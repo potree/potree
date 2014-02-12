@@ -1,4 +1,3 @@
-
 # Potree - WebGL Pointcloud Viewer
 
 Homepage: <a href="http://potree.org/">potree.org</a>

@@ -119,27 +119,34 @@ function relMouseCoords(event, element){
     return {x:canvasX, y:canvasY}
 }
 
-//function logLRU(){
-//	var lru = PointcloudOctreeNode.lruNodes;
-//	
-//	var string = "{ ";
-//	var curr = lru.first;
-//	var i = 0; 
-//	while(curr != null){
-//		string += curr.node.id;
-//		if(curr.next != null){
-//			string += ", ";
-//		}
-//		if( i > 20){
-//			Logger.info(string);
-//			string = "";
-//			i = 0;
-//		}
-//		
-//		curr = curr.next;
-//		i++;
-//	}
-//	string += "}";
-//	string += "(" + lru.size() + ")";
-//	Logger.info(string);
-//}
+
+//copyright 1999 Idocs, Inc. http://www.idocs.com
+//Distribute this script freely but keep this notice in place
+function numbersonly(myfield, e, dec) {
+	var key;
+	var keychar;
+
+	if (window.event)
+		key = window.event.keyCode;
+	else if (e)
+		key = e.which;
+	else
+		return true;
+	keychar = String.fromCharCode(key);
+
+	// control keys
+	if ((key == null) || (key == 0) || (key == 8) || (key == 9) || (key == 13)
+			|| (key == 27))
+		return true;
+
+	// numbers
+	else if ((("0123456789").indexOf(keychar) > -1))
+		return true;
+
+	// decimal point jump
+	else if (dec && (keychar == ".")) {
+		myfield.form.elements[dec].focus();
+		return false;
+	} else
+		return false;
+}

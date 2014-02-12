@@ -21,8 +21,6 @@ Potree.shaderDir="resources/shader"
  */
 Potree.includes = [
 	"libs/mjs/mjs.js",
-	"libs/WebglDebug/webgl-debug.js",
-	"libs/other/other.js",
 	"src/extensions/Array.js",
 	"src/extensions/mjs.js",
 	"src/extensions/String.js",
@@ -86,7 +84,6 @@ Potree.Settings.pointSize = 1;
 Potree.Settings.backgroundColor = [0,0,0,1];//[ 0.3, 0.3, 0.4, 1 ];
 Potree.Settings.showGrid = false;
 Potree.Settings.frustumCulling = true;
-Potree.Settings.useDebugContext = false;
 
 //other
 Potree.gridSceneNode = null;
@@ -256,11 +253,6 @@ Potree.initGL = function() {
 		return false;
 	}
 
-	if(Potree.Settings.useDebugContext){
-		 console.log("using WebGLDebugUtils - debugcontext. Performance may suffer.");
-		 gl = WebGLDebugUtils.makeDebugContext(gl);
-	}
-	
 	// extensions
 	if (!gl.getExtension("OES_texture_float")) {
 		console.log("some functions require OES_texture_float extension");

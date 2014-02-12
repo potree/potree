@@ -2,11 +2,6 @@
 <head>
 
 <link rel="stylesheet" type="text/css" href="resources/style/potree.css" />
-<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css" />
-
-<script type="text/javascript" src="libs/jquery/jquery-1.9.1.min.js"></script>
-<script type="text/javascript" src="libs/jquery/jquery-ui-1.10.1.custom.min.js"></script>
-<!--<script type="text/javascript" src="potree.min.js"></script>-->
 <script type="text/javascript" src="src/Potree.js"></script>
 <script type="text/javascript" >Potree.importScripts("./");</script>
 
@@ -28,7 +23,8 @@ DemoKeyListener.prototype.invokeKeyDown = function(){}
 DemoKeyListener.prototype.invokeKeyUp = function(){}
 
 function init() {
-	var success = Potree.init($('canvas')[0]);
+	var canvas = document.getElementById("canvas");
+	var success = Potree.init(canvas);
 	if(!success){
 		return;
 	}
@@ -51,12 +47,12 @@ function init() {
 	var material = MaterialManager.getMaterial("pointCloud");
 //	material.renderMode = PointCloudRenderMode.FILTERED_SPLAT;
 	Potree.Settings.LODMultiplicator = 20.0;
-	MaterialManager.getMaterial("pointCloud").pointSize = 0.5;
+	MaterialManager.getMaterial("pointCloud").pointSize = 1;
 	
 	KeyListener.addListener(new DemoKeyListener(material));
 	
 	
-	$('canvas')[0].focus();
+	canvas.focus();
 }
 
 </script>

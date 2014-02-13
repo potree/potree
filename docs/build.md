@@ -7,6 +7,10 @@
 
 ## Usage
 
-	gulp default
+	gulp clean     // Deletes the build directory
+	gulp test      // Runs Javascript test "jshint"
 
-Gulp.js is watching for changes. Stop with `ctrl+c`.
+	gulp debug     // Builds script files and watches for changes
+	gulp build     // Builds script files
+
+If Gulp.js is watching for changes, stop with `ctrl+c`.

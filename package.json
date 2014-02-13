@@ -2,12 +2,15 @@
     "name": "gulp-potree",
     "private": true,
     "version": "0.0.1",
-    "description": "Packages required by gulp.js",
+    "description": "Packages required by build process",
     "dependencies": {
         "gulp": "*",
         "gulp-util": "*",
+        "gulp-clean": "*",
         "gulp-concat": "*",
-        "gulp-uglify": "*"
+        "gulp-uglify": "*",
+        "gulp-rename": "*",
+        "gulp-jshint": "*"
     },
     "author": {},
     "license": ""

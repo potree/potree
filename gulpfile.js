@@ -5,11 +5,13 @@ var gulp = require('gulp');
 var gutil = require('gulp-util');
 
 var clean = require('gulp-clean');
+var serve = require('gulp-serve');
 var mdown = require('gulp-markdown');
 var concat = require('gulp-concat');
 var uglify = require('gulp-uglify');
 var jshint = require('gulp-jshint');
 var rename = require('gulp-rename');
+var minify = require('gulp-minify-css');
 
 var paths = {
 	scripts: [
@@ -84,6 +86,9 @@ gulp.task('styles', function() {
 	// Copy all Stylesheets into build directory
 	return gulp.src(paths.styles)
 		.pipe(concat('potree.css'))
+		.pipe(gulp.dest('build/css'))
+		.pipe(rename({suffix: '.min'}))
+		.pipe(minify())
 		.pipe(gulp.dest('build/css'));
 });
 
@@ -112,7 +117,10 @@ gulp.task('watch', function () {
 	gulp.watch(paths.scripts, ['scripts']);
 });
 
+// Simple webserver
+gulp.task('serve', serve('build'));
+
 // called when you run `gulp` from cli
-gulp.task('debug', ['styles', 'scripts', 'watch']);
+gulp.task('debug', ['styles', 'scripts', 'watch', 'serve']);
 gulp.task('build', ['clean', 'styles', 'scripts']);
 

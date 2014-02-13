@@ -15,7 +15,8 @@
         "gulp-jshint": "*",
         "gulp-inject": "*",
         "gulp-flatten": "*",
-        "gulp-markdown": "*"
+        "gulp-markdown": "*",
+        "gulp-minify-css": "*"
     },
     "author": {},
     "license": ""

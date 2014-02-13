@@ -1,7 +1,7 @@
 # Documentation
 
 * [File Format Description](./file_format.md)
-* [How Nodes Are Loaded](./how_nodes_are_loaded.md)
+* [How Nodes Are Loaded](./how_does_loading_nodes_work.md)
 
 ## Introduction
 

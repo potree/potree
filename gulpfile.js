@@ -4,8 +4,11 @@
 var gulp = require('gulp');
 var gutil = require('gulp-util');
 
+var clean = require('gulp-clean');
 var concat = require('gulp-concat');
 var uglify = require('gulp-uglify');
+var jshint = require('gulp-jshint');
+var rename = require('gulp-rename');
 
 var paths = {
 	scripts: [
@@ -65,17 +68,34 @@ var paths = {
 };
 
 gulp.task('scripts', function() {
-	// Minify and copy all JavaScript (except vendor scripts)
+	// Copy all JavaScript into build directory
 	return gulp.src(paths.scripts)
+		.pipe(concat('potree.js'))
+		.pipe(gulp.dest('build/js'))
+		.pipe(rename({suffix: '.min'}))
 		.pipe(uglify())
-		.pipe(concat('potree.min.js'))
-		.pipe(gulp.dest('build/'));
+		.pipe(gulp.dest('build/js'));
 });
 
-// Rerun the task when a file changes
+gulp.task('test', function() {
+	// Test Javascript source files
+	return gulp.src(paths.scripts)
+		.pipe(jshint())
+		.pipe(jshint.reporter('default'));
+});
+
+gulp.task('clean', function() {
+	// Clean the following directories
+	return gulp.src(['build'], { read: false })
+		.pipe(clean());
+});
+
 gulp.task('watch', function () {
+	// Watch the following files for changes
 	gulp.watch(paths.scripts, ['scripts']);
 });
 
-// The default task (called when you run `gulp` from cli)
-gulp.task('default', ['scripts', 'watch']);
+// called when you run `gulp` from cli
+gulp.task('debug', ['scripts', 'watch']);
+gulp.task('build', ['clean', 'scripts']);
+

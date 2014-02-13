@@ -1,0 +1,14 @@
+{
+    "name": "gulp-potree",
+    "private": true,
+    "version": "0.0.1",
+    "description": "Packages required by gulp.js",
+    "dependencies": {
+        "gulp": "*",
+        "gulp-util": "*",
+        "gulp-concat": "*",
+        "gulp-uglify": "*"
+    },
+    "author": {},
+    "license": ""
+}

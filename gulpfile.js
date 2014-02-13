@@ -5,6 +5,7 @@ var gulp = require('gulp');
 var gutil = require('gulp-util');
 
 var clean = require('gulp-clean');
+var mdown = require('gulp-markdown');
 var concat = require('gulp-concat');
 var uglify = require('gulp-uglify');
 var jshint = require('gulp-jshint');
@@ -64,7 +65,9 @@ var paths = {
 		"src/loader/ProceduralPointcloudGenerator.js",
 		"src/loader/PlyLoader.js",
 		"src/utils/LRU.js",
-	]
+	],
+	styles: "resources/css/*.css",
+	docs:   "docs/*.md"
 };
 
 gulp.task('scripts', function() {
@@ -75,6 +78,20 @@ gulp.task('scripts', function() {
 		.pipe(rename({suffix: '.min'}))
 		.pipe(uglify())
 		.pipe(gulp.dest('build/js'));
+});
+
+gulp.task('styles', function() {
+	// Copy all Stylesheets into build directory
+	return gulp.src(paths.styles)
+		.pipe(concat('potree.css'))
+		.pipe(gulp.dest('build/css'));
+});
+
+gulp.task('docs', function() {
+	// Build documentation
+	return gulp.src(paths.docs)
+		.pipe(mdown())
+		.pipe(gulp.dest('build/docs'));
 });
 
 gulp.task('test', function() {
@@ -96,6 +113,6 @@ gulp.task('watch', function () {
 });
 
 // called when you run `gulp` from cli
-gulp.task('debug', ['scripts', 'watch']);
-gulp.task('build', ['clean', 'scripts']);
+gulp.task('debug', ['styles', 'scripts', 'watch']);
+gulp.task('build', ['clean', 'styles', 'scripts']);
 

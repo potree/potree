@@ -7,10 +7,15 @@
         "gulp": "*",
         "gulp-util": "*",
         "gulp-clean": "*",
+        "gulp-serve": "*",
+        "gulp-jsdoc": "*",
         "gulp-concat": "*",
         "gulp-uglify": "*",
         "gulp-rename": "*",
-        "gulp-jshint": "*"
+        "gulp-jshint": "*",
+        "gulp-inject": "*",
+        "gulp-flatten": "*",
+        "gulp-markdown": "*"
     },
     "author": {},
     "license": ""

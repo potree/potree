@@ -9,6 +9,7 @@
 
 	gulp clean     // Deletes the build directory
 	gulp test      // Runs Javascript test "jshint"
+	gulp docs      // Build documentation
 
 	gulp debug     // Builds script files and watches for changes
 	gulp build     // Builds script files

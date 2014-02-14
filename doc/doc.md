@@ -23,7 +23,10 @@ This should be the result:
 
 ![](./images/lion_demo_screenshot.jpg)
 
+And this is what happens inside lion.html:
+
 Initialize potree inside the canvas element:
+
     var canvas = document.getElementById("canvas");
     var success = Potree.init(canvas);
     if(!success){
@@ -31,6 +34,7 @@ Initialize potree inside the canvas element:
     }
     
 Load a point cloud and add it to the scene:
+
     var scene = Potree.currentScene;
     var cloudURL = "resources/pointclouds/lion_takanawa/cloud.js";    
     var pcoNode = POCLoader.load(cloudURL);
@@ -38,21 +42,25 @@ Load a point cloud and add it to the scene:
     
 Directly manipulate the transformation matrix of the point cloud node:
 In this case, the point cloud was upside down so it has to be mirrored along the y-axis.
+
     pcoNode.transform = [1, 0, 0, 0,
     				      0, -1, 0, 0,
     				      0, 0, 1, 0,
     				      0, 0, 0, 1];
 
 Transform the camera:
+
     var cam = scene.activeCamera;
     cam.rotateY(Math.PI/2);
     cam.translate(-1,-1,-1);
     
 Set the point Size:
+
     var material = MaterialManager.getMaterial("pointCloud");
     material.pointSize = 1;
 
-A high LOD multiplicator will display more nodes that are small or far away.
+A high LOD multiplicator will display more nodes that are small or far away:
+
 	Potree.Settings.LODMultiplicator = 20.0;
 	
 

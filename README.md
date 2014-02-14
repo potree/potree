@@ -7,5 +7,11 @@ Homepage: <a href="http://potree.org/">potree.org</a>
 Put the sourcecode on a webserver and open lion.html. 
 Use the PotreeConverter to convert your own point clouds into the potree format.
 
+PotreeConverter binaries for windows are available here:
+http://potree.org/downloads/PotreeConverter_2014.01.22.zip
+
+PotreeConverter source is available here:
+https://github.com/potree/PotreeConverter
+
 ## License
 Potree is available under the FreeBSD license.

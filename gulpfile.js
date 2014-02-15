@@ -18,6 +18,7 @@ var paths = {
 		"libs/mjs/mjs.js"
 	],
 	potree: [
+		"src/License.js",
 		"src/extensions/Array.js",
 		"src/extensions/mjs.js",
 		"src/extensions/String.js",
@@ -83,14 +84,14 @@ gulp.task('scripts', function() {
 		.pipe(concat('mjs.js'))
 		.pipe(gulp.dest('build/js'))
 		.pipe(rename({suffix: '.min'}))
-		.pipe(uglify())
+		.pipe(uglify({preserveComments: 'some'}))
 		.pipe(gulp.dest('build/js'));
 
 	gulp.src(paths.potree)
 		.pipe(concat('potree.js'))
 		.pipe(gulp.dest('build/js'))
 		.pipe(rename({suffix: '.min'}))
-		.pipe(uglify())
+		.pipe(uglify({preserveComments: 'some'}))
 		.pipe(gulp.dest('build/js'));
 	return;
 });

@@ -72,7 +72,9 @@ var paths = {
 		"src/Potree.js"
 	],
 	styles: "resources/css/*.css",
-	docs:   "docs/*.md"
+	docs: [
+		"docs/*.md"
+	]
 };
 
 gulp.task('scripts', function() {

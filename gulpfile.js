@@ -14,8 +14,10 @@ var rename = require('gulp-rename');
 var minify = require('gulp-minify-css');
 
 var paths = {
-	scripts: [
-		"libs/mjs/mjs.js",
+	mjs: [
+		"libs/mjs/mjs.js"
+	],
+	potree: [
 		"src/extensions/Array.js",
 		"src/extensions/mjs.js",
 		"src/extensions/String.js",
@@ -74,12 +76,20 @@ var paths = {
 
 gulp.task('scripts', function() {
 	// Copy all JavaScript into build directory
-	return gulp.src(paths.scripts)
+	gulp.src(paths.mjs)
+		.pipe(concat('mjs.js'))
+		.pipe(gulp.dest('build/js'))
+		.pipe(rename({suffix: '.min'}))
+		.pipe(uglify())
+		.pipe(gulp.dest('build/js'));
+
+	gulp.src(paths.potree)
 		.pipe(concat('potree.js'))
 		.pipe(gulp.dest('build/js'))
 		.pipe(rename({suffix: '.min'}))
 		.pipe(uglify())
 		.pipe(gulp.dest('build/js'));
+	return;
 });
 
 gulp.task('styles', function() {
@@ -115,6 +125,7 @@ gulp.task('clean', function() {
 gulp.task('watch', function () {
 	// Watch the following files for changes
 	gulp.watch(paths.scripts, ['scripts']);
+	gulp.watch(paths.styles, ['styles']);
 });
 
 // Simple webserver

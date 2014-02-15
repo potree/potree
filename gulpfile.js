@@ -115,9 +115,14 @@ gulp.task('docs', function() {
 
 gulp.task('test', function() {
 	// Test Javascript source files
-	return gulp.src(paths.scripts)
+	gulp.src(paths.mjs)
 		.pipe(jshint())
 		.pipe(jshint.reporter('default'));
+
+	gulp.src(paths.potree)
+		.pipe(jshint())
+		.pipe(jshint.reporter('default'));
+	return;
 });
 
 gulp.task('clean', function() {

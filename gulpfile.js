@@ -69,6 +69,7 @@ var paths = {
 		"src/loader/ProceduralPointcloudGenerator.js",
 		"src/loader/PlyLoader.js",
 		"src/utils/LRU.js",
+		"src/Potree.js"
 	],
 	styles: "resources/css/*.css",
 	docs:   "docs/*.md"

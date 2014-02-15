@@ -1,7 +1,7 @@
 <html>
 <head>
 
-<link rel="stylesheet" type="text/css" href="resources/style/potree.css" />
+<link rel="stylesheet" type="text/css" href="resources/css/potree.css" />
 <script type="text/javascript" src="src/Potree.js"></script>
 <script type="text/javascript" >Potree.importScripts("./");</script>
 
@@ -50,9 +50,7 @@ function generatePointCloud(){
 			offset++;
 		}
 	}
-	
-	console.log(floatView);
-	
+
 	var pointCloud = new PointCloud("cloud", pointAttributes);
 	pointCloud.setVertexBufferData(buffer);
 	pointCloud.size = numPoints;

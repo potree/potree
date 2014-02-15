@@ -1,9 +1,9 @@
 <html>
 <head>
 
-<link rel="stylesheet" type="text/css" href="resources/style/potree.css" />
-<script type="text/javascript" src="src/Potree.js"></script>
-<script type="text/javascript" >Potree.importScripts("./");</script>
+<link rel="stylesheet" type="text/css" href="../resources/css/potree.css" />
+<script type="text/javascript" src="../src/Potree.js"></script>
+<script type="text/javascript" >Potree.importScripts("..");</script>
 
 <script type="text/javascript">
 
@@ -23,35 +23,40 @@ DemoKeyListener.prototype.invokeKeyDown = function(){}
 DemoKeyListener.prototype.invokeKeyUp = function(){}
 
 function init() {
+	
+	// init potree
 	var canvas = document.getElementById("canvas");
+	Potree.shaderDir = "../resources/shader";
 	var success = Potree.init(canvas);
 	if(!success){
 		return;
 	}
 	
+	// load point cloud
 	var scene = Potree.currentScene;
-	var cloudURL = "resources/pointclouds/lion_takanawa/cloud.js";
-	
+	var cloudURL = "../resources/pointclouds/lion_takanawa/cloud.js";
 	var pcoNode = POCLoader.load(cloudURL);
 	scene.rootNode.addChild(pcoNode);
 	
+	// mirror point cloud along a-axis
 	pcoNode.transform = [1, 0, 0, 0,
 					      0, -1, 0, 0,
 					      0, 0, 1, 0,
 					      0, 0, 0, 1];
 	
+	// transform camera
 	var cam = scene.activeCamera;
 	cam.rotateY(Math.PI/2);
 	cam.translate(-1,-1,-1);
 	
+	// set point size
 	var material = MaterialManager.getMaterial("pointCloud");
-//	material.renderMode = PointCloudRenderMode.FILTERED_SPLAT;
+	material.pointSize = 1;
+	
+	// set Level of Detail
 	Potree.Settings.LODMultiplicator = 20.0;
-	MaterialManager.getMaterial("pointCloud").pointSize = 1;
 	
 	KeyListener.addListener(new DemoKeyListener(material));
-	
-	
 	canvas.focus();
 }
 

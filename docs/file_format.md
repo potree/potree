@@ -34,7 +34,7 @@ Stores information about the pointcloud in JSON format.
 
 The property "pointAttributes" indicates how each point is stored. At the moment, you should stick to the format given in the example below. "POSITION_CARTESIAN" and "COLOR_PACKED" means that each point is stored as 3 32bit floats for x,y and z coordinates and 4 unsigned bytes for r,g,b and a colors.
 
-The hierarchy property contains all nodes and the number of points in each node. The nodes must be stored top to bottom, i.e. root at the beginning and leafs at the end.
+The hierarchy property contains all nodes and the number of points in each node. The nodes must be stored top to bottom, i.e. root at the beginning and leaf-nodes at the end.
 
     {
     	"octreeDir": "data",

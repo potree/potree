@@ -5,7 +5,7 @@
  * @param camera
  * @class fly like a bird
  * @augments CamHandler
- * @author Markus Schütz
+ * @author Markus Schuetz
  */
 function FreeFlightCamHandler(camera){
 	this.camera = camera;

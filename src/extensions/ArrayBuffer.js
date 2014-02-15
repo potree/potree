@@ -3,7 +3,7 @@
 /**
  * extensions for ArrayBuffers
  * 
- * @author Markus Schütz
+ * @author Markus Schuetz
  *
  * @class
  */

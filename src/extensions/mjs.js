@@ -3,7 +3,7 @@
 /**
  * extensions for the mjs.js library
  * 
- * @author Markus Schütz
+ * @author Markus Schuetz
  *
  * @class extends the mjs V3 class
  */

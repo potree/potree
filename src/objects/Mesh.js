@@ -2,7 +2,7 @@
 
 /**
  * @class
- * @author Markus Schütz
+ * @author Markus Schuetz
  */
 MeshType = {
 	TRIANGLES : 0,
@@ -14,7 +14,7 @@ MeshType = {
  * 
  * @param name
  * @class
- * @author Markus Schütz
+ * @author Markus Schuetz
  */
 function Mesh(name){
 	this.name = name;
@@ -71,7 +71,7 @@ Object.defineProperty(Mesh.prototype, "material", {
  * 
  * @param mesh
  * @class
- * @author Markus Schütz
+ * @author Markus Schuetz
  */
 function SubMesh(mesh){
 	this.mesh = mesh;

@@ -4,7 +4,7 @@
  * @class Loads mno files and returns a PointcloudOctree
  * for a description of the mno binary file format, read mnoFileFormat.txt
  * 
- * @author Markus Schütz
+ * @author Markus Schuetz
  */
 function POCLoader(){
 	

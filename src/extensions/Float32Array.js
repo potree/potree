@@ -3,7 +3,7 @@
 /**
  * @class extensions for Float32Arrays
  * 
- * @author Markus Schütz
+ * @author Markus Schuetz
  */
 Float32Array = Float32Array;
 

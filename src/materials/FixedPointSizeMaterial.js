@@ -3,7 +3,7 @@
 /**
  * @class renders points with a fixed pixel size. 
  * @augments Material
- * @author Markus Schütz
+ * @author Markus Schuetz
  */
 function FixedPointSizeMaterial(name){
 	Material.call(this, name);

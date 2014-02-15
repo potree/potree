@@ -2,7 +2,7 @@
 /**
  * extensions for strings
  * 
- * @author Markus Schütz
+ * @author Markus Schuetz
  */
 
 String.prototype.repeat = function(count) {

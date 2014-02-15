@@ -2,7 +2,7 @@
 /**
  * @class extensions for Arrays
  * 
- * @author Markus Schütz
+ * @author Markus Schuetz
  */
 Array = Array;
 

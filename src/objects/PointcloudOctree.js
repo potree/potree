@@ -63,7 +63,7 @@ POCRenderQueue.prototype.clear = function(){
  * Octree Object that might be attached to an PointcloudOctreeSceneNode.
  * 
  * @class
- * @author Markus Schütz
+ * @author Markus Schuetz
  */
 function PointcloudOctree(){
 	this.rootNode = null;

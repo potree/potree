@@ -30,7 +30,7 @@ var PointCloudRenderMode = {
  * @param name
  * @class
  * @augments Material
- * @author Markus Schütz
+ * @author Markus Schuetz
  */
 function PointCloudMaterial(name){
 	Material.call(this, name);

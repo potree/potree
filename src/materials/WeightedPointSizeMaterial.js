@@ -5,7 +5,7 @@
  * this may change so that point size depends on more factors like child node visibility, density of a node, etc.  
  * 
  * @augments Material
- * @author Markus Schütz
+ * @author Markus Schuetz
  */
 function WeightedPointSizeMaterial(name){
 	Material.call(this, name);

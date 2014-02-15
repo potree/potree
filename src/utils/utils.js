@@ -23,7 +23,7 @@ function load_binary_resource(url) {
 	req.overrideMimeType('text/plain; charset=x-user-defined');
 	req.send(null);
 	// when accessing local files, req.status will be 0
-	if (req.status != 200 && req.status != 0) {
+	if (req.status !== 200 && req.status !== 0) {
 		console.log("req.status: '" + req.status + "'");
 		console.log("req.readyState: '" + req.readyState + "'");
 		return '';

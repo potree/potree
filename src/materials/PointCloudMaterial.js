@@ -51,7 +51,7 @@ function PointCloudMaterial(name){
 PointCloudMaterial.prototype = new Material(inheriting);
 
 PointCloudMaterial.prototype.render = function(sceneNode, renderer){
-	if(renderer.fboDepthAsRGBA != null){
+	if(renderer.fboDepthAsRGBA !== null){
 		this.weightedMaterial.render(sceneNode, renderer);
 	}else{
 		this.activeMaterial.render(sceneNode, renderer);

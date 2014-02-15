@@ -133,7 +133,7 @@ PointcloudOctreeNode.prototype.addChild = function(child) {
 		}
 	} else if (path.length > 1) {
 		var childIndex = path[0];
-		if (this.children[childIndex] != null) {
+		if (this.children[childIndex] !== null) {
 			this.children[childIndex].addChild(child);
 		} else {
 			this.children[childIndex] = child;
@@ -153,7 +153,7 @@ PointcloudOctreeNode.prototype.addChild = function(child) {
  * removes loaded point cloud data from gpu
  */
 PointcloudOctreeNode.prototype.unload = function unloadPOCNode(){
-	if(this.pointCloud != null){
+	if(this.pointCloud !== null){
 //		Logger.info("unload node: " + this.id);
 		this.pointCloud.unload();
 		this.pointCloud = null;

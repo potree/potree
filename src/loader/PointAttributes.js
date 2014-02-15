@@ -95,7 +95,7 @@ function PointAttributes(pointAttributes){
 	this.byteSize = 0;
 	this.size = 0;
 	
-	if(pointAttributes != null){
+	if(pointAttributes !== null){
 		// does not work in chrome v24
 //		for(var pointAttribute of pointAttributes){
 //			this.attributes.push(pointAttribute);

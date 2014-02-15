@@ -165,7 +165,7 @@ PlyLoader.parseHeader = function PlyLoader_parseHeader(header){
 			var name = result[1];
 			var count = parseInt(result[2]);
 			
-			if(name != "vertex"){
+			if(name !== "vertex"){
 				throw "As of now, only ply files with 'vertex' as the first element are supported.";
 			}
 			
@@ -199,11 +199,11 @@ PlyLoader.pointAttributesFromProperties = function PlyLoader_pointAttributesFrom
 			var p1 = properties[i+1];
 			var p2 = properties[i+2];
 			
-			if(p1.name != "y" || p2.name != "z"){
+			if(p1.name !== "y" || p2.name !== "z"){
 				throw "unsupported ply format";
 			}
 			
-			if((p0.type.name + p1.type.name + p2.type.name) != "floatfloatfloat"){
+			if((p0.type.name + p1.type.name + p2.type.name) !== "floatfloatfloat"){
 				throw "unsupported ply format";
 			}
 			
@@ -214,28 +214,28 @@ PlyLoader.pointAttributesFromProperties = function PlyLoader_pointAttributesFrom
 			var p1 = properties[i+1];
 			var p2 = properties[i+2];
 			
-			if(p1.name != "ny" || p2.name != "nz"){
+			if(p1.name !== "ny" || p2.name !== "nz"){
 				throw "unsupported ply format";
 			}
 			
-			if((p0.type.name + p1.type.name + p2.type.name) != "floatfloatfloat"){
+			if((p0.type.name + p1.type.name + p2.type.name) !== "floatfloatfloat"){
 				throw "unsupported ply format";
 			}
 			
 			pointAttributes.add(PointAttribute.NORMAL_FLOATS);
 			i+=3;
 		}else if(property.name === "red"){
-			if(properties[i+3] != null && properties[i+3].name === "alpha"){
+			if(properties[i+3] !== null && properties[i+3].name === "alpha"){
 				var c0 = property;
 				var c1 = properties[i+1];
 				var c2 = properties[i+2];
 				var c3 = properties[i+3];
 				
-				if(c1.name != "green" || c2.name != "blue" || c3.name != "alpha"){
+				if(c1.name !== "green" || c2.name !== "blue" || c3.name !== "alpha"){
 					throw "unsupported ply format";
 				}
 				
-				if((c0.type.name + c1.type.name + c2.type.name + c3.type.name) != "ucharucharucharuchar"){
+				if((c0.type.name + c1.type.name + c2.type.name + c3.type.name) !== "ucharucharucharuchar"){
 					throw "unsupported ply format";
 				}
 				
@@ -246,11 +246,11 @@ PlyLoader.pointAttributesFromProperties = function PlyLoader_pointAttributesFrom
 				var c1 = properties[i+1];
 				var c2 = properties[i+2];
 				
-				if(c1.name != "green" || c2.name != "blue"){
+				if(c1.name !== "green" || c2.name !== "blue"){
 					throw "unsupported ply format";
 				}
 				
-				if((c0.type.name + c1.type.name + c2.type.name) != "ucharucharuchar"){
+				if((c0.type.name + c1.type.name + c2.type.name) !== "ucharucharuchar"){
 					throw "unsupported ply format";
 				}
 				

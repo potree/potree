@@ -20,7 +20,7 @@ POCRenderQueue.prototype.add = function(node){
 };
 
 POCRenderQueue.prototype.contains = function(node){
-	return this.nodes[node.id] != null;
+	return this.nodes[node.id] !== null;
 };
 
 POCRenderQueue.prototype.get = function(index){
@@ -73,7 +73,7 @@ function PointcloudOctree(){
 	this.nodesRenderedThisFrame = 0;
 	this.octreeDir = null;
 	this.loadQueue = new Array();
-	if(MaterialManager.getMaterial("pointCloud") != null){
+	if(MaterialManager.getMaterial("pointCloud") !== null){
 		this.material = MaterialManager.getMaterial("pointCloud");
 	}
 	this.renderQueue = new POCRenderQueue();
@@ -217,7 +217,7 @@ PointcloudOctree.cleanupCache = function(bytesNeeded, exceptionsRenderQueue){
 	for(var i = 0; i < 6; i++){
 		if(lru.byteSize + bytesNeeded > PointcloudOctreeNode.memoryThreshold){
 			var node = lru.getLRUItem();
-			if(node != null && !exceptionsRenderQueue.contains(node)){
+			if(node !== null && !exceptionsRenderQueue.contains(node)){
 				node = lru.removeLRUItem();
 				node.unload();
 			}
@@ -237,7 +237,7 @@ PointcloudOctree.prototype.addTime = function(time){
 
 PointcloudOctree.prototype.processLoadQueue = function(){
 	var lru = PointcloudOctreeNode.lruNodes;
-//	if(lru != null){
+//	if(lru !== null){
 //		debugView.set("loadedNodes: ", lru.size() );
 //	}
 	var x = 5;

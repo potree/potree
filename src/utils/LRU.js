@@ -50,7 +50,7 @@ LRU.prototype.touch = function(node){
 		var item = new LRUItem(node);
 		item.previous = this.last;
 		this.last = item;
-		if(item.previous != null){
+		if(item.previous !== null){
 			item.previous.next = item;
 		}
 		
@@ -66,7 +66,7 @@ LRU.prototype.touch = function(node){
 		var item = this.items[node.id];
 		if(item.previous === null){
 			// handle touch on first element
-			if(item.next != null){
+			if(item.next !== null){
 				this.first = item.next;
 				this.first.previous = null;
 				item.previous = this.last;
@@ -101,7 +101,7 @@ LRU.prototype.removeLRUItem = function removeLRUItem(){
 	var lru = this.first;
 
 	// if the lru list contains at least 2 items, the item after the least recently used elemnt will be the new lru item. 
-	if(lru.next != null){
+	if(lru.next !== null){
 		this.first = lru.next;
 		this.first.previous = null;
 	}else{
@@ -129,9 +129,9 @@ LRU.prototype.getLRUItem = function(){
 LRU.prototype.toString = function(){
 	var string = "{ ";
 	var curr = this.first;
-	while(curr != null){
+	while(curr !== null){
 		string += curr.node.id;
-		if(curr.next != null){
+		if(curr.next !== null){
 			string += ", ";
 		}
 		curr = curr.next;

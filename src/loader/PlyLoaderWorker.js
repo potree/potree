@@ -101,11 +101,11 @@ PlyBinaryWorker.loadFromAscii = function loadFromAscii(plyFile){
 		uz: -Infinity
 	};
 	
-	while(nextLineStart < plyBuffer.byteLength && nextLineStart != null && targetOffset < pointDataView.byteLength ){
+	while(nextLineStart < plyBuffer.byteLength && nextLineStart !== null && targetOffset < pointDataView.byteLength ){
 		nextLineStart = getNextLineStart();
 		var line = String.fromCharCode.apply(this, plyBufferUint8.subarray(currentLineStart, nextLineStart));
 		var tokens = line.trim().split(" ");
-//		if(tokens.length != plyPointAttributes.attributes.length){
+//		if(tokens.length !== plyPointAttributes.attributes.length){
 //			continue;
 //		}
 		

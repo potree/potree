@@ -10,11 +10,11 @@ function Viewport(canvas, camera) {
 	this.targetVelocityMultiplicator = 20.0;
 	this.x = 0;
 	this.y = 0;
-	if (canvas != null) {
+	if (canvas !== null) {
 		this.width = canvas.width;
 		this.height = canvas.height;
 	}
-	if(this.camera != null){
+	if(this.camera !== null){
 		this.camera.aspectRatio = this.width / this.height;
 	}
 }
@@ -31,11 +31,11 @@ Viewport.prototype.setCamera = function(camera) {
  */
 Viewport.prototype.setCanvas = function(canvas) {
 	this.canvas = canvas;
-	if (canvas != null) {
+	if (canvas !== null) {
 		this.width = canvas.width;
 		this.height = canvas.height;
 	}
-	if(this.camera != null){
+	if(this.camera !== null){
 		this.camera.aspectRatio = this.width / this.height;
 	}
 };
@@ -45,7 +45,7 @@ Viewport.prototype.setDimension = function(x, y, width, height){
 	this.y = 0;
 	this.width = width;
 	this.height = height;
-	if(this.camera != null){
+	if(this.camera !== null){
 		this.camera.aspectRatio = this.width / this.height;
 	}
 };

@@ -66,7 +66,7 @@ Renderer.prototype._worldPosAt = function(x, y, width, height){
 //	var value = [ pixels[0], pixels[1], pixels[2], pixels[3] ];
 	
 	var linearDepth = 50;
-	if(depthOfNearest != null){ // calculate linearDepth
+	if(depthOfNearest !== null){ // calculate linearDepth
 		var v0 = depthOfNearest[0] / 255;
 		var v1 = depthOfNearest[1] / 255;
 		var v2 = depthOfNearest[2] / 255;
@@ -102,13 +102,13 @@ Renderer.prototype._worldPosAt = function(x, y, width, height){
 
 Renderer.prototype.clear = function(){
 	
-	if(this.fboColor != null){
+	if(this.fboColor !== null){
 		this.fboColor.bind();
 		gl.clearColor(this.bgColor.r, this.bgColor.g, this.bgColor.b, this.bgColor.a);
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 	}
 //	
-//	if(this.fboPosition != null){
+//	if(this.fboPosition !== null){
 //		this.fboPosition.bind();
 //		gl.clearColor(this.bgColor.r, this.bgColor.g, this.bgColor.b, this.bgColor.a);
 //		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);

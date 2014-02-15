@@ -306,7 +306,7 @@ var lastLoopTime = null;
 var timeSinceLastFrame = null;
 Potree.calculateTimeSinceLastFrame = function calculateTimeSinceLastFrame(){
 	var newDrawTime = new Date().getTime();
-	if (lastLoopTime != null) {
+	if (lastLoopTime !== null) {
 		timeSinceLastFrame = (newDrawTime - lastLoopTime) / 1000.0;
 	}else{
 		timeSinceLastFrame = 0;

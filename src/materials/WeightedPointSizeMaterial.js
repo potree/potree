@@ -35,13 +35,13 @@ WeightedPointSizeMaterial.prototype.render = function(sceneNode, renderer){
 		}
 	}
 	
-	if(renderer.fboColor != null){
+	if(renderer.fboColor !== null){
 		this.renderPointClouds(transform, pointClouds, renderer);
 	}
-	if(renderer.fboPosition != null){
+	if(renderer.fboPosition !== null){
 		this.renderPointCloudsPosition(transform, pointClouds, renderer);
 	}
-	if(renderer.fboDepthAsRGBA != null){
+	if(renderer.fboDepthAsRGBA !== null){
 		this.renderPointCloudsDepthAsRGBA(transform, pointClouds, renderer);
 	}
 };
@@ -162,17 +162,17 @@ WeightedPointSizeMaterial.prototype.renderPointClouds = function renderPointClou
 				gl.enableVertexAttribArray(this.shader.attributes.aVertexPosition);
 				gl.vertexAttribPointer(this.shader.attributes.aVertexPosition, 3, gl.FLOAT, false,pointAttributes.byteSize, offset);
 			}else if(attribute === PointAttribute.RGBA_PACKED){
-				if(this.shader.attributes.aVertexColour != null){
+				if(this.shader.attributes.aVertexColour !== null){
 					gl.enableVertexAttribArray(this.shader.attributes.aVertexColour);
 					gl.vertexAttribPointer(this.shader.attributes.aVertexColour, 3, gl.UNSIGNED_BYTE, false,pointAttributes.byteSize, offset);
 				}
 			}else if(attribute === PointAttribute.RGB_PACKED){
-				if(this.shader.attributes.aVertexColour != null){
+				if(this.shader.attributes.aVertexColour !== null){
 					gl.enableVertexAttribArray(this.shader.attributes.aVertexColour);
 					gl.vertexAttribPointer(this.shader.attributes.aVertexColour, 3, gl.UNSIGNED_BYTE, false,pointAttributes.byteSize, offset);
 				}
 			}else if(attribute === PointAttribute.NORMAL_FLOATS){
-				if(this.shader.attributes.aNormal != null){
+				if(this.shader.attributes.aNormal !== null){
 					gl.enableVertexAttribArray(this.shader.attributes.aNormal);
 					gl.vertexAttribPointer(this.shader.attributes.aNormal, 3, gl.FLOAT, false,pointAttributes.byteSize, offset);
 				}

@@ -111,15 +111,15 @@ Framebuffer.prototype.initBufferStuff = function(width, height) {
 
 	// remove exiting buffers
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-	if (this.texture != null) {
+	if (this.texture !== null) {
 		gl.deleteTexture(this.texture.glid);
 		this.texture = null;
 	}
-	if (this.renderbuffer != null) {
+	if (this.renderbuffer !== null) {
 		gl.deleteRenderbuffer(this.renderbuffer);
 		this.renderbuffer = null;
 	}
-	if (this.framebuffer != null) {
+	if (this.framebuffer !== null) {
 		gl.deleteFramebuffer(this.framebuffer);
 		this.framebuffer = null;
 	}

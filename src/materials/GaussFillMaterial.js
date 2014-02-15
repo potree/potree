@@ -117,12 +117,12 @@ GaussFillMaterial.prototype.depthPass = function(transform, pointClouds, camera)
 				gl.enableVertexAttribArray(this.depthShader.attributes.aVertexPosition);
 				gl.vertexAttribPointer(this.depthShader.attributes.aVertexPosition, 3, gl.FLOAT, false,pointAttributes.byteSize, offset);
 			}else if(attribute === PointAttribute.RGBA_PACKED){
-				if(this.depthShader.attributes.aVertexColour != null){
+				if(this.depthShader.attributes.aVertexColour !== null){
 					gl.enableVertexAttribArray(this.depthShader.attributes.aVertexColour);
 					gl.vertexAttribPointer(this.depthShader.attributes.aVertexColour, 3, gl.UNSIGNED_BYTE, false,pointAttributes.byteSize, offset);
 				}
 			}else if(attribute === PointAttribute.NORMAL_FLOATS){
-				if(this.depthShader.attributes.aNormal != null){
+				if(this.depthShader.attributes.aNormal !== null){
 					gl.enableVertexAttribArray(this.depthShader.attributes.aNormal);
 					gl.vertexAttribPointer(this.depthShader.attributes.aNormal, 3, gl.FLOAT, false,pointAttributes.byteSize, offset);
 				}
@@ -176,12 +176,12 @@ GaussFillMaterial.prototype.pointsPass = function(transform, pointClouds, camera
 				gl.enableVertexAttribArray(this.colorShader.attributes.aVertexPosition);
 				gl.vertexAttribPointer(this.colorShader.attributes.aVertexPosition, 3, gl.FLOAT, false,pointAttributes.byteSize, offset);
 			}else if(attribute === PointAttribute.RGBA_PACKED){
-				if(this.colorShader.attributes.aVertexColour != null){
+				if(this.colorShader.attributes.aVertexColour !== null){
 					gl.enableVertexAttribArray(this.colorShader.attributes.aVertexColour);
 					gl.vertexAttribPointer(this.colorShader.attributes.aVertexColour, 3, gl.UNSIGNED_BYTE, false,pointAttributes.byteSize, offset);
 				}
 			}else if(attribute === PointAttribute.NORMAL_FLOATS){
-				if(this.colorShader.attributes.aNormal != null){
+				if(this.colorShader.attributes.aNormal !== null){
 					gl.enableVertexAttribArray(this.colorShader.attributes.aNormal);
 					gl.vertexAttribPointer(this.colorShader.attributes.aNormal, 3, gl.FLOAT, false,pointAttributes.byteSize, offset);
 				}

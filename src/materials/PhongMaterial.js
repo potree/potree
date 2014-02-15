@@ -8,7 +8,7 @@ function PhongMaterial(name, color){
 	Material.call(this, name);
 	this.flatShader = new Shader( name, "phong.vs", "phong.fs");
 	
-	if(color != null){
+	if(color !== null){
 		this.color = color;
 	}else{
 		this.color = [1.0, 0.0, 0.0, 1.0];
@@ -62,10 +62,10 @@ PhongMaterial.prototype.renderSubMesh = function(subMesh, meshNode, camera, ligh
 		gl.vertexAttribPointer(shader.attributes.aVertexNormal, 3, gl.FLOAT, false, 0, 0);
 	}
 		
-	if(subMesh.ibo != null){
+	if(subMesh.ibo !== null){
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, subMesh.ibo);
 		gl.drawElements(mesh.glType, subMesh.indices.length, gl.UNSIGNED_SHORT, 0);
-	}else if(subMesh.vertexCount != null){
+	}else if(subMesh.vertexCount !== null){
 		gl.lineWidth(10.0);
 		gl.drawArrays(mesh.glType, 0, subMesh.vertexCount);
 	}

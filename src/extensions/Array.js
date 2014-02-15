@@ -11,14 +11,14 @@ Array = Array;
  */
 Array.prototype.remove=function(element){
 	var index = null;
-	while((index = this.indexOf(element)) != -1){
+	while((index = this.indexOf(element)) !== -1){
 		this.splice(index, 1);
 	}
 };
 
 Array.prototype.contains = function(element){
 	var index = this.indexOf(element);
-	return index != -1;
+	return index !== -1;
 };
 
 Object.defineProperties(Array.prototype, {

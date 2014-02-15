@@ -16,7 +16,7 @@ function SceneNode(name, parent) {
 	this.age = 0;
 
 	this._transform = M4x4.I;
-	if (parent != null) {
+	if (parent !== null) {
 		parent.addChild(this);
 		this.scene = parent.scene;
 	}
@@ -66,7 +66,7 @@ Object.defineProperty(SceneNode.prototype, 'globalTransformation', {
 //		var cur = this;
 //		var globalTransform = cur._transform;
 //		var globalTransform = M4x4.clone(cur._transform);
-//		while (cur.parent != null) {
+//		while (cur.parent !== null) {
 //			cur = cur.parent;
 //			globalTransform = M4x4.mul(cur._transform, globalTransform);
 //		}
@@ -76,7 +76,7 @@ Object.defineProperty(SceneNode.prototype, 'globalTransformation', {
 		var globalTransform = this.tmpMatrix1;
 		var tmpTransform = this.tmpMatrix2;
 		M4x4.copy(cur._transform, globalTransform);
-		while(cur.parent != null){
+		while(cur.parent !== null){
 			cur = cur.parent;
 			M4x4.mul(cur._transform, globalTransform, tmpTransform);
 			var tmp = globalTransform;
@@ -105,7 +105,7 @@ Object.defineProperty(SceneNode.prototype, 'descendants', {
 		var descendants = new Array();
 		var stack = new Array();
 		stack.push(this);
-		while(stack.length != 0){
+		while(stack.length !== 0){
 			var node = stack.pop();
 			descendants.push(node);
 			for(var key in node.children) {
@@ -168,18 +168,18 @@ SceneNode.prototype.addTime = function(time) {
 };
 
 SceneNode.prototype.setParent = function(parent) {
-	if(this.parent != null){
+	if(this.parent !== null){
 		delete this.parent.children[this.name];
 	}
 	this.parent = parent;
-	if(parent != null){
+	if(parent !== null){
 		parent.children[this.name] = this;
 		this.scene = parent.scene;
 	}
 };
 
 SceneNode.prototype.addChild = function(child) {
-	if (child.parent != null) {
+	if (child.parent !== null) {
 		delete child.parent.children[child.name];
 	}
 
@@ -257,7 +257,7 @@ SceneNode.prototype.scale = function(x, y, z) {
 
 SceneNode.prototype.lookAt = function(target){
 	//TODO check for correctness
-	//TODO probably will not work if this sceneNodes parent transformation is != Identity
+	//TODO probably will not work if this sceneNodes parent transformation is !== Identity
 	//TODO up-vector is always 0/1/0. check for linear independance
 	
 	var nPos = this.globalPosition;

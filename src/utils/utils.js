@@ -67,7 +67,7 @@ function getUrlVars() {
         vars[key] = value;
     });
     return vars;
-};
+}
 
 /**
  * add separators to large numbers
@@ -107,7 +107,7 @@ function relMouseCoords(event, element){
     canvasX = event.pageX - totalOffsetX;
     canvasY = event.pageY - totalOffsetY;
     
-    return {x:canvasX, y:canvasY}
+    return {x:canvasX, y:canvasY};
 }
 
 
@@ -126,8 +126,7 @@ function numbersonly(myfield, e, dec) {
 	keychar = String.fromCharCode(key);
 
 	// control keys
-	if ((key === null) || (key === 0) || (key === 8) || (key === 9) || (key === 13)
-			|| (key === 27))
+	if ((key === null) || (key === 0) || (key === 8) || (key === 9) || (key === 13)	|| (key === 27))
 		return true;
 
 	// numbers

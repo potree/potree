@@ -121,7 +121,7 @@ PointAttributes.prototype.add = function(pointAttribute){
 PointAttributes.prototype.hasColors = function(){
 	for(var name in this.attributes){
 		var pointAttribute = this.attributes[name];
-		if(pointAttribute.name == PointAttributeNames.COLOR_PACKED){
+		if(pointAttribute.name === PointAttributeNames.COLOR_PACKED){
 			return true;
 		}
 	}
@@ -132,7 +132,7 @@ PointAttributes.prototype.hasColors = function(){
 PointAttributes.prototype.hasNormals = function(){
 	for(var name in this.attributes){
 		var pointAttribute = this.attributes[name];
-		if(pointAttribute == PointAttribute.NORMAL_FLOATS){
+		if(pointAttribute === PointAttribute.NORMAL_FLOATS){
 			return true;
 		}
 	}

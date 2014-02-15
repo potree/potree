@@ -274,7 +274,7 @@ Potree.initGL = function() {
  * draws a frame to the canvas
  */
 Potree.draw = function() {
-	if(renderer == null){
+	if(renderer === null){
 		renderer = new Renderer(Potree.currentScene, Framebuffer.getSystemBuffer());
 	}
 	

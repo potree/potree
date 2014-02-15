@@ -162,7 +162,7 @@ PointcloudOctree.prototype.prepareRender = function prepareRender(pocSceneNode, 
 			}
 			
 			// schedule loading of missing point cloud data
-			if (shouldBeRendered && current.pointCloud == null) {
+			if (shouldBeRendered && current.pointCloud === null) {
 				if(!current.isLoading){
 					this.loadQueue.push(current);
 				}

@@ -29,7 +29,7 @@ PointCloud.prototype.unload = function(){
 PointCloud.prototype.setVertexBufferData = function(data) {
 
 	// wenn vertex buffer noch nicht vorhanden -> neuen erstellen
-	if (this.vbo == null) {
+	if (this.vbo === null) {
 		this.vbo = gl.createBuffer();
 	}
 

@@ -41,16 +41,16 @@ FreeFlightCamHandler.prototype.update = function(time){
 };
 
 FreeFlightCamHandler.prototype.invokeKeyDown = function(event){
-	if(event.which == 83 ){
+	if(event.which === 83 ){
 		//s
 		this.targetVelocity[2] = 1 * this.speedMultiplier;
-	}else if(event.which == 87 ){
+	}else if(event.which === 87 ){
 		//w
 		this.targetVelocity[2] = -1 * this.speedMultiplier;
-	}else if(event.which == 68 ){
+	}else if(event.which === 68 ){
 		//d
 		this.targetVelocity[0] = 1 * this.speedMultiplier;
-	}else if(event.which == 65 ){
+	}else if(event.which === 65 ){
 		//a
 		this.targetVelocity[0] = -1 * this.speedMultiplier;
 	}
@@ -59,16 +59,16 @@ FreeFlightCamHandler.prototype.invokeKeyDown = function(event){
 };
 
 FreeFlightCamHandler.prototype.invokeKeyUp = function(event){
-	if(event.which == 83 ){
+	if(event.which === 83 ){
 		//s
 		this.targetVelocity[2] = 0;
-	}else if(event.which == 87 ){
+	}else if(event.which === 87 ){
 		//w
 		this.targetVelocity[2] = 0;
-	}else if(event.which == 68 ){
+	}else if(event.which === 68 ){
 		//d
 		this.targetVelocity[0] = 0;
-	}else if(event.which == 65 ){
+	}else if(event.which === 65 ){
 		//a
 		this.targetVelocity[0] = 0;
 	}
@@ -92,11 +92,11 @@ FreeFlightCamHandler.prototype.invokeMouseMove = function(event, diffX, diffY){
 
 FreeFlightCamHandler.prototype.invokeMouseDrag = function(event, pressedKeys, diffX, diffY){
 	
-	if(pressedKeys.length == 1 && pressedKeys.contains(0) && KeyListener.pressedKeys.contains(18)){
+	if(pressedKeys.length === 1 && pressedKeys.contains(0) && KeyListener.pressedKeys.contains(18)){
 //		this.camera.translate((this.speedMultiplier * -diffX) / 10.0, (this.speedMultiplier * diffY) / 10.0, 0);
 		this.camera.transform =  M4x4.translate3((this.speedMultiplier * -diffX) / 10.0, (this.speedMultiplier * diffY) / 10.0, 0, this.camera.transform);
 		this.qualityToggle = 0.1;
-	}else if(pressedKeys.length == 1 && pressedKeys.contains(0)){
+	}else if(pressedKeys.length === 1 && pressedKeys.contains(0)){
 		var pos = this.camera.localPosition;
 		
 		var toOrigin = M4x4.translate3(-pos[0], -pos[1], -pos[2], M4x4.I);

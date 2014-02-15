@@ -7,7 +7,7 @@ function PointCloudSceneNode(name, parent, pointCloud){
 	SceneNode.call(this, name, parent);
 	this.pointCloud = pointCloud;
 	
-	if(MaterialManager.getMaterial("pointCloud") == null){
+	if(MaterialManager.getMaterial("pointCloud") === null){
 		this.material = new PointCloudMaterial("pointCloud");
 	}else{
 		this.material = MaterialManager.getMaterial("pointCloud");
@@ -41,7 +41,7 @@ Object.defineProperty(PointCloudSceneNode.prototype, 'aabb', {
 
 PointCloudSceneNode.prototype.render = function(renderer) {
 
-	if(this.pointCloud == null){
+	if(this.pointCloud === null){
 		return;
 	}
 	if(!this.visible){

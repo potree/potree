@@ -13,7 +13,7 @@ Plane.prototype = new SceneNode(inheriting);
 
 Object.defineProperty(Plane.prototype, "mesh", {
 	get: function(){
-		if(this._mesh  == null){
+		if(this._mesh  === null){
 			this._mesh  = new Mesh("plane");
 			var subMesh = new SubMesh(this._mesh);
 			this._mesh .addSubMesh(subMesh);

@@ -14,7 +14,7 @@
 function Framebuffer(width, height) {
 	if (arguments[0] === inheriting)
 		return;
-	if (arguments[0] == "system") {
+	if (arguments[0] === "system") {
 		this.framebuffer = null;
 		this.initOtherStuff();
 	} else {
@@ -28,7 +28,7 @@ function Framebuffer(width, height) {
  * @returns the system framebuffer
  */
 Framebuffer.getSystemBuffer = function() {
-	if (Framebuffer.systemBuffer == null) {
+	if (Framebuffer.systemBuffer === null) {
 		Framebuffer.systemBuffer = new Framebuffer("system");
 	}
 
@@ -36,7 +36,7 @@ Framebuffer.getSystemBuffer = function() {
 };
 
 Framebuffer.getActiveBuffer = function() {
-	if (Framebuffer.activeBuffer == null) {
+	if (Framebuffer.activeBuffer === null) {
 		Framebuffer.activeBuffer = Framebuffer.getSystemBuffer();
 	}
 
@@ -102,7 +102,7 @@ Framebuffer.prototype.updateScreenQuad = function(start, end) {
  *            height
  */
 Framebuffer.prototype.initBufferStuff = function(width, height) {
-	if (this.width == width && this.height == height) {
+	if (this.width === width && this.height === height) {
 		return;
 	}
 
@@ -257,7 +257,7 @@ Framebuffer.prototype.drawTexture = function(texture, start, end) {
 	gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
 	// uniforms
-	if (this.framebuffer == null) {
+	if (this.framebuffer === null) {
 		var canvas = document.getElementById("canvas");
 		gl.uniform1f(mat.uniforms.uWidth, canvas.width);
 		gl.uniform1f(mat.uniforms.uHeight, canvas.height);

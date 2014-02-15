@@ -22,11 +22,11 @@ OrbitCamHandler.prototype.update = function(time){
 };
 
 OrbitCamHandler.prototype.invokeMouseDrag = function(event, pressedKeys, diffX, diffY){
-	if(pressedKeys.length == 1 && pressedKeys.contains(0) && KeyListener.pressedKeys.contains(18)){
+	if(pressedKeys.length === 1 && pressedKeys.contains(0) && KeyListener.pressedKeys.contains(18)){
 //		this.camera.translate((this.speedMultiplier * -diffX) / 10.0, (this.speedMultiplier * diffY) / 10.0, 0);
 		this.camera.transform =  M4x4.translate3((this.speedMultiplier * -diffX) / 10.0, (this.speedMultiplier * diffY) / 10.0, 0, this.camera.transform);
 		this.qualityToggle = 0.1;
-	}else if(pressedKeys.length == 1 && pressedKeys.contains(0)){
+	}else if(pressedKeys.length === 1 && pressedKeys.contains(0)){
 		this.aY += 0.2*timeSinceLastFrame*diffX;
 		
 		this.update();

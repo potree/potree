@@ -25,7 +25,7 @@ MaterialManager.addMaterial = function(material){
 MaterialManager.getMaterial = function(name){
 	for(var i = 0; i < this.materials.length; i++){
 		var material = this.materials[i];
-		if(material.name == name){
+		if(material.name === name){
 			return material;
 		}
 	}

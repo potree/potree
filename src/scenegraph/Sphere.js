@@ -13,7 +13,7 @@ Sphere.prototype = new SceneNode(inheriting);
 
 Object.defineProperty(Sphere.prototype, "mesh", {
 	get: function(){
-		if(this._mesh  == null){
+		if(this._mesh  === null){
 			this._mesh  = new Mesh("sphere");
 			var subMesh = new SubMesh(this._mesh);
 			this._mesh .addSubMesh(subMesh);
@@ -54,20 +54,20 @@ Object.defineProperty(Sphere.prototype, "mesh", {
 					if(i >= steps){
 						indices.push(i-steps);
 						indices.push(i);
-						if(step == steps-1){
+						if(step === steps-1){
 							indices.push(i+1-steps);
 						}else{
 							indices.push(i+1);
 						}
 						
-						if(step == steps-1){
+						if(step === steps-1){
 							var index = Math.max(0, i+1-steps-steps);
 							indices.push(index);
 						}else{
 							indices.push(i-steps+1);
 						}
 						indices.push(i-steps);
-						if(step == steps-1){
+						if(step === steps-1){
 							indices.push(i+1-steps);
 						}else{
 							indices.push(i+1);

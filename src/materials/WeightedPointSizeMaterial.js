@@ -77,7 +77,7 @@ WeightedPointSizeMaterial.prototype.renderPointCloudsDepthAsRGBA = function rend
 		for(var j = 0; j < pointAttributes.size; j++){
 			var attribute = pointAttributes.attributes[j];
 			
-			if(attribute == PointAttribute.POSITION_CARTESIAN){
+			if(attribute === PointAttribute.POSITION_CARTESIAN){
 				gl.enableVertexAttribArray(attributes.aVertexPosition);
 				gl.vertexAttribPointer(attributes.aVertexPosition, 3, gl.FLOAT, false,pointAttributes.byteSize, offset);
 			}
@@ -118,7 +118,7 @@ WeightedPointSizeMaterial.prototype.renderPointCloudsPosition = function renderP
 		for(var j = 0; j < pointAttributes.size; j++){
 			var attribute = pointAttributes.attributes[j];
 			
-			if(attribute == PointAttribute.POSITION_CARTESIAN){
+			if(attribute === PointAttribute.POSITION_CARTESIAN){
 				gl.enableVertexAttribArray(this.posShader.attributes.aVertexPosition);
 				gl.vertexAttribPointer(this.posShader.attributes.aVertexPosition, 3, gl.FLOAT, false,pointAttributes.byteSize, offset);
 			}
@@ -158,20 +158,20 @@ WeightedPointSizeMaterial.prototype.renderPointClouds = function renderPointClou
 		for(var j = 0; j < pointAttributes.size; j++){
 			var attribute = pointAttributes.attributes[j];
 			
-			if(attribute == PointAttribute.POSITION_CARTESIAN){
+			if(attribute === PointAttribute.POSITION_CARTESIAN){
 				gl.enableVertexAttribArray(this.shader.attributes.aVertexPosition);
 				gl.vertexAttribPointer(this.shader.attributes.aVertexPosition, 3, gl.FLOAT, false,pointAttributes.byteSize, offset);
-			}else if(attribute == PointAttribute.RGBA_PACKED){
+			}else if(attribute === PointAttribute.RGBA_PACKED){
 				if(this.shader.attributes.aVertexColour != null){
 					gl.enableVertexAttribArray(this.shader.attributes.aVertexColour);
 					gl.vertexAttribPointer(this.shader.attributes.aVertexColour, 3, gl.UNSIGNED_BYTE, false,pointAttributes.byteSize, offset);
 				}
-			}else if(attribute == PointAttribute.RGB_PACKED){
+			}else if(attribute === PointAttribute.RGB_PACKED){
 				if(this.shader.attributes.aVertexColour != null){
 					gl.enableVertexAttribArray(this.shader.attributes.aVertexColour);
 					gl.vertexAttribPointer(this.shader.attributes.aVertexColour, 3, gl.UNSIGNED_BYTE, false,pointAttributes.byteSize, offset);
 				}
-			}else if(attribute == PointAttribute.NORMAL_FLOATS){
+			}else if(attribute === PointAttribute.NORMAL_FLOATS){
 				if(this.shader.attributes.aNormal != null){
 					gl.enableVertexAttribArray(this.shader.attributes.aNormal);
 					gl.vertexAttribPointer(this.shader.attributes.aNormal, 3, gl.FLOAT, false,pointAttributes.byteSize, offset);

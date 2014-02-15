@@ -111,11 +111,11 @@ PlyLoader.load = function(source, listener){
 	var plyFile = new PlyFile();
 	var worker = new Worker("src/loader/PlyLoaderWorker.js");
 	worker.onmessage = function(event){
-		if(event.data.type == "header"){
+		if(event.data.type === "header"){
 			plyFile.header = PlyLoader.parseHeader(event.data.header);
-		}else if(event.data.type == "progress"){
+		}else if(event.data.type === "progress"){
 			listener.pointsLoaded(event.data.pointsLoaded, plyFile.header.elements[0].size);
-		}else if(event.data.type == "result"){
+		}else if(event.data.type === "result"){
 			var pointBuffer = event.data.buffer;
 			var aabb = event.data.aabb;
 			var vertexElement = plyFile.header.elements[0];
@@ -130,9 +130,9 @@ PlyLoader.load = function(source, listener){
 			pointCloud.aabb.setDimensionByMinMax(min, max);
 			
 			listener.finishedLoading(pointCloud);
-		}else if(event.data.type == "log"){
+		}else if(event.data.type === "log"){
 			console.log(event.data.message);
-		}else if(event.data.type == "fileLoadProgress"){
+		}else if(event.data.type === "fileLoadProgress"){
 			listener.fileLoadProgress(event.data.percentage);
 		}else{
 			alert(event.data);
@@ -156,7 +156,7 @@ PlyLoader.parseHeader = function PlyLoader_parseHeader(header){
 	//for(var i = 0; i < lines.length; i++){
 		var line = lines.shift();
 		
-		if(line == "ply"){
+		if(line === "ply"){
 		}else if(line.search(formatPattern) >= 0){
 			var result = line.match(formatPattern);
 			plyHeader.type = PlyFileType[result[1].toUpperCase()];
@@ -194,7 +194,7 @@ PlyLoader.pointAttributesFromProperties = function PlyLoader_pointAttributesFrom
 	while(i < properties.length){
 		var property = properties[i];
 		
-		if(property.name == "x"){
+		if(property.name === "x"){
 			var p0 = property;
 			var p1 = properties[i+1];
 			var p2 = properties[i+2];
@@ -209,7 +209,7 @@ PlyLoader.pointAttributesFromProperties = function PlyLoader_pointAttributesFrom
 			
 			pointAttributes.add(PointAttribute.POSITION_CARTESIAN);
 			i+=3;
-		}else if(property.name == "nx"){
+		}else if(property.name === "nx"){
 			var p0 = property;
 			var p1 = properties[i+1];
 			var p2 = properties[i+2];
@@ -224,8 +224,8 @@ PlyLoader.pointAttributesFromProperties = function PlyLoader_pointAttributesFrom
 			
 			pointAttributes.add(PointAttribute.NORMAL_FLOATS);
 			i+=3;
-		}else if(property.name == "red"){
-			if(properties[i+3] != null && properties[i+3].name == "alpha"){
+		}else if(property.name === "red"){
+			if(properties[i+3] != null && properties[i+3].name === "alpha"){
 				var c0 = property;
 				var c1 = properties[i+1];
 				var c2 = properties[i+2];

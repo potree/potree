@@ -61,19 +61,19 @@ Viewport.prototype.addTime = function(time){
 };
 
 Viewport.prototype.invokeKeyDown = function(event){
-	if(event.which == 83 ){
+	if(event.which === 83 ){
 		//s
 		//this.camera.translate(0,0,1);
 		this.targetVelocity[2] = 1;
-	}else if(event.which == 87 ){
+	}else if(event.which === 87 ){
 		//w
 		//this.camera.translate(0,0,-1);
 		this.targetVelocity[2] = -1;
-	}else if(event.which == 68 ){
+	}else if(event.which === 68 ){
 		//d
 		//this.camera.translate(1,0,0);
 		this.targetVelocity[0] = 1;
-	}else if(event.which == 65 ){
+	}else if(event.which === 65 ){
 		//a
 		//this.camera.translate(-1,0,0);
 		this.targetVelocity[0] = -1;
@@ -81,16 +81,16 @@ Viewport.prototype.invokeKeyDown = function(event){
 };
 
 Viewport.prototype.invokeKeyUp = function(event){
-	if(event.which == 83 ){
+	if(event.which === 83 ){
 		//s
 		this.targetVelocity[2] = 0;
-	}else if(event.which == 87 ){
+	}else if(event.which === 87 ){
 		//w
 		this.targetVelocity[2] = 0;
-	}else if(event.which == 68 ){
+	}else if(event.which === 68 ){
 		//d
 		this.targetVelocity[0] = 0;
-	}else if(event.which == 65 ){
+	}else if(event.which === 65 ){
 		//a
 		this.targetVelocity[0] = 0;
 	}
@@ -111,7 +111,7 @@ Viewport.prototype.invokeMouseMove = function(event, diffX, diffY){
 };
 
 Viewport.prototype.invokeMouseDrag = function(event, pressedKeys, diffX, diffY){
-	if(pressedKeys.length == 1 && pressedKeys.contains(1)){
+	if(pressedKeys.length === 1 && pressedKeys.contains(1)){
 		if(event.altKey){
 			var pos = this.camera.localPosition;
 			

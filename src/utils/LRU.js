@@ -36,7 +36,7 @@ LRU.prototype.size = function(){
 };
 
 LRU.prototype.contains = function(node){
-	return this.items[node.id] == null;
+	return this.items[node.id] === null;
 }
 
 /**
@@ -45,7 +45,7 @@ LRU.prototype.contains = function(node){
  * @param node
  */
 LRU.prototype.touch = function(node){
-	if(this.items[node.id] == null){
+	if(this.items[node.id] === null){
 		// add to list
 		var item = new LRUItem(node);
 		item.previous = this.last;
@@ -57,14 +57,14 @@ LRU.prototype.touch = function(node){
 		this.items[node.id] = item;
 		this.elements++;
 		
-		if(this.first == null){
+		if(this.first === null){
 			this.first = item;
 		}
 		this.byteSize += node.sizeInBytes();
 	}else{
 		// update in list
 		var item = this.items[node.id];
-		if(item.previous == null){
+		if(item.previous === null){
 			// handle touch on first element
 			if(item.next != null){
 				this.first = item.next;
@@ -74,7 +74,7 @@ LRU.prototype.touch = function(node){
 				this.last = item;
 				item.previous.next = item;
 			}
-		}else if(item.next == null){
+		}else if(item.next === null){
 			// handle touch on last element
 		}else{
 			// handle touch on any other element
@@ -95,7 +95,7 @@ LRU.prototype.touch = function(node){
  * if the list was empty, null will be returned.
  */
 LRU.prototype.removeLRUItem = function removeLRUItem(){
-	if(this.first == null){
+	if(this.first === null){
 		return null;
 	}
 	var lru = this.first;
@@ -118,7 +118,7 @@ LRU.prototype.removeLRUItem = function removeLRUItem(){
 };
 
 LRU.prototype.getLRUItem = function(){
-	if(this.first == null){
+	if(this.first === null){
 		return null;
 	}
 	var lru = this.first;

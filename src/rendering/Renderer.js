@@ -37,7 +37,7 @@ Renderer.prototype._worldPosAt = function(x, y, width, height){
 	var fboDepthAsRGBA = this.fboDepthAsRGBA;
 	this.fboColor = null;
 	
-	if(this.fboWorldPosAt == null){
+	if(this.fboWorldPosAt === null){
 		this.fboWorldPosAt = new Framebuffer(this._viewport[2], this._viewport[3]);
 	}
 	this.fboWorldPosAt.bind();
@@ -59,7 +59,7 @@ Renderer.prototype._worldPosAt = function(x, y, width, height){
 		var dist = dx*dx + dy*dy;
 		var offset = i*4;
 		var value = [ pixels[offset+0], pixels[offset+1], pixels[offset+2], pixels[offset+3] ];
-		if( !(value[0] + value[1] + value[2] == 0 && value[3] == 255) && dist < minDist){
+		if( !(value[0] + value[1] + value[2] === 0 && value[3] === 255) && dist < minDist){
 			depthOfNearest = value;
 		}
 	}
@@ -159,7 +159,7 @@ Renderer.prototype.render = function(){
 	}
 	
 	// process the worldPosAt queue
-	if(this.fboDepthAsRGBA == null){
+	if(this.fboDepthAsRGBA === null){
 		for(var i = 0; i < this.worldPosCallbackQueue.length; i++){
 			var q = this.worldPosCallbackQueue[i];
 			var worldPos = this._worldPosAt(q.x, q.y, q.width, q.height);

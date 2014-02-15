@@ -164,11 +164,9 @@ M4x4.makeInverseFrustum = function M4x4_makeInverseFrustum(left, right, bottom, 
 
 /**
  * copy values from matrix a into matrix b
- * 
  */
 M4x4.copy = function(a, b){
 	for(var i = 0; i < 16; i++){
 		b[i] = a[i];
 	}
-}
-
+};

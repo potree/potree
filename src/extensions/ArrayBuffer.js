@@ -23,4 +23,4 @@ ArrayBuffer.prototype.subarray = function(offset, length){
 	}
 	
 	return sub;
-}
+};

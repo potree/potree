@@ -1,4 +1,3 @@
-
 # Materials And Rendermodes
 
 The default material for point clouds is an instance of PointCloudMaterial with the name "pointCloud".
@@ -48,7 +47,7 @@ Used when rendermode is set to FILTERED_SPLATS.
 This material is based on the paper [High Quality Splatting on Today's GPUs](http://graphics.ucsd.edu/~matthias/Papers/HighQualitySplattingOnGPUs.pdf).
 
 The idea is, that overlapping points should be blended together, if their distance to the viewer is roughly the same.
-Simple point rendering usualy leads to overlapping points:
+Simple point rendering usualy leads to overlapping points:<br>
 ![](./images/filtered_splats_overlapping.png "")
 
 This material consists of 3 passes:

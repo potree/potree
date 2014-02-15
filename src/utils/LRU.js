@@ -21,7 +21,7 @@ function LRU(){
 	// the most recently used item
 	this.last = null;
 	// a list of all items in the lru list
-	this.items = new Object();
+	this.items = {};
 	this.elements = 0;
 	this.byteSize = 0;
 }
@@ -37,7 +37,7 @@ LRU.prototype.size = function(){
 
 LRU.prototype.contains = function(node){
 	return this.items[node.id] === null;
-}
+};
 
 /**
  * makes node the most recently used item. if the list does not contain node, it will be added.
@@ -45,9 +45,10 @@ LRU.prototype.contains = function(node){
  * @param node
  */
 LRU.prototype.touch = function(node){
+	var item;
 	if(this.items[node.id] === null){
 		// add to list
-		var item = new LRUItem(node);
+		item = new LRUItem(node);
 		item.previous = this.last;
 		this.last = item;
 		if(item.previous !== null){
@@ -63,7 +64,7 @@ LRU.prototype.touch = function(node){
 		this.byteSize += node.sizeInBytes();
 	}else{
 		// update in list
-		var item = this.items[node.id];
+		item = this.items[node.id];
 		if(item.previous === null){
 			// handle touch on first element
 			if(item.next !== null){
@@ -124,7 +125,7 @@ LRU.prototype.getLRUItem = function(){
 	var lru = this.first;
 	
 	return lru.node;
-}
+};
 
 LRU.prototype.toString = function(){
 	var string = "{ ";

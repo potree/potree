@@ -7,10 +7,10 @@ function PointCloudSceneNode(name, parent, pointCloud){
 	SceneNode.call(this, name, parent);
 	this.pointCloud = pointCloud;
 	
-	if(MaterialManager.getMaterial("pointCloudMat") == null){
-		this.material = new PointCloudMaterial("pointCloudMat");
+	if(MaterialManager.getMaterial("pointCloud") == null){
+		this.material = new PointCloudMaterial("pointCloud");
 	}else{
-		this.material = MaterialManager.getMaterial("pointCloudMat");
+		this.material = MaterialManager.getMaterial("pointCloud");
 	}
 	
 	var attributes = pointCloud.pointAttributes;

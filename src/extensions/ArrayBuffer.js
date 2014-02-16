@@ -3,14 +3,14 @@
 /**
  * extensions for ArrayBuffers
  * 
- * @author Markus Schütz
+ * @author Markus Schuetz
  *
  * @class
  */
 ArrayBuffer = ArrayBuffer;
 
 ArrayBuffer.prototype.subarray = function(offset, length){
-	if(length == null){
+	if(length === null){
 		length = this.byteLength - offset;
 	}
 	
@@ -23,4 +23,4 @@ ArrayBuffer.prototype.subarray = function(offset, length){
 	}
 	
 	return sub;
-}
+};

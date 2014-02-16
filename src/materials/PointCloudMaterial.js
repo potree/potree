@@ -30,7 +30,7 @@ var PointCloudRenderMode = {
  * @param name
  * @class
  * @augments Material
- * @author Markus Schütz
+ * @author Markus Schuetz
  */
 function PointCloudMaterial(name){
 	Material.call(this, name);
@@ -51,7 +51,7 @@ function PointCloudMaterial(name){
 PointCloudMaterial.prototype = new Material(inheriting);
 
 PointCloudMaterial.prototype.render = function(sceneNode, renderer){
-	if(renderer.fboDepthAsRGBA != null){
+	if(renderer.fboDepthAsRGBA !== null){
 		this.weightedMaterial.render(sceneNode, renderer);
 	}else{
 		this.activeMaterial.render(sceneNode, renderer);
@@ -68,12 +68,12 @@ PointCloudMaterial.prototype.render = function(sceneNode, renderer){
 //};
 //
 //PointCloudMaterial.prototype.updateActiveMaterial = function(){
-//	if(this.illuminationMode == IlluminationMode.FLAT){
-//		if(this.renderMode == PointCloudRenderMode.FIXED_CIRCLE){
+//	if(this.illuminationMode === IlluminationMode.FLAT){
+//		if(this.renderMode === PointCloudRenderMode.FIXED_CIRCLE){
 //			this.activeMaterial = this.fixedMaterial;
-//		}else if(this.renderMode == PointCloudRenderMode.WEIGHTED_CIRCLE){
+//		}else if(this.renderMode === PointCloudRenderMode.WEIGHTED_CIRCLE){
 //			this.activeMaterial = this.weightedMaterial;
-//		}else if(this.renderMode == PointCloudRenderMode.FILTERED_SPLAT){
+//		}else if(this.renderMode === PointCloudRenderMode.FILTERED_SPLAT){
 //			this.activeMaterial = this.filteredMaterial;
 //		}
 //	}
@@ -83,13 +83,13 @@ Object.defineProperty(PointCloudMaterial.prototype, 'renderMode', {
 	set: function(renderMode){
 		this._renderMode = renderMode;
 		
-		if(this.renderMode == PointCloudRenderMode.FIXED_CIRCLE){
+		if(this.renderMode === PointCloudRenderMode.FIXED_CIRCLE){
 			this.activeMaterial = this.fixedMaterial;
-		}else if(this.renderMode == PointCloudRenderMode.WEIGHTED_CIRCLE){
+		}else if(this.renderMode === PointCloudRenderMode.WEIGHTED_CIRCLE){
 			this.activeMaterial = this.weightedMaterial;
-		}else if(this.renderMode == PointCloudRenderMode.FILTERED_SPLAT){
+		}else if(this.renderMode === PointCloudRenderMode.FILTERED_SPLAT){
 			this.activeMaterial = this.filteredMaterial;
-		}else if(this.renderMode == PointCloudRenderMode.GAUSS_FILL){
+		}else if(this.renderMode === PointCloudRenderMode.GAUSS_FILL){
 			this.activeMaterial = this.gaussFillMaterial;
 		}
 	},

@@ -25,7 +25,7 @@ function PointcloudOctreeNode(name, poc) {
 	
 	this.aabb = null;
 	
-	if(PointcloudOctreeNode.lruNodes == null){
+	if(PointcloudOctreeNode.lruNodes === null){
 		PointcloudOctreeNode.lruNodes = new LRU();
 	}
 }
@@ -118,8 +118,8 @@ PointcloudOctreeNode.prototype.setAABB = function(aabb){
 PointcloudOctreeNode.prototype.addChild = function(child) {
 
 	var path = child.name.replace(this.name, "");
-	if (path.length == 1) {
-		if (this.children[path] == null) {
+	if (path.length === 1) {
+		if (this.children[path] === null) {
 			this.children[path] = child;
 			child.parent = this;
 		} else {
@@ -133,7 +133,7 @@ PointcloudOctreeNode.prototype.addChild = function(child) {
 		}
 	} else if (path.length > 1) {
 		var childIndex = path[0];
-		if (this.children[childIndex] != null) {
+		if (this.children[childIndex] !== null) {
 			this.children[childIndex].addChild(child);
 		} else {
 			this.children[childIndex] = child;
@@ -153,7 +153,7 @@ PointcloudOctreeNode.prototype.addChild = function(child) {
  * removes loaded point cloud data from gpu
  */
 PointcloudOctreeNode.prototype.unload = function unloadPOCNode(){
-	if(this.pointCloud != null){
+	if(this.pointCloud !== null){
 //		Logger.info("unload node: " + this.id);
 		this.pointCloud.unload();
 		this.pointCloud = null;
@@ -179,9 +179,9 @@ PointcloudOctreeNode.loadCloudAjax = function loadPOCCloudAjax(node) {
 	xhr.responseType = 'arraybuffer';
 	xhr.overrideMimeType('text/plain; charset=x-user-defined');
 	xhr.onreadystatechange = function() {
-		if (xhr.readyState == 4) {
+		if (xhr.readyState === 4) {
 			// when accessing local files, req.status will be 0
-			if (xhr.status == 200 || xhr.status == 0) {
+			if (xhr.status === 200 || xhr.status === 0) {
 				var buffer = xhr.response;
 				PointcloudOctreeNode.loadCloudData(node, buffer, url);
 			} else {

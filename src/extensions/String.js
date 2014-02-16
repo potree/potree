@@ -2,7 +2,7 @@
 /**
  * extensions for strings
  * 
- * @author Markus Schütz
+ * @author Markus Schuetz
  */
 
 String.prototype.repeat = function(count) {
@@ -23,7 +23,7 @@ String.prototype.repeat = function(count) {
  * @returns {String}
  */
 String.prototype.leftPad = function(length, character){
-	if(character == null){
+	if(character === null){
 		character = ' ';
 	}
 	
@@ -45,7 +45,7 @@ String.prototype.leftPad = function(length, character){
  * @returns {String}
  */
 String.prototype.rightPad = function(length, character){
-	if(character == null){
+	if(character === null){
 		character = ' ';
 	}
 	

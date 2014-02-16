@@ -21,14 +21,14 @@ ShaderManager.loadFragmentShader = function(name, source) {
 };
 
 ShaderManager.getVertexShader = function(name) {
-	if(ShaderManager.vertexShader[name] == null){
+	if(ShaderManager.vertexShader[name] === null){
 		ShaderManager.loadVertexShader(name, ShaderManager.getShaderSource(name));
 	}
 	return ShaderManager.vertexShader[name];
 };
 
 ShaderManager.getFragmentShader = function(name) {
-	if(ShaderManager.fragmentShader[name] == null){
+	if(ShaderManager.fragmentShader[name] === null){
 		ShaderManager.loadFragmentShader(name, ShaderManager.getShaderSource(name));
 	}
 	return ShaderManager.fragmentShader[name];
@@ -58,7 +58,7 @@ ShaderManager.getShaderSource = function(name){
 };
 
 ShaderManager.addShader = function(shader){
-	if(ShaderManager.getShader(shader.name) != null){
+	if(ShaderManager.getShader(shader.name) !== null){
 		var message= "shader has already been created: " + shader.name;
 		throw message;
 	}
@@ -69,7 +69,7 @@ ShaderManager.addShader = function(shader){
 ShaderManager.getShader = function(name){
 	for(var i = 0; i < this.shader.length; i++){
 		var shader = this.shader[i];
-		if(shader.name == name){
+		if(shader.name === name){
 			return shader;
 		}
 	}

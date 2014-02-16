@@ -3,7 +3,7 @@
  * 
  * @class CamHandlers define different types of navigation behaviour. This class is intended to be subclassed.
  * 
- * @author Markus Schütz
+ * @author Markus Schuetz
  */
 function CamHandler(){
 	

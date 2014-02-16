@@ -13,7 +13,7 @@ function MaterialManager(){
 MaterialManager.materials = new Array();
 
 MaterialManager.addMaterial = function(material){
-	if(MaterialManager.getMaterial(material.name) != null){
+	if(MaterialManager.getMaterial(material.name) !== null){
 		var message= "material has already been created: " + material.name;
 		Logger.error(message);
 		throw message;
@@ -25,7 +25,7 @@ MaterialManager.addMaterial = function(material){
 MaterialManager.getMaterial = function(name){
 	for(var i = 0; i < this.materials.length; i++){
 		var material = this.materials[i];
-		if(material.name == name){
+		if(material.name === name){
 			return material;
 		}
 	}

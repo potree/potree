@@ -1,5 +1,6 @@
 /* -*- Mode: js2; js2-basic-offset: 4; indent-tabs-mode: nil; tab-width: 40; -*- */
-/*
+/* 
+ * @license
  * Copyright (c) 2010 Mozilla Corporation
  * Copyright (c) 2010 Vladimir Vukicevic
  *
@@ -171,7 +172,7 @@ V3.add = function V3_add(a, b, r) {
     //MathUtils_assert(b.length == 3, "b.length == 3");
     //MathUtils_assert(r == undefined || r.length == 3, "r == undefined || r.length == 3");
 
-    if (r == undefined)
+    if (r === undefined)
         r = new MJS_FLOAT_ARRAY_TYPE(3);
     r[0] = a[0] + b[0];
     r[1] = a[1] + b[1];
@@ -201,7 +202,7 @@ V3.sub = function V3_sub(a, b, r) {
     //MathUtils_assert(b.length == 3, "b.length == 3");
     //MathUtils_assert(r == undefined || r.length == 3, "r == undefined || r.length == 3");
 
-    if (r == undefined)
+    if (r === undefined)
         r = new MJS_FLOAT_ARRAY_TYPE(3);
     r[0] = a[0] - b[0];
     r[1] = a[1] - b[1];
@@ -229,7 +230,7 @@ V3.neg = function V3_neg(a, r) {
     //MathUtils_assert(a.length == 3, "a.length == 3");
     //MathUtils_assert(r == undefined || r.length == 3, "r == undefined || r.length == 3");
 
-    if (r == undefined)
+    if (r === undefined)
         r = new MJS_FLOAT_ARRAY_TYPE(3);
     r[0] = - a[0];
     r[1] = - a[1];
@@ -260,7 +261,7 @@ V3.direction = function V3_direction(a, b, r) {
     //MathUtils_assert(b.length == 3, "b.length == 3");
     //MathUtils_assert(r == undefined || r.length == 3, "r == undefined || r.length == 3");
 
-    if (r == undefined)
+    if (r === undefined)
         r = new MJS_FLOAT_ARRAY_TYPE(3);
     return V3.normalize(V3.sub(a, b, r), r);
 };
@@ -322,7 +323,7 @@ V3.normalize = function V3_normalize(a, r) {
     //MathUtils_assert(a.length == 3, "a.length == 3");
     //MathUtils_assert(r == undefined || r.length == 3, "r == undefined || r.length == 3");
 
-    if (r == undefined)
+    if (r === undefined)
         r = new MJS_FLOAT_ARRAY_TYPE(3);
     var im = 1.0 / V3.length(a);
     r[0] = a[0] * im;
@@ -351,13 +352,13 @@ V3.scale = function V3_scale(a, k, r) {
     //MathUtils_assert(a.length == 3, "a.length == 3");
     //MathUtils_assert(r == undefined || r.length == 3, "r == undefined || r.length == 3");
 
-    if (r == undefined)
+    if (r === undefined)
         r = new MJS_FLOAT_ARRAY_TYPE(3);
     r[0] = a[0] * k;
     r[1] = a[1] * k;
     r[2] = a[2] * k;
     return r;
-}
+};
 
 /*
  * Function: V3.dot
@@ -404,7 +405,7 @@ V3.cross = function V3_cross(a, b, r) {
     //MathUtils_assert(b.length == 3, "b.length == 3");
     //MathUtils_assert(r == undefined || r.length == 3, "r == undefined || r.length == 3");
 
-    if (r == undefined)
+    if (r === undefined)
         r = new MJS_FLOAT_ARRAY_TYPE(3);
     r[0] = a[1]*b[2] - a[2]*b[1];
     r[1] = a[2]*b[0] - a[0]*b[2];
@@ -518,7 +519,7 @@ M4x4.topLeft3x3 = function M4x4_topLeft3x3(m, r) {
     //MathUtils_assert(m.length == 16, "m.length == 16");
     //MathUtils_assert(r == undefined || r.length == 9, "r == undefined || r.length == 9");
 
-    if (r == undefined)
+    if (r === undefined)
         r = new MJS_FLOAT_ARRAY_TYPE(9);
     r[0] = m[0]; r[1] = m[1]; r[2] = m[2];
     r[3] = m[4]; r[4] = m[5]; r[5] = m[6];
@@ -547,7 +548,7 @@ M4x4.inverseOrthonormal = function M4x4_inverseOrthonormal(m, r) {
     //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
     //MathUtils_assert(m != r, "m != r");
 
-    if (r == undefined)
+    if (r === undefined)
         r = new MJS_FLOAT_ARRAY_TYPE(16);
     M4x4.transpose(m, r);
     var t = [m[12], m[13], m[14]];
@@ -556,7 +557,7 @@ M4x4.inverseOrthonormal = function M4x4_inverseOrthonormal(m, r) {
     r[13] = -Vec3.dot([r[1], r[5], r[9]], t);
     r[14] = -Vec3.dot([r[2], r[6], r[10]], t);
     return r;
-}
+};
 
 /*
  * Function: M4x4.inverseTo3x3
@@ -578,7 +579,7 @@ M4x4.inverseTo3x3 = function M4x4_inverseTo3x3(m, r) {
     //MathUtils_assert(m.length == 16, "m.length == 16");
     //MathUtils_assert(r == undefined || r.length == 9, "r == undefined || r.length == 9");
 
-    if (r == undefined)
+    if (r === undefined)
         r = new MJS_FLOAT_ARRAY_TYPE(9);
 
     var a11 = m[10]*m[5]-m[6]*m[9],
@@ -591,7 +592,7 @@ M4x4.inverseTo3x3 = function M4x4_inverseTo3x3(m, r) {
         a23 = -m[9]*m[0]+m[1]*m[8],
         a33 = m[5]*m[0]-m[1]*m[4];
     var det = m[0]*(a11) + m[1]*(a12) + m[2]*(a13);
-    if (det == 0) // no inverse
+    if (det === 0) // no inverse
         throw "matrix not invertible";
     var idet = 1.0 / det;
 
@@ -631,7 +632,7 @@ M4x4.inverseTo3x3 = function M4x4_inverseTo3x3(m, r) {
 M4x4.makeFrustum = function M4x4_makeFrustum(left, right, bottom, top, znear, zfar, r) {
     //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
 
-    if (r == undefined)
+    if (r === undefined)
         r = new MJS_FLOAT_ARRAY_TYPE(16);
 
     var X = 2*znear/(right-left);
@@ -713,7 +714,7 @@ M4x4.makePerspective = function M4x4_makePerspective (fovy, aspect, znear, zfar,
 M4x4.makeOrtho = function M4x4_makeOrtho (left, right, bottom, top, znear, zfar, r) {
     //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
 
-    if (r == undefined)
+    if (r === undefined)
         r = new MJS_FLOAT_ARRAY_TYPE(16);
 
     var tX = -(right+left)/(right-left);
@@ -790,7 +791,7 @@ M4x4.mul = function M4x4_mul(a, b, r) {
     //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
     //MathUtils_assert(a != r && b != r, "a != r && b != r");
 
-    if (r == undefined)
+    if (r === undefined)
         r = new MJS_FLOAT_ARRAY_TYPE(16);
 
     r[0] =
@@ -897,7 +898,7 @@ M4x4.makeRotate = function M4x4_makeRotate(angle, axis, r) {
     //MathUtils_assert(axis.length == 3, "axis.length == 3");
     //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
 
-    if (r == undefined)
+    if (r === undefined)
         r = new MJS_FLOAT_ARRAY_TYPE(16);
 
     axis = V3.normalize(axis);
@@ -974,7 +975,7 @@ M4x4.rotate = function M4x4_rotate(angle, axis, m, r) {
 M4x4.makeScale3 = function M4x4_makeScale3(x, y, z, r) {
     //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
 
-    if (r == undefined)
+    if (r === undefined)
         r = new MJS_FLOAT_ARRAY_TYPE(16);
 
     r[0] = x;
@@ -1081,7 +1082,7 @@ M4x4.scale = function M4x4_scale(v, m, r) {
 M4x4.makeTranslate3 = function M4x4_makeTranslate3(x, y, z, r) {
     //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
 
-    if (r == undefined)
+    if (r === undefined)
         r = new MJS_FLOAT_ARRAY_TYPE(16);
 
     r[0] = 1;
@@ -1195,7 +1196,7 @@ M4x4.makeLookAt = function M4x4_makeLookAt (eye, center, up, r) {
     tm2[8] = 0; tm2[9] = 0; tm2[10] = 1; tm2[3] = 0;
     tm2[0] = -eye[0]; tm2[1] = -eye[1]; tm2[2] = -eye[2]; tm2[3] = 0;
 
-    if (r == undefined)
+    if (r === undefined)
         r = new MJS_FLOAT_ARRAY_TYPE(16);
     return M4x4.mul(tm1, tm2, r);
 };
@@ -1207,7 +1208,7 @@ M4x4.transpose = function M4x4_transpose (m, r) {
     //MathUtils_assert(m.length == 16, "m.length == 16");
     //MathUtils_assert(r == undefined || r.length == 16, "r == undefined || r.length == 16");
 
-    if (m == r) {
+    if (m === r) {
         var tmp = 0.0;
         tmp = m[1]; m[1] = m[4]; m[4] = tmp;
         tmp = m[2]; m[2] = m[8]; m[8] = tmp;
@@ -1218,7 +1219,7 @@ M4x4.transpose = function M4x4_transpose (m, r) {
         return m;
     }
 
-    if (r == undefined)
+    if (r === undefined)
         r = new MJS_FLOAT_ARRAY_TYPE(16);
 
     r[0] = m[0]; r[1] = m[4]; r[2] = m[8]; r[3] = m[12];

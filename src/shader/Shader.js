@@ -8,7 +8,7 @@
 function Shader(name, vertexShader, fragmentShader){
 	if (arguments[0] === inheriting) return;
 	
-	if(name == null){
+	if(name === null){
 		name = "Shader_" + Shader.count;
 	}
 	
@@ -62,14 +62,14 @@ Shader.prototype.initAttributes = function(){
 };
 
 Shader.prototype.relink = function(){
-	if(this.vertexShaderName == null){
+	if(this.vertexShaderName === null){
 		console.log("Shader.vertexShaderName is null -> Shader won't be linked");
 	}
-	if(this.fragmentShaderName == null){
+	if(this.fragmentShaderName === null){
 		console.log("Shader.fragmentShaderName is null -> Shader won't be linked");
 	}
 	
-	if(this.program != null){
+	if(this.program !== null){
 		gl.deleteProgram(program);
 	}
 	this.program = gl.createProgram();

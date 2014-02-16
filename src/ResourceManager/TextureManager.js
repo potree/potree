@@ -14,7 +14,7 @@ TextureManager.textures = new Array();
 TextureManager.getTexture = function(name){
 	for(var i = 0; i < this.textures.length; i++){
 		var texture = this.textures[i];
-		if(texture.name == name){
+		if(texture.name === name){
 			return texture;
 		}
 	}

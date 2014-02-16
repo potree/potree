@@ -14,7 +14,7 @@ function Potree(){
 	this.camHandler = null;
 }
 
-Potree.shaderDir="resources/shader"
+Potree.shaderDir="resources/shader";
 
 /**
  * a list of all js files that must be included by Potree
@@ -73,7 +73,7 @@ Potree.includes = [
 	"src/utils/LRU.js",
                   ];
 
-Potree.Settings = new Object();
+Potree.Settings = {};
 
 //settings
 Potree.Settings.showBoundingBoxes = false;
@@ -88,10 +88,10 @@ Potree.Settings.frustumCulling = true;
 Potree.gridSceneNode = null;
 Potree.canvas = null;
 Potree.initialized = false;
-Potree.updateHandlers = new Array();
-Potree.drawHandlers = new Array();
+Potree.updateHandlers = [];
+Potree.drawHandlers = [];
 var renderer = null;
-Potree.fpsHistory = new Array();
+Potree.fpsHistory = [];
 Potree.fps = 0;
 
 
@@ -171,9 +171,9 @@ Potree.init = function(canvas) {
 	{// register mouse and key listener
 		var mousewheelevt=(/Firefox/i.test(navigator.userAgent))? "DOMMouseScroll" : "mousewheel"; //FF doesn't recognize mousewheel as of FF3.x
 		if (document.attachEvent){ //if IE (and Opera depending on user setting)
-		    document.attachEvent("on"+mousewheelevt,MouseListener.mouseWheel);
-		}else if (document.addEventListener){ //WC3 browsers
-		    document.addEventListener(mousewheelevt, MouseListener.mouseWheel, false);
+			document.attachEvent("on"+mousewheelevt,MouseListener.mouseWheel);
+		} else if (document.addEventListener){ //WC3 browsers
+			document.addEventListener(mousewheelevt, MouseListener.mouseWheel, false);
 		}
 		document.onkeydown = KeyListener.keyDown;
 		document.onkeyup = KeyListener.keyUp;
@@ -273,7 +273,7 @@ Potree.initGL = function() {
  * draws a frame to the canvas
  */
 Potree.draw = function() {
-	if(renderer == null){
+	if(renderer === null){
 		renderer = new Renderer(Potree.currentScene, Framebuffer.getSystemBuffer());
 	}
 	
@@ -305,7 +305,7 @@ var lastLoopTime = null;
 var timeSinceLastFrame = null;
 Potree.calculateTimeSinceLastFrame = function calculateTimeSinceLastFrame(){
 	var newDrawTime = new Date().getTime();
-	if (lastLoopTime != null) {
+	if (lastLoopTime !== null) {
 		timeSinceLastFrame = (newDrawTime - lastLoopTime) / 1000.0;
 	}else{
 		timeSinceLastFrame = 0;
@@ -317,6 +317,7 @@ Potree.calculateTimeSinceLastFrame = function calculateTimeSinceLastFrame(){
 
 Potree.update = function update(time){
 	
+	var i;
 	var fps = 1 / time;
 	
 	Potree.fpsHistory.push(fps);
@@ -324,7 +325,7 @@ Potree.update = function update(time){
 		Potree.fpsHistory.splice(0, 1);
 	}
 	var mean = 0;
-	for(var i = 0; i < Potree.fpsHistory.length; i++){
+	for(i = 0; i < Potree.fpsHistory.length; i++){
 		mean += Potree.fpsHistory[i];
 	}
 	mean = mean / Potree.fpsHistory.length;
@@ -335,7 +336,7 @@ Potree.update = function update(time){
 	
 	Potree.camHandler.addTime(time);
 	
-	for(var i = 0; i < Potree.updateHandlers.length; i++) {
+	for(i = 0; i < Potree.updateHandlers.length; i++) {
 		var updateHandler = Potree.updateHandlers[i];
 		updateHandler(time);
 	}

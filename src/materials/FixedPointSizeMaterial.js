@@ -3,7 +3,7 @@
 /**
  * @class renders points with a fixed pixel size. 
  * @augments Material
- * @author Markus Schütz
+ * @author Markus Schuetz
  */
 function FixedPointSizeMaterial(name){
 	Material.call(this, name);
@@ -36,16 +36,16 @@ FixedPointSizeMaterial.prototype.render = function(mno, mnoSceneNode, camera){
 		for(var j = 0; j < pointAttributes.numAttributes; j++){
 			var attribute = pointAttributes.attributes[j];
 			
-			if(attribute.name == PointAttributeNames.POSITION_CARTESIAN){
+			if(attribute.name === PointAttributeNames.POSITION_CARTESIAN){
 				gl.enableVertexAttribArray(this.shader.aVertexPosition);
 				gl.vertexAttribPointer(this.shader.aVertexPosition, 3, gl.FLOAT, false,pointAttributes.bytesPerPoint, offset);
-			}else if(attribute.name == PointAttributeNames.COLOR_PACKED){
-				if(this.shader.aVertexColour != null){
+			}else if(attribute.name === PointAttributeNames.COLOR_PACKED){
+				if(this.shader.aVertexColour !== null){
 					gl.enableVertexAttribArray(this.shader.aVertexColour);
 					gl.vertexAttribPointer(this.shader.aVertexColour, 3, gl.UNSIGNED_BYTE, false,pointAttributes.bytesPerPoint, offset);
 				}
-			}else if(attribute.name == PointAttributeNames.NORMAL_FLOATS){
-				if(this.shader.aNormal != null){
+			}else if(attribute.name === PointAttributeNames.NORMAL_FLOATS){
+				if(this.shader.aNormal !== null){
 					gl.enableVertexAttribArray(this.shader.aNormal);
 					gl.vertexAttribPointer(this.shader.aNormal, 3, gl.FLOAT, false,pointAttributes.bytesPerPoint, offset);
 				}

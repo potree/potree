@@ -16,7 +16,7 @@ function PointCloud(name, pointAttributes) {
  * delete point cloud data from gpu
  */
 PointCloud.prototype.unload = function(){
-	if (this.vbo != null) {
+	if (this.vbo !== null) {
 		gl.bindBuffer(gl.ARRAY_BUFFER, null);
 		gl.deleteBuffer(this.vbo);
 	}
@@ -29,7 +29,7 @@ PointCloud.prototype.unload = function(){
 PointCloud.prototype.setVertexBufferData = function(data) {
 
 	// wenn vertex buffer noch nicht vorhanden -> neuen erstellen
-	if (this.vbo == null) {
+	if (this.vbo === null) {
 		this.vbo = gl.createBuffer();
 	}
 

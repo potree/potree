@@ -70,12 +70,10 @@ Frustum.fromCamera = function(camera){
 	frustum.rightPlane = Frustum.calculatePlane(frustum.pNearLR, frustum.pNearUR, frustum.pFarLR);
 	frustum.topPlane = Frustum.calculatePlane(frustum.pNearUR, frustum.pNearUL, frustum.pFarUR);
 	frustum.bottomPlane = Frustum.calculatePlane(frustum.pNearLL, frustum.pNearLR, frustum.pFarLL);
-	frustum.planes = [frustum.nearPlane, frustum.farPlane, frustum.leftPlane, 
-	                  frustum.rightPlane, frustum.topPlane, frustum.bottomPlane];
-	
+	frustum.planes = [frustum.nearPlane, frustum.farPlane, frustum.leftPlane, frustum.rightPlane, frustum.topPlane, frustum.bottomPlane];
 	
 	return frustum;
-}
+};
 
 /**
  * calculates a plane from 3 points.
@@ -104,7 +102,7 @@ Frustum.calculatePlane = function(point1, point2, point3){
 	var distance = -A*x - B*y - C*z;
 	
 	return new Plane(distance, normal);
-}
+};
 
 /** 
  * check whether the aabb is completely outside the frustum or not
@@ -125,4 +123,4 @@ Frustum.prototype.isOutside = function isOutside(aabb){
 		
 	}
 	return false;
-}
+};

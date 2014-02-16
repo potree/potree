@@ -2,13 +2,13 @@
 /**
  * @class render an object without illumination
  * @augments Material
- * @author Markus Schütz
+ * @author Markus Schuetz
  */
 function FlatMaterial(name, color){
 	Material.call(this, name);
 	this.flatShader = new Shader( name, "flatShader.vs", "flatShader.fs");
 	
-	if(color != null){
+	if(color !== null){
 		this.color = color;
 	}else{
 		this.color = [1.0, 0.0, 0.0, 1.0];
@@ -59,16 +59,16 @@ FlatMaterial.prototype.renderSubMesh = function(subMesh, meshNode, renderer){
 	gl.bindBuffer(gl.ARRAY_BUFFER, subMesh.vbos["POSITION"]);
 	gl.vertexAttribPointer(shader.attributes.aVertexPosition, 3, gl.FLOAT, false, 0, 0);
 	
-	if(subMesh.vbos["TEXCOORD_0"] != null && shader.attributes.aTextureCoord != null ){
+	if(subMesh.vbos["TEXCOORD_0"] !== null && shader.attributes.aTextureCoord !== null ){
 		gl.enableVertexAttribArray(shader.attributes.aTextureCoord);
 		gl.bindBuffer(gl.ARRAY_BUFFER, subMesh.vbos["TEXCOORD_0"]);
 		gl.vertexAttribPointer(shader.attributes.aTextureCoord, 2, gl.FLOAT, false, 0, 0);
 	}
 	
-	if(subMesh.ibo != null){
+	if(subMesh.ibo !== null){
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, subMesh.ibo);
 		gl.drawElements(mesh.glType, subMesh.indices.length, gl.UNSIGNED_SHORT, 0);
-	}else if(subMesh.vertexCount != null){
+	}else if(subMesh.vertexCount !== null){
 		gl.lineWidth(10.0);
 		gl.drawArrays(mesh.glType, 0, subMesh.vertexCount);
 	}

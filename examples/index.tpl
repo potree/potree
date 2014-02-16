@@ -15,6 +15,8 @@
     <body>
         <h1>Potree.js Examples</h1>
         <!-- build:toc -->
-        <!-- endbuild -->       
+        <!-- endbuild --> 
+
+        <p><a href="docs/doc.html">Documentation</a></p>
     </body>
 </html>

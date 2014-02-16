@@ -169,5 +169,7 @@ gulp.task('watch', function () {
 gulp.task('serve', serve('build'));
 
 // called when you run `gulp` from cli
-gulp.task('build', ['examples', 'scripts', 'styles']);
-gulp.task('debug', ['build', 'watch', 'serve']);
+gulp.task('build', ['examples', 'scripts', 'styles', 'docs']);
+gulp.task('debug', ['build', 'watch', 'serve'], function () {
+	gutil.log('Webserver started:', gutil.colors.cyan('http://localhost:3000'));
+});

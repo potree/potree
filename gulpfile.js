@@ -44,7 +44,7 @@ var paths = {
 		"./src/scenegraph/Camera.js",
 		"./src/scenegraph/Scene.js",
 		"./src/scenegraph/MeshNode.js",
-		"./src/scenegraph/Light.js",
+		"./src/sce -anegraph/Light.js",
 		"./src/scenegraph/Sphere.js",
 		"./src/objects/Mesh.js",
 		"./src/Viewport.js",
@@ -110,9 +110,13 @@ gulp.task('styles', function() {
 
 gulp.task('docs', function() {
 	// Build documentation
-	return gulp.src('./docs/*.md')
+	gulp.src('./docs/*.md')
 		.pipe(mdown())
 		.pipe(gulp.dest('build/docs'));
+
+	gulp.src('./docs/images/*')
+		.pipe(gulp.dest('build/docs/images'));
+	return;
 });
 
 gulp.task('examples', function() {

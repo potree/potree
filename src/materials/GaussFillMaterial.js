@@ -1,7 +1,6 @@
 
 
 /**
- * Implementation of the "High-Quality Splatting on Today's GPUs" paper.
  * 
  * @class
  * @see http://graphics.ucsd.edu/~matthias/Papers/HighQualitySplattingOnGPUs.pdf
@@ -14,12 +13,8 @@ function GaussFillMaterial(name){
 	this.spreadXShader = new Shader(name + "_spreadX", "drawTexture.vs", "gaussFill/gaussFillSpreadXPass.fs");
 	this.spreadYShader = new Shader(name + "_spreadY", "drawTexture.vs", "gaussFill/gaussFillSpreadYPass.fs");
 	this.normalizationShader = new Shader(name + "normalization", "drawTexture.vs", "gaussFill/gaussFillNormalizationPass.fs");
-//	this.depthFBO = new FramebufferFloat32(Potree.canvas.width, Potree.canvas.height);
 	this.depthFBO = new Framebuffer(Potree.canvas.width, Potree.canvas.height);
-//	this.colorFBO = new FramebufferFloat32(Potree.canvas.width, Potree.canvas.height);
 	this.colorFBO = new Framebuffer(Potree.canvas.width, Potree.canvas.height);
-//	this.spreadXFBO = new Framebuffer(Potree.canvas.width, Potree.canvas.height);
-//	this.spreadYFBO = new Framebuffer(Potree.canvas.width, Potree.canvas.height);
 	this.spreadXFBO = new FramebufferFloat32(Potree.canvas.width, Potree.canvas.height);
 	this.spreadYFBO = new FramebufferFloat32(Potree.canvas.width, Potree.canvas.height);
 	

@@ -2,7 +2,8 @@
 
 ## File Hierarchy
 
-Points are stored in an octree. All nodes, even intermediate nodes, contain a subset of the whole point cloud.
+Points are stored in an octree. All nodes, even intermediate nodes, contain a subset of 
+the whole point cloud.
 
     .cloud.js	Contains bounding box, vertex format and octree hierarchy
     ./data		Contains one file for each octree node.
@@ -10,7 +11,8 @@ Points are stored in an octree. All nodes, even intermediate nodes, contain a su
     ./data/rx	The x.th child of the root. x = 0 to 7
     ./data/rxy	The y.th child of the x.th child of the root.
 
-Each node may have up to 8 child nodes. The numbers from 0 to 7 inside the node name indicate which child it is. For example:
+Each node may have up to 8 child nodes. The numbers from 0 to 7 inside the node name 
+indicate which child it is. For example:
 * r is the root node
 * r0 is the first child of the root node
 * r03 is the fourth child of the first child of the root node
@@ -26,15 +28,20 @@ Child nodes are arranged like this:
     |/			|/   |/
     O----x		0----4
 
-This means that node 0 is at the origin, node 1 is translated along the -z axis, node 2 is on top of node 0 and so on.
+This means that node 0 is at the origin, node 1 is translated along the -z axis, 
+node 2 is on top of node 0 and so on.
 
 ## cloud.js
 
 Stores information about the pointcloud in JSON format.
 
-The property "pointAttributes" indicates how each point is stored. At the moment, you should stick to the format given in the example below. "POSITION_CARTESIAN" and "COLOR_PACKED" means that each point is stored as 3 32bit floats for x,y and z coordinates and 4 unsigned bytes for r,g,b and a colors.
+The property "pointAttributes" indicates how each point is stored. 
+At the moment, you should stick to the format given in the example below. 
+"POSITION_CARTESIAN" and "COLOR_PACKED" means that each point is stored as 3 32bit floats for x,y 
+and z coordinates and 4 unsigned bytes for r,g,b and a colors.
 
-The hierarchy property contains all nodes and the number of points in each node. The nodes must be stored top to bottom, i.e. root at the beginning and leaf-nodes at the end.
+The hierarchy property contains all nodes and the number of points in each node. 
+The nodes must be stored top to bottom, i.e. root at the beginning and leaf-nodes at the end.
 
     {
     	"octreeDir": "data",
@@ -58,3 +65,15 @@ The hierarchy property contains all nodes and the number of points in each node.
     		["r03", 8521]
     	]
     }
+    
+## Node-Files
+
+The node files in the data directory contain the point data.
+With point attributes set to "POSITION_CARTESIAN" and "COLOR_PACKED", 
+each point will be stored as 3x32bit floats for the xyz-coordinates and 4 unsigned bytes to store
+rgba data. All data is stored in little endian order.
+Other formats are not supported at the moment.
+
+
+
+

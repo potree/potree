@@ -5,7 +5,9 @@
   "description": "Packages required by build process",
   "dependencies": {
     "gulp": "*",
+    "gulp-tap": "*",
     "gulp-util": "*",
+    "gulp-size": "*",
     "gulp-clean": "*",
     "gulp-serve": "*",
     "gulp-jsdoc": "*",
@@ -16,7 +18,8 @@
     "gulp-inject": "*",
     "gulp-flatten": "*",
     "gulp-markdown": "*",
-    "gulp-minify-css": "*"
+    "gulp-minify-css": "*",
+    "gulp-html-replace": "*"
   },
   "author": {},
   "license": "",

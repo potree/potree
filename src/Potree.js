@@ -69,7 +69,6 @@ Potree.includes = [
 	"src/materials/GaussFillMaterial.js",
 	"src/loader/POCLoader.js",
 	"src/loader/PointAttributes.js",
-	"src/loader/ProceduralPointcloudGenerator.js",
 	"src/loader/PlyLoader.js",
 	"src/utils/LRU.js",
                   ];

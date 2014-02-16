@@ -185,8 +185,6 @@ PointcloudOctreeNode.loadCloudAjax = function loadPOCCloudAjax(node) {
 				var buffer = xhr.response;
 				PointcloudOctreeNode.loadCloudData(node, buffer, url);
 			} else {
-				/*alert('Failed to load file! HTTP status: ' + xhr.status
-						+ ", file: " + url);*/
 				console.log('Failed to load file! HTTP status: ' + xhr.status + ", file: " + url);
 			}
 		}

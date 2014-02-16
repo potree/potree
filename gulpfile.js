@@ -46,7 +46,6 @@ var paths = {
 		"./src/scenegraph/MeshNode.js",
 		"./src/scenegraph/Light.js",
 		"./src/scenegraph/Sphere.js",
-		//"./src/scenegraph/Plane.js",
 		"./src/objects/Mesh.js",
 		"./src/Viewport.js",
 		"./src/navigation/CamHandler.js",
@@ -71,7 +70,6 @@ var paths = {
 		"./src/materials/GaussFillMaterial.js",
 		"./src/loader/POCLoader.js",
 		"./src/loader/PointAttributes.js",
-		"./src/loader/ProceduralPointcloudGenerator.js",
 		"./src/loader/PlyLoader.js",
 		"./src/utils/LRU.js",
 		"./src/Potree.js"

@@ -56,6 +56,8 @@ nodes are loaded at a time.
     
 <b>PointcloudOctreeNode.loadCloudAjax(node)</b> creates an asynchronous XMLHttpRequest
 to read the point cloud data from the corresponding file in _./data_.
+Read more about loading point data through XMLHttpRequests in 
+[How To Create Your Own Pointcloud Loader](how_to_create_your_own_pointcloud_loader.md).
 Once the request is finished, _PointcloudOctreeNode.loadCloudData(node, buffer, url)_
 is called to send the data directly to the GPU. 
 

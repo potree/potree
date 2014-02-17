@@ -4,6 +4,7 @@
 * [Materials and Rendermodes](./materials_and_rendermodes.md)
 * [How Does Loading Nodes Work?](./how_does_loading_nodes_work.md)
 * [How to create your own pointcloud loader](how_to_create_your_own_pointcloud_loader.md)
+* [gulp builds (testing, building documentation and single minified script file, ...)](build.md)
 
 ## Introduction 
 

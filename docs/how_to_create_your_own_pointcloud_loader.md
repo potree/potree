@@ -1,5 +1,4 @@
-
-# How To Create Your Own Pointcloud Loader
+# How To Create Or Load Your Own Pointclouds
 
 This section will explain some approaches to create and display your own point cloud data without using 
 the PointCloudOctree and some important things to consider regarding performance.

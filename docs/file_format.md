@@ -44,6 +44,7 @@ The hierarchy property contains all nodes and the number of points in each node.
 The nodes must be stored top to bottom, i.e. root at the beginning and leaf-nodes at the end.
 
     {
+    	"version": "1.0",
     	"octreeDir": "data",
     	"boundingBox": {
     		"lx": -10.0,

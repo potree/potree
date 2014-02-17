@@ -8,6 +8,10 @@
  * 
  */
 function FilteredSplatsMaterial(name){
+	if(!FilteredSplatsMaterial.isSupported()){
+		throw new Error("FilteredSplatsMaterial is not supported on your system. OES_texture_float extension is not available.");
+	}
+
 	Material.call(this, name);
 	this.depthShader = new Shader(name + "_depth", "filteredSplats/filteredSplatsDepthPass.vs", "filteredSplats/filteredSplatsDepthPass.fs");
 	this.normalShader = new Shader(name + "_filtered_normal", "filteredSplats/filteredSplatsAttributePass.vs", "filteredSplats/filteredSplatsNormalAttributePass.fs");
@@ -23,6 +27,14 @@ function FilteredSplatsMaterial(name){
 }
 
 FilteredSplatsMaterial.prototype = new Material(inheriting);
+
+FilteredSplatsMaterial.isSupported = function(){
+	if (gl.getExtension("OES_texture_float") == null) {
+		return false;
+	}else{
+		return true;
+	}
+}
 
 FilteredSplatsMaterial.prototype.render = function(sceneNode, renderer){
 	var transform = sceneNode.globalTransformation;

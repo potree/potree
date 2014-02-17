@@ -7,6 +7,10 @@
  * 
  */
 function GaussFillMaterial(name){
+	if(!GaussFillMaterial.isSupported()){
+		throw new Error("GaussFillMaterial is not supported on your system. OES_texture_float extension is not available.");
+	}
+	
 	Material.call(this, name);
 	this.depthShader = new Shader(name + "_depth", "gaussFill/gaussFillDepthPass.vs", "gaussFill/gaussFillDepthPass.fs");
 	this.colorShader = new Shader(name + "_filtered_color", "gaussFill/gaussFillPointsPass.vs", "gaussFill/gaussFillPointsPass.fs");
@@ -30,6 +34,14 @@ function GaussFillMaterial(name){
 }
 
 GaussFillMaterial.prototype = new Material(inheriting);
+
+GaussFillMaterial.isSupported = function(){
+	if (gl.getExtension("OES_texture_float") == null) {
+		return false;
+	}else{
+		return true;
+	}
+}
 
 GaussFillMaterial.prototype.render = function(sceneNode, renderer){
 	var transform = sceneNode.globalTransformation;

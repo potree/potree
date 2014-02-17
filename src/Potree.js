@@ -229,7 +229,6 @@ Object.defineProperty(Potree, "camHandler", {
  * 
  */
 Potree.initGL = function() {
-	
 	viewportWidth = Potree.canvas.width;
 	viewportHeight = Potree.canvas.height;
 
@@ -250,12 +249,6 @@ Potree.initGL = function() {
 		return false;
 	}
 
-	// extensions
-	if (!gl.getExtension("OES_texture_float")) {
-		console.log("some functions require OES_texture_float extension");
-		return false;
-	}
-	
 	// basic settings
 	var cColor = Potree.Settings.backgroundColor;
 	gl.clearColor(cColor.r, cColor.g, cColor.b, cColor.a);

@@ -18,12 +18,12 @@ function Renderer(scene, fboColor){
 	// other
 	this.fboWorldPosAt = null;
 	this.worldPosCallbackQueue = new Array();
-};
+}
 
 Renderer.prototype.viewport = function(x, y, width, height){
 	this._viewport = [x, y, width, height];
 	gl.viewport(x, y, width, height);
-}
+};
 
 Renderer.prototype.worldPosAt = function(worldPosQueueElement){
 	this.worldPosCallbackQueue.push(worldPosQueueElement);
@@ -98,7 +98,7 @@ Renderer.prototype._worldPosAt = function(x, y, width, height){
 	}
 	
 	return worldPos;
-}
+};
 
 Renderer.prototype.clear = function(){
 	if(this.fboColor != null){
@@ -106,7 +106,7 @@ Renderer.prototype.clear = function(){
 		gl.clearColor(this.bgColor.r, this.bgColor.g, this.bgColor.b, this.bgColor.a);
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 	}
-}
+};
 
 Renderer.prototype.render = function(){
 	this.clear();

@@ -297,8 +297,7 @@ SceneNode.prototype.toString = function() {
 };
 
 SceneNode.prototype.asTreeString = function(level) {
-	var msg = " ".repeat(level * 3) + this.name + "\t"
-			+ this.globalPosition + "\n";
+	var msg = " ".repeat(level * 3) + this.name + "\t" + this.globalPosition + "\n";
 	for ( var child in this.children) {
 		msg += this.children[child].asTreeString(level + 1);
 	}

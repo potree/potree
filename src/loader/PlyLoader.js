@@ -29,7 +29,7 @@ function PlyProperty(name, type){
 function PlyPropertyDataType(name, size){
 	this.name = name;
 	this.size = size;
-};
+}
 
 /**
  * represent an element in a ply file. (such as vertex/face/...)

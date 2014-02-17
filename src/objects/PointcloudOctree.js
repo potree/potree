@@ -57,7 +57,7 @@ POCRenderQueue.prototype.clear = function(){
 	this.nodeList.length = 0;
 	this.length = 0;
 	this.points = 0;
-}
+};
 
 /**
  * Octree Object that might be attached to an PointcloudOctreeSceneNode.
@@ -84,10 +84,7 @@ function PointcloudOctree(){
 	
 	// maximum amount of nodes in this pointcloud that will be loaded at a given time
 	this.loadingNodesLimit = 10;
-	
-//	this.tmpMatrix = M4x4.$();
-//	this.tmpVec3 = V3.$(0,0,0);
-};
+}
 
 PointcloudOctree.prototype.setMaterial = function(material){
 	this.material = material;

@@ -159,6 +159,6 @@ POCLoader.createChildAABB = function(aabb, childIndex){
 	}
 	
 	return caabb;
-}
+};
 
 

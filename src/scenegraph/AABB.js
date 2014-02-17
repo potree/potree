@@ -235,7 +235,7 @@ AABB.prototype.getPositive = function getPositive(normal){
  */
 AABB.prototype.getNegative = function(normal){
 	var min = this.min;
-	var max = this.max;;
+	var max = this.max;
 	var p = [max[0], max[1], max[2]];
 	if (normal[0] >= 0){
 		p[0] = min[0];

@@ -113,7 +113,7 @@ PointcloudOctreeNode.prototype.addTime = function addTime(time){
 
 PointcloudOctreeNode.prototype.setAABB = function(aabb){
 	this.aabb = aabb;
-}
+};
 
 PointcloudOctreeNode.prototype.addChild = function(child) {
 

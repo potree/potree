@@ -89,7 +89,7 @@ WeightedPointSizeMaterial.prototype.renderPointCloudsDepthAsRGBA = function rend
 		gl.disableVertexAttribArray(attributes.aNormal);
 	}
 	
-}
+};
 
 
 WeightedPointSizeMaterial.prototype.renderPointCloudsPosition = function renderPointCloudsPosition(transform, pointClouds, renderer){
@@ -129,8 +129,7 @@ WeightedPointSizeMaterial.prototype.renderPointCloudsPosition = function renderP
 		
 		gl.disableVertexAttribArray(this.posShader.attributes.aNormal);
 	}
-	
-}
+};
 
 WeightedPointSizeMaterial.prototype.renderPointClouds = function renderPointClouds(transform, pointClouds, renderer){
 	var camera = renderer.camera;

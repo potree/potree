@@ -127,7 +127,7 @@ Camera.prototype.getDirection = function(nx, ny){
     dir = V3.sub(dir, this.globalPosition);
     
     return V3.normalize(dir);
-}
+};
 
 
 

@@ -25,7 +25,7 @@ function PointcloudOctreeNode(name, poc) {
 	
 	this.aabb = null;
 	
-	if(PointcloudOctreeNode.lruNodes === null){
+	if(PointcloudOctreeNode.lruNodes == null){
 		PointcloudOctreeNode.lruNodes = new LRU();
 	}
 }
@@ -119,7 +119,7 @@ PointcloudOctreeNode.prototype.addChild = function(child) {
 
 	var path = child.name.replace(this.name, "");
 	if (path.length === 1) {
-		if (this.children[path] === null) {
+		if (this.children[path] == null) {
 			this.children[path] = child;
 			child.parent = this;
 		} else {
@@ -133,7 +133,7 @@ PointcloudOctreeNode.prototype.addChild = function(child) {
 		}
 	} else if (path.length > 1) {
 		var childIndex = path[0];
-		if (this.children[childIndex] !== null) {
+		if (this.children[childIndex] != null) {
 			this.children[childIndex].addChild(child);
 		} else {
 			this.children[childIndex] = child;

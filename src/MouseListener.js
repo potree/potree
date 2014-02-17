@@ -53,7 +53,7 @@ MouseListener.mouseWheel = function(event){
 };
 
 MouseListener.mouseMove = function(event){
-	if(MouseListener.x === null){
+	if(MouseListener.x == null){
 		MouseListener.x = event.screenX;
 		MouseListener.y = event.screenY;
 	}

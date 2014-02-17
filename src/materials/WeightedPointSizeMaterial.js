@@ -35,13 +35,13 @@ WeightedPointSizeMaterial.prototype.render = function(sceneNode, renderer){
 		}
 	}
 	
-	if(renderer.fboColor !== null){
+	if(renderer.fboColor != null){
 		this.renderPointClouds(transform, pointClouds, renderer);
 	}
-	if(renderer.fboPosition !== null){
+	if(renderer.fboPosition != null){
 		this.renderPointCloudsPosition(transform, pointClouds, renderer);
 	}
-	if(renderer.fboDepthAsRGBA !== null){
+	if(renderer.fboDepthAsRGBA != null){
 		this.renderPointCloudsDepthAsRGBA(transform, pointClouds, renderer);
 	}
 };

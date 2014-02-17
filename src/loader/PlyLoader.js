@@ -225,7 +225,7 @@ PlyLoader.pointAttributesFromProperties = function PlyLoader_pointAttributesFrom
 			pointAttributes.add(PointAttribute.NORMAL_FLOATS);
 			i+=3;
 		}else if(property.name === "red"){
-			if(properties[i+3] !== null && properties[i+3].name === "alpha"){
+			if(properties[i+3] != null && properties[i+3].name === "alpha"){
 				var c0 = property;
 				var c1 = properties[i+1];
 				var c2 = properties[i+2];

@@ -36,7 +36,7 @@ LRU.prototype.size = function(){
 };
 
 LRU.prototype.contains = function(node){
-	return this.items[node.id] === null;
+	return this.items[node.id] == null;
 };
 
 /**
@@ -46,7 +46,7 @@ LRU.prototype.contains = function(node){
  */
 LRU.prototype.touch = function(node){
 	var item;
-	if(this.items[node.id] === null){
+	if(this.items[node.id] == null){
 		// add to list
 		item = new LRUItem(node);
 		item.previous = this.last;

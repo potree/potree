@@ -237,9 +237,6 @@ PointcloudOctree.prototype.addTime = function(time){
 
 PointcloudOctree.prototype.processLoadQueue = function(){
 	var lru = PointcloudOctreeNode.lruNodes;
-//	if(lru !== null){
-//		debugView.set("loadedNodes: ", lru.size() );
-//	}
 	var x = 5;
 	var bytesNeeded = 0;
 	

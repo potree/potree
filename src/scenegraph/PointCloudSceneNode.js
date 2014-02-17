@@ -41,7 +41,7 @@ Object.defineProperty(PointCloudSceneNode.prototype, 'aabb', {
 
 PointCloudSceneNode.prototype.render = function(renderer) {
 
-	if(this.pointCloud === null){
+	if(this.pointCloud == null){
 		return;
 	}
 	if(!this.visible){

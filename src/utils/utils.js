@@ -126,7 +126,7 @@ function numbersonly(myfield, e, dec) {
 	keychar = String.fromCharCode(key);
 
 	// control keys
-	if ((key === null) || (key === 0) || (key === 8) || (key === 9) || (key === 13)	|| (key === 27))
+	if ((key == null) || (key === 0) || (key === 8) || (key === 9) || (key === 13)	|| (key === 27))
 		return true;
 
 	// numbers

@@ -273,7 +273,7 @@ Potree.initGL = function() {
  * draws a frame to the canvas
  */
 Potree.draw = function() {
-	if(renderer === null){
+	if(renderer == null){
 		renderer = new Renderer(Potree.currentScene, Framebuffer.getSystemBuffer());
 	}
 	
@@ -305,7 +305,7 @@ var lastLoopTime = null;
 var timeSinceLastFrame = null;
 Potree.calculateTimeSinceLastFrame = function calculateTimeSinceLastFrame(){
 	var newDrawTime = new Date().getTime();
-	if (lastLoopTime !== null) {
+	if (lastLoopTime != null) {
 		timeSinceLastFrame = (newDrawTime - lastLoopTime) / 1000.0;
 	}else{
 		timeSinceLastFrame = 0;

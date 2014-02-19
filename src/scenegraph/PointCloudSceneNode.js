@@ -14,7 +14,7 @@ function PointCloudSceneNode(name, parent, pointCloud){
 	}
 	
 	var attributes = pointCloud.pointAttributes;
-	if(attributes.hasColors() && attributes.hasNormals()){
+	if(attributes.hasColors()){
 		this.material.illuminationMode = IlluminationMode.FLAT;
 	}else if(attributes.hasNormals()){
 		this.material.illuminationMode = IlluminationMode.PHONG;

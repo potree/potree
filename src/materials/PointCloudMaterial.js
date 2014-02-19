@@ -128,7 +128,7 @@ Object.defineProperty(PointCloudMaterial.prototype, 'blendDepth', {
 Object.defineProperty(PointCloudMaterial.prototype, 'illuminationMode', {
 	set: function(illuminationMode){
 		this._illuminationMode = illuminationMode;
-		if(this.filteredMaterial){
+		if(FilteredSplatsMaterial.isSupported()){
 			this.filteredMaterial.illuminationMode = illuminationMode;
 		}
 		this.weightedMaterial.illuminationMode = illuminationMode;

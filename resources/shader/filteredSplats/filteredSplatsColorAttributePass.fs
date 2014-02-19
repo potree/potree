@@ -3,29 +3,6 @@
 precision highp float;
 
 varying vec3 	vVertexColour;
-//varying vec3 	vPos;
-//varying vec3	vViewPos;
-//varying vec3 	vNormal;
-//varying vec3	vViewNormal;
-//varying vec3	vViewTangent1;
-//varying vec3	vViewTangent2;
-
-//uniform vec2	uWindowSize;
-//uniform vec2 	uNearWindowSize;
-//uniform float	uNear;
-
-//float getDistance(){
-//	float u = 2.0*(gl_PointCoord.x - 0.5);
-//	float v = 2.0*(gl_PointCoord.y - 0.5);
-//	vec2 uv = vec2(u,v);
-//	
-//	vec2 a = normalize(vec2(-vViewNormal.y, vViewNormal.x));
-//	vec2 b = normalize(vec2(vViewNormal.x, vViewNormal.y));
-//	b = b * (1.0/vViewNormal.z);
-//	
-//	float val = pow(dot(a, uv), 2.0) + pow(dot(b, uv), 2.0);
-//	return 1.0 - val;
-//}
 
 float getDistance(){
 	float a = pow(2.0*(gl_PointCoord.x - 0.5), 2.0);
@@ -42,10 +19,8 @@ void main(void){
 	}
 
 	float weight = pow(c+0.2, 40.0);
-//	weight = pow(c, 2.0);
 
 	gl_FragColor = vec4( weight * vVertexColour, weight );
-	
 } 
 
 

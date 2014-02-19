@@ -74,10 +74,6 @@ Renderer.prototype._worldPosAt = function(x, y, width, height){
 		var expDepth = (v0/(256*256*256) + v1/(256*256) + v2/256 + v3);
 		var invProj = this.camera.inverseProjectionMatrix;
 		linearDepth = Math.abs(V3.transform(V3.$(0,0,expDepth), invProj).z);
-		
-//		console.log("packedDepth: " + value);
-//		console.log("expDepth: " + expDepth);
-//		console.log("linearDepth: " + linearDepth);
 	}
 	
 	var worldPos = null;
@@ -85,9 +81,12 @@ Renderer.prototype._worldPosAt = function(x, y, width, height){
 		var nx = x / Potree.canvas.width;
 		var ny = y / Potree.canvas.height;
 		var dir = this.camera.getDirection(nx, ny);
-		worldPos = V3.add(this.camera.globalPosition, V3.scale(dir,linearDepth));
-//		console.log("dir: " + dir);
-//		console.log("worldPos: " + worldPos);
+		var iFar = this.camera.getFarClipIntersection(nx, ny);
+		var iNear = this.camera.getNearClipIntersection(nx, ny);
+		var fd = V3.length(iFar);
+		var nd = V3.length(iNear);
+		var distance = (linearDepth / this.camera.farClipPlane) * fd;
+		worldPos = V3.add(this.camera.globalPosition, V3.scale(dir,distance));
 	}
 	
 	{ // reset fbos

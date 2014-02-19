@@ -129,8 +129,47 @@ Camera.prototype.getDirection = function(nx, ny){
     return V3.normalize(dir);
 };
 
+/**
+ * nx and ny are in range [0,1]
+ * origin is at the bottom left
+ */
+Camera.prototype.getFarClipIntersection = function(nx, ny){
+	var ymax = this.nearClipPlane * Math.tan(this.fieldOfView * Math.PI / 360.0);
+    var ymin = -ymax;
+    var xmin = ymin * this.aspectRatio;
+    var xmax = ymax * this.aspectRatio;
+    
+    var x = (1-nx)*xmin + nx*xmax;
+    var y = (1-ny)*ymin + ny*ymax;
+    var z = this.nearClipPlane;
+    var dir = V3.normalize(V3.$(x,y,-z));
+    
+    var plane = new Plane(this.farClipPlane, V3.$(0,0,1));
+    var I = plane.intersection(V3.$(0,0,0), dir);
+    
+    return I;
+};
 
-
+/**
+ * nx and ny are in range [0,1]
+ * origin is at the bottom left
+ */
+Camera.prototype.getNearClipIntersection = function(nx, ny){
+	var ymax = this.nearClipPlane * Math.tan(this.fieldOfView * Math.PI / 360.0);
+    var ymin = -ymax;
+    var xmin = ymin * this.aspectRatio;
+    var xmax = ymax * this.aspectRatio;
+    
+    var x = (1-nx)*xmin + nx*xmax;
+    var y = (1-ny)*ymin + ny*ymax;
+    var z = this.nearClipPlane;
+    var dir = V3.normalize(V3.$(x,y,-z));
+    
+    var plane = new Plane(this.nearClipPlane, V3.$(0,0,1));
+    var I = plane.intersection(V3.$(0,0,0), dir);
+    
+    return I;
+};
 
 
 

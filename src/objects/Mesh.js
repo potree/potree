@@ -101,7 +101,7 @@ Object.defineProperty(SubMesh.prototype, "material", {
 
 SubMesh.prototype.setVertexBufferData = function(name, data){
 	// wenn vertex buffer noch nicht vorhanden -> neuen erstellen
-	if(this.vbos[name] === null){
+	if(this.vbos[name] == null){
 		this.vbos[name] = gl.createBuffer();
 	}
 
@@ -110,7 +110,7 @@ SubMesh.prototype.setVertexBufferData = function(name, data){
 };
 
 SubMesh.prototype.setIndexBufferData = function(data){
-	if(this.ibo === null){
+	if(this.ibo == null){
 		this.ibo = gl.createBuffer();
 	}
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.ibo);

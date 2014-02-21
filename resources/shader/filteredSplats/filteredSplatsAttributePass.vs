@@ -15,11 +15,7 @@ uniform float 	uPointSize;
 
 varying vec3 	vVertexColour;
 varying vec3 	vPos;
-//varying vec3	vViewPos;
 varying vec3 	vNormal;
-//varying vec3 	vViewNormal;
-//varying vec3	vViewTangent1;
-//varying vec3	vViewTangent2;
 
 // calculate point size depending on the distance from viewport
 // or rather: take a point in view space, translate it by {trans} along the x and y axis
@@ -45,10 +41,6 @@ void main(void){
 	vec4 pos = uView * worldPos;
 	
 	vVertexColour = aVertexColour.xyz / 256.0;
-//	vViewPos = pos.xyz;
-//	vViewNormal = (uView*uWorld*vec4(aNormal, 0.0)).xyz;
-//	vViewTangent1 = (uView*uWorld*vec4(aNormal.yzx, 0.0)).xyz;
-//	vViewTangent2 = (uView*uWorld*vec4(aNormal.zxy, 0.0)).xyz;
 	vNormal = (uWorld*vec4(aNormal, 0.0)).xyz;
 	
 	gl_PointSize = pointSize(pos);

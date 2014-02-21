@@ -19,6 +19,7 @@ PointCloud.prototype.unload = function(){
 	if (this.vbo !== null) {
 		gl.bindBuffer(gl.ARRAY_BUFFER, null);
 		gl.deleteBuffer(this.vbo);
+		this.vbo = null;
 	}
 };
 

@@ -28,7 +28,7 @@ function Framebuffer(width, height) {
  * @returns the system framebuffer
  */
 Framebuffer.getSystemBuffer = function() {
-	if (Framebuffer.systemBuffer === null) {
+	if (Framebuffer.systemBuffer == null) {
 		Framebuffer.systemBuffer = new Framebuffer("system");
 	}
 
@@ -36,7 +36,7 @@ Framebuffer.getSystemBuffer = function() {
 };
 
 Framebuffer.getActiveBuffer = function() {
-	if (Framebuffer.activeBuffer === null) {
+	if (Framebuffer.activeBuffer == null) {
 		Framebuffer.activeBuffer = Framebuffer.getSystemBuffer();
 	}
 
@@ -66,13 +66,15 @@ Framebuffer.prototype.initOtherStuff = function() {
 
 	this.vbo = gl.createBuffer();
 	this.texcoordvbo = gl.createBuffer();
+	
+	// create rectangle mesh buffer
 	gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);
-	var vertices = new Float32Array([ 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1,
-			0, 0, 1, 0 ]);
+	var vertices = new Float32Array([ 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0 ]);
 	gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
 
+	// create uv coords buffer
 	gl.bindBuffer(gl.ARRAY_BUFFER, this.texcoordvbo);
-	var vertices = new Float32Array([ 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1 ]);
+	vertices = new Float32Array([ 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1 ]);
 	gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
 
 };
@@ -111,15 +113,15 @@ Framebuffer.prototype.initBufferStuff = function(width, height) {
 
 	// remove exiting buffers
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-	if (this.texture !== null) {
+	if (this.texture != null) {
 		gl.deleteTexture(this.texture.glid);
 		this.texture = null;
 	}
-	if (this.renderbuffer !== null) {
+	if (this.renderbuffer != null) {
 		gl.deleteRenderbuffer(this.renderbuffer);
 		this.renderbuffer = null;
 	}
-	if (this.framebuffer !== null) {
+	if (this.framebuffer != null) {
 		gl.deleteFramebuffer(this.framebuffer);
 		this.framebuffer = null;
 	}
@@ -196,26 +198,19 @@ Framebuffer.prototype.checkBuffer = function checkBuffer() {
 	case gl.FRAMEBUFFER_COMPLETE:
 		break;
 	case gl.FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
-		Logger
-				.error("Incomplete framebuffer: FRAMEBUFFER_INCOMPLETE_ATTACHMENT");
+		console.log("Incomplete framebuffer: FRAMEBUFFER_INCOMPLETE_ATTACHMENT");
 		throw "";
-		break;
 	case gl.FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
-		Logger
-				.error("Incomplete framebuffer: FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT");
+		console.log("Incomplete framebuffer: FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT");
 		throw "";
-		break;
 	case gl.FRAMEBUFFER_INCOMPLETE_DIMENSIONS:
-		Logger
-				.error("Incomplete framebuffer: FRAMEBUFFER_INCOMPLETE_DIMENSIONS");
+		console.log("Incomplete framebuffer: FRAMEBUFFER_INCOMPLETE_DIMENSIONS");
 		throw "";
-		break;
 	case gl.FRAMEBUFFER_UNSUPPORTED:
-		Logger.error("Incomplete framebuffer: FRAMEBUFFER_UNSUPPORTED");
+		console.log("Incomplete framebuffer: FRAMEBUFFER_UNSUPPORTED");
 		throw "";
-		break;
 	default:
-		Logger.error("Incomplete framebuffer: " + status);
+		console.log("Incomplete framebuffer: " + status);
 		throw "";
 	}
 };
@@ -257,7 +252,7 @@ Framebuffer.prototype.drawTexture = function(texture, start, end) {
 	gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
 	// uniforms
-	if (this.framebuffer === null) {
+	if (this.framebuffer == null) {
 		var canvas = document.getElementById("canvas");
 		gl.uniform1f(mat.uniforms.uWidth, canvas.width);
 		gl.uniform1f(mat.uniforms.uHeight, canvas.height);

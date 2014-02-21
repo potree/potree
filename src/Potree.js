@@ -44,9 +44,7 @@ Potree.includes = [
 	"src/scenegraph/MeshNode.js",
 	"src/scenegraph/Light.js",
 	"src/scenegraph/Sphere.js",
-//	"src/scenegraph/Plane.js",
 	"src/objects/Mesh.js",
-	"src/Viewport.js",
 	"src/navigation/CamHandler.js",
 	"src/navigation/FreeFlightCamHandler.js",
 	"src/navigation/OrbitCamHandler.js",
@@ -231,7 +229,6 @@ Object.defineProperty(Potree, "camHandler", {
  * 
  */
 Potree.initGL = function() {
-	
 	viewportWidth = Potree.canvas.width;
 	viewportHeight = Potree.canvas.height;
 
@@ -252,12 +249,6 @@ Potree.initGL = function() {
 		return false;
 	}
 
-	// extensions
-	if (!gl.getExtension("OES_texture_float")) {
-		console.log("some functions require OES_texture_float extension");
-		return false;
-	}
-	
 	// basic settings
 	var cColor = Potree.Settings.backgroundColor;
 	gl.clearColor(cColor.r, cColor.g, cColor.b, cColor.a);
@@ -273,7 +264,7 @@ Potree.initGL = function() {
  * draws a frame to the canvas
  */
 Potree.draw = function() {
-	if(renderer === null){
+	if(renderer == null){
 		renderer = new Renderer(Potree.currentScene, Framebuffer.getSystemBuffer());
 	}
 	
@@ -305,7 +296,7 @@ var lastLoopTime = null;
 var timeSinceLastFrame = null;
 Potree.calculateTimeSinceLastFrame = function calculateTimeSinceLastFrame(){
 	var newDrawTime = new Date().getTime();
-	if (lastLoopTime !== null) {
+	if (lastLoopTime != null) {
 		timeSinceLastFrame = (newDrawTime - lastLoopTime) / 1000.0;
 	}else{
 		timeSinceLastFrame = 0;

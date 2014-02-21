@@ -2,9 +2,6 @@
 
 precision highp float;
 
-// vDepth.x:	The linear depth. 
-// vDepth.y:	DepthMap depth. 
-varying vec2 	vDepth; 
 varying vec3	vPos;
 
 void main(void){

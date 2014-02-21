@@ -47,7 +47,6 @@ var paths = {
 		"./src/sce -anegraph/Light.js",
 		"./src/scenegraph/Sphere.js",
 		"./src/objects/Mesh.js",
-		"./src/Viewport.js",
 		"./src/navigation/CamHandler.js",
 		"./src/navigation/FreeFlightCamHandler.js",
 		"./src/navigation/OrbitCamHandler.js",

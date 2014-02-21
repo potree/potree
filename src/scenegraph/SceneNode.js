@@ -16,8 +16,8 @@ function SceneNode(name, parent) {
 	this.age = 0;
 
 	this._transform = M4x4.I;
-	if (parent !== null) {
-		parent.addChild(this);
+	if (this.parent != null) {
+		this.parent.addChild(this);
 		this.scene = parent.scene;
 	}
 	
@@ -76,7 +76,7 @@ Object.defineProperty(SceneNode.prototype, 'globalTransformation', {
 		var globalTransform = this.tmpMatrix1;
 		var tmpTransform = this.tmpMatrix2;
 		M4x4.copy(cur._transform, globalTransform);
-		while(cur.parent !== null){
+		while(cur.parent != null){
 			cur = cur.parent;
 			M4x4.mul(cur._transform, globalTransform, tmpTransform);
 			var tmp = globalTransform;
@@ -168,18 +168,18 @@ SceneNode.prototype.addTime = function(time) {
 };
 
 SceneNode.prototype.setParent = function(parent) {
-	if(this.parent !== null){
+	if(this.parent != null){
 		delete this.parent.children[this.name];
 	}
 	this.parent = parent;
-	if(parent !== null){
+	if(parent != null){
 		parent.children[this.name] = this;
 		this.scene = parent.scene;
 	}
 };
 
 SceneNode.prototype.addChild = function(child) {
-	if (child.parent !== null) {
+	if (child.parent != null) {
 		delete child.parent.children[child.name];
 	}
 
@@ -297,8 +297,7 @@ SceneNode.prototype.toString = function() {
 };
 
 SceneNode.prototype.asTreeString = function(level) {
-	var msg = " ".repeat(level * 3) + this.name + "\t"
-			+ this.globalPosition + "\n";
+	var msg = " ".repeat(level * 3) + this.name + "\t" + this.globalPosition + "\n";
 	for ( var child in this.children) {
 		msg += this.children[child].asTreeString(level + 1);
 	}

@@ -19,7 +19,7 @@ PointcloudOctreeSceneNode.base = SceneNode.prototype;
 
 PointcloudOctreeSceneNode.prototype.render = function(camera, lights) {
 
-	if(this.mno === null){
+	if(this.mno == null){
 		return;
 	}
 	if(!this.visible){

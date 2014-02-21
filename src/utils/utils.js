@@ -101,8 +101,7 @@ function relMouseCoords(event, element){
     do{
         totalOffsetX += currentElement.offsetLeft - currentElement.scrollLeft;
         totalOffsetY += currentElement.offsetTop - currentElement.scrollTop;
-    }
-    while(currentElement = currentElement.offsetParent)
+    }while(currentElement = currentElement.offsetParent);
 
     canvasX = event.pageX - totalOffsetX;
     canvasY = event.pageY - totalOffsetY;
@@ -126,7 +125,7 @@ function numbersonly(myfield, e, dec) {
 	keychar = String.fromCharCode(key);
 
 	// control keys
-	if ((key === null) || (key === 0) || (key === 8) || (key === 9) || (key === 13)	|| (key === 27))
+	if ((key == null) || (key === 0) || (key === 8) || (key === 9) || (key === 13)	|| (key === 27))
 		return true;
 
 	// numbers

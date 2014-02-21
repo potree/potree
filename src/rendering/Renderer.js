@@ -18,12 +18,12 @@ function Renderer(scene, fboColor){
 	// other
 	this.fboWorldPosAt = null;
 	this.worldPosCallbackQueue = new Array();
-};
+}
 
 Renderer.prototype.viewport = function(x, y, width, height){
 	this._viewport = [x, y, width, height];
 	gl.viewport(x, y, width, height);
-}
+};
 
 Renderer.prototype.worldPosAt = function(worldPosQueueElement){
 	this.worldPosCallbackQueue.push(worldPosQueueElement);
@@ -37,7 +37,7 @@ Renderer.prototype._worldPosAt = function(x, y, width, height){
 	var fboDepthAsRGBA = this.fboDepthAsRGBA;
 	this.fboColor = null;
 	
-	if(this.fboWorldPosAt === null){
+	if(this.fboWorldPosAt == null){
 		this.fboWorldPosAt = new Framebuffer(this._viewport[2], this._viewport[3]);
 	}
 	this.fboWorldPosAt.bind();
@@ -66,7 +66,7 @@ Renderer.prototype._worldPosAt = function(x, y, width, height){
 //	var value = [ pixels[0], pixels[1], pixels[2], pixels[3] ];
 	
 	var linearDepth = 50;
-	if(depthOfNearest !== null){ // calculate linearDepth
+	if(depthOfNearest != null){ // calculate linearDepth
 		var v0 = depthOfNearest[0] / 255;
 		var v1 = depthOfNearest[1] / 255;
 		var v2 = depthOfNearest[2] / 255;
@@ -74,10 +74,6 @@ Renderer.prototype._worldPosAt = function(x, y, width, height){
 		var expDepth = (v0/(256*256*256) + v1/(256*256) + v2/256 + v3);
 		var invProj = this.camera.inverseProjectionMatrix;
 		linearDepth = Math.abs(V3.transform(V3.$(0,0,expDepth), invProj).z);
-		
-//		console.log("packedDepth: " + value);
-//		console.log("expDepth: " + expDepth);
-//		console.log("linearDepth: " + linearDepth);
 	}
 	
 	var worldPos = null;
@@ -85,9 +81,12 @@ Renderer.prototype._worldPosAt = function(x, y, width, height){
 		var nx = x / Potree.canvas.width;
 		var ny = y / Potree.canvas.height;
 		var dir = this.camera.getDirection(nx, ny);
-		worldPos = V3.add(this.camera.globalPosition, V3.scale(dir,linearDepth));
-//		console.log("dir: " + dir);
-//		console.log("worldPos: " + worldPos);
+		var iFar = this.camera.getFarClipIntersection(nx, ny);
+		var iNear = this.camera.getNearClipIntersection(nx, ny);
+		var fd = V3.length(iFar);
+		var nd = V3.length(iNear);
+		var distance = (linearDepth / this.camera.farClipPlane) * fd;
+		worldPos = V3.add(this.camera.globalPosition, V3.scale(dir,distance));
 	}
 	
 	{ // reset fbos
@@ -98,22 +97,15 @@ Renderer.prototype._worldPosAt = function(x, y, width, height){
 	}
 	
 	return worldPos;
-}
+};
 
 Renderer.prototype.clear = function(){
-	
-	if(this.fboColor !== null){
+	if(this.fboColor != null){
 		this.fboColor.bind();
 		gl.clearColor(this.bgColor.r, this.bgColor.g, this.bgColor.b, this.bgColor.a);
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 	}
-//	
-//	if(this.fboPosition !== null){
-//		this.fboPosition.bind();
-//		gl.clearColor(this.bgColor.r, this.bgColor.g, this.bgColor.b, this.bgColor.a);
-//		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-//	}
-}
+};
 
 Renderer.prototype.render = function(){
 	this.clear();
@@ -159,7 +151,7 @@ Renderer.prototype.render = function(){
 	}
 	
 	// process the worldPosAt queue
-	if(this.fboDepthAsRGBA === null){
+	if(this.fboDepthAsRGBA == null){
 		for(var i = 0; i < this.worldPosCallbackQueue.length; i++){
 			var q = this.worldPosCallbackQueue[i];
 			var worldPos = this._worldPosAt(q.x, q.y, q.width, q.height);

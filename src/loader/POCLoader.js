@@ -48,7 +48,7 @@ POCLoader.load = function load(file) {
 				var mNode = new PointcloudOctreeNode(nodeName, pco);
 				mNode.points = points;
 				pco.rootNode.addChild(mNode);
-				var childIndex = mNode.name.charAt(mNode.name.length-1);
+				var childIndex = parseInt(mNode.name.charAt(mNode.name.length-1));
 				var childAABB = POCLoader.createChildAABB(mNode.parent.aabb, childIndex);
 				mNode.setAABB(childAABB);
 			}
@@ -159,6 +159,6 @@ POCLoader.createChildAABB = function(aabb, childIndex){
 	}
 	
 	return caabb;
-}
+};
 
 

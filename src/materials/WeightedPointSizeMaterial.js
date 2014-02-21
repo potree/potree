@@ -35,13 +35,13 @@ WeightedPointSizeMaterial.prototype.render = function(sceneNode, renderer){
 		}
 	}
 	
-	if(renderer.fboColor !== null){
+	if(renderer.fboColor != null){
 		this.renderPointClouds(transform, pointClouds, renderer);
 	}
-	if(renderer.fboPosition !== null){
+	if(renderer.fboPosition != null){
 		this.renderPointCloudsPosition(transform, pointClouds, renderer);
 	}
-	if(renderer.fboDepthAsRGBA !== null){
+	if(renderer.fboDepthAsRGBA != null){
 		this.renderPointCloudsDepthAsRGBA(transform, pointClouds, renderer);
 	}
 };
@@ -89,7 +89,7 @@ WeightedPointSizeMaterial.prototype.renderPointCloudsDepthAsRGBA = function rend
 		gl.disableVertexAttribArray(attributes.aNormal);
 	}
 	
-}
+};
 
 
 WeightedPointSizeMaterial.prototype.renderPointCloudsPosition = function renderPointCloudsPosition(transform, pointClouds, renderer){
@@ -129,8 +129,7 @@ WeightedPointSizeMaterial.prototype.renderPointCloudsPosition = function renderP
 		
 		gl.disableVertexAttribArray(this.posShader.attributes.aNormal);
 	}
-	
-}
+};
 
 WeightedPointSizeMaterial.prototype.renderPointClouds = function renderPointClouds(transform, pointClouds, renderer){
 	var camera = renderer.camera;

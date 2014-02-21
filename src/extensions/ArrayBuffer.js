@@ -10,7 +10,7 @@
 ArrayBuffer = ArrayBuffer;
 
 ArrayBuffer.prototype.subarray = function(offset, length){
-	if(length === null){
+	if(length == null){
 		length = this.byteLength - offset;
 	}
 	

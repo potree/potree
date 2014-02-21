@@ -7,6 +7,10 @@
  * 
  */
 function GaussFillMaterial(name){
+	if(!GaussFillMaterial.isSupported()){
+		throw new Error("GaussFillMaterial is not supported on your system. OES_texture_float extension is not available.");
+	}
+	
 	Material.call(this, name);
 	this.depthShader = new Shader(name + "_depth", "gaussFill/gaussFillDepthPass.vs", "gaussFill/gaussFillDepthPass.fs");
 	this.colorShader = new Shader(name + "_filtered_color", "gaussFill/gaussFillPointsPass.vs", "gaussFill/gaussFillPointsPass.fs");
@@ -30,6 +34,14 @@ function GaussFillMaterial(name){
 }
 
 GaussFillMaterial.prototype = new Material(inheriting);
+
+GaussFillMaterial.isSupported = function(){
+	if (gl.getExtension("OES_texture_float") == null) {
+		return false;
+	}else{
+		return true;
+	}
+}
 
 GaussFillMaterial.prototype.render = function(sceneNode, renderer){
 	var transform = sceneNode.globalTransformation;
@@ -112,12 +124,12 @@ GaussFillMaterial.prototype.depthPass = function(transform, pointClouds, camera)
 				gl.enableVertexAttribArray(this.depthShader.attributes.aVertexPosition);
 				gl.vertexAttribPointer(this.depthShader.attributes.aVertexPosition, 3, gl.FLOAT, false,pointAttributes.byteSize, offset);
 			}else if(attribute === PointAttribute.RGBA_PACKED){
-				if(this.depthShader.attributes.aVertexColour !== null){
+				if(this.depthShader.attributes.aVertexColour != null){
 					gl.enableVertexAttribArray(this.depthShader.attributes.aVertexColour);
 					gl.vertexAttribPointer(this.depthShader.attributes.aVertexColour, 3, gl.UNSIGNED_BYTE, false,pointAttributes.byteSize, offset);
 				}
 			}else if(attribute === PointAttribute.NORMAL_FLOATS){
-				if(this.depthShader.attributes.aNormal !== null){
+				if(this.depthShader.attributes.aNormal != null){
 					gl.enableVertexAttribArray(this.depthShader.attributes.aNormal);
 					gl.vertexAttribPointer(this.depthShader.attributes.aNormal, 3, gl.FLOAT, false,pointAttributes.byteSize, offset);
 				}
@@ -171,12 +183,12 @@ GaussFillMaterial.prototype.pointsPass = function(transform, pointClouds, camera
 				gl.enableVertexAttribArray(this.colorShader.attributes.aVertexPosition);
 				gl.vertexAttribPointer(this.colorShader.attributes.aVertexPosition, 3, gl.FLOAT, false,pointAttributes.byteSize, offset);
 			}else if(attribute === PointAttribute.RGBA_PACKED){
-				if(this.colorShader.attributes.aVertexColour !== null){
+				if(this.colorShader.attributes.aVertexColour != null){
 					gl.enableVertexAttribArray(this.colorShader.attributes.aVertexColour);
 					gl.vertexAttribPointer(this.colorShader.attributes.aVertexColour, 3, gl.UNSIGNED_BYTE, false,pointAttributes.byteSize, offset);
 				}
 			}else if(attribute === PointAttribute.NORMAL_FLOATS){
-				if(this.colorShader.attributes.aNormal !== null){
+				if(this.colorShader.attributes.aNormal != null){
 					gl.enableVertexAttribArray(this.colorShader.attributes.aNormal);
 					gl.vertexAttribPointer(this.colorShader.attributes.aNormal, 3, gl.FLOAT, false,pointAttributes.byteSize, offset);
 				}

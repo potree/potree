@@ -14,7 +14,7 @@ function PointCloudSceneNode(name, parent, pointCloud){
 	}
 	
 	var attributes = pointCloud.pointAttributes;
-	if(attributes.hasColors() && attributes.hasNormals()){
+	if(attributes.hasColors()){
 		this.material.illuminationMode = IlluminationMode.FLAT;
 	}else if(attributes.hasNormals()){
 		this.material.illuminationMode = IlluminationMode.PHONG;
@@ -41,7 +41,7 @@ Object.defineProperty(PointCloudSceneNode.prototype, 'aabb', {
 
 PointCloudSceneNode.prototype.render = function(renderer) {
 
-	if(this.pointCloud === null){
+	if(this.pointCloud == null){
 		return;
 	}
 	if(!this.visible){

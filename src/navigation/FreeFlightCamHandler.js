@@ -22,7 +22,7 @@ FreeFlightCamHandler.prototype = new CamHandler();
 
 FreeFlightCamHandler.prototype.addTime = function(time){
 	this.update(time);
-}
+};
 
 FreeFlightCamHandler.prototype.update = function(time){
 	this.velocity[0] = 0.2 *this.velocity[0] + 0.8 * this.targetVelocity[0] * this.targetVelocityMultiplicator;
@@ -111,7 +111,7 @@ FreeFlightCamHandler.prototype.invokeMouseDrag = function(event, pressedKeys, di
 		this.camera.transform = transform;
 		
 		
-		var transform = M4x4.mul(toOrigin, this.camera.transform);
+		transform = M4x4.mul(toOrigin, this.camera.transform);
 		transform = M4x4.mul(rotY, transform);
 		transform = M4x4.mul(backToPos, transform);
 		this.camera.transform = transform;

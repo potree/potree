@@ -8,7 +8,7 @@
 function Material(name){
 	if (arguments[0] === inheriting) return;
 	
-	if(name === null){
+	if(name == null){
 		name = "Material_" + Material.count;
 	}
 	this.name = name;

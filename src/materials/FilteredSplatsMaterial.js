@@ -8,6 +8,10 @@
  * 
  */
 function FilteredSplatsMaterial(name){
+	if(!FilteredSplatsMaterial.isSupported()){
+		throw new Error("FilteredSplatsMaterial is not supported on your system. OES_texture_float extension is not available.");
+	}
+
 	Material.call(this, name);
 	this.depthShader = new Shader(name + "_depth", "filteredSplats/filteredSplatsDepthPass.vs", "filteredSplats/filteredSplatsDepthPass.fs");
 	this.normalShader = new Shader(name + "_filtered_normal", "filteredSplats/filteredSplatsAttributePass.vs", "filteredSplats/filteredSplatsNormalAttributePass.fs");
@@ -23,6 +27,14 @@ function FilteredSplatsMaterial(name){
 }
 
 FilteredSplatsMaterial.prototype = new Material(inheriting);
+
+FilteredSplatsMaterial.isSupported = function(){
+	if (gl.getExtension("OES_texture_float") == null) {
+		return false;
+	}else{
+		return true;
+	}
+}
 
 FilteredSplatsMaterial.prototype.render = function(sceneNode, renderer){
 	var transform = sceneNode.globalTransformation;
@@ -111,12 +123,12 @@ FilteredSplatsMaterial.prototype.depthPass = function(transform, pointClouds, re
 				gl.enableVertexAttribArray(this.depthShader.attributes.aVertexPosition);
 				gl.vertexAttribPointer(this.depthShader.attributes.aVertexPosition, 3, gl.FLOAT, false,pointAttributes.byteSize, offset);
 			}else if(attribute === PointAttribute.RGBA_PACKED){
-				if(this.depthShader.attributes.aVertexColour !== null){
+				if(this.depthShader.attributes.aVertexColour != null){
 					gl.enableVertexAttribArray(this.depthShader.attributes.aVertexColour);
 					gl.vertexAttribPointer(this.depthShader.attributes.aVertexColour, 3, gl.UNSIGNED_BYTE, false,pointAttributes.byteSize, offset);
 				}
 			}else if(attribute === PointAttribute.NORMAL_FLOATS){
-				if(this.depthShader.attributes.aNormal !== null){
+				if(this.depthShader.attributes.aNormal != null){
 					gl.enableVertexAttribArray(this.depthShader.attributes.aNormal);
 					gl.vertexAttribPointer(this.depthShader.attributes.aNormal, 3, gl.FLOAT, false,pointAttributes.byteSize, offset);
 				}
@@ -177,12 +189,12 @@ FilteredSplatsMaterial.prototype.colorPass = function(transform, pointClouds, re
 				gl.enableVertexAttribArray(this.colorShader.attributes.aVertexPosition);
 				gl.vertexAttribPointer(this.colorShader.attributes.aVertexPosition, 3, gl.FLOAT, false,pointAttributes.byteSize, offset);
 			}else if(attribute === PointAttribute.RGBA_PACKED){
-				if(this.colorShader.attributes.aVertexColour !== null){
+				if(this.colorShader.attributes.aVertexColour != null){
 					gl.enableVertexAttribArray(this.colorShader.attributes.aVertexColour);
 					gl.vertexAttribPointer(this.colorShader.attributes.aVertexColour, 3, gl.UNSIGNED_BYTE, false,pointAttributes.byteSize, offset);
 				}
 			}else if(attribute === PointAttribute.NORMAL_FLOATS){
-				if(this.colorShader.attributes.aNormal !== null){
+				if(this.colorShader.attributes.aNormal != null){
 					gl.enableVertexAttribArray(this.colorShader.attributes.aNormal);
 					gl.vertexAttribPointer(this.colorShader.attributes.aNormal, 3, gl.FLOAT, false,pointAttributes.byteSize, offset);
 				}
@@ -246,12 +258,12 @@ gl.uniform2f(this.depthShader.uniforms.uWindowSize, Potree.canvas.clientWidth, P
 				gl.enableVertexAttribArray(this.normalShader.attributes.aVertexPosition);
 				gl.vertexAttribPointer(this.normalShader.attributes.aVertexPosition, 3, gl.FLOAT, false,pointAttributes.byteSize, offset);
 			}else if(attribute === PointAttribute.RGBA_PACKED){
-				if(this.normalShader.attributes.aVertexColour !== null){
+				if(this.normalShader.attributes.aVertexColour != null){
 					gl.enableVertexAttribArray(this.normalShader.attributes.aVertexColour);
 					gl.vertexAttribPointer(this.normalShader.attributes.aVertexColour, 3, gl.UNSIGNED_BYTE, false,pointAttributes.byteSize, offset);
 				}
 			}else if(attribute === PointAttribute.NORMAL_FLOATS){
-				if(this.normalShader.attributes.aNormal !== null){
+				if(this.normalShader.attributes.aNormal != null){
 					gl.enableVertexAttribArray(this.normalShader.attributes.aNormal);
 					gl.vertexAttribPointer(this.normalShader.attributes.aNormal, 3, gl.FLOAT, false,pointAttributes.byteSize, offset);
 				}

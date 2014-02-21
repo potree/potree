@@ -46,5 +46,5 @@ OrbitCamHandler.prototype.update = function(){
 	transform = M4x4.rotate(this.aY, [ 0, 1, 0], transform);
 	transform = M4x4.translate3(0,3,this.distance, transform);
 	this.camera.transform = transform;
-}
+};
 

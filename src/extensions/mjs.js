@@ -45,6 +45,36 @@ V3.transform = function V3_transform(a, b, r){
 	return r;
 };
 
+/**
+ * Function: V3.rTransform
+ *
+ *
+ * Parameters:
+ *
+ *   a - the first vector operand
+ *   b - the transformation matrix
+ *
+ * Returns:
+ *
+ *   vector rotated by the matrix. translation is not applied.
+ */
+V3.rTransform = function(a, b, r){
+	if(r === undefined){
+		r = new MJS_FLOAT_ARRAY_TYPE(3);
+	}
+	
+	r[0] = a[0] * b[0] + a[1] * b[4] + a[2] * b[8];
+	r[1] = a[0] * b[1] + a[1] * b[5] + a[2] * b[9];
+	r[2] = a[0] * b[2] + a[1] * b[6] + a[2] * b[10];
+	
+	var h = a[0] * b[3] + a[1] * b[7] + a[2] * b[11] + b[15];
+	r[0] = r[0] / h;
+	r[1] = r[1] / h;
+	r[2] = r[2] / h;
+	
+	return r;
+}
+
 
 
 /**

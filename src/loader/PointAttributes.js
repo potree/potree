@@ -5,8 +5,7 @@
  * 
  * @class
  */
-var PointAttributeNames = 
-{
+var PointAttributeNames = {
 	POSITION_CARTESIAN 	: 0,	// float x, y, z;
 	COLOR_PACKED		: 1,	// byte r, g, b, a; 	I = [0,1]
 	COLOR_FLOATS_1		: 2,	// float r, g, b; 		I = [0,1]
@@ -16,7 +15,7 @@ var PointAttributeNames =
 };
 
 var i = 0;
-for(obj in PointAttributeNames){
+for(var obj in PointAttributeNames){
 	PointAttributeNames[i] = PointAttributeNames[obj];
 	i++;
 }
@@ -26,8 +25,7 @@ for(obj in PointAttributeNames){
  * 
  * @class
  */
-var PointAttributeTypes =
-{
+var PointAttributeTypes = {
 	DATA_TYPE_DOUBLE	: {ordinal : 0, size: 8},
 	DATA_TYPE_FLOAT		: {ordinal : 1, size: 4},
 	DATA_TYPE_INT8		: {ordinal : 2, size: 1},
@@ -41,7 +39,7 @@ var PointAttributeTypes =
 };
 
 var i = 0;
-for(obj in PointAttributeTypes){
+for(var obj in PointAttributeTypes){
 	PointAttributeTypes[i] = PointAttributeTypes[obj];
 	i++;
 }
@@ -95,7 +93,7 @@ function PointAttributes(pointAttributes){
 	this.byteSize = 0;
 	this.size = 0;
 	
-	if(pointAttributes !== null){
+	if(pointAttributes != null){
 		// does not work in chrome v24
 //		for(var pointAttribute of pointAttributes){
 //			this.attributes.push(pointAttribute);
@@ -110,7 +108,7 @@ function PointAttributes(pointAttributes){
 			this.size++;
 		}
 	}
-};
+}
 
 PointAttributes.prototype.add = function(pointAttribute){
 	this.attributes.push(pointAttribute);

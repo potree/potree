@@ -21,14 +21,14 @@ ShaderManager.loadFragmentShader = function(name, source) {
 };
 
 ShaderManager.getVertexShader = function(name) {
-	if(ShaderManager.vertexShader[name] === null){
+	if(ShaderManager.vertexShader[name] == null){
 		ShaderManager.loadVertexShader(name, ShaderManager.getShaderSource(name));
 	}
 	return ShaderManager.vertexShader[name];
 };
 
 ShaderManager.getFragmentShader = function(name) {
-	if(ShaderManager.fragmentShader[name] === null){
+	if(ShaderManager.fragmentShader[name] == null){
 		ShaderManager.loadFragmentShader(name, ShaderManager.getShaderSource(name));
 	}
 	return ShaderManager.fragmentShader[name];

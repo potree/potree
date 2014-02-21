@@ -161,8 +161,8 @@ gulp.task('clean', function() {
 
 gulp.task('watch', function () {
 	// Watch the following files for changes
-	gulp.watch(paths.scripts, ['scripts']);
-	gulp.watch(paths.styles, ['styles']);
+	gulp.watch(paths.mjs, ['debug']);
+	gulp.watch(paths.potree, ['debug']);
 });
 
 // Simple webserver

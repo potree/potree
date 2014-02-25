@@ -26,6 +26,16 @@ http://potree.org/downloads/PotreeConverter_2014.01.22.zip
 * PotreeConverter source is available here:
 https://github.com/potree/PotreeConverter
 
+## Compatibility
+
+| Browser              | OS   | Result        |
+| -------------------- |:----:|:-------------:|
+| Chrome 32            | Win7 | works         |
+| Firefox 26           | Win7 | works         |
+| Safari               | Mac  | works         |
+| Opera 19             | Win7 | works         |
+| Internet Explorer 11 | Win7 | does not work |
+
 
 ## License
 Potree is available under the FreeBSD license.

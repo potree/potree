@@ -5,7 +5,7 @@ Homepage: <a href="http://potree.org/">potree.org</a>
 
 ## Demos
 * [pompei](http://potree.org/demo/pompei/pompei.html)
-* [skatepark](http://potree.org/demo/skatepark_v1.0/skatepark_v1.0.html)
+* [skatepark](http://potree.org/demo/potree_2014.01.22/skatepark.html)
 
 ## Getting Started
 1. Deploy potree on a webserver. 

@@ -8,6 +8,10 @@
  * 
  */
 function FilteredSplatsMaterial(name){
+	if(!FilteredSplatsMaterial.isSupported()){
+		throw new Error("FilteredSplatsMaterial is not supported on your system. OES_texture_float extension is not available.");
+	}
+
 	Material.call(this, name);
 	this.depthShader = new Shader(name + "_depth", "filteredSplats/filteredSplatsDepthPass.vs", "filteredSplats/filteredSplatsDepthPass.fs");
 	this.normalShader = new Shader(name + "_filtered_normal", "filteredSplats/filteredSplatsAttributePass.vs", "filteredSplats/filteredSplatsNormalAttributePass.fs");
@@ -23,6 +27,14 @@ function FilteredSplatsMaterial(name){
 }
 
 FilteredSplatsMaterial.prototype = new Material(inheriting);
+
+FilteredSplatsMaterial.isSupported = function(){
+	if (gl.getExtension("OES_texture_float") == null) {
+		return false;
+	}else{
+		return true;
+	}
+}
 
 FilteredSplatsMaterial.prototype.render = function(sceneNode, renderer){
 	var transform = sceneNode.globalTransformation;
@@ -48,7 +60,7 @@ FilteredSplatsMaterial.prototype.renderPointClouds = function(transform, pointCl
 	
 	// attributes
 	this.colorPass(transform, pointClouds, renderer);
-	if(this.illuminationMode == IlluminationMode.PHONG || this.illuminationMode == IlluminationMode.NORMALS){
+	if(this.illuminationMode === IlluminationMode.PHONG || this.illuminationMode === IlluminationMode.NORMALS){
 		this.normalPass(transform, pointClouds, renderer);
 	}
 	
@@ -107,15 +119,15 @@ FilteredSplatsMaterial.prototype.depthPass = function(transform, pointClouds, re
 		for(var j = 0; j < pointAttributes.size; j++){
 			var attribute = pointAttributes.attributes[j];
 			
-			if(attribute == PointAttribute.POSITION_CARTESIAN){
+			if(attribute === PointAttribute.POSITION_CARTESIAN){
 				gl.enableVertexAttribArray(this.depthShader.attributes.aVertexPosition);
 				gl.vertexAttribPointer(this.depthShader.attributes.aVertexPosition, 3, gl.FLOAT, false,pointAttributes.byteSize, offset);
-			}else if(attribute == PointAttribute.RGBA_PACKED){
+			}else if(attribute === PointAttribute.RGBA_PACKED){
 				if(this.depthShader.attributes.aVertexColour != null){
 					gl.enableVertexAttribArray(this.depthShader.attributes.aVertexColour);
 					gl.vertexAttribPointer(this.depthShader.attributes.aVertexColour, 3, gl.UNSIGNED_BYTE, false,pointAttributes.byteSize, offset);
 				}
-			}else if(attribute == PointAttribute.NORMAL_FLOATS){
+			}else if(attribute === PointAttribute.NORMAL_FLOATS){
 				if(this.depthShader.attributes.aNormal != null){
 					gl.enableVertexAttribArray(this.depthShader.attributes.aNormal);
 					gl.vertexAttribPointer(this.depthShader.attributes.aNormal, 3, gl.FLOAT, false,pointAttributes.byteSize, offset);
@@ -173,15 +185,15 @@ FilteredSplatsMaterial.prototype.colorPass = function(transform, pointClouds, re
 		for(var j = 0; j < pointAttributes.size; j++){
 			var attribute = pointAttributes.attributes[j];
 			
-			if(attribute == PointAttribute.POSITION_CARTESIAN){
+			if(attribute === PointAttribute.POSITION_CARTESIAN){
 				gl.enableVertexAttribArray(this.colorShader.attributes.aVertexPosition);
 				gl.vertexAttribPointer(this.colorShader.attributes.aVertexPosition, 3, gl.FLOAT, false,pointAttributes.byteSize, offset);
-			}else if(attribute == PointAttribute.RGBA_PACKED){
+			}else if(attribute === PointAttribute.RGBA_PACKED){
 				if(this.colorShader.attributes.aVertexColour != null){
 					gl.enableVertexAttribArray(this.colorShader.attributes.aVertexColour);
 					gl.vertexAttribPointer(this.colorShader.attributes.aVertexColour, 3, gl.UNSIGNED_BYTE, false,pointAttributes.byteSize, offset);
 				}
-			}else if(attribute == PointAttribute.NORMAL_FLOATS){
+			}else if(attribute === PointAttribute.NORMAL_FLOATS){
 				if(this.colorShader.attributes.aNormal != null){
 					gl.enableVertexAttribArray(this.colorShader.attributes.aNormal);
 					gl.vertexAttribPointer(this.colorShader.attributes.aNormal, 3, gl.FLOAT, false,pointAttributes.byteSize, offset);
@@ -242,15 +254,15 @@ gl.uniform2f(this.depthShader.uniforms.uWindowSize, Potree.canvas.clientWidth, P
 		for(var j = 0; j < pointAttributes.size; j++){
 			var attribute = pointAttributes.attributes[j];
 			
-			if(attribute == PointAttribute.POSITION_CARTESIAN){
+			if(attribute === PointAttribute.POSITION_CARTESIAN){
 				gl.enableVertexAttribArray(this.normalShader.attributes.aVertexPosition);
 				gl.vertexAttribPointer(this.normalShader.attributes.aVertexPosition, 3, gl.FLOAT, false,pointAttributes.byteSize, offset);
-			}else if(attribute == PointAttribute.RGBA_PACKED){
+			}else if(attribute === PointAttribute.RGBA_PACKED){
 				if(this.normalShader.attributes.aVertexColour != null){
 					gl.enableVertexAttribArray(this.normalShader.attributes.aVertexColour);
 					gl.vertexAttribPointer(this.normalShader.attributes.aVertexColour, 3, gl.UNSIGNED_BYTE, false,pointAttributes.byteSize, offset);
 				}
-			}else if(attribute == PointAttribute.NORMAL_FLOATS){
+			}else if(attribute === PointAttribute.NORMAL_FLOATS){
 				if(this.normalShader.attributes.aNormal != null){
 					gl.enableVertexAttribArray(this.normalShader.attributes.aNormal);
 					gl.vertexAttribPointer(this.normalShader.attributes.aNormal, 3, gl.FLOAT, false,pointAttributes.byteSize, offset);
@@ -294,21 +306,21 @@ FilteredSplatsMaterial.prototype.shadingPass = function(oldBuffer, renderer){
 	gl.blendFunc(gl.ONE, gl.ONE);
 	
 	// normal
-//	if(this.illuminationMode == IlluminationMode.PHONG || this.illuminationMode == IlluminationMode.NORMALS){
+//	if(this.illuminationMode === IlluminationMode.PHONG || this.illuminationMode === IlluminationMode.NORMALS){
 		gl.activeTexture(gl.TEXTURE0);
 		gl.bindTexture(gl.TEXTURE_2D, this.normalFBO.texture.glid);
 		gl.uniform1i(this.normalizationShader.uniforms.uNormal, 0);
 //	}
 		
 	// color
-//	if(this.illuminationMode == IlluminationMode.FLAT || this.illuminationMode == IlluminationMode.PHONG){
+//	if(this.illuminationMode === IlluminationMode.FLAT || this.illuminationMode === IlluminationMode.PHONG){
 		gl.activeTexture(gl.TEXTURE0 + 1);
 		gl.bindTexture(gl.TEXTURE_2D, this.colorFBO.texture.glid);
 		gl.uniform1i(this.normalizationShader.uniforms.uColor, 1);
 //	}
 	
 	// position
-//	if(this.illuminationMode == IlluminationMode.PHONG || this.illuminationMode == IlluminationMode.POSITIONS){
+//	if(this.illuminationMode === IlluminationMode.PHONG || this.illuminationMode === IlluminationMode.POSITIONS){
 		gl.activeTexture(gl.TEXTURE0 + 2);
 		gl.bindTexture(gl.TEXTURE_2D, this.depthFBO.texture.glid);
 		gl.uniform1i(this.normalizationShader.uniforms.uPosition, 2);
@@ -316,7 +328,7 @@ FilteredSplatsMaterial.prototype.shadingPass = function(oldBuffer, renderer){
 	
 	gl.uniform1i(this.normalizationShader.uniforms.uIlluminationMode, this.illuminationMode.value);
 	
-	if(this.illuminationMode == IlluminationMode.PHONG){
+	if(this.illuminationMode === IlluminationMode.PHONG){
 		for(var i = 0; i < lights.length; i++){
 			var light = lights[i];
 			var pos = light.globalPosition;

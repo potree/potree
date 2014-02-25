@@ -3,7 +3,7 @@
 /**
  * extensions for the mjs.js library
  * 
- * @author Markus Schütz
+ * @author Markus Schuetz
  *
  * @class extends the mjs V3 class
  */
@@ -29,7 +29,7 @@ M4x4 = M4x4;
  *   transformed vector
  */
 V3.transform = function V3_transform(a, b, r){
-	if(r == undefined){
+	if(r === undefined){
 		r = new MJS_FLOAT_ARRAY_TYPE(3);
 	}
 //	var r = new MJS_FLOAT_ARRAY_TYPE(3);
@@ -45,6 +45,36 @@ V3.transform = function V3_transform(a, b, r){
 	return r;
 };
 
+/**
+ * Function: V3.rTransform
+ *
+ *
+ * Parameters:
+ *
+ *   a - the first vector operand
+ *   b - the transformation matrix
+ *
+ * Returns:
+ *
+ *   vector rotated by the matrix. translation is not applied.
+ */
+V3.rTransform = function(a, b, r){
+	if(r === undefined){
+		r = new MJS_FLOAT_ARRAY_TYPE(3);
+	}
+	
+	r[0] = a[0] * b[0] + a[1] * b[4] + a[2] * b[8];
+	r[1] = a[0] * b[1] + a[1] * b[5] + a[2] * b[9];
+	r[2] = a[0] * b[2] + a[1] * b[6] + a[2] * b[10];
+	
+	var h = a[0] * b[3] + a[1] * b[7] + a[2] * b[11] + b[15];
+	r[0] = r[0] / h;
+	r[1] = r[1] / h;
+	r[2] = r[2] / h;
+	
+	return r;
+}
+
 
 
 /**
@@ -52,7 +82,7 @@ V3.transform = function V3_transform(a, b, r){
  */
 M4x4.inverseOrthonormal = function M4x4_inverseOrthonormal(m, r) {
 
-    if (r == undefined)
+    if (r === undefined)
         r = new MJS_FLOAT_ARRAY_TYPE(16);
     M4x4.transpose(m, r);
     var t = [m[12], m[13], m[14]];
@@ -84,7 +114,7 @@ M4x4.inverseOrthonormal = function M4x4_inverseOrthonormal(m, r) {
  *   Otherwise, returns a new 3-element vector with the result.
  */
 V3.direction = function V3_direction(a, b, r) {
-    if (r == undefined)
+    if (r === undefined)
         r = new MJS_FLOAT_ARRAY_TYPE(3);
     return V3.normalize(V3.sub(b, a, r), r);
 };
@@ -103,9 +133,9 @@ V3.equalScalar = function V3_equalScalar(a,b,epsilon){
     var absB = Math.abs(b);
     var diff = Math.abs(a - b);
 
-    if (a == b) { // shortcut, handles infinities
+    if (a === b) { // shortcut, handles infinities
         return true;
-    } else if (a * b == 0) { // a or b or both are zero
+    } else if (a * b === 0) { // a or b or both are zero
         // relative error is not meaningful here
         return diff < (epsilon * epsilon);
     } else { // use relative error
@@ -114,7 +144,7 @@ V3.equalScalar = function V3_equalScalar(a,b,epsilon){
 };
 
 V3.equal = function V3_equal(a,b,epsilon){
-	if(epsilon == undefined){
+	if(epsilon === undefined){
 		epsilon = 0.000001;
 	}
 //	return 
@@ -139,7 +169,7 @@ M4x4.makeInversePerspective = function M4x4_makeInversePerspective (fovy, aspect
 
 M4x4.makeInverseFrustum = function M4x4_makeInverseFrustum(left, right, bottom, top, near, far, r) {
 
-    if (r == undefined)
+    if (r === undefined)
         r = new MJS_FLOAT_ARRAY_TYPE(16);
 
     r[0] = (-left+right)/(2*near);
@@ -164,11 +194,9 @@ M4x4.makeInverseFrustum = function M4x4_makeInverseFrustum(left, right, bottom, 
 
 /**
  * copy values from matrix a into matrix b
- * 
  */
 M4x4.copy = function(a, b){
 	for(var i = 0; i < 16; i++){
 		b[i] = a[i];
 	}
-}
-
+};

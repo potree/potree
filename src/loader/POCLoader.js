@@ -4,7 +4,7 @@
  * @class Loads mno files and returns a PointcloudOctree
  * for a description of the mno binary file format, read mnoFileFormat.txt
  * 
- * @author Markus Schütz
+ * @author Markus Schuetz
  */
 function POCLoader(){
 	
@@ -23,7 +23,7 @@ POCLoader.load = function load(file) {
 		var xhr = new XMLHttpRequest();
 		xhr.open('GET', file, false);
 		xhr.send(null);
-		if(xhr.status == 200 || xhr.status == 0){
+		if(xhr.status === 200 || xhr.status === 0){
 			var fMno = JSON.parse(xhr.responseText);
 			
 			pco.octreeDir = file + "/../data";
@@ -48,7 +48,7 @@ POCLoader.load = function load(file) {
 				var mNode = new PointcloudOctreeNode(nodeName, pco);
 				mNode.points = points;
 				pco.rootNode.addChild(mNode);
-				var childIndex = mNode.name.charAt(mNode.name.length-1);
+				var childIndex = parseInt(mNode.name.charAt(mNode.name.length-1));
 				var childAABB = POCLoader.createChildAABB(mNode.parent.aabb, childIndex);
 				mNode.setAABB(childAABB);
 			}
@@ -119,39 +119,39 @@ POCLoader.createChildAABB = function(aabb, childIndex){
 		caabb.setDimensionByMinMax(cmin, cmax);
 	}
 
-	if (childIndex == 1) {
+	if (childIndex === 1) {
 		var min = V3.add(caabb.min, zHalfLength);
 		var max = V3.add(caabb.max, zHalfLength);
 		caabb.setDimensionByMinMax(min, max);
 		caabb.setColor([0.0, 0.0, 1.0, 1.0]);
-	}else if (childIndex == 3) {
+	}else if (childIndex === 3) {
 		var min = V3.add(V3.add(caabb.min, zHalfLength), yHalfLength);
 		var max = V3.add(V3.add(caabb.max, zHalfLength), yHalfLength);
 		caabb.setDimensionByMinMax(min, max);
 		caabb.setColor([1.0, 1.0, 0.0, 1.0]);
-	}else if (childIndex == 0) {
+	}else if (childIndex === 0) {
 		caabb.setColor([1.0, 0.0, 0.0, 1.0]);
-	}else if (childIndex == 2) {
+	}else if (childIndex === 2) {
 		var min = V3.add(caabb.min, yHalfLength);
 		var max = V3.add(caabb.max, yHalfLength);
 		caabb.setDimensionByMinMax(min, max);
 		caabb.setColor([0.0, 1.0, 0.0, 1.0]);
-	}else if (childIndex == 5) {
+	}else if (childIndex === 5) {
 		var min = V3.add(V3.add(caabb.min, zHalfLength), xHalfLength);
 		var max = V3.add(V3.add(caabb.max, zHalfLength), xHalfLength);
 		caabb.setDimensionByMinMax(min, max);
 		caabb.setColor([1.0, 1.0, 1.0, 1.0]);
-	}else if (childIndex == 7) {
+	}else if (childIndex === 7) {
 		var min = V3.add(caabb.min, dHalfLength);
 		var max = V3.add(caabb.max, dHalfLength);
 		caabb.setDimensionByMinMax(min, max);
 		caabb.setColor([0.0, 0.0, 0.0, 1.0]);
-	}else if (childIndex == 4) {
+	}else if (childIndex === 4) {
 		var min = V3.add(caabb.min, xHalfLength);
 		var max = V3.add(caabb.max, xHalfLength);
 		caabb.setDimensionByMinMax(min, max);
 		caabb.setColor([1.0, 0.0, 1.0, 1.0]);
-	}else if (childIndex == 6) {
+	}else if (childIndex === 6) {
 		var min = V3.add(V3.add(caabb.min, xHalfLength), yHalfLength);
 		var max = V3.add(V3.add(caabb.max, xHalfLength), yHalfLength);
 		caabb.setDimensionByMinMax(min, max);
@@ -159,6 +159,6 @@ POCLoader.createChildAABB = function(aabb, childIndex){
 	}
 	
 	return caabb;
-}
+};
 
 

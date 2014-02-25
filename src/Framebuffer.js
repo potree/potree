@@ -14,7 +14,7 @@
 function Framebuffer(width, height) {
 	if (arguments[0] === inheriting)
 		return;
-	if (arguments[0] == "system") {
+	if (arguments[0] === "system") {
 		this.framebuffer = null;
 		this.initOtherStuff();
 	} else {
@@ -66,13 +66,15 @@ Framebuffer.prototype.initOtherStuff = function() {
 
 	this.vbo = gl.createBuffer();
 	this.texcoordvbo = gl.createBuffer();
+	
+	// create rectangle mesh buffer
 	gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);
-	var vertices = new Float32Array([ 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1,
-			0, 0, 1, 0 ]);
+	var vertices = new Float32Array([ 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0 ]);
 	gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
 
+	// create uv coords buffer
 	gl.bindBuffer(gl.ARRAY_BUFFER, this.texcoordvbo);
-	var vertices = new Float32Array([ 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1 ]);
+	vertices = new Float32Array([ 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1 ]);
 	gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
 
 };
@@ -102,7 +104,7 @@ Framebuffer.prototype.updateScreenQuad = function(start, end) {
  *            height
  */
 Framebuffer.prototype.initBufferStuff = function(width, height) {
-	if (this.width == width && this.height == height) {
+	if (this.width === width && this.height === height) {
 		return;
 	}
 
@@ -196,26 +198,19 @@ Framebuffer.prototype.checkBuffer = function checkBuffer() {
 	case gl.FRAMEBUFFER_COMPLETE:
 		break;
 	case gl.FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
-		Logger
-				.error("Incomplete framebuffer: FRAMEBUFFER_INCOMPLETE_ATTACHMENT");
+		console.log("Incomplete framebuffer: FRAMEBUFFER_INCOMPLETE_ATTACHMENT");
 		throw "";
-		break;
 	case gl.FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
-		Logger
-				.error("Incomplete framebuffer: FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT");
+		console.log("Incomplete framebuffer: FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT");
 		throw "";
-		break;
 	case gl.FRAMEBUFFER_INCOMPLETE_DIMENSIONS:
-		Logger
-				.error("Incomplete framebuffer: FRAMEBUFFER_INCOMPLETE_DIMENSIONS");
+		console.log("Incomplete framebuffer: FRAMEBUFFER_INCOMPLETE_DIMENSIONS");
 		throw "";
-		break;
 	case gl.FRAMEBUFFER_UNSUPPORTED:
-		Logger.error("Incomplete framebuffer: FRAMEBUFFER_UNSUPPORTED");
+		console.log("Incomplete framebuffer: FRAMEBUFFER_UNSUPPORTED");
 		throw "";
-		break;
 	default:
-		Logger.error("Incomplete framebuffer: " + status);
+		console.log("Incomplete framebuffer: " + status);
 		throw "";
 	}
 };

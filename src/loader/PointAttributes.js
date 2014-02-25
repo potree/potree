@@ -5,8 +5,7 @@
  * 
  * @class
  */
-var PointAttributeNames = 
-{
+var PointAttributeNames = {
 	POSITION_CARTESIAN 	: 0,	// float x, y, z;
 	COLOR_PACKED		: 1,	// byte r, g, b, a; 	I = [0,1]
 	COLOR_FLOATS_1		: 2,	// float r, g, b; 		I = [0,1]
@@ -16,7 +15,7 @@ var PointAttributeNames =
 };
 
 var i = 0;
-for(obj in PointAttributeNames){
+for(var obj in PointAttributeNames){
 	PointAttributeNames[i] = PointAttributeNames[obj];
 	i++;
 }
@@ -26,8 +25,7 @@ for(obj in PointAttributeNames){
  * 
  * @class
  */
-var PointAttributeTypes =
-{
+var PointAttributeTypes = {
 	DATA_TYPE_DOUBLE	: {ordinal : 0, size: 8},
 	DATA_TYPE_FLOAT		: {ordinal : 1, size: 4},
 	DATA_TYPE_INT8		: {ordinal : 2, size: 1},
@@ -41,7 +39,7 @@ var PointAttributeTypes =
 };
 
 var i = 0;
-for(obj in PointAttributeTypes){
+for(var obj in PointAttributeTypes){
 	PointAttributeTypes[i] = PointAttributeTypes[obj];
 	i++;
 }
@@ -110,7 +108,7 @@ function PointAttributes(pointAttributes){
 			this.size++;
 		}
 	}
-};
+}
 
 PointAttributes.prototype.add = function(pointAttribute){
 	this.attributes.push(pointAttribute);
@@ -121,7 +119,7 @@ PointAttributes.prototype.add = function(pointAttribute){
 PointAttributes.prototype.hasColors = function(){
 	for(var name in this.attributes){
 		var pointAttribute = this.attributes[name];
-		if(pointAttribute.name == PointAttributeNames.COLOR_PACKED){
+		if(pointAttribute.name === PointAttributeNames.COLOR_PACKED){
 			return true;
 		}
 	}
@@ -132,7 +130,7 @@ PointAttributes.prototype.hasColors = function(){
 PointAttributes.prototype.hasNormals = function(){
 	for(var name in this.attributes){
 		var pointAttribute = this.attributes[name];
-		if(pointAttribute == PointAttribute.NORMAL_FLOATS){
+		if(pointAttribute === PointAttribute.NORMAL_FLOATS){
 			return true;
 		}
 	}

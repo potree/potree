@@ -3,7 +3,7 @@
 /**
  * @class extensions for Float32Arrays
  * 
- * @author Markus Schütz
+ * @author Markus Schuetz
  */
 Float32Array = Float32Array;
 
@@ -25,7 +25,7 @@ Float32Array.prototype.toString = function() {
 Float32Array.prototype.toMatrixFormString = function() {
 	var msg = "";
 	for ( var i = 0; i < this.length; i++) {
-		if (i != 0 && (i) % 4 == 0) {
+		if (i !== 0 && (i) % 4 === 0) {
 			msg += "\n";
 		}
 		msg += this[i].toFixed(3) + "\t";

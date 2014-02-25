@@ -20,7 +20,7 @@ POCRenderQueue.prototype.add = function(node){
 };
 
 POCRenderQueue.prototype.contains = function(node){
-	return this.nodes[node.id] != null;
+	return this.nodes[node.id] !== null;
 };
 
 POCRenderQueue.prototype.get = function(index){
@@ -57,13 +57,13 @@ POCRenderQueue.prototype.clear = function(){
 	this.nodeList.length = 0;
 	this.length = 0;
 	this.points = 0;
-}
+};
 
 /**
  * Octree Object that might be attached to an PointcloudOctreeSceneNode.
  * 
  * @class
- * @author Markus Schütz
+ * @author Markus Schuetz
  */
 function PointcloudOctree(){
 	this.rootNode = null;
@@ -73,7 +73,7 @@ function PointcloudOctree(){
 	this.nodesRenderedThisFrame = 0;
 	this.octreeDir = null;
 	this.loadQueue = new Array();
-	if(MaterialManager.getMaterial("pointCloud") != null){
+	if(MaterialManager.getMaterial("pointCloud") !== null){
 		this.material = MaterialManager.getMaterial("pointCloud");
 	}
 	this.renderQueue = new POCRenderQueue();
@@ -84,10 +84,7 @@ function PointcloudOctree(){
 	
 	// maximum amount of nodes in this pointcloud that will be loaded at a given time
 	this.loadingNodesLimit = 10;
-	
-//	this.tmpMatrix = M4x4.$();
-//	this.tmpVec3 = V3.$(0,0,0);
-};
+}
 
 PointcloudOctree.prototype.setMaterial = function(material){
 	this.material = material;
@@ -162,7 +159,7 @@ PointcloudOctree.prototype.prepareRender = function prepareRender(pocSceneNode, 
 			}
 			
 			// schedule loading of missing point cloud data
-			if (shouldBeRendered && current.pointCloud == null) {
+			if (shouldBeRendered && current.pointCloud === null) {
 				if(!current.isLoading){
 					this.loadQueue.push(current);
 				}
@@ -217,7 +214,7 @@ PointcloudOctree.cleanupCache = function(bytesNeeded, exceptionsRenderQueue){
 	for(var i = 0; i < 6; i++){
 		if(lru.byteSize + bytesNeeded > PointcloudOctreeNode.memoryThreshold){
 			var node = lru.getLRUItem();
-			if(node != null && !exceptionsRenderQueue.contains(node)){
+			if(node !== null && !exceptionsRenderQueue.contains(node)){
 				node = lru.removeLRUItem();
 				node.unload();
 			}
@@ -237,9 +234,6 @@ PointcloudOctree.prototype.addTime = function(time){
 
 PointcloudOctree.prototype.processLoadQueue = function(){
 	var lru = PointcloudOctreeNode.lruNodes;
-//	if(lru != null){
-//		debugView.set("loadedNodes: ", lru.size() );
-//	}
 	var x = 5;
 	var bytesNeeded = 0;
 	

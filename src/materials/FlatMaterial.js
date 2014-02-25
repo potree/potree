@@ -2,7 +2,7 @@
 /**
  * @class render an object without illumination
  * @augments Material
- * @author Markus Schütz
+ * @author Markus Schuetz
  */
 function FlatMaterial(name, color){
 	Material.call(this, name);

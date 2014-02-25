@@ -3,7 +3,7 @@
 /**
  * extensions for ArrayBuffers
  * 
- * @author Markus Schütz
+ * @author Markus Schuetz
  *
  * @class
  */
@@ -23,4 +23,4 @@ ArrayBuffer.prototype.subarray = function(offset, length){
 	}
 	
 	return sub;
-}
+};

@@ -23,7 +23,7 @@ function load_binary_resource(url) {
 	req.overrideMimeType('text/plain; charset=x-user-defined');
 	req.send(null);
 	// when accessing local files, req.status will be 0
-	if (req.status != 200 && req.status != 0) {
+	if (req.status !== 200 && req.status !== 0) {
 		console.log("req.status: '" + req.status + "'");
 		console.log("req.readyState: '" + req.readyState + "'");
 		return '';
@@ -43,9 +43,9 @@ function loadBinaryResourceIntoArrayBuffer(url) {
 	xhr.responseType = 'arraybuffer';
 	xhr.overrideMimeType('text/plain; charset=x-user-defined');
 	xhr.send(null);
-	if (xhr.readyState == 4) {
+	if (xhr.readyState === 4) {
 		// when accessing local files, req.status will be 0
-		if (xhr.status == 200 || xhr.status == 0) {
+		if (xhr.status === 200 || xhr.status === 0) {
 			var buffer = xhr.response;
 			return buffer;
 		} else {
@@ -67,7 +67,7 @@ function getUrlVars() {
         vars[key] = value;
     });
     return vars;
-};
+}
 
 /**
  * add separators to large numbers
@@ -101,13 +101,12 @@ function relMouseCoords(event, element){
     do{
         totalOffsetX += currentElement.offsetLeft - currentElement.scrollLeft;
         totalOffsetY += currentElement.offsetTop - currentElement.scrollTop;
-    }
-    while(currentElement = currentElement.offsetParent)
+    }while(currentElement = currentElement.offsetParent);
 
     canvasX = event.pageX - totalOffsetX;
     canvasY = event.pageY - totalOffsetY;
     
-    return {x:canvasX, y:canvasY}
+    return {x:canvasX, y:canvasY};
 }
 
 
@@ -126,8 +125,7 @@ function numbersonly(myfield, e, dec) {
 	keychar = String.fromCharCode(key);
 
 	// control keys
-	if ((key == null) || (key == 0) || (key == 8) || (key == 9) || (key == 13)
-			|| (key == 27))
+	if ((key == null) || (key === 0) || (key === 8) || (key === 9) || (key === 13)	|| (key === 27))
 		return true;
 
 	// numbers
@@ -135,7 +133,7 @@ function numbersonly(myfield, e, dec) {
 		return true;
 
 	// decimal point jump
-	else if (dec && (keychar == ".")) {
+	else if (dec && (keychar === ".")) {
 		myfield.form.elements[dec].focus();
 		return false;
 	} else

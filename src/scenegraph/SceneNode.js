@@ -16,8 +16,8 @@ function SceneNode(name, parent) {
 	this.age = 0;
 
 	this._transform = M4x4.I;
-	if (parent != null) {
-		parent.addChild(this);
+	if (this.parent != null) {
+		this.parent.addChild(this);
 		this.scene = parent.scene;
 	}
 	
@@ -66,7 +66,7 @@ Object.defineProperty(SceneNode.prototype, 'globalTransformation', {
 //		var cur = this;
 //		var globalTransform = cur._transform;
 //		var globalTransform = M4x4.clone(cur._transform);
-//		while (cur.parent != null) {
+//		while (cur.parent !== null) {
 //			cur = cur.parent;
 //			globalTransform = M4x4.mul(cur._transform, globalTransform);
 //		}
@@ -105,7 +105,7 @@ Object.defineProperty(SceneNode.prototype, 'descendants', {
 		var descendants = new Array();
 		var stack = new Array();
 		stack.push(this);
-		while(stack.length != 0){
+		while(stack.length !== 0){
 			var node = stack.pop();
 			descendants.push(node);
 			for(var key in node.children) {
@@ -251,13 +251,24 @@ SceneNode.prototype.rotateZ = function(angle) {
 	this._transform = M4x4.mul(M4x4.rotate(angle, V3.$(0, 0, 1), M4x4.I), this._transform);
 };
 
+SceneNode.prototype.rotate = function(angle, vector){
+	this._transform = M4x4.mul(M4x4.rotate(angle, vector, M4x4.I), this._transform);
+}
+
+SceneNode.prototype.rotateAroundPivot = function(x, y, pivot){
+	this.translate(-pivot.x, -pivot.y, -pivot.z);
+	this.rotateY(x);
+	this.rotate(y, this.getSideVector());
+	this.translate(pivot.x, pivot.y, pivot.z);
+}
+
 SceneNode.prototype.scale = function(x, y, z) {
 	this._transform = M4x4.scale3(x, y, z, this._transform);
 };
 
 SceneNode.prototype.lookAt = function(target){
 	//TODO check for correctness
-	//TODO probably will not work if this sceneNodes parent transformation is != Identity
+	//TODO probably will not work if this sceneNodes parent transformation is !== Identity
 	//TODO up-vector is always 0/1/0. check for linear independance
 	
 	var nPos = this.globalPosition;
@@ -297,8 +308,7 @@ SceneNode.prototype.toString = function() {
 };
 
 SceneNode.prototype.asTreeString = function(level) {
-	var msg = " ".repeat(level * 3) + this.name + "\t"
-			+ this.globalPosition + "\n";
+	var msg = " ".repeat(level * 3) + this.name + "\t" + this.globalPosition + "\n";
 	for ( var child in this.children) {
 		msg += this.children[child].asTreeString(level + 1);
 	}

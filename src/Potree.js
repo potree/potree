@@ -14,7 +14,7 @@ function Potree(){
 	this.camHandler = null;
 }
 
-Potree.shaderDir="resources/shader"
+Potree.shaderDir="resources/shader";
 
 /**
  * a list of all js files that must be included by Potree
@@ -44,9 +44,7 @@ Potree.includes = [
 	"src/scenegraph/MeshNode.js",
 	"src/scenegraph/Light.js",
 	"src/scenegraph/Sphere.js",
-//	"src/scenegraph/Plane.js",
 	"src/objects/Mesh.js",
-	"src/Viewport.js",
 	"src/navigation/CamHandler.js",
 	"src/navigation/FreeFlightCamHandler.js",
 	"src/navigation/OrbitCamHandler.js",
@@ -69,12 +67,11 @@ Potree.includes = [
 	"src/materials/GaussFillMaterial.js",
 	"src/loader/POCLoader.js",
 	"src/loader/PointAttributes.js",
-	"src/loader/ProceduralPointcloudGenerator.js",
 	"src/loader/PlyLoader.js",
 	"src/utils/LRU.js",
                   ];
 
-Potree.Settings = new Object();
+Potree.Settings = {};
 
 //settings
 Potree.Settings.showBoundingBoxes = false;
@@ -89,10 +86,10 @@ Potree.Settings.frustumCulling = true;
 Potree.gridSceneNode = null;
 Potree.canvas = null;
 Potree.initialized = false;
-Potree.updateHandlers = new Array();
-Potree.drawHandlers = new Array();
+Potree.updateHandlers = [];
+Potree.drawHandlers = [];
 var renderer = null;
-Potree.fpsHistory = new Array();
+Potree.fpsHistory = [];
 Potree.fps = 0;
 
 
@@ -172,9 +169,9 @@ Potree.init = function(canvas) {
 	{// register mouse and key listener
 		var mousewheelevt=(/Firefox/i.test(navigator.userAgent))? "DOMMouseScroll" : "mousewheel"; //FF doesn't recognize mousewheel as of FF3.x
 		if (document.attachEvent){ //if IE (and Opera depending on user setting)
-		    document.attachEvent("on"+mousewheelevt,MouseListener.mouseWheel);
-		}else if (document.addEventListener){ //WC3 browsers
-		    document.addEventListener(mousewheelevt, MouseListener.mouseWheel, false);
+			document.attachEvent("on"+mousewheelevt,MouseListener.mouseWheel);
+		} else if (document.addEventListener){ //WC3 browsers
+			document.addEventListener(mousewheelevt, MouseListener.mouseWheel, false);
 		}
 		document.onkeydown = KeyListener.keyDown;
 		document.onkeyup = KeyListener.keyUp;
@@ -232,7 +229,6 @@ Object.defineProperty(Potree, "camHandler", {
  * 
  */
 Potree.initGL = function() {
-	
 	viewportWidth = Potree.canvas.width;
 	viewportHeight = Potree.canvas.height;
 
@@ -253,12 +249,6 @@ Potree.initGL = function() {
 		return false;
 	}
 
-	// extensions
-	if (!gl.getExtension("OES_texture_float")) {
-		console.log("some functions require OES_texture_float extension");
-		return false;
-	}
-	
 	// basic settings
 	var cColor = Potree.Settings.backgroundColor;
 	gl.clearColor(cColor.r, cColor.g, cColor.b, cColor.a);
@@ -318,6 +308,7 @@ Potree.calculateTimeSinceLastFrame = function calculateTimeSinceLastFrame(){
 
 Potree.update = function update(time){
 	
+	var i;
 	var fps = 1 / time;
 	
 	Potree.fpsHistory.push(fps);
@@ -325,7 +316,7 @@ Potree.update = function update(time){
 		Potree.fpsHistory.splice(0, 1);
 	}
 	var mean = 0;
-	for(var i = 0; i < Potree.fpsHistory.length; i++){
+	for(i = 0; i < Potree.fpsHistory.length; i++){
 		mean += Potree.fpsHistory[i];
 	}
 	mean = mean / Potree.fpsHistory.length;
@@ -336,7 +327,7 @@ Potree.update = function update(time){
 	
 	Potree.camHandler.addTime(time);
 	
-	for(var i = 0; i < Potree.updateHandlers.length; i++) {
+	for(i = 0; i < Potree.updateHandlers.length; i++) {
 		var updateHandler = Potree.updateHandlers[i];
 		updateHandler(time);
 	}

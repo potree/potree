@@ -41,4 +41,4 @@ Plane.prototype.intersection = function(origin, dir){
 	var I = V3.add(O, V3.scale(dir, t));
 	
 	return I;
-}
+};

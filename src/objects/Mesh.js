@@ -2,7 +2,7 @@
 
 /**
  * @class
- * @author Markus Schütz
+ * @author Markus Schuetz
  */
 MeshType = {
 	TRIANGLES : 0,
@@ -14,7 +14,7 @@ MeshType = {
  * 
  * @param name
  * @class
- * @author Markus Schütz
+ * @author Markus Schuetz
  */
 function Mesh(name){
 	this.name = name;
@@ -28,11 +28,11 @@ function Mesh(name){
 
 Mesh.prototype.setType = function(type){
 	this.type = type;
-	if(type == MeshType.TRIANGLES){
+	if(type === MeshType.TRIANGLES){
 		this.glType = gl.TRIANGLES;
-	}else if(type == MeshType.LINES){
+	}else if(type === MeshType.LINES){
 		this.glType = gl.LINES;
-	}else if(type == MeshType.POINTS){
+	}else if(type === MeshType.POINTS){
 		this.glType = gl.POINTS;
 	}else{
 		throw "unknown mesh type: " + type + ". use one of the MeshType members.";
@@ -71,7 +71,7 @@ Object.defineProperty(Mesh.prototype, "material", {
  * 
  * @param mesh
  * @class
- * @author Markus Schütz
+ * @author Markus Schuetz
  */
 function SubMesh(mesh){
 	this.mesh = mesh;

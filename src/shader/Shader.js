@@ -69,7 +69,7 @@ Shader.prototype.relink = function(){
 		console.log("Shader.fragmentShaderName is null -> Shader won't be linked");
 	}
 	
-	if(this.program != null){
+	if(this.program !== null){
 		gl.deleteProgram(program);
 	}
 	this.program = gl.createProgram();

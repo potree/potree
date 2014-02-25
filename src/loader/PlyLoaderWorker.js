@@ -25,7 +25,7 @@ PlyBinaryWorker.load = function PlyLoader_load(source){
 		PlyBinaryWorker.loadFromFile(source);
 	}else if(source instanceof ArrayBuffer){
 		PlyBinaryWorker.loadFromBuffer(source);
-	}else if(typeof source == 'string'){
+	}else if(typeof source === 'string'){
 		PlyBinaryWorker.loadFromUrl(source);
 	}
 //	postMessage("sis: " + (source instanceof String));
@@ -49,14 +49,14 @@ PlyBinaryWorker.loadFromUrl = function(source){
 	}
 	
 	xhr.onreadystatechange = function(){
-		if(xhr.readyState == 4){
-			if (xhr.status == 200 || xhr.status == 0) {
+		if(xhr.readyState === 4){
+			if (xhr.status === 200 || xhr.status === 0) {
 				var buffer = xhr.response;
 				PlyBinaryWorker.loadFromBuffer(buffer);
 			} else {
 				// post message failed
 			}
-		}else if(xhr.readyState == 3){
+		}else if(xhr.readyState === 3){
 			
 			
 		}
@@ -82,7 +82,7 @@ PlyBinaryWorker.loadFromAscii = function loadFromAscii(plyFile){
 	var nextLineStart = 0;
 	var getNextLineStart = function(){
 		for(var i = currentLineStart+1; i < plyBufferUint8.byteLength; i++){
-			if(plyBufferUint8[i] == "\n".charCodeAt(0)){
+			if(plyBufferUint8[i] === "\n".charCodeAt(0)){
 				return i;
 			}
 		}
@@ -105,14 +105,14 @@ PlyBinaryWorker.loadFromAscii = function loadFromAscii(plyFile){
 		nextLineStart = getNextLineStart();
 		var line = String.fromCharCode.apply(this, plyBufferUint8.subarray(currentLineStart, nextLineStart));
 		var tokens = line.trim().split(" ");
-//		if(tokens.length != plyPointAttributes.attributes.length){
+//		if(tokens.length !== plyPointAttributes.attributes.length){
 //			continue;
 //		}
 		
 		for(var j = 0; j < plyPointAttributes.attributes.length; j++){
 			var pointAttribute = plyPointAttributes.attributes[j];
 			
-			if(pointAttribute == PointAttribute.POSITION_CARTESIAN){
+			if(pointAttribute === PointAttribute.POSITION_CARTESIAN){
 				var x = parseFloat(tokens.shift());
 				var y = parseFloat(tokens.shift());
 				var z = parseFloat(tokens.shift());
@@ -130,7 +130,7 @@ PlyBinaryWorker.loadFromAscii = function loadFromAscii(plyFile){
 				}
 				
 				targetOffset += 12;
-			}else if(pointAttribute == PointAttribute.NORMAL_FLOATS){
+			}else if(pointAttribute === PointAttribute.NORMAL_FLOATS){
 				var nx = parseFloat(tokens.shift());
 				var ny = parseFloat(tokens.shift());
 				var nz = parseFloat(tokens.shift());
@@ -139,7 +139,7 @@ PlyBinaryWorker.loadFromAscii = function loadFromAscii(plyFile){
 				pointDataView.setFloat32(targetOffset+8, nz, true);
 				
 				targetOffset += 12;
-			}else if(pointAttribute == PointAttribute.RGB_PACKED){
+			}else if(pointAttribute === PointAttribute.RGB_PACKED){
 				var r = parseInt(tokens.shift());
 				var g = parseInt(tokens.shift());
 				var b = parseInt(tokens.shift());
@@ -149,7 +149,7 @@ PlyBinaryWorker.loadFromAscii = function loadFromAscii(plyFile){
 				pointDataView.setUint8(targetOffset+3, 255);
 				
 				targetOffset += 4;
-			}else if(pointAttribute == PointAttribute.RGBA_PACKED){
+			}else if(pointAttribute === PointAttribute.RGBA_PACKED){
 				var r = parseInt(tokens.shift());
 				var g = parseInt(tokens.shift());
 				var b = parseInt(tokens.shift());
@@ -163,7 +163,7 @@ PlyBinaryWorker.loadFromAscii = function loadFromAscii(plyFile){
 		}
 		
 		linesRead++;
-		if((linesRead % (1000)) == 0){
+		if((linesRead % (1000)) === 0){
 			var message = {
 				"type": "progress",
 				"pointsLoaded": linesRead 
@@ -191,7 +191,7 @@ PlyBinaryWorker.loadFromAscii = function loadFromAscii(plyFile){
 
 PlyBinaryWorker.loadFromBinary = function loadFromBinary(plyFile){
 	var littleEndian = true;
-	if(plyFile.header.type == PlyFileType.BINARY_LITTLE_ENDIAN){
+	if(plyFile.header.type === PlyFileType.BINARY_LITTLE_ENDIAN){
 		littleEndian = true;
 	}else{
 		littleEndian = false;
@@ -221,7 +221,7 @@ PlyBinaryWorker.loadFromBinary = function loadFromBinary(plyFile){
 		for(var j = 0; j < plyPointAttributes.attributes.length; j++){
 			var pointAttribute = plyPointAttributes.attributes[j];
 			
-			if(pointAttribute == PointAttribute.POSITION_CARTESIAN){
+			if(pointAttribute === PointAttribute.POSITION_CARTESIAN){
 				var x = plyDataView.getFloat32(plyOffset, littleEndian);
 				var y = plyDataView.getFloat32(plyOffset+4, littleEndian);
 				var z = plyDataView.getFloat32(plyOffset+8, littleEndian);
@@ -247,20 +247,20 @@ PlyBinaryWorker.loadFromBinary = function loadFromBinary(plyFile){
 				
 				targetOffset += 12;
 				plyOffset += 12;
-			}else if(pointAttribute == PointAttribute.NORMAL_FLOATS){
+			}else if(pointAttribute === PointAttribute.NORMAL_FLOATS){
 				pointDataView.setFloat32(targetOffset, plyDataView.getFloat32(plyOffset, littleEndian), true);
 				pointDataView.setFloat32(targetOffset+4, plyDataView.getFloat32(plyOffset+4, littleEndian), true);
 				pointDataView.setFloat32(targetOffset+8, plyDataView.getFloat32(plyOffset+8, littleEndian), true);
 				targetOffset += 12;
 				plyOffset += 12;
-			}else if(pointAttribute == PointAttribute.RGB_PACKED){
+			}else if(pointAttribute === PointAttribute.RGB_PACKED){
 				pointDataView.setUint8(targetOffset, plyDataView.getUint8(plyOffset));
 				pointDataView.setUint8(targetOffset+1, plyDataView.getUint8(plyOffset+1));
 				pointDataView.setUint8(targetOffset+2, plyDataView.getUint8(plyOffset+2));
 				pointDataView.setUint8(targetOffset+3, 255);
 				targetOffset += 4;
 				plyOffset += 3;
-			}else if(pointAttribute == PointAttribute.RGBA_PACKED){
+			}else if(pointAttribute === PointAttribute.RGBA_PACKED){
 				pointDataView.setUint8(targetOffset, plyDataView.getUint8(plyOffset));
 				pointDataView.setUint8(targetOffset+1, plyDataView.getUint8(plyOffset+1));
 				pointDataView.setUint8(targetOffset+2, plyDataView.getUint8(plyOffset+2));
@@ -271,7 +271,7 @@ PlyBinaryWorker.loadFromBinary = function loadFromBinary(plyFile){
 				plyOffset += pointAttribute.byteSize;
 			}
 		}
-		if(i % (10*1000) == 0){
+		if(i % (10*1000) === 0){
 			var message = {
 				"type": "progress",
 				"pointsLoaded": i 
@@ -293,7 +293,7 @@ PlyBinaryWorker.loadFromBuffer = function PlyLoader_loadFromBuffer(buffer){
 	var plyFile = new PlyFile(buffer);
 	var possibleHeader = String.fromCharCode.apply(null, new Uint8Array(buffer, 0, 5000));
 	var headerLength = possibleHeader.indexOf("end_header") + 11;
-	if(headerLength == 0){
+	if(headerLength === 0){
 		throw "unable to read ply header";
 	}
 	
@@ -304,7 +304,7 @@ PlyBinaryWorker.loadFromBuffer = function PlyLoader_loadFromBuffer(buffer){
 		"type": "header",
 		"header": strHeader});
 	
-	if(plyFile.header.type == PlyFileType.ASCII){
+	if(plyFile.header.type === PlyFileType.ASCII){
 		PlyBinaryWorker.loadFromAscii(plyFile);
 	}else{
 		PlyBinaryWorker.loadFromBinary(plyFile);

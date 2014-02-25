@@ -30,17 +30,26 @@ var PointCloudRenderMode = {
  * @param name
  * @class
  * @augments Material
- * @author Markus Schütz
+ * @author Markus Schuetz
  */
 function PointCloudMaterial(name){
 	Material.call(this, name);
 	
 	this.renderMode = PointCloudRenderMode.WEIGHTED_CIRCLE;
 	
-	this.filteredMaterial = new FilteredSplatsMaterial(name + "_filtered");
+	if(FilteredSplatsMaterial.isSupported()){
+		this.filteredMaterial = new FilteredSplatsMaterial(name + "_filtered");
+	}else{
+		this.filteredMaterial = null;
+	}
 	this.weightedMaterial = new WeightedPointSizeMaterial(name + "_weighted");
 	this.fixedMaterial = new FixedPointSizeMaterial(name + "_fixed");
-	this.gaussFillMaterial = new GaussFillMaterial(name + "_fill");
+	
+	if(GaussFillMaterial.isSupported()){
+		this.gaussFillMaterial = new GaussFillMaterial(name + "_fill");
+	}else{
+		this.gaussFillMaterial = null;
+	}
 	
 	this.activeMaterial = this.weightedMaterial;
 	this.pointSize = 0.2;
@@ -58,39 +67,28 @@ PointCloudMaterial.prototype.render = function(sceneNode, renderer){
 	}
 };
 
-///**
-// * @param renderMode type: PointCloudRenderMode
-// */
-//PointCloudMaterial.prototype.setRenderMode = function(renderMode){
-//	this.renderMode = renderMode;
-//	
-//	this.updateActiveMaterial();
-//};
-//
-//PointCloudMaterial.prototype.updateActiveMaterial = function(){
-//	if(this.illuminationMode == IlluminationMode.FLAT){
-//		if(this.renderMode == PointCloudRenderMode.FIXED_CIRCLE){
-//			this.activeMaterial = this.fixedMaterial;
-//		}else if(this.renderMode == PointCloudRenderMode.WEIGHTED_CIRCLE){
-//			this.activeMaterial = this.weightedMaterial;
-//		}else if(this.renderMode == PointCloudRenderMode.FILTERED_SPLAT){
-//			this.activeMaterial = this.filteredMaterial;
-//		}
-//	}
-//};
-
 Object.defineProperty(PointCloudMaterial.prototype, 'renderMode', {
 	set: function(renderMode){
 		this._renderMode = renderMode;
 		
-		if(this.renderMode == PointCloudRenderMode.FIXED_CIRCLE){
+		if(this.renderMode === PointCloudRenderMode.FIXED_CIRCLE){
 			this.activeMaterial = this.fixedMaterial;
-		}else if(this.renderMode == PointCloudRenderMode.WEIGHTED_CIRCLE){
+		}else if(this.renderMode === PointCloudRenderMode.WEIGHTED_CIRCLE){
 			this.activeMaterial = this.weightedMaterial;
-		}else if(this.renderMode == PointCloudRenderMode.FILTERED_SPLAT){
-			this.activeMaterial = this.filteredMaterial;
-		}else if(this.renderMode == PointCloudRenderMode.GAUSS_FILL){
-			this.activeMaterial = this.gaussFillMaterial;
+		}else if(this.renderMode === PointCloudRenderMode.FILTERED_SPLAT){
+			if(FilteredSplatsMaterial.isSupported()){
+				this.activeMaterial = this.filteredMaterial;
+			}else{
+				this.activeMaterial = this.weightedMaterial;
+				console.log("FILTERED_SPLAT material is not supported on your system. ");
+			}
+		}else if(this.renderMode === PointCloudRenderMode.GAUSS_FILL){
+			if(GaussFillMaterial.isSupported()){
+				this.activeMaterial = this.gaussFillMaterial;
+			}else{
+				this.activeMaterial = this.weightedMaterial;
+				console.log("GAUSS_FILL material is not supported on your system. ");
+			}
 		}
 	},
 	get: function(){
@@ -101,10 +99,14 @@ Object.defineProperty(PointCloudMaterial.prototype, 'renderMode', {
 Object.defineProperty(PointCloudMaterial.prototype, 'pointSize', {
 	set: function(pointSize){
 		this._pointSize = pointSize;
-		this.filteredMaterial.pointSize = pointSize;
+		if(this.filteredMaterial !== null){
+			this.filteredMaterial.pointSize = pointSize;
+		}
 		this.weightedMaterial.pointSize = pointSize;
 		this.fixedMaterial.pointSize = pointSize;
-		this.gaussFillMaterial.pointSize = pointSize;
+		if(this.gaussFillMaterial !== null){
+			this.gaussFillMaterial.pointSize = pointSize;
+		}
 	},
 	get: function(){
 		return this._pointSize;
@@ -114,7 +116,9 @@ Object.defineProperty(PointCloudMaterial.prototype, 'pointSize', {
 Object.defineProperty(PointCloudMaterial.prototype, 'blendDepth', {
 	set: function(blendDepth){
 		this._blendDepth = blendDepth;
-		this.filteredMaterial.blendDepth = blendDepth;
+		if(this.filteredMaterial != null){
+			this.filteredMaterial.blendDepth = blendDepth;
+		}
 	},
 	get: function(){
 		return this._blendDepth;
@@ -124,7 +128,9 @@ Object.defineProperty(PointCloudMaterial.prototype, 'blendDepth', {
 Object.defineProperty(PointCloudMaterial.prototype, 'illuminationMode', {
 	set: function(illuminationMode){
 		this._illuminationMode = illuminationMode;
-		this.filteredMaterial.illuminationMode = illuminationMode;
+		if(FilteredSplatsMaterial.isSupported()){
+			this.filteredMaterial.illuminationMode = illuminationMode;
+		}
 		this.weightedMaterial.illuminationMode = illuminationMode;
 		this.fixedMaterial.illuminationMode = illuminationMode;
 	},

@@ -29,7 +29,7 @@ function PlyProperty(name, type){
 function PlyPropertyDataType(name, size){
 	this.name = name;
 	this.size = size;
-};
+}
 
 /**
  * represent an element in a ply file. (such as vertex/face/...)
@@ -111,11 +111,11 @@ PlyLoader.load = function(source, listener){
 	var plyFile = new PlyFile();
 	var worker = new Worker("src/loader/PlyLoaderWorker.js");
 	worker.onmessage = function(event){
-		if(event.data.type == "header"){
+		if(event.data.type === "header"){
 			plyFile.header = PlyLoader.parseHeader(event.data.header);
-		}else if(event.data.type == "progress"){
+		}else if(event.data.type === "progress"){
 			listener.pointsLoaded(event.data.pointsLoaded, plyFile.header.elements[0].size);
-		}else if(event.data.type == "result"){
+		}else if(event.data.type === "result"){
 			var pointBuffer = event.data.buffer;
 			var aabb = event.data.aabb;
 			var vertexElement = plyFile.header.elements[0];
@@ -130,9 +130,9 @@ PlyLoader.load = function(source, listener){
 			pointCloud.aabb.setDimensionByMinMax(min, max);
 			
 			listener.finishedLoading(pointCloud);
-		}else if(event.data.type == "log"){
+		}else if(event.data.type === "log"){
 			console.log(event.data.message);
-		}else if(event.data.type == "fileLoadProgress"){
+		}else if(event.data.type === "fileLoadProgress"){
 			listener.fileLoadProgress(event.data.percentage);
 		}else{
 			alert(event.data);
@@ -156,7 +156,7 @@ PlyLoader.parseHeader = function PlyLoader_parseHeader(header){
 	//for(var i = 0; i < lines.length; i++){
 		var line = lines.shift();
 		
-		if(line == "ply"){
+		if(line === "ply"){
 		}else if(line.search(formatPattern) >= 0){
 			var result = line.match(formatPattern);
 			plyHeader.type = PlyFileType[result[1].toUpperCase()];
@@ -165,7 +165,7 @@ PlyLoader.parseHeader = function PlyLoader_parseHeader(header){
 			var name = result[1];
 			var count = parseInt(result[2]);
 			
-			if(name != "vertex"){
+			if(name !== "vertex"){
 				throw "As of now, only ply files with 'vertex' as the first element are supported.";
 			}
 			
@@ -194,48 +194,48 @@ PlyLoader.pointAttributesFromProperties = function PlyLoader_pointAttributesFrom
 	while(i < properties.length){
 		var property = properties[i];
 		
-		if(property.name == "x"){
+		if(property.name === "x"){
 			var p0 = property;
 			var p1 = properties[i+1];
 			var p2 = properties[i+2];
 			
-			if(p1.name != "y" || p2.name != "z"){
+			if(p1.name !== "y" || p2.name !== "z"){
 				throw "unsupported ply format";
 			}
 			
-			if((p0.type.name + p1.type.name + p2.type.name) != "floatfloatfloat"){
+			if((p0.type.name + p1.type.name + p2.type.name) !== "floatfloatfloat"){
 				throw "unsupported ply format";
 			}
 			
 			pointAttributes.add(PointAttribute.POSITION_CARTESIAN);
 			i+=3;
-		}else if(property.name == "nx"){
+		}else if(property.name === "nx"){
 			var p0 = property;
 			var p1 = properties[i+1];
 			var p2 = properties[i+2];
 			
-			if(p1.name != "ny" || p2.name != "nz"){
+			if(p1.name !== "ny" || p2.name !== "nz"){
 				throw "unsupported ply format";
 			}
 			
-			if((p0.type.name + p1.type.name + p2.type.name) != "floatfloatfloat"){
+			if((p0.type.name + p1.type.name + p2.type.name) !== "floatfloatfloat"){
 				throw "unsupported ply format";
 			}
 			
 			pointAttributes.add(PointAttribute.NORMAL_FLOATS);
 			i+=3;
-		}else if(property.name == "red"){
-			if(properties[i+3] != null && properties[i+3].name == "alpha"){
+		}else if(property.name === "red"){
+			if(properties[i+3] != null && properties[i+3].name === "alpha"){
 				var c0 = property;
 				var c1 = properties[i+1];
 				var c2 = properties[i+2];
 				var c3 = properties[i+3];
 				
-				if(c1.name != "green" || c2.name != "blue" || c3.name != "alpha"){
+				if(c1.name !== "green" || c2.name !== "blue" || c3.name !== "alpha"){
 					throw "unsupported ply format";
 				}
 				
-				if((c0.type.name + c1.type.name + c2.type.name + c3.type.name) != "ucharucharucharuchar"){
+				if((c0.type.name + c1.type.name + c2.type.name + c3.type.name) !== "ucharucharucharuchar"){
 					throw "unsupported ply format";
 				}
 				
@@ -246,11 +246,11 @@ PlyLoader.pointAttributesFromProperties = function PlyLoader_pointAttributesFrom
 				var c1 = properties[i+1];
 				var c2 = properties[i+2];
 				
-				if(c1.name != "green" || c2.name != "blue"){
+				if(c1.name !== "green" || c2.name !== "blue"){
 					throw "unsupported ply format";
 				}
 				
-				if((c0.type.name + c1.type.name + c2.type.name) != "ucharucharuchar"){
+				if((c0.type.name + c1.type.name + c2.type.name) !== "ucharucharuchar"){
 					throw "unsupported ply format";
 				}
 				

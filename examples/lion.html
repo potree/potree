@@ -44,9 +44,15 @@ function init() {
 					      0, 0, 0, 1];
 	
 	// transform camera
+	var pivot = V3.$(-9,-1,-1.5);
 	var cam = scene.activeCamera;
-	cam.rotateY(Math.PI/2);
-	cam.translate(-1,-1,-1);
+	cam.translate(pivot.x, pivot.y, pivot.z);
+	cam.translate(0,0,8);
+	cam.rotateAroundPivot(2, -0.3,pivot);
+	
+	// OrbitCamHandler rotates the camera around a pivot point
+	Potree.camHandler = new OrbitCamHandler(cam);
+	Potree.camHandler.pivot = pivot;
 	
 	// set point size
 	var material = MaterialManager.getMaterial("pointCloud");
@@ -71,10 +77,9 @@ function init() {
 	</div>
 	
 	<div id="infos" style="top: 0; bottom: 0; left: 10; right: 0; position: absolute; z-index: 100; font-size: 150%;  background: #fff; top: 10px; width: 300px; height: 70px;  padding: 10px 10px 15px 10px; border-radius: 4px">
-	a,s,d,w: move through scene<br>
-	drag mouse: rotate camera<br>
+	Hold the left mouse button to rotate around the object. Use the scroll wheel to zoom in and out.<br>
 	1: default rendermode<br>
-	2: filtered splats
+	2: filtered splats (slow)
 	</div>
 	
 </body>

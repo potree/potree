@@ -77,10 +77,14 @@ function init() {
 	pcoNode.scale(0.2, 0.2, 0.2);
 	
 	// transform camera
+	var pivot = V3.$(0,0,-0.5);
 	var cam = scene.activeCamera;
+	cam.translate(0,0,2);
+	cam.rotateAroundPivot(1,-0.5, pivot);
 	
-	cam.translate(0.2,0,2);
-	cam.rotateY(0.8);
+	// OrbitCamHandler rotates the camera around a pivot point
+	Potree.camHandler = new OrbitCamHandler(cam);
+	Potree.camHandler.pivot = pivot;
 	
 	// set point size
 	var material = MaterialManager.getMaterial("pointCloud");

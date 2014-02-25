@@ -251,6 +251,17 @@ SceneNode.prototype.rotateZ = function(angle) {
 	this._transform = M4x4.mul(M4x4.rotate(angle, V3.$(0, 0, 1), M4x4.I), this._transform);
 };
 
+SceneNode.prototype.rotate = function(angle, vector){
+	this._transform = M4x4.mul(M4x4.rotate(angle, vector, M4x4.I), this._transform);
+}
+
+SceneNode.prototype.rotateAroundPivot = function(x, y, pivot){
+	this.translate(-pivot.x, -pivot.y, -pivot.z);
+	this.rotateY(x);
+	this.rotate(y, this.getSideVector());
+	this.translate(pivot.x, pivot.y, pivot.z);
+}
+
 SceneNode.prototype.scale = function(x, y, z) {
 	this._transform = M4x4.scale3(x, y, z, this._transform);
 };

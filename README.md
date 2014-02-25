@@ -3,6 +3,10 @@
 Homepage: <a href="http://potree.org/">potree.org</a>
 <img src="http://potree.org/resources/images/pompei.jpg">
 
+## Demos
+* ![pompei](http://potree.org/demo/pompei/pompei.html)
+* ![skatepark](http://potree.org/demo/skatepark_v1.0/skatepark_v1.0.html)
+
 ## Getting Started
 1. Deploy potree on a webserver. 
 2. Open one of the demos in the examples directory. <br>

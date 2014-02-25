@@ -7,6 +7,9 @@ Homepage: <a href="http://potree.org/">potree.org</a>
 * [pompei](http://potree.org/demo/pompei/pompei.html)
 * [skatepark](http://potree.org/demo/potree_2014.01.22/skatepark.html)
 
+This video shows a point cloud of the St. Stephens Cathedral. It consists of ~700m points. 
+[![](http://img.youtube.com/vi/p9e6xElafJU/0.jpg)](http://www.youtube.com/watch?v=p9e6xElafJU)
+
 ## Getting Started
 1. Deploy potree on a webserver. 
 2. Open one of the demos in the examples directory. <br>
@@ -15,7 +18,7 @@ should be something like "localhost/potree/examples/lion.html". URLs starting wi
 
 This is what the lion demo looks like:
 
-![](./docs/images/lion_demo_screenshot.jpg)
+![http://img.youtube.com/vi/p9e6xElafJU/0.jpg](./docs/images/lion_demo_screenshot.jpg)
 
 
 ## Convert Your Own Pointclouds

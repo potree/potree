@@ -1,0 +1,73 @@
+
+
+<html>
+<head>
+	<title>My first Three.js app</title>
+	<style>canvas { width: 100%; height: 100% }</style>
+</head>
+<body>
+	<script src="libs/three.js/build/three.js"></script>
+	<script src="libs/other/OrbitControls.js"></script>
+	<script src="src/Potree.js"></script>
+	<script src="src/PointCloudPlugin.js"></script>
+	<script src="src/PointCloudOctree.js"></script>
+	<script src="src/loader/POCLoader.js"></script>
+	<script src="src/loader/PointAttributes.js"></script>
+	<script src="src/utils.js"></script>
+	<script>
+		var renderer;
+		var camera;
+		var cube;
+		var scene;
+		
+		function initThree(){
+			scene = new THREE.Scene();
+			camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+
+			renderer = new THREE.WebGLRenderer();
+			renderer.setSize(window.innerWidth, window.innerHeight);
+			document.body.appendChild(renderer.domElement);
+
+			camera.position.z = 6;
+			camera.position.y = 1;
+			
+			var pointLight = new THREE.PointLight(0xffffff);
+			pointLight.position.set(10, 10, 10);
+			scene.add(pointLight);
+			
+			controls = new THREE.OrbitControls(camera);
+			controls.target.set( 0, 0, 0 );
+			camera.lookAt(new THREE.Vector3(0,0,0));
+			
+			var material = new THREE.ParticleSystemMaterial( { size: 0.01, vertexColors: true } );
+			var pco = POCLoader.load("resources/pointclouds/lion_takanawa/cloud.js");
+			var pointCloud = new Potree.PointCloudOctree(pco, material);
+			pointCloud.LODDistance = 50;
+			pointCloud.rotation.x = Math.PI;
+			pointCloud.position.x = 8;
+			scene.add(pointCloud);
+		}
+		
+		var toggle = 0;
+		function render() {
+			requestAnimationFrame(render);
+			
+			toggle += 0.1;
+			if(toggle > 0.2){
+				scene.traverse( function ( object ) {
+					if ( object instanceof Potree.PointCloudOctree ) {
+						object.update( camera );
+					}
+				} );
+				toggle = 0;
+			}
+			
+			renderer.render(scene, camera);
+		};
+		
+		initThree();
+		render();
+		
+	</script>
+</body>
+</html>

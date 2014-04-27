@@ -1,25 +1,35 @@
 
 
-/**
- * Some types of possible point attributes
- * 
- * @class
- */
-var PointAttributeNames = {
-	POSITION_CARTESIAN 	: 0,	// float x, y, z;
-	COLOR_PACKED		: 1,	// byte r, g, b, a; 	I = [0,1]
-	COLOR_FLOATS_1		: 2,	// float r, g, b; 		I = [0,1]
-	COLOR_FLOATS_255	: 3,	// float r, g, b; 		I = [0,255]
-	NORMAL_FLOATS		: 4,  	// float x, y, z;
-	FILLER				: 5
-};
+///**
+// * Some types of possible point attributes
+// * 
+// * @class
+// */
+//var PointAttributeNames = {
+//	POSITION_CARTESIAN 	: 0,	// float x, y, z;
+//	COLOR_PACKED		: 1,	// byte r, g, b, a; 	I = [0,1]
+//	COLOR_FLOATS_1		: 2,	// float r, g, b; 		I = [0,1]
+//	COLOR_FLOATS_255	: 3,	// float r, g, b; 		I = [0,255]
+//	NORMAL_FLOATS		: 4,  	// float x, y, z;
+//	FILLER				: 5
+//};
+//
+//var i = 0;
+//for(var obj in PointAttributeNames){
+//	PointAttributeNames[i] = PointAttributeNames[obj];
+//	i++;
+//}
 
-var i = 0;
-for(var obj in PointAttributeNames){
-	PointAttributeNames[i] = PointAttributeNames[obj];
-	i++;
+function PointAttributeNames(){
+	
 }
 
+PointAttributeNames.POSITION_CARTESIAN 	= 0;	// float x, y, z;
+PointAttributeNames.COLOR_PACKED		= 1;	// byte r, g, b, a; 	I = [0,1]
+PointAttributeNames.COLOR_FLOATS_1		= 2;	// float r, g, b; 		I = [0,1]
+PointAttributeNames.COLOR_FLOATS_255	= 3;	// float r, g, b; 		I = [0,255]
+PointAttributeNames.NORMAL_FLOATS		= 4;  	// float x, y, z;
+PointAttributeNames.FILLER				= 5;
 /**
  * Some types of possible point attribute data formats
  * 

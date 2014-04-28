@@ -94,9 +94,9 @@ POCLoader.createChildAABB = function(aabb, childIndex){
 	var min = aabb.min;
 	var max = aabb.max;
 	var dHalfLength = new THREE.Vector3().copy(max).sub(min).multiplyScalar(0.5);
-	var xHalfLength = new THREE.Vector3(dHalfLength[0], 0, 0);
-	var yHalfLength = new THREE.Vector3(0, dHalfLength[1], 0);
-	var zHalfLength = new THREE.Vector3(0, 0, dHalfLength[2]);
+	var xHalfLength = new THREE.Vector3(dHalfLength.x, 0, 0);
+	var yHalfLength = new THREE.Vector3(0, dHalfLength.y, 0);
+	var zHalfLength = new THREE.Vector3(0, 0, dHalfLength.z);
 
 	var cmin = min;
 	var cmax = new THREE.Vector3().add(min).add(dHalfLength);

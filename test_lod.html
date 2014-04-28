@@ -5,7 +5,7 @@
 	<title>My first Three.js app</title>
 	<style>canvas { width: 100%; height: 100% }</style>
 </head>
-<body>
+<body style="margin: 0; padding: 0">
 	<script src="libs/three.js/build/three.js"></script>
 	<script src="libs/other/OrbitControls.js"></script>
 	<script src="src/Potree.js"></script>
@@ -13,6 +13,7 @@
 	<script src="src/loader/POCLoader.js"></script>
 	<script src="src/loader/PointAttributes.js"></script>
 	<script src="src/utils.js"></script>
+	<script src="src/CustomBoxHelper.js"></script>
 	<script>
 		var renderer;
 		var camera;
@@ -28,23 +29,52 @@
 			document.body.appendChild(renderer.domElement);
 
 			camera.position.z = 6;
-			camera.position.y = 1;
+			camera.position.y = 4;
+			camera.position.x = 4;
 			
 			var pointLight = new THREE.PointLight(0xffffff);
 			pointLight.position.set(10, 10, 10);
 			scene.add(pointLight);
 			
-			controls = new THREE.OrbitControls(camera);
-			controls.target.set( 0, 0, 0 );
-			camera.lookAt(new THREE.Vector3(0,0,0));
+			var ambientLight = new THREE.AmbientLight(0x111111);
+		     scene.add(ambientLight);
 			
-			var material = new THREE.ParticleSystemMaterial( { size: 0.01, vertexColors: true } );
+			controls = new THREE.OrbitControls(camera);
+			controls.target.set( 0, 3, 0 );
+			camera.lookAt(new THREE.Vector3(0,3,0));
+			
+			var material = new THREE.ParticleSystemMaterial( { size: 0.02, vertexColors: true } );
 			var pco = POCLoader.load("resources/pointclouds/lion_takanawa/cloud.js");
 			var pointCloud = new Potree.PointCloudOctree(pco, material);
-			pointCloud.LODDistance = 50;
+			pointCloud.LODDistance = 80;
 			pointCloud.rotation.x = Math.PI;
 			pointCloud.position.x = 8;
+			pointCloud.position.z = -2;
+			pointCloud.position.y = 4;
 			scene.add(pointCloud);
+			
+			scene.add(createGrid(8,8,1));
+		}
+		
+		function createGrid(width, length, spacing){
+			var material = new THREE.LineBasicMaterial({
+		        color: 0xBBBBBB
+		    });
+			
+			var geometry = new THREE.Geometry();
+		    for(var i = 0; i <= length; i++){
+		    	 geometry.vertices.push(new THREE.Vector3(-(spacing*width)/2, 0, i*spacing-(spacing*length)/2));
+				 geometry.vertices.push(new THREE.Vector3(+(spacing*width)/2, 0, i*spacing-(spacing*length)/2));
+		    }
+		    
+		    for(var i = 0; i <= width; i++){
+		    	 geometry.vertices.push(new THREE.Vector3(i*spacing-(spacing*width)/2, 0, -(spacing*length)/2));
+				 geometry.vertices.push(new THREE.Vector3(i*spacing-(spacing*width)/2, 0, +(spacing*length)/2));
+		    }
+		    
+		    var line = new THREE.Line(geometry, material, THREE.LinePieces);
+		    line.receiveShadow = true;
+		    return line;
 		}
 		
 		var toggle = 0;
@@ -68,5 +98,17 @@
 		render();
 		
 	</script>
+	
+	<div id="lblNumVisibleNodes" style="position:absolute; left: 10px; top: 30px; width: 200px; color: white">visible nodes: 0</div>
+	<div id="lblInfo" style="position:absolute; left: 0px; top: 00px; right: 0px; height: 20px; background-color: #aaaaaa">
+	Rewriting <a href="http://potree.org/" target="_blank">potree</a> point cloud renderer from scratch using <a href="http://threejs.org/" target="_blank">three.js</a>
+	</div>
+	<div id="lblControl" style="position:absolute; left: 10px; top: 60px; width: 400px; color: white">
+	Orbit Controls:<br>
+	left mouse button: rotate object<br>
+	right mouse button: pan the screen<br>
+	scrool wheel: zoom in and out
+	</div>
+	
 </body>
 </html>

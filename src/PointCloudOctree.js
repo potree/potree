@@ -49,7 +49,7 @@ Potree.PointCloudOctreeGeometryNode.prototype.load = function(){
 }
 
 Potree.PointCloudOctreeGeometryNode.prototype.bufferLoaded = function(buffer){
-	var start = new Date().getTime();
+//	var start = new Date().getTime();
 	
 	var geometry = new THREE.BufferGeometry();
 	var numPoints = buffer.byteLength / 16;
@@ -80,9 +80,9 @@ Potree.PointCloudOctreeGeometryNode.prototype.bufferLoaded = function(buffer){
 	this.loading = false;
 	this.pcoGeometry.numNodesLoading--;
 	
-	var end = new Date().getTime();
-	var time = end - start;
-	console.log('bufferLoaded duration: ' + time);
+//	var end = new Date().getTime();
+//	var time = end - start;
+//	console.log('bufferLoaded duration: ' + time);
 }
 
 
@@ -161,21 +161,37 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 		var c = 0;
 		this.traverseBreadthFirst(function(object){
 			
-			var distance = new THREE.Vector3().subVectors(camera.position, object.position).length();
-			distance = distance - object.boundingBox.size().length()/2;
-			
-			var visible = true; 
-//			visible = visible && frustum.intersectsBox(object.boundingBox);
-			visible = visible && c < _this.maxVisibleNodes;
-			
-			visible = distance < _this.LODDistance / Math.pow(2, object.level);
-					
-			object.visible = visible;
-			if(!visible){
-				return false;
-			}
-			
-			if (object instanceof Potree.PointCloudOctreeProxyNode) {
+			if(object instanceof THREE.ParticleSystem){
+//			var distance = new THREE.Vector3().subVectors(camera.position, object.position).length();
+				var boxWorld = Potree.utils.computeTransformedBoundingBox(object.boundingBox, object.matrixWorld);
+				var camWorldPos = new THREE.Vector3().setFromMatrixPosition( camera.matrixWorld );
+				var bbWorldPos = object.boundingBox.center();
+				bbWorldPos.applyMatrix4(object.matrixWorld);
+				var distance = new THREE.Vector3().subVectors(camWorldPos, bbWorldPos).length();
+//				distance = distance - object.boundingBox.size().length()/2;
+				
+				var visible = true; 
+				visible = visible && frustum.intersectsBox(boxWorld);
+//				visible = visible && c < _this.maxVisibleNodes;
+				visible = visible && distance < _this.LODDistance / Math.pow(2, object.level);
+				object.visible = visible;
+				
+				// change centre sphere properties
+//				if(object.sphere !== undefined){
+//					object.sphere.visible = object.visible;
+//					var d = Math.max(0,distance);
+//					d = d/30;
+//					d += 0;
+////					object.sphere.material.color = new THREE.Color().setRGB(d,d,d).getHex()
+//					object.sphere.material = new THREE.MeshBasicMaterial({ 
+//						color: new THREE.Color().setRGB(d,d,d).getHex(),
+//						shading: THREE.FlatShading
+//					});
+//				}
+				if(!visible){
+					return false;
+				}
+			}else if (object instanceof Potree.PointCloudOctreeProxyNode) {
 				_this.replaceProxy(object);
 			}
 			
@@ -183,7 +199,9 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 			return true;
 		});
 		
-		console.log("visible nodes: " + c);
+		document.getElementById("lblNumVisibleNodes").innerHTML = "visible nodes: " + c;
+		
+//		console.log("visible nodes: " + c);
 	}
 }
 
@@ -199,6 +217,32 @@ Potree.PointCloudOctree.prototype.replaceProxy = function(proxy){
 		var parent = proxy.parent;
 		parent.remove(proxy);
 		parent.add(node);
+		
+		// show spheres at each node centre
+//		var sphereGeometry = new THREE.SphereGeometry(0.1);
+//		sphereGeometry.computeBoundingBox();
+//		var sphereMaterial = new THREE.MeshLambertMaterial({ color: 0xaaffaa});
+//		var sphereNode = new THREE.Mesh(sphereGeometry, sphereMaterial);
+//		sphereNode.boundingBox = sphereGeometry.boundingBox;
+//		sphereNode.position = node.boundingBox.center();
+//		node.add(sphereNode);
+//		node.sphere = sphereNode;
+		
+		// show bounding boxes
+//		var bb = THREE.Mesh.call( this, new THREE.BoxGeometry( 1, 1, 1 ), new THREE.MeshBasicMaterial( { color: #ffffff, wireframe: true } ) );
+//		var color;
+//		var index = geometryNode.index;
+//		if(index == 0) color = 0xff0000;
+//		if(index == 1) color = 0x00ff00;
+//		if(index == 2) color = 0x0000ff;
+//		if(index == 3) color = 0xffff00;
+//		if(index == 4) color = 0xff00ff;
+//		if(index == 5) color = 0x00ffff;
+//		if(index == 6) color = 0xaa00ff;
+//		if(index == 7) color = 0xffffff;
+//		var bh = new THREE.BoxHelper(node, color);
+//		bh.boundingBox = node.boundingBox;
+//		node.add(bh);
 		
 		for(var i = 0; i < 8; i++){
 			if(geometryNode.children[i] !== undefined){

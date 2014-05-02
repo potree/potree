@@ -24,6 +24,8 @@
 		var raycaster = new THREE.Raycaster();
 		var projector = new THREE.Projector();
 		var pointClouds = [];
+		var pointCloudsTested = 0;
+		var pointsTested = 0;
 		
 		function initThree(){
 			scene = new THREE.Scene();
@@ -37,27 +39,22 @@
 			camera.position.y = 4;
 			camera.position.x = 4;
 			
+			// light
 			var pointLight = new THREE.PointLight(0xffffff);
 			pointLight.position.set(10, 10, 10);
 			scene.add(pointLight);
 			
 			var ambientLight = new THREE.AmbientLight(0x111111);
-		     scene.add(ambientLight);
+		    scene.add(ambientLight);
 			
+		    // controls
 			controls = new THREE.OrbitControls(camera);
 			controls.target.set( 0, 3, 0 );
 			camera.lookAt(new THREE.Vector3(0,3,0));
 			
+			// pointcloud
 			var material = new THREE.ParticleSystemMaterial( { size: 0.02, vertexColors: true } );
 			var pco = POCLoader.load("resources/pointclouds/lion_takanawa/cloud.js");
-			
-//			pointCloud = new Potree.PointCloudOctree(pco, material);
-//			pointCloud.LODDistance = 80;
-//			pointCloud.rotation.x = Math.PI;
-//			pointCloud.position.x = 8;
-//			pointCloud.position.z = -2;
-//			pointCloud.position.y = 4;
-//			scene.add(pointCloud);
 			
 			var min = -1;
 			max = 2;
@@ -74,17 +71,26 @@
 				}
 			}
 			
+			// place spheres on click location
 			renderer.domElement.addEventListener('click', function(event){
+				vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
+				projector.unprojectVector( vector, camera );
+				var recursive = document.getElementById("chkRecursive").checked;
+				
 				var start = new Date().getTime();
+				
+				pointCloudsTested = 0;
+				pointsTested = 0;
 				
 				vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
 				projector.unprojectVector( vector, camera );
 				raycaster.ray.set( camera.position, vector.sub( camera.position ).normalize() );
 				
+				// cast rays against all point clouds
 				var intersects = [];
 				for(var i = 0; i < pointClouds.length; i++){
 					var pointCloud = pointClouds[i];
-					var tis = raycaster.intersectObject(pointCloud.root, true);
+					var tis = raycaster.intersectObject(pointCloud.root, recursive);
 					for(var j = 0; j < tis.length; j++){
 						var ti = tis[j];
 						ti.node = pointCloud;
@@ -92,6 +98,7 @@
 					}
 				}
 				
+				// find closest intersection
 				var closest = intersects.length > 0 ? intersects[0] : null;
 				for(var i = 0; i < intersects.length; i++){
 					if(intersects[i].distance < closest.distance){
@@ -99,20 +106,26 @@
 					}
 				}
 				
+				// create sphere at closest intersection
 				if(closest != null){
 					var clickPos = new THREE.Vector3().copy(raycaster.ray.direction).multiplyScalar(closest.distance);
 					clickPos.add(raycaster.ray.origin);
 					
-					var geometry = new THREE.SphereGeometry(0.1);
-					var material = new THREE.MeshLambertMaterial();
+					var geometry = new THREE.SphereGeometry(0.05, 32, 32);
+					var material = new THREE.MeshLambertMaterial({color: 0xff0000});
 					var sphere = new THREE.Mesh(geometry, material);
 					sphere.position = closest.point;
 					closest.node.add(sphere);
 				}
 				
+				
 				var end = new Date().getTime();
 				var time = end - start;
-				console.log('intersect all duration: ' + time);
+				
+				document.getElementById("lblPointCloudsTested").innerHTML = "PointClouds tested: " + pointCloudsTested;
+				document.getElementById("lblPointsTested").innerHTML = "Points tested: " + pointsTested;
+				document.getElementById("lblDuration").innerHTML = "Duration: " + time + "ms";
+				
 			});
 			document.addEventListener( 'mousemove', onDocumentMouseMove, false );
 			
@@ -155,9 +168,6 @@
 					
 			requestAnimationFrame(render);
 			
-			vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
-			projector.unprojectVector( vector, camera );
-			
 			toggle += 0.1;
 			if(toggle > 0.2){
 			octreeNodesVisible = 0;
@@ -181,15 +191,22 @@
 		
 	</script>
 	
-	<div id="lblNumVisibleNodes" style="position:absolute; left: 10px; top: 30px; width: 200px; color: white">visible nodes: 0</div>
-	<div id="lblInfo" style="position:absolute; left: 0px; top: 00px; right: 0px; height: 20px; background-color: #aaaaaa">
+	<div id="lblNumVisibleNodes" style="position:absolute; left: 10px; top: 35px; padding: 5px; width: 220px; color: black; background: white">visible nodes: 0</div>
+	<div id="lblInfo" style="position:absolute; left: 0px; top: 00px; right: 0px; padding: 5px; height: 22px; background-color: #aaaaaa">
 	Rewriting <a href="http://potree.org/" target="_blank">potree</a> point cloud renderer from scratch using <a href="http://threejs.org/" target="_blank">three.js</a>
 	</div>
-	<div id="lblControl" style="position:absolute; left: 10px; top: 60px; width: 400px; color: white">
+	<div id="lblControl" style="position:absolute; left: 10px; top: 70px; width: 220px; padding: 5px; color: black; background: white">
 	Orbit Controls:<br>
 	left mouse button: rotate object<br>
 	right mouse button: pan the screen<br>
 	scrool wheel: zoom in and out
+	</div>
+	<div id="lblStats" style="position:absolute; left: 10px; top: 165; width: 220px; padding: 5px; color: black; background: white">
+		<input id="chkRecursive" type="checkbox" checked>recursive cast
+		<div id="lblPointCloudsTested">PointClouds tested: 0</div>
+		<div id="lblPointsTested">Points tested: 0</div>
+		<div id="lblDuration">Duration: </div>
+		
 	</div>
 	
 </body>

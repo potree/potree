@@ -158,7 +158,6 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 		}
 	}else{
 		var _this = this;
-		var c = 0;
 		this.traverseBreadthFirst(function(object){
 			
 			if(object instanceof THREE.ParticleSystem){
@@ -168,6 +167,7 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 				var bbWorldPos = object.boundingBox.center();
 				bbWorldPos.applyMatrix4(object.matrixWorld);
 				var distance = new THREE.Vector3().subVectors(camWorldPos, bbWorldPos).length();
+				if(object.level == 0) distance = 0;
 //				distance = distance - object.boundingBox.size().length()/2;
 				
 				var visible = true; 
@@ -195,11 +195,11 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 				_this.replaceProxy(object);
 			}
 			
-			c++;
+			octreeNodesVisible++;
 			return true;
 		});
 		
-		document.getElementById("lblNumVisibleNodes").innerHTML = "visible nodes: " + c;
+		//document.getElementById("lblNumVisibleNodes").innerHTML = "visible nodes: " + c;
 		
 //		console.log("visible nodes: " + c);
 	}
@@ -274,6 +274,45 @@ THREE.Object3D.prototype.traverseBreadthFirst = function(callback){
 			stack.push(current.children[i]);
 		}
 	}
+}
+
+
+
+/**
+ * see http://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
+ */
+THREE.Ray.prototype.intersectParticleSystem = function(points, eps){
+	var geometry = points.geometry;
+	var attributes = geometry.attributes;
+	var positions = attributes.position.array;
+	var n = positions.length;
+	console.log("testing " + n + " points");
+	
+//	var P = [0,0,0];
+//	var O = [this.origin.x, this.origin.y, this.origin.z];
+//	var N = [this.direction.x, this.direction.y, this.direction.z];
+	var P = new THREE.Vector3();
+	var O = this.origin;
+	var N = this.direction;
+	var tmp1 = new THREE.Vector3();
+	var tmp2 = new THREE.Vector3();
+	var PO = new THREE.Vector3();
+	var nearest = Infinity;
+	for(var i = 0; i < n; i++){
+		P.x = positions[i*3+0];
+		P.y = positions[i*3+1];
+		P.z = positions[i*3+2];
+		
+		PO.subVectors(O,P);
+		tmp1.copy(PO).dot(N).multiply(N);
+		tmp2.subVectors(PO, tmp1);
+		var distance = tmp2.length();
+		if(distance < eps){
+			nearest = Math.min(nearest, PO.length());
+		}
+	}
+	
+	return nearest;
 }
 
 //THREE.Object3D.prototype.traverse = function(callback){

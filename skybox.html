@@ -89,7 +89,7 @@
 			
 			loadSkybox();
 
-			camera.position.z = 60;
+			camera.position.z = 6;
 			camera.position.y = 4;
 			camera.position.x = 4;
 			
@@ -105,13 +105,18 @@
 			camera.lookAt(new THREE.Vector3(0,3,0));
 			
 			var material = new THREE.PointCloudMaterial( { size: 0.03, vertexColors: true } );
-//			var pco = POCLoader.load("resources/pointclouds/lion_takanawa/cloud.js");
-			var pco = POCLoader.load("../../../pointclouds/converted/skatepark/cloud.js");
+			var pco = POCLoader.load("resources/pointclouds/lion_takanawa/cloud.js");
+//			var pco = POCLoader.load("../../../pointclouds/converted/skatepark/cloud.js");
 			
 			var pointCloud = new Potree.PointCloudOctree(pco, material);
-			pointCloud.LODDistance = 1280;
-			pointCloud.rotation.x = -Math.PI/2;
-			pointCloud.position.y = -200;
+//			pointCloud.LODDistance = 1280;
+//			pointCloud.rotation.x = -Math.PI/2;
+//			pointCloud.position.y = -200;
+			pointCloud.LODDistance = 80;
+			pointCloud.rotation.x = Math.PI;
+			pointCloud.position.x = 8;
+			pointCloud.position.z = -2;
+			pointCloud.position.y = 4;
 			scene.add(pointCloud);
 			pointClouds.push(pointCloud);
 			

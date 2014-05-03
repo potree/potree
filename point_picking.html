@@ -53,7 +53,7 @@
 			camera.lookAt(new THREE.Vector3(0,3,0));
 			
 			// pointcloud
-			var material = new THREE.ParticleSystemMaterial( { size: 0.02, vertexColors: true } );
+			var material = new THREE.PointCloudMaterial( { size: 0.04, vertexColors: true } );
 			var pco = POCLoader.load("resources/pointclouds/lion_takanawa/cloud.js");
 			
 			var min = -1;
@@ -76,6 +76,7 @@
 				vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
 				projector.unprojectVector( vector, camera );
 				var recursive = document.getElementById("chkRecursive").checked;
+				raycaster.params = {"PointCloud" : {threshold: 0.04}};
 				
 				var start = new Date().getTime();
 				
@@ -115,7 +116,7 @@
 					var material = new THREE.MeshLambertMaterial({color: 0xff0000});
 					var sphere = new THREE.Mesh(geometry, material);
 					sphere.position = closest.point;
-					closest.node.add(sphere);
+					scene.add(sphere);
 				}
 				
 				

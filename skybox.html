@@ -20,20 +20,76 @@
 		var cube;
 		var scene;
 		var octreeNodesVisible = 0;
+		var pointsVisible = 0;
 		var pointCloud;
 		var raycaster = new THREE.Raycaster();
 		var projector = new THREE.Projector();
 		var pointClouds = [];
 		
+		function loadSkybox(){
+			// load skybox
+			var cubeMap = new THREE.Texture( [] );
+			cubeMap.format = THREE.RGBFormat;
+			cubeMap.flipY = false;
+
+			var loader = new THREE.ImageLoader();
+			loader.load( 'resources/textures/skyboxsun25degtest.png', function ( image ) {
+
+				var getSide = function ( x, y ) {
+
+					var size = 1024;
+
+					var canvas = document.createElement( 'canvas' );
+					canvas.width = size;
+					canvas.height = size;
+
+					var context = canvas.getContext( '2d' );
+					context.drawImage( image, - x * size, - y * size );
+
+					return canvas;
+
+				};
+
+				cubeMap.image[ 0 ] = getSide( 2, 1 ); // px
+				cubeMap.image[ 1 ] = getSide( 0, 1 ); // nx
+				cubeMap.image[ 2 ] = getSide( 1, 0 ); // py
+				cubeMap.image[ 3 ] = getSide( 1, 2 ); // ny
+				cubeMap.image[ 4 ] = getSide( 1, 1 ); // pz
+				cubeMap.image[ 5 ] = getSide( 3, 1 ); // nz
+				cubeMap.needsUpdate = true;
+
+			} );
+
+			var cubeShader = THREE.ShaderLib['cube'];
+			cubeShader.uniforms['tCube'].value = cubeMap;
+
+			var skyBoxMaterial = new THREE.ShaderMaterial( {
+				fragmentShader: cubeShader.fragmentShader,
+				vertexShader: cubeShader.vertexShader,
+				uniforms: cubeShader.uniforms,
+				depthWrite: false,
+				side: THREE.BackSide
+			});
+
+			var skyBox = new THREE.Mesh(
+				new THREE.BoxGeometry( 10000, 10000, 10000 ),
+				skyBoxMaterial
+			);
+			
+			scene.add( skyBox );
+		}
+		
 		function initThree(){
 			scene = new THREE.Scene();
-			camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+			camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 100000);
 
 			renderer = new THREE.WebGLRenderer();
 			renderer.setSize(window.innerWidth, window.innerHeight);
 			document.body.appendChild(renderer.domElement);
+			
+			loadSkybox();
 
-			camera.position.z = 6;
+			camera.position.z = 60;
 			camera.position.y = 4;
 			camera.position.x = 4;
 			
@@ -48,74 +104,16 @@
 			controls.target.set( 0, 3, 0 );
 			camera.lookAt(new THREE.Vector3(0,3,0));
 			
-			var material = new THREE.ParticleSystemMaterial( { size: 0.02, vertexColors: true } );
-			var pco = POCLoader.load("resources/pointclouds/lion_takanawa/cloud.js");
+			var material = new THREE.PointCloudMaterial( { size: 0.03, vertexColors: true } );
+//			var pco = POCLoader.load("resources/pointclouds/lion_takanawa/cloud.js");
+			var pco = POCLoader.load("../../../pointclouds/converted/skatepark/cloud.js");
 			
-//			pointCloud = new Potree.PointCloudOctree(pco, material);
-//			pointCloud.LODDistance = 80;
-//			pointCloud.rotation.x = Math.PI;
-//			pointCloud.position.x = 8;
-//			pointCloud.position.z = -2;
-//			pointCloud.position.y = 4;
-//			scene.add(pointCloud);
-			
-			var min =0;
-			max = 1;
-			for(var i = min; i < max; i++){
-				for(var j = min; j < max; j++){
-					var pointCloud = new Potree.PointCloudOctree(pco, material);
-					pointCloud.LODDistance = 80;
-					pointCloud.rotation.x = Math.PI;
-					pointCloud.position.x = 8 + 7*i;
-					pointCloud.position.z = -2 - 7*j;
-					pointCloud.position.y = 4;
-					scene.add(pointCloud);
-					pointClouds.push(pointCloud);
-				}
-			}
-			
-			renderer.domElement.addEventListener('click', function(event){
-				var start = new Date().getTime();
-				
-				vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
-				projector.unprojectVector( vector, camera );
-				raycaster.ray.set( camera.position, vector.sub( camera.position ).normalize() );
-				
-				var intersects = [];
-				for(var i = 0; i < pointClouds.length; i++){
-					var pointCloud = pointClouds[i];
-					var tis = raycaster.intersectObject(pointCloud.root, true);
-					for(var j = 0; j < tis.length; j++){
-						var ti = tis[j];
-						ti.node = pointCloud;
-						intersects.push(ti);
-					}
-				}
-				
-				var closest = intersects.length > 0 ? intersects[0] : null;
-				for(var i = 0; i < intersects.length; i++){
-					if(intersects[i].distance < closest.distance){
-						closest = intersects[i];
-					}
-				}
-				
-				if(closest != null){
-					var clickPos = new THREE.Vector3().copy(raycaster.ray.direction).multiplyScalar(closest.distance);
-					clickPos.add(raycaster.ray.origin);
-					
-					var geometry = new THREE.SphereGeometry(0.1);
-					var material = new THREE.MeshLambertMaterial();
-					var sphere = new THREE.Mesh(geometry, material);
-					sphere.position = closest.point;
-					closest.node.add(sphere);
-				}
-				
-				var end = new Date().getTime();
-				var time = end - start;
-				console.log('intersect all duration: ' + time);
-			});
-			document.addEventListener( 'mousemove', onDocumentMouseMove, false );
-			
+			var pointCloud = new Potree.PointCloudOctree(pco, material);
+			pointCloud.LODDistance = 1280;
+			pointCloud.rotation.x = -Math.PI/2;
+			pointCloud.position.y = -200;
+			scene.add(pointCloud);
+			pointClouds.push(pointCloud);
 			
 			scene.add(createGrid(8,8,1));
 		}
@@ -129,7 +127,7 @@
 		
 		function createGrid(width, length, spacing){
 			var material = new THREE.LineBasicMaterial({
-		        color: 0xBBBBBB
+		        color: 0x666666
 		    });
 			
 			var geometry = new THREE.Geometry();
@@ -160,7 +158,8 @@
 			
 			toggle += 0.1;
 			if(toggle > 0.2){
-			octreeNodesVisible = 0;
+				octreeNodesVisible = 0;
+				pointsVisible = 0;
 				scene.traverse( function ( object ) {
 					if ( object instanceof Potree.PointCloudOctree ) {
 						object.update( camera );
@@ -173,6 +172,7 @@
 			renderer.render(scene, camera);
 			
 			document.getElementById("lblNumVisibleNodes").innerHTML = "visible nodes: " + octreeNodesVisible;
+			document.getElementById("lblNumVisiblePoints").innerHTML = "visible points: " + pointsVisible;
 			
 		};
 		
@@ -181,11 +181,12 @@
 		
 	</script>
 	
-	<div id="lblNumVisibleNodes" style="position:absolute; left: 10px; top: 30px; width: 200px; color: white">visible nodes: 0</div>
+	<div id="lblNumVisibleNodes" style="position:absolute; left: 10px; top: 30px; width: 200px; color: black">visible nodes: 0</div>
+	<div id="lblNumVisiblePoints" style="position:absolute; left: 10px; top: 50px; width: 200px; color: black">visible nodes: 0</div>
 	<div id="lblInfo" style="position:absolute; left: 0px; top: 00px; right: 0px; height: 20px; background-color: #aaaaaa">
 	Rewriting <a href="http://potree.org/" target="_blank">potree</a> point cloud renderer from scratch using <a href="http://threejs.org/" target="_blank">three.js</a>
 	</div>
-	<div id="lblControl" style="position:absolute; left: 10px; top: 60px; width: 400px; color: white">
+	<div id="lblControl" style="position:absolute; left: 10px; top: 80px; width: 400px; color: black">
 	Orbit Controls:<br>
 	left mouse button: rotate object<br>
 	right mouse button: pan the screen<br>

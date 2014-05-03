@@ -54,11 +54,13 @@ Potree.PointCloudOctreeGeometryNode.prototype.bufferLoaded = function(buffer){
 	var geometry = new THREE.BufferGeometry();
 	var numPoints = buffer.byteLength / 16;
 	
-	geometry.addAttribute('position', Float32Array, numPoints*3, 3);
-	geometry.addAttribute('color', Float32Array, numPoints*3, 3);
+//	geometry.addAttribute('position', Float32Array, numPoints*3, 3);
+//	geometry.addAttribute('color', Float32Array, numPoints*3, 3);
 	
-	var positions = geometry.attributes.position.array;
-	var colors = geometry.attributes.color.array;
+	var positions = new Float32Array(numPoints*3);
+	var colors = new Float32Array(numPoints*3);
+//	var positions = geometry.attributes.position.array;
+//	var colors = geometry.attributes.color.array;
 	var color = new THREE.Color();
 	
 	var fView = new Float32Array(buffer);
@@ -74,6 +76,9 @@ Potree.PointCloudOctreeGeometryNode.prototype.bufferLoaded = function(buffer){
 		colors[3*i+1] = color.g / 255;
 		colors[3*i+2] = color.b / 255;
 	}
+	
+	geometry.addAttribute('position', new THREE.Float32Attribute(positions, 3));
+	geometry.addAttribute('color', new THREE.Float32Attribute(colors, 3));
 	geometry.boundingBox = this.boundingBox;
 	this.geometry = geometry;
 	this.loaded = true;
@@ -97,7 +102,7 @@ Potree.PointCloudOctreeGeometryNode.prototype.bufferLoaded = function(buffer){
  * If a proxy node becomes visible and its geometry has not been loaded,
  * loading will begin.
  * If it is visible and the geometry has been loaded, the proxy node will 
- * be replaced with a point cloud node (THREE.ParticleSystem as of now)
+ * be replaced with a point cloud node (THREE.PointCloud as of now)
  */
 Potree.PointCloudOctreeProxyNode = function(geometryNode){
 	THREE.Object3D.call( this );
@@ -123,7 +128,7 @@ Potree.PointCloudOctree = function(geometry, material){
 	
 	this.pcoGeometry = geometry;
 	this.boundingBox = this.pcoGeometry.boundingBox;
-	//this.material = new THREE.ParticleSystemMaterial( { size: 0.01, vertexColors: true } );
+	//this.material = new THREE.PointCloudMaterial( { size: 0.01, vertexColors: true } );
 	this.material = material;
 	this.maxVisibleNodes = 300;
 	this.level = 0;
@@ -141,9 +146,10 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 	
 	var groot = this.pcoGeometry.root;
 	if(groot != undefined && groot.loaded == true && this.root === undefined){
-		var root = new THREE.ParticleSystem(groot.geometry, this.material);
+		var root = new THREE.PointCloud(groot.geometry, this.material);
 		root.level = 0;
 		root.name = groot.name;
+		root.numPoints = groot.numPoints;
 		root.boundingBox = groot.boundingBox;
 		this.add(root);
 		this.root = root;
@@ -153,6 +159,7 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 				var child = groot.children[i];
 				var childProxy = new Potree.PointCloudOctreeProxyNode(child);
 				childProxy.level = child.level;
+				childProxy.numPoints = child.numPoints;
 				root.add(childProxy);
 			}
 		}
@@ -160,7 +167,7 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 		var _this = this;
 		this.traverseBreadthFirst(function(object){
 			
-			if(object instanceof THREE.ParticleSystem){
+			if(object instanceof THREE.PointCloud){
 //			var distance = new THREE.Vector3().subVectors(camera.position, object.position).length();
 				var boxWorld = Potree.utils.computeTransformedBoundingBox(object.boundingBox, object.matrixWorld);
 				var camWorldPos = new THREE.Vector3().setFromMatrixPosition( camera.matrixWorld );
@@ -191,11 +198,14 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 				if(!visible){
 					return false;
 				}
+				
+				pointsVisible += object.numPoints;
 			}else if (object instanceof Potree.PointCloudOctreeProxyNode) {
 				_this.replaceProxy(object);
 			}
 			
 			octreeNodesVisible++;
+			
 			return true;
 		});
 		
@@ -210,9 +220,10 @@ Potree.PointCloudOctree.prototype.replaceProxy = function(proxy){
 	var geometryNode = proxy.geometryNode;
 	if(geometryNode.loaded === true){
 		var geometry = geometryNode.geometry;
-		var node = new THREE.ParticleSystem(geometry, this.material);
+		var node = new THREE.PointCloud(geometry, this.material);
 		node.name = proxy.name;
 		node.level = proxy.level;
+		node.numPoints = proxy.numPoints;
 		node.boundingBox = geometry.boundingBox;
 		var parent = proxy.parent;
 		parent.remove(proxy);
@@ -250,6 +261,7 @@ Potree.PointCloudOctree.prototype.replaceProxy = function(proxy){
 				var childProxy = new Potree.PointCloudOctreeProxyNode(child);
 				childProxy.name = child.name;
 				childProxy.level = child.level;
+				childProxy.numPoints = child.numPoints;
 				node.add(childProxy);
 			}
 		}
@@ -275,61 +287,6 @@ THREE.Object3D.prototype.traverseBreadthFirst = function(callback){
 		}
 	}
 }
-
-
-
-/**
- * see http://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
- */
-THREE.Ray.prototype.intersectParticleSystem = function(points, eps){
-	var geometry = points.geometry;
-	var attributes = geometry.attributes;
-	var positions = attributes.position.array;
-	var n = positions.length;
-	console.log("testing " + n + " points");
-	
-//	var P = [0,0,0];
-//	var O = [this.origin.x, this.origin.y, this.origin.z];
-//	var N = [this.direction.x, this.direction.y, this.direction.z];
-	var P = new THREE.Vector3();
-	var O = this.origin;
-	var N = this.direction;
-	var tmp1 = new THREE.Vector3();
-	var tmp2 = new THREE.Vector3();
-	var PO = new THREE.Vector3();
-	var nearest = Infinity;
-	for(var i = 0; i < n; i++){
-		P.x = positions[i*3+0];
-		P.y = positions[i*3+1];
-		P.z = positions[i*3+2];
-		
-		PO.subVectors(O,P);
-		tmp1.copy(PO).dot(N).multiply(N);
-		tmp2.subVectors(PO, tmp1);
-		var distance = tmp2.length();
-		if(distance < eps){
-			nearest = Math.min(nearest, PO.length());
-		}
-	}
-	
-	return nearest;
-}
-
-//THREE.Object3D.prototype.traverse = function(callback){
-//	var stack = [];
-//	stack.push(this);
-//	
-//	while(stack.length > 0){
-//		var current = stack.pop();
-//		
-//		callback(current);
-//		
-//		for(var i = 0; i < current.children.length; i++){
-//			stack.push(current.children[i]);
-//		}
-//	}
-//}
-
 
 
 

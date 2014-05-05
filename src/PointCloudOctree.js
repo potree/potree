@@ -49,18 +49,12 @@ Potree.PointCloudOctreeGeometryNode.prototype.load = function(){
 }
 
 Potree.PointCloudOctreeGeometryNode.prototype.bufferLoaded = function(buffer){
-//	var start = new Date().getTime();
 	
 	var geometry = new THREE.BufferGeometry();
 	var numPoints = buffer.byteLength / 16;
 	
-//	geometry.addAttribute('position', Float32Array, numPoints*3, 3);
-//	geometry.addAttribute('color', Float32Array, numPoints*3, 3);
-	
 	var positions = new Float32Array(numPoints*3);
 	var colors = new Float32Array(numPoints*3);
-//	var positions = geometry.attributes.position.array;
-//	var colors = geometry.attributes.color.array;
 	var color = new THREE.Color();
 	
 	var fView = new Float32Array(buffer);
@@ -84,10 +78,6 @@ Potree.PointCloudOctreeGeometryNode.prototype.bufferLoaded = function(buffer){
 	this.loaded = true;
 	this.loading = false;
 	this.pcoGeometry.numNodesLoading--;
-	
-//	var end = new Date().getTime();
-//	var time = end - start;
-//	console.log('bufferLoaded duration: ' + time);
 }
 
 
@@ -128,7 +118,6 @@ Potree.PointCloudOctree = function(geometry, material){
 	
 	this.pcoGeometry = geometry;
 	this.boundingBox = this.pcoGeometry.boundingBox;
-	//this.material = new THREE.PointCloudMaterial( { size: 0.01, vertexColors: true } );
 	this.material = material;
 	this.maxVisibleNodes = 300;
 	this.level = 0;
@@ -160,6 +149,7 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 				var childProxy = new Potree.PointCloudOctreeProxyNode(child);
 				childProxy.level = child.level;
 				childProxy.numPoints = child.numPoints;
+				childProxy.name = child.name;
 				root.add(childProxy);
 			}
 		}
@@ -168,14 +158,12 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 		this.traverseBreadthFirst(function(object){
 			
 			if(object instanceof THREE.PointCloud){
-//			var distance = new THREE.Vector3().subVectors(camera.position, object.position).length();
 				var boxWorld = Potree.utils.computeTransformedBoundingBox(object.boundingBox, object.matrixWorld);
 				var camWorldPos = new THREE.Vector3().setFromMatrixPosition( camera.matrixWorld );
 				var bbWorldPos = object.boundingBox.center();
 				bbWorldPos.applyMatrix4(object.matrixWorld);
 				var distance = new THREE.Vector3().subVectors(camWorldPos, bbWorldPos).length();
 				if(object.level == 0) distance = 0;
-//				distance = distance - object.boundingBox.size().length()/2;
 				
 				var visible = true; 
 				visible = visible && frustum.intersectsBox(boxWorld);
@@ -183,35 +171,16 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 				visible = visible && distance < _this.LODDistance / Math.pow(2, object.level);
 				object.visible = visible;
 				
-				// change centre sphere properties
-//				if(object.sphere !== undefined){
-//					object.sphere.visible = object.visible;
-//					var d = Math.max(0,distance);
-//					d = d/30;
-//					d += 0;
-////					object.sphere.material.color = new THREE.Color().setRGB(d,d,d).getHex()
-//					object.sphere.material = new THREE.MeshBasicMaterial({ 
-//						color: new THREE.Color().setRGB(d,d,d).getHex(),
-//						shading: THREE.FlatShading
-//					});
-//				}
 				if(!visible){
 					return false;
 				}
-				
-				pointsVisible += object.numPoints;
 			}else if (object instanceof Potree.PointCloudOctreeProxyNode) {
 				_this.replaceProxy(object);
 			}
 			
-			octreeNodesVisible++;
-			
 			return true;
 		});
 		
-		//document.getElementById("lblNumVisibleNodes").innerHTML = "visible nodes: " + c;
-		
-//		console.log("visible nodes: " + c);
 	}
 }
 
@@ -228,32 +197,6 @@ Potree.PointCloudOctree.prototype.replaceProxy = function(proxy){
 		var parent = proxy.parent;
 		parent.remove(proxy);
 		parent.add(node);
-		
-		// show spheres at each node centre
-//		var sphereGeometry = new THREE.SphereGeometry(0.1);
-//		sphereGeometry.computeBoundingBox();
-//		var sphereMaterial = new THREE.MeshLambertMaterial({ color: 0xaaffaa});
-//		var sphereNode = new THREE.Mesh(sphereGeometry, sphereMaterial);
-//		sphereNode.boundingBox = sphereGeometry.boundingBox;
-//		sphereNode.position = node.boundingBox.center();
-//		node.add(sphereNode);
-//		node.sphere = sphereNode;
-		
-		// show bounding boxes
-//		var bb = THREE.Mesh.call( this, new THREE.BoxGeometry( 1, 1, 1 ), new THREE.MeshBasicMaterial( { color: #ffffff, wireframe: true } ) );
-//		var color;
-//		var index = geometryNode.index;
-//		if(index == 0) color = 0xff0000;
-//		if(index == 1) color = 0x00ff00;
-//		if(index == 2) color = 0x0000ff;
-//		if(index == 3) color = 0xffff00;
-//		if(index == 4) color = 0xff00ff;
-//		if(index == 5) color = 0x00ffff;
-//		if(index == 6) color = 0xaa00ff;
-//		if(index == 7) color = 0xffffff;
-//		var bh = new THREE.BoxHelper(node, color);
-//		bh.boundingBox = node.boundingBox;
-//		node.add(bh);
 		
 		for(var i = 0; i < 8; i++){
 			if(geometryNode.children[i] !== undefined){
@@ -290,6 +233,52 @@ THREE.Object3D.prototype.traverseBreadthFirst = function(callback){
 
 
 
+
+Potree.PointCloudOctree.prototype.intersect = function(origin, direction, renderer){
+	var intersects = [];
+	var geometry = this.root.geometry;
+	var threshold = raycaster.params.PointCloud.threshold;
+
+	var inverseMatrix = new THREE.Matrix4().getInverse( object.matrixWorld );  
+	localRay.copy( raycaster.ray ).applyMatrix4( inverseMatrix );
+	if(geometry.boundingBox !== null){
+		if ( localRay.isIntersectionBox( geometry.boundingBox ) === false )  {
+			return intersects;
+		}
+	}
+	
+	var positions = object.geometry.attributes.position.array;
+	var pos = new THREE.Vector3();
+
+	for (var i = 0; i < positions.length; i++ ) {
+
+		pos.set(
+			positions[3*i], 
+			positions[3*i+1], 
+			positions[3*i+2]
+		);
+
+		var distanceToRay = localRay.distanceToPoint( pos );
+
+		if ( distanceToRay < threshold ) {
+
+			var intersectionPoint = new THREE.Vector3().copy(pos).applyMatrix4(object.matrixWorld);
+
+			intersects.push( {
+
+				distance: localRay.origin.distanceTo(pos),
+				distanceToRay: distanceToRay,
+				point: intersectionPoint,
+				index: 3*i,
+				face: null,
+				object: object
+
+			} );
+		}
+	}
+	
+	return intersects;
+}
 
 
 

@@ -19,58 +19,41 @@
 		var cube;
 		var scene;
 		var pointCloud;
+		var cameraCube, sceneCube;
 		
+		/**
+		 * see three.js cubemap examples
+		 */ 
 		function loadSkybox(){
-			// load skybox
-			var cubeMap = new THREE.Texture( [] );
-			cubeMap.format = THREE.RGBFormat;
-			cubeMap.flipY = false;
+			cameraCube = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 100000 );
+			sceneCube = new THREE.Scene();
+		
+			var path = "../resources/textures/skybox/";
+			var format = ".jpg";
+			var urls = [
+				path + 'px' + format, path + 'nx' + format,
+				path + 'py' + format, path + 'ny' + format,
+				path + 'pz' + format, path + 'nz' + format
+			];
+			
+			var textureCube = THREE.ImageUtils.loadTextureCube( urls, new THREE.CubeRefractionMapping() );
+			var material = new THREE.MeshBasicMaterial( { color: 0xffffff, envMap: textureCube, refractionRatio: 0.95 } );
+			
+			var shader = THREE.ShaderLib[ "cube" ];
+			shader.uniforms[ "tCube" ].value = textureCube;
 
-			var loader = new THREE.ImageLoader();
-			loader.load( '../resources/textures/skyboxsun25degtest.png', function ( image ) {
+			var material = new THREE.ShaderMaterial( {
 
-				var getSide = function ( x, y ) {
-
-					var size = 1024;
-
-					var canvas = document.createElement( 'canvas' );
-					canvas.width = size;
-					canvas.height = size;
-
-					var context = canvas.getContext( '2d' );
-					context.drawImage( image, - x * size, - y * size );
-
-					return canvas;
-
-				};
-
-				cubeMap.image[ 0 ] = getSide( 2, 1 ); // px
-				cubeMap.image[ 1 ] = getSide( 0, 1 ); // nx
-				cubeMap.image[ 2 ] = getSide( 1, 0 ); // py
-				cubeMap.image[ 3 ] = getSide( 1, 2 ); // ny
-				cubeMap.image[ 4 ] = getSide( 1, 1 ); // pz
-				cubeMap.image[ 5 ] = getSide( 3, 1 ); // nz
-				cubeMap.needsUpdate = true;
-
-			} );
-
-			var cubeShader = THREE.ShaderLib['cube'];
-			cubeShader.uniforms['tCube'].value = cubeMap;
-
-			var skyBoxMaterial = new THREE.ShaderMaterial( {
-				fragmentShader: cubeShader.fragmentShader,
-				vertexShader: cubeShader.vertexShader,
-				uniforms: cubeShader.uniforms,
+				fragmentShader: shader.fragmentShader,
+				vertexShader: shader.vertexShader,
+				uniforms: shader.uniforms,
 				depthWrite: false,
 				side: THREE.BackSide
-			});
 
-			var skyBox = new THREE.Mesh(
-				new THREE.BoxGeometry( 10000, 10000, 10000 ),
-				skyBoxMaterial
-			);
-			
-			scene.add( skyBox );
+			} ),
+
+			mesh = new THREE.Mesh( new THREE.BoxGeometry( 100, 100, 100 ), material );
+			sceneCube.add( mesh );
 		}
 		
 		function initThree(){
@@ -79,6 +62,7 @@
 
 			renderer = new THREE.WebGLRenderer();
 			renderer.setSize(window.innerWidth, window.innerHeight);
+			renderer.autoClear = false;
 			document.body.appendChild(renderer.domElement);
 			
 			loadSkybox();
@@ -144,6 +128,8 @@
 				}
 			} );
 
+			cameraCube.rotation.copy( camera.rotation );
+			renderer.render( sceneCube, cameraCube );
 			renderer.render(scene, camera);
 			
 		};

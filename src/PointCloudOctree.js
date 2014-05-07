@@ -123,6 +123,7 @@ Potree.PointCloudOctree = function(geometry, material){
 	this.level = 0;
 	
 	this.LODDistance = 20;
+	this.LODFalloff = 1.3;
 }
 
 Potree.PointCloudOctree.prototype = Object.create(THREE.Object3D.prototype);
@@ -168,7 +169,7 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 				var visible = true; 
 				visible = visible && frustum.intersectsBox(boxWorld);
 //				visible = visible && c < _this.maxVisibleNodes;
-				visible = visible && distance < _this.LODDistance / Math.pow(2, object.level);
+				visible = visible && distance < _this.LODDistance / Math.pow(_this.LODFalloff, object.level);
 				object.visible = visible;
 				
 				if(!visible){

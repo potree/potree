@@ -18807,6 +18807,7 @@ THREE.ShaderLib = {
 			"	#else",
 			"		gl_PointSize = size;",
 			"	#endif",
+			"   gl_PointSize = max( gl_PointSize, 2.0 );",
 
 			"	gl_Position = projectionMatrix * mvPosition;",
 

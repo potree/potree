@@ -124,7 +124,7 @@ Potree.PointCloudOctree = function(geometry, material){
 	
 	this.LODDistance = 20;
 	this.LODFalloff = 1.3;
-	this.LODFactor = 4;
+	this.LOD = 4;
 }
 
 Potree.PointCloudOctree.prototype = Object.create(THREE.Object3D.prototype);
@@ -175,10 +175,11 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 			
 			var visible = true; 
 			visible = visible && frustum.intersectsBox(boxWorld);
-			visible = visible && radius / distance > (1 / this.LODFactor);
+			visible = visible && radius / distance > (1 / this.LOD);
 			object.visible = visible;
 			
 			if(!visible){
+				this.hideDescendants(object);
 				continue;
 			}
 			
@@ -196,35 +197,6 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 				stack.push(object.children[i]);
 			}
 		}
-		
-		//this.traverseBreadthFirst(function(object){
-		//	
-		//	var boxWorld = Potree.utils.computeTransformedBoundingBox(object.boundingBox, object.matrixWorld);
-		//	var camWorldPos = new THREE.Vector3().setFromMatrixPosition( camera.matrixWorld );
-		//	var bbWorldPos = object.boundingBox.center();
-		//	bbWorldPos.applyMatrix4(object.matrixWorld);
-		//	var distance = new THREE.Vector3().subVectors(camWorldPos, bbWorldPos).length();
-		//	if(object.level == 0) distance = 0;
-		//	
-		//	var visible = true; 
-		//	visible = visible && frustum.intersectsBox(boxWorld);
-//		//	visible = visible && c < _this.maxVisibleNodes;
-		//	visible = visible && distance < _this.LODDistance / Math.pow(_this.LODFalloff, object.level);
-		//	object.visible = visible;
-		//	
-		//	if(!visible){
-		//		return false;
-		//	}
-		//	
-		//	if(object instanceof THREE.PointCloud){
-		//		_this.numVisibleNodes++;
-		//		_this.numVisiblePoints += object.numPoints;
-		//	}else if (object instanceof Potree.PointCloudOctreeProxyNode) {
-		//		_this.replaceProxy(object);
-		//	}
-		//	
-		//	return true;
-		//});
 		
 	}
 }
@@ -258,72 +230,49 @@ Potree.PointCloudOctree.prototype.replaceProxy = function(proxy){
 	}
 }
 
-THREE.Object3D.prototype.traverseBreadthFirst = function(callback){
+Potree.PointCloudOctree.prototype.hideDescendants = function(object){
 	var stack = [];
-	stack.push(this);
+	for(var i = 0; i < object.children.length; i++){
+		var child = object.children[i];
+		if(child.visible){
+			stack.push(child);
+		}
+	}
 	
 	while(stack.length > 0){
-		var current = stack.shift();
+		var object = stack.shift();
 		
-		var accepted = callback(current);
-		if(!accepted){
-			continue;
-		}
+		object.visible = false;
 		
-		for(var i = 0; i < current.children.length; i++){
-			stack.push(current.children[i]);
+		for(var i = 0; i < object.children.length; i++){
+			var child = object.children[i];
+			if(child.visible){
+				stack.push(child);
+			}
 		}
 	}
 }
 
+//THREE.Object3D.prototype.traverseBreadthFirst = function(callback){
+//	var stack = [];
+//	stack.push(this);
+//	
+//	while(stack.length > 0){
+//		var current = stack.shift();
+//		
+//		var accepted = callback(current);
+//		if(!accepted){
+//			continue;
+//		}
+//		
+//		for(var i = 0; i < current.children.length; i++){
+//			stack.push(current.children[i]);
+//		}
+//	}
+//}
 
 
 
-Potree.PointCloudOctree.prototype.intersect = function(origin, direction, renderer){
-	var intersects = [];
-	var geometry = this.root.geometry;
-	var threshold = raycaster.params.PointCloud.threshold;
-
-	var inverseMatrix = new THREE.Matrix4().getInverse( object.matrixWorld );  
-	localRay.copy( raycaster.ray ).applyMatrix4( inverseMatrix );
-	if(geometry.boundingBox !== null){
-		if ( localRay.isIntersectionBox( geometry.boundingBox ) === false )  {
-			return intersects;
-		}
-	}
-	
-	var positions = object.geometry.attributes.position.array;
-	var pos = new THREE.Vector3();
-
-	for (var i = 0; i < positions.length; i++ ) {
-
-		pos.set(
-			positions[3*i], 
-			positions[3*i+1], 
-			positions[3*i+2]
-		);
-
-		var distanceToRay = localRay.distanceToPoint( pos );
-
-		if ( distanceToRay < threshold ) {
-
-			var intersectionPoint = new THREE.Vector3().copy(pos).applyMatrix4(object.matrixWorld);
-
-			intersects.push( {
-
-				distance: localRay.origin.distanceTo(pos),
-				distanceToRay: distanceToRay,
-				point: intersectionPoint,
-				index: 3*i,
-				face: null,
-				object: object
-
-			} );
-		}
-	}
-	
-	return intersects;
-}
 
 
 

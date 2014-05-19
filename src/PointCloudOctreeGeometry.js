@@ -2,6 +2,8 @@
 
 
 Potree.PointCloudOctreeGeometry = function(){
+	Potree.PointCloudOctree.lru = Potree.PointCloudOctree.lru || new LRU();
+
 	this.numNodesLoading = 0;
 }
 
@@ -26,8 +28,8 @@ Potree.PointCloudOctreeGeometryNode.prototype.load = function(){
 		return;
 	}
 	
-	if(Potree.lru.numPoints + this.numPoints >= Potree.pointLoadLimit){
-		Potree.removeLeastRecentlyUsed(this.numPoints);
+	if(Potree.PointCloudOctree.lru.numPoints + this.numPoints >= Potree.pointLoadLimit){
+		Potree.PointCloudOctree.disposeLeastRecentlyUsed(this.numPoints);
 	}
 	
 	

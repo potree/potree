@@ -29,6 +29,8 @@ Potree.PointCloudOctreeProxyNode.prototype = Object.create(THREE.Object3D.protot
 Potree.PointCloudOctree = function(geometry, material){
 	THREE.Object3D.call( this );
 	
+	Potree.PointCloudOctree.lru = Potree.PointCloudOctree.lru || new LRU();
+	
 	this.pcoGeometry = geometry;
 	this.boundingBox = this.pcoGeometry.boundingBox;
 	this.material = material;
@@ -88,7 +90,7 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 		if(object instanceof THREE.PointCloud){
 			this.numVisibleNodes++;
 			this.numVisiblePoints += object.numPoints;
-			Potree.lru.touch(object);
+			Potree.PointCloudOctree.lru.touch(object);
 		}else if (object instanceof Potree.PointCloudOctreeProxyNode) {
 			this.replaceProxy(object);
 		}
@@ -148,4 +150,62 @@ Potree.PointCloudOctree.prototype.hideDescendants = function(object){
 			}
 		}
 	}
+}
+
+
+
+/**
+ *
+ * amount: minimum number of points to remove
+ */
+Potree.PointCloudOctree.disposeLeastRecentlyUsed = function(amount){
+	
+	
+	var freed = 0;
+	do{
+		var node = this.lru.first.node;
+		var parent = node.parent;
+		var geometry = node.geometry;
+		var pcoGeometry = node.pcoGeometry;
+		var proxy = new Potree.PointCloudOctreeProxyNode(pcoGeometry);
+	
+		var result = Potree.PointCloudOctree.disposeNode(node);
+		freed += result.freed;
+		
+		parent.add(proxy);
+		
+		if(result.numDeletedNodes == 0){
+			break;
+		}
+	}while(freed < amount);
+}
+
+Potree.PointCloudOctree.disposeNode = function(node){
+	
+	var freed = 0;
+	var numDeletedNodes = 0;
+	var descendants = [];
+	
+	node.traverse(function(object){
+		descendants.push(object);
+	});
+	
+	for(var i = 0; i < descendants.length; i++){
+		var descendant = descendants[i];
+		if(descendant instanceof THREE.PointCloud){
+			freed += descendant.pcoGeometry.numPoints;
+			descendant.pcoGeometry.dispose();
+			descendant.geometry.dispose();
+			Potree.PointCloudOctree.lru.remove(descendant);
+			numDeletedNodes++;
+		}
+	}
+	
+	Potree.PointCloudOctree.lru.remove(node);
+	node.parent.remove(node);
+	
+	return {
+		"freed": freed,
+		"numDeletedNodes": numDeletedNodes
+	};
 }

@@ -1,92 +1,5 @@
 
 
-
-
-Potree.PointCloudOctreeGeometry = function(){
-	this.numNodesLoading = 0;
-}
-
-Potree.PointCloudOctreeGeometryNode = function(name, pcoGeometry, boundingBox){
-	this.name = name;
-	this.index = parseInt(name.charAt(name.length-1));
-	this.pcoGeometry = pcoGeometry;
-	this.boundingBox = boundingBox;
-	this.children = {};
-}
-
-Potree.PointCloudOctreeGeometryNode.prototype.addChild = function(child){
-	this.children[child.index] = child;
-	child.parent = this;
-}
-
-Potree.PointCloudOctreeGeometryNode.prototype.load = function(){
-	if(this.loading === true || this.pcoGeometry.numNodesLoading > 3){
-		return;
-	}
-	this.pcoGeometry.numNodesLoading++;
-	this.loading = true;
-	var url = this.pcoGeometry.octreeDir + "/" + this.name;
-	var node = this;
-	var xhr = new XMLHttpRequest();
-	xhr.open('GET', url, true);
-	xhr.responseType = 'arraybuffer';
-	xhr.overrideMimeType('text/plain; charset=x-user-defined');
-	xhr.onreadystatechange = function() {
-		if (xhr.readyState === 4) {
-			if (xhr.status === 200 || xhr.status === 0) {
-				var buffer = xhr.response;
-				node.bufferLoaded(buffer);
-			} else {
-				console.log('Failed to load file! HTTP status: ' + xhr.status + ", file: " + url);
-			}
-		}
-	};
-	try{
-		xhr.send(null);
-	}catch(e){
-		console.log("fehler beim laden der punktwolke: " + e);
-	}
-}
-
-Potree.PointCloudOctreeGeometryNode.prototype.bufferLoaded = function(buffer){
-	
-	var geometry = new THREE.BufferGeometry();
-	var numPoints = buffer.byteLength / 16;
-	
-	var positions = new Float32Array(numPoints*3);
-	var colors = new Float32Array(numPoints*3);
-	var color = new THREE.Color();
-	
-	var fView = new Float32Array(buffer);
-	var uiView = new Uint8Array(buffer);
-	
-	for(var i = 0; i < numPoints; i++){
-		positions[3*i] = fView[4*i];
-		positions[3*i+1] = fView[4*i+1];
-		positions[3*i+2] = fView[4*i+2];
-		
-		color.setRGB(uiView[16*i+12], uiView[16*i+13], uiView[16*i+14]);
-		colors[3*i] = color.r /255;
-		colors[3*i+1] = color.g / 255;
-		colors[3*i+2] = color.b / 255;
-	}
-	
-	geometry.addAttribute('position', new THREE.Float32Attribute(positions, 3));
-	geometry.addAttribute('color', new THREE.Float32Attribute(colors, 3));
-	geometry.boundingBox = this.boundingBox;
-	this.geometry = geometry;
-	this.loaded = true;
-	this.loading = false;
-	this.pcoGeometry.numNodesLoading--;
-}
-
-
-
-
-
-
-
-
 /**
  * Stands in place for invisible or unloaded octree nodes.
  * If a proxy node becomes visible and its geometry has not been loaded,
@@ -99,12 +12,12 @@ Potree.PointCloudOctreeProxyNode = function(geometryNode){
 	
 	this.geometryNode = geometryNode;
 	this.boundingBox = geometryNode.boundingBox;
+	this.name = geometryNode.name;
+	this.level = geometryNode.level;
+	this.numPoints = geometryNode.numPoints;
 }
 
 Potree.PointCloudOctreeProxyNode.prototype = Object.create(THREE.Object3D.prototype);
-
-
-
 
 
 
@@ -119,17 +32,20 @@ Potree.PointCloudOctree = function(geometry, material){
 	this.pcoGeometry = geometry;
 	this.boundingBox = this.pcoGeometry.boundingBox;
 	this.material = material;
-	this.maxVisibleNodes = 300;
+	this.maxVisibleNodes = 500;
+	this.maxVisiblePoints = 20*1000*1000;
 	this.level = 0;
 	
 	this.LODDistance = 20;
 	this.LODFalloff = 1.3;
 	this.LOD = 4;
+	
+	
+	var rootProxy = new Potree.PointCloudOctreeProxyNode(this.pcoGeometry.root);
+	this.add(rootProxy);
 }
 
 Potree.PointCloudOctree.prototype = Object.create(THREE.Object3D.prototype);
-
-abcd = null;
 
 Potree.PointCloudOctree.prototype.update = function(camera){
 	this.numVisibleNodes = 0;
@@ -137,69 +53,52 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 	var frustum = new THREE.Frustum();
 	frustum.setFromMatrix( new THREE.Matrix4().multiplyMatrices( camera.projectionMatrix, camera.matrixWorldInverse ) );
 	
-	var groot = this.pcoGeometry.root;
-	if(groot != undefined && groot.loaded == true && this.root === undefined){
-		var root = new THREE.PointCloud(groot.geometry, this.material);
-		root.level = 0;
-		root.name = groot.name;
-		root.numPoints = groot.numPoints;
-		root.boundingBox = groot.boundingBox;
-		this.add(root);
-		this.root = root;
+	// check visibility
+	var stack = [];
+	stack.push(this);
+	while(stack.length > 0){
+		var object = stack.shift();
 		
-		for(var i = 0; i < 8; i++){
-			if(groot.children[i] !== undefined){
-				var child = groot.children[i];
-				var childProxy = new Potree.PointCloudOctreeProxyNode(child);
-				childProxy.level = child.level;
-				childProxy.numPoints = child.numPoints;
-				childProxy.name = child.name;
-				root.add(childProxy);
-			}
-		}
-	}else{
-		var _this = this;
+		var boxWorld = Potree.utils.computeTransformedBoundingBox(object.boundingBox, object.matrixWorld);
+		var camWorldPos = new THREE.Vector3().setFromMatrixPosition( camera.matrixWorld );
+		var distance = boxWorld.center().distanceTo(camWorldPos);
+		var radius = boxWorld.size().length() * 0.5;
 		
-		var stack = [];
-		stack.push(this);
-		
-		while(stack.length > 0){
-			var object = stack.shift();
-			
-			
-			var boxWorld = Potree.utils.computeTransformedBoundingBox(object.boundingBox, object.matrixWorld);
-			var camWorldPos = new THREE.Vector3().setFromMatrixPosition( camera.matrixWorld );
-			var distance = object.level;
-			distance = boxWorld.center().distanceTo(camWorldPos);
-			var radius = boxWorld.size().length() * 0.5;
-			
-			var visible = true; 
-			visible = visible && frustum.intersectsBox(boxWorld);
+		var visible = true; 
+		visible = visible && frustum.intersectsBox(boxWorld);
+		if(object.level > 2){
 			visible = visible && radius / distance > (1 / this.LOD);
-			object.visible = visible;
-			
-			if(!visible){
-				this.hideDescendants(object);
-				continue;
-			}
-			
-			if(object instanceof THREE.PointCloud){
-				_this.numVisibleNodes++;
-				_this.numVisiblePoints += object.numPoints;
-			}else if (object instanceof Potree.PointCloudOctreeProxyNode) {
-				_this.replaceProxy(object);
-			}
-			
-			
-			
-			
-			for(var i = 0; i < object.children.length; i++){
-				stack.push(object.children[i]);
-			}
+			visible = visible && (this.numVisiblePoints + object.numPoints < Potree.pointLoadLimit);
+			visible = visible && (this.numVisibleNodes <= this.maxVisibleNodes);
+			visible = visible && (this.numVisiblePoints <= this.maxVisiblePoints);
+		}else{
+			visible = true;
 		}
 		
+		
+		
+		
+		object.visible = visible;
+		
+		if(!visible){
+			this.hideDescendants(object);
+			continue;
+		}
+		
+		if(object instanceof THREE.PointCloud){
+			this.numVisibleNodes++;
+			this.numVisiblePoints += object.numPoints;
+			Potree.lru.touch(object);
+		}else if (object instanceof Potree.PointCloudOctreeProxyNode) {
+			this.replaceProxy(object);
+		}
+		
+		for(var i = 0; i < object.children.length; i++){
+			stack.push(object.children[i]);
+		}
 	}
 }
+
 
 Potree.PointCloudOctree.prototype.replaceProxy = function(proxy){
 	
@@ -211,6 +110,7 @@ Potree.PointCloudOctree.prototype.replaceProxy = function(proxy){
 		node.level = proxy.level;
 		node.numPoints = proxy.numPoints;
 		node.boundingBox = geometry.boundingBox;
+		node.pcoGeometry = geometryNode;
 		var parent = proxy.parent;
 		parent.remove(proxy);
 		parent.add(node);
@@ -219,9 +119,6 @@ Potree.PointCloudOctree.prototype.replaceProxy = function(proxy){
 			if(geometryNode.children[i] !== undefined){
 				var child = geometryNode.children[i];
 				var childProxy = new Potree.PointCloudOctreeProxyNode(child);
-				childProxy.name = child.name;
-				childProxy.level = child.level;
-				childProxy.numPoints = child.numPoints;
 				node.add(childProxy);
 			}
 		}
@@ -252,36 +149,3 @@ Potree.PointCloudOctree.prototype.hideDescendants = function(object){
 		}
 	}
 }
-
-//THREE.Object3D.prototype.traverseBreadthFirst = function(callback){
-//	var stack = [];
-//	stack.push(this);
-//	
-//	while(stack.length > 0){
-//		var current = stack.shift();
-//		
-//		var accepted = callback(current);
-//		if(!accepted){
-//			continue;
-//		}
-//		
-//		for(var i = 0; i < current.children.length; i++){
-//			stack.push(current.children[i]);
-//		}
-//	}
-//}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

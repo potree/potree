@@ -26,7 +26,12 @@ POCLoader.load = function load(url) {
 		xhr.send(null);
 		if(xhr.status === 200 || xhr.status === 0){
 			var fMno = JSON.parse(xhr.responseText);
-			if(Potree.utils.pathExists(fMno.octreeDir + "/r")){
+            // Since PotreeConverter always create this file.
+			var txt = '/cloud.js';
+            var baseUrl = url.substring(0, url.length-txt.length);
+            if(Potree.utils.pathExists(baseUrl + "/" + fMno.octreeDir + "/r")){
+                pco.octreeDir = baseUrl + "/" + fMno.octreeDir;
+			}else if(Potree.utils.pathExists(fMno.octreeDir + "/r")){
 				pco.octreeDir = fMno.octreeDir;
 			}else{
 				pco.octreeDir = url + "/../" + fMno.octreeDir;

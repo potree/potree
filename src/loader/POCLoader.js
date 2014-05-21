@@ -31,7 +31,7 @@ POCLoader.load = function load(url) {
             var baseUrl = url.substring(0, url.length-txt.length);
             if(Potree.utils.pathExists(baseUrl + "/" + fMno.octreeDir + "/r")){
                 pco.octreeDir = baseUrl + "/" + fMno.octreeDir;
-			else if(Potree.utils.pathExists(fMno.octreeDir + "/r")){
+			}else if(Potree.utils.pathExists(fMno.octreeDir + "/r")){
 				pco.octreeDir = fMno.octreeDir;
 			}else{
 				pco.octreeDir = url + "/../" + fMno.octreeDir;

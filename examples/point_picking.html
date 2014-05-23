@@ -17,6 +17,9 @@
 var renderer;
 var camera;
 var scene;
+var pickLocation;
+var mouse = { x: 1, y: 1 };
+var projector, raycaster;
 
 function generatePointcloud(){
 	var geometry = new THREE.BufferGeometry();
@@ -64,6 +67,9 @@ function generatePointcloud(){
 function init() {
 	scene = new THREE.Scene();
 	camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+	
+	projector = new THREE.Projector();
+	raycaster = new THREE.Raycaster();
 
 	renderer = new THREE.WebGLRenderer();
 	renderer.setSize(window.innerWidth, window.innerHeight);
@@ -72,15 +78,42 @@ function init() {
 	pointcloud = generatePointcloud();
 	scene.add(pointcloud);
 	
+	var sphereGeometry = new THREE.SphereGeometry(0.1, 32, 32);
+	var sphereMaterial = new THREE.MeshBasicMaterial({color: 0xff0000, shading: THREE.FlatShading});
+	pickLocation = new THREE.Mesh(sphereGeometry, sphereMaterial);
+	scene.add(pickLocation);
+	
 	// controls
 	camera.position.set(5,5,2);
 	controls = new THREE.OrbitControls(camera);
 	controls.target.set( 0, 0, 0 );
 	camera.lookAt(new THREE.Vector3(0,0,0));
+	
+	document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+}
+
+function onDocumentMouseMove( event ) {
+	event.preventDefault();
+
+	mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+	mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
 }
 
 function render() {			
 	requestAnimationFrame(render);
+	
+	camera.updateMatrixWorld(true);
+	
+	vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
+	projector.unprojectVector( vector, camera );
+	raycaster.params = {"PointCloud" : {threshold: 0.1}};
+	raycaster.ray.set( camera.position, vector.sub( camera.position ).normalize() );
+	
+	var intersects = raycaster.intersectObject(pointcloud);
+	if(intersects.length > 0){
+		var I = intersects[0];
+		pickLocation.position = I.point;
+	}
 
 	renderer.render(scene, camera);
 };

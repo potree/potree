@@ -24,9 +24,7 @@ This is what the lion demo looks like:
 ## Convert Your Own Pointclouds
 Use the PotreeConverter to convert your own point clouds into the potree format.
 
-* PotreeConverter binaries for windows are available here:
-http://potree.org/downloads/PotreeConverter_2014.04.06.zip
-* PotreeConverter source is available here:
+PotreeConverter source code and binaries for windows are available here:
 https://github.com/potree/PotreeConverter
 
 ## Compatibility

@@ -52,7 +52,7 @@
 			var pco = POCLoader.load("../resources/pointclouds/lion_takanawa/cloud.js");
 			
 			pointCloud = new Potree.PointCloudOctree(pco, material);
-			pointCloud.LODDistance = 80;
+			pointCloud.LOD = 15;
 			pointCloud.rotation.x = Math.PI;
 			pointCloud.position.x = 8;
 			pointCloud.position.z = -2;

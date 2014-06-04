@@ -59,7 +59,7 @@ function init() {
 	var material = new THREE.PointCloudMaterial( { size: 0.02, vertexColors: true } );
 	var pco = POCLoader.load("../resources/pointclouds/lion_takanawa/cloud.js");
 	pointcloud = new Potree.PointCloudOctree(pco, material);
-	pointcloud.LODDistance = 80;
+	pointcloud.LOD = 15;
 	pointcloud.rotation.x = Math.PI;
 	pointcloud.position.x = 8;
 	pointcloud.position.z = -2;

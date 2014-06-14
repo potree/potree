@@ -36,10 +36,10 @@ indicate which child it is.
 
 Child nodes are arranged like this:
 
-				    3----7
-			       /|   /|
+				  3----7
+				 /|   /|
     y 			2----6 |
-    | -z		  | 1--|-5
+    | -z		| 1--|-5
     |/			|/   |/
     O----x		0----4
 
@@ -65,31 +65,33 @@ necessary so that parsers know how to interpret the data.
 * __hiearchy__ - Contains all nodes and the number of points in each node.
 The nodes must be stored top to bottom, i.e. root at the beginning and leaf-nodes at the end.
 
-      {
-    	"version": "1.1",
-    	"octreeDir": "data",
-    	"boundingBox": {
-    		"lx": -10.0,
-    		"ly": -10.0,
-    		"lz": -10.0,
-    		"ux": 10.0,
-    		"uy": 10.0,
-    		"uz": 10.0
-    	},
-    	"pointAttributes": [
-    		"POSITION_CARTESIAN",
-    		"COLOR_PACKED"
-    	],
-      "spacing": 0.075,
-    	"hierarchy": [
-    		["r", 9103],
-    		["r0", 7809],
-    		["r1", 3491],
-    		["r3", 4309],
-    		["r03", 8521]
-    	]
-      }
 
+     	{
+     	"version": "1.1",
+     	"octreeDir": "data",
+     	"boundingBox": {
+     		"lx": -10.0,
+     		"ly": -10.0,
+     		"lz": -10.0,
+     		"ux": 10.0,
+     		"uy": 10.0,
+     		"uz": 10.0
+     	},
+     	"pointAttributes": [
+     		"POSITION_CARTESIAN",
+     		"COLOR_PACKED"
+     	],
+     	"spacing": 0.075,
+     	"hierarchy": [
+     		["r", 9103],
+     		["r0", 7809],
+     		["r1", 3491],
+     		["r3", 4309],
+     		["r03", 8521]
+     	]
+     	}
+
+    
 ## Node-Files
 
 The node files in the data directory contain the point data.

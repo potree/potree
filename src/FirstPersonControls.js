@@ -171,6 +171,14 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 			}
 		}
 		
+		if(!pan.equals(new THREE.Vector3(0,0,0))){
+			var event = {
+				type: 'move',
+				translation: pan.clone()
+			};
+			this.dispatchEvent(event);
+		}
+		
 		position.add(pan);
 		
 		this.object.updateMatrix();

@@ -21,7 +21,7 @@ THREE.PerspectiveCamera.prototype.zoomTo = function(node){
 	];
 	
 	var frustum = new THREE.Frustum();
-	frustum.setFromMatrix(new THREE.Matrix4().multiply(this.projectionMatrix, this.matrixWorldInverse));
+	frustum.setFromMatrix(new THREE.Matrix4().multiplyMatrices(this.projectionMatrix, this.matrixWorldInverse));
 	
 	var max = Number.MIN_VALUE;
 	for(var i = 0; i < ps.length; i++){

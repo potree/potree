@@ -1,6 +1,11 @@
 
 # Getting Started
 
+## Converting A Point Cloud
+
+Potree requires a special point cloud format. Use the PotreeConverter to convert las, ply or xyz files into this format.
+See [PotreeConverter - usage](https://github.com/potree/PotreeConverter)
+
 ## Including Source Files
 
 This example needs three.js, OrbitControls.js, and the potree source files:

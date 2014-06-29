@@ -52,22 +52,32 @@ Potree.PointCloudOctree.prototype = Object.create(THREE.Object3D.prototype);
 Potree.PointCloudOctree.prototype.update = function(camera){
 	this.numVisibleNodes = 0;
 	this.numVisiblePoints = 0;
-	var frustum = new THREE.Frustum();
-	frustum.setFromMatrix( new THREE.Matrix4().multiplyMatrices( camera.projectionMatrix, camera.matrixWorldInverse ) );
 	
+	// create frustum in object space
+	var frustum = new THREE.Frustum();
+	var viewI = camera.matrixWorldInverse;
+	var world = this.matrixWorld;
+	var proj = camera.projectionMatrix;
+	var fm = new THREE.Matrix4().multiply(proj).multiply(viewI).multiply(world);
+	frustum.setFromMatrix( fm );
+	
+	// calculate camera position in object space
+	var view = camera.matrixWorld;
+	var worldI = new THREE.Matrix4().getInverse(world);
+	var camMatrixObject = new THREE.Matrix4().multiply(worldI).multiply(view);
+	var camObjPos = new THREE.Vector3().setFromMatrixPosition( camMatrixObject );
 	// check visibility
 	var stack = [];
 	stack.push(this);
 	while(stack.length > 0){
 		var object = stack.shift();
 		
-		var boxWorld = Potree.utils.computeTransformedBoundingBox(object.boundingBox, object.matrixWorld);
-		var camWorldPos = new THREE.Vector3().setFromMatrixPosition( camera.matrixWorld );
-		var distance = boxWorld.center().distanceTo(camWorldPos);
-		var radius = boxWorld.size().length() * 0.5;
-		
-		var visible = true; 
-		visible = visible && frustum.intersectsBox(boxWorld);
+		var box = object.boundingBox;
+		var distance = box.center().distanceTo(camObjPos);
+		var radius = box.size().length() * 0.5;
+
+		var visible = true;
+		visible = visible && frustum.intersectsBox(box);
 		if(object.level > 1){
 			visible = visible && radius / distance > (1 / this.LOD);
 			visible = visible && (this.numVisiblePoints + object.numPoints < Potree.pointLoadLimit);
@@ -76,10 +86,6 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 		}else{
 			visible = true;
 		}
-		
-		
-		
-		
 		object.visible = visible;
 		
 		if(!visible){

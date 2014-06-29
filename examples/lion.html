@@ -2,131 +2,208 @@
 
 <html>
 <head>
-	<title>lion</title>
+	<title>Lion</title>
 	<style>canvas { width: 100%; height: 100% }</style>
 </head>
 <body style="margin: 0; padding: 0">
+
+	<style type="text/css">
+	
+	.info{
+		color:white;
+		font-weight: bold;
+		text-shadow:  1px  1px 1px black,
+					  1px -1px 1px black,
+					 -1px  1px 1px black,
+					 -1px -1px 1px black;
+	}
+	
+	a:hover, a:visited, a:link, a:active{
+		color: #ccccff;
+		text-decoration: none;
+	}
+	
+	</style>
+
 	<script src="../libs/three.js/build/three.js"></script>
 	<script src="../libs/other/OrbitControls.js"></script>
+	<script src="../libs/other/stats.min.js"></script>
+	<script src="../libs/other/dat.gui.min.js"></script>
 	<script src="../src/Potree.js"></script>
-	<script src="../src/PointCloudOctree.js"></script>
 	<script src="../src/PointCloudOctreeGeometry.js"></script>
+	<script src="../src/PointCloudOctree.js"></script>
 	<script src="../src/loader/POCLoader.js"></script>
 	<script src="../src/loader/PointAttributes.js"></script>
 	<script src="../src/utils.js"></script>
 	<script src="../src/LRU.js"></script>
+
+	
+	
+	<div id="lblNumVisibleNodes" class="info" style="position: absolute; left: 10px; top: 80px; width: 400px; color:white"></div>
+	<div id="lblNumVisiblePoints" class="info" style="position: absolute; left: 10px; top: 100px; width: 400px; color:white"></div>
+	
+	<div class="info" style="position: absolute; left: 300px; right: 300px; top: 10px; text-align: center;">
+		<a href="http://potree.org" target="_blank">potree.org</a><br>
+	</div>
+	
 	<script>
+		var defaultPointSize = 0.03;
+		var defaultLOD = 15;
+		var pointcloudPath = "../resources/pointclouds/lion_takanawa/cloud.js";
+	
 		var renderer;
 		var camera;
 		var cube;
 		var scene;
-		var octreeNodesVisible = 0;
-		var pointsVisible = 0;
-		var pointCloud;
-		var pointClouds = [];
+		var pointclouds = [];
+		var cameraCube, sceneCube;
+		var stats;
+		var pointcloudMaterial;
+		
+		function loadSkybox(){
+			cameraCube = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 100000 );
+			sceneCube = new THREE.Scene();
+		
+			var path = "../resources/textures/skybox/";
+			var format = ".jpg";
+			var urls = [
+				path + 'px' + format, path + 'nx' + format,
+				path + 'py' + format, path + 'ny' + format,
+				path + 'pz' + format, path + 'nz' + format
+			];
+			
+			var textureCube = THREE.ImageUtils.loadTextureCube( urls, new THREE.CubeRefractionMapping() );
+			var material = new THREE.MeshBasicMaterial( { color: 0xffffff, envMap: textureCube, refractionRatio: 0.95 } );
+			
+			var shader = THREE.ShaderLib[ "cube" ];
+			shader.uniforms[ "tCube" ].value = textureCube;
+
+			var material = new THREE.ShaderMaterial( {
+
+				fragmentShader: shader.fragmentShader,
+				vertexShader: shader.vertexShader,
+				uniforms: shader.uniforms,
+				depthWrite: false,
+				side: THREE.BackSide
+
+			} ),
+
+			mesh = new THREE.Mesh( new THREE.BoxGeometry( 100, 100, 100 ), material );
+			sceneCube.add( mesh );
+		}
+		
+		function initGUI(){
+			var gui = new dat.GUI({
+				height : 5 * 32 - 1
+			});
+			
+			var params = {
+				PointSize: defaultPointSize,
+				LOD: defaultLOD
+			};
+			
+			var pLOD = gui.add(params, 'LOD', 0.5,20);
+			pLOD.onChange(function(value){
+				//pointCloud.LOD = value;
+				for(var i = 0; i < pointclouds.length; i++){
+					pointclouds[i].LOD = value;
+				}
+			});
+			
+			var pPointSize = gui.add(params, 'PointSize', 0.01, 0.1);
+			pPointSize.onChange(function(value){
+				pointcloudMaterial.size = value;
+			});
+		}
 		
 		function initThree(){
+			stats = new Stats();
+			stats.domElement.style.position = 'absolute';
+			stats.domElement.style.top = '0px';
+			stats.domElement.style.margin = '5px';
+			document.body.appendChild( stats.domElement );
+		
 			scene = new THREE.Scene();
-			camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+			camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 100000);
 
 			renderer = new THREE.WebGLRenderer();
 			renderer.setSize(window.innerWidth, window.innerHeight);
+			renderer.autoClear = false;
 			document.body.appendChild(renderer.domElement);
+			
+			loadSkybox();
 
-			camera.position.z = 6;
-			camera.position.y = 4;
-			camera.position.x = 4;
-			
-			var pointLight = new THREE.PointLight(0xffffff);
-			pointLight.position.set(10, 10, 10);
-			scene.add(pointLight);
-			
-			var ambientLight = new THREE.AmbientLight(0x111111);
-		     scene.add(ambientLight);
-			
-			controls = new THREE.OrbitControls(camera);
+			// camera and controls
+			camera.position.z = 25;
+			camera.position.y = 10;
+			camera.position.x = 15;
+			controls = new THREE.OrbitControls(camera, renderer.domElement);
 			controls.target.set( 0, 3, 0 );
-			camera.lookAt(new THREE.Vector3(0,3,0));
+			camera.lookAt(controls.target);
 			
-			var material = new THREE.PointCloudMaterial( { size: 0.02, vertexColors: true } );
-			var pco = POCLoader.load("../resources/pointclouds/lion_takanawa/cloud.js");
+			pointcloudMaterial = new THREE.PointCloudMaterial( { size: defaultPointSize, vertexColors: true } );
 			
-			pointCloud = new Potree.PointCloudOctree(pco, material);
-			pointCloud.LODDistance = 80;
-			pointCloud.rotation.x = Math.PI;
-			pointCloud.position.x = 8;
-			pointCloud.position.z = -2;
-			pointCloud.position.y = 4;
-			scene.add(pointCloud);
+			//// load pointcloud
+			var pco = POCLoader.load(pointcloudPath);
+			//pointCloud = new Potree.PointCloudOctree(pco, pointcloudMaterial);
+			//pointCloud.LOD = defaultLOD;
+			//pointCloud.rotation.set(Math.PI,-1.2,0);
+			//pointCloud.moveToOrigin();
+			//pointCloud.moveToGroundPlane();
+			//scene.add(pointCloud);
 			
-			scene.add(createGrid(8,8,1));
+			for(var i = -2; i <= 2; i++){
+				for(var j = -2; j <= 2; j++){
+					var pointcloud = new Potree.PointCloudOctree(pco, pointcloudMaterial);
+					pointcloud.LOD = defaultLOD;
+					//pointcloud.rotation.set(Math.PI,-1.2,0);
+					pointcloud.rotation.set(Math.PI/2, 0.85* -Math.PI/2, -0.0);
+					pointcloud.moveToOrigin();
+					pointcloud.moveToGroundPlane();
+					pointcloud.position.x += 8*i;
+					pointcloud.position.z += 8*j;
+					
+					pointclouds.push(pointcloud);
+					scene.add(pointcloud);
+				}
+			}
 		}
 		
-		function onDocumentMouseMove( event ) {
-			event.preventDefault();
-	
-			mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-			mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-		}
-		
-		function createGrid(width, length, spacing){
-			var material = new THREE.LineBasicMaterial({
-		        color: 0xBBBBBB
-		    });
-			
-			var geometry = new THREE.Geometry();
-		    for(var i = 0; i <= length; i++){
-		    	 geometry.vertices.push(new THREE.Vector3(-(spacing*width)/2, 0, i*spacing-(spacing*length)/2));
-				 geometry.vertices.push(new THREE.Vector3(+(spacing*width)/2, 0, i*spacing-(spacing*length)/2));
-		    }
-		    
-		    for(var i = 0; i <= width; i++){
-		    	 geometry.vertices.push(new THREE.Vector3(i*spacing-(spacing*width)/2, 0, -(spacing*length)/2));
-				 geometry.vertices.push(new THREE.Vector3(i*spacing-(spacing*width)/2, 0, +(spacing*length)/2));
-		    }
-		    
-		    var line = new THREE.Line(geometry, material, THREE.LinePieces);
-		    line.receiveShadow = true;
-		    return line;
-		}
-		
-		
-		var toggle = 0;
 		function render() {
+					
 			requestAnimationFrame(render);
 			
-			octreeNodesVisible = 0;
-			pointsVisible = 0;
-			scene.traverse( function ( object ) {
-				if ( object instanceof Potree.PointCloudOctree ) {
-					object.update( camera );
-				}else if(object instanceof THREE.PointCloud){
-					if(object.visible){
-						octreeNodesVisible++;
-						pointsVisible += object.numPoints;
-					}
-				}
-			} );
-				
+			var numVisibleNodes = 0;
+			var numVisiblePoints = 0;
+			for(var i = 0; i < pointclouds.length; i++){
+				var pointcloud = pointclouds[i];
+				pointcloud.update(camera);
+				numVisibleNodes += pointcloud.numVisibleNodes;
+				numVisiblePoints += pointcloud.numVisiblePoints;
+			}
+			
+			// render skybox
+			cameraCube.rotation.copy( camera.rotation );
+			renderer.render( sceneCube, cameraCube );
+			
 			renderer.render(scene, camera);
 			
-			document.getElementById("lblNumVisibleNodes").innerHTML = "visible nodes: " + octreeNodesVisible;
-			document.getElementById("lblNumVisiblePoints").innerHTML = "visible points: " + pointsVisible;
+			document.getElementById("lblNumVisibleNodes").innerHTML = "visible nodes: " + numVisibleNodes;
+			document.getElementById("lblNumVisiblePoints").innerHTML = "visible points: " + Potree.utils.addCommas(numVisiblePoints);
+			
+			stats.update();
+			controls.update(0.1);
+			
 		};
 		
 		initThree();
+		initGUI();
 		render();
 		
 	</script>
 	
-	<div id="lblNumVisibleNodes" style="position: absolute; left: 10px; top: 20px; width: 400px; color:white"></div>
-	<div id="lblNumVisiblePoints" style="position: absolute; left: 10px; top: 40px; width: 400px; color:white"></div>
-	<div id="lblControl" style="position:absolute; left: 10px; top: 80px; width: 400px; color: white">
-	Orbit Controls:<br>
-	left mouse button: rotate object<br>
-	right mouse button: pan the screen<br>
-	scrool wheel: zoom in and out
-	</div>
+	
+	
 	
 </body>
 </html>

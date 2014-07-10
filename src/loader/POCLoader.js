@@ -32,6 +32,8 @@ POCLoader.load = function load(url) {
 				pco.octreeDir = url + "/../" + fMno.octreeDir;
 			}
 			
+			pco.spacing = fMno.spacing;
+			
 			var nodes = {};
 			
 			{ // load root

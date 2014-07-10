@@ -1,5 +1,9 @@
 
-THREE.PerspectiveCamera.prototype.zoomTo = function(node){
+THREE.PerspectiveCamera.prototype.zoomTo = function(node, factor){
+	if(factor === undefined){
+		factor = 1;
+	}
+
 	node.updateMatrixWorld();
 	this.updateMatrix();
 	this.updateMatrixWorld();
@@ -38,6 +42,7 @@ THREE.PerspectiveCamera.prototype.zoomTo = function(node){
 		max = Math.max(max, distance);
 	}
 	var offset = dir.clone().multiplyScalar(-max);
+	offset.multiplyScalar(factor);
 	pos.add(offset);
 	this.position.copy(pos);
 	

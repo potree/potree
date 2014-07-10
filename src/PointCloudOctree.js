@@ -19,13 +19,6 @@ Potree.PointCloudOctreeProxyNode = function(geometryNode){
 
 Potree.PointCloudOctreeProxyNode.prototype = Object.create(THREE.Object3D.prototype);
 
-
-
-
-
-
-
-
 Potree.PointCloudOctree = function(geometry, material){
 	THREE.Object3D.call( this );
 	

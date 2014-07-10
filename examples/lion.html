@@ -29,15 +29,7 @@
 	<script src="../libs/other/OrbitControls.js"></script>
 	<script src="../libs/other/stats.min.js"></script>
 	<script src="../libs/other/dat.gui.min.js"></script>
-	<script src="../src/Potree.js"></script>
-	<script src="../src/PointCloudOctreeGeometry.js"></script>
-	<script src="../src/PointCloudOctree.js"></script>
-	<script src="../src/loader/POCLoader.js"></script>
-	<script src="../src/loader/PointAttributes.js"></script>
-	<script src="../src/utils.js"></script>
-	<script src="../src/LRU.js"></script>
-
-	
+	<script src="../build/js/potree.min.js"></script>
 	
 	<div id="lblNumVisibleNodes" class="info" style="position: absolute; left: 10px; top: 80px; width: 400px; color:white"></div>
 	<div id="lblNumVisiblePoints" class="info" style="position: absolute; left: 10px; top: 100px; width: 400px; color:white"></div>
@@ -53,46 +45,15 @@
 	
 		var renderer;
 		var camera;
-		var cube;
 		var scene;
 		var pointclouds = [];
-		var cameraCube, sceneCube;
-		var stats;
 		var pointcloudMaterial;
-		
-		function loadSkybox(){
-			cameraCube = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 100000 );
-			sceneCube = new THREE.Scene();
-		
-			var path = "../resources/textures/skybox/";
-			var format = ".jpg";
-			var urls = [
-				path + 'px' + format, path + 'nx' + format,
-				path + 'py' + format, path + 'ny' + format,
-				path + 'pz' + format, path + 'nz' + format
-			];
-			
-			var textureCube = THREE.ImageUtils.loadTextureCube( urls, new THREE.CubeRefractionMapping() );
-			var material = new THREE.MeshBasicMaterial( { color: 0xffffff, envMap: textureCube, refractionRatio: 0.95 } );
-			
-			var shader = THREE.ShaderLib[ "cube" ];
-			shader.uniforms[ "tCube" ].value = textureCube;
-
-			var material = new THREE.ShaderMaterial( {
-
-				fragmentShader: shader.fragmentShader,
-				vertexShader: shader.vertexShader,
-				uniforms: shader.uniforms,
-				depthWrite: false,
-				side: THREE.BackSide
-
-			} ),
-
-			mesh = new THREE.Mesh( new THREE.BoxGeometry( 100, 100, 100 ), material );
-			sceneCube.add( mesh );
-		}
+		var skybox;
+		var stats;
 		
 		function initGUI(){
+		
+			// dat.gui
 			var gui = new dat.GUI({
 				height : 5 * 32 - 1
 			});
@@ -104,7 +65,6 @@
 			
 			var pLOD = gui.add(params, 'LOD', 0.5,20);
 			pLOD.onChange(function(value){
-				//pointCloud.LOD = value;
 				for(var i = 0; i < pointclouds.length; i++){
 					pointclouds[i].LOD = value;
 				}
@@ -114,15 +74,16 @@
 			pPointSize.onChange(function(value){
 				pointcloudMaterial.size = value;
 			});
-		}
-		
-		function initThree(){
+			
+			// stats
 			stats = new Stats();
 			stats.domElement.style.position = 'absolute';
 			stats.domElement.style.top = '0px';
 			stats.domElement.style.margin = '5px';
 			document.body.appendChild( stats.domElement );
+		}
 		
+		function initThree(){
 			scene = new THREE.Scene();
 			camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 100000);
 
@@ -131,26 +92,17 @@
 			renderer.autoClear = false;
 			document.body.appendChild(renderer.domElement);
 			
-			loadSkybox();
+			skybox = Potree.utils.loadSkybox("../resources/textures/skybox/");
 
 			// camera and controls
-			camera.position.z = 25;
-			camera.position.y = 10;
-			camera.position.x = 15;
+			camera.position.set(25, 10, 15);
 			controls = new THREE.OrbitControls(camera, renderer.domElement);
 			controls.target.set( 0, 3, 0 );
 			camera.lookAt(controls.target);
 			
+			// load pointcloud
 			pointcloudMaterial = new THREE.PointCloudMaterial( { size: defaultPointSize, vertexColors: true } );
-			
-			//// load pointcloud
 			var pco = POCLoader.load(pointcloudPath);
-			//pointCloud = new Potree.PointCloudOctree(pco, pointcloudMaterial);
-			//pointCloud.LOD = defaultLOD;
-			//pointCloud.rotation.set(Math.PI,-1.2,0);
-			//pointCloud.moveToOrigin();
-			//pointCloud.moveToGroundPlane();
-			//scene.add(pointCloud);
 			
 			for(var i = -2; i <= 2; i++){
 				for(var j = -2; j <= 2; j++){
@@ -173,6 +125,7 @@
 					
 			requestAnimationFrame(render);
 			
+			// update numbers
 			var numVisibleNodes = 0;
 			var numVisiblePoints = 0;
 			for(var i = 0; i < pointclouds.length; i++){
@@ -181,19 +134,18 @@
 				numVisibleNodes += pointcloud.numVisibleNodes;
 				numVisiblePoints += pointcloud.numVisiblePoints;
 			}
-			
-			// render skybox
-			cameraCube.rotation.copy( camera.rotation );
-			renderer.render( sceneCube, cameraCube );
-			
-			renderer.render(scene, camera);
-			
 			document.getElementById("lblNumVisibleNodes").innerHTML = "visible nodes: " + numVisibleNodes;
 			document.getElementById("lblNumVisiblePoints").innerHTML = "visible points: " + Potree.utils.addCommas(numVisiblePoints);
-			
 			stats.update();
+			
 			controls.update(0.1);
 			
+			// render skybox
+			skybox.camera.rotation.copy(camera.rotation);
+			renderer.render(skybox.scene, skybox.camera);
+			
+			// render scene
+			renderer.render(scene, camera);
 		};
 		
 		initThree();
@@ -201,9 +153,6 @@
 		render();
 		
 	</script>
-	
-	
-	
 	
 </body>
 </html>

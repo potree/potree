@@ -7,6 +7,15 @@
  
 	<style type="text/css">
 	 
+	.info{
+		color:white;
+		font-weight: bold;
+		text-shadow:  1px  1px 1px black,
+					  1px -1px 1px black,
+					 -1px  1px 1px black,
+					 -1px -1px 1px black;
+	}
+	 
 	#lblDistance{
 		color:white;
 		font-weight: bold;
@@ -14,8 +23,6 @@
 					  2px -2px 2px black,
 					 -2px  2px 2px black,
 					 -2px -2px 2px black;
-
-
 	} 
 	 </style>
 	 
@@ -23,13 +30,7 @@
 	<script src="../libs/other/OrbitControls.js"></script>
 	<script src="../libs/other/stats.min.js"></script>
 	<script src="../libs/other/dat.gui.min.js"></script>
-	<script src="../src/Potree.js"></script>
-	<script src="../src/PointCloudOctree.js"></script>
-	<script src="../src/PointCloudOctreeGeometry.js"></script>
-	<script src="../src/loader/POCLoader.js"></script>
-	<script src="../src/loader/PointAttributes.js"></script>
-	<script src="../src/utils.js"></script>
-	<script src="../src/LRU.js"></script>
+	<script src="../build/js/potree.min.js"></script>
 	
 	<input type="button" value="place start" 
 		style="position:absolute; left: 10px; top: 10px; width: 100px; z-index: 100" 
@@ -38,7 +39,7 @@
 		style="position:absolute; left: 10px; top: 40px; width: 100px; z-index: 100"
 		onclick="placeEnd()">
 		
-	<div id="lblDistance" style="position: absolute; width: 20px; z-index: 100;">abc</div>
+	<div id="lblDistance" class="info" style="position: absolute; width: 20px; z-index: 100;">abc</div>
 	
 	<div id="lblNumVisibleNodes" class="info" style="position: absolute; left: 10px; top: 80px; width: 400px;"></div>
 	<div id="lblNumVisiblePoints" class="info" style="position: absolute; left: 10px; top: 100px; width: 400px;"></div>
@@ -58,39 +59,7 @@
 		var spStart, spEnd, sConnection;
 		var placeStartMode = false;
 		var placeEndMode = false;
-		var cube, cameraCube, sceneCube;
-
-		function loadSkybox(){
-			cameraCube = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 100000 );
-			sceneCube = new THREE.Scene();
-
-			var path = "../resources/textures/skybox/";
-			var format = ".jpg";
-			var urls = [
-				path + 'px' + format, path + 'nx' + format,
-				path + 'py' + format, path + 'ny' + format,
-				path + 'pz' + format, path + 'nz' + format
-			];
-			
-			var textureCube = THREE.ImageUtils.loadTextureCube( urls, new THREE.CubeRefractionMapping() );
-			var material = new THREE.MeshBasicMaterial( { color: 0xffffff, envMap: textureCube, refractionRatio: 0.95 } );
-			
-			var shader = THREE.ShaderLib[ "cube" ];
-			shader.uniforms[ "tCube" ].value = textureCube;
-
-			var material = new THREE.ShaderMaterial( {
-
-				fragmentShader: shader.fragmentShader,
-				vertexShader: shader.vertexShader,
-				uniforms: shader.uniforms,
-				depthWrite: false,
-				side: THREE.BackSide
-
-			} ),
-
-			mesh = new THREE.Mesh( new THREE.BoxGeometry( 100, 100, 100 ), material );
-			sceneCube.add( mesh );
-		}
+		var skybox;
 		
 		function initGUI(){
 			var gui = new dat.GUI({
@@ -125,7 +94,7 @@
 			renderer.autoClear = false;
 			document.body.appendChild(renderer.domElement);
 			
-			loadSkybox();
+			skybox = Potree.utils.loadSkybox("../resources/textures/skybox/");
 			
 			// pointcloud
 			pointcloudMaterial = new THREE.PointCloudMaterial( { size: defaultPointSize, vertexColors: true } );
@@ -133,22 +102,19 @@
 			pointcloud = new Potree.PointCloudOctree(pco, pointcloudMaterial);
 			pointcloud.LOD = defaultLOD;
 			pointcloud.rotation.set(Math.PI/2, 0.85* -Math.PI/2, -0.0);
-			//pointcloud.scale.set(0.5,0.5,0.5);
 			pointcloud.moveToOrigin();
 			pointcloud.moveToGroundPlane();
 			pointcloud.position.y -= 1.6
 			scene.add(pointcloud);
 			
 			// grid
-			scene.add(createGrid(8,8,1));
+			scene.add(Potree.utils.createGrid(8,8,1));
 			
 			// measurement
 			var sphereGeometry = new THREE.SphereGeometry(0.05, 32, 32);
 			var sphereMaterial = new THREE.MeshBasicMaterial({color: 0xbb0000, shading: THREE.FlatShading});
 			spStart = new THREE.Mesh(sphereGeometry, sphereMaterial);
 			spEnd = new THREE.Mesh(sphereGeometry, sphereMaterial);
-			//spStart.position.set(-1.1,1.05,2);
-			//spEnd.position.set(1.3,1.0,1.15);
 			spStart.position.set(-2.2,1.9, 1.66);
 			spEnd.position.set(0.02,2,2.64);
 			scene.add(spStart);
@@ -170,27 +136,6 @@
 			
 			document.addEventListener( 'mousemove', onDocumentMouseMove, false );
 			renderer.domElement.addEventListener( 'click', onClick, false );
-		}
-
-		function createGrid(width, length, spacing){
-			var material = new THREE.LineBasicMaterial({
-				color: 0xBBBBBB
-			});
-			
-			var geometry = new THREE.Geometry();
-			for(var i = 0; i <= length; i++){
-				 geometry.vertices.push(new THREE.Vector3(-(spacing*width)/2, 0, i*spacing-(spacing*length)/2));
-				 geometry.vertices.push(new THREE.Vector3(+(spacing*width)/2, 0, i*spacing-(spacing*length)/2));
-			}
-			
-			for(var i = 0; i <= width; i++){
-				 geometry.vertices.push(new THREE.Vector3(i*spacing-(spacing*width)/2, 0, -(spacing*length)/2));
-				 geometry.vertices.push(new THREE.Vector3(i*spacing-(spacing*width)/2, 0, +(spacing*length)/2));
-			}
-			
-			var line = new THREE.Line(geometry, material, THREE.LinePieces);
-			line.receiveShadow = true;
-			return line;
 		}
 
 		function onDocumentMouseMove( event ) {
@@ -252,8 +197,8 @@
 			document.getElementById("lblNumVisiblePoints").innerHTML = "visible points: " + Potree.utils.addCommas(numVisiblePoints);
 			
 			// render skybox
-			cameraCube.rotation.copy( camera.rotation );
-			renderer.render( sceneCube, cameraCube );
+			skybox.camera.rotation.copy(camera.rotation);
+			renderer.render(skybox.scene, skybox.camera);
 
 			renderer.render(scene, camera);
 		};

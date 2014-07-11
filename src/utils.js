@@ -34,23 +34,6 @@ Potree.utils.computeTransformedBoundingBox = function (box, transform) {
 	boundingBox.setFromPoints( vertices );
 	
 	return boundingBox;
-	
-
-    //var geom = new THREE.Geometry();
-    //
-    //geom.vertices = [
-    //    new THREE.Vector3(box.min.x, box.min.y, box.min.z).applyMatrix4(transform),
-    //    new THREE.Vector3(box.min.x, box.min.y, box.min.z).applyMatrix4(transform),
-    //    new THREE.Vector3(box.max.x, box.min.y, box.min.z).applyMatrix4(transform),
-    //    new THREE.Vector3(box.min.x, box.max.y, box.min.z).applyMatrix4(transform),
-    //    new THREE.Vector3(box.min.x, box.min.y, box.max.z).applyMatrix4(transform),
-    //    new THREE.Vector3(box.min.x, box.max.y, box.max.z).applyMatrix4(transform),
-    //    new THREE.Vector3(box.max.x, box.max.y, box.min.z).applyMatrix4(transform),
-    //    new THREE.Vector3(box.max.x, box.min.y, box.max.z).applyMatrix4(transform),
-    //    new THREE.Vector3(box.max.x, box.max.y, box.max.z).applyMatrix4(transform)
-    //];
-    //geom.computeBoundingBox();
-    //return geom.boundingBox;
 }
 
 /**
@@ -70,3 +53,18 @@ Potree.utils.addCommas = function(nStr){
 	}
 	return x1 + x2;
 }
+
+/**
+ * create worker from a string
+ *
+ * code from http://stackoverflow.com/questions/10343913/how-to-create-a-web-worker-from-a-string
+ */
+Potree.utils.createWorker = function(code){
+	 var blob = new Blob([code], {type: 'application/javascript'});
+	 var worker = new Worker(URL.createObjectURL(blob));
+	 
+	 return worker;
+}
+
+
+

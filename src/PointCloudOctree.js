@@ -20,12 +20,6 @@ Potree.PointCloudOctreeProxyNode = function(geometryNode){
 Potree.PointCloudOctreeProxyNode.prototype = Object.create(THREE.Object3D.prototype);
 
 
-
-
-
-
-
-
 Potree.PointCloudOctree = function(geometry, material){
 	THREE.Object3D.call( this );
 	
@@ -78,7 +72,7 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 
 		var visible = true;
 		visible = visible && frustum.intersectsBox(box);
-		if(object.level > 1){
+		if(object.level > 0){
 			visible = visible && radius / distance > (1 / this.LOD);
 			visible = visible && (this.numVisiblePoints + object.numPoints < Potree.pointLoadLimit);
 			visible = visible && (this.numVisibleNodes <= this.maxVisibleNodes);
@@ -86,6 +80,18 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 		}else{
 			visible = true;
 		}
+		
+		if(this.pcoGeometry !== undefined && this.pcoGeometry.spacing !== undefined){
+			var spacing = this.pcoGeometry.spacing / Math.pow(2, object.level);
+			spacing *= 10;
+			if(spacing < this.material.size * 1.5){
+				visible = false;
+			}
+		}
+		
+		visible = visible && (object.level <= 4);
+		//visible = (object.level <= 3);
+		
 		object.visible = visible;
 		
 		if(!visible){

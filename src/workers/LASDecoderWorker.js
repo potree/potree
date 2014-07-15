@@ -60,6 +60,8 @@ onmessage = function(event){
 	var pointFormatID = event.data.pointFormatID;
 	var scale = event.data.scale;
 	var offset = event.data.offset;
+	var mins = event.data.mins;
+	var maxs = event.data.maxs;
 	
 	var decoder = new LASDecoder(buffer, pointFormatID, pointSize, numPoints, scale, offset);
 	
@@ -73,9 +75,9 @@ onmessage = function(event){
 	for(var i = 0; i < numPoints; i++){
 		var p = decoder.getPoint(i);
 		
-		positions[3*i] =   p.position[0] * decoder.scale[0] + decoder.offset[0];
-		positions[3*i+1] = p.position[1] * decoder.scale[1] + decoder.offset[1];
-		positions[3*i+2] = p.position[2] * decoder.scale[2] + decoder.offset[2];
+		positions[3*i] =   p.position[0] * decoder.scale[0] + decoder.offset[0];// - mins[0];
+		positions[3*i+1] = p.position[1] * decoder.scale[1] + decoder.offset[1];// - mins[1];
+		positions[3*i+2] = p.position[2] * decoder.scale[2] + decoder.offset[2];// - mins[2];
 		
 		colors[3*i] = p.color[0] /255;
 		colors[3*i+1] = p.color[1] / 255;

@@ -26,7 +26,8 @@ Potree.PointCloudOctree = function(geometry, material){
 	Potree.PointCloudOctree.lru = Potree.PointCloudOctree.lru || new LRU();
 	
 	this.pcoGeometry = geometry;
-	this.boundingBox = this.pcoGeometry.boundingBox;
+	//this.boundingBox = this.pcoGeometry.boundingBox;
+	this.boundingBox = this.pcoGeometry.root.boundingBox;
 	this.material = material;
 	this.maxVisibleNodes = 2000;
 	this.maxVisiblePoints = 20*1000*1000;
@@ -89,8 +90,8 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 			}
 		}
 		
-		visible = visible && (object.level <= 4);
-		//visible = (object.level <= 3);
+		//visible = visible && (object.level <= 4);
+		//visible = (object.level <= 4);
 		
 		object.visible = visible;
 		
@@ -179,6 +180,15 @@ Potree.PointCloudOctree.prototype.moveToGroundPlane = function(){
     var transform = this.matrixWorld;
     var tBox = Potree.utils.computeTransformedBoundingBox(box, transform);
     this.position.y += -tBox.min.y;
+}
+
+Potree.PointCloudOctree.prototype.getBoundingBoxWorld = function(){
+	this.updateMatrixWorld();
+    var box = this.boundingBox;
+    var transform = this.matrixWorld;
+    var tBox = Potree.utils.computeTransformedBoundingBox(box, transform);
+	
+	return tBox;
 }
 
 

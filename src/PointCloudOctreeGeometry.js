@@ -90,8 +90,7 @@ Potree.PointCloudOctreeGeometryNode.prototype.load = function(){
 			nodesLoadTimes[url].end = new Date().getTime();
 			
 			var time = nodesLoadTimes[url].end - nodesLoadTimes[url].start;
-			//console.log("loadTime[" + url.substring(90) + "]: " + time + "ms");
-			console.log("loadTime[" + url.replace(/^.*[\\\/]/, '') + "]: " + time + "ms");
+			//console.log("loadTime[" + url.replace(/^.*[\\\/]/, '') + "]: " + time + "ms");
 		};
 		
 		nodesLoadTimes[url] = {};
@@ -138,10 +137,29 @@ Potree.LasLazBatcher = function(node, url){
 			
 			var positions = e.data.position;
 			var colors = e.data.color;
+			var box = new THREE.Box3();
+			
+			
+			var fPositions = new Float32Array(positions);
+			for(var i = 0; i < numPoints; i++){
+				fPositions[3*i+0] -= lasBuffer.mins[0];
+				fPositions[3*i+1] -= lasBuffer.mins[1];
+				fPositions[3*i+2] -= lasBuffer.mins[2];
+				
+				box.expandByPoint(new THREE.Vector3(fPositions[3*i+0], fPositions[3*i+1], fPositions[3*i+2]));
+			}
+			
+			
+			//console.log(fPositions[0]);
+			//console.log(fPositions[1]);
+			//console.log(fPositions[2]);
 			
 			geometry.addAttribute('position', new THREE.Float32Attribute(positions, 3));
 			geometry.addAttribute('color', new THREE.Float32Attribute(colors, 3));
 			geometry.boundingBox = node.boundingBox;
+			//geometry.boundingBox = box;
+			
+			//console.log(box);
 			
 			node.geometry = geometry;
 			node.loaded = true;
@@ -151,8 +169,7 @@ Potree.LasLazBatcher = function(node, url){
 			nodesLoadTimes[url].end = new Date().getTime();
 			
 			var time = nodesLoadTimes[url].end - nodesLoadTimes[url].start;
-			//console.log("loadTime[" + url.substring(90) + "]: " + time + "ms");
-			console.log("loadTime[" + url.replace(/^.*[\\\/]/, '') + "]: " + time + "ms");
+			//console.log("loadTime[" + url.replace(/^.*[\\\/]/, '') + "]: " + time + "ms");
 			
 			//Potree.LasLazBatcher.decoderWorkers.push(ww);
 			Potree.workers.lasdecoder.returnWorker(ww);
@@ -164,7 +181,9 @@ Potree.LasLazBatcher = function(node, url){
 			pointSize: lasBuffer.pointSize,
 			pointFormatID: 2,
 			scale: lasBuffer.scale,
-			offset: lasBuffer.offset
+			offset: lasBuffer.offset,
+			mins: lasBuffer.mins,
+			maxs: lasBuffer.maxs
 		};
 		ww.postMessage(message, [message.buffer]);
 	}

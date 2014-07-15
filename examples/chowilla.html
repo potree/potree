@@ -2,7 +2,7 @@
 
 <html>
 <head>
-	<title>Overpass</title>
+	<title>tern-auscover project, chowilla</title>
 	<style>canvas { width: 100%; height: 100% }</style>
 </head>
 <body style="margin: 0; padding: 0">
@@ -33,7 +33,9 @@
 	<script src="../libs/other/dat.gui.min.js"></script>
 	
 	<script src="../build/js/potree.js"></script>
+	<script src="../src/loader/POCLoader.js"></script>
 	<script src="../src/PointCloudOctree.js"></script>
+	<script src="../src/PointCloudOctreeGeometry.js"></script>
 	<script src="../src/materials/PointCloudColorMaterial.js"></script>
 	<script src="../src/materials/PointCloudRGBMaterial.js"></script>
 	<script src="../src/materials/PointCloudHeightMaterial.js"></script>
@@ -51,8 +53,8 @@
 	
 	<div class="info" style="position: absolute; left: 300px; right: 300px; top: 10px; text-align: center;">
 		<a href="http://potree.org" target="_blank">potree.org</a><br>
-		Point cloud of an overpass, courtesy of <a href="http://www.surfaceandedge.com/" target="_blank">Surface & Edge</a><br>
-		This is to test an octree made laz files which are decoded by the browser using laslaz.js of the <a href="https://github.com/verma/plasio/tree/js-laszip" target="_blank">plas.io js-laszip branch</a>
+		Chowilla, data from <a href="http://tern-auscover.science.uq.edu.au/thredds/catalog/auscover/field_and_airborne_datasets/airborne/lidar/chowilla/Chowilla_2012_02_01/square/tiles_(1000x1000)/laz_no_overlap/catalog.html" target="_blank">tern-auscover project</a><br>
+		Experimental rendering of large scale uncolored lidar data.
 	</div>
 	
 	<script type="x-shader/x-vertex" id="vs_points">
@@ -112,10 +114,11 @@
 	
 	<script>
 		var defaultPointSize = 0.04;
-		var defaultLOD = 4;
+		var defaultLOD = 7;
 		var defaultFOV = 60;
 //		var pointcloudPath = "../../../../pointclouds/surface_and_edge/overpass/overpass_laz/cloud.js";
-		var pointcloudPath = "../../../../pointclouds/surface_and_edge/overpass/overpass/cloud.js";
+		var pointcloudPath = "../../../../pointclouds/tern_auscover/chowilla/chowilla_web/cloud_level_5.js";
+		var clock = new THREE.Clock()
 	
 		var renderer;
 		var camera;
@@ -211,34 +214,68 @@
 			camera.updateProjectionMatrix();
 			controls = new THREE.FirstPersonControls(camera, renderer.domElement);
 			camera.rotation.order = 'ZYX';
-			controls.moveSpeed *= 0.2;
-			camera.position.set(-32, 10, -8);
-			camera.rotation.set(-0.3, -1.2, 0);
+			controls.moveSpeed *= 30;
+			camera.position.set(0, 200, 0);
+			camera.rotation.set(-0.3, -Math.PI/4, 0);
 			
 			//pointcloudMaterial = new Potree.PointCloudRGBMaterial();
-			pointcloudMaterial = new Potree.PointCloudColorMaterial(1.0, 0, 0);
-			//pointcloudMaterial = new Potree.PointCloudHeightMaterial();
+			//pointcloudMaterial = new Potree.PointCloudColorMaterial(1.0, 0, 0);
+			pointcloudMaterial = new Potree.PointCloudHeightMaterial();
 			
 			// load pointcloud
 			var pco = POCLoader.load(pointcloudPath);
 			pointCloud = new Potree.PointCloudOctree(pco, pointcloudMaterial);
 			pointCloud.LOD = defaultLOD;
 			
-			//pointCloud.applyMatrix(new THREE.Matrix4().set(
-			//	1,0,0,0,
-			//	0,0,1,0,
-			//	0,-1,0,0,
-			//	0,0,0,1
-			//));
+			pointCloud.applyMatrix(new THREE.Matrix4().set(
+				1,0,0,0,
+				0,0,1,0,
+				0,-1,0,0,
+				0,0,0,1
+			));
 			
 			//pointCloud.moveToOrigin();
 			//pointCloud.moveToGroundPlane();
-			//pointcloudMaterial.setBoundingBox(pointCloud.getBoundingBoxWorld());
-			
-			console.log(pointCloud.boundingBox.min);
-			console.log(pointCloud.boundingBox.max);
+			pointcloudMaterial.setBoundingBox(pointCloud.getBoundingBoxWorld());
 			
 			scene.add(pointCloud);
+		}
+		
+		function createPointcloudMaterial(){
+			var attributes = {};
+			var uniforms = {
+				color:   { type: "c", value: new THREE.Color( 0xffffff ) },
+				size:   { type: "f", value: 55 }
+			};
+			interpolationMaterial = new THREE.ShaderMaterial( {
+				uniforms: uniforms,
+				attributes: attributes,
+				vertexShader: document.getElementById( 'vs_points' ).textContent,
+				fragmentShader: document.getElementById( 'fs_interpolation' ).textContent,
+				vertexColors: THREE.VertexColors,
+	
+				alphaTest: 0.9,
+	
+			} );
+			
+			
+			var attributes = {};
+			var uniforms = {
+				color:   { type: "c", value: new THREE.Color( 0xffffff ) },
+				size:   { type: "f", value: 55 }
+			};
+			var pointsMaterial = new THREE.ShaderMaterial( {
+				uniforms: uniforms,
+				attributes: attributes,
+				vertexShader: document.getElementById( 'vs_points' ).textContent,
+				fragmentShader: document.getElementById( 'fs_points' ).textContent,
+				vertexColors: THREE.VertexColors,
+	
+				alphaTest: 0.9,
+	
+			} ); 
+			
+			return pointsMaterial;
 		}
 		
 		function render() {
@@ -246,7 +283,7 @@
 			requestAnimationFrame(render);
 			
 			stats.update();
-			controls.update(0.1);
+			controls.update(clock.getDelta());
 			
 			pointCloud.update( camera );
 			

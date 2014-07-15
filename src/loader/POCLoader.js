@@ -44,7 +44,10 @@ POCLoader.load = function load(url) {
 				var boundingBox = new THREE.Box3(min, max);
 				pco.boundingBox = boundingBox;
 				
-				var root = new Potree.PointCloudOctreeGeometryNode(name, pco, boundingBox);
+				var box = boundingBox.clone();
+				box.min.sub(boundingBox.min);
+				box.max.sub(boundingBox.min);
+				var root = new Potree.PointCloudOctreeGeometryNode(name, pco, box);
 				root.level = 0;
 				root.numPoints = fMno.hierarchy[0][1];
 				pco.root = root;

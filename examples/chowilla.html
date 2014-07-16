@@ -57,67 +57,13 @@
 		Experimental rendering of large scale uncolored lidar data.
 	</div>
 	
-	<script type="x-shader/x-vertex" id="vs_points">
-
-		uniform float size;
-
-		varying vec3 vColor;
-
-		void main() {
-			vColor = color;
-			vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
-
-			gl_PointSize = size * 1.0 / length( mvPosition.xyz );
-			gl_Position = projectionMatrix * mvPosition;
-		}
-
-	</script>
-
-	<script type="x-shader/x-fragment" id="fs_interpolation">
-
-		varying vec3 vColor;
-
-		void main() {
-			
-			float a = pow(2.0*(gl_PointCoord.x - 0.5), 2.0);
-			float b = pow(2.0*(gl_PointCoord.y - 0.5), 2.0);
-			float c = 1.0 - (a + b);
-		
-			if(c < 0.0){
-				discard;
-			}
-			
-			gl_FragColor = vec4(vColor, 1.0);
-		}
-
-	</script>
-	
-	<script type="x-shader/x-fragment" id="fs_points">
-
-		varying vec3 vColor;
-
-		void main() {
-			
-			float a = pow(2.0*(gl_PointCoord.x - 0.5), 2.0);
-			float b = pow(2.0*(gl_PointCoord.y - 0.5), 2.0);
-			float c = 1.0 - (a + b);
-		
-			if(c < 0.0){
-				discard;
-			}
-			
-			
-			gl_FragColor = vec4(vColor, 1.0);
-		}
-
-	</script>
-	
 	<script>
 		var defaultPointSize = 0.04;
-		var defaultLOD = 7;
+		var defaultLOD = 8;
 		var defaultFOV = 60;
 //		var pointcloudPath = "../../../../pointclouds/surface_and_edge/overpass/overpass_laz/cloud.js";
-		var pointcloudPath = "../../../../pointclouds/tern_auscover/chowilla/chowilla_web/cloud_level_5.js";
+		//var pointcloudPath = "../../../../pointclouds/tern_auscover/chowilla/chowilla_web/cloud_level_5.js";
+		var pointcloudPath = "../../../../pointclouds/tern_auscover/chowilla/chowilla_quadtree/cloud_quad_level_5_laz.js";
 		var clock = new THREE.Clock()
 	
 		var renderer;

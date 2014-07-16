@@ -46,10 +46,11 @@ Potree.PointCloudHeightMaterial.vs_points = [
  "	vec4 world = modelMatrix * vec4( position, 1.0 ); ",
  "	float w = (world.y - uMin) / (uMax-uMin);            ",
  "	w = clamp(w-0.1, 0.0, 1.0);            ",
- "	vColor = 0.2*vec3(0.788, 0.64, 0.16) * (1.0-w) + vec3(0.67, 0.62, 0.53) * w;  ",
+ "	//vColor = 0.2*vec3(0.788, 0.64, 0.16) * (1.0-w) + vec3(0.67, 0.62, 0.53) * w;  ",
+ "	vColor = vec3(1.0, 0.0, 0.0) * (w) ;  ",
  "                                                             ",
  "	gl_PointSize = size * 1.0 / length( mvPosition.xyz );      ",
- "	gl_PointSize = max(gl_PointSize, 2.0);                      ",
+ "	gl_PointSize = max(gl_PointSize, 3.0);                      ",
  "	gl_Position = projectionMatrix * mvPosition;               ",
  "}                                                            "];
 

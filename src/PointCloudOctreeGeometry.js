@@ -31,7 +31,7 @@ Potree.PointCloudOctreeGeometryNode.prototype.addChild = function(child){
 }
 
 Potree.PointCloudOctreeGeometryNode.prototype.load = function(){
-	if(this.loading === true || this.pcoGeometry.numNodesLoading > 3){
+	if(this.loading === true || this.pcoGeometry.numNodesLoading > 5){
 		return;
 	}else{
 		this.loading = true;
@@ -142,9 +142,12 @@ Potree.LasLazBatcher = function(node, url){
 			
 			var fPositions = new Float32Array(positions);
 			for(var i = 0; i < numPoints; i++){
-				fPositions[3*i+0] -= lasBuffer.mins[0];
-				fPositions[3*i+1] -= lasBuffer.mins[1];
-				fPositions[3*i+2] -= lasBuffer.mins[2];
+				//fPositions[3*i+0] -= lasBuffer.mins[0];
+				//fPositions[3*i+1] -= lasBuffer.mins[1];
+				//fPositions[3*i+2] -= lasBuffer.mins[2];				
+				fPositions[3*i+0] -= node.pcoGeometry.boundingBox.min.x;
+				fPositions[3*i+1] -= node.pcoGeometry.boundingBox.min.y;
+				fPositions[3*i+2] -= node.pcoGeometry.boundingBox.min.z;
 				
 				box.expandByPoint(new THREE.Vector3(fPositions[3*i+0], fPositions[3*i+1], fPositions[3*i+2]));
 			}
@@ -156,8 +159,8 @@ Potree.LasLazBatcher = function(node, url){
 			
 			geometry.addAttribute('position', new THREE.Float32Attribute(positions, 3));
 			geometry.addAttribute('color', new THREE.Float32Attribute(colors, 3));
-			geometry.boundingBox = node.boundingBox;
-			//geometry.boundingBox = box;
+			//geometry.boundingBox = node.boundingBox;
+			geometry.boundingBox = box;
 			
 			//console.log(box);
 			

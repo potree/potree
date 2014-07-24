@@ -135,34 +135,33 @@ Potree.LasLazBatcher = function(node, url){
 			var geometry = new THREE.BufferGeometry();
 			var numPoints = lasBuffer.pointsCount;
 			
+			var endsWith = function(str, suffix) {
+				return str.indexOf(suffix, str.length - suffix.length) !== -1;
+			}
+			//if(!endsWith(url, "r44200.las")){
+			//	numPoints = Math.min(numPoints, 100);
+			//}
+			
 			var positions = e.data.position;
 			var colors = e.data.color;
+			var intensities = e.data.intensity;
+			
 			var box = new THREE.Box3();
 			
-			
 			var fPositions = new Float32Array(positions);
-			for(var i = 0; i < numPoints; i++){
-				//fPositions[3*i+0] -= lasBuffer.mins[0];
-				//fPositions[3*i+1] -= lasBuffer.mins[1];
-				//fPositions[3*i+2] -= lasBuffer.mins[2];				
-				fPositions[3*i+0] -= node.pcoGeometry.boundingBox.min.x;
-				fPositions[3*i+1] -= node.pcoGeometry.boundingBox.min.y;
-				fPositions[3*i+2] -= node.pcoGeometry.boundingBox.min.z;
+			for(var i = 0; i < numPoints; i++){			
+				//fPositions[3*i+0] -= node.pcoGeometry.boundingBox.min.x;
+				//fPositions[3*i+1] -= node.pcoGeometry.boundingBox.min.y;
+				//fPositions[3*i+2] -= node.pcoGeometry.boundingBox.min.z;
 				
 				box.expandByPoint(new THREE.Vector3(fPositions[3*i+0], fPositions[3*i+1], fPositions[3*i+2]));
 			}
 			
-			
-			//console.log(fPositions[0]);
-			//console.log(fPositions[1]);
-			//console.log(fPositions[2]);
-			
 			geometry.addAttribute('position', new THREE.Float32Attribute(positions, 3));
 			geometry.addAttribute('color', new THREE.Float32Attribute(colors, 3));
+			geometry.addAttribute('intensity', new THREE.Float32Attribute(intensities, 1));
 			//geometry.boundingBox = node.boundingBox;
 			geometry.boundingBox = box;
-			
-			//console.log(box);
 			
 			node.geometry = geometry;
 			node.loaded = true;
@@ -185,8 +184,8 @@ Potree.LasLazBatcher = function(node, url){
 			pointFormatID: 2,
 			scale: lasBuffer.scale,
 			offset: lasBuffer.offset,
-			mins: lasBuffer.mins,
-			maxs: lasBuffer.maxs
+			mins: [node.pcoGeometry.boundingBox.min.x, node.pcoGeometry.boundingBox.min.y, node.pcoGeometry.boundingBox.min.z],
+			maxs: [node.pcoGeometry.boundingBox.max.x, node.pcoGeometry.boundingBox.max.y, node.pcoGeometry.boundingBox.max.z]
 		};
 		ww.postMessage(message, [message.buffer]);
 	}

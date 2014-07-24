@@ -67,23 +67,25 @@ onmessage = function(event){
 	
 	var pBuff = new ArrayBuffer(numPoints*3*4);
 	var cBuff = new ArrayBuffer(numPoints*3*4);
+	var iBuff = new ArrayBuffer(numPoints*4);
 	var positions = new Float32Array(pBuff);
 	var colors = new Float32Array(cBuff);
-	//var positions = new Float32Array(numPoints*3);
-	//var colors = new Float32Array(numPoints*3);
+	var intensities = new Float32Array(iBuff);
 	
 	for(var i = 0; i < numPoints; i++){
 		var p = decoder.getPoint(i);
 		
-		positions[3*i] =   p.position[0] * decoder.scale[0] + decoder.offset[0];// - mins[0];
-		positions[3*i+1] = p.position[1] * decoder.scale[1] + decoder.offset[1];// - mins[1];
-		positions[3*i+2] = p.position[2] * decoder.scale[2] + decoder.offset[2];// - mins[2];
+		positions[3*i] =   p.position[0] * decoder.scale[0] + decoder.offset[0] - mins[0];
+		positions[3*i+1] = p.position[1] * decoder.scale[1] + decoder.offset[1] - mins[1];
+		positions[3*i+2] = p.position[2] * decoder.scale[2] + decoder.offset[2] - mins[2];
 		
 		colors[3*i] = p.color[0] /255;
 		colors[3*i+1] = p.color[1] / 255;
 		colors[3*i+2] = p.color[2] / 255;
+		
+		intensities[i] = p.intensity;
 	}
 	
-	var message = {position: pBuff, color: cBuff};
-	postMessage(message, [message.position, message.color]);
+	var message = {position: pBuff, color: cBuff, intensity: iBuff};
+	postMessage(message, [message.position, message.color, message.intensity]);
 }

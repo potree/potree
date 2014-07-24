@@ -62,7 +62,6 @@ POCLoader.load = function load(url) {
 				var index = parseInt(name.charAt(name.length-1));
 				var parentName = name.substring(0, name.length-1);
 				var parentNode = nodes[parentName];
-				var points = fMno.hierarchy[i][1];
 				var level = name.length-1;
 				var boundingBox = POCLoader.createChildAABB(parentNode.boundingBox, index);
 				

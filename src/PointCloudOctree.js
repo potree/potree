@@ -92,6 +92,7 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 		
 		//visible = visible && (object.level <= 4);
 		//visible = (object.level <= 4);
+		//visible = object.level === 0 || object.name === "r" || object.name === "r4" || object.name === "r44" || object.name === "r442" || object.name === "r4420" || object.name === "r44200";
 		
 		object.visible = visible;
 		

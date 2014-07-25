@@ -74,7 +74,7 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 		var visible = true;
 		visible = visible && frustum.intersectsBox(box);
 		if(object.level > 0){
-			visible = visible && radius / distance > (1 / this.LOD);
+			visible = visible && Math.pow(radius, 0.8) / distance > (1 / this.LOD);
 			visible = visible && (this.numVisiblePoints + object.numPoints < Potree.pointLoadLimit);
 			visible = visible && (this.numVisibleNodes <= this.maxVisibleNodes);
 			visible = visible && (this.numVisiblePoints <= this.maxVisiblePoints);

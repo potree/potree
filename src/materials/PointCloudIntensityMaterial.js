@@ -5,7 +5,7 @@ Potree.PointCloudIntensityMaterial = function(){
 	};
 	var uniforms = {
 		color:   { type: "c", value: new THREE.Color( 0xffffff ) },
-		size:   { type: "f", value: 500 }
+		size:   { type: "f", value: 2500 }
 	};
 	
 	this.setValues({
@@ -27,7 +27,7 @@ Potree.PointCloudIntensityMaterial.vs_points = [
  "varying vec3 vColor;                                         ",
  "                                                             ",
  "void main() {                                                ",
- "	vColor = vec3(1.0, 1.0, 1.0) * (intensity / 600.0);                                            ",
+ "	vColor = vec3(1.0, 1.0, 1.0) * (intensity / 500.0);                                            ",
  "	vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 ); ",
  "                                                             ",
  "	gl_PointSize = size * 1.0 / length( mvPosition.xyz );      ",

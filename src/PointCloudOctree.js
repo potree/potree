@@ -36,6 +36,7 @@ Potree.PointCloudOctree = function(geometry, material){
 	this.LODDistance = 20;
 	this.LODFalloff = 1.3;
 	this.LOD = 4;
+	this.showBoundingBox = false;
 	
 	
 	var rootProxy = new Potree.PointCloudOctreeProxyNode(this.pcoGeometry.root);
@@ -49,6 +50,7 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 	this.numVisiblePoints = 0;
 	
 	// create frustum in object space
+	camera.updateMatrixWorld();
 	var frustum = new THREE.Frustum();
 	var viewI = camera.matrixWorldInverse;
 	var world = this.matrixWorld;
@@ -61,23 +63,68 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 	var worldI = new THREE.Matrix4().getInverse(world);
 	var camMatrixObject = new THREE.Matrix4().multiply(worldI).multiply(view);
 	var camObjPos = new THREE.Vector3().setFromMatrixPosition( camMatrixObject );
+	
+	var ray = new THREE.Ray(camera.position, new THREE.Vector3( 0, 0, -1 ).applyQuaternion( camera.quaternion ) );
+	//var ray = new THREE.Ray(camera.position, new THREE.Vector3( 0, -1, 0 ) );
+	
 	// check visibility
 	var stack = [];
 	stack.push(this);
 	while(stack.length > 0){
 		var object = stack.shift();
 		
+		if(object instanceof THREE.Mesh || object instanceof THREE.Line ){
+			object.visible = true;
+			continue;
+		}
+		
 		var box = object.boundingBox;
+		var tbox = Potree.utils.computeTransformedBoundingBox(box, this.matrixWorld);
 		var distance = box.center().distanceTo(camObjPos);
 		var radius = box.size().length() * 0.5;
 
 		var visible = true;
 		visible = visible && frustum.intersectsBox(box);
-		if(object.level > 3){
-			visible = visible && Math.pow(radius, 0.8) / distance > (1 / this.LOD);
-			visible = visible && (this.numVisiblePoints + object.numPoints < Potree.pointLoadLimit);
-			visible = visible && (this.numVisibleNodes <= this.maxVisibleNodes);
-			visible = visible && (this.numVisiblePoints <= this.maxVisiblePoints);
+		if(object.level > 0){
+		
+			{ // distance to camera method
+				visible = visible && Math.pow(radius, 0.8) / distance > (1 / this.LOD);
+				visible = visible && (this.numVisiblePoints + object.numPoints < Potree.pointLoadLimit);
+				visible = visible && (this.numVisibleNodes <= this.maxVisibleNodes);
+				visible = visible && (this.numVisiblePoints <= this.maxVisiblePoints);
+			}
+			
+			//{ // distance to view ray method
+			//	var br = tbox.size().length() / 2;
+			//	var distanceToPoint = ray.distanceToPoint(tbox.center());
+			//	//var m = tbox.size().length() / distanceToPoint;
+			//	var m = (br - distanceToPoint) / br;
+			//	m = Math.max(m+1, 1);
+			//	m = Math.pow(m, 5);
+			//	
+			//	//visible = visible && (distanceToPoint < tbox.size().length());
+			//	
+			//	visible = visible && m * Math.pow(radius, 0.8) / distance > (1 / this.LOD);
+			//	visible = visible && (this.numVisiblePoints + object.numPoints < Potree.pointLoadLimit);
+			//	visible = visible && (this.numVisibleNodes <= this.maxVisibleNodes);
+			//	visible = visible && (this.numVisiblePoints <= this.maxVisiblePoints);
+			//	//visible = visible || (distanceToPoint < tbox.size().length() / 2);
+			//	
+			//	//document.getElementById("lblMessage").innerHTML = distanceToPoint;
+			//	//if(distanceToPoint < tbox.size().length()){
+			//	//	if(object.centerSphere !== undefined){
+			//	//		object.centerSphere.material.color.r = 0;
+			//	//		object.centerSphere.material.color.b = 1;
+			//	//	}
+			//	//}else{
+			//	//	if(object.centerSphere !== undefined){
+			//	//		object.centerSphere.material.color.r = 1;
+			//	//		object.centerSphere.material.color.b = 0;
+			//	//	}
+			//	//}
+			//}
+				
+			
 		}else{
 			visible = true;
 		}
@@ -90,15 +137,26 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 			}
 		}
 		
-		//visible = visible && (object.level <= 4);
-		//visible = (object.level <= 4);
-		//visible = object.level === 0 || object.name === "r" || object.name === "r4" || object.name === "r44" || object.name === "r442" || object.name === "r4420" || object.name === "r44200";
-		
 		object.visible = visible;
 		
 		if(!visible){
 			this.hideDescendants(object);
 			continue;
+		}else if(visible && this.showBoundingBox && object instanceof THREE.PointCloud){
+			if(object.boundingBoxNode === undefined && object.boundingBox !== undefined){
+				var boxHelper = new THREE.BoxHelper(object);
+				object.add(boxHelper);
+				object.boundingBoxNode = boxHelper;
+			}
+			//var boxHelper = new THREE.BoxHelper(node);
+			//node.add(boxHelper);
+			//node.boxHelper = boxHelper;
+		}else if(!this.showBoundingBox){
+			if(object.boundingBoxNode !== undefined){
+				//object.boundingBoxNode.visible = false;
+				object.remove(object.boundingBoxNode);
+				object.boundingBoxNode = undefined;
+			}
 		}
 		
 		if(object instanceof THREE.PointCloud){
@@ -130,6 +188,19 @@ Potree.PointCloudOctree.prototype.replaceProxy = function(proxy){
 		var parent = proxy.parent;
 		parent.remove(proxy);
 		parent.add(node);
+		
+		//var centerGeometry = new THREE.SphereGeometry();
+		//var material = new THREE.MeshBasicMaterial({color: 'red'});
+		//var centerNode = new THREE.Mesh(centerGeometry, material);
+		//centerNode.position = node.boundingBox.center();
+		//var scale = 10/(node.level+1);
+		//centerNode.scale.set(scale, scale, scale);
+		//node.add(centerNode);
+		//node.centerSphere = centerNode;
+		//
+		//var boxHelper = new THREE.BoxHelper(node);
+		//node.add(boxHelper);
+		//node.boxHelper = boxHelper;
 		
 		for(var i = 0; i < 8; i++){
 			if(geometryNode.children[i] !== undefined){

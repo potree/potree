@@ -135,9 +135,9 @@ onmessage = function(event){
 			tempUint8[1] = bufferView[i*pointSize+25];
 			var b = tempUint16[0];
 			
-			colors[3*i+0] = r;
-			colors[3*i+1] = g;
-			colors[3*i+2] = b;
+			colors[3*i+0] = r / 65536;
+			colors[3*i+1] = g / 65536;
+			colors[3*i+2] = b / 65536;
 		}
 	}
 	
@@ -155,40 +155,3 @@ onmessage = function(event){
 		
 	postMessage(message, transferables);
 }
-
-//onmessage = function(event){
-//	var buffer = event.data.buffer;
-//	var numPoints = event.data.numPoints;
-//	var pointSize = event.data.pointSize;
-//	var pointFormatID = event.data.pointFormatID;
-//	var scale = event.data.scale;
-//	var offset = event.data.offset;
-//	var mins = event.data.mins;
-//	var maxs = event.data.maxs;
-//	
-//	var decoder = new LASDecoder(buffer, pointFormatID, pointSize, numPoints, scale, offset);
-//	
-//	var pBuff = new ArrayBuffer(numPoints*3*4);
-//	var cBuff = new ArrayBuffer(numPoints*3*4);
-//	var iBuff = new ArrayBuffer(numPoints*4);
-//	var positions = new Float32Array(pBuff);
-//	var colors = new Float32Array(cBuff);
-//	var intensities = new Float32Array(iBuff);
-//	
-//	for(var i = 0; i < numPoints; i++){
-//		var p = decoder.getPoint(i);
-//		
-//		positions[3*i] =   p.position[0] * decoder.scale[0] + decoder.offset[0] - mins[0];
-//		positions[3*i+1] = p.position[1] * decoder.scale[1] + decoder.offset[1] - mins[1];
-//		positions[3*i+2] = p.position[2] * decoder.scale[2] + decoder.offset[2] - mins[2];
-//		
-//		colors[3*i] = p.color[0] /255;
-//		colors[3*i+1] = p.color[1] / 255;
-//		colors[3*i+2] = p.color[2] / 255;
-//		
-//		intensities[i] = p.intensity;
-//	}
-//	
-//	var message = {position: pBuff, color: cBuff, intensity: iBuff};
-//	postMessage(message, [message.position, message.color, message.intensity]);
-//}

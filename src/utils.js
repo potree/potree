@@ -54,6 +54,18 @@ Potree.utils.addCommas = function(nStr){
 	return x1 + x2;
 }
 
+/**
+ * create worker from a string
+ *
+ * code from http://stackoverflow.com/questions/10343913/how-to-create-a-web-worker-from-a-string
+ */
+Potree.utils.createWorker = function(code){
+	 var blob = new Blob([code], {type: 'application/javascript'});
+	 var worker = new Worker(URL.createObjectURL(blob));
+	 
+	 return worker;
+}
+
 Potree.utils.loadSkybox = function(path){
 	var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 100000 );
 	var scene = new THREE.Scene();
@@ -87,10 +99,9 @@ Potree.utils.loadSkybox = function(path){
 	return {"camera": camera, "scene": scene};
 }
 
-
-Potree.utils.createGrid = function createGrid(width, length, spacing){
+Potree.utils.createGrid = function createGrid(width, length, spacing, color){
 	var material = new THREE.LineBasicMaterial({
-		color: 0xBBBBBB
+		color: color || 0x888888
 	});
 	
 	var geometry = new THREE.Geometry();
@@ -108,4 +119,3 @@ Potree.utils.createGrid = function createGrid(width, length, spacing){
 	line.receiveShadow = true;
 	return line;
 }
-

@@ -6,14 +6,36 @@ var concat = require('gulp-concat');
 var size = require('gulp-size');
 var rename = require('gulp-rename');
 var uglify = require('gulp-uglify');
+<<<<<<< HEAD
+=======
+var gutil = require('gulp-util');
+var through = require('through');
+var os = require('os');
+var File = gutil.File;
+
+>>>>>>> laslaz
 
 var paths = {
 	potree : [
 		"src/Potree.js",
+<<<<<<< HEAD
+=======
+		"src/WorkerManager.js",
+		"build/workers/laslaz-worker.js",
+		"build/workers/lasdecoder-worker.js",
+>>>>>>> laslaz
 		"src/extensions/PerspectiveCamera.js",
 		"src/extensions/Ray.js",
 		"src/loader/POCLoader.js",
 		"src/loader/PointAttributes.js",
+<<<<<<< HEAD
+=======
+		"src/loader/LasLazLoader.js",
+		"src/materials/PointCloudRGBMaterial.js",
+		"src/materials/PointCloudIntensityMaterial.js",
+		"src/materials/PointCloudHeightMaterial.js",
+		"src/materials/PointCloudColorMaterial.js",
+>>>>>>> laslaz
 		"src/FirstPersonControls.js",
 		"src/LRU.js",
 		"src/PointCloudOctree.js",
@@ -23,7 +45,32 @@ var paths = {
 
 };
 
+<<<<<<< HEAD
 
+=======
+var workers = {
+	"laslaz": [
+		"libs/plasio/workers/laz-perf.js",
+		"libs/plasio/workers/laz-loader-worker.js"
+	],
+	"LASDecoder": [
+		"src/workers/LASDecoderWorker.js"
+	]
+};
+
+
+gulp.task("workers", function(){
+	gulp.src(workers.laslaz)
+		.pipe(encodeWorker('laslaz-worker.js', "Potree.workers.laslaz"))
+		.pipe(size({showFiles: true}))
+		.pipe(gulp.dest('build/workers'));
+		
+	gulp.src(workers.LASDecoder)
+		.pipe(encodeWorker('lasdecoder-worker.js', "Potree.workers.lasdecoder"))
+		.pipe(size({showFiles: true}))
+		.pipe(gulp.dest('build/workers'));
+});
+>>>>>>> laslaz
 
 
 gulp.task("scripts", function(){
@@ -37,4 +84,76 @@ gulp.task("scripts", function(){
 		.pipe(gulp.dest('build/js'));
 
 	return;
+<<<<<<< HEAD
 });
+=======
+});
+
+
+
+
+
+
+
+var encodeWorker = function(fileName, varname, opt){
+	if (!fileName) throw new PluginError('gulp-concat',  'Missing fileName option for gulp-concat');
+	if (!opt) opt = {};
+	if (!opt.newLine) opt.newLine = gutil.linefeed;
+	
+	var buffer = [];
+	var firstFile = null;
+	
+	function bufferContents(file){
+		if (file.isNull()) return; // ignore
+		if (file.isStream()) return this.emit('error', new PluginError('gulp-concat',  'Streaming not supported'));
+		
+		if (!firstFile) firstFile = file;
+	
+		var string = file.contents.toString('utf8');
+		buffer.push(string);
+	}
+	
+	function endStream(){
+		if (buffer.length === 0) return this.emit('end');
+		
+		var joinedContents = buffer.join("");
+		//var content = varname + " = {\n";
+		//content += "\tcode:\tatob(\"" + new Buffer(joinedContents).toString('base64') + "\"),\n";
+		//content += "\tinstances:\t[]\n";
+		//content += "};";
+		var content = varname + " = new Potree.WorkerManager(atob(\"" + new Buffer(joinedContents).toString('base64') + "\"));";
+		
+		var joinedPath = path.join(firstFile.base, fileName);
+		
+		var joinedFile = new File({
+			cwd: firstFile.cwd,
+			base: firstFile.base,
+			path: joinedPath,
+			contents: new Buffer(content)
+		});
+		
+		this.emit('data', joinedFile);
+		this.emit('end');
+	}
+	
+	return through(bufferContents, endStream);
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+>>>>>>> laslaz

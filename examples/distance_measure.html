@@ -68,7 +68,8 @@
 			
 			var params = {
 				PointSize: defaultPointSize,
-				LOD: defaultLOD
+				LOD: defaultLOD,
+				"show aabb" : false
 			};
 			
 			var pLOD = gui.add(params, 'LOD', 0.5,20);
@@ -79,6 +80,11 @@
 			var pPointSize = gui.add(params, 'PointSize', 0.01, 0.1);
 			pPointSize.onChange(function(value){
 				pointcloudMaterial.size = value;
+			});
+			
+			var pBoundingBox = gui.add(params, 'show aabb');
+			pBoundingBox.onChange(function(value){
+				pointcloud.showBoundingBox = value;
 			});
 		}
 

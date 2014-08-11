@@ -1,6 +1,6 @@
 {
 	"version": "1.1",
-	"octreeDir": "data",
+	"octreeDir": "bin",
 	"boundingBox": {
 		"lx": -2.91016,
 		"ly": -4.06274,

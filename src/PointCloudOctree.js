@@ -86,56 +86,23 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 		var visible = true;
 		visible = visible && frustum.intersectsBox(box);
 		if(object.level > 0){
-		
-			{ // distance to camera method
-				visible = visible && Math.pow(radius, 0.8) / distance > (1 / this.LOD);
-				visible = visible && (this.numVisiblePoints + object.numPoints < Potree.pointLoadLimit);
-				visible = visible && (this.numVisibleNodes <= this.maxVisibleNodes);
-				visible = visible && (this.numVisiblePoints <= this.maxVisiblePoints);
-			}
-			
-			//{ // distance to view ray method
-			//	var br = tbox.size().length() / 2;
-			//	var distanceToPoint = ray.distanceToPoint(tbox.center());
-			//	//var m = tbox.size().length() / distanceToPoint;
-			//	var m = (br - distanceToPoint) / br;
-			//	m = Math.max(m+1, 1);
-			//	m = Math.pow(m, 5);
-			//	
-			//	//visible = visible && (distanceToPoint < tbox.size().length());
-			//	
-			//	visible = visible && m * Math.pow(radius, 0.8) / distance > (1 / this.LOD);
-			//	visible = visible && (this.numVisiblePoints + object.numPoints < Potree.pointLoadLimit);
-			//	visible = visible && (this.numVisibleNodes <= this.maxVisibleNodes);
-			//	visible = visible && (this.numVisiblePoints <= this.maxVisiblePoints);
-			//	//visible = visible || (distanceToPoint < tbox.size().length() / 2);
-			//	
-			//	//document.getElementById("lblMessage").innerHTML = distanceToPoint;
-			//	//if(distanceToPoint < tbox.size().length()){
-			//	//	if(object.centerSphere !== undefined){
-			//	//		object.centerSphere.material.color.r = 0;
-			//	//		object.centerSphere.material.color.b = 1;
-			//	//	}
-			//	//}else{
-			//	//	if(object.centerSphere !== undefined){
-			//	//		object.centerSphere.material.color.r = 1;
-			//	//		object.centerSphere.material.color.b = 0;
-			//	//	}
-			//	//}
-			//}
-				
-			
+			// cull detail nodes based in distance to camera
+			visible = visible && Math.pow(radius, 0.8) / distance > (1 / this.LOD);
+			visible = visible && (this.numVisiblePoints + object.numPoints < Potree.pointLoadLimit);
+			visible = visible && (this.numVisibleNodes <= this.maxVisibleNodes);
+			visible = visible && (this.numVisiblePoints <= this.maxVisiblePoints);
 		}else{
 			visible = true;
 		}
 		
-		if(this.pcoGeometry !== undefined && this.pcoGeometry.spacing !== undefined){
-			var spacing = this.pcoGeometry.spacing / Math.pow(2, object.level);
-			spacing *= 10;
-			if(spacing < this.material.size * 1.5){
-				visible = false;
-			}
-		}
+		// trying to skip higher detail nodes, if parents already cover all holes
+		//if(this.pcoGeometry !== undefined && this.pcoGeometry.spacing !== undefined){
+		//	var spacing = this.pcoGeometry.spacing / Math.pow(2, object.level);
+		//	spacing *= 10;
+		//	if(spacing < this.material.size * 1.5){
+		//		visible = false;
+		//	}
+		//}
 		
 		object.visible = visible;
 		
@@ -148,12 +115,8 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 				object.add(boxHelper);
 				object.boundingBoxNode = boxHelper;
 			}
-			//var boxHelper = new THREE.BoxHelper(node);
-			//node.add(boxHelper);
-			//node.boxHelper = boxHelper;
 		}else if(!this.showBoundingBox){
 			if(object.boundingBoxNode !== undefined){
-				//object.boundingBoxNode.visible = false;
 				object.remove(object.boundingBoxNode);
 				object.boundingBoxNode = undefined;
 			}
@@ -163,6 +126,7 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 			this.numVisibleNodes++;
 			this.numVisiblePoints += object.numPoints;
 			Potree.PointCloudOctree.lru.touch(object);
+			object.material = this.material;
 		}else if (object instanceof Potree.PointCloudOctreeProxyNode) {
 			this.replaceProxy(object);
 		}
@@ -188,19 +152,6 @@ Potree.PointCloudOctree.prototype.replaceProxy = function(proxy){
 		var parent = proxy.parent;
 		parent.remove(proxy);
 		parent.add(node);
-		
-		//var centerGeometry = new THREE.SphereGeometry();
-		//var material = new THREE.MeshBasicMaterial({color: 'red'});
-		//var centerNode = new THREE.Mesh(centerGeometry, material);
-		//centerNode.position = node.boundingBox.center();
-		//var scale = 10/(node.level+1);
-		//centerNode.scale.set(scale, scale, scale);
-		//node.add(centerNode);
-		//node.centerSphere = centerNode;
-		//
-		//var boxHelper = new THREE.BoxHelper(node);
-		//node.add(boxHelper);
-		//node.boxHelper = boxHelper;
 		
 		for(var i = 0; i < 8; i++){
 			if(geometryNode.children[i] !== undefined){

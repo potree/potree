@@ -155,7 +155,7 @@ Potree.LasLazBatcher = function(node, url){
 			geometry.addAttribute('position', new THREE.Float32Attribute(positions, 3));
 			geometry.addAttribute('color', new THREE.Float32Attribute(colors, 3));
 			geometry.addAttribute('intensity', new THREE.Float32Attribute(intensities, 1));
-			geometry.boundingBox = box;
+			geometry.boundingBox = node.boundingBox;
 			
 			node.geometry = geometry;
 			node.loaded = true;

@@ -67,4 +67,56 @@ Potree.utils.createWorker = function(code){
 }
 
 
+Potree.utils.loadSkybox = function(path){
+	var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 100000 );
+	var scene = new THREE.Scene();
 
+	var format = ".jpg";
+	var urls = [
+		path + 'px' + format, path + 'nx' + format,
+		path + 'py' + format, path + 'ny' + format,
+		path + 'pz' + format, path + 'nz' + format
+	];
+	
+	var textureCube = THREE.ImageUtils.loadTextureCube( urls, new THREE.CubeRefractionMapping() );
+	var material = new THREE.MeshBasicMaterial( { color: 0xffffff, envMap: textureCube, refractionRatio: 0.95 } );
+	
+	var shader = THREE.ShaderLib[ "cube" ];
+	shader.uniforms[ "tCube" ].value = textureCube;
+
+	var material = new THREE.ShaderMaterial( {
+
+		fragmentShader: shader.fragmentShader,
+		vertexShader: shader.vertexShader,
+		uniforms: shader.uniforms,
+		depthWrite: false,
+		side: THREE.BackSide
+
+	} ),
+
+	mesh = new THREE.Mesh( new THREE.BoxGeometry( 100, 100, 100 ), material );
+	scene.add( mesh );
+	
+	return {"camera": camera, "scene": scene};
+}
+
+Potree.utils.createGrid = function createGrid(width, length, spacing, color){
+	var material = new THREE.LineBasicMaterial({
+		color: color || 0x888888
+	});
+	
+	var geometry = new THREE.Geometry();
+	for(var i = 0; i <= length; i++){
+		 geometry.vertices.push(new THREE.Vector3(-(spacing*width)/2, 0, i*spacing-(spacing*length)/2));
+		 geometry.vertices.push(new THREE.Vector3(+(spacing*width)/2, 0, i*spacing-(spacing*length)/2));
+	}
+	
+	for(var i = 0; i <= width; i++){
+		 geometry.vertices.push(new THREE.Vector3(i*spacing-(spacing*width)/2, 0, -(spacing*length)/2));
+		 geometry.vertices.push(new THREE.Vector3(i*spacing-(spacing*width)/2, 0, +(spacing*length)/2));
+	}
+	
+	var line = new THREE.Line(geometry, material, THREE.LinePieces);
+	line.receiveShadow = true;
+	return line;
+}

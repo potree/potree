@@ -29,16 +29,8 @@
 	<script src="../libs/other/OrbitControls.js"></script>
 	<script src="../libs/other/stats.min.js"></script>
 	<script src="../libs/other/dat.gui.min.js"></script>
-<<<<<<< HEAD
-	<script src="../build/js/potree.min.js"></script>
-=======
 	
 	<script src="../build/js/potree.min.js"></script>
-	<script src="../src/materials/PointCloudRGBMaterial.js"></script>
-	<script src="../src/materials/PointCloudColorMaterial.js"></script>
-	<script src="../src/materials/PointCloudHeightMaterial.js"></script>
-	<script src="../src/PointCloudOctree.js"></script>
->>>>>>> laslaz
 	
 	<div id="lblNumVisibleNodes" class="info" style="position: absolute; left: 10px; top: 80px; width: 400px; color:white"></div>
 	<div id="lblNumVisiblePoints" class="info" style="position: absolute; left: 10px; top: 100px; width: 400px; color:white"></div>
@@ -50,23 +42,16 @@
 	<script>
 		var defaultPointSize = 0.04;
 		var defaultLOD = 15;
-		var pointcloudPath = "../resources/pointclouds/lion_takanawa/cloud.js";
+		var pointcloudPath = "../resources/pointclouds/lion_takanawa/cloud_bin.js";
 	
 		var renderer;
 		var camera;
 		var scene;
-<<<<<<< HEAD
-		var pointclouds = [];
-		var pointcloudMaterial;
-		var skybox;
-		var stats;
-=======
 		var pointcloud;
 		var skybox;
 		var stats;
 		var clock = new THREE.Clock();
 		var materials = {};
->>>>>>> laslaz
 		
 		function initGUI(){
 		
@@ -84,13 +69,7 @@
 			
 			var pLOD = gui.add(params, 'LOD', 0.5,20);
 			pLOD.onChange(function(value){
-<<<<<<< HEAD
-				for(var i = 0; i < pointclouds.length; i++){
-					pointclouds[i].LOD = value;
-				}
-=======
 				pointcloud.LOD = value;
->>>>>>> laslaz
 			});
 			
 			var pPointSize = gui.add(params, 'PointSize', 0.01, 0.1);
@@ -98,8 +77,6 @@
 				pointcloud.material.size = value;
 			});
 			
-<<<<<<< HEAD
-=======
 			var pMaterial = gui.add(params, 'Materials', [ "RGB", "Color", "Height" ]);
 			pMaterial.onChange(function(value){
 				var size = pointcloud.material.size;
@@ -121,7 +98,6 @@
 				pointcloud.showBoundingBox = value;
 			});
 
->>>>>>> laslaz
 			// stats
 			stats = new Stats();
 			stats.domElement.style.position = 'absolute';
@@ -142,36 +118,11 @@
 			skybox = Potree.utils.loadSkybox("../resources/textures/skybox/");
 
 			// camera and controls
-<<<<<<< HEAD
-			camera.position.set(25, 10, 15);
-=======
 			camera.position.set(5, 10, 15);
->>>>>>> laslaz
 			controls = new THREE.OrbitControls(camera, renderer.domElement);
 			controls.target.set( 0, 4, 0 );
 			camera.lookAt(controls.target);
-			
-<<<<<<< HEAD
-			// load pointcloud
-			pointcloudMaterial = new THREE.PointCloudMaterial( { size: defaultPointSize, vertexColors: true } );
-			var pco = POCLoader.load(pointcloudPath);
-			
-			for(var i = -2; i <= 2; i++){
-				for(var j = -2; j <= 2; j++){
-					var pointcloud = new Potree.PointCloudOctree(pco, pointcloudMaterial);
-					pointcloud.LOD = defaultLOD;
-					//pointcloud.rotation.set(Math.PI,-1.2,0);
-					pointcloud.rotation.set(Math.PI/2, 0.85* -Math.PI/2, -0.0);
-					pointcloud.moveToOrigin();
-					pointcloud.moveToGroundPlane();
-					pointcloud.position.x += 8*i;
-					pointcloud.position.z += 8*j;
-					
-					pointclouds.push(pointcloud);
-					scene.add(pointcloud);
-				}
-			}
-=======
+
 			// materials
 			materials.rgb = new Potree.PointCloudRGBMaterial({ size: defaultPointSize});
 			materials.color = new Potree.PointCloudColorMaterial({size: defaultPointSize});
@@ -191,33 +142,11 @@
 			
 			var grid = Potree.utils.createGrid(5, 5, 2);
 			scene.add(grid);
->>>>>>> laslaz
 		}
 		
 		function render() {
 			requestAnimationFrame(render);
 			
-<<<<<<< HEAD
-			// update numbers
-			var numVisibleNodes = 0;
-			var numVisiblePoints = 0;
-			for(var i = 0; i < pointclouds.length; i++){
-				var pointcloud = pointclouds[i];
-				pointcloud.update(camera);
-				numVisibleNodes += pointcloud.numVisibleNodes;
-				numVisiblePoints += pointcloud.numVisiblePoints;
-			}
-			document.getElementById("lblNumVisibleNodes").innerHTML = "visible nodes: " + numVisibleNodes;
-			document.getElementById("lblNumVisiblePoints").innerHTML = "visible points: " + Potree.utils.addCommas(numVisiblePoints);
-			stats.update();
-			
-			controls.update(0.1);
-			
-			// render skybox
-			skybox.camera.rotation.copy(camera.rotation);
-			renderer.render(skybox.scene, skybox.camera);
-			
-=======
 			pointcloud.update(camera);
 			
 			document.getElementById("lblNumVisibleNodes").innerHTML = "visible nodes: " + pointcloud.numVisibleNodes;
@@ -230,7 +159,6 @@
 			skybox.camera.rotation.copy(camera.rotation);
 			renderer.render(skybox.scene, skybox.camera);
 			
->>>>>>> laslaz
 			// render scene
 			renderer.render(scene, camera);
 		};

@@ -6,36 +6,27 @@ var concat = require('gulp-concat');
 var size = require('gulp-size');
 var rename = require('gulp-rename');
 var uglify = require('gulp-uglify');
-<<<<<<< HEAD
-=======
 var gutil = require('gulp-util');
 var through = require('through');
 var os = require('os');
 var File = gutil.File;
 
->>>>>>> laslaz
 
 var paths = {
 	potree : [
 		"src/Potree.js",
-<<<<<<< HEAD
-=======
 		"src/WorkerManager.js",
 		"build/workers/laslaz-worker.js",
 		"build/workers/lasdecoder-worker.js",
->>>>>>> laslaz
 		"src/extensions/PerspectiveCamera.js",
 		"src/extensions/Ray.js",
 		"src/loader/POCLoader.js",
 		"src/loader/PointAttributes.js",
-<<<<<<< HEAD
-=======
 		"src/loader/LasLazLoader.js",
 		"src/materials/PointCloudRGBMaterial.js",
 		"src/materials/PointCloudIntensityMaterial.js",
 		"src/materials/PointCloudHeightMaterial.js",
 		"src/materials/PointCloudColorMaterial.js",
->>>>>>> laslaz
 		"src/FirstPersonControls.js",
 		"src/LRU.js",
 		"src/PointCloudOctree.js",
@@ -45,9 +36,6 @@ var paths = {
 
 };
 
-<<<<<<< HEAD
-
-=======
 var workers = {
 	"laslaz": [
 		"libs/plasio/workers/laz-perf.js",
@@ -70,7 +58,6 @@ gulp.task("workers", function(){
 		.pipe(size({showFiles: true}))
 		.pipe(gulp.dest('build/workers'));
 });
->>>>>>> laslaz
 
 
 gulp.task("scripts", function(){
@@ -84,9 +71,6 @@ gulp.task("scripts", function(){
 		.pipe(gulp.dest('build/js'));
 
 	return;
-<<<<<<< HEAD
-});
-=======
 });
 
 
@@ -144,16 +128,3 @@ var encodeWorker = function(fileName, varname, opt){
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
->>>>>>> laslaz

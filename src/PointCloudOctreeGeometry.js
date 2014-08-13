@@ -82,8 +82,8 @@ Potree.PointCloudOctreeGeometryNode.prototype.bufferLoaded = function(buffer){
 		colors[3*i+2] = color.b / 255;
 	}
 	
-	geometry.addAttribute('position', new THREE.Float32Attribute(positions, 3));
-	geometry.addAttribute('color', new THREE.Float32Attribute(colors, 3));
+	geometry.addAttribute('position', new THREE.BufferAttribute(positions, 3));
+	geometry.addAttribute('color', new THREE.BufferAttribute(colors, 3));
 	geometry.boundingBox = this.boundingBox;
 	this.geometry = geometry;
 	this.loaded = true;

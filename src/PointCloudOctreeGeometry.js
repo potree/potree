@@ -129,6 +129,11 @@ Potree.BinaryNodeLoader.load = function(node, callback){
 Potree.LasLazBatcher = function(node, url){	
 	this.push = function(lasBuffer){
 		var ww = Potree.workers.lasdecoder.getWorker();
+		var mins = new THREE.Vector3(lasBuffer.mins[0], lasBuffer.mins[1], lasBuffer.mins[2]);
+		var maxs = new THREE.Vector3(lasBuffer.maxs[0], lasBuffer.maxs[1], lasBuffer.maxs[2]);
+		mins.add(node.pcoGeometry.offset);
+		maxs.add(node.pcoGeometry.offset);
+		
 		ww.onmessage = function(e){
 			var geometry = new THREE.BufferGeometry();
 			var numPoints = lasBuffer.pointsCount;
@@ -155,7 +160,9 @@ Potree.LasLazBatcher = function(node, url){
 			geometry.addAttribute('position', new THREE.Float32Attribute(positions, 3));
 			geometry.addAttribute('color', new THREE.Float32Attribute(colors, 3));
 			geometry.addAttribute('intensity', new THREE.Float32Attribute(intensities, 1));
-			geometry.boundingBox = node.boundingBox;
+			//geometry.boundingBox = node.boundingBox;
+			geometry.boundingBox = new THREE.Box3(mins, maxs);
+			node.boundingBox = geometry.boundingBox;
 			
 			node.geometry = geometry;
 			node.loaded = true;

@@ -104,10 +104,13 @@ onmessage = function(event){
 		tempUint8[3] = bufferView[i*pointSize+11];
 		var z = tempInt32[0];
 		
-		positions[3*i+0] = x * scale[0] + offset[0] - mins[0];
-		positions[3*i+1] = y * scale[1] + offset[1] - mins[1];
-		positions[3*i+2] = z * scale[2] + offset[2] - mins[2];
+		//positions[3*i+0] = x * scale[0] + offset[0] - mins[0];
+		//positions[3*i+1] = y * scale[1] + offset[1] - mins[1];
+		//positions[3*i+2] = z * scale[2] + offset[2] - mins[2];
 		
+		positions[3*i+0] = x * scale[0] + offset[0];
+		positions[3*i+1] = y * scale[1] + offset[1];
+		positions[3*i+2] = z * scale[2] + offset[2];
 		
 		// INTENSITY
 		tempUint8[0] = bufferView[i*pointSize+12];

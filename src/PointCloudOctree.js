@@ -84,7 +84,7 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 
 		var visible = true;
 		visible = visible && frustum.intersectsBox(box);
-		if(object.level > 0){
+		if(object.level > 1){
 			// cull detail nodes based in distance to camera
 			visible = visible && Math.pow(radius, 0.8) / distance > (1 / this.LOD);
 			visible = visible && (this.numVisiblePoints + object.numPoints < Potree.pointLoadLimit);
@@ -101,6 +101,10 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 		//	if(spacing < this.material.size * 1.5){
 		//		visible = false;
 		//	}
+		//}
+		
+		//if(object.level > 0){
+		//	visible = parseInt(object.name.charAt(object.name.length-1)) == 0;
 		//}
 		
 		object.visible = visible;

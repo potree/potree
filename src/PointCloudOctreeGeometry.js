@@ -145,6 +145,8 @@ Potree.LasLazBatcher = function(node, url){
 			var positions = e.data.position;
 			var colors = e.data.color;
 			var intensities = e.data.intensity;
+			var classifications = new Uint8Array(e.data.classification);
+			var classifications_f = new Float32Array(classifications.byteLength);
 			
 			var box = new THREE.Box3();
 			
@@ -154,12 +156,15 @@ Potree.LasLazBatcher = function(node, url){
 				fPositions[3*i+1] += node.pcoGeometry.offset.y;
 				fPositions[3*i+2] += node.pcoGeometry.offset.z;
 				
+				classifications_f[i] = classifications[i];
+				
 				box.expandByPoint(new THREE.Vector3(fPositions[3*i+0], fPositions[3*i+1], fPositions[3*i+2]));
 			}
 			
 			geometry.addAttribute('position', new THREE.Float32Attribute(positions, 3));
 			geometry.addAttribute('color', new THREE.Float32Attribute(colors, 3));
 			geometry.addAttribute('intensity', new THREE.Float32Attribute(intensities, 1));
+			geometry.addAttribute('classification', new THREE.Float32Attribute(classifications_f, 1));
 			//geometry.boundingBox = node.boundingBox;
 			geometry.boundingBox = new THREE.Box3(mins, maxs);
 			node.boundingBox = geometry.boundingBox;

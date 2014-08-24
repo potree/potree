@@ -120,7 +120,7 @@ onmessage = function(event){
 		
 		
 		// CLASSIFICATION
-		var classification = bufferView[i*pointSize+16];
+		var classification = bufferView[i*pointSize+15];
 		classifications[i] = classification;
 		
 		

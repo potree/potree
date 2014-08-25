@@ -678,7 +678,6 @@ Potree.PointCloudIntensityMaterial.vs_points = [
  "	gl_Position = projectionMatrix * mvPosition;               ",
  "}                                                            "];
 
-
 Potree.PointCloudIntensityMaterial.fs_points_rgb = [
  "varying vec3 vColor;                                         ",
  "                                                             ",
@@ -1438,7 +1437,7 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 
 		var visible = true;
 		visible = visible && frustum.intersectsBox(box);
-		if(object.level > 3){
+		if(object.level > 1){
 			// cull detail nodes based in distance to camera
 			visible = visible && Math.pow(radius, 0.8) / distance > (1 / this.LOD);
 			visible = visible && (this.numVisiblePoints + object.numPoints < Potree.pointLoadLimit);

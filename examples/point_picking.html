@@ -49,8 +49,8 @@ function generatePointcloud(){
 		}
 	}
 	
-	geometry.addAttribute('position', new THREE.Float32Attribute(positions, 3));
-	geometry.addAttribute('color', new THREE.Float32Attribute(colors, 3));
+	geometry.addAttribute('position', new THREE.BufferAttribute(positions, 3));
+	geometry.addAttribute('color', new THREE.BufferAttribute(colors, 3));
 	
 	var material = new THREE.PointCloudMaterial({ size: 0.01, vertexColors: true });
 	var pointcloud = new THREE.PointCloud(geometry, material);
@@ -106,7 +106,7 @@ function render() {
 	var intersects = raycaster.intersectObject(pointcloud);
 	if(intersects.length > 0){
 		var I = intersects[0];
-		pickLocation.position = I.point;
+		pickLocation.position.copy(I.point);
 	}
 
 	renderer.render(scene, camera);

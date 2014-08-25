@@ -78,7 +78,7 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 		}
 		
 		var box = object.boundingBox;
-		var tbox = Potree.utils.computeTransformedBoundingBox(box, this.matrixWorld);
+		//var tbox = Potree.utils.computeTransformedBoundingBox(box, this.matrixWorld);
 		var distance = box.center().distanceTo(camObjPos);
 		var radius = box.size().length() * 0.5;
 

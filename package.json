@@ -1,0 +1,23 @@
+{
+  "name": "potree",
+  "private": true,
+  "version": "0.0.1",
+  "description": "WebGL point cloud viewer",
+  "dependencies": {
+    "gulp": "*",
+    "gulp-size": "*",
+    "gulp-concat": "*",
+    "gulp-uglify": "*",
+    "gulp-rename": "*"
+  },
+  "author": {},
+  "license": "",
+  "devDependencies": {
+    "gulp": "~3.5.2",
+    "gulp-rename": "~1.0.0",
+    "gulp-concat": "~2.1.7",
+    "gulp-uglify": "~0.2.1",
+    "gulp-util": "~2.2.20",
+    "through": "~2.3.4"
+  }
+}

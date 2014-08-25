@@ -19,20 +19,14 @@ Potree.PointCloudOctreeProxyNode = function(geometryNode){
 
 Potree.PointCloudOctreeProxyNode.prototype = Object.create(THREE.Object3D.prototype);
 
-
-
-
-
-
-
-
 Potree.PointCloudOctree = function(geometry, material){
 	THREE.Object3D.call( this );
 	
 	Potree.PointCloudOctree.lru = Potree.PointCloudOctree.lru || new LRU();
 	
 	this.pcoGeometry = geometry;
-	this.boundingBox = this.pcoGeometry.boundingBox;
+	//this.boundingBox = this.pcoGeometry.boundingBox;
+	this.boundingBox = this.pcoGeometry.root.boundingBox;
 	this.material = material;
 	this.maxVisibleNodes = 2000;
 	this.maxVisiblePoints = 20*1000*1000;
@@ -41,6 +35,7 @@ Potree.PointCloudOctree = function(geometry, material){
 	this.LODDistance = 20;
 	this.LODFalloff = 1.3;
 	this.LOD = 4;
+	this.showBoundingBox = false;
 	
 	
 	var rootProxy = new Potree.PointCloudOctreeProxyNode(this.pcoGeometry.root);
@@ -54,6 +49,7 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 	this.numVisiblePoints = 0;
 	
 	// create frustum in object space
+	camera.updateMatrixWorld();
 	var frustum = new THREE.Frustum();
 	var viewI = camera.matrixWorldInverse;
 	var world = this.matrixWorld;
@@ -66,37 +62,74 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 	var worldI = new THREE.Matrix4().getInverse(world);
 	var camMatrixObject = new THREE.Matrix4().multiply(worldI).multiply(view);
 	var camObjPos = new THREE.Vector3().setFromMatrixPosition( camMatrixObject );
+	
+	var ray = new THREE.Ray(camera.position, new THREE.Vector3( 0, 0, -1 ).applyQuaternion( camera.quaternion ) );
+	//var ray = new THREE.Ray(camera.position, new THREE.Vector3( 0, -1, 0 ) );
+	
 	// check visibility
 	var stack = [];
 	stack.push(this);
 	while(stack.length > 0){
 		var object = stack.shift();
 		
+		if(object instanceof THREE.Mesh || object instanceof THREE.Line ){
+			object.visible = true;
+			continue;
+		}
+		
 		var box = object.boundingBox;
+		//var tbox = Potree.utils.computeTransformedBoundingBox(box, this.matrixWorld);
 		var distance = box.center().distanceTo(camObjPos);
 		var radius = box.size().length() * 0.5;
 
 		var visible = true;
 		visible = visible && frustum.intersectsBox(box);
 		if(object.level > 1){
-			visible = visible && radius / distance > (1 / this.LOD);
+			// cull detail nodes based in distance to camera
+			visible = visible && Math.pow(radius, 0.8) / distance > (1 / this.LOD);
 			visible = visible && (this.numVisiblePoints + object.numPoints < Potree.pointLoadLimit);
 			visible = visible && (this.numVisibleNodes <= this.maxVisibleNodes);
 			visible = visible && (this.numVisiblePoints <= this.maxVisiblePoints);
 		}else{
-			visible = true;
+			//visible = true;
 		}
+		
+		// trying to skip higher detail nodes, if parents already cover all holes
+		//if(this.pcoGeometry !== undefined && this.pcoGeometry.spacing !== undefined){
+		//	var spacing = this.pcoGeometry.spacing / Math.pow(2, object.level);
+		//	spacing *= 10;
+		//	if(spacing < this.material.size * 1.5){
+		//		visible = false;
+		//	}
+		//}
+		
+		//if(object.level > 0){
+		//	visible = parseInt(object.name.charAt(object.name.length-1)) == 0;
+		//}
+		
 		object.visible = visible;
 		
 		if(!visible){
 			this.hideDescendants(object);
 			continue;
+		}else if(visible && this.showBoundingBox && object instanceof THREE.PointCloud){
+			if(object.boundingBoxNode === undefined && object.boundingBox !== undefined){
+				var boxHelper = new THREE.BoxHelper(object);
+				object.add(boxHelper);
+				object.boundingBoxNode = boxHelper;
+			}
+		}else if(!this.showBoundingBox){
+			if(object.boundingBoxNode !== undefined){
+				object.remove(object.boundingBoxNode);
+				object.boundingBoxNode = undefined;
+			}
 		}
 		
 		if(object instanceof THREE.PointCloud){
 			this.numVisibleNodes++;
 			this.numVisiblePoints += object.numPoints;
 			Potree.PointCloudOctree.lru.touch(object);
+			object.material = this.material;
 		}else if (object instanceof Potree.PointCloudOctreeProxyNode) {
 			this.replaceProxy(object);
 		}
@@ -173,6 +206,15 @@ Potree.PointCloudOctree.prototype.moveToGroundPlane = function(){
     var transform = this.matrixWorld;
     var tBox = Potree.utils.computeTransformedBoundingBox(box, transform);
     this.position.y += -tBox.min.y;
+}
+
+Potree.PointCloudOctree.prototype.getBoundingBoxWorld = function(){
+	this.updateMatrixWorld();
+    var box = this.boundingBox;
+    var transform = this.matrixWorld;
+    var tBox = Potree.utils.computeTransformedBoundingBox(box, transform);
+	
+	return tBox;
 }
 
 

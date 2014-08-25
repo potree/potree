@@ -17,7 +17,10 @@ function POCLoader(){
  * @param url
  * @param loadingFinishedListener executed after loading the binary has been finished
  */
-POCLoader.load = function load(url) {
+POCLoader.load = function load(url, params) {
+	var parameters = params || {};
+	var toOrigin = parameters.toOrigin || false;
+
 	try{
 		var pco = new Potree.PointCloudOctreeGeometry();
 		pco.url = url;
@@ -32,14 +35,27 @@ POCLoader.load = function load(url) {
 				pco.octreeDir = url + "/../" + fMno.octreeDir;
 			}
 			
+			pco.spacing = fMno.spacing;
+
+			pco.pointAttributes = fMno.pointAttributes;
+			
+			var min = new THREE.Vector3(fMno.boundingBox.lx, fMno.boundingBox.ly, fMno.boundingBox.lz);
+			var max = new THREE.Vector3(fMno.boundingBox.ux, fMno.boundingBox.uy, fMno.boundingBox.uz);
+			var boundingBox = new THREE.Box3(min, max);
+			var offset = new THREE.Vector3(0,0,0);
+			
+			if(toOrigin){
+				offset.set(-min.x, -min.y, -min.z);
+				boundingBox.min.add(offset);
+				boundingBox.max.add(offset);
+			}
+			pco.boundingBox = boundingBox;
+			pco.offset = offset;
+			
 			var nodes = {};
 			
 			{ // load root
 				var name = "r";
-				var min = new THREE.Vector3(fMno.boundingBox.lx, fMno.boundingBox.ly, fMno.boundingBox.lz);
-				var max = new THREE.Vector3(fMno.boundingBox.ux, fMno.boundingBox.uy, fMno.boundingBox.uz);
-				var boundingBox = new THREE.Box3(min, max);
-				pco.boundingBox = boundingBox;
 				
 				var root = new Potree.PointCloudOctreeGeometryNode(name, pco, boundingBox);
 				root.level = 0;
@@ -56,7 +72,6 @@ POCLoader.load = function load(url) {
 				var index = parseInt(name.charAt(name.length-1));
 				var parentName = name.substring(0, name.length-1);
 				var parentNode = nodes[parentName];
-				var points = fMno.hierarchy[i][1];
 				var level = name.length-1;
 				var boundingBox = POCLoader.createChildAABB(parentNode.boundingBox, index);
 				

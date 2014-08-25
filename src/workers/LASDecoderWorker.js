@@ -62,6 +62,7 @@ onmessage = function(event){
 	var offset = event.data.offset;
 	var mins = event.data.mins;
 	var maxs = event.data.maxs;
+	var bbOffset = event.data.bbOffset;
 	
 	var temp = new ArrayBuffer(4);
 	var tempUint8 = new Uint8Array(temp);
@@ -108,9 +109,9 @@ onmessage = function(event){
 		//positions[3*i+1] = y * scale[1] + offset[1] - mins[1];
 		//positions[3*i+2] = z * scale[2] + offset[2] - mins[2];
 		
-		positions[3*i+0] = x * scale[0] + offset[0];
-		positions[3*i+1] = y * scale[1] + offset[1];
-		positions[3*i+2] = z * scale[2] + offset[2];
+		positions[3*i+0] = x * scale[0] + offset[0] + bbOffset[0];
+		positions[3*i+1] = y * scale[1] + offset[1] + bbOffset[1];
+		positions[3*i+2] = z * scale[2] + offset[2] + bbOffset[2];
 		
 		// INTENSITY
 		tempUint8[0] = bufferView[i*pointSize+12];

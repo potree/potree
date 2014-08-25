@@ -152,9 +152,9 @@ Potree.LasLazBatcher = function(node, url){
 			
 			var fPositions = new Float32Array(positions);
 			for(var i = 0; i < numPoints; i++){			
-				fPositions[3*i+0] += node.pcoGeometry.offset.x;
-				fPositions[3*i+1] += node.pcoGeometry.offset.y;
-				fPositions[3*i+2] += node.pcoGeometry.offset.z;
+				//fPositions[3*i+0] += node.pcoGeometry.offset.x;
+				//fPositions[3*i+1] += node.pcoGeometry.offset.y;
+				//fPositions[3*i+2] += node.pcoGeometry.offset.z;
 				
 				classifications_f[i] = classifications[i];
 				
@@ -188,7 +188,8 @@ Potree.LasLazBatcher = function(node, url){
 			scale: lasBuffer.scale,
 			offset: lasBuffer.offset,
 			mins: [node.pcoGeometry.boundingBox.min.x, node.pcoGeometry.boundingBox.min.y, node.pcoGeometry.boundingBox.min.z],
-			maxs: [node.pcoGeometry.boundingBox.max.x, node.pcoGeometry.boundingBox.max.y, node.pcoGeometry.boundingBox.max.z]
+			maxs: [node.pcoGeometry.boundingBox.max.x, node.pcoGeometry.boundingBox.max.y, node.pcoGeometry.boundingBox.max.z],
+			bbOffset: [node.pcoGeometry.offset.x, node.pcoGeometry.offset.y, node.pcoGeometry.offset.z]
 		};
 		ww.postMessage(message, [message.buffer]);
 	}

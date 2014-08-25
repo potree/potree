@@ -174,9 +174,9 @@
 					var I = intersects[0];
 					
 					if(placeStartMode){
-						spStart.position = I.point;
+						spStart.position.copy(I.point);
 					}else if(placeEndMode){
-						spEnd.position = I.point;
+						spEnd.position.copy(I.point);
 					}
 					sConnection.geometry.vertices[0].copy(spStart.position);
 					sConnection.geometry.vertices[1].copy(spEnd.position);

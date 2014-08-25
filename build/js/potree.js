@@ -1707,8 +1707,8 @@ Potree.PointCloudOctreeGeometryNode.prototype.load = function(){
 				colors[3*i+2] = color.b / 255;
 			}
 			
-			geometry.addAttribute('position', new THREE.Float32Attribute(positions, 3));
-			geometry.addAttribute('color', new THREE.Float32Attribute(colors, 3));
+			geometry.addAttribute('position', new THREE.BufferAttribute(positions, 3));
+			geometry.addAttribute('color', new THREE.BufferAttribute(colors, 3));
 			geometry.boundingBox = node.boundingBox;
 			node.geometry = geometry;
 			node.loaded = true;
@@ -1789,10 +1789,10 @@ Potree.LasLazBatcher = function(node, url){
 				box.expandByPoint(new THREE.Vector3(fPositions[3*i+0], fPositions[3*i+1], fPositions[3*i+2]));
 			}
 			
-			geometry.addAttribute('position', new THREE.Float32Attribute(positions, 3));
-			geometry.addAttribute('color', new THREE.Float32Attribute(colors, 3));
-			geometry.addAttribute('intensity', new THREE.Float32Attribute(intensities, 1));
-			geometry.addAttribute('classification', new THREE.Float32Attribute(classifications_f, 1));
+			geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
+			geometry.addAttribute('color', new THREE.BufferAttribute(new Float32Array(colors), 3));
+			geometry.addAttribute('intensity', new THREE.BufferAttribute(new Float32Array(intensities), 1));
+			geometry.addAttribute('classification', new THREE.BufferAttribute(new Float32Array(classifications_f), 1));
 			//geometry.boundingBox = node.boundingBox;
 			geometry.boundingBox = new THREE.Box3(mins, maxs);
 			node.boundingBox = geometry.boundingBox;
@@ -1827,6 +1827,8 @@ Potree.PointCloudOctreeGeometryNode.prototype.dispose = function(){
 	delete this.geometry;
 	this.loaded = false;
 }
+
+
 
 Potree.utils = function(){
 	

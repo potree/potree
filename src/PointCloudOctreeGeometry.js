@@ -161,10 +161,10 @@ Potree.LasLazBatcher = function(node, url){
 				box.expandByPoint(new THREE.Vector3(fPositions[3*i+0], fPositions[3*i+1], fPositions[3*i+2]));
 			}
 			
-			geometry.addAttribute('position', new THREE.BufferAttribute(positions, 3));
-			geometry.addAttribute('color', new THREE.BufferAttribute(colors, 3));
-			geometry.addAttribute('intensity', new THREE.BufferAttribute(intensities, 1));
-			geometry.addAttribute('classification', new THREE.BufferAttribute(classifications_f, 1));
+			geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
+			geometry.addAttribute('color', new THREE.BufferAttribute(new Float32Array(colors), 3));
+			geometry.addAttribute('intensity', new THREE.BufferAttribute(new Float32Array(intensities), 1));
+			geometry.addAttribute('classification', new THREE.BufferAttribute(new Float32Array(classifications_f), 1));
 			//geometry.boundingBox = node.boundingBox;
 			geometry.boundingBox = new THREE.Box3(mins, maxs);
 			node.boundingBox = geometry.boundingBox;

@@ -1,0 +1,236 @@
+
+
+<html>
+<head>
+	<title>Lion</title>
+	<style>canvas { width: 100%; height: 100% }</style>
+</head>
+<body style="margin: 0; padding: 0">
+
+	<style type="text/css">
+	
+	.info{
+		color:white;
+		font-weight: bold;
+		text-shadow:  1px  1px 1px black,
+					  1px -1px 1px black,
+					 -1px  1px 1px black,
+					 -1px -1px 1px black;
+	}
+	
+	a:hover, a:visited, a:link, a:active{
+		color: #ccccff;
+		text-decoration: none;
+	}
+	
+	</style>
+
+	<script src="../libs/three.js/build/three.js"></script>
+	<script src="../libs/other/OrbitControls.js"></script>
+	<script src="../libs/other/stats.min.js"></script>
+	<script src="../libs/other/dat.gui.min.js"></script>
+	
+	<script src="../build/js/potree.min.js"></script>
+	<script src="../src/PointCloudOctree.js"></script>
+	<script src="../src/FloatingOrigin.js"></script>
+	<script src="../src/utils/LabelHelper.js"></script>
+	
+	
+	<div id="lblNumVisibleNodes" class="info" style="position: absolute; left: 10px; top: 80px; width: 400px; color:white"></div>
+	<div id="lblNumVisiblePoints" class="info" style="position: absolute; left: 10px; top: 100px; width: 400px; color:white"></div>
+	<div id="lblCamOffset" class="info" style="position: absolute; left: 10px; top: 120px; width: 400px; color:white"></div>
+	<div id="waypoints" class="info" style="position: absolute; left: 10px; top: 200px; width: 400px;  color:white; border: 1px solid black"></div>
+	
+	<div class="info" style="position: absolute; left: 300px; right: 300px; top: 10px; text-align: center;">
+		<a href="http://potree.org" target="_blank">potree.org</a><br>
+	</div>
+	
+	<script>
+		var defaultPointSize = 0.04;
+		var defaultLOD = 15;
+		var pointcloudPath = "../resources/pointclouds/lion_takanawa/cloud_bin.js";
+	
+		var renderer;
+		var camera;
+		var scene;
+		var pointclouds = [];
+		var milestones = [];
+		var skybox;
+		var stats;
+		var clock = new THREE.Clock();
+		var materials = {};
+		var floatingOrigin;
+		
+		
+		
+		
+		
+		function initGUI(){
+		
+			//// dat.gui
+			//var gui = new dat.GUI({
+			//	height : 5 * 32 - 1
+			//});
+			//
+			//var params = {
+			//	PointSize: defaultPointSize,
+			//	LOD: defaultLOD,
+			//	"show aabb" : false,
+			//	"Materials" : materials.rgb
+			//};
+			//
+			//var pLOD = gui.add(params, 'LOD', 0.5,20);
+			//pLOD.onChange(function(value){
+			//	pointcloud.LOD = value;
+			//});
+			//
+			//var pPointSize = gui.add(params, 'PointSize', 0.01, 0.1);
+			//pPointSize.onChange(function(value){
+			//	pointcloud.material.size = value;
+			//});
+			//
+			//var pMaterial = gui.add(params, 'Materials', [ "RGB", "Color", "Height" ]);
+			//pMaterial.onChange(function(value){
+			//	var size = pointcloud.material.size;
+			//	if(value === "RGB"){
+			//		pointcloud.material = materials.rgb;
+			//	}else if(value === "Color"){
+			//		pointcloud.material = materials.color;
+			//	}else if(value === "Height"){
+			//		pointcloud.material = materials.height;
+			//	}
+			//	
+			//	pointcloud.material.size = size;
+			//
+			//	console.log(value);
+			//});
+			//
+			//var pBoundingBox = gui.add(params, 'show aabb');
+			//pBoundingBox.onChange(function(value){
+			//	pointcloud.showBoundingBox = value;
+			//});
+
+			// stats
+			stats = new Stats();
+			stats.domElement.style.position = 'absolute';
+			stats.domElement.style.top = '0px';
+			stats.domElement.style.margin = '5px';
+			document.body.appendChild( stats.domElement );
+		}
+		
+		function initThree(){
+			scene = new THREE.Scene();
+			camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 100000);
+			floatingOrigin = new FloatingOrigin(camera);
+
+			renderer = new THREE.WebGLRenderer();
+			renderer.setSize(window.innerWidth, window.innerHeight);
+			renderer.autoClear = false;
+			document.body.appendChild(renderer.domElement);
+			
+			skybox = Potree.utils.loadSkybox("../resources/textures/skybox/");
+
+			// camera and controls
+			camera.position.set(5, 10, 15);
+			//controls = new THREE.OrbitControls(camera, renderer.domElement);
+			//controls.target.set( 0, 4, 0 );
+			controls = new THREE.FirstPersonControls(camera, renderer.domElement);
+			camera.rotation.order = 'ZYX';
+			//camera.lookAt(controls.target);
+
+			// materials
+			materials.rgb = new Potree.PointCloudRGBMaterial({ size: defaultPointSize});
+			materials.color = new Potree.PointCloudColorMaterial({size: defaultPointSize});
+			materials.height = new Potree.PointCloudHeightMaterial({size: defaultPointSize, min: 0, max: 10});
+			materials.height = new Potree.PointCloudHeightMaterial({size: defaultPointSize, min: 0, max: 10});
+			
+			// load pointcloud
+			var pco = POCLoader.load(pointcloudPath, {toOrigin: true});
+			
+			// create nodes for large coordinates
+			for(var i = 0; i < 45; i++){
+				var pointcloud = new Potree.PointCloudOctree(pco, materials.rgb);
+				pointcloud.LOD = defaultLOD;
+				pointcloud.rotation.set(Math.PI/2, 0.85* -Math.PI/2, -0.0);
+				pointcloud.position.set(0, 0, -Math.pow(2,i));
+				pointcloud.floatingOrigin = true;
+				
+				pointclouds.push(pointcloud);
+				scene.add(pointcloud);
+				
+				//var spritey = makeTextSprite( Potree.utils.addCommas(-pointcloud.position.z), { fontsize: 32, fontface: "Georgia", borderColor: {r:0, g:0, b:255, a:1.0} } );
+				var spritey = Potree.LabelHelper.createTextSprite( Potree.utils.addCommas(-pointcloud.position.z), { fontsize: 32, fontface: "Georgia", borderColor: {r:0, g:0, b:255, a:1.0} } );
+				spritey.position.set(0,0,pointcloud.position.z+3);
+				scene.add( spritey );
+				//milestones.push(spritey);
+				
+				floatingOrigin.addReferenceFrame(pointcloud);
+				floatingOrigin.addReferenceFrame(spritey);
+			}
+			
+			// create waypoints
+			var elWaypoints = document.getElementById("waypoints");
+			for(var i = 0; i < 45; i++){
+				var pos = -Math.pow(2,i);
+				var div = document.createElement("div");
+				div.innerHTML = Potree.utils.addCommas(-pos);
+				//div.style.position = "absolute";
+				//div.style.top = 200 + 30*i;
+				//div.style.width = 120;
+				div.style.padding = "1 2 1 2";
+				div.style.margin = "1 2 1 5";
+				//div.style.border = "1px solid black";
+				div.style.float = "left";
+				div.style.textDecoration = "underline";
+				div.onclick = (function(pos){
+					
+					return function(){
+						camera.position.z = -floatingOrigin.offset.z + pos + 25;
+					};
+					
+				})(pos);
+				elWaypoints.appendChild(div);
+			}
+			
+		}
+		
+		function render() {
+			requestAnimationFrame(render);
+			
+			var numVisibleNodes = 0;
+			var numVisiblePoints = 0;
+			for(var i = 0; i < pointclouds.length; i++){
+				var pointcloud = pointclouds[i];
+				
+				
+				numVisibleNodes += pointcloud.numVisibleNodes;
+				numVisiblePoints += pointcloud.numVisiblePoints;
+				pointcloud.update(camera);
+			}
+			
+			document.getElementById("lblNumVisibleNodes").innerHTML = "visible nodes: " + numVisibleNodes;
+			document.getElementById("lblNumVisiblePoints").innerHTML = "visible points: " + Potree.utils.addCommas(numVisiblePoints);
+			stats.update();
+			
+			controls.update(clock.getDelta());
+			
+			floatingOrigin.update();
+			
+			// render skybox
+			skybox.camera.rotation.copy(camera.rotation);
+			renderer.render(skybox.scene, skybox.camera);
+			
+			// render scene
+			renderer.render(scene, camera);
+		};
+		
+		
+		
+		initThree();
+		initGUI();
+		render();
+		
+	</script>
+	
+</body>
+</html>

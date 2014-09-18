@@ -60,6 +60,9 @@
 		var clock = new THREE.Clock();
 		var materials = {};
 		var floatingOrigin;
+		var iSphere;
+		var iLabel;
+		var mouse = { x: 1, y: 1 };
 		
 		
 		
@@ -116,6 +119,7 @@
 			stats.domElement.style.top = '0px';
 			stats.domElement.style.margin = '5px';
 			document.body.appendChild( stats.domElement );
+			
 		}
 		
 		function initThree(){
@@ -132,11 +136,9 @@
 
 			// camera and controls
 			camera.position.set(5, 10, 15);
-			//controls = new THREE.OrbitControls(camera, renderer.domElement);
-			//controls.target.set( 0, 4, 0 );
 			controls = new THREE.FirstPersonControls(camera, renderer.domElement);
 			camera.rotation.order = 'ZYX';
-			//camera.lookAt(controls.target);
+			camera.rotation.x = -0.5;
 
 			// materials
 			materials.rgb = new Potree.PointCloudRGBMaterial({ size: defaultPointSize});
@@ -148,7 +150,9 @@
 			var pco = POCLoader.load(pointcloudPath, {toOrigin: true});
 			
 			// create nodes for large coordinates
-			for(var i = 0; i < 45; i++){
+			//var count = 45;
+			var count = 45;
+			for(var i = 0; i < count; i++){
 				var pointcloud = new Potree.PointCloudOctree(pco, materials.rgb);
 				pointcloud.LOD = defaultLOD;
 				pointcloud.rotation.set(Math.PI/2, 0.85* -Math.PI/2, -0.0);
@@ -170,7 +174,7 @@
 			
 			// create waypoints
 			var elWaypoints = document.getElementById("waypoints");
-			for(var i = 0; i < 45; i++){
+			for(var i = 0; i < count; i++){
 				var pos = -Math.pow(2,i);
 				var div = document.createElement("div");
 				div.innerHTML = Potree.utils.addCommas(-pos);
@@ -192,6 +196,49 @@
 				elWaypoints.appendChild(div);
 			}
 			
+			iSphere = new THREE.Mesh(new THREE.SphereGeometry(0.1, 10, 10), new THREE.MeshNormalMaterial());
+			scene.add(iSphere);
+			
+			document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+			document.addEventListener( 'dblclick', onDoubleClick, false );
+		}
+		
+		function onDoubleClick(){
+			var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
+			var projector = new THREE.Projector();
+			projector.unprojectVector( vector, camera );
+		
+			var raycaster = new THREE.Raycaster();
+			raycaster.params = {"PointCloud" : {threshold: 0.1}};
+			raycaster.ray.set( camera.position, vector.sub( camera.position ).normalize() );
+			
+			//var intersects = raycaster.intersectObject(pointclouds[0], true);
+			var intersects = raycaster.intersectObjects(pointclouds, true);
+			if(intersects.length > 0){
+				var I = intersects[0];
+				
+				//iSphere.position.copy(I.point);
+				var sphere = new THREE.Mesh(new THREE.SphereGeometry(0.1, 10, 10), new THREE.MeshNormalMaterial());
+				sphere.position.copy(I.point);
+				scene.add(sphere);
+				floatingOrigin.addReferenceFrame(sphere);
+				
+				var pos = I.point.clone().add(floatingOrigin.offset);
+				//var msg = pos.x.toPrecision(2) + " / " + pos.y.toPrecision(2) + " / " + pos.z.toPrecision(2+Math.floor(Math.log(Math.abs(pos.z)) / Math.log(10)));
+				var msg = pos.x.toFixed(2) + " / " + pos.y.toFixed(2) + " / " + pos.z.toFixed(2);
+				iLabel = Potree.LabelHelper.createTextSprite( msg, { fontsize: 12, fontface: "Georgia", borderColor: {r:0, g:255, b:0, a:1.0} } );
+				iLabel.position.copy(I.point);
+				iLabel.position.y += 0.5;
+				scene.add( iLabel );
+				floatingOrigin.addReferenceFrame(iLabel);
+			}
+		}
+		
+		function onDocumentMouseMove( event ) {
+			event.preventDefault();
+
+			mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+			mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
 		}
 		
 		function render() {

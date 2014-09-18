@@ -29,9 +29,24 @@ Potree.LabelHelper.createTextSprite = function(message, parameters){
 	var context = canvas.getContext('2d');
 	context.font = "Bold " + fontsize + "px " + fontface;
 	
+	
+	
 	// get size data (height depends only on font size)
 	var metrics = context.measureText( message );
 	var textWidth = metrics.width;
+	var spriteWidth = textWidth + 2*borderThickness;
+	var spriteHeight = fontsize * 1.4 + 2*borderThickness;
+	console.log(metrics);
+	
+	var canvas = document.createElement('canvas');
+	var context = canvas.getContext('2d');
+	context.canvas.width = spriteWidth;
+	context.canvas.height = spriteHeight;
+	context.font = "Bold " + fontsize + "px " + fontface;
+	
+	//context.fillRect(0, 0, 500, 500);
+	
+	
 	
 	// background color
 	context.fillStyle   = "rgba(" + backgroundColor.r + "," + backgroundColor.g + ","
@@ -50,13 +65,14 @@ Potree.LabelHelper.createTextSprite = function(message, parameters){
 	context.fillText( message, borderThickness, fontsize + borderThickness);
 	
 	// canvas contents will be used for a texture
-	var texture = new THREE.Texture(canvas) 
+	var texture = new THREE.Texture(canvas);
+	
 	texture.needsUpdate = true;
 	var spriteMaterial = new THREE.SpriteMaterial( 
 		{ map: texture, useScreenCoordinates: false } );
 	var sprite = new THREE.Sprite( spriteMaterial );
 	sprite.position.set(0,0,0);
-	sprite.scale.set(8,4,1.0);
+	sprite.scale.set(spriteWidth*0.02,spriteHeight*0.02,1.0);
 	return sprite;	
 }
 

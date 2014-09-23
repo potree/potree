@@ -3,7 +3,7 @@
 <title>Lion</title>
     
 </head>
- <body style="margin: 0px; padding: 0px;">
+ <body style="margin: 0px; padding: 0px; overflow: hidden">
  
 	<style type="text/css">
 	 
@@ -94,6 +94,12 @@
 			
 			projector = new THREE.Projector();
 			raycaster = new THREE.Raycaster();
+			
+			var hud = document.createElement("div");
+			hud.style.position = "absolute";
+			hud.style.width = "100%";
+			hud.style.height = "100%";
+			document.body.appendChild(hud);
 
 			renderer = new THREE.WebGLRenderer();
 			renderer.setSize(window.innerWidth, window.innerHeight);

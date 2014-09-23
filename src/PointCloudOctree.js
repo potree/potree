@@ -67,6 +67,9 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 	//var ray = new THREE.Ray(camera.position, new THREE.Vector3( 0, -1, 0 ) );
 	
 	// check visibility
+	// TODO min and max points
+	var minPoints = 1*1000*1000;
+	var maxPoints = 5*1000*1000;
 	var stack = [];
 	stack.push(this);
 	while(stack.length > 0){
@@ -85,11 +88,16 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 		var visible = true;
 		visible = visible && frustum.intersectsBox(box);
 		if(object.level > 0){
-			// cull detail nodes based in distance to camera
-			visible = visible && Math.pow(radius, 0.8) / distance > (1 / this.LOD);
-			visible = visible && (this.numVisiblePoints + object.numPoints < Potree.pointLoadLimit);
-			visible = visible && (this.numVisibleNodes <= this.maxVisibleNodes);
-			visible = visible && (this.numVisiblePoints <= this.maxVisiblePoints);
+		
+			if(this.numVisiblePoints > minPoints && this.numVisiblePoints < maxPoints){
+				// cull detail nodes based in distance to camera
+				visible = visible && Math.pow(radius, 0.8) / distance > (1 / this.LOD);
+				visible = visible && (this.numVisiblePoints + object.numPoints < Potree.pointLoadLimit);
+				visible = visible && (this.numVisibleNodes <= this.maxVisibleNodes);
+				visible = visible && (this.numVisiblePoints <= this.maxVisiblePoints);
+			}else if(this.numVisiblePoints > maxPoints){
+				visible = false;
+			}
 		}else{
 			//visible = true;
 		}
@@ -217,6 +225,52 @@ Potree.PointCloudOctree.prototype.getBoundingBoxWorld = function(){
 	return tBox;
 }
 
+Potree.PointCloudOctree.prototype.getProfile = function(start, end, width, depth){
+	var stack = [];
+	stack.push(this);
+	
+	var side = new THREE.Vector3().subVectors(end, start).normalize();
+	var up = new THREE.Vector3(0, 1, 0);
+	var forward = new THREE.Vector3().crossVectors(side, up).normalize();
+	var N = forward;
+	var cutPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(N, start);
+	
+	var inside = [];
+	
+	
+	while(stack.length > 0){
+		var object = stack.shift();
+		
+		console.log("traversing: " + object.name);
+		
+		if(object instanceof THREE.PointCloud){
+			var geometry = object.geometry;
+			var positions = geometry.attributes.position;
+			var p = positions.array;
+			var pointCount = positions.length / positions.itemSize;
+			
+			for(var i = 0; i < pointCount; i++){
+				var pos = new THREE.Vector3(p[3*i], p[3*i+1], p[3*i+2]);
+				pos.applyMatrix4(this.matrixWorld);
+				var distance = Math.abs(cutPlane.distanceToPoint(pos));
+				
+				if(distance < width/2){
+					inside.push(pos);
+				}
+			}
+		}
+		
+		if(object == this || object.level < depth){
+			for(var i = 0; i < object.children.length; i++){
+				stack.push(object.children[i]);
+			}
+		}
+	}
+	
+	console.log("points inside: " + inside.length);
+	
+	return inside;
+}
 
 /**
  *

@@ -4,7 +4,7 @@ function FloatingOrigin(camera){
 	this.camera = camera;
 	this.offset = new THREE.Vector3();
 	this.referenceFrames = [];
-	this.threshold = 1000;
+	this.threshold = 10000;
 	
 }
 

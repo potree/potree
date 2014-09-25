@@ -40,7 +40,7 @@
 	<script src="../src/utils/LabelHelper.js"></script>
 	<script src="../src/FirstPersonControls.js"></script>
 	<script src="../src/utils/TranslationTool.js"></script>
-	<script src="../src/utils/Profile.js"></script>
+	<script src="../src/utils/ProfileTool.js"></script>
 	
 	
 	<div id="lblNumVisibleNodes" class="info" style="position: absolute; left: 10px; top: 80px; width: 400px; color:white"></div>
@@ -366,11 +366,13 @@
 		
 		function onMouseUp(){
 			translationTool.onMouseUp();
+			controls.enabled = true;
 		}
 		
 		function onMouseDown(event){
 			if(event.which === 1){
-				translationTool.onMouseDown(mouse, camera);
+				var handled = translationTool.onMouseDown(mouse, camera);
+				controls.enabled = !handled;
 			}else if(event.which === 3){	
 				onRightClick();
 			}

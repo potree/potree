@@ -198,9 +198,13 @@ Potree.TranslationTool.prototype.onMouseDown = function(mouse, camera){
 				lineStart: lineStart,
 				lineEnd: lineEnd
 			};
+			
+			return true;
 		}
 		
 	}
+	
+	return false;
 	
 };
 

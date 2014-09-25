@@ -38,6 +38,9 @@
 	<script src="../src/TextSprite.js"></script>
 	<script src="../src/Materials/PointCloudRGBMaterial.js"></script>
 	<script src="../src/utils/LabelHelper.js"></script>
+	<script src="../src/FirstPersonControls.js"></script>
+	<script src="../src/utils/TranslationTool.js"></script>
+	<script src="../src/utils/Profile.js"></script>
 	
 	
 	<div id="lblNumVisibleNodes" class="info" style="position: absolute; left: 10px; top: 80px; width: 400px; color:white"></div>
@@ -52,6 +55,9 @@
 		<a href="http://potree.org" target="_blank">potree.org</a><br>
 	</div>
 	
+	<div id="redBox" style="width: 5px; height: 5px; position: absolute; background-color: #ff0000"></div>
+	<div id="greenBox" style="width: 5px; height: 5px; position: absolute; background-color: #00ff00"></div>
+	
 	<script>
 		var States = {
 			DEFAULT: 1,
@@ -60,9 +66,6 @@
 	
 		var defaultPointSize = 1.3;
 		var defaultLOD = 9;
-		//var pointcloudPath = "../../../../pointclouds/bruno_friedmann/vol_total/vol_total_jpg_densified_point_cloud.las_converted/cloud.js";
-		//var pointcloudPath = "../../../../pointclouds/bruno_friedmann/vol_total/tiled_converted/cloud.js";
-		//var pointcloudPath = "../../../../pointclouds/bruno_friedmann/vol_total/small_tiles_converted/cloud.js";
 		var pointcloudPath = "../../../../pointclouds/bruno_friedmann/vol_total/vol_total_bin/cloud.js";
 	
 		var renderer;
@@ -81,7 +84,10 @@
 		var state = States.DEFAULT;
 		var sConnection;
 		var profileFrustum;
+		var profileFrustumRoot
 		var profile;
+		var translationTool;
+		var profileTool;
 		
 		var measurements = [];
 		var activeMeasurement;
@@ -131,36 +137,40 @@
 			//	scene.add(sphere);
 			//}
 			
-			if(profileFrustum === undefined){
-				var boxGeometry = new THREE.BoxGeometry(1,1,1,1,1,1);
-				var boxMaterial = new THREE.MeshBasicMaterial({color: 0xFF0000, transparent: true, opacity: 0.5});
-				profileFrustum = new THREE.Mesh(boxGeometry, boxMaterial);
-				
-				sceneTools.add(profileFrustum);
-			}		
-
-			profileFrustum.scale.set(width, height, depth);
-			
-			
-			var up = new THREE.Vector3().crossVectors(side, forward);
-			
-			var camera = new THREE.OrthographicCamera( -width / 2, width / 2, height / 2, -height / 2, 1, 1 + depth );
-			//var camera = new THREE.OrthographicCamera( -width, width, height, -height, -depth/2, depth/2 );
-			
-			camera.position.copy(centroid.clone().add(forward));
-			camera.lookAt(centroid);
-			//camera.position.sub(forward);
-			
-			profileFrustum.position.copy(centroid.clone().add(forward));
-			//profileFrustum.position.copy(centroid.clone().add(forward));
-			profileFrustum.lookAt(centroid);
-			profileFrustum.position.sub(forward);
-			
-			
-			var oldSize = pointclouds[0].material.size;
-			pointclouds[0].material.size = 0;
-			renderer.render(scene, camera, rtProfile, true);
-			pointclouds[0].material.size = oldSize;
+			//if(profileFrustumRoot === undefined){
+			//	var boxGeometry = new THREE.BoxGeometry(1,1,1,1,1,1);
+			//	var boxMaterial = new THREE.MeshBasicMaterial({color: 0xFF0000, transparent: true, opacity: 0.5});
+			//	
+			//	profileFrustumRoot = new THREE.Object3D();
+			//	profileFrustum = new THREE.Mesh(boxGeometry, boxMaterial);
+			//	profileFrustumRoot.add(profileFrustum);
+			//	
+			//	sceneTools.add(profileFrustumRoot);
+			//	
+			//	translationTool.setTargets([profileFrustumRoot]);
+			//}		
+            //
+			//profileFrustum.scale.set(width, height, depth);
+			//
+			//
+			//var up = new THREE.Vector3().crossVectors(side, forward);
+			//
+			//var camera = new THREE.OrthographicCamera( -width / 2, width / 2, height / 2, -height / 2, 1, 1 + depth );
+			////var camera = new THREE.OrthographicCamera( -width, width, height, -height, -depth/2, depth/2 );
+			//
+			//camera.position.copy(centroid.clone().add(forward));
+			//camera.lookAt(centroid);
+			////camera.position.sub(forward);
+			//
+			//profileFrustumRoot.position.copy(centroid.clone().add(forward));
+			//profileFrustumRoot.lookAt(centroid);
+			//profileFrustumRoot.position.sub(forward);
+			//
+			//
+			//var oldSize = pointclouds[0].material.size;
+			//pointclouds[0].material.size = 0;
+			//renderer.render(scene, camera, rtProfile, true);
+			//pointclouds[0].material.size = oldSize;
 			
 			
 			
@@ -316,15 +326,33 @@
 			
 			
 			document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+
+			
+			translationTool = new Potree.TranslationTool();
+			translationTool.position.copy(camera.position);
+			translationTool.position.x += 50;
+			translationTool.position.z -= 50;
+			translationTool.position.y -= 50;
+			
+			sceneTools.add(translationTool);
+			
+			
+			//var centroid = new THREE.Vector3(5147, 108, 400);
+			var forward = new THREE.Vector3(-1, 0, 0);
+			var side = new THREE.Vector3(0, 0, -1);
+			profileTool = new Potree.ProfileTool(200, 200, 1.5);
+			profileTool.position.set(5147, 108, 400);
+			profileTool.setOrientation(forward, side);
+			sceneTools.add(profileTool);
+			translationTool.setTargets([profileTool]);
+			
 			
 			
 			var profileGeometry = new THREE.BoxGeometry(1,1,1);
-			var profileMaterial = new THREE.MeshBasicMaterial( { color: 0xffffff, map: rtProfile } );
+			var profileMaterial = new THREE.MeshBasicMaterial( { color: 0xffffff, map: profileTool.rtProfile } );
 			profileMaterial.depthTest = false;
-			//var profileMaterial = new THREE.MeshBasicMaterial( { color: 0xffffff } );
 			profile = new THREE.Mesh(profileGeometry, profileMaterial);
-			//profile.scale.set(0.1, 0.1, 0.1);
-			profile.scale.set(1,1,0.1);
+			profile.scale.set(1,1,1);
 			
 			profile.position.set(0, 0, 0);
 			sceneHUD.add(profile);
@@ -332,11 +360,18 @@
 			
 			document.addEventListener( 'mousemove', onDocumentMouseMove, false );
 			document.addEventListener( 'dblclick', onDoubleClick, false );
-			renderer.domElement.addEventListener( 'mousedown', onClick, true );
+			renderer.domElement.addEventListener( 'mousedown', onMouseDown, true );
+			renderer.domElement.addEventListener( 'mouseup', onMouseUp, true );
 		}
 		
-		function onClick(event){
-			if(event.which == 3){	
+		function onMouseUp(){
+			translationTool.onMouseUp();
+		}
+		
+		function onMouseDown(event){
+			if(event.which === 1){
+				translationTool.onMouseDown(mouse, camera);
+			}else if(event.which === 3){	
 				onRightClick();
 			}
 		}
@@ -373,7 +408,7 @@
 				var pos = I.clone().add(floatingOrigin.offset);
 			
 				var sphereMaterial = new THREE.MeshNormalMaterial({shading: THREE.SmoothShading})
-				var sphereGeometry = new THREE.SphereGeometry(0.05, 10, 10);
+				var sphereGeometry = new THREE.SphereGeometry(0.4, 10, 10);
 				
 				var sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
 				sphere.position.copy(I);
@@ -481,9 +516,13 @@
 			document.getElementById("lblNumVisiblePoints").innerHTML = "visible points: " + Potree.utils.addCommas(numVisiblePoints);
 			stats.update();
 			
-			controls.update(clock.getDelta());
+			if(translationTool.state == translationTool.STATE.DEFAULT){
+				controls.update(clock.getDelta());
+			}
 			
 			floatingOrigin.update();
+			
+			translationTool.onMouseMove(mouse, camera);
 			
 			if(state == States.PICKING && activeMeasurement){
 				var I = getMousePointCloudIntersection();
@@ -517,18 +556,21 @@
 			
 			//var centroid = new THREE.Vector3(-2, -4 + 3*Math.sin(clock.getElapsedTime()), 3);
 			//var centroid = new THREE.Vector3(2000, 100 , 500);
-			var centroid = new THREE.Vector3(5147, 108, 400);
-			var forward = new THREE.Vector3(-1, 0, 0);
-			var side = new THREE.Vector3(0, 0, -1);
+			//var centroid = new THREE.Vector3(5147, 108, 400);
+			//var forward = new THREE.Vector3(-1, 0, 0);
+			//var side = new THREE.Vector3(0, 0, -1);
 			
 			
 			//var centroid = new THREE.Vector3(0, -3, 3);
 			//var forward = new THREE.Vector3( 0, 0, 1 ).applyQuaternion(camera.quaternion);
 			//var side = new THREE.Vector3( 1, 0, 0 ).applyQuaternion(camera.quaternion);
 			
-			calculateProfile(centroid, forward, side, 200, 200, 1.5);
+			//calculateProfile(centroid, forward, side, 200, 200, 1.5);
+			
+			profileTool.render(renderer, scene);
 			profile.scale.x = 1;
 			profile.scale.y = renderer.domElement.clientWidth / renderer.domElement.clientHeight;
+			profile.scale.z = 1;
 			profile.scale.multiplyScalar(0.5);
 			profile.position.x = 0.7;
 			profile.position.y = 0.5;

@@ -48,6 +48,14 @@
 	
 	<div class="info" style="position: absolute; left: 300px; right: 300px; top: 10px; text-align: center;">
 		<a href="http://potree.org" target="_blank">potree.org</a><br>
+		Point cloud courtesy of <a href="http://www.sigeom.ch/" target="_blank">sigeom sa</a><br>
+		Rue des Oeuches 45<br>
+		2740 Moutier<br>
+		Switzerland <br>
+
+		<br>
+		Work in Progress of profile and measurement tools.
+		Double click to generate measurement point, right click to cancel measurement tool.
 	</div>
 	
 	<script>
@@ -59,6 +67,7 @@
 		var defaultPointSize = 1.3;
 		var defaultLOD = 9;
 		var pointcloudPath = "../../../../pointclouds/bruno_friedmann/vol_total/vol_total_bin/cloud.js";
+		//var pointcloudPath = "../resources/pointclouds/sorvilier/cloud.js";
 	
 		var renderer;
 		var scene, sceneTools, sceneHUD;
@@ -138,7 +147,7 @@
 			camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 100000);
 			cameraHUD = new THREE.OrthographicCamera( -1, 1, 1, -1, -100, 1000 );
 			cameraHUD.lookAt( new THREE.Vector3(0,0,0));
-			floatingOrigin = new FloatingOrigin(camera);
+			//floatingOrigin = new FloatingOrigin(camera);
 
 			renderer = new THREE.WebGLRenderer();
 			renderer.setSize(window.innerWidth, window.innerHeight);
@@ -148,11 +157,11 @@
 			skybox = Potree.utils.loadSkybox("../resources/textures/skybox/");
 
 			// camera and controls
-			camera.position.set(5050, 158, 600);
+			camera.position.set(5050, 158, -600);
 			controls = new THREE.FirstPersonControls(camera, renderer.domElement);
 			camera.rotation.order = 'ZYX';
 			camera.rotation.x = -0.5;
-			camera.rotation.y = -Math.PI/4;
+			camera.rotation.y = -3*Math.PI/4;
 			controls.moveSpeed *= 10;
 
 			// materials
@@ -167,12 +176,10 @@
 			pointcloud.applyMatrix(new THREE.Matrix4().set(
 				1,0,0,0,
 				0,0,1,0,
-				0,1,0,0,
+				0,-1,0,0,
 				0,0,0,1
 			));
 			scene.add(pointcloud);
-			
-			floatingOrigin.addReferenceFrame(pointcloud);			
 
 			// translation tool
 			translationTool = new Potree.TranslationTool();
@@ -181,8 +188,8 @@
 			// profile tool
 			var forward = new THREE.Vector3(-1, 0, 0);
 			var side = new THREE.Vector3(0, 0, -1);
-			profileTool = new Potree.ProfileTool(200, 200, 1.5);
-			profileTool.position.set(5147, 108, 400);
+			profileTool = new Potree.ProfileTool(200, 100, 2);
+			profileTool.position.set(5147, 108, -400);
 			profileTool.setOrientation(forward, side);
 			sceneTools.add(profileTool);
 			translationTool.setTargets([profileTool]);
@@ -198,6 +205,15 @@
 			
 			// measuring tool
 			measuringTool = new Potree.MeasuringTool(scene, camera, renderer.domElement);
+			
+			
+			//floatingOrigin.addReferenceFrame(pointcloud);
+			//floatingOrigin.addReferenceFrame(profileTool);
+			//floatingOrigin.addReferenceFrame(translationTool);
+			//floatingOrigin.addReferenceFrame(measuringTool.sceneRoot);
+			
+			
+			
 			
 			document.addEventListener( 'mousemove', onDocumentMouseMove, false );
 			renderer.domElement.addEventListener( 'mousedown', onMouseDown, true );
@@ -226,6 +242,13 @@
 		function render() {
 			requestAnimationFrame(render);
 			
+			renderer.domElement.width = window.innerWidth;
+			renderer.domElement.height = window.innerHeight;
+			renderer.setSize(window.innerWidth, window.innerHeight);
+			camera.aspect = window.innerWidth / window.innerHeight;
+			camera.updateProjectionMatrix();
+			//renderer.setSize(renderer.domElement.clientWidth, renderer.domElement.clientHeight);
+			
 			var numVisibleNodes = pointcloud.numVisibleNodes;
 			var numVisiblePoints = pointcloud.numVisiblePoints;
 			pointcloud.update(camera);
@@ -238,15 +261,15 @@
 				controls.update(clock.getDelta());
 			}
 			
-			floatingOrigin.update();
+			//floatingOrigin.update();
 			
 			translationTool.onMouseMove(mouse, camera);
 			
 			profileTool.render(renderer, scene);
 			profile.scale.x = 0.5;
-			profile.scale.y = 0.5 * (renderer.domElement.clientWidth / renderer.domElement.clientHeight);
+			profile.scale.y = 0.5 * (renderer.domElement.clientWidth / renderer.domElement.clientHeight) * (profileTool.height / profileTool.width);
 			profile.position.x = 0.7;
-			profile.position.y = 0.5;
+			profile.position.y = -0.7;
 			
 			
 			// render skybox

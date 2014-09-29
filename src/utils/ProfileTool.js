@@ -13,7 +13,7 @@ Potree.ProfileTool = function(width, height, depth){
 	this.add(this.camera);
 	this.setDimension(width, height, depth);
 	
-	this.rtProfile = new THREE.WebGLRenderTarget( 1024, 1024, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat } );
+	this.rtProfile = new THREE.WebGLRenderTarget( 512, 512, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat } );
 	
 	
 }
@@ -22,6 +22,9 @@ Potree.ProfileTool.prototype = Object.create( THREE.Object3D.prototype );
 
 Potree.ProfileTool.prototype.setDimension = function(width, height, depth){
 	this.profileFrustum.scale.set(width, height, depth);
+	this.width = width;
+	this.height = height;
+	this.depth = depth;
 		
 	this.camera.left = -width / 2;
 	this.camera.right = width / 2;

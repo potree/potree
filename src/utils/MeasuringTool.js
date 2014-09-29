@@ -19,6 +19,8 @@ Potree.MeasuringTool = function(scene, camera, domElement){
 	this.activeMeasurement;
 	this.measurements = [];
 	this.sceneMeasurement = new THREE.Scene();
+	this.sceneRoot = new THREE.Object3D();
+	this.sceneMeasurement.add(this.sceneRoot);
 	
 	function Measure(){
 		this.points = [];
@@ -39,11 +41,11 @@ Potree.MeasuringTool = function(scene, camera, domElement){
 			
 			var sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
 			sphere.position.copy(I);
-			scope.sceneMeasurement.add(sphere);
+			scope.sceneRoot.add(sphere);
 			
 			var sphereEnd = new THREE.Mesh(sphereGeometry, sphereMaterial);
 			sphereEnd.position.copy(I);
-			scope.sceneMeasurement.add(sphereEnd);
+			scope.sceneRoot.add(sphereEnd);
 			
 			var msg = pos.x.toFixed(2) + " / " + pos.y.toFixed(2) + " / " + pos.z.toFixed(2);
 			
@@ -53,7 +55,7 @@ Potree.MeasuringTool = function(scene, camera, domElement){
 			label.material.opacity = 0;
 			label.position.copy(I);
 			label.position.y += 0.5;
-			scope.sceneMeasurement.add( label );
+			scope.sceneRoot.add( label );
 			
 			var labelEnd = new Potree.TextSprite(msg);
 			labelEnd.setBorderColor({r:0, g:255, b:0, a:1.0});
@@ -61,7 +63,7 @@ Potree.MeasuringTool = function(scene, camera, domElement){
 			labelEnd.material.opacity = 0;
 			labelEnd.position.copy(I);
 			labelEnd.position.y += 0.5;
-			scope.sceneMeasurement.add( labelEnd );
+			scope.sceneRoot.add( labelEnd );
 			
 			var lc = new THREE.Color( 0xff0000 );
 			var lineGeometry = new THREE.Geometry();
@@ -70,7 +72,7 @@ Potree.MeasuringTool = function(scene, camera, domElement){
 			var lineMaterial = new THREE.LineBasicMaterial( { vertexColors: THREE.VertexColors } );
 			lineMaterial.depthTest = false;
 			sConnection = new THREE.Line(lineGeometry, lineMaterial);
-			scope.sceneMeasurement.add(sConnection);
+			scope.sceneRoot.add(sConnection);
 			
 			var edgeLabel = new Potree.TextSprite(0);
 			edgeLabel.setBorderColor({r:0, g:255, b:0, a:0.0});
@@ -78,7 +80,7 @@ Potree.MeasuringTool = function(scene, camera, domElement){
 			edgeLabel.material.depthTest = false;
 			edgeLabel.position.copy(I);
 			edgeLabel.position.y += 0.5;
-			scope.sceneMeasurement.add( edgeLabel );
+			scope.sceneRoot.add( edgeLabel );
 			
 			
 			//floatingOrigin.addReferenceFrame(sphere);
@@ -104,6 +106,13 @@ Potree.MeasuringTool = function(scene, camera, domElement){
 			scope.activeMeasurement.sphereLabels.push(labelEnd);
 			scope.activeMeasurement.edges.push(sConnection);
 			scope.activeMeasurement.edgeLabels.push(edgeLabel);
+			
+			
+			var event = {
+				type: 'newpoint',
+				position: pos.clone()
+			};
+			scope.dispatchEvent(event);
 			
 		}
 	};
@@ -151,10 +160,10 @@ Potree.MeasuringTool = function(scene, camera, domElement){
 			var sphereLabel = scope.activeMeasurement.sphereLabels.pop();
 			var edgeLabel = scope.activeMeasurement.edgeLabels.pop();
 			
-			scope.sceneMeasurement.remove(sphere);
-			scope.sceneMeasurement.remove(edge);
-			scope.sceneMeasurement.remove(sphereLabel);
-			scope.sceneMeasurement.remove(edgeLabel);
+			scope.sceneRoot.remove(sphere);
+			scope.sceneRoot.remove(edge);
+			scope.sceneRoot.remove(sphereLabel);
+			scope.sceneRoot.remove(edgeLabel);
 		
 			scope.measurements.push(scope.activeMeasurement);
 			scope.activeMeasurement = undefined;
@@ -175,7 +184,7 @@ Potree.MeasuringTool = function(scene, camera, domElement){
 		projector.unprojectVector( vector, scope.camera );
 		
 		var raycaster = new THREE.Raycaster();
-		raycaster.params = {"PointCloud" : {threshold: 0.5}};
+		raycaster.params = {"PointCloud" : {threshold: 5}};
 		raycaster.ray.set( scope.camera.position, vector.sub( scope.camera.position ).normalize() );
 		
 		var pointClouds = [];
@@ -188,7 +197,8 @@ Potree.MeasuringTool = function(scene, camera, domElement){
 		var intersects = raycaster.intersectObjects(pointClouds, true);
 		
 		if(intersects.length > 0){
-			var I = intersects[0];
+			var I = intersects[0];			
+			
 			return I.point;
 		}else{
 			return undefined;

@@ -4,7 +4,7 @@ function FloatingOrigin(camera){
 	this.camera = camera;
 	this.offset = new THREE.Vector3();
 	this.referenceFrames = [];
-	this.threshold = 10000;
+	this.threshold = 1000;
 	
 }
 
@@ -16,6 +16,8 @@ FloatingOrigin.prototype.update = function(){
 	var offset = new THREE.Vector3();
 	if(this.camera.position.length() > this.threshold){
 		offset.copy(camera.position);
+	}else{
+		return;
 	}
 	
 	camera.position.sub(offset);

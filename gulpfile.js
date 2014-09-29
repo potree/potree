@@ -31,7 +31,9 @@ var paths = {
 		"src/LRU.js",
 		"src/PointCloudOctree.js",
 		"src/PointCloudOctreeGeometry.js",
-		"src/utils.js"
+		"src/utils.js",
+		"src/TextSprite.js",
+		"src/utils/MeasuringTool.js"
 	]
 
 };

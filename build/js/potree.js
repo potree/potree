@@ -1132,6 +1132,8 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 		} else if ( state === STATE.PAN ) {
 			panEnd.set( event.clientX, event.clientY );
 			panDelta.subVectors( panEnd, panStart );
+			//panDelta.multiplyScalar(this.moveSpeed).multiplyScalar(0.0001);
+			panDelta.multiplyScalar(0.0005).multiplyScalar(scope.moveSpeed);
 			
 			scope.pan( panDelta.x, panDelta.y );
 
@@ -1420,6 +1422,9 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 	//var ray = new THREE.Ray(camera.position, new THREE.Vector3( 0, -1, 0 ) );
 	
 	// check visibility
+	// TODO min and max points
+	var minPoints = 1*1000*1000;
+	var maxPoints = 5*1000*1000;
 	var stack = [];
 	stack.push(this);
 	while(stack.length > 0){
@@ -1437,12 +1442,17 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 
 		var visible = true;
 		visible = visible && frustum.intersectsBox(box);
-		if(object.level > 1){
-			// cull detail nodes based in distance to camera
-			visible = visible && Math.pow(radius, 0.8) / distance > (1 / this.LOD);
-			visible = visible && (this.numVisiblePoints + object.numPoints < Potree.pointLoadLimit);
-			visible = visible && (this.numVisibleNodes <= this.maxVisibleNodes);
-			visible = visible && (this.numVisiblePoints <= this.maxVisiblePoints);
+		if(object.level > 0){
+		
+			if(this.numVisiblePoints > minPoints && this.numVisiblePoints < maxPoints){
+				// cull detail nodes based in distance to camera
+				visible = visible && Math.pow(radius, 0.8) / distance > (1 / this.LOD);
+				visible = visible && (this.numVisiblePoints + object.numPoints < Potree.pointLoadLimit);
+				visible = visible && (this.numVisibleNodes <= this.maxVisibleNodes);
+				visible = visible && (this.numVisiblePoints <= this.maxVisiblePoints);
+			}else if(this.numVisiblePoints > maxPoints){
+				visible = false;
+			}
 		}else{
 			//visible = true;
 		}
@@ -1570,6 +1580,52 @@ Potree.PointCloudOctree.prototype.getBoundingBoxWorld = function(){
 	return tBox;
 }
 
+Potree.PointCloudOctree.prototype.getProfile = function(start, end, width, depth){
+	var stack = [];
+	stack.push(this);
+	
+	var side = new THREE.Vector3().subVectors(end, start).normalize();
+	var up = new THREE.Vector3(0, 1, 0);
+	var forward = new THREE.Vector3().crossVectors(side, up).normalize();
+	var N = forward;
+	var cutPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(N, start);
+	
+	var inside = [];
+	
+	
+	while(stack.length > 0){
+		var object = stack.shift();
+		
+		console.log("traversing: " + object.name);
+		
+		if(object instanceof THREE.PointCloud){
+			var geometry = object.geometry;
+			var positions = geometry.attributes.position;
+			var p = positions.array;
+			var pointCount = positions.length / positions.itemSize;
+			
+			for(var i = 0; i < pointCount; i++){
+				var pos = new THREE.Vector3(p[3*i], p[3*i+1], p[3*i+2]);
+				pos.applyMatrix4(this.matrixWorld);
+				var distance = Math.abs(cutPlane.distanceToPoint(pos));
+				
+				if(distance < width/2){
+					inside.push(pos);
+				}
+			}
+		}
+		
+		if(object == this || object.level < depth){
+			for(var i = 0; i < object.children.length; i++){
+				stack.push(object.children[i]);
+			}
+		}
+	}
+	
+	console.log("points inside: " + inside.length);
+	
+	return inside;
+}
 
 /**
  *
@@ -1950,3 +2006,327 @@ Potree.utils.createGrid = function createGrid(width, length, spacing, color){
 	line.receiveShadow = true;
 	return line;
 }
+
+/**
+ * adapted from http://stemkoski.github.io/Three.js/Sprite-Text-Labels.html
+ */
+
+Potree.TextSprite = function(text){
+	var texture = new THREE.Texture();
+	var spriteMaterial = new THREE.SpriteMaterial( 
+		{ map: texture, useScreenCoordinates: false} );
+	THREE.Sprite.call(this, spriteMaterial);
+	
+	this.borderThickness = 4;
+	this.fontface = "Arial";
+	this.fontsize = 28;
+	this.borderColor = { r:0, g:0, b:0, a:1.0 };
+	this.backgroundColor = { r:255, g:255, b:255, a:1.0 };
+	this.text = "";
+	
+	this.setText(text);
+};
+
+Potree.TextSprite.prototype = new THREE.Sprite();
+
+Potree.TextSprite.prototype.setText = function(text){
+	this.text = text;
+	
+	this.update();
+}
+
+Potree.TextSprite.prototype.setBorderColor = function(color){
+	this.borderColor = color;
+	
+	this.update();
+}
+
+Potree.TextSprite.prototype.setBackgroundColor = function(color){
+	this.backgroundColor = color;
+	
+	this.update();
+}
+
+Potree.TextSprite.prototype.update = function(){
+
+	var canvas = document.createElement('canvas');
+	var context = canvas.getContext('2d');
+	context.font = "Bold " + this.fontsize + "px " + this.fontface;
+	
+	// get size data (height depends only on font size)
+	var metrics = context.measureText( this.text );
+	var textWidth = metrics.width;
+	var spriteWidth = textWidth + 2 * this.borderThickness;
+	var spriteHeight = this.fontsize * 1.4 + 2 * this.borderThickness;
+	
+	var canvas = document.createElement('canvas');
+	var context = canvas.getContext('2d');
+	context.canvas.width = spriteWidth;
+	context.canvas.height = spriteHeight;
+	context.font = "Bold " + this.fontsize + "px " + this.fontface;
+	
+	// background color
+	context.fillStyle   = "rgba(" + this.backgroundColor.r + "," + this.backgroundColor.g + ","
+								  + this.backgroundColor.b + "," + this.backgroundColor.a + ")";
+	// border color
+	context.strokeStyle = "rgba(" + this.borderColor.r + "," + this.borderColor.g + ","
+								  + this.borderColor.b + "," + this.borderColor.a + ")";
+								  
+	context.lineWidth = this.borderThickness;
+	this.roundRect(context, this.borderThickness/2, this.borderThickness/2, 
+		textWidth + this.borderThickness, this.fontsize * 1.4 + this.borderThickness, 6);						  
+		
+	// text color
+	
+	
+	context.strokeStyle = "rgba(0, 0, 0, 1.0)";
+	context.strokeText( this.text, this.borderThickness, this.fontsize + this.borderThickness);
+	
+	context.fillStyle = "rgba(255, 255, 255, 1.0)";
+	context.fillText( this.text, this.borderThickness, this.fontsize + this.borderThickness);
+	
+								  
+	var texture = new THREE.Texture(canvas); 
+	texture.needsUpdate = true;	
+	
+	//var spriteMaterial = new THREE.SpriteMaterial( 
+	//	{ map: texture, useScreenCoordinates: false } );
+	this.material.map = texture;
+		
+	this.scale.set(spriteWidth*0.01,spriteHeight*0.01,1.0);
+		
+	//this.material = spriteMaterial;						  
+}
+
+Potree.TextSprite.prototype.roundRect = function(ctx, x, y, w, h, r) {
+	ctx.beginPath();
+	ctx.moveTo(x+r, y);
+	ctx.lineTo(x+w-r, y);
+	ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+	ctx.lineTo(x+w, y+h-r);
+	ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+	ctx.lineTo(x+r, y+h);
+	ctx.quadraticCurveTo(x, y+h, x, y+h-r);
+	ctx.lineTo(x, y+r);
+	ctx.quadraticCurveTo(x, y, x+r, y);
+	ctx.closePath();
+	ctx.fill();
+	ctx.stroke();   
+}
+
+
+
+
+Potree.MeasuringTool = function(scene, camera, domElement){
+	
+	var scope = this;
+	
+	this.scene = scene;
+	this.camera = camera;
+
+	this.domElement = domElement;
+	this.mouse = {x: 0, y: 0};
+	
+	var STATE = {
+		DEFAULT: 0,
+		PICKING: 1
+	};
+	
+	var state = STATE.DEFAULT;
+	
+	this.activeMeasurement;
+	this.measurements = [];
+	this.sceneMeasurement = new THREE.Scene();
+	this.sceneRoot = new THREE.Object3D();
+	this.sceneMeasurement.add(this.sceneRoot);
+	
+	function Measure(){
+		this.points = [];
+		this.spheres = [];
+		this.edges = [];
+		this.sphereLabels = [];
+		this.edgeLabels = [];
+	}
+
+	
+	function onDoubleClick(event){
+		var I = getMousePointCloudIntersection();
+		if(I){
+			var pos = I.clone();
+		
+			var sphereMaterial = new THREE.MeshNormalMaterial({shading: THREE.SmoothShading})
+			var sphereGeometry = new THREE.SphereGeometry(0.4, 10, 10);
+			
+			var sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+			sphere.position.copy(I);
+			scope.sceneRoot.add(sphere);
+			
+			var sphereEnd = new THREE.Mesh(sphereGeometry, sphereMaterial);
+			sphereEnd.position.copy(I);
+			scope.sceneRoot.add(sphereEnd);
+			
+			var msg = pos.x.toFixed(2) + " / " + pos.y.toFixed(2) + " / " + pos.z.toFixed(2);
+			
+			var label = new Potree.TextSprite(msg);
+			label.setBorderColor({r:0, g:255, b:0, a:1.0});
+			label.material.depthTest = false;
+			label.material.opacity = 0;
+			label.position.copy(I);
+			label.position.y += 0.5;
+			scope.sceneRoot.add( label );
+			
+			var labelEnd = new Potree.TextSprite(msg);
+			labelEnd.setBorderColor({r:0, g:255, b:0, a:1.0});
+			labelEnd.material.depthTest = false;
+			labelEnd.material.opacity = 0;
+			labelEnd.position.copy(I);
+			labelEnd.position.y += 0.5;
+			scope.sceneRoot.add( labelEnd );
+			
+			var lc = new THREE.Color( 0xff0000 );
+			var lineGeometry = new THREE.Geometry();
+			lineGeometry.vertices.push(I.clone(), I.clone());
+			lineGeometry.colors.push(lc, lc, lc);
+			var lineMaterial = new THREE.LineBasicMaterial( { vertexColors: THREE.VertexColors } );
+			lineMaterial.depthTest = false;
+			sConnection = new THREE.Line(lineGeometry, lineMaterial);
+			scope.sceneRoot.add(sConnection);
+			
+			var edgeLabel = new Potree.TextSprite(0);
+			edgeLabel.setBorderColor({r:0, g:255, b:0, a:0.0});
+			edgeLabel.setBackgroundColor({r:0, g:255, b:0, a:0.0});
+			edgeLabel.material.depthTest = false;
+			edgeLabel.position.copy(I);
+			edgeLabel.position.y += 0.5;
+			scope.sceneRoot.add( edgeLabel );
+			
+			
+			//floatingOrigin.addReferenceFrame(sphere);
+			//floatingOrigin.addReferenceFrame(sphereEnd);
+			//floatingOrigin.addReferenceFrame(label);
+			//floatingOrigin.addReferenceFrame(labelEnd);
+			//floatingOrigin.addReferenceFrame(sConnection);
+			//floatingOrigin.addReferenceFrame(edgeLabel);
+			
+			if(state === STATE.DEFAULT){
+				state = STATE.PICKING;
+				scope.activeMeasurement = new Measure();
+				
+				scope.activeMeasurement.spheres.push(sphere);
+			}else if(state === STATE.PICKING){
+			
+			}
+			
+			scope.activeMeasurement.points.push(I);
+			
+			scope.activeMeasurement.spheres.push(sphereEnd);
+			scope.activeMeasurement.sphereLabels.push(label);
+			scope.activeMeasurement.sphereLabels.push(labelEnd);
+			scope.activeMeasurement.edges.push(sConnection);
+			scope.activeMeasurement.edgeLabels.push(edgeLabel);
+			
+			
+			var event = {
+				type: 'newpoint',
+				position: pos.clone()
+			};
+			scope.dispatchEvent(event);
+			
+		}
+	};
+	
+	function onMouseMove(event){
+		scope.mouse.x = ( event.clientX / scope.domElement.clientWidth ) * 2 - 1;
+		scope.mouse.y = - ( event.clientY / scope.domElement.clientHeight ) * 2 + 1;
+		
+		if(state == STATE.PICKING && scope.activeMeasurement){
+			var I = getMousePointCloudIntersection();
+			
+			if(I){
+				var pos = I.clone();
+				var l = scope.activeMeasurement.spheres.length;
+				var sphere = scope.activeMeasurement.spheres[l-1];
+				var label = scope.activeMeasurement.sphereLabels[l-1];
+				var edge = scope.activeMeasurement.edges[l-2];
+				var edgeLabel = scope.activeMeasurement.edgeLabels[l-2];
+				
+				var msg = pos.x.toFixed(2) + " / " + pos.y.toFixed(2) + " / " + pos.z.toFixed(2);
+				label.setText(msg);
+				
+				sphere.position.copy(I);
+				label.position.copy(I);
+				label.position.y += 0.5;
+				
+				edge.geometry.vertices[1].copy(I);
+				edge.geometry.verticesNeedUpdate = true;
+				edge.geometry.computeBoundingSphere();
+				
+				var edgeLabelPos = edge.geometry.vertices[1].clone().add(edge.geometry.vertices[0]).multiplyScalar(0.5);
+				var edgeLabelText = edge.geometry.vertices[0].distanceTo(edge.geometry.vertices[1]).toFixed(2);
+				edgeLabel.position.copy(edgeLabelPos);
+				edgeLabel.setText(edgeLabelText);
+				edgeLabel.scale.multiplyScalar(10);
+			}
+			
+		}
+	};
+	
+	function onRightClick(event){
+		if(state == STATE.PICKING){
+			var sphere = scope.activeMeasurement.spheres.pop();
+			var edge = scope.activeMeasurement.edges.pop();
+			var sphereLabel = scope.activeMeasurement.sphereLabels.pop();
+			var edgeLabel = scope.activeMeasurement.edgeLabels.pop();
+			
+			scope.sceneRoot.remove(sphere);
+			scope.sceneRoot.remove(edge);
+			scope.sceneRoot.remove(sphereLabel);
+			scope.sceneRoot.remove(edgeLabel);
+		
+			scope.measurements.push(scope.activeMeasurement);
+			scope.activeMeasurement = undefined;
+		
+			state = STATE.DEFAULT;
+		}
+	}
+	
+	function onMouseDown(event){
+		if(event.which === 3){	
+			onRightClick(event);
+		}
+	}
+	
+	function getMousePointCloudIntersection(){
+		var vector = new THREE.Vector3( scope.mouse.x, scope.mouse.y, 0.5 );
+		var projector = new THREE.Projector();
+		projector.unprojectVector( vector, scope.camera );
+		
+		var raycaster = new THREE.Raycaster();
+		raycaster.params = {"PointCloud" : {threshold: 1}};
+		raycaster.ray.set( scope.camera.position, vector.sub( scope.camera.position ).normalize() );
+		
+		var pointClouds = [];
+		scope.scene.traverse(function(object){
+			if(object instanceof Potree.PointCloudOctree){
+				pointClouds.push(object);
+			}
+		});
+		
+		var intersects = raycaster.intersectObjects(pointClouds, true);
+		
+		if(intersects.length > 0){
+			var I = intersects[0];			
+			
+			return I.point;
+		}else{
+			return undefined;
+		}
+	}
+	
+	this.domElement.addEventListener("dblclick", onDoubleClick, false);
+	this.domElement.addEventListener( 'mousemove', onMouseMove, false );
+	this.domElement.addEventListener( 'mousedown', onMouseDown, false );
+};
+
+
+Potree.MeasuringTool.prototype = Object.create( THREE.EventDispatcher.prototype );

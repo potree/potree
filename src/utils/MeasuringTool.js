@@ -184,7 +184,7 @@ Potree.MeasuringTool = function(scene, camera, domElement){
 		projector.unprojectVector( vector, scope.camera );
 		
 		var raycaster = new THREE.Raycaster();
-		raycaster.params = {"PointCloud" : {threshold: 5}};
+		raycaster.params = {"PointCloud" : {threshold: 1}};
 		raycaster.ray.set( scope.camera.position, vector.sub( scope.camera.position ).normalize() );
 		
 		var pointClouds = [];

@@ -15,7 +15,12 @@ Potree.ProfileTool = function(width, height, depth){
 	
 	this.rtProfile = new THREE.WebGLRenderTarget( 512, 512, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat } );
 	
-	
+	this.hudGeometry = new THREE.BoxGeometry(2,2,1);
+	this.hudMaterial = new THREE.MeshBasicMaterial( { color: 0xffffff, map: this.rtProfile } );
+	this.hudMaterial.depthTest = false;
+	this.hudElement = new THREE.Mesh(this.hudGeometry, this.hudMaterial);
+	this.hudElement.scale.set(1,1,1);
+	this.hudElement.position.set(0, 0, 0);
 }
 
 Potree.ProfileTool.prototype = Object.create( THREE.Object3D.prototype );
@@ -63,6 +68,11 @@ Potree.ProfileTool.prototype.render = function(renderer, scene){
 			object.material.size = object.material.oldSize;
 		}
 	});
+	
+	//this.hudElement.scale.x = 0.5;
+	//this.hudElement.scale.y = 0.5 * (renderer.domElement.clientWidth / renderer.domElement.clientHeight) * (this.height / this.width);
+	//this.hudElement.position.x = 0.7;
+	//this.hudElement.position.y = -0.7;
 	
 }
 

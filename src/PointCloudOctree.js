@@ -36,6 +36,7 @@ Potree.PointCloudOctree = function(geometry, material){
 	this.LODFalloff = 1.3;
 	this.LOD = 4;
 	this.showBoundingBox = false;
+	this.loadQueue = [];
 	
 	
 	var rootProxy = new Potree.PointCloudOctreeProxyNode(this.pcoGeometry.root);
@@ -47,6 +48,7 @@ Potree.PointCloudOctree.prototype = Object.create(THREE.Object3D.prototype);
 Potree.PointCloudOctree.prototype.update = function(camera){
 	this.numVisibleNodes = 0;
 	this.numVisiblePoints = 0;
+	this.loadQueue = [];
 	
 	// create frustum in object space
 	camera.updateMatrixWorld();
@@ -139,12 +141,24 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 			Potree.PointCloudOctree.lru.touch(object);
 			object.material = this.material;
 		}else if (object instanceof Potree.PointCloudOctreeProxyNode) {
-			this.replaceProxy(object);
+			var geometryNode = object.geometryNode;
+			if(geometryNode.loaded === true){
+				this.replaceProxy(object);
+			}else{
+				this.loadQueue.push({node: object, lod: Math.pow(radius, 0.8) / distance});
+			}
 		}
 		
 		for(var i = 0; i < object.children.length; i++){
 			stack.push(object.children[i]);
 		}
+	}
+	
+	if(this.loadQueue.length > 0){
+		if(this.loadQueue.length >= 2){
+			this.loadQueue.sort(function(a,b){return b.lod - a.lod});
+		}
+		this.loadQueue[0].node.geometryNode.load();
 	}
 }
 
@@ -172,7 +186,8 @@ Potree.PointCloudOctree.prototype.replaceProxy = function(proxy){
 			}
 		}
 	}else{
-		geometryNode.load();
+		//geometryNode.load();
+		//this.loadQueue.push(geometryNode);
 	}
 }
 

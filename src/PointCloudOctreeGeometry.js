@@ -51,7 +51,86 @@ Potree.PointCloudOctreeGeometryNode.prototype.load = function(){
 		nodesLoadTimes[url] = {};
 		nodesLoadTimes[url].start = new Date().getTime();
 		LasLazLoader.load(url, new Potree.LasLazBatcher(this, url));
-	}else {
+	} else if ( pointAttributes === "POT"){
+		
+		var callback = function(node, buffer){
+			var dv = new DataView(buffer, 0, 4);
+			var headerSize = dv.getUint32(0, true);
+			var pointOffset = 4 + headerSize;
+			
+			var headerBuffer = buffer.slice(4, 4 + headerSize);
+			var header = String.fromCharCode.apply(null, new Uint8Array(headerBuffer));
+			header = JSON.parse(header);
+			console.log(header);
+			
+			var pScale = header.attributes[0].scale;
+			var pOffset = header.attributes[0].offset;
+			var pEncoding = header.attributes[0].encoding;
+			
+			var scale = new THREE.Vector3(pScale[0], pScale[1], pScale[2]);
+			var offset = new THREE.Vector3(pOffset[0], pOffset[1], pOffset[2]);
+			var min = pEncoding.min;
+			var max = pEncoding.max;
+			var bits = pEncoding.bits;
+			
+			var pointBuffer = buffer.slice(pointOffset, pointOffset + buffer.byteLength - pointOffset);
+			var br = new BitReader(pointBuffer);
+			
+			var X = br.read(32);
+			var Y = br.read(32);
+			var Z = br.read(32);
+			
+			var r = br.read(8);
+			var g = br.read(8);
+			var b = br.read(8);
+			
+			var geometry = new THREE.BufferGeometry();
+			var numPoints = header.pointcount;
+			
+			var positions = new Float32Array(numPoints*3);
+			var colors = new Float32Array(numPoints*3);
+			var color = new THREE.Color();
+			
+			for(var i = 0; i < header.pointcount - 1; i++){
+				
+				dx = br.read(bits[0]) + min[0]; 
+				dy = br.read(bits[1]) + min[1]; 
+				dz = br.read(bits[2]) + min[2]; 
+				
+				X = X + dx;
+				Y = Y + dy;
+				Z = Z + dz;
+				
+				x = X * scale.x + offset.x;
+				y = Y * scale.y + offset.y; 
+				z = Z * scale.z + offset.z;
+				
+				r = br.read(8);
+				g = br.read(8);
+				b = br.read(8);
+				
+				positions[3*i+0] = x;// + node.pcoGeometry.offset.x;
+				positions[3*i+1] = y;// + node.pcoGeometry.offset.y;
+				positions[3*i+2] = z;// + node.pcoGeometry.offset.z;
+				
+				colors[3*i+0] = r / 255;
+				colors[3*i+1] = g / 255;
+				colors[3*i+2] = b / 255;
+			}
+			
+			geometry.addAttribute('position', new THREE.BufferAttribute(positions, 3));
+			geometry.addAttribute('color', new THREE.BufferAttribute(colors, 3));
+			geometry.boundingBox = node.boundingBox;
+			node.geometry = geometry;
+			node.loaded = true;
+			node.loading = false;
+			node.pcoGeometry.numNodesLoading--;
+			
+		};
+		
+		Potree.BinaryNodeLoader.load(this, "pot", callback);
+		
+	} else {
 		// load binary node files
 		
 		var url = this.pcoGeometry.octreeDir + "/" + this.name;
@@ -94,7 +173,7 @@ Potree.PointCloudOctreeGeometryNode.prototype.load = function(){
 		
 		nodesLoadTimes[url] = {};
 		nodesLoadTimes[url].start = new Date().getTime();
-		Potree.BinaryNodeLoader.load(this, callback);
+		Potree.BinaryNodeLoader.load(this, "", callback);
 	}
 }
 
@@ -102,8 +181,8 @@ Potree.BinaryNodeLoader = function(){
 
 }
 
-Potree.BinaryNodeLoader.load = function(node, callback){
-	var url = node.pcoGeometry.octreeDir + "/" + node.name;
+Potree.BinaryNodeLoader.load = function(node, extension, callback){
+	var url = node.pcoGeometry.octreeDir + "/" + node.name + "." + extension;
 	var xhr = new XMLHttpRequest();
 	xhr.open('GET', url, true);
 	xhr.responseType = 'arraybuffer';

@@ -70,8 +70,8 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 	
 	// check visibility
 	// TODO min and max points
-	var minPoints = 1*1000*1000;
-	var maxPoints = 5*1000*1000;
+	//var minPoints = 1*1000*1000;
+	//var maxPoints = 5*1000*1000;
 	var stack = [];
 	stack.push(this);
 	while(stack.length > 0){
@@ -91,15 +91,15 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 		visible = visible && frustum.intersectsBox(box);
 		if(object.level > 0){
 		
-			if(this.numVisiblePoints > minPoints && this.numVisiblePoints < maxPoints){
+			//if(this.numVisiblePoints > minPoints && this.numVisiblePoints < maxPoints){
 				// cull detail nodes based in distance to camera
 				visible = visible && Math.pow(radius, 0.8) / distance > (1 / this.LOD);
 				visible = visible && (this.numVisiblePoints + object.numPoints < Potree.pointLoadLimit);
 				visible = visible && (this.numVisibleNodes <= this.maxVisibleNodes);
 				visible = visible && (this.numVisiblePoints <= this.maxVisiblePoints);
-			}else if(this.numVisiblePoints > maxPoints){
-				visible = false;
-			}
+			//}else if(this.numVisiblePoints > maxPoints){
+			//	visible = false;
+			//}
 		}else{
 			//visible = true;
 		}
@@ -152,13 +152,18 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 		for(var i = 0; i < object.children.length; i++){
 			stack.push(object.children[i]);
 		}
+		
+		//console.log(object.name);
 	}
 	
 	if(this.loadQueue.length > 0){
 		if(this.loadQueue.length >= 2){
 			this.loadQueue.sort(function(a,b){return b.lod - a.lod});
 		}
-		this.loadQueue[0].node.geometryNode.load();
+		
+		for(var i = 0; i < Math.min(5, this.loadQueue.length); i++){
+			this.loadQueue[i].node.geometryNode.load();
+		}
 	}
 }
 
@@ -183,6 +188,16 @@ Potree.PointCloudOctree.prototype.replaceProxy = function(proxy){
 				var child = geometryNode.children[i];
 				var childProxy = new Potree.PointCloudOctreeProxyNode(child);
 				node.add(childProxy);
+				
+				//for(var j = 0; j < 8; j++){
+				//	if(child.children[j] !== undefined){
+				//		var cchild = child.children[j];
+				//		var cchildProxy = new Potree.PointCloudOctreeProxyNode(cchild);
+				//		childProxy.add(cchildProxy);
+				//		
+				//		
+				//	}
+				//}
 			}
 		}
 	}else{

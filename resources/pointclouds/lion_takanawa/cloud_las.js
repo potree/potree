@@ -1,6 +1,6 @@
 {
 	"version": "1.3",
-	"octreeDir": "LAS",
+	"octreeDir": "las",
 	"boundingBox": {
 		"lx": -2.91016,
 		"ly": -4.06274,

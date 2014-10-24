@@ -182,7 +182,10 @@ Potree.BinaryNodeLoader = function(){
 }
 
 Potree.BinaryNodeLoader.load = function(node, extension, callback){
-	var url = node.pcoGeometry.octreeDir + "/" + node.name + "." + extension;
+	var url = node.pcoGeometry.octreeDir + "/" + node.name;
+	if(extension !== undefined && extension.length > 0){
+		url += "." + extension;
+	}
 	var xhr = new XMLHttpRequest();
 	xhr.open('GET', url, true);
 	xhr.responseType = 'arraybuffer';

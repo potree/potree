@@ -1391,6 +1391,7 @@ Potree.PointCloudOctree = function(geometry, material){
 	this.LODFalloff = 1.3;
 	this.LOD = 4;
 	this.showBoundingBox = false;
+	this.loadQueue = [];
 	
 	
 	var rootProxy = new Potree.PointCloudOctreeProxyNode(this.pcoGeometry.root);
@@ -1402,6 +1403,7 @@ Potree.PointCloudOctree.prototype = Object.create(THREE.Object3D.prototype);
 Potree.PointCloudOctree.prototype.update = function(camera){
 	this.numVisibleNodes = 0;
 	this.numVisiblePoints = 0;
+	this.loadQueue = [];
 	
 	// create frustum in object space
 	camera.updateMatrixWorld();
@@ -1423,8 +1425,8 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 	
 	// check visibility
 	// TODO min and max points
-	var minPoints = 1*1000*1000;
-	var maxPoints = 5*1000*1000;
+	//var minPoints = 1*1000*1000;
+	//var maxPoints = 5*1000*1000;
 	var stack = [];
 	stack.push(this);
 	while(stack.length > 0){
@@ -1444,15 +1446,15 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 		visible = visible && frustum.intersectsBox(box);
 		if(object.level > 0){
 		
-			if(this.numVisiblePoints > minPoints && this.numVisiblePoints < maxPoints){
+			//if(this.numVisiblePoints > minPoints && this.numVisiblePoints < maxPoints){
 				// cull detail nodes based in distance to camera
 				visible = visible && Math.pow(radius, 0.8) / distance > (1 / this.LOD);
 				visible = visible && (this.numVisiblePoints + object.numPoints < Potree.pointLoadLimit);
 				visible = visible && (this.numVisibleNodes <= this.maxVisibleNodes);
 				visible = visible && (this.numVisiblePoints <= this.maxVisiblePoints);
-			}else if(this.numVisiblePoints > maxPoints){
-				visible = false;
-			}
+			//}else if(this.numVisiblePoints > maxPoints){
+			//	visible = false;
+			//}
 		}else{
 			//visible = true;
 		}
@@ -1494,11 +1496,28 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 			Potree.PointCloudOctree.lru.touch(object);
 			object.material = this.material;
 		}else if (object instanceof Potree.PointCloudOctreeProxyNode) {
-			this.replaceProxy(object);
+			var geometryNode = object.geometryNode;
+			if(geometryNode.loaded === true){
+				this.replaceProxy(object);
+			}else{
+				this.loadQueue.push({node: object, lod: Math.pow(radius, 0.8) / distance});
+			}
 		}
 		
 		for(var i = 0; i < object.children.length; i++){
 			stack.push(object.children[i]);
+		}
+		
+		//console.log(object.name);
+	}
+	
+	if(this.loadQueue.length > 0){
+		if(this.loadQueue.length >= 2){
+			this.loadQueue.sort(function(a,b){return b.lod - a.lod});
+		}
+		
+		for(var i = 0; i < Math.min(5, this.loadQueue.length); i++){
+			this.loadQueue[i].node.geometryNode.load();
 		}
 	}
 }
@@ -1524,10 +1543,21 @@ Potree.PointCloudOctree.prototype.replaceProxy = function(proxy){
 				var child = geometryNode.children[i];
 				var childProxy = new Potree.PointCloudOctreeProxyNode(child);
 				node.add(childProxy);
+				
+				//for(var j = 0; j < 8; j++){
+				//	if(child.children[j] !== undefined){
+				//		var cchild = child.children[j];
+				//		var cchildProxy = new Potree.PointCloudOctreeProxyNode(cchild);
+				//		childProxy.add(cchildProxy);
+				//		
+				//		
+				//	}
+				//}
 			}
 		}
 	}else{
-		geometryNode.load();
+		//geometryNode.load();
+		//this.loadQueue.push(geometryNode);
 	}
 }
 
@@ -1735,7 +1765,86 @@ Potree.PointCloudOctreeGeometryNode.prototype.load = function(){
 		nodesLoadTimes[url] = {};
 		nodesLoadTimes[url].start = new Date().getTime();
 		LasLazLoader.load(url, new Potree.LasLazBatcher(this, url));
-	}else {
+	} else if ( pointAttributes === "POT"){
+		
+		var callback = function(node, buffer){
+			var dv = new DataView(buffer, 0, 4);
+			var headerSize = dv.getUint32(0, true);
+			var pointOffset = 4 + headerSize;
+			
+			var headerBuffer = buffer.slice(4, 4 + headerSize);
+			var header = String.fromCharCode.apply(null, new Uint8Array(headerBuffer));
+			header = JSON.parse(header);
+			console.log(header);
+			
+			var pScale = header.attributes[0].scale;
+			var pOffset = header.attributes[0].offset;
+			var pEncoding = header.attributes[0].encoding;
+			
+			var scale = new THREE.Vector3(pScale[0], pScale[1], pScale[2]);
+			var offset = new THREE.Vector3(pOffset[0], pOffset[1], pOffset[2]);
+			var min = pEncoding.min;
+			var max = pEncoding.max;
+			var bits = pEncoding.bits;
+			
+			var pointBuffer = buffer.slice(pointOffset, pointOffset + buffer.byteLength - pointOffset);
+			var br = new BitReader(pointBuffer);
+			
+			var X = br.read(32);
+			var Y = br.read(32);
+			var Z = br.read(32);
+			
+			var r = br.read(8);
+			var g = br.read(8);
+			var b = br.read(8);
+			
+			var geometry = new THREE.BufferGeometry();
+			var numPoints = header.pointcount;
+			
+			var positions = new Float32Array(numPoints*3);
+			var colors = new Float32Array(numPoints*3);
+			var color = new THREE.Color();
+			
+			for(var i = 0; i < header.pointcount - 1; i++){
+				
+				dx = br.read(bits[0]) + min[0]; 
+				dy = br.read(bits[1]) + min[1]; 
+				dz = br.read(bits[2]) + min[2]; 
+				
+				X = X + dx;
+				Y = Y + dy;
+				Z = Z + dz;
+				
+				x = X * scale.x + offset.x;
+				y = Y * scale.y + offset.y; 
+				z = Z * scale.z + offset.z;
+				
+				r = br.read(8);
+				g = br.read(8);
+				b = br.read(8);
+				
+				positions[3*i+0] = x;// + node.pcoGeometry.offset.x;
+				positions[3*i+1] = y;// + node.pcoGeometry.offset.y;
+				positions[3*i+2] = z;// + node.pcoGeometry.offset.z;
+				
+				colors[3*i+0] = r / 255;
+				colors[3*i+1] = g / 255;
+				colors[3*i+2] = b / 255;
+			}
+			
+			geometry.addAttribute('position', new THREE.BufferAttribute(positions, 3));
+			geometry.addAttribute('color', new THREE.BufferAttribute(colors, 3));
+			geometry.boundingBox = node.boundingBox;
+			node.geometry = geometry;
+			node.loaded = true;
+			node.loading = false;
+			node.pcoGeometry.numNodesLoading--;
+			
+		};
+		
+		Potree.BinaryNodeLoader.load(this, "pot", callback);
+		
+	} else {
 		// load binary node files
 		
 		var url = this.pcoGeometry.octreeDir + "/" + this.name;
@@ -1778,7 +1887,7 @@ Potree.PointCloudOctreeGeometryNode.prototype.load = function(){
 		
 		nodesLoadTimes[url] = {};
 		nodesLoadTimes[url].start = new Date().getTime();
-		Potree.BinaryNodeLoader.load(this, callback);
+		Potree.BinaryNodeLoader.load(this, "", callback);
 	}
 }
 
@@ -1786,8 +1895,11 @@ Potree.BinaryNodeLoader = function(){
 
 }
 
-Potree.BinaryNodeLoader.load = function(node, callback){
+Potree.BinaryNodeLoader.load = function(node, extension, callback){
 	var url = node.pcoGeometry.octreeDir + "/" + node.name;
+	if(extension !== undefined && extension.length > 0){
+		url += "." + extension;
+	}
 	var xhr = new XMLHttpRequest();
 	xhr.open('GET', url, true);
 	xhr.responseType = 'arraybuffer';
@@ -2330,3 +2442,338 @@ Potree.MeasuringTool = function(scene, camera, domElement){
 
 
 Potree.MeasuringTool.prototype = Object.create( THREE.EventDispatcher.prototype );
+
+Potree.ProfileTool = function(width, height, depth){
+
+	THREE.Object3D.call( this );
+
+	var boxGeometry = new THREE.BoxGeometry(1,1,1,1,1,1);
+	var boxMaterial = new THREE.MeshBasicMaterial({color: 0xFF0000, transparent: true, opacity: 0.3});
+	
+	this.profileFrustum = new THREE.Mesh(boxGeometry, boxMaterial);
+	this.add(this.profileFrustum);
+	
+	this.camera = new THREE.OrthographicCamera( -width / 2, width / 2, height / 2, -height / 2, 1, 1 + depth );
+	this.add(this.camera);
+	this.setDimension(width, height, depth);
+	
+	this.rtProfile = new THREE.WebGLRenderTarget( 512, 512, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat } );
+	
+	this.hudGeometry = new THREE.BoxGeometry(2,2,1);
+	this.hudMaterial = new THREE.MeshBasicMaterial( { color: 0xffffff, map: this.rtProfile } );
+	this.hudMaterial.depthTest = false;
+	this.hudElement = new THREE.Mesh(this.hudGeometry, this.hudMaterial);
+	this.hudElement.scale.set(1,1,1);
+	this.hudElement.position.set(0, 0, 0);
+}
+
+Potree.ProfileTool.prototype = Object.create( THREE.Object3D.prototype );
+
+Potree.ProfileTool.prototype.setDimension = function(width, height, depth){
+	this.profileFrustum.scale.set(width, height, depth);
+	this.width = width;
+	this.height = height;
+	this.depth = depth;
+		
+	this.camera.left = -width / 2;
+	this.camera.right = width / 2;
+	this.camera.top = height / 2;
+	this.camera.bottom = -height / 2;
+	this.camera.updateProjectionMatrix();
+}
+
+Potree.ProfileTool.prototype.setOrientation = function(forward, side){
+	var oldPosition = this.position.clone();
+	this.position.add(forward);
+	this.lookAt(oldPosition);
+	this.position.copy(oldPosition);
+	
+	this.camera.position.copy(oldPosition.clone().add(forward));
+	this.camera.lookAt(oldPosition);
+}
+
+Potree.ProfileTool.prototype.render = function(renderer, scene){
+	this.camera.matrixWorld.copy(this.matrixWorld);
+	
+	//TODO maybe we should store old sizes in a map instead of the objects
+	scene.traverse(function(object){
+		if(object instanceof Potree.PointCloudOctree){
+			object.material.oldSize = object.material.size;
+			object.material.size = 0;
+		}
+	});
+	
+	
+	renderer.render(scene, this.camera, this.rtProfile, true);
+	
+	
+	scene.traverse(function(object){
+		if(object instanceof Potree.PointCloudOctree){
+			object.material.size = object.material.oldSize;
+		}
+	});
+	
+	//this.hudElement.scale.x = 0.5;
+	//this.hudElement.scale.y = 0.5 * (renderer.domElement.clientWidth / renderer.domElement.clientHeight) * (this.height / this.width);
+	//this.hudElement.position.x = 0.7;
+	//this.hudElement.position.y = -0.7;
+	
+}
+
+
+
+
+
+
+
+
+
+Potree.TranslationTool = function(camera) {
+	THREE.Object3D.call( this );
+	var scope = this;
+
+	this.camera = camera;
+
+	this.geometry = new THREE.Geometry();
+	this.material = new THREE.MeshBasicMaterial( { color: Math.random() * 0xffffff } );
+	
+	this.STATE = {
+		DEFAULT: 0,
+		TRANSLATE_X: 1,
+		TRANSLATE_Y: 2,
+		TRANSLATE_Z: 3
+	};
+	
+	this.parts = {
+		ARROW_X : {name: "arrow_x", object: undefined, color: new THREE.Color( 0xff0000 ), state: this.STATE.TRANSLATE_X},
+		ARROW_Y : {name: "arrow_y", object: undefined, color: new THREE.Color( 0x00ff00 ), state: this.STATE.TRANSLATE_Y},
+		ARROW_Z : {name: "arrow_z", object: undefined, color: new THREE.Color( 0x0000ff ), state: this.STATE.TRANSLATE_Z}
+	}
+	
+	this.translateStart;
+	
+	this.state = this.STATE.DEFAULT;
+	this.highlighted;
+	this.targets;
+	
+	this.build = function(){
+		var arrowX = scope.createArrow(scope.parts.ARROW_X, scope.parts.ARROW_X.color);
+		arrowX.rotation.z = -Math.PI/2;
+		
+		var arrowY = scope.createArrow(scope.parts.ARROW_Y, scope.parts.ARROW_Y.color);
+		
+		var arrowZ = scope.createArrow(scope.parts.ARROW_Z, scope.parts.ARROW_Z.color);
+		arrowZ.rotation.x = -Math.PI/2;
+		
+		scope.add(arrowX);
+		scope.add(arrowY);
+		scope.add(arrowZ);
+		
+		
+		var boxXY = scope.createBox(new THREE.Color( 0xffff00 ));
+		boxXY.scale.z = 0.02;
+		boxXY.position.set(0.5, 0.5, 0);
+		
+		var boxXZ = scope.createBox(new THREE.Color( 0xff00ff ));
+		boxXZ.scale.y = 0.02;
+		boxXZ.position.set(0.5, 0, -0.5);
+		
+		var boxYZ = scope.createBox(new THREE.Color( 0x00ffff ));
+		boxYZ.scale.x = 0.02;
+		boxYZ.position.set(0, 0.5, -0.5);
+		
+		scope.add(boxXY);
+		scope.add(boxXZ);
+		scope.add(boxYZ);
+		
+		
+		scope.parts.ARROW_X.object = arrowX;
+		scope.parts.ARROW_Y.object = arrowY;
+		scope.parts.ARROW_Z.object = arrowZ;
+		
+		
+		scope.scale.multiplyScalar(5);
+	};
+	
+	this.createBox = function(color){
+		var boxGeometry = new THREE.BoxGeometry(1, 1, 1);
+		var boxMaterial = new THREE.MeshBasicMaterial({color: color, transparent: true, opacity: 0.5});
+		var box = new THREE.Mesh(boxGeometry, boxMaterial);
+		
+		return box;
+	};
+	
+	this.createArrow = function(partID, color){
+		var material = new THREE.MeshBasicMaterial({color: color});
+		
+		var shaftGeometry = new THREE.CylinderGeometry(0.1, 0.1, 3, 10, 1, false);
+		var shaftMatterial  = material;
+		var shaft = new THREE.Mesh(shaftGeometry, shaftMatterial);
+		shaft.position.y = 1.5;
+		
+		var headGeometry = new THREE.CylinderGeometry(0, 0.3, 1, 10, 1, false);
+		var headMaterial  = material;
+		var head = new THREE.Mesh(headGeometry, headMaterial);
+		head.position.y = 3;
+		
+		var arrow = new THREE.Object3D();
+		arrow.add(shaft);
+		arrow.add(head);
+		arrow.partID = partID;
+		arrow.material = material;
+		
+		return arrow;
+	};
+	
+	this.setHighlighted = function(partID){
+		if(partID === undefined){
+			if(scope.highlighted){
+				scope.highlighted.object.material.color = scope.highlighted.color;
+				scope.highlighted = undefined;
+			}
+			
+			return; 
+		}else if(scope.highlighted !== undefined && scope.highlighted !== partID){
+			scope.highlighted.object.material.color = scope.highlighted.color;
+		}
+
+		scope.highlighted = partID;
+		partID.object.material.color = new THREE.Color(0xffff00);
+	}
+	
+	this.getHoveredObject = function(mouse){
+		var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
+		var projector = new THREE.Projector();
+		projector.unprojectVector( vector, scope.camera );
+		
+		var raycaster = new THREE.Raycaster();
+		raycaster.ray.set( scope.camera.position, vector.sub( scope.camera.position ).normalize() );
+		
+		var intersections = raycaster.intersectObject(scope, true);
+		if(intersections.length === 0){
+			scope.setHighlighted(undefined);
+			return undefined;
+		}
+		
+		var I = intersections[0];
+		var partID = I.object.parent.partID;
+			
+		return partID;	
+	}
+	
+	this.onMouseMove = function(event){
+
+		var mouse = event.normalizedPosition;
+		
+		if(scope.state === scope.STATE.DEFAULT){
+			scope.setHighlighted(scope.getHoveredObject(mouse));
+		}else if(scope.state === scope.STATE.TRANSLATE_X || scope.state === scope.STATE.TRANSLATE_Y || scope.state === scope.STATE.TRANSLATE_Z){
+			var origin = scope.start.lineStart.clone();
+			var direction = scope.start.lineEnd.clone().sub(scope.start.lineStart);
+			direction.normalize();
+			
+			var mousePoint = new THREE.Vector3(mouse.x, mouse.y);
+			
+			var directionDistance = new THREE.Vector3().subVectors(mousePoint, origin).dot(direction);
+			var pointOnLine = direction.clone().multiplyScalar(directionDistance).add(origin);
+			
+			
+			var projector = new THREE.Projector();
+			projector.unprojectVector(pointOnLine, scope.camera);
+			
+			var diff = pointOnLine.clone().sub(scope.position);
+			scope.position.copy(pointOnLine);
+			
+			for(var i = 0; i < scope.targets.length; i++){
+				var target = scope.targets[0];
+				target.position.add(diff);
+			}
+			
+			event.signal.halt();
+		}
+		
+	};
+	
+	this.onMouseDown = function(event){
+	
+		if(scope.state === scope.STATE.DEFAULT){
+			var hoveredObject = scope.getHoveredObject(event.normalizedPosition, scope.camera);
+			if(hoveredObject){
+				scope.state = hoveredObject.state;
+				
+				var lineStart = scope.position.clone();
+				var lineEnd;
+				
+				if(scope.state === scope.STATE.TRANSLATE_X){
+					lineEnd = scope.position.clone();
+					lineEnd.x += 2;
+				}else if(scope.state === scope.STATE.TRANSLATE_Y){
+					lineEnd = scope.position.clone();
+					lineEnd.y += 2;
+				}else if(scope.state === scope.STATE.TRANSLATE_Z){
+					lineEnd = scope.position.clone();
+					lineEnd.z -= 2;
+				}
+				
+				//lineEnd = scope.position.clone();
+				
+				var projector = new THREE.Projector();
+				projector.projectVector( lineStart, scope.camera );
+				projector.projectVector( lineEnd, scope.camera );
+				
+				scope.start = {
+					mouse: event.normalizedPosition,
+					lineStart: lineStart,
+					lineEnd: lineEnd
+				};
+				
+				event.signal.halt();
+			}
+			
+		}		
+	};
+	
+	this.onMouseUp = function(event){
+		scope.setHighlighted();
+		scope.state = scope.STATE.DEFAULT;
+		
+	};
+	
+	this.setTargets = function(targets){
+		scope.targets = targets;
+		
+		if(scope.targets.length === 0){
+			return;
+		}
+		
+		//TODO calculate centroid of all targets
+		var centroid = targets[0].position.clone();
+		//for(var i = 0; i < targets.length; i++){
+		//	var target = targets[i];
+		//}
+		
+		scope.position.copy(centroid);
+		
+	}
+
+	this.build();
+};
+
+Potree.TranslationTool.prototype = Object.create( THREE.Object3D.prototype );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

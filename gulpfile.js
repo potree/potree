@@ -33,7 +33,9 @@ var paths = {
 		"src/PointCloudOctreeGeometry.js",
 		"src/utils.js",
 		"src/TextSprite.js",
-		"src/utils/MeasuringTool.js"
+		"src/utils/MeasuringTool.js",
+		"src/utils/ProfileTool.js",
+		"src/utils/TranslationTool.js"
 	]
 
 };

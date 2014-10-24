@@ -78,10 +78,9 @@
 	
     <script type="text/javascript">
 
-	//var pointcloudPath = "../resources/pointclouds/sorvilier/cloud.js";
-	var pointcloudPath = "../../../../pointclouds/bruno_friedmann/vol_total/vol_total_bin/cloud.js";
-	var defaultPointSize = 1.3;
-	var defaultLOD = 12;
+	var pointcloudPath = "../resources/pointclouds/vol_total/cloud.js";
+	var defaultPointSize = 3;
+	var defaultLOD = 17;
 	
 	// add EPSG:21781 to the proj4 projection database
 	proj4.defs('EPSG:21781', "+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=600000 +y_0=200000 +ellps=bessel +towgs84=674.4,15.1,405.3,0,0,0,0 +units=m +no_defs ");
@@ -221,11 +220,11 @@
 		
 		skybox = Potree.utils.loadSkybox("../resources/textures/skybox/");
 		
-		camera.position.set(5050, 158, -600);
+		camera.position.set(500, 200, -300);
 		controls = new THREE.FirstPersonControls(camera, renderer.domElement);
 		camera.rotation.order = 'ZYX';
 		camera.rotation.x = -0.5;
-		camera.rotation.y = -3*Math.PI/4;
+		camera.rotation.y = -5*Math.PI/4;
 		controls.moveSpeed *= 10;
 		
 		materials.rgb = new Potree.PointCloudRGBMaterial({ size: defaultPointSize});
@@ -284,7 +283,7 @@
 			pointcloud.LOD = value;
 		});
 		
-		var pPointSize = gui.add(params, 'PointSize', 0.01, 2.0);
+		var pPointSize = gui.add(params, 'PointSize', 0.01, 4.0);
 		pPointSize.onChange(function(value){
 			pointcloud.material.size = value;
 		});

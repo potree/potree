@@ -1,0 +1,8 @@
+Point cloud courtesy of sigeom sa, http://www.sigeom.ch/
+Rue des Oeuches 45
+2740 Moutier
+Switzerland 
+
+This is a small subsample of the original dataset.
+
+

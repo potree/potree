@@ -94,12 +94,6 @@
 			
 			projector = new THREE.Projector();
 			raycaster = new THREE.Raycaster();
-			
-			var hud = document.createElement("div");
-			hud.style.position = "absolute";
-			hud.style.width = "100%";
-			hud.style.height = "100%";
-			document.body.appendChild(hud);
 
 			renderer = new THREE.WebGLRenderer();
 			renderer.setSize(window.innerWidth, window.innerHeight);
@@ -161,6 +155,8 @@
 			requestAnimationFrame(render);
 			
 			camera.updateMatrixWorld(true);
+			
+			controls.update(0.1);
 			
 			vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
 			projector.unprojectVector( vector, camera );

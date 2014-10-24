@@ -66,12 +66,8 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 	var camObjPos = new THREE.Vector3().setFromMatrixPosition( camMatrixObject );
 	
 	var ray = new THREE.Ray(camera.position, new THREE.Vector3( 0, 0, -1 ).applyQuaternion( camera.quaternion ) );
-	//var ray = new THREE.Ray(camera.position, new THREE.Vector3( 0, -1, 0 ) );
 	
 	// check visibility
-	// TODO min and max points
-	//var minPoints = 1*1000*1000;
-	//var maxPoints = 5*1000*1000;
 	var stack = [];
 	stack.push(this);
 	while(stack.length > 0){
@@ -83,25 +79,18 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 		}
 		
 		var box = object.boundingBox;
-		//var tbox = Potree.utils.computeTransformedBoundingBox(box, this.matrixWorld);
 		var distance = box.center().distanceTo(camObjPos);
 		var radius = box.size().length() * 0.5;
 
 		var visible = true;
 		visible = visible && frustum.intersectsBox(box);
 		if(object.level > 0){
-		
-			//if(this.numVisiblePoints > minPoints && this.numVisiblePoints < maxPoints){
-				// cull detail nodes based in distance to camera
-				visible = visible && Math.pow(radius, 0.8) / distance > (1 / this.LOD);
-				visible = visible && (this.numVisiblePoints + object.numPoints < Potree.pointLoadLimit);
-				visible = visible && (this.numVisibleNodes <= this.maxVisibleNodes);
-				visible = visible && (this.numVisiblePoints <= this.maxVisiblePoints);
-			//}else if(this.numVisiblePoints > maxPoints){
-			//	visible = false;
-			//}
-		}else{
-			//visible = true;
+			// cull detail nodes based in distance to camera
+			visible = visible && Math.pow(radius, 0.8) / distance > (1 / this.LOD);
+			visible = visible && (this.numVisiblePoints + object.numPoints < Potree.pointLoadLimit);
+			visible = visible && (this.numVisibleNodes <= this.maxVisibleNodes);
+			visible = visible && (this.numVisiblePoints <= this.maxVisiblePoints);
+
 		}
 		
 		// trying to skip higher detail nodes, if parents already cover all holes
@@ -188,21 +177,8 @@ Potree.PointCloudOctree.prototype.replaceProxy = function(proxy){
 				var child = geometryNode.children[i];
 				var childProxy = new Potree.PointCloudOctreeProxyNode(child);
 				node.add(childProxy);
-				
-				//for(var j = 0; j < 8; j++){
-				//	if(child.children[j] !== undefined){
-				//		var cchild = child.children[j];
-				//		var cchildProxy = new Potree.PointCloudOctreeProxyNode(cchild);
-				//		childProxy.add(cchildProxy);
-				//		
-				//		
-				//	}
-				//}
 			}
 		}
-	}else{
-		//geometryNode.load();
-		//this.loadQueue.push(geometryNode);
 	}
 }
 

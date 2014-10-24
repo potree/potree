@@ -36,6 +36,7 @@ Potree.PointCloudOctree = function(geometry, material){
 	this.LODFalloff = 1.3;
 	this.LOD = 4;
 	this.showBoundingBox = false;
+	this.loadQueue = [];
 	
 	
 	var rootProxy = new Potree.PointCloudOctreeProxyNode(this.pcoGeometry.root);
@@ -47,6 +48,7 @@ Potree.PointCloudOctree.prototype = Object.create(THREE.Object3D.prototype);
 Potree.PointCloudOctree.prototype.update = function(camera){
 	this.numVisibleNodes = 0;
 	this.numVisiblePoints = 0;
+	this.loadQueue = [];
 	
 	// create frustum in object space
 	camera.updateMatrixWorld();
@@ -64,7 +66,6 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 	var camObjPos = new THREE.Vector3().setFromMatrixPosition( camMatrixObject );
 	
 	var ray = new THREE.Ray(camera.position, new THREE.Vector3( 0, 0, -1 ).applyQuaternion( camera.quaternion ) );
-	//var ray = new THREE.Ray(camera.position, new THREE.Vector3( 0, -1, 0 ) );
 	
 	// check visibility
 	var stack = [];
@@ -78,20 +79,18 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 		}
 		
 		var box = object.boundingBox;
-		//var tbox = Potree.utils.computeTransformedBoundingBox(box, this.matrixWorld);
 		var distance = box.center().distanceTo(camObjPos);
 		var radius = box.size().length() * 0.5;
 
 		var visible = true;
 		visible = visible && frustum.intersectsBox(box);
-		if(object.level > 1){
+		if(object.level > 0){
 			// cull detail nodes based in distance to camera
 			visible = visible && Math.pow(radius, 0.8) / distance > (1 / this.LOD);
 			visible = visible && (this.numVisiblePoints + object.numPoints < Potree.pointLoadLimit);
 			visible = visible && (this.numVisibleNodes <= this.maxVisibleNodes);
 			visible = visible && (this.numVisiblePoints <= this.maxVisiblePoints);
-		}else{
-			//visible = true;
+
 		}
 		
 		// trying to skip higher detail nodes, if parents already cover all holes
@@ -131,11 +130,28 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 			Potree.PointCloudOctree.lru.touch(object);
 			object.material = this.material;
 		}else if (object instanceof Potree.PointCloudOctreeProxyNode) {
-			this.replaceProxy(object);
+			var geometryNode = object.geometryNode;
+			if(geometryNode.loaded === true){
+				this.replaceProxy(object);
+			}else{
+				this.loadQueue.push({node: object, lod: Math.pow(radius, 0.8) / distance});
+			}
 		}
 		
 		for(var i = 0; i < object.children.length; i++){
 			stack.push(object.children[i]);
+		}
+		
+		//console.log(object.name);
+	}
+	
+	if(this.loadQueue.length > 0){
+		if(this.loadQueue.length >= 2){
+			this.loadQueue.sort(function(a,b){return b.lod - a.lod});
+		}
+		
+		for(var i = 0; i < Math.min(5, this.loadQueue.length); i++){
+			this.loadQueue[i].node.geometryNode.load();
 		}
 	}
 }
@@ -163,8 +179,6 @@ Potree.PointCloudOctree.prototype.replaceProxy = function(proxy){
 				node.add(childProxy);
 			}
 		}
-	}else{
-		geometryNode.load();
 	}
 }
 
@@ -217,6 +231,52 @@ Potree.PointCloudOctree.prototype.getBoundingBoxWorld = function(){
 	return tBox;
 }
 
+Potree.PointCloudOctree.prototype.getProfile = function(start, end, width, depth){
+	var stack = [];
+	stack.push(this);
+	
+	var side = new THREE.Vector3().subVectors(end, start).normalize();
+	var up = new THREE.Vector3(0, 1, 0);
+	var forward = new THREE.Vector3().crossVectors(side, up).normalize();
+	var N = forward;
+	var cutPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(N, start);
+	
+	var inside = [];
+	
+	
+	while(stack.length > 0){
+		var object = stack.shift();
+		
+		console.log("traversing: " + object.name);
+		
+		if(object instanceof THREE.PointCloud){
+			var geometry = object.geometry;
+			var positions = geometry.attributes.position;
+			var p = positions.array;
+			var pointCount = positions.length / positions.itemSize;
+			
+			for(var i = 0; i < pointCount; i++){
+				var pos = new THREE.Vector3(p[3*i], p[3*i+1], p[3*i+2]);
+				pos.applyMatrix4(this.matrixWorld);
+				var distance = Math.abs(cutPlane.distanceToPoint(pos));
+				
+				if(distance < width/2){
+					inside.push(pos);
+				}
+			}
+		}
+		
+		if(object == this || object.level < depth){
+			for(var i = 0; i < object.children.length; i++){
+				stack.push(object.children[i]);
+			}
+		}
+	}
+	
+	console.log("points inside: " + inside.length);
+	
+	return inside;
+}
 
 /**
  *

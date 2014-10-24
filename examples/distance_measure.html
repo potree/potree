@@ -3,7 +3,7 @@
 <title>Lion</title>
     
 </head>
- <body style="margin: 0px; padding: 0px;">
+ <body style="margin: 0px; padding: 0px; overflow: hidden">
  
 	<style type="text/css">
 	 
@@ -155,6 +155,8 @@
 			requestAnimationFrame(render);
 			
 			camera.updateMatrixWorld(true);
+			
+			controls.update(0.1);
 			
 			vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
 			projector.unprojectVector( vector, camera );

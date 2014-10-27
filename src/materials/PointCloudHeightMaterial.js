@@ -5,13 +5,16 @@ Potree.PointCloudHeightMaterial = function(parameters){
 	var size = parameters.size || 1.0;
 	this.min = parameters.min || 0;
 	this.max = parameters.max || 1;
+	
+	var gradientTexture = Potree.PointCloudHeightMaterial.generateGradient();
 
 	var attributes = {};
 	var uniforms = {
 		uCol:   { type: "c", value: new THREE.Color( 0xffffff ) },
 		size:   { type: "f", value: 1 },
 		uMin:	{ type: "f", value: this.min },
-		uMax:	{ type: "f", value: this.max }
+		uMax:	{ type: "f", value: this.max },
+		gradient: {type: "t", value: gradientTexture}
 	};
 	
 	this.setValues({
@@ -24,6 +27,39 @@ Potree.PointCloudHeightMaterial = function(parameters){
 		alphaTest: 0.9,
 	});
 };
+
+
+Potree.PointCloudHeightMaterial.generateGradient = function() {
+	var size = 64;
+
+	// create canvas
+	canvas = document.createElement( 'canvas' );
+	canvas.width = size;
+	canvas.height = size;
+
+	// get context
+	var context = canvas.getContext( '2d' );
+
+	// draw gradient
+	context.rect( 0, 0, size, size );
+	var gradient = context.createLinearGradient( 0, 0, size, size );
+    gradient.addColorStop(0, 'blue');
+    gradient.addColorStop(1/5, 'aqua');
+    gradient.addColorStop(2/5, 'green')
+    gradient.addColorStop(3/5, 'yellow');
+    gradient.addColorStop(4/5, 'orange');
+	gradient.addColorStop(1, 'red');
+ 
+    
+	context.fillStyle = gradient;
+	context.fill();
+	
+	var texture = new THREE.Texture( canvas );
+	texture.needsUpdate = true;
+	textureImage = texture.image;
+
+	return texture;
+}
 
 Potree.PointCloudHeightMaterial.prototype = new THREE.ShaderMaterial();
 
@@ -48,6 +84,7 @@ Potree.PointCloudHeightMaterial.vs_points = [
  "uniform float size;                                          ",
  "uniform float uMin;                                          ",
  "uniform float uMax;                                          ",
+ "uniform sampler2D gradient;                                          ",
  "                                                             ",
  "varying vec3 vColor;                                         ",
  "                                                             ",
@@ -55,8 +92,10 @@ Potree.PointCloudHeightMaterial.vs_points = [
  "	vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 ); ",
  "	vec4 world = modelMatrix * vec4( position, 1.0 ); ",
  "	float w = (world.y - uMin) / (uMax-uMin);            ",
- "	w = clamp(w-0.1, 0.2, 1.0);            ",
- "	vColor = vec3(1.0, 0.0, 0.0) * (w) ;  ",
+ "                                                             ",
+ "  vec4 gCol = texture2D(gradient, vec2(w,1.0-w));                                                           ",
+ "  vColor = gCol.rgb;                                                           ",
+ "                                                             ",
  "                                                             ",
  "	gl_PointSize = size * ( 300.0 / length( mvPosition.xyz ) );      ",
  "	gl_PointSize = max(2.0, gl_PointSize);      ",

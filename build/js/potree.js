@@ -715,13 +715,16 @@ Potree.PointCloudHeightMaterial = function(parameters){
 	var size = parameters.size || 1.0;
 	this.min = parameters.min || 0;
 	this.max = parameters.max || 1;
+	
+	var gradientTexture = Potree.PointCloudHeightMaterial.generateGradient();
 
 	var attributes = {};
 	var uniforms = {
 		uCol:   { type: "c", value: new THREE.Color( 0xffffff ) },
 		size:   { type: "f", value: 1 },
 		uMin:	{ type: "f", value: this.min },
-		uMax:	{ type: "f", value: this.max }
+		uMax:	{ type: "f", value: this.max },
+		gradient: {type: "t", value: gradientTexture}
 	};
 	
 	this.setValues({
@@ -734,6 +737,39 @@ Potree.PointCloudHeightMaterial = function(parameters){
 		alphaTest: 0.9,
 	});
 };
+
+
+Potree.PointCloudHeightMaterial.generateGradient = function() {
+	var size = 64;
+
+	// create canvas
+	canvas = document.createElement( 'canvas' );
+	canvas.width = size;
+	canvas.height = size;
+
+	// get context
+	var context = canvas.getContext( '2d' );
+
+	// draw gradient
+	context.rect( 0, 0, size, size );
+	var gradient = context.createLinearGradient( 0, 0, size, size );
+    gradient.addColorStop(0, 'blue');
+    gradient.addColorStop(1/5, 'aqua');
+    gradient.addColorStop(2/5, 'green')
+    gradient.addColorStop(3/5, 'yellow');
+    gradient.addColorStop(4/5, 'orange');
+	gradient.addColorStop(1, 'red');
+ 
+    
+	context.fillStyle = gradient;
+	context.fill();
+	
+	var texture = new THREE.Texture( canvas );
+	texture.needsUpdate = true;
+	textureImage = texture.image;
+
+	return texture;
+}
 
 Potree.PointCloudHeightMaterial.prototype = new THREE.ShaderMaterial();
 
@@ -758,6 +794,7 @@ Potree.PointCloudHeightMaterial.vs_points = [
  "uniform float size;                                          ",
  "uniform float uMin;                                          ",
  "uniform float uMax;                                          ",
+ "uniform sampler2D gradient;                                          ",
  "                                                             ",
  "varying vec3 vColor;                                         ",
  "                                                             ",
@@ -765,8 +802,10 @@ Potree.PointCloudHeightMaterial.vs_points = [
  "	vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 ); ",
  "	vec4 world = modelMatrix * vec4( position, 1.0 ); ",
  "	float w = (world.y - uMin) / (uMax-uMin);            ",
- "	w = clamp(w-0.1, 0.2, 1.0);            ",
- "	vColor = vec3(1.0, 0.0, 0.0) * (w) ;  ",
+ "                                                             ",
+ "  vec4 gCol = texture2D(gradient, vec2(w,1.0-w));                                                           ",
+ "  vColor = gCol.rgb;                                                           ",
+ "                                                             ",
  "                                                             ",
  "	gl_PointSize = size * ( 300.0 / length( mvPosition.xyz ) );      ",
  "	gl_PointSize = max(2.0, gl_PointSize);      ",
@@ -835,6 +874,15 @@ Object.defineProperty(Potree.PointCloudColorMaterial.prototype, "size", {
 	},
 	set: function(value){
 		this.uniforms.size.value = value;
+	}
+});
+
+Object.defineProperty(Potree.PointCloudColorMaterial.prototype, "color", {
+	get: function(){
+		return this.uniforms.uCol.value;
+	},
+	set: function(value){
+		this.uniforms.uCol.value.copy(value);
 	}
 });
 
@@ -1421,12 +1469,8 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 	var camObjPos = new THREE.Vector3().setFromMatrixPosition( camMatrixObject );
 	
 	var ray = new THREE.Ray(camera.position, new THREE.Vector3( 0, 0, -1 ).applyQuaternion( camera.quaternion ) );
-	//var ray = new THREE.Ray(camera.position, new THREE.Vector3( 0, -1, 0 ) );
 	
 	// check visibility
-	// TODO min and max points
-	//var minPoints = 1*1000*1000;
-	//var maxPoints = 5*1000*1000;
 	var stack = [];
 	stack.push(this);
 	while(stack.length > 0){
@@ -1438,25 +1482,18 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 		}
 		
 		var box = object.boundingBox;
-		//var tbox = Potree.utils.computeTransformedBoundingBox(box, this.matrixWorld);
 		var distance = box.center().distanceTo(camObjPos);
 		var radius = box.size().length() * 0.5;
 
 		var visible = true;
 		visible = visible && frustum.intersectsBox(box);
 		if(object.level > 0){
-		
-			//if(this.numVisiblePoints > minPoints && this.numVisiblePoints < maxPoints){
-				// cull detail nodes based in distance to camera
-				visible = visible && Math.pow(radius, 0.8) / distance > (1 / this.LOD);
-				visible = visible && (this.numVisiblePoints + object.numPoints < Potree.pointLoadLimit);
-				visible = visible && (this.numVisibleNodes <= this.maxVisibleNodes);
-				visible = visible && (this.numVisiblePoints <= this.maxVisiblePoints);
-			//}else if(this.numVisiblePoints > maxPoints){
-			//	visible = false;
-			//}
-		}else{
-			//visible = true;
+			// cull detail nodes based in distance to camera
+			visible = visible && Math.pow(radius, 0.8) / distance > (1 / this.LOD);
+			visible = visible && (this.numVisiblePoints + object.numPoints < Potree.pointLoadLimit);
+			visible = visible && (this.numVisibleNodes <= this.maxVisibleNodes);
+			visible = visible && (this.numVisiblePoints <= this.maxVisiblePoints);
+
 		}
 		
 		// trying to skip higher detail nodes, if parents already cover all holes
@@ -1543,21 +1580,8 @@ Potree.PointCloudOctree.prototype.replaceProxy = function(proxy){
 				var child = geometryNode.children[i];
 				var childProxy = new Potree.PointCloudOctreeProxyNode(child);
 				node.add(childProxy);
-				
-				//for(var j = 0; j < 8; j++){
-				//	if(child.children[j] !== undefined){
-				//		var cchild = child.children[j];
-				//		var cchildProxy = new Potree.PointCloudOctreeProxyNode(cchild);
-				//		childProxy.add(cchildProxy);
-				//		
-				//		
-				//	}
-				//}
 			}
 		}
-	}else{
-		//geometryNode.load();
-		//this.loadQueue.push(geometryNode);
 	}
 }
 

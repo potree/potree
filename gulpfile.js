@@ -16,8 +16,6 @@ var paths = {
 	potree : [
 		"src/Potree.js",
 		"src/WorkerManager.js",
-		"build/workers/laslaz-worker.js",
-		"build/workers/lasdecoder-worker.js",
 		"src/extensions/PerspectiveCamera.js",
 		"src/extensions/Ray.js",
 		"src/loader/POCLoader.js",
@@ -36,8 +34,11 @@ var paths = {
 		"src/utils/MeasuringTool.js",
 		"src/utils/ProfileTool.js",
 		"src/utils/TranslationTool.js"
+	],
+	laslaz: [
+		"build/workers/laslaz-worker.js",
+		"build/workers/lasdecoder-worker.js",
 	]
-
 };
 
 var workers = {
@@ -67,6 +68,15 @@ gulp.task("workers", function(){
 gulp.task("scripts", function(){
 	gulp.src(paths.potree)
 		.pipe(concat('potree.js'))
+		.pipe(size({showFiles: true}))
+		.pipe(gulp.dest('build/js'))
+		.pipe(rename({suffix: '.min'}))
+		.pipe(uglify({preserveComments: 'some'}))
+		.pipe(size({showFiles: true}))
+		.pipe(gulp.dest('build/js'));
+		
+	gulp.src(paths.laslaz)
+		.pipe(concat('laslaz.js'))
 		.pipe(size({showFiles: true}))
 		.pipe(gulp.dest('build/js'))
 		.pipe(rename({suffix: '.min'}))

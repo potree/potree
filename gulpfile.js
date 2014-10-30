@@ -22,6 +22,7 @@ var paths = {
 		"src/loader/PointAttributes.js",
 		"src/loader/LasLazLoader.js",
 		"src/materials/PointCloudRGBMaterial.js",
+		"src/materials/PointCloudRGBInterpolationMaterial.js",
 		"src/materials/PointCloudIntensityMaterial.js",
 		"src/materials/PointCloudHeightMaterial.js",
 		"src/materials/PointCloudColorMaterial.js",

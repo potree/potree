@@ -33,6 +33,15 @@ Object.defineProperty(Potree.PointCloudColorMaterial.prototype, "size", {
 	}
 });
 
+Object.defineProperty(Potree.PointCloudColorMaterial.prototype, "color", {
+	get: function(){
+		return this.uniforms.uCol.value;
+	},
+	set: function(value){
+		this.uniforms.uCol.value.copy(value);
+	}
+});
+
 Potree.PointCloudColorMaterial.vs_points = [
  "uniform float size;                                          ",
  "uniform vec3 uCol;                                           ",

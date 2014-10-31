@@ -80,7 +80,7 @@
 
 	var pointcloudPath = "../resources/pointclouds/vol_total/cloud.js";
 	var defaultPointSize = 4;
-	var defaultLOD = 17;
+	var defaultPointCountTarget = 0.4;
 	
 	// add EPSG:21781 to the proj4 projection database
 	proj4.defs('EPSG:21781', "+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=600000 +y_0=200000 +ellps=bessel +towgs84=674.4,15.1,405.3,0,0,0,0 +units=m +no_defs ");
@@ -235,7 +235,7 @@
 		var pco = POCLoader.load(pointcloudPath, {toOrigin: true});
 		offset = pco.offset;
 		pointcloud = new Potree.PointCloudOctree(pco, materials.rgb);
-		pointcloud.LOD = defaultLOD;
+		pointcloud.visiblePointsTarget = defaultPointCountTarget * 1000 * 1000;
 		pointcloud.applyMatrix(new THREE.Matrix4().set(
 			1,0,0,0,
 			0,0,1,0,
@@ -276,14 +276,14 @@
 		
 		var params = {
 			PointSize: defaultPointSize,
-			LOD: defaultLOD,
+			"points(m)": defaultPointCountTarget,
 			"show octree" : false,
 			"Materials" : materials.rgb
 		};
 		
-		var pLOD = gui.add(params, 'LOD', 0.5,20);
-		pLOD.onChange(function(value){
-			pointcloud.LOD = value;
+		var pPoints = gui.add(params, 'points(m)', 0.2, 1);
+			pPoints.onChange(function(value){
+				pointcloud.visiblePointsTarget = value * 1000 * 1000;
 		});
 		
 		var pPointSize = gui.add(params, 'PointSize', 0.01, 6.0);

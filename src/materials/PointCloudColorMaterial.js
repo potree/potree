@@ -4,11 +4,13 @@ Potree.PointCloudColorMaterial = function(parameters){
 
 	var color = parameters.color || new THREE.Color().setRGB(1, 0, 0);
 	var size = parameters.size || 1.0;
+	var minSize = parameters.minSize || 2.0;
 	
 	var attributes = {};
 	var uniforms = {
 		uCol:   { type: "c", value: color },
-		size:   { type: "f", value: 1 }
+		size:   { type: "f", value: 1 },
+		minSize:   { type: "f", value: 2 }
 	};
 	
 	this.setValues({
@@ -18,6 +20,7 @@ Potree.PointCloudColorMaterial = function(parameters){
 		fragmentShader: Potree.PointCloudColorMaterial.fs_points_rgb.join("\n"),
 		vertexColors: THREE.VertexColors,
 		size: size,
+		minSize: minSize,
 		alphaTest: 0.9,
 	});
 };
@@ -33,6 +36,15 @@ Object.defineProperty(Potree.PointCloudColorMaterial.prototype, "size", {
 	}
 });
 
+Object.defineProperty(Potree.PointCloudColorMaterial.prototype, "minSize", {
+	get: function(){
+		return this.uniforms.minSize.value;
+	},
+	set: function(value){
+		this.uniforms.minSize.value = value;
+	}
+});
+
 Object.defineProperty(Potree.PointCloudColorMaterial.prototype, "color", {
 	get: function(){
 		return this.uniforms.uCol.value;
@@ -44,6 +56,7 @@ Object.defineProperty(Potree.PointCloudColorMaterial.prototype, "color", {
 
 Potree.PointCloudColorMaterial.vs_points = [
  "uniform float size;                                          ",
+ "uniform float minSize;                                          ",
  "uniform vec3 uCol;                                           ",
  "varying vec3 vColor;                                         ",
  "                                                             ",
@@ -52,7 +65,7 @@ Potree.PointCloudColorMaterial.vs_points = [
  "	vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 ); ",
  "                                                             ",
  "	gl_PointSize = size * ( 300.0 / length( mvPosition.xyz ) );      ",
- "	gl_PointSize = max(2.0, gl_PointSize);      ",
+ "	gl_PointSize = max(minSize, gl_PointSize);      ",
  "	gl_Position = projectionMatrix * mvPosition;               ",
  "}                                                            "];
 

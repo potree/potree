@@ -6,10 +6,12 @@ Potree.PointCloudRGBInterpolationMaterial = function(parameters){
 	var uniforms = {
 		color:   { type: "c", value: new THREE.Color( 0xffffff ) },
 		size:   { type: "f", value: 10 },
+		minSize:   { type: "f", value: 2 },
 		blendDepth:   { type: "f", value: 0.01 }
 	};
 	
 	var pointSize = parameters.size || 1.0;
+	var minSize = parameters.minSize || 2.0;
 	
 	var vs;
 	var fs;
@@ -29,6 +31,7 @@ Potree.PointCloudRGBInterpolationMaterial = function(parameters){
 		fragmentShader: fs,
 		vertexColors: THREE.VertexColors,
 		size: pointSize,
+		minSize: minSize,
 		alphaTest: 0.9,
 	});
 };
@@ -41,6 +44,15 @@ Object.defineProperty(Potree.PointCloudRGBInterpolationMaterial.prototype, "size
 	},
 	set: function(value){
 		this.uniforms.size.value = value;
+	}
+});
+
+Object.defineProperty(Potree.PointCloudRGBInterpolationMaterial.prototype, "minSize", {
+	get: function(){
+		return this.uniforms.minSize.value;
+	},
+	set: function(value){
+		this.uniforms.minSize.value = value;
 	}
 });
 
@@ -58,6 +70,7 @@ Potree.PointCloudRGBInterpolationMaterial.vs_points = [
  "                                         ",
  "                                         ",
  "uniform float size;                                          ",
+ "uniform float minSize;                                          ",
  "varying vec3 vColor;                                         ",
  "                                                             ",
  "void main() {                                                ",
@@ -65,7 +78,7 @@ Potree.PointCloudRGBInterpolationMaterial.vs_points = [
  "	vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 ); ",
  "                                                             ",
  "	gl_PointSize = size * ( 300.0 / length( mvPosition.xyz ) );      ",
- "	gl_PointSize = max(2.0, gl_PointSize);      ",
+ "	gl_PointSize = max(minSize, gl_PointSize);      ",
  "	gl_Position = projectionMatrix * mvPosition;               ",
  "}                                                            "];
 

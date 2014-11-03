@@ -3,6 +3,7 @@ Potree.PointCloudHeightMaterial = function(parameters){
 	parameters = parameters || {};
 	
 	var size = parameters.size || 1.0;
+	var minSize = parameters.minSize || 2.0;
 	this.min = parameters.min || 0;
 	this.max = parameters.max || 1;
 	
@@ -12,6 +13,7 @@ Potree.PointCloudHeightMaterial = function(parameters){
 	var uniforms = {
 		uCol:   { type: "c", value: new THREE.Color( 0xffffff ) },
 		size:   { type: "f", value: 1 },
+		minSize:   { type: "f", value: 2 },
 		uMin:	{ type: "f", value: this.min },
 		uMax:	{ type: "f", value: this.max },
 		gradient: {type: "t", value: gradientTexture}
@@ -24,6 +26,7 @@ Potree.PointCloudHeightMaterial = function(parameters){
 		fragmentShader: Potree.PointCloudHeightMaterial.fs_points_rgb.join("\n"),
 		vertexColors: THREE.VertexColors,
 		size: size,
+		minSize: minSize,
 		alphaTest: 0.9,
 	});
 };
@@ -72,6 +75,15 @@ Object.defineProperty(Potree.PointCloudHeightMaterial.prototype, "size", {
 	}
 });
 
+Object.defineProperty(Potree.PointCloudHeightMaterial.prototype, "minSize", {
+	get: function(){
+		return this.uniforms.minSize.value;
+	},
+	set: function(value){
+		this.uniforms.minSize.value = value;
+	}
+});
+
 Potree.PointCloudHeightMaterial.prototype.setBoundingBox = function(boundingBox){
 	this.min = boundingBox.min.y;
 	this.max = boundingBox.max.y;
@@ -82,6 +94,7 @@ Potree.PointCloudHeightMaterial.prototype.setBoundingBox = function(boundingBox)
 
 Potree.PointCloudHeightMaterial.vs_points = [
  "uniform float size;                                          ",
+ "uniform float minSize;                                          ",
  "uniform float uMin;                                          ",
  "uniform float uMax;                                          ",
  "uniform sampler2D gradient;                                          ",
@@ -98,7 +111,7 @@ Potree.PointCloudHeightMaterial.vs_points = [
  "                                                             ",
  "                                                             ",
  "	gl_PointSize = size * ( 300.0 / length( mvPosition.xyz ) );      ",
- "	gl_PointSize = max(2.0, gl_PointSize);      ",
+ "	gl_PointSize = max(minSize, gl_PointSize);      ",
  "	gl_Position = projectionMatrix * mvPosition;               ",
  "}                                                            "];
 

@@ -5,10 +5,12 @@ Potree.PointCloudRGBMaterial = function(parameters){
 	var attributes = {};
 	var uniforms = {
 		color:   { type: "c", value: new THREE.Color( 0xffffff ) },
-		size:   { type: "f", value: 10 }
+		size:   { type: "f", value: 10 },
+		minSize:   { type: "f", value: 2 }
 	};
 	
 	var pointSize = parameters.size || 1.0;
+	var minSize = parameters.minSize || 2.0;
 	
 	this.setValues({
 		uniforms: uniforms,
@@ -17,6 +19,7 @@ Potree.PointCloudRGBMaterial = function(parameters){
 		fragmentShader: Potree.PointCloudRGBMaterial.fs_points_rgb.join("\n"),
 		vertexColors: THREE.VertexColors,
 		size: pointSize,
+		minSize: minSize,
 		alphaTest: 0.9,
 	});
 };
@@ -32,8 +35,18 @@ Object.defineProperty(Potree.PointCloudRGBMaterial.prototype, "size", {
 	}
 });
 
+Object.defineProperty(Potree.PointCloudRGBMaterial.prototype, "minSize", {
+	get: function(){
+		return this.uniforms.minSize.value;
+	},
+	set: function(value){
+		this.uniforms.minSize.value = value;
+	}
+});
+
 Potree.PointCloudRGBMaterial.vs_points = [
  "uniform float size;                                          ",
+ "uniform float minSize;                                          ",
  "varying vec3 vColor;                                         ",
  "                                                             ",
  "void main() {                                                ",
@@ -41,7 +54,7 @@ Potree.PointCloudRGBMaterial.vs_points = [
  "	vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 ); ",
  "                                                             ",
  "	gl_PointSize = size * ( 300.0 / length( mvPosition.xyz ) );      ",
- "	gl_PointSize = max(2.0, gl_PointSize);      ",
+ "	gl_PointSize = max(minSize, gl_PointSize);      ",
  "	gl_Position = projectionMatrix * mvPosition;               ",
  "}                                                            "];
 

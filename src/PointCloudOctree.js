@@ -66,6 +66,7 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 	
 	var ray = new THREE.Ray(camera.position, new THREE.Vector3( 0, 0, -1 ).applyQuaternion( camera.quaternion ) );
 	
+	
 	// check visibility
 	var visibleNodes = [];
 	var outOfRange = [];
@@ -127,6 +128,8 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 			}
 		}
 		
+		
+		
 		if(object instanceof THREE.PointCloud){
 			this.numVisibleNodes++;
 			this.numVisiblePoints += object.numPoints;
@@ -151,6 +154,8 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 	
 	// increase or decrease lod to meet visible point count target
 	if(this.numVisiblePoints < this.visiblePointsTarget * 0.9 && outOfRange.length > 0 && visibleNodes.length > 0){
+		// increase lod to load some of the nodes that are currently out of range
+	
 		outOfRange.sort(function(a,b){return b.lod - a.lod});
 		visibleNodes.sort(function(a,b){return a.lod - b.lod});
 		var visibleMax = 1 / visibleNodes[0].lod;
@@ -160,7 +165,19 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 		
 		this.LOD = newMax;
 	}else if(this.numVisiblePoints > this.visiblePointsTarget*1.1){
-		this.LOD *= 0.95;
+		// decrease to value at which point count target is met
+		
+		var n = 0;
+		for(var i = 0; i < visibleNodes.length; i++){
+			var element = visibleNodes[i];
+			n += element.node.numPoints;
+			
+			if(n >= this.visiblePointsTarget){
+				this.LOD = 1 / element.lod;
+				break;
+			}
+		}
+		
 	}
 	
 	// schedule some of the unloaded nodes for loading
@@ -190,7 +207,7 @@ Potree.PointCloudOctree.prototype.replaceProxy = function(proxy){
 		var parent = proxy.parent;
 		parent.remove(proxy);
 		parent.add(node);
-		
+
 		for(var i = 0; i < 8; i++){
 			if(geometryNode.children[i] !== undefined){
 				var child = geometryNode.children[i];

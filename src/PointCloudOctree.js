@@ -192,6 +192,10 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 	}
 }
 
+//Potree.PointCloudOctree.updateMatrixWorld = function( force ){
+//	node.matrixWorld.multiplyMatrices( node.parent.matrixWorld, node.matrix );
+//};
+
 
 Potree.PointCloudOctree.prototype.replaceProxy = function(proxy){
 	

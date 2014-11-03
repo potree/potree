@@ -3,6 +3,7 @@ Potree.PointCloudClassificationMaterial = function(parameters){
 	parameters = parameters || {};
 	
 	var size = parameters.size || 1.0;
+	var minSize = parameters.minSize || 2.0;
 	this.min = parameters.min || 0;
 	this.max = parameters.max || 1;
 
@@ -11,7 +12,8 @@ Potree.PointCloudClassificationMaterial = function(parameters){
 	};
 	var uniforms = {
 		color:   { type: "c", value: new THREE.Color( 0xffffff ) },
-		size:   { type: "f", value: 1 }
+		size:   { type: "f", value: 1 },
+		minSize:   { type: "f", value: 2 }
 	};	
 	
 	this.setValues({
@@ -21,6 +23,7 @@ Potree.PointCloudClassificationMaterial = function(parameters){
 		fragmentShader: Potree.PointCloudClassificationMaterial.fs_points_rgb.join("\n"),
 		vertexColors: THREE.VertexColors,
 		size: size,
+		minSize: minSize,
 		alphaTest: 0.9
 	});
 };
@@ -36,9 +39,19 @@ Object.defineProperty(Potree.PointCloudClassificationMaterial.prototype, "size",
 	}
 });
 
+Object.defineProperty(Potree.PointCloudClassificationMaterial.prototype, "minSize", {
+	get: function(){
+		return this.uniforms.minSize.value;
+	},
+	set: function(value){
+		this.uniforms.minSize.value = value;
+	}
+});
+
 Potree.PointCloudClassificationMaterial.vs_points = [
  "attribute float classification;                                          ",
  "uniform float size;                                          ",
+ "uniform float minSize;                                          ",
  "varying vec3 vColor;                                         ",
  "                                                             ",
  "void main() {                                                ",
@@ -58,7 +71,7 @@ Potree.PointCloudClassificationMaterial.vs_points = [
  "	vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 ); ",
  "                                                             ",
  "	gl_PointSize = size * ( 300.0 / length( mvPosition.xyz ) );      ",
- "	gl_PointSize = max(2.0, gl_PointSize);      ",
+ "	gl_PointSize = max(minSize, gl_PointSize);      ",
  "	gl_Position = projectionMatrix * mvPosition;               ",
  "}                                                            "];
 

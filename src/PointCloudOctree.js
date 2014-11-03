@@ -128,7 +128,7 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 			}
 		}
 		
-		
+		object.matrixWorld.multiplyMatrices( object.parent.matrixWorld, object.matrix );
 		
 		if(object instanceof THREE.PointCloud){
 			this.numVisibleNodes++;
@@ -192,9 +192,29 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 	}
 }
 
-//Potree.PointCloudOctree.updateMatrixWorld = function( force ){
-//	node.matrixWorld.multiplyMatrices( node.parent.matrixWorld, node.matrix );
-//};
+Potree.PointCloudOctree.prototype.updateMatrixWorld = function( force ){
+	//node.matrixWorld.multiplyMatrices( node.parent.matrixWorld, node.matrix );
+	
+	if ( this.matrixAutoUpdate === true ) this.updateMatrix();
+
+	if ( this.matrixWorldNeedsUpdate === true || force === true ) {
+
+		if ( this.parent === undefined ) {
+
+			this.matrixWorld.copy( this.matrix );
+
+		} else {
+
+			this.matrixWorld.multiplyMatrices( this.parent.matrixWorld, this.matrix );
+
+		}
+
+		this.matrixWorldNeedsUpdate = false;
+
+		force = true;
+
+	}
+};
 
 
 Potree.PointCloudOctree.prototype.replaceProxy = function(proxy){
@@ -211,6 +231,8 @@ Potree.PointCloudOctree.prototype.replaceProxy = function(proxy){
 		var parent = proxy.parent;
 		parent.remove(proxy);
 		parent.add(node);
+		
+		node.matrixWorld.multiplyMatrices( node.parent.matrixWorld, node.matrix );
 
 		for(var i = 0; i < 8; i++){
 			if(geometryNode.children[i] !== undefined){

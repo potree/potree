@@ -28,8 +28,7 @@ Potree.PointCloudOctree = function(geometry, material){
 	//this.boundingBox = this.pcoGeometry.boundingBox;
 	this.boundingBox = this.pcoGeometry.root.boundingBox;
 	this.material = material;
-	this.maxVisibleNodes = 2000;
-	this.maxVisiblePoints = 20*1000*1000;
+	this.visiblePointsTarget = 2*1000*1000;
 	this.level = 0;
 	
 	this.LODDistance = 20;
@@ -67,7 +66,10 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 	
 	var ray = new THREE.Ray(camera.position, new THREE.Vector3( 0, 0, -1 ).applyQuaternion( camera.quaternion ) );
 	
+	
 	// check visibility
+	var visibleNodes = [];
+	var outOfRange = [];
 	var stack = [];
 	stack.push(this);
 	while(stack.length > 0){
@@ -81,15 +83,17 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 		var box = object.boundingBox;
 		var distance = box.center().distanceTo(camObjPos);
 		var radius = box.size().length() * 0.5;
+		var weight = Math.pow(radius, 1) / distance;
 
 		var visible = true;
 		visible = visible && frustum.intersectsBox(box);
 		if(object.level > 0){
-			// cull detail nodes based in distance to camera
-			visible = visible && Math.pow(radius, 0.8) / distance > (1 / this.LOD);
-			visible = visible && (this.numVisiblePoints + object.numPoints < Potree.pointLoadLimit);
-			visible = visible && (this.numVisibleNodes <= this.maxVisibleNodes);
-			visible = visible && (this.numVisiblePoints <= this.maxVisiblePoints);
+			var inRange = weight >= (1 / this.LOD);
+			visible = visible && inRange;
+			
+			if(!inRange){
+				outOfRange.push({node: object, lod: weight});
+			}
 
 		}
 		
@@ -124,17 +128,20 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 			}
 		}
 		
+		
+		
 		if(object instanceof THREE.PointCloud){
 			this.numVisibleNodes++;
 			this.numVisiblePoints += object.numPoints;
 			Potree.PointCloudOctree.lru.touch(object);
 			object.material = this.material;
+			visibleNodes.push({node: object, lod: weight});
 		}else if (object instanceof Potree.PointCloudOctreeProxyNode) {
 			var geometryNode = object.geometryNode;
 			if(geometryNode.loaded === true){
 				this.replaceProxy(object);
 			}else{
-				this.loadQueue.push({node: object, lod: Math.pow(radius, 0.8) / distance});
+				this.loadQueue.push({node: object, lod: weight});
 			}
 		}
 		
@@ -145,6 +152,35 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 		//console.log(object.name);
 	}
 	
+	// increase or decrease lod to meet visible point count target
+	if(this.numVisiblePoints < this.visiblePointsTarget * 0.9 && outOfRange.length > 0 && visibleNodes.length > 0){
+		// increase lod to load some of the nodes that are currently out of range
+	
+		outOfRange.sort(function(a,b){return b.lod - a.lod});
+		visibleNodes.sort(function(a,b){return a.lod - b.lod});
+		var visibleMax = 1 / visibleNodes[0].lod;
+		var oorIndex = Math.min(outOfRange.length - 1, 4);
+		var outOfRangeMax = 1 / outOfRange[oorIndex].lod;
+		var newMax = Math.max(visibleMax, outOfRangeMax);
+		
+		this.LOD = newMax;
+	}else if(this.numVisiblePoints > this.visiblePointsTarget*1.1){
+		// decrease to value at which point count target is met
+		
+		var n = 0;
+		for(var i = 0; i < visibleNodes.length; i++){
+			var element = visibleNodes[i];
+			n += element.node.numPoints;
+			
+			if(n >= this.visiblePointsTarget){
+				this.LOD = 1 / element.lod;
+				break;
+			}
+		}
+		
+	}
+	
+	// schedule some of the unloaded nodes for loading
 	if(this.loadQueue.length > 0){
 		if(this.loadQueue.length >= 2){
 			this.loadQueue.sort(function(a,b){return b.lod - a.lod});
@@ -155,6 +191,10 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 		}
 	}
 }
+
+//Potree.PointCloudOctree.updateMatrixWorld = function( force ){
+//	node.matrixWorld.multiplyMatrices( node.parent.matrixWorld, node.matrix );
+//};
 
 
 Potree.PointCloudOctree.prototype.replaceProxy = function(proxy){
@@ -171,7 +211,7 @@ Potree.PointCloudOctree.prototype.replaceProxy = function(proxy){
 		var parent = proxy.parent;
 		parent.remove(proxy);
 		parent.add(node);
-		
+
 		for(var i = 0; i < 8; i++){
 			if(geometryNode.children[i] !== undefined){
 				var child = geometryNode.children[i];

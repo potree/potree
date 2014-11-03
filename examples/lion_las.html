@@ -44,7 +44,7 @@
 	
 	<script>
 		var defaultPointSize = 0.09;
-		var defaultLOD = 12;
+		var defaultPointCountTarget = 0.2;
 		var pointcloudPath = "../resources/pointclouds/lion_takanawa/cloud_las.js";
 	
 		var renderer;
@@ -65,14 +65,14 @@
 			
 			var params = {
 				PointSize: defaultPointSize,
-				LOD: defaultLOD,
+				"points(m)": defaultPointCountTarget,
 				"show aabb" : false,
 				"Materials" : materials.rgb
 			};
 			
-			var pLOD = gui.add(params, 'LOD', 0.5,20);
-			pLOD.onChange(function(value){
-				pointcloud.LOD = value;
+			var pPoints = gui.add(params, 'points(m)', 0.05, 0.3);
+			pPoints.onChange(function(value){
+				pointcloud.visiblePointsTarget = value * 1000 * 1000;
 			});
 			
 			var pPointSize = gui.add(params, 'PointSize', 0.01, 0.3);
@@ -138,7 +138,7 @@
 			var pco = POCLoader.load(pointcloudPath, {toOrigin: true});
 			
 			pointcloud = new Potree.PointCloudOctree(pco, materials.rgb);
-			pointcloud.LOD = defaultLOD;
+			pointcloud.visiblePointsTarget = defaultPointCountTarget * 1000 * 1000;
 			pointcloud.rotation.set(Math.PI/2, 0.85* -Math.PI/2, -0.0);
 			pointcloud.moveToOrigin();
 			pointcloud.moveToGroundPlane();

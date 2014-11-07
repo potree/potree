@@ -100,11 +100,13 @@ Potree.PointCloudRGBInterpolationMaterial.fs_points_rgb = [
  "	                                                           ",
  "	gl_FragColor = vec4(vColor, 1.0);                          ",
  "  gl_FragDepthEXT = gl_FragCoord.z + blendDepth*(1.0-pow(c, 1.0)) * gl_FragCoord.w ;                                                            ",
+ "	                                                           ",
+ "	//float dist = gl_FragCoord.z / gl_FragCoord.w;                                                           ",
+ "	//float fog = clamp(dist / 2000.0, 0.0, 1.0);                                                           ",
+ "	//fog = min(fog, 0.6);                                                           ",
+ "	//gl_FragColor = gl_FragColor * (1.0-fog) + vec4(170.0, 180.0, 190, 1.0) * fog / 256.0;                                                           ",
+ "  //gl_FragColor.a = 1.0;                                                            ",
  "}                                                            "];
-
-
-
-
 
 
 

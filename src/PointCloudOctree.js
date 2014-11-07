@@ -167,16 +167,17 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 	}else if(this.numVisiblePoints > this.visiblePointsTarget*1.1){
 		// decrease to value at which point count target is met
 		
-		var n = 0;
-		for(var i = 0; i < visibleNodes.length; i++){
-			var element = visibleNodes[i];
-			n += element.node.numPoints;
-			
-			if(n >= this.visiblePointsTarget){
-				this.LOD = 1 / element.lod;
-				break;
-			}
-		}
+		//var n = 0;
+		//for(var i = 0; i < visibleNodes.length; i++){
+		//	var element = visibleNodes[i];
+		//	n += element.node.numPoints;
+		//	
+		//	if(n >= this.visiblePointsTarget){
+		//		this.LOD = 1 / element.lod;
+		//		break;
+		//	}
+		//}
+		this.LOD *= 0.95;
 		
 	}
 	

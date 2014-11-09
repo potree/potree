@@ -1870,8 +1870,8 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 				node.updateMatrixWorld();
 				node.matrixWorld.multiplyMatrices( node.parent.matrixWorld, node.matrix );
 				
-				var boxHelper = new THREE.BoxHelper(node);
-				scene.add(boxHelper);
+				//var boxHelper = new THREE.BoxHelper(node);
+				//scene.add(boxHelper);
 			}else{
 				object.geometryNode.load();
 			}

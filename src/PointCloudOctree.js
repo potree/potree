@@ -128,19 +128,20 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 		var radius = box.size().length() * 0.5;
 		var weight = Math.pow(radius, 1) / distance;
 
-		var visible = true;
-		visible = visible && frustum.intersectsBox(box);
+		var insideFrustum = frustum.intersectsBox(box);
+		var inRange = true;
 		if(object.level > 0){
 			var inRange = weight >= (1 / this.LOD);
-			visible = visible && inRange;
 			
 			if(!inRange){
 				outOfRange.push({node: object, lod: weight});
 			}
-
 		}
 		
+		var visible = insideFrustum && inRange;		
 		object.visible = visible;
+		object.insideFrustum = insideFrustum;
+		object.inRange = inRange;
 		
 		object.matrixWorld.multiplyMatrices( object.parent.matrixWorld, object.matrix );
 
@@ -258,12 +259,14 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 	for(var i = 0; i < visibleNodes.length; i++){
 		var element = visibleNodes[i];
 		var node = element.node;
-		var isLeaf = true;
+		var partOfBoundingArea = true;
 		
 		for(var j = 0; j < node.children.length; j++){
 			var child = node.children[j];
 			if(child instanceof THREE.PointCloud){
-				isLeaf = isLeaf && !child.visible;
+				partOfBoundingArea = partOfBoundingArea && !(child.insideFrustum && !child.inRange);
+				
+				
 			}
 		}
 		

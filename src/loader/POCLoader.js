@@ -45,9 +45,9 @@ POCLoader.load = function load(url, params) {
 			var offset = new THREE.Vector3(0,0,0);
 			
 			if(toOrigin){
-				offset.set(-min.x, -min.y, -min.z);
-				boundingBox.min.add(offset);
-				boundingBox.max.add(offset);
+				offset.set(min.x, min.y, min.z);
+				boundingBox.min.sub(offset);
+				boundingBox.max.sub(offset);
 			}
 			pco.boundingBox = boundingBox;
 			pco.offset = offset;

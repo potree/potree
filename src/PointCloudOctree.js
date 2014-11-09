@@ -30,13 +30,15 @@ Potree.PointCloudOctree = function(geometry, material){
 	this.material = material;
 	this.visiblePointsTarget = 2*1000*1000;
 	this.level = 0;
+	this.position.add(geometry.offset);
+	this.updateMatrix();
 	
 	this.LODDistance = 20;
 	this.LODFalloff = 1.3;
 	this.LOD = 4;
 	this.showBoundingBox = false;
 	this.loadQueue = [];
-	
+	this.visibleBounds = new THREE.Box3();	
 	
 	var rootProxy = new Potree.PointCloudOctreeProxyNode(this.pcoGeometry.root);
 	this.add(rootProxy);
@@ -178,8 +180,43 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 		//	}
 		//}
 		this.LOD *= 0.95;
-		
 	}
+	
+	var leafNodes = [];
+	for(var i = 0; i < visibleNodes.length; i++){
+		var element = visibleNodes[i];
+		var node = element.node;
+		var isLeaf = true;
+		
+		for(var j = 0; j < node.children.length; j++){
+			var child = node.children[j];
+			if(child instanceof THREE.PointCloud){
+				isLeaf = isLeaf && !child.visible;
+			}
+		}
+		
+		if(isLeaf){
+			leafNodes.push(node);
+		}
+	}
+	
+	this.visibleBounds.min = new THREE.Vector3( Infinity, Infinity, Infinity );
+	this.visibleBounds.max = new THREE.Vector3( - Infinity, - Infinity, - Infinity );
+	for(var i = 0; i < leafNodes.length; i++){
+		var node = leafNodes[i];
+		
+		this.visibleBounds.expandByPoint(node.boundingBox.min);
+		this.visibleBounds.expandByPoint(node.boundingBox.max);
+	}
+	
+	//for(var i = 0; i < leafNodes.length; i++){
+	//	var object = leafNodes[i];
+	//	if(object.boundingBoxNode === undefined && object.boundingBox !== undefined){
+	//		var boxHelper = new THREE.BoxHelper(object);
+	//		object.add(boxHelper);
+	//		object.boundingBoxNode = boxHelper;
+	//	}
+	//}
 	
 	// schedule some of the unloaded nodes for loading
 	if(this.loadQueue.length > 0){
@@ -298,11 +335,14 @@ Potree.PointCloudOctree.prototype.getProfile = function(start, end, width, depth
 	var stack = [];
 	stack.push(this);
 	
+	var center = new THREE.Vector3().addVectors(end, start).multiplyScalar(0.5);
+	var length = new THREE.Vector3().subVectors(end, start).length();
 	var side = new THREE.Vector3().subVectors(end, start).normalize();
 	var up = new THREE.Vector3(0, 1, 0);
 	var forward = new THREE.Vector3().crossVectors(side, up).normalize();
 	var N = forward;
 	var cutPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(N, start);
+	var halfPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(side, center);
 	
 	var inside = [];
 	
@@ -322,8 +362,9 @@ Potree.PointCloudOctree.prototype.getProfile = function(start, end, width, depth
 				var pos = new THREE.Vector3(p[3*i], p[3*i+1], p[3*i+2]);
 				pos.applyMatrix4(this.matrixWorld);
 				var distance = Math.abs(cutPlane.distanceToPoint(pos));
+				var centerDistance = Math.abs(halfPlane.distanceToPoint(pos));
 				
-				if(distance < width/2){
+				if(distance < width / 2 && centerDistance < length / 2){
 					inside.push(pos);
 				}
 			}
@@ -396,3 +437,7 @@ Potree.PointCloudOctree.disposeNode = function(node){
 		"numDeletedNodes": numDeletedNodes
 	};
 }
+
+Potree.PointCloudOctree.prototype.getVisibleExtent = function(){
+	return this.visibleBounds.applyMatrix4(this.matrixWorld);
+};

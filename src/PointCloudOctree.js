@@ -12,12 +12,48 @@ Potree.PointCloudOctreeProxyNode = function(geometryNode){
 	
 	this.geometryNode = geometryNode;
 	this.boundingBox = geometryNode.boundingBox;
+	this.boundingSphere = this.boundingBox.getBoundingSphere();
 	this.name = geometryNode.name;
 	this.level = geometryNode.level;
 	this.numPoints = geometryNode.numPoints;
 }
 
 Potree.PointCloudOctreeProxyNode.prototype = Object.create(THREE.Object3D.prototype);
+
+
+
+
+
+
+
+
+Potree.ProfileRequest = function(start, end, width, depth, callback){
+	this.start = start;
+	this.end = end;
+	this.width = width;
+	this.depth = depth;
+	
+	//var up = start.clone();
+	//up.y += 10;
+	//this.plane = new THREE.Plane().setFromCoplanarPoints(start, end, up);
+	this.callback = callback;
+	this.loadQueue = [];
+	
+	var center = new THREE.Vector3().addVectors(end, start).multiplyScalar(0.5);
+	var length = new THREE.Vector3().subVectors(end, start).length();
+	var side = new THREE.Vector3().subVectors(end, start).normalize();
+	var up = new THREE.Vector3(0, 1, 0);
+	var forward = new THREE.Vector3().crossVectors(side, up).normalize();
+	var N = forward;
+	this.plane = new THREE.Plane().setFromNormalAndCoplanarPoint(N, start);
+};
+
+
+
+
+
+
+
 
 Potree.PointCloudOctree = function(geometry, material){
 	THREE.Object3D.call( this );
@@ -39,6 +75,7 @@ Potree.PointCloudOctree = function(geometry, material){
 	this.showBoundingBox = false;
 	this.loadQueue = [];
 	this.visibleBounds = new THREE.Box3();	
+	this.profileRequests = [];
 	
 	var rootProxy = new Potree.PointCloudOctreeProxyNode(this.pcoGeometry.root);
 	this.add(rootProxy);
@@ -68,6 +105,10 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 	
 	var ray = new THREE.Ray(camera.position, new THREE.Vector3( 0, 0, -1 ).applyQuaternion( camera.quaternion ) );
 	
+	for(var i = 0; i < this.profileRequests.length; i++){
+		var profileRequest = this.profileRequests[i];
+		profileRequest.loadQueue = [];
+	}
 	
 	// check visibility
 	var visibleNodes = [];
@@ -99,24 +140,15 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 
 		}
 		
-		// trying to skip higher detail nodes, if parents already cover all holes
-		//if(this.pcoGeometry !== undefined && this.pcoGeometry.spacing !== undefined){
-		//	var spacing = this.pcoGeometry.spacing / Math.pow(2, object.level);
-		//	spacing *= 10;
-		//	if(spacing < this.material.size * 1.5){
-		//		visible = false;
-		//	}
-		//}
-		
-		//if(object.level > 0){
-		//	visible = parseInt(object.name.charAt(object.name.length-1)) == 0;
-		//}
-		
 		object.visible = visible;
+		
+		object.matrixWorld.multiplyMatrices( object.parent.matrixWorld, object.matrix );
+
+
+		
 		
 		if(!visible){
 			this.hideDescendants(object);
-			continue;
 		}else if(visible && this.showBoundingBox && object instanceof THREE.PointCloud){
 			if(object.boundingBoxNode === undefined && object.boundingBox !== undefined){
 				var boxHelper = new THREE.BoxHelper(object);
@@ -130,9 +162,9 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 			}
 		}
 		
-		object.matrixWorld.multiplyMatrices( object.parent.matrixWorld, object.matrix );
-		
-		if(object instanceof THREE.PointCloud){
+		if(!visible){
+			continue;
+		}else if(object instanceof THREE.PointCloud){
 			this.numVisibleNodes++;
 			this.numVisiblePoints += object.numPoints;
 			Potree.PointCloudOctree.lru.touch(object);
@@ -153,6 +185,46 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 		
 		//console.log(object.name);
 	}
+	
+	
+	// check profile cut plane intersections
+	for(var i = 0; i < this.profileRequests.length; i++){
+		var profileRequest = this.profileRequests[i];
+		var plane = profileRequest.plane;
+		var start = profileRequest.start;
+		var end = profileRequest.end;
+		var depth = profileRequest.depth;
+		
+		var stack = [];
+		stack.push(this);
+		while(stack.length > 0){
+			var object = stack.shift();
+		
+			if(object instanceof Potree.PointCloudOctreeProxyNode){
+				var box = Potree.utils.computeTransformedBoundingBox(object.boundingBox, object.matrixWorld);
+				
+				var sphere = box.getBoundingSphere();
+				if(Math.abs(plane.distanceToPoint(sphere.center)) < sphere.radius){
+					profileRequest.loadQueue.push(object);
+				}
+			}
+		
+		
+			if(object.level < depth){
+				for(var i = 0; i < object.children.length; i++){
+					var child = object.children[i];
+					
+					if(child instanceof Potree.PointCloudOctreeProxyNode || child instanceof THREE.PointCloud){
+						stack.push(object.children[i]);
+					}
+				}
+			}
+		}
+			
+	}
+	
+	
+	
 	
 	// increase or decrease lod to meet visible point count target
 	if(this.numVisiblePoints < this.visiblePointsTarget * 0.9 && outOfRange.length > 0 && visibleNodes.length > 0){
@@ -207,16 +279,53 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 		
 		this.visibleBounds.expandByPoint(node.boundingBox.min);
 		this.visibleBounds.expandByPoint(node.boundingBox.max);
+		//this.visibleBounds.intersect(node.boundingBox);
 	}
 	
-	//for(var i = 0; i < leafNodes.length; i++){
-	//	var object = leafNodes[i];
-	//	if(object.boundingBoxNode === undefined && object.boundingBox !== undefined){
-	//		var boxHelper = new THREE.BoxHelper(object);
-	//		object.add(boxHelper);
-	//		object.boundingBoxNode = boxHelper;
-	//	}
-	//}
+	
+	// schedule nodes needed for a profile request
+	var finishedRequests = [];
+	for(var i = 0; i < this.profileRequests.length; i++){
+		var request = this.profileRequests[i];
+		
+		if(request.loadQueue.length > 0){
+			console.log("loading: " + request.loadQueue[0].geometryNode.name);
+			var object = request.loadQueue[0];
+			var geometryNode = object.geometryNode;
+			if(geometryNode.loaded === true && object.parent !== undefined){
+				var node = this.replaceProxy(object);
+				node.updateMatrixWorld();
+				node.matrixWorld.multiplyMatrices( node.parent.matrixWorld, node.matrix );
+				
+				var boxHelper = new THREE.BoxHelper(node);
+				scene.add(boxHelper);
+			}else{
+				object.geometryNode.load();
+			}
+		}else{
+			var points = this.getProfile(request.start, request.end, request.width, request.depth);
+		
+			request.callback({type: "finished", points: points});
+			finishedRequests.push(request);
+		}
+		
+		//for(var j = 0; j < profileRequest.loadQueue.length; j++){
+		//	var object = profileRequest.loadQueue[j];
+		//	if(object.boundingBoxNode === undefined && object.boundingBox !== undefined){
+		//		object.geometry = object.geometryNode;
+		//		var boxHelper = new THREE.BoxHelper(object);
+		//		object.add(boxHelper);
+		//		object.boundingBoxNode = boxHelper;
+		//		object.geometry = undefined;
+		//	}
+		//}
+	}
+	for(var i = 0; i < finishedRequests.length; i++){
+		var index = this.profileRequests.indexOf(finishedRequests[i]);
+		if (index > -1) {
+			this.profileRequests.splice(index, 1);
+		}
+	}
 	
 	// schedule some of the unloaded nodes for loading
 	if(this.loadQueue.length > 0){
@@ -228,6 +337,8 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 			this.loadQueue[i].node.geometryNode.load();
 		}
 	}
+	
+	
 }
 
 Potree.PointCloudOctree.prototype.updateMatrixWorld = function( force ){
@@ -265,6 +376,7 @@ Potree.PointCloudOctree.prototype.replaceProxy = function(proxy){
 		node.level = proxy.level;
 		node.numPoints = proxy.numPoints;
 		node.boundingBox = geometry.boundingBox;
+		node.boundingSphere = node.boundingBox.getBoundingSphere();
 		node.pcoGeometry = geometryNode;
 		var parent = proxy.parent;
 		parent.remove(proxy);
@@ -279,6 +391,8 @@ Potree.PointCloudOctree.prototype.replaceProxy = function(proxy){
 				node.add(childProxy);
 			}
 		}
+		
+		return node;
 	}
 }
 
@@ -331,55 +445,69 @@ Potree.PointCloudOctree.prototype.getBoundingBoxWorld = function(){
 	return tBox;
 }
 
-Potree.PointCloudOctree.prototype.getProfile = function(start, end, width, depth){
-	var stack = [];
-	stack.push(this);
-	
-	var center = new THREE.Vector3().addVectors(end, start).multiplyScalar(0.5);
-	var length = new THREE.Vector3().subVectors(end, start).length();
-	var side = new THREE.Vector3().subVectors(end, start).normalize();
-	var up = new THREE.Vector3(0, 1, 0);
-	var forward = new THREE.Vector3().crossVectors(side, up).normalize();
-	var N = forward;
-	var cutPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(N, start);
-	var halfPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(side, center);
-	
-	var inside = [];
-	
-	
-	while(stack.length > 0){
-		var object = stack.shift();
+Potree.PointCloudOctree.prototype.getProfile = function(start, end, width, depth, callback){
+	if(callback !== undefined){
+		this.profileRequests.push(new Potree.ProfileRequest(start, end, width, depth, callback));
+	}else{
+		var stack = [];
+		stack.push(this);
 		
-		console.log("traversing: " + object.name);
+		var center = new THREE.Vector3().addVectors(end, start).multiplyScalar(0.5);
+		var length = new THREE.Vector3().subVectors(end, start).length();
+		var side = new THREE.Vector3().subVectors(end, start).normalize();
+		var up = new THREE.Vector3(0, 1, 0);
+		var forward = new THREE.Vector3().crossVectors(side, up).normalize();
+		var N = forward;
+		var cutPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(N, start);
+		var halfPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(side, center);
 		
-		if(object instanceof THREE.PointCloud){
-			var geometry = object.geometry;
-			var positions = geometry.attributes.position;
-			var p = positions.array;
-			var pointCount = positions.length / positions.itemSize;
+		var inside = [];
+		
+		
+		while(stack.length > 0){
+			var object = stack.shift();
 			
-			for(var i = 0; i < pointCount; i++){
-				var pos = new THREE.Vector3(p[3*i], p[3*i+1], p[3*i+2]);
-				pos.applyMatrix4(this.matrixWorld);
-				var distance = Math.abs(cutPlane.distanceToPoint(pos));
-				var centerDistance = Math.abs(halfPlane.distanceToPoint(pos));
+			
+			var pointsFound = 0;
+			
+			if(object instanceof THREE.PointCloud){
+				var geometry = object.geometry;
+				var positions = geometry.attributes.position;
+				var p = positions.array;
+				var pointCount = positions.length / positions.itemSize;
 				
-				if(distance < width / 2 && centerDistance < length / 2){
-					inside.push(pos);
+				for(var i = 0; i < pointCount; i++){
+					var pos = new THREE.Vector3(p[3*i], p[3*i+1], p[3*i+2]);
+					pos.applyMatrix4(this.matrixWorld);
+					var distance = Math.abs(cutPlane.distanceToPoint(pos));
+					var centerDistance = Math.abs(halfPlane.distanceToPoint(pos));
+					
+					if(distance < width / 2 && centerDistance < length / 2){
+						inside.push(pos);
+						pointsFound++;
+					}
+				}
+			}
+			
+			//console.log("traversing: " + object.name + ", #points found: " + pointsFound);
+			
+			if(object == this || object.level < depth){
+				for(var i = 0; i < object.children.length; i++){
+					var child = object.children[i];
+					if(child instanceof THREE.PointCloud){
+						var sphere = child.boundingSphere.applyMatrix4(child.matrixWorld);
+						if(cutPlane.distanceToSphere(sphere) < sphere.radius){
+							stack.push(child);	
+						}			
+					}
 				}
 			}
 		}
 		
-		if(object == this || object.level < depth){
-			for(var i = 0; i < object.children.length; i++){
-				stack.push(object.children[i]);
-			}
-		}
+		console.log("points inside: " + inside.length);
+		
+		return inside;
 	}
-	
-	console.log("points inside: " + inside.length);
-	
-	return inside;
 }
 
 /**

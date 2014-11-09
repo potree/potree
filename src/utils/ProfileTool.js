@@ -67,6 +67,8 @@ Potree.ProfileTool.prototype.setCoordinates = function(start, end){
 	this.lookAt(target);
 	this.position.copy(center);
 	
+	this.start = start;
+	this.end = end;
 }
 
 Potree.ProfileTool.prototype.render = function(renderer, scene){

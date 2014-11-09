@@ -259,14 +259,12 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 	for(var i = 0; i < visibleNodes.length; i++){
 		var element = visibleNodes[i];
 		var node = element.node;
-		var partOfBoundingArea = true;
+		var isLeaf = true;
 		
 		for(var j = 0; j < node.children.length; j++){
 			var child = node.children[j];
 			if(child instanceof THREE.PointCloud){
-				partOfBoundingArea = partOfBoundingArea && !(child.insideFrustum && !child.inRange);
-				
-				
+				isLeaf = isLeaf && !child.visible;
 			}
 		}
 		

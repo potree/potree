@@ -1,5 +1,80 @@
 <!doctype html>
 <html lang="en">
+<!--
+
+used projections:
+- EPSG:21781 / Swiss
+- EPSG:3857 / WebMercator 
+- Local Scene Coordinates
+
+This demo shows how to handle georeferenced point clouds and how to use the measure and profile tools.
+
+
+
+== Georeferencing ==
+
+Georeferenced point clouds tend to have very large coordinates values which float values can't handle.
+In order to maximize the available precision, the point cloud must be moved towards the origin.
+Another problem is that georeferenced coordinates often use 
+x for easting, y for northing and z for the elevation / height. 
+Potree on the other hand uses 
+x for easting, -z for northing and y for elevation / height;
+A reference frame is used in order to move the point cloud to the origin and flip y and -z.
+
+referenceFrame = new THREE.Object3D();
+referenceFrame.position.set(-pointcloud.position.x, -pointcloud.position.y, 0);
+referenceFrame.updateMatrix();
+referenceFrame.applyMatrix(new THREE.Matrix4().set(
+	1,0,0,0,
+	0,0,1,0,
+	0,-1,0,0,
+	0,0,0,1
+));
+
+The transformations are automatically applied to the point cloud by attaching it to the referenceFrame.
+
+referenceFrame.add(pointcloud);
+
+The point cloud is now in a local scene coordinate system and all the tools like
+measuring and height profile will return local scene coordinates.
+In order to transform from local scene coordinates back to the geo coordinates,
+you can use the helper function toGeo(THREE.Vector3 coordinate);
+
+Coordinates in the OpenLayers window are given in the Web Mercator projection.
+To sync the map window with the scene, the coordinates must be transformed from Web Mercator to 
+the projection of the point cloud and then to scene coordinates.
+Transforming from Web Mercator to Swiss can be done with proj4js
+
+var swissCoordinate = proj4(webMercator, swiss, webMercatorCoordinate);
+
+Note that proj4js uses an array with 2 elements while toGeo and toLocal uses THREE.Vector3 instances.
+To transform the swissCoordinates to local coordinates, use
+
+var sceneCoordinate = toLocal(new THREE.Vector3(swissCoordinate[0], swissCoordinate[1], 0));
+
+
+
+== Profile ==
+
+There are 2 ways to get a height profile:
+- ProfileTool: 				renders points inside the profile area into a texture.
+- pointcloud.getProfile(): 	Returns points inside the profile area
+
+In this demo, both are used side by side. The ProfileTool is very fast and can be used as a
+preview to the result of the getProfile() function. 
+The depth parameter specifies the detail level of the result.
+Especially with higher depth values, it is likely that not all the octree nodes necessary
+for the calculation have been loaded, yet which is why you can provide a callback function 
+that is called once all the necessary nodes have been loaded and the point profile has been calculated.
+If you call getProfile without a callback, it will ignore unloaded nodes and immediately return
+a result.
+
+
+
+
+
+
+-->
   <head>
     <link rel="stylesheet" href="http://openlayers.org/en/v3.0.0/css/ol.css" type="text/css">
     <style>
@@ -68,27 +143,25 @@
 	test
 	</div>
 	
-	<!--<div class="info" style="position: absolute; left: 300px; right: 300px; top: 10px; text-align: center;">
+	<div class="info" style="position: absolute; left: 300px; right: 300px; top: 10px; text-align: center;">
 		<a href="http://potree.org" target="_blank">potree.org</a><br>
-		
-		Georeferencing (sync with OpenLayers3) and Measurement.<br>
-		Double click to generate measurement points. Measurement points will be displayed
-		in the point cloud as well as the OpenStreetMap window.
-		
-		<br><br>
 		Point cloud courtesy of <a href="http://www.sigeom.ch/" target="_blank">sigeom sa</a><br>
-		Rue des Oeuches 45<br>
-		2740 Moutier<br>
-		Switzerland <br>
-
 		<br>
 		
-	</div>-->
+	</div>
 	
+	<div class="info" style="position: absolute; left: 5px; top: 20px">
+	Georeferencing, Height Profile and Measurement.<br>
+		Double click to generate measurement points. <br>
+		Drag endpoints of red line in map window to modify the profile. <br>
+		Check "coordinates" to display mouse hover coordinates on the bottom left.<br>
+		Push the <input type="button" value="Height Profile" onclick="doHeightProfile()"/> button to create some spheres along the profile<br>	
+	</div>
+
     <script type="text/javascript">
 
 	var pointcloudPath = "../resources/pointclouds/vol_total/cloud.js";
-	var pointcloudPath = "../../../../pointclouds/bruno_friedmann/vol_total/vol_total_bin/cloud.js";
+	//var pointcloudPath = "../../../../pointclouds/bruno_friedmann/vol_total/vol_total_bin/cloud.js";
 	var defaultPointSize = 4;
 	var defaultPointCountTarget = 1.5;
 	
@@ -98,32 +171,27 @@
 	var WGS84 = proj4.defs("WGS84");
 	var webMercator = proj4.defs("EPSG:3857");
 	
-	// extent (with altitude) in EPSG:21781 / Swiss Coordinate System
-	var minSwiss = [584757.154, 230878.747, 662.379];
-	var maxSwiss = [593758.872, 232521.598, 850.323];
-	
-	// extent in EPSG:4326 / WGS84 World Geodetic System
-	var minExtent = proj4(proj4.defs("EPSG:21781"), proj4.defs("WGS84"), [minSwiss[0], minSwiss[1]]);
-	var maxExtent = proj4(proj4.defs("EPSG:21781"), proj4.defs("WGS84"), [maxSwiss[0], maxSwiss[1]]);
+	// extent of the point cloud (with altitude) in EPSG:21781 / Swiss Coordinate System
+	var minSwiss = [589500, 231300, 722.505];
+	var maxSwiss = [590099, 231565.743, 776.459];
 	
 	// extent in EPSG:3857 / WGS84 Web Mercator 
-	var minT = ol.proj.transform(minExtent, 'EPSG:4326', 'EPSG:3857');
-	var maxT = ol.proj.transform(maxExtent, 'EPSG:4326', 'EPSG:3857');
+	var minWeb = proj4(swiss, webMercator, [minSwiss[0], minSwiss[1]]);
+	var maxWeb = proj4(swiss, webMercator, [maxSwiss[0], maxSwiss[1]]);
 	
-	// the offset of the point cloud in EPSG:21781 coordinate system to local scene coordinates.
-	// subtract this offset in order to move from local scene coordinates (obtained from picking, etc.) 
-	// to EPSG:21781 coordinates
-	var offset = new THREE.Vector3();
+	// default values for start and end of profile in Web Mercator
+	var profileStart = proj4(swiss, webMercator, [589468, 231313]);
+	var profileEnd = proj4(swiss, webMercator, [590134, 231328]);
 	
-	var swissMin = new THREE.Vector3(485869.5728,  76443.1884, 0);
-	var swissMax = new THREE.Vector3(837076.5648, 299941.7864, 0);
-
+	// bounds of the EPSG:21781 projection 
+	//var swissMin = new THREE.Vector3(485869.5728,  76443.1884, 0);
+	//var swissMax = new THREE.Vector3(837076.5648, 299941.7864, 0);
 	
 	// OpenLayers3 stuff
 	var featureVector;
 	var camFrustumFeatureVector;
 	var camFrustum;
-	var featureOverlay;
+	var profileOverlay;
 	var visibleBounds;
 	
 	// three.js / potree stuff
@@ -140,66 +208,96 @@
 	var mouse = {x: 0, y: 0};
 	var elCoordinates = document.getElementById("lblCoordinates");
 	
+	// create a OpenLayers Map View
 	function initMapView(){
-		
-		var extent = [minT[0], minT[1], maxT[0], maxT[1]];
-		var center = [(maxT[0] + minT[0]) / 2, (maxT[1] + minT[1]) / 2];
-		
-		// draw the extent as box inside the map view
-		var box = new ol.geom.LineString([
-			minT, [maxT[0], minT[1]], maxT, [minT[0], maxT[1]], minT
-		]);
-		visibleBounds = new ol.geom.LineString([
-			minT, [maxT[0], minT[1]], maxT, [minT[0], maxT[1]], minT
-		]);
-		
-		var feature = new ol.Feature(box);
-		var visibleBoundsFeature = new ol.Feature(visibleBounds);
-		featureVector = new ol.source.Vector({
-			features: [feature, visibleBoundsFeature]
-		});
-		
-		var layer = new ol.layer.Vector({
-			source: featureVector,
-			style: new ol.style.Style({
-			fill: new ol.style.Fill({
-			  color: 'rgba(255, 255, 255, 0.2)'
-			}),
-			stroke: new ol.style.Stroke({
-			  color: '#000000',
-			  width: 2
-			}),
-			image: new ol.style.Circle({
-			  radius: 3,
-			  fill: new ol.style.Fill({
-				color: '#000000'
+	
+		{ // pointcloud extent layer
+			var extent = [minWeb[0], minWeb[1], maxWeb[0], maxWeb[1]];
+			var center = [(maxWeb[0] + minWeb[0]) / 2, (maxWeb[1] + minWeb[1]) / 2];
+			
+			// draw the extent as box inside the map view
+			var box = new ol.geom.LineString([
+				minWeb, [maxWeb[0], minWeb[1]], maxWeb, [minWeb[0], maxWeb[1]], minWeb
+			]);
+			
+			
+			var feature = new ol.Feature(box);
+			
+			featureVector = new ol.source.Vector({
+				features: [feature]
+			});
+			
+			var extentLayer = new ol.layer.Vector({
+				source: featureVector,
+				style: new ol.style.Style({
+				fill: new ol.style.Fill({
+				  color: 'rgba(255, 255, 255, 0.2)'
+				}),
+				stroke: new ol.style.Stroke({
+				  color: '#000000',
+				  width: 2
+				}),
+				image: new ol.style.Circle({
+				  radius: 3,
+				  fill: new ol.style.Fill({
+					color: '#000000'
+				  })
+				})
 			  })
-			})
-		  })
-		});	
+			});	
+		}
 		
-		camFrustumFeatureVector = new ol.source.Vector({
-			features: []
-		});
+		{ // visible bounds layer
+			visibleBounds = new ol.geom.LineString([
+				minWeb, [maxWeb[0], minWeb[1]], maxWeb, [minWeb[0], maxWeb[1]], minWeb
+			]);
+			var visibleBoundsFeature = new ol.Feature(visibleBounds);
+			
+			var visibleBoundsLayer = new ol.layer.Vector({
+				source: featureVector,
+				style: new ol.style.Style({
+				fill: new ol.style.Fill({
+				  color: 'rgba(255, 255, 255, 0.2)'
+				}),
+				stroke: new ol.style.Stroke({
+				  color: '#0000ff',
+				  width: 2
+				}),
+				image: new ol.style.Circle({
+				  radius: 3,
+				  fill: new ol.style.Fill({
+					color: '#0000ff'
+				  })
+				})
+			  })
+			});	
+		}
+		
+		
+		{ // cam frustum layer
+			camFrustumFeatureVector = new ol.source.Vector({
+				features: []
+			});
 
-		var camFrustumLayer = new ol.layer.Vector({
-			source: camFrustumFeatureVector,
-			style: new ol.style.Style({
-			fill: new ol.style.Fill({
-			  color: 'rgba(255, 255, 255, 0.2)'
-			}),
-			stroke: new ol.style.Stroke({
-			  color: '#000000',
-			  width: 2
-			}),
-			image: new ol.style.Circle({
-			  radius: 3,
-			  fill: new ol.style.Fill({
-				color: '#000000'
+			var camFrustumLayer = new ol.layer.Vector({
+				source: camFrustumFeatureVector,
+				style: new ol.style.Style({
+				fill: new ol.style.Fill({
+				  color: 'rgba(255, 255, 255, 0.2)'
+				}),
+				stroke: new ol.style.Stroke({
+				  color: '#000000',
+				  width: 2
+				}),
+				image: new ol.style.Circle({
+				  radius: 3,
+				  fill: new ol.style.Fill({
+					color: '#000000'
+				  })
+				})
 			  })
-			})
-		  })
-		});	
+			});	
+		}
 		
 		// create the map
 		var map = new ol.Map({
@@ -217,57 +315,47 @@
 				new ol.layer.Tile({
 					source: new ol.source.OSM()
 				}),
-				layer,
+				extentLayer,
+				visibleBoundsLayer,
 				camFrustumLayer
 			],
 			target: 'map',
 			view: new ol.View({
 				center: center,
-				zoom: 12
+				zoom: 15
 			})
 		});
 		
-		featureOverlay = new ol.FeatureOverlay({
-		  style: new ol.style.Style({
-			fill: new ol.style.Fill({
-			  color: 'rgba(255, 255, 255, 0.2)'
-			}),
-			stroke: new ol.style.Stroke({
-			  color: '#ff0000',
-			  width: 2
-			}),
-			image: new ol.style.Circle({
-			  radius: 7,
-			  fill: new ol.style.Fill({
-				color: '#ff0000'
+		{// profile layer
+			profileOverlay = new ol.FeatureOverlay({
+			  style: new ol.style.Style({
+				fill: new ol.style.Fill({
+				  color: 'rgba(255, 255, 255, 0.2)'
+				}),
+				stroke: new ol.style.Stroke({
+				  color: '#ff0000',
+				  width: 2
+				}),
+				image: new ol.style.Circle({
+				  radius: 7,
+				  fill: new ol.style.Fill({
+					color: '#ff0000'
+				  })
+				})
 			  })
-			})
-		  })
-		});
-		featureOverlay.setMap(map);
-		
-		var modify = new ol.interaction.Modify({
-		  features: featureOverlay.getFeatures(),
-		  // the SHIFT key must be pressed to delete vertices, so
-		  // that new vertices can be drawn at the same position
-		  // of existing vertices
-		  deleteCondition: function(event) {
-			return ol.events.condition.shiftKeyOnly(event) &&
-				ol.events.condition.singleClick(event);
-		  }
-		});
-		map.addInteraction(modify);
-
-		var draw; // global so we can remove it later
-		function addInteraction() {
-		  draw = new ol.interaction.Draw({
-			features: featureOverlay.getFeatures(),
-			//source: camFrustumFeatureVector,
-			type: /** @type {ol.geom.GeometryType} */ ("LineString")
-		  });
-		  map.addInteraction(draw);
-		}		
-		addInteraction();
+			});
+			profileOverlay.setMap(map);
+			
+			var profile = new ol.geom.LineString([profileStart, profileEnd]);
+			var profileFeature = new ol.Feature(profile);
+			profileOverlay.addFeature(profileFeature);
+			
+			// enable drag modification of the profile line
+			var modify = new ol.interaction.Modify({
+			  features: profileOverlay.getFeatures(),
+			});
+			map.addInteraction(modify);
+		}
 	}
 	
 	function initPotreeView(){
@@ -275,13 +363,13 @@
 		var near = 0.1;
 		var far = 1000000;
 		var fov = 60;
-		
 		var aspect = renderArea.clientWidth / renderArea.clientHeight;
+		
+		// scenes
 		scene = new THREE.Scene();
 		sceneHUD = new THREE.Scene();
-		camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-		cameraHUD = new THREE.OrthographicCamera( -1, 1, 1, -1, -100, 1000 );
-
+		
+		// renderer
 		renderer = new THREE.WebGLRenderer();
 		renderer.setSize(renderArea.clientWidth, renderArea.clientHeight);
 		renderer.autoClear = false;
@@ -289,13 +377,16 @@
 		
 		skybox = Potree.utils.loadSkybox("../resources/textures/skybox/");
 		
-		camera.position.set(500, 200, -300);
+		// cameras and controls
+		camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+		cameraHUD = new THREE.OrthographicCamera( -1, 1, 1, -1, -100, 1000 );
 		controls = new THREE.FirstPersonControls(camera, renderer.domElement);
 		camera.rotation.order = 'ZYX';
-		camera.rotation.x = -0.5;
-		camera.rotation.y = -5*Math.PI/4;
 		controls.moveSpeed *= 10;
+		camera.position.set(600, 880, -370);
+		camera.lookAt(new THREE.Vector3(480, 797, -219));
 		
+		// materials
 		materials.rgb = new Potree.PointCloudRGBMaterial({ size: defaultPointSize});
 		materials.rgbInterpolated = new Potree.PointCloudRGBInterpolationMaterial({ size: defaultPointSize});
 		materials.height = new Potree.PointCloudHeightMaterial({size: defaultPointSize, min: 650, max: 850});
@@ -307,7 +398,7 @@
 		pointcloud.visiblePointsTarget = defaultPointCountTarget * 1000 * 1000;
 		
 		// the reference frame transforms the point cloud into the scene coordinate system
-		// by moving it towards the origin and flipping the y and t axes.
+		// by moving it towards the origin and flipping the y and z axes.
 		// This is necessary to avoid precision errors due to large floating point values.
 		referenceFrame = new THREE.Object3D();
 		referenceFrame.position.set(-pointcloud.position.x, -pointcloud.position.y, 0);
@@ -319,23 +410,18 @@
 			0,0,0,1
 		));
 		scene.add(referenceFrame);
-		
 		referenceFrame.add(pointcloud);
 		referenceFrame.updateMatrixWorld();
 		
+		// create measuring tool
 		measuringTool = new Potree.MeasuringTool(scene, camera, renderer.domElement);
-		
-		// execute this event whenever a new measurement point has been set
 		measuringTool.addEventListener("newpoint", function(event){
 			point = toGeo(event.position);
 			
-			// transform from swiss projection to WGS84
+			// transform from swiss projection to Web Mercator
 			var swiss = proj4.defs("EPSG:21781");
 			var WGS84 = proj4.defs("WGS84");
-			var coordinate = proj4(swiss, WGS84, [point.x, point.y]);
-			
-			// transform from WGS84 to Web Mercator
-			coordinate = ol.proj.transform(coordinate, 'EPSG:4326', 'EPSG:3857');
+			var coordinate = proj4(swiss, webMercator, [point.x, point.y]);
 	
 			// add a point to the OpenLayers map
 			var olPoint = new ol.geom.Point(coordinate);
@@ -343,27 +429,29 @@
 			featureVector.addFeature(feature);
 		});
 		
+		// create profile tool
 		profileTool = new Potree.ProfileTool(400, 200, 10);
 		profileTool.position.set(0,0,0);
 		scene.add(profileTool);
 		sceneHUD.add(profileTool.hudElement);
-		
-		camera.position.copy(toLocal(new THREE.Vector3(590027, 231745, 907)));
-		camera.position.copy(new THREE.Vector3(6000, 3200, -4600));
-		camera.lookAt(toLocal(new THREE.Vector3(589962, 231462, 750)));
+		profileTool.setCoordinates(
+			new THREE.Vector3(-32, 750, -13), 
+			new THREE.Vector3(634, 750, -28));
 		
 		renderer.domElement.addEventListener( 'mousemove', onMouseMove, false );
-		
-		
-		//var lblMax = new Potree.TextSprite("max");
-		//sceneHUD.add(lblMax);
 	}
 	
+	/**
+	 * transform from geo coordinates to local scene coordinates
+	 */
 	function toLocal(position){
 		var scenePos = position.clone().applyMatrix4(referenceFrame.matrixWorld);
 		return scenePos;
 	}
 	
+	/**
+	 * transform from local scene coordinates to geo coordinates
+	 */
 	function toGeo(object){
 		var geo;
 		var inverse = new THREE.Matrix4().getInverse(referenceFrame.matrixWorld);
@@ -379,9 +467,10 @@
 		return geo;
 	}
 	
+	/**
+	 * create a dat.GUI widget that lets the user modify certain values
+	 */
 	function initGUI(){
-	
-		// dat.gui
 		var gui = new dat.GUI({
 			height : 5 * 32 - 1
 		});
@@ -453,6 +542,9 @@
 		updateMapExtent();
 	}
 	
+	/**
+	 * update the frustum in the map window according to the camera
+	 */
 	function updateMapFrustum(){
 		if(camFrustum === undefined){
 			camFrustum = new ol.geom.LineString([ [0,0], [0, 0] ]);
@@ -484,6 +576,10 @@
 		camFrustum.setCoordinates([camPos, left, right, camPos]);
 	}
 	
+	
+	/**
+	 * update the coordinate display if the "coordinates" checkbox is checked
+	 */
 	function updateCoordinatePicking(){
 		if(showCoordinates){
 			
@@ -507,6 +603,9 @@
 		}
 	}
 	
+	/**
+	 * update the map extent in the map window
+	 */
 	function updateMapExtent(){
 		var geoExtent = toGeo(pointcloud.getVisibleExtent());
 		
@@ -522,13 +621,17 @@
 		]);
 	}
 	
+	/**
+	 * Update the ProfileTools start and end according to the users modification
+	 * in the map window
+	 */
 	function updateProfile(){
-		var features = featureOverlay.getFeatures();
+		var features = profileOverlay.getFeatures();
 		if(features.getArray().length == 0){
 			return;
 		}
 		
-		var geometry = featureOverlay.getFeatures().getArray()[0].getGeometry();
+		var geometry = profileOverlay.getFeatures().getArray()[0].getGeometry();
 		var coordinates = geometry.getCoordinates();
 		
 		if(coordinates.length < 2){
@@ -537,10 +640,6 @@
 		
 		var start = new THREE.Vector3(coordinates[0][0], coordinates[0][1], 0);
 		var end = new THREE.Vector3(coordinates[1][0], coordinates[1][1], 0);
-		
-		var swiss = proj4.defs("EPSG:21781");
-		var WGS84 = proj4.defs("WGS84");
-		var webMercator = proj4.defs("EPSG:3857");
 		
 		var startSwiss = proj4(webMercator, swiss, [start.x, start.y]);
 		var startScene = toLocal(new THREE.Vector3(startSwiss[0], startSwiss[1], 0));
@@ -609,25 +708,26 @@
 		
 	}
 	
-	function profileTest(){
+	/**
+	 * Demonstrating the pointcloud.getProfile() method by creating spheres at some
+	 * of the points inside the profile.
+	 * The depth value specifies the density of the points.
+	 * This method is async and will call its callback once all the necessary
+	 * nodes have been loaded. If no callback is given, it will immediately
+	 * return an array of points and ignore nodes that have not been loaded, yet.
+	 *
+	 */
+	function doHeightProfile(){
 		var start = profileTool.start;
 		var end = profileTool.end;
-		
-		//pointcloud.getProfile(start, end, 10, 3);
-		
-		//var start = new THREE.Vector3(5399.144872280038, 756.553841534622, -588.2956906469327);
-		//var end = new THREE.Vector3(5008.626665211386, 750.8961536111632, -585.8724566535059);
-		//var start = startScene;
-		//var end = endScene;
 		var width = 10;
-		var depth = 5;
-		
-		
+		var depth = 4;
+	
 		var callback = function(event){
 			if(event.type === "finished"){
 				var points = event.points;
 				var sphereGeometry = new THREE.SphereGeometry(1, 5, 5);
-				for(var i = 0; i < points.length; i += Math.ceil(points.length / 100)){
+				for(var i = 0; i < points.length; i += Math.ceil(points.length / 500)){
 					var point = points[i];
 					var sphere = new THREE.Mesh(sphereGeometry);
 					sphere.position.copy(point);
@@ -636,17 +736,7 @@
 			}
 		};
 		
-		var points = pointcloud.getProfile(start, end, width, depth, callback);
-		
-		//var sphereGeometry = new THREE.SphereGeometry(1);
-		//for(var i = 0; i < points.length; i++){
-		//	var point = points[i];
-		//	var sphere = new THREE.Mesh(sphereGeometry);
-		//	sphere.position.copy(point);
-		//	scene.add(sphere);
-		//}
-		//
-		//console.log(points);
+		pointcloud.getProfile(start, end, width, depth, callback);
 	}
 	
 	function onMouseMove(event){

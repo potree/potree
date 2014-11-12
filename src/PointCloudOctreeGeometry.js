@@ -101,9 +101,9 @@ Potree.PointCloudOctreeGeometryNode.prototype.load = function(){
 				Y = Y + dy;
 				Z = Z + dz;
 				
-				x = X * scale.x - offset.x;
-				y = Y * scale.y - offset.y; 
-				z = Z * scale.z - offset.z;
+				x = X * scale.x + offset.x;
+				y = Y * scale.y + offset.y; 
+				z = Z * scale.z + offset.z;
 				
 				r = br.read(8);
 				g = br.read(8);
@@ -148,9 +148,9 @@ Potree.PointCloudOctreeGeometryNode.prototype.load = function(){
 			var uiView = new Uint8Array(buffer);
 			
 			for(var i = 0; i < numPoints; i++){
-				positions[3*i+0] = fView[4*i+0] - node.pcoGeometry.offset.x;
-				positions[3*i+1] = fView[4*i+1] - node.pcoGeometry.offset.y;
-				positions[3*i+2] = fView[4*i+2] - node.pcoGeometry.offset.z;
+				positions[3*i+0] = fView[4*i+0] + node.pcoGeometry.offset.x;
+				positions[3*i+1] = fView[4*i+1] + node.pcoGeometry.offset.y;
+				positions[3*i+2] = fView[4*i+2] + node.pcoGeometry.offset.z;
 				
 				color.setRGB(uiView[16*i+12], uiView[16*i+13], uiView[16*i+14]);
 				colors[3*i+0] = color.r / 255;

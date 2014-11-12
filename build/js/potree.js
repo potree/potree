@@ -175,9 +175,9 @@ POCLoader.load = function load(url, params) {
 			var offset = new THREE.Vector3(0,0,0);
 			
 			if(toOrigin){
-				offset.set(min.x, min.y, min.z);
-				boundingBox.min.sub(offset);
-				boundingBox.max.sub(offset);
+				offset.set(-min.x, -min.y, -min.z);
+				boundingBox.min.add(offset);
+				boundingBox.max.add(offset);
 			}
 			pco.boundingBox = boundingBox;
 			pco.offset = offset;
@@ -1638,7 +1638,7 @@ Potree.PointCloudOctree = function(geometry, material){
 	this.material = material;
 	this.visiblePointsTarget = 2*1000*1000;
 	this.level = 0;
-	this.position.add(geometry.offset);
+	this.position.sub(geometry.offset);
 	this.updateMatrix();
 	
 	this.LODDistance = 20;
@@ -2245,9 +2245,9 @@ Potree.PointCloudOctreeGeometryNode.prototype.load = function(){
 				Y = Y + dy;
 				Z = Z + dz;
 				
-				x = X * scale.x - offset.x;
-				y = Y * scale.y - offset.y; 
-				z = Z * scale.z - offset.z;
+				x = X * scale.x + offset.x;
+				y = Y * scale.y + offset.y; 
+				z = Z * scale.z + offset.z;
 				
 				r = br.read(8);
 				g = br.read(8);
@@ -2292,9 +2292,9 @@ Potree.PointCloudOctreeGeometryNode.prototype.load = function(){
 			var uiView = new Uint8Array(buffer);
 			
 			for(var i = 0; i < numPoints; i++){
-				positions[3*i+0] = fView[4*i+0] - node.pcoGeometry.offset.x;
-				positions[3*i+1] = fView[4*i+1] - node.pcoGeometry.offset.y;
-				positions[3*i+2] = fView[4*i+2] - node.pcoGeometry.offset.z;
+				positions[3*i+0] = fView[4*i+0] + node.pcoGeometry.offset.x;
+				positions[3*i+1] = fView[4*i+1] + node.pcoGeometry.offset.y;
+				positions[3*i+2] = fView[4*i+2] + node.pcoGeometry.offset.z;
 				
 				color.setRGB(uiView[16*i+12], uiView[16*i+13], uiView[16*i+14]);
 				colors[3*i+0] = color.r / 255;

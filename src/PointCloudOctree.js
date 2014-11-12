@@ -66,7 +66,7 @@ Potree.PointCloudOctree = function(geometry, material){
 	this.material = material;
 	this.visiblePointsTarget = 2*1000*1000;
 	this.level = 0;
-	this.position.add(geometry.offset);
+	this.position.sub(geometry.offset);
 	this.updateMatrix();
 	
 	this.LODDistance = 20;

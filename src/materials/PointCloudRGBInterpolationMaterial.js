@@ -13,17 +13,17 @@ Potree.PointCloudRGBInterpolationMaterial = function(parameters){
 	var pointSize = parameters.size || 1.0;
 	var minSize = parameters.minSize || 2.0;
 	
+	// check of extension is enabled and fallback if it's not.
 	var vs;
 	var fs;
-	var frag_depth_ext = renderer.context.getExtension('EXT_frag_depth');
-	if(!frag_depth_ext){
-		vs = Potree.PointCloudRGBMaterial.vs_points.join("\n");
-		fs = Potree.PointCloudRGBMaterial.fs_points_rgb.join("\n");
-	}else{
+	if(Potree.PointCloudRGBInterpolationMaterial.isSupported()){
 		vs = Potree.PointCloudRGBInterpolationMaterial.vs_points.join("\n");
 		fs = Potree.PointCloudRGBInterpolationMaterial.fs_points_rgb.join("\n");
+	}else{
+		vs = Potree.PointCloudRGBMaterial.vs_points.join("\n");
+		fs = Potree.PointCloudRGBMaterial.fs_points_rgb.join("\n");
 	}
-	
+
 	this.setValues({
 		uniforms: uniforms,
 		attributes: attributes,
@@ -37,6 +37,17 @@ Potree.PointCloudRGBInterpolationMaterial = function(parameters){
 };
 
 Potree.PointCloudRGBInterpolationMaterial.prototype = new THREE.ShaderMaterial();
+
+Potree.PointCloudRGBInterpolationMaterial.isSupported = function(){
+	var canvas = document.createElement('canvas');
+	var context = canvas.getContext('webgl');
+	if(context){
+		var frag_depth_ext = context.getExtension('EXT_frag_depth');
+		return frag_depth_ext;
+	}else{
+		return false;
+	}
+}
 
 Object.defineProperty(Potree.PointCloudRGBInterpolationMaterial.prototype, "size", {
 	get: function(){

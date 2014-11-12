@@ -647,17 +647,17 @@ Potree.PointCloudRGBInterpolationMaterial = function(parameters){
 	var pointSize = parameters.size || 1.0;
 	var minSize = parameters.minSize || 2.0;
 	
+	// check of extension is enabled and fallback if it's not.
 	var vs;
 	var fs;
-	var frag_depth_ext = renderer.context.getExtension('EXT_frag_depth');
-	if(!frag_depth_ext){
-		vs = Potree.PointCloudRGBMaterial.vs_points.join("\n");
-		fs = Potree.PointCloudRGBMaterial.fs_points_rgb.join("\n");
-	}else{
+	if(Potree.PointCloudRGBInterpolationMaterial.isSupported()){
 		vs = Potree.PointCloudRGBInterpolationMaterial.vs_points.join("\n");
 		fs = Potree.PointCloudRGBInterpolationMaterial.fs_points_rgb.join("\n");
+	}else{
+		vs = Potree.PointCloudRGBMaterial.vs_points.join("\n");
+		fs = Potree.PointCloudRGBMaterial.fs_points_rgb.join("\n");
 	}
-	
+
 	this.setValues({
 		uniforms: uniforms,
 		attributes: attributes,
@@ -671,6 +671,17 @@ Potree.PointCloudRGBInterpolationMaterial = function(parameters){
 };
 
 Potree.PointCloudRGBInterpolationMaterial.prototype = new THREE.ShaderMaterial();
+
+Potree.PointCloudRGBInterpolationMaterial.isSupported = function(){
+	var canvas = document.createElement('canvas');
+	var context = canvas.getContext('webgl');
+	if(context){
+		var frag_depth_ext = context.getExtension('EXT_frag_depth');
+		return frag_depth_ext;
+	}else{
+		return false;
+	}
+}
 
 Object.defineProperty(Potree.PointCloudRGBInterpolationMaterial.prototype, "size", {
 	get: function(){
@@ -734,11 +745,13 @@ Potree.PointCloudRGBInterpolationMaterial.fs_points_rgb = [
  "	                                                           ",
  "	gl_FragColor = vec4(vColor, 1.0);                          ",
  "  gl_FragDepthEXT = gl_FragCoord.z + blendDepth*(1.0-pow(c, 1.0)) * gl_FragCoord.w ;                                                            ",
+ "	                                                           ",
+ "	//float dist = gl_FragCoord.z / gl_FragCoord.w;                                                           ",
+ "	//float fog = clamp(dist / 2000.0, 0.0, 1.0);                                                           ",
+ "	//fog = min(fog, 0.6);                                                           ",
+ "	//gl_FragColor = gl_FragColor * (1.0-fog) + vec4(170.0, 180.0, 190, 1.0) * fog / 256.0;                                                           ",
+ "  //gl_FragColor.a = 1.0;                                                            ",
  "}                                                            "];
-
-
-
-
 
 
 
@@ -1737,16 +1750,17 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 	}else if(this.numVisiblePoints > this.visiblePointsTarget*1.1){
 		// decrease to value at which point count target is met
 		
-		var n = 0;
-		for(var i = 0; i < visibleNodes.length; i++){
-			var element = visibleNodes[i];
-			n += element.node.numPoints;
-			
-			if(n >= this.visiblePointsTarget){
-				this.LOD = 1 / element.lod;
-				break;
-			}
-		}
+		//var n = 0;
+		//for(var i = 0; i < visibleNodes.length; i++){
+		//	var element = visibleNodes[i];
+		//	n += element.node.numPoints;
+		//	
+		//	if(n >= this.visiblePointsTarget){
+		//		this.LOD = 1 / element.lod;
+		//		break;
+		//	}
+		//}
+		this.LOD *= 0.95;
 		
 	}
 	
@@ -2663,8 +2677,7 @@ Potree.MeasuringTool = function(scene, camera, domElement){
 	
 	function getMousePointCloudIntersection(){
 		var vector = new THREE.Vector3( scope.mouse.x, scope.mouse.y, 0.5 );
-		var projector = new THREE.Projector();
-		projector.unprojectVector( vector, scope.camera );
+		vector.unproject(scope.camera);
 		
 		var raycaster = new THREE.Raycaster();
 		raycaster.params = {"PointCloud" : {threshold: 1}};
@@ -2896,8 +2909,7 @@ Potree.TranslationTool = function(camera) {
 	
 	this.getHoveredObject = function(mouse){
 		var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
-		var projector = new THREE.Projector();
-		projector.unprojectVector( vector, scope.camera );
+		vector.unproject(scope.camera);
 		
 		var raycaster = new THREE.Raycaster();
 		raycaster.ray.set( scope.camera.position, vector.sub( scope.camera.position ).normalize() );
@@ -2930,9 +2942,7 @@ Potree.TranslationTool = function(camera) {
 			var directionDistance = new THREE.Vector3().subVectors(mousePoint, origin).dot(direction);
 			var pointOnLine = direction.clone().multiplyScalar(directionDistance).add(origin);
 			
-			
-			var projector = new THREE.Projector();
-			projector.unprojectVector(pointOnLine, scope.camera);
+			pointOnLine.unproject(scope.camera);
 			
 			var diff = pointOnLine.clone().sub(scope.position);
 			scope.position.copy(pointOnLine);
@@ -2968,11 +2978,8 @@ Potree.TranslationTool = function(camera) {
 					lineEnd.z -= 2;
 				}
 				
-				//lineEnd = scope.position.clone();
-				
-				var projector = new THREE.Projector();
-				projector.projectVector( lineStart, scope.camera );
-				projector.projectVector( lineEnd, scope.camera );
+				lineStart.project(scope.camera);
+				lineEnd.project(scope.camera);
 				
 				scope.start = {
 					mouse: event.normalizedPosition,

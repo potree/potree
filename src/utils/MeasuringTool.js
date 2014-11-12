@@ -180,8 +180,7 @@ Potree.MeasuringTool = function(scene, camera, domElement){
 	
 	function getMousePointCloudIntersection(){
 		var vector = new THREE.Vector3( scope.mouse.x, scope.mouse.y, 0.5 );
-		var projector = new THREE.Projector();
-		projector.unprojectVector( vector, scope.camera );
+		vector.unproject(scope.camera);
 		
 		var raycaster = new THREE.Raycaster();
 		raycaster.params = {"PointCloud" : {threshold: 1}};

@@ -15,7 +15,7 @@ var camera;
 var scene;
 var pickLocation;
 var mouse = { x: 1, y: 1 };
-var projector, raycaster;
+var raycaster;
 
 function generatePointcloud(){
 	var geometry = new THREE.BufferGeometry();
@@ -62,7 +62,6 @@ function init() {
 	scene = new THREE.Scene();
 	camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
 	
-	projector = new THREE.Projector();
 	raycaster = new THREE.Raycaster();
 
 	renderer = new THREE.WebGLRenderer();
@@ -99,7 +98,7 @@ function render() {
 	camera.updateMatrixWorld(true);
 	
 	vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
-	projector.unprojectVector( vector, camera );
+	vector.unproject(camera);
 	raycaster.params = {"PointCloud" : {threshold: 0.1}};
 	raycaster.ray.set( camera.position, vector.sub( camera.position ).normalize() );
 	

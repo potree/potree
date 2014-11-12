@@ -81,8 +81,7 @@ ViewerControls = function(element, camera, scene){
 		scope.mouse.y = - ( event.clientY / scope.element.clientHeight ) * 2 + 1;
 	
 		var vector = new THREE.Vector3( scope.mouse.x, scope.mouse.y, 0.5 );
-		var projector = new THREE.Projector();
-		projector.unprojectVector( vector, scope.camera );
+		vector.unproject(scope.camera);
 		
 		scope.mouse.relativePosition = {x: event.clientX, y: event.clientY};
 		scope.mouse.normalizedPosition = {x: scope.mouse.x, y: scope.mouse.y};
@@ -421,8 +420,7 @@ Potree.MeasuringControls = function(scene, camera){
 	
 	function getMousePointCloudIntersection(mouse){
 		var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
-		var projector = new THREE.Projector();
-		projector.unprojectVector( vector, scope.camera );
+		vector.unproject(scope.camera);
 		
 		var raycaster = new THREE.Raycaster();
 		raycaster.params = {"PointCloud" : {threshold: 1}};

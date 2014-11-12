@@ -33,6 +33,8 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 
 	this.rotateSpeed = 1.0;
 	this.moveSpeed = 10.0;
+	this.theta = 0;
+	this.phi = 0;
 
 	this.keys = { 
 		LEFT: 37, 
@@ -180,13 +182,21 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 		}
 		
 		position.add(pan);
+
+		if(!(thetaDelta === 0.0 && phiDelta === 0.0)) {
+			var event = {
+				type: 'rotate',
+				thetaDelta: thetaDelta,
+				phiDelta: phiDelta
+			};
+			this.dispatchEvent(event);
+		}
 		
-		this.object.updateMatrix();
-		var rot = new THREE.Matrix4().makeRotationY(thetaDelta);
-		var res = new THREE.Matrix4().multiplyMatrices(rot, this.object.matrix);
-		this.object.quaternion.setFromRotationMatrix(res);
-		
-		this.object.rotation.x += phiDelta;
+		this.theta += thetaDelta;
+		this.phi += phiDelta;
+		this.object.rotation.set(0,0,0);
+		this.object.rotateY(this.theta);
+		this.object.rotateX(this.phi);
 
 		thetaDelta = 0;
 		phiDelta = 0;

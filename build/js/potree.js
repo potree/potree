@@ -1849,6 +1849,7 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 				var boxHelper = new THREE.BoxHelper(object);
 				object.add(boxHelper);
 				object.boundingBoxNode = boxHelper;
+				boxHelper.matrixWorld.copy(object.matrixWorld);
 			}
 		}else if(!this.showBoundingBox){
 			if(object.boundingBoxNode !== undefined){
@@ -2207,7 +2208,7 @@ Potree.PointCloudOctree.prototype.getProfile = function(start, end, width, depth
 				for(var i = 0; i < object.children.length; i++){
 					var child = object.children[i];
 					if(child instanceof THREE.PointCloud){
-						var sphere = child.boundingSphere.applyMatrix4(child.matrixWorld);
+						var sphere = child.boundingSphere.clone().applyMatrix4(child.matrixWorld);
 						if(cutPlane.distanceToSphere(sphere) < sphere.radius){
 							stack.push(child);	
 						}			
@@ -3110,7 +3111,7 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 		
 		for(var i = 0; i < pointClouds.length; i++){
 			var pointcloud = pointClouds[i];
-			var point = pointcloud.pick(scope.renderer, scope.camera, ray, {accuracy: this.accuracy});
+			var point = pointcloud.pick(scope.renderer, scope.camera, ray, {accuracy: scope.accuracy});
 			
 			if(!point){
 				continue;

@@ -155,6 +155,7 @@ The updateMapExtent() shows how this can be used to visualize the boundaries in 
 		Check "coordinates" to display mouse hover coordinates on the bottom left.<br>
 		Push the <input type="button" value="Height Profile" onclick="doHeightProfile()"/> button to create some spheres along the profile<br>	
 	</div>
+	
 
     <script type="text/javascript">
 
@@ -412,7 +413,7 @@ The updateMapExtent() shows how this can be used to visualize the boundaries in 
 		referenceFrame.updateMatrixWorld();
 		
 		// create measuring tool
-		measuringTool = new Potree.MeasuringTool(scene, camera, renderer.domElement);
+		measuringTool = new Potree.MeasuringTool(scene, camera, renderer);
 		measuringTool.addEventListener("newpoint", function(event){
 			point = toGeo(event.position);
 			
@@ -582,7 +583,7 @@ The updateMapExtent() shows how this can be used to visualize the boundaries in 
 		if(showCoordinates){
 			
 			var I = getMousePointCloudIntersection();
-			if(I !== undefined){
+			if(I){
 				
 				var sceneCoordinates = I;
 				var geoCoordinates = toGeo(sceneCoordinates);
@@ -654,12 +655,9 @@ The updateMapExtent() shows how this can be used to visualize the boundaries in 
 	
 	function getMousePointCloudIntersection(){
 		var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
-		var projector = new THREE.Projector();
-		projector.unprojectVector( vector, camera );
-		
-		var raycaster = new THREE.Raycaster();
-		raycaster.params = {"PointCloud" : {threshold: 1}};
-		raycaster.ray.set( camera.position, vector.sub( camera.position ).normalize() );
+		vector.unproject(camera);
+		var direction = vector.sub(camera.position).normalize();
+		var ray = new THREE.Ray(camera.position, direction);
 		
 		var pointClouds = [];
 		scene.traverse(function(object){
@@ -668,15 +666,26 @@ The updateMapExtent() shows how this can be used to visualize the boundaries in 
 			}
 		});
 		
-		var intersects = raycaster.intersectObjects(pointClouds, true);
+		var closestPoint = null;
+		var closestPointDistance = null;
 		
-		if(intersects.length > 0){
-			var I = intersects[0];			
+		for(var i = 0; i < pointClouds.length; i++){
+			var pointcloud = pointClouds[i];
+			var point = pointcloud.pick(renderer, camera, ray, {accuracy: 0.5});
 			
-			return I.point;
-		}else{
-			return undefined;
+			if(!point){
+				continue;
+			}
+			
+			var distance = camera.position.distanceTo(point.position);
+			
+			if(!closestPoint || distance < closestPointDistance){
+				closestPoint = point;
+				closestPointDistance = distance;
+			}
 		}
+		
+		return closestPoint ? closestPoint.position : null;
 	}
 	
 	function render(){
@@ -699,10 +708,10 @@ The updateMapExtent() shows how this can be used to visualize the boundaries in 
 		renderer.render(skybox.scene, skybox.camera);
 		
 		// render scenes
-		renderer.render(scene, camera);
 		renderer.render(measuringTool.sceneMeasurement, camera);
 		renderer.render(sceneHUD, cameraHUD);
 		profileTool.render(renderer, scene);
+		renderer.render(scene, camera);
 		
 	}
 	

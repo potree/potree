@@ -708,10 +708,10 @@ The updateMapExtent() shows how this can be used to visualize the boundaries in 
 		renderer.render(skybox.scene, skybox.camera);
 		
 		// render scenes
-		renderer.render(measuringTool.sceneMeasurement, camera);
-		renderer.render(sceneHUD, cameraHUD);
 		profileTool.render(renderer, scene);
 		renderer.render(scene, camera);
+		renderer.render(measuringTool.sceneMeasurement, camera);
+		renderer.render(sceneHUD, cameraHUD);
 		
 	}
 	

@@ -159,7 +159,9 @@ POCLoader.load = function load(url, params) {
 		xhr.send(null);
 		if(xhr.status === 200 || xhr.status === 0){
 			var fMno = JSON.parse(xhr.responseText);
-			if(Potree.utils.pathExists(fMno.octreeDir + "/r")){
+			
+			// assume octreeDir is absolute if it starts with http
+			if(fMno.octreeDir.indexOf("http") === 0){
 				pco.octreeDir = fMno.octreeDir;
 			}else{
 				pco.octreeDir = url + "/../" + fMno.octreeDir;
@@ -1704,6 +1706,8 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 				object.add(boxHelper);
 				object.boundingBoxNode = boxHelper;
 			}
+			
+			object.boundingBoxNode.matrixWorld.copy(object.matrixWorld);
 		}else if(!this.showBoundingBox){
 			if(object.boundingBoxNode !== undefined){
 				object.remove(object.boundingBoxNode);
@@ -1735,33 +1739,35 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 		//console.log(object.name);
 	}
 	
-	// increase or decrease lod to meet visible point count target
+	// increase LOD if few points are visible
 	if(this.numVisiblePoints < this.visiblePointsTarget * 0.9 && outOfRange.length > 0 && visibleNodes.length > 0){
 		// increase lod to load some of the nodes that are currently out of range
-	
-		outOfRange.sort(function(a,b){return b.lod - a.lod});
 		visibleNodes.sort(function(a,b){return a.lod - b.lod});
+		outOfRange.sort(function(a,b){return b.lod - a.lod});
 		var visibleMax = 1 / visibleNodes[0].lod;
-		var oorIndex = Math.min(outOfRange.length - 1, 4);
+		var oorIndex = Math.min(outOfRange.length - 1, 5);
 		var outOfRangeMax = 1 / outOfRange[oorIndex].lod;
 		var newMax = Math.max(visibleMax, outOfRangeMax);
 		
 		this.LOD = newMax;
-	}else if(this.numVisiblePoints > this.visiblePointsTarget*1.1){
-		// decrease to value at which point count target is met
+	}
+	
+	// enforce visible point target limit 
+	visibleNodes.sort(function(a,b){return b.lod - a.lod});
+	var pointsSum = 0;
+	for(var i = 0; i < visibleNodes.length; i++){
+		var node = visibleNodes[i].node;
 		
-		//var n = 0;
-		//for(var i = 0; i < visibleNodes.length; i++){
-		//	var element = visibleNodes[i];
-		//	n += element.node.numPoints;
-		//	
-		//	if(n >= this.visiblePointsTarget){
-		//		this.LOD = 1 / element.lod;
-		//		break;
-		//	}
-		//}
-		this.LOD *= 0.95;
+		if(pointsSum > this.visiblePointsTarget){
+			node.visible = false;
+		}else if(pointsSum + node.numPoints > this.visiblePointsTarget){
+			var index = Math.min(i+5, visibleNodes.length-1);
+			this.LOD = 1 / visibleNodes[index].lod;
+			this.numVisiblePoints = pointsSum;
+			this.numVisibleNodes = i+1;
+		}
 		
+		pointsSum += node.numPoints;
 	}
 	
 	// schedule some of the unloaded nodes for loading

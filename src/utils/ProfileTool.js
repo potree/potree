@@ -21,6 +21,14 @@ Potree.ProfileTool = function(width, height, depth){
 	this.hudElement = new THREE.Mesh(this.hudGeometry, this.hudMaterial);
 	this.hudElement.scale.set(1,1,1);
 	this.hudElement.position.set(0, 0, 0);
+	
+	//var lblMax = new Potree.TextSprite("max");
+	//lblMax.scale.multiplyScalar(0.05);
+	//this.hudElement.add(lblMax);
+	
+	var start = new THREE.Vector3(0,0,0);
+	var end = new THREE.Vector3(10,0,0);
+	this.setCoordinates(start, end);
 }
 
 Potree.ProfileTool.prototype = Object.create( THREE.Object3D.prototype );
@@ -48,6 +56,21 @@ Potree.ProfileTool.prototype.setOrientation = function(forward, side){
 	this.camera.lookAt(oldPosition);
 }
 
+Potree.ProfileTool.prototype.setCoordinates = function(start, end){
+	var width = start.distanceTo(end);
+	this.setDimension(width, this.height, this.depth);
+	
+	var center = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
+	var diff = new THREE.Vector3().subVectors(end, start);
+	var target = new THREE.Vector3(diff.z, 0, -diff.x);
+	this.position.set(0,0,0);
+	this.lookAt(target);
+	this.position.copy(center);
+	
+	this.start = start;
+	this.end = end;
+}
+
 Potree.ProfileTool.prototype.render = function(renderer, scene){
 	this.camera.matrixWorld.copy(this.matrixWorld);
 	
@@ -68,12 +91,6 @@ Potree.ProfileTool.prototype.render = function(renderer, scene){
 			object.material.size = object.material.oldSize;
 		}
 	});
-	
-	//this.hudElement.scale.x = 0.5;
-	//this.hudElement.scale.y = 0.5 * (renderer.domElement.clientWidth / renderer.domElement.clientHeight) * (this.height / this.width);
-	//this.hudElement.position.x = 0.7;
-	//this.hudElement.position.y = -0.7;
-	
 }
 
 

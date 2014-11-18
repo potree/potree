@@ -121,6 +121,8 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 				object.add(boxHelper);
 				object.boundingBoxNode = boxHelper;
 			}
+			
+			object.boundingBoxNode.matrixWorld.copy(object.matrixWorld);
 		}else if(!this.showBoundingBox){
 			if(object.boundingBoxNode !== undefined){
 				object.remove(object.boundingBoxNode);

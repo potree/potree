@@ -142,10 +142,13 @@ Potree.PointCloudOctreeGeometryNode.prototype.load = function(){
 			
 			var positions = new Float32Array(numPoints*3);
 			var colors = new Float32Array(numPoints*3);
+			var indices = new ArrayBuffer(numPoints*4);
 			var color = new THREE.Color();
 			
 			var fView = new Float32Array(buffer);
 			var uiView = new Uint8Array(buffer);
+			
+			var iIndices = new Uint32Array(indices);
 			
 			for(var i = 0; i < numPoints; i++){
 				positions[3*i+0] = fView[4*i+0] + node.pcoGeometry.offset.x;
@@ -156,10 +159,13 @@ Potree.PointCloudOctreeGeometryNode.prototype.load = function(){
 				colors[3*i+0] = color.r / 255;
 				colors[3*i+1] = color.g / 255;
 				colors[3*i+2] = color.b / 255;
+				
+				iIndices[i] = i;
 			}
 			
 			geometry.addAttribute('position', new THREE.BufferAttribute(positions, 3));
 			geometry.addAttribute('color', new THREE.BufferAttribute(colors, 3));
+			geometry.addAttribute('indices', new THREE.BufferAttribute(indices, 1));
 			geometry.boundingBox = node.boundingBox;
 			node.geometry = geometry;
 			node.loaded = true;

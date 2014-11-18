@@ -1,13 +1,15 @@
 
-Potree.MeasuringTool = function(scene, camera, domElement){
+Potree.MeasuringTool = function(scene, camera, renderer){
 	
 	var scope = this;
 	
 	this.scene = scene;
 	this.camera = camera;
 
-	this.domElement = domElement;
+	this.renderer = renderer;
+	this.domElement = renderer.domElement;
 	this.mouse = {x: 0, y: 0};
+	this.accuracy = 0.5;
 	
 	var STATE = {
 		DEFAULT: 0,
@@ -181,10 +183,9 @@ Potree.MeasuringTool = function(scene, camera, domElement){
 	function getMousePointCloudIntersection(){
 		var vector = new THREE.Vector3( scope.mouse.x, scope.mouse.y, 0.5 );
 		vector.unproject(scope.camera);
-		
-		var raycaster = new THREE.Raycaster();
-		raycaster.params = {"PointCloud" : {threshold: 1}};
-		raycaster.ray.set( scope.camera.position, vector.sub( scope.camera.position ).normalize() );
+
+		var direction = vector.sub(scope.camera.position).normalize();
+		var ray = new THREE.Ray(scope.camera.position, direction);
 		
 		var pointClouds = [];
 		scope.scene.traverse(function(object){
@@ -193,15 +194,26 @@ Potree.MeasuringTool = function(scene, camera, domElement){
 			}
 		});
 		
-		var intersects = raycaster.intersectObjects(pointClouds, true);
+		var closestPoint = null;
+		var closestPointDistance = null;
 		
-		if(intersects.length > 0){
-			var I = intersects[0];			
+		for(var i = 0; i < pointClouds.length; i++){
+			var pointcloud = pointClouds[i];
+			var point = pointcloud.pick(scope.renderer, scope.camera, ray, {accuracy: scope.accuracy});
 			
-			return I.point;
-		}else{
-			return undefined;
+			if(!point){
+				continue;
+			}
+			
+			var distance = scope.camera.position.distanceTo(point.position);
+			
+			if(!closestPoint || distance < closestPointDistance){
+				closestPoint = point;
+				closestPointDistance = distance;
+			}
 		}
+		
+		return closestPoint ? closestPoint.position : null;
 	}
 	
 	this.domElement.addEventListener("dblclick", onDoubleClick, false);

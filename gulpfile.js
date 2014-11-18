@@ -26,6 +26,7 @@ var paths = {
 		"src/materials/PointCloudIntensityMaterial.js",
 		"src/materials/PointCloudHeightMaterial.js",
 		"src/materials/PointCloudColorMaterial.js",
+		"src/materials/PointCloudIndexMaterial.js",
 		"src/FirstPersonControls.js",
 		"src/LRU.js",
 		"src/PointCloudOctree.js",

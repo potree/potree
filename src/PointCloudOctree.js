@@ -147,13 +147,14 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 		
 
 		
-		if(object.level === 0){
-			visible = true;
-		}else if(object.level === 1){
-			visible = object.name === "r5";
-		}else{
-			visible = false;
-		}
+		//if(object.level === 0){
+		//	visible = true;
+		//}else if(object.level === 1){
+		//	//visible = true; 
+		//	visible = object.name === "r2";
+		//}else{
+		//	visible = false;
+		//}
 		
 		object.visible = visible;
 		object.insideFrustum = insideFrustum;
@@ -378,7 +379,7 @@ Potree.PointCloudOctree.prototype.updateVisibilityTexture = function(){
 	for(var i = 0; i <= root.children.length; i++){
 		var child = root.children[i];
 		
-		if(child instanceof THREE.PointCloud){
+		if(child instanceof THREE.PointCloud && child.visible){
 			var index = parseInt(child.name.substr(1,1));
 			ibuffer[0] += Math.pow(2, index);
 		}

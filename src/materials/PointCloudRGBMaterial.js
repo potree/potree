@@ -75,13 +75,13 @@ Potree.PointCloudRGBMaterial.vs_points = [
  "	gl_Position = projectionMatrix * mvPosition;               ",
  "                                                             ",
  "                                                             ",
- "                                                             ",
- "                                                             ",
  "  vec3 index3d = position / nodeSize;                                                           ",
+ "                                                             ",
+ "  // without it, the z/y bounds are incorrect. why?          ",
+ "  index3d.z = index3d.z + 0.033;                                                           ",
+ "  index3d.y = index3d.y + 0.033;                                                           ",
+ "                                                             ",
  "  index3d = floor(index3d + 0.5);                                                           ",
- "  //float index = 4.0*index3d.x + 2.0*index3d.y + index3d.z;                                                           ",
- "  //float index = 4.0*index3d.x + 2.0*(1.0-index3d.y) + index3d.z;           ",
- "  //float index = 4.0*index3d.z + 2.0*(1.0-index3d.y) + index3d.x;           ",
  "  float index = 4.0*index3d.x + 2.0*index3d.y + index3d.z;           ",
  "                                                             ",
  "  if(mod(floor((mask / pow(2.0, index))), 2.0) == 0.0){                     ",
@@ -91,6 +91,9 @@ Potree.PointCloudRGBMaterial.vs_points = [
  "  //vColor.rgb = value.rgb;                                                           ",
  "  //vColor.rgb = vec3(1.0, 1.0, 1.0) * pow(2.0, index) / 256.0;                                                           ",
  "                                                             ",
+ "  //vColor = index3d;                                                           ",
+ "  //vColor.r = 0.0;                                                           ",
+ "  //vColor.b = 0.0;                                                           ",
  "}                                                            "];
 
 Potree.PointCloudRGBMaterial.fs_points_rgb = [

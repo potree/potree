@@ -143,13 +143,23 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 		}
 		
 		var visible = insideFrustum && inRange;		
+		
+		
+
+		
+		if(object.level === 0){
+			visible = true;
+		}else if(object.level === 1){
+			visible = object.name === "r5";
+		}else{
+			visible = false;
+		}
+		
 		object.visible = visible;
 		object.insideFrustum = insideFrustum;
 		object.inRange = inRange;
 		
 		object.matrixWorld.multiplyMatrices( object.parent.matrixWorld, object.matrix );
-
-
 		
 		
 		if(!visible){
@@ -347,7 +357,58 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 			this.loadQueue[i].node.geometryNode.load();
 		}
 	}
+	
+	this.updateVisibilityTexture();
 };
+
+Potree.PointCloudOctree.prototype.updateVisibilityTexture = function(){
+
+	var buffer = new ArrayBuffer(4);
+	var ibuffer = new Uint8Array(buffer);
+	var root = this.children[0];
+	
+	//for(var i = 0; i < 8; i++){
+	//	var child = root.children[i];
+	//	if(child && child.visible){
+	//		//console.log(i);
+	//		ibuffer[0] += Math.pow(2, i);
+	//	}
+	//}
+	
+	for(var i = 0; i <= root.children.length; i++){
+		var child = root.children[i];
+		
+		if(child instanceof THREE.PointCloud){
+			var index = parseInt(child.name.substr(1,1));
+			ibuffer[0] += Math.pow(2, index);
+		}
+	}
+	
+	if(this.material){
+		var texture = this.material.visibleNodesTexture;
+		var data = texture.image.data;
+		
+		for(var i = 0; i < 64; i++){
+			for(var j = 0; j < 64; j++){
+				var k = i*64 + j;
+				data[3*k] = 255-j*4;
+				data[3*k+1] = 255-j*4;
+				data[3*k+2] = 255-j*4;
+			}
+		}
+		
+		//data[63*64*3+0] = 100;
+		//data[63*64*3+0] = 100;
+		//data[63*64*3+0] = 100;
+		
+		data[63*64*3+0] = ibuffer[0];
+		
+		this.material.uniforms.nodeSize.value = this.boundingBox.size().x;
+		
+		texture.needsUpdate = true;
+	}
+
+}
 
 Potree.PointCloudOctree.prototype.nodesOnRay = function(nodes, ray){
 	var nodesOnRay = [];

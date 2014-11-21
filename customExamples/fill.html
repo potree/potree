@@ -43,7 +43,8 @@
 		var defaultBlendDepth = 0.01;
 		var defaultPointCountTarget = 0.2;
 		var pointcloudPath = "../resources/pointclouds/lion_takanawa/cloud_bin.js";
-		//var pointcloudPath = "../../../../pointclouds/pix4d/matterhorn/cloud.js";
+		var pointcloudPath = "../../../../pointclouds/pix4d/matterhorn/cloud.js";
+		//var pointcloudPath = "../../../../pointclouds/3dlasermapping/whitby_sample_geom/cloud_bin.js";
 	
 		var renderer;
 		var camera;
@@ -69,7 +70,7 @@
 				"Materials" : materials.rgb
 			};
 			
-			var pPoints = gui.add(params, 'points(m)', 0.02, 0.2);
+			var pPoints = gui.add(params, 'points(m)', 0.02, 2);
 			pPoints.onChange(function(value){
 				pointcloud.visiblePointsTarget = value * 1000 * 1000;
 			});
@@ -123,7 +124,7 @@
 		
 		function initThree(){
 			scene = new THREE.Scene();
-			camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 10000);
+			camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 100000);
 
 			renderer = new THREE.WebGLRenderer();
 			renderer.setSize(window.innerWidth, window.innerHeight);
@@ -134,9 +135,15 @@
 
 			// camera and controls
 			camera.position.set(3, 7, 6);
-			controls = new THREE.OrbitControls(camera, renderer.domElement);
-			controls.target.set( 0, 5, 0 );
-			camera.lookAt(controls.target);
+			camera.position.set(2400, 4700, -2100);
+			//controls = new THREE.OrbitControls(camera, renderer.domElement);
+			//controls.target.set( 0, 5, 0 );
+			//camera.lookAt(controls.target);
+			controls = new THREE.FirstPersonControls(camera, renderer.domElement);
+			camera.rotation.order = 'ZYX';
+			camera.lookAt(new THREE.Vector3(0,0,0));
+			controls.moveSpeed *= 100;
+
 
 			// materials
 			materials.rgb = new Potree.PointCloudRGBMaterial({ size: defaultPointSize, minSize: 1});
@@ -151,12 +158,12 @@
 			pointcloud = new Potree.PointCloudOctree(pco, materials.rgb);
 			pointcloud.visiblePointsTarget = defaultPointCountTarget * 1000 * 1000;
 			pointcloud.rotation.set(Math.PI/2, 0.85* -Math.PI/2, -0.0);
-			//pointcloud.applyMatrix(new THREE.Matrix4().set(
-			//	1,0,0,0,
-			//	0,0,1,0,
-			//	0,-1,0,0,
-			//	0,0,0,1
-			//));
+			pointcloud.applyMatrix(new THREE.Matrix4().set(
+				1,0,0,0,
+				0,0,1,0,
+				0,-1,0,0,
+				0,0,0,1
+			));
 			pointcloud.moveToOrigin();
 			pointcloud.moveToGroundPlane();
 			

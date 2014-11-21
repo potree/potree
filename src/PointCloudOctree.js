@@ -159,9 +159,14 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 		//visible = object.level === 0 || (object.name === "r") || object.name === "r4" || object.name === "r41";
 		//visible = object.level === 0 || (object.name === "r") || object.name === "r0" || object.name === "r02";
 		
-		if(object.level > 2){
-			visible = false;
-		}
+		//if(object.level > 5){
+		//	visible = false;
+		//}
+		//
+		//if("r7645115".indexOf(object.name) !== 0){
+		//	visible = false;
+		//}
+		
 		
 		object.visible = visible;
 		object.insideFrustum = insideFrustum;
@@ -410,17 +415,22 @@ Potree.PointCloudOctree.prototype.updateVisibilityTexture = function(){
 			return 0;
 		});
 		
-		data[63*64*3 + i*3 + 0] = 0;
-		data[63*64*3 + i*3 + 1] = 0;
-		data[63*64*3 + i*3 + 2] = 0;
+		//data[63*64*3 + i*3 + 0] = 0;
+		//data[63*64*3 + i*3 + 1] = 0;
+		//data[63*64*3 + i*3 + 2] = 0;
+		data[i*3 + 0] = 0;
+		data[i*3 + 1] = 0;
+		data[i*3 + 2] = 0;
 		for(var j = 0; j < children.length; j++){
 			var child = children[j];
 			var index = parseInt(child.name.substr(-1));
-			data[63*64*3 + i*3 + 0] += Math.pow(2, index);
+			//data[63*64*3 + i*3 + 0] += Math.pow(2, index);
+			data[i*3 + 0] += Math.pow(2, index);
 			
 			if(j === 0){
 				var vArrayIndex = visibleNodes.indexOf(child);
-				data[63*64*3 + i*3 + 1] = vArrayIndex;
+				//data[63*64*3 + i*3 + 1] = vArrayIndex;
+				data[i*3 + 1] = vArrayIndex - i;
 			}
 			
 			//ibuffer[4*i] += Math.pow(2, index);

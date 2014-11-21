@@ -39,10 +39,11 @@
 	<div id="lblNumVisiblePoints" class="info" style="position: absolute; left: 10px; top: 100px; width: 400px; color:white"></div>
 	
 	<script>
-		var defaultPointSize = 0.00001;
+		var defaultPointSize = 0.01;
 		var defaultBlendDepth = 0.01;
-		var defaultPointCountTarget = 0.02;
+		var defaultPointCountTarget = 0.05;
 		var pointcloudPath = "../resources/pointclouds/lion_takanawa/cloud_bin.js";
+		//var pointcloudPath = "../../../../pointclouds/pix4d/matterhorn/cloud.js";
 	
 		var renderer;
 		var camera;
@@ -68,7 +69,7 @@
 				"Materials" : materials.rgb
 			};
 			
-			var pPoints = gui.add(params, 'points(m)', 0.1, 1);
+			var pPoints = gui.add(params, 'points(m)', 0.02, 0.2);
 			pPoints.onChange(function(value){
 				pointcloud.visiblePointsTarget = value * 1000 * 1000;
 			});
@@ -122,7 +123,7 @@
 		
 		function initThree(){
 			scene = new THREE.Scene();
-			camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 100);
+			camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 10000);
 
 			renderer = new THREE.WebGLRenderer();
 			renderer.setSize(window.innerWidth, window.innerHeight);
@@ -150,6 +151,12 @@
 			pointcloud = new Potree.PointCloudOctree(pco, materials.rgb);
 			pointcloud.visiblePointsTarget = defaultPointCountTarget * 1000 * 1000;
 			pointcloud.rotation.set(Math.PI/2, 0.85* -Math.PI/2, -0.0);
+			//pointcloud.applyMatrix(new THREE.Matrix4().set(
+			//	1,0,0,0,
+			//	0,0,1,0,
+			//	0,-1,0,0,
+			//	0,0,0,1
+			//));
 			pointcloud.moveToOrigin();
 			pointcloud.moveToGroundPlane();
 			

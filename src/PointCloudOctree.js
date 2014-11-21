@@ -364,50 +364,105 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 
 Potree.PointCloudOctree.prototype.updateVisibilityTexture = function(){
 
-	var buffer = new ArrayBuffer(4);
-	var ibuffer = new Uint8Array(buffer);
-	var root = this.children[0];
-	
-	//for(var i = 0; i < 8; i++){
-	//	var child = root.children[i];
-	//	if(child && child.visible){
-	//		//console.log(i);
-	//		ibuffer[0] += Math.pow(2, i);
-	//	}
-	//}
-	
-	for(var i = 0; i <= root.children.length; i++){
-		var child = root.children[i];
-		
-		if(child instanceof THREE.PointCloud && child.visible){
-			var index = parseInt(child.name.substr(1,1));
-			ibuffer[0] += Math.pow(2, index);
-		}
+	if(!this.material){
+		return;
 	}
 	
-	if(this.material){
-		var texture = this.material.visibleNodesTexture;
-		var data = texture.image.data;
-		
-		for(var i = 0; i < 64; i++){
-			for(var j = 0; j < 64; j++){
-				var k = i*64 + j;
-				data[3*k] = 255-j*4;
-				data[3*k+1] = 255-j*4;
-				data[3*k+2] = 255-j*4;
+	var texture = this.material.visibleNodesTexture;
+    var data = texture.image.data;
+	
+	var visibleNodes = [];
+	for(var i = 0; i < this.visibleNodes.length; i++){
+		visibleNodes.push(this.visibleNodes[i].node);
+	}
+	
+	
+	// sort by level and index, e.g. r, r0, r3, r4, r01, r07, r30, ...
+	var sort = function(a, b){
+		var na = a.name;
+		var nb = b.name;
+		if(na.length != nb.length) return na.length - nb.length;
+		if(na < nb) return -1;
+		if(na > nb) return 1;
+		return 0;
+	};
+	visibleNodes.sort(sort);
+	
+	for(var i = 0; i < visibleNodes.length; i++){
+		var node = visibleNodes[i];
+		var children = [];
+		for(var j = 0; j < node.children.length; j++){
+			var child = node.children[j];
+			if(child instanceof THREE.PointCloud && child.visible){
+				children.push(child);
 			}
 		}
+		children.sort(function(a, b){
+			if(a.name < b.name) return -1;
+			if(a.name > b.name) return 1;
+			return 0;
+		});
 		
-		//data[63*64*3+0] = 100;
-		//data[63*64*3+0] = 100;
-		//data[63*64*3+0] = 100;
+		data[63*64*3 + i*3 + 0] = 0;
+		data[63*64*3 + i*3 + 1] = 0;
+		data[63*64*3 + i*3 + 2] = 0;
+		for(var j = 0; j < children.length; j++){
+			var child = children[j];
+			var index = parseInt(child.name.substr(-1));
+			data[63*64*3 + i*3 + 0] += Math.pow(2, index);
+			
+			if(j === 0){
+				var vArrayIndex = visibleNodes.indexOf(child);
+				data[63*64*3 + i*3 + 1] = vArrayIndex;
+			}
+			
+			//ibuffer[4*i] += Math.pow(2, index);
+		}
 		
-		data[63*64*3+0] = ibuffer[0];
+		//for(var j = 0; j <= node.children.length; j++){
+		//	var child = node.children[j];
+		//	
+		//	if(child instanceof THREE.PointCloud && child.visible){
+		//		var index = parseInt(child.name.substr(1,1));
+		//		var vArrayIndex = this.visibleNodes.indexOf(child);
+		//		ibuffer[4*i] += Math.pow(2, index);
+		//		
+		//	}
+		//}
 		
-		this.material.uniforms.nodeSize.value = this.boundingBox.size().x;
-		
-		texture.needsUpdate = true;
 	}
+	
+	
+	this.material.uniforms.nodeSize.value = this.boundingBox.size().x;
+	texture.needsUpdate = true;
+	
+	//console.log(data[63*64*3] + ", " + ibuffer[0]);
+	
+	
+	
+	//if(this.material){
+	//	var texture = this.material.visibleNodesTexture;
+	//	var data = texture.image.data;
+	//	
+	//	for(var i = 0; i < 64; i++){
+	//		for(var j = 0; j < 64; j++){
+	//			var k = i*64 + j;
+	//			data[3*k] = 255-j*4;
+	//			data[3*k+1] = 255-j*4;
+	//			data[3*k+2] = 255-j*4;
+	//		}
+	//	}
+	//	
+	//	//data[63*64*3+0] = 100;
+	//	//data[63*64*3+0] = 100;
+	//	//data[63*64*3+0] = 100;
+	//	
+	//	data[63*64*3+0] = ibuffer[0];
+	//	
+	//	this.material.uniforms.nodeSize.value = this.boundingBox.size().x;
+	//	
+	//	texture.needsUpdate = true;
+	//}
 
 }
 

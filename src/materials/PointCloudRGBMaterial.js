@@ -98,7 +98,7 @@ Potree.PointCloudRGBMaterial.vs_points = [
  "	vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 ); ",
  "                                                             ",
  "                                                             ",
- "	gl_PointSize = 1000.0 * size * ( 300.0 / length( mvPosition.xyz ) );      ",
+ "	gl_PointSize = size * ( 300.0 / length( mvPosition.xyz ) );      ",
  "	gl_PointSize = max(minSize, gl_PointSize);      ",
  "	gl_Position = projectionMatrix * mvPosition;               ",
  "                                                             ",

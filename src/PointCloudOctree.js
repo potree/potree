@@ -151,10 +151,17 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 		//	visible = true;
 		//}else if(object.level === 1){
 		//	//visible = true; 
-		//	visible = object.name === "r2";
+		//	visible = object.name === "r"; || object.name === "r44";
 		//}else{
 		//	visible = false;
 		//}
+		
+		//visible = object.level === 0 || (object.name === "r") || object.name === "r4" || object.name === "r41";
+		//visible = object.level === 0 || (object.name === "r") || object.name === "r0" || object.name === "r02";
+		
+		if(object.level > 2){
+			visible = false;
+		}
 		
 		object.visible = visible;
 		object.insideFrustum = insideFrustum;

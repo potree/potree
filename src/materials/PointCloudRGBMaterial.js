@@ -1,4 +1,16 @@
 
+Potree.PointSizeType = {
+	FIXED: 0,
+	ATTENUATED: 1,
+	ADAPTIVE: 2
+};
+
+Potree.PointShape = {
+	SQUARE: 0,
+	CIRCLE: 1
+};
+
+
 Potree.PointCloudRGBMaterial = function(parameters){
 	parameters = parameters || {};
 
@@ -8,8 +20,13 @@ Potree.PointCloudRGBMaterial = function(parameters){
 	this.visibleNodesTexture = map;
 	
 	var pointSize = parameters.size || 1.0;
-	var minSize = parameters.minSize || 2.0;
+	var minSize = parameters.minSize || 1.0;
 	var nodeSize = 1.0;
+	
+	this._pointSizeType = Potree.PointSizeType.ATTENUATED;
+	this._pointShape = Potree.PointShape.SQUARE;
+	
+	
 	
 	var attributes = {};
 	var uniforms = {
@@ -25,8 +42,8 @@ Potree.PointCloudRGBMaterial = function(parameters){
 	this.setValues({
 		uniforms: uniforms,
 		attributes: attributes,
-		vertexShader: Potree.PointCloudRGBMaterial.vs_points.join("\n"),
-		fragmentShader: Potree.PointCloudRGBMaterial.fs_points_rgb.join("\n"),
+		vertexShader: this.getDefines() + Potree.PointCloudRGBMaterial.vs_points.join("\n"),
+		fragmentShader: this.getDefines() + Potree.PointCloudRGBMaterial.fs_points_rgb.join("\n"),
 		vertexColors: THREE.VertexColors,
 		size: pointSize,
 		minSize: minSize,
@@ -36,6 +53,58 @@ Potree.PointCloudRGBMaterial = function(parameters){
 };
 
 Potree.PointCloudRGBMaterial.prototype = new THREE.ShaderMaterial();
+
+Potree.PointCloudRGBMaterial.prototype.updateShaderSource = function(){
+	this.setValues({
+		vertexShader: pointcloud.material.getDefines() + Potree.PointCloudRGBMaterial.vs_points.join("\n"),
+		fragmentShader: pointcloud.material.getDefines() + Potree.PointCloudRGBMaterial.fs_points_rgb.join("\n")
+	});
+		
+	this.needsUpdate = true;
+};
+
+Potree.PointCloudRGBMaterial.prototype.getDefines = function(){
+
+	var defines = "";
+	
+	if(this.pointSizeType === Potree.PointSizeType.FIXED){
+		defines += "#define fixed_point_size\n";
+	}else if(this.pointSizeType === Potree.PointSizeType.ATTENUATED){
+		defines += "#define attenuated_point_size\n";
+	}else if(this.pointSizeType === Potree.PointSizeType.ADAPTIVE){
+		defines += "#define adaptive_point_size\n";
+	}
+	
+	if(this.pointShape === Potree.PointShape.SQUARE){
+		defines += "#define square_point_shape\n";
+	}else if(this.pointShape === Potree.PointShape.CIRCLE){
+		defines += "#define circle_point_shape\n";
+	}
+
+	return defines;
+};
+
+Object.defineProperty(Potree.PointCloudRGBMaterial.prototype, "pointSizeType", {
+	get: function(){
+		return this._pointSizeType;
+	},
+	set: function(value){
+		this._pointSizeType = value;
+		
+		this.updateShaderSource();
+	}
+});
+
+Object.defineProperty(Potree.PointCloudRGBMaterial.prototype, "pointShape", {
+	get: function(){
+		return this._pointShape;
+	},
+	set: function(value){
+		this._pointShape = value;
+		
+		this.updateShaderSource();
+	}
+});
 
 Object.defineProperty(Potree.PointCloudRGBMaterial.prototype, "size", {
 	get: function(){
@@ -65,7 +134,7 @@ Potree.PointCloudRGBMaterial.vs_points = [
  "varying vec3 vColor;                                                 ",
  "                                                                     ",
  "                                                                     ",
- "                                                                     ",
+ "#ifdef adaptive_point_size                                                                     ",
  "/**                                                                  ",
  " * number of 1-bits up to inclusive index position                   ",
  " * number is treated as if it were an integer in the range 0-255     ",
@@ -125,7 +194,7 @@ Potree.PointCloudRGBMaterial.vs_points = [
  "	return depth;                                                      ",
  "}                                                                    ",
  "                                                                     ",
- "                                                                     ",
+ "#endif                                                                     ",
  "                                                                     ",
  "                                                                     ",
  "void main() {                                                        ",
@@ -134,33 +203,21 @@ Potree.PointCloudRGBMaterial.vs_points = [
  "                                                                     ",
  "	gl_Position = projectionMatrix * mvPosition;                       ",
  "                                                                     ",
- "	gl_PointSize = size * ( 300.0 / length( mvPosition.xyz ) );        ",
- "  gl_PointSize = gl_PointSize / pow(1.9, getOctreeDepth());                ",
+ "  #ifdef fixed_point_size                                                                   ",
+ "  	gl_PointSize = size;                                                                   ",
+ "  #endif                                                                   ",
+ "                                                                     ",
+ "  #ifdef attenuated_point_size                                                                   ",
+ "		gl_PointSize = size * ( 300.0 / length( mvPosition.xyz ) );        ",
+ "  #endif                                                                   ",
+ "                                                                     ",
+ "  #ifdef adaptive_point_size                                                                   ",
+ "      gl_PointSize = size * ( 300.0 / length( mvPosition.xyz ) );                                                               ",
+ "  	gl_PointSize = gl_PointSize / pow(1.9, getOctreeDepth());                ",
+ "  #endif                                                                   ",
+ "                                                                     ",
  "	gl_PointSize = max(minSize, gl_PointSize);                       ",
  "                                                                     ",
- "                                                                     ",
- "                                                                     ",
- " //if(depth == 0.0){                                                 ",
- " //   vColor = vec3(1.0, 0.0, 0.0);                                  ",
- " //}else if(depth == 1.0){                            ",
- " //   vColor = vec3(0.0, 1.0, 0.0);                         ",
- " //}else if(depth == 2.0){                            ",
- " //   vColor = vec3(0.0, 0.0, 1.0);                         ",
- " //}else if(depth == 3.0){                            ",
- " //   vColor = vec3(1.0, 1.0, 0.0);                         ",
- " //}else if(depth == 4.0){                            ",
- " //   vColor = vec3(1.0, 0.0, 1.0);                         ",
- " //}else if(depth == 5.0){                            ",
- " //   vColor = vec3(0.0, 1.0, 1.0);                         ",
- " //}else if(depth == 6.0){                            ",
- " //   vColor = vec3(1.0, 1.0, 1.0);                         ",
- " //}else if(depth == 7.0){                            ",
- " //   vColor = vec3(0.5, 1.0, 0.5);                         ",
- " //}else if(depth == 8.0){                            ",
- " //   vColor = vec3(1.0, 0.5, 0.5);                         ",
- " //}else if(depth == 9.0){                            ",
- " //   vColor = vec3(0.5, 0.5, 1.0);                         ",
- " //}                                                           ",
  "                                                             ",
  "}                                                            "];
 
@@ -169,13 +226,15 @@ Potree.PointCloudRGBMaterial.fs_points_rgb = [
  "                                                             ",
  "void main() {                                                ",
  "	                                                           ",
- "	//float a = pow(2.0*(gl_PointCoord.x - 0.5), 2.0);           ",
- "	//float b = pow(2.0*(gl_PointCoord.y - 0.5), 2.0);           ",
- "	//float c = 1.0 - (a + b);                                   ",
- "  //                                                           ",
- "	//if(c < 0.0){                                               ",
- "	//	discard;                                               ",
- "	//}                                                          ",
+ "	#ifdef circle_point_shape                                                           ",
+ "		float a = pow(2.0*(gl_PointCoord.x - 0.5), 2.0);           ",
+ "		float b = pow(2.0*(gl_PointCoord.y - 0.5), 2.0);           ",
+ "		float c = 1.0 - (a + b);                                   ",
+ "  	                                                           ",
+ "		if(c < 0.0){                                               ",
+ "			discard;                                               ",
+ "		}                                                          ",
+ "	#endif                                                           ",
  "	                                                           ",
  "	gl_FragColor = vec4(vColor, 1.0);                          ",
  "}                                                            "];
@@ -193,3 +252,27 @@ Potree.PointCloudRGBMaterial.fs_points_rgb = [
 
 
 
+
+// "                                                                     ",
+// "                                                                     ",
+// " //if(depth == 0.0){                                                 ",
+// " //   vColor = vec3(1.0, 0.0, 0.0);                                  ",
+// " //}else if(depth == 1.0){                            ",
+// " //   vColor = vec3(0.0, 1.0, 0.0);                         ",
+// " //}else if(depth == 2.0){                            ",
+// " //   vColor = vec3(0.0, 0.0, 1.0);                         ",
+// " //}else if(depth == 3.0){                            ",
+// " //   vColor = vec3(1.0, 1.0, 0.0);                         ",
+// " //}else if(depth == 4.0){                            ",
+// " //   vColor = vec3(1.0, 0.0, 1.0);                         ",
+// " //}else if(depth == 5.0){                            ",
+// " //   vColor = vec3(0.0, 1.0, 1.0);                         ",
+// " //}else if(depth == 6.0){                            ",
+// " //   vColor = vec3(1.0, 1.0, 1.0);                         ",
+// " //}else if(depth == 7.0){                            ",
+// " //   vColor = vec3(0.5, 1.0, 0.5);                         ",
+// " //}else if(depth == 8.0){                            ",
+// " //   vColor = vec3(1.0, 0.5, 0.5);                         ",
+// " //}else if(depth == 9.0){                            ",
+// " //   vColor = vec3(0.5, 0.5, 1.0);                         ",
+// " //}                                                           ",

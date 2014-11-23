@@ -53,6 +53,8 @@
 		var stats;
 		var clock = new THREE.Clock();
 		var materials = {};
+		var sphere;
+		var mouse = {x: 0, y: 0};
 		
 		function initGUI(){
 		
@@ -64,6 +66,7 @@
 			var params = {
 				"points(m)": defaultPointCountTarget,
 				PointSize: defaultPointSize,
+				"opacity": 1.0,
 				"SizeType" : "Adaptive",
 				BlendDepth: defaultBlendDepth,
 				"show octree" : false,
@@ -72,7 +75,7 @@
 				"circles": false
 			};
 			
-			var pPoints = gui.add(params, 'points(m)', 0.02, 2);
+			var pPoints = gui.add(params, 'points(m)', 0.02, 5);
 			pPoints.onChange(function(value){
 				pointcloud.visiblePointsTarget = value * 1000 * 1000;
 			});
@@ -80,6 +83,11 @@
 			var pPointSize = gui.add(params, 'PointSize', 0, 200);
 			pPointSize.onChange(function(value){
 				pointcloud.material.size = value;
+			});
+			
+			var pOpacity = gui.add(params, 'opacity', 0, 1);
+			pOpacity.onChange(function(value){
+				pointcloud.material.opacity = value;
 			});
 			
 			var pSizeType = gui.add(params, 'SizeType', [ "Fixed", "Attenuated", "Adaptive"]);
@@ -105,6 +113,8 @@
 					pointcloud.material.heightMax = 5000;
 				}else if(value === "Octree Depth"){
 					pointcloud.material.pointColorType = Potree.PointColorType.OCTREE_DEPTH;
+				}else if(value === "Point Index"){
+					pointcloud.material.pointColorType = Potree.PointColorType.POINT_INDEX;
 				}
 			});
 			
@@ -127,12 +137,12 @@
 				pointcloud.showBoundingBox = value;
 			});
 			
-			//// stats
-			//stats = new Stats();
-			//stats.domElement.style.position = 'absolute';
-			//stats.domElement.style.top = '0px';
-			//stats.domElement.style.margin = '5px';
-			//document.body.appendChild( stats.domElement );
+			// stats
+			stats = new Stats();
+			stats.domElement.style.position = 'absolute';
+			stats.domElement.style.top = '0px';
+			stats.domElement.style.margin = '5px';
+			document.body.appendChild( stats.domElement );
 		}
 		
 		function initThree(){
@@ -182,18 +192,38 @@
 			
 			scene.add(pointcloud);
 			
-			//var grid = Potree.utils.createGrid(5, 5, 2);
-			//scene.add(grid);
+			
+			var sphereGeometry = new THREE.SphereGeometry(20);
+			sphere = new THREE.Mesh(sphereGeometry);
+			scene.add(sphere);
+			
+			
+			renderer.domElement.addEventListener( 'mousemove', onMouseMove, false );
+		}
+		
+		function onMouseMove(event){
+			mouse.x = ( event.clientX / renderer.domElement.clientWidth ) * 2 - 1;
+			mouse.y = - ( event.clientY / renderer.domElement.clientHeight ) * 2 + 1;
 		}
 		
 		function render() {
 			requestAnimationFrame(render);
 			
+			//var vector = new THREE.Vector3(mouse.x, mouse.y, 0.5);
+			//vector.unproject(camera);
+			//var direction = vector.sub(camera.position).normalize();
+			//var ray = new THREE.Ray(camera.position, direction);
+			//var point = pointcloud.pick(renderer, camera, ray, {accuracy: 0.2});
+			//if(point){
+			//	sphere.position.copy(point.position);
+			//}
+			
+			
 			pointcloud.update(camera);
 			
-			//document.getElementById("lblNumVisibleNodes").innerHTML = "visible nodes: " + pointcloud.numVisibleNodes;
-			//document.getElementById("lblNumVisiblePoints").innerHTML = "visible points: " + Potree.utils.addCommas(pointcloud.numVisiblePoints);
-			//stats.update();
+			document.getElementById("lblNumVisibleNodes").innerHTML = "visible nodes: " + pointcloud.numVisibleNodes;
+			document.getElementById("lblNumVisiblePoints").innerHTML = "visible points: " + Potree.utils.addCommas(pointcloud.numVisiblePoints);
+			stats.update();
 			
 			controls.update(clock.getDelta());
 			

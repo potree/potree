@@ -753,13 +753,25 @@ var point = Potree.PointCloudOctree.prototype.pick = function(renderer, camera, 
 	}
 	
 	if(!this.pickMaterial){
-		this.pickMaterial = new Potree.PointCloudIndexMaterial({ size: 0.01, minSize: 3});
+		//this.pickMaterial = new Potree.PointCloudIndexMaterial({ size: 0.01, minSize: 3});
+		this.pickMaterial = new Potree.PointCloudMaterial();
+		this.pickMaterial.pointColorType = Potree.PointColorType.POINT_INDEX;
+		this.pickMaterial.pointSizeType = Potree.PointSizeType.FIXED;
+		this.pickMaterial.size = accuracy * 5;
 	}
+	
+	// TODO
+	// Right now point size for picking is fixed 
+	// To work with adaptive size, the pick hierarchy texture must
+	// be updated to the hierarchy that is rendered during picking
 	
 	this.pickTarget.setSize(width, height);
 	
-	this.pickMaterial.size = accuracy * (this.material.size || 0.01);
-	this.pickMaterial.minSize = accuracy * (this.material.minSize || 1);
+	//this.pickMaterial.size = accuracy * (this.material.size || 0.01);
+	//this.pickMaterial.minSize = accuracy * (this.material.minSize || 1);
+	//this.pickMaterial.pointColorType = this.material.pointColorType;
+	//this.pickMaterial.pointSizeType = this.material.pointSizeType;
+	//this.pickMaterial.pointShape = this.material.pointShape;
 
 	var _gl = renderer.context;
 	
@@ -824,6 +836,10 @@ var point = Potree.PointCloudOctree.prototype.pick = function(renderer, camera, 
 	pixels[3] = 0;
 	var pIndex = ibuffer[0];
 	
+	//console.log(pcIndex);
+	//
+	//return null;
+	
 	var pc = nodes[pcIndex].node;
 	var positionArray = pc.geometry.attributes.position.array;
 	var x = positionArray[3*pIndex+0];
@@ -835,6 +851,6 @@ var point = Potree.PointCloudOctree.prototype.pick = function(renderer, camera, 
 	if(pIndex === 0 && pcIndex === 0){
 		return null;
 	}
-
+	
 	return {position: position};
 }

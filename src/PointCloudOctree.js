@@ -168,6 +168,7 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 		//}
 		
 		
+		
 		object.visible = visible;
 		object.insideFrustum = insideFrustum;
 		object.inRange = inRange;
@@ -371,7 +372,13 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 		}
 	}
 	
-	this.updateVisibilityTexture();
+	if(this.material.pointSizeType){
+		if(this.material.pointSizeType === Potree.PointSizeType.ADAPTIVE 
+			|| this.material.pointColorType === Potree.PointColorType.OCTREE_DEPTH){
+			this.updateVisibilityTexture();
+		}
+	}
+	
 };
 
 Potree.PointCloudOctree.prototype.updateVisibilityTexture = function(){
@@ -415,72 +422,25 @@ Potree.PointCloudOctree.prototype.updateVisibilityTexture = function(){
 			return 0;
 		});
 		
-		//data[63*64*3 + i*3 + 0] = 0;
-		//data[63*64*3 + i*3 + 1] = 0;
-		//data[63*64*3 + i*3 + 2] = 0;
 		data[i*3 + 0] = 0;
 		data[i*3 + 1] = 0;
 		data[i*3 + 2] = 0;
 		for(var j = 0; j < children.length; j++){
 			var child = children[j];
 			var index = parseInt(child.name.substr(-1));
-			//data[63*64*3 + i*3 + 0] += Math.pow(2, index);
 			data[i*3 + 0] += Math.pow(2, index);
 			
 			if(j === 0){
 				var vArrayIndex = visibleNodes.indexOf(child);
-				//data[63*64*3 + i*3 + 1] = vArrayIndex;
 				data[i*3 + 1] = vArrayIndex - i;
 			}
 			
-			//ibuffer[4*i] += Math.pow(2, index);
 		}
-		
-		//for(var j = 0; j <= node.children.length; j++){
-		//	var child = node.children[j];
-		//	
-		//	if(child instanceof THREE.PointCloud && child.visible){
-		//		var index = parseInt(child.name.substr(1,1));
-		//		var vArrayIndex = this.visibleNodes.indexOf(child);
-		//		ibuffer[4*i] += Math.pow(2, index);
-		//		
-		//	}
-		//}
-		
 	}
 	
 	
 	this.material.uniforms.nodeSize.value = this.boundingBox.size().x;
 	texture.needsUpdate = true;
-	
-	//console.log(data[63*64*3] + ", " + ibuffer[0]);
-	
-	
-	
-	//if(this.material){
-	//	var texture = this.material.visibleNodesTexture;
-	//	var data = texture.image.data;
-	//	
-	//	for(var i = 0; i < 64; i++){
-	//		for(var j = 0; j < 64; j++){
-	//			var k = i*64 + j;
-	//			data[3*k] = 255-j*4;
-	//			data[3*k+1] = 255-j*4;
-	//			data[3*k+2] = 255-j*4;
-	//		}
-	//	}
-	//	
-	//	//data[63*64*3+0] = 100;
-	//	//data[63*64*3+0] = 100;
-	//	//data[63*64*3+0] = 100;
-	//	
-	//	data[63*64*3+0] = ibuffer[0];
-	//	
-	//	this.material.uniforms.nodeSize.value = this.boundingBox.size().x;
-	//	
-	//	texture.needsUpdate = true;
-	//}
-
 }
 
 Potree.PointCloudOctree.prototype.nodesOnRay = function(nodes, ray){

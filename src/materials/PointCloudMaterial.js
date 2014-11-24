@@ -348,7 +348,7 @@ Potree.PointCloudMaterial.vs_points = [
  "varying vec3 vColor;                                                 ",
  "                                                                     ",
  "                                                                     ",
- "#ifdef adaptive_point_size                                                                     ",
+ "#if defined(adaptive_point_size) || defined(color_type_octree_depth)                                                                     ",
  "/**                                                                  ",
  " * number of 1-bits up to inclusive index position                   ",
  " * number is treated as if it were an integer in the range 0-255     ",
@@ -384,7 +384,7 @@ Potree.PointCloudMaterial.vs_points = [
  "	vec3 offset = vec3(0.0, 0.0, 0.0);                                 ",
  "	float iOffset = 0.0;                                               ",
  "	float depth = 0.0;                                                 ",
- "	const float octreeLevels = 11.0;                                   ",
+ "	const float octreeLevels = 10.0;                                   ",
  "	for(float i = 0.0; i <= octreeLevels; i++){                        ",
  "		                                                               ",
  "		float nodeSizeAtLevel = nodeSize / pow(2.0, i);                ",
@@ -501,40 +501,3 @@ Potree.PointCloudMaterial.fs_points_rgb = [
  "	                                                           ",
  "}                                                            "];
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// "                                                                     ",
-// "                                                                     ",
-// " //if(depth == 0.0){                                                 ",
-// " //   vColor = vec3(1.0, 0.0, 0.0);                                  ",
-// " //}else if(depth == 1.0){                            ",
-// " //   vColor = vec3(0.0, 1.0, 0.0);                         ",
-// " //}else if(depth == 2.0){                            ",
-// " //   vColor = vec3(0.0, 0.0, 1.0);                         ",
-// " //}else if(depth == 3.0){                            ",
-// " //   vColor = vec3(1.0, 1.0, 0.0);                         ",
-// " //}else if(depth == 4.0){                            ",
-// " //   vColor = vec3(1.0, 0.0, 1.0);                         ",
-// " //}else if(depth == 5.0){                            ",
-// " //   vColor = vec3(0.0, 1.0, 1.0);                         ",
-// " //}else if(depth == 6.0){                            ",
-// " //   vColor = vec3(1.0, 1.0, 1.0);                         ",
-// " //}else if(depth == 7.0){                            ",
-// " //   vColor = vec3(0.5, 1.0, 0.5);                         ",
-// " //}else if(depth == 8.0){                            ",
-// " //   vColor = vec3(1.0, 0.5, 0.5);                         ",
-// " //}else if(depth == 9.0){                            ",
-// " //   vColor = vec3(0.5, 0.5, 1.0);                         ",
-// " //}                                                           ",

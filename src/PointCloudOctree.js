@@ -449,6 +449,11 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 		}
 	}
 	
+	this.hideDescendants(this.children[0]);
+	for(var i = 0; i < this.visibleNodes.length; i++){
+		this.visibleNodes[i].node.visible = true
+	}
+	
 	if(this.material.pointSizeType){
 		if(this.material.pointSizeType === Potree.PointSizeType.ADAPTIVE 
 			|| this.material.pointColorType === Potree.PointColorType.OCTREE_DEPTH){
@@ -521,15 +526,15 @@ Potree.PointCloudOctree.prototype.getVisibleGeometry = function(camera){
 			var sphere = child.boundingSphere;
 			var distance = sphere.center.distanceTo(camObjPos);
 			var radius = sphere.radius;
-			//var weight = sphere.radius / distance;
-			var weight = (1 / Math.max(0.001, distance - radius)) * distance;
+			var weight = sphere.radius / distance;
+			//var weight = (1 / Math.max(0.001, distance - radius)) * distance;
 			
 			// discarding nodes which are very small when projected onto the screen
 			// TODO: pr < 0.3 was a value choosen by trial & error. Validate that this is fine.
 			// see http://stackoverflow.com/questions/21648630/radius-of-projected-sphere-in-screen-space
 			var fov = camera.fov / 2 * Math.PI / 180.0;
 			var pr = 1 / Math.tan(fov) * radius / Math.sqrt(distance * distance - radius * radius);
-			if(pr < 0.3){
+			if(pr < 0.2){
 				continue;
 			}
 			

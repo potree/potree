@@ -52,6 +52,7 @@ POCLoader.load = function load(url, params) {
 				boundingBox.max.add(offset);
 			}
 			pco.boundingBox = boundingBox;
+			pco.boundingSphere = boundingBox.getBoundingSphere();
 			pco.offset = offset;
 			
 			var nodes = {};

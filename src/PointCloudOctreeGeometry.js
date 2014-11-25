@@ -19,6 +19,7 @@ Potree.PointCloudOctreeGeometryNode = function(name, pcoGeometry, boundingBox){
 	this.index = parseInt(name.charAt(name.length-1));
 	this.pcoGeometry = pcoGeometry;
 	this.boundingBox = boundingBox;
+	this.boundingSphere = boundingBox.getBoundingSphere();
 	this.children = {};
 	this.numPoints = 0;
 	this.level = null;

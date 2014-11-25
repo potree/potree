@@ -524,8 +524,18 @@ Potree.PointCloudOctree.prototype.getVisibleGeometry = function(camera){
 			//var weight = sphere.radius / distance;
 			var weight = (1 / Math.max(0.001, distance - radius)) * distance;
 			
-			if(radius / distance < 0.2){
+			// discarding nodes which are very small when projected onto the screen
+			// TODO: pr < 0.3 was a value choosen by trial & error. Validate that this is fine.
+			// see http://stackoverflow.com/questions/21648630/radius-of-projected-sphere-in-screen-space
+			var fov = camera.fov / 2 * Math.PI / 180.0;
+			var pr = 1 / Math.tan(fov) * radius / Math.sqrt(distance * distance - radius * radius);
+			if(pr < 0.3){
 				continue;
+			}
+			
+			weight = pr;
+			if(distance - radius < 0){
+				weight = Number.MAX_VALUE;
 			}
 			
 			if(stack.length === 0){

@@ -36,6 +36,7 @@ Potree.PointCloudMaterial = function(parameters){
 	this._pointShape = Potree.PointShape.SQUARE;
 	this._interpolate = false;
 	this._pointColorType = Potree.PointColorType.RGB;
+	this._octreeLevels = 6.0;
 	
 	this.gradientTexture = Potree.PointCloudMaterial.generateGradient();
 	
@@ -118,6 +119,7 @@ Potree.PointCloudMaterial.prototype.getDefines = function(){
 		defines += "#define attenuated_point_size\n";
 	}else if(this.pointSizeType === Potree.PointSizeType.ADAPTIVE){
 		defines += "#define adaptive_point_size\n";
+		defines += "#define octreeLevels " + Math.max(0, this._octreeLevels - 2).toFixed(1) + "\n";
 	}
 	
 	if(this.pointShape === Potree.PointShape.SQUARE){
@@ -156,6 +158,18 @@ Object.defineProperty(Potree.PointCloudMaterial.prototype, "opacity", {
 	set: function(value){
 		if(this.uniforms.opacity.value !== value){
 			this.uniforms.opacity.value = value;
+			this.updateShaderSource();
+		}
+	}
+});
+
+Object.defineProperty(Potree.PointCloudMaterial.prototype, "octreeLevels", {
+	get: function(){
+		return this._octreeLevels;
+	},
+	set: function(value){
+		if(this._octreeLevels !== value){
+			this._octreeLevels = value;
 			this.updateShaderSource();
 		}
 	}
@@ -384,7 +398,6 @@ Potree.PointCloudMaterial.vs_points = [
  "	vec3 offset = vec3(0.0, 0.0, 0.0);                                 ",
  "	float iOffset = 0.0;                                               ",
  "	float depth = 0.0;                                                 ",
- "	const float octreeLevels = 10.0;                                   ",
  "	for(float i = 0.0; i <= octreeLevels; i++){                        ",
  "		                                                               ",
  "		float nodeSizeAtLevel = nodeSize / pow(2.0, i);                ",
@@ -488,7 +501,7 @@ Potree.PointCloudMaterial.fs_points_rgb = [
  "	#endif                                                           ",
  "	                                                           ",
  "	#if defined use_interpolation                                                           ",
- "		gl_FragDepthEXT = gl_FragCoord.z + 0.1*(1.0-pow(c, 1.0)) * gl_FragCoord.w ;                                                           ",
+ "		gl_FragDepthEXT = gl_FragCoord.z + 0.002*(1.0-pow(c, 1.0)) * gl_FragCoord.w ;                                                           ",
  "	#endif                                                           ",
  "	                                                           ",
  "	                                                           ",

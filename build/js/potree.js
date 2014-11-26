@@ -149,7 +149,7 @@ function POCLoader(){
  */
 POCLoader.load = function load(url, params) {
 	var parameters = params || {};
-	var toOrigin = parameters.toOrigin || false;
+	var toOrigin = parameters.toOrigin || true;
 
 	try{
 		var pco = new Potree.PointCloudOctreeGeometry();
@@ -583,6 +583,7 @@ Potree.PointCloudMaterial = function(parameters){
 	this._pointShape = Potree.PointShape.SQUARE;
 	this._interpolate = false;
 	this._pointColorType = Potree.PointColorType.RGB;
+	this._octreeLevels = 6.0;
 	
 	this.gradientTexture = Potree.PointCloudMaterial.generateGradient();
 	
@@ -665,6 +666,7 @@ Potree.PointCloudMaterial.prototype.getDefines = function(){
 		defines += "#define attenuated_point_size\n";
 	}else if(this.pointSizeType === Potree.PointSizeType.ADAPTIVE){
 		defines += "#define adaptive_point_size\n";
+		defines += "#define octreeLevels " + Math.max(0, this._octreeLevels - 2).toFixed(1) + "\n";
 	}
 	
 	if(this.pointShape === Potree.PointShape.SQUARE){
@@ -703,6 +705,18 @@ Object.defineProperty(Potree.PointCloudMaterial.prototype, "opacity", {
 	set: function(value){
 		if(this.uniforms.opacity.value !== value){
 			this.uniforms.opacity.value = value;
+			this.updateShaderSource();
+		}
+	}
+});
+
+Object.defineProperty(Potree.PointCloudMaterial.prototype, "octreeLevels", {
+	get: function(){
+		return this._octreeLevels;
+	},
+	set: function(value){
+		if(this._octreeLevels !== value){
+			this._octreeLevels = value;
 			this.updateShaderSource();
 		}
 	}
@@ -931,7 +945,6 @@ Potree.PointCloudMaterial.vs_points = [
  "	vec3 offset = vec3(0.0, 0.0, 0.0);                                 ",
  "	float iOffset = 0.0;                                               ",
  "	float depth = 0.0;                                                 ",
- "	const float octreeLevels = 10.0;                                   ",
  "	for(float i = 0.0; i <= octreeLevels; i++){                        ",
  "		                                                               ",
  "		float nodeSizeAtLevel = nodeSize / pow(2.0, i);                ",
@@ -1035,7 +1048,7 @@ Potree.PointCloudMaterial.fs_points_rgb = [
  "	#endif                                                           ",
  "	                                                           ",
  "	#if defined use_interpolation                                                           ",
- "		gl_FragDepthEXT = gl_FragCoord.z + 0.1*(1.0-pow(c, 1.0)) * gl_FragCoord.w ;                                                           ",
+ "		gl_FragDepthEXT = gl_FragCoord.z + 0.002*(1.0-pow(c, 1.0)) * gl_FragCoord.w ;                                                           ",
  "	#endif                                                           ",
  "	                                                           ",
  "	                                                           ",
@@ -1586,7 +1599,7 @@ Potree.PointCloudOctree = function(geometry, material){
 	//this.boundingBox = this.pcoGeometry.boundingBox;
 	this.boundingBox = this.pcoGeometry.root.boundingBox;
 	this.boundingSphere = this.boundingBox.getBoundingSphere();
-	this.material = material;
+	this.material = material || new Potree.PointCloudMaterial();
 	this.visiblePointsTarget = 2*1000*1000;
 	this.level = 0;
 	this.position.sub(geometry.offset);
@@ -1602,6 +1615,7 @@ Potree.PointCloudOctree = function(geometry, material){
 	this.visibleNodes = [];
 	this.pickTarget;
 	this.pickMaterial;
+	this.maxLevel = 0;
 	
 	var rootProxy = new Potree.PointCloudOctreeProxyNode(this.pcoGeometry.root);
 	this.add(rootProxy);
@@ -1610,135 +1624,66 @@ Potree.PointCloudOctree = function(geometry, material){
 Potree.PointCloudOctree.prototype = Object.create(THREE.Object3D.prototype);
 
 Potree.PointCloudOctree.prototype.update = function(camera){
-	this.numVisibleNodes = 0;
-	this.numVisiblePoints = 0;
-	this.loadQueue = [];
+	var visibleGeometry = this.getVisibleGeometry(camera);
+	var visibleGeometryNames = [];
 	
-	// create frustum in object space
-	camera.updateMatrixWorld();
-	var frustum = new THREE.Frustum();
-	var viewI = camera.matrixWorldInverse;
-	var world = this.matrixWorld;
-	var proj = camera.projectionMatrix;
-	var fm = new THREE.Matrix4().multiply(proj).multiply(viewI).multiply(world);
-	frustum.setFromMatrix( fm );
-	
-	// calculate camera position in object space
-	var view = camera.matrixWorld;
-	var worldI = new THREE.Matrix4().getInverse(world);
-	var camMatrixObject = new THREE.Matrix4().multiply(worldI).multiply(view);
-	var camObjPos = new THREE.Vector3().setFromMatrixPosition( camMatrixObject );
-	
-	var ray = new THREE.Ray(camera.position, new THREE.Vector3( 0, 0, -1 ).applyQuaternion( camera.quaternion ) );
+	for(var i = 0; i < visibleGeometry.length; i++){
+		visibleGeometryNames.push(visibleGeometry[i].node.name);
+	}
 	
 	for(var i = 0; i < this.profileRequests.length; i++){
 		var profileRequest = this.profileRequests[i];
 		profileRequest.loadQueue = [];
 	}
 	
-	// check visibility
+	this.loadQueue = [];
 	this.visibleNodes = [];
-	var outOfRange = [];
+	this.numVisibleNodes = 0;
+	this.numVisiblePoints = 0;
+	
+	this.hideDescendants(this.children[0]);
+	
 	var stack = [];
-	stack.push(this);
+	stack.push({node: this.children[0], weight: 1});	//TODO don't do it like that
 	while(stack.length > 0){
-		var object = stack.shift();
+		var element = stack.shift();
+		var node = element.node;
+		var weight = element.weight;
 		
-		if(object instanceof THREE.Mesh || object instanceof THREE.Line ){
-			object.visible = true;
-			continue;
-		}
+		node.visible = true;
 		
-		var box = object.boundingBox;
-		var distance = box.center().distanceTo(camObjPos);
-		var radius = box.size().length() * 0.5;
-		var weight = Math.pow(radius, 1) / distance;
-
-		var insideFrustum = frustum.intersectsBox(box);
-		var inRange = true;
-		if(object.level > 0){
-			var inRange = weight >= (1 / this.LOD);
-			
-			if(!inRange){
-				outOfRange.push({node: object, lod: weight});
-			}
-		}
-		
-		var visible = insideFrustum && inRange;		
-		
-		
-
-		
-		//if(object.level === 0){
-		//	visible = true;
-		//}else if(object.level === 1){
-		//	//visible = true; 
-		//	visible = object.name === "r"; || object.name === "r44";
-		//}else{
-		//	visible = false;
-		//}
-		
-		//visible = object.level === 0 || (object.name === "r") || object.name === "r4" || object.name === "r41";
-		//visible = object.level === 0 || (object.name === "r") || object.name === "r0" || object.name === "r02";
-		
-		//if(object.level > 5){
-		//	visible = false;
-		//}
-		//
-		//if("r7645115".indexOf(object.name) !== 0){
-		//	visible = false;
-		//}
-		
-		
-		
-		object.visible = visible;
-		object.insideFrustum = insideFrustum;
-		object.inRange = inRange;
-		
-		object.matrixWorld.multiplyMatrices( object.parent.matrixWorld, object.matrix );
-		
-		
-		if(!visible){
-			this.hideDescendants(object);
-		}else if(visible && this.showBoundingBox && object instanceof THREE.PointCloud){
-			if(object.boundingBoxNode === undefined && object.boundingBox !== undefined){
-				var boxHelper = new THREE.BoxHelper(object);
-				object.add(boxHelper);
-				object.boundingBoxNode = boxHelper;
-				boxHelper.matrixWorld.copy(object.matrixWorld);
-			}
-			
-			object.boundingBoxNode.matrixWorld.copy(object.matrixWorld);
-		}else if(!this.showBoundingBox){
-			if(object.boundingBoxNode !== undefined){
-				object.remove(object.boundingBoxNode);
-				object.boundingBoxNode = undefined;
-			}
-		}
-		
-		if(!visible){
-			continue;
-		}else if(object instanceof THREE.PointCloud){
-			this.numVisibleNodes++;
-			this.numVisiblePoints += object.numPoints;
-			Potree.PointCloudOctree.lru.touch(object);
-			object.material = this.material;
-			this.visibleNodes.push({node: object, lod: weight});
-		}else if (object instanceof Potree.PointCloudOctreeProxyNode) {
-			var geometryNode = object.geometryNode;
+		if (node instanceof Potree.PointCloudOctreeProxyNode) {
+			var geometryNode = node.geometryNode;
 			if(geometryNode.loaded === true){
-				this.replaceProxy(object);
+				this.replaceProxy(node);
 			}else{
-				this.loadQueue.push({node: object, lod: weight});
+				this.loadQueue.push(element);
+			}
+		}else if(node instanceof THREE.PointCloud){
+			this.numVisibleNodes++;
+			this.numVisiblePoints += node.numPoints;
+			node.material = this.material;
+			this.visibleNodes.push(element);
+			
+			if(node.level){
+				this.maxLevel = Math.max(node.level, this.maxLevel);
+			}
+			
+			for(var i = 0; i < node.children.length; i++){
+				var child = node.children[i];
+				var visible = visibleGeometryNames.indexOf(child.name) >= 0;
+				if(visible){
+					for(var j = 0; j < visibleGeometry.length; j++){
+						if(visibleGeometry[j].node.name === child.name){
+							stack.push({node: child, weight: visibleGeometry[j].weight});
+						}
+					};
+				}
 			}
 		}
-		
-		for(var i = 0; i < object.children.length; i++){
-			stack.push(object.children[i]);
-		}
-		
-		//console.log(object.name);
 	}
+	
+	this.material.octreeLevels = this.maxLevel;
 	
 	// check profile cut plane intersections
 	for(var i = 0; i < this.profileRequests.length; i++){
@@ -1776,40 +1721,6 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 			
 	}
 	
-	
-	
-	
-	// increase LOD if few points are visible
-	if(this.numVisiblePoints < this.visiblePointsTarget * 0.9 && outOfRange.length > 0 && this.visibleNodes.length > 0){
-		// increase lod to load some of the nodes that are currently out of range
-		this.visibleNodes.sort(function(a,b){return a.lod - b.lod});
-		outOfRange.sort(function(a,b){return b.lod - a.lod});
-		var visibleMax = 1 / this.visibleNodes[0].lod;
-		var oorIndex = Math.min(outOfRange.length - 1, 5);
-		var outOfRangeMax = 1 / outOfRange[oorIndex].lod;
-		var newMax = Math.max(visibleMax, outOfRangeMax);
-		
-		this.LOD = newMax;
-	}
-	
-	// enforce visible point target limit 
-	this.visibleNodes.sort(function(a,b){return b.lod - a.lod});
-	var pointsSum = 0;
-	for(var i = 0; i < this.visibleNodes.length; i++){
-		var node = this.visibleNodes[i].node;
-		
-		if(pointsSum > this.visiblePointsTarget){
-			node.visible = false;
-		}else if(pointsSum + node.numPoints > this.visiblePointsTarget){
-			var index = Math.min(i+5, this.visibleNodes.length-1);
-			this.LOD = 1 / this.visibleNodes[index].lod;
-			this.numVisiblePoints = pointsSum;
-			this.numVisibleNodes = i+1;
-		}
-		
-		pointsSum += node.numPoints;
-	}
-	
 	var leafNodes = [];
 	for(var i = 0; i < this.visibleNodes.length; i++){
 		var element = this.visibleNodes[i];
@@ -1838,7 +1749,6 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 		//this.visibleBounds.intersect(node.boundingBox);
 	}
 	
-	
 	// schedule nodes needed for a profile request
 	var finishedRequests = [];
 	for(var i = 0; i < this.profileRequests.length; i++){
@@ -1863,17 +1773,6 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 			request.callback({type: "finished", points: points});
 			finishedRequests.push(request);
 		}
-		
-		//for(var j = 0; j < profileRequest.loadQueue.length; j++){
-		//	var object = profileRequest.loadQueue[j];
-		//	if(object.boundingBoxNode === undefined && object.boundingBox !== undefined){
-		//		object.geometry = object.geometryNode;
-		//		var boxHelper = new THREE.BoxHelper(object);
-		//		object.add(boxHelper);
-		//		object.boundingBoxNode = boxHelper;
-		//		object.geometry = undefined;
-		//	}
-		//}
 	}
 	
 	for(var i = 0; i < finishedRequests.length; i++){
@@ -1883,87 +1782,11 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 		}
 	}
 	
-	// schedule some of the unloaded nodes for loading
-	if(this.loadQueue.length > 0){
-		if(this.loadQueue.length >= 2){
-			this.loadQueue.sort(function(a,b){return b.lod - a.lod});
-		}
-		
-		for(var i = 0; i < Math.min(5, this.loadQueue.length); i++){
-			this.loadQueue[i].node.geometryNode.load();
-		}
-	}
 	
-	if(this.material.pointSizeType){
-		if(this.material.pointSizeType === Potree.PointSizeType.ADAPTIVE 
-			|| this.material.pointColorType === Potree.PointColorType.OCTREE_DEPTH){
-			this.updateVisibilityTexture();
-		}
-	}
-	
-};
-
-Potree.PointCloudOctree.prototype.update = function(camera){
-	var visibleGeometry = this.getVisibleGeometry(camera);
-	var visibleGeometryNames = [];
-	for(var i = 0; i < visibleGeometry.length; i++){
-		visibleGeometryNames.push(visibleGeometry[i].node.name);
-	}
-	
-	this.loadQueue = [];
-	this.visibleNodes = [];
-	this.numVisibleNodes = 0;
-	this.numVisiblePoints = 0;
-	
-	this.hideDescendants(this.children[0]);
-	
-	var stack = [];
-	stack.push({node: this.children[0], weight: 1});	//TODO don't do it like that
-	while(stack.length > 0){
-		var element = stack.shift();
-		var node = element.node;
-		var weight = element.weight;
-		
-		//var visible = node instanceof Potree.PointCloudOctree;
-		//
-		//if(!visible){
-		//	continue;
-		//}
-		
-		node.visible = true;
-		
-		if (node instanceof Potree.PointCloudOctreeProxyNode) {
-			var geometryNode = node.geometryNode;
-			if(geometryNode.loaded === true){
-				this.replaceProxy(node);
-			}else{
-				this.loadQueue.push(element);
-			}
-		}else if(node instanceof THREE.PointCloud){
-			this.numVisibleNodes++;
-			this.numVisiblePoints += node.numPoints;
-			node.material = this.material;
-			this.visibleNodes.push(element);
-			
-			for(var i = 0; i < node.children.length; i++){
-				var child = node.children[i];
-				var visible = visibleGeometryNames.indexOf(child.name) >= 0;
-				if(visible){
-					for(var j = 0; j < visibleGeometry.length; j++){
-						if(visibleGeometry[j].node.name === child.name){
-							stack.push({node: child, weight: visibleGeometry[j].weight});
-						}
-					};
-				}
-			}
-		}
-		
-		
-	}
 	
 	if(this.loadQueue.length > 0){
 		if(this.loadQueue.length >= 2){
-			this.loadQueue.sort(function(a,b){return a.weight - b.weight});
+			this.loadQueue.sort(function(a,b){return b.weight - a.weight});
 		}
 		
 		for(var i = 0; i < Math.min(5, this.loadQueue.length); i++){

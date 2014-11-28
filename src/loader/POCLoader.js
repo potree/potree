@@ -19,7 +19,7 @@ function POCLoader(){
  */
 POCLoader.load = function load(url, params) {
 	var parameters = params || {};
-	var toOrigin = parameters.toOrigin || false;
+	var toOrigin = parameters.toOrigin || true;
 
 	try{
 		var pco = new Potree.PointCloudOctreeGeometry();
@@ -52,6 +52,7 @@ POCLoader.load = function load(url, params) {
 				boundingBox.max.add(offset);
 			}
 			pco.boundingBox = boundingBox;
+			pco.boundingSphere = boundingBox.getBoundingSphere();
 			pco.offset = offset;
 			
 			var nodes = {};

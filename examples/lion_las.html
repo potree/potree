@@ -1,7 +1,6 @@
-
-
 <html>
 <head>
+	<meta charset="utf-8"/>
 	<title>Lion</title>
 	<style>canvas { width: 100%; height: 100% }</style>
 </head>
@@ -9,8 +8,13 @@
 
 	<style type="text/css">
 	
+	#renderArea{
+		width: 100%;
+		height: 100%;
+	}
+	
 	.info{
-		color:white;
+		color:		white;
 		font-weight: bold;
 		text-shadow:  1px  1px 1px black,
 					  1px -1px 1px black,
@@ -34,18 +38,32 @@
 	
 	<script src="../build/js/potree.js"></script>
 	<script src="../build/js/laslaz.js"></script>
-	
+	<script src="js/ProgressBar.js"></script>
+		
 	<div id="lblNumVisibleNodes" class="info" style="position: absolute; left: 10px; top: 80px; width: 400px; color:white"></div>
 	<div id="lblNumVisiblePoints" class="info" style="position: absolute; left: 10px; top: 100px; width: 400px; color:white"></div>
+	<div id="lblMessage" class="info" style="position: absolute; left: 10px; bottom: 0px; width: 400px; color:white"></div>
 	
 	<div class="info" style="position: absolute; left: 300px; right: 300px; top: 10px; text-align: center;">
 		<a href="http://potree.org" target="_blank">potree.org</a><br>
 	</div>
 	
+	<div id="renderArea"></div>
+	
 	<script>
-		var defaultPointSize = 0.09;
-		var defaultLOD = 12;
-		var pointcloudPath = "../resources/pointclouds/lion_takanawa/cloud_las.js";
+		var pointSize = 0.5;
+		var pointCountTarget = 0.4;
+		var opacity = 1;
+		var pointSizeType = Potree.PointSizeType.ADAPTIVE;
+		var pointColorType = Potree.PointColorType.RGB;
+		var pointShape = Potree.PointShape.SQUARE;
+		var interpolate = false;
+		
+		var progressBar = new ProgressBar();
+		
+		var pointcloudPath = "../resources/pointclouds/lion_takanawa_las/cloud.js";
+	
+		var elRenderArea = document.getElementById("renderArea");
 	
 		var renderer;
 		var camera;
@@ -54,7 +72,7 @@
 		var skybox;
 		var stats;
 		var clock = new THREE.Clock();
-		var materials = {};
+		var showSkybox = false;
 		
 		function initGUI(){
 		
@@ -64,43 +82,82 @@
 			});
 			
 			var params = {
-				PointSize: defaultPointSize,
-				LOD: defaultLOD,
-				"show aabb" : false,
-				"Materials" : materials.rgb
+				"points(m)": pointCountTarget,
+				PointSize: pointSize,
+				"opacity": opacity,
+				"SizeType" : "Adaptive",
+				"show octree" : false,
+				"Materials" : "RGB",
+				"interpolate": interpolate,
+				"circles": false,
+				"skybox": false
 			};
 			
-			var pLOD = gui.add(params, 'LOD', 0.5,20);
-			pLOD.onChange(function(value){
-				pointcloud.LOD = value;
+			var pPoints = gui.add(params, 'points(m)', 0.02, 0.5);
+			pPoints.onChange(function(value){
+				pointCountTarget = value;
 			});
 			
-			var pPointSize = gui.add(params, 'PointSize', 0.01, 0.3);
+			var pPointSize = gui.add(params, 'PointSize', 0, 3);
 			pPointSize.onChange(function(value){
-				pointcloud.material.size = value;
+				pointSize = value;
 			});
 			
-			var pMaterial = gui.add(params, 'Materials', [ "RGB", "Color", "Height", "Intensity" ]);
-			pMaterial.onChange(function(value){
-				var size = pointcloud.material.size;
-				if(value === "RGB"){
-					pointcloud.material = materials.rgb;
-				}else if(value === "Color"){
-					pointcloud.material = materials.color;
-				}else if(value === "Height"){
-					pointcloud.material = materials.height;
-				}else if(value === "Intensity"){
-					pointcloud.material = materials.intensity;
+			var pOpacity = gui.add(params, 'opacity', 0, 1);
+			pOpacity.onChange(function(value){
+				opacity = value;
+			});
+			
+			var pSizeType = gui.add(params, 'SizeType', [ "Fixed", "Attenuated", "Adaptive"]);
+			pSizeType.onChange(function(value){
+				if(value === "Fixed"){
+					pointSizeType = Potree.PointSizeType.FIXED;
+				}else if(value === "Attenuated"){
+					pointSizeType = Potree.PointSizeType.ATTENUATED;
+				}else if(value === "Adaptive"){
+					pointSizeType = Potree.PointSizeType.ADAPTIVE;
 				}
-				
-				pointcloud.material.size = size;
-			
-				console.log(value);
 			});
 			
-			var pBoundingBox = gui.add(params, 'show aabb');
-			pBoundingBox.onChange(function(value){
-				pointcloud.showBoundingBox = value;
+			var pMaterial = gui.add(params, 'Materials', [ "RGB", "Color", "Height", "Intensity", "Intensity Gradient", "Octree Depth"]);
+			pMaterial.onChange(function(value){
+				if(value === "RGB"){
+					pointColorType = Potree.PointColorType.RGB;
+				}else if(value === "Color"){
+					pointColorType = Potree.PointColorType.COLOR;
+				}else if(value === "Height"){
+					pointColorType = Potree.PointColorType.HEIGHT;
+					
+				}else if(value === "Octree Depth"){
+					pointColorType = Potree.PointColorType.OCTREE_DEPTH;
+				}else if(value === "Point Index"){
+					pointColorType = Potree.PointColorType.POINT_INDEX;
+				}else if(value === "Intensity"){
+					pointColorType = Potree.PointColorType.INTENSITY;
+				}else if(value === "Intensity Gradient"){
+					pointColorType = Potree.PointColorType.INTENSITY_GRADIENT;
+				}
+			});
+			
+			if(renderer.context.getExtension("EXT_frag_depth")){
+				var pInterpolate = gui.add(params, 'interpolate');
+				pInterpolate.onChange(function(value){
+					interpolate = value;
+				});
+			}
+			
+			var pCircular = gui.add(params, 'circles');
+			pCircular.onChange(function(value){
+				if(value){
+					pointShape = Potree.PointShape.CIRCLE;
+				}else{
+					pointShape = Potree.PointShape.SQUARE;
+				}
+			});
+			
+			var pSykbox = gui.add(params, 'skybox');
+			pSykbox.onChange(function(value){
+				showSkybox = value;
 			});
 
 			// stats
@@ -112,65 +169,125 @@
 		}
 		
 		function initThree(){
+			var fov = 75;
+			var width = elRenderArea.clientWidth;
+			var height = elRenderArea.clientHeight;
+			var aspect = width / height;
+			var near = 0.1;
+			var far = 100000;
+		
 			scene = new THREE.Scene();
-			camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 100000);
+			camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
 
 			renderer = new THREE.WebGLRenderer();
-			renderer.setSize(window.innerWidth, window.innerHeight);
+			renderer.setSize(width, height);
 			renderer.autoClear = false;
-			document.body.appendChild(renderer.domElement);
+			elRenderArea.appendChild(renderer.domElement);
 			
 			skybox = Potree.utils.loadSkybox("../resources/textures/skybox/");
 
 			// camera and controls
-			camera.position.set(2, 7, 7);
+			camera.position.set(3, 7, 6);
 			controls = new THREE.OrbitControls(camera, renderer.domElement);
-			controls.target.set( 0, 4, 0 );
+			controls.target.set( 0, 5, 0 );
 			camera.lookAt(controls.target);
 			
-			// materials
-			materials.rgb = new Potree.PointCloudRGBMaterial({ size: defaultPointSize});
-			materials.color = new Potree.PointCloudColorMaterial({size: defaultPointSize});
-			materials.height = new Potree.PointCloudHeightMaterial({size: defaultPointSize, min: 0, max: 10});
-			materials.intensity = new Potree.PointCloudIntensityMaterial({size: defaultPointSize, min: 0, max: 65535});
+			// enable frag_depth extension for the interpolation shader, if available
+			renderer.context.getExtension("EXT_frag_depth");
 			
 			// load pointcloud
-			var pco = POCLoader.load(pointcloudPath, {toOrigin: true});
-			
-			pointcloud = new Potree.PointCloudOctree(pco, materials.rgb);
-			pointcloud.LOD = defaultLOD;
-			pointcloud.rotation.set(Math.PI/2, 0.85* -Math.PI/2, -0.0);
-			pointcloud.moveToOrigin();
-			pointcloud.moveToGroundPlane();
-			
-			scene.add(pointcloud);
+			POCLoader.load(pointcloudPath, function(geometry){
+				pointcloud = new Potree.PointCloudOctree(geometry);
+				
+				pointcloud.material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+				pointcloud.material.size = pointSize;
+				pointcloud.visiblePointsTarget = pointCountTarget * 1000 * 1000;
+				
+				pointcloud.rotation.set(Math.PI/2, 0.85* -Math.PI/2, -0.0);
+				pointcloud.moveToOrigin();
+				pointcloud.moveToGroundPlane();
+				
+				scene.add(pointcloud);
+			});
 			
 			var grid = Potree.utils.createGrid(5, 5, 2);
 			scene.add(grid);
 		}
 		
-		function render() {
-			requestAnimationFrame(render);
+		function update(){
+			if(pointcloud){
+				pointcloud.material.size = pointSize;
+				pointcloud.visiblePointsTarget = pointCountTarget * 1000 * 1000;
+				pointcloud.material.opacity = opacity;
+				pointcloud.material.pointSizeType = pointSizeType;
+				pointcloud.material.pointColorType = pointColorType;
+				pointcloud.material.pointShape = pointShape;
+				pointcloud.material.interpolate = interpolate;
+				pointcloud.material.heightMin = 0;
+				pointcloud.material.heightMax = 8;
+				pointcloud.material.intensityMin = 0;
+				pointcloud.material.intensityMax = 65000;
+				
+				pointcloud.update(camera);
 			
-			pointcloud.update(camera);
+				document.getElementById("lblNumVisibleNodes").innerHTML = "visible nodes: " + pointcloud.numVisibleNodes;
+				document.getElementById("lblNumVisiblePoints").innerHTML = "visible points: " + Potree.utils.addCommas(pointcloud.numVisiblePoints);
+			}
 			
-			document.getElementById("lblNumVisibleNodes").innerHTML = "visible nodes: " + pointcloud.numVisibleNodes;
-			document.getElementById("lblNumVisiblePoints").innerHTML = "visible points: " + Potree.utils.addCommas(pointcloud.numVisiblePoints);
 			stats.update();
 			
 			controls.update(clock.getDelta());
+
+			// update progress bar
+			if(pointcloud){
+				var progress = pointcloud.visibleNodes.length / pointcloud.visibleGeometry.length;
+				
+				progressBar.progress = progress;
+				progressBar.message = "loading: " + pointcloud.visibleNodes.length + " / " + pointcloud.visibleGeometry.length;
+				
+				if(progress === 1){
+					progressBar.hide();
+				}else if(progress < 1){
+					progressBar.show();
+				}
+			}else{
+				progressBar.show();
+				progressBar.message = "loading metadata";
+			}
+		}
+		
+		function render(){
+			// resize
+			var width = elRenderArea.clientWidth;
+			var height = elRenderArea.clientHeight;
+			var aspect = width / height;
 			
+			camera.aspect = aspect;
+			camera.updateProjectionMatrix();
+			
+			renderer.setSize(width, height);
+			
+		
 			// render skybox
-			skybox.camera.rotation.copy(camera.rotation);
-			renderer.render(skybox.scene, skybox.camera);
+			if(showSkybox){
+				skybox.camera.rotation.copy(camera.rotation);
+				renderer.render(skybox.scene, skybox.camera);
+			}
 			
 			// render scene
 			renderer.render(scene, camera);
+		}
+		
+		function loop() {
+			requestAnimationFrame(loop);
+			
+			update();
+			render();
 		};
 		
 		initThree();
 		initGUI();
-		render();
+		loop();
 		
 	</script>
 	

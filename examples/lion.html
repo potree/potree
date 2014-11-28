@@ -43,10 +43,10 @@
 	</div>
 	
 	<script>
-		var defaultPointSize = 0.07;
+		var defaultPointSize = 0.4;
 		var defaultBlendDepth = 0.01;
 		var defaultPointCountTarget = 0.4;
-		var pointcloudPath = "../resources/pointclouds/lion_takanawa/cloud_bin.js";
+		var pointcloudPath = "../resources/pointclouds/lion_takanawa/cloud.js";
 	
 		var renderer;
 		var camera;
@@ -55,7 +55,7 @@
 		var skybox;
 		var stats;
 		var clock = new THREE.Clock();
-		var materials = {};
+		var showSkybox = false;
 		
 		function initGUI(){
 		
@@ -65,53 +65,79 @@
 			});
 			
 			var params = {
-				PointSize: defaultPointSize,
-				BlendDepth: defaultBlendDepth,
 				"points(m)": defaultPointCountTarget,
+				PointSize: defaultPointSize,
+				"opacity": 1.0,
+				"SizeType" : "Adaptive",
 				"show octree" : false,
-				"Materials" : materials.rgb
+				"Materials" : "RGB",
+				"interpolate": false,
+				"circles": false,
+				"skybox": false
 			};
 			
-			var pPoints = gui.add(params, 'points(m)', 0.1, 1);
+			var pPoints = gui.add(params, 'points(m)', 0.02, 0.5);
 			pPoints.onChange(function(value){
 				pointcloud.visiblePointsTarget = value * 1000 * 1000;
 			});
 			
-			var pPointSize = gui.add(params, 'PointSize', 0.01, 0.2);
+			var pPointSize = gui.add(params, 'PointSize', 0, 3);
 			pPointSize.onChange(function(value){
 				pointcloud.material.size = value;
 			});
 			
-			var pMaterial = gui.add(params, 'Materials', [ "RGB", "RGB High Quality", "Color", "Height" ]);
-			pMaterial.onChange(function(value){
-				var size = pointcloud.material.size;
-				if(value === "RGB"){
-					pointcloud.material = materials.rgb;
-				}else if(value === "RGB High Quality"){
-					var frag_depth_ext = renderer.context.getExtension('EXT_frag_depth');
-					if(!frag_depth_ext){
-						var message = "failed to load EXT_frag_depth. This extension is required for the high quality shader.\n";
-						message += "using standard RGB material instead";
-						alert(message);
-						pointcloud.material = materials.rgb;
-					}else{
-						pointcloud.material = materials.rgbInterpolated;
-					}
-					
-				}else if(value === "Color"){
-					pointcloud.material = materials.color;
-				}else if(value === "Height"){
-					pointcloud.material = materials.height;
-				}
-				
-				pointcloud.material.size = size;
-			
-				console.log(value);
+			var pOpacity = gui.add(params, 'opacity', 0, 1);
+			pOpacity.onChange(function(value){
+				pointcloud.material.opacity = value;
 			});
 			
-			var pBoundingBox = gui.add(params, 'show octree');
-			pBoundingBox.onChange(function(value){
-				pointcloud.showBoundingBox = value;
+			var pSizeType = gui.add(params, 'SizeType', [ "Fixed", "Attenuated", "Adaptive"]);
+			pSizeType.onChange(function(value){
+				if(value === "Fixed"){
+					pointcloud.material.pointSizeType = Potree.PointSizeType.FIXED;
+				}else if(value === "Attenuated"){
+					pointcloud.material.pointSizeType = Potree.PointSizeType.ATTENUATED;
+				}else if(value === "Adaptive"){
+					pointcloud.material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+				}
+			});
+			
+			var pMaterial = gui.add(params, 'Materials', [ "RGB", "Color", "Height", "Octree Depth"]);
+			pMaterial.onChange(function(value){
+				if(value === "RGB"){
+					pointcloud.material.pointColorType = Potree.PointColorType.RGB;
+				}else if(value === "Color"){
+					pointcloud.material.pointColorType = Potree.PointColorType.COLOR;
+				}else if(value === "Height"){
+					pointcloud.material.pointColorType = Potree.PointColorType.HEIGHT;
+					pointcloud.material.heightMin = 0;
+					pointcloud.material.heightMax = 8;
+				}else if(value === "Octree Depth"){
+					pointcloud.material.pointColorType = Potree.PointColorType.OCTREE_DEPTH;
+				}else if(value === "Point Index"){
+					pointcloud.material.pointColorType = Potree.PointColorType.POINT_INDEX;
+				}
+			});
+			
+			if(renderer.context.getExtension("EXT_frag_depth")){
+				var pInterpolate = gui.add(params, 'interpolate');
+				pInterpolate.onChange(function(value){
+					pointcloud.material.interpolate = value;
+				});
+			}
+			
+			var pCircular = gui.add(params, 'circles');
+			pCircular.onChange(function(value){
+				if(value){
+					pointcloud.material.pointShape = Potree.PointShape.CIRCLE;
+				}else{
+					pointcloud.material.pointShape = Potree.PointShape.SQUARE;
+				}
+			});
+			
+			var pSykbox = gui.add(params, 'skybox');
+			pSykbox.onChange(function(value){
+				showSkybox = value;
 			});
 
 			// stats
@@ -138,17 +164,16 @@
 			controls = new THREE.OrbitControls(camera, renderer.domElement);
 			controls.target.set( 0, 5, 0 );
 			camera.lookAt(controls.target);
-
-			// materials
-			materials.rgb = new Potree.PointCloudRGBMaterial({ size: defaultPointSize});
-			materials.rgbInterpolated = new Potree.PointCloudRGBInterpolationMaterial({ size: defaultPointSize});
-			materials.color = new Potree.PointCloudColorMaterial({size: defaultPointSize});
-			materials.height = new Potree.PointCloudHeightMaterial({size: defaultPointSize, min: 2, max: 8});
+			
+			// enable frag_depth extension, if available
+			renderer.context.getExtension("EXT_frag_depth");
 			
 			// load pointcloud
 			var pco = POCLoader.load(pointcloudPath, {toOrigin: true});
 			
-			pointcloud = new Potree.PointCloudOctree(pco, materials.rgb);
+			pointcloud = new Potree.PointCloudOctree(pco, new Potree.PointCloudMaterial());
+			pointcloud.material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+			pointcloud.material.size = defaultPointSize;
 			pointcloud.visiblePointsTarget = defaultPointCountTarget * 1000 * 1000;
 			pointcloud.rotation.set(Math.PI/2, 0.85* -Math.PI/2, -0.0);
 			pointcloud.moveToOrigin();
@@ -172,8 +197,10 @@
 			controls.update(clock.getDelta());
 			
 			// render skybox
-			skybox.camera.rotation.copy(camera.rotation);
-			renderer.render(skybox.scene, skybox.camera);
+			if(showSkybox){
+				skybox.camera.rotation.copy(camera.rotation);
+				renderer.render(skybox.scene, skybox.camera);
+			}
 			
 			// render scene
 			renderer.render(scene, camera);

@@ -134,6 +134,12 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 				this.maxLevel = Math.max(node.level, this.maxLevel);
 			}
 			
+			//if(!node.boundingBoxNode){
+			//	var boxHelper = new THREE.BoxHelper(node);
+			//	scene.add(boxHelper);
+			//	node.boundingBoxNode = boxHelper;
+			//}
+			
 			for(var i = 0; i < node.children.length; i++){
 				var child = node.children[i];
 				var visible = visibleGeometryNames.indexOf(child.name) >= 0;
@@ -317,7 +323,8 @@ Potree.PointCloudOctree.prototype.getVisibleGeometry = function(camera){
 		var insideFrustum = frustum.intersectsBox(box);
 	
 		
-		var visible = insideFrustum; // && node.level <= 5;
+		var visible = insideFrustum; // && node.level <= 1;
+		//visible = visible && "r2".indexOf(node.name) === 0;
 		
 		if(!visible){
 			continue;
@@ -340,11 +347,11 @@ Potree.PointCloudOctree.prototype.getVisibleGeometry = function(camera){
 			//var weight = (1 / Math.max(0.001, distance - radius)) * distance;
 			
 			// discarding nodes which are very small when projected onto the screen
-			// TODO: pr < 0.3 was a value choosen by trial & error. Validate that this is fine.
+			// TODO: pr threshold was a value choosen by trial & error. Validate that this is fine.
 			// see http://stackoverflow.com/questions/21648630/radius-of-projected-sphere-in-screen-space
 			var fov = camera.fov / 2 * Math.PI / 180.0;
 			var pr = 1 / Math.tan(fov) * radius / Math.sqrt(distance * distance - radius * radius);
-			if(pr < 0.2){
+			if(pr < 0.1){
 				continue;
 			}
 			

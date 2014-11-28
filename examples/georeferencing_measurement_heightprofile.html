@@ -1,4 +1,3 @@
-<!doctype html>
 <html lang="en">
 <!--
 
@@ -78,13 +77,25 @@ The updateMapExtent() shows how this can be used to visualize the boundaries in 
 
 
 -->
-  <head>
-    <link rel="stylesheet" href="http://openlayers.org/en/v3.0.0/css/ol.css" type="text/css">
-    <style>
+<head>
+	<meta charset="utf-8"/>
+	<link rel="stylesheet" href="http://openlayers.org/en/v3.0.0/css/ol.css" type="text/css">
+	<title>Georeferencing Example</title>
+	<style>canvas { width: 100%; height: 100% }</style>
+</head>
+<body>
+	<div id="map" class="map"></div>
+	
+	<style type="text/css">
 	
 	body{
 		margin: 0;
 		padding: 0;
+	}
+	
+	#renderArea{
+		width: 100%;
+		height: 100%;
 	}
 	
 	.map {
@@ -96,21 +107,8 @@ The updateMapExtent() shows how this can be used to visualize the boundaries in 
 		z-index: 1000;
 	}
 	
-	#renderArea{
-		position: absolute;
-		width: 100%;
-		height: 100%;
-		right: 0;
-		bottom: 0;
-		z-index: 0;
-		margin: 0;
-		padding: 0;
-	}
-	
 	.info{
-		position: absolute;
-		z-index: 2000;
-		color:white;
+		color:		white;
 		font-weight: bold;
 		text-shadow:  1px  1px 1px black,
 					  1px -1px 1px black,
@@ -122,23 +120,22 @@ The updateMapExtent() shows how this can be used to visualize the boundaries in 
 		color: #ccccff;
 		text-decoration: none;
 	}
-    </style>
-    <script src="http://openlayers.org/en/v3.0.0/build/ol.js" type="text/javascript"></script>
+	
+	</style>
+	
+	<script src="http://openlayers.org/en/v3.0.0/build/ol.js" type="text/javascript"></script>
 	
 	<script src="../libs/three.js/build/three.js"></script>
 	<script src="../libs/other/dat.gui.min.js"></script>
 	<script src="../libs/proj4/proj4.js"></script>
 	
 	<script src="../build/js/potree.js"></script>
-	<script src="../src/materials/PointCloudDepthMaterial.js"></script>
-	<script src="../src/materials/PointCloudRGBMaterial.js"></script>
-	<script src="../src/PointCloudOctree.js"></script>
+	<script src="js/ProgressBar.js"></script>
 	
-    <title>Georeferencing Example</title>
-  </head>
-  <body>
-    <div id="map" class="map"></div>
-	<div id="renderArea"></div>
+	<div class="info" style="position: absolute; left: 300px; right: 300px; top: 10px; text-align: center;">
+		<a href="http://potree.org" target="_blank">potree.org</a><br>
+	</div>
+	
 	
 	<div id="lblCoordinates" class="info" style="position: absolute; left: 5px; bottom: 10px">
 	test
@@ -160,12 +157,17 @@ The updateMapExtent() shows how this can be used to visualize the boundaries in 
 	</div>
 	
 
+	<div id="renderArea"></div>
     <script type="text/javascript">
-
+	var pointSize = 20;
+	var pointCountTarget = 1;
+	var opacity = 1;
+	var pointSizeType = Potree.PointSizeType.ADAPTIVE;
+	var pointColorType = Potree.PointColorType.RGB;
+	var pointShape = Potree.PointShape.SQUARE;
+	var interpolate = false;
+	
 	var pointcloudPath = "../resources/pointclouds/vol_total/cloud.js";
-	//var pointcloudPath = "../../../../pointclouds/bruno_friedmann/vol_total/vol_total_bin/cloud.js";
-	var defaultPointSize = 20;
-	var defaultPointCountTarget = 1.5;
 	
 	// add EPSG:21781 to the proj4 projection database
 	proj4.defs('EPSG:21781', "+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=600000 +y_0=200000 +ellps=bessel +towgs84=674.4,15.1,405.3,0,0,0,0 +units=m +no_defs ");
@@ -202,6 +204,7 @@ The updateMapExtent() shows how this can be used to visualize the boundaries in 
 	var referenceFrame;
 	var camera, cameraHUD;
 	var skybox;
+	var pointcloud;
 	var clock = new THREE.Clock();
 	var measuringTool;
 	var profileTool;
@@ -209,6 +212,8 @@ The updateMapExtent() shows how this can be used to visualize the boundaries in 
 	var mouse = {x: 0, y: 0};
 	var elCoordinates = document.getElementById("lblCoordinates");
 	var showSkybox = true;
+	var elRenderArea = document.getElementById("renderArea");
+	var progressBar = new ProgressBar();
 	
 	// create a OpenLayers Map View
 	function initMapView(){
@@ -280,7 +285,7 @@ The updateMapExtent() shows how this can be used to visualize the boundaries in 
 			camFrustumFeatureVector = new ol.source.Vector({
 				features: []
 			});
-
+    
 			var camFrustumLayer = new ol.layer.Vector({
 				source: camFrustumFeatureVector,
 				style: new ol.style.Style({
@@ -361,11 +366,12 @@ The updateMapExtent() shows how this can be used to visualize the boundaries in 
 	}
 	
 	function initPotreeView(){
-		var renderArea = document.getElementById("renderArea");
 		var near = 0.1;
 		var far = 1000000;
 		var fov = 60;
-		var aspect = renderArea.clientWidth / renderArea.clientHeight;
+		var width = elRenderArea.clientWidth;
+		var height = elRenderArea.clientHeight;
+		var aspect = width / height;
 		
 		// scenes
 		scene = new THREE.Scene();
@@ -373,9 +379,9 @@ The updateMapExtent() shows how this can be used to visualize the boundaries in 
 		
 		// renderer
 		renderer = new THREE.WebGLRenderer();
-		renderer.setSize(renderArea.clientWidth, renderArea.clientHeight);
+		renderer.setSize(width, height);
 		renderer.autoClear = false;
-		renderArea.appendChild(renderer.domElement);
+		elRenderArea.appendChild(renderer.domElement);
 		
 		skybox = Potree.utils.loadSkybox("../resources/textures/skybox/");
 		
@@ -389,29 +395,29 @@ The updateMapExtent() shows how this can be used to visualize the boundaries in 
 		camera.lookAt(new THREE.Vector3(480, 797, -219));
 		
 		// load pointcloud
-		var pco = POCLoader.load(pointcloudPath, {toOrigin: true});
-				
-		offset = pco.offset;
-		pointcloud = new Potree.PointCloudOctree(pco, new Potree.PointCloudMaterial());
-		pointcloud.material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-		pointcloud.material.size = defaultPointSize;
-		pointcloud.visiblePointsTarget = defaultPointCountTarget * 1000 * 1000;
-		
-		// the reference frame transforms the point cloud into the scene coordinate system
-		// by moving it towards the origin and flipping the y and z axes.
-		// This is necessary to avoid precision errors due to large floating point values.
-		referenceFrame = new THREE.Object3D();
-		referenceFrame.position.set(-pointcloud.position.x, -pointcloud.position.y, 0);
-		referenceFrame.updateMatrix();
-		referenceFrame.applyMatrix(new THREE.Matrix4().set(
-			1,0,0,0,
-			0,0,1,0,
-			0,-1,0,0,
-			0,0,0,1
-		));
-		scene.add(referenceFrame);
-		referenceFrame.add(pointcloud);
-		referenceFrame.updateMatrixWorld();
+		var pco = POCLoader.load(pointcloudPath, function(geometry){
+			offset = geometry.offset;
+			pointcloud = new Potree.PointCloudOctree(geometry, new Potree.PointCloudMaterial());
+			pointcloud.material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+			pointcloud.material.size = pointSize;
+			pointcloud.visiblePointsTarget = pointCountTarget * 1000 * 1000;
+			
+			// the reference frame transforms the point cloud into the scene coordinate system
+			// by moving it towards the origin and flipping the y and z axes.
+			// This is necessary to avoid precision errors due to large floating point values.
+			referenceFrame = new THREE.Object3D();
+			referenceFrame.position.set(-pointcloud.position.x, -pointcloud.position.y, 0);
+			referenceFrame.updateMatrix();
+			referenceFrame.applyMatrix(new THREE.Matrix4().set(
+				1,0,0,0,
+				0,0,1,0,
+				0,-1,0,0,
+				0,0,0,1
+			));
+			scene.add(referenceFrame);
+			referenceFrame.add(pointcloud);
+			referenceFrame.updateMatrixWorld();
+		});
 		
 		// create measuring tool
 		measuringTool = new Potree.MeasuringTool(scene, camera, renderer);
@@ -422,7 +428,7 @@ The updateMapExtent() shows how this can be used to visualize the boundaries in 
 			var swiss = proj4.defs("EPSG:21781");
 			var WGS84 = proj4.defs("WGS84");
 			var coordinate = proj4(swiss, webMercator, [point.x, point.y]);
-	
+	    
 			// add a point to the OpenLayers map
 			var olPoint = new ol.geom.Point(coordinate);
 			var feature = new ol.Feature(olPoint);
@@ -463,7 +469,7 @@ The updateMapExtent() shows how this can be used to visualize the boundaries in 
 			var geoMax = object.max.clone().applyMatrix4(inverse);
 			geo = new THREE.Box3(geoMin, geoMax);
 		}
-
+    
 		return geo;
 	}
 	
@@ -476,8 +482,8 @@ The updateMapExtent() shows how this can be used to visualize the boundaries in 
 		});
 		
 		var params = {
-			"points(m)": defaultPointCountTarget,
-			PointSize: defaultPointSize,
+			"points(m)": pointCountTarget,
+			PointSize: pointSize,
 			"opacity": 1.0,
 			"SizeType" : "Adaptive",
 			"show octree" : false,
@@ -488,62 +494,60 @@ The updateMapExtent() shows how this can be used to visualize the boundaries in 
 			"skybox": true
 		};
 		
-		var pPoints = gui.add(params, 'points(m)', 0.02, 5);
+		var pPoints = gui.add(params, 'points(m)', 0.02, 1);
 		pPoints.onChange(function(value){
-			pointcloud.visiblePointsTarget = value * 1000 * 1000;
+			pointCountTarget = value ;
 		});
 		
 		var pPointSize = gui.add(params, 'PointSize', 0, 50);
 		pPointSize.onChange(function(value){
-			pointcloud.material.size = value;
+			pointSize = value;
 		});
 		
 		var pOpacity = gui.add(params, 'opacity', 0, 1);
 		pOpacity.onChange(function(value){
-			pointcloud.material.opacity = value;
+			opacity = value;
 		});
 		
 		var pSizeType = gui.add(params, 'SizeType', [ "Fixed", "Attenuated", "Adaptive"]);
 		pSizeType.onChange(function(value){
 			if(value === "Fixed"){
-				pointcloud.material.pointSizeType = Potree.PointSizeType.FIXED;
+				pointSizeType = Potree.PointSizeType.FIXED;
 			}else if(value === "Attenuated"){
-				pointcloud.material.pointSizeType = Potree.PointSizeType.ATTENUATED;
+				pointSizeType = Potree.PointSizeType.ATTENUATED;
 			}else if(value === "Adaptive"){
-				pointcloud.material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+				pointSizeType = Potree.PointSizeType.ADAPTIVE;
 			}
 		});
 		
 		var pMaterial = gui.add(params, 'Materials', [ "RGB", "Color", "Height", "Octree Depth"]);
 		pMaterial.onChange(function(value){
 			if(value === "RGB"){
-				pointcloud.material.pointColorType = Potree.PointColorType.RGB;
+				pointColorType = Potree.PointColorType.RGB;
 			}else if(value === "Color"){
-				pointcloud.material.pointColorType = Potree.PointColorType.COLOR;
+				pointColorType = Potree.PointColorType.COLOR;
 			}else if(value === "Height"){
-				pointcloud.material.pointColorType = Potree.PointColorType.HEIGHT;
-				pointcloud.material.heightMin = 710;
-				pointcloud.material.heightMax = 770;
+				pointColorType = Potree.PointColorType.HEIGHT;
 			}else if(value === "Octree Depth"){
-				pointcloud.material.pointColorType = Potree.PointColorType.OCTREE_DEPTH;
+				pointColorType = Potree.PointColorType.OCTREE_DEPTH;
 			}else if(value === "Point Index"){
-				pointcloud.material.pointColorType = Potree.PointColorType.POINT_INDEX;
+				pointColorType = Potree.PointColorType.POINT_INDEX;
 			}
 		});
 		
 		if(renderer.context.getExtension("EXT_frag_depth")){
 			var pInterpolate = gui.add(params, 'interpolate');
 			pInterpolate.onChange(function(value){
-				pointcloud.material.interpolate = value;
+				interpolate = value;
 			});
 		}
 		
 		var pCircular = gui.add(params, 'circles');
 		pCircular.onChange(function(value){
 			if(value){
-				pointcloud.material.pointShape = Potree.PointShape.CIRCLE;
+				pointShape = Potree.PointShape.CIRCLE;
 			}else{
-				pointcloud.material.pointShape = Potree.PointShape.SQUARE;
+				pointShape = Potree.PointShape.SQUARE;
 			}
 		});
 		
@@ -560,15 +564,43 @@ The updateMapExtent() shows how this can be used to visualize the boundaries in 
 	
 	function update(){
 		controls.update(clock.getDelta());
-		pointcloud.update(camera);
+		
+		if(pointcloud){
+			pointcloud.material.size = pointSize;
+			pointcloud.visiblePointsTarget = pointCountTarget * 1000 * 1000;
+			pointcloud.material.opacity = opacity;
+			pointcloud.material.pointSizeType = pointSizeType;
+			pointcloud.material.pointColorType = pointColorType;
+			pointcloud.material.pointShape = pointShape;
+			pointcloud.material.interpolate = interpolate;
+			pointcloud.material.heightMin = 710;
+			pointcloud.material.heightMax = 770;
+		
+			pointcloud.update(camera);
+			updateMapFrustum();
+			updateCoordinatePicking();
+			updateProfile();
+			updateMapExtent();
+			updateProgressBar();
+		}
+	}
 	
-		updateMapFrustum();
-		
-		updateCoordinatePicking();
-		
-		updateProfile();
-		
-		updateMapExtent();
+	function updateProgressBar(){
+		if(pointcloud){
+			var progress = pointcloud.visibleNodes.length / pointcloud.visibleGeometry.length;
+			
+			progressBar.progress = progress;
+			progressBar.message = "loading: " + pointcloud.visibleNodes.length + " / " + pointcloud.visibleGeometry.length;
+			
+			if(progress === 1){
+				progressBar.hide();
+			}else if(progress < 1){
+				progressBar.show();
+			}
+		}else{
+			progressBar.show();
+			progressBar.message = "loading metadata";
+		}
 	}
 	
 	/**
@@ -680,7 +712,7 @@ The updateMapExtent() shows how this can be used to visualize the boundaries in 
 		endScene.y = 750;
 		
 		profileTool.setCoordinates(startScene, endScene);
-
+    
 	}
 	
 	function getMousePointCloudIntersection(){
@@ -720,13 +752,14 @@ The updateMapExtent() shows how this can be used to visualize the boundaries in 
 	
 	function render(){
 		// resize 
-		var renderArea = document.getElementById("renderArea");
-		var width = renderArea.clientWidth;
-		var height = renderArea.clientHeight;
+		var width = elRenderArea.clientWidth;
+		var height = elRenderArea.clientHeight;
+		var aspect = width / height;
 		
-		renderer.setSize(width, height-10);
-		camera.aspect = width / height;
+		camera.aspect = aspect;
 		camera.updateProjectionMatrix();
+		
+		renderer.setSize(width, height);
 		
 		profileTool.hudElement.scale.x = 400 / width;
 		profileTool.hudElement.scale.y = 300 / height;

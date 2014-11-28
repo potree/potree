@@ -61,7 +61,6 @@ Potree.PointCloudOctree = function(geometry, material){
 	Potree.PointCloudOctree.lru = Potree.PointCloudOctree.lru || new LRU();
 	
 	this.pcoGeometry = geometry;
-	//this.boundingBox = this.pcoGeometry.boundingBox;
 	this.boundingBox = this.pcoGeometry.root.boundingBox;
 	this.boundingSphere = this.boundingBox.getBoundingSphere();
 	this.material = material || new Potree.PointCloudMaterial();
@@ -78,6 +77,7 @@ Potree.PointCloudOctree = function(geometry, material){
 	this.visibleBounds = new THREE.Box3();	
 	this.profileRequests = [];
 	this.visibleNodes = [];
+	this.visibleGeometry = [];
 	this.pickTarget;
 	this.pickMaterial;
 	this.maxLevel = 0;
@@ -89,11 +89,13 @@ Potree.PointCloudOctree = function(geometry, material){
 Potree.PointCloudOctree.prototype = Object.create(THREE.Object3D.prototype);
 
 Potree.PointCloudOctree.prototype.update = function(camera){
-	var visibleGeometry = this.getVisibleGeometry(camera);
+	this.updateMatrixWorld(true);
+
+	this.visibleGeometry = this.getVisibleGeometry(camera);
 	var visibleGeometryNames = [];
 	
-	for(var i = 0; i < visibleGeometry.length; i++){
-		visibleGeometryNames.push(visibleGeometry[i].node.name);
+	for(var i = 0; i < this.visibleGeometry.length; i++){
+		visibleGeometryNames.push(this.visibleGeometry[i].node.name);
 	}
 	
 	for(var i = 0; i < this.profileRequests.length; i++){
@@ -144,9 +146,9 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 				var child = node.children[i];
 				var visible = visibleGeometryNames.indexOf(child.name) >= 0;
 				if(visible){
-					for(var j = 0; j < visibleGeometry.length; j++){
-						if(visibleGeometry[j].node.name === child.name){
-							stack.push({node: child, weight: visibleGeometry[j].weight});
+					for(var j = 0; j < this.visibleGeometry.length; j++){
+						if(this.visibleGeometry[j].node.name === child.name){
+							stack.push({node: child, weight: this.visibleGeometry[j].weight});
 						}
 					};
 				}
@@ -276,7 +278,6 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 			this.updateVisibilityTexture();
 		}
 	}
-	
 };
 
 Potree.PointCloudOctree.prototype.getVisibleGeometry = function(camera){
@@ -558,7 +559,7 @@ Potree.PointCloudOctree.prototype.hideDescendants = function(object){
 
 Potree.PointCloudOctree.prototype.moveToOrigin = function(){
     this.position.set(0,0,0);
-    this.updateMatrixWorld();
+    this.updateMatrixWorld(true);
     var box = this.boundingBox;
     var transform = this.matrixWorld;
     var tBox = Potree.utils.computeTransformedBoundingBox(box, transform);
@@ -566,7 +567,7 @@ Potree.PointCloudOctree.prototype.moveToOrigin = function(){
 }
 
 Potree.PointCloudOctree.prototype.moveToGroundPlane = function(){
-    this.updateMatrixWorld();
+    this.updateMatrixWorld(true);
     var box = this.boundingBox;
     var transform = this.matrixWorld;
     var tBox = Potree.utils.computeTransformedBoundingBox(box, transform);
@@ -574,7 +575,7 @@ Potree.PointCloudOctree.prototype.moveToGroundPlane = function(){
 }
 
 Potree.PointCloudOctree.prototype.getBoundingBoxWorld = function(){
-	this.updateMatrixWorld();
+	this.updateMatrixWorld(true);
     var box = this.boundingBox;
     var transform = this.matrixWorld;
     var tBox = Potree.utils.computeTransformedBoundingBox(box, transform);

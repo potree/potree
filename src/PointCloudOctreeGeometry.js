@@ -32,7 +32,7 @@ Potree.PointCloudOctreeGeometryNode.prototype.addChild = function(child){
 }
 
 Potree.PointCloudOctreeGeometryNode.prototype.load = function(){
-	if(this.loading === true || this.pcoGeometry.numNodesLoading > 5){
+	if(this.loading === true || this.pcoGeometry.numNodesLoading > 1){
 		return;
 	}else{
 		this.loading = true;
@@ -236,16 +236,18 @@ Potree.LasLazBatcher = function(node, url){
 			var intensities = e.data.intensity;
 			var classifications = new Uint8Array(e.data.classification);
 			var classifications_f = new Float32Array(classifications.byteLength);
+			var returnNumbers = new Uint8Array(e.data.returnNumber);
+			var returnNumbers_f = new Float32Array(returnNumbers.byteLength);
+			var pointSourceIDs = new Uint16Array(e.data.pointSourceID);
+			var pointSourceIDs_f = new Float32Array(pointSourceIDs.length);
 			
 			var box = new THREE.Box3();
 			
 			var fPositions = new Float32Array(positions);
-			for(var i = 0; i < numPoints; i++){			
-				//fPositions[3*i+0] += node.pcoGeometry.offset.x;
-				//fPositions[3*i+1] += node.pcoGeometry.offset.y;
-				//fPositions[3*i+2] += node.pcoGeometry.offset.z;
-				
+			for(var i = 0; i < numPoints; i++){				
 				classifications_f[i] = classifications[i];
+				returnNumbers_f[i] = returnNumbers[i];
+				pointSourceIDs_f[i] = pointSourceIDs[i];
 				
 				box.expandByPoint(new THREE.Vector3(fPositions[3*i+0], fPositions[3*i+1], fPositions[3*i+2]));
 			}
@@ -254,6 +256,8 @@ Potree.LasLazBatcher = function(node, url){
 			geometry.addAttribute('color', new THREE.BufferAttribute(new Float32Array(colors), 3));
 			geometry.addAttribute('intensity', new THREE.BufferAttribute(new Float32Array(intensities), 1));
 			geometry.addAttribute('classification', new THREE.BufferAttribute(new Float32Array(classifications_f), 1));
+			geometry.addAttribute('returnNumber', new THREE.BufferAttribute(new Float32Array(returnNumbers_f), 1));
+			geometry.addAttribute('pointSourceID', new THREE.BufferAttribute(new Float32Array(pointSourceIDs_f), 1));
 			//geometry.boundingBox = node.boundingBox;
 			geometry.boundingBox = new THREE.Box3(mins, maxs);
 			node.boundingBox = geometry.boundingBox;

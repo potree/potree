@@ -18,7 +18,10 @@ Potree.PointColorType = {
 	INTENSITY: 4,
 	INTENSITY_GRADIENT: 5,
 	OCTREE_DEPTH: 6,
-	POINT_INDEX: 7
+	POINT_INDEX: 7,
+	CLASSIFICATION: 8,
+	RETURN_NUMBER: 9,
+	SOURCE: 10
 };
 
 Potree.PointCloudMaterial = function(parameters){
@@ -81,6 +84,12 @@ Potree.PointCloudMaterial.prototype.updateShaderSource = function(){
 	if(this.pointColorType === Potree.PointColorType.INTENSITY
 		|| this.pointColorType === Potree.PointColorType.INTENSITY_GRADIENT){
 		attributes.intensity = { type: "f", value: [] };
+	}else if(this.pointColorType === Potree.PointColorType.CLASSIFICATION){
+		attributes.classification = { type: "f", value: [] };
+	}else if(this.pointColorType === Potree.PointColorType.RETURN_NUMBER){
+		attributes.returnNumber = { type: "f", value: [] };
+	}else if(this.pointColorType === Potree.PointColorType.SOURCE){
+		attributes.pointSourceID = { type: "f", value: [] };
 	}
 	
 	this.setValues({
@@ -150,6 +159,12 @@ Potree.PointCloudMaterial.prototype.getDefines = function(){
 		defines += "#define color_type_octree_depth\n";
 	}else if(this._pointColorType === Potree.PointColorType.POINT_INDEX){
 		defines += "#define color_type_point_index\n";
+	}else if(this._pointColorType === Potree.PointColorType.CLASSIFICATION){
+		defines += "#define color_type_classification\n";
+	}else if(this._pointColorType === Potree.PointColorType.RETURN_NUMBER){
+		defines += "#define color_type_return_number\n";
+	}else if(this._pointColorType === Potree.PointColorType.SOURCE){
+		defines += "#define color_type_source\n";
 	}
 
 	return defines;
@@ -316,11 +331,12 @@ Potree.PointCloudMaterial.generateGradient = function() {
 	// draw gradient
 	context.rect( 0, 0, size, size );
 	var gradient = context.createLinearGradient( 0, 0, size, size );
-    gradient.addColorStop(0, 'blue');
-    gradient.addColorStop(1/5, 'aqua');
-    gradient.addColorStop(2/5, 'green')
-    gradient.addColorStop(3/5, 'yellow');
-    gradient.addColorStop(4/5, 'orange');
+    gradient.addColorStop(0, "#4700b6");
+    gradient.addColorStop(1/6, 'blue');
+    gradient.addColorStop(2/6, 'aqua');
+    gradient.addColorStop(3/6, 'green')
+    gradient.addColorStop(4/6, 'yellow');
+    gradient.addColorStop(5/6, 'orange');
 	gradient.addColorStop(1, 'red');
  
     
@@ -341,6 +357,9 @@ Potree.PointCloudMaterial.vs_points = [
  "attribute vec3 position;                                                           ",
  "attribute vec3 color;                                                              ",
  "attribute float intensity;                                                         ",
+ "attribute float classification;                                                         ",
+ "attribute float returnNumber;                                                         ",
+ "attribute float pointSourceID;                                                         ",
  "attribute vec4 indices;                                                            ",
  "                                                                                   ",
  "uniform mat4 modelMatrix;                                                          ",
@@ -427,7 +446,37 @@ Potree.PointCloudMaterial.vs_points = [
  "                                                                                   ",
  "#endif                                                                             ",
  "                                                                                   ",
- "                                                                                   ",
+ "vec3 classificationColor(float classification){                                                                                   ",
+ "	vec3 color = vec3(0.0, 0.0, 0.0);                                                                                   ",
+ "  float c = mod(classification, 16.0);                                                                                   ",
+ "	if(c == 0.0){ ",
+ "	   color = vec3(0.5, 0.5, 0.5); ",
+ "	}else if(c == 1.0){ ",
+ "	   color = vec3(0.5, 0.5, 0.5); ",
+ "	}else if(c == 2.0){ ",
+ "	   color = vec3(0.63, 0.32, 0.18); ",
+ "	}else if(c == 3.0){ ",
+ "	   color = vec3(0.0, 1.0, 0.0); ",
+ "	}else if(c == 4.0){ ",
+ "	   color = vec3(0.0, 0.8, 0.0); ",
+ "	}else if(c == 5.0){ ",
+ "	   color = vec3(0.0, 0.6, 0.0); ",
+ "	}else if(c == 6.0){ ",
+ "	   color = vec3(1.0, 0.66, 0.0); ",
+ "	}else if(c == 7.0){ ",
+ "	   color = vec3(1.0, 0, 1.0); ",
+ "	}else if(c == 8.0){ ",
+ "	   color = vec3(1.0, 0, 0.0); ",
+ "	}else if(c == 9.0){ ",
+ "	   color = vec3(0.0, 0.0, 1.0); ",
+ "	}else if(c == 12.0){ ",
+ "	   color = vec3(1.0, 1.0, 0.0); ",
+ "	}else{ ",
+ "	   color = vec3(0.3, 0.6, 0.6); ",
+ "	} ",
+ "	                                                                                   ",
+ "	return color;                                                                                   ",
+ "}                                                                                   ",
  "                                                                                   ",
  "void main() {                                                                      ",
  "                                                                                   ",
@@ -461,6 +510,14 @@ Potree.PointCloudMaterial.vs_points = [
  "  	vColor = texture2D(gradient, vec2(w,1.0-w)).rgb;                             ",
  "  #elif defined color_type_point_index                                             ",
  "  	vColor = indices.rgb;                                                        ",
+ "  #elif defined color_type_classification                                             ",
+ "  	vColor = classificationColor(classification);                               ",
+ "  #elif defined color_type_return_number                                             ",
+ "      float w = (returnNumber - 1.0) / 4.0 + 0.1;                                                      ",
+ "  	vColor = texture2D(gradient, vec2(w, 1.0 - w)).rgb;                             ",
+ "  #elif defined color_type_source                                             ",
+ "      float w = mod(pointSourceID, 10.0) / 10.0;                                                                             ",
+ "  	vColor = texture2D(gradient, vec2(w,1.0 - w)).rgb;                               ",
  "  #endif                                                                           ",
  "                                                                                   ",
  "                                                                                   ",
@@ -518,7 +575,6 @@ Potree.PointCloudMaterial.fs_points_rgb = [
  "	#else                                                                            ",
  "		gl_FragColor = vec4(vColor, opacity);                                        ",
  "	#endif                                                                           ",
- "	                                                                                 ",
  "	                                                                                 ",
  "}                                                                                  "];
 

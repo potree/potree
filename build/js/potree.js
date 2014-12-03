@@ -3011,7 +3011,7 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 		if(I){
 			var pos = I.clone();
 		
-			var sphereMaterial = new THREE.MeshNormalMaterial({shading: THREE.SmoothShading})
+			var sphereMaterial = new THREE.MeshNormalMaterial({shading: THREE.SmoothShading, depthTest: false, depthWrite: false})
 			var sphereGeometry = new THREE.SphereGeometry(0.4, 10, 10);
 			
 			var sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
@@ -3030,7 +3030,7 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 			label.material.opacity = 0;
 			label.position.copy(I);
 			label.position.y += 0.5;
-			scope.sceneRoot.add( label );
+			
 			
 			var labelEnd = new Potree.TextSprite(msg);
 			labelEnd.setBorderColor({r:0, g:255, b:0, a:1.0});
@@ -3038,16 +3038,15 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 			labelEnd.material.opacity = 0;
 			labelEnd.position.copy(I);
 			labelEnd.position.y += 0.5;
-			scope.sceneRoot.add( labelEnd );
+			
 			
 			var lc = new THREE.Color( 0xff0000 );
 			var lineGeometry = new THREE.Geometry();
 			lineGeometry.vertices.push(I.clone(), I.clone());
 			lineGeometry.colors.push(lc, lc, lc);
-			var lineMaterial = new THREE.LineBasicMaterial( { vertexColors: THREE.VertexColors } );
+			var lineMaterial = new THREE.LineBasicMaterial( { vertexColors: THREE.VertexColors, linewidth: 10 } );
 			lineMaterial.depthTest = false;
 			sConnection = new THREE.Line(lineGeometry, lineMaterial);
-			scope.sceneRoot.add(sConnection);
 			
 			var edgeLabel = new Potree.TextSprite(0);
 			edgeLabel.setBorderColor({r:0, g:255, b:0, a:0.0});
@@ -3055,6 +3054,11 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 			edgeLabel.material.depthTest = false;
 			edgeLabel.position.copy(I);
 			edgeLabel.position.y += 0.5;
+			
+			
+			scope.sceneRoot.add(sConnection);
+			scope.sceneRoot.add( label );
+			scope.sceneRoot.add( labelEnd );
 			scope.sceneRoot.add( edgeLabel );
 			
 			
@@ -3071,7 +3075,7 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 				
 				scope.activeMeasurement.spheres.push(sphere);
 			}else if(state === STATE.PICKING){
-			
+				scope.sceneRoot.remove(sphere);
 			}
 			
 			scope.activeMeasurement.points.push(I);
@@ -3192,6 +3196,42 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 	this.domElement.addEventListener("dblclick", onDoubleClick, false);
 	this.domElement.addEventListener( 'mousemove', onMouseMove, false );
 	this.domElement.addEventListener( 'mousedown', onMouseDown, false );
+	
+	
+	this.update = function(){
+		var measurements = [];
+		for(var i = 0; i < this.measurements.length; i++){
+			measurements.push(this.measurements[i]);
+		}
+		if(this.activeMeasurement){
+			measurements.push(this.activeMeasurement);
+		}
+		
+		
+		for(var i = 0; i < measurements.length; i++){
+			var measurement = measurements[i];
+			for(var j = 0; j < measurement.spheres.length; j++){
+				var sphere = measurement.spheres[j];
+				var wp = sphere.getWorldPosition().applyMatrix4(this.camera.matrixWorldInverse);
+				var pp = new THREE.Vector4(wp.x, wp.y, wp.z).applyMatrix4(camera.projectionMatrix);
+				var w = (wp.z  / 80); // * (2 - pp.z / pp.w);
+				sphere.scale.set(w, w, w);
+			}
+			
+			for(var j = 0; j < measurement.edgeLabels.length; j++){
+				var label = measurement.edgeLabels[j];
+				var wp = label.getWorldPosition().applyMatrix4(this.camera.matrixWorldInverse);
+				var w = Math.abs(wp.z  / 10);
+				var l = label.scale.length();
+				label.scale.multiplyScalar(w / l);
+			}
+		}
+	};
+	
+	this.render = function(){
+		this.update();
+		renderer.render(this.sceneMeasurement, this.camera);
+	};
 };
 
 

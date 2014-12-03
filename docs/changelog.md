@@ -22,11 +22,9 @@
  	scene.add(pointcloud);
   }
   ```
-
-You must also make sure that the pointcloud has been loaded before operating on it:
-
-```
-if(pointcloud){
-	// now you can safely use the pointcloud object
-}
-```
+  You must also make sure that the pointcloud has been loaded before operating on it:
+  ```
+  if(pointcloud){
+  	// now you can safely use the pointcloud object
+  }
+  ```

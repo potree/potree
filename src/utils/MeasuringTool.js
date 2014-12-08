@@ -2,14 +2,17 @@
 Potree.MeasuringTool = function(scene, camera, renderer){
 	
 	var scope = this;
+	this.enabled = false;
 	
 	this.scene = scene;
 	this.camera = camera;
-
 	this.renderer = renderer;
 	this.domElement = renderer.domElement;
 	this.mouse = {x: 0, y: 0};
 	this.accuracy = 0.5;
+	
+	var sphereMaterial = new THREE.MeshNormalMaterial({shading: THREE.SmoothShading, depthTest: false, depthWrite: false})
+	var sphereGeometry = new THREE.SphereGeometry(0.4, 10, 10);
 	
 	var STATE = {
 		DEFAULT: 0,
@@ -33,14 +36,11 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 	}
 
 	
-	function onDoubleClick(event){
+	function onClick(event){
 		var I = getMousePointCloudIntersection();
 		if(I){
 			var pos = I.clone();
-		
-			var sphereMaterial = new THREE.MeshNormalMaterial({shading: THREE.SmoothShading, depthTest: false, depthWrite: false})
-			var sphereGeometry = new THREE.SphereGeometry(0.4, 10, 10);
-			
+					
 			var sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
 			sphere.position.copy(I);
 			scope.sceneRoot.add(sphere);
@@ -131,29 +131,35 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 			var I = getMousePointCloudIntersection();
 			
 			if(I){
-				var pos = I.clone();
-				var l = scope.activeMeasurement.spheres.length;
-				var sphere = scope.activeMeasurement.spheres[l-1];
-				var label = scope.activeMeasurement.sphereLabels[l-1];
-				var edge = scope.activeMeasurement.edges[l-2];
-				var edgeLabel = scope.activeMeasurement.edgeLabels[l-2];
-				
-				var msg = pos.x.toFixed(2) + " / " + pos.y.toFixed(2) + " / " + pos.z.toFixed(2);
-				label.setText(msg);
-				
-				sphere.position.copy(I);
-				label.position.copy(I);
-				label.position.y += 0.5;
-				
-				edge.geometry.vertices[1].copy(I);
-				edge.geometry.verticesNeedUpdate = true;
-				edge.geometry.computeBoundingSphere();
-				
-				var edgeLabelPos = edge.geometry.vertices[1].clone().add(edge.geometry.vertices[0]).multiplyScalar(0.5);
-				var edgeLabelText = edge.geometry.vertices[0].distanceTo(edge.geometry.vertices[1]).toFixed(2);
-				edgeLabel.position.copy(edgeLabelPos);
-				edgeLabel.setText(edgeLabelText);
-				edgeLabel.scale.multiplyScalar(10);
+				if(scope.activeMeasurement.spheres.length === 1){
+					var pos = I.clone();
+					var sphere = scope.activeMeasurement.spheres[0];
+					sphere.position.copy(I);
+				}else{
+					var pos = I.clone();
+					var l = scope.activeMeasurement.spheres.length;
+					var sphere = scope.activeMeasurement.spheres[l-1];
+					var label = scope.activeMeasurement.sphereLabels[l-1];
+					var edge = scope.activeMeasurement.edges[l-2];
+					var edgeLabel = scope.activeMeasurement.edgeLabels[l-2];
+					
+					var msg = pos.x.toFixed(2) + " / " + pos.y.toFixed(2) + " / " + pos.z.toFixed(2);
+					label.setText(msg);
+					
+					sphere.position.copy(I);
+					label.position.copy(I);
+					label.position.y += 0.5;
+					
+					edge.geometry.vertices[1].copy(I);
+					edge.geometry.verticesNeedUpdate = true;
+					edge.geometry.computeBoundingSphere();
+					
+					var edgeLabelPos = edge.geometry.vertices[1].clone().add(edge.geometry.vertices[0]).multiplyScalar(0.5);
+					var edgeLabelText = edge.geometry.vertices[0].distanceTo(edge.geometry.vertices[1]).toFixed(2);
+					edgeLabel.position.copy(edgeLabelPos);
+					edgeLabel.setText(edgeLabelText);
+					edgeLabel.scale.multiplyScalar(10);
+				}
 			}
 			
 		}
@@ -175,6 +181,7 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 			scope.activeMeasurement = undefined;
 		
 			state = STATE.DEFAULT;
+			scope.setEnabled(false);
 		}
 	}
 	
@@ -218,12 +225,33 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 		}
 		
 		return closestPoint ? closestPoint.position : null;
-	}
+	}	
 	
-	this.domElement.addEventListener("dblclick", onDoubleClick, false);
-	this.domElement.addEventListener( 'mousemove', onMouseMove, false );
-	this.domElement.addEventListener( 'mousedown', onMouseDown, false );
-	
+	this.setEnabled = function(enable){
+		if(this.enabled === enable){
+			return;
+		}
+		
+		this.enabled = enable;
+		
+		if(enable){
+			this.domElement.addEventListener( 'click', onClick, false);
+			this.domElement.addEventListener( 'mousemove', onMouseMove, false );
+			this.domElement.addEventListener( 'mousedown', onMouseDown, false );
+			
+			state = STATE.PICKING; 
+			scope.activeMeasurement = new Measure();
+				
+			var sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+			//sphere.position.copy(I);
+			scope.sceneRoot.add(sphere);
+			scope.activeMeasurement.spheres.push(sphere);
+		}else{
+			this.domElement.removeEventListener( 'click', onClick, false);
+			this.domElement.removeEventListener( 'mousemove', onMouseMove, false );
+			this.domElement.removeEventListener( 'mousedown', onMouseDown, false );
+		}
+	};
 	
 	this.update = function(){
 		var measurements = [];
@@ -241,7 +269,7 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 				var sphere = measurement.spheres[j];
 				var wp = sphere.getWorldPosition().applyMatrix4(this.camera.matrixWorldInverse);
 				var pp = new THREE.Vector4(wp.x, wp.y, wp.z).applyMatrix4(camera.projectionMatrix);
-				var w = (wp.z  / 80); // * (2 - pp.z / pp.w);
+				var w = Math.abs((wp.z  / 80)); // * (2 - pp.z / pp.w);
 				sphere.scale.set(w, w, w);
 			}
 			

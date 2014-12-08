@@ -119,6 +119,8 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 		
 		node.visible = true;
 		
+		node.matrixWorld.multiplyMatrices( node.parent.matrixWorld, node.matrix );
+		
 		if (node instanceof Potree.PointCloudOctreeProxyNode) {
 			var geometryNode = node.geometryNode;
 			if(geometryNode.loaded === true){

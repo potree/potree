@@ -34,7 +34,7 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 	this.hoveredElement = null;
 	
 	var moveEvent = function(event){
-		event.target.material.emissive.setHex(0x444444);
+		event.target.material.emissive.setHex(0x888888);
 	};
 	
 	var leaveEvent = function(event){
@@ -474,7 +474,7 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 				var sphere = measurement.spheres[j];
 				var wp = sphere.getWorldPosition().applyMatrix4(this.camera.matrixWorldInverse);
 				var pp = new THREE.Vector4(wp.x, wp.y, wp.z).applyMatrix4(camera.projectionMatrix);
-				var w = Math.abs((wp.z  / 70)); // * (2 - pp.z / pp.w);
+				var w = Math.abs((wp.z  / 60)); // * (2 - pp.z / pp.w);
 				sphere.scale.set(w, w, w);
 			}
 			

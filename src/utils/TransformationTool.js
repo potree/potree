@@ -31,13 +31,19 @@ Potree.TransformationTool = function(scene, camera, renderer){
 		DEFAULT: 0,
 		TRANSLATE_X: 1,
 		TRANSLATE_Y: 2,
-		TRANSLATE_Z: 3
+		TRANSLATE_Z: 3,
+		SCALE_X: 1,
+		SCALE_Y: 2,
+		SCALE_Z: 3
 	};
 	
 	this.parts = {
 		ARROW_X : {name: "arrow_x", object: undefined, color: new THREE.Color( 0xff0000 ), state: this.STATE.TRANSLATE_X},
+		ARROW_Z : {name: "arrow_z", object: undefined, color: new THREE.Color( 0x0000ff ), state: this.STATE.TRANSLATE_Z},
 		ARROW_Y : {name: "arrow_y", object: undefined, color: new THREE.Color( 0x00ff00 ), state: this.STATE.TRANSLATE_Y},
-		ARROW_Z : {name: "arrow_z", object: undefined, color: new THREE.Color( 0x0000ff ), state: this.STATE.TRANSLATE_Z}
+		SCALE_X : {name: "scale_x", object: undefined, color: new THREE.Color( 0xff0000 ), state: this.STATE.SCALE_X},
+		SCALE_Z : {name: "scale_z", object: undefined, color: new THREE.Color( 0x0000ff ), state: this.STATE.SCALE_Z},
+		SCALE_Y : {name: "scale_y", object: undefined, color: new THREE.Color( 0x00ff00 ), state: this.STATE.SCALE_Y}
 	}
 
 	this.buildTranslationNode = function(){
@@ -54,6 +60,20 @@ Potree.TransformationTool = function(scene, camera, renderer){
 		this.translationNode.add(arrowZ);
 	};
 	
+	this.buildScaleNode = function(){
+		var xHandle = this.createScaleHandle(scope.parts.SCALE_X, 0xff0000);
+		xHandle.rotation.z = -Math.PI/2;
+		
+		var yHandle = this.createScaleHandle(scope.parts.SCALE_Y, 0x00ff00);
+		
+		var zHandle = this.createScaleHandle(scope.parts.SCALE_Z, 0x0000ff);
+		zHandle.rotation.x = -Math.PI/2;
+		
+		this.scaleNode.add(xHandle);
+		this.scaleNode.add(yHandle);
+		this.scaleNode.add(zHandle);
+	}
+	
 	this.createBox = function(color){
 		var boxGeometry = new THREE.BoxGeometry(1, 1, 1);
 		var boxMaterial = new THREE.MeshBasicMaterial({color: color, transparent: true, opacity: 0.5});
@@ -63,6 +83,96 @@ Potree.TransformationTool = function(scene, camera, renderer){
 	};
 	
 	var sph1, sph2, sph3;
+	
+	this.createScaleHandle = function(partID, color){
+		var boxGeometry = new THREE.BoxGeometry(1, 1, 1);
+		var material = new THREE.MeshBasicMaterial({color: color, depthTest: false, depthWrite: false});
+		
+		var box = new THREE.Mesh(boxGeometry, material);
+		box.scale.set(0.3, 0.3, 0.3);
+		box.position.set(0, 3, 0);
+		
+		var shaft = new THREE.Mesh(boxGeometry, material);
+		shaft.scale.set(0.05, 3, 0.05);
+		shaft.position.set(0, 1.5, 0);
+		
+		var handle = new THREE.Object3D();
+		handle.add(box);
+		handle.add(shaft);
+		
+		handle.partID = partID;
+		
+		
+		var moveEvent = function(event){
+			material.color.setRGB(1, 1, 0);
+		};
+		
+		var leaveEvent = function(event){
+			material.color.setHex(color);
+		};
+		
+		var dragEvent = function(event){
+		
+			var sceneDirection = new THREE.Vector3();
+			if(partID === scope.parts.SCALE_X){
+				sceneDirection.x = 1;
+			}else if(partID === scope.parts.SCALE_Y){
+				sceneDirection.y = 1;
+			}else if(partID === scope.parts.SCALE_Z){
+				sceneDirection.z = -1;
+			}
+			
+			var sceneClickPos = scope.dragstart.sceneClickPos.clone();
+			sceneClickPos.multiply(sceneDirection);
+			sceneClickPos.z *= -1;
+		
+			var lineStart = scope.dragstart.sceneStartPos.clone().project(scope.camera);
+			var lineEnd = scope.dragstart.sceneStartPos.clone().add(sceneDirection).project(scope.camera);
+			
+			var origin = lineStart.clone();
+			var screenDirection = lineEnd.clone().sub(lineStart);
+			screenDirection.normalize();
+			
+			var mouseStart = new THREE.Vector3(scope.dragstart.mousePos.x, scope.dragstart.mousePos.y, 0);
+			var mouseEnd = new THREE.Vector3(scope.mouse.x, scope.mouse.y, 0);
+	
+			var directionDistance = new THREE.Vector3().subVectors(mouseEnd, mouseStart).dot(screenDirection);
+			var pointOnLine = screenDirection.clone().multiplyScalar(directionDistance).add(origin);
+			
+			pointOnLine.unproject(scope.camera);
+			
+			var diff = scope.sceneRoot.position.clone().sub(pointOnLine);
+			//var offset = sceneClickPos.clone().sub(scope.dragstart.sceneStartPos);
+			//scope.sceneRoot.position.copy(pointOnLine);
+			//diff.sub(scope.sceneRoot.position);
+			
+			diff.multiply(new THREE.Vector3(-1, -1, 1)).addScalar(1);
+			
+			for(var i = 0; i < scope.targets.length; i++){
+				var target = scope.targets[i];
+				var startScale = scope.dragstart.scales[i];
+				target.scale.copy(startScale).multiply(diff);
+				target.scale.x = Math.max(target.scale.x, 0.01);
+				target.scale.y = Math.max(target.scale.y, 0.01);
+				target.scale.z = Math.max(target.scale.z, 0.01);
+//				target.scale.sub(diff);
+			}
+
+			event.event.stopImmediatePropagation();
+
+		};
+		
+		var dropEvent = function(event){
+			material.color.set(color);
+		};
+		
+		box.addEventListener("mousemove", moveEvent);
+		box.addEventListener("mouseleave", leaveEvent);
+		box.addEventListener("mousedrag", dragEvent);
+		box.addEventListener("drop", dropEvent);
+		
+		return handle;
+	};
 	
 	this.createArrow = function(partID, color){
 		var material = new THREE.MeshBasicMaterial({color: color, depthTest: false, depthWrite: false});
@@ -207,7 +317,10 @@ Potree.TransformationTool = function(scene, camera, renderer){
 	
 		if(scope.dragstart){
 			
-			scope.dragstart.object.dispatchEvent({type: "mousedrag", event: event});
+			scope.dragstart.object.dispatchEvent({
+				type: "mousedrag", 
+				event: event
+			});
 			
 		}else{
 	
@@ -240,11 +353,18 @@ Potree.TransformationTool = function(scene, camera, renderer){
 	function onMouseDown(event){
 		var I = getHoveredElement();
 		if(I){
+			
+			scales = [];
+			for(var i = 0; i < scope.targets.length; i++){
+				scales.push(scope.targets[i].scale.clone());
+			}
+		
 			scope.dragstart = {
 				object: I.object, 
 				sceneClickPos: I.point,
 				sceneStartPos: scope.sceneRoot.position.clone(),
-				mousePos: {x: scope.mouse.x, y: scope.mouse.y}
+				mousePos: {x: scope.mouse.x, y: scope.mouse.y},
+				scales: scales
 			};
 		}
 	};
@@ -265,7 +385,16 @@ Potree.TransformationTool = function(scene, camera, renderer){
 		var raycaster = new THREE.Raycaster();
 		raycaster.ray.set( scope.camera.position, vector.sub( scope.camera.position ).normalize() );
 		
-		var intersections = raycaster.intersectObject(scope.sceneRoot, true);
+		var objects = [];
+		if(scope.translationNode.visible){
+			objects.push(scope.translationNode);
+		}else if(scope.scaleNode.visible){
+			objects.push(scope.scaleNode);
+		}else if(scope.rotationNode.visible){
+			objects.push(scope.rotationNode);
+		}
+		
+		var intersections = raycaster.intersectObjects(objects, true);
 		if(intersections.length > 0){
 			return intersections[0];
 		}else{
@@ -316,7 +445,28 @@ Potree.TransformationTool = function(scene, camera, renderer){
 		renderer.render(this.sceneTransformation, this.camera);
 	};
 	
+	this.translate = function(){
+		this.translationNode.visible = true;
+		this.scaleNode.visible = false;
+		this.rotationNode.visible = false;
+	};
+	
+	this.scale = function(){
+		this.translationNode.visible = false;
+		this.scaleNode.visible = true;
+		this.rotationNode.visible = false;
+	};
+	
+	this.rotate = function(){
+		this.translationNode.visible = false;
+		this.scaleNode.visible = false;
+		this.rotationNode.visible = true;
+	};
+	
 	this.buildTranslationNode();
+	this.buildScaleNode();
+	
+	this.translate();
 	
 	//this.domElement.addEventListener( 'click', onClick, false);
 	this.domElement.addEventListener( 'mousemove', onMouseMove, true );

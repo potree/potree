@@ -46,7 +46,7 @@
 	<div id="lblNumVisiblePoints" class="info" style="position: absolute; left: 10px; top: 100px; width: 400px; color:white"></div>
 	<div id="lblMessage" class="info" style="position: absolute; left: 10px; bottom: 0px; width: 400px; color:white"></div>
 	
-	<div id="tools" style="position: fixed; width: 100px; bottom: 10px; right: 10px">
+	<div id="tools" style="position: fixed; width: 200px; bottom: 10px; right: 10px">
 		<input type="button" value="measure" onclick="measuringTool.setEnabled(true)"/>
 		<input type="button" value="volume" onclick="volumeTool.startInsertion()"/>
 	
@@ -55,6 +55,11 @@
 	
 	<div class="info" style="position: absolute; left: 300px; right: 300px; top: 10px; text-align: center;">
 		<a href="http://potree.org" target="_blank">potree.org</a><br>
+		Work in Progress on measurement tools.<br>
+		Click the "measure" or "volume" button to insert distance and volume measurement objects.<br>
+		Distance measurement markers can be dragged and dropped with the mouse. <br>
+		Volumes can be translated and scaled. Switch between translation and scale with "e" and "r".
+		
 	</div>
 	
 	<div id="renderArea"></div>
@@ -232,7 +237,23 @@
 	
 	
 			controls = new THREE.FirstPersonControls(camera, renderer.domElement);
+			
+			window.addEventListener( 'keydown', onKeyDown, false );
 		}
+		
+		function onKeyDown(event){
+			console.log(event.keyCode);
+			
+			if(event.keyCode === 69){
+				// e pressed
+				
+				transformationTool.translate();
+			}else if(event.keyCode === 82){
+				// r pressed
+				
+				transformationTool.scale();
+			}
+		};
 		
 		function update(){
 			if(pointcloud){
@@ -307,6 +328,8 @@
 			update();
 			render();
 		};
+		
+		
 		
 		initThree();
 		initGUI();

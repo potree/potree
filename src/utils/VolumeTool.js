@@ -22,8 +22,38 @@ Potree.VolumeTool = function(scene, camera, renderer){
 	var state = STATE.DEFAULT;
 	
 	var material = new THREE.MeshBasicMaterial( {color: 0x00ff00, transparent: true, opacity: 0.3} );
+	
 	var boxGeometry = new THREE.BoxGeometry(1, 1, 1);
 	boxGeometry.computeBoundingBox();
+	
+	var boxFrameGeometry = new THREE.Geometry();
+	// bottom
+	boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, -0.5, 0.5));
+	boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, -0.5, 0.5));
+	boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, -0.5, 0.5));
+	boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, -0.5, -0.5));
+	boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, -0.5, -0.5));
+	boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, -0.5, -0.5));
+	boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, -0.5, -0.5));
+	boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, -0.5, 0.5));
+	// top
+	boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, 0.5, 0.5));
+	boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, 0.5, 0.5));
+	boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, 0.5, 0.5));
+	boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, 0.5, -0.5));
+	boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, 0.5, -0.5));
+	boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, 0.5, -0.5));
+	boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, 0.5, -0.5));
+	boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, 0.5, 0.5));
+	// sides
+	boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, -0.5, 0.5));
+	boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, 0.5, 0.5));
+	boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, -0.5, 0.5));
+	boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, 0.5, 0.5));
+	boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, -0.5, -0.5));
+	boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, 0.5, -0.5));
+	boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, -0.5, -0.5));
+	boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, 0.5, -0.5));
 	
 	function onMouseMove(event){
 		scope.mouse.x = ( event.clientX / scope.domElement.clientWidth ) * 2 - 1;
@@ -79,25 +109,72 @@ Potree.VolumeTool = function(scene, camera, renderer){
 			
 			if(I){
 				var object = this.activeVolume.object;
+				//var label = this.activeVolume.label;
+				
 				object.position.copy(I);
 				
 				var wp = object.getWorldPosition().applyMatrix4(this.camera.matrixWorldInverse);
-				var pp = new THREE.Vector4(wp.x, wp.y, wp.z).applyMatrix4(camera.projectionMatrix);
+				var pp = new THREE.Vector4(wp.x, wp.y, wp.z).applyMatrix4(this.camera.projectionMatrix);
 				var w = Math.abs((wp.z  / 10)); 
 				object.scale.set(w, w, w);
+				
+				//label.scale.set(w,w,w);
 				//box.scale.set(1,1,1);
 			}
 		}
+		
+			var volumes = [];
+			for(var i = 0; i < this.volumes.length; i++){
+				volumes.push(this.volumes[i]);
+			}
+			if(this.activeVolume){
+				volumes.push(this.activeVolume);
+			}
+			
+			for(var i = 0; i < volumes.length; i++){
+				var box = volumes[i].object;
+				var label = volumes[i].label;
+				
+				var volume = box.scale.x * box.scale.y * box.scale.z;
+				var msg = volume.toFixed(1) + "³";
+				
+				var wp = label.getWorldPosition().applyMatrix4(this.camera.matrixWorldInverse);
+				var pp = new THREE.Vector4(wp.x, wp.y, wp.z).applyMatrix4(this.camera.projectionMatrix);
+				var w = Math.abs((wp.z  / 10)); 
+				var l = label.scale.length();
+				label.scale.multiplyScalar(w / l);
+				label.setText(msg);
+			}
+		
+		
+		
+		
+		
 	};
 	
 	this.startInsertion = function(){
 		state = STATE.INSERT_VOLUME;
 		
-		var box = new THREE.Mesh(boxGeometry, material);
-		scene.add(box);
+		var box = new THREE.Mesh( boxGeometry, material);
+		this.scene.add(box);
+		
+		var label = new Potree.TextSprite("0");
+		label.setBorderColor({r:0, g:255, b:0, a:0.0});
+		label.setBackgroundColor({r:0, g:255, b:0, a:0.0});
+		label.material.depthTest = false;
+		label.position.y -= 0.5;
+		//label.material.opacity = 0;
+		//label.position.copy(I);
+		
+		box.add(label);
+		
+		var line = new THREE.Line( boxFrameGeometry, new THREE.LineBasicMaterial({color: 0x000000}));
+		line.mode = THREE.LinePieces;
+		box.add(line);
 		
 		this.activeVolume = {
-			object: box
+			object: box,
+			label: label
 		};
 	}
 	

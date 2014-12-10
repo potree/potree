@@ -11,7 +11,7 @@
   ```
   
 * Support for binary files with .bin extension. Files without extension have shown to cause problems with FTP Uploaders and some WebServers.
-* Added classification, return number and point source ID to Potree.PointColorType.
+* Added classification, return number and point source ID to Potree.PointColorType. These color modes only work with LAS and LAZ files.
 * Replaced synchronous requests in favour of async requests.
   You must now provide a callback method in order to add a pointcloud to the scene:
 
@@ -20,7 +20,7 @@
   	pointcloud = new Potree.PointCloudOctree(geometry);
   	...
  	scene.add(pointcloud);
-  }
+  });
   ```
   You must also make sure that the pointcloud has been loaded before operating on it:
   ```

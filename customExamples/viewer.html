@@ -52,6 +52,18 @@
 	
 	</div>
 	
+	<div id="test" style="border: 1px solid red; position: fixed; pointer-events: none">
+	
+	</div>
+	
+	<div id="test1" style="border: 1px solid red; position: fixed; pointer-events: none;">
+	
+	</div>
+	
+	<div id="test2" style="border: 1px solid red; position: fixed; pointer-events: none;">
+	
+	</div>
+	
 	
 	<div class="info" style="position: absolute; left: 300px; right: 300px; top: 10px; text-align: center;">
 		<a href="http://potree.org" target="_blank">potree.org</a><br>
@@ -252,6 +264,10 @@
 				// r pressed
 				
 				transformationTool.scale();
+			}else if(event.keyCode === 84){
+				// r pressed
+				
+				transformationTool.rotate();
 			}
 		};
 		
@@ -318,6 +334,8 @@
 			
 			// render scene
 			renderer.render(scene, camera);
+			
+			renderer.clearDepth();
 			measuringTool.render();
 			transformationTool.render();
 		}

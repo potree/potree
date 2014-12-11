@@ -15,6 +15,8 @@ Potree.TransformationTool = function(scene, camera, renderer){
 	this.sceneRoot = new THREE.Object3D();
 	this.sceneTransformation.add(this.sceneRoot);
 	
+	this.sceneRotation = new THREE.Scene();
+	
 	this.translationNode = new THREE.Object3D();
 	this.rotationNode = new THREE.Object3D();
 	this.scaleNode = new THREE.Object3D();
@@ -38,12 +40,15 @@ Potree.TransformationTool = function(scene, camera, renderer){
 	};
 	
 	this.parts = {
-		ARROW_X : {name: "arrow_x", object: undefined, color: new THREE.Color( 0xff0000 ), state: this.STATE.TRANSLATE_X},
-		ARROW_Z : {name: "arrow_z", object: undefined, color: new THREE.Color( 0x0000ff ), state: this.STATE.TRANSLATE_Z},
-		ARROW_Y : {name: "arrow_y", object: undefined, color: new THREE.Color( 0x00ff00 ), state: this.STATE.TRANSLATE_Y},
-		SCALE_X : {name: "scale_x", object: undefined, color: new THREE.Color( 0xff0000 ), state: this.STATE.SCALE_X},
-		SCALE_Z : {name: "scale_z", object: undefined, color: new THREE.Color( 0x0000ff ), state: this.STATE.SCALE_Z},
-		SCALE_Y : {name: "scale_y", object: undefined, color: new THREE.Color( 0x00ff00 ), state: this.STATE.SCALE_Y}
+		ARROW_X : 	{name: "arrow_x", 	object: undefined, color: new THREE.Color( 0xff0000 ), state: this.STATE.TRANSLATE_X},
+		ARROW_Z : 	{name: "arrow_z", 	object: undefined, color: new THREE.Color( 0x0000ff ), state: this.STATE.TRANSLATE_Z},
+		ARROW_Y : 	{name: "arrow_y", 	object: undefined, color: new THREE.Color( 0x00ff00 ), state: this.STATE.TRANSLATE_Y},
+		SCALE_X : 	{name: "scale_x", 	object: undefined, color: new THREE.Color( 0xff0000 ), state: this.STATE.SCALE_X},
+		SCALE_Z : 	{name: "scale_z", 	object: undefined, color: new THREE.Color( 0x0000ff ), state: this.STATE.SCALE_Z},
+		SCALE_Y : 	{name: "scale_y", 	object: undefined, color: new THREE.Color( 0x00ff00 ), state: this.STATE.SCALE_Y},
+		ROTATE_X : 	{name: "rotate_x", 	object: undefined, color: new THREE.Color( 0xff0000 ), state: this.STATE.ROTATE_X},
+		ROTATE_Z : 	{name: "rotate_z", 	object: undefined, color: new THREE.Color( 0x0000ff ), state: this.STATE.ROTATE_Z},
+		ROTATE_Y : 	{name: "rotate_y", 	object: undefined, color: new THREE.Color( 0x00ff00 ), state: this.STATE.ROTATE_Y}
 	}
 
 	this.buildTranslationNode = function(){
@@ -74,6 +79,29 @@ Potree.TransformationTool = function(scene, camera, renderer){
 		this.scaleNode.add(zHandle);
 	}
 	
+	this.buildRotationNode = function(){
+		var xHandle = this.createRotationCircle(scope.parts.ROTATE_X, 0xff0000);
+		xHandle.rotation.y = -Math.PI/2;
+		
+		var yHandle = this.createRotationCircle(scope.parts.ROTATE_Y, 0x00ff00);
+		
+		var zHandle = this.createRotationCircle(scope.parts.ROTATE_Z, 0x0000ff);
+		yHandle.rotation.x = -Math.PI/2;
+		
+		this.rotationNode.add(xHandle);
+		this.rotationNode.add(yHandle);
+		this.rotationNode.add(zHandle);
+		
+		
+		
+		var sg = new THREE.SphereGeometry(2.9, 24, 24);
+		var sphere = new THREE.Mesh(sg, new THREE.MeshBasicMaterial({transparent: true, opacity: 0.3}));
+		
+		this.sceneRotation.add(sphere);
+	}
+	
+	
+	
 	this.createBox = function(color){
 		var boxGeometry = new THREE.BoxGeometry(1, 1, 1);
 		var boxMaterial = new THREE.MeshBasicMaterial({color: color, transparent: true, opacity: 0.5});
@@ -83,6 +111,105 @@ Potree.TransformationTool = function(scene, camera, renderer){
 	};
 	
 	var sph1, sph2, sph3;
+	
+	this.createRotationCircle = function(partID, color){
+		var geometry = new THREE.TorusGeometry(3, 0.05, 4, 48);
+		//var material = new THREE.MeshBasicMaterial({color: color, depthTest: false, depthWrite: false});
+		var material = new THREE.MeshBasicMaterial({color: color});
+		
+		var ring = new THREE.Mesh(geometry, material);
+		
+		var moveEvent = function(event){
+			material.color.setRGB(1, 1, 0);
+		};
+		
+		var leaveEvent = function(event){
+			material.color.setHex(color);
+		};
+		
+		var dragEvent = function(event){
+		
+			event.event.stopImmediatePropagation();
+		
+			var normal = new THREE.Vector3();
+			if(partID === scope.parts.ROTATE_X){
+				normal.x = 1;
+			}else if(partID === scope.parts.ROTATE_Y){
+				normal.y = 1;
+			}else if(partID === scope.parts.ROTATE_Z){
+				normal.z = -1;
+			}
+			
+			var sceneClickPos = scope.dragstart.sceneClickPos.clone();
+			var sceneOrigin = scope.sceneRoot.position.clone();
+			var sceneNormal = sceneClickPos.clone().sub(sceneOrigin).normalize();
+			
+			var screenClickPos = sceneClickPos.clone().project(scope.camera);
+			var screenOrigin = sceneOrigin.clone().project(scope.camera);
+			var screenNormal = screenClickPos.clone().sub(screenOrigin).normalize();
+			var screenTangent = new THREE.Vector3(screenNormal.y, screenNormal.x, 0);
+			
+			var mouseStart = new THREE.Vector3(scope.dragstart.mousePos.x, scope.dragstart.mousePos.y, 0);
+			var mouseEnd = new THREE.Vector3(scope.mouse.x, scope.mouse.y, 0);
+			
+			var plane = new THREE.Plane().setFromNormalAndCoplanarPoint(normal, scope.sceneRoot.position);
+			var camOrigin = scope.camera.position;
+			var camDirection = new THREE.Vector3( 0, 0, -1 ).applyQuaternion( scope.camera.quaternion );
+			var direction = new THREE.Vector3( mouseEnd.x, mouseEnd.y, 0.5 ).unproject(scope.camera).sub( scope.camera.position ).normalize();
+			var ray = new THREE.Ray( camOrigin, direction);
+			var I = ray.intersectPlane(plane);
+			
+			if(!I){
+				return;
+			}
+			
+			sceneTargetNormal = I.clone().sub(sceneOrigin).normalize();
+			
+			var angleToClick;
+			var angleToTarget;
+			
+			if(partID === scope.parts.ROTATE_X){
+				angleToClick = 2 * Math.PI + Math.atan2(sceneNormal.y, -sceneNormal.z);
+				angleToTarget = 4 * Math.PI + Math.atan2(sceneTargetNormal.y, -sceneTargetNormal.z);
+			}else if(partID === scope.parts.ROTATE_Y){
+				angleToClick = 2 * Math.PI + Math.atan2(-sceneNormal.z, sceneNormal.x);
+				angleToTarget = 4 * Math.PI + Math.atan2(-sceneTargetNormal.z, sceneTargetNormal.x);
+			}else if(partID === scope.parts.ROTATE_Z){
+				angleToClick = 2 * Math.PI + Math.atan2(sceneNormal.x, sceneNormal.y);
+				angleToTarget = 4 * Math.PI + Math.atan2(sceneTargetNormal.x, sceneTargetNormal.y);
+			}
+			
+			var diff = angleToTarget - angleToClick;
+			
+			for(var i = 0; i < scope.targets.length; i++){
+				var target = scope.targets[i];
+				var startRotation = scope.dragstart.rotations[i];
+				
+				target.rotation.copy(startRotation);
+
+				var q = new THREE.Quaternion();
+
+				q.setFromAxisAngle( normal, diff ); // axis must be normalized, angle in radians
+				target.quaternion.multiplyQuaternions( q, target.quaternion );
+
+			}
+			
+			
+			
+			
+		};
+		
+		var dropEvent = function(event){
+		
+		};
+		
+		ring.addEventListener("mousemove", moveEvent);
+		ring.addEventListener("mouseleave", leaveEvent);
+		ring.addEventListener("mousedrag", dragEvent);
+		ring.addEventListener("drop", dropEvent);
+		
+		return ring;
+	};
 	
 	this.createScaleHandle = function(partID, color){
 		var boxGeometry = new THREE.BoxGeometry(1, 1, 1);
@@ -354,9 +481,11 @@ Potree.TransformationTool = function(scene, camera, renderer){
 		var I = getHoveredElement();
 		if(I){
 			
-			scales = [];
+			var scales = [];
+			var rotations = [];
 			for(var i = 0; i < scope.targets.length; i++){
 				scales.push(scope.targets[i].scale.clone());
+				rotations.push(scope.targets[i].rotation.clone());
 			}
 		
 			scope.dragstart = {
@@ -364,7 +493,8 @@ Potree.TransformationTool = function(scene, camera, renderer){
 				sceneClickPos: I.point,
 				sceneStartPos: scope.sceneRoot.position.clone(),
 				mousePos: {x: scope.mouse.x, y: scope.mouse.y},
-				scales: scales
+				scales: scales,
+				rotations: rotations
 			};
 		}
 	};
@@ -392,6 +522,7 @@ Potree.TransformationTool = function(scene, camera, renderer){
 			objects.push(scope.scaleNode);
 		}else if(scope.rotationNode.visible){
 			objects.push(scope.rotationNode);
+			objects.push(scope.sceneRotation);
 		}
 		
 		var intersections = raycaster.intersectObjects(objects, true);
@@ -438,10 +569,16 @@ Potree.TransformationTool = function(scene, camera, renderer){
 		var pp = new THREE.Vector4(wp.x, wp.y, wp.z).applyMatrix4(camera.projectionMatrix);
 		var w = Math.abs((wp.z  / 20)); // * (2 - pp.z / pp.w);
 		node.scale.set(w, w, w);
+		
+		this.sceneRotation.scale.set(w,w,w);
 	};
 	
 	this.render = function(){
 		this.update();
+		this.sceneRotation.position.copy(this.sceneRoot.position);
+		this.sceneRotation.visible = this.rotationNode.visible && this.sceneRoot.visible;
+		
+		renderer.render(this.sceneRotation, this.camera);
 		renderer.render(this.sceneTransformation, this.camera);
 	};
 	
@@ -465,8 +602,10 @@ Potree.TransformationTool = function(scene, camera, renderer){
 	
 	this.buildTranslationNode();
 	this.buildScaleNode();
+	this.buildRotationNode();
 	
-	this.translate();
+	//this.translate();
+	this.rotate();
 	
 	//this.domElement.addEventListener( 'click', onClick, false);
 	this.domElement.addEventListener( 'mousemove', onMouseMove, true );

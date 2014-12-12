@@ -95,9 +95,63 @@ Potree.TransformationTool = function(scene, camera, renderer){
 		
 		
 		var sg = new THREE.SphereGeometry(2.9, 24, 24);
-		var sphere = new THREE.Mesh(sg, new THREE.MeshBasicMaterial({transparent: true, opacity: 0.3}));
+		var sphere = new THREE.Mesh(sg, new THREE.MeshBasicMaterial({color: 0xaaaaaa, transparent: true, opacity: 0.4}));
 		
 		this.sceneRotation.add(sphere);
+		
+		var moveEvent = function(event){
+			sphere.material.color.setHex(0x555555);
+			//sphere.material.emissive.setHex(0x555555);
+			//sphere.material.opacity = 0.2;
+		};
+		
+		var leaveEvent = function(event){
+			sphere.material.color.setHex(0xaaaaaa);
+			//sphere.material.emissive.setHex(0x000000);
+			//sphere.material.opacity = 0.3;
+		};
+		
+		var dragEvent = function(event){
+			event.event.stopImmediatePropagation();
+		
+			var mouseStart = new THREE.Vector3(scope.dragstart.mousePos.x, scope.dragstart.mousePos.y, 0.1);
+			var mouseEnd = new THREE.Vector3(scope.mouse.x, scope.mouse.y, 0.1);
+			var mouseDiff = new THREE.Vector3().subVectors(mouseEnd, mouseStart);
+			
+			var sceneStart = mouseStart.clone().unproject(scope.camera);
+			var sceneEnd = mouseEnd.clone().unproject(scope.camera);
+			var sceneDiff = new THREE.Vector3().subVectors(sceneEnd, sceneStart);
+			var sceneDir = sceneDiff.clone().normalize();
+			var toCamDir = new THREE.Vector3().subVectors(scope.camera.position, sceneStart).normalize();
+			var rotationAxis = toCamDir.clone().cross(sceneDir);
+			var rotationAmount = 6 * mouseDiff.length();
+			
+			for(var i = 0; i < scope.targets.length; i++){
+				var target = scope.targets[i];
+				var startRotation = scope.dragstart.rotations[i];
+				
+				target.rotation.copy(startRotation);
+
+				var q = new THREE.Quaternion();
+
+				q.setFromAxisAngle( rotationAxis, rotationAmount );
+				target.quaternion.multiplyQuaternions( q, target.quaternion );
+
+			}
+			
+			
+			console.log(mouseDiff);
+		};
+		
+		var dropEvent = function(event){
+		
+		};
+		
+		sphere.addEventListener("mousemove", moveEvent);
+		sphere.addEventListener("mouseleave", leaveEvent);
+		sphere.addEventListener("mousedrag", dragEvent);
+		sphere.addEventListener("drop", dropEvent);
+		
 	}
 	
 	
@@ -113,7 +167,7 @@ Potree.TransformationTool = function(scene, camera, renderer){
 	var sph1, sph2, sph3;
 	
 	this.createRotationCircle = function(partID, color){
-		var geometry = new THREE.TorusGeometry(3, 0.05, 4, 48);
+		var geometry = new THREE.TorusGeometry(3, 0.1, 12, 48);
 		//var material = new THREE.MeshBasicMaterial({color: color, depthTest: false, depthWrite: false});
 		var material = new THREE.MeshBasicMaterial({color: color});
 		
@@ -478,24 +532,32 @@ Potree.TransformationTool = function(scene, camera, renderer){
 	};
 	
 	function onMouseDown(event){
-		var I = getHoveredElement();
-		if(I){
+	
+		if(event.which === 1){
+			// left click
+			var I = getHoveredElement();
+			if(I){
+				
+				var scales = [];
+				var rotations = [];
+				for(var i = 0; i < scope.targets.length; i++){
+					scales.push(scope.targets[i].scale.clone());
+					rotations.push(scope.targets[i].rotation.clone());
+				}
 			
-			var scales = [];
-			var rotations = [];
-			for(var i = 0; i < scope.targets.length; i++){
-				scales.push(scope.targets[i].scale.clone());
-				rotations.push(scope.targets[i].rotation.clone());
+				scope.dragstart = {
+					object: I.object, 
+					sceneClickPos: I.point,
+					sceneStartPos: scope.sceneRoot.position.clone(),
+					mousePos: {x: scope.mouse.x, y: scope.mouse.y},
+					scales: scales,
+					rotations: rotations
+				};
 			}
-		
-			scope.dragstart = {
-				object: I.object, 
-				sceneClickPos: I.point,
-				sceneStartPos: scope.sceneRoot.position.clone(),
-				mousePos: {x: scope.mouse.x, y: scope.mouse.y},
-				scales: scales,
-				rotations: rotations
-			};
+		}else if(event.which === 3){
+			// right click
+			
+			scope.setTargets([]);
 		}
 	};
 	
@@ -537,6 +599,9 @@ Potree.TransformationTool = function(scene, camera, renderer){
 		scope.targets = targets;
 		
 		if(scope.targets.length === 0){
+			this.sceneRoot.visible = false;
+			this.sceneRotation.visible = false;
+		
 			return;
 		}else{
 			this.sceneRoot.visible = true;

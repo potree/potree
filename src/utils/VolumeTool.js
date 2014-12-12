@@ -61,8 +61,37 @@ Potree.VolumeTool = function(scene, camera, renderer){
 	};
 	
 	function onMouseClick(event){
+		
 		if(state === STATE.INSERT_VOLUME){
 			scope.finishInsertion();
+		}else if(event.which === 1){
+			var I = getHoveredElement();
+			
+			if(I){
+				transformationTool.setTargets([I.object]);
+			}
+		}
+	};
+	
+	function getHoveredElement(){
+			
+		var vector = new THREE.Vector3( scope.mouse.x, scope.mouse.y, 0.5 );
+		vector.unproject(scope.camera);
+		
+		var raycaster = new THREE.Raycaster();
+		raycaster.ray.set( scope.camera.position, vector.sub( scope.camera.position ).normalize() );
+		
+		var objects = [];
+		for(var i = 0; i < scope.volumes.length; i++){
+			var object = scope.volumes[i].object;
+			objects.push(object);
+		}
+		
+		var intersections = raycaster.intersectObjects(objects, false);
+		if(intersections.length > 0){
+			return intersections[0];
+		}else{
+			return false;
 		}
 	};
 	

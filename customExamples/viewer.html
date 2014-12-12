@@ -41,6 +41,7 @@
 	<script src="../src/utils/AreaTool.js"></script>
 	<script src="../src/utils/VolumeTool.js"></script>
 	<script src="../src/utils/TransformationTool.js"></script>
+	<script src="../src/materials/PointCloudMaterial.js"></script>
 	<script src="viewer.js"></script>
 		
 	<div id="lblNumVisibleNodes" class="info" style="position: absolute; left: 10px; top: 80px; width: 400px; color:white"></div>
@@ -48,7 +49,7 @@
 	<div id="lblMessage" class="info" style="position: absolute; left: 10px; bottom: 0px; width: 400px; color:white"></div>
 	
 	<div id="tools" style="position: fixed; width: 200px; bottom: 10px; right: 10px">
-		<input type="button" value="measure" onclick="measuringTool.setEnabled(true)"/>
+		<input type="button" value="distance" onclick="measuringTool.setEnabled(true)"/>
 		<input type="button" value="area" onclick="areaTool.setEnabled(true)"/>
 		<input type="button" value="volume" onclick="volumeTool.startInsertion()"/>
 	
@@ -80,7 +81,7 @@
 	
 	<script>
 		var pointSize = 0.5;
-		var pointCountTarget = 0.4;
+		var pointCountTarget = 1;
 		var opacity = 1;
 		var pointSizeType = Potree.PointSizeType.ADAPTIVE;
 		var pointColorType = Potree.PointColorType.RGB;
@@ -90,7 +91,8 @@
 		var progressBar = new ProgressBar();
 		
 		var pointcloudPath = "../resources/pointclouds/lion_takanawa/cloud.js";
-		var pointcloudPath = "../../../../pointclouds/bruno_friedmann/vol_total/vol_total_bin/cloud.js";
+		//var pointcloudPath = "../../../../pointclouds/bruno_friedmann/vol_total/vol_total_bin/cloud.js";
+		var pointcloudPath = "../../../../pointclouds/pix4d/matterhorn/cloud.js";
 	
 		var elRenderArea = document.getElementById("renderArea");
 	
@@ -127,7 +129,7 @@
 				"skybox": false
 			};
 			
-			var pPoints = gui.add(params, 'points(m)', 0.02, 0.5);
+			var pPoints = gui.add(params, 'points(m)', 0.02, 2);
 			pPoints.onChange(function(value){
 				pointCountTarget = value ;
 			});
@@ -249,7 +251,7 @@
 				referenceFrame.applyMatrix(new THREE.Matrix4().set(
 					1,0,0,0,
 					0,0,1,0,
-					0,1,0,0,
+					0,-1,0,0,
 					0,0,0,1
 				));
 				
@@ -271,7 +273,7 @@
 				//sphere.scale.set(bs.radius, bs.radius, bs.radius);
 				//sphere.position.copy(bs.center);
 				
-				zoomTo(camera, pointcloud, 0.1);
+				zoomTo(camera, pointcloud, 0.7);
 			});
 			
 			var grid = Potree.utils.createGrid(5, 5, 2);
@@ -317,7 +319,7 @@
 				pointcloud.material.heightMin = 0;
 				pointcloud.material.heightMax = 8;
 				
-				pointcloud.update(camera);
+				pointcloud.update(camera, renderer);
 			
 				document.getElementById("lblNumVisibleNodes").innerHTML = "visible nodes: " + pointcloud.numVisibleNodes;
 				document.getElementById("lblNumVisiblePoints").innerHTML = "visible points: " + Potree.utils.addCommas(pointcloud.numVisiblePoints);

@@ -46,18 +46,22 @@ Potree.PointCloudMaterial = function(parameters){
 	
 	var attributes = {};
 	var uniforms = {
-		uColor:   { type: "c", value: new THREE.Color( 0xff0000 ) },
-		opacity:   { type: "f", value: 1.0 },
-		size:   { type: "f", value: 10 },
-		minSize:   { type: "f", value: 2 },
-		nodeSize:   { type: "f", value: nodeSize },
-		heightMin:   { type: "f", value: 0.0 },
-		heightMax:   { type: "f", value: 1.0 },
-		intensityMin:   { type: "f", value: 0.0 },
-		intensityMax:   { type: "f", value: 1.0 },
-		visibleNodes:   { type: "t", value: this.visibleNodesTexture },
-		pcIndex:   { type: "f", value: 0 },
-		gradient: {type: "t", value: this.gradientTexture},
+		spacing:		{ type: "f", value: 1.0 },
+		fov:			{ type: "f", value: 1.0 },
+		screenWidth:	{ type: "f", value: 1.0 },
+		screenHeight:	{ type: "f", value: 1.0 },
+		uColor:   		{ type: "c", value: new THREE.Color( 0xff0000 ) },
+		opacity:   		{ type: "f", value: 1.0 },
+		size:   		{ type: "f", value: 10 },
+		minSize:   		{ type: "f", value: 2 },
+		nodeSize:		{ type: "f", value: nodeSize },
+		heightMin:		{ type: "f", value: 0.0 },
+		heightMax:		{ type: "f", value: 1.0 },
+		intensityMin:	{ type: "f", value: 0.0 },
+		intensityMax:	{ type: "f", value: 1.0 },
+		visibleNodes:	{ type: "t", value: this.visibleNodesTexture },
+		pcIndex:   		{ type: "f", value: 0 },
+		gradient: 		{type: "t", value: this.gradientTexture},
 	};
 	
 	
@@ -169,6 +173,54 @@ Potree.PointCloudMaterial.prototype.getDefines = function(){
 
 	return defines;
 };
+
+Object.defineProperty(Potree.PointCloudMaterial.prototype, "spacing", {
+	get: function(){
+		return this.uniforms.spacing.value;
+	},
+	set: function(value){
+		if(this.uniforms.spacing.value !== value){
+			this.uniforms.spacing.value = value;
+			//this.updateShaderSource();
+		}
+	}
+});
+
+Object.defineProperty(Potree.PointCloudMaterial.prototype, "fov", {
+	get: function(){
+		return this.uniforms.fov.value;
+	},
+	set: function(value){
+		if(this.uniforms.fov.value !== value){
+			this.uniforms.fov.value = value;
+			//this.updateShaderSource();
+		}
+	}
+});
+
+Object.defineProperty(Potree.PointCloudMaterial.prototype, "screenWidth", {
+	get: function(){
+		return this.uniforms.screenWidth.value;
+	},
+	set: function(value){
+		if(this.uniforms.screenWidth.value !== value){
+			this.uniforms.screenWidth.value = value;
+			//this.updateShaderSource();
+		}
+	}
+});
+
+Object.defineProperty(Potree.PointCloudMaterial.prototype, "screenHeight", {
+	get: function(){
+		return this.uniforms.screenHeight.value;
+	},
+	set: function(value){
+		if(this.uniforms.screenHeight.value !== value){
+			this.uniforms.screenHeight.value = value;
+			//this.updateShaderSource();
+		}
+	}
+});
 
 Object.defineProperty(Potree.PointCloudMaterial.prototype, "opacity", {
 	get: function(){
@@ -368,6 +420,11 @@ Potree.PointCloudMaterial.vs_points = [
  "uniform mat4 viewMatrix;                                                           ",
  "uniform mat3 normalMatrix;                                                         ",
  "uniform vec3 cameraPosition;                                                       ",
+ "uniform float screenWidth;                                                                                   ",
+ "uniform float screenHeight;                                                                                   ",
+ "uniform float fov;                                                                                   ",
+ "uniform float spacing;                                                                                   ",
+ "                                                                                   ",
  "                                                                                   ",
  "uniform float heightMin;                                                           ",
  "uniform float heightMax;                                                           ",
@@ -524,18 +581,26 @@ Potree.PointCloudMaterial.vs_points = [
  "  //                                                                               ",
  "  // POINT SIZE TYPES                                                              ",
  "  //                                                                               ",
+ "  float r = spacing * 1.5;                                                                                 ",
  "  #if defined fixed_point_size                                                     ",
  "  	gl_PointSize = size;                                                         ",
  "  #elif defined attenuated_point_size                                              ",
- "		gl_PointSize = size * ( 300.0 / length( mvPosition.xyz ) );                  ",
+ "		//gl_PointSize = size * ( 300.0 / length( mvPosition.xyz ) );                  ",
+ "  	gl_PointSize = (cos(fov/2.0) / sin(fov/2.0)) * r / sqrt( mvPosition.z * mvPosition.z - r * r);                                                                                 ",
+ "      gl_PointSize = gl_PointSize * screenHeight / 2.0;                                                                              ",
  "  #elif defined adaptive_point_size                                                ",
- "      gl_PointSize = size * ( 300.0 / length( mvPosition.xyz ) );                  ",
+ "      //gl_PointSize = size * ( 300.0 / length( mvPosition.xyz ) );                  ",
+ "      //gl_PointSize = (cos(fov/2.0) / sin(fov/2.0)) * r / sqrt( mvPosition.z * mvPosition.z - r * r);                                                                                 ",
+ "      gl_PointSize = (1.0 / tan(fov/2.0)) * r / sqrt( mvPosition.z * mvPosition.z - r * r);                                                                                 ",
+ "      gl_PointSize = gl_PointSize * screenHeight / 2.0;                                                                              ",
  "  	gl_PointSize = gl_PointSize / pow(1.9, getOctreeDepth());                    ",
  "  #endif                                                                           ",
- "                                                                                   ",
+ "                                                                                    ",
  "	gl_PointSize = max(minSize, gl_PointSize);                                       ",
- "	gl_PointSize = min(30.0, gl_PointSize);                                          ",
- "                                                                                   ",
+ "	gl_PointSize = min(50.0, gl_PointSize);                                          ",
+ " //float r = spacing;                                                                                 ",
+ " //gl_PointSize = (cos(fov/2.0) / sin(fov/2.0)) * r / sqrt( mvPosition.z * mvPosition.z - r * r);                                                                                 ",
+ " //gl_PointSize = gl_PointSize * screenHeight / 2.0;                                                                                 ",
  "                                                                                   ",
  "}                                                                                  "];
 

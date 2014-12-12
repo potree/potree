@@ -1,4 +1,14 @@
 
+
+//
+//
+//
+// how to calculate the radius of a projected sphere in screen space
+// http://stackoverflow.com/questions/21648630/radius-of-projected-sphere-in-screen-space
+// http://stackoverflow.com/questions/3717226/radius-of-projected-sphere
+//
+
+
 Potree.PointSizeType = {
 	FIXED: 0,
 	ATTENUATED: 1,
@@ -50,6 +60,8 @@ Potree.PointCloudMaterial = function(parameters){
 		fov:			{ type: "f", value: 1.0 },
 		screenWidth:	{ type: "f", value: 1.0 },
 		screenHeight:	{ type: "f", value: 1.0 },
+		near:			{ type: "f", value: 0.1 },
+		far:			{ type: "f", value: 1.0 },
 		uColor:   		{ type: "c", value: new THREE.Color( 0xff0000 ) },
 		opacity:   		{ type: "f", value: 1.0 },
 		size:   		{ type: "f", value: 10 },
@@ -217,6 +229,30 @@ Object.defineProperty(Potree.PointCloudMaterial.prototype, "screenHeight", {
 	set: function(value){
 		if(this.uniforms.screenHeight.value !== value){
 			this.uniforms.screenHeight.value = value;
+			//this.updateShaderSource();
+		}
+	}
+});
+
+Object.defineProperty(Potree.PointCloudMaterial.prototype, "near", {
+	get: function(){
+		return this.uniforms.near.value;
+	},
+	set: function(value){
+		if(this.uniforms.near.value !== value){
+			this.uniforms.near.value = value;
+			//this.updateShaderSource();
+		}
+	}
+});
+
+Object.defineProperty(Potree.PointCloudMaterial.prototype, "far", {
+	get: function(){
+		return this.uniforms.far.value;
+	},
+	set: function(value){
+		if(this.uniforms.far.value !== value){
+			this.uniforms.far.value = value;
 			//this.updateShaderSource();
 		}
 	}
@@ -424,6 +460,8 @@ Potree.PointCloudMaterial.vs_points = [
  "uniform float screenHeight;                                                                                   ",
  "uniform float fov;                                                                                   ",
  "uniform float spacing;                                                                                   ",
+ "uniform float near;                                                                                   ",
+ "uniform float far;                                                                                   ",
  "                                                                                   ",
  "                                                                                   ",
  "uniform float heightMin;                                                           ",
@@ -586,21 +624,18 @@ Potree.PointCloudMaterial.vs_points = [
  "  	gl_PointSize = size;                                                         ",
  "  #elif defined attenuated_point_size                                              ",
  "		//gl_PointSize = size * ( 300.0 / length( mvPosition.xyz ) );                  ",
- "  	gl_PointSize = (cos(fov/2.0) / sin(fov/2.0)) * r / sqrt( mvPosition.z * mvPosition.z - r * r);                                                                                 ",
+ "      gl_PointSize = (1.0 / tan(fov/2.0)) * size / (-mvPosition.z);                                                                                 ",
  "      gl_PointSize = gl_PointSize * screenHeight / 2.0;                                                                              ",
  "  #elif defined adaptive_point_size                                                ",
  "      //gl_PointSize = size * ( 300.0 / length( mvPosition.xyz ) );                  ",
- "      //gl_PointSize = (cos(fov/2.0) / sin(fov/2.0)) * r / sqrt( mvPosition.z * mvPosition.z - r * r);                                                                                 ",
- "      gl_PointSize = (1.0 / tan(fov/2.0)) * r / sqrt( mvPosition.z * mvPosition.z - r * r);                                                                                 ",
- "      gl_PointSize = gl_PointSize * screenHeight / 2.0;                                                                              ",
+ "      //gl_PointSize = (1.0 / tan(fov/2.0)) * r / sqrt( max(0.0, mvPosition.z * mvPosition.z - r * r));                                                                                 ",
+ "      gl_PointSize = (1.0 / tan(fov/2.0)) * r / (-mvPosition.z);                                                                                 ",
+ "      gl_PointSize = size * gl_PointSize * screenHeight / 2.0;                                                                              ",
  "  	gl_PointSize = gl_PointSize / pow(1.9, getOctreeDepth());                    ",
  "  #endif                                                                           ",
  "                                                                                    ",
  "	gl_PointSize = max(minSize, gl_PointSize);                                       ",
  "	gl_PointSize = min(50.0, gl_PointSize);                                          ",
- " //float r = spacing;                                                                                 ",
- " //gl_PointSize = (cos(fov/2.0) / sin(fov/2.0)) * r / sqrt( mvPosition.z * mvPosition.z - r * r);                                                                                 ",
- " //gl_PointSize = gl_PointSize * screenHeight / 2.0;                                                                                 ",
  "                                                                                   ",
  "}                                                                                  "];
 

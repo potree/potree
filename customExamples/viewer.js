@@ -1,60 +1,46 @@
+zoomTo = function( camera, node, factor ){
 
-ViewerControls = function(renderer, camera, scene){
+	if ( !node.geometry && !node.boundingSphere ) {
 	
-	var scope = this;
+		return;
 	
-	this.domElement = renderer.domElement;
-	this.listener = [];
+	}
+	
+	if ( node.geometry && node.geometry.boundingSphere === null ) { 
+	
+		node.geometry.computeBoundingSphere();
+	
+	}
+	
+	var boundingSphere = node.boundingSphere || node.geometry.boundingSphere;
+	
+	if ( !boundingSphere ) {
+	
+		return;
+		
+	}
 	
 	
+	node.updateMatrixWorld();
 	
-	
-	
-	
-	
-	
-	
-	var onMouseDown = function(event){
-		for(var i = 0; i < scope.listener.length; i++){
-			scope.listener[i].onMouseDown(event);
-		}
-	};
-	
-	var onDoubleClick = function(event){
-		for(var i = 0; i < scope.listener.length; i++){
-			scope.listener[i].onDoubleClick(event);
-		}
-	};
-	
-	var onMouseWheel = function(event){
-		for(var i = 0; i < scope.listener.length; i++){
-			scope.listener[i].onMouseWheel(event);
-		}
-	};
-	
-	var onKeyDown = function(event){
-		for(var i = 0; i < scope.listener.length; i++){
-			scope.listener[i].onKeyDown(event);
-		}
-	};
-	
-	var onKeyUp = function(event){
-		for(var i = 0; i < scope.listener.length; i++){
-			scope.listener[i].onKeyUp(event);
-		}
-	};
-	
-	this.update = function(delta){
-	
-	};
-	
-	this.domElement.addEventListener( 'dblclick', onDoubleClick, false);
-	this.domElement.addEventListener( 'contextmenu', function ( event ) { event.preventDefault(); }, false );
-	this.domElement.addEventListener( 'mousedown', onMouseDown, false );
-	this.domElement.addEventListener( 'mousewheel', onMouseWheel, false );
-	this.domElement.addEventListener( 'DOMMouseScroll', onMouseWheel, false ); // firefox
+	boundingSphere = boundingSphere.clone().applyMatrix4(node.matrixWorld);
 
-	window.addEventListener( 'keydown', onKeyDown, false );
-	window.addEventListener( 'keyup', onKeyUp, false );
+	var _factor = factor || 1;
+	
+	var radius = boundingSphere.radius;
+	var center = boundingSphere.center;
+	var fovr = camera.fov * Math.PI / 180;
+	
+	if( camera.aspect < 1 ){
+	
+		fovr = fovr * camera.aspect;
+		
+	}
+	
+	var distanceFactor = Math.abs( radius / Math.sin( fovr / 2 ) ) * _factor ;
+	
+	var dir = new THREE.Vector3( 0, 0, -1 ).applyQuaternion( camera.quaternion );
+	var offset = dir.multiplyScalar( -distanceFactor );
+	camera.position.copy(center.add( offset ));
+	
 };
-

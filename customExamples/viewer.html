@@ -38,6 +38,7 @@
 	<script src="../examples/js/ProgressBar.js"></script>
 	<script src="../src/PointCloudOctree.js"></script>
 	<script src="../src/utils/MeasuringTool.js"></script>
+	<script src="../src/utils/AreaTool.js"></script>
 	<script src="../src/utils/VolumeTool.js"></script>
 	<script src="../src/utils/TransformationTool.js"></script>
 	<script src="viewer.js"></script>
@@ -48,6 +49,7 @@
 	
 	<div id="tools" style="position: fixed; width: 200px; bottom: 10px; right: 10px">
 		<input type="button" value="measure" onclick="measuringTool.setEnabled(true)"/>
+		<input type="button" value="area" onclick="areaTool.setEnabled(true)"/>
 		<input type="button" value="volume" onclick="volumeTool.startInsertion()"/>
 	
 	</div>
@@ -88,6 +90,7 @@
 		var progressBar = new ProgressBar();
 		
 		var pointcloudPath = "../resources/pointclouds/lion_takanawa/cloud.js";
+		var pointcloudPath = "../../../../pointclouds/bruno_friedmann/vol_total/vol_total_bin/cloud.js";
 	
 		var elRenderArea = document.getElementById("renderArea");
 	
@@ -100,8 +103,10 @@
 		var clock = new THREE.Clock();
 		var showSkybox = false;
 		var measuringTool;
+		var areaTool;
 		var volumeTool;
 		var transformationTool;
+		var referenceFrame;
 		
 		function initGUI(){
 		
@@ -203,6 +208,9 @@
 		
 			scene = new THREE.Scene();
 			camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+			
+			referenceFrame = new THREE.Object3D();
+			scene.add(referenceFrame);
 
 			renderer = new THREE.WebGLRenderer();
 			renderer.setSize(width, height);
@@ -212,8 +220,11 @@
 			skybox = Potree.utils.loadSkybox("../resources/textures/skybox/");
 
 			// camera and controls
-			camera.position.set(3, 7, 6);
-			camera.lookAt(new THREE.Vector3(0, 5, 0));
+			camera.position.set(10, 10, 10);
+			camera.rotation.y = Math.PI / 4;
+			camera.rotation.x = -Math.PI / 4;
+			//camera.lookAt(new THREE.Vector3(0, 0, 0));
+			controls = new THREE.FirstPersonControls(camera, renderer.domElement);
 			//controls = new ViewerControls(renderer, camera, scene);
 //			controls = new THREE.FirstPersonControls(camera, renderer.domElement);
 			//controls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -231,24 +242,47 @@
 				pointcloud.material.size = pointSize;
 				pointcloud.visiblePointsTarget = pointCountTarget * 1000 * 1000;
 				
-				pointcloud.rotation.set(Math.PI/2, 0.85* -Math.PI/2, -0.0);
-				pointcloud.moveToOrigin();
-				pointcloud.moveToGroundPlane();
-				//pointcloud.position.x += 10;
+				//pointcloud.rotation.set(Math.PI/2, 0.85* -Math.PI/2, -0.0);
 				
-				scene.add(pointcloud);
-				//transformationTool.setTargets([pointcloud]);
+				referenceFrame.add(pointcloud);
+				
+				referenceFrame.applyMatrix(new THREE.Matrix4().set(
+					1,0,0,0,
+					0,0,1,0,
+					0,1,0,0,
+					0,0,0,1
+				));
+				
+				referenceFrame.updateMatrixWorld(true);
+				var sg = pointcloud.boundingSphere.clone().applyMatrix4(pointcloud.matrixWorld);
+				
+				referenceFrame.position.copy(sg.center).multiplyScalar(-1);
+				referenceFrame.position.y += sg.radius;
+				
+				referenceFrame.updateMatrixWorld(true);
+				
+				
+				
+				
+				//var sg = new THREE.SphereGeometry(1, 40, 40);
+				//var sphere = new THREE.Mesh(sg, new THREE.MeshBasicMaterial({transparent: true, opacity: 0.5}));
+				//scene.add(sphere);
+				//var bs = pointcloud.boundingSphere.clone().applyMatrix4(pointcloud.matrixWorld);
+				//sphere.scale.set(bs.radius, bs.radius, bs.radius);
+				//sphere.position.copy(bs.center);
+				
+				zoomTo(camera, pointcloud, 0.1);
 			});
 			
 			var grid = Potree.utils.createGrid(5, 5, 2);
 			scene.add(grid);
 			
 			measuringTool = new Potree.MeasuringTool(scene, camera, renderer);
+			areaTool = new Potree.AreaTool(scene, camera, renderer);
 			volumeTool = new Potree.VolumeTool(scene, camera, renderer);
 			transformationTool = new Potree.TransformationTool(scene, camera, renderer);
-	
-	
-			controls = new THREE.FirstPersonControls(camera, renderer.domElement);
+
+			
 			
 			window.addEventListener( 'keydown', onKeyDown, false );
 		}
@@ -337,6 +371,7 @@
 			
 			renderer.clearDepth();
 			measuringTool.render();
+			areaTool.render();
 			transformationTool.render();
 		}
 		

@@ -570,6 +570,10 @@ Potree.TransformationTool = function(scene, camera, renderer){
 	};
 	
 	function getHoveredElement(){
+	
+		if(scope.targets.length === 0){
+			return;
+		}
 			
 		var vector = new THREE.Vector3( scope.mouse.x, scope.mouse.y, 0.5 );
 		vector.unproject(scope.camera);
@@ -671,6 +675,8 @@ Potree.TransformationTool = function(scene, camera, renderer){
 	
 	//this.translate();
 	this.rotate();
+	
+	this.setTargets([]);
 	
 	//this.domElement.addEventListener( 'click', onClick, false);
 	this.domElement.addEventListener( 'mousemove', onMouseMove, true );

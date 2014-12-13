@@ -152,28 +152,28 @@ Potree.VolumeTool = function(scene, camera, renderer){
 			}
 		}
 		
-			var volumes = [];
-			for(var i = 0; i < this.volumes.length; i++){
-				volumes.push(this.volumes[i]);
-			}
-			if(this.activeVolume){
-				volumes.push(this.activeVolume);
-			}
+		var volumes = [];
+		for(var i = 0; i < this.volumes.length; i++){
+			volumes.push(this.volumes[i]);
+		}
+		if(this.activeVolume){
+			volumes.push(this.activeVolume);
+		}
+		
+		for(var i = 0; i < volumes.length; i++){
+			var box = volumes[i].object;
+			var label = volumes[i].label;
 			
-			for(var i = 0; i < volumes.length; i++){
-				var box = volumes[i].object;
-				var label = volumes[i].label;
-				
-				var volume = box.scale.x * box.scale.y * box.scale.z;
-				var msg = volume.toFixed(1) + "³";
-				
-				var wp = label.getWorldPosition().applyMatrix4(this.camera.matrixWorldInverse);
-				var pp = new THREE.Vector4(wp.x, wp.y, wp.z).applyMatrix4(this.camera.projectionMatrix);
-				var w = Math.abs((wp.z  / 10)); 
-				var l = label.scale.length();
-				label.scale.multiplyScalar(w / l);
-				label.setText(msg);
-			}
+			var volume = box.scale.x * box.scale.y * box.scale.z;
+			var msg = Potree.utils.addCommas(volume.toFixed(1)) + "³";
+			
+			var wp = label.getWorldPosition().applyMatrix4(this.camera.matrixWorldInverse);
+			var pp = new THREE.Vector4(wp.x, wp.y, wp.z).applyMatrix4(this.camera.projectionMatrix);
+			var w = Math.abs(wp.z  / 5); 
+			label.setText(msg);
+			var l = label.scale.length();
+			label.scale.multiplyScalar(w / l);
+		}
 		
 		
 		

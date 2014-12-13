@@ -140,7 +140,7 @@ Potree.TransformationTool = function(scene, camera, renderer){
 			}
 			
 			
-			console.log(mouseDiff);
+			//console.log(mouseDiff);
 		};
 		
 		var dropEvent = function(event){
@@ -332,7 +332,7 @@ Potree.TransformationTool = function(scene, camera, renderer){
 			for(var i = 0; i < scope.targets.length; i++){
 				var target = scope.targets[i];
 				var startScale = scope.dragstart.scales[i];
-				target.scale.copy(startScale).multiply(diff);
+				target.scale.copy(startScale).add(diff);
 				target.scale.x = Math.max(target.scale.x, 0.01);
 				target.scale.y = Math.max(target.scale.y, 0.01);
 				target.scale.z = Math.max(target.scale.z, 0.01);

@@ -1,4 +1,11 @@
 
+//
+// calculating area of a polygon:
+// http://www.mathopenref.com/coordpolygonarea2.html
+//
+//
+//
+
 Potree.AreaTool = function(scene, camera, renderer){
 	
 	var scope = this;
@@ -77,6 +84,13 @@ Potree.AreaTool = function(scene, camera, renderer){
 		this.root = root;
 		this.closed = true;
 		
+		this.areaLabel = new Potree.TextSprite();
+		this.areaLabel.setBorderColor({r:0, g:255, b:0, a:0.0});
+		this.areaLabel.setBackgroundColor({r:0, g:255, b:0, a:0.0});
+		this.areaLabel.material.depthTest = false;
+		this.areaLabel.material.opacity = 1;
+		root.add(this.areaLabel);
+		
 		var sphereGeometry = new THREE.SphereGeometry(0.4, 10, 10);
 		var lineColor = new THREE.Color( 0xff0000 );
 		
@@ -145,6 +159,23 @@ Potree.AreaTool = function(scene, camera, renderer){
 			this.update();
 		};
 		
+		/**
+		 * see http://www.mathopenref.com/coordpolygonarea2.html
+		 */
+		this.getArea = function(){
+			var area = 0;
+			var j = this.points.length - 1;
+			
+			for(var i = 0; i < this.points.length; i++){
+				var p1 = this.points[i];
+				var p2 = this.points[j];
+				area += (p2.x + p1.x) * (p1.z - p2.z);
+				j = i;
+			}
+			
+			return Math.abs(area / 2);
+		};
+		
 		this.setPosition = function(index, position){
 			var point = this.points[index];			
 			point.copy(position);
@@ -159,6 +190,8 @@ Potree.AreaTool = function(scene, camera, renderer){
 		};
 		
 		this.update = function(){
+			this.areaLabel.visible = this.points.length >= 3;
+		
 			if(this.points.length === 1){
 				var point = this.points[0];
 				this.spheres[0].position.copy(point);
@@ -167,7 +200,9 @@ Potree.AreaTool = function(scene, camera, renderer){
 				
 				return;
 			}
-		
+			
+			
+			var centroid = new THREE.Vector3();
 			var lastIndex = this.points.length - 1;
 			for(var i = 0; i <= lastIndex; i++){
 				var point = this.points[i];
@@ -207,8 +242,14 @@ Potree.AreaTool = function(scene, camera, renderer){
 					rightEdgeLabel.visible = true;
 				}
 				
-				
+				centroid.add(point);
 			}
+			centroid.multiplyScalar(1 / this.points.length);
+			
+			
+			var msg = Potree.utils.addCommas(this.getArea().toFixed(1)) + "²";
+			this.areaLabel.setText(msg);
+			this.areaLabel.position.copy(centroid);
 		};
 		
 		
@@ -441,6 +482,11 @@ Potree.AreaTool = function(scene, camera, renderer){
 				var l = label.scale.length();
 				label.scale.multiplyScalar(w / l);
 			}
+			
+			var wp = measurement.areaLabel.getWorldPosition().applyMatrix4(this.camera.matrixWorldInverse);
+			var w = Math.abs(wp.z  / 8);
+			var l = measurement.areaLabel.scale.length();
+			measurement.areaLabel.scale.multiplyScalar(w / l);
 		}
 	
 		this.light.position.copy(this.camera.position);

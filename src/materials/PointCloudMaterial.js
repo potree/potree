@@ -439,8 +439,8 @@ Potree.PointCloudMaterial.generateGradient = function() {
 }
 
 Potree.PointCloudMaterial.vs_points = [
- "precision highp float;                                                             ",
- "precision highp int;                                                               ",
+ "precision mediump float;                                                             ",
+ "precision mediump int;                                                               ",
  "                                                                                   ",
  "attribute vec3 position;                                                           ",
  "attribute vec3 color;                                                              ",

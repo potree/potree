@@ -88,7 +88,7 @@ Potree.PointCloudOctree = function(geometry, material){
 
 Potree.PointCloudOctree.prototype = Object.create(THREE.Object3D.prototype);
 
-Potree.PointCloudOctree.prototype.update = function(camera){
+Potree.PointCloudOctree.prototype.update = function(camera, renderer){
 	this.updateMatrixWorld(true);
 
 	this.visibleGeometry = this.getVisibleGeometry(camera);
@@ -108,6 +108,13 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 	this.numVisibleNodes = 0;
 	this.numVisiblePoints = 0;
 	
+	this.material.fov = camera.fov * (Math.PI / 180);
+	this.material.screenWidth = renderer.domElement.clientWidth;
+	this.material.screenHeight = renderer.domElement.clientHeight;
+	this.material.spacing = pointcloud.pcoGeometry.spacing;
+	this.material.near = camera.near;
+	this.material.far = camera.far;
+	
 	this.hideDescendants(this.children[0]);
 	
 	var stack = [];
@@ -118,6 +125,8 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 		var weight = element.weight;
 		
 		node.visible = true;
+		
+		node.matrixWorld.multiplyMatrices( node.parent.matrixWorld, node.matrix );
 		
 		if (node instanceof Potree.PointCloudOctreeProxyNode) {
 			var geometryNode = node.geometryNode;

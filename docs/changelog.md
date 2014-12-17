@@ -1,6 +1,26 @@
 
 
-# 2014.12.03
+## 2014.12.17
+
+### features
+* Added Area and Volume measurement tools. 
+* Made tool markers draggable.
+* See examples/viewer.js for a demo of all measurement tools. In this demo, the volume can be translated, scaled and rotated by pressing e, r and t.
+* Attenuated point sizes are differently scaled. Now, the point size specifies the radius of the point in scene coordinates. 
+* Adaptive point sizes are differently scaled. A size of 1 means that the point size is choosen to optimaly cover holes. Due   to this it is now necessary to pass the renderer to the pointcloud.update() function:
+ 
+  ```
+  pointcloud.update(camera, renderer);
+  ```
+
+
+
+### bugfixes
+* LAS and LAZ format now support point picking, too.
+* Using mediump precision instead of highp. Highp is not supported on all devices and it seems like it's generaly adviced not to use it.
+
+
+## 2014.12.03
 
 * Made measurement tool independant of scale. Spheres and Labels are displayed at the same size regardless of the distance to the camera.
   MeasurementTool now has to be rendered using 

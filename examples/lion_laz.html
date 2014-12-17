@@ -51,7 +51,7 @@
 	<div id="renderArea"></div>
 	
 	<script>
-		var pointSize = 0.5;
+		var pointSize = 1;
 		var pointCountTarget = 0.4;
 		var opacity = 1;
 		var pointSizeType = Potree.PointSizeType.ADAPTIVE;
@@ -228,7 +228,7 @@
 				pointcloud.material.intensityMin = 0;
 				pointcloud.material.intensityMax = 65000;
 				
-				pointcloud.update(camera);
+				pointcloud.update(camera, renderer);
 			
 				document.getElementById("lblNumVisibleNodes").innerHTML = "visible nodes: " + pointcloud.numVisibleNodes;
 				document.getElementById("lblNumVisiblePoints").innerHTML = "visible points: " + Potree.utils.addCommas(pointcloud.numVisiblePoints);

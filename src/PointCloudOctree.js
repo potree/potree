@@ -111,7 +111,7 @@ Potree.PointCloudOctree.prototype.update = function(camera, renderer){
 	this.material.fov = camera.fov * (Math.PI / 180);
 	this.material.screenWidth = renderer.domElement.clientWidth;
 	this.material.screenHeight = renderer.domElement.clientHeight;
-	this.material.spacing = pointcloud.pcoGeometry.spacing;
+	this.material.spacing = this.pcoGeometry.spacing;
 	this.material.near = camera.near;
 	this.material.far = camera.far;
 	

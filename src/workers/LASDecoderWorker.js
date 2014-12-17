@@ -75,11 +75,15 @@ onmessage = function(event){
 	var cBuff = new ArrayBuffer(numPoints*3*4);
 	var iBuff = new ArrayBuffer(numPoints*4);
 	var clBuff = new ArrayBuffer(numPoints);
+	var rnBuff = new ArrayBuffer(numPoints);
+	var psBuff = new ArrayBuffer(numPoints * 2);
 	
 	var positions = new Float32Array(pBuff);
 	var colors = new Float32Array(cBuff);
 	var intensities = new Float32Array(iBuff);
 	var classifications = new Uint8Array(clBuff);
+	var returnNumbers = new Uint8Array(rnBuff);
+	var pointSourceIDs = new Uint16Array(psBuff);
 	
 	
 	// temp arrays seem to be significantly faster than DataViews
@@ -105,10 +109,6 @@ onmessage = function(event){
 		tempUint8[3] = bufferView[i*pointSize+11];
 		var z = tempInt32[0];
 		
-		//positions[3*i+0] = x * scale[0] + offset[0] - mins[0];
-		//positions[3*i+1] = y * scale[1] + offset[1] - mins[1];
-		//positions[3*i+2] = z * scale[2] + offset[2] - mins[2];
-		
 		positions[3*i+0] = x * scale[0] + offset[0] + bbOffset[0];
 		positions[3*i+1] = y * scale[1] + offset[1] + bbOffset[1];
 		positions[3*i+2] = z * scale[2] + offset[2] + bbOffset[2];
@@ -119,11 +119,19 @@ onmessage = function(event){
 		var intensity = tempUint16[0];
 		intensities[i] = intensity;
 		
+		// RETURN NUMBER, stored in the first 3 bits
+		var returnNumber = bufferView[i*pointSize+14] & 7;
+		returnNumbers[i] = returnNumber;
 		
 		// CLASSIFICATION
 		var classification = bufferView[i*pointSize+15];
 		classifications[i] = classification;
 		
+		// POINT SOURCE ID
+		tempUint8[0] = bufferView[i*pointSize+18];
+		tempUint8[1] = bufferView[i*pointSize+19];
+		var pointSourceID = tempUint16[0];
+		pointSourceIDs[i] = pointSourceID;
 		
 		// COLOR, if available
 		if(pointFormatID === 2){
@@ -149,13 +157,17 @@ onmessage = function(event){
 		position: pBuff, 
 		color: cBuff, 
 		intensity: iBuff,
-		classification: clBuff};
+		classification: clBuff,
+		returnNumber: rnBuff,
+		pointSourceID: psBuff};
 		
 	var transferables = [
 		message.position,
 		message.color, 
 		message.intensity,
-		message.classification];
+		message.classification,
+		message.returnNumber,
+		message.pointSourceID];
 		
 	postMessage(message, transferables);
 }

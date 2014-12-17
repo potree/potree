@@ -26,6 +26,10 @@ For more details, read the [Getting Started Section](./docs/getting_started.md)
 ## Convert Your Own Pointclouds
 Use the [PotreeConverter](https://github.com/potree/PotreeConverter) to convert your own point clouds into the potree format.
 
+## Changelog
+Take a look at the changelog to get an overview of new features and possible changes to the usage:
+[docs/changelog.md](./docs/changelog.md)
+
 ## Compatibility
 
 | Browser              | OS      | Result        |

@@ -51,6 +51,13 @@ POCLoader.load = function load(url, callback) {
 				pco.boundingBox = boundingBox;
 				pco.boundingSphere = boundingBox.getBoundingSphere();
 				pco.offset = offset;
+				if(fMno.pointAttributes === "LAS"){
+					pco.loader = new Potree.LasLazLoader(fMno.version);
+				}else if(fMno.pointAttributes === "LAZ"){
+					pco.loader = new Potree.LasLazLoader(fMno.version);
+				}else{
+					pco.loader = new Potree.BinaryLoader(fMno.version);
+				}
 				
 				var nodes = {};
 				

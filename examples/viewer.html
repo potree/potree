@@ -29,27 +29,59 @@
 	
 	</style>
 
+	<script src="../libs/plasio/js/laslaz.js"></script>
+	<script src="../libs/plasio/vendor/bluebird.js"></script>
 	<script src="../libs/three.js/build/three.js"></script>
 	<script src="../libs/other/OrbitControls.js"></script>
 	<script src="../libs/other/stats.min.js"></script>
 	<script src="../libs/other/dat.gui.min.js"></script>
 	
 	<script src="../build/js/potree.js"></script>
-	<script src="js/ProgressBar.js"></script>
+	<script src="../build/js/laslaz.js"></script>
+	<script src="../examples/js/ProgressBar.js"></script>
+	<script src="../src/PointCloudOctree.js"></script>
+	<script src="../src/utils/MeasuringTool.js"></script>
+	<script src="../src/utils/AreaTool.js"></script>
+	<script src="../src/utils/VolumeTool.js"></script>
+	<script src="../src/utils/TransformationTool.js"></script>
+	<script src="../src/materials/PointCloudMaterial.js"></script>
+	<script src="viewer.js"></script>
 		
 	<div id="lblNumVisibleNodes" class="info" style="position: absolute; left: 10px; top: 80px; width: 400px; color:white"></div>
 	<div id="lblNumVisiblePoints" class="info" style="position: absolute; left: 10px; top: 100px; width: 400px; color:white"></div>
 	<div id="lblMessage" class="info" style="position: absolute; left: 10px; bottom: 0px; width: 400px; color:white"></div>
 	
+	<div id="tools" style="position: fixed; width: 200px; bottom: 10px; right: 10px">
+		<input type="button" value="distance" onclick="measuringTool.setEnabled(true)"/>
+		<input type="button" value="area" onclick="areaTool.setEnabled(true)"/>
+		<input type="button" value="volume" onclick="volumeTool.startInsertion()"/>
+	
+	</div>
+	
+	<div id="test" style="border: 1px solid red; position: fixed; pointer-events: none">
+	
+	</div>
+	
+	<div id="test1" style="border: 1px solid red; position: fixed; pointer-events: none;">
+	
+	</div>
+	
+	<div id="test2" style="border: 1px solid red; position: fixed; pointer-events: none;">
+	
+	</div>
+	
+	
 	<div class="info" style="position: absolute; left: 300px; right: 300px; top: 10px; text-align: center;">
 		<a href="http://potree.org" target="_blank">potree.org</a><br>
+		Point cloud courtesy of <a href="http://www.sigeom.ch/" target="_blank">sigeom sa</a><br>
+		
 	</div>
 	
 	<div id="renderArea"></div>
 	
 	<script>
-		var pointSize = 1;
-		var pointCountTarget = 0.4;
+		var pointSize = 1.0 ;
+		var pointCountTarget = 1;
 		var opacity = 1;
 		var pointSizeType = Potree.PointSizeType.ADAPTIVE;
 		var pointColorType = Potree.PointColorType.RGB;
@@ -57,8 +89,8 @@
 		var interpolate = false;
 		
 		var progressBar = new ProgressBar();
-		
-		var pointcloudPath = "../resources/pointclouds/lion_takanawa/cloud.js";
+
+		var pointcloudPath = "../resources/pointclouds/vol_total/cloud.js";
 	
 		var elRenderArea = document.getElementById("renderArea");
 	
@@ -70,6 +102,11 @@
 		var stats;
 		var clock = new THREE.Clock();
 		var showSkybox = false;
+		var measuringTool;
+		var areaTool;
+		var volumeTool;
+		var transformationTool;
+		var referenceFrame;
 		
 		function initGUI(){
 		
@@ -90,7 +127,7 @@
 				"skybox": false
 			};
 			
-			var pPoints = gui.add(params, 'points(m)', 0.02, 0.5);
+			var pPoints = gui.add(params, 'points(m)', 0.02, 2);
 			pPoints.onChange(function(value){
 				pointCountTarget = value ;
 			});
@@ -167,10 +204,13 @@
 			var height = elRenderArea.clientHeight;
 			var aspect = width / height;
 			var near = 0.1;
-			var far = 100000;
+			var far = 1000000;
 		
 			scene = new THREE.Scene();
 			camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+			
+			referenceFrame = new THREE.Object3D();
+			scene.add(referenceFrame);
 
 			renderer = new THREE.WebGLRenderer();
 			renderer.setSize(width, height);
@@ -180,10 +220,11 @@
 			skybox = Potree.utils.loadSkybox("../resources/textures/skybox/");
 
 			// camera and controls
-			camera.position.set(3, 7, 6);
-			controls = new THREE.OrbitControls(camera, renderer.domElement);
-			controls.target.set( 0, 5, 0 );
-			camera.lookAt(controls.target);
+			camera.position.set(-304, 372, 318);
+			camera.rotation.y = -Math.PI / 4;
+			camera.rotation.x = -Math.PI / 6;
+			controls = new THREE.FirstPersonControls(camera, renderer.domElement);
+			controls.moveSpeed *= 10;
 			
 			// enable frag_depth extension for the interpolation shader, if available
 			renderer.context.getExtension("EXT_frag_depth");
@@ -196,16 +237,58 @@
 				pointcloud.material.size = pointSize;
 				pointcloud.visiblePointsTarget = pointCountTarget * 1000 * 1000;
 				
-				pointcloud.rotation.set(Math.PI/2, 0.85* -Math.PI/2, -0.0);
-				pointcloud.moveToOrigin();
-				pointcloud.moveToGroundPlane();
+				//pointcloud.rotation.set(Math.PI/2, 0.85* -Math.PI/2, -0.0);
 				
-				scene.add(pointcloud);
+				referenceFrame.add(pointcloud);
+				
+				referenceFrame.applyMatrix(new THREE.Matrix4().set(
+					1,0,0,0,
+					0,0,1,0,
+					0,-1,0,0,
+					0,0,0,1
+				));
+				
+				referenceFrame.updateMatrixWorld(true);
+				var sg = pointcloud.boundingSphere.clone().applyMatrix4(pointcloud.matrixWorld);
+				
+				referenceFrame.position.copy(sg.center).multiplyScalar(-1);
+				referenceFrame.position.y += sg.radius;
+				
+				referenceFrame.updateMatrixWorld(true);
+				
+				//zoomTo(camera, pointcloud, 0.7);
 			});
 			
 			var grid = Potree.utils.createGrid(5, 5, 2);
 			scene.add(grid);
+			
+			measuringTool = new Potree.MeasuringTool(scene, camera, renderer);
+			areaTool = new Potree.AreaTool(scene, camera, renderer);
+			volumeTool = new Potree.VolumeTool(scene, camera, renderer);
+			transformationTool = new Potree.TransformationTool(scene, camera, renderer);
+
+			
+			
+			window.addEventListener( 'keydown', onKeyDown, false );
 		}
+		
+		function onKeyDown(event){
+			//console.log(event.keyCode);
+			
+			if(event.keyCode === 69){
+				// e pressed
+				
+				transformationTool.translate();
+			}else if(event.keyCode === 82){
+				// r pressed
+				
+				transformationTool.scale();
+			}else if(event.keyCode === 84){
+				// r pressed
+				
+				transformationTool.rotate();
+			}
+		};
 		
 		function update(){
 			if(pointcloud){
@@ -245,6 +328,9 @@
 				progressBar.show();
 				progressBar.message = "loading metadata";
 			}
+			
+			volumeTool.update();
+			transformationTool.update();
 		}
 		
 		function render(){
@@ -267,6 +353,11 @@
 			
 			// render scene
 			renderer.render(scene, camera);
+			
+			renderer.clearDepth();
+			measuringTool.render();
+			areaTool.render();
+			transformationTool.render();
 		}
 		
 		function loop() {
@@ -275,6 +366,8 @@
 			update();
 			render();
 		};
+		
+		
 		
 		initThree();
 		initGUI();

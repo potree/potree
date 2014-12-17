@@ -159,7 +159,7 @@ The updateMapExtent() shows how this can be used to visualize the boundaries in 
 
 	<div id="renderArea"></div>
     <script type="text/javascript">
-	var pointSize = 20;
+	var pointSize = 1;
 	var pointCountTarget = 1;
 	var opacity = 1;
 	var pointSizeType = Potree.PointSizeType.ADAPTIVE;
@@ -576,7 +576,7 @@ The updateMapExtent() shows how this can be used to visualize the boundaries in 
 			pointcloud.material.heightMin = 710;
 			pointcloud.material.heightMax = 770;
 		
-			pointcloud.update(camera);
+			pointcloud.update(camera, renderer);
 			updateMapFrustum();
 			updateCoordinatePicking();
 			updateProfile();
@@ -772,10 +772,11 @@ The updateMapExtent() shows how this can be used to visualize the boundaries in 
 			renderer.render(skybox.scene, skybox.camera);
 		}
 		
+		
 		// render scenes
 		profileTool.render(renderer, scene);
 		renderer.render(scene, camera);
-		renderer.render(measuringTool.sceneMeasurement, camera);
+		measuringTool.render();
 		renderer.render(sceneHUD, cameraHUD);
 		
 	}

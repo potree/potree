@@ -181,6 +181,13 @@ POCLoader.load = function load(url, callback) {
 				pco.boundingBox = boundingBox;
 				pco.boundingSphere = boundingBox.getBoundingSphere();
 				pco.offset = offset;
+				if(fMno.pointAttributes === "LAS"){
+					pco.loader = new Potree.LasLazLoader(fMno.version);
+				}else if(fMno.pointAttributes === "LAZ"){
+					pco.loader = new Potree.LasLazLoader(fMno.version);
+				}else{
+					pco.loader = new Potree.BinaryLoader(fMno.version);
+				}
 				
 				var nodes = {};
 				
@@ -436,22 +443,134 @@ PointAttributes.prototype.hasNormals = function(){
 
 
 
-function LasLazLoader(){
+Potree.BinaryLoader = function(version){
+	if(typeof(version) === "string"){
+		this.version = new Potree.Version(version);
+	}else{
+		this.version = version;
+	}
+};
 
+Potree.BinaryLoader.prototype.newerVersion = function(version){
+
+};
+
+Potree.BinaryLoader.prototype.load = function(node){
+
+	if(node.loaded){
+		return;
+	}
+
+	var url = node.pcoGeometry.octreeDir + "/" + node.name;
+	if(this.version.newerThan("1.3")){
+		url += ".bin";
+	}
+	
+	var scope = this;
+	
+	var xhr = new XMLHttpRequest();
+	xhr.open('GET', url, true);
+	xhr.responseType = 'arraybuffer';
+	xhr.overrideMimeType('text/plain; charset=x-user-defined');
+	xhr.onreadystatechange = function() {
+		if (xhr.readyState === 4) {
+			if (xhr.status === 200 || xhr.status === 0) {
+				var buffer = xhr.response;
+				scope.parse(node, buffer);
+			} else {
+				console.log('Failed to load file! HTTP status: ' + xhr.status + ", file: " + url);
+			}
+		}
+	};
+	try{
+		xhr.send(null);
+	}catch(e){
+		console.log("fehler beim laden der punktwolke: " + e);
+	}
+	
+};
+
+Potree.BinaryLoader.prototype.parse = function(node, buffer){
+	var geometry = new THREE.BufferGeometry();
+	var numPoints = buffer.byteLength / 16;
+	
+	var positions = new Float32Array(numPoints*3);
+	var colors = new Float32Array(numPoints*3);
+	var indices = new ArrayBuffer(numPoints*4);
+	var color = new THREE.Color();
+	
+	var fView = new Float32Array(buffer);
+	var uiView = new Uint8Array(buffer);
+	
+	var iIndices = new Uint32Array(indices);
+	
+	for(var i = 0; i < numPoints; i++){
+		positions[3*i+0] = fView[4*i+0] + node.pcoGeometry.offset.x;
+		positions[3*i+1] = fView[4*i+1] + node.pcoGeometry.offset.y;
+		positions[3*i+2] = fView[4*i+2] + node.pcoGeometry.offset.z;
+		
+		color.setRGB(uiView[16*i+12], uiView[16*i+13], uiView[16*i+14]);
+		colors[3*i+0] = color.r / 255;
+		colors[3*i+1] = color.g / 255;
+		colors[3*i+2] = color.b / 255;
+		
+		iIndices[i] = i;
+	}
+	
+	geometry.addAttribute('position', new THREE.BufferAttribute(positions, 3));
+	geometry.addAttribute('color', new THREE.BufferAttribute(colors, 3));
+	geometry.addAttribute('indices', new THREE.BufferAttribute(indices, 1));
+	geometry.boundingBox = node.boundingBox;
+	node.geometry = geometry;
+	node.loaded = true;
+	node.loading = false;
+	node.pcoGeometry.numNodesLoading--;
+};
+
+
+
+
+/**
+ * laslaz code taken and adapted from plas.io js-laslaz
+ *	http://plas.io/
+ *  https://github.com/verma/plasio
+ *
+ * Thanks to Uday Verma and Howard Butler
+ *
+ */
+
+Potree.LasLazLoader = function(version){
+	if(typeof(version) === "string"){
+		this.version = new Potree.Version(version);
+	}else{
+		this.version = version;
+	}
 }
 
-LasLazLoader.load = function(file, handler){		
+Potree.LasLazLoader.prototype.load = function(node){
+
+	if(node.loaded){
+		return;
+	}
+	
+	//var url = node.pcoGeometry.octreeDir + "/" + node.name;
+	var pointAttributes = node.pcoGeometry.pointAttributes;
+	var url = node.pcoGeometry.octreeDir + "/" + node.name + "." + pointAttributes.toLowerCase()
+	
+	var scope = this;
+	
 	var xhr = new XMLHttpRequest();
-	xhr.open('GET', file, true);
+	xhr.open('GET', url, true);
 	xhr.responseType = 'arraybuffer';
 	xhr.overrideMimeType('text/plain; charset=x-user-defined');
 	xhr.onreadystatechange = function() {
 		if (xhr.readyState === 4) {
 			if (xhr.status === 200) {
 				var buffer = xhr.response;
-				LasLazLoader.loadData(buffer, handler);
+				//LasLazLoader.loadData(buffer, handler);
+				scope.parse(node, buffer);
 			} else {
-				console.log('Failed to load file! HTTP status: ' + xhr.status + ", file: " + file);
+				console.log('Failed to load file! HTTP status: ' + xhr.status + ", file: " + url);
 			}
 		}
 	};
@@ -459,12 +578,13 @@ LasLazLoader.load = function(file, handler){
 	xhr.send(null);
 }
 
-LasLazLoader.progressCB = function(arg){
+Potree.LasLazLoader.progressCB = function(arg){
 
 };
 
-LasLazLoader.loadData = function loadData(buffer, handler){
+Potree.LasLazLoader.prototype.parse = function loadData(node, buffer){
 	var lf = new LASFile(buffer);
+	var handler = new Potree.LasLazBatcher(node);
 	
 	return Promise.resolve(lf).cancellable().then(function(lf) {
 		return lf.open().then(function() {
@@ -501,7 +621,7 @@ LasLazLoader.loadData = function loadData(buffer, handler){
 												   header.mins, header.maxs));
 
 				totalRead += data.count;
-				LasLazLoader.progressCB(totalRead / totalToRead);
+				Potree.LasLazLoader.progressCB(totalRead / totalToRead);
 
 				if (data.hasMoreData)
 					return reader();
@@ -520,7 +640,7 @@ LasLazLoader.loadData = function loadData(buffer, handler){
 		var lf = v[0];
 		// we're done loading this file
 		//
-		LasLazLoader.progressCB(1);
+		Potree.LasLazLoader.progressCB(1);
 
 		// Close it
 		return lf.close().then(function() {
@@ -543,7 +663,100 @@ LasLazLoader.loadData = function loadData(buffer, handler){
 			});
 		throw e;
 	});
-}
+};
+
+Potree.LasLazLoader.prototype.handle = function(node, url){
+
+};
+
+
+
+
+
+
+Potree.LasLazBatcher = function(node){	
+	this.push = function(lasBuffer){
+		var ww = Potree.workers.lasdecoder.getWorker();
+		var mins = new THREE.Vector3(lasBuffer.mins[0], lasBuffer.mins[1], lasBuffer.mins[2]);
+		var maxs = new THREE.Vector3(lasBuffer.maxs[0], lasBuffer.maxs[1], lasBuffer.maxs[2]);
+		mins.add(node.pcoGeometry.offset);
+		maxs.add(node.pcoGeometry.offset);
+		
+		ww.onmessage = function(e){
+			var geometry = new THREE.BufferGeometry();
+			var numPoints = lasBuffer.pointsCount;
+			
+			var endsWith = function(str, suffix) {
+				return str.indexOf(suffix, str.length - suffix.length) !== -1;
+			}
+			
+			var positions = e.data.position;
+			var colors = e.data.color;
+			var intensities = e.data.intensity;
+			var classifications = new Uint8Array(e.data.classification);
+			var classifications_f = new Float32Array(classifications.byteLength);
+			var returnNumbers = new Uint8Array(e.data.returnNumber);
+			var returnNumbers_f = new Float32Array(returnNumbers.byteLength);
+			var pointSourceIDs = new Uint16Array(e.data.pointSourceID);
+			var pointSourceIDs_f = new Float32Array(pointSourceIDs.length);
+			var indices = new ArrayBuffer(numPoints*4);
+			var iIndices = new Uint32Array(indices);
+			
+			var box = new THREE.Box3();
+			
+			var fPositions = new Float32Array(positions);
+			for(var i = 0; i < numPoints; i++){				
+				classifications_f[i] = classifications[i];
+				returnNumbers_f[i] = returnNumbers[i];
+				pointSourceIDs_f[i] = pointSourceIDs[i];
+				iIndices[i] = i;
+				
+				box.expandByPoint(new THREE.Vector3(fPositions[3*i+0], fPositions[3*i+1], fPositions[3*i+2]));
+			}
+			
+			geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
+			geometry.addAttribute('color', new THREE.BufferAttribute(new Float32Array(colors), 3));
+			geometry.addAttribute('intensity', new THREE.BufferAttribute(new Float32Array(intensities), 1));
+			geometry.addAttribute('classification', new THREE.BufferAttribute(new Float32Array(classifications_f), 1));
+			geometry.addAttribute('returnNumber', new THREE.BufferAttribute(new Float32Array(returnNumbers_f), 1));
+			geometry.addAttribute('pointSourceID', new THREE.BufferAttribute(new Float32Array(pointSourceIDs_f), 1));
+			geometry.addAttribute('indices', new THREE.BufferAttribute(indices, 1));
+			//geometry.boundingBox = node.boundingBox;
+			geometry.boundingBox = new THREE.Box3(mins, maxs);
+			node.boundingBox = geometry.boundingBox;
+			
+			node.geometry = geometry;
+			node.loaded = true;
+			node.loading = false;
+			node.pcoGeometry.numNodesLoading--;
+			
+			Potree.workers.lasdecoder.returnWorker(ww);
+		};
+		
+		var message = {
+			buffer: lasBuffer.arrayb,
+			numPoints: lasBuffer.pointsCount,
+			pointSize: lasBuffer.pointSize,
+			pointFormatID: 2,
+			scale: lasBuffer.scale,
+			offset: lasBuffer.offset,
+			mins: [node.pcoGeometry.boundingBox.min.x, node.pcoGeometry.boundingBox.min.y, node.pcoGeometry.boundingBox.min.z],
+			maxs: [node.pcoGeometry.boundingBox.max.x, node.pcoGeometry.boundingBox.max.y, node.pcoGeometry.boundingBox.max.z],
+			bbOffset: [node.pcoGeometry.offset.x, node.pcoGeometry.offset.y, node.pcoGeometry.offset.z]
+		};
+		ww.postMessage(message, [message.buffer]);
+	}
+};
+
+
+//
+//
+//
+// how to calculate the radius of a projected sphere in screen space
+// http://stackoverflow.com/questions/21648630/radius-of-projected-sphere-in-screen-space
+// http://stackoverflow.com/questions/3717226/radius-of-projected-sphere
+//
+
 
 Potree.PointSizeType = {
 	FIXED: 0,
@@ -564,7 +777,10 @@ Potree.PointColorType = {
 	INTENSITY: 4,
 	INTENSITY_GRADIENT: 5,
 	OCTREE_DEPTH: 6,
-	POINT_INDEX: 7
+	POINT_INDEX: 7,
+	CLASSIFICATION: 8,
+	RETURN_NUMBER: 9,
+	SOURCE: 10
 };
 
 Potree.PointCloudMaterial = function(parameters){
@@ -589,18 +805,24 @@ Potree.PointCloudMaterial = function(parameters){
 	
 	var attributes = {};
 	var uniforms = {
-		uColor:   { type: "c", value: new THREE.Color( 0xff0000 ) },
-		opacity:   { type: "f", value: 1.0 },
-		size:   { type: "f", value: 10 },
-		minSize:   { type: "f", value: 2 },
-		nodeSize:   { type: "f", value: nodeSize },
-		heightMin:   { type: "f", value: 0.0 },
-		heightMax:   { type: "f", value: 1.0 },
-		intensityMin:   { type: "f", value: 0.0 },
-		intensityMax:   { type: "f", value: 1.0 },
-		visibleNodes:   { type: "t", value: this.visibleNodesTexture },
-		pcIndex:   { type: "f", value: 0 },
-		gradient: {type: "t", value: this.gradientTexture},
+		spacing:		{ type: "f", value: 1.0 },
+		fov:			{ type: "f", value: 1.0 },
+		screenWidth:	{ type: "f", value: 1.0 },
+		screenHeight:	{ type: "f", value: 1.0 },
+		near:			{ type: "f", value: 0.1 },
+		far:			{ type: "f", value: 1.0 },
+		uColor:   		{ type: "c", value: new THREE.Color( 0xff0000 ) },
+		opacity:   		{ type: "f", value: 1.0 },
+		size:   		{ type: "f", value: 10 },
+		minSize:   		{ type: "f", value: 2 },
+		nodeSize:		{ type: "f", value: nodeSize },
+		heightMin:		{ type: "f", value: 0.0 },
+		heightMax:		{ type: "f", value: 1.0 },
+		intensityMin:	{ type: "f", value: 0.0 },
+		intensityMax:	{ type: "f", value: 1.0 },
+		visibleNodes:	{ type: "t", value: this.visibleNodesTexture },
+		pcIndex:   		{ type: "f", value: 0 },
+		gradient: 		{type: "t", value: this.gradientTexture},
 	};
 	
 	
@@ -627,6 +849,12 @@ Potree.PointCloudMaterial.prototype.updateShaderSource = function(){
 	if(this.pointColorType === Potree.PointColorType.INTENSITY
 		|| this.pointColorType === Potree.PointColorType.INTENSITY_GRADIENT){
 		attributes.intensity = { type: "f", value: [] };
+	}else if(this.pointColorType === Potree.PointColorType.CLASSIFICATION){
+		attributes.classification = { type: "f", value: [] };
+	}else if(this.pointColorType === Potree.PointColorType.RETURN_NUMBER){
+		attributes.returnNumber = { type: "f", value: [] };
+	}else if(this.pointColorType === Potree.PointColorType.SOURCE){
+		attributes.pointSourceID = { type: "f", value: [] };
 	}
 	
 	this.setValues({
@@ -696,10 +924,88 @@ Potree.PointCloudMaterial.prototype.getDefines = function(){
 		defines += "#define color_type_octree_depth\n";
 	}else if(this._pointColorType === Potree.PointColorType.POINT_INDEX){
 		defines += "#define color_type_point_index\n";
+	}else if(this._pointColorType === Potree.PointColorType.CLASSIFICATION){
+		defines += "#define color_type_classification\n";
+	}else if(this._pointColorType === Potree.PointColorType.RETURN_NUMBER){
+		defines += "#define color_type_return_number\n";
+	}else if(this._pointColorType === Potree.PointColorType.SOURCE){
+		defines += "#define color_type_source\n";
 	}
 
 	return defines;
 };
+
+Object.defineProperty(Potree.PointCloudMaterial.prototype, "spacing", {
+	get: function(){
+		return this.uniforms.spacing.value;
+	},
+	set: function(value){
+		if(this.uniforms.spacing.value !== value){
+			this.uniforms.spacing.value = value;
+			//this.updateShaderSource();
+		}
+	}
+});
+
+Object.defineProperty(Potree.PointCloudMaterial.prototype, "fov", {
+	get: function(){
+		return this.uniforms.fov.value;
+	},
+	set: function(value){
+		if(this.uniforms.fov.value !== value){
+			this.uniforms.fov.value = value;
+			//this.updateShaderSource();
+		}
+	}
+});
+
+Object.defineProperty(Potree.PointCloudMaterial.prototype, "screenWidth", {
+	get: function(){
+		return this.uniforms.screenWidth.value;
+	},
+	set: function(value){
+		if(this.uniforms.screenWidth.value !== value){
+			this.uniforms.screenWidth.value = value;
+			//this.updateShaderSource();
+		}
+	}
+});
+
+Object.defineProperty(Potree.PointCloudMaterial.prototype, "screenHeight", {
+	get: function(){
+		return this.uniforms.screenHeight.value;
+	},
+	set: function(value){
+		if(this.uniforms.screenHeight.value !== value){
+			this.uniforms.screenHeight.value = value;
+			//this.updateShaderSource();
+		}
+	}
+});
+
+Object.defineProperty(Potree.PointCloudMaterial.prototype, "near", {
+	get: function(){
+		return this.uniforms.near.value;
+	},
+	set: function(value){
+		if(this.uniforms.near.value !== value){
+			this.uniforms.near.value = value;
+			//this.updateShaderSource();
+		}
+	}
+});
+
+Object.defineProperty(Potree.PointCloudMaterial.prototype, "far", {
+	get: function(){
+		return this.uniforms.far.value;
+	},
+	set: function(value){
+		if(this.uniforms.far.value !== value){
+			this.uniforms.far.value = value;
+			//this.updateShaderSource();
+		}
+	}
+});
 
 Object.defineProperty(Potree.PointCloudMaterial.prototype, "opacity", {
 	get: function(){
@@ -862,11 +1168,12 @@ Potree.PointCloudMaterial.generateGradient = function() {
 	// draw gradient
 	context.rect( 0, 0, size, size );
 	var gradient = context.createLinearGradient( 0, 0, size, size );
-    gradient.addColorStop(0, 'blue');
-    gradient.addColorStop(1/5, 'aqua');
-    gradient.addColorStop(2/5, 'green')
-    gradient.addColorStop(3/5, 'yellow');
-    gradient.addColorStop(4/5, 'orange');
+    gradient.addColorStop(0, "#4700b6");
+    gradient.addColorStop(1/6, 'blue');
+    gradient.addColorStop(2/6, 'aqua');
+    gradient.addColorStop(3/6, 'green')
+    gradient.addColorStop(4/6, 'yellow');
+    gradient.addColorStop(5/6, 'orange');
 	gradient.addColorStop(1, 'red');
  
     
@@ -881,12 +1188,15 @@ Potree.PointCloudMaterial.generateGradient = function() {
 }
 
 Potree.PointCloudMaterial.vs_points = [
- "precision highp float;                                                             ",
- "precision highp int;                                                               ",
+ "precision mediump float;                                                             ",
+ "precision mediump int;                                                               ",
  "                                                                                   ",
  "attribute vec3 position;                                                           ",
  "attribute vec3 color;                                                              ",
  "attribute float intensity;                                                         ",
+ "attribute float classification;                                                         ",
+ "attribute float returnNumber;                                                         ",
+ "attribute float pointSourceID;                                                         ",
  "attribute vec4 indices;                                                            ",
  "                                                                                   ",
  "uniform mat4 modelMatrix;                                                          ",
@@ -895,6 +1205,13 @@ Potree.PointCloudMaterial.vs_points = [
  "uniform mat4 viewMatrix;                                                           ",
  "uniform mat3 normalMatrix;                                                         ",
  "uniform vec3 cameraPosition;                                                       ",
+ "uniform float screenWidth;                                                                                   ",
+ "uniform float screenHeight;                                                                                   ",
+ "uniform float fov;                                                                                   ",
+ "uniform float spacing;                                                                                   ",
+ "uniform float near;                                                                                   ",
+ "uniform float far;                                                                                   ",
+ "                                                                                   ",
  "                                                                                   ",
  "uniform float heightMin;                                                           ",
  "uniform float heightMax;                                                           ",
@@ -973,7 +1290,37 @@ Potree.PointCloudMaterial.vs_points = [
  "                                                                                   ",
  "#endif                                                                             ",
  "                                                                                   ",
- "                                                                                   ",
+ "vec3 classificationColor(float classification){                                                                                   ",
+ "	vec3 color = vec3(0.0, 0.0, 0.0);                                                                                   ",
+ "  float c = mod(classification, 16.0);                                                                                   ",
+ "	if(c == 0.0){ ",
+ "	   color = vec3(0.5, 0.5, 0.5); ",
+ "	}else if(c == 1.0){ ",
+ "	   color = vec3(0.5, 0.5, 0.5); ",
+ "	}else if(c == 2.0){ ",
+ "	   color = vec3(0.63, 0.32, 0.18); ",
+ "	}else if(c == 3.0){ ",
+ "	   color = vec3(0.0, 1.0, 0.0); ",
+ "	}else if(c == 4.0){ ",
+ "	   color = vec3(0.0, 0.8, 0.0); ",
+ "	}else if(c == 5.0){ ",
+ "	   color = vec3(0.0, 0.6, 0.0); ",
+ "	}else if(c == 6.0){ ",
+ "	   color = vec3(1.0, 0.66, 0.0); ",
+ "	}else if(c == 7.0){ ",
+ "	   color = vec3(1.0, 0, 1.0); ",
+ "	}else if(c == 8.0){ ",
+ "	   color = vec3(1.0, 0, 0.0); ",
+ "	}else if(c == 9.0){ ",
+ "	   color = vec3(0.0, 0.0, 1.0); ",
+ "	}else if(c == 12.0){ ",
+ "	   color = vec3(1.0, 1.0, 0.0); ",
+ "	}else{ ",
+ "	   color = vec3(0.3, 0.6, 0.6); ",
+ "	} ",
+ "	                                                                                   ",
+ "	return color;                                                                                   ",
+ "}                                                                                   ",
  "                                                                                   ",
  "void main() {                                                                      ",
  "                                                                                   ",
@@ -1007,24 +1354,37 @@ Potree.PointCloudMaterial.vs_points = [
  "  	vColor = texture2D(gradient, vec2(w,1.0-w)).rgb;                             ",
  "  #elif defined color_type_point_index                                             ",
  "  	vColor = indices.rgb;                                                        ",
+ "  #elif defined color_type_classification                                             ",
+ "  	vColor = classificationColor(classification);                               ",
+ "  #elif defined color_type_return_number                                             ",
+ "      float w = (returnNumber - 1.0) / 4.0 + 0.1;                                                      ",
+ "  	vColor = texture2D(gradient, vec2(w, 1.0 - w)).rgb;                             ",
+ "  #elif defined color_type_source                                             ",
+ "      float w = mod(pointSourceID, 10.0) / 10.0;                                                                             ",
+ "  	vColor = texture2D(gradient, vec2(w,1.0 - w)).rgb;                               ",
  "  #endif                                                                           ",
  "                                                                                   ",
  "                                                                                   ",
  "  //                                                                               ",
  "  // POINT SIZE TYPES                                                              ",
  "  //                                                                               ",
+ "  float r = spacing * 1.5;                                                                                 ",
  "  #if defined fixed_point_size                                                     ",
  "  	gl_PointSize = size;                                                         ",
  "  #elif defined attenuated_point_size                                              ",
- "		gl_PointSize = size * ( 300.0 / length( mvPosition.xyz ) );                  ",
+ "		//gl_PointSize = size * ( 300.0 / length( mvPosition.xyz ) );                  ",
+ "      gl_PointSize = (1.0 / tan(fov/2.0)) * size / (-mvPosition.z);                                                                                 ",
+ "      gl_PointSize = gl_PointSize * screenHeight / 2.0;                                                                              ",
  "  #elif defined adaptive_point_size                                                ",
- "      gl_PointSize = size * ( 300.0 / length( mvPosition.xyz ) );                  ",
+ "      //gl_PointSize = size * ( 300.0 / length( mvPosition.xyz ) );                  ",
+ "      //gl_PointSize = (1.0 / tan(fov/2.0)) * r / sqrt( max(0.0, mvPosition.z * mvPosition.z - r * r));                                                                                 ",
+ "      gl_PointSize = (1.0 / tan(fov/2.0)) * r / (-mvPosition.z);                                                                                 ",
+ "      gl_PointSize = size * gl_PointSize * screenHeight / 2.0;                                                                              ",
  "  	gl_PointSize = gl_PointSize / pow(1.9, getOctreeDepth());                    ",
  "  #endif                                                                           ",
- "                                                                                   ",
+ "                                                                                    ",
  "	gl_PointSize = max(minSize, gl_PointSize);                                       ",
- "	gl_PointSize = min(30.0, gl_PointSize);                                          ",
- "                                                                                   ",
+ "	gl_PointSize = min(50.0, gl_PointSize);                                          ",
  "                                                                                   ",
  "}                                                                                  "];
 
@@ -1064,7 +1424,6 @@ Potree.PointCloudMaterial.fs_points_rgb = [
  "	#else                                                                            ",
  "		gl_FragColor = vec4(vColor, opacity);                                        ",
  "	#endif                                                                           ",
- "	                                                                                 ",
  "	                                                                                 ",
  "}                                                                                  "];
 
@@ -1225,6 +1584,7 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 	};
 
 	this.update = function (delta) {
+		this.object.rotation.order = 'ZYX';
 		var position = this.object.position;
 		
 		if(delta !== undefined){
@@ -1251,6 +1611,15 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 		}
 		
 		position.add(pan);
+		
+		if(!(thetaDelta === 0.0 && phiDelta === 0.0)) {
+			var event = {
+				type: 'rotate',
+				thetaDelta: thetaDelta,
+				phiDelta: phiDelta
+			};
+			this.dispatchEvent(event);
+		}
 		
 		this.object.updateMatrix();
 		var rot = new THREE.Matrix4().makeRotationY(thetaDelta);
@@ -1343,14 +1712,9 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 
 		event.preventDefault();
 
-		var delta = 0;
-		if ( event.wheelDelta !== undefined ) { // WebKit / Opera / Explorer 9
-			delta = event.wheelDelta;
-		} else if ( event.detail !== undefined ) { // Firefox
-			delta = - event.detail;
-		}
+		var direction = (event.detail<0 || event.wheelDelta>0) ? 1 : -1;
+		scope.moveSpeed += scope.moveSpeed * 0.1 * direction;
 
-		scope.moveSpeed += scope.moveSpeed * 0.001 * delta;
 		scope.moveSpeed = Math.max(0.1, scope.moveSpeed);
 
 		scope.dispatchEvent( startEvent );
@@ -1630,7 +1994,7 @@ Potree.PointCloudOctree = function(geometry, material){
 
 Potree.PointCloudOctree.prototype = Object.create(THREE.Object3D.prototype);
 
-Potree.PointCloudOctree.prototype.update = function(camera){
+Potree.PointCloudOctree.prototype.update = function(camera, renderer){
 	this.updateMatrixWorld(true);
 
 	this.visibleGeometry = this.getVisibleGeometry(camera);
@@ -1650,6 +2014,13 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 	this.numVisibleNodes = 0;
 	this.numVisiblePoints = 0;
 	
+	this.material.fov = camera.fov * (Math.PI / 180);
+	this.material.screenWidth = renderer.domElement.clientWidth;
+	this.material.screenHeight = renderer.domElement.clientHeight;
+	this.material.spacing = pointcloud.pcoGeometry.spacing;
+	this.material.near = camera.near;
+	this.material.far = camera.far;
+	
 	this.hideDescendants(this.children[0]);
 	
 	var stack = [];
@@ -1660,6 +2031,8 @@ Potree.PointCloudOctree.prototype.update = function(camera){
 		var weight = element.weight;
 		
 		node.visible = true;
+		
+		node.matrixWorld.multiplyMatrices( node.parent.matrixWorld, node.matrix );
 		
 		if (node instanceof Potree.PointCloudOctreeProxyNode) {
 			var geometryNode = node.geometryNode;
@@ -2406,7 +2779,7 @@ Potree.PointCloudOctreeGeometryNode.prototype.addChild = function(child){
 }
 
 Potree.PointCloudOctreeGeometryNode.prototype.load = function(){
-	if(this.loading === true || this.pcoGeometry.numNodesLoading > 5){
+	if(this.loading === true || this.pcoGeometry.numNodesLoading > 1){
 		return;
 	}else{
 		this.loading = true;
@@ -2418,144 +2791,8 @@ Potree.PointCloudOctreeGeometryNode.prototype.load = function(){
 	
 	
 	this.pcoGeometry.numNodesLoading++;
-	var pointAttributes = this.pcoGeometry.pointAttributes;
-	if(pointAttributes === "LAS" || pointAttributes === "LAZ"){
-		// load las or laz node files
-		
-		var url = this.pcoGeometry.octreeDir + "/" + this.name + "." + pointAttributes.toLowerCase();
-		nodesLoadTimes[url] = {};
-		nodesLoadTimes[url].start = new Date().getTime();
-		LasLazLoader.load(url, new Potree.LasLazBatcher(this, url));
-	} else if ( pointAttributes === "POT"){
-		
-		var callback = function(node, buffer){
-			var dv = new DataView(buffer, 0, 4);
-			var headerSize = dv.getUint32(0, true);
-			var pointOffset = 4 + headerSize;
-			
-			var headerBuffer = buffer.slice(4, 4 + headerSize);
-			var header = String.fromCharCode.apply(null, new Uint8Array(headerBuffer));
-			header = JSON.parse(header);
-			console.log(header);
-			
-			var pScale = header.attributes[0].scale;
-			var pOffset = header.attributes[0].offset;
-			var pEncoding = header.attributes[0].encoding;
-			
-			var scale = new THREE.Vector3(pScale[0], pScale[1], pScale[2]);
-			var offset = new THREE.Vector3(pOffset[0], pOffset[1], pOffset[2]);
-			var min = pEncoding.min;
-			var max = pEncoding.max;
-			var bits = pEncoding.bits;
-			
-			var pointBuffer = buffer.slice(pointOffset, pointOffset + buffer.byteLength - pointOffset);
-			var br = new BitReader(pointBuffer);
-			
-			var X = br.read(32);
-			var Y = br.read(32);
-			var Z = br.read(32);
-			
-			var r = br.read(8);
-			var g = br.read(8);
-			var b = br.read(8);
-			
-			var geometry = new THREE.BufferGeometry();
-			var numPoints = header.pointcount;
-			
-			var positions = new Float32Array(numPoints*3);
-			var colors = new Float32Array(numPoints*3);
-			var color = new THREE.Color();
-			
-			for(var i = 0; i < header.pointcount - 1; i++){
-				
-				dx = br.read(bits[0]) + min[0]; 
-				dy = br.read(bits[1]) + min[1]; 
-				dz = br.read(bits[2]) + min[2]; 
-				
-				X = X + dx;
-				Y = Y + dy;
-				Z = Z + dz;
-				
-				x = X * scale.x + offset.x;
-				y = Y * scale.y + offset.y; 
-				z = Z * scale.z + offset.z;
-				
-				r = br.read(8);
-				g = br.read(8);
-				b = br.read(8);
-				
-				positions[3*i+0] = x;// + node.pcoGeometry.offset.x;
-				positions[3*i+1] = y;// + node.pcoGeometry.offset.y;
-				positions[3*i+2] = z;// + node.pcoGeometry.offset.z;
-				
-				colors[3*i+0] = r / 255;
-				colors[3*i+1] = g / 255;
-				colors[3*i+2] = b / 255;
-			}
-			
-			geometry.addAttribute('position', new THREE.BufferAttribute(positions, 3));
-			geometry.addAttribute('color', new THREE.BufferAttribute(colors, 3));
-			geometry.boundingBox = node.boundingBox;
-			node.geometry = geometry;
-			node.loaded = true;
-			node.loading = false;
-			node.pcoGeometry.numNodesLoading--;
-			
-		};
-		
-		Potree.BinaryNodeLoader.load(this, "pot", callback);
-		
-	} else {
-		// load binary node files
-		
-		var url = this.pcoGeometry.octreeDir + "/" + this.name;
-		nodesLoadTimes[url] = {};
-		nodesLoadTimes[url].start = new Date().getTime();
-		var callback = function(node, buffer){
-			var geometry = new THREE.BufferGeometry();
-			var numPoints = buffer.byteLength / 16;
-			
-			var positions = new Float32Array(numPoints*3);
-			var colors = new Float32Array(numPoints*3);
-			var indices = new ArrayBuffer(numPoints*4);
-			var color = new THREE.Color();
-			
-			var fView = new Float32Array(buffer);
-			var uiView = new Uint8Array(buffer);
-			
-			var iIndices = new Uint32Array(indices);
-			
-			for(var i = 0; i < numPoints; i++){
-				positions[3*i+0] = fView[4*i+0] + node.pcoGeometry.offset.x;
-				positions[3*i+1] = fView[4*i+1] + node.pcoGeometry.offset.y;
-				positions[3*i+2] = fView[4*i+2] + node.pcoGeometry.offset.z;
-				
-				color.setRGB(uiView[16*i+12], uiView[16*i+13], uiView[16*i+14]);
-				colors[3*i+0] = color.r / 255;
-				colors[3*i+1] = color.g / 255;
-				colors[3*i+2] = color.b / 255;
-				
-				iIndices[i] = i;
-			}
-			
-			geometry.addAttribute('position', new THREE.BufferAttribute(positions, 3));
-			geometry.addAttribute('color', new THREE.BufferAttribute(colors, 3));
-			geometry.addAttribute('indices', new THREE.BufferAttribute(indices, 1));
-			geometry.boundingBox = node.boundingBox;
-			node.geometry = geometry;
-			node.loaded = true;
-			node.loading = false;
-			node.pcoGeometry.numNodesLoading--;
-			
-			nodesLoadTimes[url].end = new Date().getTime();
-			
-			var time = nodesLoadTimes[url].end - nodesLoadTimes[url].start;
-		};
-		
-		nodesLoadTimes[url] = {};
-		nodesLoadTimes[url].start = new Date().getTime();
-		Potree.BinaryNodeLoader.load(this, "", callback);
-	}
+	
+	this.pcoGeometry.loader.load(this);
 }
 
 Potree.BinaryNodeLoader = function(){
@@ -2588,75 +2825,6 @@ Potree.BinaryNodeLoader.load = function(node, extension, callback){
 	}
 }
 
-
-Potree.LasLazBatcher = function(node, url){	
-	this.push = function(lasBuffer){
-		var ww = Potree.workers.lasdecoder.getWorker();
-		var mins = new THREE.Vector3(lasBuffer.mins[0], lasBuffer.mins[1], lasBuffer.mins[2]);
-		var maxs = new THREE.Vector3(lasBuffer.maxs[0], lasBuffer.maxs[1], lasBuffer.maxs[2]);
-		mins.add(node.pcoGeometry.offset);
-		maxs.add(node.pcoGeometry.offset);
-		
-		ww.onmessage = function(e){
-			var geometry = new THREE.BufferGeometry();
-			var numPoints = lasBuffer.pointsCount;
-			
-			var endsWith = function(str, suffix) {
-				return str.indexOf(suffix, str.length - suffix.length) !== -1;
-			}
-			
-			var positions = e.data.position;
-			var colors = e.data.color;
-			var intensities = e.data.intensity;
-			var classifications = new Uint8Array(e.data.classification);
-			var classifications_f = new Float32Array(classifications.byteLength);
-			
-			var box = new THREE.Box3();
-			
-			var fPositions = new Float32Array(positions);
-			for(var i = 0; i < numPoints; i++){			
-				//fPositions[3*i+0] += node.pcoGeometry.offset.x;
-				//fPositions[3*i+1] += node.pcoGeometry.offset.y;
-				//fPositions[3*i+2] += node.pcoGeometry.offset.z;
-				
-				classifications_f[i] = classifications[i];
-				
-				box.expandByPoint(new THREE.Vector3(fPositions[3*i+0], fPositions[3*i+1], fPositions[3*i+2]));
-			}
-			
-			geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
-			geometry.addAttribute('color', new THREE.BufferAttribute(new Float32Array(colors), 3));
-			geometry.addAttribute('intensity', new THREE.BufferAttribute(new Float32Array(intensities), 1));
-			geometry.addAttribute('classification', new THREE.BufferAttribute(new Float32Array(classifications_f), 1));
-			//geometry.boundingBox = node.boundingBox;
-			geometry.boundingBox = new THREE.Box3(mins, maxs);
-			node.boundingBox = geometry.boundingBox;
-			
-			node.geometry = geometry;
-			node.loaded = true;
-			node.loading = false;
-			node.pcoGeometry.numNodesLoading--;
-			
-			nodesLoadTimes[url].end = new Date().getTime();
-			
-			var time = nodesLoadTimes[url].end - nodesLoadTimes[url].start;
-			Potree.workers.lasdecoder.returnWorker(ww);
-		};
-		
-		var message = {
-			buffer: lasBuffer.arrayb,
-			numPoints: lasBuffer.pointsCount,
-			pointSize: lasBuffer.pointSize,
-			pointFormatID: 2,
-			scale: lasBuffer.scale,
-			offset: lasBuffer.offset,
-			mins: [node.pcoGeometry.boundingBox.min.x, node.pcoGeometry.boundingBox.min.y, node.pcoGeometry.boundingBox.min.z],
-			maxs: [node.pcoGeometry.boundingBox.max.x, node.pcoGeometry.boundingBox.max.y, node.pcoGeometry.boundingBox.max.z],
-			bbOffset: [node.pcoGeometry.offset.x, node.pcoGeometry.offset.y, node.pcoGeometry.offset.z]
-		};
-		ww.postMessage(message, [message.buffer]);
-	}
-};
 
 Potree.PointCloudOctreeGeometryNode.prototype.dispose = function(){
 	delete this.geometry;
@@ -2896,13 +3064,37 @@ Potree.TextSprite.prototype.roundRect = function(ctx, x, y, w, h, r) {
 
 
 
+Potree.Version = function(version){
+	this.version = version;
+	var vmLength = (version.indexOf(".") === -1) ? version.length : version.indexOf(".");
+	this.versionMajor = version.substr(0, vmLength);
+	this.versionMinor = version.substr(vmLength + 1);
+	if(this.versionMinor.length === 0){
+		this.versionMinor = 0;
+	}
+	
+};
+
+Potree.Version.prototype.newerThan = function(version){
+	var v = new Potree.Version(version);
+	
+	if( this.versionMajor > v.versionMajor){
+		return true;
+	}else if( this.versionMajor === v.versionMajor && this.versionMinor > v.versionMinor){
+		return true;
+	}else{
+		return false;
+	}
+};
+
+
 Potree.MeasuringTool = function(scene, camera, renderer){
 	
 	var scope = this;
+	this.enabled = false;
 	
 	this.scene = scene;
 	this.camera = camera;
-
 	this.renderer = renderer;
 	this.domElement = renderer.domElement;
 	this.mouse = {x: 0, y: 0};
@@ -2915,11 +3107,118 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 	
 	var state = STATE.DEFAULT;
 	
+	var sphereGeometry = new THREE.SphereGeometry(0.4, 10, 10);
+	
 	this.activeMeasurement;
 	this.measurements = [];
 	this.sceneMeasurement = new THREE.Scene();
 	this.sceneRoot = new THREE.Object3D();
 	this.sceneMeasurement.add(this.sceneRoot);
+	
+	this.light = new THREE.DirectionalLight( 0xffffff, 1 );
+	this.light.position.set( 0, 0, 10 );
+	this.light.lookAt(new THREE.Vector3(0,0,0));
+	this.sceneMeasurement.add( this.light );
+	
+	this.hoveredElement = null;
+	
+	var moveEvent = function(event){
+		event.target.material.emissive.setHex(0x888888);
+	};
+	
+	var leaveEvent = function(event){
+		event.target.material.emissive.setHex(0x000000);
+	};
+	
+	var dragEvent = function(event){
+		var I = getMousePointCloudIntersection();
+			
+		if(I){
+			for(var i = 0; i < scope.measurements.length; i++){
+				var m = scope.measurements[i];
+				var index = m.spheres.indexOf(scope.dragstart.object);
+				
+				if(index >= 0){
+					var sphere = m.spheres[index];
+					
+					if(index === 0){
+						var edge = m.edges[index];
+						var edgeLabel = m.edgeLabels[index];
+						
+						sphere.position.copy(I);
+						edge.geometry.vertices[0].copy(I);
+						edge.geometry.verticesNeedUpdate = true;
+						edge.geometry.computeBoundingSphere();
+						
+						var edgeLabelPos = edge.geometry.vertices[0].clone().add(edge.geometry.vertices[1]).multiplyScalar(0.5);
+						var edgeLabelText = edge.geometry.vertices[0].distanceTo(edge.geometry.vertices[1]).toFixed(2);
+						
+						edgeLabel.position.copy(edgeLabelPos);
+						edgeLabel.setText(edgeLabelText);
+						edgeLabel.scale.multiplyScalar(10);
+					}else if(index === m.spheres.length - 1){
+						var edge = m.edges[index - 1];
+						var edgeLabel = m.edgeLabels[index - 1];
+						
+						sphere.position.copy(I);
+						edge.geometry.vertices[1].copy(I);
+						edge.geometry.verticesNeedUpdate = true;
+						edge.geometry.computeBoundingSphere();
+						
+						var edgeLabelPos = edge.geometry.vertices[0].clone().add(edge.geometry.vertices[1]).multiplyScalar(0.5);
+						var edgeLabelText = edge.geometry.vertices[0].distanceTo(edge.geometry.vertices[1]).toFixed(2);
+						
+						edgeLabel.position.copy(edgeLabelPos);
+						edgeLabel.setText(edgeLabelText);
+						edgeLabel.scale.multiplyScalar(10);
+					}else{
+						var edge1 = m.edges[index-1];
+						var edge2 = m.edges[index];
+						
+						var edge1Label = m.edgeLabels[index-1];
+						var edge2Label = m.edgeLabels[index];
+						
+						sphere.position.copy(I);
+						
+						edge1.geometry.vertices[1].copy(I);
+						edge1.geometry.verticesNeedUpdate = true;
+						edge1.geometry.computeBoundingSphere();
+						
+						edge2.geometry.vertices[0].copy(I);
+						edge2.geometry.verticesNeedUpdate = true;
+						edge2.geometry.computeBoundingSphere();
+						
+						var edge1LabelPos = edge1.geometry.vertices[0].clone().add(edge1.geometry.vertices[1]).multiplyScalar(0.5);
+						var edge1LabelText = edge1.geometry.vertices[0].distanceTo(edge1.geometry.vertices[1]).toFixed(2);
+						
+						edge1Label.position.copy(edge1LabelPos);
+						edge1Label.setText(edge1LabelText);
+						edge1Label.scale.multiplyScalar(10);
+						
+						var edge2LabelPos = edge2.geometry.vertices[0].clone().add(edge2.geometry.vertices[1]).multiplyScalar(0.5);
+						var edge2LabelText = edge2.geometry.vertices[0].distanceTo(edge2.geometry.vertices[1]).toFixed(2);
+						
+						edge2Label.position.copy(edge2LabelPos);
+						edge2Label.setText(edge2LabelText);
+						edge2Label.scale.multiplyScalar(10);
+						
+					}
+					
+					
+					break;
+				}
+			}
+		
+			//scope.dragstart.object.position.copy(I);
+		}
+		
+		event.event.stopImmediatePropagation();
+	};
+	
+	var dropEvent = function(event){
+	
+	};
+	
 	
 	function Measure(){
 		this.points = [];
@@ -2928,23 +3227,45 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 		this.sphereLabels = [];
 		this.edgeLabels = [];
 	}
+	
+	function createSphereMaterial(){
+		var sphereMaterial = new THREE.MeshLambertMaterial({
+			shading: THREE.SmoothShading, 
+			color: 0xff0000, 
+			ambient: 0xaaaaaa,
+			depthTest: false, 
+			depthWrite: false}
+		);
+		
+		return sphereMaterial;
+	};
 
 	
-	function onDoubleClick(event){
+	function onClick(event){
+	
+		if(!scope.enabled){
+			return;
+		}
+	
 		var I = getMousePointCloudIntersection();
 		if(I){
 			var pos = I.clone();
-		
-			var sphereMaterial = new THREE.MeshNormalMaterial({shading: THREE.SmoothShading})
-			var sphereGeometry = new THREE.SphereGeometry(0.4, 10, 10);
 			
-			var sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+			var sphere = new THREE.Mesh(sphereGeometry, createSphereMaterial());
 			sphere.position.copy(I);
 			scope.sceneRoot.add(sphere);
+			sphere.addEventListener("mousemove", moveEvent);
+			sphere.addEventListener("mouseleave", leaveEvent);
+			sphere.addEventListener("mousedrag", dragEvent);
+			sphere.addEventListener("drop", dropEvent);
 			
-			var sphereEnd = new THREE.Mesh(sphereGeometry, sphereMaterial);
+			var sphereEnd = new THREE.Mesh(sphereGeometry, createSphereMaterial());
 			sphereEnd.position.copy(I);
 			scope.sceneRoot.add(sphereEnd);
+			sphereEnd.addEventListener("mousemove", moveEvent);
+			sphereEnd.addEventListener("mouseleave", leaveEvent);
+			sphereEnd.addEventListener("mousedrag", dragEvent);
+			sphereEnd.addEventListener("drop", dropEvent);
 			
 			var msg = pos.x.toFixed(2) + " / " + pos.y.toFixed(2) + " / " + pos.z.toFixed(2);
 			
@@ -2954,7 +3275,7 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 			label.material.opacity = 0;
 			label.position.copy(I);
 			label.position.y += 0.5;
-			scope.sceneRoot.add( label );
+			
 			
 			var labelEnd = new Potree.TextSprite(msg);
 			labelEnd.setBorderColor({r:0, g:255, b:0, a:1.0});
@@ -2962,16 +3283,15 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 			labelEnd.material.opacity = 0;
 			labelEnd.position.copy(I);
 			labelEnd.position.y += 0.5;
-			scope.sceneRoot.add( labelEnd );
+			
 			
 			var lc = new THREE.Color( 0xff0000 );
 			var lineGeometry = new THREE.Geometry();
 			lineGeometry.vertices.push(I.clone(), I.clone());
 			lineGeometry.colors.push(lc, lc, lc);
-			var lineMaterial = new THREE.LineBasicMaterial( { vertexColors: THREE.VertexColors } );
+			var lineMaterial = new THREE.LineBasicMaterial( { vertexColors: THREE.VertexColors, linewidth: 10 } );
 			lineMaterial.depthTest = false;
 			sConnection = new THREE.Line(lineGeometry, lineMaterial);
-			scope.sceneRoot.add(sConnection);
 			
 			var edgeLabel = new Potree.TextSprite(0);
 			edgeLabel.setBorderColor({r:0, g:255, b:0, a:0.0});
@@ -2979,6 +3299,11 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 			edgeLabel.material.depthTest = false;
 			edgeLabel.position.copy(I);
 			edgeLabel.position.y += 0.5;
+			
+			
+			scope.sceneRoot.add(sConnection);
+			scope.sceneRoot.add( label );
+			scope.sceneRoot.add( labelEnd );
 			scope.sceneRoot.add( edgeLabel );
 			
 			
@@ -2995,7 +3320,7 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 				
 				scope.activeMeasurement.spheres.push(sphere);
 			}else if(state === STATE.PICKING){
-			
+				scope.sceneRoot.remove(sphere);
 			}
 			
 			scope.activeMeasurement.points.push(I);
@@ -3020,35 +3345,67 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 		scope.mouse.x = ( event.clientX / scope.domElement.clientWidth ) * 2 - 1;
 		scope.mouse.y = - ( event.clientY / scope.domElement.clientHeight ) * 2 + 1;
 		
-		if(state == STATE.PICKING && scope.activeMeasurement){
+		if(scope.dragstart){
+			
+			scope.dragstart.object.dispatchEvent({type: "mousedrag", event: event});
+			
+		}else if(state == STATE.PICKING && scope.activeMeasurement){
 			var I = getMousePointCloudIntersection();
 			
 			if(I){
-				var pos = I.clone();
-				var l = scope.activeMeasurement.spheres.length;
-				var sphere = scope.activeMeasurement.spheres[l-1];
-				var label = scope.activeMeasurement.sphereLabels[l-1];
-				var edge = scope.activeMeasurement.edges[l-2];
-				var edgeLabel = scope.activeMeasurement.edgeLabels[l-2];
-				
-				var msg = pos.x.toFixed(2) + " / " + pos.y.toFixed(2) + " / " + pos.z.toFixed(2);
-				label.setText(msg);
-				
-				sphere.position.copy(I);
-				label.position.copy(I);
-				label.position.y += 0.5;
-				
-				edge.geometry.vertices[1].copy(I);
-				edge.geometry.verticesNeedUpdate = true;
-				edge.geometry.computeBoundingSphere();
-				
-				var edgeLabelPos = edge.geometry.vertices[1].clone().add(edge.geometry.vertices[0]).multiplyScalar(0.5);
-				var edgeLabelText = edge.geometry.vertices[0].distanceTo(edge.geometry.vertices[1]).toFixed(2);
-				edgeLabel.position.copy(edgeLabelPos);
-				edgeLabel.setText(edgeLabelText);
-				edgeLabel.scale.multiplyScalar(10);
+				if(scope.activeMeasurement.spheres.length === 1){
+					var pos = I.clone();
+					var sphere = scope.activeMeasurement.spheres[0];
+					sphere.position.copy(I);
+				}else{
+					var pos = I.clone();
+					var l = scope.activeMeasurement.spheres.length;
+					var sphere = scope.activeMeasurement.spheres[l-1];
+					var label = scope.activeMeasurement.sphereLabels[l-1];
+					var edge = scope.activeMeasurement.edges[l-2];
+					var edgeLabel = scope.activeMeasurement.edgeLabels[l-2];
+					
+					var msg = pos.x.toFixed(2) + " / " + pos.y.toFixed(2) + " / " + pos.z.toFixed(2);
+					label.setText(msg);
+					
+					sphere.position.copy(I);
+					label.position.copy(I);
+					label.position.y += 0.5;
+					
+					edge.geometry.vertices[1].copy(I);
+					edge.geometry.verticesNeedUpdate = true;
+					edge.geometry.computeBoundingSphere();
+					
+					var edgeLabelPos = edge.geometry.vertices[1].clone().add(edge.geometry.vertices[0]).multiplyScalar(0.5);
+					var edgeLabelText = edge.geometry.vertices[0].distanceTo(edge.geometry.vertices[1]).toFixed(2);
+					edgeLabel.position.copy(edgeLabelPos);
+					edgeLabel.setText(edgeLabelText);
+					edgeLabel.scale.multiplyScalar(10);
+				}
 			}
 			
+		}else{
+			var I = getHoveredElement();
+			
+			if(I){
+				
+				I.object.dispatchEvent({type: "mousemove", target: I.object, event: event});
+				
+				if(scope.hoveredElement && scope.hoveredElement !== I.object){
+					scope.hoveredElement.dispatchEvent({type: "mouseleave", target: scope.hoveredElement, event: event});
+				}
+				
+				scope.hoveredElement = I.object;
+				
+			}else{
+			
+				if(scope.hoveredElement){
+					scope.hoveredElement.dispatchEvent({type: "mouseleave", target: scope.hoveredElement, event: event});
+				}
+				
+				scope.hoveredElement = null;
+			
+			}
 		}
 	};
 	
@@ -3068,14 +3425,64 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 			scope.activeMeasurement = undefined;
 		
 			state = STATE.DEFAULT;
+			scope.setEnabled(false);
 		}
 	}
 	
 	function onMouseDown(event){
-		if(event.which === 3){	
+		if(event.which === 1){
+			
+			var I = getHoveredElement();
+			
+			if(I){
+				
+				scope.dragstart = {
+					object: I.object, 
+					sceneClickPos: I.point,
+					sceneStartPos: scope.sceneRoot.position.clone(),
+					mousePos: {x: scope.mouse.x, y: scope.mouse.y}
+				};
+				
+			}
+			
+		}else if(event.which === 3){	
 			onRightClick(event);
 		}
 	}
+	
+	function onMouseUp(event){
+		
+		if(scope.dragstart){
+			scope.dragstart.object.dispatchEvent({type: "drop", event: event});
+			scope.dragstart = null;
+		}
+		
+	}
+	
+	function getHoveredElement(){
+			
+		var vector = new THREE.Vector3( scope.mouse.x, scope.mouse.y, 0.5 );
+		vector.unproject(scope.camera);
+		
+		var raycaster = new THREE.Raycaster();
+		raycaster.ray.set( scope.camera.position, vector.sub( scope.camera.position ).normalize() );
+		
+		var spheres = [];
+		for(var i = 0; i < scope.measurements.length; i++){
+			var m = scope.measurements[i];
+			
+			for(var j = 0; j < m.spheres.length; j++){
+				spheres.push(m.spheres[j]);
+			}
+		}
+		
+		var intersections = raycaster.intersectObjects(spheres, true);
+		if(intersections.length > 0){
+			return intersections[0];
+		}else{
+			return false;
+		}
+	};
 	
 	function getMousePointCloudIntersection(){
 		var vector = new THREE.Vector3( scope.mouse.x, scope.mouse.y, 0.5 );
@@ -3111,15 +3518,83 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 		}
 		
 		return closestPoint ? closestPoint.position : null;
-	}
+	}	
 	
-	this.domElement.addEventListener("dblclick", onDoubleClick, false);
+	this.setEnabled = function(enable){
+		if(this.enabled === enable){
+			return;
+		}
+		
+		this.enabled = enable;
+		
+		if(enable){
+			
+			state = STATE.PICKING; 
+			scope.activeMeasurement = new Measure();
+			
+			var sphere = new THREE.Mesh(sphereGeometry, createSphereMaterial());
+			scope.sceneRoot.add(sphere);
+			scope.activeMeasurement.spheres.push(sphere);
+			
+			sphere.addEventListener("mousemove", moveEvent);
+			sphere.addEventListener("mouseleave", leaveEvent);
+			sphere.addEventListener("mousedrag", dragEvent);
+			sphere.addEventListener("drop", dropEvent);
+		}else{
+			//this.domElement.removeEventListener( 'click', onClick, false);
+			//this.domElement.removeEventListener( 'mousemove', onMouseMove, false );
+			//this.domElement.removeEventListener( 'mousedown', onMouseDown, false );
+		}
+	};
+	
+	this.update = function(){
+		var measurements = [];
+		for(var i = 0; i < this.measurements.length; i++){
+			measurements.push(this.measurements[i]);
+		}
+		if(this.activeMeasurement){
+			measurements.push(this.activeMeasurement);
+		}
+		
+		
+		for(var i = 0; i < measurements.length; i++){
+			var measurement = measurements[i];
+			for(var j = 0; j < measurement.spheres.length; j++){
+				var sphere = measurement.spheres[j];
+				var wp = sphere.getWorldPosition().applyMatrix4(this.camera.matrixWorldInverse);
+				var pp = new THREE.Vector4(wp.x, wp.y, wp.z).applyMatrix4(camera.projectionMatrix);
+				var w = Math.abs((wp.z  / 60)); // * (2 - pp.z / pp.w);
+				sphere.scale.set(w, w, w);
+			}
+			
+			for(var j = 0; j < measurement.edgeLabels.length; j++){
+				var label = measurement.edgeLabels[j];
+				var wp = label.getWorldPosition().applyMatrix4(this.camera.matrixWorldInverse);
+				var w = Math.abs(wp.z  / 10);
+				var l = label.scale.length();
+				label.scale.multiplyScalar(w / l);
+			}
+		}
+	
+		this.light.position.copy(this.camera.position);
+		this.light.lookAt(this.camera.getWorldDirection().add(this.camera.position));
+		
+	};
+	
+	this.render = function(){
+		this.update();
+		renderer.render(this.sceneMeasurement, this.camera);
+	};
+	
+	this.domElement.addEventListener( 'click', onClick, false);
 	this.domElement.addEventListener( 'mousemove', onMouseMove, false );
 	this.domElement.addEventListener( 'mousedown', onMouseDown, false );
+	this.domElement.addEventListener( 'mouseup', onMouseUp, true );
 };
 
 
 Potree.MeasuringTool.prototype = Object.create( THREE.EventDispatcher.prototype );
+
 
 Potree.ProfileTool = function(width, height, depth){
 

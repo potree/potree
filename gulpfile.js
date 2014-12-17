@@ -20,6 +20,7 @@ var paths = {
 		"src/extensions/Ray.js",
 		"src/loader/POCLoader.js",
 		"src/loader/PointAttributes.js",
+		"src/loader/BinaryLoader.js",
 		"src/loader/LasLazLoader.js",
 		"src/materials/PointCloudMaterial.js",
 		"src/FirstPersonControls.js",
@@ -28,6 +29,7 @@ var paths = {
 		"src/PointCloudOctreeGeometry.js",
 		"src/utils.js",
 		"src/TextSprite.js",
+		"src/Version.js",
 		"src/utils/MeasuringTool.js",
 		"src/utils/ProfileTool.js",
 		"src/utils/TranslationTool.js"

@@ -333,7 +333,7 @@ Potree.PointCloudOctree.prototype.getVisibleGeometry = function(camera){
 		var insideFrustum = frustum.intersectsBox(box);
 	
 		
-		var visible = insideFrustum; // && node.level <= 1;
+		var visible = insideFrustum && node.level <= 3;
 		//visible = visible && "r2".indexOf(node.name) === 0;
 		
 		if(!visible){
@@ -421,6 +421,8 @@ Potree.PointCloudOctree.prototype.updateVisibilityTexture = function(){
 	}
 	
 	
+	
+	
 	// sort by level and index, e.g. r, r0, r3, r4, r01, r07, r30, ...
 	var sort = function(a, b){
 		var na = a.name;
@@ -431,6 +433,22 @@ Potree.PointCloudOctree.prototype.updateVisibilityTexture = function(){
 		return 0;
 	};
 	visibleNodes.sort(sort);
+	
+	//var r = [];
+	//for(var i = 0; i < visibleNodes.length; i++){
+	//	var node = visibleNodes[i];
+	//	
+	//	if(node.level < 2){
+	//		r.push(node);
+	//	}else{
+	//	
+	//	ß0
+	//	
+	//	//if(node.numPoints > 5000){
+	//	//	r.push(node);
+	//	//}
+	//}
+	//visibleNodes = r;
 	
 	for(var i = 0; i < visibleNodes.length; i++){
 		var node = visibleNodes[i];

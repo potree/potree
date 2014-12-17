@@ -43,6 +43,7 @@
 	<script src="../src/utils/MeasuringTool.js"></script>
 	<script src="../src/utils/AreaTool.js"></script>
 	<script src="../src/utils/VolumeTool.js"></script>
+	<script src="../src/utils/ProfileTool.js"></script>
 	<script src="../src/utils/TransformationTool.js"></script>
 	<script src="../src/materials/PointCloudMaterial.js"></script>
 	<script src="viewer.js"></script>
@@ -51,22 +52,11 @@
 	<div id="lblNumVisiblePoints" class="info" style="position: absolute; left: 10px; top: 100px; width: 400px; color:white"></div>
 	<div id="lblMessage" class="info" style="position: absolute; left: 10px; bottom: 0px; width: 400px; color:white"></div>
 	
-	<div id="tools" style="position: fixed; width: 200px; bottom: 10px; right: 10px">
+	<div id="tools" style="position: fixed; width: 300px; bottom: 10px; right: 10px">
 		<input type="button" value="distance" onclick="measuringTool.setEnabled(true)"/>
 		<input type="button" value="area" onclick="areaTool.setEnabled(true)"/>
 		<input type="button" value="volume" onclick="volumeTool.startInsertion()"/>
-	
-	</div>
-	
-	<div id="test" style="border: 1px solid red; position: fixed; pointer-events: none">
-	
-	</div>
-	
-	<div id="test1" style="border: 1px solid red; position: fixed; pointer-events: none;">
-	
-	</div>
-	
-	<div id="test2" style="border: 1px solid red; position: fixed; pointer-events: none;">
+		<input type="button" value="profile" onclick="profileTool.startPicking()"/>
 	
 	</div>
 	
@@ -266,7 +256,7 @@
 			areaTool = new Potree.AreaTool(scene, camera, renderer);
 			volumeTool = new Potree.VolumeTool(scene, camera, renderer);
 			transformationTool = new Potree.TransformationTool(scene, camera, renderer);
-
+			profileTool = new Potree.ProfileTool(scene, camera, renderer);
 			
 			
 			window.addEventListener( 'keydown', onKeyDown, false );
@@ -331,6 +321,7 @@
 			
 			volumeTool.update();
 			transformationTool.update();
+			profileTool.update();
 		}
 		
 		function render(){
@@ -353,6 +344,8 @@
 			
 			// render scene
 			renderer.render(scene, camera);
+			
+			profileTool.render();
 			
 			renderer.clearDepth();
 			measuringTool.render();

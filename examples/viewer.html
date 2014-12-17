@@ -29,12 +29,15 @@
 	
 	</style>
 
+	<script src="../libs/plasio/js/laslaz.js"></script>
+	<script src="../libs/plasio/vendor/bluebird.js"></script>
 	<script src="../libs/three.js/build/three.js"></script>
 	<script src="../libs/other/OrbitControls.js"></script>
 	<script src="../libs/other/stats.min.js"></script>
 	<script src="../libs/other/dat.gui.min.js"></script>
 	
 	<script src="../build/js/potree.js"></script>
+	<script src="../build/js/laslaz.js"></script>
 	<script src="../examples/js/ProgressBar.js"></script>
 	<script src="../src/PointCloudOctree.js"></script>
 	<script src="../src/utils/MeasuringTool.js"></script>
@@ -70,10 +73,7 @@
 	
 	<div class="info" style="position: absolute; left: 300px; right: 300px; top: 10px; text-align: center;">
 		<a href="http://potree.org" target="_blank">potree.org</a><br>
-		Work in Progress on measurement tools.<br>
-		Click the "measure" or "volume" button to insert distance and volume measurement objects.<br>
-		Distance measurement markers can be dragged and dropped with the mouse. <br>
-		Volumes can be translated, scaled and rotated. Switch between translation, scale and rotation with e, r and t.
+		Point cloud courtesy of <a href="http://www.sigeom.ch/" target="_blank">sigeom sa</a><br>
 		
 	</div>
 	
@@ -89,10 +89,8 @@
 		var interpolate = false;
 		
 		var progressBar = new ProgressBar();
-		
-		var pointcloudPath = "../resources/pointclouds/lion_takanawa/cloud.js";
-		var pointcloudPath = "../../../../pointclouds/bruno_friedmann/vol_total/vol_total_bin/cloud.js";
-		//var pointcloudPath = "../../../../pointclouds/pix4d/matterhorn/cloud.js";
+
+		var pointcloudPath = "../resources/pointclouds/vol_total/cloud.js";
 	
 		var elRenderArea = document.getElementById("renderArea");
 	
@@ -206,7 +204,7 @@
 			var height = elRenderArea.clientHeight;
 			var aspect = width / height;
 			var near = 0.1;
-			var far = 100000;
+			var far = 1000000;
 		
 			scene = new THREE.Scene();
 			camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
@@ -222,16 +220,11 @@
 			skybox = Potree.utils.loadSkybox("../resources/textures/skybox/");
 
 			// camera and controls
-			camera.position.set(10, 10, 10);
-			camera.rotation.y = Math.PI / 4;
-			camera.rotation.x = -Math.PI / 4;
-			//camera.lookAt(new THREE.Vector3(0, 0, 0));
+			camera.position.set(-304, 372, 318);
+			camera.rotation.y = -Math.PI / 4;
+			camera.rotation.x = -Math.PI / 6;
 			controls = new THREE.FirstPersonControls(camera, renderer.domElement);
-			//controls = new ViewerControls(renderer, camera, scene);
-//			controls = new THREE.FirstPersonControls(camera, renderer.domElement);
-			//controls = new THREE.OrbitControls(camera, renderer.domElement);
-			//controls.target.set( 0, 5, 0 );
-			//camera.lookAt(controls.target);
+			controls.moveSpeed *= 10;
 			
 			// enable frag_depth extension for the interpolation shader, if available
 			renderer.context.getExtension("EXT_frag_depth");
@@ -263,17 +256,7 @@
 				
 				referenceFrame.updateMatrixWorld(true);
 				
-				
-				
-				
-				//var sg = new THREE.SphereGeometry(1, 40, 40);
-				//var sphere = new THREE.Mesh(sg, new THREE.MeshBasicMaterial({transparent: true, opacity: 0.5}));
-				//scene.add(sphere);
-				//var bs = pointcloud.boundingSphere.clone().applyMatrix4(pointcloud.matrixWorld);
-				//sphere.scale.set(bs.radius, bs.radius, bs.radius);
-				//sphere.position.copy(bs.center);
-				
-				zoomTo(camera, pointcloud, 0.7);
+				//zoomTo(camera, pointcloud, 0.7);
 			});
 			
 			var grid = Potree.utils.createGrid(5, 5, 2);

@@ -142,7 +142,7 @@ Potree.ProfileTool = function(scene, camera, renderer){
 		this.root.add(this.profileNode);
 		
 		this.setCoordinates = function(start, end){
-			var width = start.distanceTo(end);
+			var width = start.clone().setY(0).distanceTo(end.clone().setY(0));
 			var height = Math.abs(end.y - start.y) + 20;
 			
 			this.setDimension(width, height, this.depth);

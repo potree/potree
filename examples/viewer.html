@@ -198,6 +198,7 @@
 		
 			scene = new THREE.Scene();
 			camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+			//camera = new THREE.OrthographicCamera(-1000, 1000, 1000, -1000, -far, far);
 			
 			referenceFrame = new THREE.Object3D();
 			scene.add(referenceFrame);
@@ -215,6 +216,12 @@
 			camera.rotation.x = -Math.PI / 6;
 			controls = new THREE.FirstPersonControls(camera, renderer.domElement);
 			controls.moveSpeed *= 10;
+			
+			//camera.position.set(0, 0, 100);
+			//var sg = new THREE.SphereGeometry(1);
+			//var s = new THREE.Mesh(sg);
+			//s.scale.set(10,10,10);
+			//scene.add(s);
 			
 			// enable frag_depth extension for the interpolation shader, if available
 			renderer.context.getExtension("EXT_frag_depth");
@@ -322,6 +329,31 @@
 			volumeTool.update();
 			transformationTool.update();
 			profileTool.update();
+			
+			
+			var clipBoxes = [];
+			
+			for(var i = 0; i < profileTool.profiles.length; i++){
+				var profile = profileTool.profiles[i];
+				
+				profile.box.updateMatrixWorld();
+				var boxInverse = new THREE.Matrix4().getInverse(profile.box.matrixWorld);
+				clipBoxes.push(boxInverse);
+			}
+			
+			for(var i = 0; i < volumeTool.volumes.length; i++){
+				var volume = volumeTool.volumes[i];
+				
+				volume.object.updateMatrixWorld();
+				var boxInverse = new THREE.Matrix4().getInverse(volume.object.matrixWorld);
+				
+				clipBoxes.push(boxInverse);
+			}
+			
+			if(pointcloud){
+				pointcloud.material.setClipBoxes(clipBoxes);
+			}
+			
 		}
 		
 		function render(){
@@ -330,7 +362,7 @@
 			var height = elRenderArea.clientHeight;
 			var aspect = width / height;
 			
-			camera.aspect = aspect;
+			//camera.aspect = aspect;
 			camera.updateProjectionMatrix();
 			
 			renderer.setSize(width, height);

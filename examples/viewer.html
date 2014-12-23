@@ -52,11 +52,12 @@
 	<div id="lblNumVisiblePoints" class="info" style="position: absolute; left: 10px; top: 100px; width: 400px; color:white"></div>
 	<div id="lblMessage" class="info" style="position: absolute; left: 10px; bottom: 0px; width: 400px; color:white"></div>
 	
-	<div id="tools" style="position: fixed; width: 300px; bottom: 10px; right: 10px">
+	<div id="tools" style="position: fixed; width: 400px; bottom: 10px; right: 10px">
 		<input type="button" value="distance" onclick="measuringTool.setEnabled(true)"/>
 		<input type="button" value="area" onclick="areaTool.setEnabled(true)"/>
 		<input type="button" value="volume" onclick="volumeTool.startInsertion()"/>
 		<input type="button" value="profile" onclick="profileTool.startPicking()"/>
+		<input type="button" value="clip volume" onclick="volumeTool.startInsertion({clip: true})"/>
 	
 	</div>
 	
@@ -78,6 +79,8 @@
 		var pointShape = Potree.PointShape.SQUARE;
 		var interpolate = false;
 		
+		var showStats = false;
+		
 		var progressBar = new ProgressBar();
 
 		var pointcloudPath = "../resources/pointclouds/vol_total/cloud.js";
@@ -87,6 +90,7 @@
 		var renderer;
 		var camera;
 		var scene;
+		var sceneBG, cameraBG;
 		var pointcloud;
 		var skybox;
 		var stats;
@@ -114,7 +118,8 @@
 				"Materials" : "RGB",
 				"interpolate": interpolate,
 				"circles": false,
-				"skybox": false
+				"skybox": false,
+				"stats": showStats
 			};
 			
 			var pPoints = gui.add(params, 'points(m)', 0.02, 2);
@@ -179,6 +184,11 @@
 			pSykbox.onChange(function(value){
 				showSkybox = value;
 			});
+			
+			var pStats = gui.add(params, 'stats');
+			pStats.onChange(function(value){
+				showStats = value;
+			});
 
 			// stats
 			stats = new Stats();
@@ -197,7 +207,11 @@
 			var far = 1000000;
 		
 			scene = new THREE.Scene();
+			sceneBG = new THREE.Scene();
+			
 			camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+			//cameraBG = new THREE.OrthographicCamera(-100, 100, 100, -100, -100, 100);
+			cameraBG = new THREE.Camera();
 			//camera = new THREE.OrthographicCamera(-1000, 1000, 1000, -1000, -far, far);
 			
 			referenceFrame = new THREE.Object3D();
@@ -266,6 +280,19 @@
 			profileTool = new Potree.ProfileTool(scene, camera, renderer);
 			
 			
+			// bg, see http://stackoverflow.com/questions/19865537/three-js-set-background-image
+			var texture = THREE.ImageUtils.loadTexture( '../resources/textures/background.jpg' );
+			var bg = new THREE.Mesh(
+				new THREE.PlaneGeometry(2, 2, 0),
+				new THREE.MeshBasicMaterial({
+					map: texture
+				})
+			);
+			bg.material.depthTest = false;
+			bg.material.depthWrite = false;
+			sceneBG.add(bg);
+			
+			
 			window.addEventListener( 'keydown', onKeyDown, false );
 		}
 		
@@ -300,12 +327,24 @@
 				pointcloud.material.heightMax = 8;
 				
 				pointcloud.update(camera, renderer);
-			
-				document.getElementById("lblNumVisibleNodes").innerHTML = "visible nodes: " + pointcloud.numVisibleNodes;
-				document.getElementById("lblNumVisiblePoints").innerHTML = "visible points: " + Potree.utils.addCommas(pointcloud.numVisiblePoints);
 			}
 			
-			stats.update();
+			if(showStats){
+				document.getElementById("lblNumVisibleNodes").style.display = "";
+			    document.getElementById("lblNumVisiblePoints").style.display = "";
+			    stats.domElement.style.display = "";
+			
+				stats.update();
+			
+				if(pointcloud){
+					document.getElementById("lblNumVisibleNodes").innerHTML = "visible nodes: " + pointcloud.numVisibleNodes;
+					document.getElementById("lblNumVisiblePoints").innerHTML = "visible points: " + Potree.utils.addCommas(pointcloud.numVisiblePoints);
+				}
+			}else{
+				document.getElementById("lblNumVisibleNodes").style.display = "none";
+			    document.getElementById("lblNumVisiblePoints").style.display = "none";
+			    stats.domElement.style.display = "none";
+			}
 			
 			controls.update(clock.getDelta());
 
@@ -344,10 +383,12 @@
 			for(var i = 0; i < volumeTool.volumes.length; i++){
 				var volume = volumeTool.volumes[i];
 				
-				volume.object.updateMatrixWorld();
-				var boxInverse = new THREE.Matrix4().getInverse(volume.object.matrixWorld);
+				if(volume.clip){
+					volume.updateMatrixWorld();
+					var boxInverse = new THREE.Matrix4().getInverse(volume.matrixWorld);
 				
-				clipBoxes.push(boxInverse);
+					clipBoxes.push(boxInverse);
+				}
 			}
 			
 			if(pointcloud){
@@ -372,9 +413,12 @@
 			if(showSkybox){
 				skybox.camera.rotation.copy(camera.rotation);
 				renderer.render(skybox.scene, skybox.camera);
+			}else{
+				renderer.render(sceneBG, cameraBG);
 			}
 			
 			// render scene
+			
 			renderer.render(scene, camera);
 			
 			profileTool.render();

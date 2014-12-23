@@ -208,10 +208,6 @@ Potree.PointCloudMaterial.prototype.setClipBoxes = function(clipBoxes){
 	var numBoxes = clipBoxes.length;
 	this.numClipBoxes = numBoxes;
 	
-	if(numBoxes === 0){
-		return;
-	}
-	
 	if(this.uniforms.clipBoxes.value.length / 16 !== numBoxes){
 		this.uniforms.clipBoxes.value = new Float32Array(numBoxes * 16);
 		this.updateShaderSource();

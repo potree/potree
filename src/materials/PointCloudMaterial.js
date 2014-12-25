@@ -34,6 +34,12 @@ Potree.PointColorType = {
 	SOURCE: 10
 };
 
+Potree.ClipMode = {
+	DISABLED: 0,
+	CLIP_OUTSIDE: 1,
+	HIGHLIGHT_INSIDE: 2
+};
+
 Potree.PointCloudMaterial = function(parameters){
 	parameters = parameters || {};
 
@@ -53,6 +59,7 @@ Potree.PointCloudMaterial = function(parameters){
 	this._octreeLevels = 6.0;
 	this._useClipBox = false;
 	this.numClipBoxes = 0;
+	this._clipMode = Potree.ClipMode.DISABLED;
 	
 	this.gradientTexture = Potree.PointCloudMaterial.generateGradient();
 	
@@ -190,6 +197,14 @@ Potree.PointCloudMaterial.prototype.getDefines = function(){
 		defines += "#define color_type_return_number\n";
 	}else if(this._pointColorType === Potree.PointColorType.SOURCE){
 		defines += "#define color_type_source\n";
+	}
+	
+	if(this.clipMode === Potree.ClipMode.DISABLED){
+		defines += "#define clip_disabled\n";
+	}else if(this.clipMode === Potree.ClipMode.CLIP_OUTSIDE){
+		defines += "#define clip_outside\n";
+	}else if(this.clipMode === Potree.ClipMode.HIGHLIGHT_INSIDE){
+		defines += "#define clip_highlight_inside\n";
 	}
 	
 	//if(this.useClipBox){
@@ -350,6 +365,18 @@ Object.defineProperty(Potree.PointCloudMaterial.prototype, "pointSizeType", {
 	set: function(value){
 		if(this._pointSizeType !== value){
 			this._pointSizeType = value;
+			this.updateShaderSource();
+		}
+	}
+});
+
+Object.defineProperty(Potree.PointCloudMaterial.prototype, "clipMode", {
+	get: function(){
+		return this._clipMode;
+	},
+	set: function(value){
+		if(this._clipMode !== value){
+			this._clipMode = value;
 			this.updateShaderSource();
 		}
 	}
@@ -710,7 +737,15 @@ Potree.PointCloudMaterial.vs_points = [
  "      	insideAny = insideAny || inside;                                                                               ",
  "      }                                                                               ",
  "      if(!insideAny){                                                                               ",
- "      	gl_Position = vec4(1000.0, 1000.0, 1000.0, 1.0);                                                                               ",
+ "                                                                                     ",
+ "          #if defined clip_outside                                                                           ",
+ "      		gl_Position = vec4(1000.0, 1000.0, 1000.0, 1.0);                                                                               ",
+ "          #elif defined clip_highlight_inside                                                                           ",
+ "         		float c = (vColor.r + vColor.g + vColor.b) / 3.0;                                                                           ",
+ "          	vColor = vec3(c, c, c);                                                                           ",
+ "          #endif                                                                           ",
+ "                                                                                     ",
+ "                                                                                     ",
  "      }                                                                               ",
  "                                                                                     ",
  "  #endif                                                                                  ",

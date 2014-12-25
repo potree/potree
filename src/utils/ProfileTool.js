@@ -39,7 +39,7 @@ Potree.ProfileTool = function(scene, camera, renderer){
 		var boxGeometry = new THREE.BoxGeometry(1, 1, 1);
 		var cylinderGeometry = new THREE.CylinderGeometry(1, 1, 1, 16, 15);
 	
-		var boxMaterial = new THREE.MeshBasicMaterial({color: 0xff0000, transparent: true, opacity: 0.2});
+		var boxMaterial = new THREE.MeshBasicMaterial({color: 0xff0000, transparent: true, opacity: 0.0});
 		var startHandleMaterial = new THREE.MeshBasicMaterial({color: 0xff0000});
 		var endHandleMaterial = new THREE.MeshBasicMaterial({color: 0xff0000});
 		

@@ -45,6 +45,7 @@
 	<script src="../src/utils/VolumeTool.js"></script>
 	<script src="../src/utils/ProfileTool.js"></script>
 	<script src="../src/utils/TransformationTool.js"></script>
+	<script src="../src/utils.js"></script>
 	<script src="../src/materials/PointCloudMaterial.js"></script>
 	<script src="viewer.js"></script>
 		
@@ -52,13 +53,19 @@
 	<div id="lblNumVisiblePoints" class="info" style="position: absolute; left: 10px; top: 100px; width: 400px; color:white"></div>
 	<div id="lblMessage" class="info" style="position: absolute; left: 10px; bottom: 0px; width: 400px; color:white"></div>
 	
-	<div id="tools" style="position: fixed; width: 400px; bottom: 10px; right: 10px">
-		<input type="button" value="distance" onclick="measuringTool.setEnabled(true)"/>
+	<div id="tools" style="position: fixed; width: 180px; bottom: 10px; right: 10px">
+		<!--<input type="button" value="distance" onclick="measuringTool.setEnabled(true)"/>
 		<input type="button" value="area" onclick="areaTool.setEnabled(true)"/>
 		<input type="button" value="volume" onclick="volumeTool.startInsertion()"/>
 		<input type="button" value="profile" onclick="profileTool.startPicking()"/>
 		<input type="button" value="clip volume" onclick="volumeTool.startInsertion({clip: true})"/>
+		-->
 	
+		<img src="../resources/icons/distance.png" onclick="measuringTool.setEnabled(true)"/>
+		<img src="../resources/icons/area.png" onclick="areaTool.setEnabled(true)"/>
+		<img src="../resources/icons/volume.png" onclick="volumeTool.startInsertion()"/>
+		<img src="../resources/icons/profile.png" onclick="profileTool.startPicking()"/>
+		<img src="../resources/icons/clip_volume.png" onclick="volumeTool.startInsertion({clip: true})"/>
 	</div>
 	
 	
@@ -78,12 +85,15 @@
 		var pointColorType = Potree.PointColorType.RGB;
 		var pointShape = Potree.PointShape.SQUARE;
 		var interpolate = false;
+		var clipMode = Potree.ClipMode.HIGHLIGHT_INSIDE;
 		
 		var showStats = false;
 		
 		var progressBar = new ProgressBar();
 
 		var pointcloudPath = "../resources/pointclouds/vol_total/cloud.js";
+		var pointcloudPath = "../../../../pointclouds/pix4d/matterhorn/cloud.js";
+		//var pointcloudPath = "../resources/pointclouds/lion_takanawa/cloud.js";
 	
 		var elRenderArea = document.getElementById("renderArea");
 	
@@ -116,6 +126,7 @@
 				"SizeType" : "Adaptive",
 				"show octree" : false,
 				"Materials" : "RGB",
+				"Clip Mode": "Highlight Inside",
 				"interpolate": interpolate,
 				"circles": false,
 				"skybox": false,
@@ -161,6 +172,17 @@
 					pointColorType = Potree.PointColorType.OCTREE_DEPTH;
 				}else if(value === "Point Index"){
 					pointColorType = Potree.PointColorType.POINT_INDEX;
+				}
+			});
+			
+			var pClipMode = gui.add(params, 'Clip Mode', [ "No Clipping", "Clip Outside", "Highlight Inside"]);
+			pClipMode.onChange(function(value){
+				if(value === "No Clipping"){
+					clipMode = Potree.ClipMode.DISABLED;
+				}else if(value === "Clip Outside"){
+					clipMode = Potree.ClipMode.CLIP_OUTSIDE;
+				}else if(value === "Highlight Inside"){
+					clipMode = Potree.ClipMode.HIGHLIGHT_INSIDE;
 				}
 			});
 			
@@ -280,8 +302,13 @@
 			profileTool = new Potree.ProfileTool(scene, camera, renderer);
 			
 			
-			// bg, see http://stackoverflow.com/questions/19865537/three-js-set-background-image
-			var texture = THREE.ImageUtils.loadTexture( '../resources/textures/background.jpg' );
+			// background
+			// var texture = THREE.ImageUtils.loadTexture( '../resources/textures/background.gif' );
+			var texture = Potree.utils.createBackgroundTexture(512, 512);
+			
+			texture.minFilter = texture.magFilter = THREE.NearestFilter;
+			texture.minFilter = texture.magFilter = THREE.LinearFilter;
+			
 			var bg = new THREE.Mesh(
 				new THREE.PlaneGeometry(2, 2, 0),
 				new THREE.MeshBasicMaterial({
@@ -316,6 +343,9 @@
 		
 		function update(){
 			if(pointcloud){
+			
+				var bbWorld = Potree.utils.computeTransformedBoundingBox(pointcloud.boundingBox, pointcloud.matrixWorld);
+			
 				pointcloud.material.size = pointSize;
 				pointcloud.visiblePointsTarget = pointCountTarget * 1000 * 1000;
 				pointcloud.material.opacity = opacity;
@@ -323,8 +353,9 @@
 				pointcloud.material.pointColorType = pointColorType;
 				pointcloud.material.pointShape = pointShape;
 				pointcloud.material.interpolate = interpolate;
-				pointcloud.material.heightMin = 0;
-				pointcloud.material.heightMax = 8;
+				pointcloud.material.heightMin = bbWorld.min.y;
+				pointcloud.material.heightMax = bbWorld.max.y;
+				pointcloud.material.clipMode = clipMode;
 				
 				pointcloud.update(camera, renderer);
 			}
@@ -372,13 +403,22 @@
 			
 			var clipBoxes = [];
 			
+			var profiles = [];
 			for(var i = 0; i < profileTool.profiles.length; i++){
-				var profile = profileTool.profiles[i];
+				profiles.push(profileTool.profiles[i]);
+			}
+			if(profileTool.activeProfile){
+				profiles.push(profileTool.activeProfile);
+			}
+			for(var i = 0; i < profiles.length; i++){
+				var profile = profiles[i];
 				
 				profile.box.updateMatrixWorld();
 				var boxInverse = new THREE.Matrix4().getInverse(profile.box.matrixWorld);
 				clipBoxes.push(boxInverse);
 			}
+			
+
 			
 			for(var i = 0; i < volumeTool.volumes.length; i++){
 				var volume = volumeTool.volumes[i];
@@ -403,7 +443,7 @@
 			var height = elRenderArea.clientHeight;
 			var aspect = width / height;
 			
-			//camera.aspect = aspect;
+			camera.aspect = aspect;
 			camera.updateProjectionMatrix();
 			
 			renderer.setSize(width, height);

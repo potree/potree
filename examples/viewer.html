@@ -42,14 +42,21 @@ void main() {
 </script>
 
 <script id="fs" type="x-shader/x-vertex">
+
+#extension GL_EXT_frag_depth : enable
+
+uniform sampler2D depthMap;
 uniform sampler2D texture;
 
 varying vec2 vUv;
 
 void main() {
     vec4 color = texture2D(texture, vUv); 
+    float depth = texture2D(depthMap, vUv).g; 
 	color = color / color.w;
     gl_FragColor = color; 
+	
+	gl_FragDepthEXT = depth;
 }
 </script>
 
@@ -134,6 +141,7 @@ void main() {
 		var renderer;
 		var camera;
 		var scene;
+		var scenePointCloud;
 		var sceneBG, cameraBG;
 		var pointcloud;
 		var skybox;
@@ -261,6 +269,7 @@ void main() {
 			var far = 1000000;
 		
 			scene = new THREE.Scene();
+			scenePointCloud = new THREE.Scene();
 			sceneBG = new THREE.Scene();
 			
 			camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
@@ -269,7 +278,7 @@ void main() {
 			//camera = new THREE.OrthographicCamera(-1000, 1000, 1000, -1000, -far, far);
 			
 			referenceFrame = new THREE.Object3D();
-			scene.add(referenceFrame);
+			scenePointCloud.add(referenceFrame);
 
 			renderer = new THREE.WebGLRenderer();
 			renderer.setSize(width, height);
@@ -329,11 +338,11 @@ void main() {
 			var grid = Potree.utils.createGrid(5, 5, 2);
 			scene.add(grid);
 			
-			measuringTool = new Potree.MeasuringTool(scene, camera, renderer);
-			areaTool = new Potree.AreaTool(scene, camera, renderer);
-			volumeTool = new Potree.VolumeTool(scene, camera, renderer);
-			transformationTool = new Potree.TransformationTool(scene, camera, renderer);
-			profileTool = new Potree.ProfileTool(scene, camera, renderer);
+			measuringTool = new Potree.MeasuringTool(scenePointCloud, camera, renderer);
+			areaTool = new Potree.AreaTool(scenePointCloud, camera, renderer);
+			volumeTool = new Potree.VolumeTool(scenePointCloud, camera, renderer);
+			transformationTool = new Potree.TransformationTool(scenePointCloud, camera, renderer);
+			profileTool = new Potree.ProfileTool(scenePointCloud, camera, renderer);
 			
 			
 			// background
@@ -379,19 +388,19 @@ void main() {
 		function update(){
 			if(pointcloud){
 			
-				var bbWorld = Potree.utils.computeTransformedBoundingBox(pointcloud.boundingBox, pointcloud.matrixWorld);
+				//var bbWorld = Potree.utils.computeTransformedBoundingBox(pointcloud.boundingBox, pointcloud.matrixWorld);
 			
-				pointcloud.material.size = pointSize;
-				pointcloud.visiblePointsTarget = pointCountTarget * 1000 * 1000;
-				pointcloud.material.opacity = opacity;
-				pointcloud.material.pointSizeType = pointSizeType;
-				pointcloud.material.pointColorType = pointColorType;
-				pointcloud.material.pointShape = pointShape;
-				pointcloud.material.interpolate = quality === "High";
-				pointcloud.material.heightMin = bbWorld.min.y;
-				pointcloud.material.heightMax = bbWorld.max.y;
-				pointcloud.material.clipMode = clipMode;
-				pointcloud.material.weighted = false;
+				//pointcloud.material.size = pointSize;
+				//pointcloud.visiblePointsTarget = pointCountTarget * 1000 * 1000;
+				//pointcloud.material.opacity = opacity;
+				//pointcloud.material.pointSizeType = pointSizeType;
+				////pointcloud.material.pointColorType = pointColorType;
+				//pointcloud.material.pointShape = (quality === "High") ? Potree.PointShape.CIRCLE : pointShape;
+				//pointcloud.material.interpolate = (quality === "High");
+				//pointcloud.material.heightMin = bbWorld.min.y;
+				//pointcloud.material.heightMax = bbWorld.max.y;
+				//pointcloud.material.clipMode = clipMode;
+				////pointcloud.material.weighted = false;
 				
 				pointcloud.update(camera, renderer);
 			}
@@ -493,10 +502,32 @@ void main() {
 				renderer.render(sceneBG, cameraBG);
 			}
 			
+			if(pointcloud){
+				if(pointcloud.originalMaterial){
+					pointcloud.material = pointcloud.originalMaterial;
+				}
+				
+				var bbWorld = Potree.utils.computeTransformedBoundingBox(pointcloud.boundingBox, pointcloud.matrixWorld);
+				
+				pointcloud.material.size = pointSize;
+				pointcloud.visiblePointsTarget = pointCountTarget * 1000 * 1000;
+				pointcloud.material.opacity = opacity;
+				pointcloud.material.pointSizeType = pointSizeType;
+				pointcloud.material.pointColorType = pointColorType;
+				pointcloud.material.pointShape = pointShape;
+				pointcloud.material.interpolate = (quality === "High");
+				pointcloud.material.heightMin = bbWorld.min.y;
+				pointcloud.material.heightMax = bbWorld.max.y;
+				pointcloud.material.clipMode = clipMode;
+				pointcloud.material.weighted = false;
+			}
+			
 			// render scene
 			renderer.render(scene, camera);
+			renderer.render(scenePointCloud, camera);
 			
 			profileTool.render();
+			volumeTool.render();
 			
 			renderer.clearDepth();
 			measuringTool.render();
@@ -506,45 +537,47 @@ void main() {
 		
 		// high quality rendering using splats
 		// 
-		var rtLinearDepth = new THREE.WebGLRenderTarget( 1024, 1024, { 
+		var rtDepth = new THREE.WebGLRenderTarget( 1024, 1024, { 
 			minFilter: THREE.NearestFilter, 
 			magFilter: THREE.NearestFilter, 
 			format: THREE.RGBAFormat, 
 			type: THREE.FloatType
 		} );
-		var rtProfile = new THREE.WebGLRenderTarget( 1024, 1024, { 
+		var rtNormalize = new THREE.WebGLRenderTarget( 1024, 1024, { 
 			minFilter: THREE.LinearFilter, 
 			magFilter: THREE.NearestFilter, 
 			format: THREE.RGBAFormat, 
 			type: THREE.FloatType
 		} );
 		
-		var sceneScreen;
+		var sceneNormalize;
+		
+		var depthMaterial, weightedMaterial;
 		
 		function renderHighQuality(){
 		
-			if(!sceneScreen){
-				sceneScreen = new THREE.Scene();
+			if(!sceneNormalize){
+				sceneNormalize = new THREE.Scene();
 								
+				var vsNormalize = document.getElementById('vs').innerHTML;
+				var fsNormalize = document.getElementById('fs').innerHTML;
 				
-				var vs = document.getElementById('vs').innerHTML;
-				var fs = document.getElementById('fs').innerHTML;
-				
-				var uniforms = {
-					texture: { type: "t", value: rtProfile }
+				var uniformsNormalize = {
+					depthMap: { type: "t", value: rtDepth },
+					texture: { type: "t", value: rtNormalize }
 				};
 				
-				var bgMaterial = new THREE.ShaderMaterial({
-					uniforms: uniforms,
-					vertexShader: vs,
-					fragmentShader: fs
+				var materialNormalize = new THREE.ShaderMaterial({
+					uniforms: uniformsNormalize,
+					vertexShader: vsNormalize,
+					fragmentShader: fsNormalize
 				});
 				
-				var bg = new THREE.Mesh( new THREE.PlaneGeometry(2, 2, 0), bgMaterial);
-				bg.material.depthTest = false;
-				bg.material.depthWrite = false;
-				bg.material.transparent = true;
-				sceneScreen.add(bg);
+				var quad = new THREE.Mesh( new THREE.PlaneGeometry(2, 2, 0), materialNormalize);
+				quad.material.depthTest = true;
+				quad.material.depthWrite = true;
+				quad.material.transparent = true;
+				sceneNormalize.add(quad);
 				
 			}
 			
@@ -557,32 +590,95 @@ void main() {
 			camera.updateProjectionMatrix();
 			
 			renderer.setSize(width, height);
+			rtDepth.setSize(width, height);
+			rtNormalize.setSize(width, height);
 			
-			
-			rtProfile.setSize(width, height);
+
+			renderer.clear();
+			renderer.render(sceneBG, cameraBG);
+			renderer.render(scene, camera);
 			
 			if(pointcloud){
+				if(!weightedMaterial){
+					pointcloud.originalMaterial = pointcloud.material;
+					depthMaterial = new Potree.PointCloudMaterial();
+					weightedMaterial = new Potree.PointCloudMaterial();
+					//depthMaterial.visibleNodesTexture = pointcloud.material.visibleNodesTexture;
+					//weightedMaterial.visibleNodesTexture = pointcloud.material.visibleNodesTexture;
+				}
+				
+				pointcloud.material = depthMaterial;
+				
+				var bbWorld = Potree.utils.computeTransformedBoundingBox(pointcloud.boundingBox, pointcloud.matrixWorld);
+				
+				// get rid of this
+				pointcloud.material.size = pointSize;
+				pointcloud.visiblePointsTarget = pointCountTarget * 1000 * 1000;
+				pointcloud.material.opacity = opacity;
+				pointcloud.material.pointSizeType = pointSizeType;
+				pointcloud.material.pointColorType = Potree.PointColorType.DEPTH;
+				pointcloud.material.pointShape = Potree.PointShape.CIRCLE;
+				pointcloud.material.interpolate = (quality === "High");
+				pointcloud.material.heightMin = bbWorld.min.y;
+				pointcloud.material.heightMax = bbWorld.max.y;
+				pointcloud.material.clipMode = clipMode;
+				pointcloud.material.weighted = false;
+				
+				
 				pointcloud.material.minSize = 2;
+				pointcloud.material.screenWidth = width;
+				pointcloud.material.screenHeight = height;
 			
-				renderer.clear();
-				renderer.clearTarget( rtProfile, true, true, true );
+				pointcloud.update(camera, renderer);
+				
+				renderer.clearTarget( rtDepth, true, true, true );
+				renderer.clearTarget( rtNormalize, true, true, true );
 				
 				var origType = pointcloud.material.pointColorType;
-				pointcloud.material.weighted = false;
+				renderer.render(scenePointCloud, camera, rtDepth);
+				
+				pointcloud.material = weightedMaterial;
+				
+				
+				
+				
+				
+				// get rid of this
+				pointcloud.material.size = pointSize;
+				pointcloud.visiblePointsTarget = pointCountTarget * 1000 * 1000;
+				pointcloud.material.opacity = opacity;
+				pointcloud.material.pointSizeType = pointSizeType;
+				pointcloud.material.pointColorType = pointColorType;
 				pointcloud.material.pointShape = Potree.PointShape.CIRCLE;
-				pointcloud.material.pointColorType = Potree.PointColorType.DEPTH_LINEAR;
-				renderer.render(scene, camera, rtProfile);
-				
-				//renderer.context.depthFunc( renderer.context.LEQUAL );
-				pointcloud.material.blendDepth = pointcloud.material.spacing;
+				pointcloud.material.interpolate = (quality === "High");
+				pointcloud.material.heightMin = bbWorld.min.y;
+				pointcloud.material.heightMax = bbWorld.max.y;
+				pointcloud.material.clipMode = clipMode;
 				pointcloud.material.weighted = true;
-				pointcloud.material.pointColorType = origType;
-				renderer.clearTarget( rtProfile, true, false, false );
-				renderer.render(scene, camera, rtProfile);
 				
 				
-				renderer.render(sceneBG, cameraBG);
-				renderer.render(sceneScreen, cameraBG);
+				
+				
+				
+				//pointcloud.material.pointShape = Potree.PointShape.CIRCLE;
+				pointcloud.material.depthMap = rtDepth;
+				pointcloud.material.blendDepth = pointcloud.material.spacing;
+				//pointcloud.material.weighted = true;
+				//pointcloud.material.pointColorType = Potree.PointColorType.RGB;
+				pointcloud.update(camera, renderer);
+				renderer.render(scenePointCloud, camera, rtNormalize);
+				
+			
+			    volumeTool.render();
+				profileTool.render();
+				renderer.render(sceneNormalize, cameraBG);
+				
+				
+				renderer.clearDepth();
+				measuringTool.render();
+				areaTool.render();
+				transformationTool.render();
+					
 			}
 		
 		

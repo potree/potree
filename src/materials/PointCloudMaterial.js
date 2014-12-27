@@ -31,8 +31,7 @@ Potree.PointColorType = {
 	POINT_INDEX: 7,
 	CLASSIFICATION: 8,
 	RETURN_NUMBER: 9,
-	SOURCE: 10,
-	DEPTH_LINEAR: 11
+	SOURCE: 10
 };
 
 Potree.ClipMode = {
@@ -63,6 +62,7 @@ Potree.PointCloudMaterial = function(parameters){
 	this._clipMode = Potree.ClipMode.DISABLED;
 	this._weighted = false;
 	this._blendDepth = 0.1;
+	this._depthMap;
 	
 	this.gradientTexture = Potree.PointCloudMaterial.generateGradient();
 	
@@ -88,6 +88,7 @@ Potree.PointCloudMaterial = function(parameters){
 		gradient: 		{ type: "t", value: this.gradientTexture },
 		clipBoxes:		{ type: "Matrix4fv", value: [] },
 		blendDepth:		{ type: "f", value: this._blendDepth },
+		depthMap: 		{ type: "t", value: null },
 	};
 	
 	
@@ -128,11 +129,12 @@ Potree.PointCloudMaterial.prototype.updateShaderSource = function(){
 		fragmentShader: this.getDefines() + Potree.PointCloudMaterial.fs_points_rgb.join("\n")
 	});
 	
-	//if(this.useClipBox){
-	//	this.setValues({
-	//		clipBox: this.clipBox.elements
-	//	});
-	//}
+	if(this.depthMap){
+		this.uniforms.depthMap.value = this.depthMap;
+		this.setValues({
+			depthMap: this.depthMap,
+		});
+	}
 	
 	if(this.opacity === 1.0){
 		this.setValues({
@@ -213,8 +215,6 @@ Potree.PointCloudMaterial.prototype.getDefines = function(){
 		defines += "#define color_type_return_number\n";
 	}else if(this._pointColorType === Potree.PointColorType.SOURCE){
 		defines += "#define color_type_source\n";
-	}else if(this._pointColorType === Potree.PointColorType.DEPTH_LINEAR){
-		defines += "#define color_type_depth_linear\n";
 	}
 	
 	if(this.clipMode === Potree.ClipMode.DISABLED){
@@ -395,6 +395,18 @@ Object.defineProperty(Potree.PointCloudMaterial.prototype, "pointColorType", {
 	set: function(value){
 		if(this._pointColorType !== value){
 			this._pointColorType = value;
+			this.updateShaderSource();
+		}
+	}
+});
+
+Object.defineProperty(Potree.PointCloudMaterial.prototype, "depthMap", {
+	get: function(){
+		return this._depthMap;
+	},
+	set: function(value){
+		if(this._depthMap !== value){
+			this._depthMap = value;
 			this.updateShaderSource();
 		}
 	}
@@ -600,9 +612,12 @@ Potree.PointCloudMaterial.vs_points = [
  "                                                                                   ",
  "uniform sampler2D visibleNodes;                                                    ",
  "uniform sampler2D gradient;                                                        ",
+ "uniform sampler2D depthMap;                                                        ",
  "                                                                                   ",
  "varying float vOpacity;                                                                                   ",
  "varying vec3 vColor;                                                               ",
+ "varying float vDepth;                                                                                   ",
+ "varying float vLinearDepth;                                                                                   ",
  "                                                                                   ",
  "                                                                                   ",
  "#if defined(adaptive_point_size) || defined(color_type_octree_depth)               ",
@@ -702,12 +717,13 @@ Potree.PointCloudMaterial.vs_points = [
  "                                                                                   ",
  "	vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );                       ",
  "	gl_Position = projectionMatrix * mvPosition;                                     ",
- "  float pw = gl_Position.w;                                                                                 ",
- "  float pd = gl_Position.z;                                                                                 ",
- "  gl_Position = gl_Position / pw;                                                                                 ",
- "  gl_Position.z = 2.0*((pw - near) / far)-1.0;                                                                                 ",
+ "  //float pw = gl_Position.w;                                                                                 ",
+ "  //float pd = gl_Position.z;                                                                                 ",
+ "  //gl_Position = gl_Position / pw;                                                                                 ",
+ "  //gl_Position.z = 2.0*((pw - near) / far)-1.0;                                                                                 ",
  "  vOpacity = opacity;                                                                                 ",
- "                                                                                   ",
+ "  vLinearDepth = -mvPosition.z;                                                                                 ",
+ "  vDepth = mvPosition.z / gl_Position.w;                                                                                 ",
  "                                                                                   ",
  "  // COLOR TYPES                                                                   ",
  "                                                                                   ",
@@ -719,7 +735,8 @@ Potree.PointCloudMaterial.vs_points = [
  "                                                                                   ",
  "  	vColor = texture2D(gradient, vec2(w,1.0-w)).rgb;                             ",
  "  #elif defined color_type_depth                                                   ",
- "  	vColor = vec3(1.0, 1.0, 1.0) * gl_Position.w * 0.0001;                       ",
+ "      float d = -mvPosition.z ;                                                                             ",
+ "      vColor = vec3(d, vDepth, 0.0);                                                                             ",
  "  #elif defined color_type_intensity                                               ",
  "      float w = (intensity - intensityMin) / intensityMax;                         ",
  "		vColor = vec3(w, w, w);                                                      ",
@@ -743,12 +760,6 @@ Potree.PointCloudMaterial.vs_points = [
  "  #elif defined color_type_source                                             ",
  "      float w = mod(pointSourceID, 10.0) / 10.0;                                                                             ",
  "  	vColor = texture2D(gradient, vec2(w,1.0 - w)).rgb;                               ",
- "  #elif defined color_type_depth_linear                                             ",
- "      float d = -mvPosition.z + blendDepth;                                                                             ",
- "      vColor = vec3(d, d, d);                                                                             ",
- "                                                                                   ",
- "      gl_Position.z = 2.0*((pw + blendDepth - near) / far)-1.0;                                                                             ",
- "                                                                                   ",
  "  #endif                                                                           ",
  "                                                                                   ",
  "                                                                                   ",
@@ -774,7 +785,6 @@ Potree.PointCloudMaterial.vs_points = [
  "	gl_PointSize = max(minSize, gl_PointSize);                                       ",
  "	gl_PointSize = min(50.0, gl_PointSize);                                          ",
  "                                                                                     ",
- "                                                                                     ",
  "  // clip box                                                                                  ",
  "  #if defined use_clip_box                                                                                 ",
  "      bool insideAny = false;                                                                               ",
@@ -783,17 +793,13 @@ Potree.PointCloudMaterial.vs_points = [
  "      	bool inside = -0.5 <= clipPosition.x && clipPosition.x <= 0.5;                                                                             ",
  "      	inside = inside && -0.5 <= clipPosition.y && clipPosition.y <= 0.5;                                                                             ",
  "      	inside = inside && -0.5 <= clipPosition.z && clipPosition.z <= 0.5;                                                                             ",
- "      	//if(!inside){                                                                              ",
- "      	//	gl_Position = vec4(1000.0, 1000.0, 1000.0, 1.0);	                                                                             ",
- "      	//                                                                               ",
- "      	//}                                                                            ",
  "      	insideAny = insideAny || inside;                                                                               ",
  "      }                                                                               ",
  "      if(!insideAny){                                                                               ",
  "                                                                                     ",
  "          #if defined clip_outside                                                                           ",
  "      		gl_Position = vec4(1000.0, 1000.0, 1000.0, 1.0);                                                                               ",
- "          #elif defined clip_highlight_inside                                                                           ",
+ "          #elif defined clip_highlight_inside && !defined(color_type_depth)                                                                           ",
  "         		float c = (vColor.r + vColor.g + vColor.b) / 3.0;                                                                           ",
  "          	vColor = vec3(c, c, c);                                                                           ",
  "          #endif                                                                           ",
@@ -811,15 +817,21 @@ Potree.PointCloudMaterial.fs_points_rgb = [
  "	#extension GL_EXT_frag_depth : enable                                            ",
  "#endif                                                                             ",
  "                                                                                   ",
- "precision highp float;                                                             ",
- "precision highp int;                                                               ",
+ "precision mediump float;                                                             ",
+ "precision mediump int;                                                               ",
  "                                                                                   ",
  "//uniform float opacity;                                                             ",
  "uniform float pcIndex;                                                             ",
+ "uniform float screenWidth;                                                         ",
+ "uniform float screenHeight;                                                        ",
+ "uniform float blendDepth;                                                                                   ",
+ "                                                                                   ",
+ "uniform sampler2D depthMap;                                                                                   ",
  "                                                                                   ",
  "varying vec3 vColor;                                                               ",
  "varying float vOpacity;                                                                                    ",
- "                                                                                    ",
+ "varying float vLinearDepth;                                                                                    ",
+ "varying float vDepth;                                                                                    ",
  "                                                                                   ",
  "void main() {                                                                      ",
  "	                                                                                 ",
@@ -832,6 +844,15 @@ Potree.PointCloudMaterial.fs_points_rgb = [
  "			discard;                                                                 ",
  "		}                                                                            ",
  "	#endif                                                                           ",
+ "		                                                                                 ",
+ "	#if defined weighted_splats                                                                                  ",
+ "		vec2 uv = gl_FragCoord.xy / vec2(screenWidth, screenHeight);                                                                                 ",
+ "		                                                                                 ",
+ "	    float depth = texture2D(depthMap, uv).r;                                                                             ",
+ "	    if(vLinearDepth > depth + blendDepth){                                                                             ",
+ "	    	discard;                                                                             ",
+ "	    }                                                                             ",
+ "	#endif                                                                                 ",
  "	                                                                                 ",
  "	#if defined use_interpolation                                                    ",
  "		gl_FragDepthEXT = gl_FragCoord.z + 0.002*(1.0-pow(c, 1.0)) * gl_FragCoord.w; ",
@@ -849,7 +870,6 @@ Potree.PointCloudMaterial.fs_points_rgb = [
  "	    float w = pow(c, 2.0);                                                                             ",
  "		gl_FragColor.rgb = gl_FragColor.rgb * w;                                                                                 ",
  "		gl_FragColor.a = w;                                                                                 ",
- "	                                                                                 ",
  "	#endif                                                                                 ",
  "	                                                                                 ",
  "	                                                                                 ",

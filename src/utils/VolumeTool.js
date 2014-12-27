@@ -5,6 +5,7 @@ Potree.VolumeTool = function(scene, camera, renderer){
 	this.enabled = false;
 	
 	this.scene = scene;
+	this.sceneVolume = new THREE.Scene();
 	this.camera = camera;
 	this.renderer = renderer;
 	this.domElement = renderer.domElement;
@@ -276,7 +277,7 @@ Potree.VolumeTool = function(scene, camera, renderer){
 		
 		this.activeVolume = new Volume();
 		this.activeVolume.clip = clip;
-		this.scene.add(this.activeVolume);
+		this.sceneVolume.add(this.activeVolume);
 	}
 	
 	this.finishInsertion = function(){
@@ -287,6 +288,12 @@ Potree.VolumeTool = function(scene, camera, renderer){
 		state = STATE.DEFAULT;
 		
 	}
+	
+	this.render = function(){
+	
+		renderer.render(this.sceneVolume, this.camera);
+		
+	};
 	
 	this.domElement.addEventListener( 'click', onMouseClick, false );
 	this.domElement.addEventListener( 'mousedown', onMouseDown, false );

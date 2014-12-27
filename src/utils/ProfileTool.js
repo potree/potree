@@ -338,14 +338,18 @@ Potree.ProfileTool = function(scene, camera, renderer){
 	};
 	
 	
-	this.startPicking = function(){
+	this.startPicking = function( params ){
 		if(state === STATE.PICKING_START){
 			return ;
 		}
 		
+		var params = params || {};
+		var depth = params.depth || 1;
+		
 		state = STATE.PICKING_START;
 		
 		scope.activeProfile = new Profile(scope.sceneRoot);
+		scope.activeProfile.depth = depth;
 	};
 	
 	this.finishPicking = function(){

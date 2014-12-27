@@ -31,7 +31,8 @@ Potree.PointColorType = {
 	POINT_INDEX: 7,
 	CLASSIFICATION: 8,
 	RETURN_NUMBER: 9,
-	SOURCE: 10
+	SOURCE: 10,
+	DEPTH_LINEAR: 11
 };
 
 Potree.ClipMode = {
@@ -60,6 +61,8 @@ Potree.PointCloudMaterial = function(parameters){
 	this._useClipBox = false;
 	this.numClipBoxes = 0;
 	this._clipMode = Potree.ClipMode.DISABLED;
+	this._weighted = false;
+	this._blendDepth = 0.1;
 	
 	this.gradientTexture = Potree.PointCloudMaterial.generateGradient();
 	
@@ -84,6 +87,7 @@ Potree.PointCloudMaterial = function(parameters){
 		pcIndex:   		{ type: "f", value: 0 },
 		gradient: 		{ type: "t", value: this.gradientTexture },
 		clipBoxes:		{ type: "Matrix4fv", value: [] },
+		blendDepth:		{ type: "f", value: this._blendDepth },
 	};
 	
 	
@@ -149,6 +153,18 @@ Potree.PointCloudMaterial.prototype.updateShaderSource = function(){
 		//});
 	}
 		
+	if(this.weighted){	
+		this.setValues({
+			blending: THREE.AdditiveBlending,
+			transparent: true,
+			depthTest: true,
+			depthWrite: false
+		});	
+	}
+		
+		
+		
+		
 	this.needsUpdate = true;
 };
 
@@ -197,6 +213,8 @@ Potree.PointCloudMaterial.prototype.getDefines = function(){
 		defines += "#define color_type_return_number\n";
 	}else if(this._pointColorType === Potree.PointColorType.SOURCE){
 		defines += "#define color_type_source\n";
+	}else if(this._pointColorType === Potree.PointColorType.DEPTH_LINEAR){
+		defines += "#define color_type_depth_linear\n";
 	}
 	
 	if(this.clipMode === Potree.ClipMode.DISABLED){
@@ -207,9 +225,9 @@ Potree.PointCloudMaterial.prototype.getDefines = function(){
 		defines += "#define clip_highlight_inside\n";
 	}
 	
-	//if(this.useClipBox){
-	//	defines += "#define use_clip_box\n";
-	//}
+	if(this.weighted){
+		defines += "#define weighted_splats\n";
+	}
 	
 	if(this.numClipBoxes > 0){
 		defines += "#define use_clip_box\n";
@@ -250,6 +268,18 @@ Object.defineProperty(Potree.PointCloudMaterial.prototype, "spacing", {
 	}
 });
 
+Object.defineProperty(Potree.PointCloudMaterial.prototype, "blendDepth", {
+	get: function(){
+		return this.uniforms.blendDepth.value;
+	},
+	set: function(value){
+		if(this.uniforms.blendDepth.value !== value){
+			this.uniforms.blendDepth.value = value;
+			//this.updateShaderSource();
+		}
+	}
+});
+
 Object.defineProperty(Potree.PointCloudMaterial.prototype, "useClipBox", {
 	get: function(){
 		return this._useClipBox;
@@ -257,6 +287,18 @@ Object.defineProperty(Potree.PointCloudMaterial.prototype, "useClipBox", {
 	set: function(value){
 		if(this._useClipBox !== value){
 			this._useClipBox = value;
+			this.updateShaderSource();
+		}
+	}
+});
+
+Object.defineProperty(Potree.PointCloudMaterial.prototype, "weighted", {
+	get: function(){
+		return this._weighted;
+	},
+	set: function(value){
+		if(this._weighted !== value){
+			this._weighted = value;
 			this.updateShaderSource();
 		}
 	}
@@ -536,6 +578,7 @@ Potree.PointCloudMaterial.vs_points = [
  "uniform float screenHeight;                                                        ",
  "uniform float fov;                                                                 ",
  "uniform float spacing;                                                             ",
+ "uniform float blendDepth;                                                             ",
  "uniform float near;                                                                ",
  "uniform float far;                                                                 ",
  "                                                                                   ",
@@ -659,7 +702,10 @@ Potree.PointCloudMaterial.vs_points = [
  "                                                                                   ",
  "	vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );                       ",
  "	gl_Position = projectionMatrix * mvPosition;                                     ",
- "                                                                                   ",
+ "  float pw = gl_Position.w;                                                                                 ",
+ "  float pd = gl_Position.z;                                                                                 ",
+ "  gl_Position = gl_Position / pw;                                                                                 ",
+ "  gl_Position.z = 2.0*((pw - near) / far)-1.0;                                                                                 ",
  "  vOpacity = opacity;                                                                                 ",
  "                                                                                   ",
  "                                                                                   ",
@@ -697,7 +743,14 @@ Potree.PointCloudMaterial.vs_points = [
  "  #elif defined color_type_source                                             ",
  "      float w = mod(pointSourceID, 10.0) / 10.0;                                                                             ",
  "  	vColor = texture2D(gradient, vec2(w,1.0 - w)).rgb;                               ",
+ "  #elif defined color_type_depth_linear                                             ",
+ "      float d = -mvPosition.z + blendDepth;                                                                             ",
+ "      vColor = vec3(d, d, d);                                                                             ",
+ "                                                                                   ",
+ "      gl_Position.z = 2.0*((pw + blendDepth - near) / far)-1.0;                                                                             ",
+ "                                                                                   ",
  "  #endif                                                                           ",
+ "                                                                                   ",
  "                                                                                   ",
  "                                                                                   ",
  "  //                                                                               ",
@@ -770,7 +823,7 @@ Potree.PointCloudMaterial.fs_points_rgb = [
  "                                                                                   ",
  "void main() {                                                                      ",
  "	                                                                                 ",
- "	#if defined(circle_point_shape) || defined(use_interpolation)                    ",
+ "	#if defined(circle_point_shape) || defined(use_interpolation) || defined (weighted_splats)                    ",
  "		float a = pow(2.0*(gl_PointCoord.x - 0.5), 2.0);                             ",
  "		float b = pow(2.0*(gl_PointCoord.y - 0.5), 2.0);                             ",
  "		float c = 1.0 - (a + b);                                                     ",
@@ -790,6 +843,16 @@ Potree.PointCloudMaterial.fs_points_rgb = [
  "	#else                                                                            ",
  "		gl_FragColor = vec4(vColor, vOpacity);                                        ",
  "	#endif                                                                           ",
+ "	                                                                                 ",
+ "	                                                                                 ",
+ "	#if defined weighted_splats                                                                                 ",
+ "	    float w = pow(c, 2.0);                                                                             ",
+ "		gl_FragColor.rgb = gl_FragColor.rgb * w;                                                                                 ",
+ "		gl_FragColor.a = w;                                                                                 ",
+ "	                                                                                 ",
+ "	#endif                                                                                 ",
+ "	                                                                                 ",
+ "	                                                                                 ",
  "	                                                                                 ",
  "}                                                                                  "];
 

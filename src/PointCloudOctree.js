@@ -333,7 +333,7 @@ Potree.PointCloudOctree.prototype.getVisibleGeometry = function(camera){
 		var insideFrustum = frustum.intersectsBox(box);
 	
 		
-		var visible = insideFrustum && node.level <= 3;
+		var visible = insideFrustum; // && node.level <= 3;
 		//visible = visible && "r2".indexOf(node.name) === 0;
 		
 		if(!visible){

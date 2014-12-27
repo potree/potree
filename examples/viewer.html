@@ -28,6 +28,30 @@
 	}
 	
 	</style>
+	
+<script id="vs" type="x-shader/x-vertex">
+varying vec2 vUv;
+
+void main() {
+    vUv = uv;
+
+    gl_Position =   projectionMatrix * 
+                    modelViewMatrix * 
+                    vec4(position,1.0);
+}
+</script>
+
+<script id="fs" type="x-shader/x-vertex">
+uniform sampler2D texture;
+
+varying vec2 vUv;
+
+void main() {
+    vec4 color = texture2D(texture, vUv); 
+	color = color / color.w;
+    gl_FragColor = color; 
+}
+</script>
 
 	<script src="../libs/plasio/js/laslaz.js"></script>
 	<script src="../libs/plasio/vendor/bluebird.js"></script>
@@ -64,7 +88,7 @@
 		<img src="../resources/icons/distance.png" onclick="measuringTool.setEnabled(true)"/>
 		<img src="../resources/icons/area.png" onclick="areaTool.setEnabled(true)"/>
 		<img src="../resources/icons/volume.png" onclick="volumeTool.startInsertion()"/>
-		<img src="../resources/icons/profile.png" onclick="profileTool.startPicking()"/>
+		<img src="../resources/icons/profile.png" onclick="profileTool.startPicking({depth: pointcloud.boundingSphere.radius / 100})"/>
 		<img src="../resources/icons/clip_volume.png" onclick="volumeTool.startInsertion({clip: true})"/>
 	</div>
 	
@@ -84,16 +108,26 @@
 		var pointSizeType = Potree.PointSizeType.ADAPTIVE;
 		var pointColorType = Potree.PointColorType.RGB;
 		var pointShape = Potree.PointShape.SQUARE;
-		var interpolate = false;
 		var clipMode = Potree.ClipMode.HIGHLIGHT_INSIDE;
+		var quality = "Normal";
 		
 		var showStats = false;
 		
 		var progressBar = new ProgressBar();
 
-		var pointcloudPath = "../resources/pointclouds/vol_total/cloud.js";
+		var pointcloudPath = "../../../../pointclouds/3dlasermapping/whitby_sample_geom/cloud_bin.js";
+		var pointcloudPath = "../../../../pointclouds/kent_van_velden/cityups/cityups/cloud.js";
+		var pointcloudPath = "../../../../pointclouds/pix4d/lausanne/cloud.js";
+		var pointcloudPath = "../resources/pointclouds/lion_takanawa/cloud.js";
+		var pointcloudPath = "../../../../pointclouds/santorini/santorini/cloud.js";
+		var pointcloudPath = "../../../../pointclouds/heidelberg/dechen_cave_upscaled.las_converted/cloud.js";
+		var pointcloudPath = "../../../../pointclouds/faro/skatepark/skate_1.las_converted/cloud.js";
+		var pointcloudPath = "../../../../pointclouds/tower/tower.las_converted/cloud.js";
+		var pointcloudPath = "../../../../pointclouds/opentopography/CA13_SAN_SIM/CA13_SAN_SIM/cloud.js";
+		var pointcloudPath = "../../../../pointclouds/mschuetz/vienna_donaukanal_01.las_converted/cloud.js";
+		var pointcloudPath = "../../../../pointclouds/pix4d/eclepens.laz_converted/cloud.js";
 		var pointcloudPath = "../../../../pointclouds/pix4d/matterhorn/cloud.js";
-		//var pointcloudPath = "../resources/pointclouds/lion_takanawa/cloud.js";
+		var pointcloudPath = "../resources/pointclouds/vol_total/cloud.js";
 	
 		var elRenderArea = document.getElementById("renderArea");
 	
@@ -127,7 +161,7 @@
 				"show octree" : false,
 				"Materials" : "RGB",
 				"Clip Mode": "Highlight Inside",
-				"interpolate": interpolate,
+				"quality": "Normal",
 				"circles": false,
 				"skybox": false,
 				"stats": showStats
@@ -175,6 +209,11 @@
 				}
 			});
 			
+			var pQuality = gui.add(params, 'quality', [ "Normal", "High", "Best"]);
+			pQuality.onChange(function(value){
+				quality = value;
+			});
+			
 			var pClipMode = gui.add(params, 'Clip Mode', [ "No Clipping", "Clip Outside", "Highlight Inside"]);
 			pClipMode.onChange(function(value){
 				if(value === "No Clipping"){
@@ -185,13 +224,6 @@
 					clipMode = Potree.ClipMode.HIGHLIGHT_INSIDE;
 				}
 			});
-			
-			if(renderer.context.getExtension("EXT_frag_depth")){
-				var pInterpolate = gui.add(params, 'interpolate');
-				pInterpolate.onChange(function(value){
-					interpolate = value;
-				});
-			}
 			
 			var pCircular = gui.add(params, 'circles');
 			pCircular.onChange(function(value){
@@ -289,7 +321,9 @@
 				
 				referenceFrame.updateMatrixWorld(true);
 				
-				//zoomTo(camera, pointcloud, 0.7);
+				controls.moveSpeed = pointcloud.boundingSphere.radius / 2;
+				
+				zoomTo(camera, pointcloud, 0.7);
 			});
 			
 			var grid = Potree.utils.createGrid(5, 5, 2);
@@ -315,6 +349,7 @@
 					map: texture
 				})
 			);
+			//bg.position.z = -1;
 			bg.material.depthTest = false;
 			bg.material.depthWrite = false;
 			sceneBG.add(bg);
@@ -352,10 +387,11 @@
 				pointcloud.material.pointSizeType = pointSizeType;
 				pointcloud.material.pointColorType = pointColorType;
 				pointcloud.material.pointShape = pointShape;
-				pointcloud.material.interpolate = interpolate;
+				pointcloud.material.interpolate = quality === "High";
 				pointcloud.material.heightMin = bbWorld.min.y;
 				pointcloud.material.heightMax = bbWorld.max.y;
 				pointcloud.material.clipMode = clipMode;
+				pointcloud.material.weighted = false;
 				
 				pointcloud.update(camera, renderer);
 			}
@@ -458,7 +494,6 @@
 			}
 			
 			// render scene
-			
 			renderer.render(scene, camera);
 			
 			profileTool.render();
@@ -469,11 +504,101 @@
 			transformationTool.render();
 		}
 		
+		// high quality rendering using splats
+		// 
+		var rtLinearDepth = new THREE.WebGLRenderTarget( 1024, 1024, { 
+			minFilter: THREE.NearestFilter, 
+			magFilter: THREE.NearestFilter, 
+			format: THREE.RGBAFormat, 
+			type: THREE.FloatType
+		} );
+		var rtProfile = new THREE.WebGLRenderTarget( 1024, 1024, { 
+			minFilter: THREE.LinearFilter, 
+			magFilter: THREE.NearestFilter, 
+			format: THREE.RGBAFormat, 
+			type: THREE.FloatType
+		} );
+		
+		var sceneScreen;
+		
+		function renderHighQuality(){
+		
+			if(!sceneScreen){
+				sceneScreen = new THREE.Scene();
+								
+				
+				var vs = document.getElementById('vs').innerHTML;
+				var fs = document.getElementById('fs').innerHTML;
+				
+				var uniforms = {
+					texture: { type: "t", value: rtProfile }
+				};
+				
+				var bgMaterial = new THREE.ShaderMaterial({
+					uniforms: uniforms,
+					vertexShader: vs,
+					fragmentShader: fs
+				});
+				
+				var bg = new THREE.Mesh( new THREE.PlaneGeometry(2, 2, 0), bgMaterial);
+				bg.material.depthTest = false;
+				bg.material.depthWrite = false;
+				bg.material.transparent = true;
+				sceneScreen.add(bg);
+				
+			}
+			
+			// resize
+			var width = elRenderArea.clientWidth;
+			var height = elRenderArea.clientHeight;
+			var aspect = width / height;
+			
+			camera.aspect = aspect;
+			camera.updateProjectionMatrix();
+			
+			renderer.setSize(width, height);
+			
+			
+			rtProfile.setSize(width, height);
+			
+			if(pointcloud){
+				pointcloud.material.minSize = 2;
+			
+				renderer.clear();
+				renderer.clearTarget( rtProfile, true, true, true );
+				
+				var origType = pointcloud.material.pointColorType;
+				pointcloud.material.weighted = false;
+				pointcloud.material.pointShape = Potree.PointShape.CIRCLE;
+				pointcloud.material.pointColorType = Potree.PointColorType.DEPTH_LINEAR;
+				renderer.render(scene, camera, rtProfile);
+				
+				//renderer.context.depthFunc( renderer.context.LEQUAL );
+				pointcloud.material.blendDepth = pointcloud.material.spacing;
+				pointcloud.material.weighted = true;
+				pointcloud.material.pointColorType = origType;
+				renderer.clearTarget( rtProfile, true, false, false );
+				renderer.render(scene, camera, rtProfile);
+				
+				
+				renderer.render(sceneBG, cameraBG);
+				renderer.render(sceneScreen, cameraBG);
+			}
+		
+		
+		}
+		
 		function loop() {
 			requestAnimationFrame(loop);
 			
 			update();
-			render();
+			
+			if(quality === "Best"){
+				renderHighQuality();
+			}else{
+				render();
+			}
+			
 		};
 		
 		

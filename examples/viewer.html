@@ -95,7 +95,7 @@ void main() {
 		<img src="../resources/icons/distance.png" onclick="measuringTool.setEnabled(true)"/>
 		<img src="../resources/icons/area.png" onclick="areaTool.setEnabled(true)"/>
 		<img src="../resources/icons/volume.png" onclick="volumeTool.startInsertion()"/>
-		<img src="../resources/icons/profile.png" onclick="profileTool.startPicking({depth: pointcloud.boundingSphere.radius / 100})"/>
+		<img src="../resources/icons/profile.png" onclick="profileTool.startInsertion({width: pointcloud.boundingSphere.radius / 100})"/>
 		<img src="../resources/icons/clip_volume.png" onclick="volumeTool.startInsertion({clip: true})"/>
 	</div>
 	
@@ -133,8 +133,8 @@ void main() {
 		var pointcloudPath = "../../../../pointclouds/opentopography/CA13_SAN_SIM/CA13_SAN_SIM/cloud.js";
 		var pointcloudPath = "../../../../pointclouds/mschuetz/vienna_donaukanal_01.las_converted/cloud.js";
 		var pointcloudPath = "../../../../pointclouds/pix4d/eclepens.laz_converted/cloud.js";
-		var pointcloudPath = "../../../../pointclouds/pix4d/matterhorn/cloud.js";
 		var pointcloudPath = "../resources/pointclouds/vol_total/cloud.js";
+		var pointcloudPath = "../../../../pointclouds/pix4d/matterhorn/cloud.js";
 	
 		var elRenderArea = document.getElementById("renderArea");
 	
@@ -448,19 +448,22 @@ void main() {
 			
 			var clipBoxes = [];
 			
-			var profiles = [];
+			//var profiles = [];
+			//for(var i = 0; i < profileTool.profiles.length; i++){
+			//	profiles.push(profileTool.profiles[i]);
+			//}
+			//if(profileTool.activeProfile){
+			//	profiles.push(profileTool.activeProfile);
+			//}
 			for(var i = 0; i < profileTool.profiles.length; i++){
-				profiles.push(profileTool.profiles[i]);
-			}
-			if(profileTool.activeProfile){
-				profiles.push(profileTool.activeProfile);
-			}
-			for(var i = 0; i < profiles.length; i++){
-				var profile = profiles[i];
+				var profile = profileTool.profiles[i];
 				
-				profile.box.updateMatrixWorld();
-				var boxInverse = new THREE.Matrix4().getInverse(profile.box.matrixWorld);
-				clipBoxes.push(boxInverse);
+				for(var j = 0; j < profile.boxes.length; j++){
+					var box = profile.boxes[j];
+					box.updateMatrixWorld();
+					var boxInverse = new THREE.Matrix4().getInverse(box.matrixWorld);
+					clipBoxes.push(boxInverse);
+				}
 			}
 			
 

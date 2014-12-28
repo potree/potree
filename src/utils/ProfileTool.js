@@ -1,6 +1,13 @@
 
-Potree.ProfileTool = function(scene, camera, renderer){
+//
+// calculating area of a polygon:
+// http://www.mathopenref.com/coordpolygonarea2.html
+//
+//
+//
 
+Potree.ProfileTool = function(scene, camera, renderer){
+	
 	var scope = this;
 	this.enabled = false;
 	
@@ -13,11 +20,12 @@ Potree.ProfileTool = function(scene, camera, renderer){
 	
 	var STATE = {
 		DEFAULT: 0,
-		PICKING_START: 1,
-		PICKING_END: 2
+		INSERT: 1
 	};
 	
 	var state = STATE.DEFAULT;
+	
+	var sphereGeometry = new THREE.SphereGeometry(0.4, 10, 10);
 	
 	this.activeProfile;
 	this.profiles = [];
@@ -25,170 +33,286 @@ Potree.ProfileTool = function(scene, camera, renderer){
 	this.sceneRoot = new THREE.Object3D();
 	this.sceneProfile.add(this.sceneRoot);
 	
+	this.light = new THREE.DirectionalLight( 0xffffff, 1 );
+	this.light.position.set( 0, 0, 10 );
+	this.light.lookAt(new THREE.Vector3(0,0,0));
+	this.sceneProfile.add( this.light );
+	
 	this.hoveredElement = null;
 	
-	function Profile(root){
-		this.root = root;
-		
-		this.start = new THREE.Vector3();
-		this.end = new THREE.Vector3();
-		this.width = 10;
-		this.depth = 2;
-		this.height = 20;
-		
-		var boxGeometry = new THREE.BoxGeometry(1, 1, 1);
-		var cylinderGeometry = new THREE.CylinderGeometry(1, 1, 1, 16, 15);
+	var moveEvent = function(event){
+		event.target.material.emissive.setHex(0x888888);
+	};
 	
-		var boxMaterial = new THREE.MeshBasicMaterial({color: 0xff0000, transparent: true, opacity: 0.0});
-		var startHandleMaterial = new THREE.MeshBasicMaterial({color: 0xff0000});
-		var endHandleMaterial = new THREE.MeshBasicMaterial({color: 0xff0000});
-		
-		this.profileNode = new THREE.Object3D();
-		
-		this.box = new THREE.Mesh(boxGeometry, boxMaterial);
-		this.box.scale.set(10, 10, 10);
-		
-		this.startHandle = new THREE.Mesh(cylinderGeometry, startHandleMaterial);
-		this.endHandle = new THREE.Mesh(cylinderGeometry, endHandleMaterial);
-		
-		var moveEvent = function(event){
-			if(!scope.dragstart){
-				event.target.material.color.setHex(0xffff00);
-			}
-		};
-		
-		var leaveEvent = function(event){
-			if(!scope.dragstart){
-				event.target.material.color.setHex(0xff0000);
-			}
-		};
-		
-		var dragEvent = function(event){
-			event.event.stopImmediatePropagation();
+	var leaveEvent = function(event){
+		event.target.material.emissive.setHex(0x000000);
+	};
+	
+	var dragEvent = function(event){
+		var I = getMousePointCloudIntersection();
 			
-			
-			var vector = new THREE.Vector3( scope.mouse.x, scope.mouse.y, 0.5 );
-			vector.unproject(scope.camera);
-			
-			//var raycaster = new THREE.Raycaster();
-			//raycaster.ray.set( scope.camera.position, vector.sub( scope.camera.position ).normalize() );
-			
-			var ray = new THREE.Ray(scope.camera.position, vector.sub( scope.camera.position ).normalize());
-			
-			var plane = new THREE.Plane();
-			plane.setFromNormalAndCoplanarPoint(new THREE.Vector3(0, 1, 0), scope.dragstart.sceneClickPos);
-			//var intersections = raycaster.intersectObject(plane, true);
-			var distance = ray.distanceToPlane(plane);
-			
-			if(distance){
-				var I = ray.at(distance);
+		if(I){
+			for(var i = 0; i < scope.profiles.length; i++){
+				var m = scope.profiles[i];
+				var index = m.spheres.indexOf(scope.dragstart.object);
 				
-				for(var i = 0; i < scope.profiles.length; i++){
-					var profile = scope.profiles[i];
+				if(index >= 0){
+					scope.profiles[i].setPosition(index, I);
 					
-					if(scope.dragstart.object === profile.startHandle){
-						//profile.setStart(I);
-						var pos = I.clone();
-						pos.y = profile.start.y;
-						profile.setStart(pos);
-					}else if(scope.dragstart.object === profile.endHandle){
-						//profile.setEnd(I);
-						var pos = I.clone();
-						pos.y = profile.end.y;
-						profile.setEnd(pos);
-					}
-				}   
+					
+					break;
+				}
 			}
-			
-			scope.dragstart.object.material.color.setHex(0xffff00);
-
-			
-			//var I = getMousePointCloudIntersection();
-			//	
-			//if(I){
-			//	for(var i = 0; i < scope.profiles.length; i++){
-			//		var profile = scope.profiles[i];
-			//		
-			//		if(scope.dragstart.object === profile.startHandle){
-			//			
-			//		}else if(scope.dragstart.object === profile.endHandle){
-			//		
-			//		}
-			//	}
-			//
-			//}
-			
-		};
 		
-		var dropEvent = function(event){
-			scope.dragstart.object.material.color.setHex(0xff0000);
-		};
+			//scope.dragstart.object.position.copy(I);
+		}
 		
-		this.startHandle.addEventListener("mousemove", moveEvent);
-		this.startHandle.addEventListener("mouseleave", leaveEvent);
-		this.startHandle.addEventListener("mousedrag", dragEvent);
-		this.startHandle.addEventListener("drop", dropEvent);
-		
-		this.endHandle.addEventListener("mousemove", moveEvent);
-		this.endHandle.addEventListener("mouseleave", leaveEvent);
-		this.endHandle.addEventListener("mousedrag", dragEvent);
-		this.endHandle.addEventListener("drop", dropEvent);
-		
-		
-		this.profileNode.add(this.box);
-		this.profileNode.add(this.startHandle);
-		this.profileNode.add(this.endHandle);
-		
-		this.root.add(this.profileNode);
-		
-		this.setCoordinates = function(start, end){
-			var width = start.clone().setY(0).distanceTo(end.clone().setY(0));
-			var height = Math.abs(end.y - start.y) + 20;
-			
-			this.setDimension(width, height, this.depth);
-			
-			var center = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
-			var diff = new THREE.Vector3().subVectors(end, start);
-			var target = new THREE.Vector3(diff.z, 0, -diff.x);
-			
-			this.profileNode.position.set(0,0,0);
-			this.profileNode.lookAt(target);
-			this.profileNode.position.copy(center);
-			
-			this.startHandle.position.x = width / 2;
-			this.endHandle.position.x = -width / 2;
-			this.startHandle.scale.y = height;
-			this.endHandle.scale.y = height;
-			
-			this.start = start;
-			this.end = end;
-		};
-		
-		this.setStart = function(start){
-			this.setCoordinates(start, this.end);
-		};
-		
-		this.setEnd = function(end){
-			this.setCoordinates(this.start, end);
-		};
-		
-		this.setDimension = function(width, height, depth){
-			this.width = width;
-			this.height = height;
-			this.depth =  depth;
-			
-			this.box.scale.set(width, height, depth);
-		};
-		
-		
+		event.event.stopImmediatePropagation();
+	};
+	
+	var dropEvent = function(event){
+	
 	};
 	
 	
+	function Profile(){
+		THREE.Object3D.call( this );
+	
+		this.points = [];
+		this.spheres = [];
+		this.edges = [];
+		this.boxes = [];
+		this.width = 1;
+		this.height = 20;
+		
+		var sphereGeometry = new THREE.SphereGeometry(0.4, 10, 10);
+		var lineColor = new THREE.Color( 0xff0000 );
+		
+		var createSphereMaterial = function(){
+			var sphereMaterial = new THREE.MeshLambertMaterial({
+				shading: THREE.SmoothShading, 
+				color: 0xff0000, 
+				ambient: 0xaaaaaa,
+				depthTest: false, 
+				depthWrite: false}
+			);
+			
+			return sphereMaterial;
+		};
+		
+		this.addMarker = function(point){	
+			
+			this.points.push(point);
+
+			// sphere
+			var sphere = new THREE.Mesh(sphereGeometry, createSphereMaterial());
+			sphere.addEventListener("mousemove", moveEvent);
+			sphere.addEventListener("mouseleave", leaveEvent);
+			sphere.addEventListener("mousedrag", dragEvent);
+			sphere.addEventListener("drop", dropEvent);
+			
+			this.add(sphere);
+			this.spheres.push(sphere);
+			
+			// edges & boxes
+			if(this.points.length > 1){
+			
+				var lineGeometry = new THREE.Geometry();
+				lineGeometry.vertices.push(new THREE.Vector3(), new THREE.Vector3());
+				lineGeometry.colors.push(lineColor, lineColor, lineColor);
+				var lineMaterial = new THREE.LineBasicMaterial( { 
+					vertexColors: THREE.VertexColors, 
+					linewidth: 2, 
+					transparent: true, 
+					opacity: 0.4 
+				});
+				lineMaterial.depthTest = false;
+				var edge = new THREE.Line(lineGeometry, lineMaterial);
+				edge.visible = true;
+				
+				this.add(edge);
+				this.edges.push(edge);
+				
+				
+				var boxGeometry = new THREE.BoxGeometry(1, 1, 1);
+				var boxMaterial = new THREE.MeshBasicMaterial({color: 0xff0000, transparent: true, opacity: 0.2});
+				var box = new THREE.Mesh(boxGeometry, boxMaterial);
+				box.visible = false;
+				
+				this.add(box);
+				this.boxes.push(box);
+				
+				
+			}
+
+			this.setPosition(this.points.length-1, point);
+		};
+		
+		this.removeMarker = function(index){
+			this.points.splice(index, 1);
+			
+			this.remove(this.spheres[index]);
+			
+			if(index > 0){
+				this.remove(this.edges[index-1]);
+				this.edges.splice(index-1, 1);
+				
+				this.remove(this.boxes[index-1]);
+				this.boxes.splice(index-1, 1);
+			}
+			
+			this.spheres.splice(index, 1);
+			
+			this.update();
+		};
+		
+		/**
+		 * see http://www.mathopenref.com/coordpolygonarea2.html
+		 */
+		this.getArea = function(){
+			var area = 0;
+			var j = this.points.length - 1;
+			
+			for(var i = 0; i < this.points.length; i++){
+				var p1 = this.points[i];
+				var p2 = this.points[j];
+				area += (p2.x + p1.x) * (p1.z - p2.z);
+				j = i;
+			}
+			
+			return Math.abs(area / 2);
+		};
+		
+		this.setPosition = function(index, position){
+			var point = this.points[index];			
+			point.copy(position);
+			
+			this.update();
+		};
+		
+		this.setWidth = function(width){
+			this.width = width;
+		};
+		
+		this.update = function(){
+		
+			if(this.points.length === 1){
+				var point = this.points[0];
+				this.spheres[0].position.copy(point);
+				
+				return;
+			}
+			
+			var min = this.points[0].clone();
+			var max = this.points[0].clone();
+			var centroid = new THREE.Vector3();
+			var lastIndex = this.points.length - 1;
+			for(var i = 0; i <= lastIndex; i++){
+				var point = this.points[i];
+				var sphere = this.spheres[i];
+				var leftIndex = (i === 0) ? lastIndex : i - 1;
+				var rightIndex = (i === lastIndex) ? 0 : i + 1;
+				var leftVertex = this.points[leftIndex];
+				var rightVertex = this.points[rightIndex];
+				var leftEdge = this.edges[leftIndex];
+				var rightEdge = this.edges[i];
+				var leftBox = this.boxes[leftIndex];
+				var rightBox = this.boxes[i];
+				
+				var leftEdgeLength = point.distanceTo(leftVertex);
+				var rightEdgeLength = point.distanceTo(rightVertex);
+				var leftEdgeCenter = new THREE.Vector3().addVectors(leftVertex, point).multiplyScalar(0.5);
+				var rightEdgeCenter = new THREE.Vector3().addVectors(point, rightVertex).multiplyScalar(0.5);
+				
+				sphere.position.copy(point);
+				
+				if(leftEdge){
+					leftEdge.geometry.vertices[1].copy(point);
+					leftEdge.geometry.verticesNeedUpdate = true;
+					leftEdge.geometry.computeBoundingSphere();
+				}
+				
+				if(rightEdge){
+					rightEdge.geometry.vertices[0].copy(point);
+					rightEdge.geometry.verticesNeedUpdate = true;
+					rightEdge.geometry.computeBoundingSphere();
+				}
+				
+				if(leftBox){
+					var start = leftVertex;
+					var end = point;
+					var length = start.clone().setY(0).distanceTo(end.clone().setY(0));
+					leftBox.scale.set(length, this.height, this.width);
+					
+					var center = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
+					var diff = new THREE.Vector3().subVectors(end, start);
+					var target = new THREE.Vector3(diff.z, 0, -diff.x);
+					
+					leftBox.position.set(0,0,0);
+					leftBox.lookAt(target);
+					leftBox.position.copy(center);
+				}
+				
+				centroid.add(point);
+				min.min(point);
+				max.max(point);
+			}
+			centroid.multiplyScalar(1 / this.points.length);
+			
+			for(var i = 0; i < this.boxes.length; i++){
+				var box = this.boxes[i];
+				
+				box.position.y = min.y + (max.y - min.y) / 2;
+				//box.scale.y = max.y - min.y + 50;
+				box.scale.y = 1000000;
+			}
+			
+		};
+		
+		this.raycast = function(raycaster, intersects){
+			
+			for(var i = 0; i < this.spheres.length; i++){
+				var sphere = this.spheres[i];
+				
+				sphere.raycast(raycaster, intersects);
+			}
+			
+		}
+		
+		
+	}
+	
+	Profile.prototype = Object.create( THREE.Object3D.prototype );
+	
+	function createSphereMaterial(){
+		var sphereMaterial = new THREE.MeshLambertMaterial({
+			shading: THREE.SmoothShading, 
+			color: 0xff0000, 
+			ambient: 0xaaaaaa,
+			depthTest: false, 
+			depthWrite: false}
+		);
+		
+		return sphereMaterial;
+	};
+
+	
 	function onClick(event){
-		if(state === STATE.PICKING_START){
-			state = STATE.PICKING_END;
-		}else if(state === STATE.PICKING_END){
-			scope.finishPicking();
+	
+		if(state === STATE.INSERT){
+			var I = getMousePointCloudIntersection();
+			if(I){
+				var pos = I.clone();
+				
+				scope.activeProfile.addMarker(pos);
+				
+				var event = {
+					type: 'newpoint',
+					position: pos.clone()
+				};
+				scope.dispatchEvent(event);
+				
+			}
 		}
 	};
 	
@@ -200,19 +324,13 @@ Potree.ProfileTool = function(scene, camera, renderer){
 			
 			scope.dragstart.object.dispatchEvent({type: "mousedrag", event: event});
 			
-		}if(state == STATE.PICKING_START && scope.activeProfile){
+		}else if(state == STATE.INSERT && scope.activeProfile){
 			var I = getMousePointCloudIntersection();
 			
 			if(I){
-				scope.activeProfile.setStart(I);
-				scope.activeProfile.setEnd(I);
-			}
 			
-		}else if(state == STATE.PICKING_END && scope.activeProfile){
-			var I = getMousePointCloudIntersection();
-			
-			if(I){
-				scope.activeProfile.setEnd(I);
+				var lastIndex = scope.activeProfile.points.length-1;
+				scope.activeProfile.setPosition(lastIndex, I);
 			}
 			
 		}else{
@@ -240,11 +358,11 @@ Potree.ProfileTool = function(scene, camera, renderer){
 		}
 	};
 	
-	
 	function onRightClick(event){
-	
-	};
-	
+		if(state == STATE.INSERT){			
+			scope.finishInsertion();
+		}
+	}
 	
 	function onMouseDown(event){
 		if(event.which === 1){
@@ -265,17 +383,16 @@ Potree.ProfileTool = function(scene, camera, renderer){
 		}else if(event.which === 3){	
 			onRightClick(event);
 		}
-	};
-	
+	}
 	
 	function onMouseUp(event){
-	
+		
 		if(scope.dragstart){
 			scope.dragstart.object.dispatchEvent({type: "drop", event: event});
 			scope.dragstart = null;
 		}
-	
-	};
+		
+	}
 	
 	function getHoveredElement(){
 			
@@ -285,15 +402,7 @@ Potree.ProfileTool = function(scene, camera, renderer){
 		var raycaster = new THREE.Raycaster();
 		raycaster.ray.set( scope.camera.position, vector.sub( scope.camera.position ).normalize() );
 		
-		var objects = [];
-		for(var i = 0; i < scope.profiles.length; i++){
-			var profile = scope.profiles[i];
-			
-			objects.push(profile.startHandle);
-			objects.push(profile.endHandle);
-		}
-		
-		var intersections = raycaster.intersectObjects(objects, true);
+		var intersections = raycaster.intersectObjects(scope.profiles);
 		if(intersections.length > 0){
 			return intersections[0];
 		}else{
@@ -335,61 +444,50 @@ Potree.ProfileTool = function(scene, camera, renderer){
 		}
 		
 		return closestPoint ? closestPoint.position : null;
-	};
+	}	
 	
-	
-	this.startPicking = function( params ){
-		if(state === STATE.PICKING_START){
-			return ;
-		}
+	this.startInsertion = function(args){
+		state = STATE.INSERT;
 		
-		var params = params || {};
-		var depth = params.depth || 1;
+		var args = args || {};
+		var clip = args.clip || false;
+		var width = args.width || 1.0;
 		
-		state = STATE.PICKING_START;
-		
-		scope.activeProfile = new Profile(scope.sceneRoot);
-		scope.activeProfile.depth = depth;
-	};
-	
-	this.finishPicking = function(){
+		this.activeProfile = new Profile();
+		this.activeProfile.clip = clip;
+		this.activeProfile.setWidth(width);
+		this.sceneProfile.add(this.activeProfile);
 		this.profiles.push(this.activeProfile);
-		
-		this.activeVolume = null;
+		this.activeProfile.addMarker(new THREE.Vector3(0,0,0));
+	};
+	
+	this.finishInsertion = function(){
+		this.activeProfile.removeMarker(this.activeProfile.points.length-1);
+		this.activeProfile = null;
 		state = STATE.DEFAULT;
 	};
 	
 	this.update = function(){
-		//var profiles = [];
-		//for(var i = 0; i < this.profiles.length; i++){
-		//	profiles.push(this.profiles[i]);
-		//}
-		//if(this.activeProfile){
-		//	profiles.push(this.activeProfile);
-		//}
-		//
-		//for(var i = 0; i < profiles.length; i++){
-		//	var profile = profiles[i];
-		//	
-		//	var start = profile.startHandle;
-		//	var wp = start.getWorldPosition().applyMatrix4(this.camera.matrixWorldInverse);
-		//	var pp = new THREE.Vector4(wp.x, wp.y, wp.z).applyMatrix4(camera.projectionMatrix);
-		//	var w = Math.abs((wp.z  / 150)); // * (2 - pp.z / pp.w);
-		//	start.scale.set(w, start.scale.y, w);
-		//	
-		//	var end = profile.endHandle;
-		//	var wp = end.getWorldPosition().applyMatrix4(this.camera.matrixWorldInverse);
-		//	var pp = new THREE.Vector4(wp.x, wp.y, wp.z).applyMatrix4(camera.projectionMatrix);
-		//	var w = Math.abs((wp.z  / 150)); // * (2 - pp.z / pp.w);
-		//	end.scale.set(w, end.scale.y, w);
-		//	
-		//}
-	};
-
-	this.render = function(){
-	
-		renderer.render(this.sceneProfile, this.camera);
 		
+		for(var i = 0; i < this.profiles.length; i++){
+			var profile = this.profiles[i];
+			for(var j = 0; j < profile.spheres.length; j++){
+				var sphere = profile.spheres[j];
+				var wp = sphere.getWorldPosition().applyMatrix4(this.camera.matrixWorldInverse);
+				var pp = new THREE.Vector4(wp.x, wp.y, wp.z).applyMatrix4(camera.projectionMatrix);
+				var w = Math.abs((wp.z  / 60)); // * (2 - pp.z / pp.w);
+				sphere.scale.set(w, w, w);
+			}
+		}
+	
+		this.light.position.copy(this.camera.position);
+		this.light.lookAt(this.camera.getWorldDirection().add(this.camera.position));
+		
+	};
+	
+	this.render = function(){
+		this.update();
+		renderer.render(this.sceneProfile, this.camera);
 	};
 	
 	this.domElement.addEventListener( 'click', onClick, false);
@@ -397,12 +495,7 @@ Potree.ProfileTool = function(scene, camera, renderer){
 	this.domElement.addEventListener( 'mousedown', onMouseDown, false );
 	this.domElement.addEventListener( 'mouseup', onMouseUp, true );
 	
-
 };
 
+
 Potree.ProfileTool.prototype = Object.create( THREE.EventDispatcher.prototype );
-
-
-
-
-

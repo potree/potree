@@ -800,7 +800,7 @@ Potree.PointCloudMaterial.vs_points = [
  "          #if defined clip_outside                                                                           ",
  "      		gl_Position = vec4(1000.0, 1000.0, 1000.0, 1.0);                                                                               ",
  "          #elif defined clip_highlight_inside && !defined(color_type_depth)                                                                           ",
- "         		float c = (vColor.r + vColor.g + vColor.b) / 3.0;                                                                           ",
+ "         		float c = (vColor.r + vColor.g + vColor.b) / 6.0;                                                                           ",
  "          	vColor = vec3(c, c, c);                                                                           ",
  "          #endif                                                                           ",
  "                                                                                     ",

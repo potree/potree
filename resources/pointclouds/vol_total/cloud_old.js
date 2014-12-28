@@ -1,28 +1,19 @@
 {
-	"version": "1.4",
+	"version": "1.3",
 	"octreeDir": "data",
 	"boundingBox": {
 		"lx": 589500,
 		"ly": 231300,
 		"lz": 722.505,
-		"ux": 590099.999,
-		"uy": 231899.999,
-		"uz": 1322.50399999995
-	},
-	"tightBoundingBox": {
-		"lx": 589500.001,
-		"ly": 231300,
-		"lz": 722.564,
-		"ux": 590099.999,
-		"uy": 231565.705,
-		"uz": 789.921
+		"ux": 590100,
+		"uy": 231900,
+		"uz": 1322.5
 	},
 	"pointAttributes": [
 		"POSITION_CARTESIAN",
 		"COLOR_PACKED"
 	],
 	"spacing": 4,
-	"scale": 0.01,
 	"hierarchy": [
 		["r", 7216],
 		["r0", 13528],

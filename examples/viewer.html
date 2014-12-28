@@ -70,6 +70,9 @@ void main() {
 	<script src="../build/js/potree.js"></script>
 	<script src="../build/js/laslaz.js"></script>
 	<script src="../examples/js/ProgressBar.js"></script>
+	<script src="../src/extensions/PerspectiveCamera.js"></script>
+	<script src="../src/loader/POCLoader.js"></script>
+	<script src="../src/loader/BinaryLoader.js"></script>
 	<script src="../src/PointCloudOctree.js"></script>
 	<script src="../src/utils/MeasuringTool.js"></script>
 	<script src="../src/utils/AreaTool.js"></script>
@@ -84,7 +87,7 @@ void main() {
 	<div id="lblNumVisiblePoints" class="info" style="position: absolute; left: 10px; top: 100px; width: 400px; color:white"></div>
 	<div id="lblMessage" class="info" style="position: absolute; left: 10px; bottom: 0px; width: 400px; color:white"></div>
 	
-	<div id="tools" style="position: fixed; width: 180px; bottom: 10px; right: 10px">
+	<div id="tools" style="position: fixed; width: 240px; bottom: 10px; right: 10px">
 		<!--<input type="button" value="distance" onclick="measuringTool.setEnabled(true)"/>
 		<input type="button" value="area" onclick="areaTool.setEnabled(true)"/>
 		<input type="button" value="volume" onclick="volumeTool.startInsertion()"/>
@@ -92,11 +95,35 @@ void main() {
 		<input type="button" value="clip volume" onclick="volumeTool.startInsertion({clip: true})"/>
 		-->
 	
-		<img src="../resources/icons/distance.png" onclick="measuringTool.setEnabled(true)"/>
-		<img src="../resources/icons/area.png" onclick="areaTool.setEnabled(true)"/>
-		<img src="../resources/icons/volume.png" onclick="volumeTool.startInsertion()"/>
-		<img src="../resources/icons/profile.png" onclick="profileTool.startInsertion({width: pointcloud.boundingSphere.radius / 100})"/>
-		<img src="../resources/icons/clip_volume.png" onclick="volumeTool.startInsertion({clip: true})"/>
+		<img src="../resources/icons/focus.png" 	
+			onclick="camera.zoomTo(pointcloud, 0.7)"
+			title="focus on pointcloud"/>
+			
+		<img src="../resources/icons/flip_y_z.png" 	
+			onclick="flipYZ()"
+			title="flip y and z coordinates"/>
+	
+	
+		<img src="../resources/icons/distance.png" 	
+			onclick="measuringTool.setEnabled(true)"
+			title="distance measurements"/>
+		<img src="../resources/icons/area.png" 		
+			onclick="areaTool.setEnabled(true)"
+			title="area measurements"/>
+			
+		<img src="../resources/icons/volume.png" 	
+			onclick="volumeTool.startInsertion()"
+			title="volume measurements"/>
+			
+		<img src="../resources/icons/profile.png" 	
+			onclick="profileTool.startInsertion({width: pointcloud.boundingSphere.radius / 100})"
+			title="height profiles"/>
+			
+		<img src="../resources/icons/clip_volume.png" 
+			onclick="volumeTool.startInsertion({clip: true})"
+			title="clipping volumes"/>
+		
+		
 	</div>
 	
 	
@@ -117,6 +144,7 @@ void main() {
 		var pointShape = Potree.PointShape.SQUARE;
 		var clipMode = Potree.ClipMode.HIGHLIGHT_INSIDE;
 		var quality = "Normal";
+		var isFlipYZ = false;
 		
 		var showStats = false;
 		
@@ -134,7 +162,9 @@ void main() {
 		var pointcloudPath = "../../../../pointclouds/mschuetz/vienna_donaukanal_01.las_converted/cloud.js";
 		var pointcloudPath = "../../../../pointclouds/pix4d/eclepens.laz_converted/cloud.js";
 		var pointcloudPath = "../resources/pointclouds/vol_total/cloud.js";
+		var pointcloudPath = "../../../../pointclouds/aeroquest_mapcon/Input_LAS_Dataset.las_converted/cloud.js";
 		var pointcloudPath = "../../../../pointclouds/pix4d/matterhorn/cloud.js";
+		var pointcloudPath = "../../../../pointclouds/bruno_friedmann/vol_total_part/_converted/cloud.js";
 	
 		var elRenderArea = document.getElementById("renderArea");
 	
@@ -311,16 +341,7 @@ void main() {
 				pointcloud.material.size = pointSize;
 				pointcloud.visiblePointsTarget = pointCountTarget * 1000 * 1000;
 				
-				//pointcloud.rotation.set(Math.PI/2, 0.85* -Math.PI/2, -0.0);
-				
 				referenceFrame.add(pointcloud);
-				
-				referenceFrame.applyMatrix(new THREE.Matrix4().set(
-					1,0,0,0,
-					0,0,1,0,
-					0,-1,0,0,
-					0,0,0,1
-				));
 				
 				referenceFrame.updateMatrixWorld(true);
 				var sg = pointcloud.boundingSphere.clone().applyMatrix4(pointcloud.matrixWorld);
@@ -330,19 +351,22 @@ void main() {
 				
 				referenceFrame.updateMatrixWorld(true);
 				
+				
 				controls.moveSpeed = pointcloud.boundingSphere.radius / 2;
 				
-				zoomTo(camera, pointcloud, 0.7);
+				zoomTo(camera, pointcloud, 1);
+				
+				flipYZ();
 			});
 			
 			var grid = Potree.utils.createGrid(5, 5, 2);
 			scene.add(grid);
 			
 			measuringTool = new Potree.MeasuringTool(scenePointCloud, camera, renderer);
+			profileTool = new Potree.ProfileTool(scenePointCloud, camera, renderer);
 			areaTool = new Potree.AreaTool(scenePointCloud, camera, renderer);
 			volumeTool = new Potree.VolumeTool(scenePointCloud, camera, renderer);
 			transformationTool = new Potree.TransformationTool(scenePointCloud, camera, renderer);
-			profileTool = new Potree.ProfileTool(scenePointCloud, camera, renderer);
 			
 			
 			// background
@@ -365,6 +389,36 @@ void main() {
 			
 			
 			window.addEventListener( 'keydown', onKeyDown, false );
+		}
+		
+		function flipYZ(){
+			isFlipYZ = !isFlipYZ;
+			
+			if(isFlipYZ){
+				referenceFrame.matrix.copy(new THREE.Matrix4());
+				referenceFrame.applyMatrix(new THREE.Matrix4().set(
+					1,0,0,0,
+					0,0,1,0,
+					0,-1,0,0,
+					0,0,0,1
+				));
+				
+			}else{
+				referenceFrame.matrix.copy(new THREE.Matrix4());
+				referenceFrame.applyMatrix(new THREE.Matrix4().set(
+					1,0,0,0,
+					0,1,0,0,
+					0,0,1,0,
+					0,0,0,1
+				));
+			}
+			
+			referenceFrame.updateMatrixWorld(true);
+			pointcloud.updateMatrixWorld();
+			var sg = pointcloud.boundingSphere.clone().applyMatrix4(pointcloud.matrixWorld);
+			referenceFrame.position.copy(sg.center).multiplyScalar(-1);
+			referenceFrame.position.y += sg.radius;
+			referenceFrame.updateMatrixWorld(true);
 		}
 		
 		function onKeyDown(event){

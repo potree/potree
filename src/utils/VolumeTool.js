@@ -129,6 +129,19 @@ Potree.VolumeTool = function(scene, camera, renderer){
 	
 	function onMouseClick(event){
 		
+		//if(state === STATE.INSERT_VOLUME){
+		//	scope.finishInsertion();
+		//}else if(event.which === 1){
+		//	var I = getHoveredElement();
+		//	
+		//	if(I){
+		//		transformationTool.setTargets([I.object]);
+		//	}
+		//}
+	};
+	
+	function onMouseDown(event){
+	
 		if(state === STATE.INSERT_VOLUME){
 			scope.finishInsertion();
 		}else if(event.which === 1){
@@ -138,9 +151,8 @@ Potree.VolumeTool = function(scene, camera, renderer){
 				transformationTool.setTargets([I.object]);
 			}
 		}
-	};
 	
-	function onMouseDown(event){
+	
 		if(event.which === 3){
 			// open context menu
 			

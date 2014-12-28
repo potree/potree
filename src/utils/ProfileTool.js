@@ -128,7 +128,7 @@ Potree.ProfileTool = function(scene, camera, renderer){
 				});
 				lineMaterial.depthTest = false;
 				var edge = new THREE.Line(lineGeometry, lineMaterial);
-				edge.visible = true;
+				edge.visible = false;
 				
 				this.add(edge);
 				this.edges.push(edge);
@@ -403,6 +403,7 @@ Potree.ProfileTool = function(scene, camera, renderer){
 		raycaster.ray.set( scope.camera.position, vector.sub( scope.camera.position ).normalize() );
 		
 		var intersections = raycaster.intersectObjects(scope.profiles);
+		
 		if(intersections.length > 0){
 			return intersections[0];
 		}else{

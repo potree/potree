@@ -249,7 +249,9 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 			};
 			scope.dispatchEvent(event);
 			
+			
 		}
+		//event.stopImmediatePropagation();
 	};
 	
 	function onMouseMove(event){
@@ -353,6 +355,8 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 					sceneStartPos: scope.sceneRoot.position.clone(),
 					mousePos: {x: scope.mouse.x, y: scope.mouse.y}
 				};
+				
+				event.stopImmediatePropagation();
 				
 			}
 			

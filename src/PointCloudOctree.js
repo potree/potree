@@ -75,6 +75,7 @@ Potree.PointCloudOctree = function(geometry, material){
 	this.LODFalloff = 1.3;
 	this.LOD = 4;
 	this.showBoundingBox = false;
+	this.boundingBoxNodes = [];
 	this.loadQueue = [];
 	this.visibleBounds = new THREE.Box3();	
 	this.profileRequests = [];
@@ -103,6 +104,10 @@ Potree.PointCloudOctree.prototype.update = function(camera, renderer){
 	for(var i = 0; i < this.profileRequests.length; i++){
 		var profileRequest = this.profileRequests[i];
 		profileRequest.loadQueue = [];
+	}
+	
+	for(var i = 0; i < this.boundingBoxNodes.length; i++){
+		this.boundingBoxNodes[i].visible = false;
 	}
 	
 	this.loadQueue = [];
@@ -147,11 +152,17 @@ Potree.PointCloudOctree.prototype.update = function(camera, renderer){
 				this.maxLevel = Math.max(node.level, this.maxLevel);
 			}
 			
-			//if(!node.boundingBoxNode){
-			//	var boxHelper = new THREE.BoxHelper(node);
-			//	scene.add(boxHelper);
-			//	node.boundingBoxNode = boxHelper;
-			//}
+			if(this.showBoundingBox && !node.boundingBoxNode){
+				var boxHelper = new THREE.BoxHelper(node);
+				scene.add(boxHelper);
+				this.boundingBoxNodes.push(boxHelper);
+				node.boundingBoxNode = boxHelper;
+			}else if(this.showBoundingBox){
+				node.boundingBoxNode.visible = true;
+				node.boundingBoxNode.matrixWorld.multiplyMatrices( node.parent.matrixWorld, node.boundingBoxNode.matrix );
+			}else if(!this.showBoundingBox && node.boundingBoxNode){
+				node.boundingBoxNode.visible = false;
+			}
 			
 			for(var i = 0; i < node.children.length; i++){
 				var child = node.children[i];
@@ -280,7 +291,7 @@ Potree.PointCloudOctree.prototype.update = function(camera, renderer){
 	
 	this.hideDescendants(this.children[0]);
 	for(var i = 0; i < this.visibleNodes.length; i++){
-		this.visibleNodes[i].node.visible = true
+		this.visibleNodes[i].node.visible = true;
 	}
 	
 	if(this.material.pointSizeType){
@@ -336,7 +347,7 @@ Potree.PointCloudOctree.prototype.getVisibleGeometry = function(camera){
 	
 		
 		var visible = insideFrustum; // && node.level <= 3;
-		//visible = visible && "r2".indexOf(node.name) === 0;
+		//visible = visible && "r7".indexOf(node.name) === 0;
 		
 		if(!visible){
 			continue;

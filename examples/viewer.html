@@ -87,13 +87,16 @@ void main() {
 	<div id="lblNumVisiblePoints" class="info" style="position: absolute; left: 10px; top: 100px; width: 400px; color:white"></div>
 	<div id="lblMessage" class="info" style="position: absolute; left: 10px; bottom: 0px; width: 400px; color:white"></div>
 	
-	<div id="tools" style="position: fixed; width: 240px; bottom: 10px; right: 10px">
-		<!--<input type="button" value="distance" onclick="measuringTool.setEnabled(true)"/>
-		<input type="button" value="area" onclick="areaTool.setEnabled(true)"/>
-		<input type="button" value="volume" onclick="volumeTool.startInsertion()"/>
-		<input type="button" value="profile" onclick="profileTool.startPicking()"/>
-		<input type="button" value="clip volume" onclick="volumeTool.startInsertion({clip: true})"/>
-		-->
+	<div id="tools" style="position: fixed; width: 340px; bottom: 10px; right: 10px">
+	
+	
+		<img src="../resources/icons/fps_controls.png" 	
+			onclick="useFPSControls()"
+			title="Fly Camera"/>
+	
+		<img src="../resources/icons/orbit_controls.png" 	
+			onclick="useOrbitControls()"
+			title="Orbit Controls"/>
 	
 		<img src="../resources/icons/focus.png" 	
 			onclick="camera.zoomTo(pointcloud)"
@@ -128,8 +131,8 @@ void main() {
 	
 	
 	<div class="info" style="position: absolute; left: 300px; right: 300px; top: 10px; text-align: center;">
-		<a href="http://potree.org" target="_blank">potree.org</a><br>
-		Point cloud courtesy of <a href="http://www.sigeom.ch/" target="_blank">sigeom sa</a><br>
+		<a href="http://potree.org" target="_blank">potree.org</a>
+		<!--Point cloud courtesy of <a href="http://www.sigeom.ch/" target="_blank">sigeom sa</a><br>-->
 		
 	</div>
 	
@@ -147,25 +150,38 @@ void main() {
 		var isFlipYZ = false;
 		
 		var showStats = false;
+		var showBoundingBox = false;
+		
+		var fpControls;
+		var orbitControls;
 		
 		var progressBar = new ProgressBar();
 
-		var pointcloudPath = "../../../../pointclouds/3dlasermapping/whitby_sample_geom/cloud_bin.js";
-		var pointcloudPath = "../../../../pointclouds/kent_van_velden/cityups/cityups/cloud.js";
-		var pointcloudPath = "../../../../pointclouds/pix4d/lausanne/cloud.js";
-		var pointcloudPath = "../../../../pointclouds/santorini/santorini/cloud.js";
-		var pointcloudPath = "../../../../pointclouds/heidelberg/dechen_cave_upscaled.las_converted/cloud.js";
+		
+		
+		
+	
 		var pointcloudPath = "../../../../pointclouds/faro/skatepark/skate_1.las_converted/cloud.js";
-		var pointcloudPath = "../../../../pointclouds/tower/tower.las_converted/cloud.js";
-		var pointcloudPath = "../../../../pointclouds/opentopography/CA13_SAN_SIM/CA13_SAN_SIM/cloud.js";
-		var pointcloudPath = "../../../../pointclouds/mschuetz/vienna_donaukanal_01.las_converted/cloud.js";
-		var pointcloudPath = "../../../../pointclouds/pix4d/eclepens.laz_converted/cloud.js";
-		var pointcloudPath = "../../../../pointclouds/aeroquest_mapcon/Input_LAS_Dataset.las_converted/cloud.js";
-		var pointcloudPath = "../../../../pointclouds/pix4d/matterhorn/cloud.js";
-		var pointcloudPath = "../../../../pointclouds/bruno_friedmann/vol_total_part/_converted/cloud.js";
 		var pointcloudPath = "../resources/pointclouds/lion_takanawa/cloud.js";
+		var pointcloudPath = "../../../../pointclouds/mschuetz/lion_takanawa_oriented.las_converted/cloud.js";
+		var pointcloudPath = "../../../../pointclouds/faro/skatepark/skate_1.las_converted/cloud.js";
 		var pointcloudPath = "../resources/pointclouds/vol_total/cloud.js";
 	
+		
+
+		var pointcloudPath = "../../../../pointclouds/opentopography/indiana_statewide_454m/cloud.js";
+		var pointcloudPath = "../../../../pointclouds/opentopography/CA13_SAN_SIM/CA13_SAN_SIM/cloud.js";
+		var pointcloudPath = "../../../../deploy/point_clouds_2014.12.29/matterhorn/cloud.js";
+		var pointcloudPath = "../../../../deploy/point_clouds_2014.12.29/whitby_geom/cloud.js";
+		var pointcloudPath = "../../../../deploy/point_clouds_2014.12.29/vienna_donaukanal/cloud.js";
+		var pointcloudPath = "../../../../deploy/point_clouds_2014.12.29/dechen_cave/cloud.js";
+		var pointcloudPath = "../../../../deploy/point_clouds_2014.12.29/eclepens/cloud.js";
+		var pointcloudPath = "../../../../deploy/point_clouds_2014.12.29/owl/cloud.js";
+		var pointcloudPath = "../../../../deploy/point_clouds_2014.12.29/vol_total/cloud.js";
+	
+		
+		
+		
 		var elRenderArea = document.getElementById("renderArea");
 	
 		var renderer;
@@ -202,7 +218,8 @@ void main() {
 				"quality": "Normal",
 				"circles": false,
 				"skybox": false,
-				"stats": showStats
+				"stats": showStats,
+				"BoundingBox": showBoundingBox
 			};
 			
 			var pPoints = gui.add(params, 'points(m)', 0.02, 2);
@@ -281,6 +298,11 @@ void main() {
 			pStats.onChange(function(value){
 				showStats = value;
 			});
+			
+			var pBoundingBox = gui.add(params, 'BoundingBox');
+			pBoundingBox.onChange(function(value){
+				showBoundingBox = value;
+			});
 
 			// stats
 			stats = new Stats();
@@ -303,9 +325,8 @@ void main() {
 			sceneBG = new THREE.Scene();
 			
 			camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-			//cameraBG = new THREE.OrthographicCamera(-100, 100, 100, -100, -100, 100);
+			//camera = new THREE.OrthographicCamera(-50, 50, 50, -50, 1, 100000);
 			cameraBG = new THREE.Camera();
-			//camera = new THREE.OrthographicCamera(-1000, 1000, 1000, -1000, -far, far);
 			
 			referenceFrame = new THREE.Object3D();
 			scenePointCloud.add(referenceFrame);
@@ -321,14 +342,13 @@ void main() {
 			camera.position.set(-304, 372, 318);
 			camera.rotation.y = -Math.PI / 4;
 			camera.rotation.x = -Math.PI / 6;
-			controls = new THREE.FirstPersonControls(camera, renderer.domElement);
-			controls.moveSpeed *= 10;
+			fpControls = new THREE.FirstPersonControls(camera, renderer.domElement);
+			orbitControls = new THREE.OrbitControls(camera, renderer.domElement);
+			controls = fpControls;
+			orbitControls.enabled = false;
 			
-			//camera.position.set(0, 0, 100);
-			//var sg = new THREE.SphereGeometry(1);
-			//var s = new THREE.Mesh(sg);
-			//s.scale.set(10,10,10);
-			//scene.add(s);
+			
+			controls.moveSpeed *= 10;
 			
 			// enable frag_depth extension for the interpolation shader, if available
 			renderer.context.getExtension("EXT_frag_depth");
@@ -347,14 +367,14 @@ void main() {
 				var sg = pointcloud.boundingSphere.clone().applyMatrix4(pointcloud.matrixWorld);
 				
 				referenceFrame.position.copy(sg.center).multiplyScalar(-1);
-				referenceFrame.position.y += sg.radius;
+				//referenceFrame.position.y += sg.radius;
 				
 				referenceFrame.updateMatrixWorld(true);
 				
 				
 				controls.moveSpeed = pointcloud.boundingSphere.radius / 2;
 				
-				zoomTo(camera, pointcloud, 1);
+				camera.zoomTo(pointcloud, 1.2);
 				
 				flipYZ();
 			});
@@ -417,7 +437,9 @@ void main() {
 			pointcloud.updateMatrixWorld();
 			var sg = pointcloud.boundingSphere.clone().applyMatrix4(pointcloud.matrixWorld);
 			referenceFrame.position.copy(sg.center).multiplyScalar(-1);
-			referenceFrame.position.y += sg.radius;
+			//referenceFrame.position.y += sg.radius;
+			referenceFrame.updateMatrixWorld(true);
+			referenceFrame.position.y -= pointcloud.getWorldPosition().y;
 			referenceFrame.updateMatrixWorld(true);
 		}
 		
@@ -456,6 +478,7 @@ void main() {
 				//pointcloud.material.clipMode = clipMode;
 				////pointcloud.material.weighted = false;
 				
+				pointcloud.showBoundingBox = showBoundingBox;
 				pointcloud.update(camera, renderer);
 			}
 			
@@ -537,6 +560,18 @@ void main() {
 				pointcloud.material.setClipBoxes(clipBoxes);
 			}
 			
+		}
+		
+		function useFPSControls(){
+			controls.enabled = false;
+			controls = fpControls;
+			controls.enabled = true;
+		}
+		
+		function useOrbitControls(){
+			controls.enabled = false;
+			controls = orbitControls;
+			controls.enabled = true;
 		}
 		
 		function render(){
@@ -719,7 +754,7 @@ void main() {
 				
 				//pointcloud.material.pointShape = Potree.PointShape.CIRCLE;
 				pointcloud.material.depthMap = rtDepth;
-				pointcloud.material.blendDepth = pointcloud.material.spacing;
+				pointcloud.material.blendDepth = Math.min(pointcloud.material.spacing, 20);
 				//pointcloud.material.weighted = true;
 				//pointcloud.material.pointColorType = Potree.PointColorType.RGB;
 				pointcloud.update(camera, renderer);

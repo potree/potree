@@ -22,6 +22,10 @@ Newest information and work in progress is usually available on [twitter](https:
 
 General infos, downloads, showcase, etc. at [potree.org](http://potree.org/)
 
+## Downloads
+
+* [PotreeConverter windows binary (2014.12.30)](http://potree.org/downloads/PotreeConverter/PotreeConverter_2014.12.30.zip)
+
 ## Showcase
 
 Take a look at the [potree showcase](http://potree.org/wp/demo/) for some live examples.

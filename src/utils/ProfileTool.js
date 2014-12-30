@@ -49,22 +49,49 @@ Potree.ProfileTool = function(scene, camera, renderer){
 	};
 	
 	var dragEvent = function(event){
-		var I = getMousePointCloudIntersection();
+	
+		if(event.event.ctrlKey){
+		
+			var mouseStart = new THREE.Vector3(scope.dragstart.mousePos.x, scope.dragstart.mousePos.y, 0);
+			var mouseEnd = new THREE.Vector3(scope.mouse.x, scope.mouse.y, 0);
+			var widthStart = scope.dragstart.widthStart;
 			
-		if(I){
-			for(var i = 0; i < scope.profiles.length; i++){
-				var m = scope.profiles[i];
-				var index = m.spheres.indexOf(scope.dragstart.object);
-				
-				if(index >= 0){
-					scope.profiles[i].setPosition(index, I);
+			var scale = 1 - 10 * (mouseStart.y - mouseEnd.y);
+			scale = Math.max(0.01, scale);
+			if(widthStart){
+				for(var i = 0; i < scope.profiles.length; i++){
+					var m = scope.profiles[i];
+					var index = m.spheres.indexOf(scope.dragstart.object);
 					
-					
-					break;
+					if(index >= 0){
+						m.setWidth(widthStart * scale);
+						m.update();
+						
+						
+						break;
+					}
 				}
 			}
 		
-			//scope.dragstart.object.position.copy(I);
+		}else{
+	
+			var I = getMousePointCloudIntersection();
+				
+			if(I){
+				for(var i = 0; i < scope.profiles.length; i++){
+					var m = scope.profiles[i];
+					var index = m.spheres.indexOf(scope.dragstart.object);
+					
+					if(index >= 0){
+						scope.profiles[i].setPosition(index, I);
+						
+						
+						break;
+					}
+				}
+			
+				//scope.dragstart.object.position.copy(I);
+			}
 		}
 		
 		event.event.stopImmediatePropagation();
@@ -141,7 +168,6 @@ Potree.ProfileTool = function(scene, camera, renderer){
 				
 				this.add(box);
 				this.boxes.push(box);
-				
 				
 			}
 
@@ -253,6 +279,9 @@ Potree.ProfileTool = function(scene, camera, renderer){
 					leftBox.position.copy(center);
 				}
 				
+				
+				
+				
 				centroid.add(point);
 				min.min(point);
 				max.max(point);
@@ -271,12 +300,21 @@ Potree.ProfileTool = function(scene, camera, renderer){
 		
 		this.raycast = function(raycaster, intersects){
 			
-			for(var i = 0; i < this.spheres.length; i++){
+			for(var i = 0; i < this.points.length; i++){
 				var sphere = this.spheres[i];
 				
 				sphere.raycast(raycaster, intersects);
 			}
 			
+			// recalculate distances because they are not necessarely correct
+			// for scaled objects.
+			// see https://github.com/mrdoob/three.js/issues/5827
+			// TODO: remove this once the bug has been fixed
+			for(var i = 0; i < intersects.length; i++){
+				var I = intersects[i];
+				I.distance = raycaster.ray.origin.distanceTo(I.point);
+			}
+			intersects.sort( function ( a, b ) { return a.distance - b.distance;} );
 		}
 		
 		
@@ -370,12 +408,25 @@ Potree.ProfileTool = function(scene, camera, renderer){
 			var I = getHoveredElement();
 			
 			if(I){
+			
+				var widthStart = null;
+				for(var i = 0; i < scope.profiles.length; i++){
+					var profile = scope.profiles[i];
+					for(var j = 0; j < profile.spheres.length; j++){
+						var sphere = profile.spheres[j];
+						
+						if(sphere === I.object){
+							widthStart = profile.width;
+						}
+					}
+				}
 				
 				scope.dragstart = {
 					object: I.object, 
 					sceneClickPos: I.point,
 					sceneStartPos: scope.sceneRoot.position.clone(),
-					mousePos: {x: scope.mouse.x, y: scope.mouse.y}
+					mousePos: {x: scope.mouse.x, y: scope.mouse.y},
+					widthStart: widthStart
 				};
 				
 			}

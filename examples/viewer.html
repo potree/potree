@@ -161,17 +161,14 @@ void main() {
 		
 		
 	
-		var pointcloudPath = "../../../../pointclouds/faro/skatepark/skate_1.las_converted/cloud.js";
 		var pointcloudPath = "../resources/pointclouds/lion_takanawa/cloud.js";
-		var pointcloudPath = "../../../../pointclouds/mschuetz/lion_takanawa_oriented.las_converted/cloud.js";
 		var pointcloudPath = "../../../../pointclouds/faro/skatepark/skate_1.las_converted/cloud.js";
-		var pointcloudPath = "../resources/pointclouds/vol_total/cloud.js";
+		var pointcloudPath = "../../../../pointclouds/faro/skatepark/skate_1.las_converted/cloud.js";
 	
 		
 
 		var pointcloudPath = "../../../../pointclouds/opentopography/indiana_statewide_454m/cloud.js";
 		var pointcloudPath = "../../../../pointclouds/opentopography/CA13_SAN_SIM/CA13_SAN_SIM/cloud.js";
-		var pointcloudPath = "../../../../deploy/point_clouds_2014.12.29/matterhorn/cloud.js";
 		var pointcloudPath = "../../../../deploy/point_clouds_2014.12.29/whitby_geom/cloud.js";
 		var pointcloudPath = "../../../../deploy/point_clouds_2014.12.29/vienna_donaukanal/cloud.js";
 		var pointcloudPath = "../../../../deploy/point_clouds_2014.12.29/dechen_cave/cloud.js";
@@ -179,8 +176,13 @@ void main() {
 		var pointcloudPath = "../../../../deploy/point_clouds_2014.12.29/owl/cloud.js";
 		var pointcloudPath = "../../../../deploy/point_clouds_2014.12.29/vol_total/cloud.js";
 	
+		var pointcloudPath = "../../../../pointclouds/surface_and_edge/land_building/_converted/cloud.js";
+		var pointcloudPath = "../../../../pointclouds/opentopography/lake_tahoe_basin/converted/cloud.js";
 		
 		
+		var pointcloudPath = "../../../../deploy/point_clouds_2014.12.29/matterhorn/cloud.js";
+		var pointcloudPath = "../../../../pointclouds/mschuetz/lion_takanawa_oriented.las_converted/cloud.js";
+		var pointcloudPath = "../resources/pointclouds/vol_total/cloud.js";
 		
 		var elRenderArea = document.getElementById("renderArea");
 	
@@ -248,7 +250,10 @@ void main() {
 				}
 			});
 			
-			var pMaterial = gui.add(params, 'Materials', [ "RGB", "Color", "Height", "Octree Depth"]);
+			var pMaterial = gui.add(params, 'Materials', [ 
+				"RGB", "Color", "Height", "Intensity", "Intensity Gradient", 
+				"Classification", "Return Number", "Source",
+				"Octree Depth"]);
 			pMaterial.onChange(function(value){
 				if(value === "RGB"){
 					pointColorType = Potree.PointColorType.RGB;
@@ -256,7 +261,16 @@ void main() {
 					pointColorType = Potree.PointColorType.COLOR;
 				}else if(value === "Height"){
 					pointColorType = Potree.PointColorType.HEIGHT;
-					
+				}else if(value === "Intensity"){
+					pointColorType = Potree.PointColorType.INTENSITY;
+				}else if(value === "Intensity Gradient"){
+					pointColorType = Potree.PointColorType.INTENSITY_GRADIENT;
+				}else if(value === "Classification"){
+					pointColorType = Potree.PointColorType.CLASSIFICATION;
+				}else if(value === "Return Number"){
+					pointColorType = Potree.PointColorType.RETURN_NUMBER;
+				}else if(value === "Source"){
+					pointColorType = Potree.PointColorType.SOURCE;
 				}else if(value === "Octree Depth"){
 					pointColorType = Potree.PointColorType.OCTREE_DEPTH;
 				}else if(value === "Point Index"){
@@ -264,7 +278,7 @@ void main() {
 				}
 			});
 			
-			var pQuality = gui.add(params, 'quality', [ "Normal", "High", "Best"]);
+			var pQuality = gui.add(params, 'quality', [ "Normal", "Interpolation", "Splats"]);
 			pQuality.onChange(function(value){
 				quality = value;
 			});
@@ -397,7 +411,7 @@ void main() {
 			texture.minFilter = texture.magFilter = THREE.LinearFilter;
 			
 			var bg = new THREE.Mesh(
-				new THREE.PlaneGeometry(2, 2, 0),
+				new THREE.PlaneBufferGeometry(2, 2, 0),
 				new THREE.MeshBasicMaterial({
 					map: texture
 				})
@@ -478,6 +492,8 @@ void main() {
 				//pointcloud.material.clipMode = clipMode;
 				////pointcloud.material.weighted = false;
 				
+				pointcloud.material.intensityMin = 0;
+				pointcloud.material.intensityMax = 200;
 				pointcloud.showBoundingBox = showBoundingBox;
 				pointcloud.update(camera, renderer);
 			}
@@ -607,7 +623,7 @@ void main() {
 				pointcloud.material.pointSizeType = pointSizeType;
 				pointcloud.material.pointColorType = pointColorType;
 				pointcloud.material.pointShape = pointShape;
-				pointcloud.material.interpolate = (quality === "High");
+				pointcloud.material.interpolate = (quality === "Interpolation");
 				pointcloud.material.heightMin = bbWorld.min.y;
 				pointcloud.material.heightMax = bbWorld.max.y;
 				pointcloud.material.clipMode = clipMode;
@@ -665,7 +681,7 @@ void main() {
 					fragmentShader: fsNormalize
 				});
 				
-				var quad = new THREE.Mesh( new THREE.PlaneGeometry(2, 2, 0), materialNormalize);
+				var quad = new THREE.Mesh( new THREE.PlaneBufferGeometry(2, 2, 0), materialNormalize);
 				quad.material.depthTest = true;
 				quad.material.depthWrite = true;
 				quad.material.transparent = true;
@@ -710,7 +726,7 @@ void main() {
 				pointcloud.material.pointSizeType = pointSizeType;
 				pointcloud.material.pointColorType = Potree.PointColorType.DEPTH;
 				pointcloud.material.pointShape = Potree.PointShape.CIRCLE;
-				pointcloud.material.interpolate = (quality === "High");
+				pointcloud.material.interpolate = (quality === "Interpolate");
 				pointcloud.material.heightMin = bbWorld.min.y;
 				pointcloud.material.heightMax = bbWorld.max.y;
 				pointcloud.material.clipMode = clipMode;
@@ -742,7 +758,7 @@ void main() {
 				pointcloud.material.pointSizeType = pointSizeType;
 				pointcloud.material.pointColorType = pointColorType;
 				pointcloud.material.pointShape = Potree.PointShape.CIRCLE;
-				pointcloud.material.interpolate = (quality === "High");
+				pointcloud.material.interpolate = (quality === "Interpolation");
 				pointcloud.material.heightMin = bbWorld.min.y;
 				pointcloud.material.heightMax = bbWorld.max.y;
 				pointcloud.material.clipMode = clipMode;
@@ -781,7 +797,7 @@ void main() {
 			
 			update();
 			
-			if(quality === "Best"){
+			if(quality === "Splats"){
 				renderHighQuality();
 			}else{
 				render();

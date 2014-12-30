@@ -75,6 +75,7 @@ Potree.VolumeTool = function(scene, camera, renderer){
 		this.label.setBackgroundColor({r:0, g:255, b:0, a:0.0});
 		this.label.material.depthTest = false;
 		this.label.position.y -= 0.5;
+		this.add(this.label);
 
 		this.volume = function(){
 			return Math.abs(this.scale.x * this.scale.y * this.scale.z);

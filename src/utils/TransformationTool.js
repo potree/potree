@@ -338,10 +338,6 @@ Potree.TransformationTool = function(scene, camera, renderer){
 			pointOnLine.unproject(scope.camera);
 			
 			var diff = scope.sceneRoot.position.clone().sub(pointOnLine);
-			//var offset = sceneClickPos.clone().sub(scope.dragstart.sceneStartPos);
-			//scope.sceneRoot.position.copy(pointOnLine);
-			//diff.sub(scope.sceneRoot.position);
-			
 			diff.multiply(new THREE.Vector3(-1, -1, 1)).addScalar(1);
 			
 			for(var i = 0; i < scope.targets.length; i++){
@@ -351,7 +347,6 @@ Potree.TransformationTool = function(scene, camera, renderer){
 				target.scale.x = Math.max(target.scale.x, 0.01);
 				target.scale.y = Math.max(target.scale.y, 0.01);
 				target.scale.z = Math.max(target.scale.z, 0.01);
-//				target.scale.sub(diff);
 			}
 
 			event.event.stopImmediatePropagation();

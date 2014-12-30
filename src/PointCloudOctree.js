@@ -623,6 +623,20 @@ Potree.PointCloudOctree.prototype.getBoundingBoxWorld = function(){
 	return tBox;
 }
 
+Potree.PointCloudOctree.prototype.getPointsInProfile = function(profile, maxDepth){
+	var points = [];
+	for(var i = 0; i < profile.points.length - 1; i++){
+		var start = profile.points[i];
+		var end = profile.points[i+1];
+		var ps = pointcloud.getProfile(start, end, profile.width, maxDepth);
+		for(var j = 0; j < ps.length; j++){
+			points.push(ps[j]);
+		}
+	}
+	
+	return points;
+};
+
 Potree.PointCloudOctree.prototype.getProfile = function(start, end, width, depth, callback){
 	if(callback !== undefined){
 		this.profileRequests.push(new Potree.ProfileRequest(start, end, width, depth, callback));

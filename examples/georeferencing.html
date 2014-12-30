@@ -52,23 +52,6 @@ To transform the swissCoordinates to local coordinates, use
 var sceneCoordinate = toLocal(new THREE.Vector3(swissCoordinate[0], swissCoordinate[1], 0));
 
 
-
-== Profile ==
-
-There are 2 ways to get a height profile:
-- ProfileTool: 				renders points inside the profile area into a texture.
-- pointcloud.getProfile(): 	Returns points inside the profile area
-
-In this demo, both are used side by side. The ProfileTool is very fast and can be used as a
-preview to the result of the getProfile() function. 
-The depth parameter specifies the detail level of the result.
-Especially with higher depth values, it is likely that not all the octree nodes necessary
-for the calculation have been loaded, yet which is why you can provide a callback function 
-that is called once all the necessary nodes have been loaded and the point profile has been calculated.
-If you call getProfile without a callback, it will ignore unloaded nodes and immediately return
-a result.
-
-
 == GeoExtent ==
 
 You can get the boundaries of the currently visible parts using pointcloud.getVisibleExtent()
@@ -144,17 +127,11 @@ The updateMapExtent() shows how this can be used to visualize the boundaries in 
 	<div class="info" style="position: absolute; left: 300px; right: 300px; top: 10px; text-align: center;">
 		<a href="http://potree.org" target="_blank">potree.org</a><br>
 		Point cloud courtesy of <a href="http://www.sigeom.ch/" target="_blank">sigeom sa</a><br>
+		Georeferencing - Check "coordinates" to display mouse hover coordinates on the bottom left
 		<br>
 		
 	</div>
 	
-	<div class="info" style="position: absolute; left: 5px; top: 20px">
-	Georeferencing, Height Profile and Measurement.<br>
-		Double click to generate measurement points. <br>
-		Drag endpoints of red line in map window to modify the profile. <br>
-		Check "coordinates" to display mouse hover coordinates on the bottom left.<br>
-		Push the <input type="button" value="Height Profile" onclick="doHeightProfile()"/> button to create some spheres along the profile<br>	
-	</div>
 	
 
 	<div id="renderArea"></div>
@@ -183,10 +160,6 @@ The updateMapExtent() shows how this can be used to visualize the boundaries in 
 	var minWeb = proj4(swiss, webMercator, [minSwiss[0], minSwiss[1]]);
 	var maxWeb = proj4(swiss, webMercator, [maxSwiss[0], maxSwiss[1]]);
 	
-	// default values for start and end of profile in Web Mercator
-	var profileStart = proj4(swiss, webMercator, [589468, 231313]);
-	var profileEnd = proj4(swiss, webMercator, [590134, 231328]);
-	
 	// bounds of the EPSG:21781 projection 
 	//var swissMin = new THREE.Vector3(485869.5728,  76443.1884, 0);
 	//var swissMax = new THREE.Vector3(837076.5648, 299941.7864, 0);
@@ -195,7 +168,6 @@ The updateMapExtent() shows how this can be used to visualize the boundaries in 
 	var featureVector;
 	var camFrustumFeatureVector;
 	var camFrustum;
-	var profileOverlay;
 	var visibleBounds;
 	
 	// three.js / potree stuff
@@ -206,8 +178,6 @@ The updateMapExtent() shows how this can be used to visualize the boundaries in 
 	var skybox;
 	var pointcloud;
 	var clock = new THREE.Clock();
-	var measuringTool;
-	var profileTool;
 	var showCoordinates = false;
 	var mouse = {x: 0, y: 0};
 	var elCoordinates = document.getElementById("lblCoordinates");
@@ -333,36 +303,6 @@ The updateMapExtent() shows how this can be used to visualize the boundaries in 
 			})
 		});
 		
-		{// profile layer
-			profileOverlay = new ol.FeatureOverlay({
-			  style: new ol.style.Style({
-				fill: new ol.style.Fill({
-				  color: 'rgba(255, 255, 255, 0.2)'
-				}),
-				stroke: new ol.style.Stroke({
-				  color: '#ff0000',
-				  width: 2
-				}),
-				image: new ol.style.Circle({
-				  radius: 7,
-				  fill: new ol.style.Fill({
-					color: '#ff0000'
-				  })
-				})
-			  })
-			});
-			profileOverlay.setMap(map);
-			
-			var profile = new ol.geom.LineString([profileStart, profileEnd]);
-			var profileFeature = new ol.Feature(profile);
-			profileOverlay.addFeature(profileFeature);
-			
-			// enable drag modification of the profile line
-			var modify = new ol.interaction.Modify({
-			  features: profileOverlay.getFeatures(),
-			});
-			map.addInteraction(modify);
-		}
 	}
 	
 	function initPotreeView(){
@@ -393,11 +333,13 @@ The updateMapExtent() shows how this can be used to visualize the boundaries in 
 		controls.moveSpeed *= 10;
 		camera.position.set(600, 880, -370);
 		camera.lookAt(new THREE.Vector3(480, 797, -219));
+
+		referenceFrame = new THREE.Object3D();
 		
 		// load pointcloud
 		var pco = POCLoader.load(pointcloudPath, function(geometry){
 			offset = geometry.offset;
-			pointcloud = new Potree.PointCloudOctree(geometry, new Potree.PointCloudMaterial());
+			pointcloud = new Potree.PointCloudOctree(geometry);
 			pointcloud.material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
 			pointcloud.material.size = pointSize;
 			pointcloud.visiblePointsTarget = pointCountTarget * 1000 * 1000;
@@ -405,9 +347,13 @@ The updateMapExtent() shows how this can be used to visualize the boundaries in 
 			// the reference frame transforms the point cloud into the scene coordinate system
 			// by moving it towards the origin and flipping the y and z axes.
 			// This is necessary to avoid precision errors due to large floating point values.
-			referenceFrame = new THREE.Object3D();
+			referenceFrame.add(pointcloud);
+
+			referenceFrame.updateMatrixWorld(true);
+			
 			referenceFrame.position.set(-pointcloud.position.x, -pointcloud.position.y, 0);
-			referenceFrame.updateMatrix();
+			
+			referenceFrame.updateMatrixWorld(true);
 			referenceFrame.applyMatrix(new THREE.Matrix4().set(
 				1,0,0,0,
 				0,0,1,0,
@@ -415,34 +361,7 @@ The updateMapExtent() shows how this can be used to visualize the boundaries in 
 				0,0,0,1
 			));
 			scene.add(referenceFrame);
-			referenceFrame.add(pointcloud);
-			referenceFrame.updateMatrixWorld();
 		});
-		
-		// create measuring tool
-		measuringTool = new Potree.MeasuringTool(scene, camera, renderer);
-		measuringTool.addEventListener("newpoint", function(event){
-			point = toGeo(event.position);
-			
-			// transform from swiss projection to Web Mercator
-			var swiss = proj4.defs("EPSG:21781");
-			var WGS84 = proj4.defs("WGS84");
-			var coordinate = proj4(swiss, webMercator, [point.x, point.y]);
-	    
-			// add a point to the OpenLayers map
-			var olPoint = new ol.geom.Point(coordinate);
-			var feature = new ol.Feature(olPoint);
-			featureVector.addFeature(feature);
-		});
-		
-		// create profile tool
-		profileTool = new Potree.ProfileTool(400, 200, 10);
-		profileTool.position.set(0,0,0);
-		scene.add(profileTool);
-		sceneHUD.add(profileTool.hudElement);
-		profileTool.setCoordinates(
-			new THREE.Vector3(-32, 750, -13), 
-			new THREE.Vector3(634, 750, -28));
 		
 		renderer.domElement.addEventListener( 'mousemove', onMouseMove, false );
 	}
@@ -579,7 +498,6 @@ The updateMapExtent() shows how this can be used to visualize the boundaries in 
 			pointcloud.update(camera, renderer);
 			updateMapFrustum();
 			updateCoordinatePicking();
-			updateProfile();
 			updateMapExtent();
 			updateProgressBar();
 		}
@@ -682,39 +600,6 @@ The updateMapExtent() shows how this can be used to visualize the boundaries in 
 		]);
 	}
 	
-	/**
-	 * Update the ProfileTools start and end according to the users modification
-	 * in the map window
-	 */
-	function updateProfile(){
-		var features = profileOverlay.getFeatures();
-		if(features.getArray().length == 0){
-			return;
-		}
-		
-		var geometry = profileOverlay.getFeatures().getArray()[0].getGeometry();
-		var coordinates = geometry.getCoordinates();
-		
-		if(coordinates.length < 2){
-			return;
-		}
-		
-		var start = new THREE.Vector3(coordinates[0][0], coordinates[0][1], 0);
-		var end = new THREE.Vector3(coordinates[1][0], coordinates[1][1], 0);
-		
-		var startSwiss = proj4(webMercator, swiss, [start.x, start.y]);
-		var startScene = toLocal(new THREE.Vector3(startSwiss[0], startSwiss[1], 0));
-		
-		var endSwiss = proj4(webMercator, swiss, [end.x, end.y]);
-		var endScene = toLocal(new THREE.Vector3(endSwiss[0], endSwiss[1], 0));
-		
-		startScene.y = 750;
-		endScene.y = 750;
-		
-		profileTool.setCoordinates(startScene, endScene);
-    
-	}
-	
 	function getMousePointCloudIntersection(){
 		var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
 		vector.unproject(camera);
@@ -761,11 +646,6 @@ The updateMapExtent() shows how this can be used to visualize the boundaries in 
 		
 		renderer.setSize(width, height);
 		
-		profileTool.hudElement.scale.x = 400 / width;
-		profileTool.hudElement.scale.y = 300 / height;
-		profileTool.hudElement.position.x = 1 - 405 / width;
-		profileTool.hudElement.position.y = -1 + 905 / height;
-
 		// render skybox
 		if(showSkybox){
 			skybox.camera.rotation.copy(camera.rotation);
@@ -774,42 +654,9 @@ The updateMapExtent() shows how this can be used to visualize the boundaries in 
 		
 		
 		// render scenes
-		profileTool.render(renderer, scene);
 		renderer.render(scene, camera);
-		measuringTool.render();
 		renderer.render(sceneHUD, cameraHUD);
 		
-	}
-	
-	/**
-	 * Demonstrating the pointcloud.getProfile() method by creating spheres at some
-	 * of the points inside the profile.
-	 * The depth value specifies the density of the points.
-	 * This method is async and will call its callback once all the necessary
-	 * nodes have been loaded. If no callback is given, it will immediately
-	 * return an array of points and ignore nodes that have not been loaded, yet.
-	 *
-	 */
-	function doHeightProfile(){
-		var start = profileTool.start;
-		var end = profileTool.end;
-		var width = 10;
-		var depth = 4;
-	
-		var callback = function(event){
-			if(event.type === "finished"){
-				var points = event.points;
-				var sphereGeometry = new THREE.SphereGeometry(1, 5, 5);
-				for(var i = 0; i < points.length; i += Math.ceil(points.length / 500)){
-					var point = points[i];
-					var sphere = new THREE.Mesh(sphereGeometry);
-					sphere.position.copy(point);
-					scene.add(sphere);
-				}
-			}
-		};
-		
-		pointcloud.getProfile(start, end, width, depth, callback);
 	}
 	
 	function onMouseMove(event){

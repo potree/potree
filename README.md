@@ -1,47 +1,50 @@
-# Potree - WebGL Pointcloud Viewer
+
+# README
+
+* [Getting Started](./docs/getting_started.md)
+* [Changelog](./docs/changelog.md)
+* [User Interface](./docs/user_interface.md)
+* [Converting Point Clouds](./docs/converting.md)
+* [FAQ](./docs/faq.md)
+* [Measuring](./docs/measuring.md)
+* [File Format](./docs/file_format.md)
 
 ## About
 
-Potree is a WebGL based point cloud viewer for large datasets.
-Thanks to WebGL, it runs in all major browsers without plugins.
+Potree is a free open-source WebGL based point cloud renderer for large point clouds.
+Similar to map software like Google Maps or OpenStreeMap, only data inside the visible area and up to a certain level of detail are loaded.
 
-Homepage: <a href="http://potree.org/">potree.org</a>
-<img src="http://potree.org/resources/images/pompei.jpg">
+![](./docs/images/potree_screens.png)
 
-## Demos
+At the moment, this project is continued as master thesis under the [Harvest4D Project](https://harvest4d.org/)
 
-This video shows a point cloud of the St. Stephens Cathedral. It consists of ~700m points.
-<a href="http://www.youtube.com/watch?v=p9e6xElafJU" target="_blank"><img src="http://img.youtube.com/vi/p9e6xElafJU/0.jpg"></a>
+Newest information and work in progress is usually available on [twitter](https://twitter.com/m_schuetz)
 
-Take a look at the [online showcase](http://potree.org/wp/demo/)
+General infos, downloads, showcase, etc. at [potree.org](http://potree.org/)
 
-## Getting Started
-1. Deploy potree on a webserver.
-2. Open one of the demos in the examples directory. <br>
-Potree pages must run on a webserver so the url
-should be something like "localhost/potree/examples/lion.html". URLs starting with "file:///" will not work.
+## Downloads
 
-For more details, read the [Getting Started Section](./docs/getting_started.md)
+* [PotreeConverter windows binary (2014.12.30)](http://potree.org/downloads/PotreeConverter/PotreeConverter_2014.12.30.zip)
 
-## Convert Your Own Pointclouds
-Use the [PotreeConverter](https://github.com/potree/PotreeConverter) to convert your own point clouds into the potree format.
+## Showcase
 
-## Changelog
-Take a look at the changelog to get an overview of new features and possible changes to the usage:
-[docs/changelog.md](./docs/changelog.md)
+Take a look at the [potree showcase](http://potree.org/wp/demo/) for some live examples.
 
 ## Compatibility
 
 | Browser              | OS      | Result        |
 | -------------------- |:-------:|:-------------:|
-| Chrome 32            | Win7    | works         |
-| Firefox 26           | Win7    | works         |
-| Opera 19             | Win7    | works         |
-| Internet Explorer 11 | Win7    | technically works, if you don't expect performance |
-| Safari               | Mac     | works         |
+| Chrome 39            | Win7    | works         |
+| Firefox 34           | Win7    | works         |
+| Internet Explorer 11 | Win7    | partially works; performance issues |
 | Firefox              | Android | partially works, GUI and stability issues |
 | Opera                | Android | partially works, GUI and stabilty issues and slow |
 
 
-## License
-Potree is available under the FreeBSD license.
+## Credits
+
+* The multi-res-octree algorithms used by this viewer were developed at the Vienna University of Technology by Michael Wimmer and Claus Scheiblauer as part of the [Scanopy Project](http://www.cg.tuwien.ac.at/research/projects/Scanopy/).
+* [Three.js](https://github.com/mrdoob/three.js), the WebGL 3D rendering library on which potree is built.
+* [plas.io](http://plas.io/) point cloud viewer. LAS and LAZ support have been taken from the laslaz.js implementation of plas.io. Thanks to [Uday Verma](https://twitter.com/udaykverma) and [Howard Butler](https://twitter.com/howardbutler) for this!
+* [Harvest4D](https://harvest4d.org/) Potree currently runs as Master Thesis under the Harvest4D Project
+* [Martin Isenburg](http://rapidlasso.com/), [Georepublic](http://georepublic.de/en/), [Sigeom Sa](http://www.sigeom.ch/), [SITN](http://www.ne.ch/sitn), [Pix4D](http://pix4d.com/) as well as all the contributers to potree and PotreeConverter and many more for their support.

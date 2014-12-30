@@ -1,0 +1,100 @@
+
+
+"[ " + camera.position.x.toFixed(2) + ", " + camera.position.y.toFixed(2) + ", " + camera.position.z.toFixed(2) + " ]"
+
+
+
+
+# matterhorn
+
+position: 	[ 3334.84, 7806.38, -2970.29 ]
+lookAt:		[ 550.70, 5659.12, -275.78 ]
+
+camera.position.set(3334.84, 7806.38, -2970.29)
+camera.lookAt(new THREE.Vector3(550.70, 5659.12, -275.78))
+
+
+
+
+# dechen cave
+
+position: 	[ -2.12, 14.08, -3.40 ]
+lookAt:		[ -4.80, 13.80, 1.49 ]
+
+
+
+
+# owl
+
+position: 	[ -4.27, 7.02, 4.27 ]
+lookAt:		[ -0.12, 1.63, -0.05 ]
+
+
+
+# skatepark
+
+points:		0.6
+position: 	[ 5.10, 195.34, -12.79 ]
+lookAt:		[ -3.79, 181.82, 5.64 ]
+
+
+
+# vol total
+
+position:	[ 255.79, 506.62, -233.26 ]
+lookAt:		[ 117.90, 321.15, -22.44 ]
+
+
+
+#eclepens
+
+position:	[ 331.55, 890.39, 538.83 ]
+lookAt:		[ 127.47, 600.93, 88.21 ]
+
+
+
+# lion_takanawa
+
+position:	[ 3.68, 7.00, 4.37 ]
+lookAt:		[ 0.27, 4.68, 1.00 ]
+
+
+
+# whitby_geom
+
+position: 	[ 268.87, 539.56, -101.29 ]
+lookAt:		[ 94.25, 351.57, -0.64 ]
+
+
+# vienna donaukanal
+
+position:	[ 2.96, 17.32, 10.35 ]
+lookAt:		[ 1.42, 11.58, -0.04 ]
+
+
+# CA13_SAN_SIM
+
+position:	[ -23190.37, 20563.16, -7653.28 ]
+lookAt:		[ -22959.89, 20435.17, -7879.27 ]
+
+
+
+# lake tahoe
+
+points: 	1.5
+pointSize:	0.6
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

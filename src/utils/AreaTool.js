@@ -504,14 +504,6 @@ Potree.AreaTool = function(scene, camera, renderer){
 	this.domElement.addEventListener( 'mousedown', onMouseDown, false );
 	this.domElement.addEventListener( 'mouseup', onMouseUp, true );
 	
-	
-	
-	//this.activeMeasurement = new Measure(this.sceneRoot);
-	//this.activeMeasurement.add(new THREE.Vector3(-3,0,-3));
-	//this.activeMeasurement.add(new THREE.Vector3(3,0,-3));
-	//this.activeMeasurement.add(new THREE.Vector3(0,0,3));
-	//this.activeMeasurement.setPosition(0, new THREE.Vector3(-5, 0, -5));
-	
 };
 
 

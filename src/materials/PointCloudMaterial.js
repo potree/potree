@@ -34,6 +34,12 @@ Potree.PointColorType = {
 	SOURCE: 10
 };
 
+Potree.ClipMode = {
+	DISABLED: 0,
+	CLIP_OUTSIDE: 1,
+	HIGHLIGHT_INSIDE: 2
+};
+
 Potree.PointCloudMaterial = function(parameters){
 	parameters = parameters || {};
 
@@ -51,6 +57,12 @@ Potree.PointCloudMaterial = function(parameters){
 	this._interpolate = false;
 	this._pointColorType = Potree.PointColorType.RGB;
 	this._octreeLevels = 6.0;
+	this._useClipBox = false;
+	this.numClipBoxes = 0;
+	this._clipMode = Potree.ClipMode.DISABLED;
+	this._weighted = false;
+	this._blendDepth = 0.1;
+	this._depthMap;
 	
 	this.gradientTexture = Potree.PointCloudMaterial.generateGradient();
 	
@@ -73,7 +85,10 @@ Potree.PointCloudMaterial = function(parameters){
 		intensityMax:	{ type: "f", value: 1.0 },
 		visibleNodes:	{ type: "t", value: this.visibleNodesTexture },
 		pcIndex:   		{ type: "f", value: 0 },
-		gradient: 		{type: "t", value: this.gradientTexture},
+		gradient: 		{ type: "t", value: this.gradientTexture },
+		clipBoxes:		{ type: "Matrix4fv", value: [] },
+		blendDepth:		{ type: "f", value: this._blendDepth },
+		depthMap: 		{ type: "t", value: null },
 	};
 	
 	
@@ -114,6 +129,13 @@ Potree.PointCloudMaterial.prototype.updateShaderSource = function(){
 		fragmentShader: this.getDefines() + Potree.PointCloudMaterial.fs_points_rgb.join("\n")
 	});
 	
+	if(this.depthMap){
+		this.uniforms.depthMap.value = this.depthMap;
+		this.setValues({
+			depthMap: this.depthMap,
+		});
+	}
+	
 	if(this.opacity === 1.0){
 		this.setValues({
 			blending: THREE.NoBlending,
@@ -132,6 +154,18 @@ Potree.PointCloudMaterial.prototype.updateShaderSource = function(){
 		//	transparent: true
 		//});
 	}
+		
+	if(this.weighted){	
+		this.setValues({
+			blending: THREE.AdditiveBlending,
+			transparent: true,
+			depthTest: true,
+			depthWrite: false
+		});	
+	}
+		
+		
+		
 		
 	this.needsUpdate = true;
 };
@@ -182,8 +216,44 @@ Potree.PointCloudMaterial.prototype.getDefines = function(){
 	}else if(this._pointColorType === Potree.PointColorType.SOURCE){
 		defines += "#define color_type_source\n";
 	}
+	
+	if(this.clipMode === Potree.ClipMode.DISABLED){
+		defines += "#define clip_disabled\n";
+	}else if(this.clipMode === Potree.ClipMode.CLIP_OUTSIDE){
+		defines += "#define clip_outside\n";
+	}else if(this.clipMode === Potree.ClipMode.HIGHLIGHT_INSIDE){
+		defines += "#define clip_highlight_inside\n";
+	}
+	
+	if(this.weighted){
+		defines += "#define weighted_splats\n";
+	}
+	
+	if(this.numClipBoxes > 0){
+		defines += "#define use_clip_box\n";
+		defines += "#define clip_box_count " + this.numClipBoxes + "\n";
+	}
 
 	return defines;
+};
+
+Potree.PointCloudMaterial.prototype.setClipBoxes = function(clipBoxes){
+	var numBoxes = clipBoxes.length;
+	this.numClipBoxes = numBoxes;
+	
+	if(this.uniforms.clipBoxes.value.length / 16 !== numBoxes){
+		this.uniforms.clipBoxes.value = new Float32Array(numBoxes * 16);
+		this.updateShaderSource();
+		
+	}
+	
+	for(var i = 0; i < numBoxes; i++){
+		var box = clipBoxes[i];
+		
+		this.uniforms.clipBoxes.value.set(box.elements, 16*i);
+	}
+	
+	
 };
 
 Object.defineProperty(Potree.PointCloudMaterial.prototype, "spacing", {
@@ -194,6 +264,42 @@ Object.defineProperty(Potree.PointCloudMaterial.prototype, "spacing", {
 		if(this.uniforms.spacing.value !== value){
 			this.uniforms.spacing.value = value;
 			//this.updateShaderSource();
+		}
+	}
+});
+
+Object.defineProperty(Potree.PointCloudMaterial.prototype, "blendDepth", {
+	get: function(){
+		return this.uniforms.blendDepth.value;
+	},
+	set: function(value){
+		if(this.uniforms.blendDepth.value !== value){
+			this.uniforms.blendDepth.value = value;
+			//this.updateShaderSource();
+		}
+	}
+});
+
+Object.defineProperty(Potree.PointCloudMaterial.prototype, "useClipBox", {
+	get: function(){
+		return this._useClipBox;
+	},
+	set: function(value){
+		if(this._useClipBox !== value){
+			this._useClipBox = value;
+			this.updateShaderSource();
+		}
+	}
+});
+
+Object.defineProperty(Potree.PointCloudMaterial.prototype, "weighted", {
+	get: function(){
+		return this._weighted;
+	},
+	set: function(value){
+		if(this._weighted !== value){
+			this._weighted = value;
+			this.updateShaderSource();
 		}
 	}
 });
@@ -294,6 +400,18 @@ Object.defineProperty(Potree.PointCloudMaterial.prototype, "pointColorType", {
 	}
 });
 
+Object.defineProperty(Potree.PointCloudMaterial.prototype, "depthMap", {
+	get: function(){
+		return this._depthMap;
+	},
+	set: function(value){
+		if(this._depthMap !== value){
+			this._depthMap = value;
+			this.updateShaderSource();
+		}
+	}
+});
+
 Object.defineProperty(Potree.PointCloudMaterial.prototype, "pointSizeType", {
 	get: function(){
 		return this._pointSizeType;
@@ -301,6 +419,18 @@ Object.defineProperty(Potree.PointCloudMaterial.prototype, "pointSizeType", {
 	set: function(value){
 		if(this._pointSizeType !== value){
 			this._pointSizeType = value;
+			this.updateShaderSource();
+		}
+	}
+});
+
+Object.defineProperty(Potree.PointCloudMaterial.prototype, "clipMode", {
+	get: function(){
+		return this._clipMode;
+	},
+	set: function(value){
+		if(this._clipMode !== value){
+			this._clipMode = value;
 			this.updateShaderSource();
 		}
 	}
@@ -439,15 +569,15 @@ Potree.PointCloudMaterial.generateGradient = function() {
 }
 
 Potree.PointCloudMaterial.vs_points = [
- "precision mediump float;                                                             ",
- "precision mediump int;                                                               ",
+ "precision mediump float;                                                           ",
+ "precision mediump int;                                                             ",
  "                                                                                   ",
  "attribute vec3 position;                                                           ",
  "attribute vec3 color;                                                              ",
  "attribute float intensity;                                                         ",
- "attribute float classification;                                                         ",
- "attribute float returnNumber;                                                         ",
- "attribute float pointSourceID;                                                         ",
+ "attribute float classification;                                                    ",
+ "attribute float returnNumber;                                                      ",
+ "attribute float pointSourceID;                                                     ",
  "attribute vec4 indices;                                                            ",
  "                                                                                   ",
  "uniform mat4 modelMatrix;                                                          ",
@@ -456,12 +586,17 @@ Potree.PointCloudMaterial.vs_points = [
  "uniform mat4 viewMatrix;                                                           ",
  "uniform mat3 normalMatrix;                                                         ",
  "uniform vec3 cameraPosition;                                                       ",
- "uniform float screenWidth;                                                                                   ",
- "uniform float screenHeight;                                                                                   ",
- "uniform float fov;                                                                                   ",
- "uniform float spacing;                                                                                   ",
- "uniform float near;                                                                                   ",
- "uniform float far;                                                                                   ",
+ "uniform float screenWidth;                                                         ",
+ "uniform float screenHeight;                                                        ",
+ "uniform float fov;                                                                 ",
+ "uniform float spacing;                                                             ",
+ "uniform float blendDepth;                                                             ",
+ "uniform float near;                                                                ",
+ "uniform float far;                                                                 ",
+ "                                                                                   ",
+ "#if defined use_clip_box                                                                                   ",
+ "	uniform mat4 clipBoxes[clip_box_count];                                                                                   ",
+ "#endif                                                                                   ",
  "                                                                                   ",
  "                                                                                   ",
  "uniform float heightMin;                                                           ",
@@ -472,12 +607,17 @@ Potree.PointCloudMaterial.vs_points = [
  "uniform float minSize;                                                             ",
  "uniform float nodeSize;                                                            ",
  "uniform vec3 uColor;                                                               ",
+ "uniform float opacity;                                                                                   ",
+ "                                                                                   ",
  "                                                                                   ",
  "uniform sampler2D visibleNodes;                                                    ",
  "uniform sampler2D gradient;                                                        ",
+ "uniform sampler2D depthMap;                                                        ",
  "                                                                                   ",
- "                                                                                   ",
+ "varying float vOpacity;                                                                                   ",
  "varying vec3 vColor;                                                               ",
+ "varying float vDepth;                                                                                   ",
+ "varying float vLinearDepth;                                                                                   ",
  "                                                                                   ",
  "                                                                                   ",
  "#if defined(adaptive_point_size) || defined(color_type_octree_depth)               ",
@@ -577,7 +717,13 @@ Potree.PointCloudMaterial.vs_points = [
  "                                                                                   ",
  "	vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );                       ",
  "	gl_Position = projectionMatrix * mvPosition;                                     ",
- "                                                                                   ",
+ "  //float pw = gl_Position.w;                                                                                 ",
+ "  //float pd = gl_Position.z;                                                                                 ",
+ "  //gl_Position = gl_Position / pw;                                                                                 ",
+ "  //gl_Position.z = 2.0*((pw - near) / far)-1.0;                                                                                 ",
+ "  vOpacity = opacity;                                                                                 ",
+ "  vLinearDepth = -mvPosition.z;                                                                                 ",
+ "  vDepth = mvPosition.z / gl_Position.w;                                                                                 ",
  "                                                                                   ",
  "  // COLOR TYPES                                                                   ",
  "                                                                                   ",
@@ -589,7 +735,8 @@ Potree.PointCloudMaterial.vs_points = [
  "                                                                                   ",
  "  	vColor = texture2D(gradient, vec2(w,1.0-w)).rgb;                             ",
  "  #elif defined color_type_depth                                                   ",
- "  	vColor = vec3(1.0, 1.0, 1.0) * gl_Position.w * 0.0001;                       ",
+ "      float d = -mvPosition.z ;                                                                             ",
+ "      vColor = vec3(d, vDepth, 0.0);                                                                             ",
  "  #elif defined color_type_intensity                                               ",
  "      float w = (intensity - intensityMin) / intensityMax;                         ",
  "		vColor = vec3(w, w, w);                                                      ",
@@ -616,6 +763,7 @@ Potree.PointCloudMaterial.vs_points = [
  "  #endif                                                                           ",
  "                                                                                   ",
  "                                                                                   ",
+ "                                                                                   ",
  "  //                                                                               ",
  "  // POINT SIZE TYPES                                                              ",
  "  //                                                                               ",
@@ -636,6 +784,33 @@ Potree.PointCloudMaterial.vs_points = [
  "                                                                                    ",
  "	gl_PointSize = max(minSize, gl_PointSize);                                       ",
  "	gl_PointSize = min(50.0, gl_PointSize);                                          ",
+ "                                                                                     ",
+ "  // clip box                                                                                  ",
+ "  #if defined use_clip_box                                                                                 ",
+ "      bool insideAny = false;                                                                               ",
+ "      for(int i = 0; i < clip_box_count; i++){                                                                               ",
+ "      	vec4 clipPosition = clipBoxes[i] * modelMatrix * vec4( position, 1.0 );                                                                                     ",
+ "      	bool inside = -0.5 <= clipPosition.x && clipPosition.x <= 0.5;                                                                             ",
+ "      	inside = inside && -0.5 <= clipPosition.y && clipPosition.y <= 0.5;                                                                             ",
+ "      	inside = inside && -0.5 <= clipPosition.z && clipPosition.z <= 0.5;                                                                             ",
+ "      	insideAny = insideAny || inside;                                                                               ",
+ "      }                                                                               ",
+ "      if(!insideAny){                                                                               ",
+ "                                                                                     ",
+ "          #if defined clip_outside                                                                           ",
+ "      		gl_Position = vec4(1000.0, 1000.0, 1000.0, 1.0);                                                                               ",
+ "          #elif defined clip_highlight_inside && !defined(color_type_depth)                                                                           ",
+ "         		float c = (vColor.r + vColor.g + vColor.b) / 6.0;                                                                           ",
+ "          	//vColor = vec3(c, c, c);                                                                           ",
+ "          #endif                                                                           ",
+ "      }else{                                                                               ",
+ "      	#if defined clip_highlight_inside                                                                               ",
+ "      	vColor.r += 0.5;                                                                               ",
+ "          #endif                                                                           ",
+ "      }                                                                               ",
+ "                                                                                     ",
+ "  #endif                                                                                  ",
+ "                                                                                   ",
  "                                                                                   ",
  "}                                                                                  "];
 
@@ -644,18 +819,25 @@ Potree.PointCloudMaterial.fs_points_rgb = [
  "	#extension GL_EXT_frag_depth : enable                                            ",
  "#endif                                                                             ",
  "                                                                                   ",
- "precision highp float;                                                             ",
- "precision highp int;                                                               ",
+ "precision mediump float;                                                             ",
+ "precision mediump int;                                                               ",
  "                                                                                   ",
- "uniform float opacity;                                                             ",
+ "//uniform float opacity;                                                             ",
  "uniform float pcIndex;                                                             ",
+ "uniform float screenWidth;                                                         ",
+ "uniform float screenHeight;                                                        ",
+ "uniform float blendDepth;                                                                                   ",
+ "                                                                                   ",
+ "uniform sampler2D depthMap;                                                                                   ",
  "                                                                                   ",
  "varying vec3 vColor;                                                               ",
- "                                                                                   ",
+ "varying float vOpacity;                                                                                    ",
+ "varying float vLinearDepth;                                                                                    ",
+ "varying float vDepth;                                                                                    ",
  "                                                                                   ",
  "void main() {                                                                      ",
  "	                                                                                 ",
- "	#if defined(circle_point_shape) || defined(use_interpolation)                    ",
+ "	#if defined(circle_point_shape) || defined(use_interpolation) || defined (weighted_splats)                    ",
  "		float a = pow(2.0*(gl_PointCoord.x - 0.5), 2.0);                             ",
  "		float b = pow(2.0*(gl_PointCoord.y - 0.5), 2.0);                             ",
  "		float c = 1.0 - (a + b);                                                     ",
@@ -664,6 +846,15 @@ Potree.PointCloudMaterial.fs_points_rgb = [
  "			discard;                                                                 ",
  "		}                                                                            ",
  "	#endif                                                                           ",
+ "		                                                                                 ",
+ "	#if defined weighted_splats                                                                                  ",
+ "		vec2 uv = gl_FragCoord.xy / vec2(screenWidth, screenHeight);                                                                                 ",
+ "		                                                                                 ",
+ "	    float depth = texture2D(depthMap, uv).r;                                                                             ",
+ "	    if(vLinearDepth > depth + blendDepth){                                                                             ",
+ "	    	discard;                                                                             ",
+ "	    }                                                                             ",
+ "	#endif                                                                                 ",
  "	                                                                                 ",
  "	#if defined use_interpolation                                                    ",
  "		gl_FragDepthEXT = gl_FragCoord.z + 0.002*(1.0-pow(c, 1.0)) * gl_FragCoord.w; ",
@@ -673,8 +864,17 @@ Potree.PointCloudMaterial.fs_points_rgb = [
  "	#if defined color_type_point_index                                               ",
  "		gl_FragColor = vec4(vColor, pcIndex / 255.0);                                ",
  "	#else                                                                            ",
- "		gl_FragColor = vec4(vColor, opacity);                                        ",
+ "		gl_FragColor = vec4(vColor, vOpacity);                                        ",
  "	#endif                                                                           ",
+ "	                                                                                 ",
+ "	                                                                                 ",
+ "	#if defined weighted_splats                                                                                 ",
+ "	    float w = pow(c, 2.0);                                                                             ",
+ "		gl_FragColor.rgb = gl_FragColor.rgb * w;                                                                                 ",
+ "		gl_FragColor.a = w;                                                                                 ",
+ "	#endif                                                                                 ",
+ "	                                                                                 ",
+ "	                                                                                 ",
  "	                                                                                 ",
  "}                                                                                  "];
 

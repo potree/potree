@@ -140,6 +140,7 @@ void main() {
 		
 		var fpControls;
 		var orbitControls;
+		var controls;
 		
 		var progressBar = new ProgressBar();
 
@@ -163,15 +164,16 @@ void main() {
 		var pointcloudPath = "../../../../deploy/point_clouds_2014.12.29/vol_total/cloud.js";
 	
 		var pointcloudPath = "../../../../pointclouds/surface_and_edge/land_building/_converted/cloud.js";
+		
+		
 		var pointcloudPath = "../../../../pointclouds/opentopography/lake_tahoe_basin/converted/cloud.js";
-		
-		
 		var pointcloudPath = "../../../../deploy/point_clouds_2014.12.29/matterhorn/cloud.js";
 		var pointcloudPath = "../../../../pointclouds/mschuetz/lion_takanawa_oriented.las_converted/cloud.js";
 		var pointcloudPath = "../resources/pointclouds/vol_total/cloud.js";
 		
 		var elRenderArea = document.getElementById("renderArea");
 	
+		var gui;
 		var renderer;
 		var camera;
 		var scene;
@@ -191,11 +193,11 @@ void main() {
 		function initGUI(){
 		
 			// dat.gui
-			var gui = new dat.GUI({
+			gui = new dat.GUI({
 				height : 5 * 32 - 1
 			});
 			
-			var params = {
+			params = {
 				"points(m)": pointCountTarget,
 				PointSize: pointSize,
 				"opacity": opacity,
@@ -235,10 +237,17 @@ void main() {
 				}
 			});
 			
-			var pMaterial = gui.add(params, 'Materials', [ 
+			var options = [];
+			if(pointcloud.pcoGeometry.pointAttributes === "LAS" || pointcloud.pcoGeometry.pointAttributes === "LAZ"){
+				options = [ 
 				"RGB", "Color", "Height", "Intensity", "Intensity Gradient", 
 				"Classification", "Return Number", "Source",
-				"Octree Depth"]);
+				"Octree Depth"];
+			}else{
+				options = options = [ "RGB", "Color", "Height", "Octree Depth"];
+			}
+			
+			pMaterial = gui.add(params, 'Materials',options);
 			pMaterial.onChange(function(value){
 				if(value === "RGB"){
 					pointColorType = Potree.PointColorType.RGB;
@@ -317,6 +326,7 @@ void main() {
 			camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
 			//camera = new THREE.OrthographicCamera(-50, 50, 50, -50, 1, 100000);
 			cameraBG = new THREE.Camera();
+			camera.rotation.order = 'ZYX';
 			
 			referenceFrame = new THREE.Object3D();
 			scenePointCloud.add(referenceFrame);
@@ -332,10 +342,7 @@ void main() {
 			camera.position.set(-304, 372, 318);
 			camera.rotation.y = -Math.PI / 4;
 			camera.rotation.x = -Math.PI / 6;
-			fpControls = new THREE.FirstPersonControls(camera, renderer.domElement);
-			orbitControls = new THREE.OrbitControls(camera, renderer.domElement);
-			controls = fpControls;
-			orbitControls.enabled = false;
+			useOrbitControls();
 			
 			
 			controls.moveSpeed *= 10;
@@ -364,6 +371,8 @@ void main() {
 				camera.zoomTo(pointcloud, 1.2);
 				
 				flipYZ();
+				
+				initGUI();				
 			});
 			
 			var grid = Potree.utils.createGrid(5, 5, 2);
@@ -473,7 +482,7 @@ void main() {
 				pointcloud.update(camera, renderer);
 			}
 			
-			if(showStats){
+			if(stats && showStats){
 				document.getElementById("lblNumVisibleNodes").style.display = "";
 			    document.getElementById("lblNumVisiblePoints").style.display = "";
 			    stats.domElement.style.display = "";
@@ -484,7 +493,7 @@ void main() {
 					document.getElementById("lblNumVisibleNodes").innerHTML = "visible nodes: " + pointcloud.numVisibleNodes;
 					document.getElementById("lblNumVisiblePoints").innerHTML = "visible points: " + Potree.utils.addCommas(pointcloud.numVisiblePoints);
 				}
-			}else{
+			}else if(stats){
 				document.getElementById("lblNumVisibleNodes").style.display = "none";
 			    document.getElementById("lblNumVisiblePoints").style.display = "none";
 			    stats.domElement.style.display = "none";
@@ -554,15 +563,31 @@ void main() {
 		}
 		
 		function useFPSControls(){
-			controls.enabled = false;
+			if(controls){
+				controls.enabled = false;
+			}
+			if(!fpControls){
+				fpControls = new THREE.FirstPersonControls(camera, renderer.domElement);
+			}
+	
 			controls = fpControls;
 			controls.enabled = true;
 		}
 		
 		function useOrbitControls(){
-			controls.enabled = false;
+			if(controls){
+				controls.enabled = false;
+			}
+			if(!orbitControls){
+				orbitControls = new THREE.OrbitControls(camera, renderer.domElement);
+			}
+			
 			controls = orbitControls;
 			controls.enabled = true;
+			
+			if(pointcloud){
+				controls.target.copy(pointcloud.boundingSphere.center.clone().applyMatrix4(pointcloud.matrixWorld));
+			}
 		}
 		
 		function render(){
@@ -770,7 +795,7 @@ void main() {
 		
 		
 		initThree();
-		initGUI();
+		//initGUI();
 		loop();
 		
 	</script>

@@ -30,9 +30,11 @@ var paths = {
 		"src/utils.js",
 		"src/TextSprite.js",
 		"src/Version.js",
+		"src/utils/AreaTool.js",
 		"src/utils/MeasuringTool.js",
 		"src/utils/ProfileTool.js",
-		"src/utils/TranslationTool.js"
+		"src/utils/TransformationTool.js",
+		"src/utils/VolumeTool.js"
 	],
 	laslaz: [
 		"build/workers/laslaz-worker.js",

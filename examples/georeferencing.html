@@ -1,0 +1,681 @@
+<html lang="en">
+<!--
+
+used projections:
+- EPSG:21781 / Swiss
+- EPSG:3857 / WebMercator 
+- Local Scene Coordinates
+
+This demo shows how to handle georeferenced point clouds and how to use the measure and profile tools.
+
+
+
+== Georeferencing ==
+
+Georeferenced point clouds tend to have very large coordinates values which float values can't handle.
+In order to maximize the available precision, the point cloud must be moved towards the origin.
+Another problem is that georeferenced coordinates often use 
+x for easting, y for northing and z for the elevation / height. 
+Potree on the other hand uses 
+x for easting, -z for northing and y for elevation / height;
+A reference frame is used in order to move the point cloud to the origin and flip y and -z.
+
+referenceFrame = new THREE.Object3D();
+referenceFrame.position.set(-pointcloud.position.x, -pointcloud.position.y, 0);
+referenceFrame.updateMatrix();
+referenceFrame.applyMatrix(new THREE.Matrix4().set(
+	1,0,0,0,
+	0,0,1,0,
+	0,-1,0,0,
+	0,0,0,1
+));
+
+The transformations are automatically applied to the point cloud by attaching it to the referenceFrame.
+
+referenceFrame.add(pointcloud);
+
+The point cloud is now in a local scene coordinate system and all the tools like
+measuring and height profile will return local scene coordinates.
+In order to transform from local scene coordinates back to the geo coordinates,
+you can use the helper function toGeo(THREE.Vector3 coordinate);
+
+Coordinates in the OpenLayers window are given in the Web Mercator projection.
+To sync the map window with the scene, the coordinates must be transformed from Web Mercator to 
+the projection of the point cloud and then to scene coordinates.
+Transforming from Web Mercator to Swiss can be done with proj4js
+
+var swissCoordinate = proj4(webMercator, swiss, webMercatorCoordinate);
+
+Note that proj4js uses an array with 2 elements while toGeo and toLocal uses THREE.Vector3 instances.
+To transform the swissCoordinates to local coordinates, use
+
+var sceneCoordinate = toLocal(new THREE.Vector3(swissCoordinate[0], swissCoordinate[1], 0));
+
+
+== GeoExtent ==
+
+You can get the boundaries of the currently visible parts using pointcloud.getVisibleExtent()
+The updateMapExtent() shows how this can be used to visualize the boundaries in the map view.
+
+
+
+-->
+<head>
+	<meta charset="utf-8"/>
+	<link rel="stylesheet" href="http://openlayers.org/en/v3.0.0/css/ol.css" type="text/css">
+	<title>Georeferencing Example</title>
+	<style>canvas { width: 100%; height: 100% }</style>
+</head>
+<body>
+	<div id="map" class="map"></div>
+	
+	<style type="text/css">
+	
+	body{
+		margin: 0;
+		padding: 0;
+	}
+	
+	#renderArea{
+		width: 100%;
+		height: 100%;
+	}
+	
+	.map {
+		position: absolute;
+		height: 300px;
+		width: 400px;
+		right: 5px;
+		bottom: 5px;
+		z-index: 1000;
+	}
+	
+	.info{
+		color:		white;
+		font-weight: bold;
+		text-shadow:  1px  1px 1px black,
+					  1px -1px 1px black,
+					 -1px  1px 1px black,
+					 -1px -1px 1px black;
+	}
+	
+	a:hover, a:visited, a:link, a:active{
+		color: #ccccff;
+		text-decoration: none;
+	}
+	
+	</style>
+	
+	<script src="http://openlayers.org/en/v3.0.0/build/ol.js" type="text/javascript"></script>
+	
+	<script src="../libs/three.js/build/three.js"></script>
+	<script src="../libs/other/dat.gui.min.js"></script>
+	<script src="../libs/proj4/proj4.js"></script>
+	
+	<script src="../build/js/potree.js"></script>
+	<script src="js/ProgressBar.js"></script>
+	
+	<div class="info" style="position: absolute; left: 300px; right: 300px; top: 10px; text-align: center;">
+		<a href="http://potree.org" target="_blank">potree.org</a><br>
+	</div>
+	
+	
+	<div id="lblCoordinates" class="info" style="position: absolute; left: 5px; bottom: 10px">
+	test
+	</div>
+	
+	<div class="info" style="position: absolute; left: 300px; right: 300px; top: 10px; text-align: center;">
+		<a href="http://potree.org" target="_blank">potree.org</a><br>
+		Point cloud courtesy of <a href="http://www.sigeom.ch/" target="_blank">sigeom sa</a><br>
+		Georeferencing - Check "coordinates" to display mouse hover coordinates on the bottom left
+		<br>
+		
+	</div>
+	
+	
+
+	<div id="renderArea"></div>
+    <script type="text/javascript">
+	var pointSize = 1;
+	var pointCountTarget = 1;
+	var opacity = 1;
+	var pointSizeType = Potree.PointSizeType.ADAPTIVE;
+	var pointColorType = Potree.PointColorType.RGB;
+	var pointShape = Potree.PointShape.SQUARE;
+	var interpolate = false;
+	
+	var pointcloudPath = "../resources/pointclouds/vol_total/cloud.js";
+	
+	// add EPSG:21781 to the proj4 projection database
+	proj4.defs('EPSG:21781', "+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=600000 +y_0=200000 +ellps=bessel +towgs84=674.4,15.1,405.3,0,0,0,0 +units=m +no_defs ");
+	var swiss = proj4.defs("EPSG:21781");
+	var WGS84 = proj4.defs("WGS84");
+	var webMercator = proj4.defs("EPSG:3857");
+	
+	// extent of the point cloud (with altitude) in EPSG:21781 / Swiss Coordinate System
+	var minSwiss = [589500, 231300, 722.505];
+	var maxSwiss = [590099, 231565.743, 776.459];
+	
+	// extent in EPSG:3857 / WGS84 Web Mercator 
+	var minWeb = proj4(swiss, webMercator, [minSwiss[0], minSwiss[1]]);
+	var maxWeb = proj4(swiss, webMercator, [maxSwiss[0], maxSwiss[1]]);
+	
+	// bounds of the EPSG:21781 projection 
+	//var swissMin = new THREE.Vector3(485869.5728,  76443.1884, 0);
+	//var swissMax = new THREE.Vector3(837076.5648, 299941.7864, 0);
+	
+	// OpenLayers3 stuff
+	var featureVector;
+	var camFrustumFeatureVector;
+	var camFrustum;
+	var visibleBounds;
+	
+	// three.js / potree stuff
+	var renderer;
+	var scene, sceneHUD;
+	var referenceFrame;
+	var camera, cameraHUD;
+	var skybox;
+	var pointcloud;
+	var clock = new THREE.Clock();
+	var showCoordinates = false;
+	var mouse = {x: 0, y: 0};
+	var elCoordinates = document.getElementById("lblCoordinates");
+	var showSkybox = true;
+	var elRenderArea = document.getElementById("renderArea");
+	var progressBar = new ProgressBar();
+	
+	// create a OpenLayers Map View
+	function initMapView(){
+	
+		{ // pointcloud extent layer
+			var extent = [minWeb[0], minWeb[1], maxWeb[0], maxWeb[1]];
+			var center = [(maxWeb[0] + minWeb[0]) / 2, (maxWeb[1] + minWeb[1]) / 2];
+			
+			// draw the extent as box inside the map view
+			var box = new ol.geom.LineString([
+				minWeb, [maxWeb[0], minWeb[1]], maxWeb, [minWeb[0], maxWeb[1]], minWeb
+			]);
+			
+			
+			var feature = new ol.Feature(box);
+			
+			featureVector = new ol.source.Vector({
+				features: [feature]
+			});
+			
+			var extentLayer = new ol.layer.Vector({
+				source: featureVector,
+				style: new ol.style.Style({
+				fill: new ol.style.Fill({
+				  color: 'rgba(255, 255, 255, 0.2)'
+				}),
+				stroke: new ol.style.Stroke({
+				  color: '#000000',
+				  width: 2
+				}),
+				image: new ol.style.Circle({
+				  radius: 3,
+				  fill: new ol.style.Fill({
+					color: '#000000'
+				  })
+				})
+			  })
+			});	
+		}
+		
+		{ // visible bounds layer
+			visibleBounds = new ol.geom.LineString([
+				minWeb, [maxWeb[0], minWeb[1]], maxWeb, [minWeb[0], maxWeb[1]], minWeb
+			]);
+			var visibleBoundsFeature = new ol.Feature(visibleBounds);
+			
+			var visibleBoundsLayer = new ol.layer.Vector({
+				source: featureVector,
+				style: new ol.style.Style({
+				fill: new ol.style.Fill({
+				  color: 'rgba(255, 255, 255, 0.2)'
+				}),
+				stroke: new ol.style.Stroke({
+				  color: '#0000ff',
+				  width: 2
+				}),
+				image: new ol.style.Circle({
+				  radius: 3,
+				  fill: new ol.style.Fill({
+					color: '#0000ff'
+				  })
+				})
+			  })
+			});	
+		}
+		
+		
+		{ // cam frustum layer
+			camFrustumFeatureVector = new ol.source.Vector({
+				features: []
+			});
+    
+			var camFrustumLayer = new ol.layer.Vector({
+				source: camFrustumFeatureVector,
+				style: new ol.style.Style({
+				fill: new ol.style.Fill({
+				  color: 'rgba(255, 255, 255, 0.2)'
+				}),
+				stroke: new ol.style.Stroke({
+				  color: '#000000',
+				  width: 2
+				}),
+				image: new ol.style.Circle({
+				  radius: 3,
+				  fill: new ol.style.Fill({
+					color: '#000000'
+				  })
+				})
+			  })
+			});	
+		}
+		
+		// create the map
+		var map = new ol.Map({
+			controls: ol.control.defaults({
+				attributionOptions: /** @type {olx.control.AttributionOptions} */ ({
+				collapsible: false
+				})
+			}).extend([
+				new ol.control.ZoomToExtent({
+					extent: extent,
+					closest: true
+				})
+			]),
+			layers: [
+				new ol.layer.Tile({
+					source: new ol.source.OSM()
+				}),
+				extentLayer,
+				visibleBoundsLayer,
+				camFrustumLayer
+			],
+			target: 'map',
+			view: new ol.View({
+				center: center,
+				zoom: 15
+			})
+		});
+		
+	}
+	
+	function initPotreeView(){
+		var near = 0.1;
+		var far = 1000000;
+		var fov = 60;
+		var width = elRenderArea.clientWidth;
+		var height = elRenderArea.clientHeight;
+		var aspect = width / height;
+		
+		// scenes
+		scene = new THREE.Scene();
+		sceneHUD = new THREE.Scene();
+		
+		// renderer
+		renderer = new THREE.WebGLRenderer();
+		renderer.setSize(width, height);
+		renderer.autoClear = false;
+		elRenderArea.appendChild(renderer.domElement);
+		
+		skybox = Potree.utils.loadSkybox("../resources/textures/skybox/");
+		
+		// cameras and controls
+		camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+		cameraHUD = new THREE.OrthographicCamera( -1, 1, 1, -1, -100, 1000 );
+		controls = new THREE.FirstPersonControls(camera, renderer.domElement);
+		camera.rotation.order = 'ZYX';
+		controls.moveSpeed *= 10;
+		camera.position.set(600, 880, -370);
+		camera.lookAt(new THREE.Vector3(480, 797, -219));
+
+		referenceFrame = new THREE.Object3D();
+		
+		// load pointcloud
+		var pco = POCLoader.load(pointcloudPath, function(geometry){
+			offset = geometry.offset;
+			pointcloud = new Potree.PointCloudOctree(geometry);
+			pointcloud.material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+			pointcloud.material.size = pointSize;
+			pointcloud.visiblePointsTarget = pointCountTarget * 1000 * 1000;
+			
+			// the reference frame transforms the point cloud into the scene coordinate system
+			// by moving it towards the origin and flipping the y and z axes.
+			// This is necessary to avoid precision errors due to large floating point values.
+			referenceFrame.add(pointcloud);
+
+			referenceFrame.updateMatrixWorld(true);
+			
+			referenceFrame.position.set(-pointcloud.position.x, -pointcloud.position.y, 0);
+			
+			referenceFrame.updateMatrixWorld(true);
+			referenceFrame.applyMatrix(new THREE.Matrix4().set(
+				1,0,0,0,
+				0,0,1,0,
+				0,-1,0,0,
+				0,0,0,1
+			));
+			scene.add(referenceFrame);
+		});
+		
+		renderer.domElement.addEventListener( 'mousemove', onMouseMove, false );
+	}
+	
+	/**
+	 * transform from geo coordinates to local scene coordinates
+	 */
+	function toLocal(position){
+		var scenePos = position.clone().applyMatrix4(referenceFrame.matrixWorld);
+		return scenePos;
+	}
+	
+	/**
+	 * transform from local scene coordinates to geo coordinates
+	 */
+	function toGeo(object){
+		var geo;
+		var inverse = new THREE.Matrix4().getInverse(referenceFrame.matrixWorld);
+		
+		if(object instanceof THREE.Vector3){	
+			geo = object.clone().applyMatrix4(inverse);
+		}else if(object instanceof THREE.Box3){
+			var geoMin = object.min.clone().applyMatrix4(inverse);
+			var geoMax = object.max.clone().applyMatrix4(inverse);
+			geo = new THREE.Box3(geoMin, geoMax);
+		}
+    
+		return geo;
+	}
+	
+	/**
+	 * create a dat.GUI widget that lets the user modify certain values
+	 */
+	function initGUI(){
+		var gui = new dat.GUI({
+			height : 5 * 32 - 1
+		});
+		
+		var params = {
+			"points(m)": pointCountTarget,
+			PointSize: pointSize,
+			"opacity": 1.0,
+			"SizeType" : "Adaptive",
+			"show octree" : false,
+			"Materials" : "RGB",
+			"interpolate": false,
+			"circles": false,
+			"coordinates": showCoordinates,
+			"skybox": true
+		};
+		
+		var pPoints = gui.add(params, 'points(m)', 0.02, 1);
+		pPoints.onChange(function(value){
+			pointCountTarget = value ;
+		});
+		
+		var pPointSize = gui.add(params, 'PointSize', 0, 50);
+		pPointSize.onChange(function(value){
+			pointSize = value;
+		});
+		
+		var pOpacity = gui.add(params, 'opacity', 0, 1);
+		pOpacity.onChange(function(value){
+			opacity = value;
+		});
+		
+		var pSizeType = gui.add(params, 'SizeType', [ "Fixed", "Attenuated", "Adaptive"]);
+		pSizeType.onChange(function(value){
+			if(value === "Fixed"){
+				pointSizeType = Potree.PointSizeType.FIXED;
+			}else if(value === "Attenuated"){
+				pointSizeType = Potree.PointSizeType.ATTENUATED;
+			}else if(value === "Adaptive"){
+				pointSizeType = Potree.PointSizeType.ADAPTIVE;
+			}
+		});
+		
+		var pMaterial = gui.add(params, 'Materials', [ "RGB", "Color", "Height", "Octree Depth"]);
+		pMaterial.onChange(function(value){
+			if(value === "RGB"){
+				pointColorType = Potree.PointColorType.RGB;
+			}else if(value === "Color"){
+				pointColorType = Potree.PointColorType.COLOR;
+			}else if(value === "Height"){
+				pointColorType = Potree.PointColorType.HEIGHT;
+			}else if(value === "Octree Depth"){
+				pointColorType = Potree.PointColorType.OCTREE_DEPTH;
+			}else if(value === "Point Index"){
+				pointColorType = Potree.PointColorType.POINT_INDEX;
+			}
+		});
+		
+		if(renderer.context.getExtension("EXT_frag_depth")){
+			var pInterpolate = gui.add(params, 'interpolate');
+			pInterpolate.onChange(function(value){
+				interpolate = value;
+			});
+		}
+		
+		var pCircular = gui.add(params, 'circles');
+		pCircular.onChange(function(value){
+			if(value){
+				pointShape = Potree.PointShape.CIRCLE;
+			}else{
+				pointShape = Potree.PointShape.SQUARE;
+			}
+		});
+		
+		var pCoordinates = gui.add(params, 'coordinates');
+		pCoordinates.onChange(function(value){
+			showCoordinates = value;
+		});
+		
+		var pSykbox = gui.add(params, 'skybox');
+		pSykbox.onChange(function(value){
+			showSkybox = value;
+		});
+	}
+	
+	function update(){
+		controls.update(clock.getDelta());
+		
+		if(pointcloud){
+			pointcloud.material.size = pointSize;
+			pointcloud.visiblePointsTarget = pointCountTarget * 1000 * 1000;
+			pointcloud.material.opacity = opacity;
+			pointcloud.material.pointSizeType = pointSizeType;
+			pointcloud.material.pointColorType = pointColorType;
+			pointcloud.material.pointShape = pointShape;
+			pointcloud.material.interpolate = interpolate;
+			pointcloud.material.heightMin = 710;
+			pointcloud.material.heightMax = 770;
+		
+			pointcloud.update(camera, renderer);
+			updateMapFrustum();
+			updateCoordinatePicking();
+			updateMapExtent();
+			updateProgressBar();
+		}
+	}
+	
+	function updateProgressBar(){
+		if(pointcloud){
+			var progress = pointcloud.visibleNodes.length / pointcloud.visibleGeometry.length;
+			
+			progressBar.progress = progress;
+			progressBar.message = "loading: " + pointcloud.visibleNodes.length + " / " + pointcloud.visibleGeometry.length;
+			
+			if(progress === 1){
+				progressBar.hide();
+			}else if(progress < 1){
+				progressBar.show();
+			}
+		}else{
+			progressBar.show();
+			progressBar.message = "loading metadata";
+		}
+	}
+	
+	/**
+	 * update the frustum in the map window according to the camera
+	 */
+	function updateMapFrustum(){
+		if(camFrustum === undefined){
+			camFrustum = new ol.geom.LineString([ [0,0], [0, 0] ]);
+			var feature = new ol.Feature(camFrustum);
+			camFrustumFeatureVector.addFeature(feature);
+		}
+	
+		var aspect = camera.aspect;
+		var top = Math.tan( THREE.Math.degToRad( camera.fov * 0.5 ) ) * camera.near;
+		var bottom = - top;
+		var left = aspect * bottom;
+		var right = aspect * top;
+		
+		var camPos = new THREE.Vector3(0, 0, 0);
+		left = new THREE.Vector3(left, 0, -camera.near).multiplyScalar(3000);
+		right = new THREE.Vector3(right, 0, -camera.near).multiplyScalar(3000);
+		camPos.applyMatrix4(camera.matrixWorld);
+		left.applyMatrix4(camera.matrixWorld);
+		right.applyMatrix4(camera.matrixWorld);
+		
+		camPos = toGeo(camPos);
+		left = toGeo(left);
+		right = toGeo(right);
+		
+		camPos = proj4(swiss, webMercator, [camPos.x, camPos.y]);
+		left = proj4(swiss, webMercator, [left.x, left.y]);
+		right = proj4(swiss, webMercator, [right.x, right.y]);
+		
+		camFrustum.setCoordinates([camPos, left, right, camPos]);
+	}
+	
+	
+	/**
+	 * update the coordinate display if the "coordinates" checkbox is checked
+	 */
+	function updateCoordinatePicking(){
+		if(showCoordinates){
+			
+			var I = getMousePointCloudIntersection();
+			if(I){
+				
+				var sceneCoordinates = I;
+				var geoCoordinates = toGeo(sceneCoordinates);
+				
+				var msg = "EPSG:21781: " + geoCoordinates.x.toFixed(2) + " / ";
+				msg += geoCoordinates.y.toFixed(2) + " / ";
+				msg += geoCoordinates.z.toFixed(2);
+				msg += "  -  sceneCoordinates: " + sceneCoordinates.x.toFixed(2) + " / ";
+				msg += sceneCoordinates.y.toFixed(2) + " / ";
+				msg += sceneCoordinates.z.toFixed(2);
+				
+				elCoordinates.innerHTML = msg;
+			}
+		}else{
+			elCoordinates.innerHTML = "";
+		}
+	}
+	
+	/**
+	 * update the map extent in the map window
+	 */
+	function updateMapExtent(){
+		var geoExtent = toGeo(pointcloud.getVisibleExtent());
+		
+		geoMin = proj4(swiss, webMercator, [geoExtent.min.x, geoExtent.min.y]);
+		geoMax = proj4(swiss, webMercator, [geoExtent.max.x, geoExtent.max.y]);
+		
+		visibleBounds.setCoordinates([
+			geoMin,
+			[geoMax[0], geoMin[1]],
+			geoMax,
+			[geoMin[0], geoMax[1]],
+			geoMin
+		]);
+	}
+	
+	function getMousePointCloudIntersection(){
+		var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
+		vector.unproject(camera);
+		var direction = vector.sub(camera.position).normalize();
+		var ray = new THREE.Ray(camera.position, direction);
+		
+		var pointClouds = [];
+		scene.traverse(function(object){
+			if(object instanceof Potree.PointCloudOctree){
+				pointClouds.push(object);
+			}
+		});
+		
+		var closestPoint = null;
+		var closestPointDistance = null;
+		
+		for(var i = 0; i < pointClouds.length; i++){
+			var pointcloud = pointClouds[i];
+			var point = pointcloud.pick(renderer, camera, ray, {accuracy: 0.5});
+			
+			if(!point){
+				continue;
+			}
+			
+			var distance = camera.position.distanceTo(point.position);
+			
+			if(!closestPoint || distance < closestPointDistance){
+				closestPoint = point;
+				closestPointDistance = distance;
+			}
+		}
+		
+		return closestPoint ? closestPoint.position : null;
+	}
+	
+	function render(){
+		// resize 
+		var width = elRenderArea.clientWidth;
+		var height = elRenderArea.clientHeight;
+		var aspect = width / height;
+		
+		camera.aspect = aspect;
+		camera.updateProjectionMatrix();
+		
+		renderer.setSize(width, height);
+		
+		// render skybox
+		if(showSkybox){
+			skybox.camera.rotation.copy(camera.rotation);
+			renderer.render(skybox.scene, skybox.camera);
+		}
+		
+		
+		// render scenes
+		renderer.render(scene, camera);
+		renderer.render(sceneHUD, cameraHUD);
+		
+	}
+	
+	function onMouseMove(event){
+		mouse.x = ( event.clientX / renderer.domElement.clientWidth ) * 2 - 1;
+		mouse.y = - ( event.clientY / renderer.domElement.clientHeight ) * 2 + 1;
+	};
+	
+	function loop(){
+		requestAnimationFrame(loop);
+	
+		update();
+		render();
+	}
+	
+	initMapView();
+	initPotreeView();
+	initGUI();
+	loop();
+
+    </script>
+  </body>
+</html>

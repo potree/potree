@@ -1,10 +1,13 @@
 
-Potree.BinaryLoader = function(version){
+Potree.BinaryLoader = function(version, boundingBox, scale){
 	if(typeof(version) === "string"){
 		this.version = new Potree.Version(version);
 	}else{
 		this.version = version;
 	}
+	
+	this.boundingBox = boundingBox;
+	this.scale = scale;
 };
 
 Potree.BinaryLoader.prototype.newerVersion = function(version){
@@ -56,14 +59,21 @@ Potree.BinaryLoader.prototype.parse = function(node, buffer){
 	var color = new THREE.Color();
 	
 	var fView = new Float32Array(buffer);
+	var iView = new Int32Array(buffer);
 	var uiView = new Uint8Array(buffer);
 	
 	var iIndices = new Uint32Array(indices);
 	
 	for(var i = 0; i < numPoints; i++){
-		positions[3*i+0] = fView[4*i+0] + node.pcoGeometry.offset.x;
-		positions[3*i+1] = fView[4*i+1] + node.pcoGeometry.offset.y;
-		positions[3*i+2] = fView[4*i+2] + node.pcoGeometry.offset.z;
+		if(this.version.newerThan("1.3")){
+			positions[3*i+0] = (iView[4*i+0] * this.scale) + node.boundingBox.min.x;
+			positions[3*i+1] = (iView[4*i+1] * this.scale) + node.boundingBox.min.y;
+			positions[3*i+2] = (iView[4*i+2] * this.scale) + node.boundingBox.min.z;
+		}else{
+			positions[3*i+0] = fView[4*i+0] + node.pcoGeometry.offset.x;
+			positions[3*i+1] = fView[4*i+1] + node.pcoGeometry.offset.y;
+			positions[3*i+2] = fView[4*i+2] + node.pcoGeometry.offset.z;
+		}
 		
 		color.setRGB(uiView[16*i+12], uiView[16*i+13], uiView[16*i+14]);
 		colors[3*i+0] = color.r / 255;

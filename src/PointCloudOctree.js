@@ -61,8 +61,10 @@ Potree.PointCloudOctree = function(geometry, material){
 	Potree.PointCloudOctree.lru = Potree.PointCloudOctree.lru || new LRU();
 	
 	this.pcoGeometry = geometry;
-	this.boundingBox = this.pcoGeometry.root.boundingBox;
+	this.boundingBox = this.pcoGeometry.tightBoundingBox;
 	this.boundingSphere = this.boundingBox.getBoundingSphere();
+	//this.boundingBox = this.pcoGeometry.root.boundingBox;
+	//this.boundingSphere = this.boundingBox.getBoundingSphere();
 	this.material = material || new Potree.PointCloudMaterial();
 	this.visiblePointsTarget = 2*1000*1000;
 	this.level = 0;
@@ -73,6 +75,7 @@ Potree.PointCloudOctree = function(geometry, material){
 	this.LODFalloff = 1.3;
 	this.LOD = 4;
 	this.showBoundingBox = false;
+	this.boundingBoxNodes = [];
 	this.loadQueue = [];
 	this.visibleBounds = new THREE.Box3();	
 	this.profileRequests = [];
@@ -101,6 +104,10 @@ Potree.PointCloudOctree.prototype.update = function(camera, renderer){
 	for(var i = 0; i < this.profileRequests.length; i++){
 		var profileRequest = this.profileRequests[i];
 		profileRequest.loadQueue = [];
+	}
+	
+	for(var i = 0; i < this.boundingBoxNodes.length; i++){
+		this.boundingBoxNodes[i].visible = false;
 	}
 	
 	this.loadQueue = [];
@@ -145,11 +152,17 @@ Potree.PointCloudOctree.prototype.update = function(camera, renderer){
 				this.maxLevel = Math.max(node.level, this.maxLevel);
 			}
 			
-			//if(!node.boundingBoxNode){
-			//	var boxHelper = new THREE.BoxHelper(node);
-			//	scene.add(boxHelper);
-			//	node.boundingBoxNode = boxHelper;
-			//}
+			if(this.showBoundingBox && !node.boundingBoxNode){
+				var boxHelper = new THREE.BoxHelper(node);
+				scene.add(boxHelper);
+				this.boundingBoxNodes.push(boxHelper);
+				node.boundingBoxNode = boxHelper;
+			}else if(this.showBoundingBox){
+				node.boundingBoxNode.visible = true;
+				node.boundingBoxNode.matrixWorld.multiplyMatrices( node.parent.matrixWorld, node.boundingBoxNode.matrix );
+			}else if(!this.showBoundingBox && node.boundingBoxNode){
+				node.boundingBoxNode.visible = false;
+			}
 			
 			for(var i = 0; i < node.children.length; i++){
 				var child = node.children[i];
@@ -278,7 +291,7 @@ Potree.PointCloudOctree.prototype.update = function(camera, renderer){
 	
 	this.hideDescendants(this.children[0]);
 	for(var i = 0; i < this.visibleNodes.length; i++){
-		this.visibleNodes[i].node.visible = true
+		this.visibleNodes[i].node.visible = true;
 	}
 	
 	if(this.material.pointSizeType){
@@ -333,8 +346,8 @@ Potree.PointCloudOctree.prototype.getVisibleGeometry = function(camera){
 		var insideFrustum = frustum.intersectsBox(box);
 	
 		
-		var visible = insideFrustum; // && node.level <= 1;
-		//visible = visible && "r2".indexOf(node.name) === 0;
+		var visible = insideFrustum; // && node.level <= 3;
+		//visible = visible && "r7".indexOf(node.name) === 0;
 		
 		if(!visible){
 			continue;
@@ -421,6 +434,8 @@ Potree.PointCloudOctree.prototype.updateVisibilityTexture = function(){
 	}
 	
 	
+	
+	
 	// sort by level and index, e.g. r, r0, r3, r4, r01, r07, r30, ...
 	var sort = function(a, b){
 		var na = a.name;
@@ -431,6 +446,22 @@ Potree.PointCloudOctree.prototype.updateVisibilityTexture = function(){
 		return 0;
 	};
 	visibleNodes.sort(sort);
+	
+	//var r = [];
+	//for(var i = 0; i < visibleNodes.length; i++){
+	//	var node = visibleNodes[i];
+	//	
+	//	if(node.level < 2){
+	//		r.push(node);
+	//	}else{
+	//	
+	//	ß0
+	//	
+	//	//if(node.numPoints > 5000){
+	//	//	r.push(node);
+	//	//}
+	//}
+	//visibleNodes = r;
 	
 	for(var i = 0; i < visibleNodes.length; i++){
 		var node = visibleNodes[i];
@@ -464,7 +495,7 @@ Potree.PointCloudOctree.prototype.updateVisibilityTexture = function(){
 	}
 	
 	
-	this.material.uniforms.nodeSize.value = this.boundingBox.size().x;
+	this.material.uniforms.nodeSize.value = this.pcoGeometry.boundingBox.size().x;
 	texture.needsUpdate = true;
 }
 
@@ -591,6 +622,20 @@ Potree.PointCloudOctree.prototype.getBoundingBoxWorld = function(){
 	
 	return tBox;
 }
+
+Potree.PointCloudOctree.prototype.getPointsInProfile = function(profile, maxDepth){
+	var points = [];
+	for(var i = 0; i < profile.points.length - 1; i++){
+		var start = profile.points[i];
+		var end = profile.points[i+1];
+		var ps = pointcloud.getProfile(start, end, profile.width, maxDepth);
+		for(var j = 0; j < ps.length; j++){
+			points.push(ps[j]);
+		}
+	}
+	
+	return points;
+};
 
 Potree.PointCloudOctree.prototype.getProfile = function(start, end, width, depth, callback){
 	if(callback !== undefined){

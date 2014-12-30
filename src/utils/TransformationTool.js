@@ -93,7 +93,6 @@ Potree.TransformationTool = function(scene, camera, renderer){
 		this.rotationNode.add(zHandle);
 		
 		
-		
 		var sg = new THREE.SphereGeometry(2.9, 24, 24);
 		var sphere = new THREE.Mesh(sg, new THREE.MeshBasicMaterial({color: 0xaaaaaa, transparent: true, opacity: 0.4}));
 		
@@ -101,14 +100,10 @@ Potree.TransformationTool = function(scene, camera, renderer){
 		
 		var moveEvent = function(event){
 			sphere.material.color.setHex(0x555555);
-			//sphere.material.emissive.setHex(0x555555);
-			//sphere.material.opacity = 0.2;
 		};
 		
 		var leaveEvent = function(event){
 			sphere.material.color.setHex(0xaaaaaa);
-			//sphere.material.emissive.setHex(0x000000);
-			//sphere.material.opacity = 0.3;
 		};
 		
 		var dragEvent = function(event){
@@ -138,9 +133,6 @@ Potree.TransformationTool = function(scene, camera, renderer){
 				target.quaternion.multiplyQuaternions( q, target.quaternion );
 
 			}
-			
-			
-			//console.log(mouseDiff);
 		};
 		
 		var dropEvent = function(event){
@@ -167,11 +159,30 @@ Potree.TransformationTool = function(scene, camera, renderer){
 	var sph1, sph2, sph3;
 	
 	this.createRotationCircle = function(partID, color){
-		var geometry = new THREE.TorusGeometry(3, 0.1, 12, 48);
-		//var material = new THREE.MeshBasicMaterial({color: color, depthTest: false, depthWrite: false});
-		var material = new THREE.MeshBasicMaterial({color: color});
+		//var geometry = new THREE.TorusGeometry(3, 0.1, 12, 48);
+		//var material = new THREE.MeshBasicMaterial({color: color});
+		//
+		//var ring = new THREE.Mesh(geometry, material);
 		
-		var ring = new THREE.Mesh(geometry, material);
+		var vertices = [];
+		var segments = 128;
+		for(var i = 0; i <= segments; i++){
+			var u = (2 * Math.PI * i) / segments;
+			var x = 3 * Math.cos(u);
+			var y = 3 * Math.sin(u);
+			
+			vertices.push(new THREE.Vector3(x, y, 0));
+		}
+		var geometry = new THREE.Geometry();
+		for(var i = 0; i < vertices.length; i++){
+			geometry.vertices.push(vertices[i]);
+		}
+		var material = new THREE.LineBasicMaterial({color: color});
+		var ring = new THREE.Line( geometry, material);
+		ring.mode = THREE.LineStrip;
+		ring.scale.set(1, 1, 1);
+		//this.rotationNode.add(ring);
+		
 		
 		var moveEvent = function(event){
 			material.color.setRGB(1, 1, 0);
@@ -273,9 +284,11 @@ Potree.TransformationTool = function(scene, camera, renderer){
 		box.scale.set(0.3, 0.3, 0.3);
 		box.position.set(0, 3, 0);
 		
-		var shaft = new THREE.Mesh(boxGeometry, material);
-		shaft.scale.set(0.05, 3, 0.05);
-		shaft.position.set(0, 1.5, 0);
+		var shaftGeometry = new THREE.Geometry();
+		shaftGeometry.vertices.push(new THREE.Vector3(0, 0, 0));
+		shaftGeometry.vertices.push(new THREE.Vector3(0, 3, 0));
+		var shaftMaterial = new THREE.LineBasicMaterial({color: color, depthTest: false, depthWrite: false});
+		var shaft = new THREE.Line(shaftGeometry, shaftMaterial);
 		
 		var handle = new THREE.Object3D();
 		handle.add(box);
@@ -285,10 +298,12 @@ Potree.TransformationTool = function(scene, camera, renderer){
 		
 		
 		var moveEvent = function(event){
+			shaftMaterial.color.setRGB(1, 1, 0);
 			material.color.setRGB(1, 1, 0);
 		};
 		
 		var leaveEvent = function(event){
+			shaftMaterial.color.setHex(color);
 			material.color.setHex(color);
 		};
 		
@@ -323,10 +338,6 @@ Potree.TransformationTool = function(scene, camera, renderer){
 			pointOnLine.unproject(scope.camera);
 			
 			var diff = scope.sceneRoot.position.clone().sub(pointOnLine);
-			//var offset = sceneClickPos.clone().sub(scope.dragstart.sceneStartPos);
-			//scope.sceneRoot.position.copy(pointOnLine);
-			//diff.sub(scope.sceneRoot.position);
-			
 			diff.multiply(new THREE.Vector3(-1, -1, 1)).addScalar(1);
 			
 			for(var i = 0; i < scope.targets.length; i++){
@@ -336,7 +347,6 @@ Potree.TransformationTool = function(scene, camera, renderer){
 				target.scale.x = Math.max(target.scale.x, 0.01);
 				target.scale.y = Math.max(target.scale.y, 0.01);
 				target.scale.z = Math.max(target.scale.z, 0.01);
-//				target.scale.sub(diff);
 			}
 
 			event.event.stopImmediatePropagation();
@@ -351,6 +361,10 @@ Potree.TransformationTool = function(scene, camera, renderer){
 		box.addEventListener("mouseleave", leaveEvent);
 		box.addEventListener("mousedrag", dragEvent);
 		box.addEventListener("drop", dropEvent);
+		shaft.addEventListener("mousemove", moveEvent);
+		shaft.addEventListener("mouseleave", leaveEvent);
+		shaft.addEventListener("mousedrag", dragEvent);
+		shaft.addEventListener("drop", dropEvent);
 		
 		return handle;
 	};
@@ -358,10 +372,18 @@ Potree.TransformationTool = function(scene, camera, renderer){
 	this.createArrow = function(partID, color){
 		var material = new THREE.MeshBasicMaterial({color: color, depthTest: false, depthWrite: false});
 		
-		var shaftGeometry = new THREE.CylinderGeometry(0.05, 0.05, 3, 10, 1, false);
-		var shaftMaterial  = material;
-		var shaft = new THREE.Mesh(shaftGeometry, shaftMaterial);
-		shaft.position.y = 1.5;
+		//var shaftGeometry = new THREE.CylinderGeometry(0.05, 0.05, 3, 10, 1, false);
+		//var shaftMaterial  = material;
+		//var shaft = new THREE.Mesh(shaftGeometry, shaftMaterial);
+		//shaft.position.y = 1.5;
+		
+		var shaftGeometry = new THREE.Geometry();
+		shaftGeometry.vertices.push(new THREE.Vector3(0, 0, 0));
+		shaftGeometry.vertices.push(new THREE.Vector3(0, 3, 0));
+		var shaftMaterial = new THREE.LineBasicMaterial({color: color, depthTest: false, depthWrite: false});
+		var shaft = new THREE.Line(shaftGeometry, shaftMaterial);
+		
+		
 		
 		var headGeometry = new THREE.CylinderGeometry(0, 0.2, 0.5, 10, 1, false);
 		var headMaterial  = material;
@@ -375,10 +397,12 @@ Potree.TransformationTool = function(scene, camera, renderer){
 		arrow.material = material;
 		
 		var moveEvent = function(event){
+			headMaterial.color.setRGB(1, 1, 0);
 			shaftMaterial.color.setRGB(1, 1, 0);
 		};
 		
 		var leaveEvent = function(event){
+			headMaterial.color.set(color);
 			shaftMaterial.color.set(color);
 		};
 		
@@ -510,6 +534,11 @@ Potree.TransformationTool = function(scene, camera, renderer){
 			if(I){
 				var object = I.object;
 				
+				//var g = new THREE.SphereGeometry(2);
+				//var m = new THREE.Mesh(g);
+				//scope.scene.add(m);
+				//m.position.copy(I.point);
+				
 				object.dispatchEvent({type: "mousemove", event: event});
 				
 				if(scope.hoveredElement && scope.hoveredElement !== object){
@@ -580,6 +609,7 @@ Potree.TransformationTool = function(scene, camera, renderer){
 		
 		var raycaster = new THREE.Raycaster();
 		raycaster.ray.set( scope.camera.position, vector.sub( scope.camera.position ).normalize() );
+		raycaster.linePrecision = 0.2;
 		
 		var objects = [];
 		if(scope.translationNode.visible){
@@ -592,6 +622,17 @@ Potree.TransformationTool = function(scene, camera, renderer){
 		}
 		
 		var intersections = raycaster.intersectObjects(objects, true);
+		
+		// recalculate distances because they are not necessarely correct
+		// for scaled objects.
+		// see https://github.com/mrdoob/three.js/issues/5827
+		// TODO: remove this once the bug has been fixed
+		for(var i = 0; i < intersections.length; i++){
+			var I = intersections[i];
+			I.distance = scope.camera.position.distanceTo(I.point);
+		}
+		intersections.sort( function ( a, b ) { return a.distance - b.distance;} );
+		
 		if(intersections.length > 0){
 			return intersections[0];
 		}else{
@@ -638,6 +679,10 @@ Potree.TransformationTool = function(scene, camera, renderer){
 		var pp = new THREE.Vector4(wp.x, wp.y, wp.z).applyMatrix4(camera.projectionMatrix);
 		var w = Math.abs((wp.z  / 20)); // * (2 - pp.z / pp.w);
 		node.scale.set(w, w, w);
+		
+		if(this.targets && this.targets.length === 1){
+			this.scaleNode.rotation.copy(this.targets[0].rotation);
+		}
 		
 		this.sceneRotation.scale.set(w,w,w);
 	};

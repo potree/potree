@@ -1,20 +1,20 @@
 
-# README
+# Documentation
 
-* [Getting Started](./docs/getting_started.md)
-* [Changelog](./docs/changelog.md)
-* [User Interface](./docs/user_interface.md)
-* [Converting Point Clouds](./docs/converting.md)
-* [FAQ](./docs/faq.md)
-* [Measuring](./docs/measuring.md)
-* [File Format](./docs/file_format.md)
+* [Getting Started](getting_started.md)
+* [Changelog](changelog.md)
+* [User Interface](user_interface.md)
+* [Converting Point Clouds](converting.md)
+* [FAQ](faq.md)
+* [Measuring](measuring.md)
+* [File Format](file_format.md)
 
 ## About
 
 Potree is a free open-source WebGL based point cloud renderer for large point clouds.
 Similar to map software like Google Maps or OpenStreeMap, only data inside the visible area and up to a certain level of detail are loaded.
 
-![](./docs/images/potree_screens.png)
+![](./images/potree_screens.png)
 
 At the moment, this project is continued as master thesis under the [Harvest4D Project](https://harvest4d.org/)
 

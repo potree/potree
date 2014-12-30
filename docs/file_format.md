@@ -36,10 +36,10 @@ indicate which child it is.
 
 Child nodes are arranged like this:
 
-				  3----7
-				 /|   /|
-    y 			2----6 |
-    | -z		| 1--|-5
+				    3----7
+			  	 /|   /|
+    y 	    	2----6 |
+    | -z	  	| 1--|-5
     |/			|/   |/
     O----x		0----4
 
@@ -54,7 +54,8 @@ Stores information about the pointcloud in JSON format.
 necessary so that parsers know how to interpret the data.
 * __octreeDir__ - Directory or URL where node data is stored. Usually points to
 "data".
-* __boundingBox__ - Contains the minimum and maximum of the axis aligned bounding box.
+* __boundingBox__ - Contains the minimum and maximum of the axis aligned bounding box. This bounding box is cubic and aligned to fit to the octree root.
+* __tightBoundingBox__ - This bounding box thightly fits the point data.
 * __pointAttributes__ - Declares the point data format.
  As of now, only ["POSITION_CARTESIAN", "COLOR_PACKED"] is supported which
  stores each point in 16 bytes. The first 12 bytes contain x/y/z coordinates and
@@ -96,6 +97,6 @@ The nodes must be stored top to bottom, i.e. root at the beginning and leaf-node
 
 The node files in the data directory contain the point data.
 With point attributes set to "POSITION_CARTESIAN" and "COLOR_PACKED",
-each point will be stored as 3x32bit floats for the xyz-coordinates and 4 unsigned bytes to store
+each point will be stored as 3x32bit signed integers for the xyz-coordinates and 4 unsigned bytes to store
 rgba data. All data is stored in little endian order.
 Other formats are not supported at the moment.

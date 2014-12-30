@@ -344,9 +344,6 @@ void main() {
 			camera.rotation.x = -Math.PI / 6;
 			useOrbitControls();
 			
-			
-			controls.moveSpeed *= 10;
-			
 			// enable frag_depth extension for the interpolation shader, if available
 			renderer.context.getExtension("EXT_frag_depth");
 			
@@ -366,9 +363,7 @@ void main() {
 				referenceFrame.position.copy(sg.center).multiplyScalar(-1);
 				referenceFrame.updateMatrixWorld(true);
 				
-				controls.moveSpeed = pointcloud.boundingSphere.radius / 2;
-				
-				camera.zoomTo(pointcloud, 1.2);
+				camera.zoomTo(pointcloud, 1);
 				
 				flipYZ();
 				
@@ -572,6 +567,8 @@ void main() {
 	
 			controls = fpControls;
 			controls.enabled = true;
+			
+			controls.moveSpeed = pointcloud.boundingSphere.radius / 2;
 		}
 		
 		function useOrbitControls(){

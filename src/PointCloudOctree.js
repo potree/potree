@@ -171,6 +171,7 @@ Potree.PointCloudOctree.prototype.update = function(camera, renderer){
 					for(var j = 0; j < this.visibleGeometry.length; j++){
 						if(this.visibleGeometry[j].node.name === child.name){
 							stack.push({node: child, weight: this.visibleGeometry[j].weight});
+							break;
 						}
 					};
 				}

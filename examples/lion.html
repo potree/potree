@@ -187,16 +187,19 @@ void main() {
 			var pPoints = gui.add(params, 'points(m)', 0.02, 2);
 			pPoints.onChange(function(value){
 				pointCountTarget = value ;
+				raf();
 			});
 			
 			var pPointSize = gui.add(params, 'PointSize', 0, 3);
 			pPointSize.onChange(function(value){
 				pointSize = value;
+				raf();
 			});
 			
 			var pOpacity = gui.add(params, 'opacity', 0, 1);
 			pOpacity.onChange(function(value){
 				opacity = value;
+				raf();
 			});
 			
 			var pSizeType = gui.add(params, 'SizeType', [ "Fixed", "Attenuated", "Adaptive"]);
@@ -208,6 +211,7 @@ void main() {
 				}else if(value === "Adaptive"){
 					pointSizeType = Potree.PointSizeType.ADAPTIVE;
 				}
+				raf();
 			});
 			
 			var options = [];
@@ -243,11 +247,13 @@ void main() {
 				}else if(value === "Point Index"){
 					pointColorType = Potree.PointColorType.POINT_INDEX;
 				}
+				raf();
 			});
 			
 			var pQuality = gui.add(params, 'quality', [ "Normal", "Circles", "Interpolation", "Splats"]);
 			pQuality.onChange(function(value){
 				quality = value;
+				raf();
 			});
 			
 			var pClipMode = gui.add(params, 'Clip Mode', [ "No Clipping", "Clip Outside", "Highlight Inside"]);
@@ -259,21 +265,25 @@ void main() {
 				}else if(value === "Highlight Inside"){
 					clipMode = Potree.ClipMode.HIGHLIGHT_INSIDE;
 				}
+				raf();
 			});
 			
 			var pSykbox = gui.add(params, 'skybox');
 			pSykbox.onChange(function(value){
 				showSkybox = value;
+				raf();
 			});
 			
 			var pStats = gui.add(params, 'stats');
 			pStats.onChange(function(value){
 				showStats = value;
+				raf();
 			});
 			
 			var pBoundingBox = gui.add(params, 'BoundingBox');
 			pBoundingBox.onChange(function(value){
 				showBoundingBox = value;
+				raf();
 			});
 
 			// stats
@@ -347,6 +357,7 @@ void main() {
 				
 				initGUI();
 				useOrbitControls();
+				waitPointCloud();
 			});
 			
 			var grid = Potree.utils.createGrid(5, 5, 2);
@@ -560,6 +571,7 @@ void main() {
 			}
 			if(!orbitControls){
 				orbitControls = new THREE.OrbitControls(camera, renderer.domElement);
+				orbitControls.addEventListener('change',raf);
 			}
 			
 			controls = orbitControls;
@@ -570,7 +582,8 @@ void main() {
 			}
 		}
 		
-		function render(){
+
+		function resize(){
 			// resize
 			var width = elRenderArea.clientWidth;
 			var height = elRenderArea.clientHeight;
@@ -581,7 +594,13 @@ void main() {
 			
 			renderer.setSize(width, height);
 			
+			raf();
+		}
+
+		window.onresize=resize;
 		
+
+		function render(){
 			// render skybox
 			if(showSkybox){
 				skybox.camera.rotation.copy(camera.rotation);
@@ -759,9 +778,7 @@ void main() {
 		
 		}
 		
-		function loop() {
-			requestAnimationFrame(loop);
-			
+		function drawscene() {
 			update();
 			
 			if(quality === "Splats"){
@@ -776,7 +793,19 @@ void main() {
 		
 		initThree();
 		//initGUI();
-		loop();
+
+		function raf() {
+			requestAnimationFrame(drawscene);
+		}
+
+		function waitPointCloud(){
+			update();
+			if (!pointcloud.visibleNodes.length || pointcloud.visibleNodes.length != pointcloud.numVisibleNodes) {
+				setTimeout(waitPointCloud,150);
+			}
+			// pointcloud ready !
+			raf();
+		}
 		
 	</script>
 	

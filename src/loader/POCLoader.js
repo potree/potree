@@ -17,76 +17,97 @@ function POCLoader(){
  * @param url
  * @param loadingFinishedListener executed after loading the binary has been finished
  */
-POCLoader.load = function load(url, params) {
-	var parameters = params || {};
-	var toOrigin = parameters.toOrigin || false;
-
+POCLoader.load = function load(url, callback) {
 	try{
 		var pco = new Potree.PointCloudOctreeGeometry();
 		pco.url = url;
 		var xhr = new XMLHttpRequest();
-		xhr.open('GET', url, false);
-		xhr.send(null);
-		if(xhr.status === 200 || xhr.status === 0){
-			var fMno = JSON.parse(xhr.responseText);
-			if(Potree.utils.pathExists(fMno.octreeDir + "/r")){
-				pco.octreeDir = fMno.octreeDir;
-			}else{
-				pco.octreeDir = url + "/../" + fMno.octreeDir;
-			}
-			
-			pco.spacing = fMno.spacing;
+		xhr.open('GET', url, true);
+		
+		xhr.onreadystatechange = function(){
+			if(xhr.readyState === 4 && (xhr.status === 200 || xhr.status === 0)){
+				var fMno = JSON.parse(xhr.responseText);
+				
+				// assume octreeDir is absolute if it starts with http
+				if(fMno.octreeDir.indexOf("http") === 0){
+					pco.octreeDir = fMno.octreeDir;
+				}else{
+					pco.octreeDir = url + "/../" + fMno.octreeDir;
+				}
+				
+				pco.spacing = fMno.spacing;
 
-			pco.pointAttributes = fMno.pointAttributes;
-			
-			var min = new THREE.Vector3(fMno.boundingBox.lx, fMno.boundingBox.ly, fMno.boundingBox.lz);
-			var max = new THREE.Vector3(fMno.boundingBox.ux, fMno.boundingBox.uy, fMno.boundingBox.uz);
-			var boundingBox = new THREE.Box3(min, max);
-			var offset = new THREE.Vector3(0,0,0);
-			
-			if(toOrigin){
+				pco.pointAttributes = fMno.pointAttributes;
+				
+				var min = new THREE.Vector3(fMno.boundingBox.lx, fMno.boundingBox.ly, fMno.boundingBox.lz);
+				var max = new THREE.Vector3(fMno.boundingBox.ux, fMno.boundingBox.uy, fMno.boundingBox.uz);
+				var boundingBox = new THREE.Box3(min, max);
+				var tightBoundingBox = boundingBox.clone();
+					
+				if(fMno.tightBoundingBox){
+					tightBoundingBox.min.copy(new THREE.Vector3(fMno.tightBoundingBox.lx, fMno.tightBoundingBox.ly, fMno.tightBoundingBox.lz));
+					tightBoundingBox.max.copy(new THREE.Vector3(fMno.tightBoundingBox.ux, fMno.tightBoundingBox.uy, fMno.tightBoundingBox.uz));
+				}
+				var offset = new THREE.Vector3(0,0,0);
+				
 				offset.set(-min.x, -min.y, -min.z);
+				
 				boundingBox.min.add(offset);
 				boundingBox.max.add(offset);
-			}
-			pco.boundingBox = boundingBox;
-			pco.offset = offset;
-			
-			var nodes = {};
-			
-			{ // load root
-				var name = "r";
 				
-				var root = new Potree.PointCloudOctreeGeometryNode(name, pco, boundingBox);
-				root.level = 0;
-				root.numPoints = fMno.hierarchy[0][1];
-				pco.root = root;
-				pco.root.load();
-				nodes[name] = root;
-			}
-			
-			// load remaining hierarchy
-			for( var i = 1; i < fMno.hierarchy.length; i++){
-				var name = fMno.hierarchy[i][0];
-				var numPoints = fMno.hierarchy[i][1];
-				var index = parseInt(name.charAt(name.length-1));
-				var parentName = name.substring(0, name.length-1);
-				var parentNode = nodes[parentName];
-				var level = name.length-1;
-				var boundingBox = POCLoader.createChildAABB(parentNode.boundingBox, index);
+				tightBoundingBox.min.add(offset);
+				tightBoundingBox.max.add(offset);
 				
-				var node = new Potree.PointCloudOctreeGeometryNode(name, pco, boundingBox);
-				node.level = level;
-				node.numPoints = numPoints;
-				parentNode.addChild(node);
-				nodes[name] = node;
+				pco.boundingBox = boundingBox;
+				pco.tightBoundingBox = tightBoundingBox;
+				pco.boundingSphere = boundingBox.getBoundingSphere();
+				pco.tightBoundingSphere = tightBoundingBox.getBoundingSphere();
+				pco.offset = offset;
+				if(fMno.pointAttributes === "LAS"){
+					pco.loader = new Potree.LasLazLoader(fMno.version);
+				}else if(fMno.pointAttributes === "LAZ"){
+					pco.loader = new Potree.LasLazLoader(fMno.version);
+				}else{
+					pco.loader = new Potree.BinaryLoader(fMno.version, boundingBox, fMno.scale);
+				}
+				
+				var nodes = {};
+				
+				{ // load root
+					var name = "r";
+					
+					var root = new Potree.PointCloudOctreeGeometryNode(name, pco, boundingBox);
+					root.level = 0;
+					root.numPoints = fMno.hierarchy[0][1];
+					pco.root = root;
+					pco.root.load();
+					nodes[name] = root;
+				}
+				
+				// load remaining hierarchy
+				for( var i = 1; i < fMno.hierarchy.length; i++){
+					var name = fMno.hierarchy[i][0];
+					var numPoints = fMno.hierarchy[i][1];
+					var index = parseInt(name.charAt(name.length-1));
+					var parentName = name.substring(0, name.length-1);
+					var parentNode = nodes[parentName];
+					var level = name.length-1;
+					var boundingBox = POCLoader.createChildAABB(parentNode.boundingBox, index);
+					
+					var node = new Potree.PointCloudOctreeGeometryNode(name, pco, boundingBox);
+					node.level = level;
+					node.numPoints = numPoints;
+					parentNode.addChild(node);
+					nodes[name] = node;
+				}
+				
+				pco.nodes = nodes;
+				
+				callback(pco);
 			}
-			
-			pco.nodes = nodes;
-			
 		}
 		
-		return pco;
+		xhr.send(null);
 	}catch(e){
 		console.log("loading failed: '" + url + "'");
 		console.log(e);

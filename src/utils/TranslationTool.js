@@ -114,8 +114,7 @@ Potree.TranslationTool = function(camera) {
 	
 	this.getHoveredObject = function(mouse){
 		var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
-		var projector = new THREE.Projector();
-		projector.unprojectVector( vector, scope.camera );
+		vector.unproject(scope.camera);
 		
 		var raycaster = new THREE.Raycaster();
 		raycaster.ray.set( scope.camera.position, vector.sub( scope.camera.position ).normalize() );
@@ -148,9 +147,7 @@ Potree.TranslationTool = function(camera) {
 			var directionDistance = new THREE.Vector3().subVectors(mousePoint, origin).dot(direction);
 			var pointOnLine = direction.clone().multiplyScalar(directionDistance).add(origin);
 			
-			
-			var projector = new THREE.Projector();
-			projector.unprojectVector(pointOnLine, scope.camera);
+			pointOnLine.unproject(scope.camera);
 			
 			var diff = pointOnLine.clone().sub(scope.position);
 			scope.position.copy(pointOnLine);
@@ -186,11 +183,8 @@ Potree.TranslationTool = function(camera) {
 					lineEnd.z -= 2;
 				}
 				
-				//lineEnd = scope.position.clone();
-				
-				var projector = new THREE.Projector();
-				projector.projectVector( lineStart, scope.camera );
-				projector.projectVector( lineEnd, scope.camera );
+				lineStart.project(scope.camera);
+				lineEnd.project(scope.camera);
 				
 				scope.start = {
 					mouse: event.normalizedPosition,

@@ -154,6 +154,7 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 	};
 
 	this.update = function (delta) {
+		this.object.rotation.order = 'ZYX';
 		var position = this.object.position;
 		
 		if(delta !== undefined){
@@ -180,6 +181,15 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 		}
 		
 		position.add(pan);
+		
+		if(!(thetaDelta === 0.0 && phiDelta === 0.0)) {
+			var event = {
+				type: 'rotate',
+				thetaDelta: thetaDelta,
+				phiDelta: phiDelta
+			};
+			this.dispatchEvent(event);
+		}
 		
 		this.object.updateMatrix();
 		var rot = new THREE.Matrix4().makeRotationY(thetaDelta);
@@ -272,14 +282,9 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 
 		event.preventDefault();
 
-		var delta = 0;
-		if ( event.wheelDelta !== undefined ) { // WebKit / Opera / Explorer 9
-			delta = event.wheelDelta;
-		} else if ( event.detail !== undefined ) { // Firefox
-			delta = - event.detail;
-		}
+		var direction = (event.detail<0 || event.wheelDelta>0) ? 1 : -1;
+		scope.moveSpeed += scope.moveSpeed * 0.1 * direction;
 
-		scope.moveSpeed += scope.moveSpeed * 0.001 * delta;
 		scope.moveSpeed = Math.max(0.1, scope.moveSpeed);
 
 		scope.dispatchEvent( startEvent );

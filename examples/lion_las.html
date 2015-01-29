@@ -98,9 +98,14 @@ void main() {
 		<img src="../resources/icons/distance.png" 	
 			onclick="measuringTool.setEnabled(true)"
 			title="distance measurements"/>
+            
 		<img src="../resources/icons/area.png" 		
 			onclick="areaTool.setEnabled(true)"
 			title="area measurements"/>
+            
+		<img src="../resources/icons/angle.png" 		
+			onclick="angleTool.setEnabled(true)"
+			title="angle measurements"/>
 			
 		<img src="../resources/icons/volume.png" 	
 			onclick="volumeTool.startInsertion()"
@@ -165,6 +170,7 @@ void main() {
 		var showSkybox = false;
 		var measuringTool;
 		var areaTool;
+		var angleTool;
 		var volumeTool;
 		var transformationTool;
 		var referenceFrame;
@@ -361,6 +367,7 @@ void main() {
 			measuringTool = new Potree.MeasuringTool(scenePointCloud, camera, renderer);
 			profileTool = new Potree.ProfileTool(scenePointCloud, camera, renderer);
 			areaTool = new Potree.AreaTool(scenePointCloud, camera, renderer);
+			angleTool = new Potree.AngleTool(scenePointCloud, camera, renderer);
 			volumeTool = new Potree.VolumeTool(scenePointCloud, camera, renderer);
 			transformationTool = new Potree.TransformationTool(scenePointCloud, camera, renderer);
 			
@@ -617,6 +624,7 @@ void main() {
 			renderer.clearDepth();
 			measuringTool.render();
 			areaTool.render();
+			angleTool.render();
 			transformationTool.render();
 		}
 		
@@ -752,6 +760,7 @@ void main() {
 				renderer.clearDepth();
 				measuringTool.render();
 				areaTool.render();
+				angleTool.render();
 				transformationTool.render();
 					
 			}

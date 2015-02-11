@@ -47,6 +47,103 @@ Potree.BinaryLoader.prototype.load = function(node){
 		console.log("fehler beim laden der punktwolke: " + e);
 	}
 	
+	this.loadHierarchy(node);
+	
+	
+	
+};
+
+Potree.BinaryLoader.prototype.loadHierarchy = function(node){
+
+	// load hierarchy
+	var callback = function(node, hbuffer){
+		var count = hbuffer.byteLength / 5;
+		var view = new DataView(hbuffer);
+		
+		var stack = [];
+		var children = view.getUint8(0);
+		var numPoints = view.getUint32(1, true);
+		stack.push({children: children, numPoints: numPoints, name: node.name});
+		
+		var decoded = [];
+		
+		var offset = 5;
+		while(stack.length > 0){
+		
+			var snode = stack.shift();
+			var mask = 1;
+			for(var i = 0; i < 8; i++){
+				if((snode.children & mask) !== 0){
+					var childIndex = i;
+					var childName = snode.name + i;
+					
+					var childChildren = view.getUint8(offset);
+					var childNumPoints = view.getUint32(offset + 1, true);
+					
+					stack.push({children: childChildren, numPoints: childNumPoints, name: childName});
+					
+					decoded.push({children: childChildren, numPoints: childNumPoints, name: childName});
+					
+					offset += 5;
+				}
+				
+				mask = mask * 2;
+			}
+			
+			if(offset === hbuffer.byteLength){
+				break;
+			}
+			
+		}
+		
+		console.log(decoded);
+		
+		var nodes = {};
+		nodes[node.name] = node;
+		var pco = node.pcoGeometry;
+		
+		
+		for( var i = 0; i < decoded.length; i++){
+			var name = decoded[i].name;
+			var numPoints = decoded[i].numPoints;
+			var index = parseInt(name.charAt(name.length-1));
+			var parentName = name.substring(0, name.length-1);
+			var parentNode = nodes[parentName];
+			var level = name.length-1;
+			var boundingBox = POCLoader.createChildAABB(parentNode.boundingBox, index);
+			
+			var node = new Potree.PointCloudOctreeGeometryNode(name, pco, boundingBox);
+			node.level = level;
+			node.numPoints = numPoints;
+			parentNode.addChild(node);
+			nodes[name] = node;
+		}
+		
+	};
+	if((node.level % 5) === 0){
+		var hurl = node.pcoGeometry.octreeDir + "/../hierarchy/" + node.name + ".hrc";
+		
+		var xhr = new XMLHttpRequest();
+		xhr.open('GET', hurl, true);
+		xhr.responseType = 'arraybuffer';
+		xhr.overrideMimeType('text/plain; charset=x-user-defined');
+		xhr.onreadystatechange = function() {
+			if (xhr.readyState === 4) {
+				if (xhr.status === 200 || xhr.status === 0) {
+					var hbuffer = xhr.response;
+					callback(node, hbuffer);
+				} else {
+					console.log('Failed to load file! HTTP status: ' + xhr.status + ", file: " + url);
+				}
+			}
+		};
+		try{
+			xhr.send(null);
+		}catch(e){
+			console.log("fehler beim laden der punktwolke: " + e);
+		}
+	}
+
 };
 
 Potree.BinaryLoader.prototype.parse = function(node, buffer){

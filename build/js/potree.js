@@ -1548,9 +1548,8 @@ Potree.PointCloudMaterial.vs_points = [
  "      float d = -mvPosition.z ;                                                                             ",
  "      vColor = vec3(d, vDepth, 0.0);                                                                             ",
  "  #elif defined color_type_intensity                                               ",
- "      float w = (intensity - intensityMin) / intensityMax;                         ",
+ "      float w = (intensity - intensityMin) / (intensityMax - intensityMin);                         ",
  "		vColor = vec3(w, w, w);                                                      ",
- "  	//vColor = texture2D(gradient, vec2(w,1.0-w)).rgb;                           ",
  "  #elif defined color_type_intensity_gradient                                      ",
  "      float w = (intensity - intensityMin) / intensityMax;                         ",
  "  	vColor = texture2D(gradient, vec2(w,1.0-w)).rgb;                             ",
@@ -3209,35 +3208,37 @@ Potree.utils.createWorker = function(code){
 
 Potree.utils.loadSkybox = function(path){
 	var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 100000 );
-	var scene = new THREE.Scene();
+    var scene = new THREE.Scene();
 
-	var format = ".jpg";
-	var urls = [
-		path + 'px' + format, path + 'nx' + format,
-		path + 'py' + format, path + 'ny' + format,
-		path + 'pz' + format, path + 'nz' + format
-	];
-	
-	var textureCube = THREE.ImageUtils.loadTextureCube( urls, new THREE.CubeRefractionMapping() );
-	var material = new THREE.MeshBasicMaterial( { color: 0xffffff, envMap: textureCube, refractionRatio: 0.95 } );
-	
-	var shader = THREE.ShaderLib[ "cube" ];
-	shader.uniforms[ "tCube" ].value = textureCube;
+    var format = ".jpg";
+    var urls = [
+        path + 'px' + format, path + 'nx' + format,
+        path + 'py' + format, path + 'ny' + format,
+        path + 'pz' + format, path + 'nz' + format
+    ];
 
-	var material = new THREE.ShaderMaterial( {
+    var textureCube = THREE.ImageUtils.loadTextureCube(urls, new THREE.CubeRefractionMapping());
 
-		fragmentShader: shader.fragmentShader,
-		vertexShader: shader.vertexShader,
-		uniforms: shader.uniforms,
-		depthWrite: false,
-		side: THREE.BackSide
+    var shader = {
+        uniforms: {
+            "tCube": {type: "t", value: textureCube},
+            "tFlip": {type: "f", value: -1}
+        },
+        vertexShader: THREE.ShaderLib["cube"].vertexShader,
+        fragmentShader: THREE.ShaderLib["cube"].fragmentShader
+    };
 
-	} ),
+    var material = new THREE.ShaderMaterial({
+        fragmentShader: shader.fragmentShader,
+        vertexShader: shader.vertexShader,
+        uniforms: shader.uniforms,
+        depthWrite: false,
+        side: THREE.BackSide
+    });
+    var mesh = new THREE.Mesh(new THREE.CubeGeometry(100, 100, 100), material);
+    scene.add(mesh);
 
-	mesh = new THREE.Mesh( new THREE.BoxGeometry( 100, 100, 100 ), material );
-	scene.add( mesh );
-	
-	return {"camera": camera, "scene": scene};
+    return {"camera": camera, "scene": scene};
 }
 
 Potree.utils.createGrid = function createGrid(width, length, spacing, color){
@@ -4201,8 +4202,9 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 	};
 	
 	function onMouseMove(event){
-		scope.mouse.x = ( event.clientX / scope.domElement.clientWidth ) * 2 - 1;
-		scope.mouse.y = - ( event.clientY / scope.domElement.clientHeight ) * 2 + 1;
+        var rect = scope.domElement.getBoundingClientRect();
+        scope.mouse.x = ((event.clientX - rect.left) / scope.domElement.clientWidth) * 2 - 1;
+        scope.mouse.y = -((event.clientY - rect.top) / scope.domElement.clientHeight) * 2 + 1;
 		
 		if(scope.dragstart){
 			

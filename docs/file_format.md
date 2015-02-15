@@ -60,7 +60,7 @@ necessary so that parsers know how to interpret the data.
  As of now, only ["POSITION_CARTESIAN", "COLOR_PACKED"] is supported which
  stores each point in 16 bytes. The first 12 bytes contain x/y/z coordinates and
  the remaining 4 the r,g,b,a colors.
- * __POSITION_CARTESIAN__ - 3 x 32bit floats for x/y/z coordinates
+ * __POSITION_CARTESIAN__ - 3 x 32bit signed integers for x/y/z coordinates
  * __COLOR_PACKED__ - 4 x unsigned byte for r,g,b,a colors.
 * __spacing__ - The minimum distance between points at root level.
 * __hiearchy__ - Contains all nodes and the number of points in each node.

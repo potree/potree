@@ -40,6 +40,9 @@ THREE.EarthControls = function ( object, domElement ) {
 	
 	var dragStart = new THREE.Vector2();
 	var dragEnd = new THREE.Vector2();
+	
+	var mouseDelta = new THREE.Vector2();
+	
 	var camStart = null;
 	var pivot = null;
 
@@ -64,38 +67,61 @@ THREE.EarthControls = function ( object, domElement ) {
 				var newCamPos = new THREE.Vector3().subVectors(pivot, dir.clone().multiplyScalar(distanceToPlane));
 				camera.position.copy(newCamPos);
 			}else if(state === STATE.ROTATE){
-				
-				var diff = new THREE.Vector3().subVectors(dragEnd, dragStart);
-				diff.x =  (diff.x / this.domElement.clientWidth) * 2;
-				diff.y = -(diff.y / this.domElement.clientHeight) * 2;
-				
-				var q = new THREE.Quaternion();
+				var diff = mouseDelta.clone().multiplyScalar(delta);
+			
+				camera.updateMatrixWorld();	
 
-				q.setFromAxisAngle( new THREE.Vector3(0, 1, 0), -2 * diff.x ); // axis must be normalized, angle in radians
-				camera.quaternion.multiplyQuaternions( q, camStart.quaternion );
+				var p = new THREE.Object3D();
+				var c = new THREE.Object3D();
+				p.add(c);
+				p.position.copy(pivot);
+				c.position.copy(camera.position).sub(pivot);
+				c.rotation.copy(camera.rotation);
 				
-				var pivotCamDist = pivot.distanceTo(camStart.position);
-				var pivotCamDir = new THREE.Vector3().subVectors(camStart.position, pivot).normalize();
-				pivotCamDir.applyQuaternion(q);
+				p.rotation.y += -diff.x;
 				
-				camera.position.addVectors(pivot, pivotCamDir.multiplyScalar(pivotCamDist));
+				var dir = new THREE.Vector3().subVectors(pivot, camera.position).normalize();
+				var dir = camera.getWorldDirection();
+				var up = new THREE.Vector3(0,1,0);
+				var side = new THREE.Vector3().cross(up, dir);
 				
-				//console.log(diff.x);
+				p.rotateOnAxis(side, -diff.y);
 				
-				//var m = camStart.matrix.clone();
-				//var toOrigin = new THREE.Matrix4().makeTranslation(-pivot.x, -pivot.y, -pivot.z);
-				//var rotate = new THREE.Matrix4().makeRotationX(diff.x / 100.0);
-				//var fromOrigin = new THREE.Matrix4().makeTranslation(pivot.x, pivot.y, pivot.z);
-				//
-				//m = new THREE.Matrix4().multiplyMatrices(toOrigin, m);
-				//m = new THREE.Matrix4().multiplyMatrices(rotate, m);
-				//m = new THREE.Matrix4().multiplyMatrices(fromOrigin, m);
-				//
-				//camera.position.setFromMatrixPosition(m);
+				
+				p.updateMatrixWorld();
+				
+				//camera.position.copy(c.position);
+				//camera.rotation.copy(c.rotation);
+				
+				camera.position.copy(c.getWorldPosition());
+				camera.quaternion.copy(c.getWorldQuaternion());
+
+
+				
+				
+				//{
+				//	var m = new THREE.Matrix4().copy(camera.matrix);
+				//	var ry = camera.rotation.y;
+				//	
+				//	m.multiplyMatrices( new THREE.Matrix4().makeTranslation(-pivot.x, -pivot.y, -pivot.z), m);
+				//	//m.multiplyMatrices( new THREE.Matrix4().makeRotationY(-ry), m);
+				//	m.multiplyMatrices( new THREE.Matrix4().makeRotationX(diff.y), m);
+				//	//m.multiplyMatrices( new THREE.Matrix4().makeRotationY(ry), m);
+				//	m.multiplyMatrices( new THREE.Matrix4().makeTranslation(pivot.x, pivot.y, pivot.z), m);
+				//	
+				//	//m.multiplyMatrices( new THREE.Matrix4().makeTranslation(-pivot.x, -pivot.y, -pivot.z), m);
+				//	//m.multiplyMatrices( new THREE.Matrix4().makeRotationY(diff.x), m);
+				//	//m.multiplyMatrices( new THREE.Matrix4().makeTranslation(pivot.x, pivot.y, pivot.z), m);
+				//	
+				//	camera.matrix.copy(m);
+				//	camera.matrix.decompose( camera.position, camera.quaternion, camera.scale );
+				//}
+				
 				
 			}
 		}
 			
+		mouseDelta.set(0,0);
 	};
 
 
@@ -116,8 +142,18 @@ THREE.EarthControls = function ( object, domElement ) {
 			y: - ( event.clientY / scope.domElement.clientHeight ) * 2 + 1
 		};
 		var I = getMousePointCloudIntersection(mouse, camera, renderer, scenePointCloud, accuracy)
-		pivot = I;
+		var plane = new THREE.Plane().setFromNormalAndCoplanarPoint(new THREE.Vector3(0, 1, 0), I);
+		
+		var vec = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
+		vec.unproject(camera);
+		var dir = vec.sub(camera.position).normalize();
+		
+		var ray = new THREE.Ray(camera.position, dir);
+		pivot = ray.intersectPlane(plane);
+		
+		//pivot = I;
 		camStart = camera.clone();
+		camStart.rotation.copy(camera.rotation);
 		dragStart.set( event.clientX, event.clientY );
 		dragEnd.set(event.clientX, event.clientY);
 
@@ -138,9 +174,9 @@ THREE.EarthControls = function ( object, domElement ) {
 
 		var element = scope.domElement === document ? scope.domElement.body : scope.domElement;
 
-		//if( state === STATE.DRAG){
-			dragEnd.set(event.clientX, event.clientY);
-		//}
+		mouseDelta.set(event.clientX - dragEnd.x, event.clientY - dragEnd.y);
+		dragEnd.set(event.clientX, event.clientY);
+		
 	}
 
 	function onMouseUp() {
@@ -160,6 +196,20 @@ THREE.EarthControls = function ( object, domElement ) {
 		//var direction = (event.detail<0 || event.wheelDelta>0) ? 1 : -1;
 		//scope.moveSpeed += scope.moveSpeed * 0.1 * direction;
 		//scope.moveSpeed = Math.max(0.1, scope.moveSpeed);
+		
+		var amount = (event.detail<0 || event.wheelDelta>0) ? 1 : -1;
+		var accuracy = 1;
+		var mouse =  {
+			x: ( event.clientX / scope.domElement.clientWidth ) * 2 - 1,
+			y: - ( event.clientY / scope.domElement.clientHeight ) * 2 + 1
+		};
+		var I = getMousePointCloudIntersection(mouse, camera, renderer, scenePointCloud, accuracy)
+		
+		if(I){
+			var distance = I.distanceTo(camera.position);
+			var dir = new THREE.Vector3().subVectors(I, camera.position).normalize();
+			camera.position.add(dir.multiplyScalar(distance * 0.1 * amount));
+		}
 
 	}
 

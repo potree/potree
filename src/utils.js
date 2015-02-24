@@ -77,7 +77,7 @@ Potree.utils.loadSkybox = function(path){
         path + 'pz' + format, path + 'nz' + format
     ];
 
-    var textureCube = THREE.ImageUtils.loadTextureCube(urls, new THREE.CubeRefractionMapping());
+    var textureCube = THREE.ImageUtils.loadTextureCube(urls, THREE.CubeRefractionMapping );
 
     var shader = {
         uniforms: {
@@ -161,3 +161,44 @@ Potree.utils.createBackgroundTexture = function(width, height){
 	
 	return map;
 };
+
+
+
+function getMousePointCloudIntersection(mouse, camera, renderer, scene, accuracy){
+		var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
+		vector.unproject(camera);
+
+		var direction = vector.sub(camera.position).normalize();
+		var ray = new THREE.Ray(camera.position, direction);
+		
+		var pointClouds = [];
+		scene.traverse(function(object){
+			if(object instanceof Potree.PointCloudOctree){
+				pointClouds.push(object);
+			}
+		});
+		
+		var closestPoint = null;
+		var closestPointDistance = null;
+		
+		for(var i = 0; i < pointClouds.length; i++){
+			var pointcloud = pointClouds[i];
+			var point = pointcloud.pick(renderer, camera, ray, {accuracy: accuracy});
+			
+			if(!point){
+				continue;
+			}
+			
+			var distance = camera.position.distanceTo(point.position);
+			
+			if(!closestPoint || distance < closestPointDistance){
+				closestPoint = point;
+				closestPointDistance = distance;
+			}
+		}
+		
+		return closestPoint ? closestPoint.position : null;
+	}
+	
+	
+	

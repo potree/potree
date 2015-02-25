@@ -95,7 +95,7 @@ Potree.utils.loadSkybox = function(path){
         depthWrite: false,
         side: THREE.BackSide
     });
-    var mesh = new THREE.Mesh(new THREE.CubeGeometry(100, 100, 100), material);
+    var mesh = new THREE.Mesh(new THREE.BoxGeometry(100, 100, 100), material);
     scene.add(mesh);
 
     return {"camera": camera, "scene": scene};

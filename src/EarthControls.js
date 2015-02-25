@@ -45,6 +45,10 @@ THREE.EarthControls = function ( object, domElement ) {
 	
 	var camStart = null;
 	var pivot = null;
+	
+	
+	this.minAngle = (10 / 180) * Math.PI;	// 10°
+	this.maxAngle = (70 / 180) * Math.PI;	// 70°
 
 	this.update = function (delta) {
 		var position = this.object.position;
@@ -67,10 +71,13 @@ THREE.EarthControls = function ( object, domElement ) {
 				var newCamPos = new THREE.Vector3().subVectors(pivot, dir.clone().multiplyScalar(distanceToPlane));
 				camera.position.copy(newCamPos);
 			}else if(state === STATE.ROTATE){
+				// rotate around pivot point
+			
 				var diff = mouseDelta.clone().multiplyScalar(delta);
 			
 				camera.updateMatrixWorld();	
 
+				// do calculations on fresh nodes 
 				var p = new THREE.Object3D();
 				var c = new THREE.Object3D();
 				p.add(c);
@@ -78,46 +85,41 @@ THREE.EarthControls = function ( object, domElement ) {
 				c.position.copy(camera.position).sub(pivot);
 				c.rotation.copy(camera.rotation);
 				
+				
+				// rotate left/right
 				p.rotation.y += -diff.x;
 				
-				var dir = new THREE.Vector3().subVectors(pivot, camera.position).normalize();
+				
+				// rotate up/down
 				var dir = camera.getWorldDirection();
 				var up = new THREE.Vector3(0,1,0);
-				var side = new THREE.Vector3().cross(up, dir);
+				var side = new THREE.Vector3().crossVectors(up, dir);
+
+				var dirp = c.position.clone();
+				dirp.y = 0;
+				dirp.normalize();
+				var ac = dirp.dot(c.position.clone().normalize());
+				var angle = Math.acos(ac);
+				if(c.position.y < 0){
+					angle = -angle;
+				}
 				
-				p.rotateOnAxis(side, -diff.y);
+				var amount = 0;
+				if(diff.y > 0){
+					// rotate downwards and apply minAngle limit
+					amount = diff.y - Math.max(0, this.minAngle - (angle - diff.y));
+				}else{
+					// rotate upwards and apply maxAngle limit
+					amount = diff.y + Math.max(0, (angle - diff.y) - this.maxAngle);
+				}
+				p.rotateOnAxis(side, -amount);
 				
-				
+				// apply changes to camera
 				p.updateMatrixWorld();
-				
-				//camera.position.copy(c.position);
-				//camera.rotation.copy(c.rotation);
 				
 				camera.position.copy(c.getWorldPosition());
 				camera.quaternion.copy(c.getWorldQuaternion());
 
-
-				
-				
-				//{
-				//	var m = new THREE.Matrix4().copy(camera.matrix);
-				//	var ry = camera.rotation.y;
-				//	
-				//	m.multiplyMatrices( new THREE.Matrix4().makeTranslation(-pivot.x, -pivot.y, -pivot.z), m);
-				//	//m.multiplyMatrices( new THREE.Matrix4().makeRotationY(-ry), m);
-				//	m.multiplyMatrices( new THREE.Matrix4().makeRotationX(diff.y), m);
-				//	//m.multiplyMatrices( new THREE.Matrix4().makeRotationY(ry), m);
-				//	m.multiplyMatrices( new THREE.Matrix4().makeTranslation(pivot.x, pivot.y, pivot.z), m);
-				//	
-				//	//m.multiplyMatrices( new THREE.Matrix4().makeTranslation(-pivot.x, -pivot.y, -pivot.z), m);
-				//	//m.multiplyMatrices( new THREE.Matrix4().makeRotationY(diff.x), m);
-				//	//m.multiplyMatrices( new THREE.Matrix4().makeTranslation(pivot.x, pivot.y, pivot.z), m);
-				//	
-				//	camera.matrix.copy(m);
-				//	camera.matrix.decompose( camera.position, camera.quaternion, camera.scale );
-				//}
-				
-				
 			}
 		}
 			

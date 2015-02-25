@@ -134,6 +134,10 @@ THREE.EarthControls = function ( camera, domElement, renderer ) {
 			y: - ( event.clientY / scope.domElement.clientHeight ) * 2 + 1
 		};
 		var I = getMousePointCloudIntersection(mouse, scope.camera, scope.renderer, scope.pointclouds, accuracy)
+		if(!I){
+			return;
+		}
+		
 		var plane = new THREE.Plane().setFromNormalAndCoplanarPoint(new THREE.Vector3(0, 1, 0), I);
 		
 		var vec = new THREE.Vector3( mouse.x, mouse.y, 0.5 );

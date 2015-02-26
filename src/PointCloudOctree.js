@@ -290,15 +290,19 @@ Potree.PointCloudOctree.prototype.update = function(camera, renderer){
 		}
 	}
 	
+	var vn = [];
 	this.hideDescendants(this.children[0]);
 	for(var i = 0; i < this.visibleNodes.length; i++){
 		this.visibleNodes[i].node.visible = true;
+		vn.push(this.visibleNodes[i].node);
 	}
 	
 	if(this.material.pointSizeType){
 		if(this.material.pointSizeType === Potree.PointSizeType.ADAPTIVE 
 			|| this.material.pointColorType === Potree.PointColorType.OCTREE_DEPTH){
-			this.updateVisibilityTexture();
+			
+			
+			this.updateVisibilityTexture(this.material, vn);
 		}
 	}
 };
@@ -348,7 +352,8 @@ Potree.PointCloudOctree.prototype.getVisibleGeometry = function(camera){
 	
 		
 		var visible = insideFrustum; // && node.level <= 3;
-		//visible = visible && "r7".indexOf(node.name) === 0;
+		//visible = visible && "r0".indexOf(node.name) === 0;
+		//visible = visible && node.level === 0;
 		
 		if(!visible){
 			continue;
@@ -420,22 +425,17 @@ Potree.PointCloudOctree.prototype.getVisibleGeometry = function(camera){
 	return visibleGeometry;
 };
 
-Potree.PointCloudOctree.prototype.updateVisibilityTexture = function(){
+Potree.PointCloudOctree.prototype.updateVisibilityTexture = function(material, visibleNodes){
 
-	if(!this.material){
+	if(!material){
 		return;
 	}
 	
-	var texture = this.material.visibleNodesTexture;
+	var texture = material.visibleNodesTexture;
     var data = texture.image.data;
 	
-	var visibleNodes = [];
-	for(var i = 0; i < this.visibleNodes.length; i++){
-		visibleNodes.push(this.visibleNodes[i].node);
-	}
-	
-	
-	
+	// copy array
+	visibleNodes = visibleNodes.slice();
 	
 	// sort by level and index, e.g. r, r0, r3, r4, r01, r07, r30, ...
 	var sort = function(a, b){
@@ -447,22 +447,6 @@ Potree.PointCloudOctree.prototype.updateVisibilityTexture = function(){
 		return 0;
 	};
 	visibleNodes.sort(sort);
-	
-	//var r = [];
-	//for(var i = 0; i < visibleNodes.length; i++){
-	//	var node = visibleNodes[i];
-	//	
-	//	if(node.level < 2){
-	//		r.push(node);
-	//	}else{
-	//	
-	//	ß0
-	//	
-	//	//if(node.numPoints > 5000){
-	//	//	r.push(node);
-	//	//}
-	//}
-	//visibleNodes = r;
 	
 	for(var i = 0; i < visibleNodes.length; i++){
 		var node = visibleNodes[i];
@@ -496,7 +480,7 @@ Potree.PointCloudOctree.prototype.updateVisibilityTexture = function(){
 	}
 	
 	
-	this.material.uniforms.nodeSize.value = this.pcoGeometry.boundingBox.size().x;
+	material.uniforms.nodeSize.value = this.pcoGeometry.boundingBox.size().x;
 	texture.needsUpdate = true;
 }
 
@@ -510,10 +494,7 @@ Potree.PointCloudOctree.prototype.nodesOnRay = function(nodes, ray){
 		var sphere = node.boundingSphere.clone().applyMatrix4(node.matrixWorld);
 		
 		if(_ray.isIntersectionSphere(sphere)){
-			nodesOnRay.push(nodes[i]);
-			//node.visible = true;
-		}else{
-			//node.visible = false;
+			nodesOnRay.push(node);
 		}
 	}
 	
@@ -764,6 +745,7 @@ Potree.PointCloudOctree.prototype.getVisibleExtent = function(){
 var point = Potree.PointCloudOctree.prototype.pick = function(renderer, camera, ray, params){
 	var params = params || {};
 	var accuracy = params.accuracy || 0.5;
+	accuracy = 1;
 	
 	var nodes = this.nodesOnRay(this.visibleNodes, ray);
 	
@@ -791,6 +773,21 @@ var point = Potree.PointCloudOctree.prototype.pick = function(renderer, camera, 
 		this.pickMaterial.size = accuracy * 5;
 	}
 	
+	this.pickMaterial.pointSizeType = this.material.pointSizeType;
+	this.pickMaterial.size = this.material.size;
+	
+	if(this.pickMaterial.pointSizeType === Potree.PointSizeType.ADAPTIVE){
+		this.updateVisibilityTexture(this.pickMaterial, nodes);
+	}
+	
+	this.pickMaterial.fov 			= this.material.fov;
+	this.pickMaterial.screenWidth 	= this.material.screenWidth;
+	this.pickMaterial.screenHeight 	= this.material.screenHeight;
+	this.pickMaterial.spacing 		= this.material.spacing;
+	this.pickMaterial.near 			= this.material.near;
+	this.pickMaterial.far 			= this.material.far;
+	this.pickMaterial.octreeLevels 	= this.material.octreeLevels;
+	
 	// TODO
 	// Right now point size for picking is fixed 
 	// To work with adaptive size, the pick hierarchy texture must
@@ -816,8 +813,11 @@ var point = Potree.PointCloudOctree.prototype.pick = function(renderer, camera, 
 	
 	renderer.clear( renderer.autoClearColor, renderer.autoClearDepth, renderer.autoClearStencil );
 	
+	//TODO: UGLY HACK CHAMPIONSHIP SUBMISSION!! drawing first node does not work properly so we draw it twice.
+	nodes.push(nodes[0]);
+	
 	for(var i = 0; i < nodes.length; i++){
-		var object = nodes[i].node;
+		var object = nodes[i];
 		var geometry = object.geometry;
 		
 		if(!geometry.attributes.indices.buffer){
@@ -871,7 +871,7 @@ var point = Potree.PointCloudOctree.prototype.pick = function(renderer, camera, 
 	//
 	//return null;
 	
-	var pc = nodes[pcIndex].node;
+	var pc = nodes[pcIndex];
 	var positionArray = pc.geometry.attributes.position.array;
 	var x = positionArray[3*pIndex+0];
 	var y = positionArray[3*pIndex+1];

@@ -13,7 +13,7 @@
  *
  */
 
-THREE.EarthControls = function ( camera, domElement, renderer ) {
+THREE.EarthControls = function ( camera, domElement, renderer, resourcePath ) {
 	this.camera = camera;
 	this.renderer = renderer;
 	this.pointclouds = [];
@@ -31,6 +31,15 @@ THREE.EarthControls = function ( camera, domElement, renderer ) {
 	
 	var dragStart = new THREE.Vector2();
 	var dragEnd = new THREE.Vector2();
+	this.dragStartIndicator = document.createElement("img");
+	this.dragStartIndicator.src = resourcePath + "/icons/sphere.png";
+	this.dragStartIndicator.style.width = "32px";
+	this.dragStartIndicator.style.height = "32px";
+	this.dragStartIndicator.style.position = "absolute";
+	this.dragStartIndicator.style.display = "none";
+	this.dragStartIndicator.style.opacity = "0.6";
+	this.dragStartIndicator.style.pointerEvents = "none";
+	document.body.appendChild(this.dragStartIndicator);
 	
 	var mouseDelta = new THREE.Vector2();
 	
@@ -61,6 +70,9 @@ THREE.EarthControls = function ( camera, domElement, renderer ) {
 				
 				var newCamPos = new THREE.Vector3().subVectors(pivot, dir.clone().multiplyScalar(distanceToPlane));
 				this.camera.position.copy(newCamPos);
+				
+				this.dragStartIndicator.style.left = dragEnd.x - scope.dragStartIndicator.clientWidth / 2;
+				this.dragStartIndicator.style.top = dragEnd.y - scope.dragStartIndicator.clientHeight / 2;
 			}else if(state === STATE.ROTATE){
 				// rotate around pivot point
 			
@@ -138,6 +150,12 @@ THREE.EarthControls = function ( camera, domElement, renderer ) {
 			return;
 		}
 		
+		//var sg = new THREE.SphereGeometry();
+		//var sm = new THREE.Mesh(sg);
+		//sm.scale.set(20, 20, 20);
+		//sm.position.copy(I);
+		//scene.add(sm);
+		
 		var plane = new THREE.Plane().setFromNormalAndCoplanarPoint(new THREE.Vector3(0, 1, 0), I);
 		
 		var vec = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
@@ -152,6 +170,10 @@ THREE.EarthControls = function ( camera, domElement, renderer ) {
 		camStart.rotation.copy(scope.camera.rotation);
 		dragStart.set( event.clientX, event.clientY );
 		dragEnd.set(event.clientX, event.clientY);
+		scope.dragStartIndicator.style.display = "initial";
+		scope.dragStartIndicator.style.left = event.clientX - scope.dragStartIndicator.clientWidth / 2;
+		scope.dragStartIndicator.style.top = event.clientY - scope.dragStartIndicator.clientHeight / 2;
+		
 
 		if ( event.button === 0 ) {
 			state = STATE.DRAG;
@@ -181,6 +203,8 @@ THREE.EarthControls = function ( camera, domElement, renderer ) {
 		scope.domElement.removeEventListener( 'mousemove', onMouseMove, false );
 		scope.domElement.removeEventListener( 'mouseup', onMouseUp, false );
 		state = STATE.NONE;
+		
+		scope.dragStartIndicator.style.display = "none";
 
 	}
 
@@ -197,10 +221,23 @@ THREE.EarthControls = function ( camera, domElement, renderer ) {
 		};
 		var I = getMousePointCloudIntersection(mouse, scope.camera, scope.renderer, scope.pointclouds, accuracy)
 		
+		scope.dragStartIndicator.style.left = event.clientX - scope.dragStartIndicator.clientWidth / 2;
+		scope.dragStartIndicator.style.top = event.clientY - scope.dragStartIndicator.clientHeight / 2;
+		scope.dragStartIndicator.style.display = "initial";
+		
 		if(I){
 			var distance = I.distanceTo(scope.camera.position);
 			var dir = new THREE.Vector3().subVectors(I, scope.camera.position).normalize();
 			scope.camera.position.add(dir.multiplyScalar(distance * 0.1 * amount));
+			
+			
+			//var sg = new THREE.SphereGeometry();
+			//var sm = new THREE.Mesh(sg);
+			//sm.scale.set(20, 20, 20);
+			//sm.position.copy(I);
+			//scene.add(sm);
+			
+			
 		}
 
 	}

@@ -221,9 +221,9 @@ THREE.EarthControls = function ( camera, domElement, renderer, resourcePath ) {
 		};
 		var I = getMousePointCloudIntersection(mouse, scope.camera, scope.renderer, scope.pointclouds, accuracy)
 		
-		scope.dragStartIndicator.style.left = event.clientX - scope.dragStartIndicator.clientWidth / 2;
-		scope.dragStartIndicator.style.top = event.clientY - scope.dragStartIndicator.clientHeight / 2;
-		scope.dragStartIndicator.style.display = "initial";
+		//scope.dragStartIndicator.style.left = event.clientX - scope.dragStartIndicator.clientWidth / 2;
+		//scope.dragStartIndicator.style.top = event.clientY - scope.dragStartIndicator.clientHeight / 2;
+		//scope.dragStartIndicator.style.display = "initial";
 		
 		if(I){
 			var distance = I.distanceTo(scope.camera.position);

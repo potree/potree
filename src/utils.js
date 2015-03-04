@@ -165,35 +165,64 @@ Potree.utils.createBackgroundTexture = function(width, height){
 
 
 function getMousePointCloudIntersection(mouse, camera, renderer, pointclouds, accuracy){
-		var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
-		vector.unproject(camera);
+	var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
+	vector.unproject(camera);
 
-		var direction = vector.sub(camera.position).normalize();
-		var ray = new THREE.Ray(camera.position, direction);
+	var direction = vector.sub(camera.position).normalize();
+	var ray = new THREE.Ray(camera.position, direction);
+	
+	var closestPoint = null;
+	var closestPointDistance = null;
+	
+	for(var i = 0; i < pointclouds.length; i++){
+		var pointcloud = pointclouds[i];
+		var point = pointcloud.pick(renderer, camera, ray, {accuracy: accuracy});
 		
-		
-		
-		var closestPoint = null;
-		var closestPointDistance = null;
-		
-		for(var i = 0; i < pointclouds.length; i++){
-			var pointcloud = pointclouds[i];
-			var point = pointcloud.pick(renderer, camera, ray, {accuracy: accuracy});
-			
-			if(!point){
-				continue;
-			}
-			
-			var distance = camera.position.distanceTo(point.position);
-			
-			if(!closestPoint || distance < closestPointDistance){
-				closestPoint = point;
-				closestPointDistance = distance;
-			}
+		if(!point){
+			continue;
 		}
 		
-		return closestPoint ? closestPoint.position : null;
+		var distance = camera.position.distanceTo(point.position);
+		
+		if(!closestPoint || distance < closestPointDistance){
+			closestPoint = point;
+			closestPointDistance = distance;
+		}
 	}
+	
+	return closestPoint ? closestPoint.position : null;
+}
+	
+	
+function pixelsArrayToImage(pixels, width, height){
+    var canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+
+    var context = canvas.getContext('2d');
+	
+	pixels = new pixels.constructor(pixels);
+	
+	for(var i = 0; i < pixels.length; i++){
+		pixels[i*4 + 3] = 255;
+	}
+
+    var imageData = context.createImageData(width, height);
+    imageData.data.set(pixels);
+    context.putImageData(imageData, 0, 0);
+
+    var img = new Image();
+    img.src = canvas.toDataURL();
+	img.style.transform = "scaleY(-1)";
+	
+    return img;
+}
+	
+	
+	
+	
+	
+	
 	
 	
 	

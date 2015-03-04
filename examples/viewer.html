@@ -60,15 +60,12 @@ void main() {
 }
 </script>
 
-	<script src="../libs/plasio/js/laslaz.js"></script>
-	<script src="../libs/plasio/vendor/bluebird.js"></script>
 	<script src="../libs/three.js/build/three.js"></script>
 	<script src="../libs/other/OrbitControls.js"></script>
 	<script src="../libs/other/stats.min.js"></script>
 	<script src="../libs/other/dat.gui.min.js"></script>
 	
 	<script src="../build/js/potree.js"></script>
-	<script src="../build/js/laslaz.js"></script>
 	<script src="./js/ProgressBar.js"></script>
 		
 	<div id="lblNumVisibleNodes" class="info" style="position: absolute; left: 10px; top: 80px; width: 400px; color:white"></div>
@@ -274,7 +271,16 @@ void main() {
 				}
 			});
 			
-			var pQuality = gui.add(params, 'quality', [ "Normal", "Circles", "Interpolation", "Splats"]);
+			var qualityOptions = ["Squares", "Circles"];
+			if(Potree.Features.SHADER_INTERPOLATION.isSupported()){
+				qualityOptions.push("Interpolation");
+				params.quality = "Interpolation";
+				quality = params.quality;
+			}
+			if(Potree.Features.SHADER_SPLATS.isSupported()){
+				qualityOptions.push("Splats");
+			}
+			var pQuality = gui.add(params, 'quality', qualityOptions);
 			pQuality.onChange(function(value){
 				quality = value;
 			});

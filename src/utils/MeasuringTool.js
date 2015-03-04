@@ -9,7 +9,7 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 	this.renderer = renderer;
 	this.domElement = renderer.domElement;
 	this.mouse = {x: 0, y: 0};
-	this.accuracy = 0.5;
+	this.accuracy = 1;
 	
 	var STATE = {
 		DEFAULT: 0,

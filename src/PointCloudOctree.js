@@ -180,6 +180,7 @@ Potree.PointCloudOctree.prototype.update = function(camera, renderer){
 	}
 	
 	this.material.octreeLevels = this.maxLevel;
+	this.material.octreeLevels = 5;
 	
 	// check profile cut plane intersections
 	for(var i = 0; i < this.profileRequests.length; i++){
@@ -290,15 +291,19 @@ Potree.PointCloudOctree.prototype.update = function(camera, renderer){
 		}
 	}
 	
+	var vn = [];
 	this.hideDescendants(this.children[0]);
 	for(var i = 0; i < this.visibleNodes.length; i++){
 		this.visibleNodes[i].node.visible = true;
+		vn.push(this.visibleNodes[i].node);
 	}
 	
 	if(this.material.pointSizeType){
 		if(this.material.pointSizeType === Potree.PointSizeType.ADAPTIVE 
 			|| this.material.pointColorType === Potree.PointColorType.OCTREE_DEPTH){
-			this.updateVisibilityTexture();
+			
+			
+			this.updateVisibilityTexture(this.material, vn);
 		}
 	}
 };
@@ -348,7 +353,8 @@ Potree.PointCloudOctree.prototype.getVisibleGeometry = function(camera){
 	
 		
 		var visible = insideFrustum; // && node.level <= 3;
-		//visible = visible && "r7".indexOf(node.name) === 0;
+		//visible = visible && "r0".indexOf(node.name) === 0;
+		//visible = visible && node.level === 0;
 		
 		if(!visible){
 			continue;
@@ -420,22 +426,17 @@ Potree.PointCloudOctree.prototype.getVisibleGeometry = function(camera){
 	return visibleGeometry;
 };
 
-Potree.PointCloudOctree.prototype.updateVisibilityTexture = function(){
+Potree.PointCloudOctree.prototype.updateVisibilityTexture = function(material, visibleNodes){
 
-	if(!this.material){
+	if(!material){
 		return;
 	}
 	
-	var texture = this.material.visibleNodesTexture;
+	var texture = material.visibleNodesTexture;
     var data = texture.image.data;
 	
-	var visibleNodes = [];
-	for(var i = 0; i < this.visibleNodes.length; i++){
-		visibleNodes.push(this.visibleNodes[i].node);
-	}
-	
-	
-	
+	// copy array
+	visibleNodes = visibleNodes.slice();
 	
 	// sort by level and index, e.g. r, r0, r3, r4, r01, r07, r30, ...
 	var sort = function(a, b){
@@ -448,28 +449,18 @@ Potree.PointCloudOctree.prototype.updateVisibilityTexture = function(){
 	};
 	visibleNodes.sort(sort);
 	
-	//var r = [];
-	//for(var i = 0; i < visibleNodes.length; i++){
-	//	var node = visibleNodes[i];
-	//	
-	//	if(node.level < 2){
-	//		r.push(node);
-	//	}else{
-	//	
-	//	ß0
-	//	
-	//	//if(node.numPoints > 5000){
-	//	//	r.push(node);
-	//	//}
-	//}
-	//visibleNodes = r;
+	var visibleNodeNames = {};
+	for(var i = 0; i < visibleNodes.length; i++){
+		visibleNodeNames[visibleNodes[i].name] = true;
+	}
 	
 	for(var i = 0; i < visibleNodes.length; i++){
 		var node = visibleNodes[i];
+		
 		var children = [];
 		for(var j = 0; j < node.children.length; j++){
 			var child = node.children[j];
-			if(child instanceof THREE.PointCloud && child.visible){
+			if(child instanceof THREE.PointCloud && child.visible && visibleNodeNames[child.name]){
 				children.push(child);
 			}
 		}
@@ -496,7 +487,7 @@ Potree.PointCloudOctree.prototype.updateVisibilityTexture = function(){
 	}
 	
 	
-	this.material.uniforms.nodeSize.value = this.pcoGeometry.boundingBox.size().x;
+	material.uniforms.nodeSize.value = this.pcoGeometry.boundingBox.size().x;
 	texture.needsUpdate = true;
 }
 
@@ -506,14 +497,11 @@ Potree.PointCloudOctree.prototype.nodesOnRay = function(nodes, ray){
 	var _ray = ray.clone();
 	for(var i = 0; i < nodes.length; i++){
 		var node = nodes[i].node;
-		var inverseWorld = new THREE.Matrix4().getInverse(node.matrixWorld);
+		//var inverseWorld = new THREE.Matrix4().getInverse(node.matrixWorld);
 		var sphere = node.boundingSphere.clone().applyMatrix4(node.matrixWorld);
 		
 		if(_ray.isIntersectionSphere(sphere)){
-			nodesOnRay.push(nodes[i]);
-			//node.visible = true;
-		}else{
-			//node.visible = false;
+			nodesOnRay.push(node);
 		}
 	}
 	
@@ -761,9 +749,26 @@ Potree.PointCloudOctree.prototype.getVisibleExtent = function(){
 	return this.visibleBounds.applyMatrix4(this.matrixWorld);
 };
 
+/**
+ *
+ *
+ *
+ * params.pickWindowSize:	Look for points inside a pixel window of this size.
+ * 							Use odd values: 1, 3, 5, ...
+ * 
+ * 
+ * TODO: only draw pixels that are actually read with readPixels(). 
+ * 
+ */
 var point = Potree.PointCloudOctree.prototype.pick = function(renderer, camera, ray, params){
+	// this function finds intersections by rendering point indices and then checking the point index at the mouse location.
+	// point indices are 3 byte and rendered to the RGB component.
+	// point cloud node indices are 1 byte and stored in the ALPHA component.
+	// this limits picking capabilities to 256 nodes and 2^24 points per node. 
+
 	var params = params || {};
-	var accuracy = params.accuracy || 0.5;
+	var accuracy = params.accuracy || 1;
+	var pickWindowSize = params.pickWindowSize || 17;
 	
 	var nodes = this.nodesOnRay(this.visibleNodes, ray);
 	
@@ -783,30 +788,37 @@ var point = Potree.PointCloudOctree.prototype.pick = function(renderer, camera, 
 		);
 	}
 	
+	// setup pick material.
+	// use the same point size functions as the main material to get the same point sizes.
 	if(!this.pickMaterial){
-		//this.pickMaterial = new Potree.PointCloudIndexMaterial({ size: 0.01, minSize: 3});
 		this.pickMaterial = new Potree.PointCloudMaterial();
 		this.pickMaterial.pointColorType = Potree.PointColorType.POINT_INDEX;
 		this.pickMaterial.pointSizeType = Potree.PointSizeType.FIXED;
-		this.pickMaterial.size = accuracy * 5;
+		this.pickMaterial.size = accuracy;
 	}
 	
-	// TODO
-	// Right now point size for picking is fixed 
-	// To work with adaptive size, the pick hierarchy texture must
-	// be updated to the hierarchy that is rendered during picking
+	this.pickMaterial.pointSizeType = this.material.pointSizeType;
+	this.pickMaterial.size = this.material.size;
+	
+	if(this.pickMaterial.pointSizeType === Potree.PointSizeType.ADAPTIVE){
+		this.updateVisibilityTexture(this.pickMaterial, nodes);
+	}
+	
+	this.pickMaterial.fov 			= this.material.fov;
+	this.pickMaterial.screenWidth 	= this.material.screenWidth;
+	this.pickMaterial.screenHeight 	= this.material.screenHeight;
+	this.pickMaterial.spacing 		= this.material.spacing;
+	this.pickMaterial.near 			= this.material.near;
+	this.pickMaterial.far 			= this.material.far;
+	this.pickMaterial.octreeLevels 	= this.material.octreeLevels;
 	
 	this.pickTarget.setSize(width, height);
-	
-	//this.pickMaterial.size = accuracy * (this.material.size || 0.01);
-	//this.pickMaterial.minSize = accuracy * (this.material.minSize || 1);
-	//this.pickMaterial.pointColorType = this.material.pointColorType;
-	//this.pickMaterial.pointSizeType = this.material.pointSizeType;
-	//this.pickMaterial.pointShape = this.material.pointShape;
 
 	var _gl = renderer.context;
 	
 	var material = this.pickMaterial;
+	
+	//renderer.uploadTexture(material.visibleNodesTexture);
 	
 	renderer.setRenderTarget( this.pickTarget );
 	
@@ -816,8 +828,13 @@ var point = Potree.PointCloudOctree.prototype.pick = function(renderer, camera, 
 	
 	renderer.clear( renderer.autoClearColor, renderer.autoClearDepth, renderer.autoClearStencil );
 	
+	//TODO: UGLY HACK CHAMPIONSHIP SUBMISSION!! drawing first node does not work properly so we draw it twice.
+	if(nodes.length > 0){
+		nodes.push(nodes[0]);
+	}
+	
 	for(var i = 0; i < nodes.length; i++){
-		var object = nodes[i].node;
+		var object = nodes[i];
 		var geometry = object.geometry;
 		
 		if(!geometry.attributes.indices.buffer){
@@ -847,41 +864,67 @@ var point = Potree.PointCloudOctree.prototype.pick = function(renderer, camera, 
 		renderer.renderBufferDirect(camera, [], null, material, geometry, object);
 	}
 	
-	
-	//_gl.bindTexture( _gl.TEXTURE_2D, this.pickTarget.__webglTexture );
-	//_gl.generateMipmap( _gl.TEXTURE_2D );
-	//_gl.bindTexture( _gl.TEXTURE_2D, null );
-	
-	
 	var ps = new THREE.Vector3().addVectors(camera.position, ray.direction).project(camera);
 	ps.addScalar(1).multiplyScalar(0.5);
 	
-	var buffer = new ArrayBuffer(4);
+	var pickWindowSize = 17;
+	var pixelCount = pickWindowSize * pickWindowSize;
+	var buffer = new ArrayBuffer(pixelCount*4);
 	var pixels = new Uint8Array(buffer);
 	var ibuffer = new Uint32Array(buffer);
 	renderer.context.readPixels(
-		ps.x * width, ps.y * height, 
-		1, 1, 
+		ps.x * width - (pickWindowSize-1) / 2, ps.y * height - (pickWindowSize-1) / 2, 
+		pickWindowSize, pickWindowSize, 
 		renderer.context.RGBA, renderer.context.UNSIGNED_BYTE, pixels);
-	var pcIndex = pixels[3];
-	pixels[3] = 0;
-	var pIndex = ibuffer[0];
-	
-	//console.log(pcIndex);
+		
+		
+	//var img = pixelsArrayToImage(pixels, pickWindowSize, pickWindowSize);
+	//document.body.appendChild(img);
+	//img.style.position = "absolute";
+	//img.style.top = height - ps.y * height - pickWindowSize / 2;
+	//img.style.left = ps.x * width - pickWindowSize / 2;
+	//img.style.pointerEvents = "none";
 	//
 	//return null;
 	
-	var pc = nodes[pcIndex].node;
-	var positionArray = pc.geometry.attributes.position.array;
-	var x = positionArray[3*pIndex+0];
-	var y = positionArray[3*pIndex+1];
-	var z = positionArray[3*pIndex+2];
-	var position = new THREE.Vector3(x, y, z);
-	position.applyMatrix4(this.matrixWorld);
+		
+	// find closest hit inside pixelWindow boundaries
+	var min = Number.MAX_VALUE;
+	var hit = null;
+	//console.log("finding closest hit");
+	for(var u = 0; u < pickWindowSize; u++){
+		for(var v = 0; v < pickWindowSize; v++){
+			var offset = (u + v*pickWindowSize);
+			var distance = Math.pow(u - (pickWindowSize-1) / 2, 2) + Math.pow(v - (pickWindowSize-1) / 2, 2);
+			
+			var pcIndex = pixels[4*offset + 3];
+			pixels[4*offset + 3] = 0;
+			var pIndex = ibuffer[offset];
+			
+			if((pIndex !== 0 || pcIndex !== 0) && distance < min){
+				
+				hit = {
+					pIndex: pIndex,
+					pcIndex: pcIndex
+				};
+				//console.log(hit);
+				min = distance;
+			}
+		}
+	}	
 	
-	if(pIndex === 0 && pcIndex === 0){
+	if(hit){
+		//console.log(hit);
+		var pc = nodes[hit.pcIndex];
+	    var positionArray = pc.geometry.attributes.position.array;
+	    var x = positionArray[3*hit.pIndex+0];
+	    var y = positionArray[3*hit.pIndex+1];
+	    var z = positionArray[3*hit.pIndex+2];
+	    var position = new THREE.Vector3(x, y, z);
+	    position.applyMatrix4(this.matrixWorld);
+		
+		return {position: position};
+	}else{
 		return null;
 	}
-	
-	return {position: position};
 }

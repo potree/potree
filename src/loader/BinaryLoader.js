@@ -10,22 +10,23 @@ Potree.BinaryLoader = function(version, boundingBox, scale){
 	this.scale = scale;
 };
 
-Potree.BinaryLoader.prototype.newerVersion = function(version){
-
-};
-
 Potree.BinaryLoader.prototype.load = function(node){
-
 	if(node.loaded){
 		return;
 	}
-
-	var url = node.pcoGeometry.octreeDir + "/" + node.name;
-	if(this.version.newerThan("1.3")){
-		url += ".bin";
-	}
 	
 	var scope = this;
+
+	//var url = node.pcoGeometry.octreeDir + "/" + node.getHierarchyPath() + "/" + node.name;
+	//if(this.version.newerThan("1.3")){
+	//	url += ".bin";
+	//}
+	
+	var url = node.getURL();
+	
+	if(this.version.equalOrHigher("1.4")){
+		url += ".bin";
+	}
 	
 	var xhr = new XMLHttpRequest();
 	xhr.open('GET', url, true);
@@ -46,7 +47,6 @@ Potree.BinaryLoader.prototype.load = function(node){
 	}catch(e){
 		console.log("fehler beim laden der punktwolke: " + e);
 	}
-	
 };
 
 Potree.BinaryLoader.prototype.parse = function(node, buffer){

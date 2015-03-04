@@ -2604,7 +2604,6 @@ Potree.PointCloudOctree.prototype.update = function(camera, renderer){
 	}
 	
 	this.material.octreeLevels = this.maxLevel;
-	this.material.octreeLevels = 5;
 	
 	// check profile cut plane intersections
 	for(var i = 0; i < this.profileRequests.length; i++){

@@ -1,5 +1,6 @@
 
 
+
 function Potree(){
 	
 }
@@ -8,10 +9,6 @@ Potree.pointLoadLimit = 50*1000*1000;
 
 // contains WebWorkers with base64 encoded code
 Potree.workers = {};
-
-
-
-
 
 
 
@@ -205,6 +202,7 @@ POCLoader.load = function load(url, callback) {
 				}
 				
 				pco.spacing = fMno.spacing;
+				pco.hierarchyStepSize = fMno.hierarchyStepSize;
 
 				pco.pointAttributes = fMno.pointAttributes;
 				
@@ -247,28 +245,31 @@ POCLoader.load = function load(url, callback) {
 					
 					var root = new Potree.PointCloudOctreeGeometryNode(name, pco, boundingBox);
 					root.level = 0;
+					root.hasChildren = true;
 					root.numPoints = fMno.hierarchy[0][1];
 					pco.root = root;
 					pco.root.load();
 					nodes[name] = root;
 				}
 				
-				//// load remaining hierarchy
-				//for( var i = 1; i < fMno.hierarchy.length; i++){
-				//	var name = fMno.hierarchy[i][0];
-				//	var numPoints = fMno.hierarchy[i][1];
-				//	var index = parseInt(name.charAt(name.length-1));
-				//	var parentName = name.substring(0, name.length-1);
-				//	var parentNode = nodes[parentName];
-				//	var level = name.length-1;
-				//	var boundingBox = POCLoader.createChildAABB(parentNode.boundingBox, index);
-				//	
-				//	var node = new Potree.PointCloudOctreeGeometryNode(name, pco, boundingBox);
-				//	node.level = level;
-				//	node.numPoints = numPoints;
-				//	parentNode.addChild(node);
-				//	nodes[name] = node;
-				//}
+				// load remaining hierarchy
+				if(pco.loader.version.upTo("1.4")){
+					for( var i = 1; i < fMno.hierarchy.length; i++){
+						var name = fMno.hierarchy[i][0];
+						var numPoints = fMno.hierarchy[i][1];
+						var index = parseInt(name.charAt(name.length-1));
+						var parentName = name.substring(0, name.length-1);
+						var parentNode = nodes[parentName];
+						var level = name.length-1;
+						var boundingBox = POCLoader.createChildAABB(parentNode.boundingBox, index);
+						
+						var node = new Potree.PointCloudOctreeGeometryNode(name, pco, boundingBox);
+						node.level = level;
+						node.numPoints = numPoints;
+						parentNode.addChild(node);
+						nodes[name] = node;
+					}
+				}
 				
 				pco.nodes = nodes;
 				
@@ -505,10 +506,6 @@ Potree.BinaryLoader = function(version, boundingBox, scale){
 	this.scale = scale;
 };
 
-Potree.BinaryLoader.prototype.newerVersion = function(version){
-
-};
-
 Potree.BinaryLoader.prototype.load = function(node){
 	if(node.loaded){
 		return;
@@ -516,8 +513,14 @@ Potree.BinaryLoader.prototype.load = function(node){
 	
 	var scope = this;
 
-	var url = node.pcoGeometry.octreeDir + "/" + node.name;
-	if(this.version.newerThan("1.3")){
+	//var url = node.pcoGeometry.octreeDir + "/" + node.getHierarchyPath() + "/" + node.name;
+	//if(this.version.newerThan("1.3")){
+	//	url += ".bin";
+	//}
+	
+	var url = node.getURL();
+	
+	if(this.version.equalOrHigher("1.4")){
 		url += ".bin";
 	}
 	
@@ -614,7 +617,13 @@ Potree.LasLazLoader.prototype.load = function(node){
 	
 	//var url = node.pcoGeometry.octreeDir + "/" + node.name;
 	var pointAttributes = node.pcoGeometry.pointAttributes;
-	var url = node.pcoGeometry.octreeDir + "/" + node.name + "." + pointAttributes.toLowerCase()
+	//var url = node.pcoGeometry.octreeDir + "/" + node.name + "." + pointAttributes.toLowerCase()
+
+	var url = node.getURL();
+	
+	if(this.version.equalOrHigher("1.4")){
+		url += "." + pointAttributes.toLowerCase();
+	}
 	
 	var scope = this;
 	
@@ -3337,7 +3346,8 @@ Potree.PointCloudOctreeGeometry = function(){
 	this.numNodesLoading = 0;
 	this.nodes = null;
 	this.pointAttributes = null;
-	this.hierarchyPartDepth = 6;
+	this.hierarchyStepSize = -1;
+	this.loader = null;
 }
 
 Potree.PointCloudOctreeGeometryNode = function(name, pcoGeometry, boundingBox){
@@ -3349,7 +3359,46 @@ Potree.PointCloudOctreeGeometryNode = function(name, pcoGeometry, boundingBox){
 	this.children = {};
 	this.numPoints = 0;
 	this.level = null;
+}
+
+Potree.PointCloudOctreeGeometryNode.prototype.getURL = function(){
+	var url = "";
 	
+	var version = this.pcoGeometry.loader.version;
+	
+	if(version.equalOrHigher("1.5")){
+		url = this.pcoGeometry.octreeDir + "/" + this.getHierarchyPath() + "/" + this.name;
+	}else if(version.equalOrHigher("1.4")){
+		url = this.pcoGeometry.octreeDir + "/" + this.name;
+	}else if(version.upTo("1.3")){
+		url = this.pcoGeometry.octreeDir + "/" + this.name;
+	}
+	
+	return url;
+}
+
+Potree.PointCloudOctreeGeometryNode.prototype.getHierarchyPath = function(){
+	var path = "";
+
+	var hierachyStepSize = this.pcoGeometry.hierarchyStepSize;
+	var indices = this.name.substr(1);
+	var numParts;
+	if(indices.length == 0){
+		numParts = 0;
+	}else{
+		numParts = Math.ceil(indices.length / hierachyStepSize);
+	}
+
+	if(numParts == 0){
+		path = "";
+	}else{
+		path = "";
+		for(var i = 0; i < numParts; i++){
+			path += "r" + indices.substr(0, i*hierachyStepSize) + "/";
+		}
+	}
+
+	return path;
 }
 
 Potree.PointCloudOctreeGeometryNode.prototype.addChild = function(child){
@@ -3371,8 +3420,12 @@ Potree.PointCloudOctreeGeometryNode.prototype.load = function(){
 	this.pcoGeometry.numNodesLoading++;
 	
 	
-	if((this.level % this.pcoGeometry.hierarchyPartDepth) === 0){
-		this.loadHierachyThenPoints();
+	if(this.pcoGeometry.loader.version.equalOrHigher("1.5")){
+		if((this.level % this.pcoGeometry.hierarchyStepSize) === 0 && this.hasChildren){
+			this.loadHierachyThenPoints();
+		}else{
+			this.loadPoints();
+		}
 	}else{
 		this.loadPoints();
 	}
@@ -3449,6 +3502,7 @@ Potree.PointCloudOctreeGeometryNode.prototype.loadHierachyThenPoints = function(
 			var currentNode = new Potree.PointCloudOctreeGeometryNode(name, pco, boundingBox);
 			currentNode.level = level;
 			currentNode.numPoints = numPoints;
+			currentNode.hasChildren = decoded[i].children > 0;
 			parentNode.addChild(currentNode);
 			nodes[name] = currentNode;
 		}
@@ -3456,8 +3510,9 @@ Potree.PointCloudOctreeGeometryNode.prototype.loadHierachyThenPoints = function(
 		node.loadPoints();
 		
 	};
-	if((node.level % node.pcoGeometry.hierarchyPartDepth) === 0){
-		var hurl = node.pcoGeometry.octreeDir + "/../hierarchy/" + node.name + ".hrc";
+	if((node.level % node.pcoGeometry.hierarchyStepSize) === 0){
+		//var hurl = node.pcoGeometry.octreeDir + "/../hierarchy/" + node.name + ".hrc";
+		var hurl = node.pcoGeometry.octreeDir + "/" + node.getHierarchyPath() + "/" + node.name + ".hrc";
 		
 		var xhr = new XMLHttpRequest();
 		xhr.open('GET', hurl, true);
@@ -3689,6 +3744,41 @@ function getMousePointCloudIntersection(mouse, camera, renderer, pointclouds, ac
 	
 	
 	
+
+Potree.Features = function(){
+
+	var gl = document.createElement("canvas").getContext("webgl");
+	
+	return {
+		SHADER_INTERPOLATION: {
+			isSupported: function(){
+			
+				var supported = true;
+				
+				supported = supported && gl.getExtension("EXT_frag_depth");
+				supported = supported && gl.getParameter(gl.MAX_VARYING_VECTORS) >= 8;
+				
+				return supported;
+				
+			}
+		},
+		SHADER_SPLATS: {
+			isSupported: function(){
+				
+				var supported = true;
+				
+				supported = supported && gl.getExtension("EXT_frag_depth");
+				supported = supported && gl.getExtension("OES_texture_float");
+				supported = supported && gl.getParameter(gl.MAX_VARYING_VECTORS) >= 8;
+				
+				return supported;
+				
+			}
+		
+		}
+	}
+
+}();
 /**
  * adapted from http://stemkoski.github.io/Three.js/Sprite-Text-Labels.html
  */
@@ -3802,8 +3892,8 @@ Potree.TextSprite.prototype.roundRect = function(ctx, x, y, w, h, r) {
 Potree.Version = function(version){
 	this.version = version;
 	var vmLength = (version.indexOf(".") === -1) ? version.length : version.indexOf(".");
-	this.versionMajor = version.substr(0, vmLength);
-	this.versionMinor = version.substr(vmLength + 1);
+	this.versionMajor = parseInt(version.substr(0, vmLength));
+	this.versionMinor = parseInt(version.substr(vmLength + 1));
 	if(this.versionMinor.length === 0){
 		this.versionMinor = 0;
 	}
@@ -3822,6 +3912,21 @@ Potree.Version.prototype.newerThan = function(version){
 	}
 };
 
+Potree.Version.prototype.equalOrHigher = function(version){
+	var v = new Potree.Version(version);
+	
+	if( this.versionMajor > v.versionMajor){
+		return true;
+	}else if( this.versionMajor === v.versionMajor && this.versionMinor >= v.versionMinor){
+		return true;
+	}else{
+		return false;
+	}
+};
+
+Potree.Version.prototype.upTo = function(version){
+	return !this.newerThan(version);
+}
 
 //
 // calculating area of a polygon:

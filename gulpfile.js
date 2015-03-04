@@ -29,6 +29,7 @@ var paths = {
 		"src/PointCloudOctree.js",
 		"src/PointCloudOctreeGeometry.js",
 		"src/utils.js",
+		"src/Features.js",
 		"src/TextSprite.js",
 		"src/Version.js",
 		"src/utils/AreaTool.js",

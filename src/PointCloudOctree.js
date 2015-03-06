@@ -616,23 +616,71 @@ Potree.PointCloudOctree.prototype.getBoundingBoxWorld = function(){
  *
  * maxDepth:		search points up to the given octree depth
  *
+ *
+ * The return value is an array with all segments of the profile path
+ *  var segment = {
+ * 		start: 	THREE.Vector3,
+ * 		end: 	THREE.Vector3,
+ * 		points: {}
+ * 		project: function()
+ *  };
+ *
+ * The project() function inside each segment can be used to transform
+ * that segments point coordinates to line up along the x-axis.
+ *
+ *
  */
 Potree.PointCloudOctree.prototype.getPointsInProfile = function(profile, maxDepth){
-	var points = null;
+	var points = [];
+	
+	var mileage = 0;
 	for(var i = 0; i < profile.points.length - 1; i++){
 		var start = profile.points[i];
 		var end = profile.points[i+1];
 		var ps = this.getProfile(start, end, profile.width, maxDepth);
 		
-		if(!points){
-			points = ps;
-		}else{
-			for(var property in points){
-				if(points.hasOwnProperty(property)){
-					points[property] = points[property].concat(ps[property]);
-				}
+		var project = function(_start, _end, _mileage){
+			var start = _start;
+			var end = _end;
+			var mileage = _mileage;
+			
+			var xAxis = new THREE.Vector3(1,0,0);
+			var dir = new THREE.Vector3().subVectors(end, start);
+			dir.y = 0;
+			dir.normalize();
+			var alpha = Math.acos(xAxis.dot(dir));
+			if(dir.z > 0){
+				alpha = -alpha;
 			}
-		}
+			
+			
+			return function(position){
+						
+				var toOrigin = new THREE.Matrix4().makeTranslation(-start.x, -start.y, -start.z);
+				var alignWithX = new THREE.Matrix4().makeRotationY(-alpha);
+				var applyMileage = new THREE.Matrix4().makeTranslation(mileage, 0, 0);
+
+
+				var pos = position.clone();
+				pos.applyMatrix4(toOrigin);
+				pos.applyMatrix4(alignWithX);
+				pos.applyMatrix4(applyMileage);
+				
+				return pos;
+			};
+			
+		}(start, end, mileage)
+		
+		var segment = {
+			start: start,
+			end: end,
+			points: ps,
+			project: project
+		};
+		
+		points.push(segment);
+
+		mileage += start.distanceTo(end);
 	}
 	
 	return points;
@@ -746,6 +794,8 @@ Potree.PointCloudOctree.prototype.getProfile = function(start, end, width, depth
 				}
 			}
 		}
+		
+		inside.numPoints = inside.position.length;
 		
 		return inside;
 	}

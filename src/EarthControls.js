@@ -140,12 +140,11 @@ THREE.EarthControls = function ( camera, domElement, renderer, resourcePath ) {
 		if ( scope.enabled === false ) return;
 		event.preventDefault();
 		
-		var accuracy = 1;
 		var mouse =  {
 			x: ( event.clientX / scope.domElement.clientWidth ) * 2 - 1,
 			y: - ( event.clientY / scope.domElement.clientHeight ) * 2 + 1
 		};
-		var I = getMousePointCloudIntersection(mouse, scope.camera, scope.renderer, scope.pointclouds, accuracy)
+		var I = getMousePointCloudIntersection(mouse, scope.camera, scope.renderer, scope.pointclouds)
 		if(!I){
 			return;
 		}
@@ -214,12 +213,11 @@ THREE.EarthControls = function ( camera, domElement, renderer, resourcePath ) {
 		event.preventDefault();
 
 		var amount = (event.detail<0 || event.wheelDelta>0) ? 1 : -1;
-		var accuracy = 1;
 		var mouse =  {
 			x: ( event.clientX / scope.domElement.clientWidth ) * 2 - 1,
 			y: - ( event.clientY / scope.domElement.clientHeight ) * 2 + 1
 		};
-		var I = getMousePointCloudIntersection(mouse, scope.camera, scope.renderer, scope.pointclouds, accuracy)
+		var I = getMousePointCloudIntersection(mouse, scope.camera, scope.renderer, scope.pointclouds)
 		
 		//scope.dragStartIndicator.style.left = event.clientX - scope.dragStartIndicator.clientWidth / 2;
 		//scope.dragStartIndicator.style.top = event.clientY - scope.dragStartIndicator.clientHeight / 2;

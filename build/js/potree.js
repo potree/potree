@@ -2169,12 +2169,11 @@ THREE.EarthControls = function ( camera, domElement, renderer, resourcePath ) {
 		if ( scope.enabled === false ) return;
 		event.preventDefault();
 		
-		var accuracy = 1;
 		var mouse =  {
 			x: ( event.clientX / scope.domElement.clientWidth ) * 2 - 1,
 			y: - ( event.clientY / scope.domElement.clientHeight ) * 2 + 1
 		};
-		var I = getMousePointCloudIntersection(mouse, scope.camera, scope.renderer, scope.pointclouds, accuracy)
+		var I = getMousePointCloudIntersection(mouse, scope.camera, scope.renderer, scope.pointclouds)
 		if(!I){
 			return;
 		}
@@ -2243,12 +2242,11 @@ THREE.EarthControls = function ( camera, domElement, renderer, resourcePath ) {
 		event.preventDefault();
 
 		var amount = (event.detail<0 || event.wheelDelta>0) ? 1 : -1;
-		var accuracy = 1;
 		var mouse =  {
 			x: ( event.clientX / scope.domElement.clientWidth ) * 2 - 1,
 			y: - ( event.clientY / scope.domElement.clientHeight ) * 2 + 1
 		};
-		var I = getMousePointCloudIntersection(mouse, scope.camera, scope.renderer, scope.pointclouds, accuracy)
+		var I = getMousePointCloudIntersection(mouse, scope.camera, scope.renderer, scope.pointclouds)
 		
 		//scope.dragStartIndicator.style.left = event.clientX - scope.dragStartIndicator.clientWidth / 2;
 		//scope.dragStartIndicator.style.top = event.clientY - scope.dragStartIndicator.clientHeight / 2;
@@ -3035,20 +3033,44 @@ Potree.PointCloudOctree.prototype.getBoundingBoxWorld = function(){
 	return tBox;
 }
 
+/**
+ * returns points inside the profile points
+ *
+ * maxDepth:		search points up to the given octree depth
+ *
+ */
 Potree.PointCloudOctree.prototype.getPointsInProfile = function(profile, maxDepth){
-	var points = [];
+	var points = null;
 	for(var i = 0; i < profile.points.length - 1; i++){
 		var start = profile.points[i];
 		var end = profile.points[i+1];
 		var ps = this.getProfile(start, end, profile.width, maxDepth);
-		for(var j = 0; j < ps.length; j++){
-			points.push(ps[j]);
+		
+		if(!points){
+			points = ps;
+		}else{
+			for(var property in points){
+				if(points.hasOwnProperty(property)){
+					points[property] = points[property].concat(ps[property]);
+				}
+			}
 		}
 	}
 	
 	return points;
 };
 
+/**
+ * returns points inside the given profile bounds.
+ *
+ * start: 	
+ * end: 	
+ * width:	
+ * depth:		search points up to the given octree depth
+ * callback:	if specified, points are loaded before searching
+ *				
+ *
+ */
 Potree.PointCloudOctree.prototype.getProfile = function(start, end, width, depth, callback){
 	if(callback !== undefined){
 		this.profileRequests.push(new Potree.ProfileRequest(start, end, width, depth, callback));
@@ -3065,7 +3087,7 @@ Potree.PointCloudOctree.prototype.getProfile = function(start, end, width, depth
 		var cutPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(N, start);
 		var halfPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(side, center);
 		
-		var inside = [];
+		var inside = null;
 		
 		
 		while(stack.length > 0){
@@ -3078,16 +3100,55 @@ Potree.PointCloudOctree.prototype.getProfile = function(start, end, width, depth
 				var geometry = object.geometry;
 				var positions = geometry.attributes.position;
 				var p = positions.array;
-				var pointCount = positions.length / positions.itemSize;
+				var numPoints = object.numPoints;
 				
-				for(var i = 0; i < pointCount; i++){
+				if(!inside){
+					inside = {};
+					
+					for (var property in geometry.attributes) {
+						if (geometry.attributes.hasOwnProperty(property)) {
+							if(property === "indices"){
+							
+							}else{
+								inside[property] = [];
+							}
+						}
+					}
+				}
+				
+				for(var i = 0; i < numPoints; i++){
 					var pos = new THREE.Vector3(p[3*i], p[3*i+1], p[3*i+2]);
 					pos.applyMatrix4(this.matrixWorld);
 					var distance = Math.abs(cutPlane.distanceToPoint(pos));
 					var centerDistance = Math.abs(halfPlane.distanceToPoint(pos));
 					
 					if(distance < width / 2 && centerDistance < length / 2){
-						inside.push(pos);
+						//inside.push(pos);
+						
+						for (var property in geometry.attributes) {
+							if (geometry.attributes.hasOwnProperty(property)) {
+							
+								if(property === "position"){
+									inside[property].push(pos);
+								}else if(property === "indices"){
+									// skip indices
+								}else{
+									var values = geometry.attributes[property];
+									if(values.itemSize === 1){
+										inside[property].push(values.array[i + j]);
+									}else{
+										var value = [];
+										for(var j = 0; j < values.itemSize; j++){
+											value.push(values.array[i*values.itemSize + j]);
+										}
+										inside[property].push(value);
+									}
+								}
+								
+							}
+						}
+						
+						
 						pointsFound++;
 					}
 				}
@@ -3190,7 +3251,6 @@ var point = Potree.PointCloudOctree.prototype.pick = function(renderer, camera, 
 	// this limits picking capabilities to 256 nodes and 2^24 points per node. 
 
 	var params = params || {};
-	var accuracy = params.accuracy || 1;
 	var pickWindowSize = params.pickWindowSize || 17;
 	
 	var nodes = this.nodesOnRay(this.visibleNodes, ray);
@@ -3199,8 +3259,13 @@ var point = Potree.PointCloudOctree.prototype.pick = function(renderer, camera, 
 		return null;
 	}
 	
-	var width = Math.ceil(renderer.domElement.clientWidth * accuracy);
-	var height = Math.ceil(renderer.domElement.clientHeight * accuracy);
+	var width = Math.ceil(renderer.domElement.clientWidth);
+	var height = Math.ceil(renderer.domElement.clientHeight);
+	
+	var pixelPos = new THREE.Vector3().addVectors(camera.position, ray.direction).project(camera);
+	pixelPos.addScalar(1).multiplyScalar(0.5);
+	pixelPos.x *= width;
+	pixelPos.y *= height
 	
 	if(!this.pickTarget){
 		this.pickTarget = new THREE.WebGLRenderTarget( 
@@ -3217,7 +3282,6 @@ var point = Potree.PointCloudOctree.prototype.pick = function(renderer, camera, 
 		this.pickMaterial = new Potree.PointCloudMaterial();
 		this.pickMaterial.pointColorType = Potree.PointColorType.POINT_INDEX;
 		this.pickMaterial.pointSizeType = Potree.PointSizeType.FIXED;
-		this.pickMaterial.size = accuracy;
 	}
 	
 	this.pickMaterial.pointSizeType = this.material.pointSizeType;
@@ -3234,14 +3298,17 @@ var point = Potree.PointCloudOctree.prototype.pick = function(renderer, camera, 
 	this.pickMaterial.near 			= this.material.near;
 	this.pickMaterial.far 			= this.material.far;
 	this.pickMaterial.octreeLevels 	= this.material.octreeLevels;
+	this.pickMaterial.pointShape 	= this.material.pointShape;
 	
 	this.pickTarget.setSize(width, height);
 
 	var _gl = renderer.context;
 	
-	var material = this.pickMaterial;
+	_gl.enable(_gl.SCISSOR_TEST);
+	_gl.scissor(pixelPos.x - (pickWindowSize - 1) / 2, pixelPos.y - (pickWindowSize - 1) / 2,pickWindowSize,pickWindowSize);
+	_gl.disable(_gl.SCISSOR_TEST);
 	
-	//renderer.uploadTexture(material.visibleNodesTexture);
+	var material = this.pickMaterial;
 	
 	renderer.setRenderTarget( this.pickTarget );
 	
@@ -3287,8 +3354,7 @@ var point = Potree.PointCloudOctree.prototype.pick = function(renderer, camera, 
 		renderer.renderBufferDirect(camera, [], null, material, geometry, object);
 	}
 	
-	var ps = new THREE.Vector3().addVectors(camera.position, ray.direction).project(camera);
-	ps.addScalar(1).multiplyScalar(0.5);
+	
 	
 	var pickWindowSize = 17;
 	var pixelCount = pickWindowSize * pickWindowSize;
@@ -3296,20 +3362,9 @@ var point = Potree.PointCloudOctree.prototype.pick = function(renderer, camera, 
 	var pixels = new Uint8Array(buffer);
 	var ibuffer = new Uint32Array(buffer);
 	renderer.context.readPixels(
-		ps.x * width - (pickWindowSize-1) / 2, ps.y * height - (pickWindowSize-1) / 2, 
+		pixelPos.x - (pickWindowSize-1) / 2, pixelPos.y - (pickWindowSize-1) / 2, 
 		pickWindowSize, pickWindowSize, 
 		renderer.context.RGBA, renderer.context.UNSIGNED_BYTE, pixels);
-		
-		
-	//var img = pixelsArrayToImage(pixels, pickWindowSize, pickWindowSize);
-	//document.body.appendChild(img);
-	//img.style.position = "absolute";
-	//img.style.top = height - ps.y * height - pickWindowSize / 2;
-	//img.style.left = ps.x * width - pickWindowSize / 2;
-	//img.style.pointerEvents = "none";
-	//
-	//return null;
-	
 		
 	// find closest hit inside pixelWindow boundaries
 	var min = Number.MAX_VALUE;
@@ -3330,23 +3385,48 @@ var point = Potree.PointCloudOctree.prototype.pick = function(renderer, camera, 
 					pIndex: pIndex,
 					pcIndex: pcIndex
 				};
-				//console.log(hit);
 				min = distance;
 			}
 		}
 	}	
 	
 	if(hit){
-		//console.log(hit);
-		var pc = nodes[hit.pcIndex];
-	    var positionArray = pc.geometry.attributes.position.array;
-	    var x = positionArray[3*hit.pIndex+0];
-	    var y = positionArray[3*hit.pIndex+1];
-	    var z = positionArray[3*hit.pIndex+2];
-	    var position = new THREE.Vector3(x, y, z);
-	    position.applyMatrix4(this.matrixWorld);
+		var point = {};
 		
-		return {position: position};
+		var pc = nodes[hit.pcIndex];
+		var attributes = pc.geometry.attributes;
+		
+		for (var property in attributes) {
+			if (attributes.hasOwnProperty(property)) {
+				var values = geometry.attributes[property];
+			
+				if(property === "position"){
+					var positionArray = pc.geometry.attributes.position.array;
+					var x = positionArray[3*hit.pIndex+0];
+					var y = positionArray[3*hit.pIndex+1];
+					var z = positionArray[3*hit.pIndex+2];
+					var position = new THREE.Vector3(x, y, z);
+					position.applyMatrix4(this.matrixWorld);
+				
+					point[property] = position;
+				}else if(property === "indices"){
+				
+				}else{
+					if(values.itemSize === 1){
+						point[property] = values.array[i + j];
+					}else{
+						var value = [];
+						for(var j = 0; j < values.itemSize; j++){
+							value.push(values.array[i*values.itemSize + j]);
+						}
+						point[property] = value;
+					}
+				}
+			}
+		}
+		
+		
+		return point;
 	}else{
 		return null;
 	}
@@ -3730,7 +3810,7 @@ Potree.utils.createBackgroundTexture = function(width, height){
 
 
 
-function getMousePointCloudIntersection(mouse, camera, renderer, pointclouds, accuracy){
+function getMousePointCloudIntersection(mouse, camera, renderer, pointclouds){
 	var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
 	vector.unproject(camera);
 
@@ -3742,7 +3822,7 @@ function getMousePointCloudIntersection(mouse, camera, renderer, pointclouds, ac
 	
 	for(var i = 0; i < pointclouds.length; i++){
 		var pointcloud = pointclouds[i];
-		var point = pointcloud.pick(renderer, camera, ray, {accuracy: accuracy});
+		var point = pointcloud.pick(renderer, camera, ray);
 		
 		if(!point){
 			continue;
@@ -3993,7 +4073,6 @@ Potree.AreaTool = function(scene, camera, renderer){
 	this.renderer = renderer;
 	this.domElement = renderer.domElement;
 	this.mouse = {x: 0, y: 0};
-	this.accuracy = 0.5;
 	
 	var STATE = {
 		DEFAULT: 0,
@@ -4399,7 +4478,7 @@ Potree.AreaTool = function(scene, camera, renderer){
 		
 		for(var i = 0; i < pointClouds.length; i++){
 			var pointcloud = pointClouds[i];
-			var point = pointcloud.pick(scope.renderer, scope.camera, ray, {accuracy: scope.accuracy});
+			var point = pointcloud.pick(scope.renderer, scope.camera, ray);
 			
 			if(!point){
 				continue;
@@ -4497,7 +4576,6 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 	this.renderer = renderer;
 	this.domElement = renderer.domElement;
 	this.mouse = {x: 0, y: 0};
-	this.accuracy = 1;
 	
 	var STATE = {
 		DEFAULT: 0,
@@ -4906,7 +4984,7 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 		
 		for(var i = 0; i < pointClouds.length; i++){
 			var pointcloud = pointClouds[i];
-			var point = pointcloud.pick(scope.renderer, scope.camera, ray, {accuracy: scope.accuracy});
+			var point = pointcloud.pick(scope.renderer, scope.camera, ray);
 			
 			if(!point){
 				continue;
@@ -5016,7 +5094,6 @@ Potree.ProfileTool = function(scene, camera, renderer){
 	this.renderer = renderer;
 	this.domElement = renderer.domElement;
 	this.mouse = {x: 0, y: 0};
-	this.accuracy = 0.5;
 	
 	var STATE = {
 		DEFAULT: 0,
@@ -5481,7 +5558,7 @@ Potree.ProfileTool = function(scene, camera, renderer){
 		
 		for(var i = 0; i < pointClouds.length; i++){
 			var pointcloud = pointClouds[i];
-			var point = pointcloud.pick(scope.renderer, scope.camera, ray, {accuracy: scope.accuracy});
+			var point = pointcloud.pick(scope.renderer, scope.camera, ray);
 			
 			if(!point){
 				continue;
@@ -6294,7 +6371,6 @@ Potree.VolumeTool = function(scene, camera, renderer){
 	this.renderer = renderer;
 	this.domElement = renderer.domElement;
 	this.mouse = {x: 0, y: 0};
-	this.accuracy = 0.5;
 	
 	this.volumes = [];
 	
@@ -6508,7 +6584,7 @@ Potree.VolumeTool = function(scene, camera, renderer){
 		
 		for(var i = 0; i < pointClouds.length; i++){
 			var pointcloud = pointClouds[i];
-			var point = pointcloud.pick(scope.renderer, scope.camera, ray, {accuracy: scope.accuracy});
+			var point = pointcloud.pick(scope.renderer, scope.camera, ray);
 			
 			if(!point){
 				continue;

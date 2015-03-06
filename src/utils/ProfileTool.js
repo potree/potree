@@ -16,7 +16,6 @@ Potree.ProfileTool = function(scene, camera, renderer){
 	this.renderer = renderer;
 	this.domElement = renderer.domElement;
 	this.mouse = {x: 0, y: 0};
-	this.accuracy = 0.5;
 	
 	var STATE = {
 		DEFAULT: 0,
@@ -481,7 +480,7 @@ Potree.ProfileTool = function(scene, camera, renderer){
 		
 		for(var i = 0; i < pointClouds.length; i++){
 			var pointcloud = pointClouds[i];
-			var point = pointcloud.pick(scope.renderer, scope.camera, ray, {accuracy: scope.accuracy});
+			var point = pointcloud.pick(scope.renderer, scope.camera, ray);
 			
 			if(!point){
 				continue;

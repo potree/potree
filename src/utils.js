@@ -164,7 +164,7 @@ Potree.utils.createBackgroundTexture = function(width, height){
 
 
 
-function getMousePointCloudIntersection(mouse, camera, renderer, pointclouds, accuracy){
+function getMousePointCloudIntersection(mouse, camera, renderer, pointclouds){
 	var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
 	vector.unproject(camera);
 
@@ -176,7 +176,7 @@ function getMousePointCloudIntersection(mouse, camera, renderer, pointclouds, ac
 	
 	for(var i = 0; i < pointclouds.length; i++){
 		var pointcloud = pointclouds[i];
-		var point = pointcloud.pick(renderer, camera, ray, {accuracy: accuracy});
+		var point = pointcloud.pick(renderer, camera, ray);
 		
 		if(!point){
 			continue;

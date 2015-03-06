@@ -829,7 +829,6 @@ var point = Potree.PointCloudOctree.prototype.pick = function(renderer, camera, 
 	// this limits picking capabilities to 256 nodes and 2^24 points per node. 
 
 	var params = params || {};
-	var accuracy = params.accuracy || 1;
 	var pickWindowSize = params.pickWindowSize || 17;
 	
 	var nodes = this.nodesOnRay(this.visibleNodes, ray);
@@ -838,8 +837,8 @@ var point = Potree.PointCloudOctree.prototype.pick = function(renderer, camera, 
 		return null;
 	}
 	
-	var width = Math.ceil(renderer.domElement.clientWidth * accuracy);
-	var height = Math.ceil(renderer.domElement.clientHeight * accuracy);
+	var width = Math.ceil(renderer.domElement.clientWidth);
+	var height = Math.ceil(renderer.domElement.clientHeight);
 	
 	var pixelPos = new THREE.Vector3().addVectors(camera.position, ray.direction).project(camera);
 	pixelPos.addScalar(1).multiplyScalar(0.5);
@@ -861,7 +860,6 @@ var point = Potree.PointCloudOctree.prototype.pick = function(renderer, camera, 
 		this.pickMaterial = new Potree.PointCloudMaterial();
 		this.pickMaterial.pointColorType = Potree.PointColorType.POINT_INDEX;
 		this.pickMaterial.pointSizeType = Potree.PointSizeType.FIXED;
-		this.pickMaterial.size = accuracy;
 	}
 	
 	this.pickMaterial.pointSizeType = this.material.pointSizeType;

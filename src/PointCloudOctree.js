@@ -797,6 +797,36 @@ Potree.PointCloudOctree.prototype.getProfile = function(start, end, width, depth
 		
 		inside.numPoints = inside.position.length;
 		
+		var project = function(_start, _end){
+			var start = _start;
+			var end = _end;
+			
+			var xAxis = new THREE.Vector3(1,0,0);
+			var dir = new THREE.Vector3().subVectors(end, start);
+			dir.y = 0;
+			dir.normalize();
+			var alpha = Math.acos(xAxis.dot(dir));
+			if(dir.z > 0){
+				alpha = -alpha;
+			}
+			
+			
+			return function(position){
+						
+				var toOrigin = new THREE.Matrix4().makeTranslation(-start.x, -start.y, -start.z);
+				var alignWithX = new THREE.Matrix4().makeRotationY(-alpha);
+
+				var pos = position.clone();
+				pos.applyMatrix4(toOrigin);
+				pos.applyMatrix4(alignWithX);
+				
+				return pos;
+			};
+			
+		}(start, end)
+		
+		inside.project = project;
+		
 		return inside;
 	}
 }

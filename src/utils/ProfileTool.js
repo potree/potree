@@ -217,11 +217,15 @@ Potree.ProfileTool = function(scene, camera, renderer){
 		
 		this.setWidth = function(width){
 			this.width = width;
+			
+			this.update();
 		};
 		
 		this.update = function(){
 		
-			if(this.points.length === 1){
+			if(this.points.length === 0){
+				return;
+			}else if(this.points.length === 1){
 				var point = this.points[0];
 				this.spheres[0].position.copy(point);
 				

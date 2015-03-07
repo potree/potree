@@ -50,42 +50,118 @@ Potree.BinaryLoader.prototype.load = function(node){
 };
 
 Potree.BinaryLoader.prototype.parse = function(node, buffer){
+
 	var geometry = new THREE.BufferGeometry();
-	var numPoints = buffer.byteLength / 16;
+	var numPoints = buffer.byteLength / node.pcoGeometry.pointAttributes.byteSize;
 	
-	var positions = new Float32Array(numPoints*3);
-	var colors = new Float32Array(numPoints*3);
-	var indices = new ArrayBuffer(numPoints*4);
-	var color = new THREE.Color();
-	
-	var fView = new Float32Array(buffer);
-	var iView = new Int32Array(buffer);
-	var uiView = new Uint8Array(buffer);
+	// http://jsperf.com/uint8array-vs-dataview3/3
+	function CustomView(buffer) {
+		this.buffer = buffer;
+		this.u8 = new Uint8Array(buffer);
+		
+		var tmp = new ArrayBuffer(4);
+		var tmpf = new Float32Array(tmp);
+		var tmpu8 = new Uint8Array(tmp);
+		
+		this.getUint32 = function (i) {
+			return (this.u8[i+3] << 24) | (this.u8[i+2] << 16) | (this.u8[i+1] << 8) | this.u8[i];
+		}
+		
+		this.getUint16 = function (i) {
+			return (this.u8[i+1] << 8) | this.u8[i];
+		}
+		
+		this.getFloat = function(i){
+			tmpu8[0] = this.u8[i+0];
+			tmpu8[1] = this.u8[i+1];
+			tmpu8[2] = this.u8[i+2];
+			tmpu8[3] = this.u8[i+3];
+			
+			return tmpf[0];
+		}
+		
+		this.getUint8 = function(i){
+			return this.u8[i];
+		}
+	}
+	var cv = new CustomView(buffer);
 	
 	var iIndices = new Uint32Array(indices);
 	
-	for(var i = 0; i < numPoints; i++){
-		if(this.version.newerThan("1.3")){
-			positions[3*i+0] = (iView[4*i+0] * this.scale) + node.boundingBox.min.x;
-			positions[3*i+1] = (iView[4*i+1] * this.scale) + node.boundingBox.min.y;
-			positions[3*i+2] = (iView[4*i+2] * this.scale) + node.boundingBox.min.z;
-		}else{
-			positions[3*i+0] = fView[4*i+0] + node.pcoGeometry.offset.x;
-			positions[3*i+1] = fView[4*i+1] + node.pcoGeometry.offset.y;
-			positions[3*i+2] = fView[4*i+2] + node.pcoGeometry.offset.z;
+	var pointAttributes = node.pcoGeometry.pointAttributes;
+	
+	var offset = 0;
+	for(var i = 0; i < pointAttributes.attributes.length; i++){
+		var pointAttribute = pointAttributes.attributes[i];
+		
+		if(pointAttribute === PointAttribute.POSITION_CARTESIAN){
+		
+			var positions = new Float32Array(numPoints*3);
+			
+			for(var j = 0; j < numPoints; j++){
+				if(this.version.newerThan("1.3")){
+					positions[3*j+0] = (cv.getUint32(offset + j*pointAttributes.byteSize+0) * this.scale) + node.boundingBox.min.x;
+					positions[3*j+1] = (cv.getUint32(offset + j*pointAttributes.byteSize+4) * this.scale) + node.boundingBox.min.y;
+					positions[3*j+2] = (cv.getUint32(offset + j*pointAttributes.byteSize+8) * this.scale) + node.boundingBox.min.z;
+				}else{
+					positions[3*j+0] = cv.getFloat(j*pointAttributes.byteSize+0) + node.pcoGeometry.offset.x;
+					positions[3*j+1] = cv.getFloat(j*pointAttributes.byteSize+4) + node.pcoGeometry.offset.y;
+					positions[3*j+2] = cv.getFloat(j*pointAttributes.byteSize+8) + node.pcoGeometry.offset.z;
+				}
+			}
+			
+			geometry.addAttribute('position', new THREE.BufferAttribute(positions, 3));
+			
+		}else if(pointAttribute === PointAttribute.COLOR_PACKED){
+		
+			var colors = new Float32Array(numPoints*3);
+			
+			for(var j = 0; j < numPoints; j++){
+				colors[3*j+0] = cv.getUint8(offset + j*pointAttributes.byteSize + 0) / 255;
+				colors[3*j+1] = cv.getUint8(offset + j*pointAttributes.byteSize + 1) / 255;
+				colors[3*j+2] = cv.getUint8(offset + j*pointAttributes.byteSize + 2) / 255;
+			}
+			
+			geometry.addAttribute('color', new THREE.BufferAttribute(colors, 3));
+			
+		}else if(pointAttribute === PointAttribute.INTENSITY){
+		
+			var intensities = new Float32Array(numPoints);
+		
+			for(var j = 0; j < numPoints; j++){
+				var intensity = cv.getUint16(offset + j*pointAttributes.byteSize);
+				intensities[j] = intensity;
+			}
+			
+			geometry.addAttribute('intensity', new THREE.BufferAttribute(intensities, 1));
+			
+		}else if(pointAttribute === PointAttribute.CLASSIFICATION){
+		
+			var classifications = new Float32Array(numPoints);
+		
+			for(var j = 0; j < numPoints; j++){
+				var classification = cv.getUint8(offset + j*pointAttributes.byteSize);
+				classifications[j] = classification;
+			}
+			
+			geometry.addAttribute('classification', new THREE.BufferAttribute(classifications, 1));
+			
 		}
 		
-		color.setRGB(uiView[16*i+12], uiView[16*i+13], uiView[16*i+14]);
-		colors[3*i+0] = color.r / 255;
-		colors[3*i+1] = color.g / 255;
-		colors[3*i+2] = color.b / 255;
+		offset += pointAttribute.byteSize;
 		
-		iIndices[i] = i;
 	}
 	
-	geometry.addAttribute('position', new THREE.BufferAttribute(positions, 3));
-	geometry.addAttribute('color', new THREE.BufferAttribute(colors, 3));
+	var indices = new ArrayBuffer(numPoints*4);
+	for(var i = 0; i < numPoints; i++){
+		iIndices[i] = i;
+	}
 	geometry.addAttribute('indices', new THREE.BufferAttribute(indices, 1));
+	
+
+	
+	
+	
 	geometry.boundingBox = node.boundingBox;
 	node.geometry = geometry;
 	node.loaded = true;

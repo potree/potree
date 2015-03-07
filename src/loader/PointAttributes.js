@@ -30,6 +30,9 @@ PointAttributeNames.COLOR_FLOATS_1		= 2;	// float r, g, b; 		I = [0,1]
 PointAttributeNames.COLOR_FLOATS_255	= 3;	// float r, g, b; 		I = [0,255]
 PointAttributeNames.NORMAL_FLOATS		= 4;  	// float x, y, z;
 PointAttributeNames.FILLER				= 5;
+PointAttributeNames.INTENSITY			= 6;
+PointAttributeNames.CLASSIFICATION		= 7;
+
 /**
  * Some types of possible point attribute data formats
  * 
@@ -91,6 +94,14 @@ PointAttribute.NORMAL_FLOATS = new PointAttribute(
 PointAttribute.FILLER_1B = new PointAttribute(
 		PointAttributeNames.FILLER,
 		PointAttributeTypes.DATA_TYPE_UINT8, 1);
+		
+PointAttribute.INTENSITY = new PointAttribute(
+		PointAttributeNames.INTENSITY,
+		PointAttributeTypes.DATA_TYPE_UINT16, 1);		
+		
+PointAttribute.CLASSIFICATION = new PointAttribute(
+		PointAttributeNames.CLASSIFICATION,
+		PointAttributeTypes.DATA_TYPE_UINT8, 1);	
 
 /**
  * Ordered list of PointAttributes used to identify how points are aligned in a buffer.
@@ -111,8 +122,9 @@ function PointAttributes(pointAttributes){
 //			this.size++;
 //		}
 		
-		for(var name in pointAttributes){
-			var pointAttribute = pointAttributes[name];
+		for(var i = 0; i < pointAttributes.length; i++){
+			var pointAttributeName = pointAttributes[i];
+			var pointAttribute = PointAttribute[pointAttributeName];
 			this.attributes.push(pointAttribute);
 			this.byteSize += pointAttribute.byteSize;
 			this.size++;

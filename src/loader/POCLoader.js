@@ -70,6 +70,7 @@ POCLoader.load = function load(url, callback) {
 					pco.loader = new Potree.LasLazLoader(fMno.version);
 				}else{
 					pco.loader = new Potree.BinaryLoader(fMno.version, boundingBox, fMno.scale);
+					pco.pointAttributes = new PointAttributes(pco.pointAttributes);
 				}
 				
 				var nodes = {};

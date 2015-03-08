@@ -16,6 +16,7 @@ var paths = {
 	potree : [
 		"src/Potree.js",
 		"src/WorkerManager.js",
+		"build/workers/BinaryDecoderWorker.js",
 		"src/extensions/PerspectiveCamera.js",
 		"src/extensions/Ray.js",
 		"src/loader/POCLoader.js",
@@ -51,6 +52,11 @@ var workers = {
 	],
 	"LASDecoder": [
 		"src/workers/LASDecoderWorker.js"
+	],
+	"BinaryDecorder": [
+		"src/workers/BinaryDecoderWorker.js",
+		"src/Version.js",
+		"src/loader/PointAttributes.js"
 	]
 };
 
@@ -63,6 +69,11 @@ gulp.task("workers", function(){
 		
 	gulp.src(workers.LASDecoder)
 		.pipe(encodeWorker('lasdecoder-worker.js', "Potree.workers.lasdecoder"))
+		.pipe(size({showFiles: true}))
+		.pipe(gulp.dest('build/workers'));
+		
+		gulp.src(workers.BinaryDecorder)
+		.pipe(encodeWorker('BinaryDecoderWorker.js', "Potree.workers.binaryDecoder"))
 		.pipe(size({showFiles: true}))
 		.pipe(gulp.dest('build/workers'));
 });

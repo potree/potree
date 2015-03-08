@@ -60,6 +60,7 @@ Potree.WorkerManager.fromUrls = function(urls){
 	
 	return new Potree.WorkerManager(code);
 }
+Potree.workers.binaryDecoder = new Potree.WorkerManager(atob("DQovLyBodHRwOi8vanNwZXJmLmNvbS91aW50OGFycmF5LXZzLWRhdGF2aWV3My8zDQpmdW5jdGlvbiBDdXN0b21WaWV3KGJ1ZmZlcikgew0KCXRoaXMuYnVmZmVyID0gYnVmZmVyOw0KCXRoaXMudTggPSBuZXcgVWludDhBcnJheShidWZmZXIpOw0KCQ0KCXZhciB0bXAgPSBuZXcgQXJyYXlCdWZmZXIoNCk7DQoJdmFyIHRtcGYgPSBuZXcgRmxvYXQzMkFycmF5KHRtcCk7DQoJdmFyIHRtcHU4ID0gbmV3IFVpbnQ4QXJyYXkodG1wKTsNCgkNCgl0aGlzLmdldFVpbnQzMiA9IGZ1bmN0aW9uIChpKSB7DQoJCXJldHVybiAodGhpcy51OFtpKzNdIDw8IDI0KSB8ICh0aGlzLnU4W2krMl0gPDwgMTYpIHwgKHRoaXMudThbaSsxXSA8PCA4KSB8IHRoaXMudThbaV07DQoJfQ0KCQ0KCXRoaXMuZ2V0VWludDE2ID0gZnVuY3Rpb24gKGkpIHsNCgkJcmV0dXJuICh0aGlzLnU4W2krMV0gPDwgOCkgfCB0aGlzLnU4W2ldOw0KCX0NCgkNCgl0aGlzLmdldEZsb2F0ID0gZnVuY3Rpb24oaSl7DQoJCXRtcHU4WzBdID0gdGhpcy51OFtpKzBdOw0KCQl0bXB1OFsxXSA9IHRoaXMudThbaSsxXTsNCgkJdG1wdThbMl0gPSB0aGlzLnU4W2krMl07DQoJCXRtcHU4WzNdID0gdGhpcy51OFtpKzNdOw0KCQkNCgkJcmV0dXJuIHRtcGZbMF07DQoJfQ0KCQ0KCXRoaXMuZ2V0VWludDggPSBmdW5jdGlvbihpKXsNCgkJcmV0dXJuIHRoaXMudThbaV07DQoJfQ0KfQ0KDQpQb3RyZWUgPSB7fTsNCg0KDQpvbm1lc3NhZ2UgPSBmdW5jdGlvbihldmVudCl7DQoJdmFyIGJ1ZmZlciA9IGV2ZW50LmRhdGEuYnVmZmVyOw0KCXZhciBwb2ludEF0dHJpYnV0ZXMgPSBldmVudC5kYXRhLnBvaW50QXR0cmlidXRlczsNCgl2YXIgbnVtUG9pbnRzID0gYnVmZmVyLmJ5dGVMZW5ndGggLyBwb2ludEF0dHJpYnV0ZXMuYnl0ZVNpemU7DQoJdmFyIGN2ID0gbmV3IEN1c3RvbVZpZXcoYnVmZmVyKTsNCgl2YXIgdmVyc2lvbiA9IG5ldyBQb3RyZWUuVmVyc2lvbihldmVudC5kYXRhLnZlcnNpb24pOw0KCXZhciBtaW4gPSBldmVudC5kYXRhLm1pbjsNCgl2YXIgbm9kZU9mZnNldCA9IGV2ZW50LmRhdGEub2Zmc2V0Ow0KCXZhciBzY2FsZSA9IGV2ZW50LmRhdGEuc2NhbGU7DQoJDQoJdmFyIGF0dHJpYnV0ZUJ1ZmZlcnMgPSB7fTsNCgkNCgl2YXIgb2Zmc2V0ID0gMDsNCglmb3IodmFyIGkgPSAwOyBpIDwgcG9pbnRBdHRyaWJ1dGVzLmF0dHJpYnV0ZXMubGVuZ3RoOyBpKyspew0KCQl2YXIgcG9pbnRBdHRyaWJ1dGUgPSBwb2ludEF0dHJpYnV0ZXMuYXR0cmlidXRlc1tpXTsNCgkNCgkJaWYocG9pbnRBdHRyaWJ1dGUubmFtZSA9PT0gUG9pbnRBdHRyaWJ1dGUuUE9TSVRJT05fQ0FSVEVTSUFOLm5hbWUpew0KCQkJDQoJCQl2YXIgYnVmZiA9IG5ldyBBcnJheUJ1ZmZlcihudW1Qb2ludHMqNCozKTsNCgkJCXZhciBwb3NpdGlvbnMgPSBuZXcgRmxvYXQzMkFycmF5KGJ1ZmYpOw0KCQkJDQoJCQlmb3IodmFyIGogPSAwOyBqIDwgbnVtUG9pbnRzOyBqKyspew0KCQkJCWlmKHZlcnNpb24ubmV3ZXJUaGFuKCIxLjMiKSl7DQoJCQkJCXBvc2l0aW9uc1szKmorMF0gPSAoY3YuZ2V0VWludDMyKG9mZnNldCArIGoqcG9pbnRBdHRyaWJ1dGVzLmJ5dGVTaXplKzApICogc2NhbGUpICsgbWluWzBdOw0KCQkJCQlwb3NpdGlvbnNbMypqKzFdID0gKGN2LmdldFVpbnQzMihvZmZzZXQgKyBqKnBvaW50QXR0cmlidXRlcy5ieXRlU2l6ZSs0KSAqIHNjYWxlKSArIG1pblsxXTsNCgkJCQkJcG9zaXRpb25zWzMqaisyXSA9IChjdi5nZXRVaW50MzIob2Zmc2V0ICsgaipwb2ludEF0dHJpYnV0ZXMuYnl0ZVNpemUrOCkgKiBzY2FsZSkgKyBtaW5bMl07DQoJCQkJfWVsc2V7DQoJCQkJCXBvc2l0aW9uc1szKmorMF0gPSBjdi5nZXRGbG9hdChqKnBvaW50QXR0cmlidXRlcy5ieXRlU2l6ZSswKSArIG5vZGVPZmZzZXRbMF07DQoJCQkJCXBvc2l0aW9uc1szKmorMV0gPSBjdi5nZXRGbG9hdChqKnBvaW50QXR0cmlidXRlcy5ieXRlU2l6ZSs0KSArIG5vZGVPZmZzZXRbMV07DQoJCQkJCXBvc2l0aW9uc1szKmorMl0gPSBjdi5nZXRGbG9hdChqKnBvaW50QXR0cmlidXRlcy5ieXRlU2l6ZSs4KSArIG5vZGVPZmZzZXRbMl07DQoJCQkJfQ0KCQkJfQ0KCQkJDQoJCQlhdHRyaWJ1dGVCdWZmZXJzW3BvaW50QXR0cmlidXRlLm5hbWVdID0geyBidWZmZXI6IGJ1ZmYsIGF0dHJpYnV0ZTogcG9pbnRBdHRyaWJ1dGV9Ow0KCQkJDQoJCX1lbHNlIGlmKHBvaW50QXR0cmlidXRlLm5hbWUgPT09IFBvaW50QXR0cmlidXRlLkNPTE9SX1BBQ0tFRC5uYW1lKXsNCgkJCQ0KCQkJdmFyIGJ1ZmYgPSBuZXcgQXJyYXlCdWZmZXIobnVtUG9pbnRzKjQqMyk7DQoJCQl2YXIgY29sb3JzID0gbmV3IEZsb2F0MzJBcnJheShidWZmKTsNCgkJCQ0KCQkJZm9yKHZhciBqID0gMDsgaiA8IG51bVBvaW50czsgaisrKXsNCgkJCQljb2xvcnNbMypqKzBdID0gY3YuZ2V0VWludDgob2Zmc2V0ICsgaipwb2ludEF0dHJpYnV0ZXMuYnl0ZVNpemUgKyAwKSAvIDI1NTsNCgkJCQljb2xvcnNbMypqKzFdID0gY3YuZ2V0VWludDgob2Zmc2V0ICsgaipwb2ludEF0dHJpYnV0ZXMuYnl0ZVNpemUgKyAxKSAvIDI1NTsNCgkJCQljb2xvcnNbMypqKzJdID0gY3YuZ2V0VWludDgob2Zmc2V0ICsgaipwb2ludEF0dHJpYnV0ZXMuYnl0ZVNpemUgKyAyKSAvIDI1NTsNCgkJCX0NCgkJCQ0KCQkJYXR0cmlidXRlQnVmZmVyc1twb2ludEF0dHJpYnV0ZS5uYW1lXSA9IHsgYnVmZmVyOiBidWZmLCBhdHRyaWJ1dGU6IHBvaW50QXR0cmlidXRlfTsNCgkJCQ0KCQl9ZWxzZSBpZihwb2ludEF0dHJpYnV0ZS5uYW1lID09PSBQb2ludEF0dHJpYnV0ZS5JTlRFTlNJVFkubmFtZSl7DQoNCgkJCXZhciBidWZmID0gbmV3IEFycmF5QnVmZmVyKG51bVBvaW50cyo0KTsNCgkJCXZhciBpbnRlbnNpdGllcyA9IG5ldyBGbG9hdDMyQXJyYXkoYnVmZik7DQoJCQkNCgkJCWZvcih2YXIgaiA9IDA7IGogPCBudW1Qb2ludHM7IGorKyl7DQoJCQkJdmFyIGludGVuc2l0eSA9IGN2LmdldFVpbnQxNihvZmZzZXQgKyBqKnBvaW50QXR0cmlidXRlcy5ieXRlU2l6ZSk7DQoJCQkJaW50ZW5zaXRpZXNbal0gPSBpbnRlbnNpdHk7DQoJCQl9DQoJCQkNCgkJCWF0dHJpYnV0ZUJ1ZmZlcnNbcG9pbnRBdHRyaWJ1dGUubmFtZV0gPSB7IGJ1ZmZlcjogYnVmZiwgYXR0cmlidXRlOiBwb2ludEF0dHJpYnV0ZX07DQoJCQ0KCQl9ZWxzZSBpZihwb2ludEF0dHJpYnV0ZS5uYW1lID09PSBQb2ludEF0dHJpYnV0ZS5DTEFTU0lGSUNBVElPTi5uYW1lKXsNCg0KCQkJdmFyIGJ1ZmYgPSBuZXcgQXJyYXlCdWZmZXIobnVtUG9pbnRzKjQpOw0KCQkJdmFyIGNsYXNzaWZpY2F0aW9ucyA9IG5ldyBGbG9hdDMyQXJyYXkoYnVmZik7DQoJCQkNCgkJCWZvcih2YXIgaiA9IDA7IGogPCBudW1Qb2ludHM7IGorKyl7DQoJCQkJdmFyIGNsYXNzaWZpY2F0aW9uID0gY3YuZ2V0VWludDgob2Zmc2V0ICsgaipwb2ludEF0dHJpYnV0ZXMuYnl0ZVNpemUpOw0KCQkJCWNsYXNzaWZpY2F0aW9uc1tqXSA9IGNsYXNzaWZpY2F0aW9uOw0KCQkJfQ0KCQkJDQoJCQlhdHRyaWJ1dGVCdWZmZXJzW3BvaW50QXR0cmlidXRlLm5hbWVdID0geyBidWZmZXI6IGJ1ZmYsIGF0dHJpYnV0ZTogcG9pbnRBdHRyaWJ1dGV9Ow0KCQkNCgkJfQ0KCQkNCgkJb2Zmc2V0ICs9IHBvaW50QXR0cmlidXRlLmJ5dGVTaXplOw0KCX0NCgkNCgl2YXIgaW5kaWNlcyA9IG5ldyBBcnJheUJ1ZmZlcihudW1Qb2ludHMqNCk7DQoJdmFyIGlJbmRpY2VzID0gbmV3IFVpbnQzMkFycmF5KGluZGljZXMpOw0KCWZvcih2YXIgaSA9IDA7IGkgPCBudW1Qb2ludHM7IGkrKyl7DQoJCWlJbmRpY2VzW2ldID0gaTsNCgl9DQoJDQoJdmFyIG1lc3NhZ2UgPSB7DQoJCWF0dHJpYnV0ZUJ1ZmZlcnM6IGF0dHJpYnV0ZUJ1ZmZlcnMsDQoJCWluZGljZXM6IGluZGljZXMNCgl9Ow0KCQkNCgl2YXIgdHJhbnNmZXJhYmxlcyA9IFtdOw0KCQ0KCWZvcih2YXIgcHJvcGVydHkgaW4gbWVzc2FnZS5hdHRyaWJ1dGVCdWZmZXJzKXsNCgkJaWYobWVzc2FnZS5hdHRyaWJ1dGVCdWZmZXJzLmhhc093blByb3BlcnR5KHByb3BlcnR5KSl7DQoJCQl0cmFuc2ZlcmFibGVzLnB1c2gobWVzc2FnZS5hdHRyaWJ1dGVCdWZmZXJzW3Byb3BlcnR5XS5idWZmZXIpOw0KCQl9DQoJfQ0KCQ0KCXRyYW5zZmVyYWJsZXMucHVzaChtZXNzYWdlLmluZGljZXMpOw0KCQkNCglwb3N0TWVzc2FnZShtZXNzYWdlLCB0cmFuc2ZlcmFibGVzKTsNCgkNCn07ClBvdHJlZS5WZXJzaW9uID0gZnVuY3Rpb24odmVyc2lvbil7Cgl0aGlzLnZlcnNpb24gPSB2ZXJzaW9uOwoJdmFyIHZtTGVuZ3RoID0gKHZlcnNpb24uaW5kZXhPZigiLiIpID09PSAtMSkgPyB2ZXJzaW9uLmxlbmd0aCA6IHZlcnNpb24uaW5kZXhPZigiLiIpOwoJdGhpcy52ZXJzaW9uTWFqb3IgPSBwYXJzZUludCh2ZXJzaW9uLnN1YnN0cigwLCB2bUxlbmd0aCkpOwoJdGhpcy52ZXJzaW9uTWlub3IgPSBwYXJzZUludCh2ZXJzaW9uLnN1YnN0cih2bUxlbmd0aCArIDEpKTsKCWlmKHRoaXMudmVyc2lvbk1pbm9yLmxlbmd0aCA9PT0gMCl7CgkJdGhpcy52ZXJzaW9uTWlub3IgPSAwOwoJfQoJCn07CgpQb3RyZWUuVmVyc2lvbi5wcm90b3R5cGUubmV3ZXJUaGFuID0gZnVuY3Rpb24odmVyc2lvbil7Cgl2YXIgdiA9IG5ldyBQb3RyZWUuVmVyc2lvbih2ZXJzaW9uKTsKCQoJaWYoIHRoaXMudmVyc2lvbk1ham9yID4gdi52ZXJzaW9uTWFqb3IpewoJCXJldHVybiB0cnVlOwoJfWVsc2UgaWYoIHRoaXMudmVyc2lvbk1ham9yID09PSB2LnZlcnNpb25NYWpvciAmJiB0aGlzLnZlcnNpb25NaW5vciA+IHYudmVyc2lvbk1pbm9yKXsKCQlyZXR1cm4gdHJ1ZTsKCX1lbHNlewoJCXJldHVybiBmYWxzZTsKCX0KfTsKClBvdHJlZS5WZXJzaW9uLnByb3RvdHlwZS5lcXVhbE9ySGlnaGVyID0gZnVuY3Rpb24odmVyc2lvbil7Cgl2YXIgdiA9IG5ldyBQb3RyZWUuVmVyc2lvbih2ZXJzaW9uKTsKCQoJaWYoIHRoaXMudmVyc2lvbk1ham9yID4gdi52ZXJzaW9uTWFqb3IpewoJCXJldHVybiB0cnVlOwoJfWVsc2UgaWYoIHRoaXMudmVyc2lvbk1ham9yID09PSB2LnZlcnNpb25NYWpvciAmJiB0aGlzLnZlcnNpb25NaW5vciA+PSB2LnZlcnNpb25NaW5vcil7CgkJcmV0dXJuIHRydWU7Cgl9ZWxzZXsKCQlyZXR1cm4gZmFsc2U7Cgl9Cn07CgpQb3RyZWUuVmVyc2lvbi5wcm90b3R5cGUudXBUbyA9IGZ1bmN0aW9uKHZlcnNpb24pewoJcmV0dXJuICF0aGlzLm5ld2VyVGhhbih2ZXJzaW9uKTsKfQoKCi8vZnVuY3Rpb24gUG9pbnRBdHRyaWJ1dGVOYW1lcygpewovLwkKLy99Cgp2YXIgUG9pbnRBdHRyaWJ1dGVOYW1lcyA9IHt9OwoKUG9pbnRBdHRyaWJ1dGVOYW1lcy5QT1NJVElPTl9DQVJURVNJQU4gCT0gMDsJLy8gZmxvYXQgeCwgeSwgejsKUG9pbnRBdHRyaWJ1dGVOYW1lcy5DT0xPUl9QQUNLRUQJCT0gMTsJLy8gYnl0ZSByLCBnLCBiLCBhOyAJSSA9IFswLDFdClBvaW50QXR0cmlidXRlTmFtZXMuQ09MT1JfRkxPQVRTXzEJCT0gMjsJLy8gZmxvYXQgciwgZywgYjsgCQlJID0gWzAsMV0KUG9pbnRBdHRyaWJ1dGVOYW1lcy5DT0xPUl9GTE9BVFNfMjU1CT0gMzsJLy8gZmxvYXQgciwgZywgYjsgCQlJID0gWzAsMjU1XQpQb2ludEF0dHJpYnV0ZU5hbWVzLk5PUk1BTF9GTE9BVFMJCT0gNDsgIAkvLyBmbG9hdCB4LCB5LCB6OwpQb2ludEF0dHJpYnV0ZU5hbWVzLkZJTExFUgkJCQk9IDU7ClBvaW50QXR0cmlidXRlTmFtZXMuSU5URU5TSVRZCQkJPSA2OwpQb2ludEF0dHJpYnV0ZU5hbWVzLkNMQVNTSUZJQ0FUSU9OCQk9IDc7CgovKioKICogU29tZSB0eXBlcyBvZiBwb3NzaWJsZSBwb2ludCBhdHRyaWJ1dGUgZGF0YSBmb3JtYXRzCiAqIAogKiBAY2xhc3MKICovCnZhciBQb2ludEF0dHJpYnV0ZVR5cGVzID0gewoJREFUQV9UWVBFX0RPVUJMRQk6IHtvcmRpbmFsIDogMCwgc2l6ZTogOH0sCglEQVRBX1RZUEVfRkxPQVQJCToge29yZGluYWwgOiAxLCBzaXplOiA0fSwKCURBVEFfVFlQRV9JTlQ4CQk6IHtvcmRpbmFsIDogMiwgc2l6ZTogMX0sCglEQVRBX1RZUEVfVUlOVDgJCToge29yZGluYWwgOiAzLCBzaXplOiAxfSwKCURBVEFfVFlQRV9JTlQxNgkJOiB7b3JkaW5hbCA6IDQsIHNpemU6IDJ9LAoJREFUQV9UWVBFX1VJTlQxNgk6IHtvcmRpbmFsIDogNSwgc2l6ZTogMn0sCglEQVRBX1RZUEVfSU5UMzIJCToge29yZGluYWwgOiA2LCBzaXplOiA0fSwKCURBVEFfVFlQRV9VSU5UMzIJOiB7b3JkaW5hbCA6IDcsIHNpemU6IDR9LAoJREFUQV9UWVBFX0lOVDY0CQk6IHtvcmRpbmFsIDogOCwgc2l6ZTogOH0sCglEQVRBX1RZUEVfVUlOVDY0CToge29yZGluYWwgOiA5LCBzaXplOiA4fQp9OwoKdmFyIGkgPSAwOwpmb3IodmFyIG9iaiBpbiBQb2ludEF0dHJpYnV0ZVR5cGVzKXsKCVBvaW50QXR0cmlidXRlVHlwZXNbaV0gPSBQb2ludEF0dHJpYnV0ZVR5cGVzW29ial07CglpKys7Cn0KCi8qKgogKiBBIHNpbmdsZSBwb2ludCBhdHRyaWJ1dGUgc3VjaCBhcyBjb2xvci9ub3JtYWwvLi4gYW5kIGl0cyBkYXRhIGZvcm1hdC9udW1iZXIgb2YgZWxlbWVudHMvLi4uIAogKiAKICogQGNsYXNzCiAqIEBwYXJhbSBuYW1lIAogKiBAcGFyYW0gdHlwZQogKiBAcGFyYW0gc2l6ZQogKiBAcmV0dXJucwogKi8KZnVuY3Rpb24gUG9pbnRBdHRyaWJ1dGUobmFtZSwgdHlwZSwgbnVtRWxlbWVudHMpewoJdGhpcy5uYW1lID0gbmFtZTsKCXRoaXMudHlwZSA9IHR5cGU7IAoJdGhpcy5udW1FbGVtZW50cyA9IG51bUVsZW1lbnRzOwoJdGhpcy5ieXRlU2l6ZSA9IHRoaXMubnVtRWxlbWVudHMgKiB0aGlzLnR5cGUuc2l6ZTsKfQoKUG9pbnRBdHRyaWJ1dGUuUE9TSVRJT05fQ0FSVEVTSUFOID0gbmV3IFBvaW50QXR0cmlidXRlKAoJCVBvaW50QXR0cmlidXRlTmFtZXMuUE9TSVRJT05fQ0FSVEVTSUFOLAoJCVBvaW50QXR0cmlidXRlVHlwZXMuREFUQV9UWVBFX0ZMT0FULCAzKTsKClBvaW50QXR0cmlidXRlLlJHQkFfUEFDS0VEID0gbmV3IFBvaW50QXR0cmlidXRlKAoJCVBvaW50QXR0cmlidXRlTmFtZXMuQ09MT1JfUEFDS0VELAoJCVBvaW50QXR0cmlidXRlVHlwZXMuREFUQV9UWVBFX0lOVDgsIDQpOwoKUG9pbnRBdHRyaWJ1dGUuQ09MT1JfUEFDS0VEID0gUG9pbnRBdHRyaWJ1dGUuUkdCQV9QQUNLRUQ7CgpQb2ludEF0dHJpYnV0ZS5SR0JfUEFDS0VEID0gbmV3IFBvaW50QXR0cmlidXRlKAoJCVBvaW50QXR0cmlidXRlTmFtZXMuQ09MT1JfUEFDS0VELAoJCVBvaW50QXR0cmlidXRlVHlwZXMuREFUQV9UWVBFX0lOVDgsIDMpOwoKUG9pbnRBdHRyaWJ1dGUuTk9STUFMX0ZMT0FUUyA9IG5ldyBQb2ludEF0dHJpYnV0ZSgKCQlQb2ludEF0dHJpYnV0ZU5hbWVzLk5PUk1BTF9GTE9BVFMsCgkJUG9pbnRBdHRyaWJ1dGVUeXBlcy5EQVRBX1RZUEVfRkxPQVQsIDMpOwoKUG9pbnRBdHRyaWJ1dGUuRklMTEVSXzFCID0gbmV3IFBvaW50QXR0cmlidXRlKAoJCVBvaW50QXR0cmlidXRlTmFtZXMuRklMTEVSLAoJCVBvaW50QXR0cmlidXRlVHlwZXMuREFUQV9UWVBFX1VJTlQ4LCAxKTsKCQkKUG9pbnRBdHRyaWJ1dGUuSU5URU5TSVRZID0gbmV3IFBvaW50QXR0cmlidXRlKAoJCVBvaW50QXR0cmlidXRlTmFtZXMuSU5URU5TSVRZLAoJCVBvaW50QXR0cmlidXRlVHlwZXMuREFUQV9UWVBFX1VJTlQxNiwgMSk7CQkKCQkKUG9pbnRBdHRyaWJ1dGUuQ0xBU1NJRklDQVRJT04gPSBuZXcgUG9pbnRBdHRyaWJ1dGUoCgkJUG9pbnRBdHRyaWJ1dGVOYW1lcy5DTEFTU0lGSUNBVElPTiwKCQlQb2ludEF0dHJpYnV0ZVR5cGVzLkRBVEFfVFlQRV9VSU5UOCwgMSk7CQoKLyoqCiAqIE9yZGVyZWQgbGlzdCBvZiBQb2ludEF0dHJpYnV0ZXMgdXNlZCB0byBpZGVudGlmeSBob3cgcG9pbnRzIGFyZSBhbGlnbmVkIGluIGEgYnVmZmVyLgogKiAKICogQGNsYXNzCiAqIAogKi8KZnVuY3Rpb24gUG9pbnRBdHRyaWJ1dGVzKHBvaW50QXR0cmlidXRlcyl7Cgl0aGlzLmF0dHJpYnV0ZXMgPSBuZXcgQXJyYXkoKTsKCXRoaXMuYnl0ZVNpemUgPSAwOwoJdGhpcy5zaXplID0gMDsKCQoJaWYocG9pbnRBdHRyaWJ1dGVzICE9IG51bGwpewoJCS8vIGRvZXMgbm90IHdvcmsgaW4gY2hyb21lIHYyNAovLwkJZm9yKHZhciBwb2ludEF0dHJpYnV0ZSBvZiBwb2ludEF0dHJpYnV0ZXMpewovLwkJCXRoaXMuYXR0cmlidXRlcy5wdXNoKHBvaW50QXR0cmlidXRlKTsKLy8JCQl0aGlzLmJ5dGVTaXplICs9IHBvaW50QXR0cmlidXRlLmJ5dGVTaXplOwovLwkJCXRoaXMuc2l6ZSsrOwovLwkJfQoJCQoJCWZvcih2YXIgaSA9IDA7IGkgPCBwb2ludEF0dHJpYnV0ZXMubGVuZ3RoOyBpKyspewoJCQl2YXIgcG9pbnRBdHRyaWJ1dGVOYW1lID0gcG9pbnRBdHRyaWJ1dGVzW2ldOwoJCQl2YXIgcG9pbnRBdHRyaWJ1dGUgPSBQb2ludEF0dHJpYnV0ZVtwb2ludEF0dHJpYnV0ZU5hbWVdOwoJCQl0aGlzLmF0dHJpYnV0ZXMucHVzaChwb2ludEF0dHJpYnV0ZSk7CgkJCXRoaXMuYnl0ZVNpemUgKz0gcG9pbnRBdHRyaWJ1dGUuYnl0ZVNpemU7CgkJCXRoaXMuc2l6ZSsrOwoJCX0KCX0KfQoKUG9pbnRBdHRyaWJ1dGVzLnByb3RvdHlwZS5hZGQgPSBmdW5jdGlvbihwb2ludEF0dHJpYnV0ZSl7Cgl0aGlzLmF0dHJpYnV0ZXMucHVzaChwb2ludEF0dHJpYnV0ZSk7Cgl0aGlzLmJ5dGVTaXplICs9IHBvaW50QXR0cmlidXRlLmJ5dGVTaXplOwoJdGhpcy5zaXplKys7Cn07CgpQb2ludEF0dHJpYnV0ZXMucHJvdG90eXBlLmhhc0NvbG9ycyA9IGZ1bmN0aW9uKCl7Cglmb3IodmFyIG5hbWUgaW4gdGhpcy5hdHRyaWJ1dGVzKXsKCQl2YXIgcG9pbnRBdHRyaWJ1dGUgPSB0aGlzLmF0dHJpYnV0ZXNbbmFtZV07CgkJaWYocG9pbnRBdHRyaWJ1dGUubmFtZSA9PT0gUG9pbnRBdHRyaWJ1dGVOYW1lcy5DT0xPUl9QQUNLRUQpewoJCQlyZXR1cm4gdHJ1ZTsKCQl9Cgl9CgkKCXJldHVybiBmYWxzZTsKfTsKClBvaW50QXR0cmlidXRlcy5wcm90b3R5cGUuaGFzTm9ybWFscyA9IGZ1bmN0aW9uKCl7Cglmb3IodmFyIG5hbWUgaW4gdGhpcy5hdHRyaWJ1dGVzKXsKCQl2YXIgcG9pbnRBdHRyaWJ1dGUgPSB0aGlzLmF0dHJpYnV0ZXNbbmFtZV07CgkJaWYocG9pbnRBdHRyaWJ1dGUgPT09IFBvaW50QXR0cmlidXRlLk5PUk1BTF9GTE9BVFMpewoJCQlyZXR1cm4gdHJ1ZTsKCQl9Cgl9CgkKCXJldHVybiBmYWxzZTsKfTsKCgo="));
 
 
 THREE.PerspectiveCamera.prototype.zoomTo = function( node, factor ){
@@ -236,6 +237,7 @@ POCLoader.load = function load(url, callback) {
 					pco.loader = new Potree.LasLazLoader(fMno.version);
 				}else{
 					pco.loader = new Potree.BinaryLoader(fMno.version, boundingBox, fMno.scale);
+					pco.pointAttributes = new PointAttributes(pco.pointAttributes);
 				}
 				
 				var nodes = {};
@@ -344,29 +346,12 @@ POCLoader.createChildAABB = function(aabb, childIndex){
 
 
 
-///**
-// * Some types of possible point attributes
-// * 
-// * @class
-// */
-//var PointAttributeNames = {
-//	POSITION_CARTESIAN 	: 0,	// float x, y, z;
-//	COLOR_PACKED		: 1,	// byte r, g, b, a; 	I = [0,1]
-//	COLOR_FLOATS_1		: 2,	// float r, g, b; 		I = [0,1]
-//	COLOR_FLOATS_255	: 3,	// float r, g, b; 		I = [0,255]
-//	NORMAL_FLOATS		: 4,  	// float x, y, z;
-//	FILLER				: 5
-//};
-//
-//var i = 0;
-//for(var obj in PointAttributeNames){
-//	PointAttributeNames[i] = PointAttributeNames[obj];
-//	i++;
+
+//function PointAttributeNames(){
+//	
 //}
 
-function PointAttributeNames(){
-	
-}
+var PointAttributeNames = {};
 
 PointAttributeNames.POSITION_CARTESIAN 	= 0;	// float x, y, z;
 PointAttributeNames.COLOR_PACKED		= 1;	// byte r, g, b, a; 	I = [0,1]
@@ -374,6 +359,9 @@ PointAttributeNames.COLOR_FLOATS_1		= 2;	// float r, g, b; 		I = [0,1]
 PointAttributeNames.COLOR_FLOATS_255	= 3;	// float r, g, b; 		I = [0,255]
 PointAttributeNames.NORMAL_FLOATS		= 4;  	// float x, y, z;
 PointAttributeNames.FILLER				= 5;
+PointAttributeNames.INTENSITY			= 6;
+PointAttributeNames.CLASSIFICATION		= 7;
+
 /**
  * Some types of possible point attribute data formats
  * 
@@ -435,6 +423,14 @@ PointAttribute.NORMAL_FLOATS = new PointAttribute(
 PointAttribute.FILLER_1B = new PointAttribute(
 		PointAttributeNames.FILLER,
 		PointAttributeTypes.DATA_TYPE_UINT8, 1);
+		
+PointAttribute.INTENSITY = new PointAttribute(
+		PointAttributeNames.INTENSITY,
+		PointAttributeTypes.DATA_TYPE_UINT16, 1);		
+		
+PointAttribute.CLASSIFICATION = new PointAttribute(
+		PointAttributeNames.CLASSIFICATION,
+		PointAttributeTypes.DATA_TYPE_UINT8, 1);	
 
 /**
  * Ordered list of PointAttributes used to identify how points are aligned in a buffer.
@@ -455,8 +451,9 @@ function PointAttributes(pointAttributes){
 //			this.size++;
 //		}
 		
-		for(var name in pointAttributes){
-			var pointAttribute = pointAttributes[name];
+		for(var i = 0; i < pointAttributes.length; i++){
+			var pointAttributeName = pointAttributes[i];
+			var pointAttribute = PointAttribute[pointAttributeName];
 			this.attributes.push(pointAttribute);
 			this.byteSize += pointAttribute.byteSize;
 			this.size++;
@@ -513,11 +510,6 @@ Potree.BinaryLoader.prototype.load = function(node){
 	
 	var scope = this;
 
-	//var url = node.pcoGeometry.octreeDir + "/" + node.getHierarchyPath() + "/" + node.name;
-	//if(this.version.newerThan("1.3")){
-	//	url += ".bin";
-	//}
-	
 	var url = node.getURL();
 	
 	if(this.version.equalOrHigher("1.4")){
@@ -546,47 +538,56 @@ Potree.BinaryLoader.prototype.load = function(node){
 };
 
 Potree.BinaryLoader.prototype.parse = function(node, buffer){
-	var geometry = new THREE.BufferGeometry();
-	var numPoints = buffer.byteLength / 16;
+
+	var numPoints = buffer.byteLength / node.pcoGeometry.pointAttributes.byteSize;
+	var pointAttributes = node.pcoGeometry.pointAttributes;
 	
-	var positions = new Float32Array(numPoints*3);
-	var colors = new Float32Array(numPoints*3);
-	var indices = new ArrayBuffer(numPoints*4);
-	var color = new THREE.Color();
 	
-	var fView = new Float32Array(buffer);
-	var iView = new Int32Array(buffer);
-	var uiView = new Uint8Array(buffer);
-	
-	var iIndices = new Uint32Array(indices);
-	
-	for(var i = 0; i < numPoints; i++){
-		if(this.version.newerThan("1.3")){
-			positions[3*i+0] = (iView[4*i+0] * this.scale) + node.boundingBox.min.x;
-			positions[3*i+1] = (iView[4*i+1] * this.scale) + node.boundingBox.min.y;
-			positions[3*i+2] = (iView[4*i+2] * this.scale) + node.boundingBox.min.z;
-		}else{
-			positions[3*i+0] = fView[4*i+0] + node.pcoGeometry.offset.x;
-			positions[3*i+1] = fView[4*i+1] + node.pcoGeometry.offset.y;
-			positions[3*i+2] = fView[4*i+2] + node.pcoGeometry.offset.z;
+	var ww = Potree.workers.binaryDecoder.getWorker();
+	ww.onmessage = function(e){
+		var data = e.data;
+		var buffers = data.attributeBuffers;
+		
+		Potree.workers.binaryDecoder.returnWorker(ww);
+		
+		var geometry = new THREE.BufferGeometry();
+		
+		for(var property in buffers){
+			if(buffers.hasOwnProperty(property)){
+				var buffer = buffers[property].buffer;
+				var attribute = buffers[property].attribute;
+				var numElements = attribute.numElements;
+				
+				if(parseInt(property) === PointAttributeNames.POSITION_CARTESIAN){
+					geometry.addAttribute("position", new THREE.BufferAttribute(new Float32Array(buffer), 3));
+				}else if(parseInt(property) === PointAttributeNames.COLOR_PACKED){
+					geometry.addAttribute("color", new THREE.BufferAttribute(new Float32Array(buffer), 3));
+				}else if(parseInt(property) === PointAttributeNames.INTENSITY){
+					geometry.addAttribute("intensity", new THREE.BufferAttribute(new Float32Array(buffer), 1));
+				}else if(parseInt(property) === PointAttributeNames.CLASSIFICATION){
+					geometry.addAttribute("classification", new THREE.BufferAttribute(new Float32Array(buffer), 1));
+				}
+			}
 		}
+		geometry.addAttribute("indices", new THREE.BufferAttribute(new Float32Array(data.indices), 1));
 		
-		color.setRGB(uiView[16*i+12], uiView[16*i+13], uiView[16*i+14]);
-		colors[3*i+0] = color.r / 255;
-		colors[3*i+1] = color.g / 255;
-		colors[3*i+2] = color.b / 255;
-		
-		iIndices[i] = i;
+		geometry.boundingBox = node.boundingBox;
+		node.geometry = geometry;
+		node.loaded = true;
+		node.loading = false;
+		node.pcoGeometry.numNodesLoading--;
 	}
 	
-	geometry.addAttribute('position', new THREE.BufferAttribute(positions, 3));
-	geometry.addAttribute('color', new THREE.BufferAttribute(colors, 3));
-	geometry.addAttribute('indices', new THREE.BufferAttribute(indices, 1));
-	geometry.boundingBox = node.boundingBox;
-	node.geometry = geometry;
-	node.loaded = true;
-	node.loading = false;
-	node.pcoGeometry.numNodesLoading--;
+	var message = {
+		buffer: buffer,
+		pointAttributes: pointAttributes,
+		version: this.version.version,
+		min: [ node.boundingBox.min.x, node.boundingBox.min.y, node.boundingBox.min.z ],
+		offset: [node.pcoGeometry.offset.x, node.pcoGeometry.offset.y, node.pcoGeometry.offset.z],
+		scale: this.scale
+	};
+	ww.postMessage(message, [message.buffer]);
+
 };
 
 
@@ -3586,7 +3587,7 @@ Potree.PointCloudOctreeGeometryNode.prototype.addChild = function(child){
 }
 
 Potree.PointCloudOctreeGeometryNode.prototype.load = function(){
-	if(this.loading === true || this.pcoGeometry.numNodesLoading > 1){
+	if(this.loading === true || this.pcoGeometry.numNodesLoading > 3){
 		return;
 	}
 	
@@ -5375,11 +5376,15 @@ Potree.ProfileTool = function(scene, camera, renderer){
 		
 		this.setWidth = function(width){
 			this.width = width;
+			
+			this.update();
 		};
 		
 		this.update = function(){
 		
-			if(this.points.length === 1){
+			if(this.points.length === 0){
+				return;
+			}else if(this.points.length === 1){
 				var point = this.points[0];
 				this.spheres[0].position.copy(point);
 				

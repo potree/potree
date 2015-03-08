@@ -73,7 +73,7 @@ Potree.PointCloudOctreeGeometryNode.prototype.addChild = function(child){
 }
 
 Potree.PointCloudOctreeGeometryNode.prototype.load = function(){
-	if(this.loading === true || this.pcoGeometry.numNodesLoading > 1){
+	if(this.loading === true || this.pcoGeometry.numNodesLoading > 3){
 		return;
 	}
 	

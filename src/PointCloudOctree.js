@@ -206,12 +206,13 @@ Potree.PointCloudOctree.prototype.updatePointCloud = function(node, element, sta
 	
 	if(this.showBoundingBox && !node.boundingBoxNode){
 		var boxHelper = new THREE.BoxHelper(node);
-		scene.add(boxHelper);
+		this.add(boxHelper);
 		this.boundingBoxNodes.push(boxHelper);
 		node.boundingBoxNode = boxHelper;
+		node.boundingBoxNode.matrixWorld.copy(node.matrixWorld);
 	}else if(this.showBoundingBox){
 		node.boundingBoxNode.visible = true;
-		node.boundingBoxNode.matrixWorld.multiplyMatrices( node.parent.matrixWorld, node.boundingBoxNode.matrix );
+		node.boundingBoxNode.matrixWorld.copy(node.matrixWorld);
 	}else if(!this.showBoundingBox && node.boundingBoxNode){
 		node.boundingBoxNode.visible = false;
 	}

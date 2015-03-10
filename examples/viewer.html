@@ -66,55 +66,33 @@ void main() {
 	<script src="../libs/other/dat.gui.min.js"></script>
 	
 	<script src="../build/js/potree.js"></script>
+	<!--<script src="../src/materials/PointCloudMaterial.js"></script>
+	<script src="../src/PointCloudOctree.js"></script>
+	<script src="../src/PointCloudOctreeGeometry.js"></script>
+	<script src="../src/utils/AngleTool.js"></script>-->
 	<script src="./js/ProgressBar.js"></script>
-		
+	
+	<!-- INFOS / STATS -->
 	<div id="lblNumVisibleNodes" class="info" style="position: absolute; left: 10px; top: 80px; width: 400px; color:white"></div>
 	<div id="lblNumVisiblePoints" class="info" style="position: absolute; left: 10px; top: 100px; width: 400px; color:white"></div>
 	<div id="lblMessage" class="info" style="position: absolute; left: 10px; bottom: 0px; width: 400px; color:white"></div>
 	
+	<!-- TOOLS -->
 	<div id="tools" style="position: fixed; width: 340px; bottom: 10px; right: 10px">
-	
-	
-		<img src="../resources/icons/fps_controls.png" 	
-			onclick="useFPSControls()"
-			title="Fly Camera"/>
-	
-		<img src="../resources/icons/orbit_controls.png" 	
-			onclick="useOrbitControls()"
-			title="Orbit Controls"/>
-	
-		<img src="../resources/icons/focus.png" 	
-			onclick="camera.zoomTo(pointcloud)"
-			title="focus on pointcloud"/>
-			
-		<img src="../resources/icons/flip_y_z.png" 	
-			onclick="flipYZ()"
-			title="flip y and z coordinates"/>
-	
-	
-		<img src="../resources/icons/distance.png" 	
-			onclick="measuringTool.setEnabled(true)"
-			title="distance measurements"/>
-		<img src="../resources/icons/area.png" 		
-			onclick="areaTool.setEnabled(true)"
-			title="area measurements"/>
-			
-		<img src="../resources/icons/volume.png" 	
-			onclick="volumeTool.startInsertion()"
-			title="volume measurements"/>
-			
-		<img src="../resources/icons/profile.png" 	
-			onclick="profileTool.startInsertion({width: pointcloud.boundingSphere.radius / 100})"
-			title="height profiles"/>
-			
-		<img src="../resources/icons/clip_volume.png" 
-			onclick="volumeTool.startInsertion({clip: true})"
-			title="clipping volumes"/>
-		
+		<img src="../resources/icons/fps_controls.png" onclick="useFPSControls()"title="Fly Camera"/>
+		<img src="../resources/icons/orbit_controls.png" onclick="useOrbitControls()" title="Orbit Controls"/>
+		<img src="../resources/icons/focus.png" onclick="camera.zoomTo(pointcloud)" title="focus on pointcloud"/>
+		<img src="../resources/icons/flip_y_z.png" onclick="flipYZ()" title="flip y and z coordinates"/>
+		<img src="../resources/icons/angle.png" onclick="angleTool.setEnabled(true)" title="angle measurements"/>
+		<img src="../resources/icons/distance.png" onclick="measuringTool.setEnabled(true)" title="distance measurements"/>
+		<img src="../resources/icons/area.png" onclick="areaTool.setEnabled(true)" title="area measurements"/>
+		<img src="../resources/icons/volume.png" onclick="volumeTool.startInsertion()" title="volume measurements"/>
+		<img src="../resources/icons/profile.png" onclick="profileTool.startInsertion({width: pointcloud.boundingSphere.radius / 100})" title="height profiles"/>
+		<img src="../resources/icons/clip_volume.png" onclick="volumeTool.startInsertion({clip: true})" title="clipping volumes"/>
 		
 	</div>
 	
-	
+	<!-- HEADING -->
 	<div class="info" style="position: absolute; left: 300px; right: 300px; top: 10px; text-align: center;">
 		<a href="http://potree.org" target="_blank">potree.org</a><br>
 		Point cloud courtesy of <a href="http://www.sigeom.ch/" target="_blank">sigeom sa</a><br>
@@ -143,31 +121,12 @@ void main() {
 		var progressBar = new ProgressBar();
 
 		
-		
-		
-	
-		var pointcloudPath = "../resources/pointclouds/lion_takanawa/cloud.js";
-		var pointcloudPath = "../../../../pointclouds/faro/skatepark/skate_1.las_converted/cloud.js";
-		var pointcloudPath = "../../../../pointclouds/faro/skatepark/skate_1.las_converted/cloud.js";
-	
-		
-
-		var pointcloudPath = "../../../../pointclouds/opentopography/indiana_statewide_454m/cloud.js";
-		var pointcloudPath = "../../../../pointclouds/opentopography/CA13_SAN_SIM/CA13_SAN_SIM/cloud.js";
-		var pointcloudPath = "../../../../deploy/point_clouds_2014.12.29/whitby_geom/cloud.js";
-		var pointcloudPath = "../../../../deploy/point_clouds_2014.12.29/vienna_donaukanal/cloud.js";
-		var pointcloudPath = "../../../../deploy/point_clouds_2014.12.29/dechen_cave/cloud.js";
-		var pointcloudPath = "../../../../deploy/point_clouds_2014.12.29/eclepens/cloud.js";
-		var pointcloudPath = "../../../../deploy/point_clouds_2014.12.29/owl/cloud.js";
-		var pointcloudPath = "../../../../deploy/point_clouds_2014.12.29/vol_total/cloud.js";
-	
-		var pointcloudPath = "../../../../pointclouds/surface_and_edge/land_building/_converted/cloud.js";
-		
-		
-		var pointcloudPath = "../../../../pointclouds/opentopography/lake_tahoe_basin/converted/cloud.js";
 		var pointcloudPath = "../../../../pointclouds/mschuetz/lion_takanawa_oriented.las_converted/cloud.js";
 		var pointcloudPath = "../../../../pointclouds/mschuetz/engel/agisoft/cloud.js";
+		var pointcloudPath = "../../../../pointclouds/opentopography/lake_tahoe_basin/data_converted/cloud.js";
 		var pointcloudPath = "../../../../deploy/point_clouds_2014.12.29/matterhorn/cloud.js";
+		var pointcloudPath = "../../../../pointclouds/pix4d/lausanne_1.5/cloud.js";
+		var pointcloudPath = "../../../../pointclouds/pix4d/eclepens.laz_converted/cloud.js";
 		var pointcloudPath = "../resources/pointclouds/vol_total/cloud.js";
 		
 		var elRenderArea = document.getElementById("renderArea");
@@ -184,6 +143,7 @@ void main() {
 		var clock = new THREE.Clock();
 		var showSkybox = false;
 		var measuringTool;
+		var angleTool;
 		var areaTool;
 		var volumeTool;
 		var transformationTool;
@@ -236,18 +196,7 @@ void main() {
 				}
 			});
 			
-			var options = [];
-			if(pointcloud.pcoGeometry.pointAttributes === "LAS" || pointcloud.pcoGeometry.pointAttributes === "LAZ"){
-				options = [ 
-				"RGB", "Color", "Height", "Intensity", "Intensity Gradient", 
-				"Classification", "Return Number", "Source",
-				"Octree Depth"];
-			}else{
-				options = options = [ "RGB", "Color", "Height", "Octree Depth"];
-			}
-			
-			pMaterial = gui.add(params, 'Materials',options);
-			pMaterial.onChange(function(value){
+			var setMaterial = function(value){
 				if(value === "RGB"){
 					pointColorType = Potree.PointColorType.RGB;
 				}else if(value === "Color"){
@@ -269,6 +218,36 @@ void main() {
 				}else if(value === "Point Index"){
 					pointColorType = Potree.PointColorType.POINT_INDEX;
 				}
+			};
+			
+			var options = [];
+			var attributes = pointcloud.pcoGeometry.pointAttributes
+			if(attributes === "LAS" || attributes === "LAZ"){
+				options = [ 
+				"RGB", "Color", "Height", "Intensity", "Intensity Gradient", 
+				"Classification", "Return Number", "Source",
+				"Octree Depth"];
+			}else{
+				for(var i = 0; i < attributes.attributes.length; i++){
+					var attribute = attributes.attributes[i];
+					
+					if(attribute === PointAttribute.COLOR_PACKED){
+						options.push("RGB");
+					}else if(attribute === PointAttribute.INTENSITY){
+						options.push("Intensity");
+						options.push("Intensity Gradient");
+					}else if(attribute === PointAttribute.CLASSIFICATION){
+						options.push("Classification");
+					}
+				}
+				options.push("Height");
+			}
+			params["Materials"] = options[0];
+			setMaterial(options[0]);
+			
+			pMaterial = gui.add(params, 'Materials',options);
+			pMaterial.onChange(function(value){
+				setMaterial(value);
 			});
 			
 			var qualityOptions = ["Squares", "Circles"];
@@ -383,6 +362,7 @@ void main() {
 			
 			measuringTool = new Potree.MeasuringTool(scenePointCloud, camera, renderer);
 			profileTool = new Potree.ProfileTool(scenePointCloud, camera, renderer);
+			angleTool = new Potree.AngleTool(scenePointCloud, camera, renderer);
 			areaTool = new Potree.AreaTool(scenePointCloud, camera, renderer);
 			volumeTool = new Potree.VolumeTool(scenePointCloud, camera, renderer);
 			transformationTool = new Potree.TransformationTool(scenePointCloud, camera, renderer);
@@ -459,28 +439,39 @@ void main() {
 			}
 		};
 		
+		var intensityMax = null;
+		
 		function update(){
 			if(pointcloud){
 			
 				var bbWorld = Potree.utils.computeTransformedBoundingBox(pointcloud.boundingBox, pointcloud.matrixWorld);
-			
-				//pointcloud.material.size = pointSize;
-				//pointcloud.visiblePointsTarget = pointCountTarget * 1000 * 1000;
-				//pointcloud.material.opacity = opacity;
-				//pointcloud.material.pointSizeType = pointSizeType;
-				////pointcloud.material.pointColorType = pointColorType;
-				//pointcloud.material.pointShape = (quality === "High") ? Potree.PointShape.CIRCLE : pointShape;
-				//pointcloud.material.interpolate = (quality === "High");
-				//pointcloud.material.heightMin = bbWorld.min.y;
-				//pointcloud.material.heightMax = bbWorld.max.y;
-				//pointcloud.material.clipMode = clipMode;
-				////pointcloud.material.weighted = false;
-				
+					
+				if(!intensityMax){
+					if(pointcloud.pcoGeometry.root.loaded){
+						var attributes = pointcloud.pcoGeometry.root.geometry.attributes;
+						if(attributes.intensity){
+							var array = attributes.intensity.array;
+							var max = 0;
+							for(var i = 0; i < array.length; i++){
+								max = Math.max(array[i]);
+							}
+							
+							if(max <= 1){
+								intensityMax = 1;
+							}else if(max <= 256){
+								intensityMax = 255;
+							}else{
+								intensityMax = max;
+							}
+						}
+					}
+				}
+					
 				pointcloud.material.clipMode = clipMode;
 				pointcloud.material.heightMin = bbWorld.min.y;
 				pointcloud.material.heightMax = bbWorld.max.y;
 				pointcloud.material.intensityMin = 0;
-				pointcloud.material.intensityMax = 200;
+				pointcloud.material.intensityMax = intensityMax;
 				pointcloud.showBoundingBox = showBoundingBox;
 				pointcloud.update(camera, renderer);
 			}
@@ -641,6 +632,7 @@ void main() {
 			
 			renderer.clearDepth();
 			measuringTool.render();
+			angleTool.render();
 			areaTool.render();
 			transformationTool.render();
 		}
@@ -776,6 +768,7 @@ void main() {
 				
 				renderer.clearDepth();
 				measuringTool.render();
+				angleTool.render();
 				areaTool.render();
 				transformationTool.render();
 					

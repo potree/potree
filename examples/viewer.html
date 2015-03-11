@@ -8,6 +8,17 @@
 
 	<style type="text/css">
 	
+	<!-- this is for testing non-fullscreen render areas -->
+	#renderArea{
+		position: absolute;
+		width: 90%;
+		height: 80%;
+		top: 100px;
+		left: 100px;
+		rigt: 100px;
+		bottom: 100px;
+	}
+	
 	#renderArea{
 		width: 100%;
 		height: 100%;
@@ -66,10 +77,16 @@ void main() {
 	<script src="../libs/other/dat.gui.min.js"></script>
 	
 	<script src="../build/js/potree.js"></script>
-	<!--<script src="../src/materials/PointCloudMaterial.js"></script>
+	<script src="../src/materials/PointCloudMaterial.js"></script>
 	<script src="../src/PointCloudOctree.js"></script>
 	<script src="../src/PointCloudOctreeGeometry.js"></script>
-	<script src="../src/utils/AngleTool.js"></script>-->
+	<script src="../src/utils/AngleTool.js"></script>
+	<script src="../src/utils/MeasuringTool.js"></script>
+	<script src="../src/utils/AreaTool.js"></script>
+	<script src="../src/utils/ProfileTool.js"></script>
+	<script src="../src/utils/VolumeTool.js"></script>
+	<script src="../src/TextSprite.js"></script>
+	<script src="../src/EarthControls.js"></script>
 	<script src="./js/ProgressBar.js"></script>
 	
 	<!-- INFOS / STATS -->
@@ -78,7 +95,8 @@ void main() {
 	<div id="lblMessage" class="info" style="position: absolute; left: 10px; bottom: 0px; width: 400px; color:white"></div>
 	
 	<!-- TOOLS -->
-	<div id="tools" style="position: fixed; width: 340px; bottom: 10px; right: 10px">
+	<div id="tools" style="position: fixed; width: 380px; bottom: 10px; right: 10px">
+		<img src="../resources/icons/earth_controls_1.png" onclick="useEarthControls()"title="Earth Controls"/>
 		<img src="../resources/icons/fps_controls.png" onclick="useFPSControls()"title="Fly Camera"/>
 		<img src="../resources/icons/orbit_controls.png" onclick="useOrbitControls()" title="Orbit Controls"/>
 		<img src="../resources/icons/focus.png" onclick="camera.zoomTo(pointcloud)" title="focus on pointcloud"/>
@@ -116,6 +134,7 @@ void main() {
 		
 		var fpControls;
 		var orbitControls;
+		var earthControls;
 		var controls;
 		
 		var progressBar = new ProgressBar();
@@ -124,10 +143,10 @@ void main() {
 		var pointcloudPath = "../../../../pointclouds/mschuetz/lion_takanawa_oriented.las_converted/cloud.js";
 		var pointcloudPath = "../../../../pointclouds/mschuetz/engel/agisoft/cloud.js";
 		var pointcloudPath = "../../../../pointclouds/opentopography/lake_tahoe_basin/data_converted/cloud.js";
-		var pointcloudPath = "../../../../deploy/point_clouds_2014.12.29/matterhorn/cloud.js";
-		var pointcloudPath = "../../../../pointclouds/pix4d/lausanne_1.5/cloud.js";
-		var pointcloudPath = "../../../../pointclouds/pix4d/eclepens.laz_converted/cloud.js";
 		var pointcloudPath = "../resources/pointclouds/vol_total/cloud.js";
+		var pointcloudPath = "../../../../pointclouds/pix4d/lausanne_1.5/cloud.js";
+		var pointcloudPath = "../../../../deploy/point_clouds_2014.12.29/matterhorn/cloud.js";
+		var pointcloudPath = "../../../../pointclouds/pix4d/eclepens.laz_converted/cloud.js";
 		
 		var elRenderArea = document.getElementById("renderArea");
 	
@@ -354,7 +373,11 @@ void main() {
 				
 				flipYZ();
 				
-				initGUI();				
+				initGUI();	
+
+				earthControls.pointclouds.push(pointcloud);	
+				useEarthControls();
+				//useOrbitControls();
 			});
 			
 			var grid = Potree.utils.createGrid(5, 5, 2);
@@ -385,6 +408,8 @@ void main() {
 			bg.material.depthTest = false;
 			bg.material.depthWrite = false;
 			sceneBG.add(bg);
+			
+			earthControls = new THREE.EarthControls(camera, renderer.domElement, renderer, "../resources/");
 			
 			
 			window.addEventListener( 'keydown', onKeyDown, false );
@@ -554,6 +579,17 @@ void main() {
 				pointcloud.material.setClipBoxes(clipBoxes);
 			}
 			
+		}
+		
+		function useEarthControls(){
+			if(controls){
+				controls.enabled = false;
+			}
+	
+			controls = earthControls;
+			controls.enabled = true;
+			
+			controls.moveSpeed = pointcloud.boundingSphere.radius / 2;
 		}
 		
 		function useFPSControls(){

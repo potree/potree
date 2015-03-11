@@ -68,11 +68,15 @@ THREE.EarthControls = function ( camera, domElement, renderer, resourcePath ) {
 				var ray = new THREE.Ray(camStart.position, dir);
 				var distanceToPlane = ray.distanceToPlane(plane);
 				
-				var newCamPos = new THREE.Vector3().subVectors(pivot, dir.clone().multiplyScalar(distanceToPlane));
-				this.camera.position.copy(newCamPos);
+				if(distanceToPlane > 0){
+					var newCamPos = new THREE.Vector3().subVectors(pivot, dir.clone().multiplyScalar(distanceToPlane));
+					this.camera.position.copy(newCamPos);
+					
+					this.dragStartIndicator.style.left = dragEnd.x - scope.dragStartIndicator.clientWidth / 2;
+					this.dragStartIndicator.style.top = dragEnd.y - scope.dragStartIndicator.clientHeight / 2;
+				}
 				
-				this.dragStartIndicator.style.left = dragEnd.x - scope.dragStartIndicator.clientWidth / 2;
-				this.dragStartIndicator.style.top = dragEnd.y - scope.dragStartIndicator.clientHeight / 2;
+				
 			}else if(state === STATE.ROTATE){
 				// rotate around pivot point
 			

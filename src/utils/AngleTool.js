@@ -476,7 +476,7 @@ Potree.AngleTool = function(scene, camera, renderer){
 			for(j = 0; j < measurement.angleLabels.length; j++){
 				var label = measurement.angleLabels[j];
 				wp = label.getWorldPosition().applyMatrix4(this.camera.matrixWorldInverse);
-				w = Math.abs(wp.z  / 10);
+				w = Math.abs(wp.z  / 5);
 				var l = label.scale.length();
 				label.scale.multiplyScalar(w / l);
 			}

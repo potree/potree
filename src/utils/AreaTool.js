@@ -86,6 +86,7 @@ Potree.AreaTool = function(scene, camera, renderer){
 		this.areaLabel = new Potree.TextSprite();
 		this.areaLabel.setBorderColor({r:0, g:255, b:0, a:0.0});
 		this.areaLabel.setBackgroundColor({r:0, g:255, b:0, a:0.0});
+		this.areaLabel.setTextColor({r:180, g:220, b:180, a:1.0});
 		this.areaLabel.material.depthTest = false;
 		this.areaLabel.material.opacity = 1;
 		root.add(this.areaLabel);
@@ -478,13 +479,13 @@ Potree.AreaTool = function(scene, camera, renderer){
 			for(var j = 0; j < measurement.edgeLabels.length; j++){
 				var label = measurement.edgeLabels[j];
 				var wp = label.getWorldPosition().applyMatrix4(this.camera.matrixWorldInverse);
-				var w = Math.abs(wp.z  / 10);
+				var w = Math.abs(wp.z  / 5);
 				var l = label.scale.length();
 				label.scale.multiplyScalar(w / l);
 			}
 			
 			var wp = measurement.areaLabel.getWorldPosition().applyMatrix4(this.camera.matrixWorldInverse);
-			var w = Math.abs(wp.z  / 8);
+			var w = Math.abs(wp.z  / 4);
 			var l = measurement.areaLabel.scale.length();
 			measurement.areaLabel.scale.multiplyScalar(w / l);
 		}

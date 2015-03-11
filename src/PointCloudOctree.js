@@ -264,6 +264,16 @@ Potree.PointCloudOctree.prototype.updateLoadQueue = function(vn){
 }
 
 Potree.PointCloudOctree.prototype.update = function(camera, renderer){
+	this.visibleGeometry = [];
+	this.loadQueue = [];
+	this.visibleNodes = [];
+	this.numVisibleNodes = 0;
+	this.numVisiblePoints = 0;
+
+	if(!this.visible){
+		return;
+	}
+
 	this.updateMatrixWorld(true);
 
 	this.visibleGeometry = this.getVisibleGeometry(camera);
@@ -282,10 +292,7 @@ Potree.PointCloudOctree.prototype.update = function(camera, renderer){
 		this.boundingBoxNodes[i].visible = false;
 	}
 	
-	this.loadQueue = [];
-	this.visibleNodes = [];
-	this.numVisibleNodes = 0;
-	this.numVisiblePoints = 0;
+	
 	
 	
 	

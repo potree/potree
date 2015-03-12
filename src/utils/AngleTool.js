@@ -349,7 +349,12 @@ Potree.AngleTool = function(scene, camera, renderer){
 	}
 	
 	function onMouseDown(event){
+	
 		if(event.which === 1){
+		
+			if(state !== STATE.DEFAULT){
+				event.stopImmediatePropagation();
+			}
 			
 			var I = getHoveredElement();
 			
@@ -359,7 +364,8 @@ Potree.AngleTool = function(scene, camera, renderer){
 					sceneClickPos: I.point,
 					sceneStartPos: scope.sceneRoot.position.clone(),
 					mousePos: {x: scope.mouse.x, y: scope.mouse.y}
-				};				
+				};	
+				event.stopImmediatePropagation();
 			}
 			
 		}else if(event.which === 3){	

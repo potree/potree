@@ -164,6 +164,10 @@ Potree.VolumeTool = function(scene, camera, renderer){
 	
 	function onMouseDown(event){
 	
+		if(state !== STATE.DEFAULT){
+			event.stopImmediatePropagation();
+		}
+	
 		if(state === STATE.INSERT_VOLUME){
 			scope.finishInsertion();
 		}else if(event.which === 1){

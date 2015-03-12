@@ -344,6 +344,10 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 	
 	function onMouseDown(event){
 		if(event.which === 1){
+		
+			if(state !== STATE.DEFAULT){
+				event.stopImmediatePropagation();
+			}
 			
 			var I = getHoveredElement();
 			

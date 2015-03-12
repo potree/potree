@@ -407,6 +407,11 @@ Potree.ProfileTool = function(scene, camera, renderer){
 	}
 	
 	function onMouseDown(event){
+	
+		if(state !== STATE.DEFAULT){
+			event.stopImmediatePropagation();
+		}
+	
 		if(event.which === 1){
 			
 			var I = getHoveredElement();
@@ -432,6 +437,7 @@ Potree.ProfileTool = function(scene, camera, renderer){
 					mousePos: {x: scope.mouse.x, y: scope.mouse.y},
 					widthStart: widthStart
 				};
+				event.stopImmediatePropagation();
 				
 			}
 			

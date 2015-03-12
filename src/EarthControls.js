@@ -13,11 +13,12 @@
  *
  */
 
-THREE.EarthControls = function ( camera, domElement, renderer, resourcePath ) {
+THREE.EarthControls = function ( camera, renderer, scene ) {
 	this.camera = camera;
 	this.renderer = renderer;
 	this.pointclouds = [];
-	this.domElement = ( domElement !== undefined ) ? domElement : document;
+	this.domElement = renderer.domElement;
+	this.scene = scene;
 	
 	// Set to false to disable this control
 	this.enabled = true;
@@ -31,16 +32,11 @@ THREE.EarthControls = function ( camera, domElement, renderer, resourcePath ) {
 	
 	var dragStart = new THREE.Vector2();
 	var dragEnd = new THREE.Vector2();
-	this.dragStartIndicator = document.createElement("img");
-	this.dragStartIndicator.src = resourcePath + "/icons/sphere.png";
-	this.dragStartIndicator.style.width = "32px";
-	this.dragStartIndicator.style.height = "32px";
-	this.dragStartIndicator.style.position = "absolute";
-	this.dragStartIndicator.style.display = "none";
-	this.dragStartIndicator.style.opacity = "0.6";
-	this.dragStartIndicator.style.pointerEvents = "none";
-	document.body.appendChild(this.dragStartIndicator);
 	
+	var sphereGeometry = new THREE.SphereGeometry(1, 32, 32);
+	var sphereMaterial = new THREE.MeshNormalMaterial({shading: THREE.SmoothShading, transparent: true, opacity: 0.5});
+	this.pivotNode = new THREE.Mesh(sphereGeometry, sphereMaterial);
+
 	var mouseDelta = new THREE.Vector2();
 	
 	var camStart = null;
@@ -71,9 +67,6 @@ THREE.EarthControls = function ( camera, domElement, renderer, resourcePath ) {
 				if(distanceToPlane > 0){
 					var newCamPos = new THREE.Vector3().subVectors(pivot, dir.clone().multiplyScalar(distanceToPlane));
 					this.camera.position.copy(newCamPos);
-					
-					this.dragStartIndicator.style.left = dragEnd.x - scope.dragStartIndicator.clientWidth / 2;
-					this.dragStartIndicator.style.top = dragEnd.y - scope.dragStartIndicator.clientHeight / 2;
 				}
 				
 				
@@ -81,6 +74,8 @@ THREE.EarthControls = function ( camera, domElement, renderer, resourcePath ) {
 				// rotate around pivot point
 			
 				var diff = mouseDelta.clone().multiplyScalar(delta);
+				diff.x *= 0.3;
+				diff.y *= 0.2;
 			
 				this.camera.updateMatrixWorld();	
 
@@ -128,6 +123,12 @@ THREE.EarthControls = function ( camera, domElement, renderer, resourcePath ) {
 				this.camera.quaternion.copy(c.getWorldQuaternion());
 
 			}
+			
+			
+			var wp = this.pivotNode.getWorldPosition().applyMatrix4(this.camera.matrixWorldInverse);
+			var w = Math.abs(wp.z  / 30);
+			var l = this.pivotNode.scale.length();
+			this.pivotNode.scale.multiplyScalar(w / l);
 		}
 			
 		mouseDelta.set(0,0);
@@ -152,13 +153,7 @@ THREE.EarthControls = function ( camera, domElement, renderer, resourcePath ) {
 		if(!I){
 			return;
 		}
-		
-		//var sg = new THREE.SphereGeometry();
-		//var sm = new THREE.Mesh(sg);
-		//sm.scale.set(20, 20, 20);
-		//sm.position.copy(I);
-		//scene.add(sm);
-		
+
 		var plane = new THREE.Plane().setFromNormalAndCoplanarPoint(new THREE.Vector3(0, 1, 0), I);
 		
 		var vec = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
@@ -173,10 +168,10 @@ THREE.EarthControls = function ( camera, domElement, renderer, resourcePath ) {
 		camStart.rotation.copy(scope.camera.rotation);
 		dragStart.set( event.clientX, event.clientY );
 		dragEnd.set(event.clientX, event.clientY);
-		scope.dragStartIndicator.style.display = "initial";
-		scope.dragStartIndicator.style.left = event.clientX - scope.dragStartIndicator.clientWidth / 2;
-		scope.dragStartIndicator.style.top = event.clientY - scope.dragStartIndicator.clientHeight / 2;
 		
+		
+		scope.scene.add(scope.pivotNode);
+		scope.pivotNode.position.copy(pivot);
 
 		if ( event.button === 0 ) {
 			state = STATE.DRAG;
@@ -207,7 +202,8 @@ THREE.EarthControls = function ( camera, domElement, renderer, resourcePath ) {
 		scope.domElement.removeEventListener( 'mouseup', onMouseUp, false );
 		state = STATE.NONE;
 		
-		scope.dragStartIndicator.style.display = "none";
+		//scope.dragStartIndicator.style.display = "none";
+		scope.scene.remove(scope.pivotNode);
 
 	}
 
@@ -223,23 +219,10 @@ THREE.EarthControls = function ( camera, domElement, renderer, resourcePath ) {
 		};
 		var I = getMousePointCloudIntersection(mouse, scope.camera, scope.renderer, scope.pointclouds)
 		
-		//scope.dragStartIndicator.style.left = event.clientX - scope.dragStartIndicator.clientWidth / 2;
-		//scope.dragStartIndicator.style.top = event.clientY - scope.dragStartIndicator.clientHeight / 2;
-		//scope.dragStartIndicator.style.display = "initial";
-		
 		if(I){
 			var distance = I.distanceTo(scope.camera.position);
 			var dir = new THREE.Vector3().subVectors(I, scope.camera.position).normalize();
-			scope.camera.position.add(dir.multiplyScalar(distance * 0.1 * amount));
-			
-			
-			//var sg = new THREE.SphereGeometry();
-			//var sm = new THREE.Mesh(sg);
-			//sm.scale.set(20, 20, 20);
-			//sm.position.copy(I);
-			//scene.add(sm);
-			
-			
+			scope.camera.position.add(dir.multiplyScalar(distance * 0.1 * amount));	
 		}
 
 	}

@@ -97,4 +97,3 @@ Potree.BinaryLoader.prototype.parse = function(node, buffer){
 
 };
 
-

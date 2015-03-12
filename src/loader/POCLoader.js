@@ -81,7 +81,10 @@ POCLoader.load = function load(url, callback) {
 					var root = new Potree.PointCloudOctreeGeometryNode(name, pco, boundingBox);
 					root.level = 0;
 					root.hasChildren = true;
-					root.numPoints = fMno.hierarchy[0][1];
+					if(pco.loader.version.upTo("1.5")){
+						root.numPoints = fMno.hierarchy[0][1];
+					}
+					root.numPoints = 0;
 					pco.root = root;
 					pco.root.load();
 					nodes[name] = root;

@@ -116,6 +116,7 @@ Potree.PointCloudOctreeGeometryNode.prototype.loadHierachyThenPoints = function(
 		var stack = [];
 		var children = view.getUint8(0);
 		var numPoints = view.getUint32(1, true);
+		node.numPoints = numPoints;
 		stack.push({children: children, numPoints: numPoints, name: node.name});
 		
 		var decoded = [];

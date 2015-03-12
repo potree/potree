@@ -3,32 +3,11 @@
 
 Read the [FAQ](faq.md) if you encounter any problems.
 
-## Download Potree & PotreeConverter
+### Download PotreeConverter
 
-* [Potree](https://github.com/potree/potree/archive/master.zip)
-* [PotreeConverter](http://potree.org/downloads/PotreeConverter/PotreeConverter_2014.12.30.zip)
+* [PotreeConverter](https://github.com/potree/PotreeConverter)
 
-
-## Converting A Point Cloud
-
-Potree requires a special point cloud format. Use the PotreeConverter to convert your las or laz files.
-
-Try this for your first point cloud and then take a look at [conversion manual](converting.md) to learn more about the converter options to get better results:
-```
-./PotreeConverter.exe pointcloud.las -l 3
-```
-
-Copy the converted point cloud directory (with cloud.js + data directory) to _potree/resources/pointclouds_
-
-## Creating the Web Page
-
-Copy potree/examples/viewer.html and change the path to your own point cloud.
-
-```
-var pointcloudPath = "../resources/pointclouds/my_own_pointcloud/cloud.js";
-```
-
-## Deploying Potree On A Webserver
+### Setup a Web-Server
 
 Due to strict security policies in browsers,
 it is not possible to open potree html files directly on your pc because
@@ -40,10 +19,22 @@ alone should work fine:
 * [Apache](http://httpd.apache.org/)
 * [XAMPP](https://www.apachefriends.org/de/index.html)
 
-After you've installed apache/XAMPP, start it and copy your potree directory
-to the htdocs directory. You should now be able to access your localy hosted files like this:
+After you've installed and started Apache/XAMPP, you can access files in your htdocs
+directory through a localhost URL:
 
-    http://localhost/potree/examples/my_own_viewer.html
+Assuming your htdocs directory is ```C:\xampp\htdocs```, you can access it in your
+browser with ```http://localhost```
 
+
+### Converting & Generating a Web Page
+
+Try this for your first point cloud and then take a look at [conversion manual](converting.md) to learn more about the converter options to get better results:
+
+
+```
+./PotreeConverter.exe C:/pointcloud.las -o C:/xampp/htdocs/potree -l 3 --generate-page
+```
+
+You should now be able to open the generated potree page at this URL: ```http://localhost/potree/examples/pointcloud.html```
 
 ![](images/lion_demo_screenshot.jpg)

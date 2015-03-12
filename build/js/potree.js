@@ -248,7 +248,10 @@ POCLoader.load = function load(url, callback) {
 					var root = new Potree.PointCloudOctreeGeometryNode(name, pco, boundingBox);
 					root.level = 0;
 					root.hasChildren = true;
-					root.numPoints = fMno.hierarchy[0][1];
+					if(pco.loader.version.upTo("1.5")){
+						root.numPoints = fMno.hierarchy[0][1];
+					}
+					root.numPoints = 0;
 					pco.root = root;
 					pco.root.load();
 					nodes[name] = root;
@@ -589,7 +592,6 @@ Potree.BinaryLoader.prototype.parse = function(node, buffer){
 	ww.postMessage(message, [message.buffer]);
 
 };
-
 
 
 
@@ -2043,11 +2045,12 @@ THREE.FirstPersonControls.prototype = Object.create( THREE.EventDispatcher.proto
  *
  */
 
-THREE.EarthControls = function ( camera, domElement, renderer, resourcePath ) {
+THREE.EarthControls = function ( camera, renderer, scene ) {
 	this.camera = camera;
 	this.renderer = renderer;
 	this.pointclouds = [];
-	this.domElement = ( domElement !== undefined ) ? domElement : document;
+	this.domElement = renderer.domElement;
+	this.scene = scene;
 	
 	// Set to false to disable this control
 	this.enabled = true;
@@ -2061,16 +2064,11 @@ THREE.EarthControls = function ( camera, domElement, renderer, resourcePath ) {
 	
 	var dragStart = new THREE.Vector2();
 	var dragEnd = new THREE.Vector2();
-	this.dragStartIndicator = document.createElement("img");
-	this.dragStartIndicator.src = resourcePath + "/icons/sphere.png";
-	this.dragStartIndicator.style.width = "32px";
-	this.dragStartIndicator.style.height = "32px";
-	this.dragStartIndicator.style.position = "absolute";
-	this.dragStartIndicator.style.display = "none";
-	this.dragStartIndicator.style.opacity = "0.6";
-	this.dragStartIndicator.style.pointerEvents = "none";
-	document.body.appendChild(this.dragStartIndicator);
 	
+	var sphereGeometry = new THREE.SphereGeometry(1, 32, 32);
+	var sphereMaterial = new THREE.MeshNormalMaterial({shading: THREE.SmoothShading, transparent: true, opacity: 0.5});
+	this.pivotNode = new THREE.Mesh(sphereGeometry, sphereMaterial);
+
 	var mouseDelta = new THREE.Vector2();
 	
 	var camStart = null;
@@ -2098,15 +2096,18 @@ THREE.EarthControls = function ( camera, domElement, renderer, resourcePath ) {
 				var ray = new THREE.Ray(camStart.position, dir);
 				var distanceToPlane = ray.distanceToPlane(plane);
 				
-				var newCamPos = new THREE.Vector3().subVectors(pivot, dir.clone().multiplyScalar(distanceToPlane));
-				this.camera.position.copy(newCamPos);
+				if(distanceToPlane > 0){
+					var newCamPos = new THREE.Vector3().subVectors(pivot, dir.clone().multiplyScalar(distanceToPlane));
+					this.camera.position.copy(newCamPos);
+				}
 				
-				this.dragStartIndicator.style.left = dragEnd.x - scope.dragStartIndicator.clientWidth / 2;
-				this.dragStartIndicator.style.top = dragEnd.y - scope.dragStartIndicator.clientHeight / 2;
+				
 			}else if(state === STATE.ROTATE){
 				// rotate around pivot point
 			
 				var diff = mouseDelta.clone().multiplyScalar(delta);
+				diff.x *= 0.3;
+				diff.y *= 0.2;
 			
 				this.camera.updateMatrixWorld();	
 
@@ -2154,6 +2155,12 @@ THREE.EarthControls = function ( camera, domElement, renderer, resourcePath ) {
 				this.camera.quaternion.copy(c.getWorldQuaternion());
 
 			}
+			
+			
+			var wp = this.pivotNode.getWorldPosition().applyMatrix4(this.camera.matrixWorldInverse);
+			var w = Math.abs(wp.z  / 30);
+			var l = this.pivotNode.scale.length();
+			this.pivotNode.scale.multiplyScalar(w / l);
 		}
 			
 		mouseDelta.set(0,0);
@@ -2178,13 +2185,7 @@ THREE.EarthControls = function ( camera, domElement, renderer, resourcePath ) {
 		if(!I){
 			return;
 		}
-		
-		//var sg = new THREE.SphereGeometry();
-		//var sm = new THREE.Mesh(sg);
-		//sm.scale.set(20, 20, 20);
-		//sm.position.copy(I);
-		//scene.add(sm);
-		
+
 		var plane = new THREE.Plane().setFromNormalAndCoplanarPoint(new THREE.Vector3(0, 1, 0), I);
 		
 		var vec = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
@@ -2199,10 +2200,10 @@ THREE.EarthControls = function ( camera, domElement, renderer, resourcePath ) {
 		camStart.rotation.copy(scope.camera.rotation);
 		dragStart.set( event.clientX, event.clientY );
 		dragEnd.set(event.clientX, event.clientY);
-		scope.dragStartIndicator.style.display = "initial";
-		scope.dragStartIndicator.style.left = event.clientX - scope.dragStartIndicator.clientWidth / 2;
-		scope.dragStartIndicator.style.top = event.clientY - scope.dragStartIndicator.clientHeight / 2;
 		
+		
+		scope.scene.add(scope.pivotNode);
+		scope.pivotNode.position.copy(pivot);
 
 		if ( event.button === 0 ) {
 			state = STATE.DRAG;
@@ -2233,7 +2234,8 @@ THREE.EarthControls = function ( camera, domElement, renderer, resourcePath ) {
 		scope.domElement.removeEventListener( 'mouseup', onMouseUp, false );
 		state = STATE.NONE;
 		
-		scope.dragStartIndicator.style.display = "none";
+		//scope.dragStartIndicator.style.display = "none";
+		scope.scene.remove(scope.pivotNode);
 
 	}
 
@@ -2249,23 +2251,10 @@ THREE.EarthControls = function ( camera, domElement, renderer, resourcePath ) {
 		};
 		var I = getMousePointCloudIntersection(mouse, scope.camera, scope.renderer, scope.pointclouds)
 		
-		//scope.dragStartIndicator.style.left = event.clientX - scope.dragStartIndicator.clientWidth / 2;
-		//scope.dragStartIndicator.style.top = event.clientY - scope.dragStartIndicator.clientHeight / 2;
-		//scope.dragStartIndicator.style.display = "initial";
-		
 		if(I){
 			var distance = I.distanceTo(scope.camera.position);
 			var dir = new THREE.Vector3().subVectors(I, scope.camera.position).normalize();
-			scope.camera.position.add(dir.multiplyScalar(distance * 0.1 * amount));
-			
-			
-			//var sg = new THREE.SphereGeometry();
-			//var sm = new THREE.Mesh(sg);
-			//sm.scale.set(20, 20, 20);
-			//sm.position.copy(I);
-			//scene.add(sm);
-			
-			
+			scope.camera.position.add(dir.multiplyScalar(distance * 0.1 * amount));	
 		}
 
 	}
@@ -2629,12 +2618,13 @@ Potree.PointCloudOctree.prototype.updatePointCloud = function(node, element, sta
 	
 	if(this.showBoundingBox && !node.boundingBoxNode){
 		var boxHelper = new THREE.BoxHelper(node);
-		scene.add(boxHelper);
+		this.add(boxHelper);
 		this.boundingBoxNodes.push(boxHelper);
 		node.boundingBoxNode = boxHelper;
+		node.boundingBoxNode.matrixWorld.copy(node.matrixWorld);
 	}else if(this.showBoundingBox){
 		node.boundingBoxNode.visible = true;
-		node.boundingBoxNode.matrixWorld.multiplyMatrices( node.parent.matrixWorld, node.boundingBoxNode.matrix );
+		node.boundingBoxNode.matrixWorld.copy(node.matrixWorld);
 	}else if(!this.showBoundingBox && node.boundingBoxNode){
 		node.boundingBoxNode.visible = false;
 	}
@@ -2686,6 +2676,16 @@ Potree.PointCloudOctree.prototype.updateLoadQueue = function(vn){
 }
 
 Potree.PointCloudOctree.prototype.update = function(camera, renderer){
+	this.visibleGeometry = [];
+	this.loadQueue = [];
+	this.visibleNodes = [];
+	this.numVisibleNodes = 0;
+	this.numVisiblePoints = 0;
+
+	if(!this.visible){
+		return;
+	}
+
 	this.updateMatrixWorld(true);
 
 	this.visibleGeometry = this.getVisibleGeometry(camera);
@@ -2704,10 +2704,7 @@ Potree.PointCloudOctree.prototype.update = function(camera, renderer){
 		this.boundingBoxNodes[i].visible = false;
 	}
 	
-	this.loadQueue = [];
-	this.visibleNodes = [];
-	this.numVisibleNodes = 0;
-	this.numVisiblePoints = 0;
+	
 	
 	
 	
@@ -3645,6 +3642,7 @@ Potree.PointCloudOctreeGeometryNode.prototype.loadHierachyThenPoints = function(
 		var stack = [];
 		var children = view.getUint8(0);
 		var numPoints = view.getUint32(1, true);
+		node.numPoints = numPoints;
 		stack.push({children: children, numPoints: numPoints, name: node.name});
 		
 		var decoded = [];
@@ -4008,25 +4006,40 @@ Potree.Features = function(){
  */
 
 Potree.TextSprite = function(text){
+
+	THREE.Object3D.call(this);
+
 	var texture = new THREE.Texture();
 	var spriteMaterial = new THREE.SpriteMaterial( 
 		{ map: texture, useScreenCoordinates: false} );
-	THREE.Sprite.call(this, spriteMaterial);
+	
+	this.material = spriteMaterial;
+	this.sprite = new THREE.Sprite(spriteMaterial);
+	this.add(this.sprite);
+	
+	//THREE.Sprite.call(this, spriteMaterial);
 	
 	this.borderThickness = 4;
 	this.fontface = "Arial";
 	this.fontsize = 28;
 	this.borderColor = { r:0, g:0, b:0, a:1.0 };
 	this.backgroundColor = { r:255, g:255, b:255, a:1.0 };
+	this.textColor = {r: 255, g: 255, b: 255, a: 1.0};
 	this.text = "";
 	
 	this.setText(text);
 };
 
-Potree.TextSprite.prototype = new THREE.Sprite();
+Potree.TextSprite.prototype = new THREE.Object3D();
 
 Potree.TextSprite.prototype.setText = function(text){
 	this.text = text;
+	
+	this.update();
+}
+
+Potree.TextSprite.prototype.setTextColor = function(color){
+	this.textColor = color;
 	
 	this.update();
 }
@@ -4073,12 +4086,11 @@ Potree.TextSprite.prototype.update = function(){
 		textWidth + this.borderThickness, this.fontsize * 1.4 + this.borderThickness, 6);						  
 		
 	// text color
-	
-	
 	context.strokeStyle = "rgba(0, 0, 0, 1.0)";
 	context.strokeText( this.text, this.borderThickness, this.fontsize + this.borderThickness);
 	
-	context.fillStyle = "rgba(255, 255, 255, 1.0)";
+	context.fillStyle = "rgba(" + this.textColor.r + "," + this.textColor.g + ","
+								  + this.textColor.b + "," + this.textColor.a + ")";
 	context.fillText( this.text, this.borderThickness, this.fontsize + this.borderThickness);
 	
 								  
@@ -4087,9 +4099,9 @@ Potree.TextSprite.prototype.update = function(){
 	
 	//var spriteMaterial = new THREE.SpriteMaterial( 
 	//	{ map: texture, useScreenCoordinates: false } );
-	this.material.map = texture;
+	this.sprite.material.map = texture;
 		
-	this.scale.set(spriteWidth*0.01,spriteHeight*0.01,1.0);
+	this.sprite.scale.set(spriteWidth*0.01,spriteHeight*0.01,1.0);
 		
 	//this.material = spriteMaterial;						  
 }
@@ -4502,7 +4514,12 @@ Potree.AngleTool = function(scene, camera, renderer){
 	}
 	
 	function onMouseDown(event){
+	
 		if(event.which === 1){
+		
+			if(state !== STATE.DEFAULT){
+				event.stopImmediatePropagation();
+			}
 			
 			var I = getHoveredElement();
 			
@@ -4512,7 +4529,8 @@ Potree.AngleTool = function(scene, camera, renderer){
 					sceneClickPos: I.point,
 					sceneStartPos: scope.sceneRoot.position.clone(),
 					mousePos: {x: scope.mouse.x, y: scope.mouse.y}
-				};				
+				};	
+				event.stopImmediatePropagation();
 			}
 			
 		}else if(event.which === 3){	
@@ -4629,7 +4647,7 @@ Potree.AngleTool = function(scene, camera, renderer){
 			for(j = 0; j < measurement.angleLabels.length; j++){
 				var label = measurement.angleLabels[j];
 				wp = label.getWorldPosition().applyMatrix4(this.camera.matrixWorldInverse);
-				w = Math.abs(wp.z  / 10);
+				w = Math.abs(wp.z  / 5);
 				var l = label.scale.length();
 				label.scale.multiplyScalar(w / l);
 			}
@@ -4740,6 +4758,7 @@ Potree.AreaTool = function(scene, camera, renderer){
 		this.areaLabel = new Potree.TextSprite();
 		this.areaLabel.setBorderColor({r:0, g:255, b:0, a:0.0});
 		this.areaLabel.setBackgroundColor({r:0, g:255, b:0, a:0.0});
+		this.areaLabel.setTextColor({r:180, g:220, b:180, a:1.0});
 		this.areaLabel.material.depthTest = false;
 		this.areaLabel.material.opacity = 1;
 		root.add(this.areaLabel);
@@ -5004,6 +5023,10 @@ Potree.AreaTool = function(scene, camera, renderer){
 	
 	function onMouseDown(event){
 		if(event.which === 1){
+		
+			if(state !== STATE.DEFAULT){
+				event.stopImmediatePropagation();
+			}
 			
 			var I = getHoveredElement();
 			
@@ -5015,7 +5038,7 @@ Potree.AreaTool = function(scene, camera, renderer){
 					sceneStartPos: scope.sceneRoot.position.clone(),
 					mousePos: {x: scope.mouse.x, y: scope.mouse.y}
 				};
-				
+				event.stopImmediatePropagation();
 			}
 			
 		}else if(event.which === 3){	
@@ -5132,13 +5155,13 @@ Potree.AreaTool = function(scene, camera, renderer){
 			for(var j = 0; j < measurement.edgeLabels.length; j++){
 				var label = measurement.edgeLabels[j];
 				var wp = label.getWorldPosition().applyMatrix4(this.camera.matrixWorldInverse);
-				var w = Math.abs(wp.z  / 10);
+				var w = Math.abs(wp.z  / 5);
 				var l = label.scale.length();
 				label.scale.multiplyScalar(w / l);
 			}
 			
 			var wp = measurement.areaLabel.getWorldPosition().applyMatrix4(this.camera.matrixWorldInverse);
-			var w = Math.abs(wp.z  / 8);
+			var w = Math.abs(wp.z  / 4);
 			var l = measurement.areaLabel.scale.length();
 			measurement.areaLabel.scale.multiplyScalar(w / l);
 		}
@@ -5509,6 +5532,10 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 	
 	function onMouseDown(event){
 		if(event.which === 1){
+		
+			if(state !== STATE.DEFAULT){
+				event.stopImmediatePropagation();
+			}
 			
 			var I = getHoveredElement();
 			
@@ -5650,7 +5677,7 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 			for(var j = 0; j < measurement.edgeLabels.length; j++){
 				var label = measurement.edgeLabels[j];
 				var wp = label.getWorldPosition().applyMatrix4(this.camera.matrixWorldInverse);
-				var w = Math.abs(wp.z  / 10);
+				var w = Math.abs(wp.z  / 5);
 				var l = label.scale.length();
 				label.scale.multiplyScalar(w / l);
 			}
@@ -6084,6 +6111,11 @@ Potree.ProfileTool = function(scene, camera, renderer){
 	}
 	
 	function onMouseDown(event){
+	
+		if(state !== STATE.DEFAULT){
+			event.stopImmediatePropagation();
+		}
+	
 		if(event.which === 1){
 			
 			var I = getHoveredElement();
@@ -6109,6 +6141,7 @@ Potree.ProfileTool = function(scene, camera, renderer){
 					mousePos: {x: scope.mouse.x, y: scope.mouse.y},
 					widthStart: widthStart
 				};
+				event.stopImmediatePropagation();
 				
 			}
 			
@@ -6797,6 +6830,7 @@ Potree.TransformationTool = function(scene, camera, renderer){
 	
 	function onMouseDown(event){
 	
+	
 		if(event.which === 1){
 			// left click
 			var I = getHoveredElement();
@@ -6817,6 +6851,7 @@ Potree.TransformationTool = function(scene, camera, renderer){
 					scales: scales,
 					rotations: rotations
 				};
+				event.stopImmediatePropagation();
 			}
 		}else if(event.which === 3){
 			// right click
@@ -7024,6 +7059,7 @@ Potree.VolumeTool = function(scene, camera, renderer){
 	
 		this._clip = false;
 	
+		this.dimension = new THREE.Vector3(1,1,1);
 		var material = new THREE.MeshBasicMaterial( {color: 0x00ff00, transparent: true, opacity: 0.3} );
 		this.box = new THREE.Mesh( boxGeometry, material);
 		this.box.geometry.computeBoundingBox();
@@ -7040,9 +7076,29 @@ Potree.VolumeTool = function(scene, camera, renderer){
 		this.label.material.depthTest = false;
 		this.label.position.y -= 0.5;
 		this.add(this.label);
+		
+		var v = this;
+		this.label.updateMatrixWorld = function(){
+			var volumeWorldPos = new THREE.Vector3();
+			volumeWorldPos.setFromMatrixPosition( v.matrixWorld );
+			v.label.position.copy(volumeWorldPos);
+			v.label.updateMatrix();
+			v.label.matrixWorld.copy(v.label.matrix);
+			v.label.matrixWorldNeedsUpdate = false;
+			
+			for ( var i = 0, l = v.label.children.length; i < l; i ++ ) {
+				v.label.children[ i ].updateMatrixWorld( true );
+			}
+		};
+		
+		this.setDimension = function(x,y,z){
+			this.dimension.set(x,y,z);
+			this.box.scale.set(x,y,z);
+			this.frame.scale.set(x,y,z);
+		};
 
 		this.volume = function(){
-			return Math.abs(this.scale.x * this.scale.y * this.scale.z);
+			return Math.abs(this.dimension.x * this.dimension.y * this.dimension.z);
 		};
 		
 		this.update = function(){
@@ -7107,6 +7163,10 @@ Potree.VolumeTool = function(scene, camera, renderer){
 	};
 	
 	function onMouseDown(event){
+	
+		if(state !== STATE.DEFAULT){
+			event.stopImmediatePropagation();
+		}
 	
 		if(state === STATE.INSERT_VOLUME){
 			scope.finishInsertion();
@@ -7217,7 +7277,7 @@ Potree.VolumeTool = function(scene, camera, renderer){
 				var wp = this.activeVolume.getWorldPosition().applyMatrix4(this.camera.matrixWorldInverse);
 				var pp = new THREE.Vector4(wp.x, wp.y, wp.z).applyMatrix4(this.camera.projectionMatrix);
 				var w = Math.abs((wp.z  / 10)); 
-				this.activeVolume.scale.set(w, w, w);
+				this.activeVolume.setDimension(w, w, w);
 			}
 		}
 		

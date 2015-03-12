@@ -77,7 +77,7 @@ void main() {
 	<script src="../libs/other/dat.gui.min.js"></script>
 	
 	<script src="../build/js/potree.js"></script>
-	<script src="../src/materials/PointCloudMaterial.js"></script>
+	<!--<script src="../src/materials/PointCloudMaterial.js"></script>
 	<script src="../src/PointCloudOctree.js"></script>
 	<script src="../src/PointCloudOctreeGeometry.js"></script>
 	<script src="../src/utils/AngleTool.js"></script>
@@ -87,6 +87,8 @@ void main() {
 	<script src="../src/utils/VolumeTool.js"></script>
 	<script src="../src/TextSprite.js"></script>
 	<script src="../src/EarthControls.js"></script>
+	<script src="../src/loader/POCLoader.js"></script>
+	<script src="../src/loader/BinaryLoader.js"></script>-->
 	<script src="./js/ProgressBar.js"></script>
 	
 	<!-- INFOS / STATS -->
@@ -143,10 +145,13 @@ void main() {
 		var pointcloudPath = "../../../../pointclouds/mschuetz/lion_takanawa_oriented.las_converted/cloud.js";
 		var pointcloudPath = "../../../../pointclouds/mschuetz/engel/agisoft/cloud.js";
 		var pointcloudPath = "../../../../pointclouds/opentopography/lake_tahoe_basin/data_converted/cloud.js";
-		var pointcloudPath = "../resources/pointclouds/vol_total/cloud.js";
-		var pointcloudPath = "../../../../pointclouds/pix4d/lausanne_1.5/cloud.js";
-		var pointcloudPath = "../../../../deploy/point_clouds_2014.12.29/matterhorn/cloud.js";
 		var pointcloudPath = "../../../../pointclouds/pix4d/eclepens.laz_converted/cloud.js";
+		var pointcloudPath = "../../../../pointclouds/converted/resources/pointclouds/lion_takanawa_oriented/cloud.js";
+		var pointcloudPath = "../../../../pointclouds/pix4d/lausanne_1.3/cloud.js";
+		var pointcloudPath = "../../../../pointclouds/converted/resources/pointclouds/CA13_data/cloud.js";
+		var pointcloudPath = "../../../../deploy/point_clouds_2014.12.29/matterhorn/cloud.js";
+		var pointcloudPath = "../../../../pointclouds/pix4d/lausanne_1.5/cloud.js";
+		var pointcloudPath = "../resources/pointclouds/vol_total/cloud.js";
 		
 		var elRenderArea = document.getElementById("renderArea");
 	
@@ -409,7 +414,7 @@ void main() {
 			bg.material.depthWrite = false;
 			sceneBG.add(bg);
 			
-			earthControls = new THREE.EarthControls(camera, renderer.domElement, renderer, "../resources/");
+			earthControls = new THREE.EarthControls(camera, renderer, scenePointCloud);
 			
 			
 			window.addEventListener( 'keydown', onKeyDown, false );

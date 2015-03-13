@@ -955,7 +955,16 @@ var point = Potree.PointCloudOctree.prototype.pick = function(renderer, camera, 
 			magFilter: THREE.NearestFilter, 
 			format: THREE.RGBAFormat } 
 		);
+	}else if(this.pickTarget.width != width || this.pickTarget.height != height){
+		this.pickTarget.dispose();
+		this.pickTarget = new THREE.WebGLRenderTarget( 
+			1, 1, 
+			{ minFilter: THREE.LinearFilter, 
+			magFilter: THREE.NearestFilter, 
+			format: THREE.RGBAFormat } 
+		);
 	}
+	this.pickTarget.setSize(width, height);
 	
 	// setup pick material.
 	// use the same point size functions as the main material to get the same point sizes.
@@ -981,7 +990,7 @@ var point = Potree.PointCloudOctree.prototype.pick = function(renderer, camera, 
 	this.pickMaterial.octreeLevels 	= this.material.octreeLevels;
 	this.pickMaterial.pointShape 	= this.material.pointShape;
 	
-	this.pickTarget.setSize(width, height);
+	
 
 	var _gl = renderer.context;
 	

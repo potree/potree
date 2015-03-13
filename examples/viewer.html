@@ -142,15 +142,14 @@ void main() {
 		var progressBar = new ProgressBar();
 
 		
-		var pointcloudPath = "../../../../pointclouds/mschuetz/lion_takanawa_oriented.las_converted/cloud.js";
-		var pointcloudPath = "../../../../pointclouds/mschuetz/engel/agisoft/cloud.js";
-		var pointcloudPath = "../../../../pointclouds/opentopography/lake_tahoe_basin/data_converted/cloud.js";
-		var pointcloudPath = "../../../../pointclouds/pix4d/eclepens.laz_converted/cloud.js";
-		var pointcloudPath = "../../../../pointclouds/converted/resources/pointclouds/lion_takanawa_oriented/cloud.js";
-		var pointcloudPath = "../../../../pointclouds/pix4d/lausanne_1.3/cloud.js";
-		var pointcloudPath = "../../../../pointclouds/converted/resources/pointclouds/CA13_data/cloud.js";
 		var pointcloudPath = "../../../../deploy/point_clouds_2014.12.29/matterhorn/cloud.js";
 		var pointcloudPath = "../../../../pointclouds/pix4d/lausanne_1.5/cloud.js";
+		var pointcloudPath = "../../../../pointclouds/pix4d/lausanne_1.3/cloud.js";
+		var pointcloudPath = "../../../../pointclouds/pix4d/eclepens.laz_converted/cloud.js";
+		var pointcloudPath = "../../../../pointclouds/converted/resources/pointclouds/CA13_data/cloud.js";
+		var pointcloudPath = "../../../../pointclouds/converted/resources/pointclouds/lion_takanawa_oriented/cloud.js";
+		var pointcloudPath = "../../../../pointclouds/converted/resources/pointclouds/lausanne/cloud.js";
+		var pointcloudPath = "../../../../pointclouds/converted/resources/pointclouds/lausanne_tiles/cloud.js";
 		var pointcloudPath = "../resources/pointclouds/vol_total/cloud.js";
 		
 		var elRenderArea = document.getElementById("renderArea");
@@ -277,8 +276,8 @@ void main() {
 			var qualityOptions = ["Squares", "Circles"];
 			if(Potree.Features.SHADER_INTERPOLATION.isSupported()){
 				qualityOptions.push("Interpolation");
-				params.quality = "Interpolation";
-				quality = params.quality;
+				//params.quality = "Interpolation";
+				//quality = params.quality;
 			}
 			if(Potree.Features.SHADER_SPLATS.isSupported()){
 				qualityOptions.push("Splats");
@@ -374,9 +373,9 @@ void main() {
 				referenceFrame.position.copy(sg.center).multiplyScalar(-1);
 				referenceFrame.updateMatrixWorld(true);
 				
-				camera.zoomTo(pointcloud, 1);
 				
 				flipYZ();
+				camera.zoomTo(pointcloud, 1);
 				
 				initGUI();	
 
@@ -549,13 +548,6 @@ void main() {
 			
 			var clipBoxes = [];
 			
-			//var profiles = [];
-			//for(var i = 0; i < profileTool.profiles.length; i++){
-			//	profiles.push(profileTool.profiles[i]);
-			//}
-			//if(profileTool.activeProfile){
-			//	profiles.push(profileTool.activeProfile);
-			//}
 			for(var i = 0; i < profileTool.profiles.length; i++){
 				var profile = profileTool.profiles[i];
 				
@@ -566,8 +558,6 @@ void main() {
 					clipBoxes.push(boxInverse);
 				}
 			}
-			
-
 			
 			for(var i = 0; i < volumeTool.volumes.length; i++){
 				var volume = volumeTool.volumes[i];
@@ -722,10 +712,33 @@ void main() {
 				quad.material.depthWrite = true;
 				quad.material.transparent = true;
 				sceneNormalize.add(quad);
-				
+				sceneNormalize.screenQuad = quad;
 			}
 			
 			// resize
+			if(rtDepth){
+				if(rtDepth.width != elRenderArea.clientWidth || rtDepth.height != elRenderArea.clientHeight){
+					rtDepth.dispose();
+					rtNormalize.dispose();
+					
+					rtDepth = new THREE.WebGLRenderTarget( 1024, 1024, { 
+						minFilter: THREE.NearestFilter, 
+						magFilter: THREE.NearestFilter, 
+						format: THREE.RGBAFormat, 
+						type: THREE.FloatType
+					} );
+					rtNormalize = new THREE.WebGLRenderTarget( 1024, 1024, { 
+						minFilter: THREE.LinearFilter, 
+						magFilter: THREE.NearestFilter, 
+						format: THREE.RGBAFormat, 
+						type: THREE.FloatType
+					} );
+					
+					sceneNormalize.screenQuad.material.uniforms.depthMap.value = rtDepth;
+					sceneNormalize.screenQuad.material.uniforms.texture.value = rtNormalize;
+				}
+			}
+			
 			var width = elRenderArea.clientWidth;
 			var height = elRenderArea.clientHeight;
 			var aspect = width / height;

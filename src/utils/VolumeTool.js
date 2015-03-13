@@ -98,7 +98,8 @@ Potree.VolumeTool = function(scene, camera, renderer){
 		};
 
 		this.volume = function(){
-			return Math.abs(this.dimension.x * this.dimension.y * this.dimension.z);
+			return Math.abs(this.scale.x * this.scale.y * this.scale.z);
+			//return Math.abs(this.dimension.x * this.dimension.y * this.dimension.z);
 		};
 		
 		this.update = function(){
@@ -277,7 +278,8 @@ Potree.VolumeTool = function(scene, camera, renderer){
 				var wp = this.activeVolume.getWorldPosition().applyMatrix4(this.camera.matrixWorldInverse);
 				var pp = new THREE.Vector4(wp.x, wp.y, wp.z).applyMatrix4(this.camera.projectionMatrix);
 				var w = Math.abs((wp.z  / 10)); 
-				this.activeVolume.setDimension(w, w, w);
+				//this.activeVolume.setDimension(w, w, w);
+				this.activeVolume.scale.set(w,w,w);
 			}
 		}
 		

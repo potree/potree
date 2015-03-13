@@ -44,24 +44,14 @@ Potree.PointCloudOctreeGeometryNode.prototype.getURL = function(){
 }
 
 Potree.PointCloudOctreeGeometryNode.prototype.getHierarchyPath = function(){
-	var path = "";
+	var path = "r/";
 
-	var hierachyStepSize = this.pcoGeometry.hierarchyStepSize;
+	var hierarchyStepSize = this.pcoGeometry.hierarchyStepSize;
 	var indices = this.name.substr(1);
-	var numParts;
-	if(indices.length == 0){
-		numParts = 0;
-	}else{
-		numParts = Math.ceil(indices.length / hierachyStepSize);
-	}
-
-	if(numParts == 0){
-		path = "";
-	}else{
-		path = "";
-		for(var i = 0; i < numParts; i++){
-			path += "r" + indices.substr(0, i*hierachyStepSize) + "/";
-		}
+	
+	var numParts = Math.floor(indices.length / hierarchyStepSize);
+	for(var i = 0; i < numParts; i++){
+		path += indices.substr(i * hierarchyStepSize, hierarchyStepSize) + "/";
 	}
 
 	return path;

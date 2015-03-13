@@ -1,5 +1,7 @@
 # File Format
 
+Version 1.6
+
 The potree file format partitions points into an octree. All octree nodes,
 intermediate as well as leaves, contain a sparse subsample of points.
 
@@ -32,8 +34,15 @@ Each node may have up to 8 child nodes. The numbers from 0 to 7 inside the node 
 indicate which child it is.
 
 Files inside the data directory are grouped into a hierarchical directory structure.
-Each directory contains nodes for up to _hierarchyStepSize_ levels of the octree.
+Each directory contains nodes for up to _X_ levels of the octree
+and a hrc file that contains _(X + 1)_ levels of hierarchy for a given node,
+where _X_ is the _hierarchyStepSize_.
 Subsequent nodes are stored in sub directories.
+
+This image shows the contents of data/r for a step size of 5. It contains nodes for octree levels 0 to 4 and r.hrc which contains the hierarchy for octree levels 0 to 5.
+Contents for level 5 to 9 and 10 to 12 are stored in subsequent directories.
+
+![](./images/directoy_hierarchy.png)
 
 ## Hierarchy Chunks
 The hierarchy of a node is stored in .hrc files, in packets of 5 bytes. This list of 5-byte packets is a breadth-first traversal of the tree, starting in itself.
@@ -58,7 +67,7 @@ The file ./data/r.hrc will contain 2 packs of 5-bytes with the following data:
 
 The depth of the hierarchy in a .hrc file depends on the hierarchyStepSize which
 is set to 5 as of now. This means that at every 5th level there are .hrc files
-that contain the next 5 levels of hierarchy.
+that contain 6 levels of hierarchy (the node itself and the next 5 levels of descendants).
 
 
 ## Octree Hierarchy

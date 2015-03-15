@@ -2467,6 +2467,46 @@ Potree.PointCloudOctree.prototype.update = function(camera, renderer){
 			this.updateVisibilityTexture();
 		}
 	}
+
+	this.disposeInvisible(this.children[0]);
+};
+
+Potree.PointCloudOctree.prototype.disposeInvisible = function(object) {
+	var stack = object.children.slice(0);
+	while(stack.length > 0){
+		var object = stack.shift();
+		if (object instanceof THREE.PointCloud && !object.visible) {
+			if (object.justReplaced) {
+				object.justReplaced = false;
+			} else {
+				var parent = object.parent;
+				parent.remove(object);
+				parent.add(object.oldProxy);
+				this.disposeObject(object);
+			}
+		} else {
+			for (var i = 0; i < object.children.length; i++) {
+				stack.push(object.children[i]);
+			}
+		}
+	}
+};
+
+Potree.PointCloudOctree.prototype.disposeObject = function(object) {
+	var stack = [];
+	stack.push(object);
+	while (stack.length > 0) {
+		var obj = stack.shift();
+		if (obj.pcoGeometry) {
+			obj.pcoGeometry.dispose();
+		}
+		if (obj.geometry) {
+			obj.geometry.dispose();
+		}
+		for (var i = 0; i < obj.children.length; i++) {
+			stack.push(obj.children[i]);
+		}
+	}
 };
 
 Potree.PointCloudOctree.prototype.getVisibleGeometry = function(camera){
@@ -2723,6 +2763,8 @@ Potree.PointCloudOctree.prototype.replaceProxy = function(proxy){
 		node.boundingBox = geometry.boundingBox;
 		node.boundingSphere = node.boundingBox.getBoundingSphere();
 		node.pcoGeometry = geometryNode;
+		node.oldProxy = proxy;
+		node.justReplaced = true;
 		var parent = proxy.parent;
 		parent.remove(proxy);
 		parent.add(node);

@@ -10,22 +10,18 @@ Potree.BinaryLoader = function(version, boundingBox, scale){
 	this.scale = scale;
 };
 
-Potree.BinaryLoader.prototype.newerVersion = function(version){
-
-};
-
 Potree.BinaryLoader.prototype.load = function(node){
-
 	if(node.loaded){
 		return;
 	}
-
-	var url = node.pcoGeometry.octreeDir + "/" + node.name;
-	if(this.version.newerThan("1.3")){
-		url += ".bin";
-	}
 	
 	var scope = this;
+
+	var url = node.getURL();
+	
+	if(this.version.equalOrHigher("1.4")){
+		url += ".bin";
+	}
 	
 	var xhr = new XMLHttpRequest();
 	xhr.open('GET', url, true);
@@ -46,51 +42,58 @@ Potree.BinaryLoader.prototype.load = function(node){
 	}catch(e){
 		console.log("fehler beim laden der punktwolke: " + e);
 	}
-	
 };
 
 Potree.BinaryLoader.prototype.parse = function(node, buffer){
-	var geometry = new THREE.BufferGeometry();
-	var numPoints = buffer.byteLength / 16;
+
+	var numPoints = buffer.byteLength / node.pcoGeometry.pointAttributes.byteSize;
+	var pointAttributes = node.pcoGeometry.pointAttributes;
 	
-	var positions = new Float32Array(numPoints*3);
-	var colors = new Float32Array(numPoints*3);
-	var indices = new ArrayBuffer(numPoints*4);
-	var color = new THREE.Color();
 	
-	var fView = new Float32Array(buffer);
-	var iView = new Int32Array(buffer);
-	var uiView = new Uint8Array(buffer);
-	
-	var iIndices = new Uint32Array(indices);
-	
-	for(var i = 0; i < numPoints; i++){
-		if(this.version.newerThan("1.3")){
-			positions[3*i+0] = (iView[4*i+0] * this.scale) + node.boundingBox.min.x;
-			positions[3*i+1] = (iView[4*i+1] * this.scale) + node.boundingBox.min.y;
-			positions[3*i+2] = (iView[4*i+2] * this.scale) + node.boundingBox.min.z;
-		}else{
-			positions[3*i+0] = fView[4*i+0] + node.pcoGeometry.offset.x;
-			positions[3*i+1] = fView[4*i+1] + node.pcoGeometry.offset.y;
-			positions[3*i+2] = fView[4*i+2] + node.pcoGeometry.offset.z;
+	var ww = Potree.workers.binaryDecoder.getWorker();
+	ww.onmessage = function(e){
+		var data = e.data;
+		var buffers = data.attributeBuffers;
+		
+		Potree.workers.binaryDecoder.returnWorker(ww);
+		
+		var geometry = new THREE.BufferGeometry();
+		
+		for(var property in buffers){
+			if(buffers.hasOwnProperty(property)){
+				var buffer = buffers[property].buffer;
+				var attribute = buffers[property].attribute;
+				var numElements = attribute.numElements;
+				
+				if(parseInt(property) === PointAttributeNames.POSITION_CARTESIAN){
+					geometry.addAttribute("position", new THREE.BufferAttribute(new Float32Array(buffer), 3));
+				}else if(parseInt(property) === PointAttributeNames.COLOR_PACKED){
+					geometry.addAttribute("color", new THREE.BufferAttribute(new Float32Array(buffer), 3));
+				}else if(parseInt(property) === PointAttributeNames.INTENSITY){
+					geometry.addAttribute("intensity", new THREE.BufferAttribute(new Float32Array(buffer), 1));
+				}else if(parseInt(property) === PointAttributeNames.CLASSIFICATION){
+					geometry.addAttribute("classification", new THREE.BufferAttribute(new Float32Array(buffer), 1));
+				}
+			}
 		}
+		geometry.addAttribute("indices", new THREE.BufferAttribute(new Float32Array(data.indices), 1));
 		
-		color.setRGB(uiView[16*i+12], uiView[16*i+13], uiView[16*i+14]);
-		colors[3*i+0] = color.r / 255;
-		colors[3*i+1] = color.g / 255;
-		colors[3*i+2] = color.b / 255;
-		
-		iIndices[i] = i;
+		geometry.boundingBox = node.boundingBox;
+		node.geometry = geometry;
+		node.loaded = true;
+		node.loading = false;
+		node.pcoGeometry.numNodesLoading--;
 	}
 	
-	geometry.addAttribute('position', new THREE.BufferAttribute(positions, 3));
-	geometry.addAttribute('color', new THREE.BufferAttribute(colors, 3));
-	geometry.addAttribute('indices', new THREE.BufferAttribute(indices, 1));
-	geometry.boundingBox = node.boundingBox;
-	node.geometry = geometry;
-	node.loaded = true;
-	node.loading = false;
-	node.pcoGeometry.numNodesLoading--;
-};
+	var message = {
+		buffer: buffer,
+		pointAttributes: pointAttributes,
+		version: this.version.version,
+		min: [ node.boundingBox.min.x, node.boundingBox.min.y, node.boundingBox.min.z ],
+		offset: [node.pcoGeometry.offset.x, node.pcoGeometry.offset.y, node.pcoGeometry.offset.z],
+		scale: this.scale
+	};
+	ww.postMessage(message, [message.buffer]);
 
+};
 

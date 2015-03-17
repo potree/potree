@@ -10,7 +10,6 @@ Potree.VolumeTool = function(scene, camera, renderer){
 	this.renderer = renderer;
 	this.domElement = renderer.domElement;
 	this.mouse = {x: 0, y: 0};
-	this.accuracy = 0.5;
 	
 	this.volumes = [];
 	
@@ -60,6 +59,7 @@ Potree.VolumeTool = function(scene, camera, renderer){
 	
 		this._clip = false;
 	
+		this.dimension = new THREE.Vector3(1,1,1);
 		var material = new THREE.MeshBasicMaterial( {color: 0x00ff00, transparent: true, opacity: 0.3} );
 		this.box = new THREE.Mesh( boxGeometry, material);
 		this.box.geometry.computeBoundingBox();
@@ -76,9 +76,30 @@ Potree.VolumeTool = function(scene, camera, renderer){
 		this.label.material.depthTest = false;
 		this.label.position.y -= 0.5;
 		this.add(this.label);
+		
+		var v = this;
+		this.label.updateMatrixWorld = function(){
+			var volumeWorldPos = new THREE.Vector3();
+			volumeWorldPos.setFromMatrixPosition( v.matrixWorld );
+			v.label.position.copy(volumeWorldPos);
+			v.label.updateMatrix();
+			v.label.matrixWorld.copy(v.label.matrix);
+			v.label.matrixWorldNeedsUpdate = false;
+			
+			for ( var i = 0, l = v.label.children.length; i < l; i ++ ) {
+				v.label.children[ i ].updateMatrixWorld( true );
+			}
+		};
+		
+		this.setDimension = function(x,y,z){
+			this.dimension.set(x,y,z);
+			this.box.scale.set(x,y,z);
+			this.frame.scale.set(x,y,z);
+		};
 
 		this.volume = function(){
 			return Math.abs(this.scale.x * this.scale.y * this.scale.z);
+			//return Math.abs(this.dimension.x * this.dimension.y * this.dimension.z);
 		};
 		
 		this.update = function(){
@@ -124,8 +145,9 @@ Potree.VolumeTool = function(scene, camera, renderer){
 	
 	
 	function onMouseMove(event){
-		scope.mouse.x = ( event.clientX / scope.domElement.clientWidth ) * 2 - 1;
-		scope.mouse.y = - ( event.clientY / scope.domElement.clientHeight ) * 2 + 1;
+		var rect = scope.domElement.getBoundingClientRect();
+		scope.mouse.x = ((event.clientX - rect.left) / scope.domElement.clientWidth) * 2 - 1;
+        scope.mouse.y = -((event.clientY - rect.top) / scope.domElement.clientHeight) * 2 + 1;
 	};
 	
 	function onMouseClick(event){
@@ -142,6 +164,10 @@ Potree.VolumeTool = function(scene, camera, renderer){
 	};
 	
 	function onMouseDown(event){
+	
+		if(state !== STATE.DEFAULT){
+			event.stopImmediatePropagation();
+		}
 	
 		if(state === STATE.INSERT_VOLUME){
 			scope.finishInsertion();
@@ -224,7 +250,7 @@ Potree.VolumeTool = function(scene, camera, renderer){
 		
 		for(var i = 0; i < pointClouds.length; i++){
 			var pointcloud = pointClouds[i];
-			var point = pointcloud.pick(scope.renderer, scope.camera, ray, {accuracy: scope.accuracy});
+			var point = pointcloud.pick(scope.renderer, scope.camera, ray);
 			
 			if(!point){
 				continue;
@@ -252,7 +278,8 @@ Potree.VolumeTool = function(scene, camera, renderer){
 				var wp = this.activeVolume.getWorldPosition().applyMatrix4(this.camera.matrixWorldInverse);
 				var pp = new THREE.Vector4(wp.x, wp.y, wp.z).applyMatrix4(this.camera.projectionMatrix);
 				var w = Math.abs((wp.z  / 10)); 
-				this.activeVolume.scale.set(w, w, w);
+				//this.activeVolume.setDimension(w, w, w);
+				this.activeVolume.scale.set(w,w,w);
 			}
 		}
 		

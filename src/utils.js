@@ -68,35 +68,37 @@ Potree.utils.createWorker = function(code){
 
 Potree.utils.loadSkybox = function(path){
 	var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 100000 );
-	var scene = new THREE.Scene();
+    var scene = new THREE.Scene();
 
-	var format = ".jpg";
-	var urls = [
-		path + 'px' + format, path + 'nx' + format,
-		path + 'py' + format, path + 'ny' + format,
-		path + 'pz' + format, path + 'nz' + format
-	];
-	
-	var textureCube = THREE.ImageUtils.loadTextureCube( urls, new THREE.CubeRefractionMapping() );
-	var material = new THREE.MeshBasicMaterial( { color: 0xffffff, envMap: textureCube, refractionRatio: 0.95 } );
-	
-	var shader = THREE.ShaderLib[ "cube" ];
-	shader.uniforms[ "tCube" ].value = textureCube;
+    var format = ".jpg";
+    var urls = [
+        path + 'px' + format, path + 'nx' + format,
+        path + 'py' + format, path + 'ny' + format,
+        path + 'pz' + format, path + 'nz' + format
+    ];
 
-	var material = new THREE.ShaderMaterial( {
+    var textureCube = THREE.ImageUtils.loadTextureCube(urls, THREE.CubeRefractionMapping );
 
-		fragmentShader: shader.fragmentShader,
-		vertexShader: shader.vertexShader,
-		uniforms: shader.uniforms,
-		depthWrite: false,
-		side: THREE.BackSide
+    var shader = {
+        uniforms: {
+            "tCube": {type: "t", value: textureCube},
+            "tFlip": {type: "f", value: -1}
+        },
+        vertexShader: THREE.ShaderLib["cube"].vertexShader,
+        fragmentShader: THREE.ShaderLib["cube"].fragmentShader
+    };
 
-	} ),
+    var material = new THREE.ShaderMaterial({
+        fragmentShader: shader.fragmentShader,
+        vertexShader: shader.vertexShader,
+        uniforms: shader.uniforms,
+        depthWrite: false,
+        side: THREE.BackSide
+    });
+    var mesh = new THREE.Mesh(new THREE.BoxGeometry(100, 100, 100), material);
+    scene.add(mesh);
 
-	mesh = new THREE.Mesh( new THREE.BoxGeometry( 100, 100, 100 ), material );
-	scene.add( mesh );
-	
-	return {"camera": camera, "scene": scene};
+    return {"camera": camera, "scene": scene};
 }
 
 Potree.utils.createGrid = function createGrid(width, length, spacing, color){
@@ -159,3 +161,68 @@ Potree.utils.createBackgroundTexture = function(width, height){
 	
 	return map;
 };
+
+
+
+function getMousePointCloudIntersection(mouse, camera, renderer, pointclouds){
+	var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
+	vector.unproject(camera);
+
+	var direction = vector.sub(camera.position).normalize();
+	var ray = new THREE.Ray(camera.position, direction);
+	
+	var closestPoint = null;
+	var closestPointDistance = null;
+	
+	for(var i = 0; i < pointclouds.length; i++){
+		var pointcloud = pointclouds[i];
+		var point = pointcloud.pick(renderer, camera, ray);
+		
+		if(!point){
+			continue;
+		}
+		
+		var distance = camera.position.distanceTo(point.position);
+		
+		if(!closestPoint || distance < closestPointDistance){
+			closestPoint = point;
+			closestPointDistance = distance;
+		}
+	}
+	
+	return closestPoint ? closestPoint.position : null;
+}
+	
+	
+function pixelsArrayToImage(pixels, width, height){
+    var canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+
+    var context = canvas.getContext('2d');
+	
+	pixels = new pixels.constructor(pixels);
+	
+	for(var i = 0; i < pixels.length; i++){
+		pixels[i*4 + 3] = 255;
+	}
+
+    var imageData = context.createImageData(width, height);
+    imageData.data.set(pixels);
+    context.putImageData(imageData, 0, 0);
+
+    var img = new Image();
+    img.src = canvas.toDataURL();
+	img.style.transform = "scaleY(-1)";
+	
+    return img;
+}
+	
+	
+	
+	
+	
+	
+	
+	
+	

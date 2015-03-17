@@ -9,7 +9,6 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 	this.renderer = renderer;
 	this.domElement = renderer.domElement;
 	this.mouse = {x: 0, y: 0};
-	this.accuracy = 0.5;
 	
 	var STATE = {
 		DEFAULT: 0,
@@ -254,9 +253,10 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 		//event.stopImmediatePropagation();
 	};
 	
-	function onMouseMove(event){
-		scope.mouse.x = ( event.clientX / scope.domElement.clientWidth ) * 2 - 1;
-		scope.mouse.y = - ( event.clientY / scope.domElement.clientHeight ) * 2 + 1;
+	function onMouseMove(event){		
+		var rect = scope.domElement.getBoundingClientRect();
+		scope.mouse.x = ((event.clientX - rect.left) / scope.domElement.clientWidth) * 2 - 1;
+        scope.mouse.y = -((event.clientY - rect.top) / scope.domElement.clientHeight) * 2 + 1;
 		
 		if(scope.dragstart){
 			
@@ -344,6 +344,10 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 	
 	function onMouseDown(event){
 		if(event.which === 1){
+		
+			if(state !== STATE.DEFAULT){
+				event.stopImmediatePropagation();
+			}
 			
 			var I = getHoveredElement();
 			
@@ -418,7 +422,7 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 		
 		for(var i = 0; i < pointClouds.length; i++){
 			var pointcloud = pointClouds[i];
-			var point = pointcloud.pick(scope.renderer, scope.camera, ray, {accuracy: scope.accuracy});
+			var point = pointcloud.pick(scope.renderer, scope.camera, ray);
 			
 			if(!point){
 				continue;
@@ -485,7 +489,7 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 			for(var j = 0; j < measurement.edgeLabels.length; j++){
 				var label = measurement.edgeLabels[j];
 				var wp = label.getWorldPosition().applyMatrix4(this.camera.matrixWorldInverse);
-				var w = Math.abs(wp.z  / 10);
+				var w = Math.abs(wp.z  / 5);
 				var l = label.scale.length();
 				label.scale.multiplyScalar(w / l);
 			}

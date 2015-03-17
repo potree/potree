@@ -16,7 +16,6 @@ Potree.ProfileTool = function(scene, camera, renderer){
 	this.renderer = renderer;
 	this.domElement = renderer.domElement;
 	this.mouse = {x: 0, y: 0};
-	this.accuracy = 0.5;
 	
 	var STATE = {
 		DEFAULT: 0,
@@ -218,11 +217,15 @@ Potree.ProfileTool = function(scene, camera, renderer){
 		
 		this.setWidth = function(width){
 			this.width = width;
+			
+			this.update();
 		};
 		
 		this.update = function(){
 		
-			if(this.points.length === 1){
+			if(this.points.length === 0){
+				return;
+			}else if(this.points.length === 1){
 				var point = this.points[0];
 				this.spheres[0].position.copy(point);
 				
@@ -355,8 +358,9 @@ Potree.ProfileTool = function(scene, camera, renderer){
 	};
 	
 	function onMouseMove(event){
-		scope.mouse.x = ( event.clientX / scope.domElement.clientWidth ) * 2 - 1;
-		scope.mouse.y = - ( event.clientY / scope.domElement.clientHeight ) * 2 + 1;
+		var rect = scope.domElement.getBoundingClientRect();
+		scope.mouse.x = ((event.clientX - rect.left) / scope.domElement.clientWidth) * 2 - 1;
+        scope.mouse.y = -((event.clientY - rect.top) / scope.domElement.clientHeight) * 2 + 1;
 		
 		if(scope.dragstart){
 			
@@ -403,6 +407,11 @@ Potree.ProfileTool = function(scene, camera, renderer){
 	}
 	
 	function onMouseDown(event){
+	
+		if(state !== STATE.DEFAULT){
+			event.stopImmediatePropagation();
+		}
+	
 		if(event.which === 1){
 			
 			var I = getHoveredElement();
@@ -428,6 +437,7 @@ Potree.ProfileTool = function(scene, camera, renderer){
 					mousePos: {x: scope.mouse.x, y: scope.mouse.y},
 					widthStart: widthStart
 				};
+				event.stopImmediatePropagation();
 				
 			}
 			
@@ -481,7 +491,7 @@ Potree.ProfileTool = function(scene, camera, renderer){
 		
 		for(var i = 0; i < pointClouds.length; i++){
 			var pointcloud = pointClouds[i];
-			var point = pointcloud.pick(scope.renderer, scope.camera, ray, {accuracy: scope.accuracy});
+			var point = pointcloud.pick(scope.renderer, scope.camera, ray);
 			
 			if(!point){
 				continue;

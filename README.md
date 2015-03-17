@@ -24,7 +24,8 @@ General infos, downloads, showcase, etc. at [potree.org](http://potree.org/)
 
 ## Downloads
 
-* [PotreeConverter windows binary (2014.12.30)](http://potree.org/downloads/PotreeConverter/PotreeConverter_2014.12.30.zip)
+* [PotreeConverter 1.1, windows 64bit](http://potree.org/downloads/PotreeConverter/PotreeConverter_1.1.zip)
+* [PotreeConverter 1.0, windows 64bit](http://potree.org/downloads/PotreeConverter/PotreeConverter_2014.12.30.zip)
 
 ## Showcase
 
@@ -38,7 +39,8 @@ Take a look at the [potree showcase](http://potree.org/wp/demo/) for some live e
 | Firefox 34           | Win7    | works         |
 | Internet Explorer 11 | Win7    | partially works; performance issues |
 | Firefox              | Android | partially works, GUI and stability issues |
-| Opera                | Android | partially works, GUI and stabilty issues and slow |
+| Opera                | Android | partially works, GUI and stability issues and slow |
+| Chrome               | Android | works |
 
 
 ## Credits

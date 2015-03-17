@@ -562,6 +562,7 @@ Potree.TransformationTool = function(scene, camera, renderer){
 	
 	function onMouseDown(event){
 	
+	
 		if(event.which === 1){
 			// left click
 			var I = getHoveredElement();
@@ -582,6 +583,7 @@ Potree.TransformationTool = function(scene, camera, renderer){
 					scales: scales,
 					rotations: rotations
 				};
+				event.stopImmediatePropagation();
 			}
 		}else if(event.which === 3){
 			// right click

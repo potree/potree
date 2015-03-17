@@ -1,5 +1,32 @@
 
 
+## 2015.03.17
+
+### features
+
+* Update file format to 1.6. (see [Potree File Format](https://github.com/potree/potree/blob/master/docs/file_format.md) )
+ * Removed hierarchy from cloud.js and store it in smaller chunks.
+ * Node-files in ./data are now grouped into a directory hierarchy.
+ * RGB, INTENSITY and CLASSIFICATION can be written to the binary format in any order and combination.
+* Added EarthControls. This navigation mode provides faster and more precise
+navigation in large but flat 3d models such as landscapes from LIDAR data.
+* Point picking and height profile queries return all available point attributes,
+instead of positions only. (see https://github.com/potree/potree/issues/124)
+* Height profile queries return a project() helper function that unrolls the
+queried points along the x-axis. Can be used to draw 2D height profile images.
+(see https://github.com/potree/potree/issues/124)
+* Added an angle measurement tool. (Thanks to @Maartenvm )
+
+### changes
+
+* Update to three.js r70.
+* Load bin files in a WebWorker to take off work from the main thread.
+
+### bugfixes
+
+* Lots of bugfixes, most importantly regarding point picking and canvas resizing.
+
+
 ## 2014.30.12
 
 ### features

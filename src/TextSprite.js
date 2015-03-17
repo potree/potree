@@ -3,25 +3,40 @@
  */
 
 Potree.TextSprite = function(text){
+
+	THREE.Object3D.call(this);
+
 	var texture = new THREE.Texture();
 	var spriteMaterial = new THREE.SpriteMaterial( 
 		{ map: texture, useScreenCoordinates: false} );
-	THREE.Sprite.call(this, spriteMaterial);
+	
+	this.material = spriteMaterial;
+	this.sprite = new THREE.Sprite(spriteMaterial);
+	this.add(this.sprite);
+	
+	//THREE.Sprite.call(this, spriteMaterial);
 	
 	this.borderThickness = 4;
 	this.fontface = "Arial";
 	this.fontsize = 28;
 	this.borderColor = { r:0, g:0, b:0, a:1.0 };
 	this.backgroundColor = { r:255, g:255, b:255, a:1.0 };
+	this.textColor = {r: 255, g: 255, b: 255, a: 1.0};
 	this.text = "";
 	
 	this.setText(text);
 };
 
-Potree.TextSprite.prototype = new THREE.Sprite();
+Potree.TextSprite.prototype = new THREE.Object3D();
 
 Potree.TextSprite.prototype.setText = function(text){
 	this.text = text;
+	
+	this.update();
+}
+
+Potree.TextSprite.prototype.setTextColor = function(color){
+	this.textColor = color;
 	
 	this.update();
 }
@@ -68,12 +83,11 @@ Potree.TextSprite.prototype.update = function(){
 		textWidth + this.borderThickness, this.fontsize * 1.4 + this.borderThickness, 6);						  
 		
 	// text color
-	
-	
 	context.strokeStyle = "rgba(0, 0, 0, 1.0)";
 	context.strokeText( this.text, this.borderThickness, this.fontsize + this.borderThickness);
 	
-	context.fillStyle = "rgba(255, 255, 255, 1.0)";
+	context.fillStyle = "rgba(" + this.textColor.r + "," + this.textColor.g + ","
+								  + this.textColor.b + "," + this.textColor.a + ")";
 	context.fillText( this.text, this.borderThickness, this.fontsize + this.borderThickness);
 	
 								  
@@ -82,9 +96,9 @@ Potree.TextSprite.prototype.update = function(){
 	
 	//var spriteMaterial = new THREE.SpriteMaterial( 
 	//	{ map: texture, useScreenCoordinates: false } );
-	this.material.map = texture;
+	this.sprite.material.map = texture;
 		
-	this.scale.set(spriteWidth*0.01,spriteHeight*0.01,1.0);
+	this.sprite.scale.set(spriteWidth*0.01,spriteHeight*0.01,1.0);
 		
 	//this.material = spriteMaterial;						  
 }

@@ -1,0 +1,143 @@
+<html>
+<head>
+	<meta charset="utf-8"/>
+	<title>Viewer</title>
+	<style>canvas { width: 100%; height: 100% }</style>
+</head>
+<body style="margin: 0; padding: 0">
+
+	<style type="text/css">
+	
+	#renderArea{
+		width: 100%;
+		height: 100%;
+	}
+	
+	.info{
+		color:		white;
+		font-weight: bold;
+		text-shadow:  1px  1px 1px black,
+					  1px -1px 1px black,
+					 -1px  1px 1px black,
+					 -1px -1px 1px black;
+	}
+	
+	a:hover, a:visited, a:link, a:active{
+		color: #ccccff;
+		text-decoration: none;
+	}
+	
+	</style>
+
+	<script src="../libs/three.js/build/three.js"></script>
+	<script src="../libs/other/OrbitControls.js"></script>
+	<script src="../build/js/potree.js"></script>
+	
+	<!-- HEADING -->
+	<div class="info" style="position: absolute; left: 300px; right: 300px; top: 10px; text-align: center;">
+		<a href="http://potree.org" target="_blank">potree.org</a>
+	</div>
+	
+	<div id="renderArea"></div>
+	
+	<script>		
+		var pointcloudPath = "../resources/pointclouds/lion_takanawa/cloud.js";
+		
+		var elRenderArea = document.getElementById("renderArea");
+	
+		var renderer;
+		var camera;
+		var scene;
+		var pointcloud;
+		var clock = new THREE.Clock();
+		var controls;
+		
+		function init(){
+			var fov = 75;
+			var width = elRenderArea.clientWidth;
+			var height = elRenderArea.clientHeight;
+			var aspect = width / height;
+			var near = 0.1;
+			var far = 1000000;
+		
+			scene = new THREE.Scene();
+			
+			camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+			camera.rotation.order = 'ZYX';
+			
+			referenceFrame = new THREE.Object3D();
+			scene.add(referenceFrame);
+
+			renderer = new THREE.WebGLRenderer();
+			renderer.setSize(width, height);
+			elRenderArea.appendChild(renderer.domElement);
+			
+			// camera and controls
+			camera.position.set(5, 5, 5);
+			camera.lookAt(new THREE.Vector3(0,0,0));
+			
+			// load pointcloud
+			POCLoader.load(pointcloudPath, function(geometry){
+			
+				pointcloud = new Potree.PointCloudOctree(geometry);
+				pointcloud.material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+				pointcloud.material.size = 1;
+				
+				referenceFrame.add(pointcloud);
+				
+				// move point cloud to origin and flip y and z axis
+				referenceFrame.updateMatrixWorld(true);
+				var sg = pointcloud.boundingSphere.clone().applyMatrix4(pointcloud.matrixWorld);
+				referenceFrame.position.copy(sg.center).multiplyScalar(-1);
+				referenceFrame.updateMatrixWorld(true);
+				referenceFrame.applyMatrix(new THREE.Matrix4().set(
+					1,0,0,0,
+					0,0,1,0,
+					0,-1,0,0,
+					0,0,0,1
+				));
+				
+			});
+			
+			controls = new THREE.OrbitControls(camera, renderer.domElement);
+		}
+		
+		function update(){
+			if(pointcloud){
+				pointcloud.update(camera, renderer);
+			}
+			
+			controls.update(clock.getDelta());
+		}
+		
+		function render(){
+			// resize to fit canvas size
+			var width = elRenderArea.clientWidth;
+			var height = elRenderArea.clientHeight;
+			var aspect = width / height;
+			
+			camera.aspect = aspect;
+			camera.updateProjectionMatrix();
+			
+			renderer.setSize(width, height);
+			
+			// render scene
+			renderer.render(scene, camera);
+			
+			renderer.clearDepth();
+		}
+		
+		function loop() {
+			requestAnimationFrame(loop);
+			
+			update();
+			render();
+		};
+		
+		init();
+		loop();
+		
+	</script>
+	
+</body>
+</html>

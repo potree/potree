@@ -49,6 +49,9 @@ Potree.BinaryLoader.prototype.parse = function(node, buffer){
 	var numPoints = buffer.byteLength / node.pcoGeometry.pointAttributes.byteSize;
 	var pointAttributes = node.pcoGeometry.pointAttributes;
 	
+	if(this.version.upTo("1.5")){
+		node.numPoints = numPoints;
+	}
 	
 	var ww = Potree.workers.binaryDecoder.getWorker();
 	ww.onmessage = function(e){
@@ -83,6 +86,8 @@ Potree.BinaryLoader.prototype.parse = function(node, buffer){
 		node.loaded = true;
 		node.loading = false;
 		node.pcoGeometry.numNodesLoading--;
+		
+		//console.log("loaded:   " + node.name + "\t, " + renderer.info.memory.geometries + ", " + Potree.PointCloudOctree.lru.elements);
 	}
 	
 	var message = {

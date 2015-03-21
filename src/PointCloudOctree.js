@@ -317,7 +317,15 @@ Potree.PointCloudOctree.prototype.update = function(camera, renderer){
 				this.loadQueue.push(element);
 			}
 		}else if(node instanceof THREE.PointCloud){
-			this.updatePointCloud(node, element, stack, visibleGeometryNames);
+			if(node.pcoGeometry.loaded){
+				Potree.PointCloudOctree.lru.touch(node.pcoGeometry);
+				this.updatePointCloud(node, element, stack, visibleGeometryNames);
+			}else{
+				var proxy = new Potree.PointCloudOctreeProxyNode(node.pcoGeometry);
+				var parent = node.parent;
+				parent.remove(node);
+				parent.add(proxy);
+			}
 		}
 	}
 	
@@ -333,6 +341,7 @@ Potree.PointCloudOctree.prototype.update = function(camera, renderer){
 	}
 	
 	this.updateMaterial(vn, camera, renderer);
+	Potree.PointCloudOctree.lru.freeMemory();
 };
 
 Potree.PointCloudOctree.prototype.getVisibleGeometry = function(camera){
@@ -854,61 +863,72 @@ Potree.PointCloudOctree.prototype.getProfile = function(start, end, width, depth
 	}
 }
 
-/**
- *
- * amount: minimum number of points to remove
- */
-Potree.PointCloudOctree.disposeLeastRecentlyUsed = function(amount){
-	
-	
-	var freed = 0;
-	do{
-		var node = this.lru.first.node;
-		var parent = node.parent;
-		var geometry = node.geometry;
-		var pcoGeometry = node.pcoGeometry;
-		var proxy = new Potree.PointCloudOctreeProxyNode(pcoGeometry);
-	
-		var result = Potree.PointCloudOctree.disposeNode(node);
-		freed += result.freed;
-		
-		parent.add(proxy);
-		
-		if(result.numDeletedNodes == 0){
-			break;
-		}
-	}while(freed < amount);
-}
-
-Potree.PointCloudOctree.disposeNode = function(node){
-	
-	var freed = 0;
-	var numDeletedNodes = 0;
-	var descendants = [];
-	
-	node.traverse(function(object){
-		descendants.push(object);
-	});
-	
-	for(var i = 0; i < descendants.length; i++){
-		var descendant = descendants[i];
-		if(descendant instanceof THREE.PointCloud){
-			freed += descendant.pcoGeometry.numPoints;
-			descendant.pcoGeometry.dispose();
-			descendant.geometry.dispose();
-			Potree.PointCloudOctree.lru.remove(descendant);
-			numDeletedNodes++;
-		}
-	}
-	
-	Potree.PointCloudOctree.lru.remove(node);
-	node.parent.remove(node);
-	
-	return {
-		"freed": freed,
-		"numDeletedNodes": numDeletedNodes
-	};
-}
+///**
+// *
+// * amount: minimum number of points to remove
+// */
+//Potree.PointCloudOctree.disposeLeastRecentlyUsed = function(amount){
+//	
+//	return;
+//	
+//	var freed = 0;
+//	do{
+//		if(!Potree.PointCloudOctree.lru.first){
+//			return;
+//		}
+//	
+//		var node = Potree.PointCloudOctree.lru.first.node;
+//		if(node.visible){
+//			return;
+//		}
+//		
+//		var parent = node.parent;
+//		var geometry = node.geometry;
+//		var pcoGeometry = node.pcoGeometry;
+//		var proxy = new Potree.PointCloudOctreeProxyNode(pcoGeometry);
+//	
+//		var result = Potree.PointCloudOctree.disposeNode(node);
+//		freed += result.freed;
+//		
+//		parent.add(proxy);
+//		
+//		if(result.numDeletedNodes == 0){
+//			break;
+//		}
+//	}while(freed < amount);
+//}
+//
+//Potree.PointCloudOctree.disposeNode = function(node){
+//	
+//	var freed = 0;
+//	var numDeletedNodes = 0;
+//	var descendants = [];
+//	
+//	node.traverse(function(object){
+//		descendants.push(object);
+//	});
+//	
+//	for(var i = 0; i < descendants.length; i++){
+//		var descendant = descendants[i];
+//		if(descendant instanceof THREE.PointCloud){
+//			freed += descendant.pcoGeometry.numPoints;
+//			descendant.pcoGeometry.dispose();
+//			descendant.geometry.dispose();
+//			Potree.PointCloudOctree.lru.remove(descendant);
+//			numDeletedNodes++;
+//			
+//			console.log("disposed: " + node.name + "\t, " + renderer.info.memory.geometries + ", " + Potree.PointCloudOctree.lru.elements);
+//		}
+//	}
+//	
+//	Potree.PointCloudOctree.lru.remove(node);
+//	node.parent.remove(node);
+//	
+//	return {
+//		"freed": freed,
+//		"numDeletedNodes": numDeletedNodes
+//	};
+//}
 
 Potree.PointCloudOctree.prototype.getVisibleExtent = function(){
 	return this.visibleBounds.applyMatrix4(this.matrixWorld);

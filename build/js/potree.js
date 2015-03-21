@@ -5,7 +5,7 @@ function Potree(){
 	
 }
 
-Potree.pointLoadLimit = 50*1000*1000;
+Potree.pointLoadLimit = 5*1000*1000;
 
 // contains WebWorkers with base64 encoded code
 Potree.workers = {};
@@ -252,8 +252,9 @@ POCLoader.load = function load(url, callback) {
 					root.hasChildren = true;
 					if(version.upTo("1.5")){
 						root.numPoints = fMno.hierarchy[0][1];
+					}else{
+						root.numPoints = 0;
 					}
-					root.numPoints = 0;
 					pco.root = root;
 					pco.root.load();
 					nodes[name] = root;
@@ -547,6 +548,9 @@ Potree.BinaryLoader.prototype.parse = function(node, buffer){
 	var numPoints = buffer.byteLength / node.pcoGeometry.pointAttributes.byteSize;
 	var pointAttributes = node.pcoGeometry.pointAttributes;
 	
+	if(this.version.upTo("1.5")){
+		node.numPoints = numPoints;
+	}
 	
 	var ww = Potree.workers.binaryDecoder.getWorker();
 	ww.onmessage = function(e){
@@ -2731,6 +2735,7 @@ Potree.PointCloudOctree.prototype.update = function(camera, renderer){
 				this.loadQueue.push(element);
 			}
 		}else if(node instanceof THREE.PointCloud){
+			Potree.PointCloudOctree.lru.touch(node);
 			this.updatePointCloud(node, element, stack, visibleGeometryNames);
 		}
 	}
@@ -3277,7 +3282,15 @@ Potree.PointCloudOctree.disposeLeastRecentlyUsed = function(amount){
 	
 	var freed = 0;
 	do{
-		var node = this.lru.first.node;
+		if(!Potree.PointCloudOctree.lru.first){
+			return;
+		}
+	
+		var node = Potree.PointCloudOctree.lru.first.node;
+		if(node.visible){
+			return;
+		}
+		
 		var parent = node.parent;
 		var geometry = node.geometry;
 		var pcoGeometry = node.pcoGeometry;

@@ -78,6 +78,11 @@ void main() {
 	
 	<script src="../build/js/potree.js"></script>
 	<script src="./js/ProgressBar.js"></script>
+	<script src="../src/PointCloudOctree.js"></script>
+	<script src="../src/PointCloudOctreeGeometry.js"></script>
+	<script src="../src/loader/POCLoader.js"></script>
+	<script src="../src/loader/BinaryLoader.js"></script>
+	<script src="../src/LRU.js"></script>
 	
 	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
 	<!-- INCLUDE SETTINGS HERE -->
@@ -114,6 +119,7 @@ void main() {
 	<script>
 		var sceneProperties = {
 			path: 			"../resources/pointclouds/vol_total/cloud.js",
+			//path: 			"../../../../pointclouds/pix4d/matterhorn/cloud.js",
 			cameraPosition: null, 			// other options: cameraPosition: [10,10,10],
 			cameraTarget: 	null, 			// other options: cameraTarget: [0,0,0],
 			sizeType: 		"Adaptive",		// other options: "Fixed", "Attenuated"
@@ -495,6 +501,8 @@ void main() {
 		var intensityMax = null;
 		
 		function update(){
+			Potree.pointLoadLimit = pointCountTarget * 2 * 1000 * 1000;
+			
 			if(pointcloud){
 			
 				var bbWorld = Potree.utils.computeTransformedBoundingBox(pointcloud.boundingBox, pointcloud.matrixWorld);

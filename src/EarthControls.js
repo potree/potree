@@ -145,9 +145,11 @@ THREE.EarthControls = function ( camera, renderer, scene ) {
 		if ( scope.enabled === false ) return;
 		event.preventDefault();
 		
+		var rect = scope.domElement.getBoundingClientRect();
+		
 		var mouse =  {
-			x: ( event.clientX / scope.domElement.clientWidth ) * 2 - 1,
-			y: - ( event.clientY / scope.domElement.clientHeight ) * 2 + 1
+			x: ( (event.clientX - rect.left) / scope.domElement.clientWidth ) * 2 - 1,
+			y: - ( (event.clientY - rect.top) / scope.domElement.clientHeight ) * 2 + 1
 		};
 		var I = getMousePointCloudIntersection(mouse, scope.camera, scope.renderer, scope.pointclouds)
 		if(!I){
@@ -166,8 +168,8 @@ THREE.EarthControls = function ( camera, renderer, scene ) {
 		//pivot = I;
 		camStart = scope.camera.clone();
 		camStart.rotation.copy(scope.camera.rotation);
-		dragStart.set( event.clientX, event.clientY );
-		dragEnd.set(event.clientX, event.clientY);
+		dragStart.set( event.clientX - rect.left, event.clientY - rect.top);
+		dragEnd.set(event.clientX - rect.left, event.clientY - rect.top);
 		
 		
 		scope.scene.add(scope.pivotNode);
@@ -187,11 +189,13 @@ THREE.EarthControls = function ( camera, renderer, scene ) {
 		if ( scope.enabled === false ) return;
 
 		event.preventDefault();
+		
+		var rect = scope.domElement.getBoundingClientRect();
 
 		var element = scope.domElement === document ? scope.domElement.body : scope.domElement;
 
-		mouseDelta.set(event.clientX - dragEnd.x, event.clientY - dragEnd.y);
-		dragEnd.set(event.clientX, event.clientY);
+		mouseDelta.set(event.clientX - rect.left - dragEnd.x, event.clientY - rect.top - dragEnd.y);
+		dragEnd.set(event.clientX - rect.left, event.clientY - rect.top);
 		
 	}
 
@@ -211,11 +215,13 @@ THREE.EarthControls = function ( camera, renderer, scene ) {
 		if ( scope.enabled === false || scope.noZoom === true ) return;
 
 		event.preventDefault();
+		
+		var rect = scope.domElement.getBoundingClientRect();
 
 		var amount = (event.detail<0 || event.wheelDelta>0) ? 1 : -1;
 		var mouse =  {
-			x: ( event.clientX / scope.domElement.clientWidth ) * 2 - 1,
-			y: - ( event.clientY / scope.domElement.clientHeight ) * 2 + 1
+			x: ( (event.clientX - rect.left) / scope.domElement.clientWidth ) * 2 - 1,
+			y: - ( (event.clientY - rect.top) / scope.domElement.clientHeight ) * 2 + 1
 		};
 		var I = getMousePointCloudIntersection(mouse, scope.camera, scope.renderer, scope.pointclouds)
 		

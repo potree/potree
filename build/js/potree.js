@@ -585,6 +585,8 @@ Potree.BinaryLoader.prototype.parse = function(node, buffer){
 		node.loaded = true;
 		node.loading = false;
 		node.pcoGeometry.numNodesLoading--;
+		
+		//console.log("loaded:   " + node.name + "\t, " + renderer.info.memory.geometries + ", " + Potree.PointCloudOctree.lru.elements);
 	}
 	
 	var message = {
@@ -2183,9 +2185,11 @@ THREE.EarthControls = function ( camera, renderer, scene ) {
 		if ( scope.enabled === false ) return;
 		event.preventDefault();
 		
+		var rect = scope.domElement.getBoundingClientRect();
+		
 		var mouse =  {
-			x: ( event.clientX / scope.domElement.clientWidth ) * 2 - 1,
-			y: - ( event.clientY / scope.domElement.clientHeight ) * 2 + 1
+			x: ( (event.clientX - rect.left) / scope.domElement.clientWidth ) * 2 - 1,
+			y: - ( (event.clientY - rect.top) / scope.domElement.clientHeight ) * 2 + 1
 		};
 		var I = getMousePointCloudIntersection(mouse, scope.camera, scope.renderer, scope.pointclouds)
 		if(!I){
@@ -2204,8 +2208,8 @@ THREE.EarthControls = function ( camera, renderer, scene ) {
 		//pivot = I;
 		camStart = scope.camera.clone();
 		camStart.rotation.copy(scope.camera.rotation);
-		dragStart.set( event.clientX, event.clientY );
-		dragEnd.set(event.clientX, event.clientY);
+		dragStart.set( event.clientX - rect.left, event.clientY - rect.top);
+		dragEnd.set(event.clientX - rect.left, event.clientY - rect.top);
 		
 		
 		scope.scene.add(scope.pivotNode);
@@ -2225,11 +2229,13 @@ THREE.EarthControls = function ( camera, renderer, scene ) {
 		if ( scope.enabled === false ) return;
 
 		event.preventDefault();
+		
+		var rect = scope.domElement.getBoundingClientRect();
 
 		var element = scope.domElement === document ? scope.domElement.body : scope.domElement;
 
-		mouseDelta.set(event.clientX - dragEnd.x, event.clientY - dragEnd.y);
-		dragEnd.set(event.clientX, event.clientY);
+		mouseDelta.set(event.clientX - rect.left - dragEnd.x, event.clientY - rect.top - dragEnd.y);
+		dragEnd.set(event.clientX - rect.left, event.clientY - rect.top);
 		
 	}
 
@@ -2249,11 +2255,13 @@ THREE.EarthControls = function ( camera, renderer, scene ) {
 		if ( scope.enabled === false || scope.noZoom === true ) return;
 
 		event.preventDefault();
+		
+		var rect = scope.domElement.getBoundingClientRect();
 
 		var amount = (event.detail<0 || event.wheelDelta>0) ? 1 : -1;
 		var mouse =  {
-			x: ( event.clientX / scope.domElement.clientWidth ) * 2 - 1,
-			y: - ( event.clientY / scope.domElement.clientHeight ) * 2 + 1
+			x: ( (event.clientX - rect.left) / scope.domElement.clientWidth ) * 2 - 1,
+			y: - ( (event.clientY - rect.top) / scope.domElement.clientHeight ) * 2 + 1
 		};
 		var I = getMousePointCloudIntersection(mouse, scope.camera, scope.renderer, scope.pointclouds)
 		
@@ -2319,6 +2327,10 @@ LRU.prototype.contains = function(node){
  * @param node
  */
 LRU.prototype.touch = function(node){
+	if(!node.loaded){
+		return;
+	}
+
 	var item;
 	if(this.items[node.id] == null){
 		// add to list
@@ -2365,31 +2377,54 @@ LRU.prototype.touch = function(node){
 	}
 };
 
-/**
- * removes the least recently used item from the list and returns it. 
- * if the list was empty, null will be returned.
- */
-LRU.prototype.remove = function remove(){
-	if(this.first === null){
-		return null;
-	}
-	var lru = this.first;
+///**
+// * removes the least recently used item from the list and returns it. 
+// * if the list was empty, null will be returned.
+// */
+//LRU.prototype.remove = function remove(){
+//	if(this.first === null){
+//		return null;
+//	}
+//	var lru = this.first;
+//
+//	// if the lru list contains at least 2 items, the item after the least recently used elemnt will be the new lru item. 
+//	if(lru.next !== null){
+//		this.first = lru.next;
+//		this.first.previous = null;
+//	}else{
+//		this.first = null;
+//		this.last = null;
+//	}
+//	
+//	delete this.items[lru.node.id];
+//	this.elements--;
+//	this.numPoints -= lru.node.numPoints;
+//	
+////	Logger.info("removed node: " + lru.node.id);
+//	return lru.node;
+//};
 
-	// if the lru list contains at least 2 items, the item after the least recently used elemnt will be the new lru item. 
-	if(lru.next !== null){
-		this.first = lru.next;
-		this.first.previous = null;
-	}else{
-		this.first = null;
-		this.last = null;
+LRU.prototype.remove = function remove(node){
+	var lruItem = this.items[node.id];
+	if(lruItem){
+		if(!lruItem.previous){
+			this.first = lruItem.next;
+			this.first.previous = null;
+		}
+		if(!lruItem.next){
+			this.last = lruItem.previous;
+			this.last.next = null;
+		}
+		if(lruItem.previous &&lruItem.next){
+			lruItem.previous.next = lruItem.next;
+			lruItem.next.previous = lruItem.previous;
+		}
+	
+		delete this.items[node.id];
+		this.elements--;
+		this.numPoints -= node.numPoints;
 	}
 	
-	delete this.items[lru.node.id];
-	this.elements--;
-	this.numPoints -= lru.node.numPoints;
-	
-//	Logger.info("removed node: " + lru.node.id);
-	return lru.node;
 };
 
 LRU.prototype.getLRUItem = function(){
@@ -2416,6 +2451,38 @@ LRU.prototype.toString = function(){
 	return string;
 };
 
+LRU.prototype.freeMemory = function(){
+	if(this.elements <= 1){
+		return;
+	}
+
+	while(this.numPoints > Potree.pointLoadLimit){
+		var element = this.first;
+		var node = element.node;
+		this.disposeDescendants(node);
+	
+	};
+};
+
+LRU.prototype.disposeDescendants = function(node){
+	var stack = [];
+	stack.push(node);
+	while(stack.length > 0){
+		var current = stack.pop();
+		
+		current.dispose();
+		this.remove(current);
+		
+		for(var key in current.children){
+			if(current.children.hasOwnProperty(key)){
+				var child = current.children[key];
+				if(child.loaded){
+					stack.push(current.children[key]);
+				}
+			}
+		}
+	}
+};
 
 
 /**
@@ -2735,8 +2802,15 @@ Potree.PointCloudOctree.prototype.update = function(camera, renderer){
 				this.loadQueue.push(element);
 			}
 		}else if(node instanceof THREE.PointCloud){
-			Potree.PointCloudOctree.lru.touch(node);
-			this.updatePointCloud(node, element, stack, visibleGeometryNames);
+			if(node.pcoGeometry.loaded){
+				Potree.PointCloudOctree.lru.touch(node.pcoGeometry);
+				this.updatePointCloud(node, element, stack, visibleGeometryNames);
+			}else{
+				var proxy = new Potree.PointCloudOctreeProxyNode(node.pcoGeometry);
+				var parent = node.parent;
+				parent.remove(node);
+				parent.add(proxy);
+			}
 		}
 	}
 	
@@ -2752,6 +2826,7 @@ Potree.PointCloudOctree.prototype.update = function(camera, renderer){
 	}
 	
 	this.updateMaterial(vn, camera, renderer);
+	Potree.PointCloudOctree.lru.freeMemory();
 };
 
 Potree.PointCloudOctree.prototype.getVisibleGeometry = function(camera){
@@ -3273,69 +3348,72 @@ Potree.PointCloudOctree.prototype.getProfile = function(start, end, width, depth
 	}
 }
 
-/**
- *
- * amount: minimum number of points to remove
- */
-Potree.PointCloudOctree.disposeLeastRecentlyUsed = function(amount){
-	
-	
-	var freed = 0;
-	do{
-		if(!Potree.PointCloudOctree.lru.first){
-			return;
-		}
-	
-		var node = Potree.PointCloudOctree.lru.first.node;
-		if(node.visible){
-			return;
-		}
-		
-		var parent = node.parent;
-		var geometry = node.geometry;
-		var pcoGeometry = node.pcoGeometry;
-		var proxy = new Potree.PointCloudOctreeProxyNode(pcoGeometry);
-	
-		var result = Potree.PointCloudOctree.disposeNode(node);
-		freed += result.freed;
-		
-		parent.add(proxy);
-		
-		if(result.numDeletedNodes == 0){
-			break;
-		}
-	}while(freed < amount);
-}
-
-Potree.PointCloudOctree.disposeNode = function(node){
-	
-	var freed = 0;
-	var numDeletedNodes = 0;
-	var descendants = [];
-	
-	node.traverse(function(object){
-		descendants.push(object);
-	});
-	
-	for(var i = 0; i < descendants.length; i++){
-		var descendant = descendants[i];
-		if(descendant instanceof THREE.PointCloud){
-			freed += descendant.pcoGeometry.numPoints;
-			descendant.pcoGeometry.dispose();
-			descendant.geometry.dispose();
-			Potree.PointCloudOctree.lru.remove(descendant);
-			numDeletedNodes++;
-		}
-	}
-	
-	Potree.PointCloudOctree.lru.remove(node);
-	node.parent.remove(node);
-	
-	return {
-		"freed": freed,
-		"numDeletedNodes": numDeletedNodes
-	};
-}
+///**
+// *
+// * amount: minimum number of points to remove
+// */
+//Potree.PointCloudOctree.disposeLeastRecentlyUsed = function(amount){
+//	
+//	return;
+//	
+//	var freed = 0;
+//	do{
+//		if(!Potree.PointCloudOctree.lru.first){
+//			return;
+//		}
+//	
+//		var node = Potree.PointCloudOctree.lru.first.node;
+//		if(node.visible){
+//			return;
+//		}
+//		
+//		var parent = node.parent;
+//		var geometry = node.geometry;
+//		var pcoGeometry = node.pcoGeometry;
+//		var proxy = new Potree.PointCloudOctreeProxyNode(pcoGeometry);
+//	
+//		var result = Potree.PointCloudOctree.disposeNode(node);
+//		freed += result.freed;
+//		
+//		parent.add(proxy);
+//		
+//		if(result.numDeletedNodes == 0){
+//			break;
+//		}
+//	}while(freed < amount);
+//}
+//
+//Potree.PointCloudOctree.disposeNode = function(node){
+//	
+//	var freed = 0;
+//	var numDeletedNodes = 0;
+//	var descendants = [];
+//	
+//	node.traverse(function(object){
+//		descendants.push(object);
+//	});
+//	
+//	for(var i = 0; i < descendants.length; i++){
+//		var descendant = descendants[i];
+//		if(descendant instanceof THREE.PointCloud){
+//			freed += descendant.pcoGeometry.numPoints;
+//			descendant.pcoGeometry.dispose();
+//			descendant.geometry.dispose();
+//			Potree.PointCloudOctree.lru.remove(descendant);
+//			numDeletedNodes++;
+//			
+//			console.log("disposed: " + node.name + "\t, " + renderer.info.memory.geometries + ", " + Potree.PointCloudOctree.lru.elements);
+//		}
+//	}
+//	
+//	Potree.PointCloudOctree.lru.remove(node);
+//	node.parent.remove(node);
+//	
+//	return {
+//		"freed": freed,
+//		"numDeletedNodes": numDeletedNodes
+//	};
+//}
 
 Potree.PointCloudOctree.prototype.getVisibleExtent = function(){
 	return this.visibleBounds.applyMatrix4(this.matrixWorld);
@@ -3567,15 +3645,19 @@ Potree.PointCloudOctreeGeometry = function(){
 }
 
 Potree.PointCloudOctreeGeometryNode = function(name, pcoGeometry, boundingBox){
+	this.id = Potree.PointCloudOctreeGeometryNode.IDCount++;
 	this.name = name;
 	this.index = parseInt(name.charAt(name.length-1));
 	this.pcoGeometry = pcoGeometry;
+	this.geometry = null;
 	this.boundingBox = boundingBox;
 	this.boundingSphere = boundingBox.getBoundingSphere();
 	this.children = {};
 	this.numPoints = 0;
 	this.level = null;
 }
+
+Potree.PointCloudOctreeGeometryNode.IDCount = 0;
 
 Potree.PointCloudOctreeGeometryNode.prototype.getURL = function(){
 	var url = "";
@@ -3619,9 +3701,9 @@ Potree.PointCloudOctreeGeometryNode.prototype.load = function(){
 	
 	this.loading = true;
 	
-	if(Potree.PointCloudOctree.lru.numPoints + this.numPoints >= Potree.pointLoadLimit){
-		Potree.PointCloudOctree.disposeLeastRecentlyUsed(this.numPoints);
-	}
+	//if(Potree.PointCloudOctree.lru.numPoints + this.numPoints >= Potree.pointLoadLimit){
+	//	Potree.PointCloudOctree.disposeLeastRecentlyUsed(this.numPoints);
+	//}
 	
 	this.pcoGeometry.numNodesLoading++;
 	
@@ -3747,8 +3829,11 @@ Potree.PointCloudOctreeGeometryNode.prototype.loadHierachyThenPoints = function(
 
 
 Potree.PointCloudOctreeGeometryNode.prototype.dispose = function(){
-	delete this.geometry;
-	this.loaded = false;
+	if(this.geometry){
+		this.geometry.dispose();
+		this.geometry = null;
+		this.loaded = false;
+	}
 }
 
 

@@ -317,6 +317,7 @@ Potree.PointCloudOctree.prototype.update = function(camera, renderer){
 				this.loadQueue.push(element);
 			}
 		}else if(node instanceof THREE.PointCloud){
+			Potree.PointCloudOctree.lru.touch(node);
 			this.updatePointCloud(node, element, stack, visibleGeometryNames);
 		}
 	}
@@ -863,7 +864,15 @@ Potree.PointCloudOctree.disposeLeastRecentlyUsed = function(amount){
 	
 	var freed = 0;
 	do{
-		var node = this.lru.first.node;
+		if(!Potree.PointCloudOctree.lru.first){
+			return;
+		}
+	
+		var node = Potree.PointCloudOctree.lru.first.node;
+		if(node.visible){
+			return;
+		}
+		
 		var parent = node.parent;
 		var geometry = node.geometry;
 		var pcoGeometry = node.pcoGeometry;

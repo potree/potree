@@ -85,8 +85,9 @@ POCLoader.load = function load(url, callback) {
 					root.hasChildren = true;
 					if(version.upTo("1.5")){
 						root.numPoints = fMno.hierarchy[0][1];
+					}else{
+						root.numPoints = 0;
 					}
-					root.numPoints = 0;
 					pco.root = root;
 					pco.root.load();
 					nodes[name] = root;

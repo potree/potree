@@ -82,6 +82,7 @@ void main() {
 	<script src="../src/PointCloudOctreeGeometry.js"></script>
 	<script src="../src/loader/POCLoader.js"></script>
 	<script src="../src/loader/BinaryLoader.js"></script>
+	<script src="../src/LRU.js"></script>
 	
 	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
 	<!-- INCLUDE SETTINGS HERE -->
@@ -500,7 +501,7 @@ void main() {
 		var intensityMax = null;
 		
 		function update(){
-			Potree.pointLoadLimit = pointCountTarget * 4 * 1000 * 1000;
+			Potree.pointLoadLimit = pointCountTarget * 2 * 1000 * 1000;
 			
 			if(pointcloud){
 			

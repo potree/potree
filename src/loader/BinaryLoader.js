@@ -86,6 +86,8 @@ Potree.BinaryLoader.prototype.parse = function(node, buffer){
 		node.loaded = true;
 		node.loading = false;
 		node.pcoGeometry.numNodesLoading--;
+		
+		//console.log("loaded:   " + node.name + "\t, " + renderer.info.memory.geometries + ", " + Potree.PointCloudOctree.lru.elements);
 	}
 	
 	var message = {

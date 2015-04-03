@@ -24,7 +24,7 @@ General infos, downloads, showcase, etc. at [potree.org](http://potree.org/)
 
 ## Downloads
 
-* [PotreeConverter 1.1, windows 64bit](http://potree.org/downloads/PotreeConverter/PotreeConverter_1.1.zip)
+* [PotreeConverter 1.1.1, windows 64bit](http://potree.org/downloads/PotreeConverter/PotreeConverter_1.1.1.zip)
 * [PotreeConverter 1.0, windows 64bit](http://potree.org/downloads/PotreeConverter/PotreeConverter_2014.12.30.zip)
 
 ## Showcase

@@ -57,6 +57,8 @@ Potree.PointCloudOctreeGeometryNode.prototype.getHierarchyPath = function(){
 	for(var i = 0; i < numParts; i++){
 		path += indices.substr(i * hierarchyStepSize, hierarchyStepSize) + "/";
 	}
+	
+	path = path.slice(0,-1);
 
 	return path;
 }

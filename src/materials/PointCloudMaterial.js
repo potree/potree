@@ -868,7 +868,7 @@ Potree.PointCloudMaterial.fs_points_rgb = [
  "		vec2 uv = gl_FragCoord.xy / vec2(screenWidth, screenHeight);                 ",
  "		                                                                             ",
  "	    float depth = texture2D(depthMap, uv).r;                                     ",
- "	    if(vLinearDepth > depth + blendDepth){                                       ",
+ "	    if(vLinearDepth > depth + vRadius){                                       ",
  "	    	discard;                                                                 ",
  "	    }                                                                            ",
  "	#endif                                                                           ",

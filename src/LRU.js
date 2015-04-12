@@ -123,19 +123,26 @@ LRU.prototype.touch = function(node){
 //};
 
 LRU.prototype.remove = function remove(node){
+
 	var lruItem = this.items[node.id];
 	if(lruItem){
-		if(!lruItem.previous){
-			this.first = lruItem.next;
-			this.first.previous = null;
-		}
-		if(!lruItem.next){
-			this.last = lruItem.previous;
-			this.last.next = null;
-		}
-		if(lruItem.previous &&lruItem.next){
-			lruItem.previous.next = lruItem.next;
-			lruItem.next.previous = lruItem.previous;
+	
+		if(this.elements === 1){
+			this.first = null;
+			this.last = null;
+		}else{
+			if(!lruItem.previous){
+				this.first = lruItem.next;
+				this.first.previous = null;
+			}
+			if(!lruItem.next){
+				this.last = lruItem.previous;
+				this.last.next = null;
+			}
+			if(lruItem.previous &&lruItem.next){
+				lruItem.previous.next = lruItem.next;
+				lruItem.next.previous = lruItem.previous;
+			}
 		}
 	
 		delete this.items[node.id];

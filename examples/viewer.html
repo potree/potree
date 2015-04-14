@@ -195,6 +195,8 @@ void main() {
 				pointColorType = Potree.PointColorType.HEIGHT;
 			}else if(value === "Intensity"){
 				pointColorType = Potree.PointColorType.INTENSITY;
+			}else if(value === "Intensity Hilight"){
+				pointColorType = Potree.PointColorType.INTENSITY_HILIGHT;
 			}else if(value === "Intensity Gradient"){
 				pointColorType = Potree.PointColorType.INTENSITY_GRADIENT;
 			}else if(value === "Classification"){
@@ -259,7 +261,7 @@ void main() {
 			var attributes = pointcloud.pcoGeometry.pointAttributes
 			if(attributes === "LAS" || attributes === "LAZ"){
 				options = [ 
-				"RGB", "Color", "Height", "Intensity", "Intensity Gradient", 
+				"RGB", "Color", "Height", "Intensity", "Intensity Hilight", "Intensity Gradient",
 				"Classification", "Return Number", "Source",
 				"Octree Depth"];
 			}else{
@@ -271,6 +273,7 @@ void main() {
 					}else if(attribute === PointAttribute.INTENSITY){
 						options.push("Intensity");
 						options.push("Intensity Gradient");
+						options.push("Intensity Hilight");
 					}else if(attribute === PointAttribute.CLASSIFICATION){
 						options.push("Classification");
 					}

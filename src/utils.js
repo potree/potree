@@ -219,9 +219,54 @@ function pixelsArrayToImage(pixels, width, height){
 }
 	
 	
-	
-	
-	
+function topView(){
+	camera.position.set(0, 1, 0);
+	camera.rotation.set(-Math.PI / 2, 0, 0);
+	camera.zoomTo(pointcloud, 1);
+
+	if(controls.target){
+		var sg = pointcloud.boundingSphere.clone().applyMatrix4(pointcloud.matrixWorld);
+		var target = new THREE.Vector3(camera.position.x, sg.center.y, camera.position.z);
+		controls.target.copy(target);
+	}	
+}
+
+function frontView(){
+	camera.position.set(0, 0, 1);
+	camera.rotation.set(0, 0, 0);
+	camera.zoomTo(pointcloud, 1);
+
+	if(controls.target){
+		var sg = pointcloud.boundingSphere.clone().applyMatrix4(pointcloud.matrixWorld);
+		var target = new THREE.Vector3(camera.position.x, camera.position.y, sg.center.z);
+		controls.target.copy(target);
+	}
+}
+
+
+function leftView(){
+	camera.position.set(-1, 0, 0);
+	camera.rotation.set(0, -Math.PI / 2, 0);
+	camera.zoomTo(pointcloud, 1);
+
+	if(controls.target){
+		var sg = pointcloud.boundingSphere.clone().applyMatrix4(pointcloud.matrixWorld);
+		var target = new THREE.Vector3(sg.center.x, camera.position.y, camera.position.z);
+		controls.target.copy(target);
+	}
+}
+
+function rightView(){
+	camera.position.set(1, 0, 0);
+	camera.rotation.set(0, Math.PI / 2, 0);
+	camera.zoomTo(pointcloud, 1);
+
+	if(controls.target){
+		var sg = pointcloud.boundingSphere.clone().applyMatrix4(pointcloud.matrixWorld);
+		var target = new THREE.Vector3(sg.center.x, camera.position.y, camera.position.z);
+		controls.target.copy(target);
+	}
+}
 	
 	
 	

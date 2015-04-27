@@ -82,6 +82,7 @@ void main() {
 	<script src="../src/PointCloudOctreeGeometry.js"></script>
 	<script src="../src/loader/POCLoader.js"></script>
 	<script src="../src/loader/BinaryLoader.js"></script>
+	<script src="../src/materials/PointCloudMaterial.js"></script>
 	<script src="../src/EarthControls.js"></script>
 	<script src="../src/LRU.js"></script>
 	
@@ -845,6 +846,7 @@ void main() {
 				pointcloud.material.pointShape = Potree.PointShape.CIRCLE;
 				pointcloud.material.interpolate = (quality === "Interpolation");
 				pointcloud.material.weighted = true;
+				pointcloud.material.minSize = 2;
 				
 				pointcloud.material.depthMap = rtDepth;
 				pointcloud.material.blendDepth = Math.min(pointcloud.material.spacing, 20);

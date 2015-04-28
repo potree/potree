@@ -84,6 +84,9 @@ void main() {
 	<script src="../src/loader/BinaryLoader.js"></script>
 	<script src="../src/materials/PointCloudMaterial.js"></script>
 	<script src="../src/EarthControls.js"></script>
+	<script src="../src/utils/ProfileTool.js"></script>
+	<script src="../src/utils/MeasuringTool.js"></script>
+	<script src="../src/utils.js"></script>
 	<script src="../src/LRU.js"></script>
 	
 	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
@@ -102,7 +105,7 @@ void main() {
 		<img src="../resources/icons/focus.png" onclick="camera.zoomTo(pointcloud)" title="focus on pointcloud"/>
 		<img src="../resources/icons/flip_y_z.png" onclick="flipYZ()" title="flip y and z coordinates"/>
 		<img src="../resources/icons/angle.png" onclick="angleTool.setEnabled(true)" title="angle measurements"/>
-		<img src="../resources/icons/distance.png" onclick="measuringTool.setEnabled(true)" title="distance measurements"/>
+		<img src="../resources/icons/distance.png" onclick="measuringTool.startInsertion()" title="distance measurements"/>
 		<img src="../resources/icons/area.png" onclick="areaTool.setEnabled(true)" title="area measurements"/>
 		<img src="../resources/icons/volume.png" onclick="volumeTool.startInsertion()" title="volume measurements"/>
 		<img src="../resources/icons/profile.png" onclick="profileTool.startInsertion({width: pointcloud.boundingSphere.radius / 100})" title="height profiles"/>

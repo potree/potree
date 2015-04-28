@@ -217,6 +217,13 @@ function pixelsArrayToImage(pixels, width, height){
 	
     return img;
 }
+
+function projectedRadius(radius, fov, distance, screenHeight){
+	var projFactor =  (1 / Math.tan(fov / 2)) / distance;
+	projFactor = projFactor * screenHeight / 2;
+	
+	return radius * projFactor;
+};
 	
 	
 function topView(){

@@ -7,6 +7,8 @@ Potree.TextSprite = function(text){
 	THREE.Object3D.call(this);
 
 	var texture = new THREE.Texture();
+	texture.minFilter = THREE.LinearFilter;
+	texture.magFilter = THREE.LinearFilter;
 	var spriteMaterial = new THREE.SpriteMaterial( 
 		{ map: texture, useScreenCoordinates: false} );
 	
@@ -92,6 +94,8 @@ Potree.TextSprite.prototype.update = function(){
 	
 								  
 	var texture = new THREE.Texture(canvas); 
+	texture.minFilter = THREE.LinearFilter;
+	texture.magFilter = THREE.LinearFilter;
 	texture.needsUpdate = true;	
 	
 	//var spriteMaterial = new THREE.SpriteMaterial( 

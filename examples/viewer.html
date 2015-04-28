@@ -105,8 +105,8 @@ void main() {
 		<img src="../resources/icons/focus.png" onclick="camera.zoomTo(pointcloud)" title="focus on pointcloud"/>
 		<img src="../resources/icons/flip_y_z.png" onclick="flipYZ()" title="flip y and z coordinates"/>
 		<img src="../resources/icons/angle.png" onclick="angleTool.setEnabled(true)" title="angle measurements"/>
-		<img src="../resources/icons/distance.png" onclick="measuringTool.startInsertion()" title="distance measurements"/>
-		<img src="../resources/icons/area.png" onclick="areaTool.setEnabled(true)" title="area measurements"/>
+		<img src="../resources/icons/distance.png" onclick="measuringTool.startInsertion({showDistances: true, showArea: false, closed: false})" title="distance measurements"/>
+		<img src="../resources/icons/area.png" onclick="measuringTool.startInsertion({showDistances: true, showArea: true, closed: true})" title="area measurements"/>
 		<img src="../resources/icons/volume.png" onclick="volumeTool.startInsertion()" title="volume measurements"/>
 		<img src="../resources/icons/profile.png" onclick="profileTool.startInsertion({width: pointcloud.boundingSphere.radius / 100})" title="height profiles"/>
 		<img src="../resources/icons/clip_volume.png" onclick="volumeTool.startInsertion({clip: true})" title="clipping volumes"/>
@@ -171,7 +171,6 @@ void main() {
 		var showSkybox = false;
 		var measuringTool;
 		var angleTool;
-		var areaTool;
 		var volumeTool;
 		var transformationTool;
 		var referenceFrame;
@@ -428,7 +427,6 @@ void main() {
 			measuringTool = new Potree.MeasuringTool(scenePointCloud, camera, renderer);
 			profileTool = new Potree.ProfileTool(scenePointCloud, camera, renderer);
 			angleTool = new Potree.AngleTool(scenePointCloud, camera, renderer);
-			areaTool = new Potree.AreaTool(scenePointCloud, camera, renderer);
 			volumeTool = new Potree.VolumeTool(scenePointCloud, camera, renderer);
 			transformationTool = new Potree.TransformationTool(scenePointCloud, camera, renderer);
 			
@@ -705,7 +703,6 @@ void main() {
 			renderer.clearDepth();
 			measuringTool.render();
 			angleTool.render();
-			areaTool.render();
 			transformationTool.render();
 		}
 		
@@ -865,7 +862,6 @@ void main() {
 				renderer.clearDepth();
 				measuringTool.render();
 				angleTool.render();
-				areaTool.render();
 				transformationTool.render();
 					
 			}

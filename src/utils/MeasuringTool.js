@@ -5,10 +5,22 @@ Potree.Measure = function(){
 	THREE.Object3D.call( this );
 	
 	this.points = [];
+	this._showDistances = true;
+	this._showArea = true;
+	this._closed = true;
+	
 	this.spheres = [];
 	this.edges = [];
 	this.sphereLabels = [];
 	this.edgeLabels = [];
+	
+	this.areaLabel = new Potree.TextSprite("");
+	this.areaLabel.setBorderColor({r:0, g:255, b:0, a:0.0});
+	this.areaLabel.setBackgroundColor({r:0, g:255, b:0, a:0.0});
+	this.areaLabel.setTextColor({r:180, g:220, b:180, a:1.0});
+	this.areaLabel.material.depthTest = false;
+	this.areaLabel.material.opacity = 1;
+	this.add(this.areaLabel);
 	
 	var sphereGeometry = new THREE.SphereGeometry(0.4, 10, 10);
 	this.color = new THREE.Color( 0xff0000 );
@@ -66,8 +78,7 @@ Potree.Measure = function(){
 		this.add(sphere);
 		this.spheres.push(sphere);
 		
-		// edges & boxes
-		if(this.points.length > 1){
+		{ // edges
 			var lineGeometry = new THREE.Geometry();
 			lineGeometry.vertices.push(new THREE.Vector3(), new THREE.Vector3());
 			lineGeometry.colors.push(this.color, this.color, this.color);
@@ -82,12 +93,12 @@ Potree.Measure = function(){
 			this.edges.push(edge);
 		}
 		
-		// labels
-		if(this.points.length > 1){
+		{ // edge labels
 			var edgeLabel = new Potree.TextSprite(0);
 			edgeLabel.setBorderColor({r:0, g:255, b:0, a:0.0});
 			edgeLabel.setBackgroundColor({r:0, g:255, b:0, a:0.0});
 			edgeLabel.material.depthTest = false;
+			edgeLabel.visible = false;
 			this.edgeLabels.push(edgeLabel);
 			this.add(edgeLabel);
 		}
@@ -120,6 +131,20 @@ Potree.Measure = function(){
 		this.update();
 	};
 	
+	this.getArea = function(){
+		var area = 0;
+		var j = this.points.length - 1;
+		
+		for(var i = 0; i < this.points.length; i++){
+			var p1 = this.points[i];
+			var p2 = this.points[j];
+			area += (p2.x + p1.x) * (p1.z - p2.z);
+			j = i;
+		}
+		
+		return Math.abs(area / 2);
+	};
+	
 	this.update = function(){
 	
 		if(this.points.length === 0){
@@ -131,47 +156,60 @@ Potree.Measure = function(){
 			return;
 		}
 		
-		// update spheres
 		var lastIndex = this.points.length - 1;
+		
+		var centroid = new THREE.Vector3();
 		for(var i = 0; i <= lastIndex; i++){
 			var point = this.points[i];
-			var sphere = this.spheres[i];
+			centroid.add(point);
+		}
+		centroid.divideScalar(this.points.length);
+		
+		for(var i = 0; i <= lastIndex; i++){
+			var index = i;
+			var nextIndex = ( i + 1 > lastIndex ) ? 0 : i + 1;
+		
+			var point = this.points[index];
+			var nextPoint = this.points[nextIndex];
 			
+			var sphere = this.spheres[index];
+			
+			// spheres
 			sphere.position.copy(point);
 			sphere.material.color = scope.color;
-		}
-		
-		// update edges
-		for(var i = 0; i < lastIndex; i++){
-			var edge = this.edges[i];
-			var start = this.points[i];
-			var end = this.points[i+1];
+
+			{// edges
+				var edge = this.edges[index];
+				
+				edge.material.color = this.color;
+				
+				edge.geometry.vertices[0].copy(point);
+				edge.geometry.vertices[1].copy(nextPoint);
+				
+				edge.geometry.verticesNeedUpdate = true;
+				edge.geometry.computeBoundingSphere();
+				edge.visible = index < lastIndex || this.closed;
+			}
 			
-			edge.material.color = this.color;
+			{// edge labels
+				var edgeLabel = this.edgeLabels[i];
 			
-			edge.geometry.vertices[0].copy(start);
-			edge.geometry.vertices[1].copy(end);
-			
-			edge.geometry.verticesNeedUpdate = true;
-			edge.geometry.computeBoundingSphere();
-		}
-		
-		// update edge labels
-		for(var i = 0; i < lastIndex; i++){
-			var edgeLabel = this.edgeLabels[i];
-			var start = this.points[i];
-			var end = this.points[i+1];
-		
-			if(this.points.length >= 2){
-				var center = new THREE.Vector3().add(start);
-				center.add(end);
+				var center = new THREE.Vector3().add(point);
+				center.add(nextPoint);
 				center = center.multiplyScalar(0.5);
-				var distance = start.distanceTo(end);
+				var distance = point.distanceTo(nextPoint);
 				
 				edgeLabel.position.copy(center);
 				edgeLabel.setText(distance.toFixed(2));
+				edgeLabel.visible = this.showDistances && (index < lastIndex || this.closed) && this.points.length >= 2;
 			}
 		}
+		
+		// update area label
+		this.areaLabel.position.copy(centroid);
+		this.areaLabel.visible = this.showArea && this.points.length >= 3;
+		var msg = Potree.utils.addCommas(this.getArea().toFixed(1)) + "²";
+		this.areaLabel.setText(msg);
 	};
 	
 	this.raycast = function(raycaster, intersects){
@@ -196,6 +234,35 @@ Potree.Measure = function(){
 
 Potree.Measure.prototype = Object.create( THREE.Object3D.prototype );
 
+Object.defineProperty(Potree.Measure.prototype, "showArea", {
+	get: function(){
+		return this._showArea;
+	},
+	set: function(value){
+		this._showArea = value;
+		this.update();
+	}
+});
+
+Object.defineProperty(Potree.Measure.prototype, "closed", {
+	get: function(){
+		return this._closed;
+	},
+	set: function(value){
+		this._closed = value;
+		this.update();
+	}
+});
+
+Object.defineProperty(Potree.Measure.prototype, "showDistances", {
+	get: function(){
+		return this._showDistances;
+	},
+	set: function(value){
+		this._showDistances = value;
+		this.update();
+	}
+});
 
 Potree.MeasuringTool = function(scene, camera, renderer){
 	
@@ -400,8 +467,14 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 		state = STATE.INSERT;
 		
 		var args = args || {};
+		var showDistances = args.showDistances || true;
+		var showArea = args.showArea || false;
+		var closed = args.closed || false;
 		
 		this.activeMeasurement = new Potree.Measure();
+		this.activeMeasurement.showDistances = showDistances;
+		this.activeMeasurement.showArea = showArea;
+		this.activeMeasurement.closed = closed;
 		this.sceneMeasurement.add(this.activeMeasurement);
 		this.measurements.push(this.activeMeasurement);
 		this.activeMeasurement.addMarker(new THREE.Vector3(0,0,0));
@@ -438,6 +511,8 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 		// make sizes independant of distance and fov
 		for(var i = 0; i < measurements.length; i++){
 			var measurement = measurements[i];
+			
+			// spheres
 			for(var j = 0; j < measurement.spheres.length; j++){
 				var sphere = measurement.spheres[j];
 				
@@ -448,6 +523,7 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 				
 			}
 			
+			// edgeLabels
 			for(var j = 0; j < measurement.edgeLabels.length; j++){
 				var label = measurement.edgeLabels[j];
 				
@@ -456,6 +532,12 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 				var scale = (70 / pr);
 				label.scale.set(scale, scale, scale);
 			}
+			
+			// areaLabel
+			var distance = scope.camera.position.distanceTo(measurement.areaLabel.getWorldPosition());
+			var pr = projectedRadius(1, scope.camera.fov * Math.PI / 180, distance, renderer.domElement.clientHeight);
+			var scale = (80 / pr);
+			measurement.areaLabel.scale.set(scale, scale, scale);
 		}
 	
 		this.light.position.copy(this.camera.position);

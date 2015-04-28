@@ -31,7 +31,8 @@ Potree.PointColorType = {
 	POINT_INDEX: 7,
 	CLASSIFICATION: 8,
 	RETURN_NUMBER: 9,
-	SOURCE: 10
+	SOURCE: 10,
+	INTENSITY_HILIGHT: 11
 };
 
 Potree.ClipMode = {
@@ -89,6 +90,7 @@ Potree.PointCloudMaterial = function(parameters){
 		clipBoxes:		{ type: "Matrix4fv", value: [] },
 		blendDepth:		{ type: "f", value: this._blendDepth },
 		depthMap: 		{ type: "t", value: null },
+		hilight:        { type: "fv1", value: [0.000,0.063,0.089,0.108,0.125,0.140,0.153,0.166,0.177,0.188,0.198,0.208,0.217,0.226,0.234,0.243,0.250,0.258,0.266,0.273,0.280,0.287,0.294,0.300,0.307,0.313,0.319,0.325,0.331,0.337,0.343,0.349,0.354,0.360,0.365,0.370,0.376,0.381,0.386,0.391,0.396,0.401,0.406,0.411,0.415,0.420,0.425,0.429,0.434,0.438,0.443,0.447,0.452,0.456,0.460,0.464,0.469,0.473,0.477,0.481,0.485,0.489,0.493,0.497,0.501,0.505,0.509,0.513,0.516,0.520,0.524,0.528,0.531,0.535,0.539,0.542,0.546,0.550,0.553,0.557,0.560,0.564,0.567,0.571,0.574,0.577,0.581,0.584,0.587,0.591,0.594,0.597,0.601,0.604,0.607,0.610,0.614,0.617,0.620,0.623,0.626,0.629,0.632,0.636,0.639,0.642,0.645,0.648,0.651,0.654,0.657,0.660,0.663,0.666,0.669,0.672,0.674,0.677,0.680,0.683,0.686,0.689,0.692,0.695,0.697,0.700,0.703,0.706,0.708,0.711,0.714,0.717,0.719,0.722,0.725,0.728,0.730,0.733,0.736,0.738,0.741,0.744,0.746,0.749,0.751,0.754,0.757,0.759,0.762,0.764,0.767,0.770,0.772,0.775,0.777,0.780,0.782,0.785,0.787,0.790,0.792,0.795,0.797,0.800,0.802,0.804,0.807,0.809,0.812,0.814,0.816,0.819,0.821,0.824,0.826,0.828,0.831,0.833,0.835,0.838,0.840,0.842,0.845,0.847,0.849,0.852,0.854,0.856,0.859,0.861,0.863,0.865,0.868,0.870,0.872,0.874,0.877,0.879,0.881,0.883,0.886,0.888,0.890,0.892,0.894,0.897,0.899,0.901,0.903,0.905,0.907,0.910,0.912,0.914,0.916,0.918,0.920,0.922,0.925,0.927,0.929,0.931,0.933,0.935,0.937,0.939,0.941,0.944,0.946,0.948,0.950,0.952,0.954,0.956,0.958,0.960,0.962,0.964,0.966,0.968,0.970,0.972,0.974,0.976,0.978,0.980,0.982,0.984,0.986,0.988,0.990,0.992,0.994,0.996,0.998,1.000] }
 	};
 	
 	
@@ -113,7 +115,8 @@ Potree.PointCloudMaterial.prototype.updateShaderSource = function(){
 	
 	var attributes = {};
 	if(this.pointColorType === Potree.PointColorType.INTENSITY
-		|| this.pointColorType === Potree.PointColorType.INTENSITY_GRADIENT){
+		|| this.pointColorType === Potree.PointColorType.INTENSITY_GRADIENT
+		|| this.pointColorType === Potree.PointColorType.INTENSITY_HILIGHT){
 		attributes.intensity = { type: "f", value: [] };
 	}else if(this.pointColorType === Potree.PointColorType.CLASSIFICATION){
 		attributes.classification = { type: "f", value: [] };
@@ -128,7 +131,7 @@ Potree.PointCloudMaterial.prototype.updateShaderSource = function(){
 		vertexShader: this.getDefines() + Potree.PointCloudMaterial.vs_points.join("\n"),
 		fragmentShader: this.getDefines() + Potree.PointCloudMaterial.fs_points_rgb.join("\n")
 	});
-	
+
 	if(this.depthMap){
 		this.uniforms.depthMap.value = this.depthMap;
 		this.setValues({
@@ -203,6 +206,8 @@ Potree.PointCloudMaterial.prototype.getDefines = function(){
 		defines += "#define color_type_height\n";
 	}else if(this._pointColorType === Potree.PointColorType.INTENSITY){
 		defines += "#define color_type_intensity\n";
+	}else if(this._pointColorType === Potree.PointColorType.INTENSITY_HILIGHT){
+		defines += "#define color_type_intensity_hilight\n";
 	}else if(this._pointColorType === Potree.PointColorType.INTENSITY_GRADIENT){
 		defines += "#define color_type_intensity_gradient\n";
 	}else if(this._pointColorType === Potree.PointColorType.OCTREE_DEPTH){
@@ -614,6 +619,8 @@ Potree.PointCloudMaterial.vs_points = [
  "uniform sampler2D gradient;                                                        ",
  "uniform sampler2D depthMap;                                                        ",
  "                                                                                   ",
+ "uniform float hilight[256];                                                        ",
+ "                                                                                   ",
  "varying float vOpacity;                                                                                   ",
  "varying vec3 vColor;                                                               ",
  "varying float vDepth;                                                                                   ",
@@ -742,6 +749,10 @@ Potree.PointCloudMaterial.vs_points = [
  "      vColor = vec3(d, vDepth, 0.0);                                                                             ",
  "  #elif defined color_type_intensity                                               ",
  "      float w = (intensity - intensityMin) / (intensityMax - intensityMin);                         ",
+ "		vColor = vec3(w, w, w);                                                      ",
+ "  #elif defined color_type_intensity_hilight                                       ",
+ "      float w = (intensity - intensityMin) / (intensityMax - intensityMin);        ",
+ "      w = hilight[int(255.0 * w)];                                               ",
  "		vColor = vec3(w, w, w);                                                      ",
  "  #elif defined color_type_intensity_gradient                                      ",
  "      float w = (intensity - intensityMin) / intensityMax;                         ",

@@ -145,6 +145,7 @@ void main() {
 		var clipMode = Potree.ClipMode.HIGHLIGHT_INSIDE;
 		var quality = null;
 		var isFlipYZ = false;
+		var useDEMCollisions = false;
 		
 		var showStats = false;
 		var showBoundingBox = false;
@@ -237,7 +238,8 @@ void main() {
 				"quality": sceneProperties.quality,
 				"skybox": false,
 				"stats": showStats,
-				"BoundingBox": showBoundingBox
+				"BoundingBox": showBoundingBox,
+				"DEM Collisions": useDEMCollisions
 			};
 			
 			var pPoints = gui.add(params, 'points(m)', 0, 2);
@@ -245,17 +247,19 @@ void main() {
 				pointCountTarget = value ;
 			});
 			
-			var pPointSize = gui.add(params, 'PointSize', 0, 3);
+			var fAppearance = gui.addFolder('Appearance');
+			
+			var pPointSize = fAppearance.add(params, 'PointSize', 0, 3);
 			pPointSize.onChange(function(value){
 				pointSize = value;
 			});
 			
-			var pOpacity = gui.add(params, 'opacity', 0, 1);
+			var pOpacity = fAppearance.add(params, 'opacity', 0, 1);
 			pOpacity.onChange(function(value){
 				opacity = value;
 			});
 			
-			var pSizeType = gui.add(params, 'SizeType', [ "Fixed", "Attenuated", "Adaptive"]);
+			var pSizeType = fAppearance.add(params, 'SizeType', [ "Fixed", "Attenuated", "Adaptive"]);
 			pSizeType.onChange(function(value){
 				setPointSizeType(value);
 			});
@@ -291,7 +295,7 @@ void main() {
 			}
 			
 			
-			pMaterial = gui.add(params, 'Materials',options);
+			pMaterial = fAppearance.add(params, 'Materials',options);
 			pMaterial.onChange(function(value){
 				setMaterial(value);
 			});
@@ -303,12 +307,19 @@ void main() {
 			if(Potree.Features.SHADER_SPLATS.isSupported()){
 				qualityOptions.push("Splats");
 			}
-			var pQuality = gui.add(params, 'quality', qualityOptions);
+			var pQuality = fAppearance.add(params, 'quality', qualityOptions);
 			pQuality.onChange(function(value){
 				quality = value;
 			});
 			
-			var pClipMode = gui.add(params, 'Clip Mode', [ "No Clipping", "Clip Outside", "Highlight Inside"]);
+			var pSykbox = fAppearance.add(params, 'skybox');
+			pSykbox.onChange(function(value){
+				showSkybox = value;
+			});
+			
+			var fSettings = gui.addFolder('Settings');
+			
+			var pClipMode = fSettings.add(params, 'Clip Mode', [ "No Clipping", "Clip Outside", "Highlight Inside"]);
 			pClipMode.onChange(function(value){
 				if(value === "No Clipping"){
 					clipMode = Potree.ClipMode.DISABLED;
@@ -319,17 +330,23 @@ void main() {
 				}
 			});
 			
-			var pSykbox = gui.add(params, 'skybox');
-			pSykbox.onChange(function(value){
-				showSkybox = value;
+			var pDEMCollisions = fSettings.add(params, 'DEM Collisions');
+			pDEMCollisions.onChange(function(value){
+				useDEMCollisions = value;
 			});
 			
-			var pStats = gui.add(params, 'stats');
+			
+			
+			
+			var fDebug = gui.addFolder('Debug');
+
+			
+			var pStats = fDebug.add(params, 'stats');
 			pStats.onChange(function(value){
 				showStats = value;
 			});
 			
-			var pBoundingBox = gui.add(params, 'BoundingBox');
+			var pBoundingBox = fDebug.add(params, 'BoundingBox');
 			pBoundingBox.onChange(function(value){
 				showBoundingBox = value;
 			});
@@ -375,6 +392,16 @@ void main() {
 			camera.rotation.x = -Math.PI / 6;
 			//useOrbitControls();
 			earthControls = new THREE.EarthControls(camera, renderer, scenePointCloud);
+			earthControls.addEventListener("proposeTransform", function(event){
+				if(!pointcloud || !useDEMCollisions){
+					return;
+				}
+				
+				var demHeight = pointcloud.getDEMHeight(event.newPosition);
+				if(event.newPosition.y < demHeight){
+					event.objections++;
+				}
+			});
 			useEarthControls();
 			
 			// enable frag_depth extension for the interpolation shader, if available
@@ -539,6 +566,8 @@ void main() {
 				pointcloud.material.intensityMin = 0;
 				pointcloud.material.intensityMax = intensityMax;
 				pointcloud.showBoundingBox = showBoundingBox;
+				pointcloud.generateDEM = useDEMCollisions;
+				
 				pointcloud.update(camera, renderer);
 			}
 			
@@ -630,6 +659,16 @@ void main() {
 			}
 			if(!fpControls){
 				fpControls = new THREE.FirstPersonControls(camera, renderer.domElement);
+				fpControls.addEventListener("proposeTransform", function(event){
+					if(!pointcloud || !useDEMCollisions){
+						return;
+					}
+					
+					var demHeight = pointcloud.getDEMHeight(event.newPosition);
+					if(event.newPosition.y < demHeight){
+						event.objections++;
+					}
+				});
 			}
 	
 			controls = fpControls;
@@ -644,6 +683,16 @@ void main() {
 			}
 			if(!orbitControls){
 				orbitControls = new Potree.OrbitControls(camera, renderer.domElement);
+				orbitControls.addEventListener("proposeTransform", function(event){
+					if(!pointcloud || !useDEMCollisions){
+						return;
+					}
+					
+					var demHeight = pointcloud.getDEMHeight(event.newPosition);
+					if(event.newPosition.y < demHeight){
+						event.objections++;
+					}
+				});
 			}
 			
 			controls = orbitControls;

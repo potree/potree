@@ -119,6 +119,12 @@ Potree.HeightProfile = function(){
 		}
 
 		this.setPosition(this.points.length-1, point);
+		
+		var event = {
+			"type": "marker_added",
+			"profile": this
+		};
+		this.dispatchEvent(event);
 	};
 	
 	this.removeMarker = function(index){
@@ -135,6 +141,12 @@ Potree.HeightProfile = function(){
 		this.spheres.splice(index, 1);
 		
 		this.update();
+		
+		var event = {
+			"type": "marker_removed",
+			"profile": this
+		};
+		this.dispatchEvent(event);
 	};
 	
 	/**
@@ -528,9 +540,10 @@ Potree.ProfileTool = function(scene, camera, renderer){
 		this.activeProfile = new Potree.HeightProfile();
 		this.activeProfile.clip = clip;
 		this.activeProfile.setWidth(width);
-		this.sceneProfile.add(this.activeProfile);
-		this.profiles.push(this.activeProfile);
+		this.addProfile(this.activeProfile);
 		this.activeProfile.addMarker(new THREE.Vector3(0,0,0));
+		
+		return this.activeProfile;
 	};
 	
 	this.finishInsertion = function(){
@@ -543,6 +556,14 @@ Potree.ProfileTool = function(scene, camera, renderer){
 		this.profiles.push(profile);
 		this.sceneProfile.add(profile);
 		profile.update();
+		
+		this.dispatchEvent({"type": "profile_added", profile: profile});
+		profile.addEventListener("marker_added", function(event){
+			scope.dispatchEvent(event);
+		});
+		profile.addEventListener("marker_removed", function(event){
+			scope.dispatchEvent(event);
+		});
 	};
 	
 	this.removeProfile = function(profile){
@@ -551,6 +572,8 @@ Potree.ProfileTool = function(scene, camera, renderer){
 		if(index >= 0){
 			this.profiles.splice(index, 1);
 		}
+		
+		this.dispatchEvent({"type": "profile_removed", profile: profile});
 	}
 	
 	this.update = function(){

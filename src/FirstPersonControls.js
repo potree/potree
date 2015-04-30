@@ -155,6 +155,15 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 
 	this.update = function (delta) {
 		this.object.rotation.order = 'ZYX';
+		
+		var object = this.object;
+		
+		this.object = new THREE.Object3D();
+		this.object.position.copy(object.position);
+		this.object.rotation.copy(object.rotation);
+		this.object.updateMatrix();
+		this.object.updateMatrixWorld();
+	
 		var position = this.object.position;
 		
 		if(delta !== undefined){
@@ -197,6 +206,25 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 		this.object.quaternion.setFromRotationMatrix(res);
 		
 		this.object.rotation.x += phiDelta;
+		this.object.updateMatrixWorld();
+		
+		var proposeTransformEvent = {
+			type: "proposeTransform",
+			oldPosition: object.position,
+			newPosition: this.object.position,
+			objections: 0
+		};
+		this.dispatchEvent(proposeTransformEvent);
+		
+		if(proposeTransformEvent.objections > 0){
+			
+		}else{
+			object.position.copy(this.object.position);
+		}
+		
+		object.rotation.copy(this.object.rotation);
+		
+		this.object = object;
 
 		thetaDelta = 0;
 		phiDelta = 0;

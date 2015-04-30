@@ -48,6 +48,13 @@ THREE.EarthControls = function ( camera, renderer, scene ) {
 
 	this.update = function (delta) {
 		var position = this.camera.position;
+		this.camera.updateMatrixWorld();	
+		
+		var proposal = new THREE.Object3D();
+		proposal.position.copy(this.camera.position);
+		proposal.rotation.copy(this.camera.rotation);
+		proposal.updateMatrix();
+		proposal.updateMatrixWorld();
 		
 		if(pivot){
 			if(state === STATE.DRAG){
@@ -66,7 +73,7 @@ THREE.EarthControls = function ( camera, renderer, scene ) {
 				
 				if(distanceToPlane > 0){
 					var newCamPos = new THREE.Vector3().subVectors(pivot, dir.clone().multiplyScalar(distanceToPlane));
-					this.camera.position.copy(newCamPos);
+					proposal.position.copy(newCamPos);
 				}
 				
 				
@@ -77,7 +84,6 @@ THREE.EarthControls = function ( camera, renderer, scene ) {
 				diff.x *= 0.3;
 				diff.y *= 0.2;
 			
-				this.camera.updateMatrixWorld();	
 
 				// do calculations on fresh nodes 
 				var p = new THREE.Object3D();
@@ -119,17 +125,33 @@ THREE.EarthControls = function ( camera, renderer, scene ) {
 				// apply changes to object
 				p.updateMatrixWorld();
 				
-				this.camera.position.copy(c.getWorldPosition());
-				this.camera.quaternion.copy(c.getWorldQuaternion());
+				proposal.position.copy(c.getWorldPosition());
+				proposal.quaternion.copy(c.getWorldQuaternion());
 
 			}
 			
+			var proposeTransformEvent = {
+				type: "proposeTransform",
+				oldPosition: this.camera.position,
+				newPosition: proposal.position,
+				objections: 0
+			};
+			this.dispatchEvent(proposeTransformEvent);
+			
+			if(proposeTransformEvent.objections > 0){
+				
+			}else{
+				this.camera.position.copy(proposal.position);
+				this.camera.rotation.copy(proposal.rotation);
+			}
 			
 			var wp = this.pivotNode.getWorldPosition().applyMatrix4(this.camera.matrixWorldInverse);
 			var w = Math.abs(wp.z  / 30);
 			var l = this.pivotNode.scale.length();
 			this.pivotNode.scale.multiplyScalar(w / l);
 		}
+		
+		
 			
 		mouseDelta.set(0,0);
 	};

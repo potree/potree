@@ -60,7 +60,7 @@ Potree.WorkerManager.fromUrls = function(urls){
 	
 	return new Potree.WorkerManager(code);
 }
-Potree.workers.binaryDecoder = new Potree.WorkerManager(atob("DQovLyBodHRwOi8vanNwZXJmLmNvbS91aW50OGFycmF5LXZzLWRhdGF2aWV3My8zDQpmdW5jdGlvbiBDdXN0b21WaWV3KGJ1ZmZlcikgew0KCXRoaXMuYnVmZmVyID0gYnVmZmVyOw0KCXRoaXMudTggPSBuZXcgVWludDhBcnJheShidWZmZXIpOw0KCQ0KCXZhciB0bXAgPSBuZXcgQXJyYXlCdWZmZXIoNCk7DQoJdmFyIHRtcGYgPSBuZXcgRmxvYXQzMkFycmF5KHRtcCk7DQoJdmFyIHRtcHU4ID0gbmV3IFVpbnQ4QXJyYXkodG1wKTsNCgkNCgl0aGlzLmdldFVpbnQzMiA9IGZ1bmN0aW9uIChpKSB7DQoJCXJldHVybiAodGhpcy51OFtpKzNdIDw8IDI0KSB8ICh0aGlzLnU4W2krMl0gPDwgMTYpIHwgKHRoaXMudThbaSsxXSA8PCA4KSB8IHRoaXMudThbaV07DQoJfQ0KCQ0KCXRoaXMuZ2V0VWludDE2ID0gZnVuY3Rpb24gKGkpIHsNCgkJcmV0dXJuICh0aGlzLnU4W2krMV0gPDwgOCkgfCB0aGlzLnU4W2ldOw0KCX0NCgkNCgl0aGlzLmdldEZsb2F0ID0gZnVuY3Rpb24oaSl7DQoJCXRtcHU4WzBdID0gdGhpcy51OFtpKzBdOw0KCQl0bXB1OFsxXSA9IHRoaXMudThbaSsxXTsNCgkJdG1wdThbMl0gPSB0aGlzLnU4W2krMl07DQoJCXRtcHU4WzNdID0gdGhpcy51OFtpKzNdOw0KCQkNCgkJcmV0dXJuIHRtcGZbMF07DQoJfQ0KCQ0KCXRoaXMuZ2V0VWludDggPSBmdW5jdGlvbihpKXsNCgkJcmV0dXJuIHRoaXMudThbaV07DQoJfQ0KfQ0KDQpQb3RyZWUgPSB7fTsNCg0KDQpvbm1lc3NhZ2UgPSBmdW5jdGlvbihldmVudCl7DQoJdmFyIGJ1ZmZlciA9IGV2ZW50LmRhdGEuYnVmZmVyOw0KCXZhciBwb2ludEF0dHJpYnV0ZXMgPSBldmVudC5kYXRhLnBvaW50QXR0cmlidXRlczsNCgl2YXIgbnVtUG9pbnRzID0gYnVmZmVyLmJ5dGVMZW5ndGggLyBwb2ludEF0dHJpYnV0ZXMuYnl0ZVNpemU7DQoJdmFyIGN2ID0gbmV3IEN1c3RvbVZpZXcoYnVmZmVyKTsNCgl2YXIgdmVyc2lvbiA9IG5ldyBQb3RyZWUuVmVyc2lvbihldmVudC5kYXRhLnZlcnNpb24pOw0KCXZhciBtaW4gPSBldmVudC5kYXRhLm1pbjsNCgl2YXIgbm9kZU9mZnNldCA9IGV2ZW50LmRhdGEub2Zmc2V0Ow0KCXZhciBzY2FsZSA9IGV2ZW50LmRhdGEuc2NhbGU7DQoJDQoJdmFyIGF0dHJpYnV0ZUJ1ZmZlcnMgPSB7fTsNCgkNCgl2YXIgb2Zmc2V0ID0gMDsNCglmb3IodmFyIGkgPSAwOyBpIDwgcG9pbnRBdHRyaWJ1dGVzLmF0dHJpYnV0ZXMubGVuZ3RoOyBpKyspew0KCQl2YXIgcG9pbnRBdHRyaWJ1dGUgPSBwb2ludEF0dHJpYnV0ZXMuYXR0cmlidXRlc1tpXTsNCgkNCgkJaWYocG9pbnRBdHRyaWJ1dGUubmFtZSA9PT0gUG9pbnRBdHRyaWJ1dGUuUE9TSVRJT05fQ0FSVEVTSUFOLm5hbWUpew0KCQkJDQoJCQl2YXIgYnVmZiA9IG5ldyBBcnJheUJ1ZmZlcihudW1Qb2ludHMqNCozKTsNCgkJCXZhciBwb3NpdGlvbnMgPSBuZXcgRmxvYXQzMkFycmF5KGJ1ZmYpOw0KCQkJDQoJCQlmb3IodmFyIGogPSAwOyBqIDwgbnVtUG9pbnRzOyBqKyspew0KCQkJCWlmKHZlcnNpb24ubmV3ZXJUaGFuKCIxLjMiKSl7DQoJCQkJCXBvc2l0aW9uc1szKmorMF0gPSAoY3YuZ2V0VWludDMyKG9mZnNldCArIGoqcG9pbnRBdHRyaWJ1dGVzLmJ5dGVTaXplKzApICogc2NhbGUpICsgbWluWzBdOw0KCQkJCQlwb3NpdGlvbnNbMypqKzFdID0gKGN2LmdldFVpbnQzMihvZmZzZXQgKyBqKnBvaW50QXR0cmlidXRlcy5ieXRlU2l6ZSs0KSAqIHNjYWxlKSArIG1pblsxXTsNCgkJCQkJcG9zaXRpb25zWzMqaisyXSA9IChjdi5nZXRVaW50MzIob2Zmc2V0ICsgaipwb2ludEF0dHJpYnV0ZXMuYnl0ZVNpemUrOCkgKiBzY2FsZSkgKyBtaW5bMl07DQoJCQkJfWVsc2V7DQoJCQkJCXBvc2l0aW9uc1szKmorMF0gPSBjdi5nZXRGbG9hdChqKnBvaW50QXR0cmlidXRlcy5ieXRlU2l6ZSswKSArIG5vZGVPZmZzZXRbMF07DQoJCQkJCXBvc2l0aW9uc1szKmorMV0gPSBjdi5nZXRGbG9hdChqKnBvaW50QXR0cmlidXRlcy5ieXRlU2l6ZSs0KSArIG5vZGVPZmZzZXRbMV07DQoJCQkJCXBvc2l0aW9uc1szKmorMl0gPSBjdi5nZXRGbG9hdChqKnBvaW50QXR0cmlidXRlcy5ieXRlU2l6ZSs4KSArIG5vZGVPZmZzZXRbMl07DQoJCQkJfQ0KCQkJfQ0KCQkJDQoJCQlhdHRyaWJ1dGVCdWZmZXJzW3BvaW50QXR0cmlidXRlLm5hbWVdID0geyBidWZmZXI6IGJ1ZmYsIGF0dHJpYnV0ZTogcG9pbnRBdHRyaWJ1dGV9Ow0KCQkJDQoJCX1lbHNlIGlmKHBvaW50QXR0cmlidXRlLm5hbWUgPT09IFBvaW50QXR0cmlidXRlLkNPTE9SX1BBQ0tFRC5uYW1lKXsNCgkJCQ0KCQkJdmFyIGJ1ZmYgPSBuZXcgQXJyYXlCdWZmZXIobnVtUG9pbnRzKjQqMyk7DQoJCQl2YXIgY29sb3JzID0gbmV3IEZsb2F0MzJBcnJheShidWZmKTsNCgkJCQ0KCQkJZm9yKHZhciBqID0gMDsgaiA8IG51bVBvaW50czsgaisrKXsNCgkJCQljb2xvcnNbMypqKzBdID0gY3YuZ2V0VWludDgob2Zmc2V0ICsgaipwb2ludEF0dHJpYnV0ZXMuYnl0ZVNpemUgKyAwKSAvIDI1NTsNCgkJCQljb2xvcnNbMypqKzFdID0gY3YuZ2V0VWludDgob2Zmc2V0ICsgaipwb2ludEF0dHJpYnV0ZXMuYnl0ZVNpemUgKyAxKSAvIDI1NTsNCgkJCQljb2xvcnNbMypqKzJdID0gY3YuZ2V0VWludDgob2Zmc2V0ICsgaipwb2ludEF0dHJpYnV0ZXMuYnl0ZVNpemUgKyAyKSAvIDI1NTsNCgkJCX0NCgkJCQ0KCQkJYXR0cmlidXRlQnVmZmVyc1twb2ludEF0dHJpYnV0ZS5uYW1lXSA9IHsgYnVmZmVyOiBidWZmLCBhdHRyaWJ1dGU6IHBvaW50QXR0cmlidXRlfTsNCgkJCQ0KCQl9ZWxzZSBpZihwb2ludEF0dHJpYnV0ZS5uYW1lID09PSBQb2ludEF0dHJpYnV0ZS5JTlRFTlNJVFkubmFtZSl7DQoNCgkJCXZhciBidWZmID0gbmV3IEFycmF5QnVmZmVyKG51bVBvaW50cyo0KTsNCgkJCXZhciBpbnRlbnNpdGllcyA9IG5ldyBGbG9hdDMyQXJyYXkoYnVmZik7DQoJCQkNCgkJCWZvcih2YXIgaiA9IDA7IGogPCBudW1Qb2ludHM7IGorKyl7DQoJCQkJdmFyIGludGVuc2l0eSA9IGN2LmdldFVpbnQxNihvZmZzZXQgKyBqKnBvaW50QXR0cmlidXRlcy5ieXRlU2l6ZSk7DQoJCQkJaW50ZW5zaXRpZXNbal0gPSBpbnRlbnNpdHk7DQoJCQl9DQoJCQkNCgkJCWF0dHJpYnV0ZUJ1ZmZlcnNbcG9pbnRBdHRyaWJ1dGUubmFtZV0gPSB7IGJ1ZmZlcjogYnVmZiwgYXR0cmlidXRlOiBwb2ludEF0dHJpYnV0ZX07DQoJCQ0KCQl9ZWxzZSBpZihwb2ludEF0dHJpYnV0ZS5uYW1lID09PSBQb2ludEF0dHJpYnV0ZS5DTEFTU0lGSUNBVElPTi5uYW1lKXsNCg0KCQkJdmFyIGJ1ZmYgPSBuZXcgQXJyYXlCdWZmZXIobnVtUG9pbnRzKjQpOw0KCQkJdmFyIGNsYXNzaWZpY2F0aW9ucyA9IG5ldyBGbG9hdDMyQXJyYXkoYnVmZik7DQoJCQkNCgkJCWZvcih2YXIgaiA9IDA7IGogPCBudW1Qb2ludHM7IGorKyl7DQoJCQkJdmFyIGNsYXNzaWZpY2F0aW9uID0gY3YuZ2V0VWludDgob2Zmc2V0ICsgaipwb2ludEF0dHJpYnV0ZXMuYnl0ZVNpemUpOw0KCQkJCWNsYXNzaWZpY2F0aW9uc1tqXSA9IGNsYXNzaWZpY2F0aW9uOw0KCQkJfQ0KCQkJDQoJCQlhdHRyaWJ1dGVCdWZmZXJzW3BvaW50QXR0cmlidXRlLm5hbWVdID0geyBidWZmZXI6IGJ1ZmYsIGF0dHJpYnV0ZTogcG9pbnRBdHRyaWJ1dGV9Ow0KCQkNCgkJfQ0KCQkNCgkJb2Zmc2V0ICs9IHBvaW50QXR0cmlidXRlLmJ5dGVTaXplOw0KCX0NCgkNCgl2YXIgaW5kaWNlcyA9IG5ldyBBcnJheUJ1ZmZlcihudW1Qb2ludHMqNCk7DQoJdmFyIGlJbmRpY2VzID0gbmV3IFVpbnQzMkFycmF5KGluZGljZXMpOw0KCWZvcih2YXIgaSA9IDA7IGkgPCBudW1Qb2ludHM7IGkrKyl7DQoJCWlJbmRpY2VzW2ldID0gaTsNCgl9DQoJDQoJdmFyIG1lc3NhZ2UgPSB7DQoJCWF0dHJpYnV0ZUJ1ZmZlcnM6IGF0dHJpYnV0ZUJ1ZmZlcnMsDQoJCWluZGljZXM6IGluZGljZXMNCgl9Ow0KCQkNCgl2YXIgdHJhbnNmZXJhYmxlcyA9IFtdOw0KCQ0KCWZvcih2YXIgcHJvcGVydHkgaW4gbWVzc2FnZS5hdHRyaWJ1dGVCdWZmZXJzKXsNCgkJaWYobWVzc2FnZS5hdHRyaWJ1dGVCdWZmZXJzLmhhc093blByb3BlcnR5KHByb3BlcnR5KSl7DQoJCQl0cmFuc2ZlcmFibGVzLnB1c2gobWVzc2FnZS5hdHRyaWJ1dGVCdWZmZXJzW3Byb3BlcnR5XS5idWZmZXIpOw0KCQl9DQoJfQ0KCQ0KCXRyYW5zZmVyYWJsZXMucHVzaChtZXNzYWdlLmluZGljZXMpOw0KCQkNCglwb3N0TWVzc2FnZShtZXNzYWdlLCB0cmFuc2ZlcmFibGVzKTsNCgkNCn07ClBvdHJlZS5WZXJzaW9uID0gZnVuY3Rpb24odmVyc2lvbil7Cgl0aGlzLnZlcnNpb24gPSB2ZXJzaW9uOwoJdmFyIHZtTGVuZ3RoID0gKHZlcnNpb24uaW5kZXhPZigiLiIpID09PSAtMSkgPyB2ZXJzaW9uLmxlbmd0aCA6IHZlcnNpb24uaW5kZXhPZigiLiIpOwoJdGhpcy52ZXJzaW9uTWFqb3IgPSBwYXJzZUludCh2ZXJzaW9uLnN1YnN0cigwLCB2bUxlbmd0aCkpOwoJdGhpcy52ZXJzaW9uTWlub3IgPSBwYXJzZUludCh2ZXJzaW9uLnN1YnN0cih2bUxlbmd0aCArIDEpKTsKCWlmKHRoaXMudmVyc2lvbk1pbm9yLmxlbmd0aCA9PT0gMCl7CgkJdGhpcy52ZXJzaW9uTWlub3IgPSAwOwoJfQoJCn07CgpQb3RyZWUuVmVyc2lvbi5wcm90b3R5cGUubmV3ZXJUaGFuID0gZnVuY3Rpb24odmVyc2lvbil7Cgl2YXIgdiA9IG5ldyBQb3RyZWUuVmVyc2lvbih2ZXJzaW9uKTsKCQoJaWYoIHRoaXMudmVyc2lvbk1ham9yID4gdi52ZXJzaW9uTWFqb3IpewoJCXJldHVybiB0cnVlOwoJfWVsc2UgaWYoIHRoaXMudmVyc2lvbk1ham9yID09PSB2LnZlcnNpb25NYWpvciAmJiB0aGlzLnZlcnNpb25NaW5vciA+IHYudmVyc2lvbk1pbm9yKXsKCQlyZXR1cm4gdHJ1ZTsKCX1lbHNlewoJCXJldHVybiBmYWxzZTsKCX0KfTsKClBvdHJlZS5WZXJzaW9uLnByb3RvdHlwZS5lcXVhbE9ySGlnaGVyID0gZnVuY3Rpb24odmVyc2lvbil7Cgl2YXIgdiA9IG5ldyBQb3RyZWUuVmVyc2lvbih2ZXJzaW9uKTsKCQoJaWYoIHRoaXMudmVyc2lvbk1ham9yID4gdi52ZXJzaW9uTWFqb3IpewoJCXJldHVybiB0cnVlOwoJfWVsc2UgaWYoIHRoaXMudmVyc2lvbk1ham9yID09PSB2LnZlcnNpb25NYWpvciAmJiB0aGlzLnZlcnNpb25NaW5vciA+PSB2LnZlcnNpb25NaW5vcil7CgkJcmV0dXJuIHRydWU7Cgl9ZWxzZXsKCQlyZXR1cm4gZmFsc2U7Cgl9Cn07CgpQb3RyZWUuVmVyc2lvbi5wcm90b3R5cGUudXBUbyA9IGZ1bmN0aW9uKHZlcnNpb24pewoJcmV0dXJuICF0aGlzLm5ld2VyVGhhbih2ZXJzaW9uKTsKfQoKCi8vZnVuY3Rpb24gUG9pbnRBdHRyaWJ1dGVOYW1lcygpewovLwkKLy99Cgp2YXIgUG9pbnRBdHRyaWJ1dGVOYW1lcyA9IHt9OwoKUG9pbnRBdHRyaWJ1dGVOYW1lcy5QT1NJVElPTl9DQVJURVNJQU4gCT0gMDsJLy8gZmxvYXQgeCwgeSwgejsKUG9pbnRBdHRyaWJ1dGVOYW1lcy5DT0xPUl9QQUNLRUQJCT0gMTsJLy8gYnl0ZSByLCBnLCBiLCBhOyAJSSA9IFswLDFdClBvaW50QXR0cmlidXRlTmFtZXMuQ09MT1JfRkxPQVRTXzEJCT0gMjsJLy8gZmxvYXQgciwgZywgYjsgCQlJID0gWzAsMV0KUG9pbnRBdHRyaWJ1dGVOYW1lcy5DT0xPUl9GTE9BVFNfMjU1CT0gMzsJLy8gZmxvYXQgciwgZywgYjsgCQlJID0gWzAsMjU1XQpQb2ludEF0dHJpYnV0ZU5hbWVzLk5PUk1BTF9GTE9BVFMJCT0gNDsgIAkvLyBmbG9hdCB4LCB5LCB6OwpQb2ludEF0dHJpYnV0ZU5hbWVzLkZJTExFUgkJCQk9IDU7ClBvaW50QXR0cmlidXRlTmFtZXMuSU5URU5TSVRZCQkJPSA2OwpQb2ludEF0dHJpYnV0ZU5hbWVzLkNMQVNTSUZJQ0FUSU9OCQk9IDc7CgovKioKICogU29tZSB0eXBlcyBvZiBwb3NzaWJsZSBwb2ludCBhdHRyaWJ1dGUgZGF0YSBmb3JtYXRzCiAqIAogKiBAY2xhc3MKICovCnZhciBQb2ludEF0dHJpYnV0ZVR5cGVzID0gewoJREFUQV9UWVBFX0RPVUJMRQk6IHtvcmRpbmFsIDogMCwgc2l6ZTogOH0sCglEQVRBX1RZUEVfRkxPQVQJCToge29yZGluYWwgOiAxLCBzaXplOiA0fSwKCURBVEFfVFlQRV9JTlQ4CQk6IHtvcmRpbmFsIDogMiwgc2l6ZTogMX0sCglEQVRBX1RZUEVfVUlOVDgJCToge29yZGluYWwgOiAzLCBzaXplOiAxfSwKCURBVEFfVFlQRV9JTlQxNgkJOiB7b3JkaW5hbCA6IDQsIHNpemU6IDJ9LAoJREFUQV9UWVBFX1VJTlQxNgk6IHtvcmRpbmFsIDogNSwgc2l6ZTogMn0sCglEQVRBX1RZUEVfSU5UMzIJCToge29yZGluYWwgOiA2LCBzaXplOiA0fSwKCURBVEFfVFlQRV9VSU5UMzIJOiB7b3JkaW5hbCA6IDcsIHNpemU6IDR9LAoJREFUQV9UWVBFX0lOVDY0CQk6IHtvcmRpbmFsIDogOCwgc2l6ZTogOH0sCglEQVRBX1RZUEVfVUlOVDY0CToge29yZGluYWwgOiA5LCBzaXplOiA4fQp9OwoKdmFyIGkgPSAwOwpmb3IodmFyIG9iaiBpbiBQb2ludEF0dHJpYnV0ZVR5cGVzKXsKCVBvaW50QXR0cmlidXRlVHlwZXNbaV0gPSBQb2ludEF0dHJpYnV0ZVR5cGVzW29ial07CglpKys7Cn0KCi8qKgogKiBBIHNpbmdsZSBwb2ludCBhdHRyaWJ1dGUgc3VjaCBhcyBjb2xvci9ub3JtYWwvLi4gYW5kIGl0cyBkYXRhIGZvcm1hdC9udW1iZXIgb2YgZWxlbWVudHMvLi4uIAogKiAKICogQGNsYXNzCiAqIEBwYXJhbSBuYW1lIAogKiBAcGFyYW0gdHlwZQogKiBAcGFyYW0gc2l6ZQogKiBAcmV0dXJucwogKi8KZnVuY3Rpb24gUG9pbnRBdHRyaWJ1dGUobmFtZSwgdHlwZSwgbnVtRWxlbWVudHMpewoJdGhpcy5uYW1lID0gbmFtZTsKCXRoaXMudHlwZSA9IHR5cGU7IAoJdGhpcy5udW1FbGVtZW50cyA9IG51bUVsZW1lbnRzOwoJdGhpcy5ieXRlU2l6ZSA9IHRoaXMubnVtRWxlbWVudHMgKiB0aGlzLnR5cGUuc2l6ZTsKfQoKUG9pbnRBdHRyaWJ1dGUuUE9TSVRJT05fQ0FSVEVTSUFOID0gbmV3IFBvaW50QXR0cmlidXRlKAoJCVBvaW50QXR0cmlidXRlTmFtZXMuUE9TSVRJT05fQ0FSVEVTSUFOLAoJCVBvaW50QXR0cmlidXRlVHlwZXMuREFUQV9UWVBFX0ZMT0FULCAzKTsKClBvaW50QXR0cmlidXRlLlJHQkFfUEFDS0VEID0gbmV3IFBvaW50QXR0cmlidXRlKAoJCVBvaW50QXR0cmlidXRlTmFtZXMuQ09MT1JfUEFDS0VELAoJCVBvaW50QXR0cmlidXRlVHlwZXMuREFUQV9UWVBFX0lOVDgsIDQpOwoKUG9pbnRBdHRyaWJ1dGUuQ09MT1JfUEFDS0VEID0gUG9pbnRBdHRyaWJ1dGUuUkdCQV9QQUNLRUQ7CgpQb2ludEF0dHJpYnV0ZS5SR0JfUEFDS0VEID0gbmV3IFBvaW50QXR0cmlidXRlKAoJCVBvaW50QXR0cmlidXRlTmFtZXMuQ09MT1JfUEFDS0VELAoJCVBvaW50QXR0cmlidXRlVHlwZXMuREFUQV9UWVBFX0lOVDgsIDMpOwoKUG9pbnRBdHRyaWJ1dGUuTk9STUFMX0ZMT0FUUyA9IG5ldyBQb2ludEF0dHJpYnV0ZSgKCQlQb2ludEF0dHJpYnV0ZU5hbWVzLk5PUk1BTF9GTE9BVFMsCgkJUG9pbnRBdHRyaWJ1dGVUeXBlcy5EQVRBX1RZUEVfRkxPQVQsIDMpOwoKUG9pbnRBdHRyaWJ1dGUuRklMTEVSXzFCID0gbmV3IFBvaW50QXR0cmlidXRlKAoJCVBvaW50QXR0cmlidXRlTmFtZXMuRklMTEVSLAoJCVBvaW50QXR0cmlidXRlVHlwZXMuREFUQV9UWVBFX1VJTlQ4LCAxKTsKCQkKUG9pbnRBdHRyaWJ1dGUuSU5URU5TSVRZID0gbmV3IFBvaW50QXR0cmlidXRlKAoJCVBvaW50QXR0cmlidXRlTmFtZXMuSU5URU5TSVRZLAoJCVBvaW50QXR0cmlidXRlVHlwZXMuREFUQV9UWVBFX1VJTlQxNiwgMSk7CQkKCQkKUG9pbnRBdHRyaWJ1dGUuQ0xBU1NJRklDQVRJT04gPSBuZXcgUG9pbnRBdHRyaWJ1dGUoCgkJUG9pbnRBdHRyaWJ1dGVOYW1lcy5DTEFTU0lGSUNBVElPTiwKCQlQb2ludEF0dHJpYnV0ZVR5cGVzLkRBVEFfVFlQRV9VSU5UOCwgMSk7CQoKLyoqCiAqIE9yZGVyZWQgbGlzdCBvZiBQb2ludEF0dHJpYnV0ZXMgdXNlZCB0byBpZGVudGlmeSBob3cgcG9pbnRzIGFyZSBhbGlnbmVkIGluIGEgYnVmZmVyLgogKiAKICogQGNsYXNzCiAqIAogKi8KZnVuY3Rpb24gUG9pbnRBdHRyaWJ1dGVzKHBvaW50QXR0cmlidXRlcyl7Cgl0aGlzLmF0dHJpYnV0ZXMgPSBuZXcgQXJyYXkoKTsKCXRoaXMuYnl0ZVNpemUgPSAwOwoJdGhpcy5zaXplID0gMDsKCQoJaWYocG9pbnRBdHRyaWJ1dGVzICE9IG51bGwpewoJCS8vIGRvZXMgbm90IHdvcmsgaW4gY2hyb21lIHYyNAovLwkJZm9yKHZhciBwb2ludEF0dHJpYnV0ZSBvZiBwb2ludEF0dHJpYnV0ZXMpewovLwkJCXRoaXMuYXR0cmlidXRlcy5wdXNoKHBvaW50QXR0cmlidXRlKTsKLy8JCQl0aGlzLmJ5dGVTaXplICs9IHBvaW50QXR0cmlidXRlLmJ5dGVTaXplOwovLwkJCXRoaXMuc2l6ZSsrOwovLwkJfQoJCQoJCWZvcih2YXIgaSA9IDA7IGkgPCBwb2ludEF0dHJpYnV0ZXMubGVuZ3RoOyBpKyspewoJCQl2YXIgcG9pbnRBdHRyaWJ1dGVOYW1lID0gcG9pbnRBdHRyaWJ1dGVzW2ldOwoJCQl2YXIgcG9pbnRBdHRyaWJ1dGUgPSBQb2ludEF0dHJpYnV0ZVtwb2ludEF0dHJpYnV0ZU5hbWVdOwoJCQl0aGlzLmF0dHJpYnV0ZXMucHVzaChwb2ludEF0dHJpYnV0ZSk7CgkJCXRoaXMuYnl0ZVNpemUgKz0gcG9pbnRBdHRyaWJ1dGUuYnl0ZVNpemU7CgkJCXRoaXMuc2l6ZSsrOwoJCX0KCX0KfQoKUG9pbnRBdHRyaWJ1dGVzLnByb3RvdHlwZS5hZGQgPSBmdW5jdGlvbihwb2ludEF0dHJpYnV0ZSl7Cgl0aGlzLmF0dHJpYnV0ZXMucHVzaChwb2ludEF0dHJpYnV0ZSk7Cgl0aGlzLmJ5dGVTaXplICs9IHBvaW50QXR0cmlidXRlLmJ5dGVTaXplOwoJdGhpcy5zaXplKys7Cn07CgpQb2ludEF0dHJpYnV0ZXMucHJvdG90eXBlLmhhc0NvbG9ycyA9IGZ1bmN0aW9uKCl7Cglmb3IodmFyIG5hbWUgaW4gdGhpcy5hdHRyaWJ1dGVzKXsKCQl2YXIgcG9pbnRBdHRyaWJ1dGUgPSB0aGlzLmF0dHJpYnV0ZXNbbmFtZV07CgkJaWYocG9pbnRBdHRyaWJ1dGUubmFtZSA9PT0gUG9pbnRBdHRyaWJ1dGVOYW1lcy5DT0xPUl9QQUNLRUQpewoJCQlyZXR1cm4gdHJ1ZTsKCQl9Cgl9CgkKCXJldHVybiBmYWxzZTsKfTsKClBvaW50QXR0cmlidXRlcy5wcm90b3R5cGUuaGFzTm9ybWFscyA9IGZ1bmN0aW9uKCl7Cglmb3IodmFyIG5hbWUgaW4gdGhpcy5hdHRyaWJ1dGVzKXsKCQl2YXIgcG9pbnRBdHRyaWJ1dGUgPSB0aGlzLmF0dHJpYnV0ZXNbbmFtZV07CgkJaWYocG9pbnRBdHRyaWJ1dGUgPT09IFBvaW50QXR0cmlidXRlLk5PUk1BTF9GTE9BVFMpewoJCQlyZXR1cm4gdHJ1ZTsKCQl9Cgl9CgkKCXJldHVybiBmYWxzZTsKfTsKCgo="));
+Potree.workers.binaryDecoder = new Potree.WorkerManager(atob("Ci8vIGh0dHA6Ly9qc3BlcmYuY29tL3VpbnQ4YXJyYXktdnMtZGF0YXZpZXczLzMKZnVuY3Rpb24gQ3VzdG9tVmlldyhidWZmZXIpIHsKCXRoaXMuYnVmZmVyID0gYnVmZmVyOwoJdGhpcy51OCA9IG5ldyBVaW50OEFycmF5KGJ1ZmZlcik7CgkKCXZhciB0bXAgPSBuZXcgQXJyYXlCdWZmZXIoNCk7Cgl2YXIgdG1wZiA9IG5ldyBGbG9hdDMyQXJyYXkodG1wKTsKCXZhciB0bXB1OCA9IG5ldyBVaW50OEFycmF5KHRtcCk7CgkKCXRoaXMuZ2V0VWludDMyID0gZnVuY3Rpb24gKGkpIHsKCQlyZXR1cm4gKHRoaXMudThbaSszXSA8PCAyNCkgfCAodGhpcy51OFtpKzJdIDw8IDE2KSB8ICh0aGlzLnU4W2krMV0gPDwgOCkgfCB0aGlzLnU4W2ldOwoJfQoJCgl0aGlzLmdldFVpbnQxNiA9IGZ1bmN0aW9uIChpKSB7CgkJcmV0dXJuICh0aGlzLnU4W2krMV0gPDwgOCkgfCB0aGlzLnU4W2ldOwoJfQoJCgl0aGlzLmdldEZsb2F0ID0gZnVuY3Rpb24oaSl7CgkJdG1wdThbMF0gPSB0aGlzLnU4W2krMF07CgkJdG1wdThbMV0gPSB0aGlzLnU4W2krMV07CgkJdG1wdThbMl0gPSB0aGlzLnU4W2krMl07CgkJdG1wdThbM10gPSB0aGlzLnU4W2krM107CgkJCgkJcmV0dXJuIHRtcGZbMF07Cgl9CgkKCXRoaXMuZ2V0VWludDggPSBmdW5jdGlvbihpKXsKCQlyZXR1cm4gdGhpcy51OFtpXTsKCX0KfQoKUG90cmVlID0ge307CgoKb25tZXNzYWdlID0gZnVuY3Rpb24oZXZlbnQpewoJdmFyIGJ1ZmZlciA9IGV2ZW50LmRhdGEuYnVmZmVyOwoJdmFyIHBvaW50QXR0cmlidXRlcyA9IGV2ZW50LmRhdGEucG9pbnRBdHRyaWJ1dGVzOwoJdmFyIG51bVBvaW50cyA9IGJ1ZmZlci5ieXRlTGVuZ3RoIC8gcG9pbnRBdHRyaWJ1dGVzLmJ5dGVTaXplOwoJdmFyIGN2ID0gbmV3IEN1c3RvbVZpZXcoYnVmZmVyKTsKCXZhciB2ZXJzaW9uID0gbmV3IFBvdHJlZS5WZXJzaW9uKGV2ZW50LmRhdGEudmVyc2lvbik7Cgl2YXIgbWluID0gZXZlbnQuZGF0YS5taW47Cgl2YXIgbm9kZU9mZnNldCA9IGV2ZW50LmRhdGEub2Zmc2V0OwoJdmFyIHNjYWxlID0gZXZlbnQuZGF0YS5zY2FsZTsKCQoJdmFyIGF0dHJpYnV0ZUJ1ZmZlcnMgPSB7fTsKCQoJdmFyIG9mZnNldCA9IDA7Cglmb3IodmFyIGkgPSAwOyBpIDwgcG9pbnRBdHRyaWJ1dGVzLmF0dHJpYnV0ZXMubGVuZ3RoOyBpKyspewoJCXZhciBwb2ludEF0dHJpYnV0ZSA9IHBvaW50QXR0cmlidXRlcy5hdHRyaWJ1dGVzW2ldOwoJCgkJaWYocG9pbnRBdHRyaWJ1dGUubmFtZSA9PT0gUG9pbnRBdHRyaWJ1dGUuUE9TSVRJT05fQ0FSVEVTSUFOLm5hbWUpewoJCQkKCQkJdmFyIGJ1ZmYgPSBuZXcgQXJyYXlCdWZmZXIobnVtUG9pbnRzKjQqMyk7CgkJCXZhciBwb3NpdGlvbnMgPSBuZXcgRmxvYXQzMkFycmF5KGJ1ZmYpOwoJCQkKCQkJZm9yKHZhciBqID0gMDsgaiA8IG51bVBvaW50czsgaisrKXsKCQkJCWlmKHZlcnNpb24ubmV3ZXJUaGFuKCIxLjMiKSl7CgkJCQkJcG9zaXRpb25zWzMqaiswXSA9IChjdi5nZXRVaW50MzIob2Zmc2V0ICsgaipwb2ludEF0dHJpYnV0ZXMuYnl0ZVNpemUrMCkgKiBzY2FsZSkgKyBtaW5bMF07CgkJCQkJcG9zaXRpb25zWzMqaisxXSA9IChjdi5nZXRVaW50MzIob2Zmc2V0ICsgaipwb2ludEF0dHJpYnV0ZXMuYnl0ZVNpemUrNCkgKiBzY2FsZSkgKyBtaW5bMV07CgkJCQkJcG9zaXRpb25zWzMqaisyXSA9IChjdi5nZXRVaW50MzIob2Zmc2V0ICsgaipwb2ludEF0dHJpYnV0ZXMuYnl0ZVNpemUrOCkgKiBzY2FsZSkgKyBtaW5bMl07CgkJCQl9ZWxzZXsKCQkJCQlwb3NpdGlvbnNbMypqKzBdID0gY3YuZ2V0RmxvYXQoaipwb2ludEF0dHJpYnV0ZXMuYnl0ZVNpemUrMCkgKyBub2RlT2Zmc2V0WzBdOwoJCQkJCXBvc2l0aW9uc1szKmorMV0gPSBjdi5nZXRGbG9hdChqKnBvaW50QXR0cmlidXRlcy5ieXRlU2l6ZSs0KSArIG5vZGVPZmZzZXRbMV07CgkJCQkJcG9zaXRpb25zWzMqaisyXSA9IGN2LmdldEZsb2F0KGoqcG9pbnRBdHRyaWJ1dGVzLmJ5dGVTaXplKzgpICsgbm9kZU9mZnNldFsyXTsKCQkJCX0KCQkJfQoJCQkKCQkJYXR0cmlidXRlQnVmZmVyc1twb2ludEF0dHJpYnV0ZS5uYW1lXSA9IHsgYnVmZmVyOiBidWZmLCBhdHRyaWJ1dGU6IHBvaW50QXR0cmlidXRlfTsKCQkJCgkJfWVsc2UgaWYocG9pbnRBdHRyaWJ1dGUubmFtZSA9PT0gUG9pbnRBdHRyaWJ1dGUuQ09MT1JfUEFDS0VELm5hbWUpewoJCQkKCQkJdmFyIGJ1ZmYgPSBuZXcgQXJyYXlCdWZmZXIobnVtUG9pbnRzKjQqMyk7CgkJCXZhciBjb2xvcnMgPSBuZXcgRmxvYXQzMkFycmF5KGJ1ZmYpOwoJCQkKCQkJZm9yKHZhciBqID0gMDsgaiA8IG51bVBvaW50czsgaisrKXsKCQkJCWNvbG9yc1szKmorMF0gPSBjdi5nZXRVaW50OChvZmZzZXQgKyBqKnBvaW50QXR0cmlidXRlcy5ieXRlU2l6ZSArIDApIC8gMjU1OwoJCQkJY29sb3JzWzMqaisxXSA9IGN2LmdldFVpbnQ4KG9mZnNldCArIGoqcG9pbnRBdHRyaWJ1dGVzLmJ5dGVTaXplICsgMSkgLyAyNTU7CgkJCQljb2xvcnNbMypqKzJdID0gY3YuZ2V0VWludDgob2Zmc2V0ICsgaipwb2ludEF0dHJpYnV0ZXMuYnl0ZVNpemUgKyAyKSAvIDI1NTsKCQkJfQoJCQkKCQkJYXR0cmlidXRlQnVmZmVyc1twb2ludEF0dHJpYnV0ZS5uYW1lXSA9IHsgYnVmZmVyOiBidWZmLCBhdHRyaWJ1dGU6IHBvaW50QXR0cmlidXRlfTsKCQkJCgkJfWVsc2UgaWYocG9pbnRBdHRyaWJ1dGUubmFtZSA9PT0gUG9pbnRBdHRyaWJ1dGUuSU5URU5TSVRZLm5hbWUpewoKCQkJdmFyIGJ1ZmYgPSBuZXcgQXJyYXlCdWZmZXIobnVtUG9pbnRzKjQpOwoJCQl2YXIgaW50ZW5zaXRpZXMgPSBuZXcgRmxvYXQzMkFycmF5KGJ1ZmYpOwoJCQkKCQkJZm9yKHZhciBqID0gMDsgaiA8IG51bVBvaW50czsgaisrKXsKCQkJCXZhciBpbnRlbnNpdHkgPSBjdi5nZXRVaW50MTYob2Zmc2V0ICsgaipwb2ludEF0dHJpYnV0ZXMuYnl0ZVNpemUpOwoJCQkJaW50ZW5zaXRpZXNbal0gPSBpbnRlbnNpdHk7CgkJCX0KCQkJCgkJCWF0dHJpYnV0ZUJ1ZmZlcnNbcG9pbnRBdHRyaWJ1dGUubmFtZV0gPSB7IGJ1ZmZlcjogYnVmZiwgYXR0cmlidXRlOiBwb2ludEF0dHJpYnV0ZX07CgkJCgkJfWVsc2UgaWYocG9pbnRBdHRyaWJ1dGUubmFtZSA9PT0gUG9pbnRBdHRyaWJ1dGUuQ0xBU1NJRklDQVRJT04ubmFtZSl7CgoJCQl2YXIgYnVmZiA9IG5ldyBBcnJheUJ1ZmZlcihudW1Qb2ludHMqNCk7CgkJCXZhciBjbGFzc2lmaWNhdGlvbnMgPSBuZXcgRmxvYXQzMkFycmF5KGJ1ZmYpOwoJCQkKCQkJZm9yKHZhciBqID0gMDsgaiA8IG51bVBvaW50czsgaisrKXsKCQkJCXZhciBjbGFzc2lmaWNhdGlvbiA9IGN2LmdldFVpbnQ4KG9mZnNldCArIGoqcG9pbnRBdHRyaWJ1dGVzLmJ5dGVTaXplKTsKCQkJCWNsYXNzaWZpY2F0aW9uc1tqXSA9IGNsYXNzaWZpY2F0aW9uOwoJCQl9CgkJCQoJCQlhdHRyaWJ1dGVCdWZmZXJzW3BvaW50QXR0cmlidXRlLm5hbWVdID0geyBidWZmZXI6IGJ1ZmYsIGF0dHJpYnV0ZTogcG9pbnRBdHRyaWJ1dGV9OwoJCQoJCX0KCQkKCQlvZmZzZXQgKz0gcG9pbnRBdHRyaWJ1dGUuYnl0ZVNpemU7Cgl9CgkKCXZhciBpbmRpY2VzID0gbmV3IEFycmF5QnVmZmVyKG51bVBvaW50cyo0KTsKCXZhciBpSW5kaWNlcyA9IG5ldyBVaW50MzJBcnJheShpbmRpY2VzKTsKCWZvcih2YXIgaSA9IDA7IGkgPCBudW1Qb2ludHM7IGkrKyl7CgkJaUluZGljZXNbaV0gPSBpOwoJfQoJCgl2YXIgbWVzc2FnZSA9IHsKCQlhdHRyaWJ1dGVCdWZmZXJzOiBhdHRyaWJ1dGVCdWZmZXJzLAoJCWluZGljZXM6IGluZGljZXMKCX07CgkJCgl2YXIgdHJhbnNmZXJhYmxlcyA9IFtdOwoJCglmb3IodmFyIHByb3BlcnR5IGluIG1lc3NhZ2UuYXR0cmlidXRlQnVmZmVycyl7CgkJaWYobWVzc2FnZS5hdHRyaWJ1dGVCdWZmZXJzLmhhc093blByb3BlcnR5KHByb3BlcnR5KSl7CgkJCXRyYW5zZmVyYWJsZXMucHVzaChtZXNzYWdlLmF0dHJpYnV0ZUJ1ZmZlcnNbcHJvcGVydHldLmJ1ZmZlcik7CgkJfQoJfQoJCgl0cmFuc2ZlcmFibGVzLnB1c2gobWVzc2FnZS5pbmRpY2VzKTsKCQkKCXBvc3RNZXNzYWdlKG1lc3NhZ2UsIHRyYW5zZmVyYWJsZXMpOwoJCn07ClBvdHJlZS5WZXJzaW9uID0gZnVuY3Rpb24odmVyc2lvbil7Cgl0aGlzLnZlcnNpb24gPSB2ZXJzaW9uOwoJdmFyIHZtTGVuZ3RoID0gKHZlcnNpb24uaW5kZXhPZigiLiIpID09PSAtMSkgPyB2ZXJzaW9uLmxlbmd0aCA6IHZlcnNpb24uaW5kZXhPZigiLiIpOwoJdGhpcy52ZXJzaW9uTWFqb3IgPSBwYXJzZUludCh2ZXJzaW9uLnN1YnN0cigwLCB2bUxlbmd0aCkpOwoJdGhpcy52ZXJzaW9uTWlub3IgPSBwYXJzZUludCh2ZXJzaW9uLnN1YnN0cih2bUxlbmd0aCArIDEpKTsKCWlmKHRoaXMudmVyc2lvbk1pbm9yLmxlbmd0aCA9PT0gMCl7CgkJdGhpcy52ZXJzaW9uTWlub3IgPSAwOwoJfQoJCn07CgpQb3RyZWUuVmVyc2lvbi5wcm90b3R5cGUubmV3ZXJUaGFuID0gZnVuY3Rpb24odmVyc2lvbil7Cgl2YXIgdiA9IG5ldyBQb3RyZWUuVmVyc2lvbih2ZXJzaW9uKTsKCQoJaWYoIHRoaXMudmVyc2lvbk1ham9yID4gdi52ZXJzaW9uTWFqb3IpewoJCXJldHVybiB0cnVlOwoJfWVsc2UgaWYoIHRoaXMudmVyc2lvbk1ham9yID09PSB2LnZlcnNpb25NYWpvciAmJiB0aGlzLnZlcnNpb25NaW5vciA+IHYudmVyc2lvbk1pbm9yKXsKCQlyZXR1cm4gdHJ1ZTsKCX1lbHNlewoJCXJldHVybiBmYWxzZTsKCX0KfTsKClBvdHJlZS5WZXJzaW9uLnByb3RvdHlwZS5lcXVhbE9ySGlnaGVyID0gZnVuY3Rpb24odmVyc2lvbil7Cgl2YXIgdiA9IG5ldyBQb3RyZWUuVmVyc2lvbih2ZXJzaW9uKTsKCQoJaWYoIHRoaXMudmVyc2lvbk1ham9yID4gdi52ZXJzaW9uTWFqb3IpewoJCXJldHVybiB0cnVlOwoJfWVsc2UgaWYoIHRoaXMudmVyc2lvbk1ham9yID09PSB2LnZlcnNpb25NYWpvciAmJiB0aGlzLnZlcnNpb25NaW5vciA+PSB2LnZlcnNpb25NaW5vcil7CgkJcmV0dXJuIHRydWU7Cgl9ZWxzZXsKCQlyZXR1cm4gZmFsc2U7Cgl9Cn07CgpQb3RyZWUuVmVyc2lvbi5wcm90b3R5cGUudXBUbyA9IGZ1bmN0aW9uKHZlcnNpb24pewoJcmV0dXJuICF0aGlzLm5ld2VyVGhhbih2ZXJzaW9uKTsKfQoKCi8vZnVuY3Rpb24gUG9pbnRBdHRyaWJ1dGVOYW1lcygpewovLwkKLy99Cgp2YXIgUG9pbnRBdHRyaWJ1dGVOYW1lcyA9IHt9OwoKUG9pbnRBdHRyaWJ1dGVOYW1lcy5QT1NJVElPTl9DQVJURVNJQU4gCT0gMDsJLy8gZmxvYXQgeCwgeSwgejsKUG9pbnRBdHRyaWJ1dGVOYW1lcy5DT0xPUl9QQUNLRUQJCT0gMTsJLy8gYnl0ZSByLCBnLCBiLCBhOyAJSSA9IFswLDFdClBvaW50QXR0cmlidXRlTmFtZXMuQ09MT1JfRkxPQVRTXzEJCT0gMjsJLy8gZmxvYXQgciwgZywgYjsgCQlJID0gWzAsMV0KUG9pbnRBdHRyaWJ1dGVOYW1lcy5DT0xPUl9GTE9BVFNfMjU1CT0gMzsJLy8gZmxvYXQgciwgZywgYjsgCQlJID0gWzAsMjU1XQpQb2ludEF0dHJpYnV0ZU5hbWVzLk5PUk1BTF9GTE9BVFMJCT0gNDsgIAkvLyBmbG9hdCB4LCB5LCB6OwpQb2ludEF0dHJpYnV0ZU5hbWVzLkZJTExFUgkJCQk9IDU7ClBvaW50QXR0cmlidXRlTmFtZXMuSU5URU5TSVRZCQkJPSA2OwpQb2ludEF0dHJpYnV0ZU5hbWVzLkNMQVNTSUZJQ0FUSU9OCQk9IDc7CgovKioKICogU29tZSB0eXBlcyBvZiBwb3NzaWJsZSBwb2ludCBhdHRyaWJ1dGUgZGF0YSBmb3JtYXRzCiAqIAogKiBAY2xhc3MKICovCnZhciBQb2ludEF0dHJpYnV0ZVR5cGVzID0gewoJREFUQV9UWVBFX0RPVUJMRQk6IHtvcmRpbmFsIDogMCwgc2l6ZTogOH0sCglEQVRBX1RZUEVfRkxPQVQJCToge29yZGluYWwgOiAxLCBzaXplOiA0fSwKCURBVEFfVFlQRV9JTlQ4CQk6IHtvcmRpbmFsIDogMiwgc2l6ZTogMX0sCglEQVRBX1RZUEVfVUlOVDgJCToge29yZGluYWwgOiAzLCBzaXplOiAxfSwKCURBVEFfVFlQRV9JTlQxNgkJOiB7b3JkaW5hbCA6IDQsIHNpemU6IDJ9LAoJREFUQV9UWVBFX1VJTlQxNgk6IHtvcmRpbmFsIDogNSwgc2l6ZTogMn0sCglEQVRBX1RZUEVfSU5UMzIJCToge29yZGluYWwgOiA2LCBzaXplOiA0fSwKCURBVEFfVFlQRV9VSU5UMzIJOiB7b3JkaW5hbCA6IDcsIHNpemU6IDR9LAoJREFUQV9UWVBFX0lOVDY0CQk6IHtvcmRpbmFsIDogOCwgc2l6ZTogOH0sCglEQVRBX1RZUEVfVUlOVDY0CToge29yZGluYWwgOiA5LCBzaXplOiA4fQp9OwoKdmFyIGkgPSAwOwpmb3IodmFyIG9iaiBpbiBQb2ludEF0dHJpYnV0ZVR5cGVzKXsKCVBvaW50QXR0cmlidXRlVHlwZXNbaV0gPSBQb2ludEF0dHJpYnV0ZVR5cGVzW29ial07CglpKys7Cn0KCi8qKgogKiBBIHNpbmdsZSBwb2ludCBhdHRyaWJ1dGUgc3VjaCBhcyBjb2xvci9ub3JtYWwvLi4gYW5kIGl0cyBkYXRhIGZvcm1hdC9udW1iZXIgb2YgZWxlbWVudHMvLi4uIAogKiAKICogQGNsYXNzCiAqIEBwYXJhbSBuYW1lIAogKiBAcGFyYW0gdHlwZQogKiBAcGFyYW0gc2l6ZQogKiBAcmV0dXJucwogKi8KZnVuY3Rpb24gUG9pbnRBdHRyaWJ1dGUobmFtZSwgdHlwZSwgbnVtRWxlbWVudHMpewoJdGhpcy5uYW1lID0gbmFtZTsKCXRoaXMudHlwZSA9IHR5cGU7IAoJdGhpcy5udW1FbGVtZW50cyA9IG51bUVsZW1lbnRzOwoJdGhpcy5ieXRlU2l6ZSA9IHRoaXMubnVtRWxlbWVudHMgKiB0aGlzLnR5cGUuc2l6ZTsKfQoKUG9pbnRBdHRyaWJ1dGUuUE9TSVRJT05fQ0FSVEVTSUFOID0gbmV3IFBvaW50QXR0cmlidXRlKAoJCVBvaW50QXR0cmlidXRlTmFtZXMuUE9TSVRJT05fQ0FSVEVTSUFOLAoJCVBvaW50QXR0cmlidXRlVHlwZXMuREFUQV9UWVBFX0ZMT0FULCAzKTsKClBvaW50QXR0cmlidXRlLlJHQkFfUEFDS0VEID0gbmV3IFBvaW50QXR0cmlidXRlKAoJCVBvaW50QXR0cmlidXRlTmFtZXMuQ09MT1JfUEFDS0VELAoJCVBvaW50QXR0cmlidXRlVHlwZXMuREFUQV9UWVBFX0lOVDgsIDQpOwoKUG9pbnRBdHRyaWJ1dGUuQ09MT1JfUEFDS0VEID0gUG9pbnRBdHRyaWJ1dGUuUkdCQV9QQUNLRUQ7CgpQb2ludEF0dHJpYnV0ZS5SR0JfUEFDS0VEID0gbmV3IFBvaW50QXR0cmlidXRlKAoJCVBvaW50QXR0cmlidXRlTmFtZXMuQ09MT1JfUEFDS0VELAoJCVBvaW50QXR0cmlidXRlVHlwZXMuREFUQV9UWVBFX0lOVDgsIDMpOwoKUG9pbnRBdHRyaWJ1dGUuTk9STUFMX0ZMT0FUUyA9IG5ldyBQb2ludEF0dHJpYnV0ZSgKCQlQb2ludEF0dHJpYnV0ZU5hbWVzLk5PUk1BTF9GTE9BVFMsCgkJUG9pbnRBdHRyaWJ1dGVUeXBlcy5EQVRBX1RZUEVfRkxPQVQsIDMpOwoKUG9pbnRBdHRyaWJ1dGUuRklMTEVSXzFCID0gbmV3IFBvaW50QXR0cmlidXRlKAoJCVBvaW50QXR0cmlidXRlTmFtZXMuRklMTEVSLAoJCVBvaW50QXR0cmlidXRlVHlwZXMuREFUQV9UWVBFX1VJTlQ4LCAxKTsKCQkKUG9pbnRBdHRyaWJ1dGUuSU5URU5TSVRZID0gbmV3IFBvaW50QXR0cmlidXRlKAoJCVBvaW50QXR0cmlidXRlTmFtZXMuSU5URU5TSVRZLAoJCVBvaW50QXR0cmlidXRlVHlwZXMuREFUQV9UWVBFX1VJTlQxNiwgMSk7CQkKCQkKUG9pbnRBdHRyaWJ1dGUuQ0xBU1NJRklDQVRJT04gPSBuZXcgUG9pbnRBdHRyaWJ1dGUoCgkJUG9pbnRBdHRyaWJ1dGVOYW1lcy5DTEFTU0lGSUNBVElPTiwKCQlQb2ludEF0dHJpYnV0ZVR5cGVzLkRBVEFfVFlQRV9VSU5UOCwgMSk7CQoKLyoqCiAqIE9yZGVyZWQgbGlzdCBvZiBQb2ludEF0dHJpYnV0ZXMgdXNlZCB0byBpZGVudGlmeSBob3cgcG9pbnRzIGFyZSBhbGlnbmVkIGluIGEgYnVmZmVyLgogKiAKICogQGNsYXNzCiAqIAogKi8KZnVuY3Rpb24gUG9pbnRBdHRyaWJ1dGVzKHBvaW50QXR0cmlidXRlcyl7Cgl0aGlzLmF0dHJpYnV0ZXMgPSBuZXcgQXJyYXkoKTsKCXRoaXMuYnl0ZVNpemUgPSAwOwoJdGhpcy5zaXplID0gMDsKCQoJaWYocG9pbnRBdHRyaWJ1dGVzICE9IG51bGwpewoJCS8vIGRvZXMgbm90IHdvcmsgaW4gY2hyb21lIHYyNAovLwkJZm9yKHZhciBwb2ludEF0dHJpYnV0ZSBvZiBwb2ludEF0dHJpYnV0ZXMpewovLwkJCXRoaXMuYXR0cmlidXRlcy5wdXNoKHBvaW50QXR0cmlidXRlKTsKLy8JCQl0aGlzLmJ5dGVTaXplICs9IHBvaW50QXR0cmlidXRlLmJ5dGVTaXplOwovLwkJCXRoaXMuc2l6ZSsrOwovLwkJfQoJCQoJCWZvcih2YXIgaSA9IDA7IGkgPCBwb2ludEF0dHJpYnV0ZXMubGVuZ3RoOyBpKyspewoJCQl2YXIgcG9pbnRBdHRyaWJ1dGVOYW1lID0gcG9pbnRBdHRyaWJ1dGVzW2ldOwoJCQl2YXIgcG9pbnRBdHRyaWJ1dGUgPSBQb2ludEF0dHJpYnV0ZVtwb2ludEF0dHJpYnV0ZU5hbWVdOwoJCQl0aGlzLmF0dHJpYnV0ZXMucHVzaChwb2ludEF0dHJpYnV0ZSk7CgkJCXRoaXMuYnl0ZVNpemUgKz0gcG9pbnRBdHRyaWJ1dGUuYnl0ZVNpemU7CgkJCXRoaXMuc2l6ZSsrOwoJCX0KCX0KfQoKUG9pbnRBdHRyaWJ1dGVzLnByb3RvdHlwZS5hZGQgPSBmdW5jdGlvbihwb2ludEF0dHJpYnV0ZSl7Cgl0aGlzLmF0dHJpYnV0ZXMucHVzaChwb2ludEF0dHJpYnV0ZSk7Cgl0aGlzLmJ5dGVTaXplICs9IHBvaW50QXR0cmlidXRlLmJ5dGVTaXplOwoJdGhpcy5zaXplKys7Cn07CgpQb2ludEF0dHJpYnV0ZXMucHJvdG90eXBlLmhhc0NvbG9ycyA9IGZ1bmN0aW9uKCl7Cglmb3IodmFyIG5hbWUgaW4gdGhpcy5hdHRyaWJ1dGVzKXsKCQl2YXIgcG9pbnRBdHRyaWJ1dGUgPSB0aGlzLmF0dHJpYnV0ZXNbbmFtZV07CgkJaWYocG9pbnRBdHRyaWJ1dGUubmFtZSA9PT0gUG9pbnRBdHRyaWJ1dGVOYW1lcy5DT0xPUl9QQUNLRUQpewoJCQlyZXR1cm4gdHJ1ZTsKCQl9Cgl9CgkKCXJldHVybiBmYWxzZTsKfTsKClBvaW50QXR0cmlidXRlcy5wcm90b3R5cGUuaGFzTm9ybWFscyA9IGZ1bmN0aW9uKCl7Cglmb3IodmFyIG5hbWUgaW4gdGhpcy5hdHRyaWJ1dGVzKXsKCQl2YXIgcG9pbnRBdHRyaWJ1dGUgPSB0aGlzLmF0dHJpYnV0ZXNbbmFtZV07CgkJaWYocG9pbnRBdHRyaWJ1dGUgPT09IFBvaW50QXR0cmlidXRlLk5PUk1BTF9GTE9BVFMpewoJCQlyZXR1cm4gdHJ1ZTsKCQl9Cgl9CgkKCXJldHVybiBmYWxzZTsKfTsKCgo="));
 
 
 THREE.PerspectiveCamera.prototype.zoomTo = function( node, factor ){
@@ -594,6 +594,7 @@ Potree.BinaryLoader.prototype.parse = function(node, buffer){
 		pointAttributes: pointAttributes,
 		version: this.version.version,
 		min: [ node.boundingBox.min.x, node.boundingBox.min.y, node.boundingBox.min.z ],
+		max: [ node.boundingBox.max.x, node.boundingBox.max.y, node.boundingBox.max.z ],
 		offset: [node.pcoGeometry.offset.x, node.pcoGeometry.offset.y, node.pcoGeometry.offset.z],
 		scale: this.scale
 	};
@@ -1890,6 +1891,15 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 
 	this.update = function (delta) {
 		this.object.rotation.order = 'ZYX';
+		
+		var object = this.object;
+		
+		this.object = new THREE.Object3D();
+		this.object.position.copy(object.position);
+		this.object.rotation.copy(object.rotation);
+		this.object.updateMatrix();
+		this.object.updateMatrixWorld();
+	
 		var position = this.object.position;
 		
 		if(delta !== undefined){
@@ -1932,6 +1942,25 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 		this.object.quaternion.setFromRotationMatrix(res);
 		
 		this.object.rotation.x += phiDelta;
+		this.object.updateMatrixWorld();
+		
+		var proposeTransformEvent = {
+			type: "proposeTransform",
+			oldPosition: object.position,
+			newPosition: this.object.position,
+			objections: 0
+		};
+		this.dispatchEvent(proposeTransformEvent);
+		
+		if(proposeTransformEvent.objections > 0){
+			
+		}else{
+			object.position.copy(this.object.position);
+		}
+		
+		object.rotation.copy(this.object.rotation);
+		
+		this.object = object;
 
 		thetaDelta = 0;
 		phiDelta = 0;
@@ -2065,6 +2094,241 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 };
 
 THREE.FirstPersonControls.prototype = Object.create( THREE.EventDispatcher.prototype );
+//
+//
+// adapted from THREE.OrbitControls
+//
+
+Potree.OrbitControls = function ( object, domElement ) {
+	var scope = this;
+
+	this.object = object;
+	this.domElement = ( domElement !== undefined ) ? domElement : document;
+	
+	this.speed = {phi: 0, theta: 0};
+	this.zoomSpeed = 0;
+	this.panSpeed = new THREE.Vector2();
+	this.target = new THREE.Vector3();
+	this.mouse = new THREE.Vector2();
+	this.dollyStart = new THREE.Vector2();
+	
+	var STATE = { NONE : -1, ROTATE : 0, DOLLY : 1, PAN : 2, TOUCH_ROTATE : 3, TOUCH_DOLLY : 4, TOUCH_PAN : 5 };
+
+	var state = STATE.NONE;
+
+	this.update = function( delta ) {
+	
+		var up = new THREE.Vector3(0,1,0);
+		var dir = new THREE.Vector3().subVectors(this.target, object.position).normalize();
+		var right = new THREE.Vector3().crossVectors(dir, up).normalize();
+		var tilt = new THREE.Vector3().crossVectors(right, dir).normalize();
+		var radius = object.position.distanceTo(this.target);
+	
+		var p = new THREE.Vector3().subVectors(object.position, this.target);
+		
+		// apply rotation
+		var angle = Math.acos(-dir.dot(up, dir));
+		if(angle + this.speed.theta > 0){
+			p.applyAxisAngle(right, this.speed.theta);
+		}
+		
+		p.applyAxisAngle(up, this.speed.phi);
+		
+		
+		// apply zoom
+		var radius = radius + radius * 0.05 * this.zoomSpeed;
+		p.normalize().multiplyScalar(radius);
+		
+		// apply pan
+		var panX = right.clone().multiplyScalar( -500 * radius * delta * this.panSpeed.x);
+		var panY = tilt.clone().multiplyScalar( 500 * radius * delta * this.panSpeed.y);
+		
+		
+		var pos = new THREE.Vector3().addVectors(this.target, p);
+		pos.add(panX);
+		pos.add(panY);
+
+		
+		var proposeTransformEvent = {
+			type: "proposeTransform",
+			oldPosition: object.position,
+			newPosition: pos,
+			objections: 0
+		};
+		this.dispatchEvent(proposeTransformEvent);
+		
+		if(proposeTransformEvent.objections > 0){
+			this.speed.phi = 0;
+			this.speed.theta = 0;
+			this.zoomSpeed = 0;
+			this.panSpeed.multiplyScalar(0);
+		}else{
+			this.target.add(panX);
+			this.target.add(panY);
+			
+			object.position.copy(pos);
+			object.lookAt(this.target);
+			
+			var attenuation = (1 - delta) * 0.85;
+			this.speed.phi *= attenuation;
+			this.speed.theta *= attenuation;
+			this.zoomSpeed *= attenuation;
+			this.panSpeed.multiplyScalar(attenuation);
+		}
+		
+	};
+
+	function onMouseDown( event ) {
+		if ( event.button === 0 ) {
+			state = STATE.ROTATE;
+		} else if ( event.button === 1 ) {
+			state = STATE.DOLLY;
+		} else if ( event.button === 2 ) {
+			state = STATE.PAN;
+		}
+		
+		scope.mouse.set(event.clientX, event.clientY);
+		
+		scope.domElement.addEventListener( 'mousemove', onMouseMove, false );
+		scope.domElement.addEventListener( 'mouseup', onMouseUp, false );
+	}
+
+	function onMouseMove( event ) {
+		event.preventDefault();
+		
+		var element = scope.domElement === document ? scope.domElement.body : scope.domElement;
+		
+		var newMouse = new THREE.Vector2(event.clientX, event.clientY);
+		var diff = new THREE.Vector2().subVectors(newMouse, scope.mouse);
+		
+		if ( state === STATE.ROTATE ) {
+			scope.speed.phi -= diff.x / element.clientWidth;
+			scope.speed.theta -= diff.y / element.clientHeight;
+		} else if ( state === STATE.DOLLY ) {
+			scope.zoomSpeed = 20 * diff.y / element.clientHeight;
+		} else if ( state === STATE.PAN ) {
+			scope.panSpeed.x = diff.x / element.clientWidth;
+			scope.panSpeed.y = diff.y / element.clientHeight;
+		}
+		
+		scope.mouse.copy(newMouse);
+	}
+
+	function onMouseUp( /* event */ ) {
+		scope.domElement.removeEventListener( 'mousemove', onMouseMove, false );
+		scope.domElement.removeEventListener( 'mouseup', onMouseUp, false );
+		state = STATE.NONE;
+	}
+
+	function onMouseWheel( event ) {
+		
+		event.preventDefault();
+		
+		var delta = 0;
+
+		if ( event.wheelDelta !== undefined ) { // WebKit / Opera / Explorer 9
+
+			delta = event.wheelDelta;
+
+		} else if ( event.detail !== undefined ) { // Firefox
+
+			delta = - event.detail;
+
+		}
+		
+		scope.zoomSpeed = -Math.sign(delta);
+		
+	}
+
+	function onKeyDown( event ) {
+		
+	}
+
+	function touchstart( event ) {
+		if(event.touches.length === 1){
+			state = STATE.TOUCH_ROTATE;
+			
+			scope.mouse.set(event.touches[ 0 ].pageX, event.touches[ 0 ].pageY);
+		}else if(event.touches.length === 2){
+			state = STATE.TOUCH_DOLLY;
+			
+			var dx = event.touches[ 0 ].pageX - event.touches[ 1 ].pageX;
+			var dy = event.touches[ 0 ].pageY - event.touches[ 1 ].pageY;
+			var distance = Math.sqrt( dx * dx + dy * dy );
+			scope.dollyStart.set( 0, distance );
+		}else if(event.touches.length === 3){
+			state = STATE.TOUCH_PAN;
+			
+			scope.mouse.set(event.touches[ 0 ].pageX, event.touches[ 0 ].pageY);
+		}else{
+			state = STATE.NONE;
+		}
+	}
+
+	function touchmove( event ) {
+		event.preventDefault();
+		event.stopPropagation();
+		
+		var newMouse = new THREE.Vector2(event.touches[ 0 ].pageX, event.touches[ 0 ].pageY);
+		var diff = new THREE.Vector2().subVectors(newMouse, scope.mouse);
+		
+		var element = scope.domElement === document ? scope.domElement.body : scope.domElement;
+		
+		if(event.touches.length === 1){
+		
+			if ( state !== STATE.TOUCH_ROTATE ) return;
+			
+			scope.speed.phi -= diff.x / element.clientWidth;
+			scope.speed.theta -= diff.y / element.clientHeight;
+		}else if(event.touches.length === 2){
+		
+			if ( state !== STATE.TOUCH_DOLLY ) return;
+			
+			var dx = event.touches[ 0 ].pageX - event.touches[ 1 ].pageX;
+			var dy = event.touches[ 0 ].pageY - event.touches[ 1 ].pageY;
+			var distance = Math.sqrt( dx * dx + dy * dy );
+            
+			var dollyEnd = new THREE.Vector2( 0, distance );
+			var diff = new THREE.Vector2().subVectors( dollyEnd, scope.dollyStart );
+			
+			scope.zoomSpeed = -20 * diff.y / element.clientHeight;
+			//scope.zoomSpeed = distance;
+			
+			document.getElementById("lblMessage").innerHTML = scope.zoomSpeed;
+			
+			scope.dollyStart.copy( dollyEnd );
+			
+			//scope.zoomSpeed = 1;
+		}else if(event.touches.length === 3){
+			
+			if ( state !== STATE.TOUCH_PAN ) return;
+		
+			scope.panSpeed.x = 0.5 * diff.x / element.clientWidth;
+			scope.panSpeed.y = 0.5 * diff.y / element.clientHeight;
+		}else{
+			state = STATE.NONE;
+		}
+		
+		scope.mouse.copy(newMouse);
+	}
+
+	function touchend( event ) {
+		state = STATE.NONE;
+	}
+
+	this.domElement.addEventListener( 'contextmenu', function ( event ) { event.preventDefault(); }, false );
+	this.domElement.addEventListener( 'mousedown', onMouseDown, false );
+	this.domElement.addEventListener( 'mousewheel', onMouseWheel, false );
+
+	this.domElement.addEventListener( 'touchstart', touchstart, false );
+	this.domElement.addEventListener( 'touchend', touchend, false );
+	this.domElement.addEventListener( 'touchmove', touchmove, false );
+
+	window.addEventListener( 'keydown', onKeyDown, false );
+
+};
+
+Potree.OrbitControls.prototype = Object.create( THREE.EventDispatcher.prototype );
 
 
 /**
@@ -2115,6 +2379,13 @@ THREE.EarthControls = function ( camera, renderer, scene ) {
 
 	this.update = function (delta) {
 		var position = this.camera.position;
+		this.camera.updateMatrixWorld();	
+		
+		var proposal = new THREE.Object3D();
+		proposal.position.copy(this.camera.position);
+		proposal.rotation.copy(this.camera.rotation);
+		proposal.updateMatrix();
+		proposal.updateMatrixWorld();
 		
 		if(pivot){
 			if(state === STATE.DRAG){
@@ -2133,7 +2404,7 @@ THREE.EarthControls = function ( camera, renderer, scene ) {
 				
 				if(distanceToPlane > 0){
 					var newCamPos = new THREE.Vector3().subVectors(pivot, dir.clone().multiplyScalar(distanceToPlane));
-					this.camera.position.copy(newCamPos);
+					proposal.position.copy(newCamPos);
 				}
 				
 				
@@ -2144,7 +2415,6 @@ THREE.EarthControls = function ( camera, renderer, scene ) {
 				diff.x *= 0.3;
 				diff.y *= 0.2;
 			
-				this.camera.updateMatrixWorld();	
 
 				// do calculations on fresh nodes 
 				var p = new THREE.Object3D();
@@ -2186,17 +2456,33 @@ THREE.EarthControls = function ( camera, renderer, scene ) {
 				// apply changes to object
 				p.updateMatrixWorld();
 				
-				this.camera.position.copy(c.getWorldPosition());
-				this.camera.quaternion.copy(c.getWorldQuaternion());
+				proposal.position.copy(c.getWorldPosition());
+				proposal.quaternion.copy(c.getWorldQuaternion());
 
 			}
 			
+			var proposeTransformEvent = {
+				type: "proposeTransform",
+				oldPosition: this.camera.position,
+				newPosition: proposal.position,
+				objections: 0
+			};
+			this.dispatchEvent(proposeTransformEvent);
+			
+			if(proposeTransformEvent.objections > 0){
+				
+			}else{
+				this.camera.position.copy(proposal.position);
+				this.camera.rotation.copy(proposal.rotation);
+			}
 			
 			var wp = this.pivotNode.getWorldPosition().applyMatrix4(this.camera.matrixWorldInverse);
 			var w = Math.abs(wp.z  / 30);
 			var l = this.pivotNode.scale.length();
 			this.pivotNode.scale.multiplyScalar(w / l);
 		}
+		
+		
 			
 		mouseDelta.set(0,0);
 	};
@@ -2582,8 +2868,6 @@ Potree.PointCloudOctree = function(geometry, material){
 	this.pcoGeometry = geometry;
 	this.boundingBox = this.pcoGeometry.tightBoundingBox;
 	this.boundingSphere = this.boundingBox.getBoundingSphere();
-	//this.boundingBox = this.pcoGeometry.root.boundingBox;
-	//this.boundingSphere = this.boundingBox.getBoundingSphere();
 	this.material = material || new Potree.PointCloudMaterial();
 	this.visiblePointsTarget = 2*1000*1000;
 	this.level = 0;
@@ -2603,6 +2887,7 @@ Potree.PointCloudOctree = function(geometry, material){
 	this.pickTarget;
 	this.pickMaterial;
 	this.maxLevel = 0;
+	this.generateDEM = false;
 	
 	var rootProxy = new Potree.PointCloudOctreeProxyNode(this.pcoGeometry.root);
 	this.add(rootProxy);
@@ -2734,6 +3019,12 @@ Potree.PointCloudOctree.prototype.updatePointCloud = function(node, element, sta
 		node.boundingBoxNode.matrixWorld.copy(node.matrixWorld);
 	}else if(!this.showBoundingBox && node.boundingBoxNode){
 		node.boundingBoxNode.visible = false;
+	}
+	
+	if(this.generateDEM && node.level <= 2){
+		if(!node.dem){
+			node.dem = this.createDEM(node);
+		}
 	}
 	
 	for(var i = 0; i < node.children.length; i++){
@@ -3464,7 +3755,7 @@ Potree.PointCloudOctree.prototype.getVisibleExtent = function(){
  * TODO: only draw pixels that are actually read with readPixels(). 
  * 
  */
-var point = Potree.PointCloudOctree.prototype.pick = function(renderer, camera, ray, params){
+Potree.PointCloudOctree.prototype.pick = function(renderer, camera, ray, params){
 	// this function finds intersections by rendering point indices and then checking the point index at the mouse location.
 	// point indices are 3 byte and rendered to the RGB component.
 	// point cloud node indices are 1 byte and stored in the ALPHA component.
@@ -3660,6 +3951,325 @@ var point = Potree.PointCloudOctree.prototype.pick = function(renderer, camera, 
 		return null;
 	}
 }
+
+var demTime = 0;
+
+Potree.PointCloudOctree.prototype.createDEM = function(node){
+	
+	var start = new Date().getTime();
+
+
+	var world = node.matrixWorld;
+
+	var boundingBox = node.boundingBox.clone().applyMatrix4(world);
+	var bbSize = boundingBox.size();
+	var positions = node.geometry.attributes.position.array;
+	var demSize = 64;
+	var demMArray = new Array(demSize*demSize);
+	var dem = new Float32Array(demSize*demSize);
+	var n = positions.length / 3;
+	
+	var toWorld = function(dx, dy){
+		var x = (dx * bbSize.x) / (demSize - 1) + boundingBox.min.x;
+		var y = dem[dx + dy * demSize];
+		var z = (dy * bbSize.z) / (demSize - 1)+ boundingBox.min.z;
+		
+		return [x, y, z];
+	};
+	
+	var toDem = function(x, y){
+		var dx = parseInt(demSize * (x - boundingBox.min.x) / bbSize.x);
+		var dy = parseInt(demSize * (z - boundingBox.min.z) / bbSize.z);
+		dx = Math.min(dx, demSize - 1);
+		dy = Math.min(dy, demSize - 1);
+		
+		return [dx, dy];
+	};
+
+	for(var i = 0; i < n; i++){
+		var x = positions[3*i + 0];
+		var y = positions[3*i + 1];
+		var z = positions[3*i + 2];
+		
+		var worldPos = new THREE.Vector3(x,y,z).applyMatrix4(world);
+		
+		var dx = parseInt(demSize * (worldPos.x - boundingBox.min.x) / bbSize.x);
+		var dy = parseInt(demSize * (worldPos.z - boundingBox.min.z) / bbSize.z);
+		dx = Math.min(dx, demSize - 1);
+		dy = Math.min(dy, demSize - 1);
+		
+		var index = dx + dy * demSize;
+		if(!demMArray[index]){
+			demMArray[index] = [];
+		}
+		demMArray[index].push(worldPos.y);
+		
+		//if(dem[dx + dy * demSize] === 0){
+		//	dem[dx + dy * demSize] = worldPos.y;
+		//}else{
+		//	dem[dx + dy * demSize] = Math.max(dem[dx + dy * demSize], worldPos.y);
+		//}
+	}
+	
+	for(var i = 0; i < demMArray.length; i++){
+		var values = demMArray[i];
+		
+		if(!values){
+			dem[i] = 0;
+		}else if(values.length === 0){
+			dem[i] = 0;
+		}else{
+			var medianIndex = parseInt((values.length-1) / 2); 
+			dem[i] = values[medianIndex];
+		}
+	}
+	
+	var box2 = new THREE.Box2();
+	box2.expandByPoint(new THREE.Vector3(boundingBox.min.x, boundingBox.min.z));
+	box2.expandByPoint(new THREE.Vector3(boundingBox.max.x, boundingBox.max.z));
+	
+	var result = {
+		boundingBox: boundingBox,
+		boundingBox2D: box2,
+		dem: dem,
+		demSize: demSize
+	};
+	
+	
+	
+	//var geometry = new THREE.BufferGeometry();
+	//var vertices = new Float32Array((demSize-1)*(demSize-1)*2*3*3);
+	//var offset = 0;
+	//for(var i = 0; i < demSize-1; i++){
+	//	for(var j = 0; j < demSize-1; j++){
+	//		//var offset = 18*i + 18*j*demSize;
+	//		
+	//		var dx = i;
+	//		var dy = j;
+	//		
+	//		var v1 = toWorld(dx, dy);
+	//		var v2 = toWorld(dx+1, dy);
+	//		var v3 = toWorld(dx+1, dy+1);
+	//		var v4 = toWorld(dx, dy+1);
+	//		
+	//		vertices[offset+0] = v3[0];
+	//		vertices[offset+1] = v3[1];
+	//		vertices[offset+2] = v3[2];
+	//		
+	//		vertices[offset+3] = v2[0];
+	//		vertices[offset+4] = v2[1];
+	//		vertices[offset+5] = v2[2];
+	//		
+	//		vertices[offset+6] = v1[0];
+	//		vertices[offset+7] = v1[1];
+	//		vertices[offset+8] = v1[2];
+	//		
+	//		
+	//		vertices[offset+9 ] = v3[0];
+	//		vertices[offset+10] = v3[1];
+	//		vertices[offset+11] = v3[2];
+	//		
+	//		vertices[offset+12] = v1[0];
+	//		vertices[offset+13] = v1[1];
+	//		vertices[offset+14] = v1[2];
+	//		
+	//		vertices[offset+15] = v4[0];
+	//		vertices[offset+16] = v4[1];
+	//		vertices[offset+17] = v4[2];
+	//		         
+	//		        
+	//		
+	//		//var x = (dx * bbSize.min.x) / demSize + boundingBox.min.x;
+	//		//var y = (dy * bbSize.min.y) / demSize + boundingBox.min.y;
+	//		//var z = dem[dx + dy * demSize];
+	//		
+	//		offset += 18;
+	//		
+	//	}
+	//}
+	//
+	//geometry.addAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
+	//geometry.computeFaceNormals();
+	//geometry.computeVertexNormals();
+	//
+	//var material = new THREE.MeshNormalMaterial( { color: 0xff0000, shading: THREE.SmoothShading } );
+	//var mesh = new THREE.Mesh( geometry, material );
+	//
+	//if(node.level == 1){
+	//	scene.add(mesh);
+	//	
+	//	var demb = new Uint8Array(demSize*demSize*4);
+	//	for(var i = 0; i < demSize*demSize; i++){
+	//		demb[4*i + 0] = 255 * dem[i] / 6000;
+	//		demb[4*i + 1] = 255 * dem[i] / 6000;
+	//		demb[4*i + 2] = 255 * dem[i] / 6000;
+	//		demb[4*i + 3] = 255;
+	//	}
+	//
+	//	var img = pixelsArrayToImage(demb, demSize, demSize);
+	//	img.style.boder = "2px solid red";
+	//	var txt = document.createElement("div");
+	//	txt.innerHTML = node.name;
+	//	document.body.appendChild(txt);
+	//	document.body.appendChild(img);
+	//}
+
+
+	
+	//console.log(n);
+    //
+	var end = new Date().getTime();
+	var duration = end - start;
+	console.log(node.numPoints + " - " + duration);
+	
+	demTime += duration;
+	
+	
+	
+
+	return result;
+}
+
+Potree.PointCloudOctree.prototype.getDEMHeight = function(position){
+	var pos2 = new THREE.Vector2(position.x, position.z);
+	
+	var demHeight = function(dem){
+		var demSize = dem.demSize;
+		var box = dem.boundingBox2D;
+		var insideBox = box.containsPoint(pos2);
+		if(box.containsPoint(pos2)){
+			var uv = pos2.clone().sub(box.min).divide(box.size());
+			var xy = uv.clone().multiplyScalar(demSize);
+			
+			var demHeight = 0;
+			
+			if((xy.x > 0.5 && xy.x < demSize - 0.5) && (xy.y > 0.5 && xy.y < demSize - 0.5)){
+				var i = Math.floor(xy.x - 0.5);
+				var j = Math.floor(xy.y - 0.5);
+				i = (i === demSize - 1) ? (demSize-2) : i;
+				j = (j === demSize - 1) ? (demSize-2) : j;
+				
+				var u = xy.x - i - 0.5;
+				var v = xy.y - j - 0.5; 
+				
+				var index00 = i + j * demSize;
+				var index10 = (i+1) + j * demSize;
+				var index01 = i + (j+1) * demSize;
+				var index11 = (i+1) + (j+1) * demSize;
+				
+				var height00 = dem.dem[index00];
+				var height10 = dem.dem[index10];
+				var height01 = dem.dem[index01];
+				var height11 = dem.dem[index11];
+				
+				if(height00 === 0 || height10 === 0 || height01 === 0 || height11 === 0){
+					demHeight = null;
+				}else{
+				
+					var hx1 = height00 * (1-u) + height10 * u;
+					var hx2 = height01 * (1-u) + height11 * u;
+					
+					demHeight = hx1 * (1-v) + hx2 * v;
+				}
+				
+				var bla;
+			}else{
+				xy.x = Math.min(parseInt(Math.min(xy.x, demSize)), demSize-1);
+				xy.y = Math.min(parseInt(Math.min(xy.y, demSize)), demSize-1);
+			
+				var index = xy.x + xy.y * demSize;
+				demHeight = dem.dem[index];
+			}
+			
+			
+			return demHeight;
+		}
+		
+		return null;
+	};
+	
+	var height = null;
+	
+	var stack = [];
+	var chosenNode = null;
+	if(pointcloud.children[0].dem){
+		stack.push(pointcloud.children[0]);
+	}
+	while(stack.length > 0){
+		var node = stack.shift();
+		var dem = node.dem;
+		
+		var demSize = dem.demSize;
+		var box = dem.boundingBox2D;
+		var insideBox = box.containsPoint(pos2);
+		if(!box.containsPoint(pos2)){
+			continue;
+		}
+		
+		var dh = demHeight(dem);
+		if(!height){
+			height = dh;
+		}else if(dh != null && dh > 0){
+			height = dh;
+		}
+
+		if(node.level <= 2){
+		for(var i = 0; i < node.children.length; i++){
+			var child = node.children[i];
+			if(child.dem){
+				stack.push(child);
+			}
+		}
+		}
+	}
+	
+	
+	
+	return height;
+}
+
+Potree.PointCloudOctree.prototype.generateTerain = function(){
+	var bb = this.boundingBox.clone().applyMatrix4(this.matrixWorld);
+	
+	var width = 300;
+	var height = 300;
+	var geometry = new THREE.BufferGeometry();
+	var vertices = new Float32Array(width*height*3);
+	
+	var offset = 0;
+	for(var i = 0; i < width; i++){
+		for( var j = 0; j < height; j++){
+			var u = i / width;
+			var v = j / height;
+			
+			var x = u * bb.size().x + bb.min.x;
+			var z = v * bb.size().z + bb.min.z;
+			
+			var y = this.getDEMHeight(new THREE.Vector3(x, 0, z));
+			if(!y){
+				y = 0;
+			}
+			
+			vertices[offset + 0] = x;
+			vertices[offset + 1] = y;
+			vertices[offset + 2] = z;
+			
+			//var sm = new THREE.Mesh(sg);
+			//sm.position.set(x,y,z);
+			//scene.add(sm);
+			
+			offset += 3;
+		}
+	}
+	
+	geometry.addAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
+	var material = new THREE.PointCloudMaterial({size: 20, color: 0x00ff00});
+	
+	var pc = new THREE.PointCloud(geometry, material);
+	scene.add(pc);
+	
+};
+
 
 var nodesLoadTimes = {};
 
@@ -4197,6 +4807,8 @@ Potree.TextSprite = function(text){
 	THREE.Object3D.call(this);
 
 	var texture = new THREE.Texture();
+	texture.minFilter = THREE.LinearFilter;
+	texture.magFilter = THREE.LinearFilter;
 	var spriteMaterial = new THREE.SpriteMaterial( 
 		{ map: texture, useScreenCoordinates: false} );
 	
@@ -4282,6 +4894,8 @@ Potree.TextSprite.prototype.update = function(){
 	
 								  
 	var texture = new THREE.Texture(canvas); 
+	texture.minFilter = THREE.LinearFilter;
+	texture.magFilter = THREE.LinearFilter;
 	texture.needsUpdate = true;	
 	
 	//var spriteMaterial = new THREE.SpriteMaterial( 
@@ -6739,27 +7353,13 @@ Potree.TransformationTool = function(scene, camera, renderer){
 	this.domElement.addEventListener( 'mouseup', onMouseUp, true );
 };
 
-Potree.VolumeTool = function(scene, camera, renderer){
-	
-	var scope = this;
-	this.enabled = false;
-	
-	this.scene = scene;
-	this.sceneVolume = new THREE.Scene();
-	this.camera = camera;
-	this.renderer = renderer;
-	this.domElement = renderer.domElement;
-	this.mouse = {x: 0, y: 0};
-	
-	this.volumes = [];
-	
-	var STATE = {
-		DEFAULT: 0,
-		INSERT_VOLUME: 1
-		
-	};
-	
-	var state = STATE.DEFAULT;
+Potree.Volume = function(args){
+
+	THREE.Object3D.call( this );
+
+	args = args || {};
+	this._clip = args.clip || false;
+	this._modifiable = args.modifiable || true;
 	
 	var boxGeometry = new THREE.BoxGeometry(1, 1, 1);
 	boxGeometry.computeBoundingBox();
@@ -6792,96 +7392,129 @@ Potree.VolumeTool = function(scene, camera, renderer){
 	boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, 0.5, -0.5));
 	boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, -0.5, -0.5));
 	boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, 0.5, -0.5));
-	
-	function Volume(){
-	
-		THREE.Object3D.call( this );
-	
-		this._clip = false;
-	
-		this.dimension = new THREE.Vector3(1,1,1);
-		var material = new THREE.MeshBasicMaterial( {color: 0x00ff00, transparent: true, opacity: 0.3} );
-		this.box = new THREE.Mesh( boxGeometry, material);
-		this.box.geometry.computeBoundingBox();
-		this.boundingBox = this.box.geometry.boundingBox;
-		this.add(this.box);
-		
-		this.frame = new THREE.Line( boxFrameGeometry, new THREE.LineBasicMaterial({color: 0x000000}));
-		this.frame.mode = THREE.LinePieces;
-		this.add(this.frame);
-		
-		this.label = new Potree.TextSprite("0");
-		this.label.setBorderColor({r:0, g:255, b:0, a:0.0});
-		this.label.setBackgroundColor({r:0, g:255, b:0, a:0.0});
-		this.label.material.depthTest = false;
-		this.label.position.y -= 0.5;
-		this.add(this.label);
-		
-		var v = this;
-		this.label.updateMatrixWorld = function(){
-			var volumeWorldPos = new THREE.Vector3();
-			volumeWorldPos.setFromMatrixPosition( v.matrixWorld );
-			v.label.position.copy(volumeWorldPos);
-			v.label.updateMatrix();
-			v.label.matrixWorld.copy(v.label.matrix);
-			v.label.matrixWorldNeedsUpdate = false;
-			
-			for ( var i = 0, l = v.label.children.length; i < l; i ++ ) {
-				v.label.children[ i ].updateMatrixWorld( true );
-			}
-		};
-		
-		this.setDimension = function(x,y,z){
-			this.dimension.set(x,y,z);
-			this.box.scale.set(x,y,z);
-			this.frame.scale.set(x,y,z);
-		};
 
-		this.volume = function(){
-			return Math.abs(this.scale.x * this.scale.y * this.scale.z);
-			//return Math.abs(this.dimension.x * this.dimension.y * this.dimension.z);
-		};
+	this.dimension = new THREE.Vector3(1,1,1);
+	var material = new THREE.MeshBasicMaterial( {color: 0x00ff00, transparent: true, opacity: 0.3} );
+	this.box = new THREE.Mesh( boxGeometry, material);
+	this.box.geometry.computeBoundingBox();
+	this.boundingBox = this.box.geometry.boundingBox;
+	this.add(this.box);
+	
+	this.frame = new THREE.Line( boxFrameGeometry, new THREE.LineBasicMaterial({color: 0x000000}));
+	this.frame.mode = THREE.LinePieces;
+	this.add(this.frame);
+	
+	this.label = new Potree.TextSprite("0");
+	this.label.setBorderColor({r:0, g:255, b:0, a:0.0});
+	this.label.setBackgroundColor({r:0, g:255, b:0, a:0.0});
+	this.label.material.depthTest = false;
+	this.label.position.y -= 0.5;
+	this.add(this.label);
+	
+	var v = this;
+	this.label.updateMatrixWorld = function(){
+		var volumeWorldPos = new THREE.Vector3();
+		volumeWorldPos.setFromMatrixPosition( v.matrixWorld );
+		v.label.position.copy(volumeWorldPos);
+		v.label.updateMatrix();
+		v.label.matrixWorld.copy(v.label.matrix);
+		v.label.matrixWorldNeedsUpdate = false;
 		
-		this.update = function(){
-			this.boundingBox = this.box.geometry.boundingBox;
-		};
-		
-		this.raycast = function(raycaster, intersects){
-			
-			var is = [];
-			this.box.raycast(raycaster, is);
-		
-			if(is.length > 0){
-				var I = is[0];
-				intersects.push({
-					distance: I.distance,
-					object: this,
-					point: I.point.clone()
-				});
-			}
-		};
-		
+		for ( var i = 0, l = v.label.children.length; i < l; i ++ ) {
+			v.label.children[ i ].updateMatrixWorld( true );
+		}
+	};
+	
+	this.setDimension = function(x,y,z){
+		this.dimension.set(x,y,z);
+		this.box.scale.set(x,y,z);
+		this.frame.scale.set(x,y,z);
 	};
 
-	Volume.prototype = Object.create( THREE.Object3D.prototype );
+	this.volume = function(){
+		return Math.abs(this.scale.x * this.scale.y * this.scale.z);
+		//return Math.abs(this.dimension.x * this.dimension.y * this.dimension.z);
+	};
 	
-	Object.defineProperty(Volume.prototype, "clip", {
-		get: function(){
-			return this._clip;
-		},
+	this.update = function(){
+		this.boundingBox = this.box.geometry.boundingBox;
 		
-		set: function(value){
-			this._clip = value;
-			
-			if(this._clip){
-				this.box.visible = false;
-				this.label.visible = false;
-			}else{
-				this.box.visible = true;
-				this.label.visible = true;
-			}
+		if(this._clip){
+			this.box.visible = false;
+			this.label.visible = false;
+		}else{
+			this.box.visible = true;
+			this.label.visible = true;
 		}
-	});
+	};
+	
+	this.raycast = function(raycaster, intersects){
+		
+		var is = [];
+		this.box.raycast(raycaster, is);
+	
+		if(is.length > 0){
+			var I = is[0];
+			intersects.push({
+				distance: I.distance,
+				object: this,
+				point: I.point.clone()
+			});
+		}
+	};
+	
+	this.update();
+	
+};
+
+Potree.Volume.prototype = Object.create( THREE.Object3D.prototype );
+
+Object.defineProperty(Potree.Volume.prototype, "clip", {
+	get: function(){
+		return this._clip;
+	},
+	
+	set: function(value){
+		this._clip = value;
+		
+		this.update();
+	}
+});
+
+Object.defineProperty(Potree.Volume.prototype, "modifiable", {
+	get: function(){
+		return this._modifiable;
+	},
+	
+	set: function(value){
+		this._modifiable = value;
+		
+		this.update();
+	}
+});
+
+
+Potree.VolumeTool = function(scene, camera, renderer){
+	
+	var scope = this;
+	this.enabled = false;
+	
+	this.scene = scene;
+	this.sceneVolume = new THREE.Scene();
+	this.camera = camera;
+	this.renderer = renderer;
+	this.domElement = renderer.domElement;
+	this.mouse = {x: 0, y: 0};
+	
+	this.volumes = [];
+	
+	var STATE = {
+		DEFAULT: 0,
+		INSERT_VOLUME: 1
+		
+	};
+	
+	var state = STATE.DEFAULT;	
 	
 	
 	function onMouseMove(event){
@@ -6914,7 +7547,7 @@ Potree.VolumeTool = function(scene, camera, renderer){
 		}else if(event.which === 1){
 			var I = getHoveredElement();
 			
-			if(I){
+			if(I && I.object.modifiable){
 				transformationTool.setTargets([I.object]);
 			}
 		}
@@ -7055,19 +7688,32 @@ Potree.VolumeTool = function(scene, camera, renderer){
 		var args = args || {};
 		var clip = args.clip || false;
 		
-		this.activeVolume = new Volume();
+		this.activeVolume = new Potree.Volume();
 		this.activeVolume.clip = clip;
 		this.sceneVolume.add(this.activeVolume);
+		this.volumes.push(this.activeVolume);
 	}
 	
 	this.finishInsertion = function(){
-		this.volumes.push(this.activeVolume);
 		transformationTool.setTargets([this.activeVolume]);
 		
 		this.activeVolume = null;
 		state = STATE.DEFAULT;
-		
 	}
+	
+	this.addVolume = function(volume){
+		this.sceneVolume.add(volume);
+		this.volumes.push(volume);
+	};
+	
+	this.removeVolume = function(volume){
+		this.sceneVolume.remove(volume);
+		var index = this.volumes.indexOf(volume);
+		if(index >= 0){
+			this.volumes.splice(index, 1);
+		}
+	};
+	
 	
 	this.render = function(){
 	

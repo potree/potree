@@ -25,6 +25,7 @@ var paths = {
 		"src/loader/LasLazLoader.js",
 		"src/materials/PointCloudMaterial.js",
 		"src/FirstPersonControls.js",
+		"src/OrbitControls.js",
 		"src/EarthControls.js",
 		"src/LRU.js",
 		"src/PointCloudOctree.js",

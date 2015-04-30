@@ -622,10 +622,6 @@ void main() {
 	
 			controls = earthControls;
 			controls.enabled = true;
-			
-			//if(pointcloud){
-			//	controls.moveSpeed = pointcloud.boundingSphere.radius / 2;
-			//}
 		}
 		
 		function useFPSControls(){
@@ -647,7 +643,7 @@ void main() {
 				controls.enabled = false;
 			}
 			if(!orbitControls){
-				orbitControls = new THREE.OrbitControls(camera, renderer.domElement);
+				orbitControls = new Potree.OrbitControls(camera, renderer.domElement);
 			}
 			
 			controls = orbitControls;

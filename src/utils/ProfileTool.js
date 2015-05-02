@@ -468,6 +468,13 @@ Potree.ProfileTool = function(scene, camera, renderer){
 		}
 	}
 	
+	function onDoubleClick(event){
+		if(scope.activeProfile && state === STATE.INSERT){
+			scope.activeProfile.removeMarker(scope.activeProfile.points.length-1);
+			scope.finishInsertion();
+		}
+	}
+	
 	function onMouseUp(event){
 		
 		if(scope.dragstart){
@@ -582,10 +589,11 @@ Potree.ProfileTool = function(scene, camera, renderer){
 			var profile = this.profiles[i];
 			for(var j = 0; j < profile.spheres.length; j++){
 				var sphere = profile.spheres[j];
-				var wp = sphere.getWorldPosition().applyMatrix4(this.camera.matrixWorldInverse);
-				var pp = new THREE.Vector4(wp.x, wp.y, wp.z).applyMatrix4(camera.projectionMatrix);
-				var w = Math.abs((wp.z  / 60)); // * (2 - pp.z / pp.w);
-				sphere.scale.set(w, w, w);
+				
+				var distance = scope.camera.position.distanceTo(sphere.getWorldPosition());
+				var pr = projectedRadius(1, scope.camera.fov * Math.PI / 180, distance, renderer.domElement.clientHeight);
+				var scale = (15 / pr);
+				sphere.scale.set(scale, scale, scale);
 			}
 		}
 	
@@ -600,6 +608,7 @@ Potree.ProfileTool = function(scene, camera, renderer){
 	};
 	
 	this.domElement.addEventListener( 'click', onClick, false);
+	this.domElement.addEventListener( 'dblclick', onDoubleClick, false);
 	this.domElement.addEventListener( 'mousemove', onMouseMove, false );
 	this.domElement.addEventListener( 'mousedown', onMouseDown, false );
 	this.domElement.addEventListener( 'mouseup', onMouseUp, true );

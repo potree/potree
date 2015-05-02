@@ -474,17 +474,20 @@ Potree.AngleTool = function(scene, camera, renderer){
 			var measurement = measurements[i];
 			for(j = 0; j < measurement.spheres.length; j++){
 				var sphere = measurement.spheres[j];
-				wp = sphere.getWorldPosition().applyMatrix4(this.camera.matrixWorldInverse);
-				w = Math.abs((wp.z  / 60));
-				sphere.scale.set(w, w, w);
+				
+				var distance = scope.camera.position.distanceTo(sphere.getWorldPosition());
+				var pr = projectedRadius(1, scope.camera.fov * Math.PI / 180, distance, renderer.domElement.clientHeight);
+				var scale = (15 / pr);
+				sphere.scale.set(scale, scale, scale);
 			}
 			
 			for(j = 0; j < measurement.angleLabels.length; j++){
 				var label = measurement.angleLabels[j];
-				wp = label.getWorldPosition().applyMatrix4(this.camera.matrixWorldInverse);
-				w = Math.abs(wp.z  / 5);
-				var l = label.scale.length();
-				label.scale.multiplyScalar(w / l);
+				
+				var distance = scope.camera.position.distanceTo(label.getWorldPosition());
+				var pr = projectedRadius(1, scope.camera.fov * Math.PI / 180, distance, renderer.domElement.clientHeight);
+				var scale = (70 / pr);
+				label.scale.set(scale, scale, scale);
 			}
             
 		}

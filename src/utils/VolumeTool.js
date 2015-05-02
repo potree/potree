@@ -317,13 +317,12 @@ Potree.VolumeTool = function(scene, camera, renderer){
 			
 			var capacity = volume.volume();
 			var msg = Potree.utils.addCommas(capacity.toFixed(1)) + "³";
-			
-			var wp = label.getWorldPosition().applyMatrix4(this.camera.matrixWorldInverse);
-			var pp = new THREE.Vector4(wp.x, wp.y, wp.z).applyMatrix4(this.camera.projectionMatrix);
-			var w = Math.abs(wp.z  / 5); 
 			label.setText(msg);
-			var l = label.scale.length();
-			label.scale.multiplyScalar(w / l);
+			
+			var distance = scope.camera.position.distanceTo(label.getWorldPosition());
+			var pr = projectedRadius(1, scope.camera.fov * Math.PI / 180, distance, renderer.domElement.clientHeight);
+			var scale = (70 / pr);
+			label.scale.set(scale, scale, scale);
 		}
 		
 	};

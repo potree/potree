@@ -46,7 +46,6 @@ Potree.Measure = function(){
 	};
 	
 	var dragEvent = function(event){
-	
 		var tool = event.tool;
 		var dragstart = tool.dragstart;
 		var mouse = tool.mouse;
@@ -201,7 +200,7 @@ Potree.Measure = function(){
 				
 				edgeLabel.position.copy(center);
 				edgeLabel.setText(distance.toFixed(2));
-				edgeLabel.visible = this.showDistances && (index < lastIndex || this.closed) && this.points.length >= 2;
+				edgeLabel.visible = this.showDistances && (index < lastIndex || this.closed) && this.points.length >= 2 && distance > 0;
 			}
 		}
 		
@@ -366,6 +365,12 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 		}
 	}
 	
+	this.getState = function(){
+		// TODO remove
+	
+		return state;
+	}
+	
 	function onMouseDown(event){
 		if(event.which === 1){
 		
@@ -390,6 +395,13 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 			
 		}else if(event.which === 3){	
 			onRightClick(event);
+		}
+	}
+	
+	function onDoubleClick(event){
+		if(scope.activeMeasurement && state === STATE.INSERT){
+			scope.activeMeasurement.removeMarker(scope.activeMeasurement.points.length-1);
+			scope.finishInsertion();
 		}
 	}
 	
@@ -551,6 +563,7 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 	};
 	
 	this.domElement.addEventListener( 'click', onClick, false);
+	this.domElement.addEventListener( 'dblclick', onDoubleClick, false);
 	this.domElement.addEventListener( 'mousemove', onMouseMove, false );
 	this.domElement.addEventListener( 'mousedown', onMouseDown, false );
 	this.domElement.addEventListener( 'mouseup', onMouseUp, true );

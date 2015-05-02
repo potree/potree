@@ -84,9 +84,11 @@ void main() {
 	<script src="../src/loader/BinaryLoader.js"></script>
 	<script src="../src/materials/PointCloudMaterial.js"></script>
 	<script src="../src/EarthControls.js"></script>
+	<script src="../src/OrbitControls.js"></script>
 	<script src="../src/utils/ProfileTool.js"></script>
 	<script src="../src/utils/MeasuringTool.js"></script>
 	<script src="../src/utils/VolumeTool.js"></script>
+	<script src="../src/utils/AngleTool.js"></script>
 	<script src="../src/utils.js"></script>
 	<script src="../src/LRU.js"></script>
 	<script src="../src/TextSprite.js"></script>
@@ -131,11 +133,13 @@ void main() {
 			cameraTarget: 	null, 			// other options: cameraTarget: [0,0,0],
 			sizeType: 		"Adaptive",		// other options: "Fixed", "Attenuated"
 			quality: 		"Squares", 		// other options: "Circles", "Interpolation", "Splats"
+			fov: 			75, 		// other options: "Circles", "Interpolation", "Splats"
 			material: 		"RGB", 			// other options: "Height", "Intensity", "Classification"
 			pointLimit: 	1,				// max number of points in millions
-			navigation: 	"Earth",		// other options: "Earth", "Orbit", "Flight"
+			navigation: 	"Orbit",		// other options: "Earth", "Orbit", "Flight"
 		};
 	
+		var fov = sceneProperties.fov;
 		var pointSize = 1.0 ;
 		var pointCountTarget = sceneProperties.pointLimit;
 		var opacity = 1;
@@ -230,6 +234,7 @@ void main() {
 			params = {
 				"points(m)": pointCountTarget,
 				PointSize: pointSize,
+				"FOV": sceneProperties.fov,
 				"opacity": opacity,
 				"SizeType" : sceneProperties.sizeType,
 				"show octree" : false,
@@ -252,6 +257,11 @@ void main() {
 			var pPointSize = fAppearance.add(params, 'PointSize', 0, 3);
 			pPointSize.onChange(function(value){
 				pointSize = value;
+			});
+			
+			var fFOV = fAppearance.add(params, 'FOV', 20, 100);
+			fFOV.onChange(function(value){
+				fov = value;
 			});
 			
 			var pOpacity = fAppearance.add(params, 'opacity', 0, 1);
@@ -360,7 +370,6 @@ void main() {
 		}
 		
 		function initThree(){
-			var fov = 75;
 			var width = elRenderArea.clientWidth;
 			var height = elRenderArea.clientHeight;
 			var aspect = width / height;
@@ -587,6 +596,8 @@ void main() {
 			    document.getElementById("lblNumVisiblePoints").style.display = "none";
 			    stats.domElement.style.display = "none";
 			}
+			
+			camera.fov = fov;
 			
 			if(controls){
 				controls.update(clock.getDelta());

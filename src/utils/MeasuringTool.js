@@ -57,7 +57,7 @@ Potree.Measure = function(){
 			scope.setPosition(index, I);
 		}
 		
-		event.event.stopImmediatePropagation();
+		//event.event.stopImmediatePropagation();
 	};
 	
 	var dropEvent = function(event){
@@ -69,9 +69,9 @@ Potree.Measure = function(){
 		
 		// sphere
 		var sphere = new THREE.Mesh(sphereGeometry, createSphereMaterial());
-		sphere.addEventListener("mousemove", moveEvent);
-		sphere.addEventListener("mouseleave", leaveEvent);
-		sphere.addEventListener("mousedrag", dragEvent);
+		sphere.addEventListener("move", moveEvent);
+		sphere.addEventListener("leave", leaveEvent);
+		sphere.addEventListener("drag", dragEvent);
 		sphere.addEventListener("drop", dropEvent);
 		
 		this.add(sphere);
@@ -312,14 +312,15 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 		}
 	};
 	
-	function onMouseMove(event){		
+	function onMouseMove(event){
+	
 		var rect = scope.domElement.getBoundingClientRect();
 		scope.mouse.x = ((event.clientX - rect.left) / scope.domElement.clientWidth) * 2 - 1;
         scope.mouse.y = -((event.clientY - rect.top) / scope.domElement.clientHeight) * 2 + 1;
 		
 		if(scope.dragstart){
 			var arg = {
-				type: "mousedrag", 
+				type: "drag", 
 				event: event, 
 				tool: scope
 			};
@@ -339,10 +340,10 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 			
 			if(I){
 				
-				I.object.dispatchEvent({type: "mousemove", target: I.object, event: event});
+				I.object.dispatchEvent({type: "move", target: I.object, event: event});
 				
 				if(scope.hoveredElement && scope.hoveredElement !== I.object){
-					scope.hoveredElement.dispatchEvent({type: "mouseleave", target: scope.hoveredElement, event: event});
+					scope.hoveredElement.dispatchEvent({type: "leave", target: scope.hoveredElement, event: event});
 				}
 				
 				scope.hoveredElement = I.object;
@@ -350,7 +351,7 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 			}else{
 			
 				if(scope.hoveredElement){
-					scope.hoveredElement.dispatchEvent({type: "mouseleave", target: scope.hoveredElement, event: event});
+					scope.hoveredElement.dispatchEvent({type: "leave", target: scope.hoveredElement, event: event});
 				}
 				
 				scope.hoveredElement = null;
@@ -372,6 +373,7 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 	}
 	
 	function onMouseDown(event){
+
 		if(event.which === 1){
 		
 			if(state !== STATE.DEFAULT){
@@ -399,6 +401,16 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 	}
 	
 	function onDoubleClick(event){
+		
+		// fix move event after double click
+		// see: http://stackoverflow.com/questions/8125165/event-listener-for-dblclick-causes-event-for-mousemove-to-not-work-and-show-a-ci
+		if (window.getSelection){
+			window.getSelection().removeAllRanges();
+		}else if (document.selection){
+			document.selection.empty();
+		}
+		
+		
 		if(scope.activeMeasurement && state === STATE.INSERT){
 			scope.activeMeasurement.removeMarker(scope.activeMeasurement.points.length-1);
 			scope.finishInsertion();
@@ -406,7 +418,7 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 	}
 	
 	function onMouseUp(event){
-		
+
 		if(scope.dragstart){
 			scope.dragstart.object.dispatchEvent({type: "drop", event: event});
 			scope.dragstart = null;

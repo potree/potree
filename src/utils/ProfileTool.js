@@ -469,6 +469,15 @@ Potree.ProfileTool = function(scene, camera, renderer){
 	}
 	
 	function onDoubleClick(event){
+		
+		// fix move event after double click
+		// see: http://stackoverflow.com/questions/8125165/event-listener-for-dblclick-causes-event-for-mousemove-to-not-work-and-show-a-ci
+		if (window.getSelection){
+			window.getSelection().removeAllRanges();
+		}else if (document.selection){
+			document.selection.empty();
+		}
+	
 		if(scope.activeProfile && state === STATE.INSERT){
 			scope.activeProfile.removeMarker(scope.activeProfile.points.length-1);
 			scope.finishInsertion();

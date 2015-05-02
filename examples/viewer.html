@@ -85,6 +85,7 @@ void main() {
 	<script src="../src/materials/PointCloudMaterial.js"></script>
 	<script src="../src/EarthControls.js"></script>
 	<script src="../src/OrbitControls.js"></script>
+	<script src="../src/FirstPersonControls.js"></script>
 	<script src="../src/utils/ProfileTool.js"></script>
 	<script src="../src/utils/MeasuringTool.js"></script>
 	<script src="../src/utils/VolumeTool.js"></script>
@@ -678,6 +679,11 @@ void main() {
 					var demHeight = pointcloud.getDEMHeight(event.newPosition);
 					if(event.newPosition.y < demHeight){
 						event.objections++;
+						
+						var counterProposal = event.newPosition.clone();
+						counterProposal.y = demHeight;
+						
+						event.counterProposals.push(counterProposal);
 					}
 				});
 			}
@@ -702,6 +708,11 @@ void main() {
 					var demHeight = pointcloud.getDEMHeight(event.newPosition);
 					if(event.newPosition.y < demHeight){
 						event.objections++;
+						
+						var counterProposal = event.newPosition.clone();
+						counterProposal.y = demHeight;
+						
+						event.counterProposals.push(counterProposal);
 					}
 				});
 			}

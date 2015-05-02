@@ -279,14 +279,30 @@ Potree.OrbitControls = function ( object, domElement ) {
 
 		position.copy( this.target ).add( offset );
 		
+		// send transformation proposal to listeners
 		var proposeTransformEvent = {
 			type: "proposeTransform",
 			oldPosition: this.object.position,
 			newPosition: position,
-			objections: 0
+			objections: 0,
+			counterProposals: []
 		};
 		this.dispatchEvent(proposeTransformEvent);
 		
+		// check some counter proposals if transformation wasn't accepted
+		while(proposeTransformEvent.objections > 0 ){
+			
+			if(proposeTransformEvent.counterProposals.length > 0){
+				var cp = proposeTransformEvent.counterProposals;
+				position.copy(cp[0]);
+				
+				proposeTransformEvent.objections = 0;
+				proposeTransformEvent.counterProposals = [];
+			}
+		}
+		
+		
+		// apply transformation, if accepted
 		if(proposeTransformEvent.objections > 0){
 			thetaDelta = 0;
 			phiDelta = 0;

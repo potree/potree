@@ -13,9 +13,6 @@ Potree.HeightProfile = function(){
 	this.height = 20;
 	this._modifiable = true;
 	
-	this.camera = camera;
-	this.renderer = renderer;
-	
 	var sphereGeometry = new THREE.SphereGeometry(0.4, 10, 10);
 	var lineColor = new THREE.Color( 0xff0000 );
 	

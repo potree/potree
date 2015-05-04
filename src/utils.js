@@ -226,7 +226,7 @@ function projectedRadius(radius, fov, distance, screenHeight){
 };
 	
 	
-function topView(){
+Potree.utils.topView = function(camera, controls, pointcloud){
 	camera.position.set(0, 1, 0);
 	camera.rotation.set(-Math.PI / 2, 0, 0);
 	camera.zoomTo(pointcloud, 1);
@@ -238,7 +238,7 @@ function topView(){
 	}	
 }
 
-function frontView(){
+Potree.utils.frontView = function(camera, controls, pointcloud){
 	camera.position.set(0, 0, 1);
 	camera.rotation.set(0, 0, 0);
 	camera.zoomTo(pointcloud, 1);
@@ -251,7 +251,7 @@ function frontView(){
 }
 
 
-function leftView(){
+Potree.utils.leftView = function(camera, controls, pointcloud){
 	camera.position.set(-1, 0, 0);
 	camera.rotation.set(0, -Math.PI / 2, 0);
 	camera.zoomTo(pointcloud, 1);
@@ -263,7 +263,7 @@ function leftView(){
 	}
 }
 
-function rightView(){
+Potree.utils.rightView = function(camera, controls, pointcloud){
 	camera.position.set(1, 0, 0);
 	camera.rotation.set(0, Math.PI / 2, 0);
 	camera.zoomTo(pointcloud, 1);

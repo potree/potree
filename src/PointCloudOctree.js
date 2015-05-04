@@ -1315,7 +1315,7 @@ Potree.PointCloudOctree.prototype.createDEM = function(node){
     //
 	var end = new Date().getTime();
 	var duration = end - start;
-	console.log(node.numPoints + " - " + duration);
+	//console.log(node.numPoints + " - " + duration);
 	
 	demTime += duration;
 	
@@ -1387,8 +1387,8 @@ Potree.PointCloudOctree.prototype.getDEMHeight = function(position){
 	
 	var stack = [];
 	var chosenNode = null;
-	if(pointcloud.children[0].dem){
-		stack.push(pointcloud.children[0]);
+	if(this.children[0].dem){
+		stack.push(this.children[0]);
 	}
 	while(stack.length > 0){
 		var node = stack.shift();

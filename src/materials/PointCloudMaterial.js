@@ -8,6 +8,24 @@
 // http://stackoverflow.com/questions/3717226/radius-of-projected-sphere
 //
 
+Potree.Gradients = {
+
+	RAINBOW: [
+		[0, new THREE.Color(0.278, 0, 0.714)],
+		[1/6, new THREE.Color(0, 0, 1)],
+		[2/6, new THREE.Color(0, 1, 1)],
+		[3/6, new THREE.Color(0, 1, 0)],
+		[4/6, new THREE.Color(1, 1, 0)],
+		[5/6, new THREE.Color(1, 0.64, 0)],
+		[1, new THREE.Color(1, 0, 0)]
+	],
+	GRAYSCALE: [
+		[0, new THREE.Color(0,0,0)],
+		[1, new THREE.Color(1,1,1)]
+	]
+
+};
+
 
 Potree.PointSizeType = {
 	FIXED: 0,
@@ -64,8 +82,9 @@ Potree.PointCloudMaterial = function(parameters){
 	this._weighted = false;
 	this._blendDepth = 0.1;
 	this._depthMap;
+	this._gradient = Potree.Gradients.RAINBOW;
+	this.gradientTexture = Potree.PointCloudMaterial.generateGradientTexture(this._gradient);
 	
-	this.gradientTexture = Potree.PointCloudMaterial.generateGradient();
 	
 	var attributes = {};
 	var uniforms = {
@@ -258,6 +277,20 @@ Potree.PointCloudMaterial.prototype.setClipBoxes = function(clipBoxes){
 	
 	
 };
+
+
+Object.defineProperty(Potree.PointCloudMaterial.prototype, "gradient", {
+	get: function(){
+		return this._gradient;
+	},
+	set: function(value){
+		if(this._gradient !== value){
+			this._gradient = value;
+			this.gradientTexture = Potree.PointCloudMaterial.generateGradientTexture(this._gradient);
+			this.uniforms.gradient.value = this.gradientTexture;
+		}
+	}
+});
 
 Object.defineProperty(Potree.PointCloudMaterial.prototype, "spacing", {
 	get: function(){
@@ -547,7 +580,7 @@ Object.defineProperty(Potree.PointCloudMaterial.prototype, "pcIndex", {
 	}
 });
 
-Potree.PointCloudMaterial.generateGradient = function() {
+Potree.PointCloudMaterial.generateGradientTexture = function(gradient) {
 	var size = 64;
 
 	// create canvas
@@ -560,17 +593,15 @@ Potree.PointCloudMaterial.generateGradient = function() {
 
 	// draw gradient
 	context.rect( 0, 0, size, size );
-	var gradient = context.createLinearGradient( 0, 0, size, size );
-    gradient.addColorStop(0, "#4700b6");
-    gradient.addColorStop(1/6, 'blue');
-    gradient.addColorStop(2/6, 'aqua');
-    gradient.addColorStop(3/6, 'green')
-    gradient.addColorStop(4/6, 'yellow');
-    gradient.addColorStop(5/6, 'orange');
-	gradient.addColorStop(1, 'red');
- 
+	var ctxGradient = context.createLinearGradient( 0, 0, size, size );
+	
+	for(var i = 0;i < gradient.length; i++){
+		var step = gradient[i];
+		
+		ctxGradient.addColorStop(step[0], "#" + step[1].getHexString());
+	} 
     
-	context.fillStyle = gradient;
+	context.fillStyle = ctxGradient;
 	context.fill();
 	
 	var texture = new THREE.Texture( canvas );

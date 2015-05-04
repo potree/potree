@@ -50,6 +50,7 @@ Potree.PointCloudMaterial = function(parameters){
 	
 	var pointSize = parameters.size || 1.0;
 	var minSize = parameters.minSize || 1.0;
+	var maxSize = parameters.maxSize || 50.0;
 	var nodeSize = 1.0;
 	
 	this._pointSizeType = Potree.PointSizeType.ATTENUATED;
@@ -78,6 +79,7 @@ Potree.PointCloudMaterial = function(parameters){
 		opacity:   		{ type: "f", value: 1.0 },
 		size:   		{ type: "f", value: 10 },
 		minSize:   		{ type: "f", value: 2 },
+		maxSize:   		{ type: "f", value: 2 },
 		nodeSize:		{ type: "f", value: nodeSize },
 		heightMin:		{ type: "f", value: 0.0 },
 		heightMax:		{ type: "f", value: 1.0 },
@@ -101,6 +103,7 @@ Potree.PointCloudMaterial = function(parameters){
 		vertexColors: THREE.VertexColors,
 		size: pointSize,
 		minSize: minSize,
+		maxSize: maxSize,
 		nodeSize: nodeSize,
 		pcIndex: 0,
 		alphaTest: 0.9
@@ -490,6 +493,15 @@ Object.defineProperty(Potree.PointCloudMaterial.prototype, "minSize", {
 	}
 });
 
+Object.defineProperty(Potree.PointCloudMaterial.prototype, "maxSize", {
+	get: function(){
+		return this.uniforms.maxSize.value;
+	},
+	set: function(value){
+		this.uniforms.maxSize.value = value;
+	}
+});
+
 Object.defineProperty(Potree.PointCloudMaterial.prototype, "heightMin", {
 	get: function(){
 		return this.uniforms.heightMin.value;
@@ -605,6 +617,7 @@ Potree.PointCloudMaterial.vs_points = [
  "uniform float intensityMax;                                                        ",
  "uniform float size;                                                                ",
  "uniform float minSize;                                                             ",
+ "uniform float maxSize;                                                             ",
  "uniform float nodeSize;                                                            ",
  "uniform vec3 uColor;                                                               ",
  "uniform float opacity;                                                                                   ",
@@ -784,7 +797,7 @@ Potree.PointCloudMaterial.vs_points = [
  "  #endif                                                                           ",
  "                                                                                    ",
  "	gl_PointSize = max(minSize, gl_PointSize);                                       ",
- "	gl_PointSize = min(50.0, gl_PointSize);                                          ",
+ "	gl_PointSize = min(maxSize, gl_PointSize);                                          ",
  "                                                                                     ",
  "  vRadius = gl_PointSize / projFactor;                                                                                   ",
  "                                                                                     ",

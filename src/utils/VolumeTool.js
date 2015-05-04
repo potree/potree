@@ -359,6 +359,13 @@ Potree.VolumeTool = function(scene, camera, renderer){
 		}
 	};
 	
+	this.reset = function(){
+		for(var i = this.volumes.length - 1; i >= 0; i--){
+			var volume = this.volumes[i];
+			this.removeVolume(volume);
+		}
+	}
+	
 	
 	this.render = function(){
 	

@@ -589,6 +589,13 @@ Potree.ProfileTool = function(scene, camera, renderer){
 		this.dispatchEvent({"type": "profile_removed", profile: profile});
 	}
 	
+	this.reset = function(){
+		for(var i = this.profiles.length - 1; i >= 0; i--){
+			var profile = this.profiles[i];
+			this.removeProfile(profile);
+		}
+	}
+	
 	this.update = function(){
 		
 		for(var i = 0; i < this.profiles.length; i++){

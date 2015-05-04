@@ -511,7 +511,7 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 	};
 	
 	this.addMeasurement = function(measurement){
-		this.sceneMeasurement.add(measurement);
+		this.sceneMeasurement.add(measurxement);
 		this.measurements.push(measurement);
 	};
 	
@@ -520,6 +520,13 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 		var index = this.measurements.indexOf(measurement);
 		if(index >= 0){
 			this.measurements.splice(index, 1);
+		}
+	};
+	
+	this.reset = function(){
+		for(var i = this.measurements.length - 1; i >= 0; i--){
+			var measurement = this.measurements[i];
+			this.removeMeasurement(measurement);
 		}
 	};
 	

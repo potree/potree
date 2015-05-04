@@ -9,7 +9,6 @@
 //
 
 Potree.Gradients = {
-
 	RAINBOW: [
 		[0, new THREE.Color(0.278, 0, 0.714)],
 		[1/6, new THREE.Color(0, 0, 1)],
@@ -23,7 +22,23 @@ Potree.Gradients = {
 		[0, new THREE.Color(0,0,0)],
 		[1, new THREE.Color(1,1,1)]
 	]
+};
 
+Potree.Classification = {
+	"DEFAULT": {
+		0: 			new THREE.Color(0.5, 0.5,0.5),
+		1: 			new THREE.Color(0.5, 0.5,0.5),
+		2: 			new THREE.Color(0.63, 0.32, 0.18),
+		3: 			new THREE.Color(0.0, 1.0, 0.0),
+		4: 			new THREE.Color(0.0, 0.8, 0.0),
+		5: 			new THREE.Color(0.0, 0.6, 0.0 ),
+		6: 			new THREE.Color(1.0, 0.66, 0.0),
+		7:			new THREE.Color(1.0, 0, 1.0   ),
+		8: 			new THREE.Color(1.0, 0, 0.0   ),
+		9: 			new THREE.Color(0.0, 0.0, 1.0 ),
+		12:			new THREE.Color(1.0, 1.0, 0.0 ),
+		"DEFAULT": 	new THREE.Color(0.3, 0.6, 0.6 )
+	}
 };
 
 
@@ -83,33 +98,38 @@ Potree.PointCloudMaterial = function(parameters){
 	this._blendDepth = 0.1;
 	this._depthMap;
 	this._gradient = Potree.Gradients.RAINBOW;
+	this._classification = Potree.Classification.DEFAULT;
 	this.gradientTexture = Potree.PointCloudMaterial.generateGradientTexture(this._gradient);
+	this.classificationTexture = Potree.PointCloudMaterial.generateClassificationTexture(this._classification);
+	
+	
 	
 	
 	var attributes = {};
 	var uniforms = {
-		spacing:		{ type: "f", value: 1.0 },
-		fov:			{ type: "f", value: 1.0 },
-		screenWidth:	{ type: "f", value: 1.0 },
-		screenHeight:	{ type: "f", value: 1.0 },
-		near:			{ type: "f", value: 0.1 },
-		far:			{ type: "f", value: 1.0 },
-		uColor:   		{ type: "c", value: new THREE.Color( 0xff0000 ) },
-		opacity:   		{ type: "f", value: 1.0 },
-		size:   		{ type: "f", value: 10 },
-		minSize:   		{ type: "f", value: 2 },
-		maxSize:   		{ type: "f", value: 2 },
-		nodeSize:		{ type: "f", value: nodeSize },
-		heightMin:		{ type: "f", value: 0.0 },
-		heightMax:		{ type: "f", value: 1.0 },
-		intensityMin:	{ type: "f", value: 0.0 },
-		intensityMax:	{ type: "f", value: 1.0 },
-		visibleNodes:	{ type: "t", value: this.visibleNodesTexture },
-		pcIndex:   		{ type: "f", value: 0 },
-		gradient: 		{ type: "t", value: this.gradientTexture },
-		clipBoxes:		{ type: "Matrix4fv", value: [] },
-		blendDepth:		{ type: "f", value: this._blendDepth },
-		depthMap: 		{ type: "t", value: null },
+		spacing:			{ type: "f", value: 1.0 },
+		fov:				{ type: "f", value: 1.0 },
+		screenWidth:		{ type: "f", value: 1.0 },
+		screenHeight:		{ type: "f", value: 1.0 },
+		near:				{ type: "f", value: 0.1 },
+		far:				{ type: "f", value: 1.0 },
+		uColor:   			{ type: "c", value: new THREE.Color( 0xff0000 ) },
+		opacity:   			{ type: "f", value: 1.0 },
+		size:   			{ type: "f", value: 10 },
+		minSize:   			{ type: "f", value: 2 },
+		maxSize:   			{ type: "f", value: 2 },
+		nodeSize:			{ type: "f", value: nodeSize },
+		heightMin:			{ type: "f", value: 0.0 },
+		heightMax:			{ type: "f", value: 1.0 },
+		intensityMin:		{ type: "f", value: 0.0 },
+		intensityMax:		{ type: "f", value: 1.0 },
+		visibleNodes:		{ type: "t", value: this.visibleNodesTexture },
+		pcIndex:   			{ type: "f", value: 0 },
+		gradient: 			{ type: "t", value: this.gradientTexture },
+		classificationLUT: 	{ type: "t", value: this.classificationTexture },
+		clipBoxes:			{ type: "Matrix4fv", value: [] },
+		blendDepth:			{ type: "f", value: this._blendDepth },
+		depthMap: 			{ type: "t", value: null },
 	};
 	
 	
@@ -288,6 +308,19 @@ Object.defineProperty(Potree.PointCloudMaterial.prototype, "gradient", {
 			this._gradient = value;
 			this.gradientTexture = Potree.PointCloudMaterial.generateGradientTexture(this._gradient);
 			this.uniforms.gradient.value = this.gradientTexture;
+		}
+	}
+});
+
+Object.defineProperty(Potree.PointCloudMaterial.prototype, "classification", {
+	get: function(){
+		return this._classification;
+	},
+	set: function(value){
+		if(this._classification !== value){
+			this._classification = value;
+			this.classificationTexture = Potree.PointCloudMaterial.generateClassificationTexture(this._classification);
+			this.uniforms.classificationLUT.value = this.classificationTexture;
 		}
 	}
 });
@@ -609,7 +642,39 @@ Potree.PointCloudMaterial.generateGradientTexture = function(gradient) {
 	textureImage = texture.image;
 
 	return texture;
-}
+};
+
+Potree.PointCloudMaterial.generateClassificationTexture  = function(classification){
+	var width = 256;
+	var height = 256;
+	var map = THREE.ImageUtils.generateDataTexture( width, height, new THREE.Color() );
+	map.magFilter = THREE.NearestFilter;
+	var data = map.image.data;
+	
+	for(var x = 0; x < width; x++){
+		for(var y = 0; y < height; y++){
+			var u = 2 * (x / width) - 1;
+			var v = 2 * (y / height) - 1;
+			
+			var i = x + width*y;
+			
+			var color;
+			if(classification[x]){
+				color = classification[x];
+			}else{
+				color = classification.DEFAULT;
+			}
+			
+			
+			data[3*i+0] = 255 * color.r;
+			data[3*i+1] = 255 * color.g;
+			data[3*i+2] = 255 * color.b;
+		}
+	}
+	
+	return map;
+	
+};
 
 Potree.PointCloudMaterial.vs_points = [
  "precision mediump float;                                                           ",
@@ -656,6 +721,7 @@ Potree.PointCloudMaterial.vs_points = [
  "                                                                                   ",
  "uniform sampler2D visibleNodes;                                                    ",
  "uniform sampler2D gradient;                                                        ",
+ "uniform sampler2D classificationLUT;                                                        ",
  "uniform sampler2D depthMap;                                                        ",
  "                                                                                   ",
  "varying float vOpacity;                                                                                   ",
@@ -728,34 +794,10 @@ Potree.PointCloudMaterial.vs_points = [
  "#endif                                                                             ",
  "                                                                                   ",
  "vec3 classificationColor(float classification){                                                                                   ",
- "	vec3 color = vec3(0.0, 0.0, 0.0);                                                                                   ",
  "  float c = mod(classification, 16.0);                                                                                   ",
- "	if(c == 0.0){ ",
- "	   color = vec3(0.5, 0.5, 0.5); ",
- "	}else if(c == 1.0){ ",
- "	   color = vec3(0.5, 0.5, 0.5); ",
- "	}else if(c == 2.0){ ",
- "	   color = vec3(0.63, 0.32, 0.18); ",
- "	}else if(c == 3.0){ ",
- "	   color = vec3(0.0, 1.0, 0.0); ",
- "	}else if(c == 4.0){ ",
- "	   color = vec3(0.0, 0.8, 0.0); ",
- "	}else if(c == 5.0){ ",
- "	   color = vec3(0.0, 0.6, 0.0); ",
- "	}else if(c == 6.0){ ",
- "	   color = vec3(1.0, 0.66, 0.0); ",
- "	}else if(c == 7.0){ ",
- "	   color = vec3(1.0, 0, 1.0); ",
- "	}else if(c == 8.0){ ",
- "	   color = vec3(1.0, 0, 0.0); ",
- "	}else if(c == 9.0){ ",
- "	   color = vec3(0.0, 0.0, 1.0); ",
- "	}else if(c == 12.0){ ",
- "	   color = vec3(1.0, 1.0, 0.0); ",
- "	}else{ ",
- "	   color = vec3(0.3, 0.6, 0.6); ",
- "	} ",
- "	                                                                                   ",
+ "	vec2 uv = vec2(c / 255.0, 0.5);                                                                                   ",
+ "	vec3 color = texture2D(classificationLUT, uv).rgb;                                                                                   ",
+ "                                                                                   ",
  "	return color;                                                                                   ",
  "}                                                                                   ",
  "                                                                                   ",

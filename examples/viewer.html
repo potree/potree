@@ -89,7 +89,6 @@ void main() {
 	<script src="../src/utils/ProfileTool.js"></script>
 	<script src="../src/utils/MeasuringTool.js"></script>
 	<script src="../src/utils/VolumeTool.js"></script>
-	<script src="../src/utils/AngleTool.js"></script>
 	<script src="../src/utils.js"></script>
 	<script src="../src/LRU.js"></script>
 	<script src="../src/TextSprite.js"></script>
@@ -109,7 +108,7 @@ void main() {
 		<img src="../resources/icons/orbit_controls.png" onclick="useOrbitControls()" title="Orbit Controls"/>
 		<img src="../resources/icons/focus.png" onclick="camera.zoomTo(pointcloud)" title="focus on pointcloud"/>
 		<img src="../resources/icons/flip_y_z.png" onclick="flipYZ()" title="flip y and z coordinates"/>
-		<img src="../resources/icons/angle.png" onclick="angleTool.setEnabled(true)" title="angle measurements"/>
+		<img src="../resources/icons/angle.png" onclick="measuringTool.startInsertion({showDistances: false, showAngles: true, showArea: false, closed: true, maxMarkers: 3})" title="angle measurements"/>
 		<img src="../resources/icons/distance.png" onclick="measuringTool.startInsertion({showDistances: true, showArea: false, closed: false})" title="distance measurements"/>
 		<img src="../resources/icons/area.png" onclick="measuringTool.startInsertion({showDistances: true, showArea: true, closed: true})" title="area measurements"/>
 		<img src="../resources/icons/volume.png" onclick="volumeTool.startInsertion()" title="volume measurements"/>
@@ -139,6 +138,20 @@ void main() {
 			pointLimit: 	1,				// max number of points in millions
 			navigation: 	"Orbit",		// other options: "Earth", "Orbit", "Flight"
 		};
+		
+		//var sceneProperties = {
+		//	path: 			"../../../../pointclouds/opentopography/CA13_SAN_SIM/selection_converted/cloud.js",
+		//	path: 			"../../../../pointclouds/opentopography/CA13_SAN_SIM/att_test/cloud.js",
+		//	//path: 			"../../../../pointclouds/pix4d/matterhorn/cloud.js",
+		//	cameraPosition: null, 			// other options: cameraPosition: [10,10,10],
+		//	cameraTarget: 	null, 			// other options: cameraTarget: [0,0,0],
+		//	sizeType: 		"Adaptive",		// other options: "Fixed", "Attenuated"
+		//	quality: 		"Squares", 		// other options: "Circles", "Interpolation", "Splats"
+		//	fov: 			75, 		// other options: "Circles", "Interpolation", "Splats"
+		//	material: 		"RGB", 			// other options: "Height", "Intensity", "Classification"
+		//	pointLimit: 	1,				// max number of points in millions
+		//	navigation: 	"Earth",		// other options: "Earth", "Orbit", "Flight"
+		//};
 	
 		var fov = sceneProperties.fov;
 		var pointSize = 1.0 ;
@@ -178,7 +191,6 @@ void main() {
 		var clock = new THREE.Clock();
 		var showSkybox = false;
 		var measuringTool;
-		var angleTool;
 		var volumeTool;
 		var transformationTool;
 		var referenceFrame;
@@ -465,7 +477,6 @@ void main() {
 			
 			measuringTool = new Potree.MeasuringTool(scenePointCloud, camera, renderer);
 			profileTool = new Potree.ProfileTool(scenePointCloud, camera, renderer);
-			angleTool = new Potree.AngleTool(scenePointCloud, camera, renderer);
 			volumeTool = new Potree.VolumeTool(scenePointCloud, camera, renderer);
 			transformationTool = new Potree.TransformationTool(scenePointCloud, camera, renderer);
 			
@@ -771,7 +782,6 @@ void main() {
 			
 			renderer.clearDepth();
 			measuringTool.render();
-			angleTool.render();
 			transformationTool.render();
 		}
 		
@@ -930,7 +940,6 @@ void main() {
 				
 				renderer.clearDepth();
 				measuringTool.render();
-				angleTool.render();
 				transformationTool.render();
 					
 			}

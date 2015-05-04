@@ -34,7 +34,6 @@ var paths = {
 		"src/Features.js",
 		"src/TextSprite.js",
 		"src/Version.js",
-		"src/utils/AngleTool.js",
 		"src/utils/MeasuringTool.js",
 		"src/utils/ProfileTool.js",
 		"src/utils/TransformationTool.js",

@@ -8,11 +8,13 @@ Potree.Measure = function(){
 	this._showDistances = true;
 	this._showArea = true;
 	this._closed = true;
+	this.maxMarkers = Number.MAX_SAFE_INTEGER;
 	
 	this.spheres = [];
 	this.edges = [];
 	this.sphereLabels = [];
 	this.edgeLabels = [];
+	this.angleLabels = [];
 	
 	this.areaLabel = new Potree.TextSprite("");
 	this.areaLabel.setBorderColor({r:0, g:255, b:0, a:0.0});
@@ -101,6 +103,17 @@ Potree.Measure = function(){
 			this.edgeLabels.push(edgeLabel);
 			this.add(edgeLabel);
 		}
+		
+		{ // angle labels
+			var angleLabel = new Potree.TextSprite();
+            angleLabel.setBorderColor({r:0, g:255, b:0, a:0.0});
+            angleLabel.setBackgroundColor({r:0, g:255, b:0, a:0.0});
+            angleLabel.material.depthTest = false;
+            angleLabel.material.opacity = 1;
+			angleLabel.visible = false;
+			this.angleLabels.push(angleLabel);
+			this.add(angleLabel);
+		}
 
 		
 		this.setPosition(this.points.length-1, point);
@@ -144,6 +157,12 @@ Potree.Measure = function(){
 		return Math.abs(area / 2);
 	};
 	
+	this.getAngleBetweenLines = function(cornerPoint, point1, point2) {
+        var v1 = new THREE.Vector3().subVectors(point1, cornerPoint);
+        var v2 = new THREE.Vector3().subVectors(point2, cornerPoint);
+        return v1.angleTo(v2);
+    };
+	
 	this.update = function(){
 	
 		if(this.points.length === 0){
@@ -167,9 +186,11 @@ Potree.Measure = function(){
 		for(var i = 0; i <= lastIndex; i++){
 			var index = i;
 			var nextIndex = ( i + 1 > lastIndex ) ? 0 : i + 1;
+			var previousIndex = (i === 0) ? lastIndex : i - 1;
 		
 			var point = this.points[index];
 			var nextPoint = this.points[nextIndex];
+			var previousPoint = this.points[previousIndex];
 			
 			var sphere = this.spheres[index];
 			
@@ -201,6 +222,26 @@ Potree.Measure = function(){
 				edgeLabel.position.copy(center);
 				edgeLabel.setText(distance.toFixed(2));
 				edgeLabel.visible = this.showDistances && (index < lastIndex || this.closed) && this.points.length >= 2 && distance > 0;
+			}
+			
+			{// angle labels
+				var angleLabel = this.angleLabels[i];
+				var angle = this.getAngleBetweenLines(point, previousPoint, nextPoint);
+				
+				var dir = nextPoint.clone().sub(previousPoint);
+				dir.multiplyScalar(0.5);
+				dir = previousPoint.clone().add(dir).sub(point).normalize();
+				
+				var dist = Math.min(point.distanceTo(previousPoint), point.distanceTo(nextPoint));
+				dist = dist / 9;
+				
+				var labelPos = point.clone().add(dir.multiplyScalar(dist));
+				angleLabel.position.copy(labelPos);
+				
+				var msg = Potree.utils.addCommas((angle*(180.0/Math.PI)).toFixed(1)) + '\u00B0';
+				angleLabel.setText(msg);
+				
+				angleLabel.visible = this.showAngles && (index < lastIndex || this.closed) && this.points.length >= 3 && angle > 0;
 			}
 		}
 		
@@ -307,6 +348,10 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 					position: pos.clone()
 				};
 				scope.dispatchEvent(event);
+				
+				if(scope.activeMeasurement.points.length > scope.activeMeasurement.maxMarkers){
+					scope.finishInsertion();
+				}
 				
 			}
 		}
@@ -491,14 +536,18 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 		state = STATE.INSERT;
 		
 		var args = args || {};
-		var showDistances = args.showDistances || true;
-		var showArea = args.showArea || false;
-		var closed = args.closed || false;
+		var showDistances = (typeof args.showDistances != "undefined") ? args.showDistances : true;
+		var showArea = (typeof args.showArea != "undefined") ? args.showArea : false;
+		var showAngles = (typeof args.showAngles != "undefined") ? args.showAngles : false;
+		var closed = (typeof args.closed != "undefined") ? args.closed : false;
+		var maxMarkers = args.maxMarkers || Number.MAX_SAFE_INTEGER;
 		
 		this.activeMeasurement = new Potree.Measure();
 		this.activeMeasurement.showDistances = showDistances;
 		this.activeMeasurement.showArea = showArea;
+		this.activeMeasurement.showAngles = showAngles;
 		this.activeMeasurement.closed = closed;
+		this.activeMeasurement.maxMarkers = maxMarkers;
 		this.sceneMeasurement.add(this.activeMeasurement);
 		this.measurements.push(this.activeMeasurement);
 		this.activeMeasurement.addMarker(new THREE.Vector3(0,0,0));
@@ -557,6 +606,16 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 			// edgeLabels
 			for(var j = 0; j < measurement.edgeLabels.length; j++){
 				var label = measurement.edgeLabels[j];
+				
+				var distance = scope.camera.position.distanceTo(label.getWorldPosition());
+				var pr = projectedRadius(1, scope.camera.fov * Math.PI / 180, distance, renderer.domElement.clientHeight);
+				var scale = (70 / pr);
+				label.scale.set(scale, scale, scale);
+			}
+			
+			// angle labels
+			for(var j = 0; j < measurement.edgeLabels.length; j++){
+				var label = measurement.angleLabels[j];
 				
 				var distance = scope.camera.position.distanceTo(label.getWorldPosition());
 				var pr = projectedRadius(1, scope.camera.fov * Math.PI / 180, distance, renderer.domElement.clientHeight);

@@ -116,6 +116,13 @@ Potree.Measure = function(){
 		}
 
 		
+		
+		var event = {
+			type: "marker_added",
+			measurement: this
+		};
+		this.dispatchEvent(event);
+		
 		this.setPosition(this.points.length-1, point);
 	};
 	
@@ -139,6 +146,14 @@ Potree.Measure = function(){
 	this.setPosition = function(index, position){
 		var point = this.points[index];			
 		point.copy(position);
+		
+		var event = {
+			type: 		'marker_moved',
+			measure:	this,
+			index:		index,
+			position: 	position.clone()
+		};
+		this.dispatchEvent(event);
 		
 		this.update();
 	};
@@ -542,26 +557,46 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 		var closed = (typeof args.closed != "undefined") ? args.closed : false;
 		var maxMarkers = args.maxMarkers || Number.MAX_SAFE_INTEGER;
 		
-		this.activeMeasurement = new Potree.Measure();
-		this.activeMeasurement.showDistances = showDistances;
-		this.activeMeasurement.showArea = showArea;
-		this.activeMeasurement.showAngles = showAngles;
-		this.activeMeasurement.closed = closed;
-		this.activeMeasurement.maxMarkers = maxMarkers;
-		this.sceneMeasurement.add(this.activeMeasurement);
-		this.measurements.push(this.activeMeasurement);
-		this.activeMeasurement.addMarker(new THREE.Vector3(0,0,0));
+		var measurement = new Potree.Measure();
+		measurement.showDistances = showDistances;
+		measurement.showArea = showArea;
+		measurement.showAngles = showAngles;
+		measurement.closed = closed;
+		measurement.maxMarkers = maxMarkers;
+
+		this.addMeasurement(measurement);
+		measurement.addMarker(new THREE.Vector3(0,0,0));
+		
+		this.activeMeasurement = measurement;
 	};
 	
 	this.finishInsertion = function(){
 		this.activeMeasurement.removeMarker(this.activeMeasurement.points.length-1);
+		
+		var event = {
+			type: "insertion_finished",
+			measurement: this.activeMeasurement
+		};
+		this.dispatchEvent(event);
+		
 		this.activeMeasurement = null;
 		state = STATE.DEFAULT;
 	};
 	
 	this.addMeasurement = function(measurement){
-		this.sceneMeasurement.add(measurxement);
+		this.sceneMeasurement.add(measurement);
 		this.measurements.push(measurement);
+		
+		this.dispatchEvent({"type": "measurement_added", measurement: measurement});
+		measurement.addEventListener("marker_added", function(event){
+			scope.dispatchEvent(event);
+		});
+		measurement.addEventListener("marker_removed", function(event){
+			scope.dispatchEvent(event);
+		});
+		measurement.addEventListener("marker_moved", function(event){
+			scope.dispatchEvent(event);
+		});
 	};
 	
 	this.removeMeasurement = function(measurement){

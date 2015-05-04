@@ -115,13 +115,14 @@ Potree.HeightProfile = function(){
 			
 		}
 
-		this.setPosition(this.points.length-1, point);
 		
 		var event = {
 			"type": "marker_added",
 			"profile": this
 		};
 		this.dispatchEvent(event);
+		
+		this.setPosition(this.points.length-1, point);
 	};
 	
 	this.removeMarker = function(index){
@@ -166,6 +167,14 @@ Potree.HeightProfile = function(){
 	this.setPosition = function(index, position){
 		var point = this.points[index];			
 		point.copy(position);
+		
+		var event = {
+			type: 		'marker_moved',
+			profile:	this,
+			index:		index,
+			position: 	position.clone()
+		};
+		this.dispatchEvent(event);
 		
 		this.update();
 	};
@@ -561,6 +570,13 @@ Potree.ProfileTool = function(scene, camera, renderer){
 	
 	this.finishInsertion = function(){
 		this.activeProfile.removeMarker(this.activeProfile.points.length-1);
+		
+		var event = {
+			type: "insertion_finished",
+			profile: this.activeProfile
+		};
+		this.dispatchEvent(event);
+		
 		this.activeProfile = null;
 		state = STATE.DEFAULT;
 	};
@@ -575,6 +591,9 @@ Potree.ProfileTool = function(scene, camera, renderer){
 			scope.dispatchEvent(event);
 		});
 		profile.addEventListener("marker_removed", function(event){
+			scope.dispatchEvent(event);
+		});
+		profile.addEventListener("marker_moved", function(event){
 			scope.dispatchEvent(event);
 		});
 	};

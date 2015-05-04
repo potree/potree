@@ -342,6 +342,12 @@ Potree.VolumeTool = function(scene, camera, renderer){
 	this.finishInsertion = function(){
 		transformationTool.setTargets([this.activeVolume]);
 		
+		var event = {
+			type: "insertion_finished",
+			volume: this.activeVolume
+		};
+		this.dispatchEvent(event);
+		
 		this.activeVolume = null;
 		state = STATE.DEFAULT;
 	}
@@ -378,3 +384,5 @@ Potree.VolumeTool = function(scene, camera, renderer){
 	this.domElement.addEventListener( 'mousemove', onMouseMove, false );
 	this.domElement.addEventListener( 'contextmenu', onContextMenu, false );
 };
+
+Potree.VolumeTool.prototype = Object.create( THREE.EventDispatcher.prototype );

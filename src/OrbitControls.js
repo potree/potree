@@ -290,7 +290,7 @@ Potree.OrbitControls = function ( object, domElement ) {
 		this.dispatchEvent(proposeTransformEvent);
 		
 		// check some counter proposals if transformation wasn't accepted
-		while(proposeTransformEvent.objections > 0 ){
+		if(proposeTransformEvent.objections > 0 ){
 			
 			if(proposeTransformEvent.counterProposals.length > 0){
 				var cp = proposeTransformEvent.counterProposals;

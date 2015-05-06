@@ -2485,7 +2485,7 @@ Potree.OrbitControls = function ( object, domElement ) {
 		this.dispatchEvent(proposeTransformEvent);
 		
 		// check some counter proposals if transformation wasn't accepted
-		while(proposeTransformEvent.objections > 0 ){
+		if(proposeTransformEvent.objections > 0 ){
 			
 			if(proposeTransformEvent.counterProposals.length > 0){
 				var cp = proposeTransformEvent.counterProposals;
@@ -5623,6 +5623,13 @@ Potree.Measure = function(){
 		}
 
 		
+		
+		var event = {
+			type: "marker_added",
+			measurement: this
+		};
+		this.dispatchEvent(event);
+		
 		this.setPosition(this.points.length-1, point);
 	};
 	
@@ -5646,6 +5653,14 @@ Potree.Measure = function(){
 	this.setPosition = function(index, position){
 		var point = this.points[index];			
 		point.copy(position);
+		
+		var event = {
+			type: 		'marker_moved',
+			measure:	this,
+			index:		index,
+			position: 	position.clone()
+		};
+		this.dispatchEvent(event);
 		
 		this.update();
 	};
@@ -6049,26 +6064,46 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 		var closed = (typeof args.closed != "undefined") ? args.closed : false;
 		var maxMarkers = args.maxMarkers || Number.MAX_SAFE_INTEGER;
 		
-		this.activeMeasurement = new Potree.Measure();
-		this.activeMeasurement.showDistances = showDistances;
-		this.activeMeasurement.showArea = showArea;
-		this.activeMeasurement.showAngles = showAngles;
-		this.activeMeasurement.closed = closed;
-		this.activeMeasurement.maxMarkers = maxMarkers;
-		this.sceneMeasurement.add(this.activeMeasurement);
-		this.measurements.push(this.activeMeasurement);
-		this.activeMeasurement.addMarker(new THREE.Vector3(0,0,0));
+		var measurement = new Potree.Measure();
+		measurement.showDistances = showDistances;
+		measurement.showArea = showArea;
+		measurement.showAngles = showAngles;
+		measurement.closed = closed;
+		measurement.maxMarkers = maxMarkers;
+
+		this.addMeasurement(measurement);
+		measurement.addMarker(new THREE.Vector3(0,0,0));
+		
+		this.activeMeasurement = measurement;
 	};
 	
 	this.finishInsertion = function(){
 		this.activeMeasurement.removeMarker(this.activeMeasurement.points.length-1);
+		
+		var event = {
+			type: "insertion_finished",
+			measurement: this.activeMeasurement
+		};
+		this.dispatchEvent(event);
+		
 		this.activeMeasurement = null;
 		state = STATE.DEFAULT;
 	};
 	
 	this.addMeasurement = function(measurement){
-		this.sceneMeasurement.add(measurxement);
+		this.sceneMeasurement.add(measurement);
 		this.measurements.push(measurement);
+		
+		this.dispatchEvent({"type": "measurement_added", measurement: measurement});
+		measurement.addEventListener("marker_added", function(event){
+			scope.dispatchEvent(event);
+		});
+		measurement.addEventListener("marker_removed", function(event){
+			scope.dispatchEvent(event);
+		});
+		measurement.addEventListener("marker_moved", function(event){
+			scope.dispatchEvent(event);
+		});
 	};
 	
 	this.removeMeasurement = function(measurement){
@@ -6274,13 +6309,14 @@ Potree.HeightProfile = function(){
 			
 		}
 
-		this.setPosition(this.points.length-1, point);
 		
 		var event = {
 			"type": "marker_added",
 			"profile": this
 		};
 		this.dispatchEvent(event);
+		
+		this.setPosition(this.points.length-1, point);
 	};
 	
 	this.removeMarker = function(index){
@@ -6325,6 +6361,14 @@ Potree.HeightProfile = function(){
 	this.setPosition = function(index, position){
 		var point = this.points[index];			
 		point.copy(position);
+		
+		var event = {
+			type: 		'marker_moved',
+			profile:	this,
+			index:		index,
+			position: 	position.clone()
+		};
+		this.dispatchEvent(event);
 		
 		this.update();
 	};
@@ -6720,6 +6764,13 @@ Potree.ProfileTool = function(scene, camera, renderer){
 	
 	this.finishInsertion = function(){
 		this.activeProfile.removeMarker(this.activeProfile.points.length-1);
+		
+		var event = {
+			type: "insertion_finished",
+			profile: this.activeProfile
+		};
+		this.dispatchEvent(event);
+		
 		this.activeProfile = null;
 		state = STATE.DEFAULT;
 	};
@@ -6734,6 +6785,9 @@ Potree.ProfileTool = function(scene, camera, renderer){
 			scope.dispatchEvent(event);
 		});
 		profile.addEventListener("marker_removed", function(event){
+			scope.dispatchEvent(event);
+		});
+		profile.addEventListener("marker_moved", function(event){
 			scope.dispatchEvent(event);
 		});
 	};
@@ -7866,6 +7920,12 @@ Potree.VolumeTool = function(scene, camera, renderer){
 	this.finishInsertion = function(){
 		transformationTool.setTargets([this.activeVolume]);
 		
+		var event = {
+			type: "insertion_finished",
+			volume: this.activeVolume
+		};
+		this.dispatchEvent(event);
+		
 		this.activeVolume = null;
 		state = STATE.DEFAULT;
 	}
@@ -7902,3 +7962,5 @@ Potree.VolumeTool = function(scene, camera, renderer){
 	this.domElement.addEventListener( 'mousemove', onMouseMove, false );
 	this.domElement.addEventListener( 'contextmenu', onContextMenu, false );
 };
+
+Potree.VolumeTool.prototype = Object.create( THREE.EventDispatcher.prototype );

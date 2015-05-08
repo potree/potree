@@ -1,7 +1,8 @@
 
 Potree.Features = function(){
-
-	var gl = document.createElement("canvas").getContext("webgl");
+	
+	var ftCanvas = document.createElement("canvas");
+	var gl = ftCanvas.getContext("webgl") || ftCanvas.getContext("experimental-webgl");
 	
 	return {
 		SHADER_INTERPOLATION: {

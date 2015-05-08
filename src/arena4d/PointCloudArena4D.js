@@ -275,6 +275,12 @@ Potree.PointCloudArena4D.prototype.update = function(camera, renderer){
 	
 	this.updateLoadQueue();
 	
+	var maxLevel = 0;
+	for(var i = 0; i < this.visibleNodes.length; i++){
+		maxLevel = Math.max(this.visibleNodes[i].level, maxLevel);
+	}
+	var a;
+	
 	//{ // only show nodes on ray
 	//	var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
 	//	vector.unproject(camera);
@@ -644,7 +650,11 @@ Potree.PointCloudArena4D.prototype.pick = function(renderer, camera, ray, params
 
 Object.defineProperty(Potree.PointCloudArena4D.prototype, "progress", {
 	get: function(){
-		return Potree.PointCloudArena4DGeometryNode.nodesLoading > 0 ? 0 : 1;
+		if(this.pcoGeometry.root){
+			return Potree.PointCloudArena4DGeometryNode.nodesLoading > 0 ? 0 : 1;
+		}else{
+			return 0;
+		}
 	}
 });
 

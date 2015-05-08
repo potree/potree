@@ -259,7 +259,7 @@ Potree.VolumeTool = function(scene, camera, renderer){
 		
 		var pointClouds = [];
 		scope.scene.traverse(function(object){
-			if(object instanceof Potree.PointCloudOctree){
+			if(object instanceof Potree.PointCloudOctree || object instanceof Potree.PointCloudArena4D){
 				pointClouds.push(object);
 			}
 		});

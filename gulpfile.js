@@ -37,7 +37,9 @@ var paths = {
 		"src/utils/MeasuringTool.js",
 		"src/utils/ProfileTool.js",
 		"src/utils/TransformationTool.js",
-		"src/utils/VolumeTool.js"
+		"src/utils/VolumeTool.js",
+		"src/arena4d/PointCloudArena4D.js",
+		"src/arena4d/PointCloudArena4DGeometry.js"
 	],
 	laslaz: [
 		"build/workers/laslaz-worker.js",

@@ -3411,6 +3411,7 @@ Potree.PointCloudOctree = function(geometry, material){
 	this.boundingSphere = this.boundingBox.getBoundingSphere();
 	this.material = material || new Potree.PointCloudMaterial();
 	this.visiblePointsTarget = 2*1000*1000;
+	this.minimumNodePixelSize = 150;
 	this.level = 0;
 	this.position.sub(geometry.offset);
 	this.updateMatrix();
@@ -3627,7 +3628,7 @@ Potree.PointCloudOctree.prototype.update = function(camera, renderer){
 
 	this.updateMatrixWorld(true);
 
-	this.visibleGeometry = this.getVisibleGeometry(camera);
+	this.visibleGeometry = this.getVisibleGeometry(camera, renderer);
 	var visibleGeometryNames = [];
 	
 	for(var i = 0; i < this.visibleGeometry.length; i++){
@@ -3695,7 +3696,7 @@ Potree.PointCloudOctree.prototype.update = function(camera, renderer){
 	Potree.PointCloudOctree.lru.freeMemory();
 };
 
-Potree.PointCloudOctree.prototype.getVisibleGeometry = function(camera){
+Potree.PointCloudOctree.prototype.getVisibleGeometry = function(camera, renderer){
 	
 	var visibleGeometry = [];
 	var geometry = this.pcoGeometry;
@@ -3772,7 +3773,9 @@ Potree.PointCloudOctree.prototype.getVisibleGeometry = function(camera){
 			// see http://stackoverflow.com/questions/21648630/radius-of-projected-sphere-in-screen-space
 			var fov = camera.fov / 2 * Math.PI / 180.0;
 			var pr = 1 / Math.tan(fov) * radius / Math.sqrt(distance * distance - radius * radius);
-			if(pr < 0.1){
+			
+			var screenPixelRadius = renderer.domElement.clientHeight * pr;
+			if(screenPixelRadius < this.minimumNodePixelSize){
 				continue;
 			}
 			
@@ -4811,6 +4814,11 @@ Potree.PointCloudOctree.prototype.generateTerain = function(){
 	
 };
 
+Object.defineProperty(Potree.PointCloudOctree.prototype, "progress", {
+	get: function(){
+		return this.visibleNodes.length / this.visibleGeometry.length;
+	}
+});
 
 var nodesLoadTimes = {};
 
@@ -7986,6 +7994,8 @@ Potree.PointCloudArena4D = function(geometry){
 	this.root = null;
 	
 	this.visiblePointsTarget = 2*1000*1000;
+	this.minimumNodePixelSize = 150;
+	
 	this.position.sub(geometry.offset);
 	this.updateMatrix();
 	
@@ -8173,11 +8183,6 @@ Potree.PointCloudArena4D.prototype.update = function(camera, renderer){
 			if(this.numVisiblePoints + node.pcoGeometry.numPoints > pointcloud.visiblePointsTarget){
 				break;
 			}
-			
-			//if(node.pcoGeometry.level > 5){
-			//	continue;
-			//}
-		
 			this.numVisibleNodes++;
 			this.numVisiblePoints += node.pcoGeometry.numPoints;
 			this.visibleNodes.push({node: node, weight: weight});
@@ -8188,15 +8193,6 @@ Potree.PointCloudArena4D.prototype.update = function(camera, renderer){
 				this.boundingBoxNodes.push(boxHelper);
 				node.boundingBoxNode = boxHelper;
 				node.boundingBoxNode.matrixWorld.copy(node.matrixWorld);
-				
-				if(node.pcoGeometry.level === 0){
-					node.boundingBoxNode.material.color.setRGB(1,0,0);
-				}else if(node.pcoGeometry.level === 1){
-					node.boundingBoxNode.material.color.setRGB(0,1,0);
-				}else if(node.pcoGeometry.level === 2){
-					node.boundingBoxNode.material.color.setRGB(0,0,1);
-				}
-				
 			}else if(this.showBoundingBox && node.boundingBoxNode){
 				node.boundingBoxNode.visible = true;
 			}else if(!this.showBoundingBox){
@@ -8217,7 +8213,8 @@ Potree.PointCloudArena4D.prototype.update = function(camera, renderer){
 					pr = Number.MAX_VALUE;
 				}
 				
-				if(pr < 0.01){
+				var screenPixelRadius = renderer.domElement.clientHeight * pr;
+				if(screenPixelRadius < this.minimumNodePixelSize){
 					continue;
 				}
 				
@@ -8619,6 +8616,12 @@ Potree.PointCloudArena4D.prototype.pick = function(renderer, camera, ray, params
 	}
 };
 
+Object.defineProperty(Potree.PointCloudArena4D.prototype, "progress", {
+	get: function(){
+		return Potree.PointCloudArena4DGeometryNode.nodesLoading > 0 ? 0 : 1;
+	}
+});
+
 //Potree.PointCloudArena4D.prototype.updateMatrixWorld = function( force ){
 //	//node.matrixWorld.multiplyMatrices( node.parent.matrixWorld, node.matrix );
 //	
@@ -8723,16 +8726,6 @@ Potree.PointCloudArena4DGeometryNode.prototype.load = function(){
 		geometry.boundingSphere = scope.boundingSphere;
 		
 		scope.numPoints = numPoints;
-		
-		//var material = new THREE.PointCloudMaterial({vertexColors: THREE.VertexColors});
-		//
-		//var pointcloud = new THREE.PointCloud(geometry,material);
-		//scene.add(pointcloud);
-		//
-		//var sg = new THREE.SphereGeometry(0.01);
-		//var sm = new THREE.Mesh(sg);
-		//scene.add(sm);
-		
 	};
 	
 	xhr.send(null);
@@ -8750,6 +8743,10 @@ Potree.PointCloudArena4DGeometry = function(){
 	this.provider = null;
 	this.url = null;
 	this.root = null;
+	this.pointAttributes = new PointAttributes([
+		"POSITION_CARTESIAN",
+		"COLOR_PACKED"
+	]);
 };
 
 Potree.PointCloudArena4DGeometry.load = function(url, callback){

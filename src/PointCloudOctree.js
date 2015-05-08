@@ -65,6 +65,7 @@ Potree.PointCloudOctree = function(geometry, material){
 	this.boundingSphere = this.boundingBox.getBoundingSphere();
 	this.material = material || new Potree.PointCloudMaterial();
 	this.visiblePointsTarget = 2*1000*1000;
+	this.minimumNodePixelSize = 150;
 	this.level = 0;
 	this.position.sub(geometry.offset);
 	this.updateMatrix();
@@ -281,7 +282,7 @@ Potree.PointCloudOctree.prototype.update = function(camera, renderer){
 
 	this.updateMatrixWorld(true);
 
-	this.visibleGeometry = this.getVisibleGeometry(camera);
+	this.visibleGeometry = this.getVisibleGeometry(camera, renderer);
 	var visibleGeometryNames = [];
 	
 	for(var i = 0; i < this.visibleGeometry.length; i++){
@@ -349,7 +350,7 @@ Potree.PointCloudOctree.prototype.update = function(camera, renderer){
 	Potree.PointCloudOctree.lru.freeMemory();
 };
 
-Potree.PointCloudOctree.prototype.getVisibleGeometry = function(camera){
+Potree.PointCloudOctree.prototype.getVisibleGeometry = function(camera, renderer){
 	
 	var visibleGeometry = [];
 	var geometry = this.pcoGeometry;
@@ -426,7 +427,9 @@ Potree.PointCloudOctree.prototype.getVisibleGeometry = function(camera){
 			// see http://stackoverflow.com/questions/21648630/radius-of-projected-sphere-in-screen-space
 			var fov = camera.fov / 2 * Math.PI / 180.0;
 			var pr = 1 / Math.tan(fov) * radius / Math.sqrt(distance * distance - radius * radius);
-			if(pr < 0.1){
+			
+			var screenPixelRadius = renderer.domElement.clientHeight * pr;
+			if(screenPixelRadius < this.minimumNodePixelSize){
 				continue;
 			}
 			
@@ -1464,3 +1467,9 @@ Potree.PointCloudOctree.prototype.generateTerain = function(){
 	scene.add(pc);
 	
 };
+
+Object.defineProperty(Potree.PointCloudOctree.prototype, "progress", {
+	get: function(){
+		return this.visibleNodes.length / this.visibleGeometry.length;
+	}
+});

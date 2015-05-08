@@ -79,16 +79,6 @@ Potree.PointCloudArena4DGeometryNode.prototype.load = function(){
 		geometry.boundingSphere = scope.boundingSphere;
 		
 		scope.numPoints = numPoints;
-		
-		//var material = new THREE.PointCloudMaterial({vertexColors: THREE.VertexColors});
-		//
-		//var pointcloud = new THREE.PointCloud(geometry,material);
-		//scene.add(pointcloud);
-		//
-		//var sg = new THREE.SphereGeometry(0.01);
-		//var sm = new THREE.Mesh(sg);
-		//scene.add(sm);
-		
 	};
 	
 	xhr.send(null);
@@ -106,6 +96,10 @@ Potree.PointCloudArena4DGeometry = function(){
 	this.provider = null;
 	this.url = null;
 	this.root = null;
+	this.pointAttributes = new PointAttributes([
+		"POSITION_CARTESIAN",
+		"COLOR_PACKED"
+	]);
 };
 
 Potree.PointCloudArena4DGeometry.load = function(url, callback){

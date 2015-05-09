@@ -3,6 +3,7 @@ Potree.PointCloudArena4DProxyNode = function(geometryNode){
 	THREE.Object3D.call( this );
 	
 	this.geometryNode = geometryNode;
+	this.pcoGeometry = geometryNode;
 	this.boundingBox = geometryNode.boundingBox;
 	this.boundingSphere = geometryNode.boundingSphere;
 	this.number = geometryNode.name;
@@ -35,8 +36,7 @@ Potree.PointCloudArena4D = function(geometry){
 	this.pcoGeometry = geometry;
 	this.boundingBox = this.pcoGeometry.boundingBox;
 	this.boundingSphere = this.pcoGeometry.boundingSphere;
-	this.material = new THREE.PointCloudMaterial({vertexColors: THREE.VertexColors, size: 0.05});
-	this.material = new Potree.PointCloudMaterial({vertexColors: THREE.VertexColors, size: 0.05});
+	this.material = new Potree.PointCloudMaterialArena4D({vertexColors: THREE.VertexColors, size: 0.05});
 	this.material.sizeType = Potree.PointSizeType.ATTENUATED;
 	this.material.size = 0.05;
 	
@@ -52,12 +52,15 @@ Potree.PointCloudArena4D.prototype.updateMaterial = function(camera, renderer){
 	this.material.fov = camera.fov * (Math.PI / 180);
 	this.material.screenWidth = renderer.domElement.clientWidth;
 	this.material.screenHeight = renderer.domElement.clientHeight;
-	this.material.spacing = this.pcoGeometry.spacing;
+	this.material.spacing = 1; // TODO
 	this.material.near = camera.near;
 	this.material.far = camera.far;
 	this.material.octreeLevels = this.maxLevel;
 	//this.material.interpolate= true;
 	this.material.minSize = 3;
+	
+	var bbSize = this.boundingBox.size();
+	this.material.bbSize = [bbSize.x, bbSize.y, bbSize.z];
 };
 
 Potree.PointCloudArena4D.prototype.hideDescendants = function(object){
@@ -165,7 +168,11 @@ Potree.PointCloudArena4D.prototype.update = function(camera, renderer){
 		var node = element.node;
 		var weight = element.weight;
 
-		//if(node.level >= 20){
+		//if(node.level > 3){
+		//	continue;
+		//}
+		
+		//if(node.pcoGeometry.number > 1){
 		//	break;
 		//}
 		
@@ -275,11 +282,16 @@ Potree.PointCloudArena4D.prototype.update = function(camera, renderer){
 	
 	this.updateLoadQueue();
 	
-	var maxLevel = 0;
+	this.maxLevel = 0;
 	for(var i = 0; i < this.visibleNodes.length; i++){
-		maxLevel = Math.max(this.visibleNodes[i].level, maxLevel);
+		this.maxLevel = Math.max(this.visibleNodes[i].node.pcoGeometry.level, this.maxLevel);
 	}
-	var a;
+	
+	var vn = [];
+	for(var i = 0; i < this.visibleNodes.length; i++){
+		vn.push(this.visibleNodes[i].node);
+	}
+	this.updateVisibilityTexture(this.material, vn);
 	
 	//{ // only show nodes on ray
 	//	var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
@@ -495,7 +507,7 @@ Potree.PointCloudArena4D.prototype.pick = function(renderer, camera, ray, params
 	// setup pick material.
 	// use the same point size functions as the main material to get the same point sizes.
 	if(!this.pickMaterial){
-		this.pickMaterial = new Potree.PointCloudMaterial();
+		this.pickMaterial = new Potree.PointCloudMaterialArena4D();
 		this.pickMaterial.pointColorType = Potree.PointColorType.POINT_INDEX;
 		this.pickMaterial.pointSizeType = Potree.PointSizeType.FIXED;
 	}
@@ -647,6 +659,75 @@ Potree.PointCloudArena4D.prototype.pick = function(renderer, camera, ray, params
 		return null;
 	}
 };
+
+
+Potree.PointCloudArena4D.prototype.updateVisibilityTexture = function(material, visibleNodes){
+
+	if(!material){
+		return;
+	}
+	
+	var texture = material.visibleNodesTexture;
+    var data = texture.image.data;
+	
+	// copy array
+	visibleNodes = visibleNodes.slice();
+	
+	// sort by level and number
+	var sort = function(a, b){
+		var la = a.pcoGeometry.level;
+		var lb = b.pcoGeometry.level;
+		var na = a.pcoGeometry.number;
+		var nb = b.pcoGeometry.number;
+		if(la != lb) return la - lb;
+		if(na < nb) return -1;
+		if(na > nb) return 1;
+		return 0;
+	};
+	visibleNodes.sort(sort);
+	
+	var visibleNodeNames = [];
+	for(var i = 0; i < visibleNodes.length; i++){
+		//visibleNodeNames[visibleNodes[i].pcoGeometry.number] = true;
+		visibleNodeNames.push(visibleNodes[i].pcoGeometry.number);
+	}
+	
+	for(var i = 0; i < visibleNodes.length; i++){
+		var node = visibleNodes[i];
+		
+		var b1 = 0;	// children
+		var b2 = 0;	// offset to first child
+		var b3 = 0;	// split 
+		
+		if(node.pcoGeometry.left && visibleNodeNames.indexOf(node.pcoGeometry.left.number) > 0){
+			b1 += 1;
+			b2 = visibleNodeNames.indexOf(node.pcoGeometry.left.number) - i;
+		}
+		if(node.pcoGeometry.right && visibleNodeNames.indexOf(node.pcoGeometry.right.number) > 0){
+			b1 += 2;
+			b2 = (b2 === 0) ? visibleNodeNames.indexOf(node.pcoGeometry.right.number) - i : b2;
+		}
+		
+		if(node.pcoGeometry.split === "X"){
+			b3 = 1;
+		}else if(node.pcoGeometry.split === "Y"){
+			b3 = 2;
+		}else if(node.pcoGeometry.split === "Z"){
+			b3 = 4;
+		}
+		
+		
+		data[i*3+0] = b1;
+		data[i*3+1] = b2;
+		data[i*3+2] = b3;
+	}
+	
+	
+	material.uniforms.nodeSize.value = this.pcoGeometry.boundingBox.size().x;
+	texture.needsUpdate = true;
+}
+
+
 
 Object.defineProperty(Potree.PointCloudArena4D.prototype, "progress", {
 	get: function(){

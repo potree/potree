@@ -109,7 +109,7 @@ void main() {
 	<div id="lblMessage" class="info" style="position: absolute; left: 10px; bottom: 0px; width: 400px; color:white"></div>
 	
 	<!-- TOOLS -->
-	<div id="tools" style="position: fixed; width: 400px; bottom: 10px; right: 10px">
+	<div id="tools" style="position: fixed; width: 400px; bottom: 10px; right: 10px; display: none">
 		<img src="../resources/icons/earth_controls_1.png" onclick="useEarthControls()" title="Earth Controls"/>
 		<img src="../resources/icons/fps_controls.png" onclick="useFPSControls()" title="Fly Camera"/>
 		<img src="../resources/icons/orbit_controls.png" onclick="useOrbitControls()" title="Orbit Controls"/>
@@ -124,17 +124,34 @@ void main() {
 		
 	</div>
 	
-	<!-- HEADING -->
-	<div class="info" style="position: absolute; left: 300px; right: 300px; top: 10px; text-align: center;">
-		<a href="http://potree.org" target="_blank">potree.org</a><br>
-		Point cloud courtesy of <a href="http://www.sigeom.ch/" target="_blank">sigeom sa</a><br>
+	<div class="info" style="position: absolute; left: 50%; margin-right: -50%; transform: translate(-50%, -0%)">
+		<div>
+			Streaming points from an <a href="http://veesus.com/" target="_blank"> Arena4D Point Server</a> 
+			into <a href="http://potree.org" target="_blank">potree</a><br>
+		</div>
+	</div>
+	
+	<div id="loadCloudForm" class="info" style="position: absolute; left: 50%; top: 50%; margin-right: -50%; transform: translate(-50%, -50%)">
+		<div>
+			<div style="display: flex; justify-content: center">
+			Enter URL of vpc file:
+			</div>
+			<div style="width: 100%; display: flex">
+				<span style="flex-grow: 1"> </span>
+				<input id="cloudURL" type="textfield" style="width: 300px; flex-grow: 0.5" /> 
+				<input type="button" value="load" onclick="loadCloud()">
+				<span style="flex-grow: 1"> </span>
+			</div>
+			<div id="loadMessage" style="color: #ffaaaa; display: flex; justify-content: center">
+				
+			</div>
+		</div>
 	</div>
 	
 	<div id="renderArea"></div>
 	
 	<script>
 		var sceneProperties = {
-			path: 			"../resources/pointclouds/vol_total/cloud.js",
 			cameraPosition: null, 			// other options: cameraPosition: [10,10,10],
 			cameraTarget: 	null, 			// other options: cameraTarget: [0,0,0],
 			sizeType: 		"Adaptive",		// other options: "Fixed", "Attenuated"
@@ -145,7 +162,6 @@ void main() {
 			navigation: 	"Orbit",		// other options: "Earth", "Orbit", "Flight"
 			pointSize: 		1.0
 		};
-	
 		var fov = sceneProperties.fov;
 		var pointSize = sceneProperties.pointSize;
 		var pointCountTarget = sceneProperties.pointLimit;
@@ -188,6 +204,69 @@ void main() {
 		var volumeTool;
 		var transformationTool;
 		var referenceFrame;
+		
+		function loadCloud(){
+			var elCloudURL = document.getElementById("cloudURL");
+			var url = elCloudURL.value;
+			
+			progressBar.show();
+			progressBar.message = "loading metadata";
+			
+			var elCloudForm = document.getElementById("loadCloudForm");
+			elCloudForm.style.display = "none";
+			
+			Potree.PointCloudArena4DGeometry.load(url, function(geometry){
+			
+				// handle loading failures
+				if(!geometry){
+					elCloudForm.style.display = "block";
+					var elLoadMessage = document.getElementById("loadMessage");
+					elLoadMessage.innerHTML = "Failed to load file. Is the URL correct and the server available?";
+					
+					progressBar.hide();
+					
+					return;
+				};
+			
+				pointcloud = new Potree.PointCloudArena4D(geometry);
+				
+				referenceFrame.add(pointcloud);
+				
+				flipYZ();
+				
+				referenceFrame.updateMatrixWorld(true);
+				var sg = pointcloud.boundingSphere.clone().applyMatrix4(pointcloud.matrixWorld);
+				
+				referenceFrame.position.sub(sg.center);
+				referenceFrame.position.y += sg.radius / 2;
+				referenceFrame.updateMatrixWorld(true);
+				
+				camera.zoomTo(pointcloud, 1);
+				
+				initGUI();
+				
+				pointcloud.material.interpolation = false;
+				pointcloud.material.pointSizeType = Potree.PointSizeType.ATTENUATED;
+				earthControls.pointclouds.push(pointcloud);	
+				
+				if(sceneProperties.navigation === "Earth"){
+					useEarthControls();
+				}else if(sceneProperties.navigation === "Orbit"){
+					useOrbitControls();
+				}else if(sceneProperties.navigation === "Flight"){
+					useFPSControls();
+				}else{
+					console.warning("No navigation mode specivied. Using OrbitControls");
+					useOrbitControls();
+				}
+				
+				var grid = Potree.utils.createGrid(5, 5, 2);
+				scene.add(grid);
+				
+				document.getElementById("tools").style.display = "block";
+				
+			});
+		}
 		
 		function setPointSizeType(value){
 			if(value === "Fixed"){
@@ -430,97 +509,6 @@ void main() {
 			// enable frag_depth extension for the interpolation shader, if available
 			renderer.context.getExtension("EXT_frag_depth");
 			
-			// load pointcloud
-			if(pointcloudPath.indexOf("cloud.js") > 0){
-				POCLoader.load(pointcloudPath, function(geometry){
-					pointcloud = new Potree.PointCloudOctree(geometry);
-					
-					pointcloud.material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-					pointcloud.material.size = pointSize;
-					pointcloud.visiblePointsTarget = pointCountTarget * 1000 * 1000;
-					
-					referenceFrame.add(pointcloud);
-					
-					referenceFrame.updateMatrixWorld(true);
-					var sg = pointcloud.boundingSphere.clone().applyMatrix4(pointcloud.matrixWorld);
-					
-					referenceFrame.position.copy(sg.center).multiplyScalar(-1);
-					referenceFrame.updateMatrixWorld(true);
-					
-					
-					flipYZ();
-					camera.zoomTo(pointcloud, 1);
-					
-					initGUI();	
-				
-					earthControls.pointclouds.push(pointcloud);	
-					
-					if(sceneProperties.navigation === "Earth"){
-						useEarthControls();
-					}else if(sceneProperties.navigation === "Orbit"){
-						useOrbitControls();
-					}else if(sceneProperties.navigation === "Flight"){
-						useFPSControls();
-					}else{
-						console.warning("No navigation mode specivied. Using OrbitControls");
-						useOrbitControls();
-					}
-					
-					if(sceneProperties.cameraPosition){
-						camera.position.set(sceneProperties.cameraPosition[0], sceneProperties.cameraPosition[1], sceneProperties.cameraPosition[2]);
-					}
-					if(sceneProperties.cameraTarget){
-						camera.lookAt(new THREE.Vector3(sceneProperties.cameraTarget[0], sceneProperties.cameraTarget[1], sceneProperties.cameraTarget[2]));
-					}
-				});
-			}else if(pointcloudPath.indexOf(".vpc") > 0){
-				Potree.PointCloudArena4DGeometry.load(pointcloudPath, function(geometry){
-					pointcloud = new Potree.PointCloudArena4D(geometry);
-					pointcloud.visiblePointsTarget = 500*1000;
-					
-					//pointcloud.applyMatrix(new THREE.Matrix4().set(
-					//	1,0,0,0,
-					//	0,0,1,0,
-					//	0,-1,0,0,
-					//	0,0,0,1
-					//));
-					
-					referenceFrame.add(pointcloud);
-					
-					flipYZ();
-					
-					referenceFrame.updateMatrixWorld(true);
-					var sg = pointcloud.boundingSphere.clone().applyMatrix4(pointcloud.matrixWorld);
-					
-					referenceFrame.position.sub(sg.center);
-					referenceFrame.position.y += sg.radius / 2;
-					referenceFrame.updateMatrixWorld(true);
-					
-					camera.zoomTo(pointcloud, 1);
-					
-					initGUI();
-					pointcloud.material.interpolation = false;
-					pointcloud.material.pointSizeType = Potree.PointSizeType.ATTENUATED;
-					earthControls.pointclouds.push(pointcloud);	
-					
-					
-					if(sceneProperties.navigation === "Earth"){
-						useEarthControls();
-					}else if(sceneProperties.navigation === "Orbit"){
-						useOrbitControls();
-					}else if(sceneProperties.navigation === "Flight"){
-						useFPSControls();
-					}else{
-						console.warning("No navigation mode specivied. Using OrbitControls");
-						useOrbitControls();
-					}
-					
-				});
-			}
-			
-			var grid = Potree.utils.createGrid(5, 5, 2);
-			scene.add(grid);
-			
 			measuringTool = new Potree.MeasuringTool(scenePointCloud, camera, renderer);
 			profileTool = new Potree.ProfileTool(scenePointCloud, camera, renderer);
 			volumeTool = new Potree.VolumeTool(scenePointCloud, camera, renderer);
@@ -682,9 +670,6 @@ void main() {
 				}else if(progress < 1){
 					progressBar.show();
 				}
-			}else{
-				progressBar.show();
-				progressBar.message = "loading metadata";
 			}
 			
 			volumeTool.update();

@@ -108,35 +108,40 @@ Potree.PointCloudArena4DGeometry.load = function(url, callback){
 	xhr.open('GET', url + "?info", true);
 	
 	xhr.onreadystatechange = function(){
-		if(xhr.readyState === 4 && xhr.status === 200){
-			var response = JSON.parse(xhr.responseText);
-			
-			var geometry = new Potree.PointCloudArena4DGeometry();
-			geometry.url = url;
-			geometry.name = response.Name;
-			geometry.provider = response.Provider;
-			geometry.numNodes = response.Nodes;
-			geometry.numPoints = response.Points;
-			geometry.version = response.Version;
-			geometry.boundingBox = new THREE.Box3(
-				new THREE.Vector3().fromArray(response.BoundingBox.slice(0,3)),
-				new THREE.Vector3().fromArray(response.BoundingBox.slice(3,6))
-			);
-			
-			var offset = geometry.boundingBox.min.clone().multiplyScalar(-1);
-			
-			geometry.boundingBox.min.add(offset)
-			geometry.boundingBox.max.add(offset);
-			geometry.offset = offset;
-			
-			var center = geometry.boundingBox.center();
-			var radius = geometry.boundingBox.size().length() / 2;
-			geometry.boundingSphere = new THREE.Sphere(center, radius);
-			
-			geometry.loadHierarchy();
-			
-			callback(geometry);
-			
+		try{
+			if(xhr.readyState === 4 && xhr.status === 200){
+				var response = JSON.parse(xhr.responseText);
+				
+				var geometry = new Potree.PointCloudArena4DGeometry();
+				geometry.url = url;
+				geometry.name = response.Name;
+				geometry.provider = response.Provider;
+				geometry.numNodes = response.Nodes;
+				geometry.numPoints = response.Points;
+				geometry.version = response.Version;
+				geometry.boundingBox = new THREE.Box3(
+					new THREE.Vector3().fromArray(response.BoundingBox.slice(0,3)),
+					new THREE.Vector3().fromArray(response.BoundingBox.slice(3,6))
+				);
+				
+				var offset = geometry.boundingBox.min.clone().multiplyScalar(-1);
+				
+				geometry.boundingBox.min.add(offset)
+				geometry.boundingBox.max.add(offset);
+				geometry.offset = offset;
+				
+				var center = geometry.boundingBox.center();
+				var radius = geometry.boundingBox.size().length() / 2;
+				geometry.boundingSphere = new THREE.Sphere(center, radius);
+				
+				geometry.loadHierarchy();
+				
+				callback(geometry);
+			}else if(xhr.readyState === 4){
+				callback(null);
+			}
+		}catch(e){
+			callback(null);
 		}
 	};
 		

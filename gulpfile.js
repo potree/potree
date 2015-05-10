@@ -39,7 +39,8 @@ var paths = {
 		"src/utils/TransformationTool.js",
 		"src/utils/VolumeTool.js",
 		"src/arena4d/PointCloudArena4D.js",
-		"src/arena4d/PointCloudArena4DGeometry.js"
+		"src/arena4d/PointCloudArena4DGeometry.js",
+		"src/arena4d/PointCloudMaterialArena4D.js"
 	],
 	laslaz: [
 		"build/workers/laslaz-worker.js",

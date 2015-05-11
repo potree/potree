@@ -55,8 +55,12 @@ Potree.PointCloudArena4D.prototype.updateMaterial = function(camera, renderer){
 	this.material.spacing = this.pcoGeometry.spacing;
 	this.material.near = camera.near;
 	this.material.far = camera.far;
-	this.material.octreeLevels = this.maxLevel;
-	//this.material.interpolate= true;
+	
+	// reduce shader source updates by setting maxLevel slightly higher than actually necessary
+	if(this.maxLevel > this.material.levels){
+		this.material.levels = this.maxLevel + 2;
+	}
+	
 	this.material.minSize = 3;
 	
 	var bbSize = this.boundingBox.size();
@@ -525,7 +529,7 @@ Potree.PointCloudArena4D.prototype.pick = function(renderer, camera, ray, params
 	this.pickMaterial.spacing 		= this.material.spacing;
 	this.pickMaterial.near 			= this.material.near;
 	this.pickMaterial.far 			= this.material.far;
-	this.pickMaterial.octreeLevels 	= this.material.octreeLevels;
+	this.pickMaterial.levels 		= this.material.levels;
 	this.pickMaterial.pointShape 	= this.material.pointShape;
 	
 	

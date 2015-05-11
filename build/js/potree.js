@@ -8030,8 +8030,12 @@ Potree.PointCloudArena4D.prototype.updateMaterial = function(camera, renderer){
 	this.material.spacing = this.pcoGeometry.spacing;
 	this.material.near = camera.near;
 	this.material.far = camera.far;
-	this.material.octreeLevels = this.maxLevel;
-	//this.material.interpolate= true;
+	
+	// reduce shader source updates by setting maxLevel slightly higher than actually necessary
+	if(this.maxLevel > this.material.levels){
+		this.material.levels = this.maxLevel + 2;
+	}
+	
 	this.material.minSize = 3;
 	
 	var bbSize = this.boundingBox.size();
@@ -8500,7 +8504,7 @@ Potree.PointCloudArena4D.prototype.pick = function(renderer, camera, ray, params
 	this.pickMaterial.spacing 		= this.material.spacing;
 	this.pickMaterial.near 			= this.material.near;
 	this.pickMaterial.far 			= this.material.far;
-	this.pickMaterial.octreeLevels 	= this.material.octreeLevels;
+	this.pickMaterial.levels 		= this.material.levels;
 	this.pickMaterial.pointShape 	= this.material.pointShape;
 	
 	
@@ -8863,8 +8867,8 @@ Potree.PointCloudArena4DGeometry.load = function(url, callback){
 					new THREE.Vector3().fromArray(response.BoundingBox.slice(0,3)),
 					new THREE.Vector3().fromArray(response.BoundingBox.slice(3,6))
 				);
-				if(response.spacing){
-					geometry.spacing = response.spacing;
+				if(response.Spacing){
+					geometry.spacing = response.Spacing;
 				}
 				
 				var offset = geometry.boundingBox.min.clone().multiplyScalar(-1);
@@ -9022,12 +9026,15 @@ Potree.PointCloudArena4DGeometry.prototype.loadHierarchy = function(){
 Object.defineProperty(Potree.PointCloudArena4DGeometry.prototype, "spacing", {
 	get: function(){
 		if(this._spacing){
-			return spacing;
+			return this._spacing;
 		}else if(this.root){
 			return this.root.spacing;
 		}else{
 			null;
 		}
+	},
+	set: function(value){
+		this._spacing = value;
 	}
 });
 
@@ -9125,7 +9132,7 @@ Potree.PointCloudMaterialArena4D = function(parameters){
 	this._pointShape = Potree.PointShape.SQUARE;
 	this._interpolate = false;
 	this._pointColorType = Potree.PointColorType.RGB;
-	this._octreeLevels = 6.0;
+	this._levels = 6.0;
 	this._useClipBox = false;
 	this.numClipBoxes = 0;
 	this._clipMode = Potree.ClipMode.DISABLED;
@@ -9258,7 +9265,7 @@ Potree.PointCloudMaterialArena4D.prototype.getDefines = function(){
 		defines += "#define attenuated_point_size\n";
 	}else if(this.pointSizeType === Potree.PointSizeType.ADAPTIVE){
 		defines += "#define adaptive_point_size\n";
-		defines += "#define octreeLevels " + Math.max(0, this._octreeLevels - 2).toFixed(1) + "\n";
+		defines += "#define levels " + Math.max(0, this._levels - 2).toFixed(1) + "\n";
 	}
 	
 	if(this.pointShape === Potree.PointShape.SQUARE){
@@ -9481,13 +9488,13 @@ Object.defineProperty(Potree.PointCloudMaterialArena4D.prototype, "opacity", {
 	}
 });
 
-Object.defineProperty(Potree.PointCloudMaterialArena4D.prototype, "octreeLevels", {
+Object.defineProperty(Potree.PointCloudMaterialArena4D.prototype, "levels", {
 	get: function(){
-		return this._octreeLevels;
+		return this._levels;
 	},
 	set: function(value){
-		if(this._octreeLevels !== value){
-			this._octreeLevels = value;
+		if(this._levels !== value){
+			this._levels = value;
 			this.updateShaderSource();
 		}
 	}
@@ -9818,7 +9825,7 @@ Potree.PointCloudMaterialArena4D.vs_points = [
  "	vec3 size = bbSize;	                                                                             ",
  "	vec3 pos = position;	                                                                             ",
  "		                                                                             ",
- "	for(float i = 0.0; i <= octreeLevels + 1.0; i++){                                ",
+ "	for(float i = 0.0; i <= levels + 1.0; i++){                                ",
  "		                                                                             ",
  "		vec4 value = texture2D(visibleNodes, vec2(iOffset / 2048.0, 0.0));                                                                                      ",
  "		                                                                             ",

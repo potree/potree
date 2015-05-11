@@ -124,8 +124,8 @@ Potree.PointCloudArena4DGeometry.load = function(url, callback){
 					new THREE.Vector3().fromArray(response.BoundingBox.slice(0,3)),
 					new THREE.Vector3().fromArray(response.BoundingBox.slice(3,6))
 				);
-				if(response.spacing){
-					geometry.spacing = response.spacing;
+				if(response.Spacing){
+					geometry.spacing = response.Spacing;
 				}
 				
 				var offset = geometry.boundingBox.min.clone().multiplyScalar(-1);
@@ -283,12 +283,15 @@ Potree.PointCloudArena4DGeometry.prototype.loadHierarchy = function(){
 Object.defineProperty(Potree.PointCloudArena4DGeometry.prototype, "spacing", {
 	get: function(){
 		if(this._spacing){
-			return spacing;
+			return this._spacing;
 		}else if(this.root){
 			return this.root.spacing;
 		}else{
 			null;
 		}
+	},
+	set: function(value){
+		this._spacing = value;
 	}
 });
 

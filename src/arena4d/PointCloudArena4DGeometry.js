@@ -96,6 +96,7 @@ Potree.PointCloudArena4DGeometry = function(){
 	this.provider = null;
 	this.url = null;
 	this.root = null;
+	this._spacing = null;
 	this.pointAttributes = new PointAttributes([
 		"POSITION_CARTESIAN",
 		"COLOR_PACKED"
@@ -123,6 +124,9 @@ Potree.PointCloudArena4DGeometry.load = function(url, callback){
 					new THREE.Vector3().fromArray(response.BoundingBox.slice(0,3)),
 					new THREE.Vector3().fromArray(response.BoundingBox.slice(3,6))
 				);
+				if(response.spacing){
+					geometry.spacing = response.spacing;
+				}
 				
 				var offset = geometry.boundingBox.min.clone().multiplyScalar(-1);
 				
@@ -245,6 +249,9 @@ Potree.PointCloudArena4DGeometry.prototype.loadHierarchy = function(){
 				root.boundingSphere = new THREE.Sphere(center, radius);
 			}
 			
+			var bbSize = node.boundingBox.size();
+			node.spacing = ((bbSize.x + bbSize.y + bbSize.z) / 3) / 75;
+			
 			stack.push(node);
 			
 			if(node.isLeaf){
@@ -272,5 +279,17 @@ Potree.PointCloudArena4DGeometry.prototype.loadHierarchy = function(){
 	
 	
 };
+
+Object.defineProperty(Potree.PointCloudArena4DGeometry.prototype, "spacing", {
+	get: function(){
+		if(this._spacing){
+			return spacing;
+		}else if(this.root){
+			return this.root.spacing;
+		}else{
+			null;
+		}
+	}
+});
 
 

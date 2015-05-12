@@ -165,10 +165,18 @@ Potree.PointCloudMaterial.prototype.updateShaderSource = function(){
 		attributes.pointSourceID = { type: "f", value: [] };
 	}
 	
+	var precision = "";
+	precision += "precision " + Potree.Features.precision + " float;\n"; 
+	precision += "precision " + Potree.Features.precision + " int;\n"; 
+	precision += "\n"; 
+	
+	var vs = precision + this.getDefines() + Potree.PointCloudMaterial.vs_points.join("\n");
+	var fs = precision + this.getDefines() + Potree.PointCloudMaterial.fs_points_rgb.join("\n");
+	
 	this.setValues({
 		attributes: attributes,
-		vertexShader: this.getDefines() + Potree.PointCloudMaterial.vs_points.join("\n"),
-		fragmentShader: this.getDefines() + Potree.PointCloudMaterial.fs_points_rgb.join("\n")
+		vertexShader: vs,
+		fragmentShader: fs
 	});
 	
 	if(this.depthMap){

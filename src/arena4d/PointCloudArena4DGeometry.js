@@ -96,6 +96,7 @@ Potree.PointCloudArena4DGeometry = function(){
 	this.provider = null;
 	this.url = null;
 	this.root = null;
+	this.levels = 0;
 	this._spacing = null;
 	this.pointAttributes = new PointAttributes([
 		"POSITION_CARTESIAN",
@@ -172,6 +173,7 @@ Potree.PointCloudArena4DGeometry.prototype.loadHierarchy = function(){
 		var stack = [];
 		var root = null;
 		
+		var levels = 0;
 		
 		var start = new Date().getTime();
 		// read hierarchy
@@ -205,6 +207,7 @@ Potree.PointCloudArena4DGeometry.prototype.loadHierarchy = function(){
 			node.right = null;
 			node.pcoGeometry = scope;
 			node.level = stack.length;
+			levels = Math.max(levels, node.level);
 			
 			if(stack.length > 0){
 				var parent = stack[stack.length-1];
@@ -271,6 +274,7 @@ Potree.PointCloudArena4DGeometry.prototype.loadHierarchy = function(){
 		//document.getElementById("lblDebug").innerHTML = msg;
 		
 		scope.root = root;
+		scope.levels = levels;
 		//console.log(this.root);
 		
 	}

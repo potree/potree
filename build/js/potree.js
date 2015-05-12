@@ -993,10 +993,18 @@ Potree.PointCloudMaterial.prototype.updateShaderSource = function(){
 		attributes.pointSourceID = { type: "f", value: [] };
 	}
 	
+	var precision = "";
+	precision += "precision " + Potree.Features.precision + " float;\n"; 
+	precision += "precision " + Potree.Features.precision + " int;\n"; 
+	precision += "\n"; 
+	
+	var vs = precision + this.getDefines() + Potree.PointCloudMaterial.vs_points.join("\n");
+	var fs = precision + this.getDefines() + Potree.PointCloudMaterial.fs_points_rgb.join("\n");
+	
 	this.setValues({
 		attributes: attributes,
-		vertexShader: this.getDefines() + Potree.PointCloudMaterial.vs_points.join("\n"),
-		fragmentShader: this.getDefines() + Potree.PointCloudMaterial.fs_points_rgb.join("\n")
+		vertexShader: vs,
+		fragmentShader: fs
 	});
 	
 	if(this.depthMap){
@@ -5318,6 +5326,28 @@ Potree.Features = function(){
 	var ftCanvas = document.createElement("canvas");
 	var gl = ftCanvas.getContext("webgl") || ftCanvas.getContext("experimental-webgl");
 	
+	// -- code taken from THREE.WebGLRenderer --
+	var _vertexShaderPrecisionHighpFloat = gl.getShaderPrecisionFormat( gl.VERTEX_SHADER, gl.HIGH_FLOAT );
+	var _vertexShaderPrecisionMediumpFloat = gl.getShaderPrecisionFormat( gl.VERTEX_SHADER, gl.MEDIUM_FLOAT );
+	var _vertexShaderPrecisionLowpFloat = gl.getShaderPrecisionFormat( gl.VERTEX_SHADER, gl.LOW_FLOAT );
+	
+	var _fragmentShaderPrecisionHighpFloat = gl.getShaderPrecisionFormat( gl.FRAGMENT_SHADER, gl.HIGH_FLOAT );
+	var _fragmentShaderPrecisionMediumpFloat = gl.getShaderPrecisionFormat( gl.FRAGMENT_SHADER, gl.MEDIUM_FLOAT );
+	var _fragmentShaderPrecisionLowpFloat = gl.getShaderPrecisionFormat( gl.FRAGMENT_SHADER, gl.LOW_FLOAT );
+	
+	var highpAvailable = _vertexShaderPrecisionHighpFloat.precision > 0 && _fragmentShaderPrecisionHighpFloat.precision > 0;
+	var mediumpAvailable = _vertexShaderPrecisionMediumpFloat.precision > 0 && _fragmentShaderPrecisionMediumpFloat.precision > 0;
+	// -----------------------------------------
+	
+	var precision;
+	if(highpAvailable){
+		precision = "highp";
+	}else if(mediumpAvailable){
+		precision = "mediump";
+	}else{
+		precision = "lowp";
+	}
+	
 	return {
 		SHADER_INTERPOLATION: {
 			isSupported: function(){
@@ -5344,7 +5374,8 @@ Potree.Features = function(){
 				
 			}
 		
-		}
+		},
+		precision: precision
 	}
 
 }();
@@ -8839,6 +8870,7 @@ Potree.PointCloudArena4DGeometry = function(){
 	this.provider = null;
 	this.url = null;
 	this.root = null;
+	this.levels = 0;
 	this._spacing = null;
 	this.pointAttributes = new PointAttributes([
 		"POSITION_CARTESIAN",
@@ -8915,6 +8947,7 @@ Potree.PointCloudArena4DGeometry.prototype.loadHierarchy = function(){
 		var stack = [];
 		var root = null;
 		
+		var levels = 0;
 		
 		var start = new Date().getTime();
 		// read hierarchy
@@ -8948,6 +8981,7 @@ Potree.PointCloudArena4DGeometry.prototype.loadHierarchy = function(){
 			node.right = null;
 			node.pcoGeometry = scope;
 			node.level = stack.length;
+			levels = Math.max(levels, node.level);
 			
 			if(stack.length > 0){
 				var parent = stack[stack.length-1];
@@ -9014,6 +9048,7 @@ Potree.PointCloudArena4DGeometry.prototype.loadHierarchy = function(){
 		//document.getElementById("lblDebug").innerHTML = msg;
 		
 		scope.root = root;
+		scope.levels = levels;
 		//console.log(this.root);
 		
 	}
@@ -9144,9 +9179,6 @@ Potree.PointCloudMaterialArena4D = function(parameters){
 	this.gradientTexture = Potree.PointCloudMaterialArena4D.generateGradientTexture(this._gradient);
 	this.classificationTexture = Potree.PointCloudMaterialArena4D.generateClassificationTexture(this._classification);
 	
-	
-	
-	
 	var attributes = {};
 	var uniforms = {
 		spacing:			{ type: "f", value: 1.0 },
@@ -9208,10 +9240,18 @@ Potree.PointCloudMaterialArena4D.prototype.updateShaderSource = function(){
 		attributes.pointSourceID = { type: "f", value: [] };
 	}
 	
+	var precision = "";
+	precision += "precision " + Potree.Features.precision + " float;\n"; 
+	precision += "precision " + Potree.Features.precision + " int;\n"; 
+	precision += "\n"; 
+	
+	var vs = precision + this.getDefines() + Potree.PointCloudMaterialArena4D.vs_points.join("\n");
+	var fs = precision + this.getDefines() + Potree.PointCloudMaterialArena4D.fs_points_rgb.join("\n");
+	
 	this.setValues({
 		attributes: attributes,
-		vertexShader: this.getDefines() + Potree.PointCloudMaterialArena4D.vs_points.join("\n"),
-		fragmentShader: this.getDefines() + Potree.PointCloudMaterialArena4D.fs_points_rgb.join("\n")
+		vertexShader: vs,
+		fragmentShader: fs
 	});
 	
 	if(this.depthMap){
@@ -9729,8 +9769,6 @@ Potree.PointCloudMaterialArena4D.generateClassificationTexture  = function(class
 };
 
 Potree.PointCloudMaterialArena4D.vs_points = [
- "precision mediump float;                                                           ",
- "precision mediump int;                                                             ",
  "                                                                                   ",
  "attribute vec3 position;                                                           ",
  "attribute vec3 color;                                                              ",
@@ -10014,9 +10052,6 @@ Potree.PointCloudMaterialArena4D.fs_points_rgb = [
  "#if defined use_interpolation                                                      ",
  "	#extension GL_EXT_frag_depth : enable                                            ",
  "#endif                                                                             ",
- "                                                                                   ",
- "precision mediump float;                                                             ",
- "precision mediump int;                                                               ",
  "                                                                                   ",
  "//uniform float opacity;                                                             ",
  "uniform mat4 modelMatrix;                                                          ",

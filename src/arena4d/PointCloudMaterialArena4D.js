@@ -102,9 +102,6 @@ Potree.PointCloudMaterialArena4D = function(parameters){
 	this.gradientTexture = Potree.PointCloudMaterialArena4D.generateGradientTexture(this._gradient);
 	this.classificationTexture = Potree.PointCloudMaterialArena4D.generateClassificationTexture(this._classification);
 	
-	
-	
-	
 	var attributes = {};
 	var uniforms = {
 		spacing:			{ type: "f", value: 1.0 },
@@ -166,10 +163,18 @@ Potree.PointCloudMaterialArena4D.prototype.updateShaderSource = function(){
 		attributes.pointSourceID = { type: "f", value: [] };
 	}
 	
+	var precision = "";
+	precision += "precision " + Potree.Features.precision + " float;\n"; 
+	precision += "precision " + Potree.Features.precision + " int;\n"; 
+	precision += "\n"; 
+	
+	var vs = precision + this.getDefines() + Potree.PointCloudMaterialArena4D.vs_points.join("\n");
+	var fs = precision + this.getDefines() + Potree.PointCloudMaterialArena4D.fs_points_rgb.join("\n");
+	
 	this.setValues({
 		attributes: attributes,
-		vertexShader: this.getDefines() + Potree.PointCloudMaterialArena4D.vs_points.join("\n"),
-		fragmentShader: this.getDefines() + Potree.PointCloudMaterialArena4D.fs_points_rgb.join("\n")
+		vertexShader: vs,
+		fragmentShader: fs
 	});
 	
 	if(this.depthMap){
@@ -687,8 +692,6 @@ Potree.PointCloudMaterialArena4D.generateClassificationTexture  = function(class
 };
 
 Potree.PointCloudMaterialArena4D.vs_points = [
- "precision mediump float;                                                           ",
- "precision mediump int;                                                             ",
  "                                                                                   ",
  "attribute vec3 position;                                                           ",
  "attribute vec3 color;                                                              ",
@@ -972,9 +975,6 @@ Potree.PointCloudMaterialArena4D.fs_points_rgb = [
  "#if defined use_interpolation                                                      ",
  "	#extension GL_EXT_frag_depth : enable                                            ",
  "#endif                                                                             ",
- "                                                                                   ",
- "precision mediump float;                                                             ",
- "precision mediump int;                                                               ",
  "                                                                                   ",
  "//uniform float opacity;                                                             ",
  "uniform mat4 modelMatrix;                                                          ",

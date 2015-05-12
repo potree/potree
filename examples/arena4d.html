@@ -79,7 +79,7 @@ void main() {
 	<script src="../build/js/potree.js"></script>
 	<script src="./js/ProgressBar.js"></script>
 	
-	<!--
+	
 	<script src="../src/PointCloudOctree.js"></script>
 	<script src="../src/PointCloudOctreeGeometry.js"></script>
 	<script src="../src/loader/POCLoader.js"></script>
@@ -97,7 +97,7 @@ void main() {
 	<script src="../src/arena4d/PointCloudArena4D.js"></script>
 	<script src="../src/arena4d/PointCloudArena4DGeometry.js"></script>
 	<script src="../src/arena4d/PointCloudMaterialArena4D.js"></script>
-	-->
+	
 	
 	
 	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
@@ -242,6 +242,7 @@ void main() {
 				referenceFrame.updateMatrixWorld(true);
 				
 				camera.zoomTo(pointcloud, 1);
+				camera.far = sg.radius * 100;
 				
 				initGUI();
 				

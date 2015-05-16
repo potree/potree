@@ -64,7 +64,8 @@ Potree.PointColorType = {
 	POINT_INDEX: 7,
 	CLASSIFICATION: 8,
 	RETURN_NUMBER: 9,
-	SOURCE: 10
+	SOURCE: 10,
+	NORMAL: 11
 };
 
 Potree.ClipMode = {
@@ -163,6 +164,8 @@ Potree.PointCloudMaterial.prototype.updateShaderSource = function(){
 		attributes.returnNumber = { type: "f", value: [] };
 	}else if(this.pointColorType === Potree.PointColorType.SOURCE){
 		attributes.pointSourceID = { type: "f", value: [] };
+	}else if(this.pointColorType === Potree.PointColorType.NORMAL){
+		attributes.normal = { type: "f", value: [] };
 	}
 	
 	var precision = "";
@@ -265,6 +268,8 @@ Potree.PointCloudMaterial.prototype.getDefines = function(){
 		defines += "#define color_type_return_number\n";
 	}else if(this._pointColorType === Potree.PointColorType.SOURCE){
 		defines += "#define color_type_source\n";
+	}else if(this._pointColorType === Potree.PointColorType.NORMAL){
+		defines += "#define color_type_normal\n";
 	}
 	
 	if(this.clipMode === Potree.ClipMode.DISABLED){
@@ -695,6 +700,7 @@ Potree.PointCloudMaterial.vs_points = [
  "attribute float returnNumber;                                                      ",
  "attribute float pointSourceID;                                                     ",
  "attribute vec4 indices;                                                            ",
+ "attribute vec3 normal;                                                            ",
  "                                                                                   ",
  "uniform mat4 modelMatrix;                                                          ",
  "uniform mat4 modelViewMatrix;                                                      ",
@@ -856,6 +862,8 @@ Potree.PointCloudMaterial.vs_points = [
  "  #elif defined color_type_source                                             ",
  "      float w = mod(pointSourceID, 10.0) / 10.0;                                                                             ",
  "  	vColor = texture2D(gradient, vec2(w,1.0 - w)).rgb;                               ",
+ "  #elif defined color_type_normal                                             ",
+ "  	vColor = (modelMatrix * vec4(normal, 0.0)).xyz;                               ",
  "  #endif                                                                           ",
  "                                                                                   ",
  "                                                                                   ",

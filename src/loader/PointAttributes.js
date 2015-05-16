@@ -15,6 +15,7 @@ PointAttributeNames.NORMAL_FLOATS		= 4;  	// float x, y, z;
 PointAttributeNames.FILLER				= 5;
 PointAttributeNames.INTENSITY			= 6;
 PointAttributeNames.CLASSIFICATION		= 7;
+PointAttributeNames.NORMAL				= 8;
 
 /**
  * Some types of possible point attribute data formats
@@ -85,6 +86,10 @@ PointAttribute.INTENSITY = new PointAttribute(
 PointAttribute.CLASSIFICATION = new PointAttribute(
 		PointAttributeNames.CLASSIFICATION,
 		PointAttributeTypes.DATA_TYPE_UINT8, 1);	
+		
+PointAttribute.NORMAL = new PointAttribute(
+		PointAttributeNames.NORMAL,
+		PointAttributeTypes.DATA_TYPE_UINT8, 2);		
 
 /**
  * Ordered list of PointAttributes used to identify how points are aligned in a buffer.

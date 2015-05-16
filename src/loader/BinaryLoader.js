@@ -76,6 +76,8 @@ Potree.BinaryLoader.prototype.parse = function(node, buffer){
 					geometry.addAttribute("intensity", new THREE.BufferAttribute(new Float32Array(buffer), 1));
 				}else if(parseInt(property) === PointAttributeNames.CLASSIFICATION){
 					geometry.addAttribute("classification", new THREE.BufferAttribute(new Float32Array(buffer), 1));
+				}else if(parseInt(property) === PointAttributeNames.NORMAL){
+					geometry.addAttribute("normal", new THREE.BufferAttribute(new Float32Array(buffer), 3));
 				}
 			}
 		}

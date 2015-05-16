@@ -275,6 +275,36 @@ Potree.utils.rightView = function(camera, controls, pointcloud){
 	}
 }
 	
+/**
+ *  
+ * 0: no intersection
+ * 1: intersection
+ * 2: fully inside
+ */
+Potree.utils.frustumSphereIntersection = function(frustum, sphere){
+	var planes = frustum.planes;
+	var center = sphere.center;
+	var negRadius = - sphere.radius;
+
+	var minDistance = Number.MAX_VALUE;
+	
+	for ( var i = 0; i < 6; i ++ ) {
+
+		var distance = planes[ i ].distanceToPoint( center );
+
+		if ( distance < negRadius ) {
+
+			return 0;
+
+		}
+		
+		minDistance = Math.min(minDistance, distance);
+
+	}
+
+	return (minDistance >= sphere.radius) ? 2 : 1;
+};
+	
 	
 	
 	

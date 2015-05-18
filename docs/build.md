@@ -13,5 +13,6 @@ Setting up gulp:
 
 ## Usage
 
-    gulp workers   // creates worker files in build/workers
-    gulp scripts   // creates single script files in build/js
+    gulp build
+
+This will create a single build/js/potree.js file

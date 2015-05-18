@@ -17,6 +17,7 @@ var paths = {
 		"src/Potree.js",
 		"src/WorkerManager.js",
 		"build/workers/BinaryDecoderWorker.js",
+		"build/shaders/shaders.js",
 		"src/extensions/PerspectiveCamera.js",
 		"src/extensions/Ray.js",
 		"src/loader/POCLoader.js",
@@ -63,6 +64,11 @@ var workers = {
 	]
 };
 
+var shaders = [
+	"src/materials/shaders/pointcloud.vs",
+	"src/materials/shaders/pointcloud.fs"
+];
+
 
 gulp.task("workers", function(){
 	gulp.src(workers.laslaz)
@@ -75,14 +81,20 @@ gulp.task("workers", function(){
 		.pipe(size({showFiles: true}))
 		.pipe(gulp.dest('build/workers'));
 		
-		gulp.src(workers.BinaryDecorder)
+	gulp.src(workers.BinaryDecorder)
 		.pipe(encodeWorker('BinaryDecoderWorker.js', "Potree.workers.binaryDecoder"))
 		.pipe(size({showFiles: true}))
 		.pipe(gulp.dest('build/workers'));
 });
 
+gulp.task("shaders", function(){
+	return gulp.src(shaders)
+		.pipe(encodeShader('shaders.js', "Potree.Shader"))
+		.pipe(size({showFiles: true}))
+		.pipe(gulp.dest('build/shaders'));
+});
 
-gulp.task("scripts", function(){
+gulp.task("scripts", ['workers','shaders'], function(){
 	gulp.src(paths.potree)
 		.pipe(concat('potree.js'))
 		.pipe(size({showFiles: true}))
@@ -104,10 +116,7 @@ gulp.task("scripts", function(){
 	return;
 });
 
-
-
-
-
+gulp.task('build', ['scripts']);
 
 
 var encodeWorker = function(fileName, varname, opt){
@@ -132,10 +141,6 @@ var encodeWorker = function(fileName, varname, opt){
 		if (buffer.length === 0) return this.emit('end');
 		
 		var joinedContents = buffer.join("");
-		//var content = varname + " = {\n";
-		//content += "\tcode:\tatob(\"" + new Buffer(joinedContents).toString('base64') + "\"),\n";
-		//content += "\tinstances:\t[]\n";
-		//content += "};";
 		var content = varname + " = new Potree.WorkerManager(atob(\"" + new Buffer(joinedContents).toString('base64') + "\"));";
 		
 		var joinedPath = path.join(firstFile.base, fileName);
@@ -145,6 +150,66 @@ var encodeWorker = function(fileName, varname, opt){
 			base: firstFile.base,
 			path: joinedPath,
 			contents: new Buffer(content)
+		});
+		
+		this.emit('data', joinedFile);
+		this.emit('end');
+	}
+	
+	return through(bufferContents, endStream);
+};
+
+var encodeShader = function(fileName, varname, opt){
+	if (!fileName) throw new PluginError('gulp-concat',  'Missing fileName option for gulp-concat');
+	if (!opt) opt = {};
+	if (!opt.newLine) opt.newLine = gutil.linefeed;
+	
+	var buffer = [];
+	var files = [];
+	var firstFile = null;
+	
+	function bufferContents(file){
+		if (file.isNull()) return; // ignore
+		if (file.isStream()) return this.emit('error', new PluginError('gulp-concat',  'Streaming not supported'));
+		
+		if (!firstFile) firstFile = file;
+	
+		var string = file.contents.toString('utf8');
+		buffer.push(string);
+		files.push(file);
+	}
+	
+	function endStream(){
+		if (buffer.length === 0) return this.emit('end');
+		
+		var joinedContent = "";
+		for(var i = 0; i < buffer.length; i++){
+			var b = buffer[i];
+			var file = files[i];
+			
+			var fname = file.path.replace(file.base, "");
+			console.log(fname);
+			
+			var content = new Buffer(b).toString();
+			var prep = "Potree.Shaders[\"" + fname  + "\"] = [\n";
+			var lines = content.split("\n");
+			for(var j = 0; j < lines.length; j++){
+				var line = lines[j];
+				line = line.replace(/(\r\n|\n|\r)/gm,"");
+				prep += " \"" + line + "\",\n";
+			}
+			prep += "].join(\"\\n\");\n\n";
+			
+			joinedContent += prep;
+		}
+		
+		var joinedPath = path.join(firstFile.base, fileName);
+		
+		var joinedFile = new File({
+			cwd: firstFile.cwd,
+			base: firstFile.base,
+			path: joinedPath,
+			contents: new Buffer(joinedContent)
 		});
 		
 		this.emit('data', joinedFile);

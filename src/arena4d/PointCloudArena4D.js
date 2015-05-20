@@ -36,7 +36,7 @@ Potree.PointCloudArena4D = function(geometry){
 	this.pcoGeometry = geometry;
 	this.boundingBox = this.pcoGeometry.boundingBox;
 	this.boundingSphere = this.pcoGeometry.boundingSphere;
-	this.material = new Potree.PointCloudMaterialArena4D({vertexColors: THREE.VertexColors, size: 0.05});
+	this.material = new Potree.PointCloudMaterial({vertexColors: THREE.VertexColors, size: 0.05, treeType: Potree.TreeType.KDTREE});
 	this.material.sizeType = Potree.PointSizeType.ATTENUATED;
 	this.material.size = 0.05;
 	
@@ -511,7 +511,7 @@ Potree.PointCloudArena4D.prototype.pick = function(renderer, camera, ray, params
 	// setup pick material.
 	// use the same point size functions as the main material to get the same point sizes.
 	if(!this.pickMaterial){
-		this.pickMaterial = new Potree.PointCloudMaterialArena4D();
+		this.pickMaterial = new Potree.PointCloudMaterial({treeType: Potree.TreeType.KDTREE});
 		this.pickMaterial.pointColorType = Potree.PointColorType.POINT_INDEX;
 		this.pickMaterial.pointSizeType = Potree.PointSizeType.FIXED;
 	}

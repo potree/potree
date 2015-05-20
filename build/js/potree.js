@@ -62,21 +62,34 @@ Potree.WorkerManager.fromUrls = function(urls){
 Potree.workers.binaryDecoder = new Potree.WorkerManager(atob("Ci8vIGh0dHA6Ly9qc3BlcmYuY29tL3VpbnQ4YXJyYXktdnMtZGF0YXZpZXczLzMKZnVuY3Rpb24gQ3VzdG9tVmlldyhidWZmZXIpIHsKCXRoaXMuYnVmZmVyID0gYnVmZmVyOwoJdGhpcy51OCA9IG5ldyBVaW50OEFycmF5KGJ1ZmZlcik7CgkKCXZhciB0bXAgPSBuZXcgQXJyYXlCdWZmZXIoNCk7Cgl2YXIgdG1wZiA9IG5ldyBGbG9hdDMyQXJyYXkodG1wKTsKCXZhciB0bXB1OCA9IG5ldyBVaW50OEFycmF5KHRtcCk7CgkKCXRoaXMuZ2V0VWludDMyID0gZnVuY3Rpb24gKGkpIHsKCQlyZXR1cm4gKHRoaXMudThbaSszXSA8PCAyNCkgfCAodGhpcy51OFtpKzJdIDw8IDE2KSB8ICh0aGlzLnU4W2krMV0gPDwgOCkgfCB0aGlzLnU4W2ldOwoJfQoJCgl0aGlzLmdldFVpbnQxNiA9IGZ1bmN0aW9uIChpKSB7CgkJcmV0dXJuICh0aGlzLnU4W2krMV0gPDwgOCkgfCB0aGlzLnU4W2ldOwoJfQoJCgl0aGlzLmdldEZsb2F0ID0gZnVuY3Rpb24oaSl7CgkJdG1wdThbMF0gPSB0aGlzLnU4W2krMF07CgkJdG1wdThbMV0gPSB0aGlzLnU4W2krMV07CgkJdG1wdThbMl0gPSB0aGlzLnU4W2krMl07CgkJdG1wdThbM10gPSB0aGlzLnU4W2krM107CgkJCgkJcmV0dXJuIHRtcGZbMF07Cgl9CgkKCXRoaXMuZ2V0VWludDggPSBmdW5jdGlvbihpKXsKCQlyZXR1cm4gdGhpcy51OFtpXTsKCX0KfQoKUG90cmVlID0ge307CgoKb25tZXNzYWdlID0gZnVuY3Rpb24oZXZlbnQpewoJdmFyIGJ1ZmZlciA9IGV2ZW50LmRhdGEuYnVmZmVyOwoJdmFyIHBvaW50QXR0cmlidXRlcyA9IGV2ZW50LmRhdGEucG9pbnRBdHRyaWJ1dGVzOwoJdmFyIG51bVBvaW50cyA9IGJ1ZmZlci5ieXRlTGVuZ3RoIC8gcG9pbnRBdHRyaWJ1dGVzLmJ5dGVTaXplOwoJdmFyIGN2ID0gbmV3IEN1c3RvbVZpZXcoYnVmZmVyKTsKCXZhciB2ZXJzaW9uID0gbmV3IFBvdHJlZS5WZXJzaW9uKGV2ZW50LmRhdGEudmVyc2lvbik7Cgl2YXIgbWluID0gZXZlbnQuZGF0YS5taW47Cgl2YXIgbm9kZU9mZnNldCA9IGV2ZW50LmRhdGEub2Zmc2V0OwoJdmFyIHNjYWxlID0gZXZlbnQuZGF0YS5zY2FsZTsKCQoJdmFyIGF0dHJpYnV0ZUJ1ZmZlcnMgPSB7fTsKCQoJdmFyIG9mZnNldCA9IDA7Cglmb3IodmFyIGkgPSAwOyBpIDwgcG9pbnRBdHRyaWJ1dGVzLmF0dHJpYnV0ZXMubGVuZ3RoOyBpKyspewoJCXZhciBwb2ludEF0dHJpYnV0ZSA9IHBvaW50QXR0cmlidXRlcy5hdHRyaWJ1dGVzW2ldOwoJCgkJaWYocG9pbnRBdHRyaWJ1dGUubmFtZSA9PT0gUG9pbnRBdHRyaWJ1dGUuUE9TSVRJT05fQ0FSVEVTSUFOLm5hbWUpewoJCQkKCQkJdmFyIGJ1ZmYgPSBuZXcgQXJyYXlCdWZmZXIobnVtUG9pbnRzKjQqMyk7CgkJCXZhciBwb3NpdGlvbnMgPSBuZXcgRmxvYXQzMkFycmF5KGJ1ZmYpOwoJCQkKCQkJZm9yKHZhciBqID0gMDsgaiA8IG51bVBvaW50czsgaisrKXsKCQkJCWlmKHZlcnNpb24ubmV3ZXJUaGFuKCIxLjMiKSl7CgkJCQkJcG9zaXRpb25zWzMqaiswXSA9IChjdi5nZXRVaW50MzIob2Zmc2V0ICsgaipwb2ludEF0dHJpYnV0ZXMuYnl0ZVNpemUrMCkgKiBzY2FsZSkgKyBtaW5bMF07CgkJCQkJcG9zaXRpb25zWzMqaisxXSA9IChjdi5nZXRVaW50MzIob2Zmc2V0ICsgaipwb2ludEF0dHJpYnV0ZXMuYnl0ZVNpemUrNCkgKiBzY2FsZSkgKyBtaW5bMV07CgkJCQkJcG9zaXRpb25zWzMqaisyXSA9IChjdi5nZXRVaW50MzIob2Zmc2V0ICsgaipwb2ludEF0dHJpYnV0ZXMuYnl0ZVNpemUrOCkgKiBzY2FsZSkgKyBtaW5bMl07CgkJCQl9ZWxzZXsKCQkJCQlwb3NpdGlvbnNbMypqKzBdID0gY3YuZ2V0RmxvYXQoaipwb2ludEF0dHJpYnV0ZXMuYnl0ZVNpemUrMCkgKyBub2RlT2Zmc2V0WzBdOwoJCQkJCXBvc2l0aW9uc1szKmorMV0gPSBjdi5nZXRGbG9hdChqKnBvaW50QXR0cmlidXRlcy5ieXRlU2l6ZSs0KSArIG5vZGVPZmZzZXRbMV07CgkJCQkJcG9zaXRpb25zWzMqaisyXSA9IGN2LmdldEZsb2F0KGoqcG9pbnRBdHRyaWJ1dGVzLmJ5dGVTaXplKzgpICsgbm9kZU9mZnNldFsyXTsKCQkJCX0KCQkJfQoJCQkKCQkJYXR0cmlidXRlQnVmZmVyc1twb2ludEF0dHJpYnV0ZS5uYW1lXSA9IHsgYnVmZmVyOiBidWZmLCBhdHRyaWJ1dGU6IHBvaW50QXR0cmlidXRlfTsKCQkJCgkJfWVsc2UgaWYocG9pbnRBdHRyaWJ1dGUubmFtZSA9PT0gUG9pbnRBdHRyaWJ1dGUuQ09MT1JfUEFDS0VELm5hbWUpewoJCQkKCQkJdmFyIGJ1ZmYgPSBuZXcgQXJyYXlCdWZmZXIobnVtUG9pbnRzKjQqMyk7CgkJCXZhciBjb2xvcnMgPSBuZXcgRmxvYXQzMkFycmF5KGJ1ZmYpOwoJCQkKCQkJZm9yKHZhciBqID0gMDsgaiA8IG51bVBvaW50czsgaisrKXsKCQkJCWNvbG9yc1szKmorMF0gPSBjdi5nZXRVaW50OChvZmZzZXQgKyBqKnBvaW50QXR0cmlidXRlcy5ieXRlU2l6ZSArIDApIC8gMjU1OwoJCQkJY29sb3JzWzMqaisxXSA9IGN2LmdldFVpbnQ4KG9mZnNldCArIGoqcG9pbnRBdHRyaWJ1dGVzLmJ5dGVTaXplICsgMSkgLyAyNTU7CgkJCQljb2xvcnNbMypqKzJdID0gY3YuZ2V0VWludDgob2Zmc2V0ICsgaipwb2ludEF0dHJpYnV0ZXMuYnl0ZVNpemUgKyAyKSAvIDI1NTsKCQkJfQoJCQkKCQkJYXR0cmlidXRlQnVmZmVyc1twb2ludEF0dHJpYnV0ZS5uYW1lXSA9IHsgYnVmZmVyOiBidWZmLCBhdHRyaWJ1dGU6IHBvaW50QXR0cmlidXRlfTsKCQkJCgkJfWVsc2UgaWYocG9pbnRBdHRyaWJ1dGUubmFtZSA9PT0gUG9pbnRBdHRyaWJ1dGUuSU5URU5TSVRZLm5hbWUpewoKCQkJdmFyIGJ1ZmYgPSBuZXcgQXJyYXlCdWZmZXIobnVtUG9pbnRzKjQpOwoJCQl2YXIgaW50ZW5zaXRpZXMgPSBuZXcgRmxvYXQzMkFycmF5KGJ1ZmYpOwoJCQkKCQkJZm9yKHZhciBqID0gMDsgaiA8IG51bVBvaW50czsgaisrKXsKCQkJCXZhciBpbnRlbnNpdHkgPSBjdi5nZXRVaW50MTYob2Zmc2V0ICsgaipwb2ludEF0dHJpYnV0ZXMuYnl0ZVNpemUpOwoJCQkJaW50ZW5zaXRpZXNbal0gPSBpbnRlbnNpdHk7CgkJCX0KCQkJCgkJCWF0dHJpYnV0ZUJ1ZmZlcnNbcG9pbnRBdHRyaWJ1dGUubmFtZV0gPSB7IGJ1ZmZlcjogYnVmZiwgYXR0cmlidXRlOiBwb2ludEF0dHJpYnV0ZX07CgkJCgkJfWVsc2UgaWYocG9pbnRBdHRyaWJ1dGUubmFtZSA9PT0gUG9pbnRBdHRyaWJ1dGUuQ0xBU1NJRklDQVRJT04ubmFtZSl7CgoJCQl2YXIgYnVmZiA9IG5ldyBBcnJheUJ1ZmZlcihudW1Qb2ludHMqNCk7CgkJCXZhciBjbGFzc2lmaWNhdGlvbnMgPSBuZXcgRmxvYXQzMkFycmF5KGJ1ZmYpOwoJCQkKCQkJZm9yKHZhciBqID0gMDsgaiA8IG51bVBvaW50czsgaisrKXsKCQkJCXZhciBjbGFzc2lmaWNhdGlvbiA9IGN2LmdldFVpbnQ4KG9mZnNldCArIGoqcG9pbnRBdHRyaWJ1dGVzLmJ5dGVTaXplKTsKCQkJCWNsYXNzaWZpY2F0aW9uc1tqXSA9IGNsYXNzaWZpY2F0aW9uOwoJCQl9CgkJCQoJCQlhdHRyaWJ1dGVCdWZmZXJzW3BvaW50QXR0cmlidXRlLm5hbWVdID0geyBidWZmZXI6IGJ1ZmYsIGF0dHJpYnV0ZTogcG9pbnRBdHRyaWJ1dGV9OwoJCQoJCX1lbHNlIGlmKHBvaW50QXR0cmlidXRlLm5hbWUgPT09IFBvaW50QXR0cmlidXRlLk5PUk1BTC5uYW1lKXsKCgkJCXZhciBidWZmID0gbmV3IEFycmF5QnVmZmVyKG51bVBvaW50cyo0KjMpOwoJCQl2YXIgbm9ybWFscyA9IG5ldyBGbG9hdDMyQXJyYXkoYnVmZik7CgkJCQoJCQlmb3IodmFyIGogPSAwOyBqIDwgbnVtUG9pbnRzOyBqKyspewoJCQkJdmFyIGJ4ID0gY3YuZ2V0VWludDgob2Zmc2V0ICsgaiAqIHBvaW50QXR0cmlidXRlcy5ieXRlU2l6ZSArIDApOwoJCQkJdmFyIGJ5ID0gY3YuZ2V0VWludDgob2Zmc2V0ICsgaiAqIHBvaW50QXR0cmlidXRlcy5ieXRlU2l6ZSArIDEpOwoJCQkKCQkJCXZhciBleCA9IGJ4IC8gMjU1OwoJCQkJdmFyIGV5ID0gYnkgLyAyNTU7CgkJCQkKCQkJCXZhciBueCA9IGV4ICogMiAtIDE7CgkJCQl2YXIgbnkgPSBleSAqIDIgLSAxOwoJCQkJdmFyIG56ID0gMTsKCQkJCXZhciBudyA9IC0xOwoJCQkJCgkJCQl2YXIgbCA9IChueCAqICgtbngpKSArIChueSAqICgtbnkpKSArIChueiAqICgtbncpKTsKCQkJCW56ID0gbDsKCQkJCW54ID0gbnggKiBNYXRoLnNxcnQobCk7CgkJCQlueSA9IG55ICogTWF0aC5zcXJ0KGwpOwoJCQkJCgkJCQlueCA9IG54ICogMjsKCQkJCW55ID0gbnkgKiAyOwoJCQkJbnogPSBueiAqIDIgLSAxOwoJCQkJCgkJCQlub3JtYWxzWzMqaiArIDBdID0gbng7CgkJCQlub3JtYWxzWzMqaiArIDFdID0gbnk7CgkJCQlub3JtYWxzWzMqaiArIDJdID0gbno7CgkJCX0KCQkJCgkJCWF0dHJpYnV0ZUJ1ZmZlcnNbcG9pbnRBdHRyaWJ1dGUubmFtZV0gPSB7IGJ1ZmZlcjogYnVmZiwgYXR0cmlidXRlOiBwb2ludEF0dHJpYnV0ZX07CgkJCgkJfQoJCQoJCW9mZnNldCArPSBwb2ludEF0dHJpYnV0ZS5ieXRlU2l6ZTsKCX0KCQoJdmFyIGluZGljZXMgPSBuZXcgQXJyYXlCdWZmZXIobnVtUG9pbnRzKjQpOwoJdmFyIGlJbmRpY2VzID0gbmV3IFVpbnQzMkFycmF5KGluZGljZXMpOwoJZm9yKHZhciBpID0gMDsgaSA8IG51bVBvaW50czsgaSsrKXsKCQlpSW5kaWNlc1tpXSA9IGk7Cgl9CgkKCXZhciBtZXNzYWdlID0gewoJCWF0dHJpYnV0ZUJ1ZmZlcnM6IGF0dHJpYnV0ZUJ1ZmZlcnMsCgkJaW5kaWNlczogaW5kaWNlcwoJfTsKCQkKCXZhciB0cmFuc2ZlcmFibGVzID0gW107CgkKCWZvcih2YXIgcHJvcGVydHkgaW4gbWVzc2FnZS5hdHRyaWJ1dGVCdWZmZXJzKXsKCQlpZihtZXNzYWdlLmF0dHJpYnV0ZUJ1ZmZlcnMuaGFzT3duUHJvcGVydHkocHJvcGVydHkpKXsKCQkJdHJhbnNmZXJhYmxlcy5wdXNoKG1lc3NhZ2UuYXR0cmlidXRlQnVmZmVyc1twcm9wZXJ0eV0uYnVmZmVyKTsKCQl9Cgl9CgkKCXRyYW5zZmVyYWJsZXMucHVzaChtZXNzYWdlLmluZGljZXMpOwoJCQoJcG9zdE1lc3NhZ2UobWVzc2FnZSwgdHJhbnNmZXJhYmxlcyk7CgkKfTsKUG90cmVlLlZlcnNpb24gPSBmdW5jdGlvbih2ZXJzaW9uKXsKCXRoaXMudmVyc2lvbiA9IHZlcnNpb247Cgl2YXIgdm1MZW5ndGggPSAodmVyc2lvbi5pbmRleE9mKCIuIikgPT09IC0xKSA/IHZlcnNpb24ubGVuZ3RoIDogdmVyc2lvbi5pbmRleE9mKCIuIik7Cgl0aGlzLnZlcnNpb25NYWpvciA9IHBhcnNlSW50KHZlcnNpb24uc3Vic3RyKDAsIHZtTGVuZ3RoKSk7Cgl0aGlzLnZlcnNpb25NaW5vciA9IHBhcnNlSW50KHZlcnNpb24uc3Vic3RyKHZtTGVuZ3RoICsgMSkpOwoJaWYodGhpcy52ZXJzaW9uTWlub3IubGVuZ3RoID09PSAwKXsKCQl0aGlzLnZlcnNpb25NaW5vciA9IDA7Cgl9CgkKfTsKClBvdHJlZS5WZXJzaW9uLnByb3RvdHlwZS5uZXdlclRoYW4gPSBmdW5jdGlvbih2ZXJzaW9uKXsKCXZhciB2ID0gbmV3IFBvdHJlZS5WZXJzaW9uKHZlcnNpb24pOwoJCglpZiggdGhpcy52ZXJzaW9uTWFqb3IgPiB2LnZlcnNpb25NYWpvcil7CgkJcmV0dXJuIHRydWU7Cgl9ZWxzZSBpZiggdGhpcy52ZXJzaW9uTWFqb3IgPT09IHYudmVyc2lvbk1ham9yICYmIHRoaXMudmVyc2lvbk1pbm9yID4gdi52ZXJzaW9uTWlub3IpewoJCXJldHVybiB0cnVlOwoJfWVsc2V7CgkJcmV0dXJuIGZhbHNlOwoJfQp9OwoKUG90cmVlLlZlcnNpb24ucHJvdG90eXBlLmVxdWFsT3JIaWdoZXIgPSBmdW5jdGlvbih2ZXJzaW9uKXsKCXZhciB2ID0gbmV3IFBvdHJlZS5WZXJzaW9uKHZlcnNpb24pOwoJCglpZiggdGhpcy52ZXJzaW9uTWFqb3IgPiB2LnZlcnNpb25NYWpvcil7CgkJcmV0dXJuIHRydWU7Cgl9ZWxzZSBpZiggdGhpcy52ZXJzaW9uTWFqb3IgPT09IHYudmVyc2lvbk1ham9yICYmIHRoaXMudmVyc2lvbk1pbm9yID49IHYudmVyc2lvbk1pbm9yKXsKCQlyZXR1cm4gdHJ1ZTsKCX1lbHNlewoJCXJldHVybiBmYWxzZTsKCX0KfTsKClBvdHJlZS5WZXJzaW9uLnByb3RvdHlwZS51cFRvID0gZnVuY3Rpb24odmVyc2lvbil7CglyZXR1cm4gIXRoaXMubmV3ZXJUaGFuKHZlcnNpb24pOwp9CgoKLy9mdW5jdGlvbiBQb2ludEF0dHJpYnV0ZU5hbWVzKCl7Ci8vCQovL30KCnZhciBQb2ludEF0dHJpYnV0ZU5hbWVzID0ge307CgpQb2ludEF0dHJpYnV0ZU5hbWVzLlBPU0lUSU9OX0NBUlRFU0lBTiAJPSAwOwkvLyBmbG9hdCB4LCB5LCB6OwpQb2ludEF0dHJpYnV0ZU5hbWVzLkNPTE9SX1BBQ0tFRAkJPSAxOwkvLyBieXRlIHIsIGcsIGIsIGE7IAlJID0gWzAsMV0KUG9pbnRBdHRyaWJ1dGVOYW1lcy5DT0xPUl9GTE9BVFNfMQkJPSAyOwkvLyBmbG9hdCByLCBnLCBiOyAJCUkgPSBbMCwxXQpQb2ludEF0dHJpYnV0ZU5hbWVzLkNPTE9SX0ZMT0FUU18yNTUJPSAzOwkvLyBmbG9hdCByLCBnLCBiOyAJCUkgPSBbMCwyNTVdClBvaW50QXR0cmlidXRlTmFtZXMuTk9STUFMX0ZMT0FUUwkJPSA0OyAgCS8vIGZsb2F0IHgsIHksIHo7ClBvaW50QXR0cmlidXRlTmFtZXMuRklMTEVSCQkJCT0gNTsKUG9pbnRBdHRyaWJ1dGVOYW1lcy5JTlRFTlNJVFkJCQk9IDY7ClBvaW50QXR0cmlidXRlTmFtZXMuQ0xBU1NJRklDQVRJT04JCT0gNzsKUG9pbnRBdHRyaWJ1dGVOYW1lcy5OT1JNQUwJCQkJPSA4OwoKLyoqCiAqIFNvbWUgdHlwZXMgb2YgcG9zc2libGUgcG9pbnQgYXR0cmlidXRlIGRhdGEgZm9ybWF0cwogKiAKICogQGNsYXNzCiAqLwp2YXIgUG9pbnRBdHRyaWJ1dGVUeXBlcyA9IHsKCURBVEFfVFlQRV9ET1VCTEUJOiB7b3JkaW5hbCA6IDAsIHNpemU6IDh9LAoJREFUQV9UWVBFX0ZMT0FUCQk6IHtvcmRpbmFsIDogMSwgc2l6ZTogNH0sCglEQVRBX1RZUEVfSU5UOAkJOiB7b3JkaW5hbCA6IDIsIHNpemU6IDF9LAoJREFUQV9UWVBFX1VJTlQ4CQk6IHtvcmRpbmFsIDogMywgc2l6ZTogMX0sCglEQVRBX1RZUEVfSU5UMTYJCToge29yZGluYWwgOiA0LCBzaXplOiAyfSwKCURBVEFfVFlQRV9VSU5UMTYJOiB7b3JkaW5hbCA6IDUsIHNpemU6IDJ9LAoJREFUQV9UWVBFX0lOVDMyCQk6IHtvcmRpbmFsIDogNiwgc2l6ZTogNH0sCglEQVRBX1RZUEVfVUlOVDMyCToge29yZGluYWwgOiA3LCBzaXplOiA0fSwKCURBVEFfVFlQRV9JTlQ2NAkJOiB7b3JkaW5hbCA6IDgsIHNpemU6IDh9LAoJREFUQV9UWVBFX1VJTlQ2NAk6IHtvcmRpbmFsIDogOSwgc2l6ZTogOH0KfTsKCnZhciBpID0gMDsKZm9yKHZhciBvYmogaW4gUG9pbnRBdHRyaWJ1dGVUeXBlcyl7CglQb2ludEF0dHJpYnV0ZVR5cGVzW2ldID0gUG9pbnRBdHRyaWJ1dGVUeXBlc1tvYmpdOwoJaSsrOwp9CgovKioKICogQSBzaW5nbGUgcG9pbnQgYXR0cmlidXRlIHN1Y2ggYXMgY29sb3Ivbm9ybWFsLy4uIGFuZCBpdHMgZGF0YSBmb3JtYXQvbnVtYmVyIG9mIGVsZW1lbnRzLy4uLiAKICogCiAqIEBjbGFzcwogKiBAcGFyYW0gbmFtZSAKICogQHBhcmFtIHR5cGUKICogQHBhcmFtIHNpemUKICogQHJldHVybnMKICovCmZ1bmN0aW9uIFBvaW50QXR0cmlidXRlKG5hbWUsIHR5cGUsIG51bUVsZW1lbnRzKXsKCXRoaXMubmFtZSA9IG5hbWU7Cgl0aGlzLnR5cGUgPSB0eXBlOyAKCXRoaXMubnVtRWxlbWVudHMgPSBudW1FbGVtZW50czsKCXRoaXMuYnl0ZVNpemUgPSB0aGlzLm51bUVsZW1lbnRzICogdGhpcy50eXBlLnNpemU7Cn0KClBvaW50QXR0cmlidXRlLlBPU0lUSU9OX0NBUlRFU0lBTiA9IG5ldyBQb2ludEF0dHJpYnV0ZSgKCQlQb2ludEF0dHJpYnV0ZU5hbWVzLlBPU0lUSU9OX0NBUlRFU0lBTiwKCQlQb2ludEF0dHJpYnV0ZVR5cGVzLkRBVEFfVFlQRV9GTE9BVCwgMyk7CgpQb2ludEF0dHJpYnV0ZS5SR0JBX1BBQ0tFRCA9IG5ldyBQb2ludEF0dHJpYnV0ZSgKCQlQb2ludEF0dHJpYnV0ZU5hbWVzLkNPTE9SX1BBQ0tFRCwKCQlQb2ludEF0dHJpYnV0ZVR5cGVzLkRBVEFfVFlQRV9JTlQ4LCA0KTsKClBvaW50QXR0cmlidXRlLkNPTE9SX1BBQ0tFRCA9IFBvaW50QXR0cmlidXRlLlJHQkFfUEFDS0VEOwoKUG9pbnRBdHRyaWJ1dGUuUkdCX1BBQ0tFRCA9IG5ldyBQb2ludEF0dHJpYnV0ZSgKCQlQb2ludEF0dHJpYnV0ZU5hbWVzLkNPTE9SX1BBQ0tFRCwKCQlQb2ludEF0dHJpYnV0ZVR5cGVzLkRBVEFfVFlQRV9JTlQ4LCAzKTsKClBvaW50QXR0cmlidXRlLk5PUk1BTF9GTE9BVFMgPSBuZXcgUG9pbnRBdHRyaWJ1dGUoCgkJUG9pbnRBdHRyaWJ1dGVOYW1lcy5OT1JNQUxfRkxPQVRTLAoJCVBvaW50QXR0cmlidXRlVHlwZXMuREFUQV9UWVBFX0ZMT0FULCAzKTsKClBvaW50QXR0cmlidXRlLkZJTExFUl8xQiA9IG5ldyBQb2ludEF0dHJpYnV0ZSgKCQlQb2ludEF0dHJpYnV0ZU5hbWVzLkZJTExFUiwKCQlQb2ludEF0dHJpYnV0ZVR5cGVzLkRBVEFfVFlQRV9VSU5UOCwgMSk7CgkJClBvaW50QXR0cmlidXRlLklOVEVOU0lUWSA9IG5ldyBQb2ludEF0dHJpYnV0ZSgKCQlQb2ludEF0dHJpYnV0ZU5hbWVzLklOVEVOU0lUWSwKCQlQb2ludEF0dHJpYnV0ZVR5cGVzLkRBVEFfVFlQRV9VSU5UMTYsIDEpOwkJCgkJClBvaW50QXR0cmlidXRlLkNMQVNTSUZJQ0FUSU9OID0gbmV3IFBvaW50QXR0cmlidXRlKAoJCVBvaW50QXR0cmlidXRlTmFtZXMuQ0xBU1NJRklDQVRJT04sCgkJUG9pbnRBdHRyaWJ1dGVUeXBlcy5EQVRBX1RZUEVfVUlOVDgsIDEpOwkKCQkKUG9pbnRBdHRyaWJ1dGUuTk9STUFMID0gbmV3IFBvaW50QXR0cmlidXRlKAoJCVBvaW50QXR0cmlidXRlTmFtZXMuTk9STUFMLAoJCVBvaW50QXR0cmlidXRlVHlwZXMuREFUQV9UWVBFX1VJTlQ4LCAyKTsJCQoKLyoqCiAqIE9yZGVyZWQgbGlzdCBvZiBQb2ludEF0dHJpYnV0ZXMgdXNlZCB0byBpZGVudGlmeSBob3cgcG9pbnRzIGFyZSBhbGlnbmVkIGluIGEgYnVmZmVyLgogKiAKICogQGNsYXNzCiAqIAogKi8KZnVuY3Rpb24gUG9pbnRBdHRyaWJ1dGVzKHBvaW50QXR0cmlidXRlcyl7Cgl0aGlzLmF0dHJpYnV0ZXMgPSBuZXcgQXJyYXkoKTsKCXRoaXMuYnl0ZVNpemUgPSAwOwoJdGhpcy5zaXplID0gMDsKCQoJaWYocG9pbnRBdHRyaWJ1dGVzICE9IG51bGwpewoJCS8vIGRvZXMgbm90IHdvcmsgaW4gY2hyb21lIHYyNAovLwkJZm9yKHZhciBwb2ludEF0dHJpYnV0ZSBvZiBwb2ludEF0dHJpYnV0ZXMpewovLwkJCXRoaXMuYXR0cmlidXRlcy5wdXNoKHBvaW50QXR0cmlidXRlKTsKLy8JCQl0aGlzLmJ5dGVTaXplICs9IHBvaW50QXR0cmlidXRlLmJ5dGVTaXplOwovLwkJCXRoaXMuc2l6ZSsrOwovLwkJfQoJCQoJCWZvcih2YXIgaSA9IDA7IGkgPCBwb2ludEF0dHJpYnV0ZXMubGVuZ3RoOyBpKyspewoJCQl2YXIgcG9pbnRBdHRyaWJ1dGVOYW1lID0gcG9pbnRBdHRyaWJ1dGVzW2ldOwoJCQl2YXIgcG9pbnRBdHRyaWJ1dGUgPSBQb2ludEF0dHJpYnV0ZVtwb2ludEF0dHJpYnV0ZU5hbWVdOwoJCQl0aGlzLmF0dHJpYnV0ZXMucHVzaChwb2ludEF0dHJpYnV0ZSk7CgkJCXRoaXMuYnl0ZVNpemUgKz0gcG9pbnRBdHRyaWJ1dGUuYnl0ZVNpemU7CgkJCXRoaXMuc2l6ZSsrOwoJCX0KCX0KfQoKUG9pbnRBdHRyaWJ1dGVzLnByb3RvdHlwZS5hZGQgPSBmdW5jdGlvbihwb2ludEF0dHJpYnV0ZSl7Cgl0aGlzLmF0dHJpYnV0ZXMucHVzaChwb2ludEF0dHJpYnV0ZSk7Cgl0aGlzLmJ5dGVTaXplICs9IHBvaW50QXR0cmlidXRlLmJ5dGVTaXplOwoJdGhpcy5zaXplKys7Cn07CgpQb2ludEF0dHJpYnV0ZXMucHJvdG90eXBlLmhhc0NvbG9ycyA9IGZ1bmN0aW9uKCl7Cglmb3IodmFyIG5hbWUgaW4gdGhpcy5hdHRyaWJ1dGVzKXsKCQl2YXIgcG9pbnRBdHRyaWJ1dGUgPSB0aGlzLmF0dHJpYnV0ZXNbbmFtZV07CgkJaWYocG9pbnRBdHRyaWJ1dGUubmFtZSA9PT0gUG9pbnRBdHRyaWJ1dGVOYW1lcy5DT0xPUl9QQUNLRUQpewoJCQlyZXR1cm4gdHJ1ZTsKCQl9Cgl9CgkKCXJldHVybiBmYWxzZTsKfTsKClBvaW50QXR0cmlidXRlcy5wcm90b3R5cGUuaGFzTm9ybWFscyA9IGZ1bmN0aW9uKCl7Cglmb3IodmFyIG5hbWUgaW4gdGhpcy5hdHRyaWJ1dGVzKXsKCQl2YXIgcG9pbnRBdHRyaWJ1dGUgPSB0aGlzLmF0dHJpYnV0ZXNbbmFtZV07CgkJaWYocG9pbnRBdHRyaWJ1dGUgPT09IFBvaW50QXR0cmlidXRlLk5PUk1BTF9GTE9BVFMpewoJCQlyZXR1cm4gdHJ1ZTsKCQl9Cgl9CgkKCXJldHVybiBmYWxzZTsKfTsKCgo="));
 Potree.Shaders["pointcloud.vs"] = [
  "",
- "attribute vec3 position;",
- "attribute vec3 color;",
+ "// the following is an incomplete list of attributes, uniforms and defines",
+ "// which are automatically added through the THREE.ShaderMaterial",
+ "",
+ "//attribute vec3 position;",
+ "//attribute vec3 color;",
+ "//attribute vec3 normal;",
+ "",
+ "//uniform mat4 modelMatrix;",
+ "//uniform mat4 modelViewMatrix;",
+ "//uniform mat4 projectionMatrix;",
+ "//uniform mat4 viewMatrix;",
+ "//uniform mat3 normalMatrix;",
+ "//uniform vec3 cameraPosition;",
+ "",
+ "//#define MAX_DIR_LIGHTS 0",
+ "//#define MAX_POINT_LIGHTS 1",
+ "//#define MAX_SPOT_LIGHTS 0",
+ "//#define MAX_HEMI_LIGHTS 0",
+ "//#define MAX_SHADOWS 0",
+ "//#define MAX_BONES 58",
+ "",
+ "",
  "attribute float intensity;",
  "attribute float classification;",
  "attribute float returnNumber;",
  "attribute float pointSourceID;",
  "attribute vec4 indices;",
- "attribute vec3 normal;",
  "",
- "uniform mat4 modelMatrix;",
- "uniform mat4 modelViewMatrix;",
- "uniform mat4 projectionMatrix;",
- "uniform mat4 viewMatrix;",
- "uniform mat3 normalMatrix;",
- "uniform vec3 cameraPosition;",
  "uniform float screenWidth;",
  "uniform float screenHeight;",
  "uniform float fov;",
@@ -107,15 +120,21 @@ Potree.Shaders["pointcloud.vs"] = [
  "uniform sampler2D classificationLUT;",
  "uniform sampler2D depthMap;",
  "",
- "varying float vOpacity;",
- "varying vec3 vColor;",
- "varying float vDepth;",
- "varying float vLinearDepth;",
- "varying vec3 vViewPos;",
- "varying float vRadius;",
+ "varying float	vOpacity;",
+ "varying vec3	vColor;",
+ "varying float	vDepth;",
+ "varying float	vLinearDepth;",
+ "varying vec3	vViewPosition;",
+ "varying float 	vRadius;",
+ "varying vec3	vWorldPosition;",
+ "varying vec3	vNormal;",
  "",
  "",
- "#if defined(adaptive_point_size) || defined(color_type_octree_depth)",
+ "// ---------------------",
+ "// OCTREE",
+ "// ---------------------",
+ "",
+ "#if (defined(adaptive_point_size) || defined(color_type_tree_depth)) && defined(tree_type_octree)",
  "/**",
  " * number of 1-bits up to inclusive index position",
  " * number is treated as if it were an integer in the range 0-255",
@@ -145,13 +164,13 @@ Potree.Shaders["pointcloud.vs"] = [
  "",
  "",
  "/**",
- " * find the octree depth at the point position",
+ " * find the tree depth at the point position",
  " */",
- "float getOctreeDepth(){",
+ "float getLocalTreeDepth(){",
  "	vec3 offset = vec3(0.0, 0.0, 0.0);",
  "	float iOffset = 0.0;",
  "	float depth = 0.0;",
- "	for(float i = 0.0; i <= octreeLevels + 1.0; i++){",
+ "	for(float i = 0.0; i <= levels + 1.0; i++){",
  "		",
  "		float nodeSizeAtLevel = nodeSize / pow(2.0, i);",
  "		vec3 index3d = (position - offset) / nodeSizeAtLevel;",
@@ -174,63 +193,150 @@ Potree.Shaders["pointcloud.vs"] = [
  "	return depth;",
  "}",
  "",
- "#endif",
- "",
- "vec3 classificationColor(float classification){",
- "  float c = mod(classification, 16.0);",
- "	vec2 uv = vec2(c / 255.0, 0.5);",
- "	vec3 color = texture2D(classificationLUT, uv).rgb;",
- "",
- "	return color;",
+ "float getPointSizeAttenuation(){",
+ "	return pow(1.9, getLocalTreeDepth());",
  "}",
  "",
- "void colors(){",
- "	vec3 result;",
  "",
+ "#endif",
+ "",
+ "",
+ "// ---------------------",
+ "// KD-TREE",
+ "// ---------------------",
+ "",
+ "#if (defined(adaptive_point_size) || defined(color_type_tree_depth)) && defined(tree_type_kdtree)",
+ "",
+ "float getLocalTreeDepth(){",
+ "	vec3 offset = vec3(0.0, 0.0, 0.0);",
+ "	float iOffset = 0.0;",
+ "	float depth = 0.0;",
+ "		",
+ "		",
+ "	vec3 size = bbSize;	",
+ "	vec3 pos = position;",
+ "		",
+ "	for(float i = 0.0; i <= levels + 1.0; i++){",
+ "		",
+ "		vec4 value = texture2D(visibleNodes, vec2(iOffset / 2048.0, 0.0));",
+ "		",
+ "		int children = int(value.r * 255.0);",
+ "		float next = value.g * 255.0;",
+ "		int split = int(value.b * 255.0);",
+ "		",
+ "		if(next == 0.0){",
+ "		 	return depth;",
+ "		}",
+ "		",
+ "		vec3 splitv = vec3(0.0, 0.0, 0.0);",
+ "		if(split == 1){",
+ "			splitv.x = 1.0;",
+ "		}else if(split == 2){",
+ "		 	splitv.y = 1.0;",
+ "		}else if(split == 4){",
+ "		 	splitv.z = 1.0;",
+ "		}",
+ "		",
+ "		iOffset = iOffset + next;",
+ "		",
+ "		float factor = length(pos * splitv / size);",
+ "		if(factor < 0.5){",
+ "		 	// left",
+ "		    if(children == 0 || children == 2){",
+ "		    	return depth;",
+ "		    }",
+ "		}else{",
+ "		  	// right",
+ "		    pos = pos - size * splitv * 0.5;",
+ "		    if(children == 0 || children == 1){",
+ "		    	return depth;",
+ "		    }",
+ "		    if(children == 3){",
+ "		    	iOffset = iOffset + 1.0;",
+ "		    }",
+ "		}",
+ "		size = size * ((1.0 - (splitv + 1.0) / 2.0) + 0.5);",
+ "		",
+ "		depth++;",
+ "	}",
+ "		",
+ "		",
+ "	return depth;	",
+ "}",
+ "",
+ "float getPointSizeAttenuation(){",
+ "	return pow(1.3, getLocalTreeDepth());",
+ "}",
+ "",
+ "#endif",
+ "",
+ "void main() {",
+ "	vec4 worldPosition = modelMatrix * vec4( position, 1.0 );",
+ "	vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );",
+ "	vViewPosition = -mvPosition.xyz;",
+ "	vWorldPosition = worldPosition.xyz;",
+ "	gl_Position = projectionMatrix * mvPosition;",
+ "	vOpacity = opacity;",
+ "	vLinearDepth = -mvPosition.z;",
+ "	vDepth = mvPosition.z / gl_Position.w;",
+ "	vNormal = (modelMatrix * vec4(normal, 0.0)).xyz;",
+ "	vNormal = normalMatrix * normal;",
+ "",
+ "",
+ "	// ---------------------",
+ "	// POINT COLOR",
+ "	// ---------------------",
+ "	",
  "	#ifdef color_type_rgb",
- "		result = color;",
+ "		vColor = color;",
  "	#elif defined color_type_height",
  "		vec4 world = modelMatrix * vec4( position, 1.0 );",
  "		float w = (world.y - heightMin) / (heightMax-heightMin);",
- "	",
- "		result = texture2D(gradient, vec2(w,1.0-w)).rgb;",
+ "		vColor = texture2D(gradient, vec2(w,1.0-w)).rgb;",
  "	#elif defined color_type_depth",
  "		float d = -mvPosition.z ;",
- "		result = vec3(d, vDepth, 0.0);",
+ "		vColor = vec3(d, vDepth, 0.0);",
  "	#elif defined color_type_intensity",
  "		float w = (intensity - intensityMin) / (intensityMax - intensityMin);",
- "		result = vec3(w, w, w);",
+ "		vColor = vec3(w, w, w);",
  "	#elif defined color_type_intensity_gradient",
  "		float w = (intensity - intensityMin) / intensityMax;",
- "		result = texture2D(gradient, vec2(w,1.0-w)).rgb;",
+ "		vColor = texture2D(gradient, vec2(w,1.0-w)).rgb;",
  "	#elif defined color_type_color",
- "		result = uColor;",
- "	#elif defined color_type_octree_depth",
- "		float depth = getOctreeDepth();",
+ "		vColor = uColor;",
+ "	#elif defined color_type_tree_depth",
+ "		float depth = getLocalTreeDepth();",
  "		float w = depth / 10.0;",
- "		result = texture2D(gradient, vec2(w,1.0-w)).rgb;",
+ "		vColor = texture2D(gradient, vec2(w,1.0-w)).rgb;",
  "	#elif defined color_type_point_index",
- "		result = indices.rgb;",
+ "		vColor = indices.rgb;",
  "	#elif defined color_type_classification",
- "		result = classificationColor(classification);",
+ "		float c = mod(classification, 16.0);",
+ "		vec2 uv = vec2(c / 255.0, 0.5);",
+ "		vColor = texture2D(classificationLUT, uv).rgb;",
  "	#elif defined color_type_return_number",
  "		float w = (returnNumber - 1.0) / 4.0 + 0.1;",
- "		result = texture2D(gradient, vec2(w, 1.0 - w)).rgb;",
+ "		vColor = texture2D(gradient, vec2(w, 1.0 - w)).rgb;",
  "	#elif defined color_type_source",
  "		float w = mod(pointSourceID, 10.0) / 10.0;",
- "		result = texture2D(gradient, vec2(w,1.0 - w)).rgb;",
+ "		vColor = texture2D(gradient, vec2(w,1.0 - w)).rgb;",
  "	#elif defined color_type_normal",
- "		result = (modelMatrix * vec4(normal, 0.0)).xyz;",
+ "		vColor = (modelMatrix * vec4(normal, 0.0)).xyz;",
+ "	#elif defined color_type_phong",
+ "		vColor = color;",
  "	#endif",
  "	",
- "	vColor = result;",
- "}",
- "",
- "void pointSize(){",
+ "	if(vNormal.z < 0.0){",
+ "		gl_Position = vec4(1000.0, 1000.0, 1000.0, 1.0);",
+ "	}",
+ "	",
+ "	// ---------------------",
+ "	// POINT SIZE",
+ "	// ---------------------",
  "	float pointSize = 1.0;",
  "	",
  "	float projFactor = 1.0 / tan(fov / 2.0);",
- "	projFactor /= -vViewPos.z;",
+ "	projFactor /= vViewPosition.z;",
  "	projFactor *= screenHeight / 2.0;",
  "	float r = spacing * 1.5;",
  "	vRadius = r;",
@@ -239,7 +345,7 @@ Potree.Shaders["pointcloud.vs"] = [
  "	#elif defined attenuated_point_size",
  "		pointSize = size * projFactor;",
  "	#elif defined adaptive_point_size",
- "		float worldSpaceSize = size * r / pow(1.9, getOctreeDepth());",
+ "		float worldSpaceSize = size * r / getPointSizeAttenuation();",
  "		pointSize = worldSpaceSize * projFactor;",
  "	#endif",
  "",
@@ -249,9 +355,12 @@ Potree.Shaders["pointcloud.vs"] = [
  "	vRadius = pointSize / projFactor;",
  "	",
  "	gl_PointSize = pointSize;",
- "}",
- "",
- "void clipping(){",
+ "	",
+ "	",
+ "	// ---------------------",
+ "	// CLIPPING",
+ "	// ---------------------",
+ "	",
  "	#if defined use_clip_box",
  "		bool insideAny = false;",
  "		for(int i = 0; i < clip_box_count; i++){",
@@ -277,21 +386,6 @@ Potree.Shaders["pointcloud.vs"] = [
  "	#endif",
  "}",
  "",
- "void main() {",
- "",
- "	vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );",
- "	vViewPos = mvPosition.xyz;",
- "	gl_Position = projectionMatrix * mvPosition;",
- "	vOpacity = opacity;",
- "	vLinearDepth = -mvPosition.z;",
- "	vDepth = mvPosition.z / gl_Position.w;",
- "",
- "",
- "	colors();",
- "	pointSize();",
- "	clipping();",
- "}",
- "",
 ].join("\n");
 
 Potree.Shaders["pointcloud.fs"] = [
@@ -300,12 +394,36 @@ Potree.Shaders["pointcloud.fs"] = [
  "	#extension GL_EXT_frag_depth : enable",
  "#endif",
  "",
- "uniform mat4 modelMatrix;",
- "uniform mat4 modelViewMatrix;",
+ "",
+ "// the following is an incomplete list of attributes, uniforms and defines",
+ "// which are automatically added through the THREE.ShaderMaterial",
+ "",
+ "// #define USE_COLOR",
+ "// ",
+ "// uniform mat4 viewMatrix;",
+ "// uniform vec3 cameraPosition;",
+ "",
+ "",
+ "",
  "uniform mat4 projectionMatrix;",
- "uniform mat4 viewMatrix;",
- "uniform mat3 normalMatrix;",
- "uniform vec3 cameraPosition;",
+ "",
+ "uniform vec3 diffuse;",
+ "uniform float opacity;",
+ "uniform vec3 ambient;",
+ "uniform vec3 emissive;",
+ "uniform vec3 specular;",
+ "uniform float shininess;",
+ "",
+ "uniform vec3 ambientLightColor;",
+ "",
+ "#if MAX_POINT_LIGHTS > 0",
+ "",
+ "	uniform vec3 pointLightColor[ MAX_POINT_LIGHTS ];",
+ "",
+ "	uniform vec3 pointLightPosition[ MAX_POINT_LIGHTS ];",
+ "	uniform float pointLightDistance[ MAX_POINT_LIGHTS ];",
+ "",
+ "#endif",
  "",
  "uniform float fov;",
  "uniform float spacing;",
@@ -317,12 +435,17 @@ Potree.Shaders["pointcloud.fs"] = [
  "uniform float blendDepth;",
  "",
  "uniform sampler2D depthMap;",
- "varying vec3 vColor;",
- "varying float vOpacity;",
- "varying float vLinearDepth;",
- "varying float vDepth;",
- "varying vec3 vViewPos;",
- "varying float vRadius;",
+ "",
+ "varying vec3	vColor;",
+ "varying float	vOpacity;",
+ "varying float	vLinearDepth;",
+ "varying float	vDepth;",
+ "varying vec3	vViewPosition;",
+ "varying float	vRadius;",
+ "varying vec3	vWorldPosition;",
+ "varying vec3	vNormal;",
+ "",
+ "float specularStrength = 1.0;",
  "",
  "void main() {",
  "",
@@ -348,7 +471,7 @@ Potree.Shaders["pointcloud.fs"] = [
  "	",
  "	#if defined use_interpolation",
  "		float w = 1.0 - ( u*u + v*v);",
- "		vec4 pos = vec4(vViewPos, 1.0);",
+ "		vec4 pos = vec4(-vViewPosition, 1.0);",
  "		pos.z += w * vRadius;",
  "		pos = projectionMatrix * pos;",
  "		pos = pos / pos.w;",
@@ -365,6 +488,77 @@ Potree.Shaders["pointcloud.fs"] = [
  "	    float w = pow(1.0 - (u*u + v*v), 2.0);",
  "		gl_FragColor.rgb = gl_FragColor.rgb * w;",
  "		gl_FragColor.a = w;",
+ "	#endif",
+ "	",
+ "	vec3 normal = normalize( vNormal );",
+ "	vec3 viewPosition = normalize( vViewPosition );",
+ "	",
+ "	#if defined(color_type_phong)",
+ "",
+ "	// code taken from three.js phong light fragment shader",
+ "	",
+ "		#if defined MAX_POINT_LIGHTS > 0",
+ "",
+ "		vec3 pointDiffuse = vec3( 0.0 );",
+ "		vec3 pointSpecular = vec3( 0.0 );",
+ "",
+ "		for ( int i = 0; i < MAX_POINT_LIGHTS; i ++ ) {",
+ "",
+ "			vec4 lPosition = viewMatrix * vec4( pointLightPosition[ i ], 1.0 );",
+ "			vec3 lVector = lPosition.xyz + vViewPosition.xyz;",
+ "",
+ "			float lDistance = 1.0;",
+ "			if ( pointLightDistance[ i ] > 0.0 )",
+ "				lDistance = 1.0 - min( ( length( lVector ) / pointLightDistance[ i ] ), 1.0 );",
+ "",
+ "			lVector = normalize( lVector );",
+ "",
+ "					// diffuse",
+ "",
+ "			float dotProduct = dot( normal, lVector );",
+ "",
+ "			#ifdef WRAP_AROUND",
+ "",
+ "				float pointDiffuseWeightFull = max( dotProduct, 0.0 );",
+ "				float pointDiffuseWeightHalf = max( 0.5 * dotProduct + 0.5, 0.0 );",
+ "",
+ "				vec3 pointDiffuseWeight = mix( vec3( pointDiffuseWeightFull ), vec3( pointDiffuseWeightHalf ), wrapRGB );",
+ "",
+ "			#else",
+ "",
+ "				float pointDiffuseWeight = max( dotProduct, 0.0 );",
+ "",
+ "			#endif",
+ "",
+ "			pointDiffuse += diffuse * pointLightColor[ i ] * pointDiffuseWeight * lDistance;",
+ "",
+ "					// specular",
+ "",
+ "			vec3 pointHalfVector = normalize( lVector + viewPosition );",
+ "			float pointDotNormalHalf = max( dot( normal, pointHalfVector ), 0.0 );",
+ "			float pointSpecularWeight = specularStrength * max( pow( pointDotNormalHalf, shininess ), 0.0 );",
+ "",
+ "			float specularNormalization = ( shininess + 2.0 ) / 8.0;",
+ "",
+ "			vec3 schlick = specular + vec3( 1.0 - specular ) * pow( max( 1.0 - dot( lVector, pointHalfVector ), 0.0 ), 5.0 );",
+ "			pointSpecular += schlick * pointLightColor[ i ] * pointSpecularWeight * pointDiffuseWeight * lDistance * specularNormalization;",
+ "			pointSpecular = vec3(0.0, 0.0, 0.0);",
+ "		}",
+ "		",
+ "		#endif",
+ "		",
+ "		vec3 totalDiffuse = vec3( 0.0 );",
+ "		vec3 totalSpecular = vec3( 0.0 );",
+ "		",
+ "		#if MAX_POINT_LIGHTS > 0",
+ "",
+ "			totalDiffuse += pointDiffuse;",
+ "			totalSpecular += pointSpecular;",
+ "",
+ "		#endif",
+ "		",
+ "		gl_FragColor.xyz = gl_FragColor.xyz * ( emissive + totalDiffuse + ambientLightColor * ambient ) + totalSpecular;",
+ "",
  "	#endif",
  "	",
  "}",
@@ -1191,9 +1385,9 @@ Potree.Classification = {
 
 
 Potree.PointSizeType = {
-	FIXED: 0,
+	FIXED: 		0,
 	ATTENUATED: 1,
-	ADAPTIVE: 2
+	ADAPTIVE: 	2
 };
 
 Potree.PointShape = {
@@ -1202,24 +1396,31 @@ Potree.PointShape = {
 };
 
 Potree.PointColorType = {
-	RGB: 0,
-	COLOR: 1,
-	DEPTH: 2,
-	HEIGHT: 3,
-	INTENSITY: 4,
-	INTENSITY_GRADIENT: 5,
-	OCTREE_DEPTH: 6,
-	POINT_INDEX: 7,
-	CLASSIFICATION: 8,
-	RETURN_NUMBER: 9,
-	SOURCE: 10,
-	NORMAL: 11
+	RGB: 				0,
+	COLOR: 				1,
+	DEPTH: 				2,
+	HEIGHT: 			3,
+	INTENSITY: 			4,
+	INTENSITY_GRADIENT:	5,
+	TREE_DEPTH: 		6,
+	POINT_INDEX: 		7,
+	CLASSIFICATION: 	8,
+	RETURN_NUMBER: 		9,
+	SOURCE: 			10,
+	NORMAL: 			11,
+	PHONG: 				12,
+	TREE_DEPTH: 		13
 };
 
 Potree.ClipMode = {
-	DISABLED: 0,
-	CLIP_OUTSIDE: 1,
-	HIGHLIGHT_INSIDE: 2
+	DISABLED: 			0,
+	CLIP_OUTSIDE: 		1,
+	HIGHLIGHT_INSIDE:	2
+};
+
+Potree.TreeType = {
+	OCTREE:				0,
+	KDTREE:				1
 };
 
 Potree.PointCloudMaterial = function(parameters){
@@ -1233,13 +1434,14 @@ Potree.PointCloudMaterial = function(parameters){
 	var pointSize = parameters.size || 1.0;
 	var minSize = parameters.minSize || 1.0;
 	var maxSize = parameters.maxSize || 50.0;
+	var treeType = parameters.treeType || Potree.TreeType.OCTREE;
 	var nodeSize = 1.0;
 	
 	this._pointSizeType = Potree.PointSizeType.ATTENUATED;
 	this._pointShape = Potree.PointShape.SQUARE;
 	this._interpolate = false;
 	this._pointColorType = Potree.PointColorType.RGB;
-	this._octreeLevels = 6.0;
+	this._levels = 6.0;
 	this._useClipBox = false;
 	this.numClipBoxes = 0;
 	this._clipMode = Potree.ClipMode.DISABLED;
@@ -1250,6 +1452,8 @@ Potree.PointCloudMaterial = function(parameters){
 	this._classification = Potree.Classification.DEFAULT;
 	this.gradientTexture = Potree.PointCloudMaterial.generateGradientTexture(this._gradient);
 	this.classificationTexture = Potree.PointCloudMaterial.generateClassificationTexture(this._classification);
+	this.lights = true;
+	this._treeType = treeType;
 	
 	
 	
@@ -1279,9 +1483,25 @@ Potree.PointCloudMaterial = function(parameters){
 		clipBoxes:			{ type: "Matrix4fv", value: [] },
 		blendDepth:			{ type: "f", value: this._blendDepth },
 		depthMap: 			{ type: "t", value: null },
+		diffuse:			{ type: "fv", value: [1,1,1]},
+		ambientLightColor: 			{ type: "fv", value: null },
+		directionalLightColor: 		{ type: "fv", value: null },
+		directionalLightDirection: 	{ type: "fv", value: null },
+		pointLightColor: 			{ type: "fv", value: null },
+		pointLightPosition: 		{ type: "fv", value: null },
+		pointLightDistance: 		{ type: "fv1", value: null },
+		spotLightColor: 			{ type: "fv", value: null },
+		spotLightPosition: 			{ type: "fv", value: null },
+		spotLightDistance: 			{ type: "fv1", value: null },
+		spotLightDirection: 		{ type: "fv", value: null },
+		spotLightAngleCos: 			{ type: "fv1", value: null },
+		spotLightExponent: 			{ type: "fv1", value: null },
+		hemisphereLightSkyColor: 	{ type: "fv", value: null },
+		hemisphereLightGroundColor: { type: "fv", value: null },
+		hemisphereLightDirection: 	{ type: "fv", value: null },
 	};
 	
-	
+	this.defaultAttributeValues.normal = [0,0,0];
 	
 	this.setValues({
 		uniforms: uniforms,
@@ -1298,7 +1518,7 @@ Potree.PointCloudMaterial = function(parameters){
 	});
 };
 
-Potree.PointCloudMaterial.prototype = new THREE.RawShaderMaterial();
+Potree.PointCloudMaterial.prototype = new THREE.ShaderMaterial();
 
 Potree.PointCloudMaterial.prototype.updateShaderSource = function(){
 	
@@ -1312,17 +1532,12 @@ Potree.PointCloudMaterial.prototype.updateShaderSource = function(){
 		attributes.returnNumber = { type: "f", value: [] };
 	}else if(this.pointColorType === Potree.PointColorType.SOURCE){
 		attributes.pointSourceID = { type: "f", value: [] };
-	}else if(this.pointColorType === Potree.PointColorType.NORMAL){
+	}else if(this.pointColorType === Potree.PointColorType.NORMAL || this.pointColorType === Potree.PointColorType.PHONG){
 		attributes.normal = { type: "f", value: [] };
 	}
 	
-	var precision = "";
-	precision += "precision " + Potree.Features.precision + " float;\n"; 
-	precision += "precision " + Potree.Features.precision + " int;\n"; 
-	precision += "\n"; 
-	
-	var vs = precision + this.getDefines() + Potree.Shaders["pointcloud.vs"];
-	var fs = precision + this.getDefines() + Potree.Shaders["pointcloud.fs"];
+	var vs = this.getDefines() + Potree.Shaders["pointcloud.vs"];
+	var fs = this.getDefines() + Potree.Shaders["pointcloud.fs"];
 	
 	this.setValues({
 		attributes: attributes,
@@ -1351,9 +1566,6 @@ Potree.PointCloudMaterial.prototype.updateShaderSource = function(){
 			depthTest: false,
 			depthWrite: true
 		});
-		//this.setValues({
-		//	transparent: true
-		//});
 	}
 		
 	if(this.weighted){	
@@ -1381,7 +1593,7 @@ Potree.PointCloudMaterial.prototype.getDefines = function(){
 		defines += "#define attenuated_point_size\n";
 	}else if(this.pointSizeType === Potree.PointSizeType.ADAPTIVE){
 		defines += "#define adaptive_point_size\n";
-		defines += "#define octreeLevels " + Math.max(0, this._octreeLevels - 2).toFixed(1) + "\n";
+		defines += "#define levels " + Math.max(0, this._levels - 2).toFixed(1) + "\n";
 	}
 	
 	if(this.pointShape === Potree.PointShape.SQUARE){
@@ -1406,8 +1618,8 @@ Potree.PointCloudMaterial.prototype.getDefines = function(){
 		defines += "#define color_type_intensity\n";
 	}else if(this._pointColorType === Potree.PointColorType.INTENSITY_GRADIENT){
 		defines += "#define color_type_intensity_gradient\n";
-	}else if(this._pointColorType === Potree.PointColorType.OCTREE_DEPTH){
-		defines += "#define color_type_octree_depth\n";
+	}else if(this._pointColorType === Potree.PointColorType.TREE_DEPTH){
+		defines += "#define color_type_tree_depth\n";
 	}else if(this._pointColorType === Potree.PointColorType.POINT_INDEX){
 		defines += "#define color_type_point_index\n";
 	}else if(this._pointColorType === Potree.PointColorType.CLASSIFICATION){
@@ -1418,6 +1630,8 @@ Potree.PointCloudMaterial.prototype.getDefines = function(){
 		defines += "#define color_type_source\n";
 	}else if(this._pointColorType === Potree.PointColorType.NORMAL){
 		defines += "#define color_type_normal\n";
+	}else if(this._pointColorType === Potree.PointColorType.PHONG){
+		defines += "#define color_type_phong\n";
 	}
 	
 	if(this.clipMode === Potree.ClipMode.DISABLED){
@@ -1426,6 +1640,12 @@ Potree.PointCloudMaterial.prototype.getDefines = function(){
 		defines += "#define clip_outside\n";
 	}else if(this.clipMode === Potree.ClipMode.HIGHLIGHT_INSIDE){
 		defines += "#define clip_highlight_inside\n";
+	}
+	
+	if(this._treeType === Potree.TreeType.OCTREE){
+		defines += "#define tree_type_octree\n";
+	}else if(this._treeType === Potree.TreeType.KDTREE){
+		defines += "#define tree_type_kdtree\n";
 	}
 	
 	if(this.weighted){
@@ -1447,7 +1667,6 @@ Potree.PointCloudMaterial.prototype.setClipBoxes = function(clipBoxes){
 	if(this.uniforms.clipBoxes.value.length / 16 !== numBoxes){
 		this.uniforms.clipBoxes.value = new Float32Array(numBoxes * 16);
 		this.updateShaderSource();
-		
 	}
 	
 	for(var i = 0; i < numBoxes; i++){
@@ -1455,8 +1674,6 @@ Potree.PointCloudMaterial.prototype.setClipBoxes = function(clipBoxes){
 		
 		this.uniforms.clipBoxes.value.set(box.elements, 16*i);
 	}
-	
-	
 };
 
 
@@ -1606,13 +1823,13 @@ Object.defineProperty(Potree.PointCloudMaterial.prototype, "opacity", {
 	}
 });
 
-Object.defineProperty(Potree.PointCloudMaterial.prototype, "octreeLevels", {
+Object.defineProperty(Potree.PointCloudMaterial.prototype, "levels", {
 	get: function(){
-		return this._octreeLevels;
+		return this._levels;
 	},
 	set: function(value){
-		if(this._octreeLevels !== value){
-			this._octreeLevels = value;
+		if(this._levels !== value){
+			this._levels = value;
 			this.updateShaderSource();
 		}
 	}
@@ -1774,6 +1991,22 @@ Object.defineProperty(Potree.PointCloudMaterial.prototype, "pcIndex", {
 	}
 });
 
+Object.defineProperty(Potree.PointCloudMaterial.prototype, "treeType", {
+	get: function(){
+		return this._treeType;
+	},
+	set: function(value){
+		if(this._treeType != value){
+			this._treeType = value;
+			this.updateShaderSource();
+		}
+	}
+});
+
+/**
+ * Generates a look-up texture for gradient values (height, intensity, ...)
+ *
+ */
 Potree.PointCloudMaterial.generateGradientTexture = function(gradient) {
 	var size = 64;
 
@@ -1805,6 +2038,10 @@ Potree.PointCloudMaterial.generateGradientTexture = function(gradient) {
 	return texture;
 };
 
+/**
+ * Generates a look up texture for classification colors
+ *
+ */
 Potree.PointCloudMaterial.generateClassificationTexture  = function(classification){
 	var width = 256;
 	var height = 256;
@@ -8081,7 +8318,7 @@ Potree.PointCloudArena4D = function(geometry){
 	this.pcoGeometry = geometry;
 	this.boundingBox = this.pcoGeometry.boundingBox;
 	this.boundingSphere = this.pcoGeometry.boundingSphere;
-	this.material = new Potree.PointCloudMaterialArena4D({vertexColors: THREE.VertexColors, size: 0.05});
+	this.material = new Potree.PointCloudMaterial({vertexColors: THREE.VertexColors, size: 0.05, treeType: Potree.TreeType.KDTREE});
 	this.material.sizeType = Potree.PointSizeType.ATTENUATED;
 	this.material.size = 0.05;
 	
@@ -8556,7 +8793,7 @@ Potree.PointCloudArena4D.prototype.pick = function(renderer, camera, ray, params
 	// setup pick material.
 	// use the same point size functions as the main material to get the same point sizes.
 	if(!this.pickMaterial){
-		this.pickMaterial = new Potree.PointCloudMaterialArena4D();
+		this.pickMaterial = new Potree.PointCloudMaterial({treeType: Potree.TreeType.KDTREE});
 		this.pickMaterial.pointColorType = Potree.PointColorType.POINT_INDEX;
 		this.pickMaterial.pointSizeType = Potree.PointSizeType.FIXED;
 	}
@@ -9112,1061 +9349,4 @@ Object.defineProperty(Potree.PointCloudArena4DGeometry.prototype, "spacing", {
 	}
 });
 
-
-
-
-
-//
-//
-//
-// how to calculate the radius of a projected sphere in screen space
-// http://stackoverflow.com/questions/21648630/radius-of-projected-sphere-in-screen-space
-// http://stackoverflow.com/questions/3717226/radius-of-projected-sphere
-//
-
-Potree.Gradients = {
-	RAINBOW: [
-		[0, new THREE.Color(0.278, 0, 0.714)],
-		[1/6, new THREE.Color(0, 0, 1)],
-		[2/6, new THREE.Color(0, 1, 1)],
-		[3/6, new THREE.Color(0, 1, 0)],
-		[4/6, new THREE.Color(1, 1, 0)],
-		[5/6, new THREE.Color(1, 0.64, 0)],
-		[1, new THREE.Color(1, 0, 0)]
-	],
-	GRAYSCALE: [
-		[0, new THREE.Color(0,0,0)],
-		[1, new THREE.Color(1,1,1)]
-	]
-};
-
-Potree.Classification = {
-	"DEFAULT": {
-		0: 			new THREE.Color(0.5, 0.5,0.5),
-		1: 			new THREE.Color(0.5, 0.5,0.5),
-		2: 			new THREE.Color(0.63, 0.32, 0.18),
-		3: 			new THREE.Color(0.0, 1.0, 0.0),
-		4: 			new THREE.Color(0.0, 0.8, 0.0),
-		5: 			new THREE.Color(0.0, 0.6, 0.0 ),
-		6: 			new THREE.Color(1.0, 0.66, 0.0),
-		7:			new THREE.Color(1.0, 0, 1.0   ),
-		8: 			new THREE.Color(1.0, 0, 0.0   ),
-		9: 			new THREE.Color(0.0, 0.0, 1.0 ),
-		12:			new THREE.Color(1.0, 1.0, 0.0 ),
-		"DEFAULT": 	new THREE.Color(0.3, 0.6, 0.6 )
-	}
-};
-
-
-Potree.PointSizeType = {
-	FIXED: 0,
-	ATTENUATED: 1,
-	ADAPTIVE: 2
-};
-
-Potree.PointShape = {
-	SQUARE: 0,
-	CIRCLE: 1
-};
-
-Potree.PointColorType = {
-	RGB: 0,
-	COLOR: 1,
-	DEPTH: 2,
-	HEIGHT: 3,
-	INTENSITY: 4,
-	INTENSITY_GRADIENT: 5,
-	OCTREE_DEPTH: 6,
-	POINT_INDEX: 7,
-	CLASSIFICATION: 8,
-	RETURN_NUMBER: 9,
-	SOURCE: 10
-};
-
-Potree.ClipMode = {
-	DISABLED: 0,
-	CLIP_OUTSIDE: 1,
-	HIGHLIGHT_INSIDE: 2
-};
-
-Potree.PointCloudMaterialArena4D = function(parameters){
-	parameters = parameters || {};
-
-	var color = new THREE.Color( 0x000000 );
-	var map = THREE.ImageUtils.generateDataTexture( 2048, 1, color );
-	map.magFilter = THREE.NearestFilter;
-	this.visibleNodesTexture = map;
-	
-	var pointSize = parameters.size || 1.0;
-	var minSize = parameters.minSize || 1.0;
-	var maxSize = parameters.maxSize || 50.0;
-	var nodeSize = 1.0;
-	
-	this._pointSizeType = Potree.PointSizeType.ATTENUATED;
-	this._pointShape = Potree.PointShape.SQUARE;
-	this._interpolate = false;
-	this._pointColorType = Potree.PointColorType.RGB;
-	this._levels = 6.0;
-	this._useClipBox = false;
-	this.numClipBoxes = 0;
-	this._clipMode = Potree.ClipMode.DISABLED;
-	this._weighted = false;
-	this._blendDepth = 0.1;
-	this._depthMap;
-	this._gradient = Potree.Gradients.RAINBOW;
-	this._classification = Potree.Classification.DEFAULT;
-	this.gradientTexture = Potree.PointCloudMaterialArena4D.generateGradientTexture(this._gradient);
-	this.classificationTexture = Potree.PointCloudMaterialArena4D.generateClassificationTexture(this._classification);
-	
-	var attributes = {};
-	var uniforms = {
-		spacing:			{ type: "f", value: 1.0 },
-		fov:				{ type: "f", value: 1.0 },
-		screenWidth:		{ type: "f", value: 1.0 },
-		screenHeight:		{ type: "f", value: 1.0 },
-		near:				{ type: "f", value: 0.1 },
-		far:				{ type: "f", value: 1.0 },
-		uColor:   			{ type: "c", value: new THREE.Color( 0xff0000 ) },
-		opacity:   			{ type: "f", value: 1.0 },
-		size:   			{ type: "f", value: 10 },
-		minSize:   			{ type: "f", value: 2 },
-		maxSize:   			{ type: "f", value: 2 },
-		nodeSize:			{ type: "f", value: nodeSize },
-		heightMin:			{ type: "f", value: 0.0 },
-		heightMax:			{ type: "f", value: 1.0 },
-		intensityMin:		{ type: "f", value: 0.0 },
-		intensityMax:		{ type: "f", value: 1.0 },
-		visibleNodes:		{ type: "t", value: this.visibleNodesTexture },
-		bbSize:				{ type: "3f", value: [1,0,0] },
-		pcIndex:   			{ type: "f", value: 0 },
-		gradient: 			{ type: "t", value: this.gradientTexture },
-		classificationLUT: 	{ type: "t", value: this.classificationTexture },
-		clipBoxes:			{ type: "Matrix4fv", value: [] },
-		blendDepth:			{ type: "f", value: this._blendDepth },
-		depthMap: 			{ type: "t", value: null },
-	};
-	
-	
-	
-	this.setValues({
-		uniforms: uniforms,
-		attributes: attributes,
-		vertexShader: this.getDefines() + Potree.PointCloudMaterialArena4D.vs_points.join("\n"),
-		fragmentShader: this.getDefines() + Potree.PointCloudMaterialArena4D.fs_points_rgb.join("\n"),
-		vertexColors: THREE.VertexColors,
-		size: pointSize,
-		minSize: minSize,
-		maxSize: maxSize,
-		nodeSize: nodeSize,
-		pcIndex: 0,
-		alphaTest: 0.9
-	});
-};
-
-Potree.PointCloudMaterialArena4D.prototype = new THREE.RawShaderMaterial();
-
-Potree.PointCloudMaterialArena4D.prototype.updateShaderSource = function(){
-	
-	var attributes = {};
-	if(this.pointColorType === Potree.PointColorType.INTENSITY
-		|| this.pointColorType === Potree.PointColorType.INTENSITY_GRADIENT){
-		attributes.intensity = { type: "f", value: [] };
-	}else if(this.pointColorType === Potree.PointColorType.CLASSIFICATION){
-		attributes.classification = { type: "f", value: [] };
-	}else if(this.pointColorType === Potree.PointColorType.RETURN_NUMBER){
-		attributes.returnNumber = { type: "f", value: [] };
-	}else if(this.pointColorType === Potree.PointColorType.SOURCE){
-		attributes.pointSourceID = { type: "f", value: [] };
-	}
-	
-	var precision = "";
-	precision += "precision " + Potree.Features.precision + " float;\n"; 
-	precision += "precision " + Potree.Features.precision + " int;\n"; 
-	precision += "\n"; 
-	
-	var vs = precision + this.getDefines() + Potree.PointCloudMaterialArena4D.vs_points.join("\n");
-	var fs = precision + this.getDefines() + Potree.PointCloudMaterialArena4D.fs_points_rgb.join("\n");
-	
-	this.setValues({
-		attributes: attributes,
-		vertexShader: vs,
-		fragmentShader: fs
-	});
-	
-	if(this.depthMap){
-		this.uniforms.depthMap.value = this.depthMap;
-		this.setValues({
-			depthMap: this.depthMap,
-		});
-	}
-	
-	if(this.opacity === 1.0){
-		this.setValues({
-			blending: THREE.NoBlending,
-			transparent: false,
-			depthTest: true,
-			depthWrite: true
-		});
-	}else{
-		this.setValues({
-			blending: THREE.AdditiveBlending,
-			transparent: true,
-			depthTest: false,
-			depthWrite: true
-		});
-		//this.setValues({
-		//	transparent: true
-		//});
-	}
-		
-	if(this.weighted){	
-		this.setValues({
-			blending: THREE.AdditiveBlending,
-			transparent: true,
-			depthTest: true,
-			depthWrite: false
-		});	
-	}
-		
-		
-		
-		
-	this.needsUpdate = true;
-};
-
-Potree.PointCloudMaterialArena4D.prototype.getDefines = function(){
-
-	var defines = "";
-	
-	if(this.pointSizeType === Potree.PointSizeType.FIXED){
-		defines += "#define fixed_point_size\n";
-	}else if(this.pointSizeType === Potree.PointSizeType.ATTENUATED){
-		defines += "#define attenuated_point_size\n";
-	}else if(this.pointSizeType === Potree.PointSizeType.ADAPTIVE){
-		defines += "#define adaptive_point_size\n";
-		defines += "#define levels " + Math.max(0, this._levels - 2).toFixed(1) + "\n";
-	}
-	
-	if(this.pointShape === Potree.PointShape.SQUARE){
-		defines += "#define square_point_shape\n";
-	}else if(this.pointShape === Potree.PointShape.CIRCLE){
-		defines += "#define circle_point_shape\n";
-	}
-	
-	if(this._interpolate){
-		defines += "#define use_interpolation\n";
-	}
-	
-	if(this._pointColorType === Potree.PointColorType.RGB){
-		defines += "#define color_type_rgb\n";
-	}else if(this._pointColorType === Potree.PointColorType.COLOR){
-		defines += "#define color_type_color\n";
-	}else if(this._pointColorType === Potree.PointColorType.DEPTH){
-		defines += "#define color_type_depth\n";
-	}else if(this._pointColorType === Potree.PointColorType.HEIGHT){
-		defines += "#define color_type_height\n";
-	}else if(this._pointColorType === Potree.PointColorType.INTENSITY){
-		defines += "#define color_type_intensity\n";
-	}else if(this._pointColorType === Potree.PointColorType.INTENSITY_GRADIENT){
-		defines += "#define color_type_intensity_gradient\n";
-	}else if(this._pointColorType === Potree.PointColorType.OCTREE_DEPTH){
-		defines += "#define color_type_octree_depth\n";
-	}else if(this._pointColorType === Potree.PointColorType.POINT_INDEX){
-		defines += "#define color_type_point_index\n";
-	}else if(this._pointColorType === Potree.PointColorType.CLASSIFICATION){
-		defines += "#define color_type_classification\n";
-	}else if(this._pointColorType === Potree.PointColorType.RETURN_NUMBER){
-		defines += "#define color_type_return_number\n";
-	}else if(this._pointColorType === Potree.PointColorType.SOURCE){
-		defines += "#define color_type_source\n";
-	}
-	
-	if(this.clipMode === Potree.ClipMode.DISABLED){
-		defines += "#define clip_disabled\n";
-	}else if(this.clipMode === Potree.ClipMode.CLIP_OUTSIDE){
-		defines += "#define clip_outside\n";
-	}else if(this.clipMode === Potree.ClipMode.HIGHLIGHT_INSIDE){
-		defines += "#define clip_highlight_inside\n";
-	}
-	
-	if(this.weighted){
-		defines += "#define weighted_splats\n";
-	}
-	
-	if(this.numClipBoxes > 0){
-		defines += "#define use_clip_box\n";
-		defines += "#define clip_box_count " + this.numClipBoxes + "\n";
-	}
-
-	return defines;
-};
-
-Potree.PointCloudMaterialArena4D.prototype.setClipBoxes = function(clipBoxes){
-	var numBoxes = clipBoxes.length;
-	this.numClipBoxes = numBoxes;
-	
-	if(this.uniforms.clipBoxes.value.length / 16 !== numBoxes){
-		this.uniforms.clipBoxes.value = new Float32Array(numBoxes * 16);
-		this.updateShaderSource();
-		
-	}
-	
-	for(var i = 0; i < numBoxes; i++){
-		var box = clipBoxes[i];
-		
-		this.uniforms.clipBoxes.value.set(box.elements, 16*i);
-	}
-	
-	
-};
-
-
-Object.defineProperty(Potree.PointCloudMaterialArena4D.prototype, "gradient", {
-	get: function(){
-		return this._gradient;
-	},
-	set: function(value){
-		if(this._gradient !== value){
-			this._gradient = value;
-			this.gradientTexture = Potree.PointCloudMaterialArena4D.generateGradientTexture(this._gradient);
-			this.uniforms.gradient.value = this.gradientTexture;
-		}
-	}
-});
-
-Object.defineProperty(Potree.PointCloudMaterialArena4D.prototype, "classification", {
-	get: function(){
-		return this._classification;
-	},
-	set: function(value){
-		if(this._classification !== value){
-			this._classification = value;
-			this.classificationTexture = Potree.PointCloudMaterialArena4D.generateClassificationTexture(this._classification);
-			this.uniforms.classificationLUT.value = this.classificationTexture;
-		}
-	}
-});
-
-Object.defineProperty(Potree.PointCloudMaterialArena4D.prototype, "spacing", {
-	get: function(){
-		return this.uniforms.spacing.value;
-	},
-	set: function(value){
-		if(this.uniforms.spacing.value !== value){
-			this.uniforms.spacing.value = value;
-			//this.updateShaderSource();
-		}
-	}
-});
-
-Object.defineProperty(Potree.PointCloudMaterialArena4D.prototype, "blendDepth", {
-	get: function(){
-		return this.uniforms.blendDepth.value;
-	},
-	set: function(value){
-		if(this.uniforms.blendDepth.value !== value){
-			this.uniforms.blendDepth.value = value;
-			//this.updateShaderSource();
-		}
-	}
-});
-
-Object.defineProperty(Potree.PointCloudMaterialArena4D.prototype, "useClipBox", {
-	get: function(){
-		return this._useClipBox;
-	},
-	set: function(value){
-		if(this._useClipBox !== value){
-			this._useClipBox = value;
-			this.updateShaderSource();
-		}
-	}
-});
-
-Object.defineProperty(Potree.PointCloudMaterialArena4D.prototype, "weighted", {
-	get: function(){
-		return this._weighted;
-	},
-	set: function(value){
-		if(this._weighted !== value){
-			this._weighted = value;
-			this.updateShaderSource();
-		}
-	}
-});
-
-Object.defineProperty(Potree.PointCloudMaterialArena4D.prototype, "fov", {
-	get: function(){
-		return this.uniforms.fov.value;
-	},
-	set: function(value){
-		if(this.uniforms.fov.value !== value){
-			this.uniforms.fov.value = value;
-			//this.updateShaderSource();
-		}
-	}
-});
-
-Object.defineProperty(Potree.PointCloudMaterialArena4D.prototype, "screenWidth", {
-	get: function(){
-		return this.uniforms.screenWidth.value;
-	},
-	set: function(value){
-		if(this.uniforms.screenWidth.value !== value){
-			this.uniforms.screenWidth.value = value;
-			//this.updateShaderSource();
-		}
-	}
-});
-
-Object.defineProperty(Potree.PointCloudMaterialArena4D.prototype, "screenHeight", {
-	get: function(){
-		return this.uniforms.screenHeight.value;
-	},
-	set: function(value){
-		if(this.uniforms.screenHeight.value !== value){
-			this.uniforms.screenHeight.value = value;
-			//this.updateShaderSource();
-		}
-	}
-});
-
-Object.defineProperty(Potree.PointCloudMaterialArena4D.prototype, "near", {
-	get: function(){
-		return this.uniforms.near.value;
-	},
-	set: function(value){
-		if(this.uniforms.near.value !== value){
-			this.uniforms.near.value = value;
-			//this.updateShaderSource();
-		}
-	}
-});
-
-Object.defineProperty(Potree.PointCloudMaterialArena4D.prototype, "far", {
-	get: function(){
-		return this.uniforms.far.value;
-	},
-	set: function(value){
-		if(this.uniforms.far.value !== value){
-			this.uniforms.far.value = value;
-			//this.updateShaderSource();
-		}
-	}
-});
-
-Object.defineProperty(Potree.PointCloudMaterialArena4D.prototype, "opacity", {
-	get: function(){
-		return this.uniforms.opacity.value;
-	},
-	set: function(value){
-		if(this.uniforms.opacity.value !== value){
-			this.uniforms.opacity.value = value;
-			this.updateShaderSource();
-		}
-	}
-});
-
-Object.defineProperty(Potree.PointCloudMaterialArena4D.prototype, "levels", {
-	get: function(){
-		return this._levels;
-	},
-	set: function(value){
-		if(this._levels !== value){
-			this._levels = value;
-			this.updateShaderSource();
-		}
-	}
-});
-
-Object.defineProperty(Potree.PointCloudMaterialArena4D.prototype, "pointColorType", {
-	get: function(){
-		return this._pointColorType;
-	},
-	set: function(value){
-		if(this._pointColorType !== value){
-			this._pointColorType = value;
-			this.updateShaderSource();
-		}
-	}
-});
-
-Object.defineProperty(Potree.PointCloudMaterialArena4D.prototype, "depthMap", {
-	get: function(){
-		return this._depthMap;
-	},
-	set: function(value){
-		if(this._depthMap !== value){
-			this._depthMap = value;
-			this.updateShaderSource();
-		}
-	}
-});
-
-Object.defineProperty(Potree.PointCloudMaterialArena4D.prototype, "pointSizeType", {
-	get: function(){
-		return this._pointSizeType;
-	},
-	set: function(value){
-		if(this._pointSizeType !== value){
-			this._pointSizeType = value;
-			this.updateShaderSource();
-		}
-	}
-});
-
-Object.defineProperty(Potree.PointCloudMaterialArena4D.prototype, "clipMode", {
-	get: function(){
-		return this._clipMode;
-	},
-	set: function(value){
-		if(this._clipMode !== value){
-			this._clipMode = value;
-			this.updateShaderSource();
-		}
-	}
-});
-
-Object.defineProperty(Potree.PointCloudMaterialArena4D.prototype, "interpolate", {
-	get: function(){
-		return this._interpolate;
-	},
-	set: function(value){
-		if(this._interpolate !== value){
-			this._interpolate = value;
-			this.updateShaderSource();
-		}
-	}
-});
-
-Object.defineProperty(Potree.PointCloudMaterialArena4D.prototype, "color", {
-	get: function(){
-		return this.uniforms.uColor.value;
-	},
-	set: function(value){
-		if(this.uniforms.uColor.value !== value){
-			this.uniforms.uColor.value.copy(value);
-			this.updateShaderSource();
-		}
-	}
-});
-
-Object.defineProperty(Potree.PointCloudMaterialArena4D.prototype, "bbSize", {
-	get: function(){
-		return this.uniforms.bbSize.value;
-	},
-	set: function(value){
-		this.uniforms.bbSize.value = value;
-	}
-});
-
-Object.defineProperty(Potree.PointCloudMaterialArena4D.prototype, "pointShape", {
-	get: function(){
-		return this._pointShape;
-	},
-	set: function(value){
-		if(this._pointShape !== value){
-			this._pointShape = value;
-			this.updateShaderSource();
-		}
-	}
-});
-
-Object.defineProperty(Potree.PointCloudMaterialArena4D.prototype, "size", {
-	get: function(){
-		return this.uniforms.size.value;
-	},
-	set: function(value){
-		this.uniforms.size.value = value;
-	}
-});
-
-Object.defineProperty(Potree.PointCloudMaterialArena4D.prototype, "minSize", {
-	get: function(){
-		return this.uniforms.minSize.value;
-	},
-	set: function(value){
-		this.uniforms.minSize.value = value;
-	}
-});
-
-Object.defineProperty(Potree.PointCloudMaterialArena4D.prototype, "maxSize", {
-	get: function(){
-		return this.uniforms.maxSize.value;
-	},
-	set: function(value){
-		this.uniforms.maxSize.value = value;
-	}
-});
-
-Object.defineProperty(Potree.PointCloudMaterialArena4D.prototype, "heightMin", {
-	get: function(){
-		return this.uniforms.heightMin.value;
-	},
-	set: function(value){
-		this.uniforms.heightMin.value = value;
-	}
-});
-
-Object.defineProperty(Potree.PointCloudMaterialArena4D.prototype, "heightMax", {
-	get: function(){
-		return this.uniforms.heightMax.value;
-	},
-	set: function(value){
-		this.uniforms.heightMax.value = value;
-	}
-});
-
-Object.defineProperty(Potree.PointCloudMaterialArena4D.prototype, "intensityMin", {
-	get: function(){
-		return this.uniforms.intensityMin.value;
-	},
-	set: function(value){
-		this.uniforms.intensityMin.value = value;
-	}
-});
-
-Object.defineProperty(Potree.PointCloudMaterialArena4D.prototype, "intensityMax", {
-	get: function(){
-		return this.uniforms.intensityMax.value;
-	},
-	set: function(value){
-		this.uniforms.intensityMax.value = value;
-	}
-});
-
-Object.defineProperty(Potree.PointCloudMaterialArena4D.prototype, "pcIndex", {
-	get: function(){
-		return this.uniforms.pcIndex.value;
-	},
-	set: function(value){
-		this.uniforms.pcIndex.value = value;
-	}
-});
-
-Potree.PointCloudMaterialArena4D.generateGradientTexture = function(gradient) {
-	var size = 64;
-
-	// create canvas
-	canvas = document.createElement( 'canvas' );
-	canvas.width = size;
-	canvas.height = size;
-
-	// get context
-	var context = canvas.getContext( '2d' );
-
-	// draw gradient
-	context.rect( 0, 0, size, size );
-	var ctxGradient = context.createLinearGradient( 0, 0, size, size );
-	
-	for(var i = 0;i < gradient.length; i++){
-		var step = gradient[i];
-		
-		ctxGradient.addColorStop(step[0], "#" + step[1].getHexString());
-	} 
-    
-	context.fillStyle = ctxGradient;
-	context.fill();
-	
-	var texture = new THREE.Texture( canvas );
-	texture.needsUpdate = true;
-	textureImage = texture.image;
-
-	return texture;
-};
-
-Potree.PointCloudMaterialArena4D.generateClassificationTexture  = function(classification){
-	var width = 256;
-	var height = 256;
-	var map = THREE.ImageUtils.generateDataTexture( width, height, new THREE.Color() );
-	map.magFilter = THREE.NearestFilter;
-	var data = map.image.data;
-	
-	for(var x = 0; x < width; x++){
-		for(var y = 0; y < height; y++){
-			var u = 2 * (x / width) - 1;
-			var v = 2 * (y / height) - 1;
-			
-			var i = x + width*y;
-			
-			var color;
-			if(classification[x]){
-				color = classification[x];
-			}else{
-				color = classification.DEFAULT;
-			}
-			
-			
-			data[3*i+0] = 255 * color.r;
-			data[3*i+1] = 255 * color.g;
-			data[3*i+2] = 255 * color.b;
-		}
-	}
-	
-	return map;
-	
-};
-
-Potree.PointCloudMaterialArena4D.vs_points = [
- "                                                                                   ",
- "attribute vec3 position;                                                           ",
- "attribute vec3 color;                                                              ",
- "attribute float intensity;                                                         ",
- "attribute float classification;                                                    ",
- "attribute float returnNumber;                                                      ",
- "attribute float pointSourceID;                                                     ",
- "attribute vec4 indices;                                                            ",
- "                                                                                   ",
- "uniform mat4 modelMatrix;                                                          ",
- "uniform mat4 modelViewMatrix;                                                      ",
- "uniform mat4 projectionMatrix;                                                     ",
- "uniform mat4 viewMatrix;                                                           ",
- "uniform mat3 normalMatrix;                                                         ",
- "uniform vec3 cameraPosition;                                                       ",
- "uniform float screenWidth;                                                         ",
- "uniform float screenHeight;                                                        ",
- "uniform float fov;                                                                 ",
- "uniform float spacing;                                                             ",
- "uniform float blendDepth;                                                             ",
- "uniform float near;                                                                ",
- "uniform float far;                                                                 ",
- "                                                                                   ",
- "#if defined use_clip_box                                                                                   ",
- "	uniform mat4 clipBoxes[clip_box_count];                                                                                   ",
- "#endif                                                                                   ",
- "                                                                                   ",
- "                                                                                   ",
- "uniform float heightMin;                                                           ",
- "uniform float heightMax;                                                           ",
- "uniform float intensityMin;                                                        ",
- "uniform float intensityMax;                                                        ",
- "uniform float size;                                                                ",
- "uniform float minSize;                                                             ",
- "uniform float maxSize;                                                             ",
- "uniform vec3 bbSize;                                                            ",
- "uniform vec3 uColor;                                                               ",
- "uniform float opacity;                                                                                   ",
- "                                                                                   ",
- "                                                                                   ",
- "uniform sampler2D visibleNodes;                                                    ",
- "uniform sampler2D gradient;                                                        ",
- "uniform sampler2D classificationLUT;                                                        ",
- "uniform sampler2D depthMap;                                                        ",
- "                                                                                   ",
- "varying float vOpacity;                                                                                   ",
- "varying vec3 vColor;                                                               ",
- "varying float vDepth;                                                                                   ",
- "varying float vLinearDepth;                                                                                   ",
- "varying vec3 vViewPos;                                                                                   ",
- "varying float vRadius;                                                                                   ",
- "                                                                                   ",
- "                                                                                   ",
- "#if defined(adaptive_point_size) || defined(color_type_octree_depth)               ",
- "/**                                                                                ",
- " * number of 1-bits up to inclusive index position                                 ",
- " * number is treated as if it were an integer in the range 0-255                   ",
- " *                                                                                 ",
- " */                                                                                ",
- "float numberOfOnes(float number, float index){                                     ",
- "	float tmp = mod(number, pow(2.0, index + 1.0));                                  ",
- "	float numOnes = 0.0;                                                             ",
- "	for(float i = 0.0; i < 8.0; i++){                                                ",
- "		if(mod(tmp, 2.0) != 0.0){                                                    ",
- "			numOnes++;                                                               ",
- "		}                                                                            ",
- "		tmp = floor(tmp / 2.0);                                                      ",
- "	}                                                                                ",
- "	return numOnes;                                                                  ",
- "}                                                                                  ",
- "                                                                                   ",
- "                                                                                   ",
- "/**                                                                                ",
- " * checks whether the bit at index is 1                                            ",
- " * number is treated as if it were an integer in the range 0-255                   ",
- " *                                                                                 ",
- " */                                                                                ",
- "bool isBitSet(float number, float index){                                          ",
- "	return mod(floor(number / pow(2.0, index)), 2.0) != 0.0;                         ",
- "}                                                                                  ",
- "                                                                                   ",
- "                                                                                   ",
- "/**                                                                                ",
- " * find the kd-tree depth at the point position                                     ",
- " */                                                                                ",
- "float getKDTreeDepth(){                                                            ",
- "	vec3 offset = vec3(0.0, 0.0, 0.0);                                               ",
- "	float iOffset = 0.0;                                                             ",
- "	float depth = 0.0;                                                               ",
- "		                                                                             ",
- "		                                                                             ",
- "	vec3 size = bbSize;	                                                                             ",
- "	vec3 pos = position;	                                                                             ",
- "		                                                                             ",
- "	for(float i = 0.0; i <= levels + 1.0; i++){                                ",
- "		                                                                             ",
- "		vec4 value = texture2D(visibleNodes, vec2(iOffset / 2048.0, 0.0));                                                                                      ",
- "		                                                                             ",
- "		int children = int(value.r * 255.0);                                                                             ",
- "		float next = value.g * 255.0;                                                                             ",
- "		int split = int(value.b * 255.0);                                                                             ",
- "		                                                                             ",
- "		if(next == 0.0){                                                                             ",
- "		 	return depth;                                                                            ",
- "		}                                                                             ",
- "		                                                                             ",
- "		vec3 splitv = vec3(0.0, 0.0, 0.0);                                                                             ",
- "		if(split == 1){                                                                             ",
- "			splitv.x = 1.0;                                                                            ",
- "		}else if(split == 2){                                                                             ",
- "		 	splitv.y = 1.0;                                                                            ",
- "		}else if(split == 4){                                                                             ",
- "		 	splitv.z = 1.0;                                                                            ",
- "		}                                                                             ",
- "		                                                                             ",
- "		iOffset = iOffset + next;                                                                         ",
- "		                                                                             ",
- "		float factor = length(pos * splitv / size);                                                                             ",
- "		if(factor < 0.5){                                                                             ",
- "		 	// left                                                                            ",
- "		    if(children == 0 || children == 2){                                                                         ",
- "		    	return depth;                                                                         ",
- "		    }                                                                         ",
- "		}else{                                                                             ",
- "		  	// right                                                                           ",
- "		    pos = pos - size * splitv * 0.5;                                                                         ",
- "		    if(children == 0 || children == 1){                                                                         ",
- "		    	return depth;                                                                         ",
- "		    }                                                                         ",
- "		    if(children == 3){                                                                         ",
- "		    	iOffset = iOffset + 1.0;                                                                         ",
- "		    }                                                                         ",
- "		}                                                                             ",
- "		size = size * ((1.0 - (splitv + 1.0) / 2.0) + 0.5);                                                                              ",
- "		                                                                             ",
- "		depth++;                                                                             ",
- "	}                                                                                ",
- "		                                                                             ",
- "		                                                                             ",
- "	return depth;	                                                                             ",
- "		                                                                             ",
- "}                                                                                  ",
- "                                                                                   ",
- "#endif                                                                             ",
- "                                                                                   ",
- "vec3 classificationColor(float classification){                                                                                   ",
- "  float c = mod(classification, 16.0);                                                                                   ",
- "	vec2 uv = vec2(c / 255.0, 0.5);                                                                                   ",
- "	vec3 color = texture2D(classificationLUT, uv).rgb;                                                                                   ",
- "                                                                                   ",
- "	return color;                                                                                   ",
- "}                                                                                   ",
- "                                                                                   ",
- "void main() {                                                                      ",
- "                                                                                   ",
- "	vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );                       ",
- "  vViewPos = mvPosition.xyz;                                                                                 ",
- "	gl_Position = projectionMatrix * mvPosition;                                     ",
- "  //float pw = gl_Position.w;                                                                                 ",
- "  //float pd = gl_Position.z;                                                                                 ",
- "  //gl_Position = gl_Position / pw;                                                                                 ",
- "  //gl_Position.z = 2.0*((pw - near) / far)-1.0;                                                                                 ",
- "  vOpacity = opacity;                                                                                 ",
- "  vLinearDepth = -mvPosition.z;                                                                                 ",
- "  vDepth = mvPosition.z / gl_Position.w;                                                                                 ",
- "                                                                                   ",
- "  // COLOR TYPES                                                                   ",
- "                                                                                   ",
- "  #ifdef color_type_rgb                                                            ",
- "		vColor = color;                                                              ",
- "  #elif defined color_type_height                                                  ",
- "      vec4 world = modelMatrix * vec4( position, 1.0 );                            ",
- "      float w = (world.y - heightMin) / (heightMax-heightMin);                     ",
- "                                                                                   ",
- "  	vColor = texture2D(gradient, vec2(w,1.0-w)).rgb;                             ",
- "  #elif defined color_type_depth                                                   ",
- "      float d = -mvPosition.z ;                                                                             ",
- "      vColor = vec3(d, vDepth, 0.0);                                                                             ",
- "  #elif defined color_type_intensity                                               ",
- "      float w = (intensity - intensityMin) / (intensityMax - intensityMin);                         ",
- "		vColor = vec3(w, w, w);                                                      ",
- "  #elif defined color_type_intensity_gradient                                      ",
- "      float w = (intensity - intensityMin) / intensityMax;                         ",
- "  	vColor = texture2D(gradient, vec2(w,1.0-w)).rgb;                             ",
- "  #elif defined color_type_color                                                   ",
- "  	vColor = uColor;                                                             ",
- "  #elif defined color_type_octree_depth                                            ",
- "  	float depth = getKDTreeDepth();                                              ",
- "      float w = depth / 10.0;                                                      ",
- "  	vColor = texture2D(gradient, vec2(w,1.0-w)).rgb;                             ",
- "  #elif defined color_type_point_index                                             ",
- "  	vColor = indices.rgb;                                                        ",
- "  #elif defined color_type_classification                                             ",
- "  	vColor = classificationColor(classification);                               ",
- "  #elif defined color_type_return_number                                             ",
- "      float w = (returnNumber - 1.0) / 4.0 + 0.1;                                                      ",
- "  	vColor = texture2D(gradient, vec2(w, 1.0 - w)).rgb;                             ",
- "  #elif defined color_type_source                                             ",
- "      float w = mod(pointSourceID, 10.0) / 10.0;                                                                             ",
- "  	vColor = texture2D(gradient, vec2(w,1.0 - w)).rgb;                               ",
- "  #endif                                                                           ",
- "                                                                                   ",
- "                                                                                   ",
- "                                                                                   ",
- "  //                                                                               ",
- "  // POINT SIZE TYPES                                                              ",
- "  //                                                                               ",
- "  float projFactor = 1.0 / tan(fov / 2.0);                                                                             ",
- "  projFactor /= -vViewPos.z;                                                                             ",
- "  projFactor *= screenHeight / 2.0;                                                                              ",
- "  float r = spacing * 1.5;                                                                                 ",
- "  vRadius = r;                                                                                 ",
- "  #if defined fixed_point_size                                                     ",
- "  	gl_PointSize = size;                                                         ",
- "  #elif defined attenuated_point_size                                              ",
- "      gl_PointSize = size * projFactor;                                                                                 ",
- "  #elif defined adaptive_point_size                                                ",
- "      float worldSpaceSize = size * r / pow(1.3, getKDTreeDepth());                                                                              ",
- "      gl_PointSize = worldSpaceSize * projFactor;                                                                              ",
- "  #endif                                                                           ",
- "                                                                                    ",
- "	gl_PointSize = max(minSize, gl_PointSize);                                       ",
- "	gl_PointSize = min(maxSize, gl_PointSize);                                          ",
- "                                                                                     ",
- "  vRadius = gl_PointSize / projFactor;                                                                                   ",
- "                                                                                     ",
- "	//gl_PointSize = getKDTreeDepth();                                          ",
- "                                                                                     ",
- "  // clip box                                                                                  ",
- "  #if defined use_clip_box                                                                                 ",
- "      bool insideAny = false;                                                                               ",
- "      for(int i = 0; i < clip_box_count; i++){                                                                               ",
- "      	vec4 clipPosition = clipBoxes[i] * modelMatrix * vec4( position, 1.0 );                                                                                     ",
- "      	bool inside = -0.5 <= clipPosition.x && clipPosition.x <= 0.5;                                                                             ",
- "      	inside = inside && -0.5 <= clipPosition.y && clipPosition.y <= 0.5;                                                                             ",
- "      	inside = inside && -0.5 <= clipPosition.z && clipPosition.z <= 0.5;                                                                             ",
- "      	insideAny = insideAny || inside;                                                                               ",
- "      }                                                                               ",
- "      if(!insideAny){                                                                               ",
- "                                                                                     ",
- "          #if defined clip_outside                                                                           ",
- "      		gl_Position = vec4(1000.0, 1000.0, 1000.0, 1.0);                                                                               ",
- "          #elif defined clip_highlight_inside && !defined(color_type_depth)                                                                           ",
- "         		float c = (vColor.r + vColor.g + vColor.b) / 6.0;                                                                           ",
- "          	//vColor = vec3(c, c, c);                                                                           ",
- "          #endif                                                                           ",
- "      }else{                                                                               ",
- "      	#if defined clip_highlight_inside                                                                               ",
- "      	vColor.r += 0.5;                                                                               ",
- "          #endif                                                                           ",
- "      }                                                                               ",
- "                                                                                     ",
- "  #endif                                                                                  ",
- "                                                                                   ",
- "                                                                                   ",
- "  //float dd = getKDTreeDepth();                                                                                 ",
- "  //if(dd == 0.0){                                                                                 ",
- "  //	vColor = vec3(1.0, 0.0, 0.0);                                                                                 ",
- "  //}else if(dd == 1.0){                                                                                 ",
- "  //	vColor = vec3(0.0, 1.0, 0.0);                                                                                 ",
- "  //}else if(dd == 2.0){                                                                                 ",
- "  //	vColor = vec3(0.0, 0.0, 1.0);                                                                                 ",
- "  //}else if(dd == 3.0){                                                                                 ",
- "  //	vColor = vec3(1.0, 1.0, 0.0);                                                                                 ",
- "  //}                                                                                 ",
- "                                                                                   ",
- "                                                                                   ",
- "                                                                                   ",
- "  //vec4 value = texture2D(visibleNodes, vec2(0.0 / 2048.0, 0.0));                                                                                 ",
- "  //if(int(value.b * 255.0) == 2){                                                                                 ",
- "  //	vColor.rgb = vec3(0.0, 1.0, 0.0);                                                                                 ",
- "  //}else{                                                                                 ",
- "  //	vColor.rgb = vec3(1.0, 0.0, 0.0);                                                                                 ",
- "  //}                                                                                 ",
- "                                                                                   ",
- "                                                                                   ",
- "                                                                                   ",
- "}                                                                                  "];
-
-Potree.PointCloudMaterialArena4D.fs_points_rgb = [
- "#if defined use_interpolation                                                      ",
- "	#extension GL_EXT_frag_depth : enable                                            ",
- "#endif                                                                             ",
- "                                                                                   ",
- "//uniform float opacity;                                                             ",
- "uniform mat4 modelMatrix;                                                          ",
- "uniform mat4 modelViewMatrix;                                                      ",
- "uniform mat4 projectionMatrix;                                                     ",
- "uniform mat4 viewMatrix;                                                           ",
- "uniform mat3 normalMatrix;                                                         ",
- "uniform vec3 cameraPosition;                                                       ",
- "uniform float fov;                                                                 ",
- "uniform float spacing;                                                             ",
- "uniform float near;                                                                ",
- "uniform float far;                                                                 ",
- "                                                                                   ",
- "uniform float pcIndex;                                                             ",
- "uniform float screenWidth;                                                         ",
- "uniform float screenHeight;                                                        ",
- "uniform float blendDepth;                                                          ",
- "                                                                                   ",
- "uniform sampler2D depthMap;                                                        ",
- "                                                                                   ",
- "varying vec3 vColor;                                                               ",
- "varying float vOpacity;                                                            ",
- "varying float vLinearDepth;                                                        ",
- "varying float vDepth;                                                              ",
- "varying vec3 vViewPos;                                                              ",
- "varying float vRadius;                                                             ",
- "                                                                                   ",
- "                                                                                   ",
- "void main() {                                                                      ",
- "	                                                                                 ",
- "	#if defined(circle_point_shape) || defined(use_interpolation) || defined (weighted_splats)                    ",
- "		float u = 2.0 * gl_PointCoord.x - 1.0;                             ",
- "		float v = 2.0 * gl_PointCoord.y - 1.0;                             ",
- "	#endif                                                                           ",
- "		                                                                             ",
- "	#if defined(circle_point_shape) || defined (weighted_splats)	                                                                             ",
- "		float cc = u*u + v*v;                                                     ",
- "		if(cc > 1.0){                                                                 ",
- "			discard;                                                                 ",
- "		}                                                                            ",
- "	#endif	                                                                             ",
- "		                                                                             ",
- "	#if defined weighted_splats                                                      ",
- "		vec2 uv = gl_FragCoord.xy / vec2(screenWidth, screenHeight);                 ",
- "		                                                                             ",
- "	    float depth = texture2D(depthMap, uv).r;                                     ",
- "	    if(vLinearDepth > depth + vRadius * 0.5){                                       ",
- "	    	discard;                                                                 ",
- "	    }                                                                            ",
- "	#endif                                                                           ",
- "	                                                                                 ",
- "	#if defined use_interpolation                                                    ",
- "	    float w = 1.0 - ( u*u + v*v);                                                                             ",
- "	    vec4 pos = vec4(vViewPos, 1.0);                                                                             ",
- "	    pos.z += w * vRadius;                                                                             ",
- "	    pos = projectionMatrix * pos;                                                                             ",
- "	    pos = pos / pos.w;                                                                             ",
- "	                                                                                 ",
- "	    gl_FragDepthEXT = (pos.z + 1.0) / 2.0;                                       ",
- "	#endif                                                                           ",
- "	                                                                                 ",
- "	                                                                                 ",
- "	#if defined color_type_point_index                                               ",
- "		gl_FragColor = vec4(vColor, pcIndex / 255.0);                                ",
- "	#else                                                                            ",
- "		gl_FragColor = vec4(vColor, vOpacity);                                       ",
- "	#endif                                                                           ",
- "	                                                                                 ",
- "	                                                                                 ",
- "	#if defined weighted_splats                                                      ",
- "	    float w = pow(1.0 - (u*u + v*v), 2.0);                                                       ",
- "		gl_FragColor.rgb = gl_FragColor.rgb * w;                                     ",
- "		gl_FragColor.a = w;                                                          ",
- "	#endif                                                                           ",
- "	                                                                                 ",
- "	                                                                                 ",
- "	                                                                                 ",
- "}                                                                                  "];
 

@@ -1,19 +1,32 @@
 
-attribute vec3 position;
-attribute vec3 color;
+// the following is an incomplete list of attributes, uniforms and defines
+// which are automatically added through the THREE.ShaderMaterial
+
+//attribute vec3 position;
+//attribute vec3 color;
+//attribute vec3 normal;
+
+//uniform mat4 modelMatrix;
+//uniform mat4 modelViewMatrix;
+//uniform mat4 projectionMatrix;
+//uniform mat4 viewMatrix;
+//uniform mat3 normalMatrix;
+//uniform vec3 cameraPosition;
+
+//#define MAX_DIR_LIGHTS 0
+//#define MAX_POINT_LIGHTS 1
+//#define MAX_SPOT_LIGHTS 0
+//#define MAX_HEMI_LIGHTS 0
+//#define MAX_SHADOWS 0
+//#define MAX_BONES 58
+
+
 attribute float intensity;
 attribute float classification;
 attribute float returnNumber;
 attribute float pointSourceID;
 attribute vec4 indices;
-attribute vec3 normal;
 
-uniform mat4 modelMatrix;
-uniform mat4 modelViewMatrix;
-uniform mat4 projectionMatrix;
-uniform mat4 viewMatrix;
-uniform mat3 normalMatrix;
-uniform vec3 cameraPosition;
 uniform float screenWidth;
 uniform float screenHeight;
 uniform float fov;
@@ -44,15 +57,21 @@ uniform sampler2D gradient;
 uniform sampler2D classificationLUT;
 uniform sampler2D depthMap;
 
-varying float vOpacity;
-varying vec3 vColor;
-varying float vDepth;
-varying float vLinearDepth;
-varying vec3 vViewPos;
-varying float vRadius;
+varying float	vOpacity;
+varying vec3	vColor;
+varying float	vDepth;
+varying float	vLinearDepth;
+varying vec3	vViewPosition;
+varying float 	vRadius;
+varying vec3	vWorldPosition;
+varying vec3	vNormal;
 
 
-#if defined(adaptive_point_size) || defined(color_type_octree_depth)
+// ---------------------
+// OCTREE
+// ---------------------
+
+#if (defined(adaptive_point_size) || defined(color_type_tree_depth)) && defined(tree_type_octree)
 /**
  * number of 1-bits up to inclusive index position
  * number is treated as if it were an integer in the range 0-255
@@ -82,13 +101,13 @@ bool isBitSet(float number, float index){
 
 
 /**
- * find the octree depth at the point position
+ * find the tree depth at the point position
  */
-float getOctreeDepth(){
+float getLocalTreeDepth(){
 	vec3 offset = vec3(0.0, 0.0, 0.0);
 	float iOffset = 0.0;
 	float depth = 0.0;
-	for(float i = 0.0; i <= octreeLevels + 1.0; i++){
+	for(float i = 0.0; i <= levels + 1.0; i++){
 		
 		float nodeSizeAtLevel = nodeSize / pow(2.0, i);
 		vec3 index3d = (position - offset) / nodeSizeAtLevel;
@@ -111,63 +130,150 @@ float getOctreeDepth(){
 	return depth;
 }
 
-#endif
-
-vec3 classificationColor(float classification){
-  float c = mod(classification, 16.0);
-	vec2 uv = vec2(c / 255.0, 0.5);
-	vec3 color = texture2D(classificationLUT, uv).rgb;
-
-	return color;
+float getPointSizeAttenuation(){
+	return pow(1.9, getLocalTreeDepth());
 }
 
-void colors(){
-	vec3 result;
 
+#endif
+
+
+// ---------------------
+// KD-TREE
+// ---------------------
+
+#if (defined(adaptive_point_size) || defined(color_type_tree_depth)) && defined(tree_type_kdtree)
+
+float getLocalTreeDepth(){
+	vec3 offset = vec3(0.0, 0.0, 0.0);
+	float iOffset = 0.0;
+	float depth = 0.0;
+		
+		
+	vec3 size = bbSize;	
+	vec3 pos = position;
+		
+	for(float i = 0.0; i <= levels + 1.0; i++){
+		
+		vec4 value = texture2D(visibleNodes, vec2(iOffset / 2048.0, 0.0));
+		
+		int children = int(value.r * 255.0);
+		float next = value.g * 255.0;
+		int split = int(value.b * 255.0);
+		
+		if(next == 0.0){
+		 	return depth;
+		}
+		
+		vec3 splitv = vec3(0.0, 0.0, 0.0);
+		if(split == 1){
+			splitv.x = 1.0;
+		}else if(split == 2){
+		 	splitv.y = 1.0;
+		}else if(split == 4){
+		 	splitv.z = 1.0;
+		}
+		
+		iOffset = iOffset + next;
+		
+		float factor = length(pos * splitv / size);
+		if(factor < 0.5){
+		 	// left
+		    if(children == 0 || children == 2){
+		    	return depth;
+		    }
+		}else{
+		  	// right
+		    pos = pos - size * splitv * 0.5;
+		    if(children == 0 || children == 1){
+		    	return depth;
+		    }
+		    if(children == 3){
+		    	iOffset = iOffset + 1.0;
+		    }
+		}
+		size = size * ((1.0 - (splitv + 1.0) / 2.0) + 0.5);
+		
+		depth++;
+	}
+		
+		
+	return depth;	
+}
+
+float getPointSizeAttenuation(){
+	return pow(1.3, getLocalTreeDepth());
+}
+
+#endif
+
+void main() {
+	vec4 worldPosition = modelMatrix * vec4( position, 1.0 );
+	vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
+	vViewPosition = -mvPosition.xyz;
+	vWorldPosition = worldPosition.xyz;
+	gl_Position = projectionMatrix * mvPosition;
+	vOpacity = opacity;
+	vLinearDepth = -mvPosition.z;
+	vDepth = mvPosition.z / gl_Position.w;
+	vNormal = (modelMatrix * vec4(normal, 0.0)).xyz;
+	vNormal = normalMatrix * normal;
+
+
+	// ---------------------
+	// POINT COLOR
+	// ---------------------
+	
 	#ifdef color_type_rgb
-		result = color;
+		vColor = color;
 	#elif defined color_type_height
 		vec4 world = modelMatrix * vec4( position, 1.0 );
 		float w = (world.y - heightMin) / (heightMax-heightMin);
-	
-		result = texture2D(gradient, vec2(w,1.0-w)).rgb;
+		vColor = texture2D(gradient, vec2(w,1.0-w)).rgb;
 	#elif defined color_type_depth
 		float d = -mvPosition.z ;
-		result = vec3(d, vDepth, 0.0);
+		vColor = vec3(d, vDepth, 0.0);
 	#elif defined color_type_intensity
 		float w = (intensity - intensityMin) / (intensityMax - intensityMin);
-		result = vec3(w, w, w);
+		vColor = vec3(w, w, w);
 	#elif defined color_type_intensity_gradient
 		float w = (intensity - intensityMin) / intensityMax;
-		result = texture2D(gradient, vec2(w,1.0-w)).rgb;
+		vColor = texture2D(gradient, vec2(w,1.0-w)).rgb;
 	#elif defined color_type_color
-		result = uColor;
-	#elif defined color_type_octree_depth
-		float depth = getOctreeDepth();
+		vColor = uColor;
+	#elif defined color_type_tree_depth
+		float depth = getLocalTreeDepth();
 		float w = depth / 10.0;
-		result = texture2D(gradient, vec2(w,1.0-w)).rgb;
+		vColor = texture2D(gradient, vec2(w,1.0-w)).rgb;
 	#elif defined color_type_point_index
-		result = indices.rgb;
+		vColor = indices.rgb;
 	#elif defined color_type_classification
-		result = classificationColor(classification);
+		float c = mod(classification, 16.0);
+		vec2 uv = vec2(c / 255.0, 0.5);
+		vColor = texture2D(classificationLUT, uv).rgb;
 	#elif defined color_type_return_number
 		float w = (returnNumber - 1.0) / 4.0 + 0.1;
-		result = texture2D(gradient, vec2(w, 1.0 - w)).rgb;
+		vColor = texture2D(gradient, vec2(w, 1.0 - w)).rgb;
 	#elif defined color_type_source
 		float w = mod(pointSourceID, 10.0) / 10.0;
-		result = texture2D(gradient, vec2(w,1.0 - w)).rgb;
+		vColor = texture2D(gradient, vec2(w,1.0 - w)).rgb;
 	#elif defined color_type_normal
-		result = (modelMatrix * vec4(normal, 0.0)).xyz;
+		vColor = (modelMatrix * vec4(normal, 0.0)).xyz;
+	#elif defined color_type_phong
+		vColor = color;
 	#endif
 	
-	vColor = result;
-}
-
-void pointSize(){
+	if(vNormal.z < 0.0){
+		gl_Position = vec4(1000.0, 1000.0, 1000.0, 1.0);
+	}
+	
+	// ---------------------
+	// POINT SIZE
+	// ---------------------
 	float pointSize = 1.0;
 	
 	float projFactor = 1.0 / tan(fov / 2.0);
-	projFactor /= -vViewPos.z;
+	projFactor /= vViewPosition.z;
 	projFactor *= screenHeight / 2.0;
 	float r = spacing * 1.5;
 	vRadius = r;
@@ -176,7 +282,7 @@ void pointSize(){
 	#elif defined attenuated_point_size
 		pointSize = size * projFactor;
 	#elif defined adaptive_point_size
-		float worldSpaceSize = size * r / pow(1.9, getOctreeDepth());
+		float worldSpaceSize = size * r / getPointSizeAttenuation();
 		pointSize = worldSpaceSize * projFactor;
 	#endif
 
@@ -186,9 +292,12 @@ void pointSize(){
 	vRadius = pointSize / projFactor;
 	
 	gl_PointSize = pointSize;
-}
-
-void clipping(){
+	
+	
+	// ---------------------
+	// CLIPPING
+	// ---------------------
+	
 	#if defined use_clip_box
 		bool insideAny = false;
 		for(int i = 0; i < clip_box_count; i++){
@@ -212,19 +321,4 @@ void clipping(){
 		}
 	
 	#endif
-}
-
-void main() {
-
-	vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
-	vViewPos = mvPosition.xyz;
-	gl_Position = projectionMatrix * mvPosition;
-	vOpacity = opacity;
-	vLinearDepth = -mvPosition.z;
-	vDepth = mvPosition.z / gl_Position.w;
-
-
-	colors();
-	pointSize();
-	clipping();
 }

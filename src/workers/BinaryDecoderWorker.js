@@ -105,7 +105,7 @@ onmessage = function(event){
 			
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute};
 		
-		}else if(pointAttribute.name === PointAttribute.NORMAL.name){
+		}else if(pointAttribute.name === PointAttribute.NORMAL_SPHEREMAPPED.name){
 
 			var buff = new ArrayBuffer(numPoints*4*3);
 			var normals = new Float32Array(buff);

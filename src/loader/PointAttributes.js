@@ -15,7 +15,7 @@ PointAttributeNames.NORMAL_FLOATS		= 4;  	// float x, y, z;
 PointAttributeNames.FILLER				= 5;
 PointAttributeNames.INTENSITY			= 6;
 PointAttributeNames.CLASSIFICATION		= 7;
-PointAttributeNames.NORMAL				= 8;
+PointAttributeNames.NORMAL_SPHEREMAPPED	= 8;
 
 /**
  * Some types of possible point attribute data formats
@@ -87,8 +87,8 @@ PointAttribute.CLASSIFICATION = new PointAttribute(
 		PointAttributeNames.CLASSIFICATION,
 		PointAttributeTypes.DATA_TYPE_UINT8, 1);	
 		
-PointAttribute.NORMAL = new PointAttribute(
-		PointAttributeNames.NORMAL,
+PointAttribute.NORMAL_SPHEREMAPPED = new PointAttribute(
+		PointAttributeNames.NORMAL_SPHEREMAPPED,
 		PointAttributeTypes.DATA_TYPE_UINT8, 2);		
 
 /**
@@ -140,7 +140,7 @@ PointAttributes.prototype.hasColors = function(){
 PointAttributes.prototype.hasNormals = function(){
 	for(var name in this.attributes){
 		var pointAttribute = this.attributes[name];
-		if(pointAttribute === PointAttribute.NORMAL_FLOATS){
+		if(pointAttribute === PointAttribute.NORMAL_SPHEREMAPPED || pointAttribute === PointAttribute.NORMAL_FLOATS){
 			return true;
 		}
 	}

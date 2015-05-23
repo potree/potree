@@ -216,7 +216,6 @@ void main() {
 	vOpacity = opacity;
 	vLinearDepth = -mvPosition.z;
 	vDepth = mvPosition.z / gl_Position.w;
-	vNormal = (modelMatrix * vec4(normal, 0.0)).xyz;
 	vNormal = normalMatrix * normal;
 
 
@@ -263,9 +262,9 @@ void main() {
 		vColor = color;
 	#endif
 	
-	if(vNormal.z < 0.0){
-		gl_Position = vec4(1000.0, 1000.0, 1000.0, 1.0);
-	}
+	//if(vNormal.z < 0.0){
+	//	gl_Position = vec4(1000.0, 1000.0, 1000.0, 1.0);
+	//}
 	
 	// ---------------------
 	// POINT SIZE

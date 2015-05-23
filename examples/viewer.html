@@ -79,6 +79,7 @@ void main() {
 	<script src="../build/js/potree.js"></script>
 	<script src="./js/ProgressBar.js"></script>
 	
+	<!-- uncomment this to debug changes to the individual js files -->
 	<!--
 	<script src="../src/PointCloudOctree.js"></script>
 	<script src="../src/PointCloudOctreeGeometry.js"></script>
@@ -97,8 +98,8 @@ void main() {
 	<script src="../src/Features.js"></script>
 	<script src="../src/arena4d/PointCloudArena4D.js"></script>
 	<script src="../src/arena4d/PointCloudArena4DGeometry.js"></script>
-	<script src="../src/arena4d/PointCloudMaterialArena4D.js"></script>
 	-->
+	
 	
 	
 	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
@@ -135,8 +136,9 @@ void main() {
 	
 	<script>
 		var sceneProperties = {
-			path: 			"../resources/pointclouds/vol_total/cloud.js",
-			//path: 			"http://localhost:10123/test.vpc",
+			path: 			"../../../../pointclouds/mschuetz/lion/lion.ply_converted/cloud.js",
+			path:			"../resources/pointclouds/lion_takanawa/cloud.js",
+			path:			"../resources/pointclouds/vol_total/cloud.js",
 			cameraPosition: null, 			// other options: cameraPosition: [10,10,10],
 			cameraTarget: 	null, 			// other options: cameraTarget: [0,0,0],
 			sizeType: 		"Adaptive",		// other options: "Fixed", "Attenuated"
@@ -226,6 +228,10 @@ void main() {
 				pointColorType = Potree.PointColorType.OCTREE_DEPTH;
 			}else if(value === "Point Index"){
 				pointColorType = Potree.PointColorType.POINT_INDEX;
+			}else if(value === "Normal"){
+				pointColorType = Potree.PointColorType.NORMAL;
+			}else if(value === "Phong"){
+				pointColorType = Potree.PointColorType.PHONG;
 			}
 		};
 		
@@ -302,10 +308,13 @@ void main() {
 						options.push("Intensity Gradient");
 					}else if(attribute === PointAttribute.CLASSIFICATION){
 						options.push("Classification");
+					}else if(attribute === PointAttribute.NORMAL_SPHEREMAPPED){
+						options.push("Phong");
+						options.push("Normal");
 					}
 				}
 				options.push("Height");
-				options.push("Octree Depth");
+				options.push("Tree Depth");
 			}
 			
 			// default material is not available. set material to Height
@@ -548,6 +557,16 @@ void main() {
 			sceneBG.add(bg);			
 			
 			window.addEventListener( 'keydown', onKeyDown, false );
+			
+			
+			var directionalLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
+			directionalLight.position.set( 10, 10, 10 );
+			directionalLight.lookAt( new THREE.Vector3(0, 0, 0));
+			scenePointCloud.add( directionalLight );
+			
+			var light = new THREE.AmbientLight( 0x707070 ); // soft white light
+			scenePointCloud.add( light );
+			
 		}
 		
 		function flipYZ(){

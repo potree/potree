@@ -8553,14 +8553,7 @@ Potree.PointCloudArena4D.prototype.update = function(camera, renderer){
 		//box.max.sub(this.boundingBox.min);
 		var insideFrustum = frustum.intersectsBox(box);
 		
-		var visible = insideFrustum;
-		
-		if(node.pcoGeometry.number === 0 || node.pcoGeometry.number === 1 || node.pcoGeometry.number === 2){
-			visible = true;
-		}else{
-			visible = false;
-		}
-		
+		var visible = insideFrustum;	
 		node.visible = visible;
 		
 		

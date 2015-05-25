@@ -176,10 +176,6 @@ Potree.PointCloudArena4D.prototype.update = function(camera, renderer){
 		//	continue;
 		//}
 		
-		//if(node.pcoGeometry.number > 1){
-		//	break;
-		//}
-		
 		node.matrixWorld.multiplyMatrices( this.matrixWorld, node.matrix );
 		
 		var box = node.boundingBox.clone();
@@ -187,8 +183,10 @@ Potree.PointCloudArena4D.prototype.update = function(camera, renderer){
 		//box.max.sub(this.boundingBox.min);
 		var insideFrustum = frustum.intersectsBox(box);
 		
-		var visible = insideFrustum;
+		var visible = insideFrustum;	
 		node.visible = visible;
+		
+		
 		
 		if(!visible){
 			continue;
@@ -581,6 +579,12 @@ Potree.PointCloudArena4D.prototype.pick = function(renderer, camera, ray, params
 			_gl.vertexAttribPointer( attributePointer, attributeSize, _gl.UNSIGNED_BYTE, true, 0, 0 ); 
 		
 			_gl.uniform1f(material.program.uniforms.pcIndex, material.pcIndex);
+			
+			// TODO: another ugly hack...disable normal attributes, if they're activated
+			var alNormal = _gl.getAttribLocation(program, "normal");
+			if(alNormal >= 0){
+				_gl.disableVertexAttribArray( alNormal );
+			}
 		}	
 		
 		renderer.renderBufferDirect(camera, [], null, material, geometry, object);

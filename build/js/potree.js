@@ -111,6 +111,7 @@ Potree.Shaders["pointcloud.vs"] = [
  "uniform float minSize;",
  "uniform float maxSize;",
  "uniform float nodeSize;",
+ "uniform vec3 bbSize;",
  "uniform vec3 uColor;",
  "uniform float opacity;",
  "",
@@ -383,6 +384,7 @@ Potree.Shaders["pointcloud.vs"] = [
  "		}",
  "	",
  "	#endif",
+ "	",
  "}",
  "",
 ].join("\n");
@@ -1543,6 +1545,7 @@ Potree.PointCloudMaterial = function(parameters){
 		minSize:   			{ type: "f", value: 2 },
 		maxSize:   			{ type: "f", value: 2 },
 		nodeSize:			{ type: "f", value: nodeSize },
+		bbSize:				{ type: "fv", value: [0,0,0] },
 		heightMin:			{ type: "f", value: 0.0 },
 		heightMax:			{ type: "f", value: 1.0 },
 		intensityMin:		{ type: "f", value: 0.0 },
@@ -2072,6 +2075,15 @@ Object.defineProperty(Potree.PointCloudMaterial.prototype, "treeType", {
 			this._treeType = value;
 			this.updateShaderSource();
 		}
+	}
+});
+
+Object.defineProperty(Potree.PointCloudMaterial.prototype, "bbSize", {
+	get: function(){
+		return this.uniforms.bbSize.value;
+	},
+	set: function(value){
+		this.uniforms.bbSize.value = value;
 	}
 });
 
@@ -8534,10 +8546,6 @@ Potree.PointCloudArena4D.prototype.update = function(camera, renderer){
 		//	continue;
 		//}
 		
-		//if(node.pcoGeometry.number > 1){
-		//	break;
-		//}
-		
 		node.matrixWorld.multiplyMatrices( this.matrixWorld, node.matrix );
 		
 		var box = node.boundingBox.clone();
@@ -8546,7 +8554,16 @@ Potree.PointCloudArena4D.prototype.update = function(camera, renderer){
 		var insideFrustum = frustum.intersectsBox(box);
 		
 		var visible = insideFrustum;
+		
+		if(node.pcoGeometry.number === 0 || node.pcoGeometry.number === 1 || node.pcoGeometry.number === 2){
+			visible = true;
+		}else{
+			visible = false;
+		}
+		
 		node.visible = visible;
+		
+		
 		
 		if(!visible){
 			continue;
@@ -8939,6 +8956,12 @@ Potree.PointCloudArena4D.prototype.pick = function(renderer, camera, ray, params
 			_gl.vertexAttribPointer( attributePointer, attributeSize, _gl.UNSIGNED_BYTE, true, 0, 0 ); 
 		
 			_gl.uniform1f(material.program.uniforms.pcIndex, material.pcIndex);
+			
+			// TODO: another ugly hack...disable normal attributes, if they're activated
+			var alNormal = _gl.getAttribLocation(program, "normal");
+			if(alNormal >= 0){
+				_gl.disableVertexAttribArray( alNormal );
+			}
 		}	
 		
 		renderer.renderBufferDirect(camera, [], null, material, geometry, object);

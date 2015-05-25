@@ -48,6 +48,7 @@ uniform float size;
 uniform float minSize;
 uniform float maxSize;
 uniform float nodeSize;
+uniform vec3 bbSize;
 uniform vec3 uColor;
 uniform float opacity;
 
@@ -320,4 +321,5 @@ void main() {
 		}
 	
 	#endif
+	
 }

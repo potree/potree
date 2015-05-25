@@ -49,6 +49,7 @@ Potree.Shaders["pointcloud.vs"] = [
  "uniform float minSize;",
  "uniform float maxSize;",
  "uniform float nodeSize;",
+ "uniform vec3 bbSize;",
  "uniform vec3 uColor;",
  "uniform float opacity;",
  "",
@@ -321,6 +322,7 @@ Potree.Shaders["pointcloud.vs"] = [
  "		}",
  "	",
  "	#endif",
+ "	",
  "}",
  "",
 ].join("\n");

@@ -130,6 +130,7 @@ Potree.PointCloudMaterial = function(parameters){
 		minSize:   			{ type: "f", value: 2 },
 		maxSize:   			{ type: "f", value: 2 },
 		nodeSize:			{ type: "f", value: nodeSize },
+		bbSize:				{ type: "fv", value: [0,0,0] },
 		heightMin:			{ type: "f", value: 0.0 },
 		heightMax:			{ type: "f", value: 1.0 },
 		intensityMin:		{ type: "f", value: 0.0 },
@@ -659,6 +660,15 @@ Object.defineProperty(Potree.PointCloudMaterial.prototype, "treeType", {
 			this._treeType = value;
 			this.updateShaderSource();
 		}
+	}
+});
+
+Object.defineProperty(Potree.PointCloudMaterial.prototype, "bbSize", {
+	get: function(){
+		return this.uniforms.bbSize.value;
+	},
+	set: function(value){
+		this.uniforms.bbSize.value = value;
 	}
 });
 

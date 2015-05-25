@@ -49,4 +49,5 @@ Take a look at the [potree showcase](http://potree.org/wp/demo/) for some live e
 * [Three.js](https://github.com/mrdoob/three.js), the WebGL 3D rendering library on which potree is built.
 * [plas.io](http://plas.io/) point cloud viewer. LAS and LAZ support have been taken from the laslaz.js implementation of plas.io. Thanks to [Uday Verma](https://twitter.com/udaykverma) and [Howard Butler](https://twitter.com/howardbutler) for this!
 * [Harvest4D](https://harvest4d.org/) Potree currently runs as Master Thesis under the Harvest4D Project
-* [Martin Isenburg](http://rapidlasso.com/), [Georepublic](http://georepublic.de/en/), [Sigeom Sa](http://www.sigeom.ch/), [SITN](http://www.ne.ch/sitn), [Pix4D](http://pix4d.com/) as well as all the contributers to potree and PotreeConverter and many more for their support.
+* [Martin Isenburg](http://rapidlasso.com/), [Georepublic](http://georepublic.de/en/),
+[Veesus](http://veesus.com/), [Sigeom Sa](http://www.sigeom.ch/), [SITN](http://www.ne.ch/sitn), [Pix4D](http://pix4d.com/) as well as all the contributers to potree and PotreeConverter and many more for their support.

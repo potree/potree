@@ -217,11 +217,93 @@ function pixelsArrayToImage(pixels, width, height){
 	
     return img;
 }
+
+function projectedRadius(radius, fov, distance, screenHeight){
+	var projFactor =  (1 / Math.tan(fov / 2)) / distance;
+	projFactor = projFactor * screenHeight / 2;
+	
+	return radius * projFactor;
+};
 	
 	
+Potree.utils.topView = function(camera, controls, pointcloud){
+	camera.position.set(0, 1, 0);
+	camera.rotation.set(-Math.PI / 2, 0, 0);
+	camera.zoomTo(pointcloud, 1);
+
+	if(controls.target){
+		var sg = pointcloud.boundingSphere.clone().applyMatrix4(pointcloud.matrixWorld);
+		var target = new THREE.Vector3(camera.position.x, sg.center.y, camera.position.z);
+		controls.target.copy(target);
+	}	
+}
+
+Potree.utils.frontView = function(camera, controls, pointcloud){
+	camera.position.set(0, 0, 1);
+	camera.rotation.set(0, 0, 0);
+	camera.zoomTo(pointcloud, 1);
+
+	if(controls.target){
+		var sg = pointcloud.boundingSphere.clone().applyMatrix4(pointcloud.matrixWorld);
+		var target = new THREE.Vector3(camera.position.x, camera.position.y, sg.center.z);
+		controls.target.copy(target);
+	}
+}
+
+
+Potree.utils.leftView = function(camera, controls, pointcloud){
+	camera.position.set(-1, 0, 0);
+	camera.rotation.set(0, -Math.PI / 2, 0);
+	camera.zoomTo(pointcloud, 1);
+
+	if(controls.target){
+		var sg = pointcloud.boundingSphere.clone().applyMatrix4(pointcloud.matrixWorld);
+		var target = new THREE.Vector3(sg.center.x, camera.position.y, camera.position.z);
+		controls.target.copy(target);
+	}
+}
+
+Potree.utils.rightView = function(camera, controls, pointcloud){
+	camera.position.set(1, 0, 0);
+	camera.rotation.set(0, Math.PI / 2, 0);
+	camera.zoomTo(pointcloud, 1);
+
+	if(controls.target){
+		var sg = pointcloud.boundingSphere.clone().applyMatrix4(pointcloud.matrixWorld);
+		var target = new THREE.Vector3(sg.center.x, camera.position.y, camera.position.z);
+		controls.target.copy(target);
+	}
+}
 	
+/**
+ *  
+ * 0: no intersection
+ * 1: intersection
+ * 2: fully inside
+ */
+Potree.utils.frustumSphereIntersection = function(frustum, sphere){
+	var planes = frustum.planes;
+	var center = sphere.center;
+	var negRadius = - sphere.radius;
+
+	var minDistance = Number.MAX_VALUE;
 	
-	
+	for ( var i = 0; i < 6; i ++ ) {
+
+		var distance = planes[ i ].distanceToPoint( center );
+
+		if ( distance < negRadius ) {
+
+			return 0;
+
+		}
+		
+		minDistance = Math.min(minDistance, distance);
+
+	}
+
+	return (minDistance >= sphere.radius) ? 2 : 1;
+};
 	
 	
 	

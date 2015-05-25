@@ -13,4 +13,6 @@ Setting up gulp:
 
 ## Usage
 
-    gulp scripts   // creates single script files in build/js
+    gulp build
+
+This will create a single build/js/potree.js file

@@ -45,6 +45,10 @@ LRU.prototype.contains = function(node){
  * @param node
  */
 LRU.prototype.touch = function(node){
+	if(!node.loaded){
+		return;
+	}
+
 	var item;
 	if(this.items[node.id] == null){
 		// add to list
@@ -91,31 +95,61 @@ LRU.prototype.touch = function(node){
 	}
 };
 
-/**
- * removes the least recently used item from the list and returns it. 
- * if the list was empty, null will be returned.
- */
-LRU.prototype.remove = function remove(){
-	if(this.first === null){
-		return null;
-	}
-	var lru = this.first;
+///**
+// * removes the least recently used item from the list and returns it. 
+// * if the list was empty, null will be returned.
+// */
+//LRU.prototype.remove = function remove(){
+//	if(this.first === null){
+//		return null;
+//	}
+//	var lru = this.first;
+//
+//	// if the lru list contains at least 2 items, the item after the least recently used elemnt will be the new lru item. 
+//	if(lru.next !== null){
+//		this.first = lru.next;
+//		this.first.previous = null;
+//	}else{
+//		this.first = null;
+//		this.last = null;
+//	}
+//	
+//	delete this.items[lru.node.id];
+//	this.elements--;
+//	this.numPoints -= lru.node.numPoints;
+//	
+////	Logger.info("removed node: " + lru.node.id);
+//	return lru.node;
+//};
 
-	// if the lru list contains at least 2 items, the item after the least recently used elemnt will be the new lru item. 
-	if(lru.next !== null){
-		this.first = lru.next;
-		this.first.previous = null;
-	}else{
-		this.first = null;
-		this.last = null;
+LRU.prototype.remove = function remove(node){
+
+	var lruItem = this.items[node.id];
+	if(lruItem){
+	
+		if(this.elements === 1){
+			this.first = null;
+			this.last = null;
+		}else{
+			if(!lruItem.previous){
+				this.first = lruItem.next;
+				this.first.previous = null;
+			}
+			if(!lruItem.next){
+				this.last = lruItem.previous;
+				this.last.next = null;
+			}
+			if(lruItem.previous &&lruItem.next){
+				lruItem.previous.next = lruItem.next;
+				lruItem.next.previous = lruItem.previous;
+			}
+		}
+	
+		delete this.items[node.id];
+		this.elements--;
+		this.numPoints -= node.numPoints;
 	}
 	
-	delete this.items[lru.node.id];
-	this.elements--;
-	this.numPoints -= lru.node.numPoints;
-	
-//	Logger.info("removed node: " + lru.node.id);
-	return lru.node;
 };
 
 LRU.prototype.getLRUItem = function(){
@@ -140,4 +174,37 @@ LRU.prototype.toString = function(){
 	string += "}";
 	string += "(" + this.size() + ")";
 	return string;
+};
+
+LRU.prototype.freeMemory = function(){
+	if(this.elements <= 1){
+		return;
+	}
+
+	while(this.numPoints > Potree.pointLoadLimit){
+		var element = this.first;
+		var node = element.node;
+		this.disposeDescendants(node);
+	
+	};
+};
+
+LRU.prototype.disposeDescendants = function(node){
+	var stack = [];
+	stack.push(node);
+	while(stack.length > 0){
+		var current = stack.pop();
+		
+		current.dispose();
+		this.remove(current);
+		
+		for(var key in current.children){
+			if(current.children.hasOwnProperty(key)){
+				var child = current.children[key];
+				if(child.loaded){
+					stack.push(current.children[key]);
+				}
+			}
+		}
+	}
 };

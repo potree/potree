@@ -15,7 +15,7 @@ function ProgressBar(){
 	
 	this.element.innerHTML = "";
 	this.element.style.position = "fixed";
-	this.element.style.bottom = "20px";
+	this.element.style.bottom = "40px";
 	this.element.style.width = "200px";
 	this.element.style.marginLeft = "-100px";
 	this.element.style.left = "50%";
@@ -47,6 +47,7 @@ function ProgressBar(){
 	this.element.appendChild(this.elProgress);
 	this.element.appendChild(this.elProgressMessage);
 	
+	this.hide();
 };
 
 ProgressBar.prototype.hide = function(){

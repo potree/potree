@@ -1,4 +1,314 @@
 
+
+Potree.HeightProfile = function(){
+	var scope = this;
+	
+	THREE.Object3D.call( this );
+
+	this.points = [];
+	this.spheres = [];
+	this.edges = [];
+	this.boxes = [];
+	this.width = 1;
+	this.height = 20;
+	this._modifiable = true;
+	
+	var sphereGeometry = new THREE.SphereGeometry(0.4, 10, 10);
+	var lineColor = new THREE.Color( 0xff0000 );
+	
+	var createSphereMaterial = function(){
+		var sphereMaterial = new THREE.MeshLambertMaterial({
+			shading: THREE.SmoothShading, 
+			color: 0xff0000, 
+			ambient: 0xaaaaaa,
+			depthTest: false, 
+			depthWrite: false}
+		);
+		
+		return sphereMaterial;
+	};
+	
+	var moveEvent = function(event){
+		event.target.material.emissive.setHex(0x888888);
+	};
+	
+	var leaveEvent = function(event){
+		event.target.material.emissive.setHex(0x000000);
+	};
+	
+	var dragEvent = function(event){
+	
+		var tool = event.tool;
+		var dragstart = tool.dragstart;
+		var mouse = tool.mouse;
+	
+		if(event.event.ctrlKey){
+		
+			var mouseStart = new THREE.Vector3(dragstart.mousePos.x, dragstart.mousePos.y, 0);
+			var mouseEnd = new THREE.Vector3(mouse.x, mouse.y, 0);
+			var widthStart = dragstart.widthStart;
+			
+			var scale = 1 - 10 * (mouseStart.y - mouseEnd.y);
+			scale = Math.max(0.01, scale);
+			if(widthStart){
+				scope.setWidth(widthStart *  scale);
+			}
+		
+		}else{
+	
+			var I = tool.getMousePointCloudIntersection();
+				
+			if(I){
+				var index = scope.spheres.indexOf(tool.dragstart.object);
+				scope.setPosition(index, I);
+			}
+		}
+		
+		event.event.stopImmediatePropagation();
+	};
+	
+	var dropEvent = function(event){
+	
+	};
+	
+	this.addMarker = function(point){	
+		
+		this.points.push(point);
+
+		// sphere
+		var sphere = new THREE.Mesh(sphereGeometry, createSphereMaterial());
+		sphere.addEventListener("mousemove", moveEvent);
+		sphere.addEventListener("mouseleave", leaveEvent);
+		sphere.addEventListener("mousedrag", dragEvent);
+		sphere.addEventListener("drop", dropEvent);
+		
+		this.add(sphere);
+		this.spheres.push(sphere);
+		
+		// edges & boxes
+		if(this.points.length > 1){
+		
+			var lineGeometry = new THREE.Geometry();
+			lineGeometry.vertices.push(new THREE.Vector3(), new THREE.Vector3());
+			lineGeometry.colors.push(lineColor, lineColor, lineColor);
+			var lineMaterial = new THREE.LineBasicMaterial( { 
+				vertexColors: THREE.VertexColors, 
+				linewidth: 2, 
+				transparent: true, 
+				opacity: 0.4 
+			});
+			lineMaterial.depthTest = false;
+			var edge = new THREE.Line(lineGeometry, lineMaterial);
+			edge.visible = false;
+			
+			this.add(edge);
+			this.edges.push(edge);
+			
+			
+			var boxGeometry = new THREE.BoxGeometry(1, 1, 1);
+			var boxMaterial = new THREE.MeshBasicMaterial({color: 0xff0000, transparent: true, opacity: 0.2});
+			var box = new THREE.Mesh(boxGeometry, boxMaterial);
+			box.visible = false;
+			
+			this.add(box);
+			this.boxes.push(box);
+			
+		}
+
+		
+		var event = {
+			"type": "marker_added",
+			"profile": this
+		};
+		this.dispatchEvent(event);
+		
+		this.setPosition(this.points.length-1, point);
+	};
+	
+	this.removeMarker = function(index){
+		this.points.splice(index, 1);
+		
+		this.remove(this.spheres[index]);
+		
+		var edgeIndex = (index == 0) ? 0 : (index - 1);
+		this.remove(this.edges[edgeIndex]);
+		this.edges.splice(edgeIndex, 1);
+		this.remove(this.boxes[edgeIndex]);
+		this.boxes.splice(edgeIndex, 1);
+		
+		this.spheres.splice(index, 1);
+		
+		this.update();
+		
+		var event = {
+			"type": "marker_removed",
+			"profile": this
+		};
+		this.dispatchEvent(event);
+	};
+	
+	/**
+	 * see http://www.mathopenref.com/coordpolygonarea2.html
+	 */
+	this.getArea = function(){
+		var area = 0;
+		var j = this.points.length - 1;
+		
+		for(var i = 0; i < this.points.length; i++){
+			var p1 = this.points[i];
+			var p2 = this.points[j];
+			area += (p2.x + p1.x) * (p1.z - p2.z);
+			j = i;
+		}
+		
+		return Math.abs(area / 2);
+	};
+	
+	this.setPosition = function(index, position){
+		var point = this.points[index];			
+		point.copy(position);
+		
+		var event = {
+			type: 		'marker_moved',
+			profile:	this,
+			index:		index,
+			position: 	position.clone()
+		};
+		this.dispatchEvent(event);
+		
+		this.update();
+	};
+	
+	this.setWidth = function(width){
+		this.width = width;
+		
+		this.update();
+	};
+	
+	this.update = function(){
+	
+		if(this.points.length === 0){
+			return;
+		}else if(this.points.length === 1){
+			var point = this.points[0];
+			this.spheres[0].position.copy(point);
+			
+			return;
+		}
+		
+		var min = this.points[0].clone();
+		var max = this.points[0].clone();
+		var centroid = new THREE.Vector3();
+		var lastIndex = this.points.length - 1;
+		for(var i = 0; i <= lastIndex; i++){
+			var point = this.points[i];
+			var sphere = this.spheres[i];
+			var leftIndex = (i === 0) ? lastIndex : i - 1;
+			var rightIndex = (i === lastIndex) ? 0 : i + 1;
+			var leftVertex = this.points[leftIndex];
+			var rightVertex = this.points[rightIndex];
+			var leftEdge = this.edges[leftIndex];
+			var rightEdge = this.edges[i];
+			var leftBox = this.boxes[leftIndex];
+			var rightBox = this.boxes[i];
+			
+			var leftEdgeLength = point.distanceTo(leftVertex);
+			var rightEdgeLength = point.distanceTo(rightVertex);
+			var leftEdgeCenter = new THREE.Vector3().addVectors(leftVertex, point).multiplyScalar(0.5);
+			var rightEdgeCenter = new THREE.Vector3().addVectors(point, rightVertex).multiplyScalar(0.5);
+			
+			sphere.position.copy(point);
+			
+			if(this._modifiable){
+				sphere.visible = true;
+			}else{
+				sphere.visible = false;
+			}
+			
+			if(leftEdge){
+				leftEdge.geometry.vertices[1].copy(point);
+				leftEdge.geometry.verticesNeedUpdate = true;
+				leftEdge.geometry.computeBoundingSphere();
+			}
+			
+			if(rightEdge){
+				rightEdge.geometry.vertices[0].copy(point);
+				rightEdge.geometry.verticesNeedUpdate = true;
+				rightEdge.geometry.computeBoundingSphere();
+			}
+			
+			if(leftBox){
+				var start = leftVertex;
+				var end = point;
+				var length = start.clone().setY(0).distanceTo(end.clone().setY(0));
+				leftBox.scale.set(length, this.height, this.width);
+				
+				var center = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
+				var diff = new THREE.Vector3().subVectors(end, start);
+				var target = new THREE.Vector3(diff.z, 0, -diff.x);
+				
+				leftBox.position.set(0,0,0);
+				leftBox.lookAt(target);
+				leftBox.position.copy(center);
+			}
+			
+			
+			
+			
+			centroid.add(point);
+			min.min(point);
+			max.max(point);
+		}
+		centroid.multiplyScalar(1 / this.points.length);
+		
+		for(var i = 0; i < this.boxes.length; i++){
+			var box = this.boxes[i];
+			
+			box.position.y = min.y + (max.y - min.y) / 2;
+			//box.scale.y = max.y - min.y + 50;
+			box.scale.y = 1000000;
+		}
+		
+	};
+	
+	this.raycast = function(raycaster, intersects){
+		
+		for(var i = 0; i < this.points.length; i++){
+			var sphere = this.spheres[i];
+			
+			sphere.raycast(raycaster, intersects);
+		}
+		
+		// recalculate distances because they are not necessarely correct
+		// for scaled objects.
+		// see https://github.com/mrdoob/three.js/issues/5827
+		// TODO: remove this once the bug has been fixed
+		for(var i = 0; i < intersects.length; i++){
+			var I = intersects[i];
+			I.distance = raycaster.ray.origin.distanceTo(I.point);
+		}
+		intersects.sort( function ( a, b ) { return a.distance - b.distance;} );
+	}
+	
+	
+}
+
+Potree.HeightProfile.prototype = Object.create( THREE.Object3D.prototype );
+
+Object.defineProperty(Potree.HeightProfile.prototype, "modifiable", {
+	get: function(){
+		return this.modifiable;
+	},
+	set: function(value){
+		this._modifiable = value;
+		this.update();
+	}
+});
+
+
+
+
+
 //
 // calculating area of a polygon:
 // http://www.mathopenref.com/coordpolygonarea2.html
@@ -39,292 +349,6 @@ Potree.ProfileTool = function(scene, camera, renderer){
 	
 	this.hoveredElement = null;
 	
-	var moveEvent = function(event){
-		event.target.material.emissive.setHex(0x888888);
-	};
-	
-	var leaveEvent = function(event){
-		event.target.material.emissive.setHex(0x000000);
-	};
-	
-	var dragEvent = function(event){
-	
-		if(event.event.ctrlKey){
-		
-			var mouseStart = new THREE.Vector3(scope.dragstart.mousePos.x, scope.dragstart.mousePos.y, 0);
-			var mouseEnd = new THREE.Vector3(scope.mouse.x, scope.mouse.y, 0);
-			var widthStart = scope.dragstart.widthStart;
-			
-			var scale = 1 - 10 * (mouseStart.y - mouseEnd.y);
-			scale = Math.max(0.01, scale);
-			if(widthStart){
-				for(var i = 0; i < scope.profiles.length; i++){
-					var m = scope.profiles[i];
-					var index = m.spheres.indexOf(scope.dragstart.object);
-					
-					if(index >= 0){
-						m.setWidth(widthStart * scale);
-						m.update();
-						
-						
-						break;
-					}
-				}
-			}
-		
-		}else{
-	
-			var I = getMousePointCloudIntersection();
-				
-			if(I){
-				for(var i = 0; i < scope.profiles.length; i++){
-					var m = scope.profiles[i];
-					var index = m.spheres.indexOf(scope.dragstart.object);
-					
-					if(index >= 0){
-						scope.profiles[i].setPosition(index, I);
-						
-						
-						break;
-					}
-				}
-			
-				//scope.dragstart.object.position.copy(I);
-			}
-		}
-		
-		event.event.stopImmediatePropagation();
-	};
-	
-	var dropEvent = function(event){
-	
-	};
-	
-	
-	function Profile(){
-		THREE.Object3D.call( this );
-	
-		this.points = [];
-		this.spheres = [];
-		this.edges = [];
-		this.boxes = [];
-		this.width = 1;
-		this.height = 20;
-		
-		var sphereGeometry = new THREE.SphereGeometry(0.4, 10, 10);
-		var lineColor = new THREE.Color( 0xff0000 );
-		
-		var createSphereMaterial = function(){
-			var sphereMaterial = new THREE.MeshLambertMaterial({
-				shading: THREE.SmoothShading, 
-				color: 0xff0000, 
-				ambient: 0xaaaaaa,
-				depthTest: false, 
-				depthWrite: false}
-			);
-			
-			return sphereMaterial;
-		};
-		
-		this.addMarker = function(point){	
-			
-			this.points.push(point);
-
-			// sphere
-			var sphere = new THREE.Mesh(sphereGeometry, createSphereMaterial());
-			sphere.addEventListener("mousemove", moveEvent);
-			sphere.addEventListener("mouseleave", leaveEvent);
-			sphere.addEventListener("mousedrag", dragEvent);
-			sphere.addEventListener("drop", dropEvent);
-			
-			this.add(sphere);
-			this.spheres.push(sphere);
-			
-			// edges & boxes
-			if(this.points.length > 1){
-			
-				var lineGeometry = new THREE.Geometry();
-				lineGeometry.vertices.push(new THREE.Vector3(), new THREE.Vector3());
-				lineGeometry.colors.push(lineColor, lineColor, lineColor);
-				var lineMaterial = new THREE.LineBasicMaterial( { 
-					vertexColors: THREE.VertexColors, 
-					linewidth: 2, 
-					transparent: true, 
-					opacity: 0.4 
-				});
-				lineMaterial.depthTest = false;
-				var edge = new THREE.Line(lineGeometry, lineMaterial);
-				edge.visible = false;
-				
-				this.add(edge);
-				this.edges.push(edge);
-				
-				
-				var boxGeometry = new THREE.BoxGeometry(1, 1, 1);
-				var boxMaterial = new THREE.MeshBasicMaterial({color: 0xff0000, transparent: true, opacity: 0.2});
-				var box = new THREE.Mesh(boxGeometry, boxMaterial);
-				box.visible = false;
-				
-				this.add(box);
-				this.boxes.push(box);
-				
-			}
-
-			this.setPosition(this.points.length-1, point);
-		};
-		
-		this.removeMarker = function(index){
-			this.points.splice(index, 1);
-			
-			this.remove(this.spheres[index]);
-			
-			if(index > 0){
-				this.remove(this.edges[index-1]);
-				this.edges.splice(index-1, 1);
-				
-				this.remove(this.boxes[index-1]);
-				this.boxes.splice(index-1, 1);
-			}
-			
-			this.spheres.splice(index, 1);
-			
-			this.update();
-		};
-		
-		/**
-		 * see http://www.mathopenref.com/coordpolygonarea2.html
-		 */
-		this.getArea = function(){
-			var area = 0;
-			var j = this.points.length - 1;
-			
-			for(var i = 0; i < this.points.length; i++){
-				var p1 = this.points[i];
-				var p2 = this.points[j];
-				area += (p2.x + p1.x) * (p1.z - p2.z);
-				j = i;
-			}
-			
-			return Math.abs(area / 2);
-		};
-		
-		this.setPosition = function(index, position){
-			var point = this.points[index];			
-			point.copy(position);
-			
-			this.update();
-		};
-		
-		this.setWidth = function(width){
-			this.width = width;
-			
-			this.update();
-		};
-		
-		this.update = function(){
-		
-			if(this.points.length === 0){
-				return;
-			}else if(this.points.length === 1){
-				var point = this.points[0];
-				this.spheres[0].position.copy(point);
-				
-				return;
-			}
-			
-			var min = this.points[0].clone();
-			var max = this.points[0].clone();
-			var centroid = new THREE.Vector3();
-			var lastIndex = this.points.length - 1;
-			for(var i = 0; i <= lastIndex; i++){
-				var point = this.points[i];
-				var sphere = this.spheres[i];
-				var leftIndex = (i === 0) ? lastIndex : i - 1;
-				var rightIndex = (i === lastIndex) ? 0 : i + 1;
-				var leftVertex = this.points[leftIndex];
-				var rightVertex = this.points[rightIndex];
-				var leftEdge = this.edges[leftIndex];
-				var rightEdge = this.edges[i];
-				var leftBox = this.boxes[leftIndex];
-				var rightBox = this.boxes[i];
-				
-				var leftEdgeLength = point.distanceTo(leftVertex);
-				var rightEdgeLength = point.distanceTo(rightVertex);
-				var leftEdgeCenter = new THREE.Vector3().addVectors(leftVertex, point).multiplyScalar(0.5);
-				var rightEdgeCenter = new THREE.Vector3().addVectors(point, rightVertex).multiplyScalar(0.5);
-				
-				sphere.position.copy(point);
-				
-				if(leftEdge){
-					leftEdge.geometry.vertices[1].copy(point);
-					leftEdge.geometry.verticesNeedUpdate = true;
-					leftEdge.geometry.computeBoundingSphere();
-				}
-				
-				if(rightEdge){
-					rightEdge.geometry.vertices[0].copy(point);
-					rightEdge.geometry.verticesNeedUpdate = true;
-					rightEdge.geometry.computeBoundingSphere();
-				}
-				
-				if(leftBox){
-					var start = leftVertex;
-					var end = point;
-					var length = start.clone().setY(0).distanceTo(end.clone().setY(0));
-					leftBox.scale.set(length, this.height, this.width);
-					
-					var center = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
-					var diff = new THREE.Vector3().subVectors(end, start);
-					var target = new THREE.Vector3(diff.z, 0, -diff.x);
-					
-					leftBox.position.set(0,0,0);
-					leftBox.lookAt(target);
-					leftBox.position.copy(center);
-				}
-				
-				
-				
-				
-				centroid.add(point);
-				min.min(point);
-				max.max(point);
-			}
-			centroid.multiplyScalar(1 / this.points.length);
-			
-			for(var i = 0; i < this.boxes.length; i++){
-				var box = this.boxes[i];
-				
-				box.position.y = min.y + (max.y - min.y) / 2;
-				//box.scale.y = max.y - min.y + 50;
-				box.scale.y = 1000000;
-			}
-			
-		};
-		
-		this.raycast = function(raycaster, intersects){
-			
-			for(var i = 0; i < this.points.length; i++){
-				var sphere = this.spheres[i];
-				
-				sphere.raycast(raycaster, intersects);
-			}
-			
-			// recalculate distances because they are not necessarely correct
-			// for scaled objects.
-			// see https://github.com/mrdoob/three.js/issues/5827
-			// TODO: remove this once the bug has been fixed
-			for(var i = 0; i < intersects.length; i++){
-				var I = intersects[i];
-				I.distance = raycaster.ray.origin.distanceTo(I.point);
-			}
-			intersects.sort( function ( a, b ) { return a.distance - b.distance;} );
-		}
-		
-		
-	}
-	
-	Profile.prototype = Object.create( THREE.Object3D.prototype );
-	
 	function createSphereMaterial(){
 		var sphereMaterial = new THREE.MeshLambertMaterial({
 			shading: THREE.SmoothShading, 
@@ -341,7 +365,7 @@ Potree.ProfileTool = function(scene, camera, renderer){
 	function onClick(event){
 	
 		if(state === STATE.INSERT){
-			var I = getMousePointCloudIntersection();
+			var I = scope.getMousePointCloudIntersection();
 			if(I){
 				var pos = I.clone();
 				
@@ -363,11 +387,15 @@ Potree.ProfileTool = function(scene, camera, renderer){
         scope.mouse.y = -((event.clientY - rect.top) / scope.domElement.clientHeight) * 2 + 1;
 		
 		if(scope.dragstart){
-			
-			scope.dragstart.object.dispatchEvent({type: "mousedrag", event: event});
+			var arg = {
+				type: "mousedrag", 
+				event: event, 
+				tool: scope
+			};
+			scope.dragstart.object.dispatchEvent(arg);
 			
 		}else if(state == STATE.INSERT && scope.activeProfile){
-			var I = getMousePointCloudIntersection();
+			var I = scope.getMousePointCloudIntersection();
 			
 			if(I){
 			
@@ -446,6 +474,22 @@ Potree.ProfileTool = function(scene, camera, renderer){
 		}
 	}
 	
+	function onDoubleClick(event){
+		
+		// fix move event after double click
+		// see: http://stackoverflow.com/questions/8125165/event-listener-for-dblclick-causes-event-for-mousemove-to-not-work-and-show-a-ci
+		if (window.getSelection){
+			window.getSelection().removeAllRanges();
+		}else if (document.selection){
+			document.selection.empty();
+		}
+	
+		if(scope.activeProfile && state === STATE.INSERT){
+			scope.activeProfile.removeMarker(scope.activeProfile.points.length-1);
+			scope.finishInsertion();
+		}
+	}
+	
 	function onMouseUp(event){
 		
 		if(scope.dragstart){
@@ -472,7 +516,7 @@ Potree.ProfileTool = function(scene, camera, renderer){
 		}
 	};
 	
-	function getMousePointCloudIntersection(){
+	this.getMousePointCloudIntersection = function(){
 		var vector = new THREE.Vector3( scope.mouse.x, scope.mouse.y, 0.5 );
 		vector.unproject(scope.camera);
 
@@ -481,7 +525,7 @@ Potree.ProfileTool = function(scene, camera, renderer){
 		
 		var pointClouds = [];
 		scope.scene.traverse(function(object){
-			if(object instanceof Potree.PointCloudOctree){
+			if(object instanceof Potree.PointCloudOctree || object instanceof Potree.PointCloudArena4D){
 				pointClouds.push(object);
 			}
 		});
@@ -515,19 +559,61 @@ Potree.ProfileTool = function(scene, camera, renderer){
 		var clip = args.clip || false;
 		var width = args.width || 1.0;
 		
-		this.activeProfile = new Profile();
+		this.activeProfile = new Potree.HeightProfile();
 		this.activeProfile.clip = clip;
 		this.activeProfile.setWidth(width);
-		this.sceneProfile.add(this.activeProfile);
-		this.profiles.push(this.activeProfile);
+		this.addProfile(this.activeProfile);
 		this.activeProfile.addMarker(new THREE.Vector3(0,0,0));
+		
+		return this.activeProfile;
 	};
 	
 	this.finishInsertion = function(){
 		this.activeProfile.removeMarker(this.activeProfile.points.length-1);
+		
+		var event = {
+			type: "insertion_finished",
+			profile: this.activeProfile
+		};
+		this.dispatchEvent(event);
+		
 		this.activeProfile = null;
 		state = STATE.DEFAULT;
 	};
+	
+	this.addProfile = function(profile){
+		this.profiles.push(profile);
+		this.sceneProfile.add(profile);
+		profile.update();
+		
+		this.dispatchEvent({"type": "profile_added", profile: profile});
+		profile.addEventListener("marker_added", function(event){
+			scope.dispatchEvent(event);
+		});
+		profile.addEventListener("marker_removed", function(event){
+			scope.dispatchEvent(event);
+		});
+		profile.addEventListener("marker_moved", function(event){
+			scope.dispatchEvent(event);
+		});
+	};
+	
+	this.removeProfile = function(profile){
+		this.sceneProfile.remove(profile);
+		var index = this.profiles.indexOf(profile);
+		if(index >= 0){
+			this.profiles.splice(index, 1);
+		}
+		
+		this.dispatchEvent({"type": "profile_removed", profile: profile});
+	}
+	
+	this.reset = function(){
+		for(var i = this.profiles.length - 1; i >= 0; i--){
+			var profile = this.profiles[i];
+			this.removeProfile(profile);
+		}
+	}
 	
 	this.update = function(){
 		
@@ -535,10 +621,11 @@ Potree.ProfileTool = function(scene, camera, renderer){
 			var profile = this.profiles[i];
 			for(var j = 0; j < profile.spheres.length; j++){
 				var sphere = profile.spheres[j];
-				var wp = sphere.getWorldPosition().applyMatrix4(this.camera.matrixWorldInverse);
-				var pp = new THREE.Vector4(wp.x, wp.y, wp.z).applyMatrix4(camera.projectionMatrix);
-				var w = Math.abs((wp.z  / 60)); // * (2 - pp.z / pp.w);
-				sphere.scale.set(w, w, w);
+				
+				var distance = scope.camera.position.distanceTo(sphere.getWorldPosition());
+				var pr = projectedRadius(1, scope.camera.fov * Math.PI / 180, distance, renderer.domElement.clientHeight);
+				var scale = (15 / pr);
+				sphere.scale.set(scale, scale, scale);
 			}
 		}
 	
@@ -553,6 +640,7 @@ Potree.ProfileTool = function(scene, camera, renderer){
 	};
 	
 	this.domElement.addEventListener( 'click', onClick, false);
+	this.domElement.addEventListener( 'dblclick', onDoubleClick, false);
 	this.domElement.addEventListener( 'mousemove', onMouseMove, false );
 	this.domElement.addEventListener( 'mousedown', onMouseDown, false );
 	this.domElement.addEventListener( 'mouseup', onMouseUp, true );

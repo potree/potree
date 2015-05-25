@@ -105,6 +105,39 @@ onmessage = function(event){
 			
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute};
 		
+		}else if(pointAttribute.name === PointAttribute.NORMAL_SPHEREMAPPED.name){
+
+			var buff = new ArrayBuffer(numPoints*4*3);
+			var normals = new Float32Array(buff);
+			
+			for(var j = 0; j < numPoints; j++){
+				var bx = cv.getUint8(offset + j * pointAttributes.byteSize + 0);
+				var by = cv.getUint8(offset + j * pointAttributes.byteSize + 1);
+			
+				var ex = bx / 255;
+				var ey = by / 255;
+				
+				var nx = ex * 2 - 1;
+				var ny = ey * 2 - 1;
+				var nz = 1;
+				var nw = -1;
+				
+				var l = (nx * (-nx)) + (ny * (-ny)) + (nz * (-nw));
+				nz = l;
+				nx = nx * Math.sqrt(l);
+				ny = ny * Math.sqrt(l);
+				
+				nx = nx * 2;
+				ny = ny * 2;
+				nz = nz * 2 - 1;
+				
+				normals[3*j + 0] = nx;
+				normals[3*j + 1] = ny;
+				normals[3*j + 2] = nz;
+			}
+			
+			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute};
+		
 		}
 		
 		offset += pointAttribute.byteSize;

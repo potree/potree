@@ -1167,6 +1167,11 @@ Potree.BinaryLoader.prototype.parse = function(node, buffer){
 		}
 		geometry.addAttribute("indices", new THREE.BufferAttribute(new Float32Array(data.indices), 1));
 		
+		if(!geometry.attributes.normal){
+			var buffer = new Float32Array(numPoints*3);
+			geometry.addAttribute("normal", new THREE.BufferAttribute(new Float32Array(buffer), 3));
+		}
+		
 		geometry.boundingBox = node.boundingBox;
 		node.geometry = geometry;
 		node.loaded = true;
@@ -1387,7 +1392,8 @@ Potree.LasLazBatcher = function(node){
 			geometry.addAttribute('returnNumber', new THREE.BufferAttribute(new Float32Array(returnNumbers_f), 1));
 			geometry.addAttribute('pointSourceID', new THREE.BufferAttribute(new Float32Array(pointSourceIDs_f), 1));
 			geometry.addAttribute('indices', new THREE.BufferAttribute(indices, 1));
-			//geometry.boundingBox = node.boundingBox;
+			geometry.addAttribute("normal", new THREE.BufferAttribute(new Float32Array(numPoints*3), 3));
+			
 			geometry.boundingBox = new THREE.Box3(mins, maxs);
 			node.boundingBox = geometry.boundingBox;
 			
@@ -4751,13 +4757,6 @@ Potree.PointCloudOctree.prototype.pick = function(renderer, camera, ray, params)
 			_gl.vertexAttribPointer( attributePointer, attributeSize, _gl.UNSIGNED_BYTE, true, 0, 0 ); 
 		
 			_gl.uniform1f(material.program.uniforms.pcIndex, material.pcIndex);
-			
-			// TODO: another ugly hack...disable normal attributes, if they're activated
-			var alNormal = _gl.getAttribLocation(program, "normal");
-			if(alNormal >= 0){
-				_gl.disableVertexAttribArray( alNormal );
-			}
-			
 		}	
 		
 		renderer.renderBufferDirect(camera, [], null, material, geometry, object);
@@ -6583,7 +6582,7 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 	
 	this.render = function(){
 		this.update();
-		renderer.render(this.sceneMeasurement, this.camera);
+		this.renderer.render(this.sceneMeasurement, this.camera);
 	};
 	
 	this.domElement.addEventListener( 'click', onClick, false);
@@ -8949,12 +8948,6 @@ Potree.PointCloudArena4D.prototype.pick = function(renderer, camera, ray, params
 			_gl.vertexAttribPointer( attributePointer, attributeSize, _gl.UNSIGNED_BYTE, true, 0, 0 ); 
 		
 			_gl.uniform1f(material.program.uniforms.pcIndex, material.pcIndex);
-			
-			// TODO: another ugly hack...disable normal attributes, if they're activated
-			var alNormal = _gl.getAttribLocation(program, "normal");
-			if(alNormal >= 0){
-				_gl.disableVertexAttribArray( alNormal );
-			}
 		}	
 		
 		renderer.renderBufferDirect(camera, [], null, material, geometry, object);
@@ -9212,6 +9205,7 @@ Potree.PointCloudArena4DGeometryNode.prototype.load = function(){
 		geometry.addAttribute("position", new THREE.BufferAttribute(positions, 3));
 		geometry.addAttribute("color", new THREE.BufferAttribute(colors, 3));
 		geometry.addAttribute("indices", new THREE.BufferAttribute(indices, 1));
+		geometry.addAttribute("normal", new THREE.BufferAttribute(new Float32Array(numPoints*3), 3));
 		
 		scope.geometry = geometry;
 		scope.loaded = true;

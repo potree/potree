@@ -70,6 +70,7 @@ Potree.PointCloudArena4DGeometryNode.prototype.load = function(){
 		geometry.addAttribute("position", new THREE.BufferAttribute(positions, 3));
 		geometry.addAttribute("color", new THREE.BufferAttribute(colors, 3));
 		geometry.addAttribute("indices", new THREE.BufferAttribute(indices, 1));
+		geometry.addAttribute("normal", new THREE.BufferAttribute(new Float32Array(numPoints*3), 3));
 		
 		scope.geometry = geometry;
 		scope.loaded = true;

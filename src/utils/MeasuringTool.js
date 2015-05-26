@@ -672,7 +672,7 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 	
 	this.render = function(){
 		this.update();
-		renderer.render(this.sceneMeasurement, this.camera);
+		this.renderer.render(this.sceneMeasurement, this.camera);
 	};
 	
 	this.domElement.addEventListener( 'click', onClick, false);

@@ -83,6 +83,11 @@ Potree.BinaryLoader.prototype.parse = function(node, buffer){
 		}
 		geometry.addAttribute("indices", new THREE.BufferAttribute(new Float32Array(data.indices), 1));
 		
+		if(!geometry.attributes.normal){
+			var buffer = new Float32Array(numPoints*3);
+			geometry.addAttribute("normal", new THREE.BufferAttribute(new Float32Array(buffer), 3));
+		}
+		
 		geometry.boundingBox = node.boundingBox;
 		node.geometry = geometry;
 		node.loaded = true;

@@ -99,7 +99,6 @@ Potree.PointCloudMaterial = function(parameters){
 	this._pointShape = Potree.PointShape.SQUARE;
 	this._interpolate = false;
 	this._pointColorType = Potree.PointColorType.RGB;
-	this._levels = 6.0;
 	this._useClipBox = false;
 	this.numClipBoxes = 0;
 	this._clipMode = Potree.ClipMode.DISABLED;
@@ -135,6 +134,7 @@ Potree.PointCloudMaterial = function(parameters){
 		heightMax:			{ type: "f", value: 1.0 },
 		intensityMin:		{ type: "f", value: 0.0 },
 		intensityMax:		{ type: "f", value: 1.0 },
+		clipBoxCount:		{ type: "f", value: 0 },
 		visibleNodes:		{ type: "t", value: this.visibleNodesTexture },
 		pcIndex:   			{ type: "f", value: 0 },
 		gradient: 			{ type: "t", value: this.gradientTexture },
@@ -253,7 +253,6 @@ Potree.PointCloudMaterial.prototype.getDefines = function(){
 		defines += "#define attenuated_point_size\n";
 	}else if(this.pointSizeType === Potree.PointSizeType.ADAPTIVE){
 		defines += "#define adaptive_point_size\n";
-		defines += "#define levels " + Math.max(0, this._levels - 2).toFixed(1) + "\n";
 	}
 	
 	if(this.pointShape === Potree.PointShape.SQUARE){
@@ -314,22 +313,25 @@ Potree.PointCloudMaterial.prototype.getDefines = function(){
 	
 	if(this.numClipBoxes > 0){
 		defines += "#define use_clip_box\n";
-		defines += "#define clip_box_count " + this.numClipBoxes + "\n";
 	}
 
 	return defines;
 };
 
 Potree.PointCloudMaterial.prototype.setClipBoxes = function(clipBoxes){
-	var numBoxes = clipBoxes.length;
-	this.numClipBoxes = numBoxes;
 	
-	if(this.uniforms.clipBoxes.value.length / 16 !== numBoxes){
-		this.uniforms.clipBoxes.value = new Float32Array(numBoxes * 16);
+	var doUpdate = (this.numClipBoxes != clipBoxes.length) && (clipBoxes.length === 0 || this.numClipBoxes === 0);
+
+	this.numClipBoxes = clipBoxes.length;
+	this.uniforms.clipBoxCount.value = this.numClipBoxes;
+	
+	if(doUpdate){
 		this.updateShaderSource();
 	}
 	
-	for(var i = 0; i < numBoxes; i++){
+	this.uniforms.clipBoxes.value = new Float32Array(this.numClipBoxes * 16);
+	
+	for(var i = 0; i < this.numClipBoxes; i++){
 		var box = clipBoxes[i];
 		
 		this.uniforms.clipBoxes.value.set(box.elements, 16*i);
@@ -454,7 +456,6 @@ Object.defineProperty(Potree.PointCloudMaterial.prototype, "near", {
 	set: function(value){
 		if(this.uniforms.near.value !== value){
 			this.uniforms.near.value = value;
-			//this.updateShaderSource();
 		}
 	}
 });
@@ -466,7 +467,6 @@ Object.defineProperty(Potree.PointCloudMaterial.prototype, "far", {
 	set: function(value){
 		if(this.uniforms.far.value !== value){
 			this.uniforms.far.value = value;
-			//this.updateShaderSource();
 		}
 	}
 });
@@ -478,18 +478,6 @@ Object.defineProperty(Potree.PointCloudMaterial.prototype, "opacity", {
 	set: function(value){
 		if(this.uniforms.opacity.value !== value){
 			this.uniforms.opacity.value = value;
-			this.updateShaderSource();
-		}
-	}
-});
-
-Object.defineProperty(Potree.PointCloudMaterial.prototype, "levels", {
-	get: function(){
-		return this._levels;
-	},
-	set: function(value){
-		if(this._levels !== value){
-			this._levels = value;
 			this.updateShaderSource();
 		}
 	}

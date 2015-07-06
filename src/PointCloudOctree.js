@@ -244,7 +244,6 @@ Potree.PointCloudOctree.prototype.updateMaterial = function(vn, camera, renderer
 	this.material.spacing = this.pcoGeometry.spacing;
 	this.material.near = camera.near;
 	this.material.far = camera.far;
-	this.material.octreeLevels = this.maxLevel;
 	
 	if(this.material.pointSizeType){
 		if(this.material.pointSizeType === Potree.PointSizeType.ADAPTIVE 
@@ -1015,7 +1014,6 @@ Potree.PointCloudOctree.prototype.pick = function(renderer, camera, ray, params)
 	this.pickMaterial.spacing 		= this.material.spacing;
 	this.pickMaterial.near 			= this.material.near;
 	this.pickMaterial.far 			= this.material.far;
-	this.pickMaterial.octreeLevels 	= this.material.octreeLevels;
 	this.pickMaterial.pointShape 	= this.material.pointShape;
 	
 	

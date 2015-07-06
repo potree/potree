@@ -83,6 +83,8 @@ Potree.Shaders["pointcloud.vs"] = [
  "//#define MAX_SHADOWS 0",
  "//#define MAX_BONES 58",
  "",
+ "#define max_clip_boxes 30",
+ "",
  "",
  "attribute float intensity;",
  "attribute float classification;",
@@ -99,7 +101,7 @@ Potree.Shaders["pointcloud.vs"] = [
  "uniform float far;",
  "",
  "#if defined use_clip_box",
- "	uniform mat4 clipBoxes[clip_box_count];",
+ "	uniform mat4 clipBoxes[max_clip_boxes];",
  "#endif",
  "",
  "",
@@ -107,13 +109,14 @@ Potree.Shaders["pointcloud.vs"] = [
  "uniform float heightMax;",
  "uniform float intensityMin;",
  "uniform float intensityMax;",
- "uniform float size;",
- "uniform float minSize;",
- "uniform float maxSize;",
+ "uniform float size;				// pixel size factor",
+ "uniform float minSize;			// minimum pixel size",
+ "uniform float maxSize;			// maximum pixel size",
  "uniform float nodeSize;",
  "uniform vec3 bbSize;",
  "uniform vec3 uColor;",
  "uniform float opacity;",
+ "uniform float clipBoxCount;",
  "",
  "",
  "uniform sampler2D visibleNodes;",
@@ -171,7 +174,7 @@ Potree.Shaders["pointcloud.vs"] = [
  "	vec3 offset = vec3(0.0, 0.0, 0.0);",
  "	float iOffset = 0.0;",
  "	float depth = 0.0;",
- "	for(float i = 0.0; i <= levels + 1.0; i++){",
+ "	for(float i = 0.0; i <= 1000.0; i++){",
  "		",
  "		float nodeSizeAtLevel = nodeSize / pow(2.0, i);",
  "		vec3 index3d = (position - offset) / nodeSizeAtLevel;",
@@ -217,7 +220,7 @@ Potree.Shaders["pointcloud.vs"] = [
  "	vec3 size = bbSize;	",
  "	vec3 pos = position;",
  "		",
- "	for(float i = 0.0; i <= levels + 1.0; i++){",
+ "	for(float i = 0.0; i <= 1000.0; i++){",
  "		",
  "		vec4 value = texture2D(visibleNodes, vec2(iOffset / 2048.0, 0.0));",
  "		",
@@ -363,7 +366,11 @@ Potree.Shaders["pointcloud.vs"] = [
  "	",
  "	#if defined use_clip_box",
  "		bool insideAny = false;",
- "		for(int i = 0; i < clip_box_count; i++){",
+ "		for(int i = 0; i < max_clip_boxes; i++){",
+ "			if(i == int(clipBoxCount)){",
+ "				break;",
+ "			}",
+ "		",
  "			vec4 clipPosition = clipBoxes[i] * modelMatrix * vec4( position, 1.0 );",
  "			bool inside = -0.5 <= clipPosition.x && clipPosition.x <= 0.5;",
  "			inside = inside && -0.5 <= clipPosition.y && clipPosition.y <= 0.5;",
@@ -1520,7 +1527,6 @@ Potree.PointCloudMaterial = function(parameters){
 	this._pointShape = Potree.PointShape.SQUARE;
 	this._interpolate = false;
 	this._pointColorType = Potree.PointColorType.RGB;
-	this._levels = 6.0;
 	this._useClipBox = false;
 	this.numClipBoxes = 0;
 	this._clipMode = Potree.ClipMode.DISABLED;
@@ -1556,6 +1562,7 @@ Potree.PointCloudMaterial = function(parameters){
 		heightMax:			{ type: "f", value: 1.0 },
 		intensityMin:		{ type: "f", value: 0.0 },
 		intensityMax:		{ type: "f", value: 1.0 },
+		clipBoxCount:		{ type: "f", value: 0 },
 		visibleNodes:		{ type: "t", value: this.visibleNodesTexture },
 		pcIndex:   			{ type: "f", value: 0 },
 		gradient: 			{ type: "t", value: this.gradientTexture },
@@ -1674,7 +1681,6 @@ Potree.PointCloudMaterial.prototype.getDefines = function(){
 		defines += "#define attenuated_point_size\n";
 	}else if(this.pointSizeType === Potree.PointSizeType.ADAPTIVE){
 		defines += "#define adaptive_point_size\n";
-		defines += "#define levels " + Math.max(0, this._levels - 2).toFixed(1) + "\n";
 	}
 	
 	if(this.pointShape === Potree.PointShape.SQUARE){
@@ -1735,22 +1741,25 @@ Potree.PointCloudMaterial.prototype.getDefines = function(){
 	
 	if(this.numClipBoxes > 0){
 		defines += "#define use_clip_box\n";
-		defines += "#define clip_box_count " + this.numClipBoxes + "\n";
 	}
 
 	return defines;
 };
 
 Potree.PointCloudMaterial.prototype.setClipBoxes = function(clipBoxes){
-	var numBoxes = clipBoxes.length;
-	this.numClipBoxes = numBoxes;
 	
-	if(this.uniforms.clipBoxes.value.length / 16 !== numBoxes){
-		this.uniforms.clipBoxes.value = new Float32Array(numBoxes * 16);
+	var doUpdate = (this.numClipBoxes != clipBoxes.length) && (clipBoxes.length === 0 || this.numClipBoxes === 0);
+
+	this.numClipBoxes = clipBoxes.length;
+	this.uniforms.clipBoxCount.value = this.numClipBoxes;
+	
+	if(doUpdate){
 		this.updateShaderSource();
 	}
 	
-	for(var i = 0; i < numBoxes; i++){
+	this.uniforms.clipBoxes.value = new Float32Array(this.numClipBoxes * 16);
+	
+	for(var i = 0; i < this.numClipBoxes; i++){
 		var box = clipBoxes[i];
 		
 		this.uniforms.clipBoxes.value.set(box.elements, 16*i);
@@ -1875,7 +1884,6 @@ Object.defineProperty(Potree.PointCloudMaterial.prototype, "near", {
 	set: function(value){
 		if(this.uniforms.near.value !== value){
 			this.uniforms.near.value = value;
-			//this.updateShaderSource();
 		}
 	}
 });
@@ -1887,7 +1895,6 @@ Object.defineProperty(Potree.PointCloudMaterial.prototype, "far", {
 	set: function(value){
 		if(this.uniforms.far.value !== value){
 			this.uniforms.far.value = value;
-			//this.updateShaderSource();
 		}
 	}
 });
@@ -1899,18 +1906,6 @@ Object.defineProperty(Potree.PointCloudMaterial.prototype, "opacity", {
 	set: function(value){
 		if(this.uniforms.opacity.value !== value){
 			this.uniforms.opacity.value = value;
-			this.updateShaderSource();
-		}
-	}
-});
-
-Object.defineProperty(Potree.PointCloudMaterial.prototype, "levels", {
-	get: function(){
-		return this._levels;
-	},
-	set: function(value){
-		if(this._levels !== value){
-			this._levels = value;
 			this.updateShaderSource();
 		}
 	}
@@ -3934,7 +3929,6 @@ Potree.PointCloudOctree.prototype.updateMaterial = function(vn, camera, renderer
 	this.material.spacing = this.pcoGeometry.spacing;
 	this.material.near = camera.near;
 	this.material.far = camera.far;
-	this.material.octreeLevels = this.maxLevel;
 	
 	if(this.material.pointSizeType){
 		if(this.material.pointSizeType === Potree.PointSizeType.ADAPTIVE 
@@ -4705,7 +4699,6 @@ Potree.PointCloudOctree.prototype.pick = function(renderer, camera, ray, params)
 	this.pickMaterial.spacing 		= this.material.spacing;
 	this.pickMaterial.near 			= this.material.near;
 	this.pickMaterial.far 			= this.material.far;
-	this.pickMaterial.octreeLevels 	= this.material.octreeLevels;
 	this.pickMaterial.pointShape 	= this.material.pointShape;
 	
 	

@@ -137,7 +137,37 @@ onmessage = function(event){
 			}
 			
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute};
-		
+		}else if(pointAttribute.name === PointAttribute.NORMAL_OCT16.name){
+			
+			var buff = new ArrayBuffer(numPoints*4*3);
+			var normals = new Float32Array(buff);
+			for(var j = 0; j < numPoints; j++){
+				var bx = cv.getUint8(offset + j * pointAttributes.byteSize + 0);
+				var by = cv.getUint8(offset + j * pointAttributes.byteSize + 1);
+				
+				var u = (bx / 255) * 2 - 1;
+				var v = (by / 255) * 2 - 1;
+				
+				var z = 1 - Math.abs(u) - Math.abs(v);
+				
+				if(z >= 0){
+					var x = u;
+					var y = v;
+				}else{
+					var x = - (v/Math.sign(v) - 1) / Math.sign(u);
+					var y = - (u/Math.sign(u) - 1) / Math.sign(v);
+				}
+				
+				var length = Math.sqrt(x*x + y*y + z*z);
+				x = x / length;
+				y = y / length;
+				z = z / length;
+				
+				normals[3*j + 0] = x;
+				normals[3*j + 1] = y;
+				normals[3*j + 2] = z;
+			}
+			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute};
 		}
 		
 		offset += pointAttribute.byteSize;

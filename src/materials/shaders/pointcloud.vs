@@ -33,9 +33,10 @@ uniform float screenWidth;
 uniform float screenHeight;
 uniform float fov;
 uniform float spacing;
-uniform float blendDepth;
 uniform float near;
 uniform float far;
+uniform float level;
+uniform float visibleNodesOffset;
 
 #if defined use_clip_box
 	uniform mat4 clipBoxes[max_clip_boxes];
@@ -49,7 +50,9 @@ uniform float intensityMax;
 uniform float size;				// pixel size factor
 uniform float minSize;			// minimum pixel size
 uniform float maxSize;			// maximum pixel size
+uniform float octreeSize;
 uniform float nodeSize;
+uniform vec3 bbMin;
 uniform vec3 bbSize;
 uniform vec3 uColor;
 uniform float opacity;
@@ -108,12 +111,12 @@ bool isBitSet(float number, float index){
  * find the tree depth at the point position
  */
 float getLocalTreeDepth(){
-	vec3 offset = vec3(0.0, 0.0, 0.0);
-	float iOffset = 0.0;
-	float depth = 0.0;
+	vec3 offset = bbMin;
+	float iOffset = visibleNodesOffset;
+	float depth = level;
 	for(float i = 0.0; i <= 1000.0; i++){
 		
-		float nodeSizeAtLevel = nodeSize / pow(2.0, i);
+		float nodeSizeAtLevel = octreeSize  / pow(2.0, i + level);
 		vec3 index3d = (position - offset) / nodeSizeAtLevel;
 		index3d = floor(index3d + 0.5);
 		float index = 4.0*index3d.x + 2.0*index3d.y + index3d.z;

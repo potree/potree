@@ -197,8 +197,36 @@ Potree.PointCloudOctree.prototype.updateProfileRequests = function(){
 Potree.PointCloudOctree.prototype.updatePointCloud = function(node, element, stack, visibleGeometryNames){
 	this.numVisibleNodes++;
 	this.numVisiblePoints += node.numPoints;
-	node.material = this.material;
 	this.visibleNodes.push(element);
+	
+	node.material.fov = camera.fov * (Math.PI / 180);
+	node.material.screenWidth = renderer.domElement.clientWidth;
+	node.material.screenHeight = renderer.domElement.clientHeight;
+	node.material.spacing = this.pcoGeometry.spacing;
+	node.material.near = camera.near;
+	node.material.far = camera.far;
+	
+	node.material.octreeLevels = this.maxLevel;
+	node.material.pointColorType = this.material.pointColorType;
+	node.material.pointSizeType = this.material.pointSizeType;
+	node.material.pointShape = this.material.pointShape;
+	node.material.interpolate = this.material.interpolate;
+	node.material.size = this.material.size;
+	node.material.heightMin = this.material.heightMin;
+	node.material.heightMax = this.material.heightMax;
+	node.material.intensityMin = this.material.intensityMin;
+	node.material.intensityMax = this.material.intensityMax;
+	node.material.weighted = this.material.weighted;
+	node.material.opacity = this.material.opacity;
+	node.material.minSize = this.material.minSize;
+	node.material.uniforms.level.value = node.level;
+	
+	node.material.uniforms.octreeSize.value = this.pcoGeometry.boundingBox.size().x;
+	node.material.uniforms.nodeSize.value = node.pcoGeometry.boundingBox.size().x;
+	node.material.uniforms.bbMin.value = node.pcoGeometry.boundingBox.min.toArray();
+	
+	node.material.uniforms.visibleNodesTexture = this.material.visibleNodesTexture;
+	node.material.uniforms.visibleNodes.value = this.material.visibleNodesTexture;
 	
 	if(node.level){
 		this.maxLevel = Math.max(node.level, this.maxLevel);
@@ -236,25 +264,6 @@ Potree.PointCloudOctree.prototype.updatePointCloud = function(node, element, sta
 		}
 	}
 }
-
-Potree.PointCloudOctree.prototype.updateMaterial = function(vn, camera, renderer){
-	this.material.fov = camera.fov * (Math.PI / 180);
-	this.material.screenWidth = renderer.domElement.clientWidth;
-	this.material.screenHeight = renderer.domElement.clientHeight;
-	this.material.spacing = this.pcoGeometry.spacing;
-	this.material.near = camera.near;
-	this.material.far = camera.far;
-	
-	if(this.material.pointSizeType){
-		if(this.material.pointSizeType === Potree.PointSizeType.ADAPTIVE 
-			|| this.material.pointColorType === Potree.PointColorType.OCTREE_DEPTH){
-			
-			this.updateVisibilityTexture(this.material, vn);
-		}
-	}
-	
-	
-};
 
 Potree.PointCloudOctree.prototype.updateLoadQueue = function(vn){
 	if(this.loadQueue.length > 0){
@@ -345,7 +354,15 @@ Potree.PointCloudOctree.prototype.update = function(camera, renderer){
 		vn.push(this.visibleNodes[i].node);
 	}
 	
-	this.updateMaterial(vn, camera, renderer);
+	// update visibility texture
+	if(this.material.pointSizeType){
+		if(this.material.pointSizeType === Potree.PointSizeType.ADAPTIVE 
+			|| this.material.pointColorType === Potree.PointColorType.OCTREE_DEPTH){
+			
+			this.updateVisibilityTexture(this.material, vn);
+		}
+	}
+	
 	Potree.PointCloudOctree.lru.freeMemory();
 };
 
@@ -494,6 +511,7 @@ Potree.PointCloudOctree.prototype.updateVisibilityTexture = function(material, v
 	
 	for(var i = 0; i < visibleNodes.length; i++){
 		var node = visibleNodes[i];
+		node.material.uniforms.visibleNodesOffset.value = i;
 		
 		var children = [];
 		for(var j = 0; j < node.children.length; j++){
@@ -576,7 +594,8 @@ Potree.PointCloudOctree.prototype.replaceProxy = function(proxy){
 	var geometryNode = proxy.geometryNode;
 	if(geometryNode.loaded === true){
 		var geometry = geometryNode.geometry;
-		var node = new THREE.PointCloud(geometry, this.material);
+		var material = new Potree.PointCloudMaterial();
+		var node = new THREE.PointCloud(geometry, material);
 		node.name = proxy.name;
 		node.level = proxy.level;
 		node.numPoints = proxy.numPoints;

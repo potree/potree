@@ -82,6 +82,8 @@ Potree.TreeType = {
 };
 
 Potree.PointCloudMaterial = function(parameters){
+	THREE.Material.call( this );
+
 	parameters = parameters || {};
 
 	var color = new THREE.Color( 0x000000 );
@@ -103,7 +105,6 @@ Potree.PointCloudMaterial = function(parameters){
 	this.numClipBoxes = 0;
 	this._clipMode = Potree.ClipMode.DISABLED;
 	this._weighted = false;
-	this._blendDepth = 0.1;
 	this._depthMap;
 	this._gradient = Potree.Gradients.RAINBOW;
 	this._classification = Potree.Classification.DEFAULT;
@@ -129,18 +130,21 @@ Potree.PointCloudMaterial = function(parameters){
 		minSize:   			{ type: "f", value: 2 },
 		maxSize:   			{ type: "f", value: 2 },
 		nodeSize:			{ type: "f", value: nodeSize },
+		octreeSize:			{ type: "f", value: 0 },
+		bbMin:				{ type: "fv", value: [0,0,0] },
 		bbSize:				{ type: "fv", value: [0,0,0] },
 		heightMin:			{ type: "f", value: 0.0 },
 		heightMax:			{ type: "f", value: 1.0 },
 		intensityMin:		{ type: "f", value: 0.0 },
 		intensityMax:		{ type: "f", value: 1.0 },
 		clipBoxCount:		{ type: "f", value: 0 },
+		level:				{ type: "f", value: 0 },
+		visibleNodesOffset:	{ type: "f", value: 0 },
 		visibleNodes:		{ type: "t", value: this.visibleNodesTexture },
 		pcIndex:   			{ type: "f", value: 0 },
 		gradient: 			{ type: "t", value: this.gradientTexture },
 		classificationLUT: 	{ type: "t", value: this.classificationTexture },
 		clipBoxes:			{ type: "Matrix4fv", value: [] },
-		blendDepth:			{ type: "f", value: this._blendDepth },
 		depthMap: 			{ type: "t", value: null },
 		diffuse:			{ type: "fv", value: [1,1,1]},
 		ambient:			{ type: "fv", value: [0.1, 0.1, 0.1]},
@@ -377,18 +381,6 @@ Object.defineProperty(Potree.PointCloudMaterial.prototype, "spacing", {
 	}
 });
 
-Object.defineProperty(Potree.PointCloudMaterial.prototype, "blendDepth", {
-	get: function(){
-		return this.uniforms.blendDepth.value;
-	},
-	set: function(value){
-		if(this.uniforms.blendDepth.value !== value){
-			this.uniforms.blendDepth.value = value;
-			//this.updateShaderSource();
-		}
-	}
-});
-
 Object.defineProperty(Potree.PointCloudMaterial.prototype, "useClipBox", {
 	get: function(){
 		return this._useClipBox;
@@ -476,9 +468,11 @@ Object.defineProperty(Potree.PointCloudMaterial.prototype, "opacity", {
 		return this.uniforms.opacity.value;
 	},
 	set: function(value){
-		if(this.uniforms.opacity.value !== value){
-			this.uniforms.opacity.value = value;
-			this.updateShaderSource();
+		if(this.uniforms.opacity){
+			if(this.uniforms.opacity.value !== value){
+				this.uniforms.opacity.value = value;
+				this.updateShaderSource();
+			}
 		}
 	}
 });

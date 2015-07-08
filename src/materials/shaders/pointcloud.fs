@@ -62,7 +62,6 @@ uniform float far;
 uniform float pcIndex;
 uniform float screenWidth;
 uniform float screenHeight;
-uniform float blendDepth;
 
 uniform sampler2D depthMap;
 
@@ -94,7 +93,7 @@ void main() {
 	#if defined weighted_splats
 		vec2 uv = gl_FragCoord.xy / vec2(screenWidth, screenHeight);
 		float depth = texture2D(depthMap, uv).r;
-		if(vLinearDepth > depth + vRadius * 0.5){
+		if(vLinearDepth > depth + vRadius){
 			discard;
 		}
 	#endif

@@ -323,7 +323,11 @@ Potree.PointCloudMaterial.prototype.getDefines = function(){
 };
 
 Potree.PointCloudMaterial.prototype.setClipBoxes = function(clipBoxes){
-	
+	if(!clipBoxes){
+		return;
+	}
+
+	this.clipBoxes = clipBoxes;
 	var doUpdate = (this.numClipBoxes != clipBoxes.length) && (clipBoxes.length === 0 || this.numClipBoxes === 0);
 
 	this.numClipBoxes = clipBoxes.length;

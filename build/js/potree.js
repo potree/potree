@@ -1771,7 +1771,11 @@ Potree.PointCloudMaterial.prototype.getDefines = function(){
 };
 
 Potree.PointCloudMaterial.prototype.setClipBoxes = function(clipBoxes){
-	
+	if(!clipBoxes){
+		return;
+	}
+
+	this.clipBoxes = clipBoxes;
 	var doUpdate = (this.numClipBoxes != clipBoxes.length) && (clipBoxes.length === 0 || this.numClipBoxes === 0);
 
 	this.numClipBoxes = clipBoxes.length;
@@ -3918,6 +3922,8 @@ Potree.PointCloudOctree.prototype.updatePointCloud = function(node, element, sta
 	node.material.opacity = this.material.opacity;
 	node.material.minSize = this.material.minSize;
 	node.material.uniforms.level.value = node.level;
+	node.material.setClipBoxes(this.material.clipBoxes);
+	node.material.clipMode = this.material.clipMode;
 	
 	node.material.uniforms.octreeSize.value = this.pcoGeometry.boundingBox.size().x;
 	node.material.uniforms.nodeSize.value = node.pcoGeometry.boundingBox.size().x;

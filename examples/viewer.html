@@ -80,7 +80,7 @@ void main() {
 	<script src="./js/ProgressBar.js"></script>
 	
 	<!-- uncomment this to debug changes to the individual js files -->
-	<!--
+	
 	<script src="../src/PointCloudOctree.js"></script>
 	<script src="../src/PointCloudOctreeGeometry.js"></script>
 	<script src="../src/loader/POCLoader.js"></script>
@@ -98,7 +98,7 @@ void main() {
 	<script src="../src/Features.js"></script>
 	<script src="../src/arena4d/PointCloudArena4D.js"></script>
 	<script src="../src/arena4d/PointCloudArena4DGeometry.js"></script>
-	-->
+	
 	
 	
 	
@@ -136,9 +136,10 @@ void main() {
 	
 	<script>
 		var sceneProperties = {
-			path: 			"../../../../pointclouds/mschuetz/lion/lion.ply_converted/cloud.js",
 			path:			"../resources/pointclouds/lion_takanawa/cloud.js",
 			path:			"../resources/pointclouds/vol_total/cloud.js",
+			//path:			"../../../../../temp/test/normals_oct16/cloud.js",
+			//path:			"../../../../../temp/test/normals_lion/cloud.js",
 			cameraPosition: null, 			// other options: cameraPosition: [10,10,10],
 			cameraTarget: 	null, 			// other options: cameraTarget: [0,0,0],
 			sizeType: 		"Adaptive",		// other options: "Fixed", "Attenuated"
@@ -149,6 +150,11 @@ void main() {
 			navigation: 	"Orbit",		// other options: "Earth", "Orbit", "Flight"
 			pointSize: 		1.0
 		};
+		
+		if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
+			sceneProperties.navigation = "Orbit";
+		}
+
 	
 		var fov = sceneProperties.fov;
 		var pointSize = sceneProperties.pointSize;
@@ -162,6 +168,7 @@ void main() {
 		var isFlipYZ = false;
 		var useDEMCollisions = false;
 		var minNodeSize = 150;
+		var directionalLight;
 		
 		var showStats = false;
 		var showBoundingBox = false;
@@ -204,7 +211,13 @@ void main() {
 		};
 		
 		function setQuality(value){
-			quality = value;
+			if(value == "Interpolation" && !Potree.Features.SHADER_INTERPOLATION.isSupported()){
+				quality = "Squares";
+			}else if(value == "Splats" && !Potree.Features.SHADER_SPLATS.isSupported()){
+				quality = "Squares";
+			}else{
+				quality = value;
+			}
 		};
 		
 		function setMaterial(value){
@@ -308,7 +321,7 @@ void main() {
 						options.push("Intensity Gradient");
 					}else if(attribute === PointAttribute.CLASSIFICATION){
 						options.push("Classification");
-					}else if(attribute === PointAttribute.NORMAL_SPHEREMAPPED){
+					}else if(attribute === PointAttribute.NORMAL_SPHEREMAPPED || attribute === PointAttribute.NORMAL_OCT16){
 						options.push("Phong");
 						options.push("Normal");
 					}
@@ -558,13 +571,12 @@ void main() {
 			
 			window.addEventListener( 'keydown', onKeyDown, false );
 			
-			
-			var directionalLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
+			directionalLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
 			directionalLight.position.set( 10, 10, 10 );
 			directionalLight.lookAt( new THREE.Vector3(0, 0, 0));
 			scenePointCloud.add( directionalLight );
 			
-			var light = new THREE.AmbientLight( 0x707070 ); // soft white light
+			var light = new THREE.AmbientLight( 0x555555 ); // soft white light
 			scenePointCloud.add( light );
 			
 		}
@@ -622,6 +634,9 @@ void main() {
 		
 		function update(){
 			Potree.pointLoadLimit = pointCountTarget * 2 * 1000 * 1000;
+			
+			directionalLight.position.copy(camera.position);
+			directionalLight.lookAt(new THREE.Vector3().addVectors(camera.position, camera.getWorldDirection()));
 			
 			if(pointcloud){
 			
@@ -1016,11 +1031,11 @@ void main() {
 				
 			
 			    volumeTool.render();
-				profileTool.render();
 				renderer.render(sceneNormalize, cameraBG);
 				
 				
 				renderer.clearDepth();
+				profileTool.render();
 				measuringTool.render();
 				transformationTool.render();
 					

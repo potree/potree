@@ -17,6 +17,7 @@ PointAttributeNames.INTENSITY			= 6;
 PointAttributeNames.CLASSIFICATION		= 7;
 PointAttributeNames.NORMAL_SPHEREMAPPED	= 8;
 PointAttributeNames.NORMAL_OCT16		= 9;
+PointAttributeNames.NORMAL				= 10;
 
 /**
  * Some types of possible point attribute data formats
@@ -95,6 +96,10 @@ PointAttribute.NORMAL_SPHEREMAPPED = new PointAttribute(
 PointAttribute.NORMAL_OCT16 = new PointAttribute(
 		PointAttributeNames.NORMAL_OCT16,
 		PointAttributeTypes.DATA_TYPE_UINT8, 2);	
+		
+PointAttribute.NORMAL = new PointAttribute(
+		PointAttributeNames.NORMAL,
+		PointAttributeTypes.DATA_TYPE_FLOAT, 3);
 
 /**
  * Ordered list of PointAttributes used to identify how points are aligned in a buffer.
@@ -148,6 +153,7 @@ PointAttributes.prototype.hasNormals = function(){
 		if(
 			pointAttribute === PointAttribute.NORMAL_SPHEREMAPPED || 
 			pointAttribute === PointAttribute.NORMAL_FLOATS ||
+			pointAttribute === PointAttribute.NORMAL ||
 			pointAttribute === PointAttribute.NORMAL_OCT16){
 			return true;
 		}

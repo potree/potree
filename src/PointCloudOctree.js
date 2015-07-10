@@ -81,7 +81,6 @@ Potree.PointCloudOctree = function(geometry, material){
 	this.visibleNodes = [];
 	this.visibleGeometry = [];
 	this.pickTarget;
-	this.pickMaterial;
 	this.maxLevel = 0;
 	this.generateDEM = false;
 	
@@ -1011,44 +1010,15 @@ Potree.PointCloudOctree.prototype.pick = function(renderer, camera, ray, params)
 		);
 	}
 	this.pickTarget.setSize(width, height);
-	
-	// setup pick material.
-	// use the same point size functions as the main material to get the same point sizes.
-	if(!this.pickMaterial){
-		this.pickMaterial = new Potree.PointCloudMaterial();
-		this.pickMaterial.pointColorType = Potree.PointColorType.POINT_INDEX;
-		this.pickMaterial.pointSizeType = Potree.PointSizeType.FIXED;
-	}
-	
-	this.pickMaterial.pointSizeType = this.material.pointSizeType;
-	this.pickMaterial.size = this.material.size;
-	
-	if(this.pickMaterial.pointSizeType === Potree.PointSizeType.ADAPTIVE){
-		this.updateVisibilityTexture(this.pickMaterial, nodes);
-	}
-	
-	this.pickMaterial.fov 			= this.material.fov;
-	this.pickMaterial.screenWidth 	= this.material.screenWidth;
-	this.pickMaterial.screenHeight 	= this.material.screenHeight;
-	this.pickMaterial.spacing 		= this.material.spacing;
-	this.pickMaterial.near 			= this.material.near;
-	this.pickMaterial.far 			= this.material.far;
-	this.pickMaterial.pointShape 	= this.material.pointShape;
-	
-	
-
 	var _gl = renderer.context;
 	
 	_gl.enable(_gl.SCISSOR_TEST);
 	_gl.scissor(pixelPos.x - (pickWindowSize - 1) / 2, pixelPos.y - (pickWindowSize - 1) / 2,pickWindowSize,pickWindowSize);
 	_gl.disable(_gl.SCISSOR_TEST);
 	
-	var material = this.pickMaterial;
 	
 	renderer.setRenderTarget( this.pickTarget );
 	
-	renderer.setDepthTest( material.depthTest );
-	renderer.setDepthWrite( material.depthWrite )
 	renderer.setBlending( THREE.NoBlending );
 	
 	renderer.clear( renderer.autoClearColor, renderer.autoClearDepth, renderer.autoClearStencil );
@@ -1066,10 +1036,33 @@ Potree.PointCloudOctree.prototype.pick = function(renderer, camera, ray, params)
 			continue;
 		}
 		
-		material.pcIndex = i;
+		if(!object.pickMaterial){
+			object.pickMaterial = new Potree.PointCloudMaterial();
+		}
 		
-		if(material.program){
-			var program = material.program.program;
+		object.pickMaterial.pointColorType = Potree.PointColorType.POINT_INDEX;
+		object.pickMaterial.pointSizeType = this.material.pointSizeType;
+		object.pickMaterial.size 			= this.material.size;
+		object.pickMaterial.fov 			= this.material.fov;
+		object.pickMaterial.screenWidth 	= this.material.screenWidth;
+		object.pickMaterial.screenHeight 	= this.material.screenHeight;
+		object.pickMaterial.spacing 		= this.material.spacing;
+		object.pickMaterial.near 			= this.material.near;
+		object.pickMaterial.far 			= this.material.far;
+		object.pickMaterial.pointShape 	= this.material.pointShape;
+		object.pickMaterial.uniforms.level.value = object.level;
+	
+		object.pickMaterial.uniforms.octreeSize.value = this.pcoGeometry.boundingBox.size().x;
+		object.pickMaterial.uniforms.nodeSize.value = object.pcoGeometry.boundingBox.size().x;
+		object.pickMaterial.uniforms.bbMin.value = object.pcoGeometry.boundingBox.min.toArray();
+		
+		object.pickMaterial.uniforms.visibleNodesTexture = this.material.visibleNodesTexture;
+		object.pickMaterial.uniforms.visibleNodes.value = this.material.visibleNodesTexture;
+		
+		object.pickMaterial.uniforms.pcIndex.value = i;
+		
+		if(object.pickMaterial.program){
+			var program = object.pickMaterial.program.program;
 			_gl.useProgram( program );
 			//_gl.disable( _gl.BLEND );
 			
@@ -1082,11 +1075,20 @@ Potree.PointCloudOctree.prototype.pick = function(renderer, camera, ray, params)
 			//}
 			_gl.enableVertexAttribArray( attributePointer );
 			_gl.vertexAttribPointer( attributePointer, attributeSize, _gl.UNSIGNED_BYTE, true, 0, 0 ); 
-		
-			_gl.uniform1f(material.program.uniforms.pcIndex, material.pcIndex);
+		//
+		//	_gl.uniform1f(object.pickMaterial.program.uniforms.pcIndex, object.pickMaterial.pcIndex);
 		}	
 		
-		renderer.renderBufferDirect(camera, [], null, material, geometry, object);
+		renderer.renderBufferDirect(camera, [], null, object.pickMaterial, geometry, object);
+		
+		if(object.pickMaterial.program){
+			var program = object.pickMaterial.program.program;
+			_gl.useProgram( program );
+			var attributePointer = _gl.getAttribLocation(program, "indices");
+			var attributeSize = 4;
+			_gl.bindBuffer( _gl.ARRAY_BUFFER, geometry.attributes.indices.buffer );
+			_gl.disableVertexAttribArray( attributePointer );
+		}
 	}
 	
 	var pixelCount = pickWindowSize * pickWindowSize;

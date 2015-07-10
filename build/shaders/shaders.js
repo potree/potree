@@ -224,7 +224,7 @@ Potree.Shaders["pointcloud.vs"] = [
  "	vOpacity = opacity;",
  "	vLinearDepth = -mvPosition.z;",
  "	vDepth = mvPosition.z / gl_Position.w;",
- "	vNormal = normalMatrix * normal;",
+ "	vNormal = normalize(normalMatrix * normal);",
  "",
  "",
  "	// ---------------------",

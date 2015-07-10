@@ -168,6 +168,20 @@ onmessage = function(event){
 				normals[3*j + 2] = z;
 			}
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute};
+		}else if(pointAttribute.name === PointAttribute.NORMAL.name){
+		
+			var buff = new ArrayBuffer(numPoints*4*3);
+			var normals = new Float32Array(buff);
+			for(var j = 0; j < numPoints; j++){
+				var x = cv.getFloat(offset + j * pointAttributes.byteSize + 0);
+				var y = cv.getFloat(offset + j * pointAttributes.byteSize + 4);
+				var z = cv.getFloat(offset + j * pointAttributes.byteSize + 8);
+				
+				normals[3*j + 0] = x;
+				normals[3*j + 1] = y;
+				normals[3*j + 2] = z;
+			}
+			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute};
 		}
 		
 		offset += pointAttribute.byteSize;

@@ -15,15 +15,21 @@ function POCLoader(){
  * loading of descendants happens asynchronously when they're needed
  * 
  * @param url
- * @param loadingFinishedListener executed after loading the binary has been finished
+ * @param callback executed after loading the binary has been finished
+ * @param login Optional login name to be used for HTTP Basic Authentication.
+ * @param password Optional plain text password for the HTTP Authentication.
  */
-POCLoader.load = function load(url, callback) {
+POCLoader.load = function load(url, callback, login, password) {
 	try{
 		var pco = new Potree.PointCloudOctreeGeometry();
 		pco.url = url;
 		var xhr = new XMLHttpRequest();
 		xhr.open('GET', url, true);
-		
+		if (!!login) {
+			xhr.withCredentials = true;
+			xhr.setRequestHeader("Authorization", "Basic " + btoa(login + ":" + password));
+		}
+
 		xhr.onreadystatechange = function(){
 			if(xhr.readyState === 4 && (xhr.status === 200 || xhr.status === 0)){
 				var fMno = JSON.parse(xhr.responseText);

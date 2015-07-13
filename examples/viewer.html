@@ -80,7 +80,7 @@ void main() {
 	<script src="./js/ProgressBar.js"></script>
 	
 	<!-- uncomment this to debug changes to the individual js files -->
-	
+	<!--
 	<script src="../src/PointCloudOctree.js"></script>
 	<script src="../src/PointCloudOctreeGeometry.js"></script>
 	<script src="../src/loader/POCLoader.js"></script>
@@ -99,7 +99,7 @@ void main() {
 	<script src="../src/Features.js"></script>
 	<script src="../src/arena4d/PointCloudArena4D.js"></script>
 	<script src="../src/arena4d/PointCloudArena4DGeometry.js"></script>
-	
+	-->
 	
 	
 	
@@ -141,16 +141,11 @@ void main() {
 	
 	<script>
 		var sceneProperties = {
-			path:			"../resources/pointclouds/lion_takanawa/cloud.js",
 			path:			"../resources/pointclouds/vol_total/cloud.js",
-			//path:			"http://5.9.65.151/mschuetz/potree/test/cloud.js",
-			//path:			"http://5.9.65.151/mschuetz/potree/resources/pointclouds/pix4d/matterhorn/resources/pointclouds/matterhorn.laz/cloud.js",
-			//path:			"../../../../../temp/test/normals_oct16/cloud.js",
-			//path:			"../../../../../temp/test/normals_lion/cloud.js",
 			cameraPosition: null, 				// other options: cameraPosition: [10,10,10],
 			cameraTarget: 	null, 				// other options: cameraTarget: [0,0,0],
 			sizeType: 		"Adaptive",			// other options: "Fixed", "Attenuated"
-			quality: 		"Interpolation", 	// options: "Squares", "Circles", "Interpolation", "Splats"
+			quality: 		null, 	// options: "Squares", "Circles", "Interpolation", "Splats"
 			fov: 			75, 				// other options: "Circles", "Interpolation", "Splats"
 			material: 		"RGB", 				// other options: "Height", "Intensity", "Classification"
 			pointLimit: 	1,					// max number of points in millions
@@ -160,6 +155,14 @@ void main() {
 		
 		if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
 			sceneProperties.navigation = "Orbit";
+		}
+		
+		if(sceneProperties.quality === null){
+			if(Potree.Features.SHADER_INTERPOLATION.isSupported()){
+				sceneProperties.quality = "Interpolation";
+			}else{
+				sceneProperties.quality = "Squares";
+			}
 		}
 
 	
@@ -218,6 +221,8 @@ void main() {
 		};
 		
 		function setQuality(value){
+			
+		
 			if(value == "Interpolation" && !Potree.Features.SHADER_INTERPOLATION.isSupported()){
 				quality = "Squares";
 			}else if(value == "Splats" && !Potree.Features.SHADER_SPLATS.isSupported()){
@@ -1105,7 +1110,6 @@ void main() {
 		
 		
 		initThree();
-		//initGUI();
 		loop();
 		
 	</script>

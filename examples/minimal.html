@@ -77,7 +77,7 @@
 			camera.lookAt(new THREE.Vector3(0,0,0));
 			
 			// load pointcloud
-			POCLoader.load(pointcloudPath, function(geometry){
+			Potree.POCLoader.load(pointcloudPath, function(geometry){
 			
 				pointcloud = new Potree.PointCloudOctree(geometry);
 				pointcloud.material.pointSizeType = Potree.PointSizeType.ADAPTIVE;

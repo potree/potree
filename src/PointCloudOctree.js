@@ -1051,7 +1051,6 @@ Potree.PointCloudOctree.prototype.pick = function(renderer, camera, ray, params)
 		object.pickMaterial.uniforms.level.value = object.level;
 	
 		object.pickMaterial.uniforms.octreeSize.value = this.pcoGeometry.boundingBox.size().x;
-		object.pickMaterial.uniforms.nodeSize.value = object.pcoGeometry.boundingBox.size().x;
 		object.pickMaterial.uniforms.bbMin.value = object.pcoGeometry.boundingBox.min.toArray();
 		
 		object.pickMaterial.uniforms.visibleNodesTexture = this.material.visibleNodesTexture;

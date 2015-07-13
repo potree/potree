@@ -326,18 +326,20 @@ void main() {
 				for(var i = 0; i < attributes.attributes.length; i++){
 					var attribute = attributes.attributes[i];
 					
-					if(attribute === PointAttribute.COLOR_PACKED){
+					if(attribute === Potree.PointAttribute.COLOR_PACKED){
 						options.push("RGB");
-					}else if(attribute === PointAttribute.INTENSITY){
+					}else if(attribute === Potree.PointAttribute.INTENSITY){
 						options.push("Intensity");
 						options.push("Intensity Gradient");
-					}else if(attribute === PointAttribute.CLASSIFICATION){
+					}else if(attribute === Potree.PointAttribute.CLASSIFICATION){
 						options.push("Classification");
-					}else if(attribute === PointAttribute.NORMAL_SPHEREMAPPED || attribute === PointAttribute.NORMAL_OCT16){
-						options.push("Phong");
-						options.push("Normal");
 					}
 				}
+				if(attributes.hasNormals()){
+					options.push("Phong");
+					options.push("Normal");
+				}
+				
 				options.push("Height");
 				options.push("Tree Depth");
 			}

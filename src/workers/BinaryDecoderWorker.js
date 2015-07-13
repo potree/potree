@@ -49,7 +49,7 @@ onmessage = function(event){
 	for(var i = 0; i < pointAttributes.attributes.length; i++){
 		var pointAttribute = pointAttributes.attributes[i];
 	
-		if(pointAttribute.name === PointAttribute.POSITION_CARTESIAN.name){
+		if(pointAttribute.name === Potree.PointAttribute.POSITION_CARTESIAN.name){
 			
 			var buff = new ArrayBuffer(numPoints*4*3);
 			var positions = new Float32Array(buff);
@@ -68,7 +68,7 @@ onmessage = function(event){
 			
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute};
 			
-		}else if(pointAttribute.name === PointAttribute.COLOR_PACKED.name){
+		}else if(pointAttribute.name === Potree.PointAttribute.COLOR_PACKED.name){
 			
 			var buff = new ArrayBuffer(numPoints*4*3);
 			var colors = new Float32Array(buff);
@@ -81,7 +81,7 @@ onmessage = function(event){
 			
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute};
 			
-		}else if(pointAttribute.name === PointAttribute.INTENSITY.name){
+		}else if(pointAttribute.name === Potree.PointAttribute.INTENSITY.name){
 
 			var buff = new ArrayBuffer(numPoints*4);
 			var intensities = new Float32Array(buff);
@@ -93,7 +93,7 @@ onmessage = function(event){
 			
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute};
 		
-		}else if(pointAttribute.name === PointAttribute.CLASSIFICATION.name){
+		}else if(pointAttribute.name === Potree.PointAttribute.CLASSIFICATION.name){
 
 			var buff = new ArrayBuffer(numPoints*4);
 			var classifications = new Float32Array(buff);
@@ -105,7 +105,7 @@ onmessage = function(event){
 			
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute};
 		
-		}else if(pointAttribute.name === PointAttribute.NORMAL_SPHEREMAPPED.name){
+		}else if(pointAttribute.name === Potree.PointAttribute.NORMAL_SPHEREMAPPED.name){
 
 			var buff = new ArrayBuffer(numPoints*4*3);
 			var normals = new Float32Array(buff);
@@ -137,7 +137,7 @@ onmessage = function(event){
 			}
 			
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute};
-		}else if(pointAttribute.name === PointAttribute.NORMAL_OCT16.name){
+		}else if(pointAttribute.name === Potree.PointAttribute.NORMAL_OCT16.name){
 			
 			var buff = new ArrayBuffer(numPoints*4*3);
 			var normals = new Float32Array(buff);
@@ -168,7 +168,7 @@ onmessage = function(event){
 				normals[3*j + 2] = z;
 			}
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute};
-		}else if(pointAttribute.name === PointAttribute.NORMAL.name){
+		}else if(pointAttribute.name === Potree.PointAttribute.NORMAL.name){
 		
 			var buff = new ArrayBuffer(numPoints*4*3);
 			var normals = new Float32Array(buff);

@@ -72,7 +72,7 @@ Potree.POCLoader.load = function load(url, callback) {
 					pco.loader = new Potree.LasLazLoader(fMno.version);
 				}else{
 					pco.loader = new Potree.BinaryLoader(fMno.version, boundingBox, fMno.scale);
-					pco.pointAttributes = new PointAttributes(pco.pointAttributes);
+					pco.pointAttributes = new Potree.PointAttributes(pco.pointAttributes);
 				}
 				
 				var nodes = {};
@@ -128,10 +128,10 @@ Potree.POCLoader.load = function load(url, callback) {
 Potree.POCLoader.loadPointAttributes = function(mno){
 	
 	var fpa = mno.pointAttributes;
-	var pa = new PointAttributes();
+	var pa = new Potree.PointAttributes();
 	
 	for(var i = 0; i < fpa.length; i++){   
-		var pointAttribute = PointAttribute[fpa[i]];
+		var pointAttribute = Potree.PointAttribute[fpa[i]];
 		pa.add(pointAttribute);
 	}                                                                     
 	

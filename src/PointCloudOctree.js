@@ -205,7 +205,6 @@ Potree.PointCloudOctree.prototype.updatePointCloud = function(node, element, sta
 	node.material.near = camera.near;
 	node.material.far = camera.far;
 	
-	node.material.octreeLevels = this.maxLevel;
 	node.material.pointColorType = this.material.pointColorType;
 	node.material.pointSizeType = this.material.pointSizeType;
 	node.material.pointShape = this.material.pointShape;
@@ -223,10 +222,8 @@ Potree.PointCloudOctree.prototype.updatePointCloud = function(node, element, sta
 	node.material.clipMode = this.material.clipMode;
 	
 	node.material.uniforms.octreeSize.value = this.pcoGeometry.boundingBox.size().x;
-	node.material.uniforms.nodeSize.value = node.pcoGeometry.boundingBox.size().x;
 	node.material.uniforms.bbMin.value = node.pcoGeometry.boundingBox.min.toArray();
 	
-	node.material.uniforms.visibleNodesTexture = this.material.visibleNodesTexture;
 	node.material.uniforms.visibleNodes.value = this.material.visibleNodesTexture;
 	
 	if(node.level){
@@ -544,7 +541,6 @@ Potree.PointCloudOctree.prototype.updateVisibilityTexture = function(material, v
 	}
 	
 	
-	material.uniforms.nodeSize.value = this.pcoGeometry.boundingBox.size().x;
 	texture.needsUpdate = true;
 }
 

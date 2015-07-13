@@ -129,7 +129,6 @@ Potree.PointCloudMaterial = function(parameters){
 		size:   			{ type: "f", value: 10 },
 		minSize:   			{ type: "f", value: 2 },
 		maxSize:   			{ type: "f", value: 2 },
-		nodeSize:			{ type: "f", value: nodeSize },
 		octreeSize:			{ type: "f", value: 0 },
 		bbMin:				{ type: "fv", value: [0,0,0] },
 		bbSize:				{ type: "fv", value: [0,0,0] },

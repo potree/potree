@@ -114,7 +114,6 @@ Potree.Shaders["pointcloud.vs"] = [
  "uniform float minSize;			// minimum pixel size",
  "uniform float maxSize;			// maximum pixel size",
  "uniform float octreeSize;",
- "uniform float nodeSize;",
  "uniform vec3 bbMin;",
  "uniform vec3 bbSize;",
  "uniform vec3 uColor;",
@@ -762,7 +761,7 @@ THREE.Ray.prototype.distanceToPlaneWithNegative = function ( plane ) {
  * 
  * @author Markus Schuetz
  */
-function POCLoader(){
+Potree.POCLoader = function(){
 	
 }
  
@@ -773,7 +772,7 @@ function POCLoader(){
  * @param url
  * @param loadingFinishedListener executed after loading the binary has been finished
  */
-POCLoader.load = function load(url, callback) {
+Potree.POCLoader.load = function load(url, callback) {
 	try{
 		var pco = new Potree.PointCloudOctreeGeometry();
 		pco.url = url;
@@ -858,7 +857,7 @@ POCLoader.load = function load(url, callback) {
 						var parentName = name.substring(0, name.length-1);
 						var parentNode = nodes[parentName];
 						var level = name.length-1;
-						var boundingBox = POCLoader.createChildAABB(parentNode.boundingBox, index);
+						var boundingBox = Potree.POCLoader.createChildAABB(parentNode.boundingBox, index);
 						
 						var node = new Potree.PointCloudOctreeGeometryNode(name, pco, boundingBox);
 						node.level = level;
@@ -881,7 +880,7 @@ POCLoader.load = function load(url, callback) {
 	}
 };
 
-POCLoader.loadPointAttributes = function(mno){
+Potree.POCLoader.loadPointAttributes = function(mno){
 	
 	var fpa = mno.pointAttributes;
 	var pa = new PointAttributes();
@@ -895,7 +894,7 @@ POCLoader.loadPointAttributes = function(mno){
 };
 
 
-POCLoader.createChildAABB = function(aabb, childIndex){
+Potree.POCLoader.createChildAABB = function(aabb, childIndex){
 	var V3 = THREE.Vector3;
 	var min = aabb.min;
 	var max = aabb.max;
@@ -1577,7 +1576,6 @@ Potree.PointCloudMaterial = function(parameters){
 		size:   			{ type: "f", value: 10 },
 		minSize:   			{ type: "f", value: 2 },
 		maxSize:   			{ type: "f", value: 2 },
-		nodeSize:			{ type: "f", value: nodeSize },
 		octreeSize:			{ type: "f", value: 0 },
 		bbMin:				{ type: "fv", value: [0,0,0] },
 		bbSize:				{ type: "fv", value: [0,0,0] },
@@ -3908,7 +3906,6 @@ Potree.PointCloudOctree.prototype.updatePointCloud = function(node, element, sta
 	node.material.near = camera.near;
 	node.material.far = camera.far;
 	
-	node.material.octreeLevels = this.maxLevel;
 	node.material.pointColorType = this.material.pointColorType;
 	node.material.pointSizeType = this.material.pointSizeType;
 	node.material.pointShape = this.material.pointShape;
@@ -3926,10 +3923,8 @@ Potree.PointCloudOctree.prototype.updatePointCloud = function(node, element, sta
 	node.material.clipMode = this.material.clipMode;
 	
 	node.material.uniforms.octreeSize.value = this.pcoGeometry.boundingBox.size().x;
-	node.material.uniforms.nodeSize.value = node.pcoGeometry.boundingBox.size().x;
 	node.material.uniforms.bbMin.value = node.pcoGeometry.boundingBox.min.toArray();
 	
-	node.material.uniforms.visibleNodesTexture = this.material.visibleNodesTexture;
 	node.material.uniforms.visibleNodes.value = this.material.visibleNodesTexture;
 	
 	if(node.level){
@@ -4247,7 +4242,6 @@ Potree.PointCloudOctree.prototype.updateVisibilityTexture = function(material, v
 	}
 	
 	
-	material.uniforms.nodeSize.value = this.pcoGeometry.boundingBox.size().x;
 	texture.needsUpdate = true;
 }
 
@@ -5356,7 +5350,7 @@ Potree.PointCloudOctreeGeometryNode.prototype.loadHierachyThenPoints = function(
 			var parentName = name.substring(0, name.length-1);
 			var parentNode = nodes[parentName];
 			var level = name.length-1;
-			var boundingBox = POCLoader.createChildAABB(parentNode.boundingBox, index);
+			var boundingBox = Potree.POCLoader.createChildAABB(parentNode.boundingBox, index);
 			
 			var currentNode = new Potree.PointCloudOctreeGeometryNode(name, pco, boundingBox);
 			currentNode.level = level;
@@ -7640,7 +7634,7 @@ Potree.TransformationTool = function(scene, camera, renderer){
 			pointOnLine.unproject(scope.camera);
 			
 			var diff = scope.sceneRoot.position.clone().sub(pointOnLine);
-			diff.multiply(new THREE.Vector3(-1, -1, 1)).addScalar(1);
+			diff.multiply(new THREE.Vector3(-1, -1, 1));
 			
 			for(var i = 0; i < scope.targets.length; i++){
 				var target = scope.targets[i];

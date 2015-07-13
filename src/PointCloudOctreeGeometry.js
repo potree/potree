@@ -160,7 +160,7 @@ Potree.PointCloudOctreeGeometryNode.prototype.loadHierachyThenPoints = function(
 			var parentName = name.substring(0, name.length-1);
 			var parentNode = nodes[parentName];
 			var level = name.length-1;
-			var boundingBox = POCLoader.createChildAABB(parentNode.boundingBox, index);
+			var boundingBox = Potree.POCLoader.createChildAABB(parentNode.boundingBox, index);
 			
 			var currentNode = new Potree.PointCloudOctreeGeometryNode(name, pco, boundingBox);
 			currentNode.level = level;

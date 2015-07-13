@@ -51,7 +51,6 @@ uniform float size;				// pixel size factor
 uniform float minSize;			// minimum pixel size
 uniform float maxSize;			// maximum pixel size
 uniform float octreeSize;
-uniform float nodeSize;
 uniform vec3 bbMin;
 uniform vec3 bbSize;
 uniform vec3 uColor;

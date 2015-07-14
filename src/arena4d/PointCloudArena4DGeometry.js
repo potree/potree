@@ -99,7 +99,7 @@ Potree.PointCloudArena4DGeometry = function(){
 	this.root = null;
 	this.levels = 0;
 	this._spacing = null;
-	this.pointAttributes = new PointAttributes([
+	this.pointAttributes = new Potree.PointAttributes([
 		"POSITION_CARTESIAN",
 		"COLOR_PACKED"
 	]);

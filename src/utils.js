@@ -307,4 +307,3 @@ Potree.utils.frustumSphereIntersection = function(frustum, sphere){
 	
 	
 	
-	

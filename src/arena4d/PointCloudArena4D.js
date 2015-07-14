@@ -725,7 +725,6 @@ Potree.PointCloudArena4D.prototype.updateVisibilityTexture = function(material, 
 	}
 	
 	
-	material.uniforms.nodeSize.value = this.pcoGeometry.boundingBox.size().x;
 	texture.needsUpdate = true;
 }
 

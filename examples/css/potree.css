@@ -1,0 +1,39 @@
+/* this style is to test non fullscreen canvas */
+/*#renderArea{
+	position: absolute;
+	width: 90%;
+	height: 80%;
+	top: 100px;
+	left: 100px;
+	right: 100px;
+	bottom: 100px;
+}*/
+
+#renderArea{
+	width: 100%;
+	height: 100%;
+}
+
+.info{
+	color:		white;
+	font-weight: bold;
+	text-shadow:  1px  1px 1px black,
+				  1px -1px 1px black,
+				 -1px  1px 1px black,
+				 -1px -1px 1px black;
+}
+
+a:hover, a:visited, a:link, a:active{
+	color: #ccccff;
+	text-decoration: none;
+}
+
+canvas { 
+	width: 100%; 
+	height: 100% 
+}
+
+body{ 
+	margin: 0; 
+	padding: 0
+}

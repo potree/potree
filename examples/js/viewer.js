@@ -25,7 +25,7 @@ var useDEMCollisions = false;
 var minNodeSize = 150;
 var directionalLight;
 
-var showStats = true;
+var showStats = false;
 var showBoundingBox = false;
 var freeze = false;
 

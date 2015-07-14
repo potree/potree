@@ -337,7 +337,7 @@ The updateMapExtent() shows how this can be used to visualize the boundaries in 
 		referenceFrame = new THREE.Object3D();
 		
 		// load pointcloud
-		var pco = POCLoader.load(pointcloudPath, function(geometry){
+		var pco = Potree.POCLoader.load(pointcloudPath, function(geometry){
 			offset = geometry.offset;
 			pointcloud = new Potree.PointCloudOctree(geometry);
 			pointcloud.material.pointSizeType = Potree.PointSizeType.ADAPTIVE;

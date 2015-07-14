@@ -35,13 +35,16 @@ Take a look at the [potree showcase](http://potree.org/wp/demo/) for some live e
 
 | Browser              | OS      | Result        |
 | -------------------- |:-------:|:-------------:|
-| Chrome 39            | Win7    | works         |
+| Chrome 42            | Win7    | works         |
 | Firefox 34           | Win7    | works         |
 | Internet Explorer 11 | Win7    | partially works; performance issues |
 | Firefox              | Android | partially works, GUI and stability issues |
 | Opera                | Android | partially works, GUI and stability issues and slow |
 | Chrome               | Android | works |
 
+## Roadmap
+
+see [Roadmap](https://github.com/potree/potree/wiki/Roadmap)
 
 ## Credits
 

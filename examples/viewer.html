@@ -1,84 +1,17 @@
 <html>
 <head>
 	<meta charset="utf-8"/>
-	<title>Viewer</title>
-	<style>canvas { width: 100%; height: 100% }</style>
+	<title>Potree Viewer</title>
+	<link rel="stylesheet" type="text/css" href="css/potree.css">
 </head>
-<body style="margin: 0; padding: 0">
-
-	<style type="text/css">
-	
-	/* this style is to test non fullscreen canvas */
-	/*#renderArea{
-		position: absolute;
-		width: 90%;
-		height: 80%;
-		top: 100px;
-		left: 100px;
-		right: 100px;
-		bottom: 100px;
-	}*/
-	
-	#renderArea{
-		width: 100%;
-		height: 100%;
-	}
-	
-	.info{
-		color:		white;
-		font-weight: bold;
-		text-shadow:  1px  1px 1px black,
-					  1px -1px 1px black,
-					 -1px  1px 1px black,
-					 -1px -1px 1px black;
-	}
-	
-	a:hover, a:visited, a:link, a:active{
-		color: #ccccff;
-		text-decoration: none;
-	}
-	
-	</style>
-	
-<script id="vs" type="x-shader/x-vertex">
-varying vec2 vUv;
-
-void main() {
-    vUv = uv;
-
-    gl_Position =   projectionMatrix * 
-                    modelViewMatrix * 
-                    vec4(position,1.0);
-}
-</script>
-
-<script id="fs" type="x-shader/x-vertex">
-
-#extension GL_EXT_frag_depth : enable
-
-uniform sampler2D depthMap;
-uniform sampler2D texture;
-
-varying vec2 vUv;
-
-void main() {
-    vec4 color = texture2D(texture, vUv); 
-    float depth = texture2D(depthMap, vUv).g; 
-	color = color / color.w;
-    gl_FragColor = color; 
-	
-	gl_FragDepthEXT = depth;
-}
-</script>
+<body>
 
 	<script src="../libs/three.js/build/three.js"></script>
-	<script src="../libs/other/OrbitControls.js"></script>
 	<script src="../libs/other/stats.min.js"></script>
 	<script src="../libs/other/dat.gui.min.js"></script>
 	
 	<script src="../build/js/potree.js"></script>
 	<script src="./js/ProgressBar.js"></script>
-	
 	
 	
 	<!-- uncomment this to debug changes to the individual js files -->
@@ -112,6 +45,12 @@ void main() {
 	<script src="../build/js/laslaz.js"></script>
 	-->
 	
+	<!-- HEADING -->
+	<div class="info" style="position: absolute; left: 300px; right: 300px; top: 10px; text-align: center;">
+		<a href="http://potree.org" target="_blank">potree.org</a><br>
+		Point cloud courtesy of <a href="http://www.sigeom.ch/" target="_blank">sigeom sa</a><br>
+	</div>
+	
 	<!-- INFOS / STATS -->
 	<div id="lblNumVisibleNodes" class="info" style="position: absolute; left: 10px; top: 80px; width: 400px; color:white"></div>
 	<div id="lblNumVisiblePoints" class="info" style="position: absolute; left: 10px; top: 100px; width: 400px; color:white"></div>
@@ -130,13 +69,6 @@ void main() {
 		<img src="../resources/icons/volume.png" onclick="volumeTool.startInsertion()" title="volume measurements"/>
 		<img src="../resources/icons/profile.png" onclick="profileTool.startInsertion({width: pointcloud.boundingSphere.radius / 100})" title="height profiles"/>
 		<img src="../resources/icons/clip_volume.png" onclick="volumeTool.startInsertion({clip: true})" title="clipping volumes"/>
-		
-	</div>
-	
-	<!-- HEADING -->
-	<div class="info" style="position: absolute; left: 300px; right: 300px; top: 10px; text-align: center;">
-		<a href="http://potree.org" target="_blank">potree.org</a><br>
-		Point cloud courtesy of <a href="http://www.sigeom.ch/" target="_blank">sigeom sa</a><br>
 	</div>
 	
 	<div id="renderArea"></div>
@@ -144,8 +76,6 @@ void main() {
 	<script>
 		var sceneProperties = {
 			path:			"../resources/pointclouds/vol_total/cloud.js",
-			//path:			"http://localhost/temp/archpro/heidentor_many_nodes/cloud.js",
-			//path:			"http://5.9.65.151/mschuetz/potree/users/archpro/heidentor/resources/pointclouds/heidentor.laz/cloud.js",
 			cameraPosition: null, 				// options: cameraPosition: [10,10,10],
 			cameraTarget: 	null, 				// options: cameraTarget: [0,0,0],
 			sizeType: 		"Adaptive",			// options: "Fixed", "Attenuated", "Adaptive"

@@ -22,7 +22,7 @@ var clipMode = Potree.ClipMode.HIGHLIGHT_INSIDE;
 var quality = null;
 var isFlipYZ = false;
 var useDEMCollisions = false;
-var minNodeSize = 60;
+var minNodeSize = 150;
 var directionalLight;
 
 var showStats = true;
@@ -321,7 +321,9 @@ function initThree(){
 	renderer.context.getExtension("EXT_frag_depth");
 	
 	// load pointcloud
-	if(pointcloudPath.indexOf("cloud.js") > 0){
+	if(!pointcloudPath){
+		
+	}else if(pointcloudPath.indexOf("cloud.js") > 0){
 		Potree.POCLoader.load(pointcloudPath, function(geometry){
 			pointcloud = new Potree.PointCloudOctree(geometry);
 			
@@ -593,9 +595,6 @@ function update(){
 		}else if(progress < 1){
 			progressBar.show();
 		}
-	}else{
-		progressBar.show();
-		progressBar.message = "loading metadata";
 	}
 	
 	volumeTool.update();
@@ -776,8 +775,8 @@ function renderHighQuality(){
 	if(!sceneNormalize){
 		sceneNormalize = new THREE.Scene();
 						
-		var vsNormalize = document.getElementById('vs').innerHTML;
-		var fsNormalize = document.getElementById('fs').innerHTML;
+		var vsNormalize = Potree.Shaders["normalize.vs"];
+		var fsNormalize = Potree.Shaders["normalize.fs"];
 		
 		var uniformsNormalize = {
 			depthMap: { type: "t", value: rtDepth },

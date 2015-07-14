@@ -644,6 +644,36 @@ Potree.Shaders["pointcloud.fs"] = [
  "",
 ].join("\n");
 
+Potree.Shaders["normalize.vs"] = [
+ "",
+ "varying vec2 vUv;",
+ "",
+ "void main() {",
+ "    vUv = uv;",
+ "",
+ "    gl_Position =   projectionMatrix * modelViewMatrix * vec4(position,1.0);",
+ "}",
+].join("\n");
+
+Potree.Shaders["normalize.fs"] = [
+ "",
+ "#extension GL_EXT_frag_depth : enable",
+ "",
+ "uniform sampler2D depthMap;",
+ "uniform sampler2D texture;",
+ "",
+ "varying vec2 vUv;",
+ "",
+ "void main() {",
+ "    vec4 color = texture2D(texture, vUv); ",
+ "    float depth = texture2D(depthMap, vUv).g; ",
+ "	color = color / color.w;",
+ "    gl_FragColor = color; ",
+ "	",
+ "	gl_FragDepthEXT = depth;",
+ "}",
+].join("\n");
+
 
 
 
@@ -9103,7 +9133,6 @@ Potree.PointCloudArena4D.prototype.updateVisibilityTexture = function(material, 
 	}
 	
 	
-	material.uniforms.nodeSize.value = this.pcoGeometry.boundingBox.size().x;
 	texture.needsUpdate = true;
 }
 
@@ -9243,7 +9272,7 @@ Potree.PointCloudArena4DGeometry = function(){
 	this.root = null;
 	this.levels = 0;
 	this._spacing = null;
-	this.pointAttributes = new PointAttributes([
+	this.pointAttributes = new Potree.PointAttributes([
 		"POSITION_CARTESIAN",
 		"COLOR_PACKED"
 	]);

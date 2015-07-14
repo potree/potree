@@ -81,7 +81,6 @@ Potree.PointCloudOctree = function(geometry, material){
 	this.visibleNodes = [];
 	this.visibleGeometry = [];
 	this.pickTarget;
-	this.pickMaterial;
 	this.maxLevel = 0;
 	this.generateDEM = false;
 	
@@ -197,8 +196,35 @@ Potree.PointCloudOctree.prototype.updateProfileRequests = function(){
 Potree.PointCloudOctree.prototype.updatePointCloud = function(node, element, stack, visibleGeometryNames){
 	this.numVisibleNodes++;
 	this.numVisiblePoints += node.numPoints;
-	node.material = this.material;
 	this.visibleNodes.push(element);
+	
+	node.material.fov = camera.fov * (Math.PI / 180);
+	node.material.screenWidth = renderer.domElement.clientWidth;
+	node.material.screenHeight = renderer.domElement.clientHeight;
+	node.material.spacing = this.pcoGeometry.spacing;
+	node.material.near = camera.near;
+	node.material.far = camera.far;
+	
+	node.material.pointColorType = this.material.pointColorType;
+	node.material.pointSizeType = this.material.pointSizeType;
+	node.material.pointShape = this.material.pointShape;
+	node.material.interpolate = this.material.interpolate;
+	node.material.size = this.material.size;
+	node.material.heightMin = this.material.heightMin;
+	node.material.heightMax = this.material.heightMax;
+	node.material.intensityMin = this.material.intensityMin;
+	node.material.intensityMax = this.material.intensityMax;
+	node.material.weighted = this.material.weighted;
+	node.material.opacity = this.material.opacity;
+	node.material.minSize = this.material.minSize;
+	node.material.uniforms.level.value = node.level;
+	node.material.setClipBoxes(this.material.clipBoxes);
+	node.material.clipMode = this.material.clipMode;
+	
+	node.material.uniforms.octreeSize.value = this.pcoGeometry.boundingBox.size().x;
+	node.material.uniforms.bbMin.value = node.pcoGeometry.boundingBox.min.toArray();
+	
+	node.material.uniforms.visibleNodes.value = this.material.visibleNodesTexture;
 	
 	if(node.level){
 		this.maxLevel = Math.max(node.level, this.maxLevel);
@@ -236,26 +262,6 @@ Potree.PointCloudOctree.prototype.updatePointCloud = function(node, element, sta
 		}
 	}
 }
-
-Potree.PointCloudOctree.prototype.updateMaterial = function(vn, camera, renderer){
-	this.material.fov = camera.fov * (Math.PI / 180);
-	this.material.screenWidth = renderer.domElement.clientWidth;
-	this.material.screenHeight = renderer.domElement.clientHeight;
-	this.material.spacing = this.pcoGeometry.spacing;
-	this.material.near = camera.near;
-	this.material.far = camera.far;
-	this.material.octreeLevels = this.maxLevel;
-	
-	if(this.material.pointSizeType){
-		if(this.material.pointSizeType === Potree.PointSizeType.ADAPTIVE 
-			|| this.material.pointColorType === Potree.PointColorType.OCTREE_DEPTH){
-			
-			this.updateVisibilityTexture(this.material, vn);
-		}
-	}
-	
-	
-};
 
 Potree.PointCloudOctree.prototype.updateLoadQueue = function(vn){
 	if(this.loadQueue.length > 0){
@@ -346,7 +352,15 @@ Potree.PointCloudOctree.prototype.update = function(camera, renderer){
 		vn.push(this.visibleNodes[i].node);
 	}
 	
-	this.updateMaterial(vn, camera, renderer);
+	// update visibility texture
+	if(this.material.pointSizeType){
+		if(this.material.pointSizeType === Potree.PointSizeType.ADAPTIVE 
+			|| this.material.pointColorType === Potree.PointColorType.OCTREE_DEPTH){
+			
+			this.updateVisibilityTexture(this.material, vn);
+		}
+	}
+	
 	Potree.PointCloudOctree.lru.freeMemory();
 };
 
@@ -495,6 +509,7 @@ Potree.PointCloudOctree.prototype.updateVisibilityTexture = function(material, v
 	
 	for(var i = 0; i < visibleNodes.length; i++){
 		var node = visibleNodes[i];
+		node.material.uniforms.visibleNodesOffset.value = i;
 		
 		var children = [];
 		for(var j = 0; j < node.children.length; j++){
@@ -526,7 +541,6 @@ Potree.PointCloudOctree.prototype.updateVisibilityTexture = function(material, v
 	}
 	
 	
-	material.uniforms.nodeSize.value = this.pcoGeometry.boundingBox.size().x;
 	texture.needsUpdate = true;
 }
 
@@ -577,7 +591,8 @@ Potree.PointCloudOctree.prototype.replaceProxy = function(proxy){
 	var geometryNode = proxy.geometryNode;
 	if(geometryNode.loaded === true){
 		var geometry = geometryNode.geometry;
-		var node = new THREE.PointCloud(geometry, this.material);
+		var material = new Potree.PointCloudMaterial();
+		var node = new THREE.PointCloud(geometry, material);
 		node.name = proxy.name;
 		node.level = proxy.level;
 		node.numPoints = proxy.numPoints;
@@ -993,45 +1008,15 @@ Potree.PointCloudOctree.prototype.pick = function(renderer, camera, ray, params)
 		);
 	}
 	this.pickTarget.setSize(width, height);
-	
-	// setup pick material.
-	// use the same point size functions as the main material to get the same point sizes.
-	if(!this.pickMaterial){
-		this.pickMaterial = new Potree.PointCloudMaterial();
-		this.pickMaterial.pointColorType = Potree.PointColorType.POINT_INDEX;
-		this.pickMaterial.pointSizeType = Potree.PointSizeType.FIXED;
-	}
-	
-	this.pickMaterial.pointSizeType = this.material.pointSizeType;
-	this.pickMaterial.size = this.material.size;
-	
-	if(this.pickMaterial.pointSizeType === Potree.PointSizeType.ADAPTIVE){
-		this.updateVisibilityTexture(this.pickMaterial, nodes);
-	}
-	
-	this.pickMaterial.fov 			= this.material.fov;
-	this.pickMaterial.screenWidth 	= this.material.screenWidth;
-	this.pickMaterial.screenHeight 	= this.material.screenHeight;
-	this.pickMaterial.spacing 		= this.material.spacing;
-	this.pickMaterial.near 			= this.material.near;
-	this.pickMaterial.far 			= this.material.far;
-	this.pickMaterial.octreeLevels 	= this.material.octreeLevels;
-	this.pickMaterial.pointShape 	= this.material.pointShape;
-	
-	
-
 	var _gl = renderer.context;
 	
 	_gl.enable(_gl.SCISSOR_TEST);
 	_gl.scissor(pixelPos.x - (pickWindowSize - 1) / 2, pixelPos.y - (pickWindowSize - 1) / 2,pickWindowSize,pickWindowSize);
 	_gl.disable(_gl.SCISSOR_TEST);
 	
-	var material = this.pickMaterial;
 	
 	renderer.setRenderTarget( this.pickTarget );
 	
-	renderer.setDepthTest( material.depthTest );
-	renderer.setDepthWrite( material.depthWrite )
 	renderer.setBlending( THREE.NoBlending );
 	
 	renderer.clear( renderer.autoClearColor, renderer.autoClearDepth, renderer.autoClearStencil );
@@ -1049,10 +1034,32 @@ Potree.PointCloudOctree.prototype.pick = function(renderer, camera, ray, params)
 			continue;
 		}
 		
-		material.pcIndex = i;
+		if(!object.pickMaterial){
+			object.pickMaterial = new Potree.PointCloudMaterial();
+		}
 		
-		if(material.program){
-			var program = material.program.program;
+		object.pickMaterial.pointColorType = Potree.PointColorType.POINT_INDEX;
+		object.pickMaterial.pointSizeType = this.material.pointSizeType;
+		object.pickMaterial.size 			= this.material.size;
+		object.pickMaterial.fov 			= this.material.fov;
+		object.pickMaterial.screenWidth 	= this.material.screenWidth;
+		object.pickMaterial.screenHeight 	= this.material.screenHeight;
+		object.pickMaterial.spacing 		= this.material.spacing;
+		object.pickMaterial.near 			= this.material.near;
+		object.pickMaterial.far 			= this.material.far;
+		object.pickMaterial.pointShape 	= this.material.pointShape;
+		object.pickMaterial.uniforms.level.value = object.level;
+	
+		object.pickMaterial.uniforms.octreeSize.value = this.pcoGeometry.boundingBox.size().x;
+		object.pickMaterial.uniforms.bbMin.value = object.pcoGeometry.boundingBox.min.toArray();
+		
+		object.pickMaterial.uniforms.visibleNodesTexture = this.material.visibleNodesTexture;
+		object.pickMaterial.uniforms.visibleNodes.value = this.material.visibleNodesTexture;
+		
+		object.pickMaterial.uniforms.pcIndex.value = i;
+		
+		if(object.pickMaterial.program){
+			var program = object.pickMaterial.program.program;
 			_gl.useProgram( program );
 			//_gl.disable( _gl.BLEND );
 			
@@ -1065,11 +1072,20 @@ Potree.PointCloudOctree.prototype.pick = function(renderer, camera, ray, params)
 			//}
 			_gl.enableVertexAttribArray( attributePointer );
 			_gl.vertexAttribPointer( attributePointer, attributeSize, _gl.UNSIGNED_BYTE, true, 0, 0 ); 
-		
-			_gl.uniform1f(material.program.uniforms.pcIndex, material.pcIndex);
+		//
+		//	_gl.uniform1f(object.pickMaterial.program.uniforms.pcIndex, object.pickMaterial.pcIndex);
 		}	
 		
-		renderer.renderBufferDirect(camera, [], null, material, geometry, object);
+		renderer.renderBufferDirect(camera, [], null, object.pickMaterial, geometry, object);
+		
+		if(object.pickMaterial.program){
+			var program = object.pickMaterial.program.program;
+			_gl.useProgram( program );
+			var attributePointer = _gl.getAttribLocation(program, "indices");
+			var attributeSize = 4;
+			_gl.bindBuffer( _gl.ARRAY_BUFFER, geometry.attributes.indices.buffer );
+			_gl.disableVertexAttribArray( attributePointer );
+		}
 	}
 	
 	var pixelCount = pickWindowSize * pickWindowSize;

@@ -68,15 +68,19 @@ Potree.BinaryLoader.prototype.parse = function(node, buffer){
 				var attribute = buffers[property].attribute;
 				var numElements = attribute.numElements;
 				
-				if(parseInt(property) === PointAttributeNames.POSITION_CARTESIAN){
+				if(parseInt(property) === Potree.PointAttributeNames.POSITION_CARTESIAN){
 					geometry.addAttribute("position", new THREE.BufferAttribute(new Float32Array(buffer), 3));
-				}else if(parseInt(property) === PointAttributeNames.COLOR_PACKED){
+				}else if(parseInt(property) === Potree.PointAttributeNames.COLOR_PACKED){
 					geometry.addAttribute("color", new THREE.BufferAttribute(new Float32Array(buffer), 3));
-				}else if(parseInt(property) === PointAttributeNames.INTENSITY){
+				}else if(parseInt(property) === Potree.PointAttributeNames.INTENSITY){
 					geometry.addAttribute("intensity", new THREE.BufferAttribute(new Float32Array(buffer), 1));
-				}else if(parseInt(property) === PointAttributeNames.CLASSIFICATION){
+				}else if(parseInt(property) === Potree.PointAttributeNames.CLASSIFICATION){
 					geometry.addAttribute("classification", new THREE.BufferAttribute(new Float32Array(buffer), 1));
-				}else if(parseInt(property) === PointAttributeNames.NORMAL_SPHEREMAPPED){
+				}else if(parseInt(property) === Potree.PointAttributeNames.NORMAL_SPHEREMAPPED){
+					geometry.addAttribute("normal", new THREE.BufferAttribute(new Float32Array(buffer), 3));
+				}else if(parseInt(property) === Potree.PointAttributeNames.NORMAL_OCT16){
+					geometry.addAttribute("normal", new THREE.BufferAttribute(new Float32Array(buffer), 3));
+				}else if(parseInt(property) === Potree.PointAttributeNames.NORMAL){
 					geometry.addAttribute("normal", new THREE.BufferAttribute(new Float32Array(buffer), 3));
 				}
 			}

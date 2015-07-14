@@ -20,6 +20,8 @@
 //#define MAX_SHADOWS 0
 //#define MAX_BONES 58
 
+#define max_clip_boxes 30
+
 
 attribute float intensity;
 attribute float classification;
@@ -31,12 +33,13 @@ uniform float screenWidth;
 uniform float screenHeight;
 uniform float fov;
 uniform float spacing;
-uniform float blendDepth;
 uniform float near;
 uniform float far;
+uniform float level;
+uniform float visibleNodesOffset;
 
 #if defined use_clip_box
-	uniform mat4 clipBoxes[clip_box_count];
+	uniform mat4 clipBoxes[max_clip_boxes];
 #endif
 
 
@@ -44,13 +47,15 @@ uniform float heightMin;
 uniform float heightMax;
 uniform float intensityMin;
 uniform float intensityMax;
-uniform float size;
-uniform float minSize;
-uniform float maxSize;
-uniform float nodeSize;
+uniform float size;				// pixel size factor
+uniform float minSize;			// minimum pixel size
+uniform float maxSize;			// maximum pixel size
+uniform float octreeSize;
+uniform vec3 bbMin;
 uniform vec3 bbSize;
 uniform vec3 uColor;
 uniform float opacity;
+uniform float clipBoxCount;
 
 
 uniform sampler2D visibleNodes;
@@ -105,12 +110,12 @@ bool isBitSet(float number, float index){
  * find the tree depth at the point position
  */
 float getLocalTreeDepth(){
-	vec3 offset = vec3(0.0, 0.0, 0.0);
-	float iOffset = 0.0;
-	float depth = 0.0;
-	for(float i = 0.0; i <= levels + 1.0; i++){
+	vec3 offset = bbMin;
+	float iOffset = visibleNodesOffset;
+	float depth = level;
+	for(float i = 0.0; i <= 1000.0; i++){
 		
-		float nodeSizeAtLevel = nodeSize / pow(2.0, i);
+		float nodeSizeAtLevel = octreeSize  / pow(2.0, i + level);
 		vec3 index3d = (position - offset) / nodeSizeAtLevel;
 		index3d = floor(index3d + 0.5);
 		float index = 4.0*index3d.x + 2.0*index3d.y + index3d.z;
@@ -154,7 +159,7 @@ float getLocalTreeDepth(){
 	vec3 size = bbSize;	
 	vec3 pos = position;
 		
-	for(float i = 0.0; i <= levels + 1.0; i++){
+	for(float i = 0.0; i <= 1000.0; i++){
 		
 		vec4 value = texture2D(visibleNodes, vec2(iOffset / 2048.0, 0.0));
 		
@@ -217,7 +222,7 @@ void main() {
 	vOpacity = opacity;
 	vLinearDepth = -mvPosition.z;
 	vDepth = mvPosition.z / gl_Position.w;
-	vNormal = normalMatrix * normal;
+	vNormal = normalize(normalMatrix * normal);
 
 
 	// ---------------------
@@ -300,7 +305,11 @@ void main() {
 	
 	#if defined use_clip_box
 		bool insideAny = false;
-		for(int i = 0; i < clip_box_count; i++){
+		for(int i = 0; i < max_clip_boxes; i++){
+			if(i == int(clipBoxCount)){
+				break;
+			}
+		
 			vec4 clipPosition = clipBoxes[i] * modelMatrix * vec4( position, 1.0 );
 			bool inside = -0.5 <= clipPosition.x && clipPosition.x <= 0.5;
 			inside = inside && -0.5 <= clipPosition.y && clipPosition.y <= 0.5;

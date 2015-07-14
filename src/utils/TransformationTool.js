@@ -338,7 +338,7 @@ Potree.TransformationTool = function(scene, camera, renderer){
 			pointOnLine.unproject(scope.camera);
 			
 			var diff = scope.sceneRoot.position.clone().sub(pointOnLine);
-			diff.multiply(new THREE.Vector3(-1, -1, 1)).addScalar(1);
+			diff.multiply(new THREE.Vector3(-1, -1, 1));
 			
 			for(var i = 0; i < scope.targets.length; i++){
 				var target = scope.targets[i];

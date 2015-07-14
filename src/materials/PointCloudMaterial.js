@@ -82,6 +82,8 @@ Potree.TreeType = {
 };
 
 Potree.PointCloudMaterial = function(parameters){
+	THREE.Material.call( this );
+
 	parameters = parameters || {};
 
 	var color = new THREE.Color( 0x000000 );
@@ -99,12 +101,10 @@ Potree.PointCloudMaterial = function(parameters){
 	this._pointShape = Potree.PointShape.SQUARE;
 	this._interpolate = false;
 	this._pointColorType = Potree.PointColorType.RGB;
-	this._levels = 6.0;
 	this._useClipBox = false;
 	this.numClipBoxes = 0;
 	this._clipMode = Potree.ClipMode.DISABLED;
 	this._weighted = false;
-	this._blendDepth = 0.1;
 	this._depthMap;
 	this._gradient = Potree.Gradients.RAINBOW;
 	this._classification = Potree.Classification.DEFAULT;
@@ -129,18 +129,21 @@ Potree.PointCloudMaterial = function(parameters){
 		size:   			{ type: "f", value: 10 },
 		minSize:   			{ type: "f", value: 2 },
 		maxSize:   			{ type: "f", value: 2 },
-		nodeSize:			{ type: "f", value: nodeSize },
+		octreeSize:			{ type: "f", value: 0 },
+		bbMin:				{ type: "fv", value: [0,0,0] },
 		bbSize:				{ type: "fv", value: [0,0,0] },
 		heightMin:			{ type: "f", value: 0.0 },
 		heightMax:			{ type: "f", value: 1.0 },
 		intensityMin:		{ type: "f", value: 0.0 },
 		intensityMax:		{ type: "f", value: 1.0 },
+		clipBoxCount:		{ type: "f", value: 0 },
+		level:				{ type: "f", value: 0 },
+		visibleNodesOffset:	{ type: "f", value: 0 },
 		visibleNodes:		{ type: "t", value: this.visibleNodesTexture },
 		pcIndex:   			{ type: "f", value: 0 },
 		gradient: 			{ type: "t", value: this.gradientTexture },
 		classificationLUT: 	{ type: "t", value: this.classificationTexture },
 		clipBoxes:			{ type: "Matrix4fv", value: [] },
-		blendDepth:			{ type: "f", value: this._blendDepth },
 		depthMap: 			{ type: "t", value: null },
 		diffuse:			{ type: "fv", value: [1,1,1]},
 		ambient:			{ type: "fv", value: [0.1, 0.1, 0.1]},
@@ -253,7 +256,6 @@ Potree.PointCloudMaterial.prototype.getDefines = function(){
 		defines += "#define attenuated_point_size\n";
 	}else if(this.pointSizeType === Potree.PointSizeType.ADAPTIVE){
 		defines += "#define adaptive_point_size\n";
-		defines += "#define levels " + Math.max(0, this._levels - 2).toFixed(1) + "\n";
 	}
 	
 	if(this.pointShape === Potree.PointShape.SQUARE){
@@ -314,22 +316,29 @@ Potree.PointCloudMaterial.prototype.getDefines = function(){
 	
 	if(this.numClipBoxes > 0){
 		defines += "#define use_clip_box\n";
-		defines += "#define clip_box_count " + this.numClipBoxes + "\n";
 	}
 
 	return defines;
 };
 
 Potree.PointCloudMaterial.prototype.setClipBoxes = function(clipBoxes){
-	var numBoxes = clipBoxes.length;
-	this.numClipBoxes = numBoxes;
+	if(!clipBoxes){
+		return;
+	}
+
+	this.clipBoxes = clipBoxes;
+	var doUpdate = (this.numClipBoxes != clipBoxes.length) && (clipBoxes.length === 0 || this.numClipBoxes === 0);
+
+	this.numClipBoxes = clipBoxes.length;
+	this.uniforms.clipBoxCount.value = this.numClipBoxes;
 	
-	if(this.uniforms.clipBoxes.value.length / 16 !== numBoxes){
-		this.uniforms.clipBoxes.value = new Float32Array(numBoxes * 16);
+	if(doUpdate){
 		this.updateShaderSource();
 	}
 	
-	for(var i = 0; i < numBoxes; i++){
+	this.uniforms.clipBoxes.value = new Float32Array(this.numClipBoxes * 16);
+	
+	for(var i = 0; i < this.numClipBoxes; i++){
 		var box = clipBoxes[i];
 		
 		this.uniforms.clipBoxes.value.set(box.elements, 16*i);
@@ -370,18 +379,6 @@ Object.defineProperty(Potree.PointCloudMaterial.prototype, "spacing", {
 	set: function(value){
 		if(this.uniforms.spacing.value !== value){
 			this.uniforms.spacing.value = value;
-			//this.updateShaderSource();
-		}
-	}
-});
-
-Object.defineProperty(Potree.PointCloudMaterial.prototype, "blendDepth", {
-	get: function(){
-		return this.uniforms.blendDepth.value;
-	},
-	set: function(value){
-		if(this.uniforms.blendDepth.value !== value){
-			this.uniforms.blendDepth.value = value;
 			//this.updateShaderSource();
 		}
 	}
@@ -454,7 +451,6 @@ Object.defineProperty(Potree.PointCloudMaterial.prototype, "near", {
 	set: function(value){
 		if(this.uniforms.near.value !== value){
 			this.uniforms.near.value = value;
-			//this.updateShaderSource();
 		}
 	}
 });
@@ -466,7 +462,6 @@ Object.defineProperty(Potree.PointCloudMaterial.prototype, "far", {
 	set: function(value){
 		if(this.uniforms.far.value !== value){
 			this.uniforms.far.value = value;
-			//this.updateShaderSource();
 		}
 	}
 });
@@ -476,21 +471,11 @@ Object.defineProperty(Potree.PointCloudMaterial.prototype, "opacity", {
 		return this.uniforms.opacity.value;
 	},
 	set: function(value){
-		if(this.uniforms.opacity.value !== value){
-			this.uniforms.opacity.value = value;
-			this.updateShaderSource();
-		}
-	}
-});
-
-Object.defineProperty(Potree.PointCloudMaterial.prototype, "levels", {
-	get: function(){
-		return this._levels;
-	},
-	set: function(value){
-		if(this._levels !== value){
-			this._levels = value;
-			this.updateShaderSource();
+		if(this.uniforms.opacity){
+			if(this.uniforms.opacity.value !== value){
+				this.uniforms.opacity.value = value;
+				this.updateShaderSource();
+			}
 		}
 	}
 });

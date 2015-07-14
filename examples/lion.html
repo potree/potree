@@ -325,18 +325,20 @@ void main() {
 				for(var i = 0; i < attributes.attributes.length; i++){
 					var attribute = attributes.attributes[i];
 					
-					if(attribute === PointAttribute.COLOR_PACKED){
+					if(attribute === Potree.PointAttribute.COLOR_PACKED){
 						options.push("RGB");
-					}else if(attribute === PointAttribute.INTENSITY){
+					}else if(attribute === Potree.PointAttribute.INTENSITY){
 						options.push("Intensity");
 						options.push("Intensity Gradient");
-					}else if(attribute === PointAttribute.CLASSIFICATION){
+					}else if(attribute === Potree.PointAttribute.CLASSIFICATION){
 						options.push("Classification");
-					}else if(attribute === PointAttribute.NORMAL_SPHEREMAPPED || attribute === PointAttribute.NORMAL_OCT16){
-						options.push("Phong");
-						options.push("Normal");
 					}
 				}
+				if(attributes.hasNormals()){
+					options.push("Phong");
+					options.push("Normal");
+				}
+				
 				options.push("Height");
 				options.push("Tree Depth");
 			}
@@ -642,6 +644,8 @@ void main() {
 		};
 		
 		var intensityMax = null;
+		var heightMin = null;
+		var heightMax = null;
 		
 		function update(){
 			Potree.pointLoadLimit = pointCountTarget * 2 * 1000 * 1000;
@@ -674,10 +678,15 @@ void main() {
 						}
 					}
 				}
+				
+				if(!heightMin){
+					heightMin = bbWorld.min.y;
+					heightMax = bbWorld.max.y;
+				}
 					
 				pointcloud.material.clipMode = clipMode;
-				pointcloud.material.heightMin = bbWorld.min.y;
-				pointcloud.material.heightMax = bbWorld.max.y;
+				pointcloud.material.heightMin = heightMin;
+				pointcloud.material.heightMax = heightMax;
 				pointcloud.material.intensityMin = 0;
 				pointcloud.material.intensityMax = intensityMax;
 				pointcloud.showBoundingBox = showBoundingBox;

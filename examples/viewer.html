@@ -645,6 +645,8 @@ void main() {
 		};
 		
 		var intensityMax = null;
+		var heightMin = null;
+		var heightMax = null;
 		
 		function update(){
 			Potree.pointLoadLimit = pointCountTarget * 2 * 1000 * 1000;
@@ -677,10 +679,15 @@ void main() {
 						}
 					}
 				}
+				
+				if(!heightMin){
+					heightMin = bbWorld.min.y;
+					heightMax = bbWorld.max.y;
+				}
 					
 				pointcloud.material.clipMode = clipMode;
-				pointcloud.material.heightMin = bbWorld.min.y;
-				pointcloud.material.heightMax = bbWorld.max.y;
+				pointcloud.material.heightMin = heightMin;
+				pointcloud.material.heightMax = heightMax;
 				pointcloud.material.intensityMin = 0;
 				pointcloud.material.intensityMax = intensityMax;
 				pointcloud.showBoundingBox = showBoundingBox;

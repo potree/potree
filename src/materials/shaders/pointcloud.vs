@@ -62,7 +62,6 @@ uniform sampler2D depthMap;
 
 varying float	vOpacity;
 varying vec3	vColor;
-varying float	vDepth;
 varying float	vLinearDepth;
 varying vec3	vViewPosition;
 varying float 	vRadius;
@@ -217,7 +216,6 @@ void main() {
 	gl_Position = projectionMatrix * mvPosition;
 	vOpacity = opacity;
 	vLinearDepth = -mvPosition.z;
-	vDepth = mvPosition.z / gl_Position.w;
 	vNormal = normalize(normalMatrix * normal);
 
 
@@ -232,8 +230,9 @@ void main() {
 		float w = (world.y - heightMin) / (heightMax-heightMin);
 		vColor = texture2D(gradient, vec2(w,1.0-w)).rgb;
 	#elif defined color_type_depth
-		float d = -mvPosition.z ;
-		vColor = vec3(d, vDepth, 0.0);
+		float linearDepth = -mvPosition.z ;
+		float expDepth = gl_Position.z / gl_Position.w;
+		vColor = vec3(linearDepth, expDepth, 0.0);
 	#elif defined color_type_intensity
 		float w = (intensity - intensityMin) / (intensityMax - intensityMin);
 		vColor = vec3(w, w, w);

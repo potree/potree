@@ -68,7 +68,6 @@ uniform sampler2D depthMap;
 varying vec3	vColor;
 varying float	vOpacity;
 varying float	vLinearDepth;
-varying float	vDepth;
 varying vec3	vViewPosition;
 varying float	vRadius;
 varying vec3	vWorldPosition;

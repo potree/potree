@@ -758,6 +758,14 @@ var rtDepth = new THREE.WebGLRenderTarget( 1024, 1024, {
 	format: THREE.RGBAFormat, 
 	type: THREE.FloatType
 } );
+
+var rtOcclusion = new THREE.WebGLRenderTarget( 1024, 1024, { 
+	minFilter: THREE.LinearFilter, 
+	magFilter: THREE.NearestFilter, 
+	format: THREE.RGBAFormat, 
+	type: THREE.FloatType
+} );
+
 var rtNormalize = new THREE.WebGLRenderTarget( 1024, 1024, { 
 	minFilter: THREE.LinearFilter, 
 	magFilter: THREE.NearestFilter, 
@@ -766,14 +774,18 @@ var rtNormalize = new THREE.WebGLRenderTarget( 1024, 1024, {
 } );
 
 var sceneNormalize;
+var sceneScreen, screenQuad;
 
 var depthMaterial, weightedMaterial;
+
+var edlMaterial = new Potree.EyeDomeLightingMaterial();
 
 // render with splats
 function renderHighQuality(){
 
 	if(!sceneNormalize){
 		sceneNormalize = new THREE.Scene();
+		sceneScreen = new THREE.Scene();
 						
 		var vsNormalize = Potree.Shaders["normalize.vs"];
 		var fsNormalize = Potree.Shaders["normalize.fs"];
@@ -795,6 +807,12 @@ function renderHighQuality(){
 		quad.material.transparent = true;
 		sceneNormalize.add(quad);
 		sceneNormalize.screenQuad = quad;
+		
+		screenQuad = new THREE.Mesh( new THREE.PlaneBufferGeometry(2, 2, 0), edlMaterial);
+		screenQuad.material.depthTest = true;
+		screenQuad.material.depthWrite = true;
+		screenQuad.material.transparent = true;
+		sceneScreen.add(screenQuad);
 	}
 	
 	// resize
@@ -803,13 +821,19 @@ function renderHighQuality(){
 			rtDepth.dispose();
 			rtNormalize.dispose();
 			
-			rtDepth = new THREE.WebGLRenderTarget( 1024, 1024, { 
+			rtDepth = new THREE.WebGLRenderTarget( width, height, { 
 				minFilter: THREE.NearestFilter, 
 				magFilter: THREE.NearestFilter, 
 				format: THREE.RGBAFormat, 
 				type: THREE.FloatType
 			} );
-			rtNormalize = new THREE.WebGLRenderTarget( 1024, 1024, { 
+			rtNormalize = new THREE.WebGLRenderTarget( width, height, { 
+				minFilter: THREE.LinearFilter, 
+				magFilter: THREE.NearestFilter, 
+				format: THREE.RGBAFormat, 
+				type: THREE.FloatType
+			} );
+			rtOcclusion = new THREE.WebGLRenderTarget( width, height, { 
 				minFilter: THREE.LinearFilter, 
 				magFilter: THREE.NearestFilter, 
 				format: THREE.RGBAFormat, 
@@ -818,6 +842,8 @@ function renderHighQuality(){
 			
 			sceneNormalize.screenQuad.material.uniforms.depthMap.value = rtDepth;
 			sceneNormalize.screenQuad.material.uniforms.texture.value = rtNormalize;
+			
+			edlMaterial.uniforms.depthMap.value = rtDepth;
 		}
 	}
 	
@@ -891,7 +917,6 @@ function renderHighQuality(){
 			renderer.render(scenePointCloud, camera, rtDepth);
 		}
 		
-		
 		{// ATTRIBUTE PASS
 			var material = pointcloud._hqsplats.attributeMaterial;
 			
@@ -914,8 +939,15 @@ function renderHighQuality(){
 			renderer.render(scenePointCloud, camera, rtNormalize);
 		}
 		
+		{ // OCCLUSION PASS
+			edlMaterial.uniforms.near.value = camera.near;
+			edlMaterial.uniforms.far.value = camera.far;
+		
+			renderer.render(sceneScreen, cameraBG);
+		}
+		
 		// NORMALIZATION PASS
-		renderer.render(sceneNormalize, cameraBG);
+		//renderer.render(sceneNormalize, cameraBG);
 		
 		pointcloud.material = pointcloud._hqsplats.originalMaterial;
 	

@@ -125,7 +125,6 @@ Potree.Shaders["pointcloud.vs"] = [
  "",
  "varying float	vOpacity;",
  "varying vec3	vColor;",
- "varying float	vDepth;",
  "varying float	vLinearDepth;",
  "varying vec3	vViewPosition;",
  "varying float 	vRadius;",
@@ -280,7 +279,6 @@ Potree.Shaders["pointcloud.vs"] = [
  "	gl_Position = projectionMatrix * mvPosition;",
  "	vOpacity = opacity;",
  "	vLinearDepth = -mvPosition.z;",
- "	vDepth = mvPosition.z / gl_Position.w;",
  "	vNormal = normalize(normalMatrix * normal);",
  "",
  "",
@@ -295,8 +293,9 @@ Potree.Shaders["pointcloud.vs"] = [
  "		float w = (world.y - heightMin) / (heightMax-heightMin);",
  "		vColor = texture2D(gradient, vec2(w,1.0-w)).rgb;",
  "	#elif defined color_type_depth",
- "		float d = -mvPosition.z ;",
- "		vColor = vec3(d, vDepth, 0.0);",
+ "		float linearDepth = -mvPosition.z ;",
+ "		float expDepth = gl_Position.z / gl_Position.w;",
+ "		vColor = vec3(linearDepth, expDepth, 0.0);",
  "	#elif defined color_type_intensity",
  "		float w = (intensity - intensityMin) / (intensityMax - intensityMin);",
  "		vColor = vec3(w, w, w);",
@@ -465,7 +464,6 @@ Potree.Shaders["pointcloud.fs"] = [
  "varying vec3	vColor;",
  "varying float	vOpacity;",
  "varying float	vLinearDepth;",
- "varying float	vDepth;",
  "varying vec3	vViewPosition;",
  "varying float	vRadius;",
  "varying vec3	vWorldPosition;",
@@ -671,6 +669,67 @@ Potree.Shaders["normalize.fs"] = [
  "    gl_FragColor = color; ",
  "	",
  "	gl_FragDepthEXT = depth;",
+ "}",
+].join("\n");
+
+Potree.Shaders["edl.vs"] = [
+ "",
+ "",
+ "varying vec2 vUv;",
+ "varying vec3 vViewRay;",
+ "",
+ "void main() {",
+ "    vUv = uv;",
+ "	",
+ "	vec4 mvPosition = modelViewMatrix * vec4(position,1.0);",
+ "	vViewRay = mvPosition.xyz;",
+ "",
+ "    gl_Position = projectionMatrix * mvPosition;",
+ "	",
+ "	",
+ "}",
+].join("\n");
+
+Potree.Shaders["edl.fs"] = [
+ "",
+ "#define KERNEL_SIZE 16",
+ "",
+ "uniform mat4 projectionMatrix;",
+ "",
+ "uniform float near;",
+ "uniform float far;",
+ "uniform float radius;",
+ "uniform vec3 kernel[KERNEL_SIZE];",
+ "",
+ "uniform sampler2D depthMap;",
+ "",
+ "",
+ "",
+ "varying vec2 vUv;",
+ "varying vec3 vViewRay;",
+ "",
+ "void main() {",
+ "    float linearDepth = texture2D(depthMap, vUv).r; ",
+ "	vec3 origin = linearDepth * vViewRay;",
+ "	",
+ "	float occlusion = 0.0;",
+ "	float occlusionCount = 0.0;",
+ "	for(int i = 0; i < KERNEL_SIZE; i++){",
+ "		vec3 sampleVec = kernel[i] * 0.01;",
+ "		",
+ "		float opacity = texture2D(depthMap, vUv + sampleVec.xy).a;",
+ "		float sampleDepth = texture2D(depthMap, vUv + sampleVec.xy).r;",
+ "		",
+ "		occlusionCount += opacity;",
+ "		if(linearDepth > sampleDepth){",
+ "			occlusion += 1.0;",
+ "		}",
+ "	}",
+ "	occlusion = 1.0 - (occlusion / float(KERNEL_SIZE));",
+ "	",
+ "	float w = occlusion;",
+ "	",
+ "	gl_FragColor = vec4(w, w, w, 1.0); ",
  "}",
 ].join("\n");
 
@@ -2184,6 +2243,75 @@ Potree.PointCloudMaterial.generateClassificationTexture  = function(classificati
 	return map;
 	
 };
+
+// see http://john-chapman-graphics.blogspot.co.at/2013/01/ssao-tutorial.html
+
+
+
+Potree.EyeDomeLightingMaterial = function(parameters){
+	THREE.Material.call( this );
+
+	parameters = parameters || {};
+	
+	var kernelSize = 16;
+	var kernel = Potree.EyeDomeLightingMaterial.generateKernel(kernelSize);
+	
+	var uniforms = {
+		near: 		{ type: "f", value: 0 },
+		far: 		{ type: "f", value: 0 },
+		depthMap: 	{ type: "t", value: null },
+		kernel:		{ type: "fv", value: kernel},
+		radius:		{ type: "f", value: 20}
+	};
+	
+	this.setValues({
+		uniforms: uniforms,
+		vertexShader: Potree.Shaders["edl.vs"],
+		fragmentShader: Potree.Shaders["edl.fs"],
+	});
+	
+};
+
+
+Potree.EyeDomeLightingMaterial.prototype = new THREE.ShaderMaterial();
+
+Potree.EyeDomeLightingMaterial.generateKernel = function(kernelSize){
+	var kernel = new Float32Array(3*kernelSize);
+	
+	for(var i = 0; i < kernelSize; i++){
+		var x = Math.random() * 2 - 1;
+		var y = Math.random() * 2 - 1;
+		var z = Math.random();
+		var length = Math.sqrt( x*x + y*y + z*z );
+		var scale = Math.random();
+		
+		x = scale * x / length;
+		y = scale * y / length;
+		z = scale * z / length;
+		
+		kernel[3*i + 0] = x;
+		kernel[3*i + 1] = y;
+		kernel[3*i + 2] = z;
+	}
+
+		return kernel;
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 /**

@@ -100,7 +100,7 @@ void main() {
 	#endif
 	
 	#if defined use_interpolation
-		float wi = 1.0 - ( u*u + v*v);
+		float wi = 0.0 - ( u*u + v*v);
 		vec4 pos = vec4(-vViewPosition, 1.0);
 		pos.z += wi * vRadius;
 		float linearDepth = pos.z;

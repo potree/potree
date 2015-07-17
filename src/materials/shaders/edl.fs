@@ -1,5 +1,5 @@
 
-#define KERNEL_SIZE 16
+#define KERNEL_SIZE 32
 
 uniform mat4 projectionMatrix;
 
@@ -13,6 +13,8 @@ uniform sampler2D randomMap;
 
 varying vec2 vUv;
 varying vec3 vViewRay;
+
+// TODO don't fetch same texel multiple times (depth + alpha)
 
 void main() {
     float linearDepth = texture2D(depthMap, vUv).r; 
@@ -43,6 +45,10 @@ void main() {
 		occlusion =  (occlusion / float(KERNEL_SIZE));
     }else{
         occlusion = 0.0;
+    }
+	
+	if(texture2D(depthMap, vUv).a == 0.0){
+     	occlusion = 0.0;   
     }
 	
 	float w = occlusion;

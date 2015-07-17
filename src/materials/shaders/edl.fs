@@ -1,5 +1,5 @@
 
-#define KERNEL_SIZE 32
+#define KERNEL_SIZE 16
 
 uniform mat4 projectionMatrix;
 

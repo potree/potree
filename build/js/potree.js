@@ -668,6 +668,7 @@ Potree.Shaders["normalize.fs"] = [
  "#extension GL_EXT_frag_depth : enable",
  "",
  "uniform sampler2D depthMap;",
+ "uniform sampler2D occlusionMap;",
  "uniform sampler2D texture;",
  "",
  "varying vec2 vUv;",
@@ -675,8 +676,11 @@ Potree.Shaders["normalize.fs"] = [
  "void main() {",
  "    vec4 color = texture2D(texture, vUv); ",
  "    float depth = texture2D(depthMap, vUv).g; ",
+ "	float occlusion = texture2D(occlusionMap, vUv).g; ",
  "	color = color / color.w;",
- "    gl_FragColor = color; ",
+ "    ",
+ "	color = color * (1.0 - occlusion);",
+ "	gl_FragColor = vec4(color.xyz, 1.0); ",
  "	",
  "	gl_FragDepthEXT = depth;",
  "}",
@@ -702,7 +706,7 @@ Potree.Shaders["edl.vs"] = [
 
 Potree.Shaders["edl.fs"] = [
  "",
- "#define KERNEL_SIZE 32",
+ "#define KERNEL_SIZE 16",
  "",
  "uniform mat4 projectionMatrix;",
  "",
@@ -2280,7 +2284,7 @@ Potree.EyeDomeLightingMaterial = function(parameters){
 
 	parameters = parameters || {};
 	
-	var kernelSize = 32;
+	var kernelSize = 16;
 	var kernel = Potree.EyeDomeLightingMaterial.generateKernel(kernelSize);
 	var randomMap = Potree.EyeDomeLightingMaterial.generateRandomTexture();
 	

@@ -8,7 +8,7 @@ Potree.EyeDomeLightingMaterial = function(parameters){
 
 	parameters = parameters || {};
 	
-	var kernelSize = 32;
+	var kernelSize = 16;
 	var kernel = Potree.EyeDomeLightingMaterial.generateKernel(kernelSize);
 	var randomMap = Potree.EyeDomeLightingMaterial.generateRandomTexture();
 	

@@ -278,7 +278,7 @@ function initThree(){
 	var height = elRenderArea.clientHeight;
 	var aspect = width / height;
 	var near = 0.1;
-	var far = 1000000;
+	var far = 100000;
 
 	scene = new THREE.Scene();
 	scenePointCloud = new THREE.Scene();
@@ -880,13 +880,13 @@ function renderHighQuality(){
 			
 			hq.depthMaterial.pointColorType = Potree.PointColorType.DEPTH;
 			hq.depthMaterial.pointShape = Potree.PointShape.CIRCLE;
-			hq.depthMaterial.interpolate = false;
+			hq.depthMaterial.interpolate = true;
 			hq.depthMaterial.weighted = false;
 			hq.depthMaterial.minSize = 2;
 			hq.depthMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.size().x;
 			
 			hq.attributeMaterial.pointShape = Potree.PointShape.CIRCLE;
-			hq.attributeMaterial.interpolate = false;
+			hq.attributeMaterial.interpolate = true;
 			hq.attributeMaterial.weighted = true;
 			hq.attributeMaterial.minSize = 2;
 			hq.attributeMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.size().x;

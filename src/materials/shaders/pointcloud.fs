@@ -77,6 +77,8 @@ float specularStrength = 1.0;
 
 void main() {
 
+	vec3 color = vColor;
+
 	#if defined(circle_point_shape) || defined(use_interpolation) || defined (weighted_splats)
 		float u = 2.0 * gl_PointCoord.x - 1.0;
 		float v = 2.0 * gl_PointCoord.y - 1.0;
@@ -98,18 +100,26 @@ void main() {
 	#endif
 	
 	#if defined use_interpolation
-		float w = 1.0 - ( u*u + v*v);
+		float wi = 1.0 - ( u*u + v*v);
 		vec4 pos = vec4(-vViewPosition, 1.0);
-		pos.z += w * vRadius;
+		pos.z += wi * vRadius;
+		float linearDepth = pos.z;
 		pos = projectionMatrix * pos;
 		pos = pos / pos.w;
+		float expDepth = pos.z;
 		gl_FragDepthEXT = (pos.z + 1.0) / 2.0;
+		
+		#if defined(color_type_depth)
+			color.r = linearDepth;
+			color.g = expDepth;
+		#endif
+		
 	#endif
 	
 	#if defined color_type_point_index
-		gl_FragColor = vec4(vColor, pcIndex / 255.0);
+		gl_FragColor = vec4(color, pcIndex / 255.0);
 	#else
-		gl_FragColor = vec4(vColor, vOpacity);
+		gl_FragColor = vec4(color, vOpacity);
 	#endif
 	
 	#if defined weighted_splats

@@ -473,6 +473,8 @@ Potree.Shaders["pointcloud.fs"] = [
  "",
  "void main() {",
  "",
+ "	vec3 color = vColor;",
+ "",
  "	#if defined(circle_point_shape) || defined(use_interpolation) || defined (weighted_splats)",
  "		float u = 2.0 * gl_PointCoord.x - 1.0;",
  "		float v = 2.0 * gl_PointCoord.y - 1.0;",
@@ -494,18 +496,26 @@ Potree.Shaders["pointcloud.fs"] = [
  "	#endif",
  "	",
  "	#if defined use_interpolation",
- "		float w = 1.0 - ( u*u + v*v);",
+ "		float wi = 1.0 - ( u*u + v*v);",
  "		vec4 pos = vec4(-vViewPosition, 1.0);",
- "		pos.z += w * vRadius;",
+ "		pos.z += wi * vRadius;",
+ "		float linearDepth = pos.z;",
  "		pos = projectionMatrix * pos;",
  "		pos = pos / pos.w;",
+ "		float expDepth = pos.z;",
  "		gl_FragDepthEXT = (pos.z + 1.0) / 2.0;",
+ "		",
+ "		#if defined(color_type_depth)",
+ "			color.r = linearDepth;",
+ "			color.g = expDepth;",
+ "		#endif",
+ "		",
  "	#endif",
  "	",
  "	#if defined color_type_point_index",
- "		gl_FragColor = vec4(vColor, pcIndex / 255.0);",
+ "		gl_FragColor = vec4(color, pcIndex / 255.0);",
  "	#else",
- "		gl_FragColor = vec4(vColor, vOpacity);",
+ "		gl_FragColor = vec4(color, vOpacity);",
  "	#endif",
  "	",
  "	#if defined weighted_splats",
@@ -702,8 +712,7 @@ Potree.Shaders["edl.fs"] = [
  "uniform vec3 kernel[KERNEL_SIZE];",
  "",
  "uniform sampler2D depthMap;",
- "",
- "",
+ "uniform sampler2D randomMap;",
  "",
  "varying vec2 vUv;",
  "varying vec3 vViewRay;",
@@ -712,10 +721,17 @@ Potree.Shaders["edl.fs"] = [
  "    float linearDepth = texture2D(depthMap, vUv).r; ",
  "	vec3 origin = linearDepth * vViewRay;",
  "	",
+ "	vec2 uvRand = gl_FragCoord.xy;",
+ "    uvRand.x = mod(uvRand.x, 4.0) / 4.0;",
+ "    uvRand.y = mod(uvRand.y, 4.0) / 4.0;",
+ "	float random = texture2D(randomMap, uvRand).r * 3.1415;",
+ "	mat2 randomRotation = mat2(cos(random), sin(random), -sin(random), cos(random));",
+ "	",
  "	float occlusion = 0.0;",
  "	float occlusionCount = 0.0;",
- "	for(int i = 0; i < KERNEL_SIZE; i++){",
- "		vec3 sampleVec = kernel[i] * 0.01;",
+ "	for(int i = 0; i < KERNEL_SIZE; i++){	",
+ "		vec3 sampleVec = kernel[i] * 0.05;",
+ "		sampleVec.xy = randomRotation * sampleVec.xy;",
  "		",
  "		float opacity = texture2D(depthMap, vUv + sampleVec.xy).a;",
  "		float sampleDepth = texture2D(depthMap, vUv + sampleVec.xy).r;",
@@ -725,7 +741,12 @@ Potree.Shaders["edl.fs"] = [
  "			occlusion += 1.0;",
  "		}",
  "	}",
- "	occlusion = 1.0 - (occlusion / float(KERNEL_SIZE));",
+ "    ",
+ "    if(occlusionCount > 0.0){",
+ "		occlusion =  (occlusion / float(KERNEL_SIZE));",
+ "    }else{",
+ "        occlusion = 0.0;",
+ "    }",
  "	",
  "	float w = occlusion;",
  "	",
@@ -2255,10 +2276,13 @@ Potree.EyeDomeLightingMaterial = function(parameters){
 	
 	var kernelSize = 16;
 	var kernel = Potree.EyeDomeLightingMaterial.generateKernel(kernelSize);
+	var randomMap = Potree.EyeDomeLightingMaterial.generateRandomTexture();
+	
 	
 	var uniforms = {
 		near: 		{ type: "f", value: 0 },
 		far: 		{ type: "f", value: 0 },
+		randomMap:	{ type: "t", value: randomMap},
 		depthMap: 	{ type: "t", value: null },
 		kernel:		{ type: "fv", value: kernel},
 		radius:		{ type: "f", value: 20}
@@ -2275,15 +2299,47 @@ Potree.EyeDomeLightingMaterial = function(parameters){
 
 Potree.EyeDomeLightingMaterial.prototype = new THREE.ShaderMaterial();
 
+Potree.EyeDomeLightingMaterial.generateRandomTexture = function(kernelSize){
+	var width = 4;
+	var height = 4;
+	
+	var map = THREE.ImageUtils.generateDataTexture( width, height, new THREE.Color() );
+	map.magFilter = THREE.NearestFilter;
+	var data = map.image.data;
+	
+	for(var x = 0; x < width; x++){
+		for(var y = 0; y < height; y++){
+			var value = Math.random();
+			var i = x + width * y;
+			
+			data[3*i+0] = 255 * value;
+			data[3*i+1] = 255 * value;
+			data[3*i+2] = 255 * value;
+			
+			//value = 255 * (x / 3);
+			//data[3*i+0] = value;
+			//data[3*i+1] = value;
+			//data[3*i+2] = value;
+			
+			
+		}
+	}
+	
+	return map;
+};
+
+
 Potree.EyeDomeLightingMaterial.generateKernel = function(kernelSize){
 	var kernel = new Float32Array(3*kernelSize);
 	
 	for(var i = 0; i < kernelSize; i++){
+	
 		var x = Math.random() * 2 - 1;
 		var y = Math.random() * 2 - 1;
 		var z = Math.random();
 		var length = Math.sqrt( x*x + y*y + z*z );
 		var scale = Math.random();
+		scale = scale * scale;
 		
 		x = scale * x / length;
 		y = scale * y / length;

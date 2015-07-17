@@ -757,6 +757,7 @@ var HighQualityRenderer = function(){
 	var edlMaterial = new Potree.EyeDomeLightingMaterial();
 	var depthMaterial = new Potree.PointCloudMaterial();
 	var attributeMaterial = new Potree.PointCloudMaterial();
+	var blurMaterial = new Potree.BlurMaterial();
 	
 	
 	depthMaterial.pointColorType = Potree.PointColorType.DEPTH;
@@ -785,6 +786,13 @@ var HighQualityRenderer = function(){
 	} );
 
 	var rtNormalize = new THREE.WebGLRenderTarget( 1024, 1024, { 
+		minFilter: THREE.LinearFilter, 
+		magFilter: THREE.NearestFilter, 
+		format: THREE.RGBAFormat, 
+		type: THREE.FloatType
+	} );
+	
+	var rtBlur = new THREE.WebGLRenderTarget( 1024, 1024, { 
 		minFilter: THREE.LinearFilter, 
 		magFilter: THREE.NearestFilter, 
 		format: THREE.RGBAFormat, 
@@ -835,6 +843,7 @@ var HighQualityRenderer = function(){
 			rtDepth.dispose();
 			rtNormalize.dispose();
 			rtOcclusion.dispose();
+			rtBlur.dispose();
 			
 			rtDepth = new THREE.WebGLRenderTarget( width, height, { 
 				minFilter: THREE.NearestFilter, 
@@ -844,6 +853,13 @@ var HighQualityRenderer = function(){
 			} );
 			
 			rtOcclusion = new THREE.WebGLRenderTarget( width, height, { 
+				minFilter: THREE.LinearFilter, 
+				magFilter: THREE.NearestFilter, 
+				format: THREE.RGBAFormat, 
+				type: THREE.FloatType
+			} );
+			
+			rtBlur = new THREE.WebGLRenderTarget( width, height, { 
 				minFilter: THREE.LinearFilter, 
 				magFilter: THREE.NearestFilter, 
 				format: THREE.RGBAFormat, 
@@ -867,6 +883,7 @@ var HighQualityRenderer = function(){
 		
 		renderer.setSize(width, height);
 		rtDepth.setSize(width, height);
+		rtBlur.setSize(width, height);
 		rtNormalize.setSize(width, height);
 		rtOcclusion.setSize(width, height);
 		
@@ -905,11 +922,21 @@ var HighQualityRenderer = function(){
 				material.heightMax = heightMax;
 				
 				pointcloud.material = material;
-				
+			
+			
+				//for(var i = 0; i < pointcloud.visibleNodes.length; i++){
+				//	var node = pointcloud.visibleNodes[i].node;
+				//	node.material = material;
+				//}
 				pointcloud.update(camera, renderer);
 				
 				renderer.clearTarget( rtDepth, true, true, true );
 				renderer.render(scenePointCloud, camera, rtDepth);
+				
+				//for(var i = 0; i < pointcloud.visibleNodes.length; i++){
+				//	var node = pointcloud.visibleNodes[i].node;
+				//	node.material = originalMaterial;
+				//}
 			}
 			
 			{// ATTRIBUTE PASS
@@ -932,9 +959,13 @@ var HighQualityRenderer = function(){
 				
 				pointcloud.material = material;
 				
+				//scenePointCloud.overrideMaterial = material;
+				
 				pointcloud.update(camera, renderer);
 				renderer.clearTarget( rtNormalize, true, true, true );
 				renderer.render(scenePointCloud, camera, rtNormalize);
+				
+				//scenePointCloud.overrideMaterial = null;
 			}
 			
 			{ // OCCLUSION PASS
@@ -946,9 +977,20 @@ var HighQualityRenderer = function(){
 				screenPass.render(renderer, edlMaterial, rtOcclusion);
 			}
 			
+			{ // BLUR PASS
+				blurMaterial.uniforms.near.value = camera.near;
+				blurMaterial.uniforms.far.value = camera.far;
+				blurMaterial.uniforms.screenWidth.value = width;
+				blurMaterial.uniforms.screenHeight.value = height;
+				blurMaterial.uniforms.map.value = rtOcclusion;
+				
+				renderer.clearTarget( rtBlur, true, true, true );
+				screenPass.render(renderer, blurMaterial, rtBlur);
+			}
+			
 			{// NORMALIZATION & COMPOSITION PASS
 				hqCompositionMaterial.uniforms.depthMap.value = rtDepth;
-				hqCompositionMaterial.uniforms.occlusionMap.value = rtOcclusion;
+				hqCompositionMaterial.uniforms.occlusionMap.value = rtBlur;
 				hqCompositionMaterial.uniforms.texture.value = rtNormalize;
 				screenPass.render(renderer, hqCompositionMaterial);
 			}

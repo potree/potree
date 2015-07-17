@@ -26,6 +26,7 @@ var paths = {
 		"src/loader/LasLazLoader.js",
 		"src/materials/PointCloudMaterial.js",
 		"src/materials/EyeDomeLightingMaterial.js",
+		"src/materials/BlurMaterial.js",
 		"src/FirstPersonControls.js",
 		"src/OrbitControls.js",
 		"src/EarthControls.js",
@@ -70,7 +71,9 @@ var shaders = [
 	"src/materials/shaders/normalize.vs",
 	"src/materials/shaders/normalize.fs",
 	"src/materials/shaders/edl.vs",
-	"src/materials/shaders/edl.fs"
+	"src/materials/shaders/edl.fs",
+	"src/materials/shaders/blur.vs",
+	"src/materials/shaders/blur.fs"
 ];
 
 

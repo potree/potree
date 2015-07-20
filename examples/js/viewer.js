@@ -279,7 +279,7 @@ function initThree(){
 	var height = elRenderArea.clientHeight;
 	var aspect = width / height;
 	var near = 0.1;
-	var far = 100000;
+	var far = 1000000;
 
 	scene = new THREE.Scene();
 	scenePointCloud = new THREE.Scene();

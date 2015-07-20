@@ -706,10 +706,12 @@ Potree.Shaders["edl.vs"] = [
 
 Potree.Shaders["edl.fs"] = [
  "",
- "",
- "// adapted from Christian Boucheny's EDL shader code in cloud compare:",
+ "// ",
+ "// adapted from the EDL shader code from Christian Boucheny in cloud compare:",
  "// https://github.com/cloudcompare/trunk/tree/master/plugins/qEDL/shaders/EDL",
+ "//",
  "",
+ "#define NEIGHBOUR_COUNT 8",
  "",
  "",
  "uniform mat4 projectionMatrix;",
@@ -718,7 +720,7 @@ Potree.Shaders["edl.fs"] = [
  "uniform float screenHeight;",
  "uniform float near;",
  "uniform float far;",
- "uniform vec2 neighbours[16];",
+ "uniform vec2 neighbours[NEIGHBOUR_COUNT];",
  "uniform vec3 lightDir;",
  "uniform float zoom;",
  "uniform float pixScale;",
@@ -730,44 +732,51 @@ Potree.Shaders["edl.fs"] = [
  "varying vec2 vUv;",
  "varying vec3 vViewRay;",
  "",
- "float ztransform(float depth){",
- "	return 1.0 - (depth - near) / (far - near);",
+ "/**",
+ " * transform linear depth to [0,1] interval with 1 beeing closest to the camera.",
+ " */",
+ "float ztransform(float linearDepth){",
+ "	return 1.0 - (linearDepth - near) / (far - near);",
  "}",
  "",
  "float obscurance(float z, float dist){",
  "	return max(0.0, z) / dist;",
  "}",
  "",
- "float computeObscurance(float depth, float scale){",
- "	vec4 P = vec4(lightDir, -dot(lightDir, vec3(0.0, 0.0, depth) ) );",
+ "float computeObscurance(float linearDepth, float scale){",
+ "	vec4 P = vec4(lightDir, -dot(lightDir, vec3(0.0, 0.0, ztransform(linearDepth)) ) );",
  "	",
  "	float sum = 0.0;",
  "	",
- "	for(int c = 0; c < 8; c++){",
+ "	for(int c = 0; c < NEIGHBOUR_COUNT; c++){",
  "		vec2 N_rel_pos = scale * zoom / vec2(screenWidth, screenHeight) * neighbours[c];",
  "		vec2 N_abs_pos = vUv + N_rel_pos;",
  "		",
- "		float Zn = ztransform(texture2D(depthMap, N_abs_pos).r);",
- "		float Znp = dot( vec4( N_rel_pos, Zn, 1.0), P );",
+ "		vec4 neighbourDepth = texture2D(depthMap, N_abs_pos);",
  "		",
- "		//sum += obscurance( Znp, scale );",
- "		sum += obscurance( Znp, 0.1 * texture2D(depthMap, vUv).r  );",
+ "		if(neighbourDepth.w > 0.0){",
+ "			float Zn = ztransform(neighbourDepth.r);",
+ "			float Znp = dot( vec4( N_rel_pos, Zn, 1.0), P );",
+ "			",
+ "			sum += obscurance( Znp, 0.1 * linearDepth );",
+ "		}",
  "	}",
  "	",
  "	return sum;",
  "}",
  "",
  "void main(){",
+ "	vec4 color = texture2D(colorMap, vUv);",
  "",
- "	float depth = ztransform(texture2D(depthMap, vUv).r);",
- "	float f = computeObscurance(depth, pixScale);",
+ "	float linearDepth = texture2D(depthMap, vUv).r;",
+ "	float f = computeObscurance(linearDepth, pixScale);",
  "	f = exp(-expScale * f);",
  "	",
- "	vec3 color = texture2D(colorMap, vUv).rgb;",
+ "	if(color.a == 0.0 && f >= 1.0){",
+ "		discard;",
+ "	}",
  "	",
- "	//gl_FragColor = vec4(f, f, f, 1.0);",
- "	gl_FragColor = vec4(color * f, 1.0);",
- "",
+ "	gl_FragColor = vec4(color.rgb * f, 1.0);",
  "}",
  "",
 ].join("\n");
@@ -1648,6 +1657,7 @@ Potree.Classification = {
 };
 
 
+
 Potree.PointSizeType = {
 	FIXED: 		0,
 	ATTENUATED: 1,
@@ -1692,7 +1702,7 @@ Potree.PointCloudMaterial = function(parameters){
 
 	parameters = parameters || {};
 
-	var color = new THREE.Color( 0x000000 );
+	var color = new THREE.Color( 0xffffff );
 	var map = THREE.ImageUtils.generateDataTexture( 2048, 1, color );
 	map.magFilter = THREE.NearestFilter;
 	this.visibleNodesTexture = map;
@@ -1730,7 +1740,7 @@ Potree.PointCloudMaterial = function(parameters){
 		screenHeight:		{ type: "f", value: 1.0 },
 		near:				{ type: "f", value: 0.1 },
 		far:				{ type: "f", value: 1.0 },
-		uColor:   			{ type: "c", value: new THREE.Color( 0xff0000 ) },
+		uColor:   			{ type: "c", value: new THREE.Color( 0xffffff ) },
 		opacity:   			{ type: "f", value: 1.0 },
 		size:   			{ type: "f", value: 10 },
 		minSize:   			{ type: "f", value: 2 },
@@ -2344,10 +2354,11 @@ Potree.EyeDomeLightingMaterial = function(parameters){
 	var kernel = Potree.EyeDomeLightingMaterial.generateKernel(kernelSize);
 	var randomMap = Potree.EyeDomeLightingMaterial.generateRandomTexture();
 	
-	var neighbours = new Float32Array(8*2);
-	for(var c = 0; c < 8; c++){
-		neighbours[2*c+0] = Math.cos(c * Math.PI / 4);
-		neighbours[2*c+1] = Math.sin(c * Math.PI / 4);
+	var neighbourCount = 8;
+	var neighbours = new Float32Array(neighbourCount*2);
+	for(var c = 0; c < neighbourCount; c++){
+		neighbours[2*c+0] = Math.cos(2 * c * Math.PI / neighbourCount);
+		neighbours[2*c+1] = Math.sin(2 * c * Math.PI / neighbourCount);
 	}
 	
 	var lightDir = new THREE.Vector3(0.0, 0.0, 1.0).normalize();

@@ -12,10 +12,11 @@ Potree.EyeDomeLightingMaterial = function(parameters){
 	var kernel = Potree.EyeDomeLightingMaterial.generateKernel(kernelSize);
 	var randomMap = Potree.EyeDomeLightingMaterial.generateRandomTexture();
 	
-	var neighbours = new Float32Array(8*2);
-	for(var c = 0; c < 8; c++){
-		neighbours[2*c+0] = Math.cos(c * Math.PI / 4);
-		neighbours[2*c+1] = Math.sin(c * Math.PI / 4);
+	var neighbourCount = 8;
+	var neighbours = new Float32Array(neighbourCount*2);
+	for(var c = 0; c < neighbourCount; c++){
+		neighbours[2*c+0] = Math.cos(2 * c * Math.PI / neighbourCount);
+		neighbours[2*c+1] = Math.sin(2 * c * Math.PI / neighbourCount);
 	}
 	
 	var lightDir = new THREE.Vector3(0.0, 0.0, 1.0).normalize();

@@ -188,6 +188,7 @@ function initGUI(){
 		}
 		
 		options.push("Height");
+		options.push("Color");
 		options.push("Tree Depth");
 	}
 	

@@ -42,6 +42,7 @@ Potree.Classification = {
 };
 
 
+
 Potree.PointSizeType = {
 	FIXED: 		0,
 	ATTENUATED: 1,
@@ -86,7 +87,7 @@ Potree.PointCloudMaterial = function(parameters){
 
 	parameters = parameters || {};
 
-	var color = new THREE.Color( 0x000000 );
+	var color = new THREE.Color( 0xffffff );
 	var map = THREE.ImageUtils.generateDataTexture( 2048, 1, color );
 	map.magFilter = THREE.NearestFilter;
 	this.visibleNodesTexture = map;
@@ -124,7 +125,7 @@ Potree.PointCloudMaterial = function(parameters){
 		screenHeight:		{ type: "f", value: 1.0 },
 		near:				{ type: "f", value: 0.1 },
 		far:				{ type: "f", value: 1.0 },
-		uColor:   			{ type: "c", value: new THREE.Color( 0xff0000 ) },
+		uColor:   			{ type: "c", value: new THREE.Color( 0xffffff ) },
 		opacity:   			{ type: "f", value: 1.0 },
 		size:   			{ type: "f", value: 10 },
 		minSize:   			{ type: "f", value: 2 },

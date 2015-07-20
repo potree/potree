@@ -12,14 +12,26 @@ Potree.EyeDomeLightingMaterial = function(parameters){
 	var kernel = Potree.EyeDomeLightingMaterial.generateKernel(kernelSize);
 	var randomMap = Potree.EyeDomeLightingMaterial.generateRandomTexture();
 	
+	var neighbours = new Float32Array(8*2);
+	for(var c = 0; c < 8; c++){
+		neighbours[2*c+0] = Math.cos(c * Math.PI / 4);
+		neighbours[2*c+1] = Math.sin(c * Math.PI / 4);
+	}
+	
+	var lightDir = new THREE.Vector3(0.0, 0.0, 1.0).normalize();
 	
 	var uniforms = {
-		near: 		{ type: "f", value: 0 },
-		far: 		{ type: "f", value: 0 },
-		randomMap:	{ type: "t", value: randomMap},
-		depthMap: 	{ type: "t", value: null },
-		kernel:		{ type: "fv", value: kernel},
-		radius:		{ type: "f", value: 20}
+		screenWidth: 	{ type: "f", 	value: 0 },
+		screenHeight: 	{ type: "f", 	value: 0 },
+		near: 			{ type: "f", 	value: 0 },
+		far: 			{ type: "f", 	value: 0 },
+		pixScale: 		{ type: "f", 	value: 1.0 },
+		expScale: 		{ type: "f", 	value: 100.0 },
+		zoom: 			{ type: "f", 	value: 3.0 },
+		lightDir:		{ type: "v3",	value: lightDir },
+		neighbours:		{ type: "2fv", 	value: neighbours },
+		depthMap: 		{ type: "t", 	value: null },
+		colorMap: 		{ type: "t", 	value: null }
 	};
 	
 	this.setValues({

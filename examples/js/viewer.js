@@ -22,7 +22,7 @@ var clipMode = Potree.ClipMode.HIGHLIGHT_INSIDE;
 var quality = null;
 var isFlipYZ = false;
 var useDEMCollisions = false;
-var minNodeSize = 150;
+var minNodeSize = 0;
 var directionalLight;
 
 var showStats = false;
@@ -278,7 +278,7 @@ function initThree(){
 	var height = elRenderArea.clientHeight;
 	var aspect = width / height;
 	var near = 0.1;
-	var far = 1000000;
+	var far = 100000;
 
 	scene = new THREE.Scene();
 	scenePointCloud = new THREE.Scene();
@@ -1010,19 +1010,255 @@ var HighQualityRenderer = function(){
 };
 
 
+
+var edlRenderer = null;
+var EDLRenderer = function(){
+
+	var edlMaterial = new Potree.EyeDomeLightingMaterial();
+	var depthMaterial = new Potree.PointCloudMaterial();
+	var attributeMaterial = new Potree.PointCloudMaterial();
+	
+	window.edlMaterial = edlMaterial;
+	
+	depthMaterial.pointColorType = Potree.PointColorType.DEPTH;
+	depthMaterial.pointShape = Potree.PointShape.CIRCLE;
+	depthMaterial.interpolate = false;
+	depthMaterial.weighted = false;
+	depthMaterial.minSize = 2;
+				
+	attributeMaterial.pointShape = Potree.PointShape.CIRCLE;
+	attributeMaterial.interpolate = false;
+	attributeMaterial.weighted = false;
+	attributeMaterial.minSize = 2;
+
+	var rtDepth = new THREE.WebGLRenderTarget( 1024, 1024, { 
+		minFilter: THREE.NearestFilter, 
+		magFilter: THREE.NearestFilter, 
+		format: THREE.RGBAFormat, 
+		type: THREE.FloatType
+	} );
+
+	var rtOcclusion = new THREE.WebGLRenderTarget( 1024, 1024, { 
+		minFilter: THREE.LinearFilter, 
+		magFilter: THREE.NearestFilter, 
+		format: THREE.RGBAFormat, 
+		type: THREE.FloatType
+	} );
+
+	var rtNormalize = new THREE.WebGLRenderTarget( 1024, 1024, { 
+		minFilter: THREE.LinearFilter, 
+		magFilter: THREE.NearestFilter, 
+		format: THREE.RGBAFormat, 
+		type: THREE.FloatType
+	} );
+	
+	var vsNormalize = Potree.Shaders["normalize.vs"];
+	var fsNormalize = Potree.Shaders["normalize.fs"];
+	
+	var uniformsNormalize = {
+		depthMap: { type: "t", value: rtDepth },
+		occlusionMap: { type: "t", value: rtOcclusion },
+		texture: { type: "t", value: rtNormalize }
+	};
+	
+	var hqCompositionMaterial = new THREE.ShaderMaterial({
+		uniforms: uniformsNormalize,
+		vertexShader: vsNormalize,
+		fragmentShader: fsNormalize
+	});
+
+
+	var screenPass = new function(){
+
+		this.screenScene = new THREE.Scene();
+		this.screenQuad = new THREE.Mesh(new THREE.PlaneBufferGeometry(2, 2, 0));
+		this.screenQuad.material.depthTest = true;
+		this.screenQuad.material.depthWrite = true;
+		this.screenQuad.material.transparent = true;
+		this.screenScene.add(this.screenQuad);
+		this.camera = new THREE.Camera();
+		
+		this.render = function(renderer, material, target){
+			this.screenQuad.material = material;
+			
+			if(typeof target === undefined){
+				renderer.render(this.screenScene, this.camera);
+			}else{
+				renderer.render(this.screenScene, this.camera, target);
+			}
+		}
+	}();
+
+	// render with splats
+	this.render = function(renderer){
+		// resize
+		if(rtDepth.width != elRenderArea.clientWidth || rtDepth.height != elRenderArea.clientHeight){
+			rtDepth.dispose();
+			rtNormalize.dispose();
+			rtOcclusion.dispose();
+			
+			rtDepth = new THREE.WebGLRenderTarget( width, height, { 
+				minFilter: THREE.NearestFilter, 
+				magFilter: THREE.NearestFilter, 
+				format: THREE.RGBAFormat, 
+				type: THREE.FloatType
+			} );
+			
+			rtOcclusion = new THREE.WebGLRenderTarget( width, height, { 
+				minFilter: THREE.LinearFilter, 
+				magFilter: THREE.NearestFilter, 
+				format: THREE.RGBAFormat, 
+				type: THREE.FloatType
+			} );
+			
+			rtNormalize = new THREE.WebGLRenderTarget( width, height, { 
+				minFilter: THREE.LinearFilter, 
+				magFilter: THREE.NearestFilter, 
+				format: THREE.RGBAFormat, 
+				type: THREE.FloatType
+			} );
+		}
+		
+		var width = elRenderArea.clientWidth;
+		var height = elRenderArea.clientHeight;
+		var aspect = width / height;
+		
+		camera.aspect = aspect;
+		camera.updateProjectionMatrix();
+		
+		renderer.setSize(width, height);
+		rtDepth.setSize(width, height);
+		rtNormalize.setSize(width, height);
+		rtOcclusion.setSize(width, height);
+		
+		renderer.clear();
+		if(showSkybox){
+			skybox.camera.rotation.copy(camera.rotation);
+			renderer.render(skybox.scene, skybox.camera);
+		}else{
+			renderer.render(sceneBG, cameraBG);
+		}
+		renderer.render(scene, camera);
+		
+		if(pointcloud){
+		
+			depthMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.size().x;
+			attributeMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.size().x;
+		
+			pointcloud.visiblePointsTarget = pointCountTarget * 1000 * 1000;
+			var originalMaterial = pointcloud.material;
+			
+			
+			{// DEPTH PASS
+				var material = depthMaterial;
+				
+				material.size = pointSize;
+				material.pointSizeType = pointSizeType;
+				material.screenWidth = width;
+				material.screenHeight = height;
+				material.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
+				material.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.size().x;
+				material.fov = camera.fov * (Math.PI / 180);
+				material.spacing = pointcloud.pcoGeometry.spacing;
+				material.near = camera.near;
+				material.far = camera.far;
+				material.heightMin = heightMin;
+				material.heightMax = heightMax;
+				
+				pointcloud.material = material;
+			
+			
+				//for(var i = 0; i < pointcloud.visibleNodes.length; i++){
+				//	var node = pointcloud.visibleNodes[i].node;
+				//	node.material = material;
+				//}
+				pointcloud.update(camera, renderer);
+				
+				renderer.clearTarget( rtDepth, true, true, true );
+				renderer.render(scenePointCloud, camera, rtDepth);
+				
+				//for(var i = 0; i < pointcloud.visibleNodes.length; i++){
+				//	var node = pointcloud.visibleNodes[i].node;
+				//	node.material = originalMaterial;
+				//}
+			}
+			
+			{// ATTRIBUTE PASS
+				var material = attributeMaterial;
+				
+				material.size = pointSize;
+				material.pointSizeType = pointSizeType;
+				material.screenWidth = width;
+				material.screenHeight = height;
+				material.pointColorType = pointColorType;
+				material.depthMap = rtDepth;
+				material.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
+				material.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.size().x;
+				material.fov = camera.fov * (Math.PI / 180);
+				material.spacing = pointcloud.pcoGeometry.spacing;
+				material.near = camera.near;
+				material.far = camera.far;
+				material.heightMin = heightMin;
+				material.heightMax = heightMax;
+				
+				pointcloud.material = material;
+				
+				//scenePointCloud.overrideMaterial = material;
+				
+				pointcloud.update(camera, renderer);
+				renderer.clearTarget( rtNormalize, true, true, true );
+				renderer.render(scenePointCloud, camera, rtNormalize);
+				
+				//scenePointCloud.overrideMaterial = null;
+			}
+			
+			{ // OCCLUSION PASS
+				edlMaterial.uniforms.screenWidth.value = width;
+				edlMaterial.uniforms.screenHeight.value = height;
+				edlMaterial.uniforms.near.value = camera.near;
+				edlMaterial.uniforms.far.value = camera.far;
+				edlMaterial.uniforms.depthMap.value = rtDepth;
+				edlMaterial.uniforms.colorMap.value = rtNormalize;
+				edlMaterial.uniforms.expScale.value = camera.far;
+			
+				renderer.clearTarget( rtOcclusion, true, true, true );
+				screenPass.render(renderer, edlMaterial);
+			}
+
+			
+			//{// NORMALIZATION & COMPOSITION PASS
+			//	hqCompositionMaterial.uniforms.depthMap.value = rtDepth;
+			//	hqCompositionMaterial.uniforms.occlusionMap.value = rtOcclusion;
+			//	hqCompositionMaterial.uniforms.texture.value = rtNormalize;
+			//	screenPass.render(renderer, hqCompositionMaterial);
+			//}
+	
+		}
+
+
+	}
+};
+
+
+
 function loop() {
 	requestAnimationFrame(loop);
 	
 	update();
 	
-	if(quality === "Splats"){
-		if(!highQualityRenderer){
-			highQualityRenderer = new HighQualityRenderer();
-		}
-		highQualityRenderer.render(renderer);
-	}else{
-		render();
+	if(!edlRenderer){
+		edlRenderer = new EDLRenderer();
 	}
+	edlRenderer.render(renderer);
+	
+	//if(quality === "Splats"){
+	//	if(!highQualityRenderer){
+	//		highQualityRenderer = new HighQualityRenderer();
+	//	}
+	//	highQualityRenderer.render(renderer);
+	//}else{
+	//	render();
+	//}
 	
 };
 

@@ -1,57 +1,66 @@
 
-#define KERNEL_SIZE 16
+// 
+// adapted from the EDL shader code from Christian Boucheny in cloud compare:
+// https://github.com/cloudcompare/trunk/tree/master/plugins/qEDL/shaders/EDL
+//
+
+
+
 
 uniform mat4 projectionMatrix;
 
+uniform float screenWidth;
+uniform float screenHeight;
 uniform float near;
 uniform float far;
-uniform float radius;
-uniform vec3 kernel[KERNEL_SIZE];
+uniform vec2 neighbours[16];
+uniform vec3 lightDir;
+uniform float zoom;
+uniform float pixScale;
+uniform float expScale;
 
 uniform sampler2D depthMap;
-uniform sampler2D randomMap;
+uniform sampler2D colorMap;
 
 varying vec2 vUv;
 varying vec3 vViewRay;
 
-// TODO don't fetch same texel multiple times (depth + alpha)
+float ztransform(float depth){
+	return 1.0 - (depth - near) / (far - near);
+}
 
-void main() {
-    float linearDepth = texture2D(depthMap, vUv).r; 
-	vec3 origin = linearDepth * vViewRay;
+float obscurance(float z, float dist){
+	return max(0.0, z) / dist;
+}
+
+float computeObscurance(float depth, float scale){
+	vec4 P = vec4(lightDir, -dot(lightDir, vec3(0.0, 0.0, depth) ) );
 	
-	vec2 uvRand = gl_FragCoord.xy;
-    uvRand.x = mod(uvRand.x, 4.0) / 4.0;
-    uvRand.y = mod(uvRand.y, 4.0) / 4.0;
-	float random = texture2D(randomMap, uvRand).r * 3.1415;
-	mat2 randomRotation = mat2(cos(random), sin(random), -sin(random), cos(random));
+	float sum = 0.0;
 	
-	float occlusion = 0.0;
-	float occlusionCount = 0.0;
-	for(int i = 0; i < KERNEL_SIZE; i++){	
-		vec3 sampleVec = kernel[i] * 0.05;
-		sampleVec.xy = randomRotation * sampleVec.xy;
+	for(int c = 0; c < 8; c++){
+		vec2 N_rel_pos = scale * zoom / vec2(screenWidth, screenHeight) * neighbours[c];
+		vec2 N_abs_pos = vUv + N_rel_pos;
 		
-		float opacity = texture2D(depthMap, vUv + sampleVec.xy).a;
-		float sampleDepth = texture2D(depthMap, vUv + sampleVec.xy).r;
+		float Zn = ztransform(texture2D(depthMap, N_abs_pos).r);
+		float Znp = dot( vec4( N_rel_pos, Zn, 1.0), P );
 		
-		occlusionCount += opacity;
-		if(linearDepth > sampleDepth){
-			occlusion += 1.0;
-		}
+		//sum += obscurance( Znp, scale );
+		sum += obscurance( Znp, 0.1 * texture2D(depthMap, vUv).r  );
 	}
-    
-    if(occlusionCount > 0.0){
-		occlusion =  (occlusion / float(KERNEL_SIZE));
-    }else{
-        occlusion = 0.0;
-    }
 	
-	if(texture2D(depthMap, vUv).a == 0.0){
-     	occlusion = 0.0;   
-    }
+	return sum;
+}
+
+void main(){
+
+	float depth = ztransform(texture2D(depthMap, vUv).r);
+	float f = computeObscurance(depth, pixScale);
+	f = exp(-expScale * f);
 	
-	float w = occlusion;
+	vec3 color = texture2D(colorMap, vUv).rgb;
 	
-	gl_FragColor = vec4(w, w, w, 1.0); 
+	//gl_FragColor = vec4(f, f, f, 1.0);
+	gl_FragColor = vec4(color * f, 1.0);
+
 }

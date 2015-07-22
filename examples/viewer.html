@@ -77,7 +77,6 @@
 	<script>
 		var sceneProperties = {
 			path:			"http://sitn.ne.ch/lidar/cloud/potree_v16_l10/resources/pointclouds/CH03_LN02/cloud.js",
-			path:			"http://ahn2.pointclouds.nl/potree_data/tile_all/cloud.js",
 			path:			"../resources/pointclouds/vol_total/cloud.js",
 			path:			"http://5.9.65.151/mschuetz/potree/resources/pointclouds/opentopography/TAHOE/cloud.js",
 			path:			"http://localhost/dev/pointclouds/heidelberg/dechen_cave_upscaled.las_converted/cloud.js",
@@ -88,8 +87,9 @@
 			path:			"../resources/pointclouds/lion_takanawa/cloud.js",
 			path:			"http://localhost/dev/pointclouds/g4d/04_centrum_high_vyber5m_ijk.ply_converted/cloud.js",
 			path:			"http://5.9.65.151/mschuetz/potree/users/archpro/heidentor/resources/pointclouds/heidentor.laz/cloud.js",
-			path:			"http://5.9.65.151/mschuetz/potree/test/cloud.js",
 			path:			"http://5.9.65.151/mschuetz/potree/resources/pointclouds/pix4d/matterhorn/resources/pointclouds/matterhorn.laz/cloud.js",
+			path:			"http://ahn2.pointclouds.nl/potree_data/tile_all/cloud.js",
+			path:			"http://5.9.65.151/mschuetz/potree/test/cloud.js",
 			cameraPosition: null, 				// options: cameraPosition: [10,10,10],
 			cameraTarget: 	null, 				// options: cameraTarget: [0,0,0],
 			sizeType: 		"Adaptive",			// options: "Fixed", "Attenuated", "Adaptive"
@@ -98,7 +98,8 @@
 			material: 		"RGB", 				// options: "RGB", "Height", "Intensity", "Classification"
 			pointLimit: 	1,					// max number of points in millions
 			navigation: 	"Orbit",			// options: "Earth", "Orbit", "Flight"
-			pointSize: 		1.3
+			pointSize: 		1,
+			useEDL:			true
 		};
 	</script>
 	<script src="./js/viewer.js"></script>

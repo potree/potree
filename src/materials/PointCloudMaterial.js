@@ -113,6 +113,7 @@ Potree.PointCloudMaterial = function(parameters){
 	this.classificationTexture = Potree.PointCloudMaterial.generateClassificationTexture(this._classification);
 	this.lights = true;
 	this._treeType = treeType;
+	this._useLogarithmicDepthBuffer = false;
 	
 	
 	
@@ -264,6 +265,10 @@ Potree.PointCloudMaterial.prototype.getDefines = function(){
 	
 	if(this._interpolate){
 		defines += "#define use_interpolation\n";
+	}
+	
+	if(this._useLogarithmicDepthBuffer){
+		defines += "#define use_logarithmic_depth_buffer\n";
 	}
 	
 	if(this._pointColorType === Potree.PointColorType.RGB){
@@ -533,6 +538,18 @@ Object.defineProperty(Potree.PointCloudMaterial.prototype, "interpolate", {
 	set: function(value){
 		if(this._interpolate !== value){
 			this._interpolate = value;
+			this.updateShaderSource();
+		}
+	}
+});
+
+Object.defineProperty(Potree.PointCloudMaterial.prototype, "useLogarithmicDepthBuffer", {
+	get: function(){
+		return this._useLogarithmicDepthBuffer;
+	},
+	set: function(value){
+		if(this._useLogarithmicDepthBuffer !== value){
+			this._useLogarithmicDepthBuffer = value;
 			this.updateShaderSource();
 		}
 	}

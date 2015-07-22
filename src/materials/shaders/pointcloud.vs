@@ -22,7 +22,6 @@
 
 #define max_clip_boxes 30
 
-
 attribute float intensity;
 attribute float classification;
 attribute float returnNumber;
@@ -218,8 +217,10 @@ void main() {
 	vLinearDepth = -mvPosition.z;
 	vNormal = normalize(normalMatrix * normal);
 	
-	//gl_Position.z = ((vLinearDepth - near) / (far - near)) * 2.0 - 1.0;
-
+	#if defined(use_logarithmic_depth_buffer)
+		float logarithmicZ = (2.0 * log2(gl_Position.w + 1.0) / log2(far + 1.0) - 1.0) * gl_Position.w;
+		gl_Position.z = logarithmicZ;
+	#endif
 
 	// ---------------------
 	// POINT COLOR

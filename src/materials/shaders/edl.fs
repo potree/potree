@@ -6,7 +6,6 @@
 
 #define NEIGHBOUR_COUNT 8
 
-
 uniform mat4 projectionMatrix;
 
 uniform float screenWidth;
@@ -39,6 +38,14 @@ float expToLinear(float z){
 	return linear;
 }
 
+// this actually only returns linaer depth values of LOG_BIAS is 1.0
+// lower values work out more nicely, though.
+#define LOG_BIAS 0.01
+float logToLinear(float z){
+	float c = 10.0;
+	return (pow((1.0 + LOG_BIAS * far), z) - 1.0) / LOG_BIAS;
+}
+
 float obscurance(float z, float dist){
 	return max(0.0, z) / dist;
 }
@@ -53,7 +60,7 @@ float computeObscurance(float linearDepth, float scale){
 		vec2 N_abs_pos = vUv + N_rel_pos;
 		
 		vec4 neighbourDepth = texture2D(depthMap, N_abs_pos);
-		float linearNeighbourDepth = expToLinear(neighbourDepth.r);
+		float linearNeighbourDepth = logToLinear(neighbourDepth.r);
 		
 		if(neighbourDepth.w > 0.0){
 			float Zn = ztransform(linearNeighbourDepth);
@@ -68,8 +75,11 @@ float computeObscurance(float linearDepth, float scale){
 
 void main(){
 
-	float expDepth = texture2D(depthMap, vUv).r;
-	float linearDepth = expToLinear(expDepth);
+	float logDepth = texture2D(depthMap, vUv).r;
+	float linearDepth = logToLinear(logDepth);
+
+	//float expDepth = texture2D(depthMap, vUv).r;
+	//float linearDepth = expToLinear(expDepth);
 	
 	float f = computeObscurance(linearDepth, pixScale);
 	f = exp(-expScale * f);

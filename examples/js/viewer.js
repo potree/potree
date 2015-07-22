@@ -127,6 +127,7 @@ function initGUI(){
 		"Materials" : sceneProperties.material,
 		"Clip Mode": "Highlight Inside",
 		"quality": sceneProperties.quality,
+		"EDL": sceneProperties.useEDL,
 		"skybox": false,
 		"stats": showStats,
 		"BoundingBox": showBoundingBox,
@@ -215,6 +216,11 @@ function initGUI(){
 	var pQuality = fAppearance.add(params, 'quality', qualityOptions);
 	pQuality.onChange(function(value){
 		quality = value;
+	});
+	
+	var pEDL = fAppearance.add(params, 'EDL');
+	pEDL.onChange(function(value){
+		sceneProperties.useEDL = value;
 	});
 	
 	var pSykbox = fAppearance.add(params, 'skybox');
@@ -1124,7 +1130,6 @@ var EDLRenderer = function(){
 		renderer.render(scene, camera);
 		
 		if(pointcloud){
-		
 			var width = elRenderArea.clientWidth;
 			var height = elRenderArea.clientHeight;
 		
@@ -1134,54 +1139,52 @@ var EDLRenderer = function(){
 			pointcloud.visiblePointsTarget = pointCountTarget * 1000 * 1000;
 			var originalMaterial = pointcloud.material;
 			
+			var vn = [];
+			for(var i = 0; i < pointcloud.visibleNodes.length; i++){
+				vn.push(pointcloud.visibleNodes[i].node);
+			}
 			
 			{// DEPTH PASS
-				var material = depthMaterial;
-				
-				material.size = pointSize;
-				material.pointSizeType = pointSizeType;
-				material.screenWidth = width;
-				material.screenHeight = height;
-				material.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
-				material.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.size().x;
-				material.fov = camera.fov * (Math.PI / 180);
-				material.spacing = pointcloud.pcoGeometry.spacing;
-				material.near = camera.near;
-				material.far = camera.far;
-				material.heightMin = heightMin;
-				material.heightMax = heightMax;
-				
-				pointcloud.material = material;
+				depthMaterial.size = pointSize;
+				depthMaterial.pointSizeType = pointSizeType;
+				depthMaterial.screenWidth = width;
+				depthMaterial.screenHeight = height;
+				depthMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.size().x;
+				depthMaterial.fov = camera.fov * (Math.PI / 180);
+				depthMaterial.spacing = pointcloud.pcoGeometry.spacing;
+				depthMaterial.near = camera.near;
+				depthMaterial.far = camera.far;
+				depthMaterial.heightMin = heightMin;
+				depthMaterial.heightMax = heightMax;
+				depthMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.size().x;
+				pointcloud.updateVisibilityTexture(depthMaterial, vn);
 			
-				pointcloud.update(camera, renderer);
-				
+				scenePointCloud.overrideMaterial = depthMaterial;
 				renderer.clearTarget( rtDepth, true, true, true );
 				renderer.render(scenePointCloud, camera, rtDepth);
+				scenePointCloud.overrideMaterial = null;
 			}
 			
 			{// ATTRIBUTE PASS
-				var material = attributeMaterial;
+				attributeMaterial.size = pointSize;
+				attributeMaterial.pointSizeType = pointSizeType;
+				attributeMaterial.screenWidth = width;
+				attributeMaterial.screenHeight = height;
+				attributeMaterial.pointColorType = pointColorType;
+				attributeMaterial.depthMap = rtDepth;
+				attributeMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.size().x;
+				attributeMaterial.fov = camera.fov * (Math.PI / 180);
+				attributeMaterial.spacing = pointcloud.pcoGeometry.spacing;
+				attributeMaterial.near = camera.near;
+				attributeMaterial.far = camera.far;
+				attributeMaterial.heightMin = heightMin;
+				attributeMaterial.heightMax = heightMax;
+				pointcloud.updateVisibilityTexture(attributeMaterial, vn);
 				
-				material.size = pointSize;
-				material.pointSizeType = pointSizeType;
-				material.screenWidth = width;
-				material.screenHeight = height;
-				material.pointColorType = pointColorType;
-				material.depthMap = rtDepth;
-				material.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
-				material.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.size().x;
-				material.fov = camera.fov * (Math.PI / 180);
-				material.spacing = pointcloud.pcoGeometry.spacing;
-				material.near = camera.near;
-				material.far = camera.far;
-				material.heightMin = heightMin;
-				material.heightMax = heightMax;
-				
-				pointcloud.material = material;
-				
-				pointcloud.update(camera, renderer);
+				scenePointCloud.overrideMaterial = attributeMaterial;
 				renderer.clearTarget( rtNormalize, true, true, true );
 				renderer.render(scenePointCloud, camera, rtNormalize);
+				scenePointCloud.overrideMaterial = null;
 			}
 			
 			{ // OCCLUSION PASS

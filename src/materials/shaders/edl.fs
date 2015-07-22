@@ -32,6 +32,13 @@ float ztransform(float linearDepth){
 	return 1.0 - (linearDepth - near) / (far - near);
 }
 
+float expToLinear(float z){
+    z = 2.0 * z - 1.0;
+	float linear = (2.0 * near * far) / (far + near - z * (far - near));
+
+	return linear;
+}
+
 float obscurance(float z, float dist){
 	return max(0.0, z) / dist;
 }
@@ -46,9 +53,10 @@ float computeObscurance(float linearDepth, float scale){
 		vec2 N_abs_pos = vUv + N_rel_pos;
 		
 		vec4 neighbourDepth = texture2D(depthMap, N_abs_pos);
+		float linearNeighbourDepth = expToLinear(neighbourDepth.r);
 		
 		if(neighbourDepth.w > 0.0){
-			float Zn = ztransform(neighbourDepth.r);
+			float Zn = ztransform(linearNeighbourDepth);
 			float Znp = dot( vec4( N_rel_pos, Zn, 1.0), P );
 			
 			sum += obscurance( Znp, 0.1 * linearDepth );
@@ -59,12 +67,14 @@ float computeObscurance(float linearDepth, float scale){
 }
 
 void main(){
-	vec4 color = texture2D(colorMap, vUv);
 
-	float linearDepth = texture2D(depthMap, vUv).r;
+	float expDepth = texture2D(depthMap, vUv).r;
+	float linearDepth = expToLinear(expDepth);
+	
 	float f = computeObscurance(linearDepth, pixScale);
 	f = exp(-expScale * f);
 	
+	vec4 color = texture2D(colorMap, vUv);
 	if(color.a == 0.0 && f >= 1.0){
 		discard;
 	}

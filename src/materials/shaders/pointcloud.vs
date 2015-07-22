@@ -217,6 +217,8 @@ void main() {
 	vOpacity = opacity;
 	vLinearDepth = -mvPosition.z;
 	vNormal = normalize(normalMatrix * normal);
+	
+	//gl_Position.z = ((vLinearDepth - near) / (far - near)) * 2.0 - 1.0;
 
 
 	// ---------------------
@@ -231,7 +233,7 @@ void main() {
 		vColor = texture2D(gradient, vec2(w,1.0-w)).rgb;
 	#elif defined color_type_depth
 		float linearDepth = -mvPosition.z ;
-		float expDepth = gl_Position.z / gl_Position.w;
+		float expDepth = (gl_Position.z / gl_Position.w) * 0.5 + 0.5;
 		vColor = vec3(linearDepth, expDepth, 0.0);
 	#elif defined color_type_intensity
 		float w = (intensity - intensityMin) / (intensityMax - intensityMin);

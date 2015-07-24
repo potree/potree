@@ -72,6 +72,20 @@ Potree.Features = function(){
 			}
 		
 		},
+		SHADER_EDL: {
+			isSupported: function(){
+				
+				var supported = true;
+				
+				supported = supported && gl.getExtension("EXT_frag_depth");
+				supported = supported && gl.getExtension("OES_texture_float");
+				supported = supported && gl.getParameter(gl.MAX_VARYING_VECTORS) >= 8;
+				
+				return supported;
+				
+			}
+		
+		},
 		precision: precision
 	}
 

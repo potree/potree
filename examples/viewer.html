@@ -15,12 +15,13 @@
 	
 	
 	<!-- uncomment this to debug changes to the individual js files -->
-	<!--
+	
 	<script src="../src/PointCloudOctree.js"></script>
 	<script src="../src/PointCloudOctreeGeometry.js"></script>
 	<script src="../src/loader/POCLoader.js"></script>
 	<script src="../src/loader/BinaryLoader.js"></script>
 	<script src="../src/materials/PointCloudMaterial.js"></script>
+	<script src="../src/materials/EyeDomeLightingMaterial.js"></script>
 	<script src="../src/EarthControls.js"></script>
 	<script src="../src/OrbitControls.js"></script>
 	<script src="../src/FirstPersonControls.js"></script>
@@ -34,7 +35,7 @@
 	<script src="../src/Features.js"></script>
 	<script src="../src/arena4d/PointCloudArena4D.js"></script>
 	<script src="../src/arena4d/PointCloudArena4DGeometry.js"></script>
-	-->
+	
 	
 	
 	
@@ -74,17 +75,19 @@
 	<div id="renderArea"></div>
 	
 	<script>
+		
 		var sceneProperties = {
 			path:			"../resources/pointclouds/vol_total/cloud.js",
-			cameraPosition: null, 				// options: cameraPosition: [10,10,10],
-			cameraTarget: 	null, 				// options: cameraTarget: [0,0,0],
+			cameraPosition: null,
+			cameraTarget: null,
 			sizeType: 		"Adaptive",			// options: "Fixed", "Attenuated", "Adaptive"
-			quality: 		null, 				// options: "Squares", "Circles", "Interpolation", "Splats"
+			quality: 		"Interpolation", 	// options: "Squares", "Circles", "Interpolation", "Splats"
 			fov: 			75, 				// field of view in degree
 			material: 		"RGB", 				// options: "RGB", "Height", "Intensity", "Classification"
 			pointLimit: 	1,					// max number of points in millions
 			navigation: 	"Orbit",			// options: "Earth", "Orbit", "Flight"
-			pointSize: 		1.0
+			pointSize: 		1,	
+			useEDL:			false,				// eye-dome-lighting, especially usefull for point clouds without normals
 		};
 	</script>
 	<script src="./js/viewer.js"></script>

@@ -22,7 +22,6 @@
 
 #define max_clip_boxes 30
 
-
 attribute float intensity;
 attribute float classification;
 attribute float returnNumber;
@@ -62,8 +61,8 @@ uniform sampler2D depthMap;
 
 varying float	vOpacity;
 varying vec3	vColor;
-varying float	vDepth;
 varying float	vLinearDepth;
+varying float	vLogDepth;
 varying vec3	vViewPosition;
 varying float 	vRadius;
 varying vec3	vWorldPosition;
@@ -217,9 +216,16 @@ void main() {
 	gl_Position = projectionMatrix * mvPosition;
 	vOpacity = opacity;
 	vLinearDepth = -mvPosition.z;
-	vDepth = mvPosition.z / gl_Position.w;
 	vNormal = normalize(normalMatrix * normal);
-
+	
+	#if defined(use_edl)
+		vLogDepth = log2(gl_Position.w + 1.0) / log2(far + 1.0);
+	#endif
+	
+	//#if defined(use_logarithmic_depth_buffer)
+	//	float logarithmicZ = (2.0 * log2(gl_Position.w + 1.0) / log2(far + 1.0) - 1.0) * gl_Position.w;
+	//	gl_Position.z = logarithmicZ;
+	//#endif
 
 	// ---------------------
 	// POINT COLOR
@@ -232,8 +238,9 @@ void main() {
 		float w = (world.y - heightMin) / (heightMax-heightMin);
 		vColor = texture2D(gradient, vec2(w,1.0-w)).rgb;
 	#elif defined color_type_depth
-		float d = -mvPosition.z ;
-		vColor = vec3(d, vDepth, 0.0);
+		float linearDepth = -mvPosition.z ;
+		float expDepth = (gl_Position.z / gl_Position.w) * 0.5 + 0.5;
+		vColor = vec3(linearDepth, expDepth, 0.0);
 	#elif defined color_type_intensity
 		float w = (intensity - intensityMin) / (intensityMax - intensityMin);
 		vColor = vec3(w, w, w);
@@ -252,6 +259,11 @@ void main() {
 		float c = mod(classification, 16.0);
 		vec2 uv = vec2(c / 255.0, 0.5);
 		vColor = texture2D(classificationLUT, uv).rgb;
+		
+		// TODO only for testing - removing points with class 7
+		if(classification == 7.0){
+			gl_Position = vec4(100.0, 100.0, 100.0, 0.0);
+		}
 	#elif defined color_type_return_number
 		float w = (returnNumber - 1.0) / 4.0 + 0.1;
 		vColor = texture2D(gradient, vec2(w, 1.0 - w)).rgb;

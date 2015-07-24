@@ -68,7 +68,7 @@ uniform sampler2D depthMap;
 varying vec3	vColor;
 varying float	vOpacity;
 varying float	vLinearDepth;
-varying float	vDepth;
+varying float	vLogDepth;
 varying vec3	vViewPosition;
 varying float	vRadius;
 varying vec3	vWorldPosition;
@@ -77,6 +77,9 @@ varying vec3	vNormal;
 float specularStrength = 1.0;
 
 void main() {
+
+	vec3 color = vColor;
+	float depth = gl_FragCoord.z;
 
 	#if defined(circle_point_shape) || defined(use_interpolation) || defined (weighted_splats)
 		float u = 2.0 * gl_PointCoord.x - 1.0;
@@ -92,25 +95,34 @@ void main() {
 	
 	#if defined weighted_splats
 		vec2 uv = gl_FragCoord.xy / vec2(screenWidth, screenHeight);
-		float depth = texture2D(depthMap, uv).r;
-		if(vLinearDepth > depth + vRadius){
+		float sDepth = texture2D(depthMap, uv).r;
+		if(vLinearDepth > sDepth + vRadius){
 			discard;
 		}
 	#endif
 	
 	#if defined use_interpolation
-		float w = 1.0 - ( u*u + v*v);
+		float wi = 0.0 - ( u*u + v*v);
 		vec4 pos = vec4(-vViewPosition, 1.0);
-		pos.z += w * vRadius;
+		pos.z += wi * vRadius;
+		float linearDepth = pos.z;
 		pos = projectionMatrix * pos;
 		pos = pos / pos.w;
-		gl_FragDepthEXT = (pos.z + 1.0) / 2.0;
+		float expDepth = pos.z;
+		depth = (pos.z + 1.0) / 2.0;
+		gl_FragDepthEXT = depth;
+		
+		#if defined(color_type_depth)
+			color.r = linearDepth;
+			color.g = expDepth;
+		#endif
+		
 	#endif
 	
 	#if defined color_type_point_index
-		gl_FragColor = vec4(vColor, pcIndex / 255.0);
+		gl_FragColor = vec4(color, pcIndex / 255.0);
 	#else
-		gl_FragColor = vec4(vColor, vOpacity);
+		gl_FragColor = vec4(color, vOpacity);
 	#endif
 	
 	#if defined weighted_splats
@@ -239,6 +251,11 @@ void main() {
 		
 		gl_FragColor.xyz = gl_FragColor.xyz * ( emissive + totalDiffuse + ambientLightColor * ambient ) + totalSpecular;
 
+	#endif
+	
+	
+	#if defined(use_edl)
+		gl_FragColor.a = vLogDepth;
 	#endif
 	
 }

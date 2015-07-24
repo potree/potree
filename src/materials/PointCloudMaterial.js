@@ -42,6 +42,7 @@ Potree.Classification = {
 };
 
 
+
 Potree.PointSizeType = {
 	FIXED: 		0,
 	ATTENUATED: 1,
@@ -86,7 +87,7 @@ Potree.PointCloudMaterial = function(parameters){
 
 	parameters = parameters || {};
 
-	var color = new THREE.Color( 0x000000 );
+	var color = new THREE.Color( 0xffffff );
 	var map = THREE.ImageUtils.generateDataTexture( 2048, 1, color );
 	map.magFilter = THREE.NearestFilter;
 	this.visibleNodesTexture = map;
@@ -112,6 +113,8 @@ Potree.PointCloudMaterial = function(parameters){
 	this.classificationTexture = Potree.PointCloudMaterial.generateClassificationTexture(this._classification);
 	this.lights = true;
 	this._treeType = treeType;
+	this._useLogarithmicDepthBuffer = false;
+	this._useEDL = false;
 	
 	
 	
@@ -124,7 +127,7 @@ Potree.PointCloudMaterial = function(parameters){
 		screenHeight:		{ type: "f", value: 1.0 },
 		near:				{ type: "f", value: 0.1 },
 		far:				{ type: "f", value: 1.0 },
-		uColor:   			{ type: "c", value: new THREE.Color( 0xff0000 ) },
+		uColor:   			{ type: "c", value: new THREE.Color( 0xffffff ) },
 		opacity:   			{ type: "f", value: 1.0 },
 		size:   			{ type: "f", value: 10 },
 		minSize:   			{ type: "f", value: 2 },
@@ -263,6 +266,14 @@ Potree.PointCloudMaterial.prototype.getDefines = function(){
 	
 	if(this._interpolate){
 		defines += "#define use_interpolation\n";
+	}
+	
+	if(this._useLogarithmicDepthBuffer){
+		defines += "#define use_logarithmic_depth_buffer\n";
+	}
+	
+	if(this._useEDL){
+		defines += "#define use_edl\n";
 	}
 	
 	if(this._pointColorType === Potree.PointColorType.RGB){
@@ -532,6 +543,30 @@ Object.defineProperty(Potree.PointCloudMaterial.prototype, "interpolate", {
 	set: function(value){
 		if(this._interpolate !== value){
 			this._interpolate = value;
+			this.updateShaderSource();
+		}
+	}
+});
+
+Object.defineProperty(Potree.PointCloudMaterial.prototype, "useEDL", {
+	get: function(){
+		return this._useEDL;
+	},
+	set: function(value){
+		if(this._useEDL !== value){
+			this._useEDL = value;
+			this.updateShaderSource();
+		}
+	}
+});
+
+Object.defineProperty(Potree.PointCloudMaterial.prototype, "useLogarithmicDepthBuffer", {
+	get: function(){
+		return this._useLogarithmicDepthBuffer;
+	},
+	set: function(value){
+		if(this._useLogarithmicDepthBuffer !== value){
+			this._useLogarithmicDepthBuffer = value;
 			this.updateShaderSource();
 		}
 	}

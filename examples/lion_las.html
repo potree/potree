@@ -21,6 +21,7 @@
 	<script src="../src/loader/POCLoader.js"></script>
 	<script src="../src/loader/BinaryLoader.js"></script>
 	<script src="../src/materials/PointCloudMaterial.js"></script>
+	<script src="../src/materials/EyeDomeLightingMaterial.js"></script>
 	<script src="../src/EarthControls.js"></script>
 	<script src="../src/OrbitControls.js"></script>
 	<script src="../src/FirstPersonControls.js"></script>
@@ -73,17 +74,19 @@
 	<div id="renderArea"></div>
 	
 	<script>
+		
 		var sceneProperties = {
-			path: 			"../resources/pointclouds/lion_takanawa_las/cloud.js",
-			cameraPosition: [3.6, 4.367, 4],// other options: cameraPosition: [10,10,10],
-			cameraTarget: 	null, 			// other options: cameraTarget: [0,0,0],
-			sizeType: 		"Adaptive",		// other options: "Fixed", "Attenuated"
-			quality: 		null, 		// other options: "Circles", "Interpolation", "Splats"
-			fov: 			75, 			// other options: "Circles", "Interpolation", "Splats"
-			material: 		"RGB", 			// other options: "Height", "Intensity", "Classification"
-			pointLimit: 	1,				// max number of points in millions
-			navigation: 	"Orbit",		// other options: "Earth", "Orbit", "Flight"
-			pointSize: 		1.0
+			path:			"../resources/pointclouds/lion_takanawa_las/cloud.js",
+			cameraPosition: null,
+			cameraTarget: null,
+			sizeType: 		"Adaptive",			// options: "Fixed", "Attenuated", "Adaptive"
+			quality: 		"Interpolation", 	// options: "Squares", "Circles", "Interpolation", "Splats"
+			fov: 			75, 				// field of view in degree
+			material: 		"RGB", 				// options: "RGB", "Height", "Intensity", "Classification"
+			pointLimit: 	1,					// max number of points in millions
+			navigation: 	"Orbit",			// options: "Earth", "Orbit", "Flight"
+			pointSize: 		1.2,	
+			useEDL:			false,				// eye-dome-lighting, especially usefull for point clouds without normals
 		};
 	</script>
 	<script src="./js/viewer.js"></script>

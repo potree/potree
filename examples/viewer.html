@@ -41,10 +41,10 @@
 	
 	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
 	<!-- INCLUDE SETTINGS HERE -->
-	<script src="../libs/plasio/js/laslaz.js"></script>
+	<!--<script src="../libs/plasio/js/laslaz.js"></script>
 	<script src="../libs/plasio/vendor/bluebird.js"></script>
 	<script src="../build/js/laslaz.js"></script>
-	
+	-->
 	
 	<!-- HEADING -->
 	<div class="info" style="position: absolute; left: 300px; right: 300px; top: 10px; text-align: center;">
@@ -75,78 +75,19 @@
 	<div id="renderArea"></div>
 	
 	<script>
-	
-	/*
-	
-	
-	
-	
-3m, float texture
-EDL						~43fps
-Interpolation			~39fps
-
-
-3m, byte texture
-EDL						~46fps
-
-
-
-
-	*/
-		var sceneProperties = {
-			path:			"http://sitn.ne.ch/lidar/cloud/potree_v16_l10/resources/pointclouds/CH03_LN02/cloud.js",
-			path:			"../resources/pointclouds/vol_total/cloud.js",
-			path:			"http://5.9.65.151/mschuetz/potree/resources/pointclouds/opentopography/TAHOE/cloud.js",
-			path:			"http://localhost/dev/pointclouds/heidelberg/dechen_cave_upscaled.las_converted/cloud.js",
-			path:			"http://localhost/dev/pointclouds/scott_reed/DoverMillRuins.las_converted/cloud.js",
-			path:			"http://localhost/dev/pointclouds/pix4d/lausanne_converted/cloud.js",
-			path:			"http://localhost/dev/pointclouds/3dlasermapping/Whitby_sample_GeoM.las_converted/cloud.js",
-			path:			"http://localhost/dev/pointclouds/bruno_friedmann/vol_total/vol_total/cloud.js",
-			path:			"http://localhost/dev/pointclouds/g4d/04_centrum_high_vyber5m_ijk.ply_converted/cloud.js",
-			path:			"http://ahn2.pointclouds.nl/potree_data/tile_all/cloud.js",
-			path:			"http://5.9.65.151/mschuetz/potree/resources/pointclouds/pix4d/matterhorn/resources/pointclouds/matterhorn.laz/cloud.js",
-			path:			"http://5.9.65.151/mschuetz/potree/users/archpro/heidentor/resources/pointclouds/heidentor.laz/cloud.js",
-			path:			"../resources/pointclouds/lion_takanawa/cloud.js",
-			path:			"http://5.9.65.151/mschuetz/potree/test/cloud.js",
-			cameraPosition: [3204.741829475006, 402.40442451921365, 14394.860851747568], 				// options: cameraPosition: [10,10,10],
-			cameraTarget: 	[4957.5153131576735, -808.4912295682744, 13395.195534816736], 				// options: cameraTarget: [0,0,0],
-			//cameraPosition: null,
-			//cameraTarget: null,
-			sizeType: 		"Adaptive",			// options: "Fixed", "Attenuated", "Adaptive"
-			quality: 		"Interpolation", 				// options: "Squares", "Circles", "Interpolation", "Splats"
-			fov: 			75, 				// field of view in degree
-			material: 		"RGB", 				// options: "RGB", "Height", "Intensity", "Classification"
-			pointLimit: 	3,					// max number of points in millions
-			navigation: 	"Flight",			// options: "Earth", "Orbit", "Flight"
-			pointSize: 		1,
-			useEDL:			true,
-		};
 		
 		var sceneProperties = {
-			path:			"http://sitn.ne.ch/lidar/cloud/potree_v16_l10/resources/pointclouds/CH03_LN02/cloud.js",
 			path:			"../resources/pointclouds/vol_total/cloud.js",
-			path:			"http://5.9.65.151/mschuetz/potree/resources/pointclouds/opentopography/TAHOE/cloud.js",
-			path:			"http://localhost/dev/pointclouds/heidelberg/dechen_cave_upscaled.las_converted/cloud.js",
-			path:			"http://localhost/dev/pointclouds/scott_reed/DoverMillRuins.las_converted/cloud.js",
-			path:			"http://localhost/dev/pointclouds/pix4d/lausanne_converted/cloud.js",
-			path:			"http://localhost/dev/pointclouds/3dlasermapping/Whitby_sample_GeoM.las_converted/cloud.js",
-			path:			"http://localhost/dev/pointclouds/bruno_friedmann/vol_total/vol_total/cloud.js",
-			path:			"http://localhost/dev/pointclouds/g4d/04_centrum_high_vyber5m_ijk.ply_converted/cloud.js",
-			path:			"http://5.9.65.151/mschuetz/potree/resources/pointclouds/pix4d/matterhorn/resources/pointclouds/matterhorn.laz/cloud.js",
-			path:			"http://5.9.65.151/mschuetz/potree/test/cloud.js",
-			path:			"http://5.9.65.151/mschuetz/potree/users/archpro/heidentor/resources/pointclouds/heidentor.laz/cloud.js",
-			path:			"http://ahn2.pointclouds.nl/potree_data/tile_all/cloud.js",
-			path:			"../resources/pointclouds/lion_takanawa/cloud.js",
 			cameraPosition: null,
 			cameraTarget: null,
 			sizeType: 		"Adaptive",			// options: "Fixed", "Attenuated", "Adaptive"
-			quality: 		"Interpolation", 				// options: "Squares", "Circles", "Interpolation", "Splats"
+			quality: 		"Interpolation", 	// options: "Squares", "Circles", "Interpolation", "Splats"
 			fov: 			75, 				// field of view in degree
-			material: 		"Color", 				// options: "RGB", "Height", "Intensity", "Classification"
-			pointLimit: 	3,					// max number of points in millions
+			material: 		"RGB", 				// options: "RGB", "Height", "Intensity", "Classification"
+			pointLimit: 	1,					// max number of points in millions
 			navigation: 	"Orbit",			// options: "Earth", "Orbit", "Flight"
-			pointSize: 		1,
-			useEDL:			true,
+			pointSize: 		1,	
+			useEDL:			false,				// eye-dome-lighting, especially usefull for point clouds without normals
 		};
 	</script>
 	<script src="./js/viewer.js"></script>

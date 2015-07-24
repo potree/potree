@@ -322,6 +322,11 @@ Potree.Shaders["pointcloud.vs"] = [
  "		float c = mod(classification, 16.0);",
  "		vec2 uv = vec2(c / 255.0, 0.5);",
  "		vColor = texture2D(classificationLUT, uv).rgb;",
+ "		",
+ "		// TODO only for testing - removing points with class 7",
+ "		if(classification == 7.0){",
+ "			gl_Position = vec4(100.0, 100.0, 100.0, 0.0);",
+ "		}",
  "	#elif defined color_type_return_number",
  "		float w = (returnNumber - 1.0) / 4.0 + 0.1;",
  "		vColor = texture2D(gradient, vec2(w, 1.0 - w)).rgb;",
@@ -684,18 +689,20 @@ Potree.Shaders["normalize.fs"] = [
  "#extension GL_EXT_frag_depth : enable",
  "",
  "uniform sampler2D depthMap;",
- "uniform sampler2D occlusionMap;",
  "uniform sampler2D texture;",
  "",
  "varying vec2 vUv;",
  "",
  "void main() {",
- "    vec4 color = texture2D(texture, vUv); ",
  "    float depth = texture2D(depthMap, vUv).g; ",
- "	float occlusion = texture2D(occlusionMap, vUv).g; ",
+ "	",
+ "	if(depth <= 0.0){",
+ "		discard;",
+ "	}",
+ "	",
+ "    vec4 color = texture2D(texture, vUv); ",
  "	color = color / color.w;",
  "    ",
- "	color = color * (1.0 - occlusion);",
  "	gl_FragColor = vec4(color.xyz, 1.0); ",
  "	",
  "	gl_FragDepthEXT = depth;",
@@ -6117,6 +6124,20 @@ Potree.Features = function(){
 			}
 		},
 		SHADER_SPLATS: {
+			isSupported: function(){
+				
+				var supported = true;
+				
+				supported = supported && gl.getExtension("EXT_frag_depth");
+				supported = supported && gl.getExtension("OES_texture_float");
+				supported = supported && gl.getParameter(gl.MAX_VARYING_VECTORS) >= 8;
+				
+				return supported;
+				
+			}
+		
+		},
+		SHADER_EDL: {
 			isSupported: function(){
 				
 				var supported = true;

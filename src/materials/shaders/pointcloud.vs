@@ -259,6 +259,11 @@ void main() {
 		float c = mod(classification, 16.0);
 		vec2 uv = vec2(c / 255.0, 0.5);
 		vColor = texture2D(classificationLUT, uv).rgb;
+		
+		// TODO only for testing - removing points with class 7
+		if(classification == 7.0){
+			gl_Position = vec4(100.0, 100.0, 100.0, 0.0);
+		}
 	#elif defined color_type_return_number
 		float w = (returnNumber - 1.0) / 4.0 + 0.1;
 		vColor = texture2D(gradient, vec2(w, 1.0 - w)).rgb;

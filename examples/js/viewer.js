@@ -136,7 +136,7 @@ function initGUI(){
 		"freeze": freeze
 	};
 	
-	var pPoints = gui.add(params, 'points(m)', 0, 2);
+	var pPoints = gui.add(params, 'points(m)', 0, 4);
 	pPoints.onChange(function(value){
 		pointCountTarget = value ;
 	});
@@ -218,10 +218,12 @@ function initGUI(){
 		quality = value;
 	});
 	
-	var pEDL = fAppearance.add(params, 'EDL');
-	pEDL.onChange(function(value){
-		sceneProperties.useEDL = value;
-	});
+	if(Potree.Features.SHADER_EDL.isSupported()){
+		var pEDL = fAppearance.add(params, 'EDL');
+		pEDL.onChange(function(value){
+			sceneProperties.useEDL = value;
+		});
+	}
 	
 	var pSykbox = fAppearance.add(params, 'skybox');
 	pSykbox.onChange(function(value){
@@ -363,6 +365,18 @@ function initThree(){
 			}else{
 				console.warning("No navigation mode specivied. Using OrbitControls");
 				useOrbitControls();
+			}
+			
+			if(sceneProperties.cameraPosition != null){
+				var cp = new THREE.Vector3(sceneProperties.cameraPosition[0], sceneProperties.cameraPosition[1], sceneProperties.cameraPosition[2]);
+				camera.position.copy(cp);
+			}
+			if(sceneProperties.cameraTarget != null){
+				var cp = new THREE.Vector3(sceneProperties.cameraPosition[0], sceneProperties.cameraPosition[1], sceneProperties.cameraPosition[2]);
+				var ct = new THREE.Vector3(sceneProperties.cameraTarget[0], sceneProperties.cameraTarget[1], sceneProperties.cameraTarget[2]);
+				
+				camera.lookAt(new THREE.Vector3().addVectors(cp, ct));
+				orbitControls.target.copy(ct);
 			}
 			
 			if(sceneProperties.cameraPosition){
@@ -766,138 +780,84 @@ var potreeRenderer = new PotreeRenderer();
 var highQualityRenderer = null;
 var HighQualityRenderer = function(){
 
-	var edlMaterial = new Potree.EyeDomeLightingMaterial();
-	var depthMaterial = new Potree.PointCloudMaterial();
-	var attributeMaterial = new Potree.PointCloudMaterial();
-	var blurMaterial = new Potree.BlurMaterial();
+	var depthMaterial = null;
+	var attributeMaterial = null;
+	var normalizationMaterial = null;
 	
+	var rtDepth;
+	var rtNormalize;
 	
-	depthMaterial.pointColorType = Potree.PointColorType.DEPTH;
-	depthMaterial.pointShape = Potree.PointShape.CIRCLE;
-	depthMaterial.interpolate = false;
-	depthMaterial.weighted = false;
-	depthMaterial.minSize = 2;
-				
-	attributeMaterial.pointShape = Potree.PointShape.CIRCLE;
-	attributeMaterial.interpolate = false;
-	attributeMaterial.weighted = true;
-	attributeMaterial.minSize = 2;
-
-	var rtDepth = new THREE.WebGLRenderTarget( 1024, 1024, { 
-		minFilter: THREE.NearestFilter, 
-		magFilter: THREE.NearestFilter, 
-		format: THREE.RGBAFormat, 
-		type: THREE.FloatType
-	} );
-
-	var rtOcclusion = new THREE.WebGLRenderTarget( 1024, 1024, { 
-		minFilter: THREE.LinearFilter, 
-		magFilter: THREE.NearestFilter, 
-		format: THREE.RGBAFormat, 
-		type: THREE.FloatType
-	} );
-
-	var rtNormalize = new THREE.WebGLRenderTarget( 1024, 1024, { 
-		minFilter: THREE.LinearFilter, 
-		magFilter: THREE.NearestFilter, 
-		format: THREE.RGBAFormat, 
-		type: THREE.FloatType
-	} );
-	
-	var rtBlur = new THREE.WebGLRenderTarget( 1024, 1024, { 
-		minFilter: THREE.LinearFilter, 
-		magFilter: THREE.NearestFilter, 
-		format: THREE.RGBAFormat, 
-		type: THREE.FloatType
-	} );
-	
-	var vsNormalize = Potree.Shaders["normalize.vs"];
-	var fsNormalize = Potree.Shaders["normalize.fs"];
-	
-	var uniformsNormalize = {
-		depthMap: { type: "t", value: rtDepth },
-		occlusionMap: { type: "t", value: rtOcclusion },
-		texture: { type: "t", value: rtNormalize }
-	};
-	
-	var hqCompositionMaterial = new THREE.ShaderMaterial({
-		uniforms: uniformsNormalize,
-		vertexShader: vsNormalize,
-		fragmentShader: fsNormalize
-	});
-
-
-	var screenPass = new function(){
-
-		this.screenScene = new THREE.Scene();
-		this.screenQuad = new THREE.Mesh(new THREE.PlaneBufferGeometry(2, 2, 0));
-		this.screenQuad.material.depthTest = true;
-		this.screenQuad.material.depthWrite = true;
-		this.screenQuad.material.transparent = true;
-		this.screenScene.add(this.screenQuad);
-		this.camera = new THREE.Camera();
-		
-		this.render = function(renderer, material, target){
-			this.screenQuad.material = material;
-			
-			if(typeof target === undefined){
-				renderer.render(this.screenScene, this.camera);
-			}else{
-				renderer.render(this.screenScene, this.camera, target);
-			}
+	var initHQSPlats = function(){
+		if(depthMaterial != null){
+			return;
 		}
-	}();
+	
+		depthMaterial = new Potree.PointCloudMaterial();
+		attributeMaterial = new Potree.PointCloudMaterial();
+	
+		depthMaterial.pointColorType = Potree.PointColorType.DEPTH;
+		depthMaterial.pointShape = Potree.PointShape.CIRCLE;
+		depthMaterial.interpolate = false;
+		depthMaterial.weighted = false;
+		depthMaterial.minSize = 2;
+					
+		attributeMaterial.pointShape = Potree.PointShape.CIRCLE;
+		attributeMaterial.interpolate = false;
+		attributeMaterial.weighted = true;
+		attributeMaterial.minSize = 2;
 
-	// render with splats
-	this.render = function(renderer){
-		// resize
-		if(rtDepth.width != elRenderArea.clientWidth || rtDepth.height != elRenderArea.clientHeight){
-			rtDepth.dispose();
-			rtNormalize.dispose();
-			rtOcclusion.dispose();
-			rtBlur.dispose();
-			
-			rtDepth = new THREE.WebGLRenderTarget( width, height, { 
-				minFilter: THREE.NearestFilter, 
-				magFilter: THREE.NearestFilter, 
-				format: THREE.RGBAFormat, 
-				type: THREE.FloatType
-			} );
-			
-			rtOcclusion = new THREE.WebGLRenderTarget( width, height, { 
-				minFilter: THREE.LinearFilter, 
-				magFilter: THREE.NearestFilter, 
-				format: THREE.RGBAFormat, 
-				type: THREE.FloatType
-			} );
-			
-			rtBlur = new THREE.WebGLRenderTarget( width, height, { 
-				minFilter: THREE.LinearFilter, 
-				magFilter: THREE.NearestFilter, 
-				format: THREE.RGBAFormat, 
-				type: THREE.FloatType
-			} );
-			
-			rtNormalize = new THREE.WebGLRenderTarget( width, height, { 
-				minFilter: THREE.LinearFilter, 
-				magFilter: THREE.NearestFilter, 
-				format: THREE.RGBAFormat, 
-				type: THREE.FloatType
-			} );
+		rtDepth = new THREE.WebGLRenderTarget( 1024, 1024, { 
+			minFilter: THREE.NearestFilter, 
+			magFilter: THREE.NearestFilter, 
+			format: THREE.RGBAFormat, 
+			type: THREE.FloatType
+		} );
+
+		rtNormalize = new THREE.WebGLRenderTarget( 1024, 1024, { 
+			minFilter: THREE.LinearFilter, 
+			magFilter: THREE.NearestFilter, 
+			format: THREE.RGBAFormat, 
+			type: THREE.FloatType
+		} );
+		
+		var uniformsNormalize = {
+			depthMap: { type: "t", value: rtDepth },
+			texture: { type: "t", value: rtNormalize }
+		};
+		
+		normalizationMaterial = new THREE.ShaderMaterial({
+			uniforms: uniformsNormalize,
+			vertexShader: Potree.Shaders["normalize.vs"],
+			fragmentShader: Potree.Shaders["normalize.fs"]
+		});
+	}
+	
+	var resize = function(width, height){
+		if(rtDepth.width == width && rtDepth.height == height){
+			return;
 		}
 		
-		var width = elRenderArea.clientWidth;
-		var height = elRenderArea.clientHeight;
-		var aspect = width / height;
+		rtDepth.dispose();
+		rtNormalize.dispose();
 		
-		camera.aspect = aspect;
+		camera.aspect = width / height;
 		camera.updateProjectionMatrix();
 		
 		renderer.setSize(width, height);
 		rtDepth.setSize(width, height);
-		rtBlur.setSize(width, height);
 		rtNormalize.setSize(width, height);
-		rtOcclusion.setSize(width, height);
+	};
+
+	// render with splats
+	this.render = function(renderer){
+	
+		var width = elRenderArea.clientWidth;
+		var height = elRenderArea.clientHeight;
+	
+		initHQSPlats();
+		
+		resize(width, height);
+		
 		
 		renderer.clear();
 		if(showSkybox){
@@ -916,105 +876,70 @@ var HighQualityRenderer = function(){
 			pointcloud.visiblePointsTarget = pointCountTarget * 1000 * 1000;
 			var originalMaterial = pointcloud.material;
 			
+			var vn = [];
+			for(var i = 0; i < pointcloud.visibleNodes.length; i++){
+				vn.push(pointcloud.visibleNodes[i].node);
+			}
 			
 			{// DEPTH PASS
-				var material = depthMaterial;
+				depthMaterial.size = pointSize;
+				depthMaterial.pointSizeType = pointSizeType;
+				depthMaterial.screenWidth = width;
+				depthMaterial.screenHeight = height;
+				depthMaterial.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
+				depthMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.size().x;
+				depthMaterial.fov = camera.fov * (Math.PI / 180);
+				depthMaterial.spacing = pointcloud.pcoGeometry.spacing;
+				depthMaterial.near = camera.near;
+				depthMaterial.far = camera.far;
+				depthMaterial.heightMin = heightMin;
+				depthMaterial.heightMax = heightMax;
+				pointcloud.updateVisibilityTexture(depthMaterial, vn);
 				
-				material.size = pointSize;
-				material.pointSizeType = pointSizeType;
-				material.screenWidth = width;
-				material.screenHeight = height;
-				material.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
-				material.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.size().x;
-				material.fov = camera.fov * (Math.PI / 180);
-				material.spacing = pointcloud.pcoGeometry.spacing;
-				material.near = camera.near;
-				material.far = camera.far;
-				material.heightMin = heightMin;
-				material.heightMax = heightMax;
-				
-				pointcloud.material = material;
-			
-			
-				//for(var i = 0; i < pointcloud.visibleNodes.length; i++){
-				//	var node = pointcloud.visibleNodes[i].node;
-				//	node.material = material;
-				//}
-				pointcloud.update(camera, renderer);
-				
+				scenePointCloud.overrideMaterial = depthMaterial;
 				renderer.clearTarget( rtDepth, true, true, true );
 				renderer.render(scenePointCloud, camera, rtDepth);
-				
-				//for(var i = 0; i < pointcloud.visibleNodes.length; i++){
-				//	var node = pointcloud.visibleNodes[i].node;
-				//	node.material = originalMaterial;
-				//}
+				scenePointCloud.overrideMaterial = null;
 			}
 			
 			{// ATTRIBUTE PASS
-				var material = attributeMaterial;
+				attributeMaterial.size = pointSize;
+				attributeMaterial.pointSizeType = pointSizeType;
+				attributeMaterial.screenWidth = width;
+				attributeMaterial.screenHeight = height;
+				attributeMaterial.pointColorType = pointColorType;
+				attributeMaterial.depthMap = rtDepth;
+				attributeMaterial.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
+				attributeMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.size().x;
+				attributeMaterial.fov = camera.fov * (Math.PI / 180);
+				attributeMaterial.spacing = pointcloud.pcoGeometry.spacing;
+				attributeMaterial.near = camera.near;
+				attributeMaterial.far = camera.far;
+				attributeMaterial.heightMin = heightMin;
+				attributeMaterial.heightMax = heightMax;
+				attributeMaterial.intensityMin = pointcloud.material.intensityMin;
+				attributeMaterial.intensityMax = pointcloud.material.intensityMax;
+				pointcloud.updateVisibilityTexture(depthMaterial, vn);
 				
-				material.size = pointSize;
-				material.pointSizeType = pointSizeType;
-				material.screenWidth = width;
-				material.screenHeight = height;
-				material.pointColorType = pointColorType;
-				material.depthMap = rtDepth;
-				material.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
-				material.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.size().x;
-				material.fov = camera.fov * (Math.PI / 180);
-				material.spacing = pointcloud.pcoGeometry.spacing;
-				material.near = camera.near;
-				material.far = camera.far;
-				material.heightMin = heightMin;
-				material.heightMax = heightMax;
-				
-				pointcloud.material = material;
-				
-				//scenePointCloud.overrideMaterial = material;
-				
-				pointcloud.update(camera, renderer);
+				scenePointCloud.overrideMaterial = attributeMaterial;
 				renderer.clearTarget( rtNormalize, true, true, true );
 				renderer.render(scenePointCloud, camera, rtNormalize);
-				
-				//scenePointCloud.overrideMaterial = null;
+				scenePointCloud.overrideMaterial = null;
 			}
 			
-			{ // OCCLUSION PASS
-				edlMaterial.uniforms.near.value = camera.near;
-				edlMaterial.uniforms.far.value = camera.far;
-				edlMaterial.uniforms.depthMap.value = rtDepth;
-			
-				renderer.clearTarget( rtOcclusion, true, true, true );
-				screenPass.render(renderer, edlMaterial, rtOcclusion);
+			{// NORMALIZATION PASS
+				normalizationMaterial.uniforms.depthMap.value = rtDepth;
+				normalizationMaterial.uniforms.texture.value = rtNormalize;
+				Potree.utils.screenPass.render(renderer, normalizationMaterial);
 			}
 			
-			{ // BLUR PASS
-				blurMaterial.uniforms.near.value = camera.near;
-				blurMaterial.uniforms.far.value = camera.far;
-				blurMaterial.uniforms.screenWidth.value = width;
-				blurMaterial.uniforms.screenHeight.value = height;
-				blurMaterial.uniforms.map.value = rtOcclusion;
-				
-				renderer.clearTarget( rtBlur, true, true, true );
-				screenPass.render(renderer, blurMaterial, rtBlur);
-			}
-			
-			{// NORMALIZATION & COMPOSITION PASS
-				hqCompositionMaterial.uniforms.depthMap.value = rtDepth;
-				hqCompositionMaterial.uniforms.occlusionMap.value = rtBlur;
-				hqCompositionMaterial.uniforms.texture.value = rtNormalize;
-				screenPass.render(renderer, hqCompositionMaterial);
-			}
-			//
-			//pointcloud.material = originalMaterial;
-		    //
-			//volumeTool.render();
-			//renderer.clearDepth();
-			//profileTool.render();
-			//measuringTool.render();
-			//transformationTool.render();
-				
+			pointcloud.material = originalMaterial;
+		    
+			volumeTool.render();
+			renderer.clearDepth();
+			profileTool.render();
+			measuringTool.render();
+			transformationTool.render();
 		}
 
 
@@ -1156,6 +1081,10 @@ var EDLRenderer = function(){
 				attributeMaterial.far = camera.far;
 				attributeMaterial.heightMin = heightMin;
 				attributeMaterial.heightMax = heightMax;
+				attributeMaterial.intensityMin = pointcloud.material.intensityMin;
+				attributeMaterial.intensityMax = pointcloud.material.intensityMax;
+				attributeMaterial.setClipBoxes(pointcloud.material.clipBoxes);
+				attributeMaterial.clipMode = pointcloud.material.clipMode;
 				pointcloud.updateVisibilityTexture(attributeMaterial, vn);
 				
 				scenePointCloud.overrideMaterial = attributeMaterial;

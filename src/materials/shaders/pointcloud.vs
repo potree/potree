@@ -62,6 +62,7 @@ uniform sampler2D depthMap;
 varying float	vOpacity;
 varying vec3	vColor;
 varying float	vLinearDepth;
+varying float	vLogDepth;
 varying vec3	vViewPosition;
 varying float 	vRadius;
 varying vec3	vWorldPosition;
@@ -217,10 +218,14 @@ void main() {
 	vLinearDepth = -mvPosition.z;
 	vNormal = normalize(normalMatrix * normal);
 	
-	#if defined(use_logarithmic_depth_buffer)
-		float logarithmicZ = (2.0 * log2(gl_Position.w + 1.0) / log2(far + 1.0) - 1.0) * gl_Position.w;
-		gl_Position.z = logarithmicZ;
+	#if defined(use_edl)
+		vLogDepth = log2(gl_Position.w + 1.0) / log2(far + 1.0);
 	#endif
+	
+	//#if defined(use_logarithmic_depth_buffer)
+	//	float logarithmicZ = (2.0 * log2(gl_Position.w + 1.0) / log2(far + 1.0) - 1.0) * gl_Position.w;
+	//	gl_Position.z = logarithmicZ;
+	//#endif
 
 	// ---------------------
 	// POINT COLOR

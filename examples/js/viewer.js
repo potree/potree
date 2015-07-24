@@ -1029,11 +1029,9 @@ var EDLRenderer = function(){
 	var edlMaterial = null;
 	var attributeMaterial = null;
 	
-	var depthTexture = null;
+	//var depthTexture = null;
 	
-	var rtOcclusion = null;
 	var rtColor = null;
-	var hqCompositionMaterial = null;
 	var gl = renderer.context;
 	
 	var initEDL = function(){
@@ -1041,7 +1039,7 @@ var EDLRenderer = function(){
 			return;
 		}
 		
-		var depthTextureExt = gl.getExtension("WEBGL_depth_texture"); 
+		//var depthTextureExt = gl.getExtension("WEBGL_depth_texture"); 
 		
 		edlMaterial = new Potree.EyeDomeLightingMaterial();
 		attributeMaterial = new Potree.PointCloudMaterial();
@@ -1050,36 +1048,28 @@ var EDLRenderer = function(){
 		attributeMaterial.interpolate = false;
 		attributeMaterial.weighted = false;
 		attributeMaterial.minSize = 2;
-		attributeMaterial.useLogarithmicDepthBuffer = true;
-
-		rtOcclusion = new THREE.WebGLRenderTarget( 1024, 1024, { 
-			minFilter: THREE.LinearFilter, 
-			magFilter: THREE.NearestFilter, 
-			format: THREE.RGBAFormat, 
-			type: THREE.FloatType
-		} );
+		attributeMaterial.useLogarithmicDepthBuffer = false;
+		attributeMaterial.useEDL = true;
 
 		rtColor = new THREE.WebGLRenderTarget( 1024, 1024, { 
 			minFilter: THREE.LinearFilter, 
 			magFilter: THREE.NearestFilter, 
 			format: THREE.RGBAFormat, 
 			type: THREE.FloatType,
-			depthBuffer: false,
-			stencilBuffer: false
+			//type: THREE.UnsignedByteType,
+			//depthBuffer: false,
+			//stencilBuffer: false
 		} );
 		
-		var vsNormalize = Potree.Shaders["normalize.vs"];
-		var fsNormalize = Potree.Shaders["normalize.fs"];
-		
-		depthTexture = new THREE.Texture();
-		depthTexture.__webglInit = true;
-		depthTexture.__webglTexture = gl.createTexture();;
-		gl.bindTexture(gl.TEXTURE_2D, depthTexture.__webglTexture);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT, 1024, 1024, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_SHORT, null);
+		//depthTexture = new THREE.Texture();
+		//depthTexture.__webglInit = true;
+		//depthTexture.__webglTexture = gl.createTexture();;
+		//gl.bindTexture(gl.TEXTURE_2D, depthTexture.__webglTexture);
+		//gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+		//gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+		//gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+		//gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+		//gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT, 1024, 1024, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_SHORT, null);
 	};
 	
 	var resize = function(){
@@ -1093,7 +1083,6 @@ var EDLRenderer = function(){
 		// https://github.com/mrdoob/three.js/pull/6355
 		if(needsResize){
 			rtColor.dispose();
-			rtOcclusion.dispose();
 		}
 		
 		camera.aspect = aspect;
@@ -1101,29 +1090,28 @@ var EDLRenderer = function(){
 		
 		renderer.setSize(width, height);
 		rtColor.setSize(width, height);
-		rtOcclusion.setSize(width, height);
 		
-		if(needsResize){
-			renderer.setRenderTarget(rtColor);
-			var framebuffer = rtColor.__webglFramebuffer;
-			gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-			
-			
-			gl.bindRenderbuffer( gl.RENDERBUFFER, rtColor.__webglRenderbuffer );
-			gl.renderbufferStorage( gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, rtColor.width, rtColor.height );
-			gl.framebufferRenderbuffer( gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, null );
-			
-			gl.bindTexture(gl.TEXTURE_2D, depthTexture.__webglTexture);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-			gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT, width, height, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_INT, null);
-			
-			gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, depthTexture.__webglTexture, 0);
-			
-			renderer.setRenderTarget(null);
-		}
+		//if(needsResize){
+		//	renderer.setRenderTarget(rtColor);
+		//	var framebuffer = rtColor.__webglFramebuffer;
+		//	gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+		//	
+		//	
+		//	gl.bindRenderbuffer( gl.RENDERBUFFER, rtColor.__webglRenderbuffer );
+		//	gl.renderbufferStorage( gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, rtColor.width, rtColor.height );
+		//	gl.framebufferRenderbuffer( gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, null );
+		//	
+		//	gl.bindTexture(gl.TEXTURE_2D, depthTexture.__webglTexture);
+		//	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+		//	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+		//	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+		//	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+		//	gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT, width, height, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_INT, null);
+		//	
+		//	gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, depthTexture.__webglTexture, 0);
+		//	
+		//	renderer.setRenderTarget(null);
+		//}
 	}
 
 	this.render = function(){
@@ -1184,9 +1172,8 @@ var EDLRenderer = function(){
 				edlMaterial.uniforms.colorMap.value = rtColor;
 				edlMaterial.uniforms.expScale.value = camera.far;
 				
-				edlMaterial.uniforms.depthMap.value = depthTexture;
+				//edlMaterial.uniforms.depthMap.value = depthTexture;
 			
-				renderer.clearTarget( rtOcclusion, true, true, true );
 				Potree.utils.screenPass.render(renderer, edlMaterial);
 			}	
 			

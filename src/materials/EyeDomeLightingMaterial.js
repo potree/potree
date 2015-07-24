@@ -23,6 +23,14 @@ Potree.EyeDomeLightingMaterial = function(parameters){
 		neighbours[2*c+1] = Math.sin(2 * c * Math.PI / neighbourCount);
 	}
 	
+	//var neighbourCount = 32;
+	//var neighbours = new Float32Array(neighbourCount*2);
+	//for(var c = 0; c < neighbourCount; c++){
+	//	var r = (c / neighbourCount) * 4 + 0.1;
+	//	neighbours[2*c+0] = Math.cos(2 * c * Math.PI / neighbourCount) * r;
+	//	neighbours[2*c+1] = Math.sin(2 * c * Math.PI / neighbourCount) * r;
+	//}
+	
 	var lightDir = new THREE.Vector3(0.0, 0.0, 1.0).normalize();
 	
 	var uniforms = {

@@ -125,6 +125,7 @@ Potree.Shaders["pointcloud.vs"] = [
  "varying float	vOpacity;",
  "varying vec3	vColor;",
  "varying float	vLinearDepth;",
+ "varying float	vLogDepth;",
  "varying vec3	vViewPosition;",
  "varying float 	vRadius;",
  "varying vec3	vWorldPosition;",
@@ -280,8 +281,14 @@ Potree.Shaders["pointcloud.vs"] = [
  "	vLinearDepth = -mvPosition.z;",
  "	vNormal = normalize(normalMatrix * normal);",
  "	",
- "	float logarithmicZ = (2.0 * log2(gl_Position.w + 1.0) / log2(far + 1.0) - 1.0) * gl_Position.w;",
- "	gl_Position.z = logarithmicZ;",
+ "	#if defined(use_edl)",
+ "		vLogDepth = log2(gl_Position.w + 1.0) / log2(far + 1.0);",
+ "	#endif",
+ "	",
+ "	//#if defined(use_logarithmic_depth_buffer)",
+ "	//	float logarithmicZ = (2.0 * log2(gl_Position.w + 1.0) / log2(far + 1.0) - 1.0) * gl_Position.w;",
+ "	//	gl_Position.z = logarithmicZ;",
+ "	//#endif",
  "",
  "	// ---------------------",
  "	// POINT COLOR",
@@ -465,6 +472,7 @@ Potree.Shaders["pointcloud.fs"] = [
  "varying vec3	vColor;",
  "varying float	vOpacity;",
  "varying float	vLinearDepth;",
+ "varying float	vLogDepth;",
  "varying vec3	vViewPosition;",
  "varying float	vRadius;",
  "varying vec3	vWorldPosition;",
@@ -475,6 +483,7 @@ Potree.Shaders["pointcloud.fs"] = [
  "void main() {",
  "",
  "	vec3 color = vColor;",
+ "	float depth = gl_FragCoord.z;",
  "",
  "	#if defined(circle_point_shape) || defined(use_interpolation) || defined (weighted_splats)",
  "		float u = 2.0 * gl_PointCoord.x - 1.0;",
@@ -490,8 +499,8 @@ Potree.Shaders["pointcloud.fs"] = [
  "	",
  "	#if defined weighted_splats",
  "		vec2 uv = gl_FragCoord.xy / vec2(screenWidth, screenHeight);",
- "		float depth = texture2D(depthMap, uv).r;",
- "		if(vLinearDepth > depth + vRadius){",
+ "		float sDepth = texture2D(depthMap, uv).r;",
+ "		if(vLinearDepth > sDepth + vRadius){",
  "			discard;",
  "		}",
  "	#endif",
@@ -504,7 +513,8 @@ Potree.Shaders["pointcloud.fs"] = [
  "		pos = projectionMatrix * pos;",
  "		pos = pos / pos.w;",
  "		float expDepth = pos.z;",
- "		gl_FragDepthEXT = (pos.z + 1.0) / 2.0;",
+ "		depth = (pos.z + 1.0) / 2.0;",
+ "		gl_FragDepthEXT = depth;",
  "		",
  "		#if defined(color_type_depth)",
  "			color.r = linearDepth;",
@@ -647,6 +657,11 @@ Potree.Shaders["pointcloud.fs"] = [
  "",
  "	#endif",
  "	",
+ "	",
+ "	#if defined(use_edl)",
+ "		gl_FragColor.a = vLogDepth;",
+ "	#endif",
+ "	",
  "}",
  "",
  "",
@@ -726,7 +741,7 @@ Potree.Shaders["edl.fs"] = [
  "uniform float pixScale;",
  "uniform float expScale;",
  "",
- "uniform sampler2D depthMap;",
+ "//uniform sampler2D depthMap;",
  "uniform sampler2D colorMap;",
  "",
  "varying vec2 vUv;",
@@ -746,11 +761,10 @@ Potree.Shaders["edl.fs"] = [
  "	return linear;",
  "}",
  "",
- "// this actually only returns linaer depth values of LOG_BIAS is 1.0",
+ "// this actually only returns linear depth values if LOG_BIAS is 1.0",
  "// lower values work out more nicely, though.",
  "#define LOG_BIAS 0.01",
  "float logToLinear(float z){",
- "	float c = 10.0;",
  "	return (pow((1.0 + LOG_BIAS * far), z) - 1.0) / LOG_BIAS;",
  "}",
  "",
@@ -767,14 +781,13 @@ Potree.Shaders["edl.fs"] = [
  "		vec2 N_rel_pos = scale * zoom / vec2(screenWidth, screenHeight) * neighbours[c];",
  "		vec2 N_abs_pos = vUv + N_rel_pos;",
  "		",
- "		vec4 neighbourDepth = texture2D(depthMap, N_abs_pos);",
- "		float linearNeighbourDepth = logToLinear(neighbourDepth.r);",
+ "		float neighbourDepth = logToLinear(texture2D(colorMap, N_abs_pos).a);",
  "		",
- "		if(neighbourDepth.w > 0.0){",
- "			float Zn = ztransform(linearNeighbourDepth);",
+ "		if(neighbourDepth != 0.0){",
+ "			float Zn = ztransform(neighbourDepth);",
  "			float Znp = dot( vec4( N_rel_pos, Zn, 1.0), P );",
  "			",
- "			sum += obscurance( Znp, 0.1 * linearDepth );",
+ "			sum += obscurance( Znp, 0.05 * linearDepth );",
  "		}",
  "	}",
  "	",
@@ -782,12 +795,7 @@ Potree.Shaders["edl.fs"] = [
  "}",
  "",
  "void main(){",
- "",
- "	float logDepth = texture2D(depthMap, vUv).r;",
- "	float linearDepth = logToLinear(logDepth);",
- "",
- "	//float expDepth = texture2D(depthMap, vUv).r;",
- "	//float linearDepth = expToLinear(expDepth);",
+ "	float linearDepth = logToLinear(texture2D(colorMap, vUv).a);",
  "	",
  "	float f = computeObscurance(linearDepth, pixScale);",
  "	f = exp(-expScale * f);",
@@ -1749,6 +1757,8 @@ Potree.PointCloudMaterial = function(parameters){
 	this.classificationTexture = Potree.PointCloudMaterial.generateClassificationTexture(this._classification);
 	this.lights = true;
 	this._treeType = treeType;
+	this._useLogarithmicDepthBuffer = false;
+	this._useEDL = false;
 	
 	
 	
@@ -1900,6 +1910,14 @@ Potree.PointCloudMaterial.prototype.getDefines = function(){
 	
 	if(this._interpolate){
 		defines += "#define use_interpolation\n";
+	}
+	
+	if(this._useLogarithmicDepthBuffer){
+		defines += "#define use_logarithmic_depth_buffer\n";
+	}
+	
+	if(this._useEDL){
+		defines += "#define use_edl\n";
 	}
 	
 	if(this._pointColorType === Potree.PointColorType.RGB){
@@ -2174,6 +2192,30 @@ Object.defineProperty(Potree.PointCloudMaterial.prototype, "interpolate", {
 	}
 });
 
+Object.defineProperty(Potree.PointCloudMaterial.prototype, "useEDL", {
+	get: function(){
+		return this._useEDL;
+	},
+	set: function(value){
+		if(this._useEDL !== value){
+			this._useEDL = value;
+			this.updateShaderSource();
+		}
+	}
+});
+
+Object.defineProperty(Potree.PointCloudMaterial.prototype, "useLogarithmicDepthBuffer", {
+	get: function(){
+		return this._useLogarithmicDepthBuffer;
+	},
+	set: function(value){
+		if(this._useLogarithmicDepthBuffer !== value){
+			this._useLogarithmicDepthBuffer = value;
+			this.updateShaderSource();
+		}
+	}
+});
+
 Object.defineProperty(Potree.PointCloudMaterial.prototype, "color", {
 	get: function(){
 		return this.uniforms.uColor.value;
@@ -2385,6 +2427,14 @@ Potree.EyeDomeLightingMaterial = function(parameters){
 		neighbours[2*c+0] = Math.cos(2 * c * Math.PI / neighbourCount);
 		neighbours[2*c+1] = Math.sin(2 * c * Math.PI / neighbourCount);
 	}
+	
+	//var neighbourCount = 32;
+	//var neighbours = new Float32Array(neighbourCount*2);
+	//for(var c = 0; c < neighbourCount; c++){
+	//	var r = (c / neighbourCount) * 4 + 0.1;
+	//	neighbours[2*c+0] = Math.cos(2 * c * Math.PI / neighbourCount) * r;
+	//	neighbours[2*c+1] = Math.sin(2 * c * Math.PI / neighbourCount) * r;
+	//}
 	
 	var lightDir = new THREE.Vector3(0.0, 0.0, 1.0).normalize();
 	

@@ -18,7 +18,7 @@ uniform float zoom;
 uniform float pixScale;
 uniform float expScale;
 
-uniform sampler2D depthMap;
+//uniform sampler2D depthMap;
 uniform sampler2D colorMap;
 
 varying vec2 vUv;
@@ -38,11 +38,10 @@ float expToLinear(float z){
 	return linear;
 }
 
-// this actually only returns linaer depth values of LOG_BIAS is 1.0
+// this actually only returns linear depth values if LOG_BIAS is 1.0
 // lower values work out more nicely, though.
 #define LOG_BIAS 0.01
 float logToLinear(float z){
-	float c = 10.0;
 	return (pow((1.0 + LOG_BIAS * far), z) - 1.0) / LOG_BIAS;
 }
 
@@ -59,14 +58,13 @@ float computeObscurance(float linearDepth, float scale){
 		vec2 N_rel_pos = scale * zoom / vec2(screenWidth, screenHeight) * neighbours[c];
 		vec2 N_abs_pos = vUv + N_rel_pos;
 		
-		vec4 neighbourDepth = texture2D(depthMap, N_abs_pos);
-		float linearNeighbourDepth = logToLinear(neighbourDepth.r);
+		float neighbourDepth = logToLinear(texture2D(colorMap, N_abs_pos).a);
 		
-		if(neighbourDepth.w > 0.0){
-			float Zn = ztransform(linearNeighbourDepth);
+		if(neighbourDepth != 0.0){
+			float Zn = ztransform(neighbourDepth);
 			float Znp = dot( vec4( N_rel_pos, Zn, 1.0), P );
 			
-			sum += obscurance( Znp, 0.1 * linearDepth );
+			sum += obscurance( Znp, 0.05 * linearDepth );
 		}
 	}
 	
@@ -74,12 +72,7 @@ float computeObscurance(float linearDepth, float scale){
 }
 
 void main(){
-
-	float logDepth = texture2D(depthMap, vUv).r;
-	float linearDepth = logToLinear(logDepth);
-
-	//float expDepth = texture2D(depthMap, vUv).r;
-	//float linearDepth = expToLinear(expDepth);
+	float linearDepth = logToLinear(texture2D(colorMap, vUv).a);
 	
 	float f = computeObscurance(linearDepth, pixScale);
 	f = exp(-expScale * f);

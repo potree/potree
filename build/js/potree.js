@@ -713,17 +713,13 @@ Potree.Shaders["edl.vs"] = [
  "",
  "",
  "varying vec2 vUv;",
- "varying vec3 vViewRay;",
  "",
  "void main() {",
  "    vUv = uv;",
  "	",
  "	vec4 mvPosition = modelViewMatrix * vec4(position,1.0);",
- "	vViewRay = mvPosition.xyz;",
  "",
  "    gl_Position = projectionMatrix * mvPosition;",
- "	",
- "	",
  "}",
 ].join("\n");
 
@@ -744,15 +740,13 @@ Potree.Shaders["edl.fs"] = [
  "uniform float far;",
  "uniform vec2 neighbours[NEIGHBOUR_COUNT];",
  "uniform vec3 lightDir;",
- "uniform float zoom;",
- "uniform float pixScale;",
  "uniform float expScale;",
+ "uniform float radius;",
  "",
  "//uniform sampler2D depthMap;",
  "uniform sampler2D colorMap;",
  "",
  "varying vec2 vUv;",
- "varying vec3 vViewRay;",
  "",
  "/**",
  " * transform linear depth to [0,1] interval with 1 beeing closest to the camera.",
@@ -779,13 +773,14 @@ Potree.Shaders["edl.fs"] = [
  "	return max(0.0, z) / dist;",
  "}",
  "",
- "float computeObscurance(float linearDepth, float scale){",
- "	vec4 P = vec4(lightDir, -dot(lightDir, vec3(0.0, 0.0, ztransform(linearDepth)) ) );",
+ "float computeObscurance(float linearDepth){",
+ "	vec4 P = vec4(0, 0, 1, -ztransform(linearDepth));",
+ "	vec2 uvRadius = radius / vec2(screenWidth, screenHeight);",
  "	",
  "	float sum = 0.0;",
  "	",
  "	for(int c = 0; c < NEIGHBOUR_COUNT; c++){",
- "		vec2 N_rel_pos = scale * zoom / vec2(screenWidth, screenHeight) * neighbours[c];",
+ "		vec2 N_rel_pos = uvRadius * neighbours[c];",
  "		vec2 N_abs_pos = vUv + N_rel_pos;",
  "		",
  "		float neighbourDepth = logToLinear(texture2D(colorMap, N_abs_pos).a);",
@@ -804,7 +799,7 @@ Potree.Shaders["edl.fs"] = [
  "void main(){",
  "	float linearDepth = logToLinear(texture2D(colorMap, vUv).a);",
  "	",
- "	float f = computeObscurance(linearDepth, pixScale);",
+ "	float f = computeObscurance(linearDepth);",
  "	f = exp(-expScale * f);",
  "	",
  "	vec4 color = texture2D(colorMap, vUv);",
@@ -2450,9 +2445,8 @@ Potree.EyeDomeLightingMaterial = function(parameters){
 		screenHeight: 	{ type: "f", 	value: 0 },
 		near: 			{ type: "f", 	value: 0 },
 		far: 			{ type: "f", 	value: 0 },
-		pixScale: 		{ type: "f", 	value: 1.0 },
 		expScale: 		{ type: "f", 	value: 100.0 },
-		zoom: 			{ type: "f", 	value: 3.0 },
+		radius: 		{ type: "f", 	value: 3.0 },
 		lightDir:		{ type: "v3",	value: lightDir },
 		neighbours:		{ type: "2fv", 	value: neighbours },
 		depthMap: 		{ type: "t", 	value: null },
@@ -5119,6 +5113,11 @@ Potree.PointCloudOctree.prototype.pick = function(renderer, camera, ray, params)
 		}	
 		
 		renderer.renderBufferDirect(camera, [], null, material, geometry, object);
+		
+		var program = material.program.program;
+		_gl.useProgram( program );
+		var attributePointer = _gl.getAttribLocation(program, "indices");
+		_gl.disableVertexAttribArray( attributePointer );
 	}
 	
 	var pixelCount = pickWindowSize * pickWindowSize;

@@ -1070,6 +1070,11 @@ Potree.PointCloudOctree.prototype.pick = function(renderer, camera, ray, params)
 		}	
 		
 		renderer.renderBufferDirect(camera, [], null, material, geometry, object);
+		
+		var program = material.program.program;
+		_gl.useProgram( program );
+		var attributePointer = _gl.getAttribLocation(program, "indices");
+		_gl.disableVertexAttribArray( attributePointer );
 	}
 	
 	var pixelCount = pickWindowSize * pickWindowSize;

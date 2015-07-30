@@ -14,15 +14,13 @@ uniform float near;
 uniform float far;
 uniform vec2 neighbours[NEIGHBOUR_COUNT];
 uniform vec3 lightDir;
-uniform float zoom;
-uniform float pixScale;
 uniform float expScale;
+uniform float radius;
 
 //uniform sampler2D depthMap;
 uniform sampler2D colorMap;
 
 varying vec2 vUv;
-varying vec3 vViewRay;
 
 /**
  * transform linear depth to [0,1] interval with 1 beeing closest to the camera.
@@ -49,13 +47,14 @@ float obscurance(float z, float dist){
 	return max(0.0, z) / dist;
 }
 
-float computeObscurance(float linearDepth, float scale){
-	vec4 P = vec4(lightDir, -dot(lightDir, vec3(0.0, 0.0, ztransform(linearDepth)) ) );
+float computeObscurance(float linearDepth){
+	vec4 P = vec4(0, 0, 1, -ztransform(linearDepth));
+	vec2 uvRadius = radius / vec2(screenWidth, screenHeight);
 	
 	float sum = 0.0;
 	
 	for(int c = 0; c < NEIGHBOUR_COUNT; c++){
-		vec2 N_rel_pos = scale * zoom / vec2(screenWidth, screenHeight) * neighbours[c];
+		vec2 N_rel_pos = uvRadius * neighbours[c];
 		vec2 N_abs_pos = vUv + N_rel_pos;
 		
 		float neighbourDepth = logToLinear(texture2D(colorMap, N_abs_pos).a);
@@ -74,7 +73,7 @@ float computeObscurance(float linearDepth, float scale){
 void main(){
 	float linearDepth = logToLinear(texture2D(colorMap, vUv).a);
 	
-	float f = computeObscurance(linearDepth, pixScale);
+	float f = computeObscurance(linearDepth);
 	f = exp(-expScale * f);
 	
 	vec4 color = texture2D(colorMap, vUv);

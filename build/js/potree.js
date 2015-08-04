@@ -3903,20 +3903,20 @@ Potree.PointCloudOctree.prototype.updateProfileRequests = function(){
 	}
 };
 
-Potree.PointCloudOctree.prototype.updateMaterial = function(vn, camera, renderer){
-	this.material.fov = camera.fov * (Math.PI / 180);
-	this.material.screenWidth = renderer.domElement.clientWidth;
-	this.material.screenHeight = renderer.domElement.clientHeight;
-	this.material.spacing = this.pcoGeometry.spacing;
-	this.material.near = camera.near;
-	this.material.far = camera.far;
-	this.material.uniforms.octreeSize.value = this.pcoGeometry.boundingBox.size().x;
+Potree.PointCloudOctree.prototype.updateMaterial = function(material, vn, camera, renderer){
+	material.fov = camera.fov * (Math.PI / 180);
+	material.screenWidth = renderer.domElement.clientWidth;
+	material.screenHeight = renderer.domElement.clientHeight;
+	material.spacing = this.pcoGeometry.spacing;
+	material.near = camera.near;
+	material.far = camera.far;
+	material.uniforms.octreeSize.value = this.pcoGeometry.boundingBox.size().x;
 	
-	if(this.material.pointSizeType){
-		if(this.material.pointSizeType === Potree.PointSizeType.ADAPTIVE 
-			|| this.material.pointColorType === Potree.PointColorType.OCTREE_DEPTH){
+	if(material.pointSizeType){
+		if(material.pointSizeType === Potree.PointSizeType.ADAPTIVE 
+			|| material.pointColorType === Potree.PointColorType.OCTREE_DEPTH){
 			
-			this.updateVisibilityTexture(this.material, vn);
+			this.updateVisibilityTexture(material, vn);
 		}
 	}
 };
@@ -4049,16 +4049,7 @@ Potree.PointCloudOctree.prototype.update = function(camera, renderer){
 		vn.push(this.visibleNodes[i].node);
 	}
 	
-	// update visibility texture
-	if(this.material.pointSizeType){
-		if(this.material.pointSizeType === Potree.PointSizeType.ADAPTIVE 
-			|| this.material.pointColorType === Potree.PointColorType.OCTREE_DEPTH){
-			
-			this.updateVisibilityTexture(this.material, vn);
-		}
-	}
-	
-	this.updateMaterial(vn, camera, renderer);
+	this.updateMaterial(this.material, vn, camera, renderer);
 	
 	Potree.PointCloudOctree.lru.freeMemory();
 };
@@ -4711,25 +4702,14 @@ Potree.PointCloudOctree.prototype.pick = function(renderer, camera, ray, params)
 	if(!this.pickMaterial){
 		this.pickMaterial = new Potree.PointCloudMaterial();
 		this.pickMaterial.pointColorType = Potree.PointColorType.POINT_INDEX;
-		this.pickMaterial.pointSizeType = Potree.PointSizeType.FIXED;
 	}
 	
 	this.pickMaterial.pointSizeType = this.material.pointSizeType;
 	this.pickMaterial.size = this.material.size;
-	
-	if(this.pickMaterial.pointSizeType === Potree.PointSizeType.ADAPTIVE){
-		this.updateVisibilityTexture(this.pickMaterial, nodes);
-	}
-	
-	this.pickMaterial.fov 			= this.material.fov;
-	this.pickMaterial.screenWidth 	= this.material.screenWidth;
-	this.pickMaterial.screenHeight 	= this.material.screenHeight;
-	this.pickMaterial.spacing 		= this.material.spacing;
-	this.pickMaterial.near 			= this.material.near;
-	this.pickMaterial.far 			= this.material.far;
 	this.pickMaterial.pointShape 	= this.material.pointShape;
+	this.pickMaterial.interpolate = this.material.interpolate;
 	
-	
+	this.updateMaterial(this.pickMaterial, nodes, camera, renderer);
 
 	var _gl = renderer.context;
 	

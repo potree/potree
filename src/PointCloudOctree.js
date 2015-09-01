@@ -573,7 +573,11 @@ Potree.PointCloudOctree.prototype.replaceProxy = function(proxy){
 		node.name = proxy.name;
 		node.level = proxy.level;
 		node.numPoints = proxy.numPoints;
-		node.boundingBox = geometry.boundingBox;
+		if(typeof geometryNode.tightBoundingBox !== "undefined"){
+			node.boundingBox = geometryNode.tightBoundingBox;
+		}else{
+			node.boundingBox = geometry.boundingBox;
+		}
 		node.boundingSphere = node.boundingBox.getBoundingSphere();
 		node.pcoGeometry = geometryNode;
 		var parent = proxy.parent;

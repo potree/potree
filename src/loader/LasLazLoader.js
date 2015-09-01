@@ -198,8 +198,15 @@ Potree.LasLazBatcher = function(node){
 			geometry.addAttribute('indices', new THREE.BufferAttribute(indices, 1));
 			geometry.addAttribute("normal", new THREE.BufferAttribute(new Float32Array(numPoints*3), 3));
 			
-			geometry.boundingBox = new THREE.Box3(mins, maxs);
+			var tightBoundingBox = new THREE.Box3(
+				new THREE.Vector3().fromArray(e.data.tightBoundingBox.min),
+				new THREE.Vector3().fromArray(e.data.tightBoundingBox.max)
+			);
+			
+			//geometry.boundingBox = new THREE.Box3(mins, maxs);
+			geometry.boundingBox = tightBoundingBox;
 			node.boundingBox = geometry.boundingBox;
+			node.tightBoundingBox = tightBoundingBox;
 			
 			node.geometry = geometry;
 			node.loaded = true;

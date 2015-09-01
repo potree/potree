@@ -84,6 +84,10 @@ onmessage = function(event){
 	var classifications = new Uint8Array(clBuff);
 	var returnNumbers = new Uint8Array(rnBuff);
 	var pointSourceIDs = new Uint16Array(psBuff);
+	var tightBoundingBox = {
+		min: [ Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY],
+		max: [ Number.NEGATIVE_INFINITY , Number.NEGATIVE_INFINITY , Number.NEGATIVE_INFINITY ]
+	};
 	
 	
 	// temp arrays seem to be significantly faster than DataViews
@@ -112,6 +116,14 @@ onmessage = function(event){
 		positions[3*i+0] = x * scale[0] + offset[0] + bbOffset[0];
 		positions[3*i+1] = y * scale[1] + offset[1] + bbOffset[1];
 		positions[3*i+2] = z * scale[2] + offset[2] + bbOffset[2];
+		
+		tightBoundingBox.min[0] = Math.min(tightBoundingBox.min[0], positions[3*i+0]);
+		tightBoundingBox.min[1] = Math.min(tightBoundingBox.min[1], positions[3*i+1]);
+		tightBoundingBox.min[2] = Math.min(tightBoundingBox.min[2], positions[3*i+2]);
+		
+		tightBoundingBox.max[0] = Math.max(tightBoundingBox.max[0], positions[3*i+0]);
+		tightBoundingBox.max[1] = Math.max(tightBoundingBox.max[1], positions[3*i+1]);
+		tightBoundingBox.max[2] = Math.max(tightBoundingBox.max[2], positions[3*i+2]);
 		
 		// INTENSITY
 		tempUint8[0] = bufferView[i*pointSize+12];
@@ -159,7 +171,9 @@ onmessage = function(event){
 		intensity: iBuff,
 		classification: clBuff,
 		returnNumber: rnBuff,
-		pointSourceID: psBuff};
+		pointSourceID: psBuff,
+		tightBoundingBox: tightBoundingBox
+	};
 		
 	var transferables = [
 		message.position,

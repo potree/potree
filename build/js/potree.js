@@ -1012,12 +1012,6 @@ Potree.POCLoader.load = function load(url, callback) {
 				var min = new THREE.Vector3(fMno.boundingBox.lx, fMno.boundingBox.ly, fMno.boundingBox.lz);
 				var max = new THREE.Vector3(fMno.boundingBox.ux, fMno.boundingBox.uy, fMno.boundingBox.uz);
 				var boundingBox = new THREE.Box3(min, max);
-				var tightBoundingBox = boundingBox.clone();
-				
-				if(fMno.tightBoundingBox){
-					tightBoundingBox.min.copy(new THREE.Vector3(fMno.tightBoundingBox.lx, fMno.tightBoundingBox.ly, fMno.tightBoundingBox.lz));
-					tightBoundingBox.max.copy(new THREE.Vector3(fMno.tightBoundingBox.ux, fMno.tightBoundingBox.uy, fMno.tightBoundingBox.uz));
-				}
 				var offset = new THREE.Vector3(0,0,0);
 				
 				offset.set(-min.x, -min.y, -min.z);
@@ -1025,13 +1019,8 @@ Potree.POCLoader.load = function load(url, callback) {
 				boundingBox.min.add(offset);
 				boundingBox.max.add(offset);
 				
-				tightBoundingBox.min.add(offset);
-				tightBoundingBox.max.add(offset);
-				
 				pco.boundingBox = boundingBox;
-				pco.tightBoundingBox = tightBoundingBox;
 				pco.boundingSphere = boundingBox.getBoundingSphere();
-				pco.tightBoundingSphere = tightBoundingBox.getBoundingSphere();
 				pco.offset = offset;
 				if(fMno.pointAttributes === "LAS"){
 					pco.loader = new Potree.LasLazLoader(fMno.version);
@@ -4104,7 +4093,7 @@ Potree.PointCloudOctree = function(geometry, material){
 	Potree.PointCloudOctree.lru = Potree.PointCloudOctree.lru || new LRU();
 	
 	this.pcoGeometry = geometry;
-	this.boundingBox = this.pcoGeometry.tightBoundingBox;
+	this.boundingBox = this.pcoGeometry.boundingBox;
 	this.boundingSphere = this.boundingBox.getBoundingSphere();
 	this.material = material || new Potree.PointCloudMaterial();
 	this.visiblePointsTarget = 2*1000*1000;
@@ -4235,20 +4224,20 @@ Potree.PointCloudOctree.prototype.updateProfileRequests = function(){
 	}
 };
 
-Potree.PointCloudOctree.prototype.updateMaterial = function(vn, camera, renderer){
-	this.material.fov = camera.fov * (Math.PI / 180);
-	this.material.screenWidth = renderer.domElement.clientWidth;
-	this.material.screenHeight = renderer.domElement.clientHeight;
-	this.material.spacing = this.pcoGeometry.spacing;
-	this.material.near = camera.near;
-	this.material.far = camera.far;
-	this.material.uniforms.octreeSize.value = this.pcoGeometry.boundingBox.size().x;
+Potree.PointCloudOctree.prototype.updateMaterial = function(material, vn, camera, renderer){
+	material.fov = camera.fov * (Math.PI / 180);
+	material.screenWidth = renderer.domElement.clientWidth;
+	material.screenHeight = renderer.domElement.clientHeight;
+	material.spacing = this.pcoGeometry.spacing;
+	material.near = camera.near;
+	material.far = camera.far;
+	material.uniforms.octreeSize.value = this.pcoGeometry.boundingBox.size().x;
 	
-	if(this.material.pointSizeType){
-		if(this.material.pointSizeType === Potree.PointSizeType.ADAPTIVE 
-			|| this.material.pointColorType === Potree.PointColorType.OCTREE_DEPTH){
+	if(material.pointSizeType){
+		if(material.pointSizeType === Potree.PointSizeType.ADAPTIVE 
+			|| material.pointColorType === Potree.PointColorType.OCTREE_DEPTH){
 			
-			this.updateVisibilityTexture(this.material, vn);
+			this.updateVisibilityTexture(material, vn);
 		}
 	}
 };
@@ -4381,16 +4370,7 @@ Potree.PointCloudOctree.prototype.update = function(camera, renderer){
 		vn.push(this.visibleNodes[i].node);
 	}
 	
-	// update visibility texture
-	if(this.material.pointSizeType){
-		if(this.material.pointSizeType === Potree.PointSizeType.ADAPTIVE 
-			|| this.material.pointColorType === Potree.PointColorType.OCTREE_DEPTH){
-			
-			this.updateVisibilityTexture(this.material, vn);
-		}
-	}
-	
-	this.updateMaterial(vn, camera, renderer);
+	this.updateMaterial(this.material, vn, camera, renderer);
 	
 	Potree.PointCloudOctree.lru.freeMemory();
 };
@@ -5043,25 +5023,14 @@ Potree.PointCloudOctree.prototype.pick = function(renderer, camera, ray, params)
 	if(!this.pickMaterial){
 		this.pickMaterial = new Potree.PointCloudMaterial();
 		this.pickMaterial.pointColorType = Potree.PointColorType.POINT_INDEX;
-		this.pickMaterial.pointSizeType = Potree.PointSizeType.FIXED;
 	}
 	
 	this.pickMaterial.pointSizeType = this.material.pointSizeType;
 	this.pickMaterial.size = this.material.size;
-	
-	if(this.pickMaterial.pointSizeType === Potree.PointSizeType.ADAPTIVE){
-		this.updateVisibilityTexture(this.pickMaterial, nodes);
-	}
-	
-	this.pickMaterial.fov 			= this.material.fov;
-	this.pickMaterial.screenWidth 	= this.material.screenWidth;
-	this.pickMaterial.screenHeight 	= this.material.screenHeight;
-	this.pickMaterial.spacing 		= this.material.spacing;
-	this.pickMaterial.near 			= this.material.near;
-	this.pickMaterial.far 			= this.material.far;
 	this.pickMaterial.pointShape 	= this.material.pointShape;
+	this.pickMaterial.interpolate = this.material.interpolate;
 	
-	
+	this.updateMaterial(this.pickMaterial, nodes, camera, renderer);
 
 	var _gl = renderer.context;
 	
@@ -6064,23 +6033,25 @@ Potree.utils.screenPass = new function(){
 	
 
 Potree.Features = function(){
-	
+
 	var ftCanvas = document.createElement("canvas");
 	var gl = ftCanvas.getContext("webgl") || ftCanvas.getContext("experimental-webgl");
-	
+	if (gl === null)
+		return null;
+
 	// -- code taken from THREE.WebGLRenderer --
 	var _vertexShaderPrecisionHighpFloat = gl.getShaderPrecisionFormat( gl.VERTEX_SHADER, gl.HIGH_FLOAT );
 	var _vertexShaderPrecisionMediumpFloat = gl.getShaderPrecisionFormat( gl.VERTEX_SHADER, gl.MEDIUM_FLOAT );
 	var _vertexShaderPrecisionLowpFloat = gl.getShaderPrecisionFormat( gl.VERTEX_SHADER, gl.LOW_FLOAT );
-	
+
 	var _fragmentShaderPrecisionHighpFloat = gl.getShaderPrecisionFormat( gl.FRAGMENT_SHADER, gl.HIGH_FLOAT );
 	var _fragmentShaderPrecisionMediumpFloat = gl.getShaderPrecisionFormat( gl.FRAGMENT_SHADER, gl.MEDIUM_FLOAT );
 	var _fragmentShaderPrecisionLowpFloat = gl.getShaderPrecisionFormat( gl.FRAGMENT_SHADER, gl.LOW_FLOAT );
-	
+
 	var highpAvailable = _vertexShaderPrecisionHighpFloat.precision > 0 && _fragmentShaderPrecisionHighpFloat.precision > 0;
 	var mediumpAvailable = _vertexShaderPrecisionMediumpFloat.precision > 0 && _fragmentShaderPrecisionMediumpFloat.precision > 0;
 	// -----------------------------------------
-	
+
 	var precision;
 	if(highpAvailable){
 		precision = "highp";
@@ -6089,52 +6060,52 @@ Potree.Features = function(){
 	}else{
 		precision = "lowp";
 	}
-	
+
 	return {
 		SHADER_INTERPOLATION: {
 			isSupported: function(){
-			
+
 				//if(typeof this.shaderInterpolationSupported === "undefined"){
 				//	var material = new Potree.PointCloudMaterial();
 				//	material.interpolate = true;
-				//	
+				//
 				//	var vs = gl.createShader(gl.VERTEX_SHADER);
 				//	var fs = gl.createShader(gl.FRAGMENT_SHADER);
 				//	gl.shaderSource(vs, material.vertexShader);
 				//	gl.shaderSource(fs, material.fragmentShader);
-				//	
+				//
 				//	gl.compileShader(vs);
 				//	gl.compileShader(fs);
-				//	
+				//
 				//	var successVS = gl.getShaderParameter(vs, gl.COMPILE_STATUS);
 				//	var successFS = gl.getShaderParameter(fs, gl.COMPILE_STATUS);
 				//	this.shaderInterpolationSupported = successVS && successFS;
 				//}
 				//
 				//return this.shaderInterpolationSupported;
-				
-			
+
+
 				var supported = true;
-				
+
 				supported = supported && gl.getExtension("EXT_frag_depth");
 				supported = supported && gl.getParameter(gl.MAX_VARYING_VECTORS) >= 8;
-				
+
 				return supported;
 			}
 		},
 		SHADER_SPLATS: {
 			isSupported: function(){
-				
+
 				var supported = true;
-				
+
 				supported = supported && gl.getExtension("EXT_frag_depth");
 				supported = supported && gl.getExtension("OES_texture_float");
 				supported = supported && gl.getParameter(gl.MAX_VARYING_VECTORS) >= 8;
-				
+
 				return supported;
-				
+
 			}
-		
+
 		},
 		SHADER_EDL: {
 			isSupported: function(){
@@ -6154,6 +6125,7 @@ Potree.Features = function(){
 	}
 
 }();
+
 /**
  * adapted from http://stemkoski.github.io/Three.js/Sprite-Text-Labels.html
  */

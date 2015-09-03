@@ -22,7 +22,7 @@ var clipMode = Potree.ClipMode.HIGHLIGHT_INSIDE;
 var quality = null;
 var isFlipYZ = false;
 var useDEMCollisions = false;
-var minNodeSize = 0;
+var minNodeSize = 100;
 var directionalLight;
 
 var showStats = false;
@@ -651,6 +651,21 @@ function update(){
 		pointcloud.material.setClipBoxes(clipBoxes);
 	}
 	
+	//if(pointcloud){
+	//
+	//	var levels = new Uint32Array(20);
+	//
+	//	var vn = pointcloud.visibleNodes;
+	//	for(var i = 0; i < vn.length; i++){
+	//		var node = vn[i].node;
+	//		var level = node.level;
+	//		
+	//		levels[level]++;
+	//	}
+	//	
+	//	var a;
+	//}
+	
 }
 
 function useEarthControls(){
@@ -876,11 +891,6 @@ var HighQualityRenderer = function(){
 			pointcloud.visiblePointsTarget = pointCountTarget * 1000 * 1000;
 			var originalMaterial = pointcloud.material;
 			
-			var vn = [];
-			for(var i = 0; i < pointcloud.visibleNodes.length; i++){
-				vn.push(pointcloud.visibleNodes[i].node);
-			}
-			
 			{// DEPTH PASS
 				depthMaterial.size = pointSize;
 				depthMaterial.pointSizeType = pointSizeType;
@@ -894,7 +904,7 @@ var HighQualityRenderer = function(){
 				depthMaterial.far = camera.far;
 				depthMaterial.heightMin = heightMin;
 				depthMaterial.heightMax = heightMax;
-				pointcloud.updateVisibilityTexture(depthMaterial, vn);
+				pointcloud.updateVisibilityTexture(depthMaterial, pointcloud.visibleNodes);
 				
 				scenePointCloud.overrideMaterial = depthMaterial;
 				renderer.clearTarget( rtDepth, true, true, true );
@@ -919,7 +929,6 @@ var HighQualityRenderer = function(){
 				attributeMaterial.heightMax = heightMax;
 				attributeMaterial.intensityMin = pointcloud.material.intensityMin;
 				attributeMaterial.intensityMax = pointcloud.material.intensityMax;
-				pointcloud.updateVisibilityTexture(depthMaterial, vn);
 				
 				scenePointCloud.overrideMaterial = attributeMaterial;
 				renderer.clearTarget( rtNormalize, true, true, true );
@@ -1063,11 +1072,6 @@ var EDLRenderer = function(){
 			pointcloud.visiblePointsTarget = pointCountTarget * 1000 * 1000;
 			var originalMaterial = pointcloud.material;
 			
-			var vn = [];
-			for(var i = 0; i < pointcloud.visibleNodes.length; i++){
-				vn.push(pointcloud.visibleNodes[i].node);
-			}
-			
 			{// COLOR & DEPTH PASS
 				attributeMaterial.size = pointSize;
 				attributeMaterial.pointSizeType = pointSizeType;
@@ -1085,7 +1089,7 @@ var EDLRenderer = function(){
 				attributeMaterial.intensityMax = pointcloud.material.intensityMax;
 				attributeMaterial.setClipBoxes(pointcloud.material.clipBoxes);
 				attributeMaterial.clipMode = pointcloud.material.clipMode;
-				pointcloud.updateVisibilityTexture(attributeMaterial, vn);
+				pointcloud.updateVisibilityTexture(attributeMaterial, pointcloud.visibleNodes);
 				
 				scenePointCloud.overrideMaterial = attributeMaterial;
 				renderer.clearTarget( rtColor, true, true, true );
@@ -1119,12 +1123,20 @@ var EDLRenderer = function(){
 	}
 };
 
-
+//var toggleMessage = 0;
 
 function loop() {
 	requestAnimationFrame(loop);
 	
+	//var start = new Date().getTime();
 	update();
+	//var end = new Date().getTime();
+	//var duration = end - start;
+	//toggleMessage++;
+	//if(toggleMessage > 30){
+	//	document.getElementById("lblMessage").innerHTML = "update: " + duration + "ms";
+	//	toggleMessage = 0;
+	//}
 	
 	if(sceneProperties.useEDL){
 		if(!edlRenderer){

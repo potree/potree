@@ -1,0 +1,130 @@
+<html>
+<head>
+	<meta charset="utf-8"/>
+	<title>Potree Viewer</title>
+	<link rel="stylesheet" type="text/css" href="css/potree.css">
+</head>
+<body>
+
+	<script src="../libs/three.js/build/three.js"></script>
+	<script src="../libs/other/stats.min.js"></script>
+	<script src="../libs/other/dat.gui.min.js"></script>
+	<script src="../libs/other/BinaryHeap.js"></script>
+	
+	<script src="../build/js/potree.js"></script>
+	<script src="./js/ProgressBar.js"></script>
+	
+	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
+	<!-- INCLUDE SETTINGS HERE -->
+	<!--<script src="../libs/plasio/js/laslaz.js"></script>
+	<script src="../libs/plasio/vendor/bluebird.js"></script>
+	<script src="../build/js/laslaz.js"></script>-->
+	
+	<!-- HEADING -->
+	<div class="info" style="position: absolute; left: 300px; right: 300px; top: 10px; text-align: center;">
+		<a href="http://potree.org" target="_blank">potree.org</a><br>
+		Point cloud courtesy of <a href="http://www.sigeom.ch/" target="_blank">sigeom sa</a><br>
+	</div>
+	
+	<!-- INFOS / STATS -->
+	<div id="lblNumVisibleNodes" class="info" style="position: absolute; left: 10px; top: 80px; width: 400px; color:white"></div>
+	<div id="lblNumVisiblePoints" class="info" style="position: absolute; left: 10px; top: 100px; width: 400px; color:white"></div>
+	<div id="lblMessage" class="info" style="position: absolute; left: 10px; bottom: 0px; width: 400px; color:white"></div>
+	
+	<div id="renderArea"></div>
+	
+	<script>
+		
+		var sceneProperties = {
+			path:			"http://5.9.65.151/mschuetz/potree/resources/pointclouds/pix4d/matterhorn/cloud.js",
+			path:			"http://5.9.65.151/mschuetz/potree/test/cloud.js",
+			path:			"../resources/pointclouds/lion_takanawa/cloud.js",
+			path:			"http://localhost/temp/test/cloud.js",
+			path:			"../resources/pointclouds/vol_total/cloud.js",
+			cameraPosition: null,
+			cameraTarget: null,
+			sizeType: 		"Fixed",			// options: "Fixed", "Attenuated", "Adaptive"
+			quality: 		"Squares", 			// options: "Squares", "Circles", "Interpolation", "Splats"
+			fov: 			75, 				// field of view in degree
+			material: 		"RGB", 				// options: "RGB", "Height", "Intensity", "Classification"
+			pointLimit: 	1,					// max number of points in millions
+			navigation: 	"Orbit",			// options: "Earth", "Orbit", "Flight"
+			pointSize: 		2,	
+			useEDL:			false,				// eye-dome-lighting, especially usefull for point clouds without normals
+		};
+	</script>
+	<script src="./js/viewer.js"></script>
+	
+	<canvas id="cHeightProfile" width="300" height="300"
+		style="position: absolute; width: 300px; height: 300px; left: 10px; bottom: 10px; border: 1px solid black; pointer-events: none"></canvas>
+	
+	<script>
+	
+	// create a profile with 3 markers / 2 segments
+	var profile = new Potree.HeightProfile();
+	profile.addMarker(new THREE.Vector3(-294, 59, 95));
+	profile.addMarker(new THREE.Vector3(-179, 55, -1));
+	profile.addMarker(new THREE.Vector3(-69,33,-39));
+	profile.setWidth(3);
+	profileTool.addProfile(profile);
+	
+	// profile will be drawn into this canvas
+	var canvas = document.getElementById("cHeightProfile"),
+    context = canvas.getContext("2d");
+	context.fillStyle = "#000000";
+	context.fillRect(0, 0, 300, 300);
+	
+	function update2DProfile(){
+	
+		// clear canvas
+		context.clearRect(0, 0, 300, 300);
+		context.fillStyle = "#000000";
+		context.fillRect(0, 0, 300, 300);
+		
+		// set origin to bottom left
+		context.setTransform(1, 0, 0, 1, 0, 0);
+		context.translate(0, 300);
+		context.scale(1, -1);
+	
+		var result = pointcloud.getPointsInProfile(profile, 2);
+		var segments = result.segments;
+		
+		// iterate through all segments of the profile
+		for(var i = 0; i < segments.length; i++){
+			var segment = segments[i];
+			
+			for(var j = 0; j < segment.points.numPoints; j++){
+				var position = segment.points.position[j];
+				position = segment.project(position);
+				var color = segment.points.color[j];
+				
+				var x = (position.x / result.projectedBoundingBox.max.x) * 300;
+				var y = (position.y / result.projectedBoundingBox.max.x) * 300;
+				
+				var r = parseInt(color[0]*255);
+				var g = parseInt(color[1]*255);
+				var b = parseInt(color[2]*255);
+				
+				context.fillStyle = "rgb(" + r + ", " + g + " , " + b + " )";
+				context.fillRect(x, y, 2, 2);
+			}
+		}
+		
+		setTimeout(update2DProfile, 1000);
+	}
+	
+	// uncommenting this updates the profile view every time one of the markers moves
+	//profile.addEventListener("marker_moved", function(event){
+	//	update2DProfile();
+	//});
+	
+	// update profile view every 1000ms
+	setTimeout(update2DProfile, 1000);
+	
+
+	</script>
+	
+	
+	
+</body>
+</html>

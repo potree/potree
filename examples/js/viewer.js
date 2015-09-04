@@ -363,7 +363,7 @@ function initThree(){
 			}else if(sceneProperties.navigation === "Flight"){
 				useFPSControls();
 			}else{
-				console.warning("No navigation mode specivied. Using OrbitControls");
+				console.warning("No navigation mode specified. Using OrbitControls");
 				useOrbitControls();
 			}
 			
@@ -599,7 +599,7 @@ function update(){
 
 	// update progress bar
 	if(pointcloud){
-		var progress = pointcloud.progress;;
+		var progress = pointcloud.progress;
 		
 		progressBar.progress = progress;
 		
@@ -904,7 +904,9 @@ var HighQualityRenderer = function(){
 				depthMaterial.far = camera.far;
 				depthMaterial.heightMin = heightMin;
 				depthMaterial.heightMax = heightMax;
-				pointcloud.updateVisibilityTexture(depthMaterial, pointcloud.visibleNodes);
+				//pointcloud.updateVisibilityTexture(depthMaterial, pointcloud.visibleNodes);
+				attributeMaterial.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
+				attributeMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.size().x;
 				
 				scenePointCloud.overrideMaterial = depthMaterial;
 				renderer.clearTarget( rtDepth, true, true, true );
@@ -929,6 +931,8 @@ var HighQualityRenderer = function(){
 				attributeMaterial.heightMax = heightMax;
 				attributeMaterial.intensityMin = pointcloud.material.intensityMin;
 				attributeMaterial.intensityMax = pointcloud.material.intensityMax;
+				attributeMaterial.setClipBoxes(pointcloud.material.clipBoxes);
+				attributeMaterial.clipMode = pointcloud.material.clipMode;
 				
 				scenePointCloud.overrideMaterial = attributeMaterial;
 				renderer.clearTarget( rtNormalize, true, true, true );
@@ -1078,6 +1082,7 @@ var EDLRenderer = function(){
 				attributeMaterial.screenWidth = width;
 				attributeMaterial.screenHeight = height;
 				attributeMaterial.pointColorType = pointColorType;
+				attributeMaterial.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
 				attributeMaterial.uniforms.octreeSize.value = octreeSize;
 				attributeMaterial.fov = camera.fov * (Math.PI / 180);
 				attributeMaterial.spacing = pointcloud.pcoGeometry.spacing;
@@ -1089,7 +1094,6 @@ var EDLRenderer = function(){
 				attributeMaterial.intensityMax = pointcloud.material.intensityMax;
 				attributeMaterial.setClipBoxes(pointcloud.material.clipBoxes);
 				attributeMaterial.clipMode = pointcloud.material.clipMode;
-				pointcloud.updateVisibilityTexture(attributeMaterial, pointcloud.visibleNodes);
 				
 				scenePointCloud.overrideMaterial = attributeMaterial;
 				renderer.clearTarget( rtColor, true, true, true );

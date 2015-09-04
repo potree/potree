@@ -21,6 +21,7 @@
 	<script src="../src/PointCloudOctreeGeometry.js"></script>
 	<script src="../src/loader/POCLoader.js"></script>
 	<script src="../src/loader/BinaryLoader.js"></script>
+	<script src="../src/loader/LasLazLoader.js"></script>
 	<script src="../src/materials/PointCloudMaterial.js"></script>
 	<script src="../src/materials/EyeDomeLightingMaterial.js"></script>
 	<script src="../src/EarthControls.js"></script>
@@ -78,11 +79,13 @@
 	<script>
 		
 		var sceneProperties = {
-			path:			"http://localhost/temp/test/cloud.js",
 			path:			"http://5.9.65.151/mschuetz/potree/resources/pointclouds/pix4d/matterhorn/cloud.js",
-			path:			"http://5.9.65.151/mschuetz/potree/test/cloud.js",
 			path:			"../resources/pointclouds/lion_takanawa/cloud.js",
 			path:			"../resources/pointclouds/vol_total/cloud.js",
+			path:			"http://5.9.65.151/mschuetz/potree/resources/pointclouds/vermessung_zh_ch/zuerich/cloud.js",
+			path:			"http://localhost/dev/pointclouds/opentopography/CA13_SAN_SIM/selection_converted/cloud.js",
+			path:			"http://localhost/temp/test/cloud.js",
+			path:			"http://5.9.65.151/mschuetz/potree/test/cloud.js",
 			cameraPosition: null,
 			cameraTarget: null,
 			sizeType: 		"Adaptive",			// options: "Fixed", "Attenuated", "Adaptive"

@@ -203,8 +203,8 @@ Potree.LasLazBatcher = function(node){
 				new THREE.Vector3().fromArray(e.data.tightBoundingBox.max)
 			);
 			
-			//geometry.boundingBox = new THREE.Box3(mins, maxs);
-			geometry.boundingBox = tightBoundingBox;
+			geometry.boundingBox = new THREE.Box3(mins, maxs);
+			//geometry.boundingBox = tightBoundingBox;
 			node.boundingBox = geometry.boundingBox;
 			node.tightBoundingBox = tightBoundingBox;
 			

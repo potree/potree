@@ -1402,9 +1402,10 @@ Potree.BinaryLoader.prototype.parse = function(node, buffer){
 			geometry.addAttribute("normal", new THREE.BufferAttribute(new Float32Array(buffer), 3));
 		}
 		
-		//geometry.boundingBox = node.boundingBox;
-		geometry.boundingBox = tightBoundingBox;
+		geometry.boundingBox = node.boundingBox;
+		//geometry.boundingBox = tightBoundingBox;
 		node.geometry = geometry;
+		node.boundingBox = tightBoundingBox;
 		node.tightBoundingBox = tightBoundingBox;
 		node.loaded = true;
 		node.loading = false;
@@ -1629,8 +1630,8 @@ Potree.LasLazBatcher = function(node){
 				new THREE.Vector3().fromArray(e.data.tightBoundingBox.max)
 			);
 			
-			//geometry.boundingBox = new THREE.Box3(mins, maxs);
-			geometry.boundingBox = tightBoundingBox;
+			geometry.boundingBox = new THREE.Box3(mins, maxs);
+			//geometry.boundingBox = tightBoundingBox;
 			node.boundingBox = geometry.boundingBox;
 			node.tightBoundingBox = tightBoundingBox;
 			
@@ -4116,6 +4117,7 @@ Potree.PointCloudOctree.prototype.updateVisibility = function(camera, renderer){
 	
 	var visibleNodes = [];
 	var visibleGeometry = [];
+	var unloadedGeometry = [];
 	var pointCount = 0;
 	
 	// first, hide all visible nodes
@@ -4132,7 +4134,7 @@ Potree.PointCloudOctree.prototype.updateVisibility = function(camera, renderer){
 		var node = element.node;
 		var parent = element.parent;
 		
-		var box = node.boundingBox;
+		var box = node.tightBoundingBox;
 		var insideFrustum = frustum.intersectsBox(box);
 		var visible = insideFrustum;
 		visible = visible && !(this.numVisiblePoints + node.numPoints > this.visiblePointsTarget);
@@ -4141,11 +4143,64 @@ Potree.PointCloudOctree.prototype.updateVisibility = function(camera, renderer){
 			continue;
 		}
 		
+		this.numVisibleNodes++;
+		this.numVisiblePoints += node.numPoints;
+		
+		// if geometry is loaded, create a scene node
+		if(node instanceof Potree.PointCloudOctreeGeometryNode){
+			var geometryNode = node;
+			var geometry = geometryNode.geometry;
+			
+			if((typeof parent === "undefined" || parent instanceof Potree.PointCloudOctreeNode) && geometryNode.loaded){
+				var pcoNode = new Potree.PointCloudOctreeNode();
+				var sceneNode = new THREE.PointCloud(geometry, this.material);
+				sceneNode.visible = false;
+				
+				pcoNode.name = geometryNode.name;
+				pcoNode.level = geometryNode.level;
+				pcoNode.numPoints = geometryNode.numPoints;
+				pcoNode.boundingBox = geometry.boundingBox;
+				pcoNode.tightBoundingBox = geometry.tightBoundingBox;
+				pcoNode.boundingSphere = pcoNode.boundingBox.getBoundingSphere();
+				pcoNode.geometryNode = geometryNode;
+				pcoNode.parent = parent;
+				pcoNode.children = geometryNode.children;
+				sceneNode.boundingBox = pcoNode.boundingBox;
+				sceneNode.boundingSphere = pcoNode.boundingSphere;
+				sceneNode.numPoints = pcoNode.numPoints;
+				sceneNode.level = pcoNode.level;
+				
+				pcoNode.sceneNode = sceneNode;
+				
+				if(typeof node.parent === "undefined"){
+					this.root = pcoNode;
+					this.add(pcoNode.sceneNode);
+					
+					sceneNode.matrixWorld.multiplyMatrices( this.matrixWorld, sceneNode.matrix );
+				}else{
+					var childIndex = parseInt(pcoNode.name[pcoNode.name.length - 1]);
+					parent.sceneNode.add(sceneNode);
+					parent.children[childIndex] = pcoNode;
+					
+					sceneNode.matrixWorld.multiplyMatrices( parent.sceneNode.matrixWorld, sceneNode.matrix );
+				}
+				
+				node = pcoNode;
+			}
+			
+			if(!geometryNode.loaded){
+				unloadedGeometry.push(node);
+				visibleGeometry.push(node);
+			}
+			
+		}
+		
 		if(node instanceof Potree.PointCloudOctreeNode){
 			Potree.PointCloudOctree.lru.touch(node.geometryNode);
 			node.sceneNode.visible = true;
 			node.sceneNode.material = this.material;
 			visibleNodes.push(node);
+			visibleGeometry.push(node.geometryNode);
 			
 			if(node.parent){
 				node.sceneNode.matrixWorld.multiplyMatrices( node.parent.sceneNode.matrixWorld, node.sceneNode.matrix );
@@ -4171,55 +4226,7 @@ Potree.PointCloudOctree.prototype.updateVisibility = function(camera, renderer){
 					node.dem = this.createDEM(node);
 				}
 			}
-			
-			this.numVisibleNodes++;
-			this.numVisiblePoints += node.numPoints;
-			
-		}else if(node instanceof Potree.PointCloudOctreeGeometryNode){
-			var geometryNode = node;
-			var geometry = geometryNode.geometry;
-			
-			if(geometryNode.loaded){
-				// if geometry is loaded, create a scene node
-				var pcoNode = new Potree.PointCloudOctreeNode();
-				var sceneNode = new THREE.PointCloud(geometry, this.material);
-				sceneNode.visible = false;
-				
-				pcoNode.name = geometryNode.name;
-				pcoNode.level = geometryNode.level;
-				pcoNode.numPoints = geometryNode.numPoints;
-				pcoNode.boundingBox = geometry.boundingBox;
-				pcoNode.boundingSphere = pcoNode.boundingBox.getBoundingSphere();
-				pcoNode.geometryNode = geometryNode;
-				pcoNode.parent = parent;
-				pcoNode.children = geometryNode.children;
-				sceneNode.boundingBox = pcoNode.boundingBox;
-				sceneNode.boundingSphere = pcoNode.boundingSphere;
-				sceneNode.numPoints = pcoNode.numPoints;
-				sceneNode.level = pcoNode.level;
-				
-				pcoNode.sceneNode = sceneNode;
-				
-				if(parent){
-					var childIndex = parseInt(pcoNode.name[pcoNode.name.length - 1]);
-					parent.sceneNode.add(sceneNode);
-					parent.children[childIndex] = pcoNode;
-				}else{
-					this.add(sceneNode);
-					this.root = pcoNode;
-				}
-				
-				node = pcoNode;
-				
-				if(node.parent){
-					node.sceneNode.matrixWorld.multiplyMatrices( node.parent.sceneNode.matrixWorld, node.sceneNode.matrix );
-				}else{
-					node.sceneNode.matrixWorld.multiplyMatrices( this.matrixWorld, node.sceneNode.matrix );
-				}
-			}else{
-				visibleGeometry.push(node);
-			}
-		}
+		} 
 		
 		// add child nodes to priorityQueue
 		for(var i = 0; i < 8; i++){
@@ -4251,11 +4258,14 @@ Potree.PointCloudOctree.prototype.updateVisibility = function(camera, renderer){
 	}
 	
 	this.visibleNodes = visibleNodes;
+	this.visibleGeometry = visibleGeometry;
 	
 	// load next few unloaded geometries
-	for(var i = 0; i < Math.min(5, visibleGeometry.length); i++){
-		visibleGeometry[i].load();
+	for(var i = 0; i < Math.min(5, unloadedGeometry.length); i++){
+		unloadedGeometry[i].load();
 	}
+	
+	document.getElementById("lblMessage").innerHTML = this.visibleGeometry.length;
 };
 
 Potree.PointCloudOctree.prototype.updateVisibleBounds = function(){
@@ -5067,6 +5077,97 @@ Potree.PointCloudOctree.prototype.createDEM = function(node){
 		dem: dem,
 		demSize: demSize
 	};
+	
+	
+	
+	
+	//if(node.level == 2){
+	//	var geometry = new THREE.BufferGeometry();
+	//	var vertices = new Float32Array((demSize-1)*(demSize-1)*2*3*3);
+	//	var offset = 0;
+	//	for(var i = 0; i < demSize-1; i++){
+	//		for(var j = 0; j < demSize-1; j++){
+	//			//var offset = 18*i + 18*j*demSize;
+	//			
+	//			var dx = i;
+	//			var dy = j;
+	//			
+	//			var v1 = toWorld(dx, dy);
+	//			var v2 = toWorld(dx+1, dy);
+	//			var v3 = toWorld(dx+1, dy+1);
+	//			var v4 = toWorld(dx, dy+1);
+	//			
+	//			vertices[offset+0] = v3[0];
+	//			vertices[offset+1] = v3[1];
+	//			vertices[offset+2] = v3[2];
+	//			
+	//			vertices[offset+3] = v2[0];
+	//			vertices[offset+4] = v2[1];
+	//			vertices[offset+5] = v2[2];
+	//			
+	//			vertices[offset+6] = v1[0];
+	//			vertices[offset+7] = v1[1];
+	//			vertices[offset+8] = v1[2];
+	//			
+	//			
+	//			vertices[offset+9 ] = v3[0];
+	//			vertices[offset+10] = v3[1];
+	//			vertices[offset+11] = v3[2];
+	//			
+	//			vertices[offset+12] = v1[0];
+	//			vertices[offset+13] = v1[1];
+	//			vertices[offset+14] = v1[2];
+	//			
+	//			vertices[offset+15] = v4[0];
+	//			vertices[offset+16] = v4[1];
+	//			vertices[offset+17] = v4[2];
+	//					 
+	//					
+	//			
+	//			//var x = (dx * bbSize.min.x) / demSize + boundingBox.min.x;
+	//			//var y = (dy * bbSize.min.y) / demSize + boundingBox.min.y;
+	//			//var z = dem[dx + dy * demSize];
+	//			
+	//			offset += 18;
+	//			
+	//		}
+	//	}
+	//	
+	//	geometry.addAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
+	//	geometry.computeFaceNormals();
+	//	geometry.computeVertexNormals();
+	//	
+	//	var material = new THREE.MeshNormalMaterial( { color: 0xff0000, shading: THREE.SmoothShading } );
+	//	var mesh = new THREE.Mesh( geometry, material );
+	//	scene.add(mesh);
+	//}
+	//
+	//
+	//if(node.level == 0){
+	//	scene.add(mesh);
+	//	
+	//	var demb = new Uint8Array(demSize*demSize*4);
+	//	for(var i = 0; i < demSize*demSize; i++){
+	//		demb[4*i + 0] = 255 * dem[i] / 300;
+	//		demb[4*i + 1] = 255 * dem[i] / 300;
+	//		demb[4*i + 2] = 255 * dem[i] / 300;
+	//		demb[4*i + 3] = 255;
+	//	}
+	//
+	//	var img = pixelsArrayToImage(demb, demSize, demSize);
+	//	img.style.boder = "2px solid red";
+	//	img.style.position = "absolute";
+	//	img.style.top  = "0px";
+	//	img.style.width = "400px";
+	//	img.style.height = "200px";
+	//	var txt = document.createElement("div");
+	//	txt.innerHTML = node.name;
+	//	//document.body.appendChild(txt);
+	//	document.body.appendChild(img);
+	//}
+	
+	
+	
 	var end = new Date().getTime();
 	var duration = end - start;
 	
@@ -5137,8 +5238,8 @@ Potree.PointCloudOctree.prototype.getDEMHeight = function(position){
 	
 	var stack = [];
 	var chosenNode = null;
-	if(this.children[0].dem){
-		stack.push(this.children[0]);
+	if(this.root.dem){
+		stack.push(this.root);
 	}
 	while(stack.length > 0){
 		var node = stack.shift();
@@ -5159,12 +5260,12 @@ Potree.PointCloudOctree.prototype.getDEMHeight = function(position){
 		}
 
 		if(node.level <= 2){
-		for(var i = 0; i < node.children.length; i++){
-			var child = node.children[i];
-			if(child.dem){
-				stack.push(child);
+			for(var i = 0; i < node.children.length; i++){
+				var child = node.children[i];
+				if(child.dem){
+					stack.push(child);
+				}
 			}
-		}
 		}
 	}
 	
@@ -5845,7 +5946,7 @@ Potree.Features = function(){
 				
 				var supported = true;
 				
-				supported = supported && gl.getExtension("EXT_frag_depth");
+				//supported = supported && gl.getExtension("EXT_frag_depth");
 				supported = supported && gl.getExtension("OES_texture_float");
 				supported = supported && gl.getParameter(gl.MAX_VARYING_VECTORS) >= 8;
 				

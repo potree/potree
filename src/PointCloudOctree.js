@@ -61,6 +61,7 @@ Potree.PointCloudOctree.prototype.updateVisibility = function(camera, renderer){
 	
 	var visibleNodes = [];
 	var visibleGeometry = [];
+	var unloadedGeometry = [];
 	var pointCount = 0;
 	
 	// first, hide all visible nodes
@@ -86,11 +87,64 @@ Potree.PointCloudOctree.prototype.updateVisibility = function(camera, renderer){
 			continue;
 		}
 		
+		this.numVisibleNodes++;
+		this.numVisiblePoints += node.numPoints;
+		
+		// if geometry is loaded, create a scene node
+		if(node instanceof Potree.PointCloudOctreeGeometryNode){
+			var geometryNode = node;
+			var geometry = geometryNode.geometry;
+			
+			if((typeof parent === "undefined" || parent instanceof Potree.PointCloudOctreeNode) && geometryNode.loaded){
+				var pcoNode = new Potree.PointCloudOctreeNode();
+				var sceneNode = new THREE.PointCloud(geometry, this.material);
+				sceneNode.visible = false;
+				
+				pcoNode.name = geometryNode.name;
+				pcoNode.level = geometryNode.level;
+				pcoNode.numPoints = geometryNode.numPoints;
+				pcoNode.boundingBox = geometry.boundingBox;
+				pcoNode.tightBoundingBox = geometry.tightBoundingBox;
+				pcoNode.boundingSphere = pcoNode.boundingBox.getBoundingSphere();
+				pcoNode.geometryNode = geometryNode;
+				pcoNode.parent = parent;
+				pcoNode.children = geometryNode.children;
+				sceneNode.boundingBox = pcoNode.boundingBox;
+				sceneNode.boundingSphere = pcoNode.boundingSphere;
+				sceneNode.numPoints = pcoNode.numPoints;
+				sceneNode.level = pcoNode.level;
+				
+				pcoNode.sceneNode = sceneNode;
+				
+				if(typeof node.parent === "undefined"){
+					this.root = pcoNode;
+					this.add(pcoNode.sceneNode);
+					
+					sceneNode.matrixWorld.multiplyMatrices( this.matrixWorld, sceneNode.matrix );
+				}else{
+					var childIndex = parseInt(pcoNode.name[pcoNode.name.length - 1]);
+					parent.sceneNode.add(sceneNode);
+					parent.children[childIndex] = pcoNode;
+					
+					sceneNode.matrixWorld.multiplyMatrices( parent.sceneNode.matrixWorld, sceneNode.matrix );
+				}
+				
+				node = pcoNode;
+			}
+			
+			if(!geometryNode.loaded){
+				unloadedGeometry.push(node);
+				visibleGeometry.push(node);
+			}
+			
+		}
+		
 		if(node instanceof Potree.PointCloudOctreeNode){
 			Potree.PointCloudOctree.lru.touch(node.geometryNode);
 			node.sceneNode.visible = true;
 			node.sceneNode.material = this.material;
 			visibleNodes.push(node);
+			visibleGeometry.push(node.geometryNode);
 			
 			if(node.parent){
 				node.sceneNode.matrixWorld.multiplyMatrices( node.parent.sceneNode.matrixWorld, node.sceneNode.matrix );
@@ -116,55 +170,7 @@ Potree.PointCloudOctree.prototype.updateVisibility = function(camera, renderer){
 					node.dem = this.createDEM(node);
 				}
 			}
-			
-			this.numVisibleNodes++;
-			this.numVisiblePoints += node.numPoints;
-			
-		}else if(node instanceof Potree.PointCloudOctreeGeometryNode){
-			var geometryNode = node;
-			var geometry = geometryNode.geometry;
-			
-			if(geometryNode.loaded){
-				// if geometry is loaded, create a scene node
-				var pcoNode = new Potree.PointCloudOctreeNode();
-				var sceneNode = new THREE.PointCloud(geometry, this.material);
-				sceneNode.visible = false;
-				
-				pcoNode.name = geometryNode.name;
-				pcoNode.level = geometryNode.level;
-				pcoNode.numPoints = geometryNode.numPoints;
-				pcoNode.boundingBox = geometry.boundingBox;
-				pcoNode.boundingSphere = pcoNode.boundingBox.getBoundingSphere();
-				pcoNode.geometryNode = geometryNode;
-				pcoNode.parent = parent;
-				pcoNode.children = geometryNode.children;
-				sceneNode.boundingBox = pcoNode.boundingBox;
-				sceneNode.boundingSphere = pcoNode.boundingSphere;
-				sceneNode.numPoints = pcoNode.numPoints;
-				sceneNode.level = pcoNode.level;
-				
-				pcoNode.sceneNode = sceneNode;
-				
-				if(parent){
-					var childIndex = parseInt(pcoNode.name[pcoNode.name.length - 1]);
-					parent.sceneNode.add(sceneNode);
-					parent.children[childIndex] = pcoNode;
-				}else{
-					this.add(sceneNode);
-					this.root = pcoNode;
-				}
-				
-				node = pcoNode;
-				
-				if(node.parent){
-					node.sceneNode.matrixWorld.multiplyMatrices( node.parent.sceneNode.matrixWorld, node.sceneNode.matrix );
-				}else{
-					node.sceneNode.matrixWorld.multiplyMatrices( this.matrixWorld, node.sceneNode.matrix );
-				}
-			}else{
-				visibleGeometry.push(node);
-			}
-		}
+		} 
 		
 		// add child nodes to priorityQueue
 		for(var i = 0; i < 8; i++){
@@ -196,11 +202,14 @@ Potree.PointCloudOctree.prototype.updateVisibility = function(camera, renderer){
 	}
 	
 	this.visibleNodes = visibleNodes;
+	this.visibleGeometry = visibleGeometry;
 	
 	// load next few unloaded geometries
-	for(var i = 0; i < Math.min(5, visibleGeometry.length); i++){
-		visibleGeometry[i].load();
+	for(var i = 0; i < Math.min(5, unloadedGeometry.length); i++){
+		unloadedGeometry[i].load();
 	}
+	
+	document.getElementById("lblMessage").innerHTML = this.visibleGeometry.length;
 };
 
 Potree.PointCloudOctree.prototype.updateVisibleBounds = function(){
@@ -397,41 +406,6 @@ Potree.PointCloudOctree.prototype.updateMatrixWorld = function( force ){
 
 	}
 };
-
-
-Potree.PointCloudOctree.prototype.replaceProxy = function(proxy){
-	
-	var geometryNode = proxy.geometryNode;
-	if(geometryNode.loaded === true){
-		var geometry = geometryNode.geometry;
-		var node = new THREE.PointCloud(geometry, this.material);
-		node.name = proxy.name;
-		node.level = proxy.level;
-		node.numPoints = proxy.numPoints;
-		if(typeof geometryNode.tightBoundingBox !== "undefined"){
-			node.boundingBox = geometryNode.tightBoundingBox;
-		}else{
-			node.boundingBox = geometry.boundingBox;
-		}
-		node.boundingSphere = node.boundingBox.getBoundingSphere();
-		node.pcoGeometry = geometryNode;
-		var parent = proxy.parent;
-		parent.remove(proxy);
-		parent.add(node);
-		
-		node.matrixWorld.multiplyMatrices( node.parent.matrixWorld, node.matrix );
-
-		for(var i = 0; i < 8; i++){
-			if(geometryNode.children[i] !== undefined){
-				var child = geometryNode.children[i];
-				var childProxy = new Potree.PointCloudOctreeProxyNode(child);
-				node.add(childProxy);
-			}
-		}
-		
-		return node;
-	}
-}
 
 Potree.PointCloudOctree.prototype.hideDescendants = function(object){
 	var stack = [];

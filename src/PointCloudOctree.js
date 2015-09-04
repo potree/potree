@@ -1012,6 +1012,97 @@ Potree.PointCloudOctree.prototype.createDEM = function(node){
 		dem: dem,
 		demSize: demSize
 	};
+	
+	
+	
+	
+	//if(node.level == 2){
+	//	var geometry = new THREE.BufferGeometry();
+	//	var vertices = new Float32Array((demSize-1)*(demSize-1)*2*3*3);
+	//	var offset = 0;
+	//	for(var i = 0; i < demSize-1; i++){
+	//		for(var j = 0; j < demSize-1; j++){
+	//			//var offset = 18*i + 18*j*demSize;
+	//			
+	//			var dx = i;
+	//			var dy = j;
+	//			
+	//			var v1 = toWorld(dx, dy);
+	//			var v2 = toWorld(dx+1, dy);
+	//			var v3 = toWorld(dx+1, dy+1);
+	//			var v4 = toWorld(dx, dy+1);
+	//			
+	//			vertices[offset+0] = v3[0];
+	//			vertices[offset+1] = v3[1];
+	//			vertices[offset+2] = v3[2];
+	//			
+	//			vertices[offset+3] = v2[0];
+	//			vertices[offset+4] = v2[1];
+	//			vertices[offset+5] = v2[2];
+	//			
+	//			vertices[offset+6] = v1[0];
+	//			vertices[offset+7] = v1[1];
+	//			vertices[offset+8] = v1[2];
+	//			
+	//			
+	//			vertices[offset+9 ] = v3[0];
+	//			vertices[offset+10] = v3[1];
+	//			vertices[offset+11] = v3[2];
+	//			
+	//			vertices[offset+12] = v1[0];
+	//			vertices[offset+13] = v1[1];
+	//			vertices[offset+14] = v1[2];
+	//			
+	//			vertices[offset+15] = v4[0];
+	//			vertices[offset+16] = v4[1];
+	//			vertices[offset+17] = v4[2];
+	//					 
+	//					
+	//			
+	//			//var x = (dx * bbSize.min.x) / demSize + boundingBox.min.x;
+	//			//var y = (dy * bbSize.min.y) / demSize + boundingBox.min.y;
+	//			//var z = dem[dx + dy * demSize];
+	//			
+	//			offset += 18;
+	//			
+	//		}
+	//	}
+	//	
+	//	geometry.addAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
+	//	geometry.computeFaceNormals();
+	//	geometry.computeVertexNormals();
+	//	
+	//	var material = new THREE.MeshNormalMaterial( { color: 0xff0000, shading: THREE.SmoothShading } );
+	//	var mesh = new THREE.Mesh( geometry, material );
+	//	scene.add(mesh);
+	//}
+	//
+	//
+	//if(node.level == 0){
+	//	scene.add(mesh);
+	//	
+	//	var demb = new Uint8Array(demSize*demSize*4);
+	//	for(var i = 0; i < demSize*demSize; i++){
+	//		demb[4*i + 0] = 255 * dem[i] / 300;
+	//		demb[4*i + 1] = 255 * dem[i] / 300;
+	//		demb[4*i + 2] = 255 * dem[i] / 300;
+	//		demb[4*i + 3] = 255;
+	//	}
+	//
+	//	var img = pixelsArrayToImage(demb, demSize, demSize);
+	//	img.style.boder = "2px solid red";
+	//	img.style.position = "absolute";
+	//	img.style.top  = "0px";
+	//	img.style.width = "400px";
+	//	img.style.height = "200px";
+	//	var txt = document.createElement("div");
+	//	txt.innerHTML = node.name;
+	//	//document.body.appendChild(txt);
+	//	document.body.appendChild(img);
+	//}
+	
+	
+	
 	var end = new Date().getTime();
 	var duration = end - start;
 	
@@ -1082,8 +1173,8 @@ Potree.PointCloudOctree.prototype.getDEMHeight = function(position){
 	
 	var stack = [];
 	var chosenNode = null;
-	if(this.children[0].dem){
-		stack.push(this.children[0]);
+	if(this.root.dem){
+		stack.push(this.root);
 	}
 	while(stack.length > 0){
 		var node = stack.shift();
@@ -1104,12 +1195,12 @@ Potree.PointCloudOctree.prototype.getDEMHeight = function(position){
 		}
 
 		if(node.level <= 2){
-		for(var i = 0; i < node.children.length; i++){
-			var child = node.children[i];
-			if(child.dem){
-				stack.push(child);
+			for(var i = 0; i < node.children.length; i++){
+				var child = node.children[i];
+				if(child.dem){
+					stack.push(child);
+				}
 			}
-		}
 		}
 	}
 	

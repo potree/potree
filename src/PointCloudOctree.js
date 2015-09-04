@@ -209,7 +209,6 @@ Potree.PointCloudOctree.prototype.updateVisibility = function(camera, renderer){
 		unloadedGeometry[i].load();
 	}
 	
-	document.getElementById("lblMessage").innerHTML = this.visibleGeometry.length;
 };
 
 Potree.PointCloudOctree.prototype.updateVisibleBounds = function(){

@@ -2,6 +2,7 @@
 <head>
 	<meta charset="utf-8"/>
 	<title>Potree Viewer</title>
+	<!--<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">-->
 	<link rel="stylesheet" type="text/css" href="css/potree.css">
 </head>
 <body>
@@ -13,7 +14,6 @@
 	
 	<script src="../build/js/potree.js"></script>
 	<script src="./js/ProgressBar.js"></script>
-	
 	
 	<!-- uncomment this to debug changes to the individual js files -->
 	
@@ -38,15 +38,12 @@
 	<script src="../src/arena4d/PointCloudArena4D.js"></script>
 	<script src="../src/arena4d/PointCloudArena4DGeometry.js"></script>
 	
-	
-	
-	
 	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
 	<!-- INCLUDE SETTINGS HERE -->
-	<script src="../libs/plasio/js/laslaz.js"></script>
+	<!--<script src="../libs/plasio/js/laslaz.js"></script>
 	<script src="../libs/plasio/vendor/bluebird.js"></script>
 	<script src="../build/js/laslaz.js"></script>
-	
+	-->
 	
 	<!-- HEADING -->
 	<div class="info" style="position: absolute; left: 300px; right: 300px; top: 10px; text-align: center;">
@@ -81,11 +78,11 @@
 		var sceneProperties = {
 			path:			"http://5.9.65.151/mschuetz/potree/resources/pointclouds/pix4d/matterhorn/cloud.js",
 			path:			"../resources/pointclouds/lion_takanawa/cloud.js",
-			path:			"../resources/pointclouds/vol_total/cloud.js",
 			path:			"http://5.9.65.151/mschuetz/potree/resources/pointclouds/vermessung_zh_ch/zuerich/cloud.js",
 			path:			"http://localhost/dev/pointclouds/opentopography/CA13_SAN_SIM/selection_converted/cloud.js",
-			path:			"http://localhost/temp/test/cloud.js",
 			path:			"http://5.9.65.151/mschuetz/potree/test/cloud.js",
+			path:			"http://localhost/temp/test/cloud.js",
+			path:			"../resources/pointclouds/vol_total/cloud.js",
 			cameraPosition: null,
 			cameraTarget: null,
 			sizeType: 		"Adaptive",			// options: "Fixed", "Attenuated", "Adaptive"

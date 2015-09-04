@@ -378,6 +378,7 @@ Potree.Shaders["pointcloud.fs"] = [
  "		uniform vec3 	pointLightColor[ MAX_POINT_LIGHTS ];",
  "		uniform vec3 	pointLightPosition[ MAX_POINT_LIGHTS ];",
  "		uniform float 	pointLightDistance[ MAX_POINT_LIGHTS ];",
+ "		uniform float pointLightDecay[ MAX_POINT_LIGHTS ];",
  "",
  "	#endif",
  "",

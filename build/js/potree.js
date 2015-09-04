@@ -440,6 +440,7 @@ Potree.Shaders["pointcloud.fs"] = [
  "		uniform vec3 	pointLightColor[ MAX_POINT_LIGHTS ];",
  "		uniform vec3 	pointLightPosition[ MAX_POINT_LIGHTS ];",
  "		uniform float 	pointLightDistance[ MAX_POINT_LIGHTS ];",
+ "		uniform float pointLightDecay[ MAX_POINT_LIGHTS ];",
  "",
  "	#endif",
  "",
@@ -4134,7 +4135,7 @@ Potree.PointCloudOctree.prototype.updateVisibility = function(camera, renderer){
 		var node = element.node;
 		var parent = element.parent;
 		
-		var box = node.tightBoundingBox;
+		var box = node.boundingBox;
 		var insideFrustum = frustum.intersectsBox(box);
 		var visible = insideFrustum;
 		visible = visible && !(this.numVisiblePoints + node.numPoints > this.visiblePointsTarget);
@@ -4265,7 +4266,6 @@ Potree.PointCloudOctree.prototype.updateVisibility = function(camera, renderer){
 		unloadedGeometry[i].load();
 	}
 	
-	document.getElementById("lblMessage").innerHTML = this.visibleGeometry.length;
 };
 
 Potree.PointCloudOctree.prototype.updateVisibleBounds = function(){
@@ -4462,41 +4462,6 @@ Potree.PointCloudOctree.prototype.updateMatrixWorld = function( force ){
 
 	}
 };
-
-
-Potree.PointCloudOctree.prototype.replaceProxy = function(proxy){
-	
-	var geometryNode = proxy.geometryNode;
-	if(geometryNode.loaded === true){
-		var geometry = geometryNode.geometry;
-		var node = new THREE.PointCloud(geometry, this.material);
-		node.name = proxy.name;
-		node.level = proxy.level;
-		node.numPoints = proxy.numPoints;
-		if(typeof geometryNode.tightBoundingBox !== "undefined"){
-			node.boundingBox = geometryNode.tightBoundingBox;
-		}else{
-			node.boundingBox = geometry.boundingBox;
-		}
-		node.boundingSphere = node.boundingBox.getBoundingSphere();
-		node.pcoGeometry = geometryNode;
-		var parent = proxy.parent;
-		parent.remove(proxy);
-		parent.add(node);
-		
-		node.matrixWorld.multiplyMatrices( node.parent.matrixWorld, node.matrix );
-
-		for(var i = 0; i < 8; i++){
-			if(geometryNode.children[i] !== undefined){
-				var child = geometryNode.children[i];
-				var childProxy = new Potree.PointCloudOctreeProxyNode(child);
-				node.add(childProxy);
-			}
-		}
-		
-		return node;
-	}
-}
 
 Potree.PointCloudOctree.prototype.hideDescendants = function(object){
 	var stack = [];

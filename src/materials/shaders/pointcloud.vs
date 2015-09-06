@@ -25,6 +25,7 @@
 attribute float intensity;
 attribute float classification;
 attribute float returnNumber;
+attribute float numberOfReturns;
 attribute float pointSourceID;
 attribute vec4 indices;
 
@@ -265,8 +266,21 @@ void main() {
 			gl_Position = vec4(100.0, 100.0, 100.0, 0.0);
 		}
 	#elif defined color_type_return_number
-		float w = (returnNumber - 1.0) / 4.0 + 0.1;
-		vColor = texture2D(gradient, vec2(w, 1.0 - w)).rgb;
+		//float w = (returnNumber - 1.0) / 4.0 + 0.1;
+		//vColor = texture2D(gradient, vec2(w, 1.0 - w)).rgb;
+		
+		if(numberOfReturns == 1.0){
+			vColor = vec3(1.0, 1.0, 0.0);
+		}else{
+			if(returnNumber == 1.0){
+				vColor = vec3(1.0, 0.0, 0.0);
+			}else if(returnNumber == numberOfReturns){
+				vColor = vec3(0.0, 0.0, 1.0);
+			}else{
+				vColor = vec3(0.0, 1.0, 0.0);
+			}
+		}
+		
 	#elif defined color_type_source
 		float w = mod(pointSourceID, 10.0) / 10.0;
 		vColor = texture2D(gradient, vec2(w,1.0 - w)).rgb;

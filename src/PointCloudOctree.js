@@ -768,6 +768,8 @@ Potree.PointCloudOctree.prototype.pick = function(renderer, camera, ray, params)
 	this.pickMaterial.size = this.material.size;
 	this.pickMaterial.pointShape 	= this.material.pointShape;
 	this.pickMaterial.interpolate = this.material.interpolate;
+	this.pickMaterial.minSize = this.material.minSize;
+	this.pickMaterial.maxSize = this.material.maxSize;
 	
 	this.updateMaterial(this.pickMaterial, nodes, camera, renderer);
 

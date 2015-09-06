@@ -76,6 +76,7 @@ onmessage = function(event){
 	var iBuff = new ArrayBuffer(numPoints*4);
 	var clBuff = new ArrayBuffer(numPoints);
 	var rnBuff = new ArrayBuffer(numPoints);
+	var nrBuff = new ArrayBuffer(numPoints);
 	var psBuff = new ArrayBuffer(numPoints * 2);
 	
 	var positions = new Float32Array(pBuff);
@@ -83,6 +84,7 @@ onmessage = function(event){
 	var intensities = new Float32Array(iBuff);
 	var classifications = new Uint8Array(clBuff);
 	var returnNumbers = new Uint8Array(rnBuff);
+	var numberOfReturns = new Uint8Array(nrBuff);
 	var pointSourceIDs = new Uint16Array(psBuff);
 	var tightBoundingBox = {
 		min: [ Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY],
@@ -131,9 +133,12 @@ onmessage = function(event){
 		var intensity = tempUint16[0];
 		intensities[i] = intensity;
 		
-		// RETURN NUMBER, stored in the first 3 bits
+		// RETURN NUMBER, stored in the first 3 bits - 00000111
 		var returnNumber = bufferView[i*pointSize+14] & 7;
 		returnNumbers[i] = returnNumber;
+		
+		// NUMBER OF RETURNS, stored in 00111000
+		numberOfReturns[i] = (bufferView[i*pointSize+14] & 56) / 8;
 		
 		// CLASSIFICATION
 		var classification = bufferView[i*pointSize+15];
@@ -171,6 +176,7 @@ onmessage = function(event){
 		intensity: iBuff,
 		classification: clBuff,
 		returnNumber: rnBuff,
+		numberOfReturns: nrBuff,
 		pointSourceID: psBuff,
 		tightBoundingBox: tightBoundingBox
 	};
@@ -181,6 +187,7 @@ onmessage = function(event){
 		message.intensity,
 		message.classification,
 		message.returnNumber,
+		message.numberOfReturns,
 		message.pointSourceID];
 		
 	postMessage(message, transferables);

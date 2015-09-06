@@ -195,6 +195,7 @@ Potree.PointCloudMaterial.prototype.updateShaderSource = function(){
 		attributes.classification = { type: "f", value: [] };
 	}else if(this.pointColorType === Potree.PointColorType.RETURN_NUMBER){
 		attributes.returnNumber = { type: "f", value: [] };
+		attributes.numberOfReturns = { type: "f", value: [] };
 	}else if(this.pointColorType === Potree.PointColorType.SOURCE){
 		attributes.pointSourceID = { type: "f", value: [] };
 	}else if(this.pointColorType === Potree.PointColorType.NORMAL || this.pointColorType === Potree.PointColorType.PHONG){

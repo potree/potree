@@ -171,7 +171,9 @@ Potree.LasLazBatcher = function(node){
 			var classifications = new Uint8Array(e.data.classification);
 			var classifications_f = new Float32Array(classifications.byteLength);
 			var returnNumbers = new Uint8Array(e.data.returnNumber);
+			var numberOfReturns = new Uint8Array(e.data.numberOfReturns);
 			var returnNumbers_f = new Float32Array(returnNumbers.byteLength);
+			var numberOfReturns_f = new Float32Array(numberOfReturns.byteLength);
 			var pointSourceIDs = new Uint16Array(e.data.pointSourceID);
 			var pointSourceIDs_f = new Float32Array(pointSourceIDs.length);
 			var indices = new ArrayBuffer(numPoints*4);
@@ -183,6 +185,7 @@ Potree.LasLazBatcher = function(node){
 			for(var i = 0; i < numPoints; i++){				
 				classifications_f[i] = classifications[i];
 				returnNumbers_f[i] = returnNumbers[i];
+				numberOfReturns_f[i] = numberOfReturns[i];
 				pointSourceIDs_f[i] = pointSourceIDs[i];
 				iIndices[i] = i;
 				
@@ -194,6 +197,7 @@ Potree.LasLazBatcher = function(node){
 			geometry.addAttribute('intensity', new THREE.BufferAttribute(new Float32Array(intensities), 1));
 			geometry.addAttribute('classification', new THREE.BufferAttribute(new Float32Array(classifications_f), 1));
 			geometry.addAttribute('returnNumber', new THREE.BufferAttribute(new Float32Array(returnNumbers_f), 1));
+			geometry.addAttribute('numberOfReturns', new THREE.BufferAttribute(new Float32Array(numberOfReturns_f), 1));
 			geometry.addAttribute('pointSourceID', new THREE.BufferAttribute(new Float32Array(pointSourceIDs_f), 1));
 			geometry.addAttribute('indices', new THREE.BufferAttribute(indices, 1));
 			geometry.addAttribute("normal", new THREE.BufferAttribute(new Float32Array(numPoints*3), 3));

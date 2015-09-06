@@ -8,11 +8,7 @@ if(sceneProperties.useEDL && !Potree.Features.SHADER_EDL.isSupported()){
 }
 
 if(sceneProperties.quality === null){
-	if(Potree.Features.SHADER_INTERPOLATION.isSupported()){
-		sceneProperties.quality = "Interpolation";
-	}else{
-		sceneProperties.quality = "Squares";
-	}
+	sceneProperties.quality = "Squares";
 }
 
 var fov = sceneProperties.fov;
@@ -351,6 +347,18 @@ function initThree(){
 			
 			referenceFrame.position.copy(sg.center).multiplyScalar(-1);
 			referenceFrame.updateMatrixWorld(true);
+			
+			if(sg.radius > 50*1000){
+				camera.near = 10;
+			}else if(sg.radius > 10*1000){
+				camera.near = 2;
+			}else if(sg.radius > 1000){
+				camera.near = 1;
+			}else if(sg.radius > 100){
+				camera.near = 0.5;
+			}else{
+				camera.near = 0.1;
+			}
 			
 			
 			flipYZ();
@@ -908,7 +916,6 @@ var HighQualityRenderer = function(){
 				depthMaterial.far = camera.far;
 				depthMaterial.heightMin = heightMin;
 				depthMaterial.heightMax = heightMax;
-				//pointcloud.updateVisibilityTexture(depthMaterial, pointcloud.visibleNodes);
 				attributeMaterial.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
 				attributeMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.size().x;
 				

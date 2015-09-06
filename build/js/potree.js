@@ -88,6 +88,7 @@ Potree.Shaders["pointcloud.vs"] = [
  "attribute float intensity;",
  "attribute float classification;",
  "attribute float returnNumber;",
+ "attribute float numberOfReturns;",
  "attribute float pointSourceID;",
  "attribute vec4 indices;",
  "",
@@ -328,8 +329,21 @@ Potree.Shaders["pointcloud.vs"] = [
  "			gl_Position = vec4(100.0, 100.0, 100.0, 0.0);",
  "		}",
  "	#elif defined color_type_return_number",
- "		float w = (returnNumber - 1.0) / 4.0 + 0.1;",
- "		vColor = texture2D(gradient, vec2(w, 1.0 - w)).rgb;",
+ "		//float w = (returnNumber - 1.0) / 4.0 + 0.1;",
+ "		//vColor = texture2D(gradient, vec2(w, 1.0 - w)).rgb;",
+ "		",
+ "		if(numberOfReturns == 1.0){",
+ "			vColor = vec3(1.0, 1.0, 0.0);",
+ "		}else{",
+ "			if(returnNumber == 1.0){",
+ "				vColor = vec3(1.0, 0.0, 0.0);",
+ "			}else if(returnNumber == numberOfReturns){",
+ "				vColor = vec3(0.0, 0.0, 1.0);",
+ "			}else{",
+ "				vColor = vec3(0.0, 1.0, 0.0);",
+ "			}",
+ "		}",
+ "		",
  "	#elif defined color_type_source",
  "		float w = mod(pointSourceID, 10.0) / 10.0;",
  "		vColor = texture2D(gradient, vec2(w,1.0 - w)).rgb;",
@@ -440,7 +454,7 @@ Potree.Shaders["pointcloud.fs"] = [
  "		uniform vec3 	pointLightColor[ MAX_POINT_LIGHTS ];",
  "		uniform vec3 	pointLightPosition[ MAX_POINT_LIGHTS ];",
  "		uniform float 	pointLightDistance[ MAX_POINT_LIGHTS ];",
- "		uniform float pointLightDecay[ MAX_POINT_LIGHTS ];",
+ "		uniform float 	pointLightDecay[ MAX_POINT_LIGHTS ];",
  "",
  "	#endif",
  "",
@@ -1599,7 +1613,9 @@ Potree.LasLazBatcher = function(node){
 			var classifications = new Uint8Array(e.data.classification);
 			var classifications_f = new Float32Array(classifications.byteLength);
 			var returnNumbers = new Uint8Array(e.data.returnNumber);
+			var numberOfReturns = new Uint8Array(e.data.numberOfReturns);
 			var returnNumbers_f = new Float32Array(returnNumbers.byteLength);
+			var numberOfReturns_f = new Float32Array(numberOfReturns.byteLength);
 			var pointSourceIDs = new Uint16Array(e.data.pointSourceID);
 			var pointSourceIDs_f = new Float32Array(pointSourceIDs.length);
 			var indices = new ArrayBuffer(numPoints*4);
@@ -1611,6 +1627,7 @@ Potree.LasLazBatcher = function(node){
 			for(var i = 0; i < numPoints; i++){				
 				classifications_f[i] = classifications[i];
 				returnNumbers_f[i] = returnNumbers[i];
+				numberOfReturns_f[i] = numberOfReturns[i];
 				pointSourceIDs_f[i] = pointSourceIDs[i];
 				iIndices[i] = i;
 				
@@ -1622,6 +1639,7 @@ Potree.LasLazBatcher = function(node){
 			geometry.addAttribute('intensity', new THREE.BufferAttribute(new Float32Array(intensities), 1));
 			geometry.addAttribute('classification', new THREE.BufferAttribute(new Float32Array(classifications_f), 1));
 			geometry.addAttribute('returnNumber', new THREE.BufferAttribute(new Float32Array(returnNumbers_f), 1));
+			geometry.addAttribute('numberOfReturns', new THREE.BufferAttribute(new Float32Array(numberOfReturns_f), 1));
 			geometry.addAttribute('pointSourceID', new THREE.BufferAttribute(new Float32Array(pointSourceIDs_f), 1));
 			geometry.addAttribute('indices', new THREE.BufferAttribute(indices, 1));
 			geometry.addAttribute("normal", new THREE.BufferAttribute(new Float32Array(numPoints*3), 3));
@@ -1813,9 +1831,11 @@ Potree.PointCloudMaterial = function(parameters){
 		pointLightColor: 			{ type: "fv", value: null },
 		pointLightPosition: 		{ type: "fv", value: null },
 		pointLightDistance: 		{ type: "fv1", value: null },
+		pointLightDecay: 			{ type: "fv1", value: null },
 		spotLightColor: 			{ type: "fv", value: null },
 		spotLightPosition: 			{ type: "fv", value: null },
 		spotLightDistance: 			{ type: "fv1", value: null },
+		spotLightDecay: 			{ type: "fv1", value: null },
 		spotLightDirection: 		{ type: "fv", value: null },
 		spotLightAngleCos: 			{ type: "fv1", value: null },
 		spotLightExponent: 			{ type: "fv1", value: null },
@@ -1853,6 +1873,7 @@ Potree.PointCloudMaterial.prototype.updateShaderSource = function(){
 		attributes.classification = { type: "f", value: [] };
 	}else if(this.pointColorType === Potree.PointColorType.RETURN_NUMBER){
 		attributes.returnNumber = { type: "f", value: [] };
+		attributes.numberOfReturns = { type: "f", value: [] };
 	}else if(this.pointColorType === Potree.PointColorType.SOURCE){
 		attributes.pointSourceID = { type: "f", value: [] };
 	}else if(this.pointColorType === Potree.PointColorType.NORMAL || this.pointColorType === Potree.PointColorType.PHONG){
@@ -4825,6 +4846,8 @@ Potree.PointCloudOctree.prototype.pick = function(renderer, camera, ray, params)
 	this.pickMaterial.size = this.material.size;
 	this.pickMaterial.pointShape 	= this.material.pointShape;
 	this.pickMaterial.interpolate = this.material.interpolate;
+	this.pickMaterial.minSize = this.material.minSize;
+	this.pickMaterial.maxSize = this.material.maxSize;
 	
 	this.updateMaterial(this.pickMaterial, nodes, camera, renderer);
 
@@ -4838,9 +4861,9 @@ Potree.PointCloudOctree.prototype.pick = function(renderer, camera, ray, params)
 	
 	renderer.setRenderTarget( this.pickTarget );
 	
-	renderer.setDepthTest( material.depthTest );
-	renderer.setDepthWrite( material.depthWrite )
-	renderer.setBlending( THREE.NoBlending );
+	renderer.state.setDepthTest( material.depthTest );
+	renderer.state.setDepthWrite( material.depthWrite )
+	renderer.state.setBlending( THREE.NoBlending );
 	
 	renderer.clear( renderer.autoClearColor, renderer.autoClearDepth, renderer.autoClearStencil );
 	
@@ -5911,7 +5934,7 @@ Potree.Features = function(){
 				
 				var supported = true;
 				
-				//supported = supported && gl.getExtension("EXT_frag_depth");
+				supported = supported && gl.getExtension("EXT_frag_depth");
 				supported = supported && gl.getExtension("OES_texture_float");
 				supported = supported && gl.getParameter(gl.MAX_VARYING_VECTORS) >= 8;
 				

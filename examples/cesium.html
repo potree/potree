@@ -1,13 +1,56 @@
 <!DOCTYPE html>
 <html lang="en">
+<!--
+
+Thanks for help with this to Matthias Adorjan
+
+-->
+
 <head>
+	<link rel="stylesheet" type="text/css" href="css/potree.css">
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
 	<!-- Make the application on mobile take up the full browser screen and disable user scaling. -->
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
 	<title>three.js & Potree & Cesium</title>
   
+  <style>
+	@import url(../libs/Cesium/Widgets/widgets.css);
+	
+	body{
+		margin: 0;
+		padding: 0;
+	}
+	
+	#cesiumContainer{
+		position: absolute;
+		width: 100%;
+		height: 100%;
+	}
+
+	a:hover, a:visited, a:link, a:active{
+	color: #ccccff;
+	text-decoration: none;
+}
+  </style>
+</head>
+<body>
+<div id="cesiumContainer"></div>
+
+<div class="info" style="position: absolute; left: 300px; right: 300px; top: 10px; text-align: center;">
+
+Rendering a <a href="http://threejs.org/" target="_blank">three.js</a> / <a href="http://potree.org/" target="_blank">Potree</a> point cloud in
+<a href="https://cesiumjs.org/" target="_blank">Cesium</a><br>
+Point cloud courtesy of <a href="http://sigeom.ch/" target="_blank">sigeom sa</a>
+
+
+
+</div>
+
+
 	<script src="../libs/Cesium/Cesium.js"></script>
+	<script src="../libs/other/stats.min.js"></script>
+	<script src="../libs/other/dat.gui.min.js"></script>
 	<script src="../libs/other/BinaryHeap.js"></script>
 	<script src="../libs/proj4/proj4.js"></script>
 	<script src="../libs/three.js/build/three.js"></script>
@@ -33,49 +76,7 @@
 	<script src="../src/Features.js"></script>
 	<script src="../src/arena4d/PointCloudArena4D.js"></script>
 	<script src="../src/arena4d/PointCloudArena4DGeometry.js"></script>
-  
-  <style>
-	@import url(../libs/Cesium/Widgets/widgets.css);
-	
-	body{
-		margin: 0;
-		padding: 0;
-	}
-	
-	#cesiumContainer{
-		position: absolute;
-		width: 800px;
-		height: 800px;
-	}
-	
-	#lblInfo{
-		position: absolute;
-		left: 5px; top: 5px; 
-		width: 300;
-		color:		white;
-		font-weight: bold;
-		text-shadow:  1px  1px 1px black,
-					  1px -1px 1px black,
-					 -1px  1px 1px black,
-					 -1px -1px 1px black;
-	}
-	
-	a:hover, a:visited, a:link, a:active{
-	color: #ccccff;
-	text-decoration: none;
-}
-  </style>
-</head>
-<body>
-<div id="cesiumContainer"></div>
 
-<div id="lblInfo" >
-
-Rendering a <a href="http://threejs.org/" target="_blank">three.js</a> / <a href="http://potree.org/" target="_blank">Potree</a> point cloud in
-<a href="https://cesiumjs.org/" target="_blank">Cesium</a><br>
-Point cloud courtesy of <a href="http://sigeom.ch/" target="_blank">sigeom sa</a>
-
-</div>
 <script>
 
 // add EPSG:21781 projection definition
@@ -147,13 +148,16 @@ function initCesium(){
 	var center = Cesium.Cartesian3.fromDegrees(
 		(minWGS84[0] + maxWGS84[0]) / 2, 
 		(minWGS84[1] + maxWGS84[1]) / 2,
-		600
+		1000
 	);
+	
+	var cp = new Cesium.Cartesian3(4303414.154026048, 552161.235598733, 4660771.704035539);
 	cesium.viewer.camera.setView({
-		position : center,
-		heading : 0.0,
-		pitch : -Cesium.Math.PI_OVER_TWO,
-		roll : 0.0
+		position : cp,
+		heading : 10,
+		//pitch : -Cesium.Math.PI_OVER_TWO,
+		pitch : -Cesium.Math.PI_OVER_TWO * 0.5,
+		roll : 0
 	});	  
 }
 
@@ -169,11 +173,6 @@ function initThree(){
 	three.camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
 	three.renderer = new THREE.WebGLRenderer({alpha: true, canvas: cesium.viewer.canvas});
 	three.renderer.autoClear = false;
-	
-	
-	var sg = new THREE.SphereGeometry(1);
-	var sm = new THREE.Mesh(sg, new THREE.MeshNormalMaterial());
-	three.scene.add(sm);
 	
 	three.camera.position.set(200,200,200);
 	three.camera.lookAt(new THREE.Vector3(0,0,0));
@@ -200,7 +199,7 @@ function renderPotree(){
 
 	// register threejs scene with cesium 
 	if(potree.pointcloud){ 
-		three.camera.fov = Cesium.Math.toDegrees(cesium.viewer.camera.frustum.fov)
+		three.camera.fov = Cesium.Math.toDegrees(cesium.viewer.camera.frustum.fovy)
 		three.camera.updateProjectionMatrix();
 		
 		var cartToVec = function(cart){
@@ -265,6 +264,8 @@ function renderPotree(){
 	three.renderer.resetGLState();
 	three.renderer.state.reset = resetFunc;
 	
+	three.renderer.context.enable(three.renderer.context.DEPTH_TEST);
+	three.renderer.clearDepth();
 	three.renderer.render(three.scene, three.camera);
 }
 

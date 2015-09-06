@@ -781,9 +781,9 @@ Potree.PointCloudOctree.prototype.pick = function(renderer, camera, ray, params)
 	
 	renderer.setRenderTarget( this.pickTarget );
 	
-	renderer.setDepthTest( material.depthTest );
-	renderer.setDepthWrite( material.depthWrite )
-	renderer.setBlending( THREE.NoBlending );
+	renderer.state.setDepthTest( material.depthTest );
+	renderer.state.setDepthWrite( material.depthWrite )
+	renderer.state.setBlending( THREE.NoBlending );
 	
 	renderer.clear( renderer.autoClearColor, renderer.autoClearDepth, renderer.autoClearStencil );
 	

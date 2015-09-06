@@ -3,6 +3,10 @@ if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(naviga
 	sceneProperties.navigation = "Orbit";
 }
 
+if(sceneProperties.useEDL && !Potree.Features.SHADER_EDL.isSupported()){
+	sceneProperties.useEDL = false;
+}
+
 if(sceneProperties.quality === null){
 	if(Potree.Features.SHADER_INTERPOLATION.isSupported()){
 		sceneProperties.quality = "Interpolation";

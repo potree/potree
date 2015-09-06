@@ -87,7 +87,7 @@ function setMaterial(value){
 		pointColorType = Potree.PointColorType.RGB;
 	}else if(value === "Color"){
 		pointColorType = Potree.PointColorType.COLOR;
-	}else if(value === "Height"){
+	}else if(value === "Elevation"){
 		pointColorType = Potree.PointColorType.HEIGHT;
 	}else if(value === "Intensity"){
 		pointColorType = Potree.PointColorType.INTENSITY;
@@ -171,7 +171,7 @@ function initGUI(){
 	var attributes = pointcloud.pcoGeometry.pointAttributes
 	if(attributes === "LAS" || attributes === "LAZ"){
 		options = [ 
-		"RGB", "Color", "Height", "Intensity", "Intensity Gradient", 
+		"RGB", "Color", "Elevation", "Intensity", "Intensity Gradient", 
 		"Classification", "Return Number", "Source",
 		"Tree Depth"];
 	}else{
@@ -192,16 +192,16 @@ function initGUI(){
 			options.push("Normal");
 		}
 		
-		options.push("Height");
+		options.push("Elevation");
 		options.push("Color");
 		options.push("Tree Depth");
 	}
 	
-	// default material is not available. set material to Height
+	// default material is not available. set material to Elevation
 	if(options.indexOf(params.Materials) < 0){
-		console.error("Default Material '" + params.Material + "' is not available. Using Height instead");
-		setMaterial("Height");
-		params.Materials = "Height";
+		console.error("Default Material '" + params.Material + "' is not available. Using Elevation instead");
+		setMaterial("Elevation");
+		params.Materials = "Elevation";
 	}
 	
 	

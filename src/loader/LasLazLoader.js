@@ -209,7 +209,7 @@ Potree.LasLazBatcher = function(node){
 			
 			geometry.boundingBox = new THREE.Box3(mins, maxs);
 			//geometry.boundingBox = tightBoundingBox;
-			node.boundingBox = geometry.boundingBox;
+			//node.boundingBox = geometry.boundingBox;
 			node.tightBoundingBox = tightBoundingBox;
 			
 			node.geometry = geometry;

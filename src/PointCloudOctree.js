@@ -79,6 +79,7 @@ Potree.PointCloudOctree.prototype.updateVisibility = function(camera, renderer){
 		var parent = element.parent;
 		
 		var box = node.boundingBox;
+		
 		var insideFrustum = frustum.intersectsBox(box);
 		var visible = insideFrustum;
 		visible = visible && !(this.numVisiblePoints + node.numPoints > this.visiblePointsTarget);

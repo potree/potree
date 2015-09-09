@@ -1420,7 +1420,7 @@ Potree.BinaryLoader.prototype.parse = function(node, buffer){
 		geometry.boundingBox = node.boundingBox;
 		//geometry.boundingBox = tightBoundingBox;
 		node.geometry = geometry;
-		node.boundingBox = tightBoundingBox;
+		//node.boundingBox = tightBoundingBox;
 		node.tightBoundingBox = tightBoundingBox;
 		node.loaded = true;
 		node.loading = false;
@@ -1651,7 +1651,7 @@ Potree.LasLazBatcher = function(node){
 			
 			geometry.boundingBox = new THREE.Box3(mins, maxs);
 			//geometry.boundingBox = tightBoundingBox;
-			node.boundingBox = geometry.boundingBox;
+			//node.boundingBox = geometry.boundingBox;
 			node.tightBoundingBox = tightBoundingBox;
 			
 			node.geometry = geometry;
@@ -4157,6 +4157,7 @@ Potree.PointCloudOctree.prototype.updateVisibility = function(camera, renderer){
 		var parent = element.parent;
 		
 		var box = node.boundingBox;
+		
 		var insideFrustum = frustum.intersectsBox(box);
 		var visible = insideFrustum;
 		visible = visible && !(this.numVisiblePoints + node.numPoints > this.visiblePointsTarget);

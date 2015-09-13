@@ -28,13 +28,12 @@ browser with ```http://localhost```
 
 ### Converting & Generating a Web Page
 
-Try this for your first point cloud and then take a look at [conversion manual](converting.md) to learn more about the converter options to get better results:
-
+Try this for your first point cloud and then take a look at the [PotreeConverter page](https://github.com/potree/PotreeConverter) to learn more about the converter options:
 
 ```
-./PotreeConverter.exe C:/pointcloud.las -o C:/xampp/htdocs/potree -l 3 --generate-page
+./PotreeConverter.exe C:/pointcloud.las -o C:/xampp/htdocs/potree --generate-page pageName
 ```
 
-You should now be able to open the generated potree page at this URL: ```http://localhost/potree/examples/pointcloud.html```
+You should now be able to open the generated potree page at this URL: ```http://localhost/potree/examples/pageName.html```
 
 ![](images/lion_demo_screenshot.jpg)

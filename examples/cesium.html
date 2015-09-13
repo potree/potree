@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--
+
+Thanks for help with this to Matthias Adorjan
+
+-->
+
+<head>
+	<link rel="stylesheet" type="text/css" href="css/potree.css">
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+	<!-- Make the application on mobile take up the full browser screen and disable user scaling. -->
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+	<title>three.js & Potree & Cesium</title>
+  
+  <style>
+	@import url(../libs/Cesium/Widgets/widgets.css);
+	
+	body{
+		margin: 0;
+		padding: 0;
+	}
+	
+	#cesiumContainer{
+		position: absolute;
+		width: 100%;
+		height: 100%;
+	}
+
+	a:hover, a:visited, a:link, a:active{
+	color: #ccccff;
+	text-decoration: none;
+}
+  </style>
+</head>
+<body>
+<div id="cesiumContainer"></div>
+
+<div class="info" style="position: absolute; left: 300px; right: 300px; top: 10px; text-align: center;">
+
+Rendering a <a href="http://threejs.org/" target="_blank">three.js</a> / <a href="http://potree.org/" target="_blank">Potree</a> point cloud in
+<a href="https://cesiumjs.org/" target="_blank">Cesium</a><br>
+Point cloud courtesy of <a href="http://sigeom.ch/" target="_blank">sigeom sa</a>
+
+
+
+</div>
+
+
+	<script src="../libs/Cesium/Cesium.js"></script>
+	<script src="../libs/other/stats.min.js"></script>
+	<script src="../libs/other/dat.gui.min.js"></script>
+	<script src="../libs/other/BinaryHeap.js"></script>
+	<script src="../libs/proj4/proj4.js"></script>
+	<script src="../libs/three.js/build/three.js"></script>
+	<script src="../build/js/potree.js"></script>
+  
+	<script src="../src/PointCloudOctree.js"></script>
+	<script src="../src/PointCloudOctreeGeometry.js"></script>
+	<script src="../src/loader/POCLoader.js"></script>
+	<script src="../src/loader/BinaryLoader.js"></script>
+	<script src="../src/loader/LasLazLoader.js"></script>
+	<script src="../src/materials/PointCloudMaterial.js"></script>
+	<script src="../src/materials/EyeDomeLightingMaterial.js"></script>
+	<script src="../src/EarthControls.js"></script>
+	<script src="../src/OrbitControls.js"></script>
+	<script src="../src/FirstPersonControls.js"></script>
+	<script src="../src/utils/ProfileTool.js"></script>
+	<script src="../src/utils/MeasuringTool.js"></script>
+	<script src="../src/utils/TransformationTool.js"></script>
+	<script src="../src/utils/VolumeTool.js"></script>
+	<script src="../src/utils.js"></script>
+	<script src="../src/LRU.js"></script>
+	<script src="../src/TextSprite.js"></script>
+	<script src="../src/Features.js"></script>
+	<script src="../src/arena4d/PointCloudArena4D.js"></script>
+	<script src="../src/arena4d/PointCloudArena4DGeometry.js"></script>
+
+<script>
+
+// add EPSG:21781 projection definition
+proj4.defs('EPSG:21781', "+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=600000 +y_0=200000 +ellps=bessel +towgs84=674.4,15.1,405.3,0,0,0,0 +units=m +no_defs ");
+
+var swiss = proj4.defs("EPSG:21781");
+var WGS84 = proj4.defs("WGS84");
+var webMercator = proj4.defs("EPSG:3857");
+
+// boundaries in EPSG:21781 
+var minSwiss = [589500, 231300, 722.505];
+var maxSwiss = [590099, 231565.743, 776.4590];
+
+// boundaries in WGS84
+var minWGS84 = proj4(swiss, WGS84, [minSwiss[0], minSwiss[1]]);
+var maxWGS84 = proj4(swiss, WGS84, [maxSwiss[0], maxSwiss[1]]);
+
+var cesiumContainer = document.getElementById("cesiumContainer");
+
+var three = {
+	renderer: null,
+	camera: null,
+	scene: null
+};
+
+var cesium = {
+	viewer: null
+};
+
+var potree = {
+	pointcloud: null
+};
+ 
+
+function initCesium(){
+	cesium.viewer = new Cesium.Viewer('cesiumContainer', {
+		useDefaultRenderLoop: false,
+		fullscreenButton: false,
+		animation: false,
+		baseLayerPicker: false,
+		geocoder: false,
+		homeButton: false,
+		infoBox: false,
+		sceneModePicker: false,
+		selectionIndicator: false,
+		timeline: false,
+		navigationHelpButton: false,
+		navigationInstructionsInitiallyVisible: false
+		
+	});
+
+	// create polygon from boundaries in WGS84
+	var entity = {
+		name : 'Wyoming',
+		polygon : {
+		hierarchy : Cesium.Cartesian3.fromDegreesArray([
+			minWGS84[0], minWGS84[1],
+			maxWGS84[0], minWGS84[1],
+			maxWGS84[0], maxWGS84[1],
+			minWGS84[0], maxWGS84[1],
+			]),
+		material : Cesium.Color.RED.withAlpha(0.2),
+		outline : true,
+		outlineColor : Cesium.Color.BLACK
+		}
+	};
+	var wyoming = cesium.viewer.entities.add(entity);
+	
+	var center = Cesium.Cartesian3.fromDegrees(
+		(minWGS84[0] + maxWGS84[0]) / 2, 
+		(minWGS84[1] + maxWGS84[1]) / 2,
+		1000
+	);
+	
+	var cp = new Cesium.Cartesian3(4303414.154026048, 552161.235598733, 4660771.704035539);
+	cesium.viewer.camera.setView({
+		position : cp,
+		heading : 10,
+		//pitch : -Cesium.Math.PI_OVER_TWO,
+		pitch : -Cesium.Math.PI_OVER_TWO * 0.5,
+		roll : 0
+	});	  
+}
+
+function initThree(){
+	var fov = 75;
+	var width = 1;
+	var height = 1;
+	var aspect = width / height;
+	var near = 1;
+	var far = 10*1000*1000;
+	
+	three.scene = new THREE.Scene();
+	three.camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+	three.renderer = new THREE.WebGLRenderer({alpha: true, canvas: cesium.viewer.canvas});
+	three.renderer.autoClear = false;
+	
+	three.camera.position.set(200,200,200);
+	three.camera.lookAt(new THREE.Vector3(0,0,0));
+	
+	Potree.POCLoader.load("../resources/pointclouds/vol_total/cloud.js", function(geometry){
+	
+		var pointcloud = new Potree.PointCloudOctree(geometry);
+		pointcloud.material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+		pointcloud.material.size = 1;
+
+		three.scene.add(pointcloud);
+		
+		potree.pointcloud = pointcloud;
+		
+	});
+	
+}
+
+function renderCesium(){
+	cesium.viewer.forceResize();
+	cesium.viewer.render();
+}
+
+function renderPotree(){
+
+	// register threejs scene with cesium 
+	if(potree.pointcloud){ 
+		three.camera.fov = Cesium.Math.toDegrees(cesium.viewer.camera.frustum.fovy)
+		three.camera.updateProjectionMatrix();
+		
+		var cartToVec = function(cart){
+			return new THREE.Vector3(cart.x, cart.y, cart.z);
+		};
+		
+		{ 
+			//potree.pointcloud.showBoundingBox = true;
+			
+			var bottomLeft 		= cartToVec(Cesium.Cartesian3.fromDegrees(minWGS84[0], minWGS84[1]));
+			var topLeft 		= cartToVec(Cesium.Cartesian3.fromDegrees(minWGS84[0], maxWGS84[1]));
+			var bottomLeftHigh	= cartToVec(Cesium.Cartesian3.fromDegrees(minWGS84[0], minWGS84[1], 1));
+			
+			potree.pointcloud.position.copy(bottomLeft);
+			potree.pointcloud.lookAt(bottomLeftHigh);
+			
+			// use direction from bottom left to top left as up-vector
+			var latDir 	= new THREE.Vector3().subVectors(topLeft, bottomLeft).normalize();
+			potree.pointcloud.up.copy(latDir);
+		}
+		
+		three.camera.matrixAutoUpdate = false;
+		var cvm = cesium.viewer.camera.viewMatrix;
+		var civm = cesium.viewer.camera.inverseViewMatrix;
+		three.camera.matrixWorld.set(
+			civm[0], civm[4], civm[8 ], civm[12], 
+			civm[1], civm[5], civm[9 ], civm[13], 
+			civm[2], civm[6], civm[10], civm[14], 
+			civm[3], civm[7], civm[11], civm[15]
+		);
+		three.camera.matrixWorldInverse.set(
+			cvm[0], cvm[4], cvm[8 ], cvm[12], 
+			cvm[1], cvm[5], cvm[9 ], cvm[13], 
+			cvm[2], cvm[6], cvm[10], cvm[14], 
+			cvm[3], cvm[7], cvm[11], cvm[15]
+		);
+		
+		three.camera.lookAt(new THREE.Vector3(0,0,0));
+	}
+
+
+	var width =  cesiumContainer.clientWidth;
+	var height = cesiumContainer.clientHeight;
+	var aspect = width / height;
+	
+	three.camera.aspect = aspect;
+	
+	//three.camera.near = cesium.viewer.camera.frustum.near;
+	//three.camera.far = cesium.viewer.camera.frustum.far;
+	
+	three.camera.updateProjectionMatrix();
+	
+	three.renderer.setSize(width, height);
+	
+	// In order to be able to render into the same canvas as cesium,
+	// WebGLRenderer._currentProgram has to be set to null before using the three.js render function.
+	// since _currentProgram is a private variable, this can only be done through WebGLRenderer.resetGLState();
+	// resetGLState(), however, also calls state.reset which causes errors.
+	// This workaround therefore temporarily changes the state.reset reset function to an empty function
+	var resetFunc = three.renderer.state.reset;
+	three.renderer.state.reset = function(){};
+	three.renderer.resetGLState();
+	three.renderer.state.reset = resetFunc;
+	
+	three.renderer.context.enable(three.renderer.context.DEPTH_TEST);
+	three.renderer.clearDepth();
+	three.renderer.render(three.scene, three.camera);
+}
+
+function update(){
+	if(potree.pointcloud){
+		potree.pointcloud.update(three.camera, three.renderer);
+	}
+}
+
+function loop(){
+	requestAnimationFrame(loop);
+	
+	
+	
+	update();
+
+	renderCesium();
+	renderPotree();
+}
+
+initCesium();
+initThree();
+
+loop();
+
+
+
+  </script>
+</body>
+</html>

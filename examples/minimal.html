@@ -29,6 +29,7 @@
 	
 	</style>
 
+	<script src="../libs/other/BinaryHeap.js"></script>
 	<script src="../libs/three.js/build/three.js"></script>
 	<script src="../libs/other/OrbitControls.js"></script>
 	<script src="../build/js/potree.js"></script>
@@ -99,7 +100,7 @@
 				
 			});
 			
-			controls = new THREE.OrbitControls(camera, renderer.domElement);
+			controls = new Potree.OrbitControls(camera, renderer.domElement);
 		}
 		
 		function update(){

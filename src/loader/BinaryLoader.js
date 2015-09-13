@@ -57,6 +57,10 @@ Potree.BinaryLoader.prototype.parse = function(node, buffer){
 	ww.onmessage = function(e){
 		var data = e.data;
 		var buffers = data.attributeBuffers;
+		var tightBoundingBox = new THREE.Box3(
+			new THREE.Vector3().fromArray(data.tightBoundingBox.min),
+			new THREE.Vector3().fromArray(data.tightBoundingBox.max)
+		);
 		
 		Potree.workers.binaryDecoder.returnWorker(ww);
 		
@@ -93,12 +97,13 @@ Potree.BinaryLoader.prototype.parse = function(node, buffer){
 		}
 		
 		geometry.boundingBox = node.boundingBox;
+		//geometry.boundingBox = tightBoundingBox;
 		node.geometry = geometry;
+		//node.boundingBox = tightBoundingBox;
+		node.tightBoundingBox = tightBoundingBox;
 		node.loaded = true;
 		node.loading = false;
 		node.pcoGeometry.numNodesLoading--;
-		
-		//console.log("loaded:   " + node.name + "\t, " + renderer.info.memory.geometries + ", " + Potree.PointCloudOctree.lru.elements);
 	}
 	
 	var message = {

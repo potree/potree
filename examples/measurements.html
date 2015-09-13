@@ -1,0 +1,104 @@
+<html>
+<head>
+	<meta charset="utf-8"/>
+	<title>Potree Viewer</title>
+	<link rel="stylesheet" type="text/css" href="css/potree.css">
+</head>
+<body>
+
+	<script src="../libs/three.js/build/three.js"></script>
+	<script src="../libs/other/stats.min.js"></script>
+	<script src="../libs/other/dat.gui.min.js"></script>
+	<script src="../libs/other/BinaryHeap.js"></script>
+	
+	<script src="../build/js/potree.js"></script>
+	<script src="./js/ProgressBar.js"></script>
+	
+	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
+	<!-- INCLUDE SETTINGS HERE -->
+	<!--<script src="../libs/plasio/js/laslaz.js"></script>
+	<script src="../libs/plasio/vendor/bluebird.js"></script>
+	<script src="../build/js/laslaz.js"></script>-->
+	
+	<!-- HEADING -->
+	<div class="info" style="position: absolute; left: 300px; right: 300px; top: 10px; text-align: center;">
+		<a href="http://potree.org" target="_blank">potree.org</a><br>
+		Point cloud courtesy of <a href="http://www.sigeom.ch/" target="_blank">sigeom sa</a><br>
+	</div>
+	
+	<!-- INFOS / STATS -->
+	<div id="lblNumVisibleNodes" class="info" style="position: absolute; left: 10px; top: 80px; width: 400px; color:white"></div>
+	<div id="lblNumVisiblePoints" class="info" style="position: absolute; left: 10px; top: 100px; width: 400px; color:white"></div>
+	<div id="lblMessage" class="info" style="position: absolute; left: 10px; bottom: 0px; width: 400px; color:white"></div>
+	
+	<div id="renderArea"></div>
+	
+	<!-- TOOLS -->
+	<div id="tools" style="position: fixed; width: 400px; bottom: 10px; right: 10px">
+		<img src="../resources/icons/earth_controls_1.png" onclick="useEarthControls()" title="Earth Controls"/>
+		<img src="../resources/icons/fps_controls.png" onclick="useFPSControls()" title="Fly Camera"/>
+		<img src="../resources/icons/orbit_controls.png" onclick="useOrbitControls()" title="Orbit Controls"/>
+		<img src="../resources/icons/focus.png" onclick="camera.zoomTo(pointcloud)" title="focus on pointcloud"/>
+		<img src="../resources/icons/flip_y_z.png" onclick="flipYZ()" title="flip y and z coordinates"/>
+		<img src="../resources/icons/angle.png" onclick="measuringTool.startInsertion({showDistances: false, showAngles: true, showArea: false, closed: true, maxMarkers: 3})" title="angle measurements"/>
+		<img src="../resources/icons/distance.png" onclick="measuringTool.startInsertion({showDistances: true, showArea: false, closed: false})" title="distance measurements"/>
+		<img src="../resources/icons/area.png" onclick="measuringTool.startInsertion({showDistances: true, showArea: true, closed: true})" title="area measurements"/>
+		<img src="../resources/icons/volume.png" onclick="volumeTool.startInsertion()" title="volume measurements"/>
+		<img src="../resources/icons/profile.png" onclick="profileTool.startInsertion({width: pointcloud.boundingSphere.radius / 100})" title="height profiles"/>
+		<img src="../resources/icons/clip_volume.png" onclick="volumeTool.startInsertion({clip: true})" title="clipping volumes"/>
+	</div>
+	
+	<script>
+		
+		var sceneProperties = {
+			path:			"http://5.9.65.151/mschuetz/potree/resources/pointclouds/pix4d/matterhorn/cloud.js",
+			path:			"http://5.9.65.151/mschuetz/potree/test/cloud.js",
+			path:			"../resources/pointclouds/lion_takanawa/cloud.js",
+			path:			"http://localhost/temp/test/cloud.js",
+			path:			"../resources/pointclouds/vol_total/cloud.js",
+			cameraPosition: null,
+			cameraTarget: null,
+			sizeType: 		"Fixed",			// options: "Fixed", "Attenuated", "Adaptive"
+			quality: 		"Squares", 			// options: "Squares", "Circles", "Interpolation", "Splats"
+			fov: 			75, 				// field of view in degree
+			material: 		"RGB", 				// options: "RGB", "Height", "Intensity", "Classification"
+			pointLimit: 	1,					// max number of points in millions
+			navigation: 	"Orbit",			// options: "Earth", "Orbit", "Flight"
+			pointSize: 		2,	
+			useEDL:			false,				// eye-dome-lighting, especially usefull for point clouds without normals
+		};
+	</script>
+	<script src="./js/viewer.js"></script>
+	
+	
+	<script>
+	
+	var distanceMeasurement = new Potree.Measure();
+	distanceMeasurement.addMarker(new THREE.Vector3(-294, 59, 95));
+	distanceMeasurement.addMarker(new THREE.Vector3(-179, 55, -1));
+	distanceMeasurement.addMarker(new THREE.Vector3(-69,33,-39));
+	distanceMeasurement.showDistances = true;
+	distanceMeasurement.showArea = false;
+	distanceMeasurement.showAngles = false;
+	distanceMeasurement.closed = false;
+	measuringTool.addMeasurement(distanceMeasurement);
+	
+	
+	var areaMeasurement = new Potree.Measure();
+	areaMeasurement.addMarker(new THREE.Vector3(108.04, 6.46, -36.70));
+	areaMeasurement.addMarker(new THREE.Vector3(58.27, 17.01, 72.32 ));
+	areaMeasurement.addMarker(new THREE.Vector3(67.35, 18.50, 95.41 ));
+	areaMeasurement.addMarker(new THREE.Vector3(92.06, 20.68, 97.29 ));
+	areaMeasurement.addMarker(new THREE.Vector3(186.39, 17.83, 8.16 ));
+	areaMeasurement.showDistances = true;
+	areaMeasurement.showArea = true;
+	areaMeasurement.showAngles = false;
+	areaMeasurement.closed = true;
+	measuringTool.addMeasurement(areaMeasurement);
+	
+	</script>
+	
+	
+	
+</body>
+</html>

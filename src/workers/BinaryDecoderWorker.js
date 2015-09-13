@@ -42,6 +42,8 @@ onmessage = function(event){
 	var min = event.data.min;
 	var nodeOffset = event.data.offset;
 	var scale = event.data.scale;
+	var tightBoxMin = [ Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY];
+	var tightBoxMax = [ Number.NEGATIVE_INFINITY , Number.NEGATIVE_INFINITY , Number.NEGATIVE_INFINITY ];
 	
 	var attributeBuffers = {};
 	
@@ -64,6 +66,14 @@ onmessage = function(event){
 					positions[3*j+1] = cv.getFloat(j*pointAttributes.byteSize+4) + nodeOffset[1];
 					positions[3*j+2] = cv.getFloat(j*pointAttributes.byteSize+8) + nodeOffset[2];
 				}
+				
+				tightBoxMin[0] = Math.min(tightBoxMin[0], positions[3*j+0]);
+				tightBoxMin[1] = Math.min(tightBoxMin[1], positions[3*j+1]);
+				tightBoxMin[2] = Math.min(tightBoxMin[2], positions[3*j+2]);
+				
+				tightBoxMax[0] = Math.max(tightBoxMax[0], positions[3*j+0]);
+				tightBoxMax[1] = Math.max(tightBoxMax[1], positions[3*j+1]);
+				tightBoxMax[2] = Math.max(tightBoxMax[2], positions[3*j+2]);
 			}
 			
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute};
@@ -195,6 +205,7 @@ onmessage = function(event){
 	
 	var message = {
 		attributeBuffers: attributeBuffers,
+		tightBoundingBox: { min: tightBoxMin, max: tightBoxMax },
 		indices: indices
 	};
 		

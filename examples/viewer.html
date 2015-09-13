@@ -2,6 +2,7 @@
 <head>
 	<meta charset="utf-8"/>
 	<title>Potree Viewer</title>
+	<!--<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">-->
 	<link rel="stylesheet" type="text/css" href="css/potree.css">
 </head>
 <body>
@@ -9,18 +10,20 @@
 	<script src="../libs/three.js/build/three.js"></script>
 	<script src="../libs/other/stats.min.js"></script>
 	<script src="../libs/other/dat.gui.min.js"></script>
+	<script src="../libs/other/BinaryHeap.js"></script>
 	
 	<script src="../build/js/potree.js"></script>
 	<script src="./js/ProgressBar.js"></script>
 	
-	
 	<!-- uncomment this to debug changes to the individual js files -->
-	<!--
+	
 	<script src="../src/PointCloudOctree.js"></script>
 	<script src="../src/PointCloudOctreeGeometry.js"></script>
 	<script src="../src/loader/POCLoader.js"></script>
 	<script src="../src/loader/BinaryLoader.js"></script>
+	<script src="../src/loader/LasLazLoader.js"></script>
 	<script src="../src/materials/PointCloudMaterial.js"></script>
+	<script src="../src/materials/EyeDomeLightingMaterial.js"></script>
 	<script src="../src/EarthControls.js"></script>
 	<script src="../src/OrbitControls.js"></script>
 	<script src="../src/FirstPersonControls.js"></script>
@@ -34,9 +37,6 @@
 	<script src="../src/Features.js"></script>
 	<script src="../src/arena4d/PointCloudArena4D.js"></script>
 	<script src="../src/arena4d/PointCloudArena4DGeometry.js"></script>
-	-->
-	
-	
 	
 	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
 	<!-- INCLUDE SETTINGS HERE -->
@@ -74,17 +74,25 @@
 	<div id="renderArea"></div>
 	
 	<script>
+		
 		var sceneProperties = {
+			path:			"http://5.9.65.151/mschuetz/potree/resources/pointclouds/pix4d/matterhorn/cloud.js",
+			path:			"../resources/pointclouds/lion_takanawa/cloud.js",
+			path:			"http://5.9.65.151/mschuetz/potree/resources/pointclouds/vermessung_zh_ch/zuerich/cloud.js",
+			path:			"http://localhost/dev/pointclouds/opentopography/CA13_SAN_SIM/selection_converted/cloud.js",
+			path:			"http://5.9.65.151/mschuetz/potree/test/cloud.js",
+			path:			"http://localhost/temp/test/cloud.js",
 			path:			"../resources/pointclouds/vol_total/cloud.js",
-			cameraPosition: null, 				// options: cameraPosition: [10,10,10],
-			cameraTarget: 	null, 				// options: cameraTarget: [0,0,0],
+			cameraPosition: null,
+			cameraTarget: null,
 			sizeType: 		"Adaptive",			// options: "Fixed", "Attenuated", "Adaptive"
-			quality: 		null, 				// options: "Squares", "Circles", "Interpolation", "Splats"
+			quality: 		"Squares", 	// options: "Squares", "Circles", "Interpolation", "Splats"
 			fov: 			75, 				// field of view in degree
 			material: 		"RGB", 				// options: "RGB", "Height", "Intensity", "Classification"
 			pointLimit: 	1,					// max number of points in millions
 			navigation: 	"Orbit",			// options: "Earth", "Orbit", "Flight"
-			pointSize: 		1.0
+			pointSize: 		1,	
+			useEDL:			false,				// eye-dome-lighting, especially usefull for point clouds without normals
 		};
 	</script>
 	<script src="./js/viewer.js"></script>

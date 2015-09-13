@@ -4,17 +4,18 @@
 * [Getting Started](./docs/getting_started.md)
 * [Changelog](./docs/changelog.md)
 * [User Interface](./docs/user_interface.md)
-* [Converting Point Clouds](./docs/converting.md)
 * [FAQ](./docs/faq.md)
-* [Measuring](./docs/measuring.md)
 * [File Format](./docs/file_format.md)
 
 ## About
 
 Potree is a free open-source WebGL based point cloud renderer for large point clouds.
-Similar to map software like Google Maps or OpenStreeMap, only data inside the visible area and up to a certain level of detail are loaded.
 
-![](./docs/images/potree_screens.png)
+It is based on the [TU Wien Scanopy project](https://www.cg.tuwien.ac.at/research/projects/Scanopy/)
+
+
+
+<a href="http://potree.org/wp/demo/" target="_blank"> ![](./docs/images/potree_screens.png) </a>
 
 At the moment, this project is continued as master thesis under the [Harvest4D Project](https://harvest4d.org/)
 
@@ -22,11 +23,11 @@ Newest information and work in progress is usually available on [twitter](https:
 
 General infos, downloads, showcase, etc. at [potree.org](http://potree.org/)
 
+Contact: Markus Schütz - mschuetz@potree.org
+
 ## Downloads
 
-* [PotreeConverter 1.2, windows 64bit](https://github.com/potree/PotreeConverter/releases/tag/1.2)
-* [PotreeConverter 1.1.1, windows 64bit](http://potree.org/downloads/PotreeConverter/PotreeConverter_1.1.1.zip)
-* [PotreeConverter 1.0, windows 64bit](http://potree.org/downloads/PotreeConverter/PotreeConverter_2014.12.30.zip)
+[PotreeConverter source and Win64 binaries](https://github.com/potree/PotreeConverter/releases)
 
 ## Showcase
 
@@ -43,15 +44,12 @@ Take a look at the [potree showcase](http://potree.org/wp/demo/) for some live e
 | Opera                | Android | partially works, GUI and stability issues and slow |
 | Chrome               | Android | works |
 
-## Roadmap
-
-see [Roadmap](https://github.com/potree/potree/wiki/Roadmap)
-
 ## Credits
 
 * The multi-res-octree algorithms used by this viewer were developed at the Vienna University of Technology by Michael Wimmer and Claus Scheiblauer as part of the [Scanopy Project](http://www.cg.tuwien.ac.at/research/projects/Scanopy/).
 * [Three.js](https://github.com/mrdoob/three.js), the WebGL 3D rendering library on which potree is built.
 * [plas.io](http://plas.io/) point cloud viewer. LAS and LAZ support have been taken from the laslaz.js implementation of plas.io. Thanks to [Uday Verma](https://twitter.com/udaykverma) and [Howard Butler](https://twitter.com/howardbutler) for this!
 * [Harvest4D](https://harvest4d.org/) Potree currently runs as Master Thesis under the Harvest4D Project
+* Christian Boucheny (EDL developer) and Daniel Girardeau-Montaut ([CloudCompare](http://www.danielgm.net/cc/)). The EDL shader was adapted from the CloudCompare source code!
 * [Martin Isenburg](http://rapidlasso.com/), [Georepublic](http://georepublic.de/en/),
 [Veesus](http://veesus.com/), [Sigeom Sa](http://www.sigeom.ch/), [SITN](http://www.ne.ch/sitn), [Pix4D](http://pix4d.com/) as well as all the contributers to potree and PotreeConverter and many more for their support.

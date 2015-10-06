@@ -24,6 +24,8 @@ var isFlipYZ = false;
 var useDEMCollisions = false;
 var minNodeSize = 100;
 var directionalLight;
+var edlScale = sceneProperties.edlScale || 1;
+var edlRadius = sceneProperties.edlRadius || 3;
 
 var showStats = false;
 var showBoundingBox = false;
@@ -128,6 +130,7 @@ function initGUI(){
 		"Clip Mode": "Highlight Inside",
 		"quality": sceneProperties.quality,
 		"EDL": sceneProperties.useEDL,
+		"EDLScale": edlScale,
 		"skybox": false,
 		"stats": showStats,
 		"BoundingBox": showBoundingBox,
@@ -219,9 +222,27 @@ function initGUI(){
 	});
 	
 	if(Potree.Features.SHADER_EDL.isSupported()){
-		var pEDL = fAppearance.add(params, 'EDL');
+	
+		var edlParams = {
+			"enable": sceneProperties.useEDL,
+			"strength": edlScale,
+			"radius": edlRadius
+		};
+	
+		var fEDL = fAppearance.addFolder('Eye-Dome-Lighting');
+		var pEDL = fEDL.add(edlParams, 'enable');
 		pEDL.onChange(function(value){
 			sceneProperties.useEDL = value;
+		});
+		
+		var pEDLScale = fEDL.add(edlParams, 'strength', 0, 3, 0.01);
+		pEDLScale.onChange(function(value){
+			edlScale = value;
+		});
+		
+		var pRadius = fEDL.add(edlParams, 'radius', 1, 5);
+		pRadius.onChange(function(value){
+			edlRadius = value;
 		});
 	}
 	
@@ -1123,10 +1144,20 @@ var EDLRenderer = function(){
 				attributeMaterial.treeType = pointcloud.material.treeType;
 				attributeMaterial.uniforms.classificationLUT.value = pointcloud.material.uniforms.classificationLUT.value;
 				
-				scenePointCloud.overrideMaterial = attributeMaterial;
+				pointcloud.material = attributeMaterial;
+				for(var i = 0; i < pointcloud.visibleNodes.length; i++){
+					var node = pointcloud.visibleNodes[i];
+					node.sceneNode.material = attributeMaterial;
+				}
+				
 				renderer.clearTarget( rtColor, true, true, true );
 				renderer.render(scenePointCloud, camera, rtColor);
-				scenePointCloud.overrideMaterial = null;
+				
+				pointcloud.material = originalMaterial;
+				for(var i = 0; i < pointcloud.visibleNodes.length; i++){
+					var node = pointcloud.visibleNodes[i];
+					node.sceneNode.material = originalMaterial;
+				}
 			}
 			
 			{ // EDL OCCLUSION PASS
@@ -1136,6 +1167,8 @@ var EDLRenderer = function(){
 				edlMaterial.uniforms.far.value = camera.far;
 				edlMaterial.uniforms.colorMap.value = rtColor;
 				edlMaterial.uniforms.expScale.value = camera.far;
+				edlMaterial.uniforms.edlScale.value = edlScale;
+				edlMaterial.uniforms.radius.value = edlRadius;
 				
 				//edlMaterial.uniforms.depthMap.value = depthTexture;
 			

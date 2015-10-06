@@ -39,6 +39,7 @@ Potree.EyeDomeLightingMaterial = function(parameters){
 		near: 			{ type: "f", 	value: 0 },
 		far: 			{ type: "f", 	value: 0 },
 		expScale: 		{ type: "f", 	value: 100.0 },
+		edlScale: 		{ type: "f", 	value: 1.0 },
 		radius: 		{ type: "f", 	value: 3.0 },
 		lightDir:		{ type: "v3",	value: lightDir },
 		neighbours:		{ type: "2fv", 	value: neighbours },

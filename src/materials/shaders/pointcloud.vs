@@ -261,10 +261,6 @@ void main() {
 		vec2 uv = vec2(c / 255.0, 0.5);
 		vec4 classColor = texture2D(classificationLUT, uv);
 		vColor = classColor.rgb;
-		
-		if(classColor.a == 0.0){
-			gl_Position = vec4(100.0, 100.0, 100.0, 0.0);
-		}
 	#elif defined color_type_return_number
 		if(numberOfReturns == 1.0){
 			vColor = vec3(1.0, 1.0, 0.0);
@@ -287,6 +283,7 @@ void main() {
 	#endif
 	
 	{
+		// TODO might want to combine with the define block above to avoid reading same LUT two times
 		float c = mod(classification, 16.0);
 		vec2 uv = vec2(c / 255.0, 0.5);
 		

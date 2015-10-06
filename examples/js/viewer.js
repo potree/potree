@@ -928,6 +928,7 @@ var HighQualityRenderer = function(){
 				depthMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.size().x;
 				depthMaterial.bbSize = pointcloud.material.bbSize;
 				depthMaterial.treeType = pointcloud.material.treeType;
+				depthMaterial.uniforms.classificationLUT.value = pointcloud.material.uniforms.classificationLUT.value;
 				
 				scenePointCloud.overrideMaterial = depthMaterial;
 				renderer.clearTarget( rtDepth, true, true, true );
@@ -956,6 +957,7 @@ var HighQualityRenderer = function(){
 				attributeMaterial.clipMode = pointcloud.material.clipMode;
 				attributeMaterial.bbSize = pointcloud.material.bbSize;
 				attributeMaterial.treeType = pointcloud.material.treeType;
+				attributeMaterial.uniforms.classificationLUT.value = pointcloud.material.uniforms.classificationLUT.value;
 				
 				scenePointCloud.overrideMaterial = attributeMaterial;
 				renderer.clearTarget( rtNormalize, true, true, true );
@@ -1119,6 +1121,7 @@ var EDLRenderer = function(){
 				attributeMaterial.clipMode = pointcloud.material.clipMode;
 				attributeMaterial.bbSize = pointcloud.material.bbSize;
 				attributeMaterial.treeType = pointcloud.material.treeType;
+				attributeMaterial.uniforms.classificationLUT.value = pointcloud.material.uniforms.classificationLUT.value;
 				
 				scenePointCloud.overrideMaterial = attributeMaterial;
 				renderer.clearTarget( rtColor, true, true, true );

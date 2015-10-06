@@ -259,16 +259,13 @@ void main() {
 	#elif defined color_type_classification
 		float c = mod(classification, 16.0);
 		vec2 uv = vec2(c / 255.0, 0.5);
-		vColor = texture2D(classificationLUT, uv).rgb;
+		vec4 classColor = texture2D(classificationLUT, uv);
+		vColor = classColor.rgb;
 		
-		// TODO only for testing - removing points with class 7
-		if(classification == 7.0){
+		if(classColor.a == 0.0){
 			gl_Position = vec4(100.0, 100.0, 100.0, 0.0);
 		}
 	#elif defined color_type_return_number
-		//float w = (returnNumber - 1.0) / 4.0 + 0.1;
-		//vColor = texture2D(gradient, vec2(w, 1.0 - w)).rgb;
-		
 		if(numberOfReturns == 1.0){
 			vColor = vec3(1.0, 1.0, 0.0);
 		}else{
@@ -280,7 +277,6 @@ void main() {
 				vColor = vec3(0.0, 1.0, 0.0);
 			}
 		}
-		
 	#elif defined color_type_source
 		float w = mod(pointSourceID, 10.0) / 10.0;
 		vColor = texture2D(gradient, vec2(w,1.0 - w)).rgb;
@@ -289,6 +285,15 @@ void main() {
 	#elif defined color_type_phong
 		vColor = color;
 	#endif
+	
+	{
+		float c = mod(classification, 16.0);
+		vec2 uv = vec2(c / 255.0, 0.5);
+		
+		if(texture2D(classificationLUT, uv).a == 0.0){
+			gl_Position = vec4(100.0, 100.0, 100.0, 0.0);
+		}
+	}
 	
 	//if(vNormal.z < 0.0){
 	//	gl_Position = vec4(1000.0, 1000.0, 1000.0, 1.0);

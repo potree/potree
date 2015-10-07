@@ -564,7 +564,7 @@ var intensityMax = null;
 var heightMin = null;
 var heightMax = null;
 
-function update(){
+function update(delta, timestamp){
 	Potree.pointLoadLimit = pointCountTarget * 2 * 1000 * 1000;
 	
 	directionalLight.position.copy(camera.position);
@@ -635,7 +635,7 @@ function update(){
 	camera.fov = fov;
 	
 	if(controls){
-		controls.update(clock.getDelta());
+		controls.update(delta);
 	}
 
 	// update progress bar
@@ -692,21 +692,8 @@ function update(){
 		pointcloud.material.setClipBoxes(clipBoxes);
 	}
 	
-	//if(pointcloud){
-	//
-	//	var levels = new Uint32Array(20);
-	//
-	//	var vn = pointcloud.visibleNodes;
-	//	for(var i = 0; i < vn.length; i++){
-	//		var node = vn[i].node;
-	//		var level = node.level;
-	//		
-	//		levels[level]++;
-	//	}
-	//	
-	//	var a;
-	//}
 	
+	TWEEN.update(timestamp);
 }
 
 function useEarthControls(){
@@ -766,6 +753,56 @@ function useOrbitControls(){
 				counterProposal.y = demHeight;
 				
 				event.counterProposals.push(counterProposal);
+			}
+		});
+		orbitControls.domElement.addEventListener("dblclick", function(event){
+			if(!pointcloud){
+				return;
+			}
+			
+			event.preventDefault();
+		
+			var rect = orbitControls.domElement.getBoundingClientRect();
+			
+			var mouse =  {
+				x: ( (event.clientX - rect.left) / orbitControls.domElement.clientWidth ) * 2 - 1,
+				y: - ( (event.clientY - rect.top) / orbitControls.domElement.clientHeight ) * 2 + 1
+			};
+			
+			
+			var I = getMousePointCloudIntersection(mouse, camera, renderer, [pointcloud]);
+			if(I != null){
+			
+				var camTargetDistance = camera.position.distanceTo(orbitControls.target);
+			
+				var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
+				vector.unproject(camera);
+
+				var direction = vector.sub(camera.position).normalize();
+				var ray = new THREE.Ray(camera.position, direction);
+				
+				var nodes = pointcloud.nodesOnRay(pointcloud.visibleNodes, ray);
+				var lastNode = nodes[nodes.length - 1];
+				var radius = lastNode.boundingSphere.radius;
+				var targetRadius = Math.min(camTargetDistance, radius);
+				
+				var d = camera.getWorldDirection().multiplyScalar(-1);
+				var cameraTargetPosition = new THREE.Vector3().addVectors(I, d.multiplyScalar(targetRadius));
+				var controlsTargetPosition = I;
+				
+				var animationDuration = 400;
+				
+				var easing = TWEEN.Easing.Quartic.Out;
+				
+				// animate position
+				var tween = new TWEEN.Tween(camera.position).to(cameraTargetPosition, animationDuration);
+				tween.easing(easing);
+				tween.start();
+				
+				// animate target
+				var tween = new TWEEN.Tween(controls.target).to(I, animationDuration);
+				tween.easing(easing);
+				tween.start();
 			}
 		});
 	}
@@ -1045,15 +1082,6 @@ var EDLRenderer = function(){
 			//stencilBuffer: false
 		} );
 		
-		//depthTexture = new THREE.Texture();
-		//depthTexture.__webglInit = true;
-		//depthTexture.__webglTexture = gl.createTexture();;
-		//gl.bindTexture(gl.TEXTURE_2D, depthTexture.__webglTexture);
-		//gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-		//gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-		//gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-		//gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-		//gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT, 1024, 1024, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_SHORT, null);
 	};
 	
 	var resize = function(){
@@ -1074,28 +1102,6 @@ var EDLRenderer = function(){
 		
 		renderer.setSize(width, height);
 		rtColor.setSize(width, height);
-		
-		//if(needsResize){
-		//	renderer.setRenderTarget(rtColor);
-		//	var framebuffer = rtColor.__webglFramebuffer;
-		//	gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-		//	
-		//	
-		//	gl.bindRenderbuffer( gl.RENDERBUFFER, rtColor.__webglRenderbuffer );
-		//	gl.renderbufferStorage( gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, rtColor.width, rtColor.height );
-		//	gl.framebufferRenderbuffer( gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, null );
-		//	
-		//	gl.bindTexture(gl.TEXTURE_2D, depthTexture.__webglTexture);
-		//	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-		//	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-		//	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-		//	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-		//	gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT, width, height, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_INT, null);
-		//	
-		//	gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, depthTexture.__webglTexture, 0);
-		//	
-		//	renderer.setRenderTarget(null);
-		//}
 	}
 
 	this.render = function(){
@@ -1123,6 +1129,14 @@ var EDLRenderer = function(){
 			var originalMaterial = pointcloud.material;
 			
 			{// COLOR & DEPTH PASS
+				attributeMaterial = pointcloud.material;
+				attributeMaterial.pointShape = Potree.PointShape.CIRCLE;
+				attributeMaterial.interpolate = false;
+				attributeMaterial.weighted = false;
+				attributeMaterial.minSize = 2;
+				attributeMaterial.useLogarithmicDepthBuffer = false;
+				attributeMaterial.useEDL = true;
+				
 				attributeMaterial.size = pointSize;
 				attributeMaterial.pointSizeType = pointSizeType;
 				attributeMaterial.screenWidth = width;
@@ -1190,11 +1204,11 @@ var EDLRenderer = function(){
 
 //var toggleMessage = 0;
 
-function loop() {
+function loop(timestamp) {
 	requestAnimationFrame(loop);
 	
 	//var start = new Date().getTime();
-	update();
+	update(clock.getDelta(), timestamp);
 	//var end = new Date().getTime();
 	//var duration = end - start;
 	//toggleMessage++;
@@ -1221,4 +1235,4 @@ function loop() {
 
 
 initThree();
-loop();
+requestAnimationFrame(loop);

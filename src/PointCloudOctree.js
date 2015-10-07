@@ -309,7 +309,7 @@ Potree.PointCloudOctree.prototype.updateVisibilityTexture = function(material, v
 		var children = [];
 		for(var j = 0; j < 8; j++){
 			var child = node.children[j];
-			if(child instanceof Potree.PointCloudOctreeNode && child.sceneNode.visible){
+			if(child instanceof Potree.PointCloudOctreeNode && child.sceneNode.visible && visibleNodes.indexOf(child) >= 0){
 				children.push(child);
 			}
 		}
@@ -839,6 +839,25 @@ Potree.PointCloudOctree.prototype.pick = function(renderer, camera, ray, params)
 		pixelPos.x - (pickWindowSize-1) / 2, pixelPos.y - (pickWindowSize-1) / 2, 
 		pickWindowSize, pickWindowSize, 
 		renderer.context.RGBA, renderer.context.UNSIGNED_BYTE, pixels);
+		
+
+	//{ // show big render target for debugging purposes
+	//	var br = new ArrayBuffer(width*height*4);
+	//	var bp = new Uint8Array(br);
+	//	renderer.context.readPixels( 0, 0, width, height, 
+	//		renderer.context.RGBA, renderer.context.UNSIGNED_BYTE, bp);
+	//
+	//	var img = pixelsArrayToImage(bp, width, height);
+	//	img.style.boder = "2px solid red";
+	//	img.style.position = "absolute";
+	//	img.style.top  = "0px";
+	//	img.style.width = width + "px";
+	//	img.style.height = height + "px";
+	//	img.onclick = function(){document.body.removeChild(img)};
+	//	document.body.appendChild(img);
+	//}
+		
+		
 		
 	// find closest hit inside pixelWindow boundaries
 	var min = Number.MAX_VALUE;

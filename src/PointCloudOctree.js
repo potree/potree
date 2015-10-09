@@ -1,5 +1,11 @@
 
 
+Potree.ProfileRequest = function(){
+	this.queue = [];
+	
+	
+};
+
 Potree.PointCloudOctreeNode = function(){
 	this.children = {};
 	this.sceneNode = null;
@@ -771,6 +777,7 @@ Potree.PointCloudOctree.prototype.pick = function(renderer, camera, ray, params)
 	this.pickMaterial.interpolate = this.material.interpolate;
 	this.pickMaterial.minSize = this.material.minSize;
 	this.pickMaterial.maxSize = this.material.maxSize;
+	this.pickMaterial.classification = this.material.classification;
 	
 	this.updateMaterial(this.pickMaterial, nodes, camera, renderer);
 

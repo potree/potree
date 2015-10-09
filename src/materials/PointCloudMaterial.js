@@ -374,11 +374,11 @@ Object.defineProperty(Potree.PointCloudMaterial.prototype, "classification", {
 		return this._classification;
 	},
 	set: function(value){
-		if(this._classification !== value){
+		//if(this._classification !== value){
 			this._classification = value;
 			this.classificationTexture = Potree.PointCloudMaterial.generateClassificationTexture(this._classification);
 			this.uniforms.classificationLUT.value = this.classificationTexture;
-		}
+		//}
 	}
 });
 

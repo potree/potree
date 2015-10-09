@@ -186,7 +186,7 @@ LRU.prototype.freeMemory = function(){
 		var node = element.node;
 		this.disposeDescendants(node);
 	
-	};
+	}
 };
 
 LRU.prototype.disposeDescendants = function(node){

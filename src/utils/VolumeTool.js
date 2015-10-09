@@ -337,7 +337,7 @@ Potree.VolumeTool = function(scene, camera, renderer){
 		this.activeVolume.clip = clip;
 		this.sceneVolume.add(this.activeVolume);
 		this.volumes.push(this.activeVolume);
-	}
+	};
 	
 	this.finishInsertion = function(){
 		transformationTool.setTargets([this.activeVolume]);
@@ -350,7 +350,7 @@ Potree.VolumeTool = function(scene, camera, renderer){
 		
 		this.activeVolume = null;
 		state = STATE.DEFAULT;
-	}
+	};
 	
 	this.addVolume = function(volume){
 		this.sceneVolume.add(volume);
@@ -370,7 +370,7 @@ Potree.VolumeTool = function(scene, camera, renderer){
 			var volume = this.volumes[i];
 			this.removeVolume(volume);
 		}
-	}
+	};
 	
 	
 	this.render = function(){

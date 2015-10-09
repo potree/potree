@@ -49,7 +49,7 @@ Potree.TransformationTool = function(scene, camera, renderer){
 		ROTATE_X : 	{name: "rotate_x", 	object: undefined, color: new THREE.Color( 0xff0000 ), state: this.STATE.ROTATE_X},
 		ROTATE_Z : 	{name: "rotate_z", 	object: undefined, color: new THREE.Color( 0x0000ff ), state: this.STATE.ROTATE_Z},
 		ROTATE_Y : 	{name: "rotate_y", 	object: undefined, color: new THREE.Color( 0x00ff00 ), state: this.STATE.ROTATE_Y}
-	}
+	};
 
 	this.buildTranslationNode = function(){
 		var arrowX = scope.createArrow(scope.parts.ARROW_X, scope.parts.ARROW_X.color);
@@ -77,7 +77,7 @@ Potree.TransformationTool = function(scene, camera, renderer){
 		this.scaleNode.add(xHandle);
 		this.scaleNode.add(yHandle);
 		this.scaleNode.add(zHandle);
-	}
+	};
 	
 	this.buildRotationNode = function(){
 		var xHandle = this.createRotationCircle(scope.parts.ROTATE_X, 0xff0000);
@@ -144,7 +144,7 @@ Potree.TransformationTool = function(scene, camera, renderer){
 		sphere.addEventListener("mousedrag", dragEvent);
 		sphere.addEventListener("drop", dropEvent);
 		
-	}
+	};
 	
 	
 	
@@ -673,7 +673,7 @@ Potree.TransformationTool = function(scene, camera, renderer){
 		//}
 		
 		
-	}
+	};
 	
 	this.update = function(){
 		var node = this.sceneRoot;

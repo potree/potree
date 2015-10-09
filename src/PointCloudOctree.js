@@ -33,11 +33,11 @@ Potree.PointCloudOctree = function(geometry, material){
 	this.visibleBounds = new THREE.Box3();	
 	this.visibleNodes = [];
 	this.visibleGeometry = [];
-	this.pickTarget;
+	this.pickTarget = null;
 	this.generateDEM = false;
 	
 	this.root = this.pcoGeometry.root;
-}
+};
 
 Potree.PointCloudOctree.prototype = Object.create(THREE.Object3D.prototype);
 
@@ -62,7 +62,7 @@ Potree.PointCloudOctree.prototype.updateVisibility = function(camera, renderer){
 	var camObjPos = new THREE.Vector3().setFromMatrixPosition( camMatrixObject );
 	
 	// traverse nodes with highest weight(depends on node size and distance to camera) first
-	var priorityQueue = new BinaryHeap(function(x){return 1 / x.weight});
+	var priorityQueue = new BinaryHeap(function(x){return 1 / x.weight;});
 	priorityQueue.push({node: this.root, weight: 1});
 	
 	var visibleNodes = [];
@@ -248,7 +248,7 @@ Potree.PointCloudOctree.prototype.updateVisibleBounds = function(){
 		this.visibleBounds.expandByPoint(node.boundingBox.max);
 	}
 	
-}
+};
 
 Potree.PointCloudOctree.prototype.updateMaterial = function(material, visibleNodes, camera, renderer){
 	material.fov = camera.fov * (Math.PI / 180);
@@ -267,7 +267,7 @@ Potree.PointCloudOctree.prototype.updateMaterial = function(material, visibleNod
 			this.updateVisibilityTexture(material, visibleNodes);
 		}
 	}
-}
+};
 
 Potree.PointCloudOctree.prototype.update = function(camera, renderer){
 	
@@ -343,7 +343,7 @@ Potree.PointCloudOctree.prototype.updateVisibilityTexture = function(material, v
 	
 	
 	texture.needsUpdate = true;
-}
+};
 
 
 
@@ -434,7 +434,7 @@ Potree.PointCloudOctree.prototype.hideDescendants = function(object){
 			}
 		}
 	}
-}
+};
 
 Potree.PointCloudOctree.prototype.moveToOrigin = function(){
     this.position.set(0,0,0);
@@ -443,7 +443,7 @@ Potree.PointCloudOctree.prototype.moveToOrigin = function(){
     var transform = this.matrixWorld;
     var tBox = Potree.utils.computeTransformedBoundingBox(box, transform);
     this.position.set(0,0,0).sub(tBox.center());
-}
+};
 
 Potree.PointCloudOctree.prototype.moveToGroundPlane = function(){
     this.updateMatrixWorld(true);
@@ -451,7 +451,7 @@ Potree.PointCloudOctree.prototype.moveToGroundPlane = function(){
     var transform = this.matrixWorld;
     var tBox = Potree.utils.computeTransformedBoundingBox(box, transform);
     this.position.y += -tBox.min.y;
-}
+};
 
 Potree.PointCloudOctree.prototype.getBoundingBoxWorld = function(){
 	this.updateMatrixWorld(true);
@@ -460,7 +460,7 @@ Potree.PointCloudOctree.prototype.getBoundingBoxWorld = function(){
     var tBox = Potree.utils.computeTransformedBoundingBox(box, transform);
 	
 	return tBox;
-}
+};
 
 /**
  * returns points inside the profile points
@@ -699,14 +699,14 @@ Potree.PointCloudOctree.prototype.getProfile = function(start, end, width, depth
 				return pos;
 			};
 			
-		}(start, end)
+		}(start, end);
 		
 		inside.project = project;
 		inside.boundingBox = boundingBox;
 		
 		return inside;
 	}
-}
+};
 
 Potree.PointCloudOctree.prototype.getVisibleExtent = function(){
 	return this.visibleBounds.applyMatrix4(this.matrixWorld);
@@ -744,7 +744,7 @@ Potree.PointCloudOctree.prototype.pick = function(renderer, camera, ray, params)
 	var pixelPos = new THREE.Vector3().addVectors(camera.position, ray.direction).project(camera);
 	pixelPos.addScalar(1).multiplyScalar(0.5);
 	pixelPos.x *= width;
-	pixelPos.y *= height
+	pixelPos.y *= height;
 	
 	if(!this.pickTarget){
 		this.pickTarget = new THREE.WebGLRenderTarget( 
@@ -792,7 +792,7 @@ Potree.PointCloudOctree.prototype.pick = function(renderer, camera, ray, params)
 	renderer.setRenderTarget( this.pickTarget );
 	
 	renderer.state.setDepthTest( material.depthTest );
-	renderer.state.setDepthWrite( material.depthWrite )
+	renderer.state.setDepthWrite( material.depthWrite );
 	renderer.state.setBlending( THREE.NoBlending );
 	
 	renderer.clear( renderer.autoClearColor, renderer.autoClearDepth, renderer.autoClearStencil );
@@ -898,7 +898,7 @@ Potree.PointCloudOctree.prototype.pick = function(renderer, camera, ray, params)
 		
 		for (var property in attributes) {
 			if (attributes.hasOwnProperty(property)) {
-				var values = geometry.attributes[property];
+				var values = pc.geometry.attributes[property];
 			
 				if(property === "position"){
 					var positionArray = pc.geometry.attributes.position.array;
@@ -930,7 +930,7 @@ Potree.PointCloudOctree.prototype.pick = function(renderer, camera, ray, params)
 	}else{
 		return null;
 	}
-}
+};
 
 var demTime = 0;
 
@@ -1111,7 +1111,7 @@ Potree.PointCloudOctree.prototype.createDEM = function(node){
 	demTime += duration;
 
 	return result;
-}
+};
 
 Potree.PointCloudOctree.prototype.getDEMHeight = function(position){
 	var pos2 = new THREE.Vector2(position.x, position.z);
@@ -1209,7 +1209,7 @@ Potree.PointCloudOctree.prototype.getDEMHeight = function(position){
 	
 	
 	return height;
-}
+};
 
 Potree.PointCloudOctree.prototype.generateTerain = function(){
 	var bb = this.boundingBox.clone().applyMatrix4(this.matrixWorld);

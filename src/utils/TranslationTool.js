@@ -19,13 +19,11 @@ Potree.TranslationTool = function(camera) {
 		ARROW_X : {name: "arrow_x", object: undefined, color: new THREE.Color( 0xff0000 ), state: this.STATE.TRANSLATE_X},
 		ARROW_Y : {name: "arrow_y", object: undefined, color: new THREE.Color( 0x00ff00 ), state: this.STATE.TRANSLATE_Y},
 		ARROW_Z : {name: "arrow_z", object: undefined, color: new THREE.Color( 0x0000ff ), state: this.STATE.TRANSLATE_Z}
-	}
-	
-	this.translateStart;
+	};
 	
 	this.state = this.STATE.DEFAULT;
-	this.highlighted;
-	this.targets;
+	this.highlighted = null;
+	this.targets = null;
 	
 	this.build = function(){
 		var arrowX = scope.createArrow(scope.parts.ARROW_X, scope.parts.ARROW_X.color);
@@ -110,7 +108,7 @@ Potree.TranslationTool = function(camera) {
 
 		scope.highlighted = partID;
 		partID.object.material.color = new THREE.Color(0xffff00);
-	}
+	};
 	
 	this.getHoveredObject = function(mouse){
 		var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
@@ -129,7 +127,7 @@ Potree.TranslationTool = function(camera) {
 		var partID = I.object.parent.partID;
 			
 		return partID;	
-	}
+	};
 	
 	this.onMouseMove = function(event){
 
@@ -219,7 +217,7 @@ Potree.TranslationTool = function(camera) {
 		
 		scope.position.copy(centroid);
 		
-	}
+	};
 
 	this.build();
 };

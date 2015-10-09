@@ -10,11 +10,11 @@ function CustomView(buffer) {
 	
 	this.getUint32 = function (i) {
 		return (this.u8[i+3] << 24) | (this.u8[i+2] << 16) | (this.u8[i+1] << 8) | this.u8[i];
-	}
+	};
 	
 	this.getUint16 = function (i) {
 		return (this.u8[i+1] << 8) | this.u8[i];
-	}
+	};
 	
 	this.getFloat = function(i){
 		tmpu8[0] = this.u8[i+0];
@@ -23,11 +23,11 @@ function CustomView(buffer) {
 		tmpu8[3] = this.u8[i+3];
 		
 		return tmpf[0];
-	}
+	};
 	
 	this.getUint8 = function(i){
 		return this.u8[i];
-	}
+	};
 }
 
 Potree = {};
@@ -160,12 +160,14 @@ onmessage = function(event){
 				
 				var z = 1 - Math.abs(u) - Math.abs(v);
 				
+				var x = 0;
+				var y = 0;
 				if(z >= 0){
-					var x = u;
-					var y = v;
+					x = u;
+					y = v;
 				}else{
-					var x = - (v/Math.sign(v) - 1) / Math.sign(u);
-					var y = - (u/Math.sign(u) - 1) / Math.sign(v);
+					x = - (v/Math.sign(v) - 1) / Math.sign(u);
+					y = - (u/Math.sign(u) - 1) / Math.sign(v);
 				}
 				
 				var length = Math.sqrt(x*x + y*y + z*z);

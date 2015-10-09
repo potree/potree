@@ -67,8 +67,7 @@ Potree.PointColorType = {
 	RETURN_NUMBER: 		9,
 	SOURCE: 			10,
 	NORMAL: 			11,
-	PHONG: 				12,
-	TREE_DEPTH: 		13
+	PHONG: 				12
 };
 
 Potree.ClipMode = {
@@ -106,7 +105,7 @@ Potree.PointCloudMaterial = function(parameters){
 	this.numClipBoxes = 0;
 	this._clipMode = Potree.ClipMode.DISABLED;
 	this._weighted = false;
-	this._depthMap;
+	this._depthMap = null;
 	this._gradient = Potree.Gradients.RAINBOW;
 	this._classification = Potree.Classification.DEFAULT;
 	this.gradientTexture = Potree.PointCloudMaterial.generateGradientTexture(this._gradient);

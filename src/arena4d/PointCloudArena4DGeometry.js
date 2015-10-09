@@ -132,7 +132,7 @@ Potree.PointCloudArena4DGeometry.load = function(url, callback){
 				
 				var offset = geometry.boundingBox.min.clone().multiplyScalar(-1);
 				
-				geometry.boundingBox.min.add(offset)
+				geometry.boundingBox.min.add(offset);
 				geometry.boundingBox.max.add(offset);
 				geometry.offset = offset;
 				
@@ -278,7 +278,7 @@ Potree.PointCloudArena4DGeometry.prototype.loadHierarchy = function(){
 		scope.levels = levels;
 		//console.log(this.root);
 		
-	}
+	};
 	
 	xhr.send(null);
 	

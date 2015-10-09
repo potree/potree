@@ -131,7 +131,7 @@ Potree.Measure = function(){
 		
 		this.remove(this.spheres[index]);
 		
-		var edgeIndex = (index == 0) ? 0 : (index - 1);
+		var edgeIndex = (index === 0) ? 0 : (index - 1);
 		this.remove(this.edges[edgeIndex]);
 		this.edges.splice(edgeIndex, 1);
 		
@@ -284,7 +284,7 @@ Potree.Measure = function(){
 			I.distance = raycaster.ray.origin.distanceTo(I.point);
 		}
 		intersects.sort( function ( a, b ) { return a.distance - b.distance;} );
-	}
+	};
 };
 
 Potree.Measure.prototype = Object.create( THREE.Object3D.prototype );
@@ -337,7 +337,7 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 	
 	var state = STATE.DEFAULT;
 	
-	this.activeMeasurement;
+	this.activeMeasurement= null;
 	this.measurements = [];
 	this.sceneMeasurement = new THREE.Scene();
 	this.sceneRoot = new THREE.Object3D();
@@ -430,7 +430,7 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 		// TODO remove
 	
 		return state;
-	}
+	};
 	
 	function onMouseDown(event){
 
@@ -545,7 +545,7 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 		}
 		
 		return closestPoint ? closestPoint.position : null;
-	}	
+	};
 	
 	this.startInsertion = function(args){
 		state = STATE.INSERT;

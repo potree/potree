@@ -9,7 +9,7 @@ Potree.PointCloudArena4DProxyNode = function(geometryNode){
 	this.number = geometryNode.name;
 	this.numPoints = geometryNode.numPoints;
 	this.level = geometryNode.level;
-}
+};
 
 Potree.PointCloudArena4DProxyNode.prototype = Object.create(THREE.Object3D.prototype);
 
@@ -91,7 +91,7 @@ Potree.PointCloudArena4D.prototype.hideDescendants = function(object){
 			}
 		}
 	}
-}
+};
 
 Potree.PointCloudArena4D.prototype.updateMatrixWorld = function( force ){
 	//node.matrixWorld.multiplyMatrices( node.parent.matrixWorld, node.matrix );
@@ -378,7 +378,7 @@ Potree.PointCloudArena4D.prototype.replaceProxy = function(proxy){
 		
 		return node;
 	}
-}
+};
 
 Potree.PointCloudArena4D.prototype.updateLoadQueue = function(vn){
 	if(this.loadQueue.length > 0){
@@ -390,7 +390,7 @@ Potree.PointCloudArena4D.prototype.updateLoadQueue = function(vn){
 			this.loadQueue[i].node.geometryNode.load();
 		}
 	}
-}
+};
 
 Potree.PointCloudArena4D.prototype.getVisibleGeometry = function(camera){
 	var visibleGeometry = [];
@@ -486,7 +486,7 @@ Potree.PointCloudArena4D.prototype.pick = function(renderer, camera, ray, params
 	var pixelPos = new THREE.Vector3().addVectors(camera.position, ray.direction).project(camera);
 	pixelPos.addScalar(1).multiplyScalar(0.5);
 	pixelPos.x *= width;
-	pixelPos.y *= height
+	pixelPos.y *= height;
 	
 	if(!this.pickTarget){
 		this.pickTarget = new THREE.WebGLRenderTarget( 
@@ -543,7 +543,7 @@ Potree.PointCloudArena4D.prototype.pick = function(renderer, camera, ray, params
 	renderer.setRenderTarget( this.pickTarget );
 	
 	renderer.state.setDepthTest( material.depthTest );
-	renderer.state.setDepthWrite( material.depthWrite )
+	renderer.state.setDepthWrite( material.depthWrite );
 	renderer.state.setBlending( THREE.NoBlending );
 	
 	renderer.clear( renderer.autoClearColor, renderer.autoClearDepth, renderer.autoClearStencil );
@@ -628,7 +628,7 @@ Potree.PointCloudArena4D.prototype.pick = function(renderer, camera, ray, params
 		
 		for (var property in attributes) {
 			if (attributes.hasOwnProperty(property)) {
-				var values = geometry.attributes[property];
+				var values = pc.geometry.attributes[property];
 			
 				if(property === "position"){
 					var positionArray = pc.geometry.attributes.position.array;
@@ -726,7 +726,7 @@ Potree.PointCloudArena4D.prototype.updateVisibilityTexture = function(material, 
 	
 	
 	texture.needsUpdate = true;
-}
+};
 
 
 

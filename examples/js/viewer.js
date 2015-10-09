@@ -221,29 +221,117 @@ function initGUI(){
 		quality = value;
 	});
 	
-	if(Potree.Features.SHADER_EDL.isSupported()){
+	{ // Eye-Dome-Lighting
+		if(Potree.Features.SHADER_EDL.isSupported()){
+		
+			var edlParams = {
+				"enable": sceneProperties.useEDL,
+				"strength": edlScale,
+				"radius": edlRadius
+			};
+		
+			var fEDL = fAppearance.addFolder('Eye-Dome-Lighting');
+			var pEDL = fEDL.add(edlParams, 'enable');
+			pEDL.onChange(function(value){
+				sceneProperties.useEDL = value;
+			});
+			
+			var pEDLScale = fEDL.add(edlParams, 'strength', 0, 3, 0.01);
+			pEDLScale.onChange(function(value){
+				edlScale = value;
+			});
+			
+			var pRadius = fEDL.add(edlParams, 'radius', 1, 5);
+			pRadius.onChange(function(value){
+				edlRadius = value;
+			});
+		}
+	}
 	
-		var edlParams = {
-			"enable": sceneProperties.useEDL,
-			"strength": edlScale,
-			"radius": edlRadius
+	{ // Classification
+		var classificationParams = {
+			"never classified": true,
+			"unclassified": true,
+			"ground": true,
+			"low vegetation": true,
+			"medium vegetation": true,
+			"high vegetation": true,
+			"building": true,
+			"low point(noise)": false,
+			"key-point": true,
+			"water": true,
+			"overlap": true
 		};
-	
-		var fEDL = fAppearance.addFolder('Eye-Dome-Lighting');
-		var pEDL = fEDL.add(edlParams, 'enable');
-		pEDL.onChange(function(value){
-			sceneProperties.useEDL = value;
+		
+		var setClassificationVisibility = function(key, value){
+			if(!pointcloud){
+				return;
+			}
+			var newClass = pointcloud.material.classification;
+			newClass[key].w = value ? 1 : 0;
+			
+			pointcloud.material.classification = newClass;
+		};
+		
+		var fClassification = fAppearance.addFolder('Classification');
+		
+		var pNeverClassified = fClassification.add(classificationParams, 'never classified');
+		pNeverClassified.onChange(function(value){
+			setClassificationVisibility(0, value);
+		});		
+		
+		var pUnclassified = fClassification.add(classificationParams, 'unclassified');
+		pUnclassified.onChange(function(value){
+			setClassificationVisibility(1, value);
+		});	
+		
+		var pGround = fClassification.add(classificationParams, 'ground');
+		pGround.onChange(function(value){
+			setClassificationVisibility(2, value);
+		});	
+		
+		var pLowVeg = fClassification.add(classificationParams, 'low vegetation');
+		pLowVeg.onChange(function(value){
+			setClassificationVisibility(3, value);
+		});	
+		
+		var pMedVeg = fClassification.add(classificationParams, 'medium vegetation');
+		pMedVeg.onChange(function(value){
+			setClassificationVisibility(4, value);
+		});	
+		
+		var pHighVeg = fClassification.add(classificationParams, 'high vegetation');
+		pHighVeg.onChange(function(value){
+			setClassificationVisibility(5, value);
+		});	
+		
+		var pBuilding = fClassification.add(classificationParams, 'building');
+		pBuilding.onChange(function(value){
+			setClassificationVisibility(6, value);
+		});	
+		
+		var pNoise = fClassification.add(classificationParams, 'low point(noise)');
+		pNoise.onChange(function(value){
+			setClassificationVisibility(7, value);
+		});	
+		
+		var pKeyPoint = fClassification.add(classificationParams, 'key-point');
+		pKeyPoint.onChange(function(value){
+			setClassificationVisibility(8, value);
+		});	
+		
+		var pWater = fClassification.add(classificationParams, 'water');
+		pWater.onChange(function(value){
+			setClassificationVisibility(9, value);
+		});	
+		
+		var pOverlap = fClassification.add(classificationParams, 'overlap');
+		pOverlap.onChange(function(value){
+			setClassificationVisibility(12, value);
 		});
 		
-		var pEDLScale = fEDL.add(edlParams, 'strength', 0, 3, 0.01);
-		pEDLScale.onChange(function(value){
-			edlScale = value;
-		});
 		
-		var pRadius = fEDL.add(edlParams, 'radius', 1, 5);
-		pRadius.onChange(function(value){
-			edlRadius = value;
-		});
+
 	}
 	
 	var pSykbox = fAppearance.add(params, 'skybox');
@@ -790,7 +878,7 @@ function useOrbitControls(){
 				var cameraTargetPosition = new THREE.Vector3().addVectors(I, d.multiplyScalar(targetRadius));
 				var controlsTargetPosition = I;
 				
-				var animationDuration = 400;
+				var animationDuration = 600;
 				
 				var easing = TWEEN.Easing.Quartic.Out;
 				

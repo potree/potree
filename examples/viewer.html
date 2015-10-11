@@ -35,6 +35,7 @@
 	<script src="../src/utils/VolumeTool.js"></script>
 	<script src="../src/utils.js"></script>
 	<script src="../src/LRU.js"></script>
+	<script src="../src/Annotation.js"></script>
 	<script src="../src/TextSprite.js"></script>
 	<script src="../src/Features.js"></script>
 	<script src="../src/arena4d/PointCloudArena4D.js"></script>
@@ -46,34 +47,15 @@
 	<script src="../libs/plasio/vendor/bluebird.js"></script>
 	<script src="../build/js/laslaz.js"></script>
 	
-	
-	<!-- HEADING -->
-	<div class="info" style="position: absolute; left: 300px; right: 300px; top: 10px; text-align: center;">
-		<a href="http://potree.org" target="_blank">potree.org</a><br>
-		Point cloud courtesy of <a href="http://www.sigeom.ch/" target="_blank">sigeom sa</a><br>
+	<div id="renderArea">
+
+		<!-- HEADING -->
+		<div class="info" style="position: absolute; left: 300px; right: 300px; top: 10px; text-align: center;">
+			<a href="http://potree.org" target="_blank">potree.org</a><br>
+			Testing annotations and refactoring of the viewer.
+		</div>
 	</div>
 	
-	<!-- INFOS / STATS -->
-	<div id="lblNumVisibleNodes" class="info" style="position: absolute; left: 10px; top: 80px; width: 400px; color:white"></div>
-	<div id="lblNumVisiblePoints" class="info" style="position: absolute; left: 10px; top: 100px; width: 400px; color:white"></div>
-	<div id="lblMessage" class="info" style="position: absolute; left: 10px; bottom: 0px; width: 400px; color:white"></div>
-	
-	<!-- TOOLS -->
-	<div id="tools" style="position: fixed; width: 400px; bottom: 10px; right: 10px">
-		<img src="../resources/icons/earth_controls_1.png" onclick="viewer.useEarthControls()" title="Earth Controls"/>
-		<img src="../resources/icons/fps_controls.png" 	onclick="viewer.useFPSControls()" title="Fly Camera"/>
-		<img src="../resources/icons/orbit_controls.png" onclick="viewer.useOrbitControls()" title="Orbit Controls"/>
-		<img src="../resources/icons/focus.png" 		onclick="viewer.camera.zoomTo(viewer.pointcloud)" title="focus on pointcloud"/>
-		<img src="../resources/icons/flip_y_z.png" 		onclick="viewer.flipYZ()" title="flip y and z coordinates"/>
-		<img src="../resources/icons/angle.png" 		onclick="viewer.measuringTool.startInsertion({showDistances: false, showAngles: true, showArea: false, closed: true, maxMarkers: 3})" title="angle measurements"/>
-		<img src="../resources/icons/distance.png" 		onclick="viewer.measuringTool.startInsertion({showDistances: true, showArea: false, closed: false})" title="distance measurements"/>
-		<img src="../resources/icons/area.png" 			onclick="viewer.measuringTool.startInsertion({showDistances: true, showArea: true, closed: true})" title="area measurements"/>
-		<img src="../resources/icons/volume.png" 		onclick="viewer.volumeTool.startInsertion()" title="volume measurements"/>
-		<img src="../resources/icons/profile.png" 		onclick="viewer.profileTool.startInsertion({width: viewer.pointcloud.boundingSphere.radius / 100})" title="height profiles"/>
-		<img src="../resources/icons/clip_volume.png" 	onclick="viewer.volumeTool.startInsertion({clip: true})" title="clipping volumes"/>
-	</div>
-	
-	<div id="renderArea"></div>
 		
 	<script>
 		var settings = {
@@ -82,14 +64,14 @@
 			path:			"http://5.9.65.151/mschuetz/potree/test/cloud.js",
 			cameraPosition: null,
 			cameraTarget: null,
-			sizeType: 		"Adaptive",			// options: "Fixed", "Attenuated", "Adaptive"
-			quality: 		"Squares", 			// options: "Squares", "Circles", "Interpolation", "Splats"
-			fov: 			75, 				// field of view in degree
-			material: 		"RGB", 				// options: "RGB", "Height", "Intensity", "Classification"
-			pointLimit: 	1,					// max number of points in millions
-			navigation: 	"Orbit",			// options: "Earth", "Orbit", "Flight"
-			pointSize: 		1,					
-			useEDL:			true,				// eye-dome-lighting, especially useful for point clouds without normals
+			sizeType:		"Adaptive",			// options: "Fixed", "Attenuated", "Adaptive"
+			quality:		"Squares",			// options: "Squares", "Circles", "Interpolation", "Splats"
+			fov:			75,					// field of view in degree
+			material:		"RGB",				// options: "RGB", "Height", "Intensity", "Classification"
+			pointLimit:		1,					// max number of points in millions
+			navigation:		"Orbit",			// options: "Earth", "Orbit", "Flight"
+			pointSize:		1,					
+			useEDL:			false,				// eye-dome-lighting, especially useful for point clouds without normals
 		};
 		
 		var onPointCloudLoaded = function(event){
@@ -101,7 +83,35 @@
 		viewer = new Potree.Viewer(canvas, settings, {
 			"onPointCloudLoaded": onPointCloudLoaded
 		});
+		
+		viewer.addAnnotation(new THREE.Vector3(3511, 228, 14192), {
+			"cameraTarget": new THREE.Vector3(3511, 82, 14192),
+			"cameraPosition": new THREE.Vector3(3097, 360, 14276)
+		});
+		
+		viewer.addAnnotation(new THREE.Vector3(39391, 480, 35045), {
+			"cameraTarget": new THREE.Vector3(39391, 332, 35045),
+			"cameraPosition": new THREE.Vector3(37467, 1974, 35050)
+		});
+		
+		viewer.addAnnotation(new THREE.Vector3(-6726, 46, 2165), {
+			"cameraTarget": new THREE.Vector3(-6726, 24, 2165),
+			"cameraPosition": new THREE.Vector3(-6671, 75, 2221)
+		});
 	</script>
 	
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+

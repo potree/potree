@@ -355,14 +355,14 @@ Potree.Viewer = function(domElement, settings, args){
 		// default material is not available. set material to Elevation
 		if(options.indexOf(params.Materials) < 0){
 			console.error("Default Material '" + params.Material + "' is not available. Using Elevation instead");
-			setMaterial("Elevation");
+			scope.setMaterial("Elevation");
 			params.Materials = "Elevation";
 		}
 		
 		
 		pMaterial = fAppearance.add(params, 'Materials',options);
 		pMaterial.onChange(function(value){
-			setMaterial(value);
+			scope.setMaterial(value);
 		});
 		
 		var qualityOptions = ["Squares", "Circles"];
@@ -413,7 +413,7 @@ Potree.Viewer = function(domElement, settings, args){
 				"medium vegetation": true,
 				"high vegetation": true,
 				"building": true,
-				"low point(noise)": false,
+				"low point(noise)": true,
 				"key-point": true,
 				"water": true,
 				"overlap": true

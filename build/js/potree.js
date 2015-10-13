@@ -883,36 +883,39 @@ Potree.Shaders["blur.fs"] = [
 
 THREE.PerspectiveCamera.prototype.zoomTo = function( node, factor ){
 
-	if ( !node.geometry && !node.boundingSphere) {
-	
+	if ( !node.geometry && !node.boundingSphere && !node.boundingBox) {
 		return;
-	
 	}
 	
 	if ( node.geometry && node.geometry.boundingSphere === null ) { 
-	
 		node.geometry.computeBoundingSphere();
-	
 	}
 	
 	node.updateMatrixWorld();
+	
+	var bs;
+	
+	if(node.boundingSphere){
+		bs = node.boundingSphere;
+	}else if(node.geometry && node.geometry.boundingSphere){
+		bs = node.geometry.boundingSphere;
+	}else{
+		bs = node.boundingBox.getBoundingSphere();
+	}
 
 	var _factor = factor || 1;
-	var bs = node.boundingSphere || node.geometry.boundingSphere;
+	
 	bs = bs.clone().applyMatrix4(node.matrixWorld); 
 	var radius = bs.radius;
 	var fovr = this.fov * Math.PI / 180;
 	
 	if( this.aspect < 1 ){
-	
 		fovr = fovr * this.aspect;
-		
 	}
 	
 	var distanceFactor = Math.abs( radius / Math.sin( fovr / 2 ) ) * _factor ;
 	
-	var dir = new THREE.Vector3( 0, 0, -1 ).applyQuaternion( this.quaternion );
-	var offset = dir.multiplyScalar( -distanceFactor );
+	var offset = this.getWorldDirection().multiplyScalar( -distanceFactor );
 	this.position.copy(bs.center.clone().add( offset ));
 	
 };
@@ -5986,53 +5989,29 @@ function projectedRadius(radius, fov, distance, screenHeight){
 };
 	
 	
-Potree.utils.topView = function(camera, controls, pointcloud){
+Potree.utils.topView = function(camera, node){
 	camera.position.set(0, 1, 0);
 	camera.rotation.set(-Math.PI / 2, 0, 0);
-	camera.zoomTo(pointcloud, 1);
-
-	if(controls.target){
-		var sg = pointcloud.boundingSphere.clone().applyMatrix4(pointcloud.matrixWorld);
-		var target = new THREE.Vector3(camera.position.x, sg.center.y, camera.position.z);
-		controls.target.copy(target);
-	}	
+	camera.zoomTo(node, 1);
 };
 
-Potree.utils.frontView = function(camera, controls, pointcloud){
+Potree.utils.frontView = function(camera, node){
 	camera.position.set(0, 0, 1);
 	camera.rotation.set(0, 0, 0);
-	camera.zoomTo(pointcloud, 1);
-
-	if(controls.target){
-		var sg = pointcloud.boundingSphere.clone().applyMatrix4(pointcloud.matrixWorld);
-		var target = new THREE.Vector3(camera.position.x, camera.position.y, sg.center.z);
-		controls.target.copy(target);
-	}
+	camera.zoomTo(node, 1);
 };
 
 
-Potree.utils.leftView = function(camera, controls, pointcloud){
+Potree.utils.leftView = function(camera, node){
 	camera.position.set(-1, 0, 0);
 	camera.rotation.set(0, -Math.PI / 2, 0);
-	camera.zoomTo(pointcloud, 1);
-
-	if(controls.target){
-		var sg = pointcloud.boundingSphere.clone().applyMatrix4(pointcloud.matrixWorld);
-		var target = new THREE.Vector3(sg.center.x, camera.position.y, camera.position.z);
-		controls.target.copy(target);
-	}
+	camera.zoomTo(node, 1);
 };
 
-Potree.utils.rightView = function(camera, controls, pointcloud){
+Potree.utils.rightView = function(camera, node){
 	camera.position.set(1, 0, 0);
 	camera.rotation.set(0, Math.PI / 2, 0);
-	camera.zoomTo(pointcloud, 1);
-
-	if(controls.target){
-		var sg = pointcloud.boundingSphere.clone().applyMatrix4(pointcloud.matrixWorld);
-		var target = new THREE.Vector3(sg.center.x, camera.position.y, camera.position.z);
-		controls.target.copy(target);
-	}
+	camera.zoomTo(node, 1);
 };
 	
 /**
@@ -6195,8 +6174,11 @@ Potree.TextSprite = function(text){
 	var texture = new THREE.Texture();
 	texture.minFilter = THREE.LinearFilter;
 	texture.magFilter = THREE.LinearFilter;
-	var spriteMaterial = new THREE.SpriteMaterial( 
-		{ map: texture, useScreenCoordinates: false} );
+	var spriteMaterial = new THREE.SpriteMaterial( { 
+		map: texture, 
+		useScreenCoordinates: false,
+		depthTest: false,
+		depthWrite: false} );
 	
 	this.material = spriteMaterial;
 	this.sprite = new THREE.Sprite(spriteMaterial);
@@ -6411,7 +6393,7 @@ Potree.Measure = function(){
 			scope.setPosition(index, I);
 		}
 		
-		//event.event.stopImmediatePropagation();
+		event.event.stopImmediatePropagation();
 	};
 	
 	var dropEvent = function(event){
@@ -8407,6 +8389,10 @@ Potree.TransformationTool = function(scene, camera, renderer){
 		this.rotationNode.visible = true;
 	};
 	
+	this.reset = function(){
+		this.setTargets([]);
+	};
+	
 	this.buildTranslationNode();
 	this.buildScaleNode();
 	this.buildRotationNode();
@@ -8463,7 +8449,12 @@ Potree.Volume = function(args){
 	boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, 0.5, -0.5));
 
 	this.dimension = new THREE.Vector3(1,1,1);
-	var material = new THREE.MeshBasicMaterial( {color: 0x00ff00, transparent: true, opacity: 0.3} );
+	var material = new THREE.MeshBasicMaterial( {
+		color: 0x00ff00, 
+		transparent: true, 
+		opacity: 0.3,
+		depthTest: true, 
+		depthWrite: true} );
 	this.box = new THREE.Mesh( boxGeometry, material);
 	this.box.geometry.computeBoundingBox();
 	this.boundingBox = this.box.geometry.boundingBox;
@@ -8477,6 +8468,8 @@ Potree.Volume = function(args){
 	this.label.setBorderColor({r:0, g:255, b:0, a:0.0});
 	this.label.setBackgroundColor({r:0, g:255, b:0, a:0.0});
 	this.label.material.depthTest = false;
+	this.label.material.depthWrite = false;
+	this.label.material.transparent = true;
 	this.label.position.y -= 0.5;
 	this.add(this.label);
 	
@@ -8507,6 +8500,7 @@ Potree.Volume = function(args){
 	
 	this.update = function(){
 		this.boundingBox = this.box.geometry.boundingBox;
+		this.boundingSphere = this.boundingBox.getBoundingSphere();
 		
 		if(this._clip){
 			this.box.visible = false;
@@ -8563,7 +8557,7 @@ Object.defineProperty(Potree.Volume.prototype, "modifiable", {
 });
 
 
-Potree.VolumeTool = function(scene, camera, renderer){
+Potree.VolumeTool = function(scene, camera, renderer, transformationTool){
 	
 	var scope = this;
 	this.enabled = false;
@@ -8572,7 +8566,8 @@ Potree.VolumeTool = function(scene, camera, renderer){
 	this.sceneVolume = new THREE.Scene();
 	this.camera = camera;
 	this.renderer = renderer;
-	this.domElement = renderer.domElement;
+	this.transformationTool = transformationTool;
+	this.domElement = this.renderer.domElement;
 	this.mouse = {x: 0, y: 0};
 	
 	this.volumes = [];
@@ -8617,7 +8612,7 @@ Potree.VolumeTool = function(scene, camera, renderer){
 			var I = getHoveredElement();
 			
 			if(I && I.object.modifiable){
-				transformationTool.setTargets([I.object]);
+				scope.transformationTool.setTargets([I.object]);
 			}
 		}
 	
@@ -8743,7 +8738,7 @@ Potree.VolumeTool = function(scene, camera, renderer){
 			label.setText(msg);
 			
 			var distance = scope.camera.position.distanceTo(label.getWorldPosition());
-			var pr = projectedRadius(1, scope.camera.fov * Math.PI / 180, distance, renderer.domElement.clientHeight);
+			var pr = projectedRadius(1, scope.camera.fov * Math.PI / 180, distance, scope.renderer.domElement.clientHeight);
 			var scale = (70 / pr);
 			label.scale.set(scale, scale, scale);
 		}
@@ -8763,7 +8758,7 @@ Potree.VolumeTool = function(scene, camera, renderer){
 	};
 	
 	this.finishInsertion = function(){
-		transformationTool.setTargets([this.activeVolume]);
+		scope.transformationTool.setTargets([this.activeVolume]);
 		
 		var event = {
 			type: "insertion_finished",
@@ -8796,9 +8791,9 @@ Potree.VolumeTool = function(scene, camera, renderer){
 	};
 	
 	
-	this.render = function(){
-	
-		renderer.render(this.sceneVolume, this.camera);
+	this.render = function(target){
+		
+		scope.renderer.render(this.sceneVolume, this.camera, target);
 		
 	};
 	

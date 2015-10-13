@@ -38,6 +38,7 @@
 	<script src="../src/Annotation.js"></script>
 	<script src="../src/TextSprite.js"></script>
 	<script src="../src/Features.js"></script>
+	<script src="../src/extensions/PerspectiveCamera.js"></script>
 	<script src="../src/arena4d/PointCloudArena4D.js"></script>
 	<script src="../src/arena4d/PointCloudArena4DGeometry.js"></script>
 	
@@ -71,11 +72,16 @@
 			pointLimit:		1,					// max number of points in millions
 			navigation:		"Orbit",			// options: "Earth", "Orbit", "Flight"
 			pointSize:		1,					
-			useEDL:			false,				// eye-dome-lighting, especially useful for point clouds without normals
+			useEDL:			true,				// eye-dome-lighting, especially useful for point clouds without normals
 		};
 		
 		var onPointCloudLoaded = function(event){
 			console.log("point cloud loaded");
+			
+			var volume = new Potree.Volume();
+			volume.scale.set(10000, 10000, 10000);
+			
+			viewer.volumeTool.addVolume(volume);
 		};
 	
 		var canvas = document.getElementById("renderArea");

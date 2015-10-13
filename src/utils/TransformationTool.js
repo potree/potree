@@ -716,6 +716,10 @@ Potree.TransformationTool = function(scene, camera, renderer){
 		this.rotationNode.visible = true;
 	};
 	
+	this.reset = function(){
+		this.setTargets([]);
+	};
+	
 	this.buildTranslationNode();
 	this.buildScaleNode();
 	this.buildRotationNode();

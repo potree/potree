@@ -97,7 +97,7 @@ Potree.Viewer = function(domElement, settings, args){
 		elToolbar.appendChild(createToolIcon(
 			"../resources/icons/focus.png",
 			"focus on pointcloud",
-			function(){scope.camera.zoomTo(viewer.pointcloud)}
+			function(){scope.zoomTo(viewer.pointcloud)}
 		));
 		
 		elToolbar.appendChild(createToolIcon(
@@ -262,6 +262,23 @@ Potree.Viewer = function(domElement, settings, args){
 		}else if(value === "Phong"){
 			scope.pointColorType = Potree.PointColorType.PHONG;
 		}
+	};
+	
+	this.zoomTo = function(node, factor){
+		scope.camera.zoomTo(node, factor);
+		
+		var bs;
+		if(node.boundingSphere){
+			bs = node.boundingSphere;
+		}else if(node.geometry && node.geometry.boundingSphere){
+			bs = node.geometry.boundingSphere;
+		}else{
+			bs = node.boundingBox.getBoundingSphere();
+		}
+		
+		bs = bs.clone().applyMatrix4(node.matrixWorld); 
+		
+		scope.orbitControls.target.copy(bs.center);
 	};
 
 	this.initGUI = function(){
@@ -729,7 +746,7 @@ Potree.Viewer = function(domElement, settings, args){
 				
 				
 				scope.flipYZ();
-				scope.camera.zoomTo(scope.pointcloud, 1);
+				scope.zoomTo(scope.pointcloud, 1);
 				
 				scope.initGUI();	
 			
@@ -791,7 +808,7 @@ Potree.Viewer = function(domElement, settings, args){
 				referenceFrame.position.y += sg.radius / 2;
 				referenceFrame.updateMatrixWorld(true);
 				
-				scope.camera.zoomTo(scope.pointcloud, 1);
+				scope.zoomTo(scope.pointcloud, 1);
 				
 				initGUI();
 				scope.pointcloud.material.interpolation = false;
@@ -828,8 +845,8 @@ Potree.Viewer = function(domElement, settings, args){
 		
 		scope.measuringTool = new Potree.MeasuringTool(scope.scenePointCloud, scope.camera, scope.renderer);
 		scope.profileTool = new Potree.ProfileTool(scope.scenePointCloud, scope.camera, scope.renderer);
-		scope.volumeTool = new Potree.VolumeTool(scope.scenePointCloud, scope.camera, scope.renderer);
 		scope.transformationTool = new Potree.TransformationTool(scope.scenePointCloud, scope.camera, scope.renderer);
+		scope.volumeTool = new Potree.VolumeTool(scope.scenePointCloud, scope.camera, scope.renderer, scope.transformationTool);
 		
 		
 		// background
@@ -899,15 +916,15 @@ Potree.Viewer = function(domElement, settings, args){
 		if(event.keyCode === 69){
 			// e pressed
 			
-			transformationTool.translate();
+			scope.transformationTool.translate();
 		}else if(event.keyCode === 82){
 			// r pressed
 			
-			transformationTool.scale();
+			scope.transformationTool.scale();
 		}else if(event.keyCode === 84){
 			// r pressed
 			
-			transformationTool.rotate();
+			scope.transformationTool.rotate();
 		}
 	};
 
@@ -1480,12 +1497,17 @@ Potree.Viewer = function(domElement, settings, args){
 					scope.renderer.clearTarget( rtColor, true, true, true );
 					scope.renderer.render(scope.scenePointCloud, scope.camera, rtColor);
 					
+					
 					scope.pointcloud.material = originalMaterial;
 					for(var i = 0; i < scope.pointcloud.visibleNodes.length; i++){
 						var node = scope.pointcloud.visibleNodes[i];
 						node.sceneNode.material = originalMaterial;
 					}
 				}
+				
+				// bit of a hack here. The EDL pass will mess up the text of the volume tool
+				// so volume tool is rendered again afterwards
+				scope.volumeTool.render(rtColor);
 				
 				{ // EDL OCCLUSION PASS
 					edlMaterial.uniforms.screenWidth.value = width;

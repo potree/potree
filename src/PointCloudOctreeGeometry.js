@@ -27,6 +27,7 @@ Potree.PointCloudOctreeGeometryNode = function(name, pcoGeometry, boundingBox){
 	this.children = {};
 	this.numPoints = 0;
 	this.level = null;
+	this.oneTimeDisposeHandlers = [];
 };
 
 Potree.PointCloudOctreeGeometryNode.IDCount = 0;
@@ -203,10 +204,18 @@ Potree.PointCloudOctreeGeometryNode.prototype.loadHierachyThenPoints = function(
 
 
 Potree.PointCloudOctreeGeometryNode.prototype.dispose = function(){
-	if(this.geometry){
+	if(this.geometry && this.parent != null){
 		this.geometry.dispose();
 		this.geometry = null;
 		this.loaded = false;
+		
+		//this.dispatchEvent( { type: 'dispose' } );
+		for(var i = 0; i < this.oneTimeDisposeHandlers.length; i++){
+			var handler = this.oneTimeDisposeHandlers[i];
+			handler();
+		}
+		this.oneTimeDisposeHandlers = [];
 	}
 };
 
+THREE.EventDispatcher.prototype.apply( Potree.PointCloudOctreeGeometryNode.prototype );

@@ -136,6 +136,18 @@ Potree.PointCloudOctree.prototype.updateVisibility = function(camera, renderer){
 					sceneNode.matrixWorld.multiplyMatrices( parent.sceneNode.matrixWorld, sceneNode.matrix );
 				}
 				
+				// when a PointCloudOctreeGeometryNode is disposed, 
+				// then replace reference to PointCloudOctreeNode with PointCloudOctreeGeometryNode
+				// as it was before it was loaded
+				var disposeListener = function(parent, pcoNode, geometryNode){
+					return function(){
+						var childIndex = parseInt(pcoNode.name[pcoNode.name.length - 1]);
+						parent.sceneNode.remove(pcoNode.sceneNode);
+						parent.children[childIndex] = geometryNode;
+					}
+				}(parent, pcoNode, node);
+				pcoNode.geometryNode.oneTimeDisposeHandlers.push(disposeListener);
+				
 				node = pcoNode;
 			}
 			
@@ -278,6 +290,7 @@ Potree.PointCloudOctree.prototype.update = function(camera, renderer){
 	this.updateVisibleBounds();
 	
 	Potree.PointCloudOctree.lru.freeMemory();
+	
 	
 	// TODO bounds
 	// TODO free memory

@@ -61,7 +61,7 @@ Potree.Viewer = function(domElement, settings, args){
 	
 	{ // create toolbar
 		var elToolbar = document.createElement("div");
-		elToolbar.style.position = "fixed";
+		elToolbar.style.position = "absolute";
 		elToolbar.style.width = "400px";
 		elToolbar.style.bottom = "10px";
 		elToolbar.style.right = "10px";
@@ -289,8 +289,13 @@ Potree.Viewer = function(domElement, settings, args){
 
 		// dat.gui
 		gui = new dat.GUI({
+		autoPlace: false
 			//height : 5 * 32 - 1
 		});
+		gui.domElement.style.position = "absolute";
+		gui.domElement.style.top = "5px";
+		gui.domElement.style.right = "5px";
+		this.renderArea.appendChild(gui.domElement);
 		
 		params = {
 			"points(m)": scope.pointCountTarget,
@@ -647,6 +652,8 @@ Potree.Viewer = function(domElement, settings, args){
 					
 					var easing = TWEEN.Easing.Quartic.Out;
 					
+					scope.controls.enabled = false;
+					
 					// animate position
 					var tween = new TWEEN.Tween(scope.camera.position).to(cameraTargetPosition, animationDuration);
 					tween.easing(easing);
@@ -655,6 +662,9 @@ Potree.Viewer = function(domElement, settings, args){
 					// animate target
 					var tween = new TWEEN.Tween(scope.controls.target).to(I, animationDuration);
 					tween.easing(easing);
+					tween.onComplete(function(){
+						scope.controls.enabled = true;
+					});
 					tween.start();
 				}
 			});

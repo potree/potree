@@ -48,13 +48,14 @@
 	<script src="../libs/plasio/vendor/bluebird.js"></script>
 	<script src="../build/js/laslaz.js"></script>
 	
-	<div id="renderArea">
+	<div id="renderArea" style="position: absolute; width: 100%; height: 100%; overflow: hidden;">
 
 		<!-- HEADING -->
 		<div class="info" style="position: absolute; left: 300px; right: 300px; top: 10px; text-align: center;">
 			<a href="http://potree.org" target="_blank">potree.org</a><br>
 			Testing annotations and refactoring of the viewer.
 		</div>
+		
 	</div>
 	
 		
@@ -76,34 +77,44 @@
 		};
 		
 		var onPointCloudLoaded = function(event){
-			console.log("point cloud loaded");
+			// do stuff here that should be executed once the point cloud has been loaded.
+			// event.pointcloud returns the point cloud object
 			
-			var volume = new Potree.Volume();
-			volume.scale.set(10000, 10000, 10000);
+			//var volume = new Potree.Volume();
+			//volume.scale.set(4000, 4000, 4000);
+			//viewer.volumeTool.addVolume(volume);
 			
-			viewer.volumeTool.addVolume(volume);
+			
+			viewer.addAnnotation(new THREE.Vector3(3511, 228, 14192), {
+				"cameraTarget": new THREE.Vector3(3511, 82, 14192),
+				"cameraPosition": new THREE.Vector3(3097, 360, 14276)
+			});
+			
+			viewer.addAnnotation(new THREE.Vector3(39391, 480, 35045), {
+				"cameraTarget": new THREE.Vector3(39391, 332, 35045),
+				"cameraPosition": new THREE.Vector3(37467, 1974, 35050)
+			});
+			
+			viewer.addAnnotation(new THREE.Vector3(-6726, 46, 2165), {
+				"cameraTarget": new THREE.Vector3(-6726, 24, 2165),
+				"cameraPosition": new THREE.Vector3(-6671, 75, 2221)
+			});
+			
+			viewer.addAnnotation(new THREE.Vector3(3020, 200, 3568), {
+				"cameraTarget": new THREE.Vector3(3020, 158, 3568),
+				"cameraPosition": new THREE.Vector3(2475, 483, 3023)
+			});
+			
+			viewer.addAnnotation(new THREE.Vector3(43814, 400, 38377), {
+				"cameraTarget": new THREE.Vector3(43814, 370, 38377),
+				"cameraPosition": new THREE.Vector3(44254, 686, 38702)
+			});
 		};
 	
-		var canvas = document.getElementById("renderArea");
-		
-		viewer = new Potree.Viewer(canvas, settings, {
+		viewer = new Potree.Viewer(document.getElementById("renderArea"), settings, {
 			"onPointCloudLoaded": onPointCloudLoaded
 		});
 		
-		viewer.addAnnotation(new THREE.Vector3(3511, 228, 14192), {
-			"cameraTarget": new THREE.Vector3(3511, 82, 14192),
-			"cameraPosition": new THREE.Vector3(3097, 360, 14276)
-		});
-		
-		viewer.addAnnotation(new THREE.Vector3(39391, 480, 35045), {
-			"cameraTarget": new THREE.Vector3(39391, 332, 35045),
-			"cameraPosition": new THREE.Vector3(37467, 1974, 35050)
-		});
-		
-		viewer.addAnnotation(new THREE.Vector3(-6726, 46, 2165), {
-			"cameraTarget": new THREE.Vector3(-6726, 24, 2165),
-			"cameraPosition": new THREE.Vector3(-6671, 75, 2221)
-		});
 	</script>
 	
 </body>

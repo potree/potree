@@ -1,14 +1,91 @@
 
 
-Potree.ProfileRequest = function(){
-	this.queue = [];
+Potree.ProfileRequest = function(pointcloud, profile, maxDepth, callback){
+
+	this.pointcloud = pointcloud;
+	this.profile = profile;
+	this.maxDepth = maxDepth;
+	this.callback = callback;
 	
+	// 
+	// DO INSTEAD:
+	// - transform profile to pointcloud geometry coordinate system
+	// - traverse PointCloudOctreeGeometry. No need for PointCloudOctree!
+	//
+	//
+
+	this.priorityQueue = new BinaryHeap(function(x){return 1 / x.weight;});
+	
+	this.initialize = function(){
+		this.priorityQueue.push({node: pointcloud.root, weight: 1});
+		this.traverse(pointcloud.root);
+	};
+	
+	// traverse the node and add intersecting descendants to queue
+	this.traverse = function(node){
+		
+		var stack = [];
+		for(var i = 0; i < 8; i++){
+			var child = node.children[i];
+			if(child && pointcloud.nodeIntersectsProfile(child, this.profile)){
+				stack.push(child);
+			}
+		}
+		
+		while(stack.length > 0){
+			var node = stack.pop();
+			var weight = node.boundingSphere.radius;
+			
+			this.priorityQueue.push({node: node, weight: weight});
+		
+			// add children that intersect the cutting plane
+			if(node.level < this.maxDepth){
+				for(var i = 0; i < 8; i++){
+					var child = node.children[i];
+					if(child && pointcloud.nodeIntersectsProfile(child, this.profile)){
+						stack.push(child);
+					}
+				}
+			}
+		}
+	};
+	
+	this.update = function(){
+		
+		// load nodes in queue
+		// if hierarchy expands, also load nodes from expanded hierarchy
+		// once loaded, add data to this.points and remove node from queue
+		// only evaluate 10-50 nodes per frame to maintain responsiveness
+		
+		for(var i = 0; i < Math.min(10, this.priorityQueue.size()); i++){
+			var node = this.priorityQueue.pop();
+			
+			
+			
+		}
+		
+		callback.onProgress(points);
+		
+		if(this.queue.length === 0){
+			callback.onFinished();
+		}
+		
+	};
+	
+	this.cancel = function(){
+		this.queue = [];
+		
+		callback.onCancel();
+	};
+	
+	this.initialize();
 	
 };
 
 Potree.PointCloudOctreeNode = function(){
 	this.children = {};
 	this.sceneNode = null;
+	this.octree = null;
 };
 
 
@@ -35,6 +112,7 @@ Potree.PointCloudOctree = function(geometry, material){
 	this.visibleGeometry = [];
 	this.pickTarget = null;
 	this.generateDEM = false;
+	this.profileRequests = [];
 	
 	this.root = this.pcoGeometry.root;
 };
@@ -90,6 +168,11 @@ Potree.PointCloudOctree.prototype.updateVisibility = function(camera, renderer){
 		var visible = insideFrustum;
 		visible = visible && !(this.numVisiblePoints + node.numPoints > this.visiblePointsTarget);
 		
+		if(node instanceof Potree.PointCloudOctreeNode && viewer.profileTool.profiles.length > 0){
+			var profile = viewer.profileTool.profiles[0];
+			visible = this.nodeIntersectsProfile(node, profile);
+		}
+		
 		if(!visible){
 			continue;
 		}
@@ -107,6 +190,7 @@ Potree.PointCloudOctree.prototype.updateVisibility = function(camera, renderer){
 				var sceneNode = new THREE.PointCloud(geometry, this.material);
 				sceneNode.visible = false;
 				
+				pcoNode.octree = this;
 				pcoNode.name = geometryNode.name;
 				pcoNode.level = geometryNode.level;
 				pcoNode.numPoints = geometryNode.numPoints;
@@ -358,13 +442,44 @@ Potree.PointCloudOctree.prototype.updateVisibilityTexture = function(material, v
 	texture.needsUpdate = true;
 };
 
+Potree.PointCloudOctree.prototype.nodeIntersectsProfile = function(node, profile){
+	var bbWorld = node.boundingBox.clone().applyMatrix4(this.matrixWorld);
+	var bsWorld = bbWorld.getBoundingSphere();
+	
+	for(var i = 0; i < profile.points.length - 1; i++){
+		var start = new THREE.Vector3(profile.points[i].x, bsWorld.center.y, profile.points[i].z);
+		var end = new THREE.Vector3(profile.points[i+1].x, bsWorld.center.y, profile.points[i+1].z);
+		
+		var ray1 = new THREE.Ray(start, new THREE.Vector3().subVectors(end, start).normalize());
+		var ray2 = new THREE.Ray(end, new THREE.Vector3().subVectors(start, end).normalize());
+		
+		if(ray1.isIntersectionSphere(bsWorld) && ray2.isIntersectionSphere(bsWorld)){
+			return true;
+		}
+	}
+	
+	return false;
+};
 
 
-
-
-
-
-
+//Potree.PointCloudOctreeNode.prototype.intersectsProfile = function(profile){
+//	var bbWorld = this.boundingBox.clone().applyMatrix4(this.octree.matrixWorld);
+//	var bsWorld = bbWorld.getBoundingSphere();
+//	
+//	for(var i = 0; i < profile.points.length - 1; i++){
+//		var start = new THREE.Vector3(profile.points[i].x, bsWorld.center.y, profile.points[i].z);
+//		var end = new THREE.Vector3(profile.points[i+1].x, bsWorld.center.y, profile.points[i+1].z);
+//		
+//		var ray1 = new THREE.Ray(start, new THREE.Vector3().subVectors(end, start).normalize());
+//		var ray2 = new THREE.Ray(end, new THREE.Vector3().subVectors(start, end).normalize());
+//		
+//		if(ray1.isIntersectionSphere(bsWorld) && ray2.isIntersectionSphere(bsWorld)){
+//			return true;
+//		}
+//	}
+//	
+//	return false;
+//};
 
 
 
@@ -494,7 +609,15 @@ Potree.PointCloudOctree.prototype.getBoundingBoxWorld = function(){
  *
  *
  */
-Potree.PointCloudOctree.prototype.getPointsInProfile = function(profile, maxDepth){
+Potree.PointCloudOctree.prototype.getPointsInProfile = function(profile, maxDepth, callback){
+
+	if(callback){
+		var request = new Potree.ProfileRequest(this, profile, maxDepth, callback);
+		this.profileRequests.push(request);
+		
+		return;
+	}
+
 	var points = {
 		segments: [],
 		boundingBox: new THREE.Box3(),
@@ -586,7 +709,8 @@ Potree.PointCloudOctree.prototype.getPointsInProfile = function(profile, maxDept
  */
 Potree.PointCloudOctree.prototype.getProfile = function(start, end, width, depth, callback){
 	if(callback !== undefined){
-		this.profileRequests.push(new Potree.ProfileRequest(start, end, width, depth, callback));
+		var request = new Potree.ProfileRequest(start, end, width, depth, callback);
+		this.profileRequests.push(request);
 	}else{
 		var stack = [];
 		stack.push(this);

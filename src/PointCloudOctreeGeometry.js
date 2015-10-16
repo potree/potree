@@ -27,6 +27,7 @@ Potree.PointCloudOctreeGeometryNode = function(name, pcoGeometry, boundingBox){
 	this.children = {};
 	this.numPoints = 0;
 	this.level = null;
+	this.loaded = false;
 	this.oneTimeDisposeHandlers = [];
 };
 
@@ -70,7 +71,7 @@ Potree.PointCloudOctreeGeometryNode.prototype.addChild = function(child){
 };
 
 Potree.PointCloudOctreeGeometryNode.prototype.load = function(){
-	if(this.loading === true || this.pcoGeometry.numNodesLoading > 3){
+	if(this.loading === true || this.loaded === true ||this.pcoGeometry.numNodesLoading > 3){
 		return;
 	}
 	

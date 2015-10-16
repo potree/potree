@@ -211,6 +211,9 @@ Potree.ProfileRequest = function(pointcloud, profile, maxDepth, callback){
 			};
 			
 			points.segments.push(segment);
+			
+			points.boundingBox.expandByPoint(inside.boundingBox.min);
+			points.boundingBox.expandByPoint(inside.boundingBox.max);
 		
 		}
 		
@@ -238,8 +241,8 @@ Potree.ProfileRequest = function(pointcloud, profile, maxDepth, callback){
 				
 				
 				return function(position){
-							
-					var toOrigin = new THREE.Matrix4().makeTranslation(-start.x, -boundingBox.min.y, -start.z);
+					// -boundingBox.min.y	
+					var toOrigin = new THREE.Matrix4().makeTranslation(-start.x, 0, -start.z);
 					var alignWithX = new THREE.Matrix4().makeRotationY(-alpha);
 					var applyMileage = new THREE.Matrix4().makeTranslation(mileage.x, 0, 0);
 

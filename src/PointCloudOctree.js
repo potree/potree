@@ -1,4 +1,87 @@
 
+Potree.ProfileData = function(profile){
+	this.profile = profile;
+	
+	this.segments = [];
+	this.boundingBox = new THREE.Box3();
+	this.projectedBoundingBox = new THREE.Box2();
+	
+	var mileage = new THREE.Vector3();
+	for(var i = 0; i < profile.points.length - 1; i++){
+		var start = profile.points[i];
+		var end = profile.points[i+1];
+		
+		var center = new THREE.Vector3().addVectors(end, start).multiplyScalar(0.5);
+		var length = new THREE.Vector3().subVectors(end, start).length();
+		var side = new THREE.Vector3().subVectors(end, start).normalize();
+		var up = new THREE.Vector3(0, 1, 0);
+		var forward = new THREE.Vector3().crossVectors(side, up).normalize();
+		var N = forward;
+		var cutPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(N, start);
+		var halfPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(side, center);
+		
+		var project = function(_start, _end, _mileage){
+			var start = _start;
+			var end = _end;
+			var mileage = _mileage;
+			
+			var xAxis = new THREE.Vector3(1,0,0);
+			var dir = new THREE.Vector3().subVectors(end, start);
+			dir.y = 0;
+			dir.normalize();
+			var alpha = Math.acos(xAxis.dot(dir));
+			if(dir.z > 0){
+				alpha = -alpha;
+			}
+			
+			
+			return function(position){
+				var toOrigin = new THREE.Matrix4().makeTranslation(-start.x, 0, -start.z);
+				var alignWithX = new THREE.Matrix4().makeRotationY(-alpha);
+				var applyMileage = new THREE.Matrix4().makeTranslation(mileage.x, 0, 0);
+
+				var pos = position.clone();
+				pos.applyMatrix4(toOrigin);
+				pos.applyMatrix4(alignWithX);
+				pos.applyMatrix4(applyMileage);
+				
+				return pos;
+			};
+			
+		}(start, end, mileage.clone());
+		
+		var segment = {
+			start: start,
+			end: end,
+			cutPlane: cutPlane,
+			halfPlane: halfPlane,
+			length: length,
+			points: null,
+			project: project
+		};
+		
+		this.segments.push(segment);
+		
+		mileage.x += new THREE.Vector3(start.x, 0, start.z).distanceTo(new THREE.Vector3(end.x, 0, end.z));
+		mileage.y += end.y - start.y;
+	}
+	
+	this.projectedBoundingBox.min.x = 0;
+	this.projectedBoundingBox.min.y = Number.POSITIVE_INFINITY;
+	this.projectedBoundingBox.max.x = mileage.x;
+	this.projectedBoundingBox.max.y = Number.NEGATIVE_INFINITY;
+	
+	this.size = function(){
+		var size = 0;
+		for(var i = 0; i < this.segments.length; i++){
+			if(this.segments[i].points){
+				size += this.segments[i].points.numPoints;
+			}
+		}
+		return size;
+	}
+	
+};
 
 Potree.ProfileRequest = function(pointcloud, profile, maxDepth, callback){
 
@@ -6,6 +89,8 @@ Potree.ProfileRequest = function(pointcloud, profile, maxDepth, callback){
 	this.profile = profile;
 	this.maxDepth = maxDepth || Number.MAX_VALUE;
 	this.callback = callback;
+	this.temporaryResult = new Potree.ProfileData(this.profile);
+	this.pointsServed = 0;
 
 	this.priorityQueue = new BinaryHeap(function(x){return 1 / x.weight;});
 	
@@ -48,13 +133,14 @@ Potree.ProfileRequest = function(pointcloud, profile, maxDepth, callback){
 		// load nodes in queue
 		// if hierarchy expands, also load nodes from expanded hierarchy
 		// once loaded, add data to this.points and remove node from queue
-		// only evaluate 10-50 nodes per frame to maintain responsiveness
+		// only evaluate 1-50 nodes per frame to maintain responsiveness
 		
 		var intersectedNodes = [];
 		
-		for(var i = 0; i < Math.min(10, this.priorityQueue.size()); i++){
+		for(var i = 0; i < Math.min(2, this.priorityQueue.size()); i++){
 			var element = this.priorityQueue.pop();
 			var node = element.node;
+			
 			
 			if(node.loaded){
 				// add points to result
@@ -71,15 +157,24 @@ Potree.ProfileRequest = function(pointcloud, profile, maxDepth, callback){
 		}
 		
 		if(intersectedNodes.length > 0){
-			var result = this.getPointsInsideProfile(intersectedNodes)
-		
-			callback.onProgress(result);
+			this.getPointsInsideProfile(intersectedNodes, this.temporaryResult);
+			if(this.temporaryResult.size() > 100){
+				this.pointsServed += this.temporaryResult.size();
+				callback.onProgress({request: this, points: this.temporaryResult});
+				this.temporaryResult = new Potree.ProfileData(this.profile);
+			}
 		}
 		
 		if(this.priorityQueue.size() === 0){
 			// we're done! inform callback and remove from pending requests
 
-			callback.onFinish();
+			if(this.temporaryResult.size() > 0){
+				this.pointsServed += this.temporaryResult.size();
+				callback.onProgress({request: this, points: this.temporaryResult});
+				this.temporaryResult = new Potree.ProfileData(this.profile);
+			}
+			
+			callback.onFinish({request: this});
 			
 			var index = pointcloud.profileRequests.indexOf(this);
 			if(index >= 0){
@@ -88,48 +183,29 @@ Potree.ProfileRequest = function(pointcloud, profile, maxDepth, callback){
 		}
 	};
 	
-	this.getPointsInsideProfile = function(nodes){
+	this.getPointsInsideProfile = function(nodes, target){
 	
-		var points = {
-			segments: [],
-			boundingBox: new THREE.Box3(),
-			projectedBoundingBox: new THREE.Box2()
-		};
-	
-		for(var pi = 0; pi < this.profile.points.length - 1; pi++){
-			var start = this.profile.points[pi];
-			var end = this.profile.points[pi+1];
-	
-			var center = new THREE.Vector3().addVectors(end, start).multiplyScalar(0.5);
-			var length = new THREE.Vector3().subVectors(end, start).length();
-			var side = new THREE.Vector3().subVectors(end, start).normalize();
-			var up = new THREE.Vector3(0, 1, 0);
-			var forward = new THREE.Vector3().crossVectors(side, up).normalize();
-			var N = forward;
-			var cutPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(N, start);
-			var halfPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(side, center);
+		for(var pi = 0; pi < target.segments.length; pi++){
+			var segment = target.segments[pi];
 			
-			var inside = null;
-			
-			var boundingBox = new THREE.Box3();
-			
-			for(var i = 0; i < nodes.length; i++){
-				var node = nodes[i];
+			for(var ni = 0; ni < nodes.length; ni++){
+				var node = nodes[ni];
 				
 				var geometry = node.geometry;
 				var positions = geometry.attributes.position;
 				var p = positions.array;
 				var numPoints = node.numPoints;
 				
-				if(!inside){
-					inside = {};
+				if(!segment.points){
+					segment.points = {};
+					segment.points.boundingBox = new THREE.Box3();
 					
 					for (var property in geometry.attributes) {
 						if (geometry.attributes.hasOwnProperty(property)) {
 							if(property === "indices"){
 							
 							}else{
-								inside[property] = [];
+								segment.points[property] = [];
 							}
 						}
 					}
@@ -138,29 +214,29 @@ Potree.ProfileRequest = function(pointcloud, profile, maxDepth, callback){
 				for(var i = 0; i < numPoints; i++){
 					var pos = new THREE.Vector3(p[3*i], p[3*i+1], p[3*i+2]);
 					pos.applyMatrix4(pointcloud.matrixWorld);
-					var distance = Math.abs(cutPlane.distanceToPoint(pos));
-					var centerDistance = Math.abs(halfPlane.distanceToPoint(pos));
+					var distance = Math.abs(segment.cutPlane.distanceToPoint(pos));
+					var centerDistance = Math.abs(segment.halfPlane.distanceToPoint(pos));
 					
-					if(distance < profile.width / 2 && centerDistance < length / 2){
-						boundingBox.expandByPoint(pos);
+					if(distance < profile.width / 2 && centerDistance < segment.length / 2){
+						segment.points.boundingBox.expandByPoint(pos);
 						
 						for (var property in geometry.attributes) {
 							if (geometry.attributes.hasOwnProperty(property)) {
 							
 								if(property === "position"){
-									inside[property].push(pos);
+									segment.points[property].push(pos);
 								}else if(property === "indices"){
 									// skip indices
 								}else{
 									var values = geometry.attributes[property];
 									if(values.itemSize === 1){
-										inside[property].push(values.array[i + j]);
+										segment.points[property].push(values.array[i + j]);
 									}else{
 										var value = [];
 										for(var j = 0; j < values.itemSize; j++){
 											value.push(values.array[i*values.itemSize + j]);
 										}
-										inside[property].push(value);
+										segment.points[property].push(value);
 									}
 								}
 								
@@ -170,104 +246,16 @@ Potree.ProfileRequest = function(pointcloud, profile, maxDepth, callback){
 				}
 			}
 		
-			inside.numPoints = inside.position.length;
+			segment.points.numPoints = segment.points.position.length;
 			
-			var project = function(_start, _end){
-				var start = _start;
-				var end = _end;
+			if(segment.points.numPoints > 0){
+				target.boundingBox.expandByPoint(segment.points.boundingBox.min);
+				target.boundingBox.expandByPoint(segment.points.boundingBox.max);
 				
-				var xAxis = new THREE.Vector3(1,0,0);
-				var dir = new THREE.Vector3().subVectors(end, start);
-				dir.y = 0;
-				dir.normalize();
-				var alpha = Math.acos(xAxis.dot(dir));
-				if(dir.z > 0){
-					alpha = -alpha;
-				}
-				
-				
-				return function(position){
-							
-					var toOrigin = new THREE.Matrix4().makeTranslation(-start.x, -start.y, -start.z);
-					var alignWithX = new THREE.Matrix4().makeRotationY(-alpha);
-
-					var pos = position.clone();
-					pos.applyMatrix4(toOrigin);
-					pos.applyMatrix4(alignWithX);
-					
-					return pos;
-				};
-				
-			}(start, end);
-			
-			inside.project = project;
-			inside.boundingBox = boundingBox;
-			
-			var segment = {
-				start: start,
-				end: end,
-				points: inside,
-				project: null
-			};
-			
-			points.segments.push(segment);
-			
-			points.boundingBox.expandByPoint(inside.boundingBox.min);
-			points.boundingBox.expandByPoint(inside.boundingBox.max);
-		
+				target.projectedBoundingBox.expandByPoint(new THREE.Vector2(0, target.boundingBox.min.y));
+				target.projectedBoundingBox.expandByPoint(new THREE.Vector2(0, target.boundingBox.max.y));
+			}
 		}
-		
-		// add projection functions to the segments
-		var mileage = new THREE.Vector3();
-		for(var i = 0; i < points.segments.length; i++){
-			var segment = points.segments[i];
-			var start = segment.start;
-			var end = segment.end;
-			
-			var project = function(_start, _end, _mileage, _boundingBox){
-				var start = _start;
-				var end = _end;
-				var mileage = _mileage;
-				var boundingBox = _boundingBox;
-				
-				var xAxis = new THREE.Vector3(1,0,0);
-				var dir = new THREE.Vector3().subVectors(end, start);
-				dir.y = 0;
-				dir.normalize();
-				var alpha = Math.acos(xAxis.dot(dir));
-				if(dir.z > 0){
-					alpha = -alpha;
-				}
-				
-				
-				return function(position){
-					// -boundingBox.min.y	
-					var toOrigin = new THREE.Matrix4().makeTranslation(-start.x, 0, -start.z);
-					var alignWithX = new THREE.Matrix4().makeRotationY(-alpha);
-					var applyMileage = new THREE.Matrix4().makeTranslation(mileage.x, 0, 0);
-
-					var pos = position.clone();
-					pos.applyMatrix4(toOrigin);
-					pos.applyMatrix4(alignWithX);
-					pos.applyMatrix4(applyMileage);
-					
-					return pos;
-				};
-				
-			}(start, end, mileage.clone(), points.boundingBox.clone());
-			
-			segment.project = project;
-			
-			mileage.x += new THREE.Vector3(start.x, 0, start.z).distanceTo(new THREE.Vector3(end.x, 0, end.z));
-			mileage.y += end.y - start.y;
-		}
-		
-		points.projectedBoundingBox.min.x = 0;
-		points.projectedBoundingBox.min.y = points.boundingBox.min.y;
-		points.projectedBoundingBox.max.x = mileage.x;
-		points.projectedBoundingBox.max.y = points.boundingBox.max.y;
-		
-		return points;
 	};
 	
 	this.cancel = function(){
@@ -825,7 +813,7 @@ Potree.PointCloudOctree.prototype.getPointsInProfile = function(profile, maxDept
 		var request = new Potree.ProfileRequest(this, profile, maxDepth, callback);
 		this.profileRequests.push(request);
 		
-		return;
+		return request;
 	}
 
 	var points = {

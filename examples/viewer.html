@@ -58,8 +58,23 @@
 		
 	</div>
 	
+	<canvas id="cHeightProfile" width="600" height="600"
+		style="position: absolute; width: 600px; height: 600px; left: 10px; bottom: 10px; border: 1px solid black; pointer-events: none"></canvas>
+	
 		
 	<script>
+		
+		// profile will be drawn into this canvas
+		var canvas = document.getElementById("cHeightProfile"),
+		context = canvas.getContext("2d");
+		context.fillStyle = "#000000";
+		context.fillRect(0, 0, 600, 600);
+		
+		// set origin to bottom left
+		context.setTransform(1, 0, 0, 1, 0, 0);
+		context.translate(0, 600);
+		context.scale(1, -1);
+	
 		var settings = {
 			path:			"../resources/pointclouds/vol_total/cloud.js",
 			path:			"../resources/pointclouds/lion_takanawa/cloud.js",
@@ -80,9 +95,65 @@
 			// do stuff here that should be executed once the point cloud has been loaded.
 			// event.pointcloud returns the point cloud object
 			
-			//var volume = new Potree.Volume();
-			//volume.scale.set(4000, 4000, 4000);
-			//viewer.volumeTool.addVolume(volume);
+			var profile = new Potree.HeightProfile();
+			profile.addMarker(new THREE.Vector3( -5843.50390625, 46.469974280276844, 32.140625));
+			profile.addMarker(new THREE.Vector3(-5775.00390625, 142.09997916308927, 363.6484375));
+			profile.addMarker(new THREE.Vector3(-5510.01171875, 161.23997855273768, 535.1484375));
+			profile.setWidth(3);
+			viewer.profileTool.addProfile(profile);
+			
+			var pointCount = 0;
+			var projectedBoundingBox = null;
+			event.pointcloud.getPointsInProfile(viewer.profileTool.profiles[0], 10, {
+				"onProgress": function(points){
+					
+					if(!projectedBoundingBox){
+						projectedBoundingBox = points.projectedBoundingBox;
+					}
+					
+					// iterate through all segments of the profile
+					var segments = points.segments;
+					for(var i = 0; i < segments.length; i++){
+						var segment = segments[i];
+						//console.log("numPoints: " + segment.points.numPoints);
+						
+						pointCount += segment.points.numPoints;
+						
+						for(var j = 0; j < segment.points.numPoints; j++){
+							var position = segment.points.position[j];
+							
+							
+							position = segment.project(position);
+							var color = segment.points.color[j];
+							
+							var x = (position.x / projectedBoundingBox.max.x) * 600;
+							var y = ((position.y - projectedBoundingBox.min.y) / projectedBoundingBox.max.x) * 600;
+							
+							
+							var r = parseInt(color[0]*255);
+							var g = parseInt(color[1]*255);
+							var b = parseInt(color[2]*255);
+							
+							context.fillStyle = "rgb(" + r + ", " + g + " , " + b + " )";
+							context.fillRect(x, y, 1, 1);
+						}
+					}
+				},
+				"onCancel": function(){
+					console.log("canceled");
+				},
+				"onFinish": function(){
+					console.log("finished loading profile data!");
+					console.log("pointCount: " + pointCount);
+				}
+			});
+			
+			
+			
+			
+			
+			
+			
 			
 			
 			viewer.addAnnotation(new THREE.Vector3(3511, 228, 14192), {
@@ -109,6 +180,12 @@
 				"cameraTarget": new THREE.Vector3(43814, 370, 38377),
 				"cameraPosition": new THREE.Vector3(44254, 686, 38702)
 			});
+			
+			
+			
+			
+			
+			
 		};
 	
 		viewer = new Potree.Viewer(document.getElementById("renderArea"), settings, {

@@ -342,7 +342,7 @@ Potree.Viewer = function(domElement, settings, args){
 		
 		var pSizeType = fAppearance.add(params, 'SizeType', [ "Fixed", "Attenuated", "Adaptive"]);
 		pSizeType.onChange(function(value){
-			setPointSizeType(value);
+			scope.setPointSizeType(value);
 		});
 		
 		var options = [];

@@ -613,18 +613,18 @@ Potree.Viewer = function(domElement, settings, args){
 					event.counterProposals.push(counterProposal);
 				}
 			});
-			scope.orbitControls.domElement.addEventListener("dblclick", function(event){
+			scope.renderArea.addEventListener("dblclick", function(event){
 				if(!scope.pointcloud){
 					return;
 				}
 				
 				event.preventDefault();
 			
-				var rect = scope.orbitControls.domElement.getBoundingClientRect();
+				var rect = scope.renderArea.getBoundingClientRect();
 				
 				var mouse =  {
-					x: ( (event.clientX - rect.left) / scope.orbitControls.domElement.clientWidth ) * 2 - 1,
-					y: - ( (event.clientY - rect.top) / scope.orbitControls.domElement.clientHeight ) * 2 + 1
+					x: ( (event.clientX - rect.left) / scope.renderArea.clientWidth ) * 2 - 1,
+					y: - ( (event.clientY - rect.top) / scope.renderArea.clientHeight ) * 2 + 1
 				};
 				
 				
@@ -660,10 +660,11 @@ Potree.Viewer = function(domElement, settings, args){
 					tween.start();
 					
 					// animate target
-					var tween = new TWEEN.Tween(scope.controls.target).to(I, animationDuration);
+					var tween = new TWEEN.Tween(scope.orbitControls.target).to(I, animationDuration);
 					tween.easing(easing);
 					tween.onComplete(function(){
 						scope.controls.enabled = true;
+						scope.fpControls.moveSpeed = radius / 2;
 					});
 					tween.start();
 				}

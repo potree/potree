@@ -226,53 +226,29 @@ function projectedRadius(radius, fov, distance, screenHeight){
 };
 	
 	
-Potree.utils.topView = function(camera, controls, pointcloud){
+Potree.utils.topView = function(camera, node){
 	camera.position.set(0, 1, 0);
 	camera.rotation.set(-Math.PI / 2, 0, 0);
-	camera.zoomTo(pointcloud, 1);
-
-	if(controls.target){
-		var sg = pointcloud.boundingSphere.clone().applyMatrix4(pointcloud.matrixWorld);
-		var target = new THREE.Vector3(camera.position.x, sg.center.y, camera.position.z);
-		controls.target.copy(target);
-	}	
+	camera.zoomTo(node, 1);
 };
 
-Potree.utils.frontView = function(camera, controls, pointcloud){
+Potree.utils.frontView = function(camera, node){
 	camera.position.set(0, 0, 1);
 	camera.rotation.set(0, 0, 0);
-	camera.zoomTo(pointcloud, 1);
-
-	if(controls.target){
-		var sg = pointcloud.boundingSphere.clone().applyMatrix4(pointcloud.matrixWorld);
-		var target = new THREE.Vector3(camera.position.x, camera.position.y, sg.center.z);
-		controls.target.copy(target);
-	}
+	camera.zoomTo(node, 1);
 };
 
 
-Potree.utils.leftView = function(camera, controls, pointcloud){
+Potree.utils.leftView = function(camera, node){
 	camera.position.set(-1, 0, 0);
 	camera.rotation.set(0, -Math.PI / 2, 0);
-	camera.zoomTo(pointcloud, 1);
-
-	if(controls.target){
-		var sg = pointcloud.boundingSphere.clone().applyMatrix4(pointcloud.matrixWorld);
-		var target = new THREE.Vector3(sg.center.x, camera.position.y, camera.position.z);
-		controls.target.copy(target);
-	}
+	camera.zoomTo(node, 1);
 };
 
-Potree.utils.rightView = function(camera, controls, pointcloud){
+Potree.utils.rightView = function(camera, node){
 	camera.position.set(1, 0, 0);
 	camera.rotation.set(0, Math.PI / 2, 0);
-	camera.zoomTo(pointcloud, 1);
-
-	if(controls.target){
-		var sg = pointcloud.boundingSphere.clone().applyMatrix4(pointcloud.matrixWorld);
-		var target = new THREE.Vector3(sg.center.x, camera.position.y, camera.position.z);
-		controls.target.copy(target);
-	}
+	camera.zoomTo(node, 1);
 };
 	
 /**

@@ -59,7 +59,7 @@ Potree.Measure = function(){
 			scope.setPosition(index, I);
 		}
 		
-		//event.event.stopImmediatePropagation();
+		event.event.stopImmediatePropagation();
 	};
 	
 	var dropEvent = function(event){

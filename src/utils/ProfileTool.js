@@ -182,6 +182,13 @@ Potree.HeightProfile = function(){
 	this.setWidth = function(width){
 		this.width = width;
 		
+		var event = {
+			type: 		'width_changed',
+			profile:	this,
+			width:		width
+		};
+		this.dispatchEvent(event);
+		
 		this.update();
 	};
 	

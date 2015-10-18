@@ -195,6 +195,8 @@ LRU.prototype.disposeDescendants = function(node){
 	while(stack.length > 0){
 		var current = stack.pop();
 		
+		//console.log(current);
+		
 		current.dispose();
 		this.remove(current);
 		

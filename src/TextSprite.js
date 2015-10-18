@@ -9,8 +9,11 @@ Potree.TextSprite = function(text){
 	var texture = new THREE.Texture();
 	texture.minFilter = THREE.LinearFilter;
 	texture.magFilter = THREE.LinearFilter;
-	var spriteMaterial = new THREE.SpriteMaterial( 
-		{ map: texture, useScreenCoordinates: false} );
+	var spriteMaterial = new THREE.SpriteMaterial( { 
+		map: texture, 
+		useScreenCoordinates: false,
+		depthTest: false,
+		depthWrite: false} );
 	
 	this.material = spriteMaterial;
 	this.sprite = new THREE.Sprite(spriteMaterial);

@@ -31,6 +31,7 @@ var paths = {
 		"src/OrbitControls.js",
 		"src/EarthControls.js",
 		"src/LRU.js",
+		"src/Annotation.js",
 		"src/PointCloudOctree.js",
 		"src/PointCloudOctreeGeometry.js",
 		"src/utils.js",

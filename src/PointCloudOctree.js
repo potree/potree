@@ -12,7 +12,7 @@ Potree.ProfileData = function(profile){
 		var end = profile.points[i+1];
 		
 		var center = new THREE.Vector3().addVectors(end, start).multiplyScalar(0.5);
-		var length = new THREE.Vector3().subVectors(end, start).length();
+		var length = new THREE.Vector3(start.x, 0, start.z).distanceTo(new THREE.Vector3(end.x, 0, end.z));
 		var side = new THREE.Vector3().subVectors(end, start).normalize();
 		var up = new THREE.Vector3(0, 1, 0);
 		var forward = new THREE.Vector3().crossVectors(side, up).normalize();

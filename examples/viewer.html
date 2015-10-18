@@ -18,7 +18,7 @@
 	<script src="./js/ProgressBar.js"></script>
 	
 	<!-- uncomment this to debug changes to the individual js files -->
-	
+	<!--
 	<script src="../src/PointCloudOctree.js"></script>
 	<script src="../src/PointCloudOctreeGeometry.js"></script>
 	<script src="../src/loader/POCLoader.js"></script>
@@ -41,44 +41,32 @@
 	<script src="../src/extensions/PerspectiveCamera.js"></script>
 	<script src="../src/arena4d/PointCloudArena4D.js"></script>
 	<script src="../src/arena4d/PointCloudArena4DGeometry.js"></script>
+	-->
 	
 	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
 	<!-- INCLUDE SETTINGS HERE -->
-	<script src="../libs/plasio/js/laslaz.js"></script>
+	<!--<script src="../libs/plasio/js/laslaz.js"></script>
 	<script src="../libs/plasio/vendor/bluebird.js"></script>
-	<script src="../build/js/laslaz.js"></script>
+	<script src="../build/js/laslaz.js"></script>-->
 	
 	<div id="renderArea" style="position: absolute; width: 100%; height: 100%; overflow: hidden;">
 
 		<!-- HEADING -->
 		<div class="info" style="position: absolute; left: 300px; right: 300px; top: 10px; text-align: center;">
 			<a href="http://potree.org" target="_blank">potree.org</a><br>
-			Testing annotations and refactoring of the viewer.
+			Point cloud courtesy of <a href="http://www.sigeom.ch/" target="_blank">sigeom sa</a><br>
 		</div>
 		
 	</div>
 	
-	<canvas id="cHeightProfile" width="600" height="600"
-		style="position: absolute; width: 600px; height: 600px; left: 10px; bottom: 10px; border: 1px solid black; pointer-events: none"></canvas>
 	
 		
 	<script>
-		
-		// profile will be drawn into this canvas
-		var canvas = document.getElementById("cHeightProfile"),
-		context = canvas.getContext("2d");
-		context.fillStyle = "#000000";
-		context.fillRect(0, 0, 600, 600);
-		
-		// set origin to bottom left
-		context.setTransform(1, 0, 0, 1, 0, 0);
-		context.translate(0, 600);
-		context.scale(1, -1);
 	
 		var settings = {
-			path:			"../resources/pointclouds/vol_total/cloud.js",
 			path:			"../resources/pointclouds/lion_takanawa/cloud.js",
 			path:			"http://5.9.65.151/mschuetz/potree/test/cloud.js",
+			path:			"../resources/pointclouds/vol_total/cloud.js",
 			cameraPosition: null,
 			cameraTarget: null,
 			sizeType:		"Adaptive",			// options: "Fixed", "Attenuated", "Adaptive"
@@ -94,97 +82,6 @@
 		var onPointCloudLoaded = function(event){
 			// do stuff here that should be executed once the point cloud has been loaded.
 			// event.pointcloud returns the point cloud object
-			
-			var profile = new Potree.HeightProfile();
-			profile.addMarker(new THREE.Vector3( -5843.50390625, 46.469974280276844, 32.140625));
-			profile.addMarker(new THREE.Vector3(-5775.00390625, 142.09997916308927, 363.6484375));
-			profile.addMarker(new THREE.Vector3(-5510.01171875, 161.23997855273768, 535.1484375));
-			profile.setWidth(3);
-			viewer.profileTool.addProfile(profile);
-			
-			var pointCount = 0;
-			var projectedBoundingBox = null;
-			event.pointcloud.getPointsInProfile(viewer.profileTool.profiles[0], 10, {
-				"onProgress": function(points){
-					
-					if(!projectedBoundingBox){
-						projectedBoundingBox = points.projectedBoundingBox;
-					}
-					
-					// iterate through all segments of the profile
-					var segments = points.segments;
-					for(var i = 0; i < segments.length; i++){
-						var segment = segments[i];
-						//console.log("numPoints: " + segment.points.numPoints);
-						
-						pointCount += segment.points.numPoints;
-						
-						for(var j = 0; j < segment.points.numPoints; j++){
-							var position = segment.points.position[j];
-							
-							
-							position = segment.project(position);
-							var color = segment.points.color[j];
-							
-							var x = (position.x / projectedBoundingBox.max.x) * 600;
-							var y = ((position.y - projectedBoundingBox.min.y) / projectedBoundingBox.max.x) * 600;
-							
-							
-							var r = parseInt(color[0]*255);
-							var g = parseInt(color[1]*255);
-							var b = parseInt(color[2]*255);
-							
-							context.fillStyle = "rgb(" + r + ", " + g + " , " + b + " )";
-							context.fillRect(x, y, 1, 1);
-						}
-					}
-				},
-				"onCancel": function(){
-					console.log("canceled");
-				},
-				"onFinish": function(){
-					console.log("finished loading profile data!");
-					console.log("pointCount: " + pointCount);
-				}
-			});
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			viewer.addAnnotation(new THREE.Vector3(3511, 228, 14192), {
-				"cameraTarget": new THREE.Vector3(3511, 82, 14192),
-				"cameraPosition": new THREE.Vector3(3097, 360, 14276)
-			});
-			
-			viewer.addAnnotation(new THREE.Vector3(39391, 480, 35045), {
-				"cameraTarget": new THREE.Vector3(39391, 332, 35045),
-				"cameraPosition": new THREE.Vector3(37467, 1974, 35050)
-			});
-			
-			viewer.addAnnotation(new THREE.Vector3(-6726, 46, 2165), {
-				"cameraTarget": new THREE.Vector3(-6726, 24, 2165),
-				"cameraPosition": new THREE.Vector3(-6671, 75, 2221)
-			});
-			
-			viewer.addAnnotation(new THREE.Vector3(3020, 200, 3568), {
-				"cameraTarget": new THREE.Vector3(3020, 158, 3568),
-				"cameraPosition": new THREE.Vector3(2475, 483, 3023)
-			});
-			
-			viewer.addAnnotation(new THREE.Vector3(43814, 400, 38377), {
-				"cameraTarget": new THREE.Vector3(43814, 370, 38377),
-				"cameraPosition": new THREE.Vector3(44254, 686, 38702)
-			});
-			
-			
-			
-			
-			
 			
 		};
 	

@@ -69,16 +69,11 @@
 		context = canvas.getContext("2d");
 		context.fillStyle = "#000000";
 		context.fillRect(0, 0, 600, 300);
-		
-		// set origin to bottom left
-		context.setTransform(1, 0, 0, 1, 0, 0);
-		context.translate(0, 300);
-		context.scale(1, -1);
 	
 		var settings = {
 			path:			"../resources/pointclouds/lion_takanawa/cloud.js",
-			path:			"../resources/pointclouds/vol_total/cloud.js",
 			path:			"http://5.9.65.151/mschuetz/potree/test/cloud.js",
+			path:			"../resources/pointclouds/vol_total/cloud.js",
 			cameraPosition: null,
 			cameraTarget: null,
 			sizeType:		"Adaptive",			// options: "Fixed", "Attenuated", "Adaptive"
@@ -93,47 +88,77 @@
 
 		var latestRequest = null;
 		var projectedBoundingBox = null;
+		var toFrame = null;
 		
 		var makeProfileRequest = function(){
 			if(latestRequest){
 				latestRequest.cancel();
 			}
+			
+			var canvas = document.getElementById("cHeightProfile");
+			
 			projectedBoundingBox = null;
+			toFrame = null;
 			context.fillStyle = "#000000";
-			context.fillRect(0, 0, 600, 300);
+			context.fillRect(0, 0, canvas.width, canvas.height);
 		
 			latestRequest = viewer.pointcloud.getPointsInProfile(viewer.profileTool.profiles[0], null, {
 				"onProgress": function(event){
 					
 					var request = event.request;
 					var points = event.points;
+					var segments = points.segments;
 					
 					if(!projectedBoundingBox){
 						projectedBoundingBox = points.projectedBoundingBox;
+						
+						toFrame = function(x, y){
+							var scale = ( 1 / projectedBoundingBox.size().x) * (canvas.width - 100);
+							
+							return {
+								x: 50 + (x * scale), 
+								y: canvas.height - (y - projectedBoundingBox.min.y) * scale - 35
+							};
+						};
+						
+						context.fillStyle = "rgb(100, 100, 100)";
+						context.fillRect(50, canvas.height - 15 - 250, 1, 250);
+						context.fillRect(50, canvas.height - 35, 500, 1);
+						
+						context.font="bold 1em Arial";
+						context.fillText(projectedBoundingBox.min.y.toFixed(1), 10, canvas.height - 35);
+						context.fillText(projectedBoundingBox.max.y.toFixed(1), 10, toFrame(0, projectedBoundingBox.max.y).y);
+						
+						context.fillStyle = "rgb(255, 0, 0)";
+						var mileage = 0;
+						for(var i = 0; i < segments.length; i++){
+							var segment = segments[i];
+							context.fillRect(toFrame(mileage, 0).x, canvas.height - 35, 4,8);
+							context.fillText(mileage.toFixed(1), toFrame(mileage, 0).x - 10, canvas.height - 10);
+							
+							mileage += segment.length;
+						}
+						context.fillRect(toFrame(mileage, 0).x, canvas.height - 35, 4, 8);
+						context.fillText(mileage.toFixed(1), toFrame(mileage, 0).x - 15, canvas.height - 10);
 					}
 					
 					// iterate through all segments of the profile
-					var segments = points.segments;
 					for(var i = 0; i < segments.length; i++){
 						var segment = segments[i];
 						
 						for(var j = 0; j < segment.points.numPoints; j++){
 							var position = segment.points.position[j];
-							
-							
 							position = segment.project(position);
+							position = toFrame(position.x, position.y);
+							
 							var color = segment.points.color[j];
-							
-							var x = 10 + (position.x / projectedBoundingBox.max.x) * 580;
-							var y = 15 + ((position.y - projectedBoundingBox.min.y) / projectedBoundingBox.max.x) * 570;
-							
 							
 							var r = parseInt(color[0]*255);
 							var g = parseInt(color[1]*255);
 							var b = parseInt(color[2]*255);
 							
 							context.fillStyle = "rgb(" + r + ", " + g + " , " + b + " )";
-							context.fillRect(x, y, 2, 2);
+							context.fillRect(position.x, position.y, 1,1);
 						}
 					}
 					
@@ -156,9 +181,6 @@
 		};
 		
 		var onPointCloudLoaded = function(event){
-			// do stuff here that should be executed once the point cloud has been loaded.
-			// event.pointcloud returns the point cloud object
-			
 			var profile = new Potree.HeightProfile();
 			profile.addMarker(new THREE.Vector3( -235.29000091552734, 52.45999908452405, 90.1893768310547));
 			profile.addMarker(new THREE.Vector3(-283.07999992370605, 54.68999862676038, 108.33937454223634));

@@ -193,7 +193,7 @@ Potree.Viewer = function(domElement, settings, args){
 	this.earthControls;
 	this.controls;
 
-	var progressBar = new ProgressBar();
+	this.progressBar = new ProgressBar();
 
 	var pointcloudPath = defaultSettings.path;
 
@@ -214,7 +214,7 @@ Potree.Viewer = function(domElement, settings, args){
 	var stats;
 	var clock = new THREE.Clock();
 	var showSkybox = false;
-	var referenceFrame;
+	this.referenceFrame;
 
 	this.setPointSizeType = function(value){
 		if(value === "Fixed"){
@@ -702,8 +702,8 @@ Potree.Viewer = function(domElement, settings, args){
 		scope.cameraBG = new THREE.Camera();
 		scope.camera.rotation.order = 'ZYX';
 		
-		referenceFrame = new THREE.Object3D();
-		scope.scenePointCloud.add(referenceFrame);
+		scope.referenceFrame = new THREE.Object3D();
+		scope.scenePointCloud.add(scope.referenceFrame);
 
 		scope.renderer = new THREE.WebGLRenderer();
 		scope.renderer.setSize(width, height);
@@ -735,13 +735,13 @@ Potree.Viewer = function(domElement, settings, args){
 				scope.pointcloud.material.size = scope.pointSize;
 				scope.pointcloud.visiblePointsTarget = scope.pointCountTarget * 1000 * 1000;
 				
-				referenceFrame.add(scope.pointcloud);
+				scope.referenceFrame.add(scope.pointcloud);
 				
-				referenceFrame.updateMatrixWorld(true);
+				scope.referenceFrame.updateMatrixWorld(true);
 				var sg = scope.pointcloud.boundingSphere.clone().applyMatrix4(scope.pointcloud.matrixWorld);
 				
-				referenceFrame.position.copy(sg.center).multiplyScalar(-1);
-				referenceFrame.updateMatrixWorld(true);
+				scope.referenceFrame.position.copy(sg.center).multiplyScalar(-1);
+				scope.referenceFrame.updateMatrixWorld(true);
 				
 				if(sg.radius > 50*1000){
 					scope.camera.near = 10;
@@ -808,20 +808,20 @@ Potree.Viewer = function(domElement, settings, args){
 				//	0,0,0,1
 				//));
 				
-				referenceFrame.add(scope.pointcloud);
+				scope.referenceFrame.add(scope.pointcloud);
 				
-				flipYZ();
+				scope.flipYZ();
 				
-				referenceFrame.updateMatrixWorld(true);
+				scope.referenceFrame.updateMatrixWorld(true);
 				var sg = scope.pointcloud.boundingSphere.clone().applyMatrix4(scope.pointcloud.matrixWorld);
 				
-				referenceFrame.position.sub(sg.center);
-				referenceFrame.position.y += sg.radius / 2;
-				referenceFrame.updateMatrixWorld(true);
+				scope.referenceFrame.position.sub(sg.center);
+				scope.referenceFrame.position.y += sg.radius / 2;
+				scope.referenceFrame.updateMatrixWorld(true);
 				
 				scope.zoomTo(scope.pointcloud, 1);
 				
-				initGUI();
+				scope.initGUI();
 				scope.pointcloud.material.interpolation = false;
 				scope.pointcloud.material.pointSizeType = Potree.PointSizeType.ATTENUATED;
 				scope.earthControls.pointclouds.push(scope.pointcloud);	
@@ -894,8 +894,8 @@ Potree.Viewer = function(domElement, settings, args){
 		scope.isFlipYZ = !scope.isFlipYZ;
 		
 		if(scope.isFlipYZ){
-			referenceFrame.matrix.copy(new THREE.Matrix4());
-			referenceFrame.applyMatrix(new THREE.Matrix4().set(
+			scope.referenceFrame.matrix.copy(new THREE.Matrix4());
+			scope.referenceFrame.applyMatrix(new THREE.Matrix4().set(
 				1,0,0,0,
 				0,0,1,0,
 				0,-1,0,0,
@@ -903,8 +903,8 @@ Potree.Viewer = function(domElement, settings, args){
 			));
 			
 		}else{
-			referenceFrame.matrix.copy(new THREE.Matrix4());
-			referenceFrame.applyMatrix(new THREE.Matrix4().set(
+			scope.referenceFrame.matrix.copy(new THREE.Matrix4());
+			scope.referenceFrame.applyMatrix(new THREE.Matrix4().set(
 				1,0,0,0,
 				0,1,0,0,
 				0,0,1,0,
@@ -912,13 +912,13 @@ Potree.Viewer = function(domElement, settings, args){
 			));
 		}
 		
-		referenceFrame.updateMatrixWorld(true);
+		scope.referenceFrame.updateMatrixWorld(true);
 		scope.pointcloud.updateMatrixWorld();
 		var sg = scope.pointcloud.boundingSphere.clone().applyMatrix4(scope.pointcloud.matrixWorld);
-		referenceFrame.position.copy(sg.center).multiplyScalar(-1);
-		referenceFrame.updateMatrixWorld(true);
-		referenceFrame.position.y -= scope.pointcloud.getWorldPosition().y;
-		referenceFrame.updateMatrixWorld(true);
+		scope.referenceFrame.position.copy(sg.center).multiplyScalar(-1);
+		scope.referenceFrame.updateMatrixWorld(true);
+		scope.referenceFrame.position.y -= scope.pointcloud.getWorldPosition().y;
+		scope.referenceFrame.updateMatrixWorld(true);
 	}
 
 	function onKeyDown(event){
@@ -1021,7 +1021,7 @@ Potree.Viewer = function(domElement, settings, args){
 		if(scope.pointcloud){
 			var progress = scope.pointcloud.progress;
 			
-			progressBar.progress = progress;
+			scope.progressBar.progress = progress;
 			
 			var message;
 			if(progress === 0 || scope.pointcloud instanceof Potree.PointCloudArena4D){
@@ -1029,12 +1029,12 @@ Potree.Viewer = function(domElement, settings, args){
 			}else{
 				message = "loading: " + parseInt(progress*100) + "%";
 			}
-			progressBar.message = message;
+			scope.progressBar.message = message;
 			
 			if(progress === 1){
-				progressBar.hide();
+				scope.progressBar.hide();
 			}else if(progress < 1){
-				progressBar.show();
+				scope.progressBar.show();
 			}
 		}
 		
@@ -1502,7 +1502,11 @@ Potree.Viewer = function(domElement, settings, args){
 					scope.pointcloud.material = attributeMaterial;
 					for(var i = 0; i < scope.pointcloud.visibleNodes.length; i++){
 						var node = scope.pointcloud.visibleNodes[i];
-						node.sceneNode.material = attributeMaterial;
+						if(scope.pointcloud instanceof Potree.PointCloudOctree){
+							node.sceneNode.material = attributeMaterial;
+						}else if(scope.pointcloud instanceof Potree.PointCloudArena4D){
+							node.material = attributeMaterial;
+						}
 					}
 					
 					scope.renderer.clearTarget( rtColor, true, true, true );
@@ -1512,7 +1516,11 @@ Potree.Viewer = function(domElement, settings, args){
 					scope.pointcloud.material = originalMaterial;
 					for(var i = 0; i < scope.pointcloud.visibleNodes.length; i++){
 						var node = scope.pointcloud.visibleNodes[i];
-						node.sceneNode.material = originalMaterial;
+						if(scope.pointcloud instanceof Potree.PointCloudOctree){
+							node.sceneNode.material = originalMaterial;
+						}else if(scope.pointcloud instanceof Potree.PointCloudArena4D){
+							node.material = originalMaterial;
+						}
 					}
 				}
 				

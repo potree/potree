@@ -9376,7 +9376,7 @@ Potree.PointCloudArena4D.prototype.update = function(camera, renderer){
 				this.loadQueue.push(element);
 			}
 		}else if(node instanceof THREE.PointCloud){
-			if(this.numVisiblePoints + node.pcoGeometry.numPoints > pointcloud.visiblePointsTarget){
+			if(this.numVisiblePoints + node.pcoGeometry.numPoints > this.visiblePointsTarget){
 				break;
 			}
 			this.numVisibleNodes++;
@@ -10073,6 +10073,7 @@ Potree.PointCloudArena4DGeometry.load = function(url, callback){
 				callback(null);
 			}
 		}catch(e){
+			console.error(e.message);
 			callback(null);
 		}
 	};

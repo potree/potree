@@ -147,6 +147,7 @@ Potree.PointCloudArena4DGeometry.load = function(url, callback){
 				callback(null);
 			}
 		}catch(e){
+			console.error(e.message);
 			callback(null);
 		}
 	};

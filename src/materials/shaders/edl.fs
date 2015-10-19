@@ -17,6 +17,7 @@ uniform vec3 lightDir;
 uniform float expScale;
 uniform float edlScale;
 uniform float radius;
+uniform float opacity;
 
 //uniform sampler2D depthMap;
 uniform sampler2D colorMap;
@@ -82,5 +83,5 @@ void main(){
 		discard;
 	}
 	
-	gl_FragColor = vec4(color.rgb * f, 1.0);
+	gl_FragColor = vec4(color.rgb * f, opacity);
 }

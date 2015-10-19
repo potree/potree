@@ -44,7 +44,8 @@ Potree.EyeDomeLightingMaterial = function(parameters){
 		lightDir:		{ type: "v3",	value: lightDir },
 		neighbours:		{ type: "2fv", 	value: neighbours },
 		depthMap: 		{ type: "t", 	value: null },
-		colorMap: 		{ type: "t", 	value: null }
+		colorMap: 		{ type: "t", 	value: null },
+		opacity:		{ type: "f",	value: 1.0}
 	};
 	
 	this.setValues({

@@ -760,6 +760,7 @@ Potree.Shaders["edl.fs"] = [
  "uniform float expScale;",
  "uniform float edlScale;",
  "uniform float radius;",
+ "uniform float opacity;",
  "",
  "//uniform sampler2D depthMap;",
  "uniform sampler2D colorMap;",
@@ -825,7 +826,7 @@ Potree.Shaders["edl.fs"] = [
  "		discard;",
  "	}",
  "	",
- "	gl_FragColor = vec4(color.rgb * f, 1.0);",
+ "	gl_FragColor = vec4(color.rgb * f, opacity);",
  "}",
  "",
 ].join("\n");
@@ -2494,7 +2495,8 @@ Potree.EyeDomeLightingMaterial = function(parameters){
 		lightDir:		{ type: "v3",	value: lightDir },
 		neighbours:		{ type: "2fv", 	value: neighbours },
 		depthMap: 		{ type: "t", 	value: null },
-		colorMap: 		{ type: "t", 	value: null }
+		colorMap: 		{ type: "t", 	value: null },
+		opacity:		{ type: "f",	value: 1.0}
 	};
 	
 	this.setValues({

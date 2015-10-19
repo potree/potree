@@ -298,7 +298,7 @@ Potree.Viewer = function(domElement, settings, args){
 		this.renderArea.appendChild(gui.domElement);
 		
 		params = {
-			"points(m)": scope.pointCountTarget,
+			"max. points(m)": scope.pointCountTarget,
 			PointSize: scope.pointSize,
 			"FOV": scope.fov,
 			"opacity": scope.opacity,
@@ -318,7 +318,7 @@ Potree.Viewer = function(domElement, settings, args){
 			"freeze": scope.freeze
 		};
 		
-		var pPoints = gui.add(params, 'points(m)', 0, 4);
+		var pPoints = gui.add(params, 'max. points(m)', 0, 4);
 		pPoints.onChange(function(value){
 			scope.pointCountTarget = value ;
 		});
@@ -1173,8 +1173,8 @@ Potree.Viewer = function(domElement, settings, args){
 
 			// render skybox
 			if(showSkybox){
-				skybox.scope.camera.rotation.copy(scope.camera.rotation);
-				scope.renderer.render(skybox.scene, skybox.scope.camera);
+				scope.camera.rotation.copy(scope.camera.rotation);
+				scope.renderer.render(skybox.scene, skybox.camera);
 			}else{
 				scope.renderer.render(scope.sceneBG, scope.cameraBG);
 			}
@@ -1295,8 +1295,8 @@ Potree.Viewer = function(domElement, settings, args){
 			
 			scope.renderer.clear();
 			if(showSkybox){
-				skybox.scope.camera.rotation.copy(scope.camera.rotation);
-				scope.renderer.render(skybox.scene, skybox.scope.camera);
+				skybox.camera.rotation.copy(scope.camera.rotation);
+				scope.renderer.render(skybox.scene, skybox.camera);
 			}else{
 				scope.renderer.render(scope.sceneBG, scope.cameraBG);
 			}
@@ -1453,8 +1453,8 @@ Potree.Viewer = function(domElement, settings, args){
 			
 			scope.renderer.clear();
 			if(showSkybox){
-				skybox.scope.camera.rotation.copy(scope.camera.rotation);
-				scope.renderer.render(skybox.scene, skybox.scope.camera);
+				scope.camera.rotation.copy(scope.camera.rotation);
+				scope.renderer.render(skybox.scene, skybox.camera);
 			}else{
 				scope.renderer.render(scope.sceneBG, scope.cameraBG);
 			}
@@ -1529,8 +1529,10 @@ Potree.Viewer = function(domElement, settings, args){
 					edlMaterial.uniforms.expScale.value = scope.camera.far;
 					edlMaterial.uniforms.edlScale.value = scope.edlScale;
 					edlMaterial.uniforms.radius.value = scope.edlRadius;
-					
-					//edlMaterial.uniforms.depthMap.value = depthTexture;
+					edlMaterial.uniforms.opacity.value = scope.opacity;
+					edlMaterial.depthTest = true;
+					edlMaterial.depthWrite = true;
+					edlMaterial.transparent = true;
 				
 					Potree.utils.screenPass.render(scope.renderer, edlMaterial);
 				}	

@@ -698,6 +698,7 @@ Potree.Shaders["edl.fs"] = [
  "uniform float expScale;",
  "uniform float edlScale;",
  "uniform float radius;",
+ "uniform float opacity;",
  "",
  "//uniform sampler2D depthMap;",
  "uniform sampler2D colorMap;",
@@ -763,7 +764,7 @@ Potree.Shaders["edl.fs"] = [
  "		discard;",
  "	}",
  "	",
- "	gl_FragColor = vec4(color.rgb * f, 1.0);",
+ "	gl_FragColor = vec4(color.rgb * f, opacity);",
  "}",
  "",
 ].join("\n");

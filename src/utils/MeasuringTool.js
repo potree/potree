@@ -474,6 +474,7 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 		if(scope.activeMeasurement && state === STATE.INSERT){
 			scope.activeMeasurement.removeMarker(scope.activeMeasurement.points.length-1);
 			scope.finishInsertion();
+			event.stopImmediatePropagation();
 		}
 	}
 	

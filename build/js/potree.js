@@ -7864,6 +7864,7 @@ Potree.ProfileTool = function(scene, camera, renderer){
 		if(scope.activeProfile && state === STATE.INSERT){
 			scope.activeProfile.removeMarker(scope.activeProfile.points.length-1);
 			scope.finishInsertion();
+			event.stopImmediatePropagation();
 		}
 	}
 	

@@ -28,6 +28,7 @@ var paths = {
 		"src/materials/EyeDomeLightingMaterial.js",
 		"src/materials/BlurMaterial.js",
 		"src/FirstPersonControls.js",
+		"src/GeoControls.js",
 		"src/OrbitControls.js",
 		"src/EarthControls.js",
 		"src/LRU.js",

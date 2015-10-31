@@ -3,6 +3,7 @@ Potree.Viewer = function(domElement, settings, args){
 	var scope = this;
 	var defaultSettings = settings;
 	var arguments = args || {};
+	var pointCloudLoadedCallback = args.onPointCloudLoaded || function(){};
 	
 	this.renderArea = domElement;
 	
@@ -89,6 +90,12 @@ Potree.Viewer = function(domElement, settings, args){
 		));
 		
 		elToolbar.appendChild(createToolIcon(
+			"../resources/icons/fps_controls.png",
+			"Geo Controls",
+			function(){scope.useGeoControls()}
+		));
+		
+		elToolbar.appendChild(createToolIcon(
 			"../resources/icons/orbit_controls.png",
 			"Orbit Controls",
 			function(){scope.useOrbitControls()}
@@ -161,10 +168,6 @@ Potree.Viewer = function(domElement, settings, args){
 	if(defaultSettings.useEDL && !Potree.Features.SHADER_EDL.isSupported()){
 		defaultSettings.useEDL = false;
 	}
-
-	if(typeof arguments.onPointCloudLoaded !== "undefined"){
-		this.addEventListener("pointcloud_loaded", arguments.onPointCloudLoaded);
-	}
 	
 	this.annotations = [];
 	this.fov = defaultSettings.fov || 60;
@@ -191,6 +194,7 @@ Potree.Viewer = function(domElement, settings, args){
 	this.fpControls;
 	this.orbitControls;
 	this.earthControls;
+	this.geoControls;
 	this.controls;
 
 	this.progressBar = new ProgressBar();
@@ -595,6 +599,25 @@ Potree.Viewer = function(domElement, settings, args){
 				}
 			});
 		}
+		
+		{ // create GEO CONTROLS
+			scope.geoControls = new Potree.GeoControls(scope.camera, scope.renderer.domElement);
+			scope.geoControls.addEventListener("proposeTransform", function(event){
+				if(!scope.pointcloud || !scope.useDEMCollisions){
+					return;
+				}
+				
+				var demHeight = scope.pointcloud.getDEMHeight(event.newPosition);
+				if(event.newPosition.y < demHeight){
+					event.objections++;
+					
+					var counterProposal = event.newPosition.clone();
+					counterProposal.y = demHeight;
+					
+					event.counterProposals.push(counterProposal);
+				}
+			});
+		}
 	
 		{ // create ORBIT CONTROLS
 			scope.orbitControls = new Potree.OrbitControls(scope.camera, scope.renderer.domElement);
@@ -665,6 +688,7 @@ Potree.Viewer = function(domElement, settings, args){
 					tween.onComplete(function(){
 						scope.controls.enabled = true;
 						scope.fpControls.moveSpeed = radius / 2;
+						scope.geoControls.moveSpeed = radius / 2;
 					});
 					tween.start();
 				}
@@ -724,130 +748,82 @@ Potree.Viewer = function(domElement, settings, args){
 		// enable frag_depth extension for the interpolation shader, if available
 		scope.renderer.context.getExtension("EXT_frag_depth");
 		
+		var initPointcloud = function(){
+		
+			scope.referenceFrame.add(scope.pointcloud);
+		
+			var sg = scope.pointcloud.boundingSphere.clone().applyMatrix4(scope.pointcloud.matrixWorld);
+			 
+			scope.referenceFrame.updateMatrixWorld(true);
+			
+			if(sg.radius > 50*1000){
+				scope.camera.near = 10;
+			}else if(sg.radius > 10*1000){
+				scope.camera.near = 2;
+			}else if(sg.radius > 1000){
+				scope.camera.near = 1;
+			}else if(sg.radius > 100){
+				scope.camera.near = 0.5;
+			}else{
+				scope.camera.near = 0.1;
+			}
+		
+			if(defaultSettings.navigation === "Earth"){
+				scope.useEarthControls();
+			}else if(defaultSettings.navigation === "Orbit"){
+				scope.useOrbitControls();
+			}else if(defaultSettings.navigation === "Flight"){
+				scope.useFPSControls();
+			}else if(defaultSettings.navigation === "Geo"){
+				scope.useGeoControls();
+			}else{
+				console.warning("No navigation mode specified. Using OrbitControls");
+				scope.useOrbitControls();
+			}
+
+			if(defaultSettings.cameraPosition != null){
+				var cp = new THREE.Vector3(defaultSettings.cameraPosition[0], defaultSettings.cameraPosition[1], defaultSettings.cameraPosition[2]);
+				scope.camera.position.copy(cp);
+			}
+
+			if(defaultSettings.cameraTarget != null){
+				var ct = new THREE.Vector3(defaultSettings.cameraTarget[0], defaultSettings.cameraTarget[1], defaultSettings.cameraTarget[2]);
+				scope.camera.lookAt(ct);
+				
+				if(defaultSettings.navigation === "Orbit"){
+					scope.controls.target.copy(ct);
+				}
+			}
+			
+			scope.referenceFrame.position.sub(sg.center);
+			scope.referenceFrame.updateMatrixWorld(true);
+			
+			scope.flipYZ();
+			
+			scope.zoomTo(scope.pointcloud, 1);
+			
+			scope.initGUI();	
+			scope.earthControls.pointclouds.push(scope.pointcloud);	
+			
+			scope.dispatchEvent({"type": "pointcloud_loaded", "pointcloud": scope.pointcloud});
+		};
+		this.addEventListener("pointcloud_loaded", pointCloudLoadedCallback);
+		
 		// load pointcloud
 		if(!pointcloudPath){
 			
 		}else if(pointcloudPath.indexOf("cloud.js") > 0){
+		
 			Potree.POCLoader.load(pointcloudPath, function(geometry){
 				scope.pointcloud = new Potree.PointCloudOctree(geometry);
 				
-				scope.pointcloud.material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-				scope.pointcloud.material.size = scope.pointSize;
-				scope.pointcloud.visiblePointsTarget = scope.pointCountTarget * 1000 * 1000;
-				
-				scope.referenceFrame.add(scope.pointcloud);
-				
-				scope.referenceFrame.updateMatrixWorld(true);
-				var sg = scope.pointcloud.boundingSphere.clone().applyMatrix4(scope.pointcloud.matrixWorld);
-				
-				scope.referenceFrame.position.copy(sg.center).multiplyScalar(-1);
-				scope.referenceFrame.updateMatrixWorld(true);
-				
-				if(sg.radius > 50*1000){
-					scope.camera.near = 10;
-				}else if(sg.radius > 10*1000){
-					scope.camera.near = 2;
-				}else if(sg.radius > 1000){
-					scope.camera.near = 1;
-				}else if(sg.radius > 100){
-					scope.camera.near = 0.5;
-				}else{
-					scope.camera.near = 0.1;
-				}
-				
-				
-				scope.flipYZ();
-				scope.zoomTo(scope.pointcloud, 1);
-				
-				scope.initGUI();	
-			
-				scope.earthControls.pointclouds.push(scope.pointcloud);	
-				
-				
-				
-				if(defaultSettings.navigation === "Earth"){
-					scope.useEarthControls();
-				}else if(defaultSettings.navigation === "Orbit"){
-					scope.useOrbitControls();
-				}else if(defaultSettings.navigation === "Flight"){
-					scope.useFPSControls();
-				}else{
-					console.warning("No navigation mode specified. Using OrbitControls");
-					scope.useOrbitControls();
-				}
-				
-				if(defaultSettings.cameraPosition != null){
-					var cp = new THREE.Vector3(defaultSettings.cameraPosition[0], defaultSettings.cameraPosition[1], defaultSettings.cameraPosition[2]);
-					scope.camera.position.copy(cp);
-				}
-				
-				if(defaultSettings.cameraTarget != null){
-					var ct = new THREE.Vector3(defaultSettings.cameraTarget[0], defaultSettings.cameraTarget[1], defaultSettings.cameraTarget[2]);
-					scope.camera.lookAt(ct);
-					
-					if(defaultSettings.navigation === "Orbit"){
-						scope.controls.target.copy(ct);
-					}
-				}
-				
-				scope.dispatchEvent({
-					"type": "pointcloud_loaded",
-					"pointcloud": scope.pointcloud
-				});
-				
+				initPointcloud(geometry);				
 			});
 		}else if(pointcloudPath.indexOf(".vpc") > 0){
 			Potree.PointCloudArena4DGeometry.load(pointcloudPath, function(geometry){
 				scope.pointcloud = new Potree.PointCloudArena4D(geometry);
-				scope.pointcloud.visiblePointsTarget = 500*1000;
 				
-				//scope.pointcloud.applyMatrix(new THREE.Matrix4().set(
-				//	1,0,0,0,
-				//	0,0,1,0,
-				//	0,-1,0,0,
-				//	0,0,0,1
-				//));
-				
-				scope.referenceFrame.add(scope.pointcloud);
-				
-				scope.flipYZ();
-				
-				scope.referenceFrame.updateMatrixWorld(true);
-				var sg = scope.pointcloud.boundingSphere.clone().applyMatrix4(scope.pointcloud.matrixWorld);
-				
-				scope.referenceFrame.position.sub(sg.center);
-				scope.referenceFrame.position.y += sg.radius / 2;
-				scope.referenceFrame.updateMatrixWorld(true);
-				
-				scope.zoomTo(scope.pointcloud, 1);
-				
-				scope.initGUI();
-				scope.pointcloud.material.interpolation = false;
-				scope.pointcloud.material.pointSizeType = Potree.PointSizeType.ATTENUATED;
-				scope.earthControls.pointclouds.push(scope.pointcloud);	
-				
-				
-				if(defaultSettings.navigation === "Earth"){
-					scope.useEarthControls();
-				}else if(defaultSettings.navigation === "Orbit"){
-					scope.useOrbitControls();
-				}else if(defaultSettings.navigation === "Flight"){
-					scope.useFPSControls();
-				}else{
-					console.warning("No navigation mode specivied. Using OrbitControls");
-					scope.useOrbitControls();
-				}
-				
-				if(defaultSettings.cameraPosition != null){
-					var cp = new THREE.Vector3(defaultSettings.cameraPosition[0], defaultSettings.cameraPosition[1], defaultSettings.cameraPosition[2]);
-					scope.camera.position.copy(cp);
-				}
-				
-				if(defaultSettings.cameraTarget != null){
-					var ct = new THREE.Vector3(defaultSettings.cameraTarget[0], defaultSettings.cameraTarget[1], defaultSettings.cameraTarget[2]);
-					scope.camera.lookAt(ct);
-				}
-				
+				initPointcloud(geometry);
 			});
 		}
 		
@@ -1116,6 +1092,17 @@ Potree.Viewer = function(domElement, settings, args){
 
 		scope.controls = scope.earthControls;
 		scope.controls.enabled = true;
+	}
+	
+	this.useGeoControls = function(){
+		if(scope.controls){
+			scope.controls.enabled = false;
+		}
+
+		scope.controls = scope.geoControls;
+		scope.controls.enabled = true;
+		
+		scope.controls.moveSpeed = scope.pointcloud.boundingSphere.radius / 6;
 	}
 
 	this.useFPSControls = function(){

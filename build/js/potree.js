@@ -4524,6 +4524,7 @@ Potree.Annotation = function(viewer, args){
 	this.cameraTarget = args.cameraTarget || this.position;
 	this.view = args.view || null;
 	this.keepOpen = false;
+	this.descriptionVisible = false;
 	
 	this.domElement = document.createElement("div");
 	this.domElement.style.position = "fixed";
@@ -4591,12 +4592,16 @@ Potree.Annotation = function(viewer, args){
 	
 	this.domElement.onmouseenter = function(){
 		scope.domElement.style.opacity = "0.8";
+		scope.domElement.style.zIndex = 1000;
 		if(scope.description){
+			scope.descriptionVisible = true;	
 			scope.domDescription.style.display = "block";
 		}
 	};
 	this.domElement.onmouseleave = function(){
 		scope.domElement.style.opacity = "0.5";
+		scope.domElement.style.zIndex = 100;
+		scope.descriptionVisible = true;	
 		scope.domDescription.style.display = "none";
 	};
 	

@@ -1074,6 +1074,9 @@ Potree.Viewer = function(domElement, settings, args){
 			for(var i = 0; i < distances.length; i++){
 				var ann = distances[i].annotation;
 				ann.domElement.style.zIndex = "" + i;
+				if(ann.descriptionVisible){
+					ann.domElement.style.zIndex += 100;
+				}
 			}
 		}
 		

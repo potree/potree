@@ -1056,8 +1056,11 @@ Potree.Viewer = function(domElement, settings, args){
 				screenPos.x = scope.renderArea.clientWidth * (screenPos.x + 1) / 2;
 				screenPos.y = scope.renderArea.clientHeight * (1 - (screenPos.y + 1) / 2);
 				
-				ann.domElement.style.left = screenPos.x - ann.domElement.clientWidth / 2;
-				ann.domElement.style.top = screenPos.y;
+				ann.domElement.style.left = Math.floor(screenPos.x - ann.domElement.clientWidth / 2);
+				ann.domElement.style.top = Math.floor(screenPos.y);
+				
+				//ann.domDescription.style.left = screenPos.x - ann.domDescription.clientWidth / 2 + 10;
+				//ann.domDescription.style.top = screenPos.y + 30;
 
 				distances.push({annotation: ann, distance: screenPos.z});
 				
@@ -1132,15 +1135,20 @@ Potree.Viewer = function(domElement, settings, args){
 	this.addAnnotation = function(position, args){
 		var cameraPosition = args.cameraPosition;
 		var cameraTarget = args.cameraTarget || position;
+		var description = args.description || null;
+		var title = args.title || null;
 		
 		var annotation = new Potree.Annotation(scope, {
 			"position": position,
 			"cameraPosition": cameraPosition,
-			"cameraTarget": cameraTarget
+			"cameraTarget": cameraTarget,
+			"title": title,
+			"description": description
 		});
 		
 		scope.annotations.push(annotation);
 		scope.renderArea.appendChild(annotation.domElement);
+		//scope.renderArea.appendChild(annotation.domDescription);
 	}
 
 	var PotreeRenderer = function(){

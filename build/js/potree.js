@@ -4543,6 +4543,7 @@ Potree.Annotation = function(viewer, args){
 	this.elOrdinal.style.opacity = "1";
 	this.elOrdinal.style.margin = "auto";
 	this.elOrdinal.style.zIndex = "100";
+	this.elOrdinal.style.width = "fit-content";
 	this.domElement.appendChild(this.elOrdinal);
 	
 	this.domDescription = document.createElement("div");
@@ -4559,9 +4560,7 @@ Potree.Annotation = function(viewer, args){
 	this.domElement.appendChild(this.domDescription);
 	
 	this.elOrdinal.onmouseenter = function(){
-		if(scope.description){
-			scope.domDescription.style.display = "block";
-		}
+		
 	};
 	this.elOrdinal.onmouseleave = function(){
 
@@ -4592,6 +4591,9 @@ Potree.Annotation = function(viewer, args){
 	
 	this.domElement.onmouseenter = function(){
 		scope.domElement.style.opacity = "0.8";
+		if(scope.description){
+			scope.domDescription.style.display = "block";
+		}
 	};
 	this.domElement.onmouseleave = function(){
 		scope.domElement.style.opacity = "0.5";
@@ -6864,6 +6866,8 @@ Potree.Features = function(){
 Potree.TextSprite = function(text){
 
 	THREE.Object3D.call(this);
+	
+	var scope = this;
 
 	var texture = new THREE.Texture();
 	texture.minFilter = THREE.LinearFilter;
@@ -6926,7 +6930,8 @@ Potree.TextSprite.prototype.update = function(){
 	// get size data (height depends only on font size)
 	var metrics = context.measureText( this.text );
 	var textWidth = metrics.width;
-	var spriteWidth = textWidth + 2 * this.borderThickness;
+	var margin = 5;
+	var spriteWidth = 2*margin + textWidth + 2 * this.borderThickness;
 	var spriteHeight = this.fontsize * 1.4 + 2 * this.borderThickness;
 	
 	var canvas = document.createElement('canvas');
@@ -6944,15 +6949,15 @@ Potree.TextSprite.prototype.update = function(){
 								  
 	context.lineWidth = this.borderThickness;
 	this.roundRect(context, this.borderThickness/2, this.borderThickness/2, 
-		textWidth + this.borderThickness, this.fontsize * 1.4 + this.borderThickness, 6);						  
+		textWidth + this.borderThickness + 2*margin, this.fontsize * 1.4 + this.borderThickness, 6);						  
 		
 	// text color
 	context.strokeStyle = "rgba(0, 0, 0, 1.0)";
-	context.strokeText( this.text, this.borderThickness, this.fontsize + this.borderThickness);
+	context.strokeText( this.text, this.borderThickness + margin, this.fontsize + this.borderThickness);
 	
 	context.fillStyle = "rgba(" + this.textColor.r + "," + this.textColor.g + ","
 								  + this.textColor.b + "," + this.textColor.a + ")";
-	context.fillText( this.text, this.borderThickness, this.fontsize + this.borderThickness);
+	context.fillText( this.text, this.borderThickness + margin, this.fontsize + this.borderThickness);
 	
 								  
 	var texture = new THREE.Texture(canvas); 
@@ -6984,9 +6989,6 @@ Potree.TextSprite.prototype.roundRect = function(ctx, x, y, w, h, r) {
 	ctx.fill();
 	ctx.stroke();   
 };
-
-
-
 
 Potree.Version = function(version){
 	this.version = version;
@@ -7045,11 +7047,12 @@ Potree.Measure = function(){
 	this.angleLabels = [];
 	
 	this.areaLabel = new Potree.TextSprite("");
-	this.areaLabel.setBorderColor({r:0, g:255, b:0, a:0.0});
-	this.areaLabel.setBackgroundColor({r:0, g:255, b:0, a:0.0});
+	this.areaLabel.setBorderColor({r:0, g:0, b:0, a:0.8});
+	this.areaLabel.setBackgroundColor({r:0, g:0, b:0, a:0.3});
 	this.areaLabel.setTextColor({r:180, g:220, b:180, a:1.0});
 	this.areaLabel.material.depthTest = false;
 	this.areaLabel.material.opacity = 1;
+	this.areaLabel.visible = false;;
 	this.add(this.areaLabel);
 	
 	var sphereGeometry = new THREE.SphereGeometry(0.4, 10, 10);
@@ -7123,9 +7126,9 @@ Potree.Measure = function(){
 		}
 		
 		{ // edge labels
-			var edgeLabel = new Potree.TextSprite(0);
-			edgeLabel.setBorderColor({r:0, g:255, b:0, a:0.0});
-			edgeLabel.setBackgroundColor({r:0, g:255, b:0, a:0.0});
+			var edgeLabel = new Potree.TextSprite();
+			edgeLabel.setBorderColor({r:0, g:0, b:0, a:0.8});
+			edgeLabel.setBackgroundColor({r:0, g:0, b:0, a:0.3});
 			edgeLabel.material.depthTest = false;
 			edgeLabel.visible = false;
 			this.edgeLabels.push(edgeLabel);
@@ -7134,8 +7137,8 @@ Potree.Measure = function(){
 		
 		{ // angle labels
 			var angleLabel = new Potree.TextSprite();
-            angleLabel.setBorderColor({r:0, g:255, b:0, a:0.0});
-            angleLabel.setBackgroundColor({r:0, g:255, b:0, a:0.0});
+            angleLabel.setBorderColor({r:0, g:0, b:0, a:0.8});
+			angleLabel.setBackgroundColor({r:0, g:0, b:0, a:0.3});
             angleLabel.material.depthTest = false;
             angleLabel.material.opacity = 1;
 			angleLabel.visible = false;
@@ -7594,7 +7597,7 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 		measurement.maxMarkers = maxMarkers;
 
 		this.addMeasurement(measurement);
-		measurement.addMarker(new THREE.Vector3(0,0,0));
+		measurement.addMarker(new THREE.Vector3(Infinity,Infinity,Infinity));
 		
 		this.activeMeasurement = measurement;
 	};

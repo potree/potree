@@ -17,11 +17,12 @@ Potree.Measure = function(){
 	this.angleLabels = [];
 	
 	this.areaLabel = new Potree.TextSprite("");
-	this.areaLabel.setBorderColor({r:0, g:255, b:0, a:0.0});
-	this.areaLabel.setBackgroundColor({r:0, g:255, b:0, a:0.0});
+	this.areaLabel.setBorderColor({r:0, g:0, b:0, a:0.8});
+	this.areaLabel.setBackgroundColor({r:0, g:0, b:0, a:0.3});
 	this.areaLabel.setTextColor({r:180, g:220, b:180, a:1.0});
 	this.areaLabel.material.depthTest = false;
 	this.areaLabel.material.opacity = 1;
+	this.areaLabel.visible = false;;
 	this.add(this.areaLabel);
 	
 	var sphereGeometry = new THREE.SphereGeometry(0.4, 10, 10);
@@ -95,9 +96,9 @@ Potree.Measure = function(){
 		}
 		
 		{ // edge labels
-			var edgeLabel = new Potree.TextSprite(0);
-			edgeLabel.setBorderColor({r:0, g:255, b:0, a:0.0});
-			edgeLabel.setBackgroundColor({r:0, g:255, b:0, a:0.0});
+			var edgeLabel = new Potree.TextSprite();
+			edgeLabel.setBorderColor({r:0, g:0, b:0, a:0.8});
+			edgeLabel.setBackgroundColor({r:0, g:0, b:0, a:0.3});
 			edgeLabel.material.depthTest = false;
 			edgeLabel.visible = false;
 			this.edgeLabels.push(edgeLabel);
@@ -106,8 +107,8 @@ Potree.Measure = function(){
 		
 		{ // angle labels
 			var angleLabel = new Potree.TextSprite();
-            angleLabel.setBorderColor({r:0, g:255, b:0, a:0.0});
-            angleLabel.setBackgroundColor({r:0, g:255, b:0, a:0.0});
+            angleLabel.setBorderColor({r:0, g:0, b:0, a:0.8});
+			angleLabel.setBackgroundColor({r:0, g:0, b:0, a:0.3});
             angleLabel.material.depthTest = false;
             angleLabel.material.opacity = 1;
 			angleLabel.visible = false;
@@ -566,7 +567,7 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 		measurement.maxMarkers = maxMarkers;
 
 		this.addMeasurement(measurement);
-		measurement.addMarker(new THREE.Vector3(0,0,0));
+		measurement.addMarker(new THREE.Vector3(Infinity,Infinity,Infinity));
 		
 		this.activeMeasurement = measurement;
 	};

@@ -32,6 +32,7 @@ Potree.Annotation = function(viewer, args){
 	this.elOrdinal.style.opacity = "1";
 	this.elOrdinal.style.margin = "auto";
 	this.elOrdinal.style.zIndex = "100";
+	this.elOrdinal.style.width = "fit-content";
 	this.domElement.appendChild(this.elOrdinal);
 	
 	this.domDescription = document.createElement("div");
@@ -48,9 +49,7 @@ Potree.Annotation = function(viewer, args){
 	this.domElement.appendChild(this.domDescription);
 	
 	this.elOrdinal.onmouseenter = function(){
-		if(scope.description){
-			scope.domDescription.style.display = "block";
-		}
+		
 	};
 	this.elOrdinal.onmouseleave = function(){
 
@@ -81,6 +80,9 @@ Potree.Annotation = function(viewer, args){
 	
 	this.domElement.onmouseenter = function(){
 		scope.domElement.style.opacity = "0.8";
+		if(scope.description){
+			scope.domDescription.style.display = "block";
+		}
 	};
 	this.domElement.onmouseleave = function(){
 		scope.domElement.style.opacity = "0.5";

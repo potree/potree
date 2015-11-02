@@ -3062,8 +3062,8 @@ Potree.GeoControls = function ( object, domElement ) {
 		var te = this.object.matrix.elements;
 
 		// get Y column of matrix
-		//panOffset.set( te[ 8 ], te[ 9 ], te[ 10 ] );
-		panOffset.set( te[ 8 ], 0, te[ 10 ] );
+		panOffset.set( te[ 8 ], te[ 9 ], te[ 10 ] );
+		//panOffset.set( te[ 8 ], 0, te[ 10 ] );
 		panOffset.multiplyScalar( distance );
 		
 		pan.add( panOffset );
@@ -5792,7 +5792,7 @@ Potree.PointCloudOctree.prototype.pick = function(renderer, camera, ray, params)
 			continue;
 		}
 		
-		material.pcIndex = i;
+		material.pcIndex = i + 1;
 		
 		if(material.program){
 			var program = material.program.program;
@@ -5830,21 +5830,21 @@ Potree.PointCloudOctree.prototype.pick = function(renderer, camera, ray, params)
 		renderer.context.RGBA, renderer.context.UNSIGNED_BYTE, pixels);
 		
 
-	//{ // show big render target for debugging purposes
-	//	var br = new ArrayBuffer(width*height*4);
-	//	var bp = new Uint8Array(br);
-	//	renderer.context.readPixels( 0, 0, width, height, 
-	//		renderer.context.RGBA, renderer.context.UNSIGNED_BYTE, bp);
-	//
-	//	var img = pixelsArrayToImage(bp, width, height);
-	//	img.style.boder = "2px solid red";
-	//	img.style.position = "absolute";
-	//	img.style.top  = "0px";
-	//	img.style.width = width + "px";
-	//	img.style.height = height + "px";
-	//	img.onclick = function(){document.body.removeChild(img)};
-	//	document.body.appendChild(img);
-	//}
+		//{ // show big render target for debugging purposes
+		//	var br = new ArrayBuffer(width*height*4);
+		//	var bp = new Uint8Array(br);
+		//	renderer.context.readPixels( 0, 0, width, height, 
+		//		renderer.context.RGBA, renderer.context.UNSIGNED_BYTE, bp);
+		//
+		//	var img = pixelsArrayToImage(bp, width, height);
+		//	img.style.boder = "2px solid red";
+		//	img.style.position = "absolute";
+		//	img.style.top  = "0px";
+		//	img.style.width = width + "px";
+		//	img.style.height = height + "px";
+		//	img.onclick = function(){document.body.removeChild(img)};
+		//	document.body.appendChild(img);
+		//}
 		
 		
 		
@@ -5865,7 +5865,7 @@ Potree.PointCloudOctree.prototype.pick = function(renderer, camera, ray, params)
 				
 				hit = {
 					pIndex: pIndex,
-					pcIndex: pcIndex
+					pcIndex: pcIndex - 1
 				};
 				min = distance;
 			}

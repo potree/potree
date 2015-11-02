@@ -124,8 +124,8 @@ Potree.GeoControls = function ( object, domElement ) {
 		var te = this.object.matrix.elements;
 
 		// get Y column of matrix
-		//panOffset.set( te[ 8 ], te[ 9 ], te[ 10 ] );
-		panOffset.set( te[ 8 ], 0, te[ 10 ] );
+		panOffset.set( te[ 8 ], te[ 9 ], te[ 10 ] );
+		//panOffset.set( te[ 8 ], 0, te[ 10 ] );
 		panOffset.multiplyScalar( distance );
 		
 		pan.add( panOffset );

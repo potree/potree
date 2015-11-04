@@ -182,7 +182,7 @@ Potree.GeoControls = function ( object, domElement ) {
 			if(this.moveLeft){
 				this.panLeft(delta * this.moveSpeed * multiplier);
 			}
-			if(this.moveForward){
+			if(this.moveForward || this.moveForwardMouse){
 				this.panForward(-delta * this.moveSpeed * multiplier);
 			}
 			if(this.moveBackward){
@@ -299,11 +299,11 @@ Potree.GeoControls = function ( object, domElement ) {
 			//state = STATE.PAN;
             //
 			//panStart.set( event.clientX, event.clientY );
-			scope.moveForward = true;
+			scope.moveForwardMouse = true;
 		}
 
-		scope.domElement.addEventListener( 'mousemove', onMouseMove, false );
-		scope.domElement.addEventListener( 'mouseup', onMouseUp, false );
+		//scope.domElement.addEventListener( 'mousemove', onMouseMove, false );
+		//scope.domElement.addEventListener( 'mouseup', onMouseUp, false );
 		scope.dispatchEvent( startEvent );
 	}
 
@@ -341,15 +341,16 @@ Potree.GeoControls = function ( object, domElement ) {
 	function onMouseUp(event) {
 		if ( scope.enabled === false ) return;
 		
-		if(event.button === 2){
-			scope.moveForward = false;
-		}
+		//console.log(event.which);
 		
-		scope.domElement.removeEventListener( 'mousemove', onMouseMove, false );
-		scope.domElement.removeEventListener( 'mouseup', onMouseUp, false );
-		scope.dispatchEvent( endEvent );
-		state = STATE.NONE;
-
+		if(event.button === 2){
+			scope.moveForwardMouse = false;
+		}else{
+			//scope.domElement.removeEventListener( 'mousemove', onMouseMove, false );
+			//scope.domElement.removeEventListener( 'mouseup', onMouseUp, false );
+			scope.dispatchEvent( endEvent );
+			state = STATE.NONE;
+		}
 	}
 
 	function onMouseWheel(event) {
@@ -411,6 +412,9 @@ Potree.GeoControls = function ( object, domElement ) {
 	this.domElement.addEventListener( 'mousedown', onMouseDown, false );
 	this.domElement.addEventListener( 'mousewheel', onMouseWheel, false );
 	this.domElement.addEventListener( 'DOMMouseScroll', onMouseWheel, false ); // firefox
+	
+	scope.domElement.addEventListener( 'mousemove', onMouseMove, false );
+	scope.domElement.addEventListener( 'mouseup', onMouseUp, false );
 
 	window.addEventListener( 'keydown', onKeyDown, false );
 	window.addEventListener( 'keyup', onKeyUp, false );

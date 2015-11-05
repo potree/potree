@@ -56,6 +56,8 @@ uniform float opacity;
 //
 //#endif
 
+uniform float blendHardness;
+uniform float blendDepthSupplement;
 uniform float fov;
 uniform float spacing;
 uniform float near;
@@ -97,7 +99,7 @@ void main() {
 	#if defined weighted_splats
 		vec2 uv = gl_FragCoord.xy / vec2(screenWidth, screenHeight);
 		float sDepth = texture2D(depthMap, uv).r;
-		if(vLinearDepth > sDepth + vRadius){
+		if(vLinearDepth > sDepth + vRadius + blendDepthSupplement){
 			discard;
 		}
 	#endif
@@ -127,7 +129,7 @@ void main() {
 	#endif
 	
 	#if defined weighted_splats
-	    float w = pow(1.0 - (u*u + v*v), 2.0);
+	    float w = pow(1.0 - (u*u + v*v), blendHardness);
 		gl_FragColor.rgb = gl_FragColor.rgb * w;
 		gl_FragColor.a = w;
 	#endif

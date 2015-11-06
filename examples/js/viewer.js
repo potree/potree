@@ -733,6 +733,8 @@ Potree.Viewer = function(domElement, settings, args){
 		scope.renderer.setSize(width, height);
 		scope.renderer.autoClear = false;
 		renderArea.appendChild(scope.renderer.domElement);
+		scope.renderer.domElement.tabIndex = "2222";
+		scope.renderer.domElement.addEventListener("mousedown", function(){scope.renderer.domElement.focus();});
 		
 		skybox = Potree.utils.loadSkybox("../resources/textures/skybox/");
 
@@ -1343,6 +1345,8 @@ Potree.Viewer = function(domElement, settings, args){
 					attributeMaterial.uniforms.visibleNodes.value = scope.pointcloud.material.visibleNodesTexture;
 					attributeMaterial.uniforms.octreeSize.value = scope.pointcloud.pcoGeometry.boundingBox.size().x;
 					attributeMaterial.fov = scope.camera.fov * (Math.PI / 180);
+					attributeMaterial.uniforms.blendHardness.value = scope.pointcloud.material.uniforms.blendHardness.value;
+					attributeMaterial.uniforms.blendDepthSupplement.value = scope.pointcloud.material.uniforms.blendDepthSupplement.value;
 					attributeMaterial.spacing = scope.pointcloud.pcoGeometry.spacing;
 					attributeMaterial.near = scope.camera.near;
 					attributeMaterial.far = scope.camera.far;

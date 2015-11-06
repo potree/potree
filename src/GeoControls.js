@@ -416,8 +416,11 @@ Potree.GeoControls = function ( object, domElement ) {
 	scope.domElement.addEventListener( 'mousemove', onMouseMove, false );
 	scope.domElement.addEventListener( 'mouseup', onMouseUp, false );
 
-	window.addEventListener( 'keydown', onKeyDown, false );
-	window.addEventListener( 'keyup', onKeyUp, false );
+	if(this.domElement.tabIndex === -1){
+		this.domElement.tabIndex = 2222;
+	}
+	scope.domElement.addEventListener( 'keydown', onKeyDown, false );
+	scope.domElement.addEventListener( 'keyup', onKeyUp, false );
 
 };
 

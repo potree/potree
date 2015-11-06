@@ -185,6 +185,8 @@ Potree.Viewer = function(domElement, settings, args){
 	this.edlScale = defaultSettings.edlScale || 1;
 	this.edlRadius = defaultSettings.edlRadius || 3;
 	this.useEDL = defaultSettings.useEDL || false;
+	this.minimumJumpDistance = 0.2;
+	this.jumpDistance = null;
 
 	this.showDebugInfos = false;
 	this.showStats = false;
@@ -654,18 +656,24 @@ Potree.Viewer = function(domElement, settings, args){
 				var I = getMousePointCloudIntersection(mouse, scope.camera, scope.renderer, [scope.pointcloud]);
 				if(I != null){
 				
-					var camTargetDistance = scope.camera.position.distanceTo(scope.orbitControls.target);
-				
-					var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
-					vector.unproject(scope.camera);
-
-					var direction = vector.sub(scope.camera.position).normalize();
-					var ray = new THREE.Ray(scope.camera.position, direction);
+					var targetRadius = 0;
+					if(!scope.jumpDistance){
+						var camTargetDistance = scope.camera.position.distanceTo(scope.orbitControls.target);
 					
-					var nodes = scope.pointcloud.nodesOnRay(scope.pointcloud.visibleNodes, ray);
-					var lastNode = nodes[nodes.length - 1];
-					var radius = lastNode.boundingSphere.radius;
-					var targetRadius = Math.min(camTargetDistance, radius);
+						var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
+						vector.unproject(scope.camera);
+
+						var direction = vector.sub(scope.camera.position).normalize();
+						var ray = new THREE.Ray(scope.camera.position, direction);
+						
+						var nodes = scope.pointcloud.nodesOnRay(scope.pointcloud.visibleNodes, ray);
+						var lastNode = nodes[nodes.length - 1];
+						var radius = lastNode.boundingSphere.radius;
+						var targetRadius = Math.min(camTargetDistance, radius);
+						var targetRadius = Math.max(scope.minimumJumpDistance, targetRadius);
+					}else{
+						targetRadius = scope.jumpDistance;
+					}
 					
 					var d = scope.camera.getWorldDirection().multiplyScalar(-1);
 					var cameraTargetPosition = new THREE.Vector3().addVectors(I, d.multiplyScalar(targetRadius));

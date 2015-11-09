@@ -985,17 +985,17 @@ THREE.Ray.prototype.distanceToPlaneWithNegative = function ( plane ) {
 /**
  * @class Loads mno files and returns a PointcloudOctree
  * for a description of the mno binary file format, read mnoFileFormat.txt
- * 
+ *
  * @author Markus Schuetz
  */
 Potree.POCLoader = function(){
-	
+
 }
- 
+
 /**
- * @return a point cloud octree with the root node data loaded. 
+ * @return a point cloud octree with the root node data loaded.
  * loading of descendants happens asynchronously when they're needed
- * 
+ *
  * @param url
  * @param loadingFinishedListener executed after loading the binary has been finished
  */
@@ -1005,45 +1005,45 @@ Potree.POCLoader.load = function load(url, callback) {
 		pco.url = url;
 		var xhr = new XMLHttpRequest();
 		xhr.open('GET', url, true);
-		
+
 		xhr.onreadystatechange = function(){
 			if(xhr.readyState === 4 && (xhr.status === 200 || xhr.status === 0)){
 				var fMno = JSON.parse(xhr.responseText);
-				
+
 				var version = new Potree.Version(fMno.version);
-				
+
 				// assume octreeDir is absolute if it starts with http
 				if(fMno.octreeDir.indexOf("http") === 0){
 					pco.octreeDir = fMno.octreeDir;
 				}else{
-					pco.octreeDir = url + "/../" + fMno.octreeDir;
+					pco.octreeDir = Potree.utils.joinUrls(url, fMno.octreeDir, true, true);
 				}
-				
+
 				pco.spacing = fMno.spacing;
 				pco.hierarchyStepSize = fMno.hierarchyStepSize;
 
 				pco.pointAttributes = fMno.pointAttributes;
-				
+
 				var min = new THREE.Vector3(fMno.boundingBox.lx, fMno.boundingBox.ly, fMno.boundingBox.lz);
 				var max = new THREE.Vector3(fMno.boundingBox.ux, fMno.boundingBox.uy, fMno.boundingBox.uz);
 				var boundingBox = new THREE.Box3(min, max);
 				var tightBoundingBox = boundingBox.clone();
-				
+
 				if(fMno.tightBoundingBox){
 					tightBoundingBox.min.copy(new THREE.Vector3(fMno.tightBoundingBox.lx, fMno.tightBoundingBox.ly, fMno.tightBoundingBox.lz));
 					tightBoundingBox.max.copy(new THREE.Vector3(fMno.tightBoundingBox.ux, fMno.tightBoundingBox.uy, fMno.tightBoundingBox.uz));
 				}
 
 				var offset = new THREE.Vector3(0,0,0);
-				
+
 				offset.set(-min.x, -min.y, -min.z);
-				
+
 				boundingBox.min.add(offset);
 				boundingBox.max.add(offset);
-				
+
 				tightBoundingBox.min.add(offset);
 				tightBoundingBox.max.add(offset);
-				
+
 				pco.boundingBox = boundingBox;
 				pco.tightBoundingBox = tightBoundingBox
 				pco.boundingSphere = boundingBox.getBoundingSphere();
@@ -1057,12 +1057,12 @@ Potree.POCLoader.load = function load(url, callback) {
 					pco.loader = new Potree.BinaryLoader(fMno.version, boundingBox, fMno.scale);
 					pco.pointAttributes = new Potree.PointAttributes(pco.pointAttributes);
 				}
-				
+
 				var nodes = {};
-				
+
 				{ // load root
 					var name = "r";
-					
+
 					var root = new Potree.PointCloudOctreeGeometryNode(name, pco, boundingBox);
 					root.level = 0;
 					root.hasChildren = true;
@@ -1075,7 +1075,7 @@ Potree.POCLoader.load = function load(url, callback) {
 					pco.root.load();
 					nodes[name] = root;
 				}
-				
+
 				// load remaining hierarchy
 				if(version.upTo("1.4")){
 					for( var i = 1; i < fMno.hierarchy.length; i++){
@@ -1086,7 +1086,7 @@ Potree.POCLoader.load = function load(url, callback) {
 						var parentNode = nodes[parentName];
 						var level = name.length-1;
 						var boundingBox = Potree.POCLoader.createChildAABB(parentNode.boundingBox, index);
-						
+
 						var node = new Potree.PointCloudOctreeGeometryNode(name, pco, boundingBox);
 						node.level = level;
 						node.numPoints = numPoints;
@@ -1094,13 +1094,13 @@ Potree.POCLoader.load = function load(url, callback) {
 						nodes[name] = node;
 					}
 				}
-				
+
 				pco.nodes = nodes;
-				
+
 				callback(pco);
 			}
 		}
-		
+
 		xhr.send(null);
 	}catch(e){
 		console.log("loading failed: '" + url + "'");
@@ -1109,15 +1109,15 @@ Potree.POCLoader.load = function load(url, callback) {
 };
 
 Potree.POCLoader.loadPointAttributes = function(mno){
-	
+
 	var fpa = mno.pointAttributes;
 	var pa = new Potree.PointAttributes();
-	
-	for(var i = 0; i < fpa.length; i++){   
+
+	for(var i = 0; i < fpa.length; i++){
 		var pointAttribute = Potree.PointAttribute[fpa[i]];
 		pa.add(pointAttribute);
-	}                                                                     
-	
+	}
+
 	return pa;
 };
 
@@ -1160,7 +1160,7 @@ Potree.POCLoader.createChildAABB = function(aabb, childIndex){
 		min = new THREE.Vector3().copy(cmin).add(xHalfLength).add(yHalfLength);
 		max = new THREE.Vector3().copy(cmax).add(xHalfLength).add(yHalfLength);
 	}
-	
+
 	return new THREE.Box3(min, max);
 };
 
@@ -1326,7 +1326,7 @@ Potree.BinaryLoader = function(version, boundingBox, scale){
 	}else{
 		this.version = version;
 	}
-	
+
 	this.boundingBox = boundingBox;
 	this.scale = scale;
 };
@@ -1335,15 +1335,15 @@ Potree.BinaryLoader.prototype.load = function(node){
 	if(node.loaded){
 		return;
 	}
-	
+
 	var scope = this;
 
 	var url = node.getURL();
-	
+
 	if(this.version.equalOrHigher("1.4")){
-		url += ".bin";
+		url = Potree.utils.joinUrls(url, ".bin", false);
 	}
-	
+
 	var xhr = new XMLHttpRequest();
 	xhr.open('GET', url, true);
 	xhr.responseType = 'arraybuffer';
@@ -1369,11 +1369,11 @@ Potree.BinaryLoader.prototype.parse = function(node, buffer){
 
 	var numPoints = buffer.byteLength / node.pcoGeometry.pointAttributes.byteSize;
 	var pointAttributes = node.pcoGeometry.pointAttributes;
-	
+
 	if(this.version.upTo("1.5")){
 		node.numPoints = numPoints;
 	}
-	
+
 	var ww = Potree.workers.binaryDecoder.getWorker();
 	ww.onmessage = function(e){
 		var data = e.data;
@@ -1382,17 +1382,17 @@ Potree.BinaryLoader.prototype.parse = function(node, buffer){
 			new THREE.Vector3().fromArray(data.tightBoundingBox.min),
 			new THREE.Vector3().fromArray(data.tightBoundingBox.max)
 		);
-		
+
 		Potree.workers.binaryDecoder.returnWorker(ww);
-		
+
 		var geometry = new THREE.BufferGeometry();
-		
+
 		for(var property in buffers){
 			if(buffers.hasOwnProperty(property)){
 				var buffer = buffers[property].buffer;
 				var attribute = buffers[property].attribute;
 				var numElements = attribute.numElements;
-				
+
 				if(parseInt(property) === Potree.PointAttributeNames.POSITION_CARTESIAN){
 					geometry.addAttribute("position", new THREE.BufferAttribute(new Float32Array(buffer), 3));
 				}else if(parseInt(property) === Potree.PointAttributeNames.COLOR_PACKED){
@@ -1411,12 +1411,12 @@ Potree.BinaryLoader.prototype.parse = function(node, buffer){
 			}
 		}
 		geometry.addAttribute("indices", new THREE.BufferAttribute(new Float32Array(data.indices), 1));
-		
+
 		if(!geometry.attributes.normal){
 			var buffer = new Float32Array(numPoints*3);
 			geometry.addAttribute("normal", new THREE.BufferAttribute(new Float32Array(buffer), 3));
 		}
-		
+
 		geometry.boundingBox = node.boundingBox;
 		//geometry.boundingBox = tightBoundingBox;
 		node.geometry = geometry;
@@ -1426,7 +1426,7 @@ Potree.BinaryLoader.prototype.parse = function(node, buffer){
 		node.loading = false;
 		node.pcoGeometry.numNodesLoading--;
 	}
-	
+
 	var message = {
 		buffer: buffer,
 		pointAttributes: pointAttributes,
@@ -1463,19 +1463,19 @@ Potree.LasLazLoader.prototype.load = function(node){
 	if(node.loaded){
 		return;
 	}
-	
+
 	//var url = node.pcoGeometry.octreeDir + "/" + node.name;
 	var pointAttributes = node.pcoGeometry.pointAttributes;
 	//var url = node.pcoGeometry.octreeDir + "/" + node.name + "." + pointAttributes.toLowerCase()
 
 	var url = node.getURL();
-	
+
 	if(this.version.equalOrHigher("1.4")){
-		url += "." + pointAttributes.toLowerCase();
+		url = Potree.utils.joinUrls(url, "." + pointAttributes.toLowerCase(), false);
 	}
-	
+
 	var scope = this;
-	
+
 	var xhr = new XMLHttpRequest();
 	xhr.open('GET', url, true);
 	xhr.responseType = 'arraybuffer';
@@ -1491,7 +1491,7 @@ Potree.LasLazLoader.prototype.load = function(node){
 			}
 		}
 	};
-	
+
 	xhr.send(null);
 }
 
@@ -1502,7 +1502,7 @@ Potree.LasLazLoader.progressCB = function(arg){
 Potree.LasLazLoader.prototype.parse = function loadData(node, buffer){
 	var lf = new LASFile(buffer);
 	var handler = new Potree.LasLazBatcher(node);
-	
+
 	return Promise.resolve(lf).cancellable().then(function(lf) {
 		return lf.open().then(function() {
 			lf.isOpen = true;
@@ -1522,7 +1522,7 @@ Potree.LasLazLoader.prototype.parse = function loadData(node, buffer){
 	}).then(function(v) {
 		var lf = v[0];
 		var header = v[1];
-		
+
 		var skip = 1;
 		var totalRead = 0;
 		var totalToRead = (skip <= 1 ? header.pointsCount : header.pointsCount / skip);
@@ -1551,7 +1551,7 @@ Potree.LasLazLoader.prototype.parse = function loadData(node, buffer){
 				}
 			});
 		};
-		
+
 		return reader();
 	}).then(function(v) {
 		var lf = v[0];
@@ -1573,7 +1573,7 @@ Potree.LasLazLoader.prototype.parse = function loadData(node, buffer){
 	}).catch(Promise.CancellationError, function(e) {
 		// If there was a cancellation, make sure the file is closed, if the file is open
 		// close and then fail
-		if (lf.isOpen) 
+		if (lf.isOpen)
 			return lf.close().then(function() {
 				lf.isOpen = false;
 				throw e;
@@ -1591,22 +1591,22 @@ Potree.LasLazLoader.prototype.handle = function(node, url){
 
 
 
-Potree.LasLazBatcher = function(node){	
+Potree.LasLazBatcher = function(node){
 	this.push = function(lasBuffer){
 		var ww = Potree.workers.lasdecoder.getWorker();
 		var mins = new THREE.Vector3(lasBuffer.mins[0], lasBuffer.mins[1], lasBuffer.mins[2]);
 		var maxs = new THREE.Vector3(lasBuffer.maxs[0], lasBuffer.maxs[1], lasBuffer.maxs[2]);
 		mins.add(node.pcoGeometry.offset);
 		maxs.add(node.pcoGeometry.offset);
-		
+
 		ww.onmessage = function(e){
 			var geometry = new THREE.BufferGeometry();
 			var numPoints = lasBuffer.pointsCount;
-			
+
 			var endsWith = function(str, suffix) {
 				return str.indexOf(suffix, str.length - suffix.length) !== -1;
 			}
-			
+
 			var positions = e.data.position;
 			var colors = e.data.color;
 			var intensities = e.data.intensity;
@@ -1620,20 +1620,20 @@ Potree.LasLazBatcher = function(node){
 			var pointSourceIDs_f = new Float32Array(pointSourceIDs.length);
 			var indices = new ArrayBuffer(numPoints*4);
 			var iIndices = new Uint32Array(indices);
-			
+
 			var box = new THREE.Box3();
-			
+
 			var fPositions = new Float32Array(positions);
-			for(var i = 0; i < numPoints; i++){				
+			for(var i = 0; i < numPoints; i++){
 				classifications_f[i] = classifications[i];
 				returnNumbers_f[i] = returnNumbers[i];
 				numberOfReturns_f[i] = numberOfReturns[i];
 				pointSourceIDs_f[i] = pointSourceIDs[i];
 				iIndices[i] = i;
-				
+
 				box.expandByPoint(new THREE.Vector3(fPositions[3*i+0], fPositions[3*i+1], fPositions[3*i+2]));
 			}
-			
+
 			geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
 			geometry.addAttribute('color', new THREE.BufferAttribute(new Float32Array(colors), 3));
 			geometry.addAttribute('intensity', new THREE.BufferAttribute(new Float32Array(intensities), 1));
@@ -1643,25 +1643,25 @@ Potree.LasLazBatcher = function(node){
 			geometry.addAttribute('pointSourceID', new THREE.BufferAttribute(new Float32Array(pointSourceIDs_f), 1));
 			geometry.addAttribute('indices', new THREE.BufferAttribute(indices, 1));
 			geometry.addAttribute("normal", new THREE.BufferAttribute(new Float32Array(numPoints*3), 3));
-			
+
 			var tightBoundingBox = new THREE.Box3(
 				new THREE.Vector3().fromArray(e.data.tightBoundingBox.min),
 				new THREE.Vector3().fromArray(e.data.tightBoundingBox.max)
 			);
-			
+
 			geometry.boundingBox = new THREE.Box3(mins, maxs);
 			//geometry.boundingBox = tightBoundingBox;
 			//node.boundingBox = geometry.boundingBox;
 			node.tightBoundingBox = tightBoundingBox;
-			
+
 			node.geometry = geometry;
 			node.loaded = true;
 			node.loading = false;
 			node.pcoGeometry.numNodesLoading--;
-			
+
 			Potree.workers.lasdecoder.returnWorker(ww);
 		};
-		
+
 		var message = {
 			buffer: lasBuffer.arrayb,
 			numPoints: lasBuffer.pointsCount,
@@ -5345,17 +5345,18 @@ Potree.PointCloudOctreeGeometryNode.IDCount = 0;
 
 Potree.PointCloudOctreeGeometryNode.prototype.getURL = function(){
 	var url = "";
-	
+
 	var version = this.pcoGeometry.loader.version;
-	
+
 	if(version.equalOrHigher("1.5")){
-		url = this.pcoGeometry.octreeDir + "/" + this.getHierarchyPath() + "/" + this.name;
+		url = Potree.utils.joinUrls(Potree.utils.joinUrls(this.pcoGeometry.octreeDir,
+			this.getHierarchyPath()), this.name);
 	}else if(version.equalOrHigher("1.4")){
-		url = this.pcoGeometry.octreeDir + "/" + this.name;
+		url = Potree.utils.joinUrls(this.pcoGeometry.octreeDir, this.name);
 	}else if(version.upTo("1.3")){
-		url = this.pcoGeometry.octreeDir + "/" + this.name;
+		url = Potree.utils.joinUrls(this.pcoGeometry.octreeDir, this.name);
 	}
-	
+
 	return url;
 }
 
@@ -5364,12 +5365,12 @@ Potree.PointCloudOctreeGeometryNode.prototype.getHierarchyPath = function(){
 
 	var hierarchyStepSize = this.pcoGeometry.hierarchyStepSize;
 	var indices = this.name.substr(1);
-	
+
 	var numParts = Math.floor(indices.length / hierarchyStepSize);
 	for(var i = 0; i < numParts; i++){
 		path += indices.substr(i * hierarchyStepSize, hierarchyStepSize) + "/";
 	}
-	
+
 	path = path.slice(0,-1);
 
 	return path;
@@ -5384,16 +5385,16 @@ Potree.PointCloudOctreeGeometryNode.prototype.load = function(){
 	if(this.loading === true || this.pcoGeometry.numNodesLoading > 3){
 		return;
 	}
-	
+
 	this.loading = true;
-	
+
 	//if(Potree.PointCloudOctree.lru.numPoints + this.numPoints >= Potree.pointLoadLimit){
 	//	Potree.PointCloudOctree.disposeLeastRecentlyUsed(this.numPoints);
 	//}
-	
+
 	this.pcoGeometry.numNodesLoading++;
-	
-	
+
+
 	if(this.pcoGeometry.loader.version.equalOrHigher("1.5")){
 		if((this.level % this.pcoGeometry.hierarchyStepSize) === 0 && this.hasChildren){
 			this.loadHierachyThenPoints();
@@ -5403,8 +5404,8 @@ Potree.PointCloudOctreeGeometryNode.prototype.load = function(){
 	}else{
 		this.loadPoints();
 	}
-	
-	
+
+
 }
 
 Potree.PointCloudOctreeGeometryNode.prototype.loadPoints = function(){
@@ -5420,51 +5421,51 @@ Potree.PointCloudOctreeGeometryNode.prototype.loadHierachyThenPoints = function(
 	var callback = function(node, hbuffer){
 		var count = hbuffer.byteLength / 5;
 		var view = new DataView(hbuffer);
-		
+
 		var stack = [];
 		var children = view.getUint8(0);
 		var numPoints = view.getUint32(1, true);
 		node.numPoints = numPoints;
 		stack.push({children: children, numPoints: numPoints, name: node.name});
-		
+
 		var decoded = [];
-		
+
 		var offset = 5;
 		while(stack.length > 0){
-		
+
 			var snode = stack.shift();
 			var mask = 1;
 			for(var i = 0; i < 8; i++){
 				if((snode.children & mask) !== 0){
 					var childIndex = i;
 					var childName = snode.name + i;
-					
+
 					var childChildren = view.getUint8(offset);
 					var childNumPoints = view.getUint32(offset + 1, true);
-					
+
 					stack.push({children: childChildren, numPoints: childNumPoints, name: childName});
-					
+
 					decoded.push({children: childChildren, numPoints: childNumPoints, name: childName});
-					
+
 					offset += 5;
 				}
-				
+
 				mask = mask * 2;
 			}
-			
+
 			if(offset === hbuffer.byteLength){
 				break;
 			}
-			
+
 		}
-		
+
 		//console.log(decoded);
-		
+
 		var nodes = {};
 		nodes[node.name] = node;
 		var pco = node.pcoGeometry;
-		
-		
+
+
 		for( var i = 0; i < decoded.length; i++){
 			var name = decoded[i].name;
 			var numPoints = decoded[i].numPoints;
@@ -5473,7 +5474,7 @@ Potree.PointCloudOctreeGeometryNode.prototype.loadHierachyThenPoints = function(
 			var parentNode = nodes[parentName];
 			var level = name.length-1;
 			var boundingBox = Potree.POCLoader.createChildAABB(parentNode.boundingBox, index);
-			
+
 			var currentNode = new Potree.PointCloudOctreeGeometryNode(name, pco, boundingBox);
 			currentNode.level = level;
 			currentNode.numPoints = numPoints;
@@ -5481,14 +5482,16 @@ Potree.PointCloudOctreeGeometryNode.prototype.loadHierachyThenPoints = function(
 			parentNode.addChild(currentNode);
 			nodes[name] = currentNode;
 		}
-		
+
 		node.loadPoints();
-		
+
 	};
 	if((node.level % node.pcoGeometry.hierarchyStepSize) === 0){
 		//var hurl = node.pcoGeometry.octreeDir + "/../hierarchy/" + node.name + ".hrc";
-		var hurl = node.pcoGeometry.octreeDir + "/" + node.getHierarchyPath() + "/" + node.name + ".hrc";
-		
+		var hurl = Potree.utils.joinUrls(
+			Potree.utils.joinUrls(node.pcoGeometry.octreeDir, node.getHierarchyPath()),
+			node.name + ".hrc");
+
 		var xhr = new XMLHttpRequest();
 		xhr.open('GET', hurl, true);
 		xhr.responseType = 'arraybuffer';
@@ -5525,7 +5528,7 @@ Potree.PointCloudOctreeGeometryNode.prototype.dispose = function(){
 
 
 Potree.utils = function(){
-	
+
 };
 
 Potree.utils.pathExists = function(url){
@@ -5536,6 +5539,33 @@ Potree.utils.pathExists = function(url){
 		return false;
 	}
 	return true;
+}
+
+Potree.utils.joinUrls = function(first, second, appendSlash, removeLast) {
+    // Set defaults
+    if (typeof appendSlash === "undefined") appendSlash = true;
+    if (typeof removeLast === "undefined") removeLast = false;
+
+    // Split out the base and query string
+    var parts = first.split('?');
+    var base = parts.shift();
+
+    // Remove the last part of the URL path if set
+    if (removeLast) base = base.substring(0, base.lastIndexOf('/'));
+
+    // Make sure there is a slash and only one slash between url fragments
+    if (appendSlash) {
+        base = base.replace(/\/?$/, '/');
+        second = second.replace(/^\/?/g, '');
+    }
+
+    // Append fragments
+    var newUrl = base + second;
+
+    // Append query string
+    if (parts.length) newUrl += '?' + parts.join('?');
+
+    return newUrl;
 }
 
 /**
@@ -5554,16 +5584,16 @@ Potree.utils.computeTransformedBoundingBox = function (box, transform) {
         new THREE.Vector3(box.max.x, box.min.y, box.max.z).applyMatrix4(transform),
         new THREE.Vector3(box.max.x, box.max.y, box.max.z).applyMatrix4(transform)
     ];
-	
+
 	var boundingBox = new THREE.Box3();
 	boundingBox.setFromPoints( vertices );
-	
+
 	return boundingBox;
 }
 
 /**
  * add separators to large numbers
- * 
+ *
  * @param nStr
  * @returns
  */
@@ -5587,7 +5617,7 @@ Potree.utils.addCommas = function(nStr){
 Potree.utils.createWorker = function(code){
 	 var blob = new Blob([code], {type: 'application/javascript'});
 	 var worker = new Worker(URL.createObjectURL(blob));
-	 
+
 	 return worker;
 }
 
@@ -5630,18 +5660,18 @@ Potree.utils.createGrid = function createGrid(width, length, spacing, color){
 	var material = new THREE.LineBasicMaterial({
 		color: color || 0x888888
 	});
-	
+
 	var geometry = new THREE.Geometry();
 	for(var i = 0; i <= length; i++){
 		 geometry.vertices.push(new THREE.Vector3(-(spacing*width)/2, 0, i*spacing-(spacing*length)/2));
 		 geometry.vertices.push(new THREE.Vector3(+(spacing*width)/2, 0, i*spacing-(spacing*length)/2));
 	}
-	
+
 	for(var i = 0; i <= width; i++){
 		 geometry.vertices.push(new THREE.Vector3(i*spacing-(spacing*width)/2, 0, -(spacing*length)/2));
 		 geometry.vertices.push(new THREE.Vector3(i*spacing-(spacing*width)/2, 0, +(spacing*length)/2));
 	}
-	
+
 	var line = new THREE.Line(geometry, material, THREE.LinePieces);
 	line.receiveShadow = true;
 	return line;
@@ -5666,24 +5696,24 @@ Potree.utils.createBackgroundTexture = function(width, height){
 		for(var y = 0; y < height; y++){
 			var u = 2 * (x / width) - 1;
 			var v = 2 * (y / height) - 1;
-			
+
 			var i = x + width*y;
 			var d = gauss(2*u, 2*v) / max;
 			var r = (Math.random() + Math.random() + Math.random()) / 3;
 			r = (d * 0.5 + 0.5) * r * 0.03;
 			r = r * 0.4;
-			
+
 			//d = Math.pow(d, 0.6);
-			
+
 			data[3*i+0] = 255 * (d / 15 + 0.05 + r) * chroma[0];
 			data[3*i+1] = 255 * (d / 15 + 0.05 + r) * chroma[1];
 			data[3*i+2] = 255 * (d / 15 + 0.05 + r) * chroma[2];
-			
+
 			//data[4*i+3] = 255;
-		
+
 		}
 	}
-	
+
 	return map;
 };
 
@@ -5695,39 +5725,39 @@ function getMousePointCloudIntersection(mouse, camera, renderer, pointclouds){
 
 	var direction = vector.sub(camera.position).normalize();
 	var ray = new THREE.Ray(camera.position, direction);
-	
+
 	var closestPoint = null;
 	var closestPointDistance = null;
-	
+
 	for(var i = 0; i < pointclouds.length; i++){
 		var pointcloud = pointclouds[i];
 		var point = pointcloud.pick(renderer, camera, ray);
-		
+
 		if(!point){
 			continue;
 		}
-		
+
 		var distance = camera.position.distanceTo(point.position);
-		
+
 		if(!closestPoint || distance < closestPointDistance){
 			closestPoint = point;
 			closestPointDistance = distance;
 		}
 	}
-	
+
 	return closestPoint ? closestPoint.position : null;
 }
-	
-	
+
+
 function pixelsArrayToImage(pixels, width, height){
     var canvas = document.createElement('canvas');
     canvas.width = width;
     canvas.height = height;
 
     var context = canvas.getContext('2d');
-	
+
 	pixels = new pixels.constructor(pixels);
-	
+
 	for(var i = 0; i < pixels.length; i++){
 		pixels[i*4 + 3] = 255;
 	}
@@ -5739,18 +5769,18 @@ function pixelsArrayToImage(pixels, width, height){
     var img = new Image();
     img.src = canvas.toDataURL();
 	img.style.transform = "scaleY(-1)";
-	
+
     return img;
 }
 
 function projectedRadius(radius, fov, distance, screenHeight){
 	var projFactor =  (1 / Math.tan(fov / 2)) / distance;
 	projFactor = projFactor * screenHeight / 2;
-	
+
 	return radius * projFactor;
 };
-	
-	
+
+
 Potree.utils.topView = function(camera, controls, pointcloud){
 	camera.position.set(0, 1, 0);
 	camera.rotation.set(-Math.PI / 2, 0, 0);
@@ -5760,7 +5790,7 @@ Potree.utils.topView = function(camera, controls, pointcloud){
 		var sg = pointcloud.boundingSphere.clone().applyMatrix4(pointcloud.matrixWorld);
 		var target = new THREE.Vector3(camera.position.x, sg.center.y, camera.position.z);
 		controls.target.copy(target);
-	}	
+	}
 }
 
 Potree.utils.frontView = function(camera, controls, pointcloud){
@@ -5799,9 +5829,9 @@ Potree.utils.rightView = function(camera, controls, pointcloud){
 		controls.target.copy(target);
 	}
 }
-	
+
 /**
- *  
+ *
  * 0: no intersection
  * 1: intersection
  * 2: fully inside
@@ -5812,7 +5842,7 @@ Potree.utils.frustumSphereIntersection = function(frustum, sphere){
 	var negRadius = - sphere.radius;
 
 	var minDistance = Number.MAX_VALUE;
-	
+
 	for ( var i = 0; i < 6; i ++ ) {
 
 		var distance = planes[ i ].distanceToPoint( center );
@@ -5822,15 +5852,15 @@ Potree.utils.frustumSphereIntersection = function(frustum, sphere){
 			return 0;
 
 		}
-		
+
 		minDistance = Math.min(minDistance, distance);
 
 	}
 
 	return (minDistance >= sphere.radius) ? 2 : 1;
 };
-	
-	
+
+
 Potree.utils.screenPass = new function(){
 
 	this.screenScene = new THREE.Scene();
@@ -5840,10 +5870,10 @@ Potree.utils.screenPass = new function(){
 	this.screenQuad.material.transparent = true;
 	this.screenScene.add(this.screenQuad);
 	this.camera = new THREE.Camera();
-	
+
 	this.render = function(renderer, material, target){
 		this.screenQuad.material = material;
-		
+
 		if(typeof target === undefined){
 			renderer.render(this.screenScene, this.camera);
 		}else{
@@ -5851,9 +5881,9 @@ Potree.utils.screenPass = new function(){
 		}
 	}
 }();
-	
-	
-	
+
+
+
 
 Potree.Features = function(){
 

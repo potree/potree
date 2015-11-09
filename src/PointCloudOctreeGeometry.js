@@ -176,7 +176,9 @@ Potree.PointCloudOctreeGeometryNode.prototype.loadHierachyThenPoints = function(
 	};
 	if((node.level % node.pcoGeometry.hierarchyStepSize) === 0){
 		//var hurl = node.pcoGeometry.octreeDir + "/../hierarchy/" + node.name + ".hrc";
-		var hurl = node.pcoGeometry.octreeDir + "/" + node.getHierarchyPath() + "/" + node.name + ".hrc";
+		var hurl = Potree.utils.joinUrls(
+			Potree.utils.joinUrls(node.pcoGeometry.octreeDir, node.getHierarchyPath()),
+			node.name + ".hrc");
 
 		var xhr = new XMLHttpRequest();
 		xhr.open('GET', hurl, true);

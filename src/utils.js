@@ -13,10 +13,30 @@ Potree.utils.pathExists = function(url){
 	return true;
 }
 
-Potree.utils.joinUrls = function(url, appendage) {
-    var parts = url.split('?');
-    var newUrl = parts[0].replace(/\/?$/, '/') + appendage.replace(/^\/?/g, '');
-    if (parts.length > 1) {newUrl += '?' + parts[1];}
+Potree.utils.joinUrls = function(first, second, appendSlash, removeLast) {
+    // Set defaults
+    if (typeof appendSlash === "undefined") appendSlash = true;
+    if (typeof removeLast === "undefined") removeLast = false;
+
+    // Split out the base and query string
+    var parts = first.split('?');
+    var base = parts.shift();
+
+    // Remove the last part of the URL path if set
+    if (removeLast) base = base.substring(0, base.lastIndexOf('/'));
+
+    // Make sure there is a slash and only one slash between url fragments
+    if (appendSlash) {
+        base = base.replace(/\/?$/, '/');
+        second = second.replace(/^\/?/g, '');
+    }
+
+    // Append fragments
+    var newUrl = base + second;
+
+    // Append query string
+    if (parts.length) newUrl += '?' + parts.join('?');
+
     return newUrl;
 }
 

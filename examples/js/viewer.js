@@ -140,7 +140,7 @@ Potree.Viewer = function(domElement, settings, args){
 		elToolbar.appendChild(createToolIcon(
 			"../resources/icons/profile.png",
 			"height profiles",
-			function(){scope.profileTool.startInsertion({width: viewer.pointcloud.boundingSphere.radius / 100})}
+			function(){scope.profileTool.startInsertion()}
 		));
 		
 		elToolbar.appendChild(createToolIcon(
@@ -286,6 +286,10 @@ Potree.Viewer = function(domElement, settings, args){
 	};
 
 	this.initGUI = function(){
+	
+		if(gui){
+			return;
+		}
 
 		scope.setPointSizeType(defaultSettings.sizeType);
 		scope.setQuality(defaultSettings.quality);
@@ -1402,7 +1406,7 @@ Potree.Viewer = function(domElement, settings, args){
 					scope.renderer.render(scope.scenePointCloud, scope.camera, rtNormalize);
 					scope.scenePointCloud.overrideMaterial = null;
 					
-					scope.pointcloud.material = originalMaterial;
+					pointcloud.material = originalMaterial;
 				}
 			}
 			
@@ -1429,7 +1433,7 @@ Potree.Viewer = function(domElement, settings, args){
 	var EDLRenderer = function(){
 
 		var edlMaterial = null;
-		var attributeMaterial = null;
+		var attributeMaterials = [];
 		
 		//var depthTexture = null;
 		
@@ -1444,14 +1448,7 @@ Potree.Viewer = function(domElement, settings, args){
 			//var depthTextureExt = gl.getExtension("WEBGL_depth_texture"); 
 			
 			edlMaterial = new Potree.EyeDomeLightingMaterial();
-			attributeMaterial = new Potree.PointCloudMaterial();
-						
-			attributeMaterial.pointShape = Potree.PointShape.CIRCLE;
-			attributeMaterial.interpolate = false;
-			attributeMaterial.weighted = false;
-			attributeMaterial.minSize = 2;
-			attributeMaterial.useLogarithmicDepthBuffer = false;
-			attributeMaterial.useEDL = true;
+			
 
 			rtColor = new THREE.WebGLRenderTarget( 1024, 1024, { 
 				minFilter: THREE.LinearFilter, 
@@ -1500,17 +1497,34 @@ Potree.Viewer = function(domElement, settings, args){
 			}
 			scope.renderer.render(scope.scene, scope.camera);
 			
-			if(scope.pointcloud){
+			var originalMaterials = [];
+			for(var i = 0; i < scope.pointclouds.length; i++){
+				var pointcloud = scope.pointclouds[i];
 				var width = renderArea.clientWidth;
 				var height = renderArea.clientHeight;
+				
+				if(attributeMaterials.length <= i ){
+					var attributeMaterial = new Potree.PointCloudMaterial();
+						
+					attributeMaterial.pointShape = Potree.PointShape.CIRCLE;
+					attributeMaterial.interpolate = false;
+					attributeMaterial.weighted = false;
+					attributeMaterial.minSize = 2;
+					attributeMaterial.useLogarithmicDepthBuffer = false;
+					attributeMaterial.useEDL = true;
+					attributeMaterials.push(attributeMaterial);
+				}
+				var attributeMaterial = attributeMaterials[i];
 			
-				var octreeSize = scope.pointcloud.pcoGeometry.boundingBox.size().x;
+				var octreeSize = pointcloud.pcoGeometry.boundingBox.size().x;
 			
-				scope.pointcloud.visiblePointsTarget = scope.pointCountTarget * 1000 * 1000;
-				var originalMaterial = scope.pointcloud.material;
+				pointcloud.visiblePointsTarget = scope.pointCountTarget * 1000 * 1000;
+				originalMaterials.push(pointcloud.material);
+				
+				scope.renderer.clearTarget( rtColor, true, true, true );
 				
 				{// COLOR & DEPTH PASS
-					attributeMaterial = scope.pointcloud.material;
+					attributeMaterial = pointcloud.material;
 					attributeMaterial.pointShape = Potree.PointShape.CIRCLE;
 					attributeMaterial.interpolate = false;
 					attributeMaterial.weighted = false;
@@ -1523,51 +1537,55 @@ Potree.Viewer = function(domElement, settings, args){
 					attributeMaterial.screenWidth = width;
 					attributeMaterial.screenHeight = height;
 					attributeMaterial.pointColorType = scope.pointColorType;
-					attributeMaterial.uniforms.visibleNodes.value = scope.pointcloud.material.visibleNodesTexture;
+					attributeMaterial.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
 					attributeMaterial.uniforms.octreeSize.value = octreeSize;
 					attributeMaterial.fov = scope.camera.fov * (Math.PI / 180);
-					attributeMaterial.spacing = scope.pointcloud.pcoGeometry.spacing;
+					attributeMaterial.spacing = pointcloud.pcoGeometry.spacing;
 					attributeMaterial.near = scope.camera.near;
 					attributeMaterial.far = scope.camera.far;
 					attributeMaterial.heightMin = heightMin;
 					attributeMaterial.heightMax = heightMax;
-					attributeMaterial.intensityMin = scope.pointcloud.material.intensityMin;
-					attributeMaterial.intensityMax = scope.pointcloud.material.intensityMax;
-					attributeMaterial.setClipBoxes(scope.pointcloud.material.clipBoxes);
-					attributeMaterial.clipMode = scope.pointcloud.material.clipMode;
-					attributeMaterial.bbSize = scope.pointcloud.material.bbSize;
-					attributeMaterial.treeType = scope.pointcloud.material.treeType;
-					attributeMaterial.uniforms.classificationLUT.value = scope.pointcloud.material.uniforms.classificationLUT.value;
+					attributeMaterial.intensityMin = pointcloud.material.intensityMin;
+					attributeMaterial.intensityMax = pointcloud.material.intensityMax;
+					attributeMaterial.setClipBoxes(pointcloud.material.clipBoxes);
+					attributeMaterial.clipMode = pointcloud.material.clipMode;
+					attributeMaterial.bbSize = pointcloud.material.bbSize;
+					attributeMaterial.treeType = pointcloud.material.treeType;
+					attributeMaterial.uniforms.classificationLUT.value = pointcloud.material.uniforms.classificationLUT.value;
 					
-					scope.pointcloud.material = attributeMaterial;
-					for(var i = 0; i < scope.pointcloud.visibleNodes.length; i++){
-						var node = scope.pointcloud.visibleNodes[i];
-						if(scope.pointcloud instanceof Potree.PointCloudOctree){
+					pointcloud.material = attributeMaterial;
+					for(var j = 0; j < pointcloud.visibleNodes.length; j++){
+						var node = pointcloud.visibleNodes[j];
+						if(pointcloud instanceof Potree.PointCloudOctree){
 							node.sceneNode.material = attributeMaterial;
-						}else if(scope.pointcloud instanceof Potree.PointCloudArena4D){
+						}else if(pointcloud instanceof Potree.PointCloudArena4D){
 							node.material = attributeMaterial;
-						}
-					}
-					
-					scope.renderer.clearTarget( rtColor, true, true, true );
-					scope.renderer.render(scope.scenePointCloud, scope.camera, rtColor);
-					
-					
-					scope.pointcloud.material = originalMaterial;
-					for(var i = 0; i < scope.pointcloud.visibleNodes.length; i++){
-						var node = scope.pointcloud.visibleNodes[i];
-						if(scope.pointcloud instanceof Potree.PointCloudOctree){
-							node.sceneNode.material = originalMaterial;
-						}else if(scope.pointcloud instanceof Potree.PointCloudArena4D){
-							node.material = originalMaterial;
 						}
 					}
 				}
 				
-				// bit of a hack here. The EDL pass will mess up the text of the volume tool
-				// so volume tool is rendered again afterwards
-				scope.volumeTool.render(rtColor);
+			}
+			
+			scope.renderer.render(scope.scenePointCloud, scope.camera, rtColor);
+			// bit of a hack here. The EDL pass will mess up the text of the volume tool
+			// so volume tool is rendered again afterwards
+			scope.volumeTool.render(rtColor);
+					
+			for(var i = 0; i < scope.pointclouds.length; i++){
+				var pointcloud = scope.pointclouds[i];
+				var originalMaterial = originalMaterials[i];
+				pointcloud.material = originalMaterial;
+				for(var j = 0; j < pointcloud.visibleNodes.length; j++){
+					var node = pointcloud.visibleNodes[j];
+					if(pointcloud instanceof Potree.PointCloudOctree){
+						node.sceneNode.material = originalMaterial;
+					}else if(pointcloud instanceof Potree.PointCloudArena4D){
+						node.material = originalMaterial;
+					}
+				}
+			}
 				
+			if(scope.pointclouds.length > 0){
 				{ // EDL OCCLUSION PASS
 					edlMaterial.uniforms.screenWidth.value = width;
 					edlMaterial.uniforms.screenHeight.value = height;

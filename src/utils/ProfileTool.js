@@ -376,6 +376,10 @@ Potree.ProfileTool = function(scene, camera, renderer){
 			if(I){
 				var pos = I.clone();
 				
+				if(scope.activeProfile.points.length === 1 && scope.activeProfile.width === null){
+					scope.activeProfile.setWidth(camera.position.distanceTo(pos) / 50);
+				}
+				
 				scope.activeProfile.addMarker(pos);
 				
 				var event = {
@@ -565,7 +569,7 @@ Potree.ProfileTool = function(scene, camera, renderer){
 		
 		var args = args || {};
 		var clip = args.clip || false;
-		var width = args.width || 1.0;
+		var width = args.width || null;
 		
 		this.activeProfile = new Potree.HeightProfile();
 		this.activeProfile.clip = clip;

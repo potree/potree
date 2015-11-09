@@ -2,13 +2,16 @@
 
 
 function Potree(){
-	
+
 }
+
+Potree.pointBudget = 1*1000*1000;
 
 // contains WebWorkers with base64 encoded code
 Potree.workers = {};
 
 Potree.Shaders = {};
+
 
 
 
@@ -5032,7 +5035,8 @@ Potree.PointCloudOctree.prototype.updateVisibility = function(camera, renderer){
 			var geometryNode = node;
 			var geometry = geometryNode.geometry;
 			
-			if((typeof parent === "undefined" || parent instanceof Potree.PointCloudOctreeNode) && geometryNode.loaded){
+			if((typeof parent === "undefined" || parent instanceof Potree.PointCloudOctreeNode) 
+					&& geometryNode.loaded){
 				var pcoNode = new Potree.PointCloudOctreeNode();
 				var sceneNode = new THREE.PointCloud(geometry, this.material);
 				sceneNode.visible = false;

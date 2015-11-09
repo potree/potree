@@ -1,6 +1,6 @@
 
 Potree.utils = function(){
-	
+
 };
 
 Potree.utils.pathExists = function(url){
@@ -11,6 +11,33 @@ Potree.utils.pathExists = function(url){
 		return false;
 	}
 	return true;
+}
+
+Potree.utils.joinUrls = function(first, second, appendSlash, removeLast) {
+    // Set defaults
+    if (typeof appendSlash === "undefined") appendSlash = true;
+    if (typeof removeLast === "undefined") removeLast = false;
+
+    // Split out the base and query string
+    var parts = first.split('?');
+    var base = parts.shift();
+
+    // Remove the last part of the URL path if set
+    if (removeLast) base = base.substring(0, base.lastIndexOf('/'));
+
+    // Make sure there is a slash and only one slash between url fragments
+    if (appendSlash) {
+        base = base.replace(/\/?$/, '/');
+        second = second.replace(/^\/?/g, '');
+    }
+
+    // Append fragments
+    var newUrl = base + second;
+
+    // Append query string
+    if (parts.length) newUrl += '?' + parts.join('?');
+
+    return newUrl;
 }
 
 /**
@@ -29,16 +56,16 @@ Potree.utils.computeTransformedBoundingBox = function (box, transform) {
         new THREE.Vector3(box.max.x, box.min.y, box.max.z).applyMatrix4(transform),
         new THREE.Vector3(box.max.x, box.max.y, box.max.z).applyMatrix4(transform)
     ];
-	
+
 	var boundingBox = new THREE.Box3();
 	boundingBox.setFromPoints( vertices );
-	
+
 	return boundingBox;
 }
 
 /**
  * add separators to large numbers
- * 
+ *
  * @param nStr
  * @returns
  */
@@ -62,7 +89,7 @@ Potree.utils.addCommas = function(nStr){
 Potree.utils.createWorker = function(code){
 	 var blob = new Blob([code], {type: 'application/javascript'});
 	 var worker = new Worker(URL.createObjectURL(blob));
-	 
+
 	 return worker;
 }
 
@@ -105,18 +132,18 @@ Potree.utils.createGrid = function createGrid(width, length, spacing, color){
 	var material = new THREE.LineBasicMaterial({
 		color: color || 0x888888
 	});
-	
+
 	var geometry = new THREE.Geometry();
 	for(var i = 0; i <= length; i++){
 		 geometry.vertices.push(new THREE.Vector3(-(spacing*width)/2, 0, i*spacing-(spacing*length)/2));
 		 geometry.vertices.push(new THREE.Vector3(+(spacing*width)/2, 0, i*spacing-(spacing*length)/2));
 	}
-	
+
 	for(var i = 0; i <= width; i++){
 		 geometry.vertices.push(new THREE.Vector3(i*spacing-(spacing*width)/2, 0, -(spacing*length)/2));
 		 geometry.vertices.push(new THREE.Vector3(i*spacing-(spacing*width)/2, 0, +(spacing*length)/2));
 	}
-	
+
 	var line = new THREE.Line(geometry, material, THREE.LinePieces);
 	line.receiveShadow = true;
 	return line;
@@ -141,24 +168,24 @@ Potree.utils.createBackgroundTexture = function(width, height){
 		for(var y = 0; y < height; y++){
 			var u = 2 * (x / width) - 1;
 			var v = 2 * (y / height) - 1;
-			
+
 			var i = x + width*y;
 			var d = gauss(2*u, 2*v) / max;
 			var r = (Math.random() + Math.random() + Math.random()) / 3;
 			r = (d * 0.5 + 0.5) * r * 0.03;
 			r = r * 0.4;
-			
+
 			//d = Math.pow(d, 0.6);
-			
+
 			data[3*i+0] = 255 * (d / 15 + 0.05 + r) * chroma[0];
 			data[3*i+1] = 255 * (d / 15 + 0.05 + r) * chroma[1];
 			data[3*i+2] = 255 * (d / 15 + 0.05 + r) * chroma[2];
-			
+
 			//data[4*i+3] = 255;
-		
+
 		}
 	}
-	
+
 	return map;
 };
 
@@ -170,39 +197,39 @@ function getMousePointCloudIntersection(mouse, camera, renderer, pointclouds){
 
 	var direction = vector.sub(camera.position).normalize();
 	var ray = new THREE.Ray(camera.position, direction);
-	
+
 	var closestPoint = null;
 	var closestPointDistance = null;
-	
+
 	for(var i = 0; i < pointclouds.length; i++){
 		var pointcloud = pointclouds[i];
 		var point = pointcloud.pick(renderer, camera, ray);
-		
+
 		if(!point){
 			continue;
 		}
-		
+
 		var distance = camera.position.distanceTo(point.position);
-		
+
 		if(!closestPoint || distance < closestPointDistance){
 			closestPoint = point;
 			closestPointDistance = distance;
 		}
 	}
-	
+
 	return closestPoint ? closestPoint.position : null;
 }
-	
-	
+
+
 function pixelsArrayToImage(pixels, width, height){
     var canvas = document.createElement('canvas');
     canvas.width = width;
     canvas.height = height;
 
     var context = canvas.getContext('2d');
-	
+
 	pixels = new pixels.constructor(pixels);
-	
+
 	for(var i = 0; i < pixels.length; i++){
 		pixels[i*4 + 3] = 255;
 	}
@@ -214,18 +241,18 @@ function pixelsArrayToImage(pixels, width, height){
     var img = new Image();
     img.src = canvas.toDataURL();
 	img.style.transform = "scaleY(-1)";
-	
+
     return img;
 }
 
 function projectedRadius(radius, fov, distance, screenHeight){
 	var projFactor =  (1 / Math.tan(fov / 2)) / distance;
 	projFactor = projFactor * screenHeight / 2;
-	
+
 	return radius * projFactor;
 };
-	
-	
+
+
 Potree.utils.topView = function(camera, controls, pointcloud){
 	camera.position.set(0, 1, 0);
 	camera.rotation.set(-Math.PI / 2, 0, 0);
@@ -235,7 +262,7 @@ Potree.utils.topView = function(camera, controls, pointcloud){
 		var sg = pointcloud.boundingSphere.clone().applyMatrix4(pointcloud.matrixWorld);
 		var target = new THREE.Vector3(camera.position.x, sg.center.y, camera.position.z);
 		controls.target.copy(target);
-	}	
+	}
 }
 
 Potree.utils.frontView = function(camera, controls, pointcloud){
@@ -274,9 +301,9 @@ Potree.utils.rightView = function(camera, controls, pointcloud){
 		controls.target.copy(target);
 	}
 }
-	
+
 /**
- *  
+ *
  * 0: no intersection
  * 1: intersection
  * 2: fully inside
@@ -287,7 +314,7 @@ Potree.utils.frustumSphereIntersection = function(frustum, sphere){
 	var negRadius = - sphere.radius;
 
 	var minDistance = Number.MAX_VALUE;
-	
+
 	for ( var i = 0; i < 6; i ++ ) {
 
 		var distance = planes[ i ].distanceToPoint( center );
@@ -297,15 +324,15 @@ Potree.utils.frustumSphereIntersection = function(frustum, sphere){
 			return 0;
 
 		}
-		
+
 		minDistance = Math.min(minDistance, distance);
 
 	}
 
 	return (minDistance >= sphere.radius) ? 2 : 1;
 };
-	
-	
+
+
 Potree.utils.screenPass = new function(){
 
 	this.screenScene = new THREE.Scene();
@@ -315,10 +342,10 @@ Potree.utils.screenPass = new function(){
 	this.screenQuad.material.transparent = true;
 	this.screenScene.add(this.screenQuad);
 	this.camera = new THREE.Camera();
-	
+
 	this.render = function(renderer, material, target){
 		this.screenQuad.material = material;
-		
+
 		if(typeof target === undefined){
 			renderer.render(this.screenScene, this.camera);
 		}else{
@@ -326,6 +353,5 @@ Potree.utils.screenPass = new function(){
 		}
 	}
 }();
-	
-	
-	
+
+

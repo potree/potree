@@ -46,16 +46,14 @@
 	
 	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
 	<!-- INCLUDE SETTINGS HERE -->
-	<!--<script src="../libs/plasio/js/laslaz.js"></script>
+	<script src="../libs/plasio/js/laslaz.js"></script>
 	<script src="../libs/plasio/vendor/bluebird.js"></script>
-	<script src="../build/js/laslaz.js"></script>-->
+	<script src="../build/js/laslaz.js"></script>
 	
 	<div id="renderArea" style="position: absolute; width: 100%; height: 100%; overflow: hidden;">
 
 		<!-- HEADING -->
 		<div class="info" style="position: absolute; left: 300px; right: 300px; top: 10px; text-align: center;">
-			<a href="http://potree.org" target="_blank">potree.org</a><br>
-			Point cloud courtesy of <a href="http://www.sigeom.ch/" target="_blank">sigeom sa</a><br>
 		</div>
 		
 	</div>
@@ -65,30 +63,39 @@
 	<script>
 	
 		var settings = {
-			path:			"../resources/pointclouds/lion_takanawa/cloud.js",
-			path:			"http://5.9.65.151/mschuetz/potree/test/cloud.js",
-			path:			"../resources/pointclouds/vol_total/cloud.js",
 			cameraPosition: null,
 			cameraTarget: null,
-			sizeType:		"Adaptive",			// options: "Fixed", "Attenuated", "Adaptive"
+			sizeType:		"Fixed",			// options: "Fixed", "Attenuated", "Adaptive"
 			quality:		"Squares",			// options: "Squares", "Circles", "Interpolation", "Splats"
 			fov:			75,					// field of view in degree
 			material:		"RGB",				// options: "RGB", "Height", "Intensity", "Classification"
 			pointLimit:		1,					// max number of points in millions
 			navigation:		"Orbit",			// options: "Earth", "Orbit", "Flight"
-			pointSize:		1,					
-			useEDL:			true,				// eye-dome-lighting, especially useful for point clouds without normals
+			pointSize:		2,					
+			useEDL:			false,				// eye-dome-lighting, especially useful for point clouds without normals
 		};
 		
 		var onPointCloudLoaded = function(event){
 			// do stuff here that should be executed once the point cloud has been loaded.
 			// event.pointcloud returns the point cloud object
 			
+			if(!viewer.isFlipYZ){
+				viewer.flipYZ();
+			}
 		};
 	
 		viewer = new Potree.Viewer(document.getElementById("renderArea"), settings, {
 			"onPointCloudLoaded": onPointCloudLoaded
 		});
+		
+		//viewer.addPointCloud("../resources/pointclouds/vol_total/cloud.js");
+		//viewer.addPointCloud("../resources/pointclouds/lion_takanawa/cloud.js");
+		
+		viewer.addPointCloud("http://localhost/temp/layers/1/cloud.js");
+		viewer.addPointCloud("http://localhost/temp/layers/2/cloud.js");
+		
+		//viewer.addPointCloud("http://localhost/temp/layers/3/cloud.js");
+		//viewer.addPointCloud("http://localhost/temp/layers/4/cloud.js");
 		
 	</script>
 	

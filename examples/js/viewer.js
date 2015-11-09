@@ -949,6 +949,7 @@ Potree.Viewer = function(domElement, settings, args){
 
 	this.update = function(delta, timestamp){
 		Potree.pointLoadLimit = scope.pointCountTarget * 2 * 1000 * 1000;
+		Potree.pointBudget = scope.pointCountTarget * 1000 * 1000;
 		
 		scope.directionalLight.position.copy(scope.camera.position);
 		scope.directionalLight.lookAt(new THREE.Vector3().addVectors(scope.camera.position, scope.camera.getWorldDirection()));
@@ -1226,7 +1227,6 @@ Potree.Viewer = function(domElement, settings, args){
 				
 				var bbWorld = Potree.utils.computeTransformedBoundingBox(pointcloud.boundingBox, pointcloud.matrixWorld);
 				
-				pointcloud.visiblePointsTarget = scope.pointCountTarget * 1000 * 1000;
 				pointcloud.material.size = scope.pointSize;
 				pointcloud.material.opacity = scope.opacity;
 				pointcloud.material.pointColorType = scope.pointColorType;
@@ -1348,7 +1348,6 @@ Potree.Viewer = function(domElement, settings, args){
 				depthMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.size().x;
 				attributeMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.size().x;
 			
-				pointcloud.visiblePointsTarget = scope.pointCountTarget * 1000 * 1000;
 				var originalMaterial = pointcloud.material;
 				
 				{// DEPTH PASS
@@ -1518,7 +1517,6 @@ Potree.Viewer = function(domElement, settings, args){
 			
 				var octreeSize = pointcloud.pcoGeometry.boundingBox.size().x;
 			
-				pointcloud.visiblePointsTarget = scope.pointCountTarget * 1000 * 1000;
 				originalMaterials.push(pointcloud.material);
 				
 				scope.renderer.clearTarget( rtColor, true, true, true );

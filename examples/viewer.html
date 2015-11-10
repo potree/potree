@@ -62,35 +62,42 @@
 		
 	<script>
 	
-		var settings = {
-			cameraPosition: null,
-			cameraTarget: null,
-			sizeType:		"Fixed",			// options: "Fixed", "Attenuated", "Adaptive"
-			quality:		"Squares",			// options: "Squares", "Circles", "Interpolation", "Splats"
-			fov:			75,					// field of view in degree
-			material:		"RGB",				// options: "RGB", "Height", "Intensity", "Classification"
-			pointLimit:		1,					// max number of points in millions
-			navigation:		"Orbit",			// options: "Earth", "Orbit", "Flight"
-			pointSize:		2,					
-			useEDL:			false,				// eye-dome-lighting, especially useful for point clouds without normals
-		};
-		
 		var onPointCloudLoaded = function(event){
-			// do stuff here that should be executed once the point cloud has been loaded.
+			// do stuff here that should be executed once a point cloud has been loaded.
 			// event.pointcloud returns the point cloud object
+			console.log("a point cloud has been loaded");
 			
-			if(!viewer.isFlipYZ){
+			// set up things when the first point cloud has been loaded
+			if(viewer.pointclouds.length === 1){
 				viewer.flipYZ();
+				//viewer.useOrbitControls();
+				viewer.useEarthControls();
+				viewer.zoomTo(event.pointcloud, 1);
+			
+				viewer.camera.position.set(814, 100, 155);
+				viewer.camera.lookAt(new THREE.Vector3(768, 59, 110))
+				viewer.orbitControls.target = new THREE.Vector3(768, 59, 110);
 			}
 		};
 	
-		viewer = new Potree.Viewer(document.getElementById("renderArea"), settings, {
+		viewer = new Potree.Viewer(document.getElementById("renderArea"), {
 			"onPointCloudLoaded": onPointCloudLoaded
 		});
+		viewer.useEDL = false;
+		viewer.pointSize = 3;
+		viewer.pointLimit = 1;
+		viewer.setMaterial("RGB");
+		viewer.fov = 60;
+		viewer.setPointSizeType("Fixed");
+		viewer.setQuality("Squares");
 		
 		
-		viewer.addPointCloud("http://localhost/temp/layers/1/cloud.js");
-		viewer.addPointCloud("http://localhost/temp/layers/2/cloud.js");
+		viewer.addPointCloud("http://localhost/temp/layers/1/cloud.js", function(pointcloud){
+			console.log("point cloud 1 loaded");
+		});
+		viewer.addPointCloud("http://localhost/temp/layers/2/cloud.js", function(pointcloud){
+			console.log("point cloud 2 loaded");
+		});
 		
 		
 	</script>

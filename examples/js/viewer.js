@@ -1,7 +1,6 @@
 
-Potree.Viewer = function(domElement, settings, args){
+Potree.Viewer = function(domElement, args){
 	var scope = this;
-	var defaultSettings = settings;
 	var arguments = args || {};
 	var pointCloudLoadedCallback = args.onPointCloudLoaded || function(){};
 	
@@ -161,35 +160,31 @@ Potree.Viewer = function(domElement, settings, args){
 	
 	
 
-	if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
-		defaultSettings.navigation = "Orbit";
-	}
-
-	if(defaultSettings.useEDL && !Potree.Features.SHADER_EDL.isSupported()){
-		defaultSettings.useEDL = false;
-	}
+	//if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
+	//	defaultSettings.navigation = "Orbit";
+	//}
 	
 	this.annotations = [];
-	this.fov = defaultSettings.fov || 60;
-	this.pointSize = defaultSettings.pointSize || 1;
-	this.pointCountTarget = defaultSettings.pointLimit || 1;
+	this.fov = 60;
+	this.pointSize = 1;
 	this.opacity = 1;
+	this.sizeType = "Fixed";
 	this.pointSizeType = null;
 	this.pointColorType = null;
 	this.clipMode = Potree.ClipMode.HIGHLIGHT_INSIDE;
-	this.quality = defaultSettings.quality || "Squares";
+	this.quality = "Squares";
 	this.isFlipYZ = false;
 	this.useDEMCollisions = false;
 	this.minNodeSize = 100;
 	this.directionalLight;
-	this.edlScale = defaultSettings.edlScale || 1;
-	this.edlRadius = defaultSettings.edlRadius || 3;
-	this.useEDL = defaultSettings.useEDL || false;
+	this.edlScale = 1;
+	this.edlRadius = 3;
+	this.useEDL = false;
 	this.minimumJumpDistance = 0.2;
 	this.jumpDistance = null;
 
 	this.showDebugInfos = false;
-	this.showStats = false;
+	this.showStats = true;
 	this.showBoundingBox = false;
 	this.freeze = false;
 
@@ -221,6 +216,7 @@ Potree.Viewer = function(domElement, settings, args){
 	this.referenceFrame;
 
 	this.setPointSizeType = function(value){
+		scope.sizeType = value;
 		if(value === "Fixed"){
 			scope.pointSizeType = Potree.PointSizeType.FIXED;
 		}else if(value === "Attenuated"){
@@ -241,6 +237,7 @@ Potree.Viewer = function(domElement, settings, args){
 	};
 
 	this.setMaterial = function(value){
+		this.material = value;
 		if(value === "RGB"){
 			scope.pointColorType = Potree.PointColorType.RGB;
 		}else if(value === "Color"){
@@ -291,10 +288,6 @@ Potree.Viewer = function(domElement, settings, args){
 			return;
 		}
 
-		scope.setPointSizeType(defaultSettings.sizeType);
-		scope.setQuality(defaultSettings.quality);
-		scope.setMaterial(defaultSettings.material);
-
 		// dat.gui
 		gui = new dat.GUI({
 		autoPlace: false
@@ -306,16 +299,16 @@ Potree.Viewer = function(domElement, settings, args){
 		this.renderArea.appendChild(gui.domElement);
 		
 		params = {
-			"max. points(m)": scope.pointCountTarget,
+			"max. points(m)": Potree.pointBudget / (1000*1000),
 			PointSize: scope.pointSize,
 			"FOV": scope.fov,
 			"opacity": scope.opacity,
-			"SizeType" : defaultSettings.sizeType,
+			"SizeType" : scope.sizeType,
 			"show octree" : false,
-			"Materials" : defaultSettings.material,
+			"Materials" : scope.material,
 			"Clip Mode": "Highlight Inside",
-			"quality": defaultSettings.quality,
-			"EDL": defaultSettings.useEDL,
+			"quality": scope.quality,
+			"EDL": scope.useEDL,
 			"EDLScale": scope.edlScale,
 			"skybox": false,
 			"stats": scope.showStats,
@@ -326,9 +319,9 @@ Potree.Viewer = function(domElement, settings, args){
 			"freeze": scope.freeze
 		};
 		
-		var pPoints = gui.add(params, 'max. points(m)', 0, 4);
+		var pPoints = gui.add(params, 'max. points(m)', 0, 6);
 		pPoints.onChange(function(value){
-			scope.pointCountTarget = value ;
+			Potree.pointBudget = value * 1000 * 1000;
 		});
 		
 		var fAppearance = gui.addFolder('Appearance');
@@ -588,6 +581,7 @@ Potree.Viewer = function(domElement, settings, args){
 	this.createControls = function(){
 		{ // create FIRST PERSON CONTROLS
 			scope.fpControls = new THREE.FirstPersonControls(scope.camera, scope.renderer.domElement);
+			scope.fpControls.enabled = false;
 			scope.fpControls.addEventListener("proposeTransform", function(event){
 				if(scope.pointclouds.length === 0){
 					return;
@@ -597,6 +591,7 @@ Potree.Viewer = function(domElement, settings, args){
 		
 		{ // create GEO CONTROLS
 			scope.geoControls = new Potree.GeoControls(scope.camera, scope.renderer.domElement);
+			scope.geoControls.enabled = false;
 			scope.geoControls.addEventListener("proposeTransform", function(event){
 				if(scope.pointclouds.length === 0){
 					return;
@@ -606,6 +601,7 @@ Potree.Viewer = function(domElement, settings, args){
 	
 		{ // create ORBIT CONTROLS
 			scope.orbitControls = new Potree.OrbitControls(scope.camera, scope.renderer.domElement);
+			scope.orbitControls.enabled = false;
 			scope.orbitControls.addEventListener("proposeTransform", function(event){
 				if(scope.pointclouds.length === 0){
 					return;
@@ -694,6 +690,7 @@ Potree.Viewer = function(domElement, settings, args){
 		
 		{ // create EARTH CONTROLS
 			scope.earthControls = new THREE.EarthControls(scope.camera, scope.renderer, scope.scenePointCloud);
+			scope.earthControls.enabled = false;
 			scope.earthControls.addEventListener("proposeTransform", function(event){
 				if(scope.pointclouds.length === 0){
 					return;
@@ -702,7 +699,8 @@ Potree.Viewer = function(domElement, settings, args){
 		}
 	};
 	
-	this.addPointCloud = function(path){
+	this.addPointCloud = function(path, callback){
+		callback = callback || function(){};
 		var initPointcloud = function(pointcloud){
 		
 			scope.pointclouds.push(pointcloud);
@@ -752,34 +750,7 @@ Potree.Viewer = function(domElement, settings, args){
 			}else{
 				scope.camera.near = 0.1;
 			}
-		
-			if(defaultSettings.navigation === "Earth"){
-				scope.useEarthControls();
-			}else if(defaultSettings.navigation === "Orbit"){
-				scope.useOrbitControls();
-			}else if(defaultSettings.navigation === "Flight"){
-				scope.useFPSControls();
-			}else if(defaultSettings.navigation === "Geo"){
-				scope.useGeoControls();
-			}else{
-				console.warning("No navigation mode specified. Using OrbitControls");
-				scope.useOrbitControls();
-			}
 
-			if(defaultSettings.cameraPosition != null){
-				var cp = new THREE.Vector3(defaultSettings.cameraPosition[0], defaultSettings.cameraPosition[1], defaultSettings.cameraPosition[2]);
-				scope.camera.position.copy(cp);
-			}
-
-			if(defaultSettings.cameraTarget != null){
-				var ct = new THREE.Vector3(defaultSettings.cameraTarget[0], defaultSettings.cameraTarget[1], defaultSettings.cameraTarget[2]);
-				scope.camera.lookAt(ct);
-				
-				if(defaultSettings.navigation === "Orbit"){
-					scope.controls.target.copy(ct);
-				}
-			}
-			
 			scope.referenceFrame.position.sub(sg.center);
 			scope.referenceFrame.updateMatrixWorld(true);
 			
@@ -791,6 +762,8 @@ Potree.Viewer = function(domElement, settings, args){
 			scope.earthControls.pointclouds.push(pointcloud);	
 			
 			scope.dispatchEvent({"type": "pointcloud_loaded", "pointcloud": pointcloud});
+			
+			callback(pointcloud);
 		};
 		this.addEventListener("pointcloud_loaded", pointCloudLoadedCallback);
 		
@@ -848,7 +821,7 @@ Potree.Viewer = function(domElement, settings, args){
 		
 		this.createControls();
 		
-		scope.useEarthControls();
+		//scope.useEarthControls();
 		
 		// enable frag_depth extension for the interpolation shader, if available
 		scope.renderer.context.getExtension("EXT_frag_depth");
@@ -948,8 +921,7 @@ Potree.Viewer = function(domElement, settings, args){
 	var heightMax = null;
 
 	this.update = function(delta, timestamp){
-		Potree.pointLoadLimit = scope.pointCountTarget * 2 * 1000 * 1000;
-		Potree.pointBudget = scope.pointCountTarget * 1000 * 1000;
+		Potree.pointLoadLimit = Potree.pointBudget * 2;
 		
 		scope.directionalLight.position.copy(scope.camera.position);
 		scope.directionalLight.lookAt(new THREE.Vector3().addVectors(scope.camera.position, scope.camera.getWorldDirection()));
@@ -1150,7 +1122,7 @@ Potree.Viewer = function(domElement, settings, args){
 		scope.controls = scope.geoControls;
 		scope.controls.enabled = true;
 		
-		scope.controls.moveSpeed = scope.pointcloud[0].boundingSphere.radius / 6;
+		scope.controls.moveSpeed = scope.pointclouds[0].boundingSphere.radius / 6;
 	}
 
 	this.useFPSControls = function(){
@@ -1161,7 +1133,7 @@ Potree.Viewer = function(domElement, settings, args){
 		scope.controls = scope.fpControls;
 		scope.controls.enabled = true;
 		
-		scope.controls.moveSpeed = scope.pointcloud[0].boundingSphere.radius / 6;
+		scope.controls.moveSpeed = scope.pointclouds[0].boundingSphere.radius / 6;
 	}
 
 	this.useOrbitControls = function(){
@@ -1629,7 +1601,7 @@ Potree.Viewer = function(domElement, settings, args){
 		//	toggleMessage = 0;
 		//}
 		
-		if(scope.useEDL){
+		if(scope.useEDL && Potree.Features.SHADER_EDL.isSupported()){
 			if(!edlRenderer){
 				edlRenderer = new EDLRenderer();
 			}

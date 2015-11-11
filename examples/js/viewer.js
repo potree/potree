@@ -59,6 +59,98 @@ Potree.Viewer = function(domElement, args){
 		};
 	}
 	
+	// create bootstrap toolbar
+	if(true){
+		var elToolbar = document.getElementById("toolbar");
+	
+		var createToolIcon = function(icon, title, callback){
+			var elLi = document.createElement("li");
+			var elA = document.createElement("a");
+			var elImg = document.createElement("img");
+			elImg.src = icon;
+			elImg.title = title;
+			elImg.onclick = callback;
+			
+			elLi.appendChild(elA);
+			elA.appendChild(elImg);
+			
+			return elLi;
+		};
+		
+		elToolbar.appendChild(createToolIcon(
+			"../resources/icons/earth_controls_1.png",
+			"Earth Controls",
+			function(){scope.useEarthControls()}
+		));
+		
+		
+		elToolbar.appendChild(createToolIcon(
+			"../resources/icons/fps_controls.png",
+			"Flight Controls",
+			function(){scope.useFPSControls()}
+		));
+		
+		elToolbar.appendChild(createToolIcon(
+			"../resources/icons/fps_controls.png",
+			"Geo Controls",
+			function(){scope.useGeoControls()}
+		));
+		
+		elToolbar.appendChild(createToolIcon(
+			"../resources/icons/orbit_controls.png",
+			"Orbit Controls",
+			function(){scope.useOrbitControls()}
+		));
+		
+		elToolbar.appendChild(createToolIcon(
+			"../resources/icons/focus.png",
+			"focus on pointcloud",
+			function(){scope.zoomTo(viewer.pointclouds)}
+		));
+		
+		elToolbar.appendChild(createToolIcon(
+			"../resources/icons/flip_y_z.png",
+			"flip y and z coordinates",
+			function(){scope.flipYZ()}
+		));
+		
+		elToolbar.appendChild(createToolIcon(
+			"../resources/icons/angle.png",
+			"angle measurements",
+			function(){scope.measuringTool.startInsertion({showDistances: false, showAngles: true, showArea: false, closed: true, maxMarkers: 3})}
+		));
+		
+		elToolbar.appendChild(createToolIcon(
+			"../resources/icons/distance.png",
+			"distance measurements",
+			function(){scope.measuringTool.startInsertion({showDistances: true, showArea: false, closed: false})}
+		));
+		
+		elToolbar.appendChild(createToolIcon(
+			"../resources/icons/area.png",
+			"area measurements",
+			function(){scope.measuringTool.startInsertion({showDistances: true, showArea: true, closed: true})}
+		));
+		
+		elToolbar.appendChild(createToolIcon(
+			"../resources/icons/volume.png",
+			"volume measurements",
+			function(){scope.volumeTool.startInsertion()}
+		));
+		
+		elToolbar.appendChild(createToolIcon(
+			"../resources/icons/profile.png",
+			"height profiles",
+			function(){scope.profileTool.startInsertion()}
+		));
+		
+		elToolbar.appendChild(createToolIcon(
+			"../resources/icons/clip_volume.png",
+			"clipping volumes",
+			function(){scope.volumeTool.startInsertion({clip: true})}
+		));
+	}
+	
 	if(false){ // create toolbar
 		var elToolbar = document.createElement("div");
 		elToolbar.style.position = "absolute";
@@ -282,6 +374,60 @@ Potree.Viewer = function(domElement, args){
 		scope.orbitControls.target.copy(bs.center);
 	};
 
+	
+	this.initGUI = function(){
+	
+		
+		var options = [ 
+			"RGB", 
+			"Color", 
+			"Elevation", 
+			"Intensity", 
+			"Intensity Gradient", 
+			"Classification", 
+			"Return Number", 
+			"Source", 
+			"Phong",
+			"Tree Depth"	
+		];
+		
+		var elMaterialList = document.getElementById("materialList");
+		for(var i = 0; i < options.length; i++){
+			var option = options[i];
+			
+			var elDiv = document.createElement("div");
+			var elLabel = document.createElement("label");
+			var elRadio = document.createElement("input");
+			var elText = document.createTextNode(option);
+			
+			elDiv.classList.add("radio");
+			
+			elRadio.type = "radio";
+			elRadio.name = "optMaterial";
+			
+			elRadio.onchange = (function(matName){
+				return function(event){
+					console.log(event);
+					console.log(matName);
+					viewer.setMaterial(matName);
+				};
+				
+			})(option);
+			
+			elDiv.appendChild(elLabel);
+			elLabel.appendChild(elRadio);
+			elLabel.appendChild(elText);
+			
+			elMaterialList.appendChild(elDiv);
+			
+		}
+		
+		
+		//scope.setMaterial(value);
+	
+	};
+	
+	/*
 	this.initGUI = function(){
 	
 		if(gui){
@@ -576,7 +722,7 @@ Potree.Viewer = function(domElement, args){
 		stats.domElement.style.top = '0px';
 		stats.domElement.style.margin = '5px';
 		document.body.appendChild( stats.domElement );
-	}
+	}*/
 	
 	this.createControls = function(){
 		{ // create FIRST PERSON CONTROLS
@@ -758,7 +904,6 @@ Potree.Viewer = function(domElement, args){
 			
 			scope.zoomTo(pointcloud, 1);
 			
-			//scope.initGUI();	
 			scope.earthControls.pointclouds.push(pointcloud);	
 			
 			scope.dispatchEvent({"type": "pointcloud_loaded", "pointcloud": pointcloud});
@@ -1617,6 +1762,7 @@ Potree.Viewer = function(domElement, args){
 	};
 
 	scope.initThree();
+	scope.initGUI();
 
 	requestAnimationFrame(loop);
 };

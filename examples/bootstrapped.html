@@ -18,6 +18,14 @@
 	.navbar-xs .navbar-primary .navbar .navbar-nav > li > a > img {  padding-top: 2px; padding-bottom: 2px;}
 	.nav > li > a{ padding: 10px 6px; }
 	
+	.navbar-xs .navbar-primary .navbar .navbar-nav > li > div {  padding-top: 0px; padding-bottom: 0px; line-height: 34px; height: 34px;}
+	.nav > li > div{ margin: 10px; padding: 10px 6px; }
+	.dropdown-menu > li > div{ padding: 3px 20px }
+	
+	.radio label{
+		width: 100%;
+	}
+	
 	/*
 	ul.nav li:hover > ul.dropdown-menu {
 		display: block;   
@@ -86,12 +94,12 @@
 		  </a>
 		   <ul class="nav navbar-nav">
 		   
-		   <li class="dropdown">
+			<li class="dropdown">
               <a href="#" class="dropdown-toggle" role="button" aria-haspopup="true" aria-expanded="false">
 				Appearance <b class="caret"></b>
 			  </a>
               <ul class="dropdown-menu multi-level" role="menu" aria-labelledby="dLabel"> 
-				<li><a href="#" class="small" data-value="option3" tabIndex="-1">
+				<li tabIndex="-1"><a href="#" class="small" data-value="option3" tabIndex="-1">
 					Point Size <div id="sldPointSize"></div>
 				</a></li>
 				
@@ -104,18 +112,54 @@
 				</a></li>
 				
 				<li><a href="#" class="small" data-value="option3" tabIndex="-1">
-					Point Size ljh oöh	 <select>
-					  <option value="volvo">Volvo</option>
-					  <option value="saab">Saab</option>
-					  <option value="mercedes">Mercedes</option>
-					  <option value="audi">Audi</option>
+					Point Sizing <select>
+					  <option value="volvo">Fixed</option>
+					  <option value="saab">Attenuated</option>
+					  <option value="mercedes">Adaptive</option>
 					</select>
 				</a></li>
 				
-				<li class="divider"></li>
+				<li><a href="#" class="small" data-value="option3" tabIndex="-1">
+					Point Sizing  asd <select>
+					  <option value="volvo">Fixed</option>
+					  <option value="saab">Attenuated</option>
+					  <option value="mercedes">Adaptive</option>
+					</select>
+				</a></li>
+				
+				<li role="separator" class="divider"></li>
+                <li class="dropdown-header">Eye-Dome-Lighting</li>
+				<li><a href="#" class="small" data-value="option3" tabIndex="-1">
+					<input type="checkbox" onClick="toggleEDL(this)"/>&nbsp;enable</a>
+				</li>
+				
+				<li><a href="#" class="small" data-value="option3" tabIndex="-1">
+					radius <div id="sldEDLRadius"></div>
+				</a></li>
+				
+				<li><a href="#" class="small" data-value="option3" tabIndex="-1">
+					strength <div id="sldEDLStrength"></div>
+				</a></li>
 				
               </ul>
             </li>
+			
+			
+			
+			<li class="dropdown">
+              <a href="#" class="dropdown-toggle" role="button" aria-haspopup="true" aria-expanded="false">
+				Materials <b class="caret"></b>
+			  </a>
+              <ul class="dropdown-menu multi-level" role="menu" aria-labelledby="dLabel"> 
+				<li id="materialList">
+					
+				</li>
+				
+              </ul>
+            </li>
+			
+			
+			
 		   
 			<li class="dropdown">
               <a href="#" class="dropdown-toggle" role="button" aria-haspopup="true" aria-expanded="false">
@@ -149,10 +193,7 @@
 		</div>
 		
 		 <div id="navbar" class="collapse navbar-collapse">
-          <ul class="nav navbar-nav">
-			<li><a href="#" class="pull-left"><img src="../resources/icons/distance.png"></a></li>
-			<li><a href="#" class="pull-left"><img src="../resources/icons/distance.png"></a></li>
-			<li><a href="#" class="pull-left"><img src="../resources/icons/distance.png"></a></li>
+          <ul class="nav navbar-nav" id="toolbar">
           </ul>
         </div>
 	
@@ -208,9 +249,16 @@
 	
 	
 	
-	
+	<!-- Bootstrap core JavaScript-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+	<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+    <script src="../libs/bootstrap/js/bootstrap.min.js"></script>
 		
 	<script>
+	
+		function toggleEDL(element){
+			viewer.useEDL = element.checked;
+		}
 	
 		function toggleStats(element){
 			viewer.showStats = element.checked;
@@ -270,12 +318,7 @@
 	</script>
 	
 	
-	 <!-- Bootstrap core JavaScript
-    ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-	<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
-    <script src="../libs/bootstrap/js/bootstrap.min.js"></script>
+
 
 	<script>
 	
@@ -329,6 +372,22 @@
 		max: 1,
 		step: 0.01,
 		slide: function( event, ui ) {viewer.opacity = ui.value;}
+    });
+	
+	$( "#sldEDLRadius" ).slider({
+		value: 3,
+		min: 1,
+		max: 5,
+		step: 0.01,
+		slide: function( event, ui ) {viewer.edlRadius = ui.value;}
+    });
+	
+	$( "#sldEDLStrength" ).slider({
+		value: 1,
+		min: 0,
+		max: 3,
+		step: 0.01,
+		slide: function( event, ui ) {viewer.edlScale = ui.value;}
     });
 	
 	</script>

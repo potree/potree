@@ -59,7 +59,7 @@ Potree.Viewer = function(domElement, args){
 		};
 	}
 	
-	{ // create toolbar
+	if(false){ // create toolbar
 		var elToolbar = document.createElement("div");
 		elToolbar.style.position = "absolute";
 		elToolbar.style.width = "400px";
@@ -294,7 +294,7 @@ Potree.Viewer = function(domElement, args){
 			//height : 5 * 32 - 1
 		});
 		gui.domElement.style.position = "absolute";
-		gui.domElement.style.top = "5px";
+		gui.domElement.style.top = "80px";
 		gui.domElement.style.right = "5px";
 		this.renderArea.appendChild(gui.domElement);
 		
@@ -705,7 +705,7 @@ Potree.Viewer = function(domElement, args){
 		
 			scope.pointclouds.push(pointcloud);
 			
-			{
+			if(false){
 				var id = (scope.pointclouds.length - 1);
 				var checkbox = document.createElement('input');
 				checkbox.type = "checkbox";
@@ -758,7 +758,7 @@ Potree.Viewer = function(domElement, args){
 			
 			scope.zoomTo(pointcloud, 1);
 			
-			scope.initGUI();	
+			//scope.initGUI();	
 			scope.earthControls.pointclouds.push(pointcloud);	
 			
 			scope.dispatchEvent({"type": "pointcloud_loaded", "pointcloud": pointcloud});

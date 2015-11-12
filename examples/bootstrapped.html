@@ -45,6 +45,12 @@
 		background-color: #f5f5f5;
 	}
 	
+	.horizontal-separator{
+		position:	absolute !important;
+		top: 4px;
+		bottom: 4px;
+		border: 1px solid gray;
+	}	
 	
 	/*
 	ul.nav li:hover > ul.dropdown-menu {
@@ -112,7 +118,10 @@
 		  <a class="navbar-brand" href="http://potree.org" target="_blank" title="Potree">
 			  Potree<!--<img id="main-logo" src="../resources/icons/distance.png" alt="Potree" />-->
 		  </a>
+		  
+		  
 		   <ul class="nav navbar-nav">
+		   
 		   
 			<li class="dropdown">
               <a href="#" class="dropdown-toggle" role="button" aria-haspopup="true" aria-expanded="false">
@@ -120,15 +129,18 @@
 			  </a>
               <ul class="dropdown-menu multi-level" role="menu" aria-labelledby="dLabel"> 
 				<li tabIndex="-1"><a href="#" class="small" data-value="option3" tabIndex="-1">
-					Point Size <div id="sldPointSize"></div>
+					Point Size: <span id="lblPointSize"></span> 
+					<div id="sldPointSize"></div>
 				</a></li>
 				
 				<li><a href="#" class="small" data-value="option3" tabIndex="-1">
-					Field of View <div id="sldFOV"></div>
+					Field of View: <span id="lblFOV"></span>
+					<div id="sldFOV"></div>
 				</a></li>
 				
 				<li><a href="#" class="small" data-value="option3" tabIndex="-1">
-					Opacity <div id="sldOpacity"></div>
+					Opacity: <span id="lblOpacity"></span>
+					<div id="sldOpacity"></div>
 				</a></li>
 				
 				<li><label class="menu-item"><input type="checkbox" onClick="toggleSkybox(this)"/>&nbsp;Skybox</label></li>
@@ -138,32 +150,34 @@
 				<li role="separator" class="divider"></li>
                 <li class="dropdown-header">Point Sizing</li>
 				
-				<li><label><input type="radio" name="optPointSizing" onClick="togglePointSizing(this);" value="Fixed" /> Fixed</label></li>
-				<li><label><input type="radio" name="optPointSizing" onClick="togglePointSizing(this);" value="Attenuated" /> Attenuated</label></li>
-				<li><label><input type="radio" name="optPointSizing" onClick="togglePointSizing(this);" value="Adaptive" /> Adaptive</label></li>
+				<li><label><input type="radio" id="optPointSizing_Fixed" name="optPointSizing" onClick="viewer.setPointSizing(this.value);" value="Fixed" /> Fixed</label></li>
+				<li><label><input type="radio" id="optPointSizing_Attenuated" name="optPointSizing" onClick="viewer.setPointSizing(this.value);" value="Attenuated" /> Attenuated</label></li>
+				<li><label><input type="radio" id="optPointSizing_Adaptive" name="optPointSizing" onClick="viewer.setPointSizing(this.value);" value="Adaptive" /> Adaptive</label></li>
 				
 				
 				
 				<li role="separator" class="divider"></li>
                 <li class="dropdown-header">Quality</li>
 				
-				<li><label><input type="radio" name="optQuality" onClick="toggleQuality(this);" value="Squares" /> Squares</label></li>
-				<li><label><input type="radio" name="optQuality" onClick="toggleQuality(this);" value="Circles" /> Circles</label></li>
-				<li><label><input type="radio" name="optQuality" onClick="toggleQuality(this);" value="Interpolation" /> Interpolation</label></li>
-				<li><label><input type="radio" name="optQuality" onClick="toggleQuality(this);" value="Splats" /> HQ-Splats</label></li>
+				<li><label><input type="radio" id="optQuality_Squares" name="optQuality" onClick="viewer.setQuality(this.value);" value="Squares" /> Squares</label></li>
+				<li><label><input type="radio" id="optQuality_Circles" name="optQuality" onClick="viewer.setQuality(this.value);" value="Circles" /> Circles</label></li>
+				<li><label><input type="radio" id="optQuality_Interpolation" name="optQuality" onClick="viewer.setQuality(this.value);" value="Interpolation" /> Interpolation</label></li>
+				<li><label><input type="radio" id="optQuality_Splats" name="optQuality" onClick="viewer.setQuality(this.value);" value="Splats" /> HQ-Splats</label></li>
 				
 				
 				
 				<li role="separator" class="divider"></li>
                 <li class="dropdown-header">Eye-Dome-Lighting</li>
-				<li><label><input type="checkbox" onClick="toggleEDL(this)"/>&nbsp;enable</label></li>
 				
+				<li><label><input type="checkbox" id="chkEDLEnabled" onClick="viewer.setEDLEnabled(this.checked)"/>&nbsp;enable</label></li>
 				<li><a href="#" class="small" data-value="option3" tabIndex="-1">
-					radius <div id="sldEDLRadius"></div>
+					radius <span id="lblEDLRadius"></span>
+					<div id="sldEDLRadius"></div>
 				</a></li>	
 				
 				<li><a href="#" class="small" data-value="option3" tabIndex="-1">
-					strength <div id="sldEDLStrength"></div>
+					strength <span id="lblEDLStrength"></span>
+					<div id="sldEDLStrength"></div>
 				</a></li>
 				
               </ul>
@@ -177,9 +191,19 @@
 			  </a>
               <ul class="dropdown-menu multi-level" role="menu" aria-labelledby="dLabel"> 
 				<li id="materialList">
-					
+					<!-- filled on load -->
 				</li>
-				
+              </ul>
+            </li>
+			
+			<li class="dropdown">
+              <a href="#" class="dropdown-toggle" role="button" aria-haspopup="true" aria-expanded="false">
+				Classifications <b class="caret"></b>
+			  </a>
+              <ul  id="classificationList" class="dropdown-menu" role="menu" aria-labelledby="dLabel"> 
+				<li id="classificationList">
+					<!-- filled on load -->
+				</li>
               </ul>
             </li>
 			
@@ -223,12 +247,20 @@
 				<li><a href="#" class="small" data-value="option3" tabIndex="-1">
 					Min Node Size<div id="minNodeSize"></div>
 				</a></li>
+				
+				<li role="separator" class="divider"></li>
+				<li class="dropdown-header">Clip Mode</li>
+				
+				<li><label><input type="radio" id="optClipMode_NoClipping" 		name="optClipMode" onClick="viewer.setClipMode(Potree.ClipMode.DISABLED);"  /> No Clipping</label></li>
+				<li><label><input type="radio" id="optClipMode_ClipOutside" 	name="optClipMode" onClick="viewer.setClipMode(Potree.ClipMode.CLIP_OUTSIDE);"  /> Clip Outside</label></li>
+				<li><label><input type="radio" id="optClipMode_HighlightInside" name="optClipMode" onClick="viewer.setClipMode(Potree.ClipMode.HIGHLIGHT_INSIDE);"  /> Highlight Inside</label></li>
+				
 				<li role="separator" class="divider"></li>
                 <li class="dropdown-header">Debug</li>
-				<li><label><input type="checkbox" onClick="toggleStats(this)"/>&nbsp;Stats</label></li>
-				<li><label><input type="checkbox" onClick="toggleDebugInfos(this)"/>&nbsp;Debug Infos</label></li>
-				<li><label><input type="checkbox" onClick="toggleBoundingBox(this)"/>&nbsp;Bounding Box</label></li>
-				<li><label><input type="checkbox" onClick="toggleFreeze(this)"/>&nbsp;Freeze</label></li>
+				<li><label><input type="checkbox" id="chkShowStats" onClick="viewer.setShowStats(this.checked)"/>&nbsp;Stats</label></li>
+				<li><label><input type="checkbox" id="chkShowDebugInfos" onClick="viewer.setShowDebugInfos(this.checked)"/>&nbsp;Debug Infos</label></li>
+				<li><label><input type="checkbox" id="chkShowBoundingBox" onClick="viewer.setShowBoundingBox(this.checked)"/>&nbsp;Bounding Box</label></li>
+				<li><label><input type="checkbox" id="chkFreeze" onClick="viewer.setFreeze(this.checked)"/>&nbsp;Freeze</label></li>
               </ul>
             </li>
 			
@@ -246,11 +278,6 @@
           </ul>
 		</div>
 		
-		<div class="collapse navbar-collapse">
-		<ul class="nav navbar-nav" id="toolbar">
-		<li>lalasdfasdf asdf asdf asdfa</li>
-          </ul>
-		</div>
 		
 		 <div id="navbar" class="collapse navbar-collapse">
           <ul class="nav navbar-nav" id="toolbar">
@@ -279,10 +306,11 @@
 	
 	
 	
-	
-	
 	<div id="renderArea" style="position: absolute; width: 100%; height: 100%; overflow: hidden;">
 
+		<div id="overlays" style="position: absolute; left: 10px; top: 45px;">
+		</div>
+	
 		<!-- HEADING -->
 		<div class="info" style="position: absolute; left: 300px; right: 300px; top: 10px; text-align: center;">
 		</div>
@@ -316,39 +344,6 @@
 		
 	<script>
 	
-		function toggleQuality(element){
-			viewer.quality = element.value;
-		}
-	
-		function togglePointSizing(element){
-			viewer.setPointSizeType(element.value);
-		}
-	
-		function toggleEDL(element){
-			viewer.useEDL = element.checked;
-		}
-		
-		function toggleSkybox(element){
-			viewer.showSkybox = element.checked;
-		}
-	
-		function toggleStats(element){
-			viewer.showStats = element.checked;
-		}
-		
-		function toggleBoundingBox(element){
-			viewer.showBoundingBox = element.checked;
-		}
-		
-		function toggleDebugInfos(element){
-			viewer.showDebugInfos = element.checked;
-			viewer.infos.domElement.style.display = viewer.showDebugInfos ? "block" : "none";
-		}
-		
-		function toggleFreeze(element){
-			viewer.freeze = element.checked;
-		}
-	
 		var onPointCloudLoaded = function(event){
 			// do stuff here that should be executed once a point cloud has been loaded.
 			// event.pointcloud returns the point cloud object
@@ -370,14 +365,14 @@
 		viewer = new Potree.Viewer(document.getElementById("renderArea"), {
 			"onPointCloudLoaded": onPointCloudLoaded
 		});
-		viewer.useEDL = false;
-		viewer.pointSize = 3;
-		viewer.pointLimit = 1;
-		viewer.setMaterial("RGB");
-		viewer.fov = 60;
-		viewer.setPointSizeType("Fixed");
-		viewer.setQuality("Squares");
 		
+		viewer.setEDLEnabled(false);
+		viewer.setPointSize(3);
+		viewer.setMaterial("RGB");
+		viewer.setFOV(60);
+		viewer.setPointSizing("Fixed");
+		viewer.setQuality("Squares");
+		viewer.setPointBudget(1*1000*1000);
 		
 		viewer.addPointCloud("http://localhost/temp/layers/1/cloud.js", function(pointcloud){
 			console.log("point cloud 1 loaded");
@@ -412,55 +407,7 @@
 		});
 	}
 	
-	$( "#minNodeSize" ).slider({
-		value: 100,
-		min: 0,
-		max: 1500,
-		step: 1,
-		slide: function( event, ui ) {
-			viewer.minNodeSize = ui.value;
-		}
-    });
 	
-	$( "#sldPointSize" ).slider({
-		value: 1,
-		min: 0,
-		max: 3,
-		step: 0.01,
-		slide: function( event, ui ) {viewer.pointSize = ui.value;}
-    });
-	
-	$( "#sldFOV" ).slider({
-		value: 60,
-		min: 20,
-		max: 100,
-		step: 0.01,
-		slide: function( event, ui ) {viewer.fov = ui.value;}
-    });
-	
-	$( "#sldOpacity" ).slider({
-		value: 1,
-		min: 0,
-		max: 1,
-		step: 0.01,
-		slide: function( event, ui ) {viewer.opacity = ui.value;}
-    });
-	
-	$( "#sldEDLRadius" ).slider({
-		value: 3,
-		min: 1,
-		max: 5,
-		step: 0.01,
-		slide: function( event, ui ) {viewer.edlRadius = ui.value;}
-    });
-	
-	$( "#sldEDLStrength" ).slider({
-		value: 1,
-		min: 0,
-		max: 3,
-		step: 0.01,
-		slide: function( event, ui ) {viewer.edlScale = ui.value;}
-    });
 	
 	</script>
 	

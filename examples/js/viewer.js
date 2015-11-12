@@ -6,58 +6,9 @@ Potree.Viewer = function(domElement, args){
 	
 	this.renderArea = domElement;
 	
-	{ // create stats fields
-		var createField = function(id, top){
-			var field = document.createElement("div");
-			field.id = id;
-			field.classList.add("info");
-			field.style.position = "absolute";
-			field.style.left = "10px";
-			field.style.top = top + "px";
-			field.style.width = "400px";
-			field.style.color = "white";
-			
-			return field;
-		};
-		
-		var elNumVisibleNodes = createField("lblNumVisibleNodes", 80);
-		var elNumVisiblePoints = createField("lblNumVisiblePoints", 100);
-		
-		scope.renderArea.appendChild(elNumVisibleNodes);
-		scope.renderArea.appendChild(elNumVisiblePoints);
-	}
 	
-	{ // infos
-		scope.infos = new function(){
-		
-			var _this = this;
-		
-			this.elements = {};
-			
-			this.domElement = document.createElement("div");
-			this.domElement.id = "infos";
-			this.domElement.classList.add("info");
-			this.domElement.style.position = "fixed";
-			this.domElement.style.left = "10px";
-			this.domElement.style.top = "120px";
-			this.domElement.style.pointerEvents = "none";
-			
-			scope.renderArea.appendChild(this.domElement);
-		
-			this.set = function(key, value){
-				var element = this.elements[key];
-				if(typeof element === "undefined"){
-					element = document.createElement("div");
-					_this.domElement.appendChild(element);
-					this.elements[key] = element;
-					
-				}
-				
-				element.innerHTML = value;
-			};
-		
-		};
-	}
+	
+	
 	
 	// create bootstrap toolbar
 	if(true){
@@ -306,8 +257,86 @@ Potree.Viewer = function(domElement, args){
 	var clock = new THREE.Clock();
 	this.showSkybox = false;
 	this.referenceFrame;
+	
+	this.setShowBoundingBox = function(value){
+		this.showBoundingBox = value;
+		
+		document.getElementById("chkShowBoundingBox").checked = value;
+	};
+	
+	this.setShowDebugInfos = function(value){
+		this.showDebugInfos = value;
+		this.infos.domElement.style.display = this.showDebugInfos ? "block" : "none";
+		document.getElementById("chkShowDebugInfos").checked = value;
+	};
+	
+	this.setShowStats = function(value){
+		this.showStats = value;
+		
+		document.getElementById("chkShowStats").checked = value;
+	};
+	
+	this.setFreeze = function(value){
+		this.freeze = value;
+		
+		document.getElementById("chkFreeze").checked = value;
+	};
+	
+	this.setPointBudget = function(value){
+		Potree.pointBudget = value;
+	};
+	
+	this.setClipMode = function(clipMode){
+		this.clipMode = clipMode;
+		
+		if(clipMode === Potree.ClipMode.DISABLED){
+			document.getElementById("optClipMode_NoClipping").checked = true;
+		}else if(clipMode === Potree.ClipMode.CLIP_OUTSIDE){
+			document.getElementById("optClipMode_ClipOutside").checked = true;
+		}else if(clipMode === Potree.ClipMode.HIGHLIGHT_INSIDE){
+			document.getElementById("optClipMode_HighlightInside").checked = true;
+		}
+	};
+	
+	this.setEDLEnabled = function(value){
+		scope.useEDL = value;
+		
+		document.getElementById("chkEDLEnabled").checked = value;
+	};
+	
+	this.setEDLRadius = function(value){
+		scope.edlRadius = value;
+		
+		document.getElementById("lblEDLRadius").innerHTML = value.toFixed(2);
+		$( "#sldEDLRadius" ).slider("option", "value", value);
+	};
+	
+	this.setEDLStrength = function(value){
+		scope.edlScale = value;
+		
+		document.getElementById("lblEDLStrength").innerHTML = value.toFixed(2);
+		$( "#sldEDLStrength" ).slider("option", "value", value);
+	};
+	
+	this.setPointSize = function(value){
+		scope.pointSize = value;
+		document.getElementById("lblPointSize").innerHTML = value.toFixed(2);
+		$( "#sldPointSize" ).slider("option", "value", value);
+	};
+	
+	this.setFOV = function(value){
+		scope.fov = value;
+		document.getElementById("lblFOV").innerHTML = parseInt(value);
+		$( "#sldFOV" ).slider("option", "value", value);
+	};
+	
+	this.setOpacity = function(value){
+		scope.opacity = value;
+		document.getElementById("lblOpacity").innerHTML = value.toFixed(2);
+		$( "#sldOpacity" ).slider("option", "value", value);
+	};
 
-	this.setPointSizeType = function(value){
+	this.setPointSizing = function(value){
 		scope.sizeType = value;
 		if(value === "Fixed"){
 			scope.pointSizeType = Potree.PointSizeType.FIXED;
@@ -316,6 +345,8 @@ Potree.Viewer = function(domElement, args){
 		}else if(value === "Adaptive"){
 			scope.pointSizeType = Potree.PointSizeType.ADAPTIVE;
 		}
+		
+		document.getElementById("optPointSizing_" + value).checked = true;
 	};
 
 	this.setQuality = function(value){
@@ -326,6 +357,20 @@ Potree.Viewer = function(domElement, args){
 		}else{
 			scope.quality = value;
 		}
+		
+		document.getElementById("optQuality_" + value).checked = true;
+	};
+	
+	this.setClassificationVisibility = function(key, value){
+		for(var i = 0; i < scope.pointclouds.length; i++){
+			var pointcloud = scope.pointclouds[i];
+			var newClass = pointcloud.material.classification;
+			newClass[key].w = value ? 1 : 0;
+			
+			pointcloud.material.classification = newClass;
+		}
+		
+		document.getElementById("chkClassification_" + key).checked = value;
 	};
 
 	this.setMaterial = function(value){
@@ -355,6 +400,8 @@ Potree.Viewer = function(domElement, args){
 		}else if(value === "Phong"){
 			scope.pointColorType = Potree.PointColorType.PHONG;
 		}
+		
+		document.getElementById("optMaterial_" + value).checked = true;
 	};
 	
 	this.zoomTo = function(node, factor){
@@ -377,350 +424,242 @@ Potree.Viewer = function(domElement, args){
 	
 	this.initGUI = function(){
 	
+		stats = new Stats();
+		//stats.domElement.style.position = 'absolute';
+		//stats.domElement.style.top = '0px';
+		//stats.domElement.style.margin = '5px';
+		document.getElementById("overlays").appendChild(stats.domElement);
+		//document.body.appendChild( stats.domElement );
 		
-		var options = [ 
-			"RGB", 
-			"Color", 
-			"Elevation", 
-			"Intensity", 
-			"Intensity Gradient", 
-			"Classification", 
-			"Return Number", 
-			"Source", 
-			"Phong",
-			"Tree Depth"	
-		];
 		
-		var elMaterialList = document.getElementById("materialList");
-		for(var i = 0; i < options.length; i++){
-			var option = options[i];
-			
-			//var elDiv = document.createElement("div");
-			var elLabel = document.createElement("label");
-			var elRadio = document.createElement("input");
-			var elText = document.createTextNode(" " + option);
-			
-			//elDiv.classList.add("radio");
-			
-			elRadio.type = "radio";
-			elRadio.name = "optMaterial";
-			
-			elRadio.onchange = (function(matName){
-				return function(event){
-					viewer.setMaterial(matName);
-				};
+		
+		{ // create stats fields
+			var createField = function(id, top){
+				var field = document.createElement("div");
+				field.id = id;
+				field.classList.add("info");
+				//field.style.position = "absolute";
+				//field.style.left = "10px";
+				//field.style.top = top + "px";
+				field.style.width = "400px";
+				field.style.color = "white";
 				
-			})(option);
+				return field;
+			};
 			
-			//elDiv.appendChild(elLabel);
-			elLabel.appendChild(elRadio);
-			elLabel.appendChild(elText);
+			var elNumVisibleNodes = createField("lblNumVisibleNodes", 80);
+			var elNumVisiblePoints = createField("lblNumVisiblePoints", 100);
 			
-			elMaterialList.appendChild(elLabel);
 			
+			
+			document.getElementById("overlays").appendChild(elNumVisibleNodes);
+			document.getElementById("overlays").appendChild(elNumVisiblePoints);
+		}
+	
+		{ // infos
+			scope.infos = new function(){
+			
+				var _this = this;
+			
+				this.elements = {};
+				
+				this.domElement = document.createElement("div");
+				this.domElement.id = "infos";
+				this.domElement.classList.add("info");
+				this.domElement.style.pointerEvents = "none";
+				
+				document.getElementById("overlays").appendChild(this.domElement);
+			
+				this.set = function(key, value){
+					var element = this.elements[key];
+					if(typeof element === "undefined"){
+						element = document.createElement("div");
+						_this.domElement.appendChild(element);
+						this.elements[key] = element;
+						
+					}
+					
+					element.innerHTML = key + ": " + value;
+				};
+			
+			};
+		}
+		
+		var toggleQuality = function(element){
+			scope.quality = element.value;
+		}
+	
+		var togglePointSizing = function(element){
+			scope.setPointSizeType(element.value);
+		}
+	
+		var toggleEDL = function(element){
+			scope.useEDL = element.checked;
+		}
+		
+		var toggleSkybox = function(element){
+			scope.showSkybox = element.checked;
+		}
+	
+		var toggleStats = function(element){
+			scope.showStats = element.checked;
+		}
+		
+		var toggleBoundingBox = function(element){
+			scope.showBoundingBox = element.checked;
+		}
+		
+		{ // Materials
+			var options = [ 
+				"RGB", 
+				"Color", 
+				"Elevation", 
+				"Intensity", 
+				"Intensity Gradient", 
+				"Classification", 
+				"Return Number", 
+				"Source", 
+				"Phong",
+				"Tree Depth"	
+			];
+			
+			var elMaterialList = document.getElementById("materialList");
+			for(var i = 0; i < options.length; i++){
+				var option = options[i];
+				
+				var elLabel = document.createElement("label");
+				var elRadio = document.createElement("input");
+				var elText = document.createTextNode(" " + option);
+				
+				elRadio.type = "radio";
+				elRadio.name = "optMaterial";
+				elRadio.id = "optMaterial_" + option;
+				elRadio.checked = this.material === option;
+				elLabel.style.whiteSpace = "nowrap";
+				
+				elRadio.onchange = (function(matName){
+					return function(event){
+						viewer.setMaterial(matName);
+					};
+					
+				})(option);
+				
+				elLabel.appendChild(elRadio);
+				elLabel.appendChild(elText);
+				
+				elMaterialList.appendChild(elLabel);
+				
+			}
 		}
 		
 		
-		//scope.setMaterial(value);
+		{ // Classifications
+			
+			var addClassificationItem = function(code, name){
+				//<li><label><input type="checkbox" onClick="toggleStats(this)"/>&nbsp;Stats</label></li>
+				var elClassificationList = document.getElementById("classificationList");
+				
+				var elLi = document.createElement("li");
+				var elLabel = document.createElement("label");
+				var elInput = document.createElement("input");
+				var elText = document.createTextNode(" " + name);
+				
+				elInput.id = "chkClassification_" + code;
+				elInput.type = "checkbox";
+				elInput.checked = true;
+				elInput.onclick = function(event){
+					console.log(code + "; " + event.target.checked);
+					scope.setClassificationVisibility(code, event.target.checked);
+				}
+				
+				elLabel.style.whiteSpace = "nowrap";
+				
+				elClassificationList.appendChild(elLi);
+				elLi.appendChild(elLabel);
+				elLabel.appendChild(elInput);
+				elLabel.appendChild(elText);
+			};
+			
+			addClassificationItem(0, "never classified");
+			addClassificationItem(1, "unclassified");
+			addClassificationItem(2, "ground");
+			addClassificationItem(3, "low vegetation");
+			addClassificationItem(4, "medium vegetation");
+			addClassificationItem(5, "high vegetation");
+			addClassificationItem(6, "building");
+			addClassificationItem(7, "low point(noise)");
+			addClassificationItem(8, "key-point");
+			addClassificationItem(9, "water");
+			addClassificationItem(12, "overlap");
+		}
+		
+		$( "#minNodeSize" ).slider({
+			value: 100,
+			min: 0,
+			max: 1500,
+			step: 1,
+			slide: function( event, ui ) {
+				viewer.minNodeSize = ui.value;
+			}
+		});
+	
+	
+		$( "#sldPointSize" ).slider({
+			value: 1,
+			min: 0,
+			max: 3,
+			step: 0.01,
+			slide: function( event, ui ) {viewer.setPointSize(ui.value);}
+		});
+		
+		$( "#sldFOV" ).slider({
+			value: 60,
+			min: 20,
+			max: 100,
+			step: 1,
+			slide: function( event, ui ) {viewer.setFOV(ui.value);}
+		});
+		
+		$( "#sldOpacity" ).slider({
+			value: 1,
+			min: 0,
+			max: 1,
+			step: 0.01,
+			slide: function( event, ui ) {viewer.setOpacity(ui.value);}
+		});
+		
+		$( "#sldEDLRadius" ).slider({
+			value: 1,
+			min: 1,
+			max: 5,
+			step: 0.01,
+			slide: function( event, ui ) {viewer.setEDLRadius(ui.value);}
+		});
+		
+		$( "#sldEDLStrength" ).slider({
+			value: 1,
+			min: 0,
+			max: 3,
+			step: 0.01,
+			slide: function( event, ui ) {viewer.setEDLStrength(ui.value);}
+		});
+		
+		
+		
+		scope.setPointSize(1);
+		scope.setFOV(60);
+		scope.setOpacity(1);
+		scope.setEDLEnabled(false);
+		scope.setEDLRadius(2);
+		scope.setEDLStrength(1);
+		scope.setClipMode(Potree.ClipMode.HIGHLIGHT_INSIDE);
+		scope.setPointBudget(1*1000*1000);
+		scope.setShowBoundingBox(false);
+		scope.setShowDebugInfos(false);
+		scope.setShowStats(false);
+		scope.setFreeze(false);
 	
 	};
-	
-	/*
-	this.initGUI = function(){
-	
-		if(gui){
-			return;
-		}
-
-		// dat.gui
-		gui = new dat.GUI({
-		autoPlace: false
-			//height : 5 * 32 - 1
-		});
-		gui.domElement.style.position = "absolute";
-		gui.domElement.style.top = "80px";
-		gui.domElement.style.right = "5px";
-		this.renderArea.appendChild(gui.domElement);
-		
-		params = {
-			"max. points(m)": Potree.pointBudget / (1000*1000),
-			PointSize: scope.pointSize,
-			"FOV": scope.fov,
-			"opacity": scope.opacity,
-			"SizeType" : scope.sizeType,
-			"show octree" : false,
-			"Materials" : scope.material,
-			"Clip Mode": "Highlight Inside",
-			"quality": scope.quality,
-			"EDL": scope.useEDL,
-			"EDLScale": scope.edlScale,
-			"skybox": false,
-			"stats": scope.showStats,
-			"debugInfos": scope.showDebugInfos,
-			"BoundingBox": scope.showBoundingBox,
-			"DEM Collisions": scope.useDEMCollisions,
-			"MinNodeSize": scope.minNodeSize,
-			"freeze": scope.freeze
-		};
-		
-		var pPoints = gui.add(params, 'max. points(m)', 0, 6);
-		pPoints.onChange(function(value){
-			Potree.pointBudget = value * 1000 * 1000;
-		});
-		
-		var fAppearance = gui.addFolder('Appearance');
-		
-		var pPointSize = fAppearance.add(params, 'PointSize', 0, 3);
-		pPointSize.onChange(function(value){
-			scope.pointSize = value;
-		});
-		
-		var fFOV = fAppearance.add(params, 'FOV', 20, 100);
-		fFOV.onChange(function(value){
-			scope.fov = value;
-		});
-		
-		var pOpacity = fAppearance.add(params, 'opacity', 0, 1);
-		pOpacity.onChange(function(value){
-			scope.opacity = value;
-		});
-		
-		var pSizeType = fAppearance.add(params, 'SizeType', [ "Fixed", "Attenuated", "Adaptive"]);
-		pSizeType.onChange(function(value){
-			scope.setPointSizeType(value);
-		});
-		
-		var options = [];
-		var attributes = scope.pointclouds[0].pcoGeometry.pointAttributes;
-		if(attributes === "LAS" || attributes === "LAZ"){
-			options = [ 
-			"RGB", "Color", "Elevation", "Intensity", "Intensity Gradient", 
-			"Classification", "Return Number", "Source",
-			"Tree Depth"];
-		}else{
-			for(var i = 0; i < attributes.attributes.length; i++){
-				var attribute = attributes.attributes[i];
-				
-				if(attribute === Potree.PointAttribute.COLOR_PACKED){
-					options.push("RGB");
-				}else if(attribute === Potree.PointAttribute.INTENSITY){
-					options.push("Intensity");
-					options.push("Intensity Gradient");
-				}else if(attribute === Potree.PointAttribute.CLASSIFICATION){
-					options.push("Classification");
-				}
-			}
-			if(attributes.hasNormals()){
-				options.push("Phong");
-				options.push("Normal");
-			}
-			
-			options.push("Elevation");
-			options.push("Color");
-			options.push("Tree Depth");
-		}
-		
-		// default material is not available. set material to Elevation
-		if(options.indexOf(params.Materials) < 0){
-			console.error("Default Material '" + params.Material + "' is not available. Using Elevation instead");
-			scope.setMaterial("Elevation");
-			params.Materials = "Elevation";
-		}
-		
-		
-		pMaterial = fAppearance.add(params, 'Materials',options);
-		pMaterial.onChange(function(value){
-			scope.setMaterial(value);
-		});
-		
-		var qualityOptions = ["Squares", "Circles"];
-		if(Potree.Features.SHADER_INTERPOLATION.isSupported()){
-			qualityOptions.push("Interpolation");
-		}
-		if(Potree.Features.SHADER_SPLATS.isSupported()){
-			qualityOptions.push("Splats");
-		}
-		var pQuality = fAppearance.add(params, 'quality', qualityOptions);
-		pQuality.onChange(function(value){
-			scope.quality = value;
-		});
-		
-		{ // Eye-Dome-Lighting
-			if(Potree.Features.SHADER_EDL.isSupported()){
-			
-				var edlParams = {
-					"enable": scope.useEDL,
-					"strength": scope.edlScale,
-					"radius": scope.edlRadius
-				};
-			
-				var fEDL = fAppearance.addFolder('Eye-Dome-Lighting');
-				var pEDL = fEDL.add(edlParams, 'enable');
-				pEDL.onChange(function(value){
-					scope.useEDL = value;
-				});
-				
-				var pEDLScale = fEDL.add(edlParams, 'strength', 0, 3, 0.01);
-				pEDLScale.onChange(function(value){
-					scope.edlScale = value;
-				});
-				
-				var pRadius = fEDL.add(edlParams, 'radius', 1, 5);
-				pRadius.onChange(function(value){
-					scope.edlRadius = value;
-				});
-			}
-		}
-		
-		{ // Classification
-			var classificationParams = {
-				"never classified": true,
-				"unclassified": true,
-				"ground": true,
-				"low vegetation": true,
-				"medium vegetation": true,
-				"high vegetation": true,
-				"building": true,
-				"low point(noise)": true,
-				"key-point": true,
-				"water": true,
-				"overlap": true
-			};
-			
-			var setClassificationVisibility = function(key, value){
-
-				for(var i = 0; i < scope.pointclouds.length; i++){
-					var pointcloud = scope.pointclouds[i];
-					var newClass = pointcloud.material.classification;
-					newClass[key].w = value ? 1 : 0;
-					
-					pointcloud.material.classification = newClass;
-				}
-			};
-			
-			var fClassification = fAppearance.addFolder('Classification');
-			
-			var pNeverClassified = fClassification.add(classificationParams, 'never classified');
-			pNeverClassified.onChange(function(value){
-				setClassificationVisibility(0, value);
-			});		
-			
-			var pUnclassified = fClassification.add(classificationParams, 'unclassified');
-			pUnclassified.onChange(function(value){
-				setClassificationVisibility(1, value);
-			});	
-			
-			var pGround = fClassification.add(classificationParams, 'ground');
-			pGround.onChange(function(value){
-				setClassificationVisibility(2, value);
-			});	
-			
-			var pLowVeg = fClassification.add(classificationParams, 'low vegetation');
-			pLowVeg.onChange(function(value){
-				setClassificationVisibility(3, value);
-			});	
-			
-			var pMedVeg = fClassification.add(classificationParams, 'medium vegetation');
-			pMedVeg.onChange(function(value){
-				setClassificationVisibility(4, value);
-			});	
-			
-			var pHighVeg = fClassification.add(classificationParams, 'high vegetation');
-			pHighVeg.onChange(function(value){
-				setClassificationVisibility(5, value);
-			});	
-			
-			var pBuilding = fClassification.add(classificationParams, 'building');
-			pBuilding.onChange(function(value){
-				setClassificationVisibility(6, value);
-			});	
-			
-			var pNoise = fClassification.add(classificationParams, 'low point(noise)');
-			pNoise.onChange(function(value){
-				setClassificationVisibility(7, value);
-			});	
-			
-			var pKeyPoint = fClassification.add(classificationParams, 'key-point');
-			pKeyPoint.onChange(function(value){
-				setClassificationVisibility(8, value);
-			});	
-			
-			var pWater = fClassification.add(classificationParams, 'water');
-			pWater.onChange(function(value){
-				setClassificationVisibility(9, value);
-			});	
-			
-			var pOverlap = fClassification.add(classificationParams, 'overlap');
-			pOverlap.onChange(function(value){
-				setClassificationVisibility(12, value);
-			});
-			
-			
-
-		}
-		
-		var pSykbox = fAppearance.add(params, 'skybox');
-		pSykbox.onChange(function(value){
-			showSkybox = value;
-		});
-		
-		var fSettings = gui.addFolder('Settings');
-		
-		var pClipMode = fSettings.add(params, 'Clip Mode', [ "No Clipping", "Clip Outside", "Highlight Inside"]);
-		pClipMode.onChange(function(value){
-			if(value === "No Clipping"){
-				scope.clipMode = Potree.ClipMode.DISABLED;
-			}else if(value === "Clip Outside"){
-				scope.clipMode = Potree.ClipMode.CLIP_OUTSIDE;
-			}else if(value === "Highlight Inside"){
-				scope.clipMode = Potree.ClipMode.HIGHLIGHT_INSIDE;
-			}
-		});
-		
-		var pDEMCollisions = fSettings.add(params, 'DEM Collisions');
-		pDEMCollisions.onChange(function(value){
-			scope.useDEMCollisions = value;
-		});
-		
-		var pMinNodeSize = fSettings.add(params, 'MinNodeSize', 0, 1500);
-		pMinNodeSize.onChange(function(value){
-			scope.minNodeSize = value;
-		});
-		
-		
-		
-		
-		var fDebug = gui.addFolder('Debug');
-
-		
-		var pStats = fDebug.add(params, 'stats');
-		pStats.onChange(function(value){
-			scope.showStats = value;
-		});
-		
-		var pShowDebugInfos = fDebug.add(params, "debugInfos");
-		pShowDebugInfos.onChange(function(value){
-			scope.showDebugInfos = value;
-			scope.infos.domElement.style.display = scope.showDebugInfos ? "block" : "none";
-		});
-		
-		var pBoundingBox = fDebug.add(params, 'BoundingBox');
-		pBoundingBox.onChange(function(value){
-			scope.showBoundingBox = value;
-		});
-		
-		var pFreeze = fDebug.add(params, 'freeze');
-		pFreeze.onChange(function(value){
-			scope.freeze = value;
-		});
-
-		// stats
-		stats = new Stats();
-		stats.domElement.style.position = 'absolute';
-		stats.domElement.style.top = '0px';
-		stats.domElement.style.margin = '5px';
-		document.body.appendChild( stats.domElement );
-	}*/
 	
 	this.createControls = function(){
 		{ // create FIRST PERSON CONTROLS

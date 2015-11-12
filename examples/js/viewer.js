@@ -77,42 +77,42 @@ Potree.Viewer = function(domElement, args){
 			return elLi;
 		};
 		
-		elToolbar.appendChild(createToolIcon(
-			"../resources/icons/earth_controls_1.png",
-			"Earth Controls",
-			function(){scope.useEarthControls()}
-		));
-		
-		
-		elToolbar.appendChild(createToolIcon(
-			"../resources/icons/fps_controls.png",
-			"Flight Controls",
-			function(){scope.useFPSControls()}
-		));
-		
-		elToolbar.appendChild(createToolIcon(
-			"../resources/icons/fps_controls.png",
-			"Geo Controls",
-			function(){scope.useGeoControls()}
-		));
-		
-		elToolbar.appendChild(createToolIcon(
-			"../resources/icons/orbit_controls.png",
-			"Orbit Controls",
-			function(){scope.useOrbitControls()}
-		));
-		
-		elToolbar.appendChild(createToolIcon(
-			"../resources/icons/focus.png",
-			"focus on pointcloud",
-			function(){scope.zoomTo(viewer.pointclouds)}
-		));
-		
-		elToolbar.appendChild(createToolIcon(
-			"../resources/icons/flip_y_z.png",
-			"flip y and z coordinates",
-			function(){scope.flipYZ()}
-		));
+		//elToolbar.appendChild(createToolIcon(
+		//	"../resources/icons/earth_controls_1.png",
+		//	"Earth Controls",
+		//	function(){scope.useEarthControls()}
+		//));
+		//
+		//
+		//elToolbar.appendChild(createToolIcon(
+		//	"../resources/icons/fps_controls.png",
+		//	"Flight Controls",
+		//	function(){scope.useFPSControls()}
+		//));
+		//
+		//elToolbar.appendChild(createToolIcon(
+		//	"../resources/icons/fps_controls.png",
+		//	"Geo Controls",
+		//	function(){scope.useGeoControls()}
+		//));
+		//
+		//elToolbar.appendChild(createToolIcon(
+		//	"../resources/icons/orbit_controls.png",
+		//	"Orbit Controls",
+		//	function(){scope.useOrbitControls()}
+		//));
+		//
+		//elToolbar.appendChild(createToolIcon(
+		//	"../resources/icons/focus.png",
+		//	"focus on pointcloud",
+		//	function(){scope.zoomTo(viewer.pointclouds)}
+		//));
+		//
+		//elToolbar.appendChild(createToolIcon(
+		//	"../resources/icons/flip_y_z.png",
+		//	"flip y and z coordinates",
+		//	function(){scope.flipYZ()}
+		//));
 		
 		elToolbar.appendChild(createToolIcon(
 			"../resources/icons/angle.png",
@@ -304,7 +304,7 @@ Potree.Viewer = function(domElement, args){
 	var skybox;
 	var stats;
 	var clock = new THREE.Clock();
-	var showSkybox = false;
+	this.showSkybox = false;
 	this.referenceFrame;
 
 	this.setPointSizeType = function(value){
@@ -395,30 +395,28 @@ Potree.Viewer = function(domElement, args){
 		for(var i = 0; i < options.length; i++){
 			var option = options[i];
 			
-			var elDiv = document.createElement("div");
+			//var elDiv = document.createElement("div");
 			var elLabel = document.createElement("label");
 			var elRadio = document.createElement("input");
-			var elText = document.createTextNode(option);
+			var elText = document.createTextNode(" " + option);
 			
-			elDiv.classList.add("radio");
+			//elDiv.classList.add("radio");
 			
 			elRadio.type = "radio";
 			elRadio.name = "optMaterial";
 			
 			elRadio.onchange = (function(matName){
 				return function(event){
-					console.log(event);
-					console.log(matName);
 					viewer.setMaterial(matName);
 				};
 				
 			})(option);
 			
-			elDiv.appendChild(elLabel);
+			//elDiv.appendChild(elLabel);
 			elLabel.appendChild(elRadio);
 			elLabel.appendChild(elText);
 			
-			elMaterialList.appendChild(elDiv);
+			elMaterialList.appendChild(elLabel);
 			
 		}
 		
@@ -1329,7 +1327,7 @@ Potree.Viewer = function(domElement, args){
 			
 
 			// render skybox
-			if(showSkybox){
+			if(scope.showSkybox){
 				scope.camera.rotation.copy(scope.camera.rotation);
 				scope.renderer.render(skybox.scene, skybox.camera);
 			}else{
@@ -1451,7 +1449,7 @@ Potree.Viewer = function(domElement, args){
 			
 			
 			scope.renderer.clear();
-			if(showSkybox){
+			if(scope.showSkybox){
 				skybox.camera.rotation.copy(scope.camera.rotation);
 				scope.renderer.render(skybox.scene, skybox.camera);
 			}else{
@@ -1605,7 +1603,7 @@ Potree.Viewer = function(domElement, args){
 			resize();
 			
 			scope.renderer.clear();
-			if(showSkybox){
+			if(scope.showSkybox){
 				scope.camera.rotation.copy(scope.camera.rotation);
 				scope.renderer.render(skybox.scene, skybox.camera);
 			}else{

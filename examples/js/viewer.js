@@ -6,202 +6,6 @@ Potree.Viewer = function(domElement, args){
 	
 	this.renderArea = domElement;
 	
-	
-	
-	
-	
-	// create bootstrap toolbar
-	if(true){
-		var elToolbar = document.getElementById("toolbar");
-	
-		var createToolIcon = function(icon, title, callback){
-			var elLi = document.createElement("li");
-			var elA = document.createElement("a");
-			var elImg = document.createElement("img");
-			elImg.src = icon;
-			elImg.title = title;
-			elImg.onclick = callback;
-			
-			elLi.appendChild(elA);
-			elA.appendChild(elImg);
-			
-			return elLi;
-		};
-		
-		//elToolbar.appendChild(createToolIcon(
-		//	"../resources/icons/earth_controls_1.png",
-		//	"Earth Controls",
-		//	function(){scope.useEarthControls()}
-		//));
-		//
-		//
-		//elToolbar.appendChild(createToolIcon(
-		//	"../resources/icons/fps_controls.png",
-		//	"Flight Controls",
-		//	function(){scope.useFPSControls()}
-		//));
-		//
-		//elToolbar.appendChild(createToolIcon(
-		//	"../resources/icons/fps_controls.png",
-		//	"Geo Controls",
-		//	function(){scope.useGeoControls()}
-		//));
-		//
-		//elToolbar.appendChild(createToolIcon(
-		//	"../resources/icons/orbit_controls.png",
-		//	"Orbit Controls",
-		//	function(){scope.useOrbitControls()}
-		//));
-		//
-		//elToolbar.appendChild(createToolIcon(
-		//	"../resources/icons/focus.png",
-		//	"focus on pointcloud",
-		//	function(){scope.zoomTo(viewer.pointclouds)}
-		//));
-		//
-		//elToolbar.appendChild(createToolIcon(
-		//	"../resources/icons/flip_y_z.png",
-		//	"flip y and z coordinates",
-		//	function(){scope.flipYZ()}
-		//));
-		
-		elToolbar.appendChild(createToolIcon(
-			"../resources/icons/angle.png",
-			"angle measurements",
-			function(){scope.measuringTool.startInsertion({showDistances: false, showAngles: true, showArea: false, closed: true, maxMarkers: 3})}
-		));
-		
-		elToolbar.appendChild(createToolIcon(
-			"../resources/icons/distance.png",
-			"distance measurements",
-			function(){scope.measuringTool.startInsertion({showDistances: true, showArea: false, closed: false})}
-		));
-		
-		elToolbar.appendChild(createToolIcon(
-			"../resources/icons/area.png",
-			"area measurements",
-			function(){scope.measuringTool.startInsertion({showDistances: true, showArea: true, closed: true})}
-		));
-		
-		elToolbar.appendChild(createToolIcon(
-			"../resources/icons/volume.png",
-			"volume measurements",
-			function(){scope.volumeTool.startInsertion()}
-		));
-		
-		elToolbar.appendChild(createToolIcon(
-			"../resources/icons/profile.png",
-			"height profiles",
-			function(){scope.profileTool.startInsertion()}
-		));
-		
-		elToolbar.appendChild(createToolIcon(
-			"../resources/icons/clip_volume.png",
-			"clipping volumes",
-			function(){scope.volumeTool.startInsertion({clip: true})}
-		));
-	}
-	
-	if(false){ // create toolbar
-		var elToolbar = document.createElement("div");
-		elToolbar.style.position = "absolute";
-		elToolbar.style.width = "400px";
-		elToolbar.style.bottom = "10px";
-		elToolbar.style.right = "10px";
-		this.renderArea.appendChild(elToolbar);
-		
-		var createToolIcon = function(icon, title, callback){
-			var tool = document.createElement("img");
-			tool.src = icon;
-			tool.title = title;
-			tool.onclick = callback;
-			
-			return tool;
-		};
-		
-		elToolbar.appendChild(createToolIcon(
-			"../resources/icons/earth_controls_1.png",
-			"Earth Controls",
-			function(){scope.useEarthControls()}
-		));
-		
-		elToolbar.appendChild(createToolIcon(
-			"../resources/icons/fps_controls.png",
-			"Flight Controls",
-			function(){scope.useFPSControls()}
-		));
-		
-		elToolbar.appendChild(createToolIcon(
-			"../resources/icons/fps_controls.png",
-			"Geo Controls",
-			function(){scope.useGeoControls()}
-		));
-		
-		elToolbar.appendChild(createToolIcon(
-			"../resources/icons/orbit_controls.png",
-			"Orbit Controls",
-			function(){scope.useOrbitControls()}
-		));
-		
-		elToolbar.appendChild(createToolIcon(
-			"../resources/icons/focus.png",
-			"focus on pointcloud",
-			function(){scope.zoomTo(viewer.pointclouds)}
-		));
-		
-		elToolbar.appendChild(createToolIcon(
-			"../resources/icons/flip_y_z.png",
-			"flip y and z coordinates",
-			function(){scope.flipYZ()}
-		));
-		
-		elToolbar.appendChild(createToolIcon(
-			"../resources/icons/angle.png",
-			"angle measurements",
-			function(){scope.measuringTool.startInsertion({showDistances: false, showAngles: true, showArea: false, closed: true, maxMarkers: 3})}
-		));
-		
-		elToolbar.appendChild(createToolIcon(
-			"../resources/icons/distance.png",
-			"distance measurements",
-			function(){scope.measuringTool.startInsertion({showDistances: true, showArea: false, closed: false})}
-		));
-		
-		elToolbar.appendChild(createToolIcon(
-			"../resources/icons/area.png",
-			"area measurements",
-			function(){scope.measuringTool.startInsertion({showDistances: true, showArea: true, closed: true})}
-		));
-		
-		elToolbar.appendChild(createToolIcon(
-			"../resources/icons/volume.png",
-			"volume measurements",
-			function(){scope.volumeTool.startInsertion()}
-		));
-		
-		elToolbar.appendChild(createToolIcon(
-			"../resources/icons/profile.png",
-			"height profiles",
-			function(){scope.profileTool.startInsertion()}
-		));
-		
-		elToolbar.appendChild(createToolIcon(
-			"../resources/icons/clip_volume.png",
-			"clipping volumes",
-			function(){scope.volumeTool.startInsertion({clip: true})}
-		));
-		
-		
-	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
 
 	//if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
 	//	defaultSettings.navigation = "Orbit";
@@ -258,6 +62,26 @@ Potree.Viewer = function(domElement, args){
 	this.showSkybox = false;
 	this.referenceFrame;
 	
+	this.setNavigationMode = function(value){
+		if(value === "Orbit"){
+			this.useOrbitControls();
+		}else if(value === "Flight"){
+			this.useFPSControls();
+		}else if(value === "Earth"){
+			this.useEarthControls();
+		}
+		
+		document.getElementById("optNavigation_" + value).checked = true;
+	};
+	
+	this.setShowToolbar = function(value){
+		document.getElementById("toolbar").style.display = value ? "initial" : "none";
+	};
+	
+	this.setShowNavbar = function(value){
+		document.getElementById("navbar").style.display = value ? "initial" : "none";
+	};
+	
 	this.setShowBoundingBox = function(value){
 		this.showBoundingBox = value;
 		
@@ -284,6 +108,8 @@ Potree.Viewer = function(domElement, args){
 	
 	this.setPointBudget = function(value){
 		Potree.pointBudget = value;
+		
+		document.getElementById("lblPointBudget").innerHTML = (value / (1*1000*1000)).toFixed(2) + "m";
 	};
 	
 	this.setClipMode = function(clipMode){
@@ -420,16 +246,278 @@ Potree.Viewer = function(domElement, args){
 		
 		scope.orbitControls.target.copy(bs.center);
 	};
+	
+	this.showAbout = function(){
+		$(function() {
+			$( "#about-panel" ).dialog();
+		});
+	};
+	
+	
+	
+	this.getBoundingBox = function(pointclouds){
+		var box = new THREE.Box3();
+		
+		for(var i = 0; i < pointclouds.length; i++){
+			var pointcloud = pointclouds[i];
+			
+			var boxWorld = pointcloud.boundingBox.clone().applyMatrix4(pointcloud.matrixWorld);
+			box.union(boxWorld);
+		}
+		
+		return box;
+	};
+	
+	this.fitToScreen = function(){
+		var box = this.getBoundingBox(scope.pointclouds);
+		
+		var node = new THREE.Object3D();
+		node.boundingBox = box;
+		
+		//scope.camera.zoomTo(node, 1);
+		scope.zoomTo(node, 1);
+	};
+	
+	this.setTopView = function(){
+		var box = this.getBoundingBox(scope.pointclouds);
+		
+		var node = new THREE.Object3D();
+		node.boundingBox = box;
+		
+		scope.camera.position.set(0, 1, 0);
+		scope.camera.rotation.set(-Math.PI / 2, 0, 0);
+		scope.camera.zoomTo(node, 1);
+	};
+	
+	this.setFrontView = function(){
+		var box = this.getBoundingBox(scope.pointclouds);
+		
+		var node = new THREE.Object3D();
+		node.boundingBox = box;
+		
+		scope.camera.position.set(0, 0, 1);
+		scope.camera.rotation.set(0, 0, 0);
+		scope.camera.zoomTo(node, 1);
+	};
+	
+	this.setLeftView = function(){
+		var box = this.getBoundingBox(scope.pointclouds);
+		
+		var node = new THREE.Object3D();
+		node.boundingBox = box;
+		
+		scope.camera.position.set(-1, 0, 0);
+		scope.camera.rotation.set(0, -Math.PI / 2, 0);
+		scope.camera.zoomTo(node, 1);
+	};
+	
+	this.setRightView = function(){
+		var box = this.getBoundingBox(scope.pointclouds);
+		
+		var node = new THREE.Object3D();
+		node.boundingBox = box;
+		
+		scope.camera.position.set(1, 0, 0);
+		scope.camera.rotation.set(0, Math.PI / 2, 0);
+		scope.camera.zoomTo(node, 1);
+	};
+	
+	
 
 	
 	this.initGUI = function(){
 	
 		stats = new Stats();
-		//stats.domElement.style.position = 'absolute';
-		//stats.domElement.style.top = '0px';
-		//stats.domElement.style.margin = '5px';
 		document.getElementById("overlays").appendChild(stats.domElement);
-		//document.body.appendChild( stats.domElement );
+		
+		
+		
+		// create bootstrap toolbar
+		if(true){
+			var elToolbar = document.getElementById("toolbar");
+			var elNavigationbar = document.getElementById("navigationbar");
+		
+			var createToolIcon = function(icon, title, callback){
+				var elLi = document.createElement("li");
+				var elA = document.createElement("a");
+				var elImg = document.createElement("img");
+				elImg.src = icon;
+				elImg.title = title;
+				elImg.onclick = callback;
+				
+				elLi.appendChild(elA);
+				elA.appendChild(elImg);
+				
+				return elLi;
+			};
+			
+			elNavigationbar.appendChild(createToolIcon(
+				"../resources/icons/earth_controls_1.png",
+				"Earth Controls",
+				function(){scope.useEarthControls()}
+			));
+			
+			
+			elNavigationbar.appendChild(createToolIcon(
+				"../resources/icons/fps_controls.png",
+				"Flight Controls",
+				function(){scope.useFPSControls()}
+			));
+			
+			//elNavigationbar.appendChild(createToolIcon(
+			//	"../resources/icons/fps_controls.png",
+			//	"Geo Controls",
+			//	function(){scope.useGeoControls()}
+			//));
+			
+			elNavigationbar.appendChild(createToolIcon(
+				"../resources/icons/orbit_controls.png",
+				"Orbit Controls",
+				function(){scope.useOrbitControls()}
+			));
+			
+			elNavigationbar.appendChild(createToolIcon(
+				"../resources/icons/focus.png",
+				"focus on pointcloud",
+				function(){scope.fitToScreen()}
+			));
+			//
+			//elToolbar.appendChild(createToolIcon(
+			//	"../resources/icons/flip_y_z.png",
+			//	"flip y and z coordinates",
+			//	function(){scope.flipYZ()}
+			//));
+			
+			elToolbar.appendChild(createToolIcon(
+				"../resources/icons/angle.png",
+				"angle measurements",
+				function(){scope.measuringTool.startInsertion({showDistances: false, showAngles: true, showArea: false, closed: true, maxMarkers: 3})}
+			));
+			
+			elToolbar.appendChild(createToolIcon(
+				"../resources/icons/distance.png",
+				"distance measurements",
+				function(){scope.measuringTool.startInsertion({showDistances: true, showArea: false, closed: false})}
+			));
+			
+			elToolbar.appendChild(createToolIcon(
+				"../resources/icons/area.png",
+				"area measurements",
+				function(){scope.measuringTool.startInsertion({showDistances: true, showArea: true, closed: true})}
+			));
+			
+			elToolbar.appendChild(createToolIcon(
+				"../resources/icons/volume.png",
+				"volume measurements",
+				function(){scope.volumeTool.startInsertion()}
+			));
+			
+			elToolbar.appendChild(createToolIcon(
+				"../resources/icons/profile.png",
+				"height profiles",
+				function(){scope.profileTool.startInsertion()}
+			));
+			
+			elToolbar.appendChild(createToolIcon(
+				"../resources/icons/clip_volume.png",
+				"clipping volumes",
+				function(){scope.volumeTool.startInsertion({clip: true})}
+			));
+		}
+		
+		if(false){ // create toolbar
+			var elToolbar = document.createElement("div");
+			elToolbar.style.position = "absolute";
+			elToolbar.style.width = "400px";
+			elToolbar.style.bottom = "10px";
+			elToolbar.style.right = "10px";
+			this.renderArea.appendChild(elToolbar);
+			
+			var createToolIcon = function(icon, title, callback){
+				var tool = document.createElement("img");
+				tool.src = icon;
+				tool.title = title;
+				tool.onclick = callback;
+				
+				return tool;
+			};
+			
+			elToolbar.appendChild(createToolIcon(
+				"../resources/icons/earth_controls_1.png",
+				"Earth Controls",
+				function(){scope.useEarthControls()}
+			));
+			
+			elToolbar.appendChild(createToolIcon(
+				"../resources/icons/fps_controls.png",
+				"Flight Controls",
+				function(){scope.useFPSControls()}
+			));
+			
+			elToolbar.appendChild(createToolIcon(
+				"../resources/icons/fps_controls.png",
+				"Geo Controls",
+				function(){scope.useGeoControls()}
+			));
+			
+			elToolbar.appendChild(createToolIcon(
+				"../resources/icons/orbit_controls.png",
+				"Orbit Controls",
+				function(){scope.useOrbitControls()}
+			));
+			
+			elToolbar.appendChild(createToolIcon(
+				"../resources/icons/focus.png",
+				"focus on pointcloud",
+				function(){scope.zoomTo(viewer.pointclouds)}
+			));
+			
+			elToolbar.appendChild(createToolIcon(
+				"../resources/icons/flip_y_z.png",
+				"flip y and z coordinates",
+				function(){scope.flipYZ()}
+			));
+			
+			elToolbar.appendChild(createToolIcon(
+				"../resources/icons/angle.png",
+				"angle measurements",
+				function(){scope.measuringTool.startInsertion({showDistances: false, showAngles: true, showArea: false, closed: true, maxMarkers: 3})}
+			));
+			
+			elToolbar.appendChild(createToolIcon(
+				"../resources/icons/distance.png",
+				"distance measurements",
+				function(){scope.measuringTool.startInsertion({showDistances: true, showArea: false, closed: false})}
+			));
+			
+			elToolbar.appendChild(createToolIcon(
+				"../resources/icons/area.png",
+				"area measurements",
+				function(){scope.measuringTool.startInsertion({showDistances: true, showArea: true, closed: true})}
+			));
+			
+			elToolbar.appendChild(createToolIcon(
+				"../resources/icons/volume.png",
+				"volume measurements",
+				function(){scope.volumeTool.startInsertion()}
+			));
+			
+			elToolbar.appendChild(createToolIcon(
+				"../resources/icons/profile.png",
+				"height profiles",
+				function(){scope.profileTool.startInsertion()}
+			));
+			
+			elToolbar.appendChild(createToolIcon(
+				"../resources/icons/clip_volume.png",
+				"clipping volumes",
+				function(){scope.volumeTool.startInsertion({clip: true})}
+			));
+			
+			
+		}
+	
+	
 		
 		
 		
@@ -603,6 +691,13 @@ Potree.Viewer = function(domElement, args){
 			}
 		});
 	
+		$( "#sldPointBudget" ).slider({
+			value: 1,
+			min: 0.1,
+			max: 5,
+			step: 0.01,
+			slide: function( event, ui ) {viewer.setPointBudget(ui.value * 1*1000*1000);}
+		});
 	
 		$( "#sldPointSize" ).slider({
 			value: 1,
@@ -658,6 +753,7 @@ Potree.Viewer = function(domElement, args){
 		scope.setShowDebugInfos(false);
 		scope.setShowStats(false);
 		scope.setFreeze(false);
+		scope.setNavigationMode("Orbit");
 	
 	};
 	

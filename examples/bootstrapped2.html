@@ -57,6 +57,14 @@
 		display: block;   
 	}
 	*/
+	
+	
+	/*!
+ * Start Bootstrap - Simple Sidebar HTML Template (http://startbootstrap.com)
+ * Code licensed under the Apache License v2.0.
+ * For details, see http://www.apache.org/licenses/LICENSE-2.0.
+ */
+
 
 	</style>
 	
@@ -114,28 +122,23 @@
 	<div class="navbar-xs" id="navbar">
 	<div class="navbar-primary">
 	<nav class="navbar navbar-inverse navbar-fixed-top">
-		<div class="navbar-collapse collapse">
+		<div class="navbar-header">
 		  <!--
 		  <a class="navbar-brand" href="http://potree.org" target="_blank" title="Potree">
-			  Potree.org
+			  Potree.org<!--<img id="main-logo" src="../resources/icons/distance.png" alt="Potree" />-->
 		  </a>
 		  -->
 		 
 		  
 		  
-		   <ul class="nav navbar-nav navbar-left">
-			<li></li>  
+		   <ul class="nav navbar-nav">
+		  <li></li>  
 		   
 			<li class="dropdown">
               <a href="#" class="dropdown-toggle" role="button" aria-haspopup="true" aria-expanded="false">
 				Appearance 
 			  </a>
-              <ul class="dropdown-menu multi-level" role="menu" aria-labelledby="dLabel" style="width: 250px"> 
-				<li tabIndex="-1"><a href="#" class="small" data-value="option3" tabIndex="-1">
-					Point Budget: <span id="lblPointBudget"></span> 
-					<div id="sldPointBudget"></div>
-				</a></li>
-				
+              <ul class="dropdown-menu multi-level" role="menu" aria-labelledby="dLabel"> 
 				<li tabIndex="-1"><a href="#" class="small" data-value="option3" tabIndex="-1">
 					Point Size: <span id="lblPointSize"></span> 
 					<div id="sldPointSize"></div>
@@ -226,21 +229,21 @@
 				
                 <li class="dropdown-header">Navigation Mode</li>
 				
-				<li><label><input type="radio" id="optNavigation_Orbit" name="optNavigation" onClick="viewer.setNavigationMode(this.value);" value="Orbit" /> Orbit</label></li>
-				<li><label><input type="radio" id="optNavigation_Flight" name="optNavigation" onClick="viewer.setNavigationMode(this.value);" value="Flight" /> Free-Flight</label></li>
-				<li><label><input type="radio" id="optNavigation_Earth" name="optNavigation" onClick="viewer.setNavigationMode(this.value);" value="Earth" /> Earth</label></li>
+				<li><label><input type="radio" name="optNavigation" onClick="toggleNavigation(this);" value="Squares" /> Orbit</label></li>
+				<li><label><input type="radio" name="optNavigation" onClick="toggleNavigation(this);" value="Circles" /> Free-Flight</label></li>
+				<li><label><input type="radio" name="optNavigation" onClick="toggleNavigation(this);" value="Interpolation" /> Earth</label></li>
 				
 				<li role="separator" class="divider"></li>
                 <li class="dropdown-header">Views</li>
 				
-				<li><a href="#" onclick="viewer.fitToScreen()">Fit-To-Screen</a></li>
-				<li><a href="#" onclick="viewer.setFrontView()" >Front</a></li>
-				<li><a href="#" onclick="viewer.setTopView()" >Top</a></li>
-				<li><a href="#" onclick="viewer.setRightView()" >Right</a></li>
-				<li><a href="#" onclick="viewer.setLeftView()" >Left</a></li>
+				<li><a href="#">Fit-To-Screen</a></li>
+				<li><a href="#">Front</a></li>
+				<li><a href="#">Top</a></li>
+				<li><a href="#">Right</a></li>
+				<li><a href="#">Left</a></li>
 				
 				<li role="separator" class="divider"></li>
-				<li><a href="#" onclick="viewer.flipYZ();">Swap YZ coordinates</a></li>
+				<li><a href="#">Swap YZ coordinates</a></li>
 				
               </ul>
             </li>
@@ -277,62 +280,108 @@
 				Help 
 			  </a>
               <ul class="dropdown-menu">
-				<li><a href="https://github.com/potree/potree/blob/master/docs/documentation.md" target="_blank" class="small" data-value="option3" tabIndex="-1">Documentation</a></li>
-				<li><a href="#" class="small" data-toggle="modal" data-target="#myModal">About</a></li>
+				<li><a href="#" class="small" data-value="option3" tabIndex="-1">Documentation</a></li>
+				<li><a href="#" class="small" data-value="option3" tabIndex="-1">About</a></li>
               </ul>
             </li>
 			
+			<!--
+			<li>
+			<div class="btn-group">
+			  <button class="btn btn-default btn-xs dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+				Point Budget <span class="caret"></span>
+			  </button>
+			  <ul class="dropdown-menu">
+				<li><a href="#">0.5</a></li>
+				<li><a href="#">1  </a></li>
+				<li><a href="#">2  </a></li>
+				<li><a href="#">3  </a></li>
+				<li><a href="#">4  </a></li>
+				<li><a href="#">5  </a></li>
+				<li><a href="#">10 </a></li>
+			  </ul>
+			</div>
+			</li>
+			-->
+			
+			
           </ul>
-		  
-			<ul class="nav navbar-nav navbar-right" ><li></li></ul>
-			<ul class="nav navbar-nav navbar-right" id="toolbar"></ul>
-			<ul class="nav navbar-nav navbar-right" id="navigationbar"></ul>
 		</div>
+		
+		
+		 <div id="navbar" class="collapse navbar-collapse">
+          <ul class="nav navbar-nav" id="toolbar">
+          </ul>
+        </div>
+	
+	  
+	  
     </nav>
 	</div>
 	</div>
 	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<div id="wrapper" style="position: absolute">
+	
+		<a href="#menu-toggle" class="btn btn-default" id="menu-toggle" style="
+		width: 200px; float:left
+		">
+		Toggle Menu</a>
 
-<!-- Modal -->
-<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="myModalLabel">About Potree</h4>
-      </div>
-      <div class="modal-body">
-		Version: 1.3<br>
-		<br>
-		Author: Markus Sch&uuml;tz<br>
-		mschuetz@potree.org<br>
-		<br>
-		Developed at the <a href="https://www.cg.tuwien.ac.at/" target="_blank">Vienna University of Technology, 
-		Institute of Computer Graphics and Algorithms</a>
-		<br>
-		<br>
-		Homepage: <a href="http://potree.org" target="_blank">http://potree.org</a><br>
-		Github: <a href="https://github.com/potree/potree" target="_blank">https://github.com/potree/potree</a><br>
+        <!-- Sidebar -->
+        <div id="sidebar-wrapper" style="
+		width: 200px; 
+		height: 100%;
+		z-index: 1000; 
+		background-color: #aaaaaa;
+		overflow: hidden
+		">
+            <ul class="sidebar-nav">
+                <li class="sidebar-brand">
+                    <a href="#">
+                        Start Bootstrap
+                    </a>
+                </li>
+                <li>
+                    <a href="#">Dashboard</a>
+                </li>
+                <li>
+                    <a href="#">Shortcuts</a>
+                </li>
+                <li>
+                    <a href="#">Overview</a>
+                </li>
+                <li>
+                    <a href="#">Events</a>
+                </li>
+                <li>
+                    <a href="#">About</a>
+                </li>
+                <li>
+                    <a href="#">Services</a>
+                </li>
+                <li>
+                    <a href="#">Contact</a>
+                </li>
+            </ul>
+        </div>
+        <!-- /#sidebar-wrapper -->
 		
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-      </div>
-    </div>
-  </div>
-</div>
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	<div id="renderArea" style="position: absolute; width: 100%; height: 100%; overflow: hidden;">
+		
 
+    </div>
+	
+	
+	<div id="renderArea" style="width: 100%; height: 100%; overflow: hidden;">
 		<div id="overlays" style="position: absolute; left: 10px; top: 45px;">
 		</div>
 	
@@ -341,6 +390,17 @@
 		</div>
 		
 	</div>
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	
 	
@@ -376,8 +436,8 @@
 			
 			// set up things when the first point cloud has been loaded
 			if(viewer.pointclouds.length === 1){
-				viewer.flipYZ();
-				viewer.setNavigationMode("Orbit");
+				//viewer.flipYZ();
+				viewer.useOrbitControls();
 				//viewer.useEarthControls();
 				viewer.zoomTo(event.pointcloud, 1);
 			
@@ -398,22 +458,22 @@
 		viewer.setPointSizing("Fixed");
 		viewer.setQuality("Squares");
 		viewer.setPointBudget(1*1000*1000);
-		viewer.setShowNavbar(true);
-		viewer.setShowToolbar(true);
+		viewer.setShowNavbar(false);
+		viewer.setShowToolbar(false);
 		
-		viewer.addPointCloud("http://localhost/temp/layers/1/cloud.js", function(pointcloud){
-			console.log("point cloud 1 loaded");
-		});
-		viewer.addPointCloud("http://localhost/temp/layers/2/cloud.js", function(pointcloud){
-			console.log("point cloud 2 loaded");
-		});
+		//viewer.addPointCloud("http://localhost/temp/layers/1/cloud.js", function(pointcloud){
+		//	console.log("point cloud 1 loaded");
+		//});
+		//viewer.addPointCloud("http://localhost/temp/layers/2/cloud.js", function(pointcloud){
+		//	console.log("point cloud 2 loaded");
+		//});
 		
-		//viewer.addPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/archpro/heidentor/cloud.js");
+		viewer.addPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/archpro/heidentor/cloud.js");
 		
 		
 	</script>
 	
-	
+
 
 
 	<script>
@@ -437,6 +497,14 @@
 	}
 	
 	
+	$( "#menu-toggle" ).click(function(e) {
+		e.preventDefault();
+		$( "#sidebar-wrapper" ).toggle( "slide" );
+	});
+	
+	$("#sidebar-wrapper").resizable({
+		alsoResize: "#menu-toggle"
+	});
 	
 	</script>
 	

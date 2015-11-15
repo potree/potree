@@ -62,6 +62,29 @@ Potree.Viewer = function(domElement, args){
 	this.showSkybox = false;
 	this.referenceFrame;
 	
+	this.toLocal = (function(viewer){
+		return function(position){
+			var scenePos = position.clone().applyMatrix4(viewer.referenceFrame.matrixWorld);
+			
+			return scenePos;
+		}
+	})(this);
+	
+	
+	this.toGeo = (function(viewer){
+		return function(position){
+			var inverse = new THREE.Matrix4().getInverse(viewer.referenceFrame.matrixWorld);
+			var geoPos = position.clone().applyMatrix4(inverse);
+
+			return geoPos;
+		}
+	})(this);
+	
+	
+	this.setDescription = function(value){
+		document.getElementById("description").innerHTML = value;
+	};
+	
 	this.setNavigationMode = function(value){
 		if(value === "Orbit"){
 			this.useOrbitControls();
@@ -395,6 +418,12 @@ Potree.Viewer = function(domElement, args){
 			));
 			
 			elToolbar.appendChild(createToolIcon(
+				"../resources/icons/point.png",
+				"angle measurements",
+				function(){scope.measuringTool.startInsertion({showDistances: false, showAngles: false, showCoordinates: true, showArea: false, closed: true, maxMarkers: 1})}
+			));
+			
+			elToolbar.appendChild(createToolIcon(
 				"../resources/icons/distance.png",
 				"distance measurements",
 				function(){scope.measuringTool.startInsertion({showDistances: true, showArea: false, closed: false})}
@@ -482,6 +511,12 @@ Potree.Viewer = function(domElement, args){
 				"../resources/icons/angle.png",
 				"angle measurements",
 				function(){scope.measuringTool.startInsertion({showDistances: false, showAngles: true, showArea: false, closed: true, maxMarkers: 3})}
+			));
+			
+			elToolbar.appendChild(createToolIcon(
+				"../resources/icons/angle.png",
+				"coordinate measurements",
+				function(){scope.measuringTool.startInsertion({showDistances: false, showAngles: true, showArea: false, closed: true, maxMarkers: 1})}
 			));
 			
 			elToolbar.appendChild(createToolIcon(
@@ -1013,6 +1048,36 @@ Potree.Viewer = function(domElement, args){
 		scope.profileTool = new Potree.ProfileTool(scope.scenePointCloud, scope.camera, scope.renderer);
 		scope.transformationTool = new Potree.TransformationTool(scope.scenePointCloud, scope.camera, scope.renderer);
 		scope.volumeTool = new Potree.VolumeTool(scope.scenePointCloud, scope.camera, scope.renderer, scope.transformationTool);
+		
+		scope.profileTool.addEventListener("profile_added", function(profileEvent){
+			var profileButton = document.createElement("input");
+			profileButton.type = "button";
+			profileButton.style.width = "100%";
+			profileButton.value = "profile " + scope.profileTool.profiles.length;
+			
+			profileButton.onclick = function(clickEvent){
+				scope.profileTool.draw(
+					profileEvent.profile, 
+					$("#profile_draw_container")[0], 
+					scope.toGeo);
+				profileEvent.profile.addEventListener("marker_moved", function(){
+					scope.profileTool.draw(
+					profileEvent.profile, 
+					$("#profile_draw_container")[0], 
+					scope.toGeo);
+				});
+				profileEvent.profile.addEventListener("width_changed", function(){
+					scope.profileTool.draw(
+					profileEvent.profile, 
+					$("#profile_draw_container")[0], 
+					scope.toGeo);
+				});
+			};
+			
+			
+		
+			$("#profile_selection")[0].appendChild(profileButton);
+		});
 		
 		
 		// background
@@ -1801,8 +1866,6 @@ Potree.Viewer = function(domElement, args){
 };
 
 Potree.Viewer.prototype = Object.create( THREE.EventDispatcher.prototype );
-
-
 
 
 

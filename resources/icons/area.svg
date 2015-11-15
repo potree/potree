@@ -14,7 +14,10 @@
    id="svg3797"
    version="1.1"
    inkscape:version="0.48.5 r10040"
-   sodipodi:docname="area.svg">
+   sodipodi:docname="area.svg"
+   inkscape:export-filename="D:\dev\workspaces\potree\develop\resources\icons\area.png"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90">
   <defs
      id="defs3799" />
   <sodipodi:namedview
@@ -26,16 +29,16 @@
      inkscape:pageshadow="2"
      inkscape:zoom="22.395604"
      inkscape:cx="9.4591229"
-     inkscape:cy="15.712251"
+     inkscape:cy="15.332712"
      inkscape:current-layer="layer1"
      showgrid="true"
      inkscape:grid-bbox="true"
      inkscape:document-units="px"
-     inkscape:window-width="1920"
-     inkscape:window-height="1138"
-     inkscape:window-x="-8"
-     inkscape:window-y="-8"
-     inkscape:window-maximized="1">
+     inkscape:window-width="944"
+     inkscape:window-height="1002"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="0">
     <inkscape:grid
        type="xygrid"
        id="grid3805" />
@@ -48,7 +51,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>

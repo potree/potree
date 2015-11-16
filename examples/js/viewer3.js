@@ -82,7 +82,6 @@ Potree.Viewer = function(domElement, args){
 	
 	
 	this.setDescription = function(value){
-		document.getElementById("description").innerHTML = value;
 	};
 	
 	this.setNavigationMode = function(value){
@@ -94,95 +93,68 @@ Potree.Viewer = function(domElement, args){
 			this.useEarthControls();
 		}
 		
-		document.getElementById("optNavigation_" + value).checked = true;
 	};
 	
 	this.setShowToolbar = function(value){
-		document.getElementById("toolbar").style.display = value ? "initial" : "none";
 	};
 	
 	this.setShowNavbar = function(value){
-		document.getElementById("navbar").style.display = value ? "initial" : "none";
 	};
 	
 	this.setShowBoundingBox = function(value){
 		this.showBoundingBox = value;
 		
-		document.getElementById("chkShowBoundingBox").checked = value;
 	};
 	
 	this.setShowDebugInfos = function(value){
 		this.showDebugInfos = value;
 		this.infos.domElement.style.display = this.showDebugInfos ? "block" : "none";
-		document.getElementById("chkShowDebugInfos").checked = value;
 	};
 	
 	this.setShowStats = function(value){
 		this.showStats = value;
 		
-		document.getElementById("chkShowStats").checked = value;
 	};
 	
 	this.setFreeze = function(value){
 		this.freeze = value;
 		
-		document.getElementById("chkFreeze").checked = value;
 	};
 	
 	this.setPointBudget = function(value){
 		Potree.pointBudget = value;
 		
-		document.getElementById("lblPointBudget").innerHTML = (value / (1*1000*1000)).toFixed(2) + "m";
 	};
 	
 	this.setClipMode = function(clipMode){
 		this.clipMode = clipMode;
-		
-		if(clipMode === Potree.ClipMode.DISABLED){
-			document.getElementById("optClipMode_NoClipping").checked = true;
-		}else if(clipMode === Potree.ClipMode.CLIP_OUTSIDE){
-			document.getElementById("optClipMode_ClipOutside").checked = true;
-		}else if(clipMode === Potree.ClipMode.HIGHLIGHT_INSIDE){
-			document.getElementById("optClipMode_HighlightInside").checked = true;
-		}
 	};
 	
 	this.setEDLEnabled = function(value){
 		scope.useEDL = value;
 		
-		document.getElementById("chkEDLEnabled").checked = value;
 	};
 	
 	this.setEDLRadius = function(value){
 		scope.edlRadius = value;
 		
-		document.getElementById("lblEDLRadius").innerHTML = value.toFixed(2);
-		$( "#sldEDLRadius" ).slider("option", "value", value);
 	};
 	
 	this.setEDLStrength = function(value){
 		scope.edlScale = value;
 		
-		document.getElementById("lblEDLStrength").innerHTML = value.toFixed(2);
-		$( "#sldEDLStrength" ).slider("option", "value", value);
 	};
 	
 	this.setPointSize = function(value){
 		scope.pointSize = value;
-		document.getElementById("lblPointSize").innerHTML = value.toFixed(2);
-		$( "#sldPointSize" ).slider("option", "value", value);
 	};
 	
 	this.setFOV = function(value){
 		scope.fov = value;
-		document.getElementById("lblFOV").innerHTML = parseInt(value);
-		$( "#sldFOV" ).slider("option", "value", value);
 	};
 	
 	this.setOpacity = function(value){
 		scope.opacity = value;
-		document.getElementById("lblOpacity").innerHTML = value.toFixed(2);
-		$( "#sldOpacity" ).slider("option", "value", value);
 	};
 
 	this.setPointSizing = function(value){
@@ -195,7 +167,6 @@ Potree.Viewer = function(domElement, args){
 			scope.pointSizeType = Potree.PointSizeType.ADAPTIVE;
 		}
 		
-		document.getElementById("optPointSizing_" + value).checked = true;
 	};
 
 	this.setQuality = function(value){
@@ -207,7 +178,6 @@ Potree.Viewer = function(domElement, args){
 			scope.quality = value;
 		}
 		
-		document.getElementById("optQuality_" + value).checked = true;
 	};
 	
 	this.setClassificationVisibility = function(key, value){
@@ -219,7 +189,6 @@ Potree.Viewer = function(domElement, args){
 			pointcloud.material.classification = newClass;
 		}
 		
-		document.getElementById("chkClassification_" + key).checked = value;
 	};
 
 	this.setMaterial = function(value){
@@ -250,7 +219,6 @@ Potree.Viewer = function(domElement, args){
 			scope.pointColorType = Potree.PointColorType.PHONG;
 		}
 		
-		document.getElementById("optMaterial_" + value).checked = true;
 	};
 	
 	this.zoomTo = function(node, factor){
@@ -351,65 +319,45 @@ Potree.Viewer = function(domElement, args){
 	this.initGUI = function(){
 	
 		stats = new Stats();
-		document.getElementById("overlays").appendChild(stats.domElement);
 		
 		
-		
-		// create bootstrap toolbar
 		if(true){
-			var elToolbar = document.getElementById("toolbar");
-			var elNavigationbar = document.getElementById("navigationbar");
+			var elToolbar = document.getElementById("tools");
+			var elNavigation = document.getElementById("navigation");
 		
 			var createToolIcon = function(icon, title, callback){
-				var elLi = document.createElement("li");
-				var elA = document.createElement("a");
 				var elImg = document.createElement("img");
 				elImg.src = icon;
 				elImg.title = title;
 				elImg.onclick = callback;
 				
-				//elLi.appendChild(elA);
-				elLi.appendChild(elImg);
-				
-				return elLi;
+				return elImg;
 			};
 			
-			elNavigationbar.appendChild(createToolIcon(
+			elNavigation.appendChild(createToolIcon(
 				"../resources/icons/earth_controls_1.png",
 				"Earth Controls",
 				function(){scope.useEarthControls()}
 			));
 			
 			
-			elNavigationbar.appendChild(createToolIcon(
+			elNavigation.appendChild(createToolIcon(
 				"../resources/icons/fps_controls.png",
 				"Flight Controls",
 				function(){scope.useFPSControls()}
 			));
 			
-			//elNavigationbar.appendChild(createToolIcon(
-			//	"../resources/icons/fps_controls.png",
-			//	"Geo Controls",
-			//	function(){scope.useGeoControls()}
-			//));
-			
-			elNavigationbar.appendChild(createToolIcon(
+			elNavigation.appendChild(createToolIcon(
 				"../resources/icons/orbit_controls.png",
 				"Orbit Controls",
 				function(){scope.useOrbitControls()}
 			));
 			
-			elNavigationbar.appendChild(createToolIcon(
+			elNavigation.appendChild(createToolIcon(
 				"../resources/icons/focus.png",
 				"focus on pointcloud",
 				function(){scope.fitToScreen()}
 			));
-			//
-			//elToolbar.appendChild(createToolIcon(
-			//	"../resources/icons/flip_y_z.png",
-			//	"flip y and z coordinates",
-			//	function(){scope.flipYZ()}
-			//));
 			
 			elToolbar.appendChild(createToolIcon(
 				"../resources/icons/angle.png",
@@ -454,104 +402,50 @@ Potree.Viewer = function(domElement, args){
 			));
 		}
 		
-		if(false){ // create toolbar
-			var elToolbar = document.createElement("div");
-			elToolbar.style.position = "absolute";
-			elToolbar.style.width = "400px";
-			elToolbar.style.bottom = "10px";
-			elToolbar.style.right = "10px";
-			this.renderArea.appendChild(elToolbar);
+		{ // Materials
+			var options = [ 
+				"RGB", 
+				"Color", 
+				"Elevation", 
+				"Intensity", 
+				"Intensity Gradient", 
+				"Classification", 
+				"Return Number", 
+				"Source", 
+				"Phong",
+				"Tree Depth"	
+			];
 			
-			var createToolIcon = function(icon, title, callback){
-				var tool = document.createElement("img");
-				tool.src = icon;
-				tool.title = title;
-				tool.onclick = callback;
+			var elMaterialList = document.getElementById("materialList");
+			for(var i = 0; i < options.length; i++){
+				var option = options[i];
 				
-				return tool;
-			};
-			
-			elToolbar.appendChild(createToolIcon(
-				"../resources/icons/earth_controls_1.png",
-				"Earth Controls",
-				function(){scope.useEarthControls()}
-			));
-			
-			elToolbar.appendChild(createToolIcon(
-				"../resources/icons/fps_controls.png",
-				"Flight Controls",
-				function(){scope.useFPSControls()}
-			));
-			
-			elToolbar.appendChild(createToolIcon(
-				"../resources/icons/fps_controls.png",
-				"Geo Controls",
-				function(){scope.useGeoControls()}
-			));
-			
-			elToolbar.appendChild(createToolIcon(
-				"../resources/icons/orbit_controls.png",
-				"Orbit Controls",
-				function(){scope.useOrbitControls()}
-			));
-			
-			elToolbar.appendChild(createToolIcon(
-				"../resources/icons/focus.png",
-				"focus on pointcloud",
-				function(){scope.zoomTo(viewer.pointclouds)}
-			));
-			
-			elToolbar.appendChild(createToolIcon(
-				"../resources/icons/flip_y_z.png",
-				"flip y and z coordinates",
-				function(){scope.flipYZ()}
-			));
-			
-			elToolbar.appendChild(createToolIcon(
-				"../resources/icons/angle.png",
-				"angle measurements",
-				function(){scope.measuringTool.startInsertion({showDistances: false, showAngles: true, showArea: false, closed: true, maxMarkers: 3})}
-			));
-			
-			elToolbar.appendChild(createToolIcon(
-				"../resources/icons/angle.png",
-				"coordinate measurements",
-				function(){scope.measuringTool.startInsertion({showDistances: false, showAngles: true, showArea: false, closed: true, maxMarkers: 1})}
-			));
-			
-			elToolbar.appendChild(createToolIcon(
-				"../resources/icons/distance.png",
-				"distance measurements",
-				function(){scope.measuringTool.startInsertion({showDistances: true, showArea: false, closed: false})}
-			));
-			
-			elToolbar.appendChild(createToolIcon(
-				"../resources/icons/area.png",
-				"area measurements",
-				function(){scope.measuringTool.startInsertion({showDistances: true, showArea: true, closed: true})}
-			));
-			
-			elToolbar.appendChild(createToolIcon(
-				"../resources/icons/volume.png",
-				"volume measurements",
-				function(){scope.volumeTool.startInsertion()}
-			));
-			
-			elToolbar.appendChild(createToolIcon(
-				"../resources/icons/profile.png",
-				"height profiles",
-				function(){scope.profileTool.startInsertion()}
-			));
-			
-			elToolbar.appendChild(createToolIcon(
-				"../resources/icons/clip_volume.png",
-				"clipping volumes",
-				function(){scope.volumeTool.startInsertion({clip: true})}
-			));
-			
-			
+				var elDiv = document.createElement("div");
+				var elLabel = document.createElement("label");
+				var elRadio = document.createElement("input");
+				var elText = document.createTextNode(" " + option);
+				
+				elRadio.type = "radio";
+				elRadio.name = "optMaterial";
+				elRadio.id = "optMaterial_" + option;
+				elRadio.checked = this.material === option;
+				elLabel.style.whiteSpace = "nowrap";
+				
+				elRadio.onchange = (function(matName){
+					return function(event){
+						viewer.setMaterial(matName);
+					};
+					
+				})(option);
+				
+				elLabel.appendChild(elRadio);
+				elLabel.appendChild(elText);
+				elDiv.appendChild(elLabel);
+				
+				elMaterialList.appendChild(elDiv);
+				
+			}
 		}
-	
 	
 		
 		
@@ -632,99 +526,8 @@ Potree.Viewer = function(domElement, args){
 			scope.showBoundingBox = element.checked;
 		}
 		
-		{ // Materials
-			var options = [ 
-				"RGB", 
-				"Color", 
-				"Elevation", 
-				"Intensity", 
-				"Intensity Gradient", 
-				"Classification", 
-				"Return Number", 
-				"Source", 
-				"Phong",
-				"Tree Depth"	
-			];
-			
-			var elMaterialList = document.getElementById("materialList");
-			for(var i = 0; i < options.length; i++){
-				var option = options[i];
-				
-				var elLabel = document.createElement("label");
-				var elRadio = document.createElement("input");
-				var elText = document.createTextNode(" " + option);
-				
-				elRadio.type = "radio";
-				elRadio.name = "optMaterial";
-				elRadio.id = "optMaterial_" + option;
-				elRadio.checked = this.material === option;
-				elLabel.style.whiteSpace = "nowrap";
-				
-				elRadio.onchange = (function(matName){
-					return function(event){
-						viewer.setMaterial(matName);
-					};
-					
-				})(option);
-				
-				elLabel.appendChild(elRadio);
-				elLabel.appendChild(elText);
-				
-				elMaterialList.appendChild(elLabel);
-				
-			}
-		}
 		
 		
-		{ // Classifications
-			
-			var addClassificationItem = function(code, name){
-				//<li><label><input type="checkbox" onClick="toggleStats(this)"/>&nbsp;Stats</label></li>
-				var elClassificationList = document.getElementById("classificationList");
-				
-				var elLi = document.createElement("li");
-				var elLabel = document.createElement("label");
-				var elInput = document.createElement("input");
-				var elText = document.createTextNode(" " + name);
-				
-				elInput.id = "chkClassification_" + code;
-				elInput.type = "checkbox";
-				elInput.checked = true;
-				elInput.onclick = function(event){
-					console.log(code + "; " + event.target.checked);
-					scope.setClassificationVisibility(code, event.target.checked);
-				}
-				
-				elLabel.style.whiteSpace = "nowrap";
-				
-				elClassificationList.appendChild(elLi);
-				elLi.appendChild(elLabel);
-				elLabel.appendChild(elInput);
-				elLabel.appendChild(elText);
-			};
-			
-			addClassificationItem(0, "never classified");
-			addClassificationItem(1, "unclassified");
-			addClassificationItem(2, "ground");
-			addClassificationItem(3, "low vegetation");
-			addClassificationItem(4, "medium vegetation");
-			addClassificationItem(5, "high vegetation");
-			addClassificationItem(6, "building");
-			addClassificationItem(7, "low point(noise)");
-			addClassificationItem(8, "key-point");
-			addClassificationItem(9, "water");
-			addClassificationItem(12, "overlap");
-		}
-		
-		$( "#minNodeSize" ).slider({
-			value: 100,
-			min: 0,
-			max: 1500,
-			step: 1,
-			slide: function( event, ui ) {
-				viewer.minNodeSize = ui.value;
-			}
-		});
 	
 		$( "#sldPointBudget" ).slider({
 			value: 1,
@@ -758,22 +561,7 @@ Potree.Viewer = function(domElement, args){
 			slide: function( event, ui ) {viewer.setOpacity(ui.value);}
 		});
 		
-		$( "#sldEDLRadius" ).slider({
-			value: 1,
-			min: 1,
-			max: 5,
-			step: 0.01,
-			slide: function( event, ui ) {viewer.setEDLRadius(ui.value);}
-		});
-		
-		$( "#sldEDLStrength" ).slider({
-			value: 1,
-			min: 0,
-			max: 3,
-			step: 0.01,
-			slide: function( event, ui ) {viewer.setEDLStrength(ui.value);}
-		});
-		
+
 		
 		
 		scope.setPointSize(1);

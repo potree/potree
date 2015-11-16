@@ -9,14 +9,20 @@
 	<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
 	
 	<style>
-	
 	.navbar-primary .navbar .nav > li > a:hover {background-color: #000000;}
 	.navbar-primary .navbar .nav.pull-right {margin-left: 10px; margin-right: 0;}
-	.navbar-xs .navbar-primary .navbar { min-height:34px; height: 34px; }
+	.navbar-xs .navbar-primary .navbar { position: relative; margin: 0px; min-height:34px; height: 34px; }
 	.navbar-xs .navbar-primary .navbar .navbar-brand{ padding: 3px 12px;font-size: 16px;line-height: 28px; }
-	.navbar-xs .navbar-primary .navbar .navbar-nav > li > a {  padding-top: 0px; padding-bottom: 0px; line-height: 34px; height: 34px;}
-	.navbar-xs .navbar-primary .navbar .navbar-nav > li > a > img {  padding-top: 2px; padding-bottom: 2px;}
+	.navbar-xs .navbar-primary .navbar .navbar-nav > li > a {  padding: 2 5; line-height: 34px; height: 34px;}
+	.navbar-xs .navbar-primary .navbar .navbar-nav > li > a > img {  width: 50px; height: 50px; padding: 0; position: relative; z-index: 100}
+	.navbar-xs .navbar-primary .navbar .navbar-nav > li > img {  width: 32px; height: 32px; padding: 0; position: relative; z-index: 100}
+	li.dropdown.open > ul {  z-index: 1; padding-top: 15px;}
 	.nav > li > a{ padding: 10px 6px; }
+	
+	.navbar{
+		border-radius: 0px;
+		margin: 0;
+	}
 	
 	.navbar-xs .navbar-primary .navbar .navbar-nav > li > div {  padding-top: 0px; padding-bottom: 0px; line-height: 34px; height: 34px;}
 	.nav > li > div{ margin: 10px; padding: 10px 6px; }
@@ -33,6 +39,7 @@
 		-moz-user-select: none;
 		-ms-user-select: none;
 		user-select: none;
+		min-width: 200px;
 	}
 	
 	li.dropdown.open > ul > li > label {
@@ -51,20 +58,6 @@
 		bottom: 4px;
 		border: 1px solid gray;
 	}	
-	
-	/*
-	ul.nav li:hover > ul.dropdown-menu {
-		display: block;   
-	}
-	*/
-	
-	
-	/*!
- * Start Bootstrap - Simple Sidebar HTML Template (http://startbootstrap.com)
- * Code licensed under the Apache License v2.0.
- * For details, see http://www.apache.org/licenses/LICENSE-2.0.
- */
-
 
 	</style>
 	
@@ -77,6 +70,7 @@
 	<script src="../libs/other/dat.gui.min.js"></script>
 	<script src="../libs/other/BinaryHeap.js"></script>
 	<script src="../libs/tween/tween.min.js"></script>
+	<script src="../libs/d3/d3.js"></script>
 	
 	<script src="../build/js/potree.js"></script>
 	<script src="./js/viewer.js"></script>
@@ -119,26 +113,35 @@
 	
 	
 	
-	<div class="navbar-xs" id="navbar">
+	
+	
+	
+	<div style="height: 100%;">
+	<div class="navbar-xs" id="navbar" style="z-index: 10000">
 	<div class="navbar-primary">
-	<nav class="navbar navbar-inverse navbar-fixed-top">
-		<div class="navbar-header">
+	<nav class="navbar navbar-primary navbar-inverse">
+		<div class="navbar-collapse collapse">
 		  <!--
 		  <a class="navbar-brand" href="http://potree.org" target="_blank" title="Potree">
-			  Potree.org<!--<img id="main-logo" src="../resources/icons/distance.png" alt="Potree" />-->
+			  Potree.org
 		  </a>
 		  -->
 		 
 		  
 		  
-		   <ul class="nav navbar-nav">
-		  <li></li>  
+		   <ul class="nav navbar-nav navbar-left">
+			<li></li>  
 		   
 			<li class="dropdown">
               <a href="#" class="dropdown-toggle" role="button" aria-haspopup="true" aria-expanded="false">
-				Appearance 
+				Appearance
 			  </a>
-              <ul class="dropdown-menu multi-level" role="menu" aria-labelledby="dLabel"> 
+              <ul class="dropdown-menu multi-level" role="menu" aria-labelledby="dLabel" style="width: 250px"> 
+				<li data-toggle="tooltip" data-placement="right" title="Maximum number of points that will be rendered."><a href="#" class="small" data-value="option3" tabIndex="-1">
+					Point Budget: <span id="lblPointBudget"></span> 
+					<div id="sldPointBudget"></div>
+				</a></li>
+				
 				<li tabIndex="-1"><a href="#" class="small" data-value="option3" tabIndex="-1">
 					Point Size: <span id="lblPointSize"></span> 
 					<div id="sldPointSize"></div>
@@ -161,26 +164,26 @@
 				<li role="separator" class="divider"></li>
                 <li class="dropdown-header">Point Sizing</li>
 				
-				<li><label><input type="radio" id="optPointSizing_Fixed" name="optPointSizing" onClick="viewer.setPointSizing(this.value);" value="Fixed" /> Fixed</label></li>
-				<li><label><input type="radio" id="optPointSizing_Attenuated" name="optPointSizing" onClick="viewer.setPointSizing(this.value);" value="Attenuated" /> Attenuated</label></li>
-				<li><label><input type="radio" id="optPointSizing_Adaptive" name="optPointSizing" onClick="viewer.setPointSizing(this.value);" value="Adaptive" /> Adaptive</label></li>
+				<li data-toggle="tooltip" data-placement="right" title="Point Size = pixel size. Same pixel size for all points"><label><input type="radio" id="optPointSizing_Fixed" name="optPointSizing" onClick="viewer.setPointSizing(this.value);" value="Fixed" /> Fixed</label></li>
+				<li data-toggle="tooltip" data-placement="right" title="Point Size = scene units, e.g. meters. Distant points become smaller."><label><input type="radio" id="optPointSizing_Attenuated" name="optPointSizing" onClick="viewer.setPointSizing(this.value);" value="Attenuated" /> Attenuated</label></li>
+				<li data-toggle="tooltip" data-placement="right" title="Point Size = factor. Points are automatically resized according to level of detail. Works best with a point size of 1 or smaller."><label><input type="radio" id="optPointSizing_Adaptive" name="optPointSizing" onClick="viewer.setPointSizing(this.value);" value="Adaptive" /> Adaptive</label></li>
 				
 				
 				
 				<li role="separator" class="divider"></li>
                 <li class="dropdown-header">Quality</li>
 				
-				<li><label><input type="radio" id="optQuality_Squares" name="optQuality" onClick="viewer.setQuality(this.value);" value="Squares" /> Squares</label></li>
-				<li><label><input type="radio" id="optQuality_Circles" name="optQuality" onClick="viewer.setQuality(this.value);" value="Circles" /> Circles</label></li>
-				<li><label><input type="radio" id="optQuality_Interpolation" name="optQuality" onClick="viewer.setQuality(this.value);" value="Interpolation" /> Interpolation</label></li>
-				<li><label><input type="radio" id="optQuality_Splats" name="optQuality" onClick="viewer.setQuality(this.value);" value="Splats" /> HQ-Splats</label></li>
+				<li data-toggle="tooltip" data-placement="right" title="Render each point as a square. Very fast."><label><input type="radio" id="optQuality_Squares" name="optQuality" onClick="viewer.setQuality(this.value);" value="Squares" /> Squares</label></li>
+				<li data-toggle="tooltip" data-placement="right" title="Render each point as a circle. Very fast."><label><input type="radio" id="optQuality_Circles" name="optQuality" onClick="viewer.setQuality(this.value);" value="Circles" /> Circles</label></li>
+				<li data-toggle="tooltip" data-placement="right" title="Nearest-neighbour-like interpolation between overlapping points. Better quality but slower. Only works if EDL is disabled, at the moment."><label><input type="radio" id="optQuality_Interpolation" name="optQuality" onClick="viewer.setQuality(this.value);" value="Interpolation" /> Interpolation</label></li>
+				<li data-toggle="tooltip" data-placement="right" title="Highest Quality but slowest. Only works if EDL is disabled, at the moment."><label><input type="radio" id="optQuality_Splats" name="optQuality" onClick="viewer.setQuality(this.value);" value="Splats" /> HQ-Splats</label></li>
 				
 				
 				
 				<li role="separator" class="divider"></li>
                 <li class="dropdown-header">Eye-Dome-Lighting</li>
 				
-				<li><label><input type="checkbox" id="chkEDLEnabled" onClick="viewer.setEDLEnabled(this.checked)"/>&nbsp;enable</label></li>
+				<li data-toggle="tooltip" data-placement="right" title="Illumination for point clouds without normals. Must be disabled if you want to use interpolation or HQ-Splat modes."><label><input type="checkbox" id="chkEDLEnabled" onClick="viewer.setEDLEnabled(this.checked)"/>&nbsp;enable</label></li>
 				<li><a href="#" class="small" data-value="option3" tabIndex="-1">
 					radius <span id="lblEDLRadius"></span>
 					<div id="sldEDLRadius"></div>
@@ -198,7 +201,7 @@
 			
 			<li class="dropdown">
               <a href="#" class="dropdown-toggle" role="button" aria-haspopup="true" aria-expanded="false">
-				Materials 
+				Materials
 			  </a>
               <ul class="dropdown-menu multi-level" role="menu" aria-labelledby="dLabel"> 
 				<li id="materialList">
@@ -209,7 +212,7 @@
 			
 			<li class="dropdown">
               <a href="#" class="dropdown-toggle" role="button" aria-haspopup="true" aria-expanded="false">
-				Classifications 
+				Classifications
 			  </a>
               <ul  id="classificationList" class="dropdown-menu" role="menu" aria-labelledby="dLabel"> 
 				<li id="classificationList">
@@ -223,27 +226,27 @@
 			
 			<li class="dropdown">
               <a href="#" class="dropdown-toggle" role="button" aria-haspopup="true" aria-expanded="false">
-				Navigation 
+				Navigation
 			  </a>
               <ul class="dropdown-menu multi-level" role="menu" aria-labelledby="dLabel"> 
 				
                 <li class="dropdown-header">Navigation Mode</li>
 				
-				<li><label><input type="radio" name="optNavigation" onClick="toggleNavigation(this);" value="Squares" /> Orbit</label></li>
-				<li><label><input type="radio" name="optNavigation" onClick="toggleNavigation(this);" value="Circles" /> Free-Flight</label></li>
-				<li><label><input type="radio" name="optNavigation" onClick="toggleNavigation(this);" value="Interpolation" /> Earth</label></li>
+				<li data-toggle="tooltip" data-placement="right" title="Rotate around pivot point. Double click to set new pivot and zoom towards it."><label><input type="radio" id="optNavigation_Orbit" name="optNavigation" onClick="viewer.setNavigationMode(this.value);" value="Orbit" /> Orbit</label></li>
+				<li data-toggle="tooltip" data-placement="right" title="Fly through scene using W,A,S,D and left mouse button"><label><input type="radio" id="optNavigation_Flight" name="optNavigation" onClick="viewer.setNavigationMode(this.value);" value="Flight" /> Free-Flight</label></li>
+				<li data-toggle="tooltip" data-placement="right" title="Drag through scene with left button and rotate with right button."><label><input type="radio" id="optNavigation_Earth" name="optNavigation" onClick="viewer.setNavigationMode(this.value);" value="Earth" /> Earth</label></li>
 				
 				<li role="separator" class="divider"></li>
                 <li class="dropdown-header">Views</li>
 				
-				<li><a href="#">Fit-To-Screen</a></li>
-				<li><a href="#">Front</a></li>
-				<li><a href="#">Top</a></li>
-				<li><a href="#">Right</a></li>
-				<li><a href="#">Left</a></li>
+				<li><a href="#" onclick="viewer.fitToScreen()">Fit-To-Screen</a></li>
+				<li><a href="#" onclick="viewer.setFrontView()" >Front</a></li>
+				<li><a href="#" onclick="viewer.setTopView()" >Top</a></li>
+				<li><a href="#" onclick="viewer.setRightView()" >Right</a></li>
+				<li><a href="#" onclick="viewer.setLeftView()" >Left</a></li>
 				
 				<li role="separator" class="divider"></li>
-				<li><a href="#">Swap YZ coordinates</a></li>
+				<li><a href="#" onclick="viewer.flipYZ();">Swap YZ coordinates</a></li>
 				
               </ul>
             </li>
@@ -255,16 +258,16 @@
 				Settings 
 			  </a>
               <ul class="dropdown-menu" >
-				<li><a href="#" class="small" data-value="option3" tabIndex="-1">
+				<li data-toggle="tooltip" data-placement="right" title="Nodes with smaller size on screen will not be rendered. Increase to improve performance."> <a href="#" class="small" data-value="option3" tabIndex="-1">
 					Min Node Size<div id="minNodeSize"></div>
 				</a></li>
 				
 				<li role="separator" class="divider"></li>
 				<li class="dropdown-header">Clip Mode</li>
 				
-				<li><label><input type="radio" id="optClipMode_NoClipping" 		name="optClipMode" onClick="viewer.setClipMode(Potree.ClipMode.DISABLED);"  /> No Clipping</label></li>
-				<li><label><input type="radio" id="optClipMode_ClipOutside" 	name="optClipMode" onClick="viewer.setClipMode(Potree.ClipMode.CLIP_OUTSIDE);"  /> Clip Outside</label></li>
-				<li><label><input type="radio" id="optClipMode_HighlightInside" name="optClipMode" onClick="viewer.setClipMode(Potree.ClipMode.HIGHLIGHT_INSIDE);"  /> Highlight Inside</label></li>
+				<li data-toggle="tooltip" data-placement="right" title="No clipping of points outside height profile or clip volumes."><label><input type="radio" id="optClipMode_NoClipping" 		name="optClipMode" onClick="viewer.setClipMode(Potree.ClipMode.DISABLED);"  /> No Clipping</label></li>
+				<li data-toggle="tooltip" data-placement="right" title="Only render points inside height profile or clip volume."><label><input type="radio" id="optClipMode_ClipOutside" 	name="optClipMode" onClick="viewer.setClipMode(Potree.ClipMode.CLIP_OUTSIDE);"  /> Clip Outside</label></li>
+				<li data-toggle="tooltip" data-placement="right" title="Highlight points inside height profile or clip volume and render remaining points normally."><label><input type="radio" id="optClipMode_HighlightInside" name="optClipMode" onClick="viewer.setClipMode(Potree.ClipMode.HIGHLIGHT_INSIDE);"  /> Highlight Inside</label></li>
 				
 				<li role="separator" class="divider"></li>
                 <li class="dropdown-header">Debug</li>
@@ -280,115 +283,67 @@
 				Help 
 			  </a>
               <ul class="dropdown-menu">
-				<li><a href="#" class="small" data-value="option3" tabIndex="-1">Documentation</a></li>
-				<li><a href="#" class="small" data-value="option3" tabIndex="-1">About</a></li>
+				<li><a href="https://github.com/potree/potree/blob/master/docs/documentation.md" target="_blank" class="small" data-value="option3" tabIndex="-1">Documentation</a></li>
+				<li><a href="#" class="small" data-toggle="modal" data-target="#myModal">About</a></li>
               </ul>
             </li>
 			
-			<!--
-			<li>
-			<div class="btn-group">
-			  <button class="btn btn-default btn-xs dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-				Point Budget <span class="caret"></span>
-			  </button>
-			  <ul class="dropdown-menu">
-				<li><a href="#">0.5</a></li>
-				<li><a href="#">1  </a></li>
-				<li><a href="#">2  </a></li>
-				<li><a href="#">3  </a></li>
-				<li><a href="#">4  </a></li>
-				<li><a href="#">5  </a></li>
-				<li><a href="#">10 </a></li>
-			  </ul>
-			</div>
-			</li>
-			-->
-			
+			<li class="dropdown">
+              <a href="#" class="dropdown-toggle" role="button" aria-haspopup="true" aria-expanded="false" onclick="toggleProfileWindow();">
+				Height Profile Window
+			  </a>
+            </li>
 			
           </ul>
+		  
+			<ul class="nav navbar-nav navbar-right" ><li></li></ul>
+			<ul class="nav navbar-nav navbar-right" id="toolbar"></ul>
+			<ul class="nav navbar-nav navbar-right" id="navigationbar"></ul>
 		</div>
-		
-		
-		 <div id="navbar" class="collapse navbar-collapse">
-          <ul class="nav navbar-nav" id="toolbar">
-          </ul>
-        </div>
-	
-	  
-	  
     </nav>
 	</div>
 	</div>
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	<div id="wrapper" style="position: absolute">
-	
-		<a href="#menu-toggle" class="btn btn-default" id="menu-toggle" style="
-		width: 200px; float:left
-		">
-		Toggle Menu</a>
+	<div id="renderArea" style="position: absolute; top: 34px; right: 0; left: 0; bottom: 0; overflow: hidden;">
 
-        <!-- Sidebar -->
-        <div id="sidebar-wrapper" style="
-		width: 200px; 
-		height: 100%;
-		z-index: 1000; 
-		background-color: #aaaaaa;
-		overflow: hidden
-		">
-            <ul class="sidebar-nav">
-                <li class="sidebar-brand">
-                    <a href="#">
-                        Start Bootstrap
-                    </a>
-                </li>
-                <li>
-                    <a href="#">Dashboard</a>
-                </li>
-                <li>
-                    <a href="#">Shortcuts</a>
-                </li>
-                <li>
-                    <a href="#">Overview</a>
-                </li>
-                <li>
-                    <a href="#">Events</a>
-                </li>
-                <li>
-                    <a href="#">About</a>
-                </li>
-                <li>
-                    <a href="#">Services</a>
-                </li>
-                <li>
-                    <a href="#">Contact</a>
-                </li>
-            </ul>
-        </div>
-        <!-- /#sidebar-wrapper -->
-		
-		
-
-    </div>
-	
-	
-	<div id="renderArea" style="width: 100%; height: 100%; overflow: hidden;">
 		<div id="overlays" style="position: absolute; left: 10px; top: 45px;">
 		</div>
 	
 		<!-- HEADING -->
-		<div class="info" style="position: absolute; left: 300px; right: 300px; top: 10px; text-align: center;">
+		<div id="description" class="info" style="position: absolute; top: 10px; left: 50%; transform: translateX(-50%); text-align: center"></div>
+	</div>
+	
+	</div>
+
+	
+
+	<!-- About Dialog -->
+	<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+	  <div class="modal-dialog" role="document">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			<h4 class="modal-title" id="myModalLabel">About Potree</h4>
+		  </div>
+		  <div class="modal-body">
+			Version: 1.3<br>
+			<br>
+			Author: Markus Sch&uuml;tz<br>
+			mschuetz@potree.org<br>
+			<br>
+			Developed at the <a href="https://www.cg.tuwien.ac.at/" target="_blank">Vienna University of Technology, 
+			Institute of Computer Graphics and Algorithms</a>
+			<br>
+			<br>
+			Homepage: <a href="http://potree.org" target="_blank">http://potree.org</a><br>
+			Github: <a href="https://github.com/potree/potree" target="_blank">https://github.com/potree/potree</a><br>
+			
+		  </div>
+		  <div class="modal-footer">
+			<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+		  </div>
 		</div>
-		
+	  </div>
 	</div>
 	
 	
@@ -396,28 +351,126 @@
 	
 	
 	
+	<!--
+	<style>
+	
+	.pw_root{
+		width: 400px;
+		height: 200px;
+		border:	2px solid black;
+	}
+	
+	.pw_titlebar{
+		position: absolute;
+		height: 30px;
+		background-color: blue;
+		left: 0px;
+		right: 0px;
+	}
+	
+	.pw_content{
+		position: absolute;
+		top: 30px;
+		left: 0px;
+		right: 0px;
+		bottom: 0px;
+	}
+	
+	</style>
+	
+	<div id="profile_panel" class="pw_root" style="position: absolute; width: 400px">
+		<div id="profile_panel_titlebar" class="pw_titlebar">
+            <div id="profile_panel_minimizeButton" class="ui-icon ui-icon-circle-minus"></div>
+            <div id="profile_panel_info"></div>
+        </div>
+		<div style="display: flex; flex-direction: row" class="pw_content">
+			<span style="width: 200px; height: 100%; background-color: red">
+			asd
+			</span>
+			
+			<span style="height: 100%; background-color: green; flex-grow: 1">
+			asd
+			</span>
+		</div>
+	</div>
+	
+	-->
 	
 	
-	
-	
-	
-	
-	
-	
-	
-	
+	<div id="profile" style="display: none; position: absolute; top: 100; left: 10; width: 600px; height: 300px; background-color: #222; border: 1px solid black">
+		
+		<div id="profile_titlebar" style="display: flex; background-color: #111; color: #9d9d9d; position: absolute; height: 30px; width: 100%;">
+		<span style="flex-grow: 1; flex-direction: row">Height Profiles</span>
+		<span>close</span>
+		</div>
+		
+		<div style="position: absolute; top: 30px; width: 100%; height: calc(100% - 30px);" class="pw_content">
+			
+			<span style="height: 100%; width: 100%; background-color: #222; padding: 5px; display:flex; flex-direction: column">
+				<div style=" width: 100%; background-color: #222; color: #9d9d9d">
+				
 
+				
+
+				<table style="color: #9d9d9d">
+					<tr>
+						<td style="padding: 1 5; white-space: nowrap">Select Profile</td>
+						<td style="width: 100%">
+							<!--<span id="profile_button_container" style="whitespace: nowrap"></span>-->
+							<div id="profile_button_container" class="btn-group btn-group-xs" role="group" aria-label="...">
+							</div>
+							</td>
+					</tr>
+					<tr>
+						<td style="padding: 1 5; white-space: nowrap">Points in profile</td>
+						<td><span id="profile_num_points">-</span></td>
+					</tr>
+					<tr>
+						<td style="vertical-align: top; padding: 1 5; white-space: nowrap">Markers</td>
+						<td><span id="profile_markers">-</span></td>
+					</tr>
+				</table>
+				<br>
+				</div>
+				
+				<div id="profile_draw_container" style="
+					width: 100%; 
+					background-color: #222; 
+					flex-grow: 1; 
+					position: relative; height: 100%">
+					<div style="
+						position: absolute; 
+						left: 41; 
+						top: 0; 
+						bottom: 20; 
+						width: calc(100% - 41px); 
+						height: calc(100% - 20px); 
+						background-color: #000000;
+						"></div>
+					<svg id="profileSVG" style="
+						fill: #9d9d9d;
+						position: absolute; 
+						left: 0; right: 0; 
+						top: 0; bottom: 0; 
+						width: 100%; 
+						height: 100%;
+						/*background-color: #222;*/
+						"></svg>
+					<canvas id="profileCanvas" style="
+						position: absolute; 
+						left: 41; 
+						top: 0; 
+						bottom: 20; 
+						width: calc(100% - 41px); 
+						height: calc(100% - 20px); 
+						/*background-color: #000000;*/
+						"></canvas>
+					
+				</div>
+			</span>
+		</div>
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+	</div>
 	
 	
 	
@@ -437,7 +490,7 @@
 			// set up things when the first point cloud has been loaded
 			if(viewer.pointclouds.length === 1){
 				//viewer.flipYZ();
-				viewer.useOrbitControls();
+				viewer.setNavigationMode("Orbit");
 				//viewer.useEarthControls();
 				viewer.zoomTo(event.pointcloud, 1);
 			
@@ -458,8 +511,9 @@
 		viewer.setPointSizing("Fixed");
 		viewer.setQuality("Squares");
 		viewer.setPointBudget(1*1000*1000);
-		viewer.setShowNavbar(false);
-		viewer.setShowToolbar(false);
+		viewer.setShowNavbar(true);
+		viewer.setShowToolbar(true);
+		viewer.setDescription("New User Interface Prototype<br>Feedback to mschuetz@potree.org");
 		
 		//viewer.addPointCloud("http://localhost/temp/layers/1/cloud.js", function(pointcloud){
 		//	console.log("point cloud 1 loaded");
@@ -468,15 +522,18 @@
 		//	console.log("point cloud 2 loaded");
 		//});
 		
-		viewer.addPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/archpro/heidentor/cloud.js");
+		//viewer.addPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/archpro/heidentor/cloud.js");
+		viewer.addPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/opentopography/CA13/cloud.js");
 		
 		
 	</script>
-	
-
 
 
 	<script>
+	
+	function toggleProfileWindow(){
+		$("#profile").fadeToggle(300);
+	}
 	
 	{
 		// http://stackoverflow.com/questions/25089297/twitter-bootstrap-avoid-dropdown-menu-close-on-click-inside/25196101#25196101
@@ -486,7 +543,7 @@
 			$(this).parent().toggleClass('open');
 		});
 
-		$('body').on('click', function (e) {
+		$('body').on('mousedown', function (e) {
 			if (!$('li.dropdown').is(e.target) 
 				&& $('li.dropdown').has(e.target).length === 0 
 				&& $('.open').has(e.target).length === 0
@@ -494,17 +551,40 @@
 				$('li.dropdown').removeClass('open');
 			}
 		});
+		
+		$('li.dropdown > a').on('mouseover', function (event) {
+			$('.open').removeClass("open");
+			$(this).parent().addClass('open');
+		});
+		
+		
+		
+		//$('li.dropdown > ul').on('mouseleave', function (event) {
+		//	$(this).parent().removeClass('open');
+		//});
+		
+//		#navbar > div > nav > div > ul.nav.navbar-nav.navbar-left > li:nth-child(5)
 	}
 	
-	
-	$( "#menu-toggle" ).click(function(e) {
-		e.preventDefault();
-		$( "#sidebar-wrapper" ).toggle( "slide" );
+	$(document).ready(function(){
+		$('[data-toggle="tooltip"]').tooltip({
+			viewport: {selector: 'body', padding: 2},
+			container: 'body'
+		}); 
 	});
 	
-	$("#sidebar-wrapper").resizable({
-		alsoResize: "#menu-toggle"
-	});
+	$("#profile").draggable({
+        handle: "#profile_titlebar",
+        containment: 'window',
+        scroll: false
+    }).draggable({ scroll: false });  
+	
+	$("#profile").resizable({
+        minHeight: 15,
+        stop: function(event, ui) {
+            
+        }
+    })
 	
 	</script>
 	

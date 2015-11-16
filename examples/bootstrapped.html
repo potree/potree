@@ -13,8 +13,10 @@
 	.navbar-primary .navbar .nav.pull-right {margin-left: 10px; margin-right: 0;}
 	.navbar-xs .navbar-primary .navbar { position: relative; margin: 0px; min-height:34px; height: 34px; }
 	.navbar-xs .navbar-primary .navbar .navbar-brand{ padding: 3px 12px;font-size: 16px;line-height: 28px; }
-	.navbar-xs .navbar-primary .navbar .navbar-nav > li > a {  padding-top: 0px; padding-bottom: 0px; line-height: 34px; height: 34px;}
-	.navbar-xs .navbar-primary .navbar .navbar-nav > li > a > img {  padding-top: 2px; padding-bottom: 2px;}
+	.navbar-xs .navbar-primary .navbar .navbar-nav > li > a {  padding: 2 5; line-height: 34px; height: 34px;}
+	.navbar-xs .navbar-primary .navbar .navbar-nav > li > a > img {  width: 50px; height: 50px; padding: 0; position: relative; z-index: 100}
+	.navbar-xs .navbar-primary .navbar .navbar-nav > li > img {  width: 32px; height: 32px; padding: 0; position: relative; z-index: 100}
+	li.dropdown.open > ul {  z-index: 1; padding-top: 15px;}
 	.nav > li > a{ padding: 10px 6px; }
 	
 	.navbar{
@@ -56,12 +58,6 @@
 		bottom: 4px;
 		border: 1px solid gray;
 	}	
-	
-	/*
-	ul.nav li:hover > ul.dropdown-menu {
-		display: block;   
-	}
-	*/
 
 	</style>
 	
@@ -121,7 +117,7 @@
 	
 	
 	<div style="height: 100%;">
-	<div class="navbar-xs" id="navbar">
+	<div class="navbar-xs" id="navbar" style="z-index: 10000">
 	<div class="navbar-primary">
 	<nav class="navbar navbar-primary navbar-inverse">
 		<div class="navbar-collapse collapse">
@@ -138,8 +134,8 @@
 		   
 			<li class="dropdown">
               <a href="#" class="dropdown-toggle" role="button" aria-haspopup="true" aria-expanded="false">
-				Appearance
-				<!--<img src="../resources/icons/distance.png" />-->
+				<!--Appearance-->
+				<img src="../resources/icons/round_dropdown.png" width="40" />
 			  </a>
               <ul class="dropdown-menu multi-level" role="menu" aria-labelledby="dLabel" style="width: 250px"> 
 				<li data-toggle="tooltip" data-placement="right" title="Maximum number of points that will be rendered."><a href="#" class="small" data-value="option3" tabIndex="-1">
@@ -206,7 +202,8 @@
 			
 			<li class="dropdown">
               <a href="#" class="dropdown-toggle" role="button" aria-haspopup="true" aria-expanded="false">
-				Materials 
+				<!--Materials -->
+				<img src="../resources/icons/round_dropdown.png" width="40" />
 			  </a>
               <ul class="dropdown-menu multi-level" role="menu" aria-labelledby="dLabel"> 
 				<li id="materialList">
@@ -217,7 +214,8 @@
 			
 			<li class="dropdown">
               <a href="#" class="dropdown-toggle" role="button" aria-haspopup="true" aria-expanded="false">
-				Classifications 
+				<!--Classifications -->
+				<img src="../resources/icons/round_dropdown.png" width="40" />
 			  </a>
               <ul  id="classificationList" class="dropdown-menu" role="menu" aria-labelledby="dLabel"> 
 				<li id="classificationList">
@@ -231,7 +229,8 @@
 			
 			<li class="dropdown">
               <a href="#" class="dropdown-toggle" role="button" aria-haspopup="true" aria-expanded="false">
-				Navigation 
+				<!--Navigation -->
+				<img src="../resources/icons/round_dropdown.png" width="40" />
 			  </a>
               <ul class="dropdown-menu multi-level" role="menu" aria-labelledby="dLabel"> 
 				
@@ -260,7 +259,8 @@
 		   
 			<li class="dropdown">
               <a href="#" class="dropdown-toggle" role="button" aria-haspopup="true" aria-expanded="false">
-				Settings 
+				<!--Settings -->
+				<img src="../resources/icons/round_dropdown.png" width="40" />
 			  </a>
               <ul class="dropdown-menu" >
 				<li data-toggle="tooltip" data-placement="right" title="Nodes with smaller size on screen will not be rendered. Increase to improve performance."> <a href="#" class="small" data-value="option3" tabIndex="-1">
@@ -285,12 +285,20 @@
 			
 			<li class="dropdown">
               <a href="#" class="dropdown-toggle" role="button" aria-haspopup="true" aria-expanded="false">
-				Help 
+				<!--Help -->
+				<img src="../resources/icons/round_dropdown.png" width="40" />
 			  </a>
               <ul class="dropdown-menu">
 				<li><a href="https://github.com/potree/potree/blob/master/docs/documentation.md" target="_blank" class="small" data-value="option3" tabIndex="-1">Documentation</a></li>
 				<li><a href="#" class="small" data-toggle="modal" data-target="#myModal">About</a></li>
               </ul>
+            </li>
+			
+			<li class="dropdown">
+              <a href="#" class="dropdown-toggle" role="button" aria-haspopup="true" aria-expanded="false" onclick="toggleProfileWindow();">
+				<!--Height Profile Window -->
+				<img src="../resources/icons/round_popup.png" width="40" />
+			  </a>
             </li>
 			
           </ul>
@@ -396,27 +404,37 @@
 	-->
 	
 	
-	<div id="profile" style="position: absolute; top: 100; left: 10; width: 600px; height: 300px; background-color: #222; border: 1px solid black">
+	<div id="profile" style="display: none; position: absolute; top: 100; left: 10; width: 600px; height: 300px; background-color: #222; border: 1px solid black">
 		
 		<div id="profile_titlebar" style="display: flex; background-color: #111; color: #9d9d9d; position: absolute; height: 30px; width: 100%;">
 		<span style="flex-grow: 1; flex-direction: row">Height Profiles</span>
 		<span>close</span>
 		</div>
 		
-		<div style="display: flex; flex-direction: row; position: absolute; top: 30px; width: 100%; height: calc(100% - 30px);" class="pw_content">
-			<span id="profile_selection" style="position: relative; height: calc(100% - 10px); width: 200px; margin: 5px; background-color:  rgb(0,0,0)">
-			</span>
+		<div style="position: absolute; top: 30px; width: 100%; height: calc(100% - 30px);" class="pw_content">
 			
-			<span style="height: 100%; flex-grow: 1; background-color: #222; padding: 5px; display:flex; flex-direction: column">
+			<span style="height: 100%; width: 100%; background-color: #222; padding: 5px; display:flex; flex-direction: column">
 				<div style=" width: 100%; background-color: #222; color: #9d9d9d">
+				
+
+				
+
 				<table style="color: #9d9d9d">
 					<tr>
-						<td style="padding: 1 5;">Points in profile</td>
-						<td><span id="profile_num_points">123</span></td>
+						<td style="padding: 1 5; white-space: nowrap">Select Profile</td>
+						<td style="width: 100%">
+							<!--<span id="profile_button_container" style="whitespace: nowrap"></span>-->
+							<div id="profile_button_container" class="btn-group btn-group-xs" role="group" aria-label="...">
+							</div>
+							</td>
 					</tr>
 					<tr>
-						<td style="vertical-align: top; padding: 1 5;">Markers</td>
-						<td><span id="profile_markers"> </span></td>
+						<td style="padding: 1 5; white-space: nowrap">Points in profile</td>
+						<td><span id="profile_num_points">-</span></td>
+					</tr>
+					<tr>
+						<td style="vertical-align: top; padding: 1 5; white-space: nowrap">Markers</td>
+						<td><span id="profile_markers">-</span></td>
 					</tr>
 				</table>
 				<br>
@@ -478,7 +496,7 @@
 			
 			// set up things when the first point cloud has been loaded
 			if(viewer.pointclouds.length === 1){
-				viewer.flipYZ();
+				//viewer.flipYZ();
 				viewer.setNavigationMode("Orbit");
 				//viewer.useEarthControls();
 				viewer.zoomTo(event.pointcloud, 1);
@@ -504,20 +522,25 @@
 		viewer.setShowToolbar(true);
 		viewer.setDescription("New User Interface Prototype<br>Feedback to mschuetz@potree.org");
 		
-		viewer.addPointCloud("http://localhost/temp/layers/1/cloud.js", function(pointcloud){
-			console.log("point cloud 1 loaded");
-		});
-		viewer.addPointCloud("http://localhost/temp/layers/2/cloud.js", function(pointcloud){
-			console.log("point cloud 2 loaded");
-		});
+		//viewer.addPointCloud("http://localhost/temp/layers/1/cloud.js", function(pointcloud){
+		//	console.log("point cloud 1 loaded");
+		//});
+		//viewer.addPointCloud("http://localhost/temp/layers/2/cloud.js", function(pointcloud){
+		//	console.log("point cloud 2 loaded");
+		//});
 		
 		//viewer.addPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/archpro/heidentor/cloud.js");
+		viewer.addPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/opentopography/CA13/cloud.js");
 		
 		
 	</script>
 
 
 	<script>
+	
+	function toggleProfileWindow(){
+		$("#profile").fadeToggle(300);
+	}
 	
 	{
 		// http://stackoverflow.com/questions/25089297/twitter-bootstrap-avoid-dropdown-menu-close-on-click-inside/25196101#25196101

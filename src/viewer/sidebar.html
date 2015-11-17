@@ -1,0 +1,584 @@
+
+
+<div class="navmenu navmenu-default navmenu-fixed-left">
+  <a class="navmenu-brand" href="http://potree.org" target="_blank">Potree.org</a>
+  
+  <div id="accordion" class="accordion">
+	  <h3>Appearance</h3>
+	  <div>
+	  <ul class="pv-menu-list">
+	  
+		<li>Point Budget: <span id="lblPointBudget"></span> <div id="sldPointBudget"></div>	</li>
+		<li>Point Size: <span id="lblPointSize"></span> <div id="sldPointSize"></div>		</li>
+		<li>Field of View: <span id="lblFOV"></span><div id="sldFOV"></div>					</li>
+		<li>Opacity: <span id="lblOpacity"></span><div id="sldOpacity"></div>				</li>
+
+					
+		<li><label class="menu-item"><input type="checkbox" onClick="viewer.setShowSkybox(this.checked)"/>&nbsp;Skybox</label></li>
+	   
+		<li>
+		<table>
+			<tr>
+				<td>Point Sizing</td>
+				<td>
+					<select>
+						<option>Fixed</option>
+						<option>Attenuated</option>
+						<option>Adaptive</option>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<td>Quality</td>
+				<td>
+					<select>
+						<option>Squares</option>
+						<option>Circles</option>
+						<option>Interpolation</option>
+						<option>HQ-Splats</option>
+					</select>
+				</td>
+			</tr>
+		</table>
+		</li>
+		
+		<li class="pv-divider"></li>
+		<li class="pv-menu-list-header">Eye-Dome-Lighting</li>
+		
+		<li><label><input type="checkbox" id="chkEDLEnabled" onClick="viewer.setEDLEnabled(this.checked)"/>&nbsp;enable</label></li>
+		<li>radius: <span id="lblEDLRadius"></span><div id="sldEDLRadius"></div></li>
+		<li>strength: <span id="lblEDLStrength"></span><div id="sldEDLStrength"></div></li>
+		
+		</ul>
+	   
+	  </div>
+	  <h3>Navigation</h3>
+	  <div>
+		<ul class="pv-menu-list">
+			<li id="navigation"></li>
+			<li><label><input type="checkbox" onClick="viewer.setShowStats(this.checked)"/>&nbsp;keep above ground</label></li>
+			<li>move speed <span id="lblMoveSpeed"></span><div id="sldMoveSpeed"></div></li>
+		</ul>
+	  </div>
+	  <h3>Tools</h3>
+	  <div>
+		<ul class="pv-menu-list">
+		<li id="tools"></li>
+		</ul>
+	  </div>
+	  <h3>Measurements</h3>
+	  <div>
+		<ul class="pv-menu-list" id="measurement_details">
+		<!--
+		<li>
+			<div class="panel panel-default">
+			  <div class="panel-heading pv-panel-heading" style="display: flex; flex-direction: row">
+				<img src="../resources/icons/distance.png" style="width: 16px; height: 16px" /> 
+				<span style="flex-grow:1"> </span>
+				<img src="../resources/icons/remove.svg" style="width: 16px; height: 16px" /> 
+			  </div>
+			  <div class="panel-body">
+				<div class="measurement-detail-node-marker" >423, 413, 75464</div>
+				<div class="measurement-detail-edge" > </div>
+				<div class="measurement-detail-node-distance" > 12,001.37 </div>
+				<div class="measurement-detail-edge" > </div>
+				<div class="measurement-detail-node-marker" >423, 413, 75464</div>
+				<div class="measurement-detail-edge" > </div>
+				<div class="measurement-detail-node-distance" > 97 </div>
+				<div class="measurement-detail-edge" > </div>
+				<div class="measurement-detail-node-marker" >423, 413, 75464</div>
+			  </div>
+			</div>
+		</li>
+		
+		<li>
+			<div class="panel panel-default">
+			  <div class="panel-heading potree">Panel heading without title</div>
+			  <div class="panel-body">
+				Panel content
+			  </div>
+			</div>
+		</li>
+		-->
+		</ul>
+	  </div>
+	  <h3>Material</h3>
+	  <div>
+		<ul id="materialList" class="pv-menu-list"></ul>
+	  </div>
+	  <h3>Classification Filter</h3>
+	  <div>
+		<ul id="classificationList" class="pv-menu-list"></ul>
+	  </div>
+	   <h3>Settings</h3>
+	  <div>
+		<ul class="pv-menu-list">
+			<li><label><input type="checkbox" onClick="viewer.setShowStats(this.checked)"/>&nbsp;show stats</label></li>
+			<li><label><input type="checkbox" onClick="viewer.setShowDebugInfos(this.checked)"/>&nbsp;show debug infos</label></li>
+			<li><label><input type="checkbox" onClick="viewer.setShowBoundingBox(this.checked)"/>&nbsp;show bounding box</label></li>
+			<li><label><input type="checkbox" onClick="viewer.setFreeze(this.checked)"/>&nbsp;freeze</label></li>
+		
+		</ul>
+	  </div>
+	  <!--
+	  <h3>Help</h3>
+	  <div>
+		<p>
+		Cras dictum. Pellentesque habitant morbi tristique senectus et netus
+		et malesuada fames ac turpis egestas. Vestibulum ante ipsum primis in
+		faucibus orci luctus et ultrices posuere cubilia Curae; Aenean lacinia
+		mauris vel est.
+		</p>
+		<p>
+		Suspendisse eu nisl. Nullam ut libero. Integer dignissim consequat lectus.
+		Class aptent taciti sociosqu ad litora torquent per conubia nostra, per
+		inceptos himenaeos.
+		</p>
+	  </div>
+	  -->
+	</div>
+
+</div>
+
+
+<script>
+
+var createToolIcon = function(icon, title, callback){
+	var elImg = document.createElement("img");
+	elImg.src = icon;
+	elImg.title = title;
+	elImg.onclick = callback;
+	elImg.style.width = "32px";
+	elImg.style.height = "32px";
+	
+	return elImg;
+};
+
+function initToolbar(){
+	var elToolbar = document.getElementById("tools");
+	
+	elToolbar.appendChild(createToolIcon(
+		"../resources/icons/angle.png",
+		"angle measurements",
+		function(){viewer.measuringTool.startInsertion({showDistances: false, showAngles: true, showArea: false, closed: true, maxMarkers: 3})}
+	));
+	
+	elToolbar.appendChild(createToolIcon(
+		"../resources/icons/point.png",
+		"angle measurements",
+		function(){viewer.measuringTool.startInsertion({showDistances: false, showAngles: false, showCoordinates: true, showArea: false, closed: true, maxMarkers: 1})}
+	));
+	
+	elToolbar.appendChild(createToolIcon(
+		"../resources/icons/distance.png",
+		"distance measurements",
+		function(){viewer.measuringTool.startInsertion({showDistances: true, showArea: false, closed: false})}
+	));
+	
+	elToolbar.appendChild(createToolIcon(
+		"../resources/icons/area.png",
+		"area measurements",
+		function(){viewer.measuringTool.startInsertion({showDistances: true, showArea: true, closed: true})}
+	));
+	
+	elToolbar.appendChild(createToolIcon(
+		"../resources/icons/volume.png",
+		"volume measurements",
+		function(){viewer.volumeTool.startInsertion()}
+	));
+	
+	elToolbar.appendChild(createToolIcon(
+		"../resources/icons/profile.png",
+		"height profiles",
+		function(){viewer.profileTool.startInsertion()}
+	));
+	
+	elToolbar.appendChild(createToolIcon(
+		"../resources/icons/clip_volume.png",
+		"clipping volumes",
+		function(){viewer.volumeTool.startInsertion({clip: true})}
+	));
+	
+	elToolbar.appendChild(createToolIcon(
+		"../resources/icons/reset_tools.svg",
+		"remove all measurements",
+		function(){
+			viewer.measuringTool.reset();
+			viewer.profileTool.reset();
+			viewer.volumeTool.reset();
+		}
+	));
+}
+
+function initMaterials(){
+	var options = [ 
+		"RGB", 
+		"Color", 
+		"Elevation", 
+		"Intensity", 
+		"Intensity Gradient", 
+		"Classification", 
+		"Return Number", 
+		"Source", 
+		"Phong",
+		"Tree Depth"	
+	];
+	
+	var elMaterialList = document.getElementById("materialList");
+	for(var i = 0; i < options.length; i++){
+		var option = options[i];
+		
+		var elDiv = document.createElement("li");
+		var elLabel = document.createElement("label");
+		var elRadio = document.createElement("input");
+		var elText = document.createTextNode(" " + option);
+		
+		elRadio.type = "radio";
+		elRadio.name = "optMaterial";
+		elRadio.id = "optMaterial_" + option;
+		elRadio.checked = this.material === option;
+		elLabel.style.whiteSpace = "nowrap";
+		
+		elRadio.onchange = (function(matName){
+			return function(event){
+				viewer.setMaterial(matName);
+			};
+			
+		})(option);
+		
+		elLabel.appendChild(elRadio);
+		elLabel.appendChild(elText);
+		elDiv.appendChild(elLabel);
+		
+		elMaterialList.appendChild(elDiv);
+		
+	}
+}
+
+function initClassificationList(){
+	var addClassificationItem = function(code, name){
+		var elClassificationList = document.getElementById("classificationList");
+		
+		var elLi = document.createElement("li");
+		var elLabel = document.createElement("label");
+		var elInput = document.createElement("input");
+		var elText = document.createTextNode(" " + name);
+		
+		elInput.id = "chkClassification_" + code;
+		elInput.type = "checkbox";
+		elInput.checked = true;
+		elInput.onclick = function(event){
+			viewer.setClassificationVisibility(code, event.target.checked);
+		}
+		
+		elLabel.style.whiteSpace = "nowrap";
+		
+		elClassificationList.appendChild(elLi);
+		elLi.appendChild(elLabel);
+		elLabel.appendChild(elInput);
+		elLabel.appendChild(elText);
+	};
+	
+	addClassificationItem(0, "never classified");
+	addClassificationItem(1, "unclassified");
+	addClassificationItem(2, "ground");
+	addClassificationItem(3, "low vegetation");
+	addClassificationItem(4, "medium vegetation");
+	addClassificationItem(5, "high vegetation");
+	addClassificationItem(6, "building");
+	addClassificationItem(7, "low point(noise)");
+	addClassificationItem(8, "key-point");
+	addClassificationItem(9, "water");
+	addClassificationItem(12, "overlap");
+}
+
+function initAccordion(){
+	$('#accordion').accordion({
+		autoHeight: true,
+		heightStyle: "content",
+        collapsible:true,
+        beforeActivate: function(event, ui) {
+             // The accordion believes a panel is being opened
+            if (ui.newHeader[0]) {
+                var currHeader  = ui.newHeader;
+                var currContent = currHeader.next('.ui-accordion-content');
+             // The accordion believes a panel is being closed
+            } else {
+                var currHeader  = ui.oldHeader;
+                var currContent = currHeader.next('.ui-accordion-content');
+            }
+             // Since we've changed the default behavior, this detects the actual status
+            var isPanelSelected = currHeader.attr('aria-selected') == 'true';
+            
+             // Toggle the panel's header
+            currHeader.toggleClass('ui-corner-all',isPanelSelected).toggleClass('accordion-header-active ui-state-active ui-corner-top',!isPanelSelected).attr('aria-selected',((!isPanelSelected).toString()));
+            
+            // Toggle the panel's icon
+            currHeader.children('.ui-icon').toggleClass('ui-icon-triangle-1-e',isPanelSelected).toggleClass('ui-icon-triangle-1-s',!isPanelSelected);
+            
+             // Toggle the panel's content
+            currContent.toggleClass('accordion-content-active',!isPanelSelected)    
+            if (isPanelSelected) { currContent.slideUp(); }  else { currContent.slideDown(); }
+
+            return false; // Cancels the default action
+        }
+    });
+}
+
+function initAppearance(){
+	$( "#sldPointBudget" ).slider({
+		value: viewer.getPointBudget(),
+		min: 100*1000,
+		max: 5*1000*1000,
+		step: 1000,
+		slide: function( event, ui ) {viewer.setPointBudget(ui.value);}
+	});
+	
+	$( "#sldPointSize" ).slider({
+		value: viewer.getPointSize(),
+		min: 0,
+		max: 3,
+		step: 0.01,
+		slide: function( event, ui ) {viewer.setPointSize(ui.value);}
+	});
+	
+	$( "#sldFOV" ).slider({
+		value: viewer.getFOV(),
+		min: 20,
+		max: 100,
+		step: 1,
+		slide: function( event, ui ) {viewer.setFOV(ui.value);}
+	});
+	
+	$( "#sldOpacity" ).slider({
+		value: viewer.getOpacity(),
+		min: 0,
+		max: 1,
+		step: 0.01,
+		slide: function( event, ui ) {viewer.setOpacity(ui.value);}
+	});
+	
+	$( "#sldEDLRadius" ).slider({
+		value: viewer.getEDLRadius(),
+		min: 1,
+		max: 4,
+		step: 0.01,
+		slide: function( event, ui ) {viewer.setEDLRadius(ui.value);}
+	});
+	
+	$( "#sldEDLStrength" ).slider({
+		value: viewer.getEDLStrength(),
+		min: 0,
+		max: 5,
+		step: 0.01,
+		slide: function( event, ui ) {viewer.setEDLStrength(ui.value);}
+	});
+	
+	viewer.addEventListener("point_budget_changed", function(event){
+		$( '#lblPointBudget')[0].innerHTML = Potree.utils.addCommas(viewer.getPointBudget());
+		$( "#sldPointBudget" ).slider({value: viewer.getPointBudget()});
+	});
+	
+	viewer.addEventListener("point_size_changed", function(event){
+		$('#lblPointSize')[0].innerHTML = viewer.getPointSize().toFixed(2);
+		$( "#sldPointSize" ).slider({value: viewer.getPointSize()});
+	});
+	
+	viewer.addEventListener("fov_changed", function(event){
+		$('#lblFOV')[0].innerHTML = parseInt(viewer.getFOV());
+		$( "#sldFOV" ).slider({value: viewer.getFOV()});
+	});
+	
+	viewer.addEventListener("opacity_changed", function(event){
+		$('#lblOpacity')[0].innerHTML = viewer.getOpacity().toFixed(2);
+		$( "#sldOpacity" ).slider({value: viewer.getOpacity()});
+	});
+	
+	viewer.addEventListener("edl_radius_changed", function(event){
+		$('#lblEDLRadius')[0].innerHTML = viewer.getEDLRadius().toFixed(1);
+		$( "#sldEDLRadius" ).slider({value: viewer.getEDLRadius()});
+	});
+	
+	viewer.addEventListener("edl_strength_changed", function(event){
+		$('#lblEDLStrength')[0].innerHTML = viewer.getEDLStrength().toFixed(1);
+		$( "#sldEDLStrength" ).slider({value: viewer.getEDLStrength()});
+	});
+	
+	
+	$('#lblPointBudget')[0].innerHTML = Potree.utils.addCommas(viewer.getPointBudget());
+	$('#lblPointSize')[0].innerHTML = viewer.getPointSize().toFixed(2);
+	$('#lblFOV')[0].innerHTML = parseInt(viewer.getFOV());
+	$('#lblOpacity')[0].innerHTML = viewer.getOpacity().toFixed(2);
+	$('#lblEDLRadius')[0].innerHTML = viewer.getEDLRadius().toFixed(1);
+	$('#lblEDLStrength')[0].innerHTML = viewer.getEDLStrength().toFixed(1);
+}
+	
+	
+function initNavigation(){
+
+	var elNavigation = document.getElementById("navigation");
+	
+	elNavigation.appendChild(createToolIcon(
+		"../resources/icons/earth_controls_1.png",
+		"Earth Controls",
+		function(){viewer.useEarthControls()}
+	));
+	
+	
+	elNavigation.appendChild(createToolIcon(
+		"../resources/icons/fps_controls.png",
+		"Flight Controls",
+		function(){viewer.useFPSControls()}
+	));
+	
+	elNavigation.appendChild(createToolIcon(
+		"../resources/icons/orbit_controls.png",
+		"Orbit Controls",
+		function(){viewer.useOrbitControls()}
+	));
+	
+	elNavigation.appendChild(createToolIcon(
+		"../resources/icons/focus.png",
+		"focus on pointcloud",
+		function(){viewer.fitToScreen()}
+	));
+	
+	elNavigation.appendChild(createToolIcon(
+		"../resources/icons/topview.svg",
+		"top view",
+		function(){viewer.setTopView()}
+	));
+	
+	elNavigation.appendChild(createToolIcon(
+		"../resources/icons/frontview.svg",
+		"front view",
+		function(){viewer.setFrontView()}
+	));
+	
+	elNavigation.appendChild(createToolIcon(
+		"../resources/icons/leftview.svg",
+		"left view",
+		function(){viewer.setLeftView()}
+	));
+	
+
+	$( "#sldMoveSpeed" ).slider({
+		value: 10,
+		min: 0.1,
+		max: 100,
+		step: 0.01,
+		slide: function( event, ui ) {viewer.setMoveSpeed(ui.value);}
+	});
+}
+
+function initMeasurementDetails(){
+
+	//<li>
+	//		<div class="panel panel-default">
+	//		  <div class="panel-heading pv-panel-heading" style="display: flex; flex-direction: row">
+	//			<img src="../resources/icons/distance.png" style="width: 16px; height: 16px" /> 
+	//			<span style="flex-grow:1"> </span>
+	//			<img src="../resources/icons/remove.svg" style="width: 16px; height: 16px" /> 
+	//		  </div>
+	//		  <div class="panel-body">
+	//			<div class="measurement-detail-node-marker" >423, 413, 75464</div>
+	//			<div class="measurement-detail-edge" > </div>
+	//			<div class="measurement-detail-node-distance" > 12,001.37 </div>
+	//			<div class="measurement-detail-edge" > </div>
+	//			<div class="measurement-detail-node-marker" >423, 413, 75464</div>
+	//			<div class="measurement-detail-edge" > </div>
+	//			<div class="measurement-detail-node-distance" > 97 </div>
+	//			<div class="measurement-detail-edge" > </div>
+	//			<div class="measurement-detail-node-marker" >423, 413, 75464</div>
+	//		  </div>
+	//		</div>
+	//	</li>
+
+	viewer.measuringTool.addEventListener("measurement_added", function(event){
+		var measurement = event.measurement;
+	
+		var elLi = document.createElement("li");
+		var elPanel = document.createElement("div");
+		var elPanelHeader = document.createElement("div");
+		var elPanelBody = document.createElement("div");
+		var elPanelIcon = document.createElement("img");
+		var elPanelStretch = document.createElement("span");
+		var elPanelRemove = document.createElement("img");
+		
+		elPanel.classList.add("panel", "panel-default");
+		elPanelHeader.classList.add("panel-heading", "pv-panel-heading");
+		elPanelIcon.src = "../resources/icons/distance.png";
+		elPanelIcon.style.width = "16px";
+		elPanelIcon.style.height = "16px";
+		elPanelStretch.style.flexGrow = 1;
+		elPanelRemove.src = "../resources/icons/remove.svg";
+		elPanelRemove.style.width = "16px";
+		elPanelRemove.style.height = "16px";
+		elPanelBody.classList.add("panel-body");
+		
+		elLi.appendChild(elPanel);
+		elPanel.appendChild(elPanelHeader);
+		elPanelHeader.appendChild(elPanelIcon);
+		elPanelHeader.appendChild(elPanelStretch);
+		elPanelHeader.appendChild(elPanelRemove);
+		elPanel.appendChild(elPanelBody);
+		elPanelBody.appendChild(document.createTextNode("lala"));
+		
+		//$('#measurement_details').append(elLi);
+		document.getElementById("measurement_details").appendChild(elLi);
+		
+		var updateDisplay = function(event){
+			$(elPanelBody).empty();
+			
+			for(var i = 0; i < measurement.points.length; i++){
+				var point = measurement.points[i];
+				var geoCoord = viewer.toGeo(point);
+	
+				var txt = geoCoord.x.toFixed(2) + ", ";
+				txt += geoCoord.y.toFixed(2) + ", ";
+				txt += geoCoord.z.toFixed(2);
+				
+				var elNodeMarker = $('<div>').addClass("measurement-detail-node-marker");
+				elNodeMarker.html(txt);
+				
+				$(elPanelBody).append(elNodeMarker);
+				
+				if(i < measurement.points.length - 1){
+					var elEdge = $('<div>').addClass("measurement-detail-edge");
+					$(elPanelBody).append(elEdge);
+				}
+			}
+		};
+		
+		viewer.measuringTool.addEventListener("marker_added", updateDisplay);
+		viewer.measuringTool.addEventListener("marker_removed", updateDisplay);
+		viewer.measuringTool.addEventListener("marker_moved", updateDisplay);
+		
+	});
+};
+
+
+$(document).ready( function() {
+    
+	initAccordion();
+	initAppearance();
+	initToolbar();
+	initNavigation();
+	initMaterials();
+	initClassificationList();
+	initMeasurementDetails();
+	
+});
+
+
+
+
+
+
+
+
+
+
+
+	
+</script>

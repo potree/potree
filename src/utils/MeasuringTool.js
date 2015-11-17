@@ -155,6 +155,8 @@ Potree.Measure = function(){
 		this.spheres.splice(index, 1);
 		
 		this.update();
+		
+		this.dispatchEvent({type: "marker_removed", measurement: this});
 	};
 	
 	this.setPosition = function(index, position){
@@ -357,10 +359,11 @@ Object.defineProperty(Potree.Measure.prototype, "showDistances", {
 	}
 });
 
-Potree.MeasuringTool = function(scene, camera, renderer){
+Potree.MeasuringTool = function(scene, camera, renderer, toGeo){
 	
 	var scope = this;
 	this.enabled = false;
+	this.toGeo = toGeo;
 	
 	this.scene = scene;
 	this.camera = camera;
@@ -704,6 +707,7 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 			for(var j = 0; j < measurement.coordinateLabels.length; j++){
 				var label = measurement.coordinateLabels[j];
 				var sphere = measurement.spheres[j];
+				var point = measurement.points[j];
 				
 				var distance = scope.camera.position.distanceTo(sphere.getWorldPosition());
 					
@@ -724,11 +728,16 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 					scope.camera.position, direction.multiplyScalar(distance));
 					
 				label.position.copy(labelPos);
-				viewer.infos.set("labelPos", label.position.x);
 				
 				var pr = projectedRadius(1, scope.camera.fov * Math.PI / 180, distance, renderer.domElement.clientHeight);
 				var scale = (70 / pr);
 				label.scale.set(scale, scale, scale);
+				
+				var geoCoord = scope.toGeo(point);
+				var txt = geoCoord.x.toFixed(2) + " / ";
+				txt += geoCoord.y.toFixed(2) + " / ";
+				txt += geoCoord.z.toFixed(2);
+				label.setText(txt);
 			}
 			
 			// areaLabel

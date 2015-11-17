@@ -29,6 +29,9 @@ Potree.Viewer = function(domElement, args){
 	this.useEDL = false;
 	this.minimumJumpDistance = 0.2;
 	this.jumpDistance = null;
+	this.intensityMax = null;
+	this.heightMin = null;
+	this.heightMax = null;
 
 	this.showDebugInfos = false;
 	this.showStats = true;
@@ -62,6 +65,94 @@ Potree.Viewer = function(domElement, args){
 	this.showSkybox = false;
 	this.referenceFrame;
 	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+//------------------------------------------------------------------------------------
+// Viewer API 
+//------------------------------------------------------------------------------------
+	
+	this.addPointCloud = function(path, callback){
+		callback = callback || function(){};
+		var initPointcloud = function(pointcloud){
+		
+			scope.pointclouds.push(pointcloud);
+
+			scope.referenceFrame.add(pointcloud);
+		
+			var sg = pointcloud.boundingSphere.clone().applyMatrix4(pointcloud.matrixWorld);
+			 
+			scope.referenceFrame.updateMatrixWorld(true);
+			
+			if(sg.radius > 50*1000){
+				scope.camera.near = 10;
+			}else if(sg.radius > 10*1000){
+				scope.camera.near = 2;
+			}else if(sg.radius > 1000){
+				scope.camera.near = 1;
+			}else if(sg.radius > 100){
+				scope.camera.near = 0.5;
+			}else{
+				scope.camera.near = 0.1;
+			}
+
+			scope.referenceFrame.position.sub(sg.center);
+			scope.referenceFrame.updateMatrixWorld(true);
+			
+			scope.flipYZ();
+			
+			scope.zoomTo(pointcloud, 1);
+			
+			scope.earthControls.pointclouds.push(pointcloud);	
+			
+			scope.dispatchEvent({"type": "pointcloud_loaded", "pointcloud": pointcloud});
+			
+			callback(pointcloud);
+		};
+		this.addEventListener("pointcloud_loaded", pointCloudLoadedCallback);
+		
+		// load pointcloud
+		if(!path){
+			
+		}else if(path.indexOf("cloud.js") > 0){
+		
+			Potree.POCLoader.load(path, function(geometry){
+				pointcloud = new Potree.PointCloudOctree(geometry);
+				
+				initPointcloud(pointcloud);				
+			});
+		}else if(path.indexOf(".vpc") > 0){
+			Potree.PointCloudArena4DGeometry.load(path, function(geometry){
+				pointcloud = new Potree.PointCloudArena4D(geometry);
+				
+				initPointcloud(pointcloud);
+			});
+		}
+	};
+	
 	this.toLocal = (function(viewer){
 		return function(position){
 			var scenePos = position.clone().applyMatrix4(viewer.referenceFrame.matrixWorld);
@@ -82,94 +173,196 @@ Potree.Viewer = function(domElement, args){
 	
 	
 	this.setDescription = function(value){
+		$('#pv_description')[0].innerHTML = value;
 	};
 	
 	this.setNavigationMode = function(value){
 		if(value === "Orbit"){
-			this.useOrbitControls();
+			scope.useOrbitControls();
 		}else if(value === "Flight"){
-			this.useFPSControls();
+			scope.useFPSControls();
 		}else if(value === "Earth"){
-			this.useEarthControls();
+			scope.useEarthControls();
 		}
 		
-	};
-	
-	this.setShowToolbar = function(value){
-	};
-	
-	this.setShowNavbar = function(value){
 	};
 	
 	this.setShowBoundingBox = function(value){
-		this.showBoundingBox = value;
-		
+		if(scope.showBoundingBox !== value){
+			scope.showBoundingBox = value;
+			scope.dispatchEvent({"type": "show_boundingbox_changed", "viewer": scope});
+		}
 	};
 	
-	this.setShowDebugInfos = function(value){
-		this.showDebugInfos = value;
-		this.infos.domElement.style.display = this.showDebugInfos ? "block" : "none";
+	this.getShowBoundingBox = function(){
+		return scope.showBoundingBox;
 	};
 	
-	this.setShowStats = function(value){
-		this.showStats = value;
-		
+	this.setMoveSpeed = function(value){
+		if(scope.fpControls.moveSpeed !== value){
+			scope.fpControls.moveSpeed = value;
+			scope.dispatchEvent({"type": "move_speed_changed", "viewer": scope, "speed": value});
+		}
+	};
+	
+	this.getMoveSpeed = function(){
+		return scope.fpControls.moveSpeed;
+	};
+	
+	this.setShowSkybox = function(value){
+		if(scope.showSkybox !== value){
+			scope.showSkybox = value;
+			scope.dispatchEvent({"type": "show_skybox_changed", "viewer": scope});
+		}
+	};
+	
+	this.getShowSkybox = function(){
+		return scope.showSkybox;
+	};
+	
+	this.setHeightRange = function(min, max){
+		if(scope.heightMin !== min || scope.heightMax !== max){
+			scope.heightMin = min || scope.heightMin;
+			scope.heightMax = max || scope.heightMax;
+			scope.dispatchEvent({"type": "height_range_changed", "viewer": scope});
+		}
+	};
+	
+	this.getHeightRange = function(){
+		return {min: scope.heightMin, max: scope.heightMax};
+	};
+	
+	this.setIntensityMax = function(max){
+		if(scope.intensityMax !== max){
+			scope.intensityMax = max;
+			scope.dispatchEvent({"type": "intensity_max_changed", "viewer": scope});
+		}
+	};
+	
+	this.getIntensityMax = function(){
+		return scope.intensityMax;
 	};
 	
 	this.setFreeze = function(value){
-		this.freeze = value;
-		
+		if(scope.freeze != value){
+			scope.freeze = value;
+			scope.dispatchEvent({"type": "freeze_changed", "viewer": scope});
+		}
+	};
+	
+	this.getFreeze = function(){
+		return scope.freeze;
 	};
 	
 	this.setPointBudget = function(value){
-		Potree.pointBudget = value;
-		
+		if(Potree.pointBudget != value){
+			Potree.pointBudget = parseInt(value);
+			scope.dispatchEvent({"type": "point_budget_changed", "viewer": scope});
+		}
+	};
+	
+	this.getPointBudget = function(){
+		return Potree.pointBudget;
 	};
 	
 	this.setClipMode = function(clipMode){
-		this.clipMode = clipMode;
+		if(scope.clipMode != clipMode){
+			scope.clipMode = clipMode;
+			scope.dispatchEvent({"type": "clip_mode_changed", "viewer": scope});
+		}
+	};
+	
+	this.getClipMode = function(){
+		return scope.clipMode;
 	};
 	
 	this.setEDLEnabled = function(value){
-		scope.useEDL = value;
-		
+		if(scope.useEDL != value){
+			scope.useEDL = value;
+			scope.dispatchEvent({"type": "use_edl_changed", "viewer": scope});
+		}
+	};
+	
+	this.getEDLEnabled = function(){
+		return scope.useEDL;
 	};
 	
 	this.setEDLRadius = function(value){
-		scope.edlRadius = value;
-		
+		if(scope.edlRadius !== value){
+			scope.edlRadius = value;
+			scope.dispatchEvent({"type": "edl_radius_changed", "viewer": scope});
+		}
+	};
+	
+	this.getEDLRadius = function(){
+		return scope.edlRadius;
 	};
 	
 	this.setEDLStrength = function(value){
-		scope.edlScale = value;
-		
+		if(scope.edlScale !== value){
+			scope.edlScale = value;
+			scope.dispatchEvent({"type": "edl_strength_changed", "viewer": scope});
+		}
+	};
+	
+	this.getEDLStrength = function(){
+		return scope.edlScale;
 	};
 	
 	this.setPointSize = function(value){
-		scope.pointSize = value;
+		if(scope.pointSize !== value){
+			scope.pointSize = value;
+			scope.dispatchEvent({"type": "point_size_changed", "viewer": scope});
+		}
 	};
 	
+	this.getPointSize = function(){
+		return scope.pointSize;
+	}
+	
 	this.setFOV = function(value){
-		scope.fov = value;
+		if(scope.fov !== value){
+			scope.fov = value;
+			scope.dispatchEvent({"type": "fov_changed", "viewer": scope});
+		}
+	};
+	
+	this.getFOV = function(){
+		return scope.fov;
 	};
 	
 	this.setOpacity = function(value){
-		scope.opacity = value;
+		if(scope.opacity !== value){
+			scope.opacity = value;
+			scope.dispatchEvent({"type": "opacity_changed", "viewer": scope});
+		}
+	};
+	
+	this.getOpacity = function(){
+		return scope.opacity;
 	};
 
 	this.setPointSizing = function(value){
-		scope.sizeType = value;
-		if(value === "Fixed"){
-			scope.pointSizeType = Potree.PointSizeType.FIXED;
-		}else if(value === "Attenuated"){
-			scope.pointSizeType = Potree.PointSizeType.ATTENUATED;
-		}else if(value === "Adaptive"){
-			scope.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+		if(scope.sizeType !== value){
+			scope.sizeType = value;
+			if(value === "Fixed"){
+				scope.pointSizeType = Potree.PointSizeType.FIXED;
+			}else if(value === "Attenuated"){
+				scope.pointSizeType = Potree.PointSizeType.ATTENUATED;
+			}else if(value === "Adaptive"){
+				scope.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+			}
+			
+			scope.dispatchEvent({"type": "point_sizing_changed", "viewer": scope});
 		}
-		
+	};
+	
+	this.getPointSizing = function(){
+		return scope.sizeType;
 	};
 
 	this.setQuality = function(value){
+		var oldQuality = scope.quality;
 		if(value == "Interpolation" && !Potree.Features.SHADER_INTERPOLATION.isSupported()){
 			scope.quality = "Squares";
 		}else if(value == "Splats" && !Potree.Features.SHADER_SPLATS.isSupported()){
@@ -178,47 +371,70 @@ Potree.Viewer = function(domElement, args){
 			scope.quality = value;
 		}
 		
+		if(oldQuality !== scope.quality){
+			scope.dispatchEvent({"type": "quality_changed", "viewer": scope});
+		}
+	};
+	
+	this.getQuality = function(){
+		return scope.quality;
 	};
 	
 	this.setClassificationVisibility = function(key, value){
+		var changed = false;
 		for(var i = 0; i < scope.pointclouds.length; i++){
 			var pointcloud = scope.pointclouds[i];
 			var newClass = pointcloud.material.classification;
+			var oldValue = newClass[key].w;
 			newClass[key].w = value ? 1 : 0;
+			
+			if(oldValue !== newClass[key].w){
+				changed = true;
+			}
 			
 			pointcloud.material.classification = newClass;
 		}
 		
+		if(changed){
+			scope.dispatchEvent({"type": "classification_visibility_changed", "viewer": scope});
+		}
 	};
 
 	this.setMaterial = function(value){
-		this.material = value;
-		if(value === "RGB"){
-			scope.pointColorType = Potree.PointColorType.RGB;
-		}else if(value === "Color"){
-			scope.pointColorType = Potree.PointColorType.COLOR;
-		}else if(value === "Elevation"){
-			scope.pointColorType = Potree.PointColorType.HEIGHT;
-		}else if(value === "Intensity"){
-			scope.pointColorType = Potree.PointColorType.INTENSITY;
-		}else if(value === "Intensity Gradient"){
-			scope.pointColorType = Potree.PointColorType.INTENSITY_GRADIENT;
-		}else if(value === "Classification"){
-			scope.pointColorType = Potree.PointColorType.CLASSIFICATION;
-		}else if(value === "Return Number"){
-			scope.pointColorType = Potree.PointColorType.RETURN_NUMBER;
-		}else if(value === "Source"){
-			scope.pointColorType = Potree.PointColorType.SOURCE;
-		}else if(value === "Tree Depth"){
-			scope.pointColorType = Potree.PointColorType.TREE_DEPTH;
-		}else if(value === "Point Index"){
-			scope.pointColorType = Potree.PointColorType.POINT_INDEX;
-		}else if(value === "Normal"){
-			scope.pointColorType = Potree.PointColorType.NORMAL;
-		}else if(value === "Phong"){
-			scope.pointColorType = Potree.PointColorType.PHONG;
+		if(this.material !== value){
+			this.material = value;
+			if(value === "RGB"){
+				scope.pointColorType = Potree.PointColorType.RGB;
+			}else if(value === "Color"){
+				scope.pointColorType = Potree.PointColorType.COLOR;
+			}else if(value === "Elevation"){
+				scope.pointColorType = Potree.PointColorType.HEIGHT;
+			}else if(value === "Intensity"){
+				scope.pointColorType = Potree.PointColorType.INTENSITY;
+			}else if(value === "Intensity Gradient"){
+				scope.pointColorType = Potree.PointColorType.INTENSITY_GRADIENT;
+			}else if(value === "Classification"){
+				scope.pointColorType = Potree.PointColorType.CLASSIFICATION;
+			}else if(value === "Return Number"){
+				scope.pointColorType = Potree.PointColorType.RETURN_NUMBER;
+			}else if(value === "Source"){
+				scope.pointColorType = Potree.PointColorType.SOURCE;
+			}else if(value === "Tree Depth"){
+				scope.pointColorType = Potree.PointColorType.TREE_DEPTH;
+			}else if(value === "Point Index"){
+				scope.pointColorType = Potree.PointColorType.POINT_INDEX;
+			}else if(value === "Normal"){
+				scope.pointColorType = Potree.PointColorType.NORMAL;
+			}else if(value === "Phong"){
+				scope.pointColorType = Potree.PointColorType.PHONG;
+			}
+			
+			scope.dispatchEvent({"type": "material_changed", "viewer": scope});
 		}
-		
+	};
+	
+	this.getMaterial = function(){
+		return scope.pointColorType;
 	};
 	
 	this.zoomTo = function(node, factor){
@@ -236,6 +452,8 @@ Potree.Viewer = function(domElement, args){
 		bs = bs.clone().applyMatrix4(node.matrixWorld); 
 		
 		scope.orbitControls.target.copy(bs.center);
+		
+		scope.dispatchEvent({"type": "zoom_to", "viewer": scope});
 	};
 	
 	this.showAbout = function(){
@@ -243,8 +461,6 @@ Potree.Viewer = function(domElement, args){
 			$( "#about-panel" ).dialog();
 		});
 	};
-	
-	
 	
 	this.getBoundingBox = function(pointclouds){
 		var box = new THREE.Box3();
@@ -313,272 +529,174 @@ Potree.Viewer = function(domElement, args){
 		scope.camera.zoomTo(node, 1);
 	};
 	
+	this.flipYZ = function(){
+		scope.isFlipYZ = !scope.isFlipYZ;
+		
+		if(scope.isFlipYZ){
+			scope.referenceFrame.matrix.copy(new THREE.Matrix4());
+			scope.referenceFrame.applyMatrix(new THREE.Matrix4().set(
+				1,0,0,0,
+				0,0,1,0,
+				0,-1,0,0,
+				0,0,0,1
+			));
+			
+		}else{
+			scope.referenceFrame.matrix.copy(new THREE.Matrix4());
+			scope.referenceFrame.applyMatrix(new THREE.Matrix4().set(
+				1,0,0,0,
+				0,1,0,0,
+				0,0,1,0,
+				0,0,0,1
+			));
+		}
+		
+		scope.referenceFrame.updateMatrixWorld(true);
+		scope.pointclouds[0].updateMatrixWorld();
+		var sg = scope.pointclouds[0].boundingSphere.clone().applyMatrix4(scope.pointclouds[0].matrixWorld);
+		scope.referenceFrame.position.copy(sg.center).multiplyScalar(-1);
+		scope.referenceFrame.updateMatrixWorld(true);
+		scope.referenceFrame.position.y -= scope.pointclouds[0].getWorldPosition().y;
+		scope.referenceFrame.updateMatrixWorld(true);
+	}
 	
+	this.useEarthControls = function(){
+		if(scope.controls){
+			scope.controls.enabled = false;
+		}		
 
+		scope.controls = scope.earthControls;
+		scope.controls.enabled = true;
+	}
 	
-	this.initGUI = function(){
-	
-		stats = new Stats();
-		
-		
-		if(true){
-			var elToolbar = document.getElementById("tools");
-			var elNavigation = document.getElementById("navigation");
-		
-			var createToolIcon = function(icon, title, callback){
-				var elImg = document.createElement("img");
-				elImg.src = icon;
-				elImg.title = title;
-				elImg.onclick = callback;
-				
-				return elImg;
-			};
-			
-			elNavigation.appendChild(createToolIcon(
-				"../resources/icons/earth_controls_1.png",
-				"Earth Controls",
-				function(){scope.useEarthControls()}
-			));
-			
-			
-			elNavigation.appendChild(createToolIcon(
-				"../resources/icons/fps_controls.png",
-				"Flight Controls",
-				function(){scope.useFPSControls()}
-			));
-			
-			elNavigation.appendChild(createToolIcon(
-				"../resources/icons/orbit_controls.png",
-				"Orbit Controls",
-				function(){scope.useOrbitControls()}
-			));
-			
-			elNavigation.appendChild(createToolIcon(
-				"../resources/icons/focus.png",
-				"focus on pointcloud",
-				function(){scope.fitToScreen()}
-			));
-			
-			elToolbar.appendChild(createToolIcon(
-				"../resources/icons/angle.png",
-				"angle measurements",
-				function(){scope.measuringTool.startInsertion({showDistances: false, showAngles: true, showArea: false, closed: true, maxMarkers: 3})}
-			));
-			
-			elToolbar.appendChild(createToolIcon(
-				"../resources/icons/point.png",
-				"angle measurements",
-				function(){scope.measuringTool.startInsertion({showDistances: false, showAngles: false, showCoordinates: true, showArea: false, closed: true, maxMarkers: 1})}
-			));
-			
-			elToolbar.appendChild(createToolIcon(
-				"../resources/icons/distance.png",
-				"distance measurements",
-				function(){scope.measuringTool.startInsertion({showDistances: true, showArea: false, closed: false})}
-			));
-			
-			elToolbar.appendChild(createToolIcon(
-				"../resources/icons/area.png",
-				"area measurements",
-				function(){scope.measuringTool.startInsertion({showDistances: true, showArea: true, closed: true})}
-			));
-			
-			elToolbar.appendChild(createToolIcon(
-				"../resources/icons/volume.png",
-				"volume measurements",
-				function(){scope.volumeTool.startInsertion()}
-			));
-			
-			elToolbar.appendChild(createToolIcon(
-				"../resources/icons/profile.png",
-				"height profiles",
-				function(){scope.profileTool.startInsertion()}
-			));
-			
-			elToolbar.appendChild(createToolIcon(
-				"../resources/icons/clip_volume.png",
-				"clipping volumes",
-				function(){scope.volumeTool.startInsertion({clip: true})}
-			));
+	this.useGeoControls = function(){
+		if(scope.controls){
+			scope.controls.enabled = false;
 		}
-		
-		{ // Materials
-			var options = [ 
-				"RGB", 
-				"Color", 
-				"Elevation", 
-				"Intensity", 
-				"Intensity Gradient", 
-				"Classification", 
-				"Return Number", 
-				"Source", 
-				"Phong",
-				"Tree Depth"	
-			];
-			
-			var elMaterialList = document.getElementById("materialList");
-			for(var i = 0; i < options.length; i++){
-				var option = options[i];
-				
-				var elDiv = document.createElement("div");
-				var elLabel = document.createElement("label");
-				var elRadio = document.createElement("input");
-				var elText = document.createTextNode(" " + option);
-				
-				elRadio.type = "radio";
-				elRadio.name = "optMaterial";
-				elRadio.id = "optMaterial_" + option;
-				elRadio.checked = this.material === option;
-				elLabel.style.whiteSpace = "nowrap";
-				
-				elRadio.onchange = (function(matName){
-					return function(event){
-						viewer.setMaterial(matName);
-					};
-					
-				})(option);
-				
-				elLabel.appendChild(elRadio);
-				elLabel.appendChild(elText);
-				elDiv.appendChild(elLabel);
-				
-				elMaterialList.appendChild(elDiv);
-				
-			}
-		}
-	
-		
-		
-		
-		{ // create stats fields
-			var createField = function(id, top){
-				var field = document.createElement("div");
-				field.id = id;
-				field.classList.add("info");
-				//field.style.position = "absolute";
-				//field.style.left = "10px";
-				//field.style.top = top + "px";
-				field.style.width = "400px";
-				field.style.color = "white";
-				
-				return field;
-			};
-			
-			var elNumVisibleNodes = createField("lblNumVisibleNodes", 80);
-			var elNumVisiblePoints = createField("lblNumVisiblePoints", 100);
-			
-			
-			
-			document.getElementById("overlays").appendChild(elNumVisibleNodes);
-			document.getElementById("overlays").appendChild(elNumVisiblePoints);
-		}
-	
-		{ // infos
-			scope.infos = new function(){
-			
-				var _this = this;
-			
-				this.elements = {};
-				
-				this.domElement = document.createElement("div");
-				this.domElement.id = "infos";
-				this.domElement.classList.add("info");
-				this.domElement.style.pointerEvents = "none";
-				
-				document.getElementById("overlays").appendChild(this.domElement);
-			
-				this.set = function(key, value){
-					var element = this.elements[key];
-					if(typeof element === "undefined"){
-						element = document.createElement("div");
-						_this.domElement.appendChild(element);
-						this.elements[key] = element;
-						
-					}
-					
-					element.innerHTML = key + ": " + value;
-				};
-			
-			};
-		}
-		
-		var toggleQuality = function(element){
-			scope.quality = element.value;
-		}
-	
-		var togglePointSizing = function(element){
-			scope.setPointSizeType(element.value);
-		}
-	
-		var toggleEDL = function(element){
-			scope.useEDL = element.checked;
-		}
-		
-		var toggleSkybox = function(element){
-			scope.showSkybox = element.checked;
-		}
-	
-		var toggleStats = function(element){
-			scope.showStats = element.checked;
-		}
-		
-		var toggleBoundingBox = function(element){
-			scope.showBoundingBox = element.checked;
-		}
-		
-		
-		
-	
-		$( "#sldPointBudget" ).slider({
-			value: 1,
-			min: 0.1,
-			max: 5,
-			step: 0.01,
-			slide: function( event, ui ) {viewer.setPointBudget(ui.value * 1*1000*1000);}
-		});
-	
-		$( "#sldPointSize" ).slider({
-			value: 1,
-			min: 0,
-			max: 3,
-			step: 0.01,
-			slide: function( event, ui ) {viewer.setPointSize(ui.value);}
-		});
-		
-		$( "#sldFOV" ).slider({
-			value: 60,
-			min: 20,
-			max: 100,
-			step: 1,
-			slide: function( event, ui ) {viewer.setFOV(ui.value);}
-		});
-		
-		$( "#sldOpacity" ).slider({
-			value: 1,
-			min: 0,
-			max: 1,
-			step: 0.01,
-			slide: function( event, ui ) {viewer.setOpacity(ui.value);}
-		});
-		
 
+		scope.controls = scope.geoControls;
+		scope.controls.enabled = true;
 		
+		scope.controls.moveSpeed = scope.pointclouds[0].boundingSphere.radius / 6;
+	}
+
+	this.useFPSControls = function(){
+		if(scope.controls){
+			scope.controls.enabled = false;
+		}
+
+		scope.controls = scope.fpControls;
+		scope.controls.enabled = true;
 		
-		scope.setPointSize(1);
-		scope.setFOV(60);
-		scope.setOpacity(1);
-		scope.setEDLEnabled(false);
-		scope.setEDLRadius(2);
-		scope.setEDLStrength(1);
-		scope.setClipMode(Potree.ClipMode.HIGHLIGHT_INSIDE);
-		scope.setPointBudget(1*1000*1000);
-		scope.setShowBoundingBox(false);
-		scope.setShowDebugInfos(false);
-		scope.setShowStats(false);
-		scope.setFreeze(false);
-		scope.setNavigationMode("Orbit");
-	
+		scope.controls.moveSpeed = scope.pointclouds[0].boundingSphere.radius / 6;
+	}
+
+	this.useOrbitControls = function(){
+		if(scope.controls){
+			scope.controls.enabled = false;
+		}
+		
+		scope.controls = scope.orbitControls;
+		scope.controls.enabled = true;
+		
+		if(scope.pointclouds.length > 0){
+			scope.controls.target.copy(scope.pointclouds[0].boundingSphere.center.clone().applyMatrix4(scope.pointclouds[0].matrixWorld));
+		}
 	};
+	
+	this.addAnnotation = function(position, args){
+		var cameraPosition = args.cameraPosition;
+		var cameraTarget = args.cameraTarget || position;
+		var description = args.description || null;
+		var title = args.title || null;
+		
+		var annotation = new Potree.Annotation(scope, {
+			"position": position,
+			"cameraPosition": cameraPosition,
+			"cameraTarget": cameraTarget,
+			"title": title,
+			"description": description
+		});
+		
+		scope.annotations.push(annotation);
+		scope.renderArea.appendChild(annotation.domElement);
+		
+		scope.dispatchEvent({"type": "annotation_added", "viewer": scope});
+	}
+	
+	this.getAnnotations = function(){
+		return scope.annotations;
+	};
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+//------------------------------------------------------------------------------------
+// Viewer Internals 
+//------------------------------------------------------------------------------------
+
+	//this.initGUI = function(){
+	//
+	//	//return;
+	//    //
+	//	//stats = new Stats();
+	//	//
+	//	//{ // create stats fields
+	//	//	var createField = function(id, top){
+	//	//		var field = document.createElement("div");
+	//	//		field.id = id;
+	//	//		field.classList.add("info");
+	//	//		field.style.width = "400px";
+	//	//		field.style.color = "white";
+	//	//		
+	//	//		return field;
+	//	//	};
+	//	//	
+	//	//	var elNumVisibleNodes = createField("lblNumVisibleNodes", 80);
+	//	//	var elNumVisiblePoints = createField("lblNumVisiblePoints", 100);
+	//	//	
+	//	//	
+	//	//	
+	//	//	document.getElementById("overlays").appendChild(elNumVisibleNodes);
+	//	//	document.getElementById("overlays").appendChild(elNumVisiblePoints);
+	//	//}
+	//    //
+	//	//{ // infos
+	//	//	scope.infos = new function(){
+	//	//	
+	//	//		var _this = this;
+	//	//	
+	//	//		this.elements = {};
+	//	//		
+	//	//		this.domElement = document.createElement("div");
+	//	//		this.domElement.id = "infos";
+	//	//		this.domElement.classList.add("info");
+	//	//		this.domElement.style.pointerEvents = "none";
+	//	//		
+	//	//		document.getElementById("overlays").appendChild(this.domElement);
+	//	//	
+	//	//		this.set = function(key, value){
+	//	//			var element = this.elements[key];
+	//	//			if(typeof element === "undefined"){
+	//	//				element = document.createElement("div");
+	//	//				_this.domElement.appendChild(element);
+	//	//				this.elements[key] = element;
+	//	//				
+	//	//			}
+	//	//			
+	//	//			element.innerHTML = key + ": " + value;
+	//	//		};
+	//	//	
+	//	//	};
+	//	//}
+	//};
 	
 	this.createControls = function(){
 		{ // create FIRST PERSON CONTROLS
@@ -701,91 +819,6 @@ Potree.Viewer = function(domElement, args){
 		}
 	};
 	
-	this.addPointCloud = function(path, callback){
-		callback = callback || function(){};
-		var initPointcloud = function(pointcloud){
-		
-			scope.pointclouds.push(pointcloud);
-			
-			if(false){
-				var id = (scope.pointclouds.length - 1);
-				var checkbox = document.createElement('input');
-				checkbox.type = "checkbox";
-				checkbox.name = "pointcloud_" + id;
-				checkbox.value = "value";
-				checkbox.id = id;
-				checkbox.checked = true;
-				checkbox.style.position = "absolute";
-				checkbox.style.top = 60 + ((scope.pointclouds.length - 1) * 30);
-				checkbox.onclick = function(event){
-					console.log(event);
-					scope.pointclouds[parseInt(event.target.id)].visible = event.target.checked;
-				};
-
-				var label = document.createElement('label')
-				label.htmlFor = id;
-				label.style.color = "#ffffff";
-				label.appendChild(document.createTextNode("pointcloud " + id));
-				label.style.position = "absolute";
-				label.style.top = 60 + ((scope.pointclouds.length - 1) * 30);
-				label.style.left = 30;
-
-				document.body.appendChild(checkbox);
-				document.body.appendChild(label);
-
-			}
-		
-			scope.referenceFrame.add(pointcloud);
-		
-			var sg = pointcloud.boundingSphere.clone().applyMatrix4(pointcloud.matrixWorld);
-			 
-			scope.referenceFrame.updateMatrixWorld(true);
-			
-			if(sg.radius > 50*1000){
-				scope.camera.near = 10;
-			}else if(sg.radius > 10*1000){
-				scope.camera.near = 2;
-			}else if(sg.radius > 1000){
-				scope.camera.near = 1;
-			}else if(sg.radius > 100){
-				scope.camera.near = 0.5;
-			}else{
-				scope.camera.near = 0.1;
-			}
-
-			scope.referenceFrame.position.sub(sg.center);
-			scope.referenceFrame.updateMatrixWorld(true);
-			
-			scope.flipYZ();
-			
-			scope.zoomTo(pointcloud, 1);
-			
-			scope.earthControls.pointclouds.push(pointcloud);	
-			
-			scope.dispatchEvent({"type": "pointcloud_loaded", "pointcloud": pointcloud});
-			
-			callback(pointcloud);
-		};
-		this.addEventListener("pointcloud_loaded", pointCloudLoadedCallback);
-		
-		// load pointcloud
-		if(!path){
-			
-		}else if(path.indexOf("cloud.js") > 0){
-		
-			Potree.POCLoader.load(path, function(geometry){
-				pointcloud = new Potree.PointCloudOctree(geometry);
-				
-				initPointcloud(pointcloud);				
-			});
-		}else if(path.indexOf(".vpc") > 0){
-			Potree.PointCloudArena4DGeometry.load(path, function(geometry){
-				pointcloud = new Potree.PointCloudArena4D(geometry);
-				
-				initPointcloud(pointcloud);
-			});
-		}
-	};
 	
 	this.initThree = function(){
 		var width = renderArea.clientWidth;
@@ -832,7 +865,7 @@ Potree.Viewer = function(domElement, args){
 		var grid = Potree.utils.createGrid(5, 5, 2);
 		scope.scene.add(grid);
 		
-		scope.measuringTool = new Potree.MeasuringTool(scope.scenePointCloud, scope.camera, scope.renderer);
+		scope.measuringTool = new Potree.MeasuringTool(scope.scenePointCloud, scope.camera, scope.renderer, scope.toGeo);
 		scope.profileTool = new Potree.ProfileTool(scope.scenePointCloud, scope.camera, scope.renderer);
 		scope.transformationTool = new Potree.TransformationTool(scope.scenePointCloud, scope.camera, scope.renderer);
 		scope.volumeTool = new Potree.VolumeTool(scope.scenePointCloud, scope.camera, scope.renderer, scope.transformationTool);
@@ -874,10 +907,6 @@ Potree.Viewer = function(domElement, args){
 					scope.toGeo);
 				});
 			};
-			
-			
-		
-			$("#profile_button_container")[0].appendChild(profileButton);
 		});
 		
 		
@@ -911,37 +940,6 @@ Potree.Viewer = function(domElement, args){
 		
 	}
 
-	this.flipYZ = function(){
-		scope.isFlipYZ = !scope.isFlipYZ;
-		
-		if(scope.isFlipYZ){
-			scope.referenceFrame.matrix.copy(new THREE.Matrix4());
-			scope.referenceFrame.applyMatrix(new THREE.Matrix4().set(
-				1,0,0,0,
-				0,0,1,0,
-				0,-1,0,0,
-				0,0,0,1
-			));
-			
-		}else{
-			scope.referenceFrame.matrix.copy(new THREE.Matrix4());
-			scope.referenceFrame.applyMatrix(new THREE.Matrix4().set(
-				1,0,0,0,
-				0,1,0,0,
-				0,0,1,0,
-				0,0,0,1
-			));
-		}
-		
-		scope.referenceFrame.updateMatrixWorld(true);
-		scope.pointclouds[0].updateMatrixWorld();
-		var sg = scope.pointclouds[0].boundingSphere.clone().applyMatrix4(scope.pointclouds[0].matrixWorld);
-		scope.referenceFrame.position.copy(sg.center).multiplyScalar(-1);
-		scope.referenceFrame.updateMatrixWorld(true);
-		scope.referenceFrame.position.y -= scope.pointclouds[0].getWorldPosition().y;
-		scope.referenceFrame.updateMatrixWorld(true);
-	}
-
 	function onKeyDown(event){
 		//console.log(event.keyCode);
 		
@@ -960,10 +958,6 @@ Potree.Viewer = function(domElement, args){
 		}
 	};
 
-	var intensityMax = null;
-	var heightMin = null;
-	var heightMax = null;
-
 	this.update = function(delta, timestamp){
 		Potree.pointLoadLimit = Potree.pointBudget * 2;
 		
@@ -978,7 +972,7 @@ Potree.Viewer = function(domElement, args){
 			var pointcloud = scope.pointclouds[i];
 			var bbWorld = Potree.utils.computeTransformedBoundingBox(pointcloud.boundingBox, pointcloud.matrixWorld);
 				
-			if(!intensityMax){
+			if(!scope.intensityMax){
 				var root = pointcloud.pcoGeometry.root;
 				if(root != null && root.loaded){
 					var attributes = pointcloud.pcoGeometry.root.geometry.attributes;
@@ -990,26 +984,26 @@ Potree.Viewer = function(domElement, args){
 						}
 						
 						if(max <= 1){
-							intensityMax = 1;
+							scope.intensityMax = 1;
 						}else if(max <= 256){
-							intensityMax = 255;
+							scope.intensityMax = 255;
 						}else{
-							intensityMax = max;
+							scope.intensityMax = max;
 						}
 					}
 				}
 			}
 			
-			if(heightMin === null){
-				heightMin = bbWorld.min.y;
-				heightMax = bbWorld.max.y;
+			if(scope.heightMin === null){
+				scope.heightMin = bbWorld.min.y;
+				scope.heightMax = bbWorld.max.y;
 			}
 				
 			pointcloud.material.clipMode = scope.clipMode;
-			pointcloud.material.heightMin = heightMin;
-			pointcloud.material.heightMax = heightMax;
+			pointcloud.material.heightMin = scope.heightMin;
+			pointcloud.material.heightMax = scope.heightMax;
 			pointcloud.material.intensityMin = 0;
-			pointcloud.material.intensityMax = intensityMax;
+			pointcloud.material.intensityMax = scope.intensityMax;
 			pointcloud.showBoundingBox = scope.showBoundingBox;
 			pointcloud.generateDEM = scope.useDEMCollisions;
 			pointcloud.minimumNodePixelSize = scope.minNodeSize;
@@ -1031,20 +1025,20 @@ Potree.Viewer = function(domElement, args){
 		}
 		
 		
-		if(stats && scope.showStats){
-			document.getElementById("lblNumVisibleNodes").style.display = "";
-			document.getElementById("lblNumVisiblePoints").style.display = "";
-			stats.domElement.style.display = "";
-		
-			stats.update();
-		
-			document.getElementById("lblNumVisibleNodes").innerHTML = "visible nodes: " + visibleNodes;
-			document.getElementById("lblNumVisiblePoints").innerHTML = "visible points: " + Potree.utils.addCommas(visiblePoints);
-		}else if(stats){
-			document.getElementById("lblNumVisibleNodes").style.display = "none";
-			document.getElementById("lblNumVisiblePoints").style.display = "none";
-			stats.domElement.style.display = "none";
-		}
+		//if(stats && scope.showStats){
+		//	document.getElementById("lblNumVisibleNodes").style.display = "";
+		//	document.getElementById("lblNumVisiblePoints").style.display = "";
+		//	stats.domElement.style.display = "";
+		//
+		//	stats.update();
+		//
+		//	document.getElementById("lblNumVisibleNodes").innerHTML = "visible nodes: " + visibleNodes;
+		//	document.getElementById("lblNumVisiblePoints").innerHTML = "visible points: " + Potree.utils.addCommas(visiblePoints);
+		//}else if(stats){
+		//	document.getElementById("lblNumVisibleNodes").style.display = "none";
+		//	document.getElementById("lblNumVisiblePoints").style.display = "none";
+		//	stats.domElement.style.display = "none";
+		//}
 		
 		scope.camera.fov = scope.fov;
 		
@@ -1151,68 +1145,28 @@ Potree.Viewer = function(domElement, args){
 		scope.dispatchEvent({"type": "update", "delta": delta, "timestamp": timestamp});
 	}
 
-	this.useEarthControls = function(){
-		if(scope.controls){
-			scope.controls.enabled = false;
-		}		
-
-		scope.controls = scope.earthControls;
-		scope.controls.enabled = true;
-	}
 	
-	this.useGeoControls = function(){
-		if(scope.controls){
-			scope.controls.enabled = false;
-		}
 
-		scope.controls = scope.geoControls;
-		scope.controls.enabled = true;
-		
-		scope.controls.moveSpeed = scope.pointclouds[0].boundingSphere.radius / 6;
-	}
 
-	this.useFPSControls = function(){
-		if(scope.controls){
-			scope.controls.enabled = false;
-		}
 
-		scope.controls = scope.fpControls;
-		scope.controls.enabled = true;
-		
-		scope.controls.moveSpeed = scope.pointclouds[0].boundingSphere.radius / 6;
-	}
 
-	this.useOrbitControls = function(){
-		if(scope.controls){
-			scope.controls.enabled = false;
-		}
-		
-		scope.controls = scope.orbitControls;
-		scope.controls.enabled = true;
-		
-		if(scope.pointclouds.length > 0){
-			scope.controls.target.copy(scope.pointclouds[0].boundingSphere.center.clone().applyMatrix4(scope.pointclouds[0].matrixWorld));
-		}
-	};
+
+
+
+
+
+
+
+
+
+
+
+
+
 	
-	this.addAnnotation = function(position, args){
-		var cameraPosition = args.cameraPosition;
-		var cameraTarget = args.cameraTarget || position;
-		var description = args.description || null;
-		var title = args.title || null;
-		
-		var annotation = new Potree.Annotation(scope, {
-			"position": position,
-			"cameraPosition": cameraPosition,
-			"cameraTarget": cameraTarget,
-			"title": title,
-			"description": description
-		});
-		
-		scope.annotations.push(annotation);
-		scope.renderArea.appendChild(annotation.domElement);
-		//scope.renderArea.appendChild(annotation.domDescription);
-	}
+//------------------------------------------------------------------------------------
+// Renderers
+//------------------------------------------------------------------------------------
 
 	var PotreeRenderer = function(){
 
@@ -1379,8 +1333,8 @@ Potree.Viewer = function(domElement, args){
 					depthMaterial.spacing = pointcloud.pcoGeometry.spacing;
 					depthMaterial.near = scope.camera.near;
 					depthMaterial.far = scope.camera.far;
-					depthMaterial.heightMin = heightMin;
-					depthMaterial.heightMax = heightMax;
+					depthMaterial.heightMin = scope.heightMin;
+					depthMaterial.heightMax = scope.heightMax;
 					depthMaterial.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
 					depthMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.size().x;
 					depthMaterial.bbSize = pointcloud.material.bbSize;
@@ -1408,8 +1362,8 @@ Potree.Viewer = function(domElement, args){
 					attributeMaterial.spacing = pointcloud.pcoGeometry.spacing;
 					attributeMaterial.near = scope.camera.near;
 					attributeMaterial.far = scope.camera.far;
-					attributeMaterial.heightMin = heightMin;
-					attributeMaterial.heightMax = heightMax;
+					attributeMaterial.heightMin = scope.heightMin;
+					attributeMaterial.heightMax = scope.heightMax;
 					attributeMaterial.intensityMin = pointcloud.material.intensityMin;
 					attributeMaterial.intensityMax = pointcloud.material.intensityMax;
 					attributeMaterial.setClipBoxes(pointcloud.material.clipBoxes);
@@ -1559,8 +1513,8 @@ Potree.Viewer = function(domElement, args){
 					attributeMaterial.spacing = pointcloud.pcoGeometry.spacing;
 					attributeMaterial.near = scope.camera.near;
 					attributeMaterial.far = scope.camera.far;
-					attributeMaterial.heightMin = heightMin;
-					attributeMaterial.heightMax = heightMax;
+					attributeMaterial.heightMin = scope.heightMin;
+					attributeMaterial.heightMax = scope.heightMax;
 					attributeMaterial.intensityMin = pointcloud.material.intensityMin;
 					attributeMaterial.intensityMax = pointcloud.material.intensityMax;
 					attributeMaterial.setClipBoxes(pointcloud.material.clipBoxes);
@@ -1663,8 +1617,24 @@ Potree.Viewer = function(domElement, args){
 	};
 
 	scope.initThree();
-	scope.initGUI();
+	//scope.initGUI();
+	
+	// set defaults
+	scope.setPointSize(1);
+	scope.setFOV(60);
+	scope.setOpacity(1);
+	scope.setEDLEnabled(false);
+	scope.setEDLRadius(2);
+	scope.setEDLStrength(1);
+	scope.setClipMode(Potree.ClipMode.HIGHLIGHT_INSIDE);
+	scope.setPointBudget(1*1000*1000);
+	scope.setShowBoundingBox(false);
+	//scope.setShowDebugInfos(false);
+	//scope.setShowStats(false);
+	scope.setFreeze(false);
+	scope.setNavigationMode("Orbit");
 
+	// start rendering!
 	requestAnimationFrame(loop);
 };
 
@@ -1685,34 +1655,9 @@ Potree.Viewer.prototype = Object.create( THREE.EventDispatcher.prototype );
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+//------------------------------------------------------------------------------------
+// STUFF 
+//------------------------------------------------------------------------------------
 
 Potree.updatePointClouds = function(pointclouds, camera, renderer){
 

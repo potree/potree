@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -6,190 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
-    <title>Off Canvas Reveal Menu Template for Bootstrap</title>
+    <title>Potree Viewer</title>
 
     <!-- Bootstrap core CSS -->
 	<link rel="stylesheet" type="text/css" href="css/potree.css">
-    <link href="../libs/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-    <link href="../libs/jasny-bootstrap/css/jasny-bootstrap.css" rel="stylesheet">
-    <link href="../libs/jasny-bootstrap/css/navmenu-reveal.css" rel="stylesheet">
-	<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
-	
-	<style>
-	
-	.ui-accordion-content{
-		padding: 0px 0px !important;
-	}
-		
-	.pv-menu-list{
-		list-style-type: none;
-		padding: 0;
-	}
-	
-	.pv-menu-list > li{
-		margin: 8px 20px;
-	}
-	
-	.pv-menu-list > .pv-divider{
-		border-top: 1px solid black;
-		opacity: 0.2;
-		margin: 8px 0px;
-	}
-	
-	.pv-menu-list-header{
-		opacity: 0.8;
-	}
-	
-	.pv-menu-item{
-		width: 100%;
-	}
-
-	
-	</style>
-	
   </head>
 
   <body>
-    <div class="navmenu navmenu-default navmenu-fixed-left">
-	
-	
-      <a class="navmenu-brand" href="http://potree.org" target="_blank">Potree.org</a>
-	  
-	  <div id="accordion" class="accordion">
-		  <h3>Appearance</h3>
-		  <div>
-		  <ul class="pv-menu-list">
-		  
-			<li>Point Budget: <span id="lblPointBudget"></span> <div id="sldPointBudget"></div>	</li>
-			<li>Point Size: <span id="lblPointSize"></span> <div id="sldPointSize"></div>		</li>
-			<li>Field of View: <span id="lblFOV"></span><div id="sldFOV"></div>					</li>
-			<li>Opacity: <span id="lblOpacity"></span><div id="sldOpacity"></div>				</li>
-
-						
-			<li><label class="menu-item"><input type="checkbox" onClick="viewer.setShowSkybox(this.checked)"/>&nbsp;Skybox</label></li>
-		   
-			<li>
-			<table>
-				<tr>
-					<td>Point Sizing</td>
-					<td>
-						<select>
-							<option>Fixed</option>
-							<option>Attenuated</option>
-							<option>Adaptive</option>
-						</select>
-					</td>
-				</tr>
-				<tr>
-					<td>Quality</td>
-					<td>
-						<select>
-							<option>Squares</option>
-							<option>Circles</option>
-							<option>Interpolation</option>
-							<option>HQ-Splats</option>
-						</select>
-					</td>
-				</tr>
-			</table>
-			</li>
-			
-			<li class="pv-divider"></li>
-			<li class="pv-menu-list-header">Eye-Dome-Lighting</li>
-			
-			<li><label><input type="checkbox" id="chkEDLEnabled" onClick="viewer.setEDLEnabled(this.checked)"/>&nbsp;enable</label></li>
-			<li>radius: <span id="lblEDLRadius"></span><div id="sldEDLRadius"></div></li>
-			<li>strength: <span id="lblEDLStrength"></span><div id="sldEDLStrength"></div></li>
-			
-			</ul>
-		   
-		  </div>
-		  <h3>Tools</h3>
-		  <div>
-			<div id="navigation"></div>
-			<div id="tools"></div>
-		  </div>
-		  <h3>Material</h3>
-		  <div>
-			<div id="materialList">
-			
-			</div>
-		  </div>
-		  <h3>Classifications</h3>
-		  <div>
-			<p>
-			Nam enim risus, molestie et, porta ac, aliquam ac, risus. Quisque lobortis.
-			Phasellus pellentesque purus in massa. Aenean in pede. Phasellus ac libero
-			ac tellus pellentesque semper. Sed ac felis. Sed commodo, magna quis
-			lacinia ornare, quam ante aliquam nisi, eu iaculis leo purus venenatis dui.
-			</p>
-			<ul>
-			  <li>List item one</li>
-			  <li>List item two</li>
-			  <li>List item three</li>
-			</ul>
-		  </div>
-		  <h3>Navigation</h3>
-		  <div>
-			<p>
-			Cras dictum. Pellentesque habitant morbi tristique senectus et netus
-			et malesuada fames ac turpis egestas. Vestibulum ante ipsum primis in
-			faucibus orci luctus et ultrices posuere cubilia Curae; Aenean lacinia
-			mauris vel est.
-			</p>
-			<p>
-			Suspendisse eu nisl. Nullam ut libero. Integer dignissim consequat lectus.
-			Class aptent taciti sociosqu ad litora torquent per conubia nostra, per
-			inceptos himenaeos.
-			</p>
-		  </div>
-		   <h3>Settings</h3>
-		  <div>
-			<p>
-			Cras dictum. Pellentesque habitant morbi tristique senectus et netus
-			et malesuada fames ac turpis egestas. Vestibulum ante ipsum primis in
-			faucibus orci luctus et ultrices posuere cubilia Curae; Aenean lacinia
-			mauris vel est.
-			</p>
-			<p>
-			Suspendisse eu nisl. Nullam ut libero. Integer dignissim consequat lectus.
-			Class aptent taciti sociosqu ad litora torquent per conubia nostra, per
-			inceptos himenaeos.
-			</p>
-		  </div>
-		  <h3>Help</h3>
-		  <div>
-			<p>
-			Cras dictum. Pellentesque habitant morbi tristique senectus et netus
-			et malesuada fames ac turpis egestas. Vestibulum ante ipsum primis in
-			faucibus orci luctus et ultrices posuere cubilia Curae; Aenean lacinia
-			mauris vel est.
-			</p>
-			<p>
-			Suspendisse eu nisl. Nullam ut libero. Integer dignissim consequat lectus.
-			Class aptent taciti sociosqu ad litora torquent per conubia nostra, per
-			inceptos himenaeos.
-			</p>
-		  </div>
-		</div>
-
-    </div>
-	
-	<style>
-		.icon-bar{
-			height: 4px !important;
-			border: 1px solid black;
-			background-color: white;
-			border-radius: 2px;
-		}
-		
-		.canvas{
-			-webkit-transition: top .35s, left .35s, bottom .35s, right .35s, width .35s;
-			transition: top .35s, left .35s, bottom .35s, right .35s, width .35s;
-		}
-	</style>
-	
-	
+    
 	
 
     <div class="canvas" style="position: absolute; width: 100%;">
@@ -206,24 +29,17 @@
 			</div>
 		
 			<!-- HEADING -->
-			<div id="description" class="info" style="position: absolute; top: 10px; left: 50%; transform: translateX(-50%); text-align: center">
+			<div id="pv_description" class="info" style="position: absolute; top: 10px; left: 50%; transform: translateX(-50%); text-align: center">
 			</div>
 		</div>
-		
-		
     </div>
     
 
-    <!-- Bootstrap core JavaScript
-    ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
-    <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
-	<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+   <!-- <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>-->
+    <script src="../libs/jquery-2.1.4/jquery-2.1.4.min.js"></script>
+	<script src="../libs/jquery-ui-1.11.4/jquery-ui.min.js"></script>
     <script src="../libs/bootstrap/js/bootstrap.min.js"></script>
     <script src="../libs/jasny-bootstrap/js/jasny-bootstrap.js"></script>
-	
-	
-	
 	
 	<script src="../libs/three.js/build/three.js"></script>
 	<script src="../libs/other/stats.min.js"></script>
@@ -237,7 +53,6 @@
 	<script src="./js/ProgressBar.js"></script>
 	
 	<!-- uncomment this to debug changes to the individual js files -->
-	
 	<script src="../src/PointCloudOctree.js"></script>
 	<script src="../src/PointCloudOctreeGeometry.js"></script>
 	<script src="../src/loader/POCLoader.js"></script>
@@ -268,8 +83,6 @@
 	<script src="../libs/plasio/js/laslaz.js"></script>
 	<script src="../libs/plasio/vendor/bluebird.js"></script>
 	<script src="../build/js/laslaz.js"></script>
-	
-	
 	
 	
 	<script>
@@ -303,9 +116,9 @@
 		viewer.setPointSizing("Fixed");
 		viewer.setQuality("Squares");
 		viewer.setPointBudget(1*1000*1000);
-		viewer.setShowNavbar(true);
-		viewer.setShowToolbar(true);
-		//viewer.setDescription("New User Interface Prototype<br>Feedback to mschuetz@potree.org");
+		//viewer.setShowNavbar(true);
+		//viewer.setShowToolbar(true);
+		viewer.setDescription("New User Interface Prototype<br>Feedback to mschuetz@potree.org");
 		
 		viewer.addPointCloud("http://localhost/temp/ca13/1/cloud.js", function(pointcloud){
 			console.log("point cloud 1 loaded");
@@ -321,57 +134,17 @@
 		//viewer.addPointCloud("http://localhost/temp/georepublic/layer_2/cloud.js");
 		
 		
+		function loadGUI(){
+			$('body').append($('<div>').load("../src/viewer/sidebar.html"));
+			$('head').append( $('<link rel="stylesheet" type="text/css" />').attr('href', '../src/viewer/viewer.css') );		
+			$('head').append( $('<link rel="stylesheet" type="text/css" />').attr('href', "../libs/bootstrap/css/bootstrap.min.css"));
+			$('head').append( $('<link rel="stylesheet" type="text/css" />').attr('href', "../libs/jasny-bootstrap/css/jasny-bootstrap.css"));
+			$('head').append( $('<link rel="stylesheet" type="text/css" />').attr('href', "../libs/jasny-bootstrap/css/navmenu-reveal.css" ));
+			$('head').append( $('<link rel="stylesheet" type="text/css" />').attr('href', "../libs/jquery-ui-1.11.4/jquery-ui.css"	));
+		}
+		loadGUI();
+	
+		
 	</script>
-	
-	
-	
-	<script>
-	
-	$(document).ready( function() {
-    $('#accordion').accordion({
-		autoHeight: true,
-		heightStyle: "content",
-        collapsible:true,
-        beforeActivate: function(event, ui) {
-             // The accordion believes a panel is being opened
-            if (ui.newHeader[0]) {
-                var currHeader  = ui.newHeader;
-                var currContent = currHeader.next('.ui-accordion-content');
-             // The accordion believes a panel is being closed
-            } else {
-                var currHeader  = ui.oldHeader;
-                var currContent = currHeader.next('.ui-accordion-content');
-            }
-             // Since we've changed the default behavior, this detects the actual status
-            var isPanelSelected = currHeader.attr('aria-selected') == 'true';
-            
-             // Toggle the panel's header
-            currHeader.toggleClass('ui-corner-all',isPanelSelected).toggleClass('accordion-header-active ui-state-active ui-corner-top',!isPanelSelected).attr('aria-selected',((!isPanelSelected).toString()));
-            
-            // Toggle the panel's icon
-            currHeader.children('.ui-icon').toggleClass('ui-icon-triangle-1-e',isPanelSelected).toggleClass('ui-icon-triangle-1-s',!isPanelSelected);
-            
-             // Toggle the panel's content
-            currContent.toggleClass('accordion-content-active',!isPanelSelected)    
-            if (isPanelSelected) { currContent.slideUp(); }  else { currContent.slideDown(); }
-
-            return false; // Cancels the default action
-        }
-    });
-});
-	
-	</script>
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
   </body>
 </html>

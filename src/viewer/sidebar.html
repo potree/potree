@@ -106,6 +106,10 @@
 	  <div>
 		<ul id="materialList" class="pv-menu-list"></ul>
 	  </div>
+	  <h3>Scene</h3>
+	  <div>
+		<ul id="sceneList" class="pv-menu-list"></ul>
+	  </div>
 	  <h3>Classification Filter</h3>
 	  <div>
 		<ul id="classificationList" class="pv-menu-list"></ul>
@@ -698,6 +702,8 @@ function initMeasurementDetails(){
 			
 		};
 		
+		updateDisplay();
+		
 		if(measurement){
 			viewer.measuringTool.addEventListener("marker_added", updateDisplay);
 			viewer.measuringTool.addEventListener("marker_removed", updateDisplay);
@@ -723,13 +729,65 @@ function initMeasurementDetails(){
 				}
 			});
 		}
-		
-		
 	};
+	
+	for(var i = 0; i < viewer.measuringTool.measurements.length; i++){
+		callback({measurement: viewer.measuringTool.measurements[i]});
+	}
+	
+	for(var i = 0; i < viewer.profileTool.profiles.length; i++){
+		callback({profile: viewer.profileTool.profiles[i]});
+	}
 
 	viewer.measuringTool.addEventListener("measurement_added", callback);
 	viewer.profileTool.addEventListener("profile_added", callback);
 	viewer.volumeTool.addEventListener("volume_added", callback);
+};
+
+function initSceneList(){
+
+	// <li>
+	// <label class="menu-item">
+	// <input type="checkbox" onClick="viewer.setShowSkybox(this.checked)"/>
+	// &nbsp;Skybox
+	// </label>
+	// </li>
+	var scenelist = $('#sceneList');
+	
+	var id = 0;
+	var addPointcloud = function(pointcloud){
+		var elLi = $('<li>');
+		var elLabel = $('<label>');
+		var elInput = $('<input type="checkbox">');
+		
+		elInput[0].checked = true;
+		elInput[0].id = "scene_list_item_pointcloud_" + id;
+		elLabel[0].id = "scene_list_item_label_pointcloud_" + id;
+		elLabel[0].htmlFor = "scene_list_item_pointcloud_" + id;
+		elLabel.addClass("menu-item");
+		elInput.click(function(event){
+			pointcloud.visible = event.target.checked;
+		});
+		
+		elLi.append(elLabel);
+		elLabel.append(elInput);
+		elLabel.append(document.createTextNode("point cloud " + id));
+		
+		scenelist.append(elLi);
+		
+		id++;
+	}
+	
+	for(var i = 0; i < viewer.pointclouds.length; i++){
+		var pointcloud = viewer.pointclouds[i];
+		console.log("woohoo");
+		addPointcloud(pointcloud);
+	}
+	
+	viewer.addEventListener("pointcloud_loaded", function(event){
+		console.log("yeahhaaa");
+		addPointcloud(event.pointcloud);
+	});
 };
 
 
@@ -742,6 +800,7 @@ $(document).ready( function() {
 	initMaterials();
 	initClassificationList();
 	initMeasurementDetails();
+	initSceneList();
 	
 });
 

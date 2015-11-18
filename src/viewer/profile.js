@@ -6,6 +6,8 @@ Potree.Viewer.Profile = function(viewer, element){
 	this.enabled = true;
 	this.element = element;
 	this.currentProfile = null;
+	this.requests = [];
+	this.pointsProcessed = 0;
 	
 	
 	$('#closeProfileContainer').click(function(){
@@ -20,6 +22,14 @@ Potree.Viewer.Profile = function(viewer, element){
 	
 	this.hide = function(){
 		$('#profile_window').fadeOut();
+	};
+	
+	this.cancel = function(){
+		for(var i = 0; i < scope.requests.length; i++){
+			scope.requests[i].cancel();
+		}
+		
+		scope.requests = [];
 	};
 	
 	this.preparePoints = function(profileProgress){
@@ -150,13 +160,14 @@ Potree.Viewer.Profile = function(viewer, element){
 			scope.__drawData = {};
 		}
 		var dd = scope.__drawData;
-		
-		if(dd.request){
-			dd.request.cancel();
-		}
 		dd.points = [];
 		
-		var pointcloud = scope.viewer.pointclouds[0];
+		scope.pointsProcessed = 0;
+		
+		for(var i = 0; i < scope.requests.length; i++){
+			scope.requests[i].cancel();
+		}
+		scope.requests = [];
 		
 		var drawPoints = function(canvas, points, scaleX, scaleY) {
 			var pointSize = 2;
@@ -172,135 +183,142 @@ Potree.Viewer.Profile = function(viewer, element){
 			}
 		};
 		
-		
 		var projectedBoundingBox = null;
-		dd.request = pointcloud.getPointsInProfile(profile, null, {
-			"onProgress": function(event){
-				if(!scope.enabled){
-					return;
-				}
-				
-				var segments = event.points.segments;
-				
-				if(!projectedBoundingBox){
-					projectedBoundingBox = event.points.projectedBoundingBox;
-				}
-				
-				var result = scope.preparePoints(event.points);
-				dd.points = dd.points.concat(result.data);
-				
-				var markers =  profile.points;
-				
-				
-				
-				
-				var containerWidth = scope.element.clientWidth;
-				var containerHeight = scope.element.clientHeight;
-				var margin = {top: 0, right: 0, bottom: 20, left: 40};
-				var width = containerWidth - (margin.left + margin.right);
-				var height = containerHeight - (margin.top + margin.bottom);
-				
-				var scaleX = d3.scale.linear().range([0, width]);
-				scaleX.domain([d3.min(dd.points, function(d) { return d.distance; }), d3.max(dd.points, function(d) { return d.distance; })]);
-
-				// Y scale
-				var scaleY = d3.scale.linear().range([height,0]);
-				scaleY.domain([d3.min(dd.points, function(d) { return d.altitude; }), d3.max(dd.points, function(d) { return d.altitude; })]);
-				
-				var zoom = d3.behavior.zoom()
-				.x(scaleX)
-				.y(scaleY)
-				.scaleExtent([0,8])
-				.size([width, height])
-				.on("zoom",  function(){
-					var t = zoom.translate();
-					//var tx = t[0];
-					//var ty = t[1];
-					//
-					//tx = Math.min(tx, 0);
-					//tx = Math.max(tx, width - projectedBoundingBox.max.x);
-					//zoom.translate([tx, ty]);
-
-					svg.select(".x.axis").call(xAxis);
-					svg.select(".y.axis").call(yAxis);
-
-					canvas.clearRect(0, 0, width, height);
-					drawPoints(canvas, dd.points, scaleX, scaleY);
-				});
-				
-				var canvas = d3.select("#profileCanvas")
-				.attr("width", width)
-				.attr("height", height)
-				.call(zoom)
-				.node().getContext("2d");
-				
-				//d3.select("svg#profile_draw_container").remove();
-				d3.select("svg#profileSVG").selectAll("*").remove();
-				
-				svg = d3.select("svg#profileSVG")
-				.call(zoom)
-				.attr("width", (width + margin.left + margin.right).toString())
-				.attr("height", (height + margin.top + margin.bottom).toString())
-				.attr("transform", "translate(" + margin.left + "," + margin.top + ")")
-				.on("mousemove", function(){
-					// TODO implement pointHighlight
-				});
-				
-				
-				// Create x axis
-				var xAxis = d3.svg.axis()
-					.scale(scaleX)
-					.innerTickSize(-height)
-					.outerTickSize(5)
-					.orient("bottom")
-					.ticks(10, "m");
-
-				// Create y axis
-				var yAxis = d3.svg.axis()
-					.scale(scaleY)
-					.innerTickSize(-width)
-					.outerTickSize(5)
-					.orient("left")
-					.ticks(10, "m");
-					
-				// Append axis to the chart
-				svg.append("g")
-					.attr("class", "x axis")
-					.call(xAxis);
-
-				var gy = svg.append("g")
-					.attr("class", "y axis")
-					.call(yAxis);
-
-				//gy.selectAll("g").filter(function(d) { return d; })
-				//	.classed("minor", true);
-					
-				if(navigator.userAgent.indexOf("Firefox") == -1 ) {
-					svg.select(".y.axis").attr("transform", "translate("+ (margin.left).toString() + "," + margin.top.toString() + ")");
-					svg.select(".x.axis").attr("transform", "translate(" + margin.left.toString() + "," + (height + margin.top).toString() + ")");
-				} else {
-					svg.select(".x.axis").attr("transform", "translate( 0 ," + height.toString() + ")");
-				}
-				
-				drawPoints(canvas, dd.points, scaleX, scaleY);
+		
+		var setupAndDraw = function(){
+			var containerWidth = scope.element.clientWidth;
+			var containerHeight = scope.element.clientHeight;
+			var margin = {top: 0, right: 0, bottom: 20, left: 40};
+			var width = containerWidth - (margin.left + margin.right);
+			var height = containerHeight - (margin.top + margin.bottom);
 			
-				document.getElementById("profile_num_points").innerHTML = Potree.utils.addCommas(dd.request.pointsServed);
+			var scaleX = d3.scale.linear().range([0, width]);
+			scaleX.domain([d3.min(dd.points, function(d) { return d.distance; }), d3.max(dd.points, function(d) { return d.distance; })]);
+
+			// Y scale
+			var scaleY = d3.scale.linear().range([height,0]);
+			scaleY.domain([d3.min(dd.points, function(d) { return d.altitude; }), d3.max(dd.points, function(d) { return d.altitude; })]);
+			
+			var zoom = d3.behavior.zoom()
+			.x(scaleX)
+			.y(scaleY)
+			.scaleExtent([0,8])
+			.size([width, height])
+			.on("zoom",  function(){
+				var t = zoom.translate();
+				//var tx = t[0];
+				//var ty = t[1];
+				//
+				//tx = Math.min(tx, 0);
+				//tx = Math.max(tx, width - projectedBoundingBox.max.x);
+				//zoom.translate([tx, ty]);
+
+				svg.select(".x.axis").call(xAxis);
+				svg.select(".y.axis").call(yAxis);
+
+				canvas.clearRect(0, 0, width, height);
+				drawPoints(canvas, dd.points, scaleX, scaleY);
+			});
+			
+			var canvas = d3.select("#profileCanvas")
+			.attr("width", width)
+			.attr("height", height)
+			.call(zoom)
+			.node().getContext("2d");
+			
+			//d3.select("svg#profile_draw_container").remove();
+			d3.select("svg#profileSVG").selectAll("*").remove();
+			
+			svg = d3.select("svg#profileSVG")
+			.call(zoom)
+			.attr("width", (width + margin.left + margin.right).toString())
+			.attr("height", (height + margin.top + margin.bottom).toString())
+			.attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+			.on("mousemove", function(){
+				// TODO implement pointHighlight
+			});
+			
+			
+			// Create x axis
+			var xAxis = d3.svg.axis()
+				.scale(scaleX)
+				.innerTickSize(-height)
+				.outerTickSize(5)
+				.orient("bottom")
+				.ticks(10, "m");
+
+			// Create y axis
+			var yAxis = d3.svg.axis()
+				.scale(scaleY)
+				.innerTickSize(-width)
+				.outerTickSize(5)
+				.orient("left")
+				.ticks(10, "m");
 				
-				if(dd.request.pointsServed > 20*1000){
-					dd.request.cancel();
-				}
-			},
-			"onFinish": function(event){
-				if(!scope.enabled){
-					return;
-				}
-			},
-			"onCancel": function(){
-				if(!scope.enabled){
-					return;
-				}
+			// Append axis to the chart
+			svg.append("g")
+				.attr("class", "x axis")
+				.call(xAxis);
+
+			var gy = svg.append("g")
+				.attr("class", "y axis")
+				.call(yAxis);
+
+			//gy.selectAll("g").filter(function(d) { return d; })
+			//	.classed("minor", true);
+				
+			if(navigator.userAgent.indexOf("Firefox") == -1 ) {
+				svg.select(".y.axis").attr("transform", "translate("+ (margin.left).toString() + "," + margin.top.toString() + ")");
+				svg.select(".x.axis").attr("transform", "translate(" + margin.left.toString() + "," + (height + margin.top).toString() + ")");
+			} else {
+				svg.select(".x.axis").attr("transform", "translate( 0 ," + height.toString() + ")");
 			}
-		});	
+			
+			drawPoints(canvas, dd.points, scaleX, scaleY);
+			
+			document.getElementById("profile_num_points").innerHTML = Potree.utils.addCommas(scope.pointsProcessed);
+		};
+		
+		
+		for(var i = 0; i < scope.viewer.pointclouds.length; i++){
+			var pointcloud = scope.viewer.pointclouds[i];
+			var request = pointcloud.getPointsInProfile(profile, null, {
+				"onProgress": function(event){
+					if(!scope.enabled){
+						return;
+					}
+					
+					if(!projectedBoundingBox){
+						projectedBoundingBox = event.points.projectedBoundingBox;
+					}else{
+						projectedBoundingBox.union(event.points.projectedBoundingBox);
+					}
+					
+					var result = scope.preparePoints(event.points);
+					dd.points = dd.points.concat(result.data);
+					
+					setupAndDraw();
+					
+					scope.pointsProcessed += event.request.pointsServed;
+					
+					if(scope.pointsProcessed > 20*1000){
+						scope.cancel();
+					}
+				},
+				"onFinish": function(event){
+					if(!scope.enabled){
+						return;
+					}
+				},
+				"onCancel": function(){
+					if(!scope.enabled){
+						return;
+					}
+				}
+			});	
+			
+			scope.requests.push(request);
+		}
 	};
 	
 	var drawOnChange = function(event){

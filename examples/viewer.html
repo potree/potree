@@ -126,7 +126,23 @@
 		});
 		viewer.addPointCloud("http://localhost/temp/ca13/2/cloud.js", function(pointcloud){
 			console.log("point cloud 2 loaded");
+			
+			var profile = new Potree.HeightProfile();
+			profile.addMarker(new THREE.Vector3(-139.5800, 92.9300003, -121.66000));
+			profile.addMarker(new THREE.Vector3(365.80500, 25.6599922, -124.04498));
+			profile.addMarker(new THREE.Vector3(775.42749, 97.0524902, -115.38500));
+			profile.setWidth(4);
+			
+			viewer.profileTool.addProfile(profile);
 		});
+		
+		
+		
+		-139.5800, 92.9300003, -121.66000
+		365.80500, 25.6599922, -124.04498
+		775.42749, 97.0524902, -115.38500
+		
+		
 		
 		//viewer.addPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/archpro/heidentor/cloud.js");
 		//viewer.addPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/opentopography/CA13/cloud.js");

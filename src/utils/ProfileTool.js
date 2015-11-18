@@ -381,7 +381,7 @@ Potree.ProfileTool = function(scene, camera, renderer){
 				var pos = I.clone();
 				
 				if(scope.activeProfile.points.length === 1 && scope.activeProfile.width === null){
-					scope.activeProfile.setWidth((camera.position.distanceTo(pos) / 50).toFixed(3));
+					scope.activeProfile.setWidth((camera.position.distanceTo(pos) / 50));
 				}
 				
 				scope.activeProfile.addMarker(pos);

@@ -167,8 +167,18 @@
 
 
 
+/* no scrollbar styling in firefox, sadly */
+.navmenu::-webkit-scrollbar{
+  height: 12px;
+}
 
+.navmenu::-webkit-scrollbar-track{
+  background: rgba(0, 0, 0, 0.1);
+}
 
+.navmenu::-webkit-scrollbar-thumb{
+  background: rgba(0, 0, 0, 0.5);
+}
 
 
 

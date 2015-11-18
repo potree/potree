@@ -583,22 +583,24 @@ function initMeasurementDetails(){
 				var elWidthSlider = $('<div id="sldProfileWidth_' + id + '">');
 				
 				elWidthSlider.slider({
-					value: Math.pow((profile.getWidth() / 1000), 1/4).toFixed(2),
+					value: Math.pow((profile.getWidth() / 1000), 1/4).toFixed(3),
 					min: 0,
 					max: 1,
 					step: 0.01,
 					slide: function(event, ui){
 						var val = Math.pow(ui.value, 4) * 1000;
-						val = val.toFixed(2);
 						profile.setWidth(val);
 					}
 				});
-				elWidthLabel.html(Potree.utils.addCommas(profile.getWidth()));
+				if(profile.getWidth()){
+					elWidthLabel.html(Potree.utils.addCommas(profile.getWidth().toFixed(3)));
+				}else{
+					elWidthLabel.html("-");
+				}
 				
 				widthListener = function(event){
 					var val = Math.pow((event.width / 1000), 1/4);
-					val = val.toFixed(2);
-					elWidthLabel.html(Potree.utils.addCommas(event.width));
+					elWidthLabel.html(Potree.utils.addCommas(event.width.toFixed(3)));
 					elWidthSlider.slider({value: val});
 				};
 				profile.addEventListener("width_changed", widthListener);

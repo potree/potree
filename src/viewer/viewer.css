@@ -37,6 +37,24 @@
 	background-color: #eee;
 }
 
+.measurement-detail-node-area{
+	border: 3px solid #749b74;
+	border-radius: 6px;
+	margin: auto;
+	margin-top: 15px;
+	text-align: center;
+	background-color: #eee;
+}
+
+.measurement-detail-node-angle{
+	border: 1px solid #000;
+	width: 50%;
+	margin: auto;
+	border-radius: 6px;
+	text-align: center;
+	background-color: #eee;
+}
+
 .measurement-detail-node-distance{
 	border: 1px solid #000;
 	width: 50%;
@@ -51,6 +69,15 @@
 	width: 2px;
 	height: 10px;
 	margin: auto;
+}
+
+#measurement_details .panel-body{
+	padding: 5px 3px;
+}
+
+.measurement-detail-button{
+	width: 100%;
+	margin-top:	8px;
 }
 
 .pv-panel-heading{
@@ -105,6 +132,10 @@
 
 .pv-menu-list > li{
 	margin: 8px 20px;
+}
+
+#measurement_details .pv-menu-list > li{
+	margin: 20px 10px;
 }
 
 .pv-menu-list > .pv-divider{

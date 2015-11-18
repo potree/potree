@@ -493,9 +493,16 @@ function initMeasurementDetails(){
 	//		  </div>
 	//		</div>
 	//	</li>
-
-	viewer.measuringTool.addEventListener("measurement_added", function(event){
+	
+	var id = 0;
+	
+	var callback = function(event){
+	
+		id++;
+	
 		var measurement = event.measurement;
+		var profile = event.profile;
+		var volume = event.volume;
 	
 		var elLi = document.createElement("li");
 		var elPanel = document.createElement("div");
@@ -507,10 +514,39 @@ function initMeasurementDetails(){
 		
 		elPanel.classList.add("panel", "panel-default");
 		elPanelHeader.classList.add("panel-heading", "pv-panel-heading");
-		elPanelIcon.src = "../resources/icons/distance.png";
+		
+		if(measurement){
+			if(measurement.showDistances && !measurement.showArea && !measurement.showAngles){
+				elPanelIcon.src = "../resources/icons/distance.png";
+				elPanelStretch.innerHTML = "Distance";
+			}else if(measurement.showDistances && measurement.showArea && !measurement.showAngles){
+				elPanelIcon.src = "../resources/icons/area.png";
+				elPanelStretch.innerHTML = "Area";
+			}else if(measurement.maxMarkers === 1){
+				elPanelIcon.src = "../resources/icons/point.png";
+				elPanelStretch.innerHTML = "Coordinate";
+			}else if(!measurement.showDistances && !measurement.showArea && measurement.showAngles){
+				elPanelIcon.src = "../resources/icons/angle.png";
+				elPanelStretch.innerHTML = "Angle";
+			}
+			
+			elPanelRemove.onclick = function(){viewer.measuringTool.removeMeasurement(measurement);};
+		}else if(profile){
+			elPanelIcon.src = "../resources/icons/profile.png";
+			elPanelRemove.onclick = function(){viewer.profileTool.removeProfile(profile);};
+			
+			elPanelStretch.innerHTML = "Profile";
+		}else if(volume){
+			elPanelIcon.src = "../resources/icons/volume.png";
+			elPanelRemove.onclick = function(){viewer.measuringTool.removeVolume(volume);};
+			
+			elPanelStretch.innerHTML = "Volume";
+		}
+		
 		elPanelIcon.style.width = "16px";
 		elPanelIcon.style.height = "16px";
 		elPanelStretch.style.flexGrow = 1;
+		elPanelStretch.style.textAlign = "center";
 		elPanelRemove.src = "../resources/icons/remove.svg";
 		elPanelRemove.style.width = "16px";
 		elPanelRemove.style.height = "16px";
@@ -522,16 +558,69 @@ function initMeasurementDetails(){
 		elPanelHeader.appendChild(elPanelStretch);
 		elPanelHeader.appendChild(elPanelRemove);
 		elPanel.appendChild(elPanelBody);
-		elPanelBody.appendChild(document.createTextNode("lala"));
+		//elPanelBody.appendChild(document.createTextNode("lala"));
 		
 		//$('#measurement_details').append(elLi);
 		document.getElementById("measurement_details").appendChild(elLi);
 		
+		var widthListener;
 		var updateDisplay = function(event){
+		
+			if(profile){
+				if(widthListener){
+					profile.removeEventListener("width_changed", widthListener);
+				}
+			}
+		
 			$(elPanelBody).empty();
 			
-			for(var i = 0; i < measurement.points.length; i++){
-				var point = measurement.points[i];
+			if(profile){
+				//<li>Point Budget: <span id="lblPointBudget"></span> <div id="sldPointBudget"></div>	</li>
+				
+				var elLi = $('<li>');
+				var elText = document.createTextNode("width: ");
+				var elWidthLabel = $('<span id="lblProfileWidth_' + id + '">');
+				var elWidthSlider = $('<div id="sldProfileWidth_' + id + '">');
+				
+				elWidthSlider.slider({
+					value: Math.pow((profile.getWidth() / 1000), 1/4).toFixed(2),
+					min: 0,
+					max: 1,
+					step: 0.01,
+					slide: function(event, ui){
+						var val = Math.pow(ui.value, 4) * 1000;
+						val = val.toFixed(2);
+						profile.setWidth(val);
+					}
+				});
+				elWidthLabel.html(Potree.utils.addCommas(profile.getWidth()));
+				
+				widthListener = function(event){
+					var val = Math.pow((event.width / 1000), 1/4);
+					val = val.toFixed(2);
+					elWidthLabel.html(Potree.utils.addCommas(event.width));
+					elWidthSlider.slider({value: val});
+				};
+				profile.addEventListener("width_changed", widthListener);
+				
+				elLi.append(elText);
+				elLi.append(elWidthLabel);
+				elLi.append(elWidthSlider);
+				
+				elPanelBody.appendChild(elLi[0]);
+			}
+			
+			var points;
+			if(measurement){
+				points = measurement.points;
+			}else if(profile){
+				points = profile.points;
+			}else if(volume){
+				points = [volume.getWorldPosition()];
+			}
+			
+			for(var i = 0; i < points.length; i++){
+				var point = points[i];
 				var geoCoord = viewer.toGeo(point);
 	
 				var txt = geoCoord.x.toFixed(2) + ", ";
@@ -543,18 +632,98 @@ function initMeasurementDetails(){
 				
 				$(elPanelBody).append(elNodeMarker);
 				
-				if(i < measurement.points.length - 1){
+				if(i < points.length - 1){
+					if(measurement && measurement.showDistances){
+						
+						var elEdge = $('<div>').addClass("measurement-detail-edge");
+						$(elPanelBody).append(elEdge);
+						
+						var nextPoint = points[i+1];
+						var nextGeo = viewer.toGeo(nextPoint);
+						var distance = nextGeo.distanceTo(geoCoord);
+						var txt = Potree.utils.addCommas(distance.toFixed(2));
+						
+						var elNodeDistance = $('<div>').addClass("measurement-detail-node-distance");
+						elNodeDistance.html(txt);
+						
+						$(elPanelBody).append(elNodeDistance);
+						
+						//var elEdge = $('<div>').addClass("measurement-detail-edge");
+						//$(elPanelBody).append(elEdge);
+					}
+				}
+				
+				if(measurement && measurement.showAngles){
+					var elEdge = $('<div>').addClass("measurement-detail-edge");
+					$(elPanelBody).append(elEdge);
+					
+					var angle = measurement.getAngle(i);
+					var txt = Potree.utils.addCommas((angle*(180.0/Math.PI)).toFixed(1)) + '\u00B0';
+					var elNodeAngle = $('<div>').addClass("measurement-detail-node-angle");
+					elNodeAngle.html(txt);
+					$(elPanelBody).append(elNodeAngle);
+					
+					//if(i < points.length - 1){
+					//	var elEdge = $('<div>').addClass("measurement-detail-edge");
+					//	$(elPanelBody).append(elEdge);
+					//}
+				}
+				
+				if(i < points.length - 1){
 					var elEdge = $('<div>').addClass("measurement-detail-edge");
 					$(elPanelBody).append(elEdge);
 				}
 			}
+			
+			if(measurement && measurement.showArea){
+				var txt = Potree.utils.addCommas(measurement.getArea().toFixed(1)) + "²";
+				
+				var elNodeArea = $('<div>').addClass("measurement-detail-node-area");
+				elNodeArea.html(txt);
+				
+				$(elPanelBody).append(elNodeArea);
+			}
+			
+			if(profile){
+				var elOpenProfileWindow = $('<input type="button" value="show 2d profile">')
+					.addClass("measurement-detail-button");
+				$(elPanelBody).append(elOpenProfileWindow);
+			}
+			
 		};
 		
-		viewer.measuringTool.addEventListener("marker_added", updateDisplay);
-		viewer.measuringTool.addEventListener("marker_removed", updateDisplay);
-		viewer.measuringTool.addEventListener("marker_moved", updateDisplay);
+		if(measurement){
+			viewer.measuringTool.addEventListener("marker_added", updateDisplay);
+			viewer.measuringTool.addEventListener("marker_removed", updateDisplay);
+			viewer.measuringTool.addEventListener("marker_moved", updateDisplay);
+			viewer.measuringTool.addEventListener("measurement_removed", function(event){
+				if(event.measurement === measurement){
+					viewer.measuringTool.removeEventListener("marker_added", updateDisplay);
+					viewer.measuringTool.removeEventListener("marker_removed", updateDisplay);
+					viewer.measuringTool.removeEventListener("marker_moved", updateDisplay);
+					$(elLi).remove();
+				}
+			});
+		}else if(profile){
+			viewer.profileTool.addEventListener("marker_added", updateDisplay);
+			viewer.profileTool.addEventListener("marker_removed", updateDisplay);
+			viewer.profileTool.addEventListener("marker_moved", updateDisplay);
+			viewer.profileTool.addEventListener("profile_removed", function(event){
+				if(event.profile === profile){
+					viewer.profileTool.removeEventListener("marker_added", updateDisplay);
+					viewer.profileTool.removeEventListener("marker_removed", updateDisplay);
+					viewer.profileTool.removeEventListener("marker_moved", updateDisplay);
+					$(elLi).remove();
+				}
+			});
+		}
 		
-	});
+		
+	};
+
+	viewer.measuringTool.addEventListener("measurement_added", callback);
+	viewer.profileTool.addEventListener("profile_added", callback);
+	viewer.volumeTool.addEventListener("volume_added", callback);
 };
 
 

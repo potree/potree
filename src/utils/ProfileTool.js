@@ -192,6 +192,10 @@ Potree.HeightProfile = function(){
 		this.update();
 	};
 	
+	this.getWidth = function(){
+		return this.width;
+	};
+	
 	this.update = function(){
 	
 		if(this.points.length === 0){
@@ -377,7 +381,7 @@ Potree.ProfileTool = function(scene, camera, renderer){
 				var pos = I.clone();
 				
 				if(scope.activeProfile.points.length === 1 && scope.activeProfile.width === null){
-					scope.activeProfile.setWidth(camera.position.distanceTo(pos) / 50);
+					scope.activeProfile.setWidth((camera.position.distanceTo(pos) / 50).toFixed(3));
 				}
 				
 				scope.activeProfile.addMarker(pos);
@@ -615,9 +619,10 @@ Potree.ProfileTool = function(scene, camera, renderer){
 		var index = this.profiles.indexOf(profile);
 		if(index >= 0){
 			this.profiles.splice(index, 1);
+			
+			this.dispatchEvent({"type": "profile_removed", profile: profile});
 		}
 		
-		this.dispatchEvent({"type": "profile_removed", profile: profile});
 	};
 	
 	this.reset = function(){

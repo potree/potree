@@ -194,6 +194,19 @@ Potree.Measure = function(){
         return v1.angleTo(v2);
     };
 	
+	this.getAngle = function(index){
+	
+		if(this.points.length < 3 || index >= this.points.length){
+			return 0;
+		}
+		
+		var previous = (index === 0) ? this.points[this.points.length-1] : this.points[index-1];
+		var point = this.points[index];
+		var next = this.points[(index + 1) % (this.points.length)];
+		
+		return this.getAngleBetweenLines(point, previous, next);
+	};
+	
 	this.update = function(){
 	
 		if(this.points.length === 0){
@@ -649,6 +662,8 @@ Potree.MeasuringTool = function(scene, camera, renderer, toGeo){
 		var index = this.measurements.indexOf(measurement);
 		if(index >= 0){
 			this.measurements.splice(index, 1);
+			
+			this.dispatchEvent({"type": "measurement_removed", measurement: measurement});
 		}
 	};
 	

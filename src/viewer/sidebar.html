@@ -689,6 +689,10 @@ function initMeasurementDetails(){
 			if(profile){
 				var elOpenProfileWindow = $('<input type="button" value="show 2d profile">')
 					.addClass("measurement-detail-button");
+				elOpenProfileWindow[0].onclick = function(){
+					viewer._2dprofile.show();
+					viewer._2dprofile.draw(profile);
+				};
 				$(elPanelBody).append(elOpenProfileWindow);
 			}
 			

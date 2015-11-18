@@ -164,6 +164,9 @@
 	transition: top .35s, left .35s, bottom .35s, right .35s, width .35s;
 }
 
+.profile-container-button{
+	cursor: pointer;
+}
 
 
 
@@ -180,7 +183,20 @@
   background: rgba(0, 0, 0, 0.5);
 }
 
+.pv-titlebar{
+	background-color: #7A8184;
+	color: ##39474B;
+	font-weight: 700;
+	padding: 5px;
+}
 
+.pv-main-color{
+	background: #19282C;
+}
+
+.profile-button:hover{
+	background-color: #0000CC;
+}
 
 
 

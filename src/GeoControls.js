@@ -31,6 +31,11 @@ Potree.GeoControls = function ( object, domElement ) {
 	// Set to false to disable this control
 	this.enabled = true;
 
+	// Set this to a THREE.SplineCurve3 instance
+	this.track = null;
+	// position on track in intervall [0,1]
+	this.trackPos = 0;
+	
 	this.rotateSpeed = 1.0;
 	this.moveSpeed = 10.0;
 
@@ -83,6 +88,37 @@ Potree.GeoControls = function ( object, domElement ) {
 	var changeEvent = { type: 'change' };
 	var startEvent = { type: 'start'};
 	var endEvent = { type: 'end'};
+	
+	this.setTrack = function(track){
+		if(this.track !== track){
+			this.track = track;
+			this.trackPos = 0;
+		}
+	};
+	
+	this.setTrackPos = function(trackPos){
+	
+		var newTrackPos = Math.max(0, Math.min(1, trackPos));
+		var oldTrackPos = this.trackPos;
+		
+		var pStart = this.track.getPointAt(oldTrackPos);
+		var pEnd = this.track.getPointAt(newTrackPos);
+		var pDiff = pEnd.sub(pStart);
+		
+		this.trackPos = newTrackPos;
+		
+		if(newTrackPos !== oldTrackPos){
+			var event = {
+				type: 'move',
+				translation: pan.clone()
+			};
+			this.dispatchEvent(event);
+		}
+	}
+	
+	this.getTrackPos = function(){
+		return this.trackPos;
+	};
 
 	this.rotateLeft = function ( angle ) {
 		thetaDelta -= angle;
@@ -121,15 +157,18 @@ Potree.GeoControls = function ( object, domElement ) {
 	// pass in distance in world space to move forward
 	this.panForward = function ( distance ) {
 
-		var te = this.object.matrix.elements;
+		if(this.track){
+			this.setTrackPos( this.getTrackPos() - distance / this.track.getLength());
+		}else{
+			var te = this.object.matrix.elements;
 
-		// get Y column of matrix
-		panOffset.set( te[ 8 ], te[ 9 ], te[ 10 ] );
-		//panOffset.set( te[ 8 ], 0, te[ 10 ] );
-		panOffset.multiplyScalar( distance );
-		
-		pan.add( panOffset );
-
+			// get Y column of matrix
+			panOffset.set( te[ 8 ], te[ 9 ], te[ 10 ] );
+			//panOffset.set( te[ 8 ], 0, te[ 10 ] );
+			panOffset.multiplyScalar( distance );
+			
+			pan.add( panOffset );
+		}
 	};
 	
 	this.pan = function ( deltaX, deltaY ) {
@@ -273,6 +312,11 @@ Potree.GeoControls = function ( object, domElement ) {
 			this.dispatchEvent( changeEvent );
 
 			lastPosition.copy( this.object.position );
+		}
+		
+		if(this.track){
+			var pos = this.track.getPointAt(this.trackPos);
+			object.position.copy(pos);
 		}
 	};
 

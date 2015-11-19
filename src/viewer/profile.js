@@ -169,17 +169,51 @@ Potree.Viewer.Profile = function(viewer, element){
 		}
 		scope.requests = [];
 		
-		var drawPoints = function(canvas, points, scaleX, scaleY) {
+		var drawPoints = function(context, points, rangeX, rangeY, scaleX, scaleY) {
+		
+		
+			var mileage = 0;
+			for(var i = 0; i < profile.points.length; i++){
+				var point = profile.points[i];
+				var pointGeo = scope.viewer.toGeo(point);
+				
+				if(i > 0){
+					var previousGeo = scope.viewer.toGeo(profile.points[i-1]);
+					var dx = pointGeo.x - previousGeo.x;
+					var dy = pointGeo.y - previousGeo.y;
+					var distance = Math.sqrt(dx * dx + dy * dy);
+					mileage += distance;
+				}
+				
+				var radius = 4;
+				
+				var cx = scaleX(mileage);
+				var cy = context.canvas.clientHeight;
+				
+				//context.strokeStyle = '#311';
+				//context.beginPath();
+				//context.moveTo(cx, cy);
+				//context.lineTo(cx, 0);
+				//context.stroke();
+				//context.restore();
+				
+				context.beginPath();
+				context.arc(cx, cy, radius, 0, 2 * Math.PI, false);
+				context.fillStyle = '#a22';
+				context.fill();
+			};
+		
+		
 			var pointSize = 2;
 			var i = -1, n = points.length, d, cx, cy;
 			while (++i < n) {
 				d = points[i];
 				cx = scaleX(d.distance);
 				cy = scaleY(d.altitude);
-				canvas.moveTo(cx, cy);
-				canvas.fillRect(cx, cy, pointSize, pointSize);
-				//canvas.fillStyle = pv.profile.strokeColor(d);
-				canvas.fillStyle = d.color;
+				context.moveTo(cx, cy);
+				context.fillStyle = d.color;
+				context.fillRect(cx, cy, pointSize, pointSize);
+				//context.fillStyle = pv.profile.strokeColor(d);
 			}
 		};
 		
@@ -192,12 +226,15 @@ Potree.Viewer.Profile = function(viewer, element){
 			var width = containerWidth - (margin.left + margin.right);
 			var height = containerHeight - (margin.top + margin.bottom);
 			
+			var rangeX = [d3.min(dd.points, function(d) { return d.distance; }), d3.max(dd.points, function(d) { return d.distance; })];
+			var rangeY = [d3.min(dd.points, function(d) { return d.altitude; }), d3.max(dd.points, function(d) { return d.altitude; })];
+			
 			var scaleX = d3.scale.linear().range([0, width]);
-			scaleX.domain([d3.min(dd.points, function(d) { return d.distance; }), d3.max(dd.points, function(d) { return d.distance; })]);
+			scaleX.domain(rangeX);
 
 			// Y scale
 			var scaleY = d3.scale.linear().range([height,0]);
-			scaleY.domain([d3.min(dd.points, function(d) { return d.altitude; }), d3.max(dd.points, function(d) { return d.altitude; })]);
+			scaleY.domain(rangeY);
 			
 			var zoom = d3.behavior.zoom()
 			.x(scaleX)
@@ -217,7 +254,7 @@ Potree.Viewer.Profile = function(viewer, element){
 				svg.select(".y.axis").call(yAxis);
 
 				canvas.clearRect(0, 0, width, height);
-				drawPoints(canvas, dd.points, scaleX, scaleY);
+				drawPoints(canvas, dd.points, rangeX, rangeY, scaleX, scaleY);
 			});
 			
 			var canvas = d3.select("#profileCanvas")
@@ -225,6 +262,7 @@ Potree.Viewer.Profile = function(viewer, element){
 			.attr("height", height)
 			.call(zoom)
 			.node().getContext("2d");
+			
 			
 			//d3.select("svg#profile_draw_container").remove();
 			d3.select("svg#profileSVG").selectAll("*").remove();
@@ -256,16 +294,13 @@ Potree.Viewer.Profile = function(viewer, element){
 				.ticks(10, "m");
 				
 			// Append axis to the chart
-			svg.append("g")
+			var gx = svg.append("g")
 				.attr("class", "x axis")
 				.call(xAxis);
 
-			var gy = svg.append("g")
+			svg.append("g")
 				.attr("class", "y axis")
 				.call(yAxis);
-
-			//gy.selectAll("g").filter(function(d) { return d; })
-			//	.classed("minor", true);
 				
 			if(navigator.userAgent.indexOf("Firefox") == -1 ) {
 				svg.select(".y.axis").attr("transform", "translate("+ (margin.left).toString() + "," + margin.top.toString() + ")");
@@ -274,7 +309,7 @@ Potree.Viewer.Profile = function(viewer, element){
 				svg.select(".x.axis").attr("transform", "translate( 0 ," + height.toString() + ")");
 			}
 			
-			drawPoints(canvas, dd.points, scaleX, scaleY);
+			drawPoints(canvas, dd.points, rangeX, rangeY, scaleX, scaleY);
 			
 			document.getElementById("profile_num_points").innerHTML = Potree.utils.addCommas(scope.pointsProcessed);
 		};

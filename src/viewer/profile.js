@@ -158,8 +158,9 @@ Potree.Viewer.Profile = function(viewer, element){
 		if(!scope.__drawData){
 			scope.__drawData = {};
 		}
-		var dd = scope.__drawData;
-		dd.points = [];
+		scope.points = [];
+		scope.rangeX = [Infinity, -Infinity];
+		scope.rangeY = [Infinity, -Infinity];
 		
 		scope.pointsProcessed = 0;
 		
@@ -225,15 +226,29 @@ Potree.Viewer.Profile = function(viewer, element){
 			var width = containerWidth - (margin.left + margin.right);
 			var height = containerHeight - (margin.top + margin.bottom);
 			
-			var rangeX = [d3.min(dd.points, function(d) { return d.distance; }), d3.max(dd.points, function(d) { return d.distance; })];
-			var rangeY = [d3.min(dd.points, function(d) { return d.altitude; }), d3.max(dd.points, function(d) { return d.altitude; })];
+			var scaleX = d3.scale.linear();
+			var scaleY = d3.scale.linear();
 			
-			var scaleX = d3.scale.linear().range([0, width]);
-			scaleX.domain(rangeX);
-
-			// Y scale
-			var scaleY = d3.scale.linear().range([height,0]);
-			scaleY.domain(rangeY);
+			var domainProfileWidth = scope.rangeX[1] - scope.rangeX[0];
+			var domainProfileHeight = scope.rangeY[1] - scope.rangeY[0];
+			var domainRatio = domainProfileWidth / domainProfileHeight;
+			var rangeProfileWidth = width;
+			var rangeProfileHeight = height;
+			var rangeRatio = rangeProfileWidth / rangeProfileHeight;
+			
+			if(domainRatio < rangeRatio){
+				scaleY.range([height, 0]);
+				
+				var targetWidth = domainProfileWidth * (rangeProfileHeight / domainProfileHeight);
+				scaleX.range([width / 2 - targetWidth / 2, width / 2 + targetWidth / 2]);
+			}else{
+				scaleX.range([0, width]);
+				
+				var targetHeight = domainProfileHeight* (rangeProfileWidth / domainProfileWidth);
+				scaleY.range([height / 2 + targetHeight / 2, height / 2 - targetHeight / 2]);
+			}
+			scaleX.domain(scope.rangeX);
+			scaleY.domain(scope.rangeY);
 			
 			var zoom = d3.behavior.zoom()
 			.x(scaleX)
@@ -253,7 +268,7 @@ Potree.Viewer.Profile = function(viewer, element){
 				svg.select(".y.axis").call(yAxis);
 
 				canvas.clearRect(0, 0, width, height);
-				drawPoints(canvas, dd.points, rangeX, rangeY, scaleX, scaleY);
+				drawPoints(canvas, scope.points, scope.rangeX, scope.rangeY, scaleX, scaleY);
 			});
 			
 			var canvas = d3.select("#profileCanvas")
@@ -308,7 +323,7 @@ Potree.Viewer.Profile = function(viewer, element){
 				svg.select(".x.axis").attr("transform", "translate( 0 ," + height.toString() + ")");
 			}
 			
-			drawPoints(canvas, dd.points, rangeX, rangeY, scaleX, scaleY);
+			drawPoints(canvas, scope.points, scope.rangeX, scope.rangeY, scaleX, scaleY);
 			
 			document.getElementById("profile_num_points").innerHTML = Potree.utils.addCommas(scope.pointsProcessed);
 		};
@@ -329,7 +344,14 @@ Potree.Viewer.Profile = function(viewer, element){
 					}
 					
 					var result = scope.preparePoints(event.points);
-					dd.points = dd.points.concat(result.data);
+					var points = result.data;
+					scope.points = scope.points.concat(points);
+					
+					var batchRangeX = [d3.min(points, function(d) { return d.distance; }), d3.max(points, function(d) { return d.distance; })];
+					var batchRangeY = [d3.min(points, function(d) { return d.altitude; }), d3.max(points, function(d) { return d.altitude; })];
+					
+					scope.rangeX = [ Math.min(scope.rangeX[0], batchRangeX[0]), Math.max(scope.rangeX[1], batchRangeX[1]) ];
+					scope.rangeY = [ Math.min(scope.rangeY[0], batchRangeY[0]), Math.max(scope.rangeY[1], batchRangeY[1]) ];
 					
 					setupAndDraw();
 					

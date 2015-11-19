@@ -87,8 +87,6 @@
 	   <h3>Settings</h3>
 	  <div>
 		<ul class="pv-menu-list">
-			<li><label><input type="checkbox" onClick="viewer.setShowStats(this.checked)"/>&nbsp;show stats</label></li>
-			<li><label><input type="checkbox" onClick="viewer.setShowDebugInfos(this.checked)"/>&nbsp;show debug infos</label></li>
 			<li><label><input type="checkbox" onClick="viewer.setShowBoundingBox(this.checked)"/>&nbsp;show bounding box</label></li>
 			<li><label><input type="checkbox" onClick="viewer.setFreeze(this.checked)"/>&nbsp;freeze</label></li>
 		
@@ -276,12 +274,11 @@ function initMaterials(){
 	}
 	
 	$("#optMaterial").val(viewer.getMaterialName()).selectmenu("refresh")
-	
 	$("#optMaterial").selectmenu({
 		change: function(event, ui){
 			viewer.setMaterial(ui.item.value);
 		}
-	})
+	});
 }
 
 function initClassificationList(){
@@ -358,6 +355,20 @@ function initAppearance(){
 
 	$( "#optPointSizing" ).selectmenu();
 	$( "#optQuality" ).selectmenu();
+	
+	$("#optPointSizing").val(viewer.getPointSizing()).selectmenu("refresh")
+	$("#optPointSizing").selectmenu({
+		change: function(event, ui){
+			viewer.setPointSizing(ui.item.value);
+		}
+	});
+	
+	$("#optQuality").val(viewer.getQuality()).selectmenu("refresh")
+	$("#optQuality").selectmenu({
+		change: function(event, ui){
+			viewer.setQuality(ui.item.value);
+		}
+	});
 
 
 	$( "#sldPointBudget" ).slider({

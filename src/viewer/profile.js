@@ -100,17 +100,16 @@ Potree.Viewer.Profile = function(viewer, element){
 				var alpha = Math.acos(cosAlpha);
 				var dist = hypo * cosAlpha + totalDistance;
 				if (!isNaN(dist)) {
-					data.push({
-						'distance': dist,
-						'x': p.x,
-						'y': p.y,
-						'altitude': p.z,
-						'color': 'rgb(' + points.color[j][0] * 100 + '%,' + points.color[j][1] * 100 + '%,' + points.color[j][2] * 100 + '%)',
-						'intensity': 'rgb(' + points.intensity[j] + '%,' + points.intensity[j] + '%,' + points.intensity[j] + '%)',
-						'intensityCode': points.intensity[j],
-						//'heightColor': colorRamp(p.z),
-						'classificationCode': points.classification[j]
-					});
+					var d =	{ };
+					d.distance = dist;
+					d.x = p.x;
+					d.y = p.y;
+					d.altitude = p.z;
+					d.color = points.color ? 'rgb(' + points.color[j][0] * 100 + '%,' + points.color[j][1] * 100 + '%,' + points.color[j][2] * 100 + '%)' : 'rgb(0,0,0)';
+					d.intensity = points.intensity ? 'rgb(' + points.intensity[j] + '%,' + points.intensity[j] + '%,' + points.intensity[j] + '%)' : 'rgb(0,0,0)';
+					d.intensityCode = points.intensity ? points.intensity[j] : 0;
+					d.classificationCode = points.classification ? points.classification[j] : 0;
+					data.push(d);
 				}
 			}
 

@@ -1,6 +1,6 @@
 
 
-<div class="navmenu navmenu-default navmenu-fixed-left">
+<div class="navmenu navmenu-default navmenu-fixed-left unselectable">
   <a class="navmenu-brand" href="http://potree.org" target="_blank">Potree.org</a>
   
   <div id="accordion" class="accordion">
@@ -12,35 +12,27 @@
 		<li>Point Size: <span id="lblPointSize"></span> <div id="sldPointSize"></div>		</li>
 		<li>Field of View: <span id="lblFOV"></span><div id="sldFOV"></div>					</li>
 		<li>Opacity: <span id="lblOpacity"></span><div id="sldOpacity"></div>				</li>
-
-					
-		<li><label class="menu-item"><input type="checkbox" onClick="viewer.setShowSkybox(this.checked)"/>&nbsp;Skybox</label></li>
 	   
-		<li>
-		<table>
-			<tr>
-				<td>Point Sizing</td>
-				<td>
-					<select>
-						<option>Fixed</option>
-						<option>Attenuated</option>
-						<option>Adaptive</option>
-					</select>
-				</td>
-			</tr>
-			<tr>
-				<td>Quality</td>
-				<td>
-					<select>
-						<option>Squares</option>
-						<option>Circles</option>
-						<option>Interpolation</option>
-						<option>HQ-Splats</option>
-					</select>
-				</td>
-			</tr>
-		</table>
+	   <li>
+		   <label for="optPointSizing" class="pv-select-label">Point Sizing </label>
+		   <select id="optPointSizing" name="optPointSizing">
+				<option>Fixed</option>
+				<option>Attenuated</option>
+				<option>Adaptive</option>
+			</select>
 		</li>
+		
+		<li>
+		   <label for="optQuality" class="pv-select-label">Quality </label>
+		   <select id="optQuality" name="optQuality">
+				<option>Squares</option>
+				<option>Circles</option>
+				<option>Interpolation</option>
+				<option>HQ-Splats</option>
+			</select>
+		</li>		
+	   
+		<li><label class="menu-item"><input type="checkbox" onClick="viewer.setShowSkybox(this.checked)"/>&nbsp;Skybox</label></li>
 		
 		<li class="pv-divider"></li>
 		<li class="pv-menu-list-header">Eye-Dome-Lighting</li>
@@ -68,43 +60,21 @@
 	  </div>
 	  <h3>Measurements</h3>
 	  <div>
-		<ul class="pv-menu-list" id="measurement_details">
-		<!--
-		<li>
-			<div class="panel panel-default">
-			  <div class="panel-heading pv-panel-heading" style="display: flex; flex-direction: row">
-				<img src="../resources/icons/distance.png" style="width: 16px; height: 16px" /> 
-				<span style="flex-grow:1"> </span>
-				<img src="../resources/icons/remove.svg" style="width: 16px; height: 16px" /> 
-			  </div>
-			  <div class="panel-body">
-				<div class="measurement-detail-node-marker" >423, 413, 75464</div>
-				<div class="measurement-detail-edge" > </div>
-				<div class="measurement-detail-node-distance" > 12,001.37 </div>
-				<div class="measurement-detail-edge" > </div>
-				<div class="measurement-detail-node-marker" >423, 413, 75464</div>
-				<div class="measurement-detail-edge" > </div>
-				<div class="measurement-detail-node-distance" > 97 </div>
-				<div class="measurement-detail-edge" > </div>
-				<div class="measurement-detail-node-marker" >423, 413, 75464</div>
-			  </div>
-			</div>
-		</li>
-		
-		<li>
-			<div class="panel panel-default">
-			  <div class="panel-heading potree">Panel heading without title</div>
-			  <div class="panel-body">
-				Panel content
-			  </div>
-			</div>
-		</li>
-		-->
-		</ul>
+		<ul class="pv-menu-list selectable" id="measurement_details"></ul>
 	  </div>
 	  <h3>Material</h3>
 	  <div>
-		<ul id="materialList" class="pv-menu-list"></ul>
+		<ul class="pv-menu-list">
+		<li>
+		   <label for="optMaterial" class="pv-select-label">Select Attribute </label><br>
+		   <select id="optMaterial" name="optMaterial">
+		   </select>
+		</li>
+		
+		<li>Height Range: <span id="lblHeightRange"></span> <div id="sldHeightRange"></div>	</li>
+		
+		</ul>
+		<!--<ul id="materialList" class="pv-menu-list"></ul>-->
 	  </div>
 	  <h3>Scene</h3>
 	  <div>
@@ -154,6 +124,7 @@ var createToolIcon = function(icon, title, callback){
 	elImg.onclick = callback;
 	elImg.style.width = "32px";
 	elImg.style.height = "32px";
+	elImg.classList.add("button-icon");
 	
 	return elImg;
 };
@@ -215,6 +186,71 @@ function initToolbar(){
 }
 
 function initMaterials(){
+	
+	$( "#optMaterial" ).selectmenu({
+		style:'popup',
+		position: { 
+			my: "top", 
+			at: "bottom", 
+			collision: "flip" }	
+	});
+		
+	$( "#sldHeightRange" ).slider({
+		range: true,
+		min:	0,
+		max:	1000,
+		values: [0, 1000],
+		step: 	0.01,
+		slide: function( event, ui ) {
+			var local = {
+				min: viewer.toLocal(new THREE.Vector3(0, 0, ui.values[0])).y,
+				max: viewer.toLocal(new THREE.Vector3(0, 0, ui.values[1])).y,
+			};
+			viewer.setHeightRange(local.min, local.max);
+		}
+	});
+
+	var updateHeightRange = function(){
+		var box = viewer.getBoundingBox();
+		var geoMin = viewer.toGeo(box.min).z;
+		var geoMax = viewer.toGeo(box.max).z;
+		
+		var hr = viewer.getHeightRange();
+		var hrGeo = {
+			min: viewer.toGeo(new THREE.Vector3(0, hr.min, 0)).z,
+			max: viewer.toGeo(new THREE.Vector3(0, hr.max, 0)).z,
+		};
+		
+		var vMin = hr.min ? hrGeo.min : geoMin;
+		var vMax = hr.max ? hrGeo.max : geoMax;
+		
+		$( '#lblHeightRange')[0].innerHTML = hrGeo.min.toFixed(2) + " to " + hrGeo.max.toFixed(2);
+		$( "#sldHeightRange" ).slider({
+			min: geoMin,
+			max: geoMax,
+			values: [vMin, vMax]
+		});
+	};
+	
+	viewer.addEventListener("height_range_changed", function(event){
+		updateHeightRange();
+		var hr = viewer.getHeightRange();
+		var hrGeo = {
+			min: viewer.toGeo(new THREE.Vector3(0, hr.min, 0)).z,
+			max: viewer.toGeo(new THREE.Vector3(0, hr.max, 0)).z,
+		};
+		
+		$( '#lblHeightRange')[0].innerHTML = hrGeo.min.toFixed(2) + " to " + hrGeo.max.toFixed(2);
+		$( "#sldHeightRange" ).slider({values: [hrGeo.min, hrGeo.max]});
+	});
+	
+	viewer.addEventListener("pointcloud_loaded", updateHeightRange);
+	
+	updateHeightRange();
+	
+	//var hr = viewer.getHeightRange();
+	//$('#lblHeightRange')[0].innerHTML = hr.min.toFixed(2) + " to " + hr.max.toFixed(2);
+
 	var options = [ 
 		"RGB", 
 		"Color", 
@@ -228,35 +264,24 @@ function initMaterials(){
 		"Tree Depth"	
 	];
 	
-	var elMaterialList = document.getElementById("materialList");
+	var elMaterialList = document.getElementById("optMaterial");
 	for(var i = 0; i < options.length; i++){
 		var option = options[i];
 		
-		var elDiv = document.createElement("li");
-		var elLabel = document.createElement("label");
-		var elRadio = document.createElement("input");
-		var elText = document.createTextNode(" " + option);
+		var elOption = document.createElement("option");
+		elOption.innerHTML = option;
+		elOption.id = "optMaterial_" + option;
 		
-		elRadio.type = "radio";
-		elRadio.name = "optMaterial";
-		elRadio.id = "optMaterial_" + option;
-		elRadio.checked = this.material === option;
-		elLabel.style.whiteSpace = "nowrap";
-		
-		elRadio.onchange = (function(matName){
-			return function(event){
-				viewer.setMaterial(matName);
-			};
-			
-		})(option);
-		
-		elLabel.appendChild(elRadio);
-		elLabel.appendChild(elText);
-		elDiv.appendChild(elLabel);
-		
-		elMaterialList.appendChild(elDiv);
-		
+		elMaterialList.appendChild(elOption);
 	}
+	
+	$("#optMaterial").val(viewer.getMaterialName()).selectmenu("refresh")
+	
+	$("#optMaterial").selectmenu({
+		change: function(event, ui){
+			viewer.setMaterial(ui.item.value);
+		}
+	})
 }
 
 function initClassificationList(){
@@ -330,6 +355,11 @@ function initAccordion(){
 }
 
 function initAppearance(){
+
+	$( "#optPointSizing" ).selectmenu();
+	$( "#optQuality" ).selectmenu();
+
+
 	$( "#sldPointBudget" ).slider({
 		value: viewer.getPointBudget(),
 		min: 100*1000,
@@ -771,7 +801,7 @@ function initSceneList(){
 		
 		elLi.append(elLabel);
 		elLabel.append(elInput);
-		elLabel.append(document.createTextNode("point cloud " + id));
+		elLabel.append(document.createTextNode(" point cloud " + id));
 		
 		scenelist.append(elLi);
 		
@@ -780,12 +810,10 @@ function initSceneList(){
 	
 	for(var i = 0; i < viewer.pointclouds.length; i++){
 		var pointcloud = viewer.pointclouds[i];
-		console.log("woohoo");
 		addPointcloud(pointcloud);
 	}
 	
 	viewer.addEventListener("pointcloud_loaded", function(event){
-		console.log("yeahhaaa");
 		addPointcloud(event.pointcloud);
 	});
 };

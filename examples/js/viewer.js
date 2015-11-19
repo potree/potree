@@ -126,6 +126,17 @@ Potree.Viewer = function(domElement, args){
 			
 			scope.zoomTo(pointcloud, 1);
 			
+			
+			var hr = scope.getHeightRange();
+			if(hr.min === null || hr.max === null){
+				var bbWorld = scope.getBoundingBox();
+				
+				scope.setHeightRange(bbWorld.min.y, bbWorld.max.y);
+			}
+			
+			
+			
+			
 			scope.earthControls.pointclouds.push(pointcloud);	
 			
 			scope.dispatchEvent({"type": "pointcloud_loaded", "pointcloud": pointcloud});
@@ -402,32 +413,7 @@ Potree.Viewer = function(domElement, args){
 
 	this.setMaterial = function(value){
 		if(this.material !== value){
-			this.material = value;
-			if(value === "RGB"){
-				scope.pointColorType = Potree.PointColorType.RGB;
-			}else if(value === "Color"){
-				scope.pointColorType = Potree.PointColorType.COLOR;
-			}else if(value === "Elevation"){
-				scope.pointColorType = Potree.PointColorType.HEIGHT;
-			}else if(value === "Intensity"){
-				scope.pointColorType = Potree.PointColorType.INTENSITY;
-			}else if(value === "Intensity Gradient"){
-				scope.pointColorType = Potree.PointColorType.INTENSITY_GRADIENT;
-			}else if(value === "Classification"){
-				scope.pointColorType = Potree.PointColorType.CLASSIFICATION;
-			}else if(value === "Return Number"){
-				scope.pointColorType = Potree.PointColorType.RETURN_NUMBER;
-			}else if(value === "Source"){
-				scope.pointColorType = Potree.PointColorType.SOURCE;
-			}else if(value === "Tree Depth"){
-				scope.pointColorType = Potree.PointColorType.TREE_DEPTH;
-			}else if(value === "Point Index"){
-				scope.pointColorType = Potree.PointColorType.POINT_INDEX;
-			}else if(value === "Normal"){
-				scope.pointColorType = Potree.PointColorType.NORMAL;
-			}else if(value === "Phong"){
-				scope.pointColorType = Potree.PointColorType.PHONG;
-			}
+			this.material = scope.toMaterialID(value);
 			
 			scope.dispatchEvent({"type": "material_changed", "viewer": scope});
 		}
@@ -435,6 +421,66 @@ Potree.Viewer = function(domElement, args){
 	
 	this.getMaterial = function(){
 		return scope.pointColorType;
+	};
+	
+	this.getMaterialName = function(){
+		return scope.toMaterialName(scope.pointColorType);
+	};
+	
+	this.toMaterialID = function(materialName){
+		if(materialName === "RGB"){
+			scope.pointColorType = Potree.PointColorType.RGB;
+		}else if(materialName === "Color"){
+			scope.pointColorType = Potree.PointColorType.COLOR;
+		}else if(materialName === "Elevation"){
+			scope.pointColorType = Potree.PointColorType.HEIGHT;
+		}else if(materialName === "Intensity"){
+			scope.pointColorType = Potree.PointColorType.INTENSITY;
+		}else if(materialName === "Intensity Gradient"){
+			scope.pointColorType = Potree.PointColorType.INTENSITY_GRADIENT;
+		}else if(materialName === "Classification"){
+			scope.pointColorType = Potree.PointColorType.CLASSIFICATION;
+		}else if(materialName === "Return Number"){
+			scope.pointColorType = Potree.PointColorType.RETURN_NUMBER;
+		}else if(materialName === "Source"){
+			scope.pointColorType = Potree.PointColorType.SOURCE;
+		}else if(materialName === "Tree Depth"){
+			scope.pointColorType = Potree.PointColorType.TREE_DEPTH;
+		}else if(materialName === "Point Index"){
+			scope.pointColorType = Potree.PointColorType.POINT_INDEX;
+		}else if(materialName === "Normal"){
+			scope.pointColorType = Potree.PointColorType.NORMAL;
+		}else if(materialName === "Phong"){
+			scope.pointColorType = Potree.PointColorType.PHONG;
+		}
+	};
+	
+	this.toMaterialName = function(materialID){
+		if(materialID === Potree.PointColorType.RGB){
+			return "RGB";
+		}else if(materialID === Potree.PointColorType.COLOR){
+			return "Color";
+		}else if(materialID === Potree.PointColorType.HEIGHT){
+			return "Elevation";
+		}else if(materialID === Potree.PointColorType.INTENSITY){
+			return "Intensity";
+		}else if(materialID === Potree.PointColorType.INTENSITY_GRADIENT){
+			return "Intensity Gradient";
+		}else if(materialID === Potree.PointColorType.CLASSIFICATION){
+			return "Classification";
+		}else if(materialID === Potree.PointColorType.RETURN_NUMBER){
+			return "Return Number";
+		}else if(materialID === Potree.PointColorType.SOURCE){
+			return "Source";
+		}else if(materialID === Potree.PointColorType.TREE_DEPTH){
+			return "Tree Depth";
+		}else if(materialID === Potree.PointColorType.POINT_INDEX){
+			return "Point Index";
+		}else if(materialID === Potree.PointColorType.NORMAL){
+			return "Normal";
+		}else if(materialID === Potree.PointColorType.PHONG){
+			return "Phong";
+		}
 	};
 	
 	this.zoomTo = function(node, factor){
@@ -465,10 +511,11 @@ Potree.Viewer = function(domElement, args){
 	this.getBoundingBox = function(pointclouds){
 		var box = new THREE.Box3();
 		
-		for(var i = 0; i < pointclouds.length; i++){
-			var pointcloud = pointclouds[i];
+		for(var i = 0; i < scope.pointclouds.length; i++){
+			var pointcloud = scope.pointclouds[i];
 			
-			var boxWorld = pointcloud.boundingBox.clone().applyMatrix4(pointcloud.matrixWorld);
+			//var boxWorld = pointcloud.boundingBox.clone().applyMatrix4(pointcloud.matrixWorld);
+			var boxWorld = Potree.utils.computeTransformedBoundingBox(pointcloud.boundingBox, pointcloud.matrixWorld)
 			box.union(boxWorld);
 		}
 		
@@ -994,10 +1041,9 @@ Potree.Viewer = function(domElement, args){
 				}
 			}
 			
-			if(scope.heightMin === null){
-				scope.heightMin = bbWorld.min.y;
-				scope.heightMax = bbWorld.max.y;
-			}
+			//if(scope.heightMin === null){
+			//	scope.setHeightRange(bbWorld.min.y, bbWorld.max.y);
+			//}
 				
 			pointcloud.material.clipMode = scope.clipMode;
 			pointcloud.material.heightMin = scope.heightMin;

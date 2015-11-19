@@ -93,6 +93,32 @@
 	border: 1px solid black;
 }
 
+.pv-menu-list > li > label{
+	width: 100%;
+}
+
+.pv-menu-list select{
+	width: 100%;
+}
+
+.pv-menu-list > li > span{
+	width: 100% !important;
+}
+
+.pv-select-label{
+	margin: 1px;
+	font-size: 90%;
+	font-weight: 100;
+}
+
+.pv-menu-list .ui-selectmenu-button span.ui-selectmenu-text{
+	line-height: 0.8em;
+}
+
+.button-icon:hover{
+	background-color: #09181C;
+}
+
 .ui-accordion-content{
 	padding: 0px 0px !important;
 	border: none !important;
@@ -196,6 +222,24 @@
 
 .profile-button:hover{
 	background-color: #0000CC;
+}
+
+.unselectable{
+	-webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.selectable{
+	-webkit-touch-callout: text;
+    -webkit-user-select: text;
+    -khtml-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
 }
 
 

@@ -1,0 +1,857 @@
+
+
+<div class="navmenu navmenu-default navmenu-fixed-left unselectable">
+  <a class="navmenu-brand" href="http://potree.org" target="_blank">Potree.org</a>
+  
+  <div id="accordion" class="accordion">
+	  <h3>Appearance</h3>
+	  <div>
+	  <ul class="pv-menu-list">
+	  
+		<li>Point Budget: <span id="lblPointBudget"></span> <div id="sldPointBudget"></div>	</li>
+		<li>Point Size: <span id="lblPointSize"></span> <div id="sldPointSize"></div>		</li>
+		<li>Field of View: <span id="lblFOV"></span><div id="sldFOV"></div>					</li>
+		<li>Opacity: <span id="lblOpacity"></span><div id="sldOpacity"></div>				</li>
+	   
+	   <li>
+		   <label for="optPointSizing" class="pv-select-label">Point Sizing </label>
+		   <select id="optPointSizing" name="optPointSizing">
+				<option>Fixed</option>
+				<option>Attenuated</option>
+				<option>Adaptive</option>
+			</select>
+		</li>
+		
+		<li>
+		   <label for="optQuality" class="pv-select-label">Quality </label>
+		   <select id="optQuality" name="optQuality">
+				<option>Squares</option>
+				<option>Circles</option>
+				<option>Interpolation</option>
+				<option>HQ-Splats</option>
+			</select>
+		</li>		
+	   
+		<li><label class="menu-item"><input type="checkbox" onClick="viewer.setShowSkybox(this.checked)"/>&nbsp;Skybox</label></li>
+		
+		<li class="pv-divider"></li>
+		<li class="pv-menu-list-header">Eye-Dome-Lighting</li>
+		
+		<li><label><input type="checkbox" id="chkEDLEnabled" onClick="viewer.setEDLEnabled(this.checked)"/>&nbsp;enable</label></li>
+		<li>radius: <span id="lblEDLRadius"></span><div id="sldEDLRadius"></div></li>
+		<li>strength: <span id="lblEDLStrength"></span><div id="sldEDLStrength"></div></li>
+		
+		</ul>
+	   
+	  </div>
+	  <h3>Navigation</h3>
+	  <div>
+		<ul class="pv-menu-list">
+			<li id="navigation"></li>
+			<li><label><input type="checkbox" onClick="viewer.setShowStats(this.checked)"/>&nbsp;keep above ground</label></li>
+			<li>move speed <span id="lblMoveSpeed"></span><div id="sldMoveSpeed"></div></li>
+		</ul>
+	  </div>
+	  <h3>Tools</h3>
+	  <div>
+		<ul class="pv-menu-list">
+		<li id="tools"></li>
+		</ul>
+	  </div>
+	  <h3>Measurements</h3>
+	  <div>
+		<ul class="pv-menu-list selectable" id="measurement_details"></ul>
+	  </div>
+	  <h3>Material</h3>
+	  <div>
+		<ul class="pv-menu-list">
+		<li>
+		   <label for="optMaterial" class="pv-select-label">Select Attribute </label><br>
+		   <select id="optMaterial" name="optMaterial">
+		   </select>
+		</li>
+		
+		<li>Height Range: <span id="lblHeightRange"></span> <div id="sldHeightRange"></div>	</li>
+		
+		</ul>
+		<!--<ul id="materialList" class="pv-menu-list"></ul>-->
+	  </div>
+	  <h3>Scene</h3>
+	  <div>
+		<ul id="sceneList" class="pv-menu-list"></ul>
+	  </div>
+	  <h3>Classification Filter</h3>
+	  <div>
+		<ul id="classificationList" class="pv-menu-list"></ul>
+	  </div>
+	   <h3>Settings</h3>
+	  <div>
+		<ul class="pv-menu-list">
+			<li><label><input type="checkbox" onClick="viewer.setShowBoundingBox(this.checked)"/>&nbsp;show bounding box</label></li>
+			<li><label><input type="checkbox" onClick="viewer.setFreeze(this.checked)"/>&nbsp;freeze</label></li>
+		
+		</ul>
+	  </div>
+	  <!--
+	  <h3>Help</h3>
+	  <div>
+		<p>
+		Cras dictum. Pellentesque habitant morbi tristique senectus et netus
+		et malesuada fames ac turpis egestas. Vestibulum ante ipsum primis in
+		faucibus orci luctus et ultrices posuere cubilia Curae; Aenean lacinia
+		mauris vel est.
+		</p>
+		<p>
+		Suspendisse eu nisl. Nullam ut libero. Integer dignissim consequat lectus.
+		Class aptent taciti sociosqu ad litora torquent per conubia nostra, per
+		inceptos himenaeos.
+		</p>
+	  </div>
+	  -->
+	</div>
+
+</div>
+
+
+<script>
+
+var createToolIcon = function(icon, title, callback){
+	var elImg = document.createElement("img");
+	elImg.src = icon;
+	elImg.title = title;
+	elImg.onclick = callback;
+	elImg.style.width = "32px";
+	elImg.style.height = "32px";
+	elImg.classList.add("button-icon");
+	
+	return elImg;
+};
+
+function initToolbar(){
+	var elToolbar = document.getElementById("tools");
+	
+	elToolbar.appendChild(createToolIcon(
+		"../resources/icons/angle.png",
+		"angle measurements",
+		function(){viewer.measuringTool.startInsertion({showDistances: false, showAngles: true, showArea: false, closed: true, maxMarkers: 3})}
+	));
+	
+	elToolbar.appendChild(createToolIcon(
+		"../resources/icons/point.png",
+		"angle measurements",
+		function(){viewer.measuringTool.startInsertion({showDistances: false, showAngles: false, showCoordinates: true, showArea: false, closed: true, maxMarkers: 1})}
+	));
+	
+	elToolbar.appendChild(createToolIcon(
+		"../resources/icons/distance.png",
+		"distance measurements",
+		function(){viewer.measuringTool.startInsertion({showDistances: true, showArea: false, closed: false})}
+	));
+	
+	elToolbar.appendChild(createToolIcon(
+		"../resources/icons/area.png",
+		"area measurements",
+		function(){viewer.measuringTool.startInsertion({showDistances: true, showArea: true, closed: true})}
+	));
+	
+	elToolbar.appendChild(createToolIcon(
+		"../resources/icons/volume.png",
+		"volume measurements",
+		function(){viewer.volumeTool.startInsertion()}
+	));
+	
+	elToolbar.appendChild(createToolIcon(
+		"../resources/icons/profile.png",
+		"height profiles",
+		function(){viewer.profileTool.startInsertion()}
+	));
+	
+	elToolbar.appendChild(createToolIcon(
+		"../resources/icons/clip_volume.png",
+		"clipping volumes",
+		function(){viewer.volumeTool.startInsertion({clip: true})}
+	));
+	
+	elToolbar.appendChild(createToolIcon(
+		"../resources/icons/reset_tools.svg",
+		"remove all measurements",
+		function(){
+			viewer.measuringTool.reset();
+			viewer.profileTool.reset();
+			viewer.volumeTool.reset();
+		}
+	));
+}
+
+function initMaterials(){
+	
+	$( "#optMaterial" ).selectmenu({
+		style:'popup',
+		position: { 
+			my: "top", 
+			at: "bottom", 
+			collision: "flip" }	
+	});
+		
+	$( "#sldHeightRange" ).slider({
+		range: true,
+		min:	0,
+		max:	1000,
+		values: [0, 1000],
+		step: 	0.01,
+		slide: function( event, ui ) {
+			var local = {
+				min: viewer.toLocal(new THREE.Vector3(0, 0, ui.values[0])).y,
+				max: viewer.toLocal(new THREE.Vector3(0, 0, ui.values[1])).y,
+			};
+			viewer.setHeightRange(local.min, local.max);
+		}
+	});
+
+	var updateHeightRange = function(){
+		var box = viewer.getBoundingBox();
+		var geoMin = viewer.toGeo(box.min).z;
+		var geoMax = viewer.toGeo(box.max).z;
+		
+		var hr = viewer.getHeightRange();
+		var hrGeo = {
+			min: viewer.toGeo(new THREE.Vector3(0, hr.min, 0)).z,
+			max: viewer.toGeo(new THREE.Vector3(0, hr.max, 0)).z,
+		};
+		
+		var vMin = hr.min ? hrGeo.min : geoMin;
+		var vMax = hr.max ? hrGeo.max : geoMax;
+		
+		$( '#lblHeightRange')[0].innerHTML = hrGeo.min.toFixed(2) + " to " + hrGeo.max.toFixed(2);
+		$( "#sldHeightRange" ).slider({
+			min: geoMin,
+			max: geoMax,
+			values: [vMin, vMax]
+		});
+	};
+	
+	viewer.addEventListener("height_range_changed", function(event){
+		updateHeightRange();
+		var hr = viewer.getHeightRange();
+		var hrGeo = {
+			min: viewer.toGeo(new THREE.Vector3(0, hr.min, 0)).z,
+			max: viewer.toGeo(new THREE.Vector3(0, hr.max, 0)).z,
+		};
+		
+		$( '#lblHeightRange')[0].innerHTML = hrGeo.min.toFixed(2) + " to " + hrGeo.max.toFixed(2);
+		$( "#sldHeightRange" ).slider({values: [hrGeo.min, hrGeo.max]});
+	});
+	
+	viewer.addEventListener("pointcloud_loaded", updateHeightRange);
+	
+	updateHeightRange();
+	
+	//var hr = viewer.getHeightRange();
+	//$('#lblHeightRange')[0].innerHTML = hr.min.toFixed(2) + " to " + hr.max.toFixed(2);
+
+	var options = [ 
+		"RGB", 
+		"Color", 
+		"Elevation", 
+		"Intensity", 
+		"Intensity Gradient", 
+		"Classification", 
+		"Return Number", 
+		"Source", 
+		"Phong",
+		"Tree Depth"	
+	];
+	
+	var elMaterialList = document.getElementById("optMaterial");
+	for(var i = 0; i < options.length; i++){
+		var option = options[i];
+		
+		var elOption = document.createElement("option");
+		elOption.innerHTML = option;
+		elOption.id = "optMaterial_" + option;
+		
+		elMaterialList.appendChild(elOption);
+	}
+	
+	$("#optMaterial").val(viewer.getMaterialName()).selectmenu("refresh")
+	$("#optMaterial").selectmenu({
+		change: function(event, ui){
+			viewer.setMaterial(ui.item.value);
+		}
+	});
+}
+
+function initClassificationList(){
+	var addClassificationItem = function(code, name){
+		var elClassificationList = document.getElementById("classificationList");
+		
+		var elLi = document.createElement("li");
+		var elLabel = document.createElement("label");
+		var elInput = document.createElement("input");
+		var elText = document.createTextNode(" " + name);
+		
+		elInput.id = "chkClassification_" + code;
+		elInput.type = "checkbox";
+		elInput.checked = true;
+		elInput.onclick = function(event){
+			viewer.setClassificationVisibility(code, event.target.checked);
+		}
+		
+		elLabel.style.whiteSpace = "nowrap";
+		
+		elClassificationList.appendChild(elLi);
+		elLi.appendChild(elLabel);
+		elLabel.appendChild(elInput);
+		elLabel.appendChild(elText);
+	};
+	
+	addClassificationItem(0, "never classified");
+	addClassificationItem(1, "unclassified");
+	addClassificationItem(2, "ground");
+	addClassificationItem(3, "low vegetation");
+	addClassificationItem(4, "medium vegetation");
+	addClassificationItem(5, "high vegetation");
+	addClassificationItem(6, "building");
+	addClassificationItem(7, "low point(noise)");
+	addClassificationItem(8, "key-point");
+	addClassificationItem(9, "water");
+	addClassificationItem(12, "overlap");
+}
+
+function initAccordion(){
+	$('#accordion').accordion({
+		autoHeight: true,
+		heightStyle: "content",
+        collapsible:true,
+        beforeActivate: function(event, ui) {
+             // The accordion believes a panel is being opened
+            if (ui.newHeader[0]) {
+                var currHeader  = ui.newHeader;
+                var currContent = currHeader.next('.ui-accordion-content');
+             // The accordion believes a panel is being closed
+            } else {
+                var currHeader  = ui.oldHeader;
+                var currContent = currHeader.next('.ui-accordion-content');
+            }
+             // Since we've changed the default behavior, this detects the actual status
+            var isPanelSelected = currHeader.attr('aria-selected') == 'true';
+            
+             // Toggle the panel's header
+            currHeader.toggleClass('ui-corner-all',isPanelSelected).toggleClass('accordion-header-active ui-state-active ui-corner-top',!isPanelSelected).attr('aria-selected',((!isPanelSelected).toString()));
+            
+            // Toggle the panel's icon
+            currHeader.children('.ui-icon').toggleClass('ui-icon-triangle-1-e',isPanelSelected).toggleClass('ui-icon-triangle-1-s',!isPanelSelected);
+            
+             // Toggle the panel's content
+            currContent.toggleClass('accordion-content-active',!isPanelSelected)    
+            if (isPanelSelected) { currContent.slideUp(); }  else { currContent.slideDown(); }
+
+            return false; // Cancels the default action
+        }
+    });
+}
+
+function initAppearance(){
+
+	$( "#optPointSizing" ).selectmenu();
+	$( "#optQuality" ).selectmenu();
+	
+	$("#optPointSizing").val(viewer.getPointSizing()).selectmenu("refresh")
+	$("#optPointSizing").selectmenu({
+		change: function(event, ui){
+			viewer.setPointSizing(ui.item.value);
+		}
+	});
+	
+	$("#optQuality").val(viewer.getQuality()).selectmenu("refresh")
+	$("#optQuality").selectmenu({
+		change: function(event, ui){
+			viewer.setQuality(ui.item.value);
+		}
+	});
+
+
+	$( "#sldPointBudget" ).slider({
+		value: viewer.getPointBudget(),
+		min: 100*1000,
+		max: 5*1000*1000,
+		step: 1000,
+		slide: function( event, ui ) {viewer.setPointBudget(ui.value);}
+	});
+	
+	$( "#sldPointSize" ).slider({
+		value: viewer.getPointSize(),
+		min: 0,
+		max: 3,
+		step: 0.01,
+		slide: function( event, ui ) {viewer.setPointSize(ui.value);}
+	});
+	
+	$( "#sldFOV" ).slider({
+		value: viewer.getFOV(),
+		min: 20,
+		max: 100,
+		step: 1,
+		slide: function( event, ui ) {viewer.setFOV(ui.value);}
+	});
+	
+	$( "#sldOpacity" ).slider({
+		value: viewer.getOpacity(),
+		min: 0,
+		max: 1,
+		step: 0.01,
+		slide: function( event, ui ) {viewer.setOpacity(ui.value);}
+	});
+	
+	$( "#sldEDLRadius" ).slider({
+		value: viewer.getEDLRadius(),
+		min: 1,
+		max: 4,
+		step: 0.01,
+		slide: function( event, ui ) {viewer.setEDLRadius(ui.value);}
+	});
+	
+	$( "#sldEDLStrength" ).slider({
+		value: viewer.getEDLStrength(),
+		min: 0,
+		max: 5,
+		step: 0.01,
+		slide: function( event, ui ) {viewer.setEDLStrength(ui.value);}
+	});
+	
+	viewer.addEventListener("point_budget_changed", function(event){
+		$( '#lblPointBudget')[0].innerHTML = Potree.utils.addCommas(viewer.getPointBudget());
+		$( "#sldPointBudget" ).slider({value: viewer.getPointBudget()});
+	});
+	
+	viewer.addEventListener("point_size_changed", function(event){
+		$('#lblPointSize')[0].innerHTML = viewer.getPointSize().toFixed(2);
+		$( "#sldPointSize" ).slider({value: viewer.getPointSize()});
+	});
+	
+	viewer.addEventListener("fov_changed", function(event){
+		$('#lblFOV')[0].innerHTML = parseInt(viewer.getFOV());
+		$( "#sldFOV" ).slider({value: viewer.getFOV()});
+	});
+	
+	viewer.addEventListener("opacity_changed", function(event){
+		$('#lblOpacity')[0].innerHTML = viewer.getOpacity().toFixed(2);
+		$( "#sldOpacity" ).slider({value: viewer.getOpacity()});
+	});
+	
+	viewer.addEventListener("edl_radius_changed", function(event){
+		$('#lblEDLRadius')[0].innerHTML = viewer.getEDLRadius().toFixed(1);
+		$( "#sldEDLRadius" ).slider({value: viewer.getEDLRadius()});
+	});
+	
+	viewer.addEventListener("edl_strength_changed", function(event){
+		$('#lblEDLStrength')[0].innerHTML = viewer.getEDLStrength().toFixed(1);
+		$( "#sldEDLStrength" ).slider({value: viewer.getEDLStrength()});
+	});
+	
+	
+	$('#lblPointBudget')[0].innerHTML = Potree.utils.addCommas(viewer.getPointBudget());
+	$('#lblPointSize')[0].innerHTML = viewer.getPointSize().toFixed(2);
+	$('#lblFOV')[0].innerHTML = parseInt(viewer.getFOV());
+	$('#lblOpacity')[0].innerHTML = viewer.getOpacity().toFixed(2);
+	$('#lblEDLRadius')[0].innerHTML = viewer.getEDLRadius().toFixed(1);
+	$('#lblEDLStrength')[0].innerHTML = viewer.getEDLStrength().toFixed(1);
+}
+	
+	
+function initNavigation(){
+
+	var elNavigation = document.getElementById("navigation");
+	
+	elNavigation.appendChild(createToolIcon(
+		"../resources/icons/earth_controls_1.png",
+		"Earth Controls",
+		function(){viewer.useEarthControls()}
+	));
+	
+	
+	elNavigation.appendChild(createToolIcon(
+		"../resources/icons/fps_controls.png",
+		"Flight Controls",
+		function(){viewer.useFPSControls()}
+	));
+	
+	elNavigation.appendChild(createToolIcon(
+		"../resources/icons/orbit_controls.png",
+		"Orbit Controls",
+		function(){viewer.useOrbitControls()}
+	));
+	
+	elNavigation.appendChild(createToolIcon(
+		"../resources/icons/focus.png",
+		"focus on pointcloud",
+		function(){viewer.fitToScreen()}
+	));
+	
+	elNavigation.appendChild(createToolIcon(
+		"../resources/icons/topview.svg",
+		"top view",
+		function(){viewer.setTopView()}
+	));
+	
+	elNavigation.appendChild(createToolIcon(
+		"../resources/icons/frontview.svg",
+		"front view",
+		function(){viewer.setFrontView()}
+	));
+	
+	elNavigation.appendChild(createToolIcon(
+		"../resources/icons/leftview.svg",
+		"left view",
+		function(){viewer.setLeftView()}
+	));
+	
+
+	$( "#sldMoveSpeed" ).slider({
+		value: 10,
+		min: 0.1,
+		max: 100,
+		step: 0.01,
+		slide: function( event, ui ) {viewer.setMoveSpeed(ui.value);}
+	});
+}
+
+function initMeasurementDetails(){
+
+	//<li>
+	//		<div class="panel panel-default">
+	//		  <div class="panel-heading pv-panel-heading" style="display: flex; flex-direction: row">
+	//			<img src="../resources/icons/distance.png" style="width: 16px; height: 16px" /> 
+	//			<span style="flex-grow:1"> </span>
+	//			<img src="../resources/icons/remove.svg" style="width: 16px; height: 16px" /> 
+	//		  </div>
+	//		  <div class="panel-body">
+	//			<div class="measurement-detail-node-marker" >423, 413, 75464</div>
+	//			<div class="measurement-detail-edge" > </div>
+	//			<div class="measurement-detail-node-distance" > 12,001.37 </div>
+	//			<div class="measurement-detail-edge" > </div>
+	//			<div class="measurement-detail-node-marker" >423, 413, 75464</div>
+	//			<div class="measurement-detail-edge" > </div>
+	//			<div class="measurement-detail-node-distance" > 97 </div>
+	//			<div class="measurement-detail-edge" > </div>
+	//			<div class="measurement-detail-node-marker" >423, 413, 75464</div>
+	//		  </div>
+	//		</div>
+	//	</li>
+	
+	var id = 0;
+	
+	var callback = function(event){
+	
+		id++;
+	
+		var measurement = event.measurement;
+		var profile = event.profile;
+		var volume = event.volume;
+	
+		var elLi = document.createElement("li");
+		var elPanel = document.createElement("div");
+		var elPanelHeader = document.createElement("div");
+		var elPanelBody = document.createElement("div");
+		var elPanelIcon = document.createElement("img");
+		var elPanelStretch = document.createElement("span");
+		var elPanelRemove = document.createElement("img");
+		
+		elPanel.classList.add("panel", "panel-default");
+		elPanelHeader.classList.add("panel-heading", "pv-panel-heading");
+		
+		if(measurement){
+			if(measurement.showDistances && !measurement.showArea && !measurement.showAngles){
+				elPanelIcon.src = "../resources/icons/distance.png";
+				elPanelStretch.innerHTML = "Distance";
+			}else if(measurement.showDistances && measurement.showArea && !measurement.showAngles){
+				elPanelIcon.src = "../resources/icons/area.png";
+				elPanelStretch.innerHTML = "Area";
+			}else if(measurement.maxMarkers === 1){
+				elPanelIcon.src = "../resources/icons/point.png";
+				elPanelStretch.innerHTML = "Coordinate";
+			}else if(!measurement.showDistances && !measurement.showArea && measurement.showAngles){
+				elPanelIcon.src = "../resources/icons/angle.png";
+				elPanelStretch.innerHTML = "Angle";
+			}
+			
+			elPanelRemove.onclick = function(){viewer.measuringTool.removeMeasurement(measurement);};
+		}else if(profile){
+			elPanelIcon.src = "../resources/icons/profile.png";
+			elPanelRemove.onclick = function(){viewer.profileTool.removeProfile(profile);};
+			
+			elPanelStretch.innerHTML = "Profile";
+		}else if(volume){
+			elPanelIcon.src = "../resources/icons/volume.png";
+			elPanelRemove.onclick = function(){viewer.measuringTool.removeVolume(volume);};
+			
+			elPanelStretch.innerHTML = "Volume";
+		}
+		
+		elPanelIcon.style.width = "16px";
+		elPanelIcon.style.height = "16px";
+		elPanelStretch.style.flexGrow = 1;
+		elPanelStretch.style.textAlign = "center";
+		elPanelRemove.src = "../resources/icons/remove.svg";
+		elPanelRemove.style.width = "16px";
+		elPanelRemove.style.height = "16px";
+		elPanelBody.classList.add("panel-body");
+		
+		elLi.appendChild(elPanel);
+		elPanel.appendChild(elPanelHeader);
+		elPanelHeader.appendChild(elPanelIcon);
+		elPanelHeader.appendChild(elPanelStretch);
+		elPanelHeader.appendChild(elPanelRemove);
+		elPanel.appendChild(elPanelBody);
+		//elPanelBody.appendChild(document.createTextNode("lala"));
+		
+		//$('#measurement_details').append(elLi);
+		document.getElementById("measurement_details").appendChild(elLi);
+		
+		var widthListener;
+		var updateDisplay = function(event){
+		
+			if(profile){
+				if(widthListener){
+					profile.removeEventListener("width_changed", widthListener);
+				}
+			}
+		
+			$(elPanelBody).empty();
+			
+			if(profile){
+				//<li>Point Budget: <span id="lblPointBudget"></span> <div id="sldPointBudget"></div>	</li>
+				
+				var elLi = $('<li>');
+				var elText = document.createTextNode("width: ");
+				var elWidthLabel = $('<span id="lblProfileWidth_' + id + '">');
+				var elWidthSlider = $('<div id="sldProfileWidth_' + id + '">');
+				
+				elWidthSlider.slider({
+					value: Math.pow((profile.getWidth() / 1000), 1/4).toFixed(3),
+					min: 0,
+					max: 1,
+					step: 0.01,
+					slide: function(event, ui){
+						var val = Math.pow(ui.value, 4) * 1000;
+						profile.setWidth(val);
+					}
+				});
+				if(profile.getWidth()){
+					elWidthLabel.html(Potree.utils.addCommas(profile.getWidth().toFixed(3)));
+				}else{
+					elWidthLabel.html("-");
+				}
+				
+				widthListener = function(event){
+					var val = Math.pow((event.width / 1000), 1/4);
+					elWidthLabel.html(Potree.utils.addCommas(event.width.toFixed(3)));
+					elWidthSlider.slider({value: val});
+				};
+				profile.addEventListener("width_changed", widthListener);
+				
+				elLi.append(elText);
+				elLi.append(elWidthLabel);
+				elLi.append(elWidthSlider);
+				
+				elPanelBody.appendChild(elLi[0]);
+			}
+			
+			var points;
+			if(measurement){
+				points = measurement.points;
+			}else if(profile){
+				points = profile.points;
+			}else if(volume){
+				points = [volume.getWorldPosition()];
+			}
+			
+			for(var i = 0; i < points.length; i++){
+				var point = points[i];
+				var geoCoord = viewer.toGeo(point);
+	
+				var txt = geoCoord.x.toFixed(2) + ", ";
+				txt += geoCoord.y.toFixed(2) + ", ";
+				txt += geoCoord.z.toFixed(2);
+				
+				var elNodeMarker = $('<div>').addClass("measurement-detail-node-marker");
+				elNodeMarker.html(txt);
+				
+				$(elPanelBody).append(elNodeMarker);
+				
+				if(i < points.length - 1){
+					if(measurement && measurement.showDistances){
+						
+						var elEdge = $('<div>').addClass("measurement-detail-edge");
+						$(elPanelBody).append(elEdge);
+						
+						var nextPoint = points[i+1];
+						var nextGeo = viewer.toGeo(nextPoint);
+						var distance = nextGeo.distanceTo(geoCoord);
+						var txt = Potree.utils.addCommas(distance.toFixed(2));
+						
+						var elNodeDistance = $('<div>').addClass("measurement-detail-node-distance");
+						elNodeDistance.html(txt);
+						
+						$(elPanelBody).append(elNodeDistance);
+						
+						//var elEdge = $('<div>').addClass("measurement-detail-edge");
+						//$(elPanelBody).append(elEdge);
+					}
+				}
+				
+				if(measurement && measurement.showAngles){
+					var elEdge = $('<div>').addClass("measurement-detail-edge");
+					$(elPanelBody).append(elEdge);
+					
+					var angle = measurement.getAngle(i);
+					var txt = Potree.utils.addCommas((angle*(180.0/Math.PI)).toFixed(1)) + '\u00B0';
+					var elNodeAngle = $('<div>').addClass("measurement-detail-node-angle");
+					elNodeAngle.html(txt);
+					$(elPanelBody).append(elNodeAngle);
+					
+					//if(i < points.length - 1){
+					//	var elEdge = $('<div>').addClass("measurement-detail-edge");
+					//	$(elPanelBody).append(elEdge);
+					//}
+				}
+				
+				if(i < points.length - 1){
+					var elEdge = $('<div>').addClass("measurement-detail-edge");
+					$(elPanelBody).append(elEdge);
+				}
+			}
+			
+			if(measurement && measurement.showArea){
+				var txt = Potree.utils.addCommas(measurement.getArea().toFixed(1)) + "²";
+				
+				var elNodeArea = $('<div>').addClass("measurement-detail-node-area");
+				elNodeArea.html(txt);
+				
+				$(elPanelBody).append(elNodeArea);
+			}
+			
+			if(profile){
+				var elOpenProfileWindow = $('<input type="button" value="show 2d profile">')
+					.addClass("measurement-detail-button");
+				elOpenProfileWindow[0].onclick = function(){
+					viewer._2dprofile.show();
+					viewer._2dprofile.draw(profile);
+				};
+				$(elPanelBody).append(elOpenProfileWindow);
+			}
+			
+		};
+		
+		updateDisplay();
+		
+		if(measurement){
+			viewer.measuringTool.addEventListener("marker_added", updateDisplay);
+			viewer.measuringTool.addEventListener("marker_removed", updateDisplay);
+			viewer.measuringTool.addEventListener("marker_moved", updateDisplay);
+			viewer.measuringTool.addEventListener("measurement_removed", function(event){
+				if(event.measurement === measurement){
+					viewer.measuringTool.removeEventListener("marker_added", updateDisplay);
+					viewer.measuringTool.removeEventListener("marker_removed", updateDisplay);
+					viewer.measuringTool.removeEventListener("marker_moved", updateDisplay);
+					$(elLi).remove();
+				}
+			});
+		}else if(profile){
+			viewer.profileTool.addEventListener("marker_added", updateDisplay);
+			viewer.profileTool.addEventListener("marker_removed", updateDisplay);
+			viewer.profileTool.addEventListener("marker_moved", updateDisplay);
+			viewer.profileTool.addEventListener("profile_removed", function(event){
+				if(event.profile === profile){
+					viewer.profileTool.removeEventListener("marker_added", updateDisplay);
+					viewer.profileTool.removeEventListener("marker_removed", updateDisplay);
+					viewer.profileTool.removeEventListener("marker_moved", updateDisplay);
+					$(elLi).remove();
+				}
+			});
+		}
+	};
+	
+	for(var i = 0; i < viewer.measuringTool.measurements.length; i++){
+		callback({measurement: viewer.measuringTool.measurements[i]});
+	}
+	
+	for(var i = 0; i < viewer.profileTool.profiles.length; i++){
+		callback({profile: viewer.profileTool.profiles[i]});
+	}
+
+	viewer.measuringTool.addEventListener("measurement_added", callback);
+	viewer.profileTool.addEventListener("profile_added", callback);
+	viewer.volumeTool.addEventListener("volume_added", callback);
+};
+
+function initSceneList(){
+
+	// <li>
+	// <label class="menu-item">
+	// <input type="checkbox" onClick="viewer.setShowSkybox(this.checked)"/>
+	// &nbsp;Skybox
+	// </label>
+	// </li>
+	var scenelist = $('#sceneList');
+	
+	var id = 0;
+	var addPointcloud = function(pointcloud){
+		var elLi = $('<li>');
+		var elLabel = $('<label>');
+		var elInput = $('<input type="checkbox">');
+		
+		elInput[0].checked = true;
+		elInput[0].id = "scene_list_item_pointcloud_" + id;
+		elLabel[0].id = "scene_list_item_label_pointcloud_" + id;
+		elLabel[0].htmlFor = "scene_list_item_pointcloud_" + id;
+		elLabel.addClass("menu-item");
+		elInput.click(function(event){
+			pointcloud.visible = event.target.checked;
+		});
+		
+		elLi.append(elLabel);
+		elLabel.append(elInput);
+		elLabel.append(document.createTextNode(" point cloud " + id));
+		
+		scenelist.append(elLi);
+		
+		id++;
+	}
+	
+	for(var i = 0; i < viewer.pointclouds.length; i++){
+		var pointcloud = viewer.pointclouds[i];
+		addPointcloud(pointcloud);
+	}
+	
+	viewer.addEventListener("pointcloud_loaded", function(event){
+		addPointcloud(event.pointcloud);
+	});
+};
+
+
+$(document).ready( function() {
+    
+	initAccordion();
+	initAppearance();
+	initToolbar();
+	initNavigation();
+	initMaterials();
+	initClassificationList();
+	initMeasurementDetails();
+	initSceneList();
+	
+});
+
+
+
+
+
+
+
+
+
+
+
+	
+</script>

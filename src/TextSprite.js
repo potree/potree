@@ -37,9 +37,11 @@ Potree.TextSprite = function(text){
 Potree.TextSprite.prototype = new THREE.Object3D();
 
 Potree.TextSprite.prototype.setText = function(text){
-	this.text = text;
-	
-	this.update();
+	if(this.text !== text){
+		this.text = text;
+		
+		this.update();
+	}
 };
 
 Potree.TextSprite.prototype.setTextColor = function(color){

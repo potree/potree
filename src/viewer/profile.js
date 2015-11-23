@@ -250,13 +250,20 @@ Potree.Viewer.Profile = function(viewer, element){
 			scaleX.domain(scope.rangeX);
 			scaleY.domain(scope.rangeY);
 			
+			var axisScaleX = d3.scale.linear()
+				.domain(scope.rangeX)
+				.range([0, width]);
+			var axisScaleY = d3.scale.linear()
+				.domain(scope.rangeY)
+
+			
 			var zoom = d3.behavior.zoom()
 			.x(scaleX)
 			.y(scaleY)
 			.scaleExtent([0,8])
 			.size([width, height])
 			.on("zoom",  function(){
-				var t = zoom.translate();
+				//var t = zoom.translate();
 				//var tx = t[0];
 				//var ty = t[1];
 				//
@@ -355,7 +362,11 @@ Potree.Viewer.Profile = function(viewer, element){
 					
 					setupAndDraw();
 					
-					scope.pointsProcessed += event.request.pointsServed;
+					//console.log("===");
+					//console.log(scope.points.length);
+					//console.log(scope.pointsProcessed);
+					
+					scope.pointsProcessed += result.data.length;
 					
 					if(scope.pointsProcessed > 20*1000){
 						scope.cancel();

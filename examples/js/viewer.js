@@ -2,7 +2,7 @@
 Potree.Viewer = function(domElement, args){
 	var scope = this;
 	var arguments = args || {};
-	var pointCloudLoadedCallback = args.onPointCloudLoaded || function(){};
+	var pointCloudLoadedCallback = arguments.onPointCloudLoaded || function(){};
 	
 	this.renderArea = domElement;
 	
@@ -119,10 +119,12 @@ Potree.Viewer = function(domElement, args){
 				scope.camera.near = 0.1;
 			}
 
-			scope.referenceFrame.position.sub(sg.center);
-			scope.referenceFrame.updateMatrixWorld(true);
+			if(scope.pointclouds.length === 1){
+				scope.referenceFrame.position.sub(sg.center);
+				scope.referenceFrame.updateMatrixWorld(true);
+			}
 			
-			scope.flipYZ();
+			//scope.flipYZ();
 			
 			scope.zoomTo(pointcloud, 1);
 			
@@ -511,8 +513,13 @@ Potree.Viewer = function(domElement, args){
 	this.getBoundingBox = function(pointclouds){
 		var box = new THREE.Box3();
 		
+		scope.scenePointCloud.updateMatrixWorld(true);
+		scope.referenceFrame.updateMatrixWorld(true);
+		
 		for(var i = 0; i < scope.pointclouds.length; i++){
 			var pointcloud = scope.pointclouds[i];
+			
+			pointcloud.updateMatrixWorld(true);
 			
 			//var boxWorld = pointcloud.boundingBox.clone().applyMatrix4(pointcloud.matrixWorld);
 			var boxWorld = Potree.utils.computeTransformedBoundingBox(pointcloud.boundingBox, pointcloud.matrixWorld)
@@ -579,8 +586,8 @@ Potree.Viewer = function(domElement, args){
 	this.flipYZ = function(){
 		scope.isFlipYZ = !scope.isFlipYZ;
 		
+		scope.referenceFrame.matrix.copy(new THREE.Matrix4());
 		if(scope.isFlipYZ){
-			scope.referenceFrame.matrix.copy(new THREE.Matrix4());
 			scope.referenceFrame.applyMatrix(new THREE.Matrix4().set(
 				1,0,0,0,
 				0,0,1,0,
@@ -589,7 +596,6 @@ Potree.Viewer = function(domElement, args){
 			));
 			
 		}else{
-			scope.referenceFrame.matrix.copy(new THREE.Matrix4());
 			scope.referenceFrame.applyMatrix(new THREE.Matrix4().set(
 				1,0,0,0,
 				0,1,0,0,
@@ -599,12 +605,20 @@ Potree.Viewer = function(domElement, args){
 		}
 		
 		scope.referenceFrame.updateMatrixWorld(true);
-		scope.pointclouds[0].updateMatrixWorld();
-		var sg = scope.pointclouds[0].boundingSphere.clone().applyMatrix4(scope.pointclouds[0].matrixWorld);
-		scope.referenceFrame.position.copy(sg.center).multiplyScalar(-1);
+		var box = scope.getBoundingBox();
+		scope.referenceFrame.position.copy(box.center()).multiplyScalar(-1);
+		//scope.referenceFrame.position.y -= box.min.y;
+		scope.referenceFrame.position.y = -box.min.y;
 		scope.referenceFrame.updateMatrixWorld(true);
-		scope.referenceFrame.position.y -= scope.pointclouds[0].getWorldPosition().y;
-		scope.referenceFrame.updateMatrixWorld(true);
+		
+		
+		//scope.referenceFrame.updateMatrixWorld(true);
+		//scope.pointclouds[0].updateMatrixWorld();
+		//var sg = scope.pointclouds[0].boundingSphere.clone().applyMatrix4(scope.pointclouds[0].matrixWorld);
+		//scope.referenceFrame.position.copy(sg.center).multiplyScalar(-1);
+		//scope.referenceFrame.updateMatrixWorld(true);
+		//scope.referenceFrame.position.y -= scope.pointclouds[0].getWorldPosition().y;
+		//scope.referenceFrame.updateMatrixWorld(true);
 	}
 	
 	this.useEarthControls = function(){
@@ -1154,8 +1168,8 @@ Potree.Viewer = function(domElement, args){
 				screenPos.x = scope.renderArea.clientWidth * (screenPos.x + 1) / 2;
 				screenPos.y = scope.renderArea.clientHeight * (1 - (screenPos.y + 1) / 2);
 				
-				ann.domElement.style.left = Math.floor(screenPos.x - ann.domElement.clientWidth / 2);
-				ann.domElement.style.top = Math.floor(screenPos.y);
+				ann.domElement.style.left = Math.floor(screenPos.x - ann.domElement.clientWidth / 2) + "px";
+				ann.domElement.style.top = Math.floor(screenPos.y) + "px";
 				
 				//ann.domDescription.style.left = screenPos.x - ann.domDescription.clientWidth / 2 + 10;
 				//ann.domDescription.style.top = screenPos.y + 30;

@@ -95,9 +95,9 @@
 			
 			// set up things when the first point cloud has been loaded
 			if(viewer.pointclouds.length === 1){
-				//viewer.flipYZ();
 				viewer.setNavigationMode("Orbit");
 				//viewer.useEarthControls();
+				viewer.flipYZ();
 				viewer.zoomTo(event.pointcloud, 1);
 			
 				//viewer.camera.position.set(814, 100, 155);
@@ -119,27 +119,24 @@
 		viewer.setPointBudget(1*1000*1000);
 		viewer.setDescription("New User Interface Prototype");
 		
-		//viewer.addPointCloud("http://localhost/temp/ca13/1/cloud.js", function(pointcloud){
-		//	console.log("point cloud 1 loaded");
-		//});
-		//viewer.addPointCloud("http://localhost/temp/ca13/2/cloud.js", function(pointcloud){
-		//	console.log("point cloud 2 loaded");
-		//	
-		//	var profile = new Potree.HeightProfile();
-		//	profile.addMarker(new THREE.Vector3(-139.5800, 92.9300003, -121.66000));
-		//	profile.addMarker(new THREE.Vector3(365.80500, 25.6599922, -124.04498));
-		//	profile.addMarker(new THREE.Vector3(775.42749, 97.0524902, -115.38500));
-		//	profile.setWidth(4);
-		//	
-		//	viewer.profileTool.addProfile(profile);
-		//});
+		viewer.addPointCloud("../resources/pointclouds/vol_total/cloud.js", function(){
+			var profile = new Potree.HeightProfile();
+			profile.addMarker(new THREE.Vector3(-289.53, 52.75, 126.00));
+			profile.addMarker(new THREE.Vector3(-288.88, 45.06, 25.53));
+			profile.addMarker(new THREE.Vector3(-256.45, 16.55, -78.45));
+			profile.addMarker(new THREE.Vector3(-203.87, 27.13, -63.94));
+			profile.addMarker(new THREE.Vector3(-170.97, 43.20, 17.09));
+			profile.setWidth(8);
+			viewer.profileTool.addProfile(profile);
+			
+			setTimeout(function(){
+				viewer._2dprofile.show();
+				viewer._2dprofile.draw(profile);
+			}, 500);
+		});
 		
-		//viewer.addPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/archpro/heidentor/cloud.js");
-		//viewer.addPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/opentopography/CA13/cloud.js");
-		viewer.addPointCloud("../resources/pointclouds/vol_total/cloud.js");
-		//viewer.addPointCloud("http://localhost/temp/georepublic/layer_1/cloud.js");
-		//viewer.addPointCloud("http://localhost/temp/georepublic/layer_2/cloud.js");
-		
+		//viewer.addPointCloud("http://localhost/temp/ca13/1/cloud.js");
+		//viewer.addPointCloud("http://localhost/temp/ca13/2/cloud.js");
 		
 		function loadGUI(){
 			$('body').append($('<div>').load("../src/viewer/sidebar.html"));

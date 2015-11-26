@@ -360,13 +360,9 @@ Potree.Viewer.Profile = function(viewer, element){
 					scope.rangeX = [ Math.min(scope.rangeX[0], batchRangeX[0]), Math.max(scope.rangeX[1], batchRangeX[1]) ];
 					scope.rangeY = [ Math.min(scope.rangeY[0], batchRangeY[0]), Math.max(scope.rangeY[1], batchRangeY[1]) ];
 					
-					setupAndDraw();
-					
-					//console.log("===");
-					//console.log(scope.points.length);
-					//console.log(scope.pointsProcessed);
-					
 					scope.pointsProcessed += result.data.length;
+					
+					setupAndDraw();
 					
 					if(scope.pointsProcessed > 20*1000){
 						scope.cancel();

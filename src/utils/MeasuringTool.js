@@ -54,11 +54,13 @@ Potree.Measure = function(){
 		var dragstart = tool.dragstart;
 		var mouse = tool.mouse;
 	
-		var I = tool.getMousePointCloudIntersection();
+		var point = tool.getMousePointCloudIntersection();
 			
-		if(I){
+		if(point){
+			var position = point.position;
 			var index = scope.spheres.indexOf(tool.dragstart.object);
-			scope.setPosition(index, I);
+			//scope.setPosition(index, position);
+			scope.setMarker(index, point);
 		}
 		
 		event.event.stopImmediatePropagation();
@@ -69,6 +71,9 @@ Potree.Measure = function(){
 	};
 	
 	this.addMarker = function(point){
+		if(point instanceof THREE.Vector3){
+			point = {position: point};
+		}
 		this.points.push(point);
 		
 		// sphere
@@ -136,7 +141,8 @@ Potree.Measure = function(){
 		};
 		this.dispatchEvent(event);
 		
-		this.setPosition(this.points.length-1, point);
+		//this.setPosition(this.points.length-1, point.position);
+		this.setMarker(this.points.length-1, point);
 	};
 	
 	this.removeMarker = function(index){
@@ -159,9 +165,23 @@ Potree.Measure = function(){
 		this.dispatchEvent({type: "marker_removed", measurement: this});
 	};
 	
+	this.setMarker = function(index, point){
+		this.points[index] = point;
+		
+		var event = {
+			type: 		'marker_moved',
+			measure:	this,
+			index:		index,
+			position: 	point.position.clone()
+		};
+		this.dispatchEvent(event);
+		
+		this.update();
+	}
+	
 	this.setPosition = function(index, position){
 		var point = this.points[index];			
-		point.copy(position);
+		point.position.copy(position);
 		
 		var event = {
 			type: 		'marker_moved',
@@ -179,8 +199,8 @@ Potree.Measure = function(){
 		var j = this.points.length - 1;
 		
 		for(var i = 0; i < this.points.length; i++){
-			var p1 = this.points[i];
-			var p2 = this.points[j];
+			var p1 = this.points[i].position;
+			var p2 = this.points[j].position;
 			area += (p2.x + p1.x) * (p1.z - p2.z);
 			j = i;
 		}
@@ -189,8 +209,8 @@ Potree.Measure = function(){
 	};
 	
 	this.getAngleBetweenLines = function(cornerPoint, point1, point2) {
-        var v1 = new THREE.Vector3().subVectors(point1, cornerPoint);
-        var v2 = new THREE.Vector3().subVectors(point2, cornerPoint);
+        var v1 = new THREE.Vector3().subVectors(point1.position, cornerPoint.position);
+        var v2 = new THREE.Vector3().subVectors(point2.position, cornerPoint.position);
         return v1.angleTo(v2);
     };
 	
@@ -213,15 +233,16 @@ Potree.Measure = function(){
 			return;
 		}else if(this.points.length === 1){
 			var point = this.points[0];
-			this.spheres[0].position.copy(point);
+			var position = point.position;
+			this.spheres[0].position.copy(position);
 			
 			{// coordinate labels
 				var coordinateLabel = this.coordinateLabels[0];
 				
-				var labelPos = point.clone().add(new THREE.Vector3(0,1,0));
+				var labelPos = position.clone().add(new THREE.Vector3(0,1,0));
 				coordinateLabel.position.copy(labelPos);
 				
-				var msg = point.x.toFixed(2) + " / " + point.y.toFixed(2) + " / " + point.z.toFixed(2);
+				var msg = position.x.toFixed(2) + " / " + position.y.toFixed(2) + " / " + position.z.toFixed(2);
 				coordinateLabel.setText(msg);
 				
 				coordinateLabel.visible = this.showCoordinates && (index < lastIndex || this.closed);
@@ -235,7 +256,7 @@ Potree.Measure = function(){
 		var centroid = new THREE.Vector3();
 		for(var i = 0; i <= lastIndex; i++){
 			var point = this.points[i];
-			centroid.add(point);
+			centroid.add(point.position);
 		}
 		centroid.divideScalar(this.points.length);
 		
@@ -251,7 +272,7 @@ Potree.Measure = function(){
 			var sphere = this.spheres[index];
 			
 			// spheres
-			sphere.position.copy(point);
+			sphere.position.copy(point.position);
 			sphere.material.color = scope.color;
 
 			{// edges
@@ -259,8 +280,8 @@ Potree.Measure = function(){
 				
 				edge.material.color = this.color;
 				
-				edge.geometry.vertices[0].copy(point);
-				edge.geometry.vertices[1].copy(nextPoint);
+				edge.geometry.vertices[0].copy(point.position);
+				edge.geometry.vertices[1].copy(nextPoint.position);
 				
 				edge.geometry.verticesNeedUpdate = true;
 				edge.geometry.computeBoundingSphere();
@@ -270,10 +291,10 @@ Potree.Measure = function(){
 			{// edge labels
 				var edgeLabel = this.edgeLabels[i];
 			
-				var center = new THREE.Vector3().add(point);
-				center.add(nextPoint);
+				var center = new THREE.Vector3().add(point.position);
+				center.add(nextPoint.position);
 				center = center.multiplyScalar(0.5);
-				var distance = point.distanceTo(nextPoint);
+				var distance = point.position.distanceTo(nextPoint.position);
 				
 				edgeLabel.position.copy(center);
 				edgeLabel.setText(distance.toFixed(2));
@@ -284,14 +305,14 @@ Potree.Measure = function(){
 				var angleLabel = this.angleLabels[i];
 				var angle = this.getAngleBetweenLines(point, previousPoint, nextPoint);
 				
-				var dir = nextPoint.clone().sub(previousPoint);
+				var dir = nextPoint.position.clone().sub(previousPoint.position);
 				dir.multiplyScalar(0.5);
-				dir = previousPoint.clone().add(dir).sub(point).normalize();
+				dir = previousPoint.position.clone().add(dir).sub(point.position).normalize();
 				
-				var dist = Math.min(point.distanceTo(previousPoint), point.distanceTo(nextPoint));
+				var dist = Math.min(point.position.distanceTo(previousPoint.position), point.position.distanceTo(nextPoint.position));
 				dist = dist / 9;
 				
-				var labelPos = point.clone().add(dir.multiplyScalar(dist));
+				var labelPos = point.position.clone().add(dir.multiplyScalar(dist));
 				angleLabel.position.copy(labelPos);
 				
 				var msg = Potree.utils.addCommas((angle*(180.0/Math.PI)).toFixed(1)) + '\u00B0';
@@ -303,10 +324,10 @@ Potree.Measure = function(){
 			{// coordinate labels
 				var coordinateLabel = this.coordinateLabels[0];
 				
-				var labelPos = point.clone().add(new THREE.Vector3(0,1,0));
+				var labelPos = point.position.clone().add(new THREE.Vector3(0,1,0));
 				coordinateLabel.position.copy(labelPos);
 				
-				var msg = point.x.toFixed(2) + " / " + point.y.toFixed(2) + " / " + point.z.toFixed(2);
+				var msg = point.position.x.toFixed(2) + " / " + point.position.y.toFixed(2) + " / " + point.position.z.toFixed(2);
 				coordinateLabel.setText(msg);
 				
 				coordinateLabel.visible = this.showCoordinates && (index < lastIndex || this.closed);
@@ -406,10 +427,9 @@ Potree.MeasuringTool = function(scene, camera, renderer, toGeo){
 	
 	function onClick(event){
 		if(state === STATE.INSERT){
-			var I = scope.getMousePointCloudIntersection();
-			if(I){
-				var pos = I.clone();
-				
+			var point = scope.getMousePointCloudIntersection();
+			if(point){
+				var pos = point.position.clone();
 				
 				scope.activeMeasurement.addMarker(pos);
 				
@@ -442,12 +462,13 @@ Potree.MeasuringTool = function(scene, camera, renderer, toGeo){
 			scope.dragstart.object.dispatchEvent(arg);
 			
 		}else if(state == STATE.INSERT && scope.activeMeasurement){
-			var I = scope.getMousePointCloudIntersection();
+			var point = scope.getMousePointCloudIntersection();
 			
-			if(I){
-			
+			if(point){
+				var position = point.position;
 				var lastIndex = scope.activeMeasurement.points.length-1;
-				scope.activeMeasurement.setPosition(lastIndex, I);
+				//scope.activeMeasurement.setPosition(lastIndex, position);
+				scope.activeMeasurement.setMarker(lastIndex, point);
 			}
 			
 		}else{
@@ -600,7 +621,7 @@ Potree.MeasuringTool = function(scene, camera, renderer, toGeo){
 			}
 		}
 		
-		return closestPoint ? closestPoint.position : null;
+		return closestPoint ? closestPoint : null;
 	};
 	
 	this.startInsertion = function(args){
@@ -748,7 +769,7 @@ Potree.MeasuringTool = function(scene, camera, renderer, toGeo){
 				var scale = (70 / pr);
 				label.scale.set(scale, scale, scale);
 				
-				var geoCoord = scope.toGeo(point);
+				var geoCoord = scope.toGeo(point.position);
 				var txt = geoCoord.x.toFixed(2) + " / ";
 				txt += geoCoord.y.toFixed(2) + " / ";
 				txt += geoCoord.z.toFixed(2);

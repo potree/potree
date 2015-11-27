@@ -20,6 +20,7 @@ Potree.Annotation = function(viewer, args){
 	this.domElement.style.opacity = "0.5";
 	//this.domElement.style.border = "1px solid red";
 	this.domElement.style.padding = "10px";
+	this.domElement.style.whiteSpace = "nowrap";
 	this.domElement.className = "annotation";
 	
 	this.elOrdinal = document.createElement("div");
@@ -81,7 +82,7 @@ Potree.Annotation = function(viewer, args){
 	
 	this.domElement.onmouseenter = function(){
 		scope.domElement.style.opacity = "0.8";
-		scope.domElement.style.zIndex = 1000;
+		scope.domElement.style.zIndex = "1000";
 		if(scope.description){
 			scope.descriptionVisible = true;	
 			scope.domDescription.style.display = "block";
@@ -89,7 +90,7 @@ Potree.Annotation = function(viewer, args){
 	};
 	this.domElement.onmouseleave = function(){
 		scope.domElement.style.opacity = "0.5";
-		scope.domElement.style.zIndex = 100;
+		scope.domElement.style.zIndex = "100";
 		scope.descriptionVisible = true;	
 		scope.domDescription.style.display = "none";
 	};
@@ -118,8 +119,10 @@ Potree.Annotation = function(viewer, args){
 		tween.onComplete(function(){
 			camera.lookAt(target);
 			scope.viewer.orbitControls.target.copy(target);
+			scope.dispatchEvent({type: "focusing_finished", target: scope});
 		});
 
+		scope.dispatchEvent({type: "focusing_started", target: scope});
 		tween.start();
 	};
 	
@@ -132,5 +135,7 @@ Potree.Annotation = function(viewer, args){
 
 	};
 };
+
+Potree.Annotation.prototype = Object.create( THREE.EventDispatcher.prototype );
 
 Potree.Annotation.counter = 0;

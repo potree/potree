@@ -607,9 +607,10 @@ Potree.Viewer = function(domElement, args){
 		scope.referenceFrame.updateMatrixWorld(true);
 		var box = scope.getBoundingBox();
 		scope.referenceFrame.position.copy(box.center()).multiplyScalar(-1);
-		//scope.referenceFrame.position.y -= box.min.y;
 		scope.referenceFrame.position.y = -box.min.y;
 		scope.referenceFrame.updateMatrixWorld(true);
+		
+		scope.updateHeightRange();
 		
 		
 		//scope.referenceFrame.updateMatrixWorld(true);
@@ -620,6 +621,11 @@ Potree.Viewer = function(domElement, args){
 		//scope.referenceFrame.position.y -= scope.pointclouds[0].getWorldPosition().y;
 		//scope.referenceFrame.updateMatrixWorld(true);
 	}
+	
+	this.updateHeightRange = function(){
+		var bbWorld = scope.getBoundingBox();
+		scope.setHeightRange(bbWorld.min.y, bbWorld.max.y);
+	};
 	
 	this.useEarthControls = function(){
 		if(scope.controls){
@@ -683,6 +689,8 @@ Potree.Viewer = function(domElement, args){
 		scope.renderArea.appendChild(annotation.domElement);
 		
 		scope.dispatchEvent({"type": "annotation_added", "viewer": scope});
+		
+		return annotation;
 	}
 	
 	this.getAnnotations = function(){
@@ -702,6 +710,21 @@ Potree.Viewer = function(domElement, args){
 //------------------------------------------------------------------------------------
 // Viewer Internals 
 //------------------------------------------------------------------------------------
+
+	this.loadGUI = function(){
+		$('body').append($('<div>').load("../src/viewer/sidebar.html"));
+		$('head').append( $('<link rel="stylesheet" type="text/css" />').attr('href', '../src/viewer/viewer.css') );		
+		$('head').append( $('<link rel="stylesheet" type="text/css" />').attr('href', "../libs/bootstrap/css/bootstrap.min.css"));
+		$('head').append( $('<link rel="stylesheet" type="text/css" />').attr('href', "../libs/jasny-bootstrap/css/jasny-bootstrap.css"));
+		$('head').append( $('<link rel="stylesheet" type="text/css" />').attr('href', "../libs/jasny-bootstrap/css/navmenu-reveal.css" ));
+		$('head').append( $('<link rel="stylesheet" type="text/css" />').attr('href', "../libs/jquery-ui-1.11.4/jquery-ui.css"	));
+		
+		//var elProfile = $('<div style="position: absolute; width: 100%; height: 30%; bottom: 0; display: none" >');
+		var elProfile = $('<div>').load("../src/viewer/profile.html", function(){
+			$('#renderArea').append(elProfile.children());
+			scope._2dprofile = new Potree.Viewer.Profile(scope, document.getElementById("profile_draw_container"));
+		});
+	}
 
 	//this.initGUI = function(){
 	//

@@ -657,17 +657,21 @@ function initMeasurementDetails(){
 				elPanelBody.appendChild(elLi[0]);
 			}
 			
+			var positions = [];
 			var points;
 			if(measurement){
 				points = measurement.points;
+				for(var i = 0; i < points.length; i++){
+					positions.push(points[i].position);
+				}
 			}else if(profile){
-				points = profile.points;
+				positions = profile.points;
 			}else if(volume){
-				points = [volume.getWorldPosition()];
+				positions = [volume.getWorldPosition()];
 			}
 			
-			for(var i = 0; i < points.length; i++){
-				var point = points[i];
+			for(var i = 0; i < positions.length; i++){
+				var point = positions[i];
 				var geoCoord = viewer.toGeo(point);
 	
 				var txt = geoCoord.x.toFixed(2) + ", ";
@@ -679,13 +683,13 @@ function initMeasurementDetails(){
 				
 				$(elPanelBody).append(elNodeMarker);
 				
-				if(i < points.length - 1){
+				if(i < positions.length - 1){
 					if(measurement && measurement.showDistances){
 						
 						var elEdge = $('<div>').addClass("measurement-detail-edge");
 						$(elPanelBody).append(elEdge);
 						
-						var nextPoint = points[i+1];
+						var nextPoint = positions[i+1];
 						var nextGeo = viewer.toGeo(nextPoint);
 						var distance = nextGeo.distanceTo(geoCoord);
 						var txt = Potree.utils.addCommas(distance.toFixed(2));
@@ -710,16 +714,104 @@ function initMeasurementDetails(){
 					elNodeAngle.html(txt);
 					$(elPanelBody).append(elNodeAngle);
 					
-					//if(i < points.length - 1){
+					//if(i < positions.length - 1){
 					//	var elEdge = $('<div>').addClass("measurement-detail-edge");
 					//	$(elPanelBody).append(elEdge);
 					//}
 				}
 				
-				if(i < points.length - 1){
+				if(i < positions.length - 1){
 					var elEdge = $('<div>').addClass("measurement-detail-edge");
 					$(elPanelBody).append(elEdge);
 				}
+			}
+			
+			if(points && points.length === 1){
+				var point = points[0];
+				
+				var elTable = $('<table>').css("width", "100%");
+				$(elPanelBody).append(elTable);
+				
+				if(point.color){
+					var color = point.color;
+					
+					var elTr = $('<tr>');
+					var elKey = $('<td>').css("padding", "1px 5px");
+					var elValue = $('<td>').css("width", "100%").css("padding", "1px 5px");
+					
+					var value = parseInt(color[0] * 255) 
+						+ ", " + parseInt(color[1] * 255) 
+						+ ", " + parseInt(color[2] * 255);
+					
+					elKey.html("rgb");
+					elValue.html(value);
+					
+					elTable.append(elTr);
+					elTr.append(elKey);
+					elTr.append(elValue);
+				}
+				
+				if(typeof point.intensity !== "undefined"){
+					var intensity = point.intensity;
+					
+					var elTr = $('<tr>');
+					var elKey = $('<td>').css("padding", "1px 5px");
+					var elValue = $('<td>').css("width", "100%").css("padding", "1px 5px");
+					
+					elKey.html("intensity");
+					elValue.html(intensity);
+					
+					elTable.append(elTr);
+					elTr.append(elKey);
+					elTr.append(elValue);
+				}
+				
+				if(typeof point.classification !== "undefined"){
+					var classification = point.classification;
+					
+					var elTr = $('<tr>');
+					var elKey = $('<td>').css("padding", "1px 5px");
+					var elValue = $('<td>').css("width", "100%").css("padding", "1px 5px");
+					
+					elKey.html("classification");
+					elValue.html(classification);
+					
+					elTable.append(elTr);
+					elTr.append(elKey);
+					elTr.append(elValue);
+				}
+				
+				if(typeof point.returnNumber !== "undefined"){
+					var returnNumber = point.returnNumber;
+					
+					var elTr = $('<tr>');
+					var elKey = $('<td>').css("padding", "1px 5px");
+					var elValue = $('<td>').css("width", "100%").css("padding", "1px 5px");
+					
+					elKey.html("return nr.");
+					elValue.html(returnNumber);
+					
+					elTable.append(elTr);
+					elTr.append(elKey);
+					elTr.append(elValue);
+				}
+				
+				if(typeof point.pointSourceID !== "undefined"){
+					var source = point.pointSourceID;
+					
+					var elTr = $('<tr>');
+					var elKey = $('<td>').css("padding", "1px 5px");
+					var elValue = $('<td>').css("width", "100%").css("padding", "1px 5px");
+					
+					elKey.html("source");
+					elValue.html(source);
+					
+					elTable.append(elTr);
+					elTr.append(elKey);
+					elTr.append(elValue);
+				}
+				
+				
 			}
 			
 			if(measurement && measurement.showArea){

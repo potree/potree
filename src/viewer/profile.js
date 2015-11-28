@@ -9,11 +9,22 @@ Potree.Viewer.Profile = function(viewer, element){
 	this.requests = [];
 	this.pointsProcessed = 0;
 	this.margin = {top: 0, right: 0, bottom: 20, left: 40};
+	this.maximized = false;
 	
 	
 	$('#closeProfileContainer').click(function(){
 		scope.hide();
 		scope.enabled = false;
+	});
+	
+	$('#profile_toggle_size_button').click(function(){
+		scope.maximized = !scope.maximized;
+	
+		if(scope.maximized){
+			$('#profile_window').css("height", "100%");
+		}else{
+			$('#profile_window').css("height", "30%");
+		}
 	});
 	
 	this.show = function(){

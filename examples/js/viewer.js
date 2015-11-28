@@ -1268,7 +1268,7 @@ Potree.Viewer = function(domElement, args){
 
 			// render skybox
 			if(scope.showSkybox){
-				scope.camera.rotation.copy(scope.camera.rotation);
+				skybox.camera.rotation.copy(scope.camera.rotation);
 				scope.renderer.render(skybox.scene, skybox.camera);
 			}else{
 				scope.renderer.render(scope.sceneBG, scope.cameraBG);
@@ -1544,7 +1544,7 @@ Potree.Viewer = function(domElement, args){
 			
 			scope.renderer.clear();
 			if(scope.showSkybox){
-				scope.camera.rotation.copy(scope.camera.rotation);
+				skybox.camera.rotation.copy(scope.camera.rotation);
 				scope.renderer.render(skybox.scene, skybox.camera);
 			}else{
 				scope.renderer.render(scope.sceneBG, scope.cameraBG);

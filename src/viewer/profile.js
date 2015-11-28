@@ -216,6 +216,7 @@ Potree.Viewer.Profile = function(viewer, element){
 			//html += i18n.t('tools.intensity') + ': ' + p.intensityCode;
 			
 			var html = 'x: ' + Math.round(10 * p.x) / 10 + ' y: ' + Math.round(10 * p.y) / 10 + ' z: ' + Math.round( 10 * p.altitude) / 10 + '  -  ';
+			html += "offset: " + p.distance + '  -  ';
 			html += "Classification: " + p.classificationCode + '  -  ';
 			html += "Intensity: " + p.intensityCode;
 			
@@ -397,13 +398,13 @@ Potree.Viewer.Profile = function(viewer, element){
 			scope.axisZoom = d3.behavior.zoom()
 				.x(scope.axisScaleX)
 				.y(scope.axisScaleY)
-				.scaleExtent([0,16])
+				.scaleExtent([0,128])
 				.size([width, height]);
 				
 			scope.zoom = d3.behavior.zoom()
 			.x(scope.scaleX)
 			.y(scope.scaleY)
-			.scaleExtent([0,16])
+			.scaleExtent([0,128])
 			.size([width, height])
 			.on("zoom",  function(){
 				//var t = zoom.translate();
@@ -483,7 +484,7 @@ Potree.Viewer.Profile = function(viewer, element){
 			
 			drawPoints(scope.points, scope.rangeX, scope.rangeY);
 			
-			document.getElementById("profile_num_points").innerHTML = Potree.utils.addCommas(scope.pointsProcessed);
+			document.getElementById("profile_num_points").innerHTML = Potree.utils.addCommas(scope.pointsProcessed) + " ( threshold: 20k )";
 		};
 		
 		

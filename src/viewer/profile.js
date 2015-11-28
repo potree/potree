@@ -354,30 +354,56 @@ Potree.Viewer.Profile = function(viewer, element){
 			var rangeRatio = rangeProfileWidth / rangeProfileHeight;
 			
 			if(domainRatio < rangeRatio){
-				scope.scaleY.range([height, 0]);
-				
+				// canvas scale
 				var targetWidth = domainProfileWidth * (rangeProfileHeight / domainProfileHeight);
+				scope.scaleY.range([height, 0]);
 				scope.scaleX.range([width / 2 - targetWidth / 2, width / 2 + targetWidth / 2]);
-			}else{
-				scope.scaleX.range([0, width]);
 				
+				// axis scale
+				var domainScale = rangeRatio / domainRatio;
+				var domainScaledWidth = domainProfileWidth * domainScale;
+				scope.axisScaleX = d3.scale.linear()
+					.domain([
+						domainProfileWidth / 2 - domainScaledWidth / 2 , 
+						domainProfileWidth / 2 + domainScaledWidth / 2 ])
+					.range([0, width]);
+				scope.axisScaleY = d3.scale.linear()
+					.domain(scope.rangeY)
+					.range([height, 0]);
+			}else{
+				// canvas scale
 				var targetHeight = domainProfileHeight* (rangeProfileWidth / domainProfileWidth);
+				scope.scaleX.range([0, width]);
 				scope.scaleY.range([height / 2 + targetHeight / 2, height / 2 - targetHeight / 2]);
+				
+				// axis scale
+				var domainScale =  domainRatio / rangeRatio;
+				var domainScaledHeight = domainProfileHeight * domainScale;
+				var domainHeightCentroid = (scope.rangeY[1] + scope.rangeY[0]) / 2;
+				scope.axisScaleX = d3.scale.linear()
+					.domain(scope.rangeX)
+					.range([0, width]);
+				scope.axisScaleY = d3.scale.linear()
+					.domain([
+						domainHeightCentroid - domainScaledHeight / 2 , 
+						domainHeightCentroid + domainScaledHeight / 2 ])
+					.range([height, 0]);
 			}
 			scope.scaleX.domain(scope.rangeX);
 			scope.scaleY.domain(scope.rangeY);
 			
-			var axisScaleX = d3.scale.linear()
-				.domain(scope.rangeX)
-				.range([0, width]);
-			var axisScaleY = d3.scale.linear()
-				.domain(scope.rangeY)
-
 			
-			var zoom = d3.behavior.zoom()
+
+			scope.axisZoom = d3.behavior.zoom()
+				.x(scope.axisScaleX)
+				.y(scope.axisScaleY)
+				.scaleExtent([0,16])
+				.size([width, height]);
+				
+			scope.zoom = d3.behavior.zoom()
 			.x(scope.scaleX)
 			.y(scope.scaleY)
-			.scaleExtent([0,8])
+			.scaleExtent([0,16])
 			.size([width, height])
 			.on("zoom",  function(){
 				//var t = zoom.translate();
@@ -387,7 +413,10 @@ Potree.Viewer.Profile = function(viewer, element){
 				//tx = Math.min(tx, 0);
 				//tx = Math.max(tx, width - projectedBoundingBox.max.x);
 				//zoom.translate([tx, ty]);
-
+				
+				scope.axisZoom.translate(scope.zoom.translate());
+				scope.axisZoom.scale(scope.zoom.scale());
+					
 				svg.select(".x.axis").call(xAxis);
 				svg.select(".y.axis").call(yAxis);
 
@@ -398,7 +427,7 @@ Potree.Viewer.Profile = function(viewer, element){
 			scope.context = d3.select("#profileCanvas")
 				.attr("width", width)
 				.attr("height", height)
-				.call(zoom)
+				.call(scope.zoom)
 				.node().getContext("2d");
 			
 			
@@ -406,7 +435,7 @@ Potree.Viewer.Profile = function(viewer, element){
 			d3.select("svg#profileSVG").selectAll("*").remove();
 			
 			svg = d3.select("svg#profileSVG")
-			.call(zoom)
+			.call(scope.zoom)
 			.attr("width", (width + scope.margin.left + scope.margin.right).toString())
 			.attr("height", (height + scope.margin.top + scope.margin.bottom).toString())
 			.attr("transform", "translate(" + scope.margin.left + "," + scope.margin.top + ")")
@@ -422,7 +451,7 @@ Potree.Viewer.Profile = function(viewer, element){
 			
 			// Create x axis
 			var xAxis = d3.svg.axis()
-				.scale(scope.scaleX)
+				.scale(scope.axisScaleX)
 				.innerTickSize(-height)
 				.outerTickSize(5)
 				.orient("bottom")
@@ -430,7 +459,7 @@ Potree.Viewer.Profile = function(viewer, element){
 
 			// Create y axis
 			var yAxis = d3.svg.axis()
-				.scale(scope.scaleY)
+				.scale(scope.axisScaleY)
 				.innerTickSize(-width)
 				.outerTickSize(5)
 				.orient("left")

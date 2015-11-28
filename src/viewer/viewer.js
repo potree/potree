@@ -136,10 +136,16 @@ Potree.Viewer = function(domElement, args){
 				scope.setHeightRange(bbWorld.min.y, bbWorld.max.y);
 			}
 			
-			
-			
-			
 			scope.earthControls.pointclouds.push(pointcloud);	
+			
+			
+			if(scope.pointclouds.length === 1){
+				scope.setNavigationMode("Orbit");
+				scope.flipYZ();
+				scope.zoomTo(pointcloud, 1);
+			}
+			
+			
 			
 			scope.dispatchEvent({"type": "pointcloud_loaded", "pointcloud": pointcloud});
 			

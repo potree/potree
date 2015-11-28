@@ -6,8 +6,10 @@ Potree.Measure = function(){
 	
 	this.points = [];
 	this._showDistances = true;
+	this._showCoordinates = false;
 	this._showArea = true;
 	this._closed = true;
+	this._showAngles = false;
 	this.maxMarkers = Number.MAX_SAFE_INTEGER;
 	
 	this.spheres = [];
@@ -363,6 +365,26 @@ Potree.Measure = function(){
 
 Potree.Measure.prototype = Object.create( THREE.Object3D.prototype );
 
+Object.defineProperty(Potree.Measure.prototype, "showCoordinates", {
+	get: function(){
+		return this._showCoordinates;
+	},
+	set: function(value){
+		this._showCoordinates = value;
+		this.update();
+	}
+});
+
+Object.defineProperty(Potree.Measure.prototype, "showAngles", {
+	get: function(){
+		return this._showAngles;
+	},
+	set: function(value){
+		this._showAngles = value;
+		this.update();
+	}
+});
+
 Object.defineProperty(Potree.Measure.prototype, "showArea", {
 	get: function(){
 		return this._showArea;
@@ -392,6 +414,17 @@ Object.defineProperty(Potree.Measure.prototype, "showDistances", {
 		this.update();
 	}
 });
+
+
+
+
+
+
+
+
+
+
+
 
 Potree.MeasuringTool = function(scene, camera, renderer, toGeo){
 	

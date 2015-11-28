@@ -86,6 +86,10 @@ body{
   opacity: 0.1;
 }
 
+.annotation{
+	-webkit-transition: opacity .5s;
+	transition: opacity .5s;
+}
 
 
 .measurement-detail-node-marker{

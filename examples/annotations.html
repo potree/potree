@@ -7,13 +7,10 @@
     <meta name="author" content="">
     <title>Potree Viewer</title>
 
-    <!-- Bootstrap core CSS -->
-	<link rel="stylesheet" type="text/css" href="css/potree.css">
+	<link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
   </head>
 
   <body>
-    
-	
 
     <div class="canvas" style="position: absolute; width: 100%;">
 		<div class="" style="position: absolute; z-index: 100; ">
@@ -35,7 +32,6 @@
     </div>
     
 
-   <!-- <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>-->
     <script src="../libs/jquery-2.1.4/jquery-2.1.4.min.js"></script>
 	<script src="../libs/jquery-ui-1.11.4/jquery-ui.min.js"></script>
     <script src="../libs/bootstrap/js/bootstrap.min.js"></script>
@@ -48,43 +44,7 @@
 	<script src="../libs/tween/tween.min.js"></script>
 	<script src="../libs/d3/d3.js"></script>
 	
-	<script src="../build/js/potree.js"></script>
-	<script src="./js/viewer.js"></script>
-	<script src="../src/viewer/profile.js"></script>
-	<script src="./js/ProgressBar.js"></script>
-	
-	<!-- uncomment this to debug changes to the individual js files -->
-	<script src="../src/PointCloudOctree.js"></script>
-	<script src="../src/PointCloudOctreeGeometry.js"></script>
-	<script src="../src/loader/POCLoader.js"></script>
-	<script src="../src/loader/BinaryLoader.js"></script>
-	<script src="../src/loader/LasLazLoader.js"></script>
-	<script src="../src/materials/PointCloudMaterial.js"></script>
-	<script src="../src/materials/EyeDomeLightingMaterial.js"></script>
-	<script src="../src/EarthControls.js"></script>
-	<script src="../src/OrbitControls.js"></script>
-	<script src="../src/FirstPersonControls.js"></script>
-	<script src="../src/GeoControls.js"></script>
-	<script src="../src/utils/ProfileTool.js"></script>
-	<script src="../src/utils/MeasuringTool.js"></script>
-	<script src="../src/utils/TransformationTool.js"></script>
-	<script src="../src/utils/VolumeTool.js"></script>
-	<script src="../src/utils.js"></script>
-	<script src="../src/LRU.js"></script>
-	<script src="../src/Annotation.js"></script>
-	<script src="../src/TextSprite.js"></script>
-	<script src="../src/Features.js"></script>
-	<script src="../src/extensions/PerspectiveCamera.js"></script>
-	<script src="../src/arena4d/PointCloudArena4D.js"></script>
-	<script src="../src/arena4d/PointCloudArena4DGeometry.js"></script>
-	
-	
-	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
-	<!-- INCLUDE SETTINGS HERE -->
-	<script src="../libs/plasio/js/laslaz.js"></script>
-	<script src="../libs/plasio/vendor/bluebird.js"></script>
-	<script src="../build/js/laslaz.js"></script>
-	
+	<script src="../build/potree/potree.js"></script>
 	
 	<script>
 	
@@ -97,12 +57,9 @@
 		viewer.setPointSizing("Fixed");
 		viewer.setQuality("Squares");
 		viewer.setPointBudget(1*1000*1000);
-		viewer.setDescription("");
-
-		viewer.addPointCloud("../resources/pointclouds/lion_takanawa/cloud.js", function(pointcloud){
-			viewer.flipYZ();
-			viewer.zoomTo(pointcloud, 1);
+		viewer.setDescription("New User Interface Prototype");
 		
+		viewer.addPointCloud("../resources/pointclouds/lion_takanawa/cloud.js", function(pointcloud){
 			viewer.addAnnotation(new THREE.Vector3(-0.14, 4.9, 0.25), {
 				"cameraTarget": new THREE.Vector3(0, 2, 0),
 				"cameraPosition": new THREE.Vector3(7.34, 3.24, 6.35),
@@ -125,22 +82,7 @@
 			});
 		});
 		
-		
-		function loadGUI(){
-			$('body').append($('<div>').load("../src/viewer/sidebar.html"));
-			$('head').append( $('<link rel="stylesheet" type="text/css" />').attr('href', '../src/viewer/viewer.css') );		
-			$('head').append( $('<link rel="stylesheet" type="text/css" />').attr('href', "../libs/bootstrap/css/bootstrap.min.css"));
-			$('head').append( $('<link rel="stylesheet" type="text/css" />').attr('href', "../libs/jasny-bootstrap/css/jasny-bootstrap.css"));
-			$('head').append( $('<link rel="stylesheet" type="text/css" />').attr('href', "../libs/jasny-bootstrap/css/navmenu-reveal.css" ));
-			$('head').append( $('<link rel="stylesheet" type="text/css" />').attr('href', "../libs/jquery-ui-1.11.4/jquery-ui.css"	));
-			
-			var elProfile = $('<div>').load("../src/viewer/profile.html", function(){
-				$('#renderArea').append(elProfile.children());
-				viewer._2dprofile = new Potree.Viewer.Profile(viewer, document.getElementById("profile_draw_container"));
-			});
-		}
-		loadGUI();
-	
+		viewer.loadGUI();
 		
 	</script>
   </body>

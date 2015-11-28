@@ -8,6 +8,7 @@ Potree.Viewer.Profile = function(viewer, element){
 	this.currentProfile = null;
 	this.requests = [];
 	this.pointsProcessed = 0;
+	this.margin = {top: 0, right: 0, bottom: 20, left: 40};
 	
 	
 	$('#closeProfileContainer').click(function(){
@@ -49,23 +50,31 @@ Potree.Viewer.Profile = function(viewer, element){
 		var maxY = 0;
 		var maxZ = 0;
 
-		//// Get the same color map as Three
+		// Get the same color map as Three
+		var hr = scope.viewer.getHeightRange();
+		var hrGeo = {
+			min: scope.viewer.toGeo(new THREE.Vector3(0, hr.min, 0)).z,
+			max: scope.viewer.toGeo(new THREE.Vector3(0, hr.max, 0)).z,
+		};
+		
 		//var minRange = scope.viewer.toGeo(new THREE.Vector3(0, args.heightMin, 0));
 		//var maxRange = scope.viewer.toGeo(new THREE.Vector3(0, args.heightMax, 0));
-		//var heightRange = maxRange.z - minRange.z;
-		//var colorRange = [];
-		//var colorDomain = [];
-		//
-		//// Read the altitude gradient used in 3D scene
-		//for (var c = 0; c < pv.scene3D.pointcloud.material.gradient.length; c++){
-		//	colorDomain.push(minRange.z + heightRange * pv.scene3D.pointcloud.material.gradient[c][0]);
-		//	colorRange.push('#' + pv.scene3D.pointcloud.material.gradient[c][1].getHexString());
-		//}
-		//
-		//// Altitude color map scale
-		//var colorRamp = d3.scale.linear()
-		//  .domain(colorDomain)
-		//  .range(colorRange);
+		var heightRange = hrGeo.max - hrGeo.min;
+		var colorRange = [];
+		var colorDomain = [];
+		
+		// Read the altitude gradient used in 3D scene
+		var gradient = viewer.pointclouds[0].material.gradient;
+		for (var c = 0; c < gradient.length; c++){
+			colorDomain.push(hrGeo.min + heightRange * gradient[c][0]);
+			colorRange.push('#' + gradient[c][1].getHexString());
+		}
+		
+		// Altitude color map scale
+		var colorRamp = d3.scale.linear()
+		  .domain(colorDomain)
+		  .range(colorRange)
+		  .clamp(true);
 		  
 		// Iterate the profile's segments
 		for(var i = 0; i < segments.length; i++){
@@ -105,6 +114,7 @@ Potree.Viewer.Profile = function(viewer, element){
 					d.x = p.x;
 					d.y = p.y;
 					d.altitude = p.z;
+					d.heightColor = colorRamp(p.z);
 					d.color = points.color ? 'rgb(' + points.color[j][0] * 100 + '%,' + points.color[j][1] * 100 + '%,' + points.color[j][2] * 100 + '%)' : 'rgb(0,0,0)';
 					d.intensity = points.intensity ? 'rgb(' + points.intensity[j] + '%,' + points.intensity[j] + '%,' + points.intensity[j] + '%)' : 'rgb(0,0,0)';
 					d.intensityCode = points.intensity ? points.intensity[j] : 0;
@@ -128,6 +138,109 @@ Potree.Viewer.Profile = function(viewer, element){
 		};
 
 		return output;
+	};
+	
+	this.pointHighlight = function(event){
+    
+		var pointSize = 6;
+		
+		// Find the hovered point if applicable
+		var d = scope.points;
+		var sx = scope.scaleX;
+		var sy = scope.scaleY;
+		var coordinates = [0, 0];
+		coordinates = d3.mouse(this);
+		var xs = coordinates[0];
+		var ys = coordinates[1];
+		
+		// Fix FF vs Chrome discrepancy
+		//if(navigator.userAgent.indexOf("Firefox") == -1 ) {
+		//	xs = xs - scope.margin.left;
+		//	ys = ys - scope.margin.top;
+		//}
+		var hP = [];
+		var tol = pointSize;
+
+		for (var i=0; i < d.length; i++){
+			if(sx(d[i].distance) < xs + tol && sx(d[i].distance) > xs - tol && sy(d[i].altitude) < ys + tol && sy(d[i].altitude) > ys -tol){
+				hP.push(d[i]); 
+			}
+		}
+
+		if(hP.length > 0){
+			var p = hP[0];
+			this.hoveredPoint = hP[0];
+			if(navigator.userAgent.indexOf("Firefox") == -1 ) {
+				cx = scope.scaleX(p.distance) + scope.margin.left;
+				cy = scope.scaleY(p.altitude) + scope.margin.top;
+			} else {
+				cx = scope.scaleX(p.distance);
+				cy = scope.scaleY(p.altitude);
+			}
+			
+			//cx -= pointSize / 2;
+			cy -= pointSize / 2;
+			
+			var svg = d3.select("svg");
+			d3.selectAll("rect").remove();
+			var rectangle = svg.append("rect")
+				.attr("x", cx)
+				.attr("y", cy)
+				.attr("id", p.id)
+				.attr("width", pointSize)
+				.attr("height", pointSize)
+				.style("fill", 'yellow');
+				
+				
+			var marker = $("#profile_selection_marker");
+			marker.css("display", "initial");
+			marker.css("left", cx + "px");
+			marker.css("top", cy + "px");
+			marker.css("width", pointSize + "px");
+			marker.css("height", pointSize + "px");
+			marker.css("background-color", "yellow");
+
+			//var html = 'x: ' + Math.round(10 * p.x) / 10 + ' y: ' + Math.round(10 * p.y) / 10 + ' z: ' + Math.round( 10 * p.altitude) / 10 + '  -  ';
+			//html += i18n.t('tools.classification') + ': ' + p.classificationCode + '  -  ';
+			//html += i18n.t('tools.intensity') + ': ' + p.intensityCode;
+			
+			var html = 'x: ' + Math.round(10 * p.x) / 10 + ' y: ' + Math.round(10 * p.y) / 10 + ' z: ' + Math.round( 10 * p.altitude) / 10 + '  -  ';
+			html += "Classification: " + p.classificationCode + '  -  ';
+			html += "Intensity: " + p.intensityCode;
+			
+			$('#profileInfo').css('color', 'yellow');
+			$('#profileInfo').html(html);
+
+		} else {
+			d3.selectAll("rect").remove();
+			$('#profileInfo').html("");
+			
+			var marker = $("#profile_selection_marker");
+			marker.css("display", "none");
+		}
+	};
+	
+	this.strokeColor = function (d) {
+		var material = scope.viewer.getMaterial();
+		if (material === Potree.PointColorType.RGB) {
+			return d.color;
+		} else if (material === Potree.PointColorType.INTENSITY) {
+			return d.intensity;
+		} else if (material === Potree.PointColorType.CLASSIFICATION) {
+			var classif = scope.viewer.pointclouds[0].material.classification;
+			if (typeof classif[d.classificationCode] != 'undefined'){
+				var color = 'rgb(' + classif[d.classificationCode].x * 100 + '%,';
+				color += classif[d.classificationCode].y * 100 + '%,';
+				color += classif[d.classificationCode].z * 100 + '%)';
+				return color;
+			} else {
+				return 'rgb(255,255,255)';
+			}
+		} else if (material === Potree.PointColorType.HEIGHT) {
+			return d.heightColor;
+		} else {
+			return d.color;
+		}
 	};
 	
 	this.redraw = function(){
@@ -169,7 +282,7 @@ Potree.Viewer.Profile = function(viewer, element){
 		}
 		scope.requests = [];
 		
-		var drawPoints = function(context, points, rangeX, rangeY, scaleX, scaleY) {
+		var drawPoints = function(points, rangeX, rangeY) {
 		
 		
 			var mileage = 0;
@@ -187,20 +300,13 @@ Potree.Viewer.Profile = function(viewer, element){
 				
 				var radius = 4;
 				
-				var cx = scaleX(mileage);
-				var cy = context.canvas.clientHeight;
+				var cx = scope.scaleX(mileage);
+				var cy = scope.context.canvas.clientHeight;
 				
-				//context.strokeStyle = '#311';
-				//context.beginPath();
-				//context.moveTo(cx, cy);
-				//context.lineTo(cx, 0);
-				//context.stroke();
-				//context.restore();
-				
-				context.beginPath();
-				context.arc(cx, cy, radius, 0, 2 * Math.PI, false);
-				context.fillStyle = '#a22';
-				context.fill();
+				scope.context.beginPath();
+				scope.context.arc(cx, cy, radius, 0, 2 * Math.PI, false);
+				scope.context.fillStyle = '#a22';
+				scope.context.fill();
 			};
 		
 		
@@ -208,11 +314,11 @@ Potree.Viewer.Profile = function(viewer, element){
 			var i = -1, n = points.length, d, cx, cy;
 			while (++i < n) {
 				d = points[i];
-				cx = scaleX(d.distance);
-				cy = scaleY(d.altitude);
-				context.moveTo(cx, cy);
-				context.fillStyle = d.color;
-				context.fillRect(cx, cy, pointSize, pointSize);
+				cx = scope.scaleX(d.distance);
+				cy = scope.scaleY(d.altitude);
+				scope.context.moveTo(cx, cy);
+				scope.context.fillStyle = scope.strokeColor(d);
+				scope.context.fillRect(cx, cy, pointSize, pointSize);
 				//context.fillStyle = pv.profile.strokeColor(d);
 			}
 		};
@@ -222,12 +328,12 @@ Potree.Viewer.Profile = function(viewer, element){
 		var setupAndDraw = function(){
 			var containerWidth = scope.element.clientWidth;
 			var containerHeight = scope.element.clientHeight;
-			var margin = {top: 0, right: 0, bottom: 20, left: 40};
-			var width = containerWidth - (margin.left + margin.right);
-			var height = containerHeight - (margin.top + margin.bottom);
 			
-			var scaleX = d3.scale.linear();
-			var scaleY = d3.scale.linear();
+			var width = containerWidth - (scope.margin.left + scope.margin.right);
+			var height = containerHeight - (scope.margin.top + scope.margin.bottom);
+			
+			scope.scaleX = d3.scale.linear();
+			scope.scaleY = d3.scale.linear();
 			
 			var domainProfileWidth = scope.rangeX[1] - scope.rangeX[0];
 			var domainProfileHeight = scope.rangeY[1] - scope.rangeY[0];
@@ -237,18 +343,18 @@ Potree.Viewer.Profile = function(viewer, element){
 			var rangeRatio = rangeProfileWidth / rangeProfileHeight;
 			
 			if(domainRatio < rangeRatio){
-				scaleY.range([height, 0]);
+				scope.scaleY.range([height, 0]);
 				
 				var targetWidth = domainProfileWidth * (rangeProfileHeight / domainProfileHeight);
-				scaleX.range([width / 2 - targetWidth / 2, width / 2 + targetWidth / 2]);
+				scope.scaleX.range([width / 2 - targetWidth / 2, width / 2 + targetWidth / 2]);
 			}else{
-				scaleX.range([0, width]);
+				scope.scaleX.range([0, width]);
 				
 				var targetHeight = domainProfileHeight* (rangeProfileWidth / domainProfileWidth);
-				scaleY.range([height / 2 + targetHeight / 2, height / 2 - targetHeight / 2]);
+				scope.scaleY.range([height / 2 + targetHeight / 2, height / 2 - targetHeight / 2]);
 			}
-			scaleX.domain(scope.rangeX);
-			scaleY.domain(scope.rangeY);
+			scope.scaleX.domain(scope.rangeX);
+			scope.scaleY.domain(scope.rangeY);
 			
 			var axisScaleX = d3.scale.linear()
 				.domain(scope.rangeX)
@@ -258,8 +364,8 @@ Potree.Viewer.Profile = function(viewer, element){
 
 			
 			var zoom = d3.behavior.zoom()
-			.x(scaleX)
-			.y(scaleY)
+			.x(scope.scaleX)
+			.y(scope.scaleY)
 			.scaleExtent([0,8])
 			.size([width, height])
 			.on("zoom",  function(){
@@ -274,15 +380,15 @@ Potree.Viewer.Profile = function(viewer, element){
 				svg.select(".x.axis").call(xAxis);
 				svg.select(".y.axis").call(yAxis);
 
-				canvas.clearRect(0, 0, width, height);
-				drawPoints(canvas, scope.points, scope.rangeX, scope.rangeY, scaleX, scaleY);
+				scope.context.clearRect(0, 0, width, height);
+				drawPoints(scope.points, scope.rangeX, scope.rangeY);
 			});
 			
-			var canvas = d3.select("#profileCanvas")
-			.attr("width", width)
-			.attr("height", height)
-			.call(zoom)
-			.node().getContext("2d");
+			scope.context = d3.select("#profileCanvas")
+				.attr("width", width)
+				.attr("height", height)
+				.call(zoom)
+				.node().getContext("2d");
 			
 			
 			//d3.select("svg#profile_draw_container").remove();
@@ -290,17 +396,22 @@ Potree.Viewer.Profile = function(viewer, element){
 			
 			svg = d3.select("svg#profileSVG")
 			.call(zoom)
-			.attr("width", (width + margin.left + margin.right).toString())
-			.attr("height", (height + margin.top + margin.bottom).toString())
-			.attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+			.attr("width", (width + scope.margin.left + scope.margin.right).toString())
+			.attr("height", (height + scope.margin.top + scope.margin.bottom).toString())
+			.attr("transform", "translate(" + scope.margin.left + "," + scope.margin.top + ")")
 			.on("mousemove", function(){
+//				scope.pointHighlight
 				// TODO implement pointHighlight
 			});
+			//scope.context.canvas.addEventListener("mousemove", scope.pointHighlight);
+			
+			d3.select("#profileCanvas")
+			.on("mousemove", scope.pointHighlight);
 			
 			
 			// Create x axis
 			var xAxis = d3.svg.axis()
-				.scale(scaleX)
+				.scale(scope.scaleX)
 				.innerTickSize(-height)
 				.outerTickSize(5)
 				.orient("bottom")
@@ -308,7 +419,7 @@ Potree.Viewer.Profile = function(viewer, element){
 
 			// Create y axis
 			var yAxis = d3.svg.axis()
-				.scale(scaleY)
+				.scale(scope.scaleY)
 				.innerTickSize(-width)
 				.outerTickSize(5)
 				.orient("left")
@@ -324,13 +435,13 @@ Potree.Viewer.Profile = function(viewer, element){
 				.call(yAxis);
 				
 			if(navigator.userAgent.indexOf("Firefox") == -1 ) {
-				svg.select(".y.axis").attr("transform", "translate("+ (margin.left).toString() + "," + margin.top.toString() + ")");
-				svg.select(".x.axis").attr("transform", "translate(" + margin.left.toString() + "," + (height + margin.top).toString() + ")");
+				svg.select(".y.axis").attr("transform", "translate("+ (scope.margin.left).toString() + "," + scope.margin.top.toString() + ")");
+				svg.select(".x.axis").attr("transform", "translate(" + scope.margin.left.toString() + "," + (height + scope.margin.top).toString() + ")");
 			} else {
 				svg.select(".x.axis").attr("transform", "translate( 0 ," + height.toString() + ")");
 			}
 			
-			drawPoints(canvas, scope.points, scope.rangeX, scope.rangeY, scaleX, scaleY);
+			drawPoints(scope.points, scope.rangeX, scope.rangeY);
 			
 			document.getElementById("profile_num_points").innerHTML = Potree.utils.addCommas(scope.pointsProcessed);
 		};
@@ -392,11 +503,12 @@ Potree.Viewer.Profile = function(viewer, element){
 	
 	viewer.profileTool.addEventListener("marker_moved", drawOnChange);
 	viewer.profileTool.addEventListener("width_changed", drawOnChange);
-	//$(window).resize(function(event){
-	//	console.log("resized");
-	//	drawOnChange({profile: scope.currentProfile});
-	//});
-	
+	viewer.addEventListener("material_changed", function(){
+		drawOnChange({profile: scope.currentProfile});
+	});
+	viewer.addEventListener("height_range_changed", function(){
+		drawOnChange({profile: scope.currentProfile});
+	});
 	
 	var width = document.getElementById('profile_window').clientWidth;
 	var height = document.getElementById('profile_window').clientHeight;

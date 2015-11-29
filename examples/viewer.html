@@ -7,39 +7,18 @@
     <meta name="author" content="">
     <title>Potree Viewer</title>
 
-	<link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
+	<!--<link rel="stylesheet" type="text/css" href="../build/potree/potree.css">-->
+	<link rel="stylesheet" type="text/css" href="../src/viewer/potree.css">
+	<link rel="stylesheet" type="text/css" href="../libs/jquery-ui-1.11.4/jquery-ui.css">
   </head>
 
   <body>
-
-    <div class="canvas" style="position: absolute; width: 100%;">
-		<div class="" style="position: absolute; z-index: 100; ">
-			<button type="button" class=" navbar-toggle" style="border-color: white" data-toggle="offcanvas" data-recalc="false" data-target=".navmenu" data-canvas=".canvas">
-			  <span class="icon-bar" style="background-color: white"></span>
-			  <span class="icon-bar" style="background-color: white"></span>
-			  <span class="icon-bar" style="background-color: white"></span>
-			</button>
-		</div>
-		<div id="renderArea" style="position: absolute; top: 0px; right: 0; left: 0; bottom: 0; overflow: hidden;">
-
-			<div id="overlays" style="position: absolute; left: 10px; top: 45px;">
-			</div>
-		
-			<!-- HEADING -->
-			<div id="pv_description" class="info" style="position: absolute; top: 10px; left: 50%; transform: translateX(-50%); text-align: center">
-			</div>
-		</div>
-    </div>
-    
-
-    <script src="../libs/jquery-2.1.4/jquery-2.1.4.min.js"></script>
+  
+	<script src="../libs/jquery-2.1.4/jquery-2.1.4.min.js"></script>
 	<script src="../libs/jquery-ui-1.11.4/jquery-ui.min.js"></script>
-    <script src="../libs/bootstrap/js/bootstrap.min.js"></script>
-    <script src="../libs/jasny-bootstrap/js/jasny-bootstrap.js"></script>
 	
 	<script src="../libs/three.js/build/three.js"></script>
 	<script src="../libs/other/stats.min.js"></script>
-	<script src="../libs/other/dat.gui.min.js"></script>
 	<script src="../libs/other/BinaryHeap.js"></script>
 	<script src="../libs/tween/tween.min.js"></script>
 	<script src="../libs/d3/d3.js"></script>
@@ -47,7 +26,6 @@
 	<script src="../build/potree/potree.js"></script>
 	
 	<!-- uncomment this to debug individual js files -->
-	<!--
 	<script src="../src/viewer/viewer.js"></script>
 	<script src="../src/viewer/profile.js"></script>
 	<script src="../src/viewer/ProgressBar.js"></script>
@@ -74,7 +52,7 @@
 	<script src="../src/extensions/PerspectiveCamera.js"></script>
 	<script src="../src/arena4d/PointCloudArena4D.js"></script>
 	<script src="../src/arena4d/PointCloudArena4DGeometry.js"></script>
-	-->
+	
 	
 	
 	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
@@ -82,30 +60,29 @@
 	<script src="../libs/plasio/js/laslaz.js"></script>
 	<script src="../libs/plasio/vendor/bluebird.js"></script>
 	<script src="../build/potree/laslaz.js"></script>
+
+    <div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
 	
+		<div id="potree_render_area">
+			
+			<img class="potree_menu_toggle" src="../resources/icons/menu_button.svg" onclick="viewer.toggleSidebar()" />
+		
+			<!-- HEADING -->
+			<div id="potree_description" class="potree_info_text"></div>
+		</div>
+		
+		<div id="potree_sidebar_container"> </div>
+    </div>
 	
 	<script>
 	
 		var onPointCloudLoaded = function(event){
-			// do stuff here that should be executed once a point cloud has been loaded.
+			// do stuff here that should be executed whenever a point cloud has been loaded.
 			// event.pointcloud returns the point cloud object
 			console.log("a point cloud has been loaded");
-			
-			
-			
-			// set up things when the first point cloud has been loaded
-			if(viewer.pointclouds.length === 1){
-				viewer.setNavigationMode("Orbit");
-				viewer.flipYZ();
-				viewer.zoomTo(event.pointcloud, 1);
-				
-				//viewer.camera.position.set(814, 100, 155);
-				//viewer.orbitControls.target = new THREE.Vector3(768, 59, 110);
-				//viewer.camera.lookAt(viewer.orbitControls.target);
-			}
-		};
+		}; 
 	
-		viewer = new Potree.Viewer(document.getElementById("renderArea"), {
+		viewer = new Potree.Viewer(document.getElementById("potree_render_area"), {
 			"onPointCloudLoaded": onPointCloudLoaded
 		});
 		
@@ -139,11 +116,11 @@
 		//	}, 500);
 		//});
 		
-		//viewer.addPointCloud("http://localhost/temp/ca13/1/cloud.js");
-		//viewer.addPointCloud("http://localhost/temp/ca13/2/cloud.js");
+		viewer.addPointCloud("http://localhost/temp/ca13/1/cloud.js");
+		viewer.addPointCloud("http://localhost/temp/ca13/2/cloud.js");
 		
 		
-		viewer.addPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/opentopography/CA13/cloud.js");
+		//viewer.addPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/opentopography/CA13/cloud.js");
 		
 		viewer.loadGUI();
 		

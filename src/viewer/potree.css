@@ -30,26 +30,66 @@
 /* http://paletton.com */
 
 
-
-
-
-
-#renderArea{
-	position: absolute;
-	top: 0px;
-	bottom: 0px;
-	left: 0px;
-	right: 0px:
-	overflow: hidden;
+.potree_container{
+	/*font-size:	75%;*/
 }
 
-.info{
+.potree_info_text{
 	color:		white;
 	font-weight: bold;
 	text-shadow:  1px  1px 1px black,
 				  1px -1px 1px black,
 				 -1px  1px 1px black,
 				 -1px -1px 1px black;
+}
+
+#potree_description{
+	position: absolute; 
+	top: 10px; 
+	left: 50%; 
+	transform: translateX(-50%); 
+	text-align: center
+}
+
+#potree_sidebar_container{
+	position:	absolute;
+	z-index:	0;
+	width:		300px;
+	height:		100%;
+	overflow-y:	auto;
+	font-size:	85%;
+	
+}
+
+.potree_menu_toggle{
+	position:		absolute;
+	float:			left;
+	margin:			4px 4px;
+	background:		none;
+	width:			3em;
+	height:			3em;
+	z-index:		100;
+	
+}
+
+.potree_menu_toggle_bars{
+	border:			1px solid black;
+	background-color:	white;
+	width:			90%;
+	height:			4px;
+}
+
+
+#potree_render_area{
+	position: absolute;
+	top: 0px;
+	bottom: 0px;
+	left: 0px;
+	right: 0px;
+	overflow: hidden;
+	z-index: 1;
+	-webkit-transition: left .35s;
+	transition: left .35s;
 }
 
 a:hover, a:visited, a:link, a:active{

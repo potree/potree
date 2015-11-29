@@ -557,8 +557,8 @@ function initMeasurementDetails(){
 		var elPanelStretch = document.createElement("span");
 		var elPanelRemove = document.createElement("img");
 		
-		elPanel.classList.add("panel", "panel-default");
-		elPanelHeader.classList.add("panel-heading", "pv-panel-heading");
+		elPanel.classList.add("potree-panel", "panel-default");
+		elPanelHeader.classList.add("potree-panel-heading", "pv-panel-heading");
 		
 		if(measurement){
 			if(measurement.showDistances && !measurement.showArea && !measurement.showAngles){
@@ -622,7 +622,7 @@ function initMeasurementDetails(){
 			if(profile){
 				//<li>Point Budget: <span id="lblPointBudget"></span> <div id="sldPointBudget"></div>	</li>
 				
-				var elLi = $('<li>');
+				var elLi = $('<li style="margin-bottom: 5px">');
 				var elText = document.createTextNode("width: ");
 				var elWidthLabel = $('<span id="lblProfileWidth_' + id + '">');
 				var elWidthSlider = $('<div id="sldProfileWidth_' + id + '">');

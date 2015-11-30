@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>Potree Viewer</title>
+
+	<link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
+  </head>
+
+  <body>
+
+    <div class="canvas" style="position: absolute; width: 100%;">
+		<div class="" style="position: absolute; z-index: 100; ">
+			<button type="button" class=" navbar-toggle" style="border-color: white" data-toggle="offcanvas" data-recalc="false" data-target=".navmenu" data-canvas=".canvas">
+			  <span class="icon-bar" style="background-color: white"></span>
+			  <span class="icon-bar" style="background-color: white"></span>
+			  <span class="icon-bar" style="background-color: white"></span>
+			</button>
+		</div>
+		<div id="renderArea" style="position: absolute; top: 0px; right: 0; left: 0; bottom: 0; overflow: hidden;">
+
+			<div id="overlays" style="position: absolute; left: 10px; top: 45px;">
+			</div>
+		
+			<!-- HEADING -->
+			<div id="pv_description" class="info" style="position: absolute; top: 10px; left: 50%; transform: translateX(-50%); text-align: center">
+			</div>
+		</div>
+    </div>
+    
+
+    <script src="../libs/jquery-2.1.4/jquery-2.1.4.min.js"></script>
+	<script src="../libs/jquery-ui-1.11.4/jquery-ui.min.js"></script>
+    <script src="../libs/bootstrap/js/bootstrap.min.js"></script>
+    <script src="../libs/jasny-bootstrap/js/jasny-bootstrap.js"></script>
+	
+	<script src="../libs/three.js/build/three.js"></script>
+	<script src="../libs/other/stats.min.js"></script>
+	<script src="../libs/other/dat.gui.min.js"></script>
+	<script src="../libs/other/BinaryHeap.js"></script>
+	<script src="../libs/tween/tween.min.js"></script>
+	<script src="../libs/d3/d3.js"></script>
+	
+	<script src="../build/potree/potree.js"></script>
+	
+	<script>
+	
+		viewer = new Potree.Viewer(document.getElementById("renderArea"));
+		
+		viewer.setEDLEnabled(false);
+		viewer.setPointSize(3);
+		viewer.setMaterial("RGB");
+		viewer.setFOV(60);
+		viewer.setPointSizing("Fixed");
+		viewer.setQuality("Squares");
+		viewer.setPointBudget(1*1000*1000);
+		viewer.setDescription("New User Interface Prototype");
+		
+		viewer.addPointCloud("../resources/pointclouds/lion_takanawa/cloud.js", function(pointcloud){
+			viewer.addAnnotation(new THREE.Vector3(-0.14, 4.9, 0.25), {
+				"cameraTarget": new THREE.Vector3(0, 2, 0),
+				"cameraPosition": new THREE.Vector3(7.34, 3.24, 6.35),
+				"title": "Lion",
+				"description": "A chinese guardian lion (<a href='https://en.wikipedia.org/wiki/Chinese_guardian_lions' target='_blank'>Wikipedia</a>)"
+			});
+			
+			viewer.addAnnotation(new THREE.Vector3(-0.09, 4.13, 1.5), {
+				"cameraTarget": new THREE.Vector3(-0.09, 3.9, 1),
+				"cameraPosition": new THREE.Vector3(0.74, 4.23, 3)
+			});
+			
+			viewer.addAnnotation(new THREE.Vector3(0.46, 2.2, 1.07), {
+				"cameraTarget": new THREE.Vector3(0.46, 2.2, 1.07),
+				"cameraPosition": new THREE.Vector3(1.63, 3.27, 2.32),
+				"description": "Female guardian lions have a cub under their left paw." + 
+					"<br><br><center><a href='https://commons.wikimedia.org/wiki/File:Beijing_Forbidden_City_Imperial_Guardian_Lions.jpg' target='blank'>" + 
+					"<img src='https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Beijing_Forbidden_City_Imperial_Guardian_Lions.jpg/450px-Beijing_Forbidden_City_Imperial_Guardian_Lions.jpg' width='200px'/>" +
+					"</a></center>"
+			});
+		});
+		
+		viewer.loadGUI();
+		
+	</script>
+  </body>
+</html>

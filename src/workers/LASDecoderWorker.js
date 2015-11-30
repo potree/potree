@@ -191,4 +191,4 @@ onmessage = function(event){
 		message.pointSourceID];
 		
 	postMessage(message, transferables);
-}
+};

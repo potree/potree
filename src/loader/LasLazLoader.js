@@ -14,7 +14,7 @@ Potree.LasLazLoader = function(version){
 	}else{
 		this.version = version;
 	}
-}
+};
 
 Potree.LasLazLoader.prototype.load = function(node){
 
@@ -51,7 +51,7 @@ Potree.LasLazLoader.prototype.load = function(node){
 	};
 	
 	xhr.send(null);
-}
+};
 
 Potree.LasLazLoader.progressCB = function(arg){
 
@@ -163,7 +163,7 @@ Potree.LasLazBatcher = function(node){
 			
 			var endsWith = function(str, suffix) {
 				return str.indexOf(suffix, str.length - suffix.length) !== -1;
-			}
+			};
 			
 			var positions = e.data.position;
 			var colors = e.data.color;
@@ -232,5 +232,5 @@ Potree.LasLazBatcher = function(node){
 			bbOffset: [node.pcoGeometry.offset.x, node.pcoGeometry.offset.y, node.pcoGeometry.offset.z]
 		};
 		ww.postMessage(message, [message.buffer]);
-	}
+	};
 };

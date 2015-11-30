@@ -670,7 +670,10 @@ Potree.OrbitControls = function ( object, domElement ) {
 	this.domElement.addEventListener( 'touchend', touchend, false );
 	this.domElement.addEventListener( 'touchmove', touchmove, false );
 
-	window.addEventListener( 'keydown', onKeyDown, false );
+	if(this.domElement.tabIndex === -1){
+		this.domElement.tabIndex = 2222;
+	}
+	this.domElement.addEventListener( 'keydown', onKeyDown, false );
 
 };
 

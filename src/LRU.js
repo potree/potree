@@ -186,7 +186,7 @@ LRU.prototype.freeMemory = function(){
 		var node = element.node;
 		this.disposeDescendants(node);
 	
-	};
+	}
 };
 
 LRU.prototype.disposeDescendants = function(node){
@@ -194,6 +194,8 @@ LRU.prototype.disposeDescendants = function(node){
 	stack.push(node);
 	while(stack.length > 0){
 		var current = stack.pop();
+		
+		//console.log(current);
 		
 		current.dispose();
 		this.remove(current);

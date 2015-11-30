@@ -8,7 +8,7 @@
  */
 Potree.POCLoader = function(){
 	
-}
+};
  
 /**
  * @return a point cloud octree with the root node data loaded. 
@@ -63,7 +63,7 @@ Potree.POCLoader.load = function load(url, callback) {
 				tightBoundingBox.max.add(offset);
 				
 				pco.boundingBox = boundingBox;
-				pco.tightBoundingBox = tightBoundingBox
+				pco.tightBoundingBox = tightBoundingBox;
 				pco.boundingSphere = boundingBox.getBoundingSphere();
 				pco.tightBoundingSphere = tightBoundingBox.getBoundingSphere();
 				pco.offset = offset;
@@ -117,7 +117,7 @@ Potree.POCLoader.load = function load(url, callback) {
 				
 				callback(pco);
 			}
-		}
+		};
 		
 		xhr.send(null);
 	}catch(e){

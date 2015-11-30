@@ -1,0 +1,142 @@
+<html>
+<head>
+	<meta charset="utf-8"/>
+	<title>Potree Viewer</title>
+	<!--<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">-->
+	<link rel="stylesheet" type="text/css" href="css/potree.css">
+	
+</head>
+<body>
+
+	<script src="../libs/three.js/build/three.js"></script>
+	<script src="../libs/other/stats.min.js"></script>
+	<script src="../libs/other/dat.gui.min.js"></script>
+	<script src="../libs/other/BinaryHeap.js"></script>
+	<script src="../libs/tween/tween.min.js"></script>
+	
+	<script src="../build/js/potree.js"></script>
+	<script src="../src/OrbitControls.js"></script>
+	
+	<div id="renderArea" style="position: absolute; top: 0px; right: 0; left: 0; bottom: 0; overflow: hidden;">
+	
+	</div>
+	
+	
+	<script>	
+		var renderArea = document.getElementById("renderArea");
+		var renderer = renderer = new THREE.WebGLRenderer();
+		renderArea.appendChild(renderer.domElement);
+		
+		var near = 0.01;
+		var far = 1000;
+		var scene = new THREE.Scene();
+		var camera = new THREE.PerspectiveCamera(60, 1, near, far);
+		
+		camera.position.set(0,0,10);
+		camera.lookAt(new THREE.Vector3(0,0,0));
+		
+		//var sg = new THREE.SphereGeometry(1);
+		//var sm = new THREE.Mesh(sg);
+		//scene.add(sm);
+		
+		controls = new Potree.OrbitControls( camera, renderer.domElement );
+		
+		stats = new Stats();
+		document.body.appendChild(stats.domElement);
+		
+		function generatePointCloudGeometry( color, width, length ){
+
+			var geometry = new THREE.BufferGeometry();
+			var numPoints = width*length;
+
+			var positions = new Float32Array( numPoints*3 );
+			var colors = new Float32Array( numPoints*3 );
+
+			var k = 0;
+
+			for( var i = 0; i < width; i++ ) {
+
+				for( var j = 0; j < length; j++ ) {
+
+					var u = i / width;
+					var v = j / length;
+					var x = u - 0.5;
+					var y = ( Math.cos( u * Math.PI * 8 ) + Math.sin( v * Math.PI * 8 ) ) / 20;
+					var z = v - 0.5;
+
+					positions[ 3 * k ] = x;
+					positions[ 3 * k + 1 ] = y;
+					positions[ 3 * k + 2 ] = z;
+
+					var intensity = ( y + 0.1 ) * 5;
+					colors[ 3 * k ] = color.r * intensity;
+					colors[ 3 * k + 1 ] = color.g * intensity;
+					colors[ 3 * k + 2 ] = color.b * intensity;
+
+					k++;
+
+				}
+
+			}
+
+			geometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
+			geometry.addAttribute( 'color', new THREE.BufferAttribute( colors, 3 ) );
+			geometry.computeBoundingBox();
+
+			return geometry;
+
+		}
+		
+		function generatePointcloud( color, width, length ) {
+
+			var geometry = generatePointCloudGeometry( color, width, length );
+
+			var material = new THREE.PointCloudMaterial( { 
+				size: 0.000001, 
+				vertexColors: THREE.VertexColors,
+				depthTest: false,
+				depthWrite: false
+				} );
+			var pointcloud = new THREE.PointCloud( geometry, material );
+
+			return pointcloud;
+
+		}
+		
+		var pc = generatePointcloud(new THREE.Color( 1,0,0 ), 1000, 500);
+		scene.add(pc);
+		
+		function loop(){
+			requestAnimationFrame(loop);
+			
+			var width = renderArea.clientWidth;
+			var height = renderArea.clientHeight;
+			var aspect = width / height;
+			
+			camera.aspect = aspect;
+			renderer.setSize(width, height);
+			
+			renderer.render(scene, camera);
+			
+			controls.update(0.1);
+			stats.update();
+		};
+		
+		requestAnimationFrame(loop);
+	</script>
+	
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+

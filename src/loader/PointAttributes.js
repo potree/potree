@@ -51,7 +51,7 @@ Potree.PointAttribute = function(name, type, numElements){
 	this.type = type; 
 	this.numElements = numElements;
 	this.byteSize = this.numElements * this.type.size;
-}
+};
 
 Potree.PointAttribute.POSITION_CARTESIAN = new Potree.PointAttribute(
 		Potree.PointAttributeNames.POSITION_CARTESIAN,
@@ -102,7 +102,7 @@ Potree.PointAttribute.NORMAL = new Potree.PointAttribute(
  * 
  */
 Potree.PointAttributes = function(pointAttributes){
-	this.attributes = new Array();
+	this.attributes = [];
 	this.byteSize = 0;
 	this.size = 0;
 	
@@ -115,7 +115,7 @@ Potree.PointAttributes = function(pointAttributes){
 			this.size++;
 		}
 	}
-}
+};
 
 Potree.PointAttributes.prototype.add = function(pointAttribute){
 	this.attributes.push(pointAttribute);

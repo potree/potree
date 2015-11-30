@@ -15,7 +15,9 @@ uniform float far;
 uniform vec2 neighbours[NEIGHBOUR_COUNT];
 uniform vec3 lightDir;
 uniform float expScale;
+uniform float edlScale;
 uniform float radius;
+uniform float opacity;
 
 //uniform sampler2D depthMap;
 uniform sampler2D colorMap;
@@ -29,13 +31,6 @@ float ztransform(float linearDepth){
 	return 1.0 - (linearDepth - near) / (far - near);
 }
 
-float expToLinear(float z){
-    z = 2.0 * z - 1.0;
-	float linear = (2.0 * near * far) / (far + near - z * (far - near));
-
-	return linear;
-}
-
 // this actually only returns linear depth values if LOG_BIAS is 1.0
 // lower values work out more nicely, though.
 #define LOG_BIAS 0.01
@@ -43,12 +38,7 @@ float logToLinear(float z){
 	return (pow((1.0 + LOG_BIAS * far), z) - 1.0) / LOG_BIAS;
 }
 
-float obscurance(float z, float dist){
-	return max(0.0, z) / dist;
-}
-
 float computeObscurance(float linearDepth){
-	vec4 P = vec4(0, 0, 1, -ztransform(linearDepth));
 	vec2 uvRadius = radius / vec2(screenWidth, screenHeight);
 	
 	float sum = 0.0;
@@ -60,10 +50,9 @@ float computeObscurance(float linearDepth){
 		float neighbourDepth = logToLinear(texture2D(colorMap, N_abs_pos).a);
 		
 		if(neighbourDepth != 0.0){
-			float Zn = ztransform(neighbourDepth);
-			float Znp = dot( vec4( N_rel_pos, Zn, 1.0), P );
+			float Znp = ztransform(neighbourDepth) - ztransform(linearDepth);
 			
-			sum += obscurance( Znp, 0.05 * linearDepth );
+			sum += max(0.0, Znp) / (0.05 * linearDepth);
 		}
 	}
 	
@@ -74,12 +63,12 @@ void main(){
 	float linearDepth = logToLinear(texture2D(colorMap, vUv).a);
 	
 	float f = computeObscurance(linearDepth);
-	f = exp(-expScale * f);
+	f = exp(-expScale * edlScale * f);
 	
 	vec4 color = texture2D(colorMap, vUv);
 	if(color.a == 0.0 && f >= 1.0){
 		discard;
 	}
 	
-	gl_FragColor = vec4(color.rgb * f, 1.0);
+	gl_FragColor = vec4(color.rgb * f, opacity);
 }

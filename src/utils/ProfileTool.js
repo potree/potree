@@ -130,7 +130,7 @@ Potree.HeightProfile = function(){
 		
 		this.remove(this.spheres[index]);
 		
-		var edgeIndex = (index == 0) ? 0 : (index - 1);
+		var edgeIndex = (index === 0) ? 0 : (index - 1);
 		this.remove(this.edges[edgeIndex]);
 		this.edges.splice(edgeIndex, 1);
 		this.remove(this.boxes[edgeIndex]);
@@ -182,7 +182,18 @@ Potree.HeightProfile = function(){
 	this.setWidth = function(width){
 		this.width = width;
 		
+		var event = {
+			type: 		'width_changed',
+			profile:	this,
+			width:		width
+		};
+		this.dispatchEvent(event);
+		
 		this.update();
+	};
+	
+	this.getWidth = function(){
+		return this.width;
 	};
 	
 	this.update = function(){
@@ -288,10 +299,10 @@ Potree.HeightProfile = function(){
 			I.distance = raycaster.ray.origin.distanceTo(I.point);
 		}
 		intersects.sort( function ( a, b ) { return a.distance - b.distance;} );
-	}
+	};
 	
 	
-}
+};
 
 Potree.HeightProfile.prototype = Object.create( THREE.Object3D.prototype );
 
@@ -336,7 +347,7 @@ Potree.ProfileTool = function(scene, camera, renderer){
 	
 	var sphereGeometry = new THREE.SphereGeometry(0.4, 10, 10);
 	
-	this.activeProfile;
+	this.activeProfile = null;
 	this.profiles = [];
 	this.sceneProfile = new THREE.Scene();
 	this.sceneRoot = new THREE.Object3D();
@@ -368,6 +379,10 @@ Potree.ProfileTool = function(scene, camera, renderer){
 			var I = scope.getMousePointCloudIntersection();
 			if(I){
 				var pos = I.clone();
+				
+				if(scope.activeProfile.points.length === 1 && scope.activeProfile.width === null){
+					scope.activeProfile.setWidth((camera.position.distanceTo(pos) / 50));
+				}
 				
 				scope.activeProfile.addMarker(pos);
 				
@@ -487,6 +502,7 @@ Potree.ProfileTool = function(scene, camera, renderer){
 		if(scope.activeProfile && state === STATE.INSERT){
 			scope.activeProfile.removeMarker(scope.activeProfile.points.length-1);
 			scope.finishInsertion();
+			event.stopImmediatePropagation();
 		}
 	}
 	
@@ -550,14 +566,14 @@ Potree.ProfileTool = function(scene, camera, renderer){
 		}
 		
 		return closestPoint ? closestPoint.position : null;
-	}	
+	};
 	
 	this.startInsertion = function(args){
 		state = STATE.INSERT;
 		
 		var args = args || {};
 		var clip = args.clip || false;
-		var width = args.width || 1.0;
+		var width = args.width || null;
 		
 		this.activeProfile = new Potree.HeightProfile();
 		this.activeProfile.clip = clip;
@@ -596,6 +612,9 @@ Potree.ProfileTool = function(scene, camera, renderer){
 		profile.addEventListener("marker_moved", function(event){
 			scope.dispatchEvent(event);
 		});
+		profile.addEventListener("width_changed", function(event){
+			scope.dispatchEvent(event);
+		});
 	};
 	
 	this.removeProfile = function(profile){
@@ -603,17 +622,18 @@ Potree.ProfileTool = function(scene, camera, renderer){
 		var index = this.profiles.indexOf(profile);
 		if(index >= 0){
 			this.profiles.splice(index, 1);
+			
+			this.dispatchEvent({"type": "profile_removed", profile: profile});
 		}
 		
-		this.dispatchEvent({"type": "profile_removed", profile: profile});
-	}
+	};
 	
 	this.reset = function(){
 		for(var i = this.profiles.length - 1; i >= 0; i--){
 			var profile = this.profiles[i];
 			this.removeProfile(profile);
 		}
-	}
+	};
 	
 	this.update = function(){
 		
@@ -638,6 +658,7 @@ Potree.ProfileTool = function(scene, camera, renderer){
 		this.update();
 		renderer.render(this.sceneProfile, this.camera);
 	};
+	
 	
 	this.domElement.addEventListener( 'click', onClick, false);
 	this.domElement.addEventListener( 'dblclick', onDoubleClick, false);

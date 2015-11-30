@@ -366,8 +366,14 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 	this.domElement.addEventListener( 'mousewheel', onMouseWheel, false );
 	this.domElement.addEventListener( 'DOMMouseScroll', onMouseWheel, false ); // firefox
 
-	window.addEventListener( 'keydown', onKeyDown, false );
-	window.addEventListener( 'keyup', onKeyUp, false );
+	if(this.domElement.tabIndex === -1){
+		this.domElement.tabIndex = 2222;
+	}
+	this.domElement.addEventListener( 'keydown', onKeyDown, false );
+	this.domElement.addEventListener( 'keyup', onKeyUp, false );
+	
+	//document.body.addEventListener( 'keydown', onKeyDown, false );
+	//document.body.addEventListener( 'keyup', onKeyUp, false );
 
 };
 

@@ -104,7 +104,7 @@ Potree.BinaryLoader.prototype.parse = function(node, buffer){
 		node.loaded = true;
 		node.loading = false;
 		node.pcoGeometry.numNodesLoading--;
-	}
+	};
 	
 	var message = {
 		buffer: buffer,

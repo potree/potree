@@ -1,22 +1,34 @@
-<html>
-<head>
-	<meta charset="utf-8"/>
-	<title>Potree Viewer</title>
-	<!--<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">-->
-	<link rel="stylesheet" type="text/css" href="css/potree.css">
-</head>
-<body>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>Potree Viewer</title>
 
+	<!--<link rel="stylesheet" type="text/css" href="../build/potree/potree.css">-->
+	<link rel="stylesheet" type="text/css" href="../src/viewer/potree.css">
+	<link rel="stylesheet" type="text/css" href="../libs/jquery-ui-1.11.4/jquery-ui.css">
+  </head>
+
+  <body>
+  
+	<script src="../libs/jquery-2.1.4/jquery-2.1.4.min.js"></script>
+	<script src="../libs/jquery-ui-1.11.4/jquery-ui.min.js"></script>
+	
 	<script src="../libs/three.js/build/three.js"></script>
 	<script src="../libs/other/stats.min.js"></script>
-	<script src="../libs/other/dat.gui.min.js"></script>
 	<script src="../libs/other/BinaryHeap.js"></script>
+	<script src="../libs/tween/tween.min.js"></script>
+	<script src="../libs/d3/d3.js"></script>
 	
-	<script src="../build/js/potree.js"></script>
-	<script src="./js/ProgressBar.js"></script>
+	<script src="../build/potree/potree.js"></script>
 	
-	<!-- uncomment this to debug changes to the individual js files -->
-	
+	<!-- uncomment this to debug individual js files -->
+	<script src="../src/viewer/viewer.js"></script>
+	<script src="../src/viewer/profile.js"></script>
+	<script src="../src/viewer/ProgressBar.js"></script>
 	<script src="../src/PointCloudOctree.js"></script>
 	<script src="../src/PointCloudOctreeGeometry.js"></script>
 	<script src="../src/loader/POCLoader.js"></script>
@@ -27,75 +39,91 @@
 	<script src="../src/EarthControls.js"></script>
 	<script src="../src/OrbitControls.js"></script>
 	<script src="../src/FirstPersonControls.js"></script>
+	<script src="../src/GeoControls.js"></script>
 	<script src="../src/utils/ProfileTool.js"></script>
 	<script src="../src/utils/MeasuringTool.js"></script>
 	<script src="../src/utils/TransformationTool.js"></script>
 	<script src="../src/utils/VolumeTool.js"></script>
 	<script src="../src/utils.js"></script>
 	<script src="../src/LRU.js"></script>
+	<script src="../src/Annotation.js"></script>
 	<script src="../src/TextSprite.js"></script>
 	<script src="../src/Features.js"></script>
+	<script src="../src/extensions/PerspectiveCamera.js"></script>
 	<script src="../src/arena4d/PointCloudArena4D.js"></script>
 	<script src="../src/arena4d/PointCloudArena4DGeometry.js"></script>
 	
+	
+	
 	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
 	<!-- INCLUDE SETTINGS HERE -->
-	<!--<script src="../libs/plasio/js/laslaz.js"></script>
+	<script src="../libs/plasio/js/laslaz.js"></script>
 	<script src="../libs/plasio/vendor/bluebird.js"></script>
-	<script src="../build/js/laslaz.js"></script>
-	-->
+	<script src="../build/potree/laslaz.js"></script>
+
+    <div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
 	
-	<!-- HEADING -->
-	<div class="info" style="position: absolute; left: 300px; right: 300px; top: 10px; text-align: center;">
-		<a href="http://potree.org" target="_blank">potree.org</a><br>
-		Point cloud courtesy of <a href="http://www.sigeom.ch/" target="_blank">sigeom sa</a><br>
-	</div>
-	
-	<!-- INFOS / STATS -->
-	<div id="lblNumVisibleNodes" class="info" style="position: absolute; left: 10px; top: 80px; width: 400px; color:white"></div>
-	<div id="lblNumVisiblePoints" class="info" style="position: absolute; left: 10px; top: 100px; width: 400px; color:white"></div>
-	<div id="lblMessage" class="info" style="position: absolute; left: 10px; bottom: 0px; width: 400px; color:white"></div>
-	
-	<!-- TOOLS -->
-	<div id="tools" style="position: fixed; width: 400px; bottom: 10px; right: 10px">
-		<img src="../resources/icons/earth_controls_1.png" onclick="useEarthControls()" title="Earth Controls"/>
-		<img src="../resources/icons/fps_controls.png" onclick="useFPSControls()" title="Fly Camera"/>
-		<img src="../resources/icons/orbit_controls.png" onclick="useOrbitControls()" title="Orbit Controls"/>
-		<img src="../resources/icons/focus.png" onclick="camera.zoomTo(pointcloud)" title="focus on pointcloud"/>
-		<img src="../resources/icons/flip_y_z.png" onclick="flipYZ()" title="flip y and z coordinates"/>
-		<img src="../resources/icons/angle.png" onclick="measuringTool.startInsertion({showDistances: false, showAngles: true, showArea: false, closed: true, maxMarkers: 3})" title="angle measurements"/>
-		<img src="../resources/icons/distance.png" onclick="measuringTool.startInsertion({showDistances: true, showArea: false, closed: false})" title="distance measurements"/>
-		<img src="../resources/icons/area.png" onclick="measuringTool.startInsertion({showDistances: true, showArea: true, closed: true})" title="area measurements"/>
-		<img src="../resources/icons/volume.png" onclick="volumeTool.startInsertion()" title="volume measurements"/>
-		<img src="../resources/icons/profile.png" onclick="profileTool.startInsertion({width: pointcloud.boundingSphere.radius / 100})" title="height profiles"/>
-		<img src="../resources/icons/clip_volume.png" onclick="volumeTool.startInsertion({clip: true})" title="clipping volumes"/>
-	</div>
-	
-	<div id="renderArea"></div>
+		<div id="potree_render_area">
+			
+			<img class="potree_menu_toggle" src="../resources/icons/menu_button.svg" onclick="viewer.toggleSidebar()" />
+		
+			<!-- HEADING -->
+			<div id="potree_description" class="potree_info_text"></div>
+		</div>
+		
+		<div id="potree_sidebar_container"> </div>
+    </div>
 	
 	<script>
-		
-		var sceneProperties = {
-			path:			"http://5.9.65.151/mschuetz/potree/resources/pointclouds/pix4d/matterhorn/cloud.js",
-			path:			"../resources/pointclouds/lion_takanawa/cloud.js",
-			path:			"http://5.9.65.151/mschuetz/potree/resources/pointclouds/vermessung_zh_ch/zuerich/cloud.js",
-			path:			"http://localhost/dev/pointclouds/opentopography/CA13_SAN_SIM/selection_converted/cloud.js",
-			path:			"http://5.9.65.151/mschuetz/potree/test/cloud.js",
-			path:			"http://localhost/temp/test/cloud.js",
-			path:			"../resources/pointclouds/vol_total/cloud.js",
-			cameraPosition: null,
-			cameraTarget: null,
-			sizeType: 		"Adaptive",			// options: "Fixed", "Attenuated", "Adaptive"
-			quality: 		"Squares", 	// options: "Squares", "Circles", "Interpolation", "Splats"
-			fov: 			75, 				// field of view in degree
-			material: 		"RGB", 				// options: "RGB", "Height", "Intensity", "Classification"
-			pointLimit: 	1,					// max number of points in millions
-			navigation: 	"Orbit",			// options: "Earth", "Orbit", "Flight"
-			pointSize: 		1,	
-			useEDL:			false,				// eye-dome-lighting, especially usefull for point clouds without normals
-		};
-	</script>
-	<script src="./js/viewer.js"></script>
 	
-</body>
+		var onPointCloudLoaded = function(event){
+			// do stuff here that should be executed whenever a point cloud has been loaded.
+			// event.pointcloud returns the point cloud object
+			console.log("a point cloud has been loaded");
+		}; 
+	
+		viewer = new Potree.Viewer(document.getElementById("potree_render_area"), {
+			"onPointCloudLoaded": onPointCloudLoaded
+		});
+		
+		viewer.setEDLEnabled(false);
+		viewer.setPointSize(3);
+		viewer.setMaterial("RGB");
+		viewer.setFOV(60);
+		viewer.setPointSizing("Fixed");
+		viewer.setQuality("Squares");
+		viewer.setPointBudget(1*1000*1000);
+		viewer.setDescription("New User Interface Prototype");
+		
+		//viewer.addPointCloud("../resources/pointclouds/vol_total/cloud.js", function(){
+		//	var profile = new Potree.HeightProfile();
+		//	//profile.addMarker(new THREE.Vector3(-289.53, 52.75, 126.00));
+		//	//profile.addMarker(new THREE.Vector3(-288.88, 45.06, 25.53));
+		//	//profile.addMarker(new THREE.Vector3(-256.45, 16.55, -78.45));
+		//	//profile.addMarker(new THREE.Vector3(-203.87, 27.13, -63.94));
+		//	//profile.addMarker(new THREE.Vector3(-170.97, 43.20, 17.09));
+		//	profile.addMarker(new THREE.Vector3(-270.90999, 58.96097, 89.05937)); 
+		//	profile.addMarker(new THREE.Vector3(-280.0200, 57.85097, 63.96937));
+		//	profile.setWidth(2);
+		//	viewer.profileTool.addProfile(profile);
+		//	
+		//	//profile.addMarker(new THREE.Vector3(270.90999, 58.96097, 89.05937)); 
+		//	//profile.addMarker(new THREE.Vector3(-280.0200, 57.85097, 63.96937));
+		//	
+		//	setTimeout(function(){
+		//		viewer._2dprofile.show();
+		//		viewer._2dprofile.draw(profile);
+		//	}, 500);
+		//});
+		
+		viewer.addPointCloud("http://localhost/temp/ca13/1/cloud.js");
+		viewer.addPointCloud("http://localhost/temp/ca13/2/cloud.js");
+		
+		
+		//viewer.addPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/opentopography/CA13/cloud.js");
+		
+		viewer.loadGUI();
+		
+	</script>
+  </body>
 </html>

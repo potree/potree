@@ -75,6 +75,8 @@ void main() {
 	<script src="../libs/other/OrbitControls.js"></script>
 	<script src="../libs/other/stats.min.js"></script>
 	<script src="../libs/other/dat.gui.min.js"></script>
+	<script src="../libs/other/BinaryHeap.js"></script>
+	<script src="../libs/tween/tween.min.js"></script>
 	
 	<script src="../build/js/potree.js"></script>
 	<script src="./js/ProgressBar.js"></script>
@@ -168,13 +170,23 @@ void main() {
 	<script src="./js/viewer.js"></script>
 	
 	<script>
+	
+		var onPointCloudLoaded = function(event){
+			// do stuff here that should be executed once the point cloud has been loaded.
+			// event.pointcloud returns the point cloud object
+			
+		};
+	
+		viewer = new Potree.Viewer(document.getElementById("renderArea"), sceneProperties, {
+			"onPointCloudLoaded": onPointCloudLoaded
+		});
 		
 		function loadCloud(){
 			var elCloudURL = document.getElementById("cloudURL");
 			var url = elCloudURL.value;
 			
-			progressBar.show();
-			progressBar.message = "loading metadata";
+			viewer.progressBar.show();
+			viewer.progressBar.message = "loading metadata";
 			
 			var elCloudForm = document.getElementById("loadCloudForm");
 			elCloudForm.style.display = "none";
@@ -187,46 +199,46 @@ void main() {
 					var elLoadMessage = document.getElementById("loadMessage");
 					elLoadMessage.innerHTML = "Failed to load file. Is the URL correct and the server available?";
 					
-					progressBar.hide();
+					viewer.progressBar.hide();
 					
 					return;
 				};
 			
-				pointcloud = new Potree.PointCloudArena4D(geometry);
+				viewer.pointcloud = new Potree.PointCloudArena4D(geometry);
 				
-				referenceFrame.add(pointcloud);
+				viewer.referenceFrame.add(viewer.pointcloud);
 				
-				flipYZ();
+				viewer.flipYZ();
 				
-				referenceFrame.updateMatrixWorld(true);
-				var sg = pointcloud.boundingSphere.clone().applyMatrix4(pointcloud.matrixWorld);
+				viewer.referenceFrame.updateMatrixWorld(true);
+				var sg = viewer.pointcloud.boundingSphere.clone().applyMatrix4(viewer.pointcloud.matrixWorld);
 				
-				referenceFrame.position.sub(sg.center);
-				referenceFrame.position.y += sg.radius / 2;
-				referenceFrame.updateMatrixWorld(true);
+				viewer.referenceFrame.position.sub(sg.center);
+				viewer.referenceFrame.position.y += sg.radius / 2;
+				viewer.referenceFrame.updateMatrixWorld(true);
 				
-				camera.zoomTo(pointcloud, 1);
-				camera.far = sg.radius * 100;
+				viewer.camera.zoomTo(viewer.pointcloud, 1);
+				viewer.camera.far = sg.radius * 100;
 				
-				initGUI();
+				viewer.initGUI();
 				
-				pointcloud.material.interpolation = false;
-				pointcloud.material.pointSizeType = Potree.PointSizeType.ATTENUATED;
-				earthControls.pointclouds.push(pointcloud);	
+				viewer.pointcloud.material.interpolation = false;
+				viewer.pointcloud.material.pointSizeType = Potree.PointSizeType.ATTENUATED;
+				viewer.earthControls.pointclouds.push(viewer.pointcloud);	
 				
 				if(sceneProperties.navigation === "Earth"){
-					useEarthControls();
+					viewer.useEarthControls();
 				}else if(sceneProperties.navigation === "Orbit"){
-					useOrbitControls();
+					viewer.useOrbitControls();
 				}else if(sceneProperties.navigation === "Flight"){
-					useFPSControls();
+					viewer.useFPSControls();
 				}else{
 					console.warning("No navigation mode specivied. Using OrbitControls");
-					useOrbitControls();
+					viewer.useOrbitControls();
 				}
 				
 				var grid = Potree.utils.createGrid(5, 5, 2);
-				scene.add(grid);
+				viewer.scene.add(grid);
 				
 				document.getElementById("tools").style.display = "block";
 				

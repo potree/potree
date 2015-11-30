@@ -173,7 +173,7 @@ THREE.EarthControls = function ( camera, renderer, scene ) {
 			x: ( (event.clientX - rect.left) / scope.domElement.clientWidth ) * 2 - 1,
 			y: - ( (event.clientY - rect.top) / scope.domElement.clientHeight ) * 2 + 1
 		};
-		var I = getMousePointCloudIntersection(mouse, scope.camera, scope.renderer, scope.pointclouds)
+		var I = getMousePointCloudIntersection(mouse, scope.camera, scope.renderer, scope.pointclouds);
 		if(!I){
 			return;
 		}
@@ -245,7 +245,7 @@ THREE.EarthControls = function ( camera, renderer, scene ) {
 			x: ( (event.clientX - rect.left) / scope.domElement.clientWidth ) * 2 - 1,
 			y: - ( (event.clientY - rect.top) / scope.domElement.clientHeight ) * 2 + 1
 		};
-		var I = getMousePointCloudIntersection(mouse, scope.camera, scope.renderer, scope.pointclouds)
+		var I = getMousePointCloudIntersection(mouse, scope.camera, scope.renderer, scope.pointclouds);
 		
 		if(I){
 			var distance = I.distanceTo(scope.camera.position);

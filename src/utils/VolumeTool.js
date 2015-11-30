@@ -40,7 +40,12 @@ Potree.Volume = function(args){
 	boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, 0.5, -0.5));
 
 	this.dimension = new THREE.Vector3(1,1,1);
-	var material = new THREE.MeshBasicMaterial( {color: 0x00ff00, transparent: true, opacity: 0.3} );
+	var material = new THREE.MeshBasicMaterial( {
+		color: 0x00ff00, 
+		transparent: true, 
+		opacity: 0.3,
+		depthTest: true, 
+		depthWrite: true} );
 	this.box = new THREE.Mesh( boxGeometry, material);
 	this.box.geometry.computeBoundingBox();
 	this.boundingBox = this.box.geometry.boundingBox;
@@ -54,6 +59,8 @@ Potree.Volume = function(args){
 	this.label.setBorderColor({r:0, g:255, b:0, a:0.0});
 	this.label.setBackgroundColor({r:0, g:255, b:0, a:0.0});
 	this.label.material.depthTest = false;
+	this.label.material.depthWrite = false;
+	this.label.material.transparent = true;
 	this.label.position.y -= 0.5;
 	this.add(this.label);
 	
@@ -84,6 +91,7 @@ Potree.Volume = function(args){
 	
 	this.update = function(){
 		this.boundingBox = this.box.geometry.boundingBox;
+		this.boundingSphere = this.boundingBox.getBoundingSphere();
 		
 		if(this._clip){
 			this.box.visible = false;
@@ -140,7 +148,7 @@ Object.defineProperty(Potree.Volume.prototype, "modifiable", {
 });
 
 
-Potree.VolumeTool = function(scene, camera, renderer){
+Potree.VolumeTool = function(scene, camera, renderer, transformationTool){
 	
 	var scope = this;
 	this.enabled = false;
@@ -149,7 +157,8 @@ Potree.VolumeTool = function(scene, camera, renderer){
 	this.sceneVolume = new THREE.Scene();
 	this.camera = camera;
 	this.renderer = renderer;
-	this.domElement = renderer.domElement;
+	this.transformationTool = transformationTool;
+	this.domElement = this.renderer.domElement;
 	this.mouse = {x: 0, y: 0};
 	
 	this.volumes = [];
@@ -194,7 +203,7 @@ Potree.VolumeTool = function(scene, camera, renderer){
 			var I = getHoveredElement();
 			
 			if(I && I.object.modifiable){
-				transformationTool.setTargets([I.object]);
+				scope.transformationTool.setTargets([I.object]);
 			}
 		}
 	
@@ -320,7 +329,7 @@ Potree.VolumeTool = function(scene, camera, renderer){
 			label.setText(msg);
 			
 			var distance = scope.camera.position.distanceTo(label.getWorldPosition());
-			var pr = projectedRadius(1, scope.camera.fov * Math.PI / 180, distance, renderer.domElement.clientHeight);
+			var pr = projectedRadius(1, scope.camera.fov * Math.PI / 180, distance, scope.renderer.domElement.clientHeight);
 			var scale = (70 / pr);
 			label.scale.set(scale, scale, scale);
 		}
@@ -337,10 +346,10 @@ Potree.VolumeTool = function(scene, camera, renderer){
 		this.activeVolume.clip = clip;
 		this.sceneVolume.add(this.activeVolume);
 		this.volumes.push(this.activeVolume);
-	}
+	};
 	
 	this.finishInsertion = function(){
-		transformationTool.setTargets([this.activeVolume]);
+		scope.transformationTool.setTargets([this.activeVolume]);
 		
 		var event = {
 			type: "insertion_finished",
@@ -350,7 +359,7 @@ Potree.VolumeTool = function(scene, camera, renderer){
 		
 		this.activeVolume = null;
 		state = STATE.DEFAULT;
-	}
+	};
 	
 	this.addVolume = function(volume){
 		this.sceneVolume.add(volume);
@@ -370,12 +379,12 @@ Potree.VolumeTool = function(scene, camera, renderer){
 			var volume = this.volumes[i];
 			this.removeVolume(volume);
 		}
-	}
+	};
 	
 	
-	this.render = function(){
-	
-		renderer.render(this.sceneVolume, this.camera);
+	this.render = function(target){
+		
+		scope.renderer.render(this.sceneVolume, this.camera, target);
 		
 	};
 	

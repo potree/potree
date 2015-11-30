@@ -89,6 +89,6 @@ Potree.Features = function(){
 		
 		},
 		precision: precision
-	}
+	};
 
 }();

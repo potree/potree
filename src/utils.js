@@ -11,7 +11,7 @@ Potree.utils.pathExists = function(url){
 		return false;
 	}
 	return true;
-}
+};
 
 /**
  * adapted from mhluska at https://github.com/mrdoob/three.js/issues/1561
@@ -34,7 +34,7 @@ Potree.utils.computeTransformedBoundingBox = function (box, transform) {
 	boundingBox.setFromPoints( vertices );
 	
 	return boundingBox;
-}
+};
 
 /**
  * add separators to large numbers
@@ -52,7 +52,7 @@ Potree.utils.addCommas = function(nStr){
 		x1 = x1.replace(rgx, '$1' + ',' + '$2');
 	}
 	return x1 + x2;
-}
+};
 
 /**
  * create worker from a string
@@ -64,7 +64,7 @@ Potree.utils.createWorker = function(code){
 	 var worker = new Worker(URL.createObjectURL(blob));
 	 
 	 return worker;
-}
+};
 
 Potree.utils.loadSkybox = function(path){
 	var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 100000 );
@@ -99,7 +99,7 @@ Potree.utils.loadSkybox = function(path){
     scene.add(mesh);
 
     return {"camera": camera, "scene": scene};
-}
+};
 
 Potree.utils.createGrid = function createGrid(width, length, spacing, color){
 	var material = new THREE.LineBasicMaterial({
@@ -120,7 +120,7 @@ Potree.utils.createGrid = function createGrid(width, length, spacing, color){
 	var line = new THREE.Line(geometry, material, THREE.LinePieces);
 	line.receiveShadow = true;
 	return line;
-}
+};
 
 
 Potree.utils.createBackgroundTexture = function(width, height){
@@ -191,7 +191,7 @@ function getMousePointCloudIntersection(mouse, camera, renderer, pointclouds){
 	}
 	
 	return closestPoint ? closestPoint.position : null;
-}
+};
 	
 	
 function pixelsArrayToImage(pixels, width, height){
@@ -216,7 +216,7 @@ function pixelsArrayToImage(pixels, width, height){
 	img.style.transform = "scaleY(-1)";
 	
     return img;
-}
+};
 
 function projectedRadius(radius, fov, distance, screenHeight){
 	var projFactor =  (1 / Math.tan(fov / 2)) / distance;
@@ -226,54 +226,30 @@ function projectedRadius(radius, fov, distance, screenHeight){
 };
 	
 	
-Potree.utils.topView = function(camera, controls, pointcloud){
+Potree.utils.topView = function(camera, node){
 	camera.position.set(0, 1, 0);
 	camera.rotation.set(-Math.PI / 2, 0, 0);
-	camera.zoomTo(pointcloud, 1);
+	camera.zoomTo(node, 1);
+};
 
-	if(controls.target){
-		var sg = pointcloud.boundingSphere.clone().applyMatrix4(pointcloud.matrixWorld);
-		var target = new THREE.Vector3(camera.position.x, sg.center.y, camera.position.z);
-		controls.target.copy(target);
-	}	
-}
-
-Potree.utils.frontView = function(camera, controls, pointcloud){
+Potree.utils.frontView = function(camera, node){
 	camera.position.set(0, 0, 1);
 	camera.rotation.set(0, 0, 0);
-	camera.zoomTo(pointcloud, 1);
-
-	if(controls.target){
-		var sg = pointcloud.boundingSphere.clone().applyMatrix4(pointcloud.matrixWorld);
-		var target = new THREE.Vector3(camera.position.x, camera.position.y, sg.center.z);
-		controls.target.copy(target);
-	}
-}
+	camera.zoomTo(node, 1);
+};
 
 
-Potree.utils.leftView = function(camera, controls, pointcloud){
+Potree.utils.leftView = function(camera, node){
 	camera.position.set(-1, 0, 0);
 	camera.rotation.set(0, -Math.PI / 2, 0);
-	camera.zoomTo(pointcloud, 1);
+	camera.zoomTo(node, 1);
+};
 
-	if(controls.target){
-		var sg = pointcloud.boundingSphere.clone().applyMatrix4(pointcloud.matrixWorld);
-		var target = new THREE.Vector3(sg.center.x, camera.position.y, camera.position.z);
-		controls.target.copy(target);
-	}
-}
-
-Potree.utils.rightView = function(camera, controls, pointcloud){
+Potree.utils.rightView = function(camera, node){
 	camera.position.set(1, 0, 0);
 	camera.rotation.set(0, Math.PI / 2, 0);
-	camera.zoomTo(pointcloud, 1);
-
-	if(controls.target){
-		var sg = pointcloud.boundingSphere.clone().applyMatrix4(pointcloud.matrixWorld);
-		var target = new THREE.Vector3(sg.center.x, camera.position.y, camera.position.z);
-		controls.target.copy(target);
-	}
-}
+	camera.zoomTo(node, 1);
+};
 	
 /**
  *  
@@ -324,7 +300,7 @@ Potree.utils.screenPass = new function(){
 		}else{
 			renderer.render(this.screenScene, this.camera, target);
 		}
-	}
+	};
 }();
 	
 	

@@ -233,7 +233,7 @@ Potree.ProfileRequest = function(pointcloud, profile, maxDepth, callback){
 								}else{
 									var values = geometry.attributes[property];
 									if(values.itemSize === 1){
-										segment.points[property].push(values.array[i + j]);
+										segment.points[property].push(values.array[i]);
 									}else{
 										var value = [];
 										for(var j = 0; j < values.itemSize; j++){

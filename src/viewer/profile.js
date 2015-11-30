@@ -130,6 +130,8 @@ Potree.Viewer.Profile = function(viewer, element){
 					d.intensity = points.intensity ? 'rgb(' + points.intensity[j] + '%,' + points.intensity[j] + '%,' + points.intensity[j] + '%)' : 'rgb(0,0,0)';
 					d.intensityCode = points.intensity ? points.intensity[j] : 0;
 					d.classificationCode = points.classification ? points.classification[j] : 0;
+					d.returnNumber = points.returnNumber[j];
+					d.numberOfReturns = points.numberOfReturns[j];
 					data.push(d);
 				}
 			}
@@ -249,6 +251,21 @@ Potree.Viewer.Profile = function(viewer, element){
 				return 'rgb(255,255,255)';
 			}
 		} else if (material === Potree.PointColorType.HEIGHT) {
+			return d.heightColor;
+		} else if (material === Potree.PointColorType.RETURN_NUMBER) {
+			
+			if(d.numberOfReturns === 1){
+					return 'rgb(255, 255, 0)';
+			}else{
+				if(d.returnNumber === 1){
+					return 'rgb(255, 0, 0)';
+				}else if(d.returnNumber === d.numberOfReturns){
+					return 'rgb(0, 0, 255)';
+				}else{
+					return 'rgb(0, 255, 0)';
+				}
+			}
+			
 			return d.heightColor;
 		} else {
 			return d.color;

@@ -252,7 +252,7 @@ void main() {
 		vColor = uColor;
 	#elif defined color_type_tree_depth
 		float depth = getLocalTreeDepth();
-		float w = depth / 10.0;
+		float w = depth / 30.0;
 		vColor = texture2D(gradient, vec2(w,1.0-w)).rgb;
 	#elif defined color_type_point_index
 		vColor = indices.rgb;

@@ -55,12 +55,6 @@ Potree.PointCloudArena4D.prototype.updateMaterial = function(camera, renderer){
 	this.material.spacing = this.pcoGeometry.spacing;
 	this.material.near = camera.near;
 	this.material.far = camera.far;
-	
-	// reduce shader source updates by setting maxLevel slightly higher than actually necessary
-	if(this.maxLevel > this.material.levels){
-		this.material.levels = this.maxLevel + 2;
-	}
-	
 	this.material.minSize = 3;
 	
 	var bbSize = this.boundingBox.size();
@@ -515,22 +509,21 @@ Potree.PointCloudArena4D.prototype.pick = function(renderer, camera, ray, params
 	}
 	
 	this.pickMaterial.pointSizeType = this.material.pointSizeType;
-	this.pickMaterial.size = this.material.size;
-	
-	if(this.pickMaterial.pointSizeType === Potree.PointSizeType.ADAPTIVE){
-		this.updateVisibilityTexture(this.pickMaterial, nodes);
-	}
-	
+	this.pickMaterial.size 			= this.material.size;
 	this.pickMaterial.fov 			= this.material.fov;
 	this.pickMaterial.screenWidth 	= this.material.screenWidth;
 	this.pickMaterial.screenHeight 	= this.material.screenHeight;
 	this.pickMaterial.spacing 		= this.material.spacing;
 	this.pickMaterial.near 			= this.material.near;
 	this.pickMaterial.far 			= this.material.far;
-	this.pickMaterial.levels 		= this.material.levels;
-	this.pickMaterial.pointShape 	= this.material.pointShape;
+	this.pickMaterial.interpolate 	= this.material.interpolate;
+	this.pickMaterial.minSize 		= this.material.minSize;
+	this.pickMaterial.maxSize 		= this.material.maxSize;
+	this.pickMaterial.bbSize 		= this.material.bbSize;
 	
-	
+	if(this.pickMaterial.pointSizeType === Potree.PointSizeType.ADAPTIVE){
+		this.updateVisibilityTexture(this.pickMaterial, nodes);
+	}
 
 	var _gl = renderer.context;
 	
@@ -595,6 +588,23 @@ Potree.PointCloudArena4D.prototype.pick = function(renderer, camera, ray, params
 		pixelPos.x - (pickWindowSize-1) / 2, pixelPos.y - (pickWindowSize-1) / 2, 
 		pickWindowSize, pickWindowSize, 
 		renderer.context.RGBA, renderer.context.UNSIGNED_BYTE, pixels);
+		
+		
+	//{ // show big render target for debugging purposes
+	//	var br = new ArrayBuffer(width*height*4);
+	//	var bp = new Uint8Array(br);
+	//	renderer.context.readPixels( 0, 0, width, height, 
+	//		renderer.context.RGBA, renderer.context.UNSIGNED_BYTE, bp);
+	//
+	//	var img = pixelsArrayToImage(bp, width, height);
+	//	img.style.boder = "2px solid red";
+	//	img.style.position = "absolute";
+	//	img.style.top  = "0px";
+	//	img.style.width = width + "px";
+	//	img.style.height = height + "px";
+	//	img.onclick = function(){document.body.removeChild(img)};
+	//	document.body.appendChild(img);
+	//}
 		
 	// find closest hit inside pixelWindow boundaries
 	var min = Number.MAX_VALUE;

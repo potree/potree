@@ -25,6 +25,8 @@ Potree.PointCloudArena4DGeometryNode.prototype.load = function(){
 		return;
 	}
 	
+	this.loading = true;
+	
 	Potree.PointCloudArena4DGeometryNode.nodesLoading++;
 	
 	var url = this.pcoGeometry.url + "?node=" + this.number;
@@ -80,6 +82,8 @@ Potree.PointCloudArena4DGeometryNode.prototype.load = function(){
 		geometry.boundingSphere = scope.boundingSphere;
 		
 		scope.numPoints = numPoints;
+		
+		scope.loading = false;
 	};
 	
 	xhr.send(null);

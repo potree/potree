@@ -191,6 +191,10 @@ Potree.Viewer = function(domElement, args){
 	})(this);
 	
 	
+	this.setMinNodeSize = function(value){
+		scope.minNodeSize = value;
+	};
+	
 	this.setDescription = function(value){
 		$('#potree_description')[0].innerHTML = value;
 	};

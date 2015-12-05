@@ -5180,7 +5180,7 @@ Potree.ProfileRequest = function(pointcloud, profile, maxDepth, callback){
 								}else{
 									var values = geometry.attributes[property];
 									if(values.itemSize === 1){
-										segment.points[property].push(values.array[i + j]);
+										segment.points[property].push(values.array[i]);
 									}else{
 										var value = [];
 										for(var j = 0; j < values.itemSize; j++){
@@ -11327,8 +11327,12 @@ Potree.Viewer = function(domElement, args){
 	})(this);
 	
 	
+	this.setMinNodeSize = function(value){
+		scope.minNodeSize = value;
+	};
+	
 	this.setDescription = function(value){
-		$('#pv_description')[0].innerHTML = value;
+		$('#potree_description')[0].innerHTML = value;
 	};
 	
 	this.setNavigationMode = function(value){
@@ -11853,17 +11857,35 @@ Potree.Viewer = function(domElement, args){
 // Viewer Internals 
 //------------------------------------------------------------------------------------
 
+	this.toggleSidebar = function(){
+		
+		var renderArea = $('#potree_render_area');
+		var sidebar = $('#potree_sidebar_container');
+		var isVisible = renderArea.css("left") !== "0px";
+		
+		if(isVisible){
+			renderArea.css("left", "0px");
+		}else{
+			renderArea.css("left", "300px");
+		}
+	};
+
 	this.loadGUI = function(){
-		$('body').append($('<div>').load("../src/viewer/sidebar.html"));
+		var sidebarContainer = $('#potree_sidebar_container');
+		sidebarContainer.load("../src/viewer/sidebar.html");
+		sidebarContainer.css("width", "300px");
+		sidebarContainer.css("height", "100%");
+		
+		
 		//$('head').append( $('<link rel="stylesheet" type="text/css" />').attr('href', '../src/viewer/viewer.css') );		
-		$('head').append( $('<link rel="stylesheet" type="text/css" />').attr('href', "../libs/bootstrap/css/bootstrap.min.css"));
-		$('head').append( $('<link rel="stylesheet" type="text/css" />').attr('href', "../libs/jasny-bootstrap/css/jasny-bootstrap.css"));
-		$('head').append( $('<link rel="stylesheet" type="text/css" />').attr('href', "../libs/jasny-bootstrap/css/navmenu-reveal.css" ));
-		$('head').append( $('<link rel="stylesheet" type="text/css" />').attr('href', "../libs/jquery-ui-1.11.4/jquery-ui.css"	));
+		//$('head').append( $('<link rel="stylesheet" type="text/css" />').attr('href', "../libs/bootstrap/css/bootstrap.min.css"));
+		//$('head').append( $('<link rel="stylesheet" type="text/css" />').attr('href', "../libs/jasny-bootstrap/css/jasny-bootstrap.css"));
+		//$('head').append( $('<link rel="stylesheet" type="text/css" />').attr('href', "../libs/jasny-bootstrap/css/navmenu-reveal.css" ));
+		//$('head').append( $('<link rel="stylesheet" type="text/css" />').attr('href', "../libs/jquery-ui-1.11.4/jquery-ui.css"	));
 		
 		//var elProfile = $('<div style="position: absolute; width: 100%; height: 30%; bottom: 0; display: none" >');
 		var elProfile = $('<div>').load("../src/viewer/profile.html", function(){
-			$('#renderArea').append(elProfile.children());
+			$('#potree_render_area').append(elProfile.children());
 			scope._2dprofile = new Potree.Viewer.Profile(scope, document.getElementById("profile_draw_container"));
 		});
 	}
@@ -11991,8 +12013,8 @@ Potree.Viewer = function(domElement, args){
 	
 	
 	this.initThree = function(){
-		var width = renderArea.clientWidth;
-		var height = renderArea.clientHeight;
+		var width = scope.renderArea.clientWidth;
+		var height = scope.renderArea.clientHeight;
 		var aspect = width / height;
 		var near = 0.1;
 		var far = 1000*1000;
@@ -12012,7 +12034,7 @@ Potree.Viewer = function(domElement, args){
 		scope.renderer = new THREE.WebGLRenderer();
 		scope.renderer.setSize(width, height);
 		scope.renderer.autoClear = false;
-		renderArea.appendChild(scope.renderer.domElement);
+		scope.renderArea.appendChild(scope.renderer.domElement);
 		scope.renderer.domElement.tabIndex = "2222";
 		scope.renderer.domElement.addEventListener("mousedown", function(){scope.renderer.domElement.focus();});
 		
@@ -12341,8 +12363,8 @@ Potree.Viewer = function(domElement, args){
 
 		this.render = function(){
 			{// resize
-				var width = renderArea.clientWidth;
-				var height = renderArea.clientHeight;
+				var width = scope.renderArea.clientWidth;
+				var height = scope.renderArea.clientHeight;
 				var aspect = width / height;
 				
 				scope.camera.aspect = aspect;
@@ -12466,8 +12488,8 @@ Potree.Viewer = function(domElement, args){
 		// render with splats
 		this.render = function(renderer){
 		
-			var width = renderArea.clientWidth;
-			var height = renderArea.clientHeight;
+			var width = scope.renderArea.clientWidth;
+			var height = scope.renderArea.clientHeight;
 		
 			initHQSPlats();
 			
@@ -12603,8 +12625,8 @@ Potree.Viewer = function(domElement, args){
 		};
 		
 		var resize = function(){
-			var width = renderArea.clientWidth;
-			var height = renderArea.clientHeight;
+			var width = scope.renderArea.clientWidth;
+			var height = scope.renderArea.clientHeight;
 			var aspect = width / height;
 			
 			var needsResize = (rtColor.width != width || rtColor.height != height);
@@ -12640,8 +12662,8 @@ Potree.Viewer = function(domElement, args){
 			var originalMaterials = [];
 			for(var i = 0; i < scope.pointclouds.length; i++){
 				var pointcloud = scope.pointclouds[i];
-				var width = renderArea.clientWidth;
-				var height = renderArea.clientHeight;
+				var width = scope.renderArea.clientWidth;
+				var height = scope.renderArea.clientHeight;
 				
 				if(attributeMaterials.length <= i ){
 					var attributeMaterial = new Potree.PointCloudMaterial();
@@ -12951,6 +12973,8 @@ Potree.Viewer.Profile = function(viewer, element){
 					d.intensity = points.intensity ? 'rgb(' + points.intensity[j] + '%,' + points.intensity[j] + '%,' + points.intensity[j] + '%)' : 'rgb(0,0,0)';
 					d.intensityCode = points.intensity ? points.intensity[j] : 0;
 					d.classificationCode = points.classification ? points.classification[j] : 0;
+					d.returnNumber = points.returnNumber[j];
+					d.numberOfReturns = points.numberOfReturns[j];
 					data.push(d);
 				}
 			}
@@ -13070,6 +13094,21 @@ Potree.Viewer.Profile = function(viewer, element){
 				return 'rgb(255,255,255)';
 			}
 		} else if (material === Potree.PointColorType.HEIGHT) {
+			return d.heightColor;
+		} else if (material === Potree.PointColorType.RETURN_NUMBER) {
+			
+			if(d.numberOfReturns === 1){
+					return 'rgb(255, 255, 0)';
+			}else{
+				if(d.returnNumber === 1){
+					return 'rgb(255, 0, 0)';
+				}else if(d.returnNumber === d.numberOfReturns){
+					return 'rgb(0, 0, 255)';
+				}else{
+					return 'rgb(0, 255, 0)';
+				}
+			}
+			
 			return d.heightColor;
 		} else {
 			return d.color;

@@ -130,8 +130,8 @@ Potree.Viewer.Profile = function(viewer, element){
 					d.intensity = points.intensity ? 'rgb(' + points.intensity[j] + '%,' + points.intensity[j] + '%,' + points.intensity[j] + '%)' : 'rgb(0,0,0)';
 					d.intensityCode = points.intensity ? points.intensity[j] : 0;
 					d.classificationCode = points.classification ? points.classification[j] : 0;
-					d.returnNumber = points.returnNumber[j];
-					d.numberOfReturns = points.numberOfReturns[j];
+					d.returnNumber = points.returnNumber ? points.returnNumber[j] : 0;
+					d.numberOfReturns = points.numberOfReturns ? points.numberOfReturns[j] : 0;
 					data.push(d);
 				}
 			}

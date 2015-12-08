@@ -359,21 +359,21 @@ Potree.OrbitControls = function ( object, domElement ) {
 		if ( scope.enabled === false ) return;
 		event.preventDefault();
 
-		if ( event.button === 0 ) {
+		if (event.button === THREE.MOUSE.MIDDLE || (event.button === THREE.MOUSE.LEFT && event.ctrlKey)) {
 			if ( scope.noRotate === true ) return;
 
 			state = STATE.ROTATE;
 
 			rotateStart.set( event.clientX, event.clientY );
 
-		} else if ( event.button === 1 ) {
+		} else if (event.button === THREE.MOUSE.RIGHT) {
 			if ( scope.noZoom === true ) return;
 
 			state = STATE.DOLLY;
 
 			dollyStart.set( event.clientX, event.clientY );
 
-		} else if ( event.button === 2 ) {
+		} else if (event.button === THREE.MOUSE.LEFT) {
 			if ( scope.noPan === true ) return;
 
 			state = STATE.PAN;

@@ -308,6 +308,9 @@ Potree.PointCloudOctree = function(geometry, material){
 	this.generateDEM = false;
 	this.profileRequests = [];
 	
+	// TODO read projection from file instead
+	this.projection = geometry.projection;
+	
 	this.root = this.pcoGeometry.root;
 };
 

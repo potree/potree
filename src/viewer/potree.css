@@ -76,12 +76,24 @@
 .potree_menu_toggle{
 	position:		absolute;
 	float:			left;
-	margin:			4px 4px;
+	margin:			8px 8px;
 	background:		none;
-	width:			3em;
-	height:			3em;
+	width:			2.5em;
+	height:			2.5em;
 	z-index:		100;
-	
+	cursor: 		pointer;
+}
+
+#potree_map_toggle{
+	position:		absolute;
+	float:			left;
+	margin:			8px 8px;
+	background:		none;
+	width:			2.5em;
+	height:			2.5em;
+	z-index:		100;
+	top:			calc(2.5em + 8px);
+	cursor: 		pointer;
 }
 
 .potree_menu_toggle_bars{

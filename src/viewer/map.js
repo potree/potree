@@ -13,35 +13,20 @@ Potree.Viewer.MapView = function(viewer){
 	this.sceneProjection = null;
 	
 	this.init = function(){
-		scope.setSceneProjection("+proj=utm +zone=10 +ellps=GRS80 +datum=NAD83 +units=m +no_defs");
+		//scope.setSceneProjection("+proj=utm +zone=10 +ellps=GRS80 +datum=NAD83 +units=m +no_defs");
 		
-		scope.sceneExtent = {
-			min: [643453.67, 3889087.89, -2.72],
-			max: [736910.93, 3971391.48, 1093.60]
-		};
+		$( "#potree_map" ).draggable({ handle: $('#potree_map_header') });
+		$( "#potree_map" ).resizable();
+		//$( "#potree_map" ).css("display", "block");
+		$( "#potree_map_toggle" ).css("display", "block");
+	
+		scope.gExtent = new ol.geom.LineString([[0,0], [0,0]]);
 		
-		scope.mapExtent = {
-			min: proj4(scope.sceneProjection, scope.mapProjection, [scope.sceneExtent.min[0], scope.sceneExtent.min[1]]),
-			max: proj4(scope.sceneProjection, scope.mapProjection, [scope.sceneExtent.max[0], scope.sceneExtent.max[1]])
-		};
-		
-		
-		var p1 = scope.toMap.forward([scope.sceneExtent.min[0], scope.sceneExtent.min[1]]);
-		var p2 = scope.toMap.forward([scope.sceneExtent.max[0], scope.sceneExtent.min[1]]);
-		var p3 = scope.toMap.forward([scope.sceneExtent.max[0], scope.sceneExtent.max[1]]);
-		var p4 = scope.toMap.forward([scope.sceneExtent.min[0], scope.sceneExtent.max[1]]);
-		
-		scope.olExtent = [scope.mapExtent.min[0], scope.mapExtent.min[1], scope.mapExtent.max[0], scope.mapExtent.max[1]];
-		scope.olCenter = [(scope.mapExtent.max[0] + scope.mapExtent.min[0]) / 2, (scope.mapExtent.max[1] + scope.mapExtent.min[1]) / 2];
-		
-		 // Layer used to draw the point cloud extent
-		var box = new ol.geom.LineString([p1, p2, p3, p4, p1]);
-		
-		var feature = new ol.Feature(box);
+		// EXTENT LAYER
+		var feature = new ol.Feature(scope.gExtent);
 		var featureVector = new ol.source.Vector({
 			features: [feature]
 		});
-		
 		var visibleBoundsLayer = new ol.layer.Vector({
 			source: featureVector,
 			style: new ol.style.Style({
@@ -61,7 +46,7 @@ Potree.Viewer.MapView = function(viewer){
 			})
 		});
 		
-		// Layer used to display the tools drawings in 2D
+		// TOOL DRAWINGS LAYER
 		scope.toolLayer = new ol.layer.Vector({
 			source: new ol.source.Vector({
 			}),
@@ -76,6 +61,7 @@ Potree.Viewer.MapView = function(viewer){
 			})
 		});
 		
+		// SOURCES EXTENT LAYER
 		scope.sourcesLayer = new ol.layer.Vector({
 			source: new ol.source.Vector({}),
 			style: new ol.style.Style({
@@ -83,12 +69,13 @@ Potree.Viewer.MapView = function(viewer){
 					color: 'rgba(255, 0, 0, 0.1)'
 				}),
 				stroke: new ol.style.Stroke({
-					  color: 'rgba(255, 0, 0, 1)',
-					  width: 2
+					  color: 'rgba(0, 0, 150, 1)',
+					  width: 1
 				})
 			})
 		});
 		
+		// SOURCES LABEL
 		scope.sourcesLabelLayer = new ol.layer.Vector({
 			source: new ol.source.Vector({
 			}),
@@ -107,20 +94,31 @@ Potree.Viewer.MapView = function(viewer){
 		
 		var mousePositionControl = new ol.control.MousePosition({
 			coordinateFormat: ol.coordinate.createStringXY(4),
-			projection: scope.mapProjectionName,
+			projection: scope.sceneProjection,
 			undefinedHTML: '&nbsp;'
 		});
-		
-		
 		
 		var DownloadSelectionControl = function(opt_options) {
 			var options = opt_options || {};
 			
-			//var myHTMLDoc = "<html><head><title>mydoc</title></head><body>This is a test page</body></html>";
-			//var uri = "data:application/octet-stream;base64,"+btoa(myHTMLDoc);
+			// TOGGLE TILES
+			var btToggleTiles = document.createElement('button');
+			btToggleTiles.innerHTML = 'T';
+			btToggleTiles.addEventListener('click', function(){
+				var visible = scope.sourcesLayer.getVisible();
+				scope.sourcesLayer.setVisible(!visible);
+				scope.sourcesLabelLayer.setVisible(!visible);
+			}, false);
+			btToggleTiles.style.float = "left";
+			btToggleTiles.title = "show / hide tiles";
+			
+			
+			
+			// DOWNLOAD SELECTED TILES
 			var link = document.createElement("a");
 			link.href = "#";
 			link.download = "list.txt";
+			link.style.float = "left";
 			
 			var button = document.createElement('button');
 			button.innerHTML = 'D';
@@ -154,9 +152,11 @@ Potree.Viewer.MapView = function(viewer){
 			
 			button.addEventListener('click', handleDownload, false);
 			
+			// assemble container
 			var element = document.createElement('div');
 			element.className = 'ol-unselectable ol-control';
 			element.appendChild(link);
+			element.appendChild(btToggleTiles);
 			element.style.bottom = "0.5em";
 			element.style.left = "0.5em";
 			element.title = "Download list of selected tiles. Select area using ctrl + left mouse.";
@@ -180,6 +180,7 @@ Potree.Viewer.MapView = function(viewer){
 					closest: true
 				}),
 				new DownloadSelectionControl()
+				//mousePositionControl
 			]),
 			layers: [
 				new ol.layer.Tile({source: new ol.source.OSM()}),
@@ -194,14 +195,8 @@ Potree.Viewer.MapView = function(viewer){
 				zoom: 9
 			})
 		});
-		
 
-
-		
-		
-		
-		
-		
+		// DRAGBOX / SELECTION
 		scope.dragBoxLayer = new ol.layer.Vector({
 			source: new ol.source.Vector({}),
 			style: new ol.style.Style({
@@ -212,17 +207,12 @@ Potree.Viewer.MapView = function(viewer){
 			})
 		});
 		scope.map.addLayer(scope.dragBoxLayer);
-		var dragBoxLine = new ol.geom.LineString([p1, p2, p3, p4, p1])
-		var feature = new ol.Feature({'geometry': dragBoxLine});
-		scope.sourcesLayer.getSource().addFeature(feature);
-		
 		
 		var select = new ol.interaction.Select();
 		scope.map.addInteraction(select);
 		
 		var selectedFeatures = select.getFeatures();
         
-		// a DragBox interaction used to select features by drawing boxes
 		var dragBox = new ol.interaction.DragBox({
 		  condition: ol.events.condition.platformModifierKeyOnly
 		});
@@ -251,7 +241,7 @@ Potree.Viewer.MapView = function(viewer){
 		
 		
 		
-		
+		// adding pointclouds to map
 		scope.viewer.addEventListener("pointcloud_loaded", function(event){
 			scope.load(event.pointcloud);
 		});
@@ -259,6 +249,16 @@ Potree.Viewer.MapView = function(viewer){
 			scope.load(scope.viewer.pointclouds[i]);
 		}
 		
+		scope.viewer.profileTool.addEventListener("profile_added", scope.updateToolDrawings);
+		scope.viewer.profileTool.addEventListener("profile_removed", scope.updateToolDrawings);
+		scope.viewer.profileTool.addEventListener("marker_moved", scope.updateToolDrawings);
+		scope.viewer.profileTool.addEventListener("marker_removed", scope.updateToolDrawings);
+		scope.viewer.profileTool.addEventListener("marker_added", scope.updateToolDrawings);
+		
+		scope.viewer.measuringTool.addEventListener("measurement_added", scope.updateToolDrawings);
+		scope.viewer.measuringTool.addEventListener("marker_added", scope.updateToolDrawings);
+		scope.viewer.measuringTool.addEventListener("marker_removed", scope.updateToolDrawings);
+		scope.viewer.measuringTool.addEventListener("marker_moved", scope.updateToolDrawings);
 
 	};
 	
@@ -268,6 +268,78 @@ Potree.Viewer.MapView = function(viewer){
 		this.toScene = proj4(scope.mapProjection, scope.sceneProjection);
 	};
 	
+	this.getMapExtent = function(){
+		var bb = scope.viewer.getBoundingBoxGeo();
+		
+		var bottomLeft = scope.toMap.forward([bb.min.x, bb.min.y]);
+		var bottomRight = scope.toMap.forward([bb.max.x, bb.min.y]);
+		var topRight = scope.toMap.forward([bb.max.x, bb.max.y]);
+		var topLeft = scope.toMap.forward([bb.min.x, bb.max.y]);
+		
+		var extent = {
+			bottomLeft: bottomLeft,
+			bottomRight: bottomRight,
+			topRight: topRight,
+			topLeft: topLeft
+		};
+		
+		return extent;
+	};
+	
+	this.getMapCenter = function(){
+		var mapExtent = scope.getMapExtent();
+		
+		var mapCenter = [
+			(mapExtent.bottomLeft[0] + mapExtent.topRight[0]) / 2, 
+			(mapExtent.bottomLeft[1] + mapExtent.topRight[1]) / 2
+		];
+		
+		return mapCenter;
+	};	
+	
+	this.updateToolDrawings = function(){
+		scope.toolLayer.getSource().clear();
+		
+		var profiles = scope.viewer.profileTool.profiles;
+		for(var i = 0; i < profiles.length; i++){
+			var profile = profiles[i];
+			var coordinates = [];
+			
+			for(var j = 0; j < profile.points.length; j++){
+				var point = profile.points[j];
+				var pointGeo = scope.viewer.toGeo(point);
+				var pointMap = scope.toMap.forward([pointGeo.x, pointGeo.y]);
+				coordinates.push(pointMap);
+			}
+			
+			var line = new ol.geom.LineString(coordinates);
+			var feature = new ol.Feature(line);
+			scope.toolLayer.getSource().addFeature(feature);
+		}
+		
+		var measurements = scope.viewer.measuringTool.measurements;
+		for(var i = 0; i < measurements.length; i++){
+			var measurement = measurements[i];
+			var coordinates = [];
+			
+			for(var j = 0; j < measurement.points.length; j++){
+				var point = measurement.points[j].position;
+				var pointGeo = scope.viewer.toGeo(point);
+				var pointMap = scope.toMap.forward([pointGeo.x, pointGeo.y]);
+				coordinates.push(pointMap);
+			}
+			
+			if(measurement.closed && measurement.points.length > 0){
+				coordinates.push(coordinates[0]);
+			}
+			
+			var line = new ol.geom.LineString(coordinates);
+			var feature = new ol.Feature(line);
+			scope.toolLayer.getSource().addFeature(feature);
+		}
+		
+	};
+	
 	
 	this.load = function(pointcloud){
 		
@@ -275,12 +347,23 @@ Potree.Viewer.MapView = function(viewer){
 			return;
 		}
 		
-		scope.sceneExtent = {
-			min: [643453.67, 3889087.89, -2.72],
-			max: [736910.93, 3971391.48, 1093.60]
-		};
+		if(!scope.sceneProjection){
+			scope.setSceneProjection(pointcloud.projection);
+		}
 		
+		var mapExtent = scope.getMapExtent();
+		var mapCenter = scope.getMapCenter();
 		
+		var view = scope.map.getView();
+		view.setCenter(mapCenter);
+		
+		scope.gExtent.setCoordinates([
+			mapExtent.bottomLeft, 
+			mapExtent.bottomRight, 
+			mapExtent.topRight, 
+			mapExtent.topLeft,
+			mapExtent.bottomLeft
+		]);
 
 		var createLabelStyle = function(text){
 			var style = new ol.style.Style({
@@ -347,23 +430,21 @@ Potree.Viewer.MapView = function(viewer){
 				});
 				feature.setStyle(createLabelStyle(name));
 				scope.sourcesLabelLayer.getSource().addFeature(feature);
-				
-				
-
 			}
-		})
-
-
-
+		});
 	}
 	
-
-	
-	
-	
-	
-	
-	
+	this.update = function(delta){
+		var pm = $( "#potree_map" );
+		
+		if(pm.is(":visible")){
+			var mapSize = scope.map.getSize();
+			var resized = (pm.width() != mapSize[0] || pm.height() != mapSize[1]);
+			if(resized){
+				scope.map.updateSize();
+			}
+		}
+	};
 	
 };
 

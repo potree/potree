@@ -98,6 +98,13 @@ Potree.Viewer = function(domElement, args){
 	this.addPointCloud = function(path, callback){
 		callback = callback || function(){};
 		var initPointcloud = function(pointcloud){
+			
+			if(!scope.mapView){
+				if(pointcloud.projection){
+					scope.mapView = new Potree.Viewer.MapView(viewer);
+					scope.mapView.init(viewer);
+				}
+			}
 		
 			scope.pointclouds.push(pointcloud);
 
@@ -775,6 +782,12 @@ Potree.Viewer = function(domElement, args){
 			renderArea.css("left", "300px");
 		}
 	};
+	
+	this.toggleMap = function(){
+		var map = $('#potree_map');
+		map.toggle(100);
+		
+	};
 
 	this.loadGUI = function(){
 		var sidebarContainer = $('#potree_sidebar_container');
@@ -795,9 +808,6 @@ Potree.Viewer = function(domElement, args){
 			scope._2dprofile = new Potree.Viewer.Profile(scope, document.getElementById("profile_draw_container"));
 		});
 		
-		scope.mapView = new Potree.Viewer.MapView(viewer);
-		scope.mapView.init(viewer);
-		//mapView.setTiles(); 
 	}
 
 	this.createControls = function(){
@@ -1239,6 +1249,10 @@ Potree.Viewer = function(domElement, args){
 				+ ", " + viewer.camera.position.y.toFixed(2) 
 				+ ", " + viewer.camera.position.z.toFixed(2)
 			);
+		}
+		
+		if(scope.mapView){
+			scope.mapView.update(delta);
 		}
 		
 		TWEEN.update(timestamp);

@@ -62,6 +62,7 @@ Potree.POCLoader.load = function load(url, callback) {
 				tightBoundingBox.min.add(offset);
 				tightBoundingBox.max.add(offset);
 				
+				pco.projection = fMno.projection;
 				pco.boundingBox = boundingBox;
 				pco.tightBoundingBox = tightBoundingBox;
 				pco.boundingSphere = boundingBox.getBoundingSphere();

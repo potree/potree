@@ -486,6 +486,8 @@ Potree.MeasuringTool = function(scene, camera, renderer, toGeo){
 		scope.mouse.x = ((event.clientX - rect.left) / scope.domElement.clientWidth) * 2 - 1;
         scope.mouse.y = -((event.clientY - rect.top) / scope.domElement.clientHeight) * 2 + 1;
 		
+		//console.log(scope.mouse);
+		
 		if(scope.dragstart){
 			var arg = {
 				type: "drag", 

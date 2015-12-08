@@ -1,10 +1,10 @@
-#PROJ4JS [![Build Status](https://travis-ci.org/proj4js/proj4js.svg)](https://travis-ci.org/proj4js/proj4js)
+# PROJ4JS [![Build Status](https://travis-ci.org/proj4js/proj4js.svg)](https://travis-ci.org/proj4js/proj4js)
 
 Proj4js is a JavaScript library to transform point coordinates from one coordinate system to another, including datum transformations.
 Originally a port of [PROJ.4](http://trac.osgeo.org/proj/) and [GCTCP C](http://edcftp.cr.usgs.gov/pub//software/gctpc) it is
 a part of the [MetaCRS](http://wiki.osgeo.org/wiki/MetaCRS) group of projects.
 
-##Installing
+## Installing
 
 Depending on your preferences
 
@@ -19,12 +19,12 @@ or just manually grab the file `proj4.js` from the [latest release](https://gith
 
 if you do not want to download anything, Proj4js is also hosted on [cdnjs](http://www.cdnjs.com/libraries/proj4js) for direct use in your browser applications.
 
-##Using
+## Using
 
 the basic signature is:
 
 ```javascript
-proj4(fromProjection[, toProjection2, coordinates])
+proj4(fromProjection[, toProjection, coordinates])
 ```
 
 Projections can be proj or wkt strings.
@@ -114,7 +114,7 @@ proj4.defs can also be used to define a named alias:
 proj4.defs('urn:x-ogc:def:crs:EPSG:4326', proj4.defs('EPSG:4326'));
 ``` 
 
-##Developing
+## Developing
 to set up build tools make sure you have node and grunt-cli installed and then run `npm install`
 
 to do the complete build and browser tests run

@@ -61,6 +61,18 @@
 	
 }
 
+.potree_sidebar_brand{
+	margin:			8px 20px;
+	line-height:	2em;
+	font-size:		100%;
+	font-weight:	bold;
+	position:		relative;
+}
+
+#potree_sidebar_container a{
+	color: 		#8Aa1c4;
+}
+
 .potree_menu_toggle{
 	position:		absolute;
 	float:			left;
@@ -364,6 +376,59 @@ body{
     -ms-user-select: text;
     user-select: text;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.ol-dragbox {
+  background-color: rgba(255,255,255,0.4);
+  border-color: rgba(100,150,0,1);
+  border: 1px solid red;
+}
+
 
 
 

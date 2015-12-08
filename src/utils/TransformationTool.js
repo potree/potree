@@ -516,10 +516,11 @@ Potree.TransformationTool = function(scene, camera, renderer){
 	};
 	
 	function onMouseMove(event){
-		scope.mouse.x = ( event.clientX / scope.domElement.clientWidth ) * 2 - 1;
-		scope.mouse.y = - ( event.clientY / scope.domElement.clientHeight ) * 2 + 1;
-	
-	
+		
+		var rect = scope.domElement.getBoundingClientRect();
+		scope.mouse.x = ((event.clientX - rect.left) / scope.domElement.clientWidth) * 2 - 1;
+        scope.mouse.y = -((event.clientY - rect.top) / scope.domElement.clientHeight) * 2 + 1;
+		
 		if(scope.dragstart){
 			
 			scope.dragstart.object.dispatchEvent({
@@ -667,12 +668,33 @@ Potree.TransformationTool = function(scene, camera, renderer){
 			var centroid = bb.clone().applyMatrix4(target.matrixWorld).center();
 			scope.sceneRoot.position.copy(centroid);
 		}
+	};
+	
+	this.getBoundingBox = function(){
+		var box = new THREE.Box3();
 		
-		//for(var i = 0; i < targets.length; i++){
-		//	var target = targets[i];
-		//}
+		for(var i = 0; i < scope.targets.length; i++){
+			var target = scope.targets[i];
+			var targetBB;
+
+			if(target.boundingBox){
+				targetBB = target.boundingBox;
+			}else if(target.boundingSphere){
+				targetBB = target.boundingSphere.getBoundingBox();
+			}else if(target.geometry){
+				if(target.geometry.boundingBox){
+					targetBB = target.geometry.boundingBox;
+				}else if(target.geometry.boundingSphere){
+					targetBB = target.geometry.boundingSphere.getBoundingBox();
+				}
+			}
+			
+			targetBB = Potree.utils.computeTransformedBoundingBox(targetBB, target.matrixWorld);
+			
+			box.union(targetBB);
+		}
 		
-		
+		return box;
 	};
 	
 	this.update = function(){

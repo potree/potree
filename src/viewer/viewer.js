@@ -521,6 +521,8 @@ Potree.Viewer = function(domElement, args){
 	};
 	
 	this.getBoundingBox = function(pointclouds){
+		pointclouds = pointclouds || scope.pointclouds;
+		
 		var box = new THREE.Box3();
 		
 		scope.scenePointCloud.updateMatrixWorld(true);
@@ -539,8 +541,32 @@ Potree.Viewer = function(domElement, args){
 		return box;
 	};
 	
+	this.getBoundingBoxGeo = function(pointclouds){
+		pointclouds = pointclouds || scope.pointclouds;
+		
+		var box = new THREE.Box3();
+		
+		scope.scenePointCloud.updateMatrixWorld(true);
+		scope.referenceFrame.updateMatrixWorld(true);
+		
+		for(var i = 0; i < scope.pointclouds.length; i++){
+			var pointcloud = scope.pointclouds[i];
+			
+			pointcloud.updateMatrixWorld(true);
+			
+			var boxWorld = Potree.utils.computeTransformedBoundingBox(pointcloud.boundingBox, pointcloud.matrix)
+			box.union(boxWorld);
+		}
+		
+		return box;
+	};
+	
 	this.fitToScreen = function(){
 		var box = this.getBoundingBox(scope.pointclouds);
+		
+		if(scope.transformationTool.targets.length > 0){
+			box = scope.transformationTool.getBoundingBox();
+		}
 		
 		var node = new THREE.Object3D();
 		node.boundingBox = box;
@@ -551,6 +577,10 @@ Potree.Viewer = function(domElement, args){
 	
 	this.setTopView = function(){
 		var box = this.getBoundingBox(scope.pointclouds);
+		
+		if(scope.transformationTool.targets.length > 0){
+			box = scope.transformationTool.getBoundingBox();
+		}
 		
 		var node = new THREE.Object3D();
 		node.boundingBox = box;
@@ -563,6 +593,10 @@ Potree.Viewer = function(domElement, args){
 	this.setFrontView = function(){
 		var box = this.getBoundingBox(scope.pointclouds);
 		
+		if(scope.transformationTool.targets.length > 0){
+			box = scope.transformationTool.getBoundingBox();
+		}
+		
 		var node = new THREE.Object3D();
 		node.boundingBox = box;
 		
@@ -574,6 +608,10 @@ Potree.Viewer = function(domElement, args){
 	this.setLeftView = function(){
 		var box = this.getBoundingBox(scope.pointclouds);
 		
+		if(scope.transformationTool.targets.length > 0){
+			box = scope.transformationTool.getBoundingBox();
+		}
+		
 		var node = new THREE.Object3D();
 		node.boundingBox = box;
 		
@@ -584,6 +622,10 @@ Potree.Viewer = function(domElement, args){
 	
 	this.setRightView = function(){
 		var box = this.getBoundingBox(scope.pointclouds);
+		
+		if(scope.transformationTool.targets.length > 0){
+			box = scope.transformationTool.getBoundingBox();
+		}
 		
 		var node = new THREE.Object3D();
 		node.boundingBox = box;
@@ -752,6 +794,10 @@ Potree.Viewer = function(domElement, args){
 			$('#potree_render_area').append(elProfile.children());
 			scope._2dprofile = new Potree.Viewer.Profile(scope, document.getElementById("profile_draw_container"));
 		});
+		
+		scope.mapView = new Potree.Viewer.MapView(viewer);
+		scope.mapView.init(viewer);
+		//mapView.setTiles(); 
 	}
 
 	this.createControls = function(){

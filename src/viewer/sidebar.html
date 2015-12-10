@@ -866,6 +866,7 @@ function initMeasurementDetails(){
 			}
 			
 			if(profile){
+				// show 2d profile button
 				var elOpenProfileWindow = $('<input type="button" value="show 2d profile">')
 					.addClass("measurement-detail-button");
 				elOpenProfileWindow[0].onclick = function(){
@@ -873,6 +874,30 @@ function initMeasurementDetails(){
 					viewer._2dprofile.draw(profile);
 				};
 				$(elPanelBody).append(elOpenProfileWindow);
+				
+				// download points in profile button
+				var elDownloadProfileLink = document.createElement("a");
+				elDownloadProfileLink.href = "#";
+				elDownloadProfileLink.download = "profile.las";
+				
+				var elDownloadProfileButton = $('<input type="button" value="download">')
+					.addClass("measurement-detail-button");
+				elDownloadProfileButton[0].onclick = function(){
+					var las = viewer._2dprofile.getLAS();
+					var u8view = new Uint8Array(las);
+					
+					var binString = "";
+					for(var i = 0; i < u8view.length; i++){
+						binString += String.fromCharCode(u8view[i]);
+					}
+					
+					var uri = "data:application/octet-stream;base64,"+btoa(binString);
+					elDownloadProfileLink.href = uri;
+				};
+				
+				elDownloadProfileLink.appendChild(elDownloadProfileButton[0]);
+				
+				$(elPanelBody).append(elDownloadProfileLink);
 			}
 			
 		};

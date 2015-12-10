@@ -44,6 +44,100 @@ Potree.Viewer.Profile = function(viewer, element){
 		scope.requests = [];
 	};
 	
+	this.getLAS = function(){
+		var points = scope.points;
+		var offset = new THREE.Vector3(0, 0, 0);
+		var scale = new THREE.Vector3(0.01, 0.01, 0.01);
+		
+		var setString = function(string, offset, buffer){
+			var view = new Uint8Array(buffer);
+			
+			for(var i = 0; i < string.length; i++){
+				var charCode = string.charCodeAt(i);
+				view[offset + i] = charCode;
+			}
+		}
+		
+		var buffer = new ArrayBuffer(227 + 28 * points.length);
+		var view = new DataView(buffer);
+		var u8View = new Uint8Array(buffer);
+		//var u16View = new Uint16Array(buffer);
+		
+		setString("LASF", 0, buffer);
+		u8View[24] = 1;
+		u8View[25] = 2;
+		
+		// system identifier o:26 l:32
+		
+		// generating software o:58 l:32
+		setString("potree 1.4", 58, buffer); 
+		
+		// file creation day of year o:90 l:2
+		// file creation year o:92 l:2
+		
+		// header size o:94 l:2
+		view.setUint16(94, 227, true);
+		
+		// offset to point data o:96 l:4
+		view.setUint32(96, 227, true);
+		
+		// number of variable length records o:100 l:4
+		
+		// point data record format 104 1
+		u8View[104] = 2;
+		
+		// point data record length 105 2
+		view.setUint16(105, 28, true);
+		
+		// number of point records 107 4 
+		view.setUint32(107, points.length, true);
+		
+		// number of points by return 111 20
+		
+		// x scale factor 131 8
+		view.setFloat64(131, scale.x, true);
+		
+		// y scale factor 139 8
+		view.setFloat64(139, scale.y, true);
+		
+		// z scale factor 147 8
+		view.setFloat64(147, scale.z, true);
+		
+		// x offset 155 8
+		view.setFloat64(155, offset.x, true);
+		
+		// y offset 163 8
+		view.setFloat64(163, offset.y, true);
+		
+		// z offset 171 8
+		view.setFloat64(171, offset.z, true);
+		
+		var boffset = 227;
+		for(var i = 0; i < points.length; i++){
+			var point = points[i];
+			var position = new THREE.Vector3(point.x, point.y, point.z);
+			
+			var ux = parseInt((position.x - offset.x) / scale.x);
+			var uy = parseInt((position.y - offset.y) / scale.y);
+			var uz = parseInt((position.z - offset.z) / scale.z);
+			
+			view.setUint32(boffset + 0, ux, true);
+			view.setUint32(boffset + 4, uy, true);
+			view.setUint32(boffset + 8, uz, true);
+			
+			// intensity 
+			// return number 
+			// number of returns
+			
+			//view.setUint16(boffset + 20, point.color.r, true);
+			
+			boffset += 28;
+		}
+		
+		
+		return buffer;
+	};
+	
 	this.preparePoints = function(profileProgress){
 	
 		var segments = profileProgress.segments;
@@ -124,6 +218,7 @@ Potree.Viewer.Profile = function(viewer, element){
 					d.distance = dist;
 					d.x = p.x;
 					d.y = p.y;
+					d.z = p.z;
 					d.altitude = p.z;
 					d.heightColor = colorRamp(p.z);
 					d.color = points.color ? 'rgb(' + points.color[j][0] * 100 + '%,' + points.color[j][1] * 100 + '%,' + points.color[j][2] * 100 + '%)' : 'rgb(0,0,0)';

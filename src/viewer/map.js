@@ -169,16 +169,20 @@ Potree.Viewer.MapView = function(viewer){
 		};
 		ol.inherits(DownloadSelectionControl, ol.control.Control);
 		
+		
+		//scope.controls = {};
+		//scope.controls.zoomToExtent = new ol.control.ZoomToExtent({
+		//	extent: undefined,
+		//	closest: true
+		//})
+		
 		scope.map = new ol.Map({
 			controls: ol.control.defaults({
 				attributionOptions: ({
 				collapsible: false
 				})
 			}).extend([
-				new ol.control.ZoomToExtent({
-					extent: scope.olExtent,
-					closest: true
-				}),
+				//scope.controls.zoomToExtent,
 				new DownloadSelectionControl()
 				//mousePositionControl
 			]),
@@ -353,6 +357,9 @@ Potree.Viewer.MapView = function(viewer){
 		
 		var mapExtent = scope.getMapExtent();
 		var mapCenter = scope.getMapCenter();
+		
+		//viewer.mapView.controls.zoomToExtent.extent_ = [ mapExtent.bottomLeft, mapExtent.topRight ];
+		//viewer.mapView.controls.zoomToExtent.set("extent", [ mapExtent.bottomLeft, mapExtent.topRight ]);
 		
 		var view = scope.map.getView();
 		view.setCenter(mapCenter);

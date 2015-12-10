@@ -141,7 +141,10 @@ Potree.Viewer.MapView = function(viewer){
 					var feature = features[i];
 					
 					if(feature.source){
-						content += feature.source.name + "\n";
+						var cloudjsurl = feature.pointcloud.pcoGeometry.url;
+						var pcurl = cloudjsurl.substring(0, cloudjsurl.lastIndexOf("/") + 1);
+						var sourceurl = pcurl + "/source";
+						content += sourceurl + "/" + feature.source.name + "\n";
 					}
 				}
 				
@@ -428,6 +431,7 @@ Potree.Viewer.MapView = function(viewer){
 					'geometry': new ol.geom.LineString([p1, p2, p3, p4, p1])
 				});
 				feature.source = source;
+				feature.pointcloud = pointcloud;
 				scope.sourcesLayer.getSource().addFeature(feature);
 				
 

@@ -10,6 +10,7 @@ Potree.Viewer.Profile = function(viewer, element){
 	this.pointsProcessed = 0;
 	this.margin = {top: 0, right: 0, bottom: 20, left: 40};
 	this.maximized = false;
+	this.threshold = 20*1000;
 	
 	
 	$('#closeProfileContainer').click(function(){
@@ -125,9 +126,17 @@ Potree.Viewer.Profile = function(viewer, element){
 			view.setUint32(boffset + 4, uy, true);
 			view.setUint32(boffset + 8, uz, true);
 			
-			// intensity 
-			// return number 
-			// number of returns
+			view.setUint16(boffset + 12, (point.intensity), true);
+			var rt = point.returnNumber;
+			rt += (point.numberOfReturns << 3);
+			view.setUint8(boffset + 14, rt);
+			
+			// classification
+			view.setUint8(boffset + 15, point.classification);
+			// scan angle rank
+			// user data
+			// point source id
+			view.setUint16(boffset + 18, point.pointSourceID);
 			
 			view.setUint16(boffset + 20, (point.color[0] * 255), true);
 			view.setUint16(boffset + 22, (point.color[1] * 255), true);
@@ -223,13 +232,12 @@ Potree.Viewer.Profile = function(viewer, element){
 					d.z = p.z;
 					d.altitude = p.z;
 					d.heightColor = colorRamp(p.z);
-					//d.color = points.color ? 'rgb(' + points.color[j][0] * 100 + '%,' + points.color[j][1] * 100 + '%,' + points.color[j][2] * 100 + '%)' : 'rgb(0,0,0)';
 					d.color = points.color ? points.color[j] : [0, 0, 0];
-					d.intensity = points.intensity ? 'rgb(' + points.intensity[j] + '%,' + points.intensity[j] + '%,' + points.intensity[j] + '%)' : 'rgb(0,0,0)';
-					d.intensityCode = points.intensity ? points.intensity[j] : 0;
-					d.classificationCode = points.classification ? points.classification[j] : 0;
+					d.intensity = points.intensity ? points.intensity[j] : 0;
+					d.classification = points.classification ? points.classification[j] : 0;
 					d.returnNumber = points.returnNumber ? points.returnNumber[j] : 0;
 					d.numberOfReturns = points.numberOfReturns ? points.numberOfReturns[j] : 0;
+					d.pointSourceID = points.pointSourceID ? points.pointSourceID[j] : 0;
 					data.push(d);
 				}
 			}
@@ -316,9 +324,9 @@ Potree.Viewer.Profile = function(viewer, element){
 			//html += i18n.t('tools.intensity') + ': ' + p.intensityCode;
 			
 			var html = 'x: ' + Math.round(10 * p.x) / 10 + ' y: ' + Math.round(10 * p.y) / 10 + ' z: ' + Math.round( 10 * p.altitude) / 10 + '  -  ';
-			html += "offset: " + p.distance + '  -  ';
-			html += "Classification: " + p.classificationCode + '  -  ';
-			html += "Intensity: " + p.intensityCode;
+			html += "offset: " + p.distance.toFixed(3) + '  -  ';
+			html += "Classification: " + p.classification + '  -  ';
+			html += "Intensity: " + p.intensity;
 			
 			$('#profileInfo').css('color', 'yellow');
 			$('#profileInfo').html(html);
@@ -338,13 +346,14 @@ Potree.Viewer.Profile = function(viewer, element){
 			//return d.color;
 			return 'rgb(' + (d.color[0] * 100) + '%,' + (d.color[1] * 100) + '%,' + (d.color[2] * 100) + '%)';
 		} else if (material === Potree.PointColorType.INTENSITY) {
-			return d.intensity;
+			//return d.intensity;
+			return 'rgb(' + points.intensity + '%,' + points.intensity + '%,' + points.intensity + '%)';
 		} else if (material === Potree.PointColorType.CLASSIFICATION) {
 			var classif = scope.viewer.pointclouds[0].material.classification;
-			if (typeof classif[d.classificationCode] != 'undefined'){
-				var color = 'rgb(' + classif[d.classificationCode].x * 100 + '%,';
-				color += classif[d.classificationCode].y * 100 + '%,';
-				color += classif[d.classificationCode].z * 100 + '%)';
+			if (typeof classif[d.classification] != 'undefined'){
+				var color = 'rgb(' + classif[d.classification].x * 100 + '%,';
+				color += classif[d.classification].y * 100 + '%,';
+				color += classif[d.classification].z * 100 + '%)';
 				return color;
 			} else {
 				return 'rgb(255,255,255)';
@@ -600,7 +609,7 @@ Potree.Viewer.Profile = function(viewer, element){
 			
 			drawPoints(scope.points, scope.rangeX, scope.rangeY);
 			
-			document.getElementById("profile_num_points").innerHTML = Potree.utils.addCommas(scope.pointsProcessed) + " ( threshold: 20k )";
+			document.getElementById("profile_num_points").innerHTML = Potree.utils.addCommas(scope.pointsProcessed) + " ";
 		};
 		
 		
@@ -632,7 +641,7 @@ Potree.Viewer.Profile = function(viewer, element){
 					
 					setupAndDraw();
 					
-					if(scope.pointsProcessed > 20*1000){
+					if(scope.pointsProcessed > scope.threshold){
 						scope.cancel();
 					}
 				},
@@ -650,6 +659,12 @@ Potree.Viewer.Profile = function(viewer, element){
 			
 			scope.requests.push(request);
 		}
+	};
+	
+	this.setThreshold = function(value){
+		scope.threshold = value;
+		
+		scope.redraw();
 	};
 	
 	var drawOnChange = function(event){

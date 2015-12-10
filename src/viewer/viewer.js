@@ -196,10 +196,16 @@ Potree.Viewer = function(domElement, args){
 			return geoPos;
 		}
 	})(this);
-	
+
+	this.getMinNodeSize = function(){
+		return scope.minNodeSize;
+	};
 	
 	this.setMinNodeSize = function(value){
-		scope.minNodeSize = value;
+		if(scope.minNodeSize !== value){
+			scope.minNodeSize = value;
+			scope.dispatchEvent({"type": "minnodesize_changed", "viewer": scope});
+		}
 	};
 	
 	this.setDescription = function(value){

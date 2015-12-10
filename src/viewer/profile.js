@@ -129,7 +129,9 @@ Potree.Viewer.Profile = function(viewer, element){
 			// return number 
 			// number of returns
 			
-			//view.setUint16(boffset + 20, point.color.r, true);
+			view.setUint16(boffset + 20, (point.color[0] * 255), true);
+			view.setUint16(boffset + 22, (point.color[1] * 255), true);
+			view.setUint16(boffset + 24, (point.color[2] * 255), true);
 			
 			boffset += 28;
 		}
@@ -221,7 +223,8 @@ Potree.Viewer.Profile = function(viewer, element){
 					d.z = p.z;
 					d.altitude = p.z;
 					d.heightColor = colorRamp(p.z);
-					d.color = points.color ? 'rgb(' + points.color[j][0] * 100 + '%,' + points.color[j][1] * 100 + '%,' + points.color[j][2] * 100 + '%)' : 'rgb(0,0,0)';
+					//d.color = points.color ? 'rgb(' + points.color[j][0] * 100 + '%,' + points.color[j][1] * 100 + '%,' + points.color[j][2] * 100 + '%)' : 'rgb(0,0,0)';
+					d.color = points.color ? points.color[j] : [0, 0, 0];
 					d.intensity = points.intensity ? 'rgb(' + points.intensity[j] + '%,' + points.intensity[j] + '%,' + points.intensity[j] + '%)' : 'rgb(0,0,0)';
 					d.intensityCode = points.intensity ? points.intensity[j] : 0;
 					d.classificationCode = points.classification ? points.classification[j] : 0;
@@ -332,7 +335,8 @@ Potree.Viewer.Profile = function(viewer, element){
 	this.strokeColor = function (d) {
 		var material = scope.viewer.getMaterial();
 		if (material === Potree.PointColorType.RGB) {
-			return d.color;
+			//return d.color;
+			return 'rgb(' + (d.color[0] * 100) + '%,' + (d.color[1] * 100) + '%,' + (d.color[2] * 100) + '%)';
 		} else if (material === Potree.PointColorType.INTENSITY) {
 			return d.intensity;
 		} else if (material === Potree.PointColorType.CLASSIFICATION) {

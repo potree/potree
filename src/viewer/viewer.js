@@ -32,6 +32,7 @@ Potree.Viewer = function(domElement, args){
 	this.intensityMax = null;
 	this.heightMin = null;
 	this.heightMax = null;
+	this.moveSpeed = 10;
 
 	this.showDebugInfos = false;
 	this.showStats = true;
@@ -129,6 +130,8 @@ Potree.Viewer = function(domElement, args){
 			if(scope.pointclouds.length === 1){
 				scope.referenceFrame.position.sub(sg.center);
 				scope.referenceFrame.updateMatrixWorld(true);
+				var moveSpeed = sg.radius / 6;
+				scope.setMoveSpeed(moveSpeed);
 			}
 			
 			//scope.flipYZ();
@@ -235,8 +238,10 @@ Potree.Viewer = function(domElement, args){
 	};
 	
 	this.setMoveSpeed = function(value){
-		if(scope.fpControls.moveSpeed !== value){
-			scope.fpControls.moveSpeed = value;
+		if(scope.moveSpeed !== value){
+			scope.moveSpeed = value;
+			scope.fpControls.setMoveSpeed(value);
+			scope.geoControls.setMoveSpeed(value);
 			scope.dispatchEvent({"type": "move_speed_changed", "viewer": scope, "speed": value});
 		}
 	};
@@ -709,7 +714,7 @@ Potree.Viewer = function(domElement, args){
 		scope.controls = scope.geoControls;
 		scope.controls.enabled = true;
 		
-		scope.controls.moveSpeed = scope.pointclouds[0].boundingSphere.radius / 6;
+		//scope.controls.moveSpeed = scope.pointclouds[0].boundingSphere.radius / 6;
 	}
 
 	this.useFPSControls = function(){
@@ -720,7 +725,7 @@ Potree.Viewer = function(domElement, args){
 		scope.controls = scope.fpControls;
 		scope.controls.enabled = true;
 		
-		scope.controls.moveSpeed = scope.pointclouds[0].boundingSphere.radius / 6;
+		//scope.controls.moveSpeed = scope.pointclouds[0].boundingSphere.radius / 6;
 	}
 
 	this.useOrbitControls = function(){
@@ -825,6 +830,9 @@ Potree.Viewer = function(domElement, args){
 					return;
 				}
 			});
+			scope.fpControls.addEventListener("move_speed_changed", function(event){
+				scope.setMoveSpeed(scope.fpControls.moveSpeed);
+			});
 		}
 		
 		{ // create GEO CONTROLS
@@ -834,6 +842,9 @@ Potree.Viewer = function(domElement, args){
 				if(scope.pointclouds.length === 0){
 					return;
 				}
+			});
+			scope.geoControls.addEventListener("move_speed_changed", function(event){
+				scope.setMoveSpeed(scope.geoControls.moveSpeed);
 			});
 		}
 	
@@ -1258,7 +1269,7 @@ Potree.Viewer = function(domElement, args){
 		}
 		
 		if(scope.mapView){
-			scope.mapView.update(delta);
+			scope.mapView.update(delta, scope.camera);
 		}
 		
 		TWEEN.update(timestamp);

@@ -46,6 +46,22 @@ Potree.Viewer.MapView = function(viewer){
 			})
 		});
 		
+		// CAMERA LAYER
+		scope.gCamera = new ol.geom.LineString([[0,0], [0,0], [0,0], [0,0]]);
+		var feature = new ol.Feature(scope.gCamera);
+		var featureVector = new ol.source.Vector({
+			features: [feature]
+		});
+		var cameraLayer = new ol.layer.Vector({
+			source: featureVector,
+			style: new ol.style.Style({
+				stroke: new ol.style.Stroke({
+					  color: '#0000ff',
+					  width: 2
+				})
+			})
+		});
+		
 		// TOOL DRAWINGS LAYER
 		scope.toolLayer = new ol.layer.Vector({
 			source: new ol.source.Vector({
@@ -75,7 +91,7 @@ Potree.Viewer.MapView = function(viewer){
 			})
 		});
 		
-		// SOURCES LABEL
+		// SOURCES LABEL LAYER
 		scope.sourcesLabelLayer = new ol.layer.Vector({
 			source: new ol.source.Vector({
 			}),
@@ -186,15 +202,16 @@ Potree.Viewer.MapView = function(viewer){
 				})
 			}).extend([
 				//scope.controls.zoomToExtent,
-				new DownloadSelectionControl()
-				//mousePositionControl
+				new DownloadSelectionControl(),
+				mousePositionControl
 			]),
 			layers: [
 				new ol.layer.Tile({source: new ol.source.OSM()}),
 				scope.toolLayer,
 				scope.sourcesLayer,
 				scope.sourcesLabelLayer,
-				visibleBoundsLayer
+				visibleBoundsLayer,
+				cameraLayer
 			],
 			target: 'potree_map_content',
 			view: new ol.View({
@@ -448,13 +465,42 @@ Potree.Viewer.MapView = function(viewer){
 	this.update = function(delta){
 		var pm = $( "#potree_map" );
 		
-		if(pm.is(":visible")){
-			var mapSize = scope.map.getSize();
-			var resized = (pm.width() != mapSize[0] || pm.height() != mapSize[1]);
-			if(resized){
-				scope.map.updateSize();
-			}
+		if(!pm.is(":visible")){
+			return;
 		}
+		
+		// resize
+		var mapSize = scope.map.getSize();
+		var resized = (pm.width() != mapSize[0] || pm.height() != mapSize[1]);
+		if(resized){
+			scope.map.updateSize();
+		}
+		
+		// camera
+		var scale = scope.map.getView().getResolution();
+		var camera = scope.viewer.camera;
+		var campos = camera.position;
+		var camdir = camera.getWorldDirection();
+		var sceneLookAt = camdir.clone().multiplyScalar(30 * scale).add(campos);
+		var geoPos = scope.viewer.toGeo(camera.position);
+		var geoLookAt = scope.viewer.toGeo(sceneLookAt);
+		var mapPos = new THREE.Vector2().fromArray(scope.toMap.forward([geoPos.x, geoPos.y]));
+		var mapLookAt = new THREE.Vector2().fromArray(scope.toMap.forward([geoLookAt.x, geoLookAt.y]));
+		var mapDir = new THREE.Vector2().subVectors(mapLookAt, mapPos).normalize();
+		mapLookAt = mapPos.clone().add(mapDir.clone().multiplyScalar(30 * scale));
+		var mapLength = mapPos.distanceTo(mapLookAt);
+		var mapSide = new THREE.Vector2(-mapDir.y, mapDir.x);
+		
+		var p1 = mapPos.toArray();
+		var p2 = mapLookAt.clone().sub(mapSide.clone().multiplyScalar(0.3 * mapLength)).toArray();
+		var p3 = mapLookAt.clone().add(mapSide.clone().multiplyScalar(0.3 * mapLength)).toArray();
+
+		
+		scope.gCamera.setCoordinates([p1, p2, p3, p1]);
+		//
+		//viewer.mapView.map.getPixelFromCoordinate(p1);
+		
+		
 	};
 	
 };

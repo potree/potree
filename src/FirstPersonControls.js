@@ -325,13 +325,26 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 		event.preventDefault();
 
 		var direction = (event.detail<0 || event.wheelDelta>0) ? 1 : -1;
-		scope.moveSpeed += scope.moveSpeed * 0.1 * direction;
 
-		scope.moveSpeed = Math.max(0.1, scope.moveSpeed);
+		var moveSpeed = scope.moveSpeed + scope.moveSpeed * 0.1 * direction;
+		moveSpeed = Math.max(0.1, moveSpeed);
 
+		scope.setMoveSpeed(moveSpeed);
+		
+		
 		scope.dispatchEvent( startEvent );
 		scope.dispatchEvent( endEvent );
 	}
+	
+	this.setMoveSpeed = function(value){
+		if(scope.moveSpeed !== value){
+			scope.moveSpeed = value;
+			scope.dispatchEvent( {
+				type: "move_speed_changed",
+				controls: scope
+			});
+		}
+	};
 
 	function onKeyDown( event ) {
 		if ( scope.enabled === false) return;

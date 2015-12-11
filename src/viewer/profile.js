@@ -47,8 +47,22 @@ Potree.Viewer.Profile = function(viewer, element){
 	
 	this.getLAS = function(){
 		var points = scope.points;
-		var offset = new THREE.Vector3(0, 0, 0);
+		var boundingBox = new THREE.Box3();
+		
+		for(var i = 0; i < points.length; i++){
+			var point = points[i];
+			var position = new THREE.Vector3(point.x, point.y, point.z);
+			
+			boundingBox.expandByPoint(position);
+		}
+		var offset = boundingBox.min.clone();
+		var diagonal = boundingBox.min.distanceTo(boundingBox.max);
 		var scale = new THREE.Vector3(0.01, 0.01, 0.01);
+		if(diagonal > 100*1000){
+			scale = new THREE.Vector3(0.01, 0.01, 0.01);
+		}else{
+			scale = new THREE.Vector3(0.001, 0.001, 0.001);
+		}
 		
 		var setString = function(string, offset, buffer){
 			var view = new Uint8Array(buffer);
@@ -145,6 +159,24 @@ Potree.Viewer.Profile = function(viewer, element){
 			boffset += 28;
 		}
 		
+		
+		// max x 179 8
+		view.setFloat64(179, boundingBox.max.x, true);
+		
+		// min x 187 8
+		view.setFloat64(187, boundingBox.min.x, true);
+		
+		// max y 195 8
+		view.setFloat64(195, boundingBox.max.y, true);
+		
+		// min y 203 8
+		view.setFloat64(203, boundingBox.min.y, true);
+		
+		// max z 211 8
+		view.setFloat64(211, boundingBox.max.z, true);
+		
+		// min z 219 8
+		view.setFloat64(219, boundingBox.min.z, true);
 		
 		return buffer;
 	};

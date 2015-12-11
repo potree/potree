@@ -30,6 +30,8 @@ Potree.updatePointClouds = function(pointclouds, camera, renderer){
 		pointcloud.updateVisibleBounds();
 	}
 	
+	Potree.PointCloudOctree.lru.freeMemory();
+	
 	return result;
 };
 
@@ -207,7 +209,7 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 				node.boundingBoxNode.visible = false;
 			}
 			
-			if(pointcloud.generateDEM && node.level <= 2){
+			if(pointcloud.generateDEM && node.level <= 6){
 				if(!node.dem){
 					node.dem = pointcloud.createDEM(node);
 				}

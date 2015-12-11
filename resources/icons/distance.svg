@@ -24,15 +24,15 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="22.395604"
-     inkscape:cx="14.845403"
-     inkscape:cy="16.761565"
+     inkscape:zoom="11.197802"
+     inkscape:cx="-5.9535063"
+     inkscape:cy="11.037615"
      inkscape:current-layer="layer1"
      showgrid="true"
      inkscape:grid-bbox="true"
      inkscape:document-units="px"
      inkscape:window-width="1920"
-     inkscape:window-height="1138"
+     inkscape:window-height="1018"
      inkscape:window-x="-8"
      inkscape:window-y="-8"
      inkscape:window-maximized="1">
@@ -57,29 +57,29 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer">
     <path
-       style="fill:none;stroke:#000000;stroke-width:3;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
-       d="M 8,24 22,10"
+       style="fill:none;stroke:#000000;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="M 10,23 24,9"
        id="path3829"
        inkscape:connector-curvature="0" />
     <path
        sodipodi:type="arc"
-       style="stroke-width:2.52600002000000010;stroke-miterlimit:4;stroke-dasharray:none;fill:#ff0000;fill-opacity:1;stroke:#000000;stroke-opacity:1"
+       style="fill:#00ff00;fill-opacity:1;stroke:#000000;stroke-width:1.09090912;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
        id="path3807-4"
        sodipodi:cx="11"
        sodipodi:cy="22"
        sodipodi:rx="6"
        sodipodi:ry="6"
        d="M 17,22 A 6,6 0 1 1 5,22 6,6 0 1 1 17,22 z"
-       transform="matrix(0.91666667,0,0,0.91666667,14.416667,-12.666667)" />
+       transform="matrix(0.61111111,0,0,0.61111111,17.777779,-4.9444445)" />
     <path
        sodipodi:type="arc"
-       style="stroke-width:2.52600002000000010;stroke-miterlimit:4;stroke-dasharray:none;fill:#ff0000;fill-opacity:1;stroke:#000000;stroke-opacity:1"
+       style="fill:#00ff00;fill-opacity:1;stroke:#000000;stroke-width:1.09090912;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
        id="path3807"
        sodipodi:cx="11"
        sodipodi:cy="22"
        sodipodi:rx="6"
        sodipodi:ry="6"
        d="M 17,22 A 6,6 0 1 1 5,22 6,6 0 1 1 17,22 z"
-       transform="matrix(0.91666667,0,0,0.91666667,-2.5833333,4.3333333)" />
+       transform="matrix(0.61111111,0,0,0.61111111,0.7777778,12.055556)" />
   </g>
 </svg>

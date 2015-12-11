@@ -245,6 +245,8 @@ Potree.ProfileRequest = function(pointcloud, profile, maxDepth, callback){
 								
 							}
 						}
+					}else{
+						var a;
 					}
 				}
 			}
@@ -472,7 +474,7 @@ Potree.PointCloudOctree.prototype.updateVisibility = function(camera, renderer){
 				node.boundingBoxNode.visible = false;
 			}
 			
-			if(this.generateDEM && node.level <= 2){
+			if(this.generateDEM && node.level <= 6){
 				if(!node.dem){
 					node.dem = this.createDEM(node);
 				}
@@ -1360,7 +1362,7 @@ Potree.PointCloudOctree.prototype.createDEM = function(node){
 	
 	
 	
-	//if(node.level == 2){
+	//if(node.level === 6){
 	//	var geometry = new THREE.BufferGeometry();
 	//	var vertices = new Float32Array((demSize-1)*(demSize-1)*2*3*3);
 	//	var offset = 0;
@@ -1418,10 +1420,10 @@ Potree.PointCloudOctree.prototype.createDEM = function(node){
 	//	
 	//	var material = new THREE.MeshNormalMaterial( { color: 0xff0000, shading: THREE.SmoothShading } );
 	//	var mesh = new THREE.Mesh( geometry, material );
-	//	scene.add(mesh);
+	//	viewer.scene.add(mesh);
 	//}
-	//
-	//
+	
+	
 	//if(node.level == 0){
 	//	scene.add(mesh);
 	//	
@@ -1527,7 +1529,7 @@ Potree.PointCloudOctree.prototype.getDEMHeight = function(position){
 		var demSize = dem.demSize;
 		var box = dem.boundingBox2D;
 		var insideBox = box.containsPoint(pos2);
-		if(!box.containsPoint(pos2)){
+		if(!insideBox){
 			continue;
 		}
 		
@@ -1538,10 +1540,10 @@ Potree.PointCloudOctree.prototype.getDEMHeight = function(position){
 			height = dh;
 		}
 
-		if(node.level <= 2){
-			for(var i = 0; i < node.children.length; i++){
+		if(node.level <= 6){
+			for(var i = 0; i < 8; i++){
 				var child = node.children[i];
-				if(child.dem){
+				if(typeof child !== "undefined" && typeof child.dem !== "undefined"){
 					stack.push(child);
 				}
 			}
@@ -1553,47 +1555,47 @@ Potree.PointCloudOctree.prototype.getDEMHeight = function(position){
 	return height;
 };
 
-Potree.PointCloudOctree.prototype.generateTerain = function(){
-	var bb = this.boundingBox.clone().applyMatrix4(this.matrixWorld);
-	
-	var width = 300;
-	var height = 300;
-	var geometry = new THREE.BufferGeometry();
-	var vertices = new Float32Array(width*height*3);
-	
-	var offset = 0;
-	for(var i = 0; i < width; i++){
-		for( var j = 0; j < height; j++){
-			var u = i / width;
-			var v = j / height;
-			
-			var x = u * bb.size().x + bb.min.x;
-			var z = v * bb.size().z + bb.min.z;
-			
-			var y = this.getDEMHeight(new THREE.Vector3(x, 0, z));
-			if(!y){
-				y = 0;
-			}
-			
-			vertices[offset + 0] = x;
-			vertices[offset + 1] = y;
-			vertices[offset + 2] = z;
-			
-			//var sm = new THREE.Mesh(sg);
-			//sm.position.set(x,y,z);
-			//scene.add(sm);
-			
-			offset += 3;
-		}
-	}
-	
-	geometry.addAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
-	var material = new THREE.PointCloudMaterial({size: 20, color: 0x00ff00});
-	
-	var pc = new THREE.PointCloud(geometry, material);
-	scene.add(pc);
-	
-};
+//Potree.PointCloudOctree.prototype.generateTerain = function(){
+//	var bb = this.boundingBox.clone().applyMatrix4(this.matrixWorld);
+//	
+//	var width = 300;
+//	var height = 300;
+//	var geometry = new THREE.BufferGeometry();
+//	var vertices = new Float32Array(width*height*3);
+//	
+//	var offset = 0;
+//	for(var i = 0; i < width; i++){
+//		for( var j = 0; j < height; j++){
+//			var u = i / width;
+//			var v = j / height;
+//			
+//			var x = u * bb.size().x + bb.min.x;
+//			var z = v * bb.size().z + bb.min.z;
+//			
+//			var y = this.getDEMHeight(new THREE.Vector3(x, 0, z));
+//			if(!y){
+//				y = 0;
+//			}
+//			
+//			vertices[offset + 0] = x;
+//			vertices[offset + 1] = y;
+//			vertices[offset + 2] = z;
+//			
+//			//var sm = new THREE.Mesh(sg);
+//			//sm.position.set(x,y,z);
+//			//scene.add(sm);
+//			
+//			offset += 3;
+//		}
+//	}
+//	
+//	geometry.addAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
+//	var material = new THREE.PointCloudMaterial({size: 20, color: 0x00ff00});
+//	
+//	var pc = new THREE.PointCloud(geometry, material);
+//	scene.add(pc);
+//	
+//};
 
 Object.defineProperty(Potree.PointCloudOctree.prototype, "progress", {
 	get: function(){

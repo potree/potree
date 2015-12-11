@@ -48,7 +48,7 @@
 	  <div>
 		<ul class="pv-menu-list">
 			<li id="navigation"></li>
-			<li><label><input type="checkbox" onClick="viewer.setShowStats(this.checked)"/>&nbsp;keep above ground</label></li>
+			<li><label><input type="checkbox" onClick="viewer.setDEMCollisionsEnabled(this.checked)"/>&nbsp;keep above ground</label></li>
 			<li>move speed <span id="lblMoveSpeed"></span><div id="sldMoveSpeed"></div></li>
 		</ul>
 	  </div>
@@ -139,6 +139,7 @@
 					<li><a target="_blank" href="https://georepublic.info/en/">georepublic</a></li>
 					<li><a target="_blank" href="http://hobu.co/">Howard Butler, Uday Verma, Connor Manning</a></li>
 					<li><a target="_blank" href="http://www.danielgm.net/cc/">Cloud Compare</a></li>
+					<li><a target="_blank" href="http://sitn.ne.ch/">sitn</a></li>
 				</ul>
 			</li>
 		
@@ -189,37 +190,37 @@ function initToolbar(){
 	));
 	
 	elToolbar.appendChild(createToolIcon(
-		"../resources/icons/point.png",
+		"../resources/icons/point.svg",
 		"angle measurements",
 		function(){viewer.measuringTool.startInsertion({showDistances: false, showAngles: false, showCoordinates: true, showArea: false, closed: true, maxMarkers: 1})}
 	));
 	
 	elToolbar.appendChild(createToolIcon(
-		"../resources/icons/distance.png",
+		"../resources/icons/distance.svg",
 		"distance measurements",
 		function(){viewer.measuringTool.startInsertion({showDistances: true, showArea: false, closed: false})}
 	));
 	
 	elToolbar.appendChild(createToolIcon(
-		"../resources/icons/area.png",
+		"../resources/icons/area.svg",
 		"area measurements",
 		function(){viewer.measuringTool.startInsertion({showDistances: true, showArea: true, closed: true})}
 	));
 	
 	elToolbar.appendChild(createToolIcon(
-		"../resources/icons/volume.png",
+		"../resources/icons/volume.svg",
 		"volume measurements",
 		function(){viewer.volumeTool.startInsertion()}
 	));
 	
 	elToolbar.appendChild(createToolIcon(
-		"../resources/icons/profile.png",
+		"../resources/icons/profile.svg",
 		"height profiles",
 		function(){viewer.profileTool.startInsertion()}
 	));
 	
 	elToolbar.appendChild(createToolIcon(
-		"../resources/icons/clip_volume.png",
+		"../resources/icons/clip_volume.svg",
 		"clipping volumes",
 		function(){viewer.volumeTool.startInsertion({clip: true})}
 	));
@@ -529,13 +530,13 @@ function initNavigation(){
 	));
 	
 	elNavigation.appendChild(createToolIcon(
-		"../resources/icons/orbit_controls.png",
+		"../resources/icons/orbit_controls.svg",
 		"Orbit Controls",
 		function(){viewer.useOrbitControls()}
 	));
 	
 	elNavigation.appendChild(createToolIcon(
-		"../resources/icons/focus.png",
+		"../resources/icons/focus.svg",
 		"focus on pointcloud",
 		function(){viewer.fitToScreen()}
 	));
@@ -630,13 +631,13 @@ function initMeasurementDetails(){
 		
 		if(measurement){
 			if(measurement.showDistances && !measurement.showArea && !measurement.showAngles){
-				elPanelIcon.src = "../resources/icons/distance.png";
+				elPanelIcon.src = "../resources/icons/distance.svg";
 				elPanelStretch.innerHTML = "Distance";
 			}else if(measurement.showDistances && measurement.showArea && !measurement.showAngles){
-				elPanelIcon.src = "../resources/icons/area.png";
+				elPanelIcon.src = "../resources/icons/area.svg";
 				elPanelStretch.innerHTML = "Area";
 			}else if(measurement.maxMarkers === 1){
-				elPanelIcon.src = "../resources/icons/point.png";
+				elPanelIcon.src = "../resources/icons/point.svg";
 				elPanelStretch.innerHTML = "Coordinate";
 			}else if(!measurement.showDistances && !measurement.showArea && measurement.showAngles){
 				elPanelIcon.src = "../resources/icons/angle.png";
@@ -645,12 +646,12 @@ function initMeasurementDetails(){
 			
 			elPanelRemove.onclick = function(){viewer.measuringTool.removeMeasurement(measurement);};
 		}else if(profile){
-			elPanelIcon.src = "../resources/icons/profile.png";
+			elPanelIcon.src = "../resources/icons/profile.svg";
 			elPanelRemove.onclick = function(){viewer.profileTool.removeProfile(profile);};
 			
 			elPanelStretch.innerHTML = "Profile";
 		}else if(volume){
-			elPanelIcon.src = "../resources/icons/volume.png";
+			elPanelIcon.src = "../resources/icons/volume.svg";
 			elPanelRemove.onclick = function(){viewer.measuringTool.removeVolume(volume);};
 			
 			elPanelStretch.innerHTML = "Volume";

@@ -317,6 +317,17 @@ Potree.Viewer = function(domElement, args){
 		return scope.clipMode;
 	};
 	
+	this.setDEMCollisionsEnabled = function(value){
+		if(scope.useDEMCollisions !== value){
+			scope.useDEMCollisions = value;
+			scope.dispatchEvent({"type": "use_demcollisions_changed", "viewer": scope});
+		};
+	};
+	
+	this.getDEMCollisionsEnabled = function(){
+		return scope.useDEMCollisions;
+	};
+	
 	this.setEDLEnabled = function(value){
 		if(scope.useEDL != value){
 			scope.useEDL = value;
@@ -822,14 +833,40 @@ Potree.Viewer = function(domElement, args){
 	}
 
 	this.createControls = function(){
+		
+		var demCollisionHandler =  function(event){
+			
+			if(!scope.useDEMCollisions){
+				return
+			}
+			
+			var demHeight = null;
+			
+			for(var i = 0; i < scope.pointclouds.length; i++){
+				var pointcloud = scope.pointclouds[i];
+				pointcloud.generateDEM = true;
+				
+				var height = pointcloud.getDEMHeight(event.newPosition);
+				
+				if(demHeight){
+					demHeight = Math.max(demHeight, height);
+				}else{
+					demHeight = height;
+				}
+			}
+			
+			if(event.newPosition.y < demHeight){
+				event.objections++;
+				var counterProposal = event.newPosition.clone();
+				counterProposal.y = demHeight;
+				event.counterProposals.push(counterProposal);
+			}
+		};
+		
 		{ // create FIRST PERSON CONTROLS
 			scope.fpControls = new THREE.FirstPersonControls(scope.camera, scope.renderer.domElement);
 			scope.fpControls.enabled = false;
-			scope.fpControls.addEventListener("proposeTransform", function(event){
-				if(scope.pointclouds.length === 0){
-					return;
-				}
-			});
+			scope.fpControls.addEventListener("proposeTransform", demCollisionHandler);
 			scope.fpControls.addEventListener("move_speed_changed", function(event){
 				scope.setMoveSpeed(scope.fpControls.moveSpeed);
 			});
@@ -838,11 +875,7 @@ Potree.Viewer = function(domElement, args){
 		{ // create GEO CONTROLS
 			scope.geoControls = new Potree.GeoControls(scope.camera, scope.renderer.domElement);
 			scope.geoControls.enabled = false;
-			scope.geoControls.addEventListener("proposeTransform", function(event){
-				if(scope.pointclouds.length === 0){
-					return;
-				}
-			});
+			scope.geoControls.addEventListener("proposeTransform", demCollisionHandler);
 			scope.geoControls.addEventListener("move_speed_changed", function(event){
 				scope.setMoveSpeed(scope.geoControls.moveSpeed);
 			});
@@ -851,11 +884,7 @@ Potree.Viewer = function(domElement, args){
 		{ // create ORBIT CONTROLS
 			scope.orbitControls = new Potree.OrbitControls(scope.camera, scope.renderer.domElement);
 			scope.orbitControls.enabled = false;
-			scope.orbitControls.addEventListener("proposeTransform", function(event){
-				if(scope.pointclouds.length === 0){
-					return;
-				}
-			});
+			scope.orbitControls.addEventListener("proposeTransform", demCollisionHandler);
 			scope.renderArea.addEventListener("dblclick", function(event){
 				if(scope.pointclouds.length === 0){
 					return;
@@ -940,11 +969,7 @@ Potree.Viewer = function(domElement, args){
 		{ // create EARTH CONTROLS
 			scope.earthControls = new THREE.EarthControls(scope.camera, scope.renderer, scope.scenePointCloud);
 			scope.earthControls.enabled = false;
-			scope.earthControls.addEventListener("proposeTransform", function(event){
-				if(scope.pointclouds.length === 0){
-					return;
-				}
-			});
+			scope.earthControls.addEventListener("proposeTransform", demCollisionHandler);
 		}
 	};
 	

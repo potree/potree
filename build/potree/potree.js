@@ -2,8 +2,15 @@
 
 
 function Potree(){
-
+	
 }
+Potree.version = {
+	major: 1,
+	minor: 4,
+	suffix: "RC"
+};
+
+console.log("Potree " + Potree.version.major + "." + Potree.version.minor + Potree.version.suffix);
 
 Potree.pointBudget = 1*1000*1000;
 

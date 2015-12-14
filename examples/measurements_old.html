@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>Potree Viewer</title>
+
+	<link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
+  </head>
+
+  <body>
+
+    <div class="canvas" style="position: absolute; width: 100%;">
+		<div class="" style="position: absolute; z-index: 100; ">
+			<button type="button" class=" navbar-toggle" style="border-color: white" data-toggle="offcanvas" data-recalc="false" data-target=".navmenu" data-canvas=".canvas">
+			  <span class="icon-bar" style="background-color: white"></span>
+			  <span class="icon-bar" style="background-color: white"></span>
+			  <span class="icon-bar" style="background-color: white"></span>
+			</button>
+		</div>
+		<div id="renderArea" style="position: absolute; top: 0px; right: 0; left: 0; bottom: 0; overflow: hidden;">
+
+			<div id="overlays" style="position: absolute; left: 10px; top: 45px;">
+			</div>
+		
+			<!-- HEADING -->
+			<div id="pv_description" class="info" style="position: absolute; top: 10px; left: 50%; transform: translateX(-50%); text-align: center">
+			</div>
+		</div>
+    </div>
+    
+
+    <script src="../libs/jquery-2.1.4/jquery-2.1.4.min.js"></script>
+	<script src="../libs/jquery-ui-1.11.4/jquery-ui.min.js"></script>
+    <script src="../libs/bootstrap/js/bootstrap.min.js"></script>
+    <script src="../libs/jasny-bootstrap/js/jasny-bootstrap.js"></script>
+	
+	<script src="../libs/three.js/build/three.js"></script>
+	<script src="../libs/other/stats.min.js"></script>
+	<script src="../libs/other/dat.gui.min.js"></script>
+	<script src="../libs/other/BinaryHeap.js"></script>
+	<script src="../libs/tween/tween.min.js"></script>
+	<script src="../libs/d3/d3.js"></script>
+	
+	<script src="../build/potree/potree.js"></script>
+	
+	<script>
+	
+		viewer = new Potree.Viewer(document.getElementById("renderArea"));
+		
+		viewer.setEDLEnabled(false);
+		viewer.setPointSize(3);
+		viewer.setMaterial("RGB");
+		viewer.setFOV(60);
+		viewer.setPointSizing("Fixed");
+		viewer.setQuality("Squares");
+		viewer.setPointBudget(1*1000*1000);
+		viewer.setDescription("New User Interface Prototype");
+		
+		viewer.addPointCloud("../resources/pointclouds/vol_total/cloud.js", function(){
+		
+			// coordinates are given in the original point cloud coordinate system and transformed to 
+			// local scene coordinates
+			var distanceMeasurement = new Potree.Measure();
+			distanceMeasurement.addMarker(viewer.toLocal(new THREE.Vector3(589541.5201, 231328.0400, 777.79500)));
+			distanceMeasurement.addMarker(viewer.toLocal(new THREE.Vector3(589733.0596, 231333.2299, 757.87500)));
+			distanceMeasurement.addMarker(viewer.toLocal(new THREE.Vector3(589767.7000, 231435.6198, 750.49500)));
+			distanceMeasurement.showDistances = true;
+			distanceMeasurement.showArea = false;
+			distanceMeasurement.showAngles = false;
+			distanceMeasurement.closed = false;
+			viewer.measuringTool.addMeasurement(distanceMeasurement);
+
+			// using local coordinates directly
+			var areaMeasurement = new Potree.Measure();
+			areaMeasurement.addMarker(new THREE.Vector3(108.04, 6.46, -36.70));
+			areaMeasurement.addMarker(new THREE.Vector3(58.27, 17.01, 72.32 ));
+			areaMeasurement.addMarker(new THREE.Vector3(67.35, 18.50, 95.41 ));
+			areaMeasurement.addMarker(new THREE.Vector3(92.06, 20.68, 97.29 ));
+			areaMeasurement.addMarker(new THREE.Vector3(186.39, 17.83, 8.16 ));
+			areaMeasurement.showDistances = true;
+			areaMeasurement.showArea = true;
+			areaMeasurement.showAngles = false;
+			areaMeasurement.closed = true;
+			viewer.measuringTool.addMeasurement(areaMeasurement);
+			
+		});
+		
+		viewer.loadGUI();
+		
+	</script>
+  </body>
+</html>

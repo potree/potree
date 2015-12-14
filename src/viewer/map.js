@@ -391,6 +391,11 @@ Potree.Viewer.MapView = function(viewer){
 			mapExtent.topLeft,
 			mapExtent.bottomLeft
 		]);
+		
+		//view.fit(scope.gExtent, scope.map.getSize());
+		view.fit(scope.gExtent, [300, 300], {
+			constrainResolution: false
+		});
 
 		var createLabelStyle = function(text){
 			var style = new ol.style.Style({
@@ -443,21 +448,21 @@ Potree.Viewer.MapView = function(viewer){
 				var p3 = scope.toMap.forward( [bounds.max[0], bounds.max[1]] );
 				var p4 = scope.toMap.forward( [bounds.min[0], bounds.max[1]] );
 				
-				var boxes = [];
-				var feature = new ol.Feature({
-					'geometry': new ol.geom.LineString([p1, p2, p3, p4, p1])
-				});
-				feature.source = source;
-				feature.pointcloud = pointcloud;
-				scope.sourcesLayer.getSource().addFeature(feature);
-				
-
-				feature = new ol.Feature({
-					 geometry: new ol.geom.Point(mapCenter),
-					 name: name 
-				});
-				feature.setStyle(createLabelStyle(name));
-				scope.sourcesLabelLayer.getSource().addFeature(feature);
+				//var boxes = [];
+				//var feature = new ol.Feature({
+				//	'geometry': new ol.geom.LineString([p1, p2, p3, p4, p1])
+				//});
+				//feature.source = source;
+				//feature.pointcloud = pointcloud;
+				//scope.sourcesLayer.getSource().addFeature(feature);
+				//
+                //
+				//feature = new ol.Feature({
+				//	 geometry: new ol.geom.Point(mapCenter),
+				//	 name: name 
+				//});
+				//feature.setStyle(createLabelStyle(name));
+				//scope.sourcesLabelLayer.getSource().addFeature(feature);
 			}
 		});
 	}

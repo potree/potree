@@ -47,7 +47,8 @@ var paths = {
 		"src/arena4d/PointCloudArena4DGeometry.js",
 		"src/viewer/ProgressBar.js",
 		"src/viewer/viewer.js",
-		"src/viewer/profile.js"
+		"src/viewer/profile.js",
+		"src/viewer/map.js"
 	],
 	laslaz: [
 		"build/workers/laslaz-worker.js",

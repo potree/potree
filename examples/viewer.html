@@ -7,8 +7,7 @@
     <meta name="author" content="">
     <title>Potree Viewer</title>
 
-	<!--<link rel="stylesheet" type="text/css" href="../build/potree/potree.css">-->
-	<link rel="stylesheet" type="text/css" href="../src/viewer/potree.css">
+	<link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
 	<link rel="stylesheet" type="text/css" href="../libs/jquery-ui-1.11.4/jquery-ui.css">
 	<link rel="stylesheet" href="http://openlayers.org/en/v3.11.2/css/ol.css" type="text/css">
   </head>
@@ -23,10 +22,12 @@
 	<script src="../libs/other/BinaryHeap.js"></script>
 	<script src="../libs/tween/tween.min.js"></script>
 	<script src="../libs/d3/d3.js"></script>
+	<script src="../libs/proj4/proj4.js"></script>
 	
 	<script src="../build/potree/potree.js"></script>
 	
 	<!-- uncomment this to debug individual js files -->
+	<!--
 	<script src="../src/viewer/viewer.js"></script>
 	<script src="../src/viewer/profile.js"></script>
 	<script src="../src/viewer/ProgressBar.js"></script>
@@ -53,6 +54,7 @@
 	<script src="../src/extensions/PerspectiveCamera.js"></script>
 	<script src="../src/arena4d/PointCloudArena4D.js"></script>
 	<script src="../src/arena4d/PointCloudArena4DGeometry.js"></script>
+	-->
 	
 	
 	
@@ -64,7 +66,6 @@
 	
 	
 	<script src="http://openlayers.org/en/v3.11.2/build/ol-debug.js"></script>
-	<script src="../libs/proj4/proj4.js"></script>
 	<script src="../src/viewer/map.js"></script>
 
     <div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
@@ -76,8 +77,6 @@
 			
 			<div id="potree_map" class="mapBox" style="position: absolute; left: 50px; top: 50px; width: 400px; height: 400px; display: none">
 				<div id="potree_map_header" style="position: absolute; width: 100%; height: 25px; top: 0px; background-color: rgba(0,0,0,0.5); z-index: 1000; border-top-left-radius: 3px; border-top-right-radius: 3px;">
-					<!--<select id="layerSelector"></select>
-					<div id="minimizeMapButton" class="ui-icon ui-icon-close" data-i18n="[title]nav.hide_2d_map"></div>-->
 				</div>
 				<div id="potree_map_content" class="map" style="position: absolute; z-index: 100; top: 25px; width: 100%; height: calc(100% - 25px); border: 2px solid rgba(0,0,0,0.5); box-sizing: border-box;"></div>
 			</div>
@@ -109,39 +108,14 @@
 		viewer.setQuality("Squares");
 		viewer.setPointBudget(1*1000*1000);
 		//viewer.setOpacity(0.03);
-		viewer.setDescription("Download Tool Prototype. Use ctrl + left mouse to area-select tiles.<br>Click 'D' to download a list of selected tiles.");
+		viewer.setDescription("Potree 1.4RC. Use this for testing purposes only! Check <a href='https://twitter.com/m_schuetz' target='_blank'>here</a> for new updates.<br>"
+			+ "Report issues on the <a href='https://github.com/potree/potree' target='_blank'>github repository</a> or <a href='mailto:mschuetz@potree.org' target='_blank'>mschuetz@potree.org</a><br>"
+			+ "Point cloud courtesy of <a href='http://sigeom.ch/' target='_blank'>sigeom sa</a>"
+			
+		);
 		//viewer.setMinNodeSize(5);
-		
-		//viewer.addPointCloud("../resources/pointclouds/vol_total/cloud.js", function(){
-		//	var profile = new Potree.HeightProfile();
-		//	//profile.addMarker(new THREE.Vector3(-289.53, 52.75, 126.00));
-		//	//profile.addMarker(new THREE.Vector3(-288.88, 45.06, 25.53));
-		//	//profile.addMarker(new THREE.Vector3(-256.45, 16.55, -78.45));
-		//	//profile.addMarker(new THREE.Vector3(-203.87, 27.13, -63.94));
-		//	//profile.addMarker(new THREE.Vector3(-170.97, 43.20, 17.09));
-		//	profile.addMarker(new THREE.Vector3(-270.90999, 58.96097, 89.05937)); 
-		//	profile.addMarker(new THREE.Vector3(-280.0200, 57.85097, 63.96937));
-		//	profile.setWidth(2);
-		//	viewer.profileTool.addProfile(profile);
-		//	
-		//	//profile.addMarker(new THREE.Vector3(270.90999, 58.96097, 89.05937)); 
-		//	//profile.addMarker(new THREE.Vector3(-280.0200, 57.85097, 63.96937));
-		//	
-		//	setTimeout(function(){
-		//		viewer._2dprofile.show();
-		//		viewer._2dprofile.draw(profile);
-		//	}, 500);
-		//});
-		
-		//viewer.addPointCloud("http://localhost/temp/ca13/1/cloud.js");
-		//viewer.addPointCloud("http://localhost/temp/ca13/2/cloud.js");
-		//viewer.addPointCloud("http://localhost/temp/ca13/cloud.js");
-		viewer.addPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/opentopography/CA13_1.4/cloud.js");
-		
-		//viewer.addPointCloud("http://localhost/temp/test/2/cloud.js");
-		
-		
-		//viewer.addPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/opentopography/CA13/cloud.js");
+
+		viewer.addPointCloud("../resources/pointclouds/vol_total/cloud.js");
 		
 		viewer.loadGUI();
 		

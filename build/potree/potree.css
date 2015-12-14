@@ -61,15 +61,39 @@
 	
 }
 
+.potree_sidebar_brand{
+	margin:			8px 20px;
+	line-height:	2em;
+	font-size:		100%;
+	font-weight:	bold;
+	position:		relative;
+}
+
+#potree_sidebar_container a{
+	color: 		#8Aa1c4;
+}
+
 .potree_menu_toggle{
 	position:		absolute;
 	float:			left;
-	margin:			4px 4px;
+	margin:			8px 8px;
 	background:		none;
-	width:			3em;
-	height:			3em;
+	width:			2.5em;
+	height:			2.5em;
 	z-index:		100;
-	
+	cursor: 		pointer;
+}
+
+#potree_map_toggle{
+	position:		absolute;
+	float:			left;
+	margin:			8px 8px;
+	background:		none;
+	width:			2.5em;
+	height:			2.5em;
+	z-index:		100;
+	top:			calc(2.5em + 8px);
+	cursor: 		pointer;
 }
 
 .potree_menu_toggle_bars{
@@ -364,6 +388,59 @@ body{
     -ms-user-select: text;
     user-select: text;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.ol-dragbox {
+  background-color: rgba(255,255,255,0.4);
+  border-color: rgba(100,150,0,1);
+  border: 1px solid red;
+}
+
 
 
 

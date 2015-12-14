@@ -7,7 +7,7 @@
     <meta name="author" content="">
     <title>Potree Viewer</title>
 
-	<link rel="stylesheet" type="text/css" href="../src/viewer/potree.css">
+	<link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
 	<link rel="stylesheet" type="text/css" href="../libs/jquery-ui-1.11.4/jquery-ui.css">
 	<link rel="stylesheet" href="http://openlayers.org/en/v3.11.2/css/ol.css" type="text/css">
   </head>
@@ -22,6 +22,7 @@
 	<script src="../libs/other/BinaryHeap.js"></script>
 	<script src="../libs/tween/tween.min.js"></script>
 	<script src="../libs/d3/d3.js"></script>
+	<script src="../libs/proj4/proj4.js"></script>
 	
 	<script src="../build/potree/potree.js"></script>
 	
@@ -65,8 +66,6 @@
 	
 	
 	<script src="http://openlayers.org/en/v3.11.2/build/ol-debug.js"></script>
-	<script src="../libs/proj4/proj4.js"></script>
-	<script src="../src/viewer/map.js"></script>
 
     <div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
 	
@@ -106,36 +105,38 @@
 		viewer.setFOV(60);
 		viewer.setPointSizing("Fixed");
 		viewer.setQuality("Squares");
-		viewer.setPointBudget(1*1000*1000);
+		viewer.setPointBudget(2*1000*1000);
 		//viewer.setOpacity(0.03);
-		viewer.setDescription("Annotations. Useful properties to determine coordinates in browser developer tools: <br>"
-			+ "viewer.camera.position & viewer.orbitControls.target<br>"
-			+ "Annotation positions are given in local scene coordinates. To convert between local and pointcloud coordinates:<br>"
-			+ "viewer.toLocal(pointcloudCoordinate) & viewer.toGeo(localSceneCoordinate)<br>"
+		viewer.setDescription("Potree 1.4RC. Use this for testing purposes only! Check <a href='https://twitter.com/m_schuetz' target='_blank'>here</a> for new updates.<br>"
+			+ "Report issues on the <a href='https://github.com/potree/potree' target='_blank'>github repository</a> or <a href='mailto:mschuetz@potree.org' target='_blank'>mschuetz@potree.org</a><br>"
+			+ "San Simeon, CA Central Coast point cloud taken from <a href='http://opentopo.sdsc.edu/lidarDataset?opentopoID=OTLAS.032013.26910.2' target='_blank'>Open Topography</a> (17.7b points) "
+			
 		);
 		//viewer.setMinNodeSize(5);
 
-		viewer.addPointCloud("../resources/pointclouds/lion_takanawa/cloud.js", function(pointcloud){
-			viewer.addAnnotation(new THREE.Vector3(-0.14, 4.9, 0.25), {
-				"cameraTarget": new THREE.Vector3(0, 2, 0),
-				"cameraPosition": new THREE.Vector3(7.34, 3.24, 6.35),
-				"title": "Lion",
-				"description": "A chinese guardian lion (<a href='https://en.wikipedia.org/wiki/Chinese_guardian_lions' target='_blank'>Wikipedia</a>)"
+		//viewer.addPointCloud("../resources/pointclouds/vol_total/cloud.js");
+		viewer.addPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/opentopography/CA13_1.4/cloud.js", function(){
+			var campos = viewer.toLocal(new THREE.Vector3(693006.8122483197, 3915782.204995968, 425.11218082315514));
+			var camtarget = viewer.toLocal(new THREE.Vector3(693670.3358966872, 3916063.4171309504, 147.47781346102335));
+			
+			viewer.addAnnotation(viewer.toLocal(new THREE.Vector3(693670.3358966872, 3916063.4171309504, 230)), {
+				"cameraTarget": viewer.toLocal(new THREE.Vector3(693670.3358966872, 3916063.4171309504, 147.47781346102335)),
+				"cameraPosition": viewer.toLocal(new THREE.Vector3(693006.8122483197, 3915782.204995968, 425.11218082315514)),
+				"title": "Morro Rock",
+				"description": "Morro Rock is a 581-foot (177 m) volcanic plug <br> located just offshore from Morro Bay, California,<br> at the entrance to Morro Bay Harbor.<br> (<a href='https://en.wikipedia.org/wiki/Morro_Rock' target='_blank'>Wikipedia</a>)"
 			});
 			
-			viewer.addAnnotation(new THREE.Vector3(-0.09, 4.13, 1.5), {
-				"cameraTarget": new THREE.Vector3(-0.09, 3.9, 1),
-				"cameraPosition": new THREE.Vector3(0.74, 4.23, 3)
+			viewer.addAnnotation(viewer.toLocal(new THREE.Vector3(665753.918178844, 3950561.9976737187, 530)), {
+				"cameraTarget": viewer.toLocal(new THREE.Vector3(665753.918178844, 3950561.9976737187, 491.3209449004851)),
+				"cameraPosition": viewer.toLocal(new THREE.Vector3(665630.4751295825, 3950444.315780534, 602.8491750159778)),
+				"title": "Hearst Castle",
+				"description": "Hearst Castle is a National and California Historical Landmark mansion located on the Central Coast of California, United States. <br> (<a href='https://en.wikipedia.org/wiki/Hearst_Castle' target='_blank'>Wikipedia</a>)"
 			});
 			
-			viewer.addAnnotation(new THREE.Vector3(0.46, 2.2, 1.07), {
-				"cameraTarget": new THREE.Vector3(0.46, 2.2, 1.07),
-				"cameraPosition": new THREE.Vector3(1.63, 3.27, 2.32),
-				"description": "Female guardian lions have a cub under their left paw." + 
-					"<br><br><center><a href='https://commons.wikimedia.org/wiki/File:Beijing_Forbidden_City_Imperial_Guardian_Lions.jpg' target='blank'>" + 
-					"<img src='https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Beijing_Forbidden_City_Imperial_Guardian_Lions.jpg/450px-Beijing_Forbidden_City_Imperial_Guardian_Lions.jpg' width='200px'/>" +
-					"</a></center>"
-			});
+			
+			
+			
+			
 		});
 		
 		viewer.loadGUI();

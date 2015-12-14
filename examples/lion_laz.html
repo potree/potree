@@ -1,24 +1,35 @@
-<html>
-<head>
-	<meta charset="utf-8"/>
-	<title>Potree Viewer</title>
-	<!--<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">-->
-	<link rel="stylesheet" type="text/css" href="css/potree.css">
-</head>
-<body>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>Potree Viewer</title>
 
+	<link rel="stylesheet" type="text/css" href="../src/viewer/potree.css">
+	<link rel="stylesheet" type="text/css" href="../libs/jquery-ui-1.11.4/jquery-ui.css">
+	<link rel="stylesheet" href="http://openlayers.org/en/v3.11.2/css/ol.css" type="text/css">
+  </head>
+
+  <body>
+  
+	<script src="../libs/jquery-2.1.4/jquery-2.1.4.min.js"></script>
+	<script src="../libs/jquery-ui-1.11.4/jquery-ui.min.js"></script>
+	
 	<script src="../libs/three.js/build/three.js"></script>
 	<script src="../libs/other/stats.min.js"></script>
-	<script src="../libs/other/dat.gui.min.js"></script>
 	<script src="../libs/other/BinaryHeap.js"></script>
 	<script src="../libs/tween/tween.min.js"></script>
+	<script src="../libs/d3/d3.js"></script>
 	
-	<script src="../build/js/potree.js"></script>
-	<script src="./js/viewer.js"></script>
-	<script src="./js/ProgressBar.js"></script>
+	<script src="../build/potree/potree.js"></script>
 	
-	<!-- uncomment this to debug changes to the individual js files -->
-	
+	<!-- uncomment this to debug individual js files -->
+	<!--
+	<script src="../src/viewer/viewer.js"></script>
+	<script src="../src/viewer/profile.js"></script>
+	<script src="../src/viewer/ProgressBar.js"></script>
 	<script src="../src/PointCloudOctree.js"></script>
 	<script src="../src/PointCloudOctreeGeometry.js"></script>
 	<script src="../src/loader/POCLoader.js"></script>
@@ -29,6 +40,7 @@
 	<script src="../src/EarthControls.js"></script>
 	<script src="../src/OrbitControls.js"></script>
 	<script src="../src/FirstPersonControls.js"></script>
+	<script src="../src/GeoControls.js"></script>
 	<script src="../src/utils/ProfileTool.js"></script>
 	<script src="../src/utils/MeasuringTool.js"></script>
 	<script src="../src/utils/TransformationTool.js"></script>
@@ -41,64 +53,68 @@
 	<script src="../src/extensions/PerspectiveCamera.js"></script>
 	<script src="../src/arena4d/PointCloudArena4D.js"></script>
 	<script src="../src/arena4d/PointCloudArena4DGeometry.js"></script>
+	-->
+	
+	
 	
 	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
 	<!-- INCLUDE SETTINGS HERE -->
 	<script src="../libs/plasio/js/laslaz.js"></script>
 	<script src="../libs/plasio/vendor/bluebird.js"></script>
-	<script src="../build/js/laslaz.js"></script>
+	<script src="../build/potree/laslaz.js"></script>
 	
-	<div id="renderArea" style="position: absolute; width: 100%; height: 100%; overflow: hidden;">
+	
+	<script src="http://openlayers.org/en/v3.11.2/build/ol-debug.js"></script>
+	<script src="../libs/proj4/proj4.js"></script>
+	<script src="../src/viewer/map.js"></script>
 
-		<!-- HEADING -->
-		<div class="info" style="position: absolute; left: 300px; right: 300px; top: 10px; text-align: center;">
-			<a href="http://potree.org" target="_blank">potree.org</a>
+    <div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
+	
+		<div id="potree_render_area">
+			
+			<img class="potree_menu_toggle" src="../resources/icons/menu_button.svg" onclick="viewer.toggleSidebar()" />
+			<img id="potree_map_toggle" src="../resources/icons/map_icon.png" onclick="viewer.toggleMap()" style="display: none"/>
+			
+			<div id="potree_map" class="mapBox" style="position: absolute; left: 50px; top: 50px; width: 400px; height: 400px; display: none">
+				<div id="potree_map_header" style="position: absolute; width: 100%; height: 25px; top: 0px; background-color: rgba(0,0,0,0.5); z-index: 1000; border-top-left-radius: 3px; border-top-right-radius: 3px;">
+				</div>
+				<div id="potree_map_content" class="map" style="position: absolute; z-index: 100; top: 25px; width: 100%; height: calc(100% - 25px); border: 2px solid rgba(0,0,0,0.5); box-sizing: border-box;"></div>
+			</div>
+		
+			<!-- HEADING -->
+			<div id="potree_description" class="potree_info_text"></div>
 		</div>
 		
-	</div>
+		<div id="potree_sidebar_container"> </div>
+    </div>
 	
-	
-		
 	<script>
 	
-		var settings = {
-			path:			"../resources/pointclouds/lion_takanawa_laz/cloud.js",
-			cameraPosition: null,
-			cameraTarget: null,
-			sizeType:		"Adaptive",			// options: "Fixed", "Attenuated", "Adaptive"
-			quality:		"Squares",			// options: "Squares", "Circles", "Interpolation", "Splats"
-			fov:			75,					// field of view in degree
-			material:		"RGB",				// options: "RGB", "Height", "Intensity", "Classification"
-			pointLimit:		1,					// max number of points in millions
-			navigation:		"Orbit",			// options: "Earth", "Orbit", "Flight"
-			pointSize:		1,					
-			useEDL:			true,				// eye-dome-lighting, especially useful for point clouds without normals
-		};
-		
 		var onPointCloudLoaded = function(event){
-			// do stuff here that should be executed once the point cloud has been loaded.
+			// do stuff here that should be executed whenever a point cloud has been loaded.
 			// event.pointcloud returns the point cloud object
-			
-		};
+			console.log("a point cloud has been loaded");
+		}; 
 	
-		viewer = new Potree.Viewer(document.getElementById("renderArea"), settings, {
+		viewer = new Potree.Viewer(document.getElementById("potree_render_area"), {
 			"onPointCloudLoaded": onPointCloudLoaded
 		});
 		
+		viewer.setEDLEnabled(false);
+		viewer.setPointSize(3);
+		viewer.setMaterial("RGB");
+		viewer.setFOV(60);
+		viewer.setPointSizing("Fixed");
+		viewer.setQuality("Squares");
+		viewer.setPointBudget(1*1000*1000);
+		//viewer.setOpacity(0.03);
+		viewer.setDescription("");
+		//viewer.setMinNodeSize(5);
+
+		viewer.addPointCloud("../resources/pointclouds/lion_takanawa_laz/cloud.js");
+		
+		viewer.loadGUI();
+		
 	</script>
-	
-</body>
+  </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -30,6 +30,8 @@ Potree.updatePointClouds = function(pointclouds, camera, renderer){
 		pointcloud.updateVisibleBounds();
 	}
 	
+	Potree.PointCloudOctree.lru.freeMemory();
+	
 	return result;
 };
 
@@ -207,7 +209,7 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 				node.boundingBoxNode.visible = false;
 			}
 			
-			if(pointcloud.generateDEM && node.level <= 2){
+			if(pointcloud.generateDEM && node.level <= 6){
 				if(!node.dem){
 					node.dem = pointcloud.createDEM(node);
 				}
@@ -1284,6 +1286,7 @@ Potree.POCLoader.load = function load(url, callback) {
 				tightBoundingBox.min.add(offset);
 				tightBoundingBox.max.add(offset);
 				
+				pco.projection = fMno.projection;
 				pco.boundingBox = boundingBox;
 				pco.tightBoundingBox = tightBoundingBox;
 				pco.boundingSphere = boundingBox.getBoundingSphere();
@@ -3124,13 +3127,26 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 		event.preventDefault();
 
 		var direction = (event.detail<0 || event.wheelDelta>0) ? 1 : -1;
-		scope.moveSpeed += scope.moveSpeed * 0.1 * direction;
 
-		scope.moveSpeed = Math.max(0.1, scope.moveSpeed);
+		var moveSpeed = scope.moveSpeed + scope.moveSpeed * 0.1 * direction;
+		moveSpeed = Math.max(0.1, moveSpeed);
 
+		scope.setMoveSpeed(moveSpeed);
+		
+		
 		scope.dispatchEvent( startEvent );
 		scope.dispatchEvent( endEvent );
 	}
+	
+	this.setMoveSpeed = function(value){
+		if(scope.moveSpeed !== value){
+			scope.moveSpeed = value;
+			scope.dispatchEvent( {
+				type: "move_speed_changed",
+				controls: scope
+			});
+		}
+	};
 
 	function onKeyDown( event ) {
 		if ( scope.enabled === false) return;
@@ -3582,13 +3598,24 @@ Potree.GeoControls = function ( object, domElement ) {
 		event.preventDefault();
 
 		var direction = (event.detail<0 || event.wheelDelta>0) ? 1 : -1;
-		scope.moveSpeed += scope.moveSpeed * 0.1 * direction;
+		var moveSpeed = scope.moveSpeed + scope.moveSpeed * 0.1 * direction;
+		moveSpeed = Math.max(0.1, moveSpeed);
 
-		scope.moveSpeed = Math.max(0.1, scope.moveSpeed);
+		scope.setMoveSpeed(moveSpeed);
 
 		scope.dispatchEvent( startEvent );
 		scope.dispatchEvent( endEvent );
 	}
+	
+	this.setMoveSpeed = function(value){
+		if(scope.moveSpeed !== value){
+			scope.moveSpeed = value;
+			scope.dispatchEvent( {
+				type: "move_speed_changed",
+				controls: scope
+			});
+		}
+	};
 
 	function onKeyDown( event ) {
 		if ( scope.enabled === false) return;
@@ -5192,6 +5219,8 @@ Potree.ProfileRequest = function(pointcloud, profile, maxDepth, callback){
 								
 							}
 						}
+					}else{
+						var a;
 					}
 				}
 			}
@@ -5254,6 +5283,9 @@ Potree.PointCloudOctree = function(geometry, material){
 	this.pickTarget = null;
 	this.generateDEM = false;
 	this.profileRequests = [];
+	
+	// TODO read projection from file instead
+	this.projection = geometry.projection;
 	
 	this.root = this.pcoGeometry.root;
 };
@@ -5416,7 +5448,7 @@ Potree.PointCloudOctree.prototype.updateVisibility = function(camera, renderer){
 				node.boundingBoxNode.visible = false;
 			}
 			
-			if(this.generateDEM && node.level <= 2){
+			if(this.generateDEM && node.level <= 6){
 				if(!node.dem){
 					node.dem = this.createDEM(node);
 				}
@@ -6304,7 +6336,7 @@ Potree.PointCloudOctree.prototype.createDEM = function(node){
 	
 	
 	
-	//if(node.level == 2){
+	//if(node.level === 6){
 	//	var geometry = new THREE.BufferGeometry();
 	//	var vertices = new Float32Array((demSize-1)*(demSize-1)*2*3*3);
 	//	var offset = 0;
@@ -6362,10 +6394,10 @@ Potree.PointCloudOctree.prototype.createDEM = function(node){
 	//	
 	//	var material = new THREE.MeshNormalMaterial( { color: 0xff0000, shading: THREE.SmoothShading } );
 	//	var mesh = new THREE.Mesh( geometry, material );
-	//	scene.add(mesh);
+	//	viewer.scene.add(mesh);
 	//}
-	//
-	//
+	
+	
 	//if(node.level == 0){
 	//	scene.add(mesh);
 	//	
@@ -6471,7 +6503,7 @@ Potree.PointCloudOctree.prototype.getDEMHeight = function(position){
 		var demSize = dem.demSize;
 		var box = dem.boundingBox2D;
 		var insideBox = box.containsPoint(pos2);
-		if(!box.containsPoint(pos2)){
+		if(!insideBox){
 			continue;
 		}
 		
@@ -6482,10 +6514,10 @@ Potree.PointCloudOctree.prototype.getDEMHeight = function(position){
 			height = dh;
 		}
 
-		if(node.level <= 2){
-			for(var i = 0; i < node.children.length; i++){
+		if(node.level <= 6){
+			for(var i = 0; i < 8; i++){
 				var child = node.children[i];
-				if(child.dem){
+				if(typeof child !== "undefined" && typeof child.dem !== "undefined"){
 					stack.push(child);
 				}
 			}
@@ -6497,47 +6529,47 @@ Potree.PointCloudOctree.prototype.getDEMHeight = function(position){
 	return height;
 };
 
-Potree.PointCloudOctree.prototype.generateTerain = function(){
-	var bb = this.boundingBox.clone().applyMatrix4(this.matrixWorld);
-	
-	var width = 300;
-	var height = 300;
-	var geometry = new THREE.BufferGeometry();
-	var vertices = new Float32Array(width*height*3);
-	
-	var offset = 0;
-	for(var i = 0; i < width; i++){
-		for( var j = 0; j < height; j++){
-			var u = i / width;
-			var v = j / height;
-			
-			var x = u * bb.size().x + bb.min.x;
-			var z = v * bb.size().z + bb.min.z;
-			
-			var y = this.getDEMHeight(new THREE.Vector3(x, 0, z));
-			if(!y){
-				y = 0;
-			}
-			
-			vertices[offset + 0] = x;
-			vertices[offset + 1] = y;
-			vertices[offset + 2] = z;
-			
-			//var sm = new THREE.Mesh(sg);
-			//sm.position.set(x,y,z);
-			//scene.add(sm);
-			
-			offset += 3;
-		}
-	}
-	
-	geometry.addAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
-	var material = new THREE.PointCloudMaterial({size: 20, color: 0x00ff00});
-	
-	var pc = new THREE.PointCloud(geometry, material);
-	scene.add(pc);
-	
-};
+//Potree.PointCloudOctree.prototype.generateTerain = function(){
+//	var bb = this.boundingBox.clone().applyMatrix4(this.matrixWorld);
+//	
+//	var width = 300;
+//	var height = 300;
+//	var geometry = new THREE.BufferGeometry();
+//	var vertices = new Float32Array(width*height*3);
+//	
+//	var offset = 0;
+//	for(var i = 0; i < width; i++){
+//		for( var j = 0; j < height; j++){
+//			var u = i / width;
+//			var v = j / height;
+//			
+//			var x = u * bb.size().x + bb.min.x;
+//			var z = v * bb.size().z + bb.min.z;
+//			
+//			var y = this.getDEMHeight(new THREE.Vector3(x, 0, z));
+//			if(!y){
+//				y = 0;
+//			}
+//			
+//			vertices[offset + 0] = x;
+//			vertices[offset + 1] = y;
+//			vertices[offset + 2] = z;
+//			
+//			//var sm = new THREE.Mesh(sg);
+//			//sm.position.set(x,y,z);
+//			//scene.add(sm);
+//			
+//			offset += 3;
+//		}
+//	}
+//	
+//	geometry.addAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
+//	var material = new THREE.PointCloudMaterial({size: 20, color: 0x00ff00});
+//	
+//	var pc = new THREE.PointCloud(geometry, material);
+//	scene.add(pc);
+//	
+//};
 
 Object.defineProperty(Potree.PointCloudOctree.prototype, "progress", {
 	get: function(){
@@ -7826,6 +7858,8 @@ Potree.MeasuringTool = function(scene, camera, renderer, toGeo){
 		var rect = scope.domElement.getBoundingClientRect();
 		scope.mouse.x = ((event.clientX - rect.left) / scope.domElement.clientWidth) * 2 - 1;
         scope.mouse.y = -((event.clientY - rect.top) / scope.domElement.clientHeight) * 2 + 1;
+		
+		//console.log(scope.mouse);
 		
 		if(scope.dragstart){
 			var arg = {
@@ -9368,10 +9402,11 @@ Potree.TransformationTool = function(scene, camera, renderer){
 	};
 	
 	function onMouseMove(event){
-		scope.mouse.x = ( event.clientX / scope.domElement.clientWidth ) * 2 - 1;
-		scope.mouse.y = - ( event.clientY / scope.domElement.clientHeight ) * 2 + 1;
-	
-	
+		
+		var rect = scope.domElement.getBoundingClientRect();
+		scope.mouse.x = ((event.clientX - rect.left) / scope.domElement.clientWidth) * 2 - 1;
+        scope.mouse.y = -((event.clientY - rect.top) / scope.domElement.clientHeight) * 2 + 1;
+		
 		if(scope.dragstart){
 			
 			scope.dragstart.object.dispatchEvent({
@@ -9519,12 +9554,33 @@ Potree.TransformationTool = function(scene, camera, renderer){
 			var centroid = bb.clone().applyMatrix4(target.matrixWorld).center();
 			scope.sceneRoot.position.copy(centroid);
 		}
+	};
+	
+	this.getBoundingBox = function(){
+		var box = new THREE.Box3();
 		
-		//for(var i = 0; i < targets.length; i++){
-		//	var target = targets[i];
-		//}
+		for(var i = 0; i < scope.targets.length; i++){
+			var target = scope.targets[i];
+			var targetBB;
+
+			if(target.boundingBox){
+				targetBB = target.boundingBox;
+			}else if(target.boundingSphere){
+				targetBB = target.boundingSphere.getBoundingBox();
+			}else if(target.geometry){
+				if(target.geometry.boundingBox){
+					targetBB = target.geometry.boundingBox;
+				}else if(target.geometry.boundingSphere){
+					targetBB = target.geometry.boundingSphere.getBoundingBox();
+				}
+			}
+			
+			targetBB = Potree.utils.computeTransformedBoundingBox(targetBB, target.matrixWorld);
+			
+			box.union(targetBB);
+		}
 		
-		
+		return box;
 	};
 	
 	this.update = function(){
@@ -11168,6 +11224,7 @@ Potree.Viewer = function(domElement, args){
 	this.intensityMax = null;
 	this.heightMin = null;
 	this.heightMax = null;
+	this.moveSpeed = 10;
 
 	this.showDebugInfos = false;
 	this.showStats = true;
@@ -11234,6 +11291,13 @@ Potree.Viewer = function(domElement, args){
 	this.addPointCloud = function(path, callback){
 		callback = callback || function(){};
 		var initPointcloud = function(pointcloud){
+			
+			if(!scope.mapView){
+				if(pointcloud.projection){
+					scope.mapView = new Potree.Viewer.MapView(viewer);
+					scope.mapView.init(viewer);
+				}
+			}
 		
 			scope.pointclouds.push(pointcloud);
 
@@ -11258,6 +11322,8 @@ Potree.Viewer = function(domElement, args){
 			if(scope.pointclouds.length === 1){
 				scope.referenceFrame.position.sub(sg.center);
 				scope.referenceFrame.updateMatrixWorld(true);
+				var moveSpeed = sg.radius / 6;
+				scope.setMoveSpeed(moveSpeed);
 			}
 			
 			//scope.flipYZ();
@@ -11325,10 +11391,16 @@ Potree.Viewer = function(domElement, args){
 			return geoPos;
 		}
 	})(this);
-	
+
+	this.getMinNodeSize = function(){
+		return scope.minNodeSize;
+	};
 	
 	this.setMinNodeSize = function(value){
-		scope.minNodeSize = value;
+		if(scope.minNodeSize !== value){
+			scope.minNodeSize = value;
+			scope.dispatchEvent({"type": "minnodesize_changed", "viewer": scope});
+		}
 	};
 	
 	this.setDescription = function(value){
@@ -11358,8 +11430,10 @@ Potree.Viewer = function(domElement, args){
 	};
 	
 	this.setMoveSpeed = function(value){
-		if(scope.fpControls.moveSpeed !== value){
-			scope.fpControls.moveSpeed = value;
+		if(scope.moveSpeed !== value){
+			scope.moveSpeed = value;
+			scope.fpControls.setMoveSpeed(value);
+			scope.geoControls.setMoveSpeed(value);
 			scope.dispatchEvent({"type": "move_speed_changed", "viewer": scope, "speed": value});
 		}
 	};
@@ -11433,6 +11507,17 @@ Potree.Viewer = function(domElement, args){
 	
 	this.getClipMode = function(){
 		return scope.clipMode;
+	};
+	
+	this.setDEMCollisionsEnabled = function(value){
+		if(scope.useDEMCollisions !== value){
+			scope.useDEMCollisions = value;
+			scope.dispatchEvent({"type": "use_demcollisions_changed", "viewer": scope});
+		};
+	};
+	
+	this.getDEMCollisionsEnabled = function(){
+		return scope.useDEMCollisions;
 	};
 	
 	this.setEDLEnabled = function(value){
@@ -11657,6 +11742,8 @@ Potree.Viewer = function(domElement, args){
 	};
 	
 	this.getBoundingBox = function(pointclouds){
+		pointclouds = pointclouds || scope.pointclouds;
+		
 		var box = new THREE.Box3();
 		
 		scope.scenePointCloud.updateMatrixWorld(true);
@@ -11675,8 +11762,32 @@ Potree.Viewer = function(domElement, args){
 		return box;
 	};
 	
+	this.getBoundingBoxGeo = function(pointclouds){
+		pointclouds = pointclouds || scope.pointclouds;
+		
+		var box = new THREE.Box3();
+		
+		scope.scenePointCloud.updateMatrixWorld(true);
+		scope.referenceFrame.updateMatrixWorld(true);
+		
+		for(var i = 0; i < scope.pointclouds.length; i++){
+			var pointcloud = scope.pointclouds[i];
+			
+			pointcloud.updateMatrixWorld(true);
+			
+			var boxWorld = Potree.utils.computeTransformedBoundingBox(pointcloud.boundingBox, pointcloud.matrix)
+			box.union(boxWorld);
+		}
+		
+		return box;
+	};
+	
 	this.fitToScreen = function(){
 		var box = this.getBoundingBox(scope.pointclouds);
+		
+		if(scope.transformationTool.targets.length > 0){
+			box = scope.transformationTool.getBoundingBox();
+		}
 		
 		var node = new THREE.Object3D();
 		node.boundingBox = box;
@@ -11687,6 +11798,10 @@ Potree.Viewer = function(domElement, args){
 	
 	this.setTopView = function(){
 		var box = this.getBoundingBox(scope.pointclouds);
+		
+		if(scope.transformationTool.targets.length > 0){
+			box = scope.transformationTool.getBoundingBox();
+		}
 		
 		var node = new THREE.Object3D();
 		node.boundingBox = box;
@@ -11699,6 +11814,10 @@ Potree.Viewer = function(domElement, args){
 	this.setFrontView = function(){
 		var box = this.getBoundingBox(scope.pointclouds);
 		
+		if(scope.transformationTool.targets.length > 0){
+			box = scope.transformationTool.getBoundingBox();
+		}
+		
 		var node = new THREE.Object3D();
 		node.boundingBox = box;
 		
@@ -11710,6 +11829,10 @@ Potree.Viewer = function(domElement, args){
 	this.setLeftView = function(){
 		var box = this.getBoundingBox(scope.pointclouds);
 		
+		if(scope.transformationTool.targets.length > 0){
+			box = scope.transformationTool.getBoundingBox();
+		}
+		
 		var node = new THREE.Object3D();
 		node.boundingBox = box;
 		
@@ -11720,6 +11843,10 @@ Potree.Viewer = function(domElement, args){
 	
 	this.setRightView = function(){
 		var box = this.getBoundingBox(scope.pointclouds);
+		
+		if(scope.transformationTool.targets.length > 0){
+			box = scope.transformationTool.getBoundingBox();
+		}
 		
 		var node = new THREE.Object3D();
 		node.boundingBox = box;
@@ -11790,7 +11917,7 @@ Potree.Viewer = function(domElement, args){
 		scope.controls = scope.geoControls;
 		scope.controls.enabled = true;
 		
-		scope.controls.moveSpeed = scope.pointclouds[0].boundingSphere.radius / 6;
+		//scope.controls.moveSpeed = scope.pointclouds[0].boundingSphere.radius / 6;
 	}
 
 	this.useFPSControls = function(){
@@ -11801,7 +11928,7 @@ Potree.Viewer = function(domElement, args){
 		scope.controls = scope.fpControls;
 		scope.controls.enabled = true;
 		
-		scope.controls.moveSpeed = scope.pointclouds[0].boundingSphere.radius / 6;
+		//scope.controls.moveSpeed = scope.pointclouds[0].boundingSphere.radius / 6;
 	}
 
 	this.useOrbitControls = function(){
@@ -11869,10 +11996,16 @@ Potree.Viewer = function(domElement, args){
 			renderArea.css("left", "300px");
 		}
 	};
+	
+	this.toggleMap = function(){
+		var map = $('#potree_map');
+		map.toggle(100);
+		
+	};
 
 	this.loadGUI = function(){
 		var sidebarContainer = $('#potree_sidebar_container');
-		sidebarContainer.load("../src/viewer/sidebar.html");
+		sidebarContainer.load("../build/potree/sidebar.html");
 		sidebarContainer.css("width", "300px");
 		sidebarContainer.css("height", "100%");
 		
@@ -11884,41 +12017,66 @@ Potree.Viewer = function(domElement, args){
 		//$('head').append( $('<link rel="stylesheet" type="text/css" />').attr('href', "../libs/jquery-ui-1.11.4/jquery-ui.css"	));
 		
 		//var elProfile = $('<div style="position: absolute; width: 100%; height: 30%; bottom: 0; display: none" >');
-		var elProfile = $('<div>').load("../src/viewer/profile.html", function(){
+		var elProfile = $('<div>').load("../build/potree/profile.html", function(){
 			$('#potree_render_area').append(elProfile.children());
 			scope._2dprofile = new Potree.Viewer.Profile(scope, document.getElementById("profile_draw_container"));
 		});
+		
 	}
 
 	this.createControls = function(){
+		
+		var demCollisionHandler =  function(event){
+			
+			if(!scope.useDEMCollisions){
+				return
+			}
+			
+			var demHeight = null;
+			
+			for(var i = 0; i < scope.pointclouds.length; i++){
+				var pointcloud = scope.pointclouds[i];
+				pointcloud.generateDEM = true;
+				
+				var height = pointcloud.getDEMHeight(event.newPosition);
+				
+				if(demHeight){
+					demHeight = Math.max(demHeight, height);
+				}else{
+					demHeight = height;
+				}
+			}
+			
+			if(event.newPosition.y < demHeight){
+				event.objections++;
+				var counterProposal = event.newPosition.clone();
+				counterProposal.y = demHeight;
+				event.counterProposals.push(counterProposal);
+			}
+		};
+		
 		{ // create FIRST PERSON CONTROLS
 			scope.fpControls = new THREE.FirstPersonControls(scope.camera, scope.renderer.domElement);
 			scope.fpControls.enabled = false;
-			scope.fpControls.addEventListener("proposeTransform", function(event){
-				if(scope.pointclouds.length === 0){
-					return;
-				}
+			scope.fpControls.addEventListener("proposeTransform", demCollisionHandler);
+			scope.fpControls.addEventListener("move_speed_changed", function(event){
+				scope.setMoveSpeed(scope.fpControls.moveSpeed);
 			});
 		}
 		
 		{ // create GEO CONTROLS
 			scope.geoControls = new Potree.GeoControls(scope.camera, scope.renderer.domElement);
 			scope.geoControls.enabled = false;
-			scope.geoControls.addEventListener("proposeTransform", function(event){
-				if(scope.pointclouds.length === 0){
-					return;
-				}
+			scope.geoControls.addEventListener("proposeTransform", demCollisionHandler);
+			scope.geoControls.addEventListener("move_speed_changed", function(event){
+				scope.setMoveSpeed(scope.geoControls.moveSpeed);
 			});
 		}
 	
 		{ // create ORBIT CONTROLS
 			scope.orbitControls = new Potree.OrbitControls(scope.camera, scope.renderer.domElement);
 			scope.orbitControls.enabled = false;
-			scope.orbitControls.addEventListener("proposeTransform", function(event){
-				if(scope.pointclouds.length === 0){
-					return;
-				}
-			});
+			scope.orbitControls.addEventListener("proposeTransform", demCollisionHandler);
 			scope.renderArea.addEventListener("dblclick", function(event){
 				if(scope.pointclouds.length === 0){
 					return;
@@ -12003,11 +12161,7 @@ Potree.Viewer = function(domElement, args){
 		{ // create EARTH CONTROLS
 			scope.earthControls = new THREE.EarthControls(scope.camera, scope.renderer, scope.scenePointCloud);
 			scope.earthControls.enabled = false;
-			scope.earthControls.addEventListener("proposeTransform", function(event){
-				if(scope.pointclouds.length === 0){
-					return;
-				}
-			});
+			scope.earthControls.addEventListener("proposeTransform", demCollisionHandler);
 		}
 	};
 	
@@ -12329,6 +12483,10 @@ Potree.Viewer = function(domElement, args){
 				+ ", " + viewer.camera.position.y.toFixed(2) 
 				+ ", " + viewer.camera.position.z.toFixed(2)
 			);
+		}
+		
+		if(scope.mapView){
+			scope.mapView.update(delta, scope.camera);
 		}
 		
 		TWEEN.update(timestamp);
@@ -12853,6 +13011,7 @@ Potree.Viewer.Profile = function(viewer, element){
 	this.pointsProcessed = 0;
 	this.margin = {top: 0, right: 0, bottom: 20, left: 40};
 	this.maximized = false;
+	this.threshold = 20*1000;
 	
 	
 	$('#closeProfileContainer').click(function(){
@@ -12885,6 +13044,142 @@ Potree.Viewer.Profile = function(viewer, element){
 		}
 		
 		scope.requests = [];
+	};
+	
+	this.getLAS = function(){
+		var points = scope.points;
+		var boundingBox = new THREE.Box3();
+		
+		for(var i = 0; i < points.length; i++){
+			var point = points[i];
+			var position = new THREE.Vector3(point.x, point.y, point.z);
+			
+			boundingBox.expandByPoint(position);
+		}
+		var offset = boundingBox.min.clone();
+		var diagonal = boundingBox.min.distanceTo(boundingBox.max);
+		var scale = new THREE.Vector3(0.01, 0.01, 0.01);
+		if(diagonal > 100*1000){
+			scale = new THREE.Vector3(0.01, 0.01, 0.01);
+		}else{
+			scale = new THREE.Vector3(0.001, 0.001, 0.001);
+		}
+		
+		var setString = function(string, offset, buffer){
+			var view = new Uint8Array(buffer);
+			
+			for(var i = 0; i < string.length; i++){
+				var charCode = string.charCodeAt(i);
+				view[offset + i] = charCode;
+			}
+		}
+		
+		var buffer = new ArrayBuffer(227 + 28 * points.length);
+		var view = new DataView(buffer);
+		var u8View = new Uint8Array(buffer);
+		//var u16View = new Uint16Array(buffer);
+		
+		setString("LASF", 0, buffer);
+		u8View[24] = 1;
+		u8View[25] = 2;
+		
+		// system identifier o:26 l:32
+		
+		// generating software o:58 l:32
+		setString("potree 1.4", 58, buffer); 
+		
+		// file creation day of year o:90 l:2
+		// file creation year o:92 l:2
+		
+		// header size o:94 l:2
+		view.setUint16(94, 227, true);
+		
+		// offset to point data o:96 l:4
+		view.setUint32(96, 227, true);
+		
+		// number of variable length records o:100 l:4
+		
+		// point data record format 104 1
+		u8View[104] = 2;
+		
+		// point data record length 105 2
+		view.setUint16(105, 28, true);
+		
+		// number of point records 107 4 
+		view.setUint32(107, points.length, true);
+		
+		// number of points by return 111 20
+		
+		// x scale factor 131 8
+		view.setFloat64(131, scale.x, true);
+		
+		// y scale factor 139 8
+		view.setFloat64(139, scale.y, true);
+		
+		// z scale factor 147 8
+		view.setFloat64(147, scale.z, true);
+		
+		// x offset 155 8
+		view.setFloat64(155, offset.x, true);
+		
+		// y offset 163 8
+		view.setFloat64(163, offset.y, true);
+		
+		// z offset 171 8
+		view.setFloat64(171, offset.z, true);
+		
+		var boffset = 227;
+		for(var i = 0; i < points.length; i++){
+			var point = points[i];
+			var position = new THREE.Vector3(point.x, point.y, point.z);
+			
+			var ux = parseInt((position.x - offset.x) / scale.x);
+			var uy = parseInt((position.y - offset.y) / scale.y);
+			var uz = parseInt((position.z - offset.z) / scale.z);
+			
+			view.setUint32(boffset + 0, ux, true);
+			view.setUint32(boffset + 4, uy, true);
+			view.setUint32(boffset + 8, uz, true);
+			
+			view.setUint16(boffset + 12, (point.intensity), true);
+			var rt = point.returnNumber;
+			rt += (point.numberOfReturns << 3);
+			view.setUint8(boffset + 14, rt);
+			
+			// classification
+			view.setUint8(boffset + 15, point.classification);
+			// scan angle rank
+			// user data
+			// point source id
+			view.setUint16(boffset + 18, point.pointSourceID);
+			
+			view.setUint16(boffset + 20, (point.color[0] * 255), true);
+			view.setUint16(boffset + 22, (point.color[1] * 255), true);
+			view.setUint16(boffset + 24, (point.color[2] * 255), true);
+			
+			boffset += 28;
+		}
+		
+		
+		// max x 179 8
+		view.setFloat64(179, boundingBox.max.x, true);
+		
+		// min x 187 8
+		view.setFloat64(187, boundingBox.min.x, true);
+		
+		// max y 195 8
+		view.setFloat64(195, boundingBox.max.y, true);
+		
+		// min y 203 8
+		view.setFloat64(203, boundingBox.min.y, true);
+		
+		// max z 211 8
+		view.setFloat64(211, boundingBox.max.z, true);
+		
+		// min z 219 8
+		view.setFloat64(219, boundingBox.min.z, true);
+		
+		return buffer;
 	};
 	
 	this.preparePoints = function(profileProgress){
@@ -12967,14 +13262,15 @@ Potree.Viewer.Profile = function(viewer, element){
 					d.distance = dist;
 					d.x = p.x;
 					d.y = p.y;
+					d.z = p.z;
 					d.altitude = p.z;
 					d.heightColor = colorRamp(p.z);
-					d.color = points.color ? 'rgb(' + points.color[j][0] * 100 + '%,' + points.color[j][1] * 100 + '%,' + points.color[j][2] * 100 + '%)' : 'rgb(0,0,0)';
-					d.intensity = points.intensity ? 'rgb(' + points.intensity[j] + '%,' + points.intensity[j] + '%,' + points.intensity[j] + '%)' : 'rgb(0,0,0)';
-					d.intensityCode = points.intensity ? points.intensity[j] : 0;
-					d.classificationCode = points.classification ? points.classification[j] : 0;
-					d.returnNumber = points.returnNumber[j];
-					d.numberOfReturns = points.numberOfReturns[j];
+					d.color = points.color ? points.color[j] : [0, 0, 0];
+					d.intensity = points.intensity ? points.intensity[j] : 0;
+					d.classification = points.classification ? points.classification[j] : 0;
+					d.returnNumber = points.returnNumber ? points.returnNumber[j] : 0;
+					d.numberOfReturns = points.numberOfReturns ? points.numberOfReturns[j] : 0;
+					d.pointSourceID = points.pointSourceID ? points.pointSourceID[j] : 0;
 					data.push(d);
 				}
 			}
@@ -13061,9 +13357,9 @@ Potree.Viewer.Profile = function(viewer, element){
 			//html += i18n.t('tools.intensity') + ': ' + p.intensityCode;
 			
 			var html = 'x: ' + Math.round(10 * p.x) / 10 + ' y: ' + Math.round(10 * p.y) / 10 + ' z: ' + Math.round( 10 * p.altitude) / 10 + '  -  ';
-			html += "offset: " + p.distance + '  -  ';
-			html += "Classification: " + p.classificationCode + '  -  ';
-			html += "Intensity: " + p.intensityCode;
+			html += "offset: " + p.distance.toFixed(3) + '  -  ';
+			html += "Classification: " + p.classification + '  -  ';
+			html += "Intensity: " + p.intensity;
 			
 			$('#profileInfo').css('color', 'yellow');
 			$('#profileInfo').html(html);
@@ -13080,15 +13376,17 @@ Potree.Viewer.Profile = function(viewer, element){
 	this.strokeColor = function (d) {
 		var material = scope.viewer.getMaterial();
 		if (material === Potree.PointColorType.RGB) {
-			return d.color;
+			//return d.color;
+			return 'rgb(' + (d.color[0] * 100) + '%,' + (d.color[1] * 100) + '%,' + (d.color[2] * 100) + '%)';
 		} else if (material === Potree.PointColorType.INTENSITY) {
-			return d.intensity;
+			//return d.intensity;
+			return 'rgb(' + points.intensity + '%,' + points.intensity + '%,' + points.intensity + '%)';
 		} else if (material === Potree.PointColorType.CLASSIFICATION) {
 			var classif = scope.viewer.pointclouds[0].material.classification;
-			if (typeof classif[d.classificationCode] != 'undefined'){
-				var color = 'rgb(' + classif[d.classificationCode].x * 100 + '%,';
-				color += classif[d.classificationCode].y * 100 + '%,';
-				color += classif[d.classificationCode].z * 100 + '%)';
+			if (typeof classif[d.classification] != 'undefined'){
+				var color = 'rgb(' + classif[d.classification].x * 100 + '%,';
+				color += classif[d.classification].y * 100 + '%,';
+				color += classif[d.classification].z * 100 + '%)';
 				return color;
 			} else {
 				return 'rgb(255,255,255)';
@@ -13344,7 +13642,7 @@ Potree.Viewer.Profile = function(viewer, element){
 			
 			drawPoints(scope.points, scope.rangeX, scope.rangeY);
 			
-			document.getElementById("profile_num_points").innerHTML = Potree.utils.addCommas(scope.pointsProcessed) + " ( threshold: 20k )";
+			document.getElementById("profile_num_points").innerHTML = Potree.utils.addCommas(scope.pointsProcessed) + " ";
 		};
 		
 		
@@ -13376,7 +13674,7 @@ Potree.Viewer.Profile = function(viewer, element){
 					
 					setupAndDraw();
 					
-					if(scope.pointsProcessed > 20*1000){
+					if(scope.pointsProcessed > scope.threshold){
 						scope.cancel();
 					}
 				},
@@ -13394,6 +13692,12 @@ Potree.Viewer.Profile = function(viewer, element){
 			
 			scope.requests.push(request);
 		}
+	};
+	
+	this.setThreshold = function(value){
+		scope.threshold = value;
+		
+		scope.redraw();
 	};
 	
 	var drawOnChange = function(event){
@@ -13431,3 +13735,517 @@ Potree.Viewer.Profile = function(viewer, element){
 	
 	
 };
+
+// http://epsg.io/
+proj4.defs("UTM10N", "+proj=utm +zone=10 +ellps=GRS80 +datum=NAD83 +units=m +no_defs");
+
+Potree.Viewer.MapView = function(viewer){
+	var scope = this;
+	
+	this.viewer = viewer;
+	
+	this.webMapService = "WMTS";
+	this.mapProjectionName = "EPSG:3857";
+	this.mapProjection = proj4.defs(scope.mapProjectionName);
+	this.sceneProjection = null;
+	
+	this.init = function(){
+		//scope.setSceneProjection("+proj=utm +zone=10 +ellps=GRS80 +datum=NAD83 +units=m +no_defs");
+		
+		$( "#potree_map" ).draggable({ handle: $('#potree_map_header') });
+		$( "#potree_map" ).resizable();
+		//$( "#potree_map" ).css("display", "block");
+		$( "#potree_map_toggle" ).css("display", "block");
+	
+		scope.gExtent = new ol.geom.LineString([[0,0], [0,0]]);
+		
+		// EXTENT LAYER
+		var feature = new ol.Feature(scope.gExtent);
+		var featureVector = new ol.source.Vector({
+			features: [feature]
+		});
+		var visibleBoundsLayer = new ol.layer.Vector({
+			source: featureVector,
+			style: new ol.style.Style({
+				fill: new ol.style.Fill({
+					color: 'rgba(255, 255, 255, 0.2)'
+				}),
+				stroke: new ol.style.Stroke({
+					  color: '#0000ff',
+					  width: 2
+				}),
+				image: new ol.style.Circle({
+					radius: 3,
+					fill: new ol.style.Fill({
+						color: '#0000ff'
+					})
+				})
+			})
+		});
+		
+		// CAMERA LAYER
+		scope.gCamera = new ol.geom.LineString([[0,0], [0,0], [0,0], [0,0]]);
+		var feature = new ol.Feature(scope.gCamera);
+		var featureVector = new ol.source.Vector({
+			features: [feature]
+		});
+		var cameraLayer = new ol.layer.Vector({
+			source: featureVector,
+			style: new ol.style.Style({
+				stroke: new ol.style.Stroke({
+					  color: '#0000ff',
+					  width: 2
+				})
+			})
+		});
+		
+		// TOOL DRAWINGS LAYER
+		scope.toolLayer = new ol.layer.Vector({
+			source: new ol.source.Vector({
+			}),
+			style: new ol.style.Style({
+				fill: new ol.style.Fill({
+					color: 'rgba(255, 0, 0, 1)'
+				}),
+				stroke: new ol.style.Stroke({
+					  color: 'rgba(255, 0, 0, 1)',
+					  width: 2
+				})
+			})
+		});
+		
+		// SOURCES EXTENT LAYER
+		scope.sourcesLayer = new ol.layer.Vector({
+			source: new ol.source.Vector({}),
+			style: new ol.style.Style({
+				fill: new ol.style.Fill({
+					color: 'rgba(255, 0, 0, 0.1)'
+				}),
+				stroke: new ol.style.Stroke({
+					  color: 'rgba(0, 0, 150, 1)',
+					  width: 1
+				})
+			})
+		});
+		
+		// SOURCES LABEL LAYER
+		scope.sourcesLabelLayer = new ol.layer.Vector({
+			source: new ol.source.Vector({
+			}),
+			style: new ol.style.Style({
+				fill: new ol.style.Fill({
+					color: 'rgba(255, 0, 0, 0.1)'
+				}),
+				stroke: new ol.style.Stroke({
+					  color: 'rgba(255, 0, 0, 1)',
+					  width: 2
+				})
+			}),
+			minResolution: 2,
+            maxResolution: 20
+		});
+		
+		var mousePositionControl = new ol.control.MousePosition({
+			coordinateFormat: ol.coordinate.createStringXY(4),
+			projection: scope.sceneProjection,
+			undefinedHTML: '&nbsp;'
+		});
+		
+		var DownloadSelectionControl = function(opt_options) {
+			var options = opt_options || {};
+			
+			// TOGGLE TILES
+			var btToggleTiles = document.createElement('button');
+			btToggleTiles.innerHTML = 'T';
+			btToggleTiles.addEventListener('click', function(){
+				var visible = scope.sourcesLayer.getVisible();
+				scope.sourcesLayer.setVisible(!visible);
+				scope.sourcesLabelLayer.setVisible(!visible);
+			}, false);
+			btToggleTiles.style.float = "left";
+			btToggleTiles.title = "show / hide tiles";
+			
+			
+			
+			// DOWNLOAD SELECTED TILES
+			var link = document.createElement("a");
+			link.href = "#";
+			link.download = "list.txt";
+			link.style.float = "left";
+			
+			var button = document.createElement('button');
+			button.innerHTML = 'D';
+			link.appendChild(button);
+			
+			var this_ = this;
+			var handleDownload = function(e) {
+				var features = selectedFeatures.getArray();
+				
+				if(features.length === 0){
+					alert("No tiles were selected. Select area with ctrl + left mouse button!");
+					e.preventDefault();
+					e.stopImmediatePropagation();
+					return false;
+					
+				}
+				
+				var content = "";
+				for(var i = 0; i < features.length; i++){
+					var feature = features[i];
+					
+					if(feature.source){
+						var cloudjsurl = feature.pointcloud.pcoGeometry.url;
+						var pcurl = cloudjsurl.substring(0, cloudjsurl.lastIndexOf("/") + 1);
+						var sourceurl = pcurl + "/source";
+						content += sourceurl + "/" + feature.source.name + "\n";
+					}
+				}
+				
+				var uri = "data:application/octet-stream;base64,"+btoa(content);
+				link.href = uri;
+				
+			};
+			
+			button.addEventListener('click', handleDownload, false);
+			
+			// assemble container
+			var element = document.createElement('div');
+			element.className = 'ol-unselectable ol-control';
+			element.appendChild(link);
+			element.appendChild(btToggleTiles);
+			element.style.bottom = "0.5em";
+			element.style.left = "0.5em";
+			element.title = "Download list of selected tiles. Select area using ctrl + left mouse.";
+			
+			ol.control.Control.call(this, {
+				element: element,
+				target: options.target
+			});
+			
+		};
+		ol.inherits(DownloadSelectionControl, ol.control.Control);
+		
+		
+		//scope.controls = {};
+		//scope.controls.zoomToExtent = new ol.control.ZoomToExtent({
+		//	extent: undefined,
+		//	closest: true
+		//})
+		
+		scope.map = new ol.Map({
+			controls: ol.control.defaults({
+				attributionOptions: ({
+				collapsible: false
+				})
+			}).extend([
+				//scope.controls.zoomToExtent,
+				new DownloadSelectionControl(),
+				mousePositionControl
+			]),
+			layers: [
+				new ol.layer.Tile({source: new ol.source.OSM()}),
+				scope.toolLayer,
+				scope.sourcesLayer,
+				scope.sourcesLabelLayer,
+				visibleBoundsLayer,
+				cameraLayer
+			],
+			target: 'potree_map_content',
+			view: new ol.View({
+				center: scope.olCenter,
+				zoom: 9
+			})
+		});
+
+		// DRAGBOX / SELECTION
+		scope.dragBoxLayer = new ol.layer.Vector({
+			source: new ol.source.Vector({}),
+			style: new ol.style.Style({
+				stroke: new ol.style.Stroke({
+					  color: 'rgba(0, 0, 255, 1)',
+					  width: 2
+				})
+			})
+		});
+		scope.map.addLayer(scope.dragBoxLayer);
+		
+		var select = new ol.interaction.Select();
+		scope.map.addInteraction(select);
+		
+		var selectedFeatures = select.getFeatures();
+        
+		var dragBox = new ol.interaction.DragBox({
+		  condition: ol.events.condition.platformModifierKeyOnly
+		});
+        
+		scope.map.addInteraction(dragBox);
+        
+		
+		dragBox.on('boxend', function(e) {
+		  // features that intersect the box are added to the collection of
+		  // selected features, and their names are displayed in the "info"
+		  // div
+		  var extent = dragBox.getGeometry().getExtent();
+		  scope.sourcesLayer.getSource().forEachFeatureIntersectingExtent(extent, function(feature) {
+			selectedFeatures.push(feature);
+		  });
+		});
+		
+		// clear selection when drawing a new box and when clicking on the map
+		dragBox.on('boxstart', function(e) {
+		  selectedFeatures.clear();
+		});
+		scope.map.on('click', function() {
+		  selectedFeatures.clear();
+		});
+		
+		
+		
+		
+		// adding pointclouds to map
+		scope.viewer.addEventListener("pointcloud_loaded", function(event){
+			scope.load(event.pointcloud);
+		});
+		for(var i = 0; i < scope.viewer.pointclouds.length; i++){
+			scope.load(scope.viewer.pointclouds[i]);
+		}
+		
+		scope.viewer.profileTool.addEventListener("profile_added", scope.updateToolDrawings);
+		scope.viewer.profileTool.addEventListener("profile_removed", scope.updateToolDrawings);
+		scope.viewer.profileTool.addEventListener("marker_moved", scope.updateToolDrawings);
+		scope.viewer.profileTool.addEventListener("marker_removed", scope.updateToolDrawings);
+		scope.viewer.profileTool.addEventListener("marker_added", scope.updateToolDrawings);
+		
+		scope.viewer.measuringTool.addEventListener("measurement_added", scope.updateToolDrawings);
+		scope.viewer.measuringTool.addEventListener("marker_added", scope.updateToolDrawings);
+		scope.viewer.measuringTool.addEventListener("marker_removed", scope.updateToolDrawings);
+		scope.viewer.measuringTool.addEventListener("marker_moved", scope.updateToolDrawings);
+
+	};
+	
+	this.setSceneProjection = function(sceneProjection){
+		scope.sceneProjection = sceneProjection;
+		this.toMap = proj4(scope.sceneProjection, scope.mapProjection);
+		this.toScene = proj4(scope.mapProjection, scope.sceneProjection);
+	};
+	
+	this.getMapExtent = function(){
+		var bb = scope.viewer.getBoundingBoxGeo();
+		
+		var bottomLeft = scope.toMap.forward([bb.min.x, bb.min.y]);
+		var bottomRight = scope.toMap.forward([bb.max.x, bb.min.y]);
+		var topRight = scope.toMap.forward([bb.max.x, bb.max.y]);
+		var topLeft = scope.toMap.forward([bb.min.x, bb.max.y]);
+		
+		var extent = {
+			bottomLeft: bottomLeft,
+			bottomRight: bottomRight,
+			topRight: topRight,
+			topLeft: topLeft
+		};
+		
+		return extent;
+	};
+	
+	this.getMapCenter = function(){
+		var mapExtent = scope.getMapExtent();
+		
+		var mapCenter = [
+			(mapExtent.bottomLeft[0] + mapExtent.topRight[0]) / 2, 
+			(mapExtent.bottomLeft[1] + mapExtent.topRight[1]) / 2
+		];
+		
+		return mapCenter;
+	};	
+	
+	this.updateToolDrawings = function(){
+		scope.toolLayer.getSource().clear();
+		
+		var profiles = scope.viewer.profileTool.profiles;
+		for(var i = 0; i < profiles.length; i++){
+			var profile = profiles[i];
+			var coordinates = [];
+			
+			for(var j = 0; j < profile.points.length; j++){
+				var point = profile.points[j];
+				var pointGeo = scope.viewer.toGeo(point);
+				var pointMap = scope.toMap.forward([pointGeo.x, pointGeo.y]);
+				coordinates.push(pointMap);
+			}
+			
+			var line = new ol.geom.LineString(coordinates);
+			var feature = new ol.Feature(line);
+			scope.toolLayer.getSource().addFeature(feature);
+		}
+		
+		var measurements = scope.viewer.measuringTool.measurements;
+		for(var i = 0; i < measurements.length; i++){
+			var measurement = measurements[i];
+			var coordinates = [];
+			
+			for(var j = 0; j < measurement.points.length; j++){
+				var point = measurement.points[j].position;
+				var pointGeo = scope.viewer.toGeo(point);
+				var pointMap = scope.toMap.forward([pointGeo.x, pointGeo.y]);
+				coordinates.push(pointMap);
+			}
+			
+			if(measurement.closed && measurement.points.length > 0){
+				coordinates.push(coordinates[0]);
+			}
+			
+			var line = new ol.geom.LineString(coordinates);
+			var feature = new ol.Feature(line);
+			scope.toolLayer.getSource().addFeature(feature);
+		}
+		
+	};
+	
+	
+	this.load = function(pointcloud){
+		
+		if(!(pointcloud instanceof Potree.PointCloudOctree)){
+			return;
+		}
+		
+		if(!scope.sceneProjection){
+			scope.setSceneProjection(pointcloud.projection);
+		}
+		
+		var mapExtent = scope.getMapExtent();
+		var mapCenter = scope.getMapCenter();
+		
+		//viewer.mapView.controls.zoomToExtent.extent_ = [ mapExtent.bottomLeft, mapExtent.topRight ];
+		//viewer.mapView.controls.zoomToExtent.set("extent", [ mapExtent.bottomLeft, mapExtent.topRight ]);
+		
+		var view = scope.map.getView();
+		view.setCenter(mapCenter);
+		
+		scope.gExtent.setCoordinates([
+			mapExtent.bottomLeft, 
+			mapExtent.bottomRight, 
+			mapExtent.topRight, 
+			mapExtent.topLeft,
+			mapExtent.bottomLeft
+		]);
+		
+		//view.fit(scope.gExtent, scope.map.getSize());
+		view.fit(scope.gExtent, [300, 300], {
+			constrainResolution: false
+		});
+
+		var createLabelStyle = function(text){
+			var style = new ol.style.Style({
+				image: new ol.style.Circle({
+					fill: new ol.style.Fill({
+						color: 'rgba(100,50,200,0.5)'
+					}),
+					stroke: new ol.style.Stroke({
+						color: 'rgba(120,30,100,0.8)',
+						width: 3
+					})
+				}),
+				text: new ol.style.Text({
+					font: '12px helvetica,sans-serif',
+					text: text,
+					fill: new ol.style.Fill({
+						color: '#000'
+					}),
+					stroke: new ol.style.Stroke({
+						color: '#fff',
+						width: 2
+					})
+				})
+			});
+			
+			return style;
+		}
+
+		var url = pointcloud.pcoGeometry.url + "/../sources.json";
+		$.getJSON(url, function(data){
+			var sources = data.sources;
+			
+			for(var i = 0; i < sources.length; i++){
+				var source = sources[i];
+				var name = source.name;
+				var points = source.points;
+				var bounds = source.bounds;
+
+				var mapBounds = {
+					min: scope.toMap.forward( [bounds.min[0], bounds.min[1]] ),
+					max: scope.toMap.forward( [bounds.max[0], bounds.max[1]] )
+				}
+				var mapCenter = [
+					(mapBounds.min[0] + mapBounds.max[0]) / 2,
+					(mapBounds.min[1] + mapBounds.max[1]) / 2,
+				];
+				
+				var p1 = scope.toMap.forward( [bounds.min[0], bounds.min[1]] );
+				var p2 = scope.toMap.forward( [bounds.max[0], bounds.min[1]] );
+				var p3 = scope.toMap.forward( [bounds.max[0], bounds.max[1]] );
+				var p4 = scope.toMap.forward( [bounds.min[0], bounds.max[1]] );
+				
+				//var boxes = [];
+				//var feature = new ol.Feature({
+				//	'geometry': new ol.geom.LineString([p1, p2, p3, p4, p1])
+				//});
+				//feature.source = source;
+				//feature.pointcloud = pointcloud;
+				//scope.sourcesLayer.getSource().addFeature(feature);
+				//
+                //
+				//feature = new ol.Feature({
+				//	 geometry: new ol.geom.Point(mapCenter),
+				//	 name: name 
+				//});
+				//feature.setStyle(createLabelStyle(name));
+				//scope.sourcesLabelLayer.getSource().addFeature(feature);
+			}
+		});
+	}
+	
+	this.update = function(delta){
+		var pm = $( "#potree_map" );
+		
+		if(!pm.is(":visible")){
+			return;
+		}
+		
+		// resize
+		var mapSize = scope.map.getSize();
+		var resized = (pm.width() != mapSize[0] || pm.height() != mapSize[1]);
+		if(resized){
+			scope.map.updateSize();
+		}
+		
+		// camera
+		var scale = scope.map.getView().getResolution();
+		var camera = scope.viewer.camera;
+		var campos = camera.position;
+		var camdir = camera.getWorldDirection();
+		var sceneLookAt = camdir.clone().multiplyScalar(30 * scale).add(campos);
+		var geoPos = scope.viewer.toGeo(camera.position);
+		var geoLookAt = scope.viewer.toGeo(sceneLookAt);
+		var mapPos = new THREE.Vector2().fromArray(scope.toMap.forward([geoPos.x, geoPos.y]));
+		var mapLookAt = new THREE.Vector2().fromArray(scope.toMap.forward([geoLookAt.x, geoLookAt.y]));
+		var mapDir = new THREE.Vector2().subVectors(mapLookAt, mapPos).normalize();
+		mapLookAt = mapPos.clone().add(mapDir.clone().multiplyScalar(30 * scale));
+		var mapLength = mapPos.distanceTo(mapLookAt);
+		var mapSide = new THREE.Vector2(-mapDir.y, mapDir.x);
+		
+		var p1 = mapPos.toArray();
+		var p2 = mapLookAt.clone().sub(mapSide.clone().multiplyScalar(0.3 * mapLength)).toArray();
+		var p3 = mapLookAt.clone().add(mapSide.clone().multiplyScalar(0.3 * mapLength)).toArray();
+
+		
+		scope.gCamera.setCoordinates([p1, p2, p3, p1]);
+		//
+		//viewer.mapView.map.getPixelFromCoordinate(p1);
+		
+		
+	};
+	
+};
+
+
+

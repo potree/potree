@@ -11,9 +11,49 @@ Potree.PointCloudArena4DGeometryNode = function(){
 	this.loaded = false;
 	this.numPoints = 0;
 	this.level = 0;
+	this.children = [];
+	this.oneTimeDisposeHandlers = [];
 };
 
 Potree.PointCloudArena4DGeometryNode.nodesLoading = 0;
+
+Potree.PointCloudArena4DGeometryNode.prototype.isGeometryNode = function(){
+	return true;
+};
+
+Potree.PointCloudArena4DGeometryNode.prototype.isTreeNode = function(){
+	return false;
+};
+
+Potree.PointCloudArena4DGeometryNode.prototype.isLoaded = function(){
+	return this.loaded;
+};
+
+Potree.PointCloudArena4DGeometryNode.prototype.getBoundingSphere = function(){
+	return this.boundingSphere;
+};
+
+Potree.PointCloudArena4DGeometryNode.prototype.getBoundingBox = function(){
+	return this.boundingBox;
+};
+
+Potree.PointCloudArena4DGeometryNode.prototype.getChildren = function(){
+	var children = [];
+	
+	if(this.left){
+		children.push(this.left);
+	} 
+	
+	if(this.right){
+		children.push(this.right);
+	}
+	
+	return children;
+};
+
+Potree.PointCloudArena4DGeometryNode.prototype.getBoundingBox = function(){
+	return this.boundingBox;
+};
 
 Potree.PointCloudArena4DGeometryNode.prototype.load = function(){
 
@@ -24,6 +64,8 @@ Potree.PointCloudArena4DGeometryNode.prototype.load = function(){
 	if(Potree.PointCloudArena4DGeometryNode.nodesLoading >= 5){
 		return;
 	}
+	
+	this.loading = true;
 	
 	Potree.PointCloudArena4DGeometryNode.nodesLoading++;
 	
@@ -80,9 +122,29 @@ Potree.PointCloudArena4DGeometryNode.prototype.load = function(){
 		geometry.boundingSphere = scope.boundingSphere;
 		
 		scope.numPoints = numPoints;
+		scope.loading = false;
 	};
 	
 	xhr.send(null);
+};
+
+Potree.PointCloudArena4DGeometryNode.prototype.dispose = function(){
+	if(this.geometry && this.parent != null){
+		this.geometry.dispose();
+		this.geometry = null;
+		this.loaded = false;
+		
+		//this.dispatchEvent( { type: 'dispose' } );
+		for(var i = 0; i < this.oneTimeDisposeHandlers.length; i++){
+			var handler = this.oneTimeDisposeHandlers[i];
+			handler();
+		}
+		this.oneTimeDisposeHandlers = [];
+	}
+};
+
+Potree.PointCloudArena4DGeometryNode.prototype.getNumPoints = function(){
+	return this.numPoints;
 };
 
 
@@ -104,6 +166,8 @@ Potree.PointCloudArena4DGeometry = function(){
 		"COLOR_PACKED"
 	]);
 };
+
+Potree.PointCloudArena4DGeometry.prototype = Object.create( THREE.EventDispatcher.prototype );
 
 Potree.PointCloudArena4DGeometry.load = function(url, callback){
 
@@ -218,6 +282,7 @@ Potree.PointCloudArena4DGeometry.prototype.loadHierarchy = function(){
 				
 				if(parent.hasLeft && !parent.left){
 					parent.left = node;
+					parent.children.push(node);
 					
 					if(parent.split === "X"){
 						node.boundingBox.max.x = node.boundingBox.min.x + parentBBSize.x / 2;
@@ -233,6 +298,7 @@ Potree.PointCloudArena4DGeometry.prototype.loadHierarchy = function(){
 					
 				}else{
 					parent.right = node;
+					parent.children.push(node);
 					
 					if(parent.split === "X"){
 						node.boundingBox.min.x = node.boundingBox.min.x + parentBBSize.x / 2;
@@ -278,6 +344,8 @@ Potree.PointCloudArena4DGeometry.prototype.loadHierarchy = function(){
 		scope.root = root;
 		scope.levels = levels;
 		//console.log(this.root);
+		
+		scope.dispatchEvent({type: "hierarchy_loaded"});
 		
 	};
 	

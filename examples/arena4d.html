@@ -1,138 +1,91 @@
-<html>
-<head>
-	<meta charset="utf-8"/>
-	<title>Viewer</title>
-	<style>canvas { width: 100%; height: 100% }</style>
-</head>
-<body style="margin: 0; padding: 0">
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>Potree Viewer</title>
 
-	<style type="text/css">
+	<link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
+	<link rel="stylesheet" type="text/css" href="../libs/jquery-ui-1.11.4/jquery-ui.css">
+	<link rel="stylesheet" href="http://openlayers.org/en/v3.11.2/css/ol.css" type="text/css">
+  </head>
+
+  <body>
+  
+	<script src="http://openlayers.org/en/v3.11.2/build/ol-debug.js"></script>
+	<script src="../libs/jquery-2.1.4/jquery-2.1.4.min.js"></script>
+	<script src="../libs/jquery-ui-1.11.4/jquery-ui.min.js"></script>
 	
-	/* this style is to test non fullscreen canvas */
-	/*#renderArea{
-		position: absolute;
-		width: 90%;
-		height: 80%;
-		top: 100px;
-		left: 100px;
-		right: 100px;
-		bottom: 100px;
-	}*/
-	
-	#renderArea{
-		width: 100%;
-		height: 100%;
-	}
-	
-	.info{
-		color:		white;
-		font-weight: bold;
-		text-shadow:  1px  1px 1px black,
-					  1px -1px 1px black,
-					 -1px  1px 1px black,
-					 -1px -1px 1px black;
-	}
-	
-	a:hover, a:visited, a:link, a:active{
-		color: #ccccff;
-		text-decoration: none;
-	}
-	
-	</style>
-	
-<script id="vs" type="x-shader/x-vertex">
-varying vec2 vUv;
-
-void main() {
-    vUv = uv;
-
-    gl_Position =   projectionMatrix * 
-                    modelViewMatrix * 
-                    vec4(position,1.0);
-}
-</script>
-
-<script id="fs" type="x-shader/x-vertex">
-
-#extension GL_EXT_frag_depth : enable
-
-uniform sampler2D depthMap;
-uniform sampler2D texture;
-
-varying vec2 vUv;
-
-void main() {
-    vec4 color = texture2D(texture, vUv); 
-    float depth = texture2D(depthMap, vUv).g; 
-	color = color / color.w;
-    gl_FragColor = color; 
-	
-	gl_FragDepthEXT = depth;
-}
-</script>
-
 	<script src="../libs/three.js/build/three.js"></script>
-	<script src="../libs/other/OrbitControls.js"></script>
 	<script src="../libs/other/stats.min.js"></script>
-	<script src="../libs/other/dat.gui.min.js"></script>
 	<script src="../libs/other/BinaryHeap.js"></script>
 	<script src="../libs/tween/tween.min.js"></script>
+	<script src="../libs/d3/d3.js"></script>
+	<script src="../libs/proj4/proj4.js"></script>
 	
-	<script src="../build/js/potree.js"></script>
-	<script src="./js/ProgressBar.js"></script>
+	<script src="../build/potree/potree.js"></script>
 	
-	
+	<!-- uncomment this to debug individual js files -->
+	<!--
+	<script src="../src/viewer/viewer.js"></script>
+	<script src="../src/viewer/profile.js"></script>
+	<script src="../src/viewer/ProgressBar.js"></script>
 	<script src="../src/PointCloudOctree.js"></script>
 	<script src="../src/PointCloudOctreeGeometry.js"></script>
 	<script src="../src/loader/POCLoader.js"></script>
 	<script src="../src/loader/BinaryLoader.js"></script>
+	<script src="../src/loader/LasLazLoader.js"></script>
 	<script src="../src/materials/PointCloudMaterial.js"></script>
+	<script src="../src/materials/EyeDomeLightingMaterial.js"></script>
 	<script src="../src/EarthControls.js"></script>
 	<script src="../src/OrbitControls.js"></script>
 	<script src="../src/FirstPersonControls.js"></script>
+	<script src="../src/GeoControls.js"></script>
 	<script src="../src/utils/ProfileTool.js"></script>
 	<script src="../src/utils/MeasuringTool.js"></script>
+	<script src="../src/utils/TransformationTool.js"></script>
 	<script src="../src/utils/VolumeTool.js"></script>
 	<script src="../src/utils.js"></script>
 	<script src="../src/LRU.js"></script>
+	<script src="../src/Annotation.js"></script>
 	<script src="../src/TextSprite.js"></script>
+	<script src="../src/Features.js"></script>
+	<script src="../src/extensions/PerspectiveCamera.js"></script>
 	<script src="../src/arena4d/PointCloudArena4D.js"></script>
 	<script src="../src/arena4d/PointCloudArena4DGeometry.js"></script>
+	-->
 	
 	
 	
 	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
 	<!-- INCLUDE SETTINGS HERE -->
+	<script src="../libs/plasio/js/laslaz.js"></script>
+	<script src="../libs/plasio/vendor/bluebird.js"></script>
+	<script src="../build/potree/laslaz.js"></script>
 	
-	<!-- INFOS / STATS -->
-	<div id="lblNumVisibleNodes" class="info" style="position: absolute; left: 10px; top: 80px; width: 400px; color:white"></div>
-	<div id="lblNumVisiblePoints" class="info" style="position: absolute; left: 10px; top: 100px; width: 400px; color:white"></div>
-	<div id="lblMessage" class="info" style="position: absolute; left: 10px; bottom: 0px; width: 400px; color:white"></div>
+    <div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
 	
-	<!-- TOOLS -->
-	<div id="tools" style="position: fixed; width: 400px; bottom: 10px; right: 10px; display: none">
-		<img src="../resources/icons/earth_controls_1.png" onclick="useEarthControls()" title="Earth Controls"/>
-		<img src="../resources/icons/fps_controls.png" onclick="useFPSControls()" title="Fly Camera"/>
-		<img src="../resources/icons/orbit_controls.png" onclick="useOrbitControls()" title="Orbit Controls"/>
-		<img src="../resources/icons/focus.png" onclick="camera.zoomTo(pointcloud)" title="focus on pointcloud"/>
-		<img src="../resources/icons/flip_y_z.png" onclick="flipYZ()" title="flip y and z coordinates"/>
-		<img src="../resources/icons/angle.png" onclick="measuringTool.startInsertion({showDistances: false, showAngles: true, showArea: false, closed: true, maxMarkers: 3})" title="angle measurements"/>
-		<img src="../resources/icons/distance.png" onclick="measuringTool.startInsertion({showDistances: true, showArea: false, closed: false})" title="distance measurements"/>
-		<img src="../resources/icons/area.png" onclick="measuringTool.startInsertion({showDistances: true, showArea: true, closed: true})" title="area measurements"/>
-		<img src="../resources/icons/volume.png" onclick="volumeTool.startInsertion()" title="volume measurements"/>
-		<img src="../resources/icons/profile.png" onclick="profileTool.startInsertion({width: pointcloud.boundingSphere.radius / 100})" title="height profiles"/>
-		<img src="../resources/icons/clip_volume.png" onclick="volumeTool.startInsertion({clip: true})" title="clipping volumes"/>
+		<div id="potree_render_area">
+			
+			<img class="potree_menu_toggle" src="../resources/icons/menu_button.svg" onclick="viewer.toggleSidebar()" />
+			<img id="potree_map_toggle" src="../resources/icons/map_icon.png" onclick="viewer.toggleMap()" style="display: none"/>
+			
+			<div id="potree_map" class="mapBox" style="position: absolute; left: 50px; top: 50px; width: 400px; height: 400px; display: none">
+				<div id="potree_map_header" style="position: absolute; width: 100%; height: 25px; top: 0px; background-color: rgba(0,0,0,0.5); z-index: 1000; border-top-left-radius: 3px; border-top-right-radius: 3px;">
+				</div>
+				<div id="potree_map_content" class="map" style="position: absolute; z-index: 100; top: 25px; width: 100%; height: calc(100% - 25px); border: 2px solid rgba(0,0,0,0.5); box-sizing: border-box;"></div>
+			</div>
 		
-	</div>
-	
-	<div class="info" style="position: absolute; left: 50%; margin-right: -50%; transform: translate(-50%, -0%)">
-		<div>
-			Streaming points from an <a href="http://veesus.com/" target="_blank"> Arena4D Point Server</a> 
-			into <a href="http://potree.org" target="_blank">potree</a><br>
+			<!-- HEADING -->
+			<div id="potree_description" class="potree_info_text"></div>
 		</div>
-	</div>
+		
+		<div id="potree_sidebar_container"> </div>
+    </div>
 	
-	<div id="loadCloudForm" class="info" style="position: absolute; left: 50%; top: 50%; margin-right: -50%; transform: translate(-50%, -50%)">
+	<div id="loadCloudForm" class="potree_info_text" style="position: absolute; z-index: 100; left: 50%; top: 50%; margin-right: -50%; transform: translate(-50%, -50%)">
 		<div>
 			<div style="display: flex; justify-content: center">
 			Enter URL of vpc file:
@@ -151,39 +104,43 @@ void main() {
 		</div>
 	</div>
 	
-	<div id="renderArea"></div>
-	
-	<script>
-		var sceneProperties = {
-			cameraPosition: null, 			// other options: cameraPosition: [10,10,10],
-			cameraTarget: 	null, 			// other options: cameraTarget: [0,0,0],
-			sizeType: 		"Fixed",		// other options: "Fixed", "Attenuated", "Adaptive"
-			quality: 		"Squares", 		// other options: "Circles", "Interpolation", "Splats"
-			fov: 			75, 		// other options: "Circles", "Interpolation", "Splats"
-			material: 		"RGB", 			// other options: "Height", "Intensity", "Classification"
-			pointLimit: 	1,				// max number of points in millions
-			navigation: 	"Orbit",		// other options: "Earth", "Orbit", "Flight"
-			pointSize: 		2.0,
-			useEDL:			false
-		};
-	</script>
-	<script src="./js/viewer.js"></script>
-	
 	<script>
 	
 		var onPointCloudLoaded = function(event){
-			// do stuff here that should be executed once the point cloud has been loaded.
+			// do stuff here that should be executed whenever a point cloud has been loaded.
 			// event.pointcloud returns the point cloud object
-			
-		};
+			console.log("a point cloud has been loaded");
+		}; 
 	
-		viewer = new Potree.Viewer(document.getElementById("renderArea"), sceneProperties, {
+		viewer = new Potree.Viewer(document.getElementById("potree_render_area"), {
 			"onPointCloudLoaded": onPointCloudLoaded
 		});
+		
+		viewer.setEDLEnabled(false);
+		viewer.setPointSize(3);
+		viewer.setMaterial("RGB");
+		viewer.setFOV(60);
+		viewer.setPointSizing("Fixed");
+		viewer.setQuality("Squares");
+		viewer.setPointBudget(1*1000*1000);
+		//viewer.setOpacity(0.03);
+		viewer.setDescription("Potree 1.4RC. Use this for testing purposes only! Check <a href='https://twitter.com/m_schuetz' target='_blank'>here</a> for new updates.<br>"
+			+ "Report issues on the <a href='https://github.com/potree/potree' target='_blank'>github repository</a> or <a href='mailto:mschuetz@potree.org' target='_blank'>mschuetz@potree.org</a><br>"
+			+ "Point cloud courtesy of <a href='http://sigeom.ch/' target='_blank'>sigeom sa</a>"
+			
+		);
+
+		viewer.loadGUI();
+		
+		
 		
 		function loadCloud(){
 			var elCloudURL = document.getElementById("cloudURL");
 			var url = elCloudURL.value;
+			
+			if(url === ""){
+				return;
+			}
 			
 			viewer.progressBar.show();
 			viewer.progressBar.message = "loading metadata";
@@ -191,61 +148,68 @@ void main() {
 			var elCloudForm = document.getElementById("loadCloudForm");
 			elCloudForm.style.display = "none";
 			
-			Potree.PointCloudArena4DGeometry.load(url, function(geometry){
-			
-				// handle loading failures
-				if(!geometry){
+			viewer.addPointCloud(url, function(event){
+				if(event.type === "loading_failed"){
 					elCloudForm.style.display = "block";
 					var elLoadMessage = document.getElementById("loadMessage");
 					elLoadMessage.innerHTML = "Failed to load file. Is the URL correct and the server available?";
-					
-					viewer.progressBar.hide();
-					
-					return;
-				};
-			
-				viewer.pointcloud = new Potree.PointCloudArena4D(geometry);
-				
-				viewer.referenceFrame.add(viewer.pointcloud);
-				
-				viewer.flipYZ();
-				
-				viewer.referenceFrame.updateMatrixWorld(true);
-				var sg = viewer.pointcloud.boundingSphere.clone().applyMatrix4(viewer.pointcloud.matrixWorld);
-				
-				viewer.referenceFrame.position.sub(sg.center);
-				viewer.referenceFrame.position.y += sg.radius / 2;
-				viewer.referenceFrame.updateMatrixWorld(true);
-				
-				viewer.camera.zoomTo(viewer.pointcloud, 1);
-				viewer.camera.far = sg.radius * 100;
-				
-				viewer.initGUI();
-				
-				viewer.pointcloud.material.interpolation = false;
-				viewer.pointcloud.material.pointSizeType = Potree.PointSizeType.ATTENUATED;
-				viewer.earthControls.pointclouds.push(viewer.pointcloud);	
-				
-				if(sceneProperties.navigation === "Earth"){
-					viewer.useEarthControls();
-				}else if(sceneProperties.navigation === "Orbit"){
-					viewer.useOrbitControls();
-				}else if(sceneProperties.navigation === "Flight"){
-					viewer.useFPSControls();
-				}else{
-					console.warning("No navigation mode specivied. Using OrbitControls");
-					viewer.useOrbitControls();
 				}
-				
-				var grid = Potree.utils.createGrid(5, 5, 2);
-				viewer.scene.add(grid);
-				
-				document.getElementById("tools").style.display = "block";
-				
 			});
-		}
 			
-</script>
-	
-</body>
+			//Potree.PointCloudArena4DGeometry.load(url, function(geometry){
+			//
+			//	// handle loading failures
+			//	if(!geometry){
+			//		elCloudForm.style.display = "block";
+			//		var elLoadMessage = document.getElementById("loadMessage");
+			//		elLoadMessage.innerHTML = "Failed to load file. Is the URL correct and the server available?";
+			//		
+			//		viewer.progressBar.hide();
+			//		
+			//		return;
+			//	};
+			//
+			//	viewer.pointcloud = new Potree.PointCloudArena4D(geometry);
+			//	
+			//	viewer.referenceFrame.add(viewer.pointcloud);
+			//	
+			//	viewer.flipYZ();
+			//	
+			//	viewer.referenceFrame.updateMatrixWorld(true);
+			//	var sg = viewer.pointcloud.boundingSphere.clone().applyMatrix4(viewer.pointcloud.matrixWorld);
+			//	
+			//	viewer.referenceFrame.position.sub(sg.center);
+			//	viewer.referenceFrame.position.y += sg.radius / 2;
+			//	viewer.referenceFrame.updateMatrixWorld(true);
+			//	
+			//	viewer.camera.zoomTo(viewer.pointcloud, 1);
+			//	viewer.camera.far = sg.radius * 100;
+			//	
+			//	viewer.initGUI();
+			//	
+			//	viewer.pointcloud.material.interpolation = false;
+			//	viewer.pointcloud.material.pointSizeType = Potree.PointSizeType.ATTENUATED;
+			//	viewer.earthControls.pointclouds.push(viewer.pointcloud);	
+			//	
+			//	if(sceneProperties.navigation === "Earth"){
+			//		viewer.useEarthControls();
+			//	}else if(sceneProperties.navigation === "Orbit"){
+			//		viewer.useOrbitControls();
+			//	}else if(sceneProperties.navigation === "Flight"){
+			//		viewer.useFPSControls();
+			//	}else{
+			//		console.warning("No navigation mode specivied. Using OrbitControls");
+			//		viewer.useOrbitControls();
+			//	}
+			//	
+			//	var grid = Potree.utils.createGrid(5, 5, 2);
+			//	viewer.scene.add(grid);
+			//	
+			//	document.getElementById("tools").style.display = "block";
+			//	
+			//});
+		}
+		
+	</script>
+  </body>
 </html>

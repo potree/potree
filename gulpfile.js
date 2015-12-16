@@ -15,6 +15,7 @@ var File = gutil.File;
 var paths = {
 	potree : [
 		"src/Potree.js",
+		"src/PointCloudTree.js",
 		"src/WorkerManager.js",
 		"build/workers/BinaryDecoderWorker.js",
 		"build/shaders/shaders.js",

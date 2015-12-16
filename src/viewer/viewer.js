@@ -931,7 +931,7 @@ Potree.Viewer = function(domElement, args){
 						
 						var nodes = pointcloud.nodesOnRay(pointcloud.visibleNodes, ray);
 						var lastNode = nodes[nodes.length - 1];
-						var radius = lastNode.boundingSphere.radius;
+						var radius = lastNode.getBoundingSphere().radius;
 						var targetRadius = Math.min(camTargetDistance, radius);
 						var targetRadius = Math.max(scope.minimumJumpDistance, targetRadius);
 					}else{

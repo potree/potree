@@ -21,6 +21,10 @@ Potree.Shaders = {};
 
 
 Potree.updatePointClouds = function(pointclouds, camera, renderer){
+	
+	if(!Potree.lru){
+		Potree.lru = new LRU();
+	}
 
 	for(var i = 0; i < pointclouds.length; i++){
 		var pointcloud = pointclouds[i];
@@ -37,9 +41,17 @@ Potree.updatePointClouds = function(pointclouds, camera, renderer){
 		pointcloud.updateVisibleBounds();
 	}
 	
-	Potree.PointCloudOctree.lru.freeMemory();
+	Potree.getLRU().freeMemory();
 	
 	return result;
+};
+
+Potree.getLRU = function(){
+	if(!Potree.lru){
+		Potree.lru = new LRU();
+	}
+	
+	return Potree.lru;
 };
 
 
@@ -58,6 +70,11 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 	var priorityQueue = new BinaryHeap(function(x){return 1 / x.weight;});
 	for(var i = 0; i < pointclouds.length; i++){
 		var pointcloud = pointclouds[i];
+		
+		if(!pointcloud.initialized()){
+			continue;
+		}
+		
 		pointcloud.numVisibleNodes = 0;
 		pointcloud.numVisiblePoints = 0;
 		pointcloud.visibleNodes = [];
@@ -80,14 +97,18 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 		var camObjPos = new THREE.Vector3().setFromMatrixPosition( camMatrixObject );
 		camObjPositions.push(camObjPos);
 		
-		if(pointcloud.visible){
+		if(pointcloud.visible && pointcloud.root !== null){
 			priorityQueue.push({pointcloud: i, node: pointcloud.root, weight: Number.MAX_VALUE});
 		}
 		
 		// hide all previously visible nodes
-		if(pointcloud.root instanceof Potree.PointCloudOctreeNode){
+		//if(pointcloud.root instanceof Potree.PointCloudOctreeNode){
+		//	pointcloud.hideDescendants(pointcloud.root.sceneNode);
+		//}
+		if(pointcloud.root.isTreeNode()){
 			pointcloud.hideDescendants(pointcloud.root.sceneNode);
 		}
+		
 		for(var j = 0; j < pointcloud.boundingBoxNodes.length; j++){
 			pointcloud.boundingBoxNodes[j].visible = false;
 		}
@@ -99,103 +120,40 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 		var parent = element.parent;
 		var pointcloud = pointclouds[element.pointcloud];
 		
-		var box = node.boundingBox;
+		var box = node.getBoundingBox();
 		var frustum = frustums[element.pointcloud];
 		var camObjPos = camObjPositions[element.pointcloud];
 		
 		var insideFrustum = frustum.intersectsBox(box);
 		var visible = insideFrustum;
-		visible = visible && !(numVisiblePoints + node.numPoints > Potree.pointBudget);
+		visible = visible && !(numVisiblePoints + node.getNumPoints() > Potree.pointBudget);
 		
 		if(!visible){
 			continue;
 		}
 		
 		numVisibleNodes++;
-		numVisiblePoints += node.numPoints;
+		numVisiblePoints += node.getNumPoints();
 		
 		pointcloud.numVisibleNodes++;
-		pointcloud.numVisiblePoints += node.numPoints;
+		pointcloud.numVisiblePoints += node.getNumPoints();
 		
-		
-		// if geometry is loaded, create a scene node
-		if(node instanceof Potree.PointCloudOctreeGeometryNode){
-			var geometryNode = node;
-			var geometry = geometryNode.geometry;
-			
-			if((typeof parent === "undefined" || parent instanceof Potree.PointCloudOctreeNode) 
-					&& geometryNode.loaded){
-				var pcoNode = new Potree.PointCloudOctreeNode();
-				var sceneNode = new THREE.PointCloud(geometry, pointcloud.material);
-				sceneNode.visible = false;
-				
-				pcoNode.octree = pointcloud;
-				pcoNode.name = geometryNode.name;
-				pcoNode.level = geometryNode.level;
-				pcoNode.numPoints = geometryNode.numPoints;
-				pcoNode.boundingBox = geometry.boundingBox;
-				pcoNode.tightBoundingBox = geometry.tightBoundingBox;
-				pcoNode.boundingSphere = pcoNode.boundingBox.getBoundingSphere();
-				pcoNode.geometryNode = geometryNode;
-				pcoNode.parent = parent;
-				pcoNode.children = {};
-				for(var key in geometryNode.children){
-					pcoNode.children[key] = geometryNode.children[key];
-				}
-				
-				sceneNode.boundingBox = pcoNode.boundingBox;
-				sceneNode.boundingSphere = pcoNode.boundingSphere;
-				sceneNode.numPoints = pcoNode.numPoints;
-				sceneNode.level = pcoNode.level;
-				
-				pcoNode.sceneNode = sceneNode;
-				
-				if(typeof node.parent === "undefined"){
-					pointcloud.root = pcoNode;
-					pointcloud.add(pcoNode.sceneNode);
-					
-					sceneNode.matrixWorld.multiplyMatrices( pointcloud.matrixWorld, sceneNode.matrix );
-				}else{
-					var childIndex = parseInt(pcoNode.name[pcoNode.name.length - 1]);
-					parent.sceneNode.add(sceneNode);
-					parent.children[childIndex] = pcoNode;
-					
-					sceneNode.matrixWorld.multiplyMatrices( parent.sceneNode.matrixWorld, sceneNode.matrix );
-				}
-				
-				// when a PointCloudOctreeGeometryNode is disposed, 
-				// then replace reference to PointCloudOctreeNode with PointCloudOctreeGeometryNode
-				// as it was before it was loaded
-				var disposeListener = function(parent, pcoNode, geometryNode){
-					return function(){
-						var childIndex = parseInt(pcoNode.name[pcoNode.name.length - 1]);
-						parent.sceneNode.remove(pcoNode.sceneNode);
-						parent.children[childIndex] = geometryNode;
-					}
-				}(parent, pcoNode, node);
-				pcoNode.geometryNode.oneTimeDisposeHandlers.push(disposeListener);
-				
-				node = pcoNode;
-			}
-			
-			if(!geometryNode.loaded){
+		if(node.isGeometryNode() && (!parent || parent.isTreeNode())){
+			if(node.isLoaded()){
+				node = pointcloud.toTreeNode(node, parent);
+			}else{
 				unloadedGeometry.push(node);
 				visibleGeometry.push(node);
 			}
-			
 		}
 		
-		
-		if(node instanceof Potree.PointCloudOctreeNode){
-			Potree.PointCloudOctree.lru.touch(node.geometryNode);
+		if(node.isTreeNode()){
+			Potree.getLRU().touch(node.geometryNode);
 			node.sceneNode.visible = true;
 			node.sceneNode.material = pointcloud.material;
 			
 			visibleNodes.push(node);
 			pointcloud.visibleNodes.push(node);
-			
-			visibleGeometry.push(node.geometryNode);
-			pointcloud.visibleGeometry.push(node.geometryNode);
 			
 			if(node.parent){
 				node.sceneNode.matrixWorld.multiplyMatrices( node.parent.sceneNode.matrixWorld, node.sceneNode.matrix );
@@ -215,24 +173,14 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 			}else if(!pointcloud.showBoundingBox && node.boundingBoxNode){
 				node.boundingBoxNode.visible = false;
 			}
-			
-			if(pointcloud.generateDEM && node.level <= 6){
-				if(!node.dem){
-					node.dem = pointcloud.createDEM(node);
-				}
-			}
-		} 
-		
+		}
 		
 		// add child nodes to priorityQueue
-		for(var i = 0; i < 8; i++){
-			if(!node.children[i]){
-				continue;
-			}
+		var children = node.getChildren();
+		for(var i = 0; i < children.length; i++){
+			var child = children[i];
 			
-			var child = node.children[i];
-			
-			var sphere = child.boundingSphere;
+			var sphere = child.getBoundingSphere();
 			var distance = sphere.center.distanceTo(camObjPos);
 			var radius = sphere.radius;
 			

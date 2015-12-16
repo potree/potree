@@ -82,7 +82,7 @@ THREE.EarthControls = function ( camera, renderer, scene ) {
 			
 				var diff = mouseDelta.clone().multiplyScalar(delta);
 				diff.x *= 0.3;
-				diff.y *= 0.2;
+				diff.y *= -0.2;
 			
 
 				// do calculations on fresh nodes 
@@ -197,9 +197,9 @@ THREE.EarthControls = function ( camera, renderer, scene ) {
 		scope.scene.add(scope.pivotNode);
 		scope.pivotNode.position.copy(pivot);
 
-		if ( event.button === 0 ) {
+		if ( event.button === THREE.MOUSE.LEFT ) {
 			state = STATE.DRAG;
-		} else if ( event.button === 2 ) {
+		} else if ( event.button === THREE.MOUSE.RIGHT ) {
 			state = STATE.ROTATE;
 		}
         

@@ -124,6 +124,8 @@ Potree.POCLoader.load = function load(url, callback) {
 	}catch(e){
 		console.log("loading failed: '" + url + "'");
 		console.log(e);
+		
+		callback();
 	}
 };
 

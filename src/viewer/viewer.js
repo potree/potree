@@ -159,7 +159,7 @@ Potree.Viewer = function(domElement, args){
 			
 			scope.dispatchEvent({"type": "pointcloud_loaded", "pointcloud": pointcloud});
 			
-			callback(pointcloud);
+			callback({type: "pointclouad_loaded", pointcloud: pointcloud});
 		};
 		this.addEventListener("pointcloud_loaded", pointCloudLoadedCallback);
 		
@@ -167,18 +167,25 @@ Potree.Viewer = function(domElement, args){
 		if(!path){
 			
 		}else if(path.indexOf("cloud.js") > 0){
-		
 			Potree.POCLoader.load(path, function(geometry){
-				pointcloud = new Potree.PointCloudOctree(geometry);
-				
-				initPointcloud(pointcloud);				
+				if(!geometry){
+					callback({type: "loading_failed"});
+				}else{
+					pointcloud = new Potree.PointCloudOctree(geometry);
+					initPointcloud(pointcloud);				
+				}
 			});
 		}else if(path.indexOf(".vpc") > 0){
 			Potree.PointCloudArena4DGeometry.load(path, function(geometry){
-				pointcloud = new Potree.PointCloudArena4D(geometry);
-				
-				initPointcloud(pointcloud);
+				if(!geometry){
+					callback({type: "loading_failed"});
+				}else{
+					pointcloud = new Potree.PointCloudArena4D(geometry);
+					initPointcloud(pointcloud);
+				}
 			});
+		}else{
+			callback({"type": "loading_failed"});
 		}
 	};
 	

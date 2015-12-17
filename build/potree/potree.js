@@ -4043,21 +4043,21 @@ Potree.OrbitControls = function ( object, domElement ) {
 		if ( scope.enabled === false ) return;
 		event.preventDefault();
 
-		if ( event.button === 0 ) {
+		if ( event.button === THREE.MOUSE.LEFT ) {
 			if ( scope.noRotate === true ) return;
 
 			state = STATE.ROTATE;
 
 			rotateStart.set( event.clientX, event.clientY );
 
-		} else if ( event.button === 1 ) {
+		} else if ( event.button === THREE.MOUSE.MIDDLE ) {
 			if ( scope.noZoom === true ) return;
 
 			state = STATE.DOLLY;
 
 			dollyStart.set( event.clientX, event.clientY );
 
-		} else if ( event.button === 2 ) {
+		} else if ( event.button === THREE.MOUSE.RIGHT ) {
 			if ( scope.noPan === true ) return;
 
 			state = STATE.PAN;
@@ -4446,7 +4446,7 @@ THREE.EarthControls = function ( camera, renderer, scene ) {
 			
 				var diff = mouseDelta.clone().multiplyScalar(delta);
 				diff.x *= 0.3;
-				diff.y *= 0.2;
+				diff.y *= -0.2;
 			
 
 				// do calculations on fresh nodes 
@@ -4561,9 +4561,9 @@ THREE.EarthControls = function ( camera, renderer, scene ) {
 		scope.scene.add(scope.pivotNode);
 		scope.pivotNode.position.copy(pivot);
 
-		if ( event.button === 0 ) {
+		if ( event.button === THREE.MOUSE.LEFT ) {
 			state = STATE.DRAG;
-		} else if ( event.button === 2 ) {
+		} else if ( event.button === THREE.MOUSE.RIGHT ) {
 			state = STATE.ROTATE;
 		}
         
@@ -5884,6 +5884,7 @@ Potree.PointCloudOctree.prototype.pick = function(renderer, camera, ray, params)
 
 	var params = params || {};
 	var pickWindowSize = params.pickWindowSize || 17;
+	var pickOutsideClipRegion = params.pickOutsideClipRegion || false;
 	
 	var nodes = this.nodesOnRay(this.visibleNodes, ray);
 	
@@ -5931,6 +5932,19 @@ Potree.PointCloudOctree.prototype.pick = function(renderer, camera, ray, params)
 	this.pickMaterial.minSize = this.material.minSize;
 	this.pickMaterial.maxSize = this.material.maxSize;
 	this.pickMaterial.classification = this.material.classification;
+	
+	if(pickOutsideClipRegion){
+		this.pickMaterial.clipMode = Potree.ClipMode.DISABLED;
+	}else{
+		this.pickMaterial.clipMode = this.material.clipMode;
+		if(this.material.clipMode === Potree.ClipMode.CLIP_OUTSIDE){
+			this.pickMaterial.setClipBoxes(this.material.clipBoxes);
+		}else{
+			this.pickMaterial.setClipBoxes([]);
+		}
+	}
+	//this.pickMaterial.useClipBox = this.material.useClipBox;
+	
 	
 	this.updateMaterial(this.pickMaterial, nodes, camera, renderer);
 
@@ -8635,7 +8649,9 @@ Potree.ProfileTool = function(scene, camera, renderer){
 		
 		for(var i = 0; i < pointClouds.length; i++){
 			var pointcloud = pointClouds[i];
-			var point = pointcloud.pick(scope.renderer, scope.camera, ray);
+			var point = pointcloud.pick(scope.renderer, scope.camera, ray, {
+				pickOutsideClipRegion: true
+			});
 			
 			if(!point){
 				continue;
@@ -10174,6 +10190,7 @@ Potree.PointCloudArena4D.prototype.pick = function(renderer, camera, ray, params
 
 	var params = params || {};
 	var pickWindowSize = params.pickWindowSize || 17;
+	var pickOutsideClipRegion = params.pickOutsideClipRegion || false;
 	
 	var nodes = this.nodesOnRay(this.visibleNodes, ray);
 	
@@ -10231,6 +10248,16 @@ Potree.PointCloudArena4D.prototype.pick = function(renderer, camera, ray, params
 	this.pickMaterial.levels 		= this.material.levels;
 	this.pickMaterial.pointShape 	= this.material.pointShape;
 	
+	if(pickOutsideClipRegion){
+		this.pickMaterial.clipMode = Potree.ClipMode.DISABLED;
+	}else{
+		this.pickMaterial.clipMode = this.material.clipMode;
+		if(this.material.clipMode === Potree.ClipMode.CLIP_OUTSIDE){
+			this.pickMaterial.setClipBoxes(this.material.clipBoxes);
+		}else{
+			this.pickMaterial.setClipBoxes([]);
+		}
+	}
 	
 
 	var _gl = renderer.context;

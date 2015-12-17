@@ -551,7 +551,9 @@ Potree.ProfileTool = function(scene, camera, renderer){
 		
 		for(var i = 0; i < pointClouds.length; i++){
 			var pointcloud = pointClouds[i];
-			var point = pointcloud.pick(scope.renderer, scope.camera, ray);
+			var point = pointcloud.pick(scope.renderer, scope.camera, ray, {
+				pickOutsideClipRegion: true
+			});
 			
 			if(!point){
 				continue;

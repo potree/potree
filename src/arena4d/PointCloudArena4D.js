@@ -262,6 +262,7 @@ Potree.PointCloudArena4D.prototype.pick = function(renderer, camera, ray, params
 
 	var params = params || {};
 	var pickWindowSize = params.pickWindowSize || 17;
+	var pickOutsideClipRegion = params.pickOutsideClipRegion || false;
 	
 	var nodes = this.nodesOnRay(this.visibleNodes, ray);
 	
@@ -319,6 +320,16 @@ Potree.PointCloudArena4D.prototype.pick = function(renderer, camera, ray, params
 	this.pickMaterial.levels 		= this.material.levels;
 	this.pickMaterial.pointShape 	= this.material.pointShape;
 	
+	if(pickOutsideClipRegion){
+		this.pickMaterial.clipMode = Potree.ClipMode.DISABLED;
+	}else{
+		this.pickMaterial.clipMode = this.material.clipMode;
+		if(this.material.clipMode === Potree.ClipMode.CLIP_OUTSIDE){
+			this.pickMaterial.setClipBoxes(this.material.clipBoxes);
+		}else{
+			this.pickMaterial.setClipBoxes([]);
+		}
+	}
 	
 
 	var _gl = renderer.context;

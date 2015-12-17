@@ -903,6 +903,7 @@ Potree.PointCloudOctree.prototype.pick = function(renderer, camera, ray, params)
 
 	var params = params || {};
 	var pickWindowSize = params.pickWindowSize || 17;
+	var pickOutsideClipRegion = params.pickOutsideClipRegion || false;
 	
 	var nodes = this.nodesOnRay(this.visibleNodes, ray);
 	
@@ -950,6 +951,19 @@ Potree.PointCloudOctree.prototype.pick = function(renderer, camera, ray, params)
 	this.pickMaterial.minSize = this.material.minSize;
 	this.pickMaterial.maxSize = this.material.maxSize;
 	this.pickMaterial.classification = this.material.classification;
+	
+	if(pickOutsideClipRegion){
+		this.pickMaterial.clipMode = Potree.ClipMode.DISABLED;
+	}else{
+		this.pickMaterial.clipMode = this.material.clipMode;
+		if(this.material.clipMode === Potree.ClipMode.CLIP_OUTSIDE){
+			this.pickMaterial.setClipBoxes(this.material.clipBoxes);
+		}else{
+			this.pickMaterial.setClipBoxes([]);
+		}
+	}
+	//this.pickMaterial.useClipBox = this.material.useClipBox;
+	
 	
 	this.updateMaterial(this.pickMaterial, nodes, camera, renderer);
 

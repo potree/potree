@@ -653,11 +653,11 @@ Potree.PointCloudArena4D.prototype.pick = function(renderer, camera, ray, params
 				
 				}else{
 					if(values.itemSize === 1){
-						point[property] = values.array[i + j];
+						point[property] = values.array[hit.pIndex + j];
 					}else{
 						var value = [];
 						for(var j = 0; j < values.itemSize; j++){
-							value.push(values.array[i*values.itemSize + j]);
+							value.push(values.array[hit.pIndex*values.itemSize + j]);
 						}
 						point[property] = value;
 					}

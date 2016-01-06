@@ -1163,17 +1163,22 @@ Potree.Viewer = function(domElement, args){
 					var attributes = pointcloud.pcoGeometry.root.geometry.attributes;
 					if(attributes.intensity){
 						var array = attributes.intensity.array;
-						var max = 0;
-						for(var j = 0; j < array.length; j++){
-							max = Math.max(array[j]);
-						}
 						
-						if(max <= 1){
+						// chose max value from the 0.75 percentile
+						var ordered = [];
+						for(var j = 0; j < array.length; j++){
+							ordered.push(array[j]);
+						}
+						ordered.sort();
+						var capIndex = parseInt((ordered.length - 1) * 0.75);
+						var cap = ordered[capIndex];
+						
+						if(cap <= 1){
 							scope.intensityMax = 1;
-						}else if(max <= 256){
+						}else if(cap <= 256){
 							scope.intensityMax = 255;
 						}else{
-							scope.intensityMax = max;
+							scope.intensityMax = cap;
 						}
 					}
 				}

@@ -379,7 +379,7 @@ Potree.Viewer.Profile = function(viewer, element){
 			return 'rgb(' + (d.color[0] * 100) + '%,' + (d.color[1] * 100) + '%,' + (d.color[2] * 100) + '%)';
 		} else if (material === Potree.PointColorType.INTENSITY) {
 			//return d.intensity;
-			return 'rgb(' + points.intensity + '%,' + points.intensity + '%,' + points.intensity + '%)';
+			return 'rgb(' + d.intensity + '%,' + d.intensity + '%,' + d.intensity + '%)';
 		} else if (material === Potree.PointColorType.CLASSIFICATION) {
 			var classif = scope.viewer.pointclouds[0].material.classification;
 			if (typeof classif[d.classification] != 'undefined'){

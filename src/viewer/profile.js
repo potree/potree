@@ -485,6 +485,7 @@ Potree.Viewer.Profile = function(viewer, element){
 				d = points[i];
 				cx = scope.scaleX(d.distance);
 				cy = scope.scaleY(d.altitude);
+				scope.context.beginPath();
 				scope.context.moveTo(cx, cy);
 				scope.context.fillStyle = scope.strokeColor(d);
 				scope.context.fillRect(cx, cy, pointSize, pointSize);

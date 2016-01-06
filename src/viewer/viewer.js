@@ -14,6 +14,8 @@ Potree.Viewer = function(domElement, args){
 	this.annotations = [];
 	this.fov = 60;
 	this.pointSize = 1;
+	this.minPointSize = 1;
+	this.maxPointSize = 50;
 	this.opacity = 1;
 	this.sizeType = "Fixed";
 	this.pointSizeType = Potree.PointSizeType.FIXED;
@@ -377,6 +379,28 @@ Potree.Viewer = function(domElement, args){
 	
 	this.getPointSize = function(){
 		return scope.pointSize;
+	};
+	
+	this.setMinPointSize = function(value){
+		if(scope.minPointSize !== value){
+			scope.minPointSize = value;
+			scope.dispatchEvent({"type": "min_point_size_changed", "viewer": scope});
+		}
+	}
+	
+	this.getMinPointSize = function(){
+		return scope.minPointSize;
+	}
+	
+	this.setMaxPointSize = function(value){
+		if(scope.maxPointSize !== value){
+			scope.maxPointSize = value;
+			scope.dispatchEvent({"type": "max_point_size_changed", "viewer": scope});
+		}
+	}
+	
+	this.getMaxPointSize = function(){
+		return scope.maxPointSize;
 	}
 	
 	this.setFOV = function(value){
@@ -1140,8 +1164,8 @@ Potree.Viewer = function(domElement, args){
 					if(attributes.intensity){
 						var array = attributes.intensity.array;
 						var max = 0;
-						for(var i = 0; i < array.length; i++){
-							max = Math.max(array[i]);
+						for(var j = 0; j < array.length; j++){
+							max = Math.max(array[j]);
 						}
 						
 						if(max <= 1){
@@ -1364,6 +1388,8 @@ Potree.Viewer = function(domElement, args){
 				var bbWorld = Potree.utils.computeTransformedBoundingBox(pointcloud.boundingBox, pointcloud.matrixWorld);
 				
 				pointcloud.material.size = scope.pointSize;
+				pointcloud.material.minSize = scope.minPointSize;
+				pointcloud.material.maxSize = scope.maxPointSize;
 				pointcloud.material.opacity = scope.opacity;
 				pointcloud.material.pointColorType = scope.pointColorType;
 				pointcloud.material.pointSizeType = scope.pointSizeType;
@@ -1409,12 +1435,14 @@ Potree.Viewer = function(domElement, args){
 			depthMaterial.pointShape = Potree.PointShape.CIRCLE;
 			depthMaterial.interpolate = false;
 			depthMaterial.weighted = false;
-			depthMaterial.minSize = 2;
+			depthMaterial.minSize = scope.minPointSize;
+			depthMaterial.maxSize = scope.maxPointSize;
 						
 			attributeMaterial.pointShape = Potree.PointShape.CIRCLE;
 			attributeMaterial.interpolate = false;
 			attributeMaterial.weighted = true;
-			attributeMaterial.minSize = 2;
+			attributeMaterial.minSize = scope.minPointSize;
+			attributeMaterial.maxSize = scope.maxPointSize;
 
 			rtDepth = new THREE.WebGLRenderTarget( 1024, 1024, { 
 				minFilter: THREE.NearestFilter, 
@@ -1644,7 +1672,8 @@ Potree.Viewer = function(domElement, args){
 					attributeMaterial.pointShape = Potree.PointShape.CIRCLE;
 					attributeMaterial.interpolate = false;
 					attributeMaterial.weighted = false;
-					attributeMaterial.minSize = 2;
+					attributeMaterial.minSize = scope.minPointSize;
+					attributeMaterial.maxSize = scope.maxPointSize;
 					attributeMaterial.useLogarithmicDepthBuffer = false;
 					attributeMaterial.useEDL = true;
 					attributeMaterials.push(attributeMaterial);
@@ -1662,7 +1691,8 @@ Potree.Viewer = function(domElement, args){
 					attributeMaterial.pointShape = Potree.PointShape.CIRCLE;
 					attributeMaterial.interpolate = false;
 					attributeMaterial.weighted = false;
-					attributeMaterial.minSize = 2;
+					attributeMaterial.minSize = scope.minPointSize;
+					attributeMaterial.maxSize = scope.maxPointSize;
 					attributeMaterial.useLogarithmicDepthBuffer = false;
 					attributeMaterial.useEDL = true;
 					

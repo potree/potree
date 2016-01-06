@@ -170,7 +170,7 @@ Potree.PointCloudArena4D.prototype.updateMaterial = function(material, visibleNo
 		material.levels = this.maxLevel + 2;
 	}
 	
-	material.minSize = 3;
+	//material.minSize = 3;
 	
 	//material.uniforms.octreeSize.value = this.boundingBox.size().x;
 	var bbSize = this.boundingBox.size();
@@ -319,6 +319,8 @@ Potree.PointCloudArena4D.prototype.pick = function(renderer, camera, ray, params
 	this.pickMaterial.far 			= this.material.far;
 	this.pickMaterial.levels 		= this.material.levels;
 	this.pickMaterial.pointShape 	= this.material.pointShape;
+	this.pickMaterial.minSize		= this.material.minSize;
+	this.pickMaterial.maxSize		= this.material.maxSize;
 	
 	if(pickOutsideClipRegion){
 		this.pickMaterial.clipMode = Potree.ClipMode.DISABLED;

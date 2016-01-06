@@ -56,6 +56,9 @@ Potree.POCLoader.load = function load(url, callback) {
 				
 				offset.set(-min.x, -min.y, -min.z);
 				
+				// for precision problem presentation purposes
+				//offset.set(50000*1000,0,0);
+				
 				boundingBox.min.add(offset);
 				boundingBox.max.add(offset);
 				

@@ -61,7 +61,7 @@ Potree.PointColorType = {
 	HEIGHT: 			3,
 	INTENSITY: 			4,
 	INTENSITY_GRADIENT:	5,
-	TREE_DEPTH: 		6,
+	LOD: 				6,
 	POINT_INDEX: 		7,
 	CLASSIFICATION: 	8,
 	RETURN_NUMBER: 		9,
@@ -291,8 +291,8 @@ Potree.PointCloudMaterial.prototype.getDefines = function(){
 		defines += "#define color_type_intensity\n";
 	}else if(this._pointColorType === Potree.PointColorType.INTENSITY_GRADIENT){
 		defines += "#define color_type_intensity_gradient\n";
-	}else if(this._pointColorType === Potree.PointColorType.TREE_DEPTH){
-		defines += "#define color_type_tree_depth\n";
+	}else if(this._pointColorType === Potree.PointColorType.LOD){
+		defines += "#define color_type_lod\n";
 	}else if(this._pointColorType === Potree.PointColorType.POINT_INDEX){
 		defines += "#define color_type_point_index\n";
 	}else if(this._pointColorType === Potree.PointColorType.CLASSIFICATION){

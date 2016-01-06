@@ -388,7 +388,7 @@ Potree.Shaders["pointcloud.vs"] = [
  "// OCTREE",
  "// ---------------------",
  "",
- "#if (defined(adaptive_point_size) || defined(color_type_tree_depth)) && defined(tree_type_octree)",
+ "#if (defined(adaptive_point_size) || defined(color_type_lod)) && defined(tree_type_octree)",
  "/**",
  " * number of 1-bits up to inclusive index position",
  " * number is treated as if it were an integer in the range 0-255",
@@ -418,9 +418,9 @@ Potree.Shaders["pointcloud.vs"] = [
  "",
  "",
  "/**",
- " * find the tree depth at the point position",
+ " * find the LOD at the point position",
  " */",
- "float getLocalTreeDepth(){",
+ "float getLOD(){",
  "	vec3 offset = vec3(0.0, 0.0, 0.0);",
  "	float iOffset = 0.0;",
  "	float depth = 0.0;",
@@ -447,7 +447,7 @@ Potree.Shaders["pointcloud.vs"] = [
  "}",
  "",
  "float getPointSizeAttenuation(){",
- "	return pow(1.9, getLocalTreeDepth());",
+ "	return pow(1.9, getLOD());",
  "}",
  "",
  "",
@@ -458,9 +458,9 @@ Potree.Shaders["pointcloud.vs"] = [
  "// KD-TREE",
  "// ---------------------",
  "",
- "#if (defined(adaptive_point_size) || defined(color_type_tree_depth)) && defined(tree_type_kdtree)",
+ "#if (defined(adaptive_point_size) || defined(color_type_lod)) && defined(tree_type_kdtree)",
  "",
- "float getLocalTreeDepth(){",
+ "float getLOD(){",
  "	vec3 offset = vec3(0.0, 0.0, 0.0);",
  "	float iOffset = 0.0;",
  "	float depth = 0.0;",
@@ -518,7 +518,7 @@ Potree.Shaders["pointcloud.vs"] = [
  "}",
  "",
  "float getPointSizeAttenuation(){",
- "	return pow(1.3, getLocalTreeDepth());",
+ "	return pow(1.3, getLOD());",
  "}",
  "",
  "#endif",
@@ -564,8 +564,8 @@ Potree.Shaders["pointcloud.vs"] = [
  "		vColor = texture2D(gradient, vec2(w,1.0-w)).rgb;",
  "	#elif defined color_type_color",
  "		vColor = uColor;",
- "	#elif defined color_type_tree_depth",
- "		float depth = getLocalTreeDepth();",
+ "	#elif defined color_type_lod",
+ "		float depth = getLOD();",
  "		float w = depth / 10.0;",
  "		vColor = texture2D(gradient, vec2(w,1.0-w)).rgb;",
  "	#elif defined color_type_point_index",
@@ -1992,7 +1992,7 @@ Potree.PointColorType = {
 	HEIGHT: 			3,
 	INTENSITY: 			4,
 	INTENSITY_GRADIENT:	5,
-	TREE_DEPTH: 		6,
+	LOD: 				6,
 	POINT_INDEX: 		7,
 	CLASSIFICATION: 	8,
 	RETURN_NUMBER: 		9,
@@ -2222,8 +2222,8 @@ Potree.PointCloudMaterial.prototype.getDefines = function(){
 		defines += "#define color_type_intensity\n";
 	}else if(this._pointColorType === Potree.PointColorType.INTENSITY_GRADIENT){
 		defines += "#define color_type_intensity_gradient\n";
-	}else if(this._pointColorType === Potree.PointColorType.TREE_DEPTH){
-		defines += "#define color_type_tree_depth\n";
+	}else if(this._pointColorType === Potree.PointColorType.LOD){
+		defines += "#define color_type_lod\n";
 	}else if(this._pointColorType === Potree.PointColorType.POINT_INDEX){
 		defines += "#define color_type_point_index\n";
 	}else if(this._pointColorType === Potree.PointColorType.CLASSIFICATION){
@@ -5416,9 +5416,9 @@ Potree.PointCloudOctree.prototype.updateMaterial = function(material, visibleNod
 	material.uniforms.octreeSize.value = this.pcoGeometry.boundingBox.size().x;
 	
 	// update visibility texture
-	if(material.pointSizeType){
+	if(material.pointSizeType >= 0){
 		if(material.pointSizeType === Potree.PointSizeType.ADAPTIVE 
-			|| material.pointColorType === Potree.PointColorType.OCTREE_DEPTH){
+			|| material.pointColorType === Potree.PointColorType.LOD){
 			
 			this.updateVisibilityTexture(material, visibleNodes);
 		}
@@ -10110,7 +10110,7 @@ Potree.PointCloudArena4D.prototype.updateMaterial = function(material, visibleNo
 	// update visibility texture
 	if(material.pointSizeType){
 		if(material.pointSizeType === Potree.PointSizeType.ADAPTIVE 
-			|| material.pointColorType === Potree.PointColorType.OCTREE_DEPTH){
+			|| material.pointColorType === Potree.PointColorType.LOD){
 			
 			this.updateVisibilityTexture(material, visibleNodes);
 		}
@@ -11446,8 +11446,8 @@ Potree.Viewer = function(domElement, args){
 			scope.pointColorType = Potree.PointColorType.RETURN_NUMBER;
 		}else if(materialName === "Source"){
 			scope.pointColorType = Potree.PointColorType.SOURCE;
-		}else if(materialName === "Tree Depth"){
-			scope.pointColorType = Potree.PointColorType.TREE_DEPTH;
+		}else if(materialName === "Level of Detail"){
+			scope.pointColorType = Potree.PointColorType.LOD;
 		}else if(materialName === "Point Index"){
 			scope.pointColorType = Potree.PointColorType.POINT_INDEX;
 		}else if(materialName === "Normal"){
@@ -11474,8 +11474,8 @@ Potree.Viewer = function(domElement, args){
 			return "Return Number";
 		}else if(materialID === Potree.PointColorType.SOURCE){
 			return "Source";
-		}else if(materialID === Potree.PointColorType.TREE_DEPTH){
-			return "Tree Depth";
+		}else if(materialID === Potree.PointColorType.LOD){
+			return "Level of Detail";
 		}else if(materialID === Potree.PointColorType.POINT_INDEX){
 			return "Point Index";
 		}else if(materialID === Potree.PointColorType.NORMAL){

@@ -516,8 +516,8 @@ Potree.Viewer = function(domElement, args){
 			scope.pointColorType = Potree.PointColorType.RETURN_NUMBER;
 		}else if(materialName === "Source"){
 			scope.pointColorType = Potree.PointColorType.SOURCE;
-		}else if(materialName === "Tree Depth"){
-			scope.pointColorType = Potree.PointColorType.TREE_DEPTH;
+		}else if(materialName === "Level of Detail"){
+			scope.pointColorType = Potree.PointColorType.LOD;
 		}else if(materialName === "Point Index"){
 			scope.pointColorType = Potree.PointColorType.POINT_INDEX;
 		}else if(materialName === "Normal"){
@@ -544,8 +544,8 @@ Potree.Viewer = function(domElement, args){
 			return "Return Number";
 		}else if(materialID === Potree.PointColorType.SOURCE){
 			return "Source";
-		}else if(materialID === Potree.PointColorType.TREE_DEPTH){
-			return "Tree Depth";
+		}else if(materialID === Potree.PointColorType.LOD){
+			return "Level of Detail";
 		}else if(materialID === Potree.PointColorType.POINT_INDEX){
 			return "Point Index";
 		}else if(materialID === Potree.PointColorType.NORMAL){

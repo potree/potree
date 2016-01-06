@@ -179,7 +179,7 @@ Potree.PointCloudArena4D.prototype.updateMaterial = function(material, visibleNo
 	// update visibility texture
 	if(material.pointSizeType){
 		if(material.pointSizeType === Potree.PointSizeType.ADAPTIVE 
-			|| material.pointColorType === Potree.PointColorType.OCTREE_DEPTH){
+			|| material.pointColorType === Potree.PointColorType.LOD){
 			
 			this.updateVisibilityTexture(material, visibleNodes);
 		}

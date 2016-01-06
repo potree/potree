@@ -432,9 +432,9 @@ Potree.PointCloudOctree.prototype.updateMaterial = function(material, visibleNod
 	material.uniforms.octreeSize.value = this.pcoGeometry.boundingBox.size().x;
 	
 	// update visibility texture
-	if(material.pointSizeType){
+	if(material.pointSizeType >= 0){
 		if(material.pointSizeType === Potree.PointSizeType.ADAPTIVE 
-			|| material.pointColorType === Potree.PointColorType.OCTREE_DEPTH){
+			|| material.pointColorType === Potree.PointColorType.LOD){
 			
 			this.updateVisibilityTexture(material, visibleNodes);
 		}

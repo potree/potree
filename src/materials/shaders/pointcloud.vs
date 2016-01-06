@@ -74,7 +74,7 @@ varying vec3	vNormal;
 // OCTREE
 // ---------------------
 
-#if (defined(adaptive_point_size) || defined(color_type_tree_depth)) && defined(tree_type_octree)
+#if (defined(adaptive_point_size) || defined(color_type_lod)) && defined(tree_type_octree)
 /**
  * number of 1-bits up to inclusive index position
  * number is treated as if it were an integer in the range 0-255
@@ -104,9 +104,9 @@ bool isBitSet(float number, float index){
 
 
 /**
- * find the tree depth at the point position
+ * find the LOD at the point position
  */
-float getLocalTreeDepth(){
+float getLOD(){
 	vec3 offset = vec3(0.0, 0.0, 0.0);
 	float iOffset = 0.0;
 	float depth = 0.0;
@@ -133,7 +133,7 @@ float getLocalTreeDepth(){
 }
 
 float getPointSizeAttenuation(){
-	return pow(1.9, getLocalTreeDepth());
+	return pow(1.9, getLOD());
 }
 
 
@@ -144,9 +144,9 @@ float getPointSizeAttenuation(){
 // KD-TREE
 // ---------------------
 
-#if (defined(adaptive_point_size) || defined(color_type_tree_depth)) && defined(tree_type_kdtree)
+#if (defined(adaptive_point_size) || defined(color_type_lod)) && defined(tree_type_kdtree)
 
-float getLocalTreeDepth(){
+float getLOD(){
 	vec3 offset = vec3(0.0, 0.0, 0.0);
 	float iOffset = 0.0;
 	float depth = 0.0;
@@ -204,7 +204,7 @@ float getLocalTreeDepth(){
 }
 
 float getPointSizeAttenuation(){
-	return pow(1.3, getLocalTreeDepth());
+	return pow(1.3, getLOD());
 }
 
 #endif
@@ -250,8 +250,8 @@ void main() {
 		vColor = texture2D(gradient, vec2(w,1.0-w)).rgb;
 	#elif defined color_type_color
 		vColor = uColor;
-	#elif defined color_type_tree_depth
-		float depth = getLocalTreeDepth();
+	#elif defined color_type_lod
+		float depth = getLOD();
 		float w = depth / 10.0;
 		vColor = texture2D(gradient, vec2(w,1.0-w)).rgb;
 	#elif defined color_type_point_index

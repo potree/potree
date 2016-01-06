@@ -1819,19 +1819,94 @@ Potree.Viewer = function(domElement, args){
 	//scope.initGUI();
 	
 	// set defaults
-	scope.setPointSize(1);
-	scope.setFOV(60);
-	scope.setOpacity(1);
-	scope.setEDLEnabled(false);
-	scope.setEDLRadius(2);
-	scope.setEDLStrength(1);
-	scope.setClipMode(Potree.ClipMode.HIGHLIGHT_INSIDE);
-	scope.setPointBudget(1*1000*1000);
-	scope.setShowBoundingBox(false);
-	//scope.setShowDebugInfos(false);
-	//scope.setShowStats(false);
+	//scope.setEDLEnabled(false);
+	//scope.setEDLRadius(2);
+	//scope.setEDLStrength(1);
+	//scope.setClipMode(Potree.ClipMode.HIGHLIGHT_INSIDE);
+	//scope.setPointBudget(1*1000*1000);
+	//scope.setShowBoundingBox(false);
 	scope.setFreeze(false);
 	scope.setNavigationMode("Orbit");
+	
+	if(Potree.utils.getParameterByName("pointSize")){
+		scope.setPointSize(parseFloat(Potree.utils.getParameterByName("pointSize")));
+	}else{
+		scope.setPointSize(1);
+	}
+	
+	if(Potree.utils.getParameterByName("FOV")){
+		scope.setFOV(parseFloat(Potree.utils.getParameterByName("FOV")));
+	}else{
+		scope.setFOV(60);
+	}
+	
+	if(Potree.utils.getParameterByName("opacity")){
+		scope.setOpacity(parseFloat(Potree.utils.getParameterByName("opacity")));
+	}else{
+		scope.setOpacity(1);
+	}
+	
+	if(Potree.utils.getParameterByName("edlEnabled")){
+		var enabled = Potree.utils.getParameterByName("edlEnabled") === "true";
+		scope.setEDLEnabled(enabled);
+	}else{
+		scope.setEDLEnabled(false);
+	}
+	
+	if(Potree.utils.getParameterByName("edlRadius")){
+		scope.setEDLRadius(parseFloat(Potree.utils.getParameterByName("edlRadius")));
+	}else{
+		scope.setEDLRadius(2);
+	}
+	
+	if(Potree.utils.getParameterByName("edlStrength")){
+		scope.setEDLStrength(parseFloat(Potree.utils.getParameterByName("edlStrength")));
+	}else{
+		scope.setEDLStrength(1);
+	}
+	
+	if(Potree.utils.getParameterByName("clipMode")){
+		var clipMode = Potree.utils.getParameterByName("clipMode");
+		if(clipMode === "HIGHLIGHT_INSIDE"){
+			scope.setClipMode(Potree.ClipMode.HIGHLIGHT_INSIDE);
+		}else if(clipMode === "CLIP_OUTSIDE"){
+			scope.setClipMode(Potree.ClipMode.CLIP_OUTSIDE);
+		}else if(clipMode === "DISABLED"){
+			scope.setClipMode(Potree.ClipMode.DISABLED);
+		}
+	}else{
+		scope.setClipMode(Potree.ClipMode.HIGHLIGHT_INSIDE);
+	}
+	
+	if(Potree.utils.getParameterByName("pointBudget")){
+		scope.setPointBudget(parseFloat(Potree.utils.getParameterByName("pointBudget")));
+	}else{
+		scope.setPointBudget(1*1000*1000);
+	}
+	
+	if(Potree.utils.getParameterByName("showBoundingBox")){
+		var enabled = Potree.utils.getParameterByName("showBoundingBox") === "true";
+		if(enabled){
+			scope.setShowBoundingBox(true);
+		}else{
+			scope.setShowBoundingBox(false);
+		}
+	}
+	
+	if(Potree.utils.getParameterByName("material")){
+		var material = Potree.utils.getParameterByName("material");
+		scope.setMaterial(material);
+	}
+	
+	if(Potree.utils.getParameterByName("pointSizing")){
+		var sizing = Potree.utils.getParameterByName("pointSizing");
+		scope.setPointSizing(sizing);
+	}
+	
+	if(Potree.utils.getParameterByName("quality")){
+		var quality = Potree.utils.getParameterByName("quality");
+		scope.setQuality(quality);
+	}
 
 	// start rendering!
 	requestAnimationFrame(loop);

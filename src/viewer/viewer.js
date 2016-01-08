@@ -464,15 +464,15 @@ Potree.Viewer = function(domElement, args){
 	};
 	
 	this.disableAnnotations = function(){
-		for(var i = 0; i < viewer.annotations.length; i++){
-			var annotation = viewer.annotations[i];
+		for(var i = 0; i < scope.annotations.length; i++){
+			var annotation = scope.annotations[i];
 			annotation.domElement.style.pointerEvents = "none";
 		};
 	};
 	
 	this.enableAnnotations = function(){
-		for(var i = 0; i < viewer.annotations.length; i++){
-			var annotation = viewer.annotations[i];
+		for(var i = 0; i < scope.annotations.length; i++){
+			var annotation = scope.annotations[i];
 			annotation.domElement.style.pointerEvents = "auto";
 		};
 	};
@@ -1413,9 +1413,9 @@ Potree.Viewer = function(domElement, args){
 		
 		if(scope.showDebugInfos){
 			scope.infos.set("camera.position", "camera.position: " + 
-				viewer.camera.position.x.toFixed(2) 
-				+ ", " + viewer.camera.position.y.toFixed(2) 
-				+ ", " + viewer.camera.position.z.toFixed(2)
+				scope.camera.position.x.toFixed(2) 
+				+ ", " + scope.camera.position.y.toFixed(2) 
+				+ ", " + scope.camera.position.z.toFixed(2)
 			);
 		}
 		

@@ -111,6 +111,7 @@ Potree.PointCloudArena4D = function(geometry){
 	this.material.sizeType = Potree.PointSizeType.ATTENUATED;
 	this.material.size = 0.05;
 	this.profileRequests = [];
+	this.name = "";
 	
 	this.pickTarget;
 	this.pickMaterial;
@@ -119,6 +120,17 @@ Potree.PointCloudArena4D = function(geometry){
 };
 
 Potree.PointCloudArena4D.prototype = new Potree.PointCloudTree();
+
+Potree.PointCloudOctree.prototype.setName = function(name){
+	if(this.name !== name){
+		this.name = name;
+		this.dispatchEvent({type: "name_changed", name: name, pointcloud: this});
+	}
+};
+
+Potree.PointCloudOctree.prototype.getName = function(){
+	return this.name;
+};
 
 Potree.PointCloudArena4D.prototype.toTreeNode = function(geometryNode, parent){
 	var node = new Potree.PointCloudArena4DNode();

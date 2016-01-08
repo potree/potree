@@ -990,28 +990,44 @@ function initSceneList(){
 	var scenelist = $('#sceneList');
 	
 	var id = 0;
+	// this works but it looks so wrong. any better way to create a closure around pointcloud?
 	var addPointcloud = function(pointcloud){
-		var elLi = $('<li>');
-		var elLabel = $('<label>');
-		var elInput = $('<input type="checkbox">');
-		
-		elInput[0].checked = true;
-		elInput[0].id = "scene_list_item_pointcloud_" + id;
-		elLabel[0].id = "scene_list_item_label_pointcloud_" + id;
-		elLabel[0].htmlFor = "scene_list_item_pointcloud_" + id;
-		elLabel.addClass("menu-item");
-		elInput.click(function(event){
-			pointcloud.visible = event.target.checked;
-		});
-		
-		elLi.append(elLabel);
-		elLabel.append(elInput);
-		elLabel.append(document.createTextNode(" point cloud " + id));
-		
-		scenelist.append(elLi);
-		
-		id++;
-	}
+		(function(pointcloud){
+			var elLi = $('<li>');
+			var elLabel = $('<label>');
+			var elInput = $('<input type="checkbox">');
+			
+			elInput[0].checked = true;
+			elInput[0].id = "scene_list_item_pointcloud_" + id;
+			elLabel[0].id = "scene_list_item_label_pointcloud_" + id;
+			elLabel[0].htmlFor = "scene_list_item_pointcloud_" + id;
+			elLabel.addClass("menu-item");
+			elInput.click(function(event){
+				pointcloud.visible = event.target.checked;
+				if(viewer._2dprofile){
+					viewer._2dprofile.redraw();
+				}
+			});
+			
+			elLi.append(elLabel);
+			elLabel.append(elInput);
+			var pointcloudName = " " + (pointcloud.name ? pointcloud.name : "point cloud " + id);
+			var elPointCloudName = document.createTextNode(pointcloudName);
+			elLabel.append(elPointCloudName);
+			
+			scenelist.append(elLi);
+			
+			pointcloud.addEventListener("name_changed", function(e){
+				if(e.name){
+					elPointCloudName.textContent = " " + e.name;
+				}else{
+					elPointCloudName.textContent = " point cloud " + id;
+				}
+			});
+			
+			id++;
+		})(pointcloud);
+	};
 	
 	for(var i = 0; i < viewer.pointclouds.length; i++){
 		var pointcloud = viewer.pointclouds[i];

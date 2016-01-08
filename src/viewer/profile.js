@@ -417,7 +417,6 @@ Potree.Viewer.Profile = function(viewer, element){
 	};
 
 	this.draw = function(profile){
-		// TODO handle all pointclouds
 		// TODO are the used closures safe for garbage collection?
 		
 		if(!scope.enabled){
@@ -648,6 +647,11 @@ Potree.Viewer.Profile = function(viewer, element){
 		
 		for(var i = 0; i < scope.viewer.pointclouds.length; i++){
 			var pointcloud = scope.viewer.pointclouds[i];
+			
+			if(!pointcloud.visible){
+				continue;
+			}
+			
 			var request = pointcloud.getPointsInProfile(profile, null, {
 				"onProgress": function(event){
 					if(!scope.enabled){

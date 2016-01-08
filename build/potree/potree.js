@@ -5361,6 +5361,7 @@ Potree.PointCloudOctree = function(geometry, material){
 	this.pickTarget = null;
 	this.generateDEM = false;
 	this.profileRequests = [];
+	this.name = "";
 	
 	// TODO read projection from file instead
 	this.projection = geometry.projection;
@@ -5369,6 +5370,17 @@ Potree.PointCloudOctree = function(geometry, material){
 };
 
 Potree.PointCloudOctree.prototype = Object.create(Potree.PointCloudTree.prototype);
+
+Potree.PointCloudOctree.prototype.setName = function(name){
+	if(this.name !== name){
+		this.name = name;
+		this.dispatchEvent({type: "name_changed", name: name, pointcloud: this});
+	}
+};
+
+Potree.PointCloudOctree.prototype.getName = function(){
+	return this.name;
+};
 
 Potree.PointCloudOctree.prototype.toTreeNode = function(geometryNode, parent){
 	var node = new Potree.PointCloudOctreeNode();
@@ -10074,6 +10086,7 @@ Potree.PointCloudArena4D = function(geometry){
 	this.material.sizeType = Potree.PointSizeType.ATTENUATED;
 	this.material.size = 0.05;
 	this.profileRequests = [];
+	this.name = "";
 	
 	this.pickTarget;
 	this.pickMaterial;
@@ -10082,6 +10095,17 @@ Potree.PointCloudArena4D = function(geometry){
 };
 
 Potree.PointCloudArena4D.prototype = new Potree.PointCloudTree();
+
+Potree.PointCloudOctree.prototype.setName = function(name){
+	if(this.name !== name){
+		this.name = name;
+		this.dispatchEvent({type: "name_changed", name: name, pointcloud: this});
+	}
+};
+
+Potree.PointCloudOctree.prototype.getName = function(){
+	return this.name;
+};
 
 Potree.PointCloudArena4D.prototype.toTreeNode = function(geometryNode, parent){
 	var node = new Potree.PointCloudArena4DNode();
@@ -11426,15 +11450,15 @@ Potree.Viewer = function(domElement, args){
 	};
 	
 	this.disableAnnotations = function(){
-		for(var i = 0; i < viewer.annotations.length; i++){
-			var annotation = viewer.annotations[i];
+		for(var i = 0; i < scope.annotations.length; i++){
+			var annotation = scope.annotations[i];
 			annotation.domElement.style.pointerEvents = "none";
 		};
 	};
 	
 	this.enableAnnotations = function(){
-		for(var i = 0; i < viewer.annotations.length; i++){
-			var annotation = viewer.annotations[i];
+		for(var i = 0; i < scope.annotations.length; i++){
+			var annotation = scope.annotations[i];
 			annotation.domElement.style.pointerEvents = "auto";
 		};
 	};
@@ -12375,9 +12399,9 @@ Potree.Viewer = function(domElement, args){
 		
 		if(scope.showDebugInfos){
 			scope.infos.set("camera.position", "camera.position: " + 
-				viewer.camera.position.x.toFixed(2) 
-				+ ", " + viewer.camera.position.y.toFixed(2) 
-				+ ", " + viewer.camera.position.z.toFixed(2)
+				scope.camera.position.x.toFixed(2) 
+				+ ", " + scope.camera.position.y.toFixed(2) 
+				+ ", " + scope.camera.position.z.toFixed(2)
 			);
 		}
 		
@@ -13320,7 +13344,6 @@ Potree.Viewer.Profile = function(viewer, element){
 	};
 
 	this.draw = function(profile){
-		// TODO handle all pointclouds
 		// TODO are the used closures safe for garbage collection?
 		
 		if(!scope.enabled){
@@ -13551,6 +13574,11 @@ Potree.Viewer.Profile = function(viewer, element){
 		
 		for(var i = 0; i < scope.viewer.pointclouds.length; i++){
 			var pointcloud = scope.viewer.pointclouds[i];
+			
+			if(!pointcloud.visible){
+				continue;
+			}
+			
 			var request = pointcloud.getPointsInProfile(profile, null, {
 				"onProgress": function(event){
 					if(!scope.enabled){

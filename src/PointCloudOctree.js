@@ -350,6 +350,7 @@ Potree.PointCloudOctree = function(geometry, material){
 	this.pickTarget = null;
 	this.generateDEM = false;
 	this.profileRequests = [];
+	this.name = "";
 	
 	// TODO read projection from file instead
 	this.projection = geometry.projection;
@@ -358,6 +359,17 @@ Potree.PointCloudOctree = function(geometry, material){
 };
 
 Potree.PointCloudOctree.prototype = Object.create(Potree.PointCloudTree.prototype);
+
+Potree.PointCloudOctree.prototype.setName = function(name){
+	if(this.name !== name){
+		this.name = name;
+		this.dispatchEvent({type: "name_changed", name: name, pointcloud: this});
+	}
+};
+
+Potree.PointCloudOctree.prototype.getName = function(){
+	return this.name;
+};
 
 Potree.PointCloudOctree.prototype.toTreeNode = function(geometryNode, parent){
 	var node = new Potree.PointCloudOctreeNode();

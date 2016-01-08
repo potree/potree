@@ -42,6 +42,8 @@ THREE.EarthControls = function ( camera, renderer, scene ) {
 	var camStart = null;
 	var pivot = null;
 	
+	var startEvent = { type: 'start'};
+	var endEvent = { type: 'end'};
 	
 	this.minAngle = (10 / 180) * Math.PI;	// 10°
 	this.maxAngle = (70 / 180) * Math.PI;	// 70°
@@ -205,6 +207,7 @@ THREE.EarthControls = function ( camera, renderer, scene ) {
         
 		scope.domElement.addEventListener( 'mousemove', onMouseMove, false );
 		scope.domElement.addEventListener( 'mouseup', onMouseUp, false );
+		scope.dispatchEvent( startEvent );
 	}
 
 	function onMouseMove( event ) {
@@ -230,7 +233,8 @@ THREE.EarthControls = function ( camera, renderer, scene ) {
 		
 		//scope.dragStartIndicator.style.display = "none";
 		scope.scene.remove(scope.pivotNode);
-
+		
+		scope.dispatchEvent( endEvent );
 	}
 
 	function onMouseWheel(event) {
@@ -252,6 +256,9 @@ THREE.EarthControls = function ( camera, renderer, scene ) {
 			var dir = new THREE.Vector3().subVectors(I, scope.camera.position).normalize();
 			scope.camera.position.add(dir.multiplyScalar(distance * 0.1 * amount));	
 		}
+		
+		scope.dispatchEvent( startEvent );
+		scope.dispatchEvent( endEvent );
 
 	}
 

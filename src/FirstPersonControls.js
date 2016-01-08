@@ -359,6 +359,10 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 			case scope.keys.A: scope.moveLeft = true; break;
 			case scope.keys.D: scope.moveRight = true; break;			
 		}
+		
+		//if(scope.moveForward || scope.moveBackward || scope.moveLeft || scope.moveRight){
+//			scope.dispatchEvent( startEvent );
+	//	}
 	}
 	
 	function onKeyUp( event ) {

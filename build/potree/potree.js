@@ -352,6 +352,7 @@ Potree.Shaders["pointcloud.vs"] = [
  "",
  "#if defined use_clip_box",
  "	uniform mat4 clipBoxes[max_clip_boxes];",
+ "	uniform vec3 clipBoxPositions[max_clip_boxes];",
  "#endif",
  "",
  "",
@@ -665,6 +666,19 @@ Potree.Shaders["pointcloud.vs"] = [
  "			#if defined clip_highlight_inside",
  "			vColor.r += 0.5;",
  "			#endif",
+ "			",
+ "			//vec3 cp = clipBoxPositions[0];",
+ "			//vec3 diff = vWorldPosition - cp;",
+ "			//vec3 dir = normalize(diff);",
+ "			//dir.z = 0.0;",
+ "			//dir = normalize(dir);",
+ "			//",
+ "			//vec4 worldPosition = modelMatrix * vec4( position + dir * 20.0, 1.0 );",
+ "			//vec4 mvPosition = modelViewMatrix * vec4( position + dir * 20.0, 1.0 );",
+ "			//vViewPosition = -mvPosition.xyz;",
+ "			//vWorldPosition = worldPosition.xyz;",
+ "			//gl_Position = projectionMatrix * mvPosition;",
+ "			",
  "		}",
  "	",
  "	#endif",
@@ -2073,6 +2087,7 @@ Potree.PointCloudMaterial = function(parameters){
 		gradient: 			{ type: "t", value: this.gradientTexture },
 		classificationLUT: 	{ type: "t", value: this.classificationTexture },
 		clipBoxes:			{ type: "Matrix4fv", value: [] },
+		clipBoxPositions:	{ type: "fv", value: null },
 		depthMap: 			{ type: "t", value: null },
 		diffuse:			{ type: "fv", value: [1,1,1]},
 		ambient:			{ type: "fv", value: [0.1, 0.1, 0.1]},
@@ -2279,11 +2294,16 @@ Potree.PointCloudMaterial.prototype.setClipBoxes = function(clipBoxes){
 	}
 	
 	this.uniforms.clipBoxes.value = new Float32Array(this.numClipBoxes * 16);
+	this.uniforms.clipBoxPositions.value = new Float32Array(this.numClipBoxes * 3);
 	
 	for(var i = 0; i < this.numClipBoxes; i++){
 		var box = clipBoxes[i];
 		
-		this.uniforms.clipBoxes.value.set(box.elements, 16*i);
+		this.uniforms.clipBoxes.value.set(box.inverse.elements, 16*i);
+
+		this.uniforms.clipBoxPositions.value[3*i+0] = box.position.x;
+		this.uniforms.clipBoxPositions.value[3*i+1] = box.position.y;
+		this.uniforms.clipBoxPositions.value[3*i+2] = box.position.z;
 	}
 };
 
@@ -3171,6 +3191,10 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 			case scope.keys.A: scope.moveLeft = true; break;
 			case scope.keys.D: scope.moveRight = true; break;			
 		}
+		
+		//if(scope.moveForward || scope.moveBackward || scope.moveLeft || scope.moveRight){
+//			scope.dispatchEvent( startEvent );
+	//	}
 	}
 	
 	function onKeyUp( event ) {
@@ -4187,22 +4211,18 @@ Potree.OrbitControls = function ( object, domElement ) {
 
 			case scope.keys.UP:
 				scope.pan( 0, scope.keyPanSpeed );
-				//scope.update();
 				break;
 
 			case scope.keys.BOTTOM:
 				scope.pan( 0, - scope.keyPanSpeed );
-				//scope.update();
 				break;
 
 			case scope.keys.LEFT:
 				scope.pan( scope.keyPanSpeed, 0 );
-				//scope.update();
 				break;
 
 			case scope.keys.RIGHT:
 				scope.pan( - scope.keyPanSpeed, 0 );
-				//scope.update();
 				break;
 
 		}
@@ -4409,6 +4429,8 @@ THREE.EarthControls = function ( camera, renderer, scene ) {
 	var camStart = null;
 	var pivot = null;
 	
+	var startEvent = { type: 'start'};
+	var endEvent = { type: 'end'};
 	
 	this.minAngle = (10 / 180) * Math.PI;	// 10°
 	this.maxAngle = (70 / 180) * Math.PI;	// 70°
@@ -4572,6 +4594,7 @@ THREE.EarthControls = function ( camera, renderer, scene ) {
         
 		scope.domElement.addEventListener( 'mousemove', onMouseMove, false );
 		scope.domElement.addEventListener( 'mouseup', onMouseUp, false );
+		scope.dispatchEvent( startEvent );
 	}
 
 	function onMouseMove( event ) {
@@ -4597,7 +4620,8 @@ THREE.EarthControls = function ( camera, renderer, scene ) {
 		
 		//scope.dragStartIndicator.style.display = "none";
 		scope.scene.remove(scope.pivotNode);
-
+		
+		scope.dispatchEvent( endEvent );
 	}
 
 	function onMouseWheel(event) {
@@ -4619,6 +4643,9 @@ THREE.EarthControls = function ( camera, renderer, scene ) {
 			var dir = new THREE.Vector3().subVectors(I, scope.camera.position).normalize();
 			scope.camera.position.add(dir.multiplyScalar(distance * 0.1 * amount));	
 		}
+		
+		scope.dispatchEvent( startEvent );
+		scope.dispatchEvent( endEvent );
 
 	}
 
@@ -6991,7 +7018,12 @@ Potree.utils.screenPass = new function(){
 	};
 }();
 	
-	
+// from http://stackoverflow.com/questions/901115/how-can-i-get-query-string-values-in-javascript
+Potree.utils.getParameterByName = function(name) {
+    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"), results = regex.exec(location.search);
+    return results === null ? null : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
 	
 
 Potree.Features = function(){
@@ -11393,6 +11425,20 @@ Potree.Viewer = function(domElement, args){
 		return scope.quality;
 	};
 	
+	this.disableAnnotations = function(){
+		for(var i = 0; i < viewer.annotations.length; i++){
+			var annotation = viewer.annotations[i];
+			annotation.domElement.style.pointerEvents = "none";
+		};
+	};
+	
+	this.enableAnnotations = function(){
+		for(var i = 0; i < viewer.annotations.length; i++){
+			var annotation = viewer.annotations[i];
+			annotation.domElement.style.pointerEvents = "auto";
+		};
+	};
+	
 	this.setClassificationVisibility = function(key, value){
 		var changed = false;
 		for(var i = 0; i < scope.pointclouds.length; i++){
@@ -11739,6 +11785,72 @@ Potree.Viewer = function(domElement, args){
 		return scope.annotations;
 	};
 	
+	this.loadSettingsFromURL = function(){
+		if(Potree.utils.getParameterByName("pointSize")){
+			scope.setPointSize(parseFloat(Potree.utils.getParameterByName("pointSize")));
+		}
+		
+		if(Potree.utils.getParameterByName("FOV")){
+			scope.setFOV(parseFloat(Potree.utils.getParameterByName("FOV")));
+		}
+		
+		if(Potree.utils.getParameterByName("opacity")){
+			scope.setOpacity(parseFloat(Potree.utils.getParameterByName("opacity")));
+		}
+		
+		if(Potree.utils.getParameterByName("edlEnabled")){
+			var enabled = Potree.utils.getParameterByName("edlEnabled") === "true";
+			scope.setEDLEnabled(enabled);
+		}
+		
+		if(Potree.utils.getParameterByName("edlRadius")){
+			scope.setEDLRadius(parseFloat(Potree.utils.getParameterByName("edlRadius")));
+		}
+		
+		if(Potree.utils.getParameterByName("edlStrength")){
+			scope.setEDLStrength(parseFloat(Potree.utils.getParameterByName("edlStrength")));
+		}
+		
+		if(Potree.utils.getParameterByName("clipMode")){
+			var clipMode = Potree.utils.getParameterByName("clipMode");
+			if(clipMode === "HIGHLIGHT_INSIDE"){
+				scope.setClipMode(Potree.ClipMode.HIGHLIGHT_INSIDE);
+			}else if(clipMode === "CLIP_OUTSIDE"){
+				scope.setClipMode(Potree.ClipMode.CLIP_OUTSIDE);
+			}else if(clipMode === "DISABLED"){
+				scope.setClipMode(Potree.ClipMode.DISABLED);
+			}
+		}
+		
+		if(Potree.utils.getParameterByName("pointBudget")){
+			scope.setPointBudget(parseFloat(Potree.utils.getParameterByName("pointBudget")));
+		}
+		
+		if(Potree.utils.getParameterByName("showBoundingBox")){
+			var enabled = Potree.utils.getParameterByName("showBoundingBox") === "true";
+			if(enabled){
+				scope.setShowBoundingBox(true);
+			}else{
+				scope.setShowBoundingBox(false);
+			}
+		}
+		
+		if(Potree.utils.getParameterByName("material")){
+			var material = Potree.utils.getParameterByName("material");
+			scope.setMaterial(material);
+		}
+		
+		if(Potree.utils.getParameterByName("pointSizing")){
+			var sizing = Potree.utils.getParameterByName("pointSizing");
+			scope.setPointSizing(sizing);
+		}
+		
+		if(Potree.utils.getParameterByName("quality")){
+			var quality = Potree.utils.getParameterByName("quality");
+			scope.setQuality(quality);
+		}
+	};
+	
 	
 	
 	
@@ -11827,6 +11939,8 @@ Potree.Viewer = function(domElement, args){
 		{ // create FIRST PERSON CONTROLS
 			scope.fpControls = new THREE.FirstPersonControls(scope.camera, scope.renderer.domElement);
 			scope.fpControls.enabled = false;
+			scope.fpControls.addEventListener("start", scope.disableAnnotations);
+			scope.fpControls.addEventListener("end", scope.enableAnnotations);
 			scope.fpControls.addEventListener("proposeTransform", demCollisionHandler);
 			scope.fpControls.addEventListener("move_speed_changed", function(event){
 				scope.setMoveSpeed(scope.fpControls.moveSpeed);
@@ -11836,6 +11950,8 @@ Potree.Viewer = function(domElement, args){
 		{ // create GEO CONTROLS
 			scope.geoControls = new Potree.GeoControls(scope.camera, scope.renderer.domElement);
 			scope.geoControls.enabled = false;
+			scope.geoControls.addEventListener("start", scope.disableAnnotations);
+			scope.geoControls.addEventListener("end", scope.enableAnnotations);
 			scope.geoControls.addEventListener("proposeTransform", demCollisionHandler);
 			scope.geoControls.addEventListener("move_speed_changed", function(event){
 				scope.setMoveSpeed(scope.geoControls.moveSpeed);
@@ -11845,6 +11961,8 @@ Potree.Viewer = function(domElement, args){
 		{ // create ORBIT CONTROLS
 			scope.orbitControls = new Potree.OrbitControls(scope.camera, scope.renderer.domElement);
 			scope.orbitControls.enabled = false;
+			scope.orbitControls.addEventListener("start", scope.disableAnnotations);
+			scope.orbitControls.addEventListener("end", scope.enableAnnotations);
 			scope.orbitControls.addEventListener("proposeTransform", demCollisionHandler);
 			scope.renderArea.addEventListener("dblclick", function(event){
 				if(scope.pointclouds.length === 0){
@@ -11930,6 +12048,8 @@ Potree.Viewer = function(domElement, args){
 		{ // create EARTH CONTROLS
 			scope.earthControls = new THREE.EarthControls(scope.camera, scope.renderer, scope.scenePointCloud);
 			scope.earthControls.enabled = false;
+			scope.earthControls.addEventListener("start", scope.disableAnnotations);
+			scope.earthControls.addEventListener("end", scope.enableAnnotations);
 			scope.earthControls.addEventListener("proposeTransform", demCollisionHandler);
 		}
 	};
@@ -12198,7 +12318,8 @@ Potree.Viewer = function(domElement, args){
 				var box = profile.boxes[j];
 				box.updateMatrixWorld();
 				var boxInverse = new THREE.Matrix4().getInverse(box.matrixWorld);
-				clipBoxes.push(boxInverse);
+				var boxPosition = box.getWorldPosition();
+				clipBoxes.push({inverse: boxInverse, position: boxPosition});
 			}
 		}
 		
@@ -12208,8 +12329,9 @@ Potree.Viewer = function(domElement, args){
 			if(volume.clip){
 				volume.updateMatrixWorld();
 				var boxInverse = new THREE.Matrix4().getInverse(volume.matrixWorld);
-			
-				clipBoxes.push(boxInverse);
+				var boxPosition = volume.getWorldPosition();
+				//clipBoxes.push(boxInverse);
+				clipBoxes.push({inverse: boxInverse, position: boxPosition});
 			}
 		}
 		
@@ -12758,10 +12880,10 @@ Potree.Viewer = function(domElement, args){
 	scope.setClipMode(Potree.ClipMode.HIGHLIGHT_INSIDE);
 	scope.setPointBudget(1*1000*1000);
 	scope.setShowBoundingBox(false);
-	//scope.setShowDebugInfos(false);
-	//scope.setShowStats(false);
 	scope.setFreeze(false);
 	scope.setNavigationMode("Orbit");
+	
+	scope.loadSettingsFromURL();
 
 	// start rendering!
 	requestAnimationFrame(loop);
@@ -13160,7 +13282,7 @@ Potree.Viewer.Profile = function(viewer, element){
 			return 'rgb(' + (d.color[0] * 100) + '%,' + (d.color[1] * 100) + '%,' + (d.color[2] * 100) + '%)';
 		} else if (material === Potree.PointColorType.INTENSITY) {
 			//return d.intensity;
-			return 'rgb(' + points.intensity + '%,' + points.intensity + '%,' + points.intensity + '%)';
+			return 'rgb(' + d.intensity + '%,' + d.intensity + '%,' + d.intensity + '%)';
 		} else if (material === Potree.PointColorType.CLASSIFICATION) {
 			var classif = scope.viewer.pointclouds[0].material.classification;
 			if (typeof classif[d.classification] != 'undefined'){
@@ -13676,9 +13798,12 @@ Potree.Viewer.MapView = function(viewer){
 					
 					if(feature.source){
 						var cloudjsurl = feature.pointcloud.pcoGeometry.url;
-						var pcurl = cloudjsurl.substring(0, cloudjsurl.lastIndexOf("/") + 1);
-						var sourceurl = pcurl + "/source";
-						content += sourceurl + "/" + feature.source.name + "\n";
+						//var pcurl = cloudjsurl.substring(0, cloudjsurl.lastIndexOf("/") + 1);
+						//var sourceurl = pcurl + "/source";
+						//content += sourceurl + "/" + feature.source.name + "\n";
+						var sourceurl = new URL(window.location.href + '/' + cloudjsurl + '/../source/' + feature.source.name);
+						content += sourceurl.href + "\n";
+						
 					}
 				}
 				
@@ -13966,21 +14091,21 @@ Potree.Viewer.MapView = function(viewer){
 				var p3 = scope.toMap.forward( [bounds.max[0], bounds.max[1]] );
 				var p4 = scope.toMap.forward( [bounds.min[0], bounds.max[1]] );
 				
-				//var boxes = [];
-				//var feature = new ol.Feature({
-				//	'geometry': new ol.geom.LineString([p1, p2, p3, p4, p1])
-				//});
-				//feature.source = source;
-				//feature.pointcloud = pointcloud;
-				//scope.sourcesLayer.getSource().addFeature(feature);
-				//
-                //
-				//feature = new ol.Feature({
-				//	 geometry: new ol.geom.Point(mapCenter),
-				//	 name: name 
-				//});
-				//feature.setStyle(createLabelStyle(name));
-				//scope.sourcesLabelLayer.getSource().addFeature(feature);
+				var boxes = [];
+				var feature = new ol.Feature({
+					'geometry': new ol.geom.LineString([p1, p2, p3, p4, p1])
+				});
+				feature.source = source;
+				feature.pointcloud = pointcloud;
+				scope.sourcesLayer.getSource().addFeature(feature);
+				
+                
+				feature = new ol.Feature({
+					 geometry: new ol.geom.Point(mapCenter),
+					 name: name 
+				});
+				feature.setStyle(createLabelStyle(name));
+				scope.sourcesLabelLayer.getSource().addFeature(feature);
 			}
 		});
 	}

@@ -463,6 +463,20 @@ Potree.Viewer = function(domElement, args){
 		return scope.quality;
 	};
 	
+	this.disableAnnotations = function(){
+		for(var i = 0; i < viewer.annotations.length; i++){
+			var annotation = viewer.annotations[i];
+			annotation.domElement.style.pointerEvents = "none";
+		};
+	};
+	
+	this.enableAnnotations = function(){
+		for(var i = 0; i < viewer.annotations.length; i++){
+			var annotation = viewer.annotations[i];
+			annotation.domElement.style.pointerEvents = "auto";
+		};
+	};
+	
 	this.setClassificationVisibility = function(key, value){
 		var changed = false;
 		for(var i = 0; i < scope.pointclouds.length; i++){
@@ -812,39 +826,27 @@ Potree.Viewer = function(domElement, args){
 	this.loadSettingsFromURL = function(){
 		if(Potree.utils.getParameterByName("pointSize")){
 			scope.setPointSize(parseFloat(Potree.utils.getParameterByName("pointSize")));
-		}else{
-			scope.setPointSize(1);
 		}
 		
 		if(Potree.utils.getParameterByName("FOV")){
 			scope.setFOV(parseFloat(Potree.utils.getParameterByName("FOV")));
-		}else{
-			scope.setFOV(60);
 		}
 		
 		if(Potree.utils.getParameterByName("opacity")){
 			scope.setOpacity(parseFloat(Potree.utils.getParameterByName("opacity")));
-		}else{
-			scope.setOpacity(1);
 		}
 		
 		if(Potree.utils.getParameterByName("edlEnabled")){
 			var enabled = Potree.utils.getParameterByName("edlEnabled") === "true";
 			scope.setEDLEnabled(enabled);
-		}else{
-			scope.setEDLEnabled(false);
 		}
 		
 		if(Potree.utils.getParameterByName("edlRadius")){
 			scope.setEDLRadius(parseFloat(Potree.utils.getParameterByName("edlRadius")));
-		}else{
-			scope.setEDLRadius(2);
 		}
 		
 		if(Potree.utils.getParameterByName("edlStrength")){
 			scope.setEDLStrength(parseFloat(Potree.utils.getParameterByName("edlStrength")));
-		}else{
-			scope.setEDLStrength(1);
 		}
 		
 		if(Potree.utils.getParameterByName("clipMode")){
@@ -856,14 +858,10 @@ Potree.Viewer = function(domElement, args){
 			}else if(clipMode === "DISABLED"){
 				scope.setClipMode(Potree.ClipMode.DISABLED);
 			}
-		}else{
-			scope.setClipMode(Potree.ClipMode.HIGHLIGHT_INSIDE);
 		}
 		
 		if(Potree.utils.getParameterByName("pointBudget")){
 			scope.setPointBudget(parseFloat(Potree.utils.getParameterByName("pointBudget")));
-		}else{
-			scope.setPointBudget(1*1000*1000);
 		}
 		
 		if(Potree.utils.getParameterByName("showBoundingBox")){
@@ -979,6 +977,8 @@ Potree.Viewer = function(domElement, args){
 		{ // create FIRST PERSON CONTROLS
 			scope.fpControls = new THREE.FirstPersonControls(scope.camera, scope.renderer.domElement);
 			scope.fpControls.enabled = false;
+			scope.fpControls.addEventListener("start", scope.disableAnnotations);
+			scope.fpControls.addEventListener("end", scope.enableAnnotations);
 			scope.fpControls.addEventListener("proposeTransform", demCollisionHandler);
 			scope.fpControls.addEventListener("move_speed_changed", function(event){
 				scope.setMoveSpeed(scope.fpControls.moveSpeed);
@@ -988,6 +988,8 @@ Potree.Viewer = function(domElement, args){
 		{ // create GEO CONTROLS
 			scope.geoControls = new Potree.GeoControls(scope.camera, scope.renderer.domElement);
 			scope.geoControls.enabled = false;
+			scope.geoControls.addEventListener("start", scope.disableAnnotations);
+			scope.geoControls.addEventListener("end", scope.enableAnnotations);
 			scope.geoControls.addEventListener("proposeTransform", demCollisionHandler);
 			scope.geoControls.addEventListener("move_speed_changed", function(event){
 				scope.setMoveSpeed(scope.geoControls.moveSpeed);
@@ -997,6 +999,8 @@ Potree.Viewer = function(domElement, args){
 		{ // create ORBIT CONTROLS
 			scope.orbitControls = new Potree.OrbitControls(scope.camera, scope.renderer.domElement);
 			scope.orbitControls.enabled = false;
+			scope.orbitControls.addEventListener("start", scope.disableAnnotations);
+			scope.orbitControls.addEventListener("end", scope.enableAnnotations);
 			scope.orbitControls.addEventListener("proposeTransform", demCollisionHandler);
 			scope.renderArea.addEventListener("dblclick", function(event){
 				if(scope.pointclouds.length === 0){
@@ -1082,6 +1086,8 @@ Potree.Viewer = function(domElement, args){
 		{ // create EARTH CONTROLS
 			scope.earthControls = new THREE.EarthControls(scope.camera, scope.renderer, scope.scenePointCloud);
 			scope.earthControls.enabled = false;
+			scope.earthControls.addEventListener("start", scope.disableAnnotations);
+			scope.earthControls.addEventListener("end", scope.enableAnnotations);
 			scope.earthControls.addEventListener("proposeTransform", demCollisionHandler);
 		}
 	};
@@ -1350,7 +1356,8 @@ Potree.Viewer = function(domElement, args){
 				var box = profile.boxes[j];
 				box.updateMatrixWorld();
 				var boxInverse = new THREE.Matrix4().getInverse(box.matrixWorld);
-				clipBoxes.push(boxInverse);
+				var boxPosition = box.getWorldPosition();
+				clipBoxes.push({inverse: boxInverse, position: boxPosition});
 			}
 		}
 		
@@ -1360,8 +1367,9 @@ Potree.Viewer = function(domElement, args){
 			if(volume.clip){
 				volume.updateMatrixWorld();
 				var boxInverse = new THREE.Matrix4().getInverse(volume.matrixWorld);
-			
-				clipBoxes.push(boxInverse);
+				var boxPosition = volume.getWorldPosition();
+				//clipBoxes.push(boxInverse);
+				clipBoxes.push({inverse: boxInverse, position: boxPosition});
 			}
 		}
 		
@@ -1901,12 +1909,15 @@ Potree.Viewer = function(domElement, args){
 	//scope.initGUI();
 	
 	// set defaults
-	//scope.setEDLEnabled(false);
-	//scope.setEDLRadius(2);
-	//scope.setEDLStrength(1);
-	//scope.setClipMode(Potree.ClipMode.HIGHLIGHT_INSIDE);
-	//scope.setPointBudget(1*1000*1000);
-	//scope.setShowBoundingBox(false);
+	scope.setPointSize(1);
+	scope.setFOV(60);
+	scope.setOpacity(1);
+	scope.setEDLEnabled(false);
+	scope.setEDLRadius(2);
+	scope.setEDLStrength(1);
+	scope.setClipMode(Potree.ClipMode.HIGHLIGHT_INSIDE);
+	scope.setPointBudget(1*1000*1000);
+	scope.setShowBoundingBox(false);
 	scope.setFreeze(false);
 	scope.setNavigationMode("Orbit");
 	

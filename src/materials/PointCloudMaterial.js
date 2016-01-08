@@ -142,6 +142,7 @@ Potree.PointCloudMaterial = function(parameters){
 		gradient: 			{ type: "t", value: this.gradientTexture },
 		classificationLUT: 	{ type: "t", value: this.classificationTexture },
 		clipBoxes:			{ type: "Matrix4fv", value: [] },
+		clipBoxPositions:	{ type: "fv", value: null },
 		depthMap: 			{ type: "t", value: null },
 		diffuse:			{ type: "fv", value: [1,1,1]},
 		ambient:			{ type: "fv", value: [0.1, 0.1, 0.1]},
@@ -348,11 +349,16 @@ Potree.PointCloudMaterial.prototype.setClipBoxes = function(clipBoxes){
 	}
 	
 	this.uniforms.clipBoxes.value = new Float32Array(this.numClipBoxes * 16);
+	this.uniforms.clipBoxPositions.value = new Float32Array(this.numClipBoxes * 3);
 	
 	for(var i = 0; i < this.numClipBoxes; i++){
 		var box = clipBoxes[i];
 		
-		this.uniforms.clipBoxes.value.set(box.elements, 16*i);
+		this.uniforms.clipBoxes.value.set(box.inverse.elements, 16*i);
+
+		this.uniforms.clipBoxPositions.value[3*i+0] = box.position.x;
+		this.uniforms.clipBoxPositions.value[3*i+1] = box.position.y;
+		this.uniforms.clipBoxPositions.value[3*i+2] = box.position.z;
 	}
 };
 

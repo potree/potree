@@ -3321,7 +3321,7 @@ Potree.GeoControls = function ( object, domElement ) {
 	this.setTrack = function(track){
 		if(this.track !== track){
 			this.track = track;
-			this.trackPos = 0;
+			this.trackPos = null;
 		}
 	};
 	
@@ -3329,7 +3329,7 @@ Potree.GeoControls = function ( object, domElement ) {
 		var preserveRelativeRotation = _preserveRelativeRotation || false;
 	
 		var newTrackPos = Math.max(0, Math.min(1, trackPos));
-		var oldTrackPos = this.trackPos;
+		var oldTrackPos = this.trackPos || newTrackPos;
 		
 		var newTangent = this.track.getTangentAt(newTrackPos);
 		var oldTangent = this.track.getTangentAt(oldTrackPos);
@@ -3345,6 +3345,19 @@ Potree.GeoControls = function ( object, domElement ) {
 			var target = new THREE.Vector3().addVectors(this.object.position, dir);
 			this.object.lookAt(target);
 			this.object.updateMatrixWorld();
+			
+			var event = {
+				type: 'path_relative_rotation',
+				angle: angle,
+				axis: tangentDiffNormal,
+				controls: scope
+			};
+			this.dispatchEvent(event);
+		}
+		
+		if(this.trackPos === null){
+			var target = new THREE.Vector3().addVectors(this.object.position, newTangent);
+			this.object.lookAt(target);
 		}
 		
 		

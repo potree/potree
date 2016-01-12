@@ -58,6 +58,10 @@ Potree.Annotation = function(viewer, args){
 	};
 	this.elOrdinal.onclick = function(){
 		scope.moveHere(scope.viewer.camera);
+		scope.dispatchEvent({type: "click", target: scope});
+		if(scope.viewer.geoControls){
+			scope.viewer.geoControls.setTrack(null);
+		}
 	};
 
 	

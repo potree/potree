@@ -3325,16 +3325,35 @@ Potree.GeoControls = function ( object, domElement ) {
 		}
 	};
 	
-	this.setTrackPos = function(trackPos){
+	this.setTrackPos = function(trackPos, _preserveRelativeRotation){
+		var preserveRelativeRotation = _preserveRelativeRotation || false;
 	
 		var newTrackPos = Math.max(0, Math.min(1, trackPos));
 		var oldTrackPos = this.trackPos;
 		
-		var pStart = this.track.getPointAt(oldTrackPos);
-		var pEnd = this.track.getPointAt(newTrackPos);
-		var pDiff = pEnd.sub(pStart);
+		var newTangent = this.track.getTangentAt(newTrackPos);
+		var oldTangent = this.track.getTangentAt(oldTrackPos);
+		
+		if(newTangent.equals(oldTangent)){
+			// no change in direction
+		}else{
+			var tangentDiffNormal = new THREE.Vector3().crossVectors(oldTangent, newTangent).normalize();
+			var angle = oldTangent.angleTo(newTangent);
+			var rot = new THREE.Matrix4().makeRotationAxis(tangentDiffNormal, angle);
+			var dir = this.object.getWorldDirection().clone();
+			dir = dir.applyMatrix4(rot);
+			var target = new THREE.Vector3().addVectors(this.object.position, dir);
+			this.object.lookAt(target);
+			this.object.updateMatrixWorld();
+		}
+		
 		
 		this.trackPos = newTrackPos;
+		
+		//var pStart = this.track.getPointAt(oldTrackPos);
+		//var pEnd = this.track.getPointAt(newTrackPos);
+		//var pDiff = pEnd.sub(pStart);
+		
 		
 		if(newTrackPos !== oldTrackPos){
 			var event = {
@@ -4928,6 +4947,10 @@ Potree.Annotation = function(viewer, args){
 	};
 	this.elOrdinal.onclick = function(){
 		scope.moveHere(scope.viewer.camera);
+		scope.dispatchEvent({type: "click", target: scope});
+		if(scope.viewer.geoControls){
+			scope.viewer.geoControls.setTrack(null);
+		}
 	};
 
 	
@@ -13750,7 +13773,7 @@ Potree.Viewer.MapView = function(viewer){
 			source: new ol.source.Vector({}),
 			style: new ol.style.Style({
 				fill: new ol.style.Fill({
-					color: 'rgba(255, 0, 0, 0.1)'
+					color: 'rgba(0, 0, 150, 0.1)'
 				}),
 				stroke: new ol.style.Stroke({
 					  color: 'rgba(0, 0, 150, 1)',
@@ -13772,7 +13795,7 @@ Potree.Viewer.MapView = function(viewer){
 					  width: 2
 				})
 			}),
-			minResolution: 2,
+			minResolution: 0.01,
             maxResolution: 20
 		});
 		
@@ -13812,32 +13835,38 @@ Potree.Viewer.MapView = function(viewer){
 			var handleDownload = function(e) {
 				var features = selectedFeatures.getArray();
 				
+				var url =  [location.protocol, '//', location.host, location.pathname].join('');
+				
 				if(features.length === 0){
 					alert("No tiles were selected. Select area with ctrl + left mouse button!");
 					e.preventDefault();
 					e.stopImmediatePropagation();
 					return false;
-					
-				}
-				
-				var content = "";
-				for(var i = 0; i < features.length; i++){
-					var feature = features[i];
+				}else if(features.length === 1){
+					var feature = features[0];
 					
 					if(feature.source){
 						var cloudjsurl = feature.pointcloud.pcoGeometry.url;
-						//var pcurl = cloudjsurl.substring(0, cloudjsurl.lastIndexOf("/") + 1);
-						//var sourceurl = pcurl + "/source";
-						//content += sourceurl + "/" + feature.source.name + "\n";
-						var sourceurl = new URL(window.location.href + '/' + cloudjsurl + '/../source/' + feature.source.name);
-						content += sourceurl.href + "\n";
-						
+						var sourceurl = new URL(url + '/../' + cloudjsurl + '/../source/' + feature.source.name);
+						link.href = sourceurl.href;
+						link.download = feature.source.name;
 					}
+				}else{
+					var content = "";
+					for(var i = 0; i < features.length; i++){
+						var feature = features[i];
+						
+						if(feature.source){
+							var cloudjsurl = feature.pointcloud.pcoGeometry.url;
+							var sourceurl = new URL(url + '/../' + cloudjsurl + '/../source/' + feature.source.name);
+							content += sourceurl.href + "\n";
+						}
+					}
+					
+					var uri = "data:application/octet-stream;base64,"+btoa(content);
+					link.href = uri;
+					link.download = "list_of_files.txt";
 				}
-				
-				var uri = "data:application/octet-stream;base64,"+btoa(content);
-				link.href = uri;
-				
 			};
 			
 			button.addEventListener('click', handleDownload, false);
@@ -13849,7 +13878,7 @@ Potree.Viewer.MapView = function(viewer){
 			element.appendChild(btToggleTiles);
 			element.style.bottom = "0.5em";
 			element.style.left = "0.5em";
-			element.title = "Download list of selected tiles. Select area using ctrl + left mouse.";
+			element.title = "Download file or list of selected tiles. Select tile with left mouse button or area using ctrl + left mouse.";
 			
 			ol.control.Control.call(this, {
 				element: element,
@@ -14120,8 +14149,11 @@ Potree.Viewer.MapView = function(viewer){
 				var p4 = scope.toMap.forward( [bounds.min[0], bounds.max[1]] );
 				
 				var boxes = [];
+				//var feature = new ol.Feature({
+				//	'geometry': new ol.geom.LineString([p1, p2, p3, p4, p1])
+				//});
 				var feature = new ol.Feature({
-					'geometry': new ol.geom.LineString([p1, p2, p3, p4, p1])
+					'geometry': new ol.geom.Polygon([[p1, p2, p3, p4, p1]])
 				});
 				feature.source = source;
 				feature.pointcloud = pointcloud;

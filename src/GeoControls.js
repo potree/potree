@@ -96,16 +96,35 @@ Potree.GeoControls = function ( object, domElement ) {
 		}
 	};
 	
-	this.setTrackPos = function(trackPos){
+	this.setTrackPos = function(trackPos, _preserveRelativeRotation){
+		var preserveRelativeRotation = _preserveRelativeRotation || false;
 	
 		var newTrackPos = Math.max(0, Math.min(1, trackPos));
 		var oldTrackPos = this.trackPos;
 		
-		var pStart = this.track.getPointAt(oldTrackPos);
-		var pEnd = this.track.getPointAt(newTrackPos);
-		var pDiff = pEnd.sub(pStart);
+		var newTangent = this.track.getTangentAt(newTrackPos);
+		var oldTangent = this.track.getTangentAt(oldTrackPos);
+		
+		if(newTangent.equals(oldTangent)){
+			// no change in direction
+		}else{
+			var tangentDiffNormal = new THREE.Vector3().crossVectors(oldTangent, newTangent).normalize();
+			var angle = oldTangent.angleTo(newTangent);
+			var rot = new THREE.Matrix4().makeRotationAxis(tangentDiffNormal, angle);
+			var dir = this.object.getWorldDirection().clone();
+			dir = dir.applyMatrix4(rot);
+			var target = new THREE.Vector3().addVectors(this.object.position, dir);
+			this.object.lookAt(target);
+			this.object.updateMatrixWorld();
+		}
+		
 		
 		this.trackPos = newTrackPos;
+		
+		//var pStart = this.track.getPointAt(oldTrackPos);
+		//var pEnd = this.track.getPointAt(newTrackPos);
+		//var pDiff = pEnd.sub(pStart);
+		
 		
 		if(newTrackPos !== oldTrackPos){
 			var event = {

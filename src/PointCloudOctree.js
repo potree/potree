@@ -373,11 +373,11 @@ Potree.PointCloudOctree.prototype.getName = function(){
 
 Potree.PointCloudOctree.prototype.toTreeNode = function(geometryNode, parent){
 	var node = new Potree.PointCloudOctreeNode();
-	var sceneNode = new THREE.PointCloud(geometryNode.geometry, pointcloud.material);
+	var sceneNode = new THREE.PointCloud(geometryNode.geometry, this.material);
 	
 	node.geometryNode = geometryNode;
 	node.sceneNode = sceneNode;
-	node.pointcloud = pointcloud;
+	node.pointcloud = this;
 	node.children = {};
 	for(var key in geometryNode.children){
 		node.children[key] = geometryNode.children[key];

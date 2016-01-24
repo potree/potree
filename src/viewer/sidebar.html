@@ -192,49 +192,49 @@ function initToolbar(){
 	var elToolbar = document.getElementById("tools");
 	
 	elToolbar.appendChild(createToolIcon(
-		"../resources/icons/angle.png",
+		Potree.resourcePath + "/icons/angle.png",
 		"angle measurements",
 		function(){viewer.measuringTool.startInsertion({showDistances: false, showAngles: true, showArea: false, closed: true, maxMarkers: 3})}
 	));
 	
 	elToolbar.appendChild(createToolIcon(
-		"../resources/icons/point.svg",
+		Potree.resourcePath + "/icons/point.svg",
 		"angle measurements",
 		function(){viewer.measuringTool.startInsertion({showDistances: false, showAngles: false, showCoordinates: true, showArea: false, closed: true, maxMarkers: 1})}
 	));
 	
 	elToolbar.appendChild(createToolIcon(
-		"../resources/icons/distance.svg",
+		Potree.resourcePath + "/icons/distance.svg",
 		"distance measurements",
 		function(){viewer.measuringTool.startInsertion({showDistances: true, showArea: false, closed: false})}
 	));
 	
 	elToolbar.appendChild(createToolIcon(
-		"../resources/icons/area.svg",
+		Potree.resourcePath + "/icons/area.svg",
 		"area measurements",
 		function(){viewer.measuringTool.startInsertion({showDistances: true, showArea: true, closed: true})}
 	));
 	
 	elToolbar.appendChild(createToolIcon(
-		"../resources/icons/volume.svg",
+		Potree.resourcePath + "/icons/volume.svg",
 		"volume measurements",
 		function(){viewer.volumeTool.startInsertion()}
 	));
 	
 	elToolbar.appendChild(createToolIcon(
-		"../resources/icons/profile.svg",
+		Potree.resourcePath + "/icons/profile.svg",
 		"height profiles",
 		function(){viewer.profileTool.startInsertion()}
 	));
 	
 	elToolbar.appendChild(createToolIcon(
-		"../resources/icons/clip_volume.svg",
+		Potree.resourcePath + "/icons/clip_volume.svg",
 		"clipping volumes",
 		function(){viewer.volumeTool.startInsertion({clip: true})}
 	));
 	
 	elToolbar.appendChild(createToolIcon(
-		"../resources/icons/reset_tools.svg",
+		Potree.resourcePath + "/icons/reset_tools.svg",
 		"remove all measurements",
 		function(){
 			viewer.measuringTool.reset();
@@ -525,44 +525,44 @@ function initNavigation(){
 	var elNavigation = document.getElementById("navigation");
 	
 	elNavigation.appendChild(createToolIcon(
-		"../resources/icons/earth_controls_1.png",
+		Potree.resourcePath + "/icons/earth_controls_1.png",
 		"Earth Controls",
 		function(){viewer.useEarthControls()}
 	));
 	
 	
 	elNavigation.appendChild(createToolIcon(
-		"../resources/icons/fps_controls.png",
+		Potree.resourcePath + "/icons/fps_controls.png",
 		"Flight Controls",
 		function(){viewer.useFPSControls()}
 	));
 	
 	elNavigation.appendChild(createToolIcon(
-		"../resources/icons/orbit_controls.svg",
+		Potree.resourcePath + "/icons/orbit_controls.svg",
 		"Orbit Controls",
 		function(){viewer.useOrbitControls()}
 	));
 	
 	elNavigation.appendChild(createToolIcon(
-		"../resources/icons/focus.svg",
+		Potree.resourcePath + "/icons/focus.svg",
 		"focus on pointcloud",
 		function(){viewer.fitToScreen()}
 	));
 	
 	elNavigation.appendChild(createToolIcon(
-		"../resources/icons/topview.svg",
+		Potree.resourcePath + "/icons/topview.svg",
 		"top view",
 		function(){viewer.setTopView()}
 	));
 	
 	elNavigation.appendChild(createToolIcon(
-		"../resources/icons/frontview.svg",
+		Potree.resourcePath + "/icons/frontview.svg",
 		"front view",
 		function(){viewer.setFrontView()}
 	));
 	
 	elNavigation.appendChild(createToolIcon(
-		"../resources/icons/leftview.svg",
+		Potree.resourcePath + "/icons/leftview.svg",
 		"left view",
 		function(){viewer.setLeftView()}
 	));
@@ -639,27 +639,27 @@ function initMeasurementDetails(){
 		
 		if(measurement){
 			if(measurement.showDistances && !measurement.showArea && !measurement.showAngles){
-				elPanelIcon.src = "../resources/icons/distance.svg";
+				elPanelIcon.src = Potree.resourcePath + "/icons/distance.svg";
 				elPanelStretch.innerHTML = "Distance";
 			}else if(measurement.showDistances && measurement.showArea && !measurement.showAngles){
-				elPanelIcon.src = "../resources/icons/area.svg";
+				elPanelIcon.src = Potree.resourcePath + "/icons/area.svg";
 				elPanelStretch.innerHTML = "Area";
 			}else if(measurement.maxMarkers === 1){
-				elPanelIcon.src = "../resources/icons/point.svg";
+				elPanelIcon.src = Potree.resourcePath + "/icons/point.svg";
 				elPanelStretch.innerHTML = "Coordinate";
 			}else if(!measurement.showDistances && !measurement.showArea && measurement.showAngles){
-				elPanelIcon.src = "../resources/icons/angle.png";
+				elPanelIcon.src = Potree.resourcePath + "/icons/angle.png";
 				elPanelStretch.innerHTML = "Angle";
 			}
 			
 			elPanelRemove.onclick = function(){viewer.measuringTool.removeMeasurement(measurement);};
 		}else if(profile){
-			elPanelIcon.src = "../resources/icons/profile.svg";
+			elPanelIcon.src = Potree.resourcePath + "/icons/profile.svg";
 			elPanelRemove.onclick = function(){viewer.profileTool.removeProfile(profile);};
 			
 			elPanelStretch.innerHTML = "Profile";
 		}else if(volume){
-			elPanelIcon.src = "../resources/icons/volume.svg";
+			elPanelIcon.src = Potree.resourcePath + "/icons/volume.svg";
 			elPanelRemove.onclick = function(){viewer.measuringTool.removeVolume(volume);};
 			
 			elPanelStretch.innerHTML = "Volume";
@@ -669,7 +669,7 @@ function initMeasurementDetails(){
 		elPanelIcon.style.height = "16px";
 		elPanelStretch.style.flexGrow = 1;
 		elPanelStretch.style.textAlign = "center";
-		elPanelRemove.src = "../resources/icons/remove.svg";
+		elPanelRemove.src = Potree.resourcePath + "/icons/remove.svg";
 		elPanelRemove.style.width = "16px";
 		elPanelRemove.style.height = "16px";
 		elPanelBody.classList.add("panel-body");

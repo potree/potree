@@ -19,6 +19,16 @@ Potree.workers = {};
 
 Potree.Shaders = {};
 
+Potree.scriptPath = null;
+if(document.currentScript.src){
+		Potree.scriptPath = new URL(document.currentScript.src + "/..").href;
+}else{
+	console.error("Potree was unable to find its script path using document.currentScript. Is Potree included with a script tag? Does your browser support this function?");
+}
+
+Potree.resourcePath = Potree.scriptPath + "/resources";
+
+
 
 Potree.updatePointClouds = function(pointclouds, camera, renderer){
 	

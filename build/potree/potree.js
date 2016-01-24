@@ -19,6 +19,16 @@ Potree.workers = {};
 
 Potree.Shaders = {};
 
+Potree.scriptPath = null;
+if(document.currentScript.src){
+		Potree.scriptPath = new URL(document.currentScript.src + "/..").href;
+}else{
+	console.error("Potree was unable to find its script path using document.currentScript. Is Potree included with a script tag? Does your browser support this function?");
+}
+
+Potree.resourcePath = Potree.scriptPath + "/resources";
+
+
 
 Potree.updatePointClouds = function(pointclouds, camera, renderer){
 	
@@ -2004,9 +2014,11 @@ Potree.PointColorType = {
 	COLOR: 				1,
 	DEPTH: 				2,
 	HEIGHT: 			3,
+	ELEVATION: 			3,
 	INTENSITY: 			4,
 	INTENSITY_GRADIENT:	5,
 	LOD: 				6,
+	LEVEL_OF_DETAIL: 	6,
 	POINT_INDEX: 		7,
 	CLASSIFICATION: 	8,
 	RETURN_NUMBER: 		9,
@@ -11520,12 +11532,20 @@ Potree.Viewer = function(domElement, args){
 	};
 
 	this.setMaterial = function(value){
-		if(this.material !== value){
-			this.material = scope.toMaterialID(value);
+		if(scope.pointColorType !== scope.toMaterialID(value)){
+			scope.pointColorType = scope.toMaterialID(value);
 			
 			scope.dispatchEvent({"type": "material_changed", "viewer": scope});
 		}
 	};
+	
+	this.setMaterialID = function(value){
+		if(scope.pointColorType !== value){
+			scope.pointColorType = value;
+			
+			scope.dispatchEvent({"type": "material_changed", "viewer": scope});
+		}
+	}
 	
 	this.getMaterial = function(){
 		return scope.pointColorType;
@@ -11537,29 +11557,29 @@ Potree.Viewer = function(domElement, args){
 	
 	this.toMaterialID = function(materialName){
 		if(materialName === "RGB"){
-			scope.pointColorType = Potree.PointColorType.RGB;
+			return Potree.PointColorType.RGB;
 		}else if(materialName === "Color"){
-			scope.pointColorType = Potree.PointColorType.COLOR;
+			return Potree.PointColorType.COLOR;
 		}else if(materialName === "Elevation"){
-			scope.pointColorType = Potree.PointColorType.HEIGHT;
+			return Potree.PointColorType.HEIGHT;
 		}else if(materialName === "Intensity"){
-			scope.pointColorType = Potree.PointColorType.INTENSITY;
+			return Potree.PointColorType.INTENSITY;
 		}else if(materialName === "Intensity Gradient"){
-			scope.pointColorType = Potree.PointColorType.INTENSITY_GRADIENT;
+			return Potree.PointColorType.INTENSITY_GRADIENT;
 		}else if(materialName === "Classification"){
-			scope.pointColorType = Potree.PointColorType.CLASSIFICATION;
+			return Potree.PointColorType.CLASSIFICATION;
 		}else if(materialName === "Return Number"){
-			scope.pointColorType = Potree.PointColorType.RETURN_NUMBER;
+			return Potree.PointColorType.RETURN_NUMBER;
 		}else if(materialName === "Source"){
-			scope.pointColorType = Potree.PointColorType.SOURCE;
+			return Potree.PointColorType.SOURCE;
 		}else if(materialName === "Level of Detail"){
-			scope.pointColorType = Potree.PointColorType.LOD;
+			return Potree.PointColorType.LOD;
 		}else if(materialName === "Point Index"){
-			scope.pointColorType = Potree.PointColorType.POINT_INDEX;
+			return Potree.PointColorType.POINT_INDEX;
 		}else if(materialName === "Normal"){
-			scope.pointColorType = Potree.PointColorType.NORMAL;
+			return Potree.PointColorType.NORMAL;
 		}else if(materialName === "Phong"){
-			scope.pointColorType = Potree.PointColorType.PHONG;
+			return Potree.PointColorType.PHONG;
 		}
 	};
 	
@@ -11946,9 +11966,26 @@ Potree.Viewer = function(domElement, args){
 
 	this.loadGUI = function(){
 		var sidebarContainer = $('#potree_sidebar_container');
-		sidebarContainer.load("../build/potree/sidebar.html");
+		sidebarContainer.load(Potree.scriptPath + "/sidebar.html");
 		sidebarContainer.css("width", "300px");
 		sidebarContainer.css("height", "100%");
+		
+		var imgMenuToggle = document.createElement("img");
+		imgMenuToggle.src = Potree.resourcePath + "/icons/menu_button.svg";
+		imgMenuToggle.onclick = scope.toggleSidebar;
+		imgMenuToggle.classList.add("potree_menu_toggle");
+		//viewer.renderArea.appendChild(imgMenuToggle);
+		
+		var imgMapToggle = document.createElement("img");
+		imgMapToggle.src = Potree.resourcePath + "/icons/map_icon.png";
+		imgMapToggle.style.display = "none";
+		imgMapToggle.onclick = scope.toggleMap;
+		imgMapToggle.id = "potree_map_toggle";
+		//viewer.renderArea.appendChild(imgMapToggle);
+		
+		viewer.renderArea.insertBefore(imgMapToggle, viewer.renderArea.children[0]);
+		viewer.renderArea.insertBefore(imgMenuToggle, viewer.renderArea.children[0]);
+		
 		
 		
 		//$('head').append( $('<link rel="stylesheet" type="text/css" />').attr('href', '../src/viewer/viewer.css') );		
@@ -11958,7 +11995,7 @@ Potree.Viewer = function(domElement, args){
 		//$('head').append( $('<link rel="stylesheet" type="text/css" />').attr('href', "../libs/jquery-ui-1.11.4/jquery-ui.css"	));
 		
 		//var elProfile = $('<div style="position: absolute; width: 100%; height: 30%; bottom: 0; display: none" >');
-		var elProfile = $('<div>').load("../build/potree/profile.html", function(){
+		var elProfile = $('<div>').load(Potree.scriptPath + "/profile.html", function(){
 			$('#potree_render_area').append(elProfile.children());
 			scope._2dprofile = new Potree.Viewer.Profile(scope, document.getElementById("profile_draw_container"));
 		});
@@ -12141,7 +12178,7 @@ Potree.Viewer = function(domElement, args){
 		scope.renderer.domElement.tabIndex = "2222";
 		scope.renderer.domElement.addEventListener("mousedown", function(){scope.renderer.domElement.focus();});
 		
-		skybox = Potree.utils.loadSkybox("../resources/textures/skybox/");
+		skybox = Potree.utils.loadSkybox(Potree.resourcePath + "/textures/skybox/");
 
 		// camera and controls
 		scope.camera.position.set(-304, 372, 318);
@@ -12206,7 +12243,7 @@ Potree.Viewer = function(domElement, args){
 		
 		
 		// background
-		// var texture = THREE.ImageUtils.loadTexture( '../resources/textures/background.gif' );
+		// var texture = THREE.ImageUtils.loadTexture( Potree.resourcePath + '/textures/background.gif' );
 		var texture = Potree.utils.createBackgroundTexture(512, 512);
 		
 		texture.minFilter = texture.magFilter = THREE.NearestFilter;

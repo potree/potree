@@ -1,0 +1,20 @@
+{
+  "name": "i18next",
+  "version": "1.8.2",
+  "main": "./i18next.js",
+  "dependencies": {},
+  "ignore": [
+    "test/",
+    "release/",
+    "spec/",
+    "src/",
+    "sample/",
+    "report/",
+    "buildtasks/",
+    ".gitignore",
+    "Gruntfile.js",
+    "package.json",
+    "testacular.conf.js",
+    "**/*.zip"
+  ]
+}

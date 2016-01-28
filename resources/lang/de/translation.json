@@ -17,7 +17,7 @@
         "volume_measurement": "Volumenmessung",
         "height_profile": "Höhenprofil",
         "clip_volume": "Volume clip",
-        "remove_all_measurement": "alle Messungen entfernen",
+        "remove_all_measurement": "Alle Messungen entfernen",
         "left_view_control": "Linke Seite",
         "front_view_control": "Vorderseite",
         "top_view_control": "Draufsicht",
@@ -31,12 +31,12 @@
         "point_size": "Punktgrösse",
         "point_opacity": "Deckkraft",
         "field_view": "Sichtfeld",
-        "point_size_type": "Point sizing",
+        "point_size_type": "Punktgrösse",
         "point_material": "Materials",
         "elevation_range": "Elevation Bereich",
         "point_quality": "Qualität",
         "edl_radius": "Radius",
-        "edl_strength": "Stärke ",
+        "edl_strength": "Stärke",
         "edl_enable": "Ein",
         "min_node_size": "Min Knotengrösse",
         "clip_mode": "Clip-Modus",
@@ -48,7 +48,7 @@
         "language": "Sprache"
     },
     "profile": {
-        "nb_points": "Point number",
+        "nb_points": "Punkt number",
         "title": "Höhenprofil",
         "save": "Speichern"
     },

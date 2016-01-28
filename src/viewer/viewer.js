@@ -966,7 +966,23 @@ Potree.Viewer = function(domElement, args){
 			scope._2dprofile = new Potree.Viewer.Profile(scope, document.getElementById("profile_draw_container"));
 		});
 		
+        i18n.init({ 
+            lng: 'en',
+            resGetPath: '../resources/lang/__lng__/__ns__.json',
+            preload: ['en', 'fr', 'de'],
+            getAsync: true,
+            debug: true
+            }, function(t) { 
+            // Start translation once everything is loaded
+            $("body").i18n();
+        });
 	}
+    
+    this.setLanguage = function(lang) {
+        i18n.setLng(lang);
+        $("body").i18n();
+        console.log("ici");
+    }
 
 	this.createControls = function(){
 		

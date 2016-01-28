@@ -10,19 +10,23 @@
 		<span style="flex-grow: 1"></span>
 		<span id="potree_version_number" style="color: #9AA1A4; font-size: 80%; font-weight: 100"></span>
 	</span>
+    <div style="font-family:arial;">
+        <a href="javascript:viewer.setLanguage('en');" style="margin-left: 30px;">EN</a> -  
+        <a href="javascript:viewer.setLanguage('fr');">FR</a> - 
+        <a href="javascript:viewer.setLanguage('de');">DE</a>
+    </div>
   
   <div id="accordion" class="accordion">
-	  <h3>Appearance</h3>
-	  <div>
-	  <ul class="pv-menu-list">
-	  
-		<li>Point Budget: <span id="lblPointBudget"></span> <div id="sldPointBudget"></div>	</li>
-		<li>Point Size: <span id="lblPointSize"></span> <div id="sldPointSize"></div>		</li>
-		<li>Field of View: <span id="lblFOV"></span><div id="sldFOV"></div>					</li>
-		<li>Opacity: <span id="lblOpacity"></span><div id="sldOpacity"></div>				</li>
+    <h3><span data-i18n="tb.rendering_opt"></span></h3>
+    <div>
+        <ul class="pv-menu-list">
+		<li><span data-i18n="appearance.nb_max_pts"></span>:<span id="lblPointBudget"></span> <div id="sldPointBudget"></div>	</li>
+		<li><span data-i18n="appearance.point_size"></span>:<span id="lblPointSize"></span> <div id="sldPointSize"></div>		</li>
+		<li><span data-i18n="appearance.field_view"></span>:<span id="lblFOV"></span><div id="sldFOV"></div>					</li>
+		<li><span data-i18n="appearance.point_opacity"></span>:<span id="lblOpacity"></span><div id="sldOpacity"></div>				</li>
 	   
 	   <li>
-		   <label for="optPointSizing" class="pv-select-label">Point Sizing </label>
+		   <label for="optPointSizing" class="pv-select-label" data-i18n="appearance.point_size_type">Point Sizing </label>
 		   <select id="optPointSizing" name="optPointSizing">
 				<option>Fixed</option>
 				<option>Attenuated</option>
@@ -31,7 +35,7 @@
 		</li>
 		
 		<li>
-		   <label for="optQuality" class="pv-select-label">Quality </label>
+		   <label for="optQuality" class="pv-select-label" data-i18n="appearance.point_quality"></label>
 		   <select id="optQuality" name="optQuality">
 				<option>Squares</option>
 				<option>Circles</option>
@@ -40,76 +44,75 @@
 			</select>
 		</li>		
 	   
-		<li><label class="menu-item"><input type="checkbox" onClick="viewer.setShowSkybox(this.checked)"/>&nbsp;Skybox</label></li>
+		<li><label class="menu-item"><input type="checkbox" onClick="viewer.setShowSkybox(this.checked)"/><span data-i18n="appearance.skybox"></span</label></li>
 		
 		<li class="pv-divider"></li>
 		<li class="pv-menu-list-header">Eye-Dome-Lighting</li>
 		
-		<li><label><input type="checkbox" id="chkEDLEnabled" onClick="viewer.setEDLEnabled(this.checked)"/>&nbsp;enable</label></li>
-		<li>radius: <span id="lblEDLRadius"></span><div id="sldEDLRadius"></div></li>
-		<li>strength: <span id="lblEDLStrength"></span><div id="sldEDLStrength"></div></li>
+		<li><label><input type="checkbox" id="chkEDLEnabled" onClick="viewer.setEDLEnabled(this.checked)"/><span data-i18n="appearance.edl_enable"></span></label></li>
+		<li><span data-i18n="appearance.edl_radius"></span>:<span id="lblEDLRadius"></span><div id="sldEDLRadius"></div></li>
+		<li><span data-i18n="appearance.edl_strength"></span>:<span id="lblEDLStrength"></span><div id="sldEDLStrength"></div></li>
 		
 		</ul>
 	   
 	  </div>
-	  <h3>Navigation</h3>
+	  <h3><span data-i18n="tb.navigation_opt"></span></h3>
 	  <div>
 		<ul class="pv-menu-list">
 			<li id="navigation"></li>
-			<li><label><input type="checkbox" onClick="viewer.setDEMCollisionsEnabled(this.checked)"/>&nbsp;keep above ground</label></li>
-			<li>move speed <span id="lblMoveSpeed"></span><div id="sldMoveSpeed"></div></li>
+			<li><label><input type="checkbox" onClick="viewer.setDEMCollisionsEnabled(this.checked)"/><span data-i18n="appearance.bottom_lock"></span></label></li>
+			<li><span data-i18n="appearance.move_speed"></span>: <span id="lblMoveSpeed"></span><div id="sldMoveSpeed"></div></li>
 		</ul>
 	  </div>
-	  <h3>Tools</h3>
+	  <h3><span data-i18n="tb.tools_opt"></span></h3>
 	  <div>
 		<ul class="pv-menu-list">
 		<li id="tools"></li>
 		</ul>
 	  </div>
-	  <h3>Measurements</h3>
+	  <h3><span data-i18n="tb.measurments_opt"></span></h3>
 	  <div>
 		<ul class="pv-menu-list selectable" id="measurement_details"></ul>
 	  </div>
-	  <h3>Material</h3>
+	  <h3><span data-i18n="tb.materials_opt"></span></h3>
 	  <div>
 		<ul class="pv-menu-list">
 		<li>
-		   <label for="optMaterial" class="pv-select-label">Select Attribute </label><br>
+		   <label for="optMaterial" class="pv-select-label"></label><br>
 		   <select id="optMaterial" name="optMaterial">
 		   </select>
 		</li>
 		
-		<li>Elevation Range: <span id="lblHeightRange"></span> <div id="sldHeightRange"></div>	</li>
+		<li><span data-i18n="appearance.elevation_range"></span>: <span id="lblHeightRange"></span> <div id="sldHeightRange"></div>	</li>
 		
 		</ul>
 		<!--<ul id="materialList" class="pv-menu-list"></ul>-->
 	  </div>
-	  <h3>Scene</h3>
+	  <h3><span data-i18n="tb.scene_opt"></span></h3>
 	  <div>
 		<ul id="sceneList" class="pv-menu-list"></ul>
 	  </div>
-	  <h3>Classification Filter</h3>
+	  <h3><span data-i18n="tb.classification_filter_opt"></span></h3>
 	  <div>
 		<ul id="classificationList" class="pv-menu-list"></ul>
 	  </div>
-	   <h3>Settings</h3>
+	   <h3><span data-i18n="tb.parameters_opt"></span></h3>
 	  <div>
 		<ul class="pv-menu-list">
-			<li>Min Node Size: <span id="lblMinNodeSize"></span><div id="sldMinNodeSize"></div>	</li>
+			<li><span data-i18n="appearance.min_node_size"></span><span id="lblMinNodeSize"></span><div id="sldMinNodeSize"></div>	</li>
 			<li>
-			   <label for="optClipMode" class="pv-select-label">Clip Mode </label>
+			   <label for="optClipMode" class="pv-select-label"><span data-i18n="appearance.clip_mode"></span></label>
 			   <select id="optClipMode" name="optClipMode">
 					<option>No Clipping</option>
 					<option>Highlight Inside</option>
 					<option>Clip Outside</option>
 				</select>
 			</li>
-			<li><label><input type="checkbox" onClick="viewer.setShowBoundingBox(this.checked)"/>&nbsp;show bounding box</label></li>
-			<li><label><input type="checkbox" onClick="viewer.setFreeze(this.checked)"/>&nbsp;freeze</label></li>
-		
+			<li><label><input type="checkbox" onClick="viewer.setShowBoundingBox(this.checked)"/><span data-i18n="appearance.box"></span></label></li>
+			<li><label><input type="checkbox" onClick="viewer.setFreeze(this.checked)"/><span data-i18n="appearance.freeze"></span></label></li>
 		</ul>
 	  </div>
-	  <h3>About</h3>
+	  <h3><span data-i18n="tb.about_opt"></span></h3>
 	  <div>
 		<ul class="pv-menu-list">
 			<li><a href="http://potree.org" target="_blank">Potree</a> is a viewer for large point cloud / LIDAR data sets, developed at the Vienna University of Technology. 
@@ -126,6 +129,7 @@
 					<li><a target="_blank" href="http://openlayers.org/">OpenLayers3</a></li>
 					<li><a target="_blank" href="http://proj4js.org/">proj4js</a></li>
 					<li><a target="_blank" href="https://github.com/tweenjs/tween.js/">tween</a></li>
+					<li><a target="_blank" href="https://github.com/i18next/i18next/">i18next</a></li>
 				</ul>
 			</li>
 			<li>Donators:
@@ -179,63 +183,61 @@
 var createToolIcon = function(icon, title, callback){
 	var elImg = document.createElement("img");
 	elImg.src = icon;
-	elImg.title = title;
 	elImg.onclick = callback;
 	elImg.style.width = "32px";
 	elImg.style.height = "32px";
 	elImg.classList.add("button-icon");
-	
+	elImg.setAttribute("data-i18n", title);
 	return elImg;
 };
 
 function initToolbar(){
 	var elToolbar = document.getElementById("tools");
-	
 	elToolbar.appendChild(createToolIcon(
 		Potree.resourcePath + "/icons/angle.png",
-		"angle measurements",
+		"[title]tt.angle_measurement",
 		function(){viewer.measuringTool.startInsertion({showDistances: false, showAngles: true, showArea: false, closed: true, maxMarkers: 3})}
 	));
 	
 	elToolbar.appendChild(createToolIcon(
 		Potree.resourcePath + "/icons/point.svg",
-		"angle measurements",
+		"[title]tt.angle_measurement",
 		function(){viewer.measuringTool.startInsertion({showDistances: false, showAngles: false, showCoordinates: true, showArea: false, closed: true, maxMarkers: 1})}
 	));
 	
 	elToolbar.appendChild(createToolIcon(
 		Potree.resourcePath + "/icons/distance.svg",
-		"distance measurements",
+		"[title]tt.distance_measurement",
 		function(){viewer.measuringTool.startInsertion({showDistances: true, showArea: false, closed: false})}
 	));
 	
 	elToolbar.appendChild(createToolIcon(
 		Potree.resourcePath + "/icons/area.svg",
-		"area measurements",
+		"[title]tt.area_measurement",
 		function(){viewer.measuringTool.startInsertion({showDistances: true, showArea: true, closed: true})}
 	));
 	
 	elToolbar.appendChild(createToolIcon(
 		Potree.resourcePath + "/icons/volume.svg",
-		"volume measurements",
+		"[title]tt.volume_measurement",
 		function(){viewer.volumeTool.startInsertion()}
 	));
 	
 	elToolbar.appendChild(createToolIcon(
 		Potree.resourcePath + "/icons/profile.svg",
-		"height profiles",
+		"[title]tt.height_profile",
 		function(){viewer.profileTool.startInsertion()}
 	));
 	
 	elToolbar.appendChild(createToolIcon(
 		Potree.resourcePath + "/icons/clip_volume.svg",
-		"clipping volumes",
+		"[title]tt.clip_volume",
 		function(){viewer.volumeTool.startInsertion({clip: true})}
 	));
 	
 	elToolbar.appendChild(createToolIcon(
 		Potree.resourcePath + "/icons/reset_tools.svg",
-		"remove all measurements",
+		"[title]tt.remove_all_measurement",
 		function(){
 			viewer.measuringTool.reset();
 			viewer.profileTool.reset();
@@ -526,44 +528,44 @@ function initNavigation(){
 	
 	elNavigation.appendChild(createToolIcon(
 		Potree.resourcePath + "/icons/earth_controls_1.png",
-		"Earth Controls",
+        "[title]tt.earth_control",
 		function(){viewer.useEarthControls()}
 	));
 	
 	
 	elNavigation.appendChild(createToolIcon(
 		Potree.resourcePath + "/icons/fps_controls.png",
-		"Flight Controls",
+        "[title]tt.flight_control",
 		function(){viewer.useFPSControls()}
 	));
 	
 	elNavigation.appendChild(createToolIcon(
 		Potree.resourcePath + "/icons/orbit_controls.svg",
-		"Orbit Controls",
+		"[title]tt.orbit_control",
 		function(){viewer.useOrbitControls()}
 	));
 	
 	elNavigation.appendChild(createToolIcon(
 		Potree.resourcePath + "/icons/focus.svg",
-		"focus on pointcloud",
+		"[title]tt.focus_control",
 		function(){viewer.fitToScreen()}
 	));
 	
 	elNavigation.appendChild(createToolIcon(
 		Potree.resourcePath + "/icons/topview.svg",
-		"top view",
+		"[title]tt.top_view_control",
 		function(){viewer.setTopView()}
 	));
 	
 	elNavigation.appendChild(createToolIcon(
 		Potree.resourcePath + "/icons/frontview.svg",
-		"front view",
+		"[title]tt.front_view_control",
 		function(){viewer.setFrontView()}
 	));
 	
 	elNavigation.appendChild(createToolIcon(
 		Potree.resourcePath + "/icons/leftview.svg",
-		"left view",
+		"[title]tt.left_view_control",
 		function(){viewer.setLeftView()}
 	));
 	

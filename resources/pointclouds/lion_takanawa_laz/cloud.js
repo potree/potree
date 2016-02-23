@@ -19,7 +19,6 @@
 	},
 	"pointAttributes": "LAZ",
 	"spacing": 0.0750000029802322,
-	"scale": 0.001,
 	"hierarchy": [
 		["r", 5202],
 		["r0", 5020],

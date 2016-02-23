@@ -8,7 +8,7 @@ var rename = require('gulp-rename');
 var uglify = require('gulp-uglify');
 var gutil = require('gulp-util');
 var through = require('through');
-var connect = require('gulp-connect');
+var server = require('gulp-server-livereload');
 var os = require('os');
 var File = gutil.File;
 
@@ -25,6 +25,7 @@ var paths = {
 		"src/loader/POCLoader.js",
 		"src/loader/PointAttributes.js",
 		"src/loader/BinaryLoader.js",
+		"src/loader/GreyhoundLoader.js",
 		"src/loader/LasLazLoader.js",
 		"src/materials/PointCloudMaterial.js",
 		"src/materials/EyeDomeLightingMaterial.js",
@@ -138,7 +139,12 @@ gulp.task("scripts", ['workers','shaders'], function(){
 gulp.task('build', ['scripts']);
 
 gulp.task('webserver', function() {
-  connect.server();
+  gulp.src('.')
+    .pipe(server({
+      livereload: true,
+      directoryListing: true,
+      open: true
+    }));
 });
 
 

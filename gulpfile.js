@@ -8,7 +8,7 @@ var rename = require('gulp-rename');
 var uglify = require('gulp-uglify');
 var gutil = require('gulp-util');
 var through = require('through');
-var server = require('gulp-server-livereload');
+var connect = require('gulp-connect');
 var os = require('os');
 var File = gutil.File;
 
@@ -139,12 +139,7 @@ gulp.task("scripts", ['workers','shaders'], function(){
 gulp.task('build', ['scripts']);
 
 gulp.task('webserver', function() {
-  gulp.src('.')
-    .pipe(server({
-      livereload: true,
-      directoryListing: true,
-      open: true
-    }));
+  connect.server();
 });
 
 

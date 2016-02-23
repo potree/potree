@@ -15,6 +15,7 @@
   "devDependencies": {
     "gulp": "~3.5.2",
     "gulp-concat": "~2.1.7",
+    "gulp-connect": "^2.3.1",
     "gulp-rename": "~1.0.0",
     "gulp-uglify": "~0.2.1",
     "gulp-util": "~2.2.20",

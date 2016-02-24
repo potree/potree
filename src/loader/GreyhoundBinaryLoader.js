@@ -1,5 +1,5 @@
 
-Potree.BinaryLoader = function(version, boundingBox, scale){
+Potree.GreyhoundBinaryLoader = function(version, boundingBox, scale){
 	if(typeof(version) === "string"){
 		this.version = new Potree.Version(version);
 	}else{
@@ -10,7 +10,7 @@ Potree.BinaryLoader = function(version, boundingBox, scale){
 	this.scale = scale;
 };
 
-Potree.BinaryLoader.prototype.load = function(node){
+Potree.GreyhoundBinaryLoader.prototype.load = function(node){
 	if(node.loaded){
 		return;
 	}
@@ -18,10 +18,6 @@ Potree.BinaryLoader.prototype.load = function(node){
 	var scope = this;
 
 	var url = node.getURL();
-
-	if(this.version.equalOrHigher("1.4")){
-		url += ".bin";
-	}
 
 	var xhr = new XMLHttpRequest();
 	xhr.open('GET', url, true);
@@ -44,14 +40,13 @@ Potree.BinaryLoader.prototype.load = function(node){
 	}
 };
 
-Potree.BinaryLoader.prototype.parse = function(node, buffer){
+Potree.GreyhoundBinaryLoader.prototype.parse = function(node, buffer){
 
-	var numPoints = buffer.byteLength / node.pcoGeometry.pointAttributes.byteSize;
-	var pointAttributes = node.pcoGeometry.pointAttributes;
+	var numPoints = buffer.byteLength / node.pggGeometry.pointAttributes.byteSize;
+	var pointAttributes = node.pggGeometry.pointAttributes;
 
-	if(this.version.upTo("1.5")){
-		node.numPoints = numPoints;
-	}
+  node.numPoints = numPoints;
+
 
 	var ww = Potree.workers.binaryDecoder.getWorker();
 	ww.onmessage = function(e){
@@ -103,7 +98,7 @@ Potree.BinaryLoader.prototype.parse = function(node, buffer){
 		node.tightBoundingBox = tightBoundingBox;
 		node.loaded = true;
 		node.loading = false;
-		node.pcoGeometry.numNodesLoading--;
+		node.pggGeometry.numNodesLoading--;
 	};
 
 	var message = {

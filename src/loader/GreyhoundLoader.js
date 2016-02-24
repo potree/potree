@@ -96,7 +96,7 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
 				pgg.offset = offset;
 				pgg.scale = SCALE; //greyhoundInfo.scale;
 
-				pgg.loader = new Potree.BinaryLoader(version, boundingBox, pgg.scale);
+				pgg.loader = new Potree.GreyhoundBinaryLoader(version, boundingBox, pgg.scale);
 
 
 				var nodes = {};

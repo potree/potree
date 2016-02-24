@@ -25,6 +25,7 @@ var paths = {
 		"src/loader/POCLoader.js",
 		"src/loader/PointAttributes.js",
 		"src/loader/BinaryLoader.js",
+		"src/loader/GreyhoundBinaryLoader.js",
 		"src/loader/GreyhoundLoader.js",
 		"src/loader/LasLazLoader.js",
 		"src/materials/PointCloudMaterial.js",

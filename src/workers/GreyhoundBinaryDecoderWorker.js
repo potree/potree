@@ -34,9 +34,11 @@ Potree = {};
 
 
 onmessage = function(event){
+	var NUM_POINTS_BYTE_SIZE = 4;
+
 	var buffer = event.data.buffer;
 	var pointAttributes = event.data.pointAttributes;
-	var numPoints = buffer.byteLength / pointAttributes.byteSize;
+	var numPoints = (buffer.byteLength - NUM_POINTS_BYTE_SIZE) / pointAttributes.byteSize;
 	var cv = new CustomView(buffer);
 	var version = new Potree.Version(event.data.version);
 	var min = event.data.min;
@@ -48,6 +50,8 @@ onmessage = function(event){
 	var attributeBuffers = {};
 
 	var offset = 0;
+	debugger;
+
 	for(var i = 0; i < pointAttributes.attributes.length; i++){
 		var pointAttribute = pointAttributes.attributes[i];
 

@@ -19,6 +19,7 @@ var paths = {
 		"src/PointCloudTree.js",
 		"src/WorkerManager.js",
 		"build/workers/BinaryDecoderWorker.js",
+		"build/workers/GreyhoundBinaryDecoderWorker.js",
 		"build/shaders/shaders.js",
 		"src/extensions/PerspectiveCamera.js",
 		"src/extensions/Ray.js",
@@ -75,8 +76,13 @@ var workers = {
 	"LASDecoder": [
 		"src/workers/LASDecoderWorker.js"
 	],
-	"BinaryDecorder": [
+	"BinaryDecoder": [
 		"src/workers/BinaryDecoderWorker.js",
+		"src/Version.js",
+		"src/loader/PointAttributes.js"
+	],
+	"GreyhoundBinaryDecoder": [
+		"src/workers/GreyhoundBinaryDecoderWorker.js",
 		"src/Version.js",
 		"src/loader/PointAttributes.js"
 	]
@@ -105,8 +111,13 @@ gulp.task("workers", function(){
 		.pipe(size({showFiles: true}))
 		.pipe(gulp.dest('build/workers'));
 
-	gulp.src(workers.BinaryDecorder)
+	gulp.src(workers.BinaryDecoder)
 		.pipe(encodeWorker('BinaryDecoderWorker.js', "Potree.workers.binaryDecoder"))
+		.pipe(size({showFiles: true}))
+		.pipe(gulp.dest('build/workers'));
+
+	gulp.src(workers.GreyhoundBinaryDecoder)
+		.pipe(encodeWorker('GreyhoundBinaryDecoderWorker.js', "Potree.workers.greyhoundBinaryDecoder"))
 		.pipe(size({showFiles: true}))
 		.pipe(gulp.dest('build/workers'));
 });

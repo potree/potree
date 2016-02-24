@@ -44,7 +44,7 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
 				pgg.spacing = (bounds[3]-bounds[0])/2^baseDepth;
 				pgg.baseDepth = baseDepth;
 				pgg.hierarchyStepSize = HIERARCHY_STEP_SIZE;
-				pgg.pointAttributes.POSITION_CARTESIAN = true;
+				pgg.pointAttributes = ['POSITION_CARTESIAN'];
 
 				var red = false;
 				var green = false;
@@ -52,10 +52,10 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
 
 				greyhoundInfo.schema.forEach(function(entry) {
 					if (entry.name === 'Intensity') {
-						pgg.pointAttributes.INTENSITY = true;
+						pgg.pointAttributes.push('INTENSITY');
 					}
 					if (entry.name === 'Classification') {
-						pgg.pointAttributes.CLASSIFICATION = true;
+						pgg.pointAttributes.push('CLASSIFICATION');
 					}
 
 					if (entry.name === 'Red') {
@@ -70,7 +70,7 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
 				});
 
 				if (red&&green&&blue) {
-					pgg.pointAttributes.COLOR_PACKED = true;
+					pgg.pointAttributes.push('COLOR_PACKED');
 				}
 
 				var min = new THREE.Vector3(bounds[0], bounds[1], bounds[2]);

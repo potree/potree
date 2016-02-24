@@ -41,14 +41,15 @@ Potree.GreyhoundBinaryLoader.prototype.load = function(node){
 };
 
 Potree.GreyhoundBinaryLoader.prototype.parse = function(node, buffer){
+	var NUM_POINTS_BYTE_SIZE = 4;
 
-	var numPoints = buffer.byteLength / node.pggGeometry.pointAttributes.byteSize;
-	var pointAttributes = node.pggGeometry.pointAttributes;
+	var numPoints = (buffer.byteLength - NUM_POINTS_BYTE_SIZE) / node.pcoGeometry.pointAttributes.byteSize;
+	var pointAttributes = node.pcoGeometry.pointAttributes;
 
   node.numPoints = numPoints;
 
 
-	var ww = Potree.workers.binaryDecoder.getWorker();
+	var ww = Potree.workers.greyhoundBinaryDecoder.getWorker();
 	ww.onmessage = function(e){
 		var data = e.data;
 		var buffers = data.attributeBuffers;
@@ -57,7 +58,7 @@ Potree.GreyhoundBinaryLoader.prototype.parse = function(node, buffer){
 			new THREE.Vector3().fromArray(data.tightBoundingBox.max)
 		);
 
-		Potree.workers.binaryDecoder.returnWorker(ww);
+		Potree.workers.greyhoundBinaryDecoder.returnWorker(ww);
 
 		var geometry = new THREE.BufferGeometry();
 
@@ -98,7 +99,7 @@ Potree.GreyhoundBinaryLoader.prototype.parse = function(node, buffer){
 		node.tightBoundingBox = tightBoundingBox;
 		node.loaded = true;
 		node.loading = false;
-		node.pggGeometry.numNodesLoading--;
+		node.pcoGeometry.numNodesLoading--;
 	};
 
 	var message = {
@@ -106,7 +107,7 @@ Potree.GreyhoundBinaryLoader.prototype.parse = function(node, buffer){
 		pointAttributes: pointAttributes,
 		version: this.version.version,
 		min: [ node.boundingBox.min.x, node.boundingBox.min.y, node.boundingBox.min.z ],
-		offset: [node.pggGeometry.offset.x, node.pggGeometry.offset.y, node.pggGeometry.offset.z],
+		offset: [node.pcoGeometry.offset.x, node.pcoGeometry.offset.y, node.pcoGeometry.offset.z],
 		scale: this.scale
 	};
 	ww.postMessage(message, [message.buffer]);

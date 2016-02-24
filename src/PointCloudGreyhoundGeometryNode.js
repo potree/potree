@@ -1,10 +1,10 @@
 var nodesLoadTimes = {};
 
-Potree.PointCloudGreyhoundGeometryNode = function(name, pggGeometry, boundingBox){
+Potree.PointCloudGreyhoundGeometryNode = function(name, pcoGeometry, boundingBox){
 	this.id = Potree.PointCloudGreyhoundGeometryNode.IDCount++;
 	this.name = name;
 	this.index = parseInt(name.charAt(name.length-1));
-	this.pggGeometry = pggGeometry;
+	this.pcoGeometry = pcoGeometry;
 	this.geometry = null;
 	this.boundingBox = boundingBox;
 	this.boundingSphere = boundingBox.getBoundingSphere();
@@ -60,7 +60,11 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.getURL = function(){
 
   //Determine what schema to ask the greyhound server for.
   var material = viewer.getMaterial();
-  var availableAttributes = this.pggGeometry.pointAttributes;
+  var availableAttributes = {};
+  this.pcoGeometry.pointAttributes.forEach(function(item) {
+    availableAttributes[item] = true;
+  });
+
   var schema = [{
     "name": "X",
     "size": 8,
@@ -78,32 +82,37 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.getURL = function(){
 	if(material === Potree.PointColorType.RGB && availableAttributes.COLOR_PACKED){
     schema.push({
       "name": "Red",
-      "size": 1,
+      "size": 8,
       "type": "floating"
     });
     schema.push({
       "name": "Green",
-      "size": 1,
+      "size": 8,
       "type": "floating"
     });
     schema.push({
       "name": "Blue",
-      "size": 1,
+      "size": 8,
       "type": "floating"
     });
 	} else if(material === Potree.PointColorType.INTENSITY && availableAttributes.INTENSITY){
     schema.push({
       "name": "Intensity",
-      "size": 1,
+      "size": 8,
       "type": "floating"
     });
 	} else if(material === Potree.PointColorType.CLASSIFICATION && availableAttributes.CLASSIFICATION){
     schema.push({
       "name": "Classification",
-      "size": 1,
+      "size": 8,
       "type": "floating"
     });
 	}
+
+  this.pcoGeometry.pointAttributes.byteSize = 0;
+  schema.forEach(function(entry) {
+    this.pcoGeometry.pointAttributes.byteSize += entry.size;
+  }.bind(this));
   // else if(material === Potree.PointColorType.LOD){
   //
 	// }
@@ -112,10 +121,10 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.getURL = function(){
 	// }
 
   var bb = this.boundingBox;
-  var offset = this.pggGeometry.offset;
+  var offset = this.pcoGeometry.offset;
   var boundsString = (bb.min.x-offset.x) + ',' + (bb.min.y-offset.y) + ',' + (bb.min.z-offset.z) + ',' + (bb.max.x-offset.x) + ',' + (bb.max.y-offset.y) + ',' + (bb.max.z-offset.z);
 
-  var url = ''+this.pggGeometry.serverURL + 'read?depth=' + this.level+this.pggGeometry.baseDepth + '&bounds=[' + boundsString + ']' + '&schema='+JSON.stringify(schema);
+  var url = ''+this.pcoGeometry.serverURL + 'read?depth=' + this.level+this.pcoGeometry.baseDepth + '&bounds=[' + boundsString + ']' + '&schema='+JSON.stringify(schema);
 
 	return url;
 };
@@ -126,15 +135,15 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.addChild = function(child){
 };
 
 Potree.PointCloudGreyhoundGeometryNode.prototype.load = function(){
-	if(this.loading === true || this.loaded === true ||this.pggGeometry.numNodesLoading > 3){
+	if(this.loading === true || this.loaded === true ||this.pcoGeometry.numNodesLoading > 3){
 		return;
 	}
 
 	this.loading = true;
 
-	this.pggGeometry.numNodesLoading++;
+	this.pcoGeometry.numNodesLoading++;
 
-	if((this.level % this.pggGeometry.hierarchyStepSize) === 0 && this.hasChildren){
+	if((this.level % this.pcoGeometry.hierarchyStepSize) === 0 && this.hasChildren){
 		this.loadHierachyThenPoints();
 	}else{
 		this.loadPoints();
@@ -142,7 +151,7 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.load = function(){
 };
 
 Potree.PointCloudGreyhoundGeometryNode.prototype.loadPoints = function(){
-	this.pggGeometry.loader.load(this);
+	this.pcoGeometry.loader.load(this);
 };
 
 
@@ -225,7 +234,7 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.loadHierachyThenPoints = functi
 
 		var nodes = {};
 		nodes[node.name] = node;
-		var pgg = node.pggGeometry;
+		var pgg = node.pcoGeometry;
 
 
 		for( var i = 0; i < decoded.length; i++){
@@ -248,14 +257,14 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.loadHierachyThenPoints = functi
 		node.loadPoints();
 
 	};
-	if((node.level % node.pggGeometry.hierarchyStepSize) === 0){
-    var depthBegin = node.level + node.pggGeometry.baseDepth;
-    var depthEnd = depthBegin + node.pggGeometry.hierarchyStepSize + 1;
+	if((node.level % node.pcoGeometry.hierarchyStepSize) === 0){
+    var depthBegin = node.level + node.pcoGeometry.baseDepth;
+    var depthEnd = depthBegin + node.pcoGeometry.hierarchyStepSize + 1;
   	var bb = this.boundingBox;
-    var offset = node.pggGeometry.offset;
+    var offset = node.pcoGeometry.offset;
     var boundsString = (bb.min.x-offset.x) + ',' + (bb.min.y-offset.y) + ',' + (bb.min.z-offset.z) + ',' + (bb.max.x-offset.x) + ',' + (bb.max.y-offset.y) + ',' + (bb.max.z-offset.z);
 
-		var hurl = ''+this.pggGeometry.serverURL + 'hierarchy?bounds=[' + boundsString + ']' + '&depthBegin=' + depthBegin + '&depthEnd=' + depthEnd;
+		var hurl = ''+this.pcoGeometry.serverURL + 'hierarchy?bounds=[' + boundsString + ']' + '&depthBegin=' + depthBegin + '&depthEnd=' + depthEnd;
 		var xhr = new XMLHttpRequest();
 		xhr.open('GET', hurl, true);
 

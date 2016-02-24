@@ -106,7 +106,7 @@ Potree.GreyhoundBinaryLoader.prototype.parse = function(node, buffer){
 		pointAttributes: pointAttributes,
 		version: this.version.version,
 		min: [ node.boundingBox.min.x, node.boundingBox.min.y, node.boundingBox.min.z ],
-		offset: [node.pcoGeometry.offset.x, node.pcoGeometry.offset.y, node.pcoGeometry.offset.z],
+		offset: [node.pggGeometry.offset.x, node.pggGeometry.offset.y, node.pggGeometry.offset.z],
 		scale: this.scale
 	};
 	ww.postMessage(message, [message.buffer]);

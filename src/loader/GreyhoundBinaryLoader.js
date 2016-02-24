@@ -36,7 +36,7 @@ Potree.GreyhoundBinaryLoader.prototype.load = function(node){
 	try{
 		xhr.send(null);
 	}catch(e){
-		console.log("fehler beim laden der punktwolke: " + e);
+		console.log("error loading point cloud: " + e);
 	}
 };
 

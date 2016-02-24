@@ -97,7 +97,7 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
 				pgg.scale = SCALE; //greyhoundInfo.scale;
 
 				pgg.loader = new Potree.GreyhoundBinaryLoader(version, boundingBox, pgg.scale);
-
+				pgg.pointAttributes = new Potree.PointAttributes(pgg.pointAttributes);
 
 				var nodes = {};
 

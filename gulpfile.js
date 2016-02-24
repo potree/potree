@@ -38,6 +38,8 @@ var paths = {
 		"src/Annotation.js",
 		"src/PointCloudOctree.js",
 		"src/PointCloudOctreeGeometry.js",
+		"src/PointCloudGreyhoundGeometry.js",
+		"src/PointCloudGreyhoundGeometryNode.js",
 		"src/utils.js",
 		"src/Features.js",
 		"src/TextSprite.js",

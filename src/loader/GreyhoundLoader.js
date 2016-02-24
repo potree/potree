@@ -21,8 +21,8 @@ Potree.GreyhoundLoader.loadInfoJSON = function load(url, callback) {
  * @param loadingFinishedListener executed after loading the binary has been finished
  */
 Potree.GreyhoundLoader.load = function load(url, callback) {
-	var BASE_DEPTH = 6;
 	var ARBITRARY_DEPTH = 7;
+	var HIERARCHY_STEP_SIZE = 3;
 	var SCALE = 1;
 
 	try{
@@ -39,90 +39,83 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
 				var bounds = greyhoundInfo.bounds;
 				var baseDepth = greyhoundInfo.baseDepth;
 
-				var hierarchyCallOptions = 'bounds=['+bounds+']&depthBegin='+BASE_DEPTH+'&depthEnd='+ARBITRARY_DEPTH;
+				var pgg = new Potree.PointCloudGreyhoundGeometry();
+				pgg.serverURL = serverURL;
+				pgg.spacing = (bounds[3]-bounds[0])/2^baseDepth;
+				pgg.baseDepth = baseDepth;
+				pgg.hierarchyStepSize = HIERARCHY_STEP_SIZE;
+				pgg.pointAttributes.POSITION_CARTESIAN = true;
 
-				xhr.open('GET', serverURL+'hierarchy?'+hierarchyCallOptions, true);
-				xhr.onreadystatechange = function() {
-					if(xhr.readyState === 4 && (xhr.status === 200 || xhr.status === 0)){
-						var greyhoundHierarchy = JSON.parse(xhr.responseText);
-						var pgg = new Potree.PointcloudGreyhoundGeometry();
-						pgg.serverURL = serverURL;
-						pgg.spacing = (bounds[3]-bounds[0])/2^BASE_DEPTH;
-						pgg.pointAttributes = ['POSITION_CARTESIAN'];
+				var red = false;
+				var green = false;
+				var blue = false;
 
-						var red = false;
-						var green = false;
-						var blue = false;
-
-						greyhoundInfo.schema.forEach(function(entry) {
-							if (entry.name === 'Intensity') {
-								pgg.pointAttributes.push('INTENSITY');
-							}
-							if (entry.name === 'Classification') {
-								pgg.pointAttributes.push('CLASSIFICATION');
-							}
-
-							if (entry.name === 'Red') {
-								red = true;
-							}
-							if (entry.name === 'Green') {
-								green = true;
-							}
-							if (entry.name === 'Blue') {
-								blue = true;
-							}
-						});
-
-						if (red&&green&&blue) {
-							pgg.pointAttributes.push('COLOR_PACKED');
-						}
-
-						var min = new THREE.Vector3(bounds[0], bounds[1], bounds[2]);
-						var max = new THREE.Vector3(bounds[3], bounds[4], bounds[5]);
-						var boundingBox = new THREE.Box3(min, max);
-						var tightBoundingBox = boundingBox.clone();
-
-						var offset = new THREE.Vector3(0,0,0);
-
-						offset.set(-min.x, -min.y, -min.z);
-
-						boundingBox.min.add(offset);
-						boundingBox.max.add(offset);
-
-						tightBoundingBox.min.add(offset);
-						tightBoundingBox.max.add(offset);
-
-						pgg.projection = greyhoundInfo.srs;
-						pgg.boundingBox = boundingBox;
-						pgg.tightBoundingBox = tightBoundingBox;
-						pgg.boundingSphere = boundingBox.getBoundingSphere();
-						pgg.tightBoundingSphere = tightBoundingBox.getBoundingSphere();
-						pgg.offset = offset;
-						pgg.scale = SCALE; //greyhoundInfo.scale;
-
-						pgg.loader = new Potree.BinaryLoader(version, boundingBox, pgg.scale);
-
-
-						var nodes = {};
-
-						{ // load root
-							var name = "r";
-
-							var root = new Potree.PointCloudGreyhoundGeometryNode(name, pgg, boundingBox);
-							root.level = 0;
-							root.hasChildren = true;
-							root.numPoints = greyhoundInfo.numPoints;
-							pgg.root = root;
-							pgg.root.load();
-							nodes[name] = root;
-						}
-
-						pgg.nodes = nodes;
-
-						callback(pgg);
+				greyhoundInfo.schema.forEach(function(entry) {
+					if (entry.name === 'Intensity') {
+						pgg.pointAttributes.INTENSITY = true;
 					}
-				};
-				xhr.send(null);
+					if (entry.name === 'Classification') {
+						pgg.pointAttributes.CLASSIFICATION = true;
+					}
+
+					if (entry.name === 'Red') {
+						red = true;
+					}
+					if (entry.name === 'Green') {
+						green = true;
+					}
+					if (entry.name === 'Blue') {
+						blue = true;
+					}
+				});
+
+				if (red&&green&&blue) {
+					pgg.pointAttributes.COLOR_PACKED = true;
+				}
+
+				var min = new THREE.Vector3(bounds[0], bounds[1], bounds[2]);
+				var max = new THREE.Vector3(bounds[3], bounds[4], bounds[5]);
+				var boundingBox = new THREE.Box3(min, max);
+				var tightBoundingBox = boundingBox.clone();
+
+				var offset = new THREE.Vector3(0,0,0);
+
+				offset.set(-min.x, -min.y, -min.z);
+
+				boundingBox.min.add(offset);
+				boundingBox.max.add(offset);
+
+				tightBoundingBox.min.add(offset);
+				tightBoundingBox.max.add(offset);
+
+				pgg.projection = greyhoundInfo.srs;
+				pgg.boundingBox = boundingBox;
+				pgg.tightBoundingBox = tightBoundingBox;
+				pgg.boundingSphere = boundingBox.getBoundingSphere();
+				pgg.tightBoundingSphere = tightBoundingBox.getBoundingSphere();
+				pgg.offset = offset;
+				pgg.scale = SCALE; //greyhoundInfo.scale;
+
+				pgg.loader = new Potree.BinaryLoader(version, boundingBox, pgg.scale);
+
+
+				var nodes = {};
+
+				{ // load root
+					var name = "r";
+
+					var root = new Potree.PointCloudGreyhoundGeometryNode(name, pgg, boundingBox);
+					root.level = 0;
+					root.hasChildren = true;
+					root.numPoints = greyhoundInfo.numPoints;
+					pgg.root = root;
+					pgg.root.load();
+					nodes[name] = root;
+				}
+
+				pgg.nodes = nodes;
+
+				callback(pgg);
 			}
 		};
 		xhr.send(null);

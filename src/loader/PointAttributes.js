@@ -102,7 +102,6 @@ Potree.PointAttribute.NORMAL = new Potree.PointAttribute(
  *
  */
 Potree.PointAttributes = function(pointAttributes){
-debugger;
 	this.attributes = [];
 	this.byteSize = 0;
 	this.size = 0;
@@ -119,14 +118,12 @@ debugger;
 };
 
 Potree.PointAttributes.prototype.add = function(pointAttribute){
-debugger;
 	this.attributes.push(pointAttribute);
 	this.byteSize += pointAttribute.byteSize;
 	this.size++;
 };
 
 Potree.PointAttributes.prototype.hasColors = function(){
-debugger;
 	for(var name in this.attributes){
 		var pointAttribute = this.attributes[name];
 		if(pointAttribute.name === Potree.PointAttributeNames.COLOR_PACKED){
@@ -138,7 +135,6 @@ debugger;
 };
 
 Potree.PointAttributes.prototype.hasNormals = function(){
-debugger;
 	for(var name in this.attributes){
 		var pointAttribute = this.attributes[name];
 		if(

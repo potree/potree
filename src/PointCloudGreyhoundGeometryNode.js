@@ -56,58 +56,54 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.getBoundingBox = function(){
 };
 
 Potree.PointCloudGreyhoundGeometryNode.prototype.getURL = function(){
-
-
   //Determine what schema to ask the greyhound server for.
   var material = viewer.getMaterial();
-  var availableAttributes = {};
-  this.pcoGeometry.pointAttributes.forEach(function(item) {
-    availableAttributes[item] = true;
-  });
 
   var schema = [{
     "name": "X",
-    "size": 8,
-    "type": "floating"
+    "size": 4,
+    "type": "signed"
   }, {
     "name": "Y",
-    "size": 8,
-    "type": "floating"
+    "size": 4,
+    "type": "signed"
   }, {
     "name": "Z",
-    "size": 8,
-    "type": "floating"
+    "size": 4,
+    "type": "signed"
   }];
 
-	if(material === Potree.PointColorType.RGB && availableAttributes.COLOR_PACKED){
-    schema.push({
-      "name": "Red",
-      "size": 8,
-      "type": "floating"
-    });
-    schema.push({
-      "name": "Green",
-      "size": 8,
-      "type": "floating"
-    });
-    schema.push({
-      "name": "Blue",
-      "size": 8,
-      "type": "floating"
-    });
-	} else if(material === Potree.PointColorType.INTENSITY && availableAttributes.INTENSITY){
-    schema.push({
-      "name": "Intensity",
-      "size": 8,
-      "type": "floating"
-    });
-	} else if(material === Potree.PointColorType.CLASSIFICATION && availableAttributes.CLASSIFICATION){
-    schema.push({
-      "name": "Classification",
-      "size": 8,
-      "type": "floating"
-    });
-	}
+  this.pcoGeometry.pointAttributes.attributes.forEach(function(item) {
+    if(material === Potree.PointColorType.RGB && item.name === Potree.PointAttributeNames.COLOR_PACKED) {
+      schema.push({
+        "name": "Red",
+        "size": 1,
+        "type": "unsigned"
+      });
+      schema.push({
+        "name": "Green",
+        "size": 1,
+        "type": "unsigned"
+      });
+      schema.push({
+        "name": "Blue",
+        "size": 1,
+        "type": "unsigned"
+      });
+    } else if(material === Potree.PointColorType.INTENSITY && item.name === Potree.PointAttributeNames.INTENSITY){
+      schema.push({
+        "name": "Intensity",
+        "size": 2,
+        "type": "unsigned"
+      });
+  	} else if(material === Potree.PointColorType.CLASSIFICATION && item.name === Potree.PointAttributeNames.CLASSIFICATION){
+      schema.push({
+        "name": "Classification",
+        "size": 1,
+        "type": "unsigned"
+      });
+  	}
+  });
 
   this.pcoGeometry.pointAttributes.byteSize = 0;
   schema.forEach(function(entry) {
@@ -122,9 +118,10 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.getURL = function(){
 
   var bb = this.boundingBox;
   var offset = this.pcoGeometry.offset;
-  var boundsString = (bb.min.x-offset.x) + ',' + (bb.min.y-offset.y) + ',' + (bb.min.z-offset.z) + ',' + (bb.max.x-offset.x) + ',' + (bb.max.y-offset.y) + ',' + (bb.max.z-offset.z);
+  //var boundsString = (bb.min.x-offset.x) + ',' + (bb.min.y-offset.y) + ',' + (bb.min.z-offset.z) + ',' + (bb.max.x-offset.x) + ',' + (bb.max.y-offset.y) + ',' + (bb.max.z-offset.z);
+  var boundsString = (bb.min.x) + ',' + (bb.min.y) + ',' + (bb.min.z) + ',' + (bb.max.x) + ',' + (bb.max.y) + ',' + (bb.max.z);
 
-  var url = ''+this.pcoGeometry.serverURL + 'read?depth=' + this.level+this.pcoGeometry.baseDepth + '&bounds=[' + boundsString + ']' + '&schema='+JSON.stringify(schema);
+  var url = ''+this.pcoGeometry.serverURL + 'read?depth=' + (this.level+this.pcoGeometry.baseDepth) + '&bounds=[' + boundsString + ']' + '&schema='+JSON.stringify(schema); //+'&scale=' +this.pcoGeometry.scale;
 
 	return url;
 };
@@ -262,7 +259,8 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.loadHierachyThenPoints = functi
     var depthEnd = depthBegin + node.pcoGeometry.hierarchyStepSize + 1;
   	var bb = this.boundingBox;
     var offset = node.pcoGeometry.offset;
-    var boundsString = (bb.min.x-offset.x) + ',' + (bb.min.y-offset.y) + ',' + (bb.min.z-offset.z) + ',' + (bb.max.x-offset.x) + ',' + (bb.max.y-offset.y) + ',' + (bb.max.z-offset.z);
+    // var boundsString = (bb.min.x-offset.x) + ',' + (bb.min.y-offset.y) + ',' + (bb.min.z-offset.z) + ',' + (bb.max.x-offset.x) + ',' + (bb.max.y-offset.y) + ',' + (bb.max.z-offset.z);
+    var boundsString = (bb.min.x) + ',' + (bb.min.y) + ',' + (bb.min.z) + ',' + (bb.max.x) + ',' + (bb.max.y) + ',' + (bb.max.z);
 
 		var hurl = ''+this.pcoGeometry.serverURL + 'hierarchy?bounds=[' + boundsString + ']' + '&depthBegin=' + depthBegin + '&depthEnd=' + depthEnd;
 		var xhr = new XMLHttpRequest();

@@ -46,6 +46,7 @@ onmessage = function(event){
 	var tightBoxMax = [ Number.NEGATIVE_INFINITY , Number.NEGATIVE_INFINITY , Number.NEGATIVE_INFINITY ];
 
 	var attributeBuffers = {};
+	debugger;
 
 	var offset = 0;
 	for(var i = 0; i < pointAttributes.attributes.length; i++){
@@ -58,6 +59,8 @@ onmessage = function(event){
 
 			for(var j = 0; j < numPoints; j++){
 				if(version.newerThan("1.3")){
+					console.log(('x: ' + cv.getUint32(offset + j*pointAttributes.byteSize+0) * scale) + min[0]);
+
 					positions[3*j+0] = (cv.getUint32(offset + j*pointAttributes.byteSize+0) * scale) + min[0];
 					positions[3*j+1] = (cv.getUint32(offset + j*pointAttributes.byteSize+4) * scale) + min[1];
 					positions[3*j+2] = (cv.getUint32(offset + j*pointAttributes.byteSize+8) * scale) + min[2];

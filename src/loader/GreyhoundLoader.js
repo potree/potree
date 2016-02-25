@@ -44,7 +44,7 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
 				pgg.spacing = (bounds[3]-bounds[0])/2^baseDepth;
 				pgg.baseDepth = baseDepth;
 				pgg.hierarchyStepSize = HIERARCHY_STEP_SIZE;
-				pgg.pointAttributes = ['POSITION_CARTESIAN'];
+				var attributes = ['POSITION_CARTESIAN'];
 
 				var red = false;
 				var green = false;
@@ -52,10 +52,10 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
 
 				greyhoundInfo.schema.forEach(function(entry) {
 					if (entry.name === 'Intensity') {
-						pgg.pointAttributes.push('INTENSITY');
+						attributes.push('INTENSITY');
 					}
 					if (entry.name === 'Classification') {
-						pgg.pointAttributes.push('CLASSIFICATION');
+						attributes.push('CLASSIFICATION');
 					}
 
 					if (entry.name === 'Red') {
@@ -70,7 +70,7 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
 				});
 
 				if (red&&green&&blue) {
-					pgg.pointAttributes.push('COLOR_PACKED');
+					attributes.push('COLOR_PACKED');
 				}
 
 				var min = new THREE.Vector3(bounds[0], bounds[1], bounds[2]);
@@ -82,11 +82,11 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
 
 				offset.set(-min.x, -min.y, -min.z);
 
-				boundingBox.min.add(offset);
-				boundingBox.max.add(offset);
+				// boundingBox.min.add(offset);
+				// boundingBox.max.add(offset);
 
-				tightBoundingBox.min.add(offset);
-				tightBoundingBox.max.add(offset);
+				// tightBoundingBox.min.add(offset);
+				// tightBoundingBox.max.add(offset);
 
 				pgg.projection = greyhoundInfo.srs;
 				pgg.boundingBox = boundingBox;
@@ -97,7 +97,7 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
 				pgg.scale = SCALE; //greyhoundInfo.scale;
 
 				pgg.loader = new Potree.GreyhoundBinaryLoader(version, boundingBox, pgg.scale);
-				pgg.pointAttributes = new Potree.PointAttributes(pgg.pointAttributes);
+				pgg.pointAttributes = new Potree.PointAttributes(attributes);
 
 				var nodes = {};
 

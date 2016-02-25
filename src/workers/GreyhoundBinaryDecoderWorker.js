@@ -35,6 +35,7 @@ Potree = {};
 
 onmessage = function(event){
 	var NUM_POINTS_BYTE_SIZE = 4;
+	// debugger;
 
 	var buffer = event.data.buffer;
 	var pointAttributes = event.data.pointAttributes;
@@ -42,15 +43,17 @@ onmessage = function(event){
 	var cv = new CustomView(buffer);
 	var version = new Potree.Version(event.data.version);
 	var min = event.data.min;
+	var max = event.data.max;
 	var nodeOffset = event.data.offset;
 	var scale = event.data.scale;
 	var tightBoxMin = [ Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY];
 	var tightBoxMax = [ Number.NEGATIVE_INFINITY , Number.NEGATIVE_INFINITY , Number.NEGATIVE_INFINITY ];
 
+	var extent = {'x': max[0] - min[0], 'y': max[1] - min[1], 'z': max[2] - min[2]};
+
 	var attributeBuffers = {};
 
 	var offset = 0;
-	debugger;
 
 	for(var i = 0; i < pointAttributes.attributes.length; i++){
 		var pointAttribute = pointAttributes.attributes[i];
@@ -61,15 +64,9 @@ onmessage = function(event){
 			var positions = new Float32Array(buff);
 
 			for(var j = 0; j < numPoints; j++){
-				if(version.newerThan("1.3")){
-					positions[3*j+0] = (cv.getUint32(offset + j*pointAttributes.byteSize+0) * scale) + min[0];
-					positions[3*j+1] = (cv.getUint32(offset + j*pointAttributes.byteSize+4) * scale) + min[1];
-					positions[3*j+2] = (cv.getUint32(offset + j*pointAttributes.byteSize+8) * scale) + min[2];
-				}else{
-					positions[3*j+0] = cv.getFloat(j*pointAttributes.byteSize+0) + nodeOffset[0];
-					positions[3*j+1] = cv.getFloat(j*pointAttributes.byteSize+4) + nodeOffset[1];
-					positions[3*j+2] = cv.getFloat(j*pointAttributes.byteSize+8) + nodeOffset[2];
-				}
+				positions[3*j+0] = (cv.getUint32(offset + j*pointAttributes.byteSize+0) - min[0]) / extent.x;
+				positions[3*j+1] = (cv.getUint32(offset + j*pointAttributes.byteSize+4) - min[1]) / extent.y;
+				positions[3*j+2] = (cv.getUint32(offset + j*pointAttributes.byteSize+8) - min[2]) / extent.z;
 
 				tightBoxMin[0] = Math.min(tightBoxMin[0], positions[3*j+0]);
 				tightBoxMin[1] = Math.min(tightBoxMin[1], positions[3*j+1]);
@@ -79,6 +76,7 @@ onmessage = function(event){
 				tightBoxMax[1] = Math.max(tightBoxMax[1], positions[3*j+1]);
 				tightBoxMax[2] = Math.max(tightBoxMax[2], positions[3*j+2]);
 			}
+			// debugger;
 
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute};
 

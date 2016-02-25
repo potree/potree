@@ -74,29 +74,32 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.getURL = function(){
   }];
 
   this.pcoGeometry.pointAttributes.attributes.forEach(function(item) {
-    if(material === Potree.PointColorType.RGB && item.name === Potree.PointAttributeNames.COLOR_PACKED) {
+    // if(material === Potree.PointColorType.RGB && item.name === Potree.PointAttributeNames.COLOR_PACKED) {
+    if(item.name === Potree.PointAttributeNames.COLOR_PACKED) {
       schema.push({
         "name": "Red",
-        "size": 1,
+        "size": 2,
         "type": "unsigned"
       });
       schema.push({
         "name": "Green",
-        "size": 1,
+        "size": 2,
         "type": "unsigned"
       });
       schema.push({
         "name": "Blue",
-        "size": 1,
+        "size": 2,
         "type": "unsigned"
       });
-    } else if(material === Potree.PointColorType.INTENSITY && item.name === Potree.PointAttributeNames.INTENSITY){
+    // } else if(material === Potree.PointColorType.INTENSITY && item.name === Potree.PointAttributeNames.INTENSITY){
+	} else if(item.name === Potree.PointAttributeNames.INTENSITY){
       schema.push({
         "name": "Intensity",
         "size": 2,
         "type": "unsigned"
       });
-  	} else if(material === Potree.PointColorType.CLASSIFICATION && item.name === Potree.PointAttributeNames.CLASSIFICATION){
+  	// } else if(material === Potree.PointColorType.CLASSIFICATION && item.name === Potree.PointAttributeNames.CLASSIFICATION){
+		} else if(item.name === Potree.PointAttributeNames.CLASSIFICATION) {
       schema.push({
         "name": "Classification",
         "size": 1,

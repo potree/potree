@@ -45,7 +45,7 @@ onmessage = function(event){
 	var min = event.data.min;
 	var max = event.data.max;
 	var nodeOffset = event.data.offset;
-	var nodeOffset = event.data.bbOffset;
+	var bbOffset = event.data.bbOffset;
 	var scale = event.data.scale;
 	var tightBoxMin = [ Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY];
 	var tightBoxMax = [ Number.NEGATIVE_INFINITY , Number.NEGATIVE_INFINITY , Number.NEGATIVE_INFINITY ];
@@ -56,7 +56,10 @@ onmessage = function(event){
 
 	var offset = 0;
 
+	console.log('number of bytes per point: ' + pointAttributes.attributes.length);
+
 	for(var i = 0; i < pointAttributes.attributes.length; i++){
+		// console.log(offset);
 		var pointAttribute = pointAttributes.attributes[i];
 
 		if(pointAttribute.name === Potree.PointAttribute.POSITION_CARTESIAN.name){
@@ -91,9 +94,9 @@ onmessage = function(event){
 				// console.log(cv.getUint8(offset + j*pointAttributes.byteSize + 1));
 				// console.log(cv.getUint8(offset + j*pointAttributes.byteSize + 2));
 
-				colors[3*j+0] = cv.getUint8(offset + j*pointAttributes.byteSize + 0) / 255;
-				colors[3*j+1] = cv.getUint8(offset + j*pointAttributes.byteSize + 1) / 255;
-				colors[3*j+2] = cv.getUint8(offset + j*pointAttributes.byteSize + 2) / 255;				
+				colors[3*j+0] = cv.getUint16(offset + j*pointAttributes.byteSize + 0) / 255;
+				colors[3*j+1] = cv.getUint16(offset + j*pointAttributes.byteSize + 2) / 255;
+				colors[3*j+2] = cv.getUint16(offset + j*pointAttributes.byteSize + 4) / 255;
 			}
 
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute};

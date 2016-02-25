@@ -109,6 +109,7 @@ Potree.GreyhoundBinaryLoader.prototype.parse = function(node, buffer){
 		min: [ node.boundingBox.min.x, node.boundingBox.min.y, node.boundingBox.min.z ],
 		max: [ node.boundingBox.max.x, node.boundingBox.max.y, node.boundingBox.max.z ],
 		offset: [node.pcoGeometry.offset.x, node.pcoGeometry.offset.y, node.pcoGeometry.offset.z],
+		bbOffset: [node.pcoGeometry.bbOffset.x, node.pcoGeometry.bbOffset.y, node.pcoGeometry.bbOffset.z],
 		scale: this.scale
 	};
 	ww.postMessage(message, [message.buffer]);

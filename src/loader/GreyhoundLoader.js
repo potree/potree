@@ -78,9 +78,19 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
 				var boundingBox = new THREE.Box3(min, max);
 				var tightBoundingBox = boundingBox.clone();
 
-				var offset = new THREE.Vector3(0,0,0);
+				var nodeOffset = new THREE.Vector3(0,0,0);
+				var globalOffset = new THREE.Vector3(0,0,0);
 
-				offset.set(-min.x, -min.y, -min.z);
+				var extent = {'x': max.x - min.x, 'y': max.y - min.y, 'z': max.z - min.z};
+
+				// x = 1000 - 1200
+				// min.x = 1000
+				// extent.x = 200
+				// min.x+0.5*extent.x = 1100
+
+				globalOffset.set(min.x+0.5*extent.x, min.y+0.5*extent.y, min.z+0.5*extent.z);
+
+				nodeOffset.set(-0.5*extent.x, -0.5*extent.y, -0.5*extent.z);
 
 				// boundingBox.min.add(offset);
 				// boundingBox.max.add(offset);
@@ -93,7 +103,8 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
 				pgg.tightBoundingBox = tightBoundingBox;
 				pgg.boundingSphere = boundingBox.getBoundingSphere();
 				pgg.tightBoundingSphere = tightBoundingBox.getBoundingSphere();
-				pgg.offset = offset;
+				pgg.bbOffset = nodeOffset;
+				pgg.offset = globalOffset;
 				pgg.scale = SCALE; //greyhoundInfo.scale;
 
 				pgg.loader = new Potree.GreyhoundBinaryLoader(version, boundingBox, pgg.scale);

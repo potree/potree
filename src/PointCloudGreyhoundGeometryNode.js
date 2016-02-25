@@ -116,6 +116,8 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.getURL = function(){
   //
 	// }
 
+	// console.log(JSON.stringify(schema));
+
   var bb = this.boundingBox;
   var offset = this.pcoGeometry.offset;
   //var boundsString = (bb.min.x-offset.x) + ',' + (bb.min.y-offset.y) + ',' + (bb.min.z-offset.z) + ',' + (bb.max.x-offset.x) + ',' + (bb.max.y-offset.y) + ',' + (bb.max.z-offset.z);

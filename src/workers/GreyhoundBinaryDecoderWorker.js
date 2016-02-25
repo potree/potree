@@ -45,6 +45,7 @@ onmessage = function(event){
 	var min = event.data.min;
 	var max = event.data.max;
 	var nodeOffset = event.data.offset;
+	var nodeOffset = event.data.bbOffset;
 	var scale = event.data.scale;
 	var tightBoxMin = [ Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY];
 	var tightBoxMax = [ Number.NEGATIVE_INFINITY , Number.NEGATIVE_INFINITY , Number.NEGATIVE_INFINITY ];
@@ -63,10 +64,10 @@ onmessage = function(event){
 			var buff = new ArrayBuffer(numPoints*4*3);
 			var positions = new Float32Array(buff);
 
-			for(var j = 0; j < numPoints; j++){
-				positions[3*j+0] = (cv.getUint32(offset + j*pointAttributes.byteSize+0) - min[0]) / extent.x;
-				positions[3*j+1] = (cv.getUint32(offset + j*pointAttributes.byteSize+4) - min[1]) / extent.y;
-				positions[3*j+2] = (cv.getUint32(offset + j*pointAttributes.byteSize+8) - min[2]) / extent.z;
+			for (var j = 0; j < numPoints; j++) {
+				positions[3*j+0] = (cv.getUint32(offset + j*pointAttributes.byteSize+0) - nodeOffset[0]);
+				positions[3*j+1] = (cv.getUint32(offset + j*pointAttributes.byteSize+4) - nodeOffset[1]);
+				positions[3*j+2] = (cv.getUint32(offset + j*pointAttributes.byteSize+8) - nodeOffset[2]);
 
 				tightBoxMin[0] = Math.min(tightBoxMin[0], positions[3*j+0]);
 				tightBoxMin[1] = Math.min(tightBoxMin[1], positions[3*j+1]);
@@ -86,9 +87,13 @@ onmessage = function(event){
 			var colors = new Float32Array(buff);
 
 			for(var j = 0; j < numPoints; j++){
+				// console.log(cv.getUint8(offset + j*pointAttributes.byteSize + 0));
+				// console.log(cv.getUint8(offset + j*pointAttributes.byteSize + 1));
+				// console.log(cv.getUint8(offset + j*pointAttributes.byteSize + 2));
+
 				colors[3*j+0] = cv.getUint8(offset + j*pointAttributes.byteSize + 0) / 255;
 				colors[3*j+1] = cv.getUint8(offset + j*pointAttributes.byteSize + 1) / 255;
-				colors[3*j+2] = cv.getUint8(offset + j*pointAttributes.byteSize + 2) / 255;
+				colors[3*j+2] = cv.getUint8(offset + j*pointAttributes.byteSize + 2) / 255;				
 			}
 
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute};

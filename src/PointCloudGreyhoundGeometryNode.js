@@ -169,8 +169,9 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.loadPoints = function(){
 Potree.PointCloudGreyhoundGeometryNode.prototype.loadHierarchyThenPoints = function(){
 	var node = this;
 
-    console.log('LOADING HIERARCHY');
-  var transform = [0, 2, 1, 3, 4, 6, 5, 7];
+  //From Greyhound (Cartesian) ordering for the octree to Potree-default
+	// var transform = [2, 0, 3, 1, 6, 4, 7, 5];
+	var transform = [0, 2, 1, 3, 4, 6, 5, 7];
 
   var makeBitMask = function(node) {
     var keys = Object.keys(node);
@@ -195,8 +196,8 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.loadHierarchyThenPoints = funct
         mask += 1 << transform[7];
       }
     });
-    // TODO Not this.
-    return mask || 1 << 8;
+		
+    return mask;
   };
 
   var parseChildrenCounts = function(base, parentName, stack) {

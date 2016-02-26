@@ -169,7 +169,7 @@ Potree.Viewer = function(domElement, args){
 		if(!path){
 
 		}else if(path.indexOf("greyhound") === 0){
-			Potree.GreyhoundLoader.load(path, function(geometry){
+			Potree.GreyhoundLoader.load(path, function(geometry) {
 				if(!geometry){
 					callback({type: "loading_failed"});
 				}else{

@@ -168,7 +168,8 @@ Potree.Viewer = function(domElement, args){
 		// load pointcloud
 		if(!path){
 
-		}else if(path.indexOf("greyhound") === 0){
+		}else if(path.indexOf("greyhound:") === 0){
+			// We check if the path string starts with 'greyhound:', if so we assume it's a greyhound server URL.
 			Potree.GreyhoundLoader.load(path, function(geometry) {
 				if(!geometry){
 					callback({type: "loading_failed"});

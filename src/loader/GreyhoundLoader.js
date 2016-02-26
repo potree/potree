@@ -1,10 +1,11 @@
 
 
 /**
- * @class Loads mno files and returns a PointcloudOctree
- * for a description of the mno binary file format, read mnoFileFormat.txt
+ * @class Loads greyhound metadata and returns a PointcloudOctree
  *
- * @author Markus Schuetz
+ * @author Maarten van Meersbergen
+ * @author Oscar Martinez Rubi
+ * @author Connor Manning
  */
 Potree.GreyhoundLoader = function(){
 
@@ -25,13 +26,54 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
 	var SCALE = 1;
 
 	try{
+		// We assume everything ater the string 'greyhound:' is the server url
 		var serverURL = url.split('greyhound:')[1];
 		var xhr = new XMLHttpRequest();
 		xhr.open('GET', serverURL+'info', true);
 
-
 		xhr.onreadystatechange = function() {
 			if(xhr.readyState === 4 && (xhr.status === 200 || xhr.status === 0)){
+				/* We parse the result of the info query, which should be a JSON datastructure somewhat like:
+					{
+					  "bounds": [635577, 848882, -1000, 639004, 853538, 2000],
+					  "numPoints": 10653336,
+					  "schema": [{
+					    "name": "X",
+					    "size": 8,
+					    "type": "floating"
+					  }, {
+					    "name": "Y",
+					    "size": 8,
+					    "type": "floating"
+					  }, {
+					    "name": "Z",
+					    "size": 8,
+					    "type": "floating"
+					  }, {
+					    "name": "Intensity",
+					    "size": 2,
+					    "type": "unsigned"
+					  }, {
+					    "name": "Origin",
+					    "size": 4,
+					    "type": "unsigned"
+					  }, {
+					    "name": "Red",
+					    "size": 2,
+					    "type": "unsigned"
+					  }, {
+					    "name": "Green",
+					    "size": 2,
+					    "type": "unsigned"
+					  }, {
+					    "name": "Blue",
+					    "size": 2,
+					    "type": "unsigned"
+					  }],
+					  "srs": "PROJCS[\"NAD_1983_HARN_Lambert_Conformal_Conic\",GEOGCS[\"GCS_North_American_1983_HARN\",DATUM[\"NAD83_High_Accuracy_Regional_Network\",SPHEROID[\"GRS_1980\",6378137,298.257222101,AUTHORITY[\"EPSG\",\"7019\"]],AUTHORITY[\"EPSG\",\"6152\"]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433]],PROJECTION[\"Lambert_Conformal_Conic_2SP\"],PARAMETER[\"standard_parallel_1\",43],PARAMETER[\"standard_parallel_2\",45.5],PARAMETER[\"latitude_of_origin\",41.75],PARAMETER[\"central_meridian\",-120.5],PARAMETER[\"false_easting\",1312335.958005249],PARAMETER[\"false_northing\",0],UNIT[\"foot\",0.3048,AUTHORITY[\"EPSG\",\"9002\"]]]",
+					  "type": "octree"
+					}
+				*/
 				var greyhoundInfo = JSON.parse(xhr.responseText);
 				var version = new Potree.Version('1.4');
 
@@ -43,13 +85,24 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
 				pgg.spacing = (bounds[3]-bounds[0])/2^baseDepth;
 				pgg.baseDepth = baseDepth;
 				pgg.hierarchyStepSize = HIERARCHY_STEP_SIZE;
+
+				// Ideally we want to change this bit completely, since greyhound's options are wider
+				// than the default options for visualizing pointclouds. If someone ever has time to
+				// build a custom ui element for greyhound, the schema options from this info request
+				// should be given to the UI, so the user can choose between them. The selected option
+				// can then be directly requested from the server in the PointCloudGreyhoundGeometryNode
+				// without asking for attributes that we are not currently visualizing.
+
+				//We assume XYZ are always available.
 				var attributes = ['POSITION_CARTESIAN'];
 
+				//To be careful, we only add COLOR_PACKED as an option if all 3 colors are actually found.
 				var red = false;
 				var green = false;
 				var blue = false;
 
 				greyhoundInfo.schema.forEach(function(entry) {
+					// Intensity and Classification are optional.
 					if (entry.name === 'Intensity') {
 						attributes.push('INTENSITY');
 					}
@@ -71,6 +124,7 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
 				if (red&&green&&blue) {
 					attributes.push('COLOR_PACKED');
 				}
+				pgg.pointAttributes = new Potree.PointAttributes(attributes);
 
 				var min = new THREE.Vector3(bounds[0], bounds[1], bounds[2]);
 				var max = new THREE.Vector3(bounds[3], bounds[4], bounds[5]);
@@ -82,33 +136,21 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
 
 				var extent = {'x': max.x - min.x, 'y': max.y - min.y, 'z': max.z - min.z};
 
-				// x = 1000 - 1200
-				// min.x = 1000
-				// extent.x = 200
-				// min.x+0.5*extent.x = 1100
-
-				// globalOffset.set(min.x+0.5*extent.x, min.y+0.5*extent.y, min.z+0.5*extent.z);
 				globalOffset.set(min.x, min.y, min.z);
-
-				// nodeOffset.set(-0.5*extent.x, -0.5*extent.y, -0.5*extent.z);
-
-				// boundingBox.min.add(offset);
-				// boundingBox.max.add(offset);
-
-				// tightBoundingBox.min.add(offset);
-				// tightBoundingBox.max.add(offset);
 
 				pgg.projection = greyhoundInfo.srs;
 				pgg.boundingBox = boundingBox;
 				pgg.tightBoundingBox = tightBoundingBox;
 				pgg.boundingSphere = boundingBox.getBoundingSphere();
 				pgg.tightBoundingSphere = tightBoundingBox.getBoundingSphere();
+
+				// Ideally, we would want to be able to ask for a scale and an offset as well.
+				// Once that is possible in Greyhound, this will need to be changed.
 				pgg.bbOffset = globalOffset;
 				pgg.offset = nodeOffset;
 				pgg.scale = SCALE; //greyhoundInfo.scale;
 
 				pgg.loader = new Potree.GreyhoundBinaryLoader(version, boundingBox, pgg.scale);
-				pgg.pointAttributes = new Potree.PointAttributes(attributes);
 
 				var nodes = {};
 

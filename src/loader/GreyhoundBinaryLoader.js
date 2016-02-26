@@ -93,9 +93,7 @@ Potree.GreyhoundBinaryLoader.prototype.parse = function(node, buffer){
 		}
 
 		geometry.boundingBox = node.boundingBox;
-		//geometry.boundingBox = tightBoundingBox;
 		node.geometry = geometry;
-		//node.boundingBox = tightBoundingBox;
 		node.tightBoundingBox = tightBoundingBox;
 		node.loaded = true;
 		node.loading = false;

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
-    <title>Potree Viewer</title>
+    <title>Potree Viewer for Greyhound</title>
 
 	<link rel="stylesheet" type="text/css" href="../src/viewer/potree.css">
 	<link rel="stylesheet" type="text/css" href="../libs/jquery-ui-1.11.4/jquery-ui.css">
@@ -72,6 +72,8 @@
 		viewer.setDescription("");
 		//viewer.setMinNodeSize(5);
 
+    // Since this parameter to addPointCloud starts with the string 'greyhound:', it
+    // is recognised as a greyhound server URL
 		viewer.addPointCloud("greyhound:http://dev.greyhound.io/resource/autzen/");
 
 		viewer.loadGUI();

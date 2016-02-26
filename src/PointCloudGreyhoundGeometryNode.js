@@ -74,6 +74,10 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.getURL = function(){
     "type": "signed"
   }];
 
+	// Once we include options in the UI to load a dynamic list of available attributes for visualization (f.e. Classification, Intensity etc.)
+	// we will be able to ask for that specific attribute from the server, where we are now requesting all attributes for all points all the time.
+	// If we do that though, we also need to tell Potree to redraw the points that are already loaded (with different attributes).
+	// This is not default behaviour.
   this.pcoGeometry.pointAttributes.attributes.forEach(function(item) {
     // if(material === Potree.PointColorType.RGB && item.name === Potree.PointAttributeNames.COLOR_PACKED) {
     if(item.name === Potree.PointAttributeNames.COLOR_PACKED) {
@@ -113,18 +117,10 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.getURL = function(){
   schema.forEach(function(entry) {
     this.pcoGeometry.pointAttributes.byteSize += entry.size;
   }.bind(this));
-  // else if(material === Potree.PointColorType.LOD){
-  //
-	// }
-  // // else if(material === Potree.PointColorType.POINT_INDEX){
-  //
-	// }
-
-	// console.log(JSON.stringify(schema));
 
   var bb = this.boundingBox;
   var offset = this.pcoGeometry.offset;
-  //var boundsString = (bb.min.x-offset.x) + ',' + (bb.min.y-offset.y) + ',' + (bb.min.z-offset.z) + ',' + (bb.max.x-offset.x) + ',' + (bb.max.y-offset.y) + ',' + (bb.max.z-offset.z);
+
   var boundsString = (bb.min.x) + ',' + (bb.min.y) + ',' + (bb.min.z) + ',' + (bb.max.x) + ',' + (bb.max.y) + ',' + (bb.max.z);
 
   var url = ''+this.pcoGeometry.serverURL +
@@ -132,7 +128,11 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.getURL = function(){
         (baseLoaded ? (this.level + this.pcoGeometry.baseDepth) : 0) +
       '&depthEnd=' + (this.level + this.pcoGeometry.baseDepth + 1) +
       '&bounds=[' + boundsString + ']' +
-      '&schema='+JSON.stringify(schema); //+'&scale=' +this.pcoGeometry.scale;
+      '&schema='+JSON.stringify(schema);
+			// Ideally, we would want to be able to ask for a scale and an offset as well.
+			// Once that is possible in Greyhound, this will need to be changed.
+			//+'&scale=' +this.pcoGeometry.scale,
+			//+'&offset=' +this.pcoGeometry.scale;
 
   if (!baseLoaded) {
       baseLoaded = true;
@@ -196,7 +196,7 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.loadHierarchyThenPoints = funct
         mask += 1 << transform[7];
       }
     });
-		
+
     return mask;
   };
 
@@ -250,9 +250,6 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.loadHierarchyThenPoints = funct
 		node.numPoints = greyhoundHierarchy.count;
         parseChildrenCounts(greyhoundHierarchy, node.name, decoded);
 
-
-		//console.log(decoded);
-
 		var nodes = {};
 		nodes[node.name] = node;
 		var pgg = node.pcoGeometry;
@@ -282,12 +279,11 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.loadHierarchyThenPoints = funct
 
 	};
 	if((node.level % node.pcoGeometry.hierarchyStepSize) === 0){
-        var depthBegin = node.level + node.pcoGeometry.baseDepth;
-        var depthEnd = depthBegin + node.pcoGeometry.hierarchyStepSize + 1;
-        var bb = this.boundingBox;
-        var offset = node.pcoGeometry.offset;
-        // var boundsString = (bb.min.x-offset.x) + ',' + (bb.min.y-offset.y) + ',' + (bb.min.z-offset.z) + ',' + (bb.max.x-offset.x) + ',' + (bb.max.y-offset.y) + ',' + (bb.max.z-offset.z);
-        var boundsString = (bb.min.x) + ',' + (bb.min.y) + ',' + (bb.min.z) + ',' + (bb.max.x) + ',' + (bb.max.y) + ',' + (bb.max.z);
+    var depthBegin = node.level + node.pcoGeometry.baseDepth;
+    var depthEnd = depthBegin + node.pcoGeometry.hierarchyStepSize + 1;
+    var bb = this.boundingBox;
+    var offset = node.pcoGeometry.offset;    
+    var boundsString = (bb.min.x) + ',' + (bb.min.y) + ',' + (bb.min.z) + ',' + (bb.max.x) + ',' + (bb.max.y) + ',' + (bb.max.z);
 
 		var hurl = ''+this.pcoGeometry.serverURL + 'hierarchy?bounds=[' + boundsString + ']' + '&depthBegin=' + depthBegin + '&depthEnd=' + depthEnd;
 		var xhr = new XMLHttpRequest();

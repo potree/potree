@@ -35,7 +35,6 @@ Potree = {};
 
 onmessage = function(event){
 	var NUM_POINTS_BYTE_SIZE = 4;
-	// debugger;
 
 	var buffer = event.data.buffer;
 	var pointAttributes = event.data.pointAttributes;
@@ -57,7 +56,6 @@ onmessage = function(event){
 	var offset = 0;
 
 	for(var i = 0; i < pointAttributes.attributes.length; i++){
-		// console.log(offset);
 		var pointAttribute = pointAttributes.attributes[i];
 
 		if(pointAttribute.name === Potree.PointAttribute.POSITION_CARTESIAN.name){
@@ -78,7 +76,6 @@ onmessage = function(event){
 				tightBoxMax[1] = Math.max(tightBoxMax[1], positions[3*j+1]);
 				tightBoxMax[2] = Math.max(tightBoxMax[2], positions[3*j+2]);
 			}
-			// debugger;
 
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute};
 
@@ -88,10 +85,6 @@ onmessage = function(event){
 			var colors = new Float32Array(buff);
 
 			for(var j = 0; j < numPoints; j++){
-				// console.log(cv.getUint8(offset + j*pointAttributes.byteSize + 0));
-				// console.log(cv.getUint8(offset + j*pointAttributes.byteSize + 1));
-				// console.log(cv.getUint8(offset + j*pointAttributes.byteSize + 2));
-
 				colors[3*j+0] = cv.getUint16(offset + j*pointAttributes.byteSize + 0) / 255;
 				colors[3*j+1] = cv.getUint16(offset + j*pointAttributes.byteSize + 2) / 255;
 				colors[3*j+2] = cv.getUint16(offset + j*pointAttributes.byteSize + 4) / 255;

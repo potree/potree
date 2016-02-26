@@ -56,8 +56,6 @@ onmessage = function(event){
 
 	var offset = 0;
 
-	console.log('number of bytes per point: ' + pointAttributes.attributes.length);
-
 	for(var i = 0; i < pointAttributes.attributes.length; i++){
 		// console.log(offset);
 		var pointAttribute = pointAttributes.attributes[i];

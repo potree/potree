@@ -1,4 +1,5 @@
 var nodesLoadTimes = {};
+var baseLoaded = false;
 
 Potree.PointCloudGreyhoundGeometryNode = function(name, pcoGeometry, boundingBox){
 	this.id = Potree.PointCloudGreyhoundGeometryNode.IDCount++;
@@ -126,7 +127,16 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.getURL = function(){
   //var boundsString = (bb.min.x-offset.x) + ',' + (bb.min.y-offset.y) + ',' + (bb.min.z-offset.z) + ',' + (bb.max.x-offset.x) + ',' + (bb.max.y-offset.y) + ',' + (bb.max.z-offset.z);
   var boundsString = (bb.min.x) + ',' + (bb.min.y) + ',' + (bb.min.z) + ',' + (bb.max.x) + ',' + (bb.max.y) + ',' + (bb.max.z);
 
-  var url = ''+this.pcoGeometry.serverURL + 'read?depth=' + (this.level+this.pcoGeometry.baseDepth) + '&bounds=[' + boundsString + ']' + '&schema='+JSON.stringify(schema); //+'&scale=' +this.pcoGeometry.scale;
+  var url = ''+this.pcoGeometry.serverURL +
+      'read?depthBegin=' +
+        (baseLoaded ? (this.level + this.pcoGeometry.baseDepth) : 0) +
+      '&depthEnd=' + (this.level + this.pcoGeometry.baseDepth + 1) +
+      '&bounds=[' + boundsString + ']' +
+      '&schema='+JSON.stringify(schema); //+'&scale=' +this.pcoGeometry.scale;
+
+  if (!baseLoaded) {
+      baseLoaded = true;
+  }
 
 	return url;
 };
@@ -142,11 +152,10 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.load = function(){
 	}
 
 	this.loading = true;
-
 	this.pcoGeometry.numNodesLoading++;
 
 	if((this.level % this.pcoGeometry.hierarchyStepSize) === 0 && this.hasChildren){
-		this.loadHierachyThenPoints();
+		this.loadHierarchyThenPoints();
 	}else{
 		this.loadPoints();
 	}
@@ -157,33 +166,37 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.loadPoints = function(){
 };
 
 
-Potree.PointCloudGreyhoundGeometryNode.prototype.loadHierachyThenPoints = function(){
+Potree.PointCloudGreyhoundGeometryNode.prototype.loadHierarchyThenPoints = function(){
 	var node = this;
+
+    console.log('LOADING HIERARCHY');
+  var transform = [0, 2, 1, 3, 4, 6, 5, 7];
 
   var makeBitMask = function(node) {
     var keys = Object.keys(node);
     var mask = 0;
 
     keys.forEach(function(key) {
-      if (key === 'swd') {
-        mask += 1 << 0;
+      if        (key === 'swd') {
+        mask += 1 << transform[0];
       } else if (key === 'nwd') {
-        mask += 1 << 1;
+        mask += 1 << transform[1];
       } else if (key === 'swu') {
-        mask += 1 << 2;
+        mask += 1 << transform[2];
       } else if (key === 'nwu') {
-        mask += 1 << 3;
+        mask += 1 << transform[3];
       } else if (key === 'sed') {
-        mask += 1 << 4;
+        mask += 1 << transform[4];
       } else if (key === 'ned') {
-        mask += 1 << 5;
+        mask += 1 << transform[5];
       } else if (key === 'seu') {
-        mask += 1 << 6;
+        mask += 1 << transform[6];
       } else if (key === 'neu') {
-        mask += 1 << 7;
+        mask += 1 << transform[7];
       }
     });
-    return mask;
+    // TODO Not this.
+    return mask || 1 << 8;
   };
 
   var parseChildrenCounts = function(base, parentName, stack) {
@@ -192,33 +205,38 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.loadHierachyThenPoints = functi
     var childName;
     keys.forEach(function(key) {
       if (key !== 'count') {
-        if (key === 'swd') {
+        if        (key === 'swd') {
           child = base.swd;
-          childName = parentName+0;
+          childName = parentName+transform[0];
         } else if (key === 'nwd') {
           child = base.nwd;
-          childName = parentName+1;
+          childName = parentName+transform[1];
         } else if (key === 'swu') {
           child = base.swu;
-          childName = parentName+2;
+          childName = parentName+transform[2];
         } else if (key === 'nwu') {
           child = base.nwu;
-          childName = parentName+3;
+          childName = parentName+transform[3];
         } else if (key === 'sed') {
           child = base.sed;
-          childName = parentName+4;
+          childName = parentName+transform[4];
         } else if (key === 'ned') {
           child = base.ned;
-          childName = parentName+5;
+          childName = parentName+transform[5];
         } else if (key === 'seu') {
           child = base.seu;
-          childName = parentName+6;
+          childName = parentName+transform[6];
         } else if (key === 'neu') {
           child = base.neu;
-          childName = parentName+7;
+          childName = parentName+transform[7];
         }
 
-        stack.push({children: makeBitMask(child), numPoints: child.count, name: childName});
+        stack.push({
+            children: makeBitMask(child),
+            numPoints: child.count,
+            name: childName
+        });
+
         parseChildrenCounts(child, childName, stack);
       }
     });
@@ -229,7 +247,7 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.loadHierachyThenPoints = functi
 
 		var decoded = [];
 		node.numPoints = greyhoundHierarchy.count;
-    parseChildrenCounts(greyhoundHierarchy, node.name, decoded);
+        parseChildrenCounts(greyhoundHierarchy, node.name, decoded);
 
 
 		//console.log(decoded);
@@ -246,9 +264,12 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.loadHierachyThenPoints = functi
 			var parentName = name.substring(0, name.length-1);
 			var parentNode = nodes[parentName];
 			var level = name.length-1;
-			var boundingBox = Potree.GreyhoundLoader.createChildAABB(parentNode.boundingBox, index);
+			var boundingBox = Potree.GreyhoundLoader.createChildAABB(
+                    parentNode.boundingBox, index);
 
-			var currentNode = new Potree.PointCloudGreyhoundGeometryNode(name, pgg, boundingBox);
+			var currentNode = new Potree.PointCloudGreyhoundGeometryNode(
+                    name, pgg, boundingBox);
+
 			currentNode.level = level;
 			currentNode.numPoints = numPoints;
 			currentNode.hasChildren = decoded[i].children > 0;
@@ -260,12 +281,12 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.loadHierachyThenPoints = functi
 
 	};
 	if((node.level % node.pcoGeometry.hierarchyStepSize) === 0){
-    var depthBegin = node.level + node.pcoGeometry.baseDepth;
-    var depthEnd = depthBegin + node.pcoGeometry.hierarchyStepSize + 1;
-  	var bb = this.boundingBox;
-    var offset = node.pcoGeometry.offset;
-    // var boundsString = (bb.min.x-offset.x) + ',' + (bb.min.y-offset.y) + ',' + (bb.min.z-offset.z) + ',' + (bb.max.x-offset.x) + ',' + (bb.max.y-offset.y) + ',' + (bb.max.z-offset.z);
-    var boundsString = (bb.min.x) + ',' + (bb.min.y) + ',' + (bb.min.z) + ',' + (bb.max.x) + ',' + (bb.max.y) + ',' + (bb.max.z);
+        var depthBegin = node.level + node.pcoGeometry.baseDepth;
+        var depthEnd = depthBegin + node.pcoGeometry.hierarchyStepSize + 1;
+        var bb = this.boundingBox;
+        var offset = node.pcoGeometry.offset;
+        // var boundsString = (bb.min.x-offset.x) + ',' + (bb.min.y-offset.y) + ',' + (bb.min.z-offset.z) + ',' + (bb.max.x-offset.x) + ',' + (bb.max.y-offset.y) + ',' + (bb.max.z-offset.z);
+        var boundsString = (bb.min.x) + ',' + (bb.min.y) + ',' + (bb.min.z) + ',' + (bb.max.x) + ',' + (bb.max.y) + ',' + (bb.max.z);
 
 		var hurl = ''+this.pcoGeometry.serverURL + 'hierarchy?bounds=[' + boundsString + ']' + '&depthBegin=' + depthBegin + '&depthEnd=' + depthEnd;
 		var xhr = new XMLHttpRequest();

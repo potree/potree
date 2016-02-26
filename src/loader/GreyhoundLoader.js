@@ -21,7 +21,6 @@ Potree.GreyhoundLoader.loadInfoJSON = function load(url, callback) {
  * @param loadingFinishedListener executed after loading the binary has been finished
  */
 Potree.GreyhoundLoader.load = function load(url, callback) {
-	var ARBITRARY_DEPTH = 7;
 	var HIERARCHY_STEP_SIZE = 3;
 	var SCALE = 1;
 
@@ -37,7 +36,7 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
 				var version = new Potree.Version('1.4');
 
 				var bounds = greyhoundInfo.bounds;
-				var baseDepth = greyhoundInfo.baseDepth;
+				var baseDepth = Math.max(8, greyhoundInfo.baseDepth);
 
 				var pgg = new Potree.PointCloudGreyhoundGeometry();
 				pgg.serverURL = serverURL;

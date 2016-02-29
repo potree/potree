@@ -72,9 +72,10 @@
 		viewer.setDescription("");
 		//viewer.setMinNodeSize(5);
 
-    // Since this parameter to addPointCloud starts with the string 'greyhound:', it
-    // is recognised as a greyhound server URL
-		viewer.addPointCloud("greyhound:http://dev.greyhound.io/resource/autzen/");
+        // Since this parameter to addPointCloud starts with the string
+        // 'greyhound://', it is recognised as a greyhound server URL.
+		viewer.addPointCloud(
+                "greyhound://http://localhost:8080/resource/autzen-calc/");
 
 		viewer.loadGUI();
 

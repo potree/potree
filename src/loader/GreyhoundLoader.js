@@ -1,5 +1,3 @@
-
-
 /**
  * @class Loads greyhound metadata and returns a PointcloudOctree
  *
@@ -22,14 +20,14 @@ Potree.GreyhoundLoader.loadInfoJSON = function load(url, callback) {
  * @param loadingFinishedListener executed after loading the binary has been finished
  */
 Potree.GreyhoundLoader.load = function load(url, callback) {
-	var HIERARCHY_STEP_SIZE = 3;
-	var SCALE = 1;
+	var HIERARCHY_STEP_SIZE = 5;
+    var SCALE = .01;
 
 	try{
-		// We assume everything ater the string 'greyhound:' is the server url
-		var serverURL = url.split('greyhound:')[1];
+		// We assume everything ater the string 'greyhound://' is the server url
+		var serverURL = url.split('greyhound://')[1];
 		var xhr = new XMLHttpRequest();
-		xhr.open('GET', serverURL+'info', true);
+		xhr.open('GET', serverURL + 'info', true);
 
 		xhr.onreadystatechange = function() {
 			if(xhr.readyState === 4 && (xhr.status === 200 || xhr.status === 0)){
@@ -70,19 +68,31 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
 					    "size": 2,
 					    "type": "unsigned"
 					  }],
-					  "srs": "PROJCS[\"NAD_1983_HARN_Lambert_Conformal_Conic\",GEOGCS[\"GCS_North_American_1983_HARN\",DATUM[\"NAD83_High_Accuracy_Regional_Network\",SPHEROID[\"GRS_1980\",6378137,298.257222101,AUTHORITY[\"EPSG\",\"7019\"]],AUTHORITY[\"EPSG\",\"6152\"]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433]],PROJECTION[\"Lambert_Conformal_Conic_2SP\"],PARAMETER[\"standard_parallel_1\",43],PARAMETER[\"standard_parallel_2\",45.5],PARAMETER[\"latitude_of_origin\",41.75],PARAMETER[\"central_meridian\",-120.5],PARAMETER[\"false_easting\",1312335.958005249],PARAMETER[\"false_northing\",0],UNIT[\"foot\",0.3048,AUTHORITY[\"EPSG\",\"9002\"]]]",
+					  "srs": "<omitted for brevity>",
 					  "type": "octree"
 					}
 				*/
 				var greyhoundInfo = JSON.parse(xhr.responseText);
 				var version = new Potree.Version('1.4');
 
-				var bounds = greyhoundInfo.bounds;
+                var globalBounds = greyhoundInfo.bounds;
+
+                // Center around the origin.
+                var offset = [
+                    globalBounds[0] + (globalBounds[3] - globalBounds[0]) / 2,
+                    globalBounds[1] + (globalBounds[4] - globalBounds[1]) / 2,
+                    globalBounds[2] + (globalBounds[5] - globalBounds[2]) / 2
+                ];
+
+                var localBounds = globalBounds.map(function(v, i) {
+                    return (v - offset[i % 3]) / SCALE;
+                });
+
 				var baseDepth = Math.max(8, greyhoundInfo.baseDepth);
 
 				var pgg = new Potree.PointCloudGreyhoundGeometry();
 				pgg.serverURL = serverURL;
-				pgg.spacing = (bounds[3]-bounds[0])/2^baseDepth;
+				pgg.spacing = (localBounds[3]-localBounds[0])/2^baseDepth;
 				pgg.baseDepth = baseDepth;
 				pgg.hierarchyStepSize = HIERARCHY_STEP_SIZE;
 
@@ -126,17 +136,22 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
 				}
 				pgg.pointAttributes = new Potree.PointAttributes(attributes);
 
-				var min = new THREE.Vector3(bounds[0], bounds[1], bounds[2]);
-				var max = new THREE.Vector3(bounds[3], bounds[4], bounds[5]);
+				var min = new THREE.Vector3(
+                        localBounds[0], localBounds[1], localBounds[2]);
+				var max = new THREE.Vector3(
+                        localBounds[3], localBounds[4], localBounds[5]);
+                var offset = new THREE.Vector3(offset[0], offset[1], offset[2]);
 				var boundingBox = new THREE.Box3(min, max);
 				var tightBoundingBox = boundingBox.clone();
 
-				var nodeOffset = new THREE.Vector3(0,0,0);
-				var globalOffset = new THREE.Vector3(0,0,0);
+				// var nodeOffset = new THREE.Vector3(0,0,0);
+				// var globalOffset = new THREE.Vector3(0,0,0);
 
-				var extent = {'x': max.x - min.x, 'y': max.y - min.y, 'z': max.z - min.z};
-
-				globalOffset.set(min.x, min.y, min.z);
+				var extent = {
+                    'x': max.x - min.x,
+                    'y': max.y - min.y,
+                    'z': max.z - min.z
+                };
 
 				pgg.projection = greyhoundInfo.srs;
 				pgg.boundingBox = boundingBox;
@@ -146,18 +161,20 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
 
 				// Ideally, we would want to be able to ask for a scale and an offset as well.
 				// Once that is possible in Greyhound, this will need to be changed.
-				pgg.bbOffset = globalOffset;
-				pgg.offset = nodeOffset;
+				pgg.bbOffset = new THREE.Vector3(0,0,0);
+				pgg.offset = new THREE.Vector3(0,0,0);
 				pgg.scale = SCALE; //greyhoundInfo.scale;
 
-				pgg.loader = new Potree.GreyhoundBinaryLoader(version, boundingBox, pgg.scale);
+				pgg.loader = new Potree.GreyhoundBinaryLoader(
+                        version, boundingBox, pgg.scale);
 
 				var nodes = {};
 
 				{ // load root
 					var name = "r";
 
-					var root = new Potree.PointCloudGreyhoundGeometryNode(name, pgg, boundingBox);
+					var root = new Potree.PointCloudGreyhoundGeometryNode(
+                            name, pgg, boundingBox, pgg.scale, offset);
 					root.level = 0;
 					root.hasChildren = true;
 					root.numPoints = greyhoundInfo.numPoints;

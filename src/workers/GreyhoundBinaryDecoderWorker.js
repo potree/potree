@@ -30,26 +30,36 @@ function CustomView(buffer) {
 	};
 }
 
+function networkToNative(val) {
+    return ((val & 0x00FF) << 24) |
+           ((val & 0xFF00) <<  8) |
+           ((val >> 8)  & 0xFF00) |
+           ((val >> 24) & 0x00FF);
+}
+
 Potree = {};
 
 
 onmessage = function(event){
-	var NUM_POINTS_BYTE_SIZE = 4;
+	var NUM_POINTS_BYTES = 4;
 
 	var buffer = event.data.buffer;
 	var pointAttributes = event.data.pointAttributes;
-	var numPoints = (buffer.byteLength - NUM_POINTS_BYTE_SIZE) / pointAttributes.byteSize;
+
+    var view = new DataView(buffer, buffer.byteLength - NUM_POINTS_BYTES, NUM_POINTS_BYTES);
+    var numPoints = networkToNative(view.getUint32(0));
+    buffer = buffer.slice(0, buffer.byteLength - NUM_POINTS_BYTES);
+
+    // TODO Decompress buffer here.
+
 	var cv = new CustomView(buffer);
 	var version = new Potree.Version(event.data.version);
 	var min = event.data.min;
 	var max = event.data.max;
 	var nodeOffset = event.data.offset;
-	var bbOffset = event.data.bbOffset;
 	var scale = event.data.scale;
 	var tightBoxMin = [ Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY];
 	var tightBoxMax = [ Number.NEGATIVE_INFINITY , Number.NEGATIVE_INFINITY , Number.NEGATIVE_INFINITY ];
-
-	var extent = {'x': max[0] - min[0], 'y': max[1] - min[1], 'z': max[2] - min[2]};
 
 	var attributeBuffers = {};
 
@@ -64,9 +74,9 @@ onmessage = function(event){
 			var positions = new Float32Array(buff);
 
 			for (var j = 0; j < numPoints; j++) {
-				positions[3*j+0] = (cv.getUint32(offset + j*pointAttributes.byteSize+0) - nodeOffset[0]);
-				positions[3*j+1] = (cv.getUint32(offset + j*pointAttributes.byteSize+4) - nodeOffset[1]);
-				positions[3*j+2] = (cv.getUint32(offset + j*pointAttributes.byteSize+8) - nodeOffset[2]);
+				positions[3*j+0] = (cv.getUint32(offset + j*pointAttributes.byteSize+0) /*- nodeOffset[0]*/);
+				positions[3*j+1] = (cv.getUint32(offset + j*pointAttributes.byteSize+4) /*- nodeOffset[1]*/);
+				positions[3*j+2] = (cv.getUint32(offset + j*pointAttributes.byteSize+8) /*- nodeOffset[2]*/);
 
 				tightBoxMin[0] = Math.min(tightBoxMin[0], positions[3*j+0]);
 				tightBoxMin[1] = Math.min(tightBoxMin[1], positions[3*j+1]);

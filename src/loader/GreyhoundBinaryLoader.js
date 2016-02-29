@@ -46,7 +46,7 @@ Potree.GreyhoundBinaryLoader.prototype.parse = function(node, buffer){
 	var numPoints = (buffer.byteLength - NUM_POINTS_BYTE_SIZE) / node.pcoGeometry.pointAttributes.byteSize;
 	var pointAttributes = node.pcoGeometry.pointAttributes;
 
-  node.numPoints = numPoints;
+    node.numPoints = numPoints;
 
 
 	var ww = Potree.workers.greyhoundBinaryDecoder.getWorker();

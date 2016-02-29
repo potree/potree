@@ -1,7 +1,8 @@
 var nodesLoadTimes = {};
 var baseLoaded = false;
 
-Potree.PointCloudGreyhoundGeometryNode = function(name, pcoGeometry, boundingBox){
+Potree.PointCloudGreyhoundGeometryNode = function(
+        name, pcoGeometry, boundingBox, scale, offset){
 	this.id = Potree.PointCloudGreyhoundGeometryNode.IDCount++;
 	this.name = name;
 	this.index = parseInt(name.charAt(name.length-1));
@@ -9,6 +10,8 @@ Potree.PointCloudGreyhoundGeometryNode = function(name, pcoGeometry, boundingBox
 	this.geometry = null;
 	this.boundingBox = boundingBox;
 	this.boundingSphere = boundingBox.getBoundingSphere();
+    this.scale = scale;
+    this.offset = offset;
 	this.children = {};
 	this.numPoints = 0;
 	this.level = null;
@@ -50,10 +53,6 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.getChildren = function(){
 	}
 
 	return children;
-};
-
-Potree.PointCloudGreyhoundGeometryNode.prototype.getBoundingBox = function(){
-	return this.boundingBox;
 };
 
 Potree.PointCloudGreyhoundGeometryNode.prototype.getURL = function(){
@@ -119,20 +118,28 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.getURL = function(){
   }.bind(this));
 
   var bb = this.boundingBox;
-  var offset = this.pcoGeometry.offset;
+  var offset = this.offset;
 
-  var boundsString = (bb.min.x) + ',' + (bb.min.y) + ',' + (bb.min.z) + ',' + (bb.max.x) + ',' + (bb.max.y) + ',' + (bb.max.z);
+  var scale = this.pcoGeometry.scale;
+  var boundsString =
+      (bb.min.x * scale + offset.x) + ',' +
+      (bb.min.y * scale + offset.y) + ',' +
+      (bb.min.z * scale + offset.z) + ',' +
+      (bb.max.x * scale + offset.x) + ',' +
+      (bb.max.y * scale + offset.y) + ',' +
+      (bb.max.z * scale + offset.z);
+
+  var offsetString = offset.x + ',' + offset.y + ',' + offset.z;
 
   var url = ''+this.pcoGeometry.serverURL +
       'read?depthBegin=' +
         (baseLoaded ? (this.level + this.pcoGeometry.baseDepth) : 0) +
       '&depthEnd=' + (this.level + this.pcoGeometry.baseDepth + 1) +
       '&bounds=[' + boundsString + ']' +
-      '&schema='+JSON.stringify(schema);
-			// Ideally, we would want to be able to ask for a scale and an offset as well.
-			// Once that is possible in Greyhound, this will need to be changed.
-			//+'&scale=' +this.pcoGeometry.scale,
-			//+'&offset=' +this.pcoGeometry.scale;
+      '&schema=' + JSON.stringify(schema) +
+      '&scale=' + scale +
+      '&offset=[' + offsetString + ']';// +
+      //'&compress=true';
 
   if (!baseLoaded) {
       baseLoaded = true;
@@ -266,7 +273,7 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.loadHierarchyThenPoints = funct
                     parentNode.boundingBox, index);
 
 			var currentNode = new Potree.PointCloudGreyhoundGeometryNode(
-                    name, pgg, boundingBox);
+                    name, pgg, boundingBox, node.scale, node.offset);
 
 			currentNode.level = level;
 			currentNode.numPoints = numPoints;
@@ -279,11 +286,21 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.loadHierarchyThenPoints = funct
 
 	};
 	if((node.level % node.pcoGeometry.hierarchyStepSize) === 0){
-    var depthBegin = node.level + node.pcoGeometry.baseDepth;
-    var depthEnd = depthBegin + node.pcoGeometry.hierarchyStepSize + 1;
-    var bb = this.boundingBox;
-    var offset = node.pcoGeometry.offset;    
-    var boundsString = (bb.min.x) + ',' + (bb.min.y) + ',' + (bb.min.z) + ',' + (bb.max.x) + ',' + (bb.max.y) + ',' + (bb.max.z);
+        var depthBegin = node.level + node.pcoGeometry.baseDepth;
+        var depthEnd = depthBegin + node.pcoGeometry.hierarchyStepSize + 1;
+        var bb = this.boundingBox;
+        var scale = this.pcoGeometry.scale;
+
+        // Going back into Greyhound-space, i.e. the space of the actual points
+        // in the dataset.  Add the offset to get there.
+        var offset = node.offset;
+        var boundsString =
+            (bb.min.x * scale + offset.x) + ',' +
+            (bb.min.y * scale + offset.y) + ',' +
+            (bb.min.z * scale + offset.z) + ',' +
+            (bb.max.x * scale + offset.x) + ',' +
+            (bb.max.y * scale + offset.y) + ',' +
+            (bb.max.z * scale + offset.z);
 
 		var hurl = ''+this.pcoGeometry.serverURL + 'hierarchy?bounds=[' + boundsString + ']' + '&depthBegin=' + depthBegin + '&depthEnd=' + depthEnd;
 		var xhr = new XMLHttpRequest();
@@ -292,10 +309,10 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.loadHierarchyThenPoints = funct
 		xhr.onreadystatechange = function() {
 			if (xhr.readyState === 4) {
 				if (xhr.status === 200 || xhr.status === 0) {
-          var greyhoundHierarchy = JSON.parse(xhr.responseText);
-					callback(node, greyhoundHierarchy);
+                    var greyhoundHierarchy = JSON.parse(xhr.responseText);
+                    callback(node, greyhoundHierarchy);
 				} else {
-					console.log('Failed to load file! HTTP status: ' + xhr.status + ", file: " + url);
+                    console.log('Failed to load file! HTTP status: ' + xhr.status + ", file: " + url);
 				}
 			}
 		};

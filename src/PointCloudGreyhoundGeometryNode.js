@@ -56,66 +56,8 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.getChildren = function(){
 };
 
 Potree.PointCloudGreyhoundGeometryNode.prototype.getURL = function(){
-  //Determine what schema to ask the greyhound server for.
   var material = viewer.getMaterial();
-
-  var schema = [{
-    "name": "X",
-    "size": 4,
-    "type": "signed"
-  }, {
-    "name": "Y",
-    "size": 4,
-    "type": "signed"
-  }, {
-    "name": "Z",
-    "size": 4,
-    "type": "signed"
-  }];
-
-	// Once we include options in the UI to load a dynamic list of available attributes for visualization (f.e. Classification, Intensity etc.)
-	// we will be able to ask for that specific attribute from the server, where we are now requesting all attributes for all points all the time.
-	// If we do that though, we also need to tell Potree to redraw the points that are already loaded (with different attributes).
-	// This is not default behaviour.
-  this.pcoGeometry.pointAttributes.attributes.forEach(function(item) {
-    // if(material === Potree.PointColorType.RGB && item.name === Potree.PointAttributeNames.COLOR_PACKED) {
-    if(item.name === Potree.PointAttributeNames.COLOR_PACKED) {
-      schema.push({
-        "name": "Red",
-        "size": 2,
-        "type": "unsigned"
-      });
-      schema.push({
-        "name": "Green",
-        "size": 2,
-        "type": "unsigned"
-      });
-      schema.push({
-        "name": "Blue",
-        "size": 2,
-        "type": "unsigned"
-      });
-    // } else if(material === Potree.PointColorType.INTENSITY && item.name === Potree.PointAttributeNames.INTENSITY){
-	} else if(item.name === Potree.PointAttributeNames.INTENSITY){
-      schema.push({
-        "name": "Intensity",
-        "size": 2,
-        "type": "unsigned"
-      });
-  	// } else if(material === Potree.PointColorType.CLASSIFICATION && item.name === Potree.PointAttributeNames.CLASSIFICATION){
-		} else if(item.name === Potree.PointAttributeNames.CLASSIFICATION) {
-      schema.push({
-        "name": "Classification",
-        "size": 1,
-        "type": "unsigned"
-      });
-  	}
-  });
-
-  this.pcoGeometry.pointAttributes.byteSize = 0;
-  schema.forEach(function(entry) {
-    this.pcoGeometry.pointAttributes.byteSize += entry.size;
-  }.bind(this));
+  var schema = this.pcoGeometry.schema;
 
   var bb = this.boundingBox;
   var offset = this.offset;
@@ -138,8 +80,8 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.getURL = function(){
       '&bounds=[' + boundsString + ']' +
       '&schema=' + JSON.stringify(schema) +
       '&scale=' + scale +
-      '&offset=[' + offsetString + ']';// +
-      //'&compress=true';
+      '&offset=[' + offsetString + ']' +
+      ''//'&compress=true';
 
   if (!baseLoaded) {
       baseLoaded = true;

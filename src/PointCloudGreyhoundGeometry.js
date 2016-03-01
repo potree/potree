@@ -7,6 +7,7 @@ Potree.PointCloudGreyhoundGeometry = function(){
 	this.pointAttributes = {};
 	this.hierarchyStepSize = -1;
 	this.loader = null;
+    this.schema = null;
 
 	this.baseDepth = null;
 	this.offset = null;

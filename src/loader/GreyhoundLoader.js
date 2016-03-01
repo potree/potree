@@ -12,6 +12,35 @@ Potree.GreyhoundLoader = function(){
 Potree.GreyhoundLoader.loadInfoJSON = function load(url, callback) {
 }
 
+var createSchema = function(attributes) {
+  var schema = [
+      { "name": "X", "size": 4, "type": "signed" },
+      { "name": "Y", "size": 4, "type": "signed" },
+      { "name": "Z", "size": 4, "type": "signed" }
+  ];
+
+	// Once we include options in the UI to load a dynamic list of available
+    // attributes for visualization (f.e. Classification, Intensity etc.)
+	// we will be able to ask for that specific attribute from the server,
+    // where we are now requesting all attributes for all points all the time.
+	// If we do that though, we also need to tell Potree to redraw the points
+    // that are already loaded (with different attributes).
+	// This is not default behaviour.
+  attributes.forEach(function(item) {
+    if(item === 'COLOR_PACKED') {
+      schema.push({ "name": "Red",      "size": 2, "type": "unsigned" });
+      schema.push({ "name": "Green",    "size": 2, "type": "unsigned" });
+      schema.push({ "name": "Blue",     "size": 2, "type": "unsigned" });
+    } else if(item === 'INTENSITY'){
+      schema.push({ "name": "Intensity", "size": 2, "type": "unsigned" });
+    } else if(item === 'CLASSIFICATION') {
+      schema.push({ "name": "Classification", "size": 1, "type": "unsigned" });
+  	}
+  });
+
+  return schema;
+}
+
 /**
  * @return a point cloud octree with the root node data loaded.
  * loading of descendants happens asynchronously when they're needed
@@ -134,7 +163,15 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
 				if (red&&green&&blue) {
 					attributes.push('COLOR_PACKED');
 				}
+
+                var pointSize = 0;
+                pgg.schema = createSchema(attributes);
+                pgg.schema.forEach(function(entry) {
+                    pointSize += entry.size;
+                });
+
 				pgg.pointAttributes = new Potree.PointAttributes(attributes);
+                pgg.pointAttributes.byteSize = pointSize;
 
 				var min = new THREE.Vector3(
                         localBounds[0], localBounds[1], localBounds[2]);
@@ -159,11 +196,9 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
 				pgg.boundingSphere = boundingBox.getBoundingSphere();
 				pgg.tightBoundingSphere = tightBoundingBox.getBoundingSphere();
 
-				// Ideally, we would want to be able to ask for a scale and an offset as well.
-				// Once that is possible in Greyhound, this will need to be changed.
 				pgg.bbOffset = new THREE.Vector3(0,0,0);
 				pgg.offset = new THREE.Vector3(0,0,0);
-				pgg.scale = SCALE; //greyhoundInfo.scale;
+				pgg.scale = SCALE || greyhoundInfo.scale;
 
 				pgg.loader = new Potree.GreyhoundBinaryLoader(
                         version, boundingBox, pgg.scale);

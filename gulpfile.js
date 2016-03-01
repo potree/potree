@@ -84,6 +84,7 @@ var workers = {
 		"src/loader/PointAttributes.js"
 	],
 	"GreyhoundBinaryDecoder": [
+		"libs/plasio/workers/laz-perf.js",
 		"src/workers/GreyhoundBinaryDecoderWorker.js",
 		"src/Version.js",
 		"src/loader/PointAttributes.js"
@@ -157,7 +158,7 @@ gulp.task('build', ['scripts']);
 // For development, it is now possible to use 'gulp webserver'
 // from the command line to start the server (default port is 8080)
 gulp.task('webserver', function() {
-  connect.server();
+  connect.server({ port: 7777 });
 });
 
 

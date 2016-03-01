@@ -1,4 +1,3 @@
-
 // http://jsperf.com/uint8array-vs-dataview3/3
 function CustomView(buffer) {
 	this.buffer = buffer;
@@ -37,6 +36,40 @@ function networkToNative(val) {
            ((val >> 24) & 0x00FF);
 }
 
+var decompress = function(schema, input, numPoints) {
+    var x = new Module.DynamicLASZip();
+
+    var abInt = new Uint8Array(input);
+    var buf = Module._malloc(input.byteLength);
+
+    Module.HEAPU8.set(abInt, buf);
+    x.open(buf, input.byteLength);
+
+    var pointSize = 0;
+
+    schema.forEach(function(f) {
+        pointSize += f.size;
+        if (f.type === "floating")      x.addFieldFloating(f.size);
+        else if (f.type === "unsigned") x.addFieldUnsigned(f.size);
+        else if (f.type === "signed")   x.addFieldSigned(f.size);
+        else throw new Error("Unrecognized field desc:", f);
+    });
+
+    var out = Module._malloc(numPoints * pointSize);
+
+    for (var i = 0 ; i < numPoints ; i ++) {
+        x.getPoint(out + i * pointSize);
+    }
+
+    var ret = new Uint8Array(numPoints * pointSize);
+    ret.set(Module.HEAPU8.subarray(out, out + numPoints * pointSize));
+
+    Module._free(out);
+    Module._free(buf);
+
+    return ret.buffer;
+}
+
 Potree = {};
 
 
@@ -50,7 +83,7 @@ onmessage = function(event){
     var numPoints = networkToNative(view.getUint32(0));
     buffer = buffer.slice(0, buffer.byteLength - NUM_POINTS_BYTES);
 
-    // TODO Decompress buffer here.
+    // buffer = decompress(event.data.schema, buffer, numPoints);
 
 	var cv = new CustomView(buffer);
 	var version = new Potree.Version(event.data.version);
@@ -62,11 +95,14 @@ onmessage = function(event){
 	var tightBoxMax = [ Number.NEGATIVE_INFINITY , Number.NEGATIVE_INFINITY , Number.NEGATIVE_INFINITY ];
 
 	var attributeBuffers = {};
-
 	var offset = 0;
+    var pointSize = pointAttributes.byteSize;
+
+    var logged = 0;
 
 	for(var i = 0; i < pointAttributes.attributes.length; i++){
 		var pointAttribute = pointAttributes.attributes[i];
+        //console.log('PA', i, pointAttributes.attributes[i]);
 
 		if(pointAttribute.name === Potree.PointAttribute.POSITION_CARTESIAN.name){
 
@@ -74,9 +110,17 @@ onmessage = function(event){
 			var positions = new Float32Array(buff);
 
 			for (var j = 0; j < numPoints; j++) {
-				positions[3*j+0] = (cv.getUint32(offset + j*pointAttributes.byteSize+0) /*- nodeOffset[0]*/);
-				positions[3*j+1] = (cv.getUint32(offset + j*pointAttributes.byteSize+4) /*- nodeOffset[1]*/);
-				positions[3*j+2] = (cv.getUint32(offset + j*pointAttributes.byteSize+8) /*- nodeOffset[2]*/);
+				positions[3*j+0] = (cv.getUint32(offset + j*pointSize+0) /*- nodeOffset[0]*/);
+				positions[3*j+1] = (cv.getUint32(offset + j*pointSize+4) /*- nodeOffset[1]*/);
+				positions[3*j+2] = (cv.getUint32(offset + j*pointSize+8) /*- nodeOffset[2]*/);
+                /*
+                if (++logged % 10000 == 0)
+                console.log(
+                        'XYZ',
+                        (cv.getUint32(offset + j*pointSize+0)),
+                        (cv.getUint32(offset + j*pointSize+4)),
+                        (cv.getUint32(offset + j*pointSize+8)));
+                        */
 
 				tightBoxMin[0] = Math.min(tightBoxMin[0], positions[3*j+0]);
 				tightBoxMin[1] = Math.min(tightBoxMin[1], positions[3*j+1]);
@@ -98,6 +142,14 @@ onmessage = function(event){
 				colors[3*j+0] = cv.getUint16(offset + j*pointAttributes.byteSize + 0) / 255;
 				colors[3*j+1] = cv.getUint16(offset + j*pointAttributes.byteSize + 2) / 255;
 				colors[3*j+2] = cv.getUint16(offset + j*pointAttributes.byteSize + 4) / 255;
+                /*
+                if (++logged % 10000 == 0)
+                console.log(
+                        'RGB',
+                        (cv.getUint16(offset + j*pointSize+0))/255,
+                        (cv.getUint16(offset + j*pointSize+2))/255,
+                        (cv.getUint16(offset + j*pointSize+4))/255);
+                        */
 			}
 
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute};

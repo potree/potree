@@ -79,11 +79,12 @@ onmessage = function(event){
 	var buffer = event.data.buffer;
 	var pointAttributes = event.data.pointAttributes;
 
-    var view = new DataView(buffer, buffer.byteLength - NUM_POINTS_BYTES, NUM_POINTS_BYTES);
+    var view = new DataView(
+            buffer, buffer.byteLength - NUM_POINTS_BYTES, NUM_POINTS_BYTES);
     var numPoints = networkToNative(view.getUint32(0));
     buffer = buffer.slice(0, buffer.byteLength - NUM_POINTS_BYTES);
 
-    // buffer = decompress(event.data.schema, buffer, numPoints);
+    buffer = decompress(event.data.schema, buffer, numPoints);
 
 	var cv = new CustomView(buffer);
 	var version = new Potree.Version(event.data.version);
@@ -92,7 +93,7 @@ onmessage = function(event){
 	var nodeOffset = event.data.offset;
 	var scale = event.data.scale;
 	var tightBoxMin = [ Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY];
-	var tightBoxMax = [ Number.NEGATIVE_INFINITY , Number.NEGATIVE_INFINITY , Number.NEGATIVE_INFINITY ];
+	var tightBoxMax = [ Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY ];
 
 	var attributeBuffers = {};
 	var offset = 0;
@@ -102,25 +103,15 @@ onmessage = function(event){
 
 	for(var i = 0; i < pointAttributes.attributes.length; i++){
 		var pointAttribute = pointAttributes.attributes[i];
-        //console.log('PA', i, pointAttributes.attributes[i]);
 
 		if(pointAttribute.name === Potree.PointAttribute.POSITION_CARTESIAN.name){
-
 			var buff = new ArrayBuffer(numPoints*4*3);
 			var positions = new Float32Array(buff);
 
-			for (var j = 0; j < numPoints; j++) {
-				positions[3*j+0] = (cv.getUint32(offset + j*pointSize+0) /*- nodeOffset[0]*/);
-				positions[3*j+1] = (cv.getUint32(offset + j*pointSize+4) /*- nodeOffset[1]*/);
-				positions[3*j+2] = (cv.getUint32(offset + j*pointSize+8) /*- nodeOffset[2]*/);
-                /*
-                if (++logged % 10000 == 0)
-                console.log(
-                        'XYZ',
-                        (cv.getUint32(offset + j*pointSize+0)),
-                        (cv.getUint32(offset + j*pointSize+4)),
-                        (cv.getUint32(offset + j*pointSize+8)));
-                        */
+			for (var j = 0; j < numPoints; ++j) {
+				positions[3*j+0] = (cv.getUint32(offset + j*pointSize+0));
+				positions[3*j+1] = (cv.getUint32(offset + j*pointSize+4));
+				positions[3*j+2] = (cv.getUint32(offset + j*pointSize+8));
 
 				tightBoxMin[0] = Math.min(tightBoxMin[0], positions[3*j+0]);
 				tightBoxMin[1] = Math.min(tightBoxMin[1], positions[3*j+1]);
@@ -138,18 +129,10 @@ onmessage = function(event){
 			var buff = new ArrayBuffer(numPoints*4*3);
 			var colors = new Float32Array(buff);
 
-			for(var j = 0; j < numPoints; j++){
-				colors[3*j+0] = cv.getUint16(offset + j*pointAttributes.byteSize + 0) / 255;
-				colors[3*j+1] = cv.getUint16(offset + j*pointAttributes.byteSize + 2) / 255;
-				colors[3*j+2] = cv.getUint16(offset + j*pointAttributes.byteSize + 4) / 255;
-                /*
-                if (++logged % 10000 == 0)
-                console.log(
-                        'RGB',
-                        (cv.getUint16(offset + j*pointSize+0))/255,
-                        (cv.getUint16(offset + j*pointSize+2))/255,
-                        (cv.getUint16(offset + j*pointSize+4))/255);
-                        */
+			for(var j = 0; j < numPoints; ++j){
+				colors[3*j+0] = cv.getUint16(offset + j*pointSize + 0) / 255;
+				colors[3*j+1] = cv.getUint16(offset + j*pointSize + 2) / 255;
+				colors[3*j+2] = cv.getUint16(offset + j*pointSize + 4) / 255;
 			}
 
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute};
@@ -159,8 +142,8 @@ onmessage = function(event){
 			var buff = new ArrayBuffer(numPoints*4);
 			var intensities = new Float32Array(buff);
 
-			for(var j = 0; j < numPoints; j++){
-				var intensity = cv.getUint16(offset + j*pointAttributes.byteSize);
+			for(var j = 0; j < numPoints; ++j){
+				var intensity = cv.getUint16(offset + j*pointSize);
 				intensities[j] = intensity;
 			}
 
@@ -171,8 +154,8 @@ onmessage = function(event){
 			var buff = new ArrayBuffer(numPoints*4);
 			var classifications = new Float32Array(buff);
 
-			for(var j = 0; j < numPoints; j++){
-				var classification = cv.getUint8(offset + j*pointAttributes.byteSize);
+			for(var j = 0; j < numPoints; ++j){
+				var classification = cv.getUint8(offset + j*pointSize);
 				classifications[j] = classification;
 			}
 
@@ -183,9 +166,9 @@ onmessage = function(event){
 			var buff = new ArrayBuffer(numPoints*4*3);
 			var normals = new Float32Array(buff);
 
-			for(var j = 0; j < numPoints; j++){
-				var bx = cv.getUint8(offset + j * pointAttributes.byteSize + 0);
-				var by = cv.getUint8(offset + j * pointAttributes.byteSize + 1);
+			for(var j = 0; j < numPoints; ++j){
+				var bx = cv.getUint8(offset + j * pointSize + 0);
+				var by = cv.getUint8(offset + j * pointSize + 1);
 
 				var ex = bx / 255;
 				var ey = by / 255;
@@ -214,9 +197,9 @@ onmessage = function(event){
 
 			var buff = new ArrayBuffer(numPoints*4*3);
 			var normals = new Float32Array(buff);
-			for(var j = 0; j < numPoints; j++){
-				var bx = cv.getUint8(offset + j * pointAttributes.byteSize + 0);
-				var by = cv.getUint8(offset + j * pointAttributes.byteSize + 1);
+			for(var j = 0; j < numPoints; ++j){
+				var bx = cv.getUint8(offset + j * pointSize + 0);
+				var by = cv.getUint8(offset + j * pointSize + 1);
 
 				var u = (bx / 255) * 2 - 1;
 				var v = (by / 255) * 2 - 1;
@@ -247,10 +230,10 @@ onmessage = function(event){
 
 			var buff = new ArrayBuffer(numPoints*4*3);
 			var normals = new Float32Array(buff);
-			for(var j = 0; j < numPoints; j++){
-				var x = cv.getFloat(offset + j * pointAttributes.byteSize + 0);
-				var y = cv.getFloat(offset + j * pointAttributes.byteSize + 4);
-				var z = cv.getFloat(offset + j * pointAttributes.byteSize + 8);
+			for(var j = 0; j < numPoints; ++j){
+				var x = cv.getFloat(offset + j * pointSize + 0);
+				var y = cv.getFloat(offset + j * pointSize + 4);
+				var z = cv.getFloat(offset + j * pointSize + 8);
 
 				normals[3*j + 0] = x;
 				normals[3*j + 1] = y;

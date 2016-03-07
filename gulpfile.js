@@ -158,7 +158,7 @@ gulp.task('build', ['scripts']);
 // For development, it is now possible to use 'gulp webserver'
 // from the command line to start the server (default port is 8080)
 gulp.task('webserver', function() {
-  connect.server({ port: 7777 });
+  connect.server();
 });
 
 

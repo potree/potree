@@ -56,38 +56,36 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.getChildren = function(){
 };
 
 Potree.PointCloudGreyhoundGeometryNode.prototype.getURL = function(){
-  var material = viewer.getMaterial();
-  var schema = this.pcoGeometry.schema;
+    var material = viewer.getMaterial();
+    var schema = this.pcoGeometry.schema;
 
-  var bb = this.boundingBox;
-  var offset = this.offset;
+    var bb = this.boundingBox;
+    var offset = this.offset;
 
-  var scale = this.pcoGeometry.scale;
-  var boundsString =
-      (bb.min.x * scale + offset.x) + ',' +
-      (bb.min.y * scale + offset.y) + ',' +
-      (bb.min.z * scale + offset.z) + ',' +
-      (bb.max.x * scale + offset.x) + ',' +
-      (bb.max.y * scale + offset.y) + ',' +
-      (bb.max.z * scale + offset.z);
+    var scale = this.pcoGeometry.scale;
+    var boundsString =
+        (bb.min.x * scale + offset.x) + ',' +
+        (bb.min.y * scale + offset.y) + ',' +
+        (bb.min.z * scale + offset.z) + ',' +
+        (bb.max.x * scale + offset.x) + ',' +
+        (bb.max.y * scale + offset.y) + ',' +
+        (bb.max.z * scale + offset.z);
 
-  var offsetString = offset.x + ',' + offset.y + ',' + offset.z;
+    var offsetString = offset.x + ',' + offset.y + ',' + offset.z;
 
-  var url = ''+this.pcoGeometry.serverURL +
-      'read?depthBegin=' +
+    var url = ''+this.pcoGeometry.serverURL +
+        'read?depthBegin=' +
         (baseLoaded ? (this.level + this.pcoGeometry.baseDepth) : 0) +
-      '&depthEnd=' + (this.level + this.pcoGeometry.baseDepth + 1) +
-      '&bounds=[' + boundsString + ']' +
-      '&schema=' + JSON.stringify(schema) +
-      '&scale=' + scale +
-      '&offset=[' + offsetString + ']' +
-      ''//'&compress=true';
+        '&depthEnd=' + (this.level + this.pcoGeometry.baseDepth + 1) +
+        '&bounds=[' + boundsString + ']' +
+        '&schema=' + JSON.stringify(schema) +
+        '&scale=' + scale +
+        '&offset=[' + offsetString + ']' +
+        '&compress=true';
 
-  if (!baseLoaded) {
-      baseLoaded = true;
-  }
+    if (!baseLoaded) baseLoaded = true;
 
-	return url;
+    return url;
 };
 
 Potree.PointCloudGreyhoundGeometryNode.prototype.addChild = function(child){

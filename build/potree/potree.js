@@ -7357,7 +7357,7 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.loadHierarchyThenPoints = funct
     var child;
     var childName;
     keys.forEach(function(key) {
-      if (key !== 'count') {
+      if (key !== 'n') {
         if        (key === 'swd') {
           child = base.swd;
           childName = parentName+transform[0];
@@ -7386,7 +7386,7 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.loadHierarchyThenPoints = funct
 
         stack.push({
             children: makeBitMask(child),
-            numPoints: child.count,
+            numPoints: child.n,
             name: childName
         });
 
@@ -7399,7 +7399,7 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.loadHierarchyThenPoints = funct
 	var callback = function(node, greyhoundHierarchy){
 
 		var decoded = [];
-		node.numPoints = greyhoundHierarchy.count;
+		node.numPoints = greyhoundHierarchy.n;
         parseChildrenCounts(greyhoundHierarchy, node.name, decoded);
 
 		var nodes = {};

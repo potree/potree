@@ -116,8 +116,7 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.loadPoints = function(){
 Potree.PointCloudGreyhoundGeometryNode.prototype.loadHierarchyThenPoints = function(){
 	var node = this;
 
-  //From Greyhound (Cartesian) ordering for the octree to Potree-default
-	// var transform = [2, 0, 3, 1, 6, 4, 7, 5];
+    //From Greyhound (Cartesian) ordering for the octree to Potree-default
 	var transform = [0, 2, 1, 3, 4, 6, 5, 7];
 
   var makeBitMask = function(node) {

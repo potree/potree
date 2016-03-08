@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
-    <title>Potree Viewer for Greyhound</title>
+    <title>Greyhound Potree Viewer</title>
 
 	<link rel="stylesheet" type="text/css" href="../src/viewer/potree.css">
 	<link rel="stylesheet" type="text/css" href="../libs/jquery-ui-1.11.4/jquery-ui.css">
@@ -61,22 +61,21 @@
 			"onPointCloudLoaded": onPointCloudLoaded
 		});
 
-		viewer.setEDLEnabled(false);
+		viewer.setEDLEnabled(true);
 		viewer.setPointSize(3);
 		viewer.setMaterial("RGB");
 		viewer.setFOV(60);
 		viewer.setPointSizing("Fixed");
 		viewer.setQuality("Squares");
-		viewer.setPointBudget(1*1000*1000);
-		//viewer.setOpacity(0.03);
+		viewer.setPointBudget(2*1000*1000);
 		viewer.setDescription("");
-		//viewer.setMinNodeSize(5);
 
         // Since this parameter to addPointCloud starts with the string
         // 'greyhound://', it is recognised as a greyhound server URL.
-		viewer.addPointCloud(
-                "greyhound://http://54.158.26.88/resource/autzen-h/");
+        var server = "greyhound://cache.greyhound.io/resource/";
+        var resource = "autzen-h";
 
+		viewer.addPointCloud(server + resource + "/");
 		viewer.loadGUI();
 
 	</script>

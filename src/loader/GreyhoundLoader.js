@@ -50,11 +50,14 @@ var createSchema = function(attributes) {
  */
 Potree.GreyhoundLoader.load = function load(url, callback) {
 	var HIERARCHY_STEP_SIZE = 5;
-    var SCALE = .01;
 
 	try{
 		// We assume everything ater the string 'greyhound://' is the server url
 		var serverURL = url.split('greyhound://')[1];
+        if (serverURL.split('http://').length == 1) {
+            serverURL = 'http://' + serverURL;
+        }
+
 		var xhr = new XMLHttpRequest();
 		xhr.open('GET', serverURL + 'info', true);
 
@@ -113,6 +116,9 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
                     globalBounds[2] + (globalBounds[5] - globalBounds[2]) / 2
                 ];
 
+                var radius = (globalBounds[3] - globalBounds[0]) / 2;
+                var SCALE = radius < 2500 ? .01 : .1;
+
                 var localBounds = globalBounds.map(function(v, i) {
                     return (v - offset[i % 3]) / SCALE;
                 });
@@ -160,7 +166,7 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
 					}
 				});
 
-				if (red&&green&&blue) {
+				if (red && green && blue) {
 					attributes.push('COLOR_PACKED');
 				}
 

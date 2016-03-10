@@ -1892,7 +1892,7 @@ var createSchema = function(attributes) {
  * @param loadingFinishedListener executed after loading the binary has been finished
  */
 Potree.GreyhoundLoader.load = function load(url, callback) {
-	var HIERARCHY_STEP_SIZE = 5;
+	var HIERARCHY_STEP_SIZE = 4;
 
 	try{
 		// We assume everything ater the string 'greyhound://' is the server url
@@ -7338,29 +7338,17 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.loadHierarchyThenPoints = funct
 	var transform = [0, 2, 1, 3, 4, 6, 5, 7];
 
   var makeBitMask = function(node) {
-    var keys = Object.keys(node);
     var mask = 0;
-
-    keys.forEach(function(key) {
-      if        (key === 'swd') {
-        mask += 1 << transform[0];
-      } else if (key === 'nwd') {
-        mask += 1 << transform[1];
-      } else if (key === 'swu') {
-        mask += 1 << transform[2];
-      } else if (key === 'nwu') {
-        mask += 1 << transform[3];
-      } else if (key === 'sed') {
-        mask += 1 << transform[4];
-      } else if (key === 'ned') {
-        mask += 1 << transform[5];
-      } else if (key === 'seu') {
-        mask += 1 << transform[6];
-      } else if (key === 'neu') {
-        mask += 1 << transform[7];
-      }
+    Object.keys(node).forEach(function(key) {
+      if      (key === 'swd') mask += 1 << transform[0];
+      else if (key === 'nwd') mask += 1 << transform[1];
+      else if (key === 'swu') mask += 1 << transform[2];
+      else if (key === 'nwu') mask += 1 << transform[3];
+      else if (key === 'sed') mask += 1 << transform[4];
+      else if (key === 'ned') mask += 1 << transform[5];
+      else if (key === 'seu') mask += 1 << transform[6];
+      else if (key === 'neu') mask += 1 << transform[7];
     });
-
     return mask;
   };
 
@@ -7409,7 +7397,6 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.loadHierarchyThenPoints = funct
 
 	// load hierarchy
 	var callback = function(node, greyhoundHierarchy){
-
 		var decoded = [];
 		node.numPoints = greyhoundHierarchy.n;
         parseChildrenCounts(greyhoundHierarchy, node.name, decoded);
@@ -7417,7 +7404,6 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.loadHierarchyThenPoints = funct
 		var nodes = {};
 		nodes[node.name] = node;
 		var pgg = node.pcoGeometry;
-
 
 		for( var i = 0; i < decoded.length; i++){
 			var name = decoded[i].name;
@@ -7442,9 +7428,10 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.loadHierarchyThenPoints = funct
 		node.loadPoints();
 
 	};
+
 	if((node.level % node.pcoGeometry.hierarchyStepSize) === 0){
         var depthBegin = node.level + node.pcoGeometry.baseDepth;
-        var depthEnd = depthBegin + node.pcoGeometry.hierarchyStepSize + 1;
+        var depthEnd = depthBegin + node.pcoGeometry.hierarchyStepSize + 2;
         var bb = this.boundingBox;
         var scale = this.pcoGeometry.scale;
 
@@ -7459,7 +7446,11 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.loadHierarchyThenPoints = funct
             (bb.max.y * scale + offset.y) + ',' +
             (bb.max.z * scale + offset.z);
 
-		var hurl = ''+this.pcoGeometry.serverURL + 'hierarchy?bounds=[' + boundsString + ']' + '&depthBegin=' + depthBegin + '&depthEnd=' + depthEnd;
+		var hurl = '' + this.pcoGeometry.serverURL +
+            'hierarchy?bounds=[' + boundsString + ']' +
+            '&depthBegin=' + depthBegin +
+            '&depthEnd=' + depthEnd;
+
 		var xhr = new XMLHttpRequest();
 		xhr.open('GET', hurl, true);
 

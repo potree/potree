@@ -49,7 +49,7 @@ var createSchema = function(attributes) {
  * @param loadingFinishedListener executed after loading the binary has been finished
  */
 Potree.GreyhoundLoader.load = function load(url, callback) {
-	var HIERARCHY_STEP_SIZE = 5;
+	var HIERARCHY_STEP_SIZE = 4;
 
 	try{
 		// We assume everything ater the string 'greyhound://' is the server url

@@ -1951,6 +1951,7 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
 				var version = new Potree.Version('1.4');
 
                 var globalBounds = greyhoundInfo.bounds;
+                var globalTightBounds = greyhoundInfo.boundsConforming;
 
                 // Center around the origin.
                 var offset = [
@@ -1963,6 +1964,10 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
                 var SCALE = radius < 2500 ? .01 : .1;
 
                 var localBounds = globalBounds.map(function(v, i) {
+                    return (v - offset[i % 3]) / SCALE;
+                });
+
+                var localTightBounds = globalTightBounds.map(function(v, i) {
                     return (v - offset[i % 3]) / SCALE;
                 });
 
@@ -2022,22 +2027,27 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
 				pgg.pointAttributes = new Potree.PointAttributes(attributes);
                 pgg.pointAttributes.byteSize = pointSize;
 
-				var min = new THREE.Vector3(
-                        localBounds[0], localBounds[1], localBounds[2]);
-				var max = new THREE.Vector3(
-                        localBounds[3], localBounds[4], localBounds[5]);
                 var offset = new THREE.Vector3(offset[0], offset[1], offset[2]);
-				var boundingBox = new THREE.Box3(min, max);
-				var tightBoundingBox = boundingBox.clone();
 
-				// var nodeOffset = new THREE.Vector3(0,0,0);
-				// var globalOffset = new THREE.Vector3(0,0,0);
+				var boundingBox = new THREE.Box3(
+                        new THREE.Vector3(
+                            localBounds[0],
+                            localBounds[1],
+                            localBounds[2]),
+                        new THREE.Vector3(
+                            localBounds[3],
+                            localBounds[4],
+                            localBounds[5]));
 
-				var extent = {
-                    'x': max.x - min.x,
-                    'y': max.y - min.y,
-                    'z': max.z - min.z
-                };
+				var tightBoundingBox = new THREE.Box3(
+                        new THREE.Vector3(
+                            localTightBounds[0],
+                            localTightBounds[1],
+                            localTightBounds[2]),
+                        new THREE.Vector3(
+                            localTightBounds[3],
+                            localTightBounds[4],
+                            localTightBounds[5]));
 
 				pgg.projection = greyhoundInfo.srs;
 				pgg.boundingBox = boundingBox;

@@ -1,0 +1,58 @@
+{
+    "tb": {
+        "navigation_opt": "Navigation",
+        "rendering_opt": "Apparence",
+        "tools_opt": "Outils",
+        "measurments_opt": "Mesures",
+        "materials_opt": "Matériaux",
+        "scene_opt": "Scène",
+        "classification_filter_opt": "Filtre de classification",
+        "parameters_opt": "Autres paramètres",
+        "about_opt": "À propos"
+    },
+    "tt": {
+        "angle_measurement": "Mesurer un angle",
+        "distance_measurement": "Mesurer une distance",
+        "area_measurement": "Mesurer une surface",
+        "volume_measurement": "Mesurer un volume",
+        "height_profile": "Mesurer un profil",
+        "clip_volume": "Sélectionner des points par un volume",
+        "remove_all_measurement": "Supprimer toutes les mesures",
+        "left_view_control": "Vue de la gauche",
+        "front_view_control": "Vue de face",
+        "top_view_control": "Vue de dessus",
+        "focus_control": "Vue complète",
+        "orbit_control": "Orbite",
+        "flight_control": "Vol",
+        "earth_control": "Earth"
+    },
+    "appearance": {
+        "nb_max_pts": "Nb points max", 
+        "point_size": "Taille des points",
+        "point_opacity": "Opacité",
+        "field_view": "Angle de vue",
+        "point_size_type": "Type de taille",
+        "point_material": "Matériaux",
+        "elevation_range": "Plage altimétrique",
+        "point_quality": "Qualité",
+        "edl_radius": "Rayon",
+        "edl_strength": "Intensité",
+        "edl_enable": "Activer",
+        "min_node_size": "Taille minimum des noeuds",
+        "clip_mode": "Mode d'intersection",
+        "move_speed": "Vitesse",
+        "skybox": "Ciel",
+        "bottom_lock": "Rester au-dessus du sol",
+        "box": "Boite",
+        "freeze": "Vérouiller la vue",
+        "language": "Choix de la langue"
+    },
+    "profile": {
+        "nb_points": "Nombre de points",
+        "title": "Profil altimétrique",
+        "save": "Enregistrer"
+    },
+    "settings": {
+        "language": "Langue"
+    }
+}

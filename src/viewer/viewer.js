@@ -932,18 +932,18 @@ Potree.Viewer = function(domElement, args){
 
 	this.loadGUI = function(){
 		var sidebarContainer = $('#potree_sidebar_container');
-		sidebarContainer.load(Potree.scriptPath + "/sidebar.html");
+		sidebarContainer.load(new URL(Potree.scriptPath + "/sidebar.html").href);
 		sidebarContainer.css("width", "300px");
 		sidebarContainer.css("height", "100%");
 		
 		var imgMenuToggle = document.createElement("img");
-		imgMenuToggle.src = Potree.resourcePath + "/icons/menu_button.svg";
+		imgMenuToggle.src = new URL(Potree.resourcePath + "/icons/menu_button.svg").href;
 		imgMenuToggle.onclick = scope.toggleSidebar;
 		imgMenuToggle.classList.add("potree_menu_toggle");
 		//viewer.renderArea.appendChild(imgMenuToggle);
 		
 		var imgMapToggle = document.createElement("img");
-		imgMapToggle.src = Potree.resourcePath + "/icons/map_icon.png";
+		imgMapToggle.src = new URL(Potree.resourcePath + "/icons/map_icon.png").href;
 		imgMapToggle.style.display = "none";
 		imgMapToggle.onclick = scope.toggleMap;
 		imgMapToggle.id = "potree_map_toggle";
@@ -961,7 +961,7 @@ Potree.Viewer = function(domElement, args){
 		//$('head').append( $('<link rel="stylesheet" type="text/css" />').attr('href', "../libs/jquery-ui-1.11.4/jquery-ui.css"	));
 		
 		//var elProfile = $('<div style="position: absolute; width: 100%; height: 30%; bottom: 0; display: none" >');
-		var elProfile = $('<div>').load(Potree.scriptPath + "/profile.html", function(){
+		var elProfile = $('<div>').load(new URL(Potree.scriptPath + "/profile.html").href, function(){
 			$('#potree_render_area').append(elProfile.children());
 			scope._2dprofile = new Potree.Viewer.Profile(scope, document.getElementById("profile_draw_container"));
 		});
@@ -1144,7 +1144,7 @@ Potree.Viewer = function(domElement, args){
 		scope.renderer.domElement.tabIndex = "2222";
 		scope.renderer.domElement.addEventListener("mousedown", function(){scope.renderer.domElement.focus();});
 		
-		skybox = Potree.utils.loadSkybox(Potree.resourcePath + "/textures/skybox/");
+		skybox = Potree.utils.loadSkybox(new URL(Potree.resourcePath + "/textures/skybox/").href);
 
 		// camera and controls
 		scope.camera.position.set(-304, 372, 318);

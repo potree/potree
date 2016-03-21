@@ -3,6 +3,12 @@ Potree.utils = function(){
 	
 };
 
+Potree.utils.normalizeURL = function(url){
+	var u = new URL(url);
+	
+	return u.protocol + "//" + u.hostname + u.pathname.replace(/\/+/g, "/");
+};
+
 Potree.utils.pathExists = function(url){
 	var req = new XMLHttpRequest();
 	req.open('GET', url, false);

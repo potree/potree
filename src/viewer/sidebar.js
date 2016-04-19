@@ -231,6 +231,9 @@ function initAccordion(){
             return false; // Cancels the default action
         }
     });
+    
+    // Activate tools tab by default
+    $("#accordion").accordion({ active: 2});
 }
 
 function initAppearance(){
@@ -415,27 +418,6 @@ function initNavigation(){
 }
 
 function initMeasurementDetails(){
-
-	//<li>
-	//		<div class="panel panel-default">
-	//		  <div class="panel-heading pv-panel-heading" style="display: flex; flex-direction: row">
-	//			<img src="../resources/icons/distance.png" style="width: 16px; height: 16px" /> 
-	//			<span style="flex-grow:1"> </span>
-	//			<img src="../resources/icons/remove.svg" style="width: 16px; height: 16px" /> 
-	//		  </div>
-	//		  <div class="panel-body">
-	//			<div class="measurement-detail-node-marker" >423, 413, 75464</div>
-	//			<div class="measurement-detail-edge" > </div>
-	//			<div class="measurement-detail-node-distance" > 12,001.37 </div>
-	//			<div class="measurement-detail-edge" > </div>
-	//			<div class="measurement-detail-node-marker" >423, 413, 75464</div>
-	//			<div class="measurement-detail-edge" > </div>
-	//			<div class="measurement-detail-node-distance" > 97 </div>
-	//			<div class="measurement-detail-edge" > </div>
-	//			<div class="measurement-detail-node-marker" >423, 413, 75464</div>
-	//		  </div>
-	//		</div>
-	//	</li>
 	
 	var id = 0;
 	
@@ -730,36 +712,12 @@ function initMeasurementDetails(){
 					viewer._2dprofile.draw(profile);
 				};
 				$(elPanelBody).append(elOpenProfileWindow);
-				
-				//// download points in profile button
-				//var elDownloadProfileLink = document.createElement("a");
-				//elDownloadProfileLink.href = "#";
-				//elDownloadProfileLink.download = "profile.las";
-				//
-				//var elDownloadProfileButton = $('<input type="button" value="download">')
-				//	.addClass("measurement-detail-button");
-				//elDownloadProfileButton[0].onclick = function(){
-				//	var las = viewer._2dprofile.getLAS();
-				//	var u8view = new Uint8Array(las);
-				//	
-				//	var binString = "";
-				//	for(var i = 0; i < u8view.length; i++){
-				//		binString += String.fromCharCode(u8view[i]);
-				//	}
-				//	
-				//	var uri = "data:application/octet-stream;base64,"+btoa(binString);
-				//	elDownloadProfileLink.href = uri;
-				//};
-				//
-				//elDownloadProfileLink.appendChild(elDownloadProfileButton[0]);
-				//
-				//$(elPanelBody).append(elDownloadProfileLink);
 			}
 			
 		};
-		
+
 		updateDisplay();
-		
+
 		if(measurement){
 			viewer.measuringTool.addEventListener("marker_added", updateDisplay);
 			viewer.measuringTool.addEventListener("marker_removed", updateDisplay);
@@ -802,12 +760,6 @@ function initMeasurementDetails(){
 
 function initSceneList(){
 
-	// <li>
-	// <label class="menu-item">
-	// <input type="checkbox" onClick="viewer.setShowSkybox(this.checked)"/>
-	// &nbsp;Skybox
-	// </label>
-	// </li>
 	var scenelist = $('#sceneList');
 	
 	var id = 0;
@@ -861,7 +813,6 @@ function initSceneList(){
 };
 
 initSettings = function(){
-	//<li>Min Node Size: <span id="lblMinNodeSize"></span><div id="sldMinNodeSize"></div>	</li>
 	
 	$( "#sldMinNodeSize" ).slider({
 		value: viewer.getMinNodeSize(),
@@ -896,7 +847,7 @@ initSettings = function(){
 			return "Clip Outside";
 		}
 	};
-	
+
 	$("#optClipMode").selectmenu();
 	$("#optClipMode").val(toClipModeString(viewer.getClipMode())).selectmenu("refresh")
 	$("#optClipMode").selectmenu({
@@ -908,7 +859,7 @@ initSettings = function(){
 
 
 $(document).ready( function() {
-    
+
 	initAccordion();
 	initAppearance();
 	initToolbar();
@@ -918,7 +869,7 @@ $(document).ready( function() {
 	initMeasurementDetails();
 	initSceneList();
 	initSettings()
-	
+
 	$('#potree_version_number').html(Potree.version.major + "." + Potree.version.minor + Potree.version.suffix);
-	
+
 });

@@ -72,7 +72,7 @@ Potree.Viewer = function(domElement, args){
 // Viewer API 
 //------------------------------------------------------------------------------------
 	
-	this.addPointCloud = function(path, callback){
+	this.addPointCloud = function(path, name, callback){
 		callback = callback || function(){};
 		var initPointcloud = function(pointcloud){
 			
@@ -135,7 +135,7 @@ Potree.Viewer = function(domElement, args){
 			
 			scope.dispatchEvent({"type": "pointcloud_loaded", "pointcloud": pointcloud});
 			
-			callback({type: "pointclouad_loaded", pointcloud: pointcloud});
+			callback({type: "pointcloud_loaded", pointcloud: pointcloud});
 		};
 		this.addEventListener("pointcloud_loaded", pointCloudLoadedCallback);
 		
@@ -148,6 +148,7 @@ Potree.Viewer = function(domElement, args){
 					callback({type: "loading_failed"});
 				}else{
 					pointcloud = new Potree.PointCloudOctree(geometry);
+                    pointcloud.name = name;
 					initPointcloud(pointcloud);				
 				}
 			});
@@ -157,6 +158,7 @@ Potree.Viewer = function(domElement, args){
 					callback({type: "loading_failed"});
 				}else{
 					pointcloud = new Potree.PointCloudArena4D(geometry);
+                    pointcloud.name = name;
 					initPointcloud(pointcloud);
 				}
 			});
@@ -1132,7 +1134,7 @@ Potree.Viewer = function(domElement, args){
 		scope.renderArea.appendChild(scope.renderer.domElement);
 		scope.renderer.domElement.tabIndex = "2222";
 		scope.renderer.domElement.addEventListener("mousedown", function(){scope.renderer.domElement.focus();});
-		
+
 		skybox = Potree.utils.loadSkybox(new URL(Potree.resourcePath + "/textures/skybox/").href);
 
 		// camera and controls
@@ -1142,12 +1144,8 @@ Potree.Viewer = function(domElement, args){
 		
 		this.createControls();
 		
-		//scope.useEarthControls();
-		
 		// enable frag_depth extension for the interpolation shader, if available
 		scope.renderer.context.getExtension("EXT_frag_depth");
-		
-		//this.addPointCloud(pointcloudPath);
 		
 		var grid = Potree.utils.createGrid(5, 5, 2);
 		scope.scene.add(grid);

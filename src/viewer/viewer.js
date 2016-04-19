@@ -68,32 +68,6 @@ Potree.Viewer = function(domElement, args){
 	this.showSkybox = false;
 	this.referenceFrame;
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 //------------------------------------------------------------------------------------
 // Viewer API 
 //------------------------------------------------------------------------------------
@@ -1220,6 +1194,7 @@ Potree.Viewer = function(domElement, args){
 					scope.toGeo);
 				});
 			};
+
 		});
 		
 		
@@ -1254,7 +1229,6 @@ Potree.Viewer = function(domElement, args){
 	}
 
 	function onKeyDown(event){
-		//console.log(event.keyCode);
 		
 		if(event.keyCode === 69){
 			// e pressed

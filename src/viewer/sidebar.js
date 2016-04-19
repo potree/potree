@@ -483,9 +483,7 @@ function initMeasurementDetails(){
 		elPanelHeader.appendChild(elPanelStretch);
 		elPanelHeader.appendChild(elPanelRemove);
 		elPanel.appendChild(elPanelBody);
-		//elPanelBody.appendChild(document.createTextNode("lala"));
 		
-		//$('#measurement_details').append(elLi);
 		document.getElementById("measurement_details").appendChild(elLi);
 		
 		var widthListener;
@@ -496,7 +494,7 @@ function initMeasurementDetails(){
 					profile.removeEventListener("width_changed", widthListener);
 				}
 			}
-		
+
 			$(elPanelBody).empty();
 			
 			if(profile){
@@ -593,11 +591,7 @@ function initMeasurementDetails(){
 					var elNodeAngle = $('<div>').addClass("measurement-detail-node-angle");
 					elNodeAngle.html(txt);
 					$(elPanelBody).append(elNodeAngle);
-					
-					//if(i < positions.length - 1){
-					//	var elEdge = $('<div>').addClass("measurement-detail-edge");
-					//	$(elPanelBody).append(elEdge);
-					//}
+
 				}
 				
 				if(i < positions.length - 1){
@@ -605,7 +599,7 @@ function initMeasurementDetails(){
 					$(elPanelBody).append(elEdge);
 				}
 			}
-			
+
 			if(points && points.length === 1){
 				var point = points[0];
 				
@@ -702,7 +696,7 @@ function initMeasurementDetails(){
 				
 				$(elPanelBody).append(elNodeArea);
 			}
-			
+
 			if(profile){
 				// show 2d profile button
 				var elOpenProfileWindow = $('<input type="button" value="show 2d profile">')
@@ -731,7 +725,11 @@ function initMeasurementDetails(){
 				}
 			});
 		}else if(profile){
-			viewer.profileTool.addEventListener("marker_added", updateDisplay);
+			viewer.profileTool.addEventListener("marker_added", function(){
+                viewer._2dprofile.show();
+                viewer._2dprofile.draw(profile);
+                updateDisplay();
+            });
 			viewer.profileTool.addEventListener("marker_removed", updateDisplay);
 			viewer.profileTool.addEventListener("marker_moved", updateDisplay);
 			viewer.profileTool.addEventListener("profile_removed", function(event){

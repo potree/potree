@@ -6778,6 +6778,12 @@ Potree.utils = function(){
 	
 };
 
+Potree.utils.normalizeURL = function(url){
+	var u = new URL(url);
+	
+	return u.protocol + "//" + u.hostname + u.pathname.replace(/\/+/g, "/");
+};
+
 Potree.utils.pathExists = function(url){
 	var req = new XMLHttpRequest();
 	req.open('GET', url, false);
@@ -11102,37 +11108,11 @@ Potree.Viewer = function(domElement, args){
 	this.showSkybox = false;
 	this.referenceFrame;
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 //------------------------------------------------------------------------------------
 // Viewer API 
 //------------------------------------------------------------------------------------
 	
-	this.addPointCloud = function(path, callback){
+	this.addPointCloud = function(path, name, callback){
 		callback = callback || function(){};
 		var initPointcloud = function(pointcloud){
 			
@@ -11195,7 +11175,7 @@ Potree.Viewer = function(domElement, args){
 			
 			scope.dispatchEvent({"type": "pointcloud_loaded", "pointcloud": pointcloud});
 			
-			callback({type: "pointclouad_loaded", pointcloud: pointcloud});
+			callback({type: "pointcloud_loaded", pointcloud: pointcloud});
 		};
 		this.addEventListener("pointcloud_loaded", pointCloudLoadedCallback);
 		
@@ -11208,6 +11188,7 @@ Potree.Viewer = function(domElement, args){
 					callback({type: "loading_failed"});
 				}else{
 					pointcloud = new Potree.PointCloudOctree(geometry);
+                    pointcloud.name = name;
 					initPointcloud(pointcloud);				
 				}
 			});
@@ -11217,6 +11198,7 @@ Potree.Viewer = function(domElement, args){
 					callback({type: "loading_failed"});
 				}else{
 					pointcloud = new Potree.PointCloudArena4D(geometry);
+                    pointcloud.name = name;
 					initPointcloud(pointcloud);
 				}
 			});
@@ -11966,18 +11948,18 @@ Potree.Viewer = function(domElement, args){
 
 	this.loadGUI = function(){
 		var sidebarContainer = $('#potree_sidebar_container');
-		sidebarContainer.load(Potree.scriptPath + "/sidebar.html");
+		sidebarContainer.load(new URL(Potree.scriptPath + "/sidebar.html").href);
 		sidebarContainer.css("width", "300px");
 		sidebarContainer.css("height", "100%");
 		
 		var imgMenuToggle = document.createElement("img");
-		imgMenuToggle.src = Potree.resourcePath + "/icons/menu_button.svg";
+		imgMenuToggle.src = new URL(Potree.resourcePath + "/icons/menu_button.svg").href;
 		imgMenuToggle.onclick = scope.toggleSidebar;
 		imgMenuToggle.classList.add("potree_menu_toggle");
 		//viewer.renderArea.appendChild(imgMenuToggle);
 		
 		var imgMapToggle = document.createElement("img");
-		imgMapToggle.src = Potree.resourcePath + "/icons/map_icon.png";
+		imgMapToggle.src = new URL(Potree.resourcePath + "/icons/map_icon.png").href;
 		imgMapToggle.style.display = "none";
 		imgMapToggle.onclick = scope.toggleMap;
 		imgMapToggle.id = "potree_map_toggle";
@@ -11995,7 +11977,7 @@ Potree.Viewer = function(domElement, args){
 		//$('head').append( $('<link rel="stylesheet" type="text/css" />').attr('href', "../libs/jquery-ui-1.11.4/jquery-ui.css"	));
 		
 		//var elProfile = $('<div style="position: absolute; width: 100%; height: 30%; bottom: 0; display: none" >');
-		var elProfile = $('<div>').load(Potree.scriptPath + "/profile.html", function(){
+		var elProfile = $('<div>').load(new URL(Potree.scriptPath + "/profile.html").href, function(){
 			$('#potree_render_area').append(elProfile.children());
 			scope._2dprofile = new Potree.Viewer.Profile(scope, document.getElementById("profile_draw_container"));
 		});
@@ -12015,7 +11997,6 @@ Potree.Viewer = function(domElement, args){
     this.setLanguage = function(lang) {
         i18n.setLng(lang);
         $("body").i18n();
-        console.log("ici");
     }
 
 	this.createControls = function(){
@@ -12193,8 +12174,8 @@ Potree.Viewer = function(domElement, args){
 		scope.renderArea.appendChild(scope.renderer.domElement);
 		scope.renderer.domElement.tabIndex = "2222";
 		scope.renderer.domElement.addEventListener("mousedown", function(){scope.renderer.domElement.focus();});
-		
-		skybox = Potree.utils.loadSkybox(Potree.resourcePath + "/textures/skybox/");
+
+		skybox = Potree.utils.loadSkybox(new URL(Potree.resourcePath + "/textures/skybox/").href);
 
 		// camera and controls
 		scope.camera.position.set(-304, 372, 318);
@@ -12203,12 +12184,8 @@ Potree.Viewer = function(domElement, args){
 		
 		this.createControls();
 		
-		//scope.useEarthControls();
-		
 		// enable frag_depth extension for the interpolation shader, if available
 		scope.renderer.context.getExtension("EXT_frag_depth");
-		
-		//this.addPointCloud(pointcloudPath);
 		
 		var grid = Potree.utils.createGrid(5, 5, 2);
 		scope.scene.add(grid);
@@ -12255,6 +12232,7 @@ Potree.Viewer = function(domElement, args){
 					scope.toGeo);
 				});
 			};
+
 		});
 		
 		
@@ -12289,7 +12267,6 @@ Potree.Viewer = function(domElement, args){
 	}
 
 	function onKeyDown(event){
-		//console.log(event.keyCode);
 		
 		if(event.keyCode === 69){
 			// e pressed
@@ -13027,8 +13004,7 @@ Potree.Viewer.Profile = function(viewer, element){
 	this.margin = {top: 0, right: 0, bottom: 20, left: 40};
 	this.maximized = false;
 	this.threshold = 20*1000;
-	
-	
+
 	$('#closeProfileContainer').click(function(){
 		scope.hide();
 		scope.enabled = false;
@@ -13167,14 +13143,12 @@ Potree.Viewer.Profile = function(viewer, element){
 			// user data
 			// point source id
 			view.setUint16(boffset + 18, point.pointSourceID);
-			
 			view.setUint16(boffset + 20, (point.color[0] * 255), true);
 			view.setUint16(boffset + 22, (point.color[1] * 255), true);
 			view.setUint16(boffset + 24, (point.color[2] * 255), true);
 			
 			boffset += 28;
 		}
-		
 		
 		// max x 179 8
 		view.setFloat64(179, boundingBox.max.x, true);
@@ -13731,6 +13705,7 @@ Potree.Viewer.Profile = function(viewer, element){
 	viewer.addEventListener("material_changed", function(){
 		drawOnChange({profile: scope.currentProfile});
 	});
+
 	viewer.addEventListener("height_range_changed", function(){
 		drawOnChange({profile: scope.currentProfile});
 	});
@@ -13739,21 +13714,19 @@ Potree.Viewer.Profile = function(viewer, element){
 	var height = document.getElementById('profile_window').clientHeight;
 	function resizeLoop(){
 		requestAnimationFrame(resizeLoop);
-			
+
 		var newWidth = document.getElementById('profile_window').clientWidth;
 		var newHeight = document.getElementById('profile_window').clientHeight;
-		
+
 		if(newWidth !== width || newHeight !== height){
 			setTimeout(drawOnChange, 50, {profile: scope.currentProfile});
 		}
-		
+
 		width = newWidth;
 		height = newHeight;
 	};
 	requestAnimationFrame(resizeLoop);
-	
-	
-	
+
 };
 
 // http://epsg.io/

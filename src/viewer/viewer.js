@@ -981,7 +981,6 @@ Potree.Viewer = function(domElement, args){
     this.setLanguage = function(lang) {
         i18n.setLng(lang);
         $("body").i18n();
-        console.log("ici");
     }
 
 	this.createControls = function(){

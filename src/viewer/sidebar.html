@@ -20,143 +20,134 @@
     <h3><span data-i18n="tb.rendering_opt"></span></h3>
     <div>
         <ul class="pv-menu-list">
-		<li><span data-i18n="appearance.nb_max_pts"></span>:<span id="lblPointBudget"></span> <div id="sldPointBudget"></div>	</li>
-		<li><span data-i18n="appearance.point_size"></span>:<span id="lblPointSize"></span> <div id="sldPointSize"></div>		</li>
-		<li><span data-i18n="appearance.field_view"></span>:<span id="lblFOV"></span><div id="sldFOV"></div>					</li>
-		<li><span data-i18n="appearance.point_opacity"></span>:<span id="lblOpacity"></span><div id="sldOpacity"></div>				</li>
-	   
-	   <li>
-		   <label for="optPointSizing" class="pv-select-label" data-i18n="appearance.point_size_type">Point Sizing </label>
-		   <select id="optPointSizing" name="optPointSizing">
-				<option>Fixed</option>
-				<option>Attenuated</option>
-				<option>Adaptive</option>
-			</select>
-		</li>
-		
-		<li>
-		   <label for="optQuality" class="pv-select-label" data-i18n="appearance.point_quality"></label>
-		   <select id="optQuality" name="optQuality">
-				<option>Squares</option>
-				<option>Circles</option>
-				<option>Interpolation</option>
-				<option value="Splats">HQ-Splats</option>
-			</select>
-		</li>		
-	   
-		<li><label class="menu-item"><input type="checkbox" onClick="viewer.setShowSkybox(this.checked)"/><span data-i18n="appearance.skybox"></span</label></li>
-		
-		<li class="pv-divider"></li>
-		<li class="pv-menu-list-header">Eye-Dome-Lighting</li>
-		
-		<li><label><input type="checkbox" id="chkEDLEnabled" onClick="viewer.setEDLEnabled(this.checked)"/><span data-i18n="appearance.edl_enable"></span></label></li>
-		<li><span data-i18n="appearance.edl_radius"></span>:<span id="lblEDLRadius"></span><div id="sldEDLRadius"></div></li>
-		<li><span data-i18n="appearance.edl_strength"></span>:<span id="lblEDLStrength"></span><div id="sldEDLStrength"></div></li>
-		
+            <li><span data-i18n="appearance.nb_max_pts"></span>:<span id="lblPointBudget"></span> <div id="sldPointBudget"></div>	</li>
+            <li><span data-i18n="appearance.point_size"></span>:<span id="lblPointSize"></span> <div id="sldPointSize"></div>		</li>
+            <li><span data-i18n="appearance.field_view"></span>:<span id="lblFOV"></span><div id="sldFOV"></div>					</li>
+            <li><span data-i18n="appearance.point_opacity"></span>:<span id="lblOpacity"></span><div id="sldOpacity"></div>				</li>
+            <li>
+                <label for="optPointSizing" class="pv-select-label" data-i18n="appearance.point_size_type">Point Sizing </label>
+                <select id="optPointSizing" name="optPointSizing">
+                    <option>Fixed</option>
+                    <option>Attenuated</option>
+                    <option>Adaptive</option>
+                </select>
+            </li>
+            <li>
+                <label for="optQuality" class="pv-select-label" data-i18n="appearance.point_quality"></label>
+                <select id="optQuality" name="optQuality">
+                    <option>Squares</option>
+                    <option>Circles</option>
+                    <option>Interpolation</option>
+                    <option value="Splats">HQ-Splats</option>
+                </select>
+            </li>		
+            <li><label class="menu-item"><input type="checkbox" onClick="viewer.setShowSkybox(this.checked)"/><span data-i18n="appearance.skybox"></span</label></li>
+            <li class="pv-divider"></li>
+            <li class="pv-menu-list-header">Eye-Dome-Lighting</li>
+            <li><label><input type="checkbox" id="chkEDLEnabled" onClick="viewer.setEDLEnabled(this.checked)"/><span data-i18n="appearance.edl_enable"></span></label></li>
+            <li><span data-i18n="appearance.edl_radius"></span>:<span id="lblEDLRadius"></span><div id="sldEDLRadius"></div></li>
+            <li><span data-i18n="appearance.edl_strength"></span>:<span id="lblEDLStrength"></span><div id="sldEDLStrength"></div></li>
 		</ul>
-	   
-	  </div>
-	  <h3><span data-i18n="tb.navigation_opt"></span></h3>
-	  <div>
-		<ul class="pv-menu-list">
-			<li id="navigation"></li>
-			<li><label><input type="checkbox" onClick="viewer.setDEMCollisionsEnabled(this.checked)"/><span data-i18n="appearance.bottom_lock"></span></label></li>
-			<li><span data-i18n="appearance.move_speed"></span>: <span id="lblMoveSpeed"></span><div id="sldMoveSpeed"></div></li>
-		</ul>
-	  </div>
-	  <h3><span data-i18n="tb.tools_opt"></span></h3>
-	  <div>
-		<ul class="pv-menu-list">
-		<li id="tools"></li>
-		</ul>
-	  </div>
-	  <h3><span data-i18n="tb.measurments_opt"></span></h3>
-	  <div>
-		<ul class="pv-menu-list selectable" id="measurement_details"></ul>
-	  </div>
-	  <h3><span data-i18n="tb.materials_opt"></span></h3>
-	  <div>
-		<ul class="pv-menu-list">
-		<li>
-		   <label for="optMaterial" class="pv-select-label"></label><br>
-		   <select id="optMaterial" name="optMaterial">
-		   </select>
-		</li>
-		
-		<li><span data-i18n="appearance.elevation_range"></span>: <span id="lblHeightRange"></span> <div id="sldHeightRange"></div>	</li>
-		
-		</ul>
-		<!--<ul id="materialList" class="pv-menu-list"></ul>-->
-	  </div>
-	  <h3><span data-i18n="tb.scene_opt"></span></h3>
-	  <div>
-		<ul id="sceneList" class="pv-menu-list"></ul>
-	  </div>
-	  <h3><span data-i18n="tb.classification_filter_opt"></span></h3>
-	  <div>
-		<ul id="classificationList" class="pv-menu-list"></ul>
-	  </div>
-	   <h3><span data-i18n="tb.parameters_opt"></span></h3>
-	  <div>
-		<ul class="pv-menu-list">
-			<li><span data-i18n="appearance.min_node_size"></span><span id="lblMinNodeSize"></span><div id="sldMinNodeSize"></div>	</li>
-			<li>
-			   <label for="optClipMode" class="pv-select-label"><span data-i18n="appearance.clip_mode"></span></label>
-			   <select id="optClipMode" name="optClipMode">
-					<option>No Clipping</option>
-					<option>Highlight Inside</option>
-					<option>Clip Outside</option>
-				</select>
-			</li>
-			<li><label><input type="checkbox" onClick="viewer.setShowBoundingBox(this.checked)"/><span data-i18n="appearance.box"></span></label></li>
-			<li><label><input type="checkbox" onClick="viewer.setFreeze(this.checked)"/><span data-i18n="appearance.freeze"></span></label></li>
-		</ul>
-	  </div>
-	  <h3><span data-i18n="tb.about_opt"></span></h3>
-	  <div>
-		<ul class="pv-menu-list">
-			<li><a href="http://potree.org" target="_blank">Potree</a> is a viewer for large point cloud / LIDAR data sets, developed at the Vienna University of Technology. 
-			<a href="https://github.com/potree/potree" target="_blank">(github)</a>
-			</li>
-			<li>Author: <a href="mailto:mschuetz@potree.org">Markus Sch&uuml;tz</a></li>
-			<li>License: <a target="_blank" href="http://potree.org/wp/potree_license/">FreeBSD (2-clause BSD)<a></li>
-			<li>Libraries:
-				<ul>
-					<li><a target="_blank" href="http://threejs.org/">three.js</a></li>
-					<li><a target="_blank" href="https://jquery.com/">Jquery</a></li>
-					<li><a target="_blank" href="http://www.laszip.org/">laszip</a></li>
-					<li><a target="_blank" href="https://github.com/verma/plasio">Plas.io (laslaz) </a></li>
-					<li><a target="_blank" href="http://openlayers.org/">OpenLayers3</a></li>
-					<li><a target="_blank" href="http://proj4js.org/">proj4js</a></li>
-					<li><a target="_blank" href="https://github.com/tweenjs/tween.js/">tween</a></li>
-					<li><a target="_blank" href="https://github.com/i18next/i18next/">i18next</a></li>
-				</ul>
-			</li>
-			<li>Donators:
-				<ul>
-					<li><a target="_blank" href="http://rapidlasso.com/">rapidlasso</a></li>
-					<li><a target="_blank" href="https://georepublic.info/en/">georepublic</a></li>
-					<li><a target="_blank" href="http://sitn.ne.ch/">sitn</a></li>
-					<li><a target="_blank" href="http://www.veesus.com/veesus/index.php">Veesus</a></li>
-					<li><a target="_blank" href="http://sigeom.ch/">sigeom sa</a></li>
-				</ul>
-			</li>
-			<li>Credits:
-				<ul>
-					<li><a target="_blank" href="https://www.cg.tuwien.ac.at/staff/MichaelWimmer.html">Michael Wimmer</a> & 
-						<a target="_blank" href="https://www.cg.tuwien.ac.at/staff/ClausScheiblauer.html">Claus Scheiblauer</a></li>
-					<li><a target="_blank" href="https://www.cg.tuwien.ac.at/">TU Wien, Insitute of Computer Graphics and Algorithms</a></li>
-					<li><a target="_blank" href="https://harvest4d.org/">Harvest4D</a></li>
-					<li><a target="_blank" href="http://rapidlasso.com/">rapidlasso</a></li>
-					<li><a target="_blank" href="https://georepublic.info/en/">georepublic</a></li>
-					<li><a target="_blank" href="http://hobu.co/">Howard Butler, Uday Verma, Connor Manning</a></li>
-					<li><a target="_blank" href="http://www.danielgm.net/cc/">Cloud Compare</a></li>
-					<li><a target="_blank" href="http://sitn.ne.ch/">sitn</a></li>
-				</ul>
-			</li>
-		
-		</ul>
-	  </div>
+    </div>
+        <h3><span data-i18n="tb.navigation_opt"></span></h3>
+        <div>
+            <ul class="pv-menu-list">
+                <li id="navigation"></li>
+                <li><label><input type="checkbox" onClick="viewer.setDEMCollisionsEnabled(this.checked)"/><span data-i18n="appearance.bottom_lock"></span></label></li>
+                <li><span data-i18n="appearance.move_speed"></span>: <span id="lblMoveSpeed"></span><div id="sldMoveSpeed"></div></li>
+            </ul>
+        </div>
+        <h3><span data-i18n="tb.tools_opt"></span></h3>
+        <div>
+            <ul class="pv-menu-list">
+                <li id="tools"></li>
+            </ul>
+        </div>
+        <h3><span data-i18n="tb.measurments_opt"></span></h3>
+        <div>
+            <ul class="pv-menu-list selectable" id="measurement_details"></ul>
+        </div>
+        <h3><span data-i18n="tb.materials_opt"></span></h3>
+        <div>
+            <ul class="pv-menu-list">
+                <li>
+                   <label for="optMaterial" class="pv-select-label"></label><br>
+                   <select id="optMaterial" name="optMaterial">
+                   </select>
+                </li>
+                <li><span data-i18n="appearance.elevation_range"></span>: <span id="lblHeightRange"></span> <div id="sldHeightRange"></div>	</li>
+            </ul>
+        <!--<ul id="materialList" class="pv-menu-list"></ul>-->
+        </div>
+        <h3><span data-i18n="tb.scene_opt"></span></h3>
+        <div>
+            <ul id="sceneList" class="pv-menu-list"></ul>
+        </div>
+        <h3><span data-i18n="tb.classification_filter_opt"></span></h3>
+        <div>
+            <ul id="classificationList" class="pv-menu-list"></ul>
+        </div>
+        <h3><span data-i18n="tb.parameters_opt"></span></h3>
+        <div>
+            <ul class="pv-menu-list">
+                <li><span data-i18n="appearance.min_node_size"></span><span id="lblMinNodeSize"></span><div id="sldMinNodeSize"></div>	</li>
+                <li>
+                   <label for="optClipMode" class="pv-select-label"><span data-i18n="appearance.clip_mode"></span></label>
+                   <select id="optClipMode" name="optClipMode">
+                        <option>No Clipping</option>
+                        <option>Highlight Inside</option>
+                        <option>Clip Outside</option>
+                    </select>
+                </li>
+                <li><label><input type="checkbox" onClick="viewer.setShowBoundingBox(this.checked)"/><span data-i18n="appearance.box"></span></label></li>
+                <li><label><input type="checkbox" onClick="viewer.setFreeze(this.checked)"/><span data-i18n="appearance.freeze"></span></label></li>
+            </ul>
+        </div>
+        <h3><span data-i18n="tb.about_opt"></span></h3>
+        <div>
+            <ul class="pv-menu-list">
+                <li><a href="http://potree.org" target="_blank">Potree</a> is a viewer for large point cloud / LIDAR data sets, developed at the Vienna University of Technology. 
+                <a href="https://github.com/potree/potree" target="_blank">(github)</a>
+                </li>
+                <li>Author: <a href="mailto:mschuetz@potree.org">Markus Sch&uuml;tz</a></li>
+                <li>License: <a target="_blank" href="http://potree.org/wp/potree_license/">FreeBSD (2-clause BSD)<a></li>
+                <li>Libraries:
+                    <ul>
+                        <li><a target="_blank" href="http://threejs.org/">three.js</a></li>
+                        <li><a target="_blank" href="https://jquery.com/">Jquery</a></li>
+                        <li><a target="_blank" href="http://www.laszip.org/">laszip</a></li>
+                        <li><a target="_blank" href="https://github.com/verma/plasio">Plas.io (laslaz) </a></li>
+                        <li><a target="_blank" href="http://openlayers.org/">OpenLayers3</a></li>
+                        <li><a target="_blank" href="http://proj4js.org/">proj4js</a></li>
+                        <li><a target="_blank" href="https://github.com/tweenjs/tween.js/">tween</a></li>
+                        <li><a target="_blank" href="https://github.com/i18next/i18next/">i18next</a></li>
+                    </ul>
+                </li>
+                <li>Donators:
+                    <ul>
+                        <li><a target="_blank" href="http://rapidlasso.com/">rapidlasso</a></li>
+                        <li><a target="_blank" href="https://georepublic.info/en/">georepublic</a></li>
+                        <li><a target="_blank" href="http://sitn.ne.ch/">sitn</a></li>
+                        <li><a target="_blank" href="http://www.veesus.com/veesus/index.php">Veesus</a></li>
+                        <li><a target="_blank" href="http://sigeom.ch/">sigeom sa</a></li>
+                    </ul>
+                </li>
+                <li>Credits:
+                    <ul>
+                        <li><a target="_blank" href="https://www.cg.tuwien.ac.at/staff/MichaelWimmer.html">Michael Wimmer</a> & 
+                            <a target="_blank" href="https://www.cg.tuwien.ac.at/staff/ClausScheiblauer.html">Claus Scheiblauer</a></li>
+                        <li><a target="_blank" href="https://www.cg.tuwien.ac.at/">TU Wien, Insitute of Computer Graphics and Algorithms</a></li>
+                        <li><a target="_blank" href="https://harvest4d.org/">Harvest4D</a></li>
+                        <li><a target="_blank" href="http://rapidlasso.com/">rapidlasso</a></li>
+                        <li><a target="_blank" href="https://georepublic.info/en/">georepublic</a></li>
+                        <li><a target="_blank" href="http://hobu.co/">Howard Butler, Uday Verma, Connor Manning</a></li>
+                        <li><a target="_blank" href="http://www.danielgm.net/cc/">Cloud Compare</a></li>
+                        <li><a target="_blank" href="http://sitn.ne.ch/">sitn</a></li>
+                    </ul>
+                </li>
+
+            </ul>
+        </div>
 	  <!--
 	  <h3>Help</h3>
 	  <div>

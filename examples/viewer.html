@@ -95,11 +95,11 @@
 			console.log("a point cloud has been loaded");
 		}; 
 	
-		viewer = new Potree.Viewer(document.getElementById("potree_render_area"), {
+		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"), {
 			"onPointCloudLoaded": onPointCloudLoaded
 		});
 		
-		viewer.setEDLEnabled(false);
+		viewer.setEDLEnabled(true);
 		viewer.setPointSize(3);
 		viewer.setMaterial("RGB");
 		viewer.setFOV(60);
@@ -116,7 +116,13 @@
 			
 		);
 
-		viewer.addPointCloud("../pointclouds/vol_total/cloud.js");
+		//viewer.addPointCloud("../pointclouds/vol_total/cloud.js");
+		viewer.addPointCloud("../pointclouds/lion_takanawa/cloud.js", function(){viewer.camera.position.set(3.65, 5.78, 4.97);});
+		//viewer.addPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/opentopography/CA13_1.4/cloud.js", function(){});
+		//viewer.addPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/weiss/subseamanifold2/cloud.js", function(){});
+		
+		
+
 		//viewer.addPointCloud("../../../../../temp/ca13/resources/pointclouds/ca13/cloud.js");
 		//viewer.addPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/riegl/retz/cloud.js");
 		//viewer.addPointCloud("http://wocket.iddl.vt.edu/WWI_cave_1/resources/pointclouds/WWI_cave_1/cloud.js");

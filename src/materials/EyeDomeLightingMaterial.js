@@ -16,7 +16,7 @@ Potree.EyeDomeLightingMaterial = function(parameters){
 
 	parameters = parameters || {};
 	
-	var neighbourCount = 8;
+	var neighbourCount = 4;
 	var neighbours = new Float32Array(neighbourCount*2);
 	for(var c = 0; c < neighbourCount; c++){
 		neighbours[2*c+0] = Math.cos(2 * c * Math.PI / neighbourCount);
@@ -36,12 +36,8 @@ Potree.EyeDomeLightingMaterial = function(parameters){
 	var uniforms = {
 		screenWidth: 	{ type: "f", 	value: 0 },
 		screenHeight: 	{ type: "f", 	value: 0 },
-		near: 			{ type: "f", 	value: 0 },
-		far: 			{ type: "f", 	value: 0 },
-		expScale: 		{ type: "f", 	value: 100.0 },
-		edlScale: 		{ type: "f", 	value: 1.0 },
-		radius: 		{ type: "f", 	value: 3.0 },
-		lightDir:		{ type: "v3",	value: lightDir },
+		edlStrength: 		{ type: "f", 	value: 1.0 },
+		radius: 		{ type: "f", 	value: 1.0 },
 		neighbours:		{ type: "2fv", 	value: neighbours },
 		depthMap: 		{ type: "t", 	value: null },
 		colorMap: 		{ type: "t", 	value: null },

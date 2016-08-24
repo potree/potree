@@ -26,8 +26,8 @@ Potree.Viewer = function(domElement, args){
 	this.useDEMCollisions = false;
 	this.minNodeSize = 100;
 	this.directionalLight;
-	this.edlScale = 1;
-	this.edlRadius = 3;
+	this.edlStrength = 1.0;
+	this.edlRadius = 1.4;
 	this.useEDL = false;
 	this.minimumJumpDistance = 0.2;
 	this.jumpDistance = null;
@@ -360,14 +360,14 @@ Potree.Viewer = function(domElement, args){
 	};
 	
 	this.setEDLStrength = function(value){
-		if(scope.edlScale !== value){
-			scope.edlScale = value;
+		if(scope.edlStrength !== value){
+			scope.edlStrength = value;
 			scope.dispatchEvent({"type": "edl_strength_changed", "viewer": scope});
 		}
 	};
 	
 	this.getEDLStrength = function(){
-		return scope.edlScale;
+		return scope.edlStrength;
 	};
 	
 	this.setPointSize = function(value){
@@ -1750,7 +1750,7 @@ Potree.Viewer = function(domElement, args){
 			
 
 			rtColor = new THREE.WebGLRenderTarget( 1024, 1024, { 
-				minFilter: THREE.LinearFilter, 
+				minFilter: THREE.NearestFilter, 
 				magFilter: THREE.NearestFilter, 
 				format: THREE.RGBAFormat, 
 				type: THREE.FloatType,
@@ -1889,11 +1889,11 @@ Potree.Viewer = function(domElement, args){
 				{ // EDL OCCLUSION PASS
 					edlMaterial.uniforms.screenWidth.value = width;
 					edlMaterial.uniforms.screenHeight.value = height;
-					edlMaterial.uniforms.near.value = scope.camera.near;
-					edlMaterial.uniforms.far.value = scope.camera.far;
+					//edlMaterial.uniforms.near.value = scope.camera.near;
+					//edlMaterial.uniforms.far.value = scope.camera.far;
 					edlMaterial.uniforms.colorMap.value = rtColor;
-					edlMaterial.uniforms.expScale.value = scope.camera.far;
-					edlMaterial.uniforms.edlScale.value = scope.edlScale;
+					//edlMaterial.uniforms.expScale.value = scope.camera.far;
+					edlMaterial.uniforms.edlStrength.value = scope.edlStrength;
 					edlMaterial.uniforms.radius.value = scope.edlRadius;
 					edlMaterial.uniforms.opacity.value = scope.opacity;
 					edlMaterial.depthTest = true;
@@ -1917,9 +1917,17 @@ Potree.Viewer = function(domElement, args){
 	};
 
 	//var toggleMessage = 0;
+	
+	var stats = new Stats();
+	stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
+	document.body.appendChild( stats.dom );
+	stats.dom.style.left = "100px";
+
 
 	function loop(timestamp) {
 		requestAnimationFrame(loop);
+		
+		stats.begin();
 		
 		//var start = new Date().getTime();
 		scope.update(clock.getDelta(), timestamp);
@@ -1944,6 +1952,8 @@ Potree.Viewer = function(domElement, args){
 		}else{
 			potreeRenderer.render();
 		}
+		
+		stats.end();
 	};
 
 	scope.initThree();
@@ -1954,8 +1964,8 @@ Potree.Viewer = function(domElement, args){
 	scope.setFOV(60);
 	scope.setOpacity(1);
 	scope.setEDLEnabled(false);
-	scope.setEDLRadius(2);
-	scope.setEDLStrength(1);
+	scope.setEDLRadius(1.4);
+	scope.setEDLStrength(1.0);
 	scope.setClipMode(Potree.ClipMode.HIGHLIGHT_INSIDE);
 	scope.setPointBudget(1*1000*1000);
 	scope.setShowBoundingBox(false);

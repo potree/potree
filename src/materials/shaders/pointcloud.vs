@@ -217,17 +217,9 @@ void main() {
 	vWorldPosition = worldPosition.xyz;
 	gl_Position = projectionMatrix * mvPosition;
 	vOpacity = opacity;
-	vLinearDepth = -mvPosition.z;
+	vLinearDepth = gl_Position.w;
+	vLogDepth = log2(gl_Position.w);
 	vNormal = normalize(normalMatrix * normal);
-	
-	#if defined(use_edl)
-		vLogDepth = log2(gl_Position.w + 1.0) / log2(far + 1.0);
-	#endif
-	
-	//#if defined(use_logarithmic_depth_buffer)
-	//	float logarithmicZ = (2.0 * log2(gl_Position.w + 1.0) / log2(far + 1.0) - 1.0) * gl_Position.w;
-	//	gl_Position.z = logarithmicZ;
-	//#endif
 
 	// ---------------------
 	// POINT COLOR

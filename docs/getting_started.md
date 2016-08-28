@@ -9,22 +9,24 @@ Read the [FAQ](faq.md) if you encounter any problems.
 
 ### Setup a Web-Server
 
-Due to strict security policies in browsers,
-it is not possible to open potree html files directly on your pc because
-potree needs permission to load files.
-You have to put all necessary source files and the pointcloud on a webserver
-to view the result. You can, however, install a local webserver on your pc.
-I use XAMPP, which contains Apache Webserver as well as PHP and MySQL but Apache
-alone should work fine:
-* [Apache](http://httpd.apache.org/)
-* [XAMPP](https://www.apachefriends.org/de/index.html)
+Due to strict security policies in browsers, it is not possible to open potree html files directly because potree needs permission to load files. You have to put all necessary source files and the pointcloud on a webserver to view the result. 
+You can, however, install a local webserver on your machine. There are multiple options here but here we propose two simple cross platform options, live-server and XAMPP.
 
-After you've installed and started Apache/XAMPP, you can access files in your htdocs
-directory through a localhost URL:
+#### live-server
+[live-server](https://www.npmjs.com/package/live-server) is a simple node web server. It also has the benefit that it automatically refreshes a page on changes to a file. To do this you must have [node.js](https://nodejs.org/en/) and npm (which comes by default with node) installed on your machine, then from the folder with the potree html files do:
 
-Assuming your htdocs directory is ```C:\xampp\htdocs```, you can access it in your
-browser with ```http://localhost```
+  ```
+  npm install -g live-server
+  live-server
+  ```
 
+This will automatically open the page directory in your default browser and you can select the page you want from the GUI. If you lose the page it will be on localhost with the port given in the command line when you invoke the command. 
+
+
+#### XAMPP
+Another option is [XAMPP](https://www.apachefriends.org/de/index.html), which contains the web server [Apache](http://httpd.apache.org/) as well as PHP and MySQL (although these are not required).
+
+After you've installed and started Apache/XAMPP, you can access files in your htdocs directory through a localhost URL. Assuming your htdocs directory is ```C:\xampp\htdocs```, you can access it in your browser with ```http://localhost```
 
 ### Converting & Generating a Web Page
 

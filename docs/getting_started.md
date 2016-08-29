@@ -12,7 +12,7 @@ Read the [FAQ](faq.md) if you encounter any problems.
 Due to strict security policies in browsers, it is not possible to open potree html files directly because potree needs permission to load files. You have to put all necessary source files and the pointcloud on a webserver to view the result. 
 You can, however, install a local webserver on your machine. There are multiple options here but here we propose three simple cross platform options, SimpleHTTPServer, live-server and XAMPP.
 
-### Python / SimpleHTTPServer
+#### Python / SimpleHTTPServer
 
 For any machine with Python installed, from the command line in the directory of the Potree HTML files:
 

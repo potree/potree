@@ -246,6 +246,7 @@ void main() {
 	#elif defined color_type_lod
 		float depth = getLOD();
 		float w = depth / 10.0;
+		//float w = mod(depth, 4.0) / 3.0;
 		vColor = texture2D(gradient, vec2(w,1.0-w)).rgb;
 	#elif defined color_type_point_index
 		vColor = indices.rgb;
@@ -294,9 +295,9 @@ void main() {
 	// ---------------------
 	float pointSize = 1.0;
 	
-	float projFactor = 1.0 / tan(fov / 2.0);
-	projFactor /= vViewPosition.z;
-	projFactor *= screenHeight / 2.0;
+	float slope = tan(fov / 2.0);
+	float projFactor =  0.5 * screenHeight / (slope * vViewPosition.z);
+	
 	float r = spacing * 1.5;
 	vRadius = r;
 	#if defined fixed_point_size

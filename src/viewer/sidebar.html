@@ -322,7 +322,7 @@ function initMaterials(){
 		"Return Number", 
 		"Source", 
 		"Phong",
-		"Level of Detail"	
+		"Level of Detail"
 	];
 	
 	var elMaterialList = document.getElementById("optMaterial");
@@ -519,6 +519,8 @@ function initAppearance(){
 	$('#lblOpacity')[0].innerHTML = viewer.getOpacity().toFixed(2);
 	$('#lblEDLRadius')[0].innerHTML = viewer.getEDLRadius().toFixed(1);
 	$('#lblEDLStrength')[0].innerHTML = viewer.getEDLStrength().toFixed(1);
+	$('#chkEDLEnabled')[0].checked = viewer.getEDLEnabled();
+	
 }
 	
 	

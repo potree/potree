@@ -10,10 +10,19 @@ Read the [FAQ](faq.md) if you encounter any problems.
 ### Setup a Web-Server
 
 Due to strict security policies in browsers, it is not possible to open potree html files directly because potree needs permission to load files. You have to put all necessary source files and the pointcloud on a webserver to view the result. 
-You can, however, install a local webserver on your machine. There are multiple options here but here we propose two simple cross platform options, live-server and XAMPP.
+You can, however, install a local webserver on your machine. There are multiple options here but here we propose three simple cross platform options, SimpleHTTPServer, live-server and XAMPP.
+
+### Python / SimpleHTTPServer
+
+For any machine with Python installed, from the command line in the directory of the Potree HTML files:
+
+```python –m SimpleHTTPServer```
+
+And go to localhost:8000 in your browser
+
 
 #### live-server
-[live-server](https://www.npmjs.com/package/live-server) is a simple node web server. It also has the benefit that it automatically refreshes a page on changes to a file. To do this you must have [node.js](https://nodejs.org/en/) and npm (which comes by default with node) installed on your machine, then from the folder with the potree html files do:
+[live-server](https://www.npmjs.com/package/live-server) is a simple node web server. It also has the benefit that it automatically refreshes a page on changes to a file. To do this you must have [node.js](https://nodejs.org/en/) and npm (which comes by default with node) installed on your machine, then from the folder with the Potree HTML files do:
 
   ```
   npm install -g live-server

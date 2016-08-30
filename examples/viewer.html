@@ -100,12 +100,12 @@
 		});
 		
 		viewer.setEDLEnabled(true);
-		viewer.setPointSize(3);
+		viewer.setPointSize(1);
 		viewer.setMaterial("RGB");
 		viewer.setFOV(60);
-		viewer.setPointSizing("Fixed");
+		viewer.setPointSizing("Adaptive");
 		viewer.setQuality("Squares");
-		viewer.setPointBudget(1*1000*1000);
+		viewer.setPointBudget(1*100*1000);
 		viewer.loadSettingsFromURL();
 		//viewer.setOpacity(0.03);
 		//viewer.setMinNodeSize(100);
@@ -117,8 +117,10 @@
 		);
 
 		//viewer.addPointCloud("../pointclouds/vol_total/cloud.js");
-		viewer.addPointCloud("../pointclouds/lion_takanawa/cloud.js", function(){viewer.camera.position.set(3.65, 5.78, 4.97);});
+		//viewer.addPointCloud("../pointclouds/lion_takanawa/cloud.js", function(){viewer.camera.position.set(3.65, 5.78, 4.97);});
 		//viewer.addPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/opentopography/CA13_1.4/cloud.js", function(){});
+		//viewer.addPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/tern_auscover/chowilla/cloud.js", function(){});
+		viewer.addPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/riegl/retz/cloud.js", function(){});
 		//viewer.addPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/weiss/subseamanifold2/cloud.js", function(){});
 		
 		

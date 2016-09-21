@@ -194,7 +194,7 @@ Potree.PointCloudMaterial.prototype.updateShaderSource = function(){
 		|| this.pointColorType === Potree.PointColorType.INTENSITY_GRADIENT){
 		attributes.intensity = { type: "f", value: [] };
 	}else if(this.pointColorType === Potree.PointColorType.CLASSIFICATION){
-		//attributes.classification = { type: "f", value: [] };
+		attributes.classification = { type: "f", value: [] };
 	}else if(this.pointColorType === Potree.PointColorType.RETURN_NUMBER){
 		attributes.returnNumber = { type: "f", value: [] };
 		attributes.numberOfReturns = { type: "f", value: [] };
@@ -203,7 +203,7 @@ Potree.PointCloudMaterial.prototype.updateShaderSource = function(){
 	}else if(this.pointColorType === Potree.PointColorType.NORMAL || this.pointColorType === Potree.PointColorType.PHONG){
 		attributes.normal = { type: "f", value: [] };
 	}
-	attributes.classification = { type: "f", value: 0 };
+	//attributes.classification = { type: "f", value: 0 };
 	
 	var vs = this.getDefines() + Potree.Shaders["pointcloud.vs"];
 	var fs = this.getDefines() + Potree.Shaders["pointcloud.fs"];

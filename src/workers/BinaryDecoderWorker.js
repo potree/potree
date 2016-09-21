@@ -205,6 +205,18 @@ onmessage = function(event){
 		iIndices[i] = i;
 	}
 	
+	if(attributeBuffers[Potree.PointAttribute.CLASSIFICATION.name] === undefined){
+		var buff = new ArrayBuffer(numPoints*4);
+		var classifications = new Float32Array(buff);
+		
+		for(var j = 0; j < numPoints; j++){
+			classifications[j] = 0;
+		}
+		
+		attributeBuffers[Potree.PointAttribute.CLASSIFICATION.name] = { buffer: buff, attribute: Potree.PointAttribute.CLASSIFICATION};
+	}
+	
+	
 	var message = {
 		attributeBuffers: attributeBuffers,
 		tightBoundingBox: { min: tightBoxMin, max: tightBoxMax },

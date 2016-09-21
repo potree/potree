@@ -29,6 +29,69 @@ if(document.currentScript.src){
 Potree.resourcePath = Potree.scriptPath + "/resources";
 
 
+Potree.timerQueries = {};
+
+Potree.timerQueriesEnabled = false;
+
+Potree.startQuery = function(name, gl){
+	if(!Potree.timerQueriesEnabled){
+		return null;
+	}
+	
+	if(Potree.timerQueries[name] === undefined){
+		Potree.timerQueries[name] = [];
+	}
+	
+	var ext = gl.getExtension("EXT_disjoint_timer_query");
+	var query = ext.createQueryEXT();
+	ext.beginQueryEXT(ext.TIME_ELAPSED_EXT, query);
+	
+	Potree.timerQueries[name].push(query);
+	
+	return query;
+};
+
+Potree.endQuery = function(query, gl){
+	if(!Potree.timerQueriesEnabled){
+		return;
+	}
+	
+	var ext = gl.getExtension("EXT_disjoint_timer_query");
+	ext.endQueryEXT(ext.TIME_ELAPSED_EXT);
+};
+
+Potree.resolveQueries = function(gl){
+	if(!Potree.timerQueriesEnabled){
+		return;
+	}
+	
+	var ext = gl.getExtension("EXT_disjoint_timer_query");
+	
+	for(var name in Potree.timerQueries){
+		var queries = Potree.timerQueries[name];
+		
+		if(queries.length > 0){
+			var query = queries[0];
+			
+			var available = ext.getQueryObjectEXT(query, ext.QUERY_RESULT_AVAILABLE_EXT);
+			var disjoint = viewer.renderer.getContext().getParameter(ext.GPU_DISJOINT_EXT);
+			
+			if (available && !disjoint) {
+				// See how much time the rendering of the object took in nanoseconds.
+				var timeElapsed = ext.getQueryObjectEXT(query, ext.QUERY_RESULT_EXT);
+				var miliseconds = timeElapsed / (1000 * 1000);
+			
+				console.log(name + ": " + miliseconds + "ms");
+				queries.shift();
+			}
+		}
+		
+		if(queries.length === 0){
+			delete Potree.timerQueries[name];
+		}
+	}
+}
+
 
 Potree.updatePointClouds = function(pointclouds, camera, renderer){
 	
@@ -137,6 +200,12 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 		var insideFrustum = frustum.intersectsBox(box);
 		var visible = insideFrustum;
 		visible = visible && !(numVisiblePoints + node.getNumPoints() > Potree.pointBudget);
+		var maxLevel = pointcloud.maxLevel || Infinity;
+		visible = visible && node.getLevel() < maxLevel;
+		
+		if(numVisiblePoints + node.getNumPoints() > Potree.pointBudget){
+			break;
+		}
 		
 		if(!visible){
 			continue;
@@ -194,15 +263,20 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 			var distance = sphere.center.distanceTo(camObjPos);
 			var radius = sphere.radius;
 			
-			var fov = camera.fov / 2 * Math.PI / 180.0;
-			var pr = 1 / Math.tan(fov) * radius / Math.sqrt(distance * distance - radius * radius);
+			//var fov = camera.fov / 2 * Math.PI / 180.0;
+			//var pr = 1 / Math.tan(fov) * radius / Math.sqrt(distance * distance - radius * radius);
+			//var screenPixelRadius = renderer.domElement.clientHeight * pr;
 			
-			var screenPixelRadius = renderer.domElement.clientHeight * pr;
+			var fov = (camera.fov * Math.PI) / 180;
+			var slope = Math.tan(fov / 2);
+			var projFactor = (0.5 * renderer.domElement.clientHeight) / (slope * distance);
+			var screenPixelRadius = radius * projFactor;
+			
 			if(screenPixelRadius < pointcloud.minimumNodePixelSize){
 				continue;
 			}
 			
-			var weight = pr;
+			var weight = screenPixelRadius;
 			if(distance - radius < 0){
 				weight = Number.MAX_VALUE;
 			}

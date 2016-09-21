@@ -3,7 +3,7 @@
 // https://github.com/cloudcompare/trunk/tree/master/plugins/qEDL/shaders/EDL
 //
 
-#define NEIGHBOUR_COUNT 4
+//#define NEIGHBOUR_COUNT 4
 
 uniform float screenWidth;
 uniform float screenHeight;

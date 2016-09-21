@@ -37,6 +37,10 @@ Potree.PointCloudOctreeGeometryNode.prototype.isGeometryNode = function(){
 	return true;
 };
 
+Potree.PointCloudOctreeGeometryNode.prototype.getLevel = function(){
+	return this.level;
+};
+
 Potree.PointCloudOctreeGeometryNode.prototype.isTreeNode = function(){
 	return false;
 };

@@ -103,37 +103,13 @@ void main() {
 			discard;
 		}
 	#endif
-	
-	#if defined use_interpolation
-		float wi = 0.0 - ( u*u + v*v);
-		vec4 pos = vec4(-vViewPosition, 1.0);
-		pos.z += wi * vRadius;
-		float linearDepth = pos.z;
-		pos = projectionMatrix * pos;
-		pos = pos / pos.w;
-		float expDepth = pos.z;
-		depth = (pos.z + 1.0) / 2.0;
-		gl_FragDepthEXT = depth;
 		
-		#if defined(color_type_depth)
-			color.r = linearDepth;
-			color.g = expDepth;
-		#endif
-		
-	#endif
-	
 	#if defined color_type_point_index
 		gl_FragColor = vec4(color, pcIndex / 255.0);
 	#else
 		gl_FragColor = vec4(color, vOpacity);
 	#endif
-	
-	#if defined weighted_splats
-	    float w = pow(1.0 - (u*u + v*v), blendHardness);
-		gl_FragColor.rgb = gl_FragColor.rgb * w;
-		gl_FragColor.a = w;
-	#endif
-	
+
 	vec3 normal = normalize( vNormal );
 	normal.z = abs(normal.z);
 	vec3 viewPosition = normalize( vViewPosition );
@@ -256,10 +232,50 @@ void main() {
 
 	#endif
 	
-	
-	#if defined(use_edl)
-		gl_FragColor.a = vLogDepth;
+	#if defined weighted_splats
+	    //float w = pow(1.0 - (u*u + v*v), blendHardness);
+		
+		float wx = 2.0 * length(2.0 * gl_PointCoord - 1.0);
+		float w = exp(-wx * wx * 0.5);
+		
+		//float distance = length(2.0 * gl_PointCoord - 1.0);
+		//float w = exp( -(distance * distance) / blendHardness);
+		
+		gl_FragColor.rgb = gl_FragColor.rgb * w;
+		gl_FragColor.a = w;
 	#endif
+	
+	#if defined use_interpolation
+		float wi = 0.0 - ( u*u + v*v);
+		vec4 pos = vec4(-vViewPosition, 1.0);
+		pos.z += wi * vRadius;
+		float linearDepth = -pos.z;
+		pos = projectionMatrix * pos;
+		pos = pos / pos.w;
+		float expDepth = pos.z;
+		depth = (pos.z + 1.0) / 2.0;
+		gl_FragDepthEXT = depth;
+		
+		#if defined(color_type_depth)
+			color.r = linearDepth;
+			color.g = expDepth;
+		#endif
+		
+		#if defined(use_edl)
+			gl_FragColor.a = log2(linearDepth);
+		#endif
+		
+	#else
+		#if defined(use_edl)
+			gl_FragColor.a = vLogDepth;
+		#endif
+	#endif
+	
+	
+		
+	
+	
+	
 	
 }
 

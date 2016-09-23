@@ -72,7 +72,7 @@ onmessage = function(event){
 	var bufferView = new Uint8Array(buffer);
 	
 	var pBuff = new ArrayBuffer(numPoints*3*4);
-	var cBuff = new ArrayBuffer(numPoints*3*4);
+	var cBuff = new ArrayBuffer(numPoints*3);
 	var iBuff = new ArrayBuffer(numPoints*4);
 	var clBuff = new ArrayBuffer(numPoints);
 	var rnBuff = new ArrayBuffer(numPoints);
@@ -80,7 +80,7 @@ onmessage = function(event){
 	var psBuff = new ArrayBuffer(numPoints * 2);
 	
 	var positions = new Float32Array(pBuff);
-	var colors = new Float32Array(cBuff);
+	var colors = new Uint8Array(cBuff);
 	var intensities = new Float32Array(iBuff);
 	var classifications = new Uint8Array(clBuff);
 	var returnNumbers = new Uint8Array(rnBuff);
@@ -164,9 +164,9 @@ onmessage = function(event){
 			tempUint8[1] = bufferView[i*pointSize+25];
 			var b = tempUint16[0];
 			
-			colors[3*i+0] = r / 65536;
-			colors[3*i+1] = g / 65536;
-			colors[3*i+2] = b / 65536;
+			colors[3*i+0] = r / 255;
+			colors[3*i+1] = g / 255;
+			colors[3*i+2] = b / 255;
 		}
 	}
 	

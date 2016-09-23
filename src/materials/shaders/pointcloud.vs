@@ -55,6 +55,8 @@ uniform vec3 uColor;
 uniform float opacity;
 uniform float clipBoxCount;
 
+uniform float transition;
+
 
 uniform sampler2D visibleNodes;
 uniform sampler2D gradient;
@@ -210,6 +212,58 @@ float getPointSizeAttenuation(){
 
 #endif
 
+// https://en.wikipedia.org/wiki/HSL_and_HSV
+vec3 HSLtoRGB(vec3 hsl){
+	float hd = hsl.r * 6.0;
+	float c = hsl.g;
+	float l = hsl.b;
+	
+	float x = c * (1.0 - abs(mod(hd, 2.0) - 1.0));
+	
+	vec3 rgb;
+	if(0.0 <= hd && hd <= 1.0){
+		rgb = vec3(c, x, 0.0);
+	}else if(1.0 <= hd && hd <= 2.0){
+		rgb = vec3(x, c, 0.0);
+	}else if(2.0 <= hd && hd <= 3.0){
+		rgb = vec3(0.0, c, x);
+	}else if(3.0 <= hd && hd <= 4.0){
+		rgb = vec3(0.0, x, c);
+	}else if(4.0 <= hd && hd <= 5.0){
+		rgb = vec3(x, 0.0, c);
+	}else if(5.0 <= hd && hd <= 6.0){
+		rgb = vec3(c, 0.0, x);
+	}else{
+		rgb = vec3(0.0, 0.0, 0.0);
+	}
+	
+	float m = l - (0.3 * rgb.r + 0.59 * rgb.g + 0.11 * rgb.b);
+	rgb = rgb + m;
+	
+	return rgb;
+}
+
+vec3 combineInHSL(vec3 cMain, vec3 cTarget, float transition){
+	
+	vec2 xyMain = vec2(
+		(2.0*cMain.r - cMain.g - cMain.b) / 2.0,
+		(sqrt(3.0) / 2.0) * (cMain.g - cMain.b)
+	);
+	vec2 xyTarget = vec2(
+		(2.0*cTarget.r - cTarget.g - cTarget.b) / 2.0,
+		(sqrt(3.0) / 2.0) * (cTarget.g - cTarget.b)
+	);
+	
+	vec2 xy = (1.0 - transition) * xyMain + transition * xyTarget;
+	
+	float h = (atan(-xy.y, -xy.x) + 3.1415) / (2.0 * 3.1415);
+	float c = length(xy);
+	vec3 rgb = (1.0 - transition) * cMain + transition * cTarget;
+	float l = 0.3 * rgb.r + 0.59 * rgb.g + 0.11 * rgb.b;
+	
+	return HSLtoRGB(vec3(h, c, l));
+}
+
 void main() {
 	vec4 worldPosition = modelMatrix * vec4( position, 1.0 );
 	vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
@@ -231,6 +285,11 @@ void main() {
 		vec4 world = modelMatrix * vec4( position, 1.0 );
 		float w = (world.y - heightMin) / (heightMax-heightMin);
 		vColor = texture2D(gradient, vec2(w,1.0-w)).rgb;
+	#elif defined color_type_rgb_height
+		vec4 world = modelMatrix * vec4( position, 1.0 );
+		float w = (world.y - heightMin) / (heightMax-heightMin);
+		vec3 cHeight = texture2D(gradient, vec2(w,1.0-w)).rgb;
+		vColor = combineInHSL(color, cHeight, transition);
 	#elif defined color_type_depth
 		float linearDepth = -mvPosition.z ;
 		float expDepth = (gl_Position.z / gl_Position.w) * 0.5 + 0.5;

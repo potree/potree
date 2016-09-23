@@ -135,11 +135,10 @@ Potree.utils.createBackgroundTexture = function(width, height){
 		return (1 / (2 * Math.PI)) * Math.exp( - (x*x + y*y) / 2);
 	};
 
-	var map = THREE.ImageUtils.generateDataTexture( width, height, new THREE.Color() );
-	map.magFilter = THREE.NearestFilter;
-	var data = map.image.data;
+	//map.magFilter = THREE.NearestFilter;
+	var size = width * height;
+	var data = new Uint8Array( 3 * size );
 
-	//var data = new Uint8Array(width*height*4);
 	var chroma = [1, 1.5, 1.7];
 	var max = gauss(0, 0);
 
@@ -159,13 +158,13 @@ Potree.utils.createBackgroundTexture = function(width, height){
 			data[3*i+0] = 255 * (d / 15 + 0.05 + r) * chroma[0];
 			data[3*i+1] = 255 * (d / 15 + 0.05 + r) * chroma[1];
 			data[3*i+2] = 255 * (d / 15 + 0.05 + r) * chroma[2];
-			
-			//data[4*i+3] = 255;
-		
 		}
 	}
 	
-	return map;
+	var texture = new THREE.DataTexture( data, width, height, THREE.RGBFormat );
+	texture.needsUpdate = true;
+	
+	return texture;
 };
 
 
@@ -287,6 +286,28 @@ Potree.utils.frustumSphereIntersection = function(frustum, sphere){
 	return (minDistance >= sphere.radius) ? 2 : 1;
 };
 	
+// code taken from three.js
+// ImageUtils - generateDataTexture()
+Potree.utils.generateDataTexture = function(width, height, color){
+	var size = width * height;
+	var data = new Uint8Array(3 * width * height);
+	
+	var r = Math.floor( color.r * 255 );
+	var g = Math.floor( color.g * 255 );
+	var b = Math.floor( color.b * 255 );
+	
+	for ( var i = 0; i < size; i ++ ) {
+		data[ i * 3 ] 	   = r;
+		data[ i * 3 + 1 ] = g;
+		data[ i * 3 + 2 ] = b;
+	}
+	
+	var texture = new THREE.DataTexture( data, width, height, THREE.RGBFormat );
+	texture.needsUpdate = true;
+	texture.magFilter = THREE.NearestFilter;
+	
+	return texture;
+};
 	
 Potree.utils.screenPass = new function(){
 
@@ -301,7 +322,7 @@ Potree.utils.screenPass = new function(){
 	this.render = function(renderer, material, target){
 		this.screenQuad.material = material;
 		
-		if(typeof target === undefined){
+		if(typeof target === "undefined"){
 			renderer.render(this.screenScene, this.camera);
 		}else{
 			renderer.render(this.screenScene, this.camera, target);

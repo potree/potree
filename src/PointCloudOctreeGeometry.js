@@ -259,4 +259,5 @@ Potree.PointCloudOctreeGeometryNode.prototype.dispose = function(){
 	}
 };
 
-THREE.EventDispatcher.prototype.apply( Potree.PointCloudOctreeGeometryNode.prototype );
+//THREE.EventDispatcher.prototype.apply( Potree.PointCloudOctreeGeometryNode.prototype );
+Object.assign( Potree.PointCloudOctreeGeometryNode.prototype, THREE.EventDispatcher.prototype );

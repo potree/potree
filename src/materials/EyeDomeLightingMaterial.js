@@ -40,6 +40,7 @@ Potree.EyeDomeLightingMaterial = function(parameters){
 		uniforms: uniforms,
 		vertexShader: this.getDefines() + Potree.Shaders["edl.vs"],
 		fragmentShader: this.getDefines() + Potree.Shaders["edl.fs"],
+		lights: false
 	});
 	
 };

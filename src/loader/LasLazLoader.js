@@ -166,16 +166,12 @@ Potree.LasLazBatcher = function(node){
 			};
 			
 			var positions = e.data.position;
-			var colors = e.data.color;
+			var colors = new Uint8Array(e.data.color);
 			var intensities = e.data.intensity;
 			var classifications = new Uint8Array(e.data.classification);
-			var classifications_f = new Float32Array(classifications.byteLength);
 			var returnNumbers = new Uint8Array(e.data.returnNumber);
 			var numberOfReturns = new Uint8Array(e.data.numberOfReturns);
-			var returnNumbers_f = new Float32Array(returnNumbers.byteLength);
-			var numberOfReturns_f = new Float32Array(numberOfReturns.byteLength);
 			var pointSourceIDs = new Uint16Array(e.data.pointSourceID);
-			var pointSourceIDs_f = new Float32Array(pointSourceIDs.length);
 			var indices = new ArrayBuffer(numPoints*4);
 			var iIndices = new Uint32Array(indices);
 			
@@ -183,22 +179,18 @@ Potree.LasLazBatcher = function(node){
 			
 			var fPositions = new Float32Array(positions);
 			for(var i = 0; i < numPoints; i++){				
-				classifications_f[i] = classifications[i];
-				returnNumbers_f[i] = returnNumbers[i];
-				numberOfReturns_f[i] = numberOfReturns[i];
-				pointSourceIDs_f[i] = pointSourceIDs[i];
 				iIndices[i] = i;
 				
 				box.expandByPoint(new THREE.Vector3(fPositions[3*i+0], fPositions[3*i+1], fPositions[3*i+2]));
 			}
 			
 			geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
-			geometry.addAttribute('color', new THREE.BufferAttribute(new Float32Array(colors), 3));
+			geometry.addAttribute('color', new THREE.BufferAttribute(colors, 3, true));
 			geometry.addAttribute('intensity', new THREE.BufferAttribute(new Float32Array(intensities), 1));
-			geometry.addAttribute('classification', new THREE.BufferAttribute(new Float32Array(classifications_f), 1));
-			geometry.addAttribute('returnNumber', new THREE.BufferAttribute(new Float32Array(returnNumbers_f), 1));
-			geometry.addAttribute('numberOfReturns', new THREE.BufferAttribute(new Float32Array(numberOfReturns_f), 1));
-			geometry.addAttribute('pointSourceID', new THREE.BufferAttribute(new Float32Array(pointSourceIDs_f), 1));
+			geometry.addAttribute('classification', new THREE.BufferAttribute(classifications, 1));
+			geometry.addAttribute('returnNumber', new THREE.BufferAttribute(returnNumbers, 1));
+			geometry.addAttribute('numberOfReturns', new THREE.BufferAttribute(numberOfReturns, 1));
+			geometry.addAttribute('pointSourceID', new THREE.BufferAttribute(pointSourceIDs, 1));
 			geometry.addAttribute('indices', new THREE.BufferAttribute(indices, 1));
 			geometry.addAttribute("normal", new THREE.BufferAttribute(new Float32Array(numPoints*3), 3));
 			

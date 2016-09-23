@@ -35,6 +35,7 @@ Potree.Viewer = function(domElement, args){
 	this.intensityMax = null;
 	this.heightMin = null;
 	this.heightMax = null;
+	this.materialTransition = 0.5;
 	this.moveSpeed = 10;
 
 	this.showDebugInfos = false;
@@ -281,6 +282,17 @@ Potree.Viewer = function(domElement, args){
 	
 	this.getHeightRange = function(){
 		return {min: scope.heightMin, max: scope.heightMax};
+	};
+	
+	this.setMaterialTransition = function(t){
+		if(scope.materialTransition !== t){
+			scope.materialTransition = t;
+			scope.dispatchEvent({"type": "material_transition_changed", "viewer": scope});
+		}
+	};
+	
+	this.getMaterialTransition = function(){
+		return scope.materialTransition;
 	};
 	
 	this.setIntensityMax = function(max){
@@ -547,6 +559,8 @@ Potree.Viewer = function(domElement, args){
 			return Potree.PointColorType.NORMAL;
 		}else if(materialName === "Phong"){
 			return Potree.PointColorType.PHONG;
+		}else if(materialName === "RGB and Elevation"){
+			return Potree.PointColorType.RGB_HEIGHT;
 		}
 	};
 	
@@ -575,6 +589,8 @@ Potree.Viewer = function(domElement, args){
 			return "Normal";
 		}else if(materialID === Potree.PointColorType.PHONG){
 			return "Phong";
+		}else if(materialID === Potree.PointColorType.RGB_HEIGHT){
+			return "RGB and Elevation";
 		}
 	};
 	
@@ -741,7 +757,7 @@ Potree.Viewer = function(domElement, args){
 		
 		scope.referenceFrame.updateMatrixWorld(true);
 		var box = scope.getBoundingBox();
-		scope.referenceFrame.position.copy(box.center()).multiplyScalar(-1);
+		scope.referenceFrame.position.copy(box.getCenter()).multiplyScalar(-1);
 		scope.referenceFrame.position.y = -box.min.y;
 		scope.referenceFrame.updateMatrixWorld(true);
 		
@@ -1319,6 +1335,7 @@ Potree.Viewer = function(domElement, args){
 			pointcloud.showBoundingBox = scope.showBoundingBox;
 			pointcloud.generateDEM = scope.useDEMCollisions;
 			pointcloud.minimumNodePixelSize = scope.minNodeSize;
+			pointcloud.material.uniforms.transition.value = scope.materialTransition;
 			
 			//if(!scope.freeze){
 			//	pointcloud.update(scope.camera, scope.renderer);
@@ -1648,8 +1665,8 @@ Potree.Viewer = function(domElement, args){
 			for(var i = 0; i < scope.pointclouds.length; i++){
 				var pointcloud = scope.pointclouds[i];
 			
-				depthMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.size().x;
-				attributeMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.size().x;
+				depthMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.getSize().x;
+				attributeMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.getSize().x;
 			
 				var originalMaterial = pointcloud.material;
 				
@@ -1659,7 +1676,7 @@ Potree.Viewer = function(domElement, args){
 					depthMaterial.screenWidth = width;
 					depthMaterial.screenHeight = height;
 					depthMaterial.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
-					depthMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.size().x;
+					depthMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.getSize().x;
 					depthMaterial.fov = scope.camera.fov * (Math.PI / 180);
 					depthMaterial.spacing = pointcloud.pcoGeometry.spacing;
 					depthMaterial.near = scope.camera.near;
@@ -1667,7 +1684,7 @@ Potree.Viewer = function(domElement, args){
 					depthMaterial.heightMin = scope.heightMin;
 					depthMaterial.heightMax = scope.heightMax;
 					depthMaterial.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
-					depthMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.size().x;
+					depthMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.getSize().x;
 					depthMaterial.bbSize = pointcloud.material.bbSize;
 					depthMaterial.treeType = pointcloud.material.treeType;
 					depthMaterial.uniforms.classificationLUT.value = pointcloud.material.uniforms.classificationLUT.value;
@@ -1686,7 +1703,7 @@ Potree.Viewer = function(domElement, args){
 					attributeMaterial.pointColorType = scope.pointColorType;
 					attributeMaterial.depthMap = rtDepth;
 					attributeMaterial.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
-					attributeMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.size().x;
+					attributeMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.getSize().x;
 					attributeMaterial.fov = scope.camera.fov * (Math.PI / 180);
 					attributeMaterial.uniforms.blendHardness.value = pointcloud.material.uniforms.blendHardness.value;
 					attributeMaterial.uniforms.blendDepthSupplement.value = pointcloud.material.uniforms.blendDepthSupplement.value;
@@ -1821,7 +1838,7 @@ Potree.Viewer = function(domElement, args){
 				}
 				var attributeMaterial = attributeMaterials[i];
 			
-				var octreeSize = pointcloud.pcoGeometry.boundingBox.size().x;
+				var octreeSize = pointcloud.pcoGeometry.boundingBox.getSize().x;
 			
 				originalMaterials.push(pointcloud.material);
 				

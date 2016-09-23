@@ -80,13 +80,13 @@ onmessage = function(event){
 			
 		}else if(pointAttribute.name === Potree.PointAttribute.COLOR_PACKED.name){
 			
-			var buff = new ArrayBuffer(numPoints*4*3);
-			var colors = new Float32Array(buff);
+			var buff = new ArrayBuffer(numPoints*3);
+			var colors = new Uint8Array(buff);
 			
 			for(var j = 0; j < numPoints; j++){
-				colors[3*j+0] = cv.getUint8(offset + j*pointAttributes.byteSize + 0) / 255;
-				colors[3*j+1] = cv.getUint8(offset + j*pointAttributes.byteSize + 1) / 255;
-				colors[3*j+2] = cv.getUint8(offset + j*pointAttributes.byteSize + 2) / 255;
+				colors[3*j+0] = cv.getUint8(offset + j*pointAttributes.byteSize + 0);
+				colors[3*j+1] = cv.getUint8(offset + j*pointAttributes.byteSize + 1);
+				colors[3*j+2] = cv.getUint8(offset + j*pointAttributes.byteSize + 2);
 			}
 			
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute};
@@ -105,8 +105,8 @@ onmessage = function(event){
 		
 		}else if(pointAttribute.name === Potree.PointAttribute.CLASSIFICATION.name){
 
-			var buff = new ArrayBuffer(numPoints*4);
-			var classifications = new Float32Array(buff);
+			var buff = new ArrayBuffer(numPoints);
+			var classifications = new Uint8Array(buff);
 			
 			for(var j = 0; j < numPoints; j++){
 				var classification = cv.getUint8(offset + j*pointAttributes.byteSize);

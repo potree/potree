@@ -89,17 +89,14 @@ Potree.PointCloudMaterial = function(parameters){
 
 	parameters = parameters || {};
 
-	var color = new THREE.Color( 0xffffff );
+	this.visibleNodesTexture = Potree.utils.generateDataTexture( 2048, 1, new THREE.Color( 0xffffff ) );
+	this.visibleNodesTexture.minFilter = THREE.NearestFilter;
+	this.visibleNodesTexture.magFilter = THREE.NearestFilter;
 	
-	var map = Potree.utils.generateDataTexture( 2048, 1, color );
-	map.minFilter = THREE.NearestFilter;
-	map.magFilter = THREE.NearestFilter;
-	this.visibleNodesTexture = map;
-	
-	var pointSize = parameters.size || 1.0;
-	var minSize = parameters.minSize || 1.0;
-	var maxSize = parameters.maxSize || 50.0;
-	var treeType = parameters.treeType || Potree.TreeType.OCTREE;
+	let pointSize = parameters.size || 1.0;
+	let minSize = parameters.minSize || 1.0;
+	let maxSize = parameters.maxSize || 50.0;
+	let treeType = parameters.treeType || Potree.TreeType.OCTREE;
 	
 	this._pointSizeType = Potree.PointSizeType.ATTENUATED;
 	this._pointShape = Potree.PointShape.SQUARE;
@@ -115,12 +112,23 @@ Potree.PointCloudMaterial = function(parameters){
 	this.gradientTexture = Potree.PointCloudMaterial.generateGradientTexture(this._gradient);
 	this.classificationTexture = Potree.PointCloudMaterial.generateClassificationTexture(this._classification);
 	this.lights = false;
+	this.fog = false;
 	this._treeType = treeType;
-	this._useLogarithmicDepthBuffer = false;
 	this._useEDL = false;
 	
-	this.attributes = {};
-	var uniforms = {
+	this.attributes = {
+		position: 			{ type: "fv", value: [] },
+		color: 				{ type: "fv", value: [] },
+		normal: 			{ type: "fv", value: [] },
+		intensity: 			{ type: "f", value: [] },
+		classification: 	{ type: "f", value: [] },
+		returnNumber: 		{ type: "f", value: [] },
+		numberOfReturns: 	{ type: "f", value: [] },
+		pointSourceID: 		{ type: "f", value: [] },
+		normal:				{ type: "f", value: [] }
+	};
+	
+	this.uniforms = {
 		spacing:			{ type: "f", value: 1.0 },
 		blendHardness:		{ type: "f", value: 2.0 },
 		blendDepthSupplement:	{ type: "f", value: 0.0 },
@@ -131,9 +139,9 @@ Potree.PointCloudMaterial = function(parameters){
 		far:				{ type: "f", value: 1.0 },
 		uColor:   			{ type: "c", value: new THREE.Color( 0xffffff ) },
 		opacity:   			{ type: "f", value: 1.0 },
-		size:   			{ type: "f", value: 10 },
-		minSize:   			{ type: "f", value: 2 },
-		maxSize:   			{ type: "f", value: 2 },
+		size:   			{ type: "f", value: pointSize },
+		minSize:   			{ type: "f", value: minSize },
+		maxSize:   			{ type: "f", value: maxSize },
 		octreeSize:			{ type: "f", value: 0 },
 		bbSize:				{ type: "fv", value: [0,0,0] },
 		heightMin:			{ type: "f", value: 0.0 },
@@ -155,75 +163,62 @@ Potree.PointCloudMaterial = function(parameters){
 	this.defaultAttributeValues.normal = [0,0,0];
 	this.defaultAttributeValues.classification = [0,0,0];
 	
-	this.setValues({
-		uniforms: uniforms,
-		attributes: this.attributes,
-		vertexShader: this.getDefines() + Potree.Shaders["pointcloud.vs"],
-		fragmentShader: this.getDefines() + Potree.Shaders["pointcloud.fs"],
-		vertexColors: THREE.VertexColors,
-		size: pointSize,
-		minSize: minSize,
-		maxSize: maxSize,
-		pcIndex: 0,
-		alphaTest: 0.9
-	});
+	this.vertexShader = this.getDefines() + Potree.Shaders["pointcloud.vs"];
+	this.fragmentShader = this.getDefines() + Potree.Shaders["pointcloud.fs"];
+	this.vertexColors = THREE.VertexColors;
 };
 
-Potree.PointCloudMaterial.prototype = new THREE.ShaderMaterial();
+Potree.PointCloudMaterial.prototype = new THREE.RawShaderMaterial();
+
+
+//Potree.PointCloudMaterial.prototype.copyFrom = function(source){
+//	
+//	for(let uniform of source.uniforms){
+//		this.uniforms.value = source.uniforms.value;
+//	}
+//	
+//	this.pointSizeType = source.pointSizeType;
+//	
+//};
+//
+//Potree.PointCloudMaterial.prototype.clone = function(){
+//	let material = new Potree.PointCloudMaterial();
+//	material.copyFrom(this);
+//	
+//	return material;
+//};
 
 Potree.PointCloudMaterial.prototype.updateShaderSource = function(){
 	
-	var attributes = {};
-	attributes.intensity = { type: "f", value: [] };
-	attributes.classification = { type: "f", value: [] };
-	attributes.returnNumber = { type: "f", value: [] };
-	attributes.numberOfReturns = { type: "f", value: [] };
-	attributes.pointSourceID = { type: "f", value: [] };
-	attributes.normal = { type: "f", value: [] };
-	
-	var vs = this.getDefines() + Potree.Shaders["pointcloud.vs"];
-	var fs = this.getDefines() + Potree.Shaders["pointcloud.fs"];
-	
-	this.setValues({
-		attributes: attributes,
-		vertexShader: vs,
-		fragmentShader: fs
-	});
+	this.vertexShader = this.getDefines() + Potree.Shaders["pointcloud.vs"];
+	this.fragmentShader = this.getDefines() + Potree.Shaders["pointcloud.fs"];
 	
 	if(this.depthMap){
 		this.uniforms.depthMap.value = this.depthMap;
-		this.setValues({
-			depthMap: this.depthMap,
-		});
+		this.depthMap = depthMap;
+		//this.setValues({
+		//	depthMap: this.depthMap,
+		//});
 	}
 	
 	if(this.opacity === 1.0){
-		this.setValues({
-			blending: THREE.NoBlending,
-			transparent: false,
-			depthTest: true,
-			depthWrite: true
-		});
+		blending = THREE.NoBlending;
+		transparent = false;
+		depthTest = true;
+		depthWrite = true;
 	}else{
-		this.setValues({
-			blending: THREE.AdditiveBlending,
-			transparent: true,
-			depthTest: false,
-			depthWrite: true
-		});
+		blending = THREE.AdditiveBlending;
+		transparent = true;
+		depthTest = false;
+		depthWrite = true;
 	}
 		
 	if(this.weighted){	
-		this.setValues({
-			blending: THREE.AdditiveBlending,
-			transparent: true,
-			depthTest: true,
-			depthWrite: false
-		});	
+		blending = THREE.AdditiveBlending;
+		transparent = true;
+		depthTest = true;
+		depthWrite = false;	
 	}
-		
-		
-		
 		
 	this.needsUpdate = true;
 };
@@ -248,10 +243,6 @@ Potree.PointCloudMaterial.prototype.getDefines = function(){
 	
 	if(this._interpolate){
 		defines += "#define use_interpolation\n";
-	}
-	
-	if(this._useLogarithmicDepthBuffer){
-		defines += "#define use_logarithmic_depth_buffer\n";
 	}
 	
 	if(this._useEDL){
@@ -549,18 +540,6 @@ Object.defineProperty(Potree.PointCloudMaterial.prototype, "useEDL", {
 	}
 });
 
-Object.defineProperty(Potree.PointCloudMaterial.prototype, "useLogarithmicDepthBuffer", {
-	get: function(){
-		return this._useLogarithmicDepthBuffer;
-	},
-	set: function(value){
-		if(this._useLogarithmicDepthBuffer !== value){
-			this._useLogarithmicDepthBuffer = value;
-			this.updateShaderSource();
-		}
-	}
-});
-
 Object.defineProperty(Potree.PointCloudMaterial.prototype, "color", {
 	get: function(){
 		return this.uniforms.uColor.value;
@@ -585,77 +564,6 @@ Object.defineProperty(Potree.PointCloudMaterial.prototype, "pointShape", {
 	}
 });
 
-Object.defineProperty(Potree.PointCloudMaterial.prototype, "size", {
-	get: function(){
-		return this.uniforms.size.value;
-	},
-	set: function(value){
-		this.uniforms.size.value = value;
-	}
-});
-
-Object.defineProperty(Potree.PointCloudMaterial.prototype, "minSize", {
-	get: function(){
-		return this.uniforms.minSize.value;
-	},
-	set: function(value){
-		this.uniforms.minSize.value = value;
-	}
-});
-
-Object.defineProperty(Potree.PointCloudMaterial.prototype, "maxSize", {
-	get: function(){
-		return this.uniforms.maxSize.value;
-	},
-	set: function(value){
-		this.uniforms.maxSize.value = value;
-	}
-});
-
-Object.defineProperty(Potree.PointCloudMaterial.prototype, "heightMin", {
-	get: function(){
-		return this.uniforms.heightMin.value;
-	},
-	set: function(value){
-		this.uniforms.heightMin.value = value;
-	}
-});
-
-Object.defineProperty(Potree.PointCloudMaterial.prototype, "heightMax", {
-	get: function(){
-		return this.uniforms.heightMax.value;
-	},
-	set: function(value){
-		this.uniforms.heightMax.value = value;
-	}
-});
-
-Object.defineProperty(Potree.PointCloudMaterial.prototype, "intensityMin", {
-	get: function(){
-		return this.uniforms.intensityMin.value;
-	},
-	set: function(value){
-		this.uniforms.intensityMin.value = value;
-	}
-});
-
-Object.defineProperty(Potree.PointCloudMaterial.prototype, "intensityMax", {
-	get: function(){
-		return this.uniforms.intensityMax.value;
-	},
-	set: function(value){
-		this.uniforms.intensityMax.value = value;
-	}
-});
-
-Object.defineProperty(Potree.PointCloudMaterial.prototype, "pcIndex", {
-	get: function(){
-		return this.uniforms.pcIndex.value;
-	},
-	set: function(value){
-		this.uniforms.pcIndex.value = value;
-	}
-});
 
 Object.defineProperty(Potree.PointCloudMaterial.prototype, "treeType", {
 	get: function(){

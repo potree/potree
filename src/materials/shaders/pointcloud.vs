@@ -1,33 +1,28 @@
 
-// the following is an incomplete list of attributes, uniforms and defines
-// which are automatically added through the THREE.ShaderMaterial
+precision mediump float;
+precision mediump int;
 
-//attribute vec3 position;
-//attribute vec3 color;
-//attribute vec3 normal;
 
-//uniform mat4 modelMatrix;
-//uniform mat4 modelViewMatrix;
-//uniform mat4 projectionMatrix;
-//uniform mat4 viewMatrix;
-//uniform mat3 normalMatrix;
-//uniform vec3 cameraPosition;
 
-//#define MAX_DIR_LIGHTS 0
-//#define MAX_POINT_LIGHTS 1
-//#define MAX_SPOT_LIGHTS 0
-//#define MAX_HEMI_LIGHTS 0
-//#define MAX_SHADOWS 0
-//#define MAX_BONES 58
 
 #define max_clip_boxes 30
 
+attribute vec3 position;
+attribute vec3 color;
+attribute vec3 normal;
 attribute float intensity;
 attribute float classification;
 attribute float returnNumber;
 attribute float numberOfReturns;
 attribute float pointSourceID;
 attribute vec4 indices;
+
+uniform mat4 modelMatrix;
+uniform mat4 modelViewMatrix;
+uniform mat4 projectionMatrix;
+uniform mat4 viewMatrix;
+uniform mat3 normalMatrix;
+
 
 uniform float screenWidth;
 uniform float screenHeight;
@@ -345,10 +340,6 @@ void main() {
 		}
 	}
 	
-	//if(vNormal.z < 0.0){
-	//	gl_Position = vec4(1000.0, 1000.0, 1000.0, 1.0);
-	//}
-	
 	// ---------------------
 	// POINT SIZE
 	// ---------------------
@@ -404,21 +395,12 @@ void main() {
 			#if defined clip_highlight_inside
 			vColor.r += 0.5;
 			#endif
-			
-			//vec3 cp = clipBoxPositions[0];
-			//vec3 diff = vWorldPosition - cp;
-			//vec3 dir = normalize(diff);
-			//dir.z = 0.0;
-			//dir = normalize(dir);
-			//
-			//vec4 worldPosition = modelMatrix * vec4( position + dir * 20.0, 1.0 );
-			//vec4 mvPosition = modelViewMatrix * vec4( position + dir * 20.0, 1.0 );
-			//vViewPosition = -mvPosition.xyz;
-			//vWorldPosition = worldPosition.xyz;
-			//gl_Position = projectionMatrix * mvPosition;
-			
 		}
 	
+	#endif
+	
+	#if defined color_type_point_index
+		//gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
 	#endif
 	
 }

@@ -586,6 +586,15 @@ Object.defineProperty(Potree.PointCloudMaterial.prototype, "bbSize", {
 	}
 });
 
+Object.defineProperty(Potree.PointCloudMaterial.prototype, "size", {
+	get: function(){
+		return this.uniforms.size.value;
+	},
+	set: function(value){
+		this.uniforms.size.value = value;
+	}
+});
+
 /**
  * Generates a look-up texture for gradient values (height, intensity, ...)
  *

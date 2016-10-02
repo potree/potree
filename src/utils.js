@@ -218,7 +218,7 @@ function pixelsArrayToImage(pixels, width, height){
 
     var img = new Image();
     img.src = canvas.toDataURL();
-	img.style.transform = "scaleY(-1)";
+	//img.style.transform = "scaleY(-1)";
 	
     return img;
 };

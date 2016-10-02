@@ -19567,7 +19567,7 @@
     			premultipliedAlpha: _premultipliedAlpha,
     			preserveDrawingBuffer: _preserveDrawingBuffer
     		};
-
+			//WebGLDebugUtils.makeDebugContext(_canvas.getContext("webgl"))
     		_gl = _context || _canvas.getContext( 'webgl', attributes ) || _canvas.getContext( 'experimental-webgl', attributes );
 
     		if ( _gl === null ) {

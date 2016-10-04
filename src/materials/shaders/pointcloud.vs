@@ -50,7 +50,17 @@ uniform vec3 uColor;
 uniform float opacity;
 uniform float clipBoxCount;
 
+uniform vec2 intensityRange;
+uniform float intensityGamma;
+uniform float intensityContrast;
+uniform float intensityBrightness;
 uniform float transition;
+uniform float wRGB;
+uniform float wIntensity;
+uniform float wElevation;
+uniform float wClassification;
+uniform float wReturnNumber;
+uniform float wSourceID;
 
 
 uniform sampler2D visibleNodes;
@@ -207,56 +217,82 @@ float getPointSizeAttenuation(){
 
 #endif
 
-// https://en.wikipedia.org/wiki/HSL_and_HSV
-vec3 HSLtoRGB(vec3 hsl){
-	float hd = hsl.r * 6.0;
-	float c = hsl.g;
-	float l = hsl.b;
+float getIntensity(){
+	float w = (intensity - intensityRange.x) / (intensityRange.y - intensityRange.x);
+	w = pow(w, intensityGamma);
+	w = (w - 0.5) * intensityContrast + 0.5;
+	w = w + intensityBrightness;
+	w = clamp(w, 0.0, 1.0);
 	
-	float x = c * (1.0 - abs(mod(hd, 2.0) - 1.0));
-	
-	vec3 rgb;
-	if(0.0 <= hd && hd <= 1.0){
-		rgb = vec3(c, x, 0.0);
-	}else if(1.0 <= hd && hd <= 2.0){
-		rgb = vec3(x, c, 0.0);
-	}else if(2.0 <= hd && hd <= 3.0){
-		rgb = vec3(0.0, c, x);
-	}else if(3.0 <= hd && hd <= 4.0){
-		rgb = vec3(0.0, x, c);
-	}else if(4.0 <= hd && hd <= 5.0){
-		rgb = vec3(x, 0.0, c);
-	}else if(5.0 <= hd && hd <= 6.0){
-		rgb = vec3(c, 0.0, x);
-	}else{
-		rgb = vec3(0.0, 0.0, 0.0);
-	}
-	
-	float m = l - (0.3 * rgb.r + 0.59 * rgb.g + 0.11 * rgb.b);
-	rgb = rgb + m;
-	
-	return rgb;
+	return w;
 }
 
-vec3 combineInHSL(vec3 cMain, vec3 cTarget, float transition){
+vec3 getElevation(){
+	vec4 world = modelMatrix * vec4( position, 1.0 );
+	float w = (world.y - heightMin) / (heightMax-heightMin);
+	vec3 cElevation = texture2D(gradient, vec2(w,1.0-w)).rgb;
 	
-	vec2 xyMain = vec2(
-		(2.0*cMain.r - cMain.g - cMain.b) / 2.0,
-		(sqrt(3.0) / 2.0) * (cMain.g - cMain.b)
-	);
-	vec2 xyTarget = vec2(
-		(2.0*cTarget.r - cTarget.g - cTarget.b) / 2.0,
-		(sqrt(3.0) / 2.0) * (cTarget.g - cTarget.b)
-	);
+	return cElevation;
+}
+
+vec4 getClassification(){
+	float c = mod(classification, 16.0);
+	vec2 uv = vec2(c / 255.0, 0.5);
+	vec4 classColor = texture2D(classificationLUT, uv);
 	
-	vec2 xy = (1.0 - transition) * xyMain + transition * xyTarget;
+	return classColor;
+}
+
+vec3 getReturnNumber(){
+	if(numberOfReturns == 1.0){
+		return vec3(1.0, 1.0, 0.0);
+	}else{
+		if(returnNumber == 1.0){
+			return vec3(1.0, 0.0, 0.0);
+		}else if(returnNumber == numberOfReturns){
+			return vec3(0.0, 0.0, 1.0);
+		}else{
+			return vec3(0.0, 1.0, 0.0);
+		}
+	}
+}
+
+vec3 getSourceID(){
+	float w = mod(pointSourceID, 10.0) / 10.0;
+	return texture2D(gradient, vec2(w,1.0 - w)).rgb;
+}
+
+vec3 getColor(){
+	vec3 c;
+	float w;
+
+	c += wRGB * color;
+	w += wRGB;
 	
-	float h = (atan(-xy.y, -xy.x) + 3.1415) / (2.0 * 3.1415);
-	float c = length(xy);
-	vec3 rgb = (1.0 - transition) * cMain + transition * cTarget;
-	float l = 0.3 * rgb.r + 0.59 * rgb.g + 0.11 * rgb.b;
+	c += wIntensity * getIntensity() * vec3(1.0, 1.0, 1.0);
+	w += wIntensity;
 	
-	return HSLtoRGB(vec3(h, c, l));
+	c += wElevation * getElevation();
+	w += wElevation;
+	
+	c += wReturnNumber * getReturnNumber();
+	w += wReturnNumber;
+	
+	c += wSourceID * getSourceID();
+	w += wSourceID;
+	
+	vec4 cl = wClassification * getClassification();
+    c += cl.a * cl.rgb;
+	w += wClassification * cl.a;
+
+	c = c / w;
+	
+	if(w == 0.0){
+		//c = color;
+		gl_Position = vec4(100.0, 100.0, 100.0, 0.0);
+	}
+	
+	return c;
 }
 
 void main() {
@@ -273,72 +309,54 @@ void main() {
 	// ---------------------
 	// POINT COLOR
 	// ---------------------
+	vec4 cl = getClassification(); 
 	
 	#ifdef color_type_rgb
 		vColor = color;
 	#elif defined color_type_height
-		vec4 world = modelMatrix * vec4( position, 1.0 );
-		float w = (world.y - heightMin) / (heightMax-heightMin);
-		vColor = texture2D(gradient, vec2(w,1.0-w)).rgb;
+		vColor = getElevation();
 	#elif defined color_type_rgb_height
-		vec4 world = modelMatrix * vec4( position, 1.0 );
-		float w = (world.y - heightMin) / (heightMax-heightMin);
-		vec3 cHeight = texture2D(gradient, vec2(w,1.0-w)).rgb;
-		vColor = combineInHSL(color, cHeight, transition);
+		vec3 cHeight = getElevation();
+		vColor = (1.0 - transition) * color + transition * cHeight;
 	#elif defined color_type_depth
 		float linearDepth = -mvPosition.z ;
 		float expDepth = (gl_Position.z / gl_Position.w) * 0.5 + 0.5;
 		vColor = vec3(linearDepth, expDepth, 0.0);
 	#elif defined color_type_intensity
-		float w = (intensity - intensityMin) / (intensityMax - intensityMin);
+		float w = getIntensity();
 		vColor = vec3(w, w, w);
 	#elif defined color_type_intensity_gradient
-		float w = (intensity - intensityMin) / intensityMax;
+		float w = getIntensity();
 		vColor = texture2D(gradient, vec2(w,1.0-w)).rgb;
 	#elif defined color_type_color
 		vColor = uColor;
 	#elif defined color_type_lod
 		float depth = getLOD();
 		float w = depth / 10.0;
-		//float w = mod(depth, 4.0) / 3.0;
 		vColor = texture2D(gradient, vec2(w,1.0-w)).rgb;
 	#elif defined color_type_point_index
 		vColor = indices.rgb;
 	#elif defined color_type_classification
-		float c = mod(classification, 16.0);
-		vec2 uv = vec2(c / 255.0, 0.5);
-		vec4 classColor = texture2D(classificationLUT, uv);
-		vColor = classColor.rgb;
+		vColor = cl.rgb;
 	#elif defined color_type_return_number
-		if(numberOfReturns == 1.0){
-			vColor = vec3(1.0, 1.0, 0.0);
-		}else{
-			if(returnNumber == 1.0){
-				vColor = vec3(1.0, 0.0, 0.0);
-			}else if(returnNumber == numberOfReturns){
-				vColor = vec3(0.0, 0.0, 1.0);
-			}else{
-				vColor = vec3(0.0, 1.0, 0.0);
-			}
-		}
+		vColor = getReturnNumber();
 	#elif defined color_type_source
-		float w = mod(pointSourceID, 10.0) / 10.0;
-		vColor = texture2D(gradient, vec2(w,1.0 - w)).rgb;
+		vColor = getSourceID();
 	#elif defined color_type_normal
 		vColor = (modelMatrix * vec4(normal, 0.0)).xyz;
 	#elif defined color_type_phong
 		vColor = color;
+	#elif defined color_type_composite
+		vColor = getColor();
 	#endif
 	
-	{
-		// TODO might want to combine with the define block above to avoid reading same LUT two times
-		float c = mod(classification, 16.0);
-		vec2 uv = vec2(c / 255.0, 0.5);
-		
-		if(texture2D(classificationLUT, uv).a == 0.0){
+	#if !defined color_type_composite
+		if(cl.a == 0.0){
 			gl_Position = vec4(100.0, 100.0, 100.0, 0.0);
+			
+			return;
 		}
-	}
+	#endif
 	
 	// ---------------------
 	// POINT SIZE
@@ -399,7 +417,4 @@ void main() {
 	
 	#endif
 	
-	#if defined color_type_point_index
-		//gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-	#endif
 }

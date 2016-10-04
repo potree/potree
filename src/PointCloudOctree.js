@@ -556,7 +556,7 @@ Potree.PointCloudOctree.prototype.nodesOnRay = function(nodes, ray){
 		//var inverseWorld = new THREE.Matrix4().getInverse(node.matrixWorld);
 		var sphere = node.getBoundingSphere().clone().applyMatrix4(node.sceneNode.matrixWorld);
 		
-		if(_ray.isIntersectionSphere(sphere)){
+		if(_ray.intersectsSphere(sphere)){
 			nodesOnRay.push(node);
 		}
 	}
@@ -1101,7 +1101,6 @@ Potree.PointCloudOctree.prototype.pick = function(renderer, camera, ray, params)
 		
 	gl.uniformMatrix4fv(uniforms["projectionMatrix"], false, camera.projectionMatrix.elements);
 	gl.uniformMatrix4fv(uniforms["viewMatrix"], false, camera.matrixWorldInverse.elements);
-	//gl.uniform1f(uniforms["clipBoxCount"], 0);
 	
 	{
 		if(glstate.textures.visibleNodes === undefined){
@@ -1129,16 +1128,6 @@ Potree.PointCloudOctree.prototype.pick = function(renderer, camera, ray, params)
 		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, image.width, image.height, 0, gl.RGB, gl.UNSIGNED_BYTE, image.data);
 		
 	}
-	
-	//if(pickMaterial.uniforms.classificationLUT !== this.material.uniforms.classificationLUT){
-	//	pickMaterial.uniforms.classificationLUT = this.material.uniforms.classificationLUT;
-	//	
-	//	var slot = 2;
-	//	gl.uniform1i(uniforms["classificationLUT"], slot);
-	//	gl.activeTexture(gl.TEXTURE0 + slot );
-	//	gl.bindTexture( gl.TEXTURE_2D, textureProperties.__webglTexture );
-	//	
-	//}
 	
 	gl.uniform1f(uniforms["fov"], this.material.fov);
 	gl.uniform1f(uniforms["screenWidth"], this.material.screenWidth);
@@ -1197,24 +1186,8 @@ Potree.PointCloudOctree.prototype.pick = function(renderer, camera, ray, params)
 		
 		gl.uniform1f(uniforms["pcIndex"], pickMaterial.pcIndex);
 
-		//if(node.getNumPoints() === 0){
-		//	console.log("wtf");
-		//}else{
-			gl.drawArrays( gl.POINTS, 0, node.getNumPoints());
-		//}
-		
+		gl.drawArrays( gl.POINTS, 0, node.getNumPoints());		
 	}
-	
-	//{
-	//	var apPosition = gl.getAttribLocation(program, "position");
-	//	var apNormal = gl.getAttribLocation(program, "normal");
-	//	var apClassification = gl.getAttribLocation(program, "classification");
-	//	var apIndices = gl.getAttribLocation(program, "indices");
-	//	//gl.disableVertexAttribArray( apPosition );
-	//	//gl.disableVertexAttribArray( apNormal );
-	//	//gl.disableVertexAttribArray( apClassification );
-	//	//gl.disableVertexAttribArray( apIndices );
-	//}
 	
 	var pixelCount = pickWindowSize * pickWindowSize;
 	var buffer = new ArrayBuffer(pixelCount*4);

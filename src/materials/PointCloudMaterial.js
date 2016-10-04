@@ -37,7 +37,7 @@ Potree.Classification = {
 		8: 			new THREE.Vector4(1.0, 0, 0.0, 1.0),
 		9: 			new THREE.Vector4(0.0, 0.0, 1.0, 1.0),
 		12:			new THREE.Vector4(1.0, 1.0, 0.0, 1.0),
-		"DEFAULT": 	new THREE.Vector4(0.3, 0.6, 0.6, 1.0)
+		"DEFAULT": 	new THREE.Vector4(0.3, 0.6, 0.6, 0.5)
 	}
 };
 
@@ -70,7 +70,8 @@ Potree.PointColorType = {
 	SOURCE: 			10,
 	NORMAL: 			11,
 	PHONG: 				12,
-	RGB_HEIGHT: 		13
+	RGB_HEIGHT: 		13,
+	COMPOSITE: 			50
 };
 
 Potree.ClipMode = {
@@ -158,6 +159,16 @@ Potree.PointCloudMaterial = function(parameters){
 		depthMap: 			{ type: "t", value: null },
 		diffuse:			{ type: "fv", value: [1,1,1]},
 		transition:         { type: "f", value: 0.5 },
+		intensityRange:     { type: "fv", value: [0, 65000] },
+		intensityGamma:     { type: "f", value: 1 },
+		intensityContrast:	{ type: "f", value: 1 },
+		intensityBrightness:{ type: "f", value: 0 },
+		wRGB:				{ type: "f", value: 1 },
+		wIntensity:			{ type: "f", value: 0 },
+		wElevation:			{ type: "f", value: 0 },
+		wClassification:	{ type: "f", value: 0 },
+		wReturnNumber:		{ type: "f", value: 0 },
+		wSourceID:		{ type: "f", value: 0 },
 	};
 	
 	this.defaultAttributeValues.normal = [0,0,0];
@@ -277,6 +288,8 @@ Potree.PointCloudMaterial.prototype.getDefines = function(){
 		defines += "#define color_type_phong\n";
 	}else if(this._pointColorType === Potree.PointColorType.RGB_HEIGHT){
 		defines += "#define color_type_rgb_height\n";
+	}else if(this._pointColorType === Potree.PointColorType.COMPOSITE){
+		defines += "#define color_type_composite\n";
 	}
 	
 	if(this.clipMode === Potree.ClipMode.DISABLED){
@@ -592,6 +605,24 @@ Object.defineProperty(Potree.PointCloudMaterial.prototype, "size", {
 	},
 	set: function(value){
 		this.uniforms.size.value = value;
+	}
+});
+
+Object.defineProperty(Potree.PointCloudMaterial.prototype, "heightMin", {
+	get: function(){
+		return this.uniforms.heightMin.value;
+	},
+	set: function(value){
+		this.uniforms.heightMin.value = value;
+	}
+});
+
+Object.defineProperty(Potree.PointCloudMaterial.prototype, "heightMax", {
+	get: function(){
+		return this.uniforms.heightMax.value;
+	},
+	set: function(value){
+		this.uniforms.heightMax.value = value;
 	}
 });
 

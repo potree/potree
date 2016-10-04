@@ -227,6 +227,15 @@ body{
 	flex-direction: row
 }
 
+.pv-menu-list{
+	list-style-type: none;
+	padding: 0;
+}
+
+.pv-menu-list > *{
+	margin: 8px 20px;
+}
+
 
 .pv-menu-list > li > .ui-slider{
 	background-color: #7A8184 !important;
@@ -234,7 +243,7 @@ body{
 	border: 1px solid black;
 }
 
-.panel-body > li > .ui-slider{
+.pv-menu-list > div > li > .ui-slider{
 	background-color: #7A8184 !important;
 	background: none;
 	border: 1px solid black;
@@ -252,14 +261,26 @@ body{
 	width: 100% !important;
 }
 
+.pv-menu-list .ui-selectmenu-button span.ui-selectmenu-text{
+	line-height: 0.8em;
+}
+
+.panel-body > li > .ui-slider{
+	background-color: #7A8184 !important;
+	background: none;
+	border: 1px solid black;
+}
+
+.panel-body > div > li > .ui-slider{
+	background-color: #7A8184 !important;
+	background: none;
+	border: 1px solid black;
+}
+
 .pv-select-label{
 	margin: 1px;
 	font-size: 90%;
 	font-weight: 100;
-}
-
-.pv-menu-list .ui-selectmenu-button span.ui-selectmenu-text{
-	line-height: 0.8em;
 }
 
 .button-icon:hover{
@@ -296,15 +317,6 @@ body{
 
 .accordion > div{
 	background: none !important;
-}
-	
-.pv-menu-list{
-	list-style-type: none;
-	padding: 0;
-}
-
-.pv-menu-list > li{
-	margin: 8px 20px;
 }
 
 #measurement_details .pv-menu-list > li{

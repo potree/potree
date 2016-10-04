@@ -36,6 +36,17 @@ Potree.Viewer = function(domElement, args){
 	this.heightMin = null;
 	this.heightMax = null;
 	this.materialTransition = 0.5;
+	this.weightRGB = 1.0;
+	this.weightIntensity = 0.0;
+	this.weightElevation = 0.0;
+	this.weightClassification = 0.0;
+	this.weightReturnNumber = 0.0;
+	this.weightSourceID = 0.0;
+	this.intensityRange = [0, 65000];
+	this.intensityGamma = 1;
+	this.intensityContrast = 1;
+	this.intensityBrightness = 0;
+	
 	this.moveSpeed = 10;
 
 	this.showDebugInfos = false;
@@ -284,6 +295,51 @@ Potree.Viewer = function(domElement, args){
 		return {min: scope.heightMin, max: scope.heightMax};
 	};
 	
+	this.setIntensityRange = function(min, max){
+		if(scope.intensityRange[0] !== min || scope.intensityRange[1] !== max){
+			scope.intensityRange[0] = min || scope.intensityRange[0];
+			scope.intensityRange[1] = max || scope.intensityRange[1];
+			scope.dispatchEvent({"type": "intensity_range_changed", "viewer": scope});
+		}
+	};
+	
+	this.getIntensityRange = function(){
+		return scope.intensityRange;
+	};
+	
+	this.setIntensityGamma = function(value){
+		if(scope.intensityGamma !== value){
+			scope.intensityGamma = value;
+			scope.dispatchEvent({"type": "intensity_gamma_changed", "viewer": scope});
+		}
+	};
+	
+	this.getIntensityGamma = function(){
+		return scope.intensityGamma;
+	};
+	
+	this.setIntensityContrast = function(value){
+		if(scope.intensityContrast !== value){
+			scope.intensityContrast = value;
+			scope.dispatchEvent({"type": "intensity_contrast_changed", "viewer": scope});
+		}
+	};
+	
+	this.getIntensityContrast = function(){
+		return scope.intensityContrast;
+	};
+	
+	this.setIntensityBrightness = function(value){
+		if(scope.intensityBrightness !== value){
+			scope.intensityBrightness = value;
+			scope.dispatchEvent({"type": "intensity_brightness_changed", "viewer": scope});
+		}
+	};
+	
+	this.getIntensityBrightness = function(){
+		return scope.intensityBrightness;
+	};
+	
 	this.setMaterialTransition = function(t){
 		if(scope.materialTransition !== t){
 			scope.materialTransition = t;
@@ -293,6 +349,72 @@ Potree.Viewer = function(domElement, args){
 	
 	this.getMaterialTransition = function(){
 		return scope.materialTransition;
+	};
+	
+	this.setWeightRGB = function(w){
+		if(scope.weightRGB !== w){
+			scope.weightRGB = w;
+			scope.dispatchEvent({"type": "attribute_weights_changed", "viewer": scope});
+		}
+	};
+	
+	this.getWeightRGB = function(){
+		return scope.weightRGB;
+	};
+	
+	this.setWeightIntensity = function(w){
+		if(scope.weightIntensity !== w){
+			scope.weightIntensity = w;
+			scope.dispatchEvent({"type": "attribute_weights_changed", "viewer": scope});
+		}
+	};
+	
+	this.getWeightIntensity = function(){
+		return scope.weightIntensity;
+	};
+	
+	this.setWeightElevation = function(w){
+		if(scope.weightElevation !== w){
+			scope.weightElevation = w;
+			scope.dispatchEvent({"type": "attribute_weights_changed", "viewer": scope});
+		}
+	};
+	
+	this.getWeightElevation = function(){
+		return scope.weightElevation;
+	};
+	
+	this.setWeightClassification = function(w){
+		if(scope.weightClassification !== w){
+			scope.weightClassification = w;
+			scope.dispatchEvent({"type": "attribute_weights_changed", "viewer": scope});
+		}
+	};
+	
+	this.getWeightClassification = function(){
+		return scope.weightClassification;
+	};
+	
+	this.setWeightReturnNumber = function(w){
+		if(scope.weightReturnNumber !== w){
+			scope.weightReturnNumber = w;
+			scope.dispatchEvent({"type": "attribute_weights_changed", "viewer": scope});
+		}
+	};
+	
+	this.getWeightReturnNumber = function(){
+		return scope.weightReturnNumber;
+	};
+	
+	this.setWeightSourceID = function(w){
+		if(scope.weightSourceID !== w){
+			scope.weightSourceID = w;
+			scope.dispatchEvent({"type": "attribute_weights_changed", "viewer": scope});
+		}
+	};
+	
+	this.getWeightSourceID = function(){
+		return scope.weightSourceID;
 	};
 	
 	this.setIntensityMax = function(max){
@@ -561,6 +683,8 @@ Potree.Viewer = function(domElement, args){
 			return Potree.PointColorType.PHONG;
 		}else if(materialName === "RGB and Elevation"){
 			return Potree.PointColorType.RGB_HEIGHT;
+		}else if(materialName === "Composite"){
+			return Potree.PointColorType.COMPOSITE;
 		}
 	};
 	
@@ -591,6 +715,8 @@ Potree.Viewer = function(domElement, args){
 			return "Phong";
 		}else if(materialID === Potree.PointColorType.RGB_HEIGHT){
 			return "RGB and Elevation";
+		}else if(materialID === Potree.PointColorType.COMPOSITE){
+			return "Composite";
 		}
 	};
 	
@@ -1330,12 +1456,23 @@ Potree.Viewer = function(domElement, args){
 			pointcloud.material.clipMode = scope.clipMode;
 			pointcloud.material.heightMin = scope.heightMin;
 			pointcloud.material.heightMax = scope.heightMax;
-			pointcloud.material.intensityMin = 0;
-			pointcloud.material.intensityMax = scope.intensityMax;
+			//pointcloud.material.intensityMin = 0;
+			//pointcloud.material.intensityMax = scope.intensityMax;
+			pointcloud.material.uniforms.intensityRange.value = scope.getIntensityRange();
+			pointcloud.material.uniforms.intensityGamma.value = scope.getIntensityGamma();
+			pointcloud.material.uniforms.intensityContrast.value = scope.getIntensityContrast();
+			pointcloud.material.uniforms.intensityBrightness.value = scope.getIntensityBrightness();
 			pointcloud.showBoundingBox = scope.showBoundingBox;
 			pointcloud.generateDEM = scope.useDEMCollisions;
 			pointcloud.minimumNodePixelSize = scope.minNodeSize;
 			pointcloud.material.uniforms.transition.value = scope.materialTransition;
+			
+			pointcloud.material.uniforms.wRGB.value = scope.getWeightRGB();
+			pointcloud.material.uniforms.wIntensity.value = scope.getWeightIntensity();
+			pointcloud.material.uniforms.wElevation.value = scope.getWeightElevation();
+			pointcloud.material.uniforms.wClassification.value = scope.getWeightClassification();
+			pointcloud.material.uniforms.wReturnNumber.value = scope.getWeightReturnNumber();
+			pointcloud.material.uniforms.wSourceID.value = scope.getWeightSourceID();
 			
 			//if(!scope.freeze){
 			//	pointcloud.update(scope.camera, scope.renderer);

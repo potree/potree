@@ -58,7 +58,8 @@
 	height:		100%;
 	overflow-y:	auto;
 	font-size:	85%;
-	
+	overflow: 	hidden;
+	border-right:	1px solid black;
 }
 
 .potree_sidebar_brand{

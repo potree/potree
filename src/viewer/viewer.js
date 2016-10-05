@@ -44,8 +44,11 @@ Potree.Viewer = function(domElement, args){
 	this.weightSourceID = 0.0;
 	this.intensityRange = [0, 65000];
 	this.intensityGamma = 1;
-	this.intensityContrast = 1;
+	this.intensityContrast = 0;
 	this.intensityBrightness = 0;
+	this.rgbGamma = 1;
+	this.rgbContrast = 0;
+	this.rgbBrightness = 0;
 	
 	this.moveSpeed = 10;
 
@@ -338,6 +341,39 @@ Potree.Viewer = function(domElement, args){
 	
 	this.getIntensityBrightness = function(){
 		return scope.intensityBrightness;
+	};
+	
+	this.setRGBGamma = function(value){
+		if(scope.rgbGamma !== value){
+			scope.rgbGamma = value;
+			scope.dispatchEvent({"type": "rgb_gamma_changed", "viewer": scope});
+		}
+	};
+	
+	this.getRGBGamma = function(){
+		return scope.rgbGamma;
+	};
+	
+	this.setRGBContrast = function(value){
+		if(scope.rgbContrast !== value){
+			scope.rgbContrast = value;
+			scope.dispatchEvent({"type": "rgb_contrast_changed", "viewer": scope});
+		}
+	};
+	
+	this.getRGBContrast = function(){
+		return scope.rgbContrast;
+	};
+	
+	this.setRGBBrightness = function(value){
+		if(scope.rgbBrightness !== value){
+			scope.rgbBrightness = value;
+			scope.dispatchEvent({"type": "rgb_brightness_changed", "viewer": scope});
+		}
+	};
+	
+	this.getRGBBrightness = function(){
+		return scope.rgbBrightness;
 	};
 	
 	this.setMaterialTransition = function(t){
@@ -1462,6 +1498,9 @@ Potree.Viewer = function(domElement, args){
 			pointcloud.material.uniforms.intensityGamma.value = scope.getIntensityGamma();
 			pointcloud.material.uniforms.intensityContrast.value = scope.getIntensityContrast();
 			pointcloud.material.uniforms.intensityBrightness.value = scope.getIntensityBrightness();
+			pointcloud.material.uniforms.rgbGamma.value = scope.getRGBGamma();
+			pointcloud.material.uniforms.rgbContrast.value = scope.getRGBContrast();
+			pointcloud.material.uniforms.rgbBrightness.value = scope.getRGBBrightness();
 			pointcloud.showBoundingBox = scope.showBoundingBox;
 			pointcloud.generateDEM = scope.useDEMCollisions;
 			pointcloud.minimumNodePixelSize = scope.minNodeSize;

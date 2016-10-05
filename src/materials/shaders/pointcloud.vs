@@ -54,6 +54,9 @@ uniform vec2 intensityRange;
 uniform float intensityGamma;
 uniform float intensityContrast;
 uniform float intensityBrightness;
+uniform float rgbGamma;
+uniform float rgbContrast;
+uniform float rgbBrightness;
 uniform float transition;
 uniform float wRGB;
 uniform float wIntensity;
@@ -217,11 +220,27 @@ float getPointSizeAttenuation(){
 
 #endif
 
+// formula adapted from: http://www.dfstudios.co.uk/articles/programming/image-programming-algorithms/image-processing-algorithms-part-5-contrast-adjustment/
+float getContrastFactor(float contrast){
+	return (1.0158730158730156 * (contrast + 1.0)) / (1.0158730158730156 - contrast);
+}
+
+vec3 getRGB(){
+	vec3 rgb = color;
+	
+	rgb = pow(rgb, vec3(rgbGamma));
+	rgb = rgb + rgbBrightness;
+	rgb = (rgb - 0.5) * getContrastFactor(rgbContrast) + 0.5;
+	rgb = clamp(rgb, 0.0, 1.0);
+	
+	return rgb;
+}
+
 float getIntensity(){
 	float w = (intensity - intensityRange.x) / (intensityRange.y - intensityRange.x);
 	w = pow(w, intensityGamma);
-	w = (w - 0.5) * intensityContrast + 0.5;
 	w = w + intensityBrightness;
+	w = (w - 0.5) * getContrastFactor(intensityContrast) + 0.5;
 	w = clamp(w, 0.0, 1.0);
 	
 	return w;
@@ -262,11 +281,11 @@ vec3 getSourceID(){
 	return texture2D(gradient, vec2(w,1.0 - w)).rgb;
 }
 
-vec3 getColor(){
+vec3 getCompositeColor(){
 	vec3 c;
 	float w;
 
-	c += wRGB * color;
+	c += wRGB * getRGB();
 	w += wRGB;
 	
 	c += wIntensity * getIntensity() * vec3(1.0, 1.0, 1.0);
@@ -312,12 +331,12 @@ void main() {
 	vec4 cl = getClassification(); 
 	
 	#ifdef color_type_rgb
-		vColor = color;
+		vColor = getRGB();
 	#elif defined color_type_height
 		vColor = getElevation();
 	#elif defined color_type_rgb_height
 		vec3 cHeight = getElevation();
-		vColor = (1.0 - transition) * color + transition * cHeight;
+		vColor = (1.0 - transition) * getRGB() + transition * cHeight;
 	#elif defined color_type_depth
 		float linearDepth = -mvPosition.z ;
 		float expDepth = (gl_Position.z / gl_Position.w) * 0.5 + 0.5;
@@ -347,7 +366,7 @@ void main() {
 	#elif defined color_type_phong
 		vColor = color;
 	#elif defined color_type_composite
-		vColor = getColor();
+		vColor = getCompositeColor();
 	#endif
 	
 	#if !defined color_type_composite

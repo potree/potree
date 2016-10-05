@@ -404,6 +404,42 @@ body{
 
 
 
+.divider {
+    display: 		block;
+    text-align: 	center;
+    overflow: 		hidden;
+    white-space: 	nowrap; 
+	font-weight:	bold;
+	font-size:		90%;
+	letter-spacing:	1px;
+	margin-left:	-20px;
+	margin-right:	-20px;
+}
+
+.divider > span {
+    position: relative;
+    display: inline-block;
+}
+
+.divider > span:before,
+.divider > span:after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 9999px;
+    height: 1px;
+    background: #b2b2b2;
+}
+
+.divider > span:before {
+    right: 100%;
+    margin-right: 5px;
+}
+
+.divider > span:after {
+    left: 100%;
+    margin-left: 5px;
+}
 
 
 

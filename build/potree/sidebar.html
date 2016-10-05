@@ -1,6 +1,8 @@
 
 
-<div class="navmenu navmenu-default navmenu-fixed-left unselectable" style="min-height: 100%; height: 100%; border: 1px solid red">
+<div id="sidebar_root" 
+	class="perfect_scrollbar navmenu navmenu-default navmenu-fixed-left unselectable" 
+	style="position: absolute; min-height: 100%; height: 100%; width: calc(100% - 1px); border-right: 1px solid black !important; overflow: hidden">
 	<span class="potree_sidebar_brand" style="display: flex; flex-direction: row">
 		<a href="http://potree.org" target="_blank">potree.org</a> 
 		<span style="margin: 0px 3px; color: #9AA1A4"> - </span> 
@@ -15,7 +17,7 @@
         <a href="javascript:viewer.setLanguage('fr');">FR</a> - 
         <a href="javascript:viewer.setLanguage('de');">DE</a>
     </div>
-  
+  <div>
   <div id="accordion" class="accordion">
     <h3><span data-i18n="tb.rendering_opt"></span></h3>
     <div>
@@ -46,13 +48,16 @@
 	   
 		<li><label class="menu-item"><input type="checkbox" onClick="viewer.setShowSkybox(this.checked)"/><span data-i18n="appearance.skybox"></span</label></li>
 		
-		<li class="pv-divider"></li>
-		<li class="pv-menu-list-header">Eye-Dome-Lighting</li>
-		
-		<li><label><input type="checkbox" id="chkEDLEnabled" onClick="viewer.setEDLEnabled(this.checked)"/><span data-i18n="appearance.edl_enable"></span></label></li>
-		<li><span data-i18n="appearance.edl_radius"></span>:<span id="lblEDLRadius"></span><div id="sldEDLRadius"></div></li>
-		<li><span data-i18n="appearance.edl_strength"></span>:<span id="lblEDLStrength"></span><div id="sldEDLStrength"></div></li>
-		
+		<div>
+			<div class="divider">
+				<span>Eye-Dome-Lighting</span>
+			</div>
+			
+			<li><label><input type="checkbox" id="chkEDLEnabled" onClick="viewer.setEDLEnabled(this.checked)"/><span data-i18n="appearance.edl_enable"></span></label></li>
+			<li><span data-i18n="appearance.edl_radius"></span>:<span id="lblEDLRadius"></span><div id="sldEDLRadius"></div></li>
+			<li><span data-i18n="appearance.edl_strength"></span>:<span id="lblEDLStrength"></span><div id="sldEDLStrength"></div></li>
+		</div>
+			
 		</ul>
 	   
 	  </div>
@@ -78,12 +83,62 @@
 	  <div>
 		<ul class="pv-menu-list">
 		<li>
-		   <label for="optMaterial" class="pv-select-label"></label><br>
+		   <label for="optMaterial" class="pv-select-label">Attributes:</label><br>
 		   <select id="optMaterial" name="optMaterial">
 		   </select>
 		</li>
 		
-		<li><span data-i18n="appearance.elevation_range"></span>: <span id="lblHeightRange"></span> <div id="sldHeightRange"></div>	</li>
+		<div id="materials.composite_weight_container">
+			<div class="divider">
+				<span>Attribute Weights</span>
+			</div>
+		
+			<li>RGB: <span id="lblWeightRGB"></span> <div id="sldWeightRGB"></div>	</li>
+			<li>Intensity: <span id="lblWeightIntensity"></span> <div id="sldWeightIntensity"></div>	</li>
+			<li>Elevation: <span id="lblWeightElevation"></span> <div id="sldWeightElevation"></div>	</li>
+			<li>Classification: <span id="lblWeightClassification"></span> <div id="sldWeightClassification"></div>	</li>
+			<li>Return Number: <span id="lblWeightReturnNumber"></span> <div id="sldWeightReturnNumber"></div>	</li>
+			<li>Source ID: <span id="lblWeightSourceID"></span> <div id="sldWeightSourceID"></div>	</li>
+		</div>
+		
+		<div id="materials.rgb_container">
+			<div class="divider">
+				<span>RGB</span>
+			</div>
+		
+			<li>Gamma: <span id="lblRGBGamma"></span> <div id="sldRGBGamma"></div>	</li>
+			<li>Brightness: <span id="lblRGBBrightness"></span> <div id="sldRGBBrightness"></div>	</li>
+			<li>Contrast: <span id="lblRGBContrast"></span> <div id="sldRGBContrast"></div>	</li>
+		</div>
+		
+		
+		<div id="materials.elevation_container">
+			<div class="divider">
+				<span>Elevation</span>
+			</div>
+		
+			<li><span data-i18n="appearance.elevation_range"></span>: <span id="lblHeightRange"></span> <div id="sldHeightRange"></div>	</li>
+		</div>
+		
+		<div id="materials.transition_container">
+			<div class="divider">
+				<span>Transition</span>
+			</div>
+		
+			<li>transition: <span id="lblTransition"></span> <div id="sldTransition"></div>	</li>
+		</div>
+		
+		<div id="materials.intensity_container">
+			<div class="divider">
+				<span>Intensity</span>
+			</div>
+		
+			<li>Range: <span id="lblIntensityRange"></span> <div id="sldIntensityRange"></div>	</li>
+			<li>Gamma: <span id="lblIntensityGamma"></span> <div id="sldIntensityGamma"></div>	</li>
+			<li>Brightness: <span id="lblIntensityBrightness"></span> <div id="sldIntensityBrightness"></div>	</li>
+			<li>Contrast: <span id="lblIntensityContrast"></span> <div id="sldIntensityContrast"></div>	</li>
+		</div>
+			
 		
 		</ul>
 		<!--<ul id="materialList" class="pv-menu-list"></ul>-->
@@ -174,7 +229,7 @@
 	  </div>
 	  -->
 	</div>
-
+	</div>
 </div>
 
 
@@ -270,20 +325,140 @@ function initMaterials(){
 			viewer.setHeightRange(local.min, local.max);
 		}
 	});
+	
+	$( "#sldTransition" ).slider({
+		value: viewer.getMaterialTransition(),
+		min: 0,
+		max: 1,
+		step: 0.01,
+		slide: function( event, ui ) {viewer.setMaterialTransition(ui.value);}
+	});
+	
+	$( "#sldIntensityRange" ).slider({
+		range: true,
+		min:	0,
+		max:	1,
+		values: [0, 1],
+		step: 	0.01,
+		slide: function( event, ui ) {
+			let min = (ui.values[0] == 0) ? 0 : parseInt(Math.pow(2, 16 * ui.values[0]));
+			let max = parseInt(Math.pow(2, 16 * ui.values[1]));
+			viewer.setIntensityRange(min, max);
+		}
+	});
+	
+	$( "#sldIntensityGamma" ).slider({
+		value: viewer.getIntensityGamma(),
+		min: 0,
+		max: 4,
+		step: 0.01,
+		slide: function( event, ui ) {viewer.setIntensityGamma(ui.value);}
+	});
+	
+	$( "#sldIntensityContrast" ).slider({
+		value: viewer.getIntensityContrast(),
+		min: -1,
+		max: 1,
+		step: 0.01,
+		slide: function( event, ui ) {viewer.setIntensityContrast(ui.value);}
+	});
+	
+	$( "#sldIntensityBrightness" ).slider({
+		value: viewer.getIntensityBrightness(),
+		min: -1,
+		max: 1,
+		step: 0.01,
+		slide: function( event, ui ) {viewer.setIntensityBrightness(ui.value);}
+	});
+	
+	$( "#sldRGBGamma" ).slider({
+		value: viewer.getRGBGamma(),
+		min: 0,
+		max: 4,
+		step: 0.01,
+		slide: function( event, ui ) {viewer.setRGBGamma(ui.value);}
+	});
+	
+	$( "#sldRGBContrast" ).slider({
+		value: viewer.getRGBContrast(),
+		min: -1,
+		max: 1,
+		step: 0.01,
+		slide: function( event, ui ) {viewer.setRGBContrast(ui.value);}
+	});
+	
+	$( "#sldRGBBrightness" ).slider({
+		value: viewer.getRGBBrightness(),
+		min: -1,
+		max: 1,
+		step: 0.01,
+		slide: function( event, ui ) {viewer.setRGBBrightness(ui.value);}
+	});
+	
+	$( "#sldWeightRGB" ).slider({
+		value: viewer.getWeightRGB(),
+		min: 0,
+		max: 1,
+		step: 0.01,
+		slide: function( event, ui ) {viewer.setWeightRGB(ui.value);}
+	});
+	
+	$( "#sldWeightIntensity" ).slider({
+		value: viewer.getWeightIntensity(),
+		min: 0,
+		max: 1,
+		step: 0.01,
+		slide: function( event, ui ) {viewer.setWeightIntensity(ui.value);}
+	});
+	
+	$( "#sldWeightElevation" ).slider({
+		value: viewer.getWeightElevation(),
+		min: 0,
+		max: 1,
+		step: 0.01,
+		slide: function( event, ui ) {viewer.setWeightElevation(ui.value);}
+	});
+	
+	$( "#sldWeightClassification" ).slider({
+		value: viewer.getWeightClassification(),
+		min: 0,
+		max: 1,
+		step: 0.01,
+		slide: function( event, ui ) {viewer.setWeightClassification(ui.value);}
+	});
+	
+	$( "#sldWeightReturnNumber" ).slider({
+		value: viewer.getWeightReturnNumber(),
+		min: 0,
+		max: 1,
+		step: 0.01,
+		slide: function( event, ui ) {viewer.setWeightReturnNumber(ui.value);}
+	});
+	
+	$( "#sldWeightSourceID" ).slider({
+		value: viewer.getWeightSourceID(),
+		min: 0,
+		max: 1,
+		step: 0.01,
+		slide: function( event, ui ) {viewer.setWeightSourceID(ui.value);}
+	});
 
 	var updateHeightRange = function(){
-		var box = viewer.getBoundingBox();
-		var geoMin = viewer.toGeo(box.min).z;
-		var geoMax = viewer.toGeo(box.max).z;
+		let box = viewer.getBoundingBox();
+		let geoMin = viewer.toGeo(box.min).z;
+		let geoMax = viewer.toGeo(box.max).z;
+		let width = geoMax - geoMin;
+		geoMin = geoMin - 0.2 * width;
+		geoMax = geoMax + 0.2 * width;
 		
-		var hr = viewer.getHeightRange();
-		var hrGeo = {
+		let hr = viewer.getHeightRange();
+		let hrGeo = {
 			min: viewer.toGeo(new THREE.Vector3(0, hr.min, 0)).z,
 			max: viewer.toGeo(new THREE.Vector3(0, hr.max, 0)).z,
 		};
 		
-		var vMin = hr.min ? hrGeo.min : geoMin;
-		var vMax = hr.max ? hrGeo.max : geoMax;
+		let vMin = hr.min ? hrGeo.min : geoMin;
+		let vMax = hr.max ? hrGeo.max : geoMax;
 		
 		$( '#lblHeightRange')[0].innerHTML = hrGeo.min.toFixed(2) + " to " + hrGeo.max.toFixed(2);
 		$( "#sldHeightRange" ).slider({
@@ -293,27 +468,79 @@ function initMaterials(){
 		});
 	};
 	
-	viewer.addEventListener("height_range_changed", function(event){
-		updateHeightRange();
-		var hr = viewer.getHeightRange();
-		var hrGeo = {
-			min: viewer.toGeo(new THREE.Vector3(0, hr.min, 0)).z,
-			max: viewer.toGeo(new THREE.Vector3(0, hr.max, 0)).z,
-		};
+	let updateIntensityRange = function(){
+		let range = viewer.getIntensityRange();
+		let min = Math.log2(range[0]) / 16;
+		let max = Math.log2(range[1]) / 16;
 		
-		$( '#lblHeightRange')[0].innerHTML = hrGeo.min.toFixed(2) + " to " + hrGeo.max.toFixed(2);
-		$( "#sldHeightRange" ).slider({values: [hrGeo.min, hrGeo.max]});
+		$('#lblIntensityRange')[0].innerHTML = 
+			parseInt(viewer.getIntensityRange()[0]) + " to " + 
+			parseInt(viewer.getIntensityRange()[1]);
+		$( "#sldIntensityRange" ).slider({
+			values: [min, max]
+		});
+	};
+	
+	viewer.addEventListener("height_range_changed", updateHeightRange);
+	viewer.addEventListener("intensity_range_changed", updateIntensityRange);
+	
+	viewer.addEventListener("intensity_gamma_changed", function(event){
+		let gamma = viewer.getIntensityGamma();
+		
+		$('#lblIntensityGamma')[0].innerHTML = gamma.toFixed(2);
+		$("#sldIntensityGamma").slider({value: gamma});
+	});
+	
+	viewer.addEventListener("intensity_contrast_changed", function(event){
+		let contrast = viewer.getIntensityContrast();
+		
+		$('#lblIntensityContrast')[0].innerHTML = contrast.toFixed(2);
+		$("#sldIntensityContrast").slider({value: contrast});
+	});
+	
+	viewer.addEventListener("intensity_brightness_changed", function(event){
+		let brightness = viewer.getIntensityBrightness();
+		
+		$('#lblIntensityBrightness')[0].innerHTML = brightness.toFixed(2);
+		$("#sldIntensityBrightness").slider({value: brightness});
+	});
+	
+	viewer.addEventListener("rgb_gamma_changed", function(event){
+		let gamma = viewer.getRGBGamma();
+		
+		$('#lblRGBGamma')[0].innerHTML = gamma.toFixed(2);
+		$("#sldRGBGamma").slider({value: gamma});
+	});
+	
+	viewer.addEventListener("rgb_contrast_changed", function(event){
+		let contrast = viewer.getRGBContrast();
+		
+		$('#lblRGBContrast')[0].innerHTML = contrast.toFixed(2);
+		$("#sldRGBContrast").slider({value: contrast});
+	});
+	
+	viewer.addEventListener("rgb_brightness_changed", function(event){
+		let brightness = viewer.getRGBBrightness();
+		
+		$('#lblRGBBrightness')[0].innerHTML = brightness.toFixed(2);
+		$("#sldRGBBrightness").slider({value: brightness});
 	});
 	
 	viewer.addEventListener("pointcloud_loaded", updateHeightRange);
 	
 	updateHeightRange();
+	updateIntensityRange();
+	$('#lblIntensityGamma')[0].innerHTML = viewer.getIntensityGamma().toFixed(2);
+	$('#lblIntensityContrast')[0].innerHTML = viewer.getIntensityContrast().toFixed(2);
+	$('#lblIntensityBrightness')[0].innerHTML = viewer.getIntensityBrightness().toFixed(2);
 	
-	//var hr = viewer.getHeightRange();
-	//$('#lblHeightRange')[0].innerHTML = hr.min.toFixed(2) + " to " + hr.max.toFixed(2);
+	$('#lblRGBGamma')[0].innerHTML = viewer.getRGBGamma().toFixed(2);
+	$('#lblRGBContrast')[0].innerHTML = viewer.getRGBContrast().toFixed(2);
+	$('#lblRGBBrightness')[0].innerHTML = viewer.getRGBBrightness().toFixed(2);
 
 	var options = [ 
 		"RGB", 
+		"RGB and Elevation",
 		"Color", 
 		"Elevation", 
 		"Intensity", 
@@ -322,7 +549,8 @@ function initMaterials(){
 		"Return Number", 
 		"Source", 
 		"Phong",
-		"Level of Detail"
+		"Level of Detail",
+		"Composite",
 	];
 	
 	var elMaterialList = document.getElementById("optMaterial");
@@ -336,12 +564,56 @@ function initMaterials(){
 		elMaterialList.appendChild(elOption);
 	}
 	
-	$("#optMaterial").val(viewer.getMaterialName()).selectmenu("refresh")
-	$("#optMaterial").selectmenu({
-		change: function(event, ui){
-			viewer.setMaterial(ui.item.value);
+	let updateMaterialPanel = function(event, ui){
+		//viewer.setMaterial(ui.item.value);
+		
+		let selectedValue = $("#optMaterial").selectmenu().val();
+		viewer.setMaterial(selectedValue);
+		
+		let blockWeights = $("#materials\\.composite_weight_container");
+		let blockElevation = $("#materials\\.elevation_container");
+		let blockRGB = $("#materials\\.rgb_container");
+		let blockIntensity = $("#materials\\.intensity_container");
+		let blockTransition = $("#materials\\.transition_container");
+		
+		blockIntensity.css("display", "none");
+		blockElevation.css("display", "none");
+		blockRGB.css("display", "none");
+		blockWeights.css("display", "none");
+		blockTransition.css("display", "none");
+		
+		if(selectedValue === "Composite"){
+			blockWeights.css("display", "block");
+			blockElevation.css("display", "block");
+			blockRGB.css("display", "block");
+			blockIntensity.css("display", "block");
 		}
-	});
+		
+		if(selectedValue === "Elevation"){
+			blockElevation.css("display", "block");
+		}
+		
+		if(selectedValue === "RGB and Elevation"){
+			blockRGB.css("display", "block");
+			blockElevation.css("display", "block");
+		}
+		
+		if(selectedValue === "RGB"){
+			blockRGB.css("display", "block");
+		}
+		
+		if(selectedValue === "Intensity"){
+			blockIntensity.css("display", "block");
+		}
+		
+		if(selectedValue === "Intensity Gradient"){
+			blockIntensity.css("display", "block");
+		}
+	};
+	
+	$("#optMaterial").selectmenu({change: updateMaterialPanel});
+	$("#optMaterial").val(viewer.getMaterialName()).selectmenu("refresh");
+	updateMaterialPanel();
 }
 
 function initClassificationList(){
@@ -1103,6 +1375,9 @@ $(document).ready( function() {
 	initSettings()
 	
 	$('#potree_version_number').html(Potree.version.major + "." + Potree.version.minor + Potree.version.suffix);
+	//$('#potree_sidebar_container').perfectScrollbar();
+	//$('#sidebar_root').perfectScrollbar();
+	$('.perfect_scrollbar').perfectScrollbar();
 	
 });
 

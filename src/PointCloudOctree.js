@@ -1169,6 +1169,11 @@ Potree.PointCloudOctree.prototype.pick = function(renderer, camera, ray, params)
 		let apIndices = gl.getAttribLocation(program, "indices");
 		
 		let positionBuffer = renderer.properties.get(geometry.attributes.position).__webglBuffer;
+		
+		if(positionBuffer === undefined){
+			continue;
+		}
+		
 		gl.bindBuffer( gl.ARRAY_BUFFER, positionBuffer );
 		gl.vertexAttribPointer( apPosition, 3, gl.FLOAT, false, 0, 0 ); 
 		
@@ -1186,7 +1191,10 @@ Potree.PointCloudOctree.prototype.pick = function(renderer, camera, ray, params)
 		
 		gl.uniform1f(uniforms["pcIndex"], pickMaterial.pcIndex);
 
-		gl.drawArrays( gl.POINTS, 0, node.getNumPoints());		
+		let numPoints = node.getNumPoints();
+		if(numPoints > 0){
+			gl.drawArrays( gl.POINTS, 0, node.getNumPoints());		
+		}
 	}
 	
 	var pixelCount = pickWindowSize * pickWindowSize;

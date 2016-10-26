@@ -19,6 +19,12 @@ Potree.workers = {};
 
 Potree.Shaders = {};
 
+Potree.webgl = {
+	shaders: {},
+	vaos: {},
+	vbos: {}
+};
+
 Potree.scriptPath = null;
 if(document.currentScript.src){
 		Potree.scriptPath = new URL(document.currentScript.src + "/..").href;
@@ -293,6 +299,223 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 	
 	return {visibleNodes: visibleNodes, numVisiblePoints: numVisiblePoints};
 };
+
+Potree.Shader = class Shader{
+	constructor(vertexShader, fragmentShader, program, uniforms){
+		this.vertexShader = vertexShader;
+		this.fragmentShader = fragmentShader;
+		this.program = program;
+		this.uniforms = uniforms;
+	}
+};
+
+Potree.VBO = class VBO{
+	constructor(name, id, attribute){
+		this.name = name;
+		this.id = id;
+		this.attribute = attribute;
+	}
+};
+
+Potree.VAO = class VAO{
+	constructor(id, geometry, vbos){
+		this.id = id;
+		this.geometry = geometry;
+		this.vbos = vbos;
+	}
+};
+
+Potree.compileShader = function(gl, vertexShader, fragmentShader){
+	// VERTEX SHADER
+	let vs = gl.createShader(gl.VERTEX_SHADER);
+	{
+		gl.shaderSource(vs, vertexShader);
+		gl.compileShader(vs);
+		
+		let success = gl.getShaderParameter(vs, gl.COMPILE_STATUS);
+		if (!success) {
+			console.error("could not compile vertex shader:");
+			
+			let log = gl.getShaderInfoLog(vs);
+			console.error(log, vertexShader);
+			
+			return;
+		}
+	}
+	
+	// FRAGMENT SHADER
+	let fs = gl.createShader(gl.FRAGMENT_SHADER);
+	{
+		gl.shaderSource(fs, fragmentShader);
+		gl.compileShader(fs);
+		
+		let success = gl.getShaderParameter(fs, gl.COMPILE_STATUS);
+		if (!success) {
+			console.error("could not compile fragment shader:");
+			console.error(fragmentShader);
+			
+			return;
+		}
+	}
+	
+	// PROGRAM
+	var program = gl.createProgram();
+	gl.attachShader(program, vs);
+	gl.attachShader(program, fs);
+	gl.linkProgram(program);
+	var success = gl.getProgramParameter(program, gl.LINK_STATUS);
+	if (!success) {
+		console.error("could not compile shader:");
+		console.error(vertexShader);
+		console.error(fragmentShader);
+			
+		return;
+	}
+	
+	gl.useProgram(program);
+	
+	let uniforms = {};
+	{ // UNIFORMS
+		let n = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
+
+		for(let i = 0; i < n; i++){
+			var uniform = gl.getActiveUniform(program, i);
+			var name = uniform.name;
+			var loc = gl.getUniformLocation(program, name);
+
+			uniforms[name] = loc;
+		}
+	}
+	
+	let shader = new Potree.Shader(vertexShader, fragmentShader, program, uniforms);
+	
+	return shader;
+};
+
+// http://blog.tojicode.com/2012/10/oesvertexarrayobject-extension.html
+Potree.createVAO = function(gl, geometry){
+	if(Potree.vaos[geometry.uuid] ==! undefined){
+		return Potree.vaos[geometry.uuid];
+	}
+	
+	let ext = gl.getExtension("OES_vertex_array_object");
+	let id = ext.createVertexArrayOES();
+	
+	ext.bindVertexArrayOES(id);  
+	
+	let vbos = {};
+	for(let key in geometry.attributes){
+		let attribute = geometry.attributes[key];
+		
+		let type = gl.FLOAT;
+		if(attribute.array instanceof Uint8Array){
+			type = gl.UNSIGNED_BYTE;
+		}else if(attribute.array instanceof Uint16Array){
+			type = gl.UNSIGNED_SHORT;
+		}else if(attribute.array instanceof Uint32Array){
+			type = gl.UNSIGNED_INT;
+		}else if(attribute.array instanceof Int8Array){
+			type = gl.BYTE;
+		}else if(attribute.array instanceof Int16Array){
+			type = gl.SHORT;
+		}else if(attribute.array instanceof Int32Array){
+			type = gl.INT;
+		}else if(attribute.array instanceof Float32Array){
+			type = gl.FLOAT;
+		}
+		
+		let vbo = gl.createBuffer();
+		gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+		gl.bufferData(gl.ARRAY_BUFFER, attribute.array, gl.STATIC_DRAW);
+		//gl.enableVertexAttribArray(attributePointer);
+		//gl.vertexAttribPointer(attributePointer, numElements, type, attribute.normalized, 0, 0);
+		
+		vbos[key] = new Potree.VBO(key, vbo, attribute);
+	}
+	
+	ext.bindVertexArrayOES(null);
+	
+	let vao = new Potree.VAO(id, geometry, vbos);
+	Potree.vaos[geometry.uuid] = vao;
+	
+	return vao;
+};
+
+Potree.renderPointcloud = function(pointcloud, camera, renderer){
+	let gl = renderer.context;
+	let webgl = Potree.webgl;
+	let material = pointcloud.material;
+	
+	if(gl.getExtension("OES_vertex_array_object") === null){
+		console.error("OES_vertex_array_object extension not supported");
+		return;
+	}
+	
+	if(material.needsUpdate){
+		Potree.pointcloudShader = Potree.compileShader(gl,
+			material.vertexShader, material.fragmentShader);
+			
+		material.needsUpdate = false;
+	}
+	
+	let shader = Potree.pointcloudShader;
+	let uniforms = shader.uniforms;
+	
+	gl.useProgram(shader.program);
+	
+	gl.uniformMatrix4fv(uniforms["projectionMatrix"], false, camera.projectionMatrix.elements);
+	gl.uniformMatrix4fv(uniforms["viewMatrix"], false, camera.matrixWorldInverse.elements);
+	gl.uniform1f(uniforms["fov"], this.material.fov);
+	gl.uniform1f(uniforms["screenWidth"], material.screenWidth);
+	gl.uniform1f(uniforms["screenHeight"], material.screenHeight);
+	gl.uniform1f(uniforms["spacing"], material.spacing);
+	gl.uniform1f(uniforms["near"], material.near);
+	gl.uniform1f(uniforms["far"], material.far);
+	gl.uniform1f(uniforms["size"], material.size);
+	gl.uniform1f(uniforms["minSize"], material.minSize);
+	gl.uniform1f(uniforms["maxSize"], material.maxSize);
+	gl.uniform1f(uniforms["octreeSize"], pointcloud.pcoGeometry.boundingBox.getSize().x);
+	
+	{
+		let apPosition = gl.getAttribLocation(program, "position");
+		let apColor = gl.getAttribLocation(program, "color");
+		let apNormal = gl.getAttribLocation(program, "normal");
+		let apClassification = gl.getAttribLocation(program, "classification");
+		let apIndices = gl.getAttribLocation(program, "indices");
+		
+		gl.enableVertexAttribArray(apPosition);
+		gl.enableVertexAttribArray(apColor);
+		gl.enableVertexAttribArray(apNormal);
+		gl.enableVertexAttribArray(apClassification);		
+		gl.enableVertexAttribArray(apIndices);
+	}
+	
+	let nodes = pointcloud.visibleNodes;
+	for(let node of nodes){
+		let object = node.sceneNode;
+		let geometry = object.geometry;
+		
+		
+	}
+	
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -6286,6 +6509,11 @@ Potree.PointCloudOctree.prototype.pick = function(renderer, camera, ray, params)
 		let apIndices = gl.getAttribLocation(program, "indices");
 		
 		let positionBuffer = renderer.properties.get(geometry.attributes.position).__webglBuffer;
+		
+		if(positionBuffer === undefined){
+			continue;
+		}
+		
 		gl.bindBuffer( gl.ARRAY_BUFFER, positionBuffer );
 		gl.vertexAttribPointer( apPosition, 3, gl.FLOAT, false, 0, 0 ); 
 		
@@ -6303,7 +6531,10 @@ Potree.PointCloudOctree.prototype.pick = function(renderer, camera, ray, params)
 		
 		gl.uniform1f(uniforms["pcIndex"], pickMaterial.pcIndex);
 
-		gl.drawArrays( gl.POINTS, 0, node.getNumPoints());		
+		let numPoints = node.getNumPoints();
+		if(numPoints > 0){
+			gl.drawArrays( gl.POINTS, 0, node.getNumPoints());		
+		}
 	}
 	
 	var pixelCount = pickWindowSize * pickWindowSize;
@@ -7357,26 +7588,6 @@ Potree.Features = function(){
 	return {
 		SHADER_INTERPOLATION: {
 			isSupported: function(){
-
-				//if(typeof this.shaderInterpolationSupported === "undefined"){
-				//	var material = new Potree.PointCloudMaterial();
-				//	material.interpolate = true;
-				//
-				//	var vs = gl.createShader(gl.VERTEX_SHADER);
-				//	var fs = gl.createShader(gl.FRAGMENT_SHADER);
-				//	gl.shaderSource(vs, material.vertexShader);
-				//	gl.shaderSource(fs, material.fragmentShader);
-				//
-				//	gl.compileShader(vs);
-				//	gl.compileShader(fs);
-				//
-				//	var successVS = gl.getShaderParameter(vs, gl.COMPILE_STATUS);
-				//	var successFS = gl.getShaderParameter(fs, gl.COMPILE_STATUS);
-				//	this.shaderInterpolationSupported = successVS && successFS;
-				//}
-				//
-				//return this.shaderInterpolationSupported;
-
 
 				var supported = true;
 
@@ -8452,7 +8663,6 @@ Potree.HeightProfile = function(){
 		var sphereMaterial = new THREE.MeshLambertMaterial({
 			shading: THREE.SmoothShading, 
 			color: 0xff0000, 
-			ambient: 0xaaaaaa,
 			depthTest: false, 
 			depthWrite: false}
 		);

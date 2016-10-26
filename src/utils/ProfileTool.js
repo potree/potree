@@ -20,7 +20,6 @@ Potree.HeightProfile = function(){
 		var sphereMaterial = new THREE.MeshLambertMaterial({
 			shading: THREE.SmoothShading, 
 			color: 0xff0000, 
-			ambient: 0xaaaaaa,
 			depthTest: false, 
 			depthWrite: false}
 		);

@@ -9,12 +9,20 @@
 
 	<link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
 	<link rel="stylesheet" type="text/css" href="../libs/jquery-ui-1.11.4/jquery-ui.css">
+	<!--<link rel="stylesheet" type="text/css" href="../libs/jquery.scrollbar/jquery.scrollbar.css">-->
+	<link rel="stylesheet" type="text/css" href="../libs/perfect-scrollbar/css/perfect-scrollbar.css">
 	<link rel="stylesheet" href="../libs/openlayers3/ol.css" type="text/css">
   </head>
 
   <body>
   
-	<script src="../libs/jquery-2.1.4/jquery-2.1.4.min.js"></script>
+	<!--<script src="../libs/jquery-2.1.4/jquery-2.1.4.min.js"></script>-->
+	
+	<script src="https://code.jquery.com/jquery-2.2.4.js" integrity="sha256-iT6Q9iMJYuQiMWNd9lDyBUStIq/8PuOW33aOqmvFpqI=" crossorigin="anonymous"></script>
+	
+	<!--<script src="../libs/other/webgl-debug.js"></script>-->
+	<!--<script src="../libs/jquery.scrollbar/jquery.scrollbar.js"></script>-->
+	<script src="../libs/perfect-scrollbar/js/perfect-scrollbar.jquery.js"></script>
 	<script src="../libs/jquery-ui-1.11.4/jquery-ui.min.js"></script>
 	<script src="../libs/three.js/build/three.js"></script>
 	<script src="../libs/other/stats.min.js"></script>
@@ -107,47 +115,28 @@
 		viewer.setQuality("Squares");
 		viewer.setPointBudget(2*1000*1000);
 		viewer.loadSettingsFromURL();
-		//viewer.setOpacity(0.03);
-		//viewer.setMinNodeSize(100);
+		
+		viewer.setIntensityRange(0, 300);
+		viewer.setWeightClassification(1);
 		
 		viewer.setDescription("");
-
-		viewer.addPointCloud("http://localhost/dev/pointclouds/sitn/2561000_1204500_tilenotok.las_converted/cloud.js", function(){
-			viewer.addPointCloud("http://localhost/dev/pointclouds/sitn/2562000_1205000_tileok.las_converted/cloud.js", function(){});
-		});
+		
 		//viewer.addPointCloud("../pointclouds/vol_total/cloud.js");
-		//viewer.addPointCloud("../pointclouds/lion_takanawa/cloud.js", function(){viewer.camera.position.set(3.65, 5.78, 4.97);});
-		//viewer.addPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/opentopography/CA13_1.4/cloud.js", function(){});
-
-		//viewer.addPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/archpro/heidentor/cloud.js", function(){
-		//viewer.addPointCloud("http://localhost/temp/heidentors/cloud.js", function(){
-		//viewer.addPointCloud("http://localhost/temp/heidentor_0.5/cloud.js", function(){
-		//	viewer.camera.position.set(-14.839513761188028, 6.321919441441905, 0.1305196832697207);
-		//	viewer.controls.target.set(0.25049841791967936, 5.809809694187357, 0.17135421983987403);
-		//
-		//
-		//	viewer.addPointCloud("http://localhost/temp/heidentors/cloud.js", function(){});
-		//	viewer.addPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/archpro/heidentor/cloud.js", function(){});
-		//
-		//	//viewer.addAnnotation(new THREE.Vector3(1.589322547683945, 11.959672040157978, 0.051677529701118934), {
-		//	//	"cameraTarget": new THREE.Vector3(1.589322547683945, 9.959672040157978, 0.051677529701118934),
-		//	//	"cameraPosition": new THREE.Vector3(1.589322547683945, 9.959672040157978, 0.051677529701118934),
-		//	//	"title": "Heidentor",
-		//	//	"description": "Description <b>can include html tags</b>"
-		//	//});
+		//viewer.addPointCloud("../pointclouds/lion_takanawa/cloud.js", function(e){
+		//	viewer.camera.position.set(3.65, 5.78, 4.97);
+		//	e.pointcloud.setName("Lion");
 		//});
-		//viewer.addPointCloud("http://localhost/temp/lion/cloud.js", function(){
-		//	viewer.addAnnotation(new THREE.Vector3(-0.2416434845176889, 5.032372359725956, 0.4891968230895279), {
-		//		"cameraTarget": new THREE.Vector3(-0.2416434845176889, 5.032372359725956, 0.4891968230895279),
-		//		"cameraPosition": new THREE.Vector3(-0.2416434845176889, 5.032372359725956, 0.4891968230895279),
-		//		"title": "Lion",
-		//		"description": "Description <b>can include html tags</b>"
-		//	});
-		//});
+		viewer.addPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/opentopography/CA13_1.4/cloud.js", function(e){
+			e.pointcloud.setName("CA13");
+			viewer.camera.position.set(4032.572341682513, 362.07649293733874, 14037.010422605732);
+			viewer.controls.target = new THREE.Vector3(4487.972917878704, 30.06198819344912, 13877.62507638037);
+		});
 		
 		
 		viewer.loadGUI();
 		
 	</script>
+	
+	
   </body>
 </html>

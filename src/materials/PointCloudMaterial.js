@@ -216,22 +216,22 @@ Potree.PointCloudMaterial.prototype.updateShaderSource = function(){
 	}
 	
 	if(this.opacity === 1.0){
-		blending = THREE.NoBlending;
-		transparent = false;
-		depthTest = true;
-		depthWrite = true;
+		this.blending = THREE.NoBlending;
+		this.transparent = false;
+		this.depthTest = true;
+		this.depthWrite = true;
 	}else{
-		blending = THREE.AdditiveBlending;
-		transparent = true;
-		depthTest = false;
-		depthWrite = true;
+		this.blending = THREE.AdditiveBlending;
+		this.transparent = true;
+		this.depthTest = false;
+		this.depthWrite = true;
 	}
 		
 	if(this.weighted){	
-		blending = THREE.AdditiveBlending;
-		transparent = true;
-		depthTest = true;
-		depthWrite = false;	
+		this.blending = THREE.AdditiveBlending;
+		this.transparent = true;
+		this.depthTest = true;
+		this.depthWrite = false;	
 	}
 		
 	this.needsUpdate = true;

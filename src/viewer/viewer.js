@@ -1712,6 +1712,7 @@ Potree.Viewer = function(domElement, args){
 				
 				var bbWorld = Potree.utils.computeTransformedBoundingBox(pointcloud.boundingBox, pointcloud.matrixWorld);
 				
+				pointcloud.material.useEDL = false;
 				pointcloud.material.size = scope.pointSize;
 				pointcloud.material.minSize = scope.minPointSize;
 				pointcloud.material.maxSize = scope.maxPointSize;

@@ -524,7 +524,7 @@ Potree.PointCloudOctree.prototype.nodeIntersectsProfile = function(node, profile
 		var ray1 = new THREE.Ray(start, new THREE.Vector3().subVectors(end, start).normalize());
 		var ray2 = new THREE.Ray(end, new THREE.Vector3().subVectors(start, end).normalize());
 		
-		if(ray1.isIntersectionSphere(bsWorld) && ray2.isIntersectionSphere(bsWorld)){
+		if(ray1.intersectsSphere(bsWorld) && ray2.intersectsSphere(bsWorld)){
 			return true;
 		}
 	}

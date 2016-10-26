@@ -2483,22 +2483,22 @@ Potree.PointCloudMaterial.prototype.updateShaderSource = function(){
 	}
 	
 	if(this.opacity === 1.0){
-		blending = THREE.NoBlending;
-		transparent = false;
-		depthTest = true;
-		depthWrite = true;
+		this.blending = THREE.NoBlending;
+		this.transparent = false;
+		this.depthTest = true;
+		this.depthWrite = true;
 	}else{
-		blending = THREE.AdditiveBlending;
-		transparent = true;
-		depthTest = false;
-		depthWrite = true;
+		this.blending = THREE.AdditiveBlending;
+		this.transparent = true;
+		this.depthTest = false;
+		this.depthWrite = true;
 	}
 		
 	if(this.weighted){	
-		blending = THREE.AdditiveBlending;
-		transparent = true;
-		depthTest = true;
-		depthWrite = false;	
+		this.blending = THREE.AdditiveBlending;
+		this.transparent = true;
+		this.depthTest = true;
+		this.depthWrite = false;	
 	}
 		
 	this.needsUpdate = true;
@@ -5864,7 +5864,7 @@ Potree.PointCloudOctree.prototype.nodeIntersectsProfile = function(node, profile
 		var ray1 = new THREE.Ray(start, new THREE.Vector3().subVectors(end, start).normalize());
 		var ray2 = new THREE.Ray(end, new THREE.Vector3().subVectors(start, end).normalize());
 		
-		if(ray1.isIntersectionSphere(bsWorld) && ray2.isIntersectionSphere(bsWorld)){
+		if(ray1.intersectsSphere(bsWorld) && ray2.intersectsSphere(bsWorld)){
 			return true;
 		}
 	}
@@ -13195,6 +13195,7 @@ Potree.Viewer = function(domElement, args){
 				
 				var bbWorld = Potree.utils.computeTransformedBoundingBox(pointcloud.boundingBox, pointcloud.matrixWorld);
 				
+				pointcloud.material.useEDL = false;
 				pointcloud.material.size = scope.pointSize;
 				pointcloud.material.minSize = scope.minPointSize;
 				pointcloud.material.maxSize = scope.maxPointSize;
@@ -14110,7 +14111,7 @@ Potree.Viewer.Profile = function(viewer, element){
 		var material = scope.viewer.getMaterial();
 		if (material === Potree.PointColorType.RGB) {
 			//return d.color;
-			return 'rgb(' + (d.color[0] * 100) + '%,' + (d.color[1] * 100) + '%,' + (d.color[2] * 100) + '%)';
+			return 'rgb(' + (d.color[0] * 100 / 255) + '%,' + (d.color[1] * 100 / 255) + '%,' + (d.color[2] * 100 / 255) + '%)';
 		} else if (material === Potree.PointColorType.INTENSITY) {
 			//return d.intensity;
 			return 'rgb(' + d.intensity + '%,' + d.intensity + '%,' + d.intensity + '%)';

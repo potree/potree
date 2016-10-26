@@ -376,7 +376,7 @@ Potree.Viewer.Profile = function(viewer, element){
 		var material = scope.viewer.getMaterial();
 		if (material === Potree.PointColorType.RGB) {
 			//return d.color;
-			return 'rgb(' + (d.color[0] * 100) + '%,' + (d.color[1] * 100) + '%,' + (d.color[2] * 100) + '%)';
+			return 'rgb(' + (d.color[0] * 100 / 255) + '%,' + (d.color[1] * 100 / 255) + '%,' + (d.color[2] * 100 / 255) + '%)';
 		} else if (material === Potree.PointColorType.INTENSITY) {
 			//return d.intensity;
 			return 'rgb(' + d.intensity + '%,' + d.intensity + '%,' + d.intensity + '%)';

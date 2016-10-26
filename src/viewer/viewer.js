@@ -177,7 +177,7 @@ Potree.Viewer = function(domElement, args){
 			
 			scope.dispatchEvent({"type": "pointcloud_loaded", "pointcloud": pointcloud});
 			
-			callback({type: "pointclouad_loaded", pointcloud: pointcloud});
+			callback({type: "pointcloud_loaded", pointcloud: pointcloud});
 		};
 		this.addEventListener("pointcloud_loaded", pointCloudLoadedCallback);
 		

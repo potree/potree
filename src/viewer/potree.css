@@ -266,6 +266,10 @@ body{
 	line-height: 0.8em;
 }
 
+.ui-selectmenu-text{
+	background-color: white;
+}
+
 .panel-body > li > .ui-slider{
 	background-color: #7A8184 !important;
 	background: none;

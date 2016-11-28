@@ -989,13 +989,15 @@ Potree.Viewer = function(domElement, args){
 		var cameraTarget = args.cameraTarget || position;
 		var description = args.description || null;
 		var title = args.title || null;
+		var callback = args.callback || null;
 		
 		var annotation = new Potree.Annotation(scope, {
 			"position": position,
 			"cameraPosition": cameraPosition,
 			"cameraTarget": cameraTarget,
 			"title": title,
-			"description": description
+			"description": description,
+			"callback": callback
 		});
 		
 		scope.annotations.push(annotation);

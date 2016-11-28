@@ -7,21 +7,25 @@
     <meta name="author" content="">
     <title>Potree Viewer</title>
 
-	<link rel="stylesheet" type="text/css" href="../src/viewer/potree.css">
+	<link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
 	<link rel="stylesheet" type="text/css" href="../libs/jquery-ui-1.11.4/jquery-ui.css">
-	<link rel="stylesheet" href="http://openlayers.org/en/v3.11.2/css/ol.css" type="text/css">
+	<link rel="stylesheet" type="text/css" href="../libs/perfect-scrollbar/css/perfect-scrollbar.css">
+	<link rel="stylesheet" href="../libs/openlayers3/ol.css" type="text/css">
   </head>
 
   <body>
   
-	<script src="../libs/jquery-2.1.4/jquery-2.1.4.min.js"></script>
-	<script src="../libs/jquery-ui-1.11.4/jquery-ui.min.js"></script>
-	
+	<script src="../libs/jquery/jquery-3.1.1.min.js"></script>
+	<script src="../libs/perfect-scrollbar/js/perfect-scrollbar.jquery.js"></script>
+	<script src="../libs/jquery-ui/jquery-ui.min.js"></script>
 	<script src="../libs/three.js/build/three.js"></script>
 	<script src="../libs/other/stats.min.js"></script>
 	<script src="../libs/other/BinaryHeap.js"></script>
 	<script src="../libs/tween/tween.min.js"></script>
 	<script src="../libs/d3/d3.js"></script>
+	<script src="../libs/proj4/proj4.js"></script>
+	<script src="../libs/openlayers3/ol.js"></script>
+    <script src="../libs/i18next/i18next.js"></script>
 	
 	<script src="../build/potree/potree.js"></script>
 	
@@ -63,11 +67,6 @@
 	<script src="../libs/plasio/vendor/bluebird.js"></script>
 	<script src="../build/potree/laslaz.js"></script>
 	
-	
-	<script src="http://openlayers.org/en/v3.11.2/build/ol-debug.js"></script>
-	<script src="../libs/proj4/proj4.js"></script>
-	<script src="../src/viewer/map.js"></script>
-
     <div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
 	
 		<div id="potree_render_area">
@@ -100,22 +99,22 @@
 			"onPointCloudLoaded": onPointCloudLoaded
 		});
 		
-		viewer.setEDLEnabled(false);
+		viewer.setEDLEnabled(true);
 		viewer.setPointSize(3);
 		viewer.setMaterial("RGB");
 		viewer.setFOV(60);
 		viewer.setPointSizing("Fixed");
 		viewer.setQuality("Squares");
-		viewer.setPointBudget(1*1000*1000);
+		viewer.setPointBudget(2*1000*1000);
 		//viewer.setOpacity(0.03);
 		viewer.setDescription("Annotations. Useful properties to determine coordinates in browser developer tools: <br>"
 			+ "viewer.camera.position & viewer.orbitControls.target<br>"
 			+ "Annotation positions are given in local scene coordinates. To convert between local and pointcloud coordinates:<br>"
 			+ "viewer.toLocal(pointcloudCoordinate) & viewer.toGeo(localSceneCoordinate)<br>"
 		);
-		//viewer.setMinNodeSize(5);
+		viewer.setMinNodeSize(5);
 
-		viewer.addPointCloud("../resources/pointclouds/lion_takanawa/cloud.js", function(pointcloud){
+		viewer.addPointCloud("../pointclouds/lion_takanawa/cloud.js", function(pointcloud){
 			viewer.addAnnotation(new THREE.Vector3(-0.14, 4.9, 0.25), {
 				"cameraTarget": new THREE.Vector3(0, 2, 0),
 				"cameraPosition": new THREE.Vector3(7.34, 3.24, 6.35),
@@ -125,7 +124,10 @@
 			
 			viewer.addAnnotation(new THREE.Vector3(-0.09, 4.13, 1.5), {
 				"cameraTarget": new THREE.Vector3(-0.09, 3.9, 1),
-				"cameraPosition": new THREE.Vector3(0.74, 4.23, 3)
+				"cameraPosition": new THREE.Vector3(0.74, 4.23, 3),
+				"callback": function(){
+					console.log("test");
+				}
 			});
 			
 			viewer.addAnnotation(new THREE.Vector3(0.46, 2.2, 1.07), {
@@ -136,6 +138,8 @@
 					"<img src='https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Beijing_Forbidden_City_Imperial_Guardian_Lions.jpg/450px-Beijing_Forbidden_City_Imperial_Guardian_Lions.jpg' width='200px'/>" +
 					"</a></center>"
 			});
+			
+			viewer.camera.position.set(3.2, 5.5, 5.4);
 		});
 		
 		viewer.loadGUI();

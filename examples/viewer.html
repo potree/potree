@@ -9,19 +9,15 @@
 
 	<link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
 	<link rel="stylesheet" type="text/css" href="../libs/jquery-ui-1.11.4/jquery-ui.css">
-	<!--<link rel="stylesheet" type="text/css" href="../libs/jquery.scrollbar/jquery.scrollbar.css">-->
 	<link rel="stylesheet" type="text/css" href="../libs/perfect-scrollbar/css/perfect-scrollbar.css">
 	<link rel="stylesheet" href="../libs/openlayers3/ol.css" type="text/css">
   </head>
 
   <body>
   
-	<!--<script src="../libs/jquery-2.1.4/jquery-2.1.4.min.js"></script>-->
-	
-	<script src="https://code.jquery.com/jquery-2.2.4.js" integrity="sha256-iT6Q9iMJYuQiMWNd9lDyBUStIq/8PuOW33aOqmvFpqI=" crossorigin="anonymous"></script>
+	<script src="../libs/jquery/jquery-3.1.1.min.js"></script>
 	
 	<!--<script src="../libs/other/webgl-debug.js"></script>-->
-	<!--<script src="../libs/jquery.scrollbar/jquery.scrollbar.js"></script>-->
 	<script src="../libs/perfect-scrollbar/js/perfect-scrollbar.jquery.js"></script>
 	<script src="../libs/jquery-ui-1.11.4/jquery-ui.min.js"></script>
 	<script src="../libs/three.js/build/three.js"></script>
@@ -32,7 +28,6 @@
 	<script src="../libs/proj4/proj4.js"></script>
 	<script src="../libs/openlayers3/ol.js"></script>
     <script src="../libs/i18next/i18next.js"></script>
-
 	
 	<script src="../build/potree/potree.js"></script>
 	
@@ -121,16 +116,17 @@
 		
 		viewer.setDescription("");
 		
-		//viewer.addPointCloud("../pointclouds/vol_total/cloud.js");
+		viewer.addPointCloud("../pointclouds/vol_total/cloud.js");
 		//viewer.addPointCloud("../pointclouds/lion_takanawa/cloud.js", function(e){
 		//	viewer.camera.position.set(3.65, 5.78, 4.97);
 		//	e.pointcloud.setName("Lion");
 		//});
-		viewer.addPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/opentopography/CA13_1.4/cloud.js", function(e){
-			e.pointcloud.setName("CA13");
-			viewer.camera.position.set(4032.572341682513, 362.07649293733874, 14037.010422605732);
-			viewer.controls.target = new THREE.Vector3(4487.972917878704, 30.06198819344912, 13877.62507638037);
-		});
+		
+		//viewer.addPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/opentopography/CA13_1.4/cloud.js", function(e){
+		//	e.pointcloud.setName("CA13");
+		//	viewer.camera.position.set(4032.572341682513, 362.07649293733874, 14037.010422605732);
+		//	viewer.controls.target = new THREE.Vector3(4487.972917878704, 30.06198819344912, 13877.62507638037);
+		//});
 		
 		
 		viewer.loadGUI();

@@ -14,6 +14,7 @@ Potree.Annotation = function(viewer, args){
 	this.view = args.view || null;
 	this.keepOpen = false;
 	this.descriptionVisible = false;
+	this.callback = args.callback || null;
 	
 	this.domElement = document.createElement("div");
 	this.domElement.style.position = "absolute";
@@ -50,19 +51,7 @@ Potree.Annotation = function(viewer, args){
 	//this.domDescription.style.left = "-100";
 	this.domElement.appendChild(this.domDescription);
 	
-	this.elOrdinal.onmouseenter = function(){
-		
-	};
-	this.elOrdinal.onmouseleave = function(){
-
-	};
-	this.elOrdinal.onclick = function(){
-		scope.moveHere(scope.viewer.camera);
-		scope.dispatchEvent({type: "click", target: scope});
-		if(scope.viewer.geoControls){
-			scope.viewer.geoControls.setTrack(null);
-		}
-	};
+	
 
 	
 	this.elOrdinalText = document.createElement("span");
@@ -70,7 +59,6 @@ Potree.Annotation = function(viewer, args){
 	this.elOrdinalText.style.verticalAlign = "middle";
 	this.elOrdinalText.style.lineHeight = "1.5em";
 	this.elOrdinalText.style.textAlign = "center";
-	//this.elOrdinalText.style.width = "100%";
 	this.elOrdinalText.style.fontFamily = "Arial";
 	this.elOrdinalText.style.fontWeight = "bold";
 	this.elOrdinalText.style.padding = "1px 8px 0px 8px";
@@ -78,6 +66,45 @@ Potree.Annotation = function(viewer, args){
 	this.elOrdinalText.innerHTML = this.ordinal;
 	this.elOrdinalText.userSelect = "none";
 	this.elOrdinal.appendChild(this.elOrdinalText);
+	
+	if(this.callback != null){
+		this.elOrdinalText.style.padding = "1px 3px 0px 8px";
+		
+		let elLink = document.createElement("img");
+		
+		elLink.src = Potree.scriptPath + "/resources/icons/goto.svg";
+		elLink.style.width = "24px";
+		elLink.style.height = "24px";
+		elLink.style.filter = "invert(1)";
+		elLink.style.display = "inline-block";
+		elLink.style.verticalAlign = "middle";
+		elLink.style.lineHeight = "1.5em";
+		elLink.style.textAlign = "center";
+		elLink.style.fontFamily = "Arial";
+		elLink.style.fontWeight = "bold";
+		elLink.style.padding = "1px 3px 0px 3px";
+		elLink.style.cursor = "default";	
+		
+		this.elOrdinal.appendChild(elLink);
+		
+		elLink.onclick = function(){
+			scope.callback();
+		};
+	}
+	
+	this.elOrdinal.onmouseenter = function(){
+		
+	};
+	this.elOrdinal.onmouseleave = function(){
+
+	};
+	this.elOrdinalText.onclick = function(){
+		scope.moveHere(scope.viewer.camera);
+		scope.dispatchEvent({type: "click", target: scope});
+		if(scope.viewer.geoControls){
+			scope.viewer.geoControls.setTrack(null);
+		}
+	};
 	
 	this.elDescriptionText = document.createElement("span");
 	this.elDescriptionText.style.color = "#ffffff";

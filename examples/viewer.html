@@ -15,11 +15,11 @@
 
   <body>
   
-	<script src="../libs/jquery/jquery-3.1.1.min.js"></script>
+	<script src="../libs/jquery/jquery-3.1.1.js"></script>
 	
 	<!--<script src="../libs/other/webgl-debug.js"></script>-->
 	<script src="../libs/perfect-scrollbar/js/perfect-scrollbar.jquery.js"></script>
-	<script src="../libs/jquery-ui-1.11.4/jquery-ui.min.js"></script>
+	<script src="../libs/jquery-ui/jquery-ui.min.js"></script>
 	<script src="../libs/three.js/build/three.js"></script>
 	<script src="../libs/other/stats.min.js"></script>
 	<script src="../libs/other/BinaryHeap.js"></script>
@@ -116,7 +116,9 @@
 		
 		viewer.setDescription("");
 		
-		viewer.addPointCloud("../pointclouds/vol_total/cloud.js");
+		viewer.addPointCloud("../pointclouds/vol_total/cloud.js", function(e){
+			viewer.camera.position.set(589789.45, 761.83, -231420.51);
+		});
 		//viewer.addPointCloud("../pointclouds/lion_takanawa/cloud.js", function(e){
 		//	viewer.camera.position.set(3.65, 5.78, 4.97);
 		//	e.pointcloud.setName("Lion");

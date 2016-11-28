@@ -1305,8 +1305,8 @@ function initSceneList(){
 		})(pointcloud);
 	};
 	
-	for(var i = 0; i < viewer.pointclouds.length; i++){
-		var pointcloud = viewer.pointclouds[i];
+	for(var i = 0; i < viewer.scene.pointclouds.length; i++){
+		var pointcloud = viewer.scene.pointclouds[i];
 		addPointcloud(pointcloud);
 	}
 	

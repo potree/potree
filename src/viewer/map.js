@@ -2,7 +2,7 @@
 // http://epsg.io/
 proj4.defs("UTM10N", "+proj=utm +zone=10 +ellps=GRS80 +datum=NAD83 +units=m +no_defs");
 
-Potree.Viewer.MapView = function(viewer){
+Potree.MapView = function(viewer){
 	var scope = this;
 	
 	this.viewer = viewer;
@@ -275,11 +275,11 @@ Potree.Viewer.MapView = function(viewer){
 		
 		
 		// adding pointclouds to map
-		scope.viewer.addEventListener("pointcloud_loaded", function(event){
+		scope.viewer.dispatcher.addEventListener("pointcloud_loaded", function(event){
 			scope.load(event.pointcloud);
 		});
-		for(var i = 0; i < scope.viewer.pointclouds.length; i++){
-			scope.load(scope.viewer.pointclouds[i]);
+		for(var i = 0; i < scope.viewer.scene.pointclouds.length; i++){
+			scope.load(scope.viewer.scene.pointclouds[i]);
 		}
 		
 		scope.viewer.profileTool.addEventListener("profile_added", scope.updateToolDrawings);

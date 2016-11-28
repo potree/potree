@@ -106,7 +106,6 @@
 		viewer.setPointSizing("Fixed");
 		viewer.setQuality("Squares");
 		viewer.setPointBudget(2*1000*1000);
-		//viewer.setOpacity(0.03);
 		viewer.setDescription("Annotations. Useful properties to determine coordinates in browser developer tools: <br>"
 			+ "viewer.camera.position & viewer.orbitControls.target<br>"
 			+ "Annotation positions are given in local scene coordinates. To convert between local and pointcloud coordinates:<br>"
@@ -125,9 +124,14 @@
 			viewer.addAnnotation(new THREE.Vector3(-0.09, 4.13, 1.5), {
 				"cameraTarget": new THREE.Vector3(-0.09, 3.9, 1),
 				"cameraPosition": new THREE.Vector3(0.74, 4.23, 3),
-				"callback": function(){
-					console.log("test");
-				}
+				"actions": [
+					{
+						"icon": "./resources/icons/goto.svg",
+						"onclick": function(){
+							console.log("goto!!");
+						}
+					}
+				]
 			});
 			
 			viewer.addAnnotation(new THREE.Vector3(0.46, 2.2, 1.07), {

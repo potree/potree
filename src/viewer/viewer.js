@@ -6,8 +6,6 @@ Potree.Viewer = function(domElement, args){
 	
 	this.renderArea = domElement;
 	
-	
-
 	//if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
 	//	defaultSettings.navigation = "Orbit";
 	//}
@@ -87,32 +85,12 @@ Potree.Viewer = function(domElement, args){
 	
 	
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+
 //------------------------------------------------------------------------------------
 // Viewer API 
 //------------------------------------------------------------------------------------
+	
+	
 	
 	this.addPointCloud = function(path, callback){
 		callback = callback || function(){};
@@ -989,7 +967,7 @@ Potree.Viewer = function(domElement, args){
 		var cameraTarget = args.cameraTarget || position;
 		var description = args.description || null;
 		var title = args.title || null;
-		var callback = args.callback || null;
+		var actions = args.actions || null;
 		
 		var annotation = new Potree.Annotation(scope, {
 			"position": position,
@@ -997,7 +975,7 @@ Potree.Viewer = function(domElement, args){
 			"cameraTarget": cameraTarget,
 			"title": title,
 			"description": description,
-			"callback": callback
+			"actions": actions
 		});
 		
 		scope.annotations.push(annotation);

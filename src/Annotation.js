@@ -14,7 +14,7 @@ Potree.Annotation = function(viewer, args){
 	this.view = args.view || null;
 	this.keepOpen = false;
 	this.descriptionVisible = false;
-	this.callback = args.callback || null;
+	this.actions = args.actions || null;
 	
 	this.domElement = document.createElement("div");
 	this.domElement.style.position = "absolute";
@@ -67,29 +67,31 @@ Potree.Annotation = function(viewer, args){
 	this.elOrdinalText.userSelect = "none";
 	this.elOrdinal.appendChild(this.elOrdinalText);
 	
-	if(this.callback != null){
+	if(this.actions != null){
 		this.elOrdinalText.style.padding = "1px 3px 0px 8px";
 		
-		let elLink = document.createElement("img");
+		for(let action of this.actions){
+			let elButton = document.createElement("img");
 		
-		elLink.src = Potree.scriptPath + "/resources/icons/goto.svg";
-		elLink.style.width = "24px";
-		elLink.style.height = "24px";
-		elLink.style.filter = "invert(1)";
-		elLink.style.display = "inline-block";
-		elLink.style.verticalAlign = "middle";
-		elLink.style.lineHeight = "1.5em";
-		elLink.style.textAlign = "center";
-		elLink.style.fontFamily = "Arial";
-		elLink.style.fontWeight = "bold";
-		elLink.style.padding = "1px 3px 0px 3px";
-		elLink.style.cursor = "default";	
-		
-		this.elOrdinal.appendChild(elLink);
-		
-		elLink.onclick = function(){
-			scope.callback();
-		};
+			elButton.src = Potree.scriptPath + action.icon;
+			elButton.style.width = "24px";
+			elButton.style.height = "24px";
+			elButton.style.filter = "invert(1)";
+			elButton.style.display = "inline-block";
+			elButton.style.verticalAlign = "middle";
+			elButton.style.lineHeight = "1.5em";
+			elButton.style.textAlign = "center";
+			elButton.style.fontFamily = "Arial";
+			elButton.style.fontWeight = "bold";
+			elButton.style.padding = "1px 3px 0px 3px";
+			elButton.style.cursor = "default";	
+			
+			this.elOrdinal.appendChild(elButton);
+			
+			elButton.onclick = function(){
+				action.onclick();
+			};
+		}
 	}
 	
 	this.elOrdinal.onmouseenter = function(){

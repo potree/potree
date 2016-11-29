@@ -1,5 +1,4 @@
 
-
 <div id="sidebar_root" 
 	class="perfect_scrollbar navmenu navmenu-default navmenu-fixed-left unselectable" 
 	style="position: absolute; min-height: 100%; height: 100%; width: calc(100% - 1px); border-right: 1px solid black !important; overflow: hidden">
@@ -212,26 +211,9 @@
 		
 		</ul>
 	  </div>
-	  <!--
-	  <h3>Help</h3>
-	  <div>
-		<p>
-		Cras dictum. Pellentesque habitant morbi tristique senectus et netus
-		et malesuada fames ac turpis egestas. Vestibulum ante ipsum primis in
-		faucibus orci luctus et ultrices posuere cubilia Curae; Aenean lacinia
-		mauris vel est.
-		</p>
-		<p>
-		Suspendisse eu nisl. Nullam ut libero. Integer dignissim consequat lectus.
-		Class aptent taciti sociosqu ad litora torquent per conubia nostra, per
-		inceptos himenaeos.
-		</p>
-	  </div>
-	  -->
 	</div>
 	</div>
 </div>
-
 
 <script>
 
@@ -672,6 +654,9 @@ function initAccordion(){
             return false; // Cancels the default action
         }
     });
+	
+	$("#accordion").accordion({ active: 2});
+	$("#accordion").accordion({ active: 3});
 }
 
 function initAppearance(){
@@ -1364,21 +1349,12 @@ $(document).ready( function() {
 	initSettings()
 	
 	$('#potree_version_number').html(Potree.version.major + "." + Potree.version.minor + Potree.version.suffix);
-	//$('#potree_sidebar_container').perfectScrollbar();
-	//$('#sidebar_root').perfectScrollbar();
 	$('.perfect_scrollbar').perfectScrollbar();
 	
 });
 
 
 
-
-
-
-
-
-
-
-
 	
 </script>
+

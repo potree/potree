@@ -11646,7 +11646,7 @@ Potree.Viewer = class{
 		this.dispatcher.addEventListener(type, callback);
 	}
 	
-	addPointCloud(path, callback){
+	addPointCloud(path, name, callback){
 		callback = callback || function(){};
 		var initPointcloud = function(pointcloud){
 			
@@ -11718,6 +11718,7 @@ Potree.Viewer = class{
 					callback({type: "loading_failed"});
 				}else{
 					let pointcloud = new Potree.PointCloudOctree(geometry);
+                    pointcloud.name = name;
 					initPointcloud(pointcloud);				
 				}
 			}.bind(this));
@@ -11727,6 +11728,7 @@ Potree.Viewer = class{
 					callback({type: "loading_failed"});
 				}else{
 					let pointcloud = new Potree.PointCloudArena4D(geometry);
+                    pointcloud.name = name;
 					initPointcloud(pointcloud);
 				}
 			});
@@ -12697,7 +12699,6 @@ Potree.Viewer = class{
     setLanguage(lang){
         i18n.setLng(lang);
         $("body").i18n();
-        console.log("ici");
     }
 
 	createControls(){
@@ -12868,8 +12869,9 @@ Potree.Viewer = class{
 		this.renderer.autoClear = false;
 		this.renderArea.appendChild(this.renderer.domElement);
 		this.renderer.domElement.tabIndex = "2222";
-		this.renderer.domElement.addEventListener("mousedown", 
-			function(){this.renderer.domElement.focus();}.bind(this));
+		this.renderer.domElement.addEventListener("mousedown", function(){
+			this.renderer.domElement.focus();
+		}.bind(this));
 		
 		this.skybox = Potree.utils.loadSkybox(new URL(Potree.resourcePath + "/textures/skybox/").href);
 
@@ -13690,6 +13692,7 @@ class EDLRenderer{
 	}
 };
 
+
 Potree.Viewer.Profile = function(viewer, element){
 	var scope = this;
 
@@ -13702,8 +13705,7 @@ Potree.Viewer.Profile = function(viewer, element){
 	this.margin = {top: 0, right: 0, bottom: 20, left: 40};
 	this.maximized = false;
 	this.threshold = 20*1000;
-	
-	
+
 	$('#closeProfileContainer').click(function(){
 		scope.hide();
 		scope.enabled = false;
@@ -13842,14 +13844,12 @@ Potree.Viewer.Profile = function(viewer, element){
 			// user data
 			// point source id
 			view.setUint16(boffset + 18, point.pointSourceID);
-			
 			view.setUint16(boffset + 20, (point.color[0] * 255), true);
 			view.setUint16(boffset + 22, (point.color[1] * 255), true);
 			view.setUint16(boffset + 24, (point.color[2] * 255), true);
 			
 			boffset += 28;
 		}
-		
 		
 		// max x 179 8
 		view.setFloat64(179, boundingBox.max.x, true);
@@ -14395,6 +14395,7 @@ Potree.Viewer.Profile = function(viewer, element){
 	viewer.addEventListener("material_changed", function(){
 		drawOnChange({profile: scope.currentProfile});
 	});
+
 	viewer.addEventListener("height_range_changed", function(){
 		drawOnChange({profile: scope.currentProfile});
 	});
@@ -14403,21 +14404,19 @@ Potree.Viewer.Profile = function(viewer, element){
 	var height = document.getElementById('profile_window').clientHeight;
 	function resizeLoop(){
 		requestAnimationFrame(resizeLoop);
-			
+
 		var newWidth = document.getElementById('profile_window').clientWidth;
 		var newHeight = document.getElementById('profile_window').clientHeight;
-		
+
 		if(newWidth !== width || newHeight !== height){
 			setTimeout(drawOnChange, 50, {profile: scope.currentProfile});
 		}
-		
+
 		width = newWidth;
 		height = newHeight;
 	};
 	requestAnimationFrame(resizeLoop);
-	
-	
-	
+
 };
 
 // http://epsg.io/

@@ -6887,7 +6887,7 @@
 
 			gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, elementBuffer );
 
-			gl.uniformMatrix4fv( uniforms.projectionMatrix, false, camera.projectionMatrix.elements );
+			gl.uniformMatrix4fv( uniforms.projectionMatrix, false, new Float32Array( camera.projectionMatrix.elements ) );
 
 			state.activeTexture( gl.TEXTURE0 );
 			gl.uniform1i( uniforms.map, 0 );
@@ -6953,7 +6953,7 @@
 				if ( material.visible === false ) continue;
 
 				gl.uniform1f( uniforms.alphaTest, material.alphaTest );
-				gl.uniformMatrix4fv( uniforms.modelViewMatrix, false, sprite.modelViewMatrix.elements );
+				gl.uniformMatrix4fv( uniforms.modelViewMatrix, false, new Float32Array( sprite.modelViewMatrix.elements ) );
 
 				sprite.matrixWorld.decompose( spritePosition, spriteRotation, spriteScale );
 

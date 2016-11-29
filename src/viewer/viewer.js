@@ -225,19 +225,19 @@ Potree.Viewer = class{
 		}
 	};
 	
-	toLocal(position){
-		var scenePos = position.clone().applyMatrix4(this.scene.referenceFrame.matrixWorld);
-			
-		return scenePos;
-	};
-	
-	
-	toGeo(position){
-		var inverse = new THREE.Matrix4().getInverse(this.scene.referenceFrame.matrixWorld);
-		var geoPos = position.clone().applyMatrix4(inverse);
-
-		return geoPos;
-	};
+	//toLocal(position){
+	//	var scenePos = position.clone().applyMatrix4(this.scene.referenceFrame.matrixWorld);
+	//		
+	//	return scenePos;
+	//};
+	//
+	//
+	//toGeo(position){
+	//	var inverse = new THREE.Matrix4().getInverse(this.scene.referenceFrame.matrixWorld);
+	//	var geoPos = position.clone().applyMatrix4(inverse);
+    //
+	//	return geoPos;
+	//};
 
 	getMinNodeSize(){
 		return this.minNodeSize;
@@ -310,6 +310,10 @@ Potree.Viewer = class{
 	
 	getHeightRange(){
 		return {min: this.heightMin, max: this.heightMax};
+	};
+	
+	getElevationRange(){
+		return getHeightRange();
 	};
 	
 	setIntensityRange(min, max){
@@ -808,7 +812,6 @@ Potree.Viewer = class{
 			
 			pointcloud.updateMatrixWorld(true);
 			
-			//var boxWorld = pointcloud.boundingBox.clone().applyMatrix4(pointcloud.matrixWorld);
 			var boxWorld = Potree.utils.computeTransformedBoundingBox(pointcloud.boundingBox, pointcloud.matrixWorld)
 			box.union(boxWorld);
 		}
@@ -1223,7 +1226,7 @@ Potree.Viewer = class{
 			this.fpControls.enabled = false;
 			this.fpControls.addEventListener("start", this.disableAnnotations.bind(this));
 			this.fpControls.addEventListener("end", this.enableAnnotations.bind(this));
-			this.fpControls.addEventListener("proposeTransform", demCollisionHandler);
+			this.fpControls.addEventListener("proposeTransform", demCollisionHandler.bind(this));
 			this.fpControls.addEventListener("move_speed_changed", function(event){
 				this.setMoveSpeed(this.fpControls.moveSpeed);
 			}.bind(this));
@@ -1265,7 +1268,7 @@ Potree.Viewer = class{
 				var I = null;
 				
 				for(var i = 0; i < this.scene.pointclouds.length; i++){
-					intersection = getMousePointCloudIntersection(mouse, this.camera, this.renderer, [this.scene.pointclouds[i]]);
+					let intersection = getMousePointCloudIntersection(mouse, this.camera, this.renderer, [this.scene.pointclouds[i]]);
 					if(!intersection){
 						continue;
 					}
@@ -1321,18 +1324,18 @@ Potree.Viewer = class{
 						this.controls.enabled = true;
 						this.fpControls.moveSpeed = radius / 2;
 						this.geoControls.moveSpeed = radius / 2;
-					});
+					}.bind(this));
 					tween.start();
 				}
-			});
+			}.bind(this));
 		}
 		
 		{ // create EARTH CONTROLS
 			this.earthControls = new THREE.EarthControls(this.camera, this.renderer, this.scene.scenePointCloud);
 			this.earthControls.enabled = false;
-			this.earthControls.addEventListener("start", this.disableAnnotations);
-			this.earthControls.addEventListener("end", this.enableAnnotations);
-			this.earthControls.addEventListener("proposeTransform", demCollisionHandler);
+			this.earthControls.addEventListener("start", this.disableAnnotations.bind(this));
+			this.earthControls.addEventListener("end", this.enableAnnotations.bind(this));
+			this.earthControls.addEventListener("proposeTransform", demCollisionHandler.bind(this));
 		}
 	};
 	
@@ -1367,60 +1370,16 @@ Potree.Viewer = class{
 		
 		this.createControls();
 		
-		//this.useEarthControls();
-		
 		// enable frag_depth extension for the interpolation shader, if available
 		this.renderer.context.getExtension("EXT_frag_depth");
-		
-		//this.addPointCloud(pointcloudPath);
 		
 		let grid = Potree.utils.createGrid(5, 5, 2);
 		this.scene.scene.add(grid);
 		
-		this.measuringTool = new Potree.MeasuringTool(this.scene.scenePointCloud, this.camera, this.renderer, this.toGeo);
+		this.measuringTool = new Potree.MeasuringTool(this.scene.scenePointCloud, this.camera, this.renderer);
 		this.profileTool = new Potree.ProfileTool(this.scene.scenePointCloud, this.camera, this.renderer);
 		this.transformationTool = new Potree.TransformationTool(this.scene.scenePointCloud, this.camera, this.renderer);
 		this.volumeTool = new Potree.VolumeTool(this.scene.scenePointCloud, this.camera, this.renderer, this.transformationTool);
-		
-		this.profileTool.addEventListener("profile_added", function(profileEvent){
-		
-			//var poSelect = document.getElementById("profile_selection");
-			//var po = document.createElement("option");
-			//po.innerHTML = "profile " + this.profileTool.profiles.length;
-			//poSelect.appendChild(po);
-			
-		
-			var profileButton = document.createElement("button");
-			profileButton.type = "button";
-			profileButton.classList.add("btn");
-			profileButton.classList.add("btn-primary");
-			profileButton.id = "btn_rofile_" + this.profileTool.profiles.length;
-			//profileButton.style.width = "100%";
-			profileButton.value = "profile " + this.profileTool.profiles.length;
-			profileButton.innerHTML = "profile " + this.profileTool.profiles.length;
-			
-			//type="button" class="btn btn-primary"
-			
-			profileButton.onclick = function(clickEvent){
-				this.profileTool.draw(
-					profileEvent.profile, 
-					$("#profile_draw_container")[0], 
-					this.toGeo);
-				profileEvent.profile.addEventListener("marker_moved", function(){
-					this.profileTool.draw(
-					profileEvent.profile, 
-					$("#profile_draw_container")[0], 
-					this.toGeo);
-				});
-				profileEvent.profile.addEventListener("width_changed", function(){
-					this.profileTool.draw(
-					profileEvent.profile, 
-					$("#profile_draw_container")[0], 
-					this.toGeo);
-				});
-			};
-		});
-		
 		
 		// background
 		// var texture = THREE.ImageUtils.loadTexture( Potree.resourcePath + '/textures/background.gif' );
@@ -1435,7 +1394,6 @@ Potree.Viewer = class{
 				map: texture
 			})
 		);
-		//bg.position.z = -1;
 		bg.material.depthTest = false;
 		bg.material.depthWrite = false;
 		this.scene.sceneBG.add(bg);			
@@ -1445,18 +1403,15 @@ Potree.Viewer = class{
 			
 			if(event.keyCode === 69){
 				// e pressed
-				
 				this.transformationTool.translate();
 			}else if(event.keyCode === 82){
 				// r pressed
-				
 				this.transformationTool.scale();
 			}else if(event.keyCode === 84){
-				// r pressed
-				
+				// t pressed
 				this.transformationTool.rotate();
 			}
-		};
+		}.bind(this);
 		
 		window.addEventListener( 'keydown', onKeyDown, false );
 		

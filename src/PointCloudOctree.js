@@ -1099,8 +1099,8 @@ Potree.PointCloudOctree.prototype.pick = function(renderer, camera, ray, params)
 	let uniforms = glstate.uniforms;
 	gl.useProgram(program);
 		
-	gl.uniformMatrix4fv(uniforms["projectionMatrix"], false, camera.projectionMatrix.elements);
-	gl.uniformMatrix4fv(uniforms["viewMatrix"], false, camera.matrixWorldInverse.elements);
+	gl.uniformMatrix4fv(uniforms["projectionMatrix"], false, new Float32Array(camera.projectionMatrix.elements));
+	gl.uniformMatrix4fv(uniforms["viewMatrix"], false, new Float32Array(camera.matrixWorldInverse.elements));
 	
 	{
 		if(glstate.textures.visibleNodes === undefined){
@@ -1160,8 +1160,8 @@ Potree.PointCloudOctree.prototype.pick = function(renderer, camera, ray, params)
 		pickMaterial.pcIndex = i + 1;
 		
 		let modelView = new THREE.Matrix4().multiplyMatrices(camera.matrixWorldInverse, object.matrixWorld);
-		gl.uniformMatrix4fv(uniforms["modelMatrix"], false, object.matrixWorld.elements);
-		gl.uniformMatrix4fv(uniforms["modelViewMatrix"], false, modelView.elements);
+		gl.uniformMatrix4fv(uniforms["modelMatrix"], false, new Float32Array(object.matrixWorld.elements));
+		gl.uniformMatrix4fv(uniforms["modelViewMatrix"], false, new Float32Array(modelView.elements));
 		
 		let apPosition = gl.getAttribLocation(program, "position");
 		let apNormal = gl.getAttribLocation(program, "normal");

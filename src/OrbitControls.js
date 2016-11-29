@@ -258,10 +258,6 @@ Potree.OrbitControls = function ( object, domElement ) {
 		
 		theta += progression * thetaDelta;
 		phi +=  progression * phiDelta;
-		
-		if(oldTheta !== theta){
-			console.log(theta);
-		}
 
 		// restrict phi to be between desired limits
 		phi = Math.max( this.minPolarAngle, Math.min( this.maxPolarAngle, phi ) );

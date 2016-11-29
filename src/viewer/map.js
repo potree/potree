@@ -340,8 +340,7 @@ Potree.MapView = function(viewer){
 			
 			for(var j = 0; j < profile.points.length; j++){
 				var point = profile.points[j];
-				var pointGeo = scope.viewer.toGeo(point);
-				var pointMap = scope.toMap.forward([pointGeo.x, pointGeo.y]);
+				var pointMap = scope.toMap.forward([point.x, point.y]);
 				coordinates.push(pointMap);
 			}
 			
@@ -357,8 +356,7 @@ Potree.MapView = function(viewer){
 			
 			for(var j = 0; j < measurement.points.length; j++){
 				var point = measurement.points[j].position;
-				var pointGeo = scope.viewer.toGeo(point);
-				var pointMap = scope.toMap.forward([pointGeo.x, pointGeo.y]);
+				var pointMap = scope.toMap.forward([point.x, point.y]);
 				coordinates.push(pointMap);
 			}
 			
@@ -499,8 +497,8 @@ Potree.MapView = function(viewer){
 		var campos = camera.position;
 		var camdir = camera.getWorldDirection();
 		var sceneLookAt = camdir.clone().multiplyScalar(30 * scale).add(campos);
-		var geoPos = scope.viewer.toGeo(camera.position);
-		var geoLookAt = scope.viewer.toGeo(sceneLookAt);
+		var geoPos = camera.position;
+		var geoLookAt = sceneLookAt;
 		var mapPos = new THREE.Vector2().fromArray(scope.toMap.forward([geoPos.x, geoPos.y]));
 		var mapLookAt = new THREE.Vector2().fromArray(scope.toMap.forward([geoLookAt.x, geoLookAt.y]));
 		var mapDir = new THREE.Vector2().subVectors(mapLookAt, mapPos).normalize();

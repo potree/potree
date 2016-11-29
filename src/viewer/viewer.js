@@ -136,7 +136,7 @@ Potree.Viewer = class{
 		this.dispatcher.addEventListener(type, callback);
 	}
 	
-	addPointCloud(path, callback){
+	addPointCloud(path, name, callback){
 		callback = callback || function(){};
 		var initPointcloud = function(pointcloud){
 			
@@ -208,6 +208,7 @@ Potree.Viewer = class{
 					callback({type: "loading_failed"});
 				}else{
 					let pointcloud = new Potree.PointCloudOctree(geometry);
+                    pointcloud.name = name;
 					initPointcloud(pointcloud);				
 				}
 			}.bind(this));
@@ -217,6 +218,7 @@ Potree.Viewer = class{
 					callback({type: "loading_failed"});
 				}else{
 					let pointcloud = new Potree.PointCloudArena4D(geometry);
+                    pointcloud.name = name;
 					initPointcloud(pointcloud);
 				}
 			});
@@ -1187,7 +1189,6 @@ Potree.Viewer = class{
     setLanguage(lang){
         i18n.setLng(lang);
         $("body").i18n();
-        console.log("ici");
     }
 
 	createControls(){
@@ -1358,8 +1359,9 @@ Potree.Viewer = class{
 		this.renderer.autoClear = false;
 		this.renderArea.appendChild(this.renderer.domElement);
 		this.renderer.domElement.tabIndex = "2222";
-		this.renderer.domElement.addEventListener("mousedown", 
-			function(){this.renderer.domElement.focus();}.bind(this));
+		this.renderer.domElement.addEventListener("mousedown", function(){
+			this.renderer.domElement.focus();
+		}.bind(this));
 		
 		this.skybox = Potree.utils.loadSkybox(new URL(Potree.resourcePath + "/textures/skybox/").href);
 

@@ -318,11 +318,7 @@ function initMaterials(){
 		values: [0, 1000],
 		step: 	0.01,
 		slide: function( event, ui ) {
-			var local = {
-				min: viewer.toLocal(new THREE.Vector3(0, 0, ui.values[0])).y,
-				max: viewer.toLocal(new THREE.Vector3(0, 0, ui.values[1])).y,
-			};
-			viewer.setHeightRange(local.min, local.max);
+			viewer.setHeightRange(ui.values[0], ui.values[1]);
 		}
 	});
 	
@@ -445,26 +441,18 @@ function initMaterials(){
 
 	var updateHeightRange = function(){
 		let box = viewer.getBoundingBox();
-		let geoMin = viewer.toGeo(box.min).z;
-		let geoMax = viewer.toGeo(box.max).z;
-		let width = geoMax - geoMin;
-		geoMin = geoMin - 0.2 * width;
-		geoMax = geoMax + 0.2 * width;
+		let bWidth = box.max.y - box.min.y;
+		bMin = box.min.y - 0.2 * bWidth;
+		bMax = box.max.y + 0.2 * bWidth;
 		
 		let hr = viewer.getHeightRange();
-		let hrGeo = {
-			min: viewer.toGeo(new THREE.Vector3(0, hr.min, 0)).z,
-			max: viewer.toGeo(new THREE.Vector3(0, hr.max, 0)).z,
-		};
+		let hrWidth = hr.max - hr.min;
 		
-		let vMin = hr.min ? hrGeo.min : geoMin;
-		let vMax = hr.max ? hrGeo.max : geoMax;
-		
-		$( '#lblHeightRange')[0].innerHTML = hrGeo.min.toFixed(2) + " to " + hrGeo.max.toFixed(2);
+		$( '#lblHeightRange')[0].innerHTML = hr.min.toFixed(2) + " to " + hr.max.toFixed(2);
 		$( "#sldHeightRange" ).slider({
-			min: geoMin,
-			max: geoMax,
-			values: [vMin, vMax]
+			min: bMin,
+			max: bMax,
+			values: [hr.min, hr.max]
 		});
 	};
 	
@@ -1024,12 +1012,13 @@ function initMeasurementDetails(){
 			}
 			
 			for(var i = 0; i < positions.length; i++){
+				// TODO clean this up from the toGeo legacy
 				var point = positions[i];
-				var geoCoord = viewer.toGeo(point);
+				var geoCoord = point;
 	
 				var txt = geoCoord.x.toFixed(2) + ", ";
-				txt += geoCoord.y.toFixed(2) + ", ";
-				txt += geoCoord.z.toFixed(2);
+				txt += (-geoCoord.z).toFixed(2) + ", ";
+				txt += geoCoord.y.toFixed(2);
 				
 				var elNodeMarker = $('<div>').addClass("measurement-detail-node-marker");
 				elNodeMarker.html(txt);
@@ -1043,7 +1032,7 @@ function initMeasurementDetails(){
 						$(elPanelBody).append(elEdge);
 						
 						var nextPoint = positions[i+1];
-						var nextGeo = viewer.toGeo(nextPoint);
+						var nextGeo = nextPoint;
 						var distance = nextGeo.distanceTo(geoCoord);
 						var txt = Potree.utils.addCommas(distance.toFixed(2));
 						
@@ -1305,8 +1294,8 @@ function initSceneList(){
 		})(pointcloud);
 	};
 	
-	for(var i = 0; i < viewer.pointclouds.length; i++){
-		var pointcloud = viewer.pointclouds[i];
+	for(var i = 0; i < viewer.scene.pointclouds.length; i++){
+		var pointcloud = viewer.scene.pointclouds[i];
 		addPointcloud(pointcloud);
 	}
 	
@@ -1375,19 +1364,9 @@ $(document).ready( function() {
 	initSettings()
 	
 	$('#potree_version_number').html(Potree.version.major + "." + Potree.version.minor + Potree.version.suffix);
-	//$('#potree_sidebar_container').perfectScrollbar();
-	//$('#sidebar_root').perfectScrollbar();
 	$('.perfect_scrollbar').perfectScrollbar();
 	
 });
-
-
-
-
-
-
-
-
 
 
 

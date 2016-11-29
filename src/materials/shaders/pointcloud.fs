@@ -31,7 +31,6 @@ varying float	vLinearDepth;
 varying float	vLogDepth;
 varying vec3	vViewPosition;
 varying float	vRadius;
-varying vec3	vWorldPosition;
 varying vec3	vNormal;
 
 float specularStrength = 1.0;
@@ -204,7 +203,7 @@ void main() {
 	
 	#if defined use_interpolation
 		float wi = 0.0 - ( u*u + v*v);
-		vec4 pos = vec4(-vViewPosition, 1.0);
+		vec4 pos = vec4(vViewPosition, 1.0);
 		pos.z += wi * vRadius;
 		float linearDepth = -pos.z;
 		pos = projectionMatrix * pos;

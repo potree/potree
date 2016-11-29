@@ -200,21 +200,15 @@ Potree.Viewer.Profile = function(viewer, element){
 
 		// Get the same color map as Three
 		var hr = scope.viewer.getHeightRange();
-		var hrGeo = {
-			min: scope.viewer.toGeo(new THREE.Vector3(0, hr.min, 0)).z,
-			max: scope.viewer.toGeo(new THREE.Vector3(0, hr.max, 0)).z,
-		};
 		
-		//var minRange = scope.viewer.toGeo(new THREE.Vector3(0, args.heightMin, 0));
-		//var maxRange = scope.viewer.toGeo(new THREE.Vector3(0, args.heightMax, 0));
-		var heightRange = hrGeo.max - hrGeo.min;
+		var heightRange = hr.max - hr.min;
 		var colorRange = [];
 		var colorDomain = [];
 		
 		// Read the altitude gradient used in 3D scene
-		var gradient = viewer.pointclouds[0].material.gradient;
+		var gradient = viewer.scene.pointclouds[0].material.gradient;
 		for (var c = 0; c < gradient.length; c++){
-			colorDomain.push(hrGeo.min + heightRange * gradient[c][0]);
+			colorDomain.push(hr.min + heightRange * gradient[c][0]);
 			colorRange.push('#' + gradient[c][1].getHexString());
 		}
 		
@@ -227,8 +221,8 @@ Potree.Viewer.Profile = function(viewer, element){
 		// Iterate the profile's segments
 		for(var i = 0; i < segments.length; i++){
 			var segment = segments[i];
-			var segStartGeo = scope.viewer.toGeo(segment.start);
-			var segEndGeo = scope.viewer.toGeo(segment.end);
+			var segStartGeo = new THREE.Vector3(segment.start.x, -segment.start.z, segment.start.y);
+			var segEndGeo = new THREE.Vector3(segment.end.x, -segment.end.z, segment.end.y);
 			var xOA = segEndGeo.x - segStartGeo.x;
 			var yOA = segEndGeo.y - segStartGeo.y;
 			var segmentLength = Math.sqrt(xOA * xOA + yOA * yOA);
@@ -236,19 +230,15 @@ Potree.Viewer.Profile = function(viewer, element){
 
 			// Iterate the segments' points
 			for(var j = 0; j < points.numPoints; j++){
-				var p = scope.viewer.toGeo(points.position[j]);
-				// get min/max values            
-				if (p.x < minX) { minX = p.x;}
-
-				if (p.y < minY) { minY = p.y;}
-
-				if (p.z < minZ) { minZ = p.z;}
-
-				if (p.x > maxX) { maxX = p.x;}
-
-				if (p.y < maxY) { maxY = p.y;}
-
-				if (p.z < maxZ) { maxZ = p.z;}
+				var p = points.position[j];
+				p.set(p.x, -p.z, p.y);
+				
+				minX = Math.min(minX, p.x);
+				minY = Math.min(minY, p.y);
+				minZ = Math.min(minZ, p.z);
+				maxX = Math.min(maxX, p.x);
+				maxY = Math.min(maxY, p.y);
+				maxZ = Math.min(maxZ, p.z);
 
 				var xOB = p.x - segStartGeo.x;
 				var yOB = p.y - segStartGeo.y;
@@ -381,7 +371,7 @@ Potree.Viewer.Profile = function(viewer, element){
 			//return d.intensity;
 			return 'rgb(' + d.intensity + '%,' + d.intensity + '%,' + d.intensity + '%)';
 		} else if (material === Potree.PointColorType.CLASSIFICATION) {
-			var classif = scope.viewer.pointclouds[0].material.classification;
+			var classif = scope.viewer.scene.pointclouds[0].material.classification;
 			if (typeof classif[d.classification] != 'undefined'){
 				var color = 'rgb(' + classif[d.classification].x * 100 + '%,';
 				color += classif[d.classification].y * 100 + '%,';
@@ -429,7 +419,7 @@ Potree.Viewer.Profile = function(viewer, element){
 		}else{
 			return;
 		}
-		if(scope.viewer.pointclouds.length === 0){
+		if(scope.viewer.scene.pointclouds.length === 0){
 			return;
 		}
 		
@@ -456,12 +446,11 @@ Potree.Viewer.Profile = function(viewer, element){
 			var mileage = 0;
 			for(var i = 0; i < profile.points.length; i++){
 				var point = profile.points[i];
-				var pointGeo = scope.viewer.toGeo(point);
 				
 				if(i > 0){
-					var previousGeo = scope.viewer.toGeo(profile.points[i-1]);
-					var dx = pointGeo.x - previousGeo.x;
-					var dy = pointGeo.y - previousGeo.y;
+					var previous = profile.points[i-1];
+					var dx = point.x - previous.x;
+					var dy = point.y - previous.y;
 					var distance = Math.sqrt(dx * dx + dy * dy);
 					mileage += distance;
 				}
@@ -645,8 +634,8 @@ Potree.Viewer.Profile = function(viewer, element){
 		};
 		
 		
-		for(var i = 0; i < scope.viewer.pointclouds.length; i++){
-			var pointcloud = scope.viewer.pointclouds[i];
+		for(var i = 0; i < scope.viewer.scene.pointclouds.length; i++){
+			var pointcloud = scope.viewer.scene.pointclouds[i];
 			
 			if(!pointcloud.visible){
 				continue;

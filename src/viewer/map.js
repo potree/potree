@@ -2,7 +2,7 @@
 // http://epsg.io/
 proj4.defs("UTM10N", "+proj=utm +zone=10 +ellps=GRS80 +datum=NAD83 +units=m +no_defs");
 
-Potree.Viewer.MapView = function(viewer){
+Potree.MapView = function(viewer){
 	var scope = this;
 	
 	this.viewer = viewer;
@@ -275,11 +275,11 @@ Potree.Viewer.MapView = function(viewer){
 		
 		
 		// adding pointclouds to map
-		scope.viewer.addEventListener("pointcloud_loaded", function(event){
+		scope.viewer.dispatcher.addEventListener("pointcloud_loaded", function(event){
 			scope.load(event.pointcloud);
 		});
-		for(var i = 0; i < scope.viewer.pointclouds.length; i++){
-			scope.load(scope.viewer.pointclouds[i]);
+		for(var i = 0; i < scope.viewer.scene.pointclouds.length; i++){
+			scope.load(scope.viewer.scene.pointclouds[i]);
 		}
 		
 		scope.viewer.profileTool.addEventListener("profile_added", scope.updateToolDrawings);
@@ -340,8 +340,7 @@ Potree.Viewer.MapView = function(viewer){
 			
 			for(var j = 0; j < profile.points.length; j++){
 				var point = profile.points[j];
-				var pointGeo = scope.viewer.toGeo(point);
-				var pointMap = scope.toMap.forward([pointGeo.x, pointGeo.y]);
+				var pointMap = scope.toMap.forward([point.x, point.y]);
 				coordinates.push(pointMap);
 			}
 			
@@ -357,8 +356,7 @@ Potree.Viewer.MapView = function(viewer){
 			
 			for(var j = 0; j < measurement.points.length; j++){
 				var point = measurement.points[j].position;
-				var pointGeo = scope.viewer.toGeo(point);
-				var pointMap = scope.toMap.forward([pointGeo.x, pointGeo.y]);
+				var pointMap = scope.toMap.forward([point.x, point.y]);
 				coordinates.push(pointMap);
 			}
 			
@@ -499,8 +497,8 @@ Potree.Viewer.MapView = function(viewer){
 		var campos = camera.position;
 		var camdir = camera.getWorldDirection();
 		var sceneLookAt = camdir.clone().multiplyScalar(30 * scale).add(campos);
-		var geoPos = scope.viewer.toGeo(camera.position);
-		var geoLookAt = scope.viewer.toGeo(sceneLookAt);
+		var geoPos = camera.position;
+		var geoLookAt = sceneLookAt;
 		var mapPos = new THREE.Vector2().fromArray(scope.toMap.forward([geoPos.x, geoPos.y]));
 		var mapLookAt = new THREE.Vector2().fromArray(scope.toMap.forward([geoLookAt.x, geoLookAt.y]));
 		var mapDir = new THREE.Vector2().subVectors(mapLookAt, mapPos).normalize();

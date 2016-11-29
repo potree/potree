@@ -315,10 +315,8 @@ vec3 getCompositeColor(){
 }
 
 void main() {
-	vec4 worldPosition = modelMatrix * vec4( position, 1.0 );
 	vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
-	vViewPosition = -mvPosition.xyz;
-	vWorldPosition = worldPosition.xyz;
+	vViewPosition = mvPosition.xyz;
 	gl_Position = projectionMatrix * mvPosition;
 	vOpacity = opacity;
 	vLinearDepth = gl_Position.w;
@@ -383,7 +381,7 @@ void main() {
 	float pointSize = 1.0;
 	
 	float slope = tan(fov / 2.0);
-	float projFactor =  0.5 * screenHeight / (slope * vViewPosition.z);
+	float projFactor =  -0.5 * screenHeight / (slope * vViewPosition.z);
 	
 	float r = spacing * 1.5;
 	vRadius = r;

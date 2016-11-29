@@ -426,11 +426,10 @@ Object.defineProperty(Potree.Measure.prototype, "showDistances", {
 
 
 
-Potree.MeasuringTool = function(scene, camera, renderer, toGeo){
+Potree.MeasuringTool = function(scene, camera, renderer){
 	
 	var scope = this;
 	this.enabled = false;
-	this.toGeo = toGeo;
 	
 	this.scene = scene;
 	this.camera = camera;
@@ -804,10 +803,10 @@ Potree.MeasuringTool = function(scene, camera, renderer, toGeo){
 				var scale = (70 / pr);
 				label.scale.set(scale, scale, scale);
 				
-				var geoCoord = scope.toGeo(point.position);
+				var geoCoord = point.position;
 				var txt = geoCoord.x.toFixed(2) + " / ";
-				txt += geoCoord.y.toFixed(2) + " / ";
-				txt += geoCoord.z.toFixed(2);
+				txt += (-geoCoord.z).toFixed(2) + " / ";
+				txt += geoCoord.y.toFixed(2);
 				label.setText(txt);
 			}
 			

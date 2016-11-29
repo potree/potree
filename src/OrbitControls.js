@@ -254,6 +254,8 @@ Potree.OrbitControls = function ( object, domElement ) {
 
 		var progression = Math.min(1, this.fadeFactor * delta);
 		
+		let oldTheta = theta;
+		
 		theta += progression * thetaDelta;
 		phi +=  progression * phiDelta;
 

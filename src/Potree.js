@@ -48,8 +48,8 @@ Potree.startQuery = function(name, gl){
 		Potree.timerQueries[name] = [];
 	}
 	
-	var ext = gl.getExtension("EXT_disjoint_timer_query");
-	var query = ext.createQueryEXT();
+	let ext = gl.getExtension("EXT_disjoint_timer_query");
+	let query = ext.createQueryEXT();
 	ext.beginQueryEXT(ext.TIME_ELAPSED_EXT, query);
 	
 	Potree.timerQueries[name].push(query);
@@ -62,7 +62,7 @@ Potree.endQuery = function(query, gl){
 		return;
 	}
 	
-	var ext = gl.getExtension("EXT_disjoint_timer_query");
+	let ext = gl.getExtension("EXT_disjoint_timer_query");
 	ext.endQueryEXT(ext.TIME_ELAPSED_EXT);
 };
 
@@ -71,21 +71,21 @@ Potree.resolveQueries = function(gl){
 		return;
 	}
 	
-	var ext = gl.getExtension("EXT_disjoint_timer_query");
+	let ext = gl.getExtension("EXT_disjoint_timer_query");
 	
-	for(var name in Potree.timerQueries){
-		var queries = Potree.timerQueries[name];
+	for(let name in Potree.timerQueries){
+		let queries = Potree.timerQueries[name];
 		
 		if(queries.length > 0){
-			var query = queries[0];
+			let query = queries[0];
 			
-			var available = ext.getQueryObjectEXT(query, ext.QUERY_RESULT_AVAILABLE_EXT);
-			var disjoint = viewer.renderer.getContext().getParameter(ext.GPU_DISJOINT_EXT);
+			let available = ext.getQueryObjectEXT(query, ext.QUERY_RESULT_AVAILABLE_EXT);
+			let disjoint = viewer.renderer.getContext().getParameter(ext.GPU_DISJOINT_EXT);
 			
 			if (available && !disjoint) {
 				// See how much time the rendering of the object took in nanoseconds.
-				var timeElapsed = ext.getQueryObjectEXT(query, ext.QUERY_RESULT_EXT);
-				var miliseconds = timeElapsed / (1000 * 1000);
+				let timeElapsed = ext.getQueryObjectEXT(query, ext.QUERY_RESULT_EXT);
+				let miliseconds = timeElapsed / (1000 * 1000);
 			
 				console.log(name + ": " + miliseconds + "ms");
 				queries.shift();
@@ -105,17 +105,17 @@ Potree.updatePointClouds = function(pointclouds, camera, renderer){
 		Potree.lru = new LRU();
 	}
 
-	for(var i = 0; i < pointclouds.length; i++){
-		var pointcloud = pointclouds[i];
-		for(var j = 0; j < pointcloud.profileRequests.length; j++){
+	for(let i = 0; i < pointclouds.length; i++){
+		let pointcloud = pointclouds[i];
+		for(let j = 0; j < pointcloud.profileRequests.length; j++){
 			pointcloud.profileRequests[j].update();
 		}
 	}
 	
-	var result = Potree.updateVisibility(pointclouds, camera, renderer);
+	let result = Potree.updateVisibility(pointclouds, camera, renderer);
 	
-	for(var i = 0; i < pointclouds.length; i++){
-		var pointcloud = pointclouds[i];
+	for(let i = 0; i < pointclouds.length; i++){
+		let pointcloud = pointclouds[i];
 		pointcloud.updateMaterial(pointcloud.material, pointcloud.visibleNodes, camera, renderer);
 		pointcloud.updateVisibleBounds();
 	}
@@ -135,20 +135,20 @@ Potree.getLRU = function(){
 
 
 Potree.updateVisibility = function(pointclouds, camera, renderer){
-	var numVisibleNodes = 0;
-	var numVisiblePoints = 0;
+	let numVisibleNodes = 0;
+	let numVisiblePoints = 0;
 	
-	var visibleNodes = [];
-	var visibleGeometry = [];
-	var unloadedGeometry = [];
+	let visibleNodes = [];
+	let visibleGeometry = [];
+	let unloadedGeometry = [];
 	
-	var frustums = [];
-	var camObjPositions = [];
+	let frustums = [];
+	let camObjPositions = [];
 
 	// calculate object space frustum and cam pos and setup priority queue
-	var priorityQueue = new BinaryHeap(function(x){return 1 / x.weight;});
-	for(var i = 0; i < pointclouds.length; i++){
-		var pointcloud = pointclouds[i];
+	let priorityQueue = new BinaryHeap(function(x){return 1 / x.weight;});
+	for(let i = 0; i < pointclouds.length; i++){
+		let pointcloud = pointclouds[i];
 		
 		if(!pointcloud.initialized()){
 			continue;
@@ -161,19 +161,19 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 		
 		// frustum in object space
 		camera.updateMatrixWorld();
-		var frustum = new THREE.Frustum();
-		var viewI = camera.matrixWorldInverse;
-		var world = pointcloud.matrixWorld;
-		var proj = camera.projectionMatrix;
-		var fm = new THREE.Matrix4().multiply(proj).multiply(viewI).multiply(world);
+		let frustum = new THREE.Frustum();
+		let viewI = camera.matrixWorldInverse;
+		let world = pointcloud.matrixWorld;
+		let proj = camera.projectionMatrix;
+		let fm = new THREE.Matrix4().multiply(proj).multiply(viewI).multiply(world);
 		frustum.setFromMatrix( fm );
 		frustums.push(frustum);
 		
 		// camera position in object space
-		var view = camera.matrixWorld;
-		var worldI = new THREE.Matrix4().getInverse(world);
-		var camMatrixObject = new THREE.Matrix4().multiply(worldI).multiply(view);
-		var camObjPos = new THREE.Vector3().setFromMatrixPosition( camMatrixObject );
+		let view = camera.matrixWorld;
+		let worldI = new THREE.Matrix4().getInverse(world);
+		let camMatrixObject = new THREE.Matrix4().multiply(worldI).multiply(view);
+		let camObjPos = new THREE.Vector3().setFromMatrixPosition( camMatrixObject );
 		camObjPositions.push(camObjPos);
 		
 		if(pointcloud.visible && pointcloud.root !== null){
@@ -188,25 +188,25 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 			pointcloud.hideDescendants(pointcloud.root.sceneNode);
 		}
 		
-		for(var j = 0; j < pointcloud.boundingBoxNodes.length; j++){
+		for(let j = 0; j < pointcloud.boundingBoxNodes.length; j++){
 			pointcloud.boundingBoxNodes[j].visible = false;
 		}
 	}
 	
 	while(priorityQueue.size() > 0){
-		var element = priorityQueue.pop();
-		var node = element.node;
-		var parent = element.parent;
-		var pointcloud = pointclouds[element.pointcloud];
+		let element = priorityQueue.pop();
+		let node = element.node;
+		let parent = element.parent;
+		let pointcloud = pointclouds[element.pointcloud];
 		
-		var box = node.getBoundingBox();
-		var frustum = frustums[element.pointcloud];
-		var camObjPos = camObjPositions[element.pointcloud];
+		let box = node.getBoundingBox();
+		let frustum = frustums[element.pointcloud];
+		let camObjPos = camObjPositions[element.pointcloud];
 		
-		var insideFrustum = frustum.intersectsBox(box);
-		var visible = insideFrustum;
+		let insideFrustum = frustum.intersectsBox(box);
+		let visible = insideFrustum;
 		visible = visible && !(numVisiblePoints + node.getNumPoints() > Potree.pointBudget);
-		var maxLevel = pointcloud.maxLevel || Infinity;
+		let maxLevel = pointcloud.maxLevel || Infinity;
 		visible = visible && node.getLevel() < maxLevel;
 		
 		if(numVisiblePoints + node.getNumPoints() > Potree.pointBudget){
@@ -247,7 +247,7 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 			}
 			
 			if(pointcloud.showBoundingBox && !node.boundingBoxNode){
-				var boxHelper = new THREE.BoxHelper(node.sceneNode);
+				let boxHelper = new THREE.BoxHelper(node.sceneNode);
 				pointcloud.add(boxHelper);
 				pointcloud.boundingBoxNodes.push(boxHelper);
 				node.boundingBoxNode = boxHelper;
@@ -261,28 +261,24 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 		}
 		
 		// add child nodes to priorityQueue
-		var children = node.getChildren();
-		for(var i = 0; i < children.length; i++){
-			var child = children[i];
+		let children = node.getChildren();
+		for(let i = 0; i < children.length; i++){
+			let child = children[i];
 			
-			var sphere = child.getBoundingSphere();
-			var distance = sphere.center.distanceTo(camObjPos);
-			var radius = sphere.radius;
+			let sphere = child.getBoundingSphere();
+			let distance = sphere.center.distanceTo(camObjPos);
+			let radius = sphere.radius;
 			
-			//var fov = camera.fov / 2 * Math.PI / 180.0;
-			//var pr = 1 / Math.tan(fov) * radius / Math.sqrt(distance * distance - radius * radius);
-			//var screenPixelRadius = renderer.domElement.clientHeight * pr;
-			
-			var fov = (camera.fov * Math.PI) / 180;
-			var slope = Math.tan(fov / 2);
-			var projFactor = (0.5 * renderer.domElement.clientHeight) / (slope * distance);
-			var screenPixelRadius = radius * projFactor;
+			let fov = (camera.fov * Math.PI) / 180;
+			let slope = Math.tan(fov / 2);
+			let projFactor = (0.5 * renderer.domElement.clientHeight) / (slope * distance);
+			let screenPixelRadius = radius * projFactor;
 			
 			if(screenPixelRadius < pointcloud.minimumNodePixelSize){
 				continue;
 			}
 			
-			var weight = screenPixelRadius;
+			let weight = screenPixelRadius;
 			if(distance - radius < 0){
 				weight = Number.MAX_VALUE;
 			}
@@ -293,7 +289,7 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 		
 	}// end priority queue loop
 	
-	for(var i = 0; i < Math.min(5, unloadedGeometry.length); i++){
+	for(let i = 0; i < Math.min(5, unloadedGeometry.length); i++){
 		unloadedGeometry[i].load();
 	}
 	
@@ -359,11 +355,11 @@ Potree.compileShader = function(gl, vertexShader, fragmentShader){
 	}
 	
 	// PROGRAM
-	var program = gl.createProgram();
+	let program = gl.createProgram();
 	gl.attachShader(program, vs);
 	gl.attachShader(program, fs);
 	gl.linkProgram(program);
-	var success = gl.getProgramParameter(program, gl.LINK_STATUS);
+	let success = gl.getProgramParameter(program, gl.LINK_STATUS);
 	if (!success) {
 		console.error("could not compile shader:");
 		console.error(vertexShader);
@@ -379,9 +375,9 @@ Potree.compileShader = function(gl, vertexShader, fragmentShader){
 		let n = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
 
 		for(let i = 0; i < n; i++){
-			var uniform = gl.getActiveUniform(program, i);
-			var name = uniform.name;
-			var loc = gl.getUniformLocation(program, name);
+			let uniform = gl.getActiveUniform(program, i);
+			let name = uniform.name;
+			let loc = gl.getUniformLocation(program, name);
 
 			uniforms[name] = loc;
 		}

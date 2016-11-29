@@ -244,7 +244,7 @@ Potree.Measure = function(){
 				var labelPos = position.clone().add(new THREE.Vector3(0,1,0));
 				coordinateLabel.position.copy(labelPos);
 				
-				var msg = position.x.toFixed(2) + " / " + position.y.toFixed(2) + " / " + position.z.toFixed(2);
+				var msg = Potree.utils.addCommas(position.x.toFixed(2)) + " / " + Potree.utils.addCommas(position.y.toFixed(2)) + " / " + Potree.utils.addCommas(position.z.toFixed(2));
 				coordinateLabel.setText(msg);
 				
 				coordinateLabel.visible = this.showCoordinates && (index < lastIndex || this.closed);
@@ -299,7 +299,7 @@ Potree.Measure = function(){
 				var distance = point.position.distanceTo(nextPoint.position);
 				
 				edgeLabel.position.copy(center);
-				edgeLabel.setText(distance.toFixed(2));
+				edgeLabel.setText(Potree.utils.addCommas(distance.toFixed(2)));
 				edgeLabel.visible = this.showDistances && (index < lastIndex || this.closed) && this.points.length >= 2 && distance > 0;
 			}
 			
@@ -329,7 +329,8 @@ Potree.Measure = function(){
 				var labelPos = point.position.clone().add(new THREE.Vector3(0,1,0));
 				coordinateLabel.position.copy(labelPos);
 				
-				var msg = point.position.x.toFixed(2) + " / " + point.position.y.toFixed(2) + " / " + point.position.z.toFixed(2);
+				var msg = Potree.utils.addCommas(point.position.x.toFixed(2)) + " / " + Potree.utils.addCommas(point.position.y.toFixed(2)) + " / " + Potree.utils.addCommas(point.position.z.toFixed(2));
+				//var msg = "abc";
 				coordinateLabel.setText(msg);
 				
 				coordinateLabel.visible = this.showCoordinates && (index < lastIndex || this.closed);
@@ -426,188 +427,189 @@ Object.defineProperty(Potree.Measure.prototype, "showDistances", {
 
 
 
-Potree.MeasuringTool = function(scene, camera, renderer){
+Potree.MeasuringTool = class{
 	
-	var scope = this;
-	this.enabled = false;
-	
-	this.scene = scene;
-	this.camera = camera;
-	this.renderer = renderer;
-	this.domElement = renderer.domElement;
-	this.mouse = {x: 0, y: 0};
-	
-	var STATE = {
-		DEFAULT: 0,
-		INSERT: 1
-	};
-	
-	var state = STATE.DEFAULT;
-	
-	this.activeMeasurement= null;
-	this.measurements = [];
-	this.sceneMeasurement = new THREE.Scene();
-	this.sceneRoot = new THREE.Object3D();
-	this.sceneMeasurement.add(this.sceneRoot);
-	
-	this.light = new THREE.DirectionalLight( 0xffffff, 1 );
-	this.light.position.set( 0, 0, 10 );
-	this.light.lookAt(new THREE.Vector3(0,0,0));
-	this.sceneMeasurement.add( this.light );
-	
-	this.hoveredElement = null;
-	
-	function onClick(event){
-		if(state === STATE.INSERT){
-			var point = scope.getMousePointCloudIntersection();
-			if(point){
-				var pos = point.position.clone();
-				
-				scope.activeMeasurement.addMarker(pos);
-				
-				var event = {
-					type: 'newpoint',
-					position: pos.clone()
+	constructor(scene, camera, renderer){
+		this.enabled = false;
+		
+		this.scene = scene;
+		this.camera = camera;
+		this.renderer = renderer;
+		this.domElement = renderer.domElement;
+		this.mouse = {x: 0, y: 0};
+		
+		this.STATE = {
+			DEFAULT: 0,
+			INSERT: 1
+		};
+		
+		this.state = this.STATE.DEFAULT;
+		
+		this.activeMeasurement= null;
+		this.measurements = [];
+		this.sceneMeasurement = new THREE.Scene();
+		this.sceneRoot = new THREE.Object3D();
+		this.sceneMeasurement.add(this.sceneRoot);
+		
+		this.light = new THREE.DirectionalLight( 0xffffff, 1 );
+		this.light.position.set( 0, 0, 10 );
+		this.light.lookAt(new THREE.Vector3(0,0,0));
+		this.sceneMeasurement.add( this.light );
+		
+		this.hoveredElement = null;
+		this.dispatcher = new THREE.EventDispatcher();
+		
+		let onClick = function(event){
+			if(this.state === this.STATE.INSERT){
+				var point = this.getMousePointCloudIntersection();
+				if(point){
+					var pos = point.position.clone();
+					
+					this.activeMeasurement.addMarker(pos);
+					
+					var event = {
+						type: 'newpoint',
+						position: pos.clone()
+					};
+					this.dispatcher.dispatchEvent(event);
+					
+					if(this.activeMeasurement.points.length > this.activeMeasurement.maxMarkers){
+						this.finishInsertion();
+					}
+				}
+			}
+		}.bind(this);
+		
+		let onMouseMove = function(event){
+			var rect = this.domElement.getBoundingClientRect();
+			this.mouse.x = ((event.clientX - rect.left) / this.domElement.clientWidth) * 2 - 1;
+			this.mouse.y = -((event.clientY - rect.top) / this.domElement.clientHeight) * 2 + 1;
+			
+			//console.log(this.mouse);
+			
+			if(this.dragstart){
+				var arg = {
+					type: "drag", 
+					event: event, 
+					tool: this
 				};
-				scope.dispatchEvent(event);
+				this.dragstart.object.dispatchEvent(arg);
 				
-				if(scope.activeMeasurement.points.length > scope.activeMeasurement.maxMarkers){
-					scope.finishInsertion();
+			}else if(this.state == this.STATE.INSERT && this.activeMeasurement){
+				var point = this.getMousePointCloudIntersection();
+				
+				if(point){
+					var position = point.position;
+					var lastIndex = this.activeMeasurement.points.length-1;
+					//this.activeMeasurement.setPosition(lastIndex, position);
+					this.activeMeasurement.setMarker(lastIndex, point);
 				}
-				
-			}
-		}
-	};
-	
-	function onMouseMove(event){
-	
-		var rect = scope.domElement.getBoundingClientRect();
-		scope.mouse.x = ((event.clientX - rect.left) / scope.domElement.clientWidth) * 2 - 1;
-        scope.mouse.y = -((event.clientY - rect.top) / scope.domElement.clientHeight) * 2 + 1;
-		
-		//console.log(scope.mouse);
-		
-		if(scope.dragstart){
-			var arg = {
-				type: "drag", 
-				event: event, 
-				tool: scope
-			};
-			scope.dragstart.object.dispatchEvent(arg);
-			
-		}else if(state == STATE.INSERT && scope.activeMeasurement){
-			var point = scope.getMousePointCloudIntersection();
-			
-			if(point){
-				var position = point.position;
-				var lastIndex = scope.activeMeasurement.points.length-1;
-				//scope.activeMeasurement.setPosition(lastIndex, position);
-				scope.activeMeasurement.setMarker(lastIndex, point);
-			}
-			
-		}else{
-			var I = getHoveredElement();
-			
-			if(I){
-				
-				I.object.dispatchEvent({type: "move", target: I.object, event: event});
-				
-				if(scope.hoveredElement && scope.hoveredElement !== I.object){
-					scope.hoveredElement.dispatchEvent({type: "leave", target: scope.hoveredElement, event: event});
-				}
-				
-				scope.hoveredElement = I.object;
 				
 			}else{
+				var I = this.getHoveredElement();
+				
+				if(I){
+					
+					I.object.dispatchEvent({type: "move", target: I.object, event: event});
+					
+					if(this.hoveredElement && this.hoveredElement !== I.object){
+						this.hoveredElement.dispatchEvent({type: "leave", target: this.hoveredElement, event: event});
+					}
+					
+					this.hoveredElement = I.object;
+					
+				}else{
+				
+					if(this.hoveredElement){
+						this.hoveredElement.dispatchEvent({type: "leave", target: this.hoveredElement, event: event});
+					}
+					
+					this.hoveredElement = null;
+				
+				}
+			}
+		}.bind(this);
+		
+		let onRightClick = function(event){
+			if(this.state == this.STATE.INSERT){			
+				this.finishInsertion();
+			}
+		}.bind(this);
+		
+		let onMouseDown = function(event){
+			if(event.which === 1){
 			
-				if(scope.hoveredElement){
-					scope.hoveredElement.dispatchEvent({type: "leave", target: scope.hoveredElement, event: event});
+				if(this.state !== this.STATE.DEFAULT){
+					event.stopImmediatePropagation();
 				}
 				
-				scope.hoveredElement = null;
-			
+				var I = this.getHoveredElement();
+				
+				if(I){
+					
+					this.dragstart = {
+						object: I.object, 
+						sceneClickPos: I.point,
+						sceneStartPos: this.sceneRoot.position.clone(),
+						mousePos: {x: this.mouse.x, y: this.mouse.y}
+					};
+					
+					event.stopImmediatePropagation();
+					
+				}
+				
+			}else if(event.which === 3){	
+				onRightClick(event);
 			}
-		}
-	};
-	
-	function onRightClick(event){
-		if(state == STATE.INSERT){			
-			scope.finishInsertion();
-		}
-	}
-	
-	this.getState = function(){
-		// TODO remove
-	
-		return state;
-	};
-	
-	function onMouseDown(event){
-
-		if(event.which === 1){
+		}.bind(this);
 		
-			if(state !== STATE.DEFAULT){
+		let onDoubleClick = function(event){
+			
+			// fix move event after double click
+			// see: http://stackoverflow.com/questions/8125165/event-listener-for-dblclick-causes-event-for-mousemove-to-not-work-and-show-a-ci
+			if (window.getSelection){
+				window.getSelection().removeAllRanges();
+			}else if (document.selection){
+				document.selection.empty();
+			}
+			
+			
+			if(this.activeMeasurement && this.state === this.STATE.INSERT){
+				this.activeMeasurement.removeMarker(this.activeMeasurement.points.length-1);
+				this.finishInsertion();
 				event.stopImmediatePropagation();
 			}
-			
-			var I = getHoveredElement();
-			
-			if(I){
-				
-				scope.dragstart = {
-					object: I.object, 
-					sceneClickPos: I.point,
-					sceneStartPos: scope.sceneRoot.position.clone(),
-					mousePos: {x: scope.mouse.x, y: scope.mouse.y}
-				};
-				
-				event.stopImmediatePropagation();
-				
+		}.bind(this);
+		
+		let onMouseUp = function(event){
+			if(this.dragstart){
+				this.dragstart.object.dispatchEvent({type: "drop", event: event});
+				this.dragstart = null;
 			}
+		}.bind(this);
+		
+		this.domElement.addEventListener( 'click', onClick, false);
+		this.domElement.addEventListener( 'dblclick', onDoubleClick, false);
+		this.domElement.addEventListener( 'mousemove', onMouseMove, false );
+		this.domElement.addEventListener( 'mousedown', onMouseDown, false );
+		this.domElement.addEventListener( 'mouseup', onMouseUp, true );
+	}
+	
+	addEventListener(type, callback){
+		this.dispatcher.addEventListener(type, callback);
+	}
+	
+	getHoveredElement(){
 			
-		}else if(event.which === 3){	
-			onRightClick(event);
-		}
-	}
-	
-	function onDoubleClick(event){
-		
-		// fix move event after double click
-		// see: http://stackoverflow.com/questions/8125165/event-listener-for-dblclick-causes-event-for-mousemove-to-not-work-and-show-a-ci
-		if (window.getSelection){
-			window.getSelection().removeAllRanges();
-		}else if (document.selection){
-			document.selection.empty();
-		}
-		
-		
-		if(scope.activeMeasurement && state === STATE.INSERT){
-			scope.activeMeasurement.removeMarker(scope.activeMeasurement.points.length-1);
-			scope.finishInsertion();
-			event.stopImmediatePropagation();
-		}
-	}
-	
-	function onMouseUp(event){
-
-		if(scope.dragstart){
-			scope.dragstart.object.dispatchEvent({type: "drop", event: event});
-			scope.dragstart = null;
-		}
-		
-	}
-	
-	function getHoveredElement(){
-			
-		var vector = new THREE.Vector3( scope.mouse.x, scope.mouse.y, 0.5 );
-		vector.unproject(scope.camera);
+		var vector = new THREE.Vector3( this.mouse.x, this.mouse.y, 0.5 );
+		vector.unproject(this.camera);
 		
 		var raycaster = new THREE.Raycaster();
-		raycaster.ray.set( scope.camera.position, vector.sub( scope.camera.position ).normalize() );
+		raycaster.ray.set( this.camera.position, vector.sub( this.camera.position ).normalize() );
 		
 		var spheres = [];
-		for(var i = 0; i < scope.measurements.length; i++){
-			var m = scope.measurements[i];
+		for(var i = 0; i < this.measurements.length; i++){
+			var m = this.measurements[i];
 			
 			for(var j = 0; j < m.spheres.length; j++){
 				spheres.push(m.spheres[j]);
@@ -622,15 +624,15 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 		}
 	};
 	
-	this.getMousePointCloudIntersection = function(){
-		var vector = new THREE.Vector3( scope.mouse.x, scope.mouse.y, 0.5 );
-		vector.unproject(scope.camera);
+	getMousePointCloudIntersection(){
+		var vector = new THREE.Vector3( this.mouse.x, this.mouse.y, 0.5 );
+		vector.unproject(this.camera);
 
-		var direction = vector.sub(scope.camera.position).normalize();
-		var ray = new THREE.Ray(scope.camera.position, direction);
+		var direction = vector.sub(this.camera.position).normalize();
+		var ray = new THREE.Ray(this.camera.position, direction);
 		
 		var pointClouds = [];
-		scope.scene.traverse(function(object){
+		this.scene.traverse(function(object){
 			if(object instanceof Potree.PointCloudOctree || object instanceof Potree.PointCloudArena4D){
 				pointClouds.push(object);
 			}
@@ -641,13 +643,13 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 		
 		for(var i = 0; i < pointClouds.length; i++){
 			var pointcloud = pointClouds[i];
-			var point = pointcloud.pick(scope.renderer, scope.camera, ray);
+			var point = pointcloud.pick(this.renderer, this.camera, ray);
 			
 			if(!point){
 				continue;
 			}
 			
-			var distance = scope.camera.position.distanceTo(point.position);
+			var distance = this.camera.position.distanceTo(point.position);
 			
 			if(!closestPoint || distance < closestPointDistance){
 				closestPoint = point;
@@ -658,8 +660,8 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 		return closestPoint ? closestPoint : null;
 	};
 	
-	this.startInsertion = function(args){
-		state = STATE.INSERT;
+	startInsertion(args){
+		this.state = this.STATE.INSERT;
 		
 		var args = args || {};
 		var showDistances = (typeof args.showDistances != "undefined") ? args.showDistances : true;
@@ -683,53 +685,53 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 		this.activeMeasurement = measurement;
 	};
 	
-	this.finishInsertion = function(){
+	finishInsertion(){
 		this.activeMeasurement.removeMarker(this.activeMeasurement.points.length-1);
 		
 		var event = {
 			type: "insertion_finished",
 			measurement: this.activeMeasurement
 		};
-		this.dispatchEvent(event);
+		this.dispatcher.dispatchEvent(event);
 		
 		this.activeMeasurement = null;
-		state = STATE.DEFAULT;
+		this.state = this.STATE.DEFAULT;
 	};
 	
-	this.addMeasurement = function(measurement){
+	addMeasurement(measurement){
 		this.sceneMeasurement.add(measurement);
 		this.measurements.push(measurement);
 		
-		this.dispatchEvent({"type": "measurement_added", measurement: measurement});
+		this.dispatcher.dispatchEvent({"type": "measurement_added", measurement: measurement});
 		measurement.addEventListener("marker_added", function(event){
-			scope.dispatchEvent(event);
-		});
+			this.dispatcher.dispatchEvent(event);
+		}.bind(this));
 		measurement.addEventListener("marker_removed", function(event){
-			scope.dispatchEvent(event);
-		});
+			this.dispatcher.dispatchEvent(event);
+		}.bind(this));
 		measurement.addEventListener("marker_moved", function(event){
-			scope.dispatchEvent(event);
-		});
+			this.dispatcher.dispatchEvent(event);
+		}.bind(this));
 	};
 	
-	this.removeMeasurement = function(measurement){
+	removeMeasurement(measurement){
 		this.sceneMeasurement.remove(measurement);
 		var index = this.measurements.indexOf(measurement);
 		if(index >= 0){
 			this.measurements.splice(index, 1);
 			
-			this.dispatchEvent({"type": "measurement_removed", measurement: measurement});
+			this.dispatcher.dispatchEvent({"type": "measurement_removed", measurement: measurement});
 		}
 	};
 	
-	this.reset = function(){
+	reset(){
 		for(var i = this.measurements.length - 1; i >= 0; i--){
 			var measurement = this.measurements[i];
 			this.removeMeasurement(measurement);
 		}
 	};
 	
-	this.update = function(){
+	update(){
 		var measurements = [];
 		for(var i = 0; i < this.measurements.length; i++){
 			measurements.push(this.measurements[i]);
@@ -746,8 +748,8 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 			for(var j = 0; j < measurement.spheres.length; j++){
 				var sphere = measurement.spheres[j];
 				
-				var distance = scope.camera.position.distanceTo(sphere.getWorldPosition());
-				var pr = projectedRadius(1, scope.camera.fov * Math.PI / 180, distance, renderer.domElement.clientHeight);
+				var distance = this.camera.position.distanceTo(sphere.getWorldPosition());
+				var pr = Potree.utils.projectedRadius(1, this.camera.fov * Math.PI / 180, distance, this.renderer.domElement.clientHeight);
 				var scale = (15 / pr);
 				sphere.scale.set(scale, scale, scale);
 				
@@ -757,8 +759,8 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 			for(var j = 0; j < measurement.edgeLabels.length; j++){
 				var label = measurement.edgeLabels[j];
 				
-				var distance = scope.camera.position.distanceTo(label.getWorldPosition());
-				var pr = projectedRadius(1, scope.camera.fov * Math.PI / 180, distance, renderer.domElement.clientHeight);
+				var distance = this.camera.position.distanceTo(label.getWorldPosition());
+				var pr = Potree.utils.projectedRadius(1, this.camera.fov * Math.PI / 180, distance, this.renderer.domElement.clientHeight);
 				var scale = (70 / pr);
 				label.scale.set(scale, scale, scale);
 			}
@@ -767,8 +769,8 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 			for(var j = 0; j < measurement.edgeLabels.length; j++){
 				var label = measurement.angleLabels[j];
 				
-				var distance = scope.camera.position.distanceTo(label.getWorldPosition());
-				var pr = projectedRadius(1, scope.camera.fov * Math.PI / 180, distance, renderer.domElement.clientHeight);
+				var distance = this.camera.position.distanceTo(label.getWorldPosition());
+				var pr = Potree.utils.projectedRadius(1, this.camera.fov * Math.PI / 180, distance, this.renderer.domElement.clientHeight);
 				var scale = (70 / pr);
 				label.scale.set(scale, scale, scale);
 			}
@@ -779,40 +781,40 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 				var sphere = measurement.spheres[j];
 				var point = measurement.points[j];
 				
-				var distance = scope.camera.position.distanceTo(sphere.getWorldPosition());
+				var distance = this.camera.position.distanceTo(sphere.getWorldPosition());
 					
-				var screenPos = sphere.getWorldPosition().clone().project( camera );
-				screenPos.x = Math.round( ( screenPos.x + 1 ) * scope.renderer.domElement.clientWidth  / 2 ),
-				screenPos.y = Math.round( ( - screenPos.y + 1 ) * scope.renderer.domElement.clientHeight / 2 );
+				var screenPos = sphere.getWorldPosition().clone().project( this.camera );
+				screenPos.x = Math.round( ( screenPos.x + 1 ) * this.renderer.domElement.clientWidth  / 2 ),
+				screenPos.y = Math.round( ( - screenPos.y + 1 ) * this.renderer.domElement.clientHeight / 2 );
 				screenPos.z = 0;
 				screenPos.y -= 30;
 				
 				var labelPos = new THREE.Vector3( 
-					(screenPos.x / scope.renderer.domElement.clientWidth) * 2 - 1, 
-					-(screenPos.y / scope.renderer.domElement.clientHeight) * 2 + 1, 
+					(screenPos.x / this.renderer.domElement.clientWidth) * 2 - 1, 
+					-(screenPos.y / this.renderer.domElement.clientHeight) * 2 + 1, 
 					0.5 );
-				labelPos.unproject(scope.camera);
+				labelPos.unproject(this.camera);
                 
-				var direction = labelPos.sub(scope.camera.position).normalize();
+				var direction = labelPos.sub(this.camera.position).normalize();
 				labelPos = new THREE.Vector3().addVectors(
-					scope.camera.position, direction.multiplyScalar(distance));
+					this.camera.position, direction.multiplyScalar(distance));
 					
 				label.position.copy(labelPos);
 				
-				var pr = projectedRadius(1, scope.camera.fov * Math.PI / 180, distance, renderer.domElement.clientHeight);
+				var pr = Potree.utils.projectedRadius(1, this.camera.fov * Math.PI / 180, distance, this.renderer.domElement.clientHeight);
 				var scale = (70 / pr);
 				label.scale.set(scale, scale, scale);
 				
 				var geoCoord = point.position;
-				var txt = geoCoord.x.toFixed(2) + " / ";
-				txt += (-geoCoord.z).toFixed(2) + " / ";
-				txt += geoCoord.y.toFixed(2);
+				var txt = Potree.utils.addCommas(geoCoord.x.toFixed(2)) + " / ";
+				txt += Potree.utils.addCommas((-geoCoord.z).toFixed(2)) + " / ";
+				txt += Potree.utils.addCommas(geoCoord.y.toFixed(2));
 				label.setText(txt);
 			}
 			
 			// areaLabel
-			var distance = scope.camera.position.distanceTo(measurement.areaLabel.getWorldPosition());
-			var pr = projectedRadius(1, scope.camera.fov * Math.PI / 180, distance, renderer.domElement.clientHeight);
+			var distance = this.camera.position.distanceTo(measurement.areaLabel.getWorldPosition());
+			var pr = Potree.utils.projectedRadius(1, this.camera.fov * Math.PI / 180, distance, this.renderer.domElement.clientHeight);
 			var scale = (80 / pr);
 			measurement.areaLabel.scale.set(scale, scale, scale);
 		}
@@ -822,17 +824,9 @@ Potree.MeasuringTool = function(scene, camera, renderer){
 		
 	};
 	
-	this.render = function(){
+	render(){
 		this.update();
 		this.renderer.render(this.sceneMeasurement, this.camera);
 	};
-	
-	this.domElement.addEventListener( 'click', onClick, false);
-	this.domElement.addEventListener( 'dblclick', onDoubleClick, false);
-	this.domElement.addEventListener( 'mousemove', onMouseMove, false );
-	this.domElement.addEventListener( 'mousedown', onMouseDown, false );
-	this.domElement.addEventListener( 'mouseup', onMouseUp, true );
+
 };
-
-
-Potree.MeasuringTool.prototype = Object.create( THREE.EventDispatcher.prototype );

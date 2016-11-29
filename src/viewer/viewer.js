@@ -1269,7 +1269,7 @@ Potree.Viewer = class{
 				var I = null;
 				
 				for(var i = 0; i < this.scene.pointclouds.length; i++){
-					let intersection = getMousePointCloudIntersection(mouse, this.camera, this.renderer, [this.scene.pointclouds[i]]);
+					let intersection = Potree.utils.getMousePointCloudIntersection(mouse, this.camera, this.renderer, [this.scene.pointclouds[i]]);
 					if(!intersection){
 						continue;
 					}
@@ -1535,23 +1535,24 @@ Potree.Viewer = class{
 		}
 
 		// update progress bar
-		if(this.scene.pointclouds.length > 0){
-			this.progressBar.progress = progress / this.scene.pointclouds.length;
-			
-			var message;
-			if(progress === 0){
-				message = "loading";
-			}else{
-				message = "loading: " + parseInt(progress*100 / this.scene.pointclouds.length) + "%";
-			}
-			this.progressBar.message = message;
-			
-			if(progress >= 0.999){
-				this.progressBar.hide();
-			}else if(progress < 1){
-				this.progressBar.show();
-			}
-		}
+		// TODO fix progressbar
+		//if(this.scene.pointclouds.length > 0){
+		//	this.progressBar.progress = progress / this.scene.pointclouds.length;
+		//	
+		//	var message;
+		//	if(progress === 0){
+		//		message = "loading";
+		//	}else{
+		//		message = "loading: " + parseInt(progress*100 / this.scene.pointclouds.length) + "%";
+		//	}
+		//	this.progressBar.message = message;
+		//	
+		//	if(progress >= 0.999){
+		//		this.progressBar.hide();
+		//	}else if(progress < 1){
+		//		this.progressBar.show();
+		//	}
+		//}
 		
 		this.volumeTool.update();
 		this.transformationTool.update();

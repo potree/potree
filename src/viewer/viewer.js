@@ -101,7 +101,8 @@ Potree.Viewer = class{
 		this.skybox;
 		this.stats;
 		this.clock = new THREE.Clock();
-		this.showSkybox = false;
+		//this.showSkybox = false;
+		this.background;
 		
 		this.initThree();
 		
@@ -117,6 +118,7 @@ Potree.Viewer = class{
 			this.setShowBoundingBox(false);
 			this.setFreeze(false);
 			this.setNavigationMode("Orbit");
+			this.setBackground("gradient");
 			
 			this.scaleFactor = 1;
 		
@@ -131,7 +133,7 @@ Potree.Viewer = class{
 //------------------------------------------------------------------------------------
 // Viewer API 
 //------------------------------------------------------------------------------------
-	
+
 	addEventListener(type, callback){
 		this.dispatcher.addEventListener(type, callback);
 	}
@@ -252,6 +254,30 @@ Potree.Viewer = class{
 		}
 	};
 	
+	getBackground(){
+		return this.background;
+	};
+	
+	setBackground(bg){
+		
+		if(this.background === bg){
+			return;
+		}
+		
+		this.background = bg;
+		this.dispatcher.dispatchEvent({"type": "background_changed", "viewer": this});
+		
+		//if(bg === "gradient"){
+		//	this.showSkybox = false;
+		//} else if(bg === "skybox"){
+		//	this.showSkybox = true;
+		//} else if(bg === "black"){
+		//	
+		//} else if(bg === "white"){
+		//	
+		//}
+	}
+	
 	setDescription(value){
 		$('#potree_description')[0].innerHTML = value;
 	};
@@ -291,16 +317,16 @@ Potree.Viewer = class{
 		return this.fpControls.moveSpeed;
 	};
 	
-	setShowSkybox(value){
-		if(this.showSkybox !== value){
-			this.showSkybox = value;
-			this.dispatcher.dispatchEvent({"type": "show_skybox_changed", "viewer": this});
-		}
-	};
-	
-	getShowSkybox(){
-		return this.showSkybox;
-	};
+	//setShowSkybox(value){
+	//	if(this.showSkybox !== value){
+	//		this.showSkybox = value;
+	//		this.dispatcher.dispatchEvent({"type": "show_skybox_changed", "viewer": this});
+	//	}
+	//};
+	//
+	//getShowSkybox(){
+	//	return this.showSkybox;
+	//};
 	
 	setHeightRange(min, max){
 		if(this.heightMin !== min || this.heightMax !== max){
@@ -1354,7 +1380,7 @@ Potree.Viewer = class{
 		
 		
 
-		this.renderer = new THREE.WebGLRenderer();
+		this.renderer = new THREE.WebGLRenderer({premultipliedAlpha: false});
 		this.renderer.setSize(width, height);
 		this.renderer.autoClear = false;
 		this.renderArea.appendChild(this.renderer.domElement);
@@ -1725,11 +1751,19 @@ class PotreeRenderer{
 		//var queryAll = Potree.startQuery("All", viewer.renderer.getContext());
 		
 		// render skybox
-		if(viewer.showSkybox){
+		if(viewer.background === "skybox"){
+			viewer.renderer.clear(true, true, false);
 			viewer.skybox.camera.rotation.copy(viewer.camera.rotation);
 			viewer.renderer.render(viewer.skybox.scene, viewer.skybox.camera);
-		}else{
+		}else if(viewer.background === "gradient"){
+			viewer.renderer.clear(true, true, false);
 			viewer.renderer.render(viewer.scene.sceneBG, viewer.cameraBG);
+		}else if(viewer.background === "black"){
+			viewer.renderer.setClearColor(0x000000, 1);
+			viewer.renderer.clear(true, true, false);
+		}else if(viewer.background === "white"){
+			viewer.renderer.setClearColor(0xFFFFFF, 1);
+			viewer.renderer.clear(true, true, false);
 		}
 		
 		for(let i = 0; i < viewer.scene.pointclouds.length; i++){
@@ -1863,11 +1897,13 @@ class HighQualityRenderer{
 		
 		
 		viewer.renderer.clear();
-		if(viewer.showSkybox){
+		if(this.background === "skybox"){
 			skybox.camera.rotation.copy(viewer.camera.rotation);
 			viewer.renderer.render(skybox.scene, skybox.camera);
-		}else{
+		}else if(this.background === "gradient"){
 			viewer.renderer.render(viewer.sceneBG, viewer.cameraBG);
+		}else{
+			// TODO background
 		}
 		viewer.renderer.render(viewer.scene, viewer.camera);
 		
@@ -2016,14 +2052,25 @@ class EDLRenderer{
 		
 		this.resize();
 		
-		viewer.renderer.clear();
-		if(viewer.showSkybox){
+		
+		if(viewer.background === "skybox"){
+			viewer.renderer.clear();
 			viewer.skybox.camera.rotation.copy(viewer.camera.rotation);
 			viewer.renderer.render(viewer.skybox.scene, viewer.skybox.camera);
-		}else{
+		}else if(viewer.background === "gradient"){
+			viewer.renderer.clear();
 			viewer.renderer.render(viewer.scene.sceneBG, viewer.cameraBG);
+		}else if(viewer.background === "black"){
+			viewer.renderer.setClearColor(0x000000, 0);
+			viewer.renderer.clear();
+		}else if(viewer.background === "white"){
+			viewer.renderer.setClearColor(0xFFFFFF, 0);
+			viewer.renderer.clear();
 		}
+		
 		viewer.renderer.render(viewer.scene.scene, viewer.camera);
+		
+		viewer.renderer.clearTarget( this.rtColor, true, true, true );
 		
 		var originalMaterials = [];
 		for(var i = 0; i < viewer.scene.pointclouds.length; i++){
@@ -2048,8 +2095,6 @@ class EDLRenderer{
 			var octreeSize = pointcloud.pcoGeometry.boundingBox.getSize().x;
 		
 			originalMaterials.push(pointcloud.material);
-			
-			viewer.renderer.clearTarget( this.rtColor, true, true, true );
 			
 			{// COLOR & DEPTH PASS
 				attributeMaterial = pointcloud.material;

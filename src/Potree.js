@@ -134,19 +134,11 @@ Potree.getLRU = function(){
 };
 
 
-Potree.updateVisibility = function(pointclouds, camera, renderer){
-	let numVisibleNodes = 0;
-	let numVisiblePoints = 0;
-	
-	let visibleNodes = [];
-	let visibleGeometry = [];
-	let unloadedGeometry = [];
-	
+function updateVisibilityStructures(pointclouds, camera, renderer){
 	let frustums = [];
 	let camObjPositions = [];
-
-	// calculate object space frustum and cam pos and setup priority queue
 	let priorityQueue = new BinaryHeap(function(x){return 1 / x.weight;});
+	
 	for(let i = 0; i < pointclouds.length; i++){
 		let pointcloud = pointclouds[i];
 		
@@ -192,6 +184,27 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 			pointcloud.boundingBoxNodes[j].visible = false;
 		}
 	}
+	
+	return {
+		"frustums": frustums,
+		"camObjPositions" : camObjPositions,
+		"priorityQueue": priorityQueue
+	};
+}
+
+Potree.updateVisibility = function(pointclouds, camera, renderer){
+	let numVisibleNodes = 0;
+	let numVisiblePoints = 0;
+	
+	let visibleNodes = [];
+	let visibleGeometry = [];
+	let unloadedGeometry = [];
+
+	// calculate object space frustum and cam pos and setup priority queue
+	let s = updateVisibilityStructures(pointclouds, camera, renderer);
+	let frustums = s.frustums;
+	let camObjPositions = s.camObjPositions;
+	let priorityQueue = s.priorityQueue;
 	
 	while(priorityQueue.size() > 0){
 		let element = priorityQueue.pop();

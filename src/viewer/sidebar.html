@@ -858,28 +858,6 @@ function initNavigation(){
 }
 
 function initMeasurementDetails(){
-
-	//<li>
-	//		<div class="panel panel-default">
-	//		  <div class="panel-heading pv-panel-heading" style="display: flex; flex-direction: row">
-	//			<img src="../resources/icons/distance.png" style="width: 16px; height: 16px" /> 
-	//			<span style="flex-grow:1"> </span>
-	//			<img src="../resources/icons/remove.svg" style="width: 16px; height: 16px" /> 
-	//		  </div>
-	//		  <div class="panel-body">
-	//			<div class="measurement-detail-node-marker" >423, 413, 75464</div>
-	//			<div class="measurement-detail-edge" > </div>
-	//			<div class="measurement-detail-node-distance" > 12,001.37 </div>
-	//			<div class="measurement-detail-edge" > </div>
-	//			<div class="measurement-detail-node-marker" >423, 413, 75464</div>
-	//			<div class="measurement-detail-edge" > </div>
-	//			<div class="measurement-detail-node-distance" > 97 </div>
-	//			<div class="measurement-detail-edge" > </div>
-	//			<div class="measurement-detail-node-marker" >423, 413, 75464</div>
-	//		  </div>
-	//		</div>
-	//	</li>
-	
 	var id = 0;
 	
 	var callback = function(event){
@@ -944,9 +922,7 @@ function initMeasurementDetails(){
 		elPanelHeader.appendChild(elPanelStretch);
 		elPanelHeader.appendChild(elPanelRemove);
 		elPanel.appendChild(elPanelBody);
-		//elPanelBody.appendChild(document.createTextNode("lala"));
 		
-		//$('#measurement_details').append(elLi);
 		document.getElementById("measurement_details").appendChild(elLi);
 		
 		var widthListener;
@@ -961,8 +937,6 @@ function initMeasurementDetails(){
 			$(elPanelBody).empty();
 			
 			if(profile){
-				//<li>Point Budget: <span id="lblPointBudget"></span> <div id="sldPointBudget"></div>	</li>
-				
 				var elLi = $('<li style="margin-bottom: 5px">');
 				var elText = document.createTextNode("width: ");
 				var elWidthLabel = $('<span id="lblProfileWidth_' + id + '">');
@@ -1017,8 +991,8 @@ function initMeasurementDetails(){
 				var geoCoord = point;
 	
 				var txt = geoCoord.x.toFixed(2) + ", ";
-				txt += (-geoCoord.z).toFixed(2) + ", ";
-				txt += geoCoord.y.toFixed(2);
+				txt += (geoCoord.y).toFixed(2) + ", ";
+				txt += geoCoord.z.toFixed(2);
 				
 				var elNodeMarker = $('<div>').addClass("measurement-detail-node-marker");
 				elNodeMarker.html(txt);
@@ -1081,9 +1055,9 @@ function initMeasurementDetails(){
 					var elKey = $('<td>').css("padding", "1px 5px");
 					var elValue = $('<td>').css("width", "100%").css("padding", "1px 5px");
 					
-					var value = parseInt(color[0] * 255) 
-						+ ", " + parseInt(color[1] * 255) 
-						+ ", " + parseInt(color[2] * 255);
+					var value = parseInt(color[0]) 
+						+ ", " + parseInt(color[1]) 
+						+ ", " + parseInt(color[2]);
 					
 					elKey.html("rgb");
 					elValue.html(value);

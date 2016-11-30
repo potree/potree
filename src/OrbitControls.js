@@ -238,13 +238,11 @@ Potree.OrbitControls = function ( object, domElement ) {
 
 		offset.copy( position ).sub( this.target );
 
-		// angle from z-axis around y-axis
+		// yaw
+		var theta = Math.atan2( offset.x, offset.y );
 
-		var theta = Math.atan2( offset.x, offset.z );
-
-		// angle from y-axis
-
-		var phi = Math.atan2( Math.sqrt( offset.x * offset.x + offset.z * offset.z ), offset.y );
+		// pitch
+		var phi = Math.atan2( Math.sqrt( offset.x * offset.x + offset.y * offset.y ), offset.z );
 
 		if ( this.autoRotate ) {
 
@@ -256,7 +254,7 @@ Potree.OrbitControls = function ( object, domElement ) {
 		
 		let oldTheta = theta;
 		
-		theta += progression * thetaDelta;
+		theta -= progression * thetaDelta;
 		phi +=  progression * phiDelta;
 
 		// restrict phi to be between desired limits
@@ -276,8 +274,12 @@ Potree.OrbitControls = function ( object, domElement ) {
 		this.target.add( pan.clone().multiplyScalar( progression ) );
 
 		offset.x = radius * Math.sin( phi ) * Math.sin( theta );
-		offset.y = radius * Math.cos( phi );
-		offset.z = radius * Math.sin( phi ) * Math.cos( theta );
+		offset.z = radius * Math.cos( phi );
+		offset.y = radius * Math.sin( phi ) * Math.cos( theta );
+		
+		//offset.x = radius * Math.sin( theta ) * Math.sin( phi );
+		//offset.y = radius * Math.cos( theta );
+		//offset.z = radius * Math.sin( theta ) * Math.cos( phi );
 
 		position.copy( this.target ).add( offset );
 		

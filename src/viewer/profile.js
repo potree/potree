@@ -188,12 +188,8 @@ Potree.Viewer.Profile = function(viewer, element){
 		var data = [];
 		var distance = 0;
 		var totalDistance = 0;
-		var minX = Math.max();
-		var minY = Math.max();
-		var minZ = Math.max();
-		var maxX = 0;
-		var maxY = 0;
-		var maxZ = 0;
+		let min = new THREE.Vector3(Math.max());
+		let max = new THREE.Vector3(0);
 
 		// Get the same color map as Three
 		var hr = scope.viewer.getHeightRange();
@@ -218,47 +214,36 @@ Potree.Viewer.Profile = function(viewer, element){
 		// Iterate the profile's segments
 		for(var i = 0; i < segments.length; i++){
 			var segment = segments[i];
-			var segStartGeo = new THREE.Vector3(segment.start.x, -segment.start.z, segment.start.y);
-			var segEndGeo = new THREE.Vector3(segment.end.x, -segment.end.z, segment.end.y);
-			var xOA = segEndGeo.x - segStartGeo.x;
-			var yOA = segEndGeo.y - segStartGeo.y;
-			var segmentLength = Math.sqrt(xOA * xOA + yOA * yOA);
+			var sv = new THREE.Vector3().subVectors(segment.end, segment.start).setZ(0)
+			var segmentLength = sv.length();
 			var points = segment.points;
 
 			// Iterate the segments' points
 			for(var j = 0; j < points.numPoints; j++){
 				var p = points.position[j];
-				p.set(p.x, -p.z, p.y);
+				var pl = new THREE.Vector3().subVectors(p, segment.start).setZ(0);
 				
-				minX = Math.min(minX, p.x);
-				minY = Math.min(minY, p.y);
-				minZ = Math.min(minZ, p.z);
-				maxX = Math.min(maxX, p.x);
-				maxY = Math.min(maxY, p.y);
-				maxZ = Math.min(maxZ, p.z);
-
-				var xOB = p.x - segStartGeo.x;
-				var yOB = p.y - segStartGeo.y;
-				var hypo = Math.sqrt(xOB * xOB + yOB * yOB);
-				var cosAlpha = (xOA * xOB + yOA * yOB)/(Math.sqrt(xOA * xOA + yOA * yOA) * hypo);
-				var alpha = Math.acos(cosAlpha);
-				var dist = hypo * cosAlpha + totalDistance;
-				if (!isNaN(dist)) {
-					var d =	{ };
-					d.distance = dist;
-					d.x = p.x;
-					d.y = p.y;
-					d.z = p.z;
-					d.altitude = p.z;
-					d.heightColor = colorRamp(p.z);
-					d.color = points.color ? points.color[j] : [0, 0, 0];
-					d.intensity = points.intensity ? points.intensity[j] : 0;
-					d.classification = points.classification ? points.classification[j] : 0;
-					d.returnNumber = points.returnNumber ? points.returnNumber[j] : 0;
-					d.numberOfReturns = points.numberOfReturns ? points.numberOfReturns[j] : 0;
-					d.pointSourceID = points.pointSourceID ? points.pointSourceID[j] : 0;
-					data.push(d);
-				}
+				min.min(p);
+				max.max(p);
+				
+				let distance = totalDistance + pl.length();
+				
+				var d = {
+					distance: distance,
+					x: p.x,
+					y: p.y,
+					z: p.z,
+					altitude: p.z,
+					heightColor: colorRamp(p.z),
+					color: points.color ? points.color[j] : [0, 0, 0],
+					intensity: points.intensity ? points.intensity[j] : 0,
+					classification: points.classification ? points.classification[j] : 0,
+					returnNumber: points.returnNumber ? points.returnNumber[j] : 0,
+					numberOfReturns: points.numberOfReturns ? points.numberOfReturns[j] : 0,
+					pointSourceID: points.pointSourceID ? points.pointSourceID[j] : 0,
+				};
+				
+				data.push(d);
 			}
 
 			// Increment distance from the profile start point
@@ -267,12 +252,12 @@ Potree.Viewer.Profile = function(viewer, element){
 
 		var output = {
 			'data': data,
-			'minX': minX,
-			'minY': minY,
-			'minZ': minZ,
-			'maxX': maxX,
-			'maxY': maxY,
-			'maxZ': maxZ
+			'minX': min.x,
+			'minY': min.y,
+			'minZ': min.z,
+			'maxX': max.x,
+			'maxY': max.y,
+			'maxZ': max.z
 		};
 
 		return output;

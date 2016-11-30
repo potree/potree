@@ -191,7 +191,7 @@ Potree.Viewer = class{
 			
 			if(this.scene.pointclouds.length === 1){
 				this.setNavigationMode("Orbit");
-				this.flipYZ();
+				//this.flipYZ();
 				this.zoomTo(pointcloud, 1);
 			}
 			
@@ -1376,7 +1376,10 @@ Potree.Viewer = class{
 		
 		this.camera = new THREE.PerspectiveCamera(this.fov, aspect, near, far);
 		this.cameraBG = new THREE.Camera();
-		this.camera.rotation.order = 'ZYX';
+		this.camera.up.set(0, 0, 1);
+		//this.camera.rotation.order = 'ZYX';
+		
+		this.scene.referenceFrame.add(this.camera);
 		
 		
 

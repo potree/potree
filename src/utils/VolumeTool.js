@@ -329,7 +329,7 @@ Potree.VolumeTool = function(scene, camera, renderer, transformationTool){
 			label.setText(msg);
 			
 			var distance = scope.camera.position.distanceTo(label.getWorldPosition());
-			var pr = projectedRadius(1, scope.camera.fov * Math.PI / 180, distance, scope.renderer.domElement.clientHeight);
+			var pr = Potree.utils.projectedRadius(1, scope.camera.fov * Math.PI / 180, distance, scope.renderer.domElement.clientHeight);
 			var scale = (70 / pr);
 			label.scale.set(scale, scale, scale);
 		}

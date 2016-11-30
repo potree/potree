@@ -250,21 +250,19 @@ Potree.HeightProfile = function(){
 			if(leftBox){
 				var start = leftVertex;
 				var end = point;
-				var length = start.clone().setY(0).distanceTo(end.clone().setY(0));
-				leftBox.scale.set(length, this.height, this.width);
+				var length = start.clone().setZ(0).distanceTo(end.clone().setZ(0));
+				leftBox.scale.set(length, 1000000, this.width);
+				leftBox.up.set(0, 0, 1);
 				
 				var center = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
 				var diff = new THREE.Vector3().subVectors(end, start);
-				var target = new THREE.Vector3(diff.z, 0, -diff.x);
+				var target = new THREE.Vector3(diff.y, -diff.x, 0);
 				
 				leftBox.position.set(0,0,0);
 				leftBox.lookAt(target);
 				leftBox.position.copy(center);
 			}
-			
-			
-			
-			
+
 			centroid.add(point);
 			min.min(point);
 			max.max(point);
@@ -274,9 +272,7 @@ Potree.HeightProfile = function(){
 		for(var i = 0; i < this.boxes.length; i++){
 			var box = this.boxes[i];
 			
-			box.position.y = min.y + (max.y - min.y) / 2;
-			//box.scale.y = max.y - min.y + 50;
-			box.scale.y = 1000000;
+			box.position.z = min.z + (max.z - min.z) / 2;
 		}
 		
 	};
@@ -644,7 +640,7 @@ Potree.ProfileTool = function(scene, camera, renderer){
 				var sphere = profile.spheres[j];
 				
 				var distance = scope.camera.position.distanceTo(sphere.getWorldPosition());
-				var pr = projectedRadius(1, scope.camera.fov * Math.PI / 180, distance, renderer.domElement.clientHeight);
+				var pr = Potree.utils.projectedRadius(1, scope.camera.fov * Math.PI / 180, distance, renderer.domElement.clientHeight);
 				var scale = (15 / pr);
 				sphere.scale.set(scale, scale, scale);
 			}

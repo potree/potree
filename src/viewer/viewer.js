@@ -28,6 +28,8 @@ Potree.Scene = class{
 		this.pointclouds = [];
 		this.referenceFrame;
 		
+		this.measurements = [];
+		
 		this.fpControls;
 		this.orbitControls;
 		this.earthControls;
@@ -43,8 +45,28 @@ Potree.Scene = class{
 	addPointCloud(pointcloud){
 		this.pointclouds.push(pointcloud);
 		this.scenePointCloud.add(pointcloud);
-	}
+	};
 	
+	addMeasurement(measurement){
+		this.measurements.push(measurement);
+		this.dispatcher.dispatchEvent({
+			"type": "measurement_added",
+			"scene": this,
+			"measurement": measurement
+		});
+	};
+	
+	removeMeasurement(measurement){
+		let index = this.measurements.indexOf(measurement);
+		if (index > -1) {
+			this.measurements.splice(index, 1);
+			this.dispatcher.dispatchEvent({
+				"type": "measurement_removed",
+				"scene": this,
+				"measurement": measurement
+			});
+		}
+	}
 	
 	initialize(){
 		
@@ -1631,7 +1653,7 @@ class PotreeRenderer{
 		//viewer.volumeTool.render();
 		
 		viewer.renderer.clearDepth();
-		//viewer.measuringTool.render();
+		viewer.measuringTool.render();
 		//viewer.transformationTool.render();
 		
 		//Potree.endQuery(queryAll, viewer.renderer.getContext());
@@ -1818,7 +1840,7 @@ class HighQualityRenderer{
 			//viewer.volumeTool.render();
 			viewer.renderer.clearDepth();
 			//viewer.profileTool.render();
-			//viewer.measuringTool.render();
+			viewer.measuringTool.render();
 			//viewer.transformationTool.render();
 		}
 
@@ -2053,7 +2075,7 @@ class EDLRenderer{
 			//viewer.profileTool.render();
 			//viewer.volumeTool.render();
 			viewer.renderer.clearDepth();
-			//viewer.measuringTool.render();
+			viewer.measuringTool.render();
 			//viewer.transformationTool.render();
 		}
 

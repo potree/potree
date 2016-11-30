@@ -93,8 +93,20 @@
 			sceneSG.addPointCloud(e.pointcloud);
 			sceneSG.view.position.set(590030, 231767, 1007);
 			sceneSG.view.target = new THREE.Vector3(589844, 231376, 710);
-			
+
 			viewer.setScene(sceneSG);
+			
+			let measurement = new Potree.Measure();
+			measurement.showDistances = true;
+			measurement.showArea = false;
+			measurement.showAngles = false;
+			measurement.closed = false;
+			measurement.showCoordinates = false;
+			measurement.maxMarkers = Number.MAX_SAFE_INTEGER;
+			measurement.addMarker(new THREE.Vector3(589938.8594970703, 231457.48974609375, 727.9749997901916));
+			measurement.addMarker(new THREE.Vector3(589877.9293823242, 231472.29974365234, 735.1949995803833));
+
+			sceneSG.addMeasurement(measurement);
 			
 			sceneSG.addAnnotation(new THREE.Vector3(589621, 231437, 784), {
 				"cameraPosition": new THREE.Vector3(589661, 231470, 805),

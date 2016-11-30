@@ -148,14 +148,13 @@ Object.defineProperty(Potree.Volume.prototype, "modifiable", {
 });
 
 
-Potree.VolumeTool = function(scene, camera, renderer, transformationTool){
+Potree.VolumeTool = function(scene, renderer, transformationTool){
 	
 	var scope = this;
 	this.enabled = false;
 	
 	this.scene = scene;
 	this.sceneVolume = new THREE.Scene();
-	this.camera = camera;
 	this.renderer = renderer;
 	this.transformationTool = transformationTool;
 	this.domElement = this.renderer.domElement;
@@ -240,10 +239,10 @@ Potree.VolumeTool = function(scene, camera, renderer, transformationTool){
 	function getHoveredElement(){
 			
 		var vector = new THREE.Vector3( scope.mouse.x, scope.mouse.y, 0.5 );
-		vector.unproject(scope.camera);
+		vector.unproject(scope.scene.camera);
 		
 		var raycaster = new THREE.Raycaster();
-		raycaster.ray.set( scope.camera.position, vector.sub( scope.camera.position ).normalize() );
+		raycaster.ray.set( scope.scene.camera.position, vector.sub( scope.scene.camera.position ).normalize() );
 		
 		var objects = [];
 		for(var i = 0; i < scope.volumes.length; i++){
@@ -261,10 +260,10 @@ Potree.VolumeTool = function(scene, camera, renderer, transformationTool){
 	
 	function getMousePointCloudIntersection(){
 		var vector = new THREE.Vector3( scope.mouse.x, scope.mouse.y, 0.5 );
-		vector.unproject(scope.camera);
+		vector.unproject(scope.scene.camera);
 
-		var direction = vector.sub(scope.camera.position).normalize();
-		var ray = new THREE.Ray(scope.camera.position, direction);
+		var direction = vector.sub(scope.scene.camera.position).normalize();
+		var ray = new THREE.Ray(scope.scene.camera.position, direction);
 		
 		var pointClouds = [];
 		scope.scene.traverse(function(object){
@@ -278,13 +277,13 @@ Potree.VolumeTool = function(scene, camera, renderer, transformationTool){
 		
 		for(var i = 0; i < pointClouds.length; i++){
 			var pointcloud = pointClouds[i];
-			var point = pointcloud.pick(scope.renderer, scope.camera, ray);
+			var point = pointcloud.pick(scope.renderer, scope.scene.camera, ray);
 			
 			if(!point){
 				continue;
 			}
 			
-			var distance = scope.camera.position.distanceTo(point.position);
+			var distance = scope.scene.camera.position.distanceTo(point.position);
 			
 			if(!closestPoint || distance < closestPointDistance){
 				closestPoint = point;
@@ -328,8 +327,8 @@ Potree.VolumeTool = function(scene, camera, renderer, transformationTool){
 			var msg = Potree.utils.addCommas(capacity.toFixed(1)) + "³";
 			label.setText(msg);
 			
-			var distance = scope.camera.position.distanceTo(label.getWorldPosition());
-			var pr = Potree.utils.projectedRadius(1, scope.camera.fov * Math.PI / 180, distance, scope.renderer.domElement.clientHeight);
+			var distance = scope.scene.camera.position.distanceTo(label.getWorldPosition());
+			var pr = Potree.utils.projectedRadius(1, scope.scene.camera.fov * Math.PI / 180, distance, scope.renderer.domElement.clientHeight);
 			var scale = (70 / pr);
 			label.scale.set(scale, scale, scale);
 		}
@@ -384,7 +383,7 @@ Potree.VolumeTool = function(scene, camera, renderer, transformationTool){
 	
 	this.render = function(target){
 		
-		scope.renderer.render(this.sceneVolume, this.camera, target);
+		scope.renderer.render(this.sceneVolume, this.scene.camera, target);
 		
 	};
 	

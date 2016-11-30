@@ -78,29 +78,58 @@
 		viewer.setPointSizing("Adaptive");
 		viewer.setQuality("Squares");
 		viewer.setPointBudget(2*1000*1000);
-		viewer.loadSettingsFromURL();
-		
 		viewer.setIntensityRange(0, 300);
 		viewer.setWeightClassification(1);
+		viewer.loadSettingsFromURL();
 		
 		viewer.setDescription("");
 		
-		//viewer.addPointCloud("../pointclouds/vol_total/cloud.js", function(e){
-		//	e.pointcloud.setName("sigeom.sa");
-		//	//viewer.camera.position.set(589789.45, 761.83, -231420.51);
-		//});
+		let sceneSG = new Potree.Scene();
+		let sceneCA = new Potree.Scene();
+		let sceneLion = new Potree.Scene();
 		
 		
-		//viewer.addPointCloud("../pointclouds/lion_takanawa/cloud.js", function(e){
-		//	viewer.camera.position.set(3.65, 5.78, 4.97);
-		//	e.pointcloud.setName("Lion");
-		//});
-		
-		viewer.addPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/opentopography/CA13_1.4/cloud.js", "CA13", function(e){
-			viewer.camera.position.set(692643, 3915996, 777);
-			viewer.controls.target = new THREE.Vector3(694067, 3916332, 8);
+		Potree.loadPointCloud("../pointclouds/vol_total/cloud.js", "sigeom.sa", function(e){
+			sceneSG.addPointCloud(e.pointcloud);
+			sceneSG.view.position.set(590030, 231767, 1007);
+			sceneSG.view.target = new THREE.Vector3(589844, 231376, 710);
+			
+			viewer.setScene(sceneSG);
+			
+			sceneSG.addAnnotation(new THREE.Vector3(589621, 231437, 784), {
+				"cameraPosition": new THREE.Vector3(589661, 231470, 805),
+				"cameraTarget": new THREE.Vector3(589625.86, 231439, 775.38),
+				"actions": [{
+					"icon": "./resources/icons/goto.svg",
+					"onclick": function(){
+						viewer.setScene(sceneLion);
+					}
+				}]
+			});
 		});
 		
+		Potree.loadPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/opentopography/CA13_1.4/cloud.js", "CA13", function(e){
+			sceneCA.addPointCloud(e.pointcloud);
+			sceneCA.view.position.set(692643, 3915996, 777);
+			sceneCA.view.target = new THREE.Vector3(694067, 3916332, 8);
+		});
+		
+		Potree.loadPointCloud("../pointclouds/lion_takanawa/cloud.js", "lion", function(e){
+			sceneLion.addPointCloud(e.pointcloud);
+			sceneLion.view.position.set(4.15, -6.12, 8.54);
+			sceneLion.view.target = new THREE.Vector3(0, -0.098, 4.23);
+
+			
+			sceneLion.addAnnotation(new THREE.Vector3(0.72, -1, 8), {
+				"actions": [{
+					"icon": "./resources/icons/goto.svg",
+					"onclick": function(){
+						viewer.setScene(sceneSG);
+					}
+				}]
+			});
+		});
+
 		viewer.loadGUI();
         
         // Define default language: 'de'/'fr'/'en'

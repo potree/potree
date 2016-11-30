@@ -1,13 +1,12 @@
-Potree.Annotation = function(viewer, args){
+Potree.Annotation = function(scene, args){
 	var scope = this;
 	
 	Potree.Annotation.counter++;
 	
-	this.viewer = viewer;
+	this.scene = scene;
 	this.ordinal = args.title || Potree.Annotation.counter;
 	this.title = args.title || "No Title";
 	this.description = args.description || "";
-	this.scene = args.scene || null;
 	this.position = args.position || new THREE.Vector3(0,0,0);
 	this.cameraPosition = args.cameraPosition;
 	this.cameraTarget = args.cameraTarget || this.position;
@@ -101,11 +100,8 @@ Potree.Annotation = function(viewer, args){
 
 	};
 	this.elOrdinalText.onclick = function(){
-		scope.moveHere(scope.viewer.camera);
+		scope.moveHere(scope.scene.camera);
 		scope.dispatchEvent({type: "click", target: scope});
-		if(scope.viewer.geoControls){
-			scope.viewer.geoControls.setTrack(null);
-		}
 	};
 	
 	this.elDescriptionText = document.createElement("span");
@@ -133,7 +129,7 @@ Potree.Annotation = function(viewer, args){
 		var easing = TWEEN.Easing.Quartic.Out;
 
 		// animate camera position
-		var tween = new TWEEN.Tween(camera.position).to(scope.cameraPosition, animationDuration);
+		var tween = new TWEEN.Tween(scope.scene.view.position).to(scope.cameraPosition, animationDuration);
 		tween.easing(easing);
 		tween.start();
 		
@@ -146,12 +142,12 @@ Potree.Annotation = function(viewer, args){
 		var tween = new TWEEN.Tween(target).to(scope.cameraTarget, animationDuration);
 		tween.easing(easing);
 		tween.onUpdate(function(){
-			camera.lookAt(target);
-			scope.viewer.orbitControls.target.copy(target);
+			//camera.lookAt(target);
+			scope.scene.view.target.copy(target);
 		});
 		tween.onComplete(function(){
-			camera.lookAt(target);
-			scope.viewer.orbitControls.target.copy(target);
+			//camera.lookAt(target);
+			scope.scene.view.target.copy(target);
 			scope.dispatchEvent({type: "focusing_finished", target: scope});
 		});
 

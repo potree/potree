@@ -6,9 +6,10 @@ function networkToNative(val) {
 }
 
 Potree.GreyhoundBinaryLoader = function(version, boundingBox, scale){
-	if(typeof(version) === "string"){
+	if (typeof(version) === "string") {
 		this.version = new Potree.Version(version);
-	}else{
+	}
+    else {
 		this.version = version;
 	}
 
@@ -17,38 +18,40 @@ Potree.GreyhoundBinaryLoader = function(version, boundingBox, scale){
 };
 
 Potree.GreyhoundBinaryLoader.prototype.load = function(node){
-	if(node.loaded){
-		return;
-	}
+	if (node.loaded) return;
 
-	var scope = this;
-
+    var scope = this;
 	var url = node.getURL();
 
 	var xhr = new XMLHttpRequest();
 	xhr.open('GET', url, true);
 	xhr.responseType = 'arraybuffer';
 	xhr.overrideMimeType('text/plain; charset=x-user-defined');
+
 	xhr.onreadystatechange = function() {
 		if (xhr.readyState === 4) {
 			if (xhr.status === 200 || xhr.status === 0) {
 				var buffer = xhr.response;
 				scope.parse(node, buffer);
-			} else {
-				console.log('Failed to load file! HTTP status: ' + xhr.status + ", file: " + url);
+			}
+            else {
+				console.log(
+                        'Failed to load file! HTTP status:', xhr.status,
+                        'file:', url);
 			}
 		}
 	};
-	try{
+
+	try {
 		xhr.send(null);
-	}catch(e){
+	}
+    catch(e) {
 		console.log("error loading point cloud: " + e);
 	}
 };
 
 Potree.GreyhoundBinaryLoader.prototype.parse = function(node, buffer){
 	var NUM_POINTS_BYTES = 4;
-	var NUM_POINTS_BYTE_SIZE = 4;
 
     var view = new DataView(
             buffer, buffer.byteLength - NUM_POINTS_BYTES, NUM_POINTS_BYTES);
@@ -56,7 +59,6 @@ Potree.GreyhoundBinaryLoader.prototype.parse = function(node, buffer){
 	var pointAttributes = node.pcoGeometry.pointAttributes;
 
     node.numPoints = numPoints;
-
 
 	var ww = Potree.workers.greyhoundBinaryDecoder.getWorker();
 	ww.onmessage = function(e){
@@ -71,55 +73,73 @@ Potree.GreyhoundBinaryLoader.prototype.parse = function(node, buffer){
 
 		var geometry = new THREE.BufferGeometry();
 
-		for(var property in buffers){
-			if(buffers.hasOwnProperty(property)){
+        var addAttribute = function(name, buffer, size) {
+            geometry.addAttribute(
+                    name,
+                    new THREE.BufferAttribute(new Float32Array(buffer), size));
+        };
+
+		for (var property in buffers) {
+			if (buffers.hasOwnProperty(property)) {
 				var buffer = buffers[property].buffer;
 				var attribute = buffers[property].attribute;
 				var numElements = attribute.numElements;
 
-				if(parseInt(property) === Potree.PointAttributeNames.POSITION_CARTESIAN){
-					geometry.addAttribute("position", new THREE.BufferAttribute(new Float32Array(buffer), 3));
-				}else if(parseInt(property) === Potree.PointAttributeNames.COLOR_PACKED){
-					geometry.addAttribute("color", new THREE.BufferAttribute(new Float32Array(buffer), 3));
-				}else if(parseInt(property) === Potree.PointAttributeNames.INTENSITY){
-					geometry.addAttribute("intensity", new THREE.BufferAttribute(new Float32Array(buffer), 1));
-				}else if(parseInt(property) === Potree.PointAttributeNames.CLASSIFICATION){
-					geometry.addAttribute("classification", new THREE.BufferAttribute(new Float32Array(buffer), 1));
-				}else if(parseInt(property) === Potree.PointAttributeNames.NORMAL_SPHEREMAPPED){
-					geometry.addAttribute("normal", new THREE.BufferAttribute(new Float32Array(buffer), 3));
-				}else if(parseInt(property) === Potree.PointAttributeNames.NORMAL_OCT16){
-					geometry.addAttribute("normal", new THREE.BufferAttribute(new Float32Array(buffer), 3));
-				}else if(parseInt(property) === Potree.PointAttributeNames.NORMAL){
-					geometry.addAttribute("normal", new THREE.BufferAttribute(new Float32Array(buffer), 3));
-				}
+                var pointAttributes = Potree.PointAttributeNames;
+
+                switch (parseInt(property)) {
+                    case pointAttributes.POSITION_CARTESIAN:
+                        addAttribute('position', buffer, 3);
+                        break;
+                    case pointAttributes.COLOR_PACKED:
+                        addAttribute('color', buffer, 3);
+                        break;
+                    case pointAttributes.INTENSITY:
+                        addAttribute('intensity', buffer, 1);
+                        break;
+                    case pointAttributes.CLASSITICATION:
+                        addAttribute('classification', buffer, 1);
+                        break;
+                    case pointAttributes.NORMAL_SPHEREMAPPED:
+                    case pointAttributes.NORMAL_OCT16:
+                    case pointAttributes.NORMAL:
+                        addAttribute('normal', buffer, 3);
+                        break;
+                    default:
+                        break;
+                }
 			}
 		}
-		geometry.addAttribute("indices", new THREE.BufferAttribute(new Float32Array(data.indices), 1));
 
-		if(!geometry.attributes.normal){
-			var buffer = new Float32Array(numPoints*3);
-			geometry.addAttribute("normal", new THREE.BufferAttribute(new Float32Array(buffer), 3));
-		}
+        addAttribute('indices', data.indices, 1);
+
+		if (!geometry.attributes.normal) {
+            addAttribute('normal', new Float32Array(numPoints * 3), 3);
+        }
 
 		geometry.boundingBox = node.boundingBox;
 		node.geometry = geometry;
 		node.tightBoundingBox = tightBoundingBox;
 		node.loaded = true;
 		node.loading = false;
-		node.pcoGeometry.numNodesLoading--;
+		--node.pcoGeometry.numNodesLoading;
 	};
+
+    var bb = node.boundingBox;
+    var pco = node.pcoGeometry;
 
 	var message = {
 		buffer: buffer,
 		pointAttributes: pointAttributes,
 		version: this.version.version,
         schema: node.pcoGeometry.schema,
-		min: [ node.boundingBox.min.x, node.boundingBox.min.y, node.boundingBox.min.z ],
-		max: [ node.boundingBox.max.x, node.boundingBox.max.y, node.boundingBox.max.z ],
-		offset: [node.pcoGeometry.offset.x, node.pcoGeometry.offset.y, node.pcoGeometry.offset.z],
-		bbOffset: [node.pcoGeometry.bbOffset.x, node.pcoGeometry.bbOffset.y, node.pcoGeometry.bbOffset.z],
-		scale: this.scale
+		min: [bb.min.x, bb.min.y, bb.min.z],
+		max: [bb.max.x, bb.max.y, bb.max.z],
+		offset: [pco.offset.x, pco.offset.y, pco.offset.z],
+		bbOffset: [pco.bbOffset.x, pco.bbOffset.y, pco.bbOffset.z],
+        scale: this.scale
 	};
-	ww.postMessage(message, [message.buffer]);
 
+	ww.postMessage(message, [message.buffer]);
 };
+

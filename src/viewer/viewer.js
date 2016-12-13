@@ -29,6 +29,7 @@ Potree.Scene = class{
 		this.referenceFrame;
 		
 		this.measurements = [];
+		this.profiles = [];
 		
 		this.fpControls;
 		this.orbitControls;
@@ -64,6 +65,27 @@ Potree.Scene = class{
 				"type": "measurement_removed",
 				"scene": this,
 				"measurement": measurement
+			});
+		}
+	}
+	
+	addProfile(profile){
+		this.profiles.push(profile);
+		this.dispatcher.dispatchEvent({
+			"type": "profile_added",
+			"scene": this,
+			"profile": profile
+		});
+	}
+	
+	removeProfile(profile){
+		let index = this.profile.indexOf(profile);
+		if (index > -1) {
+			this.profile.splice(index, 1);
+			this.dispatcher.dispatchEvent({
+				"type": "profile_removed",
+				"scene": this,
+				"profile": profile
 			});
 		}
 	}
@@ -113,20 +135,28 @@ Potree.Scene = class{
 	}
 	
 	addAnnotation(position, args = {}){
-		var cameraPosition = args.cameraPosition;
-		var cameraTarget = args.cameraTarget || position;
-		var description = args.description || null;
-		var title = args.title || null;
-		var actions = args.actions || null;
+		//var cameraPosition = args.cameraPosition;
+		//var cameraTarget = args.cameraTarget || position;
+		//var description = args.description || null;
+		//var title = args.title || null;
+		//var actions = args.actions || null;
+		//
+		//var annotation = new Potree.Annotation(this, {
+		//	"position": position,
+		//	"cameraPosition": cameraPosition,
+		//	"cameraTarget": cameraTarget,
+		//	"title": title,
+		//	"description": description,
+		//	"actions": actions
+		//});
 		
-		var annotation = new Potree.Annotation(this, {
-			"position": position,
-			"cameraPosition": cameraPosition,
-			"cameraTarget": cameraTarget,
-			"title": title,
-			"description": description,
-			"actions": actions
-		});
+		args.position = position;
+		
+		if(!args.cameraTarget){
+			args.cameraTarget = position;
+		}
+		
+		var annotation = new Potree.Annotation(this, args);
 		
 		this.annotations.push(annotation);
 		
@@ -215,6 +245,7 @@ Potree.Viewer = class{
 		this.scene;
 
 		this.measuringTool;
+		this.profileTool;
 		this.volumeTool;
 		this.transformationTool;
 		
@@ -231,7 +262,11 @@ Potree.Viewer = class{
 		
 		{
 			this.measuringTool = new Potree.MeasuringTool(this.renderer);
-			this.profileTool = new Potree.ProfileTool(this.scene.scenePointCloud, this.scene.camera, this.renderer);
+			this.profileTool = new Potree.ProfileTool(this.renderer);
+			this.dispatcher.addEventListener("scene_changed", (e) => {
+				this.measuringTool.setScene(e.scene);
+				this.profileTool.setScene(e.scene);
+			});
 			//this.transformationTool = new Potree.TransformationTool(this.scene.scenePointCloud, this.scene.camera, this.renderer);
 			//this.volumeTool = new Potree.VolumeTool(this.scene, this.renderer, this.transformationTool);		
 			
@@ -284,7 +319,19 @@ Potree.Viewer = class{
 	
 	
 	setScene(scene){
+		
+		if(scene === this.scene){
+			return;
+		}
+		
+		let oldScene = scene;
 		this.scene = scene;
+		
+		this.dispatcher.dispatchEvent({
+			type: "scene_changed",
+			oldScene: oldScene,
+			scene: scene
+		});
 		
 		
 		{ // Annotations
@@ -301,9 +348,9 @@ Potree.Viewer = class{
 			}.bind(this));
 		}
 		
-		{
-			this.measuringTool.setScene(this.scene);
-		}
+		//{
+		//	this.measuringTool.setScene(this.scene);
+		//}
 		
 	};
 	
@@ -1441,19 +1488,16 @@ Potree.Viewer = class{
 		//this.profileTool.update();
 		
 		
-		//var clipBoxes = [];
-		//
-		//for(var i = 0; i < this.profileTool.profiles.length; i++){
-		//	var profile = this.profileTool.profiles[i];
-		//	
-		//	for(var j = 0; j < profile.boxes.length; j++){
-		//		var box = profile.boxes[j];
-		//		box.updateMatrixWorld();
-		//		var boxInverse = new THREE.Matrix4().getInverse(box.matrixWorld);
-		//		var boxPosition = box.getWorldPosition();
-		//		clipBoxes.push({inverse: boxInverse, position: boxPosition});
-		//	}
-		//}
+		var clipBoxes = [];
+		
+		for(let profile of this.scene.profiles){
+			for(let box of profile.boxes){
+				box.updateMatrixWorld();
+				var boxInverse = new THREE.Matrix4().getInverse(box.matrixWorld);
+				var boxPosition = box.getWorldPosition();
+				clipBoxes.push({inverse: boxInverse, position: boxPosition});
+			}
+		}
 		//
 		//for(var i = 0; i < this.volumeTool.volumes.length; i++){
 		//	var volume = this.volumeTool.volumes[i];
@@ -1468,9 +1512,9 @@ Potree.Viewer = class{
 		//}
 		//
 		//
-		//for(var i = 0; i < this.scene.pointclouds.length; i++){
-		//	this.scene.pointclouds[i].material.setClipBoxes(clipBoxes);
-		//}
+		for(let pointcloud of this.scene.pointclouds){
+			pointcloud.material.setClipBoxes(clipBoxes);
+		}
 		
 		{// update annotations
 			var distances = [];
@@ -1482,7 +1526,7 @@ Potree.Viewer = class{
 				screenPos.y = this.renderArea.clientHeight * (1 - (screenPos.y + 1) / 2);
 				
 				ann.domElement.style.left = Math.floor(screenPos.x - ann.domElement.clientWidth / 2) + "px";
-				ann.domElement.style.top = Math.floor(screenPos.y) + "px";
+				ann.domElement.style.top = Math.floor(screenPos.y - ann.domElement.clientHeight / 2) + "px";
 				
 				//ann.domDescription.style.left = screenPos.x - ann.domDescription.clientWidth / 2 + 10;
 				//ann.domDescription.style.top = screenPos.y + 30;
@@ -1649,7 +1693,7 @@ class PotreeRenderer{
 		viewer.renderer.render(viewer.scene.scenePointCloud, viewer.scene.camera);
 		//Potree.endQuery(queryPC, viewer.renderer.getContext());
 		
-		//viewer.profileTool.render();
+		viewer.profileTool.render();
 		//viewer.volumeTool.render();
 		
 		viewer.renderer.clearDepth();
@@ -1839,7 +1883,7 @@ class HighQualityRenderer{
 			
 			//viewer.volumeTool.render();
 			viewer.renderer.clearDepth();
-			//viewer.profileTool.render();
+			viewer.profileTool.render();
 			viewer.measuringTool.render();
 			//viewer.transformationTool.render();
 		}
@@ -2072,7 +2116,7 @@ class EDLRenderer{
 
 			
 			
-			//viewer.profileTool.render();
+			viewer.profileTool.render();
 			//viewer.volumeTool.render();
 			viewer.renderer.clearDepth();
 			viewer.measuringTool.render();

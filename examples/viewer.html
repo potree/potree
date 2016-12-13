@@ -30,6 +30,7 @@
     <script src="../libs/i18next/i18next.js"></script>
 	
 	<script src="../build/potree/potree.js"></script>
+	<script src="../src/viewer/sidebar.js"></script>
 	
 	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
 	<!-- INCLUDE SETTINGS HERE -->
@@ -96,17 +97,35 @@
 
 			viewer.setScene(sceneSG);
 			
-			let measurement = new Potree.Measure();
-			measurement.showDistances = true;
-			measurement.showArea = false;
-			measurement.showAngles = false;
-			measurement.closed = false;
-			measurement.showCoordinates = false;
-			measurement.maxMarkers = Number.MAX_SAFE_INTEGER;
-			measurement.addMarker(new THREE.Vector3(589938.8594970703, 231457.48974609375, 727.9749997901916));
-			measurement.addMarker(new THREE.Vector3(589877.9293823242, 231472.29974365234, 735.1949995803833));
+			{
+				let measurement = new Potree.Measure();
+				measurement.showDistances = true;
+				measurement.showArea = false;
+				measurement.showAngles = false;
+				measurement.closed = false;
+				measurement.showCoordinates = false;
+				measurement.maxMarkers = Number.MAX_SAFE_INTEGER;
+				measurement.addMarker(new THREE.Vector3(589938.8594970703, 231457.48974609375, 727.9749997901916));
+				measurement.addMarker(new THREE.Vector3(589877.9293823242, 231472.29974365234, 735.1949995803833));
 
-			sceneSG.addMeasurement(measurement);
+				sceneSG.addMeasurement(measurement);
+			}
+			
+			{
+				let profile = new Potree.Profile();
+				profile.addMarker(new THREE.Vector3(590055.51, 231403.00, 747.03));
+				profile.addMarker(new THREE.Vector3(590050.27, 231529.36, 727.91));
+				profile.addMarker(new THREE.Vector3(589955.85, 231481.13, 726.60));
+				profile.setWidth(5);
+
+				sceneSG.addProfile(profile);
+			}
+			
+			//sceneSG.addAnnotation(new THREE.Vector3(589621, 231437, 784), {
+			//	"cameraPosition": new THREE.Vector3(589661, 231470, 805),
+			//	"cameraTarget": new THREE.Vector3(589625.86, 231439, 775.38),
+			//	"appearance": '<img src="./resources/lion_icon_64.png">'
+			//});
 			
 			sceneSG.addAnnotation(new THREE.Vector3(589621, 231437, 784), {
 				"cameraPosition": new THREE.Vector3(589661, 231470, 805),

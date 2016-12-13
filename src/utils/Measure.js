@@ -54,33 +54,30 @@ Potree.Measure = class{
 		let sphere = new THREE.Mesh(this.sphereGeometry, this.createSphereMaterial());
 		
 		{
-			let moveEvent = function(event){
+			let moveEvent = (event) => {
 				event.target.material.emissive.setHex(0x888888);
-			}.bind(this);
+			};
 			
-			let leaveEvent = function(event){
+			let leaveEvent = (event) => {
 				event.target.material.emissive.setHex(0x000000);
-			}.bind(this);
+			};
 			
-			let dragEvent = function(event){
+			let dragEvent = (event) => {
 				let tool = event.tool;
 				let dragstart = tool.dragstart;
 				let mouse = tool.mouse;
 			
-				let point = tool.getMousePointCloudIntersection();
+				let point = tool.getMousePointCloudIntersection.bind(tool)();
 					
 				if(point){
-					let position = point.position;
 					let index = this.spheres.indexOf(tool.dragstart.object);
 					this.setMarker(index, point);
 				}
 				
 				event.event.stopImmediatePropagation();
-			}.bind(this);
+			};
 			
-			let dropEvent = function(event){
-			
-			}.bind(this);
+			let dropEvent = (event) => { };
 			
 			sphere.addEventListener("move", moveEvent);
 			sphere.addEventListener("leave", leaveEvent);
@@ -150,13 +147,13 @@ Potree.Measure = class{
 	removeMarker(index){
 		this.points.splice(index, 1);
 		
-		this.remove(this.spheres[index]);
+		this.sceneNode.remove(this.spheres[index]);
 		
 		let edgeIndex = (index === 0) ? 0 : (index - 1);
-		this.remove(this.edges[edgeIndex]);
+		this.sceneNode.remove(this.edges[edgeIndex]);
 		this.edges.splice(edgeIndex, 1);
 		
-		this.remove(this.edgeLabels[edgeIndex]);
+		this.sceneNode.remove(this.edgeLabels[edgeIndex]);
 		this.edgeLabels.splice(edgeIndex, 1);
 		this.coordinateLabels.splice(index, 1);
 		
@@ -247,7 +244,7 @@ Potree.Measure = class{
 				let msg = Potree.utils.addCommas(position.x.toFixed(2)) + " / " + Potree.utils.addCommas(position.y.toFixed(2)) + " / " + Potree.utils.addCommas(position.z.toFixed(2));
 				coordinateLabel.setText(msg);
 				
-				coordinateLabel.visible = this.showCoordinates && (index < lastIndex || this.closed);
+				//coordinateLabel.visible = this.showCoordinates && (index < lastIndex || this.closed);
 			}
 			
 			return;
@@ -329,7 +326,9 @@ Potree.Measure = class{
 				let labelPos = point.position.clone().add(new THREE.Vector3(0,1,0));
 				coordinateLabel.position.copy(labelPos);
 				
-				let msg = Potree.utils.addCommas(point.position.x.toFixed(2)) + " / " + Potree.utils.addCommas(point.position.y.toFixed(2)) + " / " + Potree.utils.addCommas(point.position.z.toFixed(2));
+				let msg = Potree.utils.addCommas(point.position.x.toFixed(2)) 
+					+ " / " + Potree.utils.addCommas(point.position.y.toFixed(2)) 
+					+ " / " + Potree.utils.addCommas(point.position.z.toFixed(2));
 				//let msg = "abc";
 				coordinateLabel.setText(msg);
 				
@@ -340,7 +339,7 @@ Potree.Measure = class{
 		// update area label
 		this.areaLabel.position.copy(centroid);
 		this.areaLabel.visible = this.showArea && this.points.length >= 3;
-		let msg = Potree.utils.addCommas(this.getArea().toFixed(1)) + "²";
+		let msg = Potree.utils.addCommas(this.getArea().toFixed(1)) + "";
 		this.areaLabel.setText(msg);
 	};
 	

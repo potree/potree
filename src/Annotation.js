@@ -14,28 +14,56 @@ Potree.Annotation = function(scene, args){
 	this.keepOpen = false;
 	this.descriptionVisible = false;
 	this.actions = args.actions || null;
+	this.appearance = args.appearance || null;
 	
 	this.domElement = document.createElement("div");
 	this.domElement.style.position = "absolute";
 	this.domElement.style.opacity = "0.5";
-	//this.domElement.style.border = "1px solid red";
 	this.domElement.style.padding = "10px";
 	this.domElement.style.whiteSpace = "nowrap";
 	this.domElement.className = "annotation";
 	
-	this.elOrdinal = document.createElement("div");
-	this.elOrdinal.style.position = "relative";
-	//this.elOrdinal.style.width = "1.5em";
-	//this.elOrdinal.style.height = "1.5em";
-	this.elOrdinal.style.color = "white";
-	this.elOrdinal.style.backgroundColor = "black";
-	this.elOrdinal.style.borderRadius = "1.5em";
-	this.elOrdinal.style.fontSize = "1em";
-	this.elOrdinal.style.opacity = "1";
-	this.elOrdinal.style.margin = "auto";
-	this.elOrdinal.style.zIndex = "100";
-	this.elOrdinal.style.width = "fit-content";
-	this.domElement.appendChild(this.elOrdinal);
+	if(this.appearance !== null){
+		this.elOrdinal = document.createElement("div");
+		this.elOrdinal.style.position = "relative";
+		this.elOrdinal.style.zIndex = "100";
+		this.elOrdinal.style.width = "fit-content";
+		
+		this.elOrdinal.innerHTML = this.appearance;
+		this.domElement.appendChild(this.elOrdinal);
+	}else{
+		this.elOrdinal = document.createElement("div");
+		this.elOrdinal.style.position = "relative";
+		this.elOrdinal.style.color = "white";
+		this.elOrdinal.style.backgroundColor = "black";
+		this.elOrdinal.style.borderRadius = "1.5em";
+		this.elOrdinal.style.fontSize = "1em";
+		this.elOrdinal.style.opacity = "1";
+		this.elOrdinal.style.margin = "auto";
+		this.elOrdinal.style.zIndex = "100";
+		this.elOrdinal.style.width = "fit-content";
+		this.domElement.appendChild(this.elOrdinal);
+		
+		this.elOrdinalText = document.createElement("span");
+		this.elOrdinalText.style.display = "inline-block";
+		this.elOrdinalText.style.verticalAlign = "middle";
+		this.elOrdinalText.style.lineHeight = "1.5em";
+		this.elOrdinalText.style.textAlign = "center";
+		this.elOrdinalText.style.fontFamily = "Arial";
+		this.elOrdinalText.style.fontWeight = "bold";
+		this.elOrdinalText.style.padding = "1px 8px 0px 8px";
+		this.elOrdinalText.style.cursor = "default";
+		this.elOrdinalText.innerHTML = this.ordinal;
+		this.elOrdinalText.userSelect = "none";
+		this.elOrdinal.appendChild(this.elOrdinalText);
+		
+		this.elOrdinal.onmouseenter = function(){};
+		this.elOrdinal.onmouseleave = function(){};
+		this.elOrdinalText.onclick = function(){
+			scope.moveHere(scope.scene.camera);
+			scope.dispatchEvent({type: "click", target: scope});
+		};
+	}
 	
 	this.domDescription = document.createElement("div");
 	this.domDescription.style.position = "relative";
@@ -46,25 +74,7 @@ Potree.Annotation = function(scene, args){
 	this.domDescription.style.borderRadius = "4px";
 	this.domDescription.style.display = "none";
 	this.domDescription.className = "annotation";
-	//this.domDescription.style.top = "20";
-	//this.domDescription.style.left = "-100";
 	this.domElement.appendChild(this.domDescription);
-	
-	
-
-	
-	this.elOrdinalText = document.createElement("span");
-	this.elOrdinalText.style.display = "inline-block";
-	this.elOrdinalText.style.verticalAlign = "middle";
-	this.elOrdinalText.style.lineHeight = "1.5em";
-	this.elOrdinalText.style.textAlign = "center";
-	this.elOrdinalText.style.fontFamily = "Arial";
-	this.elOrdinalText.style.fontWeight = "bold";
-	this.elOrdinalText.style.padding = "1px 8px 0px 8px";
-	this.elOrdinalText.style.cursor = "default";
-	this.elOrdinalText.innerHTML = this.ordinal;
-	this.elOrdinalText.userSelect = "none";
-	this.elOrdinal.appendChild(this.elOrdinalText);
 	
 	if(this.actions != null){
 		this.elOrdinalText.style.padding = "1px 3px 0px 8px";
@@ -92,17 +102,6 @@ Potree.Annotation = function(scene, args){
 			};
 		}
 	}
-	
-	this.elOrdinal.onmouseenter = function(){
-		
-	};
-	this.elOrdinal.onmouseleave = function(){
-
-	};
-	this.elOrdinalText.onclick = function(){
-		scope.moveHere(scope.scene.camera);
-		scope.dispatchEvent({type: "click", target: scope});
-	};
 	
 	this.elDescriptionText = document.createElement("span");
 	this.elDescriptionText.style.color = "#ffffff";

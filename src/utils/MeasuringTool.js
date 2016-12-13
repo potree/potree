@@ -74,7 +74,7 @@ Potree.MeasuringTool = class{
 				let point = this.getMousePointCloudIntersection();
 				
 				if(point){
-					let position = point.position;
+					//let position = point.position;
 					let lastIndex = this.activeMeasurement.points.length-1;
 					//this.activeMeasurement.setPosition(lastIndex, position);
 					this.activeMeasurement.setMarker(lastIndex, point);
@@ -171,6 +171,7 @@ Potree.MeasuringTool = class{
 	}
 	
 	setScene(scene){
+		
 		this.scene = scene;
 		this.measurements = this.scene.measurements;
 		
@@ -188,17 +189,17 @@ Potree.MeasuringTool = class{
 			this.sceneMeasurement.add(measurement.sceneNode);
 		}
 		
-		this.scene.addEventListener("measurement_added", function(e){
+		this.scene.addEventListener("measurement_added", (e) => {
 			if(this.scene === e.scene){
 				this.sceneMeasurement.add(e.measurement.sceneNode);
 			}
-		}.bind(this));
+		});
 		
-		this.scene.addEventListener("measurement_removed", function(e){
+		this.scene.addEventListener("measurement_removed", (e) => {
 			if(this.scene === e.scene){
 				this.sceneMeasurement.remove(e.measurement.sceneNode);
 			}
-		}.bind(this));
+		});
 	}
 	
 	addEventListener(type, callback){
@@ -238,7 +239,7 @@ Potree.MeasuringTool = class{
 		let ray = new THREE.Ray(this.scene.camera.position, direction);
 		
 		let pointClouds = [];
-		this.scene.traverse(function(object){
+		this.scene.scenePointCloud.traverse(function(object){
 			if(object instanceof Potree.PointCloudOctree || object instanceof Potree.PointCloudArena4D){
 				pointClouds.push(object);
 			}
@@ -283,11 +284,12 @@ Potree.MeasuringTool = class{
 		measurement.closed = closed;
 		measurement.showCoordinates = showCoordinates;
 		measurement.maxMarkers = maxMarkers;
-
-		this.addMeasurement(measurement);
 		measurement.addMarker(new THREE.Vector3(Infinity,Infinity,Infinity));
-		
+
+		this.scene.addMeasurement(measurement);
 		this.activeMeasurement = measurement;
+		
+		return this.activeMeasurement;
 	};
 	
 	finishInsertion(){
@@ -301,39 +303,6 @@ Potree.MeasuringTool = class{
 		
 		this.activeMeasurement = null;
 		this.state = this.STATE.DEFAULT;
-	};
-	
-	addMeasurement(measurement){
-		this.sceneMeasurement.add(measurement.sceneNode);
-		this.measurements.push(measurement);
-		
-		this.dispatcher.dispatchEvent({"type": "measurement_added", measurement: measurement});
-		measurement.addEventListener("marker_added", function(event){
-			this.dispatcher.dispatchEvent(event);
-		}.bind(this));
-		measurement.addEventListener("marker_removed", function(event){
-			this.dispatcher.dispatchEvent(event);
-		}.bind(this));
-		measurement.addEventListener("marker_moved", function(event){
-			this.dispatcher.dispatchEvent(event);
-		}.bind(this));
-	};
-	
-	removeMeasurement(measurement){
-		this.sceneMeasurement.remove(measurement.sceneNode);
-		let index = this.measurements.indexOf(measurement);
-		if(index >= 0){
-			this.measurements.splice(index, 1);
-			
-			this.dispatcher.dispatchEvent({"type": "measurement_removed", measurement: measurement});
-		}
-	};
-	
-	reset(){
-		for(let i = this.measurements.length - 1; i >= 0; i--){
-			let measurement = this.measurements[i];
-			this.removeMeasurement(measurement);
-		}
 	};
 	
 	update(){

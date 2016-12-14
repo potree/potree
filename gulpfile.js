@@ -7,6 +7,7 @@ var size = require('gulp-size');
 var rename = require('gulp-rename');
 var uglify = require('gulp-uglify');
 var gutil = require('gulp-util');
+var babel = require('gulp-babel');
 var through = require('through');
 var os = require('os');
 var File = gutil.File;
@@ -115,6 +116,9 @@ gulp.task("shaders", function(){
 
 gulp.task("scripts", ['workers','shaders'], function(){
 	gulp.src(paths.potree)
+		.pipe(babel({
+			presets: ['es2015']
+		}))
 		.pipe(concat('potree.js'))
 		.pipe(size({showFiles: true}))
 		.pipe(gulp.dest('build/potree'))

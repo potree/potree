@@ -79,14 +79,24 @@ Potree.Scene = class{
 	}
 	
 	removeProfile(profile){
-		let index = this.profile.indexOf(profile);
+		let index = this.profiles.indexOf(profile);
 		if (index > -1) {
-			this.profile.splice(index, 1);
+			this.profiles.splice(index, 1);
 			this.dispatcher.dispatchEvent({
 				"type": "profile_removed",
 				"scene": this,
 				"profile": profile
 			});
+		}
+	}
+	
+	removeAllMeasurements(){
+		while(this.measurements.length > 0){
+			this.removeMeasurement(this.measurements[0]);
+		}
+		
+		while(this.profiles.length > 0){
+			this.removeProfile(this.profiles[0]);
 		}
 	}
 	

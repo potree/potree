@@ -60,9 +60,7 @@ function initToolbar(){
 		Potree.resourcePath + "/icons/reset_tools.svg",
 		"[title]tt.remove_all_measurement",
 		function(){
-			viewer.measuringTool.reset();
-			viewer.profileTool.reset();
-			viewer.volumeTool.reset();
+			viewer.scene.removeAllMeasurements();
 		}
 	));
 }
@@ -677,7 +675,7 @@ function initMeasurementDetails(){
 			elPanelIcon.src = Potree.resourcePath + "/icons/profile.svg";
 			elPanelStretch.innerHTML = "Profile";
 			
-			elPanelRemove.onclick = function(){scene.removeProfile(profile);};
+			elPanelRemove.onclick = function(){scene.removeProfile(measurement);};
 		} else if(measurement instanceof Potree.Volume){
 			elPanelIcon.src = Potree.resourcePath + "/icons/volume.svg";
 			elPanelStretch.innerHTML = "Volume";
@@ -942,7 +940,7 @@ function initMeasurementDetails(){
 			};
 		} else if(measurement instanceof Potree.Profile){
 			let onremove = function(event){
-				if(event.measurement === measurement){
+				if(event.profile === measurement){
 					scene.dispatcher.removeEventListener("marker_added", updateDisplay);
 					scene.dispatcher.removeEventListener("marker_removed", updateDisplay);
 					scene.dispatcher.removeEventListener("marker_moved", updateDisplay);

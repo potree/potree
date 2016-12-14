@@ -7,7 +7,7 @@ Potree.Measure = class{
 		this.points = [];
 		this._showDistances = true;
 		this._showCoordinates = false;
-		this._showArea = true;
+		this._showArea = false;
 		this._closed = true;
 		this._showAngles = false;
 		this.maxMarkers = Number.MAX_SAFE_INTEGER;
@@ -241,7 +241,9 @@ Potree.Measure = class{
 				let labelPos = position.clone().add(new THREE.Vector3(0,1,0));
 				coordinateLabel.position.copy(labelPos);
 				
-				let msg = Potree.utils.addCommas(position.x.toFixed(2)) + " / " + Potree.utils.addCommas(position.y.toFixed(2)) + " / " + Potree.utils.addCommas(position.z.toFixed(2));
+				let msg = Potree.utils.addCommas(position.x.toFixed(2)) 
+					+ " / " + Potree.utils.addCommas(position.y.toFixed(2)) 
+					+ " / " + Potree.utils.addCommas(position.z.toFixed(2));
 				coordinateLabel.setText(msg);
 				
 				//coordinateLabel.visible = this.showCoordinates && (index < lastIndex || this.closed);
@@ -329,7 +331,6 @@ Potree.Measure = class{
 				let msg = Potree.utils.addCommas(point.position.x.toFixed(2)) 
 					+ " / " + Potree.utils.addCommas(point.position.y.toFixed(2)) 
 					+ " / " + Potree.utils.addCommas(point.position.z.toFixed(2));
-				//let msg = "abc";
 				coordinateLabel.setText(msg);
 				
 				coordinateLabel.visible = this.showCoordinates && (index < lastIndex || this.closed);

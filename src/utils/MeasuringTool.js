@@ -383,11 +383,11 @@ Potree.MeasuringTool = class{
 				let scale = (70 / pr);
 				label.scale.set(scale, scale, scale);
 				
-				let geoCoord = point.position;
-				let txt = Potree.utils.addCommas(geoCoord.x.toFixed(2)) + " / ";
-				txt += Potree.utils.addCommas((-geoCoord.z).toFixed(2)) + " / ";
-				txt += Potree.utils.addCommas(geoCoord.y.toFixed(2));
-				label.setText(txt);
+				//let geoCoord = point.position;
+				//let txt = Potree.utils.addCommas(geoCoord.x.toFixed(2)) + " / ";
+				//txt += Potree.utils.addCommas((geoCoord.y).toFixed(2)) + " / ";
+				//txt += Potree.utils.addCommas(geoCoord.z.toFixed(2));
+				//label.setText(txt);
 			}
 			
 			// areaLabel

@@ -46,6 +46,11 @@ Potree.Scene = class{
 	addPointCloud(pointcloud){
 		this.pointclouds.push(pointcloud);
 		this.scenePointCloud.add(pointcloud);
+		
+		this.dispatcher.dispatchEvent({
+			type: "pointcloud_added",
+			pointcloud: pointcloud
+		});
 	};
 	
 	addMeasurement(measurement){
@@ -280,7 +285,7 @@ Potree.Viewer = class{
 			//this.transformationTool = new Potree.TransformationTool(this.scene.scenePointCloud, this.scene.camera, this.renderer);
 			//this.volumeTool = new Potree.VolumeTool(this.scene, this.renderer, this.transformationTool);		
 			
-			let onKeyDown = function(event){
+			let onKeyDown = (event) => {
 				//console.log(event.keyCode);
 				
 				if(event.keyCode === 69){
@@ -293,7 +298,15 @@ Potree.Viewer = class{
 					// t pressed
 					this.transformationTool.rotate();
 				}
-			}.bind(this);
+			};
+			
+			this.dispatcher.addEventListener("scene_changed", (e) => {
+				this.updateHeightRange();
+			});
+			
+			this.dispatcher.addEventListener("pointcloud_added", (e) => {
+				this.updateHeightRange();
+			});
 			
 			window.addEventListener( 'keydown', onKeyDown, false );
 		}
@@ -358,10 +371,6 @@ Potree.Viewer = class{
 			}.bind(this));
 		}
 		
-		//{
-		//	this.measuringTool.setScene(this.scene);
-		//}
-		
 	};
 	
 	getControls(view){
@@ -406,51 +415,6 @@ Potree.Viewer = class{
 	addEventListener(type, callback){
 		this.dispatcher.addEventListener(type, callback);
 	}
-	
-	addPointCloud(path, name, callback){
-		callback = callback || function(){};
-		var initPointcloud = function(pointcloud){
-			
-			if(!this.mapView){
-				if(pointcloud.projection){
-					this.mapView = new Potree.MapView(this);
-					this.mapView.init(this);
-				}
-			}
-		
-			this.scene.pointclouds.push(pointcloud);
-			this.scene.referenceFrame.add(pointcloud);
-		
-			var sg = pointcloud.boundingSphere.clone().applyMatrix4(pointcloud.matrixWorld);
-			 
-			this.scene.referenceFrame.updateMatrixWorld(true);
-
-			this.zoomTo(pointcloud, 1);
-			
-			var hr = this.getHeightRange();
-			if(hr.min === null || hr.max === null){
-				var bbWorld = this.getBoundingBox();
-				
-				this.setHeightRange(bbWorld.min.y, bbWorld.max.y);
-			}
-			
-			this.earthControls.pointclouds.push(pointcloud);	
-			
-			
-			if(this.scene.pointclouds.length === 1){
-				this.setNavigationMode("Orbit");
-				//this.flipYZ();
-				this.zoomTo(pointcloud, 1);
-			}
-			
-			this.dispatcher.dispatchEvent({"type": "pointcloud_loaded", "pointcloud": pointcloud});
-			
-			callback({type: "pointcloud_loaded", pointcloud: pointcloud});
-		}.bind(this);
-		this.dispatcher.addEventListener("pointcloud_loaded", this.pointCloudLoadedCallback);
-		
-		
-	};
 	
 	getMinNodeSize(){
 		return this.minNodeSize;
@@ -539,7 +503,7 @@ Potree.Viewer = class{
 	};
 	
 	getElevationRange(){
-		return getHeightRange();
+		return this.getHeightRange();
 	};
 	
 	setIntensityRange(min, max){
@@ -1049,26 +1013,6 @@ Potree.Viewer = class{
 		return box;
 	};
 	
-	getBoundingBoxGeo(pointclouds){
-		pointclouds = pointclouds || this.scene.pointclouds;
-		
-		var box = new THREE.Box3();
-		
-		this.scene.scenePointCloud.updateMatrixWorld(true);
-		this.scene.referenceFrame.updateMatrixWorld(true);
-		
-		for(var i = 0; i < this.scene.pointclouds.length; i++){
-			var pointcloud = this.scene.pointclouds[i];
-			
-			pointcloud.updateMatrixWorld(true);
-			
-			var boxWorld = Potree.utils.computeTransformedBoundingBox(pointcloud.boundingBox, pointcloud.matrix)
-			box.union(boxWorld);
-		}
-		
-		return box;
-	};
-	
 	fitToScreen(){
 		var box = this.getBoundingBox(this.scene.pointclouds);
 		
@@ -1151,7 +1095,7 @@ Potree.Viewer = class{
 	
 	updateHeightRange(){
 		var bbWorld = this.getBoundingBox();
-		this.setHeightRange(bbWorld.min.y, bbWorld.max.y);
+		this.setHeightRange(bbWorld.min.z, bbWorld.max.z);
 	};
 	
 	loadSettingsFromURL(){

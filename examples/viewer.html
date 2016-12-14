@@ -30,7 +30,7 @@
     <script src="../libs/i18next/i18next.js"></script>
 	
 	<script src="../build/potree/potree.js"></script>
-	<script src="../src/viewer/sidebar.js"></script>
+	<!--<script src="../src/viewer/sidebar.js"></script>-->
 	
 	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
 	<!-- INCLUDE SETTINGS HERE -->
@@ -57,15 +57,7 @@
 	
 	<script>
 	
-		var onPointCloudLoaded = function(event){
-			// do stuff here that should be executed whenever a point cloud has been loaded.
-			// event.pointcloud returns the point cloud object
-			console.log("a point cloud has been loaded");
-		}; 
-	
-		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"), {
-			"onPointCloudLoaded": onPointCloudLoaded
-		});
+		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
 		
 		viewer.setEDLEnabled(true);
 		viewer.setPointSize(1);
@@ -83,7 +75,6 @@
 		let sceneSG = new Potree.Scene();
 		let sceneCA = new Potree.Scene();
 		let sceneLion = new Potree.Scene();
-		
 		
 		Potree.loadPointCloud("../pointclouds/vol_total/cloud.js", "sigeom.sa", function(e){
 			sceneSG.addPointCloud(e.pointcloud);

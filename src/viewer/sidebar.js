@@ -205,9 +205,9 @@ function initMaterials(){
 
 	var updateHeightRange = function(){
 		let box = viewer.getBoundingBox();
-		let bWidth = box.max.y - box.min.y;
-		bMin = box.min.y - 0.2 * bWidth;
-		bMax = box.max.y + 0.2 * bWidth;
+		let bWidth = box.max.z - box.min.z;
+		bMin = box.min.z - 0.2 * bWidth;
+		bMax = box.max.z + 0.2 * bWidth;
 		
 		let hr = viewer.getHeightRange();
 		let hrWidth = hr.max - hr.min;

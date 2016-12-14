@@ -36,7 +36,6 @@ Potree.Measure = class{
 		let sphereMaterial = new THREE.MeshLambertMaterial({
 			shading: THREE.SmoothShading, 
 			color: this.color, 
-			ambient: 0xaaaaaa,
 			depthTest: false, 
 			depthWrite: false}
 		);

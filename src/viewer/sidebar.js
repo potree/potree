@@ -1050,6 +1050,17 @@ function initSceneList(){
 		addPointcloud(pointcloud);
 	}
 	
+	viewer.addEventListener("scene_changed", (e) => {
+		scenelist.empty();
+		
+		let scene = e.scene;
+		for(var i = 0; i < scene.pointclouds.length; i++){
+			var pointcloud = scene.pointclouds[i];
+			addPointcloud(pointcloud);
+		}
+	});
+	
+	// TODO update scene list on scene switch
 	viewer.addEventListener("pointcloud_loaded", function(event){
 		addPointcloud(event.pointcloud);
 	});

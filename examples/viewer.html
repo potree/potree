@@ -75,13 +75,42 @@
 		let sceneSG = new Potree.Scene();
 		let sceneCA = new Potree.Scene();
 		let sceneLion = new Potree.Scene();
+		let sceneHeidentor = new Potree.Scene();
+		
+		viewer.setScene(sceneHeidentor);
+		
+		{ // Heidentor
+			Potree.loadPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/archpro/heidentor/cloud.js", "Heidentor", (e) => {
+				sceneHeidentor.addPointCloud(e.pointcloud);
+				
+				viewer.scene.view.position.set(17.7, 13.1, 15.6);
+				viewer.scene.view.target.set(-4.7,  1.4,  4.8);
+				
+				sceneHeidentor.addAnnotation(new THREE.Vector3(-2.66, 3.30, 14.51), {
+					"title": "Heidentor",
+					"cameraPosition": new THREE.Vector3(17.7, 13.1, 15.6),
+					"cameraTarget": new THREE.Vector3(-4.7,  1.4,  4.8),
+				});
+				
+				sceneHeidentor.addAnnotation(new THREE.Vector3(-0.36, 13.58, 5.00), {
+					"title": "to lion",
+					"actions": [{
+						"icon": "./resources/icons/goto.svg",
+						"onclick": function(){
+							viewer.setScene(sceneLion);
+						}
+					}]
+				});
+				
+			});
+		}
 		
 		Potree.loadPointCloud("../pointclouds/vol_total/cloud.js", "sigeom.sa", function(e){
 			sceneSG.addPointCloud(e.pointcloud);
 			sceneSG.view.position.set(590030, 231767, 1007);
 			sceneSG.view.target = new THREE.Vector3(589844, 231376, 710);
 
-			viewer.setScene(sceneSG);
+			//viewer.setScene(sceneSG);
 			
 			{
 				let measurement = new Potree.Measure();
@@ -135,16 +164,19 @@
 				"actions": [{
 					"icon": "./resources/icons/goto.svg",
 					"onclick": function(){
-						viewer.setScene(sceneSG);
+						viewer.setScene(sceneHeidentor);
 					}
 				}]
 			});
 		});
 
 		viewer.loadGUI();
-        
+        viewer.toggleSidebar();
+		
         // Define default language: 'de'/'fr'/'en'
         viewer.setLanguage('en');
+		
+		
 		
 	</script>
 	

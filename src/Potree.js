@@ -294,7 +294,10 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 			}
 			
 			if(pointcloud.showBoundingBox && !node.boundingBoxNode){
-				let boxHelper = new THREE.BoxHelper(node.sceneNode);
+				//let min = pointcloud.
+				//let box = new THREE.Box3(min, max);
+				//let boxHelper = new THREE.BoxHelper(node.sceneNode);
+				let boxHelper = new THREE.BoxHelper(node.getBoundingBox());
 				pointcloud.add(boxHelper);
 				pointcloud.boundingBoxNodes.push(boxHelper);
 				node.boundingBoxNode = boxHelper;

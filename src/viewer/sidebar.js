@@ -439,6 +439,7 @@ function initAccordion(){
 	
 	$("#accordion").accordion({ active: 2});
 	$("#accordion").accordion({ active: 3});
+	$("#accordion").accordion({ active: 4});
 }
 
 function initAppearance(){
@@ -626,6 +627,63 @@ function initNavigation(){
 	});
 	
 	$('#lblMoveSpeed')[0].innerHTML = viewer.getMoveSpeed().toFixed(1);
+}
+
+function initAnnotationDetails(){
+	
+	// annotation_details
+	let annotationPanel = $("#annotation_details");
+	
+	let trackAnnotation = (annotation) => {
+		var elLi = document.createElement("li");
+		var elItem = document.createElement("div");
+		
+		elItem.classList.add("annotation-item");
+		elItem.innerHTML = annotation.title;
+		elLi.appendChild(elItem);
+		
+		annotationPanel.append(elItem);
+		
+		elItem.onmouseover = (e) => {
+			annotation.setHighlighted(true);
+			
+		};
+		elItem.onmouseout = (e) => {
+			annotation.setHighlighted(false);
+		};
+		
+		annotation.setHighlighted(false);
+	};
+	
+	let annotationAddedCallback = (e) => {
+		trackAnnotation(e.annotation);
+	};
+	
+	let setScene = (e) => {
+		
+		annotationPanel.empty();
+		
+		if(e.oldScene){
+			if(e.oldScene.dispatcher.hasEventListener("annotation_added", annotationAddedCallback)){
+				e.oldScene.dispatcher.removeEventListener("annotation_added", annotationAddedCallback);
+			}
+		}
+		
+		if(e.scene){
+			for(let annotation of e.scene.annotations){
+				trackAnnotation(annotation);
+			}
+			
+			e.scene.addEventListener("annotation_added", annotationAddedCallback);
+		}
+		
+	};
+	
+	setScene({
+		"scene": viewer.scene
+	});
+	
+	viewer.dispatcher.addEventListener("scene_changed", setScene);
 }
 
 function initMeasurementDetails(){
@@ -1121,6 +1179,7 @@ $(document).ready( function() {
 	initNavigation();
 	initMaterials();
 	initClassificationList();
+	initAnnotationDetails();
 	initMeasurementDetails();
 	initSceneList();
 	initSettings()

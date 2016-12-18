@@ -332,7 +332,7 @@ Potree.PointCloudOctree = function(geometry, material){
 	Potree.PointCloudTree.call(this);
 	
 	this.pcoGeometry = geometry;
-	this.boundingBox = this.pcoGeometry.tightBoundingBox;
+	this.boundingBox = this.pcoGeometry.boundingBox;
 	this.boundingSphere = this.boundingBox.getBoundingSphere();
 	this.material = material || new Potree.PointCloudMaterial();
 	this.visiblePointsTarget = 2*1000*1000;

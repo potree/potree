@@ -150,21 +150,6 @@ Potree.Scene = class{
 	}
 	
 	addAnnotation(position, args = {}){
-		//var cameraPosition = args.cameraPosition;
-		//var cameraTarget = args.cameraTarget || position;
-		//var description = args.description || null;
-		//var title = args.title || null;
-		//var actions = args.actions || null;
-		//
-		//var annotation = new Potree.Annotation(this, {
-		//	"position": position,
-		//	"cameraPosition": cameraPosition,
-		//	"cameraTarget": cameraTarget,
-		//	"title": title,
-		//	"description": description,
-		//	"actions": actions
-		//});
-		
 		args.position = position;
 		
 		if(!args.cameraTarget){

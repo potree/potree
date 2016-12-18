@@ -9,7 +9,7 @@ Potree.Annotation = function(scene, args){
 	this.description = args.description || "";
 	this.position = args.position || new THREE.Vector3(0,0,0);
 	this.cameraPosition = args.cameraPosition;
-	this.cameraTarget = args.cameraTarget || this.position;
+	this.cameraTarget = args.cameraTarget;
 	this.view = args.view || null;
 	this.keepOpen = false;
 	this.descriptionVisible = false;
@@ -54,14 +54,17 @@ Potree.Annotation = function(scene, args){
 		this.elOrdinalText.style.padding = "1px 8px 0px 8px";
 		this.elOrdinalText.style.cursor = "default";
 		this.elOrdinalText.innerHTML = this.ordinal;
-		this.elOrdinalText.userSelect = "none";
+		this.elOrdinalText.style.userSelect = "none";
 		this.elOrdinal.appendChild(this.elOrdinalText);
 		
 		this.elOrdinal.onmouseenter = function(){};
 		this.elOrdinal.onmouseleave = function(){};
-		this.elOrdinalText.onclick = function(){
-			scope.moveHere(scope.scene.camera);
-			scope.dispatchEvent({type: "click", target: scope});
+		this.elOrdinalText.onclick = () => {
+			if(this.cameraTarget instanceof THREE.Vector3 && 
+				this.cameraPosition instanceof THREE.Vector3){
+				this.moveHere(this.scene.camera);
+				this.dispatchEvent({type: "click", target: this});
+			}
 		};
 	}
 	
@@ -108,20 +111,43 @@ Potree.Annotation = function(scene, args){
 	this.elDescriptionText.innerHTML = this.description;
 	this.domDescription.appendChild(this.elDescriptionText);
 	
-	this.domElement.onmouseenter = function(){
-		scope.domElement.style.opacity = "0.8";
-		scope.domElement.style.zIndex = "1000";
-		if(scope.description){
-			scope.descriptionVisible = true;	
-			scope.domDescription.style.display = "block";
+	this.domElement.onmouseenter = () => {
+		this.setHighlighted(true);
+		//this.domElement.style.opacity = "0.8";
+		//this.domElement.style.zIndex = "1000";
+		//if(this.description){
+		//	this.descriptionVisible = true;	
+		//	this.domDescription.style.display = "block";
+		//}
+	};
+	
+	this.domElement.onmouseleave = () => {
+		this.setHighlighted(false);
+		//this.domElement.style.opacity = "0.5";
+		//this.domElement.style.zIndex = "100";
+		//this.descriptionVisible = true;	
+		//this.domDescription.style.display = "none";
+	};
+	
+	this.setHighlighted = function(highlighted){
+		if(highlighted){
+			this.domElement.style.opacity = "1.0";
+			this.elOrdinal.style.boxShadow = "0 0 5px #fff";
+			this.domElement.style.zIndex = "1000";
+			
+			if(this.description){
+				this.descriptionVisible = true;	
+				this.domDescription.style.display = "block";
+			}
+			
+		}else{
+			this.domElement.style.opacity = "0.5";
+			this.elOrdinal.style.boxShadow = "";
+			this.domElement.style.zIndex = "100";
+			this.descriptionVisible = true;	
+			this.domDescription.style.display = "none";
 		}
-	};
-	this.domElement.onmouseleave = function(){
-		scope.domElement.style.opacity = "0.5";
-		scope.domElement.style.zIndex = "100";
-		scope.descriptionVisible = true;	
-		scope.domDescription.style.display = "none";
-	};
+	}
 	
 	this.moveHere = function(camera){		
 		var animationDuration = 800;

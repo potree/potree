@@ -1,4 +1,4 @@
-Potree.Annotation = function(scene, args){
+Potree.Annotation = function(scene, args = {}){
 	var scope = this;
 	
 	Potree.Annotation.counter++;
@@ -13,7 +13,7 @@ Potree.Annotation = function(scene, args){
 	this.view = args.view || null;
 	this.keepOpen = false;
 	this.descriptionVisible = false;
-	this.actions = args.actions || null;
+	this.actions = args.actions || [];
 	this.appearance = args.appearance || null;
 	
 	this.domElement = document.createElement("div");
@@ -60,11 +60,10 @@ Potree.Annotation = function(scene, args){
 		this.elOrdinal.onmouseenter = function(){};
 		this.elOrdinal.onmouseleave = function(){};
 		this.elOrdinalText.onclick = () => {
-			if(this.cameraTarget instanceof THREE.Vector3 && 
-				this.cameraPosition instanceof THREE.Vector3){
+			if(this.hasView()){
 				this.moveHere(this.scene.camera);
-				this.dispatchEvent({type: "click", target: this});
 			}
+			this.dispatchEvent({type: "click", target: this});
 		};
 	}
 	
@@ -79,13 +78,13 @@ Potree.Annotation = function(scene, args){
 	this.domDescription.className = "annotation";
 	this.domElement.appendChild(this.domDescription);
 	
-	if(this.actions != null){
+	if(this.actions.length > 0){
 		this.elOrdinalText.style.padding = "1px 3px 0px 8px";
 		
 		for(let action of this.actions){
 			let elButton = document.createElement("img");
 		
-			elButton.src = Potree.scriptPath + action.icon;
+			elButton.src = action.icon;
 			elButton.style.width = "24px";
 			elButton.style.height = "24px";
 			elButton.style.filter = "invert(1)";
@@ -95,7 +94,7 @@ Potree.Annotation = function(scene, args){
 			elButton.style.textAlign = "center";
 			elButton.style.fontFamily = "Arial";
 			elButton.style.fontWeight = "bold";
-			elButton.style.padding = "1px 3px 0px 3px";
+			elButton.style.padding = "1px 8px 0px 1px";
 			elButton.style.cursor = "default";	
 			
 			this.elOrdinal.appendChild(elButton);
@@ -147,9 +146,20 @@ Potree.Annotation = function(scene, args){
 			this.descriptionVisible = true;	
 			this.domDescription.style.display = "none";
 		}
-	}
+	};
+	
+	this.hasView = function(){
+		let hasView = this.cameraTarget instanceof THREE.Vector3;
+		hasView = hasView && this.cameraPosition instanceof THREE.Vector3;
+				
+		return hasView;
+	};
 	
 	this.moveHere = function(camera){		
+		if(!this.hasView()){
+			return;
+		}
+	
 		var animationDuration = 800;
 		var easing = TWEEN.Easing.Quartic.Out;
 

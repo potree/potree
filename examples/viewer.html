@@ -92,10 +92,12 @@
 					"cameraTarget": new THREE.Vector3(-4.7,  1.4,  4.8),
 				});
 				
-				sceneHeidentor.addAnnotation(new THREE.Vector3(-0.36, 13.58, 5.00), {
+				sceneHeidentor.addAnnotation(new THREE.Vector3(-2.90, 0.63, 2.94), {
 					"title": "to lion",
+					"cameraPosition": new THREE.Vector3(-3.75, 2.46, 3.77),
+					"cameraTarget": new THREE.Vector3(-2.98, 0.76, 2.62),
 					"actions": [{
-						"icon": "./resources/icons/goto.svg",
+						"icon": Potree.resourcePath + "/icons/goto.svg",
 						"onclick": function(){
 							viewer.setScene(sceneLion);
 						}
@@ -140,7 +142,7 @@
 				"cameraPosition": new THREE.Vector3(589661, 231470, 805),
 				"cameraTarget": new THREE.Vector3(589625.86, 231439, 775.38),
 				"actions": [{
-					"icon": "./resources/icons/goto.svg",
+					"icon": Potree.resourcePath + "/icons/goto.svg",
 					"onclick": function(){
 						viewer.setScene(sceneLion);
 					}
@@ -162,7 +164,7 @@
 			
 			sceneLion.addAnnotation(new THREE.Vector3(0.72, -1, 8), {
 				"actions": [{
-					"icon": "./resources/icons/goto.svg",
+					"icon": Potree.resourcePath + "/icons/goto.svg",
 					"onclick": function(){
 						viewer.setScene(sceneHeidentor);
 					}

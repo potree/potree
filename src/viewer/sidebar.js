@@ -635,14 +635,83 @@ function initAnnotationDetails(){
 	let annotationPanel = $("#annotation_details");
 	
 	let trackAnnotation = (annotation) => {
-		var elLi = document.createElement("li");
-		var elItem = document.createElement("div");
+		let elLi = document.createElement("li");
+		let elItem = document.createElement("div");
+		let elMain = document.createElement("span");
+		let elLabel = document.createElement("span");
+		
+		elLi.appendChild(elItem);
+		elItem.append(elMain);
+		elMain.append(elLabel);
+		annotationPanel.append(elLi);
 		
 		elItem.classList.add("annotation-item");
-		elItem.innerHTML = annotation.title;
-		elLi.appendChild(elItem);
 		
-		annotationPanel.append(elItem);
+		elMain.style.display = "flex";
+		elMain.classList.add("annotation-main");
+		
+		let elLabelText = document.createTextNode(annotation.ordinal);
+		elLabel.appendChild(elLabelText);
+		elLabel.classList.add("annotation-label");
+		
+		let actions = [];
+		{ // ACTIONS, INCLUDING GOTO LOCATION
+			if(annotation.hasView()){
+				let action = {
+					"icon": Potree.resourcePath + "/icons/target.svg",
+					"onclick": (e) => {annotation.moveHere(viewer.scene.camera)}
+				};
+				
+				actions.push(action);
+			}
+			
+			for(let action of annotation.actions){
+				actions.push(action);
+			}
+		}
+		
+		// FIRST ACTION
+		if(actions.length > 0){
+			let action = actions[0];
+			let elIcon = document.createElement("img");
+			elIcon.src = action.icon;
+			elIcon.classList.add("annotation-icon");
+			elMain.appendChild(elIcon);
+			elMain.onclick = (e) => {
+				action.onclick(e);
+			};
+			
+			elMain.onmouseover = (e) => {
+				elIcon.style.opacity = 1;
+			};
+			
+			elMain.onmouseout = (e) => {
+				elIcon.style.opacity = 0.5;
+			};
+			
+			actions.splice(0, 1);
+		}
+		
+		// REMAINING ACTIONS
+		for(let action of actions){
+			let elIcon = document.createElement("img");
+			elIcon.src = action.icon;
+			elIcon.classList.add("annotation-icon");
+			
+			elIcon.onmouseover = (e) => {
+				elIcon.style.opacity = 1;
+			};
+			
+			elIcon.onmouseout = (e) => {
+				elIcon.style.opacity = 0.5;
+			};
+			
+			elIcon.onclick = (e) => {
+				action.onclick(e);
+			};
+			
+			elItem.appendChild(elIcon);
+		}
 		
 		elItem.onmouseover = (e) => {
 			annotation.setHighlighted(true);

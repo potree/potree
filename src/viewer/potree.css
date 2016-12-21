@@ -37,7 +37,7 @@
 	--bg-dark-color:	rgba( 24, 31, 33, 1);
 	--bg-hover-color:	var(--color-2);
 	
-	--font-color:		white;
+	--font-color:		#9AA1A4;
 	--border-color:		black;
 	
 	--measurement-detail-node-bg-light:		var(--color-1);
@@ -144,14 +144,46 @@ a:hover, a:visited, a:link, a:active{
 	text-decoration: 	none;
 }
 
-.annotation-item{
-	margin:	0px !important;
-	padding: 8px 20px;
+
+.annotation-item {
+	color:			white;
+	background-color: 	black;
+	opacity:		0.5;
+	border-radius:	1.5em;
+	font-size:		1em;
+	line-height:	1.5em;
+	padding:		1px 8px 0px 8px;
+	font-weight:	bold;
+	display:		flex;
+	cursor:			default;
+	user-select:	none;
 }
 
-.annotation-item:hover{
-	background-color: var(--bg-hover-color);
+.annotation-item:hover {
+	opacity:		1.0;
+	box-shadow:		0 0 5px #ffffff;
 }
+
+.annotation-main{
+	display:		flex;
+	flex-grow:		1;
+}
+
+.annotation-label{
+	display:		block;
+	height:			100%;
+	flex-grow:		1;
+	margin:			2px 8px;
+}
+
+.annotation-icon{
+	width:		20px;
+	height:		20px;
+	filter:		invert(100%);
+	margin:		2px 2px;
+	opacity:	0.5;
+}
+
 
 canvas { 
 	width: 100%; 
@@ -319,7 +351,7 @@ body{
 
 .ui-widget-content{
 	background-color: none !important;
-	color: #9AA1A4 !important;
+	color: var(--font-color) !important;
 }
 
 .navmenu{

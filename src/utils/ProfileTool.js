@@ -341,6 +341,10 @@ Potree.ProfileTool = function(renderer){
 	
 	this.update = function(){
 		
+		if(!this.scene){
+			return;
+		}
+		
 		for(var i = 0; i < this.profiles.length; i++){
 			var profile = this.profiles[i];
 			for(var j = 0; j < profile.spheres.length; j++){
@@ -359,6 +363,10 @@ Potree.ProfileTool = function(renderer){
 	};
 	
 	this.render = function(){
+		if(!this.scene){
+			return;
+		}
+		
 		this.update();
 		renderer.render(this.sceneProfile, this.scene.camera);
 	};

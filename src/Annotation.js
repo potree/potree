@@ -20,7 +20,7 @@ Potree.Annotation = function(scene, args = {}){
 	this.domElement.style.position = "absolute";
 	this.domElement.style.opacity = "0.5";
 	this.domElement.style.padding = "10px";
-	this.domElement.style.whiteSpace = "nowrap";
+	//this.domElement.style.whiteSpace = "nowrap";
 	this.domElement.className = "annotation";
 	
 	if(this.appearance !== null){
@@ -75,6 +75,7 @@ Potree.Annotation = function(scene, args = {}){
 	this.domDescription.style.margin = "5px 0px 0px 0px";
 	this.domDescription.style.borderRadius = "4px";
 	this.domDescription.style.display = "none";
+	this.domDescription.style.maxWidth = "500px";
 	this.domDescription.className = "annotation";
 	this.domElement.appendChild(this.domDescription);
 	

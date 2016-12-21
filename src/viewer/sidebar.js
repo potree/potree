@@ -437,9 +437,9 @@ function initAccordion(){
         }
     });
 	
-	$("#accordion").accordion({ active: 2});
-	$("#accordion").accordion({ active: 3});
-	$("#accordion").accordion({ active: 4});
+	//$("#accordion").accordion({ active: 2});
+	//$("#accordion").accordion({ active: 3});
+	//$("#accordion").accordion({ active: 4});
 }
 
 function initAppearance(){

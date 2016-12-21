@@ -156,7 +156,6 @@ a:hover, a:visited, a:link, a:active{
 	font-weight:	bold;
 	display:		flex;
 	cursor:			default;
-	user-select:	none;
 }
 
 .annotation-item:hover {
@@ -174,6 +173,7 @@ a:hover, a:visited, a:link, a:active{
 	height:			100%;
 	flex-grow:		1;
 	margin:			2px 8px;
+	user-select:	none;
 }
 
 .annotation-icon{

@@ -403,6 +403,10 @@ Potree.MeasuringTool = class{
 	};
 	
 	render(){
+		if(!this.scene){
+			return;
+		}
+		
 		this.update();
 		this.renderer.render(this.sceneMeasurement, this.scene.camera);
 	};

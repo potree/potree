@@ -263,6 +263,10 @@ Potree.Viewer = class{
 		{
 			this.measuringTool = new Potree.MeasuringTool(this.renderer);
 			this.profileTool = new Potree.ProfileTool(this.renderer);
+			
+			this.measuringTool.setScene(this.scene);
+			this.profileTool.setScene(this.scene);
+			
 			this.dispatcher.addEventListener("scene_changed", (e) => {
 				this.measuringTool.setScene(e.scene);
 				this.profileTool.setScene(e.scene);
@@ -1234,7 +1238,6 @@ Potree.Viewer = class{
 		
 		viewer.renderArea.insertBefore(imgMapToggle, viewer.renderArea.children[0]);
 		viewer.renderArea.insertBefore(imgMenuToggle, viewer.renderArea.children[0]);
-		
 		
 		var elProfile = $('<div>').load(new URL(Potree.scriptPath + "/profile.html").href, function(){
 			$('#potree_render_area').append(elProfile.children());

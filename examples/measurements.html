@@ -7,81 +7,47 @@
     <meta name="author" content="">
     <title>Potree Viewer</title>
 
-	<link rel="stylesheet" type="text/css" href="../src/viewer/potree.css">
+	<link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
 	<link rel="stylesheet" type="text/css" href="../libs/jquery-ui-1.11.4/jquery-ui.css">
-	<link rel="stylesheet" href="http://openlayers.org/en/v3.11.2/css/ol.css" type="text/css">
+	<link rel="stylesheet" type="text/css" href="../libs/perfect-scrollbar/css/perfect-scrollbar.css">
+	<link rel="stylesheet" href="../libs/openlayers3/ol.css" type="text/css">
   </head>
 
   <body>
   
-	<script src="../libs/jquery-2.1.4/jquery-2.1.4.min.js"></script>
-	<script src="../libs/jquery-ui-1.11.4/jquery-ui.min.js"></script>
+	<script src="../libs/jquery/jquery-3.1.1.js"></script>
 	
+	<!--<script src="../libs/other/webgl-debug.js"></script>-->
+	<script src="../libs/perfect-scrollbar/js/perfect-scrollbar.jquery.js"></script>
+	<script src="../libs/jquery-ui/jquery-ui.min.js"></script>
 	<script src="../libs/three.js/build/three.js"></script>
 	<script src="../libs/other/stats.min.js"></script>
 	<script src="../libs/other/BinaryHeap.js"></script>
 	<script src="../libs/tween/tween.min.js"></script>
 	<script src="../libs/d3/d3.js"></script>
+	<script src="../libs/proj4/proj4.js"></script>
+	<script src="../libs/openlayers3/ol.js"></script>
+    <script src="../libs/i18next/i18next.js"></script>
 	
 	<script src="../build/potree/potree.js"></script>
 	
-	<!-- uncomment this to debug individual js files -->
-	<!--
-	<script src="../src/viewer/viewer.js"></script>
-	<script src="../src/viewer/profile.js"></script>
-	<script src="../src/viewer/ProgressBar.js"></script>
-	<script src="../src/PointCloudOctree.js"></script>
-	<script src="../src/PointCloudOctreeGeometry.js"></script>
-	<script src="../src/loader/POCLoader.js"></script>
-	<script src="../src/loader/BinaryLoader.js"></script>
-	<script src="../src/loader/LasLazLoader.js"></script>
-	<script src="../src/materials/PointCloudMaterial.js"></script>
-	<script src="../src/materials/EyeDomeLightingMaterial.js"></script>
-	<script src="../src/EarthControls.js"></script>
-	<script src="../src/OrbitControls.js"></script>
-	<script src="../src/FirstPersonControls.js"></script>
-	<script src="../src/GeoControls.js"></script>
-	<script src="../src/utils/ProfileTool.js"></script>
-	<script src="../src/utils/MeasuringTool.js"></script>
-	<script src="../src/utils/TransformationTool.js"></script>
-	<script src="../src/utils/VolumeTool.js"></script>
-	<script src="../src/utils.js"></script>
-	<script src="../src/LRU.js"></script>
-	<script src="../src/Annotation.js"></script>
-	<script src="../src/TextSprite.js"></script>
-	<script src="../src/Features.js"></script>
-	<script src="../src/extensions/PerspectiveCamera.js"></script>
-	<script src="../src/arena4d/PointCloudArena4D.js"></script>
-	<script src="../src/arena4d/PointCloudArena4DGeometry.js"></script>
-	-->
-	
-	
-	
 	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
 	<!-- INCLUDE SETTINGS HERE -->
+	
 	<script src="../libs/plasio/js/laslaz.js"></script>
 	<script src="../libs/plasio/vendor/bluebird.js"></script>
 	<script src="../build/potree/laslaz.js"></script>
 	
-	
-	<script src="http://openlayers.org/en/v3.11.2/build/ol-debug.js"></script>
-	<script src="../libs/proj4/proj4.js"></script>
-	<script src="../src/viewer/map.js"></script>
 
     <div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
 	
 		<div id="potree_render_area">
-			
-			<img class="potree_menu_toggle" src="../resources/icons/menu_button.svg" onclick="viewer.toggleSidebar()" />
-			<img id="potree_map_toggle" src="../resources/icons/map_icon.png" onclick="viewer.toggleMap()" style="display: none"/>
-			
 			<div id="potree_map" class="mapBox" style="position: absolute; left: 50px; top: 50px; width: 400px; height: 400px; display: none">
 				<div id="potree_map_header" style="position: absolute; width: 100%; height: 25px; top: 0px; background-color: rgba(0,0,0,0.5); z-index: 1000; border-top-left-radius: 3px; border-top-right-radius: 3px;">
 				</div>
 				<div id="potree_map_content" class="map" style="position: absolute; z-index: 100; top: 25px; width: 100%; height: calc(100% - 25px); border: 2px solid rgba(0,0,0,0.5); box-sizing: border-box;"></div>
 			</div>
 		
-			<!-- HEADING -->
 			<div id="potree_description" class="potree_info_text"></div>
 		</div>
 		
@@ -90,58 +56,65 @@
 	
 	<script>
 	
-		var onPointCloudLoaded = function(event){
-			// do stuff here that should be executed whenever a point cloud has been loaded.
-			// event.pointcloud returns the point cloud object
-			console.log("a point cloud has been loaded");
-		}; 
-	
-		viewer = new Potree.Viewer(document.getElementById("potree_render_area"), {
-			"onPointCloudLoaded": onPointCloudLoaded
-		});
+		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
 		
-		viewer.setEDLEnabled(false);
-		viewer.setPointSize(3);
+		viewer.setEDLEnabled(true);
+		viewer.setPointSize(1);
 		viewer.setMaterial("RGB");
 		viewer.setFOV(60);
-		viewer.setPointSizing("Fixed");
+		viewer.setPointSizing("Adaptive");
 		viewer.setQuality("Squares");
-		viewer.setPointBudget(1*1000*1000);
-		//viewer.setOpacity(0.03);
-		viewer.setDescription("");
-		//viewer.setMinNodeSize(5);
-
-		viewer.addPointCloud("../resources/pointclouds/vol_total/cloud.js", function(){
+		viewer.setPointBudget(2*1000*1000);
+		viewer.setIntensityRange(0, 300);
+		viewer.setWeightClassification(1);
+		viewer.loadSettingsFromURL();
 		
-			// coordinates are given in the original point cloud coordinate system and transformed to 
-			// local scene coordinates
-			var distanceMeasurement = new Potree.Measure();
-			distanceMeasurement.addMarker(viewer.toLocal(new THREE.Vector3(589541.5201, 231328.0400, 777.79500)));
-			distanceMeasurement.addMarker(viewer.toLocal(new THREE.Vector3(589733.0596, 231333.2299, 757.87500)));
-			distanceMeasurement.addMarker(viewer.toLocal(new THREE.Vector3(589767.7000, 231435.6198, 750.49500)));
-			distanceMeasurement.showDistances = true;
-			distanceMeasurement.showArea = false;
-			distanceMeasurement.showAngles = false;
-			distanceMeasurement.closed = false;
-			viewer.measuringTool.addMeasurement(distanceMeasurement);
+		viewer.setDescription("");
+		
+		let scene = viewer.scene;
+		
+		Potree.loadPointCloud("../pointclouds/vol_total/cloud.js", "sigeom.sa", function(e){
+			scene.addPointCloud(e.pointcloud);
+			scene.view.position.set(590030, 231767, 1007);
+			scene.view.target = new THREE.Vector3(589844, 231376, 710);
 
-			// using local coordinates directly
-			var areaMeasurement = new Potree.Measure();
-			areaMeasurement.addMarker(new THREE.Vector3(108.04, 6.46, -36.70));
-			areaMeasurement.addMarker(new THREE.Vector3(58.27, 17.01, 72.32 ));
-			areaMeasurement.addMarker(new THREE.Vector3(67.35, 18.50, 95.41 ));
-			areaMeasurement.addMarker(new THREE.Vector3(92.06, 20.68, 97.29 ));
-			areaMeasurement.addMarker(new THREE.Vector3(186.39, 17.83, 8.16 ));
-			areaMeasurement.showDistances = true;
-			areaMeasurement.showArea = true;
-			areaMeasurement.showAngles = false;
-			areaMeasurement.closed = true;
-			viewer.measuringTool.addMeasurement(areaMeasurement);
+			{ // Add Distance Measurement
+				let measurement = new Potree.Measure();
+				measurement.addMarker(new THREE.Vector3(589938.85, 231457.49, 727.97));
+				measurement.addMarker(new THREE.Vector3(589877.92, 231472.30, 735.19));
+
+				scene.addMeasurement(measurement);
+			}
+			
+			{ // Add Elevation Profile
+				let profile = new Potree.Profile();
+				profile.addMarker(new THREE.Vector3(590055.51, 231403.00, 747.03));
+				profile.addMarker(new THREE.Vector3(590050.27, 231529.36, 727.91));
+				profile.addMarker(new THREE.Vector3(589955.85, 231481.13, 726.60));
+				profile.setWidth(5);
+
+				scene.addProfile(profile);
+			}
 			
 		});
 		
+		
 		viewer.loadGUI();
+        viewer.toggleSidebar();
+		
+		$(document).ready( function() {
+			$("#accordion").accordion({ active: false});
+			$("#accordion").accordion({ active: 2});
+			$("#accordion").accordion({ active: 3});
+		});
+		
+        // Define default language: 'de'/'fr'/'en'
+        viewer.setLanguage('en');
+		
+		
 		
 	</script>
+	
+	
   </body>
 </html>

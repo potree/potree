@@ -1957,6 +1957,52 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
 				var greyhoundInfo = JSON.parse(xhr.responseText);
 				var version = new Potree.Version('1.4');
 
+                var bounds = greyhoundInfo.bounds;
+                var boundsConforming = greyhoundInfo.boundsConforming;
+
+                var width = bounds[3] - bounds[0];
+                var depth = bounds[4] - bounds[1];
+                var height= bounds[5] - bounds[2];
+                var radius = width / 2;
+
+                var scale = greyhoundInfo.scale;
+                if (!scale) {
+                    if (radius < 2500) scale = 0.01;
+                    else if (radius < 10000) scale = 0.1;
+                    else scale = 1.0;
+                }
+
+                var offset = greyhoundInfo.offset;
+                if (!offset) {
+                    offset = [
+                        bounds[0] + width / 2,
+                        bounds[1] + depth / 2,
+                        bounds[2] + height/ 2
+                    ];
+                }
+
+                console.log('Scale:', scale);
+                console.log('Offset:', offset);
+
+                var transform = function(bounds) {
+                    return bounds.map(function(v, i) {
+                        return (v - offset[i % 3]) / scale;
+                    });
+                };
+
+                console.log('Native bounds:', bounds);
+                console.log('Conforming bounds:', boundsConforming);
+
+                bounds = transform(bounds);
+                boundsConforming = transform(boundsConforming);
+
+                console.log('Transformed bounds:', bounds);
+                console.log('Transformed conforming bounds:', boundsConforming);
+
+                var localBounds = bounds;
+                var localTightBounds = boundsConforming;
+
+                /*
                 // This is the unscaled/unoffset coordinate system.
                 var nativeTightBounds = greyhoundInfo.nativeBounds;
 
@@ -2015,6 +2061,7 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
 
                 console.log('Bounds:', localBounds);
                 console.log('Conforming bounds:', localTightBounds);
+                */
 
 				var baseDepth = Math.max(8, greyhoundInfo.baseDepth);
 
@@ -2066,8 +2113,8 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
 				pgg.pointAttributes = new Potree.PointAttributes(attributes);
                 pgg.pointAttributes.byteSize = pointSize;
 
-                var effectiveScale = preScale ? preScale : requestScale;
-                var effectiveOffset = preOffset ? preOffset : requestOffset;
+                var effectiveScale = scale;
+                var effectiveOffset = offset;
 
                 var effectiveOffsetVec = new THREE.Vector3(
                     effectiveOffset[0],
@@ -2113,12 +2160,9 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
 				{ // load root
 					var name = "r";
 
-                    var requestOffsetVec = requestOffset ?
-                        effectiveOffsetVec : null;
-
 					var root = new Potree.PointCloudGreyhoundGeometryNode(
                             name, pgg, boundingBox,
-                            requestScale, requestOffsetVec);
+                            scale, effectiveOffsetVec);
 
 					root.level = 0;
 					root.hasChildren = true;

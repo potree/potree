@@ -1971,6 +1971,9 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
                     else if (radius < 10000) scale = 0.1;
                     else scale = 1.0;
                 }
+                else if (Array.isArray(scale)) {
+                    scale = Math.min(scale[0], scale[1], scale[2]);
+                }
 
                 var offset = greyhoundInfo.offset;
                 if (!offset) {
@@ -2001,67 +2004,6 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
 
                 var localBounds = bounds;
                 var localTightBounds = boundsConforming;
-
-                /*
-                // This is the unscaled/unoffset coordinate system.
-                var nativeTightBounds = greyhoundInfo.nativeBounds;
-
-                // This scale/offset, if existent, has already been applied to
-                // the data.
-                var preScale = greyhoundInfo.scale;
-                var preOffset = greyhoundInfo.offset;
-
-                var localBounds = greyhoundInfo.bounds;
-                var localTightBounds = greyhoundInfo.boundsConforming;
-
-                // If the data is already scaled, we'll request it as-is.
-                // Otherwise, we'll ask for our own scale/offset.
-                var requestOffset = null;
-                var requestScale = null;
-
-                if (!preScale) {
-                    var width = localBounds[3] - localBounds[0];
-                    var depth = localBounds[4] - localBounds[1];
-                    var height= localBounds[5] - localBounds[2];
-
-                    requestOffset = [
-                        localBounds[0] + width / 2,
-                        localBounds[1] + depth / 2,
-                        localBounds[2] + height / 2
-                    ];
-
-                    var radius = width / 2;
-                    console.log('Radius', radius);
-                    requestScale = .01;
-                    if (radius > 10000) requestScale = 1.0;
-                    else if (radius > 2500) requestScale = 0.1;
-
-                    if (getQueryParam('scale')) {
-                        requestScale = parseFloat(getQueryParam('scale'));
-                        console.log('Overriding scale:', requestScale);
-                    }
-
-                    // Now that we have determined a local scale/offset, make
-                    // sure our local bounds match.
-                    localBounds = localBounds.map(function(v, i) {
-                        return (v - requestOffset[i % 3]) / requestScale;
-                    });
-
-                    localTightBounds = localTightBounds.map(function(v, i) {
-                        return (v - requestOffset[i % 3]) / requestScale;
-                    });
-
-                    console.log('Selected scale:', requestScale);
-                    console.log('Selected offset:', requestOffset);
-                }
-                else {
-                    console.log('Existing scale:', preScale);
-                    console.log('Existing offset:', preOffset);
-                }
-
-                console.log('Bounds:', localBounds);
-                console.log('Conforming bounds:', localTightBounds);
-                */
 
 				var baseDepth = Math.max(8, greyhoundInfo.baseDepth);
 

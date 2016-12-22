@@ -105,6 +105,9 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
                     else if (radius < 10000) scale = 0.1;
                     else scale = 1.0;
                 }
+                else if (Array.isArray(scale)) {
+                    scale = Math.min(scale[0], scale[1], scale[2]);
+                }
 
                 var offset = greyhoundInfo.offset;
                 if (!offset) {

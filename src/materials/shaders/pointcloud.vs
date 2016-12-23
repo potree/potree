@@ -248,7 +248,7 @@ float getIntensity(){
 
 vec3 getElevation(){
 	vec4 world = modelMatrix * vec4( position, 1.0 );
-	float w = (world.y - heightMin) / (heightMax-heightMin);
+	float w = (world.z - heightMin) / (heightMax-heightMin);
 	vec3 cElevation = texture2D(gradient, vec2(w,1.0-w)).rgb;
 	
 	return cElevation;

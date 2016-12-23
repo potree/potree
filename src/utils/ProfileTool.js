@@ -1,334 +1,10 @@
 
-
-Potree.HeightProfile = function(){
-	var scope = this;
-	
-	THREE.Object3D.call( this );
-
-	this.points = [];
-	this.spheres = [];
-	this.edges = [];
-	this.boxes = [];
-	this.width = 1;
-	this.height = 20;
-	this._modifiable = true;
-	
-	var sphereGeometry = new THREE.SphereGeometry(0.4, 10, 10);
-	var lineColor = new THREE.Color( 0xff0000 );
-	
-	var createSphereMaterial = function(){
-		var sphereMaterial = new THREE.MeshLambertMaterial({
-			shading: THREE.SmoothShading, 
-			color: 0xff0000, 
-			depthTest: false, 
-			depthWrite: false}
-		);
-		
-		return sphereMaterial;
-	};
-	
-	var moveEvent = function(event){
-		event.target.material.emissive.setHex(0x888888);
-	};
-	
-	var leaveEvent = function(event){
-		event.target.material.emissive.setHex(0x000000);
-	};
-	
-	var dragEvent = function(event){
-	
-		var tool = event.tool;
-		var dragstart = tool.dragstart;
-		var mouse = tool.mouse;
-	
-		if(event.event.ctrlKey){
-		
-			var mouseStart = new THREE.Vector3(dragstart.mousePos.x, dragstart.mousePos.y, 0);
-			var mouseEnd = new THREE.Vector3(mouse.x, mouse.y, 0);
-			var widthStart = dragstart.widthStart;
-			
-			var scale = 1 - 10 * (mouseStart.y - mouseEnd.y);
-			scale = Math.max(0.01, scale);
-			if(widthStart){
-				scope.setWidth(widthStart *  scale);
-			}
-		
-		}else{
-	
-			var I = tool.getMousePointCloudIntersection();
-				
-			if(I){
-				var index = scope.spheres.indexOf(tool.dragstart.object);
-				scope.setPosition(index, I);
-			}
-		}
-		
-		event.event.stopImmediatePropagation();
-	};
-	
-	var dropEvent = function(event){
-	
-	};
-	
-	this.addMarker = function(point){	
-		
-		this.points.push(point);
-
-		// sphere
-		var sphere = new THREE.Mesh(sphereGeometry, createSphereMaterial());
-		sphere.addEventListener("mousemove", moveEvent);
-		sphere.addEventListener("mouseleave", leaveEvent);
-		sphere.addEventListener("mousedrag", dragEvent);
-		sphere.addEventListener("drop", dropEvent);
-		
-		this.add(sphere);
-		this.spheres.push(sphere);
-		
-		// edges & boxes
-		if(this.points.length > 1){
-		
-			var lineGeometry = new THREE.Geometry();
-			lineGeometry.vertices.push(new THREE.Vector3(), new THREE.Vector3());
-			lineGeometry.colors.push(lineColor, lineColor, lineColor);
-			var lineMaterial = new THREE.LineBasicMaterial( { 
-				vertexColors: THREE.VertexColors, 
-				linewidth: 2, 
-				transparent: true, 
-				opacity: 0.4 
-			});
-			lineMaterial.depthTest = false;
-			var edge = new THREE.Line(lineGeometry, lineMaterial);
-			edge.visible = false;
-			
-			this.add(edge);
-			this.edges.push(edge);
-			
-			
-			var boxGeometry = new THREE.BoxGeometry(1, 1, 1);
-			var boxMaterial = new THREE.MeshBasicMaterial({color: 0xff0000, transparent: true, opacity: 0.2});
-			var box = new THREE.Mesh(boxGeometry, boxMaterial);
-			box.visible = false;
-			
-			this.add(box);
-			this.boxes.push(box);
-			
-		}
-
-		
-		var event = {
-			"type": "marker_added",
-			"profile": this
-		};
-		this.dispatchEvent(event);
-		
-		this.setPosition(this.points.length-1, point);
-	};
-	
-	this.removeMarker = function(index){
-		this.points.splice(index, 1);
-		
-		this.remove(this.spheres[index]);
-		
-		var edgeIndex = (index === 0) ? 0 : (index - 1);
-		this.remove(this.edges[edgeIndex]);
-		this.edges.splice(edgeIndex, 1);
-		this.remove(this.boxes[edgeIndex]);
-		this.boxes.splice(edgeIndex, 1);
-		
-		this.spheres.splice(index, 1);
-		
-		this.update();
-		
-		var event = {
-			"type": "marker_removed",
-			"profile": this
-		};
-		this.dispatchEvent(event);
-	};
-	
-	/**
-	 * see http://www.mathopenref.com/coordpolygonarea2.html
-	 */
-	this.getArea = function(){
-		var area = 0;
-		var j = this.points.length - 1;
-		
-		for(var i = 0; i < this.points.length; i++){
-			var p1 = this.points[i];
-			var p2 = this.points[j];
-			area += (p2.x + p1.x) * (p1.z - p2.z);
-			j = i;
-		}
-		
-		return Math.abs(area / 2);
-	};
-	
-	this.setPosition = function(index, position){
-		var point = this.points[index];			
-		point.copy(position);
-		
-		var event = {
-			type: 		'marker_moved',
-			profile:	this,
-			index:		index,
-			position: 	position.clone()
-		};
-		this.dispatchEvent(event);
-		
-		this.update();
-	};
-	
-	this.setWidth = function(width){
-		this.width = width;
-		
-		var event = {
-			type: 		'width_changed',
-			profile:	this,
-			width:		width
-		};
-		this.dispatchEvent(event);
-		
-		this.update();
-	};
-	
-	this.getWidth = function(){
-		return this.width;
-	};
-	
-	this.update = function(){
-	
-		if(this.points.length === 0){
-			return;
-		}else if(this.points.length === 1){
-			var point = this.points[0];
-			this.spheres[0].position.copy(point);
-			
-			return;
-		}
-		
-		var min = this.points[0].clone();
-		var max = this.points[0].clone();
-		var centroid = new THREE.Vector3();
-		var lastIndex = this.points.length - 1;
-		for(var i = 0; i <= lastIndex; i++){
-			var point = this.points[i];
-			var sphere = this.spheres[i];
-			var leftIndex = (i === 0) ? lastIndex : i - 1;
-			var rightIndex = (i === lastIndex) ? 0 : i + 1;
-			var leftVertex = this.points[leftIndex];
-			var rightVertex = this.points[rightIndex];
-			var leftEdge = this.edges[leftIndex];
-			var rightEdge = this.edges[i];
-			var leftBox = this.boxes[leftIndex];
-			var rightBox = this.boxes[i];
-			
-			var leftEdgeLength = point.distanceTo(leftVertex);
-			var rightEdgeLength = point.distanceTo(rightVertex);
-			var leftEdgeCenter = new THREE.Vector3().addVectors(leftVertex, point).multiplyScalar(0.5);
-			var rightEdgeCenter = new THREE.Vector3().addVectors(point, rightVertex).multiplyScalar(0.5);
-			
-			sphere.position.copy(point);
-			
-			if(this._modifiable){
-				sphere.visible = true;
-			}else{
-				sphere.visible = false;
-			}
-			
-			if(leftEdge){
-				leftEdge.geometry.vertices[1].copy(point);
-				leftEdge.geometry.verticesNeedUpdate = true;
-				leftEdge.geometry.computeBoundingSphere();
-			}
-			
-			if(rightEdge){
-				rightEdge.geometry.vertices[0].copy(point);
-				rightEdge.geometry.verticesNeedUpdate = true;
-				rightEdge.geometry.computeBoundingSphere();
-			}
-			
-			if(leftBox){
-				var start = leftVertex;
-				var end = point;
-				var length = start.clone().setZ(0).distanceTo(end.clone().setZ(0));
-				leftBox.scale.set(length, 1000000, this.width);
-				leftBox.up.set(0, 0, 1);
-				
-				var center = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
-				var diff = new THREE.Vector3().subVectors(end, start);
-				var target = new THREE.Vector3(diff.y, -diff.x, 0);
-				
-				leftBox.position.set(0,0,0);
-				leftBox.lookAt(target);
-				leftBox.position.copy(center);
-			}
-
-			centroid.add(point);
-			min.min(point);
-			max.max(point);
-		}
-		centroid.multiplyScalar(1 / this.points.length);
-		
-		for(var i = 0; i < this.boxes.length; i++){
-			var box = this.boxes[i];
-			
-			box.position.z = min.z + (max.z - min.z) / 2;
-		}
-		
-	};
-	
-	this.raycast = function(raycaster, intersects){
-		
-		for(var i = 0; i < this.points.length; i++){
-			var sphere = this.spheres[i];
-			
-			sphere.raycast(raycaster, intersects);
-		}
-		
-		// recalculate distances because they are not necessarely correct
-		// for scaled objects.
-		// see https://github.com/mrdoob/three.js/issues/5827
-		// TODO: remove this once the bug has been fixed
-		for(var i = 0; i < intersects.length; i++){
-			var I = intersects[i];
-			I.distance = raycaster.ray.origin.distanceTo(I.point);
-		}
-		intersects.sort( function ( a, b ) { return a.distance - b.distance;} );
-	};
-	
-	
-};
-
-Potree.HeightProfile.prototype = Object.create( THREE.Object3D.prototype );
-
-Object.defineProperty(Potree.HeightProfile.prototype, "modifiable", {
-	get: function(){
-		return this.modifiable;
-	},
-	set: function(value){
-		this._modifiable = value;
-		this.update();
-	}
-});
-
-
-
-
-
-//
-// calculating area of a polygon:
-// http://www.mathopenref.com/coordpolygonarea2.html
-//
-//
-//
-
-Potree.ProfileTool = function(scene, camera, renderer){
+Potree.ProfileTool = function(renderer){
 	
 	var scope = this;
 	this.enabled = false;
 	
-	this.scene = scene;
-	this.camera = camera;
+	this.scene = null;
 	this.renderer = renderer;
 	this.domElement = renderer.domElement;
 	this.mouse = {x: 0, y: 0};
@@ -376,7 +52,7 @@ Potree.ProfileTool = function(scene, camera, renderer){
 				var pos = I.clone();
 				
 				if(scope.activeProfile.points.length === 1 && scope.activeProfile.width === null){
-					scope.activeProfile.setWidth((camera.position.distanceTo(pos) / 50));
+					scope.activeProfile.setWidth((scope.scene.camera.position.distanceTo(pos) / 50));
 				}
 				
 				scope.activeProfile.addMarker(pos);
@@ -392,6 +68,10 @@ Potree.ProfileTool = function(scene, camera, renderer){
 	};
 	
 	function onMouseMove(event){
+		if(!scope.scene){
+			return;
+		}
+		
 		var rect = scope.domElement.getBoundingClientRect();
 		scope.mouse.x = ((event.clientX - rect.left) / scope.domElement.clientWidth) * 2 - 1;
         scope.mouse.y = -((event.clientY - rect.top) / scope.domElement.clientHeight) * 2 + 1;
@@ -510,13 +190,50 @@ Potree.ProfileTool = function(scene, camera, renderer){
 		
 	}
 	
+	this.setScene = function(scene){
+		
+		this.scene = scene;
+		this.profiles = this.scene.profiles;
+		
+		this.activeProfile = null;
+		this.sceneProfile = new THREE.Scene();
+		this.sceneRoot = new THREE.Object3D();
+		this.sceneProfile.add(this.sceneRoot);
+		
+		this.light = new THREE.DirectionalLight( 0xffffff, 1 );
+		this.light.position.set( 0, 0, 10 );
+		this.light.lookAt(new THREE.Vector3(0,0,0));
+		this.sceneProfile.add( this.light );
+		
+		for(let profile of this.scene.profiles){
+			this.sceneProfile.add(profile.sceneNode);
+		}
+		
+		let onProfileAdded = (e) => {
+			if(this.scene === e.scene){
+				this.sceneProfile.add(e.profile.sceneNode);
+			}
+		};
+		
+		let onProfileRemoved = (e) => {
+			if(this.scene === e.scene){
+				this.sceneProfile.remove(e.profile.sceneNode);
+			}
+		};
+		
+		// TODO make sure not du add the same listeners twice
+		scene.addEventListener("profile_added", onProfileAdded);
+		scene.addEventListener("profile_removed", onProfileRemoved);
+		
+	}
+	
 	function getHoveredElement(){
 			
 		var vector = new THREE.Vector3( scope.mouse.x, scope.mouse.y, 0.5 );
-		vector.unproject(scope.camera);
+		vector.unproject(scope.scene.camera);
 		
 		var raycaster = new THREE.Raycaster();
-		raycaster.ray.set( scope.camera.position, vector.sub( scope.camera.position ).normalize() );
+		raycaster.ray.set( scope.scene.camera.position, vector.sub( scope.scene.camera.position ).normalize() );
 		
 		var intersections = raycaster.intersectObjects(scope.profiles);
 		
@@ -529,13 +246,13 @@ Potree.ProfileTool = function(scene, camera, renderer){
 	
 	this.getMousePointCloudIntersection = function(){
 		var vector = new THREE.Vector3( scope.mouse.x, scope.mouse.y, 0.5 );
-		vector.unproject(scope.camera);
+		vector.unproject(scope.scene.camera);
 
-		var direction = vector.sub(scope.camera.position).normalize();
-		var ray = new THREE.Ray(scope.camera.position, direction);
+		var direction = vector.sub(scope.scene.camera.position).normalize();
+		var ray = new THREE.Ray(scope.scene.camera.position, direction);
 		
 		var pointClouds = [];
-		scope.scene.traverse(function(object){
+		scope.scene.scenePointCloud.traverse(function(object){
 			if(object instanceof Potree.PointCloudOctree || object instanceof Potree.PointCloudArena4D){
 				pointClouds.push(object);
 			}
@@ -546,7 +263,7 @@ Potree.ProfileTool = function(scene, camera, renderer){
 		
 		for(var i = 0; i < pointClouds.length; i++){
 			var pointcloud = pointClouds[i];
-			var point = pointcloud.pick(scope.renderer, scope.camera, ray, {
+			var point = pointcloud.pick(scope.renderer, scope.scene.camera, ray, {
 				pickOutsideClipRegion: true
 			});
 			
@@ -554,7 +271,7 @@ Potree.ProfileTool = function(scene, camera, renderer){
 				continue;
 			}
 			
-			var distance = scope.camera.position.distanceTo(point.position);
+			var distance = scope.scene.camera.position.distanceTo(point.position);
 			
 			if(!closestPoint || distance < closestPointDistance){
 				closestPoint = point;
@@ -565,18 +282,19 @@ Potree.ProfileTool = function(scene, camera, renderer){
 		return closestPoint ? closestPoint.position : null;
 	};
 	
-	this.startInsertion = function(args){
+	this.startInsertion = function(args = {}){
 		state = STATE.INSERT;
 		
-		var args = args || {};
-		var clip = args.clip || false;
-		var width = args.width || null;
+		let clip = args.clip || false;
+		let width = args.width || null;
 		
-		this.activeProfile = new Potree.HeightProfile();
-		this.activeProfile.clip = clip;
-		this.activeProfile.setWidth(width);
-		this.addProfile(this.activeProfile);
-		this.activeProfile.addMarker(new THREE.Vector3(0,0,0));
+		let profile = new Potree.Profile();
+		profile.clip = clip;
+		profile.setWidth(width);
+		profile.addMarker(new THREE.Vector3(0,0,0));
+		
+		this.scene.addProfile(profile);
+		this.activeProfile = profile;
 		
 		return this.activeProfile;
 	};
@@ -614,17 +332,6 @@ Potree.ProfileTool = function(scene, camera, renderer){
 		});
 	};
 	
-	this.removeProfile = function(profile){
-		this.sceneProfile.remove(profile);
-		var index = this.profiles.indexOf(profile);
-		if(index >= 0){
-			this.profiles.splice(index, 1);
-			
-			this.dispatchEvent({"type": "profile_removed", profile: profile});
-		}
-		
-	};
-	
 	this.reset = function(){
 		for(var i = this.profiles.length - 1; i >= 0; i--){
 			var profile = this.profiles[i];
@@ -634,26 +341,34 @@ Potree.ProfileTool = function(scene, camera, renderer){
 	
 	this.update = function(){
 		
+		if(!this.scene){
+			return;
+		}
+		
 		for(var i = 0; i < this.profiles.length; i++){
 			var profile = this.profiles[i];
 			for(var j = 0; j < profile.spheres.length; j++){
 				var sphere = profile.spheres[j];
 				
-				var distance = scope.camera.position.distanceTo(sphere.getWorldPosition());
-				var pr = Potree.utils.projectedRadius(1, scope.camera.fov * Math.PI / 180, distance, renderer.domElement.clientHeight);
+				var distance = scope.scene.camera.position.distanceTo(sphere.getWorldPosition());
+				var pr = Potree.utils.projectedRadius(1, scope.scene.camera.fov * Math.PI / 180, distance, renderer.domElement.clientHeight);
 				var scale = (15 / pr);
 				sphere.scale.set(scale, scale, scale);
 			}
 		}
 	
-		this.light.position.copy(this.camera.position);
-		this.light.lookAt(this.camera.getWorldDirection().add(this.camera.position));
+		this.light.position.copy(this.scene.camera.position);
+		this.light.lookAt(this.scene.camera.getWorldDirection().add(this.scene.camera.position));
 		
 	};
 	
 	this.render = function(){
+		if(!this.scene){
+			return;
+		}
+		
 		this.update();
-		renderer.render(this.sceneProfile, this.camera);
+		renderer.render(this.sceneProfile, this.scene.camera);
 	};
 	
 	

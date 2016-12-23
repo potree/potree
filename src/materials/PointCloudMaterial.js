@@ -209,7 +209,7 @@ Potree.PointCloudMaterial.prototype.updateShaderSource = function(){
 	
 	if(this.depthMap){
 		this.uniforms.depthMap.value = this.depthMap;
-		this.depthMap = depthMap;
+		//this.depthMap = depthMap;
 		//this.setValues({
 		//	depthMap: this.depthMap,
 		//});

@@ -30,6 +30,7 @@
     <script src="../libs/i18next/i18next.js"></script>
 	
 	<script src="../build/potree/potree.js"></script>
+	<!--<script src="../src/viewer/sidebar.js"></script>-->
 	
 	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
 	<!-- INCLUDE SETTINGS HERE -->
@@ -42,17 +43,12 @@
     <div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
 	
 		<div id="potree_render_area">
-			<!--
-			<img class="potree_menu_toggle" src="../resources/icons/menu_button.svg" onclick="viewer.toggleSidebar()" />
-			<img id="potree_map_toggle" src="../resources/icons/map_icon.png" onclick="viewer.toggleMap()" style="display: none"/>
-			-->
 			<div id="potree_map" class="mapBox" style="position: absolute; left: 50px; top: 50px; width: 400px; height: 400px; display: none">
 				<div id="potree_map_header" style="position: absolute; width: 100%; height: 25px; top: 0px; background-color: rgba(0,0,0,0.5); z-index: 1000; border-top-left-radius: 3px; border-top-right-radius: 3px;">
 				</div>
 				<div id="potree_map_content" class="map" style="position: absolute; z-index: 100; top: 25px; width: 100%; height: calc(100% - 25px); border: 2px solid rgba(0,0,0,0.5); box-sizing: border-box;"></div>
 			</div>
 		
-			<!-- HEADING -->
 			<div id="potree_description" class="potree_info_text"></div>
 		</div>
 		
@@ -61,15 +57,7 @@
 	
 	<script>
 	
-		var onPointCloudLoaded = function(event){
-			// do stuff here that should be executed whenever a point cloud has been loaded.
-			// event.pointcloud returns the point cloud object
-			console.log("a point cloud has been loaded");
-		}; 
-	
-		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"), {
-			"onPointCloudLoaded": onPointCloudLoaded
-		});
+		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
 		
 		viewer.setEDLEnabled(true);
 		viewer.setPointSize(1);
@@ -78,33 +66,119 @@
 		viewer.setPointSizing("Adaptive");
 		viewer.setQuality("Squares");
 		viewer.setPointBudget(2*1000*1000);
-		viewer.loadSettingsFromURL();
-		
 		viewer.setIntensityRange(0, 300);
 		viewer.setWeightClassification(1);
+		viewer.loadSettingsFromURL();
 		
 		viewer.setDescription("");
 		
-		//viewer.addPointCloud("../pointclouds/vol_total/cloud.js", function(e){
-		//	e.pointcloud.setName("sigeom.sa");
-		//	//viewer.camera.position.set(589789.45, 761.83, -231420.51);
-		//});
+		let sceneSG = new Potree.Scene();
+		let sceneCA = new Potree.Scene();
+		let sceneLion = new Potree.Scene();
+		let sceneHeidentor = new Potree.Scene();
 		
+		viewer.setScene(sceneHeidentor);
 		
-		//viewer.addPointCloud("../pointclouds/lion_takanawa/cloud.js", function(e){
-		//	viewer.camera.position.set(3.65, 5.78, 4.97);
-		//	e.pointcloud.setName("Lion");
-		//});
+		{ // Heidentor
+			Potree.loadPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/archpro/heidentor/cloud.js", "Heidentor", (e) => {
+				sceneHeidentor.addPointCloud(e.pointcloud);
+				
+				viewer.scene.view.position.set(17.7, 13.1, 15.6);
+				viewer.scene.view.target.set(-4.7,  1.4,  4.8);
+				
+				sceneHeidentor.addAnnotation(new THREE.Vector3(-2.66, 3.30, 14.51), {
+					"title": "Heidentor",
+					"cameraPosition": new THREE.Vector3(17.7, 13.1, 15.6),
+					"cameraTarget": new THREE.Vector3(-4.7,  1.4,  4.8),
+				});
+				
+				sceneHeidentor.addAnnotation(new THREE.Vector3(-2.90, 0.63, 2.94), {
+					"title": "to lion",
+					"cameraPosition": new THREE.Vector3(-3.75, 2.46, 3.77),
+					"cameraTarget": new THREE.Vector3(-2.98, 0.76, 2.62),
+					"actions": [{
+						"icon": Potree.resourcePath + "/icons/goto.svg",
+						"onclick": function(){
+							viewer.setScene(sceneLion);
+						}
+					}]
+				});
+				
+			});
+		}
 		
-		viewer.addPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/opentopography/CA13_1.4/cloud.js", "CA13", function(e){
-			viewer.camera.position.set(692643, 3915996, 777);
-			viewer.controls.target = new THREE.Vector3(694067, 3916332, 8);
+		Potree.loadPointCloud("../pointclouds/vol_total/cloud.js", "sigeom.sa", function(e){
+			sceneSG.addPointCloud(e.pointcloud);
+			sceneSG.view.position.set(590030, 231767, 1007);
+			sceneSG.view.target = new THREE.Vector3(589844, 231376, 710);
+
+			//viewer.setScene(sceneSG);
+			
+			{
+				let measurement = new Potree.Measure();
+				measurement.addMarker(new THREE.Vector3(589938.8594970703, 231457.48974609375, 727.9749997901916));
+				measurement.addMarker(new THREE.Vector3(589877.9293823242, 231472.29974365234, 735.1949995803833));
+
+				sceneSG.addMeasurement(measurement);
+			}
+			
+			{
+				let profile = new Potree.Profile();
+				profile.addMarker(new THREE.Vector3(590055.51, 231403.00, 747.03));
+				profile.addMarker(new THREE.Vector3(590050.27, 231529.36, 727.91));
+				profile.addMarker(new THREE.Vector3(589955.85, 231481.13, 726.60));
+				profile.setWidth(5);
+
+				sceneSG.addProfile(profile);
+			}
+			
+			//sceneSG.addAnnotation(new THREE.Vector3(589621, 231437, 784), {
+			//	"cameraPosition": new THREE.Vector3(589661, 231470, 805),
+			//	"cameraTarget": new THREE.Vector3(589625.86, 231439, 775.38),
+			//	"appearance": '<img src="./resources/lion_icon_64.png">'
+			//});
+			
+			sceneSG.addAnnotation(new THREE.Vector3(589621, 231437, 784), {
+				"cameraPosition": new THREE.Vector3(589661, 231470, 805),
+				"cameraTarget": new THREE.Vector3(589625.86, 231439, 775.38),
+				"actions": [{
+					"icon": Potree.resourcePath + "/icons/goto.svg",
+					"onclick": function(){
+						viewer.setScene(sceneLion);
+					}
+				}]
+			});
 		});
 		
+		Potree.loadPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/opentopography/CA13_1.4/cloud.js", "CA13", function(e){
+			sceneCA.addPointCloud(e.pointcloud);
+			sceneCA.view.position.set(692643, 3915996, 777);
+			sceneCA.view.target = new THREE.Vector3(694067, 3916332, 8);
+		});
+		
+		Potree.loadPointCloud("../pointclouds/lion_takanawa/cloud.js", "lion", function(e){
+			sceneLion.addPointCloud(e.pointcloud);
+			sceneLion.view.position.set(4.15, -6.12, 8.54);
+			sceneLion.view.target = new THREE.Vector3(0, -0.098, 4.23);
+
+			
+			sceneLion.addAnnotation(new THREE.Vector3(0.72, -1, 8), {
+				"actions": [{
+					"icon": Potree.resourcePath + "/icons/goto.svg",
+					"onclick": function(){
+						viewer.setScene(sceneHeidentor);
+					}
+				}]
+			});
+		});
+
 		viewer.loadGUI();
-        
+        viewer.toggleSidebar();
+		
         // Define default language: 'de'/'fr'/'en'
         viewer.setLanguage('en');
+		
+		
 		
 	</script>
 	

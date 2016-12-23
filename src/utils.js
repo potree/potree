@@ -2,6 +2,14 @@
 
 Potree.utils = class{
 	
+	static toString(value){
+		if(value instanceof THREE.Vector3){
+			return value.x.toFixed(2) + ", " + value.y.toFixed(2) + ", " + value.z.toFixed(2);
+		}else{
+			return "" + value + "";
+		}
+	}
+	
 	static normalizeURL(url){
 		let u = new URL(url);
 		
@@ -113,13 +121,13 @@ Potree.utils = class{
 		
 		let geometry = new THREE.Geometry();
 		for(let i = 0; i <= length; i++){
-			 geometry.vertices.push(new THREE.Vector3(-(spacing*width)/2, 0, i*spacing-(spacing*length)/2));
-			 geometry.vertices.push(new THREE.Vector3(+(spacing*width)/2, 0, i*spacing-(spacing*length)/2));
+			 geometry.vertices.push(new THREE.Vector3(-(spacing*width)/2, i*spacing-(spacing*length)/2, 0));
+			 geometry.vertices.push(new THREE.Vector3(+(spacing*width)/2, i*spacing-(spacing*length)/2, 0));
 		}
 		
 		for(let i = 0; i <= width; i++){
-			 geometry.vertices.push(new THREE.Vector3(i*spacing-(spacing*width)/2, 0, -(spacing*length)/2));
-			 geometry.vertices.push(new THREE.Vector3(i*spacing-(spacing*width)/2, 0, +(spacing*length)/2));
+			 geometry.vertices.push(new THREE.Vector3(i*spacing-(spacing*width)/2, -(spacing*length)/2, 0));
+			 geometry.vertices.push(new THREE.Vector3(i*spacing-(spacing*width)/2, +(spacing*length)/2, 0));
 		}
 		
 		let line = new THREE.Line(geometry, material, THREE.LinePieces);

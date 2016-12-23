@@ -99,6 +99,40 @@ Potree.resolveQueries = function(gl){
 }
 
 
+Potree.loadPointCloud = function(path, name, callback){
+	
+	let loaded = function(pointcloud){
+		pointcloud.name = name;
+		
+		callback({type: "pointcloud_loaded", pointcloud: pointcloud});
+	}
+	
+	// load pointcloud
+	if(!path){
+		
+	}else if(path.indexOf("cloud.js") > 0){
+		Potree.POCLoader.load(path, function(geometry){
+			if(!geometry){
+				callback({type: "loading_failed"});
+			}else{
+				let pointcloud = new Potree.PointCloudOctree(geometry);
+				loaded(pointcloud);
+			}
+		}.bind(this));
+	}else if(path.indexOf(".vpc") > 0){
+		Potree.PointCloudArena4DGeometry.load(path, function(geometry){
+			if(!geometry){
+				callback({type: "loading_failed"});
+			}else{
+				let pointcloud = new Potree.PointCloudArena4D(geometry);
+				loaded(pointcloud);
+			}
+		});
+	}else{
+		callback({"type": "loading_failed"});
+	}
+}
+
 Potree.updatePointClouds = function(pointclouds, camera, renderer){
 	
 	if(!Potree.lru){
@@ -260,7 +294,10 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 			}
 			
 			if(pointcloud.showBoundingBox && !node.boundingBoxNode){
-				let boxHelper = new THREE.BoxHelper(node.sceneNode);
+				//let min = pointcloud.
+				//let box = new THREE.Box3(min, max);
+				//let boxHelper = new THREE.BoxHelper(node.sceneNode);
+				let boxHelper = new THREE.BoxHelper(node.getBoundingBox());
 				pointcloud.add(boxHelper);
 				pointcloud.boundingBoxNodes.push(boxHelper);
 				node.boundingBoxNode = boxHelper;

@@ -4,6 +4,7 @@
         "rendering_opt": "Appearance",
         "tools_opt": "Tools",
         "measurments_opt": "Measurements",
+        "annotations_opt": "Annotations",
         "materials_opt": "Materials",
         "scene_opt": "Scene",
         "classification_filter_opt": "Classification filter",

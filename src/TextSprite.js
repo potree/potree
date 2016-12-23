@@ -13,7 +13,7 @@ Potree.TextSprite = function(text){
 	texture.magFilter = THREE.LinearFilter;
 	var spriteMaterial = new THREE.SpriteMaterial( { 
 		map: texture, 
-		useScreenCoordinates: false,
+		//useScreenCoordinates: false,
 		depthTest: false,
 		depthWrite: false} );
 	

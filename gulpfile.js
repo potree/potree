@@ -39,8 +39,11 @@ var paths = {
 		"src/utils.js",
 		"src/Features.js",
 		"src/TextSprite.js",
+		"src/AnimationPath.js",
 		"src/Version.js",
+		"src/utils/Measure.js",
 		"src/utils/MeasuringTool.js",
+		"src/utils/Profile.js",
 		"src/utils/ProfileTool.js",
 		"src/utils/TransformationTool.js",
 		"src/utils/VolumeTool.js",
@@ -49,7 +52,8 @@ var paths = {
 		"src/viewer/ProgressBar.js",
 		"src/viewer/viewer.js",
 		"src/viewer/profile.js",
-		"src/viewer/map.js"
+		"src/viewer/map.js",
+		"src/viewer/sidebar.js"
 	],
 	laslaz: [
 		"build/workers/laslaz-worker.js",

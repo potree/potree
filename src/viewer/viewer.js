@@ -1,17 +1,177 @@
 
+Potree.View = {};
+
+Potree.View.Orbit = class{
+	constructor(position, target){
+		this.position = new THREE.Vector3(10, 10, 10);
+		this.target = new THREE.Vector3(0, 0, 0);
+	}
+};
+
+Potree.View.FirstPerson = class{
+	constructor(){
+		this.position = new THREE.Vector3(10, 10, 10);
+		this.target = new THREE.Vector3(0, 0, 0);
+	}
+};
+
 Potree.Scene = class{
 	constructor(){
+		this.dispatcher = new THREE.EventDispatcher();
+		
+		this.annotations = [];
 		this.scene = new THREE.Scene();
 		this.scenePointCloud = new THREE.Scene();
 		this.sceneBG = new THREE.Scene();
-		this.cameraBG;
+		this.camera = new THREE.PerspectiveCamera(this.fov, 1, 0.1, 1000*1000);
+		this.cameraBG = new THREE.Camera();
 		this.pointclouds = [];
 		this.referenceFrame;
+		
+		this.measurements = [];
+		this.profiles = [];
+		
+		this.fpControls;
+		this.orbitControls;
+		this.earthControls;
+		this.geoControls;
+		this.controls;
+		this.view = new Potree.View.Orbit();
+		
+		this.directionalLight = null;
+		
+		this.initialize();
+	}
+	
+	addPointCloud(pointcloud){
+		this.pointclouds.push(pointcloud);
+		this.scenePointCloud.add(pointcloud);
+		
+		this.dispatcher.dispatchEvent({
+			type: "pointcloud_added",
+			pointcloud: pointcloud
+		});
+	};
+	
+	addMeasurement(measurement){
+		this.measurements.push(measurement);
+		this.dispatcher.dispatchEvent({
+			"type": "measurement_added",
+			"scene": this,
+			"measurement": measurement
+		});
+	};
+	
+	removeMeasurement(measurement){
+		let index = this.measurements.indexOf(measurement);
+		if (index > -1) {
+			this.measurements.splice(index, 1);
+			this.dispatcher.dispatchEvent({
+				"type": "measurement_removed",
+				"scene": this,
+				"measurement": measurement
+			});
+		}
+	}
+	
+	addProfile(profile){
+		this.profiles.push(profile);
+		this.dispatcher.dispatchEvent({
+			"type": "profile_added",
+			"scene": this,
+			"profile": profile
+		});
+	}
+	
+	removeProfile(profile){
+		let index = this.profiles.indexOf(profile);
+		if (index > -1) {
+			this.profiles.splice(index, 1);
+			this.dispatcher.dispatchEvent({
+				"type": "profile_removed",
+				"scene": this,
+				"profile": profile
+			});
+		}
+	}
+	
+	removeAllMeasurements(){
+		while(this.measurements.length > 0){
+			this.removeMeasurement(this.measurements[0]);
+		}
+		
+		while(this.profiles.length > 0){
+			this.removeProfile(this.profiles[0]);
+		}
+	}
+	
+	initialize(){
 		
 		this.referenceFrame = new THREE.Object3D();
 		this.referenceFrame.matrixAutoUpdate = false;
 		this.scenePointCloud.add(this.referenceFrame);
+
+		this.camera.up.set(0, 0, 1);
+		this.camera.position.set(1000, 1000, 1000);
+		//this.camera.rotation.y = -Math.PI / 4;
+		//this.camera.rotation.x = -Math.PI / 6;
+		
+		this.directionalLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
+		this.directionalLight.position.set( 10, 10, 10 );
+		this.directionalLight.lookAt( new THREE.Vector3(0, 0, 0));
+		this.scenePointCloud.add( this.directionalLight );
+		
+		var light = new THREE.AmbientLight( 0x555555 ); // soft white light
+		this.scenePointCloud.add( light );
+		
+		let grid = Potree.utils.createGrid(5, 5, 2);
+		this.scene.add(grid);
+		
+		{// background
+		// var texture = THREE.ImageUtils.loadTexture( Potree.resourcePath + '/textures/background.gif' );
+			let texture = Potree.utils.createBackgroundTexture(512, 512);
+			
+			texture.minFilter = texture.magFilter = THREE.NearestFilter;
+			texture.minFilter = texture.magFilter = THREE.LinearFilter;
+			let bg = new THREE.Mesh(
+				new THREE.PlaneBufferGeometry(2, 2, 0),
+				new THREE.MeshBasicMaterial({
+					map: texture
+				})
+			);
+			bg.material.depthTest = false;
+			bg.material.depthWrite = false;
+			this.sceneBG.add(bg);
+		}
 	}
+	
+	addEventListener(type, callback){
+		this.dispatcher.addEventListener(type, callback);
+	}
+	
+	addAnnotation(position, args = {}){
+		args.position = position;
+		
+		if(!args.cameraTarget){
+			args.cameraTarget = position;
+		}
+		
+		var annotation = new Potree.Annotation(this, args);
+		
+		this.annotations.push(annotation);
+		
+		this.dispatcher.dispatchEvent({
+			"type": "annotation_added", 
+			"scene": this,
+			"annotation": annotation});
+		
+		return annotation;
+	}
+	
+	getAnnotations(){
+		return this.annotations;
+	};
+	
 };
 
 Potree.Viewer = class{
@@ -26,7 +186,6 @@ Potree.Viewer = class{
 		//	defaultSettings.navigation = "Orbit";
 		//}
 		
-		this.annotations = [];
 		this.fov = 60;
 		this.pointSize = 1;
 		this.minPointSize = 1;
@@ -44,11 +203,9 @@ Potree.Viewer = class{
 		this.edlStrength = 1.0;
 		this.edlRadius = 1.4;
 		this.useEDL = false;
-		this.minimumJumpDistance = 0.2;
-		this.jumpDistance = null;
 		this.intensityMax = null;
-		this.heightMin = null;
-		this.heightMax = null;
+		this.heightMin = 0;
+		this.heightMax = 1;
 		this.materialTransition = 0.5;
 		this.weightRGB = 1.0;
 		this.weightIntensity = 0.0;
@@ -71,40 +228,76 @@ Potree.Viewer = class{
 		this.showBoundingBox = false;
 		this.freeze = false;
 
-		this.fpControls;
-		this.orbitControls;
-		this.earthControls;
-		this.geoControls;
-		this.controls;
 		this.mapView;
 
 		this.progressBar = new ProgressBar();
 
 		this.stats = new Stats();
-		//this.stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
-		//document.body.appendChild( this.stats.dom );
-		//this.stats.dom.style.left = "100px";
+		this.stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
+		document.body.appendChild( this.stats.dom );
+		this.stats.dom.style.left = "100px";
 		
 		this.potreeRenderer = null;
 		this.highQualityRenderer = null;
 		this.edlRenderer = null;
 		this.renderer;
-		this.camera;
 		
-		this.scene = new Potree.Scene();
+		this.scene;
 
 		this.measuringTool;
+		this.profileTool;
 		this.volumeTool;
 		this.transformationTool;
 		
 		this.dispatcher = new THREE.EventDispatcher();
 		this.skybox;
-		this.stats;
 		this.clock = new THREE.Clock();
-		//this.showSkybox = false;
 		this.background;
 		
 		this.initThree();
+		
+		this.scene = new Potree.Scene(this.renderer);
+		this.createControls();
+		
+		{
+			this.measuringTool = new Potree.MeasuringTool(this.renderer);
+			this.profileTool = new Potree.ProfileTool(this.renderer);
+			
+			this.measuringTool.setScene(this.scene);
+			this.profileTool.setScene(this.scene);
+			
+			this.dispatcher.addEventListener("scene_changed", (e) => {
+				this.measuringTool.setScene(e.scene);
+				this.profileTool.setScene(e.scene);
+			});
+			//this.transformationTool = new Potree.TransformationTool(this.scene.scenePointCloud, this.scene.camera, this.renderer);
+			//this.volumeTool = new Potree.VolumeTool(this.scene, this.renderer, this.transformationTool);		
+			
+			let onKeyDown = (event) => {
+				//console.log(event.keyCode);
+				
+				if(event.keyCode === 69){
+					// e pressed
+					this.transformationTool.translate();
+				}else if(event.keyCode === 82){
+					// r pressed
+					this.transformationTool.scale();
+				}else if(event.keyCode === 84){
+					// t pressed
+					this.transformationTool.rotate();
+				}
+			};
+			
+			this.dispatcher.addEventListener("scene_changed", (e) => {
+				this.updateHeightRange();
+			});
+			
+			this.dispatcher.addEventListener("pointcloud_added", (e) => {
+				this.updateHeightRange();
+			});
+			
+			window.addEventListener( 'keydown', onKeyDown, false );
+		}
 		
 		{// set defaults
 			this.setPointSize(1);
@@ -134,73 +327,51 @@ Potree.Viewer = class{
 // Viewer API 
 //------------------------------------------------------------------------------------
 
-	addEventListener(type, callback){
-		this.dispatcher.addEventListener(type, callback);
+	
+	
+	setScene(scene){
+		
+		if(scene === this.scene){
+			return;
+		}
+		
+		let oldScene = scene;
+		this.scene = scene;
+		
+		this.dispatcher.dispatchEvent({
+			type: "scene_changed",
+			oldScene: oldScene,
+			scene: scene
+		});
+		
+		
+		{ // Annotations
+			$(".annotation").detach();
+			
+			for(let annotation of this.scene.annotations){
+				this.renderArea.appendChild(annotation.domElement);
+			}
+		
+			this.scene.addEventListener("annotation_added", function(e){
+				if(e.scene === this.scene){
+					this.renderArea.appendChild(e.annotation.domElement);
+				}
+			}.bind(this));
+		}
+		
+	};
+	
+	getControls(view){
+		if(view instanceof Potree.View.Orbit){
+			return this.orbitControls;
+		}else if(view instanceof Potree.View.FirstPerson){
+			return this.fpControls;
+		}else{
+			return null;
+		}
 	}
 	
-	addPointCloud(path, name, callback){
-		callback = callback || function(){};
-		var initPointcloud = function(pointcloud){
-			
-			if(!this.mapView){
-				if(pointcloud.projection){
-					this.mapView = new Potree.MapView(this);
-					this.mapView.init(this);
-				}
-			}
-		
-			this.scene.pointclouds.push(pointcloud);
-			this.scene.referenceFrame.add(pointcloud);
-		
-			var sg = pointcloud.boundingSphere.clone().applyMatrix4(pointcloud.matrixWorld);
-			 
-			this.scene.referenceFrame.updateMatrixWorld(true);
-			
-			if(sg.radius > 50*1000){
-				this.camera.near = 10;
-			}else if(sg.radius > 10*1000){
-				this.camera.near = 2;
-			}else if(sg.radius > 1000){
-				this.camera.near = 1;
-			}else if(sg.radius > 100){
-				this.camera.near = 0.5;
-			}else{
-				this.camera.near = 0.1;
-			}
-
-			//if(this.scene.pointclouds.length === 1){
-			//	this.scene.referenceFrame.position.sub(sg.center);
-			//	this.scene.referenceFrame.updateMatrixWorld(true);
-			//	var moveSpeed = sg.radius / 6;
-			//	this.setMoveSpeed(moveSpeed);
-			//}
-			
-			//this.flipYZ();
-			
-			this.zoomTo(pointcloud, 1);
-			
-			var hr = this.getHeightRange();
-			if(hr.min === null || hr.max === null){
-				var bbWorld = this.getBoundingBox();
-				
-				this.setHeightRange(bbWorld.min.y, bbWorld.max.y);
-			}
-			
-			this.earthControls.pointclouds.push(pointcloud);	
-			
-			
-			if(this.scene.pointclouds.length === 1){
-				this.setNavigationMode("Orbit");
-				//this.flipYZ();
-				this.zoomTo(pointcloud, 1);
-			}
-			
-			this.dispatcher.dispatchEvent({"type": "pointcloud_loaded", "pointcloud": pointcloud});
-			
-			callback({type: "pointcloud_loaded", pointcloud: pointcloud});
-		}.bind(this);
-		this.dispatcher.addEventListener("pointcloud_loaded", this.pointCloudLoadedCallback);
-		
+	loadPointCloud(path, name, callback){
 		// load pointcloud
 		if(!path){
 			
@@ -227,22 +398,12 @@ Potree.Viewer = class{
 		}else{
 			callback({"type": "loading_failed"});
 		}
-	};
-	
-	//toLocal(position){
-	//	var scenePos = position.clone().applyMatrix4(this.scene.referenceFrame.matrixWorld);
-	//		
-	//	return scenePos;
-	//};
-	//
-	//
-	//toGeo(position){
-	//	var inverse = new THREE.Matrix4().getInverse(this.scene.referenceFrame.matrixWorld);
-	//	var geoPos = position.clone().applyMatrix4(inverse);
-    //
-	//	return geoPos;
-	//};
+	}
 
+	addEventListener(type, callback){
+		this.dispatcher.addEventListener(type, callback);
+	}
+	
 	getMinNodeSize(){
 		return this.minNodeSize;
 	};
@@ -259,23 +420,12 @@ Potree.Viewer = class{
 	};
 	
 	setBackground(bg){
-		
 		if(this.background === bg){
 			return;
 		}
 		
 		this.background = bg;
 		this.dispatcher.dispatchEvent({"type": "background_changed", "viewer": this});
-		
-		//if(bg === "gradient"){
-		//	this.showSkybox = false;
-		//} else if(bg === "skybox"){
-		//	this.showSkybox = true;
-		//} else if(bg === "black"){
-		//	
-		//} else if(bg === "white"){
-		//	
-		//}
 	}
 	
 	setDescription(value){
@@ -283,14 +433,14 @@ Potree.Viewer = class{
 	};
 	
 	setNavigationMode(value){
-		if(value === "Orbit"){
-			this.useOrbitControls();
-		}else if(value === "Flight"){
-			this.useFPSControls();
-		}else if(value === "Earth"){
-			this.useEarthControls();
-		}
-		
+		console.log("TODO");
+		//if(value === "Orbit"){
+		//	this.useOrbitControls();
+		//}else if(value === "Flight"){
+		//	this.useFPSControls();
+		//}else if(value === "Earth"){
+		//	this.useEarthControls();
+		//}
 	};
 	
 	setShowBoundingBox(value){
@@ -341,7 +491,7 @@ Potree.Viewer = class{
 	};
 	
 	getElevationRange(){
-		return getHeightRange();
+		return this.getHeightRange();
 	};
 	
 	setIntensityRange(min, max){
@@ -681,15 +831,15 @@ Potree.Viewer = class{
 	};
 	
 	disableAnnotations(){
-		for(var i = 0; i < this.annotations.length; i++){
-			var annotation = this.annotations[i];
+		for(var i = 0; i < this.scene.annotations.length; i++){
+			var annotation = this.scene.annotations[i];
 			annotation.domElement.style.pointerEvents = "none";
 		};
 	};
 	
 	enableAnnotations(){
-		for(var i = 0; i < this.annotations.length; i++){
-			var annotation = this.annotations[i];
+		for(var i = 0; i < this.scene.annotations.length; i++){
+			var annotation = this.scene.annotations[i];
 			annotation.domElement.style.pointerEvents = "auto";
 		};
 	};
@@ -803,7 +953,7 @@ Potree.Viewer = class{
 	};
 	
 	zoomTo(node, factor){
-		this.camera.zoomTo(node, factor);
+		this.scene.camera.zoomTo(node, factor);
 		
 		var bs;
 		if(node.boundingSphere){
@@ -816,7 +966,11 @@ Potree.Viewer = class{
 		
 		bs = bs.clone().applyMatrix4(node.matrixWorld); 
 		
-		this.orbitControls.target.copy(bs.center);
+		let view = this.scene.view;
+		view.position.copy(this.scene.camera.position);
+		if(view.target){
+			view.target.copy(bs.center);
+		}
 		
 		this.dispatcher.dispatchEvent({"type": "zoom_to", "viewer": this});
 	};
@@ -847,26 +1001,6 @@ Potree.Viewer = class{
 		return box;
 	};
 	
-	getBoundingBoxGeo(pointclouds){
-		pointclouds = pointclouds || this.scene.pointclouds;
-		
-		var box = new THREE.Box3();
-		
-		this.scene.scenePointCloud.updateMatrixWorld(true);
-		this.scene.referenceFrame.updateMatrixWorld(true);
-		
-		for(var i = 0; i < this.scene.pointclouds.length; i++){
-			var pointcloud = this.scene.pointclouds[i];
-			
-			pointcloud.updateMatrixWorld(true);
-			
-			var boxWorld = Potree.utils.computeTransformedBoundingBox(pointcloud.boundingBox, pointcloud.matrix)
-			box.union(boxWorld);
-		}
-		
-		return box;
-	};
-	
 	fitToScreen(){
 		var box = this.getBoundingBox(this.scene.pointclouds);
 		
@@ -877,7 +1011,6 @@ Potree.Viewer = class{
 		var node = new THREE.Object3D();
 		node.boundingBox = box;
 		
-		//this.camera.zoomTo(node, 1);
 		this.zoomTo(node, 1);
 	};
 	
@@ -891,9 +1024,9 @@ Potree.Viewer = class{
 		var node = new THREE.Object3D();
 		node.boundingBox = box;
 		
-		this.camera.position.set(0, 1, 0);
-		this.camera.rotation.set(-Math.PI / 2, 0, 0);
-		this.camera.zoomTo(node, 1);
+		this.scene.camera.position.set(0, 1, 0);
+		this.scene.camera.rotation.set(-Math.PI / 2, 0, 0);
+		this.scene.camera.zoomTo(node, 1);
 	};
 	
 	setFrontView(){
@@ -906,9 +1039,9 @@ Potree.Viewer = class{
 		var node = new THREE.Object3D();
 		node.boundingBox = box;
 		
-		this.camera.position.set(0, 0, 1);
-		this.camera.rotation.set(0, 0, 0);
-		this.camera.zoomTo(node, 1);
+		this.scene.camera.position.set(0, 0, 1);
+		this.scene.camera.rotation.set(0, 0, 0);
+		this.scene.camera.zoomTo(node, 1);
 	};
 	
 	setLeftView(){
@@ -921,9 +1054,9 @@ Potree.Viewer = class{
 		var node = new THREE.Object3D();
 		node.boundingBox = box;
 		
-		this.camera.position.set(-1, 0, 0);
-		this.camera.rotation.set(0, -Math.PI / 2, 0);
-		this.camera.zoomTo(node, 1);
+		this.scene.camera.position.set(-1, 0, 0);
+		this.scene.camera.rotation.set(0, -Math.PI / 2, 0);
+		this.scene.camera.zoomTo(node, 1);
 	};
 	
 	setRightView(){
@@ -936,143 +1069,21 @@ Potree.Viewer = class{
 		var node = new THREE.Object3D();
 		node.boundingBox = box;
 		
-		this.camera.position.set(1, 0, 0);
-		this.camera.rotation.set(0, Math.PI / 2, 0);
-		this.camera.zoomTo(node, 1);
+		this.scene.camera.position.set(1, 0, 0);
+		this.scene.camera.rotation.set(0, Math.PI / 2, 0);
+		this.scene.camera.zoomTo(node, 1);
 	};
 	
 	flipYZ(){
-		this.isFlipYZ = !this.isFlipYZ;
+		this.isFlipYZ = !this.isFlipYZ
 		
-		if(this.isFlipYZ){
-			this.scene.referenceFrame.matrix.copy(new THREE.Matrix4().set(
-				1,0,0,0,
-				0,0,1,0,
-				0,-1,0,0,
-				0,0,0,1
-			));
-		}else{
-			this.scene.referenceFrame.matrix.copy(new THREE.Matrix4().set(
-				1,0,0,0,
-				0,1,0,0,
-				0,0,1,0,
-				0,0,0,1
-			));
-		}
-		
-		this.scene.referenceFrame.updateMatrixWorld(true);
-		var box = this.getBoundingBox();
-		//this.scene.referenceFrame.position.copy(box.getCenter()).multiplyScalar(-1);
-		//this.scene.referenceFrame.position.y = -box.min.y;
-		this.scene.referenceFrame.updateMatrixWorld(true);
-		
-		this.updateHeightRange();
-		
-		
-		//this.isFlipYZ = !this.isFlipYZ;
-		//
-		//this.scene.referenceFrame.matrix.copy(new THREE.Matrix4());
-		//if(this.isFlipYZ){
-		//	this.scene.referenceFrame.applyMatrix(new THREE.Matrix4().set(
-		//		1,0,0,0,
-		//		0,0,1,0,
-		//		0,-1,0,0,
-		//		0,0,0,1
-		//	));
-		//	
-		//}else{
-		//	this.scene.referenceFrame.applyMatrix(new THREE.Matrix4().set(
-		//		1,0,0,0,
-		//		0,1,0,0,
-		//		0,0,1,0,
-		//		0,0,0,1
-		//	));
-		//}
-		//
-		//this.scene.referenceFrame.updateMatrixWorld(true);
-		//var box = this.getBoundingBox();
-		//this.scene.referenceFrame.position.copy(box.getCenter()).multiplyScalar(-1);
-		//this.scene.referenceFrame.position.y = -box.min.y;
-		//this.scene.referenceFrame.updateMatrixWorld(true);
-		//
-		//this.updateHeightRange();
+		// TODO flipyz 
+		console.log("TODO");
 	}
 	
 	updateHeightRange(){
 		var bbWorld = this.getBoundingBox();
-		this.setHeightRange(bbWorld.min.y, bbWorld.max.y);
-	};
-	
-	useEarthControls(){
-		if(this.controls){
-			this.controls.enabled = false;
-		}		
-
-		this.controls = this.earthControls;
-		this.controls.enabled = true;
-	}
-	
-	useGeoControls(){
-		if(this.controls){
-			this.controls.enabled = false;
-		}
-
-		this.controls = this.geoControls;
-		this.controls.enabled = true;
-		
-		//this.controls.moveSpeed = this.scene.pointclouds[0].boundingSphere.radius / 6;
-	}
-
-	useFPSControls(){
-		if(this.controls){
-			this.controls.enabled = false;
-		}
-
-		this.controls = this.fpControls;
-		this.controls.enabled = true;
-		
-		//this.controls.moveSpeed = this.scene.pointclouds[0].boundingSphere.radius / 6;
-	}
-
-	useOrbitControls(){
-		if(this.controls){
-			this.controls.enabled = false;
-		}
-		
-		this.controls = this.orbitControls;
-		this.controls.enabled = true;
-		
-		if(this.scene.pointclouds.length > 0){
-			this.controls.target.copy(this.scene.pointclouds[0].boundingSphere.center.clone().applyMatrix4(this.scene.pointclouds[0].matrixWorld));
-		}
-	};
-	
-	addAnnotation(position, args){
-		var cameraPosition = args.cameraPosition;
-		var cameraTarget = args.cameraTarget || position;
-		var description = args.description || null;
-		var title = args.title || null;
-		var actions = args.actions || null;
-		
-		var annotation = new Potree.Annotation(this, {
-			"position": position,
-			"cameraPosition": cameraPosition,
-			"cameraTarget": cameraTarget,
-			"title": title,
-			"description": description,
-			"actions": actions
-		});
-		
-		this.annotations.push(annotation);
-		this.renderArea.appendChild(annotation.domElement);
-		
-		this.dispatcher.dispatchEvent({"type": "annotation_added", "viewer": this});
-		
-		return annotation;
-	}
-	
-	getAnnotations(){
-		return this.annotations;
+		this.setHeightRange(bbWorld.min.z, bbWorld.max.z);
 	};
 	
 	loadSettingsFromURL(){
@@ -1144,16 +1155,49 @@ Potree.Viewer = class{
 	
 	
 	
-	
-	
-	
-	
+
 	
 	
 	
 //------------------------------------------------------------------------------------
 // Viewer Internals 
 //------------------------------------------------------------------------------------
+
+	createControls(){
+		{ // create FIRST PERSON CONTROLS
+			this.fpControls = new THREE.FirstPersonControls(this.scene.camera, this.renderer.domElement);
+			this.fpControls.enabled = false;
+			this.fpControls.addEventListener("start", this.disableAnnotations.bind(this));
+			this.fpControls.addEventListener("end", this.enableAnnotations.bind(this));
+			this.fpControls.addEventListener("move_speed_changed", function(event){
+				this.setMoveSpeed(this.fpControls.moveSpeed);
+			}.bind(this));
+		}
+		
+		{ // create GEO CONTROLS
+			this.geoControls = new Potree.GeoControls(this.scene.camera, this.renderer.domElement);
+			this.geoControls.enabled = false;
+			this.geoControls.addEventListener("start", this.disableAnnotations.bind(this));
+			this.geoControls.addEventListener("end", this.enableAnnotations.bind(this));
+			this.geoControls.addEventListener("move_speed_changed", function(event){
+				this.setMoveSpeed(this.geoControls.moveSpeed);
+			}.bind(this));
+		}
+	
+		{ // create ORBIT CONTROLS
+			this.orbitControls = new Potree.OrbitControls(this.renderer);
+			this.orbitControls.enabled = false;
+			this.orbitControls.addEventListener("start", this.disableAnnotations.bind(this));
+			this.orbitControls.addEventListener("end", this.enableAnnotations.bind(this));
+		}
+		
+		{ // create EARTH CONTROLS
+			this.earthControls = new THREE.EarthControls(this.scene.camera, this.renderer, this.scenePointCloud);
+			this.earthControls.enabled = false;
+			this.earthControls.addEventListener("start", this.disableAnnotations.bind(this));
+			this.earthControls.addEventListener("end", this.enableAnnotations.bind(this));
+		}
+	};
 
 	toggleSidebar(){
 		
@@ -1194,7 +1238,6 @@ Potree.Viewer = class{
 		viewer.renderArea.insertBefore(imgMapToggle, viewer.renderArea.children[0]);
 		viewer.renderArea.insertBefore(imgMenuToggle, viewer.renderArea.children[0]);
 		
-		
 		var elProfile = $('<div>').load(new URL(Potree.scriptPath + "/profile.html").href, function(){
 			$('#potree_render_area').append(elProfile.children());
 			this._2dprofile = new Potree.Viewer.Profile(this, document.getElementById("profile_draw_container"));
@@ -1215,173 +1258,11 @@ Potree.Viewer = class{
     setLanguage(lang){
         i18n.setLng(lang);
         $("body").i18n();
-    }
-
-	createControls(){
-		
-		var demCollisionHandler =  function(event){
-			
-			if(!this.useDEMCollisions){
-				return
-			}
-			
-			var demHeight = null;
-			
-			for(var i = 0; i < this.scene.pointclouds.length; i++){
-				var pointcloud = this.scene.pointclouds[i];
-				pointcloud.generateDEM = true;
-				
-				var height = pointcloud.getDEMHeight(event.newPosition);
-				
-				if(demHeight){
-					demHeight = Math.max(demHeight, height);
-				}else{
-					demHeight = height;
-				}
-			}
-			
-			if(event.newPosition.y < demHeight){
-				event.objections++;
-				var counterProposal = event.newPosition.clone();
-				counterProposal.y = demHeight;
-				event.counterProposals.push(counterProposal);
-			}
-		};
-		
-		{ // create FIRST PERSON CONTROLS
-			this.fpControls = new THREE.FirstPersonControls(this.camera, this.renderer.domElement);
-			this.fpControls.enabled = false;
-			this.fpControls.addEventListener("start", this.disableAnnotations.bind(this));
-			this.fpControls.addEventListener("end", this.enableAnnotations.bind(this));
-			this.fpControls.addEventListener("proposeTransform", demCollisionHandler.bind(this));
-			this.fpControls.addEventListener("move_speed_changed", function(event){
-				this.setMoveSpeed(this.fpControls.moveSpeed);
-			}.bind(this));
-		}
-		
-		{ // create GEO CONTROLS
-			this.geoControls = new Potree.GeoControls(this.camera, this.renderer.domElement);
-			this.geoControls.enabled = false;
-			this.geoControls.addEventListener("start", this.disableAnnotations.bind(this));
-			this.geoControls.addEventListener("end", this.enableAnnotations.bind(this));
-			this.geoControls.addEventListener("proposeTransform", demCollisionHandler.bind(this));
-			this.geoControls.addEventListener("move_speed_changed", function(event){
-				this.setMoveSpeed(this.geoControls.moveSpeed);
-			}.bind(this));
-		}
-	
-		{ // create ORBIT CONTROLS
-			this.orbitControls = new Potree.OrbitControls(this.camera, this.renderer.domElement);
-			this.orbitControls.enabled = false;
-			this.orbitControls.addEventListener("start", this.disableAnnotations.bind(this));
-			this.orbitControls.addEventListener("end", this.enableAnnotations.bind(this));
-			this.orbitControls.addEventListener("proposeTransform", demCollisionHandler.bind(this));
-			this.renderArea.addEventListener("dblclick", function(event){
-				if(this.scene.pointclouds.length === 0){
-					return;
-				}
-				
-				event.preventDefault();
-			
-				var rect = this.renderArea.getBoundingClientRect();
-				
-				var mouse =  {
-					x: ( (event.clientX - rect.left) / this.renderArea.clientWidth ) * 2 - 1,
-					y: - ( (event.clientY - rect.top) / this.renderArea.clientHeight ) * 2 + 1
-				};
-				
-				var pointcloud = null;
-				var distance = Number.POSITIVE_INFINITY;
-				var I = null;
-				
-				for(var i = 0; i < this.scene.pointclouds.length; i++){
-					let intersection = Potree.utils.getMousePointCloudIntersection(mouse, this.camera, this.renderer, [this.scene.pointclouds[i]]);
-					if(!intersection){
-						continue;
-					}
-					
-					var tDist = this.camera.position.distanceTo(intersection);
-					if(tDist < distance){
-						pointcloud = this.scene.pointclouds[i];
-						distance = tDist;
-						I = intersection;
-					}
-				}
-				
-				if(I != null){
-				
-					var targetRadius = 0;
-					if(!this.jumpDistance){
-						var camTargetDistance = this.camera.position.distanceTo(this.orbitControls.target);
-					
-						var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
-						vector.unproject(this.camera);
-
-						var direction = vector.sub(this.camera.position).normalize();
-						var ray = new THREE.Ray(this.camera.position, direction);
-						
-						var nodes = pointcloud.nodesOnRay(pointcloud.visibleNodes, ray);
-						var lastNode = nodes[nodes.length - 1];
-						var radius = lastNode.getBoundingSphere().radius;
-						var targetRadius = Math.min(camTargetDistance, radius);
-						var targetRadius = Math.max(this.minimumJumpDistance, targetRadius);
-					}else{
-						targetRadius = this.jumpDistance;
-					}
-					
-					var d = this.camera.getWorldDirection().multiplyScalar(-1);
-					var cameraTargetPosition = new THREE.Vector3().addVectors(I, d.multiplyScalar(targetRadius));
-					var controlsTargetPosition = I;
-					
-					var animationDuration = 600;
-					
-					var easing = TWEEN.Easing.Quartic.Out;
-					
-					this.controls.enabled = false;
-					
-					// animate position
-					var tween = new TWEEN.Tween(this.camera.position).to(cameraTargetPosition, animationDuration);
-					tween.easing(easing);
-					tween.start();
-					
-					// animate target
-					var tween = new TWEEN.Tween(this.orbitControls.target).to(I, animationDuration);
-					tween.easing(easing);
-					tween.onComplete(function(){
-						this.controls.enabled = true;
-						this.fpControls.moveSpeed = radius / 2;
-						this.geoControls.moveSpeed = radius / 2;
-					}.bind(this));
-					tween.start();
-				}
-			}.bind(this));
-		}
-		
-		{ // create EARTH CONTROLS
-			this.earthControls = new THREE.EarthControls(this.camera, this.renderer, this.scene.scenePointCloud);
-			this.earthControls.enabled = false;
-			this.earthControls.addEventListener("start", this.disableAnnotations.bind(this));
-			this.earthControls.addEventListener("end", this.enableAnnotations.bind(this));
-			this.earthControls.addEventListener("proposeTransform", demCollisionHandler.bind(this));
-		}
-	};
-	
+    }	
 	
 	initThree(){
 		let width = this.renderArea.clientWidth;
 		let height = this.renderArea.clientHeight;
-		let aspect = width / height;
-		let near = 0.1;
-		let far = 1000*1000;
-		
-		this.camera = new THREE.PerspectiveCamera(this.fov, aspect, near, far);
-		this.cameraBG = new THREE.Camera();
-		this.camera.up.set(0, 0, 1);
-		//this.camera.rotation.order = 'ZYX';
-		
-		this.scene.referenceFrame.add(this.camera);
-		
-		
 
 		this.renderer = new THREE.WebGLRenderer({premultipliedAlpha: false});
 		this.renderer.setSize(width, height);
@@ -1394,73 +1275,19 @@ Potree.Viewer = class{
 		
 		this.skybox = Potree.utils.loadSkybox(new URL(Potree.resourcePath + "/textures/skybox/").href);
 
-		// camera and controls
-		this.camera.position.set(-304, 372, 318);
-		this.camera.rotation.y = -Math.PI / 4;
-		this.camera.rotation.x = -Math.PI / 6;
-		
-		this.createControls();
-		
 		// enable frag_depth extension for the interpolation shader, if available
 		this.renderer.context.getExtension("EXT_frag_depth");
-		
-		let grid = Potree.utils.createGrid(5, 5, 2);
-		this.scene.scene.add(grid);
-		
-		this.measuringTool = new Potree.MeasuringTool(this.scene.scenePointCloud, this.camera, this.renderer);
-		this.profileTool = new Potree.ProfileTool(this.scene.scenePointCloud, this.camera, this.renderer);
-		this.transformationTool = new Potree.TransformationTool(this.scene.scenePointCloud, this.camera, this.renderer);
-		this.volumeTool = new Potree.VolumeTool(this.scene.scenePointCloud, this.camera, this.renderer, this.transformationTool);
-		
-		// background
-		// var texture = THREE.ImageUtils.loadTexture( Potree.resourcePath + '/textures/background.gif' );
-		var texture = Potree.utils.createBackgroundTexture(512, 512);
-		
-		texture.minFilter = texture.magFilter = THREE.NearestFilter;
-		texture.minFilter = texture.magFilter = THREE.LinearFilter;
-		
-		var bg = new THREE.Mesh(
-			new THREE.PlaneBufferGeometry(2, 2, 0),
-			new THREE.MeshBasicMaterial({
-				map: texture
-			})
-		);
-		bg.material.depthTest = false;
-		bg.material.depthWrite = false;
-		this.scene.sceneBG.add(bg);			
-		
-		let onKeyDown = function(event){
-			//console.log(event.keyCode);
-			
-			if(event.keyCode === 69){
-				// e pressed
-				this.transformationTool.translate();
-			}else if(event.keyCode === 82){
-				// r pressed
-				this.transformationTool.scale();
-			}else if(event.keyCode === 84){
-				// t pressed
-				this.transformationTool.rotate();
-			}
-		}.bind(this);
-		
-		window.addEventListener( 'keydown', onKeyDown, false );
-		
-		this.directionalLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
-		this.directionalLight.position.set( 10, 10, 10 );
-		this.directionalLight.lookAt( new THREE.Vector3(0, 0, 0));
-		this.scene.scenePointCloud.add( this.directionalLight );
-		
-		var light = new THREE.AmbientLight( 0x555555 ); // soft white light
-		this.scene.scenePointCloud.add( light );
-		
 	}
 
 	update(delta, timestamp){
+		
+		let scene = this.scene;
+		let camera = this.scene.camera;
+		
 		Potree.pointLoadLimit = Potree.pointBudget * 2;
 		
-		this.directionalLight.position.copy(this.camera.position);
-		this.directionalLight.lookAt(new THREE.Vector3().addVectors(this.camera.position, this.camera.getWorldDirection()));
+		this.scene.directionalLight.position.copy(camera.position);
+		this.scene.directionalLight.lookAt(new THREE.Vector3().addVectors(camera.position, camera.getWorldDirection()));
 		
 		var visibleNodes = 0;
 		var visiblePoints = 0;
@@ -1526,7 +1353,7 @@ Potree.Viewer = class{
 			pointcloud.material.uniforms.wSourceID.value = this.getWeightSourceID();
 			
 			//if(!this.freeze){
-			//	pointcloud.update(this.camera, this.renderer);
+			//	pointcloud.update(this.scene.camera, this.renderer);
 			//}
 			
 			visibleNodes += pointcloud.numVisibleNodes;
@@ -1536,31 +1363,45 @@ Potree.Viewer = class{
 		}
 		
 		if(!this.freeze){
-			var result = Potree.updatePointClouds(this.scene.pointclouds, this.camera, this.renderer);
+			var result = Potree.updatePointClouds(this.scene.pointclouds, this.scene.camera, this.renderer);
 			visibleNodes = result.visibleNodes.length;
 			visiblePoints = result.numVisiblePoints;
 		}
 		
 		
-		//if(stats && this.showStats){
+		//if(this.stats && this.showStats){
 		//	document.getElementById("lblNumVisibleNodes").style.display = "";
 		//	document.getElementById("lblNumVisiblePoints").style.display = "";
-		//	stats.domElement.style.display = "";
+		//	this.stats.domElement.style.display = "";
 		//
-		//	stats.update();
+		//	this.stats.update();
 		//
 		//	document.getElementById("lblNumVisibleNodes").innerHTML = "visible nodes: " + visibleNodes;
 		//	document.getElementById("lblNumVisiblePoints").innerHTML = "visible points: " + Potree.utils.addCommas(visiblePoints);
-		//}else if(stats){
+		//}else if(this.stats){
 		//	document.getElementById("lblNumVisibleNodes").style.display = "none";
 		//	document.getElementById("lblNumVisiblePoints").style.display = "none";
-		//	stats.domElement.style.display = "none";
+		//	this.stats.domElement.style.display = "none";
 		//}
 		
-		this.camera.fov = this.fov;
+		camera.fov = this.fov;
 		
-		if(this.controls){
+		if(this.getControls(scene.view) !== this.controls){
+			if(this.controls){
+				this.controls.enabled = false;
+			}
+			
+			this.controls = this.getControls(scene.view);
+			this.controls.enabled = true;
+		}
+		
+		//let controls = this.getControls(this.scene.view);
+		if(this.controls !== null){
+			this.controls.setScene(scene);
 			this.controls.update(delta);
+			
+			camera.position.copy(scene.view.position);
+			camera.lookAt(scene.view.target);
 		}
 
 		// update progress bar
@@ -1583,53 +1424,50 @@ Potree.Viewer = class{
 		//	}
 		//}
 		
-		this.volumeTool.update();
-		this.transformationTool.update();
-		this.profileTool.update();
+		//this.volumeTool.update();
+		//this.transformationTool.update();
+		//this.profileTool.update();
 		
 		
 		var clipBoxes = [];
 		
-		for(var i = 0; i < this.profileTool.profiles.length; i++){
-			var profile = this.profileTool.profiles[i];
-			
-			for(var j = 0; j < profile.boxes.length; j++){
-				var box = profile.boxes[j];
+		for(let profile of this.scene.profiles){
+			for(let box of profile.boxes){
 				box.updateMatrixWorld();
 				var boxInverse = new THREE.Matrix4().getInverse(box.matrixWorld);
 				var boxPosition = box.getWorldPosition();
 				clipBoxes.push({inverse: boxInverse, position: boxPosition});
 			}
 		}
-		
-		for(var i = 0; i < this.volumeTool.volumes.length; i++){
-			var volume = this.volumeTool.volumes[i];
-			
-			if(volume.clip){
-				volume.updateMatrixWorld();
-				var boxInverse = new THREE.Matrix4().getInverse(volume.matrixWorld);
-				var boxPosition = volume.getWorldPosition();
-				//clipBoxes.push(boxInverse);
-				clipBoxes.push({inverse: boxInverse, position: boxPosition});
-			}
-		}
-		
-		
-		for(var i = 0; i < this.scene.pointclouds.length; i++){
-			this.scene.pointclouds[i].material.setClipBoxes(clipBoxes);
+		//
+		//for(var i = 0; i < this.volumeTool.volumes.length; i++){
+		//	var volume = this.volumeTool.volumes[i];
+		//	
+		//	if(volume.clip){
+		//		volume.updateMatrixWorld();
+		//		var boxInverse = new THREE.Matrix4().getInverse(volume.matrixWorld);
+		//		var boxPosition = volume.getWorldPosition();
+		//		//clipBoxes.push(boxInverse);
+		//		clipBoxes.push({inverse: boxInverse, position: boxPosition});
+		//	}
+		//}
+		//
+		//
+		for(let pointcloud of this.scene.pointclouds){
+			pointcloud.material.setClipBoxes(clipBoxes);
 		}
 		
 		{// update annotations
 			var distances = [];
-			for(var i = 0; i < this.annotations.length; i++){
-				var ann = this.annotations[i];
-				var screenPos = ann.position.clone().project(this.camera);
+			for(var i = 0; i < this.scene.annotations.length; i++){
+				var ann = this.scene.annotations[i];
+				var screenPos = ann.position.clone().project(this.scene.camera);
 				
 				screenPos.x = this.renderArea.clientWidth * (screenPos.x + 1) / 2;
 				screenPos.y = this.renderArea.clientHeight * (1 - (screenPos.y + 1) / 2);
 				
 				ann.domElement.style.left = Math.floor(screenPos.x - ann.domElement.clientWidth / 2) + "px";
-				ann.domElement.style.top = Math.floor(screenPos.y) + "px";
+				ann.domElement.style.top = Math.floor(screenPos.y - ann.domElement.clientHeight / 2) + "px";
 				
 				//ann.domDescription.style.left = screenPos.x - ann.domDescription.clientWidth / 2 + 10;
 				//ann.domDescription.style.top = screenPos.y + 30;
@@ -1654,14 +1492,14 @@ Potree.Viewer = class{
 		
 		if(this.showDebugInfos){
 			this.infos.set("camera.position", "camera.position: " + 
-				this.camera.position.x.toFixed(2) 
-				+ ", " + this.camera.position.y.toFixed(2) 
-				+ ", " + this.camera.position.z.toFixed(2)
+				this.scene.camera.position.x.toFixed(2) 
+				+ ", " + this.scene.camera.position.y.toFixed(2) 
+				+ ", " + this.scene.camera.position.z.toFixed(2)
 			);
 		}
 		
 		if(this.mapView){
-			this.mapView.update(delta, this.camera);
+			this.mapView.update(delta, this.scene.camera);
 		}
 		
 		TWEEN.update(timestamp);
@@ -1686,6 +1524,8 @@ Potree.Viewer = class{
 		//	toggleMessage = 0;
 		//}
 		
+		let queryAll = Potree.startQuery("All", viewer.renderer.getContext());
+		
 		if(this.useEDL && Potree.Features.SHADER_EDL.isSupported()){
 			if(!this.edlRenderer){
 				this.edlRenderer = new EDLRenderer(this);
@@ -1703,6 +1543,9 @@ Potree.Viewer = class{
 			
 			this.potreeRenderer.render();
 		}
+		
+		Potree.endQuery(queryAll, viewer.renderer.getContext());
+		Potree.resolveQueries(viewer.renderer.getContext());
 		
 		//if(this.takeScreenshot == true){
 		//	this.takeScreenshot = false;
@@ -1744,8 +1587,8 @@ class PotreeRenderer{
 			let height = viewer.scaleFactor * viewer.renderArea.clientHeight;
 			let aspect = width / height;
 			
-			viewer.camera.aspect = aspect;
-			viewer.camera.updateProjectionMatrix();
+			viewer.scene.camera.aspect = aspect;
+			viewer.scene.camera.updateProjectionMatrix();
 			
 			viewer.renderer.setSize(width, height);
 		}
@@ -1756,11 +1599,11 @@ class PotreeRenderer{
 		// render skybox
 		if(viewer.background === "skybox"){
 			viewer.renderer.clear(true, true, false);
-			viewer.skybox.camera.rotation.copy(viewer.camera.rotation);
+			viewer.skybox.camera.rotation.copy(viewer.scene.camera.rotation);
 			viewer.renderer.render(viewer.skybox.scene, viewer.skybox.camera);
 		}else if(viewer.background === "gradient"){
 			viewer.renderer.clear(true, true, false);
-			viewer.renderer.render(viewer.scene.sceneBG, viewer.cameraBG);
+			viewer.renderer.render(viewer.scene.sceneBG, viewer.scene.cameraBG);
 		}else if(viewer.background === "black"){
 			viewer.renderer.setClearColor(0x000000, 1);
 			viewer.renderer.clear(true, true, false);
@@ -1790,18 +1633,18 @@ class PotreeRenderer{
 		}
 		
 		// render scene
-		viewer.renderer.render(viewer.scene.scene, viewer.camera);
+		viewer.renderer.render(viewer.scene.scene, viewer.scene.camera);
 		
 		//var queryPC = Potree.startQuery("PointCloud", viewer.renderer.getContext());
-		viewer.renderer.render(viewer.scene.scenePointCloud, viewer.camera);
+		viewer.renderer.render(viewer.scene.scenePointCloud, viewer.scene.camera);
 		//Potree.endQuery(queryPC, viewer.renderer.getContext());
 		
 		viewer.profileTool.render();
-		viewer.volumeTool.render();
+		//viewer.volumeTool.render();
 		
 		viewer.renderer.clearDepth();
 		viewer.measuringTool.render();
-		viewer.transformationTool.render();
+		//viewer.transformationTool.render();
 		
 		//Potree.endQuery(queryAll, viewer.renderer.getContext());
 		
@@ -1826,34 +1669,34 @@ class HighQualityRenderer{
 	
 	
 	initHQSPlats(){
-		if(depthMaterial != null){
+		if(this.depthMaterial != null){
 			return;
 		}
 	
-		depthMaterial = new Potree.PointCloudMaterial();
-		attributeMaterial = new Potree.PointCloudMaterial();
+		this.depthMaterial = new Potree.PointCloudMaterial();
+		this.attributeMaterial = new Potree.PointCloudMaterial();
 	
-		depthMaterial.pointColorType = Potree.PointColorType.DEPTH;
-		depthMaterial.pointShape = Potree.PointShape.CIRCLE;
-		depthMaterial.interpolate = false;
-		depthMaterial.weighted = false;
-		depthMaterial.minSize = viewer.minPointSize;
-		depthMaterial.maxSize = viewer.maxPointSize;
+		this.depthMaterial.pointColorType = Potree.PointColorType.DEPTH;
+		this.depthMaterial.pointShape = Potree.PointShape.CIRCLE;
+		this.depthMaterial.interpolate = false;
+		this.depthMaterial.weighted = false;
+		this.depthMaterial.minSize = viewer.minPointSize;
+		this.depthMaterial.maxSize = viewer.maxPointSize;
 					
-		attributeMaterial.pointShape = Potree.PointShape.CIRCLE;
-		attributeMaterial.interpolate = false;
-		attributeMaterial.weighted = true;
-		attributeMaterial.minSize = viewer.minPointSize;
-		attributeMaterial.maxSize = viewer.maxPointSize;
+		this.attributeMaterial.pointShape = Potree.PointShape.CIRCLE;
+		this.attributeMaterial.interpolate = false;
+		this.attributeMaterial.weighted = true;
+		this.attributeMaterial.minSize = viewer.minPointSize;
+		this.attributeMaterial.maxSize = viewer.maxPointSize;
 
-		rtDepth = new THREE.WebGLRenderTarget( 1024, 1024, { 
+		this.rtDepth = new THREE.WebGLRenderTarget( 1024, 1024, { 
 			minFilter: THREE.NearestFilter, 
 			magFilter: THREE.NearestFilter, 
 			format: THREE.RGBAFormat, 
 			type: THREE.FloatType
 		} );
 
-		rtNormalize = new THREE.WebGLRenderTarget( 1024, 1024, { 
+		this.rtNormalize = new THREE.WebGLRenderTarget( 1024, 1024, { 
 			minFilter: THREE.LinearFilter, 
 			magFilter: THREE.NearestFilter, 
 			format: THREE.RGBAFormat, 
@@ -1861,11 +1704,11 @@ class HighQualityRenderer{
 		} );
 		
 		var uniformsNormalize = {
-			depthMap: { type: "t", value: rtDepth },
-			texture: { type: "t", value: rtNormalize }
+			depthMap: { type: "t", value: this.rtDepth },
+			texture: { type: "t", value: this.rtNormalize }
 		};
 		
-		normalizationMaterial = new THREE.ShaderMaterial({
+		this.normalizationMaterial = new THREE.ShaderMaterial({
 			uniforms: uniformsNormalize,
 			vertexShader: Potree.Shaders["normalize.vs"],
 			fragmentShader: Potree.Shaders["normalize.fs"]
@@ -1873,19 +1716,19 @@ class HighQualityRenderer{
 	};
 	
 	resize(width, height){
-		if(rtDepth.width == width && rtDepth.height == height){
+		if(this.rtDepth.width == width && this.rtDepth.height == height){
 			return;
 		}
 		
-		rtDepth.dispose();
-		rtNormalize.dispose();
+		this.rtDepth.dispose();
+		this.rtNormalize.dispose();
 		
-		viewer.camera.aspect = width / height;
-		viewer.camera.updateProjectionMatrix();
+		viewer.scene.camera.aspect = width / height;
+		viewer.scene.camera.updateProjectionMatrix();
 		
 		viewer.renderer.setSize(width, height);
-		rtDepth.setSize(width, height);
-		rtNormalize.setSize(width, height);
+		this.rtDepth.setSize(width, height);
+		this.rtNormalize.setSize(width, height);
 	};
 
 	// render with splats
@@ -1894,101 +1737,107 @@ class HighQualityRenderer{
 		var width = viewer.renderArea.clientWidth;
 		var height = viewer.renderArea.clientHeight;
 	
-		initHQSPlats();
+		this.initHQSPlats();
 		
-		resize(width, height);
+		this.resize(width, height);
 		
 		
 		viewer.renderer.clear();
-		if(this.background === "skybox"){
-			skybox.camera.rotation.copy(viewer.camera.rotation);
-			viewer.renderer.render(skybox.scene, skybox.camera);
-		}else if(this.background === "gradient"){
-			viewer.renderer.render(viewer.sceneBG, viewer.cameraBG);
-		}else{
-			// TODO background
+		if(viewer.background === "skybox"){
+			viewer.renderer.clear();
+			viewer.skybox.camera.rotation.copy(viewer.scene.camera.rotation);
+			viewer.renderer.render(viewer.skybox.scene, viewer.skybox.camera);
+		}else if(viewer.background === "gradient"){
+			viewer.renderer.clear();
+			viewer.renderer.render(viewer.scene.sceneBG, viewer.scene.cameraBG);
+		}else if(viewer.background === "black"){
+			viewer.renderer.setClearColor(0x000000, 0);
+			viewer.renderer.clear();
+		}else if(viewer.background === "white"){
+			viewer.renderer.setClearColor(0xFFFFFF, 0);
+			viewer.renderer.clear();
 		}
-		viewer.renderer.render(viewer.scene, viewer.camera);
 		
-		for(var i = 0; i < viewer.pointclouds.length; i++){
-			var pointcloud = viewer.pointclouds[i];
+		viewer.renderer.render(viewer.scene.scene, viewer.scene.camera);
 		
-			depthMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.getSize().x;
-			attributeMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.getSize().x;
+		for(let pointcloud of viewer.scene.pointclouds){
 		
-			var originalMaterial = pointcloud.material;
+			this.depthMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.getSize().x;
+			this.attributeMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.getSize().x;
+		
+			let originalMaterial = pointcloud.material;
 			
 			{// DEPTH PASS
-				depthMaterial.size = viewer.pointSize;
-				depthMaterial.pointSizeType = viewer.pointSizeType;
-				depthMaterial.screenWidth = width;
-				depthMaterial.screenHeight = height;
-				depthMaterial.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
-				depthMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.getSize().x;
-				depthMaterial.fov = viewer.camera.fov * (Math.PI / 180);
-				depthMaterial.spacing = pointcloud.pcoGeometry.spacing;
-				depthMaterial.near = viewer.camera.near;
-				depthMaterial.far = viewer.camera.far;
-				depthMaterial.heightMin = viewer.heightMin;
-				depthMaterial.heightMax = viewer.heightMax;
-				depthMaterial.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
-				depthMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.getSize().x;
-				depthMaterial.bbSize = pointcloud.material.bbSize;
-				depthMaterial.treeType = pointcloud.material.treeType;
-				depthMaterial.uniforms.classificationLUT.value = pointcloud.material.uniforms.classificationLUT.value;
+				this.depthMaterial.size = viewer.pointSize;
+				this.depthMaterial.pointSizeType = viewer.pointSizeType;
+				this.depthMaterial.screenWidth = width;
+				this.depthMaterial.screenHeight = height;
+				this.depthMaterial.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
+				this.depthMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.getSize().x;
+				this.depthMaterial.fov = viewer.scene.camera.fov * (Math.PI / 180);
+				this.depthMaterial.spacing = pointcloud.pcoGeometry.spacing;
+				this.depthMaterial.near = viewer.scene.camera.near;
+				this.depthMaterial.far = viewer.scene.camera.far;
+				this.depthMaterial.heightMin = viewer.heightMin;
+				this.depthMaterial.heightMax = viewer.heightMax;
+				this.depthMaterial.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
+				this.depthMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.getSize().x;
+				this.depthMaterial.bbSize = pointcloud.material.bbSize;
+				this.depthMaterial.treeType = pointcloud.material.treeType;
+				this.depthMaterial.uniforms.classificationLUT.value = pointcloud.material.uniforms.classificationLUT.value;
 				
-				viewer.scenePointCloud.overrideMaterial = depthMaterial;
-				viewer.renderer.clearTarget( rtDepth, true, true, true );
-				viewer.renderer.render(viewer.scenePointCloud, viewer.camera, rtDepth);
-				viewer.scenePointCloud.overrideMaterial = null;
+				viewer.scene.scenePointCloud.overrideMaterial = this.depthMaterial;
+				viewer.renderer.clearTarget( this.rtDepth, true, true, true );
+				viewer.renderer.render(viewer.scene.scenePointCloud, viewer.scene.camera, this.rtDepth);
+				viewer.scene.scenePointCloud.overrideMaterial = null;
 			}
 			
 			{// ATTRIBUTE PASS
-				attributeMaterial.size = viewer.pointSize;
-				attributeMaterial.pointSizeType = viewer.pointSizeType;
-				attributeMaterial.screenWidth = width;
-				attributeMaterial.screenHeight = height;
-				attributeMaterial.pointColorType = viewer.pointColorType;
-				attributeMaterial.depthMap = rtDepth;
-				attributeMaterial.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
-				attributeMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.getSize().x;
-				attributeMaterial.fov = viewer.camera.fov * (Math.PI / 180);
-				attributeMaterial.uniforms.blendHardness.value = pointcloud.material.uniforms.blendHardness.value;
-				attributeMaterial.uniforms.blendDepthSupplement.value = pointcloud.material.uniforms.blendDepthSupplement.value;
-				attributeMaterial.spacing = pointcloud.pcoGeometry.spacing;
-				attributeMaterial.near = viewer.camera.near;
-				attributeMaterial.far = viewer.camera.far;
-				attributeMaterial.heightMin = viewer.heightMin;
-				attributeMaterial.heightMax = viewer.heightMax;
-				attributeMaterial.intensityMin = pointcloud.material.intensityMin;
-				attributeMaterial.intensityMax = pointcloud.material.intensityMax;
-				attributeMaterial.setClipBoxes(pointcloud.material.clipBoxes);
-				attributeMaterial.clipMode = pointcloud.material.clipMode;
-				attributeMaterial.bbSize = pointcloud.material.bbSize;
-				attributeMaterial.treeType = pointcloud.material.treeType;
-				attributeMaterial.uniforms.classificationLUT.value = pointcloud.material.uniforms.classificationLUT.value;
+				this.attributeMaterial.size = viewer.pointSize;
+				this.attributeMaterial.pointSizeType = viewer.pointSizeType;
+				this.attributeMaterial.screenWidth = width;
+				this.attributeMaterial.screenHeight = height;
+				this.attributeMaterial.pointColorType = viewer.pointColorType;
+				this.attributeMaterial.depthMap = this.rtDepth;
+				this.attributeMaterial.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
+				this.attributeMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.getSize().x;
+				this.attributeMaterial.fov = viewer.scene.camera.fov * (Math.PI / 180);
+				this.attributeMaterial.uniforms.blendHardness.value = pointcloud.material.uniforms.blendHardness.value;
+				this.attributeMaterial.uniforms.blendDepthSupplement.value = pointcloud.material.uniforms.blendDepthSupplement.value;
+				this.attributeMaterial.spacing = pointcloud.pcoGeometry.spacing;
+				this.attributeMaterial.near = viewer.scene.camera.near;
+				this.attributeMaterial.far = viewer.scene.camera.far;
+				this.attributeMaterial.heightMin = viewer.heightMin;
+				this.attributeMaterial.heightMax = viewer.heightMax;
+				this.attributeMaterial.intensityMin = pointcloud.material.intensityMin;
+				this.attributeMaterial.intensityMax = pointcloud.material.intensityMax;
+				this.attributeMaterial.setClipBoxes(pointcloud.material.clipBoxes);
+				this.attributeMaterial.clipMode = pointcloud.material.clipMode;
+				this.attributeMaterial.bbSize = pointcloud.material.bbSize;
+				this.attributeMaterial.treeType = pointcloud.material.treeType;
+				this.attributeMaterial.uniforms.classificationLUT.value = pointcloud.material.uniforms.classificationLUT.value;
 				
-				viewer.scenePointCloud.overrideMaterial = attributeMaterial;
-				viewer.renderer.clearTarget( rtNormalize, true, true, true );
-				viewer.renderer.render(viewer.scenePointCloud, viewer.camera, rtNormalize);
-				viewer.scenePointCloud.overrideMaterial = null;
+				viewer.scene.scenePointCloud.overrideMaterial = this.attributeMaterial;
+				viewer.renderer.clearTarget( this.rtNormalize, true, true, true );
+				viewer.renderer.render(viewer.scene.scenePointCloud, viewer.scene.camera, this.rtNormalize);
+				viewer.scene.scenePointCloud.overrideMaterial = null;
 				
 				pointcloud.material = originalMaterial;
 			}
 		}
 		
-		if(viewer.pointclouds.length > 0){
+		if(viewer.scene.pointclouds.length > 0){
 			{// NORMALIZATION PASS
-				normalizationMaterial.uniforms.depthMap.value = rtDepth;
-				normalizationMaterial.uniforms.texture.value = rtNormalize;
-				Potree.utils.screenPass.render(viewer.renderer, normalizationMaterial);
+				this.normalizationMaterial.uniforms.depthMap.value = this.rtDepth;
+				this.normalizationMaterial.uniforms.texture.value = this.rtNormalize;
+				Potree.utils.screenPass.render(viewer.renderer, this.normalizationMaterial);
 			}
 			
-			viewer.volumeTool.render();
+			//viewer.volumeTool.render();
 			viewer.renderer.clearDepth();
 			viewer.profileTool.render();
 			viewer.measuringTool.render();
-			viewer.transformationTool.render();
+			//viewer.transformationTool.render();
 		}
 
 	}
@@ -2042,8 +1891,8 @@ class EDLRenderer{
 			this.rtColor.dispose();
 		}
 		
-		viewer.camera.aspect = aspect;
-		viewer.camera.updateProjectionMatrix();
+		viewer.scene.camera.aspect = aspect;
+		viewer.scene.camera.updateProjectionMatrix();
 		
 		viewer.renderer.setSize(width, height);
 		this.rtColor.setSize(width, height);
@@ -2058,11 +1907,11 @@ class EDLRenderer{
 		
 		if(viewer.background === "skybox"){
 			viewer.renderer.clear();
-			viewer.skybox.camera.rotation.copy(viewer.camera.rotation);
+			viewer.skybox.camera.rotation.copy(viewer.scene.camera.rotation);
 			viewer.renderer.render(viewer.skybox.scene, viewer.skybox.camera);
 		}else if(viewer.background === "gradient"){
 			viewer.renderer.clear();
-			viewer.renderer.render(viewer.scene.sceneBG, viewer.cameraBG);
+			viewer.renderer.render(viewer.scene.sceneBG, viewer.scene.cameraBG);
 		}else if(viewer.background === "black"){
 			viewer.renderer.setClearColor(0x000000, 0);
 			viewer.renderer.clear();
@@ -2071,7 +1920,7 @@ class EDLRenderer{
 			viewer.renderer.clear();
 		}
 		
-		viewer.renderer.render(viewer.scene.scene, viewer.camera);
+		viewer.renderer.render(viewer.scene.scene, viewer.scene.camera);
 		
 		viewer.renderer.clearTarget( this.rtColor, true, true, true );
 		
@@ -2116,10 +1965,10 @@ class EDLRenderer{
 				attributeMaterial.pointColorType = viewer.pointColorType;
 				attributeMaterial.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
 				attributeMaterial.uniforms.octreeSize.value = octreeSize;
-				attributeMaterial.fov = viewer.camera.fov * (Math.PI / 180);
+				attributeMaterial.fov = viewer.scene.camera.fov * (Math.PI / 180);
 				attributeMaterial.spacing = pointcloud.pcoGeometry.spacing;
-				attributeMaterial.near = viewer.camera.near;
-				attributeMaterial.far = viewer.camera.far;
+				attributeMaterial.near = viewer.scene.camera.near;
+				attributeMaterial.far = viewer.scene.camera.far;
 				attributeMaterial.heightMin = viewer.heightMin;
 				attributeMaterial.heightMax = viewer.heightMax;
 				attributeMaterial.intensityMin = pointcloud.material.intensityMin;
@@ -2144,13 +1993,13 @@ class EDLRenderer{
 		}
 		
 		//var queryPC = Potree.startQuery("PointCloud", viewer.renderer.getContext());
-		viewer.renderer.render(viewer.scene.scenePointCloud, viewer.camera, this.rtColor);
+		viewer.renderer.render(viewer.scene.scenePointCloud, viewer.scene.camera, this.rtColor);
 		//Potree.endQuery(queryPC, viewer.renderer.getContext());
 		
 		
 		// bit of a hack here. The EDL pass will mess up the text of the volume tool
 		// so volume tool is rendered again afterwards
-		viewer.volumeTool.render(this.rtColor);
+		//viewer.volumeTool.render(this.rtColor);
 				
 		for(var i = 0; i < viewer.scene.pointclouds.length; i++){
 			var pointcloud = viewer.scene.pointclouds[i];
@@ -2190,7 +2039,7 @@ class EDLRenderer{
 				Potree.utils.screenPass.render(viewer.renderer, this.edlMaterial);
 			}	
 			
-			viewer.renderer.render(viewer.scene.scene, viewer.camera);
+			viewer.renderer.render(viewer.scene.scene, viewer.scene.camera);
 			
 			//Potree.endQuery(query, viewer.renderer.getContext());
 			//Potree.resolveQueries(viewer.renderer.getContext());
@@ -2220,10 +2069,10 @@ class EDLRenderer{
 			
 			
 			viewer.profileTool.render();
-			viewer.volumeTool.render();
+			//viewer.volumeTool.render();
 			viewer.renderer.clearDepth();
 			viewer.measuringTool.render();
-			viewer.transformationTool.render();
+			//viewer.transformationTool.render();
 		}
 
 		

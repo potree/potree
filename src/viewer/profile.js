@@ -405,8 +405,34 @@ Potree.Viewer.Profile = function(viewer, element){
 			return;
 		}
 		
+		if(scope.currentProfile){
+			scope.currentProfile.dispatcher.removeEventListener("marker_moved", drawOnChange);
+			scope.currentProfile.dispatcher.removeEventListener("width_changed", drawOnChange);
+			viewer.dispatcher.removeEventListener("material_changed", drawOnChange);
+			//viewer.addEventListener("material_changed", function(){
+			//	drawOnChange({profile: scope.currentProfile});
+			//});
+			
+			
+			//viewer.profileTool.addEventListener("marker_moved", drawOnChange);
+			//viewer.profileTool.addEventListener("width_changed", drawOnChange);
+			//viewer.addEventListener("material_changed", function(){
+			//	drawOnChange({profile: scope.currentProfile});
+			//});
+            //
+			//viewer.addEventListener("height_range_changed", function(){
+			//	drawOnChange({profile: scope.currentProfile});
+			//});
+		}
+		
 		
 		scope.currentProfile = profile;
+		
+		{
+			scope.currentProfile.dispatcher.addEventListener("marker_moved", drawOnChange);
+			scope.currentProfile.dispatcher.addEventListener("width_changed", drawOnChange);
+			viewer.dispatcher.addEventListener("material_changed", drawOnChange);
+		}
 
 		if(!scope.__drawData){
 			scope.__drawData = {};
@@ -676,20 +702,22 @@ Potree.Viewer.Profile = function(viewer, element){
 	};
 	
 	var drawOnChange = function(event){
-		if(event.profile === scope.currentProfile){
+		//if(event.profile === scope.currentProfile){
 			scope.redraw();
-		}
-	};
+		//}
+	}.bind(this);
 	
-	viewer.profileTool.addEventListener("marker_moved", drawOnChange);
-	viewer.profileTool.addEventListener("width_changed", drawOnChange);
-	viewer.addEventListener("material_changed", function(){
-		drawOnChange({profile: scope.currentProfile});
-	});
+	//viewer.scene.dispatcher.addEventListener("marker_moved"))
 
-	viewer.addEventListener("height_range_changed", function(){
-		drawOnChange({profile: scope.currentProfile});
-	});
+	//viewer.profileTool.addEventListener("marker_moved", drawOnChange);
+	//viewer.profileTool.addEventListener("width_changed", drawOnChange);
+	//viewer.addEventListener("material_changed", function(){
+	//	drawOnChange({profile: scope.currentProfile});
+	//});
+    //
+	//viewer.addEventListener("height_range_changed", function(){
+	//	drawOnChange({profile: scope.currentProfile});
+	//});
 	
 	var width = document.getElementById('profile_window').clientWidth;
 	var height = document.getElementById('profile_window').clientHeight;

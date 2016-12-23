@@ -233,9 +233,9 @@ Potree.Viewer = class{
 		this.progressBar = new ProgressBar();
 
 		this.stats = new Stats();
-		//this.stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
-		//document.body.appendChild( this.stats.dom );
-		//this.stats.dom.style.left = "100px";
+		this.stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
+		document.body.appendChild( this.stats.dom );
+		this.stats.dom.style.left = "100px";
 		
 		this.potreeRenderer = null;
 		this.highQualityRenderer = null;
@@ -251,7 +251,6 @@ Potree.Viewer = class{
 		
 		this.dispatcher = new THREE.EventDispatcher();
 		this.skybox;
-		this.stats;
 		this.clock = new THREE.Clock();
 		this.background;
 		
@@ -1370,19 +1369,19 @@ Potree.Viewer = class{
 		}
 		
 		
-		//if(stats && this.showStats){
+		//if(this.stats && this.showStats){
 		//	document.getElementById("lblNumVisibleNodes").style.display = "";
 		//	document.getElementById("lblNumVisiblePoints").style.display = "";
-		//	stats.domElement.style.display = "";
+		//	this.stats.domElement.style.display = "";
 		//
-		//	stats.update();
+		//	this.stats.update();
 		//
 		//	document.getElementById("lblNumVisibleNodes").innerHTML = "visible nodes: " + visibleNodes;
 		//	document.getElementById("lblNumVisiblePoints").innerHTML = "visible points: " + Potree.utils.addCommas(visiblePoints);
-		//}else if(stats){
+		//}else if(this.stats){
 		//	document.getElementById("lblNumVisibleNodes").style.display = "none";
 		//	document.getElementById("lblNumVisiblePoints").style.display = "none";
-		//	stats.domElement.style.display = "none";
+		//	this.stats.domElement.style.display = "none";
 		//}
 		
 		camera.fov = this.fov;
@@ -1525,6 +1524,8 @@ Potree.Viewer = class{
 		//	toggleMessage = 0;
 		//}
 		
+		let queryAll = Potree.startQuery("All", viewer.renderer.getContext());
+		
 		if(this.useEDL && Potree.Features.SHADER_EDL.isSupported()){
 			if(!this.edlRenderer){
 				this.edlRenderer = new EDLRenderer(this);
@@ -1542,6 +1543,9 @@ Potree.Viewer = class{
 			
 			this.potreeRenderer.render();
 		}
+		
+		Potree.endQuery(queryAll, viewer.renderer.getContext());
+		Potree.resolveQueries(viewer.renderer.getContext());
 		
 		//if(this.takeScreenshot == true){
 		//	this.takeScreenshot = false;
@@ -1665,34 +1669,34 @@ class HighQualityRenderer{
 	
 	
 	initHQSPlats(){
-		if(depthMaterial != null){
+		if(this.depthMaterial != null){
 			return;
 		}
 	
-		depthMaterial = new Potree.PointCloudMaterial();
-		attributeMaterial = new Potree.PointCloudMaterial();
+		this.depthMaterial = new Potree.PointCloudMaterial();
+		this.attributeMaterial = new Potree.PointCloudMaterial();
 	
-		depthMaterial.pointColorType = Potree.PointColorType.DEPTH;
-		depthMaterial.pointShape = Potree.PointShape.CIRCLE;
-		depthMaterial.interpolate = false;
-		depthMaterial.weighted = false;
-		depthMaterial.minSize = viewer.minPointSize;
-		depthMaterial.maxSize = viewer.maxPointSize;
+		this.depthMaterial.pointColorType = Potree.PointColorType.DEPTH;
+		this.depthMaterial.pointShape = Potree.PointShape.CIRCLE;
+		this.depthMaterial.interpolate = false;
+		this.depthMaterial.weighted = false;
+		this.depthMaterial.minSize = viewer.minPointSize;
+		this.depthMaterial.maxSize = viewer.maxPointSize;
 					
-		attributeMaterial.pointShape = Potree.PointShape.CIRCLE;
-		attributeMaterial.interpolate = false;
-		attributeMaterial.weighted = true;
-		attributeMaterial.minSize = viewer.minPointSize;
-		attributeMaterial.maxSize = viewer.maxPointSize;
+		this.attributeMaterial.pointShape = Potree.PointShape.CIRCLE;
+		this.attributeMaterial.interpolate = false;
+		this.attributeMaterial.weighted = true;
+		this.attributeMaterial.minSize = viewer.minPointSize;
+		this.attributeMaterial.maxSize = viewer.maxPointSize;
 
-		rtDepth = new THREE.WebGLRenderTarget( 1024, 1024, { 
+		this.rtDepth = new THREE.WebGLRenderTarget( 1024, 1024, { 
 			minFilter: THREE.NearestFilter, 
 			magFilter: THREE.NearestFilter, 
 			format: THREE.RGBAFormat, 
 			type: THREE.FloatType
 		} );
 
-		rtNormalize = new THREE.WebGLRenderTarget( 1024, 1024, { 
+		this.rtNormalize = new THREE.WebGLRenderTarget( 1024, 1024, { 
 			minFilter: THREE.LinearFilter, 
 			magFilter: THREE.NearestFilter, 
 			format: THREE.RGBAFormat, 
@@ -1700,11 +1704,11 @@ class HighQualityRenderer{
 		} );
 		
 		var uniformsNormalize = {
-			depthMap: { type: "t", value: rtDepth },
-			texture: { type: "t", value: rtNormalize }
+			depthMap: { type: "t", value: this.rtDepth },
+			texture: { type: "t", value: this.rtNormalize }
 		};
 		
-		normalizationMaterial = new THREE.ShaderMaterial({
+		this.normalizationMaterial = new THREE.ShaderMaterial({
 			uniforms: uniformsNormalize,
 			vertexShader: Potree.Shaders["normalize.vs"],
 			fragmentShader: Potree.Shaders["normalize.fs"]
@@ -1712,19 +1716,19 @@ class HighQualityRenderer{
 	};
 	
 	resize(width, height){
-		if(rtDepth.width == width && rtDepth.height == height){
+		if(this.rtDepth.width == width && this.rtDepth.height == height){
 			return;
 		}
 		
-		rtDepth.dispose();
-		rtNormalize.dispose();
+		this.rtDepth.dispose();
+		this.rtNormalize.dispose();
 		
 		viewer.scene.camera.aspect = width / height;
 		viewer.scene.camera.updateProjectionMatrix();
 		
 		viewer.renderer.setSize(width, height);
-		rtDepth.setSize(width, height);
-		rtNormalize.setSize(width, height);
+		this.rtDepth.setSize(width, height);
+		this.rtNormalize.setSize(width, height);
 	};
 
 	// render with splats
@@ -1733,94 +1737,100 @@ class HighQualityRenderer{
 		var width = viewer.renderArea.clientWidth;
 		var height = viewer.renderArea.clientHeight;
 	
-		initHQSPlats();
+		this.initHQSPlats();
 		
-		resize(width, height);
+		this.resize(width, height);
 		
 		
 		viewer.renderer.clear();
-		if(this.background === "skybox"){
-			skybox.camera.rotation.copy(viewer.scene.camera.rotation);
-			viewer.renderer.render(skybox.scene, skybox.camera);
-		}else if(this.background === "gradient"){
-			viewer.renderer.render(viewer.sceneBG, viewer.scene.cameraBG);
-		}else{
-			// TODO background
+		if(viewer.background === "skybox"){
+			viewer.renderer.clear();
+			viewer.skybox.camera.rotation.copy(viewer.scene.camera.rotation);
+			viewer.renderer.render(viewer.skybox.scene, viewer.skybox.camera);
+		}else if(viewer.background === "gradient"){
+			viewer.renderer.clear();
+			viewer.renderer.render(viewer.scene.sceneBG, viewer.scene.cameraBG);
+		}else if(viewer.background === "black"){
+			viewer.renderer.setClearColor(0x000000, 0);
+			viewer.renderer.clear();
+		}else if(viewer.background === "white"){
+			viewer.renderer.setClearColor(0xFFFFFF, 0);
+			viewer.renderer.clear();
 		}
-		viewer.renderer.render(viewer.scene, viewer.scene.camera);
 		
-		for(var i = 0; i < viewer.pointclouds.length; i++){
-			var pointcloud = viewer.pointclouds[i];
+		viewer.renderer.render(viewer.scene.scene, viewer.scene.camera);
 		
-			depthMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.getSize().x;
-			attributeMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.getSize().x;
+		for(let pointcloud of viewer.scene.pointclouds){
 		
-			var originalMaterial = pointcloud.material;
+			this.depthMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.getSize().x;
+			this.attributeMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.getSize().x;
+		
+			let originalMaterial = pointcloud.material;
 			
 			{// DEPTH PASS
-				depthMaterial.size = viewer.pointSize;
-				depthMaterial.pointSizeType = viewer.pointSizeType;
-				depthMaterial.screenWidth = width;
-				depthMaterial.screenHeight = height;
-				depthMaterial.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
-				depthMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.getSize().x;
-				depthMaterial.fov = viewer.scene.camera.fov * (Math.PI / 180);
-				depthMaterial.spacing = pointcloud.pcoGeometry.spacing;
-				depthMaterial.near = viewer.scene.camera.near;
-				depthMaterial.far = viewer.scene.camera.far;
-				depthMaterial.heightMin = viewer.heightMin;
-				depthMaterial.heightMax = viewer.heightMax;
-				depthMaterial.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
-				depthMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.getSize().x;
-				depthMaterial.bbSize = pointcloud.material.bbSize;
-				depthMaterial.treeType = pointcloud.material.treeType;
-				depthMaterial.uniforms.classificationLUT.value = pointcloud.material.uniforms.classificationLUT.value;
+				this.depthMaterial.size = viewer.pointSize;
+				this.depthMaterial.pointSizeType = viewer.pointSizeType;
+				this.depthMaterial.screenWidth = width;
+				this.depthMaterial.screenHeight = height;
+				this.depthMaterial.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
+				this.depthMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.getSize().x;
+				this.depthMaterial.fov = viewer.scene.camera.fov * (Math.PI / 180);
+				this.depthMaterial.spacing = pointcloud.pcoGeometry.spacing;
+				this.depthMaterial.near = viewer.scene.camera.near;
+				this.depthMaterial.far = viewer.scene.camera.far;
+				this.depthMaterial.heightMin = viewer.heightMin;
+				this.depthMaterial.heightMax = viewer.heightMax;
+				this.depthMaterial.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
+				this.depthMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.getSize().x;
+				this.depthMaterial.bbSize = pointcloud.material.bbSize;
+				this.depthMaterial.treeType = pointcloud.material.treeType;
+				this.depthMaterial.uniforms.classificationLUT.value = pointcloud.material.uniforms.classificationLUT.value;
 				
-				viewer.scenePointCloud.overrideMaterial = depthMaterial;
-				viewer.renderer.clearTarget( rtDepth, true, true, true );
-				viewer.renderer.render(viewer.scenePointCloud, viewer.scene.camera, rtDepth);
-				viewer.scenePointCloud.overrideMaterial = null;
+				viewer.scene.scenePointCloud.overrideMaterial = this.depthMaterial;
+				viewer.renderer.clearTarget( this.rtDepth, true, true, true );
+				viewer.renderer.render(viewer.scene.scenePointCloud, viewer.scene.camera, this.rtDepth);
+				viewer.scene.scenePointCloud.overrideMaterial = null;
 			}
 			
 			{// ATTRIBUTE PASS
-				attributeMaterial.size = viewer.pointSize;
-				attributeMaterial.pointSizeType = viewer.pointSizeType;
-				attributeMaterial.screenWidth = width;
-				attributeMaterial.screenHeight = height;
-				attributeMaterial.pointColorType = viewer.pointColorType;
-				attributeMaterial.depthMap = rtDepth;
-				attributeMaterial.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
-				attributeMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.getSize().x;
-				attributeMaterial.fov = viewer.scene.camera.fov * (Math.PI / 180);
-				attributeMaterial.uniforms.blendHardness.value = pointcloud.material.uniforms.blendHardness.value;
-				attributeMaterial.uniforms.blendDepthSupplement.value = pointcloud.material.uniforms.blendDepthSupplement.value;
-				attributeMaterial.spacing = pointcloud.pcoGeometry.spacing;
-				attributeMaterial.near = viewer.scene.camera.near;
-				attributeMaterial.far = viewer.scene.camera.far;
-				attributeMaterial.heightMin = viewer.heightMin;
-				attributeMaterial.heightMax = viewer.heightMax;
-				attributeMaterial.intensityMin = pointcloud.material.intensityMin;
-				attributeMaterial.intensityMax = pointcloud.material.intensityMax;
-				attributeMaterial.setClipBoxes(pointcloud.material.clipBoxes);
-				attributeMaterial.clipMode = pointcloud.material.clipMode;
-				attributeMaterial.bbSize = pointcloud.material.bbSize;
-				attributeMaterial.treeType = pointcloud.material.treeType;
-				attributeMaterial.uniforms.classificationLUT.value = pointcloud.material.uniforms.classificationLUT.value;
+				this.attributeMaterial.size = viewer.pointSize;
+				this.attributeMaterial.pointSizeType = viewer.pointSizeType;
+				this.attributeMaterial.screenWidth = width;
+				this.attributeMaterial.screenHeight = height;
+				this.attributeMaterial.pointColorType = viewer.pointColorType;
+				this.attributeMaterial.depthMap = this.rtDepth;
+				this.attributeMaterial.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
+				this.attributeMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.getSize().x;
+				this.attributeMaterial.fov = viewer.scene.camera.fov * (Math.PI / 180);
+				this.attributeMaterial.uniforms.blendHardness.value = pointcloud.material.uniforms.blendHardness.value;
+				this.attributeMaterial.uniforms.blendDepthSupplement.value = pointcloud.material.uniforms.blendDepthSupplement.value;
+				this.attributeMaterial.spacing = pointcloud.pcoGeometry.spacing;
+				this.attributeMaterial.near = viewer.scene.camera.near;
+				this.attributeMaterial.far = viewer.scene.camera.far;
+				this.attributeMaterial.heightMin = viewer.heightMin;
+				this.attributeMaterial.heightMax = viewer.heightMax;
+				this.attributeMaterial.intensityMin = pointcloud.material.intensityMin;
+				this.attributeMaterial.intensityMax = pointcloud.material.intensityMax;
+				this.attributeMaterial.setClipBoxes(pointcloud.material.clipBoxes);
+				this.attributeMaterial.clipMode = pointcloud.material.clipMode;
+				this.attributeMaterial.bbSize = pointcloud.material.bbSize;
+				this.attributeMaterial.treeType = pointcloud.material.treeType;
+				this.attributeMaterial.uniforms.classificationLUT.value = pointcloud.material.uniforms.classificationLUT.value;
 				
-				viewer.scenePointCloud.overrideMaterial = attributeMaterial;
-				viewer.renderer.clearTarget( rtNormalize, true, true, true );
-				viewer.renderer.render(viewer.scenePointCloud, viewer.scene.camera, rtNormalize);
-				viewer.scenePointCloud.overrideMaterial = null;
+				viewer.scene.scenePointCloud.overrideMaterial = this.attributeMaterial;
+				viewer.renderer.clearTarget( this.rtNormalize, true, true, true );
+				viewer.renderer.render(viewer.scene.scenePointCloud, viewer.scene.camera, this.rtNormalize);
+				viewer.scene.scenePointCloud.overrideMaterial = null;
 				
 				pointcloud.material = originalMaterial;
 			}
 		}
 		
-		if(viewer.pointclouds.length > 0){
+		if(viewer.scene.pointclouds.length > 0){
 			{// NORMALIZATION PASS
-				normalizationMaterial.uniforms.depthMap.value = rtDepth;
-				normalizationMaterial.uniforms.texture.value = rtNormalize;
-				Potree.utils.screenPass.render(viewer.renderer, normalizationMaterial);
+				this.normalizationMaterial.uniforms.depthMap.value = this.rtDepth;
+				this.normalizationMaterial.uniforms.texture.value = this.rtNormalize;
+				Potree.utils.screenPass.render(viewer.renderer, this.normalizationMaterial);
 			}
 			
 			//viewer.volumeTool.render();

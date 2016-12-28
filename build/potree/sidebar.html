@@ -56,6 +56,17 @@
 			<li><span data-i18n="appearance.edl_radius"></span>:<span id="lblEDLRadius"></span><div id="sldEDLRadius"></div></li>
 			<li><span data-i18n="appearance.edl_strength"></span>:<span id="lblEDLStrength"></span><div id="sldEDLStrength"></div></li>
 		</div>
+		
+		<div>
+			<div class="divider">
+				<span>Background</span>
+			</div>
+			
+			<li><label><input type="radio" name="background" value="skybox" onClick='viewer.setBackground("skybox")'/><span>Skybox</span></label></li>
+			<li><label><input type="radio" name="background" value="gradient" onClick='viewer.setBackground("gradient")'/><span>Gradient</span></label></li>
+			<li><label><input type="radio" name="background" value="black" onClick='viewer.setBackground("black")'/><span>Black</span></label></li>
+			<li><label><input type="radio" name="background" value="white" onClick='viewer.setBackground("white")'/><span>White</span></label></li>
+		</div>
 			
 		</ul>
 	   
@@ -757,6 +768,10 @@ function initAppearance(){
 		$( "#sldEDLStrength" ).slider({value: viewer.getEDLStrength()});
 	});
 	
+	viewer.addEventListener("background_changed", function(event){
+		$("input[name=background][value='" + viewer.getBackground() +  "']").prop("checked",true);
+	});
+	
 	
 	$('#lblPointBudget')[0].innerHTML = Potree.utils.addCommas(viewer.getPointBudget());
 	$('#lblPointSize')[0].innerHTML = viewer.getPointSize().toFixed(2);
@@ -765,7 +780,7 @@ function initAppearance(){
 	$('#lblEDLRadius')[0].innerHTML = viewer.getEDLRadius().toFixed(1);
 	$('#lblEDLStrength')[0].innerHTML = viewer.getEDLStrength().toFixed(1);
 	$('#chkEDLEnabled')[0].checked = viewer.getEDLEnabled();
-	
+	$("input[name=background][value='" + viewer.getBackground() +  "']").prop("checked",true);
 }
 	
 	
@@ -843,28 +858,6 @@ function initNavigation(){
 }
 
 function initMeasurementDetails(){
-
-	//<li>
-	//		<div class="panel panel-default">
-	//		  <div class="panel-heading pv-panel-heading" style="display: flex; flex-direction: row">
-	//			<img src="../resources/icons/distance.png" style="width: 16px; height: 16px" /> 
-	//			<span style="flex-grow:1"> </span>
-	//			<img src="../resources/icons/remove.svg" style="width: 16px; height: 16px" /> 
-	//		  </div>
-	//		  <div class="panel-body">
-	//			<div class="measurement-detail-node-marker" >423, 413, 75464</div>
-	//			<div class="measurement-detail-edge" > </div>
-	//			<div class="measurement-detail-node-distance" > 12,001.37 </div>
-	//			<div class="measurement-detail-edge" > </div>
-	//			<div class="measurement-detail-node-marker" >423, 413, 75464</div>
-	//			<div class="measurement-detail-edge" > </div>
-	//			<div class="measurement-detail-node-distance" > 97 </div>
-	//			<div class="measurement-detail-edge" > </div>
-	//			<div class="measurement-detail-node-marker" >423, 413, 75464</div>
-	//		  </div>
-	//		</div>
-	//	</li>
-	
 	var id = 0;
 	
 	var callback = function(event){
@@ -929,9 +922,7 @@ function initMeasurementDetails(){
 		elPanelHeader.appendChild(elPanelStretch);
 		elPanelHeader.appendChild(elPanelRemove);
 		elPanel.appendChild(elPanelBody);
-		//elPanelBody.appendChild(document.createTextNode("lala"));
 		
-		//$('#measurement_details').append(elLi);
 		document.getElementById("measurement_details").appendChild(elLi);
 		
 		var widthListener;
@@ -946,8 +937,6 @@ function initMeasurementDetails(){
 			$(elPanelBody).empty();
 			
 			if(profile){
-				//<li>Point Budget: <span id="lblPointBudget"></span> <div id="sldPointBudget"></div>	</li>
-				
 				var elLi = $('<li style="margin-bottom: 5px">');
 				var elText = document.createTextNode("width: ");
 				var elWidthLabel = $('<span id="lblProfileWidth_' + id + '">');
@@ -1002,8 +991,8 @@ function initMeasurementDetails(){
 				var geoCoord = point;
 	
 				var txt = geoCoord.x.toFixed(2) + ", ";
-				txt += (-geoCoord.z).toFixed(2) + ", ";
-				txt += geoCoord.y.toFixed(2);
+				txt += (geoCoord.y).toFixed(2) + ", ";
+				txt += geoCoord.z.toFixed(2);
 				
 				var elNodeMarker = $('<div>').addClass("measurement-detail-node-marker");
 				elNodeMarker.html(txt);
@@ -1066,9 +1055,9 @@ function initMeasurementDetails(){
 					var elKey = $('<td>').css("padding", "1px 5px");
 					var elValue = $('<td>').css("width", "100%").css("padding", "1px 5px");
 					
-					var value = parseInt(color[0] * 255) 
-						+ ", " + parseInt(color[1] * 255) 
-						+ ", " + parseInt(color[2] * 255);
+					var value = parseInt(color[0]) 
+						+ ", " + parseInt(color[1]) 
+						+ ", " + parseInt(color[2]);
 					
 					elKey.html("rgb");
 					elValue.html(value);

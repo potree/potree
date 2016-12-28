@@ -3,6 +3,7 @@ Potree.View = {};
 
 Potree.View.Orbit = class{
 	constructor(position, target){
+		this.fov = (Math.PI * 60) / 180;
 		this.position = new THREE.Vector3(10, 10, 10);
 		this.target = new THREE.Vector3(0, 0, 0);
 	}
@@ -10,6 +11,7 @@ Potree.View.Orbit = class{
 
 Potree.View.FirstPerson = class{
 	constructor(){
+		this.fov = (Math.PI * 60) / 180;
 		this.position = new THREE.Vector3(10, 10, 10);
 		this.target = new THREE.Vector3(0, 0, 0);
 	}
@@ -41,6 +43,7 @@ Potree.Scene = class{
 		this.directionalLight = null;
 		
 		this.initialize();
+		
 	}
 	
 	addPointCloud(pointcloud){
@@ -352,11 +355,20 @@ Potree.Viewer = class{
 				this.renderArea.appendChild(annotation.domElement);
 			}
 		
-			this.scene.addEventListener("annotation_added", function(e){
+			// TODO make sure this isn't added multiple times on scene switches
+			this.scene.addEventListener("annotation_added", (e) => {
 				if(e.scene === this.scene){
 					this.renderArea.appendChild(e.annotation.domElement);
 				}
-			}.bind(this));
+				
+				//focusing_finished
+				e.annotation.addEventListener("focusing_finished", (event) => {
+					let distance = this.scene.view.position.distanceTo(this.scene.view.target);
+					//this.setMoveSpeed(distance / 3);
+					this.setMoveSpeed(Math.pow(distance, 0.4));
+					this.renderer.domElement.focus();
+				});
+			});
 		}
 		
 	};
@@ -433,11 +445,11 @@ Potree.Viewer = class{
 	};
 	
 	setNavigationMode(value){
-		console.log("TODO");
-		//if(value === "Orbit"){
-		//	this.useOrbitControls();
-		//}else if(value === "Flight"){
-		//	this.useFPSControls();
+		if(value === "Orbit"){
+			this.useOrbitControls();
+		}else if(value === "Flight"){
+			this.useFPSControls();
+		}
 		//}else if(value === "Earth"){
 		//	this.useEarthControls();
 		//}
@@ -1165,13 +1177,18 @@ Potree.Viewer = class{
 
 	createControls(){
 		{ // create FIRST PERSON CONTROLS
-			this.fpControls = new THREE.FirstPersonControls(this.scene.camera, this.renderer.domElement);
+			this.fpControls = new Potree.FirstPersonControls(this.renderer);
 			this.fpControls.enabled = false;
-			this.fpControls.addEventListener("start", this.disableAnnotations.bind(this));
-			this.fpControls.addEventListener("end", this.enableAnnotations.bind(this));
-			this.fpControls.addEventListener("move_speed_changed", function(event){
+			this.fpControls.dispatcher.addEventListener("start", this.disableAnnotations.bind(this));
+			this.fpControls.dispatcher.addEventListener("end", this.enableAnnotations.bind(this));
+			this.fpControls.dispatcher.addEventListener("double_click_move", (event) => {
+				let distance = event.targetLocation.distanceTo(event.position);
+				//this.setMoveSpeed(distance / 3);
+				this.setMoveSpeed(Math.pow(distance, 0.4));
+			});
+			this.fpControls.dispatcher.addEventListener("move_speed_changed", (event) => {
 				this.setMoveSpeed(this.fpControls.moveSpeed);
-			}.bind(this));
+			});
 		}
 		
 		{ // create GEO CONTROLS
@@ -1179,16 +1196,16 @@ Potree.Viewer = class{
 			this.geoControls.enabled = false;
 			this.geoControls.addEventListener("start", this.disableAnnotations.bind(this));
 			this.geoControls.addEventListener("end", this.enableAnnotations.bind(this));
-			this.geoControls.addEventListener("move_speed_changed", function(event){
+			this.geoControls.addEventListener("move_speed_changed", (event) => {
 				this.setMoveSpeed(this.geoControls.moveSpeed);
-			}.bind(this));
+			});
 		}
 	
 		{ // create ORBIT CONTROLS
 			this.orbitControls = new Potree.OrbitControls(this.renderer);
 			this.orbitControls.enabled = false;
-			this.orbitControls.addEventListener("start", this.disableAnnotations.bind(this));
-			this.orbitControls.addEventListener("end", this.enableAnnotations.bind(this));
+			this.orbitControls.dispatcher.addEventListener("start", this.disableAnnotations.bind(this));
+			this.orbitControls.dispatcher.addEventListener("end", this.enableAnnotations.bind(this));
 		}
 		
 		{ // create EARTH CONTROLS

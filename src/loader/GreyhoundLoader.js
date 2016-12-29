@@ -101,43 +101,16 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
 
                 var scale = greyhoundInfo.scale;
                 if (!scale) {
+					//scale = 1;
                     if (radius < 2500) scale = 0.01;
                     else if (radius < 10000) scale = 0.1;
                     else scale = 1.0;
-                }
-                else if (Array.isArray(scale)) {
+                } else if (Array.isArray(scale)) {
                     scale = Math.min(scale[0], scale[1], scale[2]);
-                }
-
-                var offset = greyhoundInfo.offset;
-                if (!offset) {
-                    offset = [
-                        bounds[0] + width / 2,
-                        bounds[1] + depth / 2,
-                        bounds[2] + height/ 2
-                    ];
                 }
 
                 console.log('Scale:', scale);
                 console.log('Offset:', offset);
-
-                var transform = function(bounds) {
-                    return bounds.map(function(v, i) {
-                        return (v - offset[i % 3]) / scale;
-                    });
-                };
-
-                console.log('Native bounds:', bounds);
-                console.log('Conforming bounds:', boundsConforming);
-
-                bounds = transform(bounds);
-                boundsConforming = transform(boundsConforming);
-
-                console.log('Transformed bounds:', bounds);
-                console.log('Transformed conforming bounds:', boundsConforming);
-
-                var localBounds = bounds;
-                var localTightBounds = boundsConforming;
 
 				var baseDepth = Math.max(8, greyhoundInfo.baseDepth);
 
@@ -176,7 +149,7 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
                 // Fill in geometry fields.
 				var pgg = new Potree.PointCloudGreyhoundGeometry();
 				pgg.serverURL = serverURL;
-				pgg.spacing = (localBounds[3] - localBounds[0]) / 2 ^ baseDepth;
+				pgg.spacing = (bounds[3] - bounds[0]) / Math.pow(2, baseDepth);
 				pgg.baseDepth = baseDepth;
 				pgg.hierarchyStepSize = HIERARCHY_STEP_SIZE;
 
@@ -189,44 +162,21 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
 				pgg.pointAttributes = new Potree.PointAttributes(attributes);
                 pgg.pointAttributes.byteSize = pointSize;
 
-                var effectiveScale = scale;
-                var effectiveOffset = offset;
-
-                var effectiveOffsetVec = new THREE.Vector3(
-                    effectiveOffset[0],
-                    effectiveOffset[1],
-                    effectiveOffset[2]
-                );
-
 				var boundingBox = new THREE.Box3(
-                        new THREE.Vector3(
-                            localBounds[0],
-                            localBounds[1],
-                            localBounds[2]),
-                        new THREE.Vector3(
-                            localBounds[3],
-                            localBounds[4],
-                            localBounds[5]));
-
-				var tightBoundingBox = new THREE.Box3(
-                        new THREE.Vector3(
-                            localTightBounds[0],
-                            localTightBounds[1],
-                            localTightBounds[2]),
-                        new THREE.Vector3(
-                            localTightBounds[3],
-                            localTightBounds[4],
-                            localTightBounds[5]));
+					new THREE.Vector3().fromArray(bounds, 0),
+					new THREE.Vector3().fromArray(bounds, 3));
+				
+				var offset = boundingBox.min.clone();
+				
+				boundingBox.max.sub(boundingBox.min);
+				boundingBox.min.set(0, 0, 0);
 
 				pgg.projection = greyhoundInfo.srs;
 				pgg.boundingBox = boundingBox;
-				pgg.tightBoundingBox = tightBoundingBox;
 				pgg.boundingSphere = boundingBox.getBoundingSphere();
-				pgg.tightBoundingSphere = tightBoundingBox.getBoundingSphere();
 
-				pgg.bbOffset = new THREE.Vector3(0,0,0);
-				pgg.scale = effectiveScale;
-				pgg.offset = effectiveOffsetVec;
+				pgg.scale = scale;
+				pgg.offset = offset;
 
 				pgg.loader = new Potree.GreyhoundBinaryLoader(
                         version, boundingBox, pgg.scale);
@@ -238,7 +188,7 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
 
 					var root = new Potree.PointCloudGreyhoundGeometryNode(
                             name, pgg, boundingBox,
-                            scale, effectiveOffsetVec);
+                            scale, offset);
 
 					root.level = 0;
 					root.hasChildren = true;

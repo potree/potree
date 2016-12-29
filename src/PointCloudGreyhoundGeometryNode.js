@@ -63,11 +63,20 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.getChildren = function() {
 Potree.PointCloudGreyhoundGeometryNode.prototype.getURL = function() {
     var schema = this.pcoGeometry.schema;
 
-    var bb = this.boundingBox;
+	let bbSize = this.boundingBox.getSize();
+		
+	let bounds = this.boundingBox.clone()
+	bounds.min.sub(this.pcoGeometry.boundingBox.getCenter());
+	bounds.max.sub(this.pcoGeometry.boundingBox.getCenter());
+		
+	if(this.scale){
+		bounds.min.multiplyScalar( 1 / this.scale);
+		bounds.max.multiplyScalar( 1 / this.scale);
+	}
 
     var boundsString =
-        bb.min.x + ',' + bb.min.y + ',' + bb.min.z + ',' +
-        bb.max.x + ',' + bb.max.y + ',' + bb.max.z;
+        bounds.min.x + ',' + bounds.min.y + ',' + bounds.min.z + ',' +
+        bounds.max.x + ',' + bounds.max.y + ',' + bounds.max.z;
 
     var url = ''+this.pcoGeometry.serverURL +
         'read?depthBegin=' +
@@ -80,11 +89,14 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.getURL = function() {
     if (this.scale) {
         url += '&scale=' + this.scale;
     }
-
-    if (this.offset) {
-        var offset = this.offset;
-        url += '&offset=[' + offset.x + ',' + offset.y + ',' + offset.z + ']';
-    }
+	{
+		let offset = this.offset.clone().add(bbSize.clone().multiplyScalar(0.5));
+		url += '&offset=[' + offset.x + ',' + offset.y + ',' + offset.z + ']';
+	}
+	
+	if(this.level === 1){
+		let a = 1;
+	}
 
     if (!baseLoaded) baseLoaded = true;
 
@@ -224,26 +236,35 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.loadHierarchyThenPoints =
 	if (this.level % this.pcoGeometry.hierarchyStepSize === 0) {
         var depthBegin = this.level + this.pcoGeometry.baseDepth;
         var depthEnd = depthBegin + this.pcoGeometry.hierarchyStepSize + 2;
-        var bb = this.boundingBox;
+		
+        let bbSize = this.boundingBox.getSize();
+		let bounds = new THREE.Box3(
+			bbSize.clone().multiplyScalar(-0.5),
+			bbSize.clone().multiplyScalar(0.5));
+			
+		if(this.scale){
+			bounds.min.multiplyScalar( 1 / this.scale);
+			bounds.max.multiplyScalar( 1 / this.scale);
+		}
 
         var boundsString =
-            bb.min.x + ',' + bb.min.y + ',' + bb.min.z + ',' +
-            bb.max.x + ',' + bb.max.y + ',' + bb.max.z;
+            bounds.min.x + ',' + bounds.min.y + ',' + bounds.min.z + ',' +
+            bounds.max.x + ',' + bounds.max.y + ',' + bounds.max.z;
 
 		var hurl = '' + this.pcoGeometry.serverURL +
             'hierarchy?bounds=[' + boundsString + ']' +
             '&depthBegin=' + depthBegin +
             '&depthEnd=' + depthEnd;
-
-        if (this.scale) {
-            hurl += '&scale=' + this.scale;
-        }
-
-        if (this.offset) {
-            var off = this.offset;
-            hurl += '&offset=[' + off.x + ',' + off.y + ',' + off.z + ']';
-        }
-
+			
+		if (this.scale) {
+			hurl += '&scale=' + this.scale;
+		}
+		
+		{
+			let offset = this.offset.clone().add(bbSize.clone().multiplyScalar(0.5));
+			hurl += '&offset=[' + offset.x + ',' + offset.y + ',' + offset.z + ']';
+		}
+			
 		var xhr = new XMLHttpRequest();
 		xhr.open('GET', hurl, true);
 
@@ -256,7 +277,7 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.loadHierarchyThenPoints =
 				} else {
                     console.log(
                             'Failed to load file! HTTP status:', xhr.status,
-                            'file:', url);
+                            'file:', hurl);
 				}
 			}
 		};

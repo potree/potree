@@ -192,6 +192,8 @@ Potree.OrbitControls = class{
 		};
 
 		let onDoubleClick = (event) => {
+			if ( this.enabled === false ) return;
+			
 			if(this.scene.pointclouds.length === 0){
 				return;
 			}

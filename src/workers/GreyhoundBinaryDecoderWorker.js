@@ -109,9 +109,23 @@ onmessage = function(event){
 			var positions = new Float32Array(buff);
 
 			for (var j = 0; j < numPoints; ++j) {
-				positions[3*j+0] = (cv.getUint32(offset + j*pointSize+0));
-				positions[3*j+1] = (cv.getUint32(offset + j*pointSize+4));
-				positions[3*j+2] = (cv.getUint32(offset + j*pointSize+8));
+				
+				let ux = cv.getUint32(offset + j*pointSize+0);
+				let uy = cv.getUint32(offset + j*pointSize+4);
+				let uz = cv.getUint32(offset + j*pointSize+8);
+				
+				let x = (scale * ux) + nodeOffset[0];
+				let y = (scale * uy) + nodeOffset[1];
+				let z = (scale * uz) + nodeOffset[2];
+				
+				positions[3*j+0] = x;
+				positions[3*j+1] = y;
+				positions[3*j+2] = z;
+
+				//if(j < 2){
+				//	console.log("u:" + ux + ", " + uy + ", " + uz);
+				//	console.log("f:" + x + ", " + y + ", " + z);
+				//}
 
 				tightBoxMin[0] = Math.min(tightBoxMin[0], positions[3*j+0]);
 				tightBoxMin[1] = Math.min(tightBoxMin[1], positions[3*j+1]);

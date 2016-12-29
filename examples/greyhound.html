@@ -62,7 +62,7 @@
 		viewer.setPointSize(1);
 		viewer.setMaterial("RGB");
 		viewer.setFOV(60);
-		viewer.setPointSizing("Adaptive");
+		viewer.setPointSizing("Fixed");
 		viewer.setQuality("Squares");
 		viewer.setPointBudget(2*1000*1000);
 		viewer.setIntensityRange(0, 300);
@@ -72,16 +72,15 @@
 		viewer.setDescription("");
 		
 		
-		{ // Heidentor
+		{ // Autzen
 		
 			var server = "greyhound://data.greyhound.io/resource/";
 			var resource = "autzen-h";
 
-			//viewer.addPointCloud(server + resource + "/");
-		
 			Potree.loadPointCloud(server + resource + "/", "autzen", (e) => {
 				viewer.scene.addPointCloud(e.pointcloud);
-				
+				viewer.fitToScreen();
+				viewer.scene.camera.near = 10;
 			});
 		}
 		

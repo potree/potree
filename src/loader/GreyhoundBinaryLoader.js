@@ -90,6 +90,8 @@ Potree.GreyhoundBinaryLoader.prototype.parse = function(node, buffer){
                 switch (parseInt(property)) {
                     case pointAttributes.POSITION_CARTESIAN:
                         addAttribute('position', buffer, 3);
+						//let fb = new Float32Array(buffer);
+						//console.log(fb);
                         break;
                     case pointAttributes.COLOR_PACKED:
                         addAttribute('color', buffer, 3);
@@ -127,6 +129,11 @@ Potree.GreyhoundBinaryLoader.prototype.parse = function(node, buffer){
 
     var bb = node.boundingBox;
     var pco = node.pcoGeometry;
+	
+	
+	//let nodeOffset = node.boundingBox.getSize().multiplyScalar(0.5);
+	//let nodeOffset = new THREE.Vector3(0, 0, 0);
+	let nodeOffset = node.pcoGeometry.boundingBox.getCenter();
 
 	var message = {
 		buffer: buffer,
@@ -135,8 +142,7 @@ Potree.GreyhoundBinaryLoader.prototype.parse = function(node, buffer){
         schema: node.pcoGeometry.schema,
 		min: [bb.min.x, bb.min.y, bb.min.z],
 		max: [bb.max.x, bb.max.y, bb.max.z],
-		offset: [pco.offset.x, pco.offset.y, pco.offset.z],
-		bbOffset: [pco.bbOffset.x, pco.bbOffset.y, pco.bbOffset.z],
+		offset: nodeOffset.toArray(),
         scale: this.scale
 	};
 

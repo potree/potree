@@ -338,7 +338,7 @@ Potree.PointCloudOctree = function(geometry, material){
 	this.visiblePointsTarget = 2*1000*1000;
 	this.minimumNodePixelSize = 150;
 	this.level = 0;
-	this.position.sub(geometry.offset);
+	this.position.copy(geometry.offset);
 	this.updateMatrix();
 	
 	this.showBoundingBox = false;
@@ -1181,9 +1181,12 @@ Potree.PointCloudOctree.prototype.pick = function(renderer, camera, ray, params)
 		gl.bindBuffer( gl.ARRAY_BUFFER, normalBuffer );
 		gl.vertexAttribPointer( apNormal, 3, gl.FLOAT, true, 0, 0 ); 
 		
-		let classificationBuffer = renderer.properties.get(geometry.attributes.classification).__webglBuffer;
-		gl.bindBuffer( gl.ARRAY_BUFFER, classificationBuffer );
-		gl.vertexAttribPointer( apClassification, 1, gl.UNSIGNED_BYTE, false, 0, 0 ); 
+		if(geometry.attributes.classification){
+			// really bad hack
+			let classificationBuffer = renderer.properties.get(geometry.attributes.classification).__webglBuffer;
+			gl.bindBuffer( gl.ARRAY_BUFFER, classificationBuffer );
+			gl.vertexAttribPointer( apClassification, 1, gl.UNSIGNED_BYTE, false, 0, 0 ); 
+		}
 		
 		let indexBuffer = renderer.properties.get(geometry.attributes.indices).__webglBuffer;
 		gl.bindBuffer( gl.ARRAY_BUFFER, indexBuffer );

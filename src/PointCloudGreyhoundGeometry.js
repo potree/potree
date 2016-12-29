@@ -12,10 +12,8 @@ Potree.PointCloudGreyhoundGeometry = function(){
 	this.baseDepth = null;
 	this.offset = null;
 	this.projection = null;
-	this.tightBoundingBox = null;
 
 	this.boundingSphere = null;
-	this.tightBoundingSphere = null;
 
 	//the serverURL will contain the base URL of the greyhound server. f.e. http://dev.greyhound.io/resource/autzen/
 	this.serverURL = null;

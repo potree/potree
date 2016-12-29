@@ -1040,7 +1040,7 @@ Potree.Viewer = class{
 	fitToScreen(){
 		var box = this.getBoundingBox(this.scene.pointclouds);
 		
-		if(this.transformationTool.targets.length > 0){
+		if(this.transformationTool && this.transformationTool.targets.length > 0){
 			box = this.transformationTool.getBoundingBox();
 		}
 

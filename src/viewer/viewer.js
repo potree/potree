@@ -1,3 +1,12 @@
+var getQueryParam = function(name) {
+    name = name.replace(/[\[\]]/g, "\\$&");
+    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+        results = regex.exec(window.location.href);
+    if (!results) return null;
+    if (!results[2]) return '';
+    return decodeURIComponent(results[2].replace(/\+/g, " "));
+}
+
 
 Potree.View = {};
 
@@ -383,34 +392,45 @@ Potree.Viewer = class{
 		}
 	}
 	
-	loadPointCloud(path, name, callback){
-		// load pointcloud
-		if(!path){
-			
-		}else if(path.indexOf("cloud.js") > 0){
-			Potree.POCLoader.load(path, function(geometry){
-				if(!geometry){
-					callback({type: "loading_failed"});
-				}else{
-					let pointcloud = new Potree.PointCloudOctree(geometry);
-                    pointcloud.name = name;
-					initPointcloud(pointcloud);				
-				}
-			}.bind(this));
-		}else if(path.indexOf(".vpc") > 0){
-			Potree.PointCloudArena4DGeometry.load(path, function(geometry){
-				if(!geometry){
-					callback({type: "loading_failed"});
-				}else{
-					let pointcloud = new Potree.PointCloudArena4D(geometry);
-                    pointcloud.name = name;
-					initPointcloud(pointcloud);
-				}
-			});
-		}else{
-			callback({"type": "loading_failed"});
-		}
-	}
+	//loadPointCloud(path, name, callback){
+    //
+	//	// load pointcloud
+	//	if(!path){
+    //
+	//	}else if(path.indexOf("greyhound://") === 0){
+	//		// We check if the path string starts with 'greyhound:', if so we assume it's a greyhound server URL.
+	//		Potree.GreyhoundLoader.load(path, function(geometry) {
+	//			if(!geometry){
+	//				callback({type: "loading_failed"});
+	//			}else{
+	//				pointcloud = new Potree.PointCloudOctree(geometry);
+	//				initPointcloud(pointcloud);
+	//			}
+	//		});
+	//	}else if(path.indexOf("cloud.js") > 0){
+	//		Potree.POCLoader.load(path, function(geometry){
+	//			if(!geometry){
+	//				callback({type: "loading_failed"});
+	//			}else{
+	//				let pointcloud = new Potree.PointCloudOctree(geometry);
+    //                pointcloud.name = name;
+	//				initPointcloud(pointcloud);				
+	//			}
+	//		}.bind(this));
+	//	}else if(path.indexOf(".vpc") > 0){
+	//		Potree.PointCloudArena4DGeometry.load(path, function(geometry){
+	//			if(!geometry){
+	//				callback({type: "loading_failed"});
+	//			}else{
+	//				let pointcloud = new Potree.PointCloudArena4D(geometry);
+    //                pointcloud.name = name;
+	//				initPointcloud(pointcloud);
+	//			}
+	//		});
+	//	}else{
+	//		callback({"type": "loading_failed"});
+	//	}
+	//}
 
 	addEventListener(type, callback){
 		this.dispatcher.addEventListener(type, callback);
@@ -445,11 +465,11 @@ Potree.Viewer = class{
 	};
 	
 	setNavigationMode(value){
-		if(value === "Orbit"){
-			this.useOrbitControls();
-		}else if(value === "Flight"){
-			this.useFPSControls();
-		}
+		//if(value === "Orbit"){
+		//	this.useOrbitControls();
+		//}else if(value === "Flight"){
+		//	this.useFPSControls();
+		//}
 		//}else if(value === "Earth"){
 		//	this.useEarthControls();
 		//}
@@ -684,6 +704,7 @@ Potree.Viewer = class{
 	};
 	
 	setPointBudget(value){
+
 		if(Potree.pointBudget != value){
 			Potree.pointBudget = parseInt(value);
 			this.dispatcher.dispatchEvent({"type": "point_budget_changed", "viewer": this});
@@ -857,20 +878,21 @@ Potree.Viewer = class{
 	};
 	
 	setClassificationVisibility(key, value){
+
 		var changed = false;
 		for(var i = 0; i < this.scene.pointclouds.length; i++){
 			var pointcloud = this.scene.pointclouds[i];
 			var newClass = pointcloud.material.classification;
 			var oldValue = newClass[key].w;
 			newClass[key].w = value ? 1 : 0;
-			
+
 			if(oldValue !== newClass[key].w){
 				changed = true;
 			}
-			
+
 			pointcloud.material.classification = newClass;
 		}
-		
+
 		if(changed){
 			this.dispatcher.dispatchEvent({"type": "classification_visibility_changed", "viewer": this});
 		}
@@ -901,6 +923,7 @@ Potree.Viewer = class{
 	};
 	
 	toMaterialID(materialName){
+
 		if(materialName === "RGB"){
 			return Potree.PointColorType.RGB;
 		}else if(materialName === "Color"){
@@ -933,6 +956,7 @@ Potree.Viewer = class{
 	};
 	
 	toMaterialName(materialID){
+
 		if(materialID === Potree.PointColorType.RGB){
 			return "RGB";
 		}else if(materialID === Potree.PointColorType.COLOR){
@@ -1009,17 +1033,17 @@ Potree.Viewer = class{
 			var boxWorld = Potree.utils.computeTransformedBoundingBox(pointcloud.boundingBox, pointcloud.matrixWorld)
 			box.union(boxWorld);
 		}
-		
+
 		return box;
 	};
 	
 	fitToScreen(){
 		var box = this.getBoundingBox(this.scene.pointclouds);
 		
-		if(this.transformationTool.targets.length > 0){
+		if(this.transformationTool && this.transformationTool.targets.length > 0){
 			box = this.transformationTool.getBoundingBox();
 		}
-		
+
 		var node = new THREE.Object3D();
 		node.boundingBox = box;
 		
@@ -1032,7 +1056,7 @@ Potree.Viewer = class{
 		if(this.transformationTool.targets.length > 0){
 			box = this.transformationTool.getBoundingBox();
 		}
-		
+
 		var node = new THREE.Object3D();
 		node.boundingBox = box;
 		
@@ -1047,7 +1071,7 @@ Potree.Viewer = class{
 		if(this.transformationTool.targets.length > 0){
 			box = this.transformationTool.getBoundingBox();
 		}
-		
+
 		var node = new THREE.Object3D();
 		node.boundingBox = box;
 		
@@ -1062,7 +1086,7 @@ Potree.Viewer = class{
 		if(this.transformationTool.targets.length > 0){
 			box = this.transformationTool.getBoundingBox();
 		}
-		
+
 		var node = new THREE.Object3D();
 		node.boundingBox = box;
 		
@@ -1077,7 +1101,7 @@ Potree.Viewer = class{
 		if(this.transformationTool.targets.length > 0){
 			box = this.transformationTool.getBoundingBox();
 		}
-		
+
 		var node = new THREE.Object3D();
 		node.boundingBox = box;
 		
@@ -1134,11 +1158,11 @@ Potree.Viewer = class{
 				this.setClipMode(Potree.ClipMode.DISABLED);
 			}
 		}
-		
+
 		if(Potree.utils.getParameterByName("pointBudget")){
 			this.setPointBudget(parseFloat(Potree.utils.getParameterByName("pointBudget")));
 		}
-		
+
 		if(Potree.utils.getParameterByName("showBoundingBox")){
 			var enabled = Potree.utils.getParameterByName("showBoundingBox") === "true";
 			if(enabled){
@@ -1147,17 +1171,17 @@ Potree.Viewer = class{
 				this.setShowBoundingBox(false);
 			}
 		}
-		
+
 		if(Potree.utils.getParameterByName("material")){
 			var material = Potree.utils.getParameterByName("material");
 			this.setMaterial(material);
 		}
-		
+
 		if(Potree.utils.getParameterByName("pointSizing")){
 			var sizing = Potree.utils.getParameterByName("pointSizing");
 			this.setPointSizing(sizing);
 		}
-		
+
 		if(Potree.utils.getParameterByName("quality")){
 			var quality = Potree.utils.getParameterByName("quality");
 			this.setQuality(quality);
@@ -1172,7 +1196,7 @@ Potree.Viewer = class{
 	
 	
 //------------------------------------------------------------------------------------
-// Viewer Internals 
+// Viewer Internals
 //------------------------------------------------------------------------------------
 
 	createControls(){
@@ -1221,7 +1245,7 @@ Potree.Viewer = class{
 		var renderArea = $('#potree_render_area');
 		var sidebar = $('#potree_sidebar_container');
 		var isVisible = renderArea.css("left") !== "0px";
-		
+
 		if(isVisible){
 			renderArea.css("left", "0px");
 		}else{
@@ -1232,7 +1256,7 @@ Potree.Viewer = class{
 	toggleMap(){
 		var map = $('#potree_map');
 		map.toggle(100);
-		
+
 	};
 
 	loadGUI(){
@@ -1240,12 +1264,12 @@ Potree.Viewer = class{
 		sidebarContainer.load(new URL(Potree.scriptPath + "/sidebar.html").href);
 		sidebarContainer.css("width", "300px");
 		sidebarContainer.css("height", "100%");
-		
+
 		var imgMenuToggle = document.createElement("img");
 		imgMenuToggle.src = new URL(Potree.resourcePath + "/icons/menu_button.svg").href;
 		imgMenuToggle.onclick = this.toggleSidebar;
 		imgMenuToggle.classList.add("potree_menu_toggle");
-		
+
 		var imgMapToggle = document.createElement("img");
 		imgMapToggle.src = new URL(Potree.resourcePath + "/icons/map_icon.png").href;
 		imgMapToggle.style.display = "none";
@@ -1320,7 +1344,7 @@ Potree.Viewer = class{
 					var attributes = pointcloud.pcoGeometry.root.geometry.attributes;
 					if(attributes.intensity){
 						var array = attributes.intensity.array;
-						
+
 						// chose max value from the 0.75 percentile
 						var ordered = [];
 						for(var j = 0; j < array.length; j++){
@@ -1329,7 +1353,7 @@ Potree.Viewer = class{
 						ordered.sort();
 						var capIndex = parseInt((ordered.length - 1) * 0.75);
 						var cap = ordered[capIndex];
-						
+
 						if(cap <= 1){
 							this.intensityMax = 1;
 						}else if(cap <= 256){
@@ -1372,10 +1396,10 @@ Potree.Viewer = class{
 			//if(!this.freeze){
 			//	pointcloud.update(this.scene.camera, this.renderer);
 			//}
-			
+
 			visibleNodes += pointcloud.numVisibleNodes;
 			visiblePoints += pointcloud.numVisiblePoints;
-			
+
 			progress += pointcloud.progress;
 		}
 		
@@ -1473,7 +1497,7 @@ Potree.Viewer = class{
 		for(let pointcloud of this.scene.pointclouds){
 			pointcloud.material.setClipBoxes(clipBoxes);
 		}
-		
+
 		{// update annotations
 			var distances = [];
 			for(var i = 0; i < this.scene.annotations.length; i++){
@@ -1490,7 +1514,7 @@ Potree.Viewer = class{
 				//ann.domDescription.style.top = screenPos.y + 30;
 
 				distances.push({annotation: ann, distance: screenPos.z});
-				
+
 				if(-1 > screenPos.z || screenPos.z > 1){
 					ann.domElement.style.display = "none";
 				}else{
@@ -1518,7 +1542,7 @@ Potree.Viewer = class{
 		if(this.mapView){
 			this.mapView.update(delta, this.scene.camera);
 		}
-		
+
 		TWEEN.update(timestamp);
 		
 		this.dispatcher.dispatchEvent({"type": "update", "delta": delta, "timestamp": timestamp});
@@ -1582,6 +1606,7 @@ Potree.Viewer = class{
 
 	
 };
+
 
 
 
@@ -1997,6 +2022,7 @@ class EDLRenderer{
 				attributeMaterial.uniforms.classificationLUT.value = pointcloud.material.uniforms.classificationLUT.value;
 				
 				pointcloud.material = attributeMaterial;
+
 				for(var j = 0; j < pointcloud.visibleNodes.length; j++){
 					var node = pointcloud.visibleNodes[j];
 					if(pointcloud instanceof Potree.PointCloudOctree){

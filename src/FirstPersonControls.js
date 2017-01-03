@@ -163,6 +163,8 @@ Potree.FirstPersonControls = class{
 		};
 		
 		let onKeyUp = (event) => {
+			if ( this.enabled === false ) return;
+			
 			switch ( event.keyCode ) {
 				case this.keys.W: this.moveForward = false; break;
 				case this.keys.S: this.moveBackward = false; break;
@@ -176,6 +178,8 @@ Potree.FirstPersonControls = class{
 		};
 		
 		let onDoubleClick = (event) => {
+			if ( this.enabled === false ) return;
+			
 			if(this.scene.pointclouds.length === 0){
 				return;
 			}

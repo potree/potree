@@ -11,6 +11,9 @@ var through = require('through');
 var os = require('os');
 var File = gutil.File;
 
+//We need this one for the in-built webserver
+var connect = require('gulp-connect');
+
 
 var paths = {
 	potree : [
@@ -18,12 +21,15 @@ var paths = {
 		"src/PointCloudTree.js",
 		"src/WorkerManager.js",
 		"build/workers/BinaryDecoderWorker.js",
+		"build/workers/GreyhoundBinaryDecoderWorker.js",
 		"build/shaders/shaders.js",
 		"src/extensions/PerspectiveCamera.js",
 		"src/extensions/Ray.js",
 		"src/loader/POCLoader.js",
 		"src/loader/PointAttributes.js",
 		"src/loader/BinaryLoader.js",
+		"src/loader/GreyhoundBinaryLoader.js",
+		"src/loader/GreyhoundLoader.js",
 		"src/loader/LasLazLoader.js",
 		"src/materials/PointCloudMaterial.js",
 		"src/materials/EyeDomeLightingMaterial.js",
@@ -36,6 +42,8 @@ var paths = {
 		"src/Annotation.js",
 		"src/PointCloudOctree.js",
 		"src/PointCloudOctreeGeometry.js",
+		"src/PointCloudGreyhoundGeometry.js",
+		"src/PointCloudGreyhoundGeometryNode.js",
 		"src/utils.js",
 		"src/Features.js",
 		"src/TextSprite.js",
@@ -74,8 +82,14 @@ var workers = {
 	"LASDecoder": [
 		"src/workers/LASDecoderWorker.js"
 	],
-	"BinaryDecorder": [
+	"BinaryDecoder": [
 		"src/workers/BinaryDecoderWorker.js",
+		"src/Version.js",
+		"src/loader/PointAttributes.js"
+	],
+	"GreyhoundBinaryDecoder": [
+		"libs/plasio/workers/laz-perf.js",
+		"src/workers/GreyhoundBinaryDecoderWorker.js",
 		"src/Version.js",
 		"src/loader/PointAttributes.js"
 	]
@@ -98,14 +112,19 @@ gulp.task("workers", function(){
 		.pipe(encodeWorker('laslaz-worker.js', "Potree.workers.laslaz"))
 		.pipe(size({showFiles: true}))
 		.pipe(gulp.dest('build/workers'));
-		
+
 	gulp.src(workers.LASDecoder)
 		.pipe(encodeWorker('lasdecoder-worker.js', "Potree.workers.lasdecoder"))
 		.pipe(size({showFiles: true}))
 		.pipe(gulp.dest('build/workers'));
-		
-	gulp.src(workers.BinaryDecorder)
+
+	gulp.src(workers.BinaryDecoder)
 		.pipe(encodeWorker('BinaryDecoderWorker.js', "Potree.workers.binaryDecoder"))
+		.pipe(size({showFiles: true}))
+		.pipe(gulp.dest('build/workers'));
+
+	gulp.src(workers.GreyhoundBinaryDecoder)
+		.pipe(encodeWorker('GreyhoundBinaryDecoderWorker.js', "Potree.workers.greyhoundBinaryDecoder"))
 		.pipe(size({showFiles: true}))
 		.pipe(gulp.dest('build/workers'));
 });
@@ -126,12 +145,12 @@ gulp.task("scripts", ['workers','shaders'], function(){
 		.pipe(uglify({preserveComments: 'some'}))
 		.pipe(size({showFiles: true}))
 		.pipe(gulp.dest('build/potree'));
-		
+
 	gulp.src(paths.laslaz)
 		.pipe(concat('laslaz.js'))
 		.pipe(size({showFiles: true}))
 		.pipe(gulp.dest('build/potree'));
-		
+
 	gulp.src(paths.html)
 		.pipe(gulp.dest('build/potree'));
 
@@ -140,44 +159,50 @@ gulp.task("scripts", ['workers','shaders'], function(){
 
 gulp.task('build', ['scripts']);
 
+// For development, it is now possible to use 'gulp webserver'
+// from the command line to start the server (default port is 8080)
+gulp.task('webserver', function() {
+  connect.server();
+});
+
 
 var encodeWorker = function(fileName, varname, opt){
 	if (!fileName) throw new PluginError('gulp-concat',  'Missing fileName option for gulp-concat');
 	if (!opt) opt = {};
 	if (!opt.newLine) opt.newLine = gutil.linefeed;
-	
+
 	var buffer = [];
 	var firstFile = null;
-	
+
 	function bufferContents(file){
 		if (file.isNull()) return; // ignore
 		if (file.isStream()) return this.emit('error', new PluginError('gulp-concat',  'Streaming not supported'));
-		
+
 		if (!firstFile) firstFile = file;
-	
+
 		var string = file.contents.toString('utf8');
 		buffer.push(string);
 	}
-	
+
 	function endStream(){
 		if (buffer.length === 0) return this.emit('end');
-		
+
 		var joinedContents = buffer.join("");
 		var content = varname + " = new Potree.WorkerManager(atob(\"" + new Buffer(joinedContents).toString('base64') + "\"));";
-		
+
 		var joinedPath = path.join(firstFile.base, fileName);
-		
+
 		var joinedFile = new File({
 			cwd: firstFile.cwd,
 			base: firstFile.base,
 			path: joinedPath,
 			contents: new Buffer(content)
 		});
-		
+
 		this.emit('data', joinedFile);
 		this.emit('end');
 	}
-	
+
 	return through(bufferContents, endStream);
 };
 
@@ -185,33 +210,33 @@ var encodeShader = function(fileName, varname, opt){
 	if (!fileName) throw new PluginError('gulp-concat',  'Missing fileName option for gulp-concat');
 	if (!opt) opt = {};
 	if (!opt.newLine) opt.newLine = gutil.linefeed;
-	
+
 	var buffer = [];
 	var files = [];
 	var firstFile = null;
-	
+
 	function bufferContents(file){
 		if (file.isNull()) return; // ignore
 		if (file.isStream()) return this.emit('error', new PluginError('gulp-concat',  'Streaming not supported'));
-		
+
 		if (!firstFile) firstFile = file;
-	
+
 		var string = file.contents.toString('utf8');
 		buffer.push(string);
 		files.push(file);
 	}
-	
+
 	function endStream(){
 		if (buffer.length === 0) return this.emit('end');
-		
+
 		var joinedContent = "";
 		for(var i = 0; i < buffer.length; i++){
 			var b = buffer[i];
 			var file = files[i];
-			
+
 			var fname = file.path.replace(file.base, "");
 			console.log(fname);
-			
+
 			var content = new Buffer(b).toString();
 			var prep = "Potree.Shaders[\"" + fname  + "\"] = [\n";
 			var lines = content.split("\n");
@@ -221,28 +246,22 @@ var encodeShader = function(fileName, varname, opt){
 				prep += " \"" + line + "\",\n";
 			}
 			prep += "].join(\"\\n\");\n\n";
-			
+
 			joinedContent += prep;
 		}
-		
+
 		var joinedPath = path.join(firstFile.base, fileName);
-		
+
 		var joinedFile = new File({
 			cwd: firstFile.cwd,
 			base: firstFile.base,
 			path: joinedPath,
 			contents: new Buffer(joinedContent)
 		});
-		
+
 		this.emit('data', joinedFile);
 		this.emit('end');
 	}
-	
+
 	return through(bufferContents, endStream);
 };
-
-
-
-
-
-

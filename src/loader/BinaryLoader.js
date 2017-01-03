@@ -5,7 +5,7 @@ Potree.BinaryLoader = function(version, boundingBox, scale){
 	}else{
 		this.version = version;
 	}
-	
+
 	this.boundingBox = boundingBox;
 	this.scale = scale;
 };
@@ -14,15 +14,15 @@ Potree.BinaryLoader.prototype.load = function(node){
 	if(node.loaded){
 		return;
 	}
-	
+
 	var scope = this;
 
 	var url = node.getURL();
-	
+
 	if(this.version.equalOrHigher("1.4")){
 		url += ".bin";
 	}
-	
+
 	var xhr = new XMLHttpRequest();
 	xhr.open('GET', url, true);
 	xhr.responseType = 'arraybuffer';
@@ -48,11 +48,11 @@ Potree.BinaryLoader.prototype.parse = function(node, buffer){
 
 	var numPoints = buffer.byteLength / node.pcoGeometry.pointAttributes.byteSize;
 	var pointAttributes = node.pcoGeometry.pointAttributes;
-	
+
 	if(this.version.upTo("1.5")){
 		node.numPoints = numPoints;
 	}
-	
+
 	var ww = Potree.workers.binaryDecoder.getWorker();
 	ww.onmessage = function(e){
 		var data = e.data;
@@ -61,17 +61,17 @@ Potree.BinaryLoader.prototype.parse = function(node, buffer){
 			new THREE.Vector3().fromArray(data.tightBoundingBox.min),
 			new THREE.Vector3().fromArray(data.tightBoundingBox.max)
 		);
-		
+
 		Potree.workers.binaryDecoder.returnWorker(ww);
-		
+
 		var geometry = new THREE.BufferGeometry();
-		
+
 		for(var property in buffers){
 			if(buffers.hasOwnProperty(property)){
 				var buffer = buffers[property].buffer;
 				var attribute = buffers[property].attribute;
 				var numElements = attribute.numElements;
-				
+
 				if(parseInt(property) === Potree.PointAttributeNames.POSITION_CARTESIAN){
 					geometry.addAttribute("position", new THREE.BufferAttribute(new Float32Array(buffer), 3));
 				}else if(parseInt(property) === Potree.PointAttributeNames.COLOR_PACKED){
@@ -90,12 +90,12 @@ Potree.BinaryLoader.prototype.parse = function(node, buffer){
 			}
 		}
 		geometry.addAttribute("indices", new THREE.BufferAttribute(new Float32Array(data.indices), 1));
-		
+
 		if(!geometry.attributes.normal){
 			var buffer = new Float32Array(numPoints*3);
 			geometry.addAttribute("normal", new THREE.BufferAttribute(new Float32Array(buffer), 3));
 		}
-		
+
 		geometry.boundingBox = node.boundingBox;
 		//geometry.boundingBox = tightBoundingBox;
 		node.geometry = geometry;
@@ -105,7 +105,7 @@ Potree.BinaryLoader.prototype.parse = function(node, buffer){
 		node.loading = false;
 		node.pcoGeometry.numNodesLoading--;
 	};
-	
+
 	var message = {
 		buffer: buffer,
 		pointAttributes: pointAttributes,
@@ -117,4 +117,3 @@ Potree.BinaryLoader.prototype.parse = function(node, buffer){
 	ww.postMessage(message, [message.buffer]);
 
 };
-

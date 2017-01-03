@@ -2,7 +2,7 @@
 
 
 function Potree(){
-	
+
 }
 Potree.version = {
 	major: 1,
@@ -28,6 +28,9 @@ Potree.webgl = {
 Potree.scriptPath = null;
 if(document.currentScript.src){
 		Potree.scriptPath = new URL(document.currentScript.src + "/..").href;
+        if (Potree.scriptPath.slice(-1) == '/') {
+            Potree.scriptPath = Potree.scriptPath.slice(0, -1);
+        }
 }else{
 	console.error("Potree was unable to find its script path using document.currentScript. Is Potree included with a script tag? Does your browser support this function?");
 }
@@ -110,6 +113,16 @@ Potree.loadPointCloud = function(path, name, callback){
 	// load pointcloud
 	if(!path){
 		
+	}else if(path.indexOf("greyhound://") === 0){
+		// We check if the path string starts with 'greyhound:', if so we assume it's a greyhound server URL.
+		Potree.GreyhoundLoader.load(path, function(geometry) {
+			if(!geometry){
+				callback({type: "loading_failed"});
+			}else{
+				let pointcloud = new Potree.PointCloudOctree(geometry);
+				loaded(pointcloud);
+			}
+		});
 	}else if(path.indexOf("cloud.js") > 0){
 		Potree.POCLoader.load(path, function(geometry){
 			if(!geometry){
@@ -134,7 +147,7 @@ Potree.loadPointCloud = function(path, name, callback){
 }
 
 Potree.updatePointClouds = function(pointclouds, camera, renderer){
-	
+
 	if(!Potree.lru){
 		Potree.lru = new LRU();
 	}
@@ -153,9 +166,9 @@ Potree.updatePointClouds = function(pointclouds, camera, renderer){
 		pointcloud.updateMaterial(pointcloud.material, pointcloud.visibleNodes, camera, renderer);
 		pointcloud.updateVisibleBounds();
 	}
-	
+
 	Potree.getLRU().freeMemory();
-	
+
 	return result;
 };
 
@@ -163,7 +176,7 @@ Potree.getLRU = function(){
 	if(!Potree.lru){
 		Potree.lru = new LRU();
 	}
-	
+
 	return Potree.lru;
 };
 
@@ -179,12 +192,12 @@ function updateVisibilityStructures(pointclouds, camera, renderer){
 		if(!pointcloud.initialized()){
 			continue;
 		}
-		
+
 		pointcloud.numVisibleNodes = 0;
 		pointcloud.numVisiblePoints = 0;
 		pointcloud.visibleNodes = [];
 		pointcloud.visibleGeometry = [];
-		
+
 		// frustum in object space
 		camera.updateMatrixWorld();
 		let frustum = new THREE.Frustum();
@@ -194,18 +207,18 @@ function updateVisibilityStructures(pointclouds, camera, renderer){
 		let fm = new THREE.Matrix4().multiply(proj).multiply(viewI).multiply(world);
 		frustum.setFromMatrix( fm );
 		frustums.push(frustum);
-		
+
 		// camera position in object space
 		let view = camera.matrixWorld;
 		let worldI = new THREE.Matrix4().getInverse(world);
 		let camMatrixObject = new THREE.Matrix4().multiply(worldI).multiply(view);
 		let camObjPos = new THREE.Vector3().setFromMatrixPosition( camMatrixObject );
 		camObjPositions.push(camObjPos);
-		
+
 		if(pointcloud.visible && pointcloud.root !== null){
 			priorityQueue.push({pointcloud: i, node: pointcloud.root, weight: Number.MAX_VALUE});
 		}
-		
+
 		// hide all previously visible nodes
 		//if(pointcloud.root instanceof Potree.PointCloudOctreeNode){
 		//	pointcloud.hideDescendants(pointcloud.root.sceneNode);
@@ -255,6 +268,10 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 		visible = visible && !(numVisiblePoints + node.getNumPoints() > Potree.pointBudget);
 		let maxLevel = pointcloud.maxLevel || Infinity;
 		visible = visible && node.getLevel() < maxLevel;
+		//if(node.geometryNode){
+		//	visible = node.geometryNode.name === "r" || node.geometryNode.name === "r0";
+		//}
+		
 		
 		if(numVisiblePoints + node.getNumPoints() > Potree.pointBudget){
 			break;
@@ -263,13 +280,13 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 		if(!visible){
 			continue;
 		}
-		
+
 		numVisibleNodes++;
 		numVisiblePoints += node.getNumPoints();
-		
+
 		pointcloud.numVisibleNodes++;
 		pointcloud.numVisiblePoints += node.getNumPoints();
-		
+
 		if(node.isGeometryNode() && (!parent || parent.isTreeNode())){
 			if(node.isLoaded()){
 				node = pointcloud.toTreeNode(node, parent);
@@ -278,21 +295,21 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 				visibleGeometry.push(node);
 			}
 		}
-		
+
 		if(node.isTreeNode()){
 			Potree.getLRU().touch(node.geometryNode);
 			node.sceneNode.visible = true;
 			node.sceneNode.material = pointcloud.material;
-			
+
 			visibleNodes.push(node);
 			pointcloud.visibleNodes.push(node);
-			
+
 			if(node.parent){
 				node.sceneNode.matrixWorld.multiplyMatrices( node.parent.sceneNode.matrixWorld, node.sceneNode.matrix );
 			}else{
 				node.sceneNode.matrixWorld.multiplyMatrices( pointcloud.matrixWorld, node.sceneNode.matrix );
 			}
-			
+
 			if(pointcloud.showBoundingBox && !node.boundingBoxNode){
 				//let min = pointcloud.
 				//let box = new THREE.Box3(min, max);
@@ -309,7 +326,7 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 				node.boundingBoxNode.visible = false;
 			}
 		}
-		
+
 		// add child nodes to priorityQueue
 		let children = node.getChildren();
 		for(let i = 0; i < children.length; i++){
@@ -329,20 +346,21 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 			}
 			
 			let weight = screenPixelRadius;
+
 			if(distance - radius < 0){
 				weight = Number.MAX_VALUE;
 			}
-			
+
 			priorityQueue.push({pointcloud: element.pointcloud, node: child, parent: node, weight: weight});
 		}
-		
-		
+
+
 	}// end priority queue loop
 	
 	for(let i = 0; i < Math.min(5, unloadedGeometry.length); i++){
 		unloadedGeometry[i].load();
 	}
-	
+
 	return {visibleNodes: visibleNodes, numVisiblePoints: numVisiblePoints};
 };
 

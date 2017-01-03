@@ -90,7 +90,8 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.getURL = function() {
         url += '&scale=' + this.scale;
     }
 	{
-		let offset = this.offset.clone().add(bbSize.clone().multiplyScalar(0.5));
+		//let offset = this.offset.clone().add(bbSize.clone().multiplyScalar(0.5));
+		let offset = this.pcoGeometry.offset.clone().add(this.pcoGeometry.boundingBox.getSize().multiplyScalar(0.5));
 		url += '&offset=[' + offset.x + ',' + offset.y + ',' + offset.z + ']';
 	}
 	

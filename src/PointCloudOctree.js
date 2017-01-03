@@ -1174,23 +1174,24 @@ Potree.PointCloudOctree.prototype.pick = function(renderer, camera, ray, params)
 			continue;
 		}
 		
+		let oldstate = {
+			enabled: []
+		};
+		
+		// TODO hack
+		for(let i = 0; i < 16; i++){
+			oldstate.enabled[i] = gl.getVertexAttrib(i, gl.VERTEX_ATTRIB_ARRAY_ENABLED);
+			gl.disableVertexAttribArray(i);
+		}
+		
 		gl.bindBuffer( gl.ARRAY_BUFFER, positionBuffer );
 		gl.vertexAttribPointer( apPosition, 3, gl.FLOAT, false, 0, 0 ); 
-		
-		let normalBuffer = renderer.properties.get(geometry.attributes.normal).__webglBuffer;
-		gl.bindBuffer( gl.ARRAY_BUFFER, normalBuffer );
-		gl.vertexAttribPointer( apNormal, 3, gl.FLOAT, true, 0, 0 ); 
-		
-		if(geometry.attributes.classification){
-			// really bad hack
-			let classificationBuffer = renderer.properties.get(geometry.attributes.classification).__webglBuffer;
-			gl.bindBuffer( gl.ARRAY_BUFFER, classificationBuffer );
-			gl.vertexAttribPointer( apClassification, 1, gl.UNSIGNED_BYTE, false, 0, 0 ); 
-		}
+		gl.enableVertexAttribArray(apPosition);
 		
 		let indexBuffer = renderer.properties.get(geometry.attributes.indices).__webglBuffer;
 		gl.bindBuffer( gl.ARRAY_BUFFER, indexBuffer );
 		gl.vertexAttribPointer( apIndices, 4, gl.UNSIGNED_BYTE, true, 0, 0 ); 
+		gl.enableVertexAttribArray(apIndices);
 		
 		gl.uniform1f(uniforms["pcIndex"], pickMaterial.pcIndex);
 
@@ -1198,6 +1199,13 @@ Potree.PointCloudOctree.prototype.pick = function(renderer, camera, ray, params)
 		if(numPoints > 0){
 			gl.drawArrays( gl.POINTS, 0, node.getNumPoints());		
 		}
+		
+		// TODO hack
+		for(let i = 0; i < 16; i++){
+			gl.disableVertexAttribArray(i);
+		}
+		gl.enableVertexAttribArray(0);
+		gl.enableVertexAttribArray(1);
 	}
 	
 	var pixelCount = pickWindowSize * pickWindowSize;

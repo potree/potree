@@ -268,6 +268,10 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 		visible = visible && !(numVisiblePoints + node.getNumPoints() > Potree.pointBudget);
 		let maxLevel = pointcloud.maxLevel || Infinity;
 		visible = visible && node.getLevel() < maxLevel;
+		//if(node.geometryNode){
+		//	visible = node.geometryNode.name === "r" || node.geometryNode.name === "r0";
+		//}
+		
 		
 		if(numVisiblePoints + node.getNumPoints() > Potree.pointBudget){
 			break;

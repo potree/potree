@@ -1914,11 +1914,10 @@ class EDLRenderer{
 			minFilter: THREE.NearestFilter, 
 			magFilter: THREE.NearestFilter, 
 			format: THREE.RGBAFormat, 
-			type: THREE.FloatType,
-			//type: THREE.UnsignedByteType,
-			//depthBuffer: false,
-			//stencilBuffer: false
+			type: THREE.FloatType
 		} );
+		this.rtColor.depthTexture = new THREE.DepthTexture();
+        this.rtColor.depthTexture.type = THREE.UnsignedIntType;
 		
 	};
 	
@@ -2039,6 +2038,7 @@ class EDLRenderer{
 		
 		//var queryPC = Potree.startQuery("PointCloud", viewer.renderer.getContext());
 		viewer.renderer.render(viewer.scene.scenePointCloud, viewer.scene.camera, this.rtColor);
+		viewer.renderer.render(viewer.scene.scene, viewer.scene.camera, this.rtColor);
 		//Potree.endQuery(queryPC, viewer.renderer.getContext());
 		
 		
@@ -2084,7 +2084,7 @@ class EDLRenderer{
 				Potree.utils.screenPass.render(viewer.renderer, this.edlMaterial);
 			}	
 			
-			viewer.renderer.render(viewer.scene.scene, viewer.scene.camera);
+//			viewer.renderer.render(viewer.scene.scene, viewer.scene.camera);
 			
 			//Potree.endQuery(query, viewer.renderer.getContext());
 			//Potree.resolveQueries(viewer.renderer.getContext());

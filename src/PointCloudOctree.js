@@ -907,7 +907,7 @@ Potree.PointCloudOctree.prototype.getVisibleExtent = function(){
  * TODO: only draw pixels that are actually read with readPixels(). 
  * 
  */
-Potree.PointCloudOctree.prototype.pick = function(renderer, camera, ray, params){
+Potree.PointCloudOctree.prototype.pick = function(renderer, camera, ray, params = {}){
 	// this function finds intersections by rendering point indices and then checking the point index at the mouse location.
 	// point indices are 3 byte and rendered to the RGB component.
 	// point cloud node indices are 1 byte and stored in the ALPHA component.
@@ -999,7 +999,6 @@ Potree.PointCloudOctree.prototype.pick = function(renderer, camera, ray, params)
 	
 	let pickMaterial = Potree.PointCloudOctree.pickMaterial;
 	
-	var params = params || {};
 	let pickWindowSize = params.pickWindowSize || 17;
 	let pickOutsideClipRegion = params.pickOutsideClipRegion || false;
 	

@@ -493,6 +493,8 @@ Potree.PointCloudArena4D.prototype.pick = function(renderer, camera, ray, params
 		
 	}
 	
+	let bbSize = this.pcoGeometry.boundingBox.getSize();
+	
 	gl.uniform1f(uniforms["fov"], this.material.fov);
 	gl.uniform1f(uniforms["screenWidth"], this.material.screenWidth);
 	gl.uniform1f(uniforms["screenHeight"], this.material.screenHeight);
@@ -503,7 +505,7 @@ Potree.PointCloudArena4D.prototype.pick = function(renderer, camera, ray, params
 	gl.uniform1f(uniforms["minSize"], this.material.minSize);
 	gl.uniform1f(uniforms["maxSize"], this.material.maxSize);
 	gl.uniform1f(uniforms["octreeSize"], this.pcoGeometry.boundingBox.getSize().x);
-	gl.uniform1f(uniforms["bbSize"], this.pcoGeometry.boundingBox.getSize());
+	gl.uniform3f(uniforms["bbSize"], bbSize.x, bbSize.y, bbSize.z);
 	
 	{
 		let apPosition = gl.getAttribLocation(program, "position");
@@ -583,18 +585,18 @@ Potree.PointCloudArena4D.prototype.pick = function(renderer, camera, ray, params
 		renderer.context.RGBA, renderer.context.UNSIGNED_BYTE, pixels);
 
 
-	{ // open window with image
-		var br = new ArrayBuffer(width*height*4);
-		var bp = new Uint8Array(br);
-		renderer.context.readPixels( 0, 0, width, height, 
-			renderer.context.RGBA, renderer.context.UNSIGNED_BYTE, bp);
-		
-		var img = Potree.utils.pixelsArrayToImage(bp, width, height);
-		var screenshot = img.src;
-		
-		var w = window.open();
-		w.document.write('<img src="'+screenshot+'"/>');
-	}
+	//{ // open window with image
+	//	var br = new ArrayBuffer(width*height*4);
+	//	var bp = new Uint8Array(br);
+	//	renderer.context.readPixels( 0, 0, width, height, 
+	//		renderer.context.RGBA, renderer.context.UNSIGNED_BYTE, bp);
+	//	
+	//	var img = Potree.utils.pixelsArrayToImage(bp, width, height);
+	//	var screenshot = img.src;
+	//	
+	//	var w = window.open();
+	//	w.document.write('<img src="'+screenshot+'"/>');
+	//}
 		
 	// find closest hit inside pixelWindow boundaries
 	var min = Number.MAX_VALUE;

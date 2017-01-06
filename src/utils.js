@@ -92,11 +92,15 @@ Potree.utils = class{
 		];
 		
 		var materialArray = [];
-		for (var i = 0; i < 6; i++)
+		for (var i = 0; i < 6; i++){
 			materialArray.push( new THREE.MeshBasicMaterial({
-			map: THREE.ImageUtils.loadTexture( urls[i] ),
-			side: THREE.BackSide
-		}));
+				map: THREE.ImageUtils.loadTexture( urls[i] ),
+				side: THREE.BackSide,
+				depthTest: false,
+				depthWrite: false
+				})
+			);
+		}
 		
 		var skyGeometry = new THREE.CubeGeometry( 5000, 5000, 5000 );
 		var skyMaterial = new THREE.MeshFaceMaterial( materialArray );

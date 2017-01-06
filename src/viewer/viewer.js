@@ -278,12 +278,28 @@ Potree.Viewer = class{
 			this.measuringTool.setScene(this.scene);
 			this.profileTool.setScene(this.scene);
 			
+			let onPointcloudAdded = (e) => {
+				this.updateHeightRange();
+			};
+			
 			this.dispatcher.addEventListener("scene_changed", (e) => {
 				this.measuringTool.setScene(e.scene);
 				this.profileTool.setScene(e.scene);
+				this.updateHeightRange();
+				
+				if(!e.scene.dispatcher.hasEventListener("pointcloud_added", onPointcloudAdded)){
+					e.scene.dispatcher.addEventListener("pointcloud_added", onPointcloudAdded);
+				}
 			});
+			
+			this.scene.dispatcher.addEventListener("pointcloud_added", onPointcloudAdded);
+			
 			//this.transformationTool = new Potree.TransformationTool(this.scene.scenePointCloud, this.scene.camera, this.renderer);
 			//this.volumeTool = new Potree.VolumeTool(this.scene, this.renderer, this.transformationTool);		
+			
+			//this.dispatcher.addEventListener("pointcloud_added", (e) => {
+			//	this.updateHeightRange();
+			//});
 			
 			let onKeyDown = (event) => {
 				//console.log(event.keyCode);
@@ -299,14 +315,6 @@ Potree.Viewer = class{
 					this.transformationTool.rotate();
 				}
 			};
-			
-			this.dispatcher.addEventListener("scene_changed", (e) => {
-				this.updateHeightRange();
-			});
-			
-			this.dispatcher.addEventListener("pointcloud_added", (e) => {
-				this.updateHeightRange();
-			});
 			
 			window.addEventListener( 'keydown', onKeyDown, false );
 		}

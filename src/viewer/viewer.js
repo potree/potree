@@ -236,7 +236,7 @@ Potree.Viewer = class{
 		this.moveSpeed = 10;
 
 		this.showDebugInfos = false;
-		this.showStats = true;
+		this.showStats = false;
 		this.showBoundingBox = false;
 		this.freeze = false;
 
@@ -245,9 +245,9 @@ Potree.Viewer = class{
 		this.progressBar = new ProgressBar();
 
 		this.stats = new Stats();
-		this.stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
-		document.body.appendChild( this.stats.dom );
-		this.stats.dom.style.left = "100px";
+		//this.stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
+		//document.body.appendChild( this.stats.dom );
+		//this.stats.dom.style.left = "100px";
 		
 		this.potreeRenderer = null;
 		this.highQualityRenderer = null;
@@ -1194,6 +1194,28 @@ Potree.Viewer = class{
 			var quality = Potree.utils.getParameterByName("quality");
 			this.setQuality(quality);
 		}
+		
+		if(Potree.utils.getParameterByName("position")){
+			let value = Potree.utils.getParameterByName("position");
+			value = value.replace("[", "").replace("]", "");
+			let tokens = value.split(";");
+			let x = parseFloat(tokens[0]);
+			let y = parseFloat(tokens[1]);
+			let z = parseFloat(tokens[2]);
+			
+			this.scene.view.position.set(x, y, z);
+		}
+		
+		if(Potree.utils.getParameterByName("target")){
+			let value = Potree.utils.getParameterByName("target");
+			value = value.replace("[", "").replace("]", "");
+			let tokens = value.split(";");
+			let x = parseFloat(tokens[0]);
+			let y = parseFloat(tokens[1]);
+			let z = parseFloat(tokens[2]);
+			
+			this.scene.view.target.set(x, y, z);
+		}
 	};
 	
 	
@@ -1329,6 +1351,36 @@ Potree.Viewer = class{
 	}
 
 	update(delta, timestamp){
+		
+		if(window.urlToggle === undefined){
+			window.urlToggle = 0;
+		}else{
+			
+			if(window.urlToggle > 1){
+				{
+					let strPosition = "["  
+						+ this.scene.view.position.x.toFixed(3) + ";"
+						+ this.scene.view.position.y.toFixed(3) + ";"
+						+ this.scene.view.position.z.toFixed(3) + "]";
+					Potree.utils.setParameter("position", strPosition);
+				}
+				
+				{
+					let strTarget = "["  
+						+ this.scene.view.target.x.toFixed(3) + ";"
+						+ this.scene.view.target.y.toFixed(3) + ";"
+						+ this.scene.view.target.z.toFixed(3) + "]";
+					Potree.utils.setParameter("target", strTarget);
+				}
+				
+				window.urlToggle = 0;
+			}
+			
+			window.urlToggle += delta;
+		}
+		
+		
+		
 		
 		let scene = this.scene;
 		let camera = this.scene.camera;

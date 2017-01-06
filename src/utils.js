@@ -343,6 +343,29 @@ Potree.utils = class{
 		let regex = new RegExp("[\\?&]" + name + "=([^&#]*)"), results = regex.exec(location.search);
 		return results === null ? null : decodeURIComponent(results[1].replace(/\+/g, " "));
 	}
+	
+	static setParameter(name, value){
+		//value = encodeURIComponent(value);
+		
+		name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+		let regex = new RegExp("([\\?&])(" + name + "=([^&#]*))");
+		let results = regex.exec(location.search);
+
+		let url = window.location.href;
+		if(results === null){
+			if(window.location.search.length === 0){
+				url = url + "?";
+			}else{
+				url = url + "&";
+			}
+
+			url = url + name + "=" + value;
+		}else{
+			let newValue = name + "=" + value;
+			url = url.replace(results[2], newValue);
+		}
+		window.history.replaceState({}, "", url);
+	}
 };
 
 Potree.utils.screenPass = new function(){

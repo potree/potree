@@ -1314,7 +1314,7 @@ Potree.Viewer = class{
 			this.renderer.domElement.focus();
 		}.bind(this));
 		
-		this.skybox = Potree.utils.loadSkybox(new URL(Potree.resourcePath + "/textures/skybox/").href);
+		this.skybox = Potree.utils.loadSkybox(new URL(Potree.resourcePath + "/textures/skybox2/").href);
 
 		// enable frag_depth extension for the interpolation shader, if available
 		this.renderer.context.getExtension("EXT_frag_depth");
@@ -1642,6 +1642,8 @@ class PotreeRenderer{
 		if(viewer.background === "skybox"){
 			viewer.renderer.clear(true, true, false);
 			viewer.skybox.camera.rotation.copy(viewer.scene.camera.rotation);
+			viewer.skybox.camera.fov = viewer.scene.camera.fov;
+			viewer.skybox.camera.updateProjectionMatrix();
 			viewer.renderer.render(viewer.skybox.scene, viewer.skybox.camera);
 		}else if(viewer.background === "gradient"){
 			viewer.renderer.clear(true, true, false);

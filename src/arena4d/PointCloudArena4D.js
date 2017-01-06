@@ -116,7 +116,7 @@ Potree.PointCloudArena4D = function(geometry){
 	this.pickTarget;
 	this.pickMaterial;
 	
-	this.updateMatrixWorld();
+	//this.updateMatrixWorld();
 };
 
 Potree.PointCloudArena4D.prototype = new Potree.PointCloudTree();
@@ -132,13 +132,17 @@ Potree.PointCloudOctree.prototype.getName = function(){
 	return this.name;
 };
 
+Potree.PointCloudArena4D.prototype.getLevel = function(){
+	return this.level;
+};
+
 Potree.PointCloudArena4D.prototype.toTreeNode = function(geometryNode, parent){
 	var node = new Potree.PointCloudArena4DNode();
-	var sceneNode = new THREE.PointCloud(geometryNode.geometry, pointcloud.material);
+	var sceneNode = new THREE.Points(geometryNode.geometry, this.material);
 	
 	node.geometryNode = geometryNode;
 	node.sceneNode = sceneNode;
-	node.pointcloud = pointcloud;
+	node.pointcloud = this;
 	node.left = geometryNode.left;
 	node.right = geometryNode.right;
 	
@@ -185,7 +189,7 @@ Potree.PointCloudArena4D.prototype.updateMaterial = function(material, visibleNo
 	//material.minSize = 3;
 	
 	//material.uniforms.octreeSize.value = this.boundingBox.size().x;
-	var bbSize = this.boundingBox.size();
+	var bbSize = this.boundingBox.getSize();
 	material.bbSize = [bbSize.x, bbSize.y, bbSize.z];
 	
 	// update visibility texture
@@ -261,25 +265,157 @@ Potree.PointCloudArena4D.prototype.nodesOnRay = function(nodes, ray){
 		var sphere = node.getBoundingSphere().clone().applyMatrix4(node.sceneNode.matrixWorld);
 		var box = node.getBoundingBox().clone().applyMatrix4(node.sceneNode.matrixWorld);
 		
-		
-		if(_ray.isIntersectionBox(box)){
+		if(_ray.intersectsSphere(sphere)){
 			nodesOnRay.push(node);
 		}
+		//if(_ray.isIntersectionBox(box)){
+		//	nodesOnRay.push(node);
+		//}
 	}
 	
 	return nodesOnRay;
 };
 
 Potree.PointCloudArena4D.prototype.pick = function(renderer, camera, ray, params){
-
-	var params = params || {};
-	var pickWindowSize = params.pickWindowSize || 17;
-	var pickOutsideClipRegion = params.pickOutsideClipRegion || false;
+	let gl = renderer.context;
 	
-	var nodes = this.nodesOnRay(this.visibleNodes, ray);
+	let compileMaterial = function(material){
+		if(material._glstate === undefined){
+			material._glstate = {};
+		}
+		
+		let glstate = material._glstate;
+		
+		// VERTEX SHADER
+		let vs = gl.createShader(gl.VERTEX_SHADER);
+		{
+			gl.shaderSource(vs, material.vertexShader);
+			gl.compileShader(vs);
+			
+			let success = gl.getShaderParameter(vs, gl.COMPILE_STATUS);
+			if (!success) {
+				console.error("could not compile vertex shader:");
+				
+				let log = gl.getShaderInfoLog(vs);
+				console.error(log, material.vertexShader);
+				
+				return;
+			}
+		}
+		
+		// FRAGMENT SHADER
+		let fs = gl.createShader(gl.FRAGMENT_SHADER);
+		{
+			gl.shaderSource(fs, material.fragmentShader);
+			gl.compileShader(fs);
+			
+			let success = gl.getShaderParameter(fs, gl.COMPILE_STATUS);
+			if (!success) {
+				console.error("could not compile fragment shader:");
+				console.error(material.fragmentShader);
+				
+				return;
+			}
+		}
+		
+		// PROGRAM
+		var program = gl.createProgram();
+		gl.attachShader(program, vs);
+		gl.attachShader(program, fs);
+		gl.linkProgram(program);
+		var success = gl.getProgramParameter(program, gl.LINK_STATUS);
+		if (!success) {
+			console.error("could not compile shader:");
+			console.error(material.vertexShader);
+			console.error(material.fragmentShader);
+				
+			return;
+		}
+		
+		glstate.program = program;
+		
+		gl.useProgram( program );
+		
+		{ // UNIFORMS
+			let uniforms = {};
+			let n = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
+
+			for(let i = 0; i < n; i++){
+				var uniform = gl.getActiveUniform(program, i);
+				var name = uniform.name;
+				var loc = gl.getUniformLocation(program, name);
+
+				uniforms[name] = loc;
+			}
+			
+			glstate.uniforms = uniforms;
+			glstate.textures = {};
+		}
+	};
+	
+	if(Potree.PointCloudArena4D.pickMaterial === undefined){
+		Potree.PointCloudArena4D.pickMaterial = new Potree.PointCloudMaterial({treeType: Potree.TreeType.KDTREE});
+		Potree.PointCloudArena4D.pickMaterial.pointColorType = Potree.PointColorType.POINT_INDEX;		
+		//Potree.PointCloudArena4D.pickMaterial.pointColorType = Potree.PointColorType.COLOR;
+		
+		compileMaterial(Potree.PointCloudArena4D.pickMaterial);
+	}
+	
+	let pickMaterial = Potree.PointCloudArena4D.pickMaterial;
+	
+	var params = params || {};
+	let pickWindowSize = params.pickWindowSize || 17;
+	let pickOutsideClipRegion = params.pickOutsideClipRegion || false;
+	
+	let nodes = this.nodesOnRay(this.visibleNodes, ray);
 	
 	if(nodes.length === 0){
 		return null;
+	}
+	
+	
+	
+	{ // update pick material
+		let doRecompile = false;
+	
+		if(pickMaterial.pointSizeType !== this.material.pointSizeType){
+			pickMaterial.pointSizeType = this.material.pointSizeType;
+			doRecompile = true;
+		}
+		
+		if(pickMaterial.pointShape !== this.material.pointShape){
+			pickMaterial.pointShape = this.material.pointShape;
+			doRecompile = true;
+		}
+		
+		if(pickMaterial.interpolate !== this.material.interpolate){
+			pickMaterial.interpolate = this.material.interpolate;
+			doRecompile = true;
+		}
+		
+		pickMaterial.size = this.material.size;
+		pickMaterial.minSize = this.material.minSize;
+		pickMaterial.maxSize = this.material.maxSize;
+		pickMaterial.classification = this.material.classification;
+		
+		if(pickOutsideClipRegion){
+			pickMaterial.clipMode = Potree.ClipMode.DISABLED;
+		}else{
+			pickMaterial.clipMode = this.material.clipMode;
+			if(this.material.clipMode === Potree.ClipMode.CLIP_OUTSIDE){
+				pickMaterial.setClipBoxes(this.material.clipBoxes);
+			}else{
+				pickMaterial.setClipBoxes([]);
+			}
+		}
+		
+		this.updateMaterial(pickMaterial, nodes, camera, renderer);
+		
+		if(doRecompile){
+			
+			compileMaterial(pickMaterial);
+			
+		};
 	}
 	
 	var width = Math.ceil(renderer.domElement.clientWidth);
@@ -307,100 +443,136 @@ Potree.PointCloudArena4D.prototype.pick = function(renderer, camera, ray, params
 		);
 	}
 	this.pickTarget.setSize(width, height);
-	
-	// setup pick material.
-	// use the same point size functions as the main material to get the same point sizes.
-	if(!this.pickMaterial){
-		this.pickMaterial = new Potree.PointCloudMaterial({treeType: Potree.TreeType.KDTREE});
-		this.pickMaterial.pointColorType = Potree.PointColorType.POINT_INDEX;
-		this.pickMaterial.pointSizeType = Potree.PointSizeType.FIXED;
-	}
-	
-	this.pickMaterial.pointSizeType = this.material.pointSizeType;
-	this.pickMaterial.size = this.material.size;
-	
-	if(this.pickMaterial.pointSizeType === Potree.PointSizeType.ADAPTIVE){
-		this.updateVisibilityTexture(this.pickMaterial, nodes);
-	}
-	
-	this.pickMaterial.fov 			= this.material.fov;
-	this.pickMaterial.screenWidth 	= this.material.screenWidth;
-	this.pickMaterial.screenHeight 	= this.material.screenHeight;
-	this.pickMaterial.spacing 		= this.material.spacing;
-	this.pickMaterial.near 			= this.material.near;
-	this.pickMaterial.far 			= this.material.far;
-	this.pickMaterial.levels 		= this.material.levels;
-	this.pickMaterial.pointShape 	= this.material.pointShape;
-	this.pickMaterial.minSize		= this.material.minSize;
-	this.pickMaterial.maxSize		= this.material.maxSize;
-	
-	if(pickOutsideClipRegion){
-		this.pickMaterial.clipMode = Potree.ClipMode.DISABLED;
-	}else{
-		this.pickMaterial.clipMode = this.material.clipMode;
-		if(this.material.clipMode === Potree.ClipMode.CLIP_OUTSIDE){
-			this.pickMaterial.setClipBoxes(this.material.clipBoxes);
-		}else{
-			this.pickMaterial.setClipBoxes([]);
-		}
-	}
-	
 
-	var _gl = renderer.context;
 	
-	_gl.enable(_gl.SCISSOR_TEST);
-	_gl.scissor(pixelPos.x - (pickWindowSize - 1) / 2, pixelPos.y - (pickWindowSize - 1) / 2,pickWindowSize,pickWindowSize);
-	_gl.disable(_gl.SCISSOR_TEST);
 	
-	var material = this.pickMaterial;
+	gl.enable(gl.SCISSOR_TEST);
+	gl.scissor(pixelPos.x - (pickWindowSize - 1) / 2, pixelPos.y - (pickWindowSize - 1) / 2,pickWindowSize,pickWindowSize);
+	gl.disable(gl.SCISSOR_TEST);
 	
 	renderer.setRenderTarget( this.pickTarget );
 	
-	renderer.state.setDepthTest( material.depthTest );
-	renderer.state.setDepthWrite( material.depthWrite );
+	renderer.state.setDepthTest( pickMaterial.depthTest );
+	renderer.state.setDepthWrite( pickMaterial.depthWrite );
 	renderer.state.setBlending( THREE.NoBlending );
 	
 	renderer.clear( renderer.autoClearColor, renderer.autoClearDepth, renderer.autoClearStencil );
 	
-	//TODO: UGLY HACK CHAMPIONSHIP SUBMISSION!! drawing first node does not work properly so we draw it twice.
-	if(nodes.length > 0){
-		nodes.push(nodes[0]);
+	let glstate = pickMaterial._glstate;
+	let program = glstate.program;
+	let uniforms = glstate.uniforms;
+	gl.useProgram(program);
+		
+	gl.uniformMatrix4fv(uniforms["projectionMatrix"], false, new Float32Array(camera.projectionMatrix.elements));
+	gl.uniformMatrix4fv(uniforms["viewMatrix"], false, new Float32Array(camera.matrixWorldInverse.elements));
+	
+	{
+		if(glstate.textures.visibleNodes === undefined){
+			let image = pickMaterial.visibleNodesTexture.image;
+			let texture = gl.createTexture();
+			gl.bindTexture(gl.TEXTURE_2D, texture);
+			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, image.width, image.height, 0, gl.RGB, gl.UNSIGNED_BYTE, image.data);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+			//gl.generateMipmap(gl.TEXTURE_2D);
+			gl.bindTexture(gl.TEXTURE_2D, null);
+			glstate.textures.visibleNodes = {
+				id: texture
+			};
+		}
+		
+		let texture = glstate.textures.visibleNodes.id;
+		let image = pickMaterial.visibleNodesTexture.image;
+		
+		gl.uniform1i(uniforms["visibleNodes"], 0);
+		gl.activeTexture(gl.TEXTURE0);
+		gl.bindTexture( gl.TEXTURE_2D, texture );
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, image.width, image.height, 0, gl.RGB, gl.UNSIGNED_BYTE, image.data);
+		
 	}
 	
-	for(var i = 0; i < nodes.length; i++){
-		var object = nodes[i].sceneNode;
-		var geometry = object.geometry;
+	gl.uniform1f(uniforms["fov"], this.material.fov);
+	gl.uniform1f(uniforms["screenWidth"], this.material.screenWidth);
+	gl.uniform1f(uniforms["screenHeight"], this.material.screenHeight);
+	gl.uniform1f(uniforms["spacing"], this.material.spacing);
+	gl.uniform1f(uniforms["near"], this.material.near);
+	gl.uniform1f(uniforms["far"], this.material.far);
+	gl.uniform1f(uniforms["size"], this.material.size);
+	gl.uniform1f(uniforms["minSize"], this.material.minSize);
+	gl.uniform1f(uniforms["maxSize"], this.material.maxSize);
+	gl.uniform1f(uniforms["octreeSize"], this.pcoGeometry.boundingBox.getSize().x);
+	gl.uniform1f(uniforms["bbSize"], this.pcoGeometry.boundingBox.getSize());
+	
+	{
+		let apPosition = gl.getAttribLocation(program, "position");
+		let apNormal = gl.getAttribLocation(program, "normal");
+		let apClassification = gl.getAttribLocation(program, "classification");
+		let apIndices = gl.getAttribLocation(program, "indices");
 		
-		if(!geometry.attributes.indices.buffer){
+		gl.enableVertexAttribArray( apPosition );
+		gl.enableVertexAttribArray( apNormal );
+		gl.enableVertexAttribArray( apClassification );		
+		gl.enableVertexAttribArray( apIndices );
+	}
+	
+	for(let i = 0; i < nodes.length; i++){
+		let node = nodes[i];
+		let object = node.sceneNode;
+		let geometry = object.geometry;
+		
+		pickMaterial.pcIndex = i + 1;
+		
+		let modelView = new THREE.Matrix4().multiplyMatrices(camera.matrixWorldInverse, object.matrixWorld);
+		gl.uniformMatrix4fv(uniforms["modelMatrix"], false, new Float32Array(object.matrixWorld.elements));
+		gl.uniformMatrix4fv(uniforms["modelViewMatrix"], false, new Float32Array(modelView.elements));
+		
+		let apPosition = gl.getAttribLocation(program, "position");
+		let apNormal = gl.getAttribLocation(program, "normal");
+		let apClassification = gl.getAttribLocation(program, "classification");
+		let apIndices = gl.getAttribLocation(program, "indices");
+		
+		let positionBuffer = renderer.properties.get(geometry.attributes.position).__webglBuffer;
+		
+		if(positionBuffer === undefined){
 			continue;
 		}
 		
-		material.pcIndex = i;
+		let oldstate = {
+			enabled: []
+		};
 		
-		if(material.program){
-			var program = material.program.program;
-			_gl.useProgram( program );
-			//_gl.disable( _gl.BLEND );
-			
-			var attributePointer = _gl.getAttribLocation(program, "indices");
-			var attributeSize = 4;
-			_gl.bindBuffer( _gl.ARRAY_BUFFER, geometry.attributes.indices.buffer );
-			//if(!bufferSubmitted){
-			//	_gl.bufferData( _gl.ARRAY_BUFFER, new Uint8Array(geometry.attributes.indices.array), _gl.STATIC_DRAW );
-			//	bufferSubmitted = true;
-			//}
-			_gl.enableVertexAttribArray( attributePointer );
-			_gl.vertexAttribPointer( attributePointer, attributeSize, _gl.UNSIGNED_BYTE, true, 0, 0 ); 
+		// TODO hack
+		for(let i = 0; i < 16; i++){
+			oldstate.enabled[i] = gl.getVertexAttrib(i, gl.VERTEX_ATTRIB_ARRAY_ENABLED);
+			gl.disableVertexAttribArray(i);
+		}
 		
-			_gl.uniform1f(material.program.uniforms.pcIndex, material.pcIndex);
-		}	
+		gl.bindBuffer( gl.ARRAY_BUFFER, positionBuffer );
+		gl.vertexAttribPointer( apPosition, 3, gl.FLOAT, false, 0, 0 ); 
+		gl.enableVertexAttribArray(apPosition);
 		
-		renderer.renderBufferDirect(camera, [], null, material, geometry, object);
+		let indexBuffer = renderer.properties.get(geometry.attributes.indices).__webglBuffer;
+		gl.bindBuffer( gl.ARRAY_BUFFER, indexBuffer );
+		gl.vertexAttribPointer( apIndices, 4, gl.UNSIGNED_BYTE, true, 0, 0 ); 
+		gl.enableVertexAttribArray(apIndices);
+		
+		gl.uniform1f(uniforms["pcIndex"], pickMaterial.pcIndex);
+
+		let numPoints = node.getNumPoints();
+		if(numPoints > 0){
+			gl.drawArrays( gl.POINTS, 0, node.getNumPoints());		
+		}
+		
+		// TODO hack
+		for(let i = 0; i < 16; i++){
+			gl.disableVertexAttribArray(i);
+		}
+		gl.enableVertexAttribArray(0);
+		gl.enableVertexAttribArray(1);
 	}
 	
-	
-	
-	var pickWindowSize = 17;
 	var pixelCount = pickWindowSize * pickWindowSize;
 	var buffer = new ArrayBuffer(pixelCount*4);
 	var pixels = new Uint8Array(buffer);
@@ -409,12 +581,26 @@ Potree.PointCloudArena4D.prototype.pick = function(renderer, camera, ray, params
 		pixelPos.x - (pickWindowSize-1) / 2, pixelPos.y - (pickWindowSize-1) / 2, 
 		pickWindowSize, pickWindowSize, 
 		renderer.context.RGBA, renderer.context.UNSIGNED_BYTE, pixels);
+
+
+	{ // open window with image
+		var br = new ArrayBuffer(width*height*4);
+		var bp = new Uint8Array(br);
+		renderer.context.readPixels( 0, 0, width, height, 
+			renderer.context.RGBA, renderer.context.UNSIGNED_BYTE, bp);
+		
+		var img = Potree.utils.pixelsArrayToImage(bp, width, height);
+		var screenshot = img.src;
+		
+		var w = window.open();
+		w.document.write('<img src="'+screenshot+'"/>');
+	}
 		
 	// find closest hit inside pixelWindow boundaries
 	var min = Number.MAX_VALUE;
 	var hit = null;
 	//console.log("finding closest hit");
-	for(var u = 0; u < pickWindowSize; u++){
+	for(let u = 0; u < pickWindowSize; u++){
 		for(var v = 0; v < pickWindowSize; v++){
 			var offset = (u + v*pickWindowSize);
 			var distance = Math.pow(u - (pickWindowSize-1) / 2, 2) + Math.pow(v - (pickWindowSize-1) / 2, 2);
@@ -427,7 +613,7 @@ Potree.PointCloudArena4D.prototype.pick = function(renderer, camera, ray, params
 				
 				hit = {
 					pIndex: pIndex,
-					pcIndex: pcIndex
+					pcIndex: pcIndex - 1
 				};
 				min = distance;
 			}
@@ -437,16 +623,15 @@ Potree.PointCloudArena4D.prototype.pick = function(renderer, camera, ray, params
 	if(hit){
 		var point = {};
 		
-		var pc = nodes[hit.pcIndex];
-		var geometry = pc.sceneNode.geometry;
-		var attributes = geometry.attributes;
+		var pc = nodes[hit.pcIndex].sceneNode;
+		var attributes = pc.geometry.attributes;
 		
 		for (var property in attributes) {
 			if (attributes.hasOwnProperty(property)) {
-				var values = geometry.attributes[property];
+				var values = pc.geometry.attributes[property];
 			
 				if(property === "position"){
-					var positionArray = geometry.attributes.position.array;
+					var positionArray = values.array;
 					var x = positionArray[3*hit.pIndex+0];
 					var y = positionArray[3*hit.pIndex+1];
 					var z = positionArray[3*hit.pIndex+2];
@@ -458,11 +643,11 @@ Potree.PointCloudArena4D.prototype.pick = function(renderer, camera, ray, params
 				
 				}else{
 					if(values.itemSize === 1){
-						point[property] = values.array[i + j];
+						point[property] = values.array[hit.pIndex];
 					}else{
 						var value = [];
 						for(var j = 0; j < values.itemSize; j++){
-							value.push(values.array[i*values.itemSize + j]);
+							value.push(values.array[values.itemSize*hit.pIndex + j]);
 						}
 						point[property] = value;
 					}
@@ -472,6 +657,7 @@ Potree.PointCloudArena4D.prototype.pick = function(renderer, camera, ray, params
 		
 		
 		return point;
+		//return null;
 	}else{
 		return null;
 	}

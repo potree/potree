@@ -215,7 +215,7 @@ float getLOD(){
 }
 
 float getPointSizeAttenuation(){
-	return pow(1.3, getLOD());
+	return 0.5 * pow(1.3, getLOD());
 }
 
 #endif

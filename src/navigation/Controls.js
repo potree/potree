@@ -30,12 +30,29 @@ Potree.Controls = class{
 		
 		this.wheelDelta = 0;
 		
+		this.speed = 1;
+		
+		this.domElement.addEventListener("contextmenu", (event) => { event.preventDefault(); }, false );
 		this.domElement.addEventListener("mousedown", this.onMouseDown.bind(this), false);
 		this.domElement.addEventListener("mouseup", this.onMouseUp.bind(this), false);
 		this.domElement.addEventListener("mousemove", this.onMouseMove.bind(this), false);
 		this.domElement.addEventListener("mousewheel", this.onMouseWheel.bind(this), false );
 		this.domElement.addEventListener("DOMMouseScroll", this.onMouseWheel.bind(this), false ); // Firefox
 		this.domElement.addEventListener("dblclick", this.onDoubleClick.bind(this));
+		this.domElement.addEventListener("keydown", this.onKeyDown.bind(this));
+		this.domElement.addEventListener("keyup", this.onKeyUp.bind(this));
+	}
+	
+	onKeyDown(e){
+		if(!this.enabled){
+			return;
+		}
+	}
+	
+	onKeyUp(e){
+		if(!this.enabled){
+			return;
+		}
 	}
 	
 	onDoubleClick(e){
@@ -138,6 +155,16 @@ Potree.Controls = class{
 	
 	setScene(scene){
 		this.scene = scene;
+	}
+	
+	setSpeed(value){
+		if(this.speed !== value){
+			this.speed = value;
+			this.dispatcher.dispatchEvent( {
+				type: "speed_changed",
+				controls: this
+			});
+		}
 	}
 	
 	update(delta){

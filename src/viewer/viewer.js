@@ -528,14 +528,15 @@ Potree.Viewer = class{
 	setMoveSpeed(value){
 		if(this.moveSpeed !== value){
 			this.moveSpeed = value;
-			this.fpControls.setMoveSpeed(value);
-			this.geoControls.setMoveSpeed(value);
+			this.fpControls.setSpeed(value);
+			//this.geoControls.setSpeed(value);
+			this.earthControls.setSpeed(value);
 			this.dispatcher.dispatchEvent({"type": "move_speed_changed", "viewer": this, "speed": value});
 		}
 	};
 	
 	getMoveSpeed(){
-		return this.fpControls.moveSpeed;
+		return this.moveSpeed;
 	};
 	
 	//setShowSkybox(value){
@@ -1533,6 +1534,7 @@ Potree.Viewer = class{
 			
 			this.controls = this.getControls(scene.view);
 			this.controls.enabled = true;
+			this.controls.setSpeed(this.getMoveSpeed());
 		}
 		
 		//let controls = this.getControls(this.scene.view);

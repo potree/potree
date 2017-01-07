@@ -286,6 +286,10 @@ Potree.OrbitControls = class{
 		this.domElement.addEventListener( 'keydown', onKeyDown, false );
 	}
 	
+	setSpeed(value){
+		
+	}
+	
 	setScene(scene){
 		this.scene = scene;
 	};

@@ -280,6 +280,11 @@ Potree.Viewer = class{
 			
 			let onPointcloudAdded = (e) => {
 				this.updateHeightRange();
+				
+				this.mapView = new Potree.MapView(this);
+				this.mapView.init();
+				
+				
 			};
 			
 			this.dispatcher.addEventListener("scene_changed", (e) => {
@@ -330,7 +335,7 @@ Potree.Viewer = class{
 			this.setPointBudget(1*1000*1000);
 			this.setShowBoundingBox(false);
 			this.setFreeze(false);
-			this.setNavigationMode("Orbit");
+			this.setNavigationMode(Potree.View.Orbit);
 			this.setBackground("gradient");
 			
 			this.scaleFactor = 1;
@@ -473,14 +478,24 @@ Potree.Viewer = class{
 	};
 	
 	setNavigationMode(value){
-		//if(value === "Orbit"){
-		//	this.useOrbitControls();
-		//}else if(value === "Flight"){
-		//	this.useFPSControls();
-		//}
-		//}else if(value === "Earth"){
-		//	this.useEarthControls();
-		//}
+		if(this.scene.view instanceof value){
+			return;
+		}
+		
+		if(value === Potree.View.Orbit){
+			let view = new Potree.View.Orbit();
+			view.position = this.scene.view.position;
+			view.target = this.scene.view.target;
+			
+			this.scene.view = view;
+		}else if(value === Potree.View.FirstPerson){
+			let view = new Potree.View.FirstPerson();
+			view.position = this.scene.view.position;
+			view.target = this.scene.view.target;
+			
+			this.scene.view = view;
+		}
+		
 	};
 	
 	setShowBoundingBox(value){
@@ -1358,19 +1373,27 @@ Potree.Viewer = class{
 			
 			if(window.urlToggle > 1){
 				{
+					
+					let currentValue = Potree.utils.getParameterByName("position");
 					let strPosition = "["  
 						+ this.scene.view.position.x.toFixed(3) + ";"
 						+ this.scene.view.position.y.toFixed(3) + ";"
 						+ this.scene.view.position.z.toFixed(3) + "]";
-					Potree.utils.setParameter("position", strPosition);
+					if(currentValue !== strPosition){
+						Potree.utils.setParameter("position", strPosition);
+					}
+					
 				}
 				
 				{
+					let currentValue = Potree.utils.getParameterByName("target");
 					let strTarget = "["  
 						+ this.scene.view.target.x.toFixed(3) + ";"
 						+ this.scene.view.target.y.toFixed(3) + ";"
 						+ this.scene.view.target.z.toFixed(3) + "]";
-					Potree.utils.setParameter("target", strTarget);
+					if(currentValue !== strTarget){
+						Potree.utils.setParameter("target", strTarget);
+					}
 				}
 				
 				window.urlToggle = 0;

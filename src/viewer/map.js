@@ -302,7 +302,7 @@ Potree.MapView = function(viewer){
 	};
 	
 	this.getMapExtent = function(){
-		var bb = scope.viewer.getBoundingBoxGeo();
+		var bb = scope.viewer.getBoundingBox();
 		
 		var bottomLeft = scope.toMap.forward([bb.min.x, bb.min.y]);
 		var bottomRight = scope.toMap.forward([bb.max.x, bb.min.y]);
@@ -493,7 +493,7 @@ Potree.MapView = function(viewer){
 		
 		// camera
 		var scale = scope.map.getView().getResolution();
-		var camera = scope.viewer.camera;
+		var camera = scope.viewer.scene.camera;
 		var campos = camera.position;
 		var camdir = camera.getWorldDirection();
 		var sceneLookAt = camdir.clone().multiplyScalar(30 * scale).add(campos);

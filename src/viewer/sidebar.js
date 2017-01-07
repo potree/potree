@@ -566,7 +566,6 @@ function initNavigation(){
 		function(){viewer.setNavigationMode(Potree.View.Earth)}
 	));
 	
-	
 	elNavigation.appendChild(createToolIcon(
 		Potree.resourcePath + "/icons/fps_controls.png",
         "[title]tt.flight_control",

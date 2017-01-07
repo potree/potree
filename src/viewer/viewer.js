@@ -26,6 +26,14 @@ Potree.View.FirstPerson = class{
 	}
 };
 
+Potree.View.Earth = class{
+	constructor(){
+		this.fov = (Math.PI * 60) / 180;
+		this.position = new THREE.Vector3(10, 10, 10);
+		this.target = new THREE.Vector3(0, 0, 0);
+	}
+}
+
 Potree.Scene = class{
 	constructor(){
 		this.dispatcher = new THREE.EventDispatcher();
@@ -400,6 +408,8 @@ Potree.Viewer = class{
 			return this.orbitControls;
 		}else if(view instanceof Potree.View.FirstPerson){
 			return this.fpControls;
+		}else if(view instanceof Potree.View.Earth){
+			return this.earthControls;
 		}else{
 			return null;
 		}
@@ -490,6 +500,12 @@ Potree.Viewer = class{
 			this.scene.view = view;
 		}else if(value === Potree.View.FirstPerson){
 			let view = new Potree.View.FirstPerson();
+			view.position = this.scene.view.position;
+			view.target = this.scene.view.target;
+			
+			this.scene.view = view;
+		}else if(value === Potree.View.Earth){
+			let view = new Potree.View.Earth();
 			view.position = this.scene.view.position;
 			view.target = this.scene.view.target;
 			
@@ -1260,15 +1276,15 @@ Potree.Viewer = class{
 			});
 		}
 		
-		{ // create GEO CONTROLS
-			this.geoControls = new Potree.GeoControls(this.scene.camera, this.renderer.domElement);
-			this.geoControls.enabled = false;
-			this.geoControls.addEventListener("start", this.disableAnnotations.bind(this));
-			this.geoControls.addEventListener("end", this.enableAnnotations.bind(this));
-			this.geoControls.addEventListener("move_speed_changed", (event) => {
-				this.setMoveSpeed(this.geoControls.moveSpeed);
-			});
-		}
+		//{ // create GEO CONTROLS
+		//	this.geoControls = new Potree.GeoControls(this.scene.camera, this.renderer.domElement);
+		//	this.geoControls.enabled = false;
+		//	this.geoControls.addEventListener("start", this.disableAnnotations.bind(this));
+		//	this.geoControls.addEventListener("end", this.enableAnnotations.bind(this));
+		//	this.geoControls.addEventListener("move_speed_changed", (event) => {
+		//		this.setMoveSpeed(this.geoControls.moveSpeed);
+		//	});
+		//}
 	
 		{ // create ORBIT CONTROLS
 			this.orbitControls = new Potree.OrbitControls(this.renderer);
@@ -1278,10 +1294,10 @@ Potree.Viewer = class{
 		}
 		
 		{ // create EARTH CONTROLS
-			this.earthControls = new THREE.EarthControls(this.scene.camera, this.renderer, this.scenePointCloud);
+			this.earthControls = new Potree.EarthControls(this.renderer);
 			this.earthControls.enabled = false;
-			this.earthControls.addEventListener("start", this.disableAnnotations.bind(this));
-			this.earthControls.addEventListener("end", this.enableAnnotations.bind(this));
+			this.earthControls.dispatcher.addEventListener("start", this.disableAnnotations.bind(this));
+			this.earthControls.dispatcher.addEventListener("end", this.enableAnnotations.bind(this));
 		}
 	};
 

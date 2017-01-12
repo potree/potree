@@ -30,8 +30,10 @@ Potree.POCLoader.load = function load(url, callback) {
 				
 				var version = new Potree.Version(fMno.version);
 				
-				// assume octreeDir is absolute if it starts with http
-				if(fMno.octreeDir.indexOf("http") === 0){
+				// assume octreeDir is absolute if it starts with http or we have to fetch files
+				// from AWS S3 using singed url
+				s3SignedUrlEnabled = Potree.utils.s3SignedUrlEnabled;
+				if(fMno.octreeDir.indexOf("http") === 0 || s3SignedUrlEnabled){
 					pco.octreeDir = fMno.octreeDir;
 				}else{
 					pco.octreeDir = url + "/../" + fMno.octreeDir;

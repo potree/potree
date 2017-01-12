@@ -1012,8 +1012,10 @@ Potree.POCLoader.load = function load(url, callback) {
 				
 				var version = new Potree.Version(fMno.version);
 				
-				// assume octreeDir is absolute if it starts with http
-				if(fMno.octreeDir.indexOf("http") === 0){
+				// assume octreeDir is absolute if it starts with http or we have to fetch files
+				// from AWS S3 using singed url
+				s3SignedUrlEnabled = Potree.utils.s3SignedUrlEnabled;
+				if(fMno.octreeDir.indexOf("http") === 0 || s3SignedUrlEnabled){
 					pco.octreeDir = fMno.octreeDir;
 				}else{
 					pco.octreeDir = url + "/../" + fMno.octreeDir;
@@ -1337,11 +1339,11 @@ Potree.BinaryLoader.prototype.load = function(node){
 	}
 	
 	var scope = this;
-
-	var url = node.getURL();
 	
 	if(this.version.equalOrHigher("1.4")){
-		url += ".bin";
+		var url = node.getURL(".bin");
+	}else{
+		var url = node.getURL(null);
 	}
 	
 	var xhr = new XMLHttpRequest();
@@ -1468,10 +1470,11 @@ Potree.LasLazLoader.prototype.load = function(node){
 	var pointAttributes = node.pcoGeometry.pointAttributes;
 	//var url = node.pcoGeometry.octreeDir + "/" + node.name + "." + pointAttributes.toLowerCase()
 
-	var url = node.getURL();
-	
 	if(this.version.equalOrHigher("1.4")){
-		url += "." + pointAttributes.toLowerCase();
+	    pointAttributes = pointAttributes.toLowerCase();
+	    url = node.getURL("." + pointAttributes);
+	  }else{
+	    url = node.getURL(null);
 	}
 	
 	var scope = this;
@@ -5343,20 +5346,31 @@ Potree.PointCloudOctreeGeometryNode = function(name, pcoGeometry, boundingBox){
 
 Potree.PointCloudOctreeGeometryNode.IDCount = 0;
 
-Potree.PointCloudOctreeGeometryNode.prototype.getURL = function(){
-	var url = "";
-	
-	var version = this.pcoGeometry.loader.version;
-	
-	if(version.equalOrHigher("1.5")){
-		url = this.pcoGeometry.octreeDir + "/" + this.getHierarchyPath() + "/" + this.name;
-	}else if(version.equalOrHigher("1.4")){
-		url = this.pcoGeometry.octreeDir + "/" + this.name;
-	}else if(version.upTo("1.3")){
-		url = this.pcoGeometry.octreeDir + "/" + this.name;
-	}
-	
-	return url;
+Potree.PointCloudOctreeGeometryNode.prototype.getURL = function(extension) {
+    var url = "";
+    var version = this.pcoGeometry.loader.version;
+    extension = extension || '';
+    s3SignedUrlEnabled = Potree.utils.s3SignedUrlEnabled;
+    if (s3SignedUrlEnabled) {
+        _potreeSettings = Potree.utils.s3ConfigVariables();
+        octreeDirPath = _potreeSettings.location ? _potreeSettings.location + "/" : "";
+        octreeDirPath += this.pcoGeometry.octreeDir + "/";
+        if (version.equalOrHigher("1.5")) {
+            key = octreeDirPath + this.getHierarchyPath() + "/" + this.name + extension;
+        } else if (version.equalOrHigher("1.4") || version.upTo("1.3")) {
+            key = octreeDirPath + this.name + extension;
+        }
+        url = Potree.utils.getPotreeS3Url(_potreeSettings, key)
+    } else {
+        if (version.equalOrHigher("1.5")) {
+            url = this.pcoGeometry.octreeDir + "/" + this.getHierarchyPath() + "/" + this.name + extension;
+        } else if (version.equalOrHigher("1.4")) {
+            url = this.pcoGeometry.octreeDir + "/" + this.name + extension;
+        } else if (version.upTo("1.3")) {
+            url = this.pcoGeometry.octreeDir + "/" + this.name;
+        }
+    }
+    return url;
 }
 
 Potree.PointCloudOctreeGeometryNode.prototype.getHierarchyPath = function(){
@@ -5487,8 +5501,15 @@ Potree.PointCloudOctreeGeometryNode.prototype.loadHierachyThenPoints = function(
 	};
 	if((node.level % node.pcoGeometry.hierarchyStepSize) === 0){
 		//var hurl = node.pcoGeometry.octreeDir + "/../hierarchy/" + node.name + ".hrc";
-		var hurl = node.pcoGeometry.octreeDir + "/" + node.getHierarchyPath() + "/" + node.name + ".hrc";
-		
+		var hurl;
+		s3Enabled = Potree.utils.s3SignedUrlEnabled;
+		if (s3Enabled) {
+		    _potreeSettings = Potree.utils.s3ConfigVariables();
+		    key = _potreeSettings.location + "/" + "data" + "/" + node.getHierarchyPath() + "/" + node.name + ".hrc";
+		    hurl = Potree.utils.getPotreeS3Url(_potreeSettings, key)
+		} else {
+		    hurl = node.pcoGeometry.octreeDir + "/" + node.getHierarchyPath() + "/" + node.name + ".hrc";
+		}
 		var xhr = new XMLHttpRequest();
 		xhr.open('GET', hurl, true);
 		xhr.responseType = 'arraybuffer';
@@ -5527,6 +5548,42 @@ Potree.PointCloudOctreeGeometryNode.prototype.dispose = function(){
 Potree.utils = function(){
 	
 };
+
+/*
+ * s3SignedUrlEnabled is a flag that is used for enabling to fetch the potree tiles
+ * from AWS S3 using presigned request.
+ * Set s3SignedUrlEnabled = true for enabling AWS S3 signed url functionality.
+ */
+Potree.utils.s3SignedUrlEnabled = false;
+
+/*
+ * NOTE: You need to include aws-sdk.js before loading the potree.js file.
+ */
+Potree.utils.s3ConfigVariables = function() {
+    _potreeSettings = {};
+    _potreeSettings.potreeS3 = new AWS.S3({
+        accessKeyId: "AWS_S3_ACCESS_ID",
+        secretAccessKey: "AWS_S3_SECRET_ACCESS_KEY",
+        sessionToken: "AWS_S3_SESION_TOKEN"
+    });
+    _potreeSettings.bucketName = "AWS_S3_BUCKET_NAME",
+    // location represent where your potree files are located in the S3 bucket
+    _potreeSettings.location = "AWS_S3_POTREE_FILES_LOCATION";
+    return _potreeSettings;
+}
+
+/*
+ * Retruns the AWS S3 signed for the file
+ */
+Potree.utils.getPotreeS3Url = function(params, key) {
+    s3Params = {
+        Bucket: params.bucketName,
+        Key: key
+    };
+    potreeS3 = params.potreeS3;
+    url = potreeS3.getSignedUrl('getObject', s3Params);
+    return url;
+}
 
 Potree.utils.pathExists = function(url){
 	var req = new XMLHttpRequest();

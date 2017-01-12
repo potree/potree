@@ -3,6 +3,42 @@ Potree.utils = function(){
 	
 };
 
+/*
+ * s3SignedUrlEnabled is a flag that is used for enabling to fetch the potree tiles
+ * from AWS S3 using presigned request.
+ * Set s3SignedUrlEnabled = true for enabling AWS S3 signed url functionality.
+ */
+Potree.utils.s3SignedUrlEnabled = false;
+
+/*
+ * NOTE: You need to include aws-sdk.js before loading the potree.js file.
+ */
+Potree.utils.s3ConfigVariables = function() {
+    _potreeSettings = {};
+    _potreeSettings.potreeS3 = new AWS.S3({
+        accessKeyId: "AWS_S3_ACCESS_ID",
+        secretAccessKey: "AWS_S3_SECRET_ACCESS_KEY",
+        sessionToken: "AWS_S3_SESION_TOKEN"
+    });
+    _potreeSettings.bucketName = "AWS_S3_BUCKET_NAME",
+    // location represent where your potree files are located in the S3 bucket
+    _potreeSettings.location = "AWS_S3_POTREE_FILES_LOCATION";
+    return _potreeSettings;
+}
+
+/*
+ * Retruns the AWS S3 signed for the file
+ */
+Potree.utils.getPotreeS3Url = function(params, key) {
+    s3Params = {
+        Bucket: params.bucketName,
+        Key: key
+    };
+    potreeS3 = params.potreeS3;
+    url = potreeS3.getSignedUrl('getObject', s3Params);
+    return url;
+}
+
 Potree.utils.pathExists = function(url){
 	var req = new XMLHttpRequest();
 	req.open('GET', url, false);

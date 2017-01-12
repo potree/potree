@@ -26,10 +26,11 @@ Potree.LasLazLoader.prototype.load = function(node){
 	var pointAttributes = node.pcoGeometry.pointAttributes;
 	//var url = node.pcoGeometry.octreeDir + "/" + node.name + "." + pointAttributes.toLowerCase()
 
-	var url = node.getURL();
-	
 	if(this.version.equalOrHigher("1.4")){
-		url += "." + pointAttributes.toLowerCase();
+	    pointAttributes = pointAttributes.toLowerCase();
+	    url = node.getURL("." + pointAttributes);
+	  }else{
+	    url = node.getURL(null);
 	}
 	
 	var scope = this;

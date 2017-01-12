@@ -31,20 +31,31 @@ Potree.PointCloudOctreeGeometryNode = function(name, pcoGeometry, boundingBox){
 
 Potree.PointCloudOctreeGeometryNode.IDCount = 0;
 
-Potree.PointCloudOctreeGeometryNode.prototype.getURL = function(){
-	var url = "";
-	
-	var version = this.pcoGeometry.loader.version;
-	
-	if(version.equalOrHigher("1.5")){
-		url = this.pcoGeometry.octreeDir + "/" + this.getHierarchyPath() + "/" + this.name;
-	}else if(version.equalOrHigher("1.4")){
-		url = this.pcoGeometry.octreeDir + "/" + this.name;
-	}else if(version.upTo("1.3")){
-		url = this.pcoGeometry.octreeDir + "/" + this.name;
-	}
-	
-	return url;
+Potree.PointCloudOctreeGeometryNode.prototype.getURL = function(extension) {
+    var url = "";
+    var version = this.pcoGeometry.loader.version;
+    extension = extension || '';
+    s3SignedUrlEnabled = Potree.utils.s3SignedUrlEnabled;
+    if (s3SignedUrlEnabled) {
+        _potreeSettings = Potree.utils.s3ConfigVariables();
+        octreeDirPath = _potreeSettings.location ? _potreeSettings.location + "/" : "";
+        octreeDirPath += this.pcoGeometry.octreeDir + "/";
+        if (version.equalOrHigher("1.5")) {
+            key = octreeDirPath + this.getHierarchyPath() + "/" + this.name + extension;
+        } else if (version.equalOrHigher("1.4") || version.upTo("1.3")) {
+            key = octreeDirPath + this.name + extension;
+        }
+        url = Potree.utils.getPotreeS3Url(_potreeSettings, key)
+    } else {
+        if (version.equalOrHigher("1.5")) {
+            url = this.pcoGeometry.octreeDir + "/" + this.getHierarchyPath() + "/" + this.name + extension;
+        } else if (version.equalOrHigher("1.4")) {
+            url = this.pcoGeometry.octreeDir + "/" + this.name + extension;
+        } else if (version.upTo("1.3")) {
+            url = this.pcoGeometry.octreeDir + "/" + this.name;
+        }
+    }
+    return url;
 }
 
 Potree.PointCloudOctreeGeometryNode.prototype.getHierarchyPath = function(){
@@ -175,8 +186,15 @@ Potree.PointCloudOctreeGeometryNode.prototype.loadHierachyThenPoints = function(
 	};
 	if((node.level % node.pcoGeometry.hierarchyStepSize) === 0){
 		//var hurl = node.pcoGeometry.octreeDir + "/../hierarchy/" + node.name + ".hrc";
-		var hurl = node.pcoGeometry.octreeDir + "/" + node.getHierarchyPath() + "/" + node.name + ".hrc";
-		
+		var hurl;
+		s3Enabled = Potree.utils.s3SignedUrlEnabled;
+		if (s3Enabled) {
+		    _potreeSettings = Potree.utils.s3ConfigVariables();
+		    key = _potreeSettings.location + "/" + "data" + "/" + node.getHierarchyPath() + "/" + node.name + ".hrc";
+		    hurl = Potree.utils.getPotreeS3Url(_potreeSettings, key)
+		} else {
+		    hurl = node.pcoGeometry.octreeDir + "/" + node.getHierarchyPath() + "/" + node.name + ".hrc";
+		}
 		var xhr = new XMLHttpRequest();
 		xhr.open('GET', hurl, true);
 		xhr.responseType = 'arraybuffer';

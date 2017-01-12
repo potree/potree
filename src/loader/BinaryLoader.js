@@ -16,11 +16,11 @@ Potree.BinaryLoader.prototype.load = function(node){
 	}
 	
 	var scope = this;
-
-	var url = node.getURL();
 	
 	if(this.version.equalOrHigher("1.4")){
-		url += ".bin";
+		var url = node.getURL(".bin");
+	}else{
+		var url = node.getURL(null);
 	}
 	
 	var xhr = new XMLHttpRequest();

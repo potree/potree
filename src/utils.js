@@ -366,6 +366,7 @@ Potree.utils = class{
 		}
 		window.history.replaceState({}, "", url);
 	}
+	
 };
 
 Potree.utils.screenPass = new function(){

@@ -26,6 +26,7 @@ Potree.Controls = class{
 		// y: [0, this.domElement.clientHeight]
 		this.dragStart = null;
 		this.dragEnd = null;
+		this.lastDrag = null;
 		this.viewStart = null;
 		
 		this.wheelDelta = 0;
@@ -75,6 +76,7 @@ Potree.Controls = class{
 		
 		this.dragStart = new THREE.Vector2(x, y);
 		this.dragEnd = new THREE.Vector2(x, y);
+		this.lastDrag = new THREE.Vector2(0, 0);
 		
 		if(this.scene){
 			this.viewStart = {
@@ -91,6 +93,7 @@ Potree.Controls = class{
 		
 		this.dragStart = null;
 		this.dragEnd = null;
+		this.lastDrag = null;
 		this.viewStart = null;
 	 }
 	 
@@ -99,6 +102,8 @@ Potree.Controls = class{
 			return;
 		}
 		
+		let oldDragEnd = this.dragEnd;
+		
 		if(this.dragEnd !== null){
 			let rect = this.domElement.getBoundingClientRect();
 			
@@ -106,6 +111,12 @@ Potree.Controls = class{
 			let y = e.clientY - rect.top;
 			this.dragEnd.set(x, y);
 		}
+		
+		if(this.lastDrag !== null && oldDragEnd !== null){
+			this.lastDrag.subVectors(this.dragEnd, oldDragEnd);
+		}
+		
+		
 	}
 	
 	onMouseWheel(e){
@@ -180,6 +191,19 @@ Potree.Controls = class{
 		}
 		
 		let drag = new THREE.Vector2().subVectors(this.dragEnd, this.dragStart);
+		
+		drag.x = drag.x / this.domElement.clientWidth;
+		drag.y = drag.y / this.domElement.clientHeight;
+		
+		return drag;
+	}
+	
+	getNormalizedLastDrag(){
+		if(this.lastDrag === null){
+			 return new THREE.Vector2(0, 0);
+		}
+		
+		let drag = this.lastDrag.clone();
 		
 		drag.x = drag.x / this.domElement.clientWidth;
 		drag.y = drag.y / this.domElement.clientHeight;

@@ -14,6 +14,8 @@ console.log("Potree " + Potree.version.major + "." + Potree.version.minor + Potr
 
 Potree.pointBudget = 1*1000*1000;
 
+Potree.framenumber = 0;
+
 // contains WebWorkers with base64 encoded code
 Potree.workers = {};
 
@@ -360,9 +362,69 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 	for(let i = 0; i < Math.min(5, unloadedGeometry.length); i++){
 		unloadedGeometry[i].load();
 	}
+	
+	Potree.updateDEMs(renderer, visibleNodes);
 
 	return {visibleNodes: visibleNodes, numVisiblePoints: numVisiblePoints};
 };
+
+Potree.updateDEMs = function(renderer, visibleNodes){
+	
+	return;
+	
+	let dems = Potree.__dems;
+	if(dems === undefined){
+		Potree.__dems = {};
+		dems = Potree.__dems;
+		
+		dems.target = new THREE.WebGLRenderTarget(128, 128, {
+			minFilter: THREE.NearestFilter, 
+			magFilter: THREE.NearestFilter, 
+			format: THREE.RGBAFormat, 
+			type: THREE.FloatType
+		});
+		dems.scene = new THREE.Scene();
+		dems.camera = new THREE.OrthographicCamera( 0, 128, 128, 0, 0, 10000 );
+		dems.camera.up.set(0, 0, 1);
+	}
+	for(let node of visibleNodes){
+		
+		if(node.dem !== undefined){
+			continue;
+		}
+		
+		let geometry = node.geometryNode.geometry;
+		let material = new THREE.PointsMaterial({color: 0x888888 });
+		
+		renderer.clearTarget( dems.target, true, true, true );
+		var pc = new THREE.Points(geometry, material);
+		let box = geometry.boundingBox;
+		
+		dems.scene.add(pc);
+		dems.camera.position.set(0, 0, box.max.z);
+		
+		renderer.render(dems.scene, dems.camera, dems.target);
+		
+		dems.scene.remove(pc);
+		
+		//{
+		//	let pickWindowSize = 128;
+		//	let pixelCount = pickWindowSize * pickWindowSize;
+		//	let buffer = new ArrayBuffer(pixelCount*4*4);
+		//	let pixels = new Uint8Array(buffer);
+		//	let ibuffer = new Uint32Array(buffer);
+		//	renderer.context.readPixels(
+		//		0, 0, 
+		//		pickWindowSize, pickWindowSize, 
+		//		renderer.context.RGBA, renderer.context.FLOAT, pixels);
+		//		
+		//	console.log(pixels[i]);
+		//}
+		
+	}
+	
+	
+}
 
 Potree.Shader = class Shader{
 	constructor(vertexShader, fragmentShader, program, uniforms){

@@ -7,32 +7,85 @@ var getQueryParam = function(name) {
     return decodeURIComponent(results[2].replace(/\+/g, " "));
 }
 
-
-Potree.View = {};
-
-Potree.View.Orbit = class{
-	constructor(position, target){
-		this.fov = (Math.PI * 60) / 180;
-		this.position = new THREE.Vector3(10, 10, 10);
-		this.target = new THREE.Vector3(0, 0, 0);
-	}
-};
-
-Potree.View.FirstPerson = class{
+Potree.View = class{
 	constructor(){
-		this.fov = (Math.PI * 60) / 180;
-		this.position = new THREE.Vector3(10, 10, 10);
-		this.target = new THREE.Vector3(0, 0, 0);
+		this.position = new THREE.Vector3(0, 0, 0);
+		
+		this.yaw = Math.PI / 4;
+		this._pitch = -Math.PI / 4;
+		this.radius = 1;
+		
+		this.maxPitch = Math.PI / 2;
+		this.minPitch = -Math.PI / 2;
+		
+		this.navigationMode = Potree.OrbitControls;
 	}
+	
+	clone(){
+		let c = new Potree.View();
+		c.yaw = this.yaw;
+		c._pitch = this.pitch;
+		c.radius = this.radius;
+		c.maxPitch = this.maxPitch;
+		c.minPitch = this.minPitch;
+		c.navigationMode = this.navigationMode;
+	}
+	
+	get pitch(){
+		return this._pitch;
+	}
+	
+	set pitch(angle){
+		this._pitch = Math.max(Math.min(angle, this.maxPitch), this.minPitch);
+	}
+	
+	get direction(){
+		let dir = new THREE.Vector3(0, 1, 0);
+		
+		dir.applyAxisAngle(new THREE.Vector3(1, 0, 0), this.pitch);
+		dir.applyAxisAngle(new THREE.Vector3(0, 0, 1), this.yaw);
+		
+		return dir;
+	}
+	
+	set direction(dir){
+		let yaw = Math.atan2(dir.y, dir.x) - Math.PI / 2;
+		let pitch = Math.atan2(dir.z, Math.sqrt(dir.x * dir.x + dir.y * dir.y));
+		
+		this.yaw = yaw;
+		this.pitch = pitch;
+	}
+	
+	lookAt(t){
+		let V = new THREE.Vector3().subVectors(t, this.position);
+		let radius = V.length();
+		let dir = V.normalize();
+		
+		this.radius = radius;
+		this.direction = dir;
+	}
+	
+	getPivot(){
+		return new THREE.Vector3().addVectors(this.position, this.direction.multiplyScalar(this.radius));
+	}
+	
+	pan(x, y){
+		let dir = new THREE.Vector3(0, 1, 0);
+		dir.applyAxisAngle(new THREE.Vector3(1, 0, 0), this.pitch);
+		dir.applyAxisAngle(new THREE.Vector3(0, 0, 1), this.yaw);
+		
+		let side = new THREE.Vector3(1, 0, 0);
+		side.applyAxisAngle(new THREE.Vector3(0, 0, 1), this.yaw);
+		
+		let up = side.clone().cross(dir);
+		
+		let pan = side.multiplyScalar(x).add(up.multiplyScalar(y));
+		
+		this.position = this.position.add(pan);
+		//this.target = this.target.add(pan);
+	}
+	
 };
-
-Potree.View.Earth = class{
-	constructor(){
-		this.fov = (Math.PI * 60) / 180;
-		this.position = new THREE.Vector3(10, 10, 10);
-		this.target = new THREE.Vector3(0, 0, 0);
-	}
-}
 
 Potree.Scene = class{
 	constructor(){
@@ -55,7 +108,7 @@ Potree.Scene = class{
 		this.earthControls;
 		this.geoControls;
 		this.controls;
-		this.view = new Potree.View.Orbit();
+		this.view = new Potree.View();
 		
 		this.directionalLight = null;
 		
@@ -344,7 +397,7 @@ Potree.Viewer = class{
 			this.setPointBudget(1*1000*1000);
 			this.setShowBoundingBox(false);
 			this.setFreeze(false);
-			this.setNavigationMode(Potree.View.Orbit);
+			this.setNavigationMode(Potree.OrbitControls);
 			this.setBackground("gradient");
 			
 			this.scaleFactor = 1;
@@ -404,12 +457,12 @@ Potree.Viewer = class{
 		
 	};
 	
-	getControls(view){
-		if(view instanceof Potree.View.Orbit){
+	getControls(navigationMode){
+		if(navigationMode === Potree.OrbitControls){
 			return this.orbitControls;
-		}else if(view instanceof Potree.View.FirstPerson){
+		}else if(navigationMode === Potree.FirstPersonControls){
 			return this.fpControls;
-		}else if(view instanceof Potree.View.Earth){
+		}else if(navigationMode === Potree.EarthControls){
 			return this.earthControls;
 		}else{
 			return null;
@@ -489,30 +542,7 @@ Potree.Viewer = class{
 	};
 	
 	setNavigationMode(value){
-		if(this.scene.view instanceof value){
-			return;
-		}
-		
-		if(value === Potree.View.Orbit){
-			let view = new Potree.View.Orbit();
-			view.position = this.scene.view.position;
-			view.target = this.scene.view.target;
-			
-			this.scene.view = view;
-		}else if(value === Potree.View.FirstPerson){
-			let view = new Potree.View.FirstPerson();
-			view.position = this.scene.view.position;
-			view.target = this.scene.view.target;
-			
-			this.scene.view = view;
-		}else if(value === Potree.View.Earth){
-			let view = new Potree.View.Earth();
-			view.position = this.scene.view.position;
-			view.target = this.scene.view.target;
-			
-			this.scene.view = view;
-		}
-		
+		this.scene.view.navigationMode = value;
 	};
 	
 	setShowBoundingBox(value){
@@ -1049,9 +1079,10 @@ Potree.Viewer = class{
 		
 		let view = this.scene.view;
 		view.position.copy(this.scene.camera.position);
-		if(view.target){
-			view.target.copy(bs.center);
-		}
+		view.lookAt(bs.center);
+		//if(view.target){
+		//	view.target.copy(bs.center);
+		//}
 		
 		this.dispatcher.dispatchEvent({"type": "zoom_to", "viewer": this});
 	};
@@ -1255,7 +1286,7 @@ Potree.Viewer = class{
 			let y = parseFloat(tokens[1]);
 			let z = parseFloat(tokens[2]);
 			
-			this.scene.view.target.set(x, y, z);
+			this.scene.view.lookAt(new THREE.Vector3(x, y, z));
 		}
 		
 		if(Potree.utils.getParameterByName("background")){
@@ -1430,10 +1461,11 @@ Potree.Viewer = class{
 				
 				{
 					let currentValue = Potree.utils.getParameterByName("target");
+					let pivot = this.scene.view.getPivot();
 					let strTarget = "["  
-						+ this.scene.view.target.x.toFixed(3) + ";"
-						+ this.scene.view.target.y.toFixed(3) + ";"
-						+ this.scene.view.target.z.toFixed(3) + "]";
+						+ pivot.x.toFixed(3) + ";"
+						+ pivot.y.toFixed(3) + ";"
+						+ pivot.z.toFixed(3) + "]";
 					if(currentValue !== strTarget){
 						Potree.utils.setParameter("target", strTarget);
 					}
@@ -1553,23 +1585,26 @@ Potree.Viewer = class{
 		
 		camera.fov = this.fov;
 		
-		if(this.getControls(scene.view) !== this.controls){
+		// Navigation mode changed?
+		if(this.getControls(scene.view.navigationMode) !== this.controls){
 			if(this.controls){
 				this.controls.enabled = false;
 			}
 			
-			this.controls = this.getControls(scene.view);
+			this.controls = this.getControls(scene.view.navigationMode);
 			this.controls.enabled = true;
 			this.controls.setSpeed(this.getMoveSpeed());
 		}
 		
-		//let controls = this.getControls(this.scene.view);
 		if(this.controls !== null){
 			this.controls.setScene(scene);
 			this.controls.update(delta);
 			
 			camera.position.copy(scene.view.position);
-			camera.lookAt(scene.view.target);
+			//camera.rotation.x = scene.view.pitch;
+			//camera.rotation.y = scene.view.yaw;
+			
+			camera.lookAt(scene.view.getPivot());
 		}
 
 		// update progress bar

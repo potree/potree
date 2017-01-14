@@ -58,127 +58,51 @@
 	
 		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
 		
-		viewer.setEDLEnabled(true);
+		viewer.setEDLEnabled(false);
 		viewer.setPointSize(1);
 		viewer.setMaterial("RGB");
 		viewer.setFOV(60);
-		viewer.setPointSizing("Adaptive");
+		viewer.setPointSizing("Fixed");
 		viewer.setQuality("Squares");
-		viewer.setPointBudget(2*1000*1000);
+		viewer.setPointBudget(1*1000*1000);
 		viewer.setIntensityRange(0, 300);
 		viewer.setWeightClassification(1);
 		viewer.loadSettingsFromURL();
 		
-		viewer.setDescription("");
+		viewer.setDescription("Point cloud courtesy of <a target='_blank' href='https://www.sigeom.ch/'>sigeom sa</a>");
 		
-		let sceneSG = new Potree.Scene();
-		let sceneCA = new Potree.Scene();
-		let sceneLion = new Potree.Scene();
-		let sceneHeidentor = new Potree.Scene();
-		
-		viewer.setScene(sceneHeidentor);
-		
-		{ // Heidentor
-			Potree.loadPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/archpro/heidentor/cloud.js", "Heidentor", (e) => {
-				sceneHeidentor.addPointCloud(e.pointcloud);
-				
-				viewer.scene.view.position.set(17.7, 13.1, 15.6);
-				viewer.scene.view.target.set(-4.7,  1.4,  4.8);
-				
-				sceneHeidentor.addAnnotation(new THREE.Vector3(-2.66, 3.30, 14.51), {
-					"title": "Heidentor",
-					"cameraPosition": new THREE.Vector3(17.7, 13.1, 15.6),
-					"cameraTarget": new THREE.Vector3(-4.7,  1.4,  4.8),
-				});
-				
-				sceneHeidentor.addAnnotation(new THREE.Vector3(-2.90, 0.63, 2.94), {
-					"title": "to lion",
-					"cameraPosition": new THREE.Vector3(-3.75, 2.46, 3.77),
-					"cameraTarget": new THREE.Vector3(-2.98, 0.76, 2.62),
-					"actions": [{
-						"icon": Potree.resourcePath + "/icons/goto.svg",
-						"onclick": function(){
-							viewer.setScene(sceneLion);
-						}
-					}]
-				});
-				
-				//var view = new Potree.View.FirstPerson();
-				//view.position.set(22.52, -6.46, 15.67);
-				//view.target.set(1.08, 1.80, 9.70);
-                //
-				//viewer.scene.view = view;
-				viewer.setMoveSpeed(5);
-			});
-		}
-		
+		// Sigeom
 		Potree.loadPointCloud("../pointclouds/vol_total/cloud.js", "sigeom.sa", function(e){
-			sceneSG.addPointCloud(e.pointcloud);
-			sceneSG.view.position.set(590030, 231767, 1007);
-			sceneSG.view.target = new THREE.Vector3(589844, 231376, 710);
-
-			//viewer.setScene(sceneSG);
+			let scene = viewer.scene;
+			scene.addPointCloud(e.pointcloud);
 			
-			{
-				let measurement = new Potree.Measure();
-				measurement.addMarker(new THREE.Vector3(589938.8594970703, 231457.48974609375, 727.9749997901916));
-				measurement.addMarker(new THREE.Vector3(589877.9293823242, 231472.29974365234, 735.1949995803833));
-
-				sceneSG.addMeasurement(measurement);
+			
+			//window.planeGeometry = new THREE.PlaneGeometry(1, 1);
+			//window.planeMaterial = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
+			//window.plane = new THREE.Mesh( planeGeometry, planeMaterial );
+			//plane.position.copy(viewer.scene.pointclouds[0].position);
+			//plane.scale.copy(viewer.scene.pointclouds[0].boundingBox.getSize());
+			//plane.position.add(viewer.scene.pointclouds[0].boundingBox.getSize().clone().multiplyScalar(0.5));
+			//plane.position.z = viewer.scene.pointclouds[0].position.z;
+			//viewer.scene.scene.add( plane );
+			
+			//viewer.scene.scenePointCloud.updateMatrixWorld()
+			
+			if(!Potree.utils.getParameterByName("target")){
+				viewer.fitToScreen();
 			}
 			
-			{
-				let profile = new Potree.Profile();
-				profile.addMarker(new THREE.Vector3(590055.51, 231403.00, 747.03));
-				profile.addMarker(new THREE.Vector3(590050.27, 231529.36, 727.91));
-				profile.addMarker(new THREE.Vector3(589955.85, 231481.13, 726.60));
-				profile.setWidth(5);
-
-				sceneSG.addProfile(profile);
-			}
 			
-			//sceneSG.addAnnotation(new THREE.Vector3(589621, 231437, 784), {
-			//	"cameraPosition": new THREE.Vector3(589661, 231470, 805),
-			//	"cameraTarget": new THREE.Vector3(589625.86, 231439, 775.38),
-			//	"appearance": '<img src="./resources/lion_icon_64.png">'
-			//});
+			//scene.view = new Potree.View.Earth();
+			//scene.view.position.set(590030, 231767, 1007);
+			//scene.view.target.set(589844, 231376, 710);
 			
-			sceneSG.addAnnotation(new THREE.Vector3(589621, 231437, 784), {
-				"cameraPosition": new THREE.Vector3(589661, 231470, 805),
-				"cameraTarget": new THREE.Vector3(589625.86, 231439, 775.38),
-				"actions": [{
-					"icon": Potree.resourcePath + "/icons/goto.svg",
-					"onclick": function(){
-						viewer.setScene(sceneLion);
-					}
-				}]
-			});
+			//scene.view.position.set(590030, 231767, 1007);
+			//scene.view.target = new THREE.Vector3(589844, 231376, 710);
 		});
 		
-		Potree.loadPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/opentopography/CA13_1.4/cloud.js", "CA13", function(e){
-			sceneCA.addPointCloud(e.pointcloud);
-			sceneCA.view.position.set(692643, 3915996, 777);
-			sceneCA.view.target = new THREE.Vector3(694067, 3916332, 8);
-		});
-		
-		Potree.loadPointCloud("../pointclouds/lion_takanawa/cloud.js", "lion", function(e){
-			sceneLion.addPointCloud(e.pointcloud);
-			sceneLion.view.position.set(4.15, -6.12, 8.54);
-			sceneLion.view.target = new THREE.Vector3(0, -0.098, 4.23);
-
-			
-			sceneLion.addAnnotation(new THREE.Vector3(0.72, -1, 8), {
-				"actions": [{
-					"icon": Potree.resourcePath + "/icons/goto.svg",
-					"onclick": function(){
-						viewer.setScene(sceneHeidentor);
-					}
-				}]
-			});
-		});
-
 		viewer.loadGUI();
-        viewer.toggleSidebar();
+        //viewer.toggleSidebar();
 		
         // Define default language: 'de'/'fr'/'en'
         viewer.setLanguage('en');

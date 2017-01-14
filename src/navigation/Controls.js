@@ -279,7 +279,8 @@ Potree.Controls = class{
 				type: "double_click_move",
 				controls: this,
 				position: cameraTargetPosition,
-				targetLocation: I
+				targetLocation: I.location,
+				targetPointcloud: I.pointcloud
 			});
 		});
 		tween.start();

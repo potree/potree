@@ -1,4 +1,3 @@
-
 /**
  * @author mschuetz / http://mschuetz.at
  *
@@ -10,23 +9,17 @@
  * @author WestLangley / http://github.com/WestLangley
  * @author erich666 / http://erichaines.com
  *
- * This set of controls performs first person navigation without mouse lock.
- * Instead, rotating the camera is done by dragging with the left mouse button.
- *
- * move: a/s/d/w or up/down/left/right
- * rotate: left mouse
- * pan: right mouse
- * change speed: mouse wheel
  *
  *
  */
+ 
 Potree.FirstPersonControls = class extends Potree.Controls{
 	
 	constructor(renderer){
 		super(renderer);
 		
-		this.rotateSpeed = 1.0;
-		this.moveSpeed = 10.0;
+		this.rotationSpeed = 200;
+		this.moveSpeed = 10;
 		
 		this.minimumJumpDistance = 0.2;
 		this.jumpDistance = null;
@@ -45,6 +38,11 @@ Potree.FirstPersonControls = class extends Potree.Controls{
 		this.STATE = { NONE : -1, ROTATE : 0, SPEEDCHANGE : 1, PAN : 2 };
 
 		this.state = this.STATE.NONE;
+		
+		this.fadeFactor = 50;
+		this.yawDelta = 0;
+		this.pitchDelta = 0;
+		this.translationDelta = new THREE.Vector3(0, 0, 0);
 		
 		if(this.domElement.tabIndex === -1){
 			this.domElement.tabIndex = 2222;
@@ -72,6 +70,14 @@ Potree.FirstPersonControls = class extends Potree.Controls{
 		}
 		
 		this.state = this.STATE.NONE;
+	}
+	
+	onDoubleClick(e){
+		if(!this.enabled){
+			return;
+		}
+		
+		this.zoomToClickLocation(e);
 	}
 	
 	onKeyDown(e){
@@ -111,72 +117,144 @@ Potree.FirstPersonControls = class extends Potree.Controls{
 			return;
 		}
 		
-		let drag = this.getNormalizedDrag();
-		let startPosition = this.scene.view.position.clone();
-		let startTarget = this.scene.view.target.clone();
-		let up = new THREE.Vector3(0, 0, 1);
+		let view = this.scene.view;
+		let drag = this.getNormalizedLastDrag();
 		
-		
-		let newPosition = this.scene.view.position.clone();
-		let newTarget = this.scene.view.target.clone();
-		
-		if(this.state === this.STATE.ROTATE){
-			let dir = new THREE.Vector3().subVectors(this.scene.view.target, this.scene.view.position);
-			let radius = dir.length();
-			dir.normalize();
-			
-			let side = new THREE.Vector3().crossVectors(dir, up);
-			
-			dir.applyAxisAngle(side, -4 * drag.y);
-			dir.applyAxisAngle(up, -4 * drag.x);
-			
-			newTarget.addVectors(startPosition, dir.clone().multiplyScalar(radius));
-		}
-		
-		let translation = new THREE.Vector3(0, 0, 0);
-		if(this.state === this.STATE.PAN){
-			translation.x = -drag.x * this.speed;
-			translation.z = +drag.y * this.speed;
-		}
-		
-		{ // TRANSLATION
-		
-			if(this.moveForward){
-				translation.y -= delta * this.speed;
-			}
-			if(this.moveBackward){
-				translation.y += delta * this.speed;
-			}
-			if(this.moveLeft){
-				translation.x -= delta * this.speed;
-			}
-			if(this.moveRight){
-				translation.x += delta * this.speed;
+		{ // accelerate while input is given
+			if(this.state === this.STATE.ROTATE){
+				this.yawDelta += drag.x * this.rotationSpeed;
+				this.pitchDelta += drag.y * this.rotationSpeed;
+			}else if(this.state === this.STATE.PAN){
+				this.translationDelta.x -= drag.x * this.speed * 50;
+				this.translationDelta.z += drag.y * this.speed * 50;
 			}
 			
-			let dir = new THREE.Vector3().subVectors(this.scene.view.target, this.scene.view.position);
-			let radius = dir.length();
-			dir.normalize();
-			
-			let pdy = dir.clone();
-			let pdx = new THREE.Vector3().crossVectors(up, dir);
-			let pdz = new THREE.Vector3().crossVectors(pdx, pdy);
-			
-			let resolvedTranslation = new THREE.Vector3();
-			resolvedTranslation.add(pdx.multiplyScalar(-this.speed * translation.x));
-			resolvedTranslation.add(pdy.multiplyScalar(-this.speed * translation.y));
-			resolvedTranslation.add(pdz.multiplyScalar(-this.speed * translation.z));
-			
-			newPosition.add(resolvedTranslation);
-			newTarget.add(resolvedTranslation);
+			{ // TRANSLATION
+				
+				if(this.moveForward && this.moveBackward){
+					this.translationDelta.y = 0;
+				}else if(this.moveForward){
+					this.translationDelta.y = this.speed;
+				}else if(this.moveBackward){
+					this.translationDelta.y = -this.speed;
+				}
+				
+				if(this.moveLeft && this.moveRight){
+					this.translationDelta.x = 0;
+				}else if(this.moveLeft){
+					this.translationDelta.x = -this.speed;
+				}else if(this.moveRight){
+					this.translationDelta.x = this.speed;
+				}
+			}
 		}
 		
-		this.scene.view.position.copy(newPosition);
-		this.scene.view.target.copy(newTarget);
-		
-		if(this.dragStart){
-			this.dragStart.copy(this.dragEnd);
+		{ // apply rotation
+			let yaw = view.yaw;
+			let pitch = view.pitch;
+			
+			yaw -= this.yawDelta * delta;
+			pitch -= this.pitchDelta * delta;
+			
+			view.yaw = yaw;
+			view.pitch = pitch;
+			
+			let V = this.scene.view.direction.multiplyScalar(-view.radius);
+			let position = new THREE.Vector3().addVectors(view.getPivot(), V);
+			
+			view.position = position;
 		}
+		
+		{ // apply translation
+			let tx = this.translationDelta.x * delta;
+			let ty = this.translationDelta.y * delta;
+			let tz = this.translationDelta.z * delta;
+			
+			view.translate(tx, ty, tz);
+		}
+		
+		{// decelerate over time
+			let attenuation = Math.max(0, 1 - this.fadeFactor * delta);
+			this.yawDelta *= attenuation;
+			this.pitchDelta *= attenuation;
+			this.translationDelta.multiplyScalar(attenuation);
+		}
+		
+		
+		this.updateFinished();
+		
+		//if(!this.enabled){
+		//	return;
+		//}
+		//
+		//let view = this.scene.view;
+		//
+		//let drag = this.getNormalizedDrag();
+		//let startPosition = view.position.clone();
+		//let startTarget = view.target.clone();
+		//let up = new THREE.Vector3(0, 0, 1);
+		//
+		//
+		//let newPosition = view.position.clone();
+		//let newTarget = view.target.clone();
+		//
+		//if(this.state === this.STATE.ROTATE){
+		//	let dir = new THREE.Vector3().subVectors(view.target, view.position);
+		//	let radius = dir.length();
+		//	dir.normalize();
+		//	
+		//	let side = new THREE.Vector3().crossVectors(dir, up);
+		//	
+		//	dir.applyAxisAngle(side, -4 * drag.y);
+		//	dir.applyAxisAngle(up, -4 * drag.x);
+		//	
+		//	newTarget.addVectors(startPosition, dir.clone().multiplyScalar(radius));
+		//}
+		//
+		//let translation = new THREE.Vector3(0, 0, 0);
+		//if(this.state === this.STATE.PAN){
+		//	translation.x = -drag.x * this.speed;
+		//	translation.z = +drag.y * this.speed;
+		//}
+		//
+		//{ // TRANSLATION
+		//
+		//	if(this.moveForward){
+		//		translation.y -= delta * this.speed;
+		//	}
+		//	if(this.moveBackward){
+		//		translation.y += delta * this.speed;
+		//	}
+		//	if(this.moveLeft){
+		//		translation.x -= delta * this.speed;
+		//	}
+		//	if(this.moveRight){
+		//		translation.x += delta * this.speed;
+		//	}
+		//	
+		//	let dir = new THREE.Vector3().subVectors(view.target, view.position);
+		//	let radius = dir.length();
+		//	dir.normalize();
+		//	
+		//	let pdy = dir.clone();
+		//	let pdx = new THREE.Vector3().crossVectors(up, dir);
+		//	let pdz = new THREE.Vector3().crossVectors(pdx, pdy);
+		//	
+		//	let resolvedTranslation = new THREE.Vector3();
+		//	resolvedTranslation.add(pdx.multiplyScalar(-this.speed * translation.x));
+		//	resolvedTranslation.add(pdy.multiplyScalar(-this.speed * translation.y));
+		//	resolvedTranslation.add(pdz.multiplyScalar(-this.speed * translation.z));
+		//	
+		//	newPosition.add(resolvedTranslation);
+		//	newTarget.add(resolvedTranslation);
+		//}
+		//
+		//view.position.copy(newPosition);
+		//view.target.copy(newTarget);
+		//
+		//if(this.dragStart){
+		//	this.dragStart.copy(this.dragEnd);
+		//}
 		
 	}
 

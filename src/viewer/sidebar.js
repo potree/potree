@@ -563,19 +563,19 @@ function initNavigation(){
 	elNavigation.appendChild(createToolIcon(
 		Potree.resourcePath + "/icons/earth_controls_1.png",
         "[title]tt.earth_control",
-		function(){viewer.setNavigationMode(Potree.View.Earth)}
+		function(){viewer.setNavigationMode(Potree.EarthControls)}
 	));
 	
 	elNavigation.appendChild(createToolIcon(
 		Potree.resourcePath + "/icons/fps_controls.png",
         "[title]tt.flight_control",
-		function(){viewer.setNavigationMode(Potree.View.FirstPerson)}
+		function(){viewer.setNavigationMode(Potree.FirstPersonControls)}
 	));
 	
 	elNavigation.appendChild(createToolIcon(
 		Potree.resourcePath + "/icons/orbit_controls.svg",
 		"[title]tt.orbit_control",
-		function(){viewer.setNavigationMode(Potree.View.Orbit)}
+		function(){viewer.setNavigationMode(Potree.OrbitControls)}
 	));
 	
 	elNavigation.appendChild(createToolIcon(

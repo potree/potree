@@ -85,6 +85,23 @@ Potree.View = class{
 		//this.target = this.target.add(pan);
 	}
 	
+	translate(x, y, z){
+		let dir = new THREE.Vector3(0, 1, 0);
+		dir.applyAxisAngle(new THREE.Vector3(1, 0, 0), this.pitch);
+		dir.applyAxisAngle(new THREE.Vector3(0, 0, 1), this.yaw);
+		
+		let side = new THREE.Vector3(1, 0, 0);
+		side.applyAxisAngle(new THREE.Vector3(0, 0, 1), this.yaw);
+		
+		let up = side.clone().cross(dir);
+		
+		let t = side.multiplyScalar(x)
+			.add(dir.multiplyScalar(y))
+			.add(up.multiplyScalar(z));
+		
+		this.position = this.position.add(t);
+	}
+	
 };
 
 Potree.Scene = class{
@@ -1326,7 +1343,6 @@ Potree.Viewer = class{
 			this.fpControls.dispatcher.addEventListener("end", this.enableAnnotations.bind(this));
 			this.fpControls.dispatcher.addEventListener("double_click_move", (event) => {
 				let distance = event.targetLocation.distanceTo(event.position);
-				//this.setMoveSpeed(distance / 3);
 				this.setMoveSpeed(Math.pow(distance, 0.4));
 			});
 			this.fpControls.dispatcher.addEventListener("move_speed_changed", (event) => {

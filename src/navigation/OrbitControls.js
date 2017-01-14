@@ -1,4 +1,18 @@
-
+/**
+ * @author mschuetz / http://mschuetz.at
+ *
+ * adapted from THREE.OrbitControls by 
+ *
+ * @author qiao / https://github.com/qiao
+ * @author mrdoob / http://mrdoob.com
+ * @author alteredq / http://alteredqualia.com/
+ * @author WestLangley / http://github.com/WestLangley
+ * @author erich666 / http://erichaines.com
+ *
+ *
+ *
+ */
+ 
 Potree.OrbitControls = class extends Potree.Controls{
 	
 	constructor(renderer){

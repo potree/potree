@@ -2,133 +2,55 @@
 // http://epsg.io/
 proj4.defs("UTM10N", "+proj=utm +zone=10 +ellps=GRS80 +datum=NAD83 +units=m +no_defs");
 
-Potree.MapView = function(viewer){
-	var scope = this;
+Potree.MapView = class{
+		
+	constructor(viewer){
+		this.viewer = viewer;
+		
+		this.webMapService = "WMTS";
+		this.mapProjectionName = "EPSG:3857";
+		this.mapProjection = proj4.defs(this.mapProjectionName);
+		this.sceneProjection = null;
+		
+		this.extentsLayer = null;
+		this.cameraLayer = null;
+		this.toolLayer = null;
+		this.sourcesLayer = null;
+		this.sourcesLabelLayer = null;
+	}
 	
-	this.viewer = viewer;
-	
-	this.webMapService = "WMTS";
-	this.mapProjectionName = "EPSG:3857";
-	this.mapProjection = proj4.defs(scope.mapProjectionName);
-	this.sceneProjection = null;
-	
-	this.init = function(){
-		//scope.setSceneProjection("+proj=utm +zone=10 +ellps=GRS80 +datum=NAD83 +units=m +no_defs");
+	init(){
+		//this.setSceneProjection("+proj=utm +zone=10 +ellps=GRS80 +datum=NAD83 +units=m +no_defs");
 		
 		$( "#potree_map" ).draggable({ handle: $('#potree_map_header') });
 		$( "#potree_map" ).resizable();
-		//$( "#potree_map" ).css("display", "block");
 		$( "#potree_map_toggle" ).css("display", "block");
 	
-		scope.gExtent = new ol.geom.LineString([[0,0], [0,0]]);
-		
-		// EXTENT LAYER
-		var feature = new ol.Feature(scope.gExtent);
-		var featureVector = new ol.source.Vector({
-			features: [feature]
-		});
-		var visibleBoundsLayer = new ol.layer.Vector({
-			source: featureVector,
-			style: new ol.style.Style({
-				fill: new ol.style.Fill({
-					color: 'rgba(255, 255, 255, 0.2)'
-				}),
-				stroke: new ol.style.Stroke({
-					  color: '#0000ff',
-					  width: 2
-				}),
-				image: new ol.style.Circle({
-					radius: 3,
-					fill: new ol.style.Fill({
-						color: '#0000ff'
-					})
-				})
-			})
-		});
-		
-		// CAMERA LAYER
-		scope.gCamera = new ol.geom.LineString([[0,0], [0,0], [0,0], [0,0]]);
-		var feature = new ol.Feature(scope.gCamera);
-		var featureVector = new ol.source.Vector({
-			features: [feature]
-		});
-		var cameraLayer = new ol.layer.Vector({
-			source: featureVector,
-			style: new ol.style.Style({
-				stroke: new ol.style.Stroke({
-					  color: '#0000ff',
-					  width: 2
-				})
-			})
-		});
-		
-		// TOOL DRAWINGS LAYER
-		scope.toolLayer = new ol.layer.Vector({
-			source: new ol.source.Vector({
-			}),
-			style: new ol.style.Style({
-				fill: new ol.style.Fill({
-					color: 'rgba(255, 0, 0, 1)'
-				}),
-				stroke: new ol.style.Stroke({
-					  color: 'rgba(255, 0, 0, 1)',
-					  width: 2
-				})
-			})
-		});
-		
-		// SOURCES EXTENT LAYER
-		scope.sourcesLayer = new ol.layer.Vector({
-			source: new ol.source.Vector({}),
-			style: new ol.style.Style({
-				fill: new ol.style.Fill({
-					color: 'rgba(0, 0, 150, 0.1)'
-				}),
-				stroke: new ol.style.Stroke({
-					  color: 'rgba(0, 0, 150, 1)',
-					  width: 1
-				})
-			})
-		});
-		
-		// SOURCES LABEL LAYER
-		scope.sourcesLabelLayer = new ol.layer.Vector({
-			source: new ol.source.Vector({
-			}),
-			style: new ol.style.Style({
-				fill: new ol.style.Fill({
-					color: 'rgba(255, 0, 0, 0.1)'
-				}),
-				stroke: new ol.style.Stroke({
-					  color: 'rgba(255, 0, 0, 1)',
-					  width: 2
-				})
-			}),
-			minResolution: 0.01,
-            maxResolution: 20
-		});
+		let extentsLayer = this.getExtentsLayer();
+		let cameraLayer = this.getCameraLayer();
+		let toolLayer = this.getToolLayer();
+		let sourcesLayer = this.getSourcesLayer();
+		let sourcesLabelLayer = this.getSourcesLabelLayer();
 		
 		var mousePositionControl = new ol.control.MousePosition({
 			coordinateFormat: ol.coordinate.createStringXY(4),
-			projection: scope.sceneProjection,
+			projection: this.sceneProjection,
 			undefinedHTML: '&nbsp;'
 		});
 		
-		var DownloadSelectionControl = function(opt_options) {
+		let DownloadSelectionControl = function(opt_options){
 			var options = opt_options || {};
 			
 			// TOGGLE TILES
 			var btToggleTiles = document.createElement('button');
 			btToggleTiles.innerHTML = 'T';
-			btToggleTiles.addEventListener('click', function(){
-				var visible = scope.sourcesLayer.getVisible();
-				scope.sourcesLayer.setVisible(!visible);
-				scope.sourcesLabelLayer.setVisible(!visible);
+			btToggleTiles.addEventListener('click', () => {
+				var visible = this.sourcesLayer.getVisible();
+				this.sourcesLayer.setVisible(!visible);
+				this.sourcesLabelLayer.setVisible(!visible);
 			}, false);
 			btToggleTiles.style.float = "left";
 			btToggleTiles.title = "show / hide tiles";
-			
-			
 			
 			// DOWNLOAD SELECTED TILES
 			var link = document.createElement("a");
@@ -141,7 +63,7 @@ Potree.MapView = function(viewer){
 			link.appendChild(button);
 			
 			var this_ = this;
-			var handleDownload = function(e) {
+			var handleDownload = (e) => {
 				var features = selectedFeatures.getArray();
 				
 				var url =  [location.protocol, '//', location.host, location.pathname].join('');
@@ -197,40 +119,33 @@ Potree.MapView = function(viewer){
 		};
 		ol.inherits(DownloadSelectionControl, ol.control.Control);
 		
-		
-		//scope.controls = {};
-		//scope.controls.zoomToExtent = new ol.control.ZoomToExtent({
-		//	extent: undefined,
-		//	closest: true
-		//})
-		
-		scope.map = new ol.Map({
+		this.map = new ol.Map({
 			controls: ol.control.defaults({
 				attributionOptions: ({
 				collapsible: false
 				})
 			}).extend([
-				//scope.controls.zoomToExtent,
+				//this.controls.zoomToExtent,
 				new DownloadSelectionControl(),
 				mousePositionControl
 			]),
 			layers: [
 				new ol.layer.Tile({source: new ol.source.OSM()}),
-				scope.toolLayer,
-				scope.sourcesLayer,
-				scope.sourcesLabelLayer,
-				visibleBoundsLayer,
+				this.toolLayer,
+				this.sourcesLayer,
+				this.sourcesLabelLayer,
+				extentsLayer,
 				cameraLayer
 			],
 			target: 'potree_map_content',
 			view: new ol.View({
-				center: scope.olCenter,
+				center: this.olCenter,
 				zoom: 9
 			})
 		});
 
 		// DRAGBOX / SELECTION
-		scope.dragBoxLayer = new ol.layer.Vector({
+		this.dragBoxLayer = new ol.layer.Vector({
 			source: new ol.source.Vector({}),
 			style: new ol.style.Style({
 				stroke: new ol.style.Stroke({
@@ -239,10 +154,10 @@ Potree.MapView = function(viewer){
 				})
 			})
 		});
-		scope.map.addLayer(scope.dragBoxLayer);
+		this.map.addLayer(this.dragBoxLayer);
 		
 		var select = new ol.interaction.Select();
-		scope.map.addInteraction(select);
+		this.map.addInteraction(select);
 		
 		var selectedFeatures = select.getFeatures();
         
@@ -250,64 +165,187 @@ Potree.MapView = function(viewer){
 		  condition: ol.events.condition.platformModifierKeyOnly
 		});
         
-		scope.map.addInteraction(dragBox);
+		this.map.addInteraction(dragBox);
         
 		
-		dragBox.on('boxend', function(e) {
-		  // features that intersect the box are added to the collection of
-		  // selected features, and their names are displayed in the "info"
-		  // div
-		  var extent = dragBox.getGeometry().getExtent();
-		  scope.sourcesLayer.getSource().forEachFeatureIntersectingExtent(extent, function(feature) {
-			selectedFeatures.push(feature);
-		  });
+		dragBox.on('boxend', (e) => {
+			// features that intersect the box are added to the collection of
+			// selected features, and their names are displayed in the "info"
+			// div
+			var extent = dragBox.getGeometry().getExtent();
+			this.sourcesLayer.getSource().forEachFeatureIntersectingExtent(extent, (feature) => {
+				selectedFeatures.push(feature);
+			});
 		});
 		
 		// clear selection when drawing a new box and when clicking on the map
-		dragBox.on('boxstart', function(e) {
-		  selectedFeatures.clear();
+		dragBox.on('boxstart', (e) => {
+			selectedFeatures.clear();
 		});
-		scope.map.on('click', function() {
-		  selectedFeatures.clear();
+		this.map.on('click', () => {
+			selectedFeatures.clear();
 		});
-		
-		
-		
 		
 		// adding pointclouds to map
-		scope.viewer.dispatcher.addEventListener("pointcloud_loaded", function(event){
-			scope.load(event.pointcloud);
+		this.viewer.dispatcher.addEventListener("pointcloud_loaded", (event) => {
+			this.load(event.pointcloud);
 		});
-		for(var i = 0; i < scope.viewer.scene.pointclouds.length; i++){
-			scope.load(scope.viewer.scene.pointclouds[i]);
+		for(var i = 0; i < this.viewer.scene.pointclouds.length; i++){
+			this.load(this.viewer.scene.pointclouds[i]);
 		}
 		
-		scope.viewer.profileTool.addEventListener("profile_added", scope.updateToolDrawings);
-		scope.viewer.profileTool.addEventListener("profile_removed", scope.updateToolDrawings);
-		scope.viewer.profileTool.addEventListener("marker_moved", scope.updateToolDrawings);
-		scope.viewer.profileTool.addEventListener("marker_removed", scope.updateToolDrawings);
-		scope.viewer.profileTool.addEventListener("marker_added", scope.updateToolDrawings);
+		this.viewer.profileTool.addEventListener("profile_added", this.updateToolDrawings);
+		this.viewer.profileTool.addEventListener("profile_removed", this.updateToolDrawings);
+		this.viewer.profileTool.addEventListener("marker_moved", this.updateToolDrawings);
+		this.viewer.profileTool.addEventListener("marker_removed", this.updateToolDrawings);
+		this.viewer.profileTool.addEventListener("marker_added", this.updateToolDrawings);
 		
-		scope.viewer.measuringTool.addEventListener("measurement_added", scope.updateToolDrawings);
-		scope.viewer.measuringTool.addEventListener("marker_added", scope.updateToolDrawings);
-		scope.viewer.measuringTool.addEventListener("marker_removed", scope.updateToolDrawings);
-		scope.viewer.measuringTool.addEventListener("marker_moved", scope.updateToolDrawings);
+		this.viewer.measuringTool.addEventListener("measurement_added", this.updateToolDrawings);
+		this.viewer.measuringTool.addEventListener("marker_added", this.updateToolDrawings);
+		this.viewer.measuringTool.addEventListener("marker_removed", this.updateToolDrawings);
+		this.viewer.measuringTool.addEventListener("marker_moved", this.updateToolDrawings);
 
-	};
+	}
 	
-	this.setSceneProjection = function(sceneProjection){
-		scope.sceneProjection = sceneProjection;
-		this.toMap = proj4(scope.sceneProjection, scope.mapProjection);
-		this.toScene = proj4(scope.mapProjection, scope.sceneProjection);
-	};
-	
-	this.getMapExtent = function(){
-		var bb = scope.viewer.getBoundingBox();
+	getExtentsLayer(){
+		if(this.extentsLayer){
+			return this.extentsLayer;
+		}
 		
-		var bottomLeft = scope.toMap.forward([bb.min.x, bb.min.y]);
-		var bottomRight = scope.toMap.forward([bb.max.x, bb.min.y]);
-		var topRight = scope.toMap.forward([bb.max.x, bb.max.y]);
-		var topLeft = scope.toMap.forward([bb.min.x, bb.max.y]);
+		this.gExtent = new ol.geom.LineString([[0,0], [0,0]]);
+		
+		let feature = new ol.Feature(this.gExtent);
+		let featureVector = new ol.source.Vector({
+			features: [feature]
+		});
+		
+		this.extentsLayer = new ol.layer.Vector({
+			source: featureVector,
+			style: new ol.style.Style({
+				fill: new ol.style.Fill({
+					color: 'rgba(255, 255, 255, 0.2)'
+				}),
+				stroke: new ol.style.Stroke({
+					  color: '#0000ff',
+					  width: 2
+				}),
+				image: new ol.style.Circle({
+					radius: 3,
+					fill: new ol.style.Fill({
+						color: '#0000ff'
+					})
+				})
+			})
+		});
+		
+		return this.extentsLayer;
+	}
+	
+	getCameraLayer(){
+		if(this.cameraLayer){
+			return this.cameraLayer;
+		}
+		
+		// CAMERA LAYER
+		this.gCamera = new ol.geom.LineString([[0,0], [0,0], [0,0], [0,0]]);
+		var feature = new ol.Feature(this.gCamera);
+		var featureVector = new ol.source.Vector({
+			features: [feature]
+		});
+		
+		this.cameraLayer = new ol.layer.Vector({
+			source: featureVector,
+			style: new ol.style.Style({
+				stroke: new ol.style.Stroke({
+					  color: '#0000ff',
+					  width: 2
+				})
+			})
+		});
+		
+		return this.cameraLayer;
+	}
+	
+	getToolLayer(){
+		if(this.toolLayer){
+			return this.toolLayer;
+		}
+		
+		this.toolLayer = new ol.layer.Vector({
+			source: new ol.source.Vector({
+			}),
+			style: new ol.style.Style({
+				fill: new ol.style.Fill({
+					color: 'rgba(255, 0, 0, 1)'
+				}),
+				stroke: new ol.style.Stroke({
+					  color: 'rgba(255, 0, 0, 1)',
+					  width: 2
+				})
+			})
+		});
+		
+		return this.toolLayer;
+	}
+	
+	getSourcesLayer(){
+		if(this.sourcesLayer){
+			return this.sourcesLayer;
+		}
+		
+		this.sourcesLayer = new ol.layer.Vector({
+			source: new ol.source.Vector({}),
+			style: new ol.style.Style({
+				fill: new ol.style.Fill({
+					color: 'rgba(0, 0, 150, 0.1)'
+				}),
+				stroke: new ol.style.Stroke({
+					  color: 'rgba(0, 0, 150, 1)',
+					  width: 1
+				})
+			})
+		});
+		
+		return this.sourcesLayer;
+	}
+	
+	getSourcesLabelLayer(){
+		if(this.sourcesLabelLayer){
+			return this.sourcesLabelLayer;
+		}
+		
+		this.sourcesLabelLayer = new ol.layer.Vector({
+			source: new ol.source.Vector({
+			}),
+			style: new ol.style.Style({
+				fill: new ol.style.Fill({
+					color: 'rgba(255, 0, 0, 0.1)'
+				}),
+				stroke: new ol.style.Stroke({
+					  color: 'rgba(255, 0, 0, 1)',
+					  width: 2
+				})
+			}),
+			minResolution: 0.01,
+            maxResolution: 20
+		});
+		
+		return this.sourcesLabelLayer;
+	}
+	
+	setSceneProjection(sceneProjection){
+		this.sceneProjection = sceneProjection;
+		this.toMap = proj4(this.sceneProjection, this.mapProjection);
+		this.toScene = proj4(this.mapProjection, this.sceneProjection);
+	};
+	
+	getMapExtent(){
+		var bb = this.viewer.getBoundingBox();
+		
+		var bottomLeft = this.toMap.forward([bb.min.x, bb.min.y]);
+		var bottomRight = this.toMap.forward([bb.max.x, bb.min.y]);
+		var topRight = this.toMap.forward([bb.max.x, bb.max.y]);
+		var topLeft = this.toMap.forward([bb.min.x, bb.max.y]);
 		
 		var extent = {
 			bottomLeft: bottomLeft,
@@ -319,8 +357,8 @@ Potree.MapView = function(viewer){
 		return extent;
 	};
 	
-	this.getMapCenter = function(){
-		var mapExtent = scope.getMapExtent();
+	getMapCenter(){
+		var mapExtent = this.getMapExtent();
 		
 		var mapCenter = [
 			(mapExtent.bottomLeft[0] + mapExtent.topRight[0]) / 2, 
@@ -330,33 +368,33 @@ Potree.MapView = function(viewer){
 		return mapCenter;
 	};	
 	
-	this.updateToolDrawings = function(){
-		scope.toolLayer.getSource().clear();
+	updateToolDrawings(){
+		this.toolLayer.getSource().clear();
 		
-		var profiles = scope.viewer.profileTool.profiles;
+		var profiles = this.viewer.profileTool.profiles;
 		for(var i = 0; i < profiles.length; i++){
 			var profile = profiles[i];
 			var coordinates = [];
 			
 			for(var j = 0; j < profile.points.length; j++){
 				var point = profile.points[j];
-				var pointMap = scope.toMap.forward([point.x, point.y]);
+				var pointMap = this.toMap.forward([point.x, point.y]);
 				coordinates.push(pointMap);
 			}
 			
 			var line = new ol.geom.LineString(coordinates);
 			var feature = new ol.Feature(line);
-			scope.toolLayer.getSource().addFeature(feature);
+			this.toolLayer.getSource().addFeature(feature);
 		}
 		
-		var measurements = scope.viewer.measuringTool.measurements;
+		var measurements = this.viewer.measuringTool.measurements;
 		for(var i = 0; i < measurements.length; i++){
 			var measurement = measurements[i];
 			var coordinates = [];
 			
 			for(var j = 0; j < measurement.points.length; j++){
 				var point = measurement.points[j].position;
-				var pointMap = scope.toMap.forward([point.x, point.y]);
+				var pointMap = this.toMap.forward([point.x, point.y]);
 				coordinates.push(pointMap);
 			}
 			
@@ -366,32 +404,29 @@ Potree.MapView = function(viewer){
 			
 			var line = new ol.geom.LineString(coordinates);
 			var feature = new ol.Feature(line);
-			scope.toolLayer.getSource().addFeature(feature);
+			this.toolLayer.getSource().addFeature(feature);
 		}
-		
-	};
+	}
 	
 	
-	this.load = function(pointcloud){
+	load(pointcloud){
 		
 		if(!(pointcloud instanceof Potree.PointCloudOctree)){
 			return;
 		}
 		
-		if(!scope.sceneProjection){
-			scope.setSceneProjection(pointcloud.projection);
+		if(!this.sceneProjection){
+			this.setSceneProjection(pointcloud.projection);
 		}
 		
-		var mapExtent = scope.getMapExtent();
-		var mapCenter = scope.getMapCenter();
+		var mapExtent = this.getMapExtent();
+		var mapCenter = this.getMapCenter();
 		
-		//viewer.mapView.controls.zoomToExtent.extent_ = [ mapExtent.bottomLeft, mapExtent.topRight ];
-		//viewer.mapView.controls.zoomToExtent.set("extent", [ mapExtent.bottomLeft, mapExtent.topRight ]);
 		
-		var view = scope.map.getView();
+		var view = this.map.getView();
 		view.setCenter(mapCenter);
 		
-		scope.gExtent.setCoordinates([
+		this.gExtent.setCoordinates([
 			mapExtent.bottomLeft, 
 			mapExtent.bottomRight, 
 			mapExtent.topRight, 
@@ -399,12 +434,11 @@ Potree.MapView = function(viewer){
 			mapExtent.bottomLeft
 		]);
 		
-		//view.fit(scope.gExtent, scope.map.getSize());
-		view.fit(scope.gExtent, [300, 300], {
+		view.fit(this.gExtent, [300, 300], {
 			constrainResolution: false
 		});
 
-		var createLabelStyle = function(text){
+		let createLabelStyle = (text) => {
 			var style = new ol.style.Style({
 				image: new ol.style.Circle({
 					fill: new ol.style.Fill({
@@ -432,7 +466,7 @@ Potree.MapView = function(viewer){
 		}
 
 		var url = pointcloud.pcoGeometry.url + "/../sources.json";
-		$.getJSON(url, function(data){
+		$.getJSON(url, (data) => {
 			var sources = data.sources;
 			
 			for(var i = 0; i < sources.length; i++){
@@ -442,18 +476,18 @@ Potree.MapView = function(viewer){
 				var bounds = source.bounds;
 
 				var mapBounds = {
-					min: scope.toMap.forward( [bounds.min[0], bounds.min[1]] ),
-					max: scope.toMap.forward( [bounds.max[0], bounds.max[1]] )
+					min: this.toMap.forward( [bounds.min[0], bounds.min[1]] ),
+					max: this.toMap.forward( [bounds.max[0], bounds.max[1]] )
 				}
 				var mapCenter = [
 					(mapBounds.min[0] + mapBounds.max[0]) / 2,
 					(mapBounds.min[1] + mapBounds.max[1]) / 2,
 				];
 				
-				var p1 = scope.toMap.forward( [bounds.min[0], bounds.min[1]] );
-				var p2 = scope.toMap.forward( [bounds.max[0], bounds.min[1]] );
-				var p3 = scope.toMap.forward( [bounds.max[0], bounds.max[1]] );
-				var p4 = scope.toMap.forward( [bounds.min[0], bounds.max[1]] );
+				var p1 = this.toMap.forward( [bounds.min[0], bounds.min[1]] );
+				var p2 = this.toMap.forward( [bounds.max[0], bounds.min[1]] );
+				var p3 = this.toMap.forward( [bounds.max[0], bounds.max[1]] );
+				var p4 = this.toMap.forward( [bounds.min[0], bounds.max[1]] );
 				
 				var boxes = [];
 				//var feature = new ol.Feature({
@@ -464,7 +498,7 @@ Potree.MapView = function(viewer){
 				});
 				feature.source = source;
 				feature.pointcloud = pointcloud;
-				scope.sourcesLayer.getSource().addFeature(feature);
+				this.sourcesLayer.getSource().addFeature(feature);
 				
                 
 				feature = new ol.Feature({
@@ -472,12 +506,12 @@ Potree.MapView = function(viewer){
 					 name: name 
 				});
 				feature.setStyle(createLabelStyle(name));
-				scope.sourcesLabelLayer.getSource().addFeature(feature);
+				this.sourcesLabelLayer.getSource().addFeature(feature);
 			}
 		});
 	}
 	
-	this.update = function(delta){
+	update(delta){
 		var pm = $( "#potree_map" );
 		
 		if(!pm.is(":visible")){
@@ -485,22 +519,22 @@ Potree.MapView = function(viewer){
 		}
 		
 		// resize
-		var mapSize = scope.map.getSize();
+		var mapSize = this.map.getSize();
 		var resized = (pm.width() != mapSize[0] || pm.height() != mapSize[1]);
 		if(resized){
-			scope.map.updateSize();
+			this.map.updateSize();
 		}
 		
 		// camera
-		var scale = scope.map.getView().getResolution();
-		var camera = scope.viewer.scene.camera;
+		var scale = this.map.getView().getResolution();
+		var camera = this.viewer.scene.camera;
 		var campos = camera.position;
 		var camdir = camera.getWorldDirection();
 		var sceneLookAt = camdir.clone().multiplyScalar(30 * scale).add(campos);
 		var geoPos = camera.position;
 		var geoLookAt = sceneLookAt;
-		var mapPos = new THREE.Vector2().fromArray(scope.toMap.forward([geoPos.x, geoPos.y]));
-		var mapLookAt = new THREE.Vector2().fromArray(scope.toMap.forward([geoLookAt.x, geoLookAt.y]));
+		var mapPos = new THREE.Vector2().fromArray(this.toMap.forward([geoPos.x, geoPos.y]));
+		var mapLookAt = new THREE.Vector2().fromArray(this.toMap.forward([geoLookAt.x, geoLookAt.y]));
 		var mapDir = new THREE.Vector2().subVectors(mapLookAt, mapPos).normalize();
 		mapLookAt = mapPos.clone().add(mapDir.clone().multiplyScalar(30 * scale));
 		var mapLength = mapPos.distanceTo(mapLookAt);
@@ -511,12 +545,8 @@ Potree.MapView = function(viewer){
 		var p3 = mapLookAt.clone().add(mapSide.clone().multiplyScalar(0.3 * mapLength)).toArray();
 
 		
-		scope.gCamera.setCoordinates([p1, p2, p3, p1]);
-		//
-		//viewer.mapView.map.getPixelFromCoordinate(p1);
-		
-		
-	};
+		this.gCamera.setCoordinates([p1, p2, p3, p1]);
+	}
 	
 };
 

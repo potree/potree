@@ -1112,7 +1112,7 @@ Potree.Viewer = class{
 		bs = bs.clone().applyMatrix4(node.matrixWorld); 
 		
 		view.position.copy(camera.position);
-		view.lookAt(bs.center);
+		//view.lookAt(bs.center);
 		
 		this.dispatcher.dispatchEvent({"type": "zoom_to", "viewer": this});
 	};
@@ -1158,7 +1158,7 @@ Potree.Viewer = class{
 	
 	setTopView(){
 		this.scene.view.yaw = 0;
-		this.scene.view.pitch = Math.PI / 2;
+		this.scene.view.pitch = -Math.PI / 2;
 		
 		this.fitToScreen();
 	};
@@ -1597,7 +1597,10 @@ Potree.Viewer = class{
 			//camera.rotation.x = scene.view.pitch;
 			//camera.rotation.y = scene.view.yaw;
 			
-			camera.lookAt(scene.view.getPivot());
+			//camera.lookAt(scene.view.getPivot());
+			camera.rotation.order = "ZXY";
+			camera.rotation.x = Math.PI / 2 + this.scene.view.pitch;
+			camera.rotation.z = this.scene.view.yaw;
 		}
 
 		// update progress bar

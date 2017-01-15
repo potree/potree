@@ -32,9 +32,7 @@ Potree.OrbitControls = class extends Potree.Controls{
 	}
 	
 	onMouseDown(e){
-		if(!this.enabled){
-			return;
-		}
+		if(!this.enabled){return;}
 		
 		super.onMouseDown(e);
 		e.preventDefault();
@@ -47,19 +45,19 @@ Potree.OrbitControls = class extends Potree.Controls{
 	}
 	
 	onMouseUp(e){
-		if(!this.enabled){
-			return;
-		}
+		if(!this.enabled){ return; }
+		
+		e.preventDefault();
 		
 		this.state = this.STATE.NONE;
 	}
 	
 	onDoubleClick(e){
-		if(!this.enabled){
-			return;
-		}
+		if(!this.enabled){ return; }
 		
-		this.zoomToClickLocation(e);
+		e.preventDefault();
+		
+		this.zoomToLocation(this.mouse);
 	}
 	
 	update(delta){

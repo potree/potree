@@ -30,7 +30,7 @@ Potree.MeasuringTool = class{
 		this.hoveredElement = null;
 		this.dispatcher = new THREE.EventDispatcher();
 		
-		let onClick = function(event){
+		let onClick = (event) => {
 			if(this.state === this.STATE.INSERT){
 				let point = this.getMousePointCloudIntersection();
 				if(point){
@@ -49,12 +49,15 @@ Potree.MeasuringTool = class{
 					}
 				}
 			}
-		}.bind(this);
+		};
 		
 		let onMouseMove = function(event){
 			if(!this.scene){
 				return;
 			}
+			
+			//event.preventDefault();
+			//event.stopImmediatePropagation();
 			
 			let rect = this.domElement.getBoundingClientRect();
 			this.mouse.x = ((event.clientX - rect.left) / this.domElement.clientWidth) * 2 - 1;
@@ -111,7 +114,9 @@ Potree.MeasuringTool = class{
 			}
 		}.bind(this);
 		
-		let onMouseDown = function(event){
+		let onMouseDown = (event) => {
+			console.log("measuring tool mouse down");
+			
 			if(event.which === 1){
 			
 				if(this.state !== this.STATE.DEFAULT){
@@ -136,7 +141,7 @@ Potree.MeasuringTool = class{
 			}else if(event.which === 3){	
 				onRightClick(event);
 			}
-		}.bind(this);
+		};
 		
 		let onDoubleClick = function(event){
 			

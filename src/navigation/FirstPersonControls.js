@@ -73,11 +73,9 @@ Potree.FirstPersonControls = class extends Potree.Controls{
 	}
 	
 	onDoubleClick(e){
-		if(!this.enabled){
-			return;
-		}
+		if(!this.enabled){return;}
 		
-		this.zoomToClickLocation(e);
+		this.zoomToLocation(this.mouse);
 	}
 	
 	onKeyDown(e){
@@ -182,80 +180,6 @@ Potree.FirstPersonControls = class extends Potree.Controls{
 		
 		
 		this.updateFinished();
-		
-		//if(!this.enabled){
-		//	return;
-		//}
-		//
-		//let view = this.scene.view;
-		//
-		//let drag = this.getNormalizedDrag();
-		//let startPosition = view.position.clone();
-		//let startTarget = view.target.clone();
-		//let up = new THREE.Vector3(0, 0, 1);
-		//
-		//
-		//let newPosition = view.position.clone();
-		//let newTarget = view.target.clone();
-		//
-		//if(this.state === this.STATE.ROTATE){
-		//	let dir = new THREE.Vector3().subVectors(view.target, view.position);
-		//	let radius = dir.length();
-		//	dir.normalize();
-		//	
-		//	let side = new THREE.Vector3().crossVectors(dir, up);
-		//	
-		//	dir.applyAxisAngle(side, -4 * drag.y);
-		//	dir.applyAxisAngle(up, -4 * drag.x);
-		//	
-		//	newTarget.addVectors(startPosition, dir.clone().multiplyScalar(radius));
-		//}
-		//
-		//let translation = new THREE.Vector3(0, 0, 0);
-		//if(this.state === this.STATE.PAN){
-		//	translation.x = -drag.x * this.speed;
-		//	translation.z = +drag.y * this.speed;
-		//}
-		//
-		//{ // TRANSLATION
-		//
-		//	if(this.moveForward){
-		//		translation.y -= delta * this.speed;
-		//	}
-		//	if(this.moveBackward){
-		//		translation.y += delta * this.speed;
-		//	}
-		//	if(this.moveLeft){
-		//		translation.x -= delta * this.speed;
-		//	}
-		//	if(this.moveRight){
-		//		translation.x += delta * this.speed;
-		//	}
-		//	
-		//	let dir = new THREE.Vector3().subVectors(view.target, view.position);
-		//	let radius = dir.length();
-		//	dir.normalize();
-		//	
-		//	let pdy = dir.clone();
-		//	let pdx = new THREE.Vector3().crossVectors(up, dir);
-		//	let pdz = new THREE.Vector3().crossVectors(pdx, pdy);
-		//	
-		//	let resolvedTranslation = new THREE.Vector3();
-		//	resolvedTranslation.add(pdx.multiplyScalar(-this.speed * translation.x));
-		//	resolvedTranslation.add(pdy.multiplyScalar(-this.speed * translation.y));
-		//	resolvedTranslation.add(pdz.multiplyScalar(-this.speed * translation.z));
-		//	
-		//	newPosition.add(resolvedTranslation);
-		//	newTarget.add(resolvedTranslation);
-		//}
-		//
-		//view.position.copy(newPosition);
-		//view.target.copy(newTarget);
-		//
-		//if(this.dragStart){
-		//	this.dragStart.copy(this.dragEnd);
-		//}
-		
 	}
 
 	

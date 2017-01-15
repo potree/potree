@@ -69,13 +69,22 @@ Potree.View = class{
 		return new THREE.Vector3().addVectors(this.position, this.direction.multiplyScalar(this.radius));
 	}
 	
+	getSide(){
+		let side = new THREE.Vector3(1, 0, 0);
+		side.applyAxisAngle(new THREE.Vector3(0, 0, 1), this.yaw);
+		
+		return side;
+	}
+	
 	pan(x, y){
 		let dir = new THREE.Vector3(0, 1, 0);
 		dir.applyAxisAngle(new THREE.Vector3(1, 0, 0), this.pitch);
 		dir.applyAxisAngle(new THREE.Vector3(0, 0, 1), this.yaw);
 		
-		let side = new THREE.Vector3(1, 0, 0);
-		side.applyAxisAngle(new THREE.Vector3(0, 0, 1), this.yaw);
+		//let side = new THREE.Vector3(1, 0, 0);
+		//side.applyAxisAngle(new THREE.Vector3(0, 0, 1), this.yaw);
+		
+		let side = this.getSide();
 		
 		let up = side.clone().cross(dir);
 		
@@ -347,11 +356,12 @@ Potree.Viewer = class{
 		this.initThree();
 		
 		this.scene = new Potree.Scene(this.renderer);
-		this.createControls();
 		
 		{
 			this.measuringTool = new Potree.MeasuringTool(this.renderer);
 			this.profileTool = new Potree.ProfileTool(this.renderer);
+			
+			this.createControls();
 			
 			this.measuringTool.setScene(this.scene);
 			this.profileTool.setScene(this.scene);
@@ -1081,7 +1091,14 @@ Potree.Viewer = class{
 	};
 	
 	zoomTo(node, factor){
-		this.scene.camera.zoomTo(node, factor);
+		//this.scene.camera.zoomTo(node, factor);
+		let view = this.scene.view;
+		
+		let camera = this.scene.camera.clone();
+		camera.position.copy(view.position);
+		camera.lookAt(view.getPivot());
+		camera.updateMatrixWorld();
+		camera.zoomTo(node, factor);
 		
 		var bs;
 		if(node.boundingSphere){
@@ -1094,12 +1111,8 @@ Potree.Viewer = class{
 		
 		bs = bs.clone().applyMatrix4(node.matrixWorld); 
 		
-		let view = this.scene.view;
-		view.position.copy(this.scene.camera.position);
+		view.position.copy(camera.position);
 		view.lookAt(bs.center);
-		//if(view.target){
-		//	view.target.copy(bs.center);
-		//}
 		
 		this.dispatcher.dispatchEvent({"type": "zoom_to", "viewer": this});
 	};
@@ -1144,65 +1157,29 @@ Potree.Viewer = class{
 	};
 	
 	setTopView(){
-		var box = this.getBoundingBox(this.scene.pointclouds);
-		
-		if(this.transformationTool && this.transformationTool.targets.length > 0){
-			box = this.transformationTool.getBoundingBox();
-		}
-		
-		let center = box.getCenter();
-		let topPos = new THREE.Vector3(center.x, center.y, box.max.z);
-		
-		this.scene.view.position.copy(topPos);
-		this.scene.view.target.copy(center);
+		this.scene.view.yaw = 0;
+		this.scene.view.pitch = Math.PI / 2;
 		
 		this.fitToScreen();
 	};
 	
 	setFrontView(){
-		var box = this.getBoundingBox(this.scene.pointclouds);
-		
-		if(this.transformationTool && this.transformationTool.targets.length > 0){
-			box = this.transformationTool.getBoundingBox();
-		}
-		
-		let center = box.getCenter();
-		let frontPos = new THREE.Vector3(center.x, box.min.y, center.z);
-		
-		this.scene.view.position.copy(frontPos);
-		this.scene.view.target.copy(center);
+		this.scene.view.yaw = 0;
+		this.scene.view.pitch = 0;
 		
 		this.fitToScreen();
 	};
 	
 	setLeftView(){
-		var box = this.getBoundingBox(this.scene.pointclouds);
-		
-		if(this.transformationTool && this.transformationTool.targets.length > 0){
-			box = this.transformationTool.getBoundingBox();
-		}
-		
-		let center = box.getCenter();
-		let leftPos = new THREE.Vector3(box.min.x, center.y, center.z);
-		
-		this.scene.view.position.copy(leftPos);
-		this.scene.view.target.copy(center);
+		this.scene.view.yaw = -Math.PI / 2;
+		this.scene.view.pitch = 0;
 		
 		this.fitToScreen();
 	};
 	
 	setRightView(){
-		var box = this.getBoundingBox(this.scene.pointclouds);
-		
-		if(this.transformationTool && this.transformationTool.targets.length > 0){
-			box = this.transformationTool.getBoundingBox();
-		}
-		
-		let center = box.getCenter();
-		let rightPos = new THREE.Vector3(box.max.x, center.y, center.z);
-		
-		this.scene.view.position.copy(rightPos);
-		this.scene.view.target.copy(center);
+		this.scene.view.yaw = Math.PI / 2;
+		this.scene.view.pitch = 0;
 		
 		this.fitToScreen();
 	};

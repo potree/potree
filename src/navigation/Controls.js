@@ -2,13 +2,6 @@
  * @author mschuetz / http://mschuetz.at
  *
  *
- * Navigation similar to Google Earth.
- *
- * left mouse: Drag with respect to intersection
- * wheel: zoom towards/away from intersection
- * right mouse: Rotate camera around intersection
- *
- *
  */
 Potree.Controls = class{
 	
@@ -46,27 +39,25 @@ Potree.Controls = class{
 	}
 	
 	onKeyDown(e){
-		if(!this.enabled){
-			return;
-		}
+		if(!this.enabled){ return; }
+		
+		e.preventDefault();
 	}
 	
 	onKeyUp(e){
-		if(!this.enabled){
-			return;
-		}
+		if(!this.enabled){ return; }
+		
+		e.preventDefault();
 	}
 	
 	onDoubleClick(e){
-		if(!this.enabled){
-			return;
-		}
+		if(!this.enabled){ return; }
+		
+		e.preventDefault();
 	}
 	
 	onMouseDown(e){
-		if(!this.enabled){
-			return;
-		}
+		if(!this.enabled){ return; }
 		
 		e.preventDefault();
 		
@@ -78,7 +69,7 @@ Potree.Controls = class{
 		this.dragStart = new THREE.Vector2(x, y);
 		this.dragEnd = new THREE.Vector2(x, y);
 		this.lastDrag = new THREE.Vector2(0, 0);
-		this.mouse.set(x, y);
+//		this.mouse.set(x, y);
 		
 		if(this.scene){
 			this.viewStart = this.scene.view.clone();
@@ -86,9 +77,9 @@ Potree.Controls = class{
 	}
 	
 	onMouseUp(e){
-		if(!this.enabled){
-			return;
-		}
+		if(!this.enabled){ return; }
+		
+		e.preventDefault();
 		
 		this.dragStart = null;
 		this.dragEnd = null;
@@ -97,9 +88,9 @@ Potree.Controls = class{
 	 }
 	 
 	onMouseMove(e){
-		if(!this.enabled){
-			return;
-		}
+		if(!this.enabled){ return; }
+		
+		e.preventDefault();
 		
 		let rect = this.domElement.getBoundingClientRect();
 		let x = e.clientX - rect.left;
@@ -120,9 +111,9 @@ Potree.Controls = class{
 	}
 	
 	onMouseWheel(e){
-		if(!this.enabled){
-			return;
-		}
+		if(!this.enabled){ return; }
+		
+		e.preventDefault();
 		
 		let delta = 0;
 		if( e.wheelDelta !== undefined ) { // WebKit / Opera / Explorer 9
@@ -134,13 +125,13 @@ Potree.Controls = class{
 		this.wheelDelta += Math.sign(delta);
 	}
 	
-	getMousePointCloudIntersection(event){
+	getMousePointCloudIntersection(mouse){
 		
 		let rect = this.domElement.getBoundingClientRect();
 		
-		let mouse =  {
-			x: ((event.clientX - rect.left) / this.domElement.clientWidth ) * 2 - 1,
-			y: - ((event.clientY - rect.top) / this.domElement.clientHeight ) * 2 + 1
+		let nmouse =  {
+			x: (mouse.x / this.domElement.clientWidth ) * 2 - 1,
+			y: - (mouse.y / this.domElement.clientHeight ) * 2 + 1
 		};
 		
 		let selectedPointcloud = null;
@@ -148,7 +139,7 @@ Potree.Controls = class{
 		let I = null;
 		
 		for(let pointcloud of this.scene.pointclouds){
-			let intersection = Potree.utils.getMousePointCloudIntersection(mouse, this.scene.camera, this.renderer, [pointcloud]);
+			let intersection = Potree.utils.getMousePointCloudIntersection(nmouse, this.scene.camera, this.renderer, [pointcloud]);
 			if(!intersection){
 				continue;
 			}
@@ -161,11 +152,15 @@ Potree.Controls = class{
 			}
 		}
 		
-		return {
-			location: I,
-			distance: distance,
-			pointcloud: selectedPointcloud
-		};
+		if(I){
+			return {
+				location: I,
+				distance: distance,
+				pointcloud: selectedPointcloud
+			};
+		}else{
+			return null;
+		}
 	}
 	
 	setScene(scene){
@@ -221,24 +216,23 @@ Potree.Controls = class{
 		return drag;
 	}
 	
-	zoomToClickLocation(event){
-		let I = this.getMousePointCloudIntersection(event);
+	zoomToLocation(mouse){
+		let I = this.getMousePointCloudIntersection(mouse);
 		
 		if(I === null){
 			return;
 		}
 		
-		let rect = this.domElement.getBoundingClientRect();
-		let mouse =  {
-			x: ( (event.clientX - rect.left) / this.domElement.clientWidth ) * 2 - 1,
-			y: - ( (event.clientY - rect.top) / this.domElement.clientHeight ) * 2 + 1
+		let nmouse =  {
+			x: (mouse.x / this.domElement.clientWidth ) * 2 - 1,
+			y: - (mouse.y / this.domElement.clientHeight ) * 2 + 1
 		};
 		
 		let targetRadius = 0;
 		{
 			let minimumJumpDistance = 0.2;
 			
-			let vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
+			let vector = new THREE.Vector3( nmouse.x, nmouse.y, 0.5 );
 			vector.unproject(this.scene.camera);
 			
 			let direction = vector.sub(this.scene.camera.position).normalize();

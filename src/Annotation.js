@@ -164,28 +164,33 @@ Potree.Annotation = function(scene, args = {}){
 		var animationDuration = 800;
 		var easing = TWEEN.Easing.Quartic.Out;
 
-		// animate camera position
-		var tween = new TWEEN.Tween(scope.scene.view.position).to(scope.cameraPosition, animationDuration);
-		tween.easing(easing);
-		tween.start();
+		{ // animate camera position
+			let tween = new TWEEN.Tween(scope.scene.view.position).to(scope.cameraPosition, animationDuration);
+			tween.easing(easing);
+			tween.onUpdate(function(){
+				console.log(scope.scene.view.position);
+			});
+			tween.start();
+		}
 		
-		// animate camera target
-		var camTargetDistance = camera.position.distanceTo(scope.cameraTarget);
-		var target = new THREE.Vector3().addVectors(
-			camera.position, 
-			camera.getWorldDirection().clone().multiplyScalar(camTargetDistance)
-		);
-		var tween = new TWEEN.Tween(target).to(scope.cameraTarget, animationDuration);
-		tween.easing(easing);
-		tween.onUpdate(function(){
-			//camera.lookAt(target);
-			scope.scene.view.target.copy(target);
-		});
-		tween.onComplete(function(){
-			//camera.lookAt(target);
-			scope.scene.view.target.copy(target);
-			scope.dispatchEvent({type: "focusing_finished", target: scope});
-		});
+		{ // animate camera target
+			var camTargetDistance = camera.position.distanceTo(scope.cameraTarget);
+			var target = new THREE.Vector3().addVectors(
+				camera.position, 
+				camera.getWorldDirection().clone().multiplyScalar(camTargetDistance)
+			);
+			var tween = new TWEEN.Tween(target).to(scope.cameraTarget, animationDuration);
+			tween.easing(easing);
+			tween.onUpdate(function(){
+				//camera.lookAt(target);
+				scope.scene.view.lookAt(target);
+			});
+			tween.onComplete(function(){
+				//camera.lookAt(target);
+				scope.scene.view.lookAt(target);
+				scope.dispatchEvent({type: "focusing_finished", target: scope});
+			});
+		}
 
 		scope.dispatchEvent({type: "focusing_started", target: scope});
 		tween.start();

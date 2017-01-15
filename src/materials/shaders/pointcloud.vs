@@ -431,7 +431,6 @@ void main() {
 			vColor.r += 0.5;
 			#endif
 		}
-	
 	#endif
 	
 }

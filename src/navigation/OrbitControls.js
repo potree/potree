@@ -61,9 +61,7 @@ Potree.OrbitControls = class extends Potree.Controls{
 	}
 	
 	update(delta){
-		if(!this.enabled){
-			return;
-		}
+		if(!this.enabled){return;}
 		
 		let view = this.scene.view;
 		let drag = this.getNormalizedLastDrag();
@@ -95,7 +93,7 @@ Potree.OrbitControls = class extends Potree.Controls{
 			let V = this.scene.view.direction.multiplyScalar(-view.radius);
 			let position = new THREE.Vector3().addVectors(pivot, V);
 			
-			view.position = position;
+			view.position.copy(position);
 		}
 		
 		{ // apply pan
@@ -117,7 +115,7 @@ Potree.OrbitControls = class extends Potree.Controls{
 			let position = new THREE.Vector3().addVectors(view.getPivot(), V);
 			view.radius = radius;
 			
-			view.position = position;
+			view.position.copy(position);
 		}
 		
 		{// decelerate over time

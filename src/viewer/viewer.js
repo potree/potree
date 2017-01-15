@@ -474,7 +474,7 @@ Potree.Viewer = class{
 				
 				//focusing_finished
 				e.annotation.addEventListener("focusing_finished", (event) => {
-					let distance = this.scene.view.position.distanceTo(this.scene.view.target);
+					let distance = this.scene.view.position.distanceTo(this.scene.view.getPivot());
 					//this.setMoveSpeed(distance / 3);
 					this.setMoveSpeed(Math.pow(distance, 0.4));
 					this.renderer.domElement.focus();

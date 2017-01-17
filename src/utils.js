@@ -12,17 +12,18 @@ Potree.utils.s3SignedUrlEnabled = false;
 
 /*
  * NOTE: You need to include aws-sdk.js before loading the potree.js file.
+ * Configure AWS settings in potree_setup.js file.
  */
 Potree.utils.s3ConfigVariables = function() {
     _potreeSettings = {};
     _potreeSettings.potreeS3 = new AWS.S3({
-        accessKeyId: "AWS_S3_ACCESS_ID",
-        secretAccessKey: "AWS_S3_SECRET_ACCESS_KEY",
-        sessionToken: "AWS_S3_SESION_TOKEN"
+        accessKeyId: _potreeS3Settings.accessKeyId,
+        secretAccessKey: _potreeS3Settings.secretAccessKey,
+        sessionToken: _potreeS3Settings.sessionToken
     });
-    _potreeSettings.bucketName = "AWS_S3_BUCKET_NAME",
+    _potreeSettings.bucketName = _potreeS3Settings.bucketName,
     // location represent where your potree files are located in the S3 bucket
-    _potreeSettings.location = "AWS_S3_POTREE_FILES_LOCATION";
+    _potreeSettings.location = _potreeS3Settings.location;
     return _potreeSettings;
 }
 

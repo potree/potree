@@ -1983,6 +1983,7 @@ class PotreeRenderer{
 			viewer.renderer.clear(true, true, false);
 			viewer.skybox.camera.rotation.copy(viewer.scene.camera.rotation);
 			viewer.skybox.camera.fov = viewer.scene.camera.fov;
+			viewer.skybox.camera.aspect = viewer.scene.camera.aspect;
 			viewer.skybox.camera.updateProjectionMatrix();
 			viewer.renderer.render(viewer.skybox.scene, viewer.skybox.camera);
 		}else if(viewer.background === "gradient"){
@@ -2132,6 +2133,9 @@ class HighQualityRenderer{
 		if(viewer.background === "skybox"){
 			viewer.renderer.clear();
 			viewer.skybox.camera.rotation.copy(viewer.scene.camera.rotation);
+			viewer.skybox.camera.fov = viewer.scene.camera.fov;
+			viewer.skybox.camera.aspect = viewer.scene.camera.aspect;
+			viewer.skybox.camera.updateProjectionMatrix();
 			viewer.renderer.render(viewer.skybox.scene, viewer.skybox.camera);
 		}else if(viewer.background === "gradient"){
 			viewer.renderer.clear();
@@ -2161,7 +2165,7 @@ class HighQualityRenderer{
 				this.depthMaterial.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
 				this.depthMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.getSize().x;
 				this.depthMaterial.fov = viewer.scene.camera.fov * (Math.PI / 180);
-				this.depthMaterial.spacing = pointcloud.pcoGeometry.spacing;
+				this.depthMaterial.spacing = pointcloud.pcoGeometry.spacing * Math.max(pointcloud.scale.x, pointcloud.scale.y, pointcloud.scale.z);
 				this.depthMaterial.near = viewer.scene.camera.near;
 				this.depthMaterial.far = viewer.scene.camera.far;
 				this.depthMaterial.heightMin = viewer.heightMin;
@@ -2190,7 +2194,7 @@ class HighQualityRenderer{
 				this.attributeMaterial.fov = viewer.scene.camera.fov * (Math.PI / 180);
 				this.attributeMaterial.uniforms.blendHardness.value = pointcloud.material.uniforms.blendHardness.value;
 				this.attributeMaterial.uniforms.blendDepthSupplement.value = pointcloud.material.uniforms.blendDepthSupplement.value;
-				this.attributeMaterial.spacing = pointcloud.pcoGeometry.spacing;
+				this.attributeMaterial.spacing = pointcloud.pcoGeometry.spacing * Math.max(pointcloud.scale.x, pointcloud.scale.y, pointcloud.scale.z);
 				this.attributeMaterial.near = viewer.scene.camera.near;
 				this.attributeMaterial.far = viewer.scene.camera.far;
 				this.attributeMaterial.heightMin = viewer.heightMin;
@@ -2293,6 +2297,9 @@ class EDLRenderer{
 		if(viewer.background === "skybox"){
 			viewer.renderer.clear();
 			viewer.skybox.camera.rotation.copy(viewer.scene.camera.rotation);
+			viewer.skybox.camera.fov = viewer.scene.camera.fov;
+			viewer.skybox.camera.aspect = viewer.scene.camera.aspect;
+			viewer.skybox.camera.updateProjectionMatrix();
 			viewer.renderer.render(viewer.skybox.scene, viewer.skybox.camera);
 		}else if(viewer.background === "gradient"){
 			viewer.renderer.clear();
@@ -2352,7 +2359,7 @@ class EDLRenderer{
 				attributeMaterial.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
 				attributeMaterial.uniforms.octreeSize.value = octreeSize;
 				attributeMaterial.fov = viewer.scene.camera.fov * (Math.PI / 180);
-				attributeMaterial.spacing = pointcloud.pcoGeometry.spacing;
+				attributeMaterial.spacing = pointcloud.pcoGeometry.spacing * Math.max(pointcloud.scale.x, pointcloud.scale.y, pointcloud.scale.z);
 				attributeMaterial.near = viewer.scene.camera.near;
 				attributeMaterial.far = viewer.scene.camera.far;
 				attributeMaterial.heightMin = viewer.heightMin;

@@ -3,7 +3,7 @@
  *
  *
  */
-Potree.Controls = class{
+Potree.Controls = class Controls{
 	
 	constructor(renderer){
 		this.renderer = renderer;
@@ -27,7 +27,10 @@ Potree.Controls = class{
 		
 		this.speed = 1;
 		
+		this.logMessages = true;
+		
 		this.domElement.addEventListener("contextmenu", (event) => { event.preventDefault(); }, false );
+		this.domElement.addEventListener("click", this.onMouseClick.bind(this), false);
 		this.domElement.addEventListener("mousedown", this.onMouseDown.bind(this), false);
 		this.domElement.addEventListener("mouseup", this.onMouseUp.bind(this), false);
 		this.domElement.addEventListener("mousemove", this.onMouseMove.bind(this), false);
@@ -41,11 +44,15 @@ Potree.Controls = class{
 	onKeyDown(e){
 		if(!this.enabled){ return; }
 		
+		if(this.logMessages) console.log(this.constructor.name + ": onKeyDown");
+		
 		e.preventDefault();
 	}
 	
 	onKeyUp(e){
 		if(!this.enabled){ return; }
+		
+		if(this.logMessages) console.log(this.constructor.name + ": onKeyUp");
 		
 		e.preventDefault();
 	}
@@ -53,11 +60,23 @@ Potree.Controls = class{
 	onDoubleClick(e){
 		if(!this.enabled){ return; }
 		
+		if(this.logMessages) console.log(this.constructor.name + ": onDoubleClick");
+		
+		e.preventDefault();
+	}
+	
+	onMouseClick(e){
+		if(!this.enabled){ return; }
+		
+		if(this.logMessages) console.log(this.constructor.name + ": onMouseClick");
+		
 		e.preventDefault();
 	}
 	
 	onMouseDown(e){
 		if(!this.enabled){ return; }
+		
+		if(this.logMessages) console.log(this.constructor.name + ": onMouseDown");
 		
 		e.preventDefault();
 		
@@ -78,6 +97,8 @@ Potree.Controls = class{
 	
 	onMouseUp(e){
 		if(!this.enabled){ return; }
+		
+		if(this.logMessages) console.log(this.constructor.name + ": onMouseUp");
 		
 		e.preventDefault();
 		

@@ -128,6 +128,7 @@ Potree.Scene = class{
 		
 		this.measurements = [];
 		this.profiles = [];
+		this.volumes = [];
 		
 		this.fpControls;
 		this.orbitControls;
@@ -150,6 +151,27 @@ Potree.Scene = class{
 			type: "pointcloud_added",
 			pointcloud: pointcloud
 		});
+	};
+	
+	addVolume(volume){
+		this.volumes.push(volume);
+		this.dispatcher.dispatchEvent({
+			"type": "volume_added",
+			"scene": this,
+			"volume": volume
+		});
+	};
+	
+	removeVolume(volume){
+		let index = this.volumes.indexOf(volume);
+		if (index > -1) {
+			this.volumes.splice(index, 1);
+			this.dispatcher.dispatchEvent({
+				"type": "volume_removed",
+				"scene": this,
+				"volume": volume
+			});
+		}
 	};
 	
 	addMeasurement(measurement){
@@ -339,19 +361,19 @@ Potree.Viewer = class{
 		this.potreeRenderer = null;
 		this.highQualityRenderer = null;
 		this.edlRenderer = null;
-		this.renderer;
+		this.renderer = null;
 		
-		this.scene;
+		this.scene = null;
 
-		this.measuringTool;
-		this.profileTool;
-		this.volumeTool;
-		this.transformationTool;
+		this.measuringTool = null;
+		this.profileTool = null;
+		this.volumeTool = null;
+		this.transformationTool = null;
 		
 		this.dispatcher = new THREE.EventDispatcher();
-		this.skybox;
+		this.skybox = null;
 		this.clock = new THREE.Clock();
-		this.background;
+		this.background = null;
 		
 		this.initThree();
 		
@@ -360,11 +382,15 @@ Potree.Viewer = class{
 		{
 			this.measuringTool = new Potree.MeasuringTool(this.renderer);
 			this.profileTool = new Potree.ProfileTool(this.renderer);
+			this.volumeTool = new Potree.VolumeTool(this.renderer);
+			this.transformationTool = new Potree.TransformationTool(this.renderer);
 			
 			this.createControls();
 			
 			this.measuringTool.setScene(this.scene);
 			this.profileTool.setScene(this.scene);
+			this.volumeTool.setScene(this.scene);
+			this.transformationTool.setScene(this.scene);
 			
 			let onPointcloudAdded = (e) => {
 				this.updateHeightRange();
@@ -379,6 +405,9 @@ Potree.Viewer = class{
 			this.dispatcher.addEventListener("scene_changed", (e) => {
 				this.measuringTool.setScene(e.scene);
 				this.profileTool.setScene(e.scene);
+				this.volumeTool.setScene(e.scene);
+				this.transformationTool.setScene(this.scene);
+				this.transformationTool.setSelection([]);
 				this.updateHeightRange();
 				
 				if(!e.scene.dispatcher.hasEventListener("pointcloud_added", onPointcloudAdded)){
@@ -2027,11 +2056,11 @@ class PotreeRenderer{
 		//Potree.endQuery(queryPC, viewer.renderer.getContext());
 		
 		viewer.profileTool.render();
-		//viewer.volumeTool.render();
+		viewer.volumeTool.render();
 		
 		viewer.renderer.clearDepth();
 		viewer.measuringTool.render();
-		//viewer.transformationTool.render();
+		viewer.transformationTool.render(viewer.scene.camera);
 		
 		//Potree.endQuery(queryAll, viewer.renderer.getContext());
 		
@@ -2223,7 +2252,7 @@ class HighQualityRenderer{
 				Potree.utils.screenPass.render(viewer.renderer, this.normalizationMaterial);
 			}
 			
-			//viewer.volumeTool.render();
+			viewer.volumeTool.render();
 			viewer.renderer.clearDepth();
 			viewer.profileTool.render();
 			viewer.measuringTool.render();
@@ -2464,7 +2493,7 @@ class EDLRenderer{
 			
 			
 			viewer.profileTool.render();
-			//viewer.volumeTool.render();
+			viewer.volumeTool.render();
 			viewer.renderer.clearDepth();
 			viewer.measuringTool.render();
 			//viewer.transformationTool.render();

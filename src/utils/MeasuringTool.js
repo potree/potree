@@ -1,6 +1,6 @@
 
 
-Potree.MeasuringTool = class{
+Potree.MeasuringTool = class MeasuringTool{
 	
 	constructor(renderer){
 		this.enabled = false;

@@ -13,7 +13,7 @@
  *
  */
  
-Potree.OrbitControls = class extends Potree.Controls{
+Potree.OrbitControls = class OrbitControls extends Potree.Controls{
 	
 	constructor(renderer){
 		super(renderer);

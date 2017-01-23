@@ -199,17 +199,22 @@ Potree.utils = class{
 	};
 
 	static getMousePointCloudIntersection(mouse, camera, renderer, pointclouds){
-		let vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
+		let nmouse =  {
+			x: (mouse.x / renderer.domElement.clientWidth ) * 2 - 1,
+			y: - (mouse.y / renderer.domElement.clientHeight ) * 2 + 1
+		};
+		
+		let vector = new THREE.Vector3( nmouse.x, nmouse.y, 0.5 );
 		vector.unproject(camera);
 
 		let direction = vector.sub(camera.position).normalize();
 		let ray = new THREE.Ray(camera.position, direction);
 		
-		let closestPoint = null;
-		let closestPointDistance = null;
+		let selectedPointcloud = null;
+		let closestDistance = Infinity;
+		let closestIntersection = null;
 		
-		for(let i = 0; i < pointclouds.length; i++){
-			let pointcloud = pointclouds[i];
+		for(let pointcloud of pointclouds){
 			let point = pointcloud.pick(renderer, camera, ray);
 			
 			if(!point){
@@ -218,13 +223,22 @@ Potree.utils = class{
 			
 			let distance = camera.position.distanceTo(point.position);
 			
-			if(!closestPoint || distance < closestPointDistance){
-				closestPoint = point;
-				closestPointDistance = distance;
+			if(distance < closestDistance){
+				closestDistance = distance;
+				selectedPointcloud = pointcloud;
+				closestIntersection = point.position;
 			}
 		}
 		
-		return closestPoint ? closestPoint.position : null;
+		if(selectedPointcloud){
+			return {
+				location: closestIntersection,
+				distance: closestDistance,
+				pointcloud: selectedPointcloud
+			};
+		}else{
+			return null;
+		}
 	};	
 		
 	static pixelsArrayToImage(pixels, width, height){

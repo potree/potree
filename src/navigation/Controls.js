@@ -3,7 +3,7 @@
  *
  *
  */
-Potree.Controls = class Controls{
+Potree.Controls = class{
 	
 	constructor(renderer){
 		this.renderer = renderer;
@@ -27,10 +27,7 @@ Potree.Controls = class Controls{
 		
 		this.speed = 1;
 		
-		this.logMessages = true;
-		
 		this.domElement.addEventListener("contextmenu", (event) => { event.preventDefault(); }, false );
-		this.domElement.addEventListener("click", this.onMouseClick.bind(this), false);
 		this.domElement.addEventListener("mousedown", this.onMouseDown.bind(this), false);
 		this.domElement.addEventListener("mouseup", this.onMouseUp.bind(this), false);
 		this.domElement.addEventListener("mousemove", this.onMouseMove.bind(this), false);
@@ -44,15 +41,11 @@ Potree.Controls = class Controls{
 	onKeyDown(e){
 		if(!this.enabled){ return; }
 		
-		if(this.logMessages) console.log(this.constructor.name + ": onKeyDown");
-		
 		e.preventDefault();
 	}
 	
 	onKeyUp(e){
 		if(!this.enabled){ return; }
-		
-		if(this.logMessages) console.log(this.constructor.name + ": onKeyUp");
 		
 		e.preventDefault();
 	}
@@ -60,23 +53,11 @@ Potree.Controls = class Controls{
 	onDoubleClick(e){
 		if(!this.enabled){ return; }
 		
-		if(this.logMessages) console.log(this.constructor.name + ": onDoubleClick");
-		
-		e.preventDefault();
-	}
-	
-	onMouseClick(e){
-		if(!this.enabled){ return; }
-		
-		if(this.logMessages) console.log(this.constructor.name + ": onMouseClick");
-		
 		e.preventDefault();
 	}
 	
 	onMouseDown(e){
 		if(!this.enabled){ return; }
-		
-		if(this.logMessages) console.log(this.constructor.name + ": onMouseDown");
 		
 		e.preventDefault();
 		
@@ -97,8 +78,6 @@ Potree.Controls = class Controls{
 	
 	onMouseUp(e){
 		if(!this.enabled){ return; }
-		
-		if(this.logMessages) console.log(this.constructor.name + ": onMouseUp");
 		
 		e.preventDefault();
 		
@@ -144,44 +123,6 @@ Potree.Controls = class Controls{
 		}
 		
 		this.wheelDelta += Math.sign(delta);
-	}
-	
-	getMousePointCloudIntersection(mouse){
-		
-		let rect = this.domElement.getBoundingClientRect();
-		
-		let nmouse =  {
-			x: (mouse.x / this.domElement.clientWidth ) * 2 - 1,
-			y: - (mouse.y / this.domElement.clientHeight ) * 2 + 1
-		};
-		
-		let selectedPointcloud = null;
-		let distance = Number.POSITIVE_INFINITY;
-		let I = null;
-		
-		for(let pointcloud of this.scene.pointclouds){
-			let intersection = Potree.utils.getMousePointCloudIntersection(nmouse, this.scene.camera, this.renderer, [pointcloud]);
-			if(!intersection){
-				continue;
-			}
-			
-			let tDist = this.scene.camera.position.distanceTo(intersection);
-			if(tDist < distance){
-				selectedPointcloud = pointcloud;
-				distance = tDist;
-				I = intersection;
-			}
-		}
-		
-		if(I){
-			return {
-				location: I,
-				distance: distance,
-				pointcloud: selectedPointcloud
-			};
-		}else{
-			return null;
-		}
 	}
 	
 	setScene(scene){

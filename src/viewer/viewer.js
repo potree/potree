@@ -29,6 +29,8 @@ Potree.View = class{
 		c.maxPitch = this.maxPitch;
 		c.minPitch = this.minPitch;
 		c.navigationMode = this.navigationMode;
+		
+		return c;
 	}
 	
 	get pitch(){
@@ -134,7 +136,7 @@ Potree.Scene = class{
 		this.orbitControls;
 		this.earthControls;
 		this.geoControls;
-		this.controls;
+		this.inputHandler;
 		this.view = new Potree.View();
 		
 		this.directionalLight = null;
@@ -364,6 +366,8 @@ Potree.Viewer = class{
 		this.renderer = null;
 		
 		this.scene = null;
+		
+		this.inputHandler = null;
 
 		this.measuringTool = null;
 		this.profileTool = null;
@@ -380,17 +384,21 @@ Potree.Viewer = class{
 		this.scene = new Potree.Scene(this.renderer);
 		
 		{
-			this.measuringTool = new Potree.MeasuringTool(this.renderer);
-			this.profileTool = new Potree.ProfileTool(this.renderer);
-			this.volumeTool = new Potree.VolumeTool(this.renderer);
-			this.transformationTool = new Potree.TransformationTool(this.renderer);
+			this.inputHandler = new Potree.InputHandler(this.renderer);
+			this.inputHandler.setScene(this.scene);
+			
+			this.measuringTool = new Potree.MeasuringTool(this);
+			//this.profileTool = new Potree.ProfileTool(this.renderer);
+			//this.volumeTool = new Potree.VolumeTool(this.renderer);
+			//this.transformationTool = new Potree.TransformationTool(this.renderer);
+			
 			
 			this.createControls();
 			
-			this.measuringTool.setScene(this.scene);
-			this.profileTool.setScene(this.scene);
-			this.volumeTool.setScene(this.scene);
-			this.transformationTool.setScene(this.scene);
+			//this.measuringTool.setScene(this.scene);
+			//this.profileTool.setScene(this.scene);
+			//this.volumeTool.setScene(this.scene);
+			//this.transformationTool.setScene(this.scene);
 			
 			let onPointcloudAdded = (e) => {
 				this.updateHeightRange();
@@ -403,11 +411,12 @@ Potree.Viewer = class{
 			};
 			
 			this.dispatcher.addEventListener("scene_changed", (e) => {
-				this.measuringTool.setScene(e.scene);
-				this.profileTool.setScene(e.scene);
-				this.volumeTool.setScene(e.scene);
-				this.transformationTool.setScene(this.scene);
-				this.transformationTool.setSelection([]);
+				this.inputHandler.setScene(e.scene);
+				//this.measuringTool.setScene(e.scene);
+				//this.profileTool.setScene(e.scene);
+				//this.volumeTool.setScene(e.scene);
+				//this.transformationTool.setScene(this.scene);
+				//this.transformationTool.setSelection([]);
 				this.updateHeightRange();
 				
 				if(!e.scene.dispatcher.hasEventListener("pointcloud_added", onPointcloudAdded)){
@@ -1175,9 +1184,9 @@ Potree.Viewer = class{
 	fitToScreen(){
 		var box = this.getBoundingBox(this.scene.pointclouds);
 		
-		if(this.transformationTool && this.transformationTool.targets.length > 0){
-			box = this.transformationTool.getBoundingBox();
-		}
+		//if(this.transformationTool && this.transformationTool.selection.length > 0){
+		//	box = this.transformationTool.getBoundingBox();
+		//}
 
 		var node = new THREE.Object3D();
 		node.boundingBox = box;
@@ -1369,8 +1378,8 @@ Potree.Viewer = class{
 		{ // create ORBIT CONTROLS
 			this.orbitControls = new Potree.OrbitControls(this.renderer);
 			this.orbitControls.enabled = false;
-			this.orbitControls.dispatcher.addEventListener("start", this.disableAnnotations.bind(this));
-			this.orbitControls.dispatcher.addEventListener("end", this.enableAnnotations.bind(this));
+			this.orbitControls.addEventListener("start", this.disableAnnotations.bind(this));
+			this.orbitControls.addEventListener("end", this.enableAnnotations.bind(this));
 		}
 		
 		{ // create EARTH CONTROLS
@@ -1611,13 +1620,15 @@ Potree.Viewer = class{
 		if(this.getControls(scene.view.navigationMode) !== this.controls){
 			if(this.controls){
 				this.controls.enabled = false;
+				this.inputHandler.removeInputListener(this.controls);
 			}
 			
 			this.controls = this.getControls(scene.view.navigationMode);
 			this.controls.enabled = true;
-			this.controls.setSpeed(this.getMoveSpeed());
+			//this.controls.setSpeed(this.getMoveSpeed());
+			this.inputHandler.addInputListener(this.controls);
 		}
-		
+		//
 		if(this.controls !== null){
 			this.controls.setScene(scene);
 			this.controls.update(delta);
@@ -1632,31 +1643,6 @@ Potree.Viewer = class{
 			camera.rotation.z = this.scene.view.yaw;
 		}
 
-		// update progress bar
-		// TODO fix progressbar
-		//if(this.scene.pointclouds.length > 0){
-		//	this.progressBar.progress = progress / this.scene.pointclouds.length;
-		//	
-		//	var message;
-		//	if(progress === 0){
-		//		message = "loading";
-		//	}else{
-		//		message = "loading: " + parseInt(progress*100 / this.scene.pointclouds.length) + "%";
-		//	}
-		//	this.progressBar.message = message;
-		//	
-		//	if(progress >= 0.999){
-		//		this.progressBar.hide();
-		//	}else if(progress < 1){
-		//		this.progressBar.show();
-		//	}
-		//}
-		
-		//this.volumeTool.update();
-		//this.transformationTool.update();
-		//this.profileTool.update();
-		
-		
 		var clipBoxes = [];
 		
 		for(let profile of this.scene.profiles){
@@ -2055,12 +2041,14 @@ class PotreeRenderer{
 		viewer.renderer.render(viewer.scene.scenePointCloud, viewer.scene.camera);
 		//Potree.endQuery(queryPC, viewer.renderer.getContext());
 		
-		viewer.profileTool.render();
-		viewer.volumeTool.render();
+		//viewer.profileTool.render();
+		//viewer.volumeTool.render();
 		
 		viewer.renderer.clearDepth();
-		viewer.measuringTool.render();
-		viewer.transformationTool.render(viewer.scene.camera);
+		//
+		viewer.measuringTool.update();
+		viewer.renderer.render(viewer.measuringTool.sceneMeasurement, viewer.scene.camera);
+		//viewer.transformationTool.render(viewer.scene.camera);
 		
 		//Potree.endQuery(queryAll, viewer.renderer.getContext());
 		

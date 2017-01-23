@@ -13,10 +13,26 @@ var createToolIcon = function(icon, title, callback){
 };
 
 function initToolbar(){
-	var elToolbar = document.getElementById("tools");
+	
+	//let startInsertion = (measure) => {
+	//	measure.addEventListener("drag", (e) => {
+	//		
+	//	});
+	//};
+	
+	let elToolbar = document.getElementById("tools");
 	elToolbar.appendChild(createToolIcon(
 		Potree.resourcePath + "/icons/angle.png",
 		"[title]tt.angle_measurement",
+		//() => {
+		//	let measure = new Potree.Measure();
+		//	measure.showDistances = false;
+		//	measure.showArea = false;
+		//	measure.showAngles = true;
+		//	measure.closed = true;
+		//	
+		//	startInsertion(measure);
+		//}
 		function(){viewer.measuringTool.startInsertion({showDistances: false, showAngles: true, showArea: false, closed: true, maxMarkers: 3})}
 	));
 	
@@ -859,8 +875,8 @@ function initMeasurementDetails(){
 					elWidthLabel.html(Potree.utils.addCommas(event.width.toFixed(3)));
 					elWidthSlider.slider({value: val});
 				};
-				if(!measurement.dispatcher.hasEventListener("width_changed", widthListener)){
-					measurement.dispatcher.addEventListener("width_changed", widthListener);
+				if(!measurement.hasEventListener("width_changed", widthListener)){
+					measurement.addEventListener("width_changed", widthListener);
 				}
 				
 				elLi.append(elText);
@@ -1052,15 +1068,15 @@ function initMeasurementDetails(){
 				}
 			};
 		
-			measurement.dispatcher.addEventListener("marker_added", updateDisplay);
-			measurement.dispatcher.addEventListener("marker_removed", updateDisplay);
-			measurement.dispatcher.addEventListener("marker_moved", updateDisplay);
+			measurement.addEventListener("marker_added", updateDisplay);
+			measurement.addEventListener("marker_removed", updateDisplay);
+			measurement.addEventListener("marker_moved", updateDisplay);
 			scene.addEventListener("measurement_removed", onremove);
 			
 			track.stopTracking = (e) => {
-				measurement.dispatcher.removeEventListener("marker_added", updateDisplay);
-				measurement.dispatcher.removeEventListener("marker_removed", updateDisplay);
-				measurement.dispatcher.removeEventListener("marker_moved", updateDisplay);
+				measurement.removeEventListener("marker_added", updateDisplay);
+				measurement.removeEventListener("marker_removed", updateDisplay);
+				measurement.removeEventListener("marker_moved", updateDisplay);
 				scene.dispatcher.removeEventListener("measurement_added", onremove);
 				scene.dispatcher.removeEventListener("measurement_removed", onremove);
 			};
@@ -1074,15 +1090,15 @@ function initMeasurementDetails(){
 				}
 			};
 		
-			measurement.dispatcher.addEventListener("marker_added", updateDisplay);
-			measurement.dispatcher.addEventListener("marker_removed", updateDisplay);
-			measurement.dispatcher.addEventListener("marker_moved", updateDisplay);
+			measurement.addEventListener("marker_added", updateDisplay);
+			measurement.addEventListener("marker_removed", updateDisplay);
+			measurement.addEventListener("marker_moved", updateDisplay);
 			scene.addEventListener("profile_removed", onremove);
 			
 			track.stopTracking = (e) => {
-				measurement.dispatcher.removeEventListener("marker_added", updateDisplay);
-				measurement.dispatcher.removeEventListener("marker_removed", updateDisplay);
-				measurement.dispatcher.removeEventListener("marker_moved", updateDisplay);
+				measurement.removeEventListener("marker_added", updateDisplay);
+				measurement.removeEventListener("marker_removed", updateDisplay);
+				measurement.removeEventListener("marker_moved", updateDisplay);
 				scene.dispatcher.removeEventListener("profile_added", onremove);
 				scene.dispatcher.removeEventListener("profile_removed", onremove);
 			};

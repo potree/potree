@@ -12,6 +12,25 @@ Potree.MeasuringTool = class MeasuringTool{
 		this.sceneMeasurement.add(this.light);
 		
 		this.viewer.inputHandler.registerInteractiveScene(this.sceneMeasurement);
+		
+		this.onRemove = (e) => {
+			this.sceneMeasurement.remove(e.measurement);
+		};
+	}
+	
+	setScene(scene){
+		if(this.scene === scene){
+			return;
+		}
+		
+		if(this.scene){
+			this.scene.removeEventListener("measurement_removed", this.onRemove);
+		}
+		
+		this.scene = scene;
+		
+		this.scene.addEventListener("measurement_removed", this.onRemove);
+		
 	}
 	
 	startInsertion(args = {}){
@@ -36,9 +55,13 @@ Potree.MeasuringTool = class MeasuringTool{
 				this.viewer.scene.pointclouds);
 			
 			if(I){
+				
 				let i = measure.spheres.indexOf(e.drag.object);
 				if(i !== -1){
 					measure.setPosition(i, I.location);
+					measure.dispatchEvent({
+						"type": "marker_moved"
+					});
 				}
 			}
 		};

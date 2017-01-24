@@ -260,6 +260,9 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 	}
 	
 	toggleSelection(object){
+		
+		let oldSelection = this.selection;
+		
 		let index = this.selection.indexOf(object);
 		
 		if(index === -1){
@@ -273,6 +276,12 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 				type: "deselect"
 			});
 		}
+		
+		this.dispatchEvent({
+			type: "selection_changed",
+			oldSelection: oldSelection,
+			selection: this.selection
+		});
 	}
 	
 	deselectAll(){
@@ -282,7 +291,18 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 			});
 		}
 		
-		this.selection = [];
+		let oldSelection = this.selection;
+		
+		if(this.selection.length > 0){
+			this.selection = [];
+			this.dispatchEvent({
+				type: "selection_changed",
+				oldSelection: oldSelection,
+				selection: this.selection
+			});
+		}
+		
+		
 	}
 	
 	isSelected(object){
@@ -347,30 +367,15 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 	}
 	
 	setScene(scene){
+		this.deselectAll();
+		
 		this.scene = scene;
-	}
-	
-	setSpeed(value){
-		if(this.speed !== value){
-			this.speed = value;
-			this.dispatchEvent( {
-				type: "speed_changed",
-				controls: this
-			});
-		}
 	}
 	
 	update(delta){
 		
 	}
-	
-	updateFinished(){
-		if(this.drag.lastDrag){
-			this.drag.lastDrag.set(0, 0);
-		}
-		this.wheelDelta = 0;
-	}
-	
+
 	getNormalizedDrag(){
 		if(!this.drag){
 			return new THREE.Vector2(0, 0);

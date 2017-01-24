@@ -11,16 +11,18 @@
 		<span style="flex-grow: 1"></span>
 		<span id="potree_version_number" style="color: #9AA1A4; font-size: 80%; font-weight: 100"></span>
 	</span>
-    <div style="font-family:arial;">
-        <a href="javascript:viewer.setLanguage('en');" style="margin-left: 30px;">EN</a> -  
-        <a href="javascript:viewer.setLanguage('fr');">FR</a> - 
-        <a href="javascript:viewer.setLanguage('de');">DE</a>
-    </div>
-  <div>
-  <div id="accordion" class="accordion">
-    <h3><span data-i18n="tb.rendering_opt"></span></h3>
-    <div>
-        <ul class="pv-menu-list">
+	<div style="font-family:arial;">
+		<a href="javascript:viewer.setLanguage('en');" style="margin-left: 30px;">EN</a> -  
+		<a href="javascript:viewer.setLanguage('fr');">FR</a> - 
+		<a href="javascript:viewer.setLanguage('de');">DE</a>
+	</div>
+	<div>
+	<div id="accordion" class="accordion">
+	
+	<!-- APPEARANCE -->
+	<h3><span data-i18n="tb.rendering_opt"></span></h3>
+	<div>
+		<ul class="pv-menu-list">
 		<li><span data-i18n="appearance.nb_max_pts"></span>:<span id="lblPointBudget"></span> <div id="sldPointBudget"></div>	</li>
 		<li><span data-i18n="appearance.point_size"></span>:<span id="lblPointSize"></span> <div id="sldPointSize"></div>		</li>
 		<li><span data-i18n="appearance.field_view"></span>:<span id="lblFOV"></span><div id="sldFOV"></div>					</li>
@@ -67,38 +69,47 @@
 		</div>
 			
 		</ul>
-	   
-	  </div>
-	  <h3><span data-i18n="tb.navigation_opt"></span></h3>
-	  <div>
+		
+		</div>
+		
+		<!-- TOOLS -->
+		<h3><span data-i18n="tb.tools_opt"></span></h3>
+		<div>
 		<ul class="pv-menu-list">
+		<div>
+			<!--<div class="divider" style="padding-bottom: 10px">
+				<span>Navigation</span>
+			</div>-->
+		
+			<li id="tools"></li>
+			
+			<div class="divider" style="padding: 10px 0px 15px 0px">
+				<span>Navigation</span>
+			</div>
 			<li id="navigation"></li>
-			<li><label><input type="checkbox" onClick="viewer.setDEMCollisionsEnabled(this.checked)"/><span data-i18n="appearance.bottom_lock"></span></label></li>
+			<!--<li><label><input type="checkbox" onClick="viewer.setDEMCollisionsEnabled(this.checked)"/><span data-i18n="appearance.bottom_lock"></span></label></li>-->
 			<li><span data-i18n="appearance.move_speed"></span>: <span id="lblMoveSpeed"></span><div id="sldMoveSpeed"></div></li>
+			
+		</div>
 		</ul>
-	  </div>
-	  <h3><span data-i18n="tb.tools_opt"></span></h3>
-	  <div>
-		<ul class="pv-menu-list">
-		<li id="tools"></li>
-		</ul>
-	  </div>
+		</div>
+
 	  
-	  <!-- MEASUREMENTS -->
-	  <h3><span data-i18n="tb.measurments_opt"></span></h3>
-	  <div>
+		<!-- MEASUREMENTS -->
+		<h3><span data-i18n="tb.measurments_opt"></span></h3>
+		<div>
 		<ul class="pv-menu-list selectable" id="measurement_details"></ul>
-	  </div>
+		</div>
 	  
-	  <!-- ANNOTATIONS -->
-	  <h3><span data-i18n="tb.annotations_opt"></span></h3>
-	  <div>
+		<!-- ANNOTATIONS -->
+		<h3><span data-i18n="tb.annotations_opt"></span></h3>
+		<div>
 		<ul class="pv-menu-list selectable" id="annotation_details"></ul>
-	  </div>
+		</div>
 	  
-	  <!-- MATERIALS -->
-	  <h3><span data-i18n="tb.materials_opt"></span></h3>
-	  <div>
+		<!-- MATERIALS -->
+		<h3><span data-i18n="tb.materials_opt"></span></h3>
+		<div>
 		<ul class="pv-menu-list">
 		<li>
 		   <label for="optMaterial" class="pv-select-label">Attributes:</label><br>

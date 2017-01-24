@@ -390,12 +390,12 @@ Potree.Viewer = class{
 			this.measuringTool = new Potree.MeasuringTool(this);
 			//this.profileTool = new Potree.ProfileTool(this.renderer);
 			//this.volumeTool = new Potree.VolumeTool(this.renderer);
-			//this.transformationTool = new Potree.TransformationTool(this.renderer);
+			this.transformationTool = new Potree.TransformationTool(this);
 			
 			
 			this.createControls();
 			
-			//this.measuringTool.setScene(this.scene);
+			this.measuringTool.setScene(this.scene);
 			//this.profileTool.setScene(this.scene);
 			//this.volumeTool.setScene(this.scene);
 			//this.transformationTool.setScene(this.scene);
@@ -412,7 +412,7 @@ Potree.Viewer = class{
 			
 			this.dispatcher.addEventListener("scene_changed", (e) => {
 				this.inputHandler.setScene(e.scene);
-				//this.measuringTool.setScene(e.scene);
+				this.measuringTool.setScene(e.scene);
 				//this.profileTool.setScene(e.scene);
 				//this.volumeTool.setScene(e.scene);
 				//this.transformationTool.setScene(this.scene);
@@ -2045,9 +2045,14 @@ class PotreeRenderer{
 		//viewer.volumeTool.render();
 		
 		viewer.renderer.clearDepth();
-		//
+		
+		
 		viewer.measuringTool.update();
+		viewer.transformationTool.update();
+		
 		viewer.renderer.render(viewer.measuringTool.sceneMeasurement, viewer.scene.camera);
+		viewer.renderer.render(viewer.transformationTool.sceneTransform, viewer.scene.camera);
+		
 		//viewer.transformationTool.render(viewer.scene.camera);
 		
 		//Potree.endQuery(queryAll, viewer.renderer.getContext());

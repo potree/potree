@@ -1,13 +1,14 @@
 
-Potree.TransformationTool = class TransformationTool extends Potree.Controls{
+Potree.TransformationTool = class TransformationTool{
 	
-	constructor(renderer){
-		super(renderer);
+	constructor(viewer){
+		
+		this.viewer = viewer;
 		
 		this.sceneTransform = new THREE.Scene();
 		this.translationNode = new THREE.Object3D();
 		this.rotationNode = new THREE.Object3D();
-		this.rotationNode = new THREE.Object3D();
+		this.scaleNode = new THREE.Object3D();
 		
 		this.TRANSFORMATION_MODES = {
 			DEFAULT: 0,
@@ -19,6 +20,11 @@ Potree.TransformationTool = class TransformationTool extends Potree.Controls{
 		this.mode = this.TRANSFORMATION_MODES.DEFAULT;
 		
 		this.selection = [];
+		
+		this.viewer.inputHandler.registerInteractiveScene(this.sceneTransform);
+		this.viewer.inputHandler.addEventListener("selection_changed", (e) => {
+			this.selection = e.selection;
+		});
 		
 		{ // translation node
 			
@@ -46,6 +52,21 @@ Potree.TransformationTool = class TransformationTool extends Potree.Controls{
 				let arrow = new THREE.Object3D();
 				arrow.add(shaft);
 				arrow.add(head);
+				
+				let mouseover = e => {
+					let c = new THREE.Color(0xFFFF00);
+					shaftMaterial.color = c;
+					headMaterial.color = c;
+				};
+				
+				let mouseleave = e => {
+					let c = new THREE.Color(color);
+					shaftMaterial.color = c;
+					headMaterial.color = c;
+				};
+				
+				shaft.addEventListener("mouseover", mouseover);
+				shaft.addEventListener("mouseleave", mouseleave);
 
 				return arrow;
 			};
@@ -62,6 +83,8 @@ Potree.TransformationTool = class TransformationTool extends Potree.Controls{
 			this.translationNode.add(arrowZ);
 		}
 		
+		
+		this.setMode(this.TRANSFORMATION_MODES.TRANSLATE);
 	}
 	
 	getSelectionBoundingBox(){
@@ -115,9 +138,9 @@ Potree.TransformationTool = class TransformationTool extends Potree.Controls{
 	}
 	
 	
-	setSelection(selection){
-		this.selection = selection;
-	}
+	//setSelection(selection){
+	//	this.selection = selection;
+	//}
 	
 	update(){
 		
@@ -128,23 +151,25 @@ Potree.TransformationTool = class TransformationTool extends Potree.Controls{
 			this.sceneTransform.visible = true;
 		}
 		
+		let scene = this.viewer.scene;
+		let renderer = this.viewer.renderer;
+		
 		let box = this.getSelectionBoundingBox();
 		let pivot = box.getCenter();
 		this.sceneTransform.position.copy(pivot);
 		
 		{
-			let distance = this.scene.camera.position.distanceTo(pivot);
-			let pr = Potree.utils.projectedRadius(1, this.scene.camera.fov * Math.PI / 180, distance, this.renderer.domElement.clientHeight);
+			let distance = scene.camera.position.distanceTo(pivot);
+			let pr = Potree.utils.projectedRadius(1, scene.camera.fov * Math.PI / 180, distance, renderer.domElement.clientHeight);
 			let scale = (150 / pr);
 			this.sceneTransform.scale.set(scale, scale, scale);
 		}
 		
-		
 	}
 	
-	render(camera, target){
-		this.update();
-		this.renderer.render(this.sceneTransform, camera, target);
-	}
+	//render(camera, target){
+	//	this.update();
+	//	this.renderer.render(this.sceneTransform, camera, target);
+	//}
 	
 };

@@ -11,8 +11,6 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 		this.renderer = renderer;
 		this.domElement = renderer.domElement;
 		
-		this.enabled = true;
-		
 		this.scene = null;
 		this.interactiveScenes = [];
 		this.inputListeners = [];
@@ -55,40 +53,46 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 	}
 	
 	onKeyDown(e){
-		if(!this.enabled){ return; }
-		
 		if(this.logMessages) console.log(this.constructor.name + ": onKeyDown");
 		
 		e.preventDefault();
 	}
 	
 	onKeyUp(e){
-		if(!this.enabled){ return; }
-		
 		if(this.logMessages) console.log(this.constructor.name + ": onKeyUp");
 		
 		e.preventDefault();
 	}
 	
 	onDoubleClick(e){
-		if(!this.enabled){ return; }
-		
 		if(this.logMessages) console.log(this.constructor.name + ": onDoubleClick");
+		
+		if(this.hoveredElement){
+			this.hoveredElement.object.dispatchEvent({
+				type: "dblclick",
+				mouse: this.mouse,
+				object: this.hoveredElement.object
+			});
+		}else{
+			for(let inputListener of this.inputListeners){
+				inputListener.dispatchEvent({
+					type: "dblclick",
+					mouse: this.mouse,
+					object: null
+				});
+			}
+		}
 		
 		e.preventDefault();
 	}
 	
 	onMouseClick(e){
-		if(!this.enabled){ return; }
-		
 		if(this.logMessages) console.log(this.constructor.name + ": onMouseClick");
 		
 		e.preventDefault();
 	}
 	
 	onMouseDown(e){
-		if(!this.enabled){ return; }
-		
 		if(this.logMessages) console.log(this.constructor.name + ": onMouseDown");
 		
 		e.preventDefault();
@@ -111,8 +115,6 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 	}
 	
 	onMouseUp(e){
-		if(!this.enabled){ return; }
-		
 		if(this.logMessages) console.log(this.constructor.name + ": onMouseUp");
 		
 		e.preventDefault();
@@ -160,8 +162,6 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 	 }
 	 
 	onMouseMove(e){
-		if(!this.enabled){ return; }
-		
 		e.preventDefault();
 		
 		let rect = this.domElement.getBoundingClientRect();
@@ -211,8 +211,6 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 	}
 	
 	onMouseWheel(e){
-		if(!this.enabled){ return; }
-		
 		e.preventDefault();
 		
 		let delta = 0;
@@ -222,7 +220,25 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 			delta = -e.detail;
 		}
 		
-		this.wheelDelta += Math.sign(delta);
+		let ndelta = Math.sign(delta);
+		
+		//this.wheelDelta += Math.sign(delta);
+		
+		if(this.hoveredElement){
+			this.hoveredElement.object.dispatchEvent({
+				type: "mousewheel",
+				delta: ndelta,
+				object: this.hoveredElement.object
+			});
+		}else{
+			for(let inputListener of this.inputListeners){
+				inputListener.dispatchEvent({
+					type: "mousewheel",
+					delta: ndelta,
+					object: null
+				});
+			}
+		}
 	}
 	
 	startDragging(object){
@@ -345,9 +361,7 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 	}
 	
 	update(delta){
-		if(!this.enabled){
-			return;
-		}
+		
 	}
 	
 	updateFinished(){
@@ -382,72 +396,5 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 		
 		return lastDrag;
 	}
-	
-	//zoomToLocation(mouse){
-	//	let I = this.getMousePointCloudIntersection(mouse);
-	//	
-	//	if(I === null){
-	//		return;
-	//	}
-	//	
-	//	let nmouse =  {
-	//		x: (mouse.x / this.domElement.clientWidth ) * 2 - 1,
-	//		y: - (mouse.y / this.domElement.clientHeight ) * 2 + 1
-	//	};
-	//	
-	//	let targetRadius = 0;
-	//	{
-	//		let minimumJumpDistance = 0.2;
-	//		
-	//		let vector = new THREE.Vector3( nmouse.x, nmouse.y, 0.5 );
-	//		vector.unproject(this.scene.camera);
-	//		
-	//		let direction = vector.sub(this.scene.camera.position).normalize();
-	//		let ray = new THREE.Ray(this.scene.camera.position, direction);
-	//		
-	//		let nodes = I.pointcloud.nodesOnRay(I.pointcloud.visibleNodes, ray);
-	//		let lastNode = nodes[nodes.length - 1];
-	//		let radius = lastNode.getBoundingSphere().radius;
-	//		targetRadius = Math.min(this.scene.view.radius, radius);
-	//		targetRadius = Math.max(minimumJumpDistance, targetRadius);
-	//	}
-	//	
-	//	let d = this.scene.view.direction.multiplyScalar(-1);
-	//	let cameraTargetPosition = new THREE.Vector3().addVectors(I.location, d.multiplyScalar(targetRadius));
-	//	let controlsTargetPosition = I.location;
-	//	
-	//	let animationDuration = 600;
-	//	let easing = TWEEN.Easing.Quartic.Out;
-	//	
-	//	this.enabled = false;
-	//	
-	//	{ // animate position
-	//		let tween = new TWEEN.Tween(this.scene.view.position).to(cameraTargetPosition, animationDuration);
-	//		tween.easing(easing);
-	//		tween.start();
-	//	}
-	//	
-	//	{ // animate target
-	//		let pivot = this.scene.view.getPivot();
-	//		let tween = new TWEEN.Tween(pivot).to(I.location, animationDuration);
-	//		tween.easing(easing);
-	//		tween.onUpdate(() => {
-	//			this.scene.view.lookAt(pivot);
-	//		});
-	//		tween.onComplete(() => {
-	//			this.enabled = true;
-	//			
-	//			this.dispatchEvent({
-	//				type: "double_click_move",
-	//				controls: this,
-	//				position: cameraTargetPosition,
-	//				targetLocation: I.location,
-	//				targetPointcloud: I.pointcloud
-	//			});
-	//		});
-	//		tween.start();
-	//	}
-	//	
-	//}
 	
 };

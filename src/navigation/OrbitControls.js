@@ -22,13 +22,15 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 		
 		this.scene = null;
 		
-		this.rotationSpeed = 10;
+		this.rotationSpeed = 5;
 		
 		this.fadeFactor = 10;
 		this.yawDelta = 0;
 		this.pitchDelta = 0;
 		this.panDelta = new THREE.Vector2(0, 0);
 		this.radiusDelta = 0;
+		
+		this.tweens = [];
 		
 		
 		let drag = (e) => {
@@ -52,7 +54,17 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 			console.log(e);
 		};
 		
+		let scroll = (e) => {
+			this.radiusDelta -= e.delta;
+		};
+		
+		let dblclick = (e) => {
+			this.zoomToLocation(e.mouse);
+		};
+		
 		this.addEventListener("drag", drag);
+		this.addEventListener("mousewheel", scroll);
+		this.addEventListener("dblclick", dblclick);
 		
 	}
 	
@@ -60,9 +72,98 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 		this.scene = scene;
 	}
 	
+	zoomToLocation(mouse){
+		let camera = this.scene.camera;
+		
+		let I = Potree.utils.getMousePointCloudIntersection(
+			mouse, 
+			camera, 
+			this.renderer, 
+			this.scene.pointclouds);
+			
+		if(I === null){
+			return;
+		}
+		
+		let nmouse =  {
+			x: +( mouse.x / this.renderer.domElement.clientWidth )  * 2 - 1,
+			y: -( mouse.y / this.renderer.domElement.clientHeight ) * 2 + 1
+		};
+		
+		let targetRadius = 0;
+		{
+			let minimumJumpDistance = 0.2;
+			
+			let vector = new THREE.Vector3( nmouse.x, nmouse.y, 0.5 );
+			vector.unproject(camera);
+			
+			let direction = vector.sub(camera.position).normalize();
+			let ray = new THREE.Ray(camera.position, direction);
+			
+			let nodes = I.pointcloud.nodesOnRay(I.pointcloud.visibleNodes, ray);
+			let lastNode = nodes[nodes.length - 1];
+			let radius = lastNode.getBoundingSphere().radius;
+			targetRadius = Math.min(this.scene.view.radius, radius);
+			targetRadius = Math.max(minimumJumpDistance, targetRadius);
+		}
+		
+		let d = this.scene.view.direction.multiplyScalar(-1);
+		let cameraTargetPosition = new THREE.Vector3().addVectors(I.location, d.multiplyScalar(targetRadius));
+		let controlsTargetPosition = I.location;
+		
+		var animationDuration = 600;
+		var easing = TWEEN.Easing.Quartic.Out;
+		
+		{ // animate position
+			let tween = new TWEEN.Tween(this.scene.view.position).to(cameraTargetPosition, animationDuration);
+			tween.easing(easing);
+			this.tweens.push(tween);
+			
+			tween.onComplete( () => {
+				this.tweens = this.tweens.filter( e => e !== tween);
+			});
+			
+			tween.start();
+		}
+		
+		{ // animate target
+			let pivot = this.scene.view.getPivot();
+			let tween = new TWEEN.Tween(pivot).to(I.location, animationDuration);
+			tween.easing(easing);
+			tween.onUpdate(() => {
+				this.scene.view.lookAt(pivot);
+			});
+			tween.onComplete(() => {
+				
+				tween.onComplete( () => {
+					this.tweens = this.tweens.filter( e => e !== tween);
+				});
+				
+				this.dispatchEvent({
+					type: "double_click_move",
+					controls: this,
+					position: cameraTargetPosition,
+					targetLocation: I.location,
+					targetPointcloud: I.pointcloud
+				});
+			});
+			tween.start();
+			
+			this.tweens.push(tween);
+		}
+	}
+	
 	update(delta){
 		
 		let view = this.scene.view;
+		
+		let changes = [ this.yawDelta, this.pitchDelta, this.radiusDelta, this.panDelta.length() ];
+		let changeHappens = changes.some( e => Math.abs(e) > 0.001);
+		if(changeHappens && this.tweens.length > 0){
+			this.tweens.forEach( e => e.stop() );
+			this.tweens = [];
+		}		
+		
 		
 		{ // apply rotation
 			let progression = Math.min(1, this.fadeFactor * delta);
@@ -93,6 +194,19 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 			view.pan(px, py);
 		}
 		
+		{ // apply zoom
+			let progression = Math.min(1, this.fadeFactor * delta);
+			
+			let radius = view.radius + progression * this.radiusDelta * view.radius * 0.1;
+			
+			let V = view.direction.multiplyScalar(-radius);
+			let position = new THREE.Vector3().addVectors(view.getPivot(), V);
+			view.radius = radius;
+			
+			view.position.copy(position);
+		}
+		
+		
 		{// decelerate over time
 			let attenuation = Math.max(0, 1 - this.fadeFactor * delta);
 			this.yawDelta *= attenuation;
@@ -103,123 +217,3 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 	}
 	
 };
- 
- 
-//Potree.OrbitControls = class OrbitControls extends Potree.Controls{
-//	
-//	constructor(renderer){
-//		super(renderer);
-//		
-//		this.rotationSpeed = 10;
-//		
-//		this.STATE = { NONE : -1, ROTATE : 0, PAN : 2 };
-//
-//		this.state = this.STATE.NONE;
-//		
-//		this.fadeFactor = 10;
-//		this.yawDelta = 0;
-//		this.pitchDelta = 0;
-//		this.panDelta = new THREE.Vector2(0, 0);
-//		this.radiusDelta = 0;
-//	}
-//	
-//	onMouseDown(e){
-//		if(!this.enabled){return;}
-//		
-//		super.onMouseDown(e);
-//		e.preventDefault();
-//		
-//		if(e.button === THREE.MOUSE.LEFT){
-//			this.state = this.STATE.ROTATE;
-//		}else if(event.button === THREE.MOUSE.RIGHT){
-//			this.state = this.STATE.PAN;
-//		}
-//	}
-//	
-//	onMouseUp(e){
-//		if(!this.enabled){ return; }
-//		
-//		e.preventDefault();
-//		
-//		this.state = this.STATE.NONE;
-//	}
-//	
-//	onDoubleClick(e){
-//		if(!this.enabled){ return; }
-//		
-//		e.preventDefault();
-//		
-//		this.zoomToLocation(this.mouse);
-//	}
-//	
-//	update(delta){
-//		if(!this.enabled){return;}
-//		
-//		let view = this.scene.view;
-//		let drag = this.getNormalizedLastDrag();
-//		
-//		{ // accelerate while input is given
-//			this.radiusDelta -= this.wheelDelta;
-//			if(this.state === this.STATE.ROTATE){
-//				this.yawDelta += drag.x * this.rotationSpeed;
-//				this.pitchDelta += drag.y * this.rotationSpeed;
-//			}else if(this.state === this.STATE.PAN){
-//				this.panDelta.x += drag.x;
-//				this.panDelta.y += drag.y;
-//			}
-//		}
-//		
-//		{ // apply rotation
-//			let progression = Math.min(1, this.fadeFactor * delta);
-//			
-//			let yaw = view.yaw;
-//			let pitch = view.pitch;
-//			let pivot = view.getPivot();
-//			
-//			yaw -= progression * this.yawDelta;
-//			pitch -= progression * this.pitchDelta;
-//			
-//			view.yaw = yaw;
-//			view.pitch = pitch;
-//			
-//			let V = this.scene.view.direction.multiplyScalar(-view.radius);
-//			let position = new THREE.Vector3().addVectors(pivot, V);
-//			
-//			view.position.copy(position);
-//		}
-//		
-//		{ // apply pan
-//			let progression = Math.min(1, this.fadeFactor * delta);
-//			let panDistance = progression * view.radius * 3;
-//			
-//			let px = -this.panDelta.x * panDistance;
-//			let py = this.panDelta.y * panDistance;
-//			
-//			view.pan(px, py);
-//		}
-//		
-//		{ // apply zoom
-//			let progression = Math.min(1, this.fadeFactor * delta);
-//			
-//			let radius = view.radius + progression * this.radiusDelta * view.radius * 0.1;
-//			
-//			let V = view.direction.multiplyScalar(-radius);
-//			let position = new THREE.Vector3().addVectors(view.getPivot(), V);
-//			view.radius = radius;
-//			
-//			view.position.copy(position);
-//		}
-//		
-//		{// decelerate over time
-//			let attenuation = Math.max(0, 1 - this.fadeFactor * delta);
-//			this.yawDelta *= attenuation;
-//			this.pitchDelta *= attenuation;
-//			this.panDelta.multiplyScalar(attenuation);
-//			this.radiusDelta *= attenuation;
-//		}
-//		
-//		this.updateFinished();
-//	}
-//	
-//	
-//};

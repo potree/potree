@@ -406,8 +406,8 @@ Potree.Viewer.Profile = function(viewer, element){
 		}
 		
 		if(scope.currentProfile){
-			scope.currentProfile.dispatcher.removeEventListener("marker_moved", drawOnChange);
-			scope.currentProfile.dispatcher.removeEventListener("width_changed", drawOnChange);
+			scope.currentProfile.removeEventListener("marker_moved", drawOnChange);
+			scope.currentProfile.removeEventListener("width_changed", drawOnChange);
 			viewer.dispatcher.removeEventListener("material_changed", drawOnChange);
 			//viewer.addEventListener("material_changed", function(){
 			//	drawOnChange({profile: scope.currentProfile});
@@ -429,8 +429,8 @@ Potree.Viewer.Profile = function(viewer, element){
 		scope.currentProfile = profile;
 		
 		{
-			scope.currentProfile.dispatcher.addEventListener("marker_moved", drawOnChange);
-			scope.currentProfile.dispatcher.addEventListener("width_changed", drawOnChange);
+			scope.currentProfile.addEventListener("marker_moved", drawOnChange);
+			scope.currentProfile.addEventListener("width_changed", drawOnChange);
 			viewer.dispatcher.addEventListener("material_changed", drawOnChange);
 		}
 

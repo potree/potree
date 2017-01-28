@@ -388,7 +388,7 @@ Potree.Viewer = class{
 			this.inputHandler.setScene(this.scene);
 			
 			this.measuringTool = new Potree.MeasuringTool(this);
-			//this.profileTool = new Potree.ProfileTool(this.renderer);
+			this.profileTool = new Potree.ProfileTool(this);
 			this.volumeTool = new Potree.VolumeTool(this);
 			this.transformationTool = new Potree.TransformationTool(this);
 			
@@ -396,7 +396,7 @@ Potree.Viewer = class{
 			this.createControls();
 			
 			this.measuringTool.setScene(this.scene);
-			//this.profileTool.setScene(this.scene);
+			this.profileTool.setScene(this.scene);
 			this.volumeTool.setScene(this.scene);
 			//this.transformationTool.setScene(this.scene);
 			
@@ -413,7 +413,7 @@ Potree.Viewer = class{
 			this.dispatcher.addEventListener("scene_changed", (e) => {
 				this.inputHandler.setScene(e.scene);
 				this.measuringTool.setScene(e.scene);
-				//this.profileTool.setScene(e.scene);
+				this.profileTool.setScene(e.scene);
 				this.volumeTool.setScene(e.scene);
 				//this.transformationTool.setScene(this.scene);
 				//this.transformationTool.setSelection([]);
@@ -1644,8 +1644,14 @@ Potree.Viewer = class{
 		}
 
 		{ // update clip boxes
-			let boxes = this.scene.profiles.reduce( (a, b) => {return a.boxes.concat(b.boxes)}, []);
-			boxes = boxes.concat(this.scene.volumes.filter(v => v.clip));
+			//let boxes = this.scene.profiles.reduce( (a, b) => {return a.boxes.concat(b.boxes)}, []);
+			//boxes = boxes.concat(this.scene.volumes.filter(v => v.clip));
+			
+			let boxes = this.scene.volumes.filter(v => v.clip);
+			for(let profile of this.scene.profiles){
+				boxes = boxes.concat(profile.boxes);
+			}
+			
 			
 			let clipBoxes = boxes.map( box => {
 				box.updateMatrixWorld();
@@ -2034,9 +2040,11 @@ class PotreeRenderer{
 		viewer.renderer.clearDepth();
 		
 		viewer.measuringTool.update();
+		viewer.profileTool.update();
 		viewer.transformationTool.update();
 		
 		viewer.renderer.render(viewer.measuringTool.sceneMeasurement, viewer.scene.camera);
+		viewer.renderer.render(viewer.profileTool.sceneProfile, viewer.scene.camera);
 		viewer.renderer.render(viewer.transformationTool.sceneTransform, viewer.scene.camera);
 		
 		

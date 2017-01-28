@@ -55,7 +55,6 @@ Potree.MeasuringTool = class MeasuringTool{
 				this.viewer.scene.pointclouds);
 			
 			if(I){
-				
 				let i = measure.spheres.indexOf(e.drag.object);
 				if(i !== -1){
 					measure.setPosition(i, I.location);

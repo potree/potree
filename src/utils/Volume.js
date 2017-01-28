@@ -1,9 +1,8 @@
 
-Potree.Volume = class{
+Potree.Volume = class extends THREE.Object3D{
 	
 	constructor(args = {}){
-		this.sceneNode = new THREE.Object3D();
-		this.dispatcher = new THREE.EventDispatcher();
+		super();
 		
 		this._clip = args.clip || false;
 		this._modifiable = args.modifiable || true;
@@ -52,11 +51,11 @@ Potree.Volume = class{
 		this.box = new THREE.Mesh(boxGeometry, this.material);
 		this.box.geometry.computeBoundingBox();
 		this.boundingBox = this.box.geometry.boundingBox;
-		this.sceneNode.add(this.box);
+		this.add(this.box);
 		
 		this.frame = new THREE.LineSegments( boxFrameGeometry, new THREE.LineBasicMaterial({color: 0x000000}));
 		//this.frame.mode = THREE.Lines;
-		this.sceneNode.add(this.frame);
+		this.add(this.frame);
 		
 		this.label = new Potree.TextSprite("0");
 		this.label.setBorderColor({r:0, g:255, b:0, a:0.0});
@@ -65,11 +64,11 @@ Potree.Volume = class{
 		this.label.material.depthWrite = false;
 		this.label.material.transparent = true;
 		this.label.position.y -= 0.5;
-		this.sceneNode.add(this.label);
+		this.add(this.label);
 		
 		this.label.updateMatrixWorld = () => {
 			var volumeWorldPos = new THREE.Vector3();
-			volumeWorldPos.setFromMatrixPosition( this.sceneNode.matrixWorld );
+			volumeWorldPos.setFromMatrixPosition( this.matrixWorld );
 			this.label.position.copy(volumeWorldPos);
 			this.label.updateMatrix();
 			this.label.matrixWorld.copy(this.label.matrix);
@@ -83,11 +82,11 @@ Potree.Volume = class{
 		this.update();
 	}
 	
-	setDimension(x,y,z){
-		this.dimension.set(x,y,z);
-		this.box.scale.set(x,y,z);
-		this.frame.scale.set(x,y,z);
-	}
+	//setDimension(x,y,z){
+	//	this.dimension.set(x,y,z);
+	//	this.box.scale.set(x,y,z);
+	//	this.frame.scale.set(x,y,z);
+	//}
 
 	getVolume(){
 		return Math.abs(this.scale.x * this.scale.y * this.scale.z);

@@ -105,7 +105,13 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 		let hovered = this.getHoveredElement();
 		
 		if(!this.drag){
-			this.startDragging(hovered ? hovered.object : null);
+			let object = hovered ? hovered.object : null;
+			if(object){
+				this.startDragging(object, {location: hovered.point});
+			}else{
+				this.startDragging(null);
+			}
+			//this.startDragging(hovered ? hovered.object : null);
 			this.drag.mouse = e.button;
 		}
 		
@@ -241,7 +247,7 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 		}
 	}
 	
-	startDragging(object){
+	startDragging(object, args = null){
 		this.drag = {
 			start: this.mouse.clone(),
 			end: this.mouse.clone(),
@@ -249,6 +255,12 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 			startView: this.scene.view.clone(),
 			object: object
 		};
+		
+		if(args){
+			for(let key of Object.keys(args)){
+				this.drag[key] = args[key];
+			}
+		}
 	}
 	
 	getMousePointCloudIntersection(mouse){

@@ -28,7 +28,7 @@ Potree.TransformationTool = class TransformationTool{
 		
 		{ // translation node
 			
-			let createArrow = (name, color) => {
+			let createArrow = (name, direction, color) => {
 				let material = new THREE.MeshBasicMaterial({
 					color: color, 
 					depthTest: false, 
@@ -65,15 +65,69 @@ Potree.TransformationTool = class TransformationTool{
 					headMaterial.color = c;
 				};
 				
+				let drag = e => {
+					
+					let camera = this.viewer.scene.camera;
+					
+					if(!e.drag.intersectionStart){
+						e.drag.intersectionStart = e.drag.location;
+						e.drag.objectStart = e.drag.object.getWorldPosition();
+						
+						let start = this.sceneTransform.position.clone();
+						let end = start.clone().add(direction);
+						let line = new THREE.Line3(start, end);
+						e.drag.line = line;
+						
+						let camOnLine = line.closestPointToPoint(camera.position, false);
+						let normal = new THREE.Vector3().subVectors(
+							camera.position, camOnLine);
+						let plane = new THREE.Plane()
+							.setFromNormalAndCoplanarPoint(normal, e.drag.intersectionStart);
+							
+						e.drag.dragPlane = plane;
+						e.drag.pivot = e.drag.intersectionStart;
+					}
+					
+					{
+						let mouse = e.drag.end;
+						let domElement = viewer.renderer.domElement;
+						let nmouse =  {
+							x: (mouse.x / domElement.clientWidth ) * 2 - 1,
+							y: - (mouse.y / domElement.clientHeight ) * 2 + 1
+						};
+						
+						let vector = new THREE.Vector3( nmouse.x, nmouse.y, 0.5 );
+						vector.unproject(camera);
+						
+						let ray = new THREE.Ray(camera.position, vector.sub( camera.position));
+						let I = ray.intersectPlane(e.drag.dragPlane);
+						
+						if(I){
+							
+							let iOnLine = e.drag.line.closestPointToPoint(I, false);
+							
+							let diff = new THREE.Vector3().subVectors(
+								iOnLine, e.drag.pivot);
+								
+							for(let selection of this.selection){
+								selection.position.add(diff);
+							}
+							
+							e.drag.pivot = e.drag.pivot.add(diff);
+						}
+					}
+				};
+				
 				shaft.addEventListener("mouseover", mouseover);
 				shaft.addEventListener("mouseleave", mouseleave);
+				shaft.addEventListener("drag", drag);
 
 				return arrow;
 			};
 			
-			let arrowX = createArrow("arrow_x", 0xFF0000);
-			let arrowY = createArrow("arrow_y", 0x00FF00);
-			let arrowZ = createArrow("arrow_z", 0x0000FF);
+			let arrowX = createArrow("arrow_x", new THREE.Vector3(1, 0, 0), 0xFF0000);
+			let arrowY = createArrow("arrow_y", new THREE.Vector3(0, 1, 0), 0x00FF00);
+			let arrowZ = createArrow("arrow_z", new THREE.Vector3(0, 0, 1), 0x0000FF);
 			
 			arrowX.rotation.z = -Math.PI/2;
 			arrowZ.rotation.x = Math.PI/2;

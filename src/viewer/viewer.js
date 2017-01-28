@@ -389,7 +389,7 @@ Potree.Viewer = class{
 			
 			this.measuringTool = new Potree.MeasuringTool(this);
 			//this.profileTool = new Potree.ProfileTool(this.renderer);
-			//this.volumeTool = new Potree.VolumeTool(this.renderer);
+			this.volumeTool = new Potree.VolumeTool(this);
 			this.transformationTool = new Potree.TransformationTool(this);
 			
 			
@@ -397,7 +397,7 @@ Potree.Viewer = class{
 			
 			this.measuringTool.setScene(this.scene);
 			//this.profileTool.setScene(this.scene);
-			//this.volumeTool.setScene(this.scene);
+			this.volumeTool.setScene(this.scene);
 			//this.transformationTool.setScene(this.scene);
 			
 			let onPointcloudAdded = (e) => {
@@ -414,7 +414,7 @@ Potree.Viewer = class{
 				this.inputHandler.setScene(e.scene);
 				this.measuringTool.setScene(e.scene);
 				//this.profileTool.setScene(e.scene);
-				//this.volumeTool.setScene(e.scene);
+				this.volumeTool.setScene(e.scene);
 				//this.transformationTool.setScene(this.scene);
 				//this.transformationTool.setSelection([]);
 				this.updateHeightRange();
@@ -1643,38 +1643,25 @@ Potree.Viewer = class{
 			camera.rotation.z = this.scene.view.yaw;
 		}
 
-		var clipBoxes = [];
-		
-		for(let profile of this.scene.profiles){
-			for(let box of profile.boxes){
+		{ // update clip boxes
+			let boxes = this.scene.profiles.reduce( (a, b) => {return a.boxes.concat(b.boxes)}, []);
+			boxes = boxes.concat(this.scene.volumes.filter(v => v.clip));
+			
+			let clipBoxes = boxes.map( box => {
 				box.updateMatrixWorld();
-				var boxInverse = new THREE.Matrix4().getInverse(box.matrixWorld);
-				var boxPosition = box.getWorldPosition();
-				clipBoxes.push({inverse: boxInverse, position: boxPosition});
+				let boxInverse = new THREE.Matrix4().getInverse(box.matrixWorld);
+				let boxPosition = box.getWorldPosition();
+				return {inverse: boxInverse, position: boxPosition};
+			});
+			
+			for(let pointcloud of this.scene.pointclouds){
+				pointcloud.material.setClipBoxes(clipBoxes);
 			}
 		}
-		//
-		//for(var i = 0; i < this.volumeTool.volumes.length; i++){
-		//	var volume = this.volumeTool.volumes[i];
-		//	
-		//	if(volume.clip){
-		//		volume.updateMatrixWorld();
-		//		var boxInverse = new THREE.Matrix4().getInverse(volume.matrixWorld);
-		//		var boxPosition = volume.getWorldPosition();
-		//		//clipBoxes.push(boxInverse);
-		//		clipBoxes.push({inverse: boxInverse, position: boxPosition});
-		//	}
-		//}
-		//
-		//
-		for(let pointcloud of this.scene.pointclouds){
-			pointcloud.material.setClipBoxes(clipBoxes);
-		}
 
-		{// update annotations
+		{ // update annotations
 			var distances = [];
-			for(var i = 0; i < this.scene.annotations.length; i++){
-				var ann = this.scene.annotations[i];
+			for(let ann of this.scene.annotations){
 				var screenPos = ann.position.clone().project(this.scene.camera);
 				
 				screenPos.x = this.renderArea.clientWidth * (screenPos.x + 1) / 2;
@@ -1683,9 +1670,6 @@ Potree.Viewer = class{
 				ann.domElement.style.left = Math.floor(screenPos.x - ann.domElement.clientWidth / 2) + "px";
 				ann.domElement.style.top = Math.floor(screenPos.y - ann.domElement.clientHeight / 2) + "px";
 				
-				//ann.domDescription.style.left = screenPos.x - ann.domDescription.clientWidth / 2 + 10;
-				//ann.domDescription.style.top = screenPos.y + 30;
-
 				distances.push({annotation: ann, distance: screenPos.z});
 
 				if(-1 > screenPos.z || screenPos.z > 1){
@@ -1694,7 +1678,9 @@ Potree.Viewer = class{
 					ann.domElement.style.display = "initial";
 				}
 			}
+			
 			distances.sort(function(a,b){return b.distance - a.distance});
+			
 			for(var i = 0; i < distances.length; i++){
 				var ann = distances[i].annotation;
 				ann.domElement.style.zIndex = "" + i;
@@ -2041,11 +2027,11 @@ class PotreeRenderer{
 		viewer.renderer.render(viewer.scene.scenePointCloud, viewer.scene.camera);
 		//Potree.endQuery(queryPC, viewer.renderer.getContext());
 		
-		//viewer.profileTool.render();
-		//viewer.volumeTool.render();
+		
+		viewer.volumeTool.update();
+		viewer.renderer.render(viewer.volumeTool.sceneVolume, viewer.scene.camera);
 		
 		viewer.renderer.clearDepth();
-		
 		
 		viewer.measuringTool.update();
 		viewer.transformationTool.update();
@@ -2053,7 +2039,6 @@ class PotreeRenderer{
 		viewer.renderer.render(viewer.measuringTool.sceneMeasurement, viewer.scene.camera);
 		viewer.renderer.render(viewer.transformationTool.sceneTransform, viewer.scene.camera);
 		
-		//viewer.transformationTool.render(viewer.scene.camera);
 		
 		//Potree.endQuery(queryAll, viewer.renderer.getContext());
 		

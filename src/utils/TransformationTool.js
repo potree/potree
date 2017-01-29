@@ -156,10 +156,11 @@ Potree.TransformationTool = class TransformationTool{
 			}
 			
 			if(box){
-				let tbox = Potree.utils.computeTransformedBoundingBox(box, node.matrixWorld);				
+				//let tbox = Potree.utils.computeTransformedBoundingBox(box, node.matrixWorld);				
+				let tbox = box.clone().applyMatrix4(node.matrixWorld);
 				
-				min = min.min(box.min);
-				max = max.max(box.max);
+				min = min.min(tbox.min);
+				max = max.max(tbox.max);
 			}else{
 				let wp = node.getWorldPosition();
 				min = min.min(wp);

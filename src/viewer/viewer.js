@@ -113,11 +113,17 @@ Potree.View = class{
 		this.position = this.position.add(t);
 	}
 	
+	translateWorld(x, y, z){
+		this.position.x += x;
+		this.position.y += y;
+		this.position.z += z;
+	}
+	
 };
 
-Potree.Scene = class{
+Potree.Scene = class extends THREE.EventDispatcher{
 	constructor(){
-		this.dispatcher = new THREE.EventDispatcher();
+		super();
 		
 		this.annotations = [];
 		this.scene = new THREE.Scene();
@@ -149,7 +155,7 @@ Potree.Scene = class{
 		this.pointclouds.push(pointcloud);
 		this.scenePointCloud.add(pointcloud);
 		
-		this.dispatcher.dispatchEvent({
+		this.dispatchEvent({
 			type: "pointcloud_added",
 			pointcloud: pointcloud
 		});
@@ -157,7 +163,7 @@ Potree.Scene = class{
 	
 	addVolume(volume){
 		this.volumes.push(volume);
-		this.dispatcher.dispatchEvent({
+		this.dispatchEvent({
 			"type": "volume_added",
 			"scene": this,
 			"volume": volume
@@ -168,7 +174,7 @@ Potree.Scene = class{
 		let index = this.volumes.indexOf(volume);
 		if (index > -1) {
 			this.volumes.splice(index, 1);
-			this.dispatcher.dispatchEvent({
+			this.dispatchEvent({
 				"type": "volume_removed",
 				"scene": this,
 				"volume": volume
@@ -178,7 +184,7 @@ Potree.Scene = class{
 	
 	addMeasurement(measurement){
 		this.measurements.push(measurement);
-		this.dispatcher.dispatchEvent({
+		this.dispatchEvent({
 			"type": "measurement_added",
 			"scene": this,
 			"measurement": measurement
@@ -189,7 +195,7 @@ Potree.Scene = class{
 		let index = this.measurements.indexOf(measurement);
 		if (index > -1) {
 			this.measurements.splice(index, 1);
-			this.dispatcher.dispatchEvent({
+			this.dispatchEvent({
 				"type": "measurement_removed",
 				"scene": this,
 				"measurement": measurement
@@ -199,7 +205,7 @@ Potree.Scene = class{
 	
 	addProfile(profile){
 		this.profiles.push(profile);
-		this.dispatcher.dispatchEvent({
+		this.dispatchEvent({
 			"type": "profile_added",
 			"scene": this,
 			"profile": profile
@@ -210,7 +216,7 @@ Potree.Scene = class{
 		let index = this.profiles.indexOf(profile);
 		if (index > -1) {
 			this.profiles.splice(index, 1);
-			this.dispatcher.dispatchEvent({
+			this.dispatchEvent({
 				"type": "profile_removed",
 				"scene": this,
 				"profile": profile
@@ -268,10 +274,6 @@ Potree.Scene = class{
 		}
 	}
 	
-	addEventListener(type, callback){
-		this.dispatcher.addEventListener(type, callback);
-	}
-	
 	addAnnotation(position, args = {}){
 		args.position = position;
 		
@@ -283,7 +285,7 @@ Potree.Scene = class{
 		
 		this.annotations.push(annotation);
 		
-		this.dispatcher.dispatchEvent({
+		this.dispatchEvent({
 			"type": "annotation_added", 
 			"scene": this,
 			"annotation": annotation});
@@ -384,14 +386,13 @@ Potree.Viewer = class{
 		this.scene = new Potree.Scene(this.renderer);
 		
 		{
-			this.inputHandler = new Potree.InputHandler(this.renderer);
+			this.inputHandler = new Potree.InputHandler(this);
 			this.inputHandler.setScene(this.scene);
 			
 			this.measuringTool = new Potree.MeasuringTool(this);
 			this.profileTool = new Potree.ProfileTool(this);
 			this.volumeTool = new Potree.VolumeTool(this);
 			this.transformationTool = new Potree.TransformationTool(this);
-			
 			
 			this.createControls();
 			
@@ -402,6 +403,12 @@ Potree.Viewer = class{
 			
 			let onPointcloudAdded = (e) => {
 				this.updateHeightRange();
+				
+				if(this.scene.pointclouds.length === 1){
+					let speed = e.pointcloud.boundingBox.getSize().length();
+					speed = speed / 10;
+					this.setMoveSpeed(speed);
+				}
 				
 				if(e.pointcloud.projection){
 					this.mapView = new Potree.MapView(this);
@@ -419,36 +426,12 @@ Potree.Viewer = class{
 				//this.transformationTool.setSelection([]);
 				this.updateHeightRange();
 				
-				if(!e.scene.dispatcher.hasEventListener("pointcloud_added", onPointcloudAdded)){
-					e.scene.dispatcher.addEventListener("pointcloud_added", onPointcloudAdded);
+				if(!e.scene.hasEventListener("pointcloud_added", onPointcloudAdded)){
+					e.scene.addEventListener("pointcloud_added", onPointcloudAdded);
 				}
 			});
 			
-			this.scene.dispatcher.addEventListener("pointcloud_added", onPointcloudAdded);
-			
-			//this.transformationTool = new Potree.TransformationTool(this.scene.scenePointCloud, this.scene.camera, this.renderer);
-			//this.volumeTool = new Potree.VolumeTool(this.scene, this.renderer, this.transformationTool);		
-			
-			//this.dispatcher.addEventListener("pointcloud_added", (e) => {
-			//	this.updateHeightRange();
-			//});
-			
-			let onKeyDown = (event) => {
-				//console.log(event.keyCode);
-				
-				if(event.keyCode === 69){
-					// e pressed
-					this.transformationTool.translate();
-				}else if(event.keyCode === 82){
-					// r pressed
-					this.transformationTool.scale();
-				}else if(event.keyCode === 84){
-					// t pressed
-					this.transformationTool.rotate();
-				}
-			};
-			
-			window.addEventListener( 'keydown', onKeyDown, false );
+			this.scene.addEventListener("pointcloud_added", onPointcloudAdded);
 		}
 		
 		{// set defaults
@@ -624,9 +607,9 @@ Potree.Viewer = class{
 	setMoveSpeed(value){
 		if(this.moveSpeed !== value){
 			this.moveSpeed = value;
-			this.fpControls.setSpeed(value);
+			//this.fpControls.setSpeed(value);
 			//this.geoControls.setSpeed(value);
-			this.earthControls.setSpeed(value);
+			//this.earthControls.setSpeed(value);
 			this.dispatcher.dispatchEvent({"type": "move_speed_changed", "viewer": this, "speed": value});
 		}
 	};
@@ -1352,17 +1335,17 @@ Potree.Viewer = class{
 
 	createControls(){
 		{ // create FIRST PERSON CONTROLS
-			this.fpControls = new Potree.FirstPersonControls(this.renderer);
+			this.fpControls = new Potree.FirstPersonControls(this);
 			this.fpControls.enabled = false;
-			this.fpControls.dispatcher.addEventListener("start", this.disableAnnotations.bind(this));
-			this.fpControls.dispatcher.addEventListener("end", this.enableAnnotations.bind(this));
-			this.fpControls.dispatcher.addEventListener("double_click_move", (event) => {
-				let distance = event.targetLocation.distanceTo(event.position);
-				this.setMoveSpeed(Math.pow(distance, 0.4));
-			});
-			this.fpControls.dispatcher.addEventListener("move_speed_changed", (event) => {
-				this.setMoveSpeed(this.fpControls.moveSpeed);
-			});
+			this.fpControls.addEventListener("start", this.disableAnnotations.bind(this));
+			this.fpControls.addEventListener("end", this.enableAnnotations.bind(this));
+			//this.fpControls.dispatcher.addEventListener("double_click_move", (event) => {
+			//	let distance = event.targetLocation.distanceTo(event.position);
+			//	this.setMoveSpeed(Math.pow(distance, 0.4));
+			//});
+			//this.fpControls.dispatcher.addEventListener("move_speed_changed", (event) => {
+			//	this.setMoveSpeed(this.fpControls.moveSpeed);
+			//});
 		}
 		
 		//{ // create GEO CONTROLS
@@ -1376,17 +1359,17 @@ Potree.Viewer = class{
 		//}
 	
 		{ // create ORBIT CONTROLS
-			this.orbitControls = new Potree.OrbitControls(this.renderer);
+			this.orbitControls = new Potree.OrbitControls(this);
 			this.orbitControls.enabled = false;
 			this.orbitControls.addEventListener("start", this.disableAnnotations.bind(this));
 			this.orbitControls.addEventListener("end", this.enableAnnotations.bind(this));
 		}
 		
 		{ // create EARTH CONTROLS
-			this.earthControls = new Potree.EarthControls(this.renderer);
+			this.earthControls = new Potree.EarthControls(this);
 			this.earthControls.enabled = false;
-			this.earthControls.dispatcher.addEventListener("start", this.disableAnnotations.bind(this));
-			this.earthControls.dispatcher.addEventListener("end", this.enableAnnotations.bind(this));
+			this.earthControls.addEventListener("start", this.disableAnnotations.bind(this));
+			this.earthControls.addEventListener("end", this.enableAnnotations.bind(this));
 		}
 	};
 

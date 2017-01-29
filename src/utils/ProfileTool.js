@@ -6,14 +6,14 @@ Potree.ProfileTool = class ProfileTool{
 		this.renderer = viewer.renderer;
 		
 		this.sceneProfile = new THREE.Scene();
+		this.sceneProfile.name = "scene_profile";
 		this.light = new THREE.PointLight( 0xffffff, 1.0 );
 		this.sceneProfile.add(this.light);
 		
 		this.viewer.inputHandler.registerInteractiveScene(this.sceneProfile);
 
-		this.onRemove = e => {
-			this.sceneProfile.remove(e.profile);
-		};
+		this.onRemove = e => this.sceneProfile.remove(e.profile);
+		this.onAdd = e => this.sceneProfile.add(e.profile);
 	}
 	
 	setScene(scene){
@@ -22,11 +22,13 @@ Potree.ProfileTool = class ProfileTool{
 		}
 		
 		if(this.scene){
+			this.scene.removeEventListeners("profile_added", this.onAdd);
 			this.scene.removeEventListeners("profile_removed", this.onRemove);
 		}
 		
 		this.scene = scene;
 		
+		this.scene.addEventListener("profile_added", this.onAdd);
 		this.scene.addEventListener("profile_removed", this.onRemove);
 	}
 	
@@ -36,33 +38,6 @@ Potree.ProfileTool = class ProfileTool{
 		let profile = new Potree.Profile();
 		
 		this.sceneProfile.add(profile);
-		
-		let drag = (e) => {
-			let I = Potree.utils.getMousePointCloudIntersection(
-				e.drag.end, 
-				this.viewer.scene.camera, 
-				this.viewer.renderer, 
-				this.viewer.scene.pointclouds);
-			
-			if(I){
-				let i = profile.spheres.indexOf(e.drag.object);
-				if(i !== -1){
-					profile.setPosition(i, I.location);
-					profile.dispatchEvent({
-						"type": "marker_moved"
-					});
-				}
-			}
-		};
-		
-		let mouseover = (e) => e.object.material.emissive.setHex(0x888888);
-		let mouseleave = (e) => e.object.material.emissive.setHex(0x000000);
-		
-		profile.addEventListener("marker_added", e => {
-			e.sphere.addEventListener("drag", drag);
-			e.sphere.addEventListener("mouseover", mouseover);
-			e.sphere.addEventListener("mouseleave", mouseleave);
-		});
 		
 		let insertionCallback = (e) => {
 			if(e.button === THREE.MOUSE.LEFT){

@@ -15,10 +15,11 @@
  
 Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 	
-	constructor(renderer){
+	constructor(viewer){
 		super()
 		
-		this.renderer = renderer;
+		this.viewer = viewer;
+		this.renderer = viewer.renderer;
 		
 		this.scene = null;
 		
@@ -50,8 +51,6 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 				this.panDelta.x += ndrag.x;
 				this.panDelta.y += ndrag.y;
 			}
-			
-			console.log(e);
 		};
 		
 		let scroll = (e) => {
@@ -163,7 +162,6 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 			this.tweens.forEach( e => e.stop() );
 			this.tweens = [];
 		}		
-		
 		
 		{ // apply rotation
 			let progression = Math.min(1, this.fadeFactor * delta);

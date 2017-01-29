@@ -33,48 +33,6 @@ Potree.Profile = class extends THREE.Object3D{
 		
 		let sphere = new THREE.Mesh(this.sphereGeometry, this.createSphereMaterial());
 		
-		let moveEvent = (event) => {
-			sphere.material.emissive.setHex(0x888888);
-		};
-		
-		let leaveEvent = (event) => {
-			event.target.material.emissive.setHex(0x000000);
-		};
-		
-		let dragEvent = (event) => {
-			let tool = event.tool;
-			let dragstart = tool.dragstart;
-			let mouse = tool.mouse;
-		
-			if(event.event.ctrlKey){
-				let mouseStart = new THREE.Vector3(dragstart.mousePos.x, dragstart.mousePos.y, 0);
-				let mouseEnd = new THREE.Vector3(mouse.x, mouse.y, 0);
-				let widthStart = dragstart.widthStart;
-				
-				let scale = 1 - 10 * (mouseStart.y - mouseEnd.y);
-				scale = Math.max(0.01, scale);
-				if(widthStart){
-					this.setWidth(widthStart *  scale);
-				}
-			} else {
-				let point = tool.getMousePointCloudIntersection.bind(tool)();
-					
-				if(point){
-					let index = this.spheres.indexOf(tool.dragstart.object);
-					this.setPosition(index, point);
-				}
-			}
-			
-			event.event.stopImmediatePropagation();
-		};
-		
-		let dropEvent = (event) => { };
-		
-		sphere.addEventListener("mousemove", moveEvent);
-		sphere.addEventListener("mouseleave", leaveEvent);
-		sphere.addEventListener("mousedrag", dragEvent);
-		sphere.addEventListener("drop", dropEvent);
-		
 		this.add(sphere);
 		this.spheres.push(sphere);
 		
@@ -105,6 +63,33 @@ Potree.Profile = class extends THREE.Object3D{
 			
 			this.add(box);
 			this.boxes.push(box);
+		}
+		
+		{ // event listeners
+			let drag = (e) => {
+				let I = Potree.utils.getMousePointCloudIntersection(
+					e.drag.end, 
+					e.viewer.scene.camera, 
+					e.viewer.renderer, 
+					e.viewer.scene.pointclouds);
+				
+				if(I){
+					let i = this.spheres.indexOf(e.drag.object);
+					if(i !== -1){
+						this.setPosition(i, I.location);
+						this.dispatchEvent({
+							"type": "marker_moved"
+						});
+					}
+				}
+			};
+			
+			let mouseover = (e) => e.object.material.emissive.setHex(0x888888);
+			let mouseleave = (e) => e.object.material.emissive.setHex(0x000000);
+		
+			sphere.addEventListener("drag", drag);
+			sphere.addEventListener("mouseover", mouseover);
+			sphere.addEventListener("mouseleave", mouseleave);
 		}
 		
 		let event = {

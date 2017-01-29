@@ -7,12 +7,22 @@ Potree.VolumeTool = class VolumeTool{
 		this.renderer = viewer.renderer;
 
 		this.sceneVolume = new THREE.Scene();
+		this.sceneVolume.name = "scene_volume";
 		
 		this.viewer.inputHandler.registerInteractiveScene(this.sceneVolume);
 
 		this.onRemove = e => {
 			this.sceneVolume.remove(e.volume);
 		};
+		
+		this.onAdd = e => {
+			this.sceneVolume.add(e.volume);
+		};
+		
+		this.viewer.inputHandler.addEventListener("delete", e => {
+			let volumes = e.selection.filter(e => (e instanceof Potree.Volume));
+			volumes.forEach(e => this.viewer.scene.removeVolume(e));
+		});
 	}
 	
 	setScene(scene){
@@ -21,11 +31,13 @@ Potree.VolumeTool = class VolumeTool{
 		}
 		
 		if(this.scene){
+			this.scene.removeEventListeners("volume_added", this.onAdd);
 			this.scene.removeEventListeners("volume_removed", this.onRemove);
 		}
 		
 		this.scene = scene;
 		
+		this.scene.addEventListener("volume_added", this.onAdd);
 		this.scene.addEventListener("volume_removed", this.onRemove);
 	}
 	
@@ -35,7 +47,7 @@ Potree.VolumeTool = class VolumeTool{
 		let volume = new Potree.Volume();
 		volume.clip = args.clip || false;
 		
-		this.sceneVolume.add(volume);
+		//this.sceneVolume.add(volume);
 		this.viewer.scene.addVolume(volume);
 
 		let drag = e => {

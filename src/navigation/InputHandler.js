@@ -5,11 +5,12 @@
  */ 
 Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 	
-	constructor(renderer){
+	constructor(viewer){
 		super();
 		
-		this.renderer = renderer;
-		this.domElement = renderer.domElement;
+		this.viewer = viewer;
+		this.renderer = viewer.renderer;
+		this.domElement = this.renderer.domElement;
 		
 		this.scene = null;
 		this.interactiveScenes = [];
@@ -20,13 +21,18 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 		
 		this.selection = [];
 		
-		this.hoveredElement = null;
+		this.hoveredElements = [];
+		this.pressedKeys = {};
 		
 		this.wheelDelta = 0;
 		
 		this.speed = 1;
 		
-		this.logMessages = true;
+		this.logMessages = false;
+		
+		if(this.domElement.tabIndex === -1){
+			this.domElement.tabIndex = 2222;
+		}
 		
 		this.domElement.addEventListener("contextmenu", (event) => { event.preventDefault(); }, false );
 		this.domElement.addEventListener("click", this.onMouseClick.bind(this), false);
@@ -55,11 +61,25 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 	onKeyDown(e){
 		if(this.logMessages) console.log(this.constructor.name + ": onKeyDown");
 		
+		if(e.keyCode === 46 && this.selection.length > 0){
+			// DELETE
+			this.dispatchEvent({
+				type: "delete",
+				selection: this.selection
+			});
+			
+			this.deselectAll();
+		}
+		
+		this.pressedKeys[e.keyCode] = true;
+		
 		e.preventDefault();
 	}
 	
 	onKeyUp(e){
 		if(this.logMessages) console.log(this.constructor.name + ": onKeyUp");
+		
+		delete this.pressedKeys[e.keyCode];
 		
 		e.preventDefault();
 	}
@@ -67,13 +87,21 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 	onDoubleClick(e){
 		if(this.logMessages) console.log(this.constructor.name + ": onDoubleClick");
 		
-		if(this.hoveredElement){
-			this.hoveredElement.object.dispatchEvent({
-				type: "dblclick",
-				mouse: this.mouse,
-				object: this.hoveredElement.object
-			});
-		}else{
+		
+		let consumed = false;
+		for(let hovered of this.hoveredElements){
+			if(hovered._listeners && hovered._listeners["dblclick"]){
+				hovered.object.dispatchEvent({
+					type: "dblclick",
+					mouse: this.mouse,
+					object: hovered.object
+				});
+				consumed = true;
+				break;
+			}
+		}
+		
+		if(!consumed){
 			for(let inputListener of this.inputListeners){
 				inputListener.dispatchEvent({
 					type: "dblclick",
@@ -82,6 +110,24 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 				});
 			}
 		}
+		
+		//if(this.hoveredElement){
+		//	
+		//	
+		//	this.hoveredElement.object.dispatchEvent({
+		//		type: "dblclick",
+		//		mouse: this.mouse,
+		//		object: this.hoveredElement.object
+		//	});
+		//}else{
+		//	for(let inputListener of this.inputListeners){
+		//		inputListener.dispatchEvent({
+		//			type: "dblclick",
+		//			mouse: this.mouse,
+		//			object: null
+		//		});
+		//	}
+		//}
 		
 		e.preventDefault();
 	}
@@ -102,17 +148,16 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 		let x = e.clientX - rect.left;
 		let y = e.clientY - rect.top;
 		
-		let hovered = this.getHoveredElement();
-		
 		if(!this.drag){
-			let object = hovered ? hovered.object : null;
-			if(object){
-				this.startDragging(object, {location: hovered.point});
+			
+			let target = this.hoveredElements
+				.find(el => (el.object._listeners && el.object._listeners["drag"]));
+			
+			if(target){
+				this.startDragging(target.object, {location: target.point});
 			}else{
 				this.startDragging(null);
 			}
-			//this.startDragging(hovered ? hovered.object : null);
-			this.drag.mouse = e.button;
 		}
 		
 		if(this.scene){
@@ -129,24 +174,25 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 		
 		if(e.button === THREE.MOUSE.LEFT){
 			if(noMovement){
-				if(this.hoveredElement){
-					if(e.ctrlKey){
-						this.toggleSelection(this.hoveredElement.object);
-					}else{
-						if(this.isSelected(this.hoveredElement.object)){
-							
+				
+				let selectable = this.hoveredElements
+					.find(el => el.object._listeners && el.object._listeners["select"]);
+				
+				if(selectable){
+					selectable = selectable.object;
+					
+					//if(e.ctrlKey){
+					//	this.toggleSelection(selectable);
+					//}else{
+						if(this.isSelected(selectable)){
 							this.selection
-								.filter(e => e !== this.hoveredElement.object)
+								.filter(e => e !== selectable)
 								.forEach(e => this.toggleSelection(e));
 						}else{
 							this.deselectAll();
-							this.toggleSelection(this.hoveredElement.object);
+							this.toggleSelection(selectable);
 						}
-					}
-					
-					this.hoveredElement.object.dispatchEvent({
-						type: "click"
-					});
+					//}
 				}else{
 					this.deselectAll();
 				}
@@ -186,34 +232,60 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 			if(this.drag.object){
 				this.drag.object.dispatchEvent({
 					type: "drag",
-					drag: this.drag
+					drag: this.drag,
+					viewer: this.viewer
 				});
 			}else{
 				for(let inputListener of this.inputListeners){
 					inputListener.dispatchEvent({
 						type: "drag",
-						drag: this.drag
+						drag: this.drag,
+						viewer: this.viewer
 					});
 				}
 			}
 		}
 		
-		let hovered = this.getHoveredElement();
-		if(this.hoveredElement && this.hoveredElement !== hovered){
-			this.hoveredElement.object.dispatchEvent({
-				type: "mouseleave",
-				object: this.hoveredElement.object
-			});
-		}
-		if(hovered && hovered !== this.hoveredElement){
-			hovered.object.dispatchEvent({
-				type: "mouseover",
-				object: hovered.object
-			});
-		}
-	
-		this.hoveredElement = hovered;
+		let hoveredElements = this.getHoveredElements();
+		let currentlyHoveredObjects = hoveredElements.map(e => e.object);
+		let previouslyHoveredObjects = this.hoveredElements.map(e => e.object);
 		
+		let justHovered = currentlyHoveredObjects
+			.filter(e => previouslyHoveredObjects.indexOf(e) === -1);
+		let justUnhovered = previouslyHoveredObjects
+			.filter(e => currentlyHoveredObjects.indexOf(e) === -1);
+			
+		let over = justHovered.find(e => (e._listeners && e._listeners["mouseover"]));
+		if(over){
+			over.dispatchEvent({
+				type: "mouseover",
+				object: over
+			});
+		}
+		
+		let leave = justUnhovered.find(e => (e._listeners && e._listeners["mouseleave"]));
+		if(leave){
+			leave.dispatchEvent({
+				type: "mouseleave",
+				object: leave
+			});
+		}
+			
+		//for(let h of justUnhovered){
+		//	h.dispatchEvent({
+		//		type: "mouseleave",
+		//		object: h
+		//	});
+		//}
+		//
+		//for(let h of justHovered){
+		//	h.dispatchEvent({
+		//		type: "mouseover",
+		//		object: h
+		//	});
+		//}
+	
+		this.hoveredElements = hoveredElements;
 	}
 	
 	onMouseWheel(e){
@@ -279,12 +351,12 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 		
 		if(index === -1){
 			this.selection.push(object);
-			this.hoveredElement.object.dispatchEvent({
+			object.dispatchEvent({
 				type: "select"
 			});
 		}else{
 			this.selection.splice(index, 1);
-			this.hoveredElement.object.dispatchEvent({
+			object.dispatchEvent({
 				type: "deselect"
 			});
 		}
@@ -338,14 +410,23 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 	}
 	
 	getHoveredElement(){
+		let hoveredElements = this.getHoveredElements();
+		if(hoveredElements.length > 0){
+			return hoveredElements[0];
+		}else{
+			return null;
+		}
+	}
+	
+	getHoveredElements(){
 		
 		let scenes = this.interactiveScenes.concat(this.scene.scene);
 	
-		let interactableListeners = ["mouseover", "mouseleave", "drag", "drop", "click"];
+		let interactableListeners = ["mouseover", "mouseleave", "drag", "drop", "click", "select", "deselect"];
 		let interactables = [];
 		for(let scene of scenes){
-			scene.traverse(node => {
-				if(node._listeners){
+			scene.traverseVisible(node => {
+				if(node._listeners && node.visible){
 					let hasInteractableListener = interactableListeners.filter((e) => {
 						return node._listeners[e] !== undefined
 					}).length > 0;
@@ -369,13 +450,15 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 		raycaster.ray.set( this.scene.camera.position, vector.sub( this.scene.camera.position ).normalize() );
 		raycaster.linePrecision = 0.2;
 		
-		let intersections = raycaster.intersectObjects(interactables, true);
+		let intersections = raycaster.intersectObjects(interactables, false);
 		
-		if(intersections.length > 0){
-			return intersections[0];
-		}else{
-			return null;
-		}
+		return intersections;
+		
+		//if(intersections.length > 0){
+		//	return intersections[0];
+		//}else{
+		//	return null;
+		//}
 	}
 	
 	setScene(scene){

@@ -748,8 +748,8 @@ function initAnnotationDetails(){
 		annotationPanel.empty();
 		
 		if(e.oldScene){
-			if(e.oldScene.dispatcher.hasEventListener("annotation_added", annotationAddedCallback)){
-				e.oldScene.dispatcher.removeEventListener("annotation_added", annotationAddedCallback);
+			if(e.oldScene.hasEventListener("annotation_added", annotationAddedCallback)){
+				e.oldScene.removeEventListener("annotation_added", annotationAddedCallback);
 			}
 		}
 		
@@ -1061,9 +1061,9 @@ function initMeasurementDetails(){
 		if(measurement instanceof Potree.Measure){
 			let onremove = function(event){
 				if(event.measurement === measurement){
-					scene.dispatcher.removeEventListener("marker_added", updateDisplay);
-					scene.dispatcher.removeEventListener("marker_removed", updateDisplay);
-					scene.dispatcher.removeEventListener("marker_moved", updateDisplay);
+					scene.removeEventListener("marker_added", updateDisplay);
+					scene.removeEventListener("marker_removed", updateDisplay);
+					scene.removeEventListener("marker_moved", updateDisplay);
 					$(elLi).remove();
 				}
 			};
@@ -1077,15 +1077,15 @@ function initMeasurementDetails(){
 				measurement.removeEventListener("marker_added", updateDisplay);
 				measurement.removeEventListener("marker_removed", updateDisplay);
 				measurement.removeEventListener("marker_moved", updateDisplay);
-				scene.dispatcher.removeEventListener("measurement_added", onremove);
-				scene.dispatcher.removeEventListener("measurement_removed", onremove);
+				scene.removeEventListener("measurement_added", onremove);
+				scene.removeEventListener("measurement_removed", onremove);
 			};
 		} else if(measurement instanceof Potree.Profile){
 			let onremove = function(event){
 				if(event.profile === measurement){
-					scene.dispatcher.removeEventListener("marker_added", updateDisplay);
-					scene.dispatcher.removeEventListener("marker_removed", updateDisplay);
-					scene.dispatcher.removeEventListener("marker_moved", updateDisplay);
+					scene.removeEventListener("marker_added", updateDisplay);
+					scene.removeEventListener("marker_removed", updateDisplay);
+					scene.removeEventListener("marker_moved", updateDisplay);
 					$(elLi).remove();
 				}
 			};
@@ -1099,8 +1099,8 @@ function initMeasurementDetails(){
 				measurement.removeEventListener("marker_added", updateDisplay);
 				measurement.removeEventListener("marker_removed", updateDisplay);
 				measurement.removeEventListener("marker_moved", updateDisplay);
-				scene.dispatcher.removeEventListener("profile_added", onremove);
-				scene.dispatcher.removeEventListener("profile_removed", onremove);
+				scene.removeEventListener("profile_added", onremove);
+				scene.removeEventListener("profile_removed", onremove);
 			};
 		}
 		
@@ -1129,12 +1129,12 @@ function initMeasurementDetails(){
 			trackMeasurement(scene, scene.profiles[i]);
 		}
 		
-		if(!scene.dispatcher.hasEventListener("measurement_added", scenelistener)){
-			scene.dispatcher.addEventListener("measurement_added", scenelistener);
+		if(!scene.hasEventListener("measurement_added", scenelistener)){
+			scene.addEventListener("measurement_added", scenelistener);
 		}
 		
-		if(!scene.dispatcher.hasEventListener("profile_added", scenelistener)){
-			scene.dispatcher.addEventListener("profile_added", scenelistener);
+		if(!scene.hasEventListener("profile_added", scenelistener)){
+			scene.addEventListener("profile_added", scenelistener);
 		}
 	};
 	

@@ -13,138 +13,99 @@
  *
  */
  
-Potree.FirstPersonControls = class extends Potree.Controls{
+Potree.FirstPersonControls = class FirstPersonControls extends THREE.EventDispatcher{
 	
-	constructor(renderer){
-		super(renderer);
+	constructor(viewer){
+		super();
+		
+		this.viewer = viewer;
+		this.renderer = viewer.renderer;
+		
+		this.scene = null;
 		
 		this.rotationSpeed = 200;
 		this.moveSpeed = 10;
 		
-		this.minimumJumpDistance = 0.2;
-		this.jumpDistance = null;
-
-		this.keys = { 
-			LEFT: 37, 
-			UP: 38, 
-			RIGHT: 39, 
-			BOTTOM: 40,
-			A: 'A'.charCodeAt(0),
-			S: 'S'.charCodeAt(0),
-			D: 'D'.charCodeAt(0),
-			W: 'W'.charCodeAt(0)
-		};
-
-		this.STATE = { NONE : -1, ROTATE : 0, SPEEDCHANGE : 1, PAN : 2 };
-
-		this.state = this.STATE.NONE;
+		this.keys = {
+			FORWARD:   ['W'.charCodeAt(0), 38],
+			BACKWARD:  ['S'.charCodeAt(0), 40],
+			LEFT:      ['A'.charCodeAt(0), 37],
+			RIGHT:     ['D'.charCodeAt(0), 39],
+			UP:        ['R'.charCodeAt(0), 33],
+			DOWN:      ['F'.charCodeAt(0), 34]
+		}
 		
 		this.fadeFactor = 50;
 		this.yawDelta = 0;
 		this.pitchDelta = 0;
 		this.translationDelta = new THREE.Vector3(0, 0, 0);
+		this.translationWorldDelta = new THREE.Vector3(0, 0, 0);
 		
-		if(this.domElement.tabIndex === -1){
-			this.domElement.tabIndex = 2222;
-		}
+		let drag = (e) => {
+			if(e.drag.object !== null){
+				return;
+			}
+			
+			let moveSpeed = this.viewer.getMoveSpeed();
+			
+			let ndrag = {
+				x: e.drag.lastDrag.x / this.renderer.domElement.clientWidth,
+				y: e.drag.lastDrag.y / this.renderer.domElement.clientHeight
+			};
+			
+			if(e.drag.mouse === THREE.MOUSE.LEFT){
+				this.yawDelta += ndrag.x * this.rotationSpeed;
+				this.pitchDelta += ndrag.y * this.rotationSpeed;
+			}else if(e.drag.mouse === THREE.MOUSE.RIGHT){
+				this.translationDelta.x -= ndrag.x * moveSpeed * 100;
+				this.translationDelta.z += ndrag.y * moveSpeed * 100;
+			}
+		};
+		
+		this.addEventListener("drag", drag);
 	}
 	
-	onMouseDown(e){
-		if(this.enabled === false){
-			return;
-		}
-		
-		super.onMouseDown(e);
-		e.preventDefault();
-		
-		if(e.button === THREE.MOUSE.LEFT){
-			this.state = this.STATE.ROTATE;
-		}else if(event.button === THREE.MOUSE.RIGHT){
-			this.state = this.STATE.PAN;
-		}
-	}
-	
-	onMouseUp(e){
-		if(this.enabled === false){
-			return;
-		}
-		
-		this.state = this.STATE.NONE;
-	}
-	
-	onDoubleClick(e){
-		if(!this.enabled){return;}
-		
-		this.zoomToLocation(this.mouse);
-	}
-	
-	onKeyDown(e){
-		if(this.enabled === false){
-			return;
-		}
-
-		if(e.keyCode === this.keys.UP || e.keyCode === this.keys.W){
-			this.moveForward = true;
-		}else if(e.keyCode === this.keys.BOTTOM || e.keyCode === this.keys.S){
-			this.moveBackward = true;
-		}else if(e.keyCode === this.keys.LEFT || e.keyCode === this.keys.A){
-			this.moveLeft = true;
-		}else if(e.keyCode === this.keys.RIGHT || e.keyCode === this.keys.D){
-			this.moveRight = true;
-		}
-	}
-	
-	onKeyUp(e){
-		if(this.enabled === false){
-			return;
-		}
-		
-		if(e.keyCode === this.keys.UP || e.keyCode === this.keys.W){
-			this.moveForward = false;
-		}else if(e.keyCode === this.keys.BOTTOM || e.keyCode === this.keys.S){
-			this.moveBackward = false;
-		}else if(e.keyCode === this.keys.LEFT || e.keyCode === this.keys.A){
-			this.moveLeft = false;
-		}else if(e.keyCode === this.keys.RIGHT || e.keyCode === this.keys.D){
-			this.moveRight = false;
-		}
+	setScene(scene){
+		this.scene = scene;
 	}
 	
 	update(delta){
-		if(!this.enabled){
-			return;
-		}
-		
 		let view = this.scene.view;
-		let drag = this.getNormalizedLastDrag();
 		
 		{ // accelerate while input is given
-			if(this.state === this.STATE.ROTATE){
-				this.yawDelta += drag.x * this.rotationSpeed;
-				this.pitchDelta += drag.y * this.rotationSpeed;
-			}else if(this.state === this.STATE.PAN){
-				this.translationDelta.x -= drag.x * this.speed * 50;
-				this.translationDelta.z += drag.y * this.speed * 50;
+			let ih = this.viewer.inputHandler;
+			
+			let moveForward = this.keys.FORWARD.some(e => ih.pressedKeys[e]);
+			let moveBackward = this.keys.BACKWARD.some(e => ih.pressedKeys[e]);
+			let moveLeft = this.keys.LEFT.some(e => ih.pressedKeys[e]);
+			let moveRight = this.keys.RIGHT.some(e => ih.pressedKeys[e]);
+			let moveUp = this.keys.UP.some(e => ih.pressedKeys[e]);
+			let moveDown = this.keys.DOWN.some(e => ih.pressedKeys[e]);
+			
+			if(moveForward && moveBackward){
+				this.translationDelta.y = 0;
+			}else if(moveForward){
+				this.translationDelta.y = this.viewer.getMoveSpeed();
+			}else if(moveBackward){
+				this.translationDelta.y = -this.viewer.getMoveSpeed();
 			}
 			
-			{ // TRANSLATION
-				
-				if(this.moveForward && this.moveBackward){
-					this.translationDelta.y = 0;
-				}else if(this.moveForward){
-					this.translationDelta.y = this.speed;
-				}else if(this.moveBackward){
-					this.translationDelta.y = -this.speed;
-				}
-				
-				if(this.moveLeft && this.moveRight){
-					this.translationDelta.x = 0;
-				}else if(this.moveLeft){
-					this.translationDelta.x = -this.speed;
-				}else if(this.moveRight){
-					this.translationDelta.x = this.speed;
-				}
+			if(moveLeft && moveRight){
+				this.translationDelta.x = 0;
+			}else if(moveLeft){
+				this.translationDelta.x = -this.viewer.getMoveSpeed();
+			}else if(moveRight){
+				this.translationDelta.x = this.viewer.getMoveSpeed();
 			}
+			
+			if(moveUp && moveDown){
+				this.translationWorldDelta.z = 0;
+			}else if(moveUp){
+				this.translationWorldDelta.z = this.viewer.getMoveSpeed();
+			}else if(moveDown){
+				this.translationWorldDelta.z = -this.viewer.getMoveSpeed();
+			}
+			
 		}
 		
 		{ // apply rotation
@@ -156,19 +117,20 @@ Potree.FirstPersonControls = class extends Potree.Controls{
 			
 			view.yaw = yaw;
 			view.pitch = pitch;
-			
-			let V = this.scene.view.direction.multiplyScalar(-view.radius);
-			let position = new THREE.Vector3().addVectors(view.getPivot(), V);
-			
-			view.position = position;
 		}
 		
 		{ // apply translation
-			let tx = this.translationDelta.x * delta;
-			let ty = this.translationDelta.y * delta;
-			let tz = this.translationDelta.z * delta;
+			view.translate(
+				this.translationDelta.x * delta,
+				this.translationDelta.y * delta,
+				this.translationDelta.z * delta
+			);
 			
-			view.translate(tx, ty, tz);
+			view.translateWorld(
+				this.translationWorldDelta.x * delta,
+				this.translationWorldDelta.y * delta,
+				this.translationWorldDelta.z * delta
+			);
 		}
 		
 		{// decelerate over time
@@ -176,10 +138,9 @@ Potree.FirstPersonControls = class extends Potree.Controls{
 			this.yawDelta *= attenuation;
 			this.pitchDelta *= attenuation;
 			this.translationDelta.multiplyScalar(attenuation);
+			this.translationWorldDelta.multiplyScalar(attenuation);
 		}
 		
-		
-		this.updateFinished();
 	}
 
 	

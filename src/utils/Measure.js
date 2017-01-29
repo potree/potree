@@ -100,6 +100,33 @@ Potree.Measure = class Measure extends THREE.Object3D{
 			this.coordinateLabels.push(coordinateLabel);
 			this.add(coordinateLabel);
 		}
+		
+		{ // Event Listeners
+			let drag = (e) => {
+				let I = Potree.utils.getMousePointCloudIntersection(
+					e.drag.end, 
+					e.viewer.scene.camera, 
+					e.viewer.renderer, 
+					e.viewer.scene.pointclouds);
+				
+				if(I){
+					let i = this.spheres.indexOf(e.drag.object);
+					if(i !== -1){
+						this.setPosition(i, I.location);
+						this.dispatchEvent({
+							"type": "marker_moved"
+						});
+					}
+				}
+			};
+			
+			let mouseover = (e) => e.object.material.emissive.setHex(0x888888);
+			let mouseleave = (e) => e.object.material.emissive.setHex(0x000000);
+			
+			sphere.addEventListener("drag", drag);
+			sphere.addEventListener("mouseover", mouseover);
+			sphere.addEventListener("mouseleave", mouseleave);
+		}
 
 		let event = {
 			type: "marker_added",

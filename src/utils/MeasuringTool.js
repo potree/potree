@@ -8,14 +8,14 @@ Potree.MeasuringTool = class MeasuringTool{
 		this.renderer = viewer.renderer;
 		
 		this.sceneMeasurement = new THREE.Scene();
+		this.sceneMeasurement.name = "scene_measurement";
 		this.light = new THREE.PointLight( 0xffffff, 1.0 );
 		this.sceneMeasurement.add(this.light);
 		
 		this.viewer.inputHandler.registerInteractiveScene(this.sceneMeasurement);
 		
-		this.onRemove = (e) => {
-			this.sceneMeasurement.remove(e.measurement);
-		};
+		this.onRemove = (e) => {this.sceneMeasurement.remove(e.measurement)};
+		this.onAdd = e => {this.sceneMeasurement.add(e.measurement)};
 	}
 	
 	setScene(scene){
@@ -24,11 +24,13 @@ Potree.MeasuringTool = class MeasuringTool{
 		}
 		
 		if(this.scene){
+			this.scene.removeEventListener("measurement_added", this.onAdd);
 			this.scene.removeEventListener("measurement_removed", this.onRemove);
 		}
 		
 		this.scene = scene;
 		
+		this.scene.addEventListener("measurement_added", this.onAdd);
 		this.scene.addEventListener("measurement_removed", this.onRemove);
 		
 	}
@@ -46,33 +48,6 @@ Potree.MeasuringTool = class MeasuringTool{
 		measure.maxMarkers = args.maxMarkers || Infinity;
 		
 		this.sceneMeasurement.add(measure);
-		
-		let drag = (e) => {
-			let I = Potree.utils.getMousePointCloudIntersection(
-				e.drag.end, 
-				this.viewer.scene.camera, 
-				this.viewer.renderer, 
-				this.viewer.scene.pointclouds);
-			
-			if(I){
-				let i = measure.spheres.indexOf(e.drag.object);
-				if(i !== -1){
-					measure.setPosition(i, I.location);
-					measure.dispatchEvent({
-						"type": "marker_moved"
-					});
-				}
-			}
-		};
-		
-		let mouseover = (e) => e.object.material.emissive.setHex(0x888888);
-		let mouseleave = (e) => e.object.material.emissive.setHex(0x000000);
-		
-		measure.addEventListener("marker_added", e => {
-			e.sphere.addEventListener("drag", drag);
-			e.sphere.addEventListener("mouseover", mouseover);
-			e.sphere.addEventListener("mouseleave", mouseleave);
-		});
 		
 		let insertionCallback = (e) => {
 			if(e.button === THREE.MOUSE.LEFT){

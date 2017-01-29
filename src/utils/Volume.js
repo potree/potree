@@ -79,14 +79,13 @@ Potree.Volume = class extends THREE.Object3D{
 			}
 		};
 		
+		{ // event listeners
+			this.addEventListener("select", e => {});
+			this.addEventListener("deselect", e => {});
+		}
+		
 		this.update();
 	}
-	
-	//setDimension(x,y,z){
-	//	this.dimension.set(x,y,z);
-	//	this.box.scale.set(x,y,z);
-	//	this.frame.scale.set(x,y,z);
-	//}
 
 	getVolume(){
 		return Math.abs(this.scale.x * this.scale.y * this.scale.z);

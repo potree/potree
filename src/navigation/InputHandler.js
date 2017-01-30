@@ -51,11 +51,12 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 	}
 	
 	removeInputListener(listener){
-		let index = this.inputListeners.indexOf(listener);
-		
-		if(index !== -1){
-			this.inputListeners = this.inputListeners.splice(index, 1);
-		}
+		this.inputListeners = this.inputListeners.filter(e => e !== listener);
+		//let index = this.inputListeners.indexOf(listener);
+		//
+		//if(index !== -1){
+		//	this.inputListeners = this.inputListeners.splice(index, 1);
+		//}
 	}
 	
 	onKeyDown(e){
@@ -143,10 +144,20 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 		
 		e.preventDefault();
 		
-		let rect = this.domElement.getBoundingClientRect();
+		//let rect = this.domElement.getBoundingClientRect();
 		
-		let x = e.clientX - rect.left;
-		let y = e.clientY - rect.top;
+		//let x = e.clientX - rect.left;
+		//let y = e.clientY - rect.top;
+		
+		if(this.hoveredElements.length === 0){
+			for(let inputListener of this.inputListeners){
+				inputListener.dispatchEvent({
+					type: "mousedown",
+					viewer: this.viewer,
+					mouse: this.mouse
+				});
+			}
+		}
 		
 		if(!this.drag){
 			
@@ -199,6 +210,16 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 			}
 		}else if(event.button === THREE.MOUSE.RIGHT){
 			this.deselectAll();
+		}
+		
+		if(this.hoveredElements.length === 0){
+			for(let inputListener of this.inputListeners){
+				inputListener.dispatchEvent({
+					type: "mouseup",
+					viewer: this.viewer,
+					mouse: this.mouse
+				});
+			}
 		}
 		
 		if(this.drag){

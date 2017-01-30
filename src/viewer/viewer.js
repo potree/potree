@@ -406,7 +406,7 @@ Potree.Viewer = class{
 				
 				if(this.scene.pointclouds.length === 1){
 					let speed = e.pointcloud.boundingBox.getSize().length();
-					speed = speed / 10;
+					speed = speed / 5;
 					this.setMoveSpeed(speed);
 				}
 				
@@ -1608,7 +1608,6 @@ Potree.Viewer = class{
 			
 			this.controls = this.getControls(scene.view.navigationMode);
 			this.controls.enabled = true;
-			//this.controls.setSpeed(this.getMoveSpeed());
 			this.inputHandler.addInputListener(this.controls);
 		}
 		//

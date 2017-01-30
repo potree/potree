@@ -41,6 +41,8 @@ Potree.FirstPersonControls = class FirstPersonControls extends THREE.EventDispat
 		this.translationDelta = new THREE.Vector3(0, 0, 0);
 		this.translationWorldDelta = new THREE.Vector3(0, 0, 0);
 		
+		this.tweens = [];
+		
 		let drag = (e) => {
 			if(e.drag.object !== null){
 				return;
@@ -62,15 +64,128 @@ Potree.FirstPersonControls = class FirstPersonControls extends THREE.EventDispat
 			}
 		};
 		
+		let scroll = (e) => {
+			let speed = this.viewer.getMoveSpeed();
+			
+			if(e.delta < 0){
+				speed = speed * 0.9;
+			}else if(e.delta > 0){
+				speed = speed / 0.9;
+			}
+			
+			speed = Math.max(speed, 0.1);
+			
+			this.viewer.setMoveSpeed(speed);
+		};
+		
+		let dblclick = (e) => {
+			this.zoomToLocation(e.mouse);
+		};
+		
 		this.addEventListener("drag", drag);
+		this.addEventListener("mousewheel", scroll);
+		this.addEventListener("dblclick", dblclick);
 	}
 	
 	setScene(scene){
 		this.scene = scene;
 	}
 	
+	zoomToLocation(mouse){
+		let camera = this.scene.camera;
+		
+		let I = Potree.utils.getMousePointCloudIntersection(
+			mouse, 
+			camera, 
+			this.renderer, 
+			this.scene.pointclouds);
+			
+		if(I === null){
+			return;
+		}
+		
+		let nmouse =  {
+			x: +( mouse.x / this.renderer.domElement.clientWidth )  * 2 - 1,
+			y: -( mouse.y / this.renderer.domElement.clientHeight ) * 2 + 1
+		};
+		
+		let targetRadius = 0;
+		{
+			let minimumJumpDistance = 0.2;
+			
+			let vector = new THREE.Vector3( nmouse.x, nmouse.y, 0.5 );
+			vector.unproject(camera);
+			
+			let direction = vector.sub(camera.position).normalize();
+			let ray = new THREE.Ray(camera.position, direction);
+			
+			let nodes = I.pointcloud.nodesOnRay(I.pointcloud.visibleNodes, ray);
+			let lastNode = nodes[nodes.length - 1];
+			let radius = lastNode.getBoundingSphere().radius;
+			targetRadius = Math.min(this.scene.view.radius, radius);
+			targetRadius = Math.max(minimumJumpDistance, targetRadius);
+		}
+		
+		let d = this.scene.view.direction.multiplyScalar(-1);
+		let cameraTargetPosition = new THREE.Vector3().addVectors(I.location, d.multiplyScalar(targetRadius));
+		let controlsTargetPosition = I.location;
+		
+		var animationDuration = 600;
+		var easing = TWEEN.Easing.Quartic.Out;
+		
+		{ // animate position
+			let tween = new TWEEN.Tween(this.scene.view.position).to(cameraTargetPosition, animationDuration);
+			tween.easing(easing);
+			this.tweens.push(tween);
+			
+			tween.onComplete( () => {
+				this.tweens = this.tweens.filter( e => e !== tween);
+			});
+			
+			tween.start();
+		}
+		
+		{ // animate target
+			let pivot = this.scene.view.getPivot();
+			let tween = new TWEEN.Tween(pivot).to(I.location, animationDuration);
+			tween.easing(easing);
+			tween.onUpdate(() => {
+				this.scene.view.lookAt(pivot);
+				let speed = this.scene.view.radius / 2.5;
+				this.viewer.setMoveSpeed(speed);
+			});
+			tween.onComplete(() => {
+				
+				this.tweens = this.tweens.filter( e => e !== tween);
+				
+				this.dispatchEvent({
+					type: "double_click_move",
+					controls: this,
+					position: cameraTargetPosition,
+					targetLocation: I.location,
+					targetPointcloud: I.pointcloud
+				});
+			});
+			tween.start();
+			
+			this.tweens.push(tween);
+		}
+	}
+	
 	update(delta){
 		let view = this.scene.view;
+		
+		{ // cancel move animations on user input
+			let changes = [ this.yawDelta, 
+				this.pitchDelta, 
+				this.translationDelta.length(),
+				this.translationWorldDelta.length() ];
+			let changeHappens = changes.some( e => Math.abs(e) > 0.001);
+			if(changeHappens && this.tweens.length > 0){
+				this.tweens.forEach( e => e.stop() );
+				this.tweens = [];
+			}	
+		}
 		
 		{ // accelerate while input is given
 			let ih = this.viewer.inputHandler;
@@ -131,6 +246,10 @@ Potree.FirstPersonControls = class FirstPersonControls extends THREE.EventDispat
 				this.translationWorldDelta.y * delta,
 				this.translationWorldDelta.z * delta
 			);
+		}
+		
+		{ // set view target according to speed
+			view.radius = 3 * this.viewer.getMoveSpeed();
 		}
 		
 		{// decelerate over time

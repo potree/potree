@@ -134,9 +134,7 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 			});
 			tween.onComplete(() => {
 				
-				tween.onComplete( () => {
-					this.tweens = this.tweens.filter( e => e !== tween);
-				});
+				this.tweens = this.tweens.filter( e => e !== tween);
 				
 				this.dispatchEvent({
 					type: "double_click_move",
@@ -156,12 +154,14 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 		
 		let view = this.scene.view;
 		
-		let changes = [ this.yawDelta, this.pitchDelta, this.radiusDelta, this.panDelta.length() ];
-		let changeHappens = changes.some( e => Math.abs(e) > 0.001);
-		if(changeHappens && this.tweens.length > 0){
-			this.tweens.forEach( e => e.stop() );
-			this.tweens = [];
-		}		
+		{ // cancel move animations on user input
+			let changes = [ this.yawDelta, this.pitchDelta, this.radiusDelta, this.panDelta.length() ];
+			let changeHappens = changes.some( e => Math.abs(e) > 0.001);
+			if(changeHappens && this.tweens.length > 0){
+				this.tweens.forEach( e => e.stop() );
+				this.tweens = [];
+			}
+		}
 		
 		{ // apply rotation
 			let progression = Math.min(1, this.fadeFactor * delta);
@@ -204,6 +204,10 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 			view.position.copy(position);
 		}
 		
+		{
+			let speed = view.radius / 2.5;
+			this.viewer.setMoveSpeed(speed);
+		}
 		
 		{// decelerate over time
 			let attenuation = Math.max(0, 1 - this.fadeFactor * delta);

@@ -20,18 +20,62 @@ Potree.EarthControls = class EarthControls extends THREE.EventDispatcher{
 				return;
 			}
 			
-			//let ndrag = {
-			//	x: e.drag.lastDrag.x / this.renderer.domElement.clientWidth,
-			//	y: e.drag.lastDrag.y / this.renderer.domElement.clientHeight
-			//};
-			//
-			//if(e.drag.mouse === THREE.MOUSE.LEFT){
-			//	this.yawDelta += ndrag.x * this.rotationSpeed;
-			//	this.pitchDelta += ndrag.y * this.rotationSpeed;
-			//}else if(e.drag.mouse === THREE.MOUSE.RIGHT){
-			//	this.panDelta.x += ndrag.x;
-			//	this.panDelta.y += ndrag.y;
+			if(!this.pivot){
+				return;
+			}
+			
+			//if(!e.drag.intersectionStart){
+			//	e.drag.camStart = this.scene.camera.clone();
 			//}
+			
+			let camStart = this.camStart;
+			
+			//let camera = this.viewer.scene.camera;
+			let mouse = e.drag.end;
+			let domElement = this.viewer.renderer.domElement;
+			
+			if(e.drag.mouse === THREE.MOUSE.LEFT){
+				let nmouse =  {
+					x: (mouse.x / domElement.clientWidth ) * 2 - 1,
+					y: - (mouse.y / domElement.clientHeight ) * 2 + 1
+				};
+				
+				let vector = new THREE.Vector3( nmouse.x, nmouse.y, 0.5 );
+				vector.unproject(camStart);
+				
+				let dir = vector.sub( camStart.position).normalize();
+				let ray = new THREE.Ray(camStart.position, dir);
+				let plane = new THREE.Plane().setFromNormalAndCoplanarPoint(
+					new THREE.Vector3(0, 0, 1), 
+					this.pivot);
+				
+				
+				let distanceToPlane = ray.distanceToPlane(plane);
+
+				if(distanceToPlane > 0){
+					let I = new THREE.Vector3().addVectors(
+						camStart.position, 
+						dir.clone().multiplyScalar(distanceToPlane));
+						
+					let movedBy = new THREE.Vector3().subVectors(
+						I, this.pivot);
+					
+					let newCamPos = camStart.position.clone().sub(movedBy);
+					
+					this.viewer.scene.view.position.copy(newCamPos);
+					
+					{
+						let distance = newCamPos.distanceTo(this.pivot);
+						this.viewer.scene.view.radius = distance;
+						let speed = this.viewer.scene.view.radius / 2.5;
+						this.viewer.setMoveSpeed(speed);
+					}
+				}
+				
+			}else if(e.drag.mouse === THREE.MOUSE.RIGHT){
+				
+			}
+			
 		};
 		
 		let onMouseDown = e => {
@@ -49,9 +93,12 @@ Potree.EarthControls = class EarthControls extends THREE.EventDispatcher{
 		
 		let onMouseUp = e => {
 			this.camStart = null;
+			this.pivot = null;
 		};
 		
-		let scroll = (e) => {this.wheelDelta += e.delta};
+		let scroll = (e) => {
+			this.wheelDelta += e.delta
+		};
 		
 		this.addEventListener("drag", drag);
 		this.addEventListener("mousewheel", scroll);
@@ -85,6 +132,13 @@ Potree.EarthControls = class EarthControls extends THREE.EventDispatcher{
 				
 				resolvedPos.add(targetDir.multiplyScalar(jumpDistance));
 				this.zoomDelta.subVectors(resolvedPos, view.position);
+				
+				{
+					let distance = resolvedPos.distanceTo(I.location);
+					view.radius = distance;
+					let speed = view.radius / 2.5;
+					this.viewer.setMoveSpeed(speed);
+				}
 			}
 		}
 		
@@ -95,6 +149,11 @@ Potree.EarthControls = class EarthControls extends THREE.EventDispatcher{
 			let newPos = new THREE.Vector3().addVectors(view.position, p);
 			view.position.copy(newPos);
 		}
+		
+		//{
+		//	let speed = view.radius / 2.5;
+		//	this.viewer.setMoveSpeed(speed);
+		//}
 		
 		// decelerate over time
 		{

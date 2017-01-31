@@ -49,6 +49,12 @@ function initToolbar(){
 	));
 	
 	elToolbar.appendChild(createToolIcon(
+		Potree.resourcePath + "/icons/height.svg",
+		"[title]tt.height_measurement",
+		function(){viewer.measuringTool.startInsertion({showDistances: false, showHeight: true, showArea: false, closed: false, maxMarkers: 2})}
+	));
+	
+	elToolbar.appendChild(createToolIcon(
 		Potree.resourcePath + "/icons/area.svg",
 		"[title]tt.area_measurement",
 		function(){viewer.measuringTool.startInsertion({showDistances: true, showArea: true, closed: true})}

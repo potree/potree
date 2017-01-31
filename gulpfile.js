@@ -75,6 +75,9 @@ var paths = {
 		"src/viewer/potree.css",
 		"src/viewer/sidebar.html",
 		"src/viewer/profile.html"
+	],
+	resources: [
+		"resources/**/*"
 	]
 };
 
@@ -157,6 +160,9 @@ gulp.task("scripts", ['workers','shaders'], function(){
 
 	gulp.src(paths.html)
 		.pipe(gulp.dest('build/potree'));
+		
+	gulp.src(paths.resources)
+		.pipe(gulp.dest('build/potree/resources'));
 
 	return;
 });

@@ -41,6 +41,15 @@ Potree.ProfileTool = class ProfileTool{
 		
 		let insertionCallback = (e) => {
 			if(e.button === THREE.MOUSE.LEFT){
+				if(profile.points.length <= 1){
+					let camera = this.viewer.scene.camera;
+					let distance = camera.position.distanceTo(profile.points[0]);
+					let pr = Potree.utils.projectedRadius(1, camera.fov * Math.PI / 180, distance, domElement.clientHeight);
+					let width = (10 / pr);
+					
+					profile.setWidth(width);
+				}
+				
 				profile.addMarker(new THREE.Vector3(0, 0, 0));
 				
 				this.viewer.inputHandler.startDragging(

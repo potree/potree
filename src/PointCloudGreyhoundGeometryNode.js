@@ -313,6 +313,7 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.dispose = function(){
 	}
 };
 
-THREE.EventDispatcher.prototype.apply(
-        Potree.PointCloudGreyhoundGeometryNode.prototype);
+//THREE.EventDispatcher.prototype.apply(
+//        Potree.PointCloudGreyhoundGeometryNode.prototype);
+Object.assign( Potree.PointCloudGreyhoundGeometryNode.prototype, THREE.EventDispatcher.prototype );
 

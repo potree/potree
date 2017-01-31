@@ -1422,7 +1422,7 @@ Potree.Viewer = class{
             resGetPath: '../resources/lang/__lng__/__ns__.json',
             preload: ['en', 'fr', 'de'],
             getAsync: true,
-            debug: true
+            debug: false
             }, function(t) { 
             // Start translation once everything is loaded
             $("body").i18n();

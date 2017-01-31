@@ -113,40 +113,33 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 		var animationDuration = 600;
 		var easing = TWEEN.Easing.Quartic.Out;
 		
-		{ // animate position
-			let tween = new TWEEN.Tween(this.scene.view.position).to(cameraTargetPosition, animationDuration);
+		{ // animate 
+		
+			let value = {x: 0};
+			let tween = new TWEEN.Tween(value).to({x: 1}, animationDuration);
 			tween.easing(easing);
 			this.tweens.push(tween);
+			
+			let startPos = this.scene.view.position.clone();
+			let targetPos = cameraTargetPosition.clone();
+			let startRadius = this.scene.view.radius;
+			let targetRadius = cameraTargetPosition.distanceTo(I.location);
+			
+			tween.onUpdate( () => {
+				let t = value.x;
+				this.scene.view.position.x = (1 - t) * startPos.x + t * targetPos.x;
+				this.scene.view.position.y = (1 - t) * startPos.y + t * targetPos.y;
+				this.scene.view.position.z = (1 - t) * startPos.z + t * targetPos.z;
+				
+				this.scene.view.radius = (1 - t) * startRadius + t * targetRadius;
+				this.viewer.setMoveSpeed(this.scene.view.radius / 2.5);
+			});
 			
 			tween.onComplete( () => {
 				this.tweens = this.tweens.filter( e => e !== tween);
 			});
 			
 			tween.start();
-		}
-		
-		{ // animate target
-			let pivot = this.scene.view.getPivot();
-			let tween = new TWEEN.Tween(pivot).to(I.location, animationDuration);
-			tween.easing(easing);
-			tween.onUpdate(() => {
-				this.scene.view.lookAt(pivot);
-			});
-			tween.onComplete(() => {
-				
-				this.tweens = this.tweens.filter( e => e !== tween);
-				
-				this.dispatchEvent({
-					type: "double_click_move",
-					controls: this,
-					position: cameraTargetPosition,
-					targetLocation: I.location,
-					targetPointcloud: I.pointcloud
-				});
-			});
-			tween.start();
-			
-			this.tweens.push(tween);
 		}
 	}
 	

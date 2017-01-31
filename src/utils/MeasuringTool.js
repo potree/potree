@@ -44,6 +44,7 @@ Potree.MeasuringTool = class MeasuringTool{
 		measure.showArea = args.showArea || false;
 		measure.showAngles = args.showAngles || false;
 		measure.showCoordinates = args.showCoordinates || false;
+		measure.showHeight = args.showHeight || false;
 		measure.closed = args.closed || false;
 		measure.maxMarkers = args.maxMarkers || Infinity;
 		
@@ -132,8 +133,91 @@ Potree.MeasuringTool = class MeasuringTool{
 				let pr = Potree.utils.projectedRadius(1, camera.fov * Math.PI / 180, distance, domElement.clientHeight);
 				let scale = (70 / pr);
 				label.scale.set(scale, scale, scale);
-				
 			}
+			
+			// height label
+			if(measure.showHeight){ 
+				let label = measure.heightLabel;
+			
+				{
+					let distance = label.position.distanceTo(camera.position);
+					let pr = Potree.utils.projectedRadius(1, camera.fov * Math.PI / 180, distance, domElement.clientHeight);
+					let scale = (70 / pr);
+					label.scale.set(scale, scale, scale);
+				}
+				
+				{ // height edge
+					let edge = measure.heightEdge;
+					let lowpoint = edge.geometry.vertices[0];
+					let start = edge.geometry.vertices[2];
+					let end = edge.geometry.vertices[3];
+					
+					let lowScreen = lowpoint.clone().project(camera);
+					let startScreen = start.clone().project(camera);
+					let endScreen = end.clone().project(camera);
+					
+					let toPixelCoordinates = v => {
+						let r = v.clone().addScalar(1).divideScalar(2);
+						r.x = r.x * domElement.clientWidth;
+						r.y = r.y * domElement.clientHeight;
+						r.z = 0;
+						
+						return r;
+					};
+				
+					let lowEL = toPixelCoordinates(lowScreen);
+					let startEL = toPixelCoordinates(startScreen);
+					let endEL = toPixelCoordinates(endScreen);
+					
+					//let pixelDistance = startEL.distanceTo(endEL);
+					//let worldDistance = start.distanceTo(end);
+					
+					let distances = [0, 
+						lowEL.distanceTo(startEL),
+						startEL.distanceTo(endEL), 0];
+						
+					let lToS = lowEL.distanceTo(startEL);
+					let sToE = startEL.distanceTo(endEL);
+					
+					edge.geometry.lineDistances = [0, lToS, lToS, lToS + sToE];
+					edge.geometry.lineDistancesNeedUpdate = true;
+						
+					edge.material.dashSize = 10;
+					edge.material.gapSize = 10;
+						
+					//let sum = 0;
+					//let cumDistances = distances.map( e => {
+					//	sum = sum + e;
+					//	return sum;
+					//});
+					//
+					//heightEdge.geometry.lineDistances = cumDistances;
+					//heightEdge.geometry.lineDistancesNeedUpdate = true;
+					//
+					//edge.material.dashSize = 10;
+					//edge.material.gapSize = 10;
+					
+					
+					//edge.material.dashSize = 10 * worldDistance / pixelDistance;
+					//edge.material.gapSize = edge.material.dashSize;
+					
+					//edge.material.dashSize = pixelDistance / 5;
+					//edge.material.gapSize = pixelDistance / 5;
+					
+				}
+			}
+			
+			
+			
+			{ // area label
+				let label = measure.areaLabel;
+			
+				let distance = label.position.distanceTo(camera.position);
+				let pr = Potree.utils.projectedRadius(1, camera.fov * Math.PI / 180, distance, domElement.clientHeight);
+				let scale = (70 / pr);
+				label.scale.set(scale, scale, scale);
+			}
+			
 		}
 		
 		

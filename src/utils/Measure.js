@@ -9,7 +9,11 @@ Potree.Measure = class Measure extends THREE.Object3D{
 		this._showArea = false;
 		this._closed = true;
 		this._showAngles = false;
+		this._showHeight = false;
 		this.maxMarkers = Number.MAX_SAFE_INTEGER;
+		
+		this.sphereGeometry = new THREE.SphereGeometry(0.4, 10, 10);
+		this.color = new THREE.Color( 0xff0000 );
 		
 		this.spheres = [];
 		this.edges = [];
@@ -17,6 +21,40 @@ Potree.Measure = class Measure extends THREE.Object3D{
 		this.edgeLabels = [];
 		this.angleLabels = [];
 		this.coordinateLabels = [];
+		
+		this.heightEdge;
+		this.heightLabel;
+		{ // height stuff
+			
+			{ // height line
+				let lineGeometry = new THREE.Geometry();
+				lineGeometry.vertices.push(
+					new THREE.Vector3(), 
+					new THREE.Vector3(), 
+					new THREE.Vector3(), 
+					new THREE.Vector3());
+				lineGeometry.colors.push(this.color, this.color, this.color);
+				let lineMaterial = new THREE.LineDashedMaterial( 
+					{ color: 0xff0000, dashSize: 5, gapSize: 2 } );
+				
+				lineMaterial.depthTest = false;
+				this.heightEdge = new THREE.Line(lineGeometry, lineMaterial);
+				this.heightEdge.visible = false;
+				
+				this.add(this.heightEdge);
+			}
+			
+			{ // height label
+				this.heightLabel = new Potree.TextSprite("");
+				this.heightLabel.setBorderColor({r:0, g:0, b:0, a:0.8});
+				this.heightLabel.setBackgroundColor({r:0, g:0, b:0, a:0.3});
+				this.heightLabel.setTextColor({r:180, g:220, b:180, a:1.0});
+				this.heightLabel.material.depthTest = false;
+				this.heightLabel.material.opacity = 1;
+				this.heightLabel.visible = false;;
+				this.add(this.heightLabel);
+			}
+		}
 		
 		this.areaLabel = new Potree.TextSprite("");
 		this.areaLabel.setBorderColor({r:0, g:0, b:0, a:0.8});
@@ -27,8 +65,7 @@ Potree.Measure = class Measure extends THREE.Object3D{
 		this.areaLabel.visible = false;;
 		this.add(this.areaLabel);
 		
-		this.sphereGeometry = new THREE.SphereGeometry(0.4, 10, 10);
-		this.color = new THREE.Color( 0xff0000 );
+		
 	}
 	
 	createSphereMaterial(){
@@ -68,6 +105,7 @@ Potree.Measure = class Measure extends THREE.Object3D{
 			this.add(edge);
 			this.edges.push(edge);
 		}
+		
 		
 		{ // edge labels
 			let edgeLabel = new Potree.TextSprite();
@@ -331,12 +369,52 @@ Potree.Measure = class Measure extends THREE.Object3D{
 				coordinateLabel.visible = this.showCoordinates;
 			}
 		}
+
+		{ // update height stuff
+			let heightEdge = this.heightEdge;
+			heightEdge.visible = this.showHeight;
+			this.heightLabel.visible = this.showHeight;
+			
+			if(this.showHeight){
+				let sorted = this.points.slice().sort( (a, b) => a.position.z - b.position.z );
+				let lowPoint = sorted[0].position.clone();
+				let highPoint = sorted[sorted.length - 1].position.clone();
+				let min = lowPoint.z;
+				let max = highPoint.z;
+				let height = max - min;
+				
+				let start = new THREE.Vector3(highPoint.x, highPoint.y, min);
+				let end = new THREE.Vector3(highPoint.x, highPoint.y, max);
+				
+				
+				heightEdge.geometry.vertices[0].copy(lowPoint);
+				heightEdge.geometry.vertices[1].copy(start);
+				heightEdge.geometry.vertices[2].copy(start);
+				heightEdge.geometry.vertices[3].copy(end);
+				
+				heightEdge.geometry.verticesNeedUpdate = true;
+				//heightEdge.geometry.computeLineDistances();
+				//heightEdge.geometry.lineDistancesNeedUpdate = true;
+				heightEdge.geometry.computeBoundingSphere();
+				
+				//heightEdge.material.dashSize = height / 40;
+				//heightEdge.material.gapSize = height / 40;
+				
+				
+				let heightLabelPosition = start.clone().add(end).multiplyScalar(0.5);
+				this.heightLabel.position.copy(heightLabelPosition);
+				let msg = Potree.utils.addCommas(height.toFixed(2));
+				this.heightLabel.setText(msg);
+			}
+			
+		}
 		
-		// update area label
-		this.areaLabel.position.copy(centroid);
-		this.areaLabel.visible = this.showArea && this.points.length >= 3;
-		let msg = Potree.utils.addCommas(this.getArea().toFixed(1)) + "";
-		this.areaLabel.setText(msg);
+		{ // update area label
+			this.areaLabel.position.copy(centroid);
+			this.areaLabel.visible = this.showArea && this.points.length >= 3;
+			let msg = Potree.utils.addCommas(this.getArea().toFixed(1)) + "";
+			this.areaLabel.setText(msg);
+		}
 	};
 	
 	raycast(raycaster, intersects){
@@ -373,6 +451,15 @@ Potree.Measure = class Measure extends THREE.Object3D{
 	
 	set showAngles(value){
 		this._showAngles = value;
+		this.update();
+	}
+	
+	get showHeight(){
+		return this._showHeight;
+	}
+	
+	set showHeight(value){
+		this._showHeight = value;
 		this.update();
 	}
 	

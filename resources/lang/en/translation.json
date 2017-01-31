@@ -14,6 +14,7 @@
     "tt": {
         "angle_measurement": "Angle measurement",
         "distance_measurement": "Distance measurement",
+        "height_measurement": "Height measurement",
         "area_measurement": "Area measurement",
         "volume_measurement": "Volume measurement",
         "height_profile": "Height profile",

@@ -22,6 +22,7 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 		this.renderer = viewer.renderer;
 		
 		this.scene = null;
+		this.sceneControls = new THREE.Scene();
 		
 		this.rotationSpeed = 5;
 		

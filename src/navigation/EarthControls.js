@@ -8,12 +8,25 @@ Potree.EarthControls = class EarthControls extends THREE.EventDispatcher{
 		this.viewer = viewer;
 		this.renderer = viewer.renderer;
 		
+		this.scene = null;
+		this.sceneControls = new THREE.Scene();
+		
 		this.rotationSpeed = 10000;
 		
 		this.fadeFactor = 20;
 		this.wheelDelta = 0;
 		this.zoomDelta = new THREE.Vector3();
 		this.camStart = null;
+
+		
+		this.pivotIndicator;
+		{
+			let sg = new THREE.SphereGeometry(1, 16, 16);
+			let sm = new THREE.MeshNormalMaterial();
+			this.pivotIndicator = new THREE.Mesh(sg, sm);
+			this.pivotIndicator.visible = false;
+			this.sceneControls.add(this.pivotIndicator);
+		}
 		
 		let drag = (e) => {
 			if(e.drag.object !== null){
@@ -23,10 +36,6 @@ Potree.EarthControls = class EarthControls extends THREE.EventDispatcher{
 			if(!this.pivot){
 				return;
 			}
-			
-			//if(!e.drag.intersectionStart){
-			//	e.drag.camStart = this.scene.camera.clone();
-			//}
 			
 			let camStart = this.camStart;
 			
@@ -73,6 +82,11 @@ Potree.EarthControls = class EarthControls extends THREE.EventDispatcher{
 				}
 				
 			}else if(e.drag.mouse === THREE.MOUSE.RIGHT){
+				let ndrag = {
+					x: e.drag.lastDrag.x / this.renderer.domElement.clientWidth,
+					y: e.drag.lastDrag.y / this.renderer.domElement.clientHeight
+				};
+				
 				
 			}
 			
@@ -88,12 +102,15 @@ Potree.EarthControls = class EarthControls extends THREE.EventDispatcher{
 			if(I){
 				this.pivot = I.location;
 				this.camStart = this.scene.camera.clone();
+				this.pivotIndicator.visible = true;
+				this.pivotIndicator.position.copy(I.location);
 			}
 		};
 		
 		let onMouseUp = e => {
 			this.camStart = null;
 			this.pivot = null;
+			this.pivotIndicator.visible = false;
 		};
 		
 		let scroll = (e) => {
@@ -114,6 +131,7 @@ Potree.EarthControls = class EarthControls extends THREE.EventDispatcher{
 		let view = this.scene.view;
 		let fade = Math.pow(0.5, this.fadeFactor * delta);
 		let progression = 1 - fade;
+		let camera = this.scene.camera;
 		
 		// compute zoom
 		if(this.wheelDelta !== 0){
@@ -150,10 +168,13 @@ Potree.EarthControls = class EarthControls extends THREE.EventDispatcher{
 			view.position.copy(newPos);
 		}
 		
-		//{
-		//	let speed = view.radius / 2.5;
-		//	this.viewer.setMoveSpeed(speed);
-		//}
+		if(this.pivotIndicator.visible){
+			let distance = this.pivotIndicator.position.distanceTo(view.position);
+			let pixelHeight = this.renderer.domElement.clientHeight;
+			let pr = Potree.utils.projectedRadius(1, camera.fov * Math.PI / 180, distance, pixelHeight);
+			let scale = (10 / pr);
+			this.pivotIndicator.scale.set(scale, scale, scale);
+		}
 		
 		// decelerate over time
 		{

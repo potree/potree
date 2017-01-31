@@ -22,6 +22,7 @@ Potree.FirstPersonControls = class FirstPersonControls extends THREE.EventDispat
 		this.renderer = viewer.renderer;
 		
 		this.scene = null;
+		this.sceneControls = new THREE.Scene();
 		
 		this.rotationSpeed = 200;
 		this.moveSpeed = 10;

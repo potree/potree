@@ -2018,6 +2018,7 @@ class PotreeRenderer{
 		
 		viewer.volumeTool.update();
 		viewer.renderer.render(viewer.volumeTool.sceneVolume, viewer.scene.camera);
+		viewer.renderer.render(viewer.controls.sceneControls, viewer.scene.camera);
 		
 		viewer.renderer.clearDepth();
 		

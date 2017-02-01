@@ -344,11 +344,6 @@ body{
 	background-color: #09181C;
 }
 
-.ui-accordion-content{
-	padding: 0px 0px !important;
-	border: none !important;
-}
-
 .ui-widget-content{
 	background-color: none !important;
 	color: var(--font-color) !important;
@@ -359,21 +354,31 @@ body{
 	border-color: var(--color-2) !important;
 }
 
-#accordion{
+.accordion{
 	background-color: var(--bg-color);
 	color: var(--color-1);
 }
 
-#accordion > h3{
+.accordion > h3{
 	background-color: var(--color-1) !important;
 	background: #f6f6f6 50% 50% repeat-x;
 	border: none;
 	color: var(--color-2);
 	padding: 4px 10px 4px 30px;
+	cursor: pointer;
 }
 
 .accordion > div{
 	background: none !important;
+}
+
+.accordion-header{
+	margin: 2px 0 0 0;
+}
+
+.accordion-content{
+	padding: 0px 0px !important;
+	border: none !important;
 }
 
 #measurement_details .pv-menu-list > li{

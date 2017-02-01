@@ -428,40 +428,27 @@ function initClassificationList(){
 }
 
 function initAccordion(){
-	$('#accordion').accordion({
-		autoHeight: true,
-		heightStyle: "content",
-        collapsible:true,
-        beforeActivate: function(event, ui) {
-             // The accordion believes a panel is being opened
-            if (ui.newHeader[0]) {
-                var currHeader  = ui.newHeader;
-                var currContent = currHeader.next('.ui-accordion-content');
-             // The accordion believes a panel is being closed
-            } else {
-                var currHeader  = ui.oldHeader;
-                var currContent = currHeader.next('.ui-accordion-content');
-            }
-             // Since we've changed the default behavior, this detects the actual status
-            var isPanelSelected = currHeader.attr('aria-selected') == 'true';
-            
-             // Toggle the panel's header
-            currHeader.toggleClass('ui-corner-all',isPanelSelected).toggleClass('accordion-header-active ui-state-active ui-corner-top',!isPanelSelected).attr('aria-selected',((!isPanelSelected).toString()));
-            
-            // Toggle the panel's icon
-            currHeader.children('.ui-icon').toggleClass('ui-icon-triangle-1-e',isPanelSelected).toggleClass('ui-icon-triangle-1-s',!isPanelSelected);
-            
-             // Toggle the panel's content
-            currContent.toggleClass('accordion-content-active',!isPanelSelected)    
-            if (isPanelSelected) { currContent.slideUp(); }  else { currContent.slideDown(); }
-
-            return false; // Cancels the default action
-        }
-    });
 	
-	//$("#accordion").accordion({ active: 2});
-	//$("#accordion").accordion({ active: 3});
-	//$("#accordion").accordion({ active: 4});
+	$(".accordion > h3").each(function(){
+		let header = $(this);
+		let content = $(this).next();
+		
+		header.addClass("accordion-header ui-widget");
+		content.addClass("accordion-content ui-widget");
+		
+		content.hide();
+		
+		header.click(function(){
+			content.slideToggle();
+		});
+	});
+	
+	// to close all, call
+	// $(".accordion > div").hide()
+	
+	// to open the, for example, tool menu, call: 
+	// $("#menu_tools").next().show()
+	
 }
 
 function initAppearance(){
@@ -816,6 +803,9 @@ function initMeasurementDetails(){
 			}else if(!measurement.showDistances && !measurement.showArea && measurement.showAngles){
 				elPanelIcon.src = Potree.resourcePath + "/icons/angle.png";
 				elPanelStretch.innerHTML = "Angle";
+			}else if(measurement.showHeight){
+				elPanelIcon.src = Potree.resourcePath + "/icons/height.svg";
+				elPanelStretch.innerHTML = "Height";
 			}
 			
 			elPanelRemove.onclick = function(){scene.removeMeasurement(measurement);};
@@ -904,6 +894,23 @@ function initMeasurementDetails(){
 				positions = measurement.points;
 			}
 			
+			if(measurement instanceof Potree.Measure && measurement.showHeight){
+				let points = measurement.points;
+				
+				let sorted = points.slice().sort( (a, b) => a.position.z - b.position.z );
+				let lowPoint = sorted[0].position.clone();
+				let highPoint = sorted[sorted.length - 1].position.clone();
+				let min = lowPoint.z;
+				let max = highPoint.z;
+				let height = max - min;
+				
+				let txt = height.toFixed(3);
+				
+				var elNodeHeight = $('<div>').addClass("measurement-detail-node-marker");
+				elNodeHeight.html(txt);
+				$(elPanelBody).append(elNodeHeight);
+			}
+			
 			for(var i = 0; i < positions.length; i++){
 				// TODO clean this up from the toGeo legacy
 				var point = positions[i];
@@ -913,10 +920,11 @@ function initMeasurementDetails(){
 				txt += (geoCoord.y).toFixed(2) + ", ";
 				txt += geoCoord.z.toFixed(2);
 				
-				var elNodeMarker = $('<div>').addClass("measurement-detail-node-marker");
-				elNodeMarker.html(txt);
-				
-				$(elPanelBody).append(elNodeMarker);
+				if(measurement && !measurement.showHeight){
+					var elNodeMarker = $('<div>').addClass("measurement-detail-node-marker");
+					elNodeMarker.html(txt);
+					$(elPanelBody).append(elNodeMarker);
+				}
 				
 				if(i < positions.length - 1){
 					if(measurement && measurement.showDistances){

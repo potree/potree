@@ -77,9 +77,6 @@
 		<div>
 		<ul class="pv-menu-list">
 		<div>
-			<!--<div class="divider" style="padding-bottom: 10px">
-				<span>Navigation</span>
-			</div>-->
 		
 			<li id="tools"></li>
 			
@@ -87,7 +84,6 @@
 				<span>Navigation</span>
 			</div>
 			<li id="navigation"></li>
-			<!--<li><label><input type="checkbox" onClick="viewer.setDEMCollisionsEnabled(this.checked)"/><span data-i18n="appearance.bottom_lock"></span></label></li>-->
 			<li><span data-i18n="appearance.move_speed"></span>: <span id="lblMoveSpeed"></span><div id="sldMoveSpeed"></div></li>
 			
 		</div>
@@ -171,17 +167,35 @@
 		
 		</ul>
 		<!--<ul id="materialList" class="pv-menu-list"></ul>-->
-	  </div>
-	  <h3><span data-i18n="tb.scene_opt"></span></h3>
-	  <div>
-		<ul id="sceneList" class="pv-menu-list"></ul>
-	  </div>
-	  <h3><span data-i18n="tb.classification_filter_opt"></span></h3>
-	  <div>
+	</div>
+	
+	<!-- Scene -->
+	<h3><span data-i18n="tb.scene_opt"></span></h3>
+	<div>
+		<ul class="pv-menu-list selectable">
+			<div>
+				<li><span data-i18n="scene.camera_position"></span>:<span id="lblCameraPosition"></span></li>
+				<li><span data-i18n="scene.camera_target"></span>:<span id="lblCameraTarget"></span></li>
+				
+			
+				<div class="divider" style="padding: 10px 0px 15px 0px">
+					<span>Point Clouds</span>
+				</div>
+			
+			</div>
+			<li id="sceneList"></li>
+		</ul>
+	</div>
+	
+	<!-- Classification -->
+	<h3><span data-i18n="tb.classification_filter_opt"></span></h3>
+	<div>
 		<ul id="classificationList" class="pv-menu-list"></ul>
-	  </div>
-	   <h3><span data-i18n="tb.parameters_opt"></span></h3>
-	  <div>
+	</div>
+	
+	<!--  -->
+	<h3><span data-i18n="tb.parameters_opt"></span></h3>
+	<div>
 		<ul class="pv-menu-list">
 			<li><span data-i18n="appearance.min_node_size"></span><span id="lblMinNodeSize"></span><div id="sldMinNodeSize"></div>	</li>
 			<li>

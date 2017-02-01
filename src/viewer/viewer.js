@@ -408,6 +408,7 @@ Potree.Viewer = class{
 					let speed = e.pointcloud.boundingBox.getSize().length();
 					speed = speed / 5;
 					this.setMoveSpeed(speed);
+					//this.scene.view.radius = speed * 2.5;
 				}
 				
 				if(e.pointcloud.projection){
@@ -1133,7 +1134,10 @@ Potree.Viewer = class{
 		bs = bs.clone().applyMatrix4(node.matrixWorld); 
 		
 		view.position.copy(camera.position);
-		//view.lookAt(bs.center);
+		view.radius = view.position.distanceTo(bs.center);
+		//let target = bs.center;
+		//target.z = target.z - bs.radius * 0.8;
+		//view.lookAt(target);
 		
 		this.dispatcher.dispatchEvent({"type": "zoom_to", "viewer": this});
 	};
@@ -1455,41 +1459,41 @@ Potree.Viewer = class{
 
 	update(delta, timestamp){
 		
-		if(window.urlToggle === undefined){
-			window.urlToggle = 0;
-		}else{
-			
-			if(window.urlToggle > 1){
-				{
-					
-					let currentValue = Potree.utils.getParameterByName("position");
-					let strPosition = "["  
-						+ this.scene.view.position.x.toFixed(3) + ";"
-						+ this.scene.view.position.y.toFixed(3) + ";"
-						+ this.scene.view.position.z.toFixed(3) + "]";
-					if(currentValue !== strPosition){
-						Potree.utils.setParameter("position", strPosition);
-					}
-					
-				}
-				
-				{
-					let currentValue = Potree.utils.getParameterByName("target");
-					let pivot = this.scene.view.getPivot();
-					let strTarget = "["  
-						+ pivot.x.toFixed(3) + ";"
-						+ pivot.y.toFixed(3) + ";"
-						+ pivot.z.toFixed(3) + "]";
-					if(currentValue !== strTarget){
-						Potree.utils.setParameter("target", strTarget);
-					}
-				}
-				
-				window.urlToggle = 0;
-			}
-			
-			window.urlToggle += delta;
-		}
+		//if(window.urlToggle === undefined){
+		//	window.urlToggle = 0;
+		//}else{
+		//	
+		//	if(window.urlToggle > 1){
+		//		{
+		//			
+		//			let currentValue = Potree.utils.getParameterByName("position");
+		//			let strPosition = "["  
+		//				+ this.scene.view.position.x.toFixed(3) + ";"
+		//				+ this.scene.view.position.y.toFixed(3) + ";"
+		//				+ this.scene.view.position.z.toFixed(3) + "]";
+		//			if(currentValue !== strPosition){
+		//				Potree.utils.setParameter("position", strPosition);
+		//			}
+		//			
+		//		}
+		//		
+		//		{
+		//			let currentValue = Potree.utils.getParameterByName("target");
+		//			let pivot = this.scene.view.getPivot();
+		//			let strTarget = "["  
+		//				+ pivot.x.toFixed(3) + ";"
+		//				+ pivot.y.toFixed(3) + ";"
+		//				+ pivot.z.toFixed(3) + "]";
+		//			if(currentValue !== strTarget){
+		//				Potree.utils.setParameter("target", strTarget);
+		//			}
+		//		}
+		//		
+		//		window.urlToggle = 0;
+		//	}
+		//	
+		//	window.urlToggle += delta;
+		//}
 		
 		
 		

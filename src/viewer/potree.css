@@ -244,7 +244,7 @@ body{
 	margin: 			auto;
 	border-radius: 		6px;
 	text-align: 		center;
-	background-color: 	var(--bg-dark-color);
+	background-color: 	var(--measurement-detail-node-bg-);
 	color: 				var(--border-color);
 }
 

@@ -54,6 +54,10 @@
         "title": "Height profile",
         "save": "Save"
     },
+	"scene": {
+		"camera_position": "Camera Position",
+		"camera_target": "Camera Target"
+	},
     "settings": {
         "language": "Language"
     }

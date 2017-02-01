@@ -1212,6 +1212,26 @@ function initSceneList(){
 	viewer.addEventListener("pointcloud_loaded", function(event){
 		addPointcloud(event.pointcloud);
 	});
+	
+	let lastPos = new THREE.Vector3();
+	let lastTarget = new THREE.Vector3();
+	viewer.addEventListener("update", e => {
+		let pos = viewer.scene.view.position;
+		let target = viewer.scene.view.getPivot();
+		
+		if(pos.equals(lastPos) && target.equals(lastTarget)){
+			return;
+		}else{
+			lastPos.copy(pos);
+			lastTarget.copy(target);
+		}
+		
+		let strCamPos = "<br>" + [pos.x, pos.y, pos.z].map(e => e.toFixed(2)).join(", ");
+		let strCamTarget = "<br>" + [target.x, target.y, target.z].map(e => e.toFixed(2)).join(", ");
+		
+		$('#lblCameraPosition').html(strCamPos);
+		$('#lblCameraTarget').html(strCamTarget);
+	});
 };
 
 initSettings = function(){

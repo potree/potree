@@ -13,71 +13,105 @@ var createToolIcon = function(icon, title, callback){
 };
 
 function initToolbar(){
-	
-	//let startInsertion = (measure) => {
-	//	measure.addEventListener("drag", (e) => {
-	//		
-	//	});
-	//};
-	
+
+	// ANGLE
 	let elToolbar = document.getElementById("tools");
 	elToolbar.appendChild(createToolIcon(
 		Potree.resourcePath + "/icons/angle.png",
 		"[title]tt.angle_measurement",
-		//() => {
-		//	let measure = new Potree.Measure();
-		//	measure.showDistances = false;
-		//	measure.showArea = false;
-		//	measure.showAngles = true;
-		//	measure.closed = true;
-		//	
-		//	startInsertion(measure);
-		//}
-		function(){viewer.measuringTool.startInsertion({showDistances: false, showAngles: true, showArea: false, closed: true, maxMarkers: 3})}
+		function(){
+			$("#menu_measurements").next().slideDown();
+			viewer.measuringTool.startInsertion({
+				showDistances: false, 
+				showAngles: true, 
+				showArea: false, 
+				closed: true, 
+				maxMarkers: 3});
+		}
 	));
 	
+	// POINT
 	elToolbar.appendChild(createToolIcon(
 		Potree.resourcePath + "/icons/point.svg",
 		"[title]tt.angle_measurement",
-		function(){viewer.measuringTool.startInsertion({showDistances: false, showAngles: false, showCoordinates: true, showArea: false, closed: true, maxMarkers: 1})}
+		function(){
+			$("#menu_measurements").next().slideDown();
+			viewer.measuringTool.startInsertion({
+				showDistances: false, 
+				showAngles: false, 
+				showCoordinates: true, 
+				showArea: false, 
+				closed: true, 
+				maxMarkers: 1});
+		}
 	));
 	
+	// DISTANCE
 	elToolbar.appendChild(createToolIcon(
 		Potree.resourcePath + "/icons/distance.svg",
 		"[title]tt.distance_measurement",
-		function(){viewer.measuringTool.startInsertion({showDistances: true, showArea: false, closed: false})}
+		function(){
+			$("#menu_measurements").next().slideDown();
+			viewer.measuringTool.startInsertion({
+				showDistances: true, 
+				showArea: false, 
+				closed: false});
+		}
 	));
 	
+	// HEIGHT
 	elToolbar.appendChild(createToolIcon(
 		Potree.resourcePath + "/icons/height.svg",
 		"[title]tt.height_measurement",
-		function(){viewer.measuringTool.startInsertion({showDistances: false, showHeight: true, showArea: false, closed: false, maxMarkers: 2})}
+		function(){
+			$("#menu_measurements").next().slideDown();
+			viewer.measuringTool.startInsertion({
+				showDistances: false, 
+				showHeight: true, 
+				showArea: false, 
+				closed: false, 
+				maxMarkers: 2});
+		}
 	));
 	
+	// AREA
 	elToolbar.appendChild(createToolIcon(
 		Potree.resourcePath + "/icons/area.svg",
 		"[title]tt.area_measurement",
-		function(){viewer.measuringTool.startInsertion({showDistances: true, showArea: true, closed: true})}
+		function(){
+			$("#menu_measurements").next().slideDown();
+			viewer.measuringTool.startInsertion({
+				showDistances: true, 
+				showArea: true, 
+				closed: true});
+		}
 	));
 	
+	// VOLUME
 	elToolbar.appendChild(createToolIcon(
 		Potree.resourcePath + "/icons/volume.svg",
 		"[title]tt.volume_measurement",
 		function(){viewer.volumeTool.startInsertion()}
 	));
 	
+	// PROFILE
 	elToolbar.appendChild(createToolIcon(
 		Potree.resourcePath + "/icons/profile.svg",
 		"[title]tt.height_profile",
-		function(){viewer.profileTool.startInsertion()}
+		function(){
+			$("#menu_measurements").next().slideDown();;
+			viewer.profileTool.startInsertion();
+		}
 	));
 	
+	// CLIP VOLUME
 	elToolbar.appendChild(createToolIcon(
 		Potree.resourcePath + "/icons/clip_volume.svg",
 		"[title]tt.clip_volume",
 		function(){viewer.volumeTool.startInsertion({clip: true})}
 	));
 	
+	// REMOVE ALL
 	elToolbar.appendChild(createToolIcon(
 		Potree.resourcePath + "/icons/reset_tools.svg",
 		"[title]tt.remove_all_measurement",

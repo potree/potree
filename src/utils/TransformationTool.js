@@ -19,12 +19,29 @@ Potree.TransformationTool = class TransformationTool{
 		
 		this.mode = this.TRANSFORMATION_MODES.DEFAULT;
 		
+		this.menu = new HoverMenu(Potree.resourcePath + "/icons/menu_icon.svg");
+		
 		this.selection = [];
 		
 		this.viewer.inputHandler.registerInteractiveScene(this.sceneTransform);
 		this.viewer.inputHandler.addEventListener("selection_changed", (e) => {
 			this.selection = e.selection;
 		});
+		
+		{ // Menu
+			this.menu.addItem(new HoverMenuItem(Potree.resourcePath + "/icons/translate.svg", e => {
+				console.log("translate!");
+			}));
+			this.menu.addItem(new HoverMenuItem(Potree.resourcePath + "/icons/rotate.svg", e => {
+				console.log("rotate!");
+			}));
+			this.menu.addItem(new HoverMenuItem(Potree.resourcePath + "/icons/scale.svg", e => {
+				console.log("scale!");
+			}));
+			this.menu.setPosition(100, 100);
+			$(this.viewer.renderArea).append(this.menu.element);
+			this.menu.element.hide();
+		}
 		
 		{ // translation node
 			
@@ -201,23 +218,34 @@ Potree.TransformationTool = class TransformationTool{
 		
 		if(this.selection.length === 0){
 			this.sceneTransform.visible = false;
+			this.menu.element.hide();
 			return;
 		}else{
 			this.sceneTransform.visible = true;
+			this.menu.element.show();
 		}
 		
 		let scene = this.viewer.scene;
 		let renderer = this.viewer.renderer;
+		let domElement = renderer.domElement;
 		
 		let box = this.getSelectionBoundingBox();
 		let pivot = box.getCenter();
 		this.sceneTransform.position.copy(pivot);
 		
-		{
+		{ // size
 			let distance = scene.camera.position.distanceTo(pivot);
 			let pr = Potree.utils.projectedRadius(1, scene.camera.fov * Math.PI / 180, distance, renderer.domElement.clientHeight);
 			let scale = (150 / pr);
 			this.sceneTransform.scale.set(scale, scale, scale);
+		}
+		
+		{ // menu
+			let screenPos = pivot.clone().project(scene.camera);
+			screenPos.x = domElement.clientWidth * (screenPos.x + 1) / 2;
+			screenPos.y = domElement.clientHeight * (1-(screenPos.y + 1) / 2);
+			
+			this.menu.setPosition(screenPos.x, screenPos.y);
 		}
 		
 	}

@@ -65,7 +65,8 @@ var paths = {
 		"src/viewer/viewer.js",
 		"src/viewer/profile.js",
 		"src/viewer/map.js",
-		"src/viewer/sidebar.js"
+		"src/viewer/sidebar.js",
+		"src/stuff/HoverMenu.js"
 	],
 	laslaz: [
 		"build/workers/laslaz-worker.js",

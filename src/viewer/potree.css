@@ -523,5 +523,61 @@ body{
 
 
 
+/* HOVER MENU */
+
+.hover_menu{
+	position: absolute;
+	width: 28px;
+	height: 28px;
+	border: 0px;
+	border-radius: 100px;
+	display: block;
+	
+}
+
+.hover_menu_icon{
+	position: absolute;
+	//border: 1px solid black;
+	display: inline-block;
+	width: 16px;
+	height: 16px;
+	padding: 6px;
+	opacity: 0.5;
+	background-color: white;
+	filter:invert();
+	border-radius: 100px;
+}
+.hover_menu_icon:hover{
+	opacity: 1.0;
+	box-shadow:	0 0 5px #ffffff;
+}
+
+.hover_menu_icon > img{
+	width: 16px;
+	height: 16px;
+}
+
+.hover_menu_item{
+	background: black;
+	border-radius: 100px;
+	display: inline-block;
+	position: absolute;
+	width:32px;
+	height: 32px;
+	opacity: 0.5;
+}
+
+.hover_menu_item:hover{
+	opacity: 1.0;
+	box-shadow:	0 0 5px #ffffff;
+}
+
+.hover_menu_item > img{
+	width: 32px;
+	height: 32px;
+	filter: invert();
+}
+
+
 
 

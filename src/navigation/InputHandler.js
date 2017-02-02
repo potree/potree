@@ -192,23 +192,19 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 				if(selectable){
 					selectable = selectable.object;
 					
-					//if(e.ctrlKey){
-					//	this.toggleSelection(selectable);
-					//}else{
-						if(this.isSelected(selectable)){
-							this.selection
-								.filter(e => e !== selectable)
-								.forEach(e => this.toggleSelection(e));
-						}else{
-							this.deselectAll();
-							this.toggleSelection(selectable);
-						}
-					//}
+					if(this.isSelected(selectable)){
+						this.selection
+							.filter(e => e !== selectable)
+							.forEach(e => this.toggleSelection(e));
+					}else{
+						this.deselectAll();
+						this.toggleSelection(selectable);
+					}
 				}else{
 					this.deselectAll();
 				}
 			}
-		}else if(event.button === THREE.MOUSE.RIGHT){
+		}else if(event.button === THREE.MOUSE.RIGHT && noMovement){
 			this.deselectAll();
 		}
 		

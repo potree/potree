@@ -35,14 +35,14 @@ class HoverMenu{
 		
 		this.element.click(function(){
 			$(this).find(".hover_menu_item").fadeIn(200);
-			$(this).find(".hover_menu_icon").fadeOut(400);
+			$(this).find(".hover_menu_icon").fadeOut(200);
 			
 			$(this).css("left", (scope.x - scope.circumference - $(this).width() / 2) + "px");
 			$(this).css("top", (scope.y - scope.circumference - $(this).height() / 2) + "px");
 			$(this).css("border", scope.circumference + "px solid transparent");
 		}).mouseleave(function(){
 			$(this).find(".hover_menu_item").fadeOut(200);
-			$(this).find(".hover_menu_icon").fadeIn(400);
+			$(this).find(".hover_menu_icon").fadeIn(200);
 			
 			$(this).css("left", (scope.x - $(this).width() / 2) + "px");
 			$(this).css("top", (scope.y - $(this).height() / 2) + "px");

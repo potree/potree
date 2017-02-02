@@ -30,13 +30,16 @@ Potree.TransformationTool = class TransformationTool{
 		
 		{ // Menu
 			this.menu.addItem(new HoverMenuItem(Potree.resourcePath + "/icons/translate.svg", e => {
-				console.log("translate!");
+				//console.log("translate!");
+				this.setMode(this.TRANSFORMATION_MODES.TRANSLATE);
 			}));
 			this.menu.addItem(new HoverMenuItem(Potree.resourcePath + "/icons/rotate.svg", e => {
-				console.log("rotate!");
+				//console.log("rotate!");
+				this.setMode(this.TRANSFORMATION_MODES.ROTATE);
 			}));
 			this.menu.addItem(new HoverMenuItem(Potree.resourcePath + "/icons/scale.svg", e => {
-				console.log("scale!");
+				//console.log("scale!");
+				this.setMode(this.TRANSFORMATION_MODES.SCALE);
 			}));
 			this.menu.setPosition(100, 100);
 			$(this.viewer.renderArea).append(this.menu.element);
@@ -57,8 +60,10 @@ Potree.TransformationTool = class TransformationTool{
 				
 				let shaftMaterial = new THREE.LineBasicMaterial({
 					color: color, 
-					depthTest: false, 
-					depthWrite: false});
+					depthTest: true, 
+					depthWrite: true,
+					transparent: true
+					});
 				let shaft = new THREE.Line(shaftGeometry, shaftMaterial);
 				
 				let headGeometry = new THREE.CylinderGeometry(0, 0.04, 0.1, 10, 1, false);
@@ -154,6 +159,160 @@ Potree.TransformationTool = class TransformationTool{
 			this.translationNode.add(arrowZ);
 		}
 		
+		{ // Rotation Node
+			let createCircle = (name, normal, color) => {
+				let material = new THREE.LineBasicMaterial({
+					color: color, 
+					depthTest: true, 
+					depthWrite: true,
+					transparent: true
+					});
+				
+				let segments = 32;
+				let radius = 1;
+				let geometry = new THREE.BufferGeometry();
+				let positions = new Float32Array( (segments + 1) * 3 );
+				for(let i = 0; i <= segments; i++){
+					let u = (i / segments) * Math.PI * 2;
+					let x = Math.cos(u) * radius;
+					let y = Math.sin(u) * radius;
+					
+					positions[3 * i + 0] = x;
+					positions[3 * i + 1] = y;
+					positions[3 * i + 2] = 0;
+				}
+				geometry.addAttribute("position", new THREE.BufferAttribute(positions, 3));
+				geometry.computeBoundingSphere();
+				
+				let circle = new THREE.Line(geometry, material);
+				circle.lookAt(normal);
+				
+				let mouseover = e => {
+					let c = new THREE.Color(0xFFFF00);
+					material.color = c;
+				};
+				
+				let mouseleave = e => {
+					let c = new THREE.Color(color);
+					material.color = c;
+				};
+				
+				let drag = e => {
+					
+					let camera = this.viewer.scene.camera;
+					let n = normal.clone().applyEuler(this.sceneTransform.rotation);
+					
+					if(!e.drag.intersectionStart){
+						//e.drag.intersectionStart = e.drag.location;
+						e.drag.objectStart = e.drag.object.getWorldPosition();
+						
+						let plane = new THREE.Plane()
+							.setFromNormalAndCoplanarPoint(n, this.sceneTransform.getWorldPosition());
+						
+						{ // e.drag.location seems imprecisse, calculate real start location
+							let mouse = e.drag.end;
+							let domElement = viewer.renderer.domElement;
+							let nmouse =  {
+								x: (mouse.x / domElement.clientWidth ) * 2 - 1,
+								y: - (mouse.y / domElement.clientHeight ) * 2 + 1
+							};
+							
+							let vector = new THREE.Vector3( nmouse.x, nmouse.y, 0.5 );
+							vector.unproject(camera);
+							
+							let ray = new THREE.Ray(camera.position, vector.sub( camera.position));
+							let I = ray.intersectPlane(plane);
+							
+							e.drag.intersectionStart = I;
+						}
+						
+						e.drag.dragPlane = plane;
+						e.drag.pivot = e.drag.intersectionStart;
+						
+						//let sg = new THREE.SphereGeometry(1, 8, 8);
+						//let sm = new THREE.MeshBasicMaterial({color: 0xff0000});
+						//let s = new THREE.Mesh(sg, sm);
+						//s.position.copy(e.drag.pivot);
+						//viewer.scene.scene.add(s);
+					}
+					
+					let mouse = e.drag.end;
+					let domElement = viewer.renderer.domElement;
+					let nmouse =  {
+						x: (mouse.x / domElement.clientWidth ) * 2 - 1,
+						y: - (mouse.y / domElement.clientHeight ) * 2 + 1
+					};
+					
+					let vector = new THREE.Vector3( nmouse.x, nmouse.y, 0.5 );
+					vector.unproject(camera);
+					
+					let ray = new THREE.Ray(camera.position, vector.sub( camera.position));
+					let I = ray.intersectPlane(e.drag.dragPlane);
+						
+					if(I){
+						let center = this.sceneTransform.position;
+						let from = e.drag.pivot;
+						let to = I;
+						
+						let v1 = from.clone().sub(center).normalize();
+						let v2 = to.clone().sub(center).normalize();
+						
+						let angle = Math.acos(v1.dot(v2));
+						let sign = Math.sign(v1.cross(v2).dot(n));
+						angle = angle * sign;
+						if(Number.isNaN(angle)){
+							return;
+						}
+						console.log(angle);
+						
+						//let sg = new THREE.SphereGeometry(1, 16, 16);
+						//let sm = new THREE.MeshNormalMaterial();
+						//let s = new THREE.Mesh(sg, sm);
+						//s.position.copy(to);
+						//viewer.scene.scene.add(s);
+						
+						for(let selection of this.selection){
+							selection.rotateOnAxis(normal, angle);
+						}
+						
+						e.drag.pivot = I;
+					}
+					
+				};
+				
+				circle.addEventListener("mouseover", mouseover);
+				circle.addEventListener("mouseleave", mouseleave);
+				circle.addEventListener("drag", drag);
+				
+				
+				return circle;
+			};
+			
+			{ // transparent ball
+				let sg = new THREE.SphereGeometry(1, 32, 32);
+				let sm = new THREE.MeshBasicMaterial({
+				//let sm = new THREE.MeshNormalMaterial({
+					color: 0xaaaaaa,
+					transparent: true,
+					depthTest: true,
+					depthWrite: true,
+					opacity: 0.4
+				});
+				
+				let sphere = new THREE.Mesh(sg, sm);
+				sphere.scale.set(0.9, 0.9, 0.9);
+				this.rotationNode.add(sphere);
+			}
+		
+			let yaw = createCircle("yaw", new THREE.Vector3(0, 0, 1), 0xff0000);
+			let pitch = createCircle("pitch", new THREE.Vector3(1, 0, 0), 0x00ff00);
+			let roll = createCircle("roll", new THREE.Vector3(0, 1, 0), 0x0000ff);
+		
+			this.rotationNode.add(yaw);
+			this.rotationNode.add(pitch);
+			this.rotationNode.add(roll);
+		}
+		
 		
 		this.setMode(this.TRANSFORMATION_MODES.TRANSLATE);
 	}
@@ -223,6 +382,10 @@ Potree.TransformationTool = class TransformationTool{
 		}else{
 			this.sceneTransform.visible = true;
 			this.menu.element.show();
+		}
+		
+		if(this.selection.length === 1){
+			this.sceneTransform.rotation.copy(this.selection[0].rotation);
 		}
 		
 		let scene = this.viewer.scene;

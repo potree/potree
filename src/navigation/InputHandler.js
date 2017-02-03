@@ -28,7 +28,7 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 		
 		this.speed = 1;
 		
-		this.logMessages = false;
+		this.logMessages = true;
 		
 		if(this.domElement.tabIndex === -1){
 			this.domElement.tabIndex = 2222;
@@ -52,11 +52,6 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 	
 	removeInputListener(listener){
 		this.inputListeners = this.inputListeners.filter(e => e !== listener);
-		//let index = this.inputListeners.indexOf(listener);
-		//
-		//if(index !== -1){
-		//	this.inputListeners = this.inputListeners.splice(index, 1);
-		//}
 	}
 	
 	onKeyDown(e){
@@ -71,6 +66,20 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 			
 			this.deselectAll();
 		}
+		
+		this.dispatchEvent({
+			type: "keydown",
+			keyCode: e.keyCode,
+			event: e
+		});
+		
+		//for(let l of this.inputListeners){
+		//	l.dispatchEvent({
+		//		type: "keydown",
+		//		keyCode: e.keyCode,
+		//		event: e
+		//	});
+		//}
 		
 		this.pressedKeys[e.keyCode] = true;
 		
@@ -112,24 +121,6 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 			}
 		}
 		
-		//if(this.hoveredElement){
-		//	
-		//	
-		//	this.hoveredElement.object.dispatchEvent({
-		//		type: "dblclick",
-		//		mouse: this.mouse,
-		//		object: this.hoveredElement.object
-		//	});
-		//}else{
-		//	for(let inputListener of this.inputListeners){
-		//		inputListener.dispatchEvent({
-		//			type: "dblclick",
-		//			mouse: this.mouse,
-		//			object: null
-		//		});
-		//	}
-		//}
-		
 		e.preventDefault();
 	}
 	
@@ -144,11 +135,6 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 		
 		e.preventDefault();
 		
-		//let rect = this.domElement.getBoundingClientRect();
-		
-		//let x = e.clientX - rect.left;
-		//let y = e.clientY - rect.top;
-		
 		if(this.hoveredElements.length === 0){
 			for(let inputListener of this.inputListeners){
 				inputListener.dispatchEvent({
@@ -160,9 +146,11 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 		}
 		
 		if(!this.drag){
-			
 			let target = this.hoveredElements
-				.find(el => (el.object._listeners && el.object._listeners["drag"]));
+				.find(el => (
+					el.object._listeners 
+					&& el.object._listeners["drag"]
+					&& el.object._listeners["drag"].length > 0));
 			
 			if(target){
 				this.startDragging(target.object, {location: target.point});
@@ -231,6 +219,8 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 	 }
 	 
 	onMouseMove(e){
+		if(this.logMessages) console.log(this.constructor.name + ": onMouseUp");
+		
 		e.preventDefault();
 		
 		let rect = this.domElement.getBoundingClientRect();
@@ -247,12 +237,14 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 			this.drag.end.set(x, y);
 			
 			if(this.drag.object){
+				if(this.logMessages) console.log(this.constructor.name + ": drag: " + this.drag.object.name);
 				this.drag.object.dispatchEvent({
 					type: "drag",
 					drag: this.drag,
 					viewer: this.viewer
 				});
 			}else{
+				if(this.logMessages) console.log(this.constructor.name + ": drag: ");
 				for(let inputListener of this.inputListeners){
 					inputListener.dispatchEvent({
 						type: "drag",
@@ -267,38 +259,48 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 		let currentlyHoveredObjects = hoveredElements.map(e => e.object);
 		let previouslyHoveredObjects = this.hoveredElements.map(e => e.object);
 		
-		let justHovered = currentlyHoveredObjects
-			.filter(e => previouslyHoveredObjects.indexOf(e) === -1);
-		let justUnhovered = previouslyHoveredObjects
-			.filter(e => currentlyHoveredObjects.indexOf(e) === -1);
+		let now = currentlyHoveredObjects.find(e => (e._listeners && e._listeners["mouseover"]));
+		let prev = previouslyHoveredObjects.find(e => (e._listeners && e._listeners["mouseover"]));
+		
+		if(now !== prev){
+			if(now){
+				now.dispatchEvent({
+					type: "mouseover",
+					object: now
+				});
+			}
 			
-		let over = justHovered.find(e => (e._listeners && e._listeners["mouseover"]));
-		if(over){
-			over.dispatchEvent({
-				type: "mouseover",
-				object: over
-			});
+			if(prev){
+				prev.dispatchEvent({
+					type: "mouseleave",
+					object: prev
+				});
+			}
 		}
 		
-		let leave = justUnhovered.find(e => (e._listeners && e._listeners["mouseleave"]));
-		if(leave){
-			leave.dispatchEvent({
-				type: "mouseleave",
-				object: leave
-			});
-		}
-			
-		//for(let h of justUnhovered){
-		//	h.dispatchEvent({
-		//		type: "mouseleave",
-		//		object: h
+		//let justHovered = currentlyHoveredObjects
+		//	.filter(e => previouslyHoveredObjects.indexOf(e) === -1);
+		//let justUnhovered = previouslyHoveredObjects
+		//	.filter(e => currentlyHoveredObjects.indexOf(e) === -1);
+		//	
+		//justHovered = justHovered.find(e => (e._listeners && e._listeners["mouseover"]));
+		//justUnhovered = justUnhovered.find(e => (e._listeners && e._listeners["mouseover"]));
+		
+		
+		
+		//let over = justHovered.find(e => (e._listeners && e._listeners["mouseover"]));
+		//if(over){
+		//	over.dispatchEvent({
+		//		type: "mouseover",
+		//		object: over
 		//	});
 		//}
 		//
-		//for(let h of justHovered){
-		//	h.dispatchEvent({
-		//		type: "mouseover",
-		//		object: h
+		//let leave = justUnhovered.find(e => (e._listeners && e._listeners["mouseleave"]));
+		//if(leave){
+		//	leave.dispatchEvent({
+		//		type: "mouseleave",
+		//		object: leave
 		//	});
 		//}
 	

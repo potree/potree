@@ -1085,7 +1085,7 @@ function initMeasurementDetails(){
 			}
 			
 			if(measurement && measurement.showArea){
-				var txt = Potree.utils.addCommas(measurement.getArea().toFixed(1)) + "²";
+				var txt = Potree.utils.addCommas(measurement.getArea().toFixed(1)) + "\u00B2";
 				
 				var elNodeArea = $('<div>').addClass("measurement-detail-node-area");
 				elNodeArea.html(txt);

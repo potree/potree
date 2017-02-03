@@ -42,7 +42,6 @@
 	
 	--measurement-detail-node-bg-light:		var(--color-1);
 	--measurement-detail-node-bg-dark:		var(--color-2);
-	--measurement-detail-area-border-color:	#749b74;
 	--measurement-detail-area-bg-color:		#eee;
 	
 }
@@ -230,12 +229,13 @@ body{
 }
 
 .measurement-detail-node-area{
-	border: 		3px solid var(--measurement-detail-area-color);
+	border: 		1px solid var(--border-color);
 	border-radius:	6px;
 	margin: 		auto;
 	margin-top: 	15px;
 	text-align: 	center;
-	background-color: var(--measurement-detail-area-bg-color);
+	background-color: var(--measurement-detail-node-bg-light);
+	color: 				var(--border-color);
 }
 
 .measurement-detail-node-angle{
@@ -532,7 +532,7 @@ body{
 	border: 0px;
 	border-radius: 100px;
 	display: block;
-	
+	user-select: none;
 }
 
 .hover_menu_icon{

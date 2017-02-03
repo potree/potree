@@ -17,6 +17,12 @@ Potree.TransformationTool = class TransformationTool{
 			SCALE: 3
 		};
 		
+		this.keys = {
+			TRANSLATE:  ['E'.charCodeAt(0)],
+			SCALE:      ['R'.charCodeAt(0)],
+			ROTATE:     ['T'.charCodeAt(0)]
+		}
+		
 		this.mode = this.TRANSFORMATION_MODES.DEFAULT;
 		
 		this.menu = new HoverMenu(Potree.resourcePath + "/icons/menu_icon.svg");
@@ -26,6 +32,18 @@ Potree.TransformationTool = class TransformationTool{
 		this.viewer.inputHandler.registerInteractiveScene(this.sceneTransform);
 		this.viewer.inputHandler.addEventListener("selection_changed", (e) => {
 			this.selection = e.selection;
+		});
+		this.viewer.inputHandler.addEventListener("keydown", (e) => {
+			if(this.selection.length > 0){
+				if(this.keys.TRANSLATE.some(key => key === e.keyCode)){
+					this.setMode(this.TRANSFORMATION_MODES.TRANSLATE);
+				}else if(this.keys.SCALE.some(key => key === e.keyCode)){
+					this.setMode(this.TRANSFORMATION_MODES.SCALE);
+				}else if(this.keys.ROTATE.some(key => key === e.keyCode)){
+					this.setMode(this.TRANSFORMATION_MODES.ROTATE);
+				}
+			}
+			
 		});
 		
 		{ // Menu
@@ -65,13 +83,16 @@ Potree.TransformationTool = class TransformationTool{
 					transparent: true
 					});
 				let shaft = new THREE.Line(shaftGeometry, shaftMaterial);
+				shaft.name = name + "_shaft";
 				
 				let headGeometry = new THREE.CylinderGeometry(0, 0.04, 0.1, 10, 1, false);
 				let headMaterial  = material;
 				let head = new THREE.Mesh(headGeometry, headMaterial);
+				head.name = name + "_head";
 				head.position.y = 1;
 				
 				let arrow = new THREE.Object3D();
+				arrow.name = name;
 				arrow.add(shaft);
 				arrow.add(head);
 				
@@ -96,7 +117,8 @@ Potree.TransformationTool = class TransformationTool{
 						e.drag.objectStart = e.drag.object.getWorldPosition();
 						
 						let start = this.sceneTransform.position.clone();
-						let end = start.clone().add(direction);
+						let end = direction.clone().applyMatrix4(this.sceneTransform.matrixWorld);
+						//let end = start.clone().add(direction);
 						let line = new THREE.Line3(start, end);
 						e.drag.line = line;
 						
@@ -185,6 +207,7 @@ Potree.TransformationTool = class TransformationTool{
 				geometry.computeBoundingSphere();
 				
 				let circle = new THREE.Line(geometry, material);
+				circle.name = name + "_circle";
 				circle.lookAt(normal);
 				
 				let mouseover = e => {
@@ -203,7 +226,6 @@ Potree.TransformationTool = class TransformationTool{
 					let n = normal.clone().applyEuler(this.sceneTransform.rotation);
 					
 					if(!e.drag.intersectionStart){
-						//e.drag.intersectionStart = e.drag.location;
 						e.drag.objectStart = e.drag.object.getWorldPosition();
 						
 						let plane = new THREE.Plane()
@@ -228,12 +250,6 @@ Potree.TransformationTool = class TransformationTool{
 						
 						e.drag.dragPlane = plane;
 						e.drag.pivot = e.drag.intersectionStart;
-						
-						//let sg = new THREE.SphereGeometry(1, 8, 8);
-						//let sm = new THREE.MeshBasicMaterial({color: 0xff0000});
-						//let s = new THREE.Mesh(sg, sm);
-						//s.position.copy(e.drag.pivot);
-						//viewer.scene.scene.add(s);
 					}
 					
 					let mouse = e.drag.end;
@@ -263,13 +279,6 @@ Potree.TransformationTool = class TransformationTool{
 						if(Number.isNaN(angle)){
 							return;
 						}
-						console.log(angle);
-						
-						//let sg = new THREE.SphereGeometry(1, 16, 16);
-						//let sm = new THREE.MeshNormalMaterial();
-						//let s = new THREE.Mesh(sg, sm);
-						//s.position.copy(to);
-						//viewer.scene.scene.add(s);
 						
 						for(let selection of this.selection){
 							selection.rotateOnAxis(normal, angle);
@@ -300,6 +309,7 @@ Potree.TransformationTool = class TransformationTool{
 				});
 				
 				let sphere = new THREE.Mesh(sg, sm);
+				sphere.name = name + "_sphere";
 				sphere.scale.set(0.9, 0.9, 0.9);
 				this.rotationNode.add(sphere);
 			}
@@ -311,6 +321,142 @@ Potree.TransformationTool = class TransformationTool{
 			this.rotationNode.add(yaw);
 			this.rotationNode.add(pitch);
 			this.rotationNode.add(roll);
+		}
+		
+		{ // scale node
+			
+			let createHandle = (name, direction, color) => {
+				let material = new THREE.MeshBasicMaterial({
+					color: color, 
+					depthTest: false, 
+					depthWrite: false});
+					
+				let shaftGeometry = new THREE.Geometry();
+				shaftGeometry.vertices.push(new THREE.Vector3(0, 0, 0));
+				shaftGeometry.vertices.push(new THREE.Vector3(0, 1, 0));
+				
+				let shaftMaterial = new THREE.LineBasicMaterial({
+					color: color, 
+					depthTest: true, 
+					depthWrite: true,
+					transparent: true
+					});
+				let shaft = new THREE.Line(shaftGeometry, shaftMaterial);
+				shaft.name = name + "_shaft";
+				
+				let headGeometry = new THREE.BoxGeometry(1, 1, 1);
+				let headMaterial  = material;
+				let head = new THREE.Mesh(headGeometry, headMaterial);
+				head.name = name + "_head";
+				head.position.y = 1;
+				head.scale.set(0.07, 0.07, 0.07);
+				
+				let arrow = new THREE.Object3D();
+				arrow.add(shaft);
+				arrow.add(head);
+				
+				let mouseover = e => {
+					let c = new THREE.Color(0xFFFF00);
+					shaftMaterial.color = c;
+					headMaterial.color = c;
+				};
+				
+				let mouseleave = e => {
+					let c = new THREE.Color(color);
+					shaftMaterial.color = c;
+					headMaterial.color = c;
+				};
+				
+				let drag = e => {
+					
+					let camera = this.viewer.scene.camera;
+					
+					if(!e.drag.intersectionStart){
+						e.drag.intersectionStart = e.drag.location;
+						e.drag.scaleStart = this.selection[0].scale.clone();
+						
+						let start = this.sceneTransform.position.clone();
+						let end = direction.clone().applyMatrix4(this.sceneTransform.matrixWorld);
+						//let end = start.clone().add(direction);
+						let line = new THREE.Line3(start, end);
+						e.drag.line = line;
+						
+						let camOnLine = line.closestPointToPoint(camera.position, false);
+						let normal = new THREE.Vector3().subVectors(
+							camera.position, camOnLine);
+						let plane = new THREE.Plane()
+							.setFromNormalAndCoplanarPoint(normal, e.drag.intersectionStart);
+							
+						e.drag.dragPlane = plane;
+						e.drag.pivot = e.drag.intersectionStart;
+					}
+					
+					{
+						let mouse = e.drag.end;
+						let domElement = viewer.renderer.domElement;
+						let nmouse =  {
+							x: (mouse.x / domElement.clientWidth ) * 2 - 1,
+							y: - (mouse.y / domElement.clientHeight ) * 2 + 1
+						};
+						
+						let vector = new THREE.Vector3( nmouse.x, nmouse.y, 0.5 );
+						vector.unproject(camera);
+						
+						let ray = new THREE.Ray(camera.position, vector.sub( camera.position));
+						let I = ray.intersectPlane(e.drag.dragPlane);
+						
+						if(I){
+							
+							let iOnLine = e.drag.line.closestPointToPoint(I, false);
+							
+							//let diff = new THREE.Vector3().subVectors(
+							//	iOnLine, e.drag.pivot);
+							
+							let oldDistance = this.sceneTransform.position.distanceTo(e.drag.pivot);
+							let newDistance = this.sceneTransform.position.distanceTo(I);
+							
+							let s = newDistance / oldDistance;
+							let scale = new THREE.Vector3(
+								direction.x === 0 ? 1 : s * direction.x,
+								direction.y === 0 ? 1 : s * direction.y,
+								direction.z === 0 ? 1 : s * direction.z
+							);
+							
+								
+							for(let selection of this.selection){
+								//selection.position.add(diff);
+								
+								selection.scale.copy(e.drag.scaleStart.clone().multiply(scale));
+								
+								//selection.scale.copy(
+								//	e.drag.scaleStart.clone()
+								//	.multiplyScalar(scale)
+								//	.multiply(direction));
+								//console.log(Potree.utils.toString(selection.scale));
+							}
+							
+							//e.drag.pivot = e.drag.pivot.add(diff);
+						}
+					}
+				};
+				
+				shaft.addEventListener("mouseover", mouseover);
+				shaft.addEventListener("mouseleave", mouseleave);
+				shaft.addEventListener("drag", drag);
+
+				return arrow;
+			};
+			
+			let arrowX = createHandle("arrow_x", new THREE.Vector3(1, 0, 0), 0xFF0000);
+			let arrowY = createHandle("arrow_y", new THREE.Vector3(0, 1, 0), 0x00FF00);
+			let arrowZ = createHandle("arrow_z", new THREE.Vector3(0, 0, 1), 0x0000FF);
+			
+			arrowX.rotation.z = -Math.PI/2;
+			arrowZ.rotation.x = Math.PI/2;
+			
+			this.scaleNode.add(arrowX);
+			this.scaleNode.add(arrowY);
+			this.scaleNode.add(arrowZ);
 		}
 		
 		
@@ -399,7 +545,7 @@ Potree.TransformationTool = class TransformationTool{
 		{ // size
 			let distance = scene.camera.position.distanceTo(pivot);
 			let pr = Potree.utils.projectedRadius(1, scene.camera.fov * Math.PI / 180, distance, renderer.domElement.clientHeight);
-			let scale = (150 / pr);
+			let scale = (120 / pr);
 			this.sceneTransform.scale.set(scale, scale, scale);
 		}
 		

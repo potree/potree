@@ -82,6 +82,29 @@ Potree.VolumeTool = class VolumeTool{
 	
 	update(delta){
 		
+		if(!this.scene){
+			return;
+		}
+		
+		let camera = this.viewer.scene.camera;
+		let domElement = this.viewer.renderer.domElement;
+		//let labels = this.viewer.scene.volumes.map(e => e.label);
+		
+		let volumes = this.viewer.scene.volumes;
+		for(let volume of volumes){
+			let label = volume.label;
+			
+			{
+				let distance = label.position.distanceTo(camera.position);
+				let pr = Potree.utils.projectedRadius(1, camera.fov * Math.PI / 180, distance, domElement.clientHeight);
+				let scale = (70 / pr);
+				label.scale.set(scale, scale, scale);
+			}
+			
+			let text = Potree.utils.addCommas(volume.getVolume().toFixed(3)) + "\u00B3";
+			label.setText(text);
+		}
+		
 	}
 
 };

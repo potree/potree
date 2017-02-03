@@ -412,7 +412,7 @@ Potree.Measure = class Measure extends THREE.Object3D{
 		{ // update area label
 			this.areaLabel.position.copy(centroid);
 			this.areaLabel.visible = this.showArea && this.points.length >= 3;
-			let msg = Potree.utils.addCommas(this.getArea().toFixed(1)) + "";
+			let msg = Potree.utils.addCommas(this.getArea().toFixed(1)) + "\u00B2";
 			this.areaLabel.setText(msg);
 		}
 	};

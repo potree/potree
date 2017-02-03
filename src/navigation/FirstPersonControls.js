@@ -34,7 +34,7 @@ Potree.FirstPersonControls = class FirstPersonControls extends THREE.EventDispat
 			RIGHT:     ['D'.charCodeAt(0), 39],
 			UP:        ['R'.charCodeAt(0), 33],
 			DOWN:      ['F'.charCodeAt(0), 34]
-		}
+		};
 		
 		this.fadeFactor = 50;
 		this.yawDelta = 0;

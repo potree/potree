@@ -4,6 +4,10 @@ Potree.Volume = class extends THREE.Object3D{
 	constructor(args = {}){
 		super();
 		
+		this.constructor.counter = (this.constructor.counter === undefined) ? 0 : this.constructor.counter + 1;
+		
+		this.name = "volume_" + this.constructor.counter;
+		
 		this._clip = args.clip || false;
 		this._modifiable = args.modifiable || true;
 		
@@ -12,6 +16,34 @@ Potree.Volume = class extends THREE.Object3D{
 		
 		let boxFrameGeometry = new THREE.Geometry();
 		{
+			let l = 0.1;
+			
+			// corner vertices
+			let v = [
+				[-0.5, -0.5, -0.5],
+				[-0.5, -0.5, +0.5],
+				[-0.5, +0.5, -0.5],
+				[-0.5, +0.5, +0.5],
+				[+0.5, -0.5, -0.5],
+				[+0.5, -0.5, +0.5],
+				[+0.5, +0.5, -0.5],
+				[+0.5, +0.5, +0.5]
+			];
+			//
+			//// create a cross at each corner with cross length l
+			//for(let b of v){
+			//	
+			//	let b1 = [ b[0] - l * Math.sign(b[0]), b[1], b[2] ];
+			//	let b2 = [ b[0], b[1] - l * Math.sign(b[1]), b[2] ];
+			//	let b3 = [ b[0], b[1], b[2] - l * Math.sign(b[2]) ];
+			//	
+			//	// create the 3 lines that a cross consists of
+			//	for(let d of [b, b1, b, b2, b, b3]){
+			//		boxFrameGeometry.vertices.push(new THREE.Vector3().fromArray(d));
+			//	}
+			//	
+			//}
+			
 			// bottom
 			boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, -0.5, 0.5));
 			boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, -0.5, 0.5));

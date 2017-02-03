@@ -76,35 +76,110 @@
 			let scene = viewer.scene;
 			scene.addPointCloud(e.pointcloud);
 			
-			
-			//window.planeGeometry = new THREE.PlaneGeometry(1, 1);
-			//window.planeMaterial = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
-			//window.plane = new THREE.Mesh( planeGeometry, planeMaterial );
-			//plane.position.copy(viewer.scene.pointclouds[0].position);
-			//plane.scale.copy(viewer.scene.pointclouds[0].boundingBox.getSize());
-			//plane.position.add(viewer.scene.pointclouds[0].boundingBox.getSize().clone().multiplyScalar(0.5));
-			//plane.position.z = viewer.scene.pointclouds[0].position.z;
-			//viewer.scene.scene.add( plane );
-			
-			//viewer.scene.scenePointCloud.updateMatrixWorld()
-			
-			if(!Potree.utils.getParameterByName("target")){
-				viewer.fitToScreen();
+			{ // VOLUME
+				let volume  = new Potree.Volume();
+				volume.scale.set(70, 70, 70);
+				volume.position.set(589922.34, 231478.44, 727.45);
+				volume.clip = true;
+				
+				scene.addVolume(volume);
 			}
 			
+			{ // DISTANCE MEASURE
+				let measure = new Potree.Measure();
+				measure.closed = false;
+				measure.addMarker(new THREE.Vector3(589998.15, 231509.47, 731.00));
+				measure.addMarker(new THREE.Vector3(589996.84, 231470.11, 737.39));		
+				measure.addMarker(new THREE.Vector3(589994.53, 231426.00, 742.03));
+				
+				scene.addMeasurement(measure);
+			}
 			
-			//scene.view = new Potree.View.Earth();
-			//scene.view.position.set(590030, 231767, 1007);
-			//scene.view.target.set(589844, 231376, 710);
+			{ // PROFILE
+				let profile = new Potree.Profile();
+				profile.setWidth(6)
+				profile.addMarker(new THREE.Vector3(589997.02, 231327.75, 755.73));
+				profile.addMarker(new THREE.Vector3(589579.65, 231323.51, 775.78));
+				profile.addMarker(new THREE.Vector3(589500.87, 231356.23, 782.91));
+				
+				scene.addProfile(profile);
+			}
 			
-			//scene.view.position.set(590030, 231767, 1007);
-			//scene.view.target = new THREE.Vector3(589844, 231376, 710);
+			//{ // SPHERE
+			//	let geometry = new THREE.SphereGeometry(1, 50, 50, 0, Math.PI * 2, 0, Math.PI * 2);
+			//	let material = new THREE.MeshNormalMaterial();
+			//	let sphere = new THREE.Mesh(geometry, material);
+			//	sphere.position.set(589844, 231376, 730);
+			//	sphere.scale.set(50, 50, 50);
+			//	//sphere.addEventListener("mouseover", e => sphere.material.wireframe = true);
+			//	//sphere.addEventListener("mouseleave", e => sphere.material.wireframe = false);
+			//	sphere.addEventListener("select", e => {
+			//		sphere.material.transparent = true;
+			//		sphere.material.opacity = 0.5;
+			//	});
+			//	sphere.addEventListener("deselect", e => {
+			//		sphere.material.transparent = false;
+			//		sphere.material.opacity = 1.0;
+			//	});
+			//	sphere.addEventListener("drag", e => {
+			//		console.log("drag");
+			//		
+			//		let I = Potree.utils.getMousePointCloudIntersection(
+			//			e.drag.end, 
+			//			viewer.scene.camera, 
+			//			viewer.renderer, 
+			//			viewer.scene.pointclouds);
+			//			
+			//		if(I){
+			//			sphere.position.copy(I.location);
+			//		}
+			//	});
+			//	sphere.addEventListener("drop", e => {
+			//		console.log("drop");
+			//	});
+			//	
+			//	viewer.scene.scene.add(sphere);
+			//}
+			//
+			//{ // Box
+			//	let geometry = new THREE.BoxGeometry(1, 1, 1);
+			//	let material = new THREE.MeshNormalMaterial();
+			//	let mesh = new THREE.Mesh(geometry, material);
+			//	mesh.position.set(589944, 231376, 740);
+			//	mesh.scale.set(50, 50, 50);
+			//	//mesh.addEventListener("mouseover", e => mesh.material.wireframe = true);
+			//	//mesh.addEventListener("mouseleave", e => mesh.material.wireframe = false);
+			//	mesh.addEventListener("select", e => {
+			//		mesh.material.transparent = true;
+			//		mesh.material.opacity = 0.5;
+			//	});
+			//	mesh.addEventListener("deselect", e => {
+			//		mesh.material.transparent = false;
+			//		mesh.material.opacity = 1.0;
+			//	});
+			//	
+			//	viewer.scene.scene.add(mesh);
+			//}
+			
+			scene.view.position.set(589974.341, 231698.397, 986.146);
+			scene.view.lookAt(new THREE.Vector3(589851.587, 231428.213, 715.634));
+			
+			//if(!Potree.utils.getParameterByName("target")){
+			//	viewer.fitToScreen();
+			//}
+			//
+			//viewer.setNavigationMode(Potree.FirstPersonControls);
+			
 		});
 		
 		viewer.loadGUI();
-        //viewer.toggleSidebar();
+        viewer.toggleSidebar();
 		
-        // Define default language: 'de'/'fr'/'en'
+		$(document).ready( function() {
+			$("#menu_tools").next().show();
+		});
+		
+        // Define default language: 'de', 'fr', 'en'
         viewer.setLanguage('en');
 		
 		

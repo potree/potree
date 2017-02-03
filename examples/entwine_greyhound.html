@@ -69,13 +69,19 @@
 		viewer.setWeightClassification(1);
 		viewer.loadSettingsFromURL();
 		
-		viewer.setDescription("");
+		viewer.setDescription('Streaming point clouds from an <a href="https://entwine.io/" target="_blank">Entwine</a> backend.');
 		
 		
-		{ // Autzen
+		{ 
 		
+			//var server = "greyhound://data.greyhound.io/resource/";
+			//var resource = "autzen-h";
+			
+			//var server = "greyhound://data.greyhound.io/resource/";
+			//var resource = "nyc-h";
+			
 			var server = "greyhound://data.greyhound.io/resource/";
-			var resource = "autzen-h";
+			var resource = "redrock-h";
 
 			Potree.loadPointCloud(server + resource + "/", "autzen", (e) => {
 				viewer.scene.addPointCloud(e.pointcloud);
@@ -86,7 +92,12 @@
 		
 
 		viewer.loadGUI();
-        viewer.toggleSidebar();
+        //viewer.toggleSidebar();
+		
+		$(document).ready( function() {
+			$("#menu_appearance").next().show();
+		});
+		
 		
         // Define default language: 'de'/'fr'/'en'
         viewer.setLanguage('en');

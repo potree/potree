@@ -1660,7 +1660,9 @@ Potree.Viewer = class{
 				screenPos.y = this.renderArea.clientHeight * (1 - (screenPos.y + 1) / 2);
 				
 				ann.domElement.style.left = Math.floor(screenPos.x - ann.domElement.clientWidth / 2) + "px";
-				ann.domElement.style.top = Math.floor(screenPos.y - ann.domElement.clientHeight / 2) + "px";
+				ann.domElement.style.top = Math.floor(screenPos.y - ann.elOrdinal.clientHeight / 2) + "px";
+				
+				
 				
 				distances.push({annotation: ann, distance: screenPos.z});
 
@@ -2225,11 +2227,19 @@ class HighQualityRenderer{
 				Potree.utils.screenPass.render(viewer.renderer, this.normalizationMaterial);
 			}
 			
-			viewer.volumeTool.render();
+			viewer.volumeTool.update();
+			viewer.renderer.render(viewer.volumeTool.sceneVolume, viewer.scene.camera);
+			viewer.renderer.render(viewer.controls.sceneControls, viewer.scene.camera);
+			
 			viewer.renderer.clearDepth();
-			viewer.profileTool.render();
-			viewer.measuringTool.render();
-			//viewer.transformationTool.render();
+			
+			viewer.measuringTool.update();
+			viewer.profileTool.update();
+			viewer.transformationTool.update();
+			
+			viewer.renderer.render(viewer.measuringTool.sceneMeasurement, viewer.scene.camera);
+			viewer.renderer.render(viewer.profileTool.sceneProfile, viewer.scene.camera);
+			viewer.renderer.render(viewer.transformationTool.sceneTransform, viewer.scene.camera);
 		}
 
 	}
@@ -2464,11 +2474,24 @@ class EDLRenderer{
 			//}
 
 			
+			viewer.volumeTool.update();
+			viewer.renderer.render(viewer.volumeTool.sceneVolume, viewer.scene.camera);
+			viewer.renderer.render(viewer.controls.sceneControls, viewer.scene.camera);
 			
-			viewer.profileTool.render();
-			viewer.volumeTool.render();
 			viewer.renderer.clearDepth();
-			viewer.measuringTool.render();
+			
+			viewer.measuringTool.update();
+			viewer.profileTool.update();
+			viewer.transformationTool.update();
+			
+			viewer.renderer.render(viewer.measuringTool.sceneMeasurement, viewer.scene.camera);
+			viewer.renderer.render(viewer.profileTool.sceneProfile, viewer.scene.camera);
+			viewer.renderer.render(viewer.transformationTool.sceneTransform, viewer.scene.camera);
+			
+			//viewer.profileTool.render();
+			//viewer.volumeTool.render();
+			//viewer.renderer.clearDepth();
+			//viewer.measuringTool.render();
 			//viewer.transformationTool.render();
 		}
 		

@@ -212,6 +212,14 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 					type: "drop",
 					drag: this.drag
 				});
+			}else{
+				if(this.logMessages) console.log(this.constructor.name + ": drop: ");
+				for(let inputListener of this.inputListeners){
+					inputListener.dispatchEvent({
+						type: "drop",
+						drag: this.drag
+					});
+				}
 			}
 			
 			this.drag = null;

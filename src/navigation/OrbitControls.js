@@ -40,6 +40,12 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 				return;
 			}
 			
+			if(e.drag.startHandled === undefined){
+				e.drag.startHandled = true;
+				
+				this.dispatchEvent({type: "start"});
+			}
+			
 			let ndrag = {
 				x: e.drag.lastDrag.x / this.renderer.domElement.clientWidth,
 				y: e.drag.lastDrag.y / this.renderer.domElement.clientHeight
@@ -54,6 +60,10 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 			}
 		};
 		
+		let drop = e => {
+			this.dispatchEvent({type: "end"});
+		};
+		
 		let scroll = (e) => {
 			this.radiusDelta -= e.delta;
 		};
@@ -63,6 +73,7 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 		};
 		
 		this.addEventListener("drag", drag);
+		this.addEventListener("drop", drop);
 		this.addEventListener("mousewheel", scroll);
 		this.addEventListener("dblclick", dblclick);
 		

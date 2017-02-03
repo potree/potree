@@ -80,15 +80,23 @@
 		Potree.loadPointCloud("../pointclouds/vol_total/cloud.js", "sigeom.sa", function(e){
 			sceneSG.addPointCloud(e.pointcloud);
 			sceneSG.view.position.set(590030, 231767, 1007);
-			sceneSG.view.target = new THREE.Vector3(589844, 231376, 710);
+			sceneSG.view.lookAt(new THREE.Vector3(589844, 231376, 710));
+			
+			sceneSG.addAnnotation(new THREE.Vector3(589847.17, 231436.78, 742.60), {
+				"title": "Sorvilier",
+				"cameraPosition": new THREE.Vector3(590034.03, 231814.02, 961.68),
+				"cameraTarget": new THREE.Vector3(589847.17, 231436.78, 742.60),
+				"description": `Point cloud of a small section in Sorvilier, Switzerland. <br>
+				Courtesy of sigeom.sa`
+			});
 			
 			sceneSG.addAnnotation(new THREE.Vector3(590043.63, 231490.79, 740.78), {
-				"title": "Trees",
-				"cameraPosition": new THREE.Vector3(590103.40, 231539.49, 787.52),
+				"title": "About Annotations",
+				"cameraPosition": new THREE.Vector3(590105.53, 231541.63, 782.05),
 				"cameraTarget": new THREE.Vector3(590043.63, 231488.79, 740.78),
-				"description": "<ul><li>Click on the annotation label to move a predefined view.</li> \
-				<li>Click on the icon to execute the specified action.</li>\
-				In this case, the action will bring you to another scene and point cloud.</ul>",
+				"description": `<ul><li>Click on the annotation label to move a predefined view.</li> 
+				<li>Click on the icon to execute the specified action.</li>
+				In this case, the action will bring you to another scene and point cloud.</ul>`,
 				"actions": [{
 					"icon": Potree.resourcePath + "/icons/goto.svg",
 					"onclick": function(){
@@ -98,15 +106,16 @@
 			});
 
 			sceneSG.addAnnotation(new THREE.Vector3(589621, 231437, 784), {
-				"title": "Another Tree",
-				"cameraPosition": new THREE.Vector3(589661, 231470, 805),
+				"title": "About Annotations 2",
+				"cameraPosition": new THREE.Vector3(589585.81, 231463.63, 804.00),
 				"cameraTarget": new THREE.Vector3(589625.86, 231439, 775.38),
-				"description": "\
-				Suitable annotation positions and views can be obtained by \
-				evaluating following lines in your browser's developer console:<br><br>\
-				<code>Potree.utils.toString(viewer.scene.view.position)</code><br>\
-				<code>Potree.utils.toString(viewer.scene.view.target)</code><br>\
-				"
+				"description": `
+				Suitable annotation positions and views can be obtained by 
+				looking up the current camera position and target in the "Scene" panel, 
+				or by evaluating following lines in your browser's developer console:<br><br>
+				<code>viewer.scene.view.position</code><br>
+				<code>viewer.scene.view.getPivot()</code><br>
+				`
 			});
 			
 			
@@ -115,7 +124,7 @@
 		Potree.loadPointCloud("../pointclouds/lion_takanawa/cloud.js", "lion", function(e){
 			sceneLion.addPointCloud(e.pointcloud);
 			sceneLion.view.position.set(4.15, -6.12, 8.54);
-			sceneLion.view.target = new THREE.Vector3(0, -0.098, 4.23);
+			sceneLion.view.lookAt(new THREE.Vector3(0, -0.098, 4.23));
 			
 			sceneLion.addAnnotation(new THREE.Vector3(0.72, -1, 8), {
 				"title": "Chinese Guardian Lion",
@@ -132,8 +141,7 @@
         viewer.toggleSidebar();
 		
 		$(document).ready( function() {
-			$("#accordion").accordion({ active: false});
-			$("#accordion").accordion({ active: 4});
+			$("#menu_annotations").next().show();
 		});
 		
         // Define default language: 'de'/'fr'/'en'

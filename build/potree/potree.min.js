@@ -3893,6 +3893,14 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 					type: "drop",
 					drag: this.drag
 				});
+			}else{
+				if(this.logMessages) console.log(this.constructor.name + ": drop: ");
+				for(let inputListener of this.inputListeners){
+					inputListener.dispatchEvent({
+						type: "drop",
+						drag: this.drag
+					});
+				}
 			}
 			
 			this.drag = null;
@@ -4495,6 +4503,12 @@ Potree.FirstPersonControls = class FirstPersonControls extends THREE.EventDispat
 				return;
 			}
 			
+			if(e.drag.startHandled === undefined){
+				e.drag.startHandled = true;
+				
+				this.dispatchEvent({type: "start"});
+			}
+			
 			let moveSpeed = this.viewer.getMoveSpeed();
 			
 			let ndrag = {
@@ -4509,6 +4523,10 @@ Potree.FirstPersonControls = class FirstPersonControls extends THREE.EventDispat
 				this.translationDelta.x -= ndrag.x * moveSpeed * 100;
 				this.translationDelta.z += ndrag.y * moveSpeed * 100;
 			}
+		};
+		
+		let drop = e => {
+			this.dispatchEvent({type: "end"});
 		};
 		
 		let scroll = (e) => {
@@ -4530,6 +4548,7 @@ Potree.FirstPersonControls = class FirstPersonControls extends THREE.EventDispat
 		};
 		
 		this.addEventListener("drag", drag);
+		this.addEventListener("drop", drop);
 		this.addEventListener("mousewheel", scroll);
 		this.addEventListener("dblclick", dblclick);
 	}
@@ -5265,6 +5284,12 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 				return;
 			}
 			
+			if(e.drag.startHandled === undefined){
+				e.drag.startHandled = true;
+				
+				this.dispatchEvent({type: "start"});
+			}
+			
 			let ndrag = {
 				x: e.drag.lastDrag.x / this.renderer.domElement.clientWidth,
 				y: e.drag.lastDrag.y / this.renderer.domElement.clientHeight
@@ -5279,6 +5304,10 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 			}
 		};
 		
+		let drop = e => {
+			this.dispatchEvent({type: "end"});
+		};
+		
 		let scroll = (e) => {
 			this.radiusDelta -= e.delta;
 		};
@@ -5288,6 +5317,7 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 		};
 		
 		this.addEventListener("drag", drag);
+		this.addEventListener("drop", drop);
 		this.addEventListener("mousewheel", scroll);
 		this.addEventListener("dblclick", dblclick);
 		
@@ -5480,6 +5510,12 @@ Potree.EarthControls = class EarthControls extends THREE.EventDispatcher{
 				return;
 			}
 			
+			if(e.drag.startHandled === undefined){
+				e.drag.startHandled = true;
+				
+				this.dispatchEvent({type: "start"});
+			}
+			
 			let camStart = this.camStart;
 			let view = this.viewer.scene.view;
 			
@@ -5576,6 +5612,10 @@ Potree.EarthControls = class EarthControls extends THREE.EventDispatcher{
 			}
 		};
 		
+		let drop = e => {
+			this.dispatchEvent({type: "end"});
+		};
+		
 		let onMouseUp = e => {
 			this.camStart = null;
 			this.pivot = null;
@@ -5591,6 +5631,7 @@ Potree.EarthControls = class EarthControls extends THREE.EventDispatcher{
 		};
 		
 		this.addEventListener("drag", drag);
+		this.addEventListener("drop", drop);
 		this.addEventListener("mousewheel", scroll);
 		this.addEventListener("mousedown", onMouseDown);
 		this.addEventListener("mouseup", onMouseUp);
@@ -6030,7 +6071,7 @@ Potree.Annotation = function(scene, args = {}){
 	this.domDescription.style.borderRadius = "4px";
 	this.domDescription.style.display = "none";
 	this.domDescription.style.maxWidth = "500px";
-	this.domDescription.className = "annotation";
+	//this.domDescription.className = "annotation";
 	this.domElement.appendChild(this.domDescription);
 	
 	if(this.actions.length > 0){
@@ -6067,31 +6108,22 @@ Potree.Annotation = function(scene, args = {}){
 	
 	this.domElement.onmouseenter = () => {
 		this.setHighlighted(true);
-		//this.domElement.style.opacity = "0.8";
-		//this.domElement.style.zIndex = "1000";
-		//if(this.description){
-		//	this.descriptionVisible = true;	
-		//	this.domDescription.style.display = "block";
-		//}
 	};
 	
 	this.domElement.onmouseleave = () => {
 		this.setHighlighted(false);
-		//this.domElement.style.opacity = "0.5";
-		//this.domElement.style.zIndex = "100";
-		//this.descriptionVisible = true;	
-		//this.domDescription.style.display = "none";
 	};
 	
 	this.setHighlighted = function(highlighted){
 		if(highlighted){
-			this.domElement.style.opacity = "1.0";
+			this.domElement.style.opacity = "0.8";
 			this.elOrdinal.style.boxShadow = "0 0 5px #fff";
 			this.domElement.style.zIndex = "1000";
 			
 			if(this.description){
 				this.descriptionVisible = true;	
 				this.domDescription.style.display = "block";
+				this.domDescription.style.position = "relative";
 			}
 			
 		}else{
@@ -13922,7 +13954,9 @@ Potree.Viewer = class{
 				screenPos.y = this.renderArea.clientHeight * (1 - (screenPos.y + 1) / 2);
 				
 				ann.domElement.style.left = Math.floor(screenPos.x - ann.domElement.clientWidth / 2) + "px";
-				ann.domElement.style.top = Math.floor(screenPos.y - ann.domElement.clientHeight / 2) + "px";
+				ann.domElement.style.top = Math.floor(screenPos.y - ann.elOrdinal.clientHeight / 2) + "px";
+				
+				
 				
 				distances.push({annotation: ann, distance: screenPos.z});
 
@@ -14487,11 +14521,19 @@ class HighQualityRenderer{
 				Potree.utils.screenPass.render(viewer.renderer, this.normalizationMaterial);
 			}
 			
-			viewer.volumeTool.render();
+			viewer.volumeTool.update();
+			viewer.renderer.render(viewer.volumeTool.sceneVolume, viewer.scene.camera);
+			viewer.renderer.render(viewer.controls.sceneControls, viewer.scene.camera);
+			
 			viewer.renderer.clearDepth();
-			viewer.profileTool.render();
-			viewer.measuringTool.render();
-			//viewer.transformationTool.render();
+			
+			viewer.measuringTool.update();
+			viewer.profileTool.update();
+			viewer.transformationTool.update();
+			
+			viewer.renderer.render(viewer.measuringTool.sceneMeasurement, viewer.scene.camera);
+			viewer.renderer.render(viewer.profileTool.sceneProfile, viewer.scene.camera);
+			viewer.renderer.render(viewer.transformationTool.sceneTransform, viewer.scene.camera);
 		}
 
 	}
@@ -14726,11 +14768,24 @@ class EDLRenderer{
 			//}
 
 			
+			viewer.volumeTool.update();
+			viewer.renderer.render(viewer.volumeTool.sceneVolume, viewer.scene.camera);
+			viewer.renderer.render(viewer.controls.sceneControls, viewer.scene.camera);
 			
-			viewer.profileTool.render();
-			viewer.volumeTool.render();
 			viewer.renderer.clearDepth();
-			viewer.measuringTool.render();
+			
+			viewer.measuringTool.update();
+			viewer.profileTool.update();
+			viewer.transformationTool.update();
+			
+			viewer.renderer.render(viewer.measuringTool.sceneMeasurement, viewer.scene.camera);
+			viewer.renderer.render(viewer.profileTool.sceneProfile, viewer.scene.camera);
+			viewer.renderer.render(viewer.transformationTool.sceneTransform, viewer.scene.camera);
+			
+			//viewer.profileTool.render();
+			//viewer.volumeTool.render();
+			//viewer.renderer.clearDepth();
+			//viewer.measuringTool.render();
 			//viewer.transformationTool.render();
 		}
 		

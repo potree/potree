@@ -39,6 +39,12 @@ Potree.EarthControls = class EarthControls extends THREE.EventDispatcher{
 				return;
 			}
 			
+			if(e.drag.startHandled === undefined){
+				e.drag.startHandled = true;
+				
+				this.dispatchEvent({type: "start"});
+			}
+			
 			let camStart = this.camStart;
 			let view = this.viewer.scene.view;
 			
@@ -135,6 +141,10 @@ Potree.EarthControls = class EarthControls extends THREE.EventDispatcher{
 			}
 		};
 		
+		let drop = e => {
+			this.dispatchEvent({type: "end"});
+		};
+		
 		let onMouseUp = e => {
 			this.camStart = null;
 			this.pivot = null;
@@ -150,6 +160,7 @@ Potree.EarthControls = class EarthControls extends THREE.EventDispatcher{
 		};
 		
 		this.addEventListener("drag", drag);
+		this.addEventListener("drop", drop);
 		this.addEventListener("mousewheel", scroll);
 		this.addEventListener("mousedown", onMouseDown);
 		this.addEventListener("mouseup", onMouseUp);

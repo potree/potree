@@ -49,6 +49,12 @@ Potree.FirstPersonControls = class FirstPersonControls extends THREE.EventDispat
 				return;
 			}
 			
+			if(e.drag.startHandled === undefined){
+				e.drag.startHandled = true;
+				
+				this.dispatchEvent({type: "start"});
+			}
+			
 			let moveSpeed = this.viewer.getMoveSpeed();
 			
 			let ndrag = {
@@ -63,6 +69,10 @@ Potree.FirstPersonControls = class FirstPersonControls extends THREE.EventDispat
 				this.translationDelta.x -= ndrag.x * moveSpeed * 100;
 				this.translationDelta.z += ndrag.y * moveSpeed * 100;
 			}
+		};
+		
+		let drop = e => {
+			this.dispatchEvent({type: "end"});
 		};
 		
 		let scroll = (e) => {
@@ -84,6 +94,7 @@ Potree.FirstPersonControls = class FirstPersonControls extends THREE.EventDispat
 		};
 		
 		this.addEventListener("drag", drag);
+		this.addEventListener("drop", drop);
 		this.addEventListener("mousewheel", scroll);
 		this.addEventListener("dblclick", dblclick);
 	}

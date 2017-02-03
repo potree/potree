@@ -52,7 +52,8 @@ Potree.MeasuringTool = class MeasuringTool{
 		
 		let insertionCallback = (e) => {
 			if(e.button === THREE.MOUSE.LEFT){
-				measure.addMarker(new THREE.Vector3(0, 0, 0));
+				
+				measure.addMarker(measure.points[measure.points.length - 1].position.clone());
 				
 				if(measure.points.length >= measure.maxMarkers){
 					domElement.removeEventListener("mouseup", insertionCallback, true);

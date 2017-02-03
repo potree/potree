@@ -50,7 +50,7 @@ Potree.ProfileTool = class ProfileTool{
 					profile.setWidth(width);
 				}
 				
-				profile.addMarker(new THREE.Vector3(0, 0, 0));
+				profile.addMarker(profile.points[profile.points.length - 1].clone());
 				
 				this.viewer.inputHandler.startDragging(
 					profile.spheres[profile.spheres.length - 1]);

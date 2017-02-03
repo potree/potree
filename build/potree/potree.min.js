@@ -104,6 +104,13 @@ Potree.resolveQueries = function(gl){
 }
 
 
+Potree.MOUSE = {
+	LEFT:   0b0001,
+	RIGHT:  0b0010,
+	MIDDLE: 0b0100
+};
+
+
 Potree.loadPointCloud = function(path, name, callback){
 	
 	let loaded = function(pointcloud){
@@ -3709,7 +3716,7 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 		
 		this.speed = 1;
 		
-		this.logMessages = true;
+		this.logMessages = false;
 		
 		if(this.domElement.tabIndex === -1){
 			this.domElement.tabIndex = 2222;
@@ -3873,7 +3880,7 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 					this.deselectAll();
 				}
 			}
-		}else if(event.button === THREE.MOUSE.RIGHT && noMovement){
+		}else if((e.button === THREE.MOUSE.RIGHT) && noMovement){
 			this.deselectAll();
 		}
 		
@@ -3918,7 +3925,7 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 		this.mouse.set(x, y);
 		
 		if(this.drag){
-			this.drag.mouse = e.button;
+			this.drag.mouse = e.buttons;
 			
 			this.drag.lastDrag.x = x - this.drag.end.x;
 			this.drag.lastDrag.y = y - this.drag.end.y;
@@ -4516,10 +4523,10 @@ Potree.FirstPersonControls = class FirstPersonControls extends THREE.EventDispat
 				y: e.drag.lastDrag.y / this.renderer.domElement.clientHeight
 			};
 			
-			if(e.drag.mouse === THREE.MOUSE.LEFT){
+			if(e.drag.mouse === Potree.MOUSE.LEFT){
 				this.yawDelta += ndrag.x * this.rotationSpeed;
 				this.pitchDelta += ndrag.y * this.rotationSpeed;
-			}else if(e.drag.mouse === THREE.MOUSE.RIGHT){
+			}else if(e.drag.mouse === Potree.MOUSE.RIGHT){
 				this.translationDelta.x -= ndrag.x * moveSpeed * 100;
 				this.translationDelta.z += ndrag.y * moveSpeed * 100;
 			}
@@ -5295,10 +5302,10 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 				y: e.drag.lastDrag.y / this.renderer.domElement.clientHeight
 			};
 			
-			if(e.drag.mouse === THREE.MOUSE.LEFT){
+			if(e.drag.mouse === Potree.MOUSE.LEFT){
 				this.yawDelta += ndrag.x * this.rotationSpeed;
 				this.pitchDelta += ndrag.y * this.rotationSpeed;
-			}else if(e.drag.mouse === THREE.MOUSE.RIGHT){
+			}else if(e.drag.mouse === Potree.MOUSE.RIGHT){
 				this.panDelta.x += ndrag.x;
 				this.panDelta.y += ndrag.y;
 			}
@@ -5523,7 +5530,7 @@ Potree.EarthControls = class EarthControls extends THREE.EventDispatcher{
 			let mouse = e.drag.end;
 			let domElement = this.viewer.renderer.domElement;
 			
-			if(e.drag.mouse === THREE.MOUSE.LEFT){
+			if(e.drag.mouse === Potree.MOUSE.LEFT){
 				let nmouse =  {
 					x: (mouse.x / domElement.clientWidth ) * 2 - 1,
 					y: - (mouse.y / domElement.clientHeight ) * 2 + 1
@@ -5561,7 +5568,7 @@ Potree.EarthControls = class EarthControls extends THREE.EventDispatcher{
 					}
 				}
 				
-			}else if(e.drag.mouse === THREE.MOUSE.RIGHT){
+			}else if(e.drag.mouse === Potree.MOUSE.RIGHT){
 				let ndrag = {
 					x: e.drag.lastDrag.x / this.renderer.domElement.clientWidth,
 					y: e.drag.lastDrag.y / this.renderer.domElement.clientHeight
@@ -9685,7 +9692,8 @@ Potree.MeasuringTool = class MeasuringTool{
 		
 		let insertionCallback = (e) => {
 			if(e.button === THREE.MOUSE.LEFT){
-				measure.addMarker(new THREE.Vector3(0, 0, 0));
+				
+				measure.addMarker(measure.points[measure.points.length - 1].position.clone());
 				
 				if(measure.points.length >= measure.maxMarkers){
 					domElement.removeEventListener("mouseup", insertionCallback, true);
@@ -10196,7 +10204,7 @@ Potree.ProfileTool = class ProfileTool{
 					profile.setWidth(width);
 				}
 				
-				profile.addMarker(new THREE.Vector3(0, 0, 0));
+				profile.addMarker(profile.points[profile.points.length - 1].clone());
 				
 				this.viewer.inputHandler.startDragging(
 					profile.spheres[profile.spheres.length - 1]);
@@ -13692,8 +13700,9 @@ Potree.Viewer = class{
 
 	loadGUI(){
 		var sidebarContainer = $('#potree_sidebar_container');
-		sidebarContainer.load(new URL(Potree.scriptPath + "/sidebar.html").href);
-		sidebarContainer.css("width", "300px");
+		sidebarContainer.load(new URL(Potree.scriptPath + "/sidebar.html").href, function(){
+			
+			sidebarContainer.css("width", "300px");
 		sidebarContainer.css("height", "100%");
 
 		var imgMenuToggle = document.createElement("img");
@@ -13725,6 +13734,29 @@ Potree.Viewer = class{
             // Start translation once everything is loaded
             $("body").i18n();
         });
+		
+		$(function() {
+			
+			console.log($('#lblPointBudget')[0]);
+			
+			initAccordion();
+			initAppearance();
+			initToolbar();
+			initNavigation();
+			initMaterials();
+			initClassificationList();
+			initAnnotationDetails();
+			initMeasurementDetails();
+			initSceneList();
+			initSettings()
+			
+			$('#potree_version_number').html(Potree.version.major + "." + Potree.version.minor + Potree.version.suffix);
+			$('.perfect_scrollbar').perfectScrollbar();
+			
+		});
+			
+		});
+		
 	}
     
     setLanguage(lang){
@@ -17428,24 +17460,42 @@ initSettings = function(){
 	});
 };
 
+//let initSidebar = () => {
+//	
+//	$(document).ready( function() {
+//		initAccordion();
+//		initAppearance();
+//		initToolbar();
+//		initNavigation();
+//		initMaterials();
+//		initClassificationList();
+//		initAnnotationDetails();
+//		initMeasurementDetails();
+//		initSceneList();
+//		initSettings()
+//		
+//		$('#potree_version_number').html(Potree.version.major + "." + Potree.version.minor + Potree.version.suffix);
+//		$('.perfect_scrollbar').perfectScrollbar();
+//	});
+//}
 
-$(document).ready( function() {
-    
-	initAccordion();
-	initAppearance();
-	initToolbar();
-	initNavigation();
-	initMaterials();
-	initClassificationList();
-	initAnnotationDetails();
-	initMeasurementDetails();
-	initSceneList();
-	initSettings()
-	
-	$('#potree_version_number').html(Potree.version.major + "." + Potree.version.minor + Potree.version.suffix);
-	$('.perfect_scrollbar').perfectScrollbar();
-	
-});
+//$(document).ready( function() {
+//    
+//	initAccordion();
+//	initAppearance();
+//	initToolbar();
+//	initNavigation();
+//	initMaterials();
+//	initClassificationList();
+//	initAnnotationDetails();
+//	initMeasurementDetails();
+//	initSceneList();
+//	initSettings()
+//	
+//	$('#potree_version_number').html(Potree.version.major + "." + Potree.version.minor + Potree.version.suffix);
+//	$('.perfect_scrollbar').perfectScrollbar();
+//	
+//});
 class HoverMenuItem{
 
 	constructor(icon, callback){

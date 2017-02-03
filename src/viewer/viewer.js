@@ -1398,8 +1398,9 @@ Potree.Viewer = class{
 
 	loadGUI(){
 		var sidebarContainer = $('#potree_sidebar_container');
-		sidebarContainer.load(new URL(Potree.scriptPath + "/sidebar.html").href);
-		sidebarContainer.css("width", "300px");
+		sidebarContainer.load(new URL(Potree.scriptPath + "/sidebar.html").href, function(){
+			
+			sidebarContainer.css("width", "300px");
 		sidebarContainer.css("height", "100%");
 
 		var imgMenuToggle = document.createElement("img");
@@ -1431,6 +1432,29 @@ Potree.Viewer = class{
             // Start translation once everything is loaded
             $("body").i18n();
         });
+		
+		$(function() {
+			
+			console.log($('#lblPointBudget')[0]);
+			
+			initAccordion();
+			initAppearance();
+			initToolbar();
+			initNavigation();
+			initMaterials();
+			initClassificationList();
+			initAnnotationDetails();
+			initMeasurementDetails();
+			initSceneList();
+			initSettings()
+			
+			$('#potree_version_number').html(Potree.version.major + "." + Potree.version.minor + Potree.version.suffix);
+			$('.perfect_scrollbar').perfectScrollbar();
+			
+		});
+			
+		});
+		
 	}
     
     setLanguage(lang){

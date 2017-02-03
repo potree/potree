@@ -1322,21 +1322,39 @@ initSettings = function(){
 	});
 };
 
+//let initSidebar = () => {
+//	
+//	$(document).ready( function() {
+//		initAccordion();
+//		initAppearance();
+//		initToolbar();
+//		initNavigation();
+//		initMaterials();
+//		initClassificationList();
+//		initAnnotationDetails();
+//		initMeasurementDetails();
+//		initSceneList();
+//		initSettings()
+//		
+//		$('#potree_version_number').html(Potree.version.major + "." + Potree.version.minor + Potree.version.suffix);
+//		$('.perfect_scrollbar').perfectScrollbar();
+//	});
+//}
 
-$(document).ready( function() {
-    
-	initAccordion();
-	initAppearance();
-	initToolbar();
-	initNavigation();
-	initMaterials();
-	initClassificationList();
-	initAnnotationDetails();
-	initMeasurementDetails();
-	initSceneList();
-	initSettings()
-	
-	$('#potree_version_number').html(Potree.version.major + "." + Potree.version.minor + Potree.version.suffix);
-	$('.perfect_scrollbar').perfectScrollbar();
-	
-});
+//$(document).ready( function() {
+//    
+//	initAccordion();
+//	initAppearance();
+//	initToolbar();
+//	initNavigation();
+//	initMaterials();
+//	initClassificationList();
+//	initAnnotationDetails();
+//	initMeasurementDetails();
+//	initSceneList();
+//	initSettings()
+//	
+//	$('#potree_version_number').html(Potree.version.major + "." + Potree.version.minor + Potree.version.suffix);
+//	$('.perfect_scrollbar').perfectScrollbar();
+//	
+//});

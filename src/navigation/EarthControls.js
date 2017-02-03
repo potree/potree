@@ -52,7 +52,7 @@ Potree.EarthControls = class EarthControls extends THREE.EventDispatcher{
 			let mouse = e.drag.end;
 			let domElement = this.viewer.renderer.domElement;
 			
-			if(e.drag.mouse === THREE.MOUSE.LEFT){
+			if(e.drag.mouse === Potree.MOUSE.LEFT){
 				let nmouse =  {
 					x: (mouse.x / domElement.clientWidth ) * 2 - 1,
 					y: - (mouse.y / domElement.clientHeight ) * 2 + 1
@@ -90,7 +90,7 @@ Potree.EarthControls = class EarthControls extends THREE.EventDispatcher{
 					}
 				}
 				
-			}else if(e.drag.mouse === THREE.MOUSE.RIGHT){
+			}else if(e.drag.mouse === Potree.MOUSE.RIGHT){
 				let ndrag = {
 					x: e.drag.lastDrag.x / this.renderer.domElement.clientWidth,
 					y: e.drag.lastDrag.y / this.renderer.domElement.clientHeight

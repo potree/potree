@@ -28,7 +28,7 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 		
 		this.speed = 1;
 		
-		this.logMessages = true;
+		this.logMessages = false;
 		
 		if(this.domElement.tabIndex === -1){
 			this.domElement.tabIndex = 2222;
@@ -192,7 +192,7 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 					this.deselectAll();
 				}
 			}
-		}else if(event.button === THREE.MOUSE.RIGHT && noMovement){
+		}else if((e.button === THREE.MOUSE.RIGHT) && noMovement){
 			this.deselectAll();
 		}
 		
@@ -237,7 +237,7 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 		this.mouse.set(x, y);
 		
 		if(this.drag){
-			this.drag.mouse = e.button;
+			this.drag.mouse = e.buttons;
 			
 			this.drag.lastDrag.x = x - this.drag.end.x;
 			this.drag.lastDrag.y = y - this.drag.end.y;

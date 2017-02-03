@@ -105,76 +105,15 @@
 				scene.addProfile(profile);
 			}
 			
-			//{ // SPHERE
-			//	let geometry = new THREE.SphereGeometry(1, 50, 50, 0, Math.PI * 2, 0, Math.PI * 2);
-			//	let material = new THREE.MeshNormalMaterial();
-			//	let sphere = new THREE.Mesh(geometry, material);
-			//	sphere.position.set(589844, 231376, 730);
-			//	sphere.scale.set(50, 50, 50);
-			//	//sphere.addEventListener("mouseover", e => sphere.material.wireframe = true);
-			//	//sphere.addEventListener("mouseleave", e => sphere.material.wireframe = false);
-			//	sphere.addEventListener("select", e => {
-			//		sphere.material.transparent = true;
-			//		sphere.material.opacity = 0.5;
-			//	});
-			//	sphere.addEventListener("deselect", e => {
-			//		sphere.material.transparent = false;
-			//		sphere.material.opacity = 1.0;
-			//	});
-			//	sphere.addEventListener("drag", e => {
-			//		console.log("drag");
-			//		
-			//		let I = Potree.utils.getMousePointCloudIntersection(
-			//			e.drag.end, 
-			//			viewer.scene.camera, 
-			//			viewer.renderer, 
-			//			viewer.scene.pointclouds);
-			//			
-			//		if(I){
-			//			sphere.position.copy(I.location);
-			//		}
-			//	});
-			//	sphere.addEventListener("drop", e => {
-			//		console.log("drop");
-			//	});
-			//	
-			//	viewer.scene.scene.add(sphere);
-			//}
-			//
-			//{ // Box
-			//	let geometry = new THREE.BoxGeometry(1, 1, 1);
-			//	let material = new THREE.MeshNormalMaterial();
-			//	let mesh = new THREE.Mesh(geometry, material);
-			//	mesh.position.set(589944, 231376, 740);
-			//	mesh.scale.set(50, 50, 50);
-			//	//mesh.addEventListener("mouseover", e => mesh.material.wireframe = true);
-			//	//mesh.addEventListener("mouseleave", e => mesh.material.wireframe = false);
-			//	mesh.addEventListener("select", e => {
-			//		mesh.material.transparent = true;
-			//		mesh.material.opacity = 0.5;
-			//	});
-			//	mesh.addEventListener("deselect", e => {
-			//		mesh.material.transparent = false;
-			//		mesh.material.opacity = 1.0;
-			//	});
-			//	
-			//	viewer.scene.scene.add(mesh);
-			//}
-			
 			scene.view.position.set(589974.341, 231698.397, 986.146);
 			scene.view.lookAt(new THREE.Vector3(589851.587, 231428.213, 715.634));
-			
-			//if(!Potree.utils.getParameterByName("target")){
-			//	viewer.fitToScreen();
-			//}
-			//
-			//viewer.setNavigationMode(Potree.FirstPersonControls);
-			
+
 		});
 		
-		viewer.loadGUI();
-        viewer.toggleSidebar();
 		
+		
+		viewer.loadGUI();
+		viewer.toggleSidebar();
 		$(document).ready( function() {
 			$("#menu_tools").next().show();
 		});

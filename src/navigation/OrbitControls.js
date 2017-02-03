@@ -51,10 +51,10 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 				y: e.drag.lastDrag.y / this.renderer.domElement.clientHeight
 			};
 			
-			if(e.drag.mouse === THREE.MOUSE.LEFT){
+			if(e.drag.mouse === Potree.MOUSE.LEFT){
 				this.yawDelta += ndrag.x * this.rotationSpeed;
 				this.pitchDelta += ndrag.y * this.rotationSpeed;
-			}else if(e.drag.mouse === THREE.MOUSE.RIGHT){
+			}else if(e.drag.mouse === Potree.MOUSE.RIGHT){
 				this.panDelta.x += ndrag.x;
 				this.panDelta.y += ndrag.y;
 			}

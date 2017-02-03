@@ -42,7 +42,6 @@
 	
 	--measurement-detail-node-bg-light:		var(--color-1);
 	--measurement-detail-node-bg-dark:		var(--color-2);
-	--measurement-detail-area-border-color:	#749b74;
 	--measurement-detail-area-bg-color:		#eee;
 	
 }
@@ -230,12 +229,13 @@ body{
 }
 
 .measurement-detail-node-area{
-	border: 		3px solid var(--measurement-detail-area-color);
+	border: 		1px solid var(--border-color);
 	border-radius:	6px;
 	margin: 		auto;
 	margin-top: 	15px;
 	text-align: 	center;
-	background-color: var(--measurement-detail-area-bg-color);
+	background-color: var(--measurement-detail-node-bg-light);
+	color: 				var(--border-color);
 }
 
 .measurement-detail-node-angle{
@@ -244,7 +244,7 @@ body{
 	margin: 			auto;
 	border-radius: 		6px;
 	text-align: 		center;
-	background-color: 	var(--bg-dark-color);
+	background-color: 	var(--measurement-detail-node-bg-);
 	color: 				var(--border-color);
 }
 
@@ -344,11 +344,6 @@ body{
 	background-color: #09181C;
 }
 
-.ui-accordion-content{
-	padding: 0px 0px !important;
-	border: none !important;
-}
-
 .ui-widget-content{
 	background-color: none !important;
 	color: var(--font-color) !important;
@@ -359,21 +354,31 @@ body{
 	border-color: var(--color-2) !important;
 }
 
-#accordion{
+.accordion{
 	background-color: var(--bg-color);
 	color: var(--color-1);
 }
 
-#accordion > h3{
+.accordion > h3{
 	background-color: var(--color-1) !important;
 	background: #f6f6f6 50% 50% repeat-x;
 	border: none;
 	color: var(--color-2);
 	padding: 4px 10px 4px 30px;
+	cursor: pointer;
 }
 
 .accordion > div{
 	background: none !important;
+}
+
+.accordion-header{
+	margin: 2px 0 0 0;
+}
+
+.accordion-content{
+	padding: 0px 0px !important;
+	border: none !important;
 }
 
 #measurement_details .pv-menu-list > li{
@@ -516,6 +521,62 @@ body{
 
 
 
+
+
+/* HOVER MENU */
+
+.hover_menu{
+	position: absolute;
+	width: 28px;
+	height: 28px;
+	border: 0px;
+	border-radius: 100px;
+	display: block;
+	user-select: none;
+}
+
+.hover_menu_icon{
+	position: absolute;
+	//border: 1px solid black;
+	display: inline-block;
+	width: 16px;
+	height: 16px;
+	padding: 6px;
+	opacity: 0.5;
+	background-color: white;
+	filter:invert();
+	border-radius: 100px;
+}
+.hover_menu_icon:hover{
+	opacity: 1.0;
+	box-shadow:	0 0 5px #ffffff;
+}
+
+.hover_menu_icon > img{
+	width: 16px;
+	height: 16px;
+}
+
+.hover_menu_item{
+	background: black;
+	border-radius: 100px;
+	display: inline-block;
+	position: absolute;
+	width:32px;
+	height: 32px;
+	opacity: 0.5;
+}
+
+.hover_menu_item:hover{
+	opacity: 1.0;
+	box-shadow:	0 0 5px #ffffff;
+}
+
+.hover_menu_item > img{
+	width: 32px;
+	height: 32px;
+	filter: invert();
+}
 
 
 

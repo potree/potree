@@ -23,6 +23,7 @@ var paths = {
 		"build/workers/BinaryDecoderWorker.js",
 		"build/workers/GreyhoundBinaryDecoderWorker.js",
 		"build/shaders/shaders.js",
+		"src/extensions/EventDispatcher.js",
 		"src/extensions/PerspectiveCamera.js",
 		"src/extensions/Ray.js",
 		"src/loader/POCLoader.js",
@@ -34,6 +35,7 @@ var paths = {
 		"src/materials/PointCloudMaterial.js",
 		"src/materials/EyeDomeLightingMaterial.js",
 		"src/materials/BlurMaterial.js",
+		"src/navigation/InputHandler.js",
 		"src/navigation/Controls.js",
 		"src/navigation/FirstPersonControls.js",
 		"src/navigation/GeoControls.js",
@@ -55,6 +57,7 @@ var paths = {
 		"src/utils/Profile.js",
 		"src/utils/ProfileTool.js",
 		"src/utils/TransformationTool.js",
+		"src/utils/Volume.js",
 		"src/utils/VolumeTool.js",
 		"src/arena4d/PointCloudArena4D.js",
 		"src/arena4d/PointCloudArena4DGeometry.js",
@@ -62,7 +65,8 @@ var paths = {
 		"src/viewer/viewer.js",
 		"src/viewer/profile.js",
 		"src/viewer/map.js",
-		"src/viewer/sidebar.js"
+		"src/viewer/sidebar.js",
+		"src/stuff/HoverMenu.js"
 	],
 	laslaz: [
 		"build/workers/laslaz-worker.js",
@@ -72,6 +76,9 @@ var paths = {
 		"src/viewer/potree.css",
 		"src/viewer/sidebar.html",
 		"src/viewer/profile.html"
+	],
+	resources: [
+		"resources/**/*"
 	]
 };
 
@@ -154,6 +161,9 @@ gulp.task("scripts", ['workers','shaders'], function(){
 
 	gulp.src(paths.html)
 		.pipe(gulp.dest('build/potree'));
+		
+	gulp.src(paths.resources)
+		.pipe(gulp.dest('build/potree/resources'));
 
 	return;
 });

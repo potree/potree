@@ -125,44 +125,6 @@ Potree.Controls = class{
 		this.wheelDelta += Math.sign(delta);
 	}
 	
-	getMousePointCloudIntersection(mouse){
-		
-		let rect = this.domElement.getBoundingClientRect();
-		
-		let nmouse =  {
-			x: (mouse.x / this.domElement.clientWidth ) * 2 - 1,
-			y: - (mouse.y / this.domElement.clientHeight ) * 2 + 1
-		};
-		
-		let selectedPointcloud = null;
-		let distance = Number.POSITIVE_INFINITY;
-		let I = null;
-		
-		for(let pointcloud of this.scene.pointclouds){
-			let intersection = Potree.utils.getMousePointCloudIntersection(nmouse, this.scene.camera, this.renderer, [pointcloud]);
-			if(!intersection){
-				continue;
-			}
-			
-			let tDist = this.scene.camera.position.distanceTo(intersection);
-			if(tDist < distance){
-				selectedPointcloud = pointcloud;
-				distance = tDist;
-				I = intersection;
-			}
-		}
-		
-		if(I){
-			return {
-				location: I,
-				distance: distance,
-				pointcloud: selectedPointcloud
-			};
-		}else{
-			return null;
-		}
-	}
-	
 	setScene(scene){
 		this.scene = scene;
 	}

@@ -1,758 +1,567 @@
 
-Potree.TransformationTool = function(scene, camera, renderer){
-
-	var scope = this;
-	this.enabled = false;
+Potree.TransformationTool = class TransformationTool{
 	
-	this.scene = scene;
-	this.camera = camera;
-	this.renderer = renderer;
-	this.domElement = renderer.domElement;
-	this.mouse = {x: 0, y: 0};
-	this.dragstart = null;
-	
-	this.sceneTransformation = new THREE.Scene();
-	this.sceneRoot = new THREE.Object3D();
-	this.sceneTransformation.add(this.sceneRoot);
-	
-	this.sceneRotation = new THREE.Scene();
-	
-	this.translationNode = new THREE.Object3D();
-	this.rotationNode = new THREE.Object3D();
-	this.scaleNode = new THREE.Object3D();
-	
-	this.sceneRoot.add(this.translationNode);
-	this.sceneRoot.add(this.rotationNode);
-	this.sceneRoot.add(this.scaleNode);
-	
-	this.sceneRoot.visible = false;
-	
-	this.hoveredElement = null;
-	
-	this.STATE = {
-		DEFAULT: 0,
-		TRANSLATE_X: 1,
-		TRANSLATE_Y: 2,
-		TRANSLATE_Z: 3,
-		SCALE_X: 1,
-		SCALE_Y: 2,
-		SCALE_Z: 3
-	};
-	
-	this.parts = {
-		ARROW_X : 	{name: "arrow_x", 	object: undefined, color: new THREE.Color( 0xff0000 ), state: this.STATE.TRANSLATE_X},
-		ARROW_Z : 	{name: "arrow_z", 	object: undefined, color: new THREE.Color( 0x0000ff ), state: this.STATE.TRANSLATE_Z},
-		ARROW_Y : 	{name: "arrow_y", 	object: undefined, color: new THREE.Color( 0x00ff00 ), state: this.STATE.TRANSLATE_Y},
-		SCALE_X : 	{name: "scale_x", 	object: undefined, color: new THREE.Color( 0xff0000 ), state: this.STATE.SCALE_X},
-		SCALE_Z : 	{name: "scale_z", 	object: undefined, color: new THREE.Color( 0x0000ff ), state: this.STATE.SCALE_Z},
-		SCALE_Y : 	{name: "scale_y", 	object: undefined, color: new THREE.Color( 0x00ff00 ), state: this.STATE.SCALE_Y},
-		ROTATE_X : 	{name: "rotate_x", 	object: undefined, color: new THREE.Color( 0xff0000 ), state: this.STATE.ROTATE_X},
-		ROTATE_Z : 	{name: "rotate_z", 	object: undefined, color: new THREE.Color( 0x0000ff ), state: this.STATE.ROTATE_Z},
-		ROTATE_Y : 	{name: "rotate_y", 	object: undefined, color: new THREE.Color( 0x00ff00 ), state: this.STATE.ROTATE_Y}
-	};
-
-	this.buildTranslationNode = function(){
-		var arrowX = scope.createArrow(scope.parts.ARROW_X, scope.parts.ARROW_X.color);
-		arrowX.rotation.z = -Math.PI/2;
+	constructor(viewer){
 		
-		var arrowY = scope.createArrow(scope.parts.ARROW_Y, scope.parts.ARROW_Y.color);
+		this.viewer = viewer;
 		
-		var arrowZ = scope.createArrow(scope.parts.ARROW_Z, scope.parts.ARROW_Z.color);
-		arrowZ.rotation.x = -Math.PI/2;
+		this.sceneTransform = new THREE.Scene();
+		this.translationNode = new THREE.Object3D();
+		this.rotationNode = new THREE.Object3D();
+		this.scaleNode = new THREE.Object3D();
 		
-		this.translationNode.add(arrowX);
-		this.translationNode.add(arrowY);
-		this.translationNode.add(arrowZ);
-	};
-	
-	this.buildScaleNode = function(){
-		var xHandle = this.createScaleHandle(scope.parts.SCALE_X, 0xff0000);
-		xHandle.rotation.z = -Math.PI/2;
-		
-		var yHandle = this.createScaleHandle(scope.parts.SCALE_Y, 0x00ff00);
-		
-		var zHandle = this.createScaleHandle(scope.parts.SCALE_Z, 0x0000ff);
-		zHandle.rotation.x = -Math.PI/2;
-		
-		this.scaleNode.add(xHandle);
-		this.scaleNode.add(yHandle);
-		this.scaleNode.add(zHandle);
-	};
-	
-	this.buildRotationNode = function(){
-		var xHandle = this.createRotationCircle(scope.parts.ROTATE_X, 0xff0000);
-		xHandle.rotation.y = -Math.PI/2;
-		
-		var yHandle = this.createRotationCircle(scope.parts.ROTATE_Y, 0x00ff00);
-		
-		var zHandle = this.createRotationCircle(scope.parts.ROTATE_Z, 0x0000ff);
-		yHandle.rotation.x = -Math.PI/2;
-		
-		this.rotationNode.add(xHandle);
-		this.rotationNode.add(yHandle);
-		this.rotationNode.add(zHandle);
-		
-		
-		var sg = new THREE.SphereGeometry(2.9, 24, 24);
-		var sphere = new THREE.Mesh(sg, new THREE.MeshBasicMaterial({color: 0xaaaaaa, transparent: true, opacity: 0.4}));
-		
-		this.sceneRotation.add(sphere);
-		
-		var moveEvent = function(event){
-			sphere.material.color.setHex(0x555555);
+		this.TRANSFORMATION_MODES = {
+			DEFAULT: 0,
+			TRANSLATE: 1,
+			ROTATE: 2,
+			SCALE: 3
 		};
 		
-		var leaveEvent = function(event){
-			sphere.material.color.setHex(0xaaaaaa);
-		};
-		
-		var dragEvent = function(event){
-			event.event.stopImmediatePropagation();
-		
-			var mouseStart = new THREE.Vector3(scope.dragstart.mousePos.x, scope.dragstart.mousePos.y, 0.1);
-			var mouseEnd = new THREE.Vector3(scope.mouse.x, scope.mouse.y, 0.1);
-			var mouseDiff = new THREE.Vector3().subVectors(mouseEnd, mouseStart);
-			
-			var sceneStart = mouseStart.clone().unproject(scope.camera);
-			var sceneEnd = mouseEnd.clone().unproject(scope.camera);
-			var sceneDiff = new THREE.Vector3().subVectors(sceneEnd, sceneStart);
-			var sceneDir = sceneDiff.clone().normalize();
-			var toCamDir = new THREE.Vector3().subVectors(scope.camera.position, sceneStart).normalize();
-			var rotationAxis = toCamDir.clone().cross(sceneDir);
-			var rotationAmount = 6 * mouseDiff.length();
-			
-			for(var i = 0; i < scope.targets.length; i++){
-				var target = scope.targets[i];
-				var startRotation = scope.dragstart.rotations[i];
-				
-				target.rotation.copy(startRotation);
-
-				var q = new THREE.Quaternion();
-
-				q.setFromAxisAngle( rotationAxis, rotationAmount );
-				target.quaternion.multiplyQuaternions( q, target.quaternion );
-
-			}
-		};
-		
-		var dropEvent = function(event){
-		
-		};
-		
-		sphere.addEventListener("mousemove", moveEvent);
-		sphere.addEventListener("mouseleave", leaveEvent);
-		sphere.addEventListener("mousedrag", dragEvent);
-		sphere.addEventListener("drop", dropEvent);
-		
-	};
-	
-	
-	
-	this.createBox = function(color){
-		var boxGeometry = new THREE.BoxGeometry(1, 1, 1);
-		var boxMaterial = new THREE.MeshBasicMaterial({color: color, transparent: true, opacity: 0.5});
-		var box = new THREE.Mesh(boxGeometry, boxMaterial);
-		
-		return box;
-	};
-	
-	var sph1, sph2, sph3;
-	
-	this.createRotationCircle = function(partID, color){
-		//var geometry = new THREE.TorusGeometry(3, 0.1, 12, 48);
-		//var material = new THREE.MeshBasicMaterial({color: color});
-		//
-		//var ring = new THREE.Mesh(geometry, material);
-		
-		var vertices = [];
-		var segments = 128;
-		for(var i = 0; i <= segments; i++){
-			var u = (2 * Math.PI * i) / segments;
-			var x = 3 * Math.cos(u);
-			var y = 3 * Math.sin(u);
-			
-			vertices.push(new THREE.Vector3(x, y, 0));
-		}
-		var geometry = new THREE.Geometry();
-		for(var i = 0; i < vertices.length; i++){
-			geometry.vertices.push(vertices[i]);
-		}
-		var material = new THREE.LineBasicMaterial({color: color});
-		var ring = new THREE.Line( geometry, material);
-		ring.mode = THREE.LineStrip;
-		ring.scale.set(1, 1, 1);
-		//this.rotationNode.add(ring);
-		
-		
-		var moveEvent = function(event){
-			material.color.setRGB(1, 1, 0);
-		};
-		
-		var leaveEvent = function(event){
-			material.color.setHex(color);
-		};
-		
-		var dragEvent = function(event){
-		
-			event.event.stopImmediatePropagation();
-		
-			var normal = new THREE.Vector3();
-			if(partID === scope.parts.ROTATE_X){
-				normal.x = 1;
-			}else if(partID === scope.parts.ROTATE_Y){
-				normal.y = 1;
-			}else if(partID === scope.parts.ROTATE_Z){
-				normal.z = -1;
-			}
-			
-			var sceneClickPos = scope.dragstart.sceneClickPos.clone();
-			var sceneOrigin = scope.sceneRoot.position.clone();
-			var sceneNormal = sceneClickPos.clone().sub(sceneOrigin).normalize();
-			
-			var screenClickPos = sceneClickPos.clone().project(scope.camera);
-			var screenOrigin = sceneOrigin.clone().project(scope.camera);
-			var screenNormal = screenClickPos.clone().sub(screenOrigin).normalize();
-			var screenTangent = new THREE.Vector3(screenNormal.y, screenNormal.x, 0);
-			
-			var mouseStart = new THREE.Vector3(scope.dragstart.mousePos.x, scope.dragstart.mousePos.y, 0);
-			var mouseEnd = new THREE.Vector3(scope.mouse.x, scope.mouse.y, 0);
-			
-			var plane = new THREE.Plane().setFromNormalAndCoplanarPoint(normal, scope.sceneRoot.position);
-			var camOrigin = scope.camera.position;
-			var camDirection = new THREE.Vector3( 0, 0, -1 ).applyQuaternion( scope.camera.quaternion );
-			var direction = new THREE.Vector3( mouseEnd.x, mouseEnd.y, 0.5 ).unproject(scope.camera).sub( scope.camera.position ).normalize();
-			var ray = new THREE.Ray( camOrigin, direction);
-			var I = ray.intersectPlane(plane);
-			
-			if(!I){
-				return;
-			}
-			
-			sceneTargetNormal = I.clone().sub(sceneOrigin).normalize();
-			
-			var angleToClick;
-			var angleToTarget;
-			
-			if(partID === scope.parts.ROTATE_X){
-				angleToClick = 2 * Math.PI + Math.atan2(sceneNormal.y, -sceneNormal.z);
-				angleToTarget = 4 * Math.PI + Math.atan2(sceneTargetNormal.y, -sceneTargetNormal.z);
-			}else if(partID === scope.parts.ROTATE_Y){
-				angleToClick = 2 * Math.PI + Math.atan2(-sceneNormal.z, sceneNormal.x);
-				angleToTarget = 4 * Math.PI + Math.atan2(-sceneTargetNormal.z, sceneTargetNormal.x);
-			}else if(partID === scope.parts.ROTATE_Z){
-				angleToClick = 2 * Math.PI + Math.atan2(sceneNormal.x, sceneNormal.y);
-				angleToTarget = 4 * Math.PI + Math.atan2(sceneTargetNormal.x, sceneTargetNormal.y);
-			}
-			
-			var diff = angleToTarget - angleToClick;
-			
-			for(var i = 0; i < scope.targets.length; i++){
-				var target = scope.targets[i];
-				var startRotation = scope.dragstart.rotations[i];
-				
-				target.rotation.copy(startRotation);
-
-				var q = new THREE.Quaternion();
-
-				q.setFromAxisAngle( normal, diff ); // axis must be normalized, angle in radians
-				target.quaternion.multiplyQuaternions( q, target.quaternion );
-
-			}
-			
-			
-			
-			
-		};
-		
-		var dropEvent = function(event){
-		
-		};
-		
-		ring.addEventListener("mousemove", moveEvent);
-		ring.addEventListener("mouseleave", leaveEvent);
-		ring.addEventListener("mousedrag", dragEvent);
-		ring.addEventListener("drop", dropEvent);
-		
-		return ring;
-	};
-	
-	this.createScaleHandle = function(partID, color){
-		var boxGeometry = new THREE.BoxGeometry(1, 1, 1);
-		var material = new THREE.MeshBasicMaterial({color: color, depthTest: false, depthWrite: false});
-		
-		var box = new THREE.Mesh(boxGeometry, material);
-		box.scale.set(0.3, 0.3, 0.3);
-		box.position.set(0, 3, 0);
-		
-		var shaftGeometry = new THREE.Geometry();
-		shaftGeometry.vertices.push(new THREE.Vector3(0, 0, 0));
-		shaftGeometry.vertices.push(new THREE.Vector3(0, 3, 0));
-		var shaftMaterial = new THREE.LineBasicMaterial({color: color, depthTest: false, depthWrite: false});
-		var shaft = new THREE.Line(shaftGeometry, shaftMaterial);
-		
-		var handle = new THREE.Object3D();
-		handle.add(box);
-		handle.add(shaft);
-		
-		handle.partID = partID;
-		
-		
-		var moveEvent = function(event){
-			shaftMaterial.color.setRGB(1, 1, 0);
-			material.color.setRGB(1, 1, 0);
-		};
-		
-		var leaveEvent = function(event){
-			shaftMaterial.color.setHex(color);
-			material.color.setHex(color);
-		};
-		
-		var dragEvent = function(event){
-		
-			var sceneDirection = new THREE.Vector3();
-			if(partID === scope.parts.SCALE_X){
-				sceneDirection.x = 1;
-			}else if(partID === scope.parts.SCALE_Y){
-				sceneDirection.y = 1;
-			}else if(partID === scope.parts.SCALE_Z){
-				sceneDirection.z = -1;
-			}
-			
-			var sceneClickPos = scope.dragstart.sceneClickPos.clone();
-			sceneClickPos.multiply(sceneDirection);
-			sceneClickPos.z *= -1;
-		
-			var lineStart = scope.dragstart.sceneStartPos.clone().project(scope.camera);
-			var lineEnd = scope.dragstart.sceneStartPos.clone().add(sceneDirection).project(scope.camera);
-			
-			var origin = lineStart.clone();
-			var screenDirection = lineEnd.clone().sub(lineStart);
-			screenDirection.normalize();
-			
-			var mouseStart = new THREE.Vector3(scope.dragstart.mousePos.x, scope.dragstart.mousePos.y, 0);
-			var mouseEnd = new THREE.Vector3(scope.mouse.x, scope.mouse.y, 0);
-	
-			var directionDistance = new THREE.Vector3().subVectors(mouseEnd, mouseStart).dot(screenDirection);
-			var pointOnLine = screenDirection.clone().multiplyScalar(directionDistance).add(origin);
-			
-			pointOnLine.unproject(scope.camera);
-			
-			var diff = scope.sceneRoot.position.clone().sub(pointOnLine);
-			diff.multiply(new THREE.Vector3(-1, -1, 1));
-			
-			for(var i = 0; i < scope.targets.length; i++){
-				var target = scope.targets[i];
-				var startScale = scope.dragstart.scales[i];
-				target.scale.copy(startScale).add(diff);
-				target.scale.x = Math.max(target.scale.x, 0.01);
-				target.scale.y = Math.max(target.scale.y, 0.01);
-				target.scale.z = Math.max(target.scale.z, 0.01);
-			}
-
-			event.event.stopImmediatePropagation();
-
-		};
-		
-		var dropEvent = function(event){
-			material.color.set(color);
-		};
-		
-		box.addEventListener("mousemove", moveEvent);
-		box.addEventListener("mouseleave", leaveEvent);
-		box.addEventListener("mousedrag", dragEvent);
-		box.addEventListener("drop", dropEvent);
-		shaft.addEventListener("mousemove", moveEvent);
-		shaft.addEventListener("mouseleave", leaveEvent);
-		shaft.addEventListener("mousedrag", dragEvent);
-		shaft.addEventListener("drop", dropEvent);
-		
-		return handle;
-	};
-	
-	this.createArrow = function(partID, color){
-		var material = new THREE.MeshBasicMaterial({color: color, depthTest: false, depthWrite: false});
-		
-		//var shaftGeometry = new THREE.CylinderGeometry(0.05, 0.05, 3, 10, 1, false);
-		//var shaftMaterial  = material;
-		//var shaft = new THREE.Mesh(shaftGeometry, shaftMaterial);
-		//shaft.position.y = 1.5;
-		
-		var shaftGeometry = new THREE.Geometry();
-		shaftGeometry.vertices.push(new THREE.Vector3(0, 0, 0));
-		shaftGeometry.vertices.push(new THREE.Vector3(0, 3, 0));
-		var shaftMaterial = new THREE.LineBasicMaterial({color: color, depthTest: false, depthWrite: false});
-		var shaft = new THREE.Line(shaftGeometry, shaftMaterial);
-		
-		
-		
-		var headGeometry = new THREE.CylinderGeometry(0, 0.2, 0.5, 10, 1, false);
-		var headMaterial  = material;
-		var head = new THREE.Mesh(headGeometry, headMaterial);
-		head.position.y = 3;
-		
-		var arrow = new THREE.Object3D();
-		arrow.add(shaft);
-		arrow.add(head);
-		arrow.partID = partID;
-		arrow.material = material;
-		
-		var moveEvent = function(event){
-			headMaterial.color.setRGB(1, 1, 0);
-			shaftMaterial.color.setRGB(1, 1, 0);
-		};
-		
-		var leaveEvent = function(event){
-			headMaterial.color.set(color);
-			shaftMaterial.color.set(color);
-		};
-		
-		var dragEvent = function(event){
-		
-			var sceneDirection = new THREE.Vector3();
-			if(partID === scope.parts.ARROW_X){
-				sceneDirection.x = 1;
-			}else if(partID === scope.parts.ARROW_Y){
-				sceneDirection.y = 1;
-			}else if(partID === scope.parts.ARROW_Z){
-				sceneDirection.z = -1;
-			}
-			
-			var sceneClickPos = scope.dragstart.sceneClickPos.clone();
-			sceneClickPos.multiply(sceneDirection);
-			sceneClickPos.z *= -1;
-		
-			//var lineStart = new THREE.Vector3();
-			//lineStart.x = scope.dragstart.mousePos.x;			
-			//lineStart.y = scope.dragstart.mousePos.y;
-			var lineStart = scope.dragstart.sceneStartPos.clone().project(scope.camera);
-			var lineEnd = scope.dragstart.sceneStartPos.clone().add(sceneDirection).project(scope.camera);
-			
-			var origin = lineStart.clone();
-			var screenDirection = lineEnd.clone().sub(lineStart);
-			screenDirection.normalize();
-			
-			
-			
-			var mouseStart = new THREE.Vector3(scope.dragstart.mousePos.x, scope.dragstart.mousePos.y, 0);
-			var mouseEnd = new THREE.Vector3(scope.mouse.x, scope.mouse.y, 0);
-			
-			//var htmlStart = mouseStart.clone().addScalar(1).multiplyScalar(0.5);
-			//htmlStart.x *= scope.domElement.clientWidth;
-			//htmlStart.y *= scope.domElement.clientHeight;
-			//
-			//var htmlEnd = mouseEnd.clone().addScalar(1).multiplyScalar(0.5);
-			//htmlEnd.x *= scope.domElement.clientWidth;
-			//htmlEnd.y *= scope.domElement.clientHeight;
-			//
-			//var el = document.getElementById("testDiv");
-			//el.style.left = htmlStart.x;
-			//el.style.width = htmlEnd.x - htmlStart.x;
-			//el.style.bottom = htmlStart.y;
-			//el.style.top = scope.domElement.clientHeight - htmlEnd.y;
-			
-			
-			
-			
-			//var directionDistance = new THREE.Vector3().subVectors(mouseEnd, origin).dot(screenDirection);
-			var directionDistance = new THREE.Vector3().subVectors(mouseEnd, mouseStart).dot(screenDirection);
-			var pointOnLine = screenDirection.clone().multiplyScalar(directionDistance).add(origin);
-			
-			pointOnLine.unproject(scope.camera);
-			
-			var diff = scope.sceneRoot.position.clone();
-			//scope.position.copy(pointOnLine);
-			var offset = sceneClickPos.clone().sub(scope.dragstart.sceneStartPos);
-			scope.sceneRoot.position.copy(pointOnLine);
-			//scope.sceneRoot.position.sub(offset);
-			diff.sub(scope.sceneRoot.position);
-			
-			for(var i = 0; i < scope.targets.length; i++){
-				var target = scope.targets[i];
-				target.position.sub(diff);
-			}
-			
-			//if(!sph1){
-			//	var g = new THREE.SphereGeometry(0.2);
-			//	
-			//	var m1 = new THREE.MeshBasicMaterial({color: 0xff0000});
-			//	var m2 = new THREE.MeshBasicMaterial({color: 0x00ff00});
-			//	var m3 = new THREE.MeshBasicMaterial({color: 0x0000ff});
-			//	
-			//	sph1 = new THREE.Mesh(g, m1);
-			//	sph2 = new THREE.Mesh(g, m2);
-			//	sph3 = new THREE.Mesh(g, m3);
-			//	
-			//	scope.scene.add(sph1);
-			//	scope.scene.add(sph2);
-			//	scope.scene.add(sph3);
-			//}
-			//sph1.position.copy(scope.dragstart.sceneStartPos);
-			//sph2.position.copy(scope.dragstart.sceneClickPos);
-			//sph3.position.copy(pointOnLine);
-
-			event.event.stopImmediatePropagation();
-
-		};
-		
-		var dropEvent = function(event){
-			shaftMaterial.color.set(color);
-		};
-		
-		shaft.addEventListener("mousemove", moveEvent);
-		head.addEventListener("mousemove", moveEvent);
-		
-		shaft.addEventListener("mouseleave", leaveEvent);
-		head.addEventListener("mouseleave", leaveEvent);
-		
-		shaft.addEventListener("mousedrag", dragEvent);
-		head.addEventListener("mousedrag", dragEvent);
-		
-		shaft.addEventListener("drop", dropEvent);
-		head.addEventListener("drop", dropEvent);
-		
-		
-		
-		return arrow;
-	};
-	
-	function onMouseMove(event){
-		
-		var rect = scope.domElement.getBoundingClientRect();
-		scope.mouse.x = ((event.clientX - rect.left) / scope.domElement.clientWidth) * 2 - 1;
-        scope.mouse.y = -((event.clientY - rect.top) / scope.domElement.clientHeight) * 2 + 1;
-		
-		if(scope.dragstart){
-			
-			scope.dragstart.object.dispatchEvent({
-				type: "mousedrag", 
-				event: event
-			});
-			
-		}else{
-	
-	
-			var I = getHoveredElement();
-			if(I){
-				var object = I.object;
-				
-				//var g = new THREE.SphereGeometry(2);
-				//var m = new THREE.Mesh(g);
-				//scope.scene.add(m);
-				//m.position.copy(I.point);
-				
-				object.dispatchEvent({type: "mousemove", event: event});
-				
-				if(scope.hoveredElement && scope.hoveredElement !== object){
-					scope.hoveredElement.dispatchEvent({type: "mouseleave", event: event});
-				}
-				
-				scope.hoveredElement = object;
-				
-			}else{
-				if(scope.hoveredElement){
-					scope.hoveredElement.dispatchEvent({type: "mouseleave", event: event});
-				}
-			
-				scope.hoveredElement = null;
-			}
-		
+		this.keys = {
+			TRANSLATE:  ['E'.charCodeAt(0)],
+			SCALE:      ['R'.charCodeAt(0)],
+			ROTATE:     ['T'.charCodeAt(0)]
 		}
 		
+		this.mode = this.TRANSFORMATION_MODES.DEFAULT;
 		
-	};
-	
-	function onMouseDown(event){
-	
-	
-		if(event.which === 1){
-			// left click
-			var I = getHoveredElement();
-			if(I){
-				
-				var scales = [];
-				var rotations = [];
-				for(var i = 0; i < scope.targets.length; i++){
-					scales.push(scope.targets[i].scale.clone());
-					rotations.push(scope.targets[i].rotation.clone());
+		this.menu = new HoverMenu(Potree.resourcePath + "/icons/menu_icon.svg");
+		
+		this.selection = [];
+		
+		this.viewer.inputHandler.registerInteractiveScene(this.sceneTransform);
+		this.viewer.inputHandler.addEventListener("selection_changed", (e) => {
+			this.selection = e.selection;
+		});
+		this.viewer.inputHandler.addEventListener("keydown", (e) => {
+			if(this.selection.length > 0){
+				if(this.keys.TRANSLATE.some(key => key === e.keyCode)){
+					this.setMode(this.TRANSFORMATION_MODES.TRANSLATE);
+				}else if(this.keys.SCALE.some(key => key === e.keyCode)){
+					this.setMode(this.TRANSFORMATION_MODES.SCALE);
+				}else if(this.keys.ROTATE.some(key => key === e.keyCode)){
+					this.setMode(this.TRANSFORMATION_MODES.ROTATE);
 				}
+			}
 			
-				scope.dragstart = {
-					object: I.object, 
-					sceneClickPos: I.point,
-					sceneStartPos: scope.sceneRoot.position.clone(),
-					mousePos: {x: scope.mouse.x, y: scope.mouse.y},
-					scales: scales,
-					rotations: rotations
+		});
+		
+		{ // Menu
+			this.menu.addItem(new HoverMenuItem(Potree.resourcePath + "/icons/translate.svg", e => {
+				//console.log("translate!");
+				this.setMode(this.TRANSFORMATION_MODES.TRANSLATE);
+			}));
+			this.menu.addItem(new HoverMenuItem(Potree.resourcePath + "/icons/rotate.svg", e => {
+				//console.log("rotate!");
+				this.setMode(this.TRANSFORMATION_MODES.ROTATE);
+			}));
+			this.menu.addItem(new HoverMenuItem(Potree.resourcePath + "/icons/scale.svg", e => {
+				//console.log("scale!");
+				this.setMode(this.TRANSFORMATION_MODES.SCALE);
+			}));
+			this.menu.setPosition(100, 100);
+			$(this.viewer.renderArea).append(this.menu.element);
+			this.menu.element.hide();
+		}
+		
+		{ // translation node
+			
+			let createArrow = (name, direction, color) => {
+				let material = new THREE.MeshBasicMaterial({
+					color: color, 
+					depthTest: false, 
+					depthWrite: false});
+					
+				let shaftGeometry = new THREE.Geometry();
+				shaftGeometry.vertices.push(new THREE.Vector3(0, 0, 0));
+				shaftGeometry.vertices.push(new THREE.Vector3(0, 1, 0));
+				
+				let shaftMaterial = new THREE.LineBasicMaterial({
+					color: color, 
+					depthTest: true, 
+					depthWrite: true,
+					transparent: true
+					});
+				let shaft = new THREE.Line(shaftGeometry, shaftMaterial);
+				shaft.name = name + "_shaft";
+				
+				let headGeometry = new THREE.CylinderGeometry(0, 0.04, 0.1, 10, 1, false);
+				let headMaterial  = material;
+				let head = new THREE.Mesh(headGeometry, headMaterial);
+				head.name = name + "_head";
+				head.position.y = 1;
+				
+				let arrow = new THREE.Object3D();
+				arrow.name = name;
+				arrow.add(shaft);
+				arrow.add(head);
+				
+				let mouseover = e => {
+					let c = new THREE.Color(0xFFFF00);
+					shaftMaterial.color = c;
+					headMaterial.color = c;
 				};
-				event.stopImmediatePropagation();
-			}
-		}else if(event.which === 3){
-			// right click
-			
-			scope.setTargets([]);
-		}
-	};
-	
-	function onMouseUp(event){
-	
-		if(scope.dragstart){
-			scope.dragstart.object.dispatchEvent({type: "drop", event: event});
-			scope.dragstart = null;
-		}
-	};
-	
-	function getHoveredElement(){
-	
-		if(scope.targets.length === 0){
-			return;
-		}
-			
-		var vector = new THREE.Vector3( scope.mouse.x, scope.mouse.y, 0.5 );
-		vector.unproject(scope.camera);
-		
-		var raycaster = new THREE.Raycaster();
-		raycaster.ray.set( scope.camera.position, vector.sub( scope.camera.position ).normalize() );
-		raycaster.linePrecision = 0.2;
-		
-		var objects = [];
-		if(scope.translationNode.visible){
-			objects.push(scope.translationNode);
-		}else if(scope.scaleNode.visible){
-			objects.push(scope.scaleNode);
-		}else if(scope.rotationNode.visible){
-			objects.push(scope.rotationNode);
-			objects.push(scope.sceneRotation);
-		}
-		
-		var intersections = raycaster.intersectObjects(objects, true);
-		
-		// recalculate distances because they are not necessarely correct
-		// for scaled objects.
-		// see https://github.com/mrdoob/three.js/issues/5827
-		// TODO: remove this once the bug has been fixed
-		for(var i = 0; i < intersections.length; i++){
-			var I = intersections[i];
-			I.distance = scope.camera.position.distanceTo(I.point);
-		}
-		intersections.sort( function ( a, b ) { return a.distance - b.distance;} );
-		
-		if(intersections.length > 0){
-			return intersections[0];
-		}else{
-			return false;
-		}
-	};
-	
-	this.setTargets = function(targets){
-		scope.targets = targets;
-		
-		if(scope.targets.length === 0){
-			this.sceneRoot.visible = false;
-			this.sceneRotation.visible = false;
-		
-			return;
-		}else{
-			this.sceneRoot.visible = true;
-		}
-		
-		//TODO calculate centroid of all targets
-		var target = targets[0];
-		var bb;
-		if(target.geometry && target.geometry.boundingBox){
-			bb = target.geometry.boundingBox;
-		}else{
-			bb = target.boundingBox;
-		}
-		
-		if(bb){
-			var centroid = bb.clone().applyMatrix4(target.matrixWorld).center();
-			scope.sceneRoot.position.copy(centroid);
-		}
-	};
-	
-	this.getBoundingBox = function(){
-		var box = new THREE.Box3();
-		
-		for(var i = 0; i < scope.targets.length; i++){
-			var target = scope.targets[i];
-			var targetBB;
+				
+				let mouseleave = e => {
+					let c = new THREE.Color(color);
+					shaftMaterial.color = c;
+					headMaterial.color = c;
+				};
+				
+				let drag = e => {
+					
+					let camera = this.viewer.scene.camera;
+					
+					if(!e.drag.intersectionStart){
+						e.drag.intersectionStart = e.drag.location;
+						e.drag.objectStart = e.drag.object.getWorldPosition();
+						
+						let start = this.sceneTransform.position.clone();
+						let end = direction.clone().applyMatrix4(this.sceneTransform.matrixWorld);
+						//let end = start.clone().add(direction);
+						let line = new THREE.Line3(start, end);
+						e.drag.line = line;
+						
+						let camOnLine = line.closestPointToPoint(camera.position, false);
+						let normal = new THREE.Vector3().subVectors(
+							camera.position, camOnLine);
+						let plane = new THREE.Plane()
+							.setFromNormalAndCoplanarPoint(normal, e.drag.intersectionStart);
+							
+						e.drag.dragPlane = plane;
+						e.drag.pivot = e.drag.intersectionStart;
+					}
+					
+					{
+						let mouse = e.drag.end;
+						let domElement = viewer.renderer.domElement;
+						let nmouse =  {
+							x: (mouse.x / domElement.clientWidth ) * 2 - 1,
+							y: - (mouse.y / domElement.clientHeight ) * 2 + 1
+						};
+						
+						let vector = new THREE.Vector3( nmouse.x, nmouse.y, 0.5 );
+						vector.unproject(camera);
+						
+						let ray = new THREE.Ray(camera.position, vector.sub( camera.position));
+						let I = ray.intersectPlane(e.drag.dragPlane);
+						
+						if(I){
+							
+							let iOnLine = e.drag.line.closestPointToPoint(I, false);
+							
+							let diff = new THREE.Vector3().subVectors(
+								iOnLine, e.drag.pivot);
+								
+							for(let selection of this.selection){
+								selection.position.add(diff);
+							}
+							
+							e.drag.pivot = e.drag.pivot.add(diff);
+						}
+					}
+				};
+				
+				shaft.addEventListener("mouseover", mouseover);
+				shaft.addEventListener("mouseleave", mouseleave);
+				shaft.addEventListener("drag", drag);
 
-			if(target.boundingBox){
-				targetBB = target.boundingBox;
-			}else if(target.boundingSphere){
-				targetBB = target.boundingSphere.getBoundingBox();
-			}else if(target.geometry){
-				if(target.geometry.boundingBox){
-					targetBB = target.geometry.boundingBox;
-				}else if(target.geometry.boundingSphere){
-					targetBB = target.geometry.boundingSphere.getBoundingBox();
+				return arrow;
+			};
+			
+			let arrowX = createArrow("arrow_x", new THREE.Vector3(1, 0, 0), 0xFF0000);
+			let arrowY = createArrow("arrow_y", new THREE.Vector3(0, 1, 0), 0x00FF00);
+			let arrowZ = createArrow("arrow_z", new THREE.Vector3(0, 0, 1), 0x0000FF);
+			
+			arrowX.rotation.z = -Math.PI/2;
+			arrowZ.rotation.x = Math.PI/2;
+			
+			this.translationNode.add(arrowX);
+			this.translationNode.add(arrowY);
+			this.translationNode.add(arrowZ);
+		}
+		
+		{ // Rotation Node
+			let createCircle = (name, normal, color) => {
+				let material = new THREE.LineBasicMaterial({
+					color: color, 
+					depthTest: true, 
+					depthWrite: true,
+					transparent: true
+					});
+				
+				let segments = 32;
+				let radius = 1;
+				let geometry = new THREE.BufferGeometry();
+				let positions = new Float32Array( (segments + 1) * 3 );
+				for(let i = 0; i <= segments; i++){
+					let u = (i / segments) * Math.PI * 2;
+					let x = Math.cos(u) * radius;
+					let y = Math.sin(u) * radius;
+					
+					positions[3 * i + 0] = x;
+					positions[3 * i + 1] = y;
+					positions[3 * i + 2] = 0;
 				}
+				geometry.addAttribute("position", new THREE.BufferAttribute(positions, 3));
+				geometry.computeBoundingSphere();
+				
+				let circle = new THREE.Line(geometry, material);
+				circle.name = name + "_circle";
+				circle.lookAt(normal);
+				
+				let mouseover = e => {
+					let c = new THREE.Color(0xFFFF00);
+					material.color = c;
+				};
+				
+				let mouseleave = e => {
+					let c = new THREE.Color(color);
+					material.color = c;
+				};
+				
+				let drag = e => {
+					
+					let camera = this.viewer.scene.camera;
+					let n = normal.clone().applyEuler(this.sceneTransform.rotation);
+					
+					if(!e.drag.intersectionStart){
+						e.drag.objectStart = e.drag.object.getWorldPosition();
+						
+						let plane = new THREE.Plane()
+							.setFromNormalAndCoplanarPoint(n, this.sceneTransform.getWorldPosition());
+						
+						{ // e.drag.location seems imprecisse, calculate real start location
+							let mouse = e.drag.end;
+							let domElement = viewer.renderer.domElement;
+							let nmouse =  {
+								x: (mouse.x / domElement.clientWidth ) * 2 - 1,
+								y: - (mouse.y / domElement.clientHeight ) * 2 + 1
+							};
+							
+							let vector = new THREE.Vector3( nmouse.x, nmouse.y, 0.5 );
+							vector.unproject(camera);
+							
+							let ray = new THREE.Ray(camera.position, vector.sub( camera.position));
+							let I = ray.intersectPlane(plane);
+							
+							e.drag.intersectionStart = I;
+						}
+						
+						e.drag.dragPlane = plane;
+						e.drag.pivot = e.drag.intersectionStart;
+					}
+					
+					let mouse = e.drag.end;
+					let domElement = viewer.renderer.domElement;
+					let nmouse =  {
+						x: (mouse.x / domElement.clientWidth ) * 2 - 1,
+						y: - (mouse.y / domElement.clientHeight ) * 2 + 1
+					};
+					
+					let vector = new THREE.Vector3( nmouse.x, nmouse.y, 0.5 );
+					vector.unproject(camera);
+					
+					let ray = new THREE.Ray(camera.position, vector.sub( camera.position));
+					let I = ray.intersectPlane(e.drag.dragPlane);
+						
+					if(I){
+						let center = this.sceneTransform.position;
+						let from = e.drag.pivot;
+						let to = I;
+						
+						let v1 = from.clone().sub(center).normalize();
+						let v2 = to.clone().sub(center).normalize();
+						
+						let angle = Math.acos(v1.dot(v2));
+						let sign = Math.sign(v1.cross(v2).dot(n));
+						angle = angle * sign;
+						if(Number.isNaN(angle)){
+							return;
+						}
+						
+						for(let selection of this.selection){
+							selection.rotateOnAxis(normal, angle);
+						}
+						
+						e.drag.pivot = I;
+					}
+					
+				};
+				
+				circle.addEventListener("mouseover", mouseover);
+				circle.addEventListener("mouseleave", mouseleave);
+				circle.addEventListener("drag", drag);
+				
+				
+				return circle;
+			};
+			
+			{ // transparent ball
+				let sg = new THREE.SphereGeometry(1, 32, 32);
+				let sm = new THREE.MeshBasicMaterial({
+				//let sm = new THREE.MeshNormalMaterial({
+					color: 0xaaaaaa,
+					transparent: true,
+					depthTest: true,
+					depthWrite: true,
+					opacity: 0.4
+				});
+				
+				let sphere = new THREE.Mesh(sg, sm);
+				sphere.name = name + "_sphere";
+				sphere.scale.set(0.9, 0.9, 0.9);
+				this.rotationNode.add(sphere);
+			}
+		
+			let yaw = createCircle("yaw", new THREE.Vector3(0, 0, 1), 0xff0000);
+			let pitch = createCircle("pitch", new THREE.Vector3(1, 0, 0), 0x00ff00);
+			let roll = createCircle("roll", new THREE.Vector3(0, 1, 0), 0x0000ff);
+		
+			this.rotationNode.add(yaw);
+			this.rotationNode.add(pitch);
+			this.rotationNode.add(roll);
+		}
+		
+		{ // scale node
+			
+			let createHandle = (name, direction, color) => {
+				let material = new THREE.MeshBasicMaterial({
+					color: color, 
+					depthTest: false, 
+					depthWrite: false});
+					
+				let shaftGeometry = new THREE.Geometry();
+				shaftGeometry.vertices.push(new THREE.Vector3(0, 0, 0));
+				shaftGeometry.vertices.push(new THREE.Vector3(0, 1, 0));
+				
+				let shaftMaterial = new THREE.LineBasicMaterial({
+					color: color, 
+					depthTest: true, 
+					depthWrite: true,
+					transparent: true
+					});
+				let shaft = new THREE.Line(shaftGeometry, shaftMaterial);
+				shaft.name = name + "_shaft";
+				
+				let headGeometry = new THREE.BoxGeometry(1, 1, 1);
+				let headMaterial  = material;
+				let head = new THREE.Mesh(headGeometry, headMaterial);
+				head.name = name + "_head";
+				head.position.y = 1;
+				head.scale.set(0.07, 0.07, 0.07);
+				
+				let arrow = new THREE.Object3D();
+				arrow.add(shaft);
+				arrow.add(head);
+				
+				let mouseover = e => {
+					let c = new THREE.Color(0xFFFF00);
+					shaftMaterial.color = c;
+					headMaterial.color = c;
+				};
+				
+				let mouseleave = e => {
+					let c = new THREE.Color(color);
+					shaftMaterial.color = c;
+					headMaterial.color = c;
+				};
+				
+				let drag = e => {
+					
+					let camera = this.viewer.scene.camera;
+					
+					if(!e.drag.intersectionStart){
+						e.drag.intersectionStart = e.drag.location;
+						e.drag.scaleStart = this.selection[0].scale.clone();
+						
+						let start = this.sceneTransform.position.clone();
+						let end = direction.clone().applyMatrix4(this.sceneTransform.matrixWorld);
+						//let end = start.clone().add(direction);
+						let line = new THREE.Line3(start, end);
+						e.drag.line = line;
+						
+						let camOnLine = line.closestPointToPoint(camera.position, false);
+						let normal = new THREE.Vector3().subVectors(
+							camera.position, camOnLine);
+						let plane = new THREE.Plane()
+							.setFromNormalAndCoplanarPoint(normal, e.drag.intersectionStart);
+							
+						e.drag.dragPlane = plane;
+						e.drag.pivot = e.drag.intersectionStart;
+					}
+					
+					{
+						let mouse = e.drag.end;
+						let domElement = viewer.renderer.domElement;
+						let nmouse =  {
+							x: (mouse.x / domElement.clientWidth ) * 2 - 1,
+							y: - (mouse.y / domElement.clientHeight ) * 2 + 1
+						};
+						
+						let vector = new THREE.Vector3( nmouse.x, nmouse.y, 0.5 );
+						vector.unproject(camera);
+						
+						let ray = new THREE.Ray(camera.position, vector.sub( camera.position));
+						let I = ray.intersectPlane(e.drag.dragPlane);
+						
+						if(I){
+							
+							let iOnLine = e.drag.line.closestPointToPoint(I, false);
+							
+							//let diff = new THREE.Vector3().subVectors(
+							//	iOnLine, e.drag.pivot);
+							
+							let oldDistance = this.sceneTransform.position.distanceTo(e.drag.pivot);
+							let newDistance = this.sceneTransform.position.distanceTo(I);
+							
+							let s = newDistance / oldDistance;
+							let scale = new THREE.Vector3(
+								direction.x === 0 ? 1 : s * direction.x,
+								direction.y === 0 ? 1 : s * direction.y,
+								direction.z === 0 ? 1 : s * direction.z
+							);
+							
+								
+							for(let selection of this.selection){
+								//selection.position.add(diff);
+								
+								selection.scale.copy(e.drag.scaleStart.clone().multiply(scale));
+								
+								//selection.scale.copy(
+								//	e.drag.scaleStart.clone()
+								//	.multiplyScalar(scale)
+								//	.multiply(direction));
+								//console.log(Potree.utils.toString(selection.scale));
+							}
+							
+							//e.drag.pivot = e.drag.pivot.add(diff);
+						}
+					}
+				};
+				
+				shaft.addEventListener("mouseover", mouseover);
+				shaft.addEventListener("mouseleave", mouseleave);
+				shaft.addEventListener("drag", drag);
+
+				return arrow;
+			};
+			
+			let arrowX = createHandle("arrow_x", new THREE.Vector3(1, 0, 0), 0xFF0000);
+			let arrowY = createHandle("arrow_y", new THREE.Vector3(0, 1, 0), 0x00FF00);
+			let arrowZ = createHandle("arrow_z", new THREE.Vector3(0, 0, 1), 0x0000FF);
+			
+			arrowX.rotation.z = -Math.PI/2;
+			arrowZ.rotation.x = Math.PI/2;
+			
+			this.scaleNode.add(arrowX);
+			this.scaleNode.add(arrowY);
+			this.scaleNode.add(arrowZ);
+		}
+		
+		
+		this.setMode(this.TRANSFORMATION_MODES.TRANSLATE);
+	}
+	
+	getSelectionBoundingBox(){
+		
+		let min = new THREE.Vector3(+Infinity, +Infinity, +Infinity);
+		let max = new THREE.Vector3(-Infinity, -Infinity, -Infinity);
+		
+		for(let node of this.selection){
+			
+			let box = null;
+			if(node.boundingBox){
+				box = node.boundingBox;
+			}else if(node.geometry && node.geometry.boundingBox){
+				box = node.geometry.boundingBox;
 			}
 			
-			targetBB = Potree.utils.computeTransformedBoundingBox(targetBB, target.matrixWorld);
+			if(box){
+				//let tbox = Potree.utils.computeTransformedBoundingBox(box, node.matrixWorld);				
+				let tbox = box.clone().applyMatrix4(node.matrixWorld);
+				
+				min = min.min(tbox.min);
+				max = max.max(tbox.max);
+			}else{
+				let wp = node.getWorldPosition();
+				min = min.min(wp);
+				max = max.max(wp);
+			}
+		}
+		
+		return new THREE.Box3(min, max);
+		
+	}
+	
+	setMode(mode){
+		if(this.mode === mode){
+			return;
+		}
+		
+		this.sceneTransform.remove(this.translationNode);
+		this.sceneTransform.remove(this.rotationNode);
+		this.sceneTransform.remove(this.scaleNode);
+		
+		if(mode === this.TRANSFORMATION_MODES.TRANSLATE){
+			this.sceneTransform.add(this.translationNode);
+		}else if(mode === this.TRANSFORMATION_MODES.ROTATE){
+			this.sceneTransform.add(this.rotationNode);
+		}else if(mode === this.TRANSFORMATION_MODES.SCALE){
+			this.sceneTransform.add(this.scaleNode);
+		}
+		
+		this.mode = mode;
+	}
+	
+	
+	//setSelection(selection){
+	//	this.selection = selection;
+	//}
+	
+	update(){
+		
+		if(this.selection.length === 0){
+			this.sceneTransform.visible = false;
+			this.menu.element.hide();
+			return;
+		}else{
+			this.sceneTransform.visible = true;
+			this.menu.element.show();
+		}
+		
+		if(this.selection.length === 1){
+			this.sceneTransform.rotation.copy(this.selection[0].rotation);
+		}
+		
+		let scene = this.viewer.scene;
+		let renderer = this.viewer.renderer;
+		let domElement = renderer.domElement;
+		
+		let box = this.getSelectionBoundingBox();
+		let pivot = box.getCenter();
+		this.sceneTransform.position.copy(pivot);
+		
+		{ // size
+			let distance = scene.camera.position.distanceTo(pivot);
+			let pr = Potree.utils.projectedRadius(1, scene.camera.fov * Math.PI / 180, distance, renderer.domElement.clientHeight);
+			let scale = (120 / pr);
+			this.sceneTransform.scale.set(scale, scale, scale);
+		}
+		
+		{ // menu
+			let screenPos = pivot.clone().project(scene.camera);
+			screenPos.x = domElement.clientWidth * (screenPos.x + 1) / 2;
+			screenPos.y = domElement.clientHeight * (1-(screenPos.y + 1) / 2);
 			
-			box.union(targetBB);
+			this.menu.setPosition(screenPos.x, screenPos.y);
 		}
 		
-		return box;
-	};
+	}
 	
-	this.update = function(){
-		var node = this.sceneRoot;
-		var wp = node.getWorldPosition().applyMatrix4(this.camera.matrixWorldInverse);
-		var pp = new THREE.Vector4(wp.x, wp.y, wp.z).applyMatrix4(camera.projectionMatrix);
-		var w = Math.abs((wp.z  / 20)); // * (2 - pp.z / pp.w);
-		node.scale.set(w, w, w);
-		
-		if(this.targets && this.targets.length === 1){
-			this.scaleNode.rotation.copy(this.targets[0].rotation);
-		}
-		
-		this.sceneRotation.scale.set(w,w,w);
-	};
+	//render(camera, target){
+	//	this.update();
+	//	this.renderer.render(this.sceneTransform, camera, target);
+	//}
 	
-	this.render = function(){
-		this.update();
-		this.sceneRotation.position.copy(this.sceneRoot.position);
-		this.sceneRotation.visible = this.rotationNode.visible && this.sceneRoot.visible;
-		
-		renderer.render(this.sceneRotation, this.camera);
-		renderer.render(this.sceneTransformation, this.camera);
-	};
-	
-	this.translate = function(){
-		this.translationNode.visible = true;
-		this.scaleNode.visible = false;
-		this.rotationNode.visible = false;
-	};
-	
-	this.scale = function(){
-		this.translationNode.visible = false;
-		this.scaleNode.visible = true;
-		this.rotationNode.visible = false;
-	};
-	
-	this.rotate = function(){
-		this.translationNode.visible = false;
-		this.scaleNode.visible = false;
-		this.rotationNode.visible = true;
-	};
-	
-	this.reset = function(){
-		this.setTargets([]);
-	};
-	
-	this.buildTranslationNode();
-	this.buildScaleNode();
-	this.buildRotationNode();
-	
-	//this.translate();
-	this.rotate();
-	
-	this.setTargets([]);
-	
-	//this.domElement.addEventListener( 'click', onClick, false);
-	this.domElement.addEventListener( 'mousemove', onMouseMove, true );
-	this.domElement.addEventListener( 'mousedown', onMouseDown, true );
-	this.domElement.addEventListener( 'mouseup', onMouseUp, true );
 };

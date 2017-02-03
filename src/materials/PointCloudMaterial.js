@@ -685,6 +685,8 @@ Potree.PointCloudMaterial.generateClassificationTexture  = function(classificati
 			var color;
 			if(classification[x]){
 				color = classification[x];
+			}else if(classification[x % 32]){
+				color = classification[x % 32];
 			}else{
 				color = classification.DEFAULT;
 			}

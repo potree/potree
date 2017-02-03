@@ -103,7 +103,7 @@ Potree.utils = class{
 		}
 		
 		var skyGeometry = new THREE.CubeGeometry( 5000, 5000, 5000 );
-		var skyMaterial = new THREE.MeshFaceMaterial( materialArray );
+		var skyMaterial = new THREE.MultiMaterial( materialArray );
 		var skybox = new THREE.Mesh( skyGeometry, skyMaterial );
 
 		scene.add(skybox);
@@ -112,30 +112,6 @@ Potree.utils = class{
 		scene.rotation.x = Math.PI / 2;
 		
 		return {"camera": camera, "scene": scene};
-
-		//let textureCube = THREE.ImageUtils.loadTextureCube(urls, THREE.CubeRefractionMapping );
-        //
-		//let shader = {
-		//	uniforms: {
-		//		"tCube": {type: "t", value: textureCube},
-		//		"tFlip": {type: "f", value: -1}
-		//	},
-		//	vertexShader: THREE.ShaderLib["cube"].vertexShader,
-		//	fragmentShader: THREE.ShaderLib["cube"].fragmentShader
-		//};
-        //
-		//let material = new THREE.ShaderMaterial({
-		//	fragmentShader: shader.fragmentShader,
-		//	vertexShader: shader.vertexShader,
-		//	uniforms: shader.uniforms,
-		//	depthWrite: false,
-		//	side: THREE.BackSide
-		//});
-		//let mesh = new THREE.Mesh(new THREE.BoxGeometry(1000, 1000, 1000), material);
-		//mesh.rotation.x = Math.PI / 2;
-		//scene.add(mesh);
-        //
-		//return {"camera": camera, "scene": scene};
 	};
 
 	static createGrid(width, length, spacing, color){
@@ -154,7 +130,7 @@ Potree.utils = class{
 			 geometry.vertices.push(new THREE.Vector3(i*spacing-(spacing*width)/2, +(spacing*length)/2, 0));
 		}
 		
-		let line = new THREE.Line(geometry, material, THREE.LinePieces);
+		let line = new THREE.LineSegments(geometry, material, THREE.LinePieces);
 		line.receiveShadow = true;
 		return line;
 	};
@@ -199,17 +175,22 @@ Potree.utils = class{
 	};
 
 	static getMousePointCloudIntersection(mouse, camera, renderer, pointclouds){
-		let vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
+		let nmouse =  {
+			x: (mouse.x / renderer.domElement.clientWidth ) * 2 - 1,
+			y: - (mouse.y / renderer.domElement.clientHeight ) * 2 + 1
+		};
+		
+		let vector = new THREE.Vector3( nmouse.x, nmouse.y, 0.5 );
 		vector.unproject(camera);
 
 		let direction = vector.sub(camera.position).normalize();
 		let ray = new THREE.Ray(camera.position, direction);
 		
-		let closestPoint = null;
-		let closestPointDistance = null;
+		let selectedPointcloud = null;
+		let closestDistance = Infinity;
+		let closestIntersection = null;
 		
-		for(let i = 0; i < pointclouds.length; i++){
-			let pointcloud = pointclouds[i];
+		for(let pointcloud of pointclouds){
 			let point = pointcloud.pick(renderer, camera, ray);
 			
 			if(!point){
@@ -218,13 +199,22 @@ Potree.utils = class{
 			
 			let distance = camera.position.distanceTo(point.position);
 			
-			if(!closestPoint || distance < closestPointDistance){
-				closestPoint = point;
-				closestPointDistance = distance;
+			if(distance < closestDistance){
+				closestDistance = distance;
+				selectedPointcloud = pointcloud;
+				closestIntersection = point.position;
 			}
 		}
 		
-		return closestPoint ? closestPoint.position : null;
+		if(selectedPointcloud){
+			return {
+				location: closestIntersection,
+				distance: closestDistance,
+				pointcloud: selectedPointcloud
+			};
+		}else{
+			return null;
+		}
 	};	
 		
 	static pixelsArrayToImage(pixels, width, height){

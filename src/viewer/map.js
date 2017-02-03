@@ -194,16 +194,16 @@ Potree.MapView = class{
 			this.load(this.viewer.scene.pointclouds[i]);
 		}
 		
-		this.viewer.profileTool.addEventListener("profile_added", this.updateToolDrawings);
-		this.viewer.profileTool.addEventListener("profile_removed", this.updateToolDrawings);
-		this.viewer.profileTool.addEventListener("marker_moved", this.updateToolDrawings);
-		this.viewer.profileTool.addEventListener("marker_removed", this.updateToolDrawings);
-		this.viewer.profileTool.addEventListener("marker_added", this.updateToolDrawings);
-		
-		this.viewer.measuringTool.addEventListener("measurement_added", this.updateToolDrawings);
-		this.viewer.measuringTool.addEventListener("marker_added", this.updateToolDrawings);
-		this.viewer.measuringTool.addEventListener("marker_removed", this.updateToolDrawings);
-		this.viewer.measuringTool.addEventListener("marker_moved", this.updateToolDrawings);
+		//this.viewer.profileTool.addEventListener("profile_added", this.updateToolDrawings);
+		//this.viewer.profileTool.addEventListener("profile_removed", this.updateToolDrawings);
+		//this.viewer.profileTool.addEventListener("marker_moved", this.updateToolDrawings);
+		//this.viewer.profileTool.addEventListener("marker_removed", this.updateToolDrawings);
+		//this.viewer.profileTool.addEventListener("marker_added", this.updateToolDrawings);
+		//
+		//this.viewer.measuringTool.addEventListener("measurement_added", this.updateToolDrawings);
+		//this.viewer.measuringTool.addEventListener("marker_added", this.updateToolDrawings);
+		//this.viewer.measuringTool.addEventListener("marker_removed", this.updateToolDrawings);
+		//this.viewer.measuringTool.addEventListener("marker_moved", this.updateToolDrawings);
 
 	}
 	

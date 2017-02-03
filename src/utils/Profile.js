@@ -1,9 +1,8 @@
 
-Potree.Profile = class{
+Potree.Profile = class extends THREE.Object3D{
 	
 	constructor(){
-		this.sceneNode = new THREE.Object3D();
-		this.dispatcher = new THREE.EventDispatcher();
+		super();
 		
 		this.points = [];
 		this.spheres = [];
@@ -34,49 +33,7 @@ Potree.Profile = class{
 		
 		let sphere = new THREE.Mesh(this.sphereGeometry, this.createSphereMaterial());
 		
-		let moveEvent = (event) => {
-			sphere.material.emissive.setHex(0x888888);
-		};
-		
-		let leaveEvent = (event) => {
-			event.target.material.emissive.setHex(0x000000);
-		};
-		
-		let dragEvent = (event) => {
-			let tool = event.tool;
-			let dragstart = tool.dragstart;
-			let mouse = tool.mouse;
-		
-			if(event.event.ctrlKey){
-				let mouseStart = new THREE.Vector3(dragstart.mousePos.x, dragstart.mousePos.y, 0);
-				let mouseEnd = new THREE.Vector3(mouse.x, mouse.y, 0);
-				let widthStart = dragstart.widthStart;
-				
-				let scale = 1 - 10 * (mouseStart.y - mouseEnd.y);
-				scale = Math.max(0.01, scale);
-				if(widthStart){
-					this.setWidth(widthStart *  scale);
-				}
-			} else {
-				let point = tool.getMousePointCloudIntersection.bind(tool)();
-					
-				if(point){
-					let index = this.spheres.indexOf(tool.dragstart.object);
-					this.setPosition(index, point);
-				}
-			}
-			
-			event.event.stopImmediatePropagation();
-		};
-		
-		let dropEvent = (event) => { };
-		
-		sphere.addEventListener("mousemove", moveEvent);
-		sphere.addEventListener("mouseleave", leaveEvent);
-		sphere.addEventListener("mousedrag", dragEvent);
-		sphere.addEventListener("drop", dropEvent);
-		
-		this.sceneNode.add(sphere);
+		this.add(sphere);
 		this.spheres.push(sphere);
 		
 		// edges & boxes
@@ -95,7 +52,7 @@ Potree.Profile = class{
 			var edge = new THREE.Line(lineGeometry, lineMaterial);
 			edge.visible = false;
 			
-			this.sceneNode.add(edge);
+			this.add(edge);
 			this.edges.push(edge);
 			
 			
@@ -104,15 +61,43 @@ Potree.Profile = class{
 			var box = new THREE.Mesh(boxGeometry, boxMaterial);
 			box.visible = false;
 			
-			this.sceneNode.add(box);
+			this.add(box);
 			this.boxes.push(box);
+		}
+		
+		{ // event listeners
+			let drag = (e) => {
+				let I = Potree.utils.getMousePointCloudIntersection(
+					e.drag.end, 
+					e.viewer.scene.camera, 
+					e.viewer.renderer, 
+					e.viewer.scene.pointclouds);
+				
+				if(I){
+					let i = this.spheres.indexOf(e.drag.object);
+					if(i !== -1){
+						this.setPosition(i, I.location);
+						this.dispatchEvent({
+							"type": "marker_moved"
+						});
+					}
+				}
+			};
+			
+			let mouseover = (e) => e.object.material.emissive.setHex(0x888888);
+			let mouseleave = (e) => e.object.material.emissive.setHex(0x000000);
+		
+			sphere.addEventListener("drag", drag);
+			sphere.addEventListener("mouseover", mouseover);
+			sphere.addEventListener("mouseleave", mouseleave);
 		}
 		
 		let event = {
 			type: "marker_added",
-			profile: this
+			profile: this,
+			sphere: sphere
 		};
-		this.dispatcher.dispatchEvent(event);
+		this.dispatchEvent(event);
 		
 		this.setPosition(this.points.length-1, point);
 	}
@@ -120,19 +105,19 @@ Potree.Profile = class{
 	removeMarker(index){
 		this.points.splice(index, 1);
 		
-		this.sceneNode.remove(this.spheres[index]);
+		this.remove(this.spheres[index]);
 		
 		var edgeIndex = (index === 0) ? 0 : (index - 1);
-		this.sceneNode.remove(this.edges[edgeIndex]);
+		this.remove(this.edges[edgeIndex]);
 		this.edges.splice(edgeIndex, 1);
-		this.sceneNode.remove(this.boxes[edgeIndex]);
+		this.remove(this.boxes[edgeIndex]);
 		this.boxes.splice(edgeIndex, 1);
 		
 		this.spheres.splice(index, 1);
 		
 		this.update();
 		
-		this.dispatcher.dispatchEvent({
+		this.dispatchEvent({
 			"type": "marker_removed",
 			"profile": this
 		});
@@ -148,7 +133,7 @@ Potree.Profile = class{
 			index:		index,
 			position: 	point.clone()
 		};
-		this.dispatcher.dispatchEvent(event);
+		this.dispatchEvent(event);
 		
 		this.update();
 	}
@@ -161,7 +146,7 @@ Potree.Profile = class{
 			profile:	this,
 			width:		width
 		};
-		this.dispatcher.dispatchEvent(event);
+		this.dispatchEvent(event);
 		
 		this.update();
 	}

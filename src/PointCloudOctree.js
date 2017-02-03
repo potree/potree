@@ -896,6 +896,7 @@ Potree.PointCloudOctree.prototype.getVisibleExtent = function(){
 	return this.visibleBounds.applyMatrix4(this.matrixWorld);
 };
 
+
 /**
  *
  *

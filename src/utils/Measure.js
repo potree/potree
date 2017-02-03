@@ -1,8 +1,7 @@
 
-Potree.Measure = class{
+Potree.Measure = class Measure extends THREE.Object3D{
 	constructor(){
-		this.sceneNode = new THREE.Object3D();
-		this.dispatcher = new THREE.EventDispatcher();
+		super();
 		
 		this.points = [];
 		this._showDistances = true;
@@ -10,7 +9,11 @@ Potree.Measure = class{
 		this._showArea = false;
 		this._closed = true;
 		this._showAngles = false;
+		this._showHeight = false;
 		this.maxMarkers = Number.MAX_SAFE_INTEGER;
+		
+		this.sphereGeometry = new THREE.SphereGeometry(0.4, 10, 10);
+		this.color = new THREE.Color( 0xff0000 );
 		
 		this.spheres = [];
 		this.edges = [];
@@ -19,6 +22,40 @@ Potree.Measure = class{
 		this.angleLabels = [];
 		this.coordinateLabels = [];
 		
+		this.heightEdge;
+		this.heightLabel;
+		{ // height stuff
+			
+			{ // height line
+				let lineGeometry = new THREE.Geometry();
+				lineGeometry.vertices.push(
+					new THREE.Vector3(), 
+					new THREE.Vector3(), 
+					new THREE.Vector3(), 
+					new THREE.Vector3());
+				lineGeometry.colors.push(this.color, this.color, this.color);
+				let lineMaterial = new THREE.LineDashedMaterial( 
+					{ color: 0xff0000, dashSize: 5, gapSize: 2 } );
+				
+				lineMaterial.depthTest = false;
+				this.heightEdge = new THREE.Line(lineGeometry, lineMaterial);
+				this.heightEdge.visible = false;
+				
+				this.add(this.heightEdge);
+			}
+			
+			{ // height label
+				this.heightLabel = new Potree.TextSprite("");
+				this.heightLabel.setBorderColor({r:0, g:0, b:0, a:0.8});
+				this.heightLabel.setBackgroundColor({r:0, g:0, b:0, a:0.3});
+				this.heightLabel.setTextColor({r:180, g:220, b:180, a:1.0});
+				this.heightLabel.material.depthTest = false;
+				this.heightLabel.material.opacity = 1;
+				this.heightLabel.visible = false;;
+				this.add(this.heightLabel);
+			}
+		}
+		
 		this.areaLabel = new Potree.TextSprite("");
 		this.areaLabel.setBorderColor({r:0, g:0, b:0, a:0.8});
 		this.areaLabel.setBackgroundColor({r:0, g:0, b:0, a:0.3});
@@ -26,10 +63,9 @@ Potree.Measure = class{
 		this.areaLabel.material.depthTest = false;
 		this.areaLabel.material.opacity = 1;
 		this.areaLabel.visible = false;;
-		this.sceneNode.add(this.areaLabel);
+		this.add(this.areaLabel);
 		
-		this.sphereGeometry = new THREE.SphereGeometry(0.4, 10, 10);
-		this.color = new THREE.Color( 0xff0000 );
+		
 	}
 	
 	createSphereMaterial(){
@@ -52,39 +88,7 @@ Potree.Measure = class{
 		// sphere
 		let sphere = new THREE.Mesh(this.sphereGeometry, this.createSphereMaterial());
 		
-		{
-			let moveEvent = (event) => {
-				event.target.material.emissive.setHex(0x888888);
-			};
-			
-			let leaveEvent = (event) => {
-				event.target.material.emissive.setHex(0x000000);
-			};
-			
-			let dragEvent = (event) => {
-				let tool = event.tool;
-				let dragstart = tool.dragstart;
-				let mouse = tool.mouse;
-			
-				let point = tool.getMousePointCloudIntersection.bind(tool)();
-					
-				if(point){
-					let index = this.spheres.indexOf(tool.dragstart.object);
-					this.setMarker(index, point);
-				}
-				
-				event.event.stopImmediatePropagation();
-			};
-			
-			let dropEvent = (event) => { };
-			
-			sphere.addEventListener("move", moveEvent);
-			sphere.addEventListener("leave", leaveEvent);
-			sphere.addEventListener("drag", dragEvent);
-			sphere.addEventListener("drop", dropEvent);
-		}
-		
-		this.sceneNode.add(sphere);
+		this.add(sphere);
 		this.spheres.push(sphere);
 		
 		{ // edges
@@ -98,9 +102,10 @@ Potree.Measure = class{
 			let edge = new THREE.Line(lineGeometry, lineMaterial);
 			edge.visible = true;
 			
-			this.sceneNode.add(edge);
+			this.add(edge);
 			this.edges.push(edge);
 		}
+		
 		
 		{ // edge labels
 			let edgeLabel = new Potree.TextSprite();
@@ -109,7 +114,7 @@ Potree.Measure = class{
 			edgeLabel.material.depthTest = false;
 			edgeLabel.visible = false;
 			this.edgeLabels.push(edgeLabel);
-			this.sceneNode.add(edgeLabel);
+			this.add(edgeLabel);
 		}
 		
 		{ // angle labels
@@ -120,7 +125,7 @@ Potree.Measure = class{
             angleLabel.material.opacity = 1;
 			angleLabel.visible = false;
 			this.angleLabels.push(angleLabel);
-			this.sceneNode.add(angleLabel);
+			this.add(angleLabel);
 		}
 		
 		{ // coordinate labels
@@ -131,14 +136,42 @@ Potree.Measure = class{
 			coordinateLabel.material.opacity = 1;
 			coordinateLabel.visible = false;
 			this.coordinateLabels.push(coordinateLabel);
-			this.sceneNode.add(coordinateLabel);
+			this.add(coordinateLabel);
+		}
+		
+		{ // Event Listeners
+			let drag = (e) => {
+				let I = Potree.utils.getMousePointCloudIntersection(
+					e.drag.end, 
+					e.viewer.scene.camera, 
+					e.viewer.renderer, 
+					e.viewer.scene.pointclouds);
+				
+				if(I){
+					let i = this.spheres.indexOf(e.drag.object);
+					if(i !== -1){
+						this.setPosition(i, I.location);
+						this.dispatchEvent({
+							"type": "marker_moved"
+						});
+					}
+				}
+			};
+			
+			let mouseover = (e) => e.object.material.emissive.setHex(0x888888);
+			let mouseleave = (e) => e.object.material.emissive.setHex(0x000000);
+			
+			sphere.addEventListener("drag", drag);
+			sphere.addEventListener("mouseover", mouseover);
+			sphere.addEventListener("mouseleave", mouseleave);
 		}
 
 		let event = {
 			type: "marker_added",
-			measurement: this
+			measurement: this,
+			sphere: sphere
 		};
-		this.dispatcher.dispatchEvent(event);
+		this.dispatchEvent(event);
 		
 		this.setMarker(this.points.length-1, point);
 	};
@@ -146,13 +179,13 @@ Potree.Measure = class{
 	removeMarker(index){
 		this.points.splice(index, 1);
 		
-		this.sceneNode.remove(this.spheres[index]);
+		this.remove(this.spheres[index]);
 		
 		let edgeIndex = (index === 0) ? 0 : (index - 1);
-		this.sceneNode.remove(this.edges[edgeIndex]);
+		this.remove(this.edges[edgeIndex]);
 		this.edges.splice(edgeIndex, 1);
 		
-		this.sceneNode.remove(this.edgeLabels[edgeIndex]);
+		this.remove(this.edgeLabels[edgeIndex]);
 		this.edgeLabels.splice(edgeIndex, 1);
 		this.coordinateLabels.splice(index, 1);
 		
@@ -160,7 +193,7 @@ Potree.Measure = class{
 		
 		this.update();
 		
-		this.dispatcher.dispatchEvent({type: "marker_removed", measurement: this});
+		this.dispatchEvent({type: "marker_removed", measurement: this});
 	};
 	
 	setMarker(index, point){
@@ -172,7 +205,7 @@ Potree.Measure = class{
 			index:		index,
 			position: 	point.position.clone()
 		};
-		this.dispatcher.dispatchEvent(event);
+		this.dispatchEvent(event);
 		
 		this.update();
 	}
@@ -187,7 +220,7 @@ Potree.Measure = class{
 			index:		index,
 			position: 	position.clone()
 		};
-		this.dispatcher.dispatchEvent(event);
+		this.dispatchEvent(event);
 		
 		this.update();
 	};
@@ -245,7 +278,7 @@ Potree.Measure = class{
 					+ " / " + Potree.utils.addCommas(position.z.toFixed(2));
 				coordinateLabel.setText(msg);
 				
-				//coordinateLabel.visible = this.showCoordinates && (index < lastIndex || this.closed);
+				coordinateLabel.visible = this.showCoordinates;
 			}
 			
 			return;
@@ -332,15 +365,56 @@ Potree.Measure = class{
 					+ " / " + Potree.utils.addCommas(point.position.z.toFixed(2));
 				coordinateLabel.setText(msg);
 				
-				coordinateLabel.visible = this.showCoordinates && (index < lastIndex || this.closed);
+				//coordinateLabel.visible = this.showCoordinates && (index < lastIndex || this.closed);
+				coordinateLabel.visible = this.showCoordinates;
 			}
 		}
+
+		{ // update height stuff
+			let heightEdge = this.heightEdge;
+			heightEdge.visible = this.showHeight;
+			this.heightLabel.visible = this.showHeight;
+			
+			if(this.showHeight){
+				let sorted = this.points.slice().sort( (a, b) => a.position.z - b.position.z );
+				let lowPoint = sorted[0].position.clone();
+				let highPoint = sorted[sorted.length - 1].position.clone();
+				let min = lowPoint.z;
+				let max = highPoint.z;
+				let height = max - min;
+				
+				let start = new THREE.Vector3(highPoint.x, highPoint.y, min);
+				let end = new THREE.Vector3(highPoint.x, highPoint.y, max);
+				
+				
+				heightEdge.geometry.vertices[0].copy(lowPoint);
+				heightEdge.geometry.vertices[1].copy(start);
+				heightEdge.geometry.vertices[2].copy(start);
+				heightEdge.geometry.vertices[3].copy(end);
+				
+				heightEdge.geometry.verticesNeedUpdate = true;
+				//heightEdge.geometry.computeLineDistances();
+				//heightEdge.geometry.lineDistancesNeedUpdate = true;
+				heightEdge.geometry.computeBoundingSphere();
+				
+				//heightEdge.material.dashSize = height / 40;
+				//heightEdge.material.gapSize = height / 40;
+				
+				
+				let heightLabelPosition = start.clone().add(end).multiplyScalar(0.5);
+				this.heightLabel.position.copy(heightLabelPosition);
+				let msg = Potree.utils.addCommas(height.toFixed(2));
+				this.heightLabel.setText(msg);
+			}
+			
+		}
 		
-		// update area label
-		this.areaLabel.position.copy(centroid);
-		this.areaLabel.visible = this.showArea && this.points.length >= 3;
-		let msg = Potree.utils.addCommas(this.getArea().toFixed(1)) + "";
-		this.areaLabel.setText(msg);
+		{ // update area label
+			this.areaLabel.position.copy(centroid);
+			this.areaLabel.visible = this.showArea && this.points.length >= 3;
+			let msg = Potree.utils.addCommas(this.getArea().toFixed(1)) + "\u00B2";
+			this.areaLabel.setText(msg);
+		}
 	};
 	
 	raycast(raycaster, intersects){
@@ -377,6 +451,15 @@ Potree.Measure = class{
 	
 	set showAngles(value){
 		this._showAngles = value;
+		this.update();
+	}
+	
+	get showHeight(){
+		return this._showHeight;
+	}
+	
+	set showHeight(value){
+		this._showHeight = value;
 		this.update();
 	}
 	

@@ -1,80 +1,251 @@
 
 
-Potree.EarthControls = class extends Potree.Controls{
+Potree.EarthControls = class EarthControls extends THREE.EventDispatcher{
 	
-	constructor(renderer){
-		super(renderer);
+	constructor(viewer){
+		super(viewer);
 		
-		this.radius = 1;
-		this.rotationSpeed = 10000;
+		this.viewer = viewer;
+		this.renderer = viewer.renderer;
 		
-		this.STATE = {
-			NONE: 0,
-			DRAG: 1,
-			ZOOM: 2,
-			ROTATE: 3
-		};
+		this.scene = null;
+		this.sceneControls = new THREE.Scene();
 		
-		this.state = this.STATE.NONE;
-		
+		this.rotationSpeed = 10;
 		
 		this.fadeFactor = 20;
+		this.wheelDelta = 0;
 		this.zoomDelta = new THREE.Vector3();
-	}
-	
-	onMouseDown(e){
-		if(!this.enabled){return;}
+		this.camStart = null;
+		
+		this.tweens = [];
 
-		super.onMouseDown(e);
-		e.preventDefault();
 		
-		let I = this.getMousePointCloudIntersection(this.mouse);
+		this.pivotIndicator;
+		{
+			let sg = new THREE.SphereGeometry(1, 16, 16);
+			let sm = new THREE.MeshNormalMaterial();
+			this.pivotIndicator = new THREE.Mesh(sg, sm);
+			this.pivotIndicator.visible = false;
+			this.sceneControls.add(this.pivotIndicator);
+		}
 		
-		if(I){
-			if(e.button === THREE.MOUSE.LEFT){
-				this.state = this.STATE.DRAG;
-			}else if(event.button === THREE.MOUSE.RIGHT){
-				this.state = this.STATE.ROTATE;
+		let drag = (e) => {
+			if(e.drag.object !== null){
+				return;
 			}
 			
-			this.pivot = I.location;
-			this.camStart = this.scene.camera.clone();
-		}
+			if(!this.pivot){
+				return;
+			}
+			
+			let camStart = this.camStart;
+			let view = this.viewer.scene.view;
+			
+			//let camera = this.viewer.scene.camera;
+			let mouse = e.drag.end;
+			let domElement = this.viewer.renderer.domElement;
+			
+			if(e.drag.mouse === THREE.MOUSE.LEFT){
+				let nmouse =  {
+					x: (mouse.x / domElement.clientWidth ) * 2 - 1,
+					y: - (mouse.y / domElement.clientHeight ) * 2 + 1
+				};
+				
+				let vector = new THREE.Vector3( nmouse.x, nmouse.y, 0.5 );
+				vector.unproject(camStart);
+				
+				let dir = vector.sub( camStart.position).normalize();
+				let ray = new THREE.Ray(camStart.position, dir);
+				let plane = new THREE.Plane().setFromNormalAndCoplanarPoint(
+					new THREE.Vector3(0, 0, 1), 
+					this.pivot);
+				
+				
+				let distanceToPlane = ray.distanceToPlane(plane);
+
+				if(distanceToPlane > 0){
+					let I = new THREE.Vector3().addVectors(
+						camStart.position, 
+						dir.clone().multiplyScalar(distanceToPlane));
+						
+					let movedBy = new THREE.Vector3().subVectors(
+						I, this.pivot);
+					
+					let newCamPos = camStart.position.clone().sub(movedBy);
+					
+					view.position.copy(newCamPos);
+					
+					{
+						let distance = newCamPos.distanceTo(this.pivot);
+						view.radius = distance;
+						let speed = view.radius / 2.5;
+						this.viewer.setMoveSpeed(speed);
+					}
+				}
+				
+			}else if(e.drag.mouse === THREE.MOUSE.RIGHT){
+				let ndrag = {
+					x: e.drag.lastDrag.x / this.renderer.domElement.clientWidth,
+					y: e.drag.lastDrag.y / this.renderer.domElement.clientHeight
+				};
+				
+				let yawDelta = -ndrag.x * this.rotationSpeed * 0.5;
+				let pitchDelta = -ndrag.y * this.rotationSpeed * 0.2;
+				
+				let originalPitch = view.pitch;
+				let tmpView = view.clone();
+				tmpView.pitch = tmpView.pitch + pitchDelta;
+				pitchDelta = tmpView.pitch - originalPitch;
+				
+				
+				let pivotToCam = new THREE.Vector3().subVectors(view.position, this.pivot);
+				let pivotToCamTarget = new THREE.Vector3().subVectors(view.getPivot(), this.pivot);
+				let side = view.getSide();
+				
+				pivotToCam.applyAxisAngle(side, pitchDelta);
+				pivotToCamTarget.applyAxisAngle(side, pitchDelta);
+				
+				pivotToCam.applyAxisAngle(new THREE.Vector3(0, 0, 1), yawDelta);
+				pivotToCamTarget.applyAxisAngle(new THREE.Vector3(0, 0, 1), yawDelta);
+				
+				let newCam = new THREE.Vector3().addVectors(this.pivot, pivotToCam);
+				let newCamTarget = new THREE.Vector3().addVectors(this.pivot, pivotToCamTarget);
+				
+				view.position.copy(newCam);
+				view.yaw += yawDelta;
+				view.pitch += pitchDelta;
+
+			}
+			
+		};
+		
+		let onMouseDown = e => {
+			let I = Potree.utils.getMousePointCloudIntersection(
+				e.mouse, 
+				this.scene.camera, 
+				this.renderer, 
+				this.scene.pointclouds);
+				
+			if(I){
+				this.pivot = I.location;
+				this.camStart = this.scene.camera.clone();
+				this.pivotIndicator.visible = true;
+				this.pivotIndicator.position.copy(I.location);
+			}
+		};
+		
+		let onMouseUp = e => {
+			this.camStart = null;
+			this.pivot = null;
+			this.pivotIndicator.visible = false;
+		};
+		
+		let scroll = (e) => {
+			this.wheelDelta += e.delta
+		};
+		
+		let dblclick = (e) => {
+			this.zoomToLocation(e.mouse);
+		};
+		
+		this.addEventListener("drag", drag);
+		this.addEventListener("mousewheel", scroll);
+		this.addEventListener("mousedown", onMouseDown);
+		this.addEventListener("mouseup", onMouseUp);
+		this.addEventListener("dblclick", dblclick);
 	}
 	
-	onMouseUp(e){
-		if(!this.enabled){
+	setScene(scene){
+		this.scene = scene;
+	}
+	
+	zoomToLocation(mouse){
+		let camera = this.scene.camera;
+		
+		let I = Potree.utils.getMousePointCloudIntersection(
+			mouse, 
+			camera, 
+			this.renderer, 
+			this.scene.pointclouds);
+			
+		if(I === null){
 			return;
 		}
 		
-		super.onMouseUp(e);
+		let nmouse =  {
+			x: +( mouse.x / this.renderer.domElement.clientWidth )  * 2 - 1,
+			y: -( mouse.y / this.renderer.domElement.clientHeight ) * 2 + 1
+		};
 		
-		//this.pivot = null;
-		this.camStart = null;
-		this.state = this.STATE.NONE;
-	}
-	
-	onDoubleClick(e){
-		if(!this.enabled){ return; }
+		let targetRadius = 0;
+		{
+			let minimumJumpDistance = 0.2;
+			
+			let vector = new THREE.Vector3( nmouse.x, nmouse.y, 0.5 );
+			vector.unproject(camera);
+			
+			let direction = vector.sub(camera.position).normalize();
+			let ray = new THREE.Ray(camera.position, direction);
+			
+			let nodes = I.pointcloud.nodesOnRay(I.pointcloud.visibleNodes, ray);
+			let lastNode = nodes[nodes.length - 1];
+			let radius = lastNode.getBoundingSphere().radius;
+			targetRadius = Math.min(this.scene.view.radius, radius);
+			targetRadius = Math.max(minimumJumpDistance, targetRadius);
+		}
 		
-		e.preventDefault();
+		let d = this.scene.view.direction.multiplyScalar(-1);
+		let cameraTargetPosition = new THREE.Vector3().addVectors(I.location, d.multiplyScalar(targetRadius));
+		let controlsTargetPosition = I.location;
 		
-		this.zoomToLocation(this.mouse);
+		var animationDuration = 600;
+		var easing = TWEEN.Easing.Quartic.Out;
+		
+		{ // animate 
+		
+			let value = {x: 0};
+			let tween = new TWEEN.Tween(value).to({x: 1}, animationDuration);
+			tween.easing(easing);
+			this.tweens.push(tween);
+			
+			let startPos = this.scene.view.position.clone();
+			let targetPos = cameraTargetPosition.clone();
+			let startRadius = this.scene.view.radius;
+			let targetRadius = cameraTargetPosition.distanceTo(I.location);
+			
+			tween.onUpdate( () => {
+				let t = value.x;
+				this.scene.view.position.x = (1 - t) * startPos.x + t * targetPos.x;
+				this.scene.view.position.y = (1 - t) * startPos.y + t * targetPos.y;
+				this.scene.view.position.z = (1 - t) * startPos.z + t * targetPos.z;
+				
+				this.scene.view.radius = (1 - t) * startRadius + t * targetRadius;
+				this.viewer.setMoveSpeed(this.scene.view.radius / 2.5);
+			});
+			
+			tween.onComplete( () => {
+				this.tweens = this.tweens.filter( e => e !== tween);
+			});
+			
+			tween.start();
+		}
 	}
 	
 	update(delta){
-		if(!this.enabled){
-			return;
-		}
-		
 		let view = this.scene.view;
-		let drag = this.getNormalizedDrag();
 		let fade = Math.pow(0.5, this.fadeFactor * delta);
 		let progression = 1 - fade;
+		let camera = this.scene.camera;
 		
-		// accelerate while input is given
+		// compute zoom
 		if(this.wheelDelta !== 0){
-			let I = this.getMousePointCloudIntersection(this.mouse);
+			let I = Potree.utils.getMousePointCloudIntersection(
+				this.viewer.inputHandler.mouse, 
+				this.scene.camera, 
+				this.renderer, 
+				this.scene.pointclouds);
+				
 			if(I){
 				let resolvedPos = new THREE.Vector3().addVectors(view.position, this.zoomDelta);
 				let distance = I.location.distanceTo(resolvedPos);
@@ -84,64 +255,14 @@ Potree.EarthControls = class extends Potree.Controls{
 				
 				resolvedPos.add(targetDir.multiplyScalar(jumpDistance));
 				this.zoomDelta.subVectors(resolvedPos, view.position);
-			}
-		}
-		
-		if(this.state === this.STATE.DRAG && this.pivot !== null){
-			let V = new THREE.Vector3().subVectors(view.getPivot(), view.position);
-			let plane = new THREE.Plane().setFromNormalAndCoplanarPoint(new THREE.Vector3(0, 0, 1), this.pivot);
-			let mouse = {
-				x:   ( this.dragEnd.x / this.domElement.clientWidth  ) * 2 - 1,
-				y: - ( this.dragEnd.y / this.domElement.clientHeight ) * 2 + 1
-			};
-			
-			let vec = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
-			vec.unproject(this.camStart);
-			var dir = vec.sub(this.camStart.position).normalize();
-			
-			var ray = new THREE.Ray(this.camStart.position, dir);
-			var distanceToPlane = ray.distanceToPlane(plane);
-			
-			if(distanceToPlane > 0){
-				let newCamPos = new THREE.Vector3()
-					.subVectors(this.pivot, dir.clone()
-					.multiplyScalar(distanceToPlane));
 				
-				let pDiff = new THREE.Vector3().subVectors(newCamPos, view.position);
-				
-				//newCamPos.addVectors(view.position, pDiff.multiplyScalar(progression));
-				newCamPos.addVectors(view.position, pDiff);
-				view.position = newCamPos;
-
-				let startDir = this.camStart.getWorldDirection();
-				let newTarget = new THREE.Vector3().addVectors(view.position, startDir);
-				view.lookAt(newTarget);
+				{
+					let distance = resolvedPos.distanceTo(I.location);
+					view.radius = distance;
+					let speed = view.radius / 2.5;
+					this.viewer.setMoveSpeed(speed);
+				}
 			}
-		}else if(this.state === this.STATE.ROTATE && this.pivot !== null){
-			
-			let drag = this.getNormalizedLastDrag();
-			
-			
-			let yawDelta = -drag.x * this.rotationSpeed * 0.05 * delta;
-			let pitchDelta = drag.y * this.rotationSpeed * 0.02 * delta;
-			
-			let pivotToCam = new THREE.Vector3().subVectors(view.position, this.pivot);
-			let pivotToCamTarget = new THREE.Vector3().subVectors(view.getPivot(), this.pivot);
-			let side = view.getSide();
-			
-			pivotToCam.applyAxisAngle(side, pitchDelta);
-			pivotToCamTarget.applyAxisAngle(side, pitchDelta);
-			
-			pivotToCam.applyAxisAngle(new THREE.Vector3(0, 0, 1), yawDelta);
-			pivotToCamTarget.applyAxisAngle(new THREE.Vector3(0, 0, 1), yawDelta);
-			
-			let newCam = new THREE.Vector3().addVectors(this.pivot, pivotToCam);
-			let newCamTarget = new THREE.Vector3().addVectors(this.pivot, pivotToCamTarget);
-			
-			view.position.copy(newCam);
-			view.lookAt(newCamTarget);
-			//view.pitch += pitchDelta;
-			
 		}
 		
 		// apply zoom
@@ -152,15 +273,28 @@ Potree.EarthControls = class extends Potree.Controls{
 			view.position.copy(newPos);
 		}
 		
+		if(this.pivotIndicator.visible){
+			let distance = this.pivotIndicator.position.distanceTo(view.position);
+			let pixelHeight = this.renderer.domElement.clientHeight;
+			let pr = Potree.utils.projectedRadius(1, camera.fov * Math.PI / 180, distance, pixelHeight);
+			let scale = (10 / pr);
+			this.pivotIndicator.scale.set(scale, scale, scale);
+		}
+		
 		// decelerate over time
 		{
 			this.zoomDelta.multiplyScalar(fade);
+			this.wheelDelta = 0;
 		}
 		
-		this.updateFinished();
-		
-		//view.position.copy(newCamPos);
-		//view.lookAt(newTarget);
 	}
 	 
 }
+
+
+
+
+
+
+
+

@@ -255,8 +255,7 @@ vec3 getElevation(){
 }
 
 vec4 getClassification(){
-	float c = mod(classification, 16.0);
-	vec2 uv = vec2(c / 255.0, 0.5);
+	vec2 uv = vec2(classification / 255.0, 0.5);
 	vec4 classColor = texture2D(classificationLUT, uv);
 	
 	return classColor;

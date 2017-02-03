@@ -13,49 +13,105 @@ var createToolIcon = function(icon, title, callback){
 };
 
 function initToolbar(){
-	var elToolbar = document.getElementById("tools");
+
+	// ANGLE
+	let elToolbar = document.getElementById("tools");
 	elToolbar.appendChild(createToolIcon(
 		Potree.resourcePath + "/icons/angle.png",
 		"[title]tt.angle_measurement",
-		function(){viewer.measuringTool.startInsertion({showDistances: false, showAngles: true, showArea: false, closed: true, maxMarkers: 3})}
+		function(){
+			$("#menu_measurements").next().slideDown();
+			viewer.measuringTool.startInsertion({
+				showDistances: false, 
+				showAngles: true, 
+				showArea: false, 
+				closed: true, 
+				maxMarkers: 3});
+		}
 	));
 	
+	// POINT
 	elToolbar.appendChild(createToolIcon(
 		Potree.resourcePath + "/icons/point.svg",
 		"[title]tt.angle_measurement",
-		function(){viewer.measuringTool.startInsertion({showDistances: false, showAngles: false, showCoordinates: true, showArea: false, closed: true, maxMarkers: 1})}
+		function(){
+			$("#menu_measurements").next().slideDown();
+			viewer.measuringTool.startInsertion({
+				showDistances: false, 
+				showAngles: false, 
+				showCoordinates: true, 
+				showArea: false, 
+				closed: true, 
+				maxMarkers: 1});
+		}
 	));
 	
+	// DISTANCE
 	elToolbar.appendChild(createToolIcon(
 		Potree.resourcePath + "/icons/distance.svg",
 		"[title]tt.distance_measurement",
-		function(){viewer.measuringTool.startInsertion({showDistances: true, showArea: false, closed: false})}
+		function(){
+			$("#menu_measurements").next().slideDown();
+			viewer.measuringTool.startInsertion({
+				showDistances: true, 
+				showArea: false, 
+				closed: false});
+		}
 	));
 	
+	// HEIGHT
+	elToolbar.appendChild(createToolIcon(
+		Potree.resourcePath + "/icons/height.svg",
+		"[title]tt.height_measurement",
+		function(){
+			$("#menu_measurements").next().slideDown();
+			viewer.measuringTool.startInsertion({
+				showDistances: false, 
+				showHeight: true, 
+				showArea: false, 
+				closed: false, 
+				maxMarkers: 2});
+		}
+	));
+	
+	// AREA
 	elToolbar.appendChild(createToolIcon(
 		Potree.resourcePath + "/icons/area.svg",
 		"[title]tt.area_measurement",
-		function(){viewer.measuringTool.startInsertion({showDistances: true, showArea: true, closed: true})}
+		function(){
+			$("#menu_measurements").next().slideDown();
+			viewer.measuringTool.startInsertion({
+				showDistances: true, 
+				showArea: true, 
+				closed: true});
+		}
 	));
 	
+	// VOLUME
 	elToolbar.appendChild(createToolIcon(
 		Potree.resourcePath + "/icons/volume.svg",
 		"[title]tt.volume_measurement",
 		function(){viewer.volumeTool.startInsertion()}
 	));
 	
+	// PROFILE
 	elToolbar.appendChild(createToolIcon(
 		Potree.resourcePath + "/icons/profile.svg",
 		"[title]tt.height_profile",
-		function(){viewer.profileTool.startInsertion()}
+		function(){
+			$("#menu_measurements").next().slideDown();;
+			viewer.profileTool.startInsertion();
+		}
 	));
 	
+	// CLIP VOLUME
 	elToolbar.appendChild(createToolIcon(
 		Potree.resourcePath + "/icons/clip_volume.svg",
 		"[title]tt.clip_volume",
 		function(){viewer.volumeTool.startInsertion({clip: true})}
 	));
 	
+	// REMOVE ALL
 	elToolbar.appendChild(createToolIcon(
 		Potree.resourcePath + "/icons/reset_tools.svg",
 		"[title]tt.remove_all_measurement",
@@ -406,40 +462,27 @@ function initClassificationList(){
 }
 
 function initAccordion(){
-	$('#accordion').accordion({
-		autoHeight: true,
-		heightStyle: "content",
-        collapsible:true,
-        beforeActivate: function(event, ui) {
-             // The accordion believes a panel is being opened
-            if (ui.newHeader[0]) {
-                var currHeader  = ui.newHeader;
-                var currContent = currHeader.next('.ui-accordion-content');
-             // The accordion believes a panel is being closed
-            } else {
-                var currHeader  = ui.oldHeader;
-                var currContent = currHeader.next('.ui-accordion-content');
-            }
-             // Since we've changed the default behavior, this detects the actual status
-            var isPanelSelected = currHeader.attr('aria-selected') == 'true';
-            
-             // Toggle the panel's header
-            currHeader.toggleClass('ui-corner-all',isPanelSelected).toggleClass('accordion-header-active ui-state-active ui-corner-top',!isPanelSelected).attr('aria-selected',((!isPanelSelected).toString()));
-            
-            // Toggle the panel's icon
-            currHeader.children('.ui-icon').toggleClass('ui-icon-triangle-1-e',isPanelSelected).toggleClass('ui-icon-triangle-1-s',!isPanelSelected);
-            
-             // Toggle the panel's content
-            currContent.toggleClass('accordion-content-active',!isPanelSelected)    
-            if (isPanelSelected) { currContent.slideUp(); }  else { currContent.slideDown(); }
-
-            return false; // Cancels the default action
-        }
-    });
 	
-	//$("#accordion").accordion({ active: 2});
-	//$("#accordion").accordion({ active: 3});
-	//$("#accordion").accordion({ active: 4});
+	$(".accordion > h3").each(function(){
+		let header = $(this);
+		let content = $(this).next();
+		
+		header.addClass("accordion-header ui-widget");
+		content.addClass("accordion-content ui-widget");
+		
+		content.hide();
+		
+		header.click(function(){
+			content.slideToggle();
+		});
+	});
+	
+	// to close all, call
+	// $(".accordion > div").hide()
+	
+	// to open the, for example, tool menu, call: 
+	// $("#menu_tools").next().show()
+	
 }
 
 function initAppearance(){
@@ -732,8 +775,8 @@ function initAnnotationDetails(){
 		annotationPanel.empty();
 		
 		if(e.oldScene){
-			if(e.oldScene.dispatcher.hasEventListener("annotation_added", annotationAddedCallback)){
-				e.oldScene.dispatcher.removeEventListener("annotation_added", annotationAddedCallback);
+			if(e.oldScene.hasEventListener("annotation_added", annotationAddedCallback)){
+				e.oldScene.removeEventListener("annotation_added", annotationAddedCallback);
 			}
 		}
 		
@@ -794,6 +837,9 @@ function initMeasurementDetails(){
 			}else if(!measurement.showDistances && !measurement.showArea && measurement.showAngles){
 				elPanelIcon.src = Potree.resourcePath + "/icons/angle.png";
 				elPanelStretch.innerHTML = "Angle";
+			}else if(measurement.showHeight){
+				elPanelIcon.src = Potree.resourcePath + "/icons/height.svg";
+				elPanelStretch.innerHTML = "Height";
 			}
 			
 			elPanelRemove.onclick = function(){scene.removeMeasurement(measurement);};
@@ -859,8 +905,8 @@ function initMeasurementDetails(){
 					elWidthLabel.html(Potree.utils.addCommas(event.width.toFixed(3)));
 					elWidthSlider.slider({value: val});
 				};
-				if(!measurement.dispatcher.hasEventListener("width_changed", widthListener)){
-					measurement.dispatcher.addEventListener("width_changed", widthListener);
+				if(!measurement.hasEventListener("width_changed", widthListener)){
+					measurement.addEventListener("width_changed", widthListener);
 				}
 				
 				elLi.append(elText);
@@ -882,6 +928,23 @@ function initMeasurementDetails(){
 				positions = measurement.points;
 			}
 			
+			if(measurement instanceof Potree.Measure && measurement.showHeight){
+				let points = measurement.points;
+				
+				let sorted = points.slice().sort( (a, b) => a.position.z - b.position.z );
+				let lowPoint = sorted[0].position.clone();
+				let highPoint = sorted[sorted.length - 1].position.clone();
+				let min = lowPoint.z;
+				let max = highPoint.z;
+				let height = max - min;
+				
+				let txt = height.toFixed(3);
+				
+				var elNodeHeight = $('<div>').addClass("measurement-detail-node-marker");
+				elNodeHeight.html(txt);
+				$(elPanelBody).append(elNodeHeight);
+			}
+			
 			for(var i = 0; i < positions.length; i++){
 				// TODO clean this up from the toGeo legacy
 				var point = positions[i];
@@ -891,10 +954,11 @@ function initMeasurementDetails(){
 				txt += (geoCoord.y).toFixed(2) + ", ";
 				txt += geoCoord.z.toFixed(2);
 				
-				var elNodeMarker = $('<div>').addClass("measurement-detail-node-marker");
-				elNodeMarker.html(txt);
-				
-				$(elPanelBody).append(elNodeMarker);
+				if(measurement && !measurement.showHeight){
+					var elNodeMarker = $('<div>').addClass("measurement-detail-node-marker");
+					elNodeMarker.html(txt);
+					$(elPanelBody).append(elNodeMarker);
+				}
 				
 				if(i < positions.length - 1){
 					if(measurement && measurement.showDistances){
@@ -1021,7 +1085,7 @@ function initMeasurementDetails(){
 			}
 			
 			if(measurement && measurement.showArea){
-				var txt = Potree.utils.addCommas(measurement.getArea().toFixed(1)) + "²";
+				var txt = Potree.utils.addCommas(measurement.getArea().toFixed(1)) + "\u00B2";
 				
 				var elNodeArea = $('<div>').addClass("measurement-detail-node-area");
 				elNodeArea.html(txt);
@@ -1045,46 +1109,46 @@ function initMeasurementDetails(){
 		if(measurement instanceof Potree.Measure){
 			let onremove = function(event){
 				if(event.measurement === measurement){
-					scene.dispatcher.removeEventListener("marker_added", updateDisplay);
-					scene.dispatcher.removeEventListener("marker_removed", updateDisplay);
-					scene.dispatcher.removeEventListener("marker_moved", updateDisplay);
+					scene.removeEventListener("marker_added", updateDisplay);
+					scene.removeEventListener("marker_removed", updateDisplay);
+					scene.removeEventListener("marker_moved", updateDisplay);
 					$(elLi).remove();
 				}
 			};
 		
-			measurement.dispatcher.addEventListener("marker_added", updateDisplay);
-			measurement.dispatcher.addEventListener("marker_removed", updateDisplay);
-			measurement.dispatcher.addEventListener("marker_moved", updateDisplay);
+			measurement.addEventListener("marker_added", updateDisplay);
+			measurement.addEventListener("marker_removed", updateDisplay);
+			measurement.addEventListener("marker_moved", updateDisplay);
 			scene.addEventListener("measurement_removed", onremove);
 			
 			track.stopTracking = (e) => {
-				measurement.dispatcher.removeEventListener("marker_added", updateDisplay);
-				measurement.dispatcher.removeEventListener("marker_removed", updateDisplay);
-				measurement.dispatcher.removeEventListener("marker_moved", updateDisplay);
-				scene.dispatcher.removeEventListener("measurement_added", onremove);
-				scene.dispatcher.removeEventListener("measurement_removed", onremove);
+				measurement.removeEventListener("marker_added", updateDisplay);
+				measurement.removeEventListener("marker_removed", updateDisplay);
+				measurement.removeEventListener("marker_moved", updateDisplay);
+				scene.removeEventListener("measurement_added", onremove);
+				scene.removeEventListener("measurement_removed", onremove);
 			};
 		} else if(measurement instanceof Potree.Profile){
 			let onremove = function(event){
 				if(event.profile === measurement){
-					scene.dispatcher.removeEventListener("marker_added", updateDisplay);
-					scene.dispatcher.removeEventListener("marker_removed", updateDisplay);
-					scene.dispatcher.removeEventListener("marker_moved", updateDisplay);
+					scene.removeEventListener("marker_added", updateDisplay);
+					scene.removeEventListener("marker_removed", updateDisplay);
+					scene.removeEventListener("marker_moved", updateDisplay);
 					$(elLi).remove();
 				}
 			};
 		
-			measurement.dispatcher.addEventListener("marker_added", updateDisplay);
-			measurement.dispatcher.addEventListener("marker_removed", updateDisplay);
-			measurement.dispatcher.addEventListener("marker_moved", updateDisplay);
+			measurement.addEventListener("marker_added", updateDisplay);
+			measurement.addEventListener("marker_removed", updateDisplay);
+			measurement.addEventListener("marker_moved", updateDisplay);
 			scene.addEventListener("profile_removed", onremove);
 			
 			track.stopTracking = (e) => {
-				measurement.dispatcher.removeEventListener("marker_added", updateDisplay);
-				measurement.dispatcher.removeEventListener("marker_removed", updateDisplay);
-				measurement.dispatcher.removeEventListener("marker_moved", updateDisplay);
-				scene.dispatcher.removeEventListener("profile_added", onremove);
-				scene.dispatcher.removeEventListener("profile_removed", onremove);
+				measurement.removeEventListener("marker_added", updateDisplay);
+				measurement.removeEventListener("marker_removed", updateDisplay);
+				measurement.removeEventListener("marker_moved", updateDisplay);
+				scene.removeEventListener("profile_added", onremove);
+				scene.removeEventListener("profile_removed", onremove);
 			};
 		}
 		
@@ -1113,12 +1177,12 @@ function initMeasurementDetails(){
 			trackMeasurement(scene, scene.profiles[i]);
 		}
 		
-		if(!scene.dispatcher.hasEventListener("measurement_added", scenelistener)){
-			scene.dispatcher.addEventListener("measurement_added", scenelistener);
+		if(!scene.hasEventListener("measurement_added", scenelistener)){
+			scene.addEventListener("measurement_added", scenelistener);
 		}
 		
-		if(!scene.dispatcher.hasEventListener("profile_added", scenelistener)){
-			scene.dispatcher.addEventListener("profile_added", scenelistener);
+		if(!scene.hasEventListener("profile_added", scenelistener)){
+			scene.addEventListener("profile_added", scenelistener);
 		}
 	};
 	
@@ -1189,6 +1253,26 @@ function initSceneList(){
 	// TODO update scene list on scene switch
 	viewer.addEventListener("pointcloud_loaded", function(event){
 		addPointcloud(event.pointcloud);
+	});
+	
+	let lastPos = new THREE.Vector3();
+	let lastTarget = new THREE.Vector3();
+	viewer.addEventListener("update", e => {
+		let pos = viewer.scene.view.position;
+		let target = viewer.scene.view.getPivot();
+		
+		if(pos.equals(lastPos) && target.equals(lastTarget)){
+			return;
+		}else{
+			lastPos.copy(pos);
+			lastTarget.copy(target);
+		}
+		
+		let strCamPos = "<br>" + [pos.x, pos.y, pos.z].map(e => e.toFixed(2)).join(", ");
+		let strCamTarget = "<br>" + [target.x, target.y, target.z].map(e => e.toFixed(2)).join(", ");
+		
+		$('#lblCameraPosition').html(strCamPos);
+		$('#lblCameraTarget').html(strCamTarget);
 	});
 };
 

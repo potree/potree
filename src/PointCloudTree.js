@@ -2,48 +2,53 @@
 
 
 
-Potree.PointCloudTreeNode = function(){
+Potree.PointCloudTreeNode = class{
 	
-	this.getChildren = function(){
+	constructor(){
+		
+	}
+	
+	getChildren(){
 		throw "override function";
 	};
 	
-	this.getBoundingBox = function(){
+	getBoundingBox(){
 		throw "override function";
 	};
 
-	this.isLoaded = function(){
+	isLoaded(){
 		throw "override function";
 	};
 	
-	this.isGeometryNode = function(){
+	isGeometryNode(){
 		throw "override function";
 	};
 	
-	this.isTreeNode = function(){
+	isTreeNode(){
 		throw "override function";
 	};
 	
-	this.getLevel = function(){
+	getLevel(){
 		throw "override function";
 	};
 
-	this.getBoundingSphere = function(){
+	getBoundingSphere(){
 		throw "override function";
 	};
 	
 };
 
 
-Potree.PointCloudTree = function(){
-	THREE.Object3D.call( this );
+Potree.PointCloudTree = class PointCloudTree extends THREE.Object3D{
 	
-	this.initialized = function(){
+	constructor(){
+		super();
+	}
+	
+	initialized(){
 		return this.root !== null;
 	};
 
 	
 };
-
-Potree.PointCloudTree.prototype = Object.create(THREE.Object3D.prototype);
 

@@ -70,6 +70,12 @@
 		viewer.setWeightClassification(1);
 		viewer.loadSettingsFromURL();
 		
+		viewer.loadGUI(() => {
+			viewer.setLanguage('en');
+			$("#menu_annotations").next().show();
+			viewer.toggleSidebar();
+		});
+		
 		viewer.setDescription("");
 		
 		let sceneSG = new Potree.Scene();
@@ -137,15 +143,7 @@
 			});
 		});
 
-		viewer.loadGUI();
-        viewer.toggleSidebar();
 		
-		$(document).ready( function() {
-			$("#menu_annotations").next().show();
-		});
-		
-        // Define default language: 'de'/'fr'/'en'
-        viewer.setLanguage('en');
 		
 		
 		

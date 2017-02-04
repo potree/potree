@@ -193,6 +193,7 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
 					root.level = 0;
 					root.hasChildren = true;
 					root.numPoints = greyhoundInfo.numPoints;
+					root.spacing = pgg.spacing;
 					pgg.root = root;
 					pgg.root.load();
 					nodes[name] = root;

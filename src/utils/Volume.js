@@ -79,7 +79,7 @@ Potree.Volume = class extends THREE.Object3D{
 			transparent: true, 
 			opacity: 0.3,
 			depthTest: true, 
-			depthWrite: true} );
+			depthWrite: false} );
 		this.box = new THREE.Mesh(boxGeometry, this.material);
 		this.box.geometry.computeBoundingBox();
 		this.boundingBox = this.box.geometry.boundingBox;

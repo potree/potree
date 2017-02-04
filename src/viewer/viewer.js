@@ -411,10 +411,11 @@ Potree.Viewer = class{
 					//this.scene.view.radius = speed * 2.5;
 				}
 				
-				if(e.pointcloud.projection){
-					this.mapView = new Potree.MapView(this);
-					this.mapView.init();
-				}
+				
+				//if(e.pointcloud.projection){
+				//	this.mapView = new Potree.MapView(this);
+				//	this.mapView.init();
+				//}
 				
 			};
 			
@@ -423,8 +424,6 @@ Potree.Viewer = class{
 				this.measuringTool.setScene(e.scene);
 				this.profileTool.setScene(e.scene);
 				this.volumeTool.setScene(e.scene);
-				//this.transformationTool.setScene(this.scene);
-				//this.transformationTool.setSelection([]);
 				this.updateHeightRange();
 				
 				if(!e.scene.hasEventListener("pointcloud_added", onPointcloudAdded)){
@@ -1396,64 +1395,57 @@ Potree.Viewer = class{
 
 	};
 
-	loadGUI(){
+	loadGUI(callback){
 		var sidebarContainer = $('#potree_sidebar_container');
-		sidebarContainer.load(new URL(Potree.scriptPath + "/sidebar.html").href, function(){
+		sidebarContainer.load(new URL(Potree.scriptPath + "/sidebar.html").href, () => {
 			
 			sidebarContainer.css("width", "300px");
-		sidebarContainer.css("height", "100%");
+			sidebarContainer.css("height", "100%");
 
-		var imgMenuToggle = document.createElement("img");
-		imgMenuToggle.src = new URL(Potree.resourcePath + "/icons/menu_button.svg").href;
-		imgMenuToggle.onclick = this.toggleSidebar;
-		imgMenuToggle.classList.add("potree_menu_toggle");
+			var imgMenuToggle = document.createElement("img");
+			imgMenuToggle.src = new URL(Potree.resourcePath + "/icons/menu_button.svg").href;
+			imgMenuToggle.onclick = this.toggleSidebar;
+			imgMenuToggle.classList.add("potree_menu_toggle");
 
-		var imgMapToggle = document.createElement("img");
-		imgMapToggle.src = new URL(Potree.resourcePath + "/icons/map_icon.png").href;
-		imgMapToggle.style.display = "none";
-		imgMapToggle.onclick = this.toggleMap;
-		imgMapToggle.id = "potree_map_toggle";
-		
-		viewer.renderArea.insertBefore(imgMapToggle, viewer.renderArea.children[0]);
-		viewer.renderArea.insertBefore(imgMenuToggle, viewer.renderArea.children[0]);
-		
-		var elProfile = $('<div>').load(new URL(Potree.scriptPath + "/profile.html").href, function(){
-			$('#potree_render_area').append(elProfile.children());
-			this._2dprofile = new Potree.Viewer.Profile(this, document.getElementById("profile_draw_container"));
-		}.bind(this));
-		
-        i18n.init({ 
-            lng: 'en',
-            resGetPath: '../resources/lang/__lng__/__ns__.json',
-            preload: ['en', 'fr', 'de'],
-            getAsync: true,
-            debug: false
-            }, function(t) { 
-            // Start translation once everything is loaded
-            $("body").i18n();
-        });
-		
-		$(function() {
+			var imgMapToggle = document.createElement("img");
+			imgMapToggle.src = new URL(Potree.resourcePath + "/icons/map_icon.png").href;
+			imgMapToggle.style.display = "none";
+			imgMapToggle.onclick = this.toggleMap;
+			imgMapToggle.id = "potree_map_toggle";
 			
-			console.log($('#lblPointBudget')[0]);
+			viewer.renderArea.insertBefore(imgMapToggle, viewer.renderArea.children[0]);
+			viewer.renderArea.insertBefore(imgMenuToggle, viewer.renderArea.children[0]);
 			
-			initAccordion();
-			initAppearance();
-			initToolbar();
-			initNavigation();
-			initMaterials();
-			initClassificationList();
-			initAnnotationDetails();
-			initMeasurementDetails();
-			initSceneList();
-			initSettings()
+			this.mapView = new Potree.MapView(this);
+			this.mapView.init();
 			
-			$('#potree_version_number').html(Potree.version.major + "." + Potree.version.minor + Potree.version.suffix);
-			$('.perfect_scrollbar').perfectScrollbar();
+			i18n.init({ 
+				lng: 'en',
+				resGetPath: '../resources/lang/__lng__/__ns__.json',
+				preload: ['en', 'fr', 'de'],
+				getAsync: true,
+				debug: false
+				}, function(t) { 
+				// Start translation once everything is loaded
+				$("body").i18n();
+			});
+			
+			$(function() {
+				initSidebar();
+				
+				if(callback){
+					callback();
+				}
+			});
+			
+			let elProfile = $('<div>').load(new URL(Potree.scriptPath + "/profile.html").href, () => {
+				$('#potree_render_area').append(elProfile.children());
+				this._2dprofile = new Potree.Viewer.Profile(this, document.getElementById("profile_draw_container"));
+			});
 			
 		});
-			
-		});
+		
+		
 		
 	}
     
@@ -1604,9 +1596,10 @@ Potree.Viewer = class{
 		}
 		
 		if(!this.freeze){
-			var result = Potree.updatePointClouds(this.scene.pointclouds, this.scene.camera, this.renderer);
+			var result = Potree.updatePointClouds(scene.pointclouds, camera, this.renderer);
 			visibleNodes = result.visibleNodes.length;
 			visiblePoints = result.numVisiblePoints;
+			camera.near = result.lowestSpacing * 10.0;
 		}
 		
 		
@@ -1718,6 +1711,9 @@ Potree.Viewer = class{
 		
 		if(this.mapView){
 			this.mapView.update(delta, this.scene.camera);
+			if(this.mapView.sceneProjection){
+				$( "#potree_map_toggle" ).css("display", "block");
+			}
 		}
 
 		TWEEN.update(timestamp);
@@ -2445,6 +2441,9 @@ class EDLRenderer{
 				}
 			}
 		}
+		
+		viewer.volumeTool.update();
+		viewer.renderer.render(viewer.volumeTool.sceneVolume, viewer.scene.camera, this.rtColor);
 			
 		if(viewer.scene.pointclouds.length > 0){
 			
@@ -2475,34 +2474,12 @@ class EDLRenderer{
 			//Potree.endQuery(query, viewer.renderer.getContext());
 			//Potree.resolveQueries(viewer.renderer.getContext());
 			
-			//if(window.endedQuery == null){
-			//	ext.endQueryEXT(ext.TIME_ELAPSED_EXT);
-			//	window.endedQuery = window.timerQuery;
-			//}
-			//
-			//
-			//if(window.endedQuery != null){
-			//	var available = ext.getQueryObjectEXT(window.endedQuery, ext.QUERY_RESULT_AVAILABLE_EXT);
-			//	var disjoint = viewer.renderer.getContext().getParameter(ext.GPU_DISJOINT_EXT);
-			//	
-			//	if (available && !disjoint) {
-			//		// See how much time the rendering of the object took in nanoseconds.
-			//		var timeElapsed = ext.getQueryObjectEXT(window.endedQuery, ext.QUERY_RESULT_EXT);
-			//		var miliseconds = timeElapsed / (1000 * 1000);
-			//	
-			//		console.log(miliseconds + "ms");
-			//	  
-			//		window.endedQuery = null;
-			//		window.timerQuery = null;
-			//	}
-			//}
-
-			
-			viewer.volumeTool.update();
-			viewer.renderer.render(viewer.volumeTool.sceneVolume, viewer.scene.camera);
-			viewer.renderer.render(viewer.controls.sceneControls, viewer.scene.camera);
 			
 			viewer.renderer.clearDepth();
+			//viewer.volumeTool.update();
+			//viewer.renderer.render(viewer.volumeTool.sceneVolume, viewer.scene.camera);
+			viewer.renderer.render(viewer.controls.sceneControls, viewer.scene.camera);
+			
 			
 			viewer.measuringTool.update();
 			viewer.profileTool.update();

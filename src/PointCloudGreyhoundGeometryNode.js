@@ -227,6 +227,7 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.loadHierarchyThenPoints =
 			currentNode.level = level;
 			currentNode.numPoints = numPoints;
 			currentNode.hasChildren = decoded[i].children > 0;
+			currentNode.spacing = pgg.spacing / Math.pow(2, level);
 			parentNode.addChild(currentNode);
 			nodes[name] = currentNode;
 		}

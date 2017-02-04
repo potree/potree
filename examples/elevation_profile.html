@@ -76,64 +76,18 @@
 			let scene = viewer.scene;
 			scene.addPointCloud(e.pointcloud);
 			
-			{ // DISTANCE MEASURE
-				let measure = new Potree.Measure();
-				measure.closed = false;
-				measure.addMarker(new THREE.Vector3(589803.18, 231357.35, 745.38));
-				measure.addMarker(new THREE.Vector3(589795.74, 231323.42, 746.21));		
-				measure.addMarker(new THREE.Vector3(589822.50, 231315.90, 744.45));
+			{ // PROFILE
+				let profile = new Potree.Profile();
+				profile.setWidth(6)
+				profile.addMarker(new THREE.Vector3(589997.02, 231327.75, 755.73));
+				profile.addMarker(new THREE.Vector3(589579.65, 231323.51, 775.78));
+				profile.addMarker(new THREE.Vector3(589500.87, 231356.23, 782.91));
 				
-				scene.addMeasurement(measure);
+				scene.addProfile(profile);
 			}
 			
-			{ // ANGLE MEASURE
-				let measure = new Potree.Measure();
-				measure.closed = true;
-				measure.showAngles = true;
-				measure.showDistances = false;
-				measure.addMarker(new THREE.Vector3(589866.11, 231372.25, 737.41));
-				measure.addMarker(new THREE.Vector3(589842.15, 231366.82, 743.61));		
-				measure.addMarker(new THREE.Vector3(589860.61, 231348.01, 740.33));
-				
-				scene.addMeasurement(measure);
-			}
-			
-			{ // SINGLE POINT MEASURE
-				let measure = new Potree.Measure();
-				measure.showDistances = false;
-				measure.showCoordinates = true;
-				measure.maxMarkers = 1;
-				measure.addMarker(new THREE.Vector3(589853.73, 231300.24, 775.48));
-				
-				scene.addMeasurement(measure);
-			}
-			
-			{ // HEIGHT MEASURE
-				let measure = new Potree.Measure();
-				measure.closed = false;
-				measure.showDistances = false;
-				measure.showHeight = true;
-				measure.addMarker(new THREE.Vector3(589849.69, 231327.26, 766.32));
-				measure.addMarker(new THREE.Vector3(589840.96, 231329.53, 744.52));		
-				
-				scene.addMeasurement(measure);
-			}
-			
-			{ // AREA MEASURE
-				let measure = new Potree.Measure();
-				measure.closed = true;
-				measure.showArea = true;
-				measure.addMarker(new THREE.Vector3(589899.37, 231300.16, 750.25));
-				measure.addMarker(new THREE.Vector3(589874.60, 231326.06, 743.40));
-				measure.addMarker(new THREE.Vector3(589911.61, 231352.57, 743.58));
-				measure.addMarker(new THREE.Vector3(589943.50, 231300.08, 754.62));
-				
-				scene.addMeasurement(measure);
-			}
-			
-			scene.view.position.set(589874.36, 231447.43, 835.03);
-			scene.view.lookAt(new THREE.Vector3(589853.01, 231318.55, 738.91));
-
+			scene.view.position.set(589974.341, 231698.397, 986.146);
+			scene.view.lookAt(new THREE.Vector3(589851.587, 231428.213, 715.634));
 		});
 		
 		viewer.loadGUI(() => {

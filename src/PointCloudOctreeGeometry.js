@@ -204,6 +204,7 @@ Potree.PointCloudOctreeGeometryNode.prototype.loadHierachyThenPoints = function(
 			currentNode.level = level;
 			currentNode.numPoints = numPoints;
 			currentNode.hasChildren = decoded[i].children > 0;
+			currentNode.spacing = pco.spacing / Math.pow(2, level);
 			parentNode.addChild(currentNode);
 			nodes[name] = currentNode;
 		}

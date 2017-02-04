@@ -88,6 +88,7 @@ Potree.POCLoader.load = function load(url, callback) {
 					var root = new Potree.PointCloudOctreeGeometryNode(name, pco, boundingBox);
 					root.level = 0;
 					root.hasChildren = true;
+					root.spacing = pco.spacing;
 					if(version.upTo("1.5")){
 						root.numPoints = fMno.hierarchy[0][1];
 					}else{
@@ -112,6 +113,7 @@ Potree.POCLoader.load = function load(url, callback) {
 						var node = new Potree.PointCloudOctreeGeometryNode(name, pco, boundingBox);
 						node.level = level;
 						node.numPoints = numPoints;
+						node.spacing = pco.spacing / Math.pow(2, level);
 						parentNode.addChild(node);
 						nodes[name] = node;
 					}

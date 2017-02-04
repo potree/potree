@@ -6,7 +6,7 @@ function Potree(){
 }
 Potree.version = {
 	major: 1,
-	minor: 4,
+	minor: 5,
 	suffix: "RC"
 };
 
@@ -204,6 +204,7 @@ function updateVisibilityStructures(pointclouds, camera, renderer){
 
 		pointcloud.numVisibleNodes = 0;
 		pointcloud.numVisiblePoints = 0;
+		pointcloud.deepestVisibleLevel = 0;
 		pointcloud.visibleNodes = [];
 		pointcloud.visibleGeometry = [];
 
@@ -255,6 +256,8 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 	let visibleNodes = [];
 	let visibleGeometry = [];
 	let unloadedGeometry = [];
+	
+	let lowestSpacing = Infinity;
 
 	// calculate object space frustum and cam pos and setup priority queue
 	let s = updateVisibilityStructures(pointclouds, camera, renderer);
@@ -273,13 +276,18 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 		let camObjPos = camObjPositions[element.pointcloud];
 		
 		let insideFrustum = frustum.intersectsBox(box);
+		let maxLevel = pointcloud.maxLevel || Infinity;
+		let level = node.getLevel();
 		let visible = insideFrustum;
 		visible = visible && !(numVisiblePoints + node.getNumPoints() > Potree.pointBudget);
-		let maxLevel = pointcloud.maxLevel || Infinity;
-		visible = visible && node.getLevel() < maxLevel;
-		//if(node.geometryNode){
-		//	visible = node.geometryNode.name === "r" || node.geometryNode.name === "r0";
-		//}
+		visible = visible && level < maxLevel;
+		
+		if(node.spacing){
+			lowestSpacing = Math.min(lowestSpacing, node.spacing);
+		}else if(node.geometryNode && node.geometryNode.spacing){
+			lowestSpacing = Math.min(lowestSpacing, node.geometryNode.spacing);
+		}
+		
 		
 		
 		if(numVisiblePoints + node.getNumPoints() > Potree.pointBudget){
@@ -372,7 +380,11 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 	
 	Potree.updateDEMs(renderer, visibleNodes);
 
-	return {visibleNodes: visibleNodes, numVisiblePoints: numVisiblePoints};
+	return {
+		visibleNodes: visibleNodes, 
+		numVisiblePoints: numVisiblePoints,
+		lowestSpacing: lowestSpacing
+	};
 };
 
 Potree.updateDEMs = function(renderer, visibleNodes){

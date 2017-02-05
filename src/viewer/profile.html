@@ -18,9 +18,11 @@
 				</span>-->
 				<span style="flex-grow: 1;"></span>
 				<span>
+				
 					<a id="potree_download_profile_link" href="#" download="profile.las">
-						<input id="potree_download_profile_button" type="button" data-i18n="[value]profile.save">
+						<input id="potree_download_profile_button" type="button" data-i18n="[value]profile.save_las">
 					</a>
+					
 				</span>
 			</div>
 			
@@ -67,7 +69,7 @@
 <script>
 
 $('#potree_download_profile_button').click(function(){
-	var las = viewer._2dprofile.getLAS();
+	var las = viewer._2dprofile.getPointsInProfileAsLas();
 	var u8view = new Uint8Array(las);
 	
 	var binString = "";

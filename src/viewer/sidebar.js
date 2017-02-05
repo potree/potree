@@ -873,7 +873,7 @@ function initMeasurementDetails(){
 		
 		document.getElementById("measurement_details").appendChild(elLi);
 		
-		var widthListener;
+		let widthListener = null;
 		var updateDisplay = function(event){
 		
 			$(elPanelBody).empty();
@@ -900,11 +900,13 @@ function initMeasurementDetails(){
 					elWidthLabel.html("-");
 				}
 				
-				widthListener = function(event){
-					var val = Math.pow((event.width / 1000), 1/4);
-					elWidthLabel.html(Potree.utils.addCommas(event.width.toFixed(3)));
-					elWidthSlider.slider({value: val});
-				};
+				if(widthListener === null){
+					widthListener = function(event){
+						var val = Math.pow((event.width / 1000), 1/4);
+						elWidthLabel.html(Potree.utils.addCommas(event.width.toFixed(3)));
+						elWidthSlider.slider({value: val});
+					};
+				}
 				if(!measurement.hasEventListener("width_changed", widthListener)){
 					measurement.addEventListener("width_changed", widthListener);
 				}

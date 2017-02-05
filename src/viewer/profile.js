@@ -1,81 +1,628 @@
 
-Potree.Viewer.Profile = function(viewer, element){
-	var scope = this;
+Potree.Viewer.Profile = class ProfileWindow{
+	
+	constructor(viewer, element){
+		this.viewer = viewer;
+		this.enabled = true;
+		this.element = element;
+		this.currentProfile = null;
+		this.requests = [];
+		this.pointsProcessed = 0;
+		this.margin = {top: 0, right: 0, bottom: 20, left: 40};
+		this.maximized = false;
+		this.threshold = 20*1000;
+		
+		$('#closeProfileContainer').click(() => {
+			this.hide();
+			this.enabled = false;
+		});
+		
+		$('#profile_toggle_size_button').click(() => {
+			this.maximized = !this.maximized;
+		
+			if(this.maximized){
+				$('#profile_window').css("height", "100%");
+			}else{
+				$('#profile_window').css("height", "30%");
+			}
+		});
+		
+		this.drawOnChange = (event) => {
+			this.redraw();
+		};
+		
+		//viewer.scene.dispatcher.addEventListener("marker_moved"))
 
-	this.viewer = viewer;
-	this.enabled = true;
-	this.element = element;
-	this.currentProfile = null;
-	this.requests = [];
-	this.pointsProcessed = 0;
-	this.margin = {top: 0, right: 0, bottom: 20, left: 40};
-	this.maximized = false;
-	this.threshold = 20*1000;
+		//viewer.profileTool.addEventListener("marker_moved", drawOnChange);
+		//viewer.profileTool.addEventListener("width_changed", drawOnChange);
+		//viewer.addEventListener("material_changed", function(){
+		//	drawOnChange({profile: this.currentProfile});
+		//});
+		//
+		//viewer.addEventListener("height_range_changed", function(){
+		//	drawOnChange({profile: this.currentProfile});
+		//});
+		
+		let width = document.getElementById('profile_window').clientWidth;
+		let height = document.getElementById('profile_window').clientHeight;
+		let resizeLoop = () => {
+			requestAnimationFrame(resizeLoop);
 
-	$('#closeProfileContainer').click(function(){
-		scope.hide();
-		scope.enabled = false;
-	});
+			let newWidth = document.getElementById('profile_window').clientWidth;
+			let newHeight = document.getElementById('profile_window').clientHeight;
+
+			if(newWidth !== width || newHeight !== height){
+				setTimeout(this.drawOnChange, 50, {profile: this.currentProfile});
+			}
+
+			width = newWidth;
+			height = newHeight;
+		};
+		requestAnimationFrame(resizeLoop);
+	}
 	
-	$('#profile_toggle_size_button').click(function(){
-		scope.maximized = !scope.maximized;
-	
-		if(scope.maximized){
-			$('#profile_window').css("height", "100%");
-		}else{
-			$('#profile_window').css("height", "30%");
-		}
-	});
-	
-	this.show = function(){
+	show(){
 		$('#profile_window').fadeIn();
-		scope.enabled = true;
+		this.enabled = true;
 	};
 	
-	this.hide = function(){
+	hide(){
 		$('#profile_window').fadeOut();
 	};
 	
-	this.cancel = function(){
-		for(var i = 0; i < scope.requests.length; i++){
-			scope.requests[i].cancel();
+	cancel(){
+		for(let request of this.requests){
+			request.cancel();
 		}
 		
-		scope.requests = [];
+		this.requests = [];
 	};
 	
-	this.getLAS = function(){
-		var points = scope.points;
-		var boundingBox = new THREE.Box3();
-		
-		for(var i = 0; i < points.length; i++){
-			var point = points[i];
-			var position = new THREE.Vector3(point.x, point.y, point.z);
-			
-			boundingBox.expandByPoint(position);
+	preparePoints(profileProgress){
+	
+		let segments = profileProgress.segments;
+		if (segments.length === 0){
+			return false;
 		}
-		var offset = boundingBox.min.clone();
-		var diagonal = boundingBox.min.distanceTo(boundingBox.max);
-		var scale = new THREE.Vector3(0.01, 0.01, 0.01);
+		
+		let data = [];
+		let distance = 0;
+		let totalDistance = 0;
+		let min = new THREE.Vector3(Math.max());
+		let max = new THREE.Vector3(0);
+
+		// Get the same color map as Three
+		let hr = this.viewer.getHeightRange();
+		
+		let heightRange = hr.max - hr.min;
+		let colorRange = [];
+		let colorDomain = [];
+		
+		// Read the altitude gradient used in 3D scene
+		let gradient = viewer.scene.pointclouds[0].material.gradient;
+		for (let c = 0; c < gradient.length; c++){
+			colorDomain.push(hr.min + heightRange * gradient[c][0]);
+			colorRange.push('#' + gradient[c][1].getHexString());
+		}
+		
+		// Altitude color map scale
+		let colorRamp = d3.scale.linear()
+		  .domain(colorDomain)
+		  .range(colorRange)
+		  .clamp(true);
+		  
+		// Iterate the profile's segments
+		for(let segment of segments){
+			let sv = new THREE.Vector3().subVectors(segment.end, segment.start).setZ(0)
+			let segmentLength = sv.length();
+			let points = segment.points;
+
+			// Iterate the segments' points
+			for(let j = 0; j < points.numPoints; j++){
+				let p = points.position[j];
+				let pl = new THREE.Vector3().subVectors(p, segment.start).setZ(0);
+				
+				min.min(p);
+				max.max(p);
+				
+				let distance = totalDistance + pl.length();
+				
+				let d = {
+					distance: distance,
+					x: p.x,
+					y: p.y,
+					z: p.z,
+					altitude: p.z,
+					heightColor: colorRamp(p.z),
+					color: points.color ? points.color[j] : [0, 0, 0],
+					intensity: points.intensity ? points.intensity[j] : 0,
+					classification: points.classification ? points.classification[j] : 0,
+					returnNumber: points.returnNumber ? points.returnNumber[j] : 0,
+					numberOfReturns: points.numberOfReturns ? points.numberOfReturns[j] : 0,
+					pointSourceID: points.pointSourceID ? points.pointSourceID[j] : 0,
+				};
+				
+				data.push(d);
+			}
+
+			// Increment distance from the profile start point
+			totalDistance += segmentLength;
+		}
+
+		let output = {
+			'data': data,
+			'minX': min.x,
+			'minY': min.y,
+			'minZ': min.z,
+			'maxX': max.x,
+			'maxY': max.y,
+			'maxZ': max.z
+		};
+
+		return output;
+	};
+	
+	pointHighlight(coordinates){
+    
+		let pointSize = 6;
+		
+		let svg = d3.select("svg#profileSVG");
+		
+		// Find the hovered point if applicable
+		let d = this.points;
+		let sx = this.scaleX;
+		let sy = this.scaleY;
+		let xs = coordinates[0];
+		let ys = coordinates[1];
+		
+		// Fix FF vs Chrome discrepancy
+		//if(navigator.userAgent.indexOf("Firefox") == -1 ) {
+		//	xs = xs - this.margin.left;
+		//	ys = ys - this.margin.top;
+		//}
+		let hP = [];
+		let tol = pointSize;
+
+		for (let i=0; i < d.length; i++){
+			if(sx(d[i].distance) < xs + tol && sx(d[i].distance) > xs - tol && sy(d[i].altitude) < ys + tol && sy(d[i].altitude) > ys -tol){
+				hP.push(d[i]); 
+			}
+		}
+
+		if(hP.length > 0){
+			let p = hP[0];
+			this.hoveredPoint = hP[0];
+			let cx, cy;
+			if(navigator.userAgent.indexOf("Firefox") == -1 ) {
+				cx = this.scaleX(p.distance) + this.margin.left;
+				cy = this.scaleY(p.altitude) + this.margin.top;
+			} else {
+				cx = this.scaleX(p.distance);
+				cy = this.scaleY(p.altitude);
+			}
+			
+			//cx -= pointSize / 2;
+			cy -= pointSize / 2;
+			
+			//let svg = d3.select("svg#profileSVG");
+			d3.selectAll("rect").remove();
+			let rectangle = svg.append("rect")
+				.attr("x", cx)
+				.attr("y", cy)
+				.attr("id", p.id)
+				.attr("width", pointSize)
+				.attr("height", pointSize)
+				.style("fill", 'yellow');
+				
+				
+			let marker = $("#profile_selection_marker");
+			marker.css("display", "initial");
+			marker.css("left", cx + "px");
+			marker.css("top", cy + "px");
+			marker.css("width", pointSize + "px");
+			marker.css("height", pointSize + "px");
+			marker.css("background-color", "yellow");
+
+			//let html = 'x: ' + Math.round(10 * p.x) / 10 + ' y: ' + Math.round(10 * p.y) / 10 + ' z: ' + Math.round( 10 * p.altitude) / 10 + '  -  ';
+			//html += i18n.t('tools.classification') + ': ' + p.classificationCode + '  -  ';
+			//html += i18n.t('tools.intensity') + ': ' + p.intensityCode;
+			
+			let html = 'x: ' + Math.round(10 * p.x) / 10 + ' y: ' + Math.round(10 * p.y) / 10 + ' z: ' + Math.round( 10 * p.altitude) / 10 + '  -  ';
+			html += "offset: " + p.distance.toFixed(3) + '  -  ';
+			html += "Classification: " + p.classification + '  -  ';
+			html += "Intensity: " + p.intensity;
+			
+			$('#profileInfo').css('color', 'yellow');
+			$('#profileInfo').html(html);
+
+		} else {
+			d3.selectAll("rect").remove();
+			$('#profileInfo').html("");
+			
+			let marker = $("#profile_selection_marker");
+			marker.css("display", "none");
+		}
+	};
+	
+	strokeColor(d){
+		let material = this.viewer.getMaterial();
+		if (material === Potree.PointColorType.RGB) {
+			//return d.color;
+			return 'rgb(' + (d.color[0] * 100 / 255) + '%,' + (d.color[1] * 100 / 255) + '%,' + (d.color[2] * 100 / 255) + '%)';
+		} else if (material === Potree.PointColorType.INTENSITY) {
+			//return d.intensity;
+			return 'rgb(' + d.intensity + '%,' + d.intensity + '%,' + d.intensity + '%)';
+		} else if (material === Potree.PointColorType.CLASSIFICATION) {
+			let classif = this.viewer.scene.pointclouds[0].material.classification;
+			if (typeof classif[d.classification] != 'undefined'){
+				let color = 'rgb(' + classif[d.classification].x * 100 + '%,';
+				color += classif[d.classification].y * 100 + '%,';
+				color += classif[d.classification].z * 100 + '%)';
+				return color;
+			} else {
+				return 'rgb(255,255,255)';
+			}
+		} else if (material === Potree.PointColorType.HEIGHT) {
+			return d.heightColor;
+		} else if (material === Potree.PointColorType.RETURN_NUMBER) {
+			
+			if(d.numberOfReturns === 1){
+					return 'rgb(255, 255, 0)';
+			}else{
+				if(d.returnNumber === 1){
+					return 'rgb(255, 0, 0)';
+				}else if(d.returnNumber === d.numberOfReturns){
+					return 'rgb(0, 0, 255)';
+				}else{
+					return 'rgb(0, 255, 0)';
+				}
+			}
+			
+			return d.heightColor;
+		} else {
+			return d.color;
+		}
+	}
+	
+	redraw(){
+		this.draw(this.currentProfile);
+	}
+
+	draw(profile){
+		// TODO are the used closures safe for garbage collection?
+		
+		if(!this.enabled){
+			return;
+		}
+		
+		if(!profile){
+			return;
+		}
+		
+		if(this.viewer.scene.pointclouds.length === 0){
+			return;
+		}
+
+		if(this.context){
+			let containerWidth = this.element.clientWidth;
+			let containerHeight = this.element.clientHeight;
+			
+			let width = containerWidth - (this.margin.left + this.margin.right);
+			let height = containerHeight - (this.margin.top + this.margin.bottom);
+			this.context.clearRect(0, 0, width, height);
+		}
+		
+		if(this.currentProfile){
+			this.currentProfile.removeEventListener("marker_moved", this.drawOnChange);
+			this.currentProfile.removeEventListener("marker_added", this.drawOnChange);
+			this.currentProfile.removeEventListener("marker_removed", this.drawOnChange);
+			this.currentProfile.removeEventListener("width_changed", this.drawOnChange);
+			viewer.dispatcher.removeEventListener("material_changed", this.drawOnChange);
+			//viewer.addEventListener("material_changed", function(){
+			//	drawOnChange({profile: this.currentProfile});
+			//});
+			
+			
+			//viewer.profileTool.addEventListener("marker_moved", drawOnChange);
+			//viewer.profileTool.addEventListener("width_changed", drawOnChange);
+			//viewer.addEventListener("material_changed", function(){
+			//	drawOnChange({profile: this.currentProfile});
+			//});
+            //
+			//viewer.addEventListener("height_range_changed", function(){
+			//	drawOnChange({profile: this.currentProfile});
+			//});
+		}
+		
+		
+		this.currentProfile = profile;
+		
+		{
+			this.currentProfile.addEventListener("marker_moved", this.drawOnChange);
+			this.currentProfile.addEventListener("marker_added", this.drawOnChange);
+			this.currentProfile.addEventListener("marker_removed", this.drawOnChange);
+			this.currentProfile.addEventListener("width_changed", this.drawOnChange);
+			viewer.dispatcher.addEventListener("material_changed", this.drawOnChange);
+		}
+
+		if(!this.__drawData){
+			this.__drawData = {};
+		}
+		this.points = [];
+		this.rangeX = [Infinity, -Infinity];
+		this.rangeY = [Infinity, -Infinity];
+		
+		this.pointsProcessed = 0;
+		
+		for(let request of this.requests){
+			request.cancel();
+		}
+		this.requests = [];
+		
+		let drawPoints = (points, rangeX, rangeY) => {
+		
+			let mileage = 0;
+			for(let i = 0; i < profile.points.length; i++){
+				let point = profile.points[i];
+				
+				if(i > 0){
+					let previous = profile.points[i-1];
+					let dx = point.x - previous.x;
+					let dy = point.y - previous.y;
+					let distance = Math.sqrt(dx * dx + dy * dy);
+					mileage += distance;
+				}
+				
+				let radius = 4;
+				
+				let cx = this.scaleX(mileage);
+				let cy = this.context.canvas.clientHeight;
+				
+				this.context.beginPath();
+				this.context.arc(cx, cy, radius, 0, 2 * Math.PI, false);
+				this.context.fillStyle = '#a22';
+				this.context.fill();
+			};
+		
+		
+			let pointSize = 2;
+			let i = -1, n = points.length, d, cx, cy;
+			while (++i < n) {
+				d = points[i];
+				cx = this.scaleX(d.distance);
+				cy = this.scaleY(d.altitude);
+				this.context.beginPath();
+				this.context.moveTo(cx, cy);
+				this.context.fillStyle = this.strokeColor(d);
+				this.context.fillRect(cx, cy, pointSize, pointSize);
+			}
+		};
+		
+		let projectedBoundingBox = null;
+		
+		let setupAndDraw = () => {
+			let containerWidth = this.element.clientWidth;
+			let containerHeight = this.element.clientHeight;
+			
+			let width = containerWidth - (this.margin.left + this.margin.right);
+			let height = containerHeight - (this.margin.top + this.margin.bottom);
+			
+			this.scaleX = d3.scale.linear();
+			this.scaleY = d3.scale.linear();
+			
+			let domainProfileWidth = this.rangeX[1] - this.rangeX[0];
+			let domainProfileHeight = this.rangeY[1] - this.rangeY[0];
+			let domainRatio = domainProfileWidth / domainProfileHeight;
+			let rangeProfileWidth = width;
+			let rangeProfileHeight = height;
+			let rangeRatio = rangeProfileWidth / rangeProfileHeight;
+			
+			if(domainRatio < rangeRatio){
+				// canvas scale
+				let targetWidth = domainProfileWidth * (rangeProfileHeight / domainProfileHeight);
+				this.scaleY.range([height, 0]);
+				this.scaleX.range([width / 2 - targetWidth / 2, width / 2 + targetWidth / 2]);
+				
+				// axis scale
+				let domainScale = rangeRatio / domainRatio;
+				let domainScaledWidth = domainProfileWidth * domainScale;
+				this.axisScaleX = d3.scale.linear()
+					.domain([
+						domainProfileWidth / 2 - domainScaledWidth / 2 , 
+						domainProfileWidth / 2 + domainScaledWidth / 2 ])
+					.range([0, width]);
+				this.axisScaleY = d3.scale.linear()
+					.domain(this.rangeY)
+					.range([height, 0]);
+			}else{
+				// canvas scale
+				let targetHeight = domainProfileHeight* (rangeProfileWidth / domainProfileWidth);
+				this.scaleX.range([0, width]);
+				this.scaleY.range([height / 2 + targetHeight / 2, height / 2 - targetHeight / 2]);
+				
+				// axis scale
+				let domainScale =  domainRatio / rangeRatio;
+				let domainScaledHeight = domainProfileHeight * domainScale;
+				let domainHeightCentroid = (this.rangeY[1] + this.rangeY[0]) / 2;
+				this.axisScaleX = d3.scale.linear()
+					.domain(this.rangeX)
+					.range([0, width]);
+				this.axisScaleY = d3.scale.linear()
+					.domain([
+						domainHeightCentroid - domainScaledHeight / 2 , 
+						domainHeightCentroid + domainScaledHeight / 2 ])
+					.range([height, 0]);
+			}
+			this.scaleX.domain(this.rangeX);
+			this.scaleY.domain(this.rangeY);
+			
+			
+
+			this.axisZoom = d3.behavior.zoom()
+				.x(this.axisScaleX)
+				.y(this.axisScaleY)
+				.scaleExtent([0,128])
+				.size([width, height]);
+				
+			this.zoom = d3.behavior.zoom()
+			.x(this.scaleX)
+			.y(this.scaleY)
+			.scaleExtent([0,128])
+			.size([width, height])
+			.on("zoom",  () => {
+				this.axisZoom.translate(this.zoom.translate());
+				this.axisZoom.scale(this.zoom.scale());
+					
+				let svg = d3.select("svg#profileSVG");
+				svg.select(".x.axis").call(xAxis);
+				svg.select(".y.axis").call(yAxis);
+
+				this.context.clearRect(0, 0, width, height);
+				drawPoints(this.points, this.rangeX, this.rangeY);
+			});
+			
+			this.context = d3.select("#profileCanvas")
+				.attr("width", width)
+				.attr("height", height)
+				.call(this.zoom)
+				.node().getContext("2d");
+			
+			d3.select("svg#profileSVG").selectAll("*").remove();
+			
+			let svg = d3.select("svg#profileSVG")
+				.call(this.zoom)
+				.attr("width", (width + this.margin.left + this.margin.right).toString())
+				.attr("height", (height + this.margin.top + this.margin.bottom).toString())
+				.attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")");
+			
+			let scope = this;
+			d3.select("#profileCanvas").on("mousemove", function(){
+				let coord = d3.mouse(this);
+				scope.pointHighlight(coord);
+			});
+			
+			// Create x axis
+			let xAxis = d3.svg.axis()
+				.scale(this.axisScaleX)
+				.innerTickSize(-height)
+				.outerTickSize(5)
+				.orient("bottom")
+				.ticks(10, "m");
+
+			// Create y axis
+			let yAxis = d3.svg.axis()
+				.scale(this.axisScaleY)
+				.innerTickSize(-width)
+				.outerTickSize(5)
+				.orient("left")
+				.ticks(10, "m");
+				
+			// Append axis to the chart
+			let gx = svg.append("g")
+				.attr("class", "x axis")
+				.call(xAxis);
+
+			svg.append("g")
+				.attr("class", "y axis")
+				.call(yAxis);
+				
+			if(navigator.userAgent.indexOf("Firefox") == -1 ) {
+				svg.select(".y.axis").attr("transform", "translate("+ (this.margin.left).toString() + "," + this.margin.top.toString() + ")");
+				svg.select(".x.axis").attr("transform", "translate(" + this.margin.left.toString() + "," + (height + this.margin.top).toString() + ")");
+			} else {
+				svg.select(".x.axis").attr("transform", "translate( 0 ," + height.toString() + ")");
+			}
+			
+			drawPoints(this.points, this.rangeX, this.rangeY);
+			
+			document.getElementById("profile_num_points").innerHTML = Potree.utils.addCommas(this.pointsProcessed) + " ";
+		};
+		
+		
+		for(let pointcloud of this.viewer.scene.pointclouds.filter(p => p.visible)){
+			
+			let request = pointcloud.getPointsInProfile(profile, null, {
+				"onProgress": (event) => {
+					if(!this.enabled){
+						return;
+					}
+					
+					if(!projectedBoundingBox){
+						projectedBoundingBox = event.points.projectedBoundingBox;
+					}else{
+						projectedBoundingBox.union(event.points.projectedBoundingBox);
+					}
+					
+					let result = this.preparePoints(event.points);
+					let points = result.data;
+					this.points = this.points.concat(points);
+					
+					let batchRangeX = [d3.min(points, function(d) { return d.distance; }), d3.max(points, function(d) { return d.distance; })];
+					let batchRangeY = [d3.min(points, function(d) { return d.altitude; }), d3.max(points, function(d) { return d.altitude; })];
+					
+					this.rangeX = [ Math.min(this.rangeX[0], batchRangeX[0]), Math.max(this.rangeX[1], batchRangeX[1]) ];
+					this.rangeY = [ Math.min(this.rangeY[0], batchRangeY[0]), Math.max(this.rangeY[1], batchRangeY[1]) ];
+					
+					this.pointsProcessed += result.data.length;
+					
+					setupAndDraw();
+					
+					if(this.pointsProcessed > this.threshold){
+						this.cancel();
+					}
+				},
+				"onFinish": (event) => {
+					if(!this.enabled){
+						return;
+					}
+				},
+				"onCancel": () => {
+					if(!this.enabled){
+						return;
+					}
+				}
+			});	
+			
+			this.requests.push(request);
+		}
+	}
+	
+	setThreshold(value){
+		this.threshold = value;
+		
+		this.redraw();
+	}
+	
+	getPointsInProfileAsLas(){
+		let points = this.points;
+		let boundingBox = new THREE.Box3();
+		
+		for(let point of points){
+			boundingBox.expandByPoint(point);
+		}
+		
+		let offset = boundingBox.min.clone();
+		let diagonal = boundingBox.min.distanceTo(boundingBox.max);
+		let scale = new THREE.Vector3(0.01, 0.01, 0.01);
 		if(diagonal > 100*1000){
 			scale = new THREE.Vector3(0.01, 0.01, 0.01);
 		}else{
 			scale = new THREE.Vector3(0.001, 0.001, 0.001);
 		}
 		
-		var setString = function(string, offset, buffer){
-			var view = new Uint8Array(buffer);
+		let setString = function(string, offset, buffer){
+			let view = new Uint8Array(buffer);
 			
-			for(var i = 0; i < string.length; i++){
-				var charCode = string.charCodeAt(i);
+			for(let i = 0; i < string.length; i++){
+				let charCode = string.charCodeAt(i);
 				view[offset + i] = charCode;
 			}
 		}
 		
-		var buffer = new ArrayBuffer(227 + 28 * points.length);
-		var view = new DataView(buffer);
-		var u8View = new Uint8Array(buffer);
-		//var u16View = new Uint16Array(buffer);
+		let buffer = new ArrayBuffer(227 + 28 * points.length);
+		let view = new DataView(buffer);
+		let u8View = new Uint8Array(buffer);
+		//let u16View = new Uint16Array(buffer);
 		
 		setString("LASF", 0, buffer);
 		u8View[24] = 1;
@@ -95,7 +642,7 @@ Potree.Viewer.Profile = function(viewer, element){
 		// offset to point data o:96 l:4
 		view.setUint32(96, 227, true);
 		
-		// number of variable length records o:100 l:4
+		// number of letiable length records o:100 l:4
 		
 		// point data record format 104 1
 		u8View[104] = 2;
@@ -126,21 +673,21 @@ Potree.Viewer.Profile = function(viewer, element){
 		// z offset 171 8
 		view.setFloat64(171, offset.z, true);
 		
-		var boffset = 227;
-		for(var i = 0; i < points.length; i++){
-			var point = points[i];
-			var position = new THREE.Vector3(point.x, point.y, point.z);
+		let boffset = 227;
+		for(let i = 0; i < points.length; i++){
+			let point = points[i];
+			let position = new THREE.Vector3(point.x, point.y, point.z);
 			
-			var ux = parseInt((position.x - offset.x) / scale.x);
-			var uy = parseInt((position.y - offset.y) / scale.y);
-			var uz = parseInt((position.z - offset.z) / scale.z);
+			let ux = parseInt((position.x - offset.x) / scale.x);
+			let uy = parseInt((position.y - offset.y) / scale.y);
+			let uz = parseInt((position.z - offset.z) / scale.z);
 			
 			view.setUint32(boffset + 0, ux, true);
 			view.setUint32(boffset + 4, uy, true);
 			view.setUint32(boffset + 8, uz, true);
 			
 			view.setUint16(boffset + 12, (point.intensity), true);
-			var rt = point.returnNumber;
+			let rt = point.returnNumber;
 			rt += (point.numberOfReturns << 3);
 			view.setUint8(boffset + 14, rt);
 			
@@ -176,573 +723,6 @@ Potree.Viewer.Profile = function(viewer, element){
 		view.setFloat64(219, boundingBox.min.z, true);
 		
 		return buffer;
-	};
-	
-	this.preparePoints = function(profileProgress){
-	
-		var segments = profileProgress.segments;
-		if (segments.length === 0){
-			return false;
-		}
-		
-		var data = [];
-		var distance = 0;
-		var totalDistance = 0;
-		let min = new THREE.Vector3(Math.max());
-		let max = new THREE.Vector3(0);
-
-		// Get the same color map as Three
-		var hr = scope.viewer.getHeightRange();
-		
-		var heightRange = hr.max - hr.min;
-		var colorRange = [];
-		var colorDomain = [];
-		
-		// Read the altitude gradient used in 3D scene
-		var gradient = viewer.scene.pointclouds[0].material.gradient;
-		for (var c = 0; c < gradient.length; c++){
-			colorDomain.push(hr.min + heightRange * gradient[c][0]);
-			colorRange.push('#' + gradient[c][1].getHexString());
-		}
-		
-		// Altitude color map scale
-		var colorRamp = d3.scale.linear()
-		  .domain(colorDomain)
-		  .range(colorRange)
-		  .clamp(true);
-		  
-		// Iterate the profile's segments
-		for(var i = 0; i < segments.length; i++){
-			var segment = segments[i];
-			var sv = new THREE.Vector3().subVectors(segment.end, segment.start).setZ(0)
-			var segmentLength = sv.length();
-			var points = segment.points;
-
-			// Iterate the segments' points
-			for(var j = 0; j < points.numPoints; j++){
-				var p = points.position[j];
-				var pl = new THREE.Vector3().subVectors(p, segment.start).setZ(0);
-				
-				min.min(p);
-				max.max(p);
-				
-				let distance = totalDistance + pl.length();
-				
-				var d = {
-					distance: distance,
-					x: p.x,
-					y: p.y,
-					z: p.z,
-					altitude: p.z,
-					heightColor: colorRamp(p.z),
-					color: points.color ? points.color[j] : [0, 0, 0],
-					intensity: points.intensity ? points.intensity[j] : 0,
-					classification: points.classification ? points.classification[j] : 0,
-					returnNumber: points.returnNumber ? points.returnNumber[j] : 0,
-					numberOfReturns: points.numberOfReturns ? points.numberOfReturns[j] : 0,
-					pointSourceID: points.pointSourceID ? points.pointSourceID[j] : 0,
-				};
-				
-				data.push(d);
-			}
-
-			// Increment distance from the profile start point
-			totalDistance += segmentLength;
-		}
-
-		var output = {
-			'data': data,
-			'minX': min.x,
-			'minY': min.y,
-			'minZ': min.z,
-			'maxX': max.x,
-			'maxY': max.y,
-			'maxZ': max.z
-		};
-
-		return output;
-	};
-	
-	this.pointHighlight = function(event){
-    
-		var pointSize = 6;
-		
-		// Find the hovered point if applicable
-		var d = scope.points;
-		var sx = scope.scaleX;
-		var sy = scope.scaleY;
-		var coordinates = [0, 0];
-		coordinates = d3.mouse(this);
-		var xs = coordinates[0];
-		var ys = coordinates[1];
-		
-		// Fix FF vs Chrome discrepancy
-		//if(navigator.userAgent.indexOf("Firefox") == -1 ) {
-		//	xs = xs - scope.margin.left;
-		//	ys = ys - scope.margin.top;
-		//}
-		var hP = [];
-		var tol = pointSize;
-
-		for (var i=0; i < d.length; i++){
-			if(sx(d[i].distance) < xs + tol && sx(d[i].distance) > xs - tol && sy(d[i].altitude) < ys + tol && sy(d[i].altitude) > ys -tol){
-				hP.push(d[i]); 
-			}
-		}
-
-		if(hP.length > 0){
-			var p = hP[0];
-			this.hoveredPoint = hP[0];
-			if(navigator.userAgent.indexOf("Firefox") == -1 ) {
-				cx = scope.scaleX(p.distance) + scope.margin.left;
-				cy = scope.scaleY(p.altitude) + scope.margin.top;
-			} else {
-				cx = scope.scaleX(p.distance);
-				cy = scope.scaleY(p.altitude);
-			}
-			
-			//cx -= pointSize / 2;
-			cy -= pointSize / 2;
-			
-			var svg = d3.select("svg");
-			d3.selectAll("rect").remove();
-			var rectangle = svg.append("rect")
-				.attr("x", cx)
-				.attr("y", cy)
-				.attr("id", p.id)
-				.attr("width", pointSize)
-				.attr("height", pointSize)
-				.style("fill", 'yellow');
-				
-				
-			var marker = $("#profile_selection_marker");
-			marker.css("display", "initial");
-			marker.css("left", cx + "px");
-			marker.css("top", cy + "px");
-			marker.css("width", pointSize + "px");
-			marker.css("height", pointSize + "px");
-			marker.css("background-color", "yellow");
-
-			//var html = 'x: ' + Math.round(10 * p.x) / 10 + ' y: ' + Math.round(10 * p.y) / 10 + ' z: ' + Math.round( 10 * p.altitude) / 10 + '  -  ';
-			//html += i18n.t('tools.classification') + ': ' + p.classificationCode + '  -  ';
-			//html += i18n.t('tools.intensity') + ': ' + p.intensityCode;
-			
-			var html = 'x: ' + Math.round(10 * p.x) / 10 + ' y: ' + Math.round(10 * p.y) / 10 + ' z: ' + Math.round( 10 * p.altitude) / 10 + '  -  ';
-			html += "offset: " + p.distance.toFixed(3) + '  -  ';
-			html += "Classification: " + p.classification + '  -  ';
-			html += "Intensity: " + p.intensity;
-			
-			$('#profileInfo').css('color', 'yellow');
-			$('#profileInfo').html(html);
-
-		} else {
-			d3.selectAll("rect").remove();
-			$('#profileInfo').html("");
-			
-			var marker = $("#profile_selection_marker");
-			marker.css("display", "none");
-		}
-	};
-	
-	this.strokeColor = function (d) {
-		var material = scope.viewer.getMaterial();
-		if (material === Potree.PointColorType.RGB) {
-			//return d.color;
-			return 'rgb(' + (d.color[0] * 100 / 255) + '%,' + (d.color[1] * 100 / 255) + '%,' + (d.color[2] * 100 / 255) + '%)';
-		} else if (material === Potree.PointColorType.INTENSITY) {
-			//return d.intensity;
-			return 'rgb(' + d.intensity + '%,' + d.intensity + '%,' + d.intensity + '%)';
-		} else if (material === Potree.PointColorType.CLASSIFICATION) {
-			var classif = scope.viewer.scene.pointclouds[0].material.classification;
-			if (typeof classif[d.classification] != 'undefined'){
-				var color = 'rgb(' + classif[d.classification].x * 100 + '%,';
-				color += classif[d.classification].y * 100 + '%,';
-				color += classif[d.classification].z * 100 + '%)';
-				return color;
-			} else {
-				return 'rgb(255,255,255)';
-			}
-		} else if (material === Potree.PointColorType.HEIGHT) {
-			return d.heightColor;
-		} else if (material === Potree.PointColorType.RETURN_NUMBER) {
-			
-			if(d.numberOfReturns === 1){
-					return 'rgb(255, 255, 0)';
-			}else{
-				if(d.returnNumber === 1){
-					return 'rgb(255, 0, 0)';
-				}else if(d.returnNumber === d.numberOfReturns){
-					return 'rgb(0, 0, 255)';
-				}else{
-					return 'rgb(0, 255, 0)';
-				}
-			}
-			
-			return d.heightColor;
-		} else {
-			return d.color;
-		}
-	};
-	
-	this.redraw = function(){
-		scope.draw(scope.currentProfile);
-	};
-
-	this.draw = function(profile){
-		// TODO are the used closures safe for garbage collection?
-		
-		if(!scope.enabled){
-			return;
-		}
-		if(profile){
-			//if(profile.points.length < 2){
-			//	return;
-			//}
-		}else{
-			return;
-		}
-		if(scope.viewer.scene.pointclouds.length === 0){
-			return;
-		}
-
-		if(scope.context){
-			let containerWidth = scope.element.clientWidth;
-			let containerHeight = scope.element.clientHeight;
-			
-			let width = containerWidth - (scope.margin.left + scope.margin.right);
-			let height = containerHeight - (scope.margin.top + scope.margin.bottom);
-			scope.context.clearRect(0, 0, width, height);
-		}
-		
-		if(scope.currentProfile){
-			scope.currentProfile.removeEventListener("marker_moved", drawOnChange);
-			scope.currentProfile.removeEventListener("width_changed", drawOnChange);
-			viewer.dispatcher.removeEventListener("material_changed", drawOnChange);
-			//viewer.addEventListener("material_changed", function(){
-			//	drawOnChange({profile: scope.currentProfile});
-			//});
-			
-			
-			//viewer.profileTool.addEventListener("marker_moved", drawOnChange);
-			//viewer.profileTool.addEventListener("width_changed", drawOnChange);
-			//viewer.addEventListener("material_changed", function(){
-			//	drawOnChange({profile: scope.currentProfile});
-			//});
-            //
-			//viewer.addEventListener("height_range_changed", function(){
-			//	drawOnChange({profile: scope.currentProfile});
-			//});
-		}
-		
-		
-		scope.currentProfile = profile;
-		
-		{
-			scope.currentProfile.addEventListener("marker_moved", drawOnChange);
-			scope.currentProfile.addEventListener("width_changed", drawOnChange);
-			viewer.dispatcher.addEventListener("material_changed", drawOnChange);
-		}
-
-		if(!scope.__drawData){
-			scope.__drawData = {};
-		}
-		scope.points = [];
-		scope.rangeX = [Infinity, -Infinity];
-		scope.rangeY = [Infinity, -Infinity];
-		
-		scope.pointsProcessed = 0;
-		
-		for(var i = 0; i < scope.requests.length; i++){
-			scope.requests[i].cancel();
-		}
-		scope.requests = [];
-		
-		var drawPoints = function(points, rangeX, rangeY) {
-		
-		
-			var mileage = 0;
-			for(var i = 0; i < profile.points.length; i++){
-				var point = profile.points[i];
-				
-				if(i > 0){
-					var previous = profile.points[i-1];
-					var dx = point.x - previous.x;
-					var dy = point.y - previous.y;
-					var distance = Math.sqrt(dx * dx + dy * dy);
-					mileage += distance;
-				}
-				
-				var radius = 4;
-				
-				var cx = scope.scaleX(mileage);
-				var cy = scope.context.canvas.clientHeight;
-				
-				scope.context.beginPath();
-				scope.context.arc(cx, cy, radius, 0, 2 * Math.PI, false);
-				scope.context.fillStyle = '#a22';
-				scope.context.fill();
-			};
-		
-		
-			var pointSize = 2;
-			var i = -1, n = points.length, d, cx, cy;
-			while (++i < n) {
-				d = points[i];
-				cx = scope.scaleX(d.distance);
-				cy = scope.scaleY(d.altitude);
-				scope.context.beginPath();
-				scope.context.moveTo(cx, cy);
-				scope.context.fillStyle = scope.strokeColor(d);
-				scope.context.fillRect(cx, cy, pointSize, pointSize);
-				//context.fillStyle = pv.profile.strokeColor(d);
-			}
-		};
-		
-		var projectedBoundingBox = null;
-		
-		var setupAndDraw = function(){
-			var containerWidth = scope.element.clientWidth;
-			var containerHeight = scope.element.clientHeight;
-			
-			var width = containerWidth - (scope.margin.left + scope.margin.right);
-			var height = containerHeight - (scope.margin.top + scope.margin.bottom);
-			
-			scope.scaleX = d3.scale.linear();
-			scope.scaleY = d3.scale.linear();
-			
-			var domainProfileWidth = scope.rangeX[1] - scope.rangeX[0];
-			var domainProfileHeight = scope.rangeY[1] - scope.rangeY[0];
-			var domainRatio = domainProfileWidth / domainProfileHeight;
-			var rangeProfileWidth = width;
-			var rangeProfileHeight = height;
-			var rangeRatio = rangeProfileWidth / rangeProfileHeight;
-			
-			if(domainRatio < rangeRatio){
-				// canvas scale
-				var targetWidth = domainProfileWidth * (rangeProfileHeight / domainProfileHeight);
-				scope.scaleY.range([height, 0]);
-				scope.scaleX.range([width / 2 - targetWidth / 2, width / 2 + targetWidth / 2]);
-				
-				// axis scale
-				var domainScale = rangeRatio / domainRatio;
-				var domainScaledWidth = domainProfileWidth * domainScale;
-				scope.axisScaleX = d3.scale.linear()
-					.domain([
-						domainProfileWidth / 2 - domainScaledWidth / 2 , 
-						domainProfileWidth / 2 + domainScaledWidth / 2 ])
-					.range([0, width]);
-				scope.axisScaleY = d3.scale.linear()
-					.domain(scope.rangeY)
-					.range([height, 0]);
-			}else{
-				// canvas scale
-				var targetHeight = domainProfileHeight* (rangeProfileWidth / domainProfileWidth);
-				scope.scaleX.range([0, width]);
-				scope.scaleY.range([height / 2 + targetHeight / 2, height / 2 - targetHeight / 2]);
-				
-				// axis scale
-				var domainScale =  domainRatio / rangeRatio;
-				var domainScaledHeight = domainProfileHeight * domainScale;
-				var domainHeightCentroid = (scope.rangeY[1] + scope.rangeY[0]) / 2;
-				scope.axisScaleX = d3.scale.linear()
-					.domain(scope.rangeX)
-					.range([0, width]);
-				scope.axisScaleY = d3.scale.linear()
-					.domain([
-						domainHeightCentroid - domainScaledHeight / 2 , 
-						domainHeightCentroid + domainScaledHeight / 2 ])
-					.range([height, 0]);
-			}
-			scope.scaleX.domain(scope.rangeX);
-			scope.scaleY.domain(scope.rangeY);
-			
-			
-
-			scope.axisZoom = d3.behavior.zoom()
-				.x(scope.axisScaleX)
-				.y(scope.axisScaleY)
-				.scaleExtent([0,128])
-				.size([width, height]);
-				
-			scope.zoom = d3.behavior.zoom()
-			.x(scope.scaleX)
-			.y(scope.scaleY)
-			.scaleExtent([0,128])
-			.size([width, height])
-			.on("zoom",  function(){
-				//var t = zoom.translate();
-				//var tx = t[0];
-				//var ty = t[1];
-				//
-				//tx = Math.min(tx, 0);
-				//tx = Math.max(tx, width - projectedBoundingBox.max.x);
-				//zoom.translate([tx, ty]);
-				
-				scope.axisZoom.translate(scope.zoom.translate());
-				scope.axisZoom.scale(scope.zoom.scale());
-					
-				svg.select(".x.axis").call(xAxis);
-				svg.select(".y.axis").call(yAxis);
-
-				scope.context.clearRect(0, 0, width, height);
-				drawPoints(scope.points, scope.rangeX, scope.rangeY);
-			});
-			
-			scope.context = d3.select("#profileCanvas")
-				.attr("width", width)
-				.attr("height", height)
-				.call(scope.zoom)
-				.node().getContext("2d");
-			
-			
-			//d3.select("svg#profile_draw_container").remove();
-			d3.select("svg#profileSVG").selectAll("*").remove();
-			
-			svg = d3.select("svg#profileSVG")
-			.call(scope.zoom)
-			.attr("width", (width + scope.margin.left + scope.margin.right).toString())
-			.attr("height", (height + scope.margin.top + scope.margin.bottom).toString())
-			.attr("transform", "translate(" + scope.margin.left + "," + scope.margin.top + ")")
-			.on("mousemove", function(){
-//				scope.pointHighlight
-				// TODO implement pointHighlight
-			});
-			//scope.context.canvas.addEventListener("mousemove", scope.pointHighlight);
-			
-			d3.select("#profileCanvas")
-			.on("mousemove", scope.pointHighlight);
-			
-			
-			// Create x axis
-			var xAxis = d3.svg.axis()
-				.scale(scope.axisScaleX)
-				.innerTickSize(-height)
-				.outerTickSize(5)
-				.orient("bottom")
-				.ticks(10, "m");
-
-			// Create y axis
-			var yAxis = d3.svg.axis()
-				.scale(scope.axisScaleY)
-				.innerTickSize(-width)
-				.outerTickSize(5)
-				.orient("left")
-				.ticks(10, "m");
-				
-			// Append axis to the chart
-			var gx = svg.append("g")
-				.attr("class", "x axis")
-				.call(xAxis);
-
-			svg.append("g")
-				.attr("class", "y axis")
-				.call(yAxis);
-				
-			if(navigator.userAgent.indexOf("Firefox") == -1 ) {
-				svg.select(".y.axis").attr("transform", "translate("+ (scope.margin.left).toString() + "," + scope.margin.top.toString() + ")");
-				svg.select(".x.axis").attr("transform", "translate(" + scope.margin.left.toString() + "," + (height + scope.margin.top).toString() + ")");
-			} else {
-				svg.select(".x.axis").attr("transform", "translate( 0 ," + height.toString() + ")");
-			}
-			
-			drawPoints(scope.points, scope.rangeX, scope.rangeY);
-			
-			document.getElementById("profile_num_points").innerHTML = Potree.utils.addCommas(scope.pointsProcessed) + " ";
-		};
-		
-		
-		for(var i = 0; i < scope.viewer.scene.pointclouds.length; i++){
-			var pointcloud = scope.viewer.scene.pointclouds[i];
-			
-			if(!pointcloud.visible){
-				continue;
-			}
-			
-			var request = pointcloud.getPointsInProfile(profile, null, {
-				"onProgress": function(event){
-					if(!scope.enabled){
-						return;
-					}
-					
-					if(!projectedBoundingBox){
-						projectedBoundingBox = event.points.projectedBoundingBox;
-					}else{
-						projectedBoundingBox.union(event.points.projectedBoundingBox);
-					}
-					
-					var result = scope.preparePoints(event.points);
-					var points = result.data;
-					scope.points = scope.points.concat(points);
-					
-					var batchRangeX = [d3.min(points, function(d) { return d.distance; }), d3.max(points, function(d) { return d.distance; })];
-					var batchRangeY = [d3.min(points, function(d) { return d.altitude; }), d3.max(points, function(d) { return d.altitude; })];
-					
-					scope.rangeX = [ Math.min(scope.rangeX[0], batchRangeX[0]), Math.max(scope.rangeX[1], batchRangeX[1]) ];
-					scope.rangeY = [ Math.min(scope.rangeY[0], batchRangeY[0]), Math.max(scope.rangeY[1], batchRangeY[1]) ];
-					
-					scope.pointsProcessed += result.data.length;
-					
-					setupAndDraw();
-					
-					if(scope.pointsProcessed > scope.threshold){
-						scope.cancel();
-					}
-				},
-				"onFinish": function(event){
-					if(!scope.enabled){
-						return;
-					}
-				},
-				"onCancel": function(){
-					if(!scope.enabled){
-						return;
-					}
-				}
-			});	
-			
-			scope.requests.push(request);
-		}
-	};
-	
-	this.setThreshold = function(value){
-		scope.threshold = value;
-		
-		scope.redraw();
-	};
-	
-	var drawOnChange = function(event){
-		//if(event.profile === scope.currentProfile){
-			scope.redraw();
-		//}
-	}.bind(this);
-	
-	//viewer.scene.dispatcher.addEventListener("marker_moved"))
-
-	//viewer.profileTool.addEventListener("marker_moved", drawOnChange);
-	//viewer.profileTool.addEventListener("width_changed", drawOnChange);
-	//viewer.addEventListener("material_changed", function(){
-	//	drawOnChange({profile: scope.currentProfile});
-	//});
-    //
-	//viewer.addEventListener("height_range_changed", function(){
-	//	drawOnChange({profile: scope.currentProfile});
-	//});
-	
-	var width = document.getElementById('profile_window').clientWidth;
-	var height = document.getElementById('profile_window').clientHeight;
-	function resizeLoop(){
-		requestAnimationFrame(resizeLoop);
-
-		var newWidth = document.getElementById('profile_window').clientWidth;
-		var newHeight = document.getElementById('profile_window').clientHeight;
-
-		if(newWidth !== width || newHeight !== height){
-			setTimeout(drawOnChange, 50, {profile: scope.currentProfile});
-		}
-
-		width = newWidth;
-		height = newHeight;
-	};
-	requestAnimationFrame(resizeLoop);
+	}
 
 };

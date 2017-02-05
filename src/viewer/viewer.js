@@ -1434,14 +1434,16 @@ Potree.Viewer = class{
 			$(function() {
 				initSidebar();
 				
-				if(callback){
-					callback();
-				}
+				
 			});
 			
 			let elProfile = $('<div>').load(new URL(Potree.scriptPath + "/profile.html").href, () => {
 				$('#potree_render_area').append(elProfile.children());
 				this._2dprofile = new Potree.Viewer.Profile(this, document.getElementById("profile_draw_container"));
+				
+				if(callback){
+					callback();
+				}
 			});
 			
 		});

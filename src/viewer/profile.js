@@ -395,14 +395,23 @@ Potree.Viewer.Profile = function(viewer, element){
 			return;
 		}
 		if(profile){
-			if(profile.points.length < 2){
-				return;
-			}
+			//if(profile.points.length < 2){
+			//	return;
+			//}
 		}else{
 			return;
 		}
 		if(scope.viewer.scene.pointclouds.length === 0){
 			return;
+		}
+
+		if(scope.context){
+			let containerWidth = scope.element.clientWidth;
+			let containerHeight = scope.element.clientHeight;
+			
+			let width = containerWidth - (scope.margin.left + scope.margin.right);
+			let height = containerHeight - (scope.margin.top + scope.margin.bottom);
+			scope.context.clearRect(0, 0, width, height);
 		}
 		
 		if(scope.currentProfile){

@@ -28,7 +28,7 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 		
 		this.speed = 1;
 		
-		this.logMessages = true;
+		this.logMessages = false;
 		
 		if(this.domElement.tabIndex === -1){
 			this.domElement.tabIndex = 2222;

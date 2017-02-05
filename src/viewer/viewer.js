@@ -383,7 +383,8 @@ Potree.Viewer = class{
 		
 		this.initThree();
 		
-		this.scene = new Potree.Scene(this.renderer);
+		let scene = new Potree.Scene(this.renderer);
+		this.setScene(scene);
 		
 		{
 			this.inputHandler = new Potree.InputHandler(this);

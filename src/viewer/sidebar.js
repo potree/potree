@@ -1159,6 +1159,9 @@ function initMeasurementDetails(){
 			trackMeasurement(e.scene, e.measurement);
 		} else if(e.profile){
 			trackMeasurement(e.scene, e.profile);
+			
+			viewer._2dprofile.show();
+			viewer._2dprofile.draw(e.profile);
 		}
 	};
 	

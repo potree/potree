@@ -158,9 +158,9 @@ Potree.Annotation = function(scene, args = {}){
 		{ // animate camera position
 			let tween = new TWEEN.Tween(scope.scene.view.position).to(scope.cameraPosition, animationDuration);
 			tween.easing(easing);
-			tween.onUpdate(function(){
-				console.log(scope.scene.view.position);
-			});
+			//tween.onUpdate(function(){
+			//	console.log(scope.scene.view.position);
+			//});
 			tween.start();
 		}
 		

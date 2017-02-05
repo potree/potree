@@ -65,13 +65,56 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 		};
 		
 		let scroll = (e) => {
-			this.radiusDelta -= e.delta;
+			let resolvedRadius = this.scene.view.radius + this.radiusDelta;
+			
+			this.radiusDelta += -e.delta * resolvedRadius * 0.1;
+			
+			//this.radiusDelta -= e.delta;
 		};
 		
 		let dblclick = (e) => {
 			this.zoomToLocation(e.mouse);
 		};
 		
+		
+		let previousTouch = null;
+		let touchStart = e => {
+			previousTouch = e;
+		};
+		
+		let touchEnd = e => {
+			previousTouch = e;
+		};
+		
+		let touchMove = e => {
+			
+			if(e.touches.length === 2 && previousTouch.touches.length === 2){
+				let prev = previousTouch;
+				let curr = e;
+				
+				let prevDX = prev.touches[0].pageX - prev.touches[1].pageX;
+				let prevDY = prev.touches[0].pageY - prev.touches[1].pageY;
+				let prevDist = Math.sqrt(prevDX * prevDX + prevDY * prevDY);
+				
+				let currDX = curr.touches[0].pageX - curr.touches[1].pageX;
+				let currDY = curr.touches[0].pageY - curr.touches[1].pageY;
+				let currDist = Math.sqrt(currDX * currDX + currDY * currDY);
+				
+				let delta = currDist / prevDist;
+				let resolvedRadius = this.scene.view.radius + this.radiusDelta;
+				let newRadius = resolvedRadius / delta;
+				this.radiusDelta = newRadius - resolvedRadius;
+				
+				//let newRadius = prevDist * (resolvedRadius / currDist);
+				//this.radiusDelta = newRadius - resolvedRadius;
+			}
+			
+			previousTouch = e;
+		};
+		
+		this.addEventListener("touchstart", touchStart);
+		this.addEventListener("touchend", touchEnd);
+		this.addEventListener("touchmove", touchMove);
 		this.addEventListener("drag", drag);
 		this.addEventListener("drop", drop);
 		this.addEventListener("mousewheel", scroll);
@@ -200,7 +243,8 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 		{ // apply zoom
 			let progression = Math.min(1, this.fadeFactor * delta);
 			
-			let radius = view.radius + progression * this.radiusDelta * view.radius * 0.1;
+			//let radius = view.radius + progression * this.radiusDelta * view.radius * 0.1;
+			let radius = view.radius + progression * this.radiusDelta;
 			
 			let V = view.direction.multiplyScalar(-radius);
 			let position = new THREE.Vector3().addVectors(view.getPivot(), V);
@@ -215,11 +259,14 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 		}
 		
 		{// decelerate over time
+			let progression = Math.min(1, this.fadeFactor * delta);
 			let attenuation = Math.max(0, 1 - this.fadeFactor * delta);
+			
 			this.yawDelta *= attenuation;
 			this.pitchDelta *= attenuation;
 			this.panDelta.multiplyScalar(attenuation);
-			this.radiusDelta *= attenuation;
+			//this.radiusDelta *= attenuation;
+			this.radiusDelta -= progression * this.radiusDelta
 		}
 	}
 	

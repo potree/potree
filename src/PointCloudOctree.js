@@ -104,7 +104,7 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree{
 		node.sceneNode = sceneNode;
 		node.pointcloud = this;
 		node.children = {};
-		for(var key of geometryNode.children){
+		for(var key in geometryNode.children){
 			node.children[key] = geometryNode.children[key];
 		}
 		

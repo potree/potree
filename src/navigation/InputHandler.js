@@ -28,7 +28,7 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 		
 		this.speed = 1;
 		
-		this.logMessages = false;
+		this.logMessages = true;
 		
 		if(this.domElement.tabIndex === -1){
 			this.domElement.tabIndex = 2222;
@@ -44,6 +44,9 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 		this.domElement.addEventListener("dblclick", this.onDoubleClick.bind(this));
 		this.domElement.addEventListener("keydown", this.onKeyDown.bind(this));
 		this.domElement.addEventListener("keyup", this.onKeyUp.bind(this));
+		this.domElement.addEventListener("touchstart", this.onTouchStart.bind(this));
+		this.domElement.addEventListener("touchend", this.onTouchEnd.bind(this));
+		this.domElement.addEventListener("touchmove", this.onTouchMove.bind(this));
 	}
 	
 	addInputListener(listener){
@@ -52,6 +55,103 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 	
 	removeInputListener(listener){
 		this.inputListeners = this.inputListeners.filter(e => e !== listener);
+	}
+	
+	onTouchStart(e){
+		if(this.logMessages) console.log(this.constructor.name + ": onTouchStart");
+		
+		e.preventDefault();
+
+		if(e.touches.length === 1){
+			let rect = this.domElement.getBoundingClientRect();
+			let x = e.touches[0].pageX - rect.left;
+			let y = e.touches[0].pageY - rect.top;
+			this.mouse.set(x, y);
+			
+			this.startDragging(null);
+		}
+		
+		for(let inputListener of this.inputListeners){
+			inputListener.dispatchEvent({
+				type: e.type,
+				touches: e.touches,
+				changedTouches: e.changedTouches
+			});
+		}
+	}
+	
+	onTouchEnd(e){
+		if(this.logMessages) console.log(this.constructor.name + ": onTouchEnd");
+		
+		e.preventDefault();
+		
+		for(let inputListener of this.inputListeners){
+			inputListener.dispatchEvent({
+				type: "drop",
+				drag: this.drag
+			});
+		}
+		
+		this.drag = null;
+		
+		for(let inputListener of this.inputListeners){
+			inputListener.dispatchEvent({
+				type: e.type,
+				touches: e.touches,
+				changedTouches: e.changedTouches
+			});
+		}
+	}
+	
+	onTouchMove(e){
+		if(this.logMessages) console.log(this.constructor.name + ": onTouchMove");
+		
+		e.preventDefault();
+		
+		if(e.touches.length === 1){
+			let rect = this.domElement.getBoundingClientRect();
+			let x = e.touches[0].pageX - rect.left;
+			let y = e.touches[0].pageY - rect.top;
+			this.mouse.set(x, y);
+			
+			if(this.drag){
+				this.drag.mouse = 1;
+				
+				this.drag.lastDrag.x = x - this.drag.end.x;
+				this.drag.lastDrag.y = y - this.drag.end.y;
+				
+				this.drag.end.set(x, y);
+				
+				if(this.logMessages) console.log(this.constructor.name + ": drag: ");
+				for(let inputListener of this.inputListeners){
+					inputListener.dispatchEvent({
+						type: "drag",
+						drag: this.drag,
+						viewer: this.viewer
+					});
+				}
+			}
+		}
+		
+		for(let inputListener of this.inputListeners){
+			inputListener.dispatchEvent({
+				type: e.type,
+				touches: e.touches,
+				changedTouches: e.changedTouches
+			});
+		}
+		
+		// DEBUG CODE
+		//let debugTouches = [...e.touches, {
+		//	pageX: this.domElement.clientWidth / 2, 
+		//	pageY: this.domElement.clientHeight / 2}];
+		//for(let inputListener of this.inputListeners){
+		//	inputListener.dispatchEvent({
+		//		type: e.type,
+		//		touches: debugTouches,
+		//		changedTouches: e.changedTouches
+		//	});
+		//}
 	}
 	
 	onKeyDown(e){
@@ -227,7 +327,7 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 	 }
 	 
 	onMouseMove(e){
-		if(this.logMessages) console.log(this.constructor.name + ": onMouseUp");
+		if(this.logMessages) console.log(this.constructor.name + ": onMouseMove");
 		
 		e.preventDefault();
 		
@@ -316,6 +416,8 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 	}
 	
 	onMouseWheel(e){
+		if(this.logMessages) console.log(this.constructor.name + ": onMouseWheel");
+		
 		e.preventDefault();
 		
 		let delta = 0;

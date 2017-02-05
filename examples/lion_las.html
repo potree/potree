@@ -71,23 +71,18 @@
 		
 		viewer.setDescription("Loading Octree of LAS files");
 		
+		viewer.loadGUI(() => {
+			viewer.setLanguage('en');
+			$("#menu_appearance").next().show();
+			//viewer.toggleSidebar();
+		});
+		
 		// Sigeom
 		Potree.loadPointCloud("../pointclouds/lion_takanawa_las/cloud.js", "lion", function(e){
 			viewer.scene.addPointCloud(e.pointcloud);
 			
 			viewer.fitToScreen();
 		});
-		
-		viewer.loadGUI();
-        viewer.toggleSidebar();
-		
-		$(document).ready( function() {
-			$("#menu_appearance").next().show();
-		});
-		
-        // Define default language: 'de', 'fr', 'en'
-        viewer.setLanguage('en');
-		
 		
 	</script>
 	

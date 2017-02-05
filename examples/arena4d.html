@@ -71,23 +71,19 @@
 		
 		viewer.setDescription("");
 		
-		let scene = viewer.scene;
-		
-		Potree.loadPointCloud("http://arena4d.uksouth.cloudapp.azure.com:8080/Arena4DWebServer/PointServer/Office_Example2.vpc", "Arena4D", function(e){
-			scene.addPointCloud(e.pointcloud);
-			
-			//viewer.fitToScreen();
-			scene.view.position.set(-19.61, 12.79, 157.47);
-			scene.view.lookAt(new THREE.Vector3(12.72, -2.13, 126.99));
+		viewer.loadGUI(() => {
+			viewer.setLanguage('en');
+			$("#menu_tools").next().show();
+			//viewer.toggleSidebar();
 		});
 		
-
-		viewer.loadGUI();
-        viewer.toggleSidebar();
-		
-        // Define default language: 'de'/'fr'/'en'
-        viewer.setLanguage('en');
-		
+		Potree.loadPointCloud("http://arena4d.uksouth.cloudapp.azure.com:8080/Arena4DWebServer/PointServer/Office_Example2.vpc", "Arena4D", function(e){
+			viewer.scene.addPointCloud(e.pointcloud);
+			
+			//viewer.fitToScreen();
+			viewer.scene.view.position.set(-19.61, 12.79, 157.47);
+			viewer.scene.view.lookAt(new THREE.Vector3(12.72, -2.13, 126.99));
+		});
 		
 	</script>
 	

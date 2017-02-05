@@ -545,7 +545,7 @@ body{
 	padding: 6px;
 	opacity: 0.5;
 	background-color: white;
-	filter:invert();
+	filter:invert(100%);
 	border-radius: 100px;
 }
 .hover_menu_icon:hover{
@@ -576,7 +576,7 @@ body{
 .hover_menu_item > img{
 	width: 32px;
 	height: 32px;
-	filter: invert();
+	filter: invert(100%);
 }
 
 

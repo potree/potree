@@ -52,7 +52,7 @@
     "profile": {
         "nb_points": "Point number",
         "title": "Height profile",
-        "save": "Save"
+        "save_las": "Save as LAS"
     },
 	"scene": {
 		"camera_position": "Camera Position",

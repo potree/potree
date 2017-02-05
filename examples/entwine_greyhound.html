@@ -71,6 +71,11 @@
 		
 		viewer.setDescription('Streaming point clouds from an <a href="https://entwine.io/" target="_blank">Entwine</a> backend.');
 		
+		viewer.loadGUI(() => {
+			viewer.setLanguage('en');
+			$("#menu_appearance").next().show();
+			//viewer.toggleSidebar();
+		});
 		
 		{ 
 		
@@ -89,19 +94,6 @@
 				viewer.scene.camera.near = 10;
 			});
 		}
-		
-
-		viewer.loadGUI();
-        //viewer.toggleSidebar();
-		
-		$(document).ready( function() {
-			$("#menu_appearance").next().show();
-		});
-		
-		
-        // Define default language: 'de'/'fr'/'en'
-        viewer.setLanguage('en');
-		
 		
 	</script>
 	

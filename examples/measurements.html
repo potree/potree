@@ -71,6 +71,13 @@
 		
 		viewer.setDescription("Point cloud courtesy of <a target='_blank' href='https://www.sigeom.ch/'>sigeom sa</a>");
 		
+		viewer.loadGUI(() => {
+			viewer.setLanguage('en');
+			$("#menu_tools").next().show();
+			$("#menu_measurements").next().show();
+			viewer.toggleSidebar();
+		});
+		
 		// Sigeom
 		Potree.loadPointCloud("../pointclouds/vol_total/cloud.js", "sigeom.sa", function(e){
 			let scene = viewer.scene;
@@ -134,13 +141,6 @@
 			scene.view.position.set(589874.36, 231447.43, 835.03);
 			scene.view.lookAt(new THREE.Vector3(589853.01, 231318.55, 738.91));
 
-		});
-		
-		viewer.loadGUI(() => {
-			viewer.setLanguage('en');
-			$("#menu_tools").next().show();
-			$("#menu_measurements").next().show();
-			viewer.toggleSidebar();
 		});
 		
 	</script>

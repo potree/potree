@@ -6,7 +6,7 @@ function Potree(){
 }
 Potree.version = {
 	major: 1,
-	minor: 4,
+	minor: 5,
 	suffix: "RC"
 };
 
@@ -204,6 +204,7 @@ function updateVisibilityStructures(pointclouds, camera, renderer){
 
 		pointcloud.numVisibleNodes = 0;
 		pointcloud.numVisiblePoints = 0;
+		pointcloud.deepestVisibleLevel = 0;
 		pointcloud.visibleNodes = [];
 		pointcloud.visibleGeometry = [];
 
@@ -255,6 +256,8 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 	let visibleNodes = [];
 	let visibleGeometry = [];
 	let unloadedGeometry = [];
+	
+	let lowestSpacing = Infinity;
 
 	// calculate object space frustum and cam pos and setup priority queue
 	let s = updateVisibilityStructures(pointclouds, camera, renderer);
@@ -273,13 +276,18 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 		let camObjPos = camObjPositions[element.pointcloud];
 		
 		let insideFrustum = frustum.intersectsBox(box);
+		let maxLevel = pointcloud.maxLevel || Infinity;
+		let level = node.getLevel();
 		let visible = insideFrustum;
 		visible = visible && !(numVisiblePoints + node.getNumPoints() > Potree.pointBudget);
-		let maxLevel = pointcloud.maxLevel || Infinity;
-		visible = visible && node.getLevel() < maxLevel;
-		//if(node.geometryNode){
-		//	visible = node.geometryNode.name === "r" || node.geometryNode.name === "r0";
-		//}
+		visible = visible && level < maxLevel;
+		
+		if(node.spacing){
+			lowestSpacing = Math.min(lowestSpacing, node.spacing);
+		}else if(node.geometryNode && node.geometryNode.spacing){
+			lowestSpacing = Math.min(lowestSpacing, node.geometryNode.spacing);
+		}
+		
 		
 		
 		if(numVisiblePoints + node.getNumPoints() > Potree.pointBudget){
@@ -320,9 +328,6 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 			}
 
 			if(pointcloud.showBoundingBox && !node.boundingBoxNode){
-				//let min = pointcloud.
-				//let box = new THREE.Box3(min, max);
-				//let boxHelper = new THREE.BoxHelper(node.sceneNode);
 				let boxHelper = new THREE.BoxHelper(node.getBoundingBox());
 				pointcloud.add(boxHelper);
 				pointcloud.boundingBoxNodes.push(boxHelper);
@@ -372,7 +377,11 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 	
 	Potree.updateDEMs(renderer, visibleNodes);
 
-	return {visibleNodes: visibleNodes, numVisiblePoints: numVisiblePoints};
+	return {
+		visibleNodes: visibleNodes, 
+		numVisiblePoints: numVisiblePoints,
+		lowestSpacing: lowestSpacing
+	};
 };
 
 Potree.updateDEMs = function(renderer, visibleNodes){
@@ -656,50 +665,55 @@ Potree.renderPointcloud = function(pointcloud, camera, renderer){
 
 
 
-Potree.PointCloudTreeNode = function(){
+Potree.PointCloudTreeNode = class{
 	
-	this.getChildren = function(){
+	constructor(){
+		
+	}
+	
+	getChildren(){
 		throw "override function";
 	};
 	
-	this.getBoundingBox = function(){
+	getBoundingBox(){
 		throw "override function";
 	};
 
-	this.isLoaded = function(){
+	isLoaded(){
 		throw "override function";
 	};
 	
-	this.isGeometryNode = function(){
+	isGeometryNode(){
 		throw "override function";
 	};
 	
-	this.isTreeNode = function(){
+	isTreeNode(){
 		throw "override function";
 	};
 	
-	this.getLevel = function(){
+	getLevel(){
 		throw "override function";
 	};
 
-	this.getBoundingSphere = function(){
+	getBoundingSphere(){
 		throw "override function";
 	};
 	
 };
 
 
-Potree.PointCloudTree = function(){
-	THREE.Object3D.call( this );
+Potree.PointCloudTree = class PointCloudTree extends THREE.Object3D{
 	
-	this.initialized = function(){
+	constructor(){
+		super();
+	}
+	
+	initialized(){
 		return this.root !== null;
 	};
 
 	
 };
-
-Potree.PointCloudTree.prototype = Object.create(THREE.Object3D.prototype);
 
 
 
@@ -1802,6 +1816,7 @@ Potree.POCLoader.load = function load(url, callback) {
 					var root = new Potree.PointCloudOctreeGeometryNode(name, pco, boundingBox);
 					root.level = 0;
 					root.hasChildren = true;
+					root.spacing = pco.spacing;
 					if(version.upTo("1.5")){
 						root.numPoints = fMno.hierarchy[0][1];
 					}else{
@@ -1826,6 +1841,7 @@ Potree.POCLoader.load = function load(url, callback) {
 						var node = new Potree.PointCloudOctreeGeometryNode(name, pco, boundingBox);
 						node.level = level;
 						node.numPoints = numPoints;
+						node.spacing = pco.spacing / Math.pow(2, level);
 						parentNode.addChild(node);
 						nodes[name] = node;
 					}
@@ -2522,6 +2538,7 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
 					root.level = 0;
 					root.hasChildren = true;
 					root.numPoints = greyhoundInfo.numPoints;
+					root.spacing = pgg.spacing;
 					pgg.root = root;
 					pgg.root.load();
 					nodes[name] = root;
@@ -3732,6 +3749,9 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 		this.domElement.addEventListener("dblclick", this.onDoubleClick.bind(this));
 		this.domElement.addEventListener("keydown", this.onKeyDown.bind(this));
 		this.domElement.addEventListener("keyup", this.onKeyUp.bind(this));
+		this.domElement.addEventListener("touchstart", this.onTouchStart.bind(this));
+		this.domElement.addEventListener("touchend", this.onTouchEnd.bind(this));
+		this.domElement.addEventListener("touchmove", this.onTouchMove.bind(this));
 	}
 	
 	addInputListener(listener){
@@ -3740,6 +3760,103 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 	
 	removeInputListener(listener){
 		this.inputListeners = this.inputListeners.filter(e => e !== listener);
+	}
+	
+	onTouchStart(e){
+		if(this.logMessages) console.log(this.constructor.name + ": onTouchStart");
+		
+		e.preventDefault();
+
+		if(e.touches.length === 1){
+			let rect = this.domElement.getBoundingClientRect();
+			let x = e.touches[0].pageX - rect.left;
+			let y = e.touches[0].pageY - rect.top;
+			this.mouse.set(x, y);
+			
+			this.startDragging(null);
+		}
+		
+		for(let inputListener of this.inputListeners){
+			inputListener.dispatchEvent({
+				type: e.type,
+				touches: e.touches,
+				changedTouches: e.changedTouches
+			});
+		}
+	}
+	
+	onTouchEnd(e){
+		if(this.logMessages) console.log(this.constructor.name + ": onTouchEnd");
+		
+		e.preventDefault();
+		
+		for(let inputListener of this.inputListeners){
+			inputListener.dispatchEvent({
+				type: "drop",
+				drag: this.drag
+			});
+		}
+		
+		this.drag = null;
+		
+		for(let inputListener of this.inputListeners){
+			inputListener.dispatchEvent({
+				type: e.type,
+				touches: e.touches,
+				changedTouches: e.changedTouches
+			});
+		}
+	}
+	
+	onTouchMove(e){
+		if(this.logMessages) console.log(this.constructor.name + ": onTouchMove");
+		
+		e.preventDefault();
+		
+		if(e.touches.length === 1){
+			let rect = this.domElement.getBoundingClientRect();
+			let x = e.touches[0].pageX - rect.left;
+			let y = e.touches[0].pageY - rect.top;
+			this.mouse.set(x, y);
+			
+			if(this.drag){
+				this.drag.mouse = 1;
+				
+				this.drag.lastDrag.x = x - this.drag.end.x;
+				this.drag.lastDrag.y = y - this.drag.end.y;
+				
+				this.drag.end.set(x, y);
+				
+				if(this.logMessages) console.log(this.constructor.name + ": drag: ");
+				for(let inputListener of this.inputListeners){
+					inputListener.dispatchEvent({
+						type: "drag",
+						drag: this.drag,
+						viewer: this.viewer
+					});
+				}
+			}
+		}
+		
+		for(let inputListener of this.inputListeners){
+			inputListener.dispatchEvent({
+				type: e.type,
+				touches: e.touches,
+				changedTouches: e.changedTouches
+			});
+		}
+		
+		// DEBUG CODE
+		//let debugTouches = [...e.touches, {
+		//	pageX: this.domElement.clientWidth / 2, 
+		//	pageY: this.domElement.clientHeight / 2}];
+		//for(let inputListener of this.inputListeners){
+		//	inputListener.dispatchEvent({
+		//		type: e.type,
+		//		touches: debugTouches,
+		//		changedTouches: e.changedTouches
+		//	});
+		//}
 	}
 	
 	onKeyDown(e){
@@ -3915,7 +4032,7 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 	 }
 	 
 	onMouseMove(e){
-		if(this.logMessages) console.log(this.constructor.name + ": onMouseUp");
+		if(this.logMessages) console.log(this.constructor.name + ": onMouseMove");
 		
 		e.preventDefault();
 		
@@ -4004,6 +4121,8 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 	}
 	
 	onMouseWheel(e){
+		if(this.logMessages) console.log(this.constructor.name + ": onMouseWheel");
+		
 		e.preventDefault();
 		
 		let delta = 0;
@@ -5316,13 +5435,56 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 		};
 		
 		let scroll = (e) => {
-			this.radiusDelta -= e.delta;
+			let resolvedRadius = this.scene.view.radius + this.radiusDelta;
+			
+			this.radiusDelta += -e.delta * resolvedRadius * 0.1;
+			
+			//this.radiusDelta -= e.delta;
 		};
 		
 		let dblclick = (e) => {
 			this.zoomToLocation(e.mouse);
 		};
 		
+		
+		let previousTouch = null;
+		let touchStart = e => {
+			previousTouch = e;
+		};
+		
+		let touchEnd = e => {
+			previousTouch = e;
+		};
+		
+		let touchMove = e => {
+			
+			if(e.touches.length === 2 && previousTouch.touches.length === 2){
+				let prev = previousTouch;
+				let curr = e;
+				
+				let prevDX = prev.touches[0].pageX - prev.touches[1].pageX;
+				let prevDY = prev.touches[0].pageY - prev.touches[1].pageY;
+				let prevDist = Math.sqrt(prevDX * prevDX + prevDY * prevDY);
+				
+				let currDX = curr.touches[0].pageX - curr.touches[1].pageX;
+				let currDY = curr.touches[0].pageY - curr.touches[1].pageY;
+				let currDist = Math.sqrt(currDX * currDX + currDY * currDY);
+				
+				let delta = currDist / prevDist;
+				let resolvedRadius = this.scene.view.radius + this.radiusDelta;
+				let newRadius = resolvedRadius / delta;
+				this.radiusDelta = newRadius - resolvedRadius;
+				
+				//let newRadius = prevDist * (resolvedRadius / currDist);
+				//this.radiusDelta = newRadius - resolvedRadius;
+			}
+			
+			previousTouch = e;
+		};
+		
+		this.addEventListener("touchstart", touchStart);
+		this.addEventListener("touchend", touchEnd);
+		this.addEventListener("touchmove", touchMove);
 		this.addEventListener("drag", drag);
 		this.addEventListener("drop", drop);
 		this.addEventListener("mousewheel", scroll);
@@ -5451,7 +5613,8 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 		{ // apply zoom
 			let progression = Math.min(1, this.fadeFactor * delta);
 			
-			let radius = view.radius + progression * this.radiusDelta * view.radius * 0.1;
+			//let radius = view.radius + progression * this.radiusDelta * view.radius * 0.1;
+			let radius = view.radius + progression * this.radiusDelta;
 			
 			let V = view.direction.multiplyScalar(-radius);
 			let position = new THREE.Vector3().addVectors(view.getPivot(), V);
@@ -5466,11 +5629,14 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 		}
 		
 		{// decelerate over time
+			let progression = Math.min(1, this.fadeFactor * delta);
 			let attenuation = Math.max(0, 1 - this.fadeFactor * delta);
+			
 			this.yawDelta *= attenuation;
 			this.pitchDelta *= attenuation;
 			this.panDelta.multiplyScalar(attenuation);
-			this.radiusDelta *= attenuation;
+			//this.radiusDelta *= attenuation;
+			this.radiusDelta -= progression * this.radiusDelta
 		}
 	}
 	
@@ -6160,9 +6326,9 @@ Potree.Annotation = function(scene, args = {}){
 		{ // animate camera position
 			let tween = new TWEEN.Tween(scope.scene.view.position).to(scope.cameraPosition, animationDuration);
 			tween.easing(easing);
-			tween.onUpdate(function(){
-				console.log(scope.scene.view.position);
-			});
+			//tween.onUpdate(function(){
+			//	console.log(scope.scene.view.position);
+			//});
 			tween.start();
 		}
 		
@@ -6482,40 +6648,46 @@ Potree.ProfileRequest = function(pointcloud, profile, maxDepth, callback){
 	
 };
 
-Potree.PointCloudOctreeNode = function(){
-	this.children = {};
-	this.sceneNode = null;
-	this.octree = null;
+
+Potree.PointCloudOctreeNode = class PointCloudOctreeNode extends Potree.PointCloudTreeNode{
 	
-	this.getNumPoints = function(){
+	constructor(){
+		super();
+		
+		this.children = {};
+		this.sceneNode = null;
+		this.octree = null;
+	}
+	
+	getNumPoints(){
 		return this.geometryNode.numPoints;
 	};
 	
-	this.isLoaded = function(){
+	isLoaded(){
 		return true;
 	};
 	
-	this.isTreeNode = function(){
+	isTreeNode(){
 		return true;
 	};
 	
-	this.isGeometryNode = function(){
+	isGeometryNode(){
 		return false;
 	};
 	
-	this.getLevel = function(){
+	getLevel(){
 		return this.geometryNode.level;
 	};
 	
-	this.getBoundingSphere = function(){
+	getBoundingSphere(){
 		return this.geometryNode.boundingSphere;
 	};
 	
-	this.getBoundingBox = function(){
+	getBoundingBox(){
 		return this.geometryNode.boundingBox;
 	};
 	
-	this.getChildren = function(){
+	getChildren(){
 		var children = [];
 		
 		for(var i = 0; i < 8; i++){
@@ -6528,1306 +6700,964 @@ Potree.PointCloudOctreeNode = function(){
 	};
 };
 
-Potree.PointCloudOctreeNode.prototype = Object.create(Potree.PointCloudTreeNode.prototype);
 
-
-Potree.PointCloudOctree = function(geometry, material){
-	//THREE.Object3D.call( this );
-	Potree.PointCloudTree.call(this);
+Potree.PointCloudOctree = class extends Potree.PointCloudTree{
 	
-	this.pcoGeometry = geometry;
-	this.boundingBox = this.pcoGeometry.boundingBox;
-	this.boundingSphere = this.boundingBox.getBoundingSphere();
-	this.material = material || new Potree.PointCloudMaterial();
-	this.visiblePointsTarget = 2*1000*1000;
-	this.minimumNodePixelSize = 150;
-	this.level = 0;
-	this.position.copy(geometry.offset);
-	this.updateMatrix();
-	
-	this.showBoundingBox = false;
-	this.boundingBoxNodes = [];
-	this.loadQueue = [];
-	this.visibleBounds = new THREE.Box3();	
-	this.visibleNodes = [];
-	this.visibleGeometry = [];
-	this.pickTarget = null;
-	this.generateDEM = false;
-	this.profileRequests = [];
-	this.name = "";
-	
-	// TODO read projection from file instead
-	this.projection = geometry.projection;
-	
-	this.root = this.pcoGeometry.root;
-};
-
-Potree.PointCloudOctree.prototype = Object.create(Potree.PointCloudTree.prototype);
-
-Potree.PointCloudOctree.prototype.setName = function(name){
-	if(this.name !== name){
-		this.name = name;
-		this.dispatchEvent({type: "name_changed", name: name, pointcloud: this});
-	}
-};
-
-Potree.PointCloudOctree.prototype.getName = function(){
-	return this.name;
-};
-
-Potree.PointCloudOctree.prototype.toTreeNode = function(geometryNode, parent){
-	var node = new Potree.PointCloudOctreeNode();
-	var sceneNode = new THREE.Points(geometryNode.geometry, this.material);
-	
-	node.geometryNode = geometryNode;
-	node.sceneNode = sceneNode;
-	node.pointcloud = this;
-	node.children = {};
-	for(var key in geometryNode.children){
-		node.children[key] = geometryNode.children[key];
-	}
-	
-	if(!parent){
-		this.root = node;
-		this.add(sceneNode);
-	}else{
-		var childIndex = parseInt(geometryNode.name[geometryNode.name.length - 1]);
-		parent.sceneNode.add(sceneNode);
-		parent.children[childIndex] = node;
-	}
-	
-	var disposeListener = function(){
-		var childIndex = parseInt(geometryNode.name[geometryNode.name.length - 1]);
-		parent.sceneNode.remove(node.sceneNode);
-		parent.children[childIndex] = geometryNode;
-	}
-	geometryNode.oneTimeDisposeHandlers.push(disposeListener);
-	
-	return node;
-};
-
-Potree.PointCloudOctree.prototype.updateVisibleBounds = function(){
-
-	var leafNodes = [];
-	for(var i = 0; i < this.visibleNodes.length; i++){
-		var node = this.visibleNodes[i];
-		var isLeaf = true;
+	constructor(geometry, material){
+		super();
 		
-		for(var j = 0; j < node.children.length; j++){
-			var child = node.children[j];
-			if(child instanceof Potree.PointCloudOctreeNode){
-				isLeaf = isLeaf && !child.sceneNode.visible;
-			}else if(child instanceof Potree.PointCloudOctreeGeometryNode){
-				isLeaf = true;
-			}
-		}
+		this.pcoGeometry = geometry;
+		this.boundingBox = this.pcoGeometry.boundingBox;
+		this.boundingSphere = this.boundingBox.getBoundingSphere();
+		this.material = material || new Potree.PointCloudMaterial();
+		this.visiblePointsTarget = 2*1000*1000;
+		this.minimumNodePixelSize = 150;
+		this.level = 0;
+		this.position.copy(geometry.offset);
+		this.updateMatrix();
 		
-		if(isLeaf){
-			leafNodes.push(node);
+		this.showBoundingBox = false;
+		this.boundingBoxNodes = [];
+		this.loadQueue = [];
+		this.visibleBounds = new THREE.Box3();	
+		this.visibleNodes = [];
+		this.visibleGeometry = [];
+		this.pickTarget = null;
+		this.generateDEM = false;
+		this.profileRequests = [];
+		this.name = "";
+		
+		// TODO read projection from file instead
+		this.projection = geometry.projection;
+		
+		this.root = this.pcoGeometry.root;
+	}
+	
+	
+	setName(name){
+		if(this.name !== name){
+			this.name = name;
+			this.dispatchEvent({type: "name_changed", name: name, pointcloud: this});
 		}
 	}
 	
-	this.visibleBounds.min = new THREE.Vector3( Infinity, Infinity, Infinity );
-	this.visibleBounds.max = new THREE.Vector3( - Infinity, - Infinity, - Infinity );
-	for(var i = 0; i < leafNodes.length; i++){
-		var node = leafNodes[i];
-		
-		this.visibleBounds.expandByPoint(node.getBoundingBox().min);
-		this.visibleBounds.expandByPoint(node.getBoundingBox().max);
+	getName(){
+		return name;
 	}
 	
-};
-
-Potree.PointCloudOctree.prototype.updateMaterial = function(material, visibleNodes, camera, renderer){
-	material.fov = camera.fov * (Math.PI / 180);
-	material.screenWidth = renderer.domElement.clientWidth;
-	material.screenHeight = renderer.domElement.clientHeight;
-	material.spacing = this.pcoGeometry.spacing * Math.max(this.scale.x, this.scale.y, this.scale.z);
-	material.near = camera.near;
-	material.far = camera.far;
-	material.uniforms.octreeSize.value = this.pcoGeometry.boundingBox.getSize().x;
+	toTreeNode(geometryNode, parent){
+		var node = new Potree.PointCloudOctreeNode();
+		var sceneNode = new THREE.Points(geometryNode.geometry, this.material);
+		
+		node.geometryNode = geometryNode;
+		node.sceneNode = sceneNode;
+		node.pointcloud = this;
+		node.children = {};
+		for(var key in geometryNode.children){
+			node.children[key] = geometryNode.children[key];
+		}
+		
+		if(!parent){
+			this.root = node;
+			this.add(sceneNode);
+		}else{
+			var childIndex = parseInt(geometryNode.name[geometryNode.name.length - 1]);
+			parent.sceneNode.add(sceneNode);
+			parent.children[childIndex] = node;
+		}
+		
+		var disposeListener = function(){
+			var childIndex = parseInt(geometryNode.name[geometryNode.name.length - 1]);
+			parent.sceneNode.remove(node.sceneNode);
+			parent.children[childIndex] = geometryNode;
+		}
+		geometryNode.oneTimeDisposeHandlers.push(disposeListener);
+		
+		return node;
+	}
 	
-	// update visibility texture
-	if(material.pointSizeType >= 0){
-		if(material.pointSizeType === Potree.PointSizeType.ADAPTIVE 
-			|| material.pointColorType === Potree.PointColorType.LOD){
+	updateVisibleBounds(){
+		var leafNodes = [];
+		for(var i = 0; i < this.visibleNodes.length; i++){
+			var node = this.visibleNodes[i];
+			var isLeaf = true;
 			
-			this.updateVisibilityTexture(material, visibleNodes);
-		}
-	}
-};
-
-Potree.PointCloudOctree.prototype.updateVisibilityTexture = function(material, visibleNodes){
-
-	if(!material){
-		return;
-	}
-	
-	var texture = material.visibleNodesTexture;
-    var data = texture.image.data;
-	
-	// copy array
-	visibleNodes = visibleNodes.slice();
-	
-	// sort by level and index, e.g. r, r0, r3, r4, r01, r07, r30, ...
-	var sort = function(a, b){
-		var na = a.geometryNode.name;
-		var nb = b.geometryNode.name;
-		if(na.length != nb.length) return na.length - nb.length;
-		if(na < nb) return -1;
-		if(na > nb) return 1;
-		return 0;
-	};
-	visibleNodes.sort(sort);
-
-	
-	for(var i = 0; i < visibleNodes.length; i++){
-		var node = visibleNodes[i];
-		
-		var children = [];
-		for(var j = 0; j < 8; j++){
-			var child = node.children[j];
-			if(child instanceof Potree.PointCloudOctreeNode && child.sceneNode.visible && visibleNodes.indexOf(child) >= 0){
-				children.push(child);
+			for(var j = 0; j < node.children.length; j++){
+				var child = node.children[j];
+				if(child instanceof Potree.PointCloudOctreeNode){
+					isLeaf = isLeaf && !child.sceneNode.visible;
+				}else if(child instanceof Potree.PointCloudOctreeGeometryNode){
+					isLeaf = true;
+				}
+			}
+			
+			if(isLeaf){
+				leafNodes.push(node);
 			}
 		}
-		children.sort(function(a, b){
-			if(a.geometryNode.name < b.geometryNode.name) return -1;
-			if(a.geometryNode.name > b.geometryNode.name) return 1;
+		
+		this.visibleBounds.min = new THREE.Vector3( Infinity, Infinity, Infinity );
+		this.visibleBounds.max = new THREE.Vector3( - Infinity, - Infinity, - Infinity );
+		for(var i = 0; i < leafNodes.length; i++){
+			var node = leafNodes[i];
+			
+			this.visibleBounds.expandByPoint(node.getBoundingBox().min);
+			this.visibleBounds.expandByPoint(node.getBoundingBox().max);
+		}
+	}
+	
+	updateMaterial(material, visibleNodes, camera, renderer){
+		material.fov = camera.fov * (Math.PI / 180);
+		material.screenWidth = renderer.domElement.clientWidth;
+		material.screenHeight = renderer.domElement.clientHeight;
+		material.spacing = this.pcoGeometry.spacing * Math.max(this.scale.x, this.scale.y, this.scale.z);
+		material.near = camera.near;
+		material.far = camera.far;
+		material.uniforms.octreeSize.value = this.pcoGeometry.boundingBox.getSize().x;
+		
+		// update visibility texture
+		if(material.pointSizeType >= 0){
+			if(material.pointSizeType === Potree.PointSizeType.ADAPTIVE 
+				|| material.pointColorType === Potree.PointColorType.LOD){
+				
+				this.updateVisibilityTexture(material, visibleNodes);
+			}
+		}
+	}
+	
+	updateVisibilityTexture(material, visibleNodes){
+		if(!material){
+			return;
+		}
+		
+		var texture = material.visibleNodesTexture;
+		var data = texture.image.data;
+		
+		// copy array
+		visibleNodes = visibleNodes.slice();
+		
+		// sort by level and index, e.g. r, r0, r3, r4, r01, r07, r30, ...
+		var sort = function(a, b){
+			var na = a.geometryNode.name;
+			var nb = b.geometryNode.name;
+			if(na.length != nb.length) return na.length - nb.length;
+			if(na < nb) return -1;
+			if(na > nb) return 1;
 			return 0;
-		});
+		};
+		visibleNodes.sort(sort);
+
 		
-		data[i*3 + 0] = 0;
-		data[i*3 + 1] = 0;
-		data[i*3 + 2] = 0;
-		for(var j = 0; j < children.length; j++){
-			var child = children[j];
-			var index = parseInt(child.geometryNode.name.substr(-1));
-			data[i*3 + 0] += Math.pow(2, index);
+		for(var i = 0; i < visibleNodes.length; i++){
+			var node = visibleNodes[i];
 			
-			if(j === 0){
-				var vArrayIndex = visibleNodes.indexOf(child);
-				data[i*3 + 1] = vArrayIndex - i;
+			var children = [];
+			for(var j = 0; j < 8; j++){
+				var child = node.children[j];
+				if(child instanceof Potree.PointCloudOctreeNode && child.sceneNode.visible && visibleNodes.indexOf(child) >= 0){
+					children.push(child);
+				}
 			}
+			children.sort(function(a, b){
+				if(a.geometryNode.name < b.geometryNode.name) return -1;
+				if(a.geometryNode.name > b.geometryNode.name) return 1;
+				return 0;
+			});
 			
+			data[i*3 + 0] = 0;
+			data[i*3 + 1] = 0;
+			data[i*3 + 2] = 0;
+			for(var j = 0; j < children.length; j++){
+				var child = children[j];
+				var index = parseInt(child.geometryNode.name.substr(-1));
+				data[i*3 + 0] += Math.pow(2, index);
+				
+				if(j === 0){
+					var vArrayIndex = visibleNodes.indexOf(child);
+					data[i*3 + 1] = vArrayIndex - i;
+				}
+				
+			}
+		}
+		
+		
+		texture.needsUpdate = true;
+	}
+	
+	nodeIntersectsProfile(node, profile){
+		var bbWorld = node.boundingBox.clone().applyMatrix4(this.matrixWorld);
+		var bsWorld = bbWorld.getBoundingSphere();
+		
+		for(var i = 0; i < profile.points.length - 1; i++){
+			var start = new THREE.Vector3(profile.points[i].x, bsWorld.center.y, profile.points[i].z);
+			var end = new THREE.Vector3(profile.points[i+1].x, bsWorld.center.y, profile.points[i+1].z);
+			
+			var ray1 = new THREE.Ray(start, new THREE.Vector3().subVectors(end, start).normalize());
+			var ray2 = new THREE.Ray(end, new THREE.Vector3().subVectors(start, end).normalize());
+			
+			if(ray1.intersectsSphere(bsWorld) && ray2.intersectsSphere(bsWorld)){
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	nodesOnRay(nodes, ray){
+		var nodesOnRay = [];
+
+		var _ray = ray.clone();
+		for(var i = 0; i < nodes.length; i++){
+			var node = nodes[i];
+			//var inverseWorld = new THREE.Matrix4().getInverse(node.matrixWorld);
+			var sphere = node.getBoundingSphere().clone().applyMatrix4(node.sceneNode.matrixWorld);
+			
+			if(_ray.intersectsSphere(sphere)){
+				nodesOnRay.push(node);
+			}
+		}
+		
+		return nodesOnRay;
+	}
+	
+	updateMatrixWorld( force ){
+		if ( this.matrixAutoUpdate === true ) this.updateMatrix();
+
+		if ( this.matrixWorldNeedsUpdate === true || force === true ) {
+
+			if ( this.parent === undefined ) {
+
+				this.matrixWorld.copy( this.matrix );
+
+			} else {
+
+				this.matrixWorld.multiplyMatrices( this.parent.matrixWorld, this.matrix );
+
+			}
+
+			this.matrixWorldNeedsUpdate = false;
+
+			force = true;
+
 		}
 	}
 	
-	
-	texture.needsUpdate = true;
-};
-
-Potree.PointCloudOctree.prototype.nodeIntersectsProfile = function(node, profile){
-	var bbWorld = node.boundingBox.clone().applyMatrix4(this.matrixWorld);
-	var bsWorld = bbWorld.getBoundingSphere();
-	
-	for(var i = 0; i < profile.points.length - 1; i++){
-		var start = new THREE.Vector3(profile.points[i].x, bsWorld.center.y, profile.points[i].z);
-		var end = new THREE.Vector3(profile.points[i+1].x, bsWorld.center.y, profile.points[i+1].z);
-		
-		var ray1 = new THREE.Ray(start, new THREE.Vector3().subVectors(end, start).normalize());
-		var ray2 = new THREE.Ray(end, new THREE.Vector3().subVectors(start, end).normalize());
-		
-		if(ray1.intersectsSphere(bsWorld) && ray2.intersectsSphere(bsWorld)){
-			return true;
-		}
-	}
-	
-	return false;
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Potree.PointCloudOctree.prototype.nodesOnRay = function(nodes, ray){
-	var nodesOnRay = [];
-
-	var _ray = ray.clone();
-	for(var i = 0; i < nodes.length; i++){
-		var node = nodes[i];
-		//var inverseWorld = new THREE.Matrix4().getInverse(node.matrixWorld);
-		var sphere = node.getBoundingSphere().clone().applyMatrix4(node.sceneNode.matrixWorld);
-		
-		if(_ray.intersectsSphere(sphere)){
-			nodesOnRay.push(node);
-		}
-	}
-	
-	return nodesOnRay;
-};
-
-Potree.PointCloudOctree.prototype.updateMatrixWorld = function( force ){
-	//node.matrixWorld.multiplyMatrices( node.parent.matrixWorld, node.matrix );
-	
-	if ( this.matrixAutoUpdate === true ) this.updateMatrix();
-
-	if ( this.matrixWorldNeedsUpdate === true || force === true ) {
-
-		if ( this.parent === undefined ) {
-
-			this.matrixWorld.copy( this.matrix );
-
-		} else {
-
-			this.matrixWorld.multiplyMatrices( this.parent.matrixWorld, this.matrix );
-
-		}
-
-		this.matrixWorldNeedsUpdate = false;
-
-		force = true;
-
-	}
-};
-
-Potree.PointCloudOctree.prototype.hideDescendants = function(object){
-	var stack = [];
-	for(var i = 0; i < object.children.length; i++){
-		var child = object.children[i];
-		if(child.visible){
-			stack.push(child);
-		}
-	}
-	
-	while(stack.length > 0){
-		var object = stack.shift();
-		
-		object.visible = false;
-		
+	hideDescendants(object){
+		var stack = [];
 		for(var i = 0; i < object.children.length; i++){
 			var child = object.children[i];
 			if(child.visible){
 				stack.push(child);
 			}
 		}
-	}
-};
-
-Potree.PointCloudOctree.prototype.moveToOrigin = function(){
-    this.position.set(0,0,0);
-    this.updateMatrixWorld(true);
-    var box = this.boundingBox;
-    var transform = this.matrixWorld;
-    var tBox = Potree.utils.computeTransformedBoundingBox(box, transform);
-    this.position.set(0,0,0).sub(tBox.getCenter());
-};
-
-Potree.PointCloudOctree.prototype.moveToGroundPlane = function(){
-    this.updateMatrixWorld(true);
-    var box = this.boundingBox;
-    var transform = this.matrixWorld;
-    var tBox = Potree.utils.computeTransformedBoundingBox(box, transform);
-    this.position.y += -tBox.min.y;
-};
-
-Potree.PointCloudOctree.prototype.getBoundingBoxWorld = function(){
-	this.updateMatrixWorld(true);
-    var box = this.boundingBox;
-    var transform = this.matrixWorld;
-    var tBox = Potree.utils.computeTransformedBoundingBox(box, transform);
-	
-	return tBox;
-};
-
-/**
- * returns points inside the profile points
- *
- * maxDepth:		search points up to the given octree depth
- *
- *
- * The return value is an array with all segments of the profile path
- *  var segment = {
- * 		start: 	THREE.Vector3,
- * 		end: 	THREE.Vector3,
- * 		points: {}
- * 		project: function()
- *  };
- *
- * The project() function inside each segment can be used to transform
- * that segments point coordinates to line up along the x-axis.
- *
- *
- */
-Potree.PointCloudOctree.prototype.getPointsInProfile = function(profile, maxDepth, callback){
-
-	if(callback){
-		var request = new Potree.ProfileRequest(this, profile, maxDepth, callback);
-		this.profileRequests.push(request);
-		
-		return request;
-	}
-
-	var points = {
-		segments: [],
-		boundingBox: new THREE.Box3(),
-		projectedBoundingBox: new THREE.Box2()
-	};
-	
-	// evaluate segments
-	for(var i = 0; i < profile.points.length - 1; i++){
-		var start = profile.points[i];
-		var end = profile.points[i+1];
-		var ps = this.getProfile(start, end, profile.width, maxDepth);
-		
-		var segment = {
-			start: start,
-			end: end,
-			points: ps,
-			project: null
-		};
-		
-		points.segments.push(segment);
-		
-		points.boundingBox.expandByPoint(ps.boundingBox.min);
-		points.boundingBox.expandByPoint(ps.boundingBox.max);
-	}
-	
-	// add projection functions to the segments
-	var mileage = new THREE.Vector3();
-	for(var i = 0; i < points.segments.length; i++){
-		var segment = points.segments[i];
-		var start = segment.start;
-		var end = segment.end;
-		
-		var project = function(_start, _end, _mileage, _boundingBox){
-			var start = _start;
-			var end = _end;
-			var mileage = _mileage;
-			var boundingBox = _boundingBox;
-			
-			var xAxis = new THREE.Vector3(1,0,0);
-			var dir = new THREE.Vector3().subVectors(end, start);
-			dir.y = 0;
-			dir.normalize();
-			var alpha = Math.acos(xAxis.dot(dir));
-			if(dir.z > 0){
-				alpha = -alpha;
-			}
-			
-			
-			return function(position){
-						
-				var toOrigin = new THREE.Matrix4().makeTranslation(-start.x, -boundingBox.min.y, -start.z);
-				var alignWithX = new THREE.Matrix4().makeRotationY(-alpha);
-				var applyMileage = new THREE.Matrix4().makeTranslation(mileage.x, 0, 0);
-
-				var pos = position.clone();
-				pos.applyMatrix4(toOrigin);
-				pos.applyMatrix4(alignWithX);
-				pos.applyMatrix4(applyMileage);
-				
-				return pos;
-			};
-			
-		}(start, end, mileage.clone(), points.boundingBox.clone());
-		
-		segment.project = project;
-		
-		mileage.x += new THREE.Vector3(start.x, 0, start.z).distanceTo(new THREE.Vector3(end.x, 0, end.z));
-		mileage.y += end.y - start.y;
-	}
-	
-	points.projectedBoundingBox.min.x = 0;
-	points.projectedBoundingBox.min.y = points.boundingBox.min.y;
-	points.projectedBoundingBox.max.x = mileage.x;
-	points.projectedBoundingBox.max.y = points.boundingBox.max.y;
-	
-	return points;
-};
-
-/**
- * returns points inside the given profile bounds.
- *
- * start: 	
- * end: 	
- * width:	
- * depth:		search points up to the given octree depth
- * callback:	if specified, points are loaded before searching
- *				
- *
- */
-Potree.PointCloudOctree.prototype.getProfile = function(start, end, width, depth, callback){
-	if(callback !== undefined){
-		var request = new Potree.ProfileRequest(start, end, width, depth, callback);
-		this.profileRequests.push(request);
-	}else{
-		var stack = [];
-		stack.push(this);
-		
-		var center = new THREE.Vector3().addVectors(end, start).multiplyScalar(0.5);
-		var length = new THREE.Vector3().subVectors(end, start).length();
-		var side = new THREE.Vector3().subVectors(end, start).normalize();
-		var up = new THREE.Vector3(0, 1, 0);
-		var forward = new THREE.Vector3().crossVectors(side, up).normalize();
-		var N = forward;
-		var cutPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(N, start);
-		var halfPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(side, center);
-		
-		var inside = null;
-		
-		var boundingBox = new THREE.Box3();
-		
 		
 		while(stack.length > 0){
 			var object = stack.shift();
 			
+			object.visible = false;
 			
-			var pointsFound = 0;
-			
-			if(object instanceof THREE.Points){
-				var geometry = object.geometry;
-				var positions = geometry.attributes.position;
-				var p = positions.array;
-				var numPoints = object.numPoints;
-				
-				if(!inside){
-					inside = {};
-					
-					for (var property in geometry.attributes) {
-						if (geometry.attributes.hasOwnProperty(property)) {
-							if(property === "indices"){
-							
-							}else{
-								inside[property] = [];
-							}
-						}
-					}
-				}
-				
-				for(var i = 0; i < numPoints; i++){
-					var pos = new THREE.Vector3(p[3*i], p[3*i+1], p[3*i+2]);
-					pos.applyMatrix4(this.matrixWorld);
-					var distance = Math.abs(cutPlane.distanceToPoint(pos));
-					var centerDistance = Math.abs(halfPlane.distanceToPoint(pos));
-					
-					if(distance < width / 2 && centerDistance < length / 2){
-						boundingBox.expandByPoint(pos);
-						
-						for (var property in geometry.attributes) {
-							if (geometry.attributes.hasOwnProperty(property)) {
-							
-								if(property === "position"){
-									inside[property].push(pos);
-								}else if(property === "indices"){
-									// skip indices
-								}else{
-									var values = geometry.attributes[property];
-									if(values.itemSize === 1){
-										inside[property].push(values.array[i + j]);
-									}else{
-										var value = [];
-										for(var j = 0; j < values.itemSize; j++){
-											value.push(values.array[i*values.itemSize + j]);
-										}
-										inside[property].push(value);
-									}
-								}
-								
-							}
-						}
-						
-						
-						pointsFound++;
-					}
-				}
-			}
-			
-			//console.log("traversing: " + object.name + ", #points found: " + pointsFound);
-			
-			if(object == this || object.level < depth){
-				for(var i = 0; i < object.children.length; i++){
-					var child = object.children[i];
-					if(child instanceof THREE.Points){
-						var sphere = child.boundingSphere.clone().applyMatrix4(child.matrixWorld);
-						if(cutPlane.distanceToSphere(sphere) < sphere.radius){
-							stack.push(child);	
-						}			
-					}
-				}
-			}
-		}
-		
-		inside.numPoints = inside.position.length;
-		
-		var project = function(_start, _end){
-			var start = _start;
-			var end = _end;
-			
-			var xAxis = new THREE.Vector3(1,0,0);
-			var dir = new THREE.Vector3().subVectors(end, start);
-			dir.y = 0;
-			dir.normalize();
-			var alpha = Math.acos(xAxis.dot(dir));
-			if(dir.z > 0){
-				alpha = -alpha;
-			}
-			
-			
-			return function(position){
-						
-				var toOrigin = new THREE.Matrix4().makeTranslation(-start.x, -start.y, -start.z);
-				var alignWithX = new THREE.Matrix4().makeRotationY(-alpha);
-
-				var pos = position.clone();
-				pos.applyMatrix4(toOrigin);
-				pos.applyMatrix4(alignWithX);
-				
-				return pos;
-			};
-			
-		}(start, end);
-		
-		inside.project = project;
-		inside.boundingBox = boundingBox;
-		
-		return inside;
-	}
-};
-
-Potree.PointCloudOctree.prototype.getVisibleExtent = function(){
-	return this.visibleBounds.applyMatrix4(this.matrixWorld);
-};
-
-
-/**
- *
- *
- *
- * params.pickWindowSize:	Look for points inside a pixel window of this size.
- * 							Use odd values: 1, 3, 5, ...
- * 
- * 
- * TODO: only draw pixels that are actually read with readPixels(). 
- * 
- */
-Potree.PointCloudOctree.prototype.pick = function(renderer, camera, ray, params = {}){
-	// this function finds intersections by rendering point indices and then checking the point index at the mouse location.
-	// point indices are 3 byte and rendered to the RGB component.
-	// point cloud node indices are 1 byte and stored in the ALPHA component.
-	// this limits picking capabilities to 256 nodes and 2^24 points per node. 
-	
-	let gl = renderer.context;
-	
-	let compileMaterial = function(material){
-		if(material._glstate === undefined){
-			material._glstate = {};
-		}
-		
-		let glstate = material._glstate;
-		
-		// VERTEX SHADER
-		let vs = gl.createShader(gl.VERTEX_SHADER);
-		{
-			gl.shaderSource(vs, material.vertexShader);
-			gl.compileShader(vs);
-			
-			let success = gl.getShaderParameter(vs, gl.COMPILE_STATUS);
-			if (!success) {
-				console.error("could not compile vertex shader:");
-				
-				let log = gl.getShaderInfoLog(vs);
-				console.error(log, material.vertexShader);
-				
-				return;
-			}
-		}
-		
-		// FRAGMENT SHADER
-		let fs = gl.createShader(gl.FRAGMENT_SHADER);
-		{
-			gl.shaderSource(fs, material.fragmentShader);
-			gl.compileShader(fs);
-			
-			let success = gl.getShaderParameter(fs, gl.COMPILE_STATUS);
-			if (!success) {
-				console.error("could not compile fragment shader:");
-				console.error(material.fragmentShader);
-				
-				return;
-			}
-		}
-		
-		// PROGRAM
-		var program = gl.createProgram();
-		gl.attachShader(program, vs);
-		gl.attachShader(program, fs);
-		gl.linkProgram(program);
-		var success = gl.getProgramParameter(program, gl.LINK_STATUS);
-		if (!success) {
-			console.error("could not compile shader:");
-			console.error(material.vertexShader);
-			console.error(material.fragmentShader);
-				
-			return;
-		}
-		
-		glstate.program = program;
-		
-		gl.useProgram( program );
-		
-		{ // UNIFORMS
-			let uniforms = {};
-			let n = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
-
-			for(let i = 0; i < n; i++){
-				var uniform = gl.getActiveUniform(program, i);
-				var name = uniform.name;
-				var loc = gl.getUniformLocation(program, name);
-
-				uniforms[name] = loc;
-			}
-			
-			glstate.uniforms = uniforms;
-			glstate.textures = {};
-		}
-	};
-	
-	if(Potree.PointCloudOctree.pickMaterial === undefined){
-		Potree.PointCloudOctree.pickMaterial = new Potree.PointCloudMaterial();
-		Potree.PointCloudOctree.pickMaterial.pointColorType = Potree.PointColorType.POINT_INDEX;		
-		//Potree.PointCloudOctree.pickMaterial.pointColorType = Potree.PointColorType.COLOR;
-		
-		compileMaterial(Potree.PointCloudOctree.pickMaterial);
-	}
-	
-	let pickMaterial = Potree.PointCloudOctree.pickMaterial;
-	
-	let pickWindowSize = params.pickWindowSize || 17;
-	let pickOutsideClipRegion = params.pickOutsideClipRegion || false;
-	
-	let nodes = this.nodesOnRay(this.visibleNodes, ray);
-	
-	if(nodes.length === 0){
-		return null;
-	}
-	
-	
-	
-	{ // update pick material
-		let doRecompile = false;
-	
-		if(pickMaterial.pointSizeType !== this.material.pointSizeType){
-			pickMaterial.pointSizeType = this.material.pointSizeType;
-			doRecompile = true;
-		}
-		
-		if(pickMaterial.pointShape !== this.material.pointShape){
-			pickMaterial.pointShape = this.material.pointShape;
-			doRecompile = true;
-		}
-		
-		if(pickMaterial.interpolate !== this.material.interpolate){
-			pickMaterial.interpolate = this.material.interpolate;
-			doRecompile = true;
-		}
-		
-		pickMaterial.size = this.material.size;
-		pickMaterial.minSize = this.material.minSize;
-		pickMaterial.maxSize = this.material.maxSize;
-		pickMaterial.classification = this.material.classification;
-		
-		if(pickOutsideClipRegion){
-			pickMaterial.clipMode = Potree.ClipMode.DISABLED;
-		}else{
-			pickMaterial.clipMode = this.material.clipMode;
-			if(this.material.clipMode === Potree.ClipMode.CLIP_OUTSIDE){
-				pickMaterial.setClipBoxes(this.material.clipBoxes);
-			}else{
-				pickMaterial.setClipBoxes([]);
-			}
-		}
-		
-		this.updateMaterial(pickMaterial, nodes, camera, renderer);
-		
-		if(doRecompile){
-			
-			compileMaterial(pickMaterial);
-			
-		};
-	}
-	
-	var width = Math.ceil(renderer.domElement.clientWidth);
-	var height = Math.ceil(renderer.domElement.clientHeight);
-	
-	var pixelPos = new THREE.Vector3().addVectors(camera.position, ray.direction).project(camera);
-	pixelPos.addScalar(1).multiplyScalar(0.5);
-	pixelPos.x *= width;
-	pixelPos.y *= height;
-	
-	if(!this.pickTarget){
-		this.pickTarget = new THREE.WebGLRenderTarget( 
-			1, 1, 
-			{ minFilter: THREE.LinearFilter, 
-			magFilter: THREE.NearestFilter, 
-			format: THREE.RGBAFormat } 
-		);
-	}else if(this.pickTarget.width != width || this.pickTarget.height != height){
-		this.pickTarget.dispose();
-		this.pickTarget = new THREE.WebGLRenderTarget( 
-			1, 1, 
-			{ minFilter: THREE.LinearFilter, 
-			magFilter: THREE.NearestFilter, 
-			format: THREE.RGBAFormat } 
-		);
-	}
-	this.pickTarget.setSize(width, height);
-
-	
-	
-	gl.enable(gl.SCISSOR_TEST);
-	gl.scissor(pixelPos.x - (pickWindowSize - 1) / 2, pixelPos.y - (pickWindowSize - 1) / 2,pickWindowSize,pickWindowSize);
-	gl.disable(gl.SCISSOR_TEST);
-	
-	renderer.setRenderTarget( this.pickTarget );
-	
-	renderer.state.setDepthTest( pickMaterial.depthTest );
-	renderer.state.setDepthWrite( pickMaterial.depthWrite );
-	renderer.state.setBlending( THREE.NoBlending );
-	
-	renderer.clear( renderer.autoClearColor, renderer.autoClearDepth, renderer.autoClearStencil );
-	
-	let glstate = pickMaterial._glstate;
-	let program = glstate.program;
-	let uniforms = glstate.uniforms;
-	gl.useProgram(program);
-		
-	gl.uniformMatrix4fv(uniforms["projectionMatrix"], false, new Float32Array(camera.projectionMatrix.elements));
-	gl.uniformMatrix4fv(uniforms["viewMatrix"], false, new Float32Array(camera.matrixWorldInverse.elements));
-	
-	{
-		if(glstate.textures.visibleNodes === undefined){
-			let image = pickMaterial.visibleNodesTexture.image;
-			let texture = gl.createTexture();
-			gl.bindTexture(gl.TEXTURE_2D, texture);
-			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, image.width, image.height, 0, gl.RGB, gl.UNSIGNED_BYTE, image.data);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-			//gl.generateMipmap(gl.TEXTURE_2D);
-			gl.bindTexture(gl.TEXTURE_2D, null);
-			glstate.textures.visibleNodes = {
-				id: texture
-			};
-		}
-		
-		let texture = glstate.textures.visibleNodes.id;
-		let image = pickMaterial.visibleNodesTexture.image;
-		
-		gl.uniform1i(uniforms["visibleNodes"], 0);
-		gl.activeTexture(gl.TEXTURE0);
-		gl.bindTexture( gl.TEXTURE_2D, texture );
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, image.width, image.height, 0, gl.RGB, gl.UNSIGNED_BYTE, image.data);
-		
-	}
-	
-	gl.uniform1f(uniforms["fov"], this.material.fov);
-	gl.uniform1f(uniforms["screenWidth"], this.material.screenWidth);
-	gl.uniform1f(uniforms["screenHeight"], this.material.screenHeight);
-	gl.uniform1f(uniforms["spacing"], this.material.spacing);
-	gl.uniform1f(uniforms["near"], this.material.near);
-	gl.uniform1f(uniforms["far"], this.material.far);
-	gl.uniform1f(uniforms["size"], this.material.size);
-	gl.uniform1f(uniforms["minSize"], this.material.minSize);
-	gl.uniform1f(uniforms["maxSize"], this.material.maxSize);
-	gl.uniform1f(uniforms["octreeSize"], this.pcoGeometry.boundingBox.getSize().x);
-	
-	{
-		let apPosition = gl.getAttribLocation(program, "position");
-		let apNormal = gl.getAttribLocation(program, "normal");
-		let apClassification = gl.getAttribLocation(program, "classification");
-		let apIndices = gl.getAttribLocation(program, "indices");
-		
-		gl.enableVertexAttribArray( apPosition );
-		gl.enableVertexAttribArray( apNormal );
-		gl.enableVertexAttribArray( apClassification );		
-		gl.enableVertexAttribArray( apIndices );
-	}
-	
-	for(let i = 0; i < nodes.length; i++){
-		let node = nodes[i];
-		let object = node.sceneNode;
-		let geometry = object.geometry;
-		
-		pickMaterial.pcIndex = i + 1;
-		
-		let modelView = new THREE.Matrix4().multiplyMatrices(camera.matrixWorldInverse, object.matrixWorld);
-		gl.uniformMatrix4fv(uniforms["modelMatrix"], false, new Float32Array(object.matrixWorld.elements));
-		gl.uniformMatrix4fv(uniforms["modelViewMatrix"], false, new Float32Array(modelView.elements));
-		
-		let apPosition = gl.getAttribLocation(program, "position");
-		let apNormal = gl.getAttribLocation(program, "normal");
-		let apClassification = gl.getAttribLocation(program, "classification");
-		let apIndices = gl.getAttribLocation(program, "indices");
-		
-		let positionBuffer = renderer.properties.get(geometry.attributes.position).__webglBuffer;
-		
-		if(positionBuffer === undefined){
-			continue;
-		}
-		
-		let oldstate = {
-			enabled: []
-		};
-		
-		// TODO hack
-		for(let i = 0; i < 16; i++){
-			oldstate.enabled[i] = gl.getVertexAttrib(i, gl.VERTEX_ATTRIB_ARRAY_ENABLED);
-			gl.disableVertexAttribArray(i);
-		}
-		
-		gl.bindBuffer( gl.ARRAY_BUFFER, positionBuffer );
-		gl.vertexAttribPointer( apPosition, 3, gl.FLOAT, false, 0, 0 ); 
-		gl.enableVertexAttribArray(apPosition);
-		
-		let indexBuffer = renderer.properties.get(geometry.attributes.indices).__webglBuffer;
-		gl.bindBuffer( gl.ARRAY_BUFFER, indexBuffer );
-		gl.vertexAttribPointer( apIndices, 4, gl.UNSIGNED_BYTE, true, 0, 0 ); 
-		gl.enableVertexAttribArray(apIndices);
-		
-		gl.uniform1f(uniforms["pcIndex"], pickMaterial.pcIndex);
-
-		let numPoints = node.getNumPoints();
-		if(numPoints > 0){
-			gl.drawArrays( gl.POINTS, 0, node.getNumPoints());		
-		}
-		
-		// TODO hack
-		for(let i = 0; i < 16; i++){
-			gl.disableVertexAttribArray(i);
-		}
-		gl.enableVertexAttribArray(0);
-		gl.enableVertexAttribArray(1);
-	}
-	
-	var pixelCount = pickWindowSize * pickWindowSize;
-	var buffer = new ArrayBuffer(pixelCount*4);
-	var pixels = new Uint8Array(buffer);
-	var ibuffer = new Uint32Array(buffer);
-	renderer.context.readPixels(
-		pixelPos.x - (pickWindowSize-1) / 2, pixelPos.y - (pickWindowSize-1) / 2, 
-		pickWindowSize, pickWindowSize, 
-		renderer.context.RGBA, renderer.context.UNSIGNED_BYTE, pixels);
-
-
-	//{ // open window with image
-	//	var br = new ArrayBuffer(width*height*4);
-	//	var bp = new Uint8Array(br);
-	//	renderer.context.readPixels( 0, 0, width, height, 
-	//		renderer.context.RGBA, renderer.context.UNSIGNED_BYTE, bp);
-	//	
-	//	var img = pixelsArrayToImage(bp, width, height);
-	//	var screenshot = img.src;
-	//	
-	//	var w = window.open();
-	//	w.document.write('<img src="'+screenshot+'"/>');
-	//}
-		
-	// find closest hit inside pixelWindow boundaries
-	var min = Number.MAX_VALUE;
-	var hit = null;
-	//console.log("finding closest hit");
-	for(let u = 0; u < pickWindowSize; u++){
-		for(var v = 0; v < pickWindowSize; v++){
-			var offset = (u + v*pickWindowSize);
-			var distance = Math.pow(u - (pickWindowSize-1) / 2, 2) + Math.pow(v - (pickWindowSize-1) / 2, 2);
-			
-			var pcIndex = pixels[4*offset + 3];
-			pixels[4*offset + 3] = 0;
-			var pIndex = ibuffer[offset];
-			
-			if((pIndex !== 0 || pcIndex !== 0) && distance < min){
-				
-				hit = {
-					pIndex: pIndex,
-					pcIndex: pcIndex - 1
-				};
-				min = distance;
-			}
-		}
-	}	
-	
-	if(hit){
-		var point = {};
-		
-		var pc = nodes[hit.pcIndex].sceneNode;
-		var attributes = pc.geometry.attributes;
-		
-		for (var property in attributes) {
-			if (attributes.hasOwnProperty(property)) {
-				var values = pc.geometry.attributes[property];
-			
-				if(property === "position"){
-					var positionArray = values.array;
-					var x = positionArray[3*hit.pIndex+0];
-					var y = positionArray[3*hit.pIndex+1];
-					var z = positionArray[3*hit.pIndex+2];
-					var position = new THREE.Vector3(x, y, z);
-					position.applyMatrix4(this.matrixWorld);
-				
-					point[property] = position;
-				}else if(property === "indices"){
-				
-				}else{
-					if(values.itemSize === 1){
-						point[property] = values.array[hit.pIndex];
-					}else{
-						var value = [];
-						for(var j = 0; j < values.itemSize; j++){
-							value.push(values.array[values.itemSize*hit.pIndex + j]);
-						}
-						point[property] = value;
-					}
-				}
-			}
-		}
-		
-		
-		return point;
-		//return null;
-	}else{
-		return null;
-	}
-};
-
-var demTime = 0;
-
-Potree.PointCloudOctree.prototype.createDEM = function(node){	
-	var start = new Date().getTime();
-
-	var sceneNode = node.sceneNode;
-
-	var world = sceneNode.matrixWorld;
-
-	var boundingBox = sceneNode.boundingBox.clone().applyMatrix4(world);
-	var bbSize = boundingBox.getSize();
-	var positions = sceneNode.geometry.attributes.position.array;
-	var demSize = 64;
-	var demMArray = new Array(demSize*demSize);
-	var dem = new Float32Array(demSize*demSize);
-	var n = positions.length / 3;
-	
-	var toWorld = function(dx, dy){
-		var x = (dx * bbSize.x) / (demSize - 1) + boundingBox.min.x;
-		var y = dem[dx + dy * demSize];
-		var z = (dy * bbSize.z) / (demSize - 1)+ boundingBox.min.z;
-		
-		return [x, y, z];
-	};
-	
-	var toDem = function(x, y){
-		var dx = parseInt(demSize * (x - boundingBox.min.x) / bbSize.x);
-		var dy = parseInt(demSize * (z - boundingBox.min.z) / bbSize.z);
-		dx = Math.min(dx, demSize - 1);
-		dy = Math.min(dy, demSize - 1);
-		
-		return [dx, dy];
-	};
-
-	for(var i = 0; i < n; i++){
-		var x = positions[3*i + 0];
-		var y = positions[3*i + 1];
-		var z = positions[3*i + 2];
-		
-		var worldPos = new THREE.Vector3(x,y,z).applyMatrix4(world);
-		
-		var dx = parseInt(demSize * (worldPos.x - boundingBox.min.x) / bbSize.x);
-		var dy = parseInt(demSize * (worldPos.z - boundingBox.min.z) / bbSize.z);
-		dx = Math.min(dx, demSize - 1);
-		dy = Math.min(dy, demSize - 1);
-		
-		var index = dx + dy * demSize;
-		if(!demMArray[index]){
-			demMArray[index] = [];
-		}
-		demMArray[index].push(worldPos.y);
-		
-		//if(dem[dx + dy * demSize] === 0){
-		//	dem[dx + dy * demSize] = worldPos.y;
-		//}else{
-		//	dem[dx + dy * demSize] = Math.max(dem[dx + dy * demSize], worldPos.y);
-		//}
-	}
-	
-	for(var i = 0; i < demMArray.length; i++){
-		var values = demMArray[i];
-		
-		if(!values){
-			dem[i] = 0;
-		}else if(values.length === 0){
-			dem[i] = 0;
-		}else{
-			var medianIndex = parseInt((values.length-1) / 2); 
-			dem[i] = values[medianIndex];
-		}
-	}
-	
-	var box2 = new THREE.Box2();
-	box2.expandByPoint(new THREE.Vector3(boundingBox.min.x, boundingBox.min.z));
-	box2.expandByPoint(new THREE.Vector3(boundingBox.max.x, boundingBox.max.z));
-	
-	var result = {
-		boundingBox: boundingBox,
-		boundingBox2D: box2,
-		dem: dem,
-		demSize: demSize
-	};
-	
-	
-	
-	
-	//if(node.level === 6){
-	//	var geometry = new THREE.BufferGeometry();
-	//	var vertices = new Float32Array((demSize-1)*(demSize-1)*2*3*3);
-	//	var offset = 0;
-	//	for(var i = 0; i < demSize-1; i++){
-	//		for(var j = 0; j < demSize-1; j++){
-	//			//var offset = 18*i + 18*j*demSize;
-	//			
-	//			var dx = i;
-	//			var dy = j;
-	//			
-	//			var v1 = toWorld(dx, dy);
-	//			var v2 = toWorld(dx+1, dy);
-	//			var v3 = toWorld(dx+1, dy+1);
-	//			var v4 = toWorld(dx, dy+1);
-	//			
-	//			vertices[offset+0] = v3[0];
-	//			vertices[offset+1] = v3[1];
-	//			vertices[offset+2] = v3[2];
-	//			
-	//			vertices[offset+3] = v2[0];
-	//			vertices[offset+4] = v2[1];
-	//			vertices[offset+5] = v2[2];
-	//			
-	//			vertices[offset+6] = v1[0];
-	//			vertices[offset+7] = v1[1];
-	//			vertices[offset+8] = v1[2];
-	//			
-	//			
-	//			vertices[offset+9 ] = v3[0];
-	//			vertices[offset+10] = v3[1];
-	//			vertices[offset+11] = v3[2];
-	//			
-	//			vertices[offset+12] = v1[0];
-	//			vertices[offset+13] = v1[1];
-	//			vertices[offset+14] = v1[2];
-	//			
-	//			vertices[offset+15] = v4[0];
-	//			vertices[offset+16] = v4[1];
-	//			vertices[offset+17] = v4[2];
-	//					 
-	//					
-	//			
-	//			//var x = (dx * bbSize.min.x) / demSize + boundingBox.min.x;
-	//			//var y = (dy * bbSize.min.y) / demSize + boundingBox.min.y;
-	//			//var z = dem[dx + dy * demSize];
-	//			
-	//			offset += 18;
-	//			
-	//		}
-	//	}
-	//	
-	//	geometry.addAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
-	//	geometry.computeFaceNormals();
-	//	geometry.computeVertexNormals();
-	//	
-	//	var material = new THREE.MeshNormalMaterial( { color: 0xff0000, shading: THREE.SmoothShading } );
-	//	var mesh = new THREE.Mesh( geometry, material );
-	//	viewer.scene.add(mesh);
-	//}
-	
-	
-	//if(node.level == 0){
-	//	scene.add(mesh);
-	//	
-	//	var demb = new Uint8Array(demSize*demSize*4);
-	//	for(var i = 0; i < demSize*demSize; i++){
-	//		demb[4*i + 0] = 255 * dem[i] / 300;
-	//		demb[4*i + 1] = 255 * dem[i] / 300;
-	//		demb[4*i + 2] = 255 * dem[i] / 300;
-	//		demb[4*i + 3] = 255;
-	//	}
-	//
-	//	var img = pixelsArrayToImage(demb, demSize, demSize);
-	//	img.style.boder = "2px solid red";
-	//	img.style.position = "absolute";
-	//	img.style.top  = "0px";
-	//	img.style.width = "400px";
-	//	img.style.height = "200px";
-	//	var txt = document.createElement("div");
-	//	txt.innerHTML = node.name;
-	//	//document.body.appendChild(txt);
-	//	document.body.appendChild(img);
-	//}
-	
-	
-	
-	var end = new Date().getTime();
-	var duration = end - start;
-	
-	demTime += duration;
-
-	return result;
-};
-
-Potree.PointCloudOctree.prototype.getDEMHeight = function(position){
-	var pos2 = new THREE.Vector2(position.x, position.z);
-	
-	var demHeight = function(dem){
-		var demSize = dem.demSize;
-		var box = dem.boundingBox2D;
-		var insideBox = box.containsPoint(pos2);
-		if(box.containsPoint(pos2)){
-			var uv = pos2.clone().sub(box.min).divide(box.getSize());
-			var xy = uv.clone().multiplyScalar(demSize);
-			
-			var demHeight = 0;
-			
-			if((xy.x > 0.5 && xy.x < demSize - 0.5) && (xy.y > 0.5 && xy.y < demSize - 0.5)){
-				var i = Math.floor(xy.x - 0.5);
-				var j = Math.floor(xy.y - 0.5);
-				i = (i === demSize - 1) ? (demSize-2) : i;
-				j = (j === demSize - 1) ? (demSize-2) : j;
-				
-				var u = xy.x - i - 0.5;
-				var v = xy.y - j - 0.5; 
-				
-				var index00 = i + j * demSize;
-				var index10 = (i+1) + j * demSize;
-				var index01 = i + (j+1) * demSize;
-				var index11 = (i+1) + (j+1) * demSize;
-				
-				var height00 = dem.dem[index00];
-				var height10 = dem.dem[index10];
-				var height01 = dem.dem[index01];
-				var height11 = dem.dem[index11];
-				
-				if(height00 === 0 || height10 === 0 || height01 === 0 || height11 === 0){
-					demHeight = null;
-				}else{
-				
-					var hx1 = height00 * (1-u) + height10 * u;
-					var hx2 = height01 * (1-u) + height11 * u;
-					
-					demHeight = hx1 * (1-v) + hx2 * v;
-				}
-				
-				var bla;
-			}else{
-				xy.x = Math.min(parseInt(Math.min(xy.x, demSize)), demSize-1);
-				xy.y = Math.min(parseInt(Math.min(xy.y, demSize)), demSize-1);
-			
-				var index = xy.x + xy.y * demSize;
-				demHeight = dem.dem[index];
-			}
-			
-			
-			return demHeight;
-		}
-		
-		return null;
-	};
-	
-	var height = null;
-	
-	var stack = [];
-	var chosenNode = null;
-	if(this.root.dem){
-		stack.push(this.root);
-	}
-	while(stack.length > 0){
-		var node = stack.shift();
-		var dem = node.dem;
-		
-		var demSize = dem.demSize;
-		var box = dem.boundingBox2D;
-		var insideBox = box.containsPoint(pos2);
-		if(!insideBox){
-			continue;
-		}
-		
-		var dh = demHeight(dem);
-		if(!height){
-			height = dh;
-		}else if(dh != null && dh > 0){
-			height = dh;
-		}
-
-		if(node.level <= 6){
-			for(var i = 0; i < 8; i++){
-				var child = node.children[i];
-				if(typeof child !== "undefined" && typeof child.dem !== "undefined"){
+			for(var i = 0; i < object.children.length; i++){
+				var child = object.children[i];
+				if(child.visible){
 					stack.push(child);
 				}
 			}
 		}
 	}
 	
-	
-	
-	return height;
-};
+	moveToOrigin(){
+		this.position.set(0,0,0);
+		this.updateMatrixWorld(true);
+		var box = this.boundingBox;
+		var transform = this.matrixWorld;
+		var tBox = Potree.utils.computeTransformedBoundingBox(box, transform);
+		this.position.set(0,0,0).sub(tBox.getCenter());
+	};
 
-//Potree.PointCloudOctree.prototype.generateTerain = function(){
-//	var bb = this.boundingBox.clone().applyMatrix4(this.matrixWorld);
-//	
-//	var width = 300;
-//	var height = 300;
-//	var geometry = new THREE.BufferGeometry();
-//	var vertices = new Float32Array(width*height*3);
-//	
-//	var offset = 0;
-//	for(var i = 0; i < width; i++){
-//		for( var j = 0; j < height; j++){
-//			var u = i / width;
-//			var v = j / height;
-//			
-//			var x = u * bb.size().x + bb.min.x;
-//			var z = v * bb.size().z + bb.min.z;
-//			
-//			var y = this.getDEMHeight(new THREE.Vector3(x, 0, z));
-//			if(!y){
-//				y = 0;
-//			}
-//			
-//			vertices[offset + 0] = x;
-//			vertices[offset + 1] = y;
-//			vertices[offset + 2] = z;
-//			
-//			//var sm = new THREE.Mesh(sg);
-//			//sm.position.set(x,y,z);
-//			//scene.add(sm);
-//			
-//			offset += 3;
-//		}
-//	}
-//	
-//	geometry.addAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
-//	var material = new THREE.PointCloudMaterial({size: 20, color: 0x00ff00});
-//	
-//	var pc = new THREE.Points(geometry, material);
-//	scene.add(pc);
-//	
-//};
+	moveToGroundPlane(){
+		this.updateMatrixWorld(true);
+		var box = this.boundingBox;
+		var transform = this.matrixWorld;
+		var tBox = Potree.utils.computeTransformedBoundingBox(box, transform);
+		this.position.y += -tBox.min.y;
+	};
 
-Object.defineProperty(Potree.PointCloudOctree.prototype, "progress", {
-	get: function(){
+	getBoundingBoxWorld(){
+		this.updateMatrixWorld(true);
+		var box = this.boundingBox;
+		var transform = this.matrixWorld;
+		var tBox = Potree.utils.computeTransformedBoundingBox(box, transform);
+		
+		return tBox;
+	};
+	
+	/**
+	 * returns points inside the profile points
+	 *
+	 * maxDepth:		search points up to the given octree depth
+	 *
+	 *
+	 * The return value is an array with all segments of the profile path
+	 *  var segment = {
+	 * 		start: 	THREE.Vector3,
+	 * 		end: 	THREE.Vector3,
+	 * 		points: {}
+	 * 		project: function()
+	 *  };
+	 *
+	 * The project() function inside each segment can be used to transform
+	 * that segments point coordinates to line up along the x-axis.
+	 *
+	 *
+	 */
+	getPointsInProfile(profile, maxDepth, callback){
+
+		if(callback){
+			var request = new Potree.ProfileRequest(this, profile, maxDepth, callback);
+			this.profileRequests.push(request);
+			
+			return request;
+		}
+
+		var points = {
+			segments: [],
+			boundingBox: new THREE.Box3(),
+			projectedBoundingBox: new THREE.Box2()
+		};
+		
+		// evaluate segments
+		for(var i = 0; i < profile.points.length - 1; i++){
+			var start = profile.points[i];
+			var end = profile.points[i+1];
+			var ps = this.getProfile(start, end, profile.width, maxDepth);
+			
+			var segment = {
+				start: start,
+				end: end,
+				points: ps,
+				project: null
+			};
+			
+			points.segments.push(segment);
+			
+			points.boundingBox.expandByPoint(ps.boundingBox.min);
+			points.boundingBox.expandByPoint(ps.boundingBox.max);
+		}
+		
+		// add projection functions to the segments
+		var mileage = new THREE.Vector3();
+		for(var i = 0; i < points.segments.length; i++){
+			var segment = points.segments[i];
+			var start = segment.start;
+			var end = segment.end;
+			
+			var project = function(_start, _end, _mileage, _boundingBox){
+				var start = _start;
+				var end = _end;
+				var mileage = _mileage;
+				var boundingBox = _boundingBox;
+				
+				var xAxis = new THREE.Vector3(1,0,0);
+				var dir = new THREE.Vector3().subVectors(end, start);
+				dir.y = 0;
+				dir.normalize();
+				var alpha = Math.acos(xAxis.dot(dir));
+				if(dir.z > 0){
+					alpha = -alpha;
+				}
+				
+				
+				return function(position){
+							
+					var toOrigin = new THREE.Matrix4().makeTranslation(-start.x, -boundingBox.min.y, -start.z);
+					var alignWithX = new THREE.Matrix4().makeRotationY(-alpha);
+					var applyMileage = new THREE.Matrix4().makeTranslation(mileage.x, 0, 0);
+
+					var pos = position.clone();
+					pos.applyMatrix4(toOrigin);
+					pos.applyMatrix4(alignWithX);
+					pos.applyMatrix4(applyMileage);
+					
+					return pos;
+				};
+				
+			}(start, end, mileage.clone(), points.boundingBox.clone());
+			
+			segment.project = project;
+			
+			mileage.x += new THREE.Vector3(start.x, 0, start.z).distanceTo(new THREE.Vector3(end.x, 0, end.z));
+			mileage.y += end.y - start.y;
+		}
+		
+		points.projectedBoundingBox.min.x = 0;
+		points.projectedBoundingBox.min.y = points.boundingBox.min.y;
+		points.projectedBoundingBox.max.x = mileage.x;
+		points.projectedBoundingBox.max.y = points.boundingBox.max.y;
+		
+		return points;
+	}
+	
+	/**
+	 * returns points inside the given profile bounds.
+	 *
+	 * start: 	
+	 * end: 	
+	 * width:	
+	 * depth:		search points up to the given octree depth
+	 * callback:	if specified, points are loaded before searching
+	 *				
+	 *
+	 */
+	getProfile(start, end, width, depth, callback){
+		if(callback !== undefined){
+			var request = new Potree.ProfileRequest(start, end, width, depth, callback);
+			this.profileRequests.push(request);
+		}else{
+			var stack = [];
+			stack.push(this);
+			
+			var center = new THREE.Vector3().addVectors(end, start).multiplyScalar(0.5);
+			var length = new THREE.Vector3().subVectors(end, start).length();
+			var side = new THREE.Vector3().subVectors(end, start).normalize();
+			var up = new THREE.Vector3(0, 1, 0);
+			var forward = new THREE.Vector3().crossVectors(side, up).normalize();
+			var N = forward;
+			var cutPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(N, start);
+			var halfPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(side, center);
+			
+			var inside = null;
+			
+			var boundingBox = new THREE.Box3();
+			
+			
+			while(stack.length > 0){
+				var object = stack.shift();
+				
+				
+				var pointsFound = 0;
+				
+				if(object instanceof THREE.Points){
+					var geometry = object.geometry;
+					var positions = geometry.attributes.position;
+					var p = positions.array;
+					var numPoints = object.numPoints;
+					
+					if(!inside){
+						inside = {};
+						
+						for (var property in geometry.attributes) {
+							if (geometry.attributes.hasOwnProperty(property)) {
+								if(property === "indices"){
+								
+								}else{
+									inside[property] = [];
+								}
+							}
+						}
+					}
+					
+					for(var i = 0; i < numPoints; i++){
+						var pos = new THREE.Vector3(p[3*i], p[3*i+1], p[3*i+2]);
+						pos.applyMatrix4(this.matrixWorld);
+						var distance = Math.abs(cutPlane.distanceToPoint(pos));
+						var centerDistance = Math.abs(halfPlane.distanceToPoint(pos));
+						
+						if(distance < width / 2 && centerDistance < length / 2){
+							boundingBox.expandByPoint(pos);
+							
+							for (var property in geometry.attributes) {
+								if (geometry.attributes.hasOwnProperty(property)) {
+								
+									if(property === "position"){
+										inside[property].push(pos);
+									}else if(property === "indices"){
+										// skip indices
+									}else{
+										var values = geometry.attributes[property];
+										if(values.itemSize === 1){
+											inside[property].push(values.array[i + j]);
+										}else{
+											var value = [];
+											for(var j = 0; j < values.itemSize; j++){
+												value.push(values.array[i*values.itemSize + j]);
+											}
+											inside[property].push(value);
+										}
+									}
+									
+								}
+							}
+							
+							
+							pointsFound++;
+						}
+					}
+				}
+				
+				//console.log("traversing: " + object.name + ", #points found: " + pointsFound);
+				
+				if(object == this || object.level < depth){
+					for(var i = 0; i < object.children.length; i++){
+						var child = object.children[i];
+						if(child instanceof THREE.Points){
+							var sphere = child.boundingSphere.clone().applyMatrix4(child.matrixWorld);
+							if(cutPlane.distanceToSphere(sphere) < sphere.radius){
+								stack.push(child);	
+							}			
+						}
+					}
+				}
+			}
+			
+			inside.numPoints = inside.position.length;
+			
+			var project = function(_start, _end){
+				var start = _start;
+				var end = _end;
+				
+				var xAxis = new THREE.Vector3(1,0,0);
+				var dir = new THREE.Vector3().subVectors(end, start);
+				dir.y = 0;
+				dir.normalize();
+				var alpha = Math.acos(xAxis.dot(dir));
+				if(dir.z > 0){
+					alpha = -alpha;
+				}
+				
+				
+				return function(position){
+							
+					var toOrigin = new THREE.Matrix4().makeTranslation(-start.x, -start.y, -start.z);
+					var alignWithX = new THREE.Matrix4().makeRotationY(-alpha);
+
+					var pos = position.clone();
+					pos.applyMatrix4(toOrigin);
+					pos.applyMatrix4(alignWithX);
+					
+					return pos;
+				};
+				
+			}(start, end);
+			
+			inside.project = project;
+			inside.boundingBox = boundingBox;
+			
+			return inside;
+		}
+	};
+
+	getVisibleExtent(){
+		return this.visibleBounds.applyMatrix4(this.matrixWorld);
+	};
+
+
+	/**
+	 *
+	 *
+	 *
+	 * params.pickWindowSize:	Look for points inside a pixel window of this size.
+	 * 							Use odd values: 1, 3, 5, ...
+	 * 
+	 * 
+	 * TODO: only draw pixels that are actually read with readPixels(). 
+	 * 
+	 */
+	pick(renderer, camera, ray, params = {}){
+		// this function finds intersections by rendering point indices and then checking the point index at the mouse location.
+		// point indices are 3 byte and rendered to the RGB component.
+		// point cloud node indices are 1 byte and stored in the ALPHA component.
+		// this limits picking capabilities to 256 nodes and 2^24 points per node. 
+		
+		let gl = renderer.context;
+		
+		let compileMaterial = function(material){
+			if(material._glstate === undefined){
+				material._glstate = {};
+			}
+			
+			let glstate = material._glstate;
+			
+			// VERTEX SHADER
+			let vs = gl.createShader(gl.VERTEX_SHADER);
+			{
+				gl.shaderSource(vs, material.vertexShader);
+				gl.compileShader(vs);
+				
+				let success = gl.getShaderParameter(vs, gl.COMPILE_STATUS);
+				if (!success) {
+					console.error("could not compile vertex shader:");
+					
+					let log = gl.getShaderInfoLog(vs);
+					console.error(log, material.vertexShader);
+					
+					return;
+				}
+			}
+			
+			// FRAGMENT SHADER
+			let fs = gl.createShader(gl.FRAGMENT_SHADER);
+			{
+				gl.shaderSource(fs, material.fragmentShader);
+				gl.compileShader(fs);
+				
+				let success = gl.getShaderParameter(fs, gl.COMPILE_STATUS);
+				if (!success) {
+					console.error("could not compile fragment shader:");
+					console.error(material.fragmentShader);
+					
+					return;
+				}
+			}
+			
+			// PROGRAM
+			var program = gl.createProgram();
+			gl.attachShader(program, vs);
+			gl.attachShader(program, fs);
+			gl.linkProgram(program);
+			var success = gl.getProgramParameter(program, gl.LINK_STATUS);
+			if (!success) {
+				console.error("could not compile shader:");
+				console.error(material.vertexShader);
+				console.error(material.fragmentShader);
+					
+				return;
+			}
+			
+			glstate.program = program;
+			
+			gl.useProgram( program );
+			
+			{ // UNIFORMS
+				let uniforms = {};
+				let n = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
+
+				for(let i = 0; i < n; i++){
+					var uniform = gl.getActiveUniform(program, i);
+					var name = uniform.name;
+					var loc = gl.getUniformLocation(program, name);
+
+					uniforms[name] = loc;
+				}
+				
+				glstate.uniforms = uniforms;
+				glstate.textures = {};
+			}
+		};
+		
+		if(Potree.PointCloudOctree.pickMaterial === undefined){
+			Potree.PointCloudOctree.pickMaterial = new Potree.PointCloudMaterial();
+			Potree.PointCloudOctree.pickMaterial.pointColorType = Potree.PointColorType.POINT_INDEX;		
+			//Potree.PointCloudOctree.pickMaterial.pointColorType = Potree.PointColorType.COLOR;
+			
+			compileMaterial(Potree.PointCloudOctree.pickMaterial);
+		}
+		
+		let pickMaterial = Potree.PointCloudOctree.pickMaterial;
+		
+		let pickWindowSize = params.pickWindowSize || 17;
+		let pickOutsideClipRegion = params.pickOutsideClipRegion || false;
+		
+		let nodes = this.nodesOnRay(this.visibleNodes, ray);
+		
+		if(nodes.length === 0){
+			return null;
+		}
+		
+		
+		
+		{ // update pick material
+			let doRecompile = false;
+		
+			if(pickMaterial.pointSizeType !== this.material.pointSizeType){
+				pickMaterial.pointSizeType = this.material.pointSizeType;
+				doRecompile = true;
+			}
+			
+			if(pickMaterial.pointShape !== this.material.pointShape){
+				pickMaterial.pointShape = this.material.pointShape;
+				doRecompile = true;
+			}
+			
+			if(pickMaterial.interpolate !== this.material.interpolate){
+				pickMaterial.interpolate = this.material.interpolate;
+				doRecompile = true;
+			}
+			
+			pickMaterial.size = this.material.size;
+			pickMaterial.minSize = this.material.minSize;
+			pickMaterial.maxSize = this.material.maxSize;
+			pickMaterial.classification = this.material.classification;
+			
+			if(pickOutsideClipRegion){
+				pickMaterial.clipMode = Potree.ClipMode.DISABLED;
+			}else{
+				pickMaterial.clipMode = this.material.clipMode;
+				if(this.material.clipMode === Potree.ClipMode.CLIP_OUTSIDE){
+					pickMaterial.setClipBoxes(this.material.clipBoxes);
+				}else{
+					pickMaterial.setClipBoxes([]);
+				}
+			}
+			
+			this.updateMaterial(pickMaterial, nodes, camera, renderer);
+			
+			if(doRecompile){
+				
+				compileMaterial(pickMaterial);
+				
+			};
+		}
+		
+		var width = Math.ceil(renderer.domElement.clientWidth);
+		var height = Math.ceil(renderer.domElement.clientHeight);
+		
+		var pixelPos = new THREE.Vector3().addVectors(camera.position, ray.direction).project(camera);
+		pixelPos.addScalar(1).multiplyScalar(0.5);
+		pixelPos.x *= width;
+		pixelPos.y *= height;
+		
+		if(!this.pickTarget){
+			this.pickTarget = new THREE.WebGLRenderTarget( 
+				1, 1, 
+				{ minFilter: THREE.LinearFilter, 
+				magFilter: THREE.NearestFilter, 
+				format: THREE.RGBAFormat } 
+			);
+		}else if(this.pickTarget.width != width || this.pickTarget.height != height){
+			this.pickTarget.dispose();
+			this.pickTarget = new THREE.WebGLRenderTarget( 
+				1, 1, 
+				{ minFilter: THREE.LinearFilter, 
+				magFilter: THREE.NearestFilter, 
+				format: THREE.RGBAFormat } 
+			);
+		}
+		this.pickTarget.setSize(width, height);
+
+		
+		
+		gl.enable(gl.SCISSOR_TEST);
+		gl.scissor(pixelPos.x - (pickWindowSize - 1) / 2, pixelPos.y - (pickWindowSize - 1) / 2,pickWindowSize,pickWindowSize);
+		gl.disable(gl.SCISSOR_TEST);
+		
+		renderer.setRenderTarget( this.pickTarget );
+		
+		renderer.state.setDepthTest( pickMaterial.depthTest );
+		renderer.state.setDepthWrite( pickMaterial.depthWrite );
+		renderer.state.setBlending( THREE.NoBlending );
+		
+		renderer.clear( renderer.autoClearColor, renderer.autoClearDepth, renderer.autoClearStencil );
+		
+		let glstate = pickMaterial._glstate;
+		let program = glstate.program;
+		let uniforms = glstate.uniforms;
+		gl.useProgram(program);
+			
+		gl.uniformMatrix4fv(uniforms["projectionMatrix"], false, new Float32Array(camera.projectionMatrix.elements));
+		gl.uniformMatrix4fv(uniforms["viewMatrix"], false, new Float32Array(camera.matrixWorldInverse.elements));
+		
+		{
+			if(glstate.textures.visibleNodes === undefined){
+				let image = pickMaterial.visibleNodesTexture.image;
+				let texture = gl.createTexture();
+				gl.bindTexture(gl.TEXTURE_2D, texture);
+				gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, image.width, image.height, 0, gl.RGB, gl.UNSIGNED_BYTE, image.data);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+				//gl.generateMipmap(gl.TEXTURE_2D);
+				gl.bindTexture(gl.TEXTURE_2D, null);
+				glstate.textures.visibleNodes = {
+					id: texture
+				};
+			}
+			
+			let texture = glstate.textures.visibleNodes.id;
+			let image = pickMaterial.visibleNodesTexture.image;
+			
+			gl.uniform1i(uniforms["visibleNodes"], 0);
+			gl.activeTexture(gl.TEXTURE0);
+			gl.bindTexture( gl.TEXTURE_2D, texture );
+			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, image.width, image.height, 0, gl.RGB, gl.UNSIGNED_BYTE, image.data);
+			
+		}
+		
+		gl.uniform1f(uniforms["fov"], this.material.fov);
+		gl.uniform1f(uniforms["screenWidth"], this.material.screenWidth);
+		gl.uniform1f(uniforms["screenHeight"], this.material.screenHeight);
+		gl.uniform1f(uniforms["spacing"], this.material.spacing);
+		gl.uniform1f(uniforms["near"], this.material.near);
+		gl.uniform1f(uniforms["far"], this.material.far);
+		gl.uniform1f(uniforms["size"], this.material.size);
+		gl.uniform1f(uniforms["minSize"], this.material.minSize);
+		gl.uniform1f(uniforms["maxSize"], this.material.maxSize);
+		gl.uniform1f(uniforms["octreeSize"], this.pcoGeometry.boundingBox.getSize().x);
+		
+		{
+			let apPosition = gl.getAttribLocation(program, "position");
+			let apNormal = gl.getAttribLocation(program, "normal");
+			let apClassification = gl.getAttribLocation(program, "classification");
+			let apIndices = gl.getAttribLocation(program, "indices");
+			
+			gl.enableVertexAttribArray( apPosition );
+			gl.enableVertexAttribArray( apNormal );
+			gl.enableVertexAttribArray( apClassification );		
+			gl.enableVertexAttribArray( apIndices );
+		}
+		
+		for(let i = 0; i < nodes.length; i++){
+			let node = nodes[i];
+			let object = node.sceneNode;
+			let geometry = object.geometry;
+			
+			pickMaterial.pcIndex = i + 1;
+			
+			let modelView = new THREE.Matrix4().multiplyMatrices(camera.matrixWorldInverse, object.matrixWorld);
+			gl.uniformMatrix4fv(uniforms["modelMatrix"], false, new Float32Array(object.matrixWorld.elements));
+			gl.uniformMatrix4fv(uniforms["modelViewMatrix"], false, new Float32Array(modelView.elements));
+			
+			let apPosition = gl.getAttribLocation(program, "position");
+			let apNormal = gl.getAttribLocation(program, "normal");
+			let apClassification = gl.getAttribLocation(program, "classification");
+			let apIndices = gl.getAttribLocation(program, "indices");
+			
+			let positionBuffer = renderer.properties.get(geometry.attributes.position).__webglBuffer;
+			
+			if(positionBuffer === undefined){
+				continue;
+			}
+			
+			let oldstate = {
+				enabled: []
+			};
+			
+			// TODO hack
+			for(let i = 0; i < 16; i++){
+				oldstate.enabled[i] = gl.getVertexAttrib(i, gl.VERTEX_ATTRIB_ARRAY_ENABLED);
+				gl.disableVertexAttribArray(i);
+			}
+			
+			gl.bindBuffer( gl.ARRAY_BUFFER, positionBuffer );
+			gl.vertexAttribPointer( apPosition, 3, gl.FLOAT, false, 0, 0 ); 
+			gl.enableVertexAttribArray(apPosition);
+			
+			let indexBuffer = renderer.properties.get(geometry.attributes.indices).__webglBuffer;
+			gl.bindBuffer( gl.ARRAY_BUFFER, indexBuffer );
+			gl.vertexAttribPointer( apIndices, 4, gl.UNSIGNED_BYTE, true, 0, 0 ); 
+			gl.enableVertexAttribArray(apIndices);
+			
+			gl.uniform1f(uniforms["pcIndex"], pickMaterial.pcIndex);
+
+			let numPoints = node.getNumPoints();
+			if(numPoints > 0){
+				gl.drawArrays( gl.POINTS, 0, node.getNumPoints());		
+			}
+			
+			// TODO hack
+			for(let i = 0; i < 16; i++){
+				gl.disableVertexAttribArray(i);
+			}
+			gl.enableVertexAttribArray(0);
+			gl.enableVertexAttribArray(1);
+		}
+		
+		var pixelCount = pickWindowSize * pickWindowSize;
+		var buffer = new ArrayBuffer(pixelCount*4);
+		var pixels = new Uint8Array(buffer);
+		var ibuffer = new Uint32Array(buffer);
+		renderer.context.readPixels(
+			pixelPos.x - (pickWindowSize-1) / 2, pixelPos.y - (pickWindowSize-1) / 2, 
+			pickWindowSize, pickWindowSize, 
+			renderer.context.RGBA, renderer.context.UNSIGNED_BYTE, pixels);
+
+
+		//{ // open window with image
+		//	var br = new ArrayBuffer(width*height*4);
+		//	var bp = new Uint8Array(br);
+		//	renderer.context.readPixels( 0, 0, width, height, 
+		//		renderer.context.RGBA, renderer.context.UNSIGNED_BYTE, bp);
+		//	
+		//	var img = pixelsArrayToImage(bp, width, height);
+		//	var screenshot = img.src;
+		//	
+		//	var w = window.open();
+		//	w.document.write('<img src="'+screenshot+'"/>');
+		//}
+			
+		// find closest hit inside pixelWindow boundaries
+		var min = Number.MAX_VALUE;
+		var hit = null;
+		//console.log("finding closest hit");
+		for(let u = 0; u < pickWindowSize; u++){
+			for(var v = 0; v < pickWindowSize; v++){
+				var offset = (u + v*pickWindowSize);
+				var distance = Math.pow(u - (pickWindowSize-1) / 2, 2) + Math.pow(v - (pickWindowSize-1) / 2, 2);
+				
+				var pcIndex = pixels[4*offset + 3];
+				pixels[4*offset + 3] = 0;
+				var pIndex = ibuffer[offset];
+				
+				if((pIndex !== 0 || pcIndex !== 0) && distance < min){
+					
+					hit = {
+						pIndex: pIndex,
+						pcIndex: pcIndex - 1
+					};
+					min = distance;
+				}
+			}
+		}	
+		
+		if(hit){
+			var point = {};
+			
+			var pc = nodes[hit.pcIndex].sceneNode;
+			var attributes = pc.geometry.attributes;
+			
+			for (var property in attributes) {
+				if (attributes.hasOwnProperty(property)) {
+					var values = pc.geometry.attributes[property];
+				
+					if(property === "position"){
+						var positionArray = values.array;
+						var x = positionArray[3*hit.pIndex+0];
+						var y = positionArray[3*hit.pIndex+1];
+						var z = positionArray[3*hit.pIndex+2];
+						var position = new THREE.Vector3(x, y, z);
+						position.applyMatrix4(this.matrixWorld);
+					
+						point[property] = position;
+					}else if(property === "indices"){
+					
+					}else{
+						if(values.itemSize === 1){
+							point[property] = values.array[hit.pIndex];
+						}else{
+							var value = [];
+							for(var j = 0; j < values.itemSize; j++){
+								value.push(values.array[values.itemSize*hit.pIndex + j]);
+							}
+							point[property] = value;
+						}
+					}
+				}
+			}
+			
+			
+			return point;
+			//return null;
+		}else{
+			return null;
+		}
+	};
+	
+	get progress(){
 		return this.visibleNodes.length / this.visibleGeometry.length;
 	}
-});
+};
+
+
 
 var nodesLoadTimes = {};
 
@@ -8034,6 +7864,7 @@ Potree.PointCloudOctreeGeometryNode.prototype.loadHierachyThenPoints = function(
 			currentNode.level = level;
 			currentNode.numPoints = numPoints;
 			currentNode.hasChildren = decoded[i].children > 0;
+			currentNode.spacing = pco.spacing / Math.pow(2, level);
 			parentNode.addChild(currentNode);
 			nodes[name] = currentNode;
 		}
@@ -8341,6 +8172,7 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.loadHierarchyThenPoints =
 			currentNode.level = level;
 			currentNode.numPoints = numPoints;
 			currentNode.hasChildren = decoded[i].children > 0;
+			currentNode.spacing = pgg.spacing / Math.pow(2, level);
 			parentNode.addChild(currentNode);
 			nodes[name] = currentNode;
 		}
@@ -10895,7 +10727,7 @@ Potree.Volume = class extends THREE.Object3D{
 			transparent: true, 
 			opacity: 0.3,
 			depthTest: true, 
-			depthWrite: true} );
+			depthWrite: false} );
 		this.box = new THREE.Mesh(boxGeometry, this.material);
 		this.box.geometry.computeBoundingBox();
 		this.boundingBox = this.box.geometry.boundingBox;
@@ -12574,6 +12406,31 @@ Potree.Scene = class extends THREE.EventDispatcher{
 			bg.material.depthWrite = false;
 			this.sceneBG.add(bg);
 		}
+		
+		{// lights
+		
+			{
+				let light = new THREE.DirectionalLight( 0xffffff );
+				light.position.set( 10, 10, 1 );
+				light.target.position.set( 0, 0,0 );
+				this.scene.add(light);
+			}
+			
+			{
+				let light = new THREE.DirectionalLight( 0xffffff );
+				light.position.set( -10, 10, 1 );
+				light.target.position.set( 0, 0,0 );
+				this.scene.add(light);
+			}
+			
+			{
+				let light = new THREE.DirectionalLight( 0xffffff );
+				light.position.set( 0, -10, 20 );
+				light.target.position.set( 0, 0,0 );
+				this.scene.add(light);
+			}
+			
+		}
 	}
 	
 	addAnnotation(position, args = {}){
@@ -12685,7 +12542,8 @@ Potree.Viewer = class{
 		
 		this.initThree();
 		
-		this.scene = new Potree.Scene(this.renderer);
+		let scene = new Potree.Scene(this.renderer);
+		this.setScene(scene);
 		
 		{
 			this.inputHandler = new Potree.InputHandler(this);
@@ -12713,10 +12571,11 @@ Potree.Viewer = class{
 					//this.scene.view.radius = speed * 2.5;
 				}
 				
-				if(e.pointcloud.projection){
-					this.mapView = new Potree.MapView(this);
-					this.mapView.init();
-				}
+				
+				//if(e.pointcloud.projection){
+				//	this.mapView = new Potree.MapView(this);
+				//	this.mapView.init();
+				//}
 				
 			};
 			
@@ -12725,8 +12584,6 @@ Potree.Viewer = class{
 				this.measuringTool.setScene(e.scene);
 				this.profileTool.setScene(e.scene);
 				this.volumeTool.setScene(e.scene);
-				//this.transformationTool.setScene(this.scene);
-				//this.transformationTool.setSelection([]);
 				this.updateHeightRange();
 				
 				if(!e.scene.hasEventListener("pointcloud_added", onPointcloudAdded)){
@@ -13698,64 +13555,59 @@ Potree.Viewer = class{
 
 	};
 
-	loadGUI(){
+	loadGUI(callback){
 		var sidebarContainer = $('#potree_sidebar_container');
-		sidebarContainer.load(new URL(Potree.scriptPath + "/sidebar.html").href, function(){
+		sidebarContainer.load(new URL(Potree.scriptPath + "/sidebar.html").href, () => {
 			
 			sidebarContainer.css("width", "300px");
-		sidebarContainer.css("height", "100%");
+			sidebarContainer.css("height", "100%");
 
-		var imgMenuToggle = document.createElement("img");
-		imgMenuToggle.src = new URL(Potree.resourcePath + "/icons/menu_button.svg").href;
-		imgMenuToggle.onclick = this.toggleSidebar;
-		imgMenuToggle.classList.add("potree_menu_toggle");
+			var imgMenuToggle = document.createElement("img");
+			imgMenuToggle.src = new URL(Potree.resourcePath + "/icons/menu_button.svg").href;
+			imgMenuToggle.onclick = this.toggleSidebar;
+			imgMenuToggle.classList.add("potree_menu_toggle");
 
-		var imgMapToggle = document.createElement("img");
-		imgMapToggle.src = new URL(Potree.resourcePath + "/icons/map_icon.png").href;
-		imgMapToggle.style.display = "none";
-		imgMapToggle.onclick = this.toggleMap;
-		imgMapToggle.id = "potree_map_toggle";
-		
-		viewer.renderArea.insertBefore(imgMapToggle, viewer.renderArea.children[0]);
-		viewer.renderArea.insertBefore(imgMenuToggle, viewer.renderArea.children[0]);
-		
-		var elProfile = $('<div>').load(new URL(Potree.scriptPath + "/profile.html").href, function(){
-			$('#potree_render_area').append(elProfile.children());
-			this._2dprofile = new Potree.Viewer.Profile(this, document.getElementById("profile_draw_container"));
-		}.bind(this));
-		
-        i18n.init({ 
-            lng: 'en',
-            resGetPath: '../resources/lang/__lng__/__ns__.json',
-            preload: ['en', 'fr', 'de'],
-            getAsync: true,
-            debug: false
-            }, function(t) { 
-            // Start translation once everything is loaded
-            $("body").i18n();
-        });
-		
-		$(function() {
+			var imgMapToggle = document.createElement("img");
+			imgMapToggle.src = new URL(Potree.resourcePath + "/icons/map_icon.png").href;
+			imgMapToggle.style.display = "none";
+			imgMapToggle.onclick = this.toggleMap;
+			imgMapToggle.id = "potree_map_toggle";
 			
-			console.log($('#lblPointBudget')[0]);
+			viewer.renderArea.insertBefore(imgMapToggle, viewer.renderArea.children[0]);
+			viewer.renderArea.insertBefore(imgMenuToggle, viewer.renderArea.children[0]);
 			
-			initAccordion();
-			initAppearance();
-			initToolbar();
-			initNavigation();
-			initMaterials();
-			initClassificationList();
-			initAnnotationDetails();
-			initMeasurementDetails();
-			initSceneList();
-			initSettings()
+			this.mapView = new Potree.MapView(this);
+			this.mapView.init();
 			
-			$('#potree_version_number').html(Potree.version.major + "." + Potree.version.minor + Potree.version.suffix);
-			$('.perfect_scrollbar').perfectScrollbar();
+			i18n.init({ 
+				lng: 'en',
+				resGetPath: '../resources/lang/__lng__/__ns__.json',
+				preload: ['en', 'fr', 'de'],
+				getAsync: true,
+				debug: false
+				}, function(t) { 
+				// Start translation once everything is loaded
+				$("body").i18n();
+			});
+			
+			$(function() {
+				initSidebar();
+				
+				
+			});
+			
+			let elProfile = $('<div>').load(new URL(Potree.scriptPath + "/profile.html").href, () => {
+				$('#potree_render_area').append(elProfile.children());
+				this._2dprofile = new Potree.Viewer.Profile(this, document.getElementById("profile_draw_container"));
+				
+				if(callback){
+					callback();
+				}
+			});
 			
 		});
-			
-		});
+		
+		
 		
 	}
     
@@ -13906,9 +13758,10 @@ Potree.Viewer = class{
 		}
 		
 		if(!this.freeze){
-			var result = Potree.updatePointClouds(this.scene.pointclouds, this.scene.camera, this.renderer);
+			var result = Potree.updatePointClouds(scene.pointclouds, camera, this.renderer);
 			visibleNodes = result.visibleNodes.length;
 			visiblePoints = result.numVisiblePoints;
+			camera.near = result.lowestSpacing * 10.0;
 		}
 		
 		
@@ -14020,6 +13873,9 @@ Potree.Viewer = class{
 		
 		if(this.mapView){
 			this.mapView.update(delta, this.scene.camera);
+			if(this.mapView.sceneProjection){
+				$( "#potree_map_toggle" ).css("display", "block");
+			}
 		}
 
 		TWEEN.update(timestamp);
@@ -14747,6 +14603,9 @@ class EDLRenderer{
 				}
 			}
 		}
+		
+		viewer.volumeTool.update();
+		viewer.renderer.render(viewer.volumeTool.sceneVolume, viewer.scene.camera, this.rtColor);
 			
 		if(viewer.scene.pointclouds.length > 0){
 			
@@ -14777,34 +14636,12 @@ class EDLRenderer{
 			//Potree.endQuery(query, viewer.renderer.getContext());
 			//Potree.resolveQueries(viewer.renderer.getContext());
 			
-			//if(window.endedQuery == null){
-			//	ext.endQueryEXT(ext.TIME_ELAPSED_EXT);
-			//	window.endedQuery = window.timerQuery;
-			//}
-			//
-			//
-			//if(window.endedQuery != null){
-			//	var available = ext.getQueryObjectEXT(window.endedQuery, ext.QUERY_RESULT_AVAILABLE_EXT);
-			//	var disjoint = viewer.renderer.getContext().getParameter(ext.GPU_DISJOINT_EXT);
-			//	
-			//	if (available && !disjoint) {
-			//		// See how much time the rendering of the object took in nanoseconds.
-			//		var timeElapsed = ext.getQueryObjectEXT(window.endedQuery, ext.QUERY_RESULT_EXT);
-			//		var miliseconds = timeElapsed / (1000 * 1000);
-			//	
-			//		console.log(miliseconds + "ms");
-			//	  
-			//		window.endedQuery = null;
-			//		window.timerQuery = null;
-			//	}
-			//}
-
-			
-			viewer.volumeTool.update();
-			viewer.renderer.render(viewer.volumeTool.sceneVolume, viewer.scene.camera);
-			viewer.renderer.render(viewer.controls.sceneControls, viewer.scene.camera);
 			
 			viewer.renderer.clearDepth();
+			//viewer.volumeTool.update();
+			//viewer.renderer.render(viewer.volumeTool.sceneVolume, viewer.scene.camera);
+			viewer.renderer.render(viewer.controls.sceneControls, viewer.scene.camera);
+			
 			
 			viewer.measuringTool.update();
 			viewer.profileTool.update();
@@ -14843,83 +14680,630 @@ class EDLRenderer{
 };
 
 
-Potree.Viewer.Profile = function(viewer, element){
-	var scope = this;
+Potree.Viewer.Profile = class ProfileWindow{
+	
+	constructor(viewer, element){
+		this.viewer = viewer;
+		this.enabled = true;
+		this.element = element;
+		this.currentProfile = null;
+		this.requests = [];
+		this.pointsProcessed = 0;
+		this.margin = {top: 0, right: 0, bottom: 20, left: 40};
+		this.maximized = false;
+		this.threshold = 20*1000;
+		
+		$('#closeProfileContainer').click(() => {
+			this.hide();
+			this.enabled = false;
+		});
+		
+		$('#profile_toggle_size_button').click(() => {
+			this.maximized = !this.maximized;
+		
+			if(this.maximized){
+				$('#profile_window').css("height", "100%");
+			}else{
+				$('#profile_window').css("height", "30%");
+			}
+		});
+		
+		this.drawOnChange = (event) => {
+			this.redraw();
+		};
+		
+		//viewer.scene.dispatcher.addEventListener("marker_moved"))
 
-	this.viewer = viewer;
-	this.enabled = true;
-	this.element = element;
-	this.currentProfile = null;
-	this.requests = [];
-	this.pointsProcessed = 0;
-	this.margin = {top: 0, right: 0, bottom: 20, left: 40};
-	this.maximized = false;
-	this.threshold = 20*1000;
+		//viewer.profileTool.addEventListener("marker_moved", drawOnChange);
+		//viewer.profileTool.addEventListener("width_changed", drawOnChange);
+		//viewer.addEventListener("material_changed", function(){
+		//	drawOnChange({profile: this.currentProfile});
+		//});
+		//
+		//viewer.addEventListener("height_range_changed", function(){
+		//	drawOnChange({profile: this.currentProfile});
+		//});
+		
+		let width = document.getElementById('profile_window').clientWidth;
+		let height = document.getElementById('profile_window').clientHeight;
+		let resizeLoop = () => {
+			requestAnimationFrame(resizeLoop);
 
-	$('#closeProfileContainer').click(function(){
-		scope.hide();
-		scope.enabled = false;
-	});
+			let newWidth = document.getElementById('profile_window').clientWidth;
+			let newHeight = document.getElementById('profile_window').clientHeight;
+
+			if(newWidth !== width || newHeight !== height){
+				setTimeout(this.drawOnChange, 50, {profile: this.currentProfile});
+			}
+
+			width = newWidth;
+			height = newHeight;
+		};
+		requestAnimationFrame(resizeLoop);
+	}
 	
-	$('#profile_toggle_size_button').click(function(){
-		scope.maximized = !scope.maximized;
-	
-		if(scope.maximized){
-			$('#profile_window').css("height", "100%");
-		}else{
-			$('#profile_window').css("height", "30%");
-		}
-	});
-	
-	this.show = function(){
+	show(){
 		$('#profile_window').fadeIn();
-		scope.enabled = true;
+		this.enabled = true;
 	};
 	
-	this.hide = function(){
+	hide(){
 		$('#profile_window').fadeOut();
 	};
 	
-	this.cancel = function(){
-		for(var i = 0; i < scope.requests.length; i++){
-			scope.requests[i].cancel();
+	cancel(){
+		for(let request of this.requests){
+			request.cancel();
 		}
 		
-		scope.requests = [];
+		this.requests = [];
 	};
 	
-	this.getLAS = function(){
-		var points = scope.points;
-		var boundingBox = new THREE.Box3();
-		
-		for(var i = 0; i < points.length; i++){
-			var point = points[i];
-			var position = new THREE.Vector3(point.x, point.y, point.z);
-			
-			boundingBox.expandByPoint(position);
+	preparePoints(profileProgress){
+	
+		let segments = profileProgress.segments;
+		if (segments.length === 0){
+			return false;
 		}
-		var offset = boundingBox.min.clone();
-		var diagonal = boundingBox.min.distanceTo(boundingBox.max);
-		var scale = new THREE.Vector3(0.01, 0.01, 0.01);
+		
+		let data = [];
+		let distance = 0;
+		let totalDistance = 0;
+		let min = new THREE.Vector3(Math.max());
+		let max = new THREE.Vector3(0);
+
+		// Get the same color map as Three
+		let hr = this.viewer.getHeightRange();
+		
+		let heightRange = hr.max - hr.min;
+		let colorRange = [];
+		let colorDomain = [];
+		
+		// Read the altitude gradient used in 3D scene
+		let gradient = viewer.scene.pointclouds[0].material.gradient;
+		for (let c = 0; c < gradient.length; c++){
+			colorDomain.push(hr.min + heightRange * gradient[c][0]);
+			colorRange.push('#' + gradient[c][1].getHexString());
+		}
+		
+		// Altitude color map scale
+		let colorRamp = d3.scale.linear()
+		  .domain(colorDomain)
+		  .range(colorRange)
+		  .clamp(true);
+		  
+		// Iterate the profile's segments
+		for(let segment of segments){
+			let sv = new THREE.Vector3().subVectors(segment.end, segment.start).setZ(0)
+			let segmentLength = sv.length();
+			let points = segment.points;
+
+			// Iterate the segments' points
+			for(let j = 0; j < points.numPoints; j++){
+				let p = points.position[j];
+				let pl = new THREE.Vector3().subVectors(p, segment.start).setZ(0);
+				
+				min.min(p);
+				max.max(p);
+				
+				let distance = totalDistance + pl.length();
+				
+				let d = {
+					distance: distance,
+					x: p.x,
+					y: p.y,
+					z: p.z,
+					altitude: p.z,
+					heightColor: colorRamp(p.z),
+					color: points.color ? points.color[j] : [0, 0, 0],
+					intensity: points.intensity ? points.intensity[j] : 0,
+					classification: points.classification ? points.classification[j] : 0,
+					returnNumber: points.returnNumber ? points.returnNumber[j] : 0,
+					numberOfReturns: points.numberOfReturns ? points.numberOfReturns[j] : 0,
+					pointSourceID: points.pointSourceID ? points.pointSourceID[j] : 0,
+				};
+				
+				data.push(d);
+			}
+
+			// Increment distance from the profile start point
+			totalDistance += segmentLength;
+		}
+
+		let output = {
+			'data': data,
+			'minX': min.x,
+			'minY': min.y,
+			'minZ': min.z,
+			'maxX': max.x,
+			'maxY': max.y,
+			'maxZ': max.z
+		};
+
+		return output;
+	};
+	
+	pointHighlight(coordinates){
+    
+		let pointSize = 6;
+		
+		let svg = d3.select("svg#profileSVG");
+		
+		// Find the hovered point if applicable
+		let d = this.points;
+		let sx = this.scaleX;
+		let sy = this.scaleY;
+		let xs = coordinates[0];
+		let ys = coordinates[1];
+		
+		// Fix FF vs Chrome discrepancy
+		//if(navigator.userAgent.indexOf("Firefox") == -1 ) {
+		//	xs = xs - this.margin.left;
+		//	ys = ys - this.margin.top;
+		//}
+		let hP = [];
+		let tol = pointSize;
+
+		for (let i=0; i < d.length; i++){
+			if(sx(d[i].distance) < xs + tol && sx(d[i].distance) > xs - tol && sy(d[i].altitude) < ys + tol && sy(d[i].altitude) > ys -tol){
+				hP.push(d[i]); 
+			}
+		}
+
+		if(hP.length > 0){
+			let p = hP[0];
+			this.hoveredPoint = hP[0];
+			let cx, cy;
+			if(navigator.userAgent.indexOf("Firefox") == -1 ) {
+				cx = this.scaleX(p.distance) + this.margin.left;
+				cy = this.scaleY(p.altitude) + this.margin.top;
+			} else {
+				cx = this.scaleX(p.distance);
+				cy = this.scaleY(p.altitude);
+			}
+			
+			//cx -= pointSize / 2;
+			cy -= pointSize / 2;
+			
+			//let svg = d3.select("svg#profileSVG");
+			d3.selectAll("rect").remove();
+			let rectangle = svg.append("rect")
+				.attr("x", cx)
+				.attr("y", cy)
+				.attr("id", p.id)
+				.attr("width", pointSize)
+				.attr("height", pointSize)
+				.style("fill", 'yellow');
+				
+				
+			let marker = $("#profile_selection_marker");
+			marker.css("display", "initial");
+			marker.css("left", cx + "px");
+			marker.css("top", cy + "px");
+			marker.css("width", pointSize + "px");
+			marker.css("height", pointSize + "px");
+			marker.css("background-color", "yellow");
+
+			//let html = 'x: ' + Math.round(10 * p.x) / 10 + ' y: ' + Math.round(10 * p.y) / 10 + ' z: ' + Math.round( 10 * p.altitude) / 10 + '  -  ';
+			//html += i18n.t('tools.classification') + ': ' + p.classificationCode + '  -  ';
+			//html += i18n.t('tools.intensity') + ': ' + p.intensityCode;
+			
+			let html = 'x: ' + Math.round(10 * p.x) / 10 + ' y: ' + Math.round(10 * p.y) / 10 + ' z: ' + Math.round( 10 * p.altitude) / 10 + '  -  ';
+			html += "offset: " + p.distance.toFixed(3) + '  -  ';
+			html += "Classification: " + p.classification + '  -  ';
+			html += "Intensity: " + p.intensity;
+			
+			$('#profileInfo').css('color', 'yellow');
+			$('#profileInfo').html(html);
+
+		} else {
+			d3.selectAll("rect").remove();
+			$('#profileInfo').html("");
+			
+			let marker = $("#profile_selection_marker");
+			marker.css("display", "none");
+		}
+	};
+	
+	strokeColor(d){
+		let material = this.viewer.getMaterial();
+		if (material === Potree.PointColorType.RGB) {
+			//return d.color;
+			return 'rgb(' + (d.color[0] * 100 / 255) + '%,' + (d.color[1] * 100 / 255) + '%,' + (d.color[2] * 100 / 255) + '%)';
+		} else if (material === Potree.PointColorType.INTENSITY) {
+			//return d.intensity;
+			return 'rgb(' + d.intensity + '%,' + d.intensity + '%,' + d.intensity + '%)';
+		} else if (material === Potree.PointColorType.CLASSIFICATION) {
+			let classif = this.viewer.scene.pointclouds[0].material.classification;
+			if (typeof classif[d.classification] != 'undefined'){
+				let color = 'rgb(' + classif[d.classification].x * 100 + '%,';
+				color += classif[d.classification].y * 100 + '%,';
+				color += classif[d.classification].z * 100 + '%)';
+				return color;
+			} else {
+				return 'rgb(255,255,255)';
+			}
+		} else if (material === Potree.PointColorType.HEIGHT) {
+			return d.heightColor;
+		} else if (material === Potree.PointColorType.RETURN_NUMBER) {
+			
+			if(d.numberOfReturns === 1){
+					return 'rgb(255, 255, 0)';
+			}else{
+				if(d.returnNumber === 1){
+					return 'rgb(255, 0, 0)';
+				}else if(d.returnNumber === d.numberOfReturns){
+					return 'rgb(0, 0, 255)';
+				}else{
+					return 'rgb(0, 255, 0)';
+				}
+			}
+			
+			return d.heightColor;
+		} else {
+			return d.color;
+		}
+	}
+	
+	redraw(){
+		this.draw(this.currentProfile);
+	}
+
+	draw(profile){
+		// TODO are the used closures safe for garbage collection?
+		
+		if(!this.enabled){
+			return;
+		}
+		
+		if(!profile){
+			return;
+		}
+		
+		if(this.viewer.scene.pointclouds.length === 0){
+			return;
+		}
+
+		if(this.context){
+			let containerWidth = this.element.clientWidth;
+			let containerHeight = this.element.clientHeight;
+			
+			let width = containerWidth - (this.margin.left + this.margin.right);
+			let height = containerHeight - (this.margin.top + this.margin.bottom);
+			this.context.clearRect(0, 0, width, height);
+		}
+		
+		if(this.currentProfile){
+			this.currentProfile.removeEventListener("marker_moved", this.drawOnChange);
+			this.currentProfile.removeEventListener("marker_added", this.drawOnChange);
+			this.currentProfile.removeEventListener("marker_removed", this.drawOnChange);
+			this.currentProfile.removeEventListener("width_changed", this.drawOnChange);
+			viewer.dispatcher.removeEventListener("material_changed", this.drawOnChange);
+			//viewer.addEventListener("material_changed", function(){
+			//	drawOnChange({profile: this.currentProfile});
+			//});
+			
+			
+			//viewer.profileTool.addEventListener("marker_moved", drawOnChange);
+			//viewer.profileTool.addEventListener("width_changed", drawOnChange);
+			//viewer.addEventListener("material_changed", function(){
+			//	drawOnChange({profile: this.currentProfile});
+			//});
+            //
+			//viewer.addEventListener("height_range_changed", function(){
+			//	drawOnChange({profile: this.currentProfile});
+			//});
+		}
+		
+		
+		this.currentProfile = profile;
+		
+		{
+			this.currentProfile.addEventListener("marker_moved", this.drawOnChange);
+			this.currentProfile.addEventListener("marker_added", this.drawOnChange);
+			this.currentProfile.addEventListener("marker_removed", this.drawOnChange);
+			this.currentProfile.addEventListener("width_changed", this.drawOnChange);
+			viewer.dispatcher.addEventListener("material_changed", this.drawOnChange);
+		}
+
+		if(!this.__drawData){
+			this.__drawData = {};
+		}
+		this.points = [];
+		this.rangeX = [Infinity, -Infinity];
+		this.rangeY = [Infinity, -Infinity];
+		
+		this.pointsProcessed = 0;
+		
+		for(let request of this.requests){
+			request.cancel();
+		}
+		this.requests = [];
+		
+		let drawPoints = (points, rangeX, rangeY) => {
+		
+			let mileage = 0;
+			for(let i = 0; i < profile.points.length; i++){
+				let point = profile.points[i];
+				
+				if(i > 0){
+					let previous = profile.points[i-1];
+					let dx = point.x - previous.x;
+					let dy = point.y - previous.y;
+					let distance = Math.sqrt(dx * dx + dy * dy);
+					mileage += distance;
+				}
+				
+				let radius = 4;
+				
+				let cx = this.scaleX(mileage);
+				let cy = this.context.canvas.clientHeight;
+				
+				this.context.beginPath();
+				this.context.arc(cx, cy, radius, 0, 2 * Math.PI, false);
+				this.context.fillStyle = '#a22';
+				this.context.fill();
+			};
+		
+		
+			let pointSize = 2;
+			let i = -1, n = points.length, d, cx, cy;
+			while (++i < n) {
+				d = points[i];
+				cx = this.scaleX(d.distance);
+				cy = this.scaleY(d.altitude);
+				this.context.beginPath();
+				this.context.moveTo(cx, cy);
+				this.context.fillStyle = this.strokeColor(d);
+				this.context.fillRect(cx, cy, pointSize, pointSize);
+			}
+		};
+		
+		let projectedBoundingBox = null;
+		
+		let setupAndDraw = () => {
+			let containerWidth = this.element.clientWidth;
+			let containerHeight = this.element.clientHeight;
+			
+			let width = containerWidth - (this.margin.left + this.margin.right);
+			let height = containerHeight - (this.margin.top + this.margin.bottom);
+			
+			this.scaleX = d3.scale.linear();
+			this.scaleY = d3.scale.linear();
+			
+			let domainProfileWidth = this.rangeX[1] - this.rangeX[0];
+			let domainProfileHeight = this.rangeY[1] - this.rangeY[0];
+			let domainRatio = domainProfileWidth / domainProfileHeight;
+			let rangeProfileWidth = width;
+			let rangeProfileHeight = height;
+			let rangeRatio = rangeProfileWidth / rangeProfileHeight;
+			
+			if(domainRatio < rangeRatio){
+				// canvas scale
+				let targetWidth = domainProfileWidth * (rangeProfileHeight / domainProfileHeight);
+				this.scaleY.range([height, 0]);
+				this.scaleX.range([width / 2 - targetWidth / 2, width / 2 + targetWidth / 2]);
+				
+				// axis scale
+				let domainScale = rangeRatio / domainRatio;
+				let domainScaledWidth = domainProfileWidth * domainScale;
+				this.axisScaleX = d3.scale.linear()
+					.domain([
+						domainProfileWidth / 2 - domainScaledWidth / 2 , 
+						domainProfileWidth / 2 + domainScaledWidth / 2 ])
+					.range([0, width]);
+				this.axisScaleY = d3.scale.linear()
+					.domain(this.rangeY)
+					.range([height, 0]);
+			}else{
+				// canvas scale
+				let targetHeight = domainProfileHeight* (rangeProfileWidth / domainProfileWidth);
+				this.scaleX.range([0, width]);
+				this.scaleY.range([height / 2 + targetHeight / 2, height / 2 - targetHeight / 2]);
+				
+				// axis scale
+				let domainScale =  domainRatio / rangeRatio;
+				let domainScaledHeight = domainProfileHeight * domainScale;
+				let domainHeightCentroid = (this.rangeY[1] + this.rangeY[0]) / 2;
+				this.axisScaleX = d3.scale.linear()
+					.domain(this.rangeX)
+					.range([0, width]);
+				this.axisScaleY = d3.scale.linear()
+					.domain([
+						domainHeightCentroid - domainScaledHeight / 2 , 
+						domainHeightCentroid + domainScaledHeight / 2 ])
+					.range([height, 0]);
+			}
+			this.scaleX.domain(this.rangeX);
+			this.scaleY.domain(this.rangeY);
+			
+			
+
+			this.axisZoom = d3.behavior.zoom()
+				.x(this.axisScaleX)
+				.y(this.axisScaleY)
+				.scaleExtent([0,128])
+				.size([width, height]);
+				
+			this.zoom = d3.behavior.zoom()
+			.x(this.scaleX)
+			.y(this.scaleY)
+			.scaleExtent([0,128])
+			.size([width, height])
+			.on("zoom",  () => {
+				this.axisZoom.translate(this.zoom.translate());
+				this.axisZoom.scale(this.zoom.scale());
+					
+				let svg = d3.select("svg#profileSVG");
+				svg.select(".x.axis").call(xAxis);
+				svg.select(".y.axis").call(yAxis);
+
+				this.context.clearRect(0, 0, width, height);
+				drawPoints(this.points, this.rangeX, this.rangeY);
+			});
+			
+			this.context = d3.select("#profileCanvas")
+				.attr("width", width)
+				.attr("height", height)
+				.call(this.zoom)
+				.node().getContext("2d");
+			
+			d3.select("svg#profileSVG").selectAll("*").remove();
+			
+			let svg = d3.select("svg#profileSVG")
+				.call(this.zoom)
+				.attr("width", (width + this.margin.left + this.margin.right).toString())
+				.attr("height", (height + this.margin.top + this.margin.bottom).toString())
+				.attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")");
+			
+			let scope = this;
+			d3.select("#profileCanvas").on("mousemove", function(){
+				let coord = d3.mouse(this);
+				scope.pointHighlight(coord);
+			});
+			
+			// Create x axis
+			let xAxis = d3.svg.axis()
+				.scale(this.axisScaleX)
+				.innerTickSize(-height)
+				.outerTickSize(5)
+				.orient("bottom")
+				.ticks(10, "m");
+
+			// Create y axis
+			let yAxis = d3.svg.axis()
+				.scale(this.axisScaleY)
+				.innerTickSize(-width)
+				.outerTickSize(5)
+				.orient("left")
+				.ticks(10, "m");
+				
+			// Append axis to the chart
+			let gx = svg.append("g")
+				.attr("class", "x axis")
+				.call(xAxis);
+
+			svg.append("g")
+				.attr("class", "y axis")
+				.call(yAxis);
+				
+			if(navigator.userAgent.indexOf("Firefox") == -1 ) {
+				svg.select(".y.axis").attr("transform", "translate("+ (this.margin.left).toString() + "," + this.margin.top.toString() + ")");
+				svg.select(".x.axis").attr("transform", "translate(" + this.margin.left.toString() + "," + (height + this.margin.top).toString() + ")");
+			} else {
+				svg.select(".x.axis").attr("transform", "translate( 0 ," + height.toString() + ")");
+			}
+			
+			drawPoints(this.points, this.rangeX, this.rangeY);
+			
+			document.getElementById("profile_num_points").innerHTML = Potree.utils.addCommas(this.pointsProcessed) + " ";
+		};
+		
+		
+		for(let pointcloud of this.viewer.scene.pointclouds.filter(p => p.visible)){
+			
+			let request = pointcloud.getPointsInProfile(profile, null, {
+				"onProgress": (event) => {
+					if(!this.enabled){
+						return;
+					}
+					
+					if(!projectedBoundingBox){
+						projectedBoundingBox = event.points.projectedBoundingBox;
+					}else{
+						projectedBoundingBox.union(event.points.projectedBoundingBox);
+					}
+					
+					let result = this.preparePoints(event.points);
+					let points = result.data;
+					this.points = this.points.concat(points);
+					
+					let batchRangeX = [d3.min(points, function(d) { return d.distance; }), d3.max(points, function(d) { return d.distance; })];
+					let batchRangeY = [d3.min(points, function(d) { return d.altitude; }), d3.max(points, function(d) { return d.altitude; })];
+					
+					this.rangeX = [ Math.min(this.rangeX[0], batchRangeX[0]), Math.max(this.rangeX[1], batchRangeX[1]) ];
+					this.rangeY = [ Math.min(this.rangeY[0], batchRangeY[0]), Math.max(this.rangeY[1], batchRangeY[1]) ];
+					
+					this.pointsProcessed += result.data.length;
+					
+					setupAndDraw();
+					
+					if(this.pointsProcessed > this.threshold){
+						this.cancel();
+					}
+				},
+				"onFinish": (event) => {
+					if(!this.enabled){
+						return;
+					}
+				},
+				"onCancel": () => {
+					if(!this.enabled){
+						return;
+					}
+				}
+			});	
+			
+			this.requests.push(request);
+		}
+	}
+	
+	setThreshold(value){
+		this.threshold = value;
+		
+		this.redraw();
+	}
+	
+	getPointsInProfileAsLas(){
+		let points = this.points;
+		let boundingBox = new THREE.Box3();
+		
+		for(let point of points){
+			boundingBox.expandByPoint(point);
+		}
+		
+		let offset = boundingBox.min.clone();
+		let diagonal = boundingBox.min.distanceTo(boundingBox.max);
+		let scale = new THREE.Vector3(0.01, 0.01, 0.01);
 		if(diagonal > 100*1000){
 			scale = new THREE.Vector3(0.01, 0.01, 0.01);
 		}else{
 			scale = new THREE.Vector3(0.001, 0.001, 0.001);
 		}
 		
-		var setString = function(string, offset, buffer){
-			var view = new Uint8Array(buffer);
+		let setString = function(string, offset, buffer){
+			let view = new Uint8Array(buffer);
 			
-			for(var i = 0; i < string.length; i++){
-				var charCode = string.charCodeAt(i);
+			for(let i = 0; i < string.length; i++){
+				let charCode = string.charCodeAt(i);
 				view[offset + i] = charCode;
 			}
 		}
 		
-		var buffer = new ArrayBuffer(227 + 28 * points.length);
-		var view = new DataView(buffer);
-		var u8View = new Uint8Array(buffer);
-		//var u16View = new Uint16Array(buffer);
+		let buffer = new ArrayBuffer(227 + 28 * points.length);
+		let view = new DataView(buffer);
+		let u8View = new Uint8Array(buffer);
+		//let u16View = new Uint16Array(buffer);
 		
 		setString("LASF", 0, buffer);
 		u8View[24] = 1;
@@ -14939,7 +15323,7 @@ Potree.Viewer.Profile = function(viewer, element){
 		// offset to point data o:96 l:4
 		view.setUint32(96, 227, true);
 		
-		// number of variable length records o:100 l:4
+		// number of letiable length records o:100 l:4
 		
 		// point data record format 104 1
 		u8View[104] = 2;
@@ -14970,21 +15354,21 @@ Potree.Viewer.Profile = function(viewer, element){
 		// z offset 171 8
 		view.setFloat64(171, offset.z, true);
 		
-		var boffset = 227;
-		for(var i = 0; i < points.length; i++){
-			var point = points[i];
-			var position = new THREE.Vector3(point.x, point.y, point.z);
+		let boffset = 227;
+		for(let i = 0; i < points.length; i++){
+			let point = points[i];
+			let position = new THREE.Vector3(point.x, point.y, point.z);
 			
-			var ux = parseInt((position.x - offset.x) / scale.x);
-			var uy = parseInt((position.y - offset.y) / scale.y);
-			var uz = parseInt((position.z - offset.z) / scale.z);
+			let ux = parseInt((position.x - offset.x) / scale.x);
+			let uy = parseInt((position.y - offset.y) / scale.y);
+			let uz = parseInt((position.z - offset.z) / scale.z);
 			
 			view.setUint32(boffset + 0, ux, true);
 			view.setUint32(boffset + 4, uy, true);
 			view.setUint32(boffset + 8, uz, true);
 			
 			view.setUint16(boffset + 12, (point.intensity), true);
-			var rt = point.returnNumber;
+			let rt = point.returnNumber;
 			rt += (point.numberOfReturns << 3);
 			view.setUint8(boffset + 14, rt);
 			
@@ -15020,565 +15404,7 @@ Potree.Viewer.Profile = function(viewer, element){
 		view.setFloat64(219, boundingBox.min.z, true);
 		
 		return buffer;
-	};
-	
-	this.preparePoints = function(profileProgress){
-	
-		var segments = profileProgress.segments;
-		if (segments.length === 0){
-			return false;
-		}
-		
-		var data = [];
-		var distance = 0;
-		var totalDistance = 0;
-		let min = new THREE.Vector3(Math.max());
-		let max = new THREE.Vector3(0);
-
-		// Get the same color map as Three
-		var hr = scope.viewer.getHeightRange();
-		
-		var heightRange = hr.max - hr.min;
-		var colorRange = [];
-		var colorDomain = [];
-		
-		// Read the altitude gradient used in 3D scene
-		var gradient = viewer.scene.pointclouds[0].material.gradient;
-		for (var c = 0; c < gradient.length; c++){
-			colorDomain.push(hr.min + heightRange * gradient[c][0]);
-			colorRange.push('#' + gradient[c][1].getHexString());
-		}
-		
-		// Altitude color map scale
-		var colorRamp = d3.scale.linear()
-		  .domain(colorDomain)
-		  .range(colorRange)
-		  .clamp(true);
-		  
-		// Iterate the profile's segments
-		for(var i = 0; i < segments.length; i++){
-			var segment = segments[i];
-			var sv = new THREE.Vector3().subVectors(segment.end, segment.start).setZ(0)
-			var segmentLength = sv.length();
-			var points = segment.points;
-
-			// Iterate the segments' points
-			for(var j = 0; j < points.numPoints; j++){
-				var p = points.position[j];
-				var pl = new THREE.Vector3().subVectors(p, segment.start).setZ(0);
-				
-				min.min(p);
-				max.max(p);
-				
-				let distance = totalDistance + pl.length();
-				
-				var d = {
-					distance: distance,
-					x: p.x,
-					y: p.y,
-					z: p.z,
-					altitude: p.z,
-					heightColor: colorRamp(p.z),
-					color: points.color ? points.color[j] : [0, 0, 0],
-					intensity: points.intensity ? points.intensity[j] : 0,
-					classification: points.classification ? points.classification[j] : 0,
-					returnNumber: points.returnNumber ? points.returnNumber[j] : 0,
-					numberOfReturns: points.numberOfReturns ? points.numberOfReturns[j] : 0,
-					pointSourceID: points.pointSourceID ? points.pointSourceID[j] : 0,
-				};
-				
-				data.push(d);
-			}
-
-			// Increment distance from the profile start point
-			totalDistance += segmentLength;
-		}
-
-		var output = {
-			'data': data,
-			'minX': min.x,
-			'minY': min.y,
-			'minZ': min.z,
-			'maxX': max.x,
-			'maxY': max.y,
-			'maxZ': max.z
-		};
-
-		return output;
-	};
-	
-	this.pointHighlight = function(event){
-    
-		var pointSize = 6;
-		
-		// Find the hovered point if applicable
-		var d = scope.points;
-		var sx = scope.scaleX;
-		var sy = scope.scaleY;
-		var coordinates = [0, 0];
-		coordinates = d3.mouse(this);
-		var xs = coordinates[0];
-		var ys = coordinates[1];
-		
-		// Fix FF vs Chrome discrepancy
-		//if(navigator.userAgent.indexOf("Firefox") == -1 ) {
-		//	xs = xs - scope.margin.left;
-		//	ys = ys - scope.margin.top;
-		//}
-		var hP = [];
-		var tol = pointSize;
-
-		for (var i=0; i < d.length; i++){
-			if(sx(d[i].distance) < xs + tol && sx(d[i].distance) > xs - tol && sy(d[i].altitude) < ys + tol && sy(d[i].altitude) > ys -tol){
-				hP.push(d[i]); 
-			}
-		}
-
-		if(hP.length > 0){
-			var p = hP[0];
-			this.hoveredPoint = hP[0];
-			if(navigator.userAgent.indexOf("Firefox") == -1 ) {
-				cx = scope.scaleX(p.distance) + scope.margin.left;
-				cy = scope.scaleY(p.altitude) + scope.margin.top;
-			} else {
-				cx = scope.scaleX(p.distance);
-				cy = scope.scaleY(p.altitude);
-			}
-			
-			//cx -= pointSize / 2;
-			cy -= pointSize / 2;
-			
-			var svg = d3.select("svg");
-			d3.selectAll("rect").remove();
-			var rectangle = svg.append("rect")
-				.attr("x", cx)
-				.attr("y", cy)
-				.attr("id", p.id)
-				.attr("width", pointSize)
-				.attr("height", pointSize)
-				.style("fill", 'yellow');
-				
-				
-			var marker = $("#profile_selection_marker");
-			marker.css("display", "initial");
-			marker.css("left", cx + "px");
-			marker.css("top", cy + "px");
-			marker.css("width", pointSize + "px");
-			marker.css("height", pointSize + "px");
-			marker.css("background-color", "yellow");
-
-			//var html = 'x: ' + Math.round(10 * p.x) / 10 + ' y: ' + Math.round(10 * p.y) / 10 + ' z: ' + Math.round( 10 * p.altitude) / 10 + '  -  ';
-			//html += i18n.t('tools.classification') + ': ' + p.classificationCode + '  -  ';
-			//html += i18n.t('tools.intensity') + ': ' + p.intensityCode;
-			
-			var html = 'x: ' + Math.round(10 * p.x) / 10 + ' y: ' + Math.round(10 * p.y) / 10 + ' z: ' + Math.round( 10 * p.altitude) / 10 + '  -  ';
-			html += "offset: " + p.distance.toFixed(3) + '  -  ';
-			html += "Classification: " + p.classification + '  -  ';
-			html += "Intensity: " + p.intensity;
-			
-			$('#profileInfo').css('color', 'yellow');
-			$('#profileInfo').html(html);
-
-		} else {
-			d3.selectAll("rect").remove();
-			$('#profileInfo').html("");
-			
-			var marker = $("#profile_selection_marker");
-			marker.css("display", "none");
-		}
-	};
-	
-	this.strokeColor = function (d) {
-		var material = scope.viewer.getMaterial();
-		if (material === Potree.PointColorType.RGB) {
-			//return d.color;
-			return 'rgb(' + (d.color[0] * 100 / 255) + '%,' + (d.color[1] * 100 / 255) + '%,' + (d.color[2] * 100 / 255) + '%)';
-		} else if (material === Potree.PointColorType.INTENSITY) {
-			//return d.intensity;
-			return 'rgb(' + d.intensity + '%,' + d.intensity + '%,' + d.intensity + '%)';
-		} else if (material === Potree.PointColorType.CLASSIFICATION) {
-			var classif = scope.viewer.scene.pointclouds[0].material.classification;
-			if (typeof classif[d.classification] != 'undefined'){
-				var color = 'rgb(' + classif[d.classification].x * 100 + '%,';
-				color += classif[d.classification].y * 100 + '%,';
-				color += classif[d.classification].z * 100 + '%)';
-				return color;
-			} else {
-				return 'rgb(255,255,255)';
-			}
-		} else if (material === Potree.PointColorType.HEIGHT) {
-			return d.heightColor;
-		} else if (material === Potree.PointColorType.RETURN_NUMBER) {
-			
-			if(d.numberOfReturns === 1){
-					return 'rgb(255, 255, 0)';
-			}else{
-				if(d.returnNumber === 1){
-					return 'rgb(255, 0, 0)';
-				}else if(d.returnNumber === d.numberOfReturns){
-					return 'rgb(0, 0, 255)';
-				}else{
-					return 'rgb(0, 255, 0)';
-				}
-			}
-			
-			return d.heightColor;
-		} else {
-			return d.color;
-		}
-	};
-	
-	this.redraw = function(){
-		scope.draw(scope.currentProfile);
-	};
-
-	this.draw = function(profile){
-		// TODO are the used closures safe for garbage collection?
-		
-		if(!scope.enabled){
-			return;
-		}
-		if(profile){
-			if(profile.points.length < 2){
-				return;
-			}
-		}else{
-			return;
-		}
-		if(scope.viewer.scene.pointclouds.length === 0){
-			return;
-		}
-		
-		if(scope.currentProfile){
-			scope.currentProfile.removeEventListener("marker_moved", drawOnChange);
-			scope.currentProfile.removeEventListener("width_changed", drawOnChange);
-			viewer.dispatcher.removeEventListener("material_changed", drawOnChange);
-			//viewer.addEventListener("material_changed", function(){
-			//	drawOnChange({profile: scope.currentProfile});
-			//});
-			
-			
-			//viewer.profileTool.addEventListener("marker_moved", drawOnChange);
-			//viewer.profileTool.addEventListener("width_changed", drawOnChange);
-			//viewer.addEventListener("material_changed", function(){
-			//	drawOnChange({profile: scope.currentProfile});
-			//});
-            //
-			//viewer.addEventListener("height_range_changed", function(){
-			//	drawOnChange({profile: scope.currentProfile});
-			//});
-		}
-		
-		
-		scope.currentProfile = profile;
-		
-		{
-			scope.currentProfile.addEventListener("marker_moved", drawOnChange);
-			scope.currentProfile.addEventListener("width_changed", drawOnChange);
-			viewer.dispatcher.addEventListener("material_changed", drawOnChange);
-		}
-
-		if(!scope.__drawData){
-			scope.__drawData = {};
-		}
-		scope.points = [];
-		scope.rangeX = [Infinity, -Infinity];
-		scope.rangeY = [Infinity, -Infinity];
-		
-		scope.pointsProcessed = 0;
-		
-		for(var i = 0; i < scope.requests.length; i++){
-			scope.requests[i].cancel();
-		}
-		scope.requests = [];
-		
-		var drawPoints = function(points, rangeX, rangeY) {
-		
-		
-			var mileage = 0;
-			for(var i = 0; i < profile.points.length; i++){
-				var point = profile.points[i];
-				
-				if(i > 0){
-					var previous = profile.points[i-1];
-					var dx = point.x - previous.x;
-					var dy = point.y - previous.y;
-					var distance = Math.sqrt(dx * dx + dy * dy);
-					mileage += distance;
-				}
-				
-				var radius = 4;
-				
-				var cx = scope.scaleX(mileage);
-				var cy = scope.context.canvas.clientHeight;
-				
-				scope.context.beginPath();
-				scope.context.arc(cx, cy, radius, 0, 2 * Math.PI, false);
-				scope.context.fillStyle = '#a22';
-				scope.context.fill();
-			};
-		
-		
-			var pointSize = 2;
-			var i = -1, n = points.length, d, cx, cy;
-			while (++i < n) {
-				d = points[i];
-				cx = scope.scaleX(d.distance);
-				cy = scope.scaleY(d.altitude);
-				scope.context.beginPath();
-				scope.context.moveTo(cx, cy);
-				scope.context.fillStyle = scope.strokeColor(d);
-				scope.context.fillRect(cx, cy, pointSize, pointSize);
-				//context.fillStyle = pv.profile.strokeColor(d);
-			}
-		};
-		
-		var projectedBoundingBox = null;
-		
-		var setupAndDraw = function(){
-			var containerWidth = scope.element.clientWidth;
-			var containerHeight = scope.element.clientHeight;
-			
-			var width = containerWidth - (scope.margin.left + scope.margin.right);
-			var height = containerHeight - (scope.margin.top + scope.margin.bottom);
-			
-			scope.scaleX = d3.scale.linear();
-			scope.scaleY = d3.scale.linear();
-			
-			var domainProfileWidth = scope.rangeX[1] - scope.rangeX[0];
-			var domainProfileHeight = scope.rangeY[1] - scope.rangeY[0];
-			var domainRatio = domainProfileWidth / domainProfileHeight;
-			var rangeProfileWidth = width;
-			var rangeProfileHeight = height;
-			var rangeRatio = rangeProfileWidth / rangeProfileHeight;
-			
-			if(domainRatio < rangeRatio){
-				// canvas scale
-				var targetWidth = domainProfileWidth * (rangeProfileHeight / domainProfileHeight);
-				scope.scaleY.range([height, 0]);
-				scope.scaleX.range([width / 2 - targetWidth / 2, width / 2 + targetWidth / 2]);
-				
-				// axis scale
-				var domainScale = rangeRatio / domainRatio;
-				var domainScaledWidth = domainProfileWidth * domainScale;
-				scope.axisScaleX = d3.scale.linear()
-					.domain([
-						domainProfileWidth / 2 - domainScaledWidth / 2 , 
-						domainProfileWidth / 2 + domainScaledWidth / 2 ])
-					.range([0, width]);
-				scope.axisScaleY = d3.scale.linear()
-					.domain(scope.rangeY)
-					.range([height, 0]);
-			}else{
-				// canvas scale
-				var targetHeight = domainProfileHeight* (rangeProfileWidth / domainProfileWidth);
-				scope.scaleX.range([0, width]);
-				scope.scaleY.range([height / 2 + targetHeight / 2, height / 2 - targetHeight / 2]);
-				
-				// axis scale
-				var domainScale =  domainRatio / rangeRatio;
-				var domainScaledHeight = domainProfileHeight * domainScale;
-				var domainHeightCentroid = (scope.rangeY[1] + scope.rangeY[0]) / 2;
-				scope.axisScaleX = d3.scale.linear()
-					.domain(scope.rangeX)
-					.range([0, width]);
-				scope.axisScaleY = d3.scale.linear()
-					.domain([
-						domainHeightCentroid - domainScaledHeight / 2 , 
-						domainHeightCentroid + domainScaledHeight / 2 ])
-					.range([height, 0]);
-			}
-			scope.scaleX.domain(scope.rangeX);
-			scope.scaleY.domain(scope.rangeY);
-			
-			
-
-			scope.axisZoom = d3.behavior.zoom()
-				.x(scope.axisScaleX)
-				.y(scope.axisScaleY)
-				.scaleExtent([0,128])
-				.size([width, height]);
-				
-			scope.zoom = d3.behavior.zoom()
-			.x(scope.scaleX)
-			.y(scope.scaleY)
-			.scaleExtent([0,128])
-			.size([width, height])
-			.on("zoom",  function(){
-				//var t = zoom.translate();
-				//var tx = t[0];
-				//var ty = t[1];
-				//
-				//tx = Math.min(tx, 0);
-				//tx = Math.max(tx, width - projectedBoundingBox.max.x);
-				//zoom.translate([tx, ty]);
-				
-				scope.axisZoom.translate(scope.zoom.translate());
-				scope.axisZoom.scale(scope.zoom.scale());
-					
-				svg.select(".x.axis").call(xAxis);
-				svg.select(".y.axis").call(yAxis);
-
-				scope.context.clearRect(0, 0, width, height);
-				drawPoints(scope.points, scope.rangeX, scope.rangeY);
-			});
-			
-			scope.context = d3.select("#profileCanvas")
-				.attr("width", width)
-				.attr("height", height)
-				.call(scope.zoom)
-				.node().getContext("2d");
-			
-			
-			//d3.select("svg#profile_draw_container").remove();
-			d3.select("svg#profileSVG").selectAll("*").remove();
-			
-			svg = d3.select("svg#profileSVG")
-			.call(scope.zoom)
-			.attr("width", (width + scope.margin.left + scope.margin.right).toString())
-			.attr("height", (height + scope.margin.top + scope.margin.bottom).toString())
-			.attr("transform", "translate(" + scope.margin.left + "," + scope.margin.top + ")")
-			.on("mousemove", function(){
-//				scope.pointHighlight
-				// TODO implement pointHighlight
-			});
-			//scope.context.canvas.addEventListener("mousemove", scope.pointHighlight);
-			
-			d3.select("#profileCanvas")
-			.on("mousemove", scope.pointHighlight);
-			
-			
-			// Create x axis
-			var xAxis = d3.svg.axis()
-				.scale(scope.axisScaleX)
-				.innerTickSize(-height)
-				.outerTickSize(5)
-				.orient("bottom")
-				.ticks(10, "m");
-
-			// Create y axis
-			var yAxis = d3.svg.axis()
-				.scale(scope.axisScaleY)
-				.innerTickSize(-width)
-				.outerTickSize(5)
-				.orient("left")
-				.ticks(10, "m");
-				
-			// Append axis to the chart
-			var gx = svg.append("g")
-				.attr("class", "x axis")
-				.call(xAxis);
-
-			svg.append("g")
-				.attr("class", "y axis")
-				.call(yAxis);
-				
-			if(navigator.userAgent.indexOf("Firefox") == -1 ) {
-				svg.select(".y.axis").attr("transform", "translate("+ (scope.margin.left).toString() + "," + scope.margin.top.toString() + ")");
-				svg.select(".x.axis").attr("transform", "translate(" + scope.margin.left.toString() + "," + (height + scope.margin.top).toString() + ")");
-			} else {
-				svg.select(".x.axis").attr("transform", "translate( 0 ," + height.toString() + ")");
-			}
-			
-			drawPoints(scope.points, scope.rangeX, scope.rangeY);
-			
-			document.getElementById("profile_num_points").innerHTML = Potree.utils.addCommas(scope.pointsProcessed) + " ";
-		};
-		
-		
-		for(var i = 0; i < scope.viewer.scene.pointclouds.length; i++){
-			var pointcloud = scope.viewer.scene.pointclouds[i];
-			
-			if(!pointcloud.visible){
-				continue;
-			}
-			
-			var request = pointcloud.getPointsInProfile(profile, null, {
-				"onProgress": function(event){
-					if(!scope.enabled){
-						return;
-					}
-					
-					if(!projectedBoundingBox){
-						projectedBoundingBox = event.points.projectedBoundingBox;
-					}else{
-						projectedBoundingBox.union(event.points.projectedBoundingBox);
-					}
-					
-					var result = scope.preparePoints(event.points);
-					var points = result.data;
-					scope.points = scope.points.concat(points);
-					
-					var batchRangeX = [d3.min(points, function(d) { return d.distance; }), d3.max(points, function(d) { return d.distance; })];
-					var batchRangeY = [d3.min(points, function(d) { return d.altitude; }), d3.max(points, function(d) { return d.altitude; })];
-					
-					scope.rangeX = [ Math.min(scope.rangeX[0], batchRangeX[0]), Math.max(scope.rangeX[1], batchRangeX[1]) ];
-					scope.rangeY = [ Math.min(scope.rangeY[0], batchRangeY[0]), Math.max(scope.rangeY[1], batchRangeY[1]) ];
-					
-					scope.pointsProcessed += result.data.length;
-					
-					setupAndDraw();
-					
-					if(scope.pointsProcessed > scope.threshold){
-						scope.cancel();
-					}
-				},
-				"onFinish": function(event){
-					if(!scope.enabled){
-						return;
-					}
-				},
-				"onCancel": function(){
-					if(!scope.enabled){
-						return;
-					}
-				}
-			});	
-			
-			scope.requests.push(request);
-		}
-	};
-	
-	this.setThreshold = function(value){
-		scope.threshold = value;
-		
-		scope.redraw();
-	};
-	
-	var drawOnChange = function(event){
-		//if(event.profile === scope.currentProfile){
-			scope.redraw();
-		//}
-	}.bind(this);
-	
-	//viewer.scene.dispatcher.addEventListener("marker_moved"))
-
-	//viewer.profileTool.addEventListener("marker_moved", drawOnChange);
-	//viewer.profileTool.addEventListener("width_changed", drawOnChange);
-	//viewer.addEventListener("material_changed", function(){
-	//	drawOnChange({profile: scope.currentProfile});
-	//});
-    //
-	//viewer.addEventListener("height_range_changed", function(){
-	//	drawOnChange({profile: scope.currentProfile});
-	//});
-	
-	var width = document.getElementById('profile_window').clientWidth;
-	var height = document.getElementById('profile_window').clientHeight;
-	function resizeLoop(){
-		requestAnimationFrame(resizeLoop);
-
-		var newWidth = document.getElementById('profile_window').clientWidth;
-		var newHeight = document.getElementById('profile_window').clientHeight;
-
-		if(newWidth !== width || newHeight !== height){
-			setTimeout(drawOnChange, 50, {profile: scope.currentProfile});
-		}
-
-		width = newWidth;
-		height = newHeight;
-	};
-	requestAnimationFrame(resizeLoop);
+	}
 
 };
 
@@ -15603,11 +15429,9 @@ Potree.MapView = class{
 	}
 	
 	init(){
-		//this.setSceneProjection("+proj=utm +zone=10 +ellps=GRS80 +datum=NAD83 +units=m +no_defs");
-		
 		$( "#potree_map" ).draggable({ handle: $('#potree_map_header') });
 		$( "#potree_map" ).resizable();
-		$( "#potree_map_toggle" ).css("display", "block");
+		//$( "#potree_map_toggle" ).css("display", "block");
 	
 		let extentsLayer = this.getExtentsLayer();
 		let cameraLayer = this.getCameraLayer();
@@ -15769,13 +15593,13 @@ Potree.MapView = class{
 			selectedFeatures.clear();
 		});
 		
-		// adding pointclouds to map
-		this.viewer.dispatcher.addEventListener("pointcloud_loaded", (event) => {
-			this.load(event.pointcloud);
-		});
-		for(var i = 0; i < this.viewer.scene.pointclouds.length; i++){
-			this.load(this.viewer.scene.pointclouds[i]);
-		}
+		//// adding pointclouds to map
+		//this.viewer.dispatcher.addEventListener("pointcloud_added", (event) => {
+		//	this.load(event.pointcloud);
+		//});
+		//for(var i = 0; i < this.viewer.scene.pointclouds.length; i++){
+		//	this.load(this.viewer.scene.pointclouds[i]);
+		//}
 		
 		//this.viewer.profileTool.addEventListener("profile_added", this.updateToolDrawings);
 		//this.viewer.profileTool.addEventListener("profile_removed", this.updateToolDrawings);
@@ -15788,6 +15612,33 @@ Potree.MapView = class{
 		//this.viewer.measuringTool.addEventListener("marker_removed", this.updateToolDrawings);
 		//this.viewer.measuringTool.addEventListener("marker_moved", this.updateToolDrawings);
 
+		this.viewer.addEventListener("scene_changed", e => {
+			this.setScene(e.scene);
+		});
+		
+		this.onPointcloudAdded = e => {
+			this.load(e.pointcloud);
+		};
+		
+		this.setScene(this.viewer.scene);
+	}
+	
+	setScene(scene){
+		if(this.scene === scene){
+			return;
+		};
+		
+		if(this.scene){
+			this.scene.removeEventListener("pointcloud_added", this.onPointcloudAdded);
+		}
+		
+		this.scene = scene;
+		
+		this.scene.addEventListener("pointcloud_added", this.onPointcloudAdded);
+		
+		for(var i = 0; i < this.viewer.scene.pointclouds.length; i++){
+			this.load(this.viewer.scene.pointclouds[i]);
+		}
 	}
 	
 	getExtentsLayer(){
@@ -15998,6 +15849,10 @@ Potree.MapView = class{
 			return;
 		}
 		
+		if(!pointcloud.projection){
+			return;
+		}
+		
 		if(!this.sceneProjection){
 			this.setSceneProjection(pointcloud.projection);
 		}
@@ -16095,6 +15950,10 @@ Potree.MapView = class{
 	}
 	
 	update(delta){
+		if(!this.sceneProjection){
+			return;
+		}
+		
 		var pm = $( "#potree_map" );
 		
 		if(!pm.is(":visible")){
@@ -17011,7 +16870,7 @@ function initMeasurementDetails(){
 		
 		document.getElementById("measurement_details").appendChild(elLi);
 		
-		var widthListener;
+		let widthListener = null;
 		var updateDisplay = function(event){
 		
 			$(elPanelBody).empty();
@@ -17038,11 +16897,13 @@ function initMeasurementDetails(){
 					elWidthLabel.html("-");
 				}
 				
-				widthListener = function(event){
-					var val = Math.pow((event.width / 1000), 1/4);
-					elWidthLabel.html(Potree.utils.addCommas(event.width.toFixed(3)));
-					elWidthSlider.slider({value: val});
-				};
+				if(widthListener === null){
+					widthListener = function(event){
+						var val = Math.pow((event.width / 1000), 1/4);
+						elWidthLabel.html(Potree.utils.addCommas(event.width.toFixed(3)));
+						elWidthSlider.slider({value: val});
+					};
+				}
 				if(!measurement.hasEventListener("width_changed", widthListener)){
 					measurement.addEventListener("width_changed", widthListener);
 				}
@@ -17297,6 +17158,9 @@ function initMeasurementDetails(){
 			trackMeasurement(e.scene, e.measurement);
 		} else if(e.profile){
 			trackMeasurement(e.scene, e.profile);
+			
+			viewer._2dprofile.show();
+			viewer._2dprofile.draw(e.profile);
 		}
 	};
 	
@@ -17460,42 +17324,21 @@ initSettings = function(){
 	});
 };
 
-//let initSidebar = () => {
-//	
-//	$(document).ready( function() {
-//		initAccordion();
-//		initAppearance();
-//		initToolbar();
-//		initNavigation();
-//		initMaterials();
-//		initClassificationList();
-//		initAnnotationDetails();
-//		initMeasurementDetails();
-//		initSceneList();
-//		initSettings()
-//		
-//		$('#potree_version_number').html(Potree.version.major + "." + Potree.version.minor + Potree.version.suffix);
-//		$('.perfect_scrollbar').perfectScrollbar();
-//	});
-//}
-
-//$(document).ready( function() {
-//    
-//	initAccordion();
-//	initAppearance();
-//	initToolbar();
-//	initNavigation();
-//	initMaterials();
-//	initClassificationList();
-//	initAnnotationDetails();
-//	initMeasurementDetails();
-//	initSceneList();
-//	initSettings()
-//	
-//	$('#potree_version_number').html(Potree.version.major + "." + Potree.version.minor + Potree.version.suffix);
-//	$('.perfect_scrollbar').perfectScrollbar();
-//	
-//});
+let initSidebar = function(){
+	initAccordion();
+	initAppearance();
+	initToolbar();
+	initNavigation();
+	initMaterials();
+	initClassificationList();
+	initAnnotationDetails();
+	initMeasurementDetails();
+	initSceneList();
+	initSettings()
+	
+	$('#potree_version_number').html(Potree.version.major + "." + Potree.version.minor + Potree.version.suffix);
+	$('.perfect_scrollbar').perfectScrollbar();
+}
 class HoverMenuItem{
 
 	constructor(icon, callback){

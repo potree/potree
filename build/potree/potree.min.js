@@ -8709,7 +8709,7 @@ Potree.Features = function(){
 				
 				var supported = true;
 				
-				supported = supported && gl.getExtension("EXT_frag_depth");
+				//supported = supported && gl.getExtension("EXT_frag_depth");
 				supported = supported && gl.getExtension("OES_texture_float");
 				supported = supported && gl.getParameter(gl.MAX_VARYING_VECTORS) >= 8;
 				
@@ -15274,6 +15274,24 @@ Potree.Viewer.Profile = class ProfileWindow{
 		this.redraw();
 	}
 	
+	getPointsInProfileAsCSV(){
+		let file = "";
+		let points = this.points.slice();
+		
+		points.sort((a, b) => (a.distance - b.distance));
+		
+		for(let point of points){
+			let line = point.distance.toFixed(4) + ", ";
+			line += point.altitude.toFixed(4) + ", ";
+			line += point.color.join(", ");
+			line += "\n";
+			
+			file = file + line;
+		}
+		
+		return file;
+	}
+	
 	getPointsInProfileAsLas(){
 		let points = this.points;
 		let boundingBox = new THREE.Box3();
@@ -17205,7 +17223,7 @@ function initSceneList(){
 			var elLabel = $('<label>');
 			var elInput = $('<input type="checkbox">');
 			
-			elInput[0].checked = true;
+			elInput[0].checked = pointcloud.visible;
 			elInput[0].id = "scene_list_item_pointcloud_" + id;
 			elLabel[0].id = "scene_list_item_label_pointcloud_" + id;
 			elLabel[0].htmlFor = "scene_list_item_pointcloud_" + id;

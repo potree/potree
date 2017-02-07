@@ -19,6 +19,10 @@
 				<span style="flex-grow: 1;"></span>
 				<span>
 				
+					<a id="potree_download_profile_ortho_link" href="#" download="profile.csv">
+						<input id="potree_download_profile_ortho_button" type="button" data-i18n="[value]profile.save_ortho">
+					</a>
+					
 					<a id="potree_download_profile_link" href="#" download="profile.las">
 						<input id="potree_download_profile_button" type="button" data-i18n="[value]profile.save_las">
 					</a>
@@ -68,16 +72,22 @@
 
 <script>
 
+$('#potree_download_profile_ortho_button').click(function(){
+	let string = viewer._2dprofile.getPointsInProfileAsCSV();
+	let uri = "data:application/octet-stream;base64,"+btoa(string);
+	$('#potree_download_profile_ortho_link').attr("href", uri);
+});
+
 $('#potree_download_profile_button').click(function(){
-	var las = viewer._2dprofile.getPointsInProfileAsLas();
-	var u8view = new Uint8Array(las);
+	let las = viewer._2dprofile.getPointsInProfileAsLas();
+	let u8view = new Uint8Array(las);
 	
-	var binString = "";
-	for(var i = 0; i < u8view.length; i++){
+	let binString = "";
+	for(let i = 0; i < u8view.length; i++){
 		binString += String.fromCharCode(u8view[i]);
 	}
 	
-	var uri = "data:application/octet-stream;base64,"+btoa(binString);
+	let uri = "data:application/octet-stream;base64,"+btoa(binString);
 	$('#potree_download_profile_link').attr("href", uri);
 	//elDownloadProfileLink.href = uri;
 	

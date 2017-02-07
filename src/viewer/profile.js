@@ -593,6 +593,24 @@ Potree.Viewer.Profile = class ProfileWindow{
 		this.redraw();
 	}
 	
+	getPointsInProfileAsCSV(){
+		let file = "";
+		let points = this.points.slice();
+		
+		points.sort((a, b) => (a.distance - b.distance));
+		
+		for(let point of points){
+			let line = point.distance.toFixed(4) + ", ";
+			line += point.altitude.toFixed(4) + ", ";
+			line += point.color.join(", ");
+			line += "\n";
+			
+			file = file + line;
+		}
+		
+		return file;
+	}
+	
 	getPointsInProfileAsLas(){
 		let points = this.points;
 		let boundingBox = new THREE.Box3();

@@ -1208,7 +1208,7 @@ function initSceneList(){
 			var elLabel = $('<label>');
 			var elInput = $('<input type="checkbox">');
 			
-			elInput[0].checked = true;
+			elInput[0].checked = pointcloud.visible;
 			elInput[0].id = "scene_list_item_pointcloud_" + id;
 			elLabel[0].id = "scene_list_item_label_pointcloud_" + id;
 			elLabel[0].htmlFor = "scene_list_item_pointcloud_" + id;

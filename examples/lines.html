@@ -98,7 +98,7 @@
 			];
 			
 			let geometry = new THREE.BufferGeometry();
-			let material = new THREE.LineBasicMaterial({ color: 0x00ff00 });
+			let material = new THREE.LineBasicMaterial({ color: 0xff0000 });
 			let buffer = new Float32Array(path);
 			geometry.addAttribute('position', new THREE.BufferAttribute(buffer, 3));
 			geometry.computeBoundingSphere();

@@ -1,10 +1,18 @@
 
 
-Potree.VolumeTool = class VolumeTool{
+Potree.VolumeTool = class VolumeTool extends THREE.EventDispatcher{
 	
 	constructor(viewer){
+		super()
+		
 		this.viewer = viewer;
 		this.renderer = viewer.renderer;
+		
+		this.addEventListener("start_inserting_volume", e => {
+			this.viewer.dispatcher.dispatchEvent({
+				type: "cancel_insertions"
+			});
+		});
 
 		this.sceneVolume = new THREE.Scene();
 		this.sceneVolume.name = "scene_volume";
@@ -47,8 +55,17 @@ Potree.VolumeTool = class VolumeTool{
 		let volume = new Potree.Volume();
 		volume.clip = args.clip || false;
 		
+		this.dispatchEvent({
+			type: "start_inserting_volume",
+			volume: volume
+		});
+		
 		//this.sceneVolume.add(volume);
 		this.viewer.scene.addVolume(volume);
+		
+		let cancel = {
+			callback: null
+		};
 
 		let drag = e => {
 			let camera = this.viewer.scene.camera;
@@ -72,10 +89,19 @@ Potree.VolumeTool = class VolumeTool{
 		let drop = e => {
 			volume.removeEventListener("drag", drag);
 			volume.removeEventListener("drop", drop);
+			
+			cancel.callback();
+		};
+		
+		cancel.callback = e => {
+			volume.removeEventListener("drag", drag);
+			volume.removeEventListener("drop", drop);
+			this.viewer.dispatcher.removeEventListener("cancel_insertions", cancel.callback);
 		};
 		
 		volume.addEventListener("drag", drag);
 		volume.addEventListener("drop", drop);
+		this.viewer.dispatcher.addEventListener("cancel_insertions", cancel.callback);
 		
 		this.viewer.inputHandler.startDragging(volume);
 	}

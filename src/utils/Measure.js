@@ -253,6 +253,33 @@ Potree.Measure = class Measure extends THREE.Object3D{
 		return Math.abs(area / 2);
 	};
 	
+	getTotalDistance(){
+		
+		if(this.points.length === 0){
+			return 0;
+		}
+		
+		let distance = 0;
+		
+		for(let i = 1; i < this.points.length; i++){
+			let prev = this.points[i-1].position;
+			let curr = this.points[i].position;
+			let d = prev.distanceTo(curr);
+			
+			distance += d;
+		}
+		
+		if(this.closed && this.points.length > 1){
+			let first = this.points[0].position;
+			let last = this.points[this.points.length - 1].position;
+			let d = last.distanceTo(first);
+			
+			distance += d;
+		}
+		
+		return distance;
+	}
+	
 	getAngleBetweenLines(cornerPoint, point1, point2) {
         let v1 = new THREE.Vector3().subVectors(point1.position, cornerPoint.position);
         let v2 = new THREE.Vector3().subVectors(point2.position, cornerPoint.position);

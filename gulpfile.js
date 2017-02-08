@@ -36,7 +36,6 @@ var paths = {
 		"src/materials/EyeDomeLightingMaterial.js",
 		"src/materials/BlurMaterial.js",
 		"src/navigation/InputHandler.js",
-		"src/navigation/Controls.js",
 		"src/navigation/FirstPersonControls.js",
 		"src/navigation/GeoControls.js",
 		"src/navigation/OrbitControls.js",

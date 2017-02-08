@@ -185,7 +185,7 @@ Potree.MapView = class{
 		});
 		
 		//// adding pointclouds to map
-		//this.viewer.dispatcher.addEventListener("pointcloud_added", (event) => {
+		//this.viewer.addEventListener("pointcloud_added", (event) => {
 		//	this.load(event.pointcloud);
 		//});
 		//for(var i = 0; i < this.viewer.scene.pointclouds.length; i++){

@@ -31,7 +31,7 @@ Potree.Viewer.Profile = class ProfileWindow{
 			this.redraw();
 		};
 		
-		//viewer.scene.dispatcher.addEventListener("marker_moved"))
+		//viewer.scene.addEventListener("marker_moved"))
 
 		//viewer.profileTool.addEventListener("marker_moved", drawOnChange);
 		//viewer.profileTool.addEventListener("width_changed", drawOnChange);
@@ -317,7 +317,7 @@ Potree.Viewer.Profile = class ProfileWindow{
 			this.currentProfile.removeEventListener("marker_added", this.drawOnChange);
 			this.currentProfile.removeEventListener("marker_removed", this.drawOnChange);
 			this.currentProfile.removeEventListener("width_changed", this.drawOnChange);
-			viewer.dispatcher.removeEventListener("material_changed", this.drawOnChange);
+			viewer.removeEventListener("material_changed", this.drawOnChange);
 			//viewer.addEventListener("material_changed", function(){
 			//	drawOnChange({profile: this.currentProfile});
 			//});
@@ -342,7 +342,7 @@ Potree.Viewer.Profile = class ProfileWindow{
 			this.currentProfile.addEventListener("marker_added", this.drawOnChange);
 			this.currentProfile.addEventListener("marker_removed", this.drawOnChange);
 			this.currentProfile.addEventListener("width_changed", this.drawOnChange);
-			viewer.dispatcher.addEventListener("material_changed", this.drawOnChange);
+			viewer.addEventListener("material_changed", this.drawOnChange);
 		}
 
 		if(!this.__drawData){

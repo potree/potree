@@ -9,7 +9,7 @@ Potree.VolumeTool = class VolumeTool extends THREE.EventDispatcher{
 		this.renderer = viewer.renderer;
 		
 		this.addEventListener("start_inserting_volume", e => {
-			this.viewer.dispatcher.dispatchEvent({
+			this.viewer.dispatchEvent({
 				type: "cancel_insertions"
 			});
 		});
@@ -96,12 +96,12 @@ Potree.VolumeTool = class VolumeTool extends THREE.EventDispatcher{
 		cancel.callback = e => {
 			volume.removeEventListener("drag", drag);
 			volume.removeEventListener("drop", drop);
-			this.viewer.dispatcher.removeEventListener("cancel_insertions", cancel.callback);
+			this.viewer.removeEventListener("cancel_insertions", cancel.callback);
 		};
 		
 		volume.addEventListener("drag", drag);
 		volume.addEventListener("drop", drop);
-		this.viewer.dispatcher.addEventListener("cancel_insertions", cancel.callback);
+		this.viewer.addEventListener("cancel_insertions", cancel.callback);
 		
 		this.viewer.inputHandler.startDragging(volume);
 	}

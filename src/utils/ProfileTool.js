@@ -8,7 +8,7 @@ Potree.ProfileTool = class ProfileTool extends THREE.EventDispatcher{
 		this.renderer = viewer.renderer;
 		
 		this.addEventListener("start_inserting_profile", e => {
-			this.viewer.dispatcher.dispatchEvent({
+			this.viewer.dispatchEvent({
 				type: "cancel_insertions"
 			});
 		});
@@ -81,10 +81,10 @@ Potree.ProfileTool = class ProfileTool extends THREE.EventDispatcher{
 		cancel.callback = e => {
 			profile.removeMarker(profile.points.length - 1);
 			domElement.removeEventListener("mouseup", insertionCallback, true);
-			this.viewer.dispatcher.removeEventListener("cancel_insertions", cancel.callback);
+			this.viewer.removeEventListener("cancel_insertions", cancel.callback);
 		};
 		
-		this.viewer.dispatcher.addEventListener("cancel_insertions", cancel.callback);
+		this.viewer.addEventListener("cancel_insertions", cancel.callback);
 		domElement.addEventListener("mouseup", insertionCallback , true);
 		
 		profile.addMarker(new THREE.Vector3(0, 0, 0));

@@ -9,7 +9,7 @@ Potree.MeasuringTool = class MeasuringTool extends THREE.EventDispatcher{
 		this.renderer = viewer.renderer;
 		
 		this.addEventListener("start_inserting_measurement", e => {
-			this.viewer.dispatcher.dispatchEvent({
+			this.viewer.dispatchEvent({
 				type: "cancel_insertions"
 			});
 		});
@@ -64,6 +64,7 @@ Potree.MeasuringTool = class MeasuringTool extends THREE.EventDispatcher{
 		this.sceneMeasurement.add(measure);
 		
 		let cancel = {
+			removeLastMarker: measure.maxMarkers > 3,
 			callback: null
 		};
 		
@@ -73,7 +74,7 @@ Potree.MeasuringTool = class MeasuringTool extends THREE.EventDispatcher{
 				measure.addMarker(measure.points[measure.points.length - 1].position.clone());
 				
 				if(measure.points.length >= measure.maxMarkers){
-					domElement.removeEventListener("mouseup", insertionCallback, true);
+					cancel.callback();
 				}
 				
 				this.viewer.inputHandler.startDragging(
@@ -84,13 +85,15 @@ Potree.MeasuringTool = class MeasuringTool extends THREE.EventDispatcher{
 		};
 		
 		cancel.callback = e => {
-			measure.removeMarker(measure.points.length - 1);
+			if(cancel.removeLastMarker){
+				measure.removeMarker(measure.points.length - 1);
+			}
 			domElement.removeEventListener("mouseup", insertionCallback, true);
-			this.viewer.dispatcher.removeEventListener("cancel_insertions", cancel.callback);
+			this.viewer.removeEventListener("cancel_insertions", cancel.callback);
 		};
 		
 		if(measure.maxMarkers > 1){
-			this.viewer.dispatcher.addEventListener("cancel_insertions", cancel.callback);
+			this.viewer.addEventListener("cancel_insertions", cancel.callback);
 			domElement.addEventListener("mouseup", insertionCallback , true);
 		}
 		

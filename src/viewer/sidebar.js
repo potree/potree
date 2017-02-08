@@ -794,7 +794,7 @@ function initAnnotationDetails(){
 		"scene": viewer.scene
 	});
 	
-	viewer.dispatcher.addEventListener("scene_changed", setScene);
+	viewer.addEventListener("scene_changed", setScene);
 }
 
 function initMeasurementDetails(){
@@ -1084,6 +1084,15 @@ function initMeasurementDetails(){
 				}
 				
 				
+			}
+			
+			if(measurement && measurement.showDistances && measurement.points.length > 1){
+				var txt = "Total: " + Potree.utils.addCommas(measurement.getTotalDistance().toFixed(3));
+				
+				var elNodeTotalDistance = $('<div>').addClass("measurement-detail-node-distance");
+				elNodeTotalDistance.html(txt);
+				
+				$(elPanelBody).append(elNodeTotalDistance);
 			}
 			
 			if(measurement && measurement.showArea){

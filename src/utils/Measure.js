@@ -354,8 +354,10 @@ Potree.Measure = class Measure extends THREE.Object3D{
 				
 				edge.material.color = this.color;
 				
-				edge.geometry.vertices[0].copy(point.position);
-				edge.geometry.vertices[1].copy(nextPoint.position);
+				edge.position.copy(point.position);
+				
+				edge.geometry.vertices[0].set(0, 0, 0);
+				edge.geometry.vertices[1].copy(nextPoint.position).sub(point.position);
 				
 				edge.geometry.verticesNeedUpdate = true;
 				edge.geometry.computeBoundingSphere();
@@ -427,11 +429,12 @@ Potree.Measure = class Measure extends THREE.Object3D{
 				let start = new THREE.Vector3(highPoint.x, highPoint.y, min);
 				let end = new THREE.Vector3(highPoint.x, highPoint.y, max);
 				
+				heightEdge.position.copy(lowPoint);
 				
-				heightEdge.geometry.vertices[0].copy(lowPoint);
-				heightEdge.geometry.vertices[1].copy(start);
-				heightEdge.geometry.vertices[2].copy(start);
-				heightEdge.geometry.vertices[3].copy(end);
+				heightEdge.geometry.vertices[0].set(0, 0, 0);
+				heightEdge.geometry.vertices[1].copy(start).sub(lowPoint);
+				heightEdge.geometry.vertices[2].copy(start).sub(lowPoint);
+				heightEdge.geometry.vertices[3].copy(end).sub(lowPoint);
 				
 				heightEdge.geometry.verticesNeedUpdate = true;
 				//heightEdge.geometry.computeLineDistances();

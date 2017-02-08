@@ -175,9 +175,9 @@ Potree.MeasuringTool = class MeasuringTool extends THREE.EventDispatcher{
 				
 				{ // height edge
 					let edge = measure.heightEdge;
-					let lowpoint = edge.geometry.vertices[0];
-					let start = edge.geometry.vertices[2];
-					let end = edge.geometry.vertices[3];
+					let lowpoint = edge.geometry.vertices[0].clone().add(edge.position);
+					let start = edge.geometry.vertices[2].clone().add(edge.position);
+					let end = edge.geometry.vertices[3].clone().add(edge.position);
 					
 					let lowScreen = lowpoint.clone().project(camera);
 					let startScreen = start.clone().project(camera);
@@ -196,9 +196,6 @@ Potree.MeasuringTool = class MeasuringTool extends THREE.EventDispatcher{
 					let startEL = toPixelCoordinates(startScreen);
 					let endEL = toPixelCoordinates(endScreen);
 					
-					//let pixelDistance = startEL.distanceTo(endEL);
-					//let worldDistance = start.distanceTo(end);
-					
 					let distances = [0, 
 						lowEL.distanceTo(startEL),
 						startEL.distanceTo(endEL), 0];
@@ -211,26 +208,6 @@ Potree.MeasuringTool = class MeasuringTool extends THREE.EventDispatcher{
 						
 					edge.material.dashSize = 10;
 					edge.material.gapSize = 10;
-						
-					//let sum = 0;
-					//let cumDistances = distances.map( e => {
-					//	sum = sum + e;
-					//	return sum;
-					//});
-					//
-					//heightEdge.geometry.lineDistances = cumDistances;
-					//heightEdge.geometry.lineDistancesNeedUpdate = true;
-					//
-					//edge.material.dashSize = 10;
-					//edge.material.gapSize = 10;
-					
-					
-					//edge.material.dashSize = 10 * worldDistance / pixelDistance;
-					//edge.material.gapSize = edge.material.dashSize;
-					
-					//edge.material.dashSize = pixelDistance / 5;
-					//edge.material.gapSize = pixelDistance / 5;
-					
 				}
 			}
 			

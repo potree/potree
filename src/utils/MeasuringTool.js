@@ -1,11 +1,18 @@
 
 
-Potree.MeasuringTool = class MeasuringTool{
+Potree.MeasuringTool = class MeasuringTool extends THREE.EventDispatcher{
 	
 	constructor(viewer){
+		super();
 		
 		this.viewer = viewer;
 		this.renderer = viewer.renderer;
+		
+		this.addEventListener("start_inserting_measurement", e => {
+			this.viewer.dispatcher.dispatchEvent({
+				type: "cancel_insertions"
+			});
+		});
 		
 		this.sceneMeasurement = new THREE.Scene();
 		this.sceneMeasurement.name = "scene_measurement";
@@ -38,8 +45,14 @@ Potree.MeasuringTool = class MeasuringTool{
 	startInsertion(args = {}){
 		
 		let domElement = this.viewer.renderer.domElement;
-
+		
 		let measure = new Potree.Measure();
+		
+		this.dispatchEvent({
+			type: "start_inserting_measurement",
+			measure: measure
+		});
+
 		measure.showDistances =  (args.showDistances == null) ? true : args.showDistances;
 		measure.showArea = args.showArea || false;
 		measure.showAngles = args.showAngles || false;
@@ -49,6 +62,10 @@ Potree.MeasuringTool = class MeasuringTool{
 		measure.maxMarkers = args.maxMarkers || Infinity;
 		
 		this.sceneMeasurement.add(measure);
+		
+		let cancel = {
+			callback: null
+		};
 		
 		let insertionCallback = (e) => {
 			if(e.button === THREE.MOUSE.LEFT){
@@ -62,12 +79,18 @@ Potree.MeasuringTool = class MeasuringTool{
 				this.viewer.inputHandler.startDragging(
 					measure.spheres[measure.spheres.length - 1]);
 			}else if(e.button === THREE.MOUSE.RIGHT){
-				measure.removeMarker(measure.points.length - 1);
-				domElement.removeEventListener("mouseup", insertionCallback, true);
+				cancel.callback();
 			}
 		};
 		
+		cancel.callback = e => {
+			measure.removeMarker(measure.points.length - 1);
+			domElement.removeEventListener("mouseup", insertionCallback, true);
+			this.viewer.dispatcher.removeEventListener("cancel_insertions", cancel.callback);
+		};
+		
 		if(measure.maxMarkers > 1){
+			this.viewer.dispatcher.addEventListener("cancel_insertions", cancel.callback);
 			domElement.addEventListener("mouseup", insertionCallback , true);
 		}
 		

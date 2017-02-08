@@ -1,9 +1,17 @@
 
-Potree.ProfileTool = class ProfileTool{
+Potree.ProfileTool = class ProfileTool extends THREE.EventDispatcher{
 	
 	constructor(viewer){
+		super();
+		
 		this.viewer = viewer;
 		this.renderer = viewer.renderer;
+		
+		this.addEventListener("start_inserting_profile", e => {
+			this.viewer.dispatcher.dispatchEvent({
+				type: "cancel_insertions"
+			});
+		});
 		
 		this.sceneProfile = new THREE.Scene();
 		this.sceneProfile.name = "scene_profile";
@@ -37,7 +45,16 @@ Potree.ProfileTool = class ProfileTool{
 		
 		let profile = new Potree.Profile();
 		
+		this.dispatchEvent({
+			type: "start_inserting_profile",
+			profile: profile
+		});
+		
 		this.sceneProfile.add(profile);
+		
+		let cancel = {
+			callback: null
+		};
 		
 		let insertionCallback = (e) => {
 			if(e.button === THREE.MOUSE.LEFT){
@@ -55,11 +72,19 @@ Potree.ProfileTool = class ProfileTool{
 				this.viewer.inputHandler.startDragging(
 					profile.spheres[profile.spheres.length - 1]);
 			}else if(e.button === THREE.MOUSE.RIGHT){
-				profile.removeMarker(profile.points.length - 1);
-				domElement.removeEventListener("mouseup", insertionCallback, true);
+				cancel.callback();
 			}
 		};
 		
+		
+		
+		cancel.callback = e => {
+			profile.removeMarker(profile.points.length - 1);
+			domElement.removeEventListener("mouseup", insertionCallback, true);
+			this.viewer.dispatcher.removeEventListener("cancel_insertions", cancel.callback);
+		};
+		
+		this.viewer.dispatcher.addEventListener("cancel_insertions", cancel.callback);
 		domElement.addEventListener("mouseup", insertionCallback , true);
 		
 		profile.addMarker(new THREE.Vector3(0, 0, 0));

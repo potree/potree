@@ -2062,13 +2062,13 @@ class PotreeRenderer{
 			pointcloud.material.weighted = false;
 		}
 		
-		// render scene
-		viewer.renderer.render(viewer.scene.scene, viewer.scene.camera);
 		
 		//var queryPC = Potree.startQuery("PointCloud", viewer.renderer.getContext());
 		viewer.renderer.render(viewer.scene.scenePointCloud, viewer.scene.camera);
 		//Potree.endQuery(queryPC, viewer.renderer.getContext());
 		
+		// render scene
+		viewer.renderer.render(viewer.scene.scene, viewer.scene.camera);
 		
 		viewer.volumeTool.update();
 		viewer.renderer.render(viewer.volumeTool.sceneVolume, viewer.scene.camera);

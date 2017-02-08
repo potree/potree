@@ -1111,9 +1111,9 @@ function initMeasurementDetails(){
 		if(measurement instanceof Potree.Measure){
 			let onremove = function(event){
 				if(event.measurement === measurement){
-					scene.removeEventListener("marker_added", updateDisplay);
-					scene.removeEventListener("marker_removed", updateDisplay);
-					scene.removeEventListener("marker_moved", updateDisplay);
+					//scene.removeEventListener("marker_added", updateDisplay);
+					//scene.removeEventListener("marker_removed", updateDisplay);
+					//scene.removeEventListener("marker_moved", updateDisplay);
 					$(elLi).remove();
 				}
 			};

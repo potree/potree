@@ -152,9 +152,22 @@ Potree.Measure = class Measure extends THREE.Object3D{
 					if(i !== -1){
 						this.setPosition(i, I.location);
 						this.dispatchEvent({
-							"type": "marker_moved"
+							"type": "marker_moved",
+							"measurement": this,
+							"index": i
 						});
 					}
+				}
+			};
+			
+			let drop = e => {
+				let i = this.spheres.indexOf(e.drag.object);
+				if(i !== -1){
+					this.dispatchEvent({
+						"type": "marker_dropped",
+						"measurement": this,
+						"index": i
+					});
 				}
 			};
 			
@@ -162,6 +175,7 @@ Potree.Measure = class Measure extends THREE.Object3D{
 			let mouseleave = (e) => e.object.material.emissive.setHex(0x000000);
 			
 			sphere.addEventListener("drag", drag);
+			sphere.addEventListener("drop", drop);
 			sphere.addEventListener("mouseover", mouseover);
 			sphere.addEventListener("mouseleave", mouseleave);
 		}

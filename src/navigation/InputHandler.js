@@ -88,7 +88,8 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 		for(let inputListener of this.inputListeners){
 			inputListener.dispatchEvent({
 				type: "drop",
-				drag: this.drag
+				drag: this.drag,
+				viewer: this.viewer
 			});
 		}
 		
@@ -310,14 +311,17 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 			if(this.drag.object){
 				this.drag.object.dispatchEvent({
 					type: "drop",
-					drag: this.drag
+					drag: this.drag,
+					viewer: this.viewer
+						
 				});
 			}else{
 				if(this.logMessages) console.log(this.constructor.name + ": drop: ");
 				for(let inputListener of this.inputListeners){
 					inputListener.dispatchEvent({
 						type: "drop",
-						drag: this.drag
+						drag: this.drag,
+						viewer: this.viewer
 					});
 				}
 			}

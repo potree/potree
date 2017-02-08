@@ -99,7 +99,7 @@ Potree.GreyhoundBinaryLoader.prototype.parse = function(node, buffer){
                     case pointAttributes.INTENSITY:
                         addAttribute('intensity', buffer, 1);
                         break;
-                    case pointAttributes.CLASSITICATION:
+                    case pointAttributes.CLASSIFICATION:
                         addAttribute('classification', buffer, 1);
                         break;
                     case pointAttributes.NORMAL_SPHEREMAPPED:

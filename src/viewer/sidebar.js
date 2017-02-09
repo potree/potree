@@ -422,6 +422,10 @@ function initMaterials(){
 	$("#optMaterial").selectmenu({change: updateMaterialPanel});
 	$("#optMaterial").val(viewer.getMaterialName()).selectmenu("refresh");
 	updateMaterialPanel();
+	
+	viewer.addEventListener("material_changed", e => {
+		$("#optMaterial").val(viewer.getMaterialName()).selectmenu("refresh");
+	});
 }
 
 function initClassificationList(){
@@ -571,6 +575,32 @@ function initAppearance(){
 	viewer.addEventListener("opacity_changed", function(event){
 		$('#lblOpacity')[0].innerHTML = viewer.getOpacity().toFixed(2);
 		$( "#sldOpacity" ).slider({value: viewer.getOpacity()});
+	});
+	
+	viewer.addEventListener("point_sizing_changed", e => {
+		let type = viewer.pointSizeType;
+		let conversion = new Map([
+			[Potree.PointSizeType.FIXED, "Fixed"],
+			[Potree.PointSizeType.ATTENUATED, "Attenuated"],
+			[Potree.PointSizeType.ADAPTIVE, "Adaptive"]
+		]);
+		
+		let typename = conversion.get(type);
+		
+		$( "#optPointSizing" )
+			.selectmenu()
+			.val(typename)
+			.selectmenu("refresh");
+	});
+	
+	viewer.addEventListener("quality_changed", e => {
+		
+		let name = viewer.quality;
+		
+		$( "#optQuality" )
+			.selectmenu()
+			.val(name)
+			.selectmenu("refresh");
 	});
 	
 	viewer.addEventListener("edl_radius_changed", function(event){
@@ -1333,6 +1363,15 @@ initSettings = function(){
 		change: function(event, ui){
 			viewer.setClipMode(toClipModeCode(ui.item.value));
 		}
+	});
+	
+	viewer.addEventListener("clip_mode_changed", e => {
+		let string = toClipModeString(viewer.clipMode);
+		
+		$( "#optClipMode" )
+			.selectmenu()
+			.val(string)
+			.selectmenu("refresh");
 	});
 };
 

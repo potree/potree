@@ -1143,6 +1143,40 @@ function initMeasurementDetails(){
 				};
 				$(elPanelBody).append(elOpenProfileWindow);
 			}
+			
+			let doExport = measurement.showDistances && !measurement.showAngles;
+			if(doExport){
+				let elBottomBar = $(`<span style="display:flex">
+					<span style="flex-grow: 1"></span>
+				</span>`);
+				$(elPanelBody).append(elBottomBar);
+				
+				{
+					let icon = Potree.resourcePath + "/icons/file_geojson.svg";
+					let elDownload = $(`<a href="#" download="measure.json" class="measurepanel_downloads"><img src="${icon}"></img></a>`);
+					
+					elDownload.click(function(e){
+						let geojson = Potree.GeoJSONExporter.toString(measurement);
+						let url = window.URL.createObjectURL(new Blob([geojson], {type: 'data:application/octet-stream'}));
+						elDownload.attr("href", url);
+					});
+					
+					elBottomBar.append(elDownload);
+				}
+				
+				{
+					let icon = Potree.resourcePath + "/icons/file_dxf.svg";
+					let elDownload = $(`<a href="#" download="measure.dxf" class="measurepanel_downloads"><img src="${icon}"></img></a>`);
+					
+					elDownload.click(function(e){
+						let dxf = Potree.DXFExporter.toString(measurement);
+						let url = window.URL.createObjectURL(new Blob([dxf], {type: 'data:application/octet-stream'}));
+						elDownload.attr("href", url);
+					});
+					
+					elBottomBar.append(elDownload);
+				}
+			}
 		};
 		
 		updateDisplay();

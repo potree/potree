@@ -580,5 +580,15 @@ body{
 }
 
 
+.measurepanel_downloads {
+	position: relative; 
+	bottom: -5px; 
+	opacity: 0.5;
+}
 
+.measurepanel_downloads:hover{
+	position: relative; 
+	bottom: -5px; 
+	opacity: 1.0;
+}
 

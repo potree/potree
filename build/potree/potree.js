@@ -10789,6 +10789,214 @@ Potree.VolumeTool = class VolumeTool extends THREE.EventDispatcher{
 	}
 
 };
+/**
+ *
+ * @author sigeom sa / http://sigeom.ch
+ * @author Ioda-Net Sàrl / https://www.ioda-net.ch/
+ * @author Markus Schütz / http://potree.org
+ *
+ */
+
+Potree.GeoJSONExporter = class GeoJSONExporter{
+	
+	static toString(measurement){
+		
+		let geojson = {
+			"type": "FeatureCollection",
+			"features": []
+		};
+		
+		let isLine = measurement.showDistances && !measurement.showArea && !measurement.showAngles;
+		let isPolygon = measurement.showDistances && measurement.showArea && !measurement.showAngles;
+		
+		if(isLine){
+			geojson.features.push({
+				"type": "Feature",
+				"geometry": {
+				"type": "LineString",
+				"coordinates": []
+				},
+				"properties": {
+				}
+			});
+		}else if (isPolygon) {
+			geojson.features.push({
+				"type": "Feature",
+				"geometry": {
+					"type": "Polygon",
+					"coordinates": []
+				},
+				"properties": {
+				}
+			});
+		}
+		
+		let coords = measurement.points.map(e => e.position.toArray());
+		
+		if(isLine){
+			geojson.features[0].geometry.coordinates = coords;
+		}else if(isPolygon){
+			coords.push(coords[0]);
+			geojson.features[0].geometry.coordinates.push(coords);
+		}
+		
+		measurement.edgeLabels.forEach(function (label) {
+			var labelPoint = {
+				type: 'Feature',
+				geometry: {
+					type: 'Point',
+					coordinates: label.position.toArray(),
+				},
+				properties: {
+					name: label.text
+				}
+			};
+			geojson.features.push(labelPoint);
+		});
+		
+		if (isLine) {
+			// There is one point more than the number of edges.
+			geojson.features.pop();
+		}
+		
+		if (isPolygon) {
+			var point = measurement.areaLabel.position;
+			var labelArea = {
+				type: 'Feature',
+				geometry: {
+					type: 'Point',
+					coordinates: point.toArray(),
+				},
+				properties: {
+					name: measurement.areaLabel.text
+				}
+			};
+			geojson.features.push(labelArea);
+		}
+		
+		return JSON.stringify(geojson);
+	}
+
+}
+
+
+
+/**
+ *
+ * @author sigeom sa / http://sigeom.ch
+ * @author Ioda-Net S�rl / https://www.ioda-net.ch/
+ * @author Markus Sch�tz / http://potree.org
+ *
+ */
+
+Potree.DXFExporter = class DXFExporter{
+	
+	static toString(measurement){
+		let isLine = measurement.showDistances && !measurement.showArea && !measurement.showAngles;
+		let isPolygon = measurement.showDistances && measurement.showArea && !measurement.showAngles;
+		
+		 if (!isLine && !isPolygon) {
+			return;
+		}
+		
+		let geomCode = isLine ? 8 : 9;
+		
+		let dxfBody = '0\n\
+SECTION\n\
+2\n\
+ENTITIES\n\
+0\n\
+POLYLINE\n\
+8\n\
+0\n\
+62\n\
+1\n\
+66\n\
+1\n\
+10\n\
+0.0\n\
+20\n\
+0.0\n\
+30\n\
+0.0\n\
+70\n\
+{geomCode}\n'.replace('{geomCode}', geomCode);
+
+		let xMax = 0.0;
+		let yMax = 0.0;
+		let zMax = 0.0;
+		measurement.points.forEach(function (point) {
+			point = point.position;
+			xMax = Math.max(xMax, point.x);
+			yMax = Math.max(yMax, point.y);
+			zMax = Math.max(zMax, point.z);
+			dxfBody += '0\n\
+VERTEX\n\
+8\n\
+0\n\
+10\n\
+{X}\n\
+20\n\
+{Y}\n\
+30\n\
+{Z}\n\
+70\n\
+32\n'.replace('{X}', point.x)
+                .replace('{Y}', point.y)
+                .replace('{Z}', point.z);
+            });
+
+            dxfBody += '0\n\
+SEQEND\n\
+0\n\
+ENDSEC\n';
+
+            var dxfHeader = '999\n\
+DXF created from potree\n\
+0\n\
+SECTION\n\
+2\n\
+HEADER\n\
+9\n\
+$ACADVER\n\
+1\n\
+AC1006\n\
+9\n\
+$INSBASE\n\
+10\n\
+0.0\n\
+20\n\
+0.0\n\
+30\n\
+0.0\n\
+9\n\
+$EXTMIN\n\
+10\n\
+0.0\n\
+20\n\
+0.0\n\
+30\n\
+0\n\
+9\n\
+$EXTMAX\n\
+10\n\
+{xMax}\n\
+20\n\
+{yMax}\n\
+30\n\
+{zMax}\n\
+0\n\
+ENDSEC\n'.replace('{xMax}', xMax)
+                .replace('{yMax}', yMax)
+                .replace('{zMax}', zMax);
+
+            let dxf = dxfHeader + dxfBody + '0\n\
+EOF';
+
+		return dxf;
+	}
+	
+}
 
 Potree.PointCloudArena4DNode = function(){
 	this.left = null;
@@ -17076,6 +17284,40 @@ function initMeasurementDetails(){
 					viewer._2dprofile.draw(measurement);
 				};
 				$(elPanelBody).append(elOpenProfileWindow);
+			}
+			
+			let doExport = measurement.showDistances && !measurement.showAngles;
+			if(doExport){
+				let elBottomBar = $(`<span style="display:flex">
+					<span style="flex-grow: 1"></span>
+				</span>`);
+				$(elPanelBody).append(elBottomBar);
+				
+				{
+					let icon = Potree.resourcePath + "/icons/file_geojson.svg";
+					let elDownload = $(`<a href="#" download="measure.json" class="measurepanel_downloads"><img src="${icon}"></img></a>`);
+					
+					elDownload.click(function(e){
+						let geojson = Potree.GeoJSONExporter.toString(measurement);
+						let url = window.URL.createObjectURL(new Blob([geojson], {type: 'data:application/octet-stream'}));
+						elDownload.attr("href", url);
+					});
+					
+					elBottomBar.append(elDownload);
+				}
+				
+				{
+					let icon = Potree.resourcePath + "/icons/file_dxf.svg";
+					let elDownload = $(`<a href="#" download="measure.dxf" class="measurepanel_downloads"><img src="${icon}"></img></a>`);
+					
+					elDownload.click(function(e){
+						let dxf = Potree.DXFExporter.toString(measurement);
+						let url = window.URL.createObjectURL(new Blob([dxf], {type: 'data:application/octet-stream'}));
+						elDownload.attr("href", url);
+					});
+					
+					elBottomBar.append(elDownload);
+				}
 			}
 		};
 		

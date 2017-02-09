@@ -60,8 +60,10 @@ Potree.GreyhoundBinaryLoader.prototype.parse = function(node, buffer){
 
     node.numPoints = numPoints;
 
-	var ww = Potree.workers.greyhoundBinaryDecoder.getWorker();
-	ww.onmessage = function(e){
+	let workerPath = Potree.scriptPath + "/workers/GreyhoundBinaryDecoderWorker.js";
+	let worker = Potree.workerPool.getWorker(workerPath);
+	
+	worker.onmessage = function(e){
 		var data = e.data;
 		var buffers = data.attributeBuffers;
 		var tightBoundingBox = new THREE.Box3(
@@ -69,7 +71,7 @@ Potree.GreyhoundBinaryLoader.prototype.parse = function(node, buffer){
 			new THREE.Vector3().fromArray(data.tightBoundingBox.max)
 		);
 
-		Potree.workers.greyhoundBinaryDecoder.returnWorker(ww);
+		Potree.workerPool.returnWorker(workerPath, worker);
 
 		var geometry = new THREE.BufferGeometry();
 
@@ -146,6 +148,6 @@ Potree.GreyhoundBinaryLoader.prototype.parse = function(node, buffer){
         scale: this.scale
 	};
 
-	ww.postMessage(message, [message.buffer]);
+	worker.postMessage(message, [message.buffer]);
 };
 

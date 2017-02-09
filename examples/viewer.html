@@ -37,7 +37,6 @@
 
 	<script src="../libs/plasio/js/laslaz.js"></script>
 	<script src="../libs/plasio/vendor/bluebird.js"></script>
-	<script src="../build/potree/laslaz.js"></script>
 
 
     <div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
@@ -83,39 +82,14 @@
 			let scene = viewer.scene;
 			scene.addPointCloud(e.pointcloud);
 			
-			{ // VOLUME
-				let volume  = new Potree.Volume();
-				volume.scale.set(70, 70, 70);
-				volume.position.set(589922.34, 231478.44, 727.45);
-				volume.clip = true;
-				
-				scene.addVolume(volume);
-			}
-			
-			{ // DISTANCE MEASURE
-				let measure = new Potree.Measure();
-				measure.closed = false;
-				measure.addMarker(new THREE.Vector3(589998.15, 231509.47, 731.00));
-				measure.addMarker(new THREE.Vector3(589996.84, 231470.11, 737.39));		
-				measure.addMarker(new THREE.Vector3(589994.53, 231426.00, 742.03));
-				
-				scene.addMeasurement(measure);
-			}
-			
-			{ // PROFILE
-				let profile = new Potree.Profile();
-				profile.setWidth(6)
-				profile.addMarker(new THREE.Vector3(589997.02, 231327.75, 755.73));
-				profile.addMarker(new THREE.Vector3(589579.65, 231323.51, 775.78));
-				profile.addMarker(new THREE.Vector3(589500.87, 231356.23, 782.91));
-				
-				scene.addProfile(profile);
-			}
-			
 			scene.view.position.set(589974.341, 231698.397, 986.146);
 			scene.view.lookAt(new THREE.Vector3(589851.587, 231428.213, 715.634));
 			// viewer.fitToScreen();
 		});
+		
+		//viewer.addEventListener("update", e => {
+		//	console.log("update function, delta: " + e.delta);
+		//});
 		
 	</script>
 	

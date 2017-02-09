@@ -53,8 +53,10 @@ Potree.BinaryLoader.prototype.parse = function(node, buffer){
 		node.numPoints = numPoints;
 	}
 
-	var ww = Potree.workers.binaryDecoder.getWorker();
-	ww.onmessage = function(e){
+	let workerPath = Potree.scriptPath + "/workers/BinaryDecoderWorker.js";
+	let worker = Potree.workerPool.getWorker(workerPath);
+	
+	worker.onmessage = function(e){
 		var data = e.data;
 		var buffers = data.attributeBuffers;
 		var tightBoundingBox = new THREE.Box3(
@@ -62,7 +64,7 @@ Potree.BinaryLoader.prototype.parse = function(node, buffer){
 			new THREE.Vector3().fromArray(data.tightBoundingBox.max)
 		);
 
-		Potree.workers.binaryDecoder.returnWorker(ww);
+		Potree.workerPool.returnWorker(workerPath, worker);
 
 		var geometry = new THREE.BufferGeometry();
 
@@ -114,6 +116,6 @@ Potree.BinaryLoader.prototype.parse = function(node, buffer){
 		offset: [node.pcoGeometry.offset.x, node.pcoGeometry.offset.y, node.pcoGeometry.offset.z],
 		scale: this.scale
 	};
-	ww.postMessage(message, [message.buffer]);
+	worker.postMessage(message, [message.buffer]);
 
 };

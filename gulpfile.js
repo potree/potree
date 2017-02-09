@@ -19,9 +19,7 @@ var paths = {
 	potree : [
 		"src/Potree.js",
 		"src/PointCloudTree.js",
-		"src/WorkerManager.js",
-		"build/workers/BinaryDecoderWorker.js",
-		"build/workers/GreyhoundBinaryDecoderWorker.js",
+		"src/WorkerPool.js",
 		"build/shaders/shaders.js",
 		"src/extensions/EventDispatcher.js",
 		"src/extensions/PerspectiveCamera.js",
@@ -119,22 +117,22 @@ gulp.task("workers", function(){
 	gulp.src(workers.laslaz)
 		.pipe(encodeWorker('laslaz-worker.js', "Potree.workers.laslaz"))
 		.pipe(size({showFiles: true}))
-		.pipe(gulp.dest('build/workers'));
+		.pipe(gulp.dest('build/potree/workers'));
 
 	gulp.src(workers.LASDecoder)
 		.pipe(encodeWorker('lasdecoder-worker.js', "Potree.workers.lasdecoder"))
 		.pipe(size({showFiles: true}))
-		.pipe(gulp.dest('build/workers'));
+		.pipe(gulp.dest('build/potree/workers'));
 
 	gulp.src(workers.BinaryDecoder)
 		.pipe(encodeWorker('BinaryDecoderWorker.js', "Potree.workers.binaryDecoder"))
 		.pipe(size({showFiles: true}))
-		.pipe(gulp.dest('build/workers'));
+		.pipe(gulp.dest('build/potree/workers'));
 
 	gulp.src(workers.GreyhoundBinaryDecoder)
 		.pipe(encodeWorker('GreyhoundBinaryDecoderWorker.js', "Potree.workers.greyhoundBinaryDecoder"))
 		.pipe(size({showFiles: true}))
-		.pipe(gulp.dest('build/workers'));
+		.pipe(gulp.dest('build/potree/workers'));
 });
 
 gulp.task("shaders", function(){
@@ -148,10 +146,6 @@ gulp.task("scripts", ['workers','shaders'], function(){
 	gulp.src(paths.potree)
 		.pipe(concat('potree.js'))
 		.pipe(size({showFiles: true}))
-		.pipe(gulp.dest('build/potree'))
-		.pipe(rename({suffix: '.min'}))
-		.pipe(uglify({preserveComments: 'some'}))
-		.pipe(size({showFiles: true}))
 		.pipe(gulp.dest('build/potree'));
 
 	gulp.src(paths.laslaz)
@@ -164,6 +158,9 @@ gulp.task("scripts", ['workers','shaders'], function(){
 		
 	gulp.src(paths.resources)
 		.pipe(gulp.dest('build/potree/resources'));
+		
+	gulp.src(["LICENSE"])
+		.pipe(gulp.dest('build/potree'));
 
 	return;
 });
@@ -199,7 +196,8 @@ var encodeWorker = function(fileName, varname, opt){
 		if (buffer.length === 0) return this.emit('end');
 
 		var joinedContents = buffer.join("");
-		var content = varname + " = new Potree.WorkerManager(atob(\"" + new Buffer(joinedContents).toString('base64') + "\"));";
+		//var content = varname + " = new Potree.WorkerManager(atob(\"" + new Buffer(joinedContents).toString('base64') + "\"));";
+		let content = joinedContents;
 
 		var joinedPath = path.join(firstFile.base, fileName);
 

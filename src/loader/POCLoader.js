@@ -52,18 +52,13 @@ Potree.POCLoader.load = function load(url, callback) {
 					tightBoundingBox.max.copy(new THREE.Vector3(fMno.tightBoundingBox.ux, fMno.tightBoundingBox.uy, fMno.tightBoundingBox.uz));
 				}
 
-				//var offset = new THREE.Vector3(0,0,0);
-				//offset.set(-min.x, -min.y, -min.z);
 				let offset = min.clone();
-				
-				// for precision problem presentation purposes
-				//offset.set(50000*1000,0,0);
 				
 				boundingBox.min.sub(offset);
 				boundingBox.max.sub(offset);
 				
-				tightBoundingBox.min.add(offset);
-				tightBoundingBox.max.add(offset);
+				tightBoundingBox.min.sub(offset);
+				tightBoundingBox.max.sub(offset);
 				
 				pco.projection = fMno.projection;
 				pco.boundingBox = boundingBox;

@@ -9,7 +9,7 @@
     <title>Potree Viewer</title>
 
 	<link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
-	<link rel="stylesheet" type="text/css" href="../libs/jquery-ui-1.11.4/jquery-ui.css">
+	<link rel="stylesheet" type="text/css" href="../libs/jquery-ui/jquery-ui.min.css">
 	<link rel="stylesheet" type="text/css" href="../libs/perfect-scrollbar/css/perfect-scrollbar.css">
 	<link rel="stylesheet" href="../libs/openlayers3/ol.css" type="text/css">
   </head>
@@ -33,7 +33,6 @@
 	<script src="../build/potree/potree.js"></script>
 	
 	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
-	<!-- INCLUDE SETTINGS HERE -->
 
 	<script src="../libs/plasio/js/laslaz.js"></script>
 	<script src="../libs/plasio/vendor/bluebird.js"></script>
@@ -60,13 +59,15 @@
 		
 		viewer.setEDLEnabled(true);
 		viewer.setPointSize(1);
-		viewer.setMaterial("RGB");
+		viewer.setMaterial("RGB"); // ["RGB", "Elevation", "Classification", "Intensity"]
 		viewer.setFOV(60);
-		viewer.setPointSizing("Adaptive");
-		viewer.setQuality("Squares");
+		viewer.setPointSizing("Adaptive"); // ["Fixed", "Attenuated", "Adaptive"]
+		viewer.setQuality("Squares"); // ["Squares", "Circles", "Interpolation"]
 		viewer.setPointBudget(1*1000*1000);
 		viewer.setIntensityRange(0, 300);
 		viewer.setWeightClassification(1);
+		viewer.setBackground("gradient"); // ["skybox", "gradient", "black", "white"];
+		<!-- INCLUDE SETTINGS HERE -->
 		viewer.loadSettingsFromURL();
 		
 		viewer.setDescription("Point cloud courtesy of <a target='_blank' href='https://www.sigeom.ch/'>sigeom sa</a>");
@@ -82,9 +83,9 @@
 			let scene = viewer.scene;
 			scene.addPointCloud(e.pointcloud);
 			
-			scene.view.position.set(589974.341, 231698.397, 986.146);
-			scene.view.lookAt(new THREE.Vector3(589851.587, 231428.213, 715.634));
-			// viewer.fitToScreen();
+			//scene.view.position.set(589974.341, 231698.397, 986.146);
+			//scene.view.lookAt(new THREE.Vector3(589851.587, 231428.213, 715.634));
+			 viewer.fitToScreen();
 		});
 		
 		//viewer.addEventListener("update", e => {

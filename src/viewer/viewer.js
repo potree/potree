@@ -1183,7 +1183,8 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			
 			pointcloud.updateMatrixWorld(true);
 			
-			var boxWorld = Potree.utils.computeTransformedBoundingBox(pointcloud.boundingBox, pointcloud.matrixWorld)
+			let pointcloudBox = pointcloud.pcoGeometry.tightBoundingBox ?  pointcloud.pcoGeometry.tightBoundingBox : pointcloud.boundingBox;
+			var boxWorld = Potree.utils.computeTransformedBoundingBox(pointcloudBox, pointcloud.matrixWorld)
 			box.union(boxWorld);
 		}
 
@@ -1444,7 +1445,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			
 			i18n.init({ 
 				lng: 'en',
-				resGetPath: '../resources/lang/__lng__/__ns__.json',
+				resGetPath: Potree.resourcePath + '/lang/__lng__/__ns__.json',
 				preload: ['en', 'fr', 'de'],
 				getAsync: true,
 				debug: false
@@ -1455,8 +1456,6 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			
 			$(function() {
 				initSidebar();
-				
-				
 			});
 			
 			let elProfile = $('<div>').load(new URL(Potree.scriptPath + "/profile.html").href, () => {
@@ -1464,7 +1463,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 				this._2dprofile = new Potree.Viewer.Profile(this, document.getElementById("profile_draw_container"));
 				
 				if(callback){
-					callback();
+					$(callback);
 				}
 			});
 			

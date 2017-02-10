@@ -5,10 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Potree Viewer</title>
 
 	<link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
-	<link rel="stylesheet" type="text/css" href="../libs/jquery-ui-1.11.4/jquery-ui.css">
+	<link rel="stylesheet" type="text/css" href="../libs/jquery-ui/jquery-ui.min.css">
 	<link rel="stylesheet" type="text/css" href="../libs/perfect-scrollbar/css/perfect-scrollbar.css">
 	<link rel="stylesheet" href="../libs/openlayers3/ol.css" type="text/css">
   </head>
@@ -79,9 +80,9 @@
 		Potree.loadPointCloud("http://arena4d.uksouth.cloudapp.azure.com:8080/Arena4DWebServer/PointServer/Office_Example2.vpc", "Arena4D", function(e){
 			viewer.scene.addPointCloud(e.pointcloud);
 			
-			//viewer.fitToScreen();
-			viewer.scene.view.position.set(-19.61, 12.79, 157.47);
-			viewer.scene.view.lookAt(new THREE.Vector3(12.72, -2.13, 126.99));
+			viewer.fitToScreen();
+			//viewer.scene.view.position.set(-19.61, 12.79, 157.47);
+			//viewer.scene.view.lookAt(new THREE.Vector3(12.72, -2.13, 126.99));
 		});
 		
 	</script>

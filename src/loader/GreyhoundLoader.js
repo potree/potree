@@ -55,7 +55,7 @@ var createSchema = function(attributes) {
  * @param loadingFinishedListener executed after loading the binary has been finished
  */
 Potree.GreyhoundLoader.load = function load(url, callback) {
-	var HIERARCHY_STEP_SIZE = 4;
+	var HIERARCHY_STEP_SIZE = 5;
 
 	try {
 		// We assume everything ater the string 'greyhound://' is the server url
@@ -100,17 +100,14 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
                 var radius = width / 2;
 
                 var scale = greyhoundInfo.scale;
-                if (!scale) {
-					//scale = 1;
-                    if (radius < 2500) scale = 0.01;
-                    else if (radius < 10000) scale = 0.1;
-                    else scale = 1.0;
-                } else if (Array.isArray(scale)) {
+                var scale = greyhoundInfo.scale || .01;
+                if (Array.isArray(scale)) {
                     scale = Math.min(scale[0], scale[1], scale[2]);
                 }
 
-                console.log('Scale:', scale);
-                console.log('Offset:', offset);
+                if (getQueryParam('scale')) {
+                    scale = parseFloat(getQueryParam('scale'));
+                }
 
 				var baseDepth = Math.max(8, greyhoundInfo.baseDepth);
 
@@ -165,9 +162,9 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
 				var boundingBox = new THREE.Box3(
 					new THREE.Vector3().fromArray(bounds, 0),
 					new THREE.Vector3().fromArray(bounds, 3));
-				
+
 				var offset = boundingBox.min.clone();
-				
+
 				boundingBox.max.sub(boundingBox.min);
 				boundingBox.min.set(0, 0, 0);
 
@@ -177,6 +174,10 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
 
 				pgg.scale = scale;
 				pgg.offset = offset;
+
+                console.log('Scale:', scale);
+                console.log('Offset:', offset);
+                console.log('Bounds:', boundingBox);
 
 				pgg.loader = new Potree.GreyhoundBinaryLoader(
                         version, boundingBox, pgg.scale);

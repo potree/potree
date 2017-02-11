@@ -17,6 +17,25 @@ Potree.PointCloudGreyhoundGeometryNode = function(
 	this.level = null;
 	this.loaded = false;
 	this.oneTimeDisposeHandlers = [];
+
+	let bounds = this.boundingBox.clone()
+	bounds.min.sub(this.pcoGeometry.boundingBox.getCenter());
+	bounds.max.sub(this.pcoGeometry.boundingBox.getCenter());
+
+	if (this.scale) {
+		bounds.min.multiplyScalar(1 / this.scale);
+		bounds.max.multiplyScalar(1 / this.scale);
+	}
+
+    // This represents the bounds for this node in the reference frame of the
+    // global bounds from `info`, centered around the origin, and then scaled
+    // by our selected scale.
+    this.greyhoundBounds = bounds;
+
+    // This represents the offset between the coordinate system described above
+    // and our pcoGeometry bounds.
+    this.greyhoundOffset = this.pcoGeometry.offset.clone().add(
+            this.pcoGeometry.boundingBox.getSize().multiplyScalar(0.5));
 };
 
 Potree.PointCloudGreyhoundGeometryNode.IDCount = 0;
@@ -62,17 +81,7 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.getChildren = function() {
 
 Potree.PointCloudGreyhoundGeometryNode.prototype.getURL = function() {
     var schema = this.pcoGeometry.schema;
-
-	let bbSize = this.boundingBox.getSize();
-		
-	let bounds = this.boundingBox.clone()
-	bounds.min.sub(this.pcoGeometry.boundingBox.getCenter());
-	bounds.max.sub(this.pcoGeometry.boundingBox.getCenter());
-		
-	if(this.scale){
-		bounds.min.multiplyScalar( 1 / this.scale);
-		bounds.max.multiplyScalar( 1 / this.scale);
-	}
+    let bounds = this.greyhoundBounds;
 
     var boundsString =
         bounds.min.x + ',' + bounds.min.y + ',' + bounds.min.z + ',' +
@@ -89,12 +98,12 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.getURL = function() {
     if (this.scale) {
         url += '&scale=' + this.scale;
     }
-	{
-		//let offset = this.offset.clone().add(bbSize.clone().multiplyScalar(0.5));
-		let offset = this.pcoGeometry.offset.clone().add(this.pcoGeometry.boundingBox.getSize().multiplyScalar(0.5));
+
+    if (this.greyhoundOffset) {
+		let offset = this.greyhoundOffset;
 		url += '&offset=[' + offset.x + ',' + offset.y + ',' + offset.z + ']';
 	}
-	
+
 	if(this.level === 1){
 		let a = 1;
 	}
@@ -238,16 +247,8 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.loadHierarchyThenPoints =
 	if (this.level % this.pcoGeometry.hierarchyStepSize === 0) {
         var depthBegin = this.level + this.pcoGeometry.baseDepth;
         var depthEnd = depthBegin + this.pcoGeometry.hierarchyStepSize + 2;
-		
-        let bbSize = this.boundingBox.getSize();
-		let bounds = new THREE.Box3(
-			bbSize.clone().multiplyScalar(-0.5),
-			bbSize.clone().multiplyScalar(0.5));
-			
-		if(this.scale){
-			bounds.min.multiplyScalar( 1 / this.scale);
-			bounds.max.multiplyScalar( 1 / this.scale);
-		}
+
+        let bounds = this.greyhoundBounds;
 
         var boundsString =
             bounds.min.x + ',' + bounds.min.y + ',' + bounds.min.z + ',' +
@@ -257,16 +258,16 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.loadHierarchyThenPoints =
             'hierarchy?bounds=[' + boundsString + ']' +
             '&depthBegin=' + depthBegin +
             '&depthEnd=' + depthEnd;
-			
+
 		if (this.scale) {
 			hurl += '&scale=' + this.scale;
 		}
-		
-		{
-			let offset = this.offset.clone().add(bbSize.clone().multiplyScalar(0.5));
+
+        if (this.greyhoundOffset) {
+            let offset = this.greyhoundOffset;
 			hurl += '&offset=[' + offset.x + ',' + offset.y + ',' + offset.z + ']';
 		}
-			
+
 		var xhr = new XMLHttpRequest();
 		xhr.open('GET', hurl, true);
 

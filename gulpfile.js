@@ -157,10 +157,10 @@ gulp.task("scripts", ['workers','shaders'], function(){
 
 	gulp.src(paths.html)
 		.pipe(gulp.dest('build/potree'));
-		
+
 	gulp.src(paths.resources)
 		.pipe(gulp.dest('build/potree/resources'));
-		
+
 	gulp.src(["LICENSE"])
 		.pipe(gulp.dest('build/potree'));
 
@@ -168,6 +168,10 @@ gulp.task("scripts", ['workers','shaders'], function(){
 });
 
 gulp.task('build', ['scripts']);
+
+gulp.task('watch', function() {
+    gulp.watch('src/**/*.js', ['scripts']);
+})
 
 // For development, it is now possible to use 'gulp webserver'
 // from the command line to start the server (default port is 8080)

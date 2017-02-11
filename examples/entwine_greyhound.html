@@ -103,7 +103,33 @@
                 st-helens
                 vanuatu-village
             */
-            var resource = "red-rocks";
+			
+			var resource = "autzen";
+            
+			
+			//
+			// Some recommended configurations:
+			//
+			
+			//var resource = "iowa-bridge";
+			//viewer.setMaterial("Intensity");
+			//viewer.setIntensityRange(0, 65536);
+			//viewer.setIntensityBrightness(0.2);
+			
+			//var resource = "iowa-city";
+			//viewer.setMaterial("Intensity");
+			
+			//var resource = "lake-isabella";
+			//viewer.setMaterial("Intensity");
+			//viewer.setIntensityGamma(0.5);
+			
+			//var resource = "space-shuttle";
+			//viewer.setMaterial("Intensity");
+			//viewer.setIntensityRange(0, 4500);
+			//viewer.setIntensityGamma(1.5);
+			
+			
+			
 
             if (getQueryParam("server")) {
                 server = getQueryParam("server");
@@ -114,8 +140,7 @@
 
 			Potree.loadPointCloud(server + resource + "/", "autzen", (e) => {
 				viewer.scene.addPointCloud(e.pointcloud);
-				viewer.fitToScreen();
-				viewer.scene.camera.near = 10;
+				viewer.fitToScreen(0.5);
 			});
 		}
 

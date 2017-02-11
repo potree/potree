@@ -12,6 +12,8 @@ Potree.Viewer.Profile = class ProfileWindow{
 		this.maximized = false;
 		this.threshold = 20*1000;
 		
+		this.scheduledDraw = null;
+		
 		$('#closeProfileContainer').click(() => {
 			this.hide();
 			this.enabled = false;
@@ -27,21 +29,17 @@ Potree.Viewer.Profile = class ProfileWindow{
 			}
 		});
 		
-		this.drawOnChange = (event) => {
-			this.redraw();
+		//this.drawOnChange = (event) => {
+		//	this.redraw();
+		//};
+		
+		this.redraw = () => {
+			if(this.currentProfile){
+				this.draw(this.currentProfile);
+			}
 		};
 		
-		//viewer.scene.addEventListener("marker_moved"))
-
-		//viewer.profileTool.addEventListener("marker_moved", drawOnChange);
-		//viewer.profileTool.addEventListener("width_changed", drawOnChange);
-		//viewer.addEventListener("material_changed", function(){
-		//	drawOnChange({profile: this.currentProfile});
-		//});
-		//
-		//viewer.addEventListener("height_range_changed", function(){
-		//	drawOnChange({profile: this.currentProfile});
-		//});
+		viewer.addEventListener("height_range_changed", this.redraw);
 		
 		let width = document.getElementById('profile_window').clientWidth;
 		let height = document.getElementById('profile_window').clientHeight;
@@ -52,7 +50,7 @@ Potree.Viewer.Profile = class ProfileWindow{
 			let newHeight = document.getElementById('profile_window').clientHeight;
 
 			if(newWidth !== width || newHeight !== height){
-				setTimeout(this.drawOnChange, 50, {profile: this.currentProfile});
+				setTimeout(this.redraw, 50, {profile: this.currentProfile});
 			}
 
 			width = newWidth;
@@ -247,11 +245,14 @@ Potree.Viewer.Profile = class ProfileWindow{
 	strokeColor(d){
 		let material = this.viewer.getMaterial();
 		if (material === Potree.PointColorType.RGB) {
-			//return d.color;
-			return 'rgb(' + (d.color[0] * 100 / 255) + '%,' + (d.color[1] * 100 / 255) + '%,' + (d.color[2] * 100 / 255) + '%)';
+			let [r, g, b] = d.color.map(e => parseInt(e));
+			
+			return `rgb( ${r}, ${g}, ${b})`;
 		} else if (material === Potree.PointColorType.INTENSITY) {
-			//return d.intensity;
-			return 'rgb(' + d.intensity + '%,' + d.intensity + '%,' + d.intensity + '%)';
+			let irange = viewer.getIntensityRange();
+			let i = parseInt(255 * (d.intensity - irange[0]) / (irange[1] - irange[0]));
+			
+			return `rgb(${i}, ${i}, ${i})`;
 		} else if (material === Potree.PointColorType.CLASSIFICATION) {
 			let classif = this.viewer.scene.pointclouds[0].material.classification;
 			if (typeof classif[d.classification] != 'undefined'){
@@ -283,14 +284,8 @@ Potree.Viewer.Profile = class ProfileWindow{
 			return d.color;
 		}
 	}
-	
-	redraw(){
-		this.draw(this.currentProfile);
-	}
 
 	draw(profile){
-		// TODO are the used closures safe for garbage collection?
-		
 		if(!this.enabled){
 			return;
 		}
@@ -302,6 +297,22 @@ Potree.Viewer.Profile = class ProfileWindow{
 		if(this.viewer.scene.pointclouds.length === 0){
 			return;
 		}
+		
+		// avoid too many expensive draws/redraws
+		// 2d profile draws don't need frame-by-frame granularity, it's
+		// fine to handle a redraw once every 100ms
+		let executeScheduledDraw = () => {
+			this.actuallyDraw(this.scheduledDraw);
+			this.scheduledDraw = null;
+		};
+		
+		if(!this.scheduledDraw){
+			setTimeout(executeScheduledDraw, 100);
+		}
+		this.scheduledDraw = profile;
+	}
+		
+	actuallyDraw(profile){
 
 		if(this.context){
 			let containerWidth = this.element.clientWidth;
@@ -313,36 +324,26 @@ Potree.Viewer.Profile = class ProfileWindow{
 		}
 		
 		if(this.currentProfile){
-			this.currentProfile.removeEventListener("marker_moved", this.drawOnChange);
-			this.currentProfile.removeEventListener("marker_added", this.drawOnChange);
-			this.currentProfile.removeEventListener("marker_removed", this.drawOnChange);
-			this.currentProfile.removeEventListener("width_changed", this.drawOnChange);
-			viewer.removeEventListener("material_changed", this.drawOnChange);
-			//viewer.addEventListener("material_changed", function(){
-			//	drawOnChange({profile: this.currentProfile});
-			//});
-			
-			
-			//viewer.profileTool.addEventListener("marker_moved", drawOnChange);
-			//viewer.profileTool.addEventListener("width_changed", drawOnChange);
-			//viewer.addEventListener("material_changed", function(){
-			//	drawOnChange({profile: this.currentProfile});
-			//});
-            //
-			//viewer.addEventListener("height_range_changed", function(){
-			//	drawOnChange({profile: this.currentProfile});
-			//});
+			this.currentProfile.removeEventListener("marker_moved", this.redraw);
+			this.currentProfile.removeEventListener("marker_added", this.redraw);
+			this.currentProfile.removeEventListener("marker_removed", this.redraw);
+			this.currentProfile.removeEventListener("width_changed", this.redraw);
+			viewer.removeEventListener("material_changed", this.redraw);
+			viewer.removeEventListener("height_range_changed", this.redraw);
+			viewer.removeEventListener("intensity_range_changed", this.redraw);
 		}
 		
 		
 		this.currentProfile = profile;
 		
 		{
-			this.currentProfile.addEventListener("marker_moved", this.drawOnChange);
-			this.currentProfile.addEventListener("marker_added", this.drawOnChange);
-			this.currentProfile.addEventListener("marker_removed", this.drawOnChange);
-			this.currentProfile.addEventListener("width_changed", this.drawOnChange);
-			viewer.addEventListener("material_changed", this.drawOnChange);
+			this.currentProfile.addEventListener("marker_moved", this.redraw);
+			this.currentProfile.addEventListener("marker_added", this.redraw);
+			this.currentProfile.addEventListener("marker_removed", this.redraw);
+			this.currentProfile.addEventListener("width_changed", this.redraw);
+			viewer.addEventListener("material_changed", this.redraw);
+			viewer.addEventListener("height_range_changed", this.redraw);
+			viewer.addEventListener("intensity_range_changed", this.redraw);
 		}
 
 		if(!this.__drawData){

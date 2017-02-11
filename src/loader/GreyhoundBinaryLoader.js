@@ -96,7 +96,8 @@ Potree.GreyhoundBinaryLoader.prototype.parse = function(node, buffer){
 						//console.log(fb);
                         break;
                     case pointAttributes.COLOR_PACKED:
-                        addAttribute('color', buffer, 3);
+						geometry.addAttribute("color", 
+							new THREE.BufferAttribute(new Uint8Array(buffer), 3, true));
                         break;
                     case pointAttributes.INTENSITY:
                         addAttribute('intensity', buffer, 1);

@@ -80,6 +80,10 @@
 		Potree.loadPointCloud("../pointclouds/lion_takanawa_laz/cloud.js", "lion", function(e){
 			viewer.scene.addPointCloud(e.pointcloud);
 			
+			e.pointcloud.position.x += 3;
+			e.pointcloud.position.y -= 3;
+			e.pointcloud.position.z += 4;
+			
 			viewer.fitToScreen();
 		});
 		

@@ -154,6 +154,7 @@ Potree.ProfileRequest = function(pointcloud, profile, maxDepth, callback){
 					this.traverse(node);
 				}
 			}else{
+				console.log("loading " + node.name);
 				node.load();
 				this.priorityQueue.push(element);
 			}

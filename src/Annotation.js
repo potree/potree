@@ -13,8 +13,10 @@ Potree.Annotation = function(scene, args = {}){
 	this.view = args.view || null;
 	this.keepOpen = false;
 	this.descriptionVisible = false;
+	this.showDescription = true;
 	this.actions = args.actions || [];
 	this.appearance = args.appearance || null;
+	this.isHighlighted = false;
 	
 	this.domElement = document.createElement("div");
 	this.domElement.style.position = "absolute";
@@ -106,18 +108,51 @@ Potree.Annotation = function(scene, args = {}){
 		}
 	}
 	
-	this.elDescriptionText = document.createElement("span");
-	this.elDescriptionText.style.color = "#ffffff";
-	this.elDescriptionText.innerHTML = this.description;
-	this.domDescription.appendChild(this.elDescriptionText);
+	{
+		let icon = Potree.resourcePath + "/icons/close.svg";
+		let close = $(`<span><img src="${icon}" width="16px"></span>`);
+		close.css("filter", "invert(100%)");
+		close.css("float", "right");
+		close.css("opacity", "0.5");
+		close.css("margin", "0px 0px 8px 8px");
+		close.hover(e => {
+			close.css("opacity", "1");
+		},e => {
+			close.css("opacity", "0.5");
+		});
+		close.click(e => {
+			this.setHighlighted(false);
+		});
+		$(this.domDescription).append(close);
+		
+		this.elDescriptionText = document.createElement("span");
+		this.elDescriptionText.style.color = "#ffffff";
+		this.elDescriptionText.innerHTML = this.description;
+		this.domDescription.appendChild(this.elDescriptionText);
+	
+	}
 	
 	this.domElement.onmouseenter = () => {
 		this.setHighlighted(true);
 	};
 	
+	$(this.domElement).on("touchstart", e => {
+		this.setHighlighted(!this.isHighlighted);
+	});
+	
 	this.domElement.onmouseleave = () => {
 		this.setHighlighted(false);
 	};
+	
+	//$(this.domElement).click(e => {
+	//	this.showDescription = !this.showDescription;
+	//	
+	//	if(this.showDescription){
+	//		$(this.domElement).append($(this.domDescription));
+	//	}else{
+	//		$(this.domDescription).remove(); 
+	//	}
+	//});
 	
 	this.setHighlighted = function(highlighted){
 		if(highlighted){
@@ -135,9 +170,11 @@ Potree.Annotation = function(scene, args = {}){
 			this.domElement.style.opacity = "0.5";
 			this.elOrdinal.style.boxShadow = "";
 			this.domElement.style.zIndex = "100";
-			this.descriptionVisible = true;	
+			this.descriptionVisible = false;	
 			this.domDescription.style.display = "none";
 		}
+		
+		this.isHighlighted = highlighted;
 	};
 	
 	this.hasView = function(){

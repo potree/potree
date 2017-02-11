@@ -1191,17 +1191,13 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		return box;
 	};
 	
-	fitToScreen(){
+	fitToScreen(factor = 1){
 		var box = this.getBoundingBox(this.scene.pointclouds);
 		
-		//if(this.transformationTool && this.transformationTool.selection.length > 0){
-		//	box = this.transformationTool.getBoundingBox();
-		//}
-
 		var node = new THREE.Object3D();
 		node.boundingBox = box;
 		
-		this.zoomTo(node, 1);
+		this.zoomTo(node, factor);
 	};
 	
 	setTopView(){
@@ -1625,6 +1621,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			visiblePoints = result.numVisiblePoints;
 			camera.near = result.lowestSpacing * 10.0;
 			camera.far = -this.getBoundingBox().applyMatrix4(camera.matrixWorldInverse).min.z;
+			camera.far = Math.max(camera.far * 1.5, 1000);
 		}
 		
 		

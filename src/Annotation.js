@@ -8,8 +8,10 @@ Potree.Annotation = function(scene, args = {}){
 	this.title = args.title || "No Title";
 	this.description = args.description || "";
 	this.position = args.position || new THREE.Vector3(0,0,0);
-	this.cameraPosition = args.cameraPosition;
-	this.cameraTarget = args.cameraTarget;
+	this.cameraPosition = (args.cameraPosition instanceof Array) ? 
+		new THREE.Vector3().fromArray(args.cameraPosition) : args.cameraPosition;
+	this.cameraTarget = (args.cameraTarget instanceof Array) ? 
+		new THREE.Vector3().fromArray(args.cameraTarget) : args.cameraTarget;
 	this.view = args.view || null;
 	this.keepOpen = false;
 	this.descriptionVisible = false;

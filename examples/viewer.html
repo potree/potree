@@ -79,7 +79,7 @@
 		});
 		
 		// Sigeom
-		Potree.loadPointCloud("../pointclouds/vol_total/cloud.js", "sigeom.sa", function(e){
+		Potree.loadPointCloud("../pointclouds/vol_total/cloud.js", "sigeom.sa", e => {
 			let scene = viewer.scene;
 			scene.addPointCloud(e.pointcloud);
 			

@@ -88,22 +88,22 @@
 			sceneSG.view.position.set(590030, 231767, 1007);
 			sceneSG.view.lookAt(new THREE.Vector3(589844, 231376, 710));
 			
-			sceneSG.addAnnotation(new THREE.Vector3(589847.17, 231436.78, 892.60), {
-				"title": "Sorvilier",
-				"cameraPosition": new THREE.Vector3(590034.03, 231814.02, 961.68),
-				"cameraTarget": new THREE.Vector3(589847.17, 231436.78, 742.60)
+			sceneSG.addAnnotation([589847.17, 231436.78, 892.60], {
+				"cameraPosition": [590034.03, 231814.02, 961.68],
+				"cameraTarget": [589847.17, 231436.78, 742.60],
+				"title": "Sorvilier"
 			});
 			
-			sceneSG.addAnnotation(new THREE.Vector3(589850.15, 231300.10, 770.94), {
+			sceneSG.addAnnotation([589850.15, 231300.10, 770.94], {
 				"title": "Trees",
 				"description": `Point cloud of a small section in Sorvilier, Switzerland. <br>
 				Courtesy of sigeom.sa`
 			});
 			
-			sceneSG.addAnnotation(new THREE.Vector3(590043.63, 231490.79, 740.78), {
+			sceneSG.addAnnotation([590043.63, 231490.79, 740.78], {
 				"title": "About Annotations",
-				"cameraPosition": new THREE.Vector3(590105.53, 231541.63, 782.05),
-				"cameraTarget": new THREE.Vector3(590043.63, 231488.79, 740.78),
+				"cameraPosition": [590105.53, 231541.63, 782.05],
+				"cameraTarget": [590043.63, 231488.79, 740.78],
 				"description": `<ul><li>Click on the annotation label to move a predefined view.</li> 
 				<li>Click on the icon to execute the specified action.</li>
 				In this case, the action will bring you to another scene and point cloud.</ul>`,
@@ -115,10 +115,10 @@
 				}]
 			});
 
-			sceneSG.addAnnotation(new THREE.Vector3(589621, 231437, 784), {
+			sceneSG.addAnnotation([589621, 231437, 784], {
+				"cameraPosition": [589585.81, 231463.63, 804.00],
+				"cameraTarget": [589625.86, 231439, 775.38],
 				"title": "About Annotations 2",
-				"cameraPosition": new THREE.Vector3(589585.81, 231463.63, 804.00),
-				"cameraTarget": new THREE.Vector3(589625.86, 231439, 775.38),
 				"description": `
 				Suitable annotation positions and views can be obtained by 
 				looking up the current camera position and target in the "Scene" panel, 
@@ -136,7 +136,7 @@
 			sceneLion.view.position.set(4.15, -6.12, 8.54);
 			sceneLion.view.lookAt(new THREE.Vector3(0, -0.098, 4.23));
 			
-			sceneLion.addAnnotation(new THREE.Vector3(0.72, -1, 8), {
+			sceneLion.addAnnotation([0.72, -1, 8], {
 				"title": "Chinese Guardian Lion",
 				"actions": [{
 					"icon": Potree.resourcePath + "/icons/goto.svg",

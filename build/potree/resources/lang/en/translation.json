@@ -53,7 +53,7 @@
         "nb_points": "Point number",
         "title": "Height profile",
         "save_las": "Save LAS(3D)",
-        "save_ortho": "Save CSV(Orthogonal)"
+        "save_ortho": "Save CSV(2D)"
     },
 	"scene": {
 		"camera_position": "Camera Position",

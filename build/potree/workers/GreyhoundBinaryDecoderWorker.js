@@ -140,15 +140,15 @@ onmessage = function(event){
 			var positions = new Float32Array(buff);
 
 			for (var j = 0; j < numPoints; ++j) {
-				
+
 				let ux = cv.getUint32(offset + j*pointSize+0);
 				let uy = cv.getUint32(offset + j*pointSize+4);
 				let uz = cv.getUint32(offset + j*pointSize+8);
-				
+
 				let x = (scale * ux) + nodeOffset[0];
 				let y = (scale * uy) + nodeOffset[1];
 				let z = (scale * uz) + nodeOffset[2];
-				
+
 				positions[3*j+0] = x;
 				positions[3*j+1] = y;
 				positions[3*j+2] = z;
@@ -174,10 +174,12 @@ onmessage = function(event){
 			var buff = new ArrayBuffer(numPoints*4*3);
 			var colors = new Float32Array(buff);
 
+            var div = event.data.normalize.color ? 65535 : 255;
+
 			for(var j = 0; j < numPoints; ++j){
-				colors[3*j+0] = cv.getUint16(offset + j*pointSize + 0) / 255;
-				colors[3*j+1] = cv.getUint16(offset + j*pointSize + 2) / 255;
-				colors[3*j+2] = cv.getUint16(offset + j*pointSize + 4) / 255;
+				colors[3*j+0] = cv.getUint16(offset + j*pointSize + 0) / div;
+				colors[3*j+1] = cv.getUint16(offset + j*pointSize + 2) / div;
+				colors[3*j+2] = cv.getUint16(offset + j*pointSize + 4) / div;
 			}
 
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute};
@@ -189,6 +191,9 @@ onmessage = function(event){
 
 			for(var j = 0; j < numPoints; ++j){
 				var intensity = cv.getUint16(offset + j*pointSize);
+                //if (event.data.normalize.intensity) {
+                //    intensity = Math.floor(intensity / 256);
+                //}
 				intensities[j] = intensity;
 			}
 

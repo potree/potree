@@ -47,12 +47,96 @@ var createSchema = function(attributes) {
   return schema;
 }
 
+var fetch = function(url, cb) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+            if (xhr.status === 200 || xhr.status === 0) {
+                cb(null, xhr.responseText);
+            }
+            else {
+                cb(xhr.responseText);
+            }
+        }
+    };
+    xhr.send(null);
+};
+
+var fetchBinary = function(url, cb) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.responseType = 'arraybuffer';
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+            if (xhr.status === 200 || xhr.status === 0) {
+                cb(null, xhr.response);
+            }
+            else {
+                cb(xhr.responseText);
+            }
+        }
+    };
+    xhr.send(null);
+};
+
+var pointSizeFrom = function(schema) {
+    return schema.reduce((p, c) => p + c.size, 0);
+};
+
+var getNormalization = function(serverURL, baseDepth, cb) {
+    var s = [
+        { "name": "X",          "size": 4, "type": "floating" },
+        { "name": "Y",          "size": 4, "type": "floating" },
+        { "name": "Z",          "size": 4, "type": "floating" },
+        { "name": "Red",        "size": 2, "type": "unsigned" },
+        { "name": "Green",      "size": 2, "type": "unsigned" },
+        { "name": "Blue",       "size": 2, "type": "unsigned" },
+        { "name": "Intensity",  "size": 2, "type": "unsigned" }
+    ];
+
+    var url = serverURL + 'read?depth=' + baseDepth +
+        '&schema=' + JSON.stringify(s);
+
+    fetchBinary(url, function(err, buffer) {
+        if (err) throw new Error(err);
+
+        var view = new DataView(buffer);
+        var numBytes = buffer.byteLength - 4;
+        var numPoints = view.getUint32(numBytes, true);
+        var pointSize = pointSizeFrom(s);
+
+        var colorNorm = false, intensityNorm = false;
+        var v;
+
+        for (var offset = 0; offset < numBytes; offset += pointSize) {
+            if (view.getUint16(offset + 12, true) > 255 ||
+                view.getUint16(offset + 14, true) > 255 ||
+                view.getUint16(offset + 16, true) > 255) {
+                colorNorm = true;
+            }
+
+            if (view.getUint16(18, true) > 255) {
+                intensityNorm = true;
+            }
+
+            if (colorNorm && intensityNorm) break;
+        }
+
+        if (colorNorm) console.log('Normalizing color');
+        if (intensityNorm) console.log('Normalizing intensity');
+
+        cb(null, { color: colorNorm, intensity: intensityNorm });
+    });
+};
+
 /**
  * @return a point cloud octree with the root node data loaded.
  * loading of descendants happens asynchronously when they're needed
  *
  * @param url
- * @param loadingFinishedListener executed after loading the binary has been finished
+ * @param loadingFinishedListener executed after loading the binary has been
+ * finished
  */
 Potree.GreyhoundLoader.load = function load(url, callback) {
 	var HIERARCHY_STEP_SIZE = 5;
@@ -64,149 +148,147 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
             serverURL = 'http://' + serverURL;
         }
 
-		var xhr = new XMLHttpRequest();
-		xhr.open('GET', serverURL + 'info', true);
+        fetch(serverURL + 'info', function(err, data) {
+            if (err) throw new Error(err);
 
-		xhr.onreadystatechange = function() {
-			if (xhr.readyState === 4 && (xhr.status === 200 || xhr.status === 0)){
-				/* We parse the result of the info query, which should be a JSON
-                 * datastructure somewhat like:
-                {
-                  "bounds": [635577, 848882, -1000, 639004, 853538, 2000],
-                  "numPoints": 10653336,
-                  "schema": [
-                      { "name": "X", "size": 8, "type": "floating" },
-                      { "name": "Y", "size": 8, "type": "floating" },
-                      { "name": "Z", "size": 8, "type": "floating" },
-                      { "name": "Intensity", "size": 2, "type": "unsigned" },
-                      { "name": "OriginId", "size": 4, "type": "unsigned" },
-                      { "name": "Red", "size": 2, "type": "unsigned" },
-                      { "name": "Green", "size": 2, "type": "unsigned" },
-                      { "name": "Blue", "size": 2, "type": "unsigned" }
-                  ],
-                  "srs": "<omitted for brevity>",
-                  "type": "octree"
+            /* We parse the result of the info query, which should be a JSON
+             * datastructure somewhat like:
+            {
+              "bounds": [635577, 848882, -1000, 639004, 853538, 2000],
+              "numPoints": 10653336,
+              "schema": [
+                  { "name": "X", "size": 8, "type": "floating" },
+                  { "name": "Y", "size": 8, "type": "floating" },
+                  { "name": "Z", "size": 8, "type": "floating" },
+                  { "name": "Intensity", "size": 2, "type": "unsigned" },
+                  { "name": "OriginId", "size": 4, "type": "unsigned" },
+                  { "name": "Red", "size": 2, "type": "unsigned" },
+                  { "name": "Green", "size": 2, "type": "unsigned" },
+                  { "name": "Blue", "size": 2, "type": "unsigned" }
+              ],
+              "srs": "<omitted for brevity>",
+              "type": "octree"
+            }
+            */
+            var greyhoundInfo = JSON.parse(data);
+            var version = new Potree.Version('1.4');
+
+            var bounds = greyhoundInfo.bounds;
+            var boundsConforming = greyhoundInfo.boundsConforming;
+
+            var width = bounds[3] - bounds[0];
+            var depth = bounds[4] - bounds[1];
+            var height= bounds[5] - bounds[2];
+            var radius = width / 2;
+
+            var scale = greyhoundInfo.scale;
+            var scale = greyhoundInfo.scale || .01;
+            if (Array.isArray(scale)) {
+                scale = Math.min(scale[0], scale[1], scale[2]);
+            }
+
+            if (getQueryParam('scale')) {
+                scale = parseFloat(getQueryParam('scale'));
+            }
+
+            var baseDepth = Math.max(8, greyhoundInfo.baseDepth);
+
+            // Ideally we want to change this bit completely, since
+            // greyhound's options are wider than the default options for
+            // visualizing pointclouds. If someone ever has time to build a
+            // custom ui element for greyhound, the schema options from
+            // this info request should be given to the UI, so the user can
+            // choose between them. The selected option can then be
+            // directly requested from the server in the
+            // PointCloudGreyhoundGeometryNode without asking for
+            // attributes that we are not currently visualizing.  We assume
+            // XYZ are always available.
+            var attributes = ['POSITION_CARTESIAN'];
+
+            // To be careful, we only add COLOR_PACKED as an option if all
+            // colors are actually found.
+            var red = false, green = false, blue = false;
+
+            greyhoundInfo.schema.forEach(function(entry) {
+                // Intensity and Classification are optional.
+                if (entry.name === 'Intensity') {
+                    attributes.push('INTENSITY');
                 }
-				*/
-				var greyhoundInfo = JSON.parse(xhr.responseText);
-				var version = new Potree.Version('1.4');
-
-                var bounds = greyhoundInfo.bounds;
-                var boundsConforming = greyhoundInfo.boundsConforming;
-
-                var width = bounds[3] - bounds[0];
-                var depth = bounds[4] - bounds[1];
-                var height= bounds[5] - bounds[2];
-                var radius = width / 2;
-
-                var scale = greyhoundInfo.scale;
-                var scale = greyhoundInfo.scale || .01;
-                if (Array.isArray(scale)) {
-                    scale = Math.min(scale[0], scale[1], scale[2]);
+                if (entry.name === 'Classification') {
+                    attributes.push('CLASSIFICATION');
                 }
 
-                if (getQueryParam('scale')) {
-                    scale = parseFloat(getQueryParam('scale'));
-                }
+                if (entry.name === 'Red') red = true;
+                else if (entry.name === 'Green') green = true;
+                else if (entry.name === 'Blue') blue = true;
+            });
 
-				var baseDepth = Math.max(8, greyhoundInfo.baseDepth);
+            if (red && green && blue) attributes.push('COLOR_PACKED');
 
-				// Ideally we want to change this bit completely, since
-                // greyhound's options are wider than the default options for
-                // visualizing pointclouds. If someone ever has time to build a
-                // custom ui element for greyhound, the schema options from
-                // this info request should be given to the UI, so the user can
-                // choose between them. The selected option can then be
-                // directly requested from the server in the
-                // PointCloudGreyhoundGeometryNode without asking for
-                // attributes that we are not currently visualizing.  We assume
-                // XYZ are always available.
-				var attributes = ['POSITION_CARTESIAN'];
+            // Fill in geometry fields.
+            var pgg = new Potree.PointCloudGreyhoundGeometry();
+            pgg.serverURL = serverURL;
+            pgg.spacing = (bounds[3] - bounds[0]) / Math.pow(2, baseDepth);
+            pgg.baseDepth = baseDepth;
+            pgg.hierarchyStepSize = HIERARCHY_STEP_SIZE;
 
-				// To be careful, we only add COLOR_PACKED as an option if all
-                // colors are actually found.
-				var red = false, green = false, blue = false;
+            pgg.schema = createSchema(attributes);
+            var pointSize = pointSizeFrom(pgg.schema);
 
-				greyhoundInfo.schema.forEach(function(entry) {
-					// Intensity and Classification are optional.
-					if (entry.name === 'Intensity') {
-						attributes.push('INTENSITY');
-					}
-					if (entry.name === 'Classification') {
-						attributes.push('CLASSIFICATION');
-					}
+            pgg.pointAttributes = new Potree.PointAttributes(attributes);
+            pgg.pointAttributes.byteSize = pointSize;
 
-					if (entry.name === 'Red') red = true;
-                    else if (entry.name === 'Green') green = true;
-                    else if (entry.name === 'Blue') blue = true;
-				});
+            var boundingBox = new THREE.Box3(
+                new THREE.Vector3().fromArray(bounds, 0),
+                new THREE.Vector3().fromArray(bounds, 3));
 
-				if (red && green && blue) attributes.push('COLOR_PACKED');
+            var offset = boundingBox.min.clone();
 
-                // Fill in geometry fields.
-				var pgg = new Potree.PointCloudGreyhoundGeometry();
-				pgg.serverURL = serverURL;
-				pgg.spacing = (bounds[3] - bounds[0]) / Math.pow(2, baseDepth);
-				pgg.baseDepth = baseDepth;
-				pgg.hierarchyStepSize = HIERARCHY_STEP_SIZE;
+            boundingBox.max.sub(boundingBox.min);
+            boundingBox.min.set(0, 0, 0);
 
-                var pointSize = 0;
-                pgg.schema = createSchema(attributes);
-                pgg.schema.forEach(function(entry) {
-                    pointSize += entry.size;
-                });
+            pgg.projection = greyhoundInfo.srs;
+            pgg.boundingBox = boundingBox;
+            pgg.boundingSphere = boundingBox.getBoundingSphere();
 
-				pgg.pointAttributes = new Potree.PointAttributes(attributes);
-                pgg.pointAttributes.byteSize = pointSize;
+            pgg.scale = scale;
+            pgg.offset = offset;
 
-				var boundingBox = new THREE.Box3(
-					new THREE.Vector3().fromArray(bounds, 0),
-					new THREE.Vector3().fromArray(bounds, 3));
+            console.log('Scale:', scale);
+            console.log('Offset:', offset);
+            console.log('Bounds:', boundingBox);
 
-				var offset = boundingBox.min.clone();
+            pgg.loader = new Potree.GreyhoundBinaryLoader(
+                    version, boundingBox, pgg.scale);
 
-				boundingBox.max.sub(boundingBox.min);
-				boundingBox.min.set(0, 0, 0);
+            var nodes = {};
 
-				pgg.projection = greyhoundInfo.srs;
-				pgg.boundingBox = boundingBox;
-				pgg.boundingSphere = boundingBox.getBoundingSphere();
+            { // load root
+                var name = "r";
 
-				pgg.scale = scale;
-				pgg.offset = offset;
+                var root = new Potree.PointCloudGreyhoundGeometryNode(
+                        name, pgg, boundingBox,
+                        scale, offset);
 
-                console.log('Scale:', scale);
-                console.log('Offset:', offset);
-                console.log('Bounds:', boundingBox);
+                root.level = 0;
+                root.hasChildren = true;
+                root.numPoints = greyhoundInfo.numPoints;
+                root.spacing = pgg.spacing;
+                pgg.root = root;
+                pgg.root.load();
+                nodes[name] = root;
+            }
 
-				pgg.loader = new Potree.GreyhoundBinaryLoader(
-                        version, boundingBox, pgg.scale);
+            pgg.nodes = nodes;
 
-				var nodes = {};
+            getNormalization(serverURL, greyhoundInfo.baseDepth,
+                    function(err, normalize) {
+                        if (normalize.color) pgg.normalize.color = true;
+                        if (normalize.intensity) pgg.normalize.intensity = true;
 
-				{ // load root
-					var name = "r";
-
-					var root = new Potree.PointCloudGreyhoundGeometryNode(
-                            name, pgg, boundingBox,
-                            scale, offset);
-
-					root.level = 0;
-					root.hasChildren = true;
-					root.numPoints = greyhoundInfo.numPoints;
-					root.spacing = pgg.spacing;
-					pgg.root = root;
-					pgg.root.load();
-					nodes[name] = root;
-				}
-
-				pgg.nodes = nodes;
-
-				callback(pgg);
-			}
-		};
-
-		xhr.send(null);
+                        callback(pgg);
+                    });
+        });
 	}
     catch(e) {
 		console.log("loading failed: '" + url + "'");

@@ -62,7 +62,7 @@ Potree.GreyhoundBinaryLoader.prototype.parse = function(node, buffer){
 
 	let workerPath = Potree.scriptPath + "/workers/GreyhoundBinaryDecoderWorker.js";
 	let worker = Potree.workerPool.getWorker(workerPath);
-	
+
 	worker.onmessage = function(e){
 		var data = e.data;
 		var buffers = data.attributeBuffers;
@@ -131,8 +131,8 @@ Potree.GreyhoundBinaryLoader.prototype.parse = function(node, buffer){
 
     var bb = node.boundingBox;
     var pco = node.pcoGeometry;
-	
-	
+
+
 	//let nodeOffset = node.boundingBox.getSize().multiplyScalar(0.5);
 	//let nodeOffset = new THREE.Vector3(0, 0, 0);
 	let nodeOffset = node.pcoGeometry.boundingBox.getCenter();
@@ -145,7 +145,8 @@ Potree.GreyhoundBinaryLoader.prototype.parse = function(node, buffer){
 		min: [bb.min.x, bb.min.y, bb.min.z],
 		max: [bb.max.x, bb.max.y, bb.max.z],
 		offset: nodeOffset.toArray(),
-        scale: this.scale
+        scale: this.scale,
+        normalize: node.pcoGeometry.normalize
 	};
 
 	worker.postMessage(message, [message.buffer]);

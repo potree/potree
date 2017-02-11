@@ -17,4 +17,6 @@ Potree.PointCloudGreyhoundGeometry = function(){
 
 	//the serverURL will contain the base URL of the greyhound server. f.e. http://dev.greyhound.io/resource/autzen/
 	this.serverURL = null;
+
+    this.normalize = { color: false, intensity: false };
 };

@@ -1,61 +1,20 @@
 
+precision mediump float;
+precision mediump int;
+
 #if defined use_interpolation
 	#extension GL_EXT_frag_depth : enable
 #endif
 
-
-// the following is an incomplete list of attributes, uniforms and defines
-// which are automatically added through the THREE.ShaderMaterial
-
-// #define USE_COLOR
-// 
-// uniform mat4 viewMatrix;
-// uniform vec3 cameraPosition;
+uniform mat4 viewMatrix;
+uniform vec3 cameraPosition;
 
 
 uniform mat4 projectionMatrix;
 uniform float opacity;
 
-
-#if defined(color_type_phong)
-
-	uniform vec3 diffuse;
-	uniform vec3 ambient;
-	uniform vec3 emissive;
-	uniform vec3 specular;
-	uniform float shininess;
-	uniform vec3 ambientLightColor;
-
-	#if MAX_POINT_LIGHTS > 0
-
-		uniform vec3 	pointLightColor[ MAX_POINT_LIGHTS ];
-		uniform vec3 	pointLightPosition[ MAX_POINT_LIGHTS ];
-		uniform float 	pointLightDistance[ MAX_POINT_LIGHTS ];
-		uniform float 	pointLightDecay[ MAX_POINT_LIGHTS ];
-
-	#endif
-
-	#if MAX_DIR_LIGHTS > 0
-
-		uniform vec3 directionalLightColor[ MAX_DIR_LIGHTS ];
-		uniform vec3 directionalLightDirection[ MAX_DIR_LIGHTS ];
-
-	#endif
-
-#endif
-
-//#if MAX_SPOT_LIGHTS > 0
-//
-//	uniform vec3 spotLightColor[ MAX_SPOT_LIGHTS ];
-//	uniform vec3 spotLightPosition[ MAX_SPOT_LIGHTS ];
-//	uniform vec3 spotLightDirection[ MAX_SPOT_LIGHTS ];
-//	uniform float spotLightAngleCos[ MAX_SPOT_LIGHTS ];
-//	uniform float spotLightExponent[ MAX_SPOT_LIGHTS ];
-//
-//	uniform float spotLightDistance[ MAX_SPOT_LIGHTS ];
-//
-//#endif
-
+uniform float blendHardness;
+uniform float blendDepthSupplement;
 uniform float fov;
 uniform float spacing;
 uniform float near;
@@ -72,7 +31,6 @@ varying float	vLinearDepth;
 varying float	vLogDepth;
 varying vec3	vViewPosition;
 varying float	vRadius;
-varying vec3	vWorldPosition;
 varying vec3	vNormal;
 
 float specularStrength = 1.0;
@@ -97,41 +55,17 @@ void main() {
 	#if defined weighted_splats
 		vec2 uv = gl_FragCoord.xy / vec2(screenWidth, screenHeight);
 		float sDepth = texture2D(depthMap, uv).r;
-		if(vLinearDepth > sDepth + vRadius){
+		if(vLinearDepth > sDepth + vRadius + blendDepthSupplement){
 			discard;
 		}
 	#endif
-	
-	#if defined use_interpolation
-		float wi = 0.0 - ( u*u + v*v);
-		vec4 pos = vec4(-vViewPosition, 1.0);
-		pos.z += wi * vRadius;
-		float linearDepth = pos.z;
-		pos = projectionMatrix * pos;
-		pos = pos / pos.w;
-		float expDepth = pos.z;
-		depth = (pos.z + 1.0) / 2.0;
-		gl_FragDepthEXT = depth;
 		
-		#if defined(color_type_depth)
-			color.r = linearDepth;
-			color.g = expDepth;
-		#endif
-		
-	#endif
-	
 	#if defined color_type_point_index
 		gl_FragColor = vec4(color, pcIndex / 255.0);
 	#else
 		gl_FragColor = vec4(color, vOpacity);
 	#endif
-	
-	#if defined weighted_splats
-	    float w = pow(1.0 - (u*u + v*v), 2.0);
-		gl_FragColor.rgb = gl_FragColor.rgb * w;
-		gl_FragColor.a = w;
-	#endif
-	
+
 	vec3 normal = normalize( vNormal );
 	normal.z = abs(normal.z);
 	vec3 viewPosition = normalize( vViewPosition );
@@ -254,10 +188,50 @@ void main() {
 
 	#endif
 	
-	
-	#if defined(use_edl)
-		gl_FragColor.a = vLogDepth;
+	#if defined weighted_splats
+	    //float w = pow(1.0 - (u*u + v*v), blendHardness);
+		
+		float wx = 2.0 * length(2.0 * gl_PointCoord - 1.0);
+		float w = exp(-wx * wx * 0.5);
+		
+		//float distance = length(2.0 * gl_PointCoord - 1.0);
+		//float w = exp( -(distance * distance) / blendHardness);
+		
+		gl_FragColor.rgb = gl_FragColor.rgb * w;
+		gl_FragColor.a = w;
 	#endif
+	
+	#if defined use_interpolation
+		float wi = 0.0 - ( u*u + v*v);
+		vec4 pos = vec4(vViewPosition, 1.0);
+		pos.z += wi * vRadius;
+		float linearDepth = -pos.z;
+		pos = projectionMatrix * pos;
+		pos = pos / pos.w;
+		float expDepth = pos.z;
+		depth = (pos.z + 1.0) / 2.0;
+		gl_FragDepthEXT = depth;
+		
+		#if defined(color_type_depth)
+			color.r = linearDepth;
+			color.g = expDepth;
+		#endif
+		
+		#if defined(use_edl)
+			gl_FragColor.a = log2(linearDepth);
+		#endif
+		
+	#else
+		#if defined(use_edl)
+			gl_FragColor.a = vLogDepth;
+		#endif
+	#endif
+	
+	
+		
+	
+	
+	
 	
 }
 

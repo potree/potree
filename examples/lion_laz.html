@@ -1,96 +1,95 @@
-<html>
-<head>
-	<meta charset="utf-8"/>
-	<title>Potree Viewer</title>
-	<link rel="stylesheet" type="text/css" href="css/potree.css">
-</head>
-<body>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Potree Viewer</title>
 
+	<link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
+	<link rel="stylesheet" type="text/css" href="../libs/jquery-ui/jquery-ui.min.css">
+	<link rel="stylesheet" type="text/css" href="../libs/perfect-scrollbar/css/perfect-scrollbar.css">
+	<link rel="stylesheet" href="../libs/openlayers3/ol.css" type="text/css">
+  </head>
+
+  <body>
+  
+	<script src="../libs/jquery/jquery-3.1.1.js"></script>
+	
+	<!--<script src="../libs/other/webgl-debug.js"></script>-->
+	<script src="../libs/perfect-scrollbar/js/perfect-scrollbar.jquery.js"></script>
+	<script src="../libs/jquery-ui/jquery-ui.min.js"></script>
 	<script src="../libs/three.js/build/three.js"></script>
 	<script src="../libs/other/stats.min.js"></script>
-	<script src="../libs/other/dat.gui.min.js"></script>
 	<script src="../libs/other/BinaryHeap.js"></script>
+	<script src="../libs/tween/tween.min.js"></script>
+	<script src="../libs/d3/d3.js"></script>
+	<script src="../libs/proj4/proj4.js"></script>
+	<script src="../libs/openlayers3/ol.js"></script>
+    <script src="../libs/i18next/i18next.js"></script>
 	
-	<script src="../build/js/potree.js"></script>
-	<script src="./js/ProgressBar.js"></script>
-	
-	
-	<!-- uncomment this to debug changes to the individual js files -->
-	<!--
-	<script src="../src/PointCloudOctree.js"></script>
-	<script src="../src/PointCloudOctreeGeometry.js"></script>
-	<script src="../src/loader/POCLoader.js"></script>
-	<script src="../src/loader/BinaryLoader.js"></script>
-	<script src="../src/materials/PointCloudMaterial.js"></script>
-	<script src="../src/materials/EyeDomeLightingMaterial.js"></script>
-	<script src="../src/EarthControls.js"></script>
-	<script src="../src/OrbitControls.js"></script>
-	<script src="../src/FirstPersonControls.js"></script>
-	<script src="../src/utils/ProfileTool.js"></script>
-	<script src="../src/utils/MeasuringTool.js"></script>
-	<script src="../src/utils/TransformationTool.js"></script>
-	<script src="../src/utils/VolumeTool.js"></script>
-	<script src="../src/utils.js"></script>
-	<script src="../src/LRU.js"></script>
-	<script src="../src/TextSprite.js"></script>
-	<script src="../src/Features.js"></script>
-	<script src="../src/arena4d/PointCloudArena4D.js"></script>
-	<script src="../src/arena4d/PointCloudArena4DGeometry.js"></script>
-	-->
-	
-	
+	<script src="../build/potree/potree.js"></script>
 	
 	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
 	<!-- INCLUDE SETTINGS HERE -->
+
 	<script src="../libs/plasio/js/laslaz.js"></script>
 	<script src="../libs/plasio/vendor/bluebird.js"></script>
-	<script src="../build/js/laslaz.js"></script>
-	
-	
-	<!-- HEADING -->
-	<div class="info" style="position: absolute; left: 300px; right: 300px; top: 10px; text-align: center;">
-		<a href="http://potree.org" target="_blank">potree.org</a>
-	</div>
-	
-	<!-- INFOS / STATS -->
-	<div id="lblNumVisibleNodes" class="info" style="position: absolute; left: 10px; top: 80px; width: 400px; color:white"></div>
-	<div id="lblNumVisiblePoints" class="info" style="position: absolute; left: 10px; top: 100px; width: 400px; color:white"></div>
-	<div id="lblMessage" class="info" style="position: absolute; left: 10px; bottom: 0px; width: 400px; color:white"></div>
-	
-	<!-- TOOLS -->
-	<div id="tools" style="position: fixed; width: 400px; bottom: 10px; right: 10px">
-		<img src="../resources/icons/earth_controls_1.png" onclick="useEarthControls()" title="Earth Controls"/>
-		<img src="../resources/icons/fps_controls.png" onclick="useFPSControls()" title="Fly Camera"/>
-		<img src="../resources/icons/orbit_controls.png" onclick="useOrbitControls()" title="Orbit Controls"/>
-		<img src="../resources/icons/focus.png" onclick="camera.zoomTo(pointcloud)" title="focus on pointcloud"/>
-		<img src="../resources/icons/flip_y_z.png" onclick="flipYZ()" title="flip y and z coordinates"/>
-		<img src="../resources/icons/angle.png" onclick="measuringTool.startInsertion({showDistances: false, showAngles: true, showArea: false, closed: true, maxMarkers: 3})" title="angle measurements"/>
-		<img src="../resources/icons/distance.png" onclick="measuringTool.startInsertion({showDistances: true, showArea: false, closed: false})" title="distance measurements"/>
-		<img src="../resources/icons/area.png" onclick="measuringTool.startInsertion({showDistances: true, showArea: true, closed: true})" title="area measurements"/>
-		<img src="../resources/icons/volume.png" onclick="volumeTool.startInsertion()" title="volume measurements"/>
-		<img src="../resources/icons/profile.png" onclick="profileTool.startInsertion({width: pointcloud.boundingSphere.radius / 100})" title="height profiles"/>
-		<img src="../resources/icons/clip_volume.png" onclick="volumeTool.startInsertion({clip: true})" title="clipping volumes"/>
-	</div>
-	
-	<div id="renderArea"></div>
-	
+
+
+    <div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
+
+		<div id="potree_render_area">
+			<div id="potree_map" class="mapBox" style="position: absolute; left: 50px; top: 50px; width: 400px; height: 400px; display: none">
+				<div id="potree_map_header" style="position: absolute; width: 100%; height: 25px; top: 0px; background-color: rgba(0,0,0,0.5); z-index: 1000; border-top-left-radius: 3px; border-top-right-radius: 3px;">
+				</div>
+				<div id="potree_map_content" class="map" style="position: absolute; z-index: 100; top: 25px; width: 100%; height: calc(100% - 25px); border: 2px solid rgba(0,0,0,0.5); box-sizing: border-box;"></div>
+			</div>
+
+			<div id="potree_description" class="potree_info_text"></div>
+		</div>
+
+		<div id="potree_sidebar_container"> </div>
+    </div>
+
 	<script>
-		
-		var sceneProperties = {
-			path:			"../resources/pointclouds/lion_takanawa_laz/cloud.js",
-			cameraPosition: null,
-			cameraTarget: null,
-			sizeType: 		"Adaptive",			// options: "Fixed", "Attenuated", "Adaptive"
-			quality: 		"Interpolation", 	// options: "Squares", "Circles", "Interpolation", "Splats"
-			fov: 			75, 				// field of view in degree
-			material: 		"RGB", 				// options: "RGB", "Height", "Intensity", "Classification"
-			pointLimit: 	1,					// max number of points in millions
-			navigation: 	"Orbit",			// options: "Earth", "Orbit", "Flight"
-			pointSize: 		1.2,	
-			useEDL:			false,				// eye-dome-lighting, especially usefull for point clouds without normals
-		};
-	</script>
-	<script src="./js/viewer.js"></script>
 	
-</body>
+		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
+		
+		viewer.setEDLEnabled(true);
+		viewer.setPointSize(1);
+		viewer.setMaterial("RGB");
+		viewer.setFOV(60);
+		viewer.setPointSizing("Adaptive");
+		viewer.setQuality("Squares");
+		viewer.setPointBudget(1*1000*1000);
+		viewer.setIntensityRange(0, 300);
+		viewer.setWeightClassification(1);
+		viewer.loadSettingsFromURL();
+		
+		viewer.setDescription("Loading LAZ compressed octree format");
+		
+		viewer.loadGUI(() => {
+			viewer.setLanguage('en');
+			$("#menu_appearance").next().show();
+			//viewer.toggleSidebar();
+		});
+		
+		Potree.loadPointCloud("../pointclouds/lion_takanawa_laz/cloud.js", "lion", function(e){
+			viewer.scene.addPointCloud(e.pointcloud);
+			
+			e.pointcloud.position.x += 3;
+			e.pointcloud.position.y -= 3;
+			e.pointcloud.position.z += 4;
+			
+			viewer.fitToScreen();
+		});
+		
+		
+	</script>
+	
+	
+  </body>
 </html>

@@ -1,0 +1,263 @@
+
+<div id="sidebar_root" 
+	class="perfect_scrollbar navmenu navmenu-default navmenu-fixed-left unselectable" 
+	style="position: absolute; min-height: 100%; height: 100%; width: calc(100% - 1px); border-right: 1px solid black !important; overflow: hidden">
+	<span class="potree_sidebar_brand" style="display: flex; flex-direction: row">
+		<a href="http://potree.org" target="_blank">potree.org</a> 
+		<span style="margin: 0px 3px; color: #9AA1A4"> - </span> 
+		<a href="https://github.com/potree/potree" target="_blank">github</a>
+		<span style="margin: 0px 3px; color: #9AA1A4"> - </span> 
+		<a href="https://twitter.com/m_schuetz" target="_blank">twitter</a>
+		<span style="flex-grow: 1"></span>
+		<span id="potree_version_number" style="color: #9AA1A4; font-size: 80%; font-weight: 100"></span>
+	</span>
+	<div style="font-family:arial;">
+		<a href="javascript:viewer.setLanguage('en');" style="margin-left: 30px;">EN</a> -  
+		<a href="javascript:viewer.setLanguage('fr');">FR</a> - 
+		<a href="javascript:viewer.setLanguage('de');">DE</a>
+	</div>
+	<div>
+	<!--<div id="accordion" class="accordion">-->
+	<div class="accordion">
+	
+		<!-- APPEARANCE -->
+		<h3 id="menu_appearance"><span data-i18n="tb.rendering_opt"></span></h3>
+		<div>
+			<ul class="pv-menu-list">
+			<li><span data-i18n="appearance.nb_max_pts"></span>:<span id="lblPointBudget"></span> <div id="sldPointBudget"></div>	</li>
+			<li><span data-i18n="appearance.point_size"></span>:<span id="lblPointSize"></span> <div id="sldPointSize"></div>		</li>
+			<li><span data-i18n="appearance.field_view"></span>:<span id="lblFOV"></span><div id="sldFOV"></div>					</li>
+			<li><span data-i18n="appearance.point_opacity"></span>:<span id="lblOpacity"></span><div id="sldOpacity"></div>				</li>
+		   
+		   <li>
+			   <label for="optPointSizing" class="pv-select-label" data-i18n="appearance.point_size_type">Point Sizing </label>
+			   <select id="optPointSizing" name="optPointSizing">
+					<option>Fixed</option>
+					<option>Attenuated</option>
+					<option>Adaptive</option>
+				</select>
+			</li>
+			
+			<li>
+			   <label for="optQuality" class="pv-select-label" data-i18n="appearance.point_quality"></label>
+			   <select id="optQuality" name="optQuality">
+					<option>Squares</option>
+					<option>Circles</option>
+					<option>Interpolation</option>
+					<!--<option value="Splats">HQ-Splats</option>-->
+				</select>
+			</li>		
+		   
+			<div>
+				<div class="divider">
+					<span>Eye-Dome-Lighting</span>
+				</div>
+				
+				<li><label><input type="checkbox" id="chkEDLEnabled" onClick="viewer.setEDLEnabled(this.checked)"/><span data-i18n="appearance.edl_enable"></span></label></li>
+				<li><span data-i18n="appearance.edl_radius"></span>:<span id="lblEDLRadius"></span><div id="sldEDLRadius"></div></li>
+				<li><span data-i18n="appearance.edl_strength"></span>:<span id="lblEDLStrength"></span><div id="sldEDLStrength"></div></li>
+			</div>
+			
+			<div>
+				<div class="divider">
+					<span>Background</span>
+				</div>
+				
+				<li><label><input type="radio" name="background" value="skybox" onClick='viewer.setBackground("skybox")'/><span>Skybox</span></label></li>
+				<li><label><input type="radio" name="background" value="gradient" onClick='viewer.setBackground("gradient")'/><span>Gradient</span></label></li>
+				<li><label><input type="radio" name="background" value="black" onClick='viewer.setBackground("black")'/><span>Black</span></label></li>
+				<li><label><input type="radio" name="background" value="white" onClick='viewer.setBackground("white")'/><span>White</span></label></li>
+			</div>
+				
+			</ul>
+			
+		</div>
+		
+		<!-- TOOLS -->
+		<h3 id="menu_tools"><span data-i18n="tb.tools_opt"></span></h3>
+		<div>
+			<ul class="pv-menu-list">
+				<div>
+				
+					<li id="tools"></li>
+					
+					<div class="divider" style="padding: 10px 0px 15px 0px">
+						<span>Navigation</span>
+					</div>
+					<li id="navigation"></li>
+					<li><span data-i18n="appearance.move_speed"></span>: <span id="lblMoveSpeed"></span><div id="sldMoveSpeed"></div></li>
+					
+				</div>
+			</ul>
+		</div>
+
+	  
+		<!-- MEASUREMENTS -->
+		<h3 id="menu_measurements"><span data-i18n="tb.measurments_opt"></span></h3>
+		<div>
+			<ul class="pv-menu-list selectable" id="measurement_details"></ul>
+		</div>
+	  
+		<!-- ANNOTATIONS -->
+		<h3 id="menu_annotations"><span data-i18n="tb.annotations_opt"></span></h3>
+		<div>
+			<ul class="pv-menu-list selectable" id="annotation_details"></ul>
+		</div>
+	  
+		<!-- MATERIALS -->
+		<h3 id="menu_materials"><span data-i18n="tb.materials_opt"></span></h3>
+		<div>
+			<ul class="pv-menu-list">
+			<li>
+			   <label for="optMaterial" class="pv-select-label">Attributes:</label><br>
+			   <select id="optMaterial" name="optMaterial">
+			   </select>
+			</li>
+			
+			<div id="materials.composite_weight_container">
+				<div class="divider">
+					<span>Attribute Weights</span>
+				</div>
+			
+				<li>RGB: <span id="lblWeightRGB"></span> <div id="sldWeightRGB"></div>	</li>
+				<li>Intensity: <span id="lblWeightIntensity"></span> <div id="sldWeightIntensity"></div>	</li>
+				<li>Elevation: <span id="lblWeightElevation"></span> <div id="sldWeightElevation"></div>	</li>
+				<li>Classification: <span id="lblWeightClassification"></span> <div id="sldWeightClassification"></div>	</li>
+				<li>Return Number: <span id="lblWeightReturnNumber"></span> <div id="sldWeightReturnNumber"></div>	</li>
+				<li>Source ID: <span id="lblWeightSourceID"></span> <div id="sldWeightSourceID"></div>	</li>
+			</div>
+			
+			<div id="materials.rgb_container">
+				<div class="divider">
+					<span>RGB</span>
+				</div>
+			
+				<li>Gamma: <span id="lblRGBGamma"></span> <div id="sldRGBGamma"></div>	</li>
+				<li>Brightness: <span id="lblRGBBrightness"></span> <div id="sldRGBBrightness"></div>	</li>
+				<li>Contrast: <span id="lblRGBContrast"></span> <div id="sldRGBContrast"></div>	</li>
+			</div>
+			
+			
+			<div id="materials.elevation_container">
+				<div class="divider">
+					<span>Elevation</span>
+				</div>
+			
+				<li><span data-i18n="appearance.elevation_range"></span>: <span id="lblHeightRange"></span> <div id="sldHeightRange"></div>	</li>
+			</div>
+			
+			<div id="materials.transition_container">
+				<div class="divider">
+					<span>Transition</span>
+				</div>
+			
+				<li>transition: <span id="lblTransition"></span> <div id="sldTransition"></div>	</li>
+			</div>
+			
+			<div id="materials.intensity_container">
+				<div class="divider">
+					<span>Intensity</span>
+				</div>
+			
+				<li>Range: <span id="lblIntensityRange"></span> <div id="sldIntensityRange"></div>	</li>
+				<li>Gamma: <span id="lblIntensityGamma"></span> <div id="sldIntensityGamma"></div>	</li>
+				<li>Brightness: <span id="lblIntensityBrightness"></span> <div id="sldIntensityBrightness"></div>	</li>
+				<li>Contrast: <span id="lblIntensityContrast"></span> <div id="sldIntensityContrast"></div>	</li>
+			</div>
+				
+			
+			</ul>
+		</div>
+	
+		<!-- Scene -->
+		<h3 id="menu_scene"><span data-i18n="tb.scene_opt"></span></h3>
+		<div>
+			<ul class="pv-menu-list selectable">
+				<div>
+					<li><span data-i18n="scene.camera_position"></span>:<span id="lblCameraPosition"></span></li>
+					<li><span data-i18n="scene.camera_target"></span>:<span id="lblCameraTarget"></span></li>
+					
+				
+					<div class="divider" style="padding: 10px 0px 15px 0px">
+						<span>Point Clouds</span>
+					</div>
+				
+				</div>
+				<li id="sceneList"></li>
+			</ul>
+		</div>
+	
+		<!-- Classification -->
+		<h3 id="menu_classification"><span data-i18n="tb.classification_filter_opt"></span></h3>
+		<div>
+			<ul id="classificationList" class="pv-menu-list"></ul>
+		</div>
+	
+		<!-- Other Settings -->
+		<h3 id="menu_other_settings"><span data-i18n="tb.parameters_opt"></span></h3>
+		<div>
+			<ul class="pv-menu-list">
+				<li><span data-i18n="appearance.min_node_size"></span><span id="lblMinNodeSize"></span><div id="sldMinNodeSize"></div>	</li>
+				<li>
+				   <label for="optClipMode" class="pv-select-label"><span data-i18n="appearance.clip_mode"></span></label>
+				   <select id="optClipMode" name="optClipMode">
+						<option>No Clipping</option>
+						<option>Highlight Inside</option>
+						<option>Clip Outside</option>
+					</select>
+				</li>
+				<li><label><input type="checkbox" onClick="viewer.setShowBoundingBox(this.checked)"/><span data-i18n="appearance.box"></span></label></li>
+				<li><label><input type="checkbox" onClick="viewer.setFreeze(this.checked)"/><span data-i18n="appearance.freeze"></span></label></li>
+			</ul>
+		  </div>
+		  
+		  <h3 id="menu_about"><span data-i18n="tb.about_opt"></span></h3>
+		  <div>
+			<ul class="pv-menu-list">
+				<li><a href="http://potree.org" target="_blank">Potree</a> is a viewer for large point cloud / LIDAR data sets, developed at the Vienna University of Technology. 
+				<a href="https://github.com/potree/potree" target="_blank">(github)</a>
+				</li>
+				<li>Author: <a href="mailto:mschuetz@potree.org">Markus Sch&uuml;tz</a></li>
+				<li>License: <a target="_blank" href="http://potree.org/wp/potree_license/">FreeBSD (2-clause BSD)<a></li>
+				<li>Libraries:
+					<ul>
+						<li><a target="_blank" href="http://threejs.org/">three.js</a></li>
+						<li><a target="_blank" href="https://jquery.com/">Jquery</a></li>
+						<li><a target="_blank" href="http://www.laszip.org/">laszip</a></li>
+						<li><a target="_blank" href="https://github.com/verma/plasio">Plas.io (laslaz) </a></li>
+						<li><a target="_blank" href="http://openlayers.org/">OpenLayers3</a></li>
+						<li><a target="_blank" href="http://proj4js.org/">proj4js</a></li>
+						<li><a target="_blank" href="https://github.com/tweenjs/tween.js/">tween</a></li>
+						<li><a target="_blank" href="https://github.com/i18next/i18next/">i18next</a></li>
+					</ul>
+				</li>
+				<li>Donators:
+					<ul>
+						<li><a target="_blank" href="http://rapidlasso.com/">rapidlasso</a></li>
+						<li><a target="_blank" href="https://georepublic.info/en/">georepublic</a></li>
+						<li><a target="_blank" href="http://sitn.ne.ch/">sitn</a></li>
+						<li><a target="_blank" href="http://www.veesus.com/veesus/index.php">Veesus</a></li>
+						<li><a target="_blank" href="http://sigeom.ch/">sigeom sa</a></li>
+					</ul>
+				</li>
+				<li>Credits:
+					<ul>
+						<li><a target="_blank" href="https://www.cg.tuwien.ac.at/staff/MichaelWimmer.html">Michael Wimmer</a> & 
+							<a target="_blank" href="https://www.cg.tuwien.ac.at/staff/ClausScheiblauer.html">Claus Scheiblauer</a></li>
+						<li><a target="_blank" href="https://www.cg.tuwien.ac.at/">TU Wien, Insitute of Computer Graphics and Algorithms</a></li>
+						<li><a target="_blank" href="https://harvest4d.org/">Harvest4D</a></li>
+						<li><a target="_blank" href="http://rapidlasso.com/">rapidlasso</a></li>
+						<li><a target="_blank" href="https://georepublic.info/en/">georepublic</a></li>
+						<li><a target="_blank" href="http://hobu.co/">Howard Butler, Uday Verma, Connor Manning</a></li>
+						<li><a target="_blank" href="http://www.danielgm.net/cc/">Cloud Compare</a></li>
+						<li><a target="_blank" href="http://sitn.ne.ch/">sitn</a></li>
+					</ul>
+				</li>
+			
+			</ul>
+		  </div>
+	</div>
+	</div>
+</div>
+
+

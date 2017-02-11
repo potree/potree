@@ -11,9 +11,53 @@ Potree.PointCloudArena4DGeometryNode = function(){
 	this.loaded = false;
 	this.numPoints = 0;
 	this.level = 0;
+	this.children = [];
+	this.oneTimeDisposeHandlers = [];
 };
 
 Potree.PointCloudArena4DGeometryNode.nodesLoading = 0;
+
+Potree.PointCloudArena4DGeometryNode.prototype.isGeometryNode = function(){
+	return true;
+};
+
+Potree.PointCloudArena4DGeometryNode.prototype.isTreeNode = function(){
+	return false;
+};
+
+Potree.PointCloudArena4DGeometryNode.prototype.isLoaded = function(){
+	return this.loaded;
+};
+
+Potree.PointCloudArena4DGeometryNode.prototype.getBoundingSphere = function(){
+	return this.boundingSphere;
+};
+
+Potree.PointCloudArena4DGeometryNode.prototype.getBoundingBox = function(){
+	return this.boundingBox;
+};
+
+Potree.PointCloudArena4DGeometryNode.prototype.getChildren = function(){
+	var children = [];
+	
+	if(this.left){
+		children.push(this.left);
+	} 
+	
+	if(this.right){
+		children.push(this.right);
+	}
+	
+	return children;
+};
+
+Potree.PointCloudArena4DGeometryNode.prototype.getBoundingBox = function(){
+	return this.boundingBox;
+};
+
+Potree.PointCloudArena4DGeometryNode.prototype.getLevel = function(){
+	return this.level;
+};
 
 Potree.PointCloudArena4DGeometryNode.prototype.load = function(){
 
@@ -82,11 +126,30 @@ Potree.PointCloudArena4DGeometryNode.prototype.load = function(){
 		geometry.boundingSphere = scope.boundingSphere;
 		
 		scope.numPoints = numPoints;
-		
+
 		scope.loading = false;
 	};
 	
 	xhr.send(null);
+};
+
+Potree.PointCloudArena4DGeometryNode.prototype.dispose = function(){
+	if(this.geometry && this.parent != null){
+		this.geometry.dispose();
+		this.geometry = null;
+		this.loaded = false;
+		
+		//this.dispatchEvent( { type: 'dispose' } );
+		for(var i = 0; i < this.oneTimeDisposeHandlers.length; i++){
+			var handler = this.oneTimeDisposeHandlers[i];
+			handler();
+		}
+		this.oneTimeDisposeHandlers = [];
+	}
+};
+
+Potree.PointCloudArena4DGeometryNode.prototype.getNumPoints = function(){
+	return this.numPoints;
 };
 
 
@@ -108,6 +171,8 @@ Potree.PointCloudArena4DGeometry = function(){
 		"COLOR_PACKED"
 	]);
 };
+
+Potree.PointCloudArena4DGeometry.prototype = Object.create( THREE.EventDispatcher.prototype );
 
 Potree.PointCloudArena4DGeometry.load = function(url, callback){
 
@@ -136,12 +201,12 @@ Potree.PointCloudArena4DGeometry.load = function(url, callback){
 				
 				var offset = geometry.boundingBox.min.clone().multiplyScalar(-1);
 				
-				geometry.boundingBox.min.add(offset)
+				geometry.boundingBox.min.add(offset);
 				geometry.boundingBox.max.add(offset);
 				geometry.offset = offset;
 				
-				var center = geometry.boundingBox.center();
-				var radius = geometry.boundingBox.size().length() / 2;
+				var center = geometry.boundingBox.getCenter();
+				var radius = geometry.boundingBox.getSize().length() / 2;
 				geometry.boundingSphere = new THREE.Sphere(center, radius);
 				
 				geometry.loadHierarchy();
@@ -151,6 +216,7 @@ Potree.PointCloudArena4DGeometry.load = function(url, callback){
 				callback(null);
 			}
 		}catch(e){
+			console.error(e.message);
 			callback(null);
 		}
 	};
@@ -217,10 +283,11 @@ Potree.PointCloudArena4DGeometry.prototype.loadHierarchy = function(){
 			if(stack.length > 0){
 				var parent = stack[stack.length-1];
 				node.boundingBox = parent.boundingBox.clone();
-				var parentBBSize = parent.boundingBox.size();
+				var parentBBSize = parent.boundingBox.getSize();
 				
 				if(parent.hasLeft && !parent.left){
 					parent.left = node;
+					parent.children.push(node);
 					
 					if(parent.split === "X"){
 						node.boundingBox.max.x = node.boundingBox.min.x + parentBBSize.x / 2;
@@ -230,12 +297,13 @@ Potree.PointCloudArena4DGeometry.prototype.loadHierarchy = function(){
 						node.boundingBox.max.z = node.boundingBox.min.z + parentBBSize.z / 2;
 					}
 					
-					var center = node.boundingBox.center();
-					var radius = node.boundingBox.size().length() / 2;
+					var center = node.boundingBox.getCenter();
+					var radius = node.boundingBox.getSize().length() / 2;
 					node.boundingSphere = new THREE.Sphere(center, radius);
 					
 				}else{
 					parent.right = node;
+					parent.children.push(node);
 					
 					if(parent.split === "X"){
 						node.boundingBox.min.x = node.boundingBox.min.x + parentBBSize.x / 2;
@@ -245,19 +313,19 @@ Potree.PointCloudArena4DGeometry.prototype.loadHierarchy = function(){
 						node.boundingBox.min.z = node.boundingBox.min.z + parentBBSize.z / 2;
 					}
 					
-					var center = node.boundingBox.center();
-					var radius = node.boundingBox.size().length() / 2;
+					var center = node.boundingBox.getCenter();
+					var radius = node.boundingBox.getSize().length() / 2;
 					node.boundingSphere = new THREE.Sphere(center, radius);
 				}
 			}else{
 				root = node;
 				root.boundingBox = scope.boundingBox.clone();
-				var center = root.boundingBox.center();
-				var radius = root.boundingBox.size().length() / 2;
+				var center = root.boundingBox.getCenter();
+				var radius = root.boundingBox.getSize().length() / 2;
 				root.boundingSphere = new THREE.Sphere(center, radius);
 			}
 			
-			var bbSize = node.boundingBox.size();
+			var bbSize = node.boundingBox.getSize();
 			node.spacing = ((bbSize.x + bbSize.y + bbSize.z) / 3) / 75;
 			
 			stack.push(node);
@@ -282,7 +350,9 @@ Potree.PointCloudArena4DGeometry.prototype.loadHierarchy = function(){
 		scope.levels = levels;
 		//console.log(this.root);
 		
-	}
+		scope.dispatchEvent({type: "hierarchy_loaded"});
+		
+	};
 	
 	xhr.send(null);
 	

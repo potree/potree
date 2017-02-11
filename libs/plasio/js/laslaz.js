@@ -205,7 +205,9 @@
 	//
 	var LAZLoader = function(arraybuffer) {
 		this.arraybuffer = arraybuffer;
-		this.ww = Potree.workers.laslaz.getWorker();
+		
+		let workerPath = Potree.scriptPath + "/workers/laslaz-worker.js";
+		this.ww = Potree.workerPool.getWorker(workerPath);
 
 		this.nextCB = null;
 		var o = this;
@@ -272,7 +274,8 @@
 
 		return new Promise(function(res, rej) {
 			o.dorr({type:'close'}, function(r) {
-				Potree.workers.laslaz.returnWorker(o.ww);
+				let workerPath = Potree.scriptPath + "/workers/laslaz-worker.js";
+				Potree.workerPool.returnWorker(workerPath, o.ww);
 			
 				if (r.status !== 1)
 					return rej(new Error("Failed to close file"));

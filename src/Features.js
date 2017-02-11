@@ -32,26 +32,6 @@ Potree.Features = function(){
 		SHADER_INTERPOLATION: {
 			isSupported: function(){
 
-				//if(typeof this.shaderInterpolationSupported === "undefined"){
-				//	var material = new Potree.PointCloudMaterial();
-				//	material.interpolate = true;
-				//
-				//	var vs = gl.createShader(gl.VERTEX_SHADER);
-				//	var fs = gl.createShader(gl.FRAGMENT_SHADER);
-				//	gl.shaderSource(vs, material.vertexShader);
-				//	gl.shaderSource(fs, material.fragmentShader);
-				//
-				//	gl.compileShader(vs);
-				//	gl.compileShader(fs);
-				//
-				//	var successVS = gl.getShaderParameter(vs, gl.COMPILE_STATUS);
-				//	var successFS = gl.getShaderParameter(fs, gl.COMPILE_STATUS);
-				//	this.shaderInterpolationSupported = successVS && successFS;
-				//}
-				//
-				//return this.shaderInterpolationSupported;
-
-
 				var supported = true;
 
 				supported = supported && gl.getExtension("EXT_frag_depth");
@@ -89,6 +69,6 @@ Potree.Features = function(){
 		
 		},
 		precision: precision
-	}
+	};
 
 }();

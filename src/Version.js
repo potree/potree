@@ -36,4 +36,4 @@ Potree.Version.prototype.equalOrHigher = function(version){
 
 Potree.Version.prototype.upTo = function(version){
 	return !this.newerThan(version);
-}
+};

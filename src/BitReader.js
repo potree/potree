@@ -36,7 +36,7 @@ BitReader = function(buf){
 			var leftGap = bitOffset % 32;
 			var rightGap = (leftGap + bits) - 32;
 			
-			result = (val << leftGap) >>> (leftGap - rightGap)
+			result = (val << leftGap) >>> (leftGap - rightGap);
 			
 			val = buffer[Math.floor(bitOffset / 32)+1];
 			result = result | val >>> (32 - rightGap);
@@ -45,5 +45,5 @@ BitReader = function(buf){
 		bitOffset += bits;
 		
 		return result;
-	}
-}
+	};
+};

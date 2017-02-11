@@ -1,104 +1,150 @@
-<html>
-<head>
-	<meta charset="utf-8"/>
-	<title>Potree Viewer</title>
-	<link rel="stylesheet" type="text/css" href="css/potree.css">
-</head>
-<body>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Potree Viewer</title>
 
+	<link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
+	<link rel="stylesheet" type="text/css" href="../libs/jquery-ui/jquery-ui.min.css">
+	<link rel="stylesheet" type="text/css" href="../libs/perfect-scrollbar/css/perfect-scrollbar.css">
+	<link rel="stylesheet" href="../libs/openlayers3/ol.css" type="text/css">
+  </head>
+
+  <body>
+  
+	<script src="../libs/jquery/jquery-3.1.1.js"></script>
+	
+	<!--<script src="../libs/other/webgl-debug.js"></script>-->
+	<script src="../libs/perfect-scrollbar/js/perfect-scrollbar.jquery.js"></script>
+	<script src="../libs/jquery-ui/jquery-ui.min.js"></script>
 	<script src="../libs/three.js/build/three.js"></script>
 	<script src="../libs/other/stats.min.js"></script>
-	<script src="../libs/other/dat.gui.min.js"></script>
 	<script src="../libs/other/BinaryHeap.js"></script>
+	<script src="../libs/tween/tween.min.js"></script>
+	<script src="../libs/d3/d3.js"></script>
+	<script src="../libs/proj4/proj4.js"></script>
+	<script src="../libs/openlayers3/ol.js"></script>
+    <script src="../libs/i18next/i18next.js"></script>
 	
-	<script src="../build/js/potree.js"></script>
-	<script src="./js/ProgressBar.js"></script>
+	<script src="../build/potree/potree.js"></script>
 	
 	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
 	<!-- INCLUDE SETTINGS HERE -->
-	<!--<script src="../libs/plasio/js/laslaz.js"></script>
+
+	<script src="../libs/plasio/js/laslaz.js"></script>
 	<script src="../libs/plasio/vendor/bluebird.js"></script>
-	<script src="../build/js/laslaz.js"></script>-->
-	
-	<!-- HEADING -->
-	<div class="info" style="position: absolute; left: 300px; right: 300px; top: 10px; text-align: center;">
-		<a href="http://potree.org" target="_blank">potree.org</a><br>
-		Point cloud courtesy of <a href="http://www.sigeom.ch/" target="_blank">sigeom sa</a><br>
-	</div>
-	
-	<!-- INFOS / STATS -->
-	<div id="lblNumVisibleNodes" class="info" style="position: absolute; left: 10px; top: 80px; width: 400px; color:white"></div>
-	<div id="lblNumVisiblePoints" class="info" style="position: absolute; left: 10px; top: 100px; width: 400px; color:white"></div>
-	<div id="lblMessage" class="info" style="position: absolute; left: 10px; bottom: 0px; width: 400px; color:white"></div>
-	
-	<div id="renderArea"></div>
-	
-	<!-- TOOLS -->
-	<div id="tools" style="position: fixed; width: 400px; bottom: 10px; right: 10px">
-		<img src="../resources/icons/earth_controls_1.png" onclick="useEarthControls()" title="Earth Controls"/>
-		<img src="../resources/icons/fps_controls.png" onclick="useFPSControls()" title="Fly Camera"/>
-		<img src="../resources/icons/orbit_controls.png" onclick="useOrbitControls()" title="Orbit Controls"/>
-		<img src="../resources/icons/focus.png" onclick="camera.zoomTo(pointcloud)" title="focus on pointcloud"/>
-		<img src="../resources/icons/flip_y_z.png" onclick="flipYZ()" title="flip y and z coordinates"/>
-		<img src="../resources/icons/angle.png" onclick="measuringTool.startInsertion({showDistances: false, showAngles: true, showArea: false, closed: true, maxMarkers: 3})" title="angle measurements"/>
-		<img src="../resources/icons/distance.png" onclick="measuringTool.startInsertion({showDistances: true, showArea: false, closed: false})" title="distance measurements"/>
-		<img src="../resources/icons/area.png" onclick="measuringTool.startInsertion({showDistances: true, showArea: true, closed: true})" title="area measurements"/>
-		<img src="../resources/icons/volume.png" onclick="volumeTool.startInsertion()" title="volume measurements"/>
-		<img src="../resources/icons/profile.png" onclick="profileTool.startInsertion({width: pointcloud.boundingSphere.radius / 100})" title="height profiles"/>
-		<img src="../resources/icons/clip_volume.png" onclick="volumeTool.startInsertion({clip: true})" title="clipping volumes"/>
-	</div>
-	
+
+
+    <div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
+
+		<div id="potree_render_area">
+			<div id="potree_map" class="mapBox" style="position: absolute; left: 50px; top: 50px; width: 400px; height: 400px; display: none">
+				<div id="potree_map_header" style="position: absolute; width: 100%; height: 25px; top: 0px; background-color: rgba(0,0,0,0.5); z-index: 1000; border-top-left-radius: 3px; border-top-right-radius: 3px;">
+				</div>
+				<div id="potree_map_content" class="map" style="position: absolute; z-index: 100; top: 25px; width: 100%; height: calc(100% - 25px); border: 2px solid rgba(0,0,0,0.5); box-sizing: border-box;"></div>
+			</div>
+
+			<div id="potree_description" class="potree_info_text"></div>
+		</div>
+
+		<div id="potree_sidebar_container"> </div>
+    </div>
+
 	<script>
+	
+		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
 		
-		var sceneProperties = {
-			path:			"http://5.9.65.151/mschuetz/potree/resources/pointclouds/pix4d/matterhorn/cloud.js",
-			path:			"http://5.9.65.151/mschuetz/potree/test/cloud.js",
-			path:			"../resources/pointclouds/lion_takanawa/cloud.js",
-			path:			"http://localhost/temp/test/cloud.js",
-			path:			"../resources/pointclouds/vol_total/cloud.js",
-			cameraPosition: null,
-			cameraTarget: null,
-			sizeType: 		"Fixed",			// options: "Fixed", "Attenuated", "Adaptive"
-			quality: 		"Squares", 			// options: "Squares", "Circles", "Interpolation", "Splats"
-			fov: 			75, 				// field of view in degree
-			material: 		"RGB", 				// options: "RGB", "Height", "Intensity", "Classification"
-			pointLimit: 	1,					// max number of points in millions
-			navigation: 	"Orbit",			// options: "Earth", "Orbit", "Flight"
-			pointSize: 		2,	
-			useEDL:			false,				// eye-dome-lighting, especially usefull for point clouds without normals
-		};
+		viewer.setEDLEnabled(true);
+		viewer.setPointSize(1);
+		viewer.setMaterial("RGB");
+		viewer.setFOV(60);
+		viewer.setPointSizing("Adaptive");
+		viewer.setQuality("Squares");
+		viewer.setPointBudget(1*1000*1000);
+		viewer.setIntensityRange(0, 300);
+		viewer.setWeightClassification(1);
+		viewer.loadSettingsFromURL();
+		
+		viewer.setDescription("Point cloud courtesy of <a target='_blank' href='https://www.sigeom.ch/'>sigeom sa</a>");
+		
+		viewer.loadGUI(() => {
+			viewer.setLanguage('en');
+			$("#menu_tools").next().show();
+			$("#menu_measurements").next().show();
+			viewer.toggleSidebar();
+		});
+		
+		// Sigeom
+		Potree.loadPointCloud("../pointclouds/vol_total/cloud.js", "sigeom.sa", function(e){
+			let scene = viewer.scene;
+			scene.addPointCloud(e.pointcloud);
+			
+			{ // DISTANCE MEASURE
+				let measure = new Potree.Measure();
+				measure.closed = false;
+				measure.addMarker(new THREE.Vector3(589803.18, 231357.35, 745.38));
+				measure.addMarker(new THREE.Vector3(589795.74, 231323.42, 746.21));		
+				measure.addMarker(new THREE.Vector3(589822.50, 231315.90, 744.45));
+				
+				scene.addMeasurement(measure);
+			}
+			
+			{ // ANGLE MEASURE
+				let measure = new Potree.Measure();
+				measure.closed = true;
+				measure.showAngles = true;
+				measure.showDistances = false;
+				measure.addMarker(new THREE.Vector3(589866.11, 231372.25, 737.41));
+				measure.addMarker(new THREE.Vector3(589842.15, 231366.82, 743.61));		
+				measure.addMarker(new THREE.Vector3(589860.61, 231348.01, 740.33));
+				
+				scene.addMeasurement(measure);
+			}
+			
+			{ // SINGLE POINT MEASURE
+				let measure = new Potree.Measure();
+				measure.showDistances = false;
+				measure.showCoordinates = true;
+				measure.maxMarkers = 1;
+				measure.addMarker(new THREE.Vector3(589853.73, 231300.24, 775.48));
+				
+				scene.addMeasurement(measure);
+			}
+			
+			{ // HEIGHT MEASURE
+				let measure = new Potree.Measure();
+				measure.closed = false;
+				measure.showDistances = false;
+				measure.showHeight = true;
+				measure.addMarker(new THREE.Vector3(589849.69, 231327.26, 766.32));
+				measure.addMarker(new THREE.Vector3(589840.96, 231329.53, 744.52));		
+				
+				scene.addMeasurement(measure);
+			}
+			
+			{ // AREA MEASURE
+				let measure = new Potree.Measure();
+				measure.closed = true;
+				measure.showArea = true;
+				measure.addMarker(new THREE.Vector3(589899.37, 231300.16, 750.25));
+				measure.addMarker(new THREE.Vector3(589874.60, 231326.06, 743.40));
+				measure.addMarker(new THREE.Vector3(589911.61, 231352.57, 743.58));
+				measure.addMarker(new THREE.Vector3(589943.50, 231300.08, 754.62));
+				
+				scene.addMeasurement(measure);
+			}
+			
+			scene.view.position.set(589874.36, 231447.43, 835.03);
+			scene.view.lookAt(new THREE.Vector3(589853.01, 231318.55, 738.91));
+
+		});
+		
 	</script>
-	<script src="./js/viewer.js"></script>
 	
 	
-	<script>
-	
-	var distanceMeasurement = new Potree.Measure();
-	distanceMeasurement.addMarker(new THREE.Vector3(-294, 59, 95));
-	distanceMeasurement.addMarker(new THREE.Vector3(-179, 55, -1));
-	distanceMeasurement.addMarker(new THREE.Vector3(-69,33,-39));
-	distanceMeasurement.showDistances = true;
-	distanceMeasurement.showArea = false;
-	distanceMeasurement.showAngles = false;
-	distanceMeasurement.closed = false;
-	measuringTool.addMeasurement(distanceMeasurement);
-	
-	
-	var areaMeasurement = new Potree.Measure();
-	areaMeasurement.addMarker(new THREE.Vector3(108.04, 6.46, -36.70));
-	areaMeasurement.addMarker(new THREE.Vector3(58.27, 17.01, 72.32 ));
-	areaMeasurement.addMarker(new THREE.Vector3(67.35, 18.50, 95.41 ));
-	areaMeasurement.addMarker(new THREE.Vector3(92.06, 20.68, 97.29 ));
-	areaMeasurement.addMarker(new THREE.Vector3(186.39, 17.83, 8.16 ));
-	areaMeasurement.showDistances = true;
-	areaMeasurement.showArea = true;
-	areaMeasurement.showAngles = false;
-	areaMeasurement.closed = true;
-	measuringTool.addMeasurement(areaMeasurement);
-	
-	</script>
-	
-	
-	
-</body>
+  </body>
 </html>

@@ -1,0 +1,65 @@
+{
+    "tb": {
+        "navigation_opt": "Navigation",
+        "rendering_opt": "Appearance",
+        "tools_opt": "Tools",
+        "measurments_opt": "Measurements",
+        "annotations_opt": "Annotations",
+        "materials_opt": "Materials",
+        "scene_opt": "Scene",
+        "classification_filter_opt": "Classification filter",
+        "parameters_opt": "Other settings",
+        "about_opt": "About"
+    },
+    "tt": {
+        "angle_measurement": "Angle measurement",
+        "distance_measurement": "Distance measurement",
+        "height_measurement": "Height measurement",
+        "area_measurement": "Area measurement",
+        "volume_measurement": "Volume measurement",
+        "height_profile": "Height profile",
+        "clip_volume": "Volume clip",
+        "remove_all_measurement": "Remove all measurements",
+        "left_view_control": "Left view",
+        "front_view_control": "Front view",
+        "top_view_control": "Top view",
+        "focus_control": "Full extent",
+        "orbit_control": "Orbit control",
+        "flight_control": "Fly control",
+        "earth_control": "Earth control"
+    },
+    "appearance": {
+        "nb_max_pts": "Point budget", 
+        "point_size": "Point size",
+        "point_opacity": "Opacity",
+        "field_view": "Field of view",
+        "point_size_type": "Point sizing",
+        "point_material": "Materials",
+        "elevation_range": "Elevation range",
+        "point_quality": "Quality",
+        "edl_radius": "Radius",
+        "edl_strength": "Strength",
+        "edl_enable": "Enable",
+        "min_node_size": "Min node size",
+        "clip_mode": "Clip mode",
+        "move_speed": "Speed",
+        "skybox": "Sky",
+        "bottom_lock": "Keep above ground",
+        "box": "Box",
+        "freeze": "Lock view",
+        "language": "Language"
+    },
+    "profile": {
+        "nb_points": "Point number",
+        "title": "Height profile",
+        "save_las": "Save LAS(3D)",
+        "save_ortho": "Save CSV(2D)"
+    },
+	"scene": {
+		"camera_position": "Camera Position",
+		"camera_target": "Camera Target"
+	},
+    "settings": {
+        "language": "Language"
+    }
+}

@@ -5,12 +5,17 @@
 Potree.TextSprite = function(text){
 
 	THREE.Object3D.call(this);
+	
+	var scope = this;
 
 	var texture = new THREE.Texture();
 	texture.minFilter = THREE.LinearFilter;
 	texture.magFilter = THREE.LinearFilter;
-	var spriteMaterial = new THREE.SpriteMaterial( 
-		{ map: texture, useScreenCoordinates: false} );
+	var spriteMaterial = new THREE.SpriteMaterial( { 
+		map: texture, 
+		//useScreenCoordinates: false,
+		depthTest: false,
+		depthWrite: false} );
 	
 	this.material = spriteMaterial;
 	this.sprite = new THREE.Sprite(spriteMaterial);
@@ -32,28 +37,30 @@ Potree.TextSprite = function(text){
 Potree.TextSprite.prototype = new THREE.Object3D();
 
 Potree.TextSprite.prototype.setText = function(text){
-	this.text = text;
-	
-	this.update();
-}
+	if(this.text !== text){
+		this.text = text;
+		
+		this.update();
+	}
+};
 
 Potree.TextSprite.prototype.setTextColor = function(color){
 	this.textColor = color;
 	
 	this.update();
-}
+};
 
 Potree.TextSprite.prototype.setBorderColor = function(color){
 	this.borderColor = color;
 	
 	this.update();
-}
+};
 
 Potree.TextSprite.prototype.setBackgroundColor = function(color){
 	this.backgroundColor = color;
 	
 	this.update();
-}
+};
 
 Potree.TextSprite.prototype.update = function(){
 
@@ -64,7 +71,8 @@ Potree.TextSprite.prototype.update = function(){
 	// get size data (height depends only on font size)
 	var metrics = context.measureText( this.text );
 	var textWidth = metrics.width;
-	var spriteWidth = textWidth + 2 * this.borderThickness;
+	var margin = 5;
+	var spriteWidth = 2*margin + textWidth + 2 * this.borderThickness;
 	var spriteHeight = this.fontsize * 1.4 + 2 * this.borderThickness;
 	
 	var canvas = document.createElement('canvas');
@@ -82,15 +90,15 @@ Potree.TextSprite.prototype.update = function(){
 								  
 	context.lineWidth = this.borderThickness;
 	this.roundRect(context, this.borderThickness/2, this.borderThickness/2, 
-		textWidth + this.borderThickness, this.fontsize * 1.4 + this.borderThickness, 6);						  
+		textWidth + this.borderThickness + 2*margin, this.fontsize * 1.4 + this.borderThickness, 6);						  
 		
 	// text color
 	context.strokeStyle = "rgba(0, 0, 0, 1.0)";
-	context.strokeText( this.text, this.borderThickness, this.fontsize + this.borderThickness);
+	context.strokeText( this.text, this.borderThickness + margin, this.fontsize + this.borderThickness);
 	
 	context.fillStyle = "rgba(" + this.textColor.r + "," + this.textColor.g + ","
 								  + this.textColor.b + "," + this.textColor.a + ")";
-	context.fillText( this.text, this.borderThickness, this.fontsize + this.borderThickness);
+	context.fillText( this.text, this.borderThickness + margin, this.fontsize + this.borderThickness);
 	
 								  
 	var texture = new THREE.Texture(canvas); 
@@ -105,7 +113,7 @@ Potree.TextSprite.prototype.update = function(){
 	this.sprite.scale.set(spriteWidth*0.01,spriteHeight*0.01,1.0);
 		
 	//this.material = spriteMaterial;						  
-}
+};
 
 Potree.TextSprite.prototype.roundRect = function(ctx, x, y, w, h, r) {
 	ctx.beginPath();
@@ -121,6 +129,4 @@ Potree.TextSprite.prototype.roundRect = function(ctx, x, y, w, h, r) {
 	ctx.closePath();
 	ctx.fill();
 	ctx.stroke();   
-}
-
-
+};

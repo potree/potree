@@ -1624,6 +1624,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			visibleNodes = result.visibleNodes.length;
 			visiblePoints = result.numVisiblePoints;
 			camera.near = result.lowestSpacing * 10.0;
+			camera.far = -this.getBoundingBox().applyMatrix4(camera.matrixWorldInverse).min.z;
 		}
 		
 		

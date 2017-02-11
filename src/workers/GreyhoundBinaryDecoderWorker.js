@@ -160,9 +160,9 @@ onmessage = function(event){
 
 			for(var j = 0; j < numPoints; ++j){
 				var intensity = cv.getUint16(offset + j*pointSize);
-                if (event.data.normalize.intensity) {
-                    intensity = Math.floor(intensity / 256);
-                }
+                //if (event.data.normalize.intensity) {
+                //    intensity = Math.floor(intensity / 256);
+                //}
 				intensities[j] = intensity;
 			}
 

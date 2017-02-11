@@ -11005,8 +11005,8 @@ Potree.GeoJSONExporter = class GeoJSONExporter{
 /**
  *
  * @author sigeom sa / http://sigeom.ch
- * @author Ioda-Net Sï¿½rl / https://www.ioda-net.ch/
- * @author Markus Schï¿½tz / http://potree.org
+ * @author Ioda-Net Sàrl / https://www.ioda-net.ch/
+ * @author Markus Schütz / http://potree.org
  *
  */
 
@@ -11563,8 +11563,6 @@ Potree.PointCloudArena4D.prototype.pick = function(renderer, camera, ray, params
 		);
 	}
 	this.pickTarget.setSize(width, height);
-
-	
 	
 	gl.enable(gl.SCISSOR_TEST);
 	gl.scissor(pixelPos.x - (pickWindowSize - 1) / 2, pixelPos.y - (pickWindowSize - 1) / 2,pickWindowSize,pickWindowSize);
@@ -11716,6 +11714,23 @@ Potree.PointCloudArena4D.prototype.pick = function(renderer, camera, ray, params
 	//	
 	//	var w = window.open();
 	//	w.document.write('<img src="'+screenshot+'"/>');
+	//}
+		
+		
+	//{ // show big render target for debugging purposes
+	//	var br = new ArrayBuffer(width*height*4);
+	//	var bp = new Uint8Array(br);
+	//	renderer.context.readPixels( 0, 0, width, height, 
+	//		renderer.context.RGBA, renderer.context.UNSIGNED_BYTE, bp);
+	//
+	//	var img = pixelsArrayToImage(bp, width, height);
+	//	img.style.boder = "2px solid red";
+	//	img.style.position = "absolute";
+	//	img.style.top  = "0px";
+	//	img.style.width = width + "px";
+	//	img.style.height = height + "px";
+	//	img.onclick = function(){document.body.removeChild(img)};
+	//	document.body.appendChild(img);
 	//}
 		
 	// find closest hit inside pixelWindow boundaries
@@ -11991,6 +12006,7 @@ Potree.PointCloudArena4DGeometryNode.prototype.load = function(){
 		geometry.boundingSphere = scope.boundingSphere;
 		
 		scope.numPoints = numPoints;
+
 		scope.loading = false;
 	};
 	

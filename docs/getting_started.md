@@ -1,8 +1,6 @@
 
 # Getting Started
 
-Read the [FAQ](faq.md) if you encounter any problems.
-
 ### Download PotreeConverter
 
 * [PotreeConverter](https://github.com/potree/PotreeConverter)

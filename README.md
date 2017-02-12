@@ -2,10 +2,6 @@
 # README
 
 * [Getting Started](./docs/getting_started.md)
-* [Changelog](./docs/changelog.md)
-* [User Interface](./docs/user_interface.md)
-* [FAQ](./docs/faq.md)
-* [File Format](./docs/file_format.md)
 
 ## About
 
@@ -14,10 +10,9 @@ Potree is a free open-source WebGL based point cloud renderer for large point cl
 It is based on the [TU Wien Scanopy project](https://www.cg.tuwien.ac.at/research/projects/Scanopy/)
 
 
-
 <a href="http://potree.org/wp/demo/" target="_blank"> ![](./docs/images/potree_screens.png) </a>
 
-At the moment, this project is continued as master thesis under the [Harvest4D Project](https://harvest4d.org/)
+Potree was part of the [Harvest4D Project](https://harvest4d.org/)
 
 Newest information and work in progress is usually available on [twitter](https://twitter.com/m_schuetz)
 

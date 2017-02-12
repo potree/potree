@@ -6004,8 +6004,10 @@ Potree.Annotation = function(scene, args = {}){
 	this.title = args.title || "No Title";
 	this.description = args.description || "";
 	this.position = args.position || new THREE.Vector3(0,0,0);
-	this.cameraPosition = args.cameraPosition;
-	this.cameraTarget = args.cameraTarget;
+	this.cameraPosition = (args.cameraPosition instanceof Array) ? 
+		new THREE.Vector3().fromArray(args.cameraPosition) : args.cameraPosition;
+	this.cameraTarget = (args.cameraTarget instanceof Array) ? 
+		new THREE.Vector3().fromArray(args.cameraTarget) : args.cameraTarget;
 	this.view = args.view || null;
 	this.keepOpen = false;
 	this.descriptionVisible = false;
@@ -11005,8 +11007,8 @@ Potree.GeoJSONExporter = class GeoJSONExporter{
 /**
  *
  * @author sigeom sa / http://sigeom.ch
- * @author Ioda-Net Sàrl / https://www.ioda-net.ch/
- * @author Markus Schütz / http://potree.org
+ * @author Ioda-Net Sï¿½rl / https://www.ioda-net.ch/
+ * @author Markus Schï¿½tz / http://potree.org
  *
  */
 
@@ -12639,7 +12641,12 @@ Potree.Scene = class extends THREE.EventDispatcher{
 	}
 	
 	addAnnotation(position, args = {}){
-		args.position = position;
+		if(position instanceof Array){
+			args.position = new THREE.Vector3().fromArray(position);
+		}else if(position instanceof THREE.Vector3){
+			args.position = position;
+		}
+		
 		
 		if(!args.cameraTarget){
 			args.cameraTarget = position;

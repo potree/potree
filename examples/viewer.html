@@ -2,7 +2,6 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -79,7 +78,7 @@
 		});
 		
 		// Sigeom
-		Potree.loadPointCloud("../pointclouds/vol_total/cloud.js", "sigeom.sa", function(e){
+		Potree.loadPointCloud("../pointclouds/vol_total/cloud.js", "sigeom.sa", e => {
 			let scene = viewer.scene;
 			scene.addPointCloud(e.pointcloud);
 			

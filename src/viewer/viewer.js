@@ -300,7 +300,12 @@ Potree.Scene = class extends THREE.EventDispatcher{
 	}
 	
 	addAnnotation(position, args = {}){
-		args.position = position;
+		if(position instanceof Array){
+			args.position = new THREE.Vector3().fromArray(position);
+		}else if(position instanceof THREE.Vector3){
+			args.position = position;
+		}
+		
 		
 		if(!args.cameraTarget){
 			args.cameraTarget = position;

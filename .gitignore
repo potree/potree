@@ -6,4 +6,5 @@ docs/.doc.md.html
 docs/.how_does_loading_nodes_work.md.html
 docs/.materials_and_rendermodes.md.html
 docs/.how_to_create_your_own_pointcloud_loader.md.html
+examples/index.html
 .project

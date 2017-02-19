@@ -707,24 +707,23 @@ function initAnnotationDetails(){
 	let annotationPanel = $("#annotation_details");
 	
 	let trackAnnotation = (annotation) => {
-		let elLi = document.createElement("li");
-		let elItem = document.createElement("div");
-		let elMain = document.createElement("span");
-		let elLabel = document.createElement("span");
 		
-		elLi.appendChild(elItem);
-		elItem.append(elMain);
-		elMain.append(elLabel);
-		annotationPanel.append(elLi);
+		let element = $(`
+			<li>
+				<div class="annotation-item">
+					<span class="annotation-main">
+						<span class="annotation-label">
+							${annotation.title}
+						</span>
+					</span>
+				</div>
+			</li>
+		`);
 		
-		elItem.classList.add("annotation-item");
+		annotationPanel.append(element);
 		
-		elMain.style.display = "flex";
-		elMain.classList.add("annotation-main");
-		
-		let elLabelText = document.createTextNode(annotation.ordinal);
-		elLabel.appendChild(elLabelText);
-		elLabel.classList.add("annotation-label");
+		let elItem = element.find(".annotation-item");
+		let elMain = element.find(".annotation-main");
 		
 		let actions = [];
 		{ // ACTIONS, INCLUDING GOTO LOCATION
@@ -745,53 +744,31 @@ function initAnnotationDetails(){
 		// FIRST ACTION
 		if(actions.length > 0){
 			let action = actions[0];
-			let elIcon = document.createElement("img");
-			elIcon.src = action.icon;
-			elIcon.classList.add("annotation-icon");
-			elMain.appendChild(elIcon);
-			elMain.onclick = (e) => {
-				action.onclick(e);
-			};
 			
-			elMain.onmouseover = (e) => {
-				elIcon.style.opacity = 1;
-			};
+			let elIcon = $(`<img src="${action.icon}" class="annotation-icon">`);
 			
-			elMain.onmouseout = (e) => {
-				elIcon.style.opacity = 0.5;
-			};
+			elMain.append(elIcon);
+			elMain.click(e => action.onclick(e));
+			elMain.mouseover(e => elIcon.css("opacity", 1));
+			elMain.mouseout(e => elIcon.css("opacity", 0.5));
 			
 			actions.splice(0, 1);
 		}
 		
 		// REMAINING ACTIONS
 		for(let action of actions){
-			let elIcon = document.createElement("img");
-			elIcon.src = action.icon;
-			elIcon.classList.add("annotation-icon");
 			
-			elIcon.onmouseover = (e) => {
-				elIcon.style.opacity = 1;
-			};
+			let elIcon = $(`<img src="${action.icon}" class="annotation-icon">`);
 			
-			elIcon.onmouseout = (e) => {
-				elIcon.style.opacity = 0.5;
-			};
+			elIcon.click(e => action.onclick(e));
+			elIcon.mouseover(e => elIcon.css("opacity", 1));
+			elIcon.mouseout(e => elIcon.css("opacity", 0.5));
 			
-			elIcon.onclick = (e) => {
-				action.onclick(e);
-			};
-			
-			elItem.appendChild(elIcon);
+			elItem.append(elIcon);
 		}
 		
-		elItem.onmouseover = (e) => {
-			annotation.setHighlighted(true);
-			
-		};
-		elItem.onmouseout = (e) => {
-			annotation.setHighlighted(false);
-		};
+		elItem.mouseover(e => annotation.setHighlighted(true));
+		elItem.mouseout(e => annotation.setHighlighted(false));
 		
 		annotation.setHighlighted(false);
 	};

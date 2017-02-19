@@ -516,13 +516,13 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			$(".annotation").detach();
 			
 			for(let annotation of this.scene.annotations){
-				this.renderArea.appendChild(annotation.domElement);
+				this.renderArea.appendChild(annotation.domElement[0]);
 			}
 		
 			// TODO make sure this isn't added multiple times on scene switches
 			this.scene.addEventListener("annotation_added", (e) => {
 				if(e.scene === this.scene){
-					this.renderArea.appendChild(e.annotation.domElement);
+					this.renderArea.appendChild(e.annotation.domElement[0]);
 				}
 				
 				//focusing_finished
@@ -1017,14 +1017,14 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 	disableAnnotations(){
 		for(var i = 0; i < this.scene.annotations.length; i++){
 			var annotation = this.scene.annotations[i];
-			annotation.domElement.style.pointerEvents = "none";
+			annotation.domElement[0].style.pointerEvents = "none";
 		};
 	};
 	
 	enableAnnotations(){
 		for(var i = 0; i < this.scene.annotations.length; i++){
 			var annotation = this.scene.annotations[i];
-			annotation.domElement.style.pointerEvents = "auto";
+			annotation.domElement[0].style.pointerEvents = "auto";
 		};
 	};
 	
@@ -1698,22 +1698,22 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		{ // update annotations
 			var distances = [];
 			for(let ann of this.scene.annotations){
+				let element = ann.domElement[0];
+				
 				var screenPos = ann.position.clone().project(this.scene.camera);
 				
 				screenPos.x = this.renderArea.clientWidth * (screenPos.x + 1) / 2;
 				screenPos.y = this.renderArea.clientHeight * (1 - (screenPos.y + 1) / 2);
 				
-				ann.domElement.style.left = Math.floor(screenPos.x - ann.domElement.clientWidth / 2) + "px";
-				ann.domElement.style.top = Math.floor(screenPos.y - ann.elOrdinal.clientHeight / 2) + "px";
-				
-				
+				element.style.left = Math.floor(screenPos.x - element.clientWidth / 2) + "px";
+				element.style.top = Math.floor(screenPos.y - ann.elTitlebar[0].clientHeight / 2) + "px";
 				
 				distances.push({annotation: ann, distance: screenPos.z});
 
 				if(-1 > screenPos.z || screenPos.z > 1){
-					ann.domElement.style.display = "none";
+					element.style.display = "none";
 				}else{
-					ann.domElement.style.display = "initial";
+					element.style.display = "initial";
 				}
 			}
 			
@@ -1721,9 +1721,11 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			
 			for(var i = 0; i < distances.length; i++){
 				var ann = distances[i].annotation;
-				ann.domElement.style.zIndex = "" + i;
+				let element = ann.domElement[0];
+				
+				element.style.zIndex = "" + i;
 				if(ann.descriptionVisible){
-					ann.domElement.style.zIndex += 100;
+					element.style.zIndex += 100;
 				}
 			}
 		}

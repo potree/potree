@@ -161,6 +161,13 @@ a:hover, a:visited, a:link, a:active{
 	width:			fit-content;
 }
 
+.annotation-expand{
+	color:			white;
+	font-size:		0.6em;
+	opacity:		1;
+	width:			fit-content;
+}
+
 .annotation-action-icon{
 	width:			24px;
 	height:			24px;

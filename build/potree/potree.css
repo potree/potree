@@ -145,7 +145,41 @@ a:hover, a:visited, a:link, a:active{
 
 .annotation{
 	-webkit-transition: opacity .1s;
-	transition: opacity .1s;
+	transition: 	opacity .1s;
+	position:		absolute;
+	padding:		10px;
+	opacity:		0.5;
+}
+
+.annotation-titlebar{
+	color:			white;
+	background-color:	black;
+	border-radius:	1.5em;
+	font-size:		1em;
+	opacity:		1;
+	margin:			auto;
+	width:			fit-content;
+}
+
+.annotation-expand{
+	color:			white;
+	font-size:		0.6em;
+	opacity:		1;
+	width:			fit-content;
+}
+
+.annotation-action-icon{
+	width:			24px;
+	height:			24px;
+	filter:			invert(1);
+	display:		inline-block;
+	vertical-align:	middle;
+	line-height:	1.5em;
+	text-align:		center;
+	font-family:	Arial;
+	font-weight:	bold;
+	padding:		1px 8px 0px 1px;
+	cursor:			default;
 }
 
 .annotation-item {
@@ -172,11 +206,46 @@ a:hover, a:visited, a:link, a:active{
 }
 
 .annotation-label{
-	display:		block;
+	//position:		relative;
+	display:		inline-block;
 	height:			100%;
 	flex-grow:		1;
-	margin:			2px 8px;
+	//margin:			2px 8px;
 	user-select:	none;
+	z-index:		100;
+	width:			fit-content;
+	vertical-align:	middle;
+	line-height:	1.5em;
+	//text-align:		center;
+	font-family:	Arial;
+	font-weight:	bold;
+	padding:		1px 8px 0px 8px;
+	cursor:			default;
+	user-select:	none;
+	white-space:	nowrap;
+}
+
+.annotation-description{
+	position:		relative;
+	color:			white;
+	background-color:	black;
+	padding:		10px;
+	margin:			5px 0px 0px 0px;
+	border-radius:	4px;
+	display:		none;
+	max-width:		500px;
+}
+
+.annotation-description-close{
+	filter:			invert(100%);
+	float:			right;
+	opacity:		0.5;
+	margin:			0px 0px 8px 8px;
+}
+
+	
+.annotation-description-content{
+	color:			white;
 }
 
 .annotation-icon{

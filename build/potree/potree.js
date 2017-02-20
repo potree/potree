@@ -5994,247 +5994,270 @@ LRU.prototype.disposeDescendants = function(node){
 		}
 	}
 };
-Potree.Annotation = function(scene, args = {}){
-	var scope = this;
+Potree.Annotation = class extends THREE.EventDispatcher{
 	
-	Potree.Annotation.counter++;
-	
-	this.scene = scene;
-	this.ordinal = args.title || Potree.Annotation.counter;
-	this.title = args.title || "No Title";
-	this.description = args.description || "";
-	this.position = args.position || new THREE.Vector3(0,0,0);
-	this.cameraPosition = (args.cameraPosition instanceof Array) ? 
-		new THREE.Vector3().fromArray(args.cameraPosition) : args.cameraPosition;
-	this.cameraTarget = (args.cameraTarget instanceof Array) ? 
-		new THREE.Vector3().fromArray(args.cameraTarget) : args.cameraTarget;
-	this.view = args.view || null;
-	this.keepOpen = false;
-	this.descriptionVisible = false;
-	this.showDescription = true;
-	this.actions = args.actions || [];
-	this.appearance = args.appearance || null;
-	this.isHighlighted = false;
-	
-	this.domElement = document.createElement("div");
-	this.domElement.style.position = "absolute";
-	this.domElement.style.opacity = "0.5";
-	this.domElement.style.padding = "10px";
-	//this.domElement.style.whiteSpace = "nowrap";
-	this.domElement.className = "annotation";
-	
-	if(this.appearance !== null){
-		this.elOrdinal = document.createElement("div");
-		this.elOrdinal.style.position = "relative";
-		this.elOrdinal.style.zIndex = "100";
-		this.elOrdinal.style.width = "fit-content";
+	constructor(args = {}){
+		super();
 		
-		this.elOrdinal.innerHTML = this.appearance;
-		this.domElement.appendChild(this.elOrdinal);
-	}else{
-		this.elOrdinal = document.createElement("div");
-		this.elOrdinal.style.position = "relative";
-		this.elOrdinal.style.color = "white";
-		this.elOrdinal.style.backgroundColor = "black";
-		this.elOrdinal.style.borderRadius = "1.5em";
-		this.elOrdinal.style.fontSize = "1em";
-		this.elOrdinal.style.opacity = "1";
-		this.elOrdinal.style.margin = "auto";
-		this.elOrdinal.style.zIndex = "100";
-		this.elOrdinal.style.width = "fit-content";
-		this.domElement.appendChild(this.elOrdinal);
+		this.scene = null;
+		this.title = args.title || "No Title";
+		this.description = args.description || "";
 		
-		this.elOrdinalText = document.createElement("span");
-		this.elOrdinalText.style.display = "inline-block";
-		this.elOrdinalText.style.verticalAlign = "middle";
-		this.elOrdinalText.style.lineHeight = "1.5em";
-		this.elOrdinalText.style.textAlign = "center";
-		this.elOrdinalText.style.fontFamily = "Arial";
-		this.elOrdinalText.style.fontWeight = "bold";
-		this.elOrdinalText.style.padding = "1px 8px 0px 8px";
-		this.elOrdinalText.style.cursor = "default";
-		this.elOrdinalText.innerHTML = this.ordinal;
-		this.elOrdinalText.style.userSelect = "none";
-		this.elOrdinal.appendChild(this.elOrdinalText);
+		if(!args.position){
+			//this.position = new THREE.Vector3(0, 0, 0);
+			this.position = null;
+		}else if(args.position instanceof THREE.Vector3){
+			this.position = args.position;
+		}else{
+			this.position = new THREE.Vector3(...args.position);
+		}
 		
-		this.elOrdinal.onmouseenter = function(){};
-		this.elOrdinal.onmouseleave = function(){};
-		this.elOrdinalText.onclick = () => {
+		this.cameraPosition = (args.cameraPosition instanceof Array) ? 
+			new THREE.Vector3().fromArray(args.cameraPosition) : args.cameraPosition;
+		this.cameraTarget = (args.cameraTarget instanceof Array) ? 
+			new THREE.Vector3().fromArray(args.cameraTarget) : args.cameraTarget;
+		this.radius = args.radius;
+		this.view = args.view || null;
+		this.keepOpen = false;
+		this.descriptionVisible = false;
+		this.showDescription = true;
+		this.actions = args.actions || [];
+		this.isHighlighted = false;
+		this.visible = true;
+		
+		this.children = [];
+		this.parent = null;
+		this.boundingBox = new THREE.Box3();
+		
+		let iconClose = Potree.resourcePath + "/icons/close.svg";
+		
+		this.domElement = $(`
+			<div class="annotation" oncontextmenu="return false;">
+				<div class="annotation-titlebar">
+					<span class="annotation-label">${this.title}</span>
+				</div>
+				<div class="annotation-description">
+					<span class="annotation-description-close">
+						<img src="${iconClose}" width="16px">
+					</span>
+					<span class="annotation-description-content"></span>
+				</div>
+			</div>
+		`);
+		
+		this.elTitlebar = this.domElement.find(".annotation-titlebar");
+		this.elTitle = this.elTitlebar.find(".annotation-label");
+		this.elDescription = this.domElement.find(".annotation-description");
+		this.elDescriptionClose = this.elDescription.find(".annotation-description-close");
+		this.elDescriptionContent = this.elDescription.find(".annotation-description-content");
+		
+		this.elTitle.click(() => {
 			if(this.hasView()){
 				this.moveHere(this.scene.camera);
 			}
 			this.dispatchEvent({type: "click", target: this});
-		};
+		});
+        
+		for(let action of this.actions){
+			this.elTitle.css("padding", "1px 3px 0px 8px");
+			
+			let elButton = $(`<img src="${action.icon}" class="annotation-action-icon">`);
+			this.elTitlebar.append(elButton);
+			elButton.click(() => action.onclick());
+		}
+		
+		this.elDescriptionClose.hover(
+			e => this.elDescriptionClose.css("opacity", "1"),
+			e => this.elDescriptionClose.css("opacity", "0.5")
+		);
+		this.elDescriptionClose.click(e => this.setHighlighted(false));
+		this.elDescriptionContent.html(this.description);
+		
+		this.domElement.mouseenter(e => this.setHighlighted(true));
+		this.domElement.mouseleave(e => this.setHighlighted(false));
+		
+		this.domElement.on("touchstart", e => {
+			this.setHighlighted(!this.isHighlighted);
+		});
 	}
 	
-	this.domDescription = document.createElement("div");
-	this.domDescription.style.position = "relative";
-	this.domDescription.style.color = "white";
-	this.domDescription.style.backgroundColor = "black";
-	this.domDescription.style.padding = "10px";
-	this.domDescription.style.margin = "5px 0px 0px 0px";
-	this.domDescription.style.borderRadius = "4px";
-	this.domDescription.style.display = "none";
-	this.domDescription.style.maxWidth = "500px";
-	//this.domDescription.className = "annotation";
-	this.domElement.appendChild(this.domDescription);
-	
-	if(this.actions.length > 0){
-		this.elOrdinalText.style.padding = "1px 3px 0px 8px";
-		
-		for(let action of this.actions){
-			let elButton = document.createElement("img");
-		
-			elButton.src = action.icon;
-			elButton.style.width = "24px";
-			elButton.style.height = "24px";
-			elButton.style.filter = "invert(1)";
-			elButton.style.display = "inline-block";
-			elButton.style.verticalAlign = "middle";
-			elButton.style.lineHeight = "1.5em";
-			elButton.style.textAlign = "center";
-			elButton.style.fontFamily = "Arial";
-			elButton.style.fontWeight = "bold";
-			elButton.style.padding = "1px 8px 0px 1px";
-			elButton.style.cursor = "default";	
+	add(annotation){
+		if(!this.children.includes(annotation)){
+			this.children.push(annotation);
+			annotation.parent = this;
 			
-			this.elOrdinal.appendChild(elButton);
-			
-			elButton.onclick = function(){
-				action.onclick();
-			};
+			let c = this;
+			while(c !== null){
+				this.dispatchEvent({
+					"type": "annotation_added",
+					"annotation": annotation
+				});
+				c = c.parent;
+			}
 		}
 	}
 	
-	{
-		let icon = Potree.resourcePath + "/icons/close.svg";
-		let close = $(`<span><img src="${icon}" width="16px"></span>`);
-		close.css("filter", "invert(100%)");
-		close.css("float", "right");
-		close.css("opacity", "0.5");
-		close.css("margin", "0px 0px 8px 8px");
-		close.hover(e => {
-			close.css("opacity", "1");
-		},e => {
-			close.css("opacity", "0.5");
-		});
-		close.click(e => {
-			this.setHighlighted(false);
-		});
-		$(this.domDescription).append(close);
-		
-		this.elDescriptionText = document.createElement("span");
-		this.elDescriptionText.style.color = "#ffffff";
-		this.elDescriptionText.innerHTML = this.description;
-		this.domDescription.appendChild(this.elDescriptionText);
-	
+	level(){
+		if(this.parent === null){
+			return 0;
+		}else{
+			return this.parent.level() + 1;
+		}
 	}
 	
-	this.domElement.onmouseenter = () => {
-		this.setHighlighted(true);
-	};
+	remove(annotation){
+		this.children = this.children.filter(e => e !== annotation);
+		annotation.parent = null;
+	}
 	
-	$(this.domElement).on("touchstart", e => {
-		this.setHighlighted(!this.isHighlighted);
-	});
+	updateBounds(){
+		let box = new THREE.Box3();
+		
+		if(this.position){
+			box.expandByPoint(this.position);
+		}
+		
+		for(let child of this.children){
+			child.updateBounds();
+			
+			box.union(child.boundingBox);
+		}
+		
+		this.boundingBox.copy(box);
+	}
 	
-	this.domElement.onmouseleave = () => {
-		this.setHighlighted(false);
-	};
+	traverse(callback){
+		let expand = callback(this);
+		
+		if(expand === undefined || expand === true){
+			for(let child of this.children){
+				child.traverse(callback);
+			}
+		}
+	}
 	
-	//$(this.domElement).click(e => {
-	//	this.showDescription = !this.showDescription;
-	//	
-	//	if(this.showDescription){
-	//		$(this.domElement).append($(this.domDescription));
-	//	}else{
-	//		$(this.domDescription).remove(); 
-	//	}
-	//});
+	traverseDescendants(callback){
+		for(let child of this.children){
+			child.traverse(callback);
+		}
+	}
 	
-	this.setHighlighted = function(highlighted){
+	flatten(){
+		let annotations = [];
+		
+		this.traverse(annotation => {
+			annotations.push(annotation);
+		});
+		
+		return annotations;
+	}
+	
+	descendants(){
+		let annotations = [];
+		
+		this.traverse(annotation => {
+			if(annotation !== this){
+				annotations.push(annotation);
+			}
+		});
+		
+		return annotations;
+	}
+	
+	setHighlighted(highlighted){
 		if(highlighted){
-			this.domElement.style.opacity = "0.8";
-			this.elOrdinal.style.boxShadow = "0 0 5px #fff";
-			this.domElement.style.zIndex = "1000";
+			this.domElement.css("opacity", "0.8");
+			this.elTitlebar.css("box-shadow", "0 0 5px #fff");
+			this.domElement.css("z-index", "1000");
 			
 			if(this.description){
 				this.descriptionVisible = true;	
-				this.domDescription.style.display = "block";
-				this.domDescription.style.position = "relative";
+				this.elDescription.css("display", "block");
+				this.elDescription.css("position", "relative");
 			}
-			
 		}else{
-			this.domElement.style.opacity = "0.5";
-			this.elOrdinal.style.boxShadow = "";
-			this.domElement.style.zIndex = "100";
+			this.domElement.css("opacity", "0.5");
+			this.elTitlebar.css("box-shadow", "");
+			this.domElement.css("z-index", "100");
 			this.descriptionVisible = false;	
-			this.domDescription.style.display = "none";
+			this.elDescription.css("display", "none");
 		}
 		
 		this.isHighlighted = highlighted;
-	};
+	}
 	
-	this.hasView = function(){
-		let hasView = this.cameraTarget instanceof THREE.Vector3;
-		hasView = hasView && this.cameraPosition instanceof THREE.Vector3;
+	hasView(){
+		let hasPosTargetView = this.cameraTarget instanceof THREE.Vector3;
+		hasPosTargetView = hasPosTargetView && this.cameraPosition instanceof THREE.Vector3;
+		
+		let hasRadiusView = this.radius !== undefined;
+		
+		let hasView = hasPosTargetView || hasRadiusView;
 				
 		return hasView;
 	};
 	
-	this.moveHere = function(camera){		
+	moveHere(camera){		
 		if(!this.hasView()){
 			return;
 		}
 	
 		var animationDuration = 800;
 		var easing = TWEEN.Easing.Quartic.Out;
-
+		
+		let endTarget;
+		if(this.cameraTarget){
+			endTarget = this.cameraTarget;
+		}else if(this.position){
+			endTarget = this.position;
+		}else{
+			endTarget = this.boundingBox.getCenter();
+		}
+		let endPosition = this.cameraPosition;
+		if(!endPosition){
+			let direction = this.scene.view.direction;
+			endPosition = endTarget.clone().add(direction.multiplyScalar(-this.radius));
+		}
+    
 		{ // animate camera position
-			let tween = new TWEEN.Tween(scope.scene.view.position).to(scope.cameraPosition, animationDuration);
+			let tween = new TWEEN.Tween(this.scene.view.position).to(endPosition, animationDuration);
 			tween.easing(easing);
-			//tween.onUpdate(function(){
-			//	console.log(scope.scene.view.position);
-			//});
 			tween.start();
 		}
 		
 		{ // animate camera target
-			var camTargetDistance = camera.position.distanceTo(scope.cameraTarget);
+			var camTargetDistance = camera.position.distanceTo(endTarget);
 			var target = new THREE.Vector3().addVectors(
 				camera.position, 
 				camera.getWorldDirection().clone().multiplyScalar(camTargetDistance)
 			);
-			var tween = new TWEEN.Tween(target).to(scope.cameraTarget, animationDuration);
+			var tween = new TWEEN.Tween(target).to(endTarget, animationDuration);
 			tween.easing(easing);
-			tween.onUpdate(function(){
-				//camera.lookAt(target);
-				scope.scene.view.lookAt(target);
+			tween.onUpdate(() => {
+				this.scene.view.lookAt(target);
 			});
-			tween.onComplete(function(){
-				//camera.lookAt(target);
-				scope.scene.view.lookAt(target);
-				scope.dispatchEvent({type: "focusing_finished", target: scope});
+			tween.onComplete(() => {
+				this.scene.view.lookAt(target);
+				this.dispatchEvent({type: "focusing_finished", target: this});
 			});
 		}
-
-		scope.dispatchEvent({type: "focusing_started", target: scope});
+    
+		this.dispatchEvent({type: "focusing_started", target: this});
 		tween.start();
 	};
 	
-	this.dispose = function(){
-
-		
+	dispose(){
 		if(this.domElement.parentElement){
 			this.domElement.parentElement.removeChild(this.domElement);
 		}
-
+    
 	};
+	
+	toString(){
+		return "Annotation: " + this.title;
+	}
 };
 
-Potree.Annotation.prototype = Object.create( THREE.EventDispatcher.prototype );
-
-Potree.Annotation.counter = 0;
 
 Potree.ProfileData = function(profile){
 	this.profile = profile;
@@ -11007,8 +11030,8 @@ Potree.GeoJSONExporter = class GeoJSONExporter{
 /**
  *
  * @author sigeom sa / http://sigeom.ch
- * @author Ioda-Net Sï¿½rl / https://www.ioda-net.ch/
- * @author Markus Schï¿½tz / http://potree.org
+ * @author Ioda-Net Sàrl / https://www.ioda-net.ch/
+ * @author Markus Schütz / http://potree.org
  *
  */
 
@@ -12466,7 +12489,7 @@ Potree.Scene = class extends THREE.EventDispatcher{
 	constructor(){
 		super();
 		
-		this.annotations = [];
+		this.annotations = new Potree.Annotation();
 		this.scene = new THREE.Scene();
 		this.scenePointCloud = new THREE.Scene();
 		this.sceneBG = new THREE.Scene();
@@ -12641,27 +12664,36 @@ Potree.Scene = class extends THREE.EventDispatcher{
 	}
 	
 	addAnnotation(position, args = {}){
+		
 		if(position instanceof Array){
 			args.position = new THREE.Vector3().fromArray(position);
 		}else if(position instanceof THREE.Vector3){
 			args.position = position;
-		}
+		} 
+		let annotation = new Potree.Annotation(args);
+		this.annotations.add(annotation);
 		
-		
-		if(!args.cameraTarget){
-			args.cameraTarget = position;
-		}
-		
-		var annotation = new Potree.Annotation(this, args);
-		
-		this.annotations.push(annotation);
-		
-		this.dispatchEvent({
-			"type": "annotation_added", 
-			"scene": this,
-			"annotation": annotation});
-		
-		return annotation;
+		//if(position instanceof Array){
+		//	args.position = new THREE.Vector3().fromArray(position);
+		//}else if(position instanceof THREE.Vector3){
+		//	args.position = position;
+		//}
+		//
+		//
+		//if(!args.cameraTarget){
+		//	args.cameraTarget = position;
+		//}
+		//
+		//var annotation = new Potree.Annotation(this, args);
+		//
+		//this.annotations.push(annotation);
+		//
+		//this.dispatchEvent({
+		//	"type": "annotation_added", 
+		//	"scene": this,
+		//	"annotation": annotation});
+		//
+		//return annotation;
 	}
 	
 	getAnnotations(){
@@ -12721,8 +12753,6 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		
 		this.moveSpeed = 10;
 
-		this.showDebugInfos = false;
-		this.showStats = false;
 		this.showBoundingBox = false;
 		this.freeze = false;
 
@@ -12731,9 +12761,9 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		this.progressBar = new ProgressBar();
 
 		this.stats = new Stats();
-		//this.stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
-		//document.body.appendChild( this.stats.dom );
-		//this.stats.dom.style.left = "100px";
+		this.stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
+		document.body.appendChild( this.stats.dom );
+		this.stats.dom.style.left = "100px";
 		
 		this.potreeRenderer = null;
 		this.highQualityRenderer = null;
@@ -12843,7 +12873,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			return;
 		}
 		
-		let oldScene = scene;
+		let oldScene = this.scene;
 		this.scene = scene;
 		
 		this.dispatchEvent({
@@ -12856,24 +12886,35 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		{ // Annotations
 			$(".annotation").detach();
 			
-			for(let annotation of this.scene.annotations){
-				this.renderArea.appendChild(annotation.domElement);
+			//for(let annotation of this.scene.annotations){
+			//	this.renderArea.appendChild(annotation.domElement[0]);
+			//}
+			
+			this.scene.annotations.traverse(annotation => {
+				this.renderArea.appendChild(annotation.domElement[0]);
+			});
+			
+			if(!this.onAnnotationAdded){
+				this.onAnnotationAdded = e => {
+					//this.renderArea.appendChild(e.annotation.domElement[0]);
+					
+					e.annotation.traverse(node => {
+						this.renderArea.appendChild(node.domElement[0]);
+					});
+					
+					////focusing_finished
+					//e.annotation.addEventListener("focusing_finished", (event) => {
+					//	let distance = this.scene.view.position.distanceTo(this.scene.view.getPivot());
+					//	this.setMoveSpeed(Math.pow(distance, 0.4));
+					//	this.renderer.domElement.focus();
+					//});
+				};
 			}
 		
-			// TODO make sure this isn't added multiple times on scene switches
-			this.scene.addEventListener("annotation_added", (e) => {
-				if(e.scene === this.scene){
-					this.renderArea.appendChild(e.annotation.domElement);
-				}
-				
-				//focusing_finished
-				e.annotation.addEventListener("focusing_finished", (event) => {
-					let distance = this.scene.view.position.distanceTo(this.scene.view.getPivot());
-					//this.setMoveSpeed(distance / 3);
-					this.setMoveSpeed(Math.pow(distance, 0.4));
-					this.renderer.domElement.focus();
-				});
-			});
+			this.scene.annotations.addEventListener("annotation_added", this.onAnnotationAdded);
+			if(oldScene){
+				oldScene.annotations.removeEventListener("annotation_added", this.onAnnotationAdded);
+			}
 		}
 		
 	};
@@ -13356,17 +13397,19 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 	};
 	
 	disableAnnotations(){
-		for(var i = 0; i < this.scene.annotations.length; i++){
-			var annotation = this.scene.annotations[i];
-			annotation.domElement.style.pointerEvents = "none";
-		};
+		this.scene.annotations.traverse(annotation => {
+			annotation.domElement.css("pointer-events", "none");
+			
+			//return annotation.visible;
+		});
 	};
 	
 	enableAnnotations(){
-		for(var i = 0; i < this.scene.annotations.length; i++){
-			var annotation = this.scene.annotations[i];
-			annotation.domElement.style.pointerEvents = "auto";
-		};
+		this.scene.annotations.traverse(annotation => {
+			annotation.domElement.css("pointer-events", "auto");
+			
+			//return annotation.visible;
+		});
 	};
 	
 	setClassificationVisibility(key, value){
@@ -13838,6 +13881,151 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		// enable frag_depth extension for the interpolation shader, if available
 		this.renderer.context.getExtension("EXT_frag_depth");
 	}
+	
+	updateAnnotations(){
+		
+		this.scene.annotations.updateBounds();
+		this.scene.camera.updateMatrixWorld();
+		
+		let distances = [];
+
+		this.scene.annotations.traverse(annotation => {
+			
+			if(annotation === this.scene.annotations){
+				return true;
+			}
+			
+			annotation.scene = this.scene;
+			
+			let element = annotation.domElement[0];
+			
+			let position = annotation.position;
+			if(!position){
+				position = annotation.boundingBox.getCenter();
+			}
+			
+			let distance = viewer.scene.camera.position.distanceTo(position);
+			let radius = annotation.boundingBox.getBoundingSphere().radius;
+			
+			let screenPos = new THREE.Vector3();
+			let screenSize = 0;
+			{
+				// SCREEN POS
+				screenPos.copy(position).project(this.scene.camera);
+				screenPos.x = this.renderArea.clientWidth * (screenPos.x + 1) / 2;
+				screenPos.y = this.renderArea.clientHeight * (1 - (screenPos.y + 1) / 2);
+				
+				screenPos.x = Math.floor(screenPos.x - element.clientWidth / 2);
+				screenPos.y = Math.floor(screenPos.y - annotation.elTitlebar[0].clientHeight / 2);
+				
+				// SCREEN SIZE
+				let fov = Math.PI * viewer.scene.camera.fov / 180;
+				let slope = Math.tan(fov / 2.0);
+				let projFactor =  0.5 * this.renderArea.clientHeight / (slope * distance);
+				
+				screenSize = radius * projFactor;
+			}
+			
+			element.style.left = screenPos.x + "px";
+			element.style.top = screenPos.y + "px";
+			
+			let zIndex = 10000000 - distance * (10000000 / this.scene.camera.far);
+			if(annotation.descriptionVisible){
+				zIndex += 10000000;
+			}
+			
+			element.style.zIndex = parseInt(zIndex);
+			
+			if(annotation.children.length > 0){
+				let expand = screenSize > 100 || annotation.boundingBox.containsPoint(this.scene.camera.position);
+				
+				if(!expand){
+					// TODO make sure descendants are invisible
+					annotation.traverseDescendants(descendant => {
+						if(!descendant.visible){
+							return;
+						}else{
+							descendant.visible = false;
+							descendant.domElement[0].style.display = "none";
+						}
+					});
+					annotation.visible = true;
+					element.style.display = "inline-block";
+				}else{
+					annotation.visible = true;
+					element.style.display = "none";
+				}
+				
+				return expand;
+			}else{
+				annotation.visible = (-1 <= screenPos.z && screenPos.z <= 1);
+				if(annotation.visible){
+					element.style.display = "inline-block";
+				}else{
+					element.style.display = "none";
+				}
+			}
+		});
+		
+		//let distances = [];
+		//let annotations = this.scene.annotations.descendants();
+        //
+		//let i = 0;
+		//for(let annotation of annotations){
+		//	
+		//	let element = annotation.domElement[0];
+		//	
+		//	let position = annotation.position;
+		//	if(!position){
+		//		position = annotation.boundingBox.getCenter();
+		//	}
+		//	
+		//	let distance = viewer.scene.camera.position.distanceTo(position);
+		//	
+		//	let screenPos = new THREE.Vector3();
+		//	let screenSize = 0;
+		//	{
+		//		// SCREEN POS
+		//		screenPos.copy(position).project(this.scene.camera);
+		//		screenPos.x = this.renderArea.clientWidth * (screenPos.x + 1) / 2;
+		//		screenPos.y = this.renderArea.clientHeight * (1 - (screenPos.y + 1) / 2);
+		//		
+		//		screenPos.x = Math.floor(screenPos.x - element.clientWidth / 2);
+		//		screenPos.y = Math.floor(screenPos.y - annotation.elTitlebar[0].clientHeight / 2);
+		//		
+		//		// SCREEN SIZE
+		//		let fov = Math.PI * viewer.scene.camera.fov / 180;
+		//		let slope = Math.tan(fov / 2.0);
+		//		let projFactor =  0.5 * this.renderArea.clientHeight / (slope * distance);
+		//		
+		//		let radius = annotation.boundingBox.getBoundingSphere().radius;
+		//		screenSize = radius * projFactor;
+		//	}
+		//	
+		//	element.style.left = screenPos.x + "px";
+		//	element.style.top = screenPos.y + "px";
+		//	
+		//	
+		//	let visible = screenSize > 100 && (-1 <= screenPos.z && screenPos.z <= 1);
+		//	
+		//	if(visible){
+		//		element.style.display = "inline-block";
+		//	}else{
+		//		element.style.display = "none";
+		//	}
+		//	
+		//	annotation.visible = visible;
+		//	
+		//	let zIndex = 10000000 - distance * (10000000 / this.scene.camera.far);
+		//	if(annotation.descriptionVisible){
+		//		zIndex += 10000000;
+		//	}
+		//	
+		//	element.style.zIndex = parseInt(zIndex);
+		//
+		//	i++;
+		//}
+	}
 
 	update(delta, timestamp){
 		
@@ -13970,22 +14158,6 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			camera.far = Math.max(camera.far * 1.5, 1000);
 		}
 		
-		
-		//if(this.stats && this.showStats){
-		//	document.getElementById("lblNumVisibleNodes").style.display = "";
-		//	document.getElementById("lblNumVisiblePoints").style.display = "";
-		//	this.stats.domElement.style.display = "";
-		//
-		//	this.stats.update();
-		//
-		//	document.getElementById("lblNumVisibleNodes").innerHTML = "visible nodes: " + visibleNodes;
-		//	document.getElementById("lblNumVisiblePoints").innerHTML = "visible points: " + Potree.utils.addCommas(visiblePoints);
-		//}else if(this.stats){
-		//	document.getElementById("lblNumVisibleNodes").style.display = "none";
-		//	document.getElementById("lblNumVisiblePoints").style.display = "none";
-		//	this.stats.domElement.style.display = "none";
-		//}
-		
 		camera.fov = this.fov;
 		
 		// Navigation mode changed?
@@ -14036,46 +14208,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			}
 		}
 
-		{ // update annotations
-			var distances = [];
-			for(let ann of this.scene.annotations){
-				var screenPos = ann.position.clone().project(this.scene.camera);
-				
-				screenPos.x = this.renderArea.clientWidth * (screenPos.x + 1) / 2;
-				screenPos.y = this.renderArea.clientHeight * (1 - (screenPos.y + 1) / 2);
-				
-				ann.domElement.style.left = Math.floor(screenPos.x - ann.domElement.clientWidth / 2) + "px";
-				ann.domElement.style.top = Math.floor(screenPos.y - ann.elOrdinal.clientHeight / 2) + "px";
-				
-				
-				
-				distances.push({annotation: ann, distance: screenPos.z});
-
-				if(-1 > screenPos.z || screenPos.z > 1){
-					ann.domElement.style.display = "none";
-				}else{
-					ann.domElement.style.display = "initial";
-				}
-			}
-			
-			distances.sort(function(a,b){return b.distance - a.distance});
-			
-			for(var i = 0; i < distances.length; i++){
-				var ann = distances[i].annotation;
-				ann.domElement.style.zIndex = "" + i;
-				if(ann.descriptionVisible){
-					ann.domElement.style.zIndex += 100;
-				}
-			}
-		}
-		
-		if(this.showDebugInfos){
-			this.infos.set("camera.position", "camera.position: " + 
-				this.scene.camera.position.x.toFixed(2) 
-				+ ", " + this.scene.camera.position.y.toFixed(2) 
-				+ ", " + this.scene.camera.position.z.toFixed(2)
-			);
-		}
+		this.updateAnnotations();
 		
 		if(this.mapView){
 			this.mapView.update(delta, this.scene.camera);
@@ -16990,125 +17123,126 @@ function initAnnotationDetails(){
 	// annotation_details
 	let annotationPanel = $("#annotation_details");
 	
-	let trackAnnotation = (annotation) => {
-		let elLi = document.createElement("li");
-		let elItem = document.createElement("div");
-		let elMain = document.createElement("span");
-		let elLabel = document.createElement("span");
-		
-		elLi.appendChild(elItem);
-		elItem.append(elMain);
-		elMain.append(elLabel);
-		annotationPanel.append(elLi);
-		
-		elItem.classList.add("annotation-item");
-		
-		elMain.style.display = "flex";
-		elMain.classList.add("annotation-main");
-		
-		let elLabelText = document.createTextNode(annotation.ordinal);
-		elLabel.appendChild(elLabelText);
-		elLabel.classList.add("annotation-label");
-		
-		let actions = [];
-		{ // ACTIONS, INCLUDING GOTO LOCATION
-			if(annotation.hasView()){
-				let action = {
-					"icon": Potree.resourcePath + "/icons/target.svg",
-					"onclick": (e) => {annotation.moveHere(viewer.scene.camera)}
-				};
-				
-				actions.push(action);
-			}
-			
-			for(let action of annotation.actions){
-				actions.push(action);
-			}
-		}
-		
-		// FIRST ACTION
-		if(actions.length > 0){
-			let action = actions[0];
-			let elIcon = document.createElement("img");
-			elIcon.src = action.icon;
-			elIcon.classList.add("annotation-icon");
-			elMain.appendChild(elIcon);
-			elMain.onclick = (e) => {
-				action.onclick(e);
-			};
-			
-			elMain.onmouseover = (e) => {
-				elIcon.style.opacity = 1;
-			};
-			
-			elMain.onmouseout = (e) => {
-				elIcon.style.opacity = 0.5;
-			};
-			
-			actions.splice(0, 1);
-		}
-		
-		// REMAINING ACTIONS
-		for(let action of actions){
-			let elIcon = document.createElement("img");
-			elIcon.src = action.icon;
-			elIcon.classList.add("annotation-icon");
-			
-			elIcon.onmouseover = (e) => {
-				elIcon.style.opacity = 1;
-			};
-			
-			elIcon.onmouseout = (e) => {
-				elIcon.style.opacity = 0.5;
-			};
-			
-			elIcon.onclick = (e) => {
-				action.onclick(e);
-			};
-			
-			elItem.appendChild(elIcon);
-		}
-		
-		elItem.onmouseover = (e) => {
-			annotation.setHighlighted(true);
-			
-		};
-		elItem.onmouseout = (e) => {
-			annotation.setHighlighted(false);
-		};
-		
-		annotation.setHighlighted(false);
-	};
-	
-	let annotationAddedCallback = (e) => {
-		trackAnnotation(e.annotation);
-	};
-	
-	let setScene = (e) => {
+	let rebuild = () => {
+		console.log("rebuild");
 		
 		annotationPanel.empty();
 		
-		if(e.oldScene){
-			if(e.oldScene.hasEventListener("annotation_added", annotationAddedCallback)){
-				e.oldScene.removeEventListener("annotation_added", annotationAddedCallback);
-			}
-		}
+		let stack = viewer.scene.annotations.children.reverse().map(
+			a => ({annotation: a, container: annotationPanel}));
 		
-		if(e.scene){
-			for(let annotation of e.scene.annotations){
-				trackAnnotation(annotation);
+		
+		while(stack.length > 0){
+			
+			let {annotation, container} = stack.pop();
+			
+			// â–º	U+25BA	\u25BA
+			// â–¼	U+25BC	\u25BC
+			
+			let element = $(`
+				<div class="annotation-item" style="margin: 8px 20px">
+					<span class="annotation-main">
+						<span class="annotation-expand">\u25BA</span>
+						<span class="annotation-label">
+							${annotation.title}
+						</span>
+					</span>
+				</div>
+			`);
+			
+			let elMain = element.find(".annotation-main");
+			let elExpand = element.find(".annotation-expand");
+			
+			elExpand.css("display", annotation.children.length > 0 ? "block" : "none");
+			
+			let actions = [];
+			{ // ACTIONS, INCLUDING GOTO LOCATION
+				if(annotation.hasView()){
+					let action = {
+						"icon": Potree.resourcePath + "/icons/target.svg",
+						"onclick": (e) => {annotation.moveHere(viewer.scene.camera)}
+					};
+					
+					actions.push(action);
+				}
+				
+				for(let action of annotation.actions){
+					actions.push(action);
+				}
 			}
 			
-			e.scene.addEventListener("annotation_added", annotationAddedCallback);
-		}
-		
+			// FIRST ACTION
+			if(annotation.children.length === 0 && actions.length > 0){
+				let action = actions[0];
+				
+				let elIcon = $(`<img src="${action.icon}" class="annotation-icon">`);
+				
+				elMain.append(elIcon);
+				elMain.click(e => action.onclick(e));
+				elMain.mouseover(e => elIcon.css("opacity", 1));
+				elMain.mouseout(e => elIcon.css("opacity", 0.5));
+				
+				actions.splice(0, 1);
+			}
+			
+			// REMAINING ACTIONS
+			for(let action of actions){
+				
+				let elIcon = $(`<img src="${action.icon}" class="annotation-icon">`);
+				
+				elIcon.click(e => {
+					action.onclick(e); 
+					return false;
+				});
+				elIcon.mouseover(e => elIcon.css("opacity", 1));
+				elIcon.mouseout(e => elIcon.css("opacity", 0.5));
+				
+				element.append(elIcon);
+			}
+			
+			element.mouseover(e => annotation.setHighlighted(true));
+			element.mouseout(e => annotation.setHighlighted(false));
+			
+			annotation.setHighlighted(false);
+			
+			container.append(element);
+			
+			if(annotation.children.length > 0){
+				
+				element.click(e => {
+					
+					if(element.next().is(":visible")){
+						elExpand.html("\u25BA");
+					}else{
+						elExpand.html("\u25BC");
+					}
+					
+					element.next().toggle(100);
+				});
+				
+				let left = ((annotation.level()) * 20) + "px";
+				let childContainer = $(`<div style="margin: 0px; padding: 0px 0px 0px ${left}; display: none"></div>`);
+				for(let child of annotation.children){
+					container.append(childContainer);
+					stack.push({annotation: child, container: childContainer});
+				}
+			}
+			
+		};
 	};
 	
-	setScene({
-		"scene": viewer.scene
+	let annotationsChanged = e => {
+		rebuild();
+	};
+	
+	viewer.addEventListener("scene_changed", e => {
+		e.oldScene.removeEventListener("annotation_added", annotationsChanged);
+		e.scene.addEventListener("annotation_added", annotationsChanged);
+		
+		rebuild();
 	});
 	
-	viewer.addEventListener("scene_changed", setScene);
+	rebuild();
 }
 
 function initMeasurementDetails(){

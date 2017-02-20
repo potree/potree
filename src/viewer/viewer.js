@@ -125,7 +125,7 @@ Potree.Scene = class extends THREE.EventDispatcher{
 	constructor(){
 		super();
 		
-		this.annotations = [];
+		this.annotations = new Potree.Annotation();
 		this.scene = new THREE.Scene();
 		this.scenePointCloud = new THREE.Scene();
 		this.sceneBG = new THREE.Scene();
@@ -299,33 +299,33 @@ Potree.Scene = class extends THREE.EventDispatcher{
 		}
 	}
 	
-	addAnnotation(position, args = {}){
-		if(position instanceof Array){
-			args.position = new THREE.Vector3().fromArray(position);
-		}else if(position instanceof THREE.Vector3){
-			args.position = position;
-		}
-		
-		
-		if(!args.cameraTarget){
-			args.cameraTarget = position;
-		}
-		
-		var annotation = new Potree.Annotation(this, args);
-		
-		this.annotations.push(annotation);
-		
-		this.dispatchEvent({
-			"type": "annotation_added", 
-			"scene": this,
-			"annotation": annotation});
-		
-		return annotation;
-	}
-	
-	getAnnotations(){
-		return this.annotations;
-	};
+	//addAnnotation(position, args = {}){
+	//	if(position instanceof Array){
+	//		args.position = new THREE.Vector3().fromArray(position);
+	//	}else if(position instanceof THREE.Vector3){
+	//		args.position = position;
+	//	}
+	//	
+	//	
+	//	if(!args.cameraTarget){
+	//		args.cameraTarget = position;
+	//	}
+	//	
+	//	var annotation = new Potree.Annotation(this, args);
+	//	
+	//	this.annotations.push(annotation);
+	//	
+	//	this.dispatchEvent({
+	//		"type": "annotation_added", 
+	//		"scene": this,
+	//		"annotation": annotation});
+	//	
+	//	return annotation;
+	//}
+	//
+	//getAnnotations(){
+	//	return this.annotations;
+	//};
 	
 };
 
@@ -380,8 +380,6 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		
 		this.moveSpeed = 10;
 
-		this.showDebugInfos = false;
-		this.showStats = false;
 		this.showBoundingBox = false;
 		this.freeze = false;
 
@@ -390,9 +388,9 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		this.progressBar = new ProgressBar();
 
 		this.stats = new Stats();
-		//this.stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
-		//document.body.appendChild( this.stats.dom );
-		//this.stats.dom.style.left = "100px";
+		this.stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
+		document.body.appendChild( this.stats.dom );
+		this.stats.dom.style.left = "100px";
 		
 		this.potreeRenderer = null;
 		this.highQualityRenderer = null;
@@ -502,7 +500,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			return;
 		}
 		
-		let oldScene = scene;
+		let oldScene = this.scene;
 		this.scene = scene;
 		
 		this.dispatchEvent({
@@ -515,24 +513,35 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		{ // Annotations
 			$(".annotation").detach();
 			
-			for(let annotation of this.scene.annotations){
+			//for(let annotation of this.scene.annotations){
+			//	this.renderArea.appendChild(annotation.domElement[0]);
+			//}
+			
+			this.scene.annotations.traverse(annotation => {
 				this.renderArea.appendChild(annotation.domElement[0]);
+			});
+			
+			if(!this.onAnnotationAdded){
+				this.onAnnotationAdded = e => {
+					//this.renderArea.appendChild(e.annotation.domElement[0]);
+					
+					e.annotation.traverse(node => {
+						this.renderArea.appendChild(node.domElement[0]);
+					});
+					
+					////focusing_finished
+					//e.annotation.addEventListener("focusing_finished", (event) => {
+					//	let distance = this.scene.view.position.distanceTo(this.scene.view.getPivot());
+					//	this.setMoveSpeed(Math.pow(distance, 0.4));
+					//	this.renderer.domElement.focus();
+					//});
+				};
 			}
 		
-			// TODO make sure this isn't added multiple times on scene switches
-			this.scene.addEventListener("annotation_added", (e) => {
-				if(e.scene === this.scene){
-					this.renderArea.appendChild(e.annotation.domElement[0]);
-				}
-				
-				//focusing_finished
-				e.annotation.addEventListener("focusing_finished", (event) => {
-					let distance = this.scene.view.position.distanceTo(this.scene.view.getPivot());
-					//this.setMoveSpeed(distance / 3);
-					this.setMoveSpeed(Math.pow(distance, 0.4));
-					this.renderer.domElement.focus();
-				});
-			});
+			this.scene.annotations.addEventListener("annotation_added", this.onAnnotationAdded);
+			if(oldScene){
+				oldScene.annotations.removeEventListener("annotation_added", this.onAnnotationAdded);
+			}
 		}
 		
 	};
@@ -1629,22 +1638,6 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			camera.far = Math.max(camera.far * 1.5, 1000);
 		}
 		
-		
-		//if(this.stats && this.showStats){
-		//	document.getElementById("lblNumVisibleNodes").style.display = "";
-		//	document.getElementById("lblNumVisiblePoints").style.display = "";
-		//	this.stats.domElement.style.display = "";
-		//
-		//	this.stats.update();
-		//
-		//	document.getElementById("lblNumVisibleNodes").innerHTML = "visible nodes: " + visibleNodes;
-		//	document.getElementById("lblNumVisiblePoints").innerHTML = "visible points: " + Potree.utils.addCommas(visiblePoints);
-		//}else if(this.stats){
-		//	document.getElementById("lblNumVisibleNodes").style.display = "none";
-		//	document.getElementById("lblNumVisiblePoints").style.display = "none";
-		//	this.stats.domElement.style.display = "none";
-		//}
-		
 		camera.fov = this.fov;
 		
 		// Navigation mode changed?
@@ -1695,27 +1688,86 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			}
 		}
 
-		{ // update annotations
-			var distances = [];
-			for(let ann of this.scene.annotations){
-				let element = ann.domElement[0];
+		if(window.acounter === undefined){
+			window.acounter = 0;
+		}
+		
+		window.acounter++;
+		
+		if((window.acounter % 1000) === 0){ // update annotations
+			this.scene.annotations.updateBounds();
+			
+			let distances = [];
+			
+			this.scene.annotations.traverse(annotation => {
 				
-				var screenPos = ann.position.clone().project(this.scene.camera);
+				if(annotation === this.scene.annotations){
+					return;
+				}
 				
+				let element = annotation.domElement[0];
+				
+				let position = annotation.position;
+				if(!position){
+					position = annotation.boundingBox.getCenter();
+				}
+				let screenPos = position.clone().project(this.scene.camera);
+				let distance = viewer.scene.camera.position.distanceTo(position);//screenPos.z;
 				screenPos.x = this.renderArea.clientWidth * (screenPos.x + 1) / 2;
 				screenPos.y = this.renderArea.clientHeight * (1 - (screenPos.y + 1) / 2);
 				
 				element.style.left = Math.floor(screenPos.x - element.clientWidth / 2) + "px";
-				element.style.top = Math.floor(screenPos.y - ann.elTitlebar[0].clientHeight / 2) + "px";
+				element.style.top = Math.floor(screenPos.y - annotation.elTitlebar[0].clientHeight / 2) + "px";
 				
-				distances.push({annotation: ann, distance: screenPos.z});
-
-				if(-1 > screenPos.z || screenPos.z > 1){
-					element.style.display = "none";
+				let fov = Math.PI * viewer.scene.camera.fov / 180;
+				let slope = Math.tan(fov / 2.0);
+				let projFactor =  0.5 * this.renderArea.clientHeight / (slope * distance);
+				
+				let radius = annotation.boundingBox.getBoundingSphere().radius;
+				let screenSize = radius * projFactor;
+				
+				if((annotation.children.length > 0 && screenSize < 100) || -1 > screenPos.z || screenPos.z > 1){
+					annotation.traverse(e => {
+						e.domElement.css("display", "none");
+					});
+					
+					return false;
 				}else{
-					element.style.display = "initial";
+					$(element).css("display", "initial");
 				}
-			}
+				
+				distances.push({annotation: annotation, distance: screenPos.z});
+				
+			});
+		
+			//let annotations = this.scene.annotations.descendants();
+		    //
+			//var distances = [];
+			//for(let ann of annotations){
+			//	let element = ann.domElement[0];
+			//	ann.scene = this.scene;
+			//	
+			//	let position = ann.position;
+			//	if(!position){
+			//		position = ann.boundingBox.getCenter();
+			//	}
+			//	
+			//	var screenPos = position.clone().project(this.scene.camera);
+			//	
+			//	screenPos.x = this.renderArea.clientWidth * (screenPos.x + 1) / 2;
+			//	screenPos.y = this.renderArea.clientHeight * (1 - (screenPos.y + 1) / 2);
+			//	
+			//	element.style.left = Math.floor(screenPos.x - element.clientWidth / 2) + "px";
+			//	element.style.top = Math.floor(screenPos.y - ann.elTitlebar[0].clientHeight / 2) + "px";
+			//	
+			//	distances.push({annotation: ann, distance: screenPos.z});
+            //
+			//	if(-1 > screenPos.z || screenPos.z > 1){
+			//		element.style.display = "none";
+			//	}else{
+			//		element.style.display = "initial";
+			//	}
+			//}
 			
 			distances.sort(function(a,b){return b.distance - a.distance});
 			
@@ -1728,14 +1780,6 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 					element.style.zIndex += 100;
 				}
 			}
-		}
-		
-		if(this.showDebugInfos){
-			this.infos.set("camera.position", "camera.position: " + 
-				this.scene.camera.position.x.toFixed(2) 
-				+ ", " + this.scene.camera.position.y.toFixed(2) 
-				+ ", " + this.scene.camera.position.z.toFixed(2)
-			);
 		}
 		
 		if(this.mapView){

@@ -1,13 +1,21 @@
 Potree.Annotation = class extends THREE.EventDispatcher{
 	
-	constructor(scene, args = {}){
+	constructor(args = {}){
 		super();
 		
-		
-		this.scene = scene;
+		this.scene = null;
 		this.title = args.title || "No Title";
 		this.description = args.description || "";
-		this.position = args.position || new THREE.Vector3(0,0,0);
+		
+		if(!args.position){
+			//this.position = new THREE.Vector3(0, 0, 0);
+			this.position = null;
+		}else if(args.position instanceof THREE.Vector3){
+			this.position = args.position;
+		}else{
+			this.position = new THREE.Vector3(...args.position);
+		}
+		
 		this.cameraPosition = (args.cameraPosition instanceof Array) ? 
 			new THREE.Vector3().fromArray(args.cameraPosition) : args.cameraPosition;
 		this.cameraTarget = (args.cameraTarget instanceof Array) ? 
@@ -18,6 +26,10 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 		this.showDescription = true;
 		this.actions = args.actions || [];
 		this.isHighlighted = false;
+		
+		this.children = [];
+		this.parent = null;
+		this.boundingBox = new THREE.Box3();
 		
 		let iconClose = Potree.resourcePath + "/icons/close.svg";
 		
@@ -69,6 +81,75 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 		this.domElement.on("touchstart", e => {
 			this.setHighlighted(!this.isHighlighted);
 		});
+	}
+	
+	add(annotation){
+		if(!this.children.includes(annotation)){
+			this.children.push(annotation);
+			annotation.parent = this;
+			
+			let c = this;
+			while(c !== null){
+				this.dispatchEvent({
+					"type": "annotation_added",
+					"annotation": annotation
+				});
+				c = c.parent;
+			}
+		}
+	}
+	
+	remove(annotation){
+		this.children = this.children.filter(e => e !== annotation);
+		annotation.parent = null;
+	}
+	
+	updateBounds(){
+		let box = new THREE.Box3();
+		
+		if(this.position){
+			box.expandByPoint(this.position);
+		}
+		
+		for(let child of this.children){
+			child.updateBounds();
+			
+			box.union(child.boundingBox);
+		}
+		
+		this.boundingBox.copy(box);
+	}
+	
+	traverse(callback){
+		let expand = callback(this);
+		
+		if(expand === undefined || expand === true){
+			for(let child of this.children){
+				child.traverse(callback);
+			}
+		}
+	}
+	
+	flatten(){
+		let annotations = [];
+		
+		this.traverse(annotation => {
+			annotations.push(annotation);
+		});
+		
+		return annotations;
+	}
+	
+	descendants(){
+		let annotations = [];
+		
+		this.traverse(annotation => {
+			if(annotation !== this){
+				annotations.push(annotation);
+			}
+		});
+		
+		return annotations;
 	}
 	
 	setHighlighted(highlighted){

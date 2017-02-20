@@ -788,7 +788,7 @@ function initAnnotationDetails(){
 		}
 		
 		if(e.scene){
-			for(let annotation of e.scene.annotations){
+			for(let annotation of e.scene.annotations.descendants()){
 				trackAnnotation(annotation);
 			}
 			

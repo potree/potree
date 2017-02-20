@@ -20,12 +20,14 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 			new THREE.Vector3().fromArray(args.cameraPosition) : args.cameraPosition;
 		this.cameraTarget = (args.cameraTarget instanceof Array) ? 
 			new THREE.Vector3().fromArray(args.cameraTarget) : args.cameraTarget;
+		this.radius = args.radius;
 		this.view = args.view || null;
 		this.keepOpen = false;
 		this.descriptionVisible = false;
 		this.showDescription = true;
 		this.actions = args.actions || [];
 		this.isHighlighted = false;
+		this.visible = true;
 		
 		this.children = [];
 		this.parent = null;
@@ -34,7 +36,7 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 		let iconClose = Potree.resourcePath + "/icons/close.svg";
 		
 		this.domElement = $(`
-			<div class="annotation">
+			<div class="annotation" oncontextmenu="return false;">
 				<div class="annotation-titlebar">
 					<span class="annotation-label">${this.title}</span>
 				</div>
@@ -99,6 +101,14 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 		}
 	}
 	
+	level(){
+		if(this.parent === null){
+			return 0;
+		}else{
+			return this.parent.level() + 1;
+		}
+	}
+	
 	remove(annotation){
 		this.children = this.children.filter(e => e !== annotation);
 		annotation.parent = null;
@@ -127,6 +137,12 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 			for(let child of this.children){
 				child.traverse(callback);
 			}
+		}
+	}
+	
+	traverseDescendants(callback){
+		for(let child of this.children){
+			child.traverse(callback);
 		}
 	}
 	
@@ -175,8 +191,12 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 	}
 	
 	hasView(){
-		let hasView = this.cameraTarget instanceof THREE.Vector3;
-		hasView = hasView && this.cameraPosition instanceof THREE.Vector3;
+		let hasPosTargetView = this.cameraTarget instanceof THREE.Vector3;
+		hasPosTargetView = hasPosTargetView && this.cameraPosition instanceof THREE.Vector3;
+		
+		let hasRadiusView = this.radius !== undefined;
+		
+		let hasView = hasPosTargetView || hasRadiusView;
 				
 		return hasView;
 	};
@@ -188,20 +208,34 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 	
 		var animationDuration = 800;
 		var easing = TWEEN.Easing.Quartic.Out;
+		
+		let endTarget;
+		if(this.cameraTarget){
+			endTarget = this.cameraTarget;
+		}else if(this.position){
+			endTarget = this.position;
+		}else{
+			endTarget = this.boundingBox.getCenter();
+		}
+		let endPosition = this.cameraPosition;
+		if(!endPosition){
+			let direction = this.scene.view.direction;
+			endPosition = endTarget.clone().add(direction.multiplyScalar(-this.radius));
+		}
     
 		{ // animate camera position
-			let tween = new TWEEN.Tween(this.scene.view.position).to(this.cameraPosition, animationDuration);
+			let tween = new TWEEN.Tween(this.scene.view.position).to(endPosition, animationDuration);
 			tween.easing(easing);
 			tween.start();
 		}
 		
 		{ // animate camera target
-			var camTargetDistance = camera.position.distanceTo(this.cameraTarget);
+			var camTargetDistance = camera.position.distanceTo(endTarget);
 			var target = new THREE.Vector3().addVectors(
 				camera.position, 
 				camera.getWorldDirection().clone().multiplyScalar(camTargetDistance)
 			);
-			var tween = new TWEEN.Tween(target).to(this.cameraTarget, animationDuration);
+			var tween = new TWEEN.Tween(target).to(endTarget, animationDuration);
 			tween.easing(easing);
 			tween.onUpdate(() => {
 				this.scene.view.lookAt(target);
@@ -222,4 +256,8 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 		}
     
 	};
+	
+	toString(){
+		return "Annotation: " + this.title;
+	}
 };

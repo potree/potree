@@ -706,102 +706,126 @@ function initAnnotationDetails(){
 	// annotation_details
 	let annotationPanel = $("#annotation_details");
 	
-	let trackAnnotation = (annotation) => {
+	let rebuild = () => {
+		console.log("rebuild");
 		
-		let element = $(`
-			<li>
-				<div class="annotation-item">
+		annotationPanel.empty();
+		
+		let stack = viewer.scene.annotations.children.reverse().map(
+			a => ({annotation: a, container: annotationPanel}));
+		
+		
+		while(stack.length > 0){
+			
+			let {annotation, container} = stack.pop();
+			
+			// ►	U+25BA	\u25BA
+			// ▼	U+25BC	\u25BC
+			
+			let element = $(`
+				<div class="annotation-item" style="margin: 8px 20px">
 					<span class="annotation-main">
+						<span class="annotation-expand">\u25BA</span>
 						<span class="annotation-label">
 							${annotation.title}
 						</span>
 					</span>
 				</div>
-			</li>
-		`);
-		
-		annotationPanel.append(element);
-		
-		let elItem = element.find(".annotation-item");
-		let elMain = element.find(".annotation-main");
-		
-		let actions = [];
-		{ // ACTIONS, INCLUDING GOTO LOCATION
-			if(annotation.hasView()){
-				let action = {
-					"icon": Potree.resourcePath + "/icons/target.svg",
-					"onclick": (e) => {annotation.moveHere(viewer.scene.camera)}
-				};
+			`);
+			
+			let elMain = element.find(".annotation-main");
+			let elExpand = element.find(".annotation-expand");
+			
+			elExpand.css("display", annotation.children.length > 0 ? "block" : "none");
+			
+			let actions = [];
+			{ // ACTIONS, INCLUDING GOTO LOCATION
+				if(annotation.hasView()){
+					let action = {
+						"icon": Potree.resourcePath + "/icons/target.svg",
+						"onclick": (e) => {annotation.moveHere(viewer.scene.camera)}
+					};
+					
+					actions.push(action);
+				}
 				
-				actions.push(action);
+				for(let action of annotation.actions){
+					actions.push(action);
+				}
 			}
 			
-			for(let action of annotation.actions){
-				actions.push(action);
+			// FIRST ACTION
+			if(annotation.children.length === 0 && actions.length > 0){
+				let action = actions[0];
+				
+				let elIcon = $(`<img src="${action.icon}" class="annotation-icon">`);
+				
+				elMain.append(elIcon);
+				elMain.click(e => action.onclick(e));
+				elMain.mouseover(e => elIcon.css("opacity", 1));
+				elMain.mouseout(e => elIcon.css("opacity", 0.5));
+				
+				actions.splice(0, 1);
 			}
-		}
-		
-		// FIRST ACTION
-		if(actions.length > 0){
-			let action = actions[0];
 			
-			let elIcon = $(`<img src="${action.icon}" class="annotation-icon">`);
+			// REMAINING ACTIONS
+			for(let action of actions){
+				
+				let elIcon = $(`<img src="${action.icon}" class="annotation-icon">`);
+				
+				elIcon.click(e => {
+					action.onclick(e); 
+					return false;
+				});
+				elIcon.mouseover(e => elIcon.css("opacity", 1));
+				elIcon.mouseout(e => elIcon.css("opacity", 0.5));
+				
+				element.append(elIcon);
+			}
 			
-			elMain.append(elIcon);
-			elMain.click(e => action.onclick(e));
-			elMain.mouseover(e => elIcon.css("opacity", 1));
-			elMain.mouseout(e => elIcon.css("opacity", 0.5));
+			element.mouseover(e => annotation.setHighlighted(true));
+			element.mouseout(e => annotation.setHighlighted(false));
 			
-			actions.splice(0, 1);
-		}
-		
-		// REMAINING ACTIONS
-		for(let action of actions){
+			annotation.setHighlighted(false);
 			
-			let elIcon = $(`<img src="${action.icon}" class="annotation-icon">`);
+			container.append(element);
 			
-			elIcon.click(e => action.onclick(e));
-			elIcon.mouseover(e => elIcon.css("opacity", 1));
-			elIcon.mouseout(e => elIcon.css("opacity", 0.5));
+			if(annotation.children.length > 0){
+				
+				element.click(e => {
+					
+					if(element.next().is(":visible")){
+						elExpand.html("\u25BA");
+					}else{
+						elExpand.html("\u25BC");
+					}
+					
+					element.next().toggle(100);
+				});
+				
+				let left = ((annotation.level()) * 20) + "px";
+				let childContainer = $(`<div style="margin: 0px; padding: 0px 0px 0px ${left}; display: none"></div>`);
+				for(let child of annotation.children){
+					container.append(childContainer);
+					stack.push({annotation: child, container: childContainer});
+				}
+			}
 			
-			elItem.append(elIcon);
-		}
-		
-		elItem.mouseover(e => annotation.setHighlighted(true));
-		elItem.mouseout(e => annotation.setHighlighted(false));
-		
-		annotation.setHighlighted(false);
+		};
 	};
 	
-	let annotationAddedCallback = (e) => {
-		trackAnnotation(e.annotation);
+	let annotationsChanged = e => {
+		rebuild();
 	};
 	
-	let setScene = (e) => {
+	viewer.addEventListener("scene_changed", e => {
+		e.oldScene.removeEventListener("annotation_added", annotationsChanged);
+		e.scene.addEventListener("annotation_added", annotationsChanged);
 		
-		annotationPanel.empty();
-		
-		if(e.oldScene){
-			if(e.oldScene.hasEventListener("annotation_added", annotationAddedCallback)){
-				e.oldScene.removeEventListener("annotation_added", annotationAddedCallback);
-			}
-		}
-		
-		if(e.scene){
-			for(let annotation of e.scene.annotations.descendants()){
-				trackAnnotation(annotation);
-			}
-			
-			e.scene.addEventListener("annotation_added", annotationAddedCallback);
-		}
-		
-	};
-	
-	setScene({
-		"scene": viewer.scene
+		rebuild();
 	});
 	
-	viewer.addEventListener("scene_changed", setScene);
+	rebuild();
 }
 
 function initMeasurementDetails(){

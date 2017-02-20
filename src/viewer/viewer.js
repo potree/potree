@@ -299,33 +299,20 @@ Potree.Scene = class extends THREE.EventDispatcher{
 		}
 	}
 	
-	//addAnnotation(position, args = {}){
-	//	if(position instanceof Array){
-	//		args.position = new THREE.Vector3().fromArray(position);
-	//	}else if(position instanceof THREE.Vector3){
-	//		args.position = position;
-	//	}
-	//	
-	//	
-	//	if(!args.cameraTarget){
-	//		args.cameraTarget = position;
-	//	}
-	//	
-	//	var annotation = new Potree.Annotation(this, args);
-	//	
-	//	this.annotations.push(annotation);
-	//	
-	//	this.dispatchEvent({
-	//		"type": "annotation_added", 
-	//		"scene": this,
-	//		"annotation": annotation});
-	//	
-	//	return annotation;
-	//}
-	//
-	//getAnnotations(){
-	//	return this.annotations;
-	//};
+	addAnnotation(position, args = {}){
+		
+		if(position instanceof Array){
+			args.position = new THREE.Vector3().fromArray(position);
+		}else if(position instanceof THREE.Vector3){
+			args.position = position;
+		} 
+		let annotation = new Potree.Annotation(args);
+		this.annotations.add(annotation);
+	}
+	
+	getAnnotations(){
+		return this.annotations;
+	};
 	
 };
 
@@ -1024,17 +1011,19 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 	};
 	
 	disableAnnotations(){
-		for(var i = 0; i < this.scene.annotations.length; i++){
-			var annotation = this.scene.annotations[i];
-			annotation.domElement[0].style.pointerEvents = "none";
-		};
+		this.scene.annotations.traverse(annotation => {
+			annotation.domElement.css("pointer-events", "none");
+			
+			//return annotation.visible;
+		});
 	};
 	
 	enableAnnotations(){
-		for(var i = 0; i < this.scene.annotations.length; i++){
-			var annotation = this.scene.annotations[i];
-			annotation.domElement[0].style.pointerEvents = "auto";
-		};
+		this.scene.annotations.traverse(annotation => {
+			annotation.domElement.css("pointer-events", "auto");
+			
+			//return annotation.visible;
+		});
 	};
 	
 	setClassificationVisibility(key, value){
@@ -1506,6 +1495,151 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		// enable frag_depth extension for the interpolation shader, if available
 		this.renderer.context.getExtension("EXT_frag_depth");
 	}
+	
+	updateAnnotations(){
+		
+		this.scene.annotations.updateBounds();
+		this.scene.camera.updateMatrixWorld();
+		
+		let distances = [];
+
+		this.scene.annotations.traverse(annotation => {
+			
+			if(annotation === this.scene.annotations){
+				return true;
+			}
+			
+			annotation.scene = this.scene;
+			
+			let element = annotation.domElement[0];
+			
+			let position = annotation.position;
+			if(!position){
+				position = annotation.boundingBox.getCenter();
+			}
+			
+			let distance = viewer.scene.camera.position.distanceTo(position);
+			let radius = annotation.boundingBox.getBoundingSphere().radius;
+			
+			let screenPos = new THREE.Vector3();
+			let screenSize = 0;
+			{
+				// SCREEN POS
+				screenPos.copy(position).project(this.scene.camera);
+				screenPos.x = this.renderArea.clientWidth * (screenPos.x + 1) / 2;
+				screenPos.y = this.renderArea.clientHeight * (1 - (screenPos.y + 1) / 2);
+				
+				screenPos.x = Math.floor(screenPos.x - element.clientWidth / 2);
+				screenPos.y = Math.floor(screenPos.y - annotation.elTitlebar[0].clientHeight / 2);
+				
+				// SCREEN SIZE
+				let fov = Math.PI * viewer.scene.camera.fov / 180;
+				let slope = Math.tan(fov / 2.0);
+				let projFactor =  0.5 * this.renderArea.clientHeight / (slope * distance);
+				
+				screenSize = radius * projFactor;
+			}
+			
+			element.style.left = screenPos.x + "px";
+			element.style.top = screenPos.y + "px";
+			
+			let zIndex = 10000000 - distance * (10000000 / this.scene.camera.far);
+			if(annotation.descriptionVisible){
+				zIndex += 10000000;
+			}
+			
+			element.style.zIndex = parseInt(zIndex);
+			
+			if(annotation.children.length > 0){
+				let expand = screenSize > 100 || annotation.boundingBox.containsPoint(this.scene.camera.position);
+				
+				if(!expand){
+					// TODO make sure descendants are invisible
+					annotation.traverseDescendants(descendant => {
+						if(!descendant.visible){
+							return;
+						}else{
+							descendant.visible = false;
+							descendant.domElement[0].style.display = "none";
+						}
+					});
+					annotation.visible = true;
+					element.style.display = "inline-block";
+				}else{
+					annotation.visible = true;
+					element.style.display = "none";
+				}
+				
+				return expand;
+			}else{
+				annotation.visible = (-1 <= screenPos.z && screenPos.z <= 1);
+				if(annotation.visible){
+					element.style.display = "inline-block";
+				}else{
+					element.style.display = "none";
+				}
+			}
+		});
+		
+		//let distances = [];
+		//let annotations = this.scene.annotations.descendants();
+        //
+		//let i = 0;
+		//for(let annotation of annotations){
+		//	
+		//	let element = annotation.domElement[0];
+		//	
+		//	let position = annotation.position;
+		//	if(!position){
+		//		position = annotation.boundingBox.getCenter();
+		//	}
+		//	
+		//	let distance = viewer.scene.camera.position.distanceTo(position);
+		//	
+		//	let screenPos = new THREE.Vector3();
+		//	let screenSize = 0;
+		//	{
+		//		// SCREEN POS
+		//		screenPos.copy(position).project(this.scene.camera);
+		//		screenPos.x = this.renderArea.clientWidth * (screenPos.x + 1) / 2;
+		//		screenPos.y = this.renderArea.clientHeight * (1 - (screenPos.y + 1) / 2);
+		//		
+		//		screenPos.x = Math.floor(screenPos.x - element.clientWidth / 2);
+		//		screenPos.y = Math.floor(screenPos.y - annotation.elTitlebar[0].clientHeight / 2);
+		//		
+		//		// SCREEN SIZE
+		//		let fov = Math.PI * viewer.scene.camera.fov / 180;
+		//		let slope = Math.tan(fov / 2.0);
+		//		let projFactor =  0.5 * this.renderArea.clientHeight / (slope * distance);
+		//		
+		//		let radius = annotation.boundingBox.getBoundingSphere().radius;
+		//		screenSize = radius * projFactor;
+		//	}
+		//	
+		//	element.style.left = screenPos.x + "px";
+		//	element.style.top = screenPos.y + "px";
+		//	
+		//	
+		//	let visible = screenSize > 100 && (-1 <= screenPos.z && screenPos.z <= 1);
+		//	
+		//	if(visible){
+		//		element.style.display = "inline-block";
+		//	}else{
+		//		element.style.display = "none";
+		//	}
+		//	
+		//	annotation.visible = visible;
+		//	
+		//	let zIndex = 10000000 - distance * (10000000 / this.scene.camera.far);
+		//	if(annotation.descriptionVisible){
+		//		zIndex += 10000000;
+		//	}
+		//	
+		//	element.style.zIndex = parseInt(zIndex);
+		//
+		//	i++;
+		//}
+	}
 
 	update(delta, timestamp){
 		
@@ -1688,99 +1822,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			}
 		}
 
-		if(window.acounter === undefined){
-			window.acounter = 0;
-		}
-		
-		window.acounter++;
-		
-		if((window.acounter % 1000) === 0){ // update annotations
-			this.scene.annotations.updateBounds();
-			
-			let distances = [];
-			
-			this.scene.annotations.traverse(annotation => {
-				
-				if(annotation === this.scene.annotations){
-					return;
-				}
-				
-				let element = annotation.domElement[0];
-				
-				let position = annotation.position;
-				if(!position){
-					position = annotation.boundingBox.getCenter();
-				}
-				let screenPos = position.clone().project(this.scene.camera);
-				let distance = viewer.scene.camera.position.distanceTo(position);//screenPos.z;
-				screenPos.x = this.renderArea.clientWidth * (screenPos.x + 1) / 2;
-				screenPos.y = this.renderArea.clientHeight * (1 - (screenPos.y + 1) / 2);
-				
-				element.style.left = Math.floor(screenPos.x - element.clientWidth / 2) + "px";
-				element.style.top = Math.floor(screenPos.y - annotation.elTitlebar[0].clientHeight / 2) + "px";
-				
-				let fov = Math.PI * viewer.scene.camera.fov / 180;
-				let slope = Math.tan(fov / 2.0);
-				let projFactor =  0.5 * this.renderArea.clientHeight / (slope * distance);
-				
-				let radius = annotation.boundingBox.getBoundingSphere().radius;
-				let screenSize = radius * projFactor;
-				
-				if((annotation.children.length > 0 && screenSize < 100) || -1 > screenPos.z || screenPos.z > 1){
-					annotation.traverse(e => {
-						e.domElement.css("display", "none");
-					});
-					
-					return false;
-				}else{
-					$(element).css("display", "initial");
-				}
-				
-				distances.push({annotation: annotation, distance: screenPos.z});
-				
-			});
-		
-			//let annotations = this.scene.annotations.descendants();
-		    //
-			//var distances = [];
-			//for(let ann of annotations){
-			//	let element = ann.domElement[0];
-			//	ann.scene = this.scene;
-			//	
-			//	let position = ann.position;
-			//	if(!position){
-			//		position = ann.boundingBox.getCenter();
-			//	}
-			//	
-			//	var screenPos = position.clone().project(this.scene.camera);
-			//	
-			//	screenPos.x = this.renderArea.clientWidth * (screenPos.x + 1) / 2;
-			//	screenPos.y = this.renderArea.clientHeight * (1 - (screenPos.y + 1) / 2);
-			//	
-			//	element.style.left = Math.floor(screenPos.x - element.clientWidth / 2) + "px";
-			//	element.style.top = Math.floor(screenPos.y - ann.elTitlebar[0].clientHeight / 2) + "px";
-			//	
-			//	distances.push({annotation: ann, distance: screenPos.z});
-            //
-			//	if(-1 > screenPos.z || screenPos.z > 1){
-			//		element.style.display = "none";
-			//	}else{
-			//		element.style.display = "initial";
-			//	}
-			//}
-			
-			distances.sort(function(a,b){return b.distance - a.distance});
-			
-			for(var i = 0; i < distances.length; i++){
-				var ann = distances[i].annotation;
-				let element = ann.domElement[0];
-				
-				element.style.zIndex = "" + i;
-				if(ann.descriptionVisible){
-					element.style.zIndex += 100;
-				}
-			}
-		}
+		this.updateAnnotations();
 		
 		if(this.mapView){
 			this.mapView.update(delta, this.scene.camera);

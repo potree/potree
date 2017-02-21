@@ -1,8 +1,8 @@
 
 
 
-var createToolIcon = function(icon, title, callback){
-	var elImg = document.createElement("img");
+let createToolIcon = function(icon, title, callback){
+	let elImg = document.createElement("img");
 	elImg.src = icon;
 	elImg.onclick = callback;
 	elImg.style.width = "32px";
@@ -259,7 +259,7 @@ function initMaterials(){
 		slide: function( event, ui ) {viewer.setWeightSourceID(ui.value);}
 	});
 
-	var updateHeightRange = function(){
+	let updateHeightRange = function(){
 		let box = viewer.getBoundingBox();
 		let bWidth = box.max.z - box.min.z;
 		bMin = box.min.z - 0.2 * bWidth;
@@ -346,7 +346,7 @@ function initMaterials(){
 	$('#lblRGBContrast')[0].innerHTML = viewer.getRGBContrast().toFixed(2);
 	$('#lblRGBBrightness')[0].innerHTML = viewer.getRGBBrightness().toFixed(2);
 
-	var options = [ 
+	let options = [ 
 		"RGB", 
 		"RGB and Elevation",
 		"Color", 
@@ -361,11 +361,11 @@ function initMaterials(){
 		"Composite",
 	];
 	
-	var elMaterialList = document.getElementById("optMaterial");
-	for(var i = 0; i < options.length; i++){
-		var option = options[i];
+	let elMaterialList = document.getElementById("optMaterial");
+	for(let i = 0; i < options.length; i++){
+		let option = options[i];
 		
-		var elOption = document.createElement("option");
+		let elOption = document.createElement("option");
 		elOption.innerHTML = option;
 		elOption.id = "optMaterial_" + option;
 		
@@ -429,27 +429,27 @@ function initMaterials(){
 }
 
 function initClassificationList(){
-	var addClassificationItem = function(code, name){
-		var elClassificationList = document.getElementById("classificationList");
+	let elClassificationList = $("#classificationList");
+	
+	let addClassificationItem = function(code, name){
 		
-		var elLi = document.createElement("li");
-		var elLabel = document.createElement("label");
-		var elInput = document.createElement("input");
-		var elText = document.createTextNode(" " + name);
+		let id = "chkClassification_" + code;
 		
-		elInput.id = "chkClassification_" + code;
-		elInput.type = "checkbox";
-		elInput.checked = true;
-		elInput.onclick = function(event){
+		let element = $(`
+			<li>
+				<label style="white-space: nowrap">
+					<input id="${id}" type="checkbox" checked="true"/> ${name} 
+				</label>
+			</li>
+		`);
+		
+		let elInput = element.find("input");
+
+		elInput.click(event => {
 			viewer.setClassificationVisibility(code, event.target.checked);
-		}
+		});
 		
-		elLabel.style.whiteSpace = "nowrap";
-		
-		elClassificationList.appendChild(elLi);
-		elLi.appendChild(elLabel);
-		elLabel.appendChild(elInput);
-		elLabel.appendChild(elText);
+		elClassificationList.append(element);
 	};
 	
 	addClassificationItem(0, "never classified");
@@ -631,7 +631,7 @@ function initAppearance(){
 	
 function initNavigation(){
 
-	var elNavigation = document.getElementById("navigation");
+	let elNavigation = document.getElementById("navigation");
 	
 	elNavigation.appendChild(createToolIcon(
 		Potree.resourcePath + "/icons/earth_controls_1.png",
@@ -675,13 +675,13 @@ function initNavigation(){
 		function(){viewer.setLeftView()}
 	));
 	
-	var speedRange = new THREE.Vector2(1, 10*1000);
+	let speedRange = new THREE.Vector2(1, 10*1000);
 	
-	var toLinearSpeed = function(value){
+	let toLinearSpeed = function(value){
 		return Math.pow(value, 4) * speedRange.y + speedRange.x;
 	};
 	
-	var toExpSpeed = function(value){
+	let toExpSpeed = function(value){
 		return Math.pow((value - speedRange.x) / speedRange.y, 1 / 4);
 	};
 
@@ -830,10 +830,12 @@ function initAnnotationDetails(){
 
 function initMeasurementDetails(){
 
-	var id = 0;
+	let id = 0;
 	let trackedItems = new Map();
 	
-	var trackMeasurement = function(scene, measurement){
+	let elMeasurements = $("#measurement_details");
+	
+	let trackMeasurement = function(scene, measurement){
 		id++;
 		
 		let track = {
@@ -843,77 +845,86 @@ function initMeasurementDetails(){
 		};
 		
 		trackedItems.set(measurement, track);
-	
-		var elLi = document.createElement("li");
-		var elPanel = document.createElement("div");
-		var elPanelHeader = document.createElement("div");
-		var elPanelBody = document.createElement("div");
-		var elPanelIcon = document.createElement("img");
-		var elPanelStretch = document.createElement("span");
-		var elPanelRemove = document.createElement("img");
 		
-		elPanel.classList.add("potree-panel", "panel-default");
-		elPanelHeader.classList.add("potree-panel-heading", "pv-panel-heading");
+		let removeIcon = Potree.resourcePath + "/icons/remove.svg";
+		
+		let icon = "";
+		let title = "";
+		let removeAction;
 		
 		if(measurement instanceof Potree.Measure){
 			if(measurement.showDistances && !measurement.showArea && !measurement.showAngles){
-				elPanelIcon.src = Potree.resourcePath + "/icons/distance.svg";
-				elPanelStretch.innerHTML = "Distance";
+				icon = Potree.resourcePath + "/icons/distance.svg";
+				title = "Distance";
 			}else if(measurement.showDistances && measurement.showArea && !measurement.showAngles){
-				elPanelIcon.src = Potree.resourcePath + "/icons/area.svg";
-				elPanelStretch.innerHTML = "Area";
+				icon = Potree.resourcePath + "/icons/area.svg";
+				title = "Area";
 			}else if(measurement.maxMarkers === 1){
-				elPanelIcon.src = Potree.resourcePath + "/icons/point.svg";
-				elPanelStretch.innerHTML = "Coordinate";
+				icon = Potree.resourcePath + "/icons/point.svg";
+				title = "Coordinate";
 			}else if(!measurement.showDistances && !measurement.showArea && measurement.showAngles){
-				elPanelIcon.src = Potree.resourcePath + "/icons/angle.png";
-				elPanelStretch.innerHTML = "Angle";
+				icon = Potree.resourcePath + "/icons/angle.png";
+				title = "Angle";
 			}else if(measurement.showHeight){
-				elPanelIcon.src = Potree.resourcePath + "/icons/height.svg";
-				elPanelStretch.innerHTML = "Height";
+				icon = Potree.resourcePath + "/icons/height.svg";
+				title = "Height";
 			}
 			
-			elPanelRemove.onclick = function(){scene.removeMeasurement(measurement);};
+			removeAction = function(){scene.removeMeasurement(measurement);};
 		} else if(measurement instanceof Potree.Profile){
-			elPanelIcon.src = Potree.resourcePath + "/icons/profile.svg";
-			elPanelStretch.innerHTML = "Profile";
+			icon = Potree.resourcePath + "/icons/profile.svg";
+			title = "Profile";
 			
-			elPanelRemove.onclick = function(){scene.removeProfile(measurement);};
+			removeAction = function(){scene.removeProfile(measurement);};
 		} else if(measurement instanceof Potree.Volume){
-			elPanelIcon.src = Potree.resourcePath + "/icons/volume.svg";
-			elPanelStretch.innerHTML = "Volume";
+			icon = Potree.resourcePath + "/icons/volume.svg";
+			title = "Volume";
 			
-			elPanelRemove.onclick = function(){scene.removeVolume(volume);};
+			removeAction = function(){scene.removeVolume(volume);};
 		}
 		
-		elPanelIcon.style.width = "16px";
-		elPanelIcon.style.height = "16px";
-		elPanelStretch.style.flexGrow = 1;
-		elPanelStretch.style.textAlign = "center";
-		elPanelRemove.src = Potree.resourcePath + "/icons/remove.svg";
-		elPanelRemove.style.width = "16px";
-		elPanelRemove.style.height = "16px";
-		elPanelBody.classList.add("panel-body");
+		let element = $(`
+			<li>
+				<div class="potree-panel panel-default">
+					<div class="potree-panel-heading pv-panel-heading">
+						<img class="measurement-panel-icon" src="${icon}"/>
+						<span class="measurement-panel-title">${title}</span>
+						<img class="measurement-panel-remove" src="${removeIcon}"/>
+					</div>
+					<div class="panel-body">
+					
+					</div>
+				</div>
+			</li>
+		`);
 		
-		elLi.appendChild(elPanel);
-		elPanel.appendChild(elPanelHeader);
-		elPanelHeader.appendChild(elPanelIcon);
-		elPanelHeader.appendChild(elPanelStretch);
-		elPanelHeader.appendChild(elPanelRemove);
-		elPanel.appendChild(elPanelBody);
+		let elIcon = element.find(".measurement-panel-icon");
+		let elRemove = element.find(".measurement-panel-remove");
+		let elPanelBody = element.find(".panel-body");
+		elRemove.click(removeAction);
 		
-		document.getElementById("measurement_details").appendChild(elLi);
+		elMeasurements.append(element);
 		
 		let widthListener = null;
-		var updateDisplay = function(event){
+		let updateDisplay = function(event){
 		
-			$(elPanelBody).empty();
+			elPanelBody.empty();
 			
 			if(measurement instanceof Potree.Profile){
-				var elLi = $('<li style="margin-bottom: 5px">');
-				var elText = document.createTextNode("width: ");
-				var elWidthLabel = $('<span id="lblProfileWidth_' + id + '">');
-				var elWidthSlider = $('<div id="sldProfileWidth_' + id + '">');
+				
+				let lblID = "lblProfileWidth_" + id;
+				let sldID = "sldProfileWidth_" + id;
+				
+				let element = $(`
+					<li style="margin-bottom: 5px">
+						width: 
+						<span id="${lblID}" />
+						<div id="${sldID}"/>
+					</li>
+				`);
+				
+				let elWidthLabel = element.find(`#${lblID}`);
+				let elWidthSlider = element.find(`#${sldID}`);
 				
 				elWidthSlider.slider({
 					value: Math.pow((measurement.getWidth() / 1000), 1/4).toFixed(3),
@@ -921,7 +932,7 @@ function initMeasurementDetails(){
 					max: 1,
 					step: 0.01,
 					slide: function(event, ui){
-						var val = Math.pow(ui.value, 4) * 1000;
+						let val = Math.pow(ui.value, 4) * 1000;
 						measurement.setWidth(val);
 					}
 				});
@@ -933,7 +944,7 @@ function initMeasurementDetails(){
 				
 				if(widthListener === null){
 					widthListener = function(event){
-						var val = Math.pow((event.width / 1000), 1/4);
+						let val = Math.pow((event.width / 1000), 1/4);
 						elWidthLabel.html(Potree.utils.addCommas(event.width.toFixed(3)));
 						elWidthSlider.slider({value: val});
 					};
@@ -942,19 +953,15 @@ function initMeasurementDetails(){
 					measurement.addEventListener("width_changed", widthListener);
 				}
 				
-				elLi.append(elText);
-				elLi.append(elWidthLabel);
-				elLi.append(elWidthSlider);
-				
-				elPanelBody.appendChild(elLi[0]);
+				elPanelBody.append(element);
 			}
 			
-			var positions = [];
-			var points;
+			let positions = [];
+			let points;
 			
 			if(measurement instanceof Potree.Measure){
 				points = measurement.points;
-				for(var i = 0; i < points.length; i++){
+				for(let i = 0; i < points.length; i++){
 					positions.push(points[i].position);
 				}
 			} else if(measurement instanceof Potree.Profile){
@@ -973,184 +980,151 @@ function initMeasurementDetails(){
 				
 				let txt = height.toFixed(3);
 				
-				var elNodeHeight = $('<div>').addClass("measurement-detail-node-marker");
-				elNodeHeight.html(txt);
-				$(elPanelBody).append(elNodeHeight);
+				let elNodeHeight = $(`<div class="measurement-detail-node-marker">${txt}</div>`);
+				elPanelBody.append(elNodeHeight);
 			}
 			
-			for(var i = 0; i < positions.length; i++){
-				// TODO clean this up from the toGeo legacy
-				var point = positions[i];
-				var geoCoord = point;
+			for(let i = 0; i < positions.length; i++){
+				let point = positions[i];
 	
-				var txt = geoCoord.x.toFixed(2) + ", ";
-				txt += (geoCoord.y).toFixed(2) + ", ";
-				txt += geoCoord.z.toFixed(2);
+				let txt = point.toArray().map(e => e.toFixed(3)).join(", ");
 				
 				if(measurement && !measurement.showHeight){
-					var elNodeMarker = $('<div>').addClass("measurement-detail-node-marker");
-					elNodeMarker.html(txt);
-					$(elPanelBody).append(elNodeMarker);
+					let elNodeMarker = $(`<div class="measurement-detail-node-marker">${txt}</div>`);
+					elPanelBody.append(elNodeMarker);
 				}
 				
 				if(i < positions.length - 1){
 					if(measurement && measurement.showDistances){
 						
-						var elEdge = $('<div>').addClass("measurement-detail-edge");
-						$(elPanelBody).append(elEdge);
+						let elEdge = $('<div class="measurement-detail-edge"></div>');
+						elPanelBody.append(elEdge);
 						
-						var nextPoint = positions[i+1];
-						var nextGeo = nextPoint;
-						var distance = nextGeo.distanceTo(geoCoord);
-						var txt = Potree.utils.addCommas(distance.toFixed(2));
+						let nextPoint = positions[i+1];
+						let nextGeo = nextPoint;
+						let distance = nextGeo.distanceTo(point);
+						let txt = Potree.utils.addCommas(distance.toFixed(2));
 						
-						var elNodeDistance = $('<div>').addClass("measurement-detail-node-distance");
-						elNodeDistance.html(txt);
+						let elNodeDistance = $(`<div class="measurement-detail-node-distance">${txt}</div>`);
 						
-						$(elPanelBody).append(elNodeDistance);
-						
+						elPanelBody.append(elNodeDistance);
 					}
 				}
 				
 				if(measurement && measurement.showAngles){
-					var elEdge = $('<div>').addClass("measurement-detail-edge");
-					$(elPanelBody).append(elEdge);
+					let elEdge = $('<div class="measurement-detail-edge"></div>');
+					elPanelBody.append(elEdge);
 					
-					var angle = measurement.getAngle(i);
-					var txt = Potree.utils.addCommas((angle*(180.0/Math.PI)).toFixed(1)) + '\u00B0';
-					var elNodeAngle = $('<div>').addClass("measurement-detail-node-angle");
+					let angle = measurement.getAngle(i);
+					let txt = Potree.utils.addCommas((angle*(180.0/Math.PI)).toFixed(1)) + '\u00B0';
+					let elNodeAngle = $('<div>').addClass("measurement-detail-node-angle");
 					elNodeAngle.html(txt);
 					$(elPanelBody).append(elNodeAngle);
 				}
 				
 				if(i < positions.length - 1){
-					var elEdge = $('<div>').addClass("measurement-detail-edge");
-					$(elPanelBody).append(elEdge);
+					let elEdge = $('<div class="measurement-detail-edge"></div>');
+					elPanelBody.append(elEdge);
 				}
 			}
 			
 			if(points && points.length === 1){
-				var point = points[0];
+				let point = points[0];
 				
-				var elTable = $('<table>').css("width", "100%");
-				$(elPanelBody).append(elTable);
+				let elTable = $('<table stlye="width: 100%"></table>');
+				elPanelBody.append(elTable);
 				
 				if(point.color){
-					var color = point.color;
+					let value = point.color.join(", ");
 					
-					var elTr = $('<tr>');
-					var elKey = $('<td>').css("padding", "1px 5px");
-					var elValue = $('<td>').css("width", "100%").css("padding", "1px 5px");
-					
-					var value = parseInt(color[0]) 
-						+ ", " + parseInt(color[1]) 
-						+ ", " + parseInt(color[2]);
-					
-					elKey.html("rgb");
-					elValue.html(value);
-					
-					elTable.append(elTr);
-					elTr.append(elKey);
-					elTr.append(elValue);
+					elTable.append($(`
+						<tr>
+							<td style="padding: 1px 5px;">rgb</td>
+							<td style="width: 100%; padding: 1px 5px;">${value}</td>
+						</tr>
+					`));
 				}
 				
 				if(typeof point.intensity !== "undefined"){
-					var intensity = point.intensity;
+					let intensity = point.intensity;
 					
-					var elTr = $('<tr>');
-					var elKey = $('<td>').css("padding", "1px 5px");
-					var elValue = $('<td>').css("width", "100%").css("padding", "1px 5px");
-					
-					elKey.html("intensity");
-					elValue.html(intensity);
-					
-					elTable.append(elTr);
-					elTr.append(elKey);
-					elTr.append(elValue);
+					elTable.append($(`
+						<tr>
+							<td style="padding: 1px 5px;">intensity</td>
+							<td style="width: 100%; padding: 1px 5px;">${intensity}</td>
+						</tr>
+					`));
 				}
 				
 				if(typeof point.classification !== "undefined"){
-					var classification = point.classification;
+					let classification = point.classification;
 					
-					var elTr = $('<tr>');
-					var elKey = $('<td>').css("padding", "1px 5px");
-					var elValue = $('<td>').css("width", "100%").css("padding", "1px 5px");
-					
-					elKey.html("classification");
-					elValue.html(classification);
-					
-					elTable.append(elTr);
-					elTr.append(elKey);
-					elTr.append(elValue);
+					elTable.append($(`
+						<tr>
+							<td style="padding: 1px 5px;">classification</td>
+							<td style="width: 100%; padding: 1px 5px;">${classification}</td>
+						</tr>
+					`));
 				}
 				
 				if(typeof point.returnNumber !== "undefined"){
-					var returnNumber = point.returnNumber;
-					
-					var elTr = $('<tr>');
-					var elKey = $('<td>').css("padding", "1px 5px");
-					var elValue = $('<td>').css("width", "100%").css("padding", "1px 5px");
-					
-					elKey.html("return nr.");
-					elValue.html(returnNumber);
-					
-					elTable.append(elTr);
-					elTr.append(elKey);
-					elTr.append(elValue);
+					let returnNumber = point.returnNumber;
+
+					elTable.append($(`
+						<tr>
+							<td style="padding: 1px 5px;">return nr.</td>
+							<td style="width: 100%; padding: 1px 5px;">${returnNumber}</td>
+						</tr>
+					`));
 				}
 				
 				if(typeof point.pointSourceID !== "undefined"){
-					var source = point.pointSourceID;
+					let source = point.pointSourceID;
 					
-					var elTr = $('<tr>');
-					var elKey = $('<td>').css("padding", "1px 5px");
-					var elValue = $('<td>').css("width", "100%").css("padding", "1px 5px");
-					
-					elKey.html("source");
-					elValue.html(source);
-					
-					elTable.append(elTr);
-					elTr.append(elKey);
-					elTr.append(elValue);
+					elTable.append($(`
+						<tr>
+							<td style="padding: 1px 5px;">source</td>
+							<td style="width: 100%; padding: 1px 5px;">${source}</td>
+						</tr>
+					`));
 				}
 				
 				
 			}
 			
 			if(measurement && measurement.showDistances && measurement.points.length > 1){
-				var txt = "Total: " + Potree.utils.addCommas(measurement.getTotalDistance().toFixed(3));
+				let txt = "Total: " + Potree.utils.addCommas(measurement.getTotalDistance().toFixed(3));
 				
-				var elNodeTotalDistance = $('<div>').addClass("measurement-detail-node-distance");
-				elNodeTotalDistance.html(txt);
+				let elNodeTotalDistance = $(`<div class="measurement-detail-node-distance">${txt}</div>`);
 				
-				$(elPanelBody).append(elNodeTotalDistance);
+				elPanelBody.append(elNodeTotalDistance);
 			}
 			
 			if(measurement && measurement.showArea){
-				var txt = Potree.utils.addCommas(measurement.getArea().toFixed(1)) + "\u00B2";
+				let txt = Potree.utils.addCommas(measurement.getArea().toFixed(1)) + "\u00B2";
 				
-				var elNodeArea = $('<div>').addClass("measurement-detail-node-area");
-				elNodeArea.html(txt);
+				let elNodeArea = $(`<div class="measurement-detail-node-area">${txt}</div>`);
 				
-				$(elPanelBody).append(elNodeArea);
+				elPanelBody.append(elNodeArea);
 			}
 			
 			if(measurement instanceof Potree.Profile){
-				var elOpenProfileWindow = $('<input type="button" value="show 2d profile">')
-					.addClass("measurement-detail-button");
-				elOpenProfileWindow[0].onclick = function(){
+				let elOpenProfileWindow = $('<input type="button" value="show 2d profile" class="measurement-detail-button">');
+				elOpenProfileWindow.click(e => {
 					viewer._2dprofile.show();
 					viewer._2dprofile.draw(measurement);
-				};
-				$(elPanelBody).append(elOpenProfileWindow);
+				});
+				elPanelBody.append(elOpenProfileWindow);
 			}
 			
 			let doExport = measurement.showDistances && !measurement.showAngles;
 			if(doExport){
-				let elBottomBar = $(`<span style="display:flex">
-					<span style="flex-grow: 1"></span>
-				</span>`);
-				$(elPanelBody).append(elBottomBar);
+				let elBottomBar = $(`
+					<span style="display:flex">
+						<span style="flex-grow: 1"></span>
+					</span>
+				`);
+				elPanelBody.append(elBottomBar);
 				
 				{
 					let icon = Potree.resourcePath + "/icons/file_geojson.svg";
@@ -1185,10 +1159,7 @@ function initMeasurementDetails(){
 		if(measurement instanceof Potree.Measure){
 			let onremove = function(event){
 				if(event.measurement === measurement){
-					//scene.removeEventListener("marker_added", updateDisplay);
-					//scene.removeEventListener("marker_removed", updateDisplay);
-					//scene.removeEventListener("marker_moved", updateDisplay);
-					$(elLi).remove();
+					element.remove();
 				}
 			};
 		
@@ -1248,11 +1219,11 @@ function initMeasurementDetails(){
 			trackedItem.stopTracking();
 		});
 		
-		for(var i = 0; i < scene.measurements.length; i++){
+		for(let i = 0; i < scene.measurements.length; i++){
 			trackMeasurement(scene, scene.measurements[i]);
 		}
 		
-		for(var i = 0; i < scene.profiles.length; i++){
+		for(let i = 0; i < scene.profiles.length; i++){
 			trackMeasurement(scene, scene.profiles[i]);
 		}
 		
@@ -1272,15 +1243,15 @@ function initMeasurementDetails(){
 
 function initSceneList(){
 
-	var scenelist = $('#sceneList');
+	let scenelist = $('#sceneList');
 	
-	var id = 0;
+	let id = 0;
 	// this works but it looks so wrong. any better way to create a closure around pointcloud?
-	var addPointcloud = function(pointcloud){
+	let addPointcloud = function(pointcloud){
 		(function(pointcloud){
-			var elLi = $('<li>');
-			var elLabel = $('<label>');
-			var elInput = $('<input type="checkbox">');
+			let elLi = $('<li>');
+			let elLabel = $('<label>');
+			let elInput = $('<input type="checkbox">');
 			
 			elInput[0].checked = pointcloud.visible;
 			elInput[0].id = "scene_list_item_pointcloud_" + id;
@@ -1296,8 +1267,8 @@ function initSceneList(){
 			
 			elLi.append(elLabel);
 			elLabel.append(elInput);
-			var pointcloudName = " " + (pointcloud.name ? pointcloud.name : "point cloud " + id);
-			var elPointCloudName = document.createTextNode(pointcloudName);
+			let pointcloudName = " " + (pointcloud.name ? pointcloud.name : "point cloud " + id);
+			let elPointCloudName = document.createTextNode(pointcloudName);
 			elLabel.append(elPointCloudName);
 			
 			scenelist.append(elLi);
@@ -1314,8 +1285,8 @@ function initSceneList(){
 		})(pointcloud);
 	};
 	
-	for(var i = 0; i < viewer.scene.pointclouds.length; i++){
-		var pointcloud = viewer.scene.pointclouds[i];
+	for(let i = 0; i < viewer.scene.pointclouds.length; i++){
+		let pointcloud = viewer.scene.pointclouds[i];
 		addPointcloud(pointcloud);
 	}
 	
@@ -1323,8 +1294,8 @@ function initSceneList(){
 		scenelist.empty();
 		
 		let scene = e.scene;
-		for(var i = 0; i < scene.pointclouds.length; i++){
-			var pointcloud = scene.pointclouds[i];
+		for(let i = 0; i < scene.pointclouds.length; i++){
+			let pointcloud = scene.pointclouds[i];
 			addPointcloud(pointcloud);
 		}
 	});
@@ -1372,7 +1343,7 @@ initSettings = function(){
 	});
 	
 	
-	var toClipModeCode = function(string){
+	let toClipModeCode = function(string){
 		if(string === "No Clipping"){
 			return Potree.ClipMode.DISABLED;
 		}else if(string === "Highlight Inside"){
@@ -1382,7 +1353,7 @@ initSettings = function(){
 		}
 	};
 	
-	var toClipModeString = function(code){
+	let toClipModeString = function(code){
 		if(code === Potree.ClipMode.DISABLED){
 			return "No Clipping";
 		}else if(code === Potree.ClipMode.HIGHLIGHT_INSIDE){

@@ -44,7 +44,7 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 					<span class="annotation-description-close">
 						<img src="${iconClose}" width="16px">
 					</span>
-					<span class="annotation-description-content"></span>
+					<span class="annotation-description-content">${this.description}</span>
 				</div>
 			</div>
 		`);
@@ -53,7 +53,7 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 		this.elTitle = this.elTitlebar.find(".annotation-label");
 		this.elDescription = this.domElement.find(".annotation-description");
 		this.elDescriptionClose = this.elDescription.find(".annotation-description-close");
-		this.elDescriptionContent = this.elDescription.find(".annotation-description-content");
+		//this.elDescriptionContent = this.elDescription.find(".annotation-description-content");
 		
 		this.elTitle.click(() => {
 			if(this.hasView()){
@@ -75,7 +75,7 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 			e => this.elDescriptionClose.css("opacity", "0.5")
 		);
 		this.elDescriptionClose.click(e => this.setHighlighted(false));
-		this.elDescriptionContent.html(this.description);
+		//this.elDescriptionContent.html(this.description);
 		
 		this.domElement.mouseenter(e => this.setHighlighted(true));
 		this.domElement.mouseleave(e => this.setHighlighted(false));

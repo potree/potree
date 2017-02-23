@@ -711,6 +711,18 @@ function initAnnotationDetails(){
 		
 		annotationPanel.empty();
 		
+		let checked = viewer.getShowAnnotations() ? "checked" : "";
+		
+		let chkEnable = $(`
+			<li><label>
+				<input type="checkbox" id="chkShowAnnotations" ${checked}
+					onClick="viewer.setShowAnnotations(this.checked)"/>
+				<span data-i18n="annotations.show"></span>
+			</label></li>
+		`);
+		annotationPanel.append(chkEnable);
+		
+		
 		let stack = viewer.scene.annotations.children.reverse().map(
 			a => ({annotation: a, container: annotationPanel}));
 		
@@ -813,6 +825,8 @@ function initAnnotationDetails(){
 			}
 			
 		};
+		
+		annotationPanel.i18n();
 	};
 	
 	let annotationsChanged = e => {

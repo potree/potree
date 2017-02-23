@@ -12733,6 +12733,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		this.moveSpeed = 10;
 
 		this.showBoundingBox = false;
+		this.showAnnotations = true;
 		this.freeze = false;
 
 		this.mapView;
@@ -13213,7 +13214,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 	
 	setPointBudget(value){
 
-		if(Potree.pointBudget != value){
+		if(Potree.pointBudget !== value){
 			Potree.pointBudget = parseInt(value);
 			this.dispatchEvent({"type": "point_budget_changed", "viewer": this});
 		}
@@ -13223,8 +13224,19 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		return Potree.pointBudget;
 	};
 	
+	setShowAnnotations(value){
+		if(this.showAnnotations !== value){
+			this.showAnnotations = value;
+			this.dispatchEvent({"type": "show_annotations_changed", "viewer": this});
+		}
+	}
+	
+	getShowAnnotations(){
+		return this.showAnnotations;
+	}
+	
 	setClipMode(clipMode){
-		if(this.clipMode != clipMode){
+		if(this.clipMode !== clipMode){
 			this.clipMode = clipMode;
 			this.dispatchEvent({"type": "clip_mode_changed", "viewer": this});
 		}
@@ -13858,6 +13870,21 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 	}
 	
 	updateAnnotations(){
+		
+		if(!this.getShowAnnotations()){
+			this.scene.annotations.traverseDescendants(descendant => {
+				if(!descendant.visible){
+					return false;
+				}else{
+					descendant.visible = false;
+					descendant.domElement[0].style.display = "none";
+				}
+				
+				return;
+			});
+			
+			return;
+		}
 		
 		this.scene.annotations.updateBounds();
 		this.scene.camera.updateMatrixWorld();
@@ -17103,6 +17130,18 @@ function initAnnotationDetails(){
 		
 		annotationPanel.empty();
 		
+		let checked = viewer.getShowAnnotations() ? "checked" : "";
+		
+		let chkEnable = $(`
+			<li><label>
+				<input type="checkbox" id="chkShowAnnotations" ${checked}
+					onClick="viewer.setShowAnnotations(this.checked)"/>
+				<span data-i18n="annotations.show"></span>
+			</label></li>
+		`);
+		annotationPanel.append(chkEnable);
+		
+		
 		let stack = viewer.scene.annotations.children.reverse().map(
 			a => ({annotation: a, container: annotationPanel}));
 		
@@ -17205,6 +17244,8 @@ function initAnnotationDetails(){
 			}
 			
 		};
+		
+		annotationPanel.i18n();
 	};
 	
 	let annotationsChanged = e => {

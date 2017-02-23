@@ -803,7 +803,8 @@ function initAnnotationDetails(){
 					element.next().toggle(100);
 				});
 				
-				let left = ((annotation.level()) * 20) + "px";
+				//let left = ((annotation.level()) * 20) + "px";
+				let left = "20px";
 				let childContainer = $(`<div style="margin: 0px; padding: 0px 0px 0px ${left}; display: none"></div>`);
 				for(let child of annotation.children){
 					container.append(childContainer);
@@ -819,11 +820,13 @@ function initAnnotationDetails(){
 	};
 	
 	viewer.addEventListener("scene_changed", e => {
-		e.oldScene.removeEventListener("annotation_added", annotationsChanged);
-		e.scene.addEventListener("annotation_added", annotationsChanged);
+		e.oldScene.annotations.removeEventListener("annotation_added", annotationsChanged);
+		e.scene.annotations.addEventListener("annotation_added", annotationsChanged);
 		
 		rebuild();
 	});
+	
+	viewer.scene.annotations.addEventListener("annotation_added", annotationsChanged);
 	
 	rebuild();
 }

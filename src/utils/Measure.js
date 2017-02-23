@@ -246,7 +246,7 @@ Potree.Measure = class Measure extends THREE.Object3D{
 		for(let i = 0; i < this.points.length; i++){
 			let p1 = this.points[i].position;
 			let p2 = this.points[j].position;
-			area += (p2.x + p1.x) * (p1.z - p2.z);
+			area += (p2.x + p1.x) * (p1.y - p2.y);
 			j = i;
 		}
 		

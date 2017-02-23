@@ -28,6 +28,7 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 		this.actions = args.actions || [];
 		this.isHighlighted = false;
 		this.visible = true;
+		this.collapseThreshold = [args.collapseThreshold, 100].find(e => e !== undefined);
 		
 		this.children = [];
 		this.parent = null;
@@ -92,7 +93,7 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 			
 			let c = this;
 			while(c !== null){
-				this.dispatchEvent({
+				c.dispatchEvent({
 					"type": "annotation_added",
 					"annotation": annotation
 				});

@@ -510,18 +510,14 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			
 			if(!this.onAnnotationAdded){
 				this.onAnnotationAdded = e => {
-					//this.renderArea.appendChild(e.annotation.domElement[0]);
-					
-					e.annotation.traverse(node => {
-						this.renderArea.appendChild(node.domElement[0]);
-					});
-					
-					////focusing_finished
-					//e.annotation.addEventListener("focusing_finished", (event) => {
-					//	let distance = this.scene.view.position.distanceTo(this.scene.view.getPivot());
-					//	this.setMoveSpeed(Math.pow(distance, 0.4));
-					//	this.renderer.domElement.focus();
-					//});
+
+				//console.log("annotation added: " + e.annotation.title);
+				
+				e.annotation.traverse(node => {
+					this.renderArea.appendChild(node.domElement[0]);
+					node.scene = this.scene;
+				});
+
 				};
 			}
 		
@@ -1551,7 +1547,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			element.style.zIndex = parseInt(zIndex);
 			
 			if(annotation.children.length > 0){
-				let expand = screenSize > 100 || annotation.boundingBox.containsPoint(this.scene.camera.position);
+				let expand = screenSize > annotation.collapseThreshold || annotation.boundingBox.containsPoint(this.scene.camera.position);
 				
 				if(!expand){
 					// TODO make sure descendants are invisible

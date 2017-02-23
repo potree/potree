@@ -6024,6 +6024,7 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 		this.actions = args.actions || [];
 		this.isHighlighted = false;
 		this.visible = true;
+		this.collapseThreshold = [args.collapseThreshold, 100].find(e => e !== undefined);
 		
 		this.children = [];
 		this.parent = null;
@@ -6088,7 +6089,7 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 			
 			let c = this;
 			while(c !== null){
-				this.dispatchEvent({
+				c.dispatchEvent({
 					"type": "annotation_added",
 					"annotation": annotation
 				});
@@ -9120,7 +9121,7 @@ Potree.Measure = class Measure extends THREE.Object3D{
 		for(let i = 0; i < this.points.length; i++){
 			let p1 = this.points[i].position;
 			let p2 = this.points[j].position;
-			area += (p2.x + p1.x) * (p1.z - p2.z);
+			area += (p2.x + p1.x) * (p1.y - p2.y);
 			j = i;
 		}
 		
@@ -11030,8 +11031,8 @@ Potree.GeoJSONExporter = class GeoJSONExporter{
 /**
  *
  * @author sigeom sa / http://sigeom.ch
- * @author Ioda-Net Sàrl / https://www.ioda-net.ch/
- * @author Markus Schütz / http://potree.org
+ * @author Ioda-Net Sï¿½rl / https://www.ioda-net.ch/
+ * @author Markus Schï¿½tz / http://potree.org
  *
  */
 
@@ -12672,28 +12673,6 @@ Potree.Scene = class extends THREE.EventDispatcher{
 		} 
 		let annotation = new Potree.Annotation(args);
 		this.annotations.add(annotation);
-		
-		//if(position instanceof Array){
-		//	args.position = new THREE.Vector3().fromArray(position);
-		//}else if(position instanceof THREE.Vector3){
-		//	args.position = position;
-		//}
-		//
-		//
-		//if(!args.cameraTarget){
-		//	args.cameraTarget = position;
-		//}
-		//
-		//var annotation = new Potree.Annotation(this, args);
-		//
-		//this.annotations.push(annotation);
-		//
-		//this.dispatchEvent({
-		//	"type": "annotation_added", 
-		//	"scene": this,
-		//	"annotation": annotation});
-		//
-		//return annotation;
 	}
 	
 	getAnnotations(){
@@ -12896,18 +12875,14 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			
 			if(!this.onAnnotationAdded){
 				this.onAnnotationAdded = e => {
-					//this.renderArea.appendChild(e.annotation.domElement[0]);
-					
-					e.annotation.traverse(node => {
-						this.renderArea.appendChild(node.domElement[0]);
-					});
-					
-					////focusing_finished
-					//e.annotation.addEventListener("focusing_finished", (event) => {
-					//	let distance = this.scene.view.position.distanceTo(this.scene.view.getPivot());
-					//	this.setMoveSpeed(Math.pow(distance, 0.4));
-					//	this.renderer.domElement.focus();
-					//});
+
+				//console.log("annotation added: " + e.annotation.title);
+				
+				e.annotation.traverse(node => {
+					this.renderArea.appendChild(node.domElement[0]);
+					node.scene = this.scene;
+				});
+
 				};
 			}
 		
@@ -13937,7 +13912,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			element.style.zIndex = parseInt(zIndex);
 			
 			if(annotation.children.length > 0){
-				let expand = screenSize > 100 || annotation.boundingBox.containsPoint(this.scene.camera.position);
+				let expand = screenSize > annotation.collapseThreshold || annotation.boundingBox.containsPoint(this.scene.camera.position);
 				
 				if(!expand){
 					// TODO make sure descendants are invisible
@@ -17220,7 +17195,8 @@ function initAnnotationDetails(){
 					element.next().toggle(100);
 				});
 				
-				let left = ((annotation.level()) * 20) + "px";
+				//let left = ((annotation.level()) * 20) + "px";
+				let left = "20px";
 				let childContainer = $(`<div style="margin: 0px; padding: 0px 0px 0px ${left}; display: none"></div>`);
 				for(let child of annotation.children){
 					container.append(childContainer);
@@ -17236,11 +17212,13 @@ function initAnnotationDetails(){
 	};
 	
 	viewer.addEventListener("scene_changed", e => {
-		e.oldScene.removeEventListener("annotation_added", annotationsChanged);
-		e.scene.addEventListener("annotation_added", annotationsChanged);
+		e.oldScene.annotations.removeEventListener("annotation_added", annotationsChanged);
+		e.scene.annotations.addEventListener("annotation_added", annotationsChanged);
 		
 		rebuild();
 	});
+	
+	viewer.scene.annotations.addEventListener("annotation_added", annotationsChanged);
 	
 	rebuild();
 }

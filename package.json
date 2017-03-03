@@ -8,7 +8,9 @@
     "gulp-size": "*",
     "gulp-concat": "*",
     "gulp-uglify": "*",
-    "gulp-rename": "*"
+    "gulp-rename": "*",
+    "jshint": "*",
+    "gulp-jshint": "*"
   },
   "author": {},
   "license": "",

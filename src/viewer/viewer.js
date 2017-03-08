@@ -1508,10 +1508,10 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		
 		if(!this.getShowAnnotations()){
 			this.scene.annotations.traverseDescendants(descendant => {
-				if(!descendant.visible){
+				if(!descendant.__visible || !descendant.visible){
 					return false;
 				}else{
-					descendant.visible = false;
+					descendant.__visible = false;
 					descendant.domElement[0].style.display = "none";
 				}
 				
@@ -1530,6 +1530,10 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			
 			if(annotation === this.scene.annotations){
 				return true;
+			}
+			
+			if(!annotation.visible){
+				return false;
 			}
 			
 			annotation.scene = this.scene;
@@ -1578,24 +1582,24 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 				
 				if(!expand){
 					annotation.traverseDescendants(descendant => {
-						if(!descendant.visible){
+						if(!descendant.__visible){
 							return;
 						}else{
-							descendant.visible = false;
+							descendant.__visible = false;
 							descendant.domElement[0].style.display = "none";
 						}
 					});
-					annotation.visible = true;
+					annotation.__visible = true;
 					element.style.display = "inline-block";
 				}else{
-					annotation.visible = true;
+					annotation.__visible = true;
 					element.style.display = "none";
 				}
 				
 				return expand;
 			}else{
-				annotation.visible = (-1 <= screenPos.z && screenPos.z <= 1);
-				if(annotation.visible){
+				annotation.__visible = (-1 <= screenPos.z && screenPos.z <= 1);
+				if(annotation.__visible){
 					element.style.display = "inline-block";
 				}else{
 					element.style.display = "none";

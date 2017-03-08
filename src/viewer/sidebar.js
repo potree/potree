@@ -777,7 +777,7 @@ function initAnnotationDetails(){
 				let elIcon = $(`<img src="${action.icon}" class="annotation-icon">`);
 				
 				elMain.append(elIcon);
-				elMain.click(e => action.onclick(e));
+				elMain.click(e => action.onclick({annotation: annotation}));
 				elMain.mouseover(e => elIcon.css("opacity", 1));
 				elMain.mouseout(e => elIcon.css("opacity", 0.5));
 				
@@ -790,7 +790,7 @@ function initAnnotationDetails(){
 				let elIcon = $(`<img src="${action.icon}" class="annotation-icon">`);
 				
 				elIcon.click(e => {
-					action.onclick(e); 
+					action.onclick({annotation: annotation}); 
 					return false;
 				});
 				elIcon.mouseover(e => elIcon.css("opacity", 1));

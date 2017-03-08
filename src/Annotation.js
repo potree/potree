@@ -27,7 +27,8 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 		this.showDescription = true;
 		this.actions = args.actions || [];
 		this.isHighlighted = false;
-		this.visible = true;
+		this._visible = true;
+		this.__visible = true;
 		this.collapseThreshold = [args.collapseThreshold, 100].find(e => e !== undefined);
 		
 		this.children = [];
@@ -68,7 +69,7 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 			
 			let elButton = $(`<img src="${action.icon}" class="annotation-action-icon">`);
 			this.elTitlebar.append(elButton);
-			elButton.click(() => action.onclick());
+			elButton.click(() => action.onclick({annotation: this}));
 		}
 		
 		this.elDescriptionClose.hover(
@@ -257,6 +258,26 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 		}
     
 	};
+	
+	get visible(){
+		return this._visible;
+	}
+	
+	set visible(value){
+		this._visible = value;
+		
+		if(!value){
+			this.traverse(node => {
+				node.__visible = false;
+				node.domElement.css("display", "none");
+			});
+		}else{
+			this.traverse(node => {
+				node.__visible = true;
+				//node.domElement.css("display", "inline-block");
+			});
+		}
+	}
 	
 	toString(){
 		return "Annotation: " + this.title;

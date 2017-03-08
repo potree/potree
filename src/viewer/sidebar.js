@@ -770,6 +770,9 @@ function initAnnotationDetails(){
 				}
 			}
 			
+			actions = actions.filter(
+				a => a.showIn === undefined || a.showIn.includes("sidebar"));
+			
 			// FIRST ACTION
 			if(annotation.children.length === 0 && actions.length > 0){
 				let action = actions[0];

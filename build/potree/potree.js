@@ -6060,7 +6060,15 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 			this.dispatchEvent({type: "click", target: this});
 		});
         
-		for(let action of this.actions){
+		let actions = this.actions.filter(
+			a => a.showIn === undefined || a.showIn.includes("scene"));
+		
+		for(let action of actions){
+			
+			//if(action.showIn !== undefined && !action.showIn.includes("scene")){
+			//	continue;
+			//}
+			
 			this.elTitle.css("padding", "1px 3px 0px 8px");
 			
 			let elButton = $(`<img src="${action.icon}" class="annotation-action-icon">`);
@@ -17162,6 +17170,9 @@ function initAnnotationDetails(){
 					actions.push(action);
 				}
 			}
+			
+			actions = actions.filter(
+				a => a.showIn === undefined || a.showIn.includes("sidebar"));
 			
 			// FIRST ACTION
 			if(annotation.children.length === 0 && actions.length > 0){

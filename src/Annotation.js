@@ -71,6 +71,10 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 				return new Potree.Action(a);
 			}
 		});
+		
+		for(let action of this.actions){
+			action.pairWith(this);
+		}
         
 		let actions = this.actions.filter(
 			a => a.showIn === undefined || a.showIn.includes("scene"));
@@ -277,6 +281,10 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 	}
 	
 	set visible(value){
+		if(this._visible === value){
+			return;
+		}
+		
 		this._visible = value;
 		
 		if(!value){
@@ -287,9 +295,13 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 		}else{
 			this.traverse(node => {
 				node.__visible = true;
-				//node.domElement.css("display", "inline-block");
 			});
 		}
+		
+		this.dispatchEvent({
+			type: "visibility_changed",
+			annotation: this
+		});
 	}
 	
 	toString(){

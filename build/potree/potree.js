@@ -6067,6 +6067,10 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 				return new Potree.Action(a);
 			}
 		});
+		
+		for(let action of this.actions){
+			action.pairWith(this);
+		}
         
 		let actions = this.actions.filter(
 			a => a.showIn === undefined || a.showIn.includes("scene"));
@@ -6273,6 +6277,10 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 	}
 	
 	set visible(value){
+		if(this._visible === value){
+			return;
+		}
+		
 		this._visible = value;
 		
 		if(!value){
@@ -6283,9 +6291,13 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 		}else{
 			this.traverse(node => {
 				node.__visible = true;
-				//node.domElement.css("display", "inline-block");
 			});
 		}
+		
+		this.dispatchEvent({
+			type: "visibility_changed",
+			annotation: this
+		});
 	}
 	
 	toString(){
@@ -6309,6 +6321,10 @@ Potree.Action = class Action extends THREE.EventDispatcher{
 	}
 	
 	onclick(event){
+		
+	}
+	
+	pairWith(object){
 		
 	}
 	
@@ -6341,6 +6357,25 @@ Potree.Actions.ToggleAnnotationVisibility = class ToggleAnnotationVisibility ext
 		this.icon = Potree.resourcePath + "/icons/eye.svg";
 		this.showIn = "sidebar";
 		this.tooltip = "toggle visibility";
+	}
+	
+	pairWith(annotation){
+		
+		if(annotation.visible){
+			this.setIcon(Potree.resourcePath + "/icons/eye.svg");
+		}else{
+			this.setIcon(Potree.resourcePath + "/icons/eye_crossed.svg");
+		}
+		
+		annotation.addEventListener("visibility_changed", e => {
+			let annotation = e.annotation;
+			
+			if(annotation.visible){
+				this.setIcon(Potree.resourcePath + "/icons/eye.svg");
+			}else{
+				this.setIcon(Potree.resourcePath + "/icons/eye_crossed.svg");
+			}
+		});
 	}
 	
 	onclick(event){
@@ -11138,8 +11173,8 @@ Potree.GeoJSONExporter = class GeoJSONExporter{
 /**
  *
  * @author sigeom sa / http://sigeom.ch
- * @author Ioda-Net Sàrl / https://www.ioda-net.ch/
- * @author Markus Schütz / http://potree.org
+ * @author Ioda-Net Sï¿½rl / https://www.ioda-net.ch/
+ * @author Markus Schï¿½tz / http://potree.org
  *
  */
 
@@ -12848,9 +12883,9 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		this.progressBar = new ProgressBar();
 
 		this.stats = new Stats();
-		this.stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
-		document.body.appendChild( this.stats.dom );
-		this.stats.dom.style.left = "100px";
+		//this.stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
+		//document.body.appendChild( this.stats.dom );
+		//this.stats.dom.style.left = "100px";
 		
 		this.potreeRenderer = null;
 		this.highQualityRenderer = null;

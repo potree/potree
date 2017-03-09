@@ -17,6 +17,10 @@ Potree.Action = class Action extends THREE.EventDispatcher{
 		
 	}
 	
+	pairWith(object){
+		
+	}
+	
 	setIcon(newIcon){
 		let oldIcon = this.icon;
 		
@@ -46,6 +50,25 @@ Potree.Actions.ToggleAnnotationVisibility = class ToggleAnnotationVisibility ext
 		this.icon = Potree.resourcePath + "/icons/eye.svg";
 		this.showIn = "sidebar";
 		this.tooltip = "toggle visibility";
+	}
+	
+	pairWith(annotation){
+		
+		if(annotation.visible){
+			this.setIcon(Potree.resourcePath + "/icons/eye.svg");
+		}else{
+			this.setIcon(Potree.resourcePath + "/icons/eye_crossed.svg");
+		}
+		
+		annotation.addEventListener("visibility_changed", e => {
+			let annotation = e.annotation;
+			
+			if(annotation.visible){
+				this.setIcon(Potree.resourcePath + "/icons/eye.svg");
+			}else{
+				this.setIcon(Potree.resourcePath + "/icons/eye_crossed.svg");
+			}
+		});
 	}
 	
 	onclick(event){

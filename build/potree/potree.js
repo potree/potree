@@ -6059,16 +6059,19 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 			}
 			this.dispatchEvent({type: "click", target: this});
 		});
+		
+		this.actions = this.actions.map(a => {
+			if(a instanceof Potree.Action){
+				return a;
+			}else{
+				return new Potree.Action(a);
+			}
+		});
         
 		let actions = this.actions.filter(
 			a => a.showIn === undefined || a.showIn.includes("scene"));
 		
 		for(let action of actions){
-			
-			//if(action.showIn !== undefined && !action.showIn.includes("scene")){
-			//	continue;
-			//}
-			
 			this.elTitle.css("padding", "1px 3px 0px 8px");
 			
 			let elButton = $(`<img src="${action.icon}" class="annotation-action-icon">`);
@@ -6182,7 +6185,8 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 			
 			if(this.description){
 				this.descriptionVisible = true;	
-				this.elDescription.css("display", "block");
+				//this.elDescription.css("display", "block");
+				this.elDescription.fadeIn(200);
 				this.elDescription.css("position", "relative");
 			}
 		}else{
@@ -6191,6 +6195,7 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 			this.domElement.css("z-index", "100");
 			this.descriptionVisible = false;	
 			this.elDescription.css("display", "none");
+			//this.elDescription.fadeOut(200);
 		}
 		
 		this.isHighlighted = highlighted;
@@ -6287,6 +6292,70 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 		return "Annotation: " + this.title;
 	}
 };
+
+
+Potree.Action = class Action extends THREE.EventDispatcher{
+
+	constructor(args = {}){
+		super();
+		
+		this.icon = args.icon || "";
+		this.tooltip = args.tooltip;
+		
+		if(args.onclick !== undefined){
+			this.onclick = args.onclick;
+		}
+		
+	}
+	
+	onclick(event){
+		
+	}
+	
+	setIcon(newIcon){
+		let oldIcon = this.icon;
+		
+		if(newIcon === oldIcon){
+			return;
+		}
+		
+		this.icon = newIcon;
+		
+		this.dispatchEvent({
+			type: "icon_changed",
+			action: this,
+			icon: newIcon,
+			oldIcon: oldIcon
+		});
+	}
+
+};
+
+Potree.Actions = {};
+
+Potree.Actions.ToggleAnnotationVisibility = class ToggleAnnotationVisibility extends Potree.Action{
+
+	constructor(args = {}){
+		super(args);
+		
+		this.icon = Potree.resourcePath + "/icons/eye.svg";
+		this.showIn = "sidebar";
+		this.tooltip = "toggle visibility";
+	}
+	
+	onclick(event){
+		let annotation = event.annotation;
+		
+		annotation.visible = !annotation.visible;
+		
+		if(annotation.visible){
+			this.setIcon(Potree.resourcePath + "/icons/eye.svg");
+		}else{
+			this.setIcon(Potree.resourcePath + "/icons/eye_crossed.svg");
+		}
+	}
+}
+
 
 
 Potree.ProfileData = function(profile){
@@ -13915,7 +13984,8 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 					return false;
 				}else{
 					descendant.__visible = false;
-					descendant.domElement[0].style.display = "none";
+					//descendant.domElement[0].style.display = "none";
+					descendant.domElement.fadeOut(200);
 				}
 				
 				return;
@@ -13941,7 +14011,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			
 			annotation.scene = this.scene;
 			
-			let element = annotation.domElement[0];
+			let element = annotation.domElement;
 			
 			let position = annotation.position;
 			if(!position){
@@ -13959,7 +14029,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 				screenPos.x = this.renderArea.clientWidth * (screenPos.x + 1) / 2;
 				screenPos.y = this.renderArea.clientHeight * (1 - (screenPos.y + 1) / 2);
 				
-				screenPos.x = Math.floor(screenPos.x - element.clientWidth / 2);
+				screenPos.x = Math.floor(screenPos.x - element[0].clientWidth / 2);
 				screenPos.y = Math.floor(screenPos.y - annotation.elTitlebar[0].clientHeight / 2);
 				
 				// SCREEN SIZE
@@ -13970,15 +14040,15 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 				screenSize = radius * projFactor;
 			}
 			
-			element.style.left = screenPos.x + "px";
-			element.style.top = screenPos.y + "px";
+			element.css("left", screenPos.x + "px");
+			element.css("top", screenPos.y + "px");
 			
 			let zIndex = 10000000 - distance * (10000000 / this.scene.camera.far);
 			if(annotation.descriptionVisible){
 				zIndex += 10000000;
 			}
 			
-			element.style.zIndex = parseInt(zIndex);
+			element.css("z-index", parseInt(zIndex));
 			
 			if(annotation.children.length > 0){
 				let expand = screenSize > annotation.collapseThreshold || annotation.boundingBox.containsPoint(this.scene.camera.position);
@@ -13989,25 +14059,28 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 							return;
 						}else{
 							descendant.__visible = false;
-							descendant.domElement[0].style.display = "none";
+							//descendant.domElement.fadeOut(200);
+							descendant.domElement.hide();
 						}
 					});
 					annotation.__visible = true;
-					element.style.display = "inline-block";
+					element.fadeIn(200);
 				}else{
 					annotation.__visible = true;
-					element.style.display = "none";
+					element.fadeOut(200);
 				}
 				
 				return expand;
 			}else{
 				annotation.__visible = (-1 <= screenPos.z && screenPos.z <= 1);
 				if(annotation.__visible){
-					element.style.display = "inline-block";
+					$(element).fadeIn(200);
 				}else{
-					element.style.display = "none";
+					$(element).fadeOut(200);
 				}
 			}
+			
+			
 		});
 	}
 
@@ -17111,10 +17184,17 @@ function initAnnotationDetails(){
 	// annotation_details
 	let annotationPanel = $("#annotation_details");
 	
+	let registeredEvents = [];
+	
 	let rebuild = () => {
 		console.log("rebuild");
 		
 		annotationPanel.empty();
+		for(let registeredEvent of registeredEvents){
+			let {type, dispatcher, callback} = registeredEvent;
+			dispatcher.removeEventListener(type, callback);
+		}
+		registeredEvents = [];
 		
 		let checked = viewer.getShowAnnotations() ? "checked" : "";
 		
@@ -17158,10 +17238,10 @@ function initAnnotationDetails(){
 			let actions = [];
 			{ // ACTIONS, INCLUDING GOTO LOCATION
 				if(annotation.hasView()){
-					let action = {
+					let action = new Potree.Action({
 						"icon": Potree.resourcePath + "/icons/target.svg",
 						"onclick": (e) => {annotation.moveHere(viewer.scene.camera)}
-					};
+					});
 					
 					actions.push(action);
 				}
@@ -17180,10 +17260,27 @@ function initAnnotationDetails(){
 				
 				let elIcon = $(`<img src="${action.icon}" class="annotation-icon">`);
 				
+				if(action.tooltip){
+					elIcon.attr("title", action.tooltip);
+				}
+				
 				elMain.append(elIcon);
 				elMain.click(e => action.onclick({annotation: annotation}));
 				elMain.mouseover(e => elIcon.css("opacity", 1));
 				elMain.mouseout(e => elIcon.css("opacity", 0.5));
+				
+				{
+					let iconChanged = e => {
+						elIcon.attr("src", e.icon);
+					};
+					
+					action.addEventListener("icon_changed", iconChanged);
+					registeredEvents.push({
+						type: "icon_changed",
+						dispatcher: action,
+						callback: iconChanged
+					});
+				}
 				
 				actions.splice(0, 1);
 			}
@@ -17193,12 +17290,29 @@ function initAnnotationDetails(){
 				
 				let elIcon = $(`<img src="${action.icon}" class="annotation-icon">`);
 				
+				if(action.tooltip){
+					elIcon.attr("title", action.tooltip);
+				}
+				
 				elIcon.click(e => {
 					action.onclick({annotation: annotation}); 
 					return false;
 				});
 				elIcon.mouseover(e => elIcon.css("opacity", 1));
 				elIcon.mouseout(e => elIcon.css("opacity", 0.5));
+				
+				{
+					let iconChanged = e => {
+						elIcon.attr("src", e.icon);
+					};
+					
+					action.addEventListener("icon_changed", iconChanged);
+					registeredEvents.push({
+						type: "icon_changed",
+						dispatcher: action,
+						callback: iconChanged
+					});
+				}
 				
 				element.append(elIcon);
 			}

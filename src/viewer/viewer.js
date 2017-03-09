@@ -1512,7 +1512,8 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 					return false;
 				}else{
 					descendant.__visible = false;
-					descendant.domElement[0].style.display = "none";
+					//descendant.domElement[0].style.display = "none";
+					descendant.domElement.fadeOut(200);
 				}
 				
 				return;
@@ -1538,7 +1539,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			
 			annotation.scene = this.scene;
 			
-			let element = annotation.domElement[0];
+			let element = annotation.domElement;
 			
 			let position = annotation.position;
 			if(!position){
@@ -1556,7 +1557,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 				screenPos.x = this.renderArea.clientWidth * (screenPos.x + 1) / 2;
 				screenPos.y = this.renderArea.clientHeight * (1 - (screenPos.y + 1) / 2);
 				
-				screenPos.x = Math.floor(screenPos.x - element.clientWidth / 2);
+				screenPos.x = Math.floor(screenPos.x - element[0].clientWidth / 2);
 				screenPos.y = Math.floor(screenPos.y - annotation.elTitlebar[0].clientHeight / 2);
 				
 				// SCREEN SIZE
@@ -1567,15 +1568,15 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 				screenSize = radius * projFactor;
 			}
 			
-			element.style.left = screenPos.x + "px";
-			element.style.top = screenPos.y + "px";
+			element.css("left", screenPos.x + "px");
+			element.css("top", screenPos.y + "px");
 			
 			let zIndex = 10000000 - distance * (10000000 / this.scene.camera.far);
 			if(annotation.descriptionVisible){
 				zIndex += 10000000;
 			}
 			
-			element.style.zIndex = parseInt(zIndex);
+			element.css("z-index", parseInt(zIndex));
 			
 			if(annotation.children.length > 0){
 				let expand = screenSize > annotation.collapseThreshold || annotation.boundingBox.containsPoint(this.scene.camera.position);
@@ -1586,25 +1587,28 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 							return;
 						}else{
 							descendant.__visible = false;
-							descendant.domElement[0].style.display = "none";
+							//descendant.domElement.fadeOut(200);
+							descendant.domElement.hide();
 						}
 					});
 					annotation.__visible = true;
-					element.style.display = "inline-block";
+					element.fadeIn(200);
 				}else{
 					annotation.__visible = true;
-					element.style.display = "none";
+					element.fadeOut(200);
 				}
 				
 				return expand;
 			}else{
 				annotation.__visible = (-1 <= screenPos.z && screenPos.z <= 1);
 				if(annotation.__visible){
-					element.style.display = "inline-block";
+					$(element).fadeIn(200);
 				}else{
-					element.style.display = "none";
+					$(element).fadeOut(200);
 				}
 			}
+			
+			
 		});
 	}
 

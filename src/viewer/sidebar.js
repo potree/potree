@@ -710,10 +710,17 @@ function initAnnotationDetails(){
 	// annotation_details
 	let annotationPanel = $("#annotation_details");
 	
+	let registeredEvents = [];
+	
 	let rebuild = () => {
 		console.log("rebuild");
 		
 		annotationPanel.empty();
+		for(let registeredEvent of registeredEvents){
+			let {type, dispatcher, callback} = registeredEvent;
+			dispatcher.removeEventListener(type, callback);
+		}
+		registeredEvents = [];
 		
 		let checked = viewer.getShowAnnotations() ? "checked" : "";
 		
@@ -757,10 +764,10 @@ function initAnnotationDetails(){
 			let actions = [];
 			{ // ACTIONS, INCLUDING GOTO LOCATION
 				if(annotation.hasView()){
-					let action = {
+					let action = new Potree.Action({
 						"icon": Potree.resourcePath + "/icons/target.svg",
 						"onclick": (e) => {annotation.moveHere(viewer.scene.camera)}
-					};
+					});
 					
 					actions.push(action);
 				}
@@ -779,10 +786,27 @@ function initAnnotationDetails(){
 				
 				let elIcon = $(`<img src="${action.icon}" class="annotation-icon">`);
 				
+				if(action.tooltip){
+					elIcon.attr("title", action.tooltip);
+				}
+				
 				elMain.append(elIcon);
 				elMain.click(e => action.onclick({annotation: annotation}));
 				elMain.mouseover(e => elIcon.css("opacity", 1));
 				elMain.mouseout(e => elIcon.css("opacity", 0.5));
+				
+				{
+					let iconChanged = e => {
+						elIcon.attr("src", e.icon);
+					};
+					
+					action.addEventListener("icon_changed", iconChanged);
+					registeredEvents.push({
+						type: "icon_changed",
+						dispatcher: action,
+						callback: iconChanged
+					});
+				}
 				
 				actions.splice(0, 1);
 			}
@@ -792,12 +816,29 @@ function initAnnotationDetails(){
 				
 				let elIcon = $(`<img src="${action.icon}" class="annotation-icon">`);
 				
+				if(action.tooltip){
+					elIcon.attr("title", action.tooltip);
+				}
+				
 				elIcon.click(e => {
 					action.onclick({annotation: annotation}); 
 					return false;
 				});
 				elIcon.mouseover(e => elIcon.css("opacity", 1));
 				elIcon.mouseout(e => elIcon.css("opacity", 0.5));
+				
+				{
+					let iconChanged = e => {
+						elIcon.attr("src", e.icon);
+					};
+					
+					action.addEventListener("icon_changed", iconChanged);
+					registeredEvents.push({
+						type: "icon_changed",
+						dispatcher: action,
+						callback: iconChanged
+					});
+				}
 				
 				element.append(elIcon);
 			}

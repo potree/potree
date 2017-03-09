@@ -63,16 +63,19 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 			}
 			this.dispatchEvent({type: "click", target: this});
 		});
+		
+		this.actions = this.actions.map(a => {
+			if(a instanceof Potree.Action){
+				return a;
+			}else{
+				return new Potree.Action(a);
+			}
+		});
         
 		let actions = this.actions.filter(
 			a => a.showIn === undefined || a.showIn.includes("scene"));
 		
 		for(let action of actions){
-			
-			//if(action.showIn !== undefined && !action.showIn.includes("scene")){
-			//	continue;
-			//}
-			
 			this.elTitle.css("padding", "1px 3px 0px 8px");
 			
 			let elButton = $(`<img src="${action.icon}" class="annotation-action-icon">`);
@@ -186,7 +189,8 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 			
 			if(this.description){
 				this.descriptionVisible = true;	
-				this.elDescription.css("display", "block");
+				//this.elDescription.css("display", "block");
+				this.elDescription.fadeIn(200);
 				this.elDescription.css("position", "relative");
 			}
 		}else{
@@ -195,6 +199,7 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 			this.domElement.css("z-index", "100");
 			this.descriptionVisible = false;	
 			this.elDescription.css("display", "none");
+			//this.elDescription.fadeOut(200);
 		}
 		
 		this.isHighlighted = highlighted;

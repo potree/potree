@@ -144,8 +144,8 @@ a:hover, a:visited, a:link, a:active{
 }
 
 .annotation{
-	-webkit-transition: opacity .1s;
-	transition: 	opacity .1s;
+	//-webkit-transition: opacity .1s;
+	//transition: 	opacity .1s;
 	position:		absolute;
 	padding:		10px;
 	opacity:		0.5;
@@ -234,6 +234,7 @@ a:hover, a:visited, a:link, a:active{
 	border-radius:	4px;
 	display:		none;
 	max-width:		500px;
+	width:			500px;
 }
 
 .annotation-description-close{

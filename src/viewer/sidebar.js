@@ -1354,7 +1354,7 @@ function initSceneList(){
 	});
 };
 
-initSettings = function(){
+let initSettings = function(){
 	//<li>Min Node Size: <span id="lblMinNodeSize"></span><div id="sldMinNodeSize"></div>	</li>
 	
 	$( "#sldMinNodeSize" ).slider({

@@ -224,9 +224,12 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 		if(!this.hasView()){
 			return;
 		}
-	
+
+		let view = this.scene.view;
+		
 		var animationDuration = 800;
 		var easing = TWEEN.Easing.Quartic.Out;
+		
 		
 		let endTarget;
 		if(this.cameraTarget){
@@ -236,37 +239,61 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 		}else{
 			endTarget = this.boundingBox.getCenter();
 		}
-		let endPosition = this.cameraPosition;
-		if(!endPosition){
-			let direction = this.scene.view.direction;
-			endPosition = endTarget.clone().add(direction.multiplyScalar(-this.radius));
-		}
-    
-		{ // animate camera position
-			let tween = new TWEEN.Tween(this.scene.view.position).to(endPosition, animationDuration);
-			tween.easing(easing);
-			tween.start();
-		}
 		
-		{ // animate camera target
-			var camTargetDistance = camera.position.distanceTo(endTarget);
-			var target = new THREE.Vector3().addVectors(
-				camera.position, 
-				camera.getWorldDirection().clone().multiplyScalar(camTargetDistance)
-			);
-			var tween = new TWEEN.Tween(target).to(endTarget, animationDuration);
-			tween.easing(easing);
-			tween.onUpdate(() => {
-				this.scene.view.lookAt(target);
-			});
-			tween.onComplete(() => {
-				this.scene.view.lookAt(target);
-				this.dispatchEvent({type: "focusing_finished", target: this});
-			});
+		if(this.cameraPosition){
+			
+			let endPosition = this.cameraPosition;
+
+			{ // animate camera position
+				let tween = new TWEEN.Tween(view.position).to(endPosition, animationDuration);
+				tween.easing(easing);
+				tween.start();
+			}
+			
+			{ // animate camera target
+				var camTargetDistance = camera.position.distanceTo(endTarget);
+				var target = new THREE.Vector3().addVectors(
+					camera.position, 
+					camera.getWorldDirection().clone().multiplyScalar(camTargetDistance)
+				);
+				var tween = new TWEEN.Tween(target).to(endTarget, animationDuration);
+				tween.easing(easing);
+				tween.onUpdate(() => {
+					view.lookAt(target);
+				});
+				tween.onComplete(() => {
+					view.lookAt(target);
+					this.dispatchEvent({type: "focusing_finished", target: this});
+				});
+				
+				this.dispatchEvent({type: "focusing_started", target: this});
+				tween.start();
+			}
+		}else if(this.radius){
+			let direction = view.direction;
+			let endPosition = endTarget.clone().add(direction.multiplyScalar(-this.radius));
+			let startRadius = view.radius;
+			let endRadius = this.radius;
+			
+			{ // animate camera position
+				let tween = new TWEEN.Tween(view.position).to(endPosition, animationDuration);
+				tween.easing(easing);
+				tween.start();
+			}
+			
+			{ // animate radius
+				let t = {x: 0};
+			
+				let tween = new TWEEN.Tween(t)
+					.to({x: 1}, animationDuration)
+					.onUpdate(function(){
+						view.radius = this.x * endRadius + (1 - this.x) * startRadius;
+					});
+				tween.easing(easing);
+				tween.start();
+			}
+			
 		}
-    
-		this.dispatchEvent({type: "focusing_started", target: this});
-		tween.start();
 	};
 	
 	dispose(){

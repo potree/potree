@@ -375,6 +375,21 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 		unloadedGeometry[i].load();
 	}
 	
+	for(let node of visibleNodes){
+		//let allowedNodes = ["r", "r0", "r4", "r04", "r40", "r402", "r4020", "r4022", "r40206", "r40224", "r40202", "r40220", "r00", "r042"];
+		//let allowedNodes = ["r", "r0", "r4", "r04", "r40", "r402", "r4020", "r4022", "r00", "r042"];
+		//let allowedNodes = ["r", "r0", "r04", "r042"];
+		let allowedNodes = ["r", "r4", "r40", "r402", "r4020", "r40206"];
+		//let allowedNodes = ["r", "r4", "r40", "r402", "r4020"];
+		node.sceneNode.visible = allowedNodes.includes(node.geometryNode.name);
+		
+		if(node.boundingBoxNode){
+			node.boundingBoxNode.visible = node.boundingBoxNode.visible && node.sceneNode.visible;
+		}
+		
+	}
+	
+	
 	Potree.updateDEMs(renderer, visibleNodes);
 
 	return {

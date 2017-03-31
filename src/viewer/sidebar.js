@@ -1404,7 +1404,7 @@ function initSceneList(){
 	});
 };
 
-initSettings = function(){
+let initSettings = function(){
 	
 	$( "#sldMinNodeSize" ).slider({
 		value: viewer.getMinNodeSize(),

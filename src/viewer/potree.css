@@ -424,7 +424,6 @@ body{
 }
 
 .ui-widget-content{
-	background-color: transparent !important;
 	color: var(--font-color) !important;
 }
 

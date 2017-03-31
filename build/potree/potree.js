@@ -30,7 +30,7 @@ Potree.webgl = {
 Potree.scriptPath = null;
 if(document.currentScript.src){
 		Potree.scriptPath = new URL(document.currentScript.src + "/..").href;
-        if (Potree.scriptPath.slice(-1) == '/') {
+        if (Potree.scriptPath.slice(-1) === '/') {
             Potree.scriptPath = Potree.scriptPath.slice(0, -1);
         }
 }else{
@@ -101,7 +101,7 @@ Potree.resolveQueries = function(gl){
 			delete Potree.timerQueries[name];
 		}
 	}
-}
+};
 
 
 Potree.MOUSE = {
@@ -117,7 +117,7 @@ Potree.loadPointCloud = function(path, name, callback){
 		pointcloud.name = name;
 		
 		callback({type: "pointcloud_loaded", pointcloud: pointcloud});
-	}
+	};
 	
 	// load pointcloud
 	if(!path){
@@ -153,7 +153,7 @@ Potree.loadPointCloud = function(path, name, callback){
 	}else{
 		callback({"type": "loading_failed"});
 	}
-}
+};
 
 Potree.updatePointClouds = function(pointclouds, camera, renderer){
 
@@ -454,207 +454,207 @@ Potree.updateDEMs = function(renderer, visibleNodes){
 	}
 	
 	
-}
-
-Potree.Shader = class Shader{
-	constructor(vertexShader, fragmentShader, program, uniforms){
-		this.vertexShader = vertexShader;
-		this.fragmentShader = fragmentShader;
-		this.program = program;
-		this.uniforms = uniforms;
-	}
 };
 
-Potree.VBO = class VBO{
-	constructor(name, id, attribute){
-		this.name = name;
-		this.id = id;
-		this.attribute = attribute;
-	}
-};
-
-Potree.VAO = class VAO{
-	constructor(id, geometry, vbos){
-		this.id = id;
-		this.geometry = geometry;
-		this.vbos = vbos;
-	}
-};
-
-Potree.compileShader = function(gl, vertexShader, fragmentShader){
-	// VERTEX SHADER
-	let vs = gl.createShader(gl.VERTEX_SHADER);
-	{
-		gl.shaderSource(vs, vertexShader);
-		gl.compileShader(vs);
-		
-		let success = gl.getShaderParameter(vs, gl.COMPILE_STATUS);
-		if (!success) {
-			console.error("could not compile vertex shader:");
-			
-			let log = gl.getShaderInfoLog(vs);
-			console.error(log, vertexShader);
-			
-			return;
-		}
-	}
-	
-	// FRAGMENT SHADER
-	let fs = gl.createShader(gl.FRAGMENT_SHADER);
-	{
-		gl.shaderSource(fs, fragmentShader);
-		gl.compileShader(fs);
-		
-		let success = gl.getShaderParameter(fs, gl.COMPILE_STATUS);
-		if (!success) {
-			console.error("could not compile fragment shader:");
-			console.error(fragmentShader);
-			
-			return;
-		}
-	}
-	
-	// PROGRAM
-	let program = gl.createProgram();
-	gl.attachShader(program, vs);
-	gl.attachShader(program, fs);
-	gl.linkProgram(program);
-	let success = gl.getProgramParameter(program, gl.LINK_STATUS);
-	if (!success) {
-		console.error("could not compile shader:");
-		console.error(vertexShader);
-		console.error(fragmentShader);
-			
-		return;
-	}
-	
-	gl.useProgram(program);
-	
-	let uniforms = {};
-	{ // UNIFORMS
-		let n = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
-
-		for(let i = 0; i < n; i++){
-			let uniform = gl.getActiveUniform(program, i);
-			let name = uniform.name;
-			let loc = gl.getUniformLocation(program, name);
-
-			uniforms[name] = loc;
-		}
-	}
-	
-	let shader = new Potree.Shader(vertexShader, fragmentShader, program, uniforms);
-	
-	return shader;
-};
-
-// http://blog.tojicode.com/2012/10/oesvertexarrayobject-extension.html
-Potree.createVAO = function(gl, geometry){
-	if(Potree.vaos[geometry.uuid] ==! undefined){
-		return Potree.vaos[geometry.uuid];
-	}
-	
-	let ext = gl.getExtension("OES_vertex_array_object");
-	let id = ext.createVertexArrayOES();
-	
-	ext.bindVertexArrayOES(id);  
-	
-	let vbos = {};
-	for(let key in geometry.attributes){
-		let attribute = geometry.attributes[key];
-		
-		let type = gl.FLOAT;
-		if(attribute.array instanceof Uint8Array){
-			type = gl.UNSIGNED_BYTE;
-		}else if(attribute.array instanceof Uint16Array){
-			type = gl.UNSIGNED_SHORT;
-		}else if(attribute.array instanceof Uint32Array){
-			type = gl.UNSIGNED_INT;
-		}else if(attribute.array instanceof Int8Array){
-			type = gl.BYTE;
-		}else if(attribute.array instanceof Int16Array){
-			type = gl.SHORT;
-		}else if(attribute.array instanceof Int32Array){
-			type = gl.INT;
-		}else if(attribute.array instanceof Float32Array){
-			type = gl.FLOAT;
-		}
-		
-		let vbo = gl.createBuffer();
-		gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-		gl.bufferData(gl.ARRAY_BUFFER, attribute.array, gl.STATIC_DRAW);
-		//gl.enableVertexAttribArray(attributePointer);
-		//gl.vertexAttribPointer(attributePointer, numElements, type, attribute.normalized, 0, 0);
-		
-		vbos[key] = new Potree.VBO(key, vbo, attribute);
-	}
-	
-	ext.bindVertexArrayOES(null);
-	
-	let vao = new Potree.VAO(id, geometry, vbos);
-	Potree.vaos[geometry.uuid] = vao;
-	
-	return vao;
-};
-
-Potree.renderPointcloud = function(pointcloud, camera, renderer){
-	let gl = renderer.context;
-	let webgl = Potree.webgl;
-	let material = pointcloud.material;
-	
-	if(gl.getExtension("OES_vertex_array_object") === null){
-		console.error("OES_vertex_array_object extension not supported");
-		return;
-	}
-	
-	if(material.needsUpdate){
-		Potree.pointcloudShader = Potree.compileShader(gl,
-			material.vertexShader, material.fragmentShader);
-			
-		material.needsUpdate = false;
-	}
-	
-	let shader = Potree.pointcloudShader;
-	let uniforms = shader.uniforms;
-	
-	gl.useProgram(shader.program);
-	
-	gl.uniformMatrix4fv(uniforms["projectionMatrix"], false, camera.projectionMatrix.elements);
-	gl.uniformMatrix4fv(uniforms["viewMatrix"], false, camera.matrixWorldInverse.elements);
-	gl.uniform1f(uniforms["fov"], this.material.fov);
-	gl.uniform1f(uniforms["screenWidth"], material.screenWidth);
-	gl.uniform1f(uniforms["screenHeight"], material.screenHeight);
-	gl.uniform1f(uniforms["spacing"], material.spacing);
-	gl.uniform1f(uniforms["near"], material.near);
-	gl.uniform1f(uniforms["far"], material.far);
-	gl.uniform1f(uniforms["size"], material.size);
-	gl.uniform1f(uniforms["minSize"], material.minSize);
-	gl.uniform1f(uniforms["maxSize"], material.maxSize);
-	gl.uniform1f(uniforms["octreeSize"], pointcloud.pcoGeometry.boundingBox.getSize().x);
-	
-	{
-		let apPosition = gl.getAttribLocation(program, "position");
-		let apColor = gl.getAttribLocation(program, "color");
-		let apNormal = gl.getAttribLocation(program, "normal");
-		let apClassification = gl.getAttribLocation(program, "classification");
-		let apIndices = gl.getAttribLocation(program, "indices");
-		
-		gl.enableVertexAttribArray(apPosition);
-		gl.enableVertexAttribArray(apColor);
-		gl.enableVertexAttribArray(apNormal);
-		gl.enableVertexAttribArray(apClassification);		
-		gl.enableVertexAttribArray(apIndices);
-	}
-	
-	let nodes = pointcloud.visibleNodes;
-	for(let node of nodes){
-		let object = node.sceneNode;
-		let geometry = object.geometry;
-		
-		
-	}
-	
-};
+//Potree.Shader = class Shader{
+//	constructor(vertexShader, fragmentShader, program, uniforms){
+//		this.vertexShader = vertexShader;
+//		this.fragmentShader = fragmentShader;
+//		this.program = program;
+//		this.uniforms = uniforms;
+//	}
+//};
+//
+//Potree.VBO = class VBO{
+//	constructor(name, id, attribute){
+//		this.name = name;
+//		this.id = id;
+//		this.attribute = attribute;
+//	}
+//};
+//
+//Potree.VAO = class VAO{
+//	constructor(id, geometry, vbos){
+//		this.id = id;
+//		this.geometry = geometry;
+//		this.vbos = vbos;
+//	}
+//};
+//
+//Potree.compileShader = function(gl, vertexShader, fragmentShader){
+//	// VERTEX SHADER
+//	let vs = gl.createShader(gl.VERTEX_SHADER);
+//	{
+//		gl.shaderSource(vs, vertexShader);
+//		gl.compileShader(vs);
+//		
+//		let success = gl.getShaderParameter(vs, gl.COMPILE_STATUS);
+//		if (!success) {
+//			console.error("could not compile vertex shader:");
+//			
+//			let log = gl.getShaderInfoLog(vs);
+//			console.error(log, vertexShader);
+//			
+//			return;
+//		}
+//	}
+//	
+//	// FRAGMENT SHADER
+//	let fs = gl.createShader(gl.FRAGMENT_SHADER);
+//	{
+//		gl.shaderSource(fs, fragmentShader);
+//		gl.compileShader(fs);
+//		
+//		let success = gl.getShaderParameter(fs, gl.COMPILE_STATUS);
+//		if (!success) {
+//			console.error("could not compile fragment shader:");
+//			console.error(fragmentShader);
+//			
+//			return;
+//		}
+//	}
+//	
+//	// PROGRAM
+//	let program = gl.createProgram();
+//	gl.attachShader(program, vs);
+//	gl.attachShader(program, fs);
+//	gl.linkProgram(program);
+//	let success = gl.getProgramParameter(program, gl.LINK_STATUS);
+//	if (!success) {
+//		console.error("could not compile shader:");
+//		console.error(vertexShader);
+//		console.error(fragmentShader);
+//			
+//		return;
+//	}
+//	
+//	gl.useProgram(program);
+//	
+//	let uniforms = {};
+//	{ // UNIFORMS
+//		let n = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
+//
+//		for(let i = 0; i < n; i++){
+//			let uniform = gl.getActiveUniform(program, i);
+//			let name = uniform.name;
+//			let loc = gl.getUniformLocation(program, name);
+//
+//			uniforms[name] = loc;
+//		}
+//	}
+//	
+//	let shader = new Potree.Shader(vertexShader, fragmentShader, program, uniforms);
+//	
+//	return shader;
+//};
+//
+//// http://blog.tojicode.com/2012/10/oesvertexarrayobject-extension.html
+//Potree.createVAO = function(gl, geometry){
+//	if(Potree.vaos[geometry.uuid] ==! undefined){
+//		return Potree.vaos[geometry.uuid];
+//	}
+//	
+//	let ext = gl.getExtension("OES_vertex_array_object");
+//	let id = ext.createVertexArrayOES();
+//	
+//	ext.bindVertexArrayOES(id);  
+//	
+//	let vbos = {};
+//	for(let key in geometry.attributes){
+//		let attribute = geometry.attributes[key];
+//		
+//		let type = gl.FLOAT;
+//		if(attribute.array instanceof Uint8Array){
+//			type = gl.UNSIGNED_BYTE;
+//		}else if(attribute.array instanceof Uint16Array){
+//			type = gl.UNSIGNED_SHORT;
+//		}else if(attribute.array instanceof Uint32Array){
+//			type = gl.UNSIGNED_INT;
+//		}else if(attribute.array instanceof Int8Array){
+//			type = gl.BYTE;
+//		}else if(attribute.array instanceof Int16Array){
+//			type = gl.SHORT;
+//		}else if(attribute.array instanceof Int32Array){
+//			type = gl.INT;
+//		}else if(attribute.array instanceof Float32Array){
+//			type = gl.FLOAT;
+//		}
+//		
+//		let vbo = gl.createBuffer();
+//		gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+//		gl.bufferData(gl.ARRAY_BUFFER, attribute.array, gl.STATIC_DRAW);
+//		//gl.enableVertexAttribArray(attributePointer);
+//		//gl.vertexAttribPointer(attributePointer, numElements, type, attribute.normalized, 0, 0);
+//		
+//		vbos[key] = new Potree.VBO(key, vbo, attribute);
+//	}
+//	
+//	ext.bindVertexArrayOES(null);
+//	
+//	let vao = new Potree.VAO(id, geometry, vbos);
+//	Potree.vaos[geometry.uuid] = vao;
+//	
+//	return vao;
+//};
+//
+//Potree.renderPointcloud = function(pointcloud, camera, renderer){
+//	let gl = renderer.context;
+//	let webgl = Potree.webgl;
+//	let material = pointcloud.material;
+//	
+//	if(gl.getExtension("OES_vertex_array_object") === null){
+//		console.error("OES_vertex_array_object extension not supported");
+//		return;
+//	}
+//	
+//	if(material.needsUpdate){
+//		Potree.pointcloudShader = Potree.compileShader(gl,
+//			material.vertexShader, material.fragmentShader);
+//			
+//		material.needsUpdate = false;
+//	}
+//	
+//	let shader = Potree.pointcloudShader;
+//	let uniforms = shader.uniforms;
+//	
+//	gl.useProgram(shader.program);
+//	
+//	gl.uniformMatrix4fv(uniforms["projectionMatrix"], false, camera.projectionMatrix.elements);
+//	gl.uniformMatrix4fv(uniforms["viewMatrix"], false, camera.matrixWorldInverse.elements);
+//	gl.uniform1f(uniforms["fov"], this.material.fov);
+//	gl.uniform1f(uniforms["screenWidth"], material.screenWidth);
+//	gl.uniform1f(uniforms["screenHeight"], material.screenHeight);
+//	gl.uniform1f(uniforms["spacing"], material.spacing);
+//	gl.uniform1f(uniforms["near"], material.near);
+//	gl.uniform1f(uniforms["far"], material.far);
+//	gl.uniform1f(uniforms["size"], material.size);
+//	gl.uniform1f(uniforms["minSize"], material.minSize);
+//	gl.uniform1f(uniforms["maxSize"], material.maxSize);
+//	gl.uniform1f(uniforms["octreeSize"], pointcloud.pcoGeometry.boundingBox.getSize().x);
+//	
+//	{
+//		let apPosition = gl.getAttribLocation(program, "position");
+//		let apColor = gl.getAttribLocation(program, "color");
+//		let apNormal = gl.getAttribLocation(program, "normal");
+//		let apClassification = gl.getAttribLocation(program, "classification");
+//		let apIndices = gl.getAttribLocation(program, "indices");
+//		
+//		gl.enableVertexAttribArray(apPosition);
+//		gl.enableVertexAttribArray(apColor);
+//		gl.enableVertexAttribArray(apNormal);
+//		gl.enableVertexAttribArray(apClassification);		
+//		gl.enableVertexAttribArray(apIndices);
+//	}
+//	
+//	let nodes = pointcloud.visibleNodes;
+//	for(let node of nodes){
+//		let object = node.sceneNode;
+//		let geometry = object.geometry;
+//		
+//		
+//	}
+//	
+//};
 
 
 
@@ -687,31 +687,31 @@ Potree.PointCloudTreeNode = class{
 	
 	getChildren(){
 		throw "override function";
-	};
+	}
 	
 	getBoundingBox(){
 		throw "override function";
-	};
+	}
 
 	isLoaded(){
 		throw "override function";
-	};
+	}
 	
 	isGeometryNode(){
 		throw "override function";
-	};
+	}
 	
 	isTreeNode(){
 		throw "override function";
-	};
+	}
 	
 	getLevel(){
 		throw "override function";
-	};
+	}
 
 	getBoundingSphere(){
 		throw "override function";
-	};
+	}
 	
 };
 
@@ -724,7 +724,7 @@ Potree.PointCloudTree = class PointCloudTree extends THREE.Object3D{
 	
 	initialized(){
 		return this.root !== null;
-	};
+	}
 
 	
 };
@@ -757,7 +757,7 @@ Potree.WorkerPool = class WorkerPool{
 		this.workers[url].push(worker);
 	}
 	
-}
+};
 
 Potree.workerPool = new Potree.WorkerPool();
 
@@ -1607,7 +1607,11 @@ Potree.Shaders["blur.fs"] = [
 
 THREE.EventDispatcher.prototype.removeEventListeners = function(type){
 	
-	if ( this._listeners === undefined ) return;
+	if ( this._listeners === undefined ) {
+		
+		return;
+		
+	}
 	
 	if ( this._listeners[ type ] ) {
 		
@@ -1744,16 +1748,16 @@ Potree.POCLoader = function(){
  */
 Potree.POCLoader.load = function load(url, callback) {
 	try{
-		var pco = new Potree.PointCloudOctreeGeometry();
+		let pco = new Potree.PointCloudOctreeGeometry();
 		pco.url = url;
-		var xhr = new XMLHttpRequest();
+		let xhr = new XMLHttpRequest();
 		xhr.open('GET', url, true);
 		
 		xhr.onreadystatechange = function(){
 			if(xhr.readyState === 4 && (xhr.status === 200 || xhr.status === 0)){
-				var fMno = JSON.parse(xhr.responseText);
+				let fMno = JSON.parse(xhr.responseText);
 				
-				var version = new Potree.Version(fMno.version);
+				let version = new Potree.Version(fMno.version);
 				
 				// assume octreeDir is absolute if it starts with http
 				if(fMno.octreeDir.indexOf("http") === 0){
@@ -1767,10 +1771,10 @@ Potree.POCLoader.load = function load(url, callback) {
 
 				pco.pointAttributes = fMno.pointAttributes;
 				
-				var min = new THREE.Vector3(fMno.boundingBox.lx, fMno.boundingBox.ly, fMno.boundingBox.lz);
-				var max = new THREE.Vector3(fMno.boundingBox.ux, fMno.boundingBox.uy, fMno.boundingBox.uz);
-				var boundingBox = new THREE.Box3(min, max);
-				var tightBoundingBox = boundingBox.clone();
+				let min = new THREE.Vector3(fMno.boundingBox.lx, fMno.boundingBox.ly, fMno.boundingBox.lz);
+				let max = new THREE.Vector3(fMno.boundingBox.ux, fMno.boundingBox.uy, fMno.boundingBox.uz);
+				let boundingBox = new THREE.Box3(min, max);
+				let tightBoundingBox = boundingBox.clone();
 				
 				if(fMno.tightBoundingBox){
 					tightBoundingBox.min.copy(new THREE.Vector3(fMno.tightBoundingBox.lx, fMno.tightBoundingBox.ly, fMno.tightBoundingBox.lz));
@@ -1800,12 +1804,12 @@ Potree.POCLoader.load = function load(url, callback) {
 					pco.pointAttributes = new Potree.PointAttributes(pco.pointAttributes);
 				}
 				
-				var nodes = {};
+				let nodes = {};
 				
 				{ // load root
-					var name = "r";
+					let name = "r";
 					
-					var root = new Potree.PointCloudOctreeGeometryNode(name, pco, boundingBox);
+					let root = new Potree.PointCloudOctreeGeometryNode(name, pco, boundingBox);
 					root.level = 0;
 					root.hasChildren = true;
 					root.spacing = pco.spacing;
@@ -1821,16 +1825,16 @@ Potree.POCLoader.load = function load(url, callback) {
 				
 				// load remaining hierarchy
 				if(version.upTo("1.4")){
-					for( var i = 1; i < fMno.hierarchy.length; i++){
-						var name = fMno.hierarchy[i][0];
-						var numPoints = fMno.hierarchy[i][1];
-						var index = parseInt(name.charAt(name.length-1));
-						var parentName = name.substring(0, name.length-1);
-						var parentNode = nodes[parentName];
-						var level = name.length-1;
-						var boundingBox = Potree.POCLoader.createChildAABB(parentNode.boundingBox, index);
+					for( let i = 1; i < fMno.hierarchy.length; i++){
+						let name = fMno.hierarchy[i][0];
+						let numPoints = fMno.hierarchy[i][1];
+						let index = parseInt(name.charAt(name.length-1));
+						let parentName = name.substring(0, name.length-1);
+						let parentNode = nodes[parentName];
+						let level = name.length-1;
+						let boundingBox = Potree.POCLoader.createChildAABB(parentNode.boundingBox, index);
 						
-						var node = new Potree.PointCloudOctreeGeometryNode(name, pco, boundingBox);
+						let node = new Potree.PointCloudOctreeGeometryNode(name, pco, boundingBox);
 						node.level = level;
 						node.numPoints = numPoints;
 						node.spacing = pco.spacing / Math.pow(2, level);
@@ -1856,11 +1860,11 @@ Potree.POCLoader.load = function load(url, callback) {
 
 Potree.POCLoader.loadPointAttributes = function(mno){
 	
-	var fpa = mno.pointAttributes;
-	var pa = new Potree.PointAttributes();
+	let fpa = mno.pointAttributes;
+	let pa = new Potree.PointAttributes();
 	
-	for(var i = 0; i < fpa.length; i++){   
-		var pointAttribute = Potree.PointAttribute[fpa[i]];
+	for(let i = 0; i < fpa.length; i++){   
+		let pointAttribute = Potree.PointAttribute[fpa[i]];
 		pa.add(pointAttribute);
 	}                                                                     
 	
@@ -1868,43 +1872,28 @@ Potree.POCLoader.loadPointAttributes = function(mno){
 };
 
 
-Potree.POCLoader.createChildAABB = function(aabb, childIndex){
-	var V3 = THREE.Vector3;
-	var min = aabb.min;
-	var max = aabb.max;
-	var dHalfLength = new THREE.Vector3().copy(max).sub(min).multiplyScalar(0.5);
-	var xHalfLength = new THREE.Vector3(dHalfLength.x, 0, 0);
-	var yHalfLength = new THREE.Vector3(0, dHalfLength.y, 0);
-	var zHalfLength = new THREE.Vector3(0, 0, dHalfLength.z);
-
-	var cmin = min;
-	var cmax = new THREE.Vector3().add(min).add(dHalfLength);
-
-	var min, max;
-	if (childIndex === 1) {
-		min = new THREE.Vector3().copy(cmin).add(zHalfLength);
-		max = new THREE.Vector3().copy(cmax).add(zHalfLength);
-	}else if (childIndex === 3) {
-		min = new THREE.Vector3().copy(cmin).add(zHalfLength).add(yHalfLength);
-		max = new THREE.Vector3().copy(cmax).add(zHalfLength).add(yHalfLength);
-	}else if (childIndex === 0) {
-		min = cmin;
-		max = cmax;
-	}else if (childIndex === 2) {
-		min = new THREE.Vector3().copy(cmin).add(yHalfLength);
-		max = new THREE.Vector3().copy(cmax).add(yHalfLength);
-	}else if (childIndex === 5) {
-		min = new THREE.Vector3().copy(cmin).add(zHalfLength).add(xHalfLength);
-		max = new THREE.Vector3().copy(cmax).add(zHalfLength).add(xHalfLength);
-	}else if (childIndex === 7) {
-		min = new THREE.Vector3().copy(cmin).add(dHalfLength);
-		max = new THREE.Vector3().copy(cmax).add(dHalfLength);
-	}else if (childIndex === 4) {
-		min = new THREE.Vector3().copy(cmin).add(xHalfLength);
-		max = new THREE.Vector3().copy(cmax).add(xHalfLength);
-	}else if (childIndex === 6) {
-		min = new THREE.Vector3().copy(cmin).add(xHalfLength).add(yHalfLength);
-		max = new THREE.Vector3().copy(cmax).add(xHalfLength).add(yHalfLength);
+Potree.POCLoader.createChildAABB = function(aabb, index){
+	
+	let min = aabb.min.clone();
+	let max = aabb.max.clone();
+	let size = new THREE.Vector3().subVectors(max, min);
+	
+	if((index & 0b0001) > 0){
+		min.z += size.z / 2;
+	}else{
+		max.z -= size.z / 2;
+	}
+	
+	if((index & 0b0010) > 0){
+		min.y += size.y / 2;
+	}else{
+		max.y -= size.y / 2;
+	}
+	
+	if((index & 0b0100) > 0){
+		min.x += size.x / 2;
+	}else{
+		max.x -= size.x / 2;
 	}
 	
 	return new THREE.Box3(min, max);
@@ -2080,22 +2069,22 @@ Potree.BinaryLoader.prototype.load = function(node){
 		return;
 	}
 
-	var scope = this;
+	let scope = this;
 
-	var url = node.getURL();
+	let url = node.getURL();
 
 	if(this.version.equalOrHigher("1.4")){
 		url += ".bin";
 	}
 
-	var xhr = new XMLHttpRequest();
+	let xhr = new XMLHttpRequest();
 	xhr.open('GET', url, true);
 	xhr.responseType = 'arraybuffer';
 	xhr.overrideMimeType('text/plain; charset=x-user-defined');
 	xhr.onreadystatechange = function() {
 		if (xhr.readyState === 4) {
 			if (xhr.status === 200 || xhr.status === 0) {
-				var buffer = xhr.response;
+				let buffer = xhr.response;
 				scope.parse(node, buffer);
 			} else {
 				console.log('Failed to load file! HTTP status: ' + xhr.status + ", file: " + url);
@@ -2111,8 +2100,8 @@ Potree.BinaryLoader.prototype.load = function(node){
 
 Potree.BinaryLoader.prototype.parse = function(node, buffer){
 
-	var numPoints = buffer.byteLength / node.pcoGeometry.pointAttributes.byteSize;
-	var pointAttributes = node.pcoGeometry.pointAttributes;
+	let numPoints = buffer.byteLength / node.pcoGeometry.pointAttributes.byteSize;
+	let pointAttributes = node.pcoGeometry.pointAttributes;
 
 	if(this.version.upTo("1.5")){
 		node.numPoints = numPoints;
@@ -2122,22 +2111,22 @@ Potree.BinaryLoader.prototype.parse = function(node, buffer){
 	let worker = Potree.workerPool.getWorker(workerPath);
 	
 	worker.onmessage = function(e){
-		var data = e.data;
-		var buffers = data.attributeBuffers;
-		var tightBoundingBox = new THREE.Box3(
+		let data = e.data;
+		let buffers = data.attributeBuffers;
+		let tightBoundingBox = new THREE.Box3(
 			new THREE.Vector3().fromArray(data.tightBoundingBox.min),
 			new THREE.Vector3().fromArray(data.tightBoundingBox.max)
 		);
 
 		Potree.workerPool.returnWorker(workerPath, worker);
 
-		var geometry = new THREE.BufferGeometry();
+		let geometry = new THREE.BufferGeometry();
 
-		for(var property in buffers){
+		for(let property in buffers){
 			if(buffers.hasOwnProperty(property)){
-				var buffer = buffers[property].buffer;
-				var attribute = buffers[property].attribute;
-				var numElements = attribute.numElements;
+				let buffer = buffers[property].buffer;
+				let attribute = buffers[property].attribute;
+				let numElements = attribute.numElements;
 
 				if(parseInt(property) === Potree.PointAttributeNames.POSITION_CARTESIAN){
 					geometry.addAttribute("position", new THREE.BufferAttribute(new Float32Array(buffer), 3));
@@ -2159,7 +2148,7 @@ Potree.BinaryLoader.prototype.parse = function(node, buffer){
 		geometry.addAttribute("indices", new THREE.BufferAttribute(new Float32Array(data.indices), 1));
 
 		if(!geometry.attributes.normal){
-			var buffer = new Float32Array(numPoints*3);
+			let buffer = new Float32Array(numPoints*3);
 			geometry.addAttribute("normal", new THREE.BufferAttribute(new Float32Array(buffer), 3));
 		}
 
@@ -2173,7 +2162,7 @@ Potree.BinaryLoader.prototype.parse = function(node, buffer){
 		node.pcoGeometry.numNodesLoading--;
 	};
 
-	var message = {
+	let message = {
 		buffer: buffer,
 		pointAttributes: pointAttributes,
 		version: this.version.version,
@@ -3059,8 +3048,7 @@ Potree.PointCloudMaterial = function(parameters){
 		classification: 	{ type: "f", value: [] },
 		returnNumber: 		{ type: "f", value: [] },
 		numberOfReturns: 	{ type: "f", value: [] },
-		pointSourceID: 		{ type: "f", value: [] },
-		normal:				{ type: "f", value: [] }
+		pointSourceID: 		{ type: "f", value: [] }
 	};
 	
 	this.uniforms = {
@@ -3260,7 +3248,7 @@ Potree.PointCloudMaterial.prototype.setClipBoxes = function(clipBoxes){
 	}
 
 	this.clipBoxes = clipBoxes;
-	var doUpdate = (this.numClipBoxes != clipBoxes.length) && (clipBoxes.length === 0 || this.numClipBoxes === 0);
+	var doUpdate = (this.numClipBoxes !== clipBoxes.length) && (clipBoxes.length === 0 || this.numClipBoxes === 0);
 
 	this.numClipBoxes = clipBoxes.length;
 	this.uniforms.clipBoxCount.value = this.numClipBoxes;
@@ -3520,7 +3508,7 @@ Object.defineProperty(Potree.PointCloudMaterial.prototype, "treeType", {
 		return this._treeType;
 	},
 	set: function(value){
-		if(this._treeType != value){
+		if(this._treeType !== value){
 			this._treeType = value;
 			this.updateShaderSource();
 		}
@@ -3571,7 +3559,7 @@ Potree.PointCloudMaterial.generateGradientTexture = function(gradient) {
 	var size = 64;
 
 	// create canvas
-	canvas = document.createElement( 'canvas' );
+	let canvas = document.createElement( 'canvas' );
 	canvas.width = size;
 	canvas.height = size;
 
@@ -3593,7 +3581,7 @@ Potree.PointCloudMaterial.generateGradientTexture = function(gradient) {
 	
 	var texture = new THREE.Texture( canvas );
 	texture.needsUpdate = true;
-	textureImage = texture.image;
+	//textureImage = texture.image;
 
 	return texture;
 };
@@ -3611,8 +3599,8 @@ Potree.PointCloudMaterial.generateClassificationTexture  = function(classificati
 	
 	for(var x = 0; x < width; x++){
 		for(var y = 0; y < height; y++){
-			var u = 2 * (x / width) - 1;
-			var v = 2 * (y / height) - 1;
+			//var u = 2 * (x / width) - 1;
+			//var v = 2 * (y / height) - 1;
 			
 			var i = x + width*y;
 			
@@ -3664,7 +3652,7 @@ Potree.EyeDomeLightingMaterial = function(parameters){
 		this.neighbours[2*c+1] = Math.sin(2 * c * Math.PI / this.neighbourCount);
 	}
 	
-	var lightDir = new THREE.Vector3(0.0, 0.0, 1.0).normalize();
+	//var lightDir = new THREE.Vector3(0.0, 0.0, 1.0).normalize();
 	
 	var uniforms = {
 		screenWidth: 	{ type: "f", 	value: 0 },
@@ -3700,17 +3688,19 @@ Potree.EyeDomeLightingMaterial.prototype.getDefines = function(){
 
 Potree.EyeDomeLightingMaterial.prototype.updateShaderSource = function(){
 	var attributes = {};
-	if(this.pointColorType === Potree.PointColorType.INTENSITY
-		|| this.pointColorType === Potree.PointColorType.INTENSITY_GRADIENT){
+	
+	let PC = Potree.PointColorType;
+	
+	if([PC.INTENSITY, PC.INTENSITY_GRADIENT].includes(this.pointColorType)){
 		attributes.intensity = { type: "f", value: [] };
-	}else if(this.pointColorType === Potree.PointColorType.CLASSIFICATION){
+	}else if(this.pointColorType === PC.CLASSIFICATION){
 		//attributes.classification = { type: "f", value: [] };
-	}else if(this.pointColorType === Potree.PointColorType.RETURN_NUMBER){
+	}else if(this.pointColorType === PC.RETURN_NUMBER){
 		attributes.returnNumber = { type: "f", value: [] };
 		attributes.numberOfReturns = { type: "f", value: [] };
-	}else if(this.pointColorType === Potree.PointColorType.SOURCE){
+	}else if(this.pointColorType === PC.SOURCE){
 		attributes.pointSourceID = { type: "f", value: [] };
-	}else if(this.pointColorType === Potree.PointColorType.NORMAL || this.pointColorType === Potree.PointColorType.PHONG){
+	}else if(this.pointColorType === PC.NORMAL || this.pointColorType === Potree.PointColorType.PHONG){
 		attributes.normal = { type: "f", value: [] };
 	}
 	attributes.classification = { type: "f", value: 0 };
@@ -3726,7 +3716,7 @@ Potree.EyeDomeLightingMaterial.prototype.updateShaderSource = function(){
 	this.uniforms.neighbours.value = this.neighbours;
 		
 	this.needsUpdate = true;
-}
+};
 
 Object.defineProperty(Potree.EyeDomeLightingMaterial.prototype, "neighbourCount", {
 	get: function(){
@@ -17962,7 +17952,7 @@ function initSceneList(){
 	});
 };
 
-initSettings = function(){
+let initSettings = function(){
 	
 	$( "#sldMinNodeSize" ).slider({
 		value: viewer.getMinNodeSize(),
@@ -18031,6 +18021,7 @@ let initSidebar = function(){
 	$('#potree_version_number').html(Potree.version.major + "." + Potree.version.minor + Potree.version.suffix);
 	$('.perfect_scrollbar').perfectScrollbar();
 }
+
 class HoverMenuItem{
 
 	constructor(icon, callback){

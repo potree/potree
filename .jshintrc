@@ -14,5 +14,10 @@
 	"esversion": 6,
 	"sub": true,
 	"browser": true,
-	"node": true
+	"node": true,
+	"globals": {
+		"Potree": true,
+		"THREE": true,
+		"$": true
+	}
 }

@@ -125,8 +125,7 @@ Potree.PointCloudMaterial = function(parameters){
 		classification: 	{ type: "f", value: [] },
 		returnNumber: 		{ type: "f", value: [] },
 		numberOfReturns: 	{ type: "f", value: [] },
-		pointSourceID: 		{ type: "f", value: [] },
-		normal:				{ type: "f", value: [] }
+		pointSourceID: 		{ type: "f", value: [] }
 	};
 	
 	this.uniforms = {
@@ -326,7 +325,7 @@ Potree.PointCloudMaterial.prototype.setClipBoxes = function(clipBoxes){
 	}
 
 	this.clipBoxes = clipBoxes;
-	var doUpdate = (this.numClipBoxes != clipBoxes.length) && (clipBoxes.length === 0 || this.numClipBoxes === 0);
+	var doUpdate = (this.numClipBoxes !== clipBoxes.length) && (clipBoxes.length === 0 || this.numClipBoxes === 0);
 
 	this.numClipBoxes = clipBoxes.length;
 	this.uniforms.clipBoxCount.value = this.numClipBoxes;
@@ -586,7 +585,7 @@ Object.defineProperty(Potree.PointCloudMaterial.prototype, "treeType", {
 		return this._treeType;
 	},
 	set: function(value){
-		if(this._treeType != value){
+		if(this._treeType !== value){
 			this._treeType = value;
 			this.updateShaderSource();
 		}
@@ -637,7 +636,7 @@ Potree.PointCloudMaterial.generateGradientTexture = function(gradient) {
 	var size = 64;
 
 	// create canvas
-	canvas = document.createElement( 'canvas' );
+	let canvas = document.createElement( 'canvas' );
 	canvas.width = size;
 	canvas.height = size;
 
@@ -659,7 +658,7 @@ Potree.PointCloudMaterial.generateGradientTexture = function(gradient) {
 	
 	var texture = new THREE.Texture( canvas );
 	texture.needsUpdate = true;
-	textureImage = texture.image;
+	//textureImage = texture.image;
 
 	return texture;
 };
@@ -677,8 +676,8 @@ Potree.PointCloudMaterial.generateClassificationTexture  = function(classificati
 	
 	for(var x = 0; x < width; x++){
 		for(var y = 0; y < height; y++){
-			var u = 2 * (x / width) - 1;
-			var v = 2 * (y / height) - 1;
+			//var u = 2 * (x / width) - 1;
+			//var v = 2 * (y / height) - 1;
 			
 			var i = x + width*y;
 			

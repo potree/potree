@@ -8,6 +8,9 @@ var rename = require('gulp-rename');
 var uglify = require('gulp-uglify');
 var gutil = require('gulp-util');
 var through = require('through');
+var jshint=require('gulp-jshint');
+
+
 var os = require('os');
 var File = gutil.File;
 
@@ -166,6 +169,27 @@ gulp.task("scripts", ['workers','shaders'], function(){
 		.pipe(gulp.dest('build/potree'));
 
 	return;
+});
+
+gulp.task('linter', function(){
+	gulp.src(paths.potree)
+		.pipe(jshint())
+		.pipe(jshint.reporter('default'));
+	gulp.src(paths.laslaz)
+		.pipe(jshint())
+		.pipe(jshint.reporter('default'));
+	gulp.src(workers.laslaz)
+		.pipe(jshint())
+		.pipe(jshint.reporter('default'));
+	gulp.src(workers.LASDecoder)
+		.pipe(jshint())
+		.pipe(jshint.reporter('default'));
+	gulp.src(workers.BinaryDecoder)
+		.pipe(jshint())
+		.pipe(jshint.reporter('default'));
+	gulp.src(workers.GreyhoundBinaryDecoder)
+		.pipe(jshint())
+		.pipe(jshint.reporter('default'));
 });
 
 gulp.task('build', ['scripts']);

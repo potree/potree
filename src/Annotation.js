@@ -1,241 +1,337 @@
-Potree.Annotation = function(scene, args = {}){
-	var scope = this;
+Potree.Annotation = class extends THREE.EventDispatcher{
 	
-	Potree.Annotation.counter++;
-	
-	this.scene = scene;
-	this.ordinal = args.title || Potree.Annotation.counter;
-	this.title = args.title || "No Title";
-	this.description = args.description || "";
-	this.position = args.position || new THREE.Vector3(0,0,0);
-	this.cameraPosition = (args.cameraPosition instanceof Array) ? 
-		new THREE.Vector3().fromArray(args.cameraPosition) : args.cameraPosition;
-	this.cameraTarget = (args.cameraTarget instanceof Array) ? 
-		new THREE.Vector3().fromArray(args.cameraTarget) : args.cameraTarget;
-	this.view = args.view || null;
-	this.keepOpen = false;
-	this.descriptionVisible = false;
-	this.showDescription = true;
-	this.actions = args.actions || [];
-	this.appearance = args.appearance || null;
-	this.isHighlighted = false;
-	
-	this.domElement = document.createElement("div");
-	this.domElement.style.position = "absolute";
-	this.domElement.style.opacity = "0.5";
-	this.domElement.style.padding = "10px";
-	//this.domElement.style.whiteSpace = "nowrap";
-	this.domElement.className = "annotation";
-	
-	if(this.appearance !== null){
-		this.elOrdinal = document.createElement("div");
-		this.elOrdinal.style.position = "relative";
-		this.elOrdinal.style.zIndex = "100";
-		this.elOrdinal.style.width = "fit-content";
+	constructor(args = {}){
+		super();
 		
-		this.elOrdinal.innerHTML = this.appearance;
-		this.domElement.appendChild(this.elOrdinal);
-	}else{
-		this.elOrdinal = document.createElement("div");
-		this.elOrdinal.style.position = "relative";
-		this.elOrdinal.style.color = "white";
-		this.elOrdinal.style.backgroundColor = "black";
-		this.elOrdinal.style.borderRadius = "1.5em";
-		this.elOrdinal.style.fontSize = "1em";
-		this.elOrdinal.style.opacity = "1";
-		this.elOrdinal.style.margin = "auto";
-		this.elOrdinal.style.zIndex = "100";
-		this.elOrdinal.style.width = "fit-content";
-		this.domElement.appendChild(this.elOrdinal);
+		this.scene = null;
+		this.title = args.title || "No Title";
+		this.description = args.description || "";
 		
-		this.elOrdinalText = document.createElement("span");
-		this.elOrdinalText.style.display = "inline-block";
-		this.elOrdinalText.style.verticalAlign = "middle";
-		this.elOrdinalText.style.lineHeight = "1.5em";
-		this.elOrdinalText.style.textAlign = "center";
-		this.elOrdinalText.style.fontFamily = "Arial";
-		this.elOrdinalText.style.fontWeight = "bold";
-		this.elOrdinalText.style.padding = "1px 8px 0px 8px";
-		this.elOrdinalText.style.cursor = "default";
-		this.elOrdinalText.innerHTML = this.ordinal;
-		this.elOrdinalText.style.userSelect = "none";
-		this.elOrdinal.appendChild(this.elOrdinalText);
+		if(!args.position){
+			//this.position = new THREE.Vector3(0, 0, 0);
+			this.position = null;
+		}else if(args.position instanceof THREE.Vector3){
+			this.position = args.position;
+		}else{
+			this.position = new THREE.Vector3(...args.position);
+		}
 		
-		this.elOrdinal.onmouseenter = function(){};
-		this.elOrdinal.onmouseleave = function(){};
-		this.elOrdinalText.onclick = () => {
+		this.cameraPosition = (args.cameraPosition instanceof Array) ? 
+			new THREE.Vector3().fromArray(args.cameraPosition) : args.cameraPosition;
+		this.cameraTarget = (args.cameraTarget instanceof Array) ? 
+			new THREE.Vector3().fromArray(args.cameraTarget) : args.cameraTarget;
+		this.radius = args.radius;
+		this.view = args.view || null;
+		this.keepOpen = false;
+		this.descriptionVisible = false;
+		this.showDescription = true;
+		this.actions = args.actions || [];
+		this.isHighlighted = false;
+		this._visible = true;
+		this.__visible = true;
+		this.collapseThreshold = [args.collapseThreshold, 100].find(e => e !== undefined);
+		
+		this.children = [];
+		this.parent = null;
+		this.boundingBox = new THREE.Box3();
+		
+		let iconClose = Potree.resourcePath + "/icons/close.svg";
+		
+		this.domElement = $(`
+			<div class="annotation" oncontextmenu="return false;">
+				<div class="annotation-titlebar">
+					<span class="annotation-label">${this.title}</span>
+				</div>
+				<div class="annotation-description">
+					<span class="annotation-description-close">
+						<img src="${iconClose}" width="16px">
+					</span>
+					<span class="annotation-description-content">${this.description}</span>
+				</div>
+			</div>
+		`);
+		
+		this.elTitlebar = this.domElement.find(".annotation-titlebar");
+		this.elTitle = this.elTitlebar.find(".annotation-label");
+		this.elDescription = this.domElement.find(".annotation-description");
+		this.elDescriptionClose = this.elDescription.find(".annotation-description-close");
+		//this.elDescriptionContent = this.elDescription.find(".annotation-description-content");
+		
+		this.elTitle.click(() => {
 			if(this.hasView()){
 				this.moveHere(this.scene.camera);
 			}
 			this.dispatchEvent({type: "click", target: this});
-		};
-	}
-	
-	this.domDescription = document.createElement("div");
-	this.domDescription.style.position = "relative";
-	this.domDescription.style.color = "white";
-	this.domDescription.style.backgroundColor = "black";
-	this.domDescription.style.padding = "10px";
-	this.domDescription.style.margin = "5px 0px 0px 0px";
-	this.domDescription.style.borderRadius = "4px";
-	this.domDescription.style.display = "none";
-	this.domDescription.style.maxWidth = "500px";
-	//this.domDescription.className = "annotation";
-	this.domElement.appendChild(this.domDescription);
-	
-	if(this.actions.length > 0){
-		this.elOrdinalText.style.padding = "1px 3px 0px 8px";
+		});
+		
+		this.actions = this.actions.map(a => {
+			if(a instanceof Potree.Action){
+				return a;
+			}else{
+				return new Potree.Action(a);
+			}
+		});
 		
 		for(let action of this.actions){
-			let elButton = document.createElement("img");
+			action.pairWith(this);
+		}
+        
+		let actions = this.actions.filter(
+			a => a.showIn === undefined || a.showIn.includes("scene"));
 		
-			elButton.src = action.icon;
-			elButton.style.width = "24px";
-			elButton.style.height = "24px";
-			elButton.style.filter = "invert(1)";
-			elButton.style.display = "inline-block";
-			elButton.style.verticalAlign = "middle";
-			elButton.style.lineHeight = "1.5em";
-			elButton.style.textAlign = "center";
-			elButton.style.fontFamily = "Arial";
-			elButton.style.fontWeight = "bold";
-			elButton.style.padding = "1px 8px 0px 1px";
-			elButton.style.cursor = "default";	
+		for(let action of actions){
+			this.elTitle.css("padding", "1px 3px 0px 8px");
 			
-			this.elOrdinal.appendChild(elButton);
+			let elButton = $(`<img src="${action.icon}" class="annotation-action-icon">`);
+			this.elTitlebar.append(elButton);
+			elButton.click(() => action.onclick({annotation: this}));
+		}
+		
+		this.elDescriptionClose.hover(
+			e => this.elDescriptionClose.css("opacity", "1"),
+			e => this.elDescriptionClose.css("opacity", "0.5")
+		);
+		this.elDescriptionClose.click(e => this.setHighlighted(false));
+		//this.elDescriptionContent.html(this.description);
+		
+		this.domElement.mouseenter(e => this.setHighlighted(true));
+		this.domElement.mouseleave(e => this.setHighlighted(false));
+		
+		this.domElement.on("touchstart", e => {
+			this.setHighlighted(!this.isHighlighted);
+		});
+	}
+	
+	add(annotation){
+		if(!this.children.includes(annotation)){
+			this.children.push(annotation);
+			annotation.parent = this;
 			
-			elButton.onclick = function(){
-				action.onclick();
-			};
+			let c = this;
+			while(c !== null){
+				c.dispatchEvent({
+					"type": "annotation_added",
+					"annotation": annotation
+				});
+				c = c.parent;
+			}
 		}
 	}
 	
-	{
-		let icon = Potree.resourcePath + "/icons/close.svg";
-		let close = $(`<span><img src="${icon}" width="16px"></span>`);
-		close.css("filter", "invert(100%)");
-		close.css("float", "right");
-		close.css("opacity", "0.5");
-		close.css("margin", "0px 0px 8px 8px");
-		close.hover(e => {
-			close.css("opacity", "1");
-		},e => {
-			close.css("opacity", "0.5");
-		});
-		close.click(e => {
-			this.setHighlighted(false);
-		});
-		$(this.domDescription).append(close);
-		
-		this.elDescriptionText = document.createElement("span");
-		this.elDescriptionText.style.color = "#ffffff";
-		this.elDescriptionText.innerHTML = this.description;
-		this.domDescription.appendChild(this.elDescriptionText);
-	
+	level(){
+		if(this.parent === null){
+			return 0;
+		}else{
+			return this.parent.level() + 1;
+		}
 	}
 	
-	this.domElement.onmouseenter = () => {
-		this.setHighlighted(true);
-	};
+	remove(annotation){
+		this.children = this.children.filter(e => e !== annotation);
+		annotation.parent = null;
+	}
 	
-	$(this.domElement).on("touchstart", e => {
-		this.setHighlighted(!this.isHighlighted);
-	});
+	updateBounds(){
+		let box = new THREE.Box3();
+		
+		if(this.position){
+			box.expandByPoint(this.position);
+		}
+		
+		for(let child of this.children){
+			child.updateBounds();
+			
+			box.union(child.boundingBox);
+		}
+		
+		this.boundingBox.copy(box);
+	}
 	
-	this.domElement.onmouseleave = () => {
-		this.setHighlighted(false);
-	};
+	traverse(callback){
+		let expand = callback(this);
+		
+		if(expand === undefined || expand === true){
+			for(let child of this.children){
+				child.traverse(callback);
+			}
+		}
+	}
 	
-	//$(this.domElement).click(e => {
-	//	this.showDescription = !this.showDescription;
-	//	
-	//	if(this.showDescription){
-	//		$(this.domElement).append($(this.domDescription));
-	//	}else{
-	//		$(this.domDescription).remove(); 
-	//	}
-	//});
+	traverseDescendants(callback){
+		for(let child of this.children){
+			child.traverse(callback);
+		}
+	}
 	
-	this.setHighlighted = function(highlighted){
+	flatten(){
+		let annotations = [];
+		
+		this.traverse(annotation => {
+			annotations.push(annotation);
+		});
+		
+		return annotations;
+	}
+	
+	descendants(){
+		let annotations = [];
+		
+		this.traverse(annotation => {
+			if(annotation !== this){
+				annotations.push(annotation);
+			}
+		});
+		
+		return annotations;
+	}
+	
+	setHighlighted(highlighted){
 		if(highlighted){
-			this.domElement.style.opacity = "0.8";
-			this.elOrdinal.style.boxShadow = "0 0 5px #fff";
-			this.domElement.style.zIndex = "1000";
+			this.domElement.css("opacity", "0.8");
+			this.elTitlebar.css("box-shadow", "0 0 5px #fff");
+			this.domElement.css("z-index", "1000");
 			
 			if(this.description){
 				this.descriptionVisible = true;	
-				this.domDescription.style.display = "block";
-				this.domDescription.style.position = "relative";
+				//this.elDescription.css("display", "block");
+				this.elDescription.fadeIn(200);
+				this.elDescription.css("position", "relative");
 			}
-			
 		}else{
-			this.domElement.style.opacity = "0.5";
-			this.elOrdinal.style.boxShadow = "";
-			this.domElement.style.zIndex = "100";
+			this.domElement.css("opacity", "0.5");
+			this.elTitlebar.css("box-shadow", "");
+			this.domElement.css("z-index", "100");
 			this.descriptionVisible = false;	
-			this.domDescription.style.display = "none";
+			this.elDescription.css("display", "none");
+			//this.elDescription.fadeOut(200);
 		}
 		
 		this.isHighlighted = highlighted;
-	};
+	}
 	
-	this.hasView = function(){
-		let hasView = this.cameraTarget instanceof THREE.Vector3;
-		hasView = hasView && this.cameraPosition instanceof THREE.Vector3;
+	hasView(){
+		let hasPosTargetView = this.cameraTarget instanceof THREE.Vector3;
+		hasPosTargetView = hasPosTargetView && this.cameraPosition instanceof THREE.Vector3;
+		
+		let hasRadiusView = this.radius !== undefined;
+		
+		let hasView = hasPosTargetView || hasRadiusView;
 				
 		return hasView;
 	};
 	
-	this.moveHere = function(camera){		
+	moveHere(camera){		
 		if(!this.hasView()){
 			return;
 		}
-	
+
+		let view = this.scene.view;
+		
 		var animationDuration = 800;
 		var easing = TWEEN.Easing.Quartic.Out;
-
-		{ // animate camera position
-			let tween = new TWEEN.Tween(scope.scene.view.position).to(scope.cameraPosition, animationDuration);
-			tween.easing(easing);
-			//tween.onUpdate(function(){
-			//	console.log(scope.scene.view.position);
-			//});
-			tween.start();
+		
+		
+		let endTarget;
+		if(this.cameraTarget){
+			endTarget = this.cameraTarget;
+		}else if(this.position){
+			endTarget = this.position;
+		}else{
+			endTarget = this.boundingBox.getCenter();
 		}
 		
-		{ // animate camera target
-			var camTargetDistance = camera.position.distanceTo(scope.cameraTarget);
-			var target = new THREE.Vector3().addVectors(
-				camera.position, 
-				camera.getWorldDirection().clone().multiplyScalar(camTargetDistance)
-			);
-			var tween = new TWEEN.Tween(target).to(scope.cameraTarget, animationDuration);
-			tween.easing(easing);
-			tween.onUpdate(function(){
-				//camera.lookAt(target);
-				scope.scene.view.lookAt(target);
-			});
-			tween.onComplete(function(){
-				//camera.lookAt(target);
-				scope.scene.view.lookAt(target);
-				scope.dispatchEvent({type: "focusing_finished", target: scope});
-			});
-		}
+		if(this.cameraPosition){
+			
+			let endPosition = this.cameraPosition;
 
-		scope.dispatchEvent({type: "focusing_started", target: scope});
-		tween.start();
+			{ // animate camera position
+				let tween = new TWEEN.Tween(view.position).to(endPosition, animationDuration);
+				tween.easing(easing);
+				tween.start();
+			}
+			
+			{ // animate camera target
+				var camTargetDistance = camera.position.distanceTo(endTarget);
+				var target = new THREE.Vector3().addVectors(
+					camera.position, 
+					camera.getWorldDirection().clone().multiplyScalar(camTargetDistance)
+				);
+				var tween = new TWEEN.Tween(target).to(endTarget, animationDuration);
+				tween.easing(easing);
+				tween.onUpdate(() => {
+					view.lookAt(target);
+				});
+				tween.onComplete(() => {
+					view.lookAt(target);
+					this.dispatchEvent({type: "focusing_finished", target: this});
+				});
+				
+				this.dispatchEvent({type: "focusing_started", target: this});
+				tween.start();
+			}
+		}else if(this.radius){
+			let direction = view.direction;
+			let endPosition = endTarget.clone().add(direction.multiplyScalar(-this.radius));
+			let startRadius = view.radius;
+			let endRadius = this.radius;
+			
+			{ // animate camera position
+				let tween = new TWEEN.Tween(view.position).to(endPosition, animationDuration);
+				tween.easing(easing);
+				tween.start();
+			}
+			
+			{ // animate radius
+				let t = {x: 0};
+			
+				let tween = new TWEEN.Tween(t)
+					.to({x: 1}, animationDuration)
+					.onUpdate(function(){
+						view.radius = this.x * endRadius + (1 - this.x) * startRadius;
+					});
+				tween.easing(easing);
+				tween.start();
+			}
+			
+		}
 	};
 	
-	this.dispose = function(){
-
-		
+	dispose(){
 		if(this.domElement.parentElement){
 			this.domElement.parentElement.removeChild(this.domElement);
 		}
-
+    
 	};
+	
+	get visible(){
+		return this._visible;
+	}
+	
+	set visible(value){
+		if(this._visible === value){
+			return;
+		}
+		
+		this._visible = value;
+		
+		if(!value){
+			this.traverse(node => {
+				node.__visible = false;
+				node.domElement.css("display", "none");
+			});
+		}else{
+			this.traverse(node => {
+				node.__visible = true;
+			});
+		}
+		
+		this.dispatchEvent({
+			type: "visibility_changed",
+			annotation: this
+		});
+	}
+	
+	toString(){
+		return "Annotation: " + this.title;
+	}
 };
-
-Potree.Annotation.prototype = Object.create( THREE.EventDispatcher.prototype );
-
-Potree.Annotation.counter = 0;

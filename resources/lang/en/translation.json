@@ -49,7 +49,10 @@
         "freeze": "Lock view",
         "language": "Language"
     },
-    "profile": {
+	"annotations": {
+		"show": "show annotations"
+    }, 
+	"profile": {
         "nb_points": "Point number",
         "title": "Height profile",
         "save_las": "Save LAS(3D)",

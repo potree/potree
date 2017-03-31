@@ -189,6 +189,7 @@ Potree.utils = class{
 		let selectedPointcloud = null;
 		let closestDistance = Infinity;
 		let closestIntersection = null;
+		let closestPoint = null;
 		
 		for(let pointcloud of pointclouds){
 			let point = pointcloud.pick(renderer, camera, ray);
@@ -203,6 +204,7 @@ Potree.utils = class{
 				closestDistance = distance;
 				selectedPointcloud = pointcloud;
 				closestIntersection = point.position;
+				closestPoint = point;
 			}
 		}
 		
@@ -210,7 +212,8 @@ Potree.utils = class{
 			return {
 				location: closestIntersection,
 				distance: closestDistance,
-				pointcloud: selectedPointcloud
+				pointcloud: selectedPointcloud,
+				point: closestPoint
 			};
 		}else{
 			return null;

@@ -98,7 +98,12 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree{
 	
 	toTreeNode(geometryNode, parent){
 		var node = new Potree.PointCloudOctreeNode();
+		
+		//if(geometryNode.name === "r40206"){
+		//	console.log("creating node for r40206");
+		//}
 		var sceneNode = new THREE.Points(geometryNode.geometry, this.material);
+		sceneNode.name = geometryNode.name;
 		
 		node.geometryNode = geometryNode;
 		node.sceneNode = sceneNode;
@@ -857,6 +862,8 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree{
 			gl.enableVertexAttribArray( apIndices );
 		}
 		
+		//renderer.resetGLState();
+		
 		for(let i = 0; i < nodes.length; i++){
 			let node = nodes[i];
 			let object = node.sceneNode;
@@ -900,9 +907,10 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree{
 			
 			gl.uniform1f(uniforms["pcIndex"], pickMaterial.pcIndex);
 
-			let numPoints = node.getNumPoints();
+			//let numPoints = node.getNumPoints();
+			let numPoints = geometry.attributes.position.count;
 			if(numPoints > 0){
-				gl.drawArrays( gl.POINTS, 0, node.getNumPoints());		
+				gl.drawArrays( gl.POINTS, 0, numPoints);		
 			}
 			
 			// TODO hack
@@ -929,7 +937,7 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree{
 		//	renderer.context.readPixels( 0, 0, width, height, 
 		//		renderer.context.RGBA, renderer.context.UNSIGNED_BYTE, bp);
 		//	
-		//	var img = pixelsArrayToImage(bp, width, height);
+		//	var img = Potree.utils.pixelsArrayToImage(bp, width, height);
 		//	var screenshot = img.src;
 		//	
 		//	var w = window.open();

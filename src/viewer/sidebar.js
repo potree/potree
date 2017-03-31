@@ -2,21 +2,23 @@
 
 
 let createToolIcon = function(icon, title, callback){
-	let elImg = document.createElement("img");
-	elImg.src = icon;
-	elImg.onclick = callback;
-	elImg.style.width = "32px";
-	elImg.style.height = "32px";
-	elImg.classList.add("button-icon");
-	elImg.setAttribute("data-i18n", title);
-	return elImg;
+	let element = $(`
+		<img src="${icon}" 
+			style="width: 32px; height: 32px" 
+			class="button-icon" 
+			data-i18n="${title}" />
+	`);
+	
+	element.click(callback);
+	
+	return element;
 };
 
 function initToolbar(){
 
 	// ANGLE
-	let elToolbar = document.getElementById("tools");
-	elToolbar.appendChild(createToolIcon(
+	let elToolbar = $("#tools");
+	elToolbar.append(createToolIcon(
 		Potree.resourcePath + "/icons/angle.png",
 		"[title]tt.angle_measurement",
 		function(){
@@ -31,7 +33,7 @@ function initToolbar(){
 	));
 	
 	// POINT
-	elToolbar.appendChild(createToolIcon(
+	elToolbar.append(createToolIcon(
 		Potree.resourcePath + "/icons/point.svg",
 		"[title]tt.angle_measurement",
 		function(){
@@ -47,7 +49,7 @@ function initToolbar(){
 	));
 	
 	// DISTANCE
-	elToolbar.appendChild(createToolIcon(
+	elToolbar.append(createToolIcon(
 		Potree.resourcePath + "/icons/distance.svg",
 		"[title]tt.distance_measurement",
 		function(){
@@ -60,7 +62,7 @@ function initToolbar(){
 	));
 	
 	// HEIGHT
-	elToolbar.appendChild(createToolIcon(
+	elToolbar.append(createToolIcon(
 		Potree.resourcePath + "/icons/height.svg",
 		"[title]tt.height_measurement",
 		function(){
@@ -75,7 +77,7 @@ function initToolbar(){
 	));
 	
 	// AREA
-	elToolbar.appendChild(createToolIcon(
+	elToolbar.append(createToolIcon(
 		Potree.resourcePath + "/icons/area.svg",
 		"[title]tt.area_measurement",
 		function(){
@@ -88,14 +90,14 @@ function initToolbar(){
 	));
 	
 	// VOLUME
-	elToolbar.appendChild(createToolIcon(
+	elToolbar.append(createToolIcon(
 		Potree.resourcePath + "/icons/volume.svg",
 		"[title]tt.volume_measurement",
 		function(){viewer.volumeTool.startInsertion()}
 	));
 	
 	// PROFILE
-	elToolbar.appendChild(createToolIcon(
+	elToolbar.append(createToolIcon(
 		Potree.resourcePath + "/icons/profile.svg",
 		"[title]tt.height_profile",
 		function(){
@@ -105,14 +107,14 @@ function initToolbar(){
 	));
 	
 	// CLIP VOLUME
-	elToolbar.appendChild(createToolIcon(
+	elToolbar.append(createToolIcon(
 		Potree.resourcePath + "/icons/clip_volume.svg",
 		"[title]tt.clip_volume",
 		function(){viewer.volumeTool.startInsertion({clip: true})}
 	));
 	
 	// REMOVE ALL
-	elToolbar.appendChild(createToolIcon(
+	elToolbar.append(createToolIcon(
 		Potree.resourcePath + "/icons/reset_tools.svg",
 		"[title]tt.remove_all_measurement",
 		function(){
@@ -361,15 +363,16 @@ function initMaterials(){
 		"Composite",
 	];
 	
-	let elMaterialList = document.getElementById("optMaterial");
+	let elMaterialList = $("#optMaterial");
 	for(let i = 0; i < options.length; i++){
 		let option = options[i];
-		
-		let elOption = document.createElement("option");
-		elOption.innerHTML = option;
-		elOption.id = "optMaterial_" + option;
-		
-		elMaterialList.appendChild(elOption);
+		let id = "optMaterial_" + option;
+
+		let elOption = $(`
+			<option id="${id}">
+				${option}
+			</option>`);
+		elMaterialList.append(elOption);
 	}
 	
 	let updateMaterialPanel = function(event, ui){
@@ -433,18 +436,19 @@ function initClassificationList(){
 	
 	let addClassificationItem = function(code, name){
 		
-		let id = "chkClassification_" + code;
+		let inputID = "chkClassification_" + code;
 		
 		let element = $(`
 			<li>
-				<label style="white-space: nowrap">
-					<input id="${id}" type="checkbox" checked="true"/> ${name} 
+				<label style="whitespace: nowrap">
+					<input id="${inputID}" type="checkbox" checked/>
+					<span>${name}</span>
 				</label>
 			</li>
 		`);
 		
 		let elInput = element.find("input");
-
+		
 		elInput.click(event => {
 			viewer.setClassificationVisibility(code, event.target.checked);
 		});
@@ -631,45 +635,45 @@ function initAppearance(){
 	
 function initNavigation(){
 
-	let elNavigation = document.getElementById("navigation");
+	let elNavigation = $("#navigation");
 	
-	elNavigation.appendChild(createToolIcon(
+	elNavigation.append(createToolIcon(
 		Potree.resourcePath + "/icons/earth_controls_1.png",
         "[title]tt.earth_control",
 		function(){viewer.setNavigationMode(Potree.EarthControls)}
 	));
 	
-	elNavigation.appendChild(createToolIcon(
+	elNavigation.append(createToolIcon(
 		Potree.resourcePath + "/icons/fps_controls.png",
         "[title]tt.flight_control",
 		function(){viewer.setNavigationMode(Potree.FirstPersonControls)}
 	));
 	
-	elNavigation.appendChild(createToolIcon(
+	elNavigation.append(createToolIcon(
 		Potree.resourcePath + "/icons/orbit_controls.svg",
 		"[title]tt.orbit_control",
 		function(){viewer.setNavigationMode(Potree.OrbitControls)}
 	));
 	
-	elNavigation.appendChild(createToolIcon(
+	elNavigation.append(createToolIcon(
 		Potree.resourcePath + "/icons/focus.svg",
 		"[title]tt.focus_control",
 		function(){viewer.fitToScreen()}
 	));
 	
-	elNavigation.appendChild(createToolIcon(
+	elNavigation.append(createToolIcon(
 		Potree.resourcePath + "/icons/topview.svg",
 		"[title]tt.top_view_control",
 		function(){viewer.setTopView()}
 	));
 	
-	elNavigation.appendChild(createToolIcon(
+	elNavigation.append(createToolIcon(
 		Potree.resourcePath + "/icons/frontview.svg",
 		"[title]tt.front_view_control",
 		function(){viewer.setFrontView()}
 	));
 	
-	elNavigation.appendChild(createToolIcon(
+	elNavigation.append(createToolIcon(
 		Potree.resourcePath + "/icons/leftview.svg",
 		"[title]tt.left_view_control",
 		function(){viewer.setLeftView()}
@@ -706,10 +710,29 @@ function initAnnotationDetails(){
 	// annotation_details
 	let annotationPanel = $("#annotation_details");
 	
+	let registeredEvents = [];
+	
 	let rebuild = () => {
 		console.log("rebuild");
 		
 		annotationPanel.empty();
+		for(let registeredEvent of registeredEvents){
+			let {type, dispatcher, callback} = registeredEvent;
+			dispatcher.removeEventListener(type, callback);
+		}
+		registeredEvents = [];
+		
+		let checked = viewer.getShowAnnotations() ? "checked" : "";
+		
+		let chkEnable = $(`
+			<li><label>
+				<input type="checkbox" id="chkShowAnnotations" ${checked}
+					onClick="viewer.setShowAnnotations(this.checked)"/>
+				<span data-i18n="annotations.show"></span>
+			</label></li>
+		`);
+		annotationPanel.append(chkEnable);
+		
 		
 		let stack = viewer.scene.annotations.children.reverse().map(
 			a => ({annotation: a, container: annotationPanel}));
@@ -741,10 +764,10 @@ function initAnnotationDetails(){
 			let actions = [];
 			{ // ACTIONS, INCLUDING GOTO LOCATION
 				if(annotation.hasView()){
-					let action = {
+					let action = new Potree.Action({
 						"icon": Potree.resourcePath + "/icons/target.svg",
 						"onclick": (e) => {annotation.moveHere(viewer.scene.camera)}
-					};
+					});
 					
 					actions.push(action);
 				}
@@ -754,16 +777,36 @@ function initAnnotationDetails(){
 				}
 			}
 			
+			actions = actions.filter(
+				a => a.showIn === undefined || a.showIn.includes("sidebar"));
+			
 			// FIRST ACTION
 			if(annotation.children.length === 0 && actions.length > 0){
 				let action = actions[0];
 				
 				let elIcon = $(`<img src="${action.icon}" class="annotation-icon">`);
 				
+				if(action.tooltip){
+					elIcon.attr("title", action.tooltip);
+				}
+				
 				elMain.append(elIcon);
-				elMain.click(e => action.onclick(e));
+				elMain.click(e => action.onclick({annotation: annotation}));
 				elMain.mouseover(e => elIcon.css("opacity", 1));
 				elMain.mouseout(e => elIcon.css("opacity", 0.5));
+				
+				{
+					let iconChanged = e => {
+						elIcon.attr("src", e.icon);
+					};
+					
+					action.addEventListener("icon_changed", iconChanged);
+					registeredEvents.push({
+						type: "icon_changed",
+						dispatcher: action,
+						callback: iconChanged
+					});
+				}
 				
 				actions.splice(0, 1);
 			}
@@ -773,12 +816,29 @@ function initAnnotationDetails(){
 				
 				let elIcon = $(`<img src="${action.icon}" class="annotation-icon">`);
 				
+				if(action.tooltip){
+					elIcon.attr("title", action.tooltip);
+				}
+				
 				elIcon.click(e => {
-					action.onclick(e); 
+					action.onclick({annotation: annotation}); 
 					return false;
 				});
 				elIcon.mouseover(e => elIcon.css("opacity", 1));
 				elIcon.mouseout(e => elIcon.css("opacity", 0.5));
+				
+				{
+					let iconChanged = e => {
+						elIcon.attr("src", e.icon);
+					};
+					
+					action.addEventListener("icon_changed", iconChanged);
+					registeredEvents.push({
+						type: "icon_changed",
+						dispatcher: action,
+						callback: iconChanged
+					});
+				}
 				
 				element.append(elIcon);
 			}
@@ -803,7 +863,8 @@ function initAnnotationDetails(){
 					element.next().toggle(100);
 				});
 				
-				let left = ((annotation.level()) * 20) + "px";
+				//let left = ((annotation.level()) * 20) + "px";
+				let left = "20px";
 				let childContainer = $(`<div style="margin: 0px; padding: 0px 0px 0px ${left}; display: none"></div>`);
 				for(let child of annotation.children){
 					container.append(childContainer);
@@ -812,6 +873,8 @@ function initAnnotationDetails(){
 			}
 			
 		};
+		
+		annotationPanel.i18n();
 	};
 	
 	let annotationsChanged = e => {
@@ -819,11 +882,13 @@ function initAnnotationDetails(){
 	};
 	
 	viewer.addEventListener("scene_changed", e => {
-		e.oldScene.removeEventListener("annotation_added", annotationsChanged);
-		e.scene.addEventListener("annotation_added", annotationsChanged);
+		e.oldScene.annotations.removeEventListener("annotation_added", annotationsChanged);
+		e.scene.annotations.addEventListener("annotation_added", annotationsChanged);
 		
 		rebuild();
 	});
+	
+	viewer.scene.annotations.addEventListener("annotation_added", annotationsChanged);
 	
 	rebuild();
 }
@@ -832,8 +897,6 @@ function initMeasurementDetails(){
 
 	let id = 0;
 	let trackedItems = new Map();
-	
-	let elMeasurements = $("#measurement_details");
 	
 	let trackMeasurement = function(scene, measurement){
 		id++;
@@ -846,85 +909,92 @@ function initMeasurementDetails(){
 		
 		trackedItems.set(measurement, track);
 		
-		let removeIcon = Potree.resourcePath + "/icons/remove.svg";
-		
-		let icon = "";
-		let title = "";
-		let removeAction;
-		
+		let panelIcon = "";
+		let panelTitle = "";
+		let removeCallback;
 		if(measurement instanceof Potree.Measure){
 			if(measurement.showDistances && !measurement.showArea && !measurement.showAngles){
-				icon = Potree.resourcePath + "/icons/distance.svg";
-				title = "Distance";
+				panelIcon = Potree.resourcePath + "/icons/distance.svg";
+				panelTitle = "Distance";
 			}else if(measurement.showDistances && measurement.showArea && !measurement.showAngles){
-				icon = Potree.resourcePath + "/icons/area.svg";
-				title = "Area";
+				panelIcon = Potree.resourcePath + "/icons/area.svg";
+				panelTitle = "Area";
 			}else if(measurement.maxMarkers === 1){
-				icon = Potree.resourcePath + "/icons/point.svg";
-				title = "Coordinate";
+				panelIcon = Potree.resourcePath + "/icons/point.svg";
+				panelTitle = "Coordinate";
 			}else if(!measurement.showDistances && !measurement.showArea && measurement.showAngles){
-				icon = Potree.resourcePath + "/icons/angle.png";
-				title = "Angle";
+				panelIcon = Potree.resourcePath + "/icons/angle.png";
+				panelTitle = "Angle";
 			}else if(measurement.showHeight){
-				icon = Potree.resourcePath + "/icons/height.svg";
-				title = "Height";
+				panelIcon = Potree.resourcePath + "/icons/height.svg";
+				panelTitle = "Height";
 			}
 			
-			removeAction = function(){scene.removeMeasurement(measurement);};
+			removeCallback = () => scene.removeMeasurement(measurement);
 		} else if(measurement instanceof Potree.Profile){
-			icon = Potree.resourcePath + "/icons/profile.svg";
-			title = "Profile";
+			panelIcon = Potree.resourcePath + "/icons/profile.svg";
+			panelTitle = "Profile";
 			
-			removeAction = function(){scene.removeProfile(measurement);};
+			removeCallback = () => scene.removeProfile(measurement);
 		} else if(measurement instanceof Potree.Volume){
-			icon = Potree.resourcePath + "/icons/volume.svg";
-			title = "Volume";
+			panelIcon = Potree.resourcePath + "/icons/volume.svg";
+			panelTitle = "Volume";
 			
-			removeAction = function(){scene.removeVolume(volume);};
+			removeCallback = () => scene.removeVolume(measurement);
 		}
 		
-		let element = $(`
+		let removeIconPath = Potree.resourcePath + "/icons/remove.svg";
+		
+		let elLi = $(`
 			<li>
 				<div class="potree-panel panel-default">
+				
+					<!-- Header -->
 					<div class="potree-panel-heading pv-panel-heading">
-						<img class="measurement-panel-icon" src="${icon}"/>
-						<span class="measurement-panel-title">${title}</span>
-						<img class="measurement-panel-remove" src="${removeIcon}"/>
+						<img src="${panelIcon}" style="width: 16px; height: 16px"/>
+						<span style="flex-grow: 1; text-align: center">${panelTitle}</span>
+						<img src="${removeIconPath}" style="width: 16px; height: 16px"/>
 					</div>
+					
+					<!-- Body -->
 					<div class="panel-body">
 					
 					</div>
 				</div>
 			</li>
 		`);
+		$("#measurement_details").append(elLi);
 		
-		let elIcon = element.find(".measurement-panel-icon");
-		let elRemove = element.find(".measurement-panel-remove");
-		let elPanelBody = element.find(".panel-body");
-		elRemove.click(removeAction);
+		let elPanelBody = elLi.find(".panel-body");
+		let elPanelHeader = elLi.find(".potree-panel-heading");
+		let elRemove = elPanelHeader.find("img:last");
 		
-		elMeasurements.append(element);
-		
+		elRemove.click(removeCallback);
+	
 		let widthListener = null;
 		let updateDisplay = function(event){
 		
 			elPanelBody.empty();
+			measurement.removeEventListener("width_changed", widthListener);
+			
 			
 			if(measurement instanceof Potree.Profile){
 				
-				let lblID = "lblProfileWidth_" + id;
-				let sldID = "sldProfileWidth_" + id;
+				let widthText = measurement.getWidth() ? 
+					Potree.utils.addCommas(measurement.getWidth().toFixed(3)) : "-";
 				
-				let element = $(`
+				let labelID = "lblProfileWidth_" + id;
+				let sliderID = "sldProfileWidth_" + id;
+				
+				let elLi = $(`
 					<li style="margin-bottom: 5px">
-						width: 
-						<span id="${lblID}" />
-						<div id="${sldID}"/>
-					</li>
-				`);
+						width: <span id="${labelID}">${widthText}</span>
+						<div id="${sliderID}"> </div>
+					</li>`
+				);
 				
-				let elWidthLabel = element.find(`#${lblID}`);
-				let elWidthSlider = element.find(`#${sldID}`);
+				let elWidthLabel = elLi.find(`#${labelID}`);
+				let elWidthSlider = elLi.find(`#${sliderID}`);
 				
 				elWidthSlider.slider({
 					value: Math.pow((measurement.getWidth() / 1000), 1/4).toFixed(3),
@@ -936,24 +1006,16 @@ function initMeasurementDetails(){
 						measurement.setWidth(val);
 					}
 				});
-				if(measurement.getWidth()){
-					elWidthLabel.html(Potree.utils.addCommas(measurement.getWidth().toFixed(3)));
-				}else{
-					elWidthLabel.html("-");
-				}
 				
-				if(widthListener === null){
-					widthListener = function(event){
-						let val = Math.pow((event.width / 1000), 1/4);
-						elWidthLabel.html(Potree.utils.addCommas(event.width.toFixed(3)));
-						elWidthSlider.slider({value: val});
-					};
-				}
-				if(!measurement.hasEventListener("width_changed", widthListener)){
-					measurement.addEventListener("width_changed", widthListener);
-				}
+				widthListener = (event) => {
+					let val = Math.pow((event.width / 1000), 1/4);
+					elWidthLabel.html(Potree.utils.addCommas(event.width.toFixed(3)));
+					elWidthSlider.slider({value: val});
+				};
 				
-				elPanelBody.append(element);
+				measurement.addEventListener("width_changed", widthListener);
+				
+				elPanelBody.append(elLi);
 			}
 			
 			let positions = [];
@@ -964,7 +1026,7 @@ function initMeasurementDetails(){
 				for(let i = 0; i < points.length; i++){
 					positions.push(points[i].position);
 				}
-			} else if(measurement instanceof Potree.Profile){
+			}else if(measurement instanceof Potree.Profile){
 				positions = measurement.points;
 			}
 			
@@ -980,32 +1042,42 @@ function initMeasurementDetails(){
 				
 				let txt = height.toFixed(3);
 				
-				let elNodeHeight = $(`<div class="measurement-detail-node-marker">${txt}</div>`);
+				let elNodeHeight = $(`
+					<div class="measurement-detail-node-marker">
+						${txt}
+					</div>`);
 				elPanelBody.append(elNodeHeight);
 			}
 			
 			for(let i = 0; i < positions.length; i++){
 				let point = positions[i];
-	
-				let txt = point.toArray().map(e => e.toFixed(3)).join(", ");
+
+				let txt = [point.x, point.y, point.z].map(p => p.toFixed(3)).join(", ");
 				
 				if(measurement && !measurement.showHeight){
-					let elNodeMarker = $(`<div class="measurement-detail-node-marker">${txt}</div>`);
+					let elNodeMarker = $(`
+						<div class="measurement-detail-node-marker">
+							${txt}
+						</div>`);
 					elPanelBody.append(elNodeMarker);
 				}
 				
 				if(i < positions.length - 1){
 					if(measurement && measurement.showDistances){
 						
-						let elEdge = $('<div class="measurement-detail-edge"></div>');
+						let elEdge = $('<div class="measurement-detail-edge">');
 						elPanelBody.append(elEdge);
 						
 						let nextPoint = positions[i+1];
-						let nextGeo = nextPoint;
-						let distance = nextGeo.distanceTo(point);
-						let txt = Potree.utils.addCommas(distance.toFixed(2));
+						let distance = nextPoint.distanceTo(point);
+						let txt = Potree.utils.addCommas(distance.toFixed(3));
 						
-						let elNodeDistance = $(`<div class="measurement-detail-node-distance">${txt}</div>`);
+						let elNodeDistance = $(`
+							<div class="measurement-detail-node-distance">
+								${txt}
+							</div>`);
+						
+						elPanelBody.append(elNodeDistance);
 						
 						elPanelBody.append(elNodeDistance);
 					}
@@ -1013,66 +1085,67 @@ function initMeasurementDetails(){
 				
 				if(measurement && measurement.showAngles){
 					let elEdge = $('<div class="measurement-detail-edge"></div>');
-					elPanelBody.append(elEdge);
+					$(elPanelBody).append(elEdge);
 					
 					let angle = measurement.getAngle(i);
 					let txt = Potree.utils.addCommas((angle*(180.0/Math.PI)).toFixed(1)) + '\u00B0';
-					let elNodeAngle = $('<div>').addClass("measurement-detail-node-angle");
-					elNodeAngle.html(txt);
+					let elNodeAngle = $(`<div class="measurement-detail-node-angle">${txt}</div>`);
+
 					$(elPanelBody).append(elNodeAngle);
 				}
 				
 				if(i < positions.length - 1){
 					let elEdge = $('<div class="measurement-detail-edge"></div>');
-					elPanelBody.append(elEdge);
+					$(elPanelBody).append(elEdge);
 				}
 			}
 			
 			if(points && points.length === 1){
 				let point = points[0];
 				
-				let elTable = $('<table stlye="width: 100%"></table>');
-				elPanelBody.append(elTable);
+				let elTable = $('<table style="width: 100%">');
+				$(elPanelBody).append(elTable);
 				
 				if(point.color){
-					let value = point.color.join(", ");
+					let color = point.color;
+					let text = color.join(", ");
 					
 					elTable.append($(`
 						<tr>
-							<td style="padding: 1px 5px;">rgb</td>
-							<td style="width: 100%; padding: 1px 5px;">${value}</td>
+							<td style="padding: 1px 5px">rgb</td>
+							<td style="width: 100%; padding: 1px 5px;">${text}</td>
 						</tr>
 					`));
 				}
 				
-				if(typeof point.intensity !== "undefined"){
+				if(point.intensity !== undefined){
 					let intensity = point.intensity;
 					
 					elTable.append($(`
 						<tr>
-							<td style="padding: 1px 5px;">intensity</td>
+							<td style="padding: 1px 5px">intensity</td>
 							<td style="width: 100%; padding: 1px 5px;">${intensity}</td>
 						</tr>
 					`));
 				}
 				
-				if(typeof point.classification !== "undefined"){
+				if(point.classification !== undefined){
 					let classification = point.classification;
 					
 					elTable.append($(`
 						<tr>
-							<td style="padding: 1px 5px;">classification</td>
+							<td style="padding: 1px 5px">classification</td>
 							<td style="width: 100%; padding: 1px 5px;">${classification}</td>
 						</tr>
 					`));
 				}
 				
-				if(typeof point.returnNumber !== "undefined"){
+				if(point.returnNumber !== undefined){
 					let returnNumber = point.returnNumber;
-
+					
 					elTable.append($(`
 						<tr>
-							<td style="padding: 1px 5px;">return nr.</td>
+							<td style="padding: 1px 5px">return nr.</td>
 							<td style="width: 100%; padding: 1px 5px;">${returnNumber}</td>
 						</tr>
 					`));
@@ -1083,7 +1156,7 @@ function initMeasurementDetails(){
 					
 					elTable.append($(`
 						<tr>
-							<td style="padding: 1px 5px;">source</td>
+							<td style="padding: 1px 5px">source</td>
 							<td style="width: 100%; padding: 1px 5px;">${source}</td>
 						</tr>
 					`));
@@ -1095,25 +1168,29 @@ function initMeasurementDetails(){
 			if(measurement && measurement.showDistances && measurement.points.length > 1){
 				let txt = "Total: " + Potree.utils.addCommas(measurement.getTotalDistance().toFixed(3));
 				
-				let elNodeTotalDistance = $(`<div class="measurement-detail-node-distance">${txt}</div>`);
-				
-				elPanelBody.append(elNodeTotalDistance);
+				$(elPanelBody).append($(`
+					<div class="measurement-detail-node-distance">${txt}</div>
+				`));
 			}
 			
 			if(measurement && measurement.showArea){
 				let txt = Potree.utils.addCommas(measurement.getArea().toFixed(1)) + "\u00B2";
 				
-				let elNodeArea = $(`<div class="measurement-detail-node-area">${txt}</div>`);
-				
-				elPanelBody.append(elNodeArea);
+				$(elPanelBody).append($(`
+					<div class="measurement-detail-node-area">${txt}</div>
+				`));
 			}
 			
 			if(measurement instanceof Potree.Profile){
-				let elOpenProfileWindow = $('<input type="button" value="show 2d profile" class="measurement-detail-button">');
+				let elOpenProfileWindow = $(`
+					<input type="button" value="show 2d profile" class="measurement-detail-button">
+				`);
+				
 				elOpenProfileWindow.click(e => {
 					viewer._2dprofile.show();
 					viewer._2dprofile.draw(measurement);
 				});
+
 				elPanelBody.append(elOpenProfileWindow);
 			}
 			
@@ -1122,13 +1199,15 @@ function initMeasurementDetails(){
 				let elBottomBar = $(`
 					<span style="display:flex">
 						<span style="flex-grow: 1"></span>
-					</span>
-				`);
-				elPanelBody.append(elBottomBar);
+					</span>`);
+				$(elPanelBody).append(elBottomBar);
 				
 				{
 					let icon = Potree.resourcePath + "/icons/file_geojson.svg";
-					let elDownload = $(`<a href="#" download="measure.json" class="measurepanel_downloads"><img src="${icon}"></img></a>`);
+					let elDownload = $(`
+						<a href="#" download="measure.json" class="measurepanel_downloads">
+							<img src="${icon}" />
+						</a>`);
 					
 					elDownload.click(function(e){
 						let geojson = Potree.GeoJSONExporter.toString(measurement);
@@ -1141,7 +1220,10 @@ function initMeasurementDetails(){
 				
 				{
 					let icon = Potree.resourcePath + "/icons/file_dxf.svg";
-					let elDownload = $(`<a href="#" download="measure.dxf" class="measurepanel_downloads"><img src="${icon}"></img></a>`);
+					let elDownload = $(`
+						<a href="#" download="measure.dxf" class="measurepanel_downloads">
+							<img src="${icon}" />
+						</a>`);
 					
 					elDownload.click(function(e){
 						let dxf = Potree.DXFExporter.toString(measurement);
@@ -1159,7 +1241,7 @@ function initMeasurementDetails(){
 		if(measurement instanceof Potree.Measure){
 			let onremove = function(event){
 				if(event.measurement === measurement){
-					element.remove();
+					$(elLi).remove();
 				}
 			};
 		
@@ -1246,61 +1328,57 @@ function initSceneList(){
 	let scenelist = $('#sceneList');
 	
 	let id = 0;
-	// this works but it looks so wrong. any better way to create a closure around pointcloud?
-	let addPointcloud = function(pointcloud){
-		(function(pointcloud){
-			let elLi = $('<li>');
-			let elLabel = $('<label>');
-			let elInput = $('<input type="checkbox">');
-			
-			elInput[0].checked = pointcloud.visible;
-			elInput[0].id = "scene_list_item_pointcloud_" + id;
-			elLabel[0].id = "scene_list_item_label_pointcloud_" + id;
-			elLabel[0].htmlFor = "scene_list_item_pointcloud_" + id;
-			elLabel.addClass("menu-item");
-			elInput.click(function(event){
-				pointcloud.visible = event.target.checked;
-				if(viewer._2dprofile){
-					viewer._2dprofile.redraw();
-				}
-			});
-			
-			elLi.append(elLabel);
-			elLabel.append(elInput);
-			let pointcloudName = " " + (pointcloud.name ? pointcloud.name : "point cloud " + id);
-			let elPointCloudName = document.createTextNode(pointcloudName);
-			elLabel.append(elPointCloudName);
-			
-			scenelist.append(elLi);
-			
-			pointcloud.addEventListener("name_changed", function(e){
-				if(e.name){
-					elPointCloudName.textContent = " " + e.name;
-				}else{
-					elPointCloudName.textContent = " point cloud " + id;
-				}
-			});
-			
-			id++;
-		})(pointcloud);
+	let addPointcloud = (pointcloud) => {
+		
+		let labelID = "scene_list_item_label_pointcloud_" + id;
+		let inputID = "scene_list_item_pointcloud_" + id;
+		let checked = pointcloud.visible ? "checked" : "";
+		let pointcloudName = " " + (pointcloud.name ? pointcloud.name : "point cloud " + id);
+		
+		let elPointclouds = $(`
+			<li>
+				<label id="${labelID}" for="${inputID}" class="menu-item">
+					<input id="${inputID}" type="checkbox" ${checked}/>
+					<span>${pointcloudName}</span>
+				</label>
+			</li>
+		`);
+		
+		let elInput = elPointclouds.find("input");
+		let elPointCloudLabel = elPointclouds.find("span");
+		
+		elInput.click(function(event){
+			pointcloud.visible = event.target.checked;
+			if(viewer._2dprofile){
+				viewer._2dprofile.redraw();
+			}
+		});
+		
+		scenelist.append(elPointclouds);
+		
+		pointcloud.addEventListener("name_changed", function(e){
+			if(e.name){
+				elPointCloudLabel.innerHTML = " " + e.name;
+			}else{
+				elPointCloudLabel.innerHTML = " point cloud " + id;
+			}
+		});
+		
+		id++;
 	};
 	
-	for(let i = 0; i < viewer.scene.pointclouds.length; i++){
-		let pointcloud = viewer.scene.pointclouds[i];
+	for(let pointcloud of  viewer.scene.pointclouds){
 		addPointcloud(pointcloud);
 	}
 	
 	viewer.addEventListener("scene_changed", (e) => {
 		scenelist.empty();
 		
-		let scene = e.scene;
-		for(let i = 0; i < scene.pointclouds.length; i++){
-			let pointcloud = scene.pointclouds[i];
+		for(let pointcloud of  e.scene.pointclouds){
 			addPointcloud(pointcloud);
 		}
 	});
 	
-	// TODO update scene list on scene switch
 	viewer.addEventListener("pointcloud_loaded", function(event){
 		addPointcloud(event.pointcloud);
 	});
@@ -1327,7 +1405,6 @@ function initSceneList(){
 };
 
 initSettings = function(){
-	//<li>Min Node Size: <span id="lblMinNodeSize"></span><div id="sldMinNodeSize"></div>	</li>
 	
 	$( "#sldMinNodeSize" ).slider({
 		value: viewer.getMinNodeSize(),

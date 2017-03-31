@@ -368,6 +368,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		this.moveSpeed = 10;
 
 		this.showBoundingBox = false;
+		this.showAnnotations = true;
 		this.freeze = false;
 
 		this.mapView;
@@ -375,9 +376,9 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		this.progressBar = new ProgressBar();
 
 		this.stats = new Stats();
-		this.stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
-		document.body.appendChild( this.stats.dom );
-		this.stats.dom.style.left = "100px";
+		//this.stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
+		//document.body.appendChild( this.stats.dom );
+		//this.stats.dom.style.left = "100px";
 		
 		this.potreeRenderer = null;
 		this.highQualityRenderer = null;
@@ -510,18 +511,14 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			
 			if(!this.onAnnotationAdded){
 				this.onAnnotationAdded = e => {
-					//this.renderArea.appendChild(e.annotation.domElement[0]);
-					
-					e.annotation.traverse(node => {
-						this.renderArea.appendChild(node.domElement[0]);
-					});
-					
-					////focusing_finished
-					//e.annotation.addEventListener("focusing_finished", (event) => {
-					//	let distance = this.scene.view.position.distanceTo(this.scene.view.getPivot());
-					//	this.setMoveSpeed(Math.pow(distance, 0.4));
-					//	this.renderer.domElement.focus();
-					//});
+
+				//console.log("annotation added: " + e.annotation.title);
+				
+				e.annotation.traverse(node => {
+					this.renderArea.appendChild(node.domElement[0]);
+					node.scene = this.scene;
+				});
+
 				};
 			}
 		
@@ -852,7 +849,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 	
 	setPointBudget(value){
 
-		if(Potree.pointBudget != value){
+		if(Potree.pointBudget !== value){
 			Potree.pointBudget = parseInt(value);
 			this.dispatchEvent({"type": "point_budget_changed", "viewer": this});
 		}
@@ -862,8 +859,19 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		return Potree.pointBudget;
 	};
 	
+	setShowAnnotations(value){
+		if(this.showAnnotations !== value){
+			this.showAnnotations = value;
+			this.dispatchEvent({"type": "show_annotations_changed", "viewer": this});
+		}
+	}
+	
+	getShowAnnotations(){
+		return this.showAnnotations;
+	}
+	
 	setClipMode(clipMode){
-		if(this.clipMode != clipMode){
+		if(this.clipMode !== clipMode){
 			this.clipMode = clipMode;
 			this.dispatchEvent({"type": "clip_mode_changed", "viewer": this});
 		}
@@ -1498,6 +1506,22 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 	
 	updateAnnotations(){
 		
+		if(!this.getShowAnnotations()){
+			this.scene.annotations.traverseDescendants(descendant => {
+				if(!descendant.__visible || !descendant.visible){
+					return false;
+				}else{
+					descendant.__visible = false;
+					//descendant.domElement[0].style.display = "none";
+					descendant.domElement.fadeOut(200);
+				}
+				
+				return;
+			});
+			
+			return;
+		}
+		
 		this.scene.annotations.updateBounds();
 		this.scene.camera.updateMatrixWorld();
 		
@@ -1509,9 +1533,13 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 				return true;
 			}
 			
+			if(!annotation.visible){
+				return false;
+			}
+			
 			annotation.scene = this.scene;
 			
-			let element = annotation.domElement[0];
+			let element = annotation.domElement;
 			
 			let position = annotation.position;
 			if(!position){
@@ -1529,7 +1557,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 				screenPos.x = this.renderArea.clientWidth * (screenPos.x + 1) / 2;
 				screenPos.y = this.renderArea.clientHeight * (1 - (screenPos.y + 1) / 2);
 				
-				screenPos.x = Math.floor(screenPos.x - element.clientWidth / 2);
+				screenPos.x = Math.floor(screenPos.x - element[0].clientWidth / 2);
 				screenPos.y = Math.floor(screenPos.y - annotation.elTitlebar[0].clientHeight / 2);
 				
 				// SCREEN SIZE
@@ -1540,105 +1568,48 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 				screenSize = radius * projFactor;
 			}
 			
-			element.style.left = screenPos.x + "px";
-			element.style.top = screenPos.y + "px";
+			element.css("left", screenPos.x + "px");
+			element.css("top", screenPos.y + "px");
 			
 			let zIndex = 10000000 - distance * (10000000 / this.scene.camera.far);
 			if(annotation.descriptionVisible){
 				zIndex += 10000000;
 			}
 			
-			element.style.zIndex = parseInt(zIndex);
+			element.css("z-index", parseInt(zIndex));
 			
 			if(annotation.children.length > 0){
-				let expand = screenSize > 100 || annotation.boundingBox.containsPoint(this.scene.camera.position);
+				let expand = screenSize > annotation.collapseThreshold || annotation.boundingBox.containsPoint(this.scene.camera.position);
 				
 				if(!expand){
-					// TODO make sure descendants are invisible
 					annotation.traverseDescendants(descendant => {
-						if(!descendant.visible){
+						if(!descendant.__visible){
 							return;
 						}else{
-							descendant.visible = false;
-							descendant.domElement[0].style.display = "none";
+							descendant.__visible = false;
+							//descendant.domElement.fadeOut(200);
+							descendant.domElement.hide();
 						}
 					});
-					annotation.visible = true;
-					element.style.display = "inline-block";
+					annotation.__visible = true;
+					element.fadeIn(200);
 				}else{
-					annotation.visible = true;
-					element.style.display = "none";
+					annotation.__visible = true;
+					element.fadeOut(200);
 				}
 				
 				return expand;
 			}else{
-				annotation.visible = (-1 <= screenPos.z && screenPos.z <= 1);
-				if(annotation.visible){
-					element.style.display = "inline-block";
+				annotation.__visible = (-1 <= screenPos.z && screenPos.z <= 1);
+				if(annotation.__visible){
+					$(element).fadeIn(200);
 				}else{
-					element.style.display = "none";
+					$(element).fadeOut(200);
 				}
 			}
+			
+			
 		});
-		
-		//let distances = [];
-		//let annotations = this.scene.annotations.descendants();
-        //
-		//let i = 0;
-		//for(let annotation of annotations){
-		//	
-		//	let element = annotation.domElement[0];
-		//	
-		//	let position = annotation.position;
-		//	if(!position){
-		//		position = annotation.boundingBox.getCenter();
-		//	}
-		//	
-		//	let distance = viewer.scene.camera.position.distanceTo(position);
-		//	
-		//	let screenPos = new THREE.Vector3();
-		//	let screenSize = 0;
-		//	{
-		//		// SCREEN POS
-		//		screenPos.copy(position).project(this.scene.camera);
-		//		screenPos.x = this.renderArea.clientWidth * (screenPos.x + 1) / 2;
-		//		screenPos.y = this.renderArea.clientHeight * (1 - (screenPos.y + 1) / 2);
-		//		
-		//		screenPos.x = Math.floor(screenPos.x - element.clientWidth / 2);
-		//		screenPos.y = Math.floor(screenPos.y - annotation.elTitlebar[0].clientHeight / 2);
-		//		
-		//		// SCREEN SIZE
-		//		let fov = Math.PI * viewer.scene.camera.fov / 180;
-		//		let slope = Math.tan(fov / 2.0);
-		//		let projFactor =  0.5 * this.renderArea.clientHeight / (slope * distance);
-		//		
-		//		let radius = annotation.boundingBox.getBoundingSphere().radius;
-		//		screenSize = radius * projFactor;
-		//	}
-		//	
-		//	element.style.left = screenPos.x + "px";
-		//	element.style.top = screenPos.y + "px";
-		//	
-		//	
-		//	let visible = screenSize > 100 && (-1 <= screenPos.z && screenPos.z <= 1);
-		//	
-		//	if(visible){
-		//		element.style.display = "inline-block";
-		//	}else{
-		//		element.style.display = "none";
-		//	}
-		//	
-		//	annotation.visible = visible;
-		//	
-		//	let zIndex = 10000000 - distance * (10000000 / this.scene.camera.far);
-		//	if(annotation.descriptionVisible){
-		//		zIndex += 10000000;
-		//	}
-		//	
-		//	element.style.zIndex = parseInt(zIndex);
-		//
-		//	i++;
-		//}
 	}
 
 	update(delta, timestamp){

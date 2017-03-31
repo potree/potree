@@ -157,11 +157,6 @@ Potree.Measure = class Measure extends THREE.Object3D{
 						}
 						
 						this.setPosition(i, I.location);
-						this.dispatchEvent({
-							"type": "marker_moved",
-							"measurement": this,
-							"index": i
-						});
 					}
 				}
 			};

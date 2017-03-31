@@ -283,7 +283,20 @@ body{
 }
 
 
+.measurement-panel-icon{
+	width:			16px;
+	height:			16px;
+}
 
+.measurement-panel-title{
+	flex-grow:		1;
+	text-align:		center;
+}
+
+.measurement-panel-remove{
+	width:			16px;
+	height:			16px;
+}
 
 .measurement-detail-node-marker{
 	border: 		1px solid var(--border-color);
@@ -301,7 +314,7 @@ body{
 	margin-top: 	15px;
 	text-align: 	center;
 	background-color: var(--measurement-detail-node-bg-light);
-	color: 				var(--border-color);
+	color: 			var(--border-color);
 }
 
 .measurement-detail-node-angle{

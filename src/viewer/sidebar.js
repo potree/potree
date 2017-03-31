@@ -1007,7 +1007,6 @@ function initMeasurementDetails(){
 					}
 				});
 				
-				
 				widthListener = (event) => {
 					let val = Math.pow((event.width / 1000), 1/4);
 					elWidthLabel.html(Potree.utils.addCommas(event.width.toFixed(3)));
@@ -1080,6 +1079,7 @@ function initMeasurementDetails(){
 						
 						elPanelBody.append(elNodeDistance);
 						
+						elPanelBody.append(elNodeDistance);
 					}
 				}
 				
@@ -1090,6 +1090,7 @@ function initMeasurementDetails(){
 					let angle = measurement.getAngle(i);
 					let txt = Potree.utils.addCommas((angle*(180.0/Math.PI)).toFixed(1)) + '\u00B0';
 					let elNodeAngle = $(`<div class="measurement-detail-node-angle">${txt}</div>`);
+
 					$(elPanelBody).append(elNodeAngle);
 				}
 				
@@ -1189,7 +1190,7 @@ function initMeasurementDetails(){
 					viewer._2dprofile.show();
 					viewer._2dprofile.draw(measurement);
 				});
-				
+
 				elPanelBody.append(elOpenProfileWindow);
 			}
 			

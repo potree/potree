@@ -375,6 +375,21 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 		unloadedGeometry[i].load();
 	}
 	
+	for(let node of visibleNodes){
+		//let allowedNodes = ["r", "r0", "r4", "r04", "r40", "r402", "r4020", "r4022", "r40206", "r40224", "r40202", "r40220", "r00", "r042"];
+		//let allowedNodes = ["r", "r0", "r4", "r04", "r40", "r402", "r4020", "r4022", "r00", "r042"];
+		//let allowedNodes = ["r", "r0", "r04", "r042"];
+		let allowedNodes = ["r", "r4", "r40", "r402", "r4020", "r40206"];
+		//let allowedNodes = ["r", "r4", "r40", "r402", "r4020"];
+		node.sceneNode.visible = allowedNodes.includes(node.geometryNode.name);
+		
+		if(node.boundingBoxNode){
+			node.boundingBoxNode.visible = node.boundingBoxNode.visible && node.sceneNode.visible;
+		}
+		
+	}
+	
+	
 	Potree.updateDEMs(renderer, visibleNodes);
 
 	return {
@@ -2334,130 +2349,135 @@ Potree.GreyhoundBinaryLoader.prototype.parse = function(node, buffer){
  * @author Oscar Martinez Rubi
  * @author Connor Manning
  */
-var getQueryParam = function(name) {
-    name = name.replace(/[\[\]]/g, "\\$&");
-    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
-        results = regex.exec(window.location.href);
-    if (!results) return null;
-    if (!results[2]) return '';
-    return decodeURIComponent(results[2].replace(/\+/g, " "));
-}
+
+class GreyhoundUtils{
+	
+	static getQueryParam(name) {
+		name = name.replace(/[\[\]]/g, "\\$&");
+		var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+			results = regex.exec(window.location.href);
+		if (!results) return null;
+		if (!results[2]) return '';
+		return decodeURIComponent(results[2].replace(/\+/g, " "));
+	}
+	
+	static createSchema(attributes) {
+		var schema = [
+			{ "name": "X", "size": 4, "type": "signed" },
+			{ "name": "Y", "size": 4, "type": "signed" },
+			{ "name": "Z", "size": 4, "type": "signed" }
+		];
+
+		// Once we include options in the UI to load a dynamic list of available
+		// attributes for visualization (f.e. Classification, Intensity etc.)
+		// we will be able to ask for that specific attribute from the server,
+		// where we are now requesting all attributes for all points all the time.
+		// If we do that though, we also need to tell Potree to redraw the points
+		// that are already loaded (with different attributes).
+		// This is not default behaviour.
+		attributes.forEach(function(item) {
+			if(item === 'COLOR_PACKED') {
+				schema.push({ "name": "Red",      "size": 2, "type": "unsigned" });
+				schema.push({ "name": "Green",    "size": 2, "type": "unsigned" });
+				schema.push({ "name": "Blue",     "size": 2, "type": "unsigned" });
+			} else if(item === 'INTENSITY'){
+				schema.push({ "name": "Intensity", "size": 2, "type": "unsigned" });
+			} else if(item === 'CLASSIFICATION') {
+				schema.push(
+						{ "name": "Classification", "size": 1, "type": "unsigned" });
+			}
+		});
+
+	  return schema;
+	}
+	
+	static fetch(url, cb) {
+		var xhr = new XMLHttpRequest();
+		xhr.open('GET', url, true);
+		xhr.onreadystatechange = function() {
+			if (xhr.readyState === 4) {
+				if (xhr.status === 200 || xhr.status === 0) {
+					cb(null, xhr.responseText);
+				}
+				else {
+					cb(xhr.responseText);
+				}
+			}
+		};
+		xhr.send(null);
+	};
+
+	static fetchBinary(url, cb) {
+		var xhr = new XMLHttpRequest();
+		xhr.open('GET', url, true);
+		xhr.responseType = 'arraybuffer';
+		xhr.onreadystatechange = function() {
+			if (xhr.readyState === 4) {
+				if (xhr.status === 200 || xhr.status === 0) {
+					cb(null, xhr.response);
+				}
+				else {
+					cb(xhr.responseText);
+				}
+			}
+		};
+		xhr.send(null);
+	};
+
+	static pointSizeFrom(schema) {
+		return schema.reduce((p, c) => p + c.size, 0);
+	};
+
+	static getNormalization(serverURL, baseDepth, cb) {
+		var s = [
+			{ "name": "X",          "size": 4, "type": "floating" },
+			{ "name": "Y",          "size": 4, "type": "floating" },
+			{ "name": "Z",          "size": 4, "type": "floating" },
+			{ "name": "Red",        "size": 2, "type": "unsigned" },
+			{ "name": "Green",      "size": 2, "type": "unsigned" },
+			{ "name": "Blue",       "size": 2, "type": "unsigned" },
+			{ "name": "Intensity",  "size": 2, "type": "unsigned" }
+		];
+
+		var url = serverURL + 'read?depth=' + baseDepth +
+			'&schema=' + JSON.stringify(s);
+
+		GreyhoundUtils.fetchBinary(url, function(err, buffer) {
+			if (err) throw new Error(err);
+
+			var view = new DataView(buffer);
+			var numBytes = buffer.byteLength - 4;
+			var numPoints = view.getUint32(numBytes, true);
+			var pointSize = GreyhoundUtils.pointSizeFrom(s);
+
+			var colorNorm = false, intensityNorm = false;
+			var v;
+
+			for (var offset = 0; offset < numBytes; offset += pointSize) {
+				if (view.getUint16(offset + 12, true) > 255 ||
+					view.getUint16(offset + 14, true) > 255 ||
+					view.getUint16(offset + 16, true) > 255) {
+					colorNorm = true;
+				}
+
+				if (view.getUint16(18, true) > 255) {
+					intensityNorm = true;
+				}
+
+				if (colorNorm && intensityNorm) break;
+			}
+
+			if (colorNorm) console.log('Normalizing color');
+			if (intensityNorm) console.log('Normalizing intensity');
+
+			cb(null, { color: colorNorm, intensity: intensityNorm });
+		});
+	};
+	
+};
 
 Potree.GreyhoundLoader = function() { };
 Potree.GreyhoundLoader.loadInfoJSON = function load(url, callback) { }
-
-var createSchema = function(attributes) {
-    var schema = [
-        { "name": "X", "size": 4, "type": "signed" },
-        { "name": "Y", "size": 4, "type": "signed" },
-        { "name": "Z", "size": 4, "type": "signed" }
-    ];
-
-	// Once we include options in the UI to load a dynamic list of available
-    // attributes for visualization (f.e. Classification, Intensity etc.)
-	// we will be able to ask for that specific attribute from the server,
-    // where we are now requesting all attributes for all points all the time.
-	// If we do that though, we also need to tell Potree to redraw the points
-    // that are already loaded (with different attributes).
-	// This is not default behaviour.
-    attributes.forEach(function(item) {
-        if(item === 'COLOR_PACKED') {
-            schema.push({ "name": "Red",      "size": 2, "type": "unsigned" });
-            schema.push({ "name": "Green",    "size": 2, "type": "unsigned" });
-            schema.push({ "name": "Blue",     "size": 2, "type": "unsigned" });
-        } else if(item === 'INTENSITY'){
-            schema.push({ "name": "Intensity", "size": 2, "type": "unsigned" });
-        } else if(item === 'CLASSIFICATION') {
-            schema.push(
-                    { "name": "Classification", "size": 1, "type": "unsigned" });
-        }
-    });
-
-  return schema;
-}
-
-var fetch = function(url, cb) {
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', url, true);
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4) {
-            if (xhr.status === 200 || xhr.status === 0) {
-                cb(null, xhr.responseText);
-            }
-            else {
-                cb(xhr.responseText);
-            }
-        }
-    };
-    xhr.send(null);
-};
-
-var fetchBinary = function(url, cb) {
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', url, true);
-    xhr.responseType = 'arraybuffer';
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4) {
-            if (xhr.status === 200 || xhr.status === 0) {
-                cb(null, xhr.response);
-            }
-            else {
-                cb(xhr.responseText);
-            }
-        }
-    };
-    xhr.send(null);
-};
-
-var pointSizeFrom = function(schema) {
-    return schema.reduce((p, c) => p + c.size, 0);
-};
-
-var getNormalization = function(serverURL, baseDepth, cb) {
-    var s = [
-        { "name": "X",          "size": 4, "type": "floating" },
-        { "name": "Y",          "size": 4, "type": "floating" },
-        { "name": "Z",          "size": 4, "type": "floating" },
-        { "name": "Red",        "size": 2, "type": "unsigned" },
-        { "name": "Green",      "size": 2, "type": "unsigned" },
-        { "name": "Blue",       "size": 2, "type": "unsigned" },
-        { "name": "Intensity",  "size": 2, "type": "unsigned" }
-    ];
-
-    var url = serverURL + 'read?depth=' + baseDepth +
-        '&schema=' + JSON.stringify(s);
-
-    fetchBinary(url, function(err, buffer) {
-        if (err) throw new Error(err);
-
-        var view = new DataView(buffer);
-        var numBytes = buffer.byteLength - 4;
-        var numPoints = view.getUint32(numBytes, true);
-        var pointSize = pointSizeFrom(s);
-
-        var colorNorm = false, intensityNorm = false;
-        var v;
-
-        for (var offset = 0; offset < numBytes; offset += pointSize) {
-            if (view.getUint16(offset + 12, true) > 255 ||
-                view.getUint16(offset + 14, true) > 255 ||
-                view.getUint16(offset + 16, true) > 255) {
-                colorNorm = true;
-            }
-
-            if (view.getUint16(18, true) > 255) {
-                intensityNorm = true;
-            }
-
-            if (colorNorm && intensityNorm) break;
-        }
-
-        if (colorNorm) console.log('Normalizing color');
-        if (intensityNorm) console.log('Normalizing intensity');
-
-        cb(null, { color: colorNorm, intensity: intensityNorm });
-    });
-};
 
 /**
  * @return a point cloud octree with the root node data loaded.
@@ -2477,7 +2497,7 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
             serverURL = 'http://' + serverURL;
         }
 
-        fetch(serverURL + 'info', function(err, data) {
+        GreyhoundUtils.fetch(serverURL + 'info', function(err, data) {
             if (err) throw new Error(err);
 
             /* We parse the result of the info query, which should be a JSON
@@ -2516,7 +2536,7 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
                 scale = Math.min(scale[0], scale[1], scale[2]);
             }
 
-            if (getQueryParam('scale')) {
+            if (GreyhoundUtils.getQueryParam('scale')) {
                 scale = parseFloat(getQueryParam('scale'));
             }
 
@@ -2561,7 +2581,7 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
             pgg.baseDepth = baseDepth;
             pgg.hierarchyStepSize = HIERARCHY_STEP_SIZE;
 
-            pgg.schema = createSchema(attributes);
+            pgg.schema = GreyhoundUtils.createSchema(attributes);
             var pointSize = pointSizeFrom(pgg.schema);
 
             pgg.pointAttributes = new Potree.PointAttributes(attributes);
@@ -2610,7 +2630,7 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
 
             pgg.nodes = nodes;
 
-            getNormalization(serverURL, greyhoundInfo.baseDepth,
+            GreyhoundUtils.getNormalization(serverURL, greyhoundInfo.baseDepth,
                     function(err, normalize) {
                         if (normalize.color) pgg.normalize.color = true;
                         if (normalize.intensity) pgg.normalize.intensity = true;
@@ -6042,7 +6062,7 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 					<span class="annotation-description-close">
 						<img src="${iconClose}" width="16px">
 					</span>
-					<span class="annotation-description-content"></span>
+					<span class="annotation-description-content">${this.description}</span>
 				</div>
 			</div>
 		`);
@@ -6051,7 +6071,7 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 		this.elTitle = this.elTitlebar.find(".annotation-label");
 		this.elDescription = this.domElement.find(".annotation-description");
 		this.elDescriptionClose = this.elDescription.find(".annotation-description-close");
-		this.elDescriptionContent = this.elDescription.find(".annotation-description-content");
+		//this.elDescriptionContent = this.elDescription.find(".annotation-description-content");
 		
 		this.elTitle.click(() => {
 			if(this.hasView()){
@@ -6088,7 +6108,7 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 			e => this.elDescriptionClose.css("opacity", "0.5")
 		);
 		this.elDescriptionClose.click(e => this.setHighlighted(false));
-		this.elDescriptionContent.html(this.description);
+		//this.elDescriptionContent.html(this.description);
 		
 		this.domElement.mouseenter(e => this.setHighlighted(true));
 		this.domElement.mouseleave(e => this.setHighlighted(false));
@@ -6220,9 +6240,12 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 		if(!this.hasView()){
 			return;
 		}
-	
+
+		let view = this.scene.view;
+		
 		var animationDuration = 800;
 		var easing = TWEEN.Easing.Quartic.Out;
+		
 		
 		let endTarget;
 		if(this.cameraTarget){
@@ -6232,37 +6255,61 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 		}else{
 			endTarget = this.boundingBox.getCenter();
 		}
-		let endPosition = this.cameraPosition;
-		if(!endPosition){
-			let direction = this.scene.view.direction;
-			endPosition = endTarget.clone().add(direction.multiplyScalar(-this.radius));
-		}
-    
-		{ // animate camera position
-			let tween = new TWEEN.Tween(this.scene.view.position).to(endPosition, animationDuration);
-			tween.easing(easing);
-			tween.start();
-		}
 		
-		{ // animate camera target
-			var camTargetDistance = camera.position.distanceTo(endTarget);
-			var target = new THREE.Vector3().addVectors(
-				camera.position, 
-				camera.getWorldDirection().clone().multiplyScalar(camTargetDistance)
-			);
-			var tween = new TWEEN.Tween(target).to(endTarget, animationDuration);
-			tween.easing(easing);
-			tween.onUpdate(() => {
-				this.scene.view.lookAt(target);
-			});
-			tween.onComplete(() => {
-				this.scene.view.lookAt(target);
-				this.dispatchEvent({type: "focusing_finished", target: this});
-			});
+		if(this.cameraPosition){
+			
+			let endPosition = this.cameraPosition;
+
+			{ // animate camera position
+				let tween = new TWEEN.Tween(view.position).to(endPosition, animationDuration);
+				tween.easing(easing);
+				tween.start();
+			}
+			
+			{ // animate camera target
+				var camTargetDistance = camera.position.distanceTo(endTarget);
+				var target = new THREE.Vector3().addVectors(
+					camera.position, 
+					camera.getWorldDirection().clone().multiplyScalar(camTargetDistance)
+				);
+				var tween = new TWEEN.Tween(target).to(endTarget, animationDuration);
+				tween.easing(easing);
+				tween.onUpdate(() => {
+					view.lookAt(target);
+				});
+				tween.onComplete(() => {
+					view.lookAt(target);
+					this.dispatchEvent({type: "focusing_finished", target: this});
+				});
+				
+				this.dispatchEvent({type: "focusing_started", target: this});
+				tween.start();
+			}
+		}else if(this.radius){
+			let direction = view.direction;
+			let endPosition = endTarget.clone().add(direction.multiplyScalar(-this.radius));
+			let startRadius = view.radius;
+			let endRadius = this.radius;
+			
+			{ // animate camera position
+				let tween = new TWEEN.Tween(view.position).to(endPosition, animationDuration);
+				tween.easing(easing);
+				tween.start();
+			}
+			
+			{ // animate radius
+				let t = {x: 0};
+			
+				let tween = new TWEEN.Tween(t)
+					.to({x: 1}, animationDuration)
+					.onUpdate(function(){
+						view.radius = this.x * endRadius + (1 - this.x) * startRadius;
+					});
+				tween.easing(easing);
+				tween.start();
+			}
+			
 		}
-    
-		this.dispatchEvent({type: "focusing_started", target: this});
-		tween.start();
 	};
 	
 	dispose(){
@@ -6772,7 +6819,12 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree{
 	
 	toTreeNode(geometryNode, parent){
 		var node = new Potree.PointCloudOctreeNode();
+		
+		//if(geometryNode.name === "r40206"){
+		//	console.log("creating node for r40206");
+		//}
 		var sceneNode = new THREE.Points(geometryNode.geometry, this.material);
+		sceneNode.name = geometryNode.name;
 		
 		node.geometryNode = geometryNode;
 		node.sceneNode = sceneNode;
@@ -7531,6 +7583,8 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree{
 			gl.enableVertexAttribArray( apIndices );
 		}
 		
+		//renderer.resetGLState();
+		
 		for(let i = 0; i < nodes.length; i++){
 			let node = nodes[i];
 			let object = node.sceneNode;
@@ -7574,9 +7628,10 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree{
 			
 			gl.uniform1f(uniforms["pcIndex"], pickMaterial.pcIndex);
 
-			let numPoints = node.getNumPoints();
+			//let numPoints = node.getNumPoints();
+			let numPoints = geometry.attributes.position.count;
 			if(numPoints > 0){
-				gl.drawArrays( gl.POINTS, 0, node.getNumPoints());		
+				gl.drawArrays( gl.POINTS, 0, numPoints);		
 			}
 			
 			// TODO hack
@@ -7603,7 +7658,7 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree{
 		//	renderer.context.readPixels( 0, 0, width, height, 
 		//		renderer.context.RGBA, renderer.context.UNSIGNED_BYTE, bp);
 		//	
-		//	var img = pixelsArrayToImage(bp, width, height);
+		//	var img = Potree.utils.pixelsArrayToImage(bp, width, height);
 		//	var screenshot = img.src;
 		//	
 		//	var w = window.open();
@@ -9168,11 +9223,6 @@ Potree.Measure = class Measure extends THREE.Object3D{
 						}
 						
 						this.setPosition(i, I.location);
-						this.dispatchEvent({
-							"type": "marker_moved",
-							"measurement": this,
-							"index": i
-						});
 					}
 				}
 			};
@@ -17516,7 +17566,6 @@ function initMeasurementDetails(){
 					}
 				});
 				
-				
 				widthListener = (event) => {
 					let val = Math.pow((event.width / 1000), 1/4);
 					elWidthLabel.html(Potree.utils.addCommas(event.width.toFixed(3)));
@@ -17589,6 +17638,7 @@ function initMeasurementDetails(){
 						
 						elPanelBody.append(elNodeDistance);
 						
+						elPanelBody.append(elNodeDistance);
 					}
 				}
 				
@@ -17599,6 +17649,7 @@ function initMeasurementDetails(){
 					let angle = measurement.getAngle(i);
 					let txt = Potree.utils.addCommas((angle*(180.0/Math.PI)).toFixed(1)) + '\u00B0';
 					let elNodeAngle = $(`<div class="measurement-detail-node-angle">${txt}</div>`);
+
 					$(elPanelBody).append(elNodeAngle);
 				}
 				
@@ -17698,7 +17749,7 @@ function initMeasurementDetails(){
 					viewer._2dprofile.show();
 					viewer._2dprofile.draw(measurement);
 				});
-				
+
 				elPanelBody.append(elOpenProfileWindow);
 			}
 			

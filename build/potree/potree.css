@@ -89,7 +89,6 @@
 
 #potree_sidebar_container a{
 	color: 			#8Aa1c4;
-	//color: 			red;
 }
 
 .potree_menu_toggle{
@@ -144,8 +143,6 @@ a:hover, a:visited, a:link, a:active{
 }
 
 .annotation{
-	//-webkit-transition: opacity .1s;
-	//transition: 	opacity .1s;
 	position:		absolute;
 	padding:		10px;
 	opacity:		0.5;
@@ -158,14 +155,15 @@ a:hover, a:visited, a:link, a:active{
 	font-size:		1em;
 	opacity:		1;
 	margin:			auto;
-	width:			fit-content;
+	display:		table;
+	/* width:			fit-content; */
 }
 
 .annotation-expand{
 	color:			white;
 	font-size:		0.6em;
 	opacity:		1;
-	width:			fit-content;
+	/* width:			fit-content; */
 }
 
 .annotation-action-icon{
@@ -206,22 +204,19 @@ a:hover, a:visited, a:link, a:active{
 }
 
 .annotation-label{
-	//position:		relative;
 	display:		inline-block;
 	height:			100%;
 	flex-grow:		1;
-	//margin:			2px 8px;
 	user-select:	none;
+	-moz-user-select: none;
 	z-index:		100;
-	width:			fit-content;
+	/* width:			fit-content; */
 	vertical-align:	middle;
 	line-height:	1.5em;
-	//text-align:		center;
 	font-family:	Arial;
 	font-weight:	bold;
 	padding:		1px 8px 0px 8px;
 	cursor:			default;
-	user-select:	none;
 	white-space:	nowrap;
 }
 
@@ -288,7 +283,20 @@ body{
 }
 
 
+.measurement-panel-icon{
+	width:			16px;
+	height:			16px;
+}
 
+.measurement-panel-title{
+	flex-grow:		1;
+	text-align:		center;
+}
+
+.measurement-panel-remove{
+	width:			16px;
+	height:			16px;
+}
 
 .measurement-detail-node-marker{
 	border: 		1px solid var(--border-color);
@@ -306,7 +314,7 @@ body{
 	margin-top: 	15px;
 	text-align: 	center;
 	background-color: var(--measurement-detail-node-bg-light);
-	color: 				var(--border-color);
+	color: 			var(--border-color);
 }
 
 .measurement-detail-node-angle{
@@ -416,7 +424,7 @@ body{
 }
 
 .ui-widget-content{
-	background-color: none !important;
+	background-color: transparent !important;
 	color: var(--font-color) !important;
 }
 
@@ -488,22 +496,9 @@ body{
 
 
 
-/* no scrollbar styling in firefox, sadly */
-.navmenu::-webkit-scrollbar{
-  height: 12px;
-}
-
-.navmenu::-webkit-scrollbar-track{
-  background: rgba(0, 0, 0, 0.1);
-}
-
-.navmenu::-webkit-scrollbar-thumb{
-  background: rgba(0, 0, 0, 0.5);
-}
-
 .pv-titlebar{
 	background-color: var(--color-1);
-	color: #var(--color-2);
+	color: var(--color-2);
 	font-weight: 700;
 	padding: 5px;
 }
@@ -604,11 +599,11 @@ body{
 	border-radius: 100px;
 	display: block;
 	user-select: none;
+	-moz-user-select: none;
 }
 
 .hover_menu_icon{
 	position: absolute;
-	//border: 1px solid black;
 	display: inline-block;
 	width: 16px;
 	height: 16px;

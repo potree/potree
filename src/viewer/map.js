@@ -455,6 +455,43 @@ Potree.MapView = class{
 		var view = this.map.getView();
 		view.setCenter(mapCenter);
 		
+		//{
+		//	let bb = this.viewer.getBoundingBox();
+		//	let corners = [
+		//		[bb.min.x, bb.min.y],
+		//		[bb.max.x, bb.min.y],
+		//		[bb.max.x, bb.max.y],
+		//		[bb.min.x, bb.max.y],
+		//		[bb.min.x, bb.min.y]];
+		//		
+		//	let vertices = [];
+		//	
+		//	for(let i = 0; i < corners.length - 1; i++){
+		//		let pieces = 5;
+		//		
+		//		for(let j = 0; j < pieces; j++){
+		//			let t0 = j / pieces;
+		//			let t1 = (j+1) / pieces;
+		//			
+		//			let c0 = corners[i+0];
+		//			let c1 = corners[i+1];
+		//			
+		//			let p0 = [
+		//				(1 - t0) * c0[0] + t0 * c1[0],
+		//				(1 - t0) * c0[1] + t0 * c1[1]];
+		//				
+		//			let p1 = [
+		//				(1 - t1) * c0[0] + t1 * c1[0],
+		//				(1 - t1) * c0[1] + t1 * c1[1]];
+		//			
+		//			vertices.push(this.toMap.forward(p0));
+		//			vertices.push(this.toMap.forward(p1));
+		//		}
+		//	}
+		//	
+		//	this.gExtent.setCoordinates(vertices);
+		//}
+		
 		this.gExtent.setCoordinates([
 			mapExtent.bottomLeft, 
 			mapExtent.bottomRight, 

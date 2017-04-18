@@ -282,6 +282,35 @@ body{
   opacity: 		0.1;
 }
 
+.measurement_item{
+	border-top: 1px solid rgba(0, 0, 0, 0.5);
+	display: block;
+	position: relative;
+	padding: 2px;
+}
+
+.measurement_header{
+	display:flex;
+	cursor: pointer;
+}
+
+.measurement_item_icon{
+	width: 20px; 
+	height: 20px;
+}
+
+.measurement_header_title{
+	flex-grow: 1;
+}
+
+.measurement_icon{
+	padding: 0px 6px 0px 0px;
+}
+
+.measurement_content{
+	padding: 5px;
+}
+
 
 .measurement-panel-icon{
 	width:			16px;

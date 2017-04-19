@@ -60,6 +60,7 @@ Potree.MeasuringTool = class MeasuringTool extends THREE.EventDispatcher{
 		measure.showHeight = args.showHeight || false;
 		measure.closed = args.closed || false;
 		measure.maxMarkers = args.maxMarkers || Infinity;
+		measure.name = args.name || "Measurement";
 		
 		this.sceneMeasurement.add(measure);
 		

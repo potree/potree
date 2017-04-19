@@ -48,7 +48,6 @@
 
 
 .potree_container{
-	/*font-size:	75%;*/
 }
 
 .potree_info_text{
@@ -156,14 +155,12 @@ a:hover, a:visited, a:link, a:active{
 	opacity:		1;
 	margin:			auto;
 	display:		table;
-	/* width:			fit-content; */
 }
 
 .annotation-expand{
 	color:			white;
 	font-size:		0.6em;
 	opacity:		1;
-	/* width:			fit-content; */
 }
 
 .annotation-action-icon{
@@ -210,7 +207,6 @@ a:hover, a:visited, a:link, a:active{
 	user-select:	none;
 	-moz-user-select: none;
 	z-index:		100;
-	/* width:			fit-content; */
 	vertical-align:	middle;
 	line-height:	1.5em;
 	font-family:	Arial;
@@ -286,29 +282,40 @@ body{
 	border-top: 1px solid rgba(0, 0, 0, 0.5);
 	display: block;
 	position: relative;
-	padding: 2px;
 }
 
 .measurement_header{
 	display:flex;
 	cursor: pointer;
+	padding: 2px;
+}
+
+.measurement_header:hover{
+	background-color: rgba(255, 255, 255, 0.1);
 }
 
 .measurement_item_icon{
-	width: 20px; 
-	height: 20px;
+	width: 24px; 
+	height: 24px;
 }
 
 .measurement_header_title{
 	flex-grow: 1;
+	display: flex;
+	align-items: center;
 }
 
 .measurement_icon{
-	padding: 0px 6px 0px 0px;
+	padding: 0px 6px 0px 4px;
 }
 
 .measurement_content{
-	padding: 5px;
+	padding: 5px 15px 5px 10px;
+	background-color: rgba(0, 0, 0, 0.4);
+}
+
+.measurement_value_table{
+	width: 100%;
 }
 
 
@@ -381,6 +388,13 @@ body{
 	width: 		100%;
 	margin-top:	8px;
 }
+
+
+
+
+
+
+
 
 .pv-panel-heading{
 	padding: 	4px !important;
@@ -473,6 +487,10 @@ body{
 	color: var(--color-2);
 	padding: 4px 10px 4px 30px;
 	cursor: pointer;
+}
+
+.accordion > h3:hover{
+	filter: brightness(125%);
 }
 
 .accordion > div{
@@ -617,7 +635,7 @@ body{
 
 
 
-/* HOVER MENU */
+
 
 .hover_menu{
 	position: absolute;
@@ -684,4 +702,3 @@ body{
 	bottom: -5px; 
 	opacity: 1.0;
 }
-

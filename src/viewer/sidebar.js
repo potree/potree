@@ -28,7 +28,8 @@ function initToolbar(){
 				showAngles: true, 
 				showArea: false, 
 				closed: true, 
-				maxMarkers: 3});
+				maxMarkers: 3,
+				name: "Angle"});
 		}
 	));
 	
@@ -44,7 +45,8 @@ function initToolbar(){
 				showCoordinates: true, 
 				showArea: false, 
 				closed: true, 
-				maxMarkers: 1});
+				maxMarkers: 1,
+				name: "Point"});
 		}
 	));
 	
@@ -57,7 +59,8 @@ function initToolbar(){
 			viewer.measuringTool.startInsertion({
 				showDistances: true, 
 				showArea: false, 
-				closed: false});
+				closed: false,
+				name: "Distance"});
 		}
 	));
 	
@@ -72,7 +75,8 @@ function initToolbar(){
 				showHeight: true, 
 				showArea: false, 
 				closed: false, 
-				maxMarkers: 2});
+				maxMarkers: 2,
+				name: "Height"});
 		}
 	));
 	
@@ -85,7 +89,8 @@ function initToolbar(){
 			viewer.measuringTool.startInsertion({
 				showDistances: true, 
 				showArea: true, 
-				closed: true});
+				closed: true,
+				name: "Area"});
 		}
 	));
 	
@@ -904,7 +909,13 @@ function initMeasurementDetails(){
 	let createCoordinatesTable = (measurement) => {
 		
 		let table = $(`
-			<table class="distance_measure_table"></table>
+			<table class="measurement_value_table">
+				<tr>
+					<th>x</th>
+					<th>y</th>
+					<th>z</th>
+				</tr>
+			</table>
 		`);
 		
 		for(let point of measurement.points){
@@ -930,7 +941,7 @@ function initMeasurementDetails(){
 	
 	let createAttributesTable = (point) => {
 		
-		let elTable = $('<table></table>');
+		let elTable = $('<table class="measurement_value_table"></table>');
 		
 		if(point.color){
 			let color = point.color;
@@ -938,8 +949,8 @@ function initMeasurementDetails(){
 			
 			elTable.append($(`
 				<tr>
-					<td style="padding: 1px 5px">rgb</td>
-					<td style="width: 100%; padding: 1px 5px;">${text}</td>
+					<td>rgb</td>
+					<td>${text}</td>
 				</tr>
 			`));
 		}
@@ -947,200 +958,486 @@ function initMeasurementDetails(){
 		return elTable;
 	};
 	
-	let TYPE = {
-		PROFILE: {
-			icon: Potree.resourcePath + "/icons/profile.svg",
-			getTitle: (measurement) => {
-				//let title = measurement.getTotalDistance().toFixed(3);
-				let title = "Profile";
-				return title;
-			},
-			getContent: (measurement) => {
-				//let totalDistance = measurement.getTotalDistance().toFixed(3);
-				
-				let content = $(`
-					<div>
-						<span>Coordinates:</span><br>
-						<span class="coordinates_table_container"></span>
+	class MeasurePanel{
+		constructor(scene, measurement){
+			this.scene = scene;
+			this.measurement = measurement;
+			this.icon = null;
+			
+			this.constructor.counter = (this.constructor.counter === undefined) ? 0 : this.constructor.counter + 1;
+			this.id = this.constructor.counter;
+			
+			let title = measurement.name;
+			
+			this.elPanel = $(`
+				<span class="measurement_item">
+					<!-- HEADER -->
+					<div class="measurement_header" onclick="$(this).next().slideToggle(200)">
+						<span class="measurement_icon"><img src="" class="measurement_item_icon" /></span>
+						<span class="measurement_header_title">${title}</span>
+					</div>
+					
+					<!-- DETAIL -->
+					<div class="measurement_content selectable" style="display: none">
 						
 					</div>
-				`);
-				
-				let container = content.find(".coordinates_table_container");
-				container.append(createCoordinatesTable(measurement));
-				
-				return content;
-			}
-		},
-		DISTANCE: {
-			icon: Potree.resourcePath + "/icons/distance.svg",
-			getTitle: (measurement) => {
-				let title = measurement.getTotalDistance().toFixed(3);
-				return title;
-			},
-			getContent: (measurement) => {
-				let totalDistance = measurement.getTotalDistance().toFixed(3);
-				
-				let content = $(`
-					<div>
-						<span>Coordinates:</span><br>
-						<span class="coordinates_table_container"></span>
-						
-						<br>
-						<span>Total Distance:</span> <span>${totalDistance}</span>
-					</div>
-				`);
-				
-				let container = content.find(".coordinates_table_container");
-				container.append(createCoordinatesTable(measurement));
-				
-				return content;
-			}
-		},
-		AREA: {
-			icon: Potree.resourcePath + "/icons/area.svg",
-			getTitle: (measurement) => {
-				let title = measurement.getArea().toFixed(3) + "\u00B2";
-				return title;
-			},
-			getContent: (measurement) => {
-				let area = measurement.getArea().toFixed(3) + "\u00B2";
-				
-				let content = $(`
-					<div>
-						<span>Coordinates:</span><br>
-						<span class="coordinates_table_container"></span>
-						<br>
-						<span>Area: ${area}</span><br>
-					</div>
-				`);
-				
-				let container = content.find(".coordinates_table_container");
-				container.append(createCoordinatesTable(measurement));
-				
-				return content;
-			}
-		},
-		COORDINATE: {
-			icon: Potree.resourcePath + "/icons/point.svg",
-			getTitle: (measurement) => {
-				let title = measurement.points[0].position.toArray()
-					.map(p => Potree.utils.addCommas(p.toFixed(2)))
-					.join("; ");
-				return title;
-			},
-			getContent: (measurement) => {
-				let content = $(`
-					<div>
-						<span class="coordinates_table_container"></span>
-						<span class="attributes_table_container"></span>
-					</div>
-				`);
-				
-				let coordinateContainer = content.find(".coordinates_table_container");
-				coordinateContainer.append(createCoordinatesTable(measurement));
-				
-				let point = measurement.points[0];
-				let attributesContainer = content.find(".attributes_table_container");
-				attributesContainer.append(createAttributesTable(point));
-				
-				return content;
-			}
-		},
-		ANGLE: {
-			icon: Potree.resourcePath + "/icons/angle.png",
-			getTitle: (measurement) => {
-				let angles = [];
-				for(let i = 0; i < measurement.points.length; i++){
-					angles.push(measurement.getAngle(i) * (180.0/Math.PI));
-				}
-				
-				let title = angles.map(a => a.toFixed(1) + '\u00B0').join(", ");
-				return title;
-			},
-			getContent: (measurement) => {
-				
-				let angles = [];
-				for(let i = 0; i < measurement.points.length; i++){
-					angles.push(measurement.getAngle(i) * (180.0/Math.PI));
-				}
-				angles = angles.map(a => a.toFixed(1) + '\u00B0').join(", ");
-				
-				let content = $(`
-					<div>
-						<span>Coordinates:</span><br>
-						<span class="coordinates_table_container"></span>
-						<br>
-						<span>Angles: ${angles}</span><br>
-					</div>
-				`);
-				
-				let container = content.find(".coordinates_table_container");
-				container.append(createCoordinatesTable(measurement));
-				
-				return content;
-			}
-		},
-		HEIGHT: {
-			icon: Potree.resourcePath + "/icons/height.svg",
-			getTitle: (measurement) => {
-				let points = measurement.points;
-				
-				let sorted = points.slice().sort( (a, b) => a.position.z - b.position.z );
-				let lowPoint = sorted[0].position.clone();
-				let highPoint = sorted[sorted.length - 1].position.clone();
-				let min = lowPoint.z;
-				let max = highPoint.z;
-				let height = max - min;
-				
-				let title = height.toFixed(3);
-				return title;
-			},
-			getContent: (measurement) => {
-				let points = measurement.points;
-				
-				let sorted = points.slice().sort( (a, b) => a.position.z - b.position.z );
-				let lowPoint = sorted[0].position.clone();
-				let highPoint = sorted[sorted.length - 1].position.clone();
-				let min = lowPoint.z;
-				let max = highPoint.z;
-				let height = max - min;
-				height = height.toFixed(3);
-				
-				let content = $(`
-					<div>
-						<span>Coordinates:</span><br>
-						<span class="coordinates_table_container"></span>
-						<br>
-						<span>Height: ${height}</span><br>
-					</div>
-				`);
-				
-				let container = content.find(".coordinates_table_container");
-				container.append(createCoordinatesTable(measurement));
-				
-				return content;
-			}
-		},
-		OTHER: {
-			icon: Potree.resourcePath + "/icons/other.svg",
-			getTitle: (measurement) => {
-				return "other";
-			},
-			getContent: (measurement) => {
-				let content = $(`
-					<div>
-						<span>Coordinates:</span><br>
-						<span class="coordinates_table_container"></span>
-					</div>
-				`);
-				
-				let container = content.find(".coordinates_table_container");
-				container.append(createCoordinatesTable(measurement));
-				
-				return content;
-			}
+				</span>
+			`);
+			
+			this.elContentContainer = this.elPanel.find(".measurement_content");
+			this.elIcon = this.elPanel.find(".measurement_item_icon");
+			
+			this._update = () => {this.update()};
 		}
+		
+		destroy(){
+			
+		}
+		
+		update(){
+			
+		}
+	};
+	
+	class DistancePanel extends MeasurePanel{
+		constructor(scene, measurement){
+			super(scene, measurement);
+			
+			this.typename = "Distance";
+			this.icon = Potree.resourcePath + "/icons/distance.svg";
+			this.elIcon.attr("src", this.icon);
+			
+			let totalDistance = this.measurement.getTotalDistance().toFixed(3);
+			this.elContent = $(`
+				<div>
+					<span class="coordinates_table_container"></span>
+					
+					<br>
+					<span>Total Distance:</span> <span id="distance_${this.id}">${totalDistance}</span>
+					
+					<!-- ACTIONS -->
+					<div style="display: flex; margin-top: 12px">
+						<span></span>
+						<span style="flex-grow: 1"></span>
+						<img class="measurement_action_remove" src="${removeIconPath}" style="width: 16px; height: 16px"/>
+					</div>
+				</div>
+			`);
+			this.elContentContainer.append(this.elContent);
+			
+			let elRemove = this.elContent.find(".measurement_action_remove");
+			elRemove.click(() => {this.scene.removeMeasurement(measurement)});
+			
+			this.measurement.addEventListener("marker_added", this._update);
+			this.measurement.addEventListener("marker_removed", this._update);
+			this.measurement.addEventListener("marker_moved", this._update);
+			
+			this.update();
+		}
+		
+		update(){
+			let elCoordiantesContainer = this.elContent.find(".coordinates_table_container");
+			elCoordiantesContainer.empty();
+			elCoordiantesContainer.append(createCoordinatesTable(this.measurement));
+			
+			let totalDistance = this.measurement.getTotalDistance().toFixed(3);
+			let elDistance = this.elContent.find(`#distance_${this.id}`);
+			elDistance.html(totalDistance);
+		}
+		
+		destroy(){
+			this.elPanel.remove();
+			
+			this.measurement.removeEventListener("marker_added", this._update);
+			this.measurement.removeEventListener("marker_removed", this._update);
+			this.measurement.removeEventListener("marker_moved", this._update);
+		}
+		
+	};
+	
+	class PointPanel extends MeasurePanel{
+		constructor(scene, measurement){
+			super(scene, measurement);
+			
+			this.typename = "Point";
+			this.icon = Potree.resourcePath + "/icons/point.svg";
+			
+			this.elIcon.attr("src", this.icon);
+			
+			let totalDistance = this.measurement.getTotalDistance().toFixed(3);
+			this.elContent = $(`
+				<div>
+					<span class="coordinates_table_container"></span>
+					
+					<br>
+					
+					<!-- ACTIONS -->
+					<div style="display: flex; margin-top: 12px">
+						<span></span>
+						<span style="flex-grow: 1"></span>
+						<img class="measurement_action_remove" src="${removeIconPath}" style="width: 16px; height: 16px"/>
+					</div>
+				</div>
+			`);
+			this.elContentContainer.append(this.elContent);
+			
+			let elRemove = this.elContent.find(".measurement_action_remove");
+			elRemove.click(() => {this.scene.removeMeasurement(measurement)});
+			
+			this.measurement.addEventListener("marker_added", this._update);
+			this.measurement.addEventListener("marker_removed", this._update);
+			this.measurement.addEventListener("marker_moved", this._update);
+			
+			this.update();
+		}
+		
+		update(){
+			let elCoordiantesContainer = this.elContent.find(".coordinates_table_container");
+			elCoordiantesContainer.empty();
+			elCoordiantesContainer.append(createCoordinatesTable(this.measurement));
+		}
+		
+		destroy(){
+			this.elPanel.remove();
+			
+			this.measurement.removeEventListener("marker_added", this._update);
+			this.measurement.removeEventListener("marker_removed", this._update);
+			this.measurement.removeEventListener("marker_moved", this._update);
+		}
+		
+	};
+	
+	class AreaPanel extends MeasurePanel{
+		constructor(scene, measurement){
+			super(scene, measurement);
+			
+			this.typename = "Area";
+			this.icon = Potree.resourcePath + "/icons/area.svg";
+			
+			this.elIcon.attr("src", this.icon);
+			
+			let totalDistance = this.measurement.getTotalDistance().toFixed(3);
+			this.elContent = $(`
+				<div>
+					<span class="coordinates_table_container"></span>
+					
+					<br>
+					
+					<!-- ACTIONS -->
+					<div style="display: flex; margin-top: 12px">
+						<span></span>
+						<span style="flex-grow: 1"></span>
+						<img class="measurement_action_remove" src="${removeIconPath}" style="width: 16px; height: 16px"/>
+					</div>
+				</div>
+			`);
+			this.elContentContainer.append(this.elContent);
+			
+			let elRemove = this.elContent.find(".measurement_action_remove");
+			elRemove.click(() => {this.scene.removeMeasurement(measurement)});
+			
+			this.measurement.addEventListener("marker_added", this._update);
+			this.measurement.addEventListener("marker_removed", this._update);
+			this.measurement.addEventListener("marker_moved", this._update);
+			
+			this.update();
+		}
+		
+		update(){
+			let elCoordiantesContainer = this.elContent.find(".coordinates_table_container");
+			elCoordiantesContainer.empty();
+			elCoordiantesContainer.append(createCoordinatesTable(this.measurement));
+		}
+		
+		destroy(){
+			this.elPanel.remove();
+			
+			this.measurement.removeEventListener("marker_added", this._update);
+			this.measurement.removeEventListener("marker_removed", this._update);
+			this.measurement.removeEventListener("marker_moved", this._update);
+		}
+		
+	};
+	
+	class AnglePanel extends MeasurePanel{
+		constructor(scene, measurement){
+			super(scene, measurement);
+			
+			this.typename = "Angle";
+			this.icon = Potree.resourcePath + "/icons/angle.png";
+			
+			this.elIcon.attr("src", this.icon);
+			
+			let totalDistance = this.measurement.getTotalDistance().toFixed(3);
+			this.elContent = $(`
+				<div>
+					<span class="coordinates_table_container"></span>
+					
+					<br>
+					
+					<!-- ACTIONS -->
+					<div style="display: flex; margin-top: 12px">
+						<span></span>
+						<span style="flex-grow: 1"></span>
+						<img class="measurement_action_remove" src="${removeIconPath}" style="width: 16px; height: 16px"/>
+					</div>
+				</div>
+			`);
+			this.elContentContainer.append(this.elContent);
+			
+			let elRemove = this.elContent.find(".measurement_action_remove");
+			elRemove.click(() => {this.scene.removeMeasurement(measurement)});
+			
+			this.measurement.addEventListener("marker_added", this._update);
+			this.measurement.addEventListener("marker_removed", this._update);
+			this.measurement.addEventListener("marker_moved", this._update);
+			
+			this.update();
+		}
+		
+		update(){
+			let elCoordiantesContainer = this.elContent.find(".coordinates_table_container");
+			elCoordiantesContainer.empty();
+			elCoordiantesContainer.append(createCoordinatesTable(this.measurement));
+		}
+		
+		destroy(){
+			this.elPanel.remove();
+			
+			this.measurement.removeEventListener("marker_added", this._update);
+			this.measurement.removeEventListener("marker_removed", this._update);
+			this.measurement.removeEventListener("marker_moved", this._update);
+		}
+		
+	};
+	
+	class HeightPanel extends MeasurePanel{
+		constructor(scene, measurement){
+			super(scene, measurement);
+			
+			this.typename = "Height";
+			this.icon = Potree.resourcePath + "/icons/height.svg";
+			
+			this.elIcon.attr("src", this.icon);
+			
+			this.elContent = $(`
+				<div>
+					<span class="coordinates_table_container"></span>
+					
+					<br>
+					
+					<!-- ACTIONS -->
+					<div style="display: flex; margin-top: 12px">
+						<span></span>
+						<span style="flex-grow: 1"></span>
+						<img class="measurement_action_remove" src="${removeIconPath}" style="width: 16px; height: 16px"/>
+					</div>
+				</div>
+			`);
+			this.elContentContainer.append(this.elContent);
+			
+			let elRemove = this.elContent.find(".measurement_action_remove");
+			elRemove.click(() => {this.scene.removeMeasurement(measurement)});
+			
+			this.measurement.addEventListener("marker_added", this._update);
+			this.measurement.addEventListener("marker_removed", this._update);
+			this.measurement.addEventListener("marker_moved", this._update);
+			
+			this.update();
+		}
+		
+		update(){
+			let elCoordiantesContainer = this.elContent.find(".coordinates_table_container");
+			elCoordiantesContainer.empty();
+			elCoordiantesContainer.append(createCoordinatesTable(this.measurement));
+		}
+		
+		destroy(){
+			this.elPanel.remove();
+			
+			this.measurement.removeEventListener("marker_added", this._update);
+			this.measurement.removeEventListener("marker_removed", this._update);
+			this.measurement.removeEventListener("marker_moved", this._update);
+		}
+		
+	};
+	
+	class ProfilePanel extends MeasurePanel{
+		constructor(scene, measurement){
+			super(scene, measurement);
+			
+			this.typename = "Profile";
+			this.icon = Potree.resourcePath + "/icons/profile.svg";
+			
+			this.elIcon.attr("src", this.icon);
+			
+			let labelID = "lblProfileWidth_" + this.id;
+			let sliderID = "sldProfileWidth_" + this.id;
+			
+			this.elContent = $(`
+				<div>
+					<span class="coordinates_table_container"></span>
+					
+					<br>
+					
+					<span style="display:flex">
+						<span style="display:flex; align-items: center; padding-right: 10px">Width: </span>
+						<input id="${sliderID}" name="${sliderID}" value="5.06" style="flex-grow: 1; width:100%">
+					</span>
+					
+					<!-- ACTIONS -->
+					<div style="display: flex; margin-top: 12px">
+						<span></span>
+						<span style="flex-grow: 1"></span>
+						<img class="measurement_action_remove" src="${removeIconPath}" style="width: 16px; height: 16px"/>
+					</div>
+				</div>
+			`);
+			this.elContentContainer.append(this.elContent);
+			
+			
+			{ // width spinner
+				let elWidthLabel = this.elContent.find(`#${labelID}`);
+				let elWidthSlider = this.elContent.find(`#${sliderID}`);
+				
+				let startValue = 0;
+				
+				elWidthSlider.spinner({
+					min: 0,
+					max: 10*1000*1000,
+					step: 0.01,
+					numberFormat: "n",
+					start: (event, ui) => {
+						startValue = measurement.getWidth();
+					},
+					spin: (event, ui) => {
+						let value = elWidthSlider.spinner("value");
+						measurement.setWidth(value);
+					},
+					change: (event, ui) => {
+						let value = elWidthSlider.spinner("value");
+						measurement.setWidth(value);
+					},
+					stop: (event, ui) => {
+						let value = elWidthSlider.spinner("value");
+						measurement.setWidth(value);
+					},
+					incremental: (count) => {
+						let value = elWidthSlider.spinner("value");
+						let step = elWidthSlider.spinner("option", "step");
+						
+						let delta = value * 0.05;
+						let increments = parseInt(delta / step);
+						
+						return increments;
+					}
+				});
+				elWidthSlider.spinner("value", measurement.getWidth());
+				elWidthSlider.spinner("widget").css("width", "100%");
+
+				this.widthListener = (event) => {
+					let value = elWidthSlider.spinner("value");
+					if(value !== measurement.getWidth()){
+						elWidthSlider.spinner("value", measurement.getWidth());
+					}
+				};
+				
+				measurement.addEventListener("width_changed", this.widthListener);
+			}
+			
+			
+			let elRemove = this.elContent.find(".measurement_action_remove");
+			elRemove.click(() => {this.scene.removeProfile(measurement)});
+			
+			this.measurement.addEventListener("marker_added", this._update);
+			this.measurement.addEventListener("marker_removed", this._update);
+			this.measurement.addEventListener("marker_moved", this._update);
+			
+			this.update();
+		}
+		
+		update(){
+			let elCoordiantesContainer = this.elContent.find(".coordinates_table_container");
+			elCoordiantesContainer.empty();
+			elCoordiantesContainer.append(createCoordinatesTable(this.measurement));
+		}
+		
+		destroy(){
+			this.elPanel.remove();
+			
+			this.measurement.removeEventListener("marker_added", this._update);
+			this.measurement.removeEventListener("marker_removed", this._update);
+			this.measurement.removeEventListener("marker_moved", this._update);
+			this.measurement.removeEventListener("width_changed", this.widthListener);
+		}
+		
+	};
+	
+	class VolumePanel extends MeasurePanel{
+		constructor(scene, measurement){
+			super(scene, measurement);
+			
+			this.typename = "Volume";
+			this.icon = Potree.resourcePath + "/icons/volume.svg";
+			
+			this.elIcon.attr("src", this.icon);
+			
+			this.elContent = $(`
+				<div>
+					
+					<input type="button" value="download" id="download_volume_${this.id}"/>
+					
+					<!-- ACTIONS -->
+					<div style="display: flex; margin-top: 12px">
+						<span></span>
+						<span style="flex-grow: 1"></span>
+						<img class="measurement_action_remove" src="${removeIconPath}" style="width: 16px; height: 16px"/>
+					</div>
+				</div>
+			`);
+			this.elContentContainer.append(this.elContent);
+			
+			this.elDownloadButton = this.elContent.find(`#download_volume_${this.id}`);
+			this.elDownloadButton.click(() => this.download());
+			
+			let elRemove = this.elContent.find(".measurement_action_remove");
+			elRemove.click(() => {this.scene.removeVolume(measurement)});
+			
+			this.measurement.addEventListener("marker_added", this._update);
+			this.measurement.addEventListener("marker_removed", this._update);
+			this.measurement.addEventListener("marker_moved", this._update);
+			
+			this.update();
+		}
+		
+		download(){
+			
+			
+			
+		}
+		
+		update(){
+			
+		}
+		
+		destroy(){
+			this.elPanel.remove();
+			
+			this.measurement.removeEventListener("marker_added", this._update);
+			this.measurement.removeEventListener("marker_removed", this._update);
+			this.measurement.removeEventListener("marker_moved", this._update);
+		}
+		
+	};
+	
+	let TYPE = {
+		DISTANCE: {panel: DistancePanel},
+		AREA: {panel: AreaPanel},
+		POINT: {panel: PointPanel},
+		ANGLE: {panel: AnglePanel},
+		HEIGHT: {panel: HeightPanel},
+		PROFILE: {panel: ProfilePanel},
+		VOLUME: {panel: VolumePanel},
 	};
 	
 	let getType = (measurement) => {
@@ -1150,7 +1447,7 @@ function initMeasurementDetails(){
 			}else if(measurement.showDistances && measurement.showArea && !measurement.showAngles){
 				return TYPE.AREA;
 			}else if(measurement.maxMarkers === 1){
-				return TYPE.COORDINATE;
+				return TYPE.POINT;
 			}else if(!measurement.showDistances && !measurement.showArea && measurement.showAngles){
 				return TYPE.ANGLE;
 			}else if(measurement.showHeight){
@@ -1161,106 +1458,48 @@ function initMeasurementDetails(){
 		}else if(measurement instanceof Potree.Profile){
 			return TYPE.PROFILE;
 		}else if(measurement instanceof Potree.Volume){
-			return TYPE.Volume;
+			return TYPE.VOLUME;
 		}
 	};
 	
 	let trackMeasurement = (scene, measurement) => {
 		id++;
 		
+		let type = getType(measurement);
+		
+		let panel = new type.panel(scene, measurement);
+		mlist.append(panel.elPanel);
+		
 		let track = {
 			scene: scene,
 			measurement: measurement,
-			stopTracking: (e) => {}
+			panel: panel,
+			stopTracking: (e) => {panel.destroy()}
 		};
 		trackedItems.set(measurement, track);
-		
-		let type = getType(measurement);
-		let icon = type.icon;
-		
-		let item = $(`
-			<span class="measurement_item">
-				<!-- HEADER -->
-				<div class="measurement_header" onclick="$(this).next().slideToggle(200)">
-					<span class="measurement_icon"><img src="${icon}" class="measurement_item_icon" /></span>
-					<span class="measurement_header_title"></span>
-					<!--<img src="${removeIconPath}" style="width: 16px; height: 16px"/>-->
-				</div>
-				
-				<!-- DETAIL -->
-				<div class="measurement_content selectable" style="display: none">
-					
-				</div>
-			</span>
-		`);
-		mlist.append(item);
-		
-		let update = () => {
-			let elTitle = item.find(".measurement_header_title");
-			elTitle.html(type.getTitle(measurement));
+
+		let onremove = (e) => {
 			
-			let elContent = item.find(".measurement_content");
-			elContent.empty();
-			elContent.append(type.getContent(measurement));
+			let remove = () => {
+				panel.destroy();
+				scene.removeEventListener("measurement_removed", onremove);
+				scene.removeEventListener("profile_removed", onremove);
+				scene.removeEventListener("volume_removed", onremove);
+			};
 			
-			let elActions = $(`
-				<div style="display: flex">
-					<span></span>
-					<span style="flex-grow: 1"></span>
-					<img class="measurement_action_remove" src="${removeIconPath}" style="width: 16px; height: 16px"/>
-				</div>
-			`);
+			if(e.measurement instanceof Potree.Measure && e.measurement === measurement){
+				remove();
+			}else if(e.profile instanceof Potree.Profile && e.profile === measurement){
+				remove();
+			}else if(e.volume instanceof Potree.Volume && e.volume === measurement){
+				remove();
+			}
 			
-			let elRemove = elActions.find(".measurement_action_remove");
-			elRemove.click(() => {scene.removeMeasurement(measurement)});
-			
-			elContent.append(elActions);
 		};
 		
-		update();
-		
-		if(measurement instanceof Potree.Measure){
-			let onremove = function(event){
-				if(event.measurement === measurement){
-					item.remove();
-					track.stopTracking();
-				}
-			};
-			
-			measurement.addEventListener("marker_added", update);
-			measurement.addEventListener("marker_removed", update);
-			measurement.addEventListener("marker_moved", update);
-			scene.addEventListener("measurement_removed", onremove);
-			
-			track.stopTracking = (e) => {
-				measurement.removeEventListener("marker_added", update);
-				measurement.removeEventListener("marker_removed", update);
-				measurement.removeEventListener("marker_moved", update);
-				scene.removeEventListener("measurement_removed", onremove);
-			};
-		}else if(measurement instanceof Potree.Profile){
-			let onremove = function(event){
-				if(event.measurement === measurement){
-					item.remove();
-					track.stopTracking();
-				}
-			};
-			
-			measurement.addEventListener("marker_added", update);
-			measurement.addEventListener("marker_removed", update);
-			measurement.addEventListener("marker_moved", update);
-			scene.addEventListener("profile_removed", onremove);
-			
-			track.stopTracking = (e) => {
-				measurement.removeEventListener("marker_added", update);
-				measurement.removeEventListener("marker_removed", update);
-				measurement.removeEventListener("marker_moved", update);
-				scene.removeEventListener("profile_removed", onremove);
-			};
-		}
-		
-		
-		
+		scene.addEventListener("measurement_removed", onremove);
+		scene.addEventListener("profile_removed", onremove);
+		scene.addEventListener("volume_removed", onremove);
 	};
 	
 	let scenelistener = (e) => {

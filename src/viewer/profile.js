@@ -12,7 +12,58 @@ Potree.Viewer.Profile = class ProfileWindow{
 		this.maximized = false;
 		this.threshold = 20*1000;
 		
+		this.elRoot = $("#profile_window");
+		
+		this.renderArea = this.elRoot.find("#profileCanvasContainer");
+		this.renderer = new THREE.WebGLRenderer({premultipliedAlpha: false});
+		this.renderer.setSize(10, 10);
+		this.renderer.autoClear = false;
+		this.renderArea.append($(this.renderer.domElement));
+		this.renderer.domElement.tabIndex = "2222";
+		this.renderer.context.getExtension("EXT_frag_depth");
+		$(this.renderer.domElement).css("width", "100%");
+		$(this.renderer.domElement).css("height", "100%");
+		
+		this.camera = new THREE.OrthographicCamera(-10, 10, 10, -10, -1000, 1000);
+		
+		this.scene = new THREE.Scene();
+		this.scene.background = new THREE.Color( 0x00ff00 );
+		
+		let sg = new THREE.SphereGeometry(5, 32, 32);
+		let sm = new THREE.MeshNormalMaterial();
+		let s = new THREE.Mesh(sg, sm);
+		s.position.set(100, 100, 0);
+		this.scene.add(s);
+		
+		this.maxPoints = 50*1000;
+		this.geometry = new THREE.BufferGeometry();
+		this.buffers = {
+			position: new Float32Array(3 * this.maxPoints),
+			color: new Uint8Array(3 * this.maxPoints),
+		};
+		this.numPoints = 0;
+		this.geometry.addAttribute("position", new THREE.BufferAttribute(this.buffers.position, 3));
+		this.geometry.addAttribute("color", new THREE.BufferAttribute(this.buffers.color, 3, true));
+		this.geometry.setDrawRange(0, 100);
+		this.material =  new THREE.PointsMaterial( { size: 0.001, vertexColors: THREE.VertexColors } );
+		this.tPoints = new THREE.Points(this.geometry, this.material);
+		this.scene.add(this.tPoints);
+		
+		this.min = new THREE.Vector3(0, 0, 0);
+		this.max = new THREE.Vector3(0, 0, 0);
+		
+		//this.renderArea.mousemove(event => {
+		//	this.render();
+		//});
+		
+		
 		this.scheduledDraw = null;
+		
+		this.redraw = () => {
+			if(this.currentProfile){
+				this.draw(this.currentProfile);
+			}
+		};
 		
 		$('#closeProfileContainer').click(() => {
 			this.hide();
@@ -29,34 +80,22 @@ Potree.Viewer.Profile = class ProfileWindow{
 			}
 		});
 		
-		//this.drawOnChange = (event) => {
-		//	this.redraw();
-		//};
-		
-		this.redraw = () => {
-			if(this.currentProfile){
-				this.draw(this.currentProfile);
-			}
-		};
-		
-		viewer.addEventListener("height_range_changed", this.redraw);
-		
-		let width = document.getElementById('profile_window').clientWidth;
-		let height = document.getElementById('profile_window').clientHeight;
-		let resizeLoop = () => {
-			requestAnimationFrame(resizeLoop);
 
-			let newWidth = document.getElementById('profile_window').clientWidth;
-			let newHeight = document.getElementById('profile_window').clientHeight;
-
-			if(newWidth !== width || newHeight !== height){
-				setTimeout(this.redraw, 50, {profile: this.currentProfile});
-			}
-
-			width = newWidth;
-			height = newHeight;
-		};
-		requestAnimationFrame(resizeLoop);
+	}
+	
+	render(){
+		let width = this.renderArea[0].clientWidth;
+		let height = this.renderArea[0].clientHeight;
+		
+		this.camera.left = -width/2;
+		this.camera.right = width/2;
+		this.camera.top = height/2;
+		this.camera.bottom = -height/2;
+		this.camera.updateProjectionMatrix();
+		
+		this.renderer.setSize(width, height);
+		
+		this.renderer.render(this.scene, this.camera);
 	}
 	
 	show(){
@@ -76,40 +115,68 @@ Potree.Viewer.Profile = class ProfileWindow{
 		this.requests = [];
 	};
 	
-	preparePoints(profileProgress){
+	handleNewPoints(profileProgress){
+		let prepared = this.preparePoints(profileProgress);
+		
+		if(prepared.numPoints === 0){
+			return;
+		}
+		
+		if(this.numPoints === 0){
+			this.min.fromArray(prepared.buffers.position, 3);
+			this.max.fromArray(prepared.buffers.position, 3);
+		}
+		
+		for(let i = 0; i < prepared.numPoints; i++){
+			let pos = new THREE.Vector3().fromArray(
+				prepared.buffers.position.slice(3*i, 3*i+3));
+			this.min.min(pos);
+			this.max.max(pos);
+		}
+		
+		let newNumPoints = this.numPoints + prepared.numPoints;
+		
+		let position = this.buffers.position;
+		let color = this.buffers.color;
+		
+		position.set(prepared.buffers.position, 3 * this.numPoints);
+		color.set(prepared.buffers.color, 3 * this.numPoints);
+		
+		for(let i = 1; i < 100; i+=3){
+			position[i] = position[i] - 700;
+		}
+		
+		this.geometry.attributes.position.needsUpdate = true;
+		this.geometry.attributes.color.needsUpdate = true;
+        
+		this.geometry.setDrawRange(0, newNumPoints);
+		
+		this.numPoints = newNumPoints;
+		
+		let center = new THREE.Vector3().addVectors(this.min, this.max)
+			.multiplyScalar(0.5);
+		this.camera.position.copy(center);
+	}
 	
+	preparePoints(profileProgress){
+		
 		let segments = profileProgress.segments;
 		if (segments.length === 0){
 			return false;
 		}
 		
-		let data = [];
+		let numPoints = profileProgress.size();
+		
+		let position = new Float32Array(3 * numPoints);
+		let color = new Uint8Array(3 * numPoints);
+		
 		let distance = 0;
 		let totalDistance = 0;
 		let min = new THREE.Vector3(Math.max());
 		let max = new THREE.Vector3(0);
 
-		// Get the same color map as Three
-		let hr = this.viewer.getHeightRange();
-		
-		let heightRange = hr.max - hr.min;
-		let colorRange = [];
-		let colorDomain = [];
-		
-		// Read the altitude gradient used in 3D scene
-		let gradient = viewer.scene.pointclouds[0].material.gradient;
-		for (let c = 0; c < gradient.length; c++){
-			colorDomain.push(hr.min + heightRange * gradient[c][0]);
-			colorRange.push('#' + gradient[c][1].getHexString());
-		}
-		
-		// Altitude color map scale
-		let colorRamp = d3.scale.linear()
-		  .domain(colorDomain)
-		  .range(colorRange)
-		  .clamp(true);
-		  
 		// Iterate the profile's segments
+		let i = 0;
 		for(let segment of segments){
 			let sv = new THREE.Vector3().subVectors(segment.end, segment.start).setZ(0)
 			let segmentLength = sv.length();
@@ -123,168 +190,43 @@ Potree.Viewer.Profile = class ProfileWindow{
 				min.min(p);
 				max.max(p);
 				
+				// TODO length is probably wrong here
 				let distance = totalDistance + pl.length();
 				
-				let d = {
-					distance: distance,
-					x: p.x,
-					y: p.y,
-					z: p.z,
-					altitude: p.z,
-					heightColor: colorRamp(p.z),
-					color: points.color ? points.color[j] : [0, 0, 0],
-					intensity: points.intensity ? points.intensity[j] : 0,
-					classification: points.classification ? points.classification[j] : 0,
-					returnNumber: points.returnNumber ? points.returnNumber[j] : 0,
-					numberOfReturns: points.numberOfReturns ? points.numberOfReturns[j] : 0,
-					pointSourceID: points.pointSourceID ? points.pointSourceID[j] : 0,
-				};
+				// important are 
+				// distance
+				// p.z
+				// points.color ? points.color[j] : [0, 0, 0]
 				
-				data.push(d);
+				position[3*i + 0] = distance;
+				position[3*i + 1] = p.z;
+				position[3*i + 2] = 0;
+				
+				let c = points.color ? points.color[j] : [0, 0, 0];
+				color[3*i + 0] = c[0];
+				color[3*i + 1] = c[1];
+				color[3*i + 2] = c[2];
+				
+				
+				i++;
 			}
 
-			// Increment distance from the profile start point
 			totalDistance += segmentLength;
 		}
-
-		let output = {
-			'data': data,
-			'minX': min.x,
-			'minY': min.y,
-			'minZ': min.z,
-			'maxX': max.x,
-			'maxY': max.y,
-			'maxZ': max.z
+		
+		let result = {
+			numPoints: numPoints,
+			min: min,
+			max: max,
+			buffers: {
+				position: position,
+				color: color
+			}
 		};
 
-		return output;
+		return result;
 	};
 	
-	pointHighlight(coordinates){
-    
-		let pointSize = 6;
-		
-		let svg = d3.select("svg#profileSVG");
-		
-		// Find the hovered point if applicable
-		let d = this.points;
-		let sx = this.scaleX;
-		let sy = this.scaleY;
-		let xs = coordinates[0];
-		let ys = coordinates[1];
-		
-		// Fix FF vs Chrome discrepancy
-		//if(navigator.userAgent.indexOf("Firefox") == -1 ) {
-		//	xs = xs - this.margin.left;
-		//	ys = ys - this.margin.top;
-		//}
-		let hP = [];
-		let tol = pointSize;
-
-		for (let i=0; i < d.length; i++){
-			if(sx(d[i].distance) < xs + tol && sx(d[i].distance) > xs - tol && sy(d[i].altitude) < ys + tol && sy(d[i].altitude) > ys -tol){
-				hP.push(d[i]); 
-			}
-		}
-
-		if(hP.length > 0){
-			let p = hP[0];
-			this.hoveredPoint = hP[0];
-			let cx, cy;
-			if(navigator.userAgent.indexOf("Firefox") == -1 ) {
-				cx = this.scaleX(p.distance) + this.margin.left;
-				cy = this.scaleY(p.altitude) + this.margin.top;
-			} else {
-				cx = this.scaleX(p.distance);
-				cy = this.scaleY(p.altitude);
-			}
-			
-			//cx -= pointSize / 2;
-			cy -= pointSize / 2;
-			
-			//let svg = d3.select("svg#profileSVG");
-			d3.selectAll("rect").remove();
-			let rectangle = svg.append("rect")
-				.attr("x", cx)
-				.attr("y", cy)
-				.attr("id", p.id)
-				.attr("width", pointSize)
-				.attr("height", pointSize)
-				.style("fill", 'yellow');
-				
-				
-			let marker = $("#profile_selection_marker");
-			marker.css("display", "initial");
-			marker.css("left", cx + "px");
-			marker.css("top", cy + "px");
-			marker.css("width", pointSize + "px");
-			marker.css("height", pointSize + "px");
-			marker.css("background-color", "yellow");
-
-			//let html = 'x: ' + Math.round(10 * p.x) / 10 + ' y: ' + Math.round(10 * p.y) / 10 + ' z: ' + Math.round( 10 * p.altitude) / 10 + '  -  ';
-			//html += i18n.t('tools.classification') + ': ' + p.classificationCode + '  -  ';
-			//html += i18n.t('tools.intensity') + ': ' + p.intensityCode;
-			
-			let html = 'x: ' + Math.round(10 * p.x) / 10 + ' y: ' + Math.round(10 * p.y) / 10 + ' z: ' + Math.round( 10 * p.altitude) / 10 + '  -  ';
-			html += "offset: " + p.distance.toFixed(3) + '  -  ';
-			html += "Classification: " + p.classification + '  -  ';
-			html += "Intensity: " + p.intensity;
-			
-			$('#profileInfo').css('color', 'yellow');
-			$('#profileInfo').html(html);
-
-		} else {
-			d3.selectAll("rect").remove();
-			$('#profileInfo').html("");
-			
-			let marker = $("#profile_selection_marker");
-			marker.css("display", "none");
-		}
-	};
-	
-	strokeColor(d){
-		let material = this.viewer.getMaterial();
-		if (material === Potree.PointColorType.RGB) {
-			let [r, g, b] = d.color.map(e => parseInt(e));
-			
-			return `rgb( ${r}, ${g}, ${b})`;
-		} else if (material === Potree.PointColorType.INTENSITY) {
-			let irange = viewer.getIntensityRange();
-			let i = parseInt(255 * (d.intensity - irange[0]) / (irange[1] - irange[0]));
-			
-			return `rgb(${i}, ${i}, ${i})`;
-		} else if (material === Potree.PointColorType.CLASSIFICATION) {
-			let classif = this.viewer.scene.pointclouds[0].material.classification;
-			if (typeof classif[d.classification] != 'undefined'){
-				let color = 'rgb(' + classif[d.classification].x * 100 + '%,';
-				color += classif[d.classification].y * 100 + '%,';
-				color += classif[d.classification].z * 100 + '%)';
-				return color;
-			} else {
-				return 'rgb(255,255,255)';
-			}
-		} else if (material === Potree.PointColorType.HEIGHT) {
-			return d.heightColor;
-		} else if (material === Potree.PointColorType.RETURN_NUMBER) {
-			
-			if(d.numberOfReturns === 1){
-					return 'rgb(255, 255, 0)';
-			}else{
-				if(d.returnNumber === 1){
-					return 'rgb(255, 0, 0)';
-				}else if(d.returnNumber === d.numberOfReturns){
-					return 'rgb(0, 0, 255)';
-				}else{
-					return 'rgb(0, 255, 0)';
-				}
-			}
-			
-			return d.heightColor;
-		} else {
-			return d.color;
-		}
-	}
-
 	draw(profile){
 		if(!this.enabled){
 			return;
@@ -302,7 +244,7 @@ Potree.Viewer.Profile = class ProfileWindow{
 		// 2d profile draws don't need frame-by-frame granularity, it's
 		// fine to handle a redraw once every 100ms
 		let executeScheduledDraw = () => {
-			this.actuallyDraw(this.scheduledDraw);
+			this.prepareDraw(this.scheduledDraw);
 			this.scheduledDraw = null;
 		};
 		
@@ -312,16 +254,9 @@ Potree.Viewer.Profile = class ProfileWindow{
 		this.scheduledDraw = profile;
 	}
 		
-	actuallyDraw(profile){
-
-		if(this.context){
-			let containerWidth = this.element.clientWidth;
-			let containerHeight = this.element.clientHeight;
-			
-			let width = containerWidth - (this.margin.left + this.margin.right);
-			let height = containerHeight - (this.margin.top + this.margin.bottom);
-			this.context.clearRect(0, 0, width, height);
-		}
+	prepareDraw(profile){
+		this.numPoints = 0;
+		this.geometry.setDrawRange(0, this.numPoints);
 		
 		if(this.currentProfile){
 			this.currentProfile.removeEventListener("marker_moved", this.redraw);
@@ -345,200 +280,6 @@ Potree.Viewer.Profile = class ProfileWindow{
 			viewer.addEventListener("height_range_changed", this.redraw);
 			viewer.addEventListener("intensity_range_changed", this.redraw);
 		}
-
-		if(!this.__drawData){
-			this.__drawData = {};
-		}
-		this.points = [];
-		this.rangeX = [Infinity, -Infinity];
-		this.rangeY = [Infinity, -Infinity];
-		
-		this.pointsProcessed = 0;
-		
-		for(let request of this.requests){
-			request.cancel();
-		}
-		this.requests = [];
-		
-		let drawPoints = (points, rangeX, rangeY) => {
-		
-			let mileage = 0;
-			for(let i = 0; i < profile.points.length; i++){
-				let point = profile.points[i];
-				
-				if(i > 0){
-					let previous = profile.points[i-1];
-					let dx = point.x - previous.x;
-					let dy = point.y - previous.y;
-					let distance = Math.sqrt(dx * dx + dy * dy);
-					mileage += distance;
-				}
-				
-				let radius = 4;
-				
-				let cx = this.scaleX(mileage);
-				let cy = this.context.canvas.clientHeight;
-				
-				this.context.beginPath();
-				this.context.arc(cx, cy, radius, 0, 2 * Math.PI, false);
-				this.context.fillStyle = '#a22';
-				this.context.fill();
-			};
-		
-		
-			let pointSize = 2;
-			let i = -1, n = points.length, d, cx, cy;
-			while (++i < n) {
-				d = points[i];
-				cx = this.scaleX(d.distance);
-				cy = this.scaleY(d.altitude);
-				this.context.beginPath();
-				this.context.moveTo(cx, cy);
-				this.context.fillStyle = this.strokeColor(d);
-				this.context.fillRect(cx, cy, pointSize, pointSize);
-			}
-		};
-		
-		let projectedBoundingBox = null;
-		
-		let setupAndDraw = () => {
-			let containerWidth = this.element.clientWidth;
-			let containerHeight = this.element.clientHeight;
-			
-			let width = containerWidth - (this.margin.left + this.margin.right);
-			let height = containerHeight - (this.margin.top + this.margin.bottom);
-			
-			this.scaleX = d3.scale.linear();
-			this.scaleY = d3.scale.linear();
-			
-			let domainProfileWidth = this.rangeX[1] - this.rangeX[0];
-			let domainProfileHeight = this.rangeY[1] - this.rangeY[0];
-			let domainRatio = domainProfileWidth / domainProfileHeight;
-			let rangeProfileWidth = width;
-			let rangeProfileHeight = height;
-			let rangeRatio = rangeProfileWidth / rangeProfileHeight;
-			
-			if(domainRatio < rangeRatio){
-				// canvas scale
-				let targetWidth = domainProfileWidth * (rangeProfileHeight / domainProfileHeight);
-				this.scaleY.range([height, 0]);
-				this.scaleX.range([width / 2 - targetWidth / 2, width / 2 + targetWidth / 2]);
-				
-				// axis scale
-				let domainScale = rangeRatio / domainRatio;
-				let domainScaledWidth = domainProfileWidth * domainScale;
-				this.axisScaleX = d3.scale.linear()
-					.domain([
-						domainProfileWidth / 2 - domainScaledWidth / 2 , 
-						domainProfileWidth / 2 + domainScaledWidth / 2 ])
-					.range([0, width]);
-				this.axisScaleY = d3.scale.linear()
-					.domain(this.rangeY)
-					.range([height, 0]);
-			}else{
-				// canvas scale
-				let targetHeight = domainProfileHeight* (rangeProfileWidth / domainProfileWidth);
-				this.scaleX.range([0, width]);
-				this.scaleY.range([height / 2 + targetHeight / 2, height / 2 - targetHeight / 2]);
-				
-				// axis scale
-				let domainScale =  domainRatio / rangeRatio;
-				let domainScaledHeight = domainProfileHeight * domainScale;
-				let domainHeightCentroid = (this.rangeY[1] + this.rangeY[0]) / 2;
-				this.axisScaleX = d3.scale.linear()
-					.domain(this.rangeX)
-					.range([0, width]);
-				this.axisScaleY = d3.scale.linear()
-					.domain([
-						domainHeightCentroid - domainScaledHeight / 2 , 
-						domainHeightCentroid + domainScaledHeight / 2 ])
-					.range([height, 0]);
-			}
-			this.scaleX.domain(this.rangeX);
-			this.scaleY.domain(this.rangeY);
-			
-			
-
-			this.axisZoom = d3.behavior.zoom()
-				.x(this.axisScaleX)
-				.y(this.axisScaleY)
-				.scaleExtent([0,128])
-				.size([width, height]);
-				
-			this.zoom = d3.behavior.zoom()
-			.x(this.scaleX)
-			.y(this.scaleY)
-			.scaleExtent([0,128])
-			.size([width, height])
-			.on("zoom",  () => {
-				this.axisZoom.translate(this.zoom.translate());
-				this.axisZoom.scale(this.zoom.scale());
-					
-				let svg = d3.select("svg#profileSVG");
-				svg.select(".x.axis").call(xAxis);
-				svg.select(".y.axis").call(yAxis);
-
-				this.context.clearRect(0, 0, width, height);
-				drawPoints(this.points, this.rangeX, this.rangeY);
-			});
-			
-			this.context = d3.select("#profileCanvas")
-				.attr("width", width)
-				.attr("height", height)
-				.call(this.zoom)
-				.node().getContext("2d");
-			
-			d3.select("svg#profileSVG").selectAll("*").remove();
-			
-			let svg = d3.select("svg#profileSVG")
-				.call(this.zoom)
-				.attr("width", (width + this.margin.left + this.margin.right).toString())
-				.attr("height", (height + this.margin.top + this.margin.bottom).toString())
-				.attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")");
-			
-			let scope = this;
-			d3.select("#profileCanvas").on("mousemove", function(){
-				let coord = d3.mouse(this);
-				scope.pointHighlight(coord);
-			});
-			
-			// Create x axis
-			let xAxis = d3.svg.axis()
-				.scale(this.axisScaleX)
-				.innerTickSize(-height)
-				.outerTickSize(5)
-				.orient("bottom")
-				.ticks(10, "m");
-
-			// Create y axis
-			let yAxis = d3.svg.axis()
-				.scale(this.axisScaleY)
-				.innerTickSize(-width)
-				.outerTickSize(5)
-				.orient("left")
-				.ticks(10, "m");
-				
-			// Append axis to the chart
-			let gx = svg.append("g")
-				.attr("class", "x axis")
-				.call(xAxis);
-
-			svg.append("g")
-				.attr("class", "y axis")
-				.call(yAxis);
-				
-			if(navigator.userAgent.indexOf("Firefox") == -1 ) {
-				svg.select(".y.axis").attr("transform", "translate("+ (this.margin.left).toString() + "," + this.margin.top.toString() + ")");
-				svg.select(".x.axis").attr("transform", "translate(" + this.margin.left.toString() + "," + (height + this.margin.top).toString() + ")");
-			} else {
-				svg.select(".x.axis").attr("transform", "translate( 0 ," + height.toString() + ")");
-			}
-			
-			drawPoints(this.points, this.rangeX, this.rangeY);
-			
-			document.getElementById("profile_num_points").innerHTML = Potree.utils.addCommas(this.pointsProcessed) + " ";
-		};
-		
 		
 		for(let pointcloud of this.viewer.scene.pointclouds.filter(p => p.visible)){
 			
@@ -548,27 +289,11 @@ Potree.Viewer.Profile = class ProfileWindow{
 						return;
 					}
 					
-					if(!projectedBoundingBox){
-						projectedBoundingBox = event.points.projectedBoundingBox;
-					}else{
-						projectedBoundingBox.union(event.points.projectedBoundingBox);
-					}
+					this.handleNewPoints(event.points);
 					
-					let result = this.preparePoints(event.points);
-					let points = result.data;
-					this.points = this.points.concat(points);
+					this.render();
 					
-					let batchRangeX = [d3.min(points, function(d) { return d.distance; }), d3.max(points, function(d) { return d.distance; })];
-					let batchRangeY = [d3.min(points, function(d) { return d.altitude; }), d3.max(points, function(d) { return d.altitude; })];
-					
-					this.rangeX = [ Math.min(this.rangeX[0], batchRangeX[0]), Math.max(this.rangeX[1], batchRangeX[1]) ];
-					this.rangeY = [ Math.min(this.rangeY[0], batchRangeY[0]), Math.max(this.rangeY[1], batchRangeY[1]) ];
-					
-					this.pointsProcessed += result.data.length;
-					
-					setupAndDraw();
-					
-					if(this.pointsProcessed > this.threshold){
+					if(this.numPoints > this.threshold){
 						this.cancel();
 					}
 				},
@@ -587,6 +312,7 @@ Potree.Viewer.Profile = class ProfileWindow{
 			this.requests.push(request);
 		}
 	}
+	
 	
 	setThreshold(value){
 		this.threshold = value;
@@ -685,7 +411,7 @@ Potree.Viewer.Profile = class ProfileWindow{
 		if(diagonal > 100*1000){
 			scale = new THREE.Vector3(0.01, 0.01, 0.01);
 		}else{
-			scale = new THREE.Vector3(0.001, 0.001, 0.001);
+			scale = new THREE.Vector3(1.1, 0.001, 0.001);
 		}
 		
 		let setString = function(string, offset, buffer){

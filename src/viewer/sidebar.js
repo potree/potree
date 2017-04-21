@@ -939,9 +939,11 @@ function initMeasurementDetails(){
 		return table;
 	};
 	
-	let createAttributesTable = (point) => {
+	let createAttributesTable = (measurement) => {
 		
 		let elTable = $('<table class="measurement_value_table"></table>');
+		
+		let point = measurement.points[0];
 		
 		if(point.color){
 			let color = point.color;
@@ -1007,13 +1009,15 @@ function initMeasurementDetails(){
 			this.icon = Potree.resourcePath + "/icons/distance.svg";
 			this.elIcon.attr("src", this.icon);
 			
-			let totalDistance = this.measurement.getTotalDistance().toFixed(3);
 			this.elContent = $(`
 				<div>
 					<span class="coordinates_table_container"></span>
 					
+					
+					
 					<br>
-					<span>Total Distance:</span> <span id="distance_${this.id}">${totalDistance}</span>
+					<table id="distances_table_${this.id}" class="measurement_value_table">
+					</table>
 					
 					<!-- ACTIONS -->
 					<div style="display: flex; margin-top: 12px">
@@ -1040,9 +1044,38 @@ function initMeasurementDetails(){
 			elCoordiantesContainer.empty();
 			elCoordiantesContainer.append(createCoordinatesTable(this.measurement));
 			
+			
+			let positions = this.measurement.points.map(p => p.position);
+			let distances = [];
+			for(let i = 0; i < positions.length - 1; i++){
+				let d = positions[i].distanceTo(positions[i+1]);
+				distances.push(d.toFixed(3));
+			}
+			
 			let totalDistance = this.measurement.getTotalDistance().toFixed(3);
-			let elDistance = this.elContent.find(`#distance_${this.id}`);
-			elDistance.html(totalDistance);
+			let elDistanceTable = this.elContent.find(`#distances_table_${this.id}`);
+			elDistanceTable.empty();
+			
+			for(let i = 0; i < distances.length; i++){
+				let label = (i === 0) ? "Distances: " : "";
+				let distance = distances[i];
+				let elDistance = $(`
+					<tr>
+						<th>${label}</th>
+						<td style="width: 100%; padding-left: 10px">${distance}</td>
+					</tr>`);
+				elDistanceTable.append(elDistance);
+			}
+			
+			
+			let elTotal = $(`
+				<tr>
+					<th>Total: </td><td style="width: 100%; padding-left: 10px">${totalDistance}</th>
+				</tr>`);
+			elDistanceTable.append(elTotal);
+			
+			//let elDistance = this.elContent.find(`#distance_${this.id}`);
+			//elDistance.html(totalDistance);
 		}
 		
 		destroy(){
@@ -1071,6 +1104,9 @@ function initMeasurementDetails(){
 					
 					<br>
 					
+					<span class="attributes_table_container"></span>
+					
+					
 					<!-- ACTIONS -->
 					<div style="display: flex; margin-top: 12px">
 						<span></span>
@@ -1095,6 +1131,10 @@ function initMeasurementDetails(){
 			let elCoordiantesContainer = this.elContent.find(".coordinates_table_container");
 			elCoordiantesContainer.empty();
 			elCoordiantesContainer.append(createCoordinatesTable(this.measurement));
+			
+			let elAttributesContainer = this.elContent.find(".attributes_table_container");
+			elAttributesContainer.empty();
+			elAttributesContainer.append(createAttributesTable(this.measurement));
 		}
 		
 		destroy(){
@@ -1175,6 +1215,19 @@ function initMeasurementDetails(){
 					
 					<br>
 					
+					<table class="measurement_value_table">
+						<tr>
+							<th>\u03b1</th>
+							<th>\u03b2</th>
+							<th>\u03b3</th>
+						</tr>
+						<tr>
+							<td align="center" id="angle_cell_alpha_${this.id}" style="width: 33%"></td>
+							<td align="center" id="angle_cell_betta_${this.id}" style="width: 33%"></td>
+							<td align="center" id="angle_cell_gamma_${this.id}" style="width: 33%"></td>
+						</tr>
+					</table>
+					
 					<!-- ACTIONS -->
 					<div style="display: flex; margin-top: 12px">
 						<span></span>
@@ -1199,6 +1252,20 @@ function initMeasurementDetails(){
 			let elCoordiantesContainer = this.elContent.find(".coordinates_table_container");
 			elCoordiantesContainer.empty();
 			elCoordiantesContainer.append(createCoordinatesTable(this.measurement));
+			
+			let angles = [];
+			for(let i = 0; i < this.measurement.points.length; i++){
+				angles.push(this.measurement.getAngle(i) * (180.0/Math.PI));
+			}
+			angles = angles.map(a => a.toFixed(1) + '\u00B0');
+			
+			let elAlpha = this.elContent.find(`#angle_cell_alpha_${this.id}`);
+			let elBetta = this.elContent.find(`#angle_cell_betta_${this.id}`);
+			let elGamma = this.elContent.find(`#angle_cell_gamma_${this.id}`);
+			
+			elAlpha.html(angles[0]);
+			elBetta.html(angles[1]);
+			elGamma.html(angles[2]);
 		}
 		
 		destroy(){
@@ -1226,6 +1293,8 @@ function initMeasurementDetails(){
 					
 					<br>
 					
+					<span id="height_label_${this.id}">Height: </span><br>
+					
 					<!-- ACTIONS -->
 					<div style="display: flex; margin-top: 12px">
 						<span></span>
@@ -1250,6 +1319,21 @@ function initMeasurementDetails(){
 			let elCoordiantesContainer = this.elContent.find(".coordinates_table_container");
 			elCoordiantesContainer.empty();
 			elCoordiantesContainer.append(createCoordinatesTable(this.measurement));
+			
+			{
+				let points = this.measurement.points;
+					
+				let sorted = points.slice().sort( (a, b) => a.position.z - b.position.z );
+				let lowPoint = sorted[0].position.clone();
+				let highPoint = sorted[sorted.length - 1].position.clone();
+				let min = lowPoint.z;
+				let max = highPoint.z;
+				let height = max - min;
+				height = height.toFixed(3);
+				
+				this.elHeightLabel = this.elContent.find(`#height_label_${this.id}`);
+				this.elHeightLabel.html(`<b>Height:</b> ${height}`);
+			}
 		}
 		
 		destroy(){
@@ -1284,6 +1368,8 @@ function initMeasurementDetails(){
 						<span style="display:flex; align-items: center; padding-right: 10px">Width: </span>
 						<input id="${sliderID}" name="${sliderID}" value="5.06" style="flex-grow: 1; width:100%">
 					</span>
+					<br>
+					<input type="button" id="show_2d_profile_${this.id}" value="show 2d profile" style="width: 100%"/>
 					
 					<!-- ACTIONS -->
 					<div style="display: flex; margin-top: 12px">
@@ -1294,7 +1380,11 @@ function initMeasurementDetails(){
 				</div>
 			`);
 			this.elContentContainer.append(this.elContent);
-			
+			this.elShow2DProfile = this.elContent.find(`#show_2d_profile_${this.id}`);
+			this.elShow2DProfile.click(() => {
+				viewer._2dprofile.show();
+				viewer._2dprofile.draw(measurement);
+			});
 			
 			{ // width spinner
 				let elWidthLabel = this.elContent.find(`#${labelID}`);
@@ -1542,6 +1632,52 @@ function initMeasurementDetails(){
 	trackScene(viewer.scene);
 	
 	viewer.addEventListener("scene_changed", (e) => {trackScene(e.scene)});
+	
+	
+	
+	
+	{ // BOTTOM ACTIONS
+		let elActionsB = $("#measurement_actions_bottom");
+	
+		{
+			let icon = Potree.resourcePath + "/icons/file_geojson.svg";
+			let elDownload = $(`
+				<a href="#" download="measure.json" class="measurepanel_downloads">
+					<img src="${icon}" style="height: 24px" />
+				</a>`);
+			elActionsB.append(elDownload);
+			
+			elDownload.click(function(e){
+				let scene = viewer.scene;
+				let measurements = [scene.measurements, scene.profiles, scene.volumes].reduce((a, v) => a.concat(v));
+				
+				let geojson = Potree.GeoJSONExporter.toString(measurements);
+				
+				let url = window.URL.createObjectURL(new Blob([geojson], {type: 'data:application/octet-stream'}));
+				elDownload.attr("href", url);
+			});
+		}
+		
+		{
+			let icon = Potree.resourcePath + "/icons/file_dxf.svg";
+			let elDownload = $(`
+				<a href="#" download="measure.dxf" class="measurepanel_downloads">
+					<img src="${icon}" style="height: 24px" />
+				</a>`);
+			elActionsB.append(elDownload);
+			
+			elDownload.click(function(e){
+				let scene = viewer.scene;
+				let measurements = [scene.measurements, scene.profiles, scene.volumes].reduce((a, v) => a.concat(v));
+				
+				let dxf = Potree.DXFExporter.toString(measurements);
+				
+				let url = window.URL.createObjectURL(new Blob([dxf], {type: 'data:application/octet-stream'}));
+				elDownload.attr("href", url);
+			});
+		}
+	
+	}
 };
 
 function initSceneList(){

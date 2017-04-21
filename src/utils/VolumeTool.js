@@ -54,6 +54,7 @@ Potree.VolumeTool = class VolumeTool extends THREE.EventDispatcher{
 		
 		let volume = new Potree.Volume();
 		volume.clip = args.clip || false;
+		volume.name = args.name || "Volume";
 		
 		this.dispatchEvent({
 			type: "start_inserting_volume",

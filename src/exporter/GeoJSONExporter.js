@@ -108,7 +108,7 @@ Potree.GeoJSONExporter = class GeoJSONExporter{
 			"features": features
 		};
 		
-		return JSON.stringify(geojson);
+		return JSON.stringify(geojson, null, "\t");
 	}
 
 }

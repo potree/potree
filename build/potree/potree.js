@@ -9058,6 +9058,9 @@ Potree.Measure = class Measure extends THREE.Object3D{
 	constructor(){
 		super();
 		
+		this.constructor.counter = (this.constructor.counter === undefined) ? 0 : this.constructor.counter + 1;
+		
+		this.name = "Measure_" + this.constructor.counter;
 		this.points = [];
 		this._showDistances = true;
 		this._showCoordinates = false;
@@ -9652,6 +9655,7 @@ Potree.MeasuringTool = class MeasuringTool extends THREE.EventDispatcher{
 		measure.showHeight = args.showHeight || false;
 		measure.closed = args.closed || false;
 		measure.maxMarkers = args.maxMarkers || Infinity;
+		measure.name = args.name || "Measurement";
 		
 		this.sceneMeasurement.add(measure);
 		
@@ -9832,6 +9836,9 @@ Potree.Profile = class extends THREE.Object3D{
 	constructor(){
 		super();
 		
+		this.constructor.counter = (this.constructor.counter === undefined) ? 0 : this.constructor.counter + 1;
+		
+		this.name = "Profile_" + this.constructor.counter;
 		this.points = [];
 		this.spheres = [];
 		this.edges = [];
@@ -10167,6 +10174,7 @@ Potree.ProfileTool = class ProfileTool extends THREE.EventDispatcher{
 		let domElement = this.viewer.renderer.domElement;
 		
 		let profile = new Potree.Profile();
+		profile.name = args.name || "Profile";
 		
 		this.dispatchEvent({
 			type: "start_inserting_profile",
@@ -11037,6 +11045,7 @@ Potree.VolumeTool = class VolumeTool extends THREE.EventDispatcher{
 		
 		let volume = new Potree.Volume();
 		volume.clip = args.clip || false;
+		volume.name = args.name || "Volume";
 		
 		this.dispatchEvent({
 			type: "start_inserting_volume",
@@ -11127,67 +11136,69 @@ Potree.VolumeTool = class VolumeTool extends THREE.EventDispatcher{
 
 Potree.GeoJSONExporter = class GeoJSONExporter{
 	
-	static toString(measurement){
-		
-		let geojson = {
-			"type": "FeatureCollection",
-			"features": []
-		};
-		
-		let isLine = measurement.showDistances && !measurement.showArea && !measurement.showAngles;
-		let isPolygon = measurement.showDistances && measurement.showArea && !measurement.showAngles;
-		
-		if(isLine){
-			geojson.features.push({
-				"type": "Feature",
-				"geometry": {
-				"type": "LineString",
-				"coordinates": []
-				},
-				"properties": {
-				}
-			});
-		}else if (isPolygon) {
-			geojson.features.push({
-				"type": "Feature",
-				"geometry": {
-					"type": "Polygon",
-					"coordinates": []
-				},
-				"properties": {
-				}
-			});
-		}
+	static measurementToFeatures(measurement){
 		
 		let coords = measurement.points.map(e => e.position.toArray());
 		
-		if(isLine){
-			geojson.features[0].geometry.coordinates = coords;
-		}else if(isPolygon){
-			coords.push(coords[0]);
-			geojson.features[0].geometry.coordinates.push(coords);
-		}
+		let features = [];
 		
-		measurement.edgeLabels.forEach(function (label) {
-			var labelPoint = {
+		if(coords.length === 1){
+			let feature = {
 				type: 'Feature',
 				geometry: {
 					type: 'Point',
-					coordinates: label.position.toArray(),
+					coordinates: coords[0],
 				},
 				properties: {
-					name: label.text
+					name: measurement.name
 				}
 			};
-			geojson.features.push(labelPoint);
-		});
-		
-		if (isLine) {
-			// There is one point more than the number of edges.
-			geojson.features.pop();
+			features.push(feature);
+		}else if(coords.length > 1 && !measurement.closed){
+			let object = {
+				"type": "Feature",
+				"geometry": {
+					"type": "LineString",
+					"coordinates": coords
+				},
+				"properties": {
+					name: measurement.name
+				}
+			};
+			
+			features.push(object);
+		}else if(coords.length > 1 && measurement.closed){
+
+			let object = {
+				"type": "Feature",
+				"geometry": {
+					"type": "Polygon",
+					"coordinates": [[...coords, coords[0]]]
+				},
+				"properties": {
+					name: measurement.name
+				}
+			};
+			features.push(object);
+		}
+
+		if(measurement.showDistances){
+			measurement.edgeLabels.forEach((label) => {
+				let labelPoint = {
+					type: 'Feature',
+					geometry: {
+						type: 'Point',
+						coordinates: label.position.toArray(),
+					},
+					properties: {
+						distance: label.text
+					}
+				};
+				features.push(labelPoint);
+			});
 		}
 		
-		if (isPolygon) {
+		if(measurement.showArea){
 			var point = measurement.areaLabel.position;
 			var labelArea = {
 				type: 'Feature',
@@ -11196,13 +11207,36 @@ Potree.GeoJSONExporter = class GeoJSONExporter{
 					coordinates: point.toArray(),
 				},
 				properties: {
-					name: measurement.areaLabel.text
+					area: measurement.areaLabel.text
 				}
 			};
-			geojson.features.push(labelArea);
+			features.push(labelArea);
 		}
 		
-		return JSON.stringify(geojson);
+		return features;
+	}
+	
+	static toString(measurements){
+		
+		if(!(measurements instanceof Array)){
+			measurements = [measurements];
+		}
+		
+		measurements = measurements.filter(m => m instanceof Potree.Measure);
+		
+		let features = [];
+		for(let measure of measurements){
+			let f = Potree.GeoJSONExporter.measurementToFeatures(measure);
+			
+			features = features.concat(f);
+		}
+		
+		let geojson = {
+			"type": "FeatureCollection",
+			"features": features
+		};
+		
+		return JSON.stringify(geojson, null, "\t");
 	}
 
 }
@@ -11219,110 +11253,147 @@ Potree.GeoJSONExporter = class GeoJSONExporter{
 
 Potree.DXFExporter = class DXFExporter{
 	
-	static toString(measurement){
-		let isLine = measurement.showDistances && !measurement.showArea && !measurement.showAngles;
-		let isPolygon = measurement.showDistances && measurement.showArea && !measurement.showAngles;
+	static measurementSection(measurement){
 		
-		 if (!isLine && !isPolygon) {
-			return;
+		if(measurement.points.length <= 1){
+			return "";
 		}
 		
-		let geomCode = isLine ? 8 : 9;
 		
-		let dxfBody = '0\n\
-SECTION\n\
-2\n\
-ENTITIES\n\
-0\n\
-POLYLINE\n\
-8\n\
-0\n\
-62\n\
-1\n\
-66\n\
-1\n\
-10\n\
-0.0\n\
-20\n\
-0.0\n\
-30\n\
-0.0\n\
-70\n\
-{geomCode}\n'.replace('{geomCode}', geomCode);
+		
+		// bit code for polygons/polylines: 
+		// https://www.autodesk.com/techpubs/autocad/acad2000/dxf/polyline_dxf_06.htm
+		let geomCode = 8; 
+		if(measurement.closed){
+			geomCode += 1;
+		}
+		
+		let dxfSection = `0
+SECTION
+2
+ENTITIES
+0
+POLYLINE
+8
+0
+62
+1
+66
+1
+10
+0.0
+20
+0.0
+30
+0.0
+70
+${geomCode}
+`;
 
 		let xMax = 0.0;
 		let yMax = 0.0;
 		let zMax = 0.0;
-		measurement.points.forEach(function (point) {
+		for(let point of measurement.points){
 			point = point.position;
 			xMax = Math.max(xMax, point.x);
 			yMax = Math.max(yMax, point.y);
 			zMax = Math.max(zMax, point.z);
-			dxfBody += '0\n\
-VERTEX\n\
-8\n\
-0\n\
-10\n\
-{X}\n\
-20\n\
-{Y}\n\
-30\n\
-{Z}\n\
-70\n\
-32\n'.replace('{X}', point.x)
-                .replace('{Y}', point.y)
-                .replace('{Z}', point.z);
-            });
+			
+			dxfSection += `0
+VERTEX
+8
+0
+10
+${point.x}
+20
+${point.y}
+30
+${point.z}
+70
+32
+`;
 
-            dxfBody += '0\n\
-SEQEND\n\
-0\n\
-ENDSEC\n';
+            dxfSection += `0
+SEQEND
+0
+ENDSEC
+`;
+		}
 
-            var dxfHeader = '999\n\
-DXF created from potree\n\
-0\n\
-SECTION\n\
-2\n\
-HEADER\n\
-9\n\
-$ACADVER\n\
-1\n\
-AC1006\n\
-9\n\
-$INSBASE\n\
-10\n\
-0.0\n\
-20\n\
-0.0\n\
-30\n\
-0.0\n\
-9\n\
-$EXTMIN\n\
-10\n\
-0.0\n\
-20\n\
-0.0\n\
-30\n\
-0\n\
-9\n\
-$EXTMAX\n\
-10\n\
-{xMax}\n\
-20\n\
-{yMax}\n\
-30\n\
-{zMax}\n\
-0\n\
-ENDSEC\n'.replace('{xMax}', xMax)
-                .replace('{yMax}', yMax)
-                .replace('{zMax}', zMax);
+		return dxfSection;
+	}
+	
+	
+	static toString(measurements){
+		
+		if(!(measurements instanceof Array)){
+			measurements = [measurements];
+		}
+		measurements = measurements.filter(m => m instanceof Potree.Measure);
+		
+		let points = measurements.filter(m => (m instanceof Potree.Measure))
+			.map(m => m.points)
+			.reduce((a, v) => a.concat(v))
+			.map(p => p.position);
+			
+		let min = new THREE.Vector3(Infinity, Infinity, Infinity);
+		let max = new THREE.Vector3(-Infinity, -Infinity, -Infinity);
+		for(let point of points){
+			min.min(point);
+			max.max(point);
+		}
+		
+		
+		
+		let dxfHeader = `999
+DXF created from potree
+0
+SECTION
+2
+HEADER
+9
+$ACADVER
+1
+AC1006
+9
+$INSBASE
+10
+0.0
+20
+0.0
+30
+0.0
+9
+$EXTMIN
+10
+${min.x}
+20
+${min.y}
+30
+${min.z}
+9
+$EXTMAX
+10
+${max.x}
+20
+${max.y}
+30
+${max.z}
+0
+ENDSEC
+`;
 
-            let dxf = dxfHeader + dxfBody + '0\n\
-EOF';
+		let dxfBody = "";
+		
+		for(let measurement of measurements){
+			dxfBody += Potree.DXFExporter.measurementSection(measurement);
+		}
 
+		let dxf = dxfHeader + dxfBody + '0\nEOF';
+		
 		return dxf;
 	}
+
 	
 }
 
@@ -16415,6 +16486,43 @@ Potree.MapView = class{
 		var view = this.map.getView();
 		view.setCenter(mapCenter);
 		
+		//{
+		//	let bb = this.viewer.getBoundingBox();
+		//	let corners = [
+		//		[bb.min.x, bb.min.y],
+		//		[bb.max.x, bb.min.y],
+		//		[bb.max.x, bb.max.y],
+		//		[bb.min.x, bb.max.y],
+		//		[bb.min.x, bb.min.y]];
+		//		
+		//	let vertices = [];
+		//	
+		//	for(let i = 0; i < corners.length - 1; i++){
+		//		let pieces = 5;
+		//		
+		//		for(let j = 0; j < pieces; j++){
+		//			let t0 = j / pieces;
+		//			let t1 = (j+1) / pieces;
+		//			
+		//			let c0 = corners[i+0];
+		//			let c1 = corners[i+1];
+		//			
+		//			let p0 = [
+		//				(1 - t0) * c0[0] + t0 * c1[0],
+		//				(1 - t0) * c0[1] + t0 * c1[1]];
+		//				
+		//			let p1 = [
+		//				(1 - t1) * c0[0] + t1 * c1[0],
+		//				(1 - t1) * c0[1] + t1 * c1[1]];
+		//			
+		//			vertices.push(this.toMap.forward(p0));
+		//			vertices.push(this.toMap.forward(p1));
+		//		}
+		//	}
+		//	
+		//	this.gExtent.setCoordinates(vertices);
+		//}
+		
 		this.gExtent.setCoordinates([
 			mapExtent.bottomLeft, 
 			mapExtent.bottomRight, 
@@ -16576,7 +16684,8 @@ function initToolbar(){
 				showAngles: true, 
 				showArea: false, 
 				closed: true, 
-				maxMarkers: 3});
+				maxMarkers: 3,
+				name: "Angle"});
 		}
 	));
 	
@@ -16592,7 +16701,8 @@ function initToolbar(){
 				showCoordinates: true, 
 				showArea: false, 
 				closed: true, 
-				maxMarkers: 1});
+				maxMarkers: 1,
+				name: "Point"});
 		}
 	));
 	
@@ -16605,7 +16715,8 @@ function initToolbar(){
 			viewer.measuringTool.startInsertion({
 				showDistances: true, 
 				showArea: false, 
-				closed: false});
+				closed: false,
+				name: "Distance"});
 		}
 	));
 	
@@ -16620,7 +16731,8 @@ function initToolbar(){
 				showHeight: true, 
 				showArea: false, 
 				closed: false, 
-				maxMarkers: 2});
+				maxMarkers: 2,
+				name: "Height"});
 		}
 	));
 	
@@ -16633,7 +16745,8 @@ function initToolbar(){
 			viewer.measuringTool.startInsertion({
 				showDistances: true, 
 				showArea: true, 
-				closed: true});
+				closed: true,
+				name: "Area"});
 		}
 	));
 	
@@ -17442,419 +17555,731 @@ function initAnnotationDetails(){
 }
 
 function initMeasurementDetails(){
-
+	
 	let id = 0;
 	let trackedItems = new Map();
 	
-	let trackMeasurement = function(scene, measurement){
-		id++;
+	let removeIconPath = Potree.resourcePath + "/icons/remove.svg";
+	let mlist = $("#measurement_list");
+	
+	let createCoordinatesTable = (measurement) => {
 		
-		let track = {
-			scene: scene,
-			measurement: measurement,
-			untrack: null
-		};
+		let table = $(`
+			<table class="measurement_value_table">
+				<tr>
+					<th>x</th>
+					<th>y</th>
+					<th>z</th>
+				</tr>
+			</table>
+		`);
 		
-		trackedItems.set(measurement, track);
-		
-		let panelIcon = "";
-		let panelTitle = "";
-		let removeCallback;
-		if(measurement instanceof Potree.Measure){
-			if(measurement.showDistances && !measurement.showArea && !measurement.showAngles){
-				panelIcon = Potree.resourcePath + "/icons/distance.svg";
-				panelTitle = "Distance";
-			}else if(measurement.showDistances && measurement.showArea && !measurement.showAngles){
-				panelIcon = Potree.resourcePath + "/icons/area.svg";
-				panelTitle = "Area";
-			}else if(measurement.maxMarkers === 1){
-				panelIcon = Potree.resourcePath + "/icons/point.svg";
-				panelTitle = "Coordinate";
-			}else if(!measurement.showDistances && !measurement.showArea && measurement.showAngles){
-				panelIcon = Potree.resourcePath + "/icons/angle.png";
-				panelTitle = "Angle";
-			}else if(measurement.showHeight){
-				panelIcon = Potree.resourcePath + "/icons/height.svg";
-				panelTitle = "Height";
-			}
+		for(let point of measurement.points){
+			let position = point instanceof THREE.Vector3 ? point : point.position;
 			
-			removeCallback = () => scene.removeMeasurement(measurement);
-		} else if(measurement instanceof Potree.Profile){
-			panelIcon = Potree.resourcePath + "/icons/profile.svg";
-			panelTitle = "Profile";
+			let x = Potree.utils.addCommas(position.x.toFixed(3));
+			let y = Potree.utils.addCommas(position.y.toFixed(3));
+			let z = Potree.utils.addCommas(position.z.toFixed(3));
 			
-			removeCallback = () => scene.removeProfile(measurement);
-		} else if(measurement instanceof Potree.Volume){
-			panelIcon = Potree.resourcePath + "/icons/volume.svg";
-			panelTitle = "Volume";
+			let row = $(`
+				<tr>
+					<td>${x}</td>
+					<td>${y}</td>
+					<td>${z}</td>
+				</tr>
+			`);
 			
-			removeCallback = () => scene.removeVolume(measurement);
+			table.append(row);
 		}
 		
-		let removeIconPath = Potree.resourcePath + "/icons/remove.svg";
+		return table;
+	};
+	
+	let createAttributesTable = (measurement) => {
 		
-		let elLi = $(`
-			<li>
-				<div class="potree-panel panel-default">
-				
-					<!-- Header -->
-					<div class="potree-panel-heading pv-panel-heading">
-						<img src="${panelIcon}" style="width: 16px; height: 16px"/>
-						<span style="flex-grow: 1; text-align: center">${panelTitle}</span>
-						<img src="${removeIconPath}" style="width: 16px; height: 16px"/>
+		let elTable = $('<table class="measurement_value_table"></table>');
+		
+		let point = measurement.points[0];
+		
+		if(point.color){
+			let color = point.color;
+			let text = color.join(", ");
+			
+			elTable.append($(`
+				<tr>
+					<td>rgb</td>
+					<td>${text}</td>
+				</tr>
+			`));
+		}
+		
+		return elTable;
+	};
+	
+	class MeasurePanel{
+		constructor(scene, measurement){
+			this.scene = scene;
+			this.measurement = measurement;
+			this.icon = null;
+			
+			this.constructor.counter = (this.constructor.counter === undefined) ? 0 : this.constructor.counter + 1;
+			this.id = this.constructor.counter;
+			
+			let title = measurement.name;
+			
+			this.elPanel = $(`
+				<span class="measurement_item">
+					<!-- HEADER -->
+					<div class="measurement_header" onclick="$(this).next().slideToggle(200)">
+						<span class="measurement_icon"><img src="" class="measurement_item_icon" /></span>
+						<span class="measurement_header_title">${title}</span>
 					</div>
 					
-					<!-- Body -->
-					<div class="panel-body">
+					<!-- DETAIL -->
+					<div class="measurement_content selectable" style="display: none">
+						
+					</div>
+				</span>
+			`);
+			
+			this.elContentContainer = this.elPanel.find(".measurement_content");
+			this.elIcon = this.elPanel.find(".measurement_item_icon");
+			
+			this._update = () => {this.update()};
+		}
+		
+		destroy(){
+			
+		}
+		
+		update(){
+			
+		}
+	};
+	
+	class DistancePanel extends MeasurePanel{
+		constructor(scene, measurement){
+			super(scene, measurement);
+			
+			this.typename = "Distance";
+			this.icon = Potree.resourcePath + "/icons/distance.svg";
+			this.elIcon.attr("src", this.icon);
+			
+			this.elContent = $(`
+				<div>
+					<span class="coordinates_table_container"></span>
 					
+					
+					
+					<br>
+					<table id="distances_table_${this.id}" class="measurement_value_table">
+					</table>
+					
+					<!-- ACTIONS -->
+					<div style="display: flex; margin-top: 12px">
+						<span></span>
+						<span style="flex-grow: 1"></span>
+						<img class="measurement_action_remove" src="${removeIconPath}" style="width: 16px; height: 16px"/>
 					</div>
 				</div>
-			</li>
-		`);
-		$("#measurement_details").append(elLi);
+			`);
+			this.elContentContainer.append(this.elContent);
+			
+			let elRemove = this.elContent.find(".measurement_action_remove");
+			elRemove.click(() => {this.scene.removeMeasurement(measurement)});
+			
+			this.measurement.addEventListener("marker_added", this._update);
+			this.measurement.addEventListener("marker_removed", this._update);
+			this.measurement.addEventListener("marker_moved", this._update);
+			
+			this.update();
+		}
 		
-		let elPanelBody = elLi.find(".panel-body");
-		let elPanelHeader = elLi.find(".potree-panel-heading");
-		let elRemove = elPanelHeader.find("img:last");
+		update(){
+			let elCoordiantesContainer = this.elContent.find(".coordinates_table_container");
+			elCoordiantesContainer.empty();
+			elCoordiantesContainer.append(createCoordinatesTable(this.measurement));
+			
+			
+			let positions = this.measurement.points.map(p => p.position);
+			let distances = [];
+			for(let i = 0; i < positions.length - 1; i++){
+				let d = positions[i].distanceTo(positions[i+1]);
+				distances.push(d.toFixed(3));
+			}
+			
+			let totalDistance = this.measurement.getTotalDistance().toFixed(3);
+			let elDistanceTable = this.elContent.find(`#distances_table_${this.id}`);
+			elDistanceTable.empty();
+			
+			for(let i = 0; i < distances.length; i++){
+				let label = (i === 0) ? "Distances: " : "";
+				let distance = distances[i];
+				let elDistance = $(`
+					<tr>
+						<th>${label}</th>
+						<td style="width: 100%; padding-left: 10px">${distance}</td>
+					</tr>`);
+				elDistanceTable.append(elDistance);
+			}
+			
+			
+			let elTotal = $(`
+				<tr>
+					<th>Total: </td><td style="width: 100%; padding-left: 10px">${totalDistance}</th>
+				</tr>`);
+			elDistanceTable.append(elTotal);
+			
+			//let elDistance = this.elContent.find(`#distance_${this.id}`);
+			//elDistance.html(totalDistance);
+		}
 		
-		elRemove.click(removeCallback);
+		destroy(){
+			this.elPanel.remove();
+			
+			this.measurement.removeEventListener("marker_added", this._update);
+			this.measurement.removeEventListener("marker_removed", this._update);
+			this.measurement.removeEventListener("marker_moved", this._update);
+		}
+		
+	};
 	
-		let widthListener = null;
-		let updateDisplay = function(event){
+	class PointPanel extends MeasurePanel{
+		constructor(scene, measurement){
+			super(scene, measurement);
+			
+			this.typename = "Point";
+			this.icon = Potree.resourcePath + "/icons/point.svg";
+			
+			this.elIcon.attr("src", this.icon);
+			
+			let totalDistance = this.measurement.getTotalDistance().toFixed(3);
+			this.elContent = $(`
+				<div>
+					<span class="coordinates_table_container"></span>
+					
+					<br>
+					
+					<span class="attributes_table_container"></span>
+					
+					
+					<!-- ACTIONS -->
+					<div style="display: flex; margin-top: 12px">
+						<span></span>
+						<span style="flex-grow: 1"></span>
+						<img class="measurement_action_remove" src="${removeIconPath}" style="width: 16px; height: 16px"/>
+					</div>
+				</div>
+			`);
+			this.elContentContainer.append(this.elContent);
+			
+			let elRemove = this.elContent.find(".measurement_action_remove");
+			elRemove.click(() => {this.scene.removeMeasurement(measurement)});
+			
+			this.measurement.addEventListener("marker_added", this._update);
+			this.measurement.addEventListener("marker_removed", this._update);
+			this.measurement.addEventListener("marker_moved", this._update);
+			
+			this.update();
+		}
 		
-			elPanelBody.empty();
-			measurement.removeEventListener("width_changed", widthListener);
+		update(){
+			let elCoordiantesContainer = this.elContent.find(".coordinates_table_container");
+			elCoordiantesContainer.empty();
+			elCoordiantesContainer.append(createCoordinatesTable(this.measurement));
 			
+			let elAttributesContainer = this.elContent.find(".attributes_table_container");
+			elAttributesContainer.empty();
+			elAttributesContainer.append(createAttributesTable(this.measurement));
+		}
+		
+		destroy(){
+			this.elPanel.remove();
 			
-			if(measurement instanceof Potree.Profile){
-				
-				let widthText = measurement.getWidth() ? 
-					Potree.utils.addCommas(measurement.getWidth().toFixed(3)) : "-";
-				
-				let labelID = "lblProfileWidth_" + id;
-				let sliderID = "sldProfileWidth_" + id;
-				
-				let elLi = $(`
-					<li style="margin-bottom: 5px">
-						width: <span id="${labelID}">${widthText}</span>
-						<div id="${sliderID}"> </div>
-					</li>`
-				);
-				
-				let elWidthLabel = elLi.find(`#${labelID}`);
-				let elWidthSlider = elLi.find(`#${sliderID}`);
-				
-				elWidthSlider.slider({
-					value: Math.pow((measurement.getWidth() / 1000), 1/4).toFixed(3),
-					min: 0,
-					max: 1,
-					step: 0.01,
-					slide: function(event, ui){
-						let val = Math.pow(ui.value, 4) * 1000;
-						measurement.setWidth(val);
-					}
-				});
-				
-				widthListener = (event) => {
-					let val = Math.pow((event.width / 1000), 1/4);
-					elWidthLabel.html(Potree.utils.addCommas(event.width.toFixed(3)));
-					elWidthSlider.slider({value: val});
-				};
-				
-				measurement.addEventListener("width_changed", widthListener);
-				
-				elPanelBody.append(elLi);
+			this.measurement.removeEventListener("marker_added", this._update);
+			this.measurement.removeEventListener("marker_removed", this._update);
+			this.measurement.removeEventListener("marker_moved", this._update);
+		}
+		
+	};
+	
+	class AreaPanel extends MeasurePanel{
+		constructor(scene, measurement){
+			super(scene, measurement);
+			
+			this.typename = "Area";
+			this.icon = Potree.resourcePath + "/icons/area.svg";
+			
+			this.elIcon.attr("src", this.icon);
+			
+			let totalDistance = this.measurement.getTotalDistance().toFixed(3);
+			this.elContent = $(`
+				<div>
+					<span class="coordinates_table_container"></span>
+					
+					<br>
+					
+					<span style="font-weight: bold">Area: </span>
+					<span id="measurement_area_${this.id}"></span>
+					
+					<!-- ACTIONS -->
+					<div style="display: flex; margin-top: 12px">
+						<span></span>
+						<span style="flex-grow: 1"></span>
+						<img class="measurement_action_remove" src="${removeIconPath}" style="width: 16px; height: 16px"/>
+					</div>
+				</div>
+			`);
+			this.elContentContainer.append(this.elContent);
+			
+			let elRemove = this.elContent.find(".measurement_action_remove");
+			elRemove.click(() => {this.scene.removeMeasurement(measurement)});
+			
+			this.measurement.addEventListener("marker_added", this._update);
+			this.measurement.addEventListener("marker_removed", this._update);
+			this.measurement.addEventListener("marker_moved", this._update);
+			
+			this.update();
+		}
+		
+		update(){
+			let elCoordiantesContainer = this.elContent.find(".coordinates_table_container");
+			elCoordiantesContainer.empty();
+			elCoordiantesContainer.append(createCoordinatesTable(this.measurement));
+			
+			let elArea = this.elContent.find(`#measurement_area_${this.id}`);
+			elArea.html(this.measurement.getArea().toFixed(3));
+		}
+		
+		destroy(){
+			this.elPanel.remove();
+			
+			this.measurement.removeEventListener("marker_added", this._update);
+			this.measurement.removeEventListener("marker_removed", this._update);
+			this.measurement.removeEventListener("marker_moved", this._update);
+		}
+		
+	};
+	
+	class AnglePanel extends MeasurePanel{
+		constructor(scene, measurement){
+			super(scene, measurement);
+			
+			this.typename = "Angle";
+			this.icon = Potree.resourcePath + "/icons/angle.png";
+			
+			this.elIcon.attr("src", this.icon);
+			
+			let totalDistance = this.measurement.getTotalDistance().toFixed(3);
+			this.elContent = $(`
+				<div>
+					<span class="coordinates_table_container"></span>
+					
+					<br>
+					
+					<table class="measurement_value_table">
+						<tr>
+							<th>\u03b1</th>
+							<th>\u03b2</th>
+							<th>\u03b3</th>
+						</tr>
+						<tr>
+							<td align="center" id="angle_cell_alpha_${this.id}" style="width: 33%"></td>
+							<td align="center" id="angle_cell_betta_${this.id}" style="width: 33%"></td>
+							<td align="center" id="angle_cell_gamma_${this.id}" style="width: 33%"></td>
+						</tr>
+					</table>
+					
+					<!-- ACTIONS -->
+					<div style="display: flex; margin-top: 12px">
+						<span></span>
+						<span style="flex-grow: 1"></span>
+						<img class="measurement_action_remove" src="${removeIconPath}" style="width: 16px; height: 16px"/>
+					</div>
+				</div>
+			`);
+			this.elContentContainer.append(this.elContent);
+			
+			let elRemove = this.elContent.find(".measurement_action_remove");
+			elRemove.click(() => {this.scene.removeMeasurement(measurement)});
+			
+			this.measurement.addEventListener("marker_added", this._update);
+			this.measurement.addEventListener("marker_removed", this._update);
+			this.measurement.addEventListener("marker_moved", this._update);
+			
+			this.update();
+		}
+		
+		update(){
+			let elCoordiantesContainer = this.elContent.find(".coordinates_table_container");
+			elCoordiantesContainer.empty();
+			elCoordiantesContainer.append(createCoordinatesTable(this.measurement));
+			
+			let angles = [];
+			for(let i = 0; i < this.measurement.points.length; i++){
+				angles.push(this.measurement.getAngle(i) * (180.0/Math.PI));
 			}
+			angles = angles.map(a => a.toFixed(1) + '\u00B0');
 			
-			let positions = [];
-			let points;
+			let elAlpha = this.elContent.find(`#angle_cell_alpha_${this.id}`);
+			let elBetta = this.elContent.find(`#angle_cell_betta_${this.id}`);
+			let elGamma = this.elContent.find(`#angle_cell_gamma_${this.id}`);
 			
-			if(measurement instanceof Potree.Measure){
-				points = measurement.points;
-				for(let i = 0; i < points.length; i++){
-					positions.push(points[i].position);
-				}
-			}else if(measurement instanceof Potree.Profile){
-				positions = measurement.points;
-			}
+			elAlpha.html(angles[0]);
+			elBetta.html(angles[1]);
+			elGamma.html(angles[2]);
+		}
+		
+		destroy(){
+			this.elPanel.remove();
 			
-			if(measurement instanceof Potree.Measure && measurement.showHeight){
-				let points = measurement.points;
-				
+			this.measurement.removeEventListener("marker_added", this._update);
+			this.measurement.removeEventListener("marker_removed", this._update);
+			this.measurement.removeEventListener("marker_moved", this._update);
+		}
+		
+	};
+	
+	class HeightPanel extends MeasurePanel{
+		constructor(scene, measurement){
+			super(scene, measurement);
+			
+			this.typename = "Height";
+			this.icon = Potree.resourcePath + "/icons/height.svg";
+			
+			this.elIcon.attr("src", this.icon);
+			
+			this.elContent = $(`
+				<div>
+					<span class="coordinates_table_container"></span>
+					
+					<br>
+					
+					<span id="height_label_${this.id}">Height: </span><br>
+					
+					<!-- ACTIONS -->
+					<div style="display: flex; margin-top: 12px">
+						<span></span>
+						<span style="flex-grow: 1"></span>
+						<img class="measurement_action_remove" src="${removeIconPath}" style="width: 16px; height: 16px"/>
+					</div>
+				</div>
+			`);
+			this.elContentContainer.append(this.elContent);
+			
+			let elRemove = this.elContent.find(".measurement_action_remove");
+			elRemove.click(() => {this.scene.removeMeasurement(measurement)});
+			
+			this.measurement.addEventListener("marker_added", this._update);
+			this.measurement.addEventListener("marker_removed", this._update);
+			this.measurement.addEventListener("marker_moved", this._update);
+			
+			this.update();
+		}
+		
+		update(){
+			let elCoordiantesContainer = this.elContent.find(".coordinates_table_container");
+			elCoordiantesContainer.empty();
+			elCoordiantesContainer.append(createCoordinatesTable(this.measurement));
+			
+			{
+				let points = this.measurement.points;
+					
 				let sorted = points.slice().sort( (a, b) => a.position.z - b.position.z );
 				let lowPoint = sorted[0].position.clone();
 				let highPoint = sorted[sorted.length - 1].position.clone();
 				let min = lowPoint.z;
 				let max = highPoint.z;
 				let height = max - min;
+				height = height.toFixed(3);
 				
-				let txt = height.toFixed(3);
-				
-				let elNodeHeight = $(`
-					<div class="measurement-detail-node-marker">
-						${txt}
-					</div>`);
-				elPanelBody.append(elNodeHeight);
+				this.elHeightLabel = this.elContent.find(`#height_label_${this.id}`);
+				this.elHeightLabel.html(`<b>Height:</b> ${height}`);
 			}
-			
-			for(let i = 0; i < positions.length; i++){
-				let point = positions[i];
-
-				let txt = [point.x, point.y, point.z].map(p => p.toFixed(3)).join(", ");
-				
-				if(measurement && !measurement.showHeight){
-					let elNodeMarker = $(`
-						<div class="measurement-detail-node-marker">
-							${txt}
-						</div>`);
-					elPanelBody.append(elNodeMarker);
-				}
-				
-				if(i < positions.length - 1){
-					if(measurement && measurement.showDistances){
-						
-						let elEdge = $('<div class="measurement-detail-edge">');
-						elPanelBody.append(elEdge);
-						
-						let nextPoint = positions[i+1];
-						let distance = nextPoint.distanceTo(point);
-						let txt = Potree.utils.addCommas(distance.toFixed(3));
-						
-						let elNodeDistance = $(`
-							<div class="measurement-detail-node-distance">
-								${txt}
-							</div>`);
-						
-						elPanelBody.append(elNodeDistance);
-						
-						elPanelBody.append(elNodeDistance);
-					}
-				}
-				
-				if(measurement && measurement.showAngles){
-					let elEdge = $('<div class="measurement-detail-edge"></div>');
-					$(elPanelBody).append(elEdge);
-					
-					let angle = measurement.getAngle(i);
-					let txt = Potree.utils.addCommas((angle*(180.0/Math.PI)).toFixed(1)) + '\u00B0';
-					let elNodeAngle = $(`<div class="measurement-detail-node-angle">${txt}</div>`);
-
-					$(elPanelBody).append(elNodeAngle);
-				}
-				
-				if(i < positions.length - 1){
-					let elEdge = $('<div class="measurement-detail-edge"></div>');
-					$(elPanelBody).append(elEdge);
-				}
-			}
-			
-			if(points && points.length === 1){
-				let point = points[0];
-				
-				let elTable = $('<table style="width: 100%">');
-				$(elPanelBody).append(elTable);
-				
-				if(point.color){
-					let color = point.color;
-					let text = color.join(", ");
-					
-					elTable.append($(`
-						<tr>
-							<td style="padding: 1px 5px">rgb</td>
-							<td style="width: 100%; padding: 1px 5px;">${text}</td>
-						</tr>
-					`));
-				}
-				
-				if(point.intensity !== undefined){
-					let intensity = point.intensity;
-					
-					elTable.append($(`
-						<tr>
-							<td style="padding: 1px 5px">intensity</td>
-							<td style="width: 100%; padding: 1px 5px;">${intensity}</td>
-						</tr>
-					`));
-				}
-				
-				if(point.classification !== undefined){
-					let classification = point.classification;
-					
-					elTable.append($(`
-						<tr>
-							<td style="padding: 1px 5px">classification</td>
-							<td style="width: 100%; padding: 1px 5px;">${classification}</td>
-						</tr>
-					`));
-				}
-				
-				if(point.returnNumber !== undefined){
-					let returnNumber = point.returnNumber;
-					
-					elTable.append($(`
-						<tr>
-							<td style="padding: 1px 5px">return nr.</td>
-							<td style="width: 100%; padding: 1px 5px;">${returnNumber}</td>
-						</tr>
-					`));
-				}
-				
-				if(typeof point.pointSourceID !== "undefined"){
-					let source = point.pointSourceID;
-					
-					elTable.append($(`
-						<tr>
-							<td style="padding: 1px 5px">source</td>
-							<td style="width: 100%; padding: 1px 5px;">${source}</td>
-						</tr>
-					`));
-				}
-				
-				
-			}
-			
-			if(measurement && measurement.showDistances && measurement.points.length > 1){
-				let txt = "Total: " + Potree.utils.addCommas(measurement.getTotalDistance().toFixed(3));
-				
-				$(elPanelBody).append($(`
-					<div class="measurement-detail-node-distance">${txt}</div>
-				`));
-			}
-			
-			if(measurement && measurement.showArea){
-				let txt = Potree.utils.addCommas(measurement.getArea().toFixed(1)) + "\u00B2";
-				
-				$(elPanelBody).append($(`
-					<div class="measurement-detail-node-area">${txt}</div>
-				`));
-			}
-			
-			if(measurement instanceof Potree.Profile){
-				let elOpenProfileWindow = $(`
-					<input type="button" value="show 2d profile" class="measurement-detail-button">
-				`);
-				
-				elOpenProfileWindow.click(e => {
-					viewer._2dprofile.show();
-					viewer._2dprofile.draw(measurement);
-				});
-
-				elPanelBody.append(elOpenProfileWindow);
-			}
-			
-			let doExport = measurement.showDistances && !measurement.showAngles;
-			if(doExport){
-				let elBottomBar = $(`
-					<span style="display:flex">
-						<span style="flex-grow: 1"></span>
-					</span>`);
-				$(elPanelBody).append(elBottomBar);
-				
-				{
-					let icon = Potree.resourcePath + "/icons/file_geojson.svg";
-					let elDownload = $(`
-						<a href="#" download="measure.json" class="measurepanel_downloads">
-							<img src="${icon}" />
-						</a>`);
-					
-					elDownload.click(function(e){
-						let geojson = Potree.GeoJSONExporter.toString(measurement);
-						let url = window.URL.createObjectURL(new Blob([geojson], {type: 'data:application/octet-stream'}));
-						elDownload.attr("href", url);
-					});
-					
-					elBottomBar.append(elDownload);
-				}
-				
-				{
-					let icon = Potree.resourcePath + "/icons/file_dxf.svg";
-					let elDownload = $(`
-						<a href="#" download="measure.dxf" class="measurepanel_downloads">
-							<img src="${icon}" />
-						</a>`);
-					
-					elDownload.click(function(e){
-						let dxf = Potree.DXFExporter.toString(measurement);
-						let url = window.URL.createObjectURL(new Blob([dxf], {type: 'data:application/octet-stream'}));
-						elDownload.attr("href", url);
-					});
-					
-					elBottomBar.append(elDownload);
-				}
-			}
-		};
-		
-		updateDisplay();
-		
-		if(measurement instanceof Potree.Measure){
-			let onremove = function(event){
-				if(event.measurement === measurement){
-					$(elLi).remove();
-				}
-			};
-		
-			measurement.addEventListener("marker_added", updateDisplay);
-			measurement.addEventListener("marker_removed", updateDisplay);
-			measurement.addEventListener("marker_moved", updateDisplay);
-			scene.addEventListener("measurement_removed", onremove);
-			
-			track.stopTracking = (e) => {
-				measurement.removeEventListener("marker_added", updateDisplay);
-				measurement.removeEventListener("marker_removed", updateDisplay);
-				measurement.removeEventListener("marker_moved", updateDisplay);
-				scene.removeEventListener("measurement_added", onremove);
-				scene.removeEventListener("measurement_removed", onremove);
-			};
-		} else if(measurement instanceof Potree.Profile){
-			let onremove = function(event){
-				if(event.profile === measurement){
-					scene.removeEventListener("marker_added", updateDisplay);
-					scene.removeEventListener("marker_removed", updateDisplay);
-					scene.removeEventListener("marker_moved", updateDisplay);
-					$(elLi).remove();
-				}
-			};
-		
-			measurement.addEventListener("marker_added", updateDisplay);
-			measurement.addEventListener("marker_removed", updateDisplay);
-			measurement.addEventListener("marker_moved", updateDisplay);
-			scene.addEventListener("profile_removed", onremove);
-			
-			track.stopTracking = (e) => {
-				measurement.removeEventListener("marker_added", updateDisplay);
-				measurement.removeEventListener("marker_removed", updateDisplay);
-				measurement.removeEventListener("marker_moved", updateDisplay);
-				scene.removeEventListener("profile_added", onremove);
-				scene.removeEventListener("profile_removed", onremove);
-			};
 		}
 		
+		destroy(){
+			this.elPanel.remove();
+			
+			this.measurement.removeEventListener("marker_added", this._update);
+			this.measurement.removeEventListener("marker_removed", this._update);
+			this.measurement.removeEventListener("marker_moved", this._update);
+		}
+		
+	};
+	
+	class ProfilePanel extends MeasurePanel{
+		constructor(scene, measurement){
+			super(scene, measurement);
+			
+			this.typename = "Profile";
+			this.icon = Potree.resourcePath + "/icons/profile.svg";
+			
+			this.elIcon.attr("src", this.icon);
+			
+			let labelID = "lblProfileWidth_" + this.id;
+			let sliderID = "sldProfileWidth_" + this.id;
+			
+			this.elContent = $(`
+				<div>
+					<span class="coordinates_table_container"></span>
+					
+					<br>
+					
+					<span style="display:flex">
+						<span style="display:flex; align-items: center; padding-right: 10px">Width: </span>
+						<input id="${sliderID}" name="${sliderID}" value="5.06" style="flex-grow: 1; width:100%">
+					</span>
+					<br>
+					<input type="button" id="show_2d_profile_${this.id}" value="show 2d profile" style="width: 100%"/>
+					
+					<!-- ACTIONS -->
+					<div style="display: flex; margin-top: 12px">
+						<span></span>
+						<span style="flex-grow: 1"></span>
+						<img class="measurement_action_remove" src="${removeIconPath}" style="width: 16px; height: 16px"/>
+					</div>
+				</div>
+			`);
+			this.elContentContainer.append(this.elContent);
+			this.elShow2DProfile = this.elContent.find(`#show_2d_profile_${this.id}`);
+			this.elShow2DProfile.click(() => {
+				viewer._2dprofile.show();
+				viewer._2dprofile.draw(measurement);
+			});
+			
+			{ // width spinner
+				let elWidthLabel = this.elContent.find(`#${labelID}`);
+				let elWidthSlider = this.elContent.find(`#${sliderID}`);
+				
+				let startValue = 0;
+				
+				elWidthSlider.spinner({
+					min: 0,
+					max: 10*1000*1000,
+					step: 0.01,
+					numberFormat: "n",
+					start: (event, ui) => {
+						startValue = measurement.getWidth();
+					},
+					spin: (event, ui) => {
+						let value = elWidthSlider.spinner("value");
+						measurement.setWidth(value);
+					},
+					change: (event, ui) => {
+						let value = elWidthSlider.spinner("value");
+						measurement.setWidth(value);
+					},
+					stop: (event, ui) => {
+						let value = elWidthSlider.spinner("value");
+						measurement.setWidth(value);
+					},
+					incremental: (count) => {
+						let value = elWidthSlider.spinner("value");
+						let step = elWidthSlider.spinner("option", "step");
+						
+						let delta = value * 0.05;
+						let increments = parseInt(delta / step);
+						
+						return increments;
+					}
+				});
+				elWidthSlider.spinner("value", measurement.getWidth());
+				elWidthSlider.spinner("widget").css("width", "100%");
+
+				this.widthListener = (event) => {
+					let value = elWidthSlider.spinner("value");
+					if(value !== measurement.getWidth()){
+						elWidthSlider.spinner("value", measurement.getWidth());
+					}
+				};
+				
+				measurement.addEventListener("width_changed", this.widthListener);
+			}
+			
+			
+			let elRemove = this.elContent.find(".measurement_action_remove");
+			elRemove.click(() => {this.scene.removeProfile(measurement)});
+			
+			this.measurement.addEventListener("marker_added", this._update);
+			this.measurement.addEventListener("marker_removed", this._update);
+			this.measurement.addEventListener("marker_moved", this._update);
+			
+			this.update();
+		}
+		
+		update(){
+			let elCoordiantesContainer = this.elContent.find(".coordinates_table_container");
+			elCoordiantesContainer.empty();
+			elCoordiantesContainer.append(createCoordinatesTable(this.measurement));
+		}
+		
+		destroy(){
+			this.elPanel.remove();
+			
+			this.measurement.removeEventListener("marker_added", this._update);
+			this.measurement.removeEventListener("marker_removed", this._update);
+			this.measurement.removeEventListener("marker_moved", this._update);
+			this.measurement.removeEventListener("width_changed", this.widthListener);
+		}
+		
+	};
+	
+	class VolumePanel extends MeasurePanel{
+		constructor(scene, measurement){
+			super(scene, measurement);
+			
+			this.typename = "Volume";
+			this.icon = Potree.resourcePath + "/icons/volume.svg";
+			
+			this.elIcon.attr("src", this.icon);
+			
+			this.elContent = $(`
+				<div>
+					
+					<input type="button" value="download" id="download_volume_${this.id}"/>
+					
+					<!-- ACTIONS -->
+					<div style="display: flex; margin-top: 12px">
+						<span></span>
+						<span style="flex-grow: 1"></span>
+						<img class="measurement_action_remove" src="${removeIconPath}" style="width: 16px; height: 16px"/>
+					</div>
+				</div>
+			`);
+			this.elContentContainer.append(this.elContent);
+			
+			this.elDownloadButton = this.elContent.find(`#download_volume_${this.id}`);
+			this.elDownloadButton.click(() => this.download());
+			
+			let elRemove = this.elContent.find(".measurement_action_remove");
+			elRemove.click(() => {this.scene.removeVolume(measurement)});
+			
+			this.measurement.addEventListener("marker_added", this._update);
+			this.measurement.addEventListener("marker_removed", this._update);
+			this.measurement.addEventListener("marker_moved", this._update);
+			
+			this.update();
+		}
+		
+		download(){
+			
+			
+			
+		}
+		
+		update(){
+			
+		}
+		
+		destroy(){
+			this.elPanel.remove();
+			
+			this.measurement.removeEventListener("marker_added", this._update);
+			this.measurement.removeEventListener("marker_removed", this._update);
+			this.measurement.removeEventListener("marker_moved", this._update);
+		}
+		
+	};
+	
+	let TYPE = {
+		DISTANCE: {panel: DistancePanel},
+		AREA: {panel: AreaPanel},
+		POINT: {panel: PointPanel},
+		ANGLE: {panel: AnglePanel},
+		HEIGHT: {panel: HeightPanel},
+		PROFILE: {panel: ProfilePanel},
+		VOLUME: {panel: VolumePanel},
+	};
+	
+	let getType = (measurement) => {
+		if(measurement instanceof Potree.Measure){
+			if(measurement.showDistances && !measurement.showArea && !measurement.showAngles){
+				return TYPE.DISTANCE;
+			}else if(measurement.showDistances && measurement.showArea && !measurement.showAngles){
+				return TYPE.AREA;
+			}else if(measurement.maxMarkers === 1){
+				return TYPE.POINT;
+			}else if(!measurement.showDistances && !measurement.showArea && measurement.showAngles){
+				return TYPE.ANGLE;
+			}else if(measurement.showHeight){
+				return TYPE.HEIGHT;
+			}else{
+				return TYPE.OTHER;
+			}
+		}else if(measurement instanceof Potree.Profile){
+			return TYPE.PROFILE;
+		}else if(measurement instanceof Potree.Volume){
+			return TYPE.VOLUME;
+		}
+	};
+	
+	let trackMeasurement = (scene, measurement) => {
+		id++;
+		
+		let type = getType(measurement);
+		
+		let panel = new type.panel(scene, measurement);
+		mlist.append(panel.elPanel);
+		
+		let track = {
+			scene: scene,
+			measurement: measurement,
+			panel: panel,
+			stopTracking: (e) => {panel.destroy()}
+		};
+		trackedItems.set(measurement, track);
+
+		let onremove = (e) => {
+			
+			let remove = () => {
+				panel.destroy();
+				scene.removeEventListener("measurement_removed", onremove);
+				scene.removeEventListener("profile_removed", onremove);
+				scene.removeEventListener("volume_removed", onremove);
+			};
+			
+			if(e.measurement instanceof Potree.Measure && e.measurement === measurement){
+				remove();
+			}else if(e.profile instanceof Potree.Profile && e.profile === measurement){
+				remove();
+			}else if(e.volume instanceof Potree.Volume && e.volume === measurement){
+				remove();
+			}
+			
+		};
+		
+		scene.addEventListener("measurement_removed", onremove);
+		scene.addEventListener("profile_removed", onremove);
+		scene.addEventListener("volume_removed", onremove);
 	};
 	
 	let scenelistener = (e) => {
 		if(e.measurement){
 			trackMeasurement(e.scene, e.measurement);
-		} else if(e.profile){
+		}else if(e.profile){
 			trackMeasurement(e.scene, e.profile);
 			
 			viewer._2dprofile.show();
 			viewer._2dprofile.draw(e.profile);
+		}else if(e.volume){
+			trackMeasurement(e.scene, e.volume);
 		}
 	};
 	
 	let trackScene = (scene) => {
-		$("#measurement_details").empty();
+		$("#measurement_list").empty();
 		
 		trackedItems.forEach(function(trackedItem, key, map){
 			trackedItem.stopTracking();
 		});
 		
-		for(let i = 0; i < scene.measurements.length; i++){
-			trackMeasurement(scene, scene.measurements[i]);
-		}
+		let items = scene.measurements
+			.concat(scene.profiles)
+			.concat(scene.volumes);
 		
-		for(let i = 0; i < scene.profiles.length; i++){
-			trackMeasurement(scene, scene.profiles[i]);
+		for(let measurement of items){
+			trackMeasurement(scene, measurement);
 		}
 		
 		if(!scene.hasEventListener("measurement_added", scenelistener)){
@@ -17864,11 +18289,61 @@ function initMeasurementDetails(){
 		if(!scene.hasEventListener("profile_added", scenelistener)){
 			scene.addEventListener("profile_added", scenelistener);
 		}
+		
+		if(!scene.hasEventListener("volume_added", scenelistener)){
+			scene.addEventListener("volume_added", scenelistener);
+		}
 	};
 	
 	trackScene(viewer.scene);
 	
 	viewer.addEventListener("scene_changed", (e) => {trackScene(e.scene)});
+	
+	
+	
+	
+	{ // BOTTOM ACTIONS
+		let elActionsB = $("#measurement_list_after");
+	
+		{
+			let icon = Potree.resourcePath + "/icons/file_geojson.svg";
+			let elDownload = $(`
+				<a href="#" download="measure.json" class="measurepanel_downloads">
+					<img src="${icon}" style="height: 24px" />
+				</a>`);
+			elActionsB.append(elDownload);
+			
+			elDownload.click(function(e){
+				let scene = viewer.scene;
+				let measurements = [scene.measurements, scene.profiles, scene.volumes].reduce((a, v) => a.concat(v));
+				
+				let geojson = Potree.GeoJSONExporter.toString(measurements);
+				
+				let url = window.URL.createObjectURL(new Blob([geojson], {type: 'data:application/octet-stream'}));
+				elDownload.attr("href", url);
+			});
+		}
+		
+		{
+			let icon = Potree.resourcePath + "/icons/file_dxf.svg";
+			let elDownload = $(`
+				<a href="#" download="measure.dxf" class="measurepanel_downloads">
+					<img src="${icon}" style="height: 24px" />
+				</a>`);
+			elActionsB.append(elDownload);
+			
+			elDownload.click(function(e){
+				let scene = viewer.scene;
+				let measurements = [scene.measurements, scene.profiles, scene.volumes].reduce((a, v) => a.concat(v));
+				
+				let dxf = Potree.DXFExporter.toString(measurements);
+				
+				let url = window.URL.createObjectURL(new Blob([dxf], {type: 'data:application/octet-stream'}));
+				elDownload.attr("href", url);
+			});
+		}
+	
+	}
 };
 
 function initSceneList(){

@@ -94,6 +94,7 @@
 			
 			{ // ANGLE MEASURE
 				let measure = new Potree.Measure();
+				measure.name = "Angle Sample";
 				measure.closed = true;
 				measure.showAngles = true;
 				measure.showDistances = false;
@@ -106,6 +107,7 @@
 			
 			{ // SINGLE POINT MEASURE
 				let measure = new Potree.Measure();
+				measure.name = "Canopy";
 				measure.showDistances = false;
 				measure.showCoordinates = true;
 				measure.maxMarkers = 1;
@@ -116,6 +118,7 @@
 			
 			{ // HEIGHT MEASURE
 				let measure = new Potree.Measure();
+				measure.name = "Tree Height";
 				measure.closed = false;
 				measure.showDistances = false;
 				measure.showHeight = true;
@@ -127,6 +130,7 @@
 			
 			{ // AREA MEASURE
 				let measure = new Potree.Measure();
+				measure.name = "Area";
 				measure.closed = true;
 				measure.showArea = true;
 				measure.addMarker(new THREE.Vector3(589899.37, 231300.16, 750.25));

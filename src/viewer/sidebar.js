@@ -1163,6 +1163,9 @@ function initMeasurementDetails(){
 					
 					<br>
 					
+					<span style="font-weight: bold">Area: </span>
+					<span id="measurement_area_${this.id}"></span>
+					
 					<!-- ACTIONS -->
 					<div style="display: flex; margin-top: 12px">
 						<span></span>
@@ -1187,6 +1190,9 @@ function initMeasurementDetails(){
 			let elCoordiantesContainer = this.elContent.find(".coordinates_table_container");
 			elCoordiantesContainer.empty();
 			elCoordiantesContainer.append(createCoordinatesTable(this.measurement));
+			
+			let elArea = this.elContent.find(`#measurement_area_${this.id}`);
+			elArea.html(this.measurement.getArea().toFixed(3));
 		}
 		
 		destroy(){
@@ -1627,6 +1633,10 @@ function initMeasurementDetails(){
 		if(!scene.hasEventListener("profile_added", scenelistener)){
 			scene.addEventListener("profile_added", scenelistener);
 		}
+		
+		if(!scene.hasEventListener("volume_added", scenelistener)){
+			scene.addEventListener("volume_added", scenelistener);
+		}
 	};
 	
 	trackScene(viewer.scene);
@@ -1637,7 +1647,7 @@ function initMeasurementDetails(){
 	
 	
 	{ // BOTTOM ACTIONS
-		let elActionsB = $("#measurement_actions_bottom");
+		let elActionsB = $("#measurement_list_after");
 	
 		{
 			let icon = Potree.resourcePath + "/icons/file_geojson.svg";

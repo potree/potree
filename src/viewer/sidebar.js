@@ -1241,7 +1241,7 @@ function initMeasurementDetails(){
 	};
 	
 	let trackScene = (scene) => {
-		$("#measurement_details").empty();
+		//$("#measurement_details").empty();
 		
 		trackedItems.forEach(function(trackedItem, key, map){
 			trackedItem.stopTracking();
@@ -1267,6 +1267,20 @@ function initMeasurementDetails(){
 	trackScene(viewer.scene);
 	
 	viewer.addEventListener("scene_changed", (e) => {trackScene(e.scene)});
+
+
+	// lenght units
+	$("#optLengthUnit").selectmenu({
+		style:'popup',
+		position: { 
+			my: "top", 
+			at: "bottom", 
+			collision: "flip" },
+		change: function(e) {
+			let selectedValue = $("#optLengthUnit").selectmenu().val();
+			viewer.setLengthUnit(selectedValue);
+		}
+	});
 };
 
 function initSceneList(){

@@ -95,7 +95,16 @@
 		<!-- MEASUREMENTS -->
 		<h3 id="menu_measurements"><span data-i18n="tb.measurments_opt"></span></h3>
 		<div>
-			<ul class="pv-menu-list selectable" id="measurement_details"></ul>
+			<div>
+				<label for="optLengthUnit" class="pv-select-label"><span data-i18n="appearance.length_unit"></span></label>
+			    <select id="optLengthUnit" name="optLengthUnit">
+					<option value="m">Meter (m)</option>
+					<option value="ft">Feet (ft)</option>
+					<option value="in">Inch (&#8243)</option>
+				</select>
+			</div>	
+			<ul class="pv-menu-list selectable" id="measurement_details">
+			</ul>
 		</div>
 	  
 		<!-- ANNOTATIONS -->

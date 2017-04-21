@@ -46,6 +46,7 @@
         "skybox": "Sky",
         "bottom_lock": "Keep above ground",
         "box": "Box",
+        "length_unit": "Length unit",
         "freeze": "Lock view",
         "language": "Language"
     },

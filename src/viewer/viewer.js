@@ -183,6 +183,7 @@ Potree.Scene = class extends THREE.EventDispatcher{
 	};
 	
 	addMeasurement(measurement){
+		measurement.lengthUnit = this.lengthUnit;
 		this.measurements.push(measurement);
 		this.dispatchEvent({
 			"type": "measurement_added",
@@ -330,6 +331,7 @@ Potree.Scene = class extends THREE.EventDispatcher{
 };
 
 Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
+
 	
 	constructor(domElement, args){
 		super();
@@ -378,7 +380,14 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		this.rgbContrast = 0;
 		this.rgbBrightness = 0;
 		
-		this.moveSpeed = 10;
+		this.moveSpeed = 10;		
+
+		this.LENGTH_UNITS = {
+			METER : {code: "m"},
+			FEET: {code: "ft"},
+			INCH: {code: "\u2033"}
+		};
+		this.lengthUnit = this.LENGTH_UNITS.METER;
 
 		this.showDebugInfos = false;
 		this.showStats = false;
@@ -1063,6 +1072,22 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			
 			this.dispatchEvent({"type": "material_changed", "viewer": this});
 		}
+	}
+
+	setLengthUnit(value) {
+		switch(value) {
+			case "m":
+				this.lengthUnit = this.LENGTH_UNITS.METER;
+				break;
+			case "ft":				
+				this.lengthUnit = this.LENGTH_UNITS.FEET;
+				break;
+			case "in":				
+				this.lengthUnit = this.LENGTH_UNITS.INCH;
+				break;
+		}
+
+		this.dispatchEvent({"type": "length_unit_changed", "viewer": this});
 	}
 	
 	getMaterial(){

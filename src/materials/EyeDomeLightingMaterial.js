@@ -23,7 +23,7 @@ Potree.EyeDomeLightingMaterial = function(parameters){
 		this.neighbours[2*c+1] = Math.sin(2 * c * Math.PI / this.neighbourCount);
 	}
 	
-	var lightDir = new THREE.Vector3(0.0, 0.0, 1.0).normalize();
+	//var lightDir = new THREE.Vector3(0.0, 0.0, 1.0).normalize();
 	
 	var uniforms = {
 		screenWidth: 	{ type: "f", 	value: 0 },
@@ -59,17 +59,19 @@ Potree.EyeDomeLightingMaterial.prototype.getDefines = function(){
 
 Potree.EyeDomeLightingMaterial.prototype.updateShaderSource = function(){
 	var attributes = {};
-	if(this.pointColorType === Potree.PointColorType.INTENSITY
-		|| this.pointColorType === Potree.PointColorType.INTENSITY_GRADIENT){
+	
+	let PC = Potree.PointColorType;
+	
+	if([PC.INTENSITY, PC.INTENSITY_GRADIENT].includes(this.pointColorType)){
 		attributes.intensity = { type: "f", value: [] };
-	}else if(this.pointColorType === Potree.PointColorType.CLASSIFICATION){
+	}else if(this.pointColorType === PC.CLASSIFICATION){
 		//attributes.classification = { type: "f", value: [] };
-	}else if(this.pointColorType === Potree.PointColorType.RETURN_NUMBER){
+	}else if(this.pointColorType === PC.RETURN_NUMBER){
 		attributes.returnNumber = { type: "f", value: [] };
 		attributes.numberOfReturns = { type: "f", value: [] };
-	}else if(this.pointColorType === Potree.PointColorType.SOURCE){
+	}else if(this.pointColorType === PC.SOURCE){
 		attributes.pointSourceID = { type: "f", value: [] };
-	}else if(this.pointColorType === Potree.PointColorType.NORMAL || this.pointColorType === Potree.PointColorType.PHONG){
+	}else if(this.pointColorType === PC.NORMAL || this.pointColorType === Potree.PointColorType.PHONG){
 		attributes.normal = { type: "f", value: [] };
 	}
 	attributes.classification = { type: "f", value: 0 };
@@ -85,7 +87,7 @@ Potree.EyeDomeLightingMaterial.prototype.updateShaderSource = function(){
 	this.uniforms.neighbours.value = this.neighbours;
 		
 	this.needsUpdate = true;
-}
+};
 
 Object.defineProperty(Potree.EyeDomeLightingMaterial.prototype, "neighbourCount", {
 	get: function(){

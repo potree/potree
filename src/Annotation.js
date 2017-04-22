@@ -27,7 +27,9 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 		this.showDescription = true;
 		this.actions = args.actions || [];
 		this.isHighlighted = false;
-		this.visible = true;
+		this._visible = true;
+		this.__visible = true;
+		this.collapseThreshold = [args.collapseThreshold, 100].find(e => e !== undefined);
 		
 		this.children = [];
 		this.parent = null;
@@ -61,13 +63,28 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 			}
 			this.dispatchEvent({type: "click", target: this});
 		});
-        
+		
+		this.actions = this.actions.map(a => {
+			if(a instanceof Potree.Action){
+				return a;
+			}else{
+				return new Potree.Action(a);
+			}
+		});
+		
 		for(let action of this.actions){
+			action.pairWith(this);
+		}
+        
+		let actions = this.actions.filter(
+			a => a.showIn === undefined || a.showIn.includes("scene"));
+		
+		for(let action of actions){
 			this.elTitle.css("padding", "1px 3px 0px 8px");
 			
 			let elButton = $(`<img src="${action.icon}" class="annotation-action-icon">`);
 			this.elTitlebar.append(elButton);
-			elButton.click(() => action.onclick());
+			elButton.click(() => action.onclick({annotation: this}));
 		}
 		
 		this.elDescriptionClose.hover(
@@ -92,7 +109,7 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 			
 			let c = this;
 			while(c !== null){
-				this.dispatchEvent({
+				c.dispatchEvent({
 					"type": "annotation_added",
 					"annotation": annotation
 				});
@@ -176,7 +193,8 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 			
 			if(this.description){
 				this.descriptionVisible = true;	
-				this.elDescription.css("display", "block");
+				//this.elDescription.css("display", "block");
+				this.elDescription.fadeIn(200);
 				this.elDescription.css("position", "relative");
 			}
 		}else{
@@ -185,6 +203,7 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 			this.domElement.css("z-index", "100");
 			this.descriptionVisible = false;	
 			this.elDescription.css("display", "none");
+			//this.elDescription.fadeOut(200);
 		}
 		
 		this.isHighlighted = highlighted;
@@ -205,9 +224,12 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 		if(!this.hasView()){
 			return;
 		}
-	
+
+		let view = this.scene.view;
+		
 		var animationDuration = 800;
 		var easing = TWEEN.Easing.Quartic.Out;
+		
 		
 		let endTarget;
 		if(this.cameraTarget){
@@ -217,37 +239,61 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 		}else{
 			endTarget = this.boundingBox.getCenter();
 		}
-		let endPosition = this.cameraPosition;
-		if(!endPosition){
-			let direction = this.scene.view.direction;
-			endPosition = endTarget.clone().add(direction.multiplyScalar(-this.radius));
-		}
-    
-		{ // animate camera position
-			let tween = new TWEEN.Tween(this.scene.view.position).to(endPosition, animationDuration);
-			tween.easing(easing);
-			tween.start();
-		}
 		
-		{ // animate camera target
-			var camTargetDistance = camera.position.distanceTo(endTarget);
-			var target = new THREE.Vector3().addVectors(
-				camera.position, 
-				camera.getWorldDirection().clone().multiplyScalar(camTargetDistance)
-			);
-			var tween = new TWEEN.Tween(target).to(endTarget, animationDuration);
-			tween.easing(easing);
-			tween.onUpdate(() => {
-				this.scene.view.lookAt(target);
-			});
-			tween.onComplete(() => {
-				this.scene.view.lookAt(target);
-				this.dispatchEvent({type: "focusing_finished", target: this});
-			});
+		if(this.cameraPosition){
+			
+			let endPosition = this.cameraPosition;
+
+			{ // animate camera position
+				let tween = new TWEEN.Tween(view.position).to(endPosition, animationDuration);
+				tween.easing(easing);
+				tween.start();
+			}
+			
+			{ // animate camera target
+				var camTargetDistance = camera.position.distanceTo(endTarget);
+				var target = new THREE.Vector3().addVectors(
+					camera.position, 
+					camera.getWorldDirection().clone().multiplyScalar(camTargetDistance)
+				);
+				var tween = new TWEEN.Tween(target).to(endTarget, animationDuration);
+				tween.easing(easing);
+				tween.onUpdate(() => {
+					view.lookAt(target);
+				});
+				tween.onComplete(() => {
+					view.lookAt(target);
+					this.dispatchEvent({type: "focusing_finished", target: this});
+				});
+				
+				this.dispatchEvent({type: "focusing_started", target: this});
+				tween.start();
+			}
+		}else if(this.radius){
+			let direction = view.direction;
+			let endPosition = endTarget.clone().add(direction.multiplyScalar(-this.radius));
+			let startRadius = view.radius;
+			let endRadius = this.radius;
+			
+			{ // animate camera position
+				let tween = new TWEEN.Tween(view.position).to(endPosition, animationDuration);
+				tween.easing(easing);
+				tween.start();
+			}
+			
+			{ // animate radius
+				let t = {x: 0};
+			
+				let tween = new TWEEN.Tween(t)
+					.to({x: 1}, animationDuration)
+					.onUpdate(function(){
+						view.radius = this.x * endRadius + (1 - this.x) * startRadius;
+					});
+				tween.easing(easing);
+				tween.start();
+			}
+			
 		}
-    
-		this.dispatchEvent({type: "focusing_started", target: this});
-		tween.start();
 	};
 	
 	dispose(){
@@ -256,6 +302,34 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 		}
     
 	};
+	
+	get visible(){
+		return this._visible;
+	}
+	
+	set visible(value){
+		if(this._visible === value){
+			return;
+		}
+		
+		this._visible = value;
+		
+		if(!value){
+			this.traverse(node => {
+				node.__visible = false;
+				node.domElement.css("display", "none");
+			});
+		}else{
+			this.traverse(node => {
+				node.__visible = true;
+			});
+		}
+		
+		this.dispatchEvent({
+			type: "visibility_changed",
+			annotation: this
+		});
+	}
 	
 	toString(){
 		return "Annotation: " + this.title;

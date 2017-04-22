@@ -4,6 +4,9 @@ Potree.Profile = class extends THREE.Object3D{
 	constructor(){
 		super();
 		
+		this.constructor.counter = (this.constructor.counter === undefined) ? 0 : this.constructor.counter + 1;
+		
+		this.name = "Profile_" + this.constructor.counter;
 		this.points = [];
 		this.spheres = [];
 		this.edges = [];

@@ -25,7 +25,7 @@ Potree.WorkerPool = class WorkerPool{
 		this.workers[url].push(worker);
 	}
 	
-}
+};
 
 Potree.workerPool = new Potree.WorkerPool();
 

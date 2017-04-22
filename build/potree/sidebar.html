@@ -14,7 +14,8 @@
 	<div style="font-family:arial;">
 		<a href="javascript:viewer.setLanguage('en');" style="margin-left: 30px;">EN</a> -  
 		<a href="javascript:viewer.setLanguage('fr');">FR</a> - 
-		<a href="javascript:viewer.setLanguage('de');">DE</a>
+		<a href="javascript:viewer.setLanguage('de');">DE</a> - 
+		<a href="javascript:viewer.setLanguage('jp');">JP</a>
 	</div>
 	<div>
 	<!--<div id="accordion" class="accordion">-->
@@ -94,8 +95,12 @@
 	  
 		<!-- MEASUREMENTS -->
 		<h3 id="menu_measurements"><span data-i18n="tb.measurments_opt"></span></h3>
-		<div>
-			<ul class="pv-menu-list selectable" id="measurement_details"></ul>
+		<div id="measurement_details">
+			<!-- <ul class="pv-menu-list selectable" id="measurement_details"></ul> -->
+		
+			<div id="measurement_list_before" style="margin: 6px 2px 6px 2px"></div>
+			<div id="measurement_list"></div>
+			<div id="measurement_list_after" style="margin: 6px 2px 6px 2px"></div>
 		</div>
 	  
 		<!-- ANNOTATIONS -->

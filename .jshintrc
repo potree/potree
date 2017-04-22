@@ -1,0 +1,23 @@
+{
+	"bitwise": true,
+	"camelcase": true,
+	"curly": true,
+	"eqeqeq": true,
+	"immed": true,
+	"indent": 4,
+	"latedef": true,
+	"newcap": true,
+	"noarg": true,
+	"nonew": true,
+	"undef": true,
+	"unused": true,
+	"esversion": 6,
+	"sub": true,
+	"browser": true,
+	"node": true,
+	"globals": {
+		"Potree": true,
+		"THREE": true,
+		"$": true
+	}
+}

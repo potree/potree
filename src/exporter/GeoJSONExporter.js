@@ -8,67 +8,69 @@
 
 Potree.GeoJSONExporter = class GeoJSONExporter{
 	
-	static toString(measurement){
-		
-		let geojson = {
-			"type": "FeatureCollection",
-			"features": []
-		};
-		
-		let isLine = measurement.showDistances && !measurement.showArea && !measurement.showAngles;
-		let isPolygon = measurement.showDistances && measurement.showArea && !measurement.showAngles;
-		
-		if(isLine){
-			geojson.features.push({
-				"type": "Feature",
-				"geometry": {
-				"type": "LineString",
-				"coordinates": []
-				},
-				"properties": {
-				}
-			});
-		}else if (isPolygon) {
-			geojson.features.push({
-				"type": "Feature",
-				"geometry": {
-					"type": "Polygon",
-					"coordinates": []
-				},
-				"properties": {
-				}
-			});
-		}
+	static measurementToFeatures(measurement){
 		
 		let coords = measurement.points.map(e => e.position.toArray());
 		
-		if(isLine){
-			geojson.features[0].geometry.coordinates = coords;
-		}else if(isPolygon){
-			coords.push(coords[0]);
-			geojson.features[0].geometry.coordinates.push(coords);
-		}
+		let features = [];
 		
-		measurement.edgeLabels.forEach(function (label) {
-			var labelPoint = {
+		if(coords.length === 1){
+			let feature = {
 				type: 'Feature',
 				geometry: {
 					type: 'Point',
-					coordinates: label.position.toArray(),
+					coordinates: coords[0],
 				},
 				properties: {
-					name: label.text
+					name: measurement.name
 				}
 			};
-			geojson.features.push(labelPoint);
-		});
-		
-		if (isLine) {
-			// There is one point more than the number of edges.
-			geojson.features.pop();
+			features.push(feature);
+		}else if(coords.length > 1 && !measurement.closed){
+			let object = {
+				"type": "Feature",
+				"geometry": {
+					"type": "LineString",
+					"coordinates": coords
+				},
+				"properties": {
+					name: measurement.name
+				}
+			};
+			
+			features.push(object);
+		}else if(coords.length > 1 && measurement.closed){
+
+			let object = {
+				"type": "Feature",
+				"geometry": {
+					"type": "Polygon",
+					"coordinates": [[...coords, coords[0]]]
+				},
+				"properties": {
+					name: measurement.name
+				}
+			};
+			features.push(object);
+		}
+
+		if(measurement.showDistances){
+			measurement.edgeLabels.forEach((label) => {
+				let labelPoint = {
+					type: 'Feature',
+					geometry: {
+						type: 'Point',
+						coordinates: label.position.toArray(),
+					},
+					properties: {
+						distance: label.text
+					}
+				};
+				features.push(labelPoint);
+			});
 		}
 		
-		if (isPolygon) {
+		if(measurement.showArea){
 			var point = measurement.areaLabel.position;
 			var labelArea = {
 				type: 'Feature',
@@ -77,13 +79,36 @@ Potree.GeoJSONExporter = class GeoJSONExporter{
 					coordinates: point.toArray(),
 				},
 				properties: {
-					name: measurement.areaLabel.text
+					area: measurement.areaLabel.text
 				}
 			};
-			geojson.features.push(labelArea);
+			features.push(labelArea);
 		}
 		
-		return JSON.stringify(geojson);
+		return features;
+	}
+	
+	static toString(measurements){
+		
+		if(!(measurements instanceof Array)){
+			measurements = [measurements];
+		}
+		
+		measurements = measurements.filter(m => m instanceof Potree.Measure);
+		
+		let features = [];
+		for(let measure of measurements){
+			let f = Potree.GeoJSONExporter.measurementToFeatures(measure);
+			
+			features = features.concat(f);
+		}
+		
+		let geojson = {
+			"type": "FeatureCollection",
+			"features": features
+		};
+		
+		return JSON.stringify(geojson, null, "\t");
 	}
 
 }

@@ -3,6 +3,9 @@ Potree.Measure = class Measure extends THREE.Object3D{
 	constructor(){
 		super();
 		
+		this.constructor.counter = (this.constructor.counter === undefined) ? 0 : this.constructor.counter + 1;
+		
+		this.name = "Measure_" + this.constructor.counter;
 		this.points = [];
 		this._showDistances = true;
 		this._showCoordinates = false;
@@ -152,12 +155,10 @@ Potree.Measure = class Measure extends THREE.Object3D{
 				if(I){
 					let i = this.spheres.indexOf(e.drag.object);
 					if(i !== -1){
-						let point = this.points[i];
 						
-						for(let key of Object.keys(I.point)){
-							if(key !== "position"){
-								point[key] = I.point[key];
-							}
+						let point = this.points[i];
+						for(let key of Object.keys(I.point).filter(e => e !== "position")){
+							point[key] = I.point[key];
 						}
 						
 						this.setPosition(i, I.location);
@@ -251,7 +252,7 @@ Potree.Measure = class Measure extends THREE.Object3D{
 		for(let i = 0; i < this.points.length; i++){
 			let p1 = this.points[i].position;
 			let p2 = this.points[j].position;
-			area += (p2.x + p1.x) * (p1.z - p2.z);
+			area += (p2.x + p1.x) * (p1.y - p2.y);
 			j = i;
 		}
 		

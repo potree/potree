@@ -48,7 +48,6 @@
 
 
 .potree_container{
-	/*font-size:	75%;*/
 }
 
 .potree_info_text{
@@ -89,7 +88,6 @@
 
 #potree_sidebar_container a{
 	color: 			#8Aa1c4;
-	//color: 			red;
 }
 
 .potree_menu_toggle{
@@ -144,8 +142,6 @@ a:hover, a:visited, a:link, a:active{
 }
 
 .annotation{
-	-webkit-transition: opacity .1s;
-	transition: 	opacity .1s;
 	position:		absolute;
 	padding:		10px;
 	opacity:		0.5;
@@ -158,14 +154,13 @@ a:hover, a:visited, a:link, a:active{
 	font-size:		1em;
 	opacity:		1;
 	margin:			auto;
-	width:			fit-content;
+	display:		table;
 }
 
 .annotation-expand{
 	color:			white;
 	font-size:		0.6em;
 	opacity:		1;
-	width:			fit-content;
 }
 
 .annotation-action-icon{
@@ -206,22 +201,18 @@ a:hover, a:visited, a:link, a:active{
 }
 
 .annotation-label{
-	//position:		relative;
 	display:		inline-block;
 	height:			100%;
 	flex-grow:		1;
-	//margin:			2px 8px;
 	user-select:	none;
+	-moz-user-select: none;
 	z-index:		100;
-	width:			fit-content;
 	vertical-align:	middle;
 	line-height:	1.5em;
-	//text-align:		center;
 	font-family:	Arial;
 	font-weight:	bold;
 	padding:		1px 8px 0px 8px;
 	cursor:			default;
-	user-select:	none;
 	white-space:	nowrap;
 }
 
@@ -234,6 +225,7 @@ a:hover, a:visited, a:link, a:active{
 	border-radius:	4px;
 	display:		none;
 	max-width:		500px;
+	width:			500px;
 }
 
 .annotation-description-close{
@@ -284,6 +276,46 @@ body{
   stroke: 		var(--font-color);
   shape-rendering: crispEdges;
   opacity: 		0.1;
+}
+
+.measurement_item{
+	border-bottom: 1px solid rgba(0, 0, 0, 0.5);
+	display: block;
+	position: relative;
+}
+
+.measurement_header{
+	display:flex;
+	cursor: pointer;
+	padding: 2px;
+}
+
+.measurement_header:hover{
+	background-color: rgba(255, 255, 255, 0.1);
+}
+
+.measurement_item_icon{
+	width: 24px; 
+	height: 24px;
+}
+
+.measurement_header_title{
+	flex-grow: 1;
+	display: flex;
+	align-items: center;
+}
+
+.measurement_icon{
+	padding: 0px 6px 0px 4px;
+}
+
+.measurement_content{
+	padding: 5px 15px 5px 10px;
+	background-color: rgba(0, 0, 0, 0.4);
+}
+
+.measurement_value_table{
+	width: 100%;
 }
 
 
@@ -357,6 +389,13 @@ body{
 	margin-top:	8px;
 }
 
+
+
+
+
+
+
+
 .pv-panel-heading{
 	padding: 	4px !important;
 	display: 	flex; 
@@ -428,7 +467,6 @@ body{
 }
 
 .ui-widget-content{
-	background-color: none !important;
 	color: var(--font-color) !important;
 }
 
@@ -449,6 +487,10 @@ body{
 	color: var(--color-2);
 	padding: 4px 10px 4px 30px;
 	cursor: pointer;
+}
+
+.accordion > h3:hover{
+	filter: brightness(125%);
 }
 
 .accordion > div{
@@ -500,22 +542,9 @@ body{
 
 
 
-/* no scrollbar styling in firefox, sadly */
-.navmenu::-webkit-scrollbar{
-  height: 12px;
-}
-
-.navmenu::-webkit-scrollbar-track{
-  background: rgba(0, 0, 0, 0.1);
-}
-
-.navmenu::-webkit-scrollbar-thumb{
-  background: rgba(0, 0, 0, 0.5);
-}
-
 .pv-titlebar{
 	background-color: var(--color-1);
-	color: #var(--color-2);
+	color: var(--color-2);
 	font-weight: 700;
 	padding: 5px;
 }
@@ -606,7 +635,7 @@ body{
 
 
 
-/* HOVER MENU */
+
 
 .hover_menu{
 	position: absolute;
@@ -616,11 +645,11 @@ body{
 	border-radius: 100px;
 	display: block;
 	user-select: none;
+	-moz-user-select: none;
 }
 
 .hover_menu_icon{
 	position: absolute;
-	//border: 1px solid black;
 	display: inline-block;
 	width: 16px;
 	height: 16px;
@@ -673,4 +702,3 @@ body{
 	bottom: -5px; 
 	opacity: 1.0;
 }
-

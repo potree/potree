@@ -30,7 +30,7 @@ Potree.webgl = {
 Potree.scriptPath = null;
 if(document.currentScript.src){
 		Potree.scriptPath = new URL(document.currentScript.src + "/..").href;
-        if (Potree.scriptPath.slice(-1) == '/') {
+        if (Potree.scriptPath.slice(-1) === '/') {
             Potree.scriptPath = Potree.scriptPath.slice(0, -1);
         }
 }else{
@@ -101,7 +101,7 @@ Potree.resolveQueries = function(gl){
 			delete Potree.timerQueries[name];
 		}
 	}
-}
+};
 
 
 Potree.MOUSE = {
@@ -117,7 +117,7 @@ Potree.loadPointCloud = function(path, name, callback){
 		pointcloud.name = name;
 		
 		callback({type: "pointcloud_loaded", pointcloud: pointcloud});
-	}
+	};
 	
 	// load pointcloud
 	if(!path){
@@ -153,7 +153,7 @@ Potree.loadPointCloud = function(path, name, callback){
 	}else{
 		callback({"type": "loading_failed"});
 	}
-}
+};
 
 Potree.updatePointClouds = function(pointclouds, camera, renderer){
 
@@ -375,6 +375,20 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 		unloadedGeometry[i].load();
 	}
 	
+	//for(let node of visibleNodes){
+	//	//let allowedNodes = ["r", "r0", "r4", "r04", "r40", "r402", "r4020", "r4022", "r40206", "r40224", "r40202", "r40220", "r00", "r042"];
+	//	//let allowedNodes = ["r", "r0", "r4", "r04", "r40", "r402", "r4020", "r4022", "r00", "r042"];
+	//	//let allowedNodes = ["r", "r0", "r04", "r042"];
+	//	let allowedNodes = ["r", "r4", "r40", "r402", "r4020", "r40206"];
+	//	//let allowedNodes = ["r", "r4", "r40", "r402", "r4020"];
+	//	node.sceneNode.visible = allowedNodes.includes(node.geometryNode.name);
+	//	
+	//	if(node.boundingBoxNode){
+	//		node.boundingBoxNode.visible = node.boundingBoxNode.visible && node.sceneNode.visible;
+	//	}
+	//}
+	
+	
 	Potree.updateDEMs(renderer, visibleNodes);
 
 	return {
@@ -440,207 +454,207 @@ Potree.updateDEMs = function(renderer, visibleNodes){
 	}
 	
 	
-}
-
-Potree.Shader = class Shader{
-	constructor(vertexShader, fragmentShader, program, uniforms){
-		this.vertexShader = vertexShader;
-		this.fragmentShader = fragmentShader;
-		this.program = program;
-		this.uniforms = uniforms;
-	}
 };
 
-Potree.VBO = class VBO{
-	constructor(name, id, attribute){
-		this.name = name;
-		this.id = id;
-		this.attribute = attribute;
-	}
-};
-
-Potree.VAO = class VAO{
-	constructor(id, geometry, vbos){
-		this.id = id;
-		this.geometry = geometry;
-		this.vbos = vbos;
-	}
-};
-
-Potree.compileShader = function(gl, vertexShader, fragmentShader){
-	// VERTEX SHADER
-	let vs = gl.createShader(gl.VERTEX_SHADER);
-	{
-		gl.shaderSource(vs, vertexShader);
-		gl.compileShader(vs);
-		
-		let success = gl.getShaderParameter(vs, gl.COMPILE_STATUS);
-		if (!success) {
-			console.error("could not compile vertex shader:");
-			
-			let log = gl.getShaderInfoLog(vs);
-			console.error(log, vertexShader);
-			
-			return;
-		}
-	}
-	
-	// FRAGMENT SHADER
-	let fs = gl.createShader(gl.FRAGMENT_SHADER);
-	{
-		gl.shaderSource(fs, fragmentShader);
-		gl.compileShader(fs);
-		
-		let success = gl.getShaderParameter(fs, gl.COMPILE_STATUS);
-		if (!success) {
-			console.error("could not compile fragment shader:");
-			console.error(fragmentShader);
-			
-			return;
-		}
-	}
-	
-	// PROGRAM
-	let program = gl.createProgram();
-	gl.attachShader(program, vs);
-	gl.attachShader(program, fs);
-	gl.linkProgram(program);
-	let success = gl.getProgramParameter(program, gl.LINK_STATUS);
-	if (!success) {
-		console.error("could not compile shader:");
-		console.error(vertexShader);
-		console.error(fragmentShader);
-			
-		return;
-	}
-	
-	gl.useProgram(program);
-	
-	let uniforms = {};
-	{ // UNIFORMS
-		let n = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
-
-		for(let i = 0; i < n; i++){
-			let uniform = gl.getActiveUniform(program, i);
-			let name = uniform.name;
-			let loc = gl.getUniformLocation(program, name);
-
-			uniforms[name] = loc;
-		}
-	}
-	
-	let shader = new Potree.Shader(vertexShader, fragmentShader, program, uniforms);
-	
-	return shader;
-};
-
-// http://blog.tojicode.com/2012/10/oesvertexarrayobject-extension.html
-Potree.createVAO = function(gl, geometry){
-	if(Potree.vaos[geometry.uuid] ==! undefined){
-		return Potree.vaos[geometry.uuid];
-	}
-	
-	let ext = gl.getExtension("OES_vertex_array_object");
-	let id = ext.createVertexArrayOES();
-	
-	ext.bindVertexArrayOES(id);  
-	
-	let vbos = {};
-	for(let key in geometry.attributes){
-		let attribute = geometry.attributes[key];
-		
-		let type = gl.FLOAT;
-		if(attribute.array instanceof Uint8Array){
-			type = gl.UNSIGNED_BYTE;
-		}else if(attribute.array instanceof Uint16Array){
-			type = gl.UNSIGNED_SHORT;
-		}else if(attribute.array instanceof Uint32Array){
-			type = gl.UNSIGNED_INT;
-		}else if(attribute.array instanceof Int8Array){
-			type = gl.BYTE;
-		}else if(attribute.array instanceof Int16Array){
-			type = gl.SHORT;
-		}else if(attribute.array instanceof Int32Array){
-			type = gl.INT;
-		}else if(attribute.array instanceof Float32Array){
-			type = gl.FLOAT;
-		}
-		
-		let vbo = gl.createBuffer();
-		gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-		gl.bufferData(gl.ARRAY_BUFFER, attribute.array, gl.STATIC_DRAW);
-		//gl.enableVertexAttribArray(attributePointer);
-		//gl.vertexAttribPointer(attributePointer, numElements, type, attribute.normalized, 0, 0);
-		
-		vbos[key] = new Potree.VBO(key, vbo, attribute);
-	}
-	
-	ext.bindVertexArrayOES(null);
-	
-	let vao = new Potree.VAO(id, geometry, vbos);
-	Potree.vaos[geometry.uuid] = vao;
-	
-	return vao;
-};
-
-Potree.renderPointcloud = function(pointcloud, camera, renderer){
-	let gl = renderer.context;
-	let webgl = Potree.webgl;
-	let material = pointcloud.material;
-	
-	if(gl.getExtension("OES_vertex_array_object") === null){
-		console.error("OES_vertex_array_object extension not supported");
-		return;
-	}
-	
-	if(material.needsUpdate){
-		Potree.pointcloudShader = Potree.compileShader(gl,
-			material.vertexShader, material.fragmentShader);
-			
-		material.needsUpdate = false;
-	}
-	
-	let shader = Potree.pointcloudShader;
-	let uniforms = shader.uniforms;
-	
-	gl.useProgram(shader.program);
-	
-	gl.uniformMatrix4fv(uniforms["projectionMatrix"], false, camera.projectionMatrix.elements);
-	gl.uniformMatrix4fv(uniforms["viewMatrix"], false, camera.matrixWorldInverse.elements);
-	gl.uniform1f(uniforms["fov"], this.material.fov);
-	gl.uniform1f(uniforms["screenWidth"], material.screenWidth);
-	gl.uniform1f(uniforms["screenHeight"], material.screenHeight);
-	gl.uniform1f(uniforms["spacing"], material.spacing);
-	gl.uniform1f(uniforms["near"], material.near);
-	gl.uniform1f(uniforms["far"], material.far);
-	gl.uniform1f(uniforms["size"], material.size);
-	gl.uniform1f(uniforms["minSize"], material.minSize);
-	gl.uniform1f(uniforms["maxSize"], material.maxSize);
-	gl.uniform1f(uniforms["octreeSize"], pointcloud.pcoGeometry.boundingBox.getSize().x);
-	
-	{
-		let apPosition = gl.getAttribLocation(program, "position");
-		let apColor = gl.getAttribLocation(program, "color");
-		let apNormal = gl.getAttribLocation(program, "normal");
-		let apClassification = gl.getAttribLocation(program, "classification");
-		let apIndices = gl.getAttribLocation(program, "indices");
-		
-		gl.enableVertexAttribArray(apPosition);
-		gl.enableVertexAttribArray(apColor);
-		gl.enableVertexAttribArray(apNormal);
-		gl.enableVertexAttribArray(apClassification);		
-		gl.enableVertexAttribArray(apIndices);
-	}
-	
-	let nodes = pointcloud.visibleNodes;
-	for(let node of nodes){
-		let object = node.sceneNode;
-		let geometry = object.geometry;
-		
-		
-	}
-	
-};
+//Potree.Shader = class Shader{
+//	constructor(vertexShader, fragmentShader, program, uniforms){
+//		this.vertexShader = vertexShader;
+//		this.fragmentShader = fragmentShader;
+//		this.program = program;
+//		this.uniforms = uniforms;
+//	}
+//};
+//
+//Potree.VBO = class VBO{
+//	constructor(name, id, attribute){
+//		this.name = name;
+//		this.id = id;
+//		this.attribute = attribute;
+//	}
+//};
+//
+//Potree.VAO = class VAO{
+//	constructor(id, geometry, vbos){
+//		this.id = id;
+//		this.geometry = geometry;
+//		this.vbos = vbos;
+//	}
+//};
+//
+//Potree.compileShader = function(gl, vertexShader, fragmentShader){
+//	// VERTEX SHADER
+//	let vs = gl.createShader(gl.VERTEX_SHADER);
+//	{
+//		gl.shaderSource(vs, vertexShader);
+//		gl.compileShader(vs);
+//		
+//		let success = gl.getShaderParameter(vs, gl.COMPILE_STATUS);
+//		if (!success) {
+//			console.error("could not compile vertex shader:");
+//			
+//			let log = gl.getShaderInfoLog(vs);
+//			console.error(log, vertexShader);
+//			
+//			return;
+//		}
+//	}
+//	
+//	// FRAGMENT SHADER
+//	let fs = gl.createShader(gl.FRAGMENT_SHADER);
+//	{
+//		gl.shaderSource(fs, fragmentShader);
+//		gl.compileShader(fs);
+//		
+//		let success = gl.getShaderParameter(fs, gl.COMPILE_STATUS);
+//		if (!success) {
+//			console.error("could not compile fragment shader:");
+//			console.error(fragmentShader);
+//			
+//			return;
+//		}
+//	}
+//	
+//	// PROGRAM
+//	let program = gl.createProgram();
+//	gl.attachShader(program, vs);
+//	gl.attachShader(program, fs);
+//	gl.linkProgram(program);
+//	let success = gl.getProgramParameter(program, gl.LINK_STATUS);
+//	if (!success) {
+//		console.error("could not compile shader:");
+//		console.error(vertexShader);
+//		console.error(fragmentShader);
+//			
+//		return;
+//	}
+//	
+//	gl.useProgram(program);
+//	
+//	let uniforms = {};
+//	{ // UNIFORMS
+//		let n = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
+//
+//		for(let i = 0; i < n; i++){
+//			let uniform = gl.getActiveUniform(program, i);
+//			let name = uniform.name;
+//			let loc = gl.getUniformLocation(program, name);
+//
+//			uniforms[name] = loc;
+//		}
+//	}
+//	
+//	let shader = new Potree.Shader(vertexShader, fragmentShader, program, uniforms);
+//	
+//	return shader;
+//};
+//
+//// http://blog.tojicode.com/2012/10/oesvertexarrayobject-extension.html
+//Potree.createVAO = function(gl, geometry){
+//	if(Potree.vaos[geometry.uuid] ==! undefined){
+//		return Potree.vaos[geometry.uuid];
+//	}
+//	
+//	let ext = gl.getExtension("OES_vertex_array_object");
+//	let id = ext.createVertexArrayOES();
+//	
+//	ext.bindVertexArrayOES(id);  
+//	
+//	let vbos = {};
+//	for(let key in geometry.attributes){
+//		let attribute = geometry.attributes[key];
+//		
+//		let type = gl.FLOAT;
+//		if(attribute.array instanceof Uint8Array){
+//			type = gl.UNSIGNED_BYTE;
+//		}else if(attribute.array instanceof Uint16Array){
+//			type = gl.UNSIGNED_SHORT;
+//		}else if(attribute.array instanceof Uint32Array){
+//			type = gl.UNSIGNED_INT;
+//		}else if(attribute.array instanceof Int8Array){
+//			type = gl.BYTE;
+//		}else if(attribute.array instanceof Int16Array){
+//			type = gl.SHORT;
+//		}else if(attribute.array instanceof Int32Array){
+//			type = gl.INT;
+//		}else if(attribute.array instanceof Float32Array){
+//			type = gl.FLOAT;
+//		}
+//		
+//		let vbo = gl.createBuffer();
+//		gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+//		gl.bufferData(gl.ARRAY_BUFFER, attribute.array, gl.STATIC_DRAW);
+//		//gl.enableVertexAttribArray(attributePointer);
+//		//gl.vertexAttribPointer(attributePointer, numElements, type, attribute.normalized, 0, 0);
+//		
+//		vbos[key] = new Potree.VBO(key, vbo, attribute);
+//	}
+//	
+//	ext.bindVertexArrayOES(null);
+//	
+//	let vao = new Potree.VAO(id, geometry, vbos);
+//	Potree.vaos[geometry.uuid] = vao;
+//	
+//	return vao;
+//};
+//
+//Potree.renderPointcloud = function(pointcloud, camera, renderer){
+//	let gl = renderer.context;
+//	let webgl = Potree.webgl;
+//	let material = pointcloud.material;
+//	
+//	if(gl.getExtension("OES_vertex_array_object") === null){
+//		console.error("OES_vertex_array_object extension not supported");
+//		return;
+//	}
+//	
+//	if(material.needsUpdate){
+//		Potree.pointcloudShader = Potree.compileShader(gl,
+//			material.vertexShader, material.fragmentShader);
+//			
+//		material.needsUpdate = false;
+//	}
+//	
+//	let shader = Potree.pointcloudShader;
+//	let uniforms = shader.uniforms;
+//	
+//	gl.useProgram(shader.program);
+//	
+//	gl.uniformMatrix4fv(uniforms["projectionMatrix"], false, camera.projectionMatrix.elements);
+//	gl.uniformMatrix4fv(uniforms["viewMatrix"], false, camera.matrixWorldInverse.elements);
+//	gl.uniform1f(uniforms["fov"], this.material.fov);
+//	gl.uniform1f(uniforms["screenWidth"], material.screenWidth);
+//	gl.uniform1f(uniforms["screenHeight"], material.screenHeight);
+//	gl.uniform1f(uniforms["spacing"], material.spacing);
+//	gl.uniform1f(uniforms["near"], material.near);
+//	gl.uniform1f(uniforms["far"], material.far);
+//	gl.uniform1f(uniforms["size"], material.size);
+//	gl.uniform1f(uniforms["minSize"], material.minSize);
+//	gl.uniform1f(uniforms["maxSize"], material.maxSize);
+//	gl.uniform1f(uniforms["octreeSize"], pointcloud.pcoGeometry.boundingBox.getSize().x);
+//	
+//	{
+//		let apPosition = gl.getAttribLocation(program, "position");
+//		let apColor = gl.getAttribLocation(program, "color");
+//		let apNormal = gl.getAttribLocation(program, "normal");
+//		let apClassification = gl.getAttribLocation(program, "classification");
+//		let apIndices = gl.getAttribLocation(program, "indices");
+//		
+//		gl.enableVertexAttribArray(apPosition);
+//		gl.enableVertexAttribArray(apColor);
+//		gl.enableVertexAttribArray(apNormal);
+//		gl.enableVertexAttribArray(apClassification);		
+//		gl.enableVertexAttribArray(apIndices);
+//	}
+//	
+//	let nodes = pointcloud.visibleNodes;
+//	for(let node of nodes){
+//		let object = node.sceneNode;
+//		let geometry = object.geometry;
+//		
+//		
+//	}
+//	
+//};
 
 
 
@@ -673,31 +687,31 @@ Potree.PointCloudTreeNode = class{
 	
 	getChildren(){
 		throw "override function";
-	};
+	}
 	
 	getBoundingBox(){
 		throw "override function";
-	};
+	}
 
 	isLoaded(){
 		throw "override function";
-	};
+	}
 	
 	isGeometryNode(){
 		throw "override function";
-	};
+	}
 	
 	isTreeNode(){
 		throw "override function";
-	};
+	}
 	
 	getLevel(){
 		throw "override function";
-	};
+	}
 
 	getBoundingSphere(){
 		throw "override function";
-	};
+	}
 	
 };
 
@@ -710,7 +724,7 @@ Potree.PointCloudTree = class PointCloudTree extends THREE.Object3D{
 	
 	initialized(){
 		return this.root !== null;
-	};
+	}
 
 	
 };
@@ -743,7 +757,7 @@ Potree.WorkerPool = class WorkerPool{
 		this.workers[url].push(worker);
 	}
 	
-}
+};
 
 Potree.workerPool = new Potree.WorkerPool();
 
@@ -1593,7 +1607,11 @@ Potree.Shaders["blur.fs"] = [
 
 THREE.EventDispatcher.prototype.removeEventListeners = function(type){
 	
-	if ( this._listeners === undefined ) return;
+	if ( this._listeners === undefined ) {
+		
+		return;
+		
+	}
 	
 	if ( this._listeners[ type ] ) {
 		
@@ -1730,16 +1748,16 @@ Potree.POCLoader = function(){
  */
 Potree.POCLoader.load = function load(url, callback) {
 	try{
-		var pco = new Potree.PointCloudOctreeGeometry();
+		let pco = new Potree.PointCloudOctreeGeometry();
 		pco.url = url;
-		var xhr = new XMLHttpRequest();
+		let xhr = new XMLHttpRequest();
 		xhr.open('GET', url, true);
 		
 		xhr.onreadystatechange = function(){
 			if(xhr.readyState === 4 && (xhr.status === 200 || xhr.status === 0)){
-				var fMno = JSON.parse(xhr.responseText);
+				let fMno = JSON.parse(xhr.responseText);
 				
-				var version = new Potree.Version(fMno.version);
+				let version = new Potree.Version(fMno.version);
 				
 				// assume octreeDir is absolute if it starts with http
 				if(fMno.octreeDir.indexOf("http") === 0){
@@ -1753,10 +1771,10 @@ Potree.POCLoader.load = function load(url, callback) {
 
 				pco.pointAttributes = fMno.pointAttributes;
 				
-				var min = new THREE.Vector3(fMno.boundingBox.lx, fMno.boundingBox.ly, fMno.boundingBox.lz);
-				var max = new THREE.Vector3(fMno.boundingBox.ux, fMno.boundingBox.uy, fMno.boundingBox.uz);
-				var boundingBox = new THREE.Box3(min, max);
-				var tightBoundingBox = boundingBox.clone();
+				let min = new THREE.Vector3(fMno.boundingBox.lx, fMno.boundingBox.ly, fMno.boundingBox.lz);
+				let max = new THREE.Vector3(fMno.boundingBox.ux, fMno.boundingBox.uy, fMno.boundingBox.uz);
+				let boundingBox = new THREE.Box3(min, max);
+				let tightBoundingBox = boundingBox.clone();
 				
 				if(fMno.tightBoundingBox){
 					tightBoundingBox.min.copy(new THREE.Vector3(fMno.tightBoundingBox.lx, fMno.tightBoundingBox.ly, fMno.tightBoundingBox.lz));
@@ -1786,12 +1804,12 @@ Potree.POCLoader.load = function load(url, callback) {
 					pco.pointAttributes = new Potree.PointAttributes(pco.pointAttributes);
 				}
 				
-				var nodes = {};
+				let nodes = {};
 				
 				{ // load root
-					var name = "r";
+					let name = "r";
 					
-					var root = new Potree.PointCloudOctreeGeometryNode(name, pco, boundingBox);
+					let root = new Potree.PointCloudOctreeGeometryNode(name, pco, boundingBox);
 					root.level = 0;
 					root.hasChildren = true;
 					root.spacing = pco.spacing;
@@ -1807,16 +1825,16 @@ Potree.POCLoader.load = function load(url, callback) {
 				
 				// load remaining hierarchy
 				if(version.upTo("1.4")){
-					for( var i = 1; i < fMno.hierarchy.length; i++){
-						var name = fMno.hierarchy[i][0];
-						var numPoints = fMno.hierarchy[i][1];
-						var index = parseInt(name.charAt(name.length-1));
-						var parentName = name.substring(0, name.length-1);
-						var parentNode = nodes[parentName];
-						var level = name.length-1;
-						var boundingBox = Potree.POCLoader.createChildAABB(parentNode.boundingBox, index);
+					for( let i = 1; i < fMno.hierarchy.length; i++){
+						let name = fMno.hierarchy[i][0];
+						let numPoints = fMno.hierarchy[i][1];
+						let index = parseInt(name.charAt(name.length-1));
+						let parentName = name.substring(0, name.length-1);
+						let parentNode = nodes[parentName];
+						let level = name.length-1;
+						let boundingBox = Potree.POCLoader.createChildAABB(parentNode.boundingBox, index);
 						
-						var node = new Potree.PointCloudOctreeGeometryNode(name, pco, boundingBox);
+						let node = new Potree.PointCloudOctreeGeometryNode(name, pco, boundingBox);
 						node.level = level;
 						node.numPoints = numPoints;
 						node.spacing = pco.spacing / Math.pow(2, level);
@@ -1842,11 +1860,11 @@ Potree.POCLoader.load = function load(url, callback) {
 
 Potree.POCLoader.loadPointAttributes = function(mno){
 	
-	var fpa = mno.pointAttributes;
-	var pa = new Potree.PointAttributes();
+	let fpa = mno.pointAttributes;
+	let pa = new Potree.PointAttributes();
 	
-	for(var i = 0; i < fpa.length; i++){   
-		var pointAttribute = Potree.PointAttribute[fpa[i]];
+	for(let i = 0; i < fpa.length; i++){   
+		let pointAttribute = Potree.PointAttribute[fpa[i]];
 		pa.add(pointAttribute);
 	}                                                                     
 	
@@ -1854,43 +1872,28 @@ Potree.POCLoader.loadPointAttributes = function(mno){
 };
 
 
-Potree.POCLoader.createChildAABB = function(aabb, childIndex){
-	var V3 = THREE.Vector3;
-	var min = aabb.min;
-	var max = aabb.max;
-	var dHalfLength = new THREE.Vector3().copy(max).sub(min).multiplyScalar(0.5);
-	var xHalfLength = new THREE.Vector3(dHalfLength.x, 0, 0);
-	var yHalfLength = new THREE.Vector3(0, dHalfLength.y, 0);
-	var zHalfLength = new THREE.Vector3(0, 0, dHalfLength.z);
-
-	var cmin = min;
-	var cmax = new THREE.Vector3().add(min).add(dHalfLength);
-
-	var min, max;
-	if (childIndex === 1) {
-		min = new THREE.Vector3().copy(cmin).add(zHalfLength);
-		max = new THREE.Vector3().copy(cmax).add(zHalfLength);
-	}else if (childIndex === 3) {
-		min = new THREE.Vector3().copy(cmin).add(zHalfLength).add(yHalfLength);
-		max = new THREE.Vector3().copy(cmax).add(zHalfLength).add(yHalfLength);
-	}else if (childIndex === 0) {
-		min = cmin;
-		max = cmax;
-	}else if (childIndex === 2) {
-		min = new THREE.Vector3().copy(cmin).add(yHalfLength);
-		max = new THREE.Vector3().copy(cmax).add(yHalfLength);
-	}else if (childIndex === 5) {
-		min = new THREE.Vector3().copy(cmin).add(zHalfLength).add(xHalfLength);
-		max = new THREE.Vector3().copy(cmax).add(zHalfLength).add(xHalfLength);
-	}else if (childIndex === 7) {
-		min = new THREE.Vector3().copy(cmin).add(dHalfLength);
-		max = new THREE.Vector3().copy(cmax).add(dHalfLength);
-	}else if (childIndex === 4) {
-		min = new THREE.Vector3().copy(cmin).add(xHalfLength);
-		max = new THREE.Vector3().copy(cmax).add(xHalfLength);
-	}else if (childIndex === 6) {
-		min = new THREE.Vector3().copy(cmin).add(xHalfLength).add(yHalfLength);
-		max = new THREE.Vector3().copy(cmax).add(xHalfLength).add(yHalfLength);
+Potree.POCLoader.createChildAABB = function(aabb, index){
+	
+	let min = aabb.min.clone();
+	let max = aabb.max.clone();
+	let size = new THREE.Vector3().subVectors(max, min);
+	
+	if((index & 0b0001) > 0){
+		min.z += size.z / 2;
+	}else{
+		max.z -= size.z / 2;
+	}
+	
+	if((index & 0b0010) > 0){
+		min.y += size.y / 2;
+	}else{
+		max.y -= size.y / 2;
+	}
+	
+	if((index & 0b0100) > 0){
+		min.x += size.x / 2;
+	}else{
+		max.x -= size.x / 2;
 	}
 	
 	return new THREE.Box3(min, max);
@@ -2066,22 +2069,22 @@ Potree.BinaryLoader.prototype.load = function(node){
 		return;
 	}
 
-	var scope = this;
+	let scope = this;
 
-	var url = node.getURL();
+	let url = node.getURL();
 
 	if(this.version.equalOrHigher("1.4")){
 		url += ".bin";
 	}
 
-	var xhr = new XMLHttpRequest();
+	let xhr = new XMLHttpRequest();
 	xhr.open('GET', url, true);
 	xhr.responseType = 'arraybuffer';
 	xhr.overrideMimeType('text/plain; charset=x-user-defined');
 	xhr.onreadystatechange = function() {
 		if (xhr.readyState === 4) {
 			if (xhr.status === 200 || xhr.status === 0) {
-				var buffer = xhr.response;
+				let buffer = xhr.response;
 				scope.parse(node, buffer);
 			} else {
 				console.log('Failed to load file! HTTP status: ' + xhr.status + ", file: " + url);
@@ -2097,8 +2100,8 @@ Potree.BinaryLoader.prototype.load = function(node){
 
 Potree.BinaryLoader.prototype.parse = function(node, buffer){
 
-	var numPoints = buffer.byteLength / node.pcoGeometry.pointAttributes.byteSize;
-	var pointAttributes = node.pcoGeometry.pointAttributes;
+	let numPoints = buffer.byteLength / node.pcoGeometry.pointAttributes.byteSize;
+	let pointAttributes = node.pcoGeometry.pointAttributes;
 
 	if(this.version.upTo("1.5")){
 		node.numPoints = numPoints;
@@ -2108,22 +2111,22 @@ Potree.BinaryLoader.prototype.parse = function(node, buffer){
 	let worker = Potree.workerPool.getWorker(workerPath);
 	
 	worker.onmessage = function(e){
-		var data = e.data;
-		var buffers = data.attributeBuffers;
-		var tightBoundingBox = new THREE.Box3(
+		let data = e.data;
+		let buffers = data.attributeBuffers;
+		let tightBoundingBox = new THREE.Box3(
 			new THREE.Vector3().fromArray(data.tightBoundingBox.min),
 			new THREE.Vector3().fromArray(data.tightBoundingBox.max)
 		);
 
 		Potree.workerPool.returnWorker(workerPath, worker);
 
-		var geometry = new THREE.BufferGeometry();
+		let geometry = new THREE.BufferGeometry();
 
-		for(var property in buffers){
+		for(let property in buffers){
 			if(buffers.hasOwnProperty(property)){
-				var buffer = buffers[property].buffer;
-				var attribute = buffers[property].attribute;
-				var numElements = attribute.numElements;
+				let buffer = buffers[property].buffer;
+				let attribute = buffers[property].attribute;
+				let numElements = attribute.numElements;
 
 				if(parseInt(property) === Potree.PointAttributeNames.POSITION_CARTESIAN){
 					geometry.addAttribute("position", new THREE.BufferAttribute(new Float32Array(buffer), 3));
@@ -2145,7 +2148,7 @@ Potree.BinaryLoader.prototype.parse = function(node, buffer){
 		geometry.addAttribute("indices", new THREE.BufferAttribute(new Float32Array(data.indices), 1));
 
 		if(!geometry.attributes.normal){
-			var buffer = new Float32Array(numPoints*3);
+			let buffer = new Float32Array(numPoints*3);
 			geometry.addAttribute("normal", new THREE.BufferAttribute(new Float32Array(buffer), 3));
 		}
 
@@ -2159,7 +2162,7 @@ Potree.BinaryLoader.prototype.parse = function(node, buffer){
 		node.pcoGeometry.numNodesLoading--;
 	};
 
-	var message = {
+	let message = {
 		buffer: buffer,
 		pointAttributes: pointAttributes,
 		version: this.version.version,
@@ -2334,130 +2337,135 @@ Potree.GreyhoundBinaryLoader.prototype.parse = function(node, buffer){
  * @author Oscar Martinez Rubi
  * @author Connor Manning
  */
-var getQueryParam = function(name) {
-    name = name.replace(/[\[\]]/g, "\\$&");
-    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
-        results = regex.exec(window.location.href);
-    if (!results) return null;
-    if (!results[2]) return '';
-    return decodeURIComponent(results[2].replace(/\+/g, " "));
-}
+
+class GreyhoundUtils{
+	
+	static getQueryParam(name) {
+		name = name.replace(/[\[\]]/g, "\\$&");
+		var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+			results = regex.exec(window.location.href);
+		if (!results) return null;
+		if (!results[2]) return '';
+		return decodeURIComponent(results[2].replace(/\+/g, " "));
+	}
+	
+	static createSchema(attributes) {
+		var schema = [
+			{ "name": "X", "size": 4, "type": "signed" },
+			{ "name": "Y", "size": 4, "type": "signed" },
+			{ "name": "Z", "size": 4, "type": "signed" }
+		];
+
+		// Once we include options in the UI to load a dynamic list of available
+		// attributes for visualization (f.e. Classification, Intensity etc.)
+		// we will be able to ask for that specific attribute from the server,
+		// where we are now requesting all attributes for all points all the time.
+		// If we do that though, we also need to tell Potree to redraw the points
+		// that are already loaded (with different attributes).
+		// This is not default behaviour.
+		attributes.forEach(function(item) {
+			if(item === 'COLOR_PACKED') {
+				schema.push({ "name": "Red",      "size": 2, "type": "unsigned" });
+				schema.push({ "name": "Green",    "size": 2, "type": "unsigned" });
+				schema.push({ "name": "Blue",     "size": 2, "type": "unsigned" });
+			} else if(item === 'INTENSITY'){
+				schema.push({ "name": "Intensity", "size": 2, "type": "unsigned" });
+			} else if(item === 'CLASSIFICATION') {
+				schema.push(
+						{ "name": "Classification", "size": 1, "type": "unsigned" });
+			}
+		});
+
+	  return schema;
+	}
+	
+	static fetch(url, cb) {
+		var xhr = new XMLHttpRequest();
+		xhr.open('GET', url, true);
+		xhr.onreadystatechange = function() {
+			if (xhr.readyState === 4) {
+				if (xhr.status === 200 || xhr.status === 0) {
+					cb(null, xhr.responseText);
+				}
+				else {
+					cb(xhr.responseText);
+				}
+			}
+		};
+		xhr.send(null);
+	};
+
+	static fetchBinary(url, cb) {
+		var xhr = new XMLHttpRequest();
+		xhr.open('GET', url, true);
+		xhr.responseType = 'arraybuffer';
+		xhr.onreadystatechange = function() {
+			if (xhr.readyState === 4) {
+				if (xhr.status === 200 || xhr.status === 0) {
+					cb(null, xhr.response);
+				}
+				else {
+					cb(xhr.responseText);
+				}
+			}
+		};
+		xhr.send(null);
+	};
+
+	static pointSizeFrom(schema) {
+		return schema.reduce((p, c) => p + c.size, 0);
+	};
+
+	static getNormalization(serverURL, baseDepth, cb) {
+		var s = [
+			{ "name": "X",          "size": 4, "type": "floating" },
+			{ "name": "Y",          "size": 4, "type": "floating" },
+			{ "name": "Z",          "size": 4, "type": "floating" },
+			{ "name": "Red",        "size": 2, "type": "unsigned" },
+			{ "name": "Green",      "size": 2, "type": "unsigned" },
+			{ "name": "Blue",       "size": 2, "type": "unsigned" },
+			{ "name": "Intensity",  "size": 2, "type": "unsigned" }
+		];
+
+		var url = serverURL + 'read?depth=' + baseDepth +
+			'&schema=' + JSON.stringify(s);
+
+		GreyhoundUtils.fetchBinary(url, function(err, buffer) {
+			if (err) throw new Error(err);
+
+			var view = new DataView(buffer);
+			var numBytes = buffer.byteLength - 4;
+			var numPoints = view.getUint32(numBytes, true);
+			var pointSize = GreyhoundUtils.pointSizeFrom(s);
+
+			var colorNorm = false, intensityNorm = false;
+			var v;
+
+			for (var offset = 0; offset < numBytes; offset += pointSize) {
+				if (view.getUint16(offset + 12, true) > 255 ||
+					view.getUint16(offset + 14, true) > 255 ||
+					view.getUint16(offset + 16, true) > 255) {
+					colorNorm = true;
+				}
+
+				if (view.getUint16(18, true) > 255) {
+					intensityNorm = true;
+				}
+
+				if (colorNorm && intensityNorm) break;
+			}
+
+			if (colorNorm) console.log('Normalizing color');
+			if (intensityNorm) console.log('Normalizing intensity');
+
+			cb(null, { color: colorNorm, intensity: intensityNorm });
+		});
+	};
+	
+};
 
 Potree.GreyhoundLoader = function() { };
 Potree.GreyhoundLoader.loadInfoJSON = function load(url, callback) { }
-
-var createSchema = function(attributes) {
-    var schema = [
-        { "name": "X", "size": 4, "type": "signed" },
-        { "name": "Y", "size": 4, "type": "signed" },
-        { "name": "Z", "size": 4, "type": "signed" }
-    ];
-
-	// Once we include options in the UI to load a dynamic list of available
-    // attributes for visualization (f.e. Classification, Intensity etc.)
-	// we will be able to ask for that specific attribute from the server,
-    // where we are now requesting all attributes for all points all the time.
-	// If we do that though, we also need to tell Potree to redraw the points
-    // that are already loaded (with different attributes).
-	// This is not default behaviour.
-    attributes.forEach(function(item) {
-        if(item === 'COLOR_PACKED') {
-            schema.push({ "name": "Red",      "size": 2, "type": "unsigned" });
-            schema.push({ "name": "Green",    "size": 2, "type": "unsigned" });
-            schema.push({ "name": "Blue",     "size": 2, "type": "unsigned" });
-        } else if(item === 'INTENSITY'){
-            schema.push({ "name": "Intensity", "size": 2, "type": "unsigned" });
-        } else if(item === 'CLASSIFICATION') {
-            schema.push(
-                    { "name": "Classification", "size": 1, "type": "unsigned" });
-        }
-    });
-
-  return schema;
-}
-
-var fetch = function(url, cb) {
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', url, true);
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4) {
-            if (xhr.status === 200 || xhr.status === 0) {
-                cb(null, xhr.responseText);
-            }
-            else {
-                cb(xhr.responseText);
-            }
-        }
-    };
-    xhr.send(null);
-};
-
-var fetchBinary = function(url, cb) {
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', url, true);
-    xhr.responseType = 'arraybuffer';
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4) {
-            if (xhr.status === 200 || xhr.status === 0) {
-                cb(null, xhr.response);
-            }
-            else {
-                cb(xhr.responseText);
-            }
-        }
-    };
-    xhr.send(null);
-};
-
-var pointSizeFrom = function(schema) {
-    return schema.reduce((p, c) => p + c.size, 0);
-};
-
-var getNormalization = function(serverURL, baseDepth, cb) {
-    var s = [
-        { "name": "X",          "size": 4, "type": "floating" },
-        { "name": "Y",          "size": 4, "type": "floating" },
-        { "name": "Z",          "size": 4, "type": "floating" },
-        { "name": "Red",        "size": 2, "type": "unsigned" },
-        { "name": "Green",      "size": 2, "type": "unsigned" },
-        { "name": "Blue",       "size": 2, "type": "unsigned" },
-        { "name": "Intensity",  "size": 2, "type": "unsigned" }
-    ];
-
-    var url = serverURL + 'read?depth=' + baseDepth +
-        '&schema=' + JSON.stringify(s);
-
-    fetchBinary(url, function(err, buffer) {
-        if (err) throw new Error(err);
-
-        var view = new DataView(buffer);
-        var numBytes = buffer.byteLength - 4;
-        var numPoints = view.getUint32(numBytes, true);
-        var pointSize = pointSizeFrom(s);
-
-        var colorNorm = false, intensityNorm = false;
-        var v;
-
-        for (var offset = 0; offset < numBytes; offset += pointSize) {
-            if (view.getUint16(offset + 12, true) > 255 ||
-                view.getUint16(offset + 14, true) > 255 ||
-                view.getUint16(offset + 16, true) > 255) {
-                colorNorm = true;
-            }
-
-            if (view.getUint16(18, true) > 255) {
-                intensityNorm = true;
-            }
-
-            if (colorNorm && intensityNorm) break;
-        }
-
-        if (colorNorm) console.log('Normalizing color');
-        if (intensityNorm) console.log('Normalizing intensity');
-
-        cb(null, { color: colorNorm, intensity: intensityNorm });
-    });
-};
 
 /**
  * @return a point cloud octree with the root node data loaded.
@@ -2477,7 +2485,7 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
             serverURL = 'http://' + serverURL;
         }
 
-        fetch(serverURL + 'info', function(err, data) {
+        GreyhoundUtils.fetch(serverURL + 'info', function(err, data) {
             if (err) throw new Error(err);
 
             /* We parse the result of the info query, which should be a JSON
@@ -2516,7 +2524,7 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
                 scale = Math.min(scale[0], scale[1], scale[2]);
             }
 
-            if (getQueryParam('scale')) {
+            if (GreyhoundUtils.getQueryParam('scale')) {
                 scale = parseFloat(getQueryParam('scale'));
             }
 
@@ -2561,7 +2569,7 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
             pgg.baseDepth = baseDepth;
             pgg.hierarchyStepSize = HIERARCHY_STEP_SIZE;
 
-            pgg.schema = createSchema(attributes);
+            pgg.schema = GreyhoundUtils.createSchema(attributes);
             var pointSize = pointSizeFrom(pgg.schema);
 
             pgg.pointAttributes = new Potree.PointAttributes(attributes);
@@ -2610,7 +2618,7 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
 
             pgg.nodes = nodes;
 
-            getNormalization(serverURL, greyhoundInfo.baseDepth,
+            GreyhoundUtils.getNormalization(serverURL, greyhoundInfo.baseDepth,
                     function(err, normalize) {
                         if (normalize.color) pgg.normalize.color = true;
                         if (normalize.intensity) pgg.normalize.intensity = true;
@@ -3040,8 +3048,7 @@ Potree.PointCloudMaterial = function(parameters){
 		classification: 	{ type: "f", value: [] },
 		returnNumber: 		{ type: "f", value: [] },
 		numberOfReturns: 	{ type: "f", value: [] },
-		pointSourceID: 		{ type: "f", value: [] },
-		normal:				{ type: "f", value: [] }
+		pointSourceID: 		{ type: "f", value: [] }
 	};
 	
 	this.uniforms = {
@@ -3241,7 +3248,7 @@ Potree.PointCloudMaterial.prototype.setClipBoxes = function(clipBoxes){
 	}
 
 	this.clipBoxes = clipBoxes;
-	var doUpdate = (this.numClipBoxes != clipBoxes.length) && (clipBoxes.length === 0 || this.numClipBoxes === 0);
+	var doUpdate = (this.numClipBoxes !== clipBoxes.length) && (clipBoxes.length === 0 || this.numClipBoxes === 0);
 
 	this.numClipBoxes = clipBoxes.length;
 	this.uniforms.clipBoxCount.value = this.numClipBoxes;
@@ -3501,7 +3508,7 @@ Object.defineProperty(Potree.PointCloudMaterial.prototype, "treeType", {
 		return this._treeType;
 	},
 	set: function(value){
-		if(this._treeType != value){
+		if(this._treeType !== value){
 			this._treeType = value;
 			this.updateShaderSource();
 		}
@@ -3552,7 +3559,7 @@ Potree.PointCloudMaterial.generateGradientTexture = function(gradient) {
 	var size = 64;
 
 	// create canvas
-	canvas = document.createElement( 'canvas' );
+	let canvas = document.createElement( 'canvas' );
 	canvas.width = size;
 	canvas.height = size;
 
@@ -3574,7 +3581,7 @@ Potree.PointCloudMaterial.generateGradientTexture = function(gradient) {
 	
 	var texture = new THREE.Texture( canvas );
 	texture.needsUpdate = true;
-	textureImage = texture.image;
+	//textureImage = texture.image;
 
 	return texture;
 };
@@ -3592,8 +3599,8 @@ Potree.PointCloudMaterial.generateClassificationTexture  = function(classificati
 	
 	for(var x = 0; x < width; x++){
 		for(var y = 0; y < height; y++){
-			var u = 2 * (x / width) - 1;
-			var v = 2 * (y / height) - 1;
+			//var u = 2 * (x / width) - 1;
+			//var v = 2 * (y / height) - 1;
 			
 			var i = x + width*y;
 			
@@ -3645,7 +3652,7 @@ Potree.EyeDomeLightingMaterial = function(parameters){
 		this.neighbours[2*c+1] = Math.sin(2 * c * Math.PI / this.neighbourCount);
 	}
 	
-	var lightDir = new THREE.Vector3(0.0, 0.0, 1.0).normalize();
+	//var lightDir = new THREE.Vector3(0.0, 0.0, 1.0).normalize();
 	
 	var uniforms = {
 		screenWidth: 	{ type: "f", 	value: 0 },
@@ -3681,17 +3688,19 @@ Potree.EyeDomeLightingMaterial.prototype.getDefines = function(){
 
 Potree.EyeDomeLightingMaterial.prototype.updateShaderSource = function(){
 	var attributes = {};
-	if(this.pointColorType === Potree.PointColorType.INTENSITY
-		|| this.pointColorType === Potree.PointColorType.INTENSITY_GRADIENT){
+	
+	let PC = Potree.PointColorType;
+	
+	if([PC.INTENSITY, PC.INTENSITY_GRADIENT].includes(this.pointColorType)){
 		attributes.intensity = { type: "f", value: [] };
-	}else if(this.pointColorType === Potree.PointColorType.CLASSIFICATION){
+	}else if(this.pointColorType === PC.CLASSIFICATION){
 		//attributes.classification = { type: "f", value: [] };
-	}else if(this.pointColorType === Potree.PointColorType.RETURN_NUMBER){
+	}else if(this.pointColorType === PC.RETURN_NUMBER){
 		attributes.returnNumber = { type: "f", value: [] };
 		attributes.numberOfReturns = { type: "f", value: [] };
-	}else if(this.pointColorType === Potree.PointColorType.SOURCE){
+	}else if(this.pointColorType === PC.SOURCE){
 		attributes.pointSourceID = { type: "f", value: [] };
-	}else if(this.pointColorType === Potree.PointColorType.NORMAL || this.pointColorType === Potree.PointColorType.PHONG){
+	}else if(this.pointColorType === PC.NORMAL || this.pointColorType === Potree.PointColorType.PHONG){
 		attributes.normal = { type: "f", value: [] };
 	}
 	attributes.classification = { type: "f", value: 0 };
@@ -3707,7 +3716,7 @@ Potree.EyeDomeLightingMaterial.prototype.updateShaderSource = function(){
 	this.uniforms.neighbours.value = this.neighbours;
 		
 	this.needsUpdate = true;
-}
+};
 
 Object.defineProperty(Potree.EyeDomeLightingMaterial.prototype, "neighbourCount", {
 	get: function(){
@@ -6023,7 +6032,9 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 		this.showDescription = true;
 		this.actions = args.actions || [];
 		this.isHighlighted = false;
-		this.visible = true;
+		this._visible = true;
+		this.__visible = true;
+		this.collapseThreshold = [args.collapseThreshold, 100].find(e => e !== undefined);
 		
 		this.children = [];
 		this.parent = null;
@@ -6040,7 +6051,7 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 					<span class="annotation-description-close">
 						<img src="${iconClose}" width="16px">
 					</span>
-					<span class="annotation-description-content"></span>
+					<span class="annotation-description-content">${this.description}</span>
 				</div>
 			</div>
 		`);
@@ -6049,7 +6060,7 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 		this.elTitle = this.elTitlebar.find(".annotation-label");
 		this.elDescription = this.domElement.find(".annotation-description");
 		this.elDescriptionClose = this.elDescription.find(".annotation-description-close");
-		this.elDescriptionContent = this.elDescription.find(".annotation-description-content");
+		//this.elDescriptionContent = this.elDescription.find(".annotation-description-content");
 		
 		this.elTitle.click(() => {
 			if(this.hasView()){
@@ -6057,13 +6068,28 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 			}
 			this.dispatchEvent({type: "click", target: this});
 		});
-        
+		
+		this.actions = this.actions.map(a => {
+			if(a instanceof Potree.Action){
+				return a;
+			}else{
+				return new Potree.Action(a);
+			}
+		});
+		
 		for(let action of this.actions){
+			action.pairWith(this);
+		}
+        
+		let actions = this.actions.filter(
+			a => a.showIn === undefined || a.showIn.includes("scene"));
+		
+		for(let action of actions){
 			this.elTitle.css("padding", "1px 3px 0px 8px");
 			
 			let elButton = $(`<img src="${action.icon}" class="annotation-action-icon">`);
 			this.elTitlebar.append(elButton);
-			elButton.click(() => action.onclick());
+			elButton.click(() => action.onclick({annotation: this}));
 		}
 		
 		this.elDescriptionClose.hover(
@@ -6071,7 +6097,7 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 			e => this.elDescriptionClose.css("opacity", "0.5")
 		);
 		this.elDescriptionClose.click(e => this.setHighlighted(false));
-		this.elDescriptionContent.html(this.description);
+		//this.elDescriptionContent.html(this.description);
 		
 		this.domElement.mouseenter(e => this.setHighlighted(true));
 		this.domElement.mouseleave(e => this.setHighlighted(false));
@@ -6088,7 +6114,7 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 			
 			let c = this;
 			while(c !== null){
-				this.dispatchEvent({
+				c.dispatchEvent({
 					"type": "annotation_added",
 					"annotation": annotation
 				});
@@ -6172,7 +6198,8 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 			
 			if(this.description){
 				this.descriptionVisible = true;	
-				this.elDescription.css("display", "block");
+				//this.elDescription.css("display", "block");
+				this.elDescription.fadeIn(200);
 				this.elDescription.css("position", "relative");
 			}
 		}else{
@@ -6181,6 +6208,7 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 			this.domElement.css("z-index", "100");
 			this.descriptionVisible = false;	
 			this.elDescription.css("display", "none");
+			//this.elDescription.fadeOut(200);
 		}
 		
 		this.isHighlighted = highlighted;
@@ -6201,9 +6229,12 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 		if(!this.hasView()){
 			return;
 		}
-	
+
+		let view = this.scene.view;
+		
 		var animationDuration = 800;
 		var easing = TWEEN.Easing.Quartic.Out;
+		
 		
 		let endTarget;
 		if(this.cameraTarget){
@@ -6213,37 +6244,61 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 		}else{
 			endTarget = this.boundingBox.getCenter();
 		}
-		let endPosition = this.cameraPosition;
-		if(!endPosition){
-			let direction = this.scene.view.direction;
-			endPosition = endTarget.clone().add(direction.multiplyScalar(-this.radius));
-		}
-    
-		{ // animate camera position
-			let tween = new TWEEN.Tween(this.scene.view.position).to(endPosition, animationDuration);
-			tween.easing(easing);
-			tween.start();
-		}
 		
-		{ // animate camera target
-			var camTargetDistance = camera.position.distanceTo(endTarget);
-			var target = new THREE.Vector3().addVectors(
-				camera.position, 
-				camera.getWorldDirection().clone().multiplyScalar(camTargetDistance)
-			);
-			var tween = new TWEEN.Tween(target).to(endTarget, animationDuration);
-			tween.easing(easing);
-			tween.onUpdate(() => {
-				this.scene.view.lookAt(target);
-			});
-			tween.onComplete(() => {
-				this.scene.view.lookAt(target);
-				this.dispatchEvent({type: "focusing_finished", target: this});
-			});
+		if(this.cameraPosition){
+			
+			let endPosition = this.cameraPosition;
+
+			{ // animate camera position
+				let tween = new TWEEN.Tween(view.position).to(endPosition, animationDuration);
+				tween.easing(easing);
+				tween.start();
+			}
+			
+			{ // animate camera target
+				var camTargetDistance = camera.position.distanceTo(endTarget);
+				var target = new THREE.Vector3().addVectors(
+					camera.position, 
+					camera.getWorldDirection().clone().multiplyScalar(camTargetDistance)
+				);
+				var tween = new TWEEN.Tween(target).to(endTarget, animationDuration);
+				tween.easing(easing);
+				tween.onUpdate(() => {
+					view.lookAt(target);
+				});
+				tween.onComplete(() => {
+					view.lookAt(target);
+					this.dispatchEvent({type: "focusing_finished", target: this});
+				});
+				
+				this.dispatchEvent({type: "focusing_started", target: this});
+				tween.start();
+			}
+		}else if(this.radius){
+			let direction = view.direction;
+			let endPosition = endTarget.clone().add(direction.multiplyScalar(-this.radius));
+			let startRadius = view.radius;
+			let endRadius = this.radius;
+			
+			{ // animate camera position
+				let tween = new TWEEN.Tween(view.position).to(endPosition, animationDuration);
+				tween.easing(easing);
+				tween.start();
+			}
+			
+			{ // animate radius
+				let t = {x: 0};
+			
+				let tween = new TWEEN.Tween(t)
+					.to({x: 1}, animationDuration)
+					.onUpdate(function(){
+						view.radius = this.x * endRadius + (1 - this.x) * startRadius;
+					});
+				tween.easing(easing);
+				tween.start();
+			}
+			
 		}
-    
-		this.dispatchEvent({type: "focusing_started", target: this});
-		tween.start();
 	};
 	
 	dispose(){
@@ -6253,10 +6308,125 @@ Potree.Annotation = class extends THREE.EventDispatcher{
     
 	};
 	
+	get visible(){
+		return this._visible;
+	}
+	
+	set visible(value){
+		if(this._visible === value){
+			return;
+		}
+		
+		this._visible = value;
+		
+		if(!value){
+			this.traverse(node => {
+				node.__visible = false;
+				node.domElement.css("display", "none");
+			});
+		}else{
+			this.traverse(node => {
+				node.__visible = true;
+			});
+		}
+		
+		this.dispatchEvent({
+			type: "visibility_changed",
+			annotation: this
+		});
+	}
+	
 	toString(){
 		return "Annotation: " + this.title;
 	}
 };
+
+
+Potree.Action = class Action extends THREE.EventDispatcher{
+
+	constructor(args = {}){
+		super();
+		
+		this.icon = args.icon || "";
+		this.tooltip = args.tooltip;
+		
+		if(args.onclick !== undefined){
+			this.onclick = args.onclick;
+		}
+		
+	}
+	
+	onclick(event){
+		
+	}
+	
+	pairWith(object){
+		
+	}
+	
+	setIcon(newIcon){
+		let oldIcon = this.icon;
+		
+		if(newIcon === oldIcon){
+			return;
+		}
+		
+		this.icon = newIcon;
+		
+		this.dispatchEvent({
+			type: "icon_changed",
+			action: this,
+			icon: newIcon,
+			oldIcon: oldIcon
+		});
+	}
+
+};
+
+Potree.Actions = {};
+
+Potree.Actions.ToggleAnnotationVisibility = class ToggleAnnotationVisibility extends Potree.Action{
+
+	constructor(args = {}){
+		super(args);
+		
+		this.icon = Potree.resourcePath + "/icons/eye.svg";
+		this.showIn = "sidebar";
+		this.tooltip = "toggle visibility";
+	}
+	
+	pairWith(annotation){
+		
+		if(annotation.visible){
+			this.setIcon(Potree.resourcePath + "/icons/eye.svg");
+		}else{
+			this.setIcon(Potree.resourcePath + "/icons/eye_crossed.svg");
+		}
+		
+		annotation.addEventListener("visibility_changed", e => {
+			let annotation = e.annotation;
+			
+			if(annotation.visible){
+				this.setIcon(Potree.resourcePath + "/icons/eye.svg");
+			}else{
+				this.setIcon(Potree.resourcePath + "/icons/eye_crossed.svg");
+			}
+		});
+	}
+	
+	onclick(event){
+		let annotation = event.annotation;
+		
+		annotation.visible = !annotation.visible;
+		
+		if(annotation.visible){
+			this.setIcon(Potree.resourcePath + "/icons/eye.svg");
+		}else{
+			this.setIcon(Potree.resourcePath + "/icons/eye_crossed.svg");
+		}
+	}
+}
+
 
 
 Potree.ProfileData = function(profile){
@@ -6638,7 +6808,12 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree{
 	
 	toTreeNode(geometryNode, parent){
 		var node = new Potree.PointCloudOctreeNode();
+		
+		//if(geometryNode.name === "r40206"){
+		//	console.log("creating node for r40206");
+		//}
 		var sceneNode = new THREE.Points(geometryNode.geometry, this.material);
+		sceneNode.name = geometryNode.name;
 		
 		node.geometryNode = geometryNode;
 		node.sceneNode = sceneNode;
@@ -7397,6 +7572,8 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree{
 			gl.enableVertexAttribArray( apIndices );
 		}
 		
+		//renderer.resetGLState();
+		
 		for(let i = 0; i < nodes.length; i++){
 			let node = nodes[i];
 			let object = node.sceneNode;
@@ -7440,9 +7617,10 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree{
 			
 			gl.uniform1f(uniforms["pcIndex"], pickMaterial.pcIndex);
 
-			let numPoints = node.getNumPoints();
+			//let numPoints = node.getNumPoints();
+			let numPoints = geometry.attributes.position.count;
 			if(numPoints > 0){
-				gl.drawArrays( gl.POINTS, 0, node.getNumPoints());		
+				gl.drawArrays( gl.POINTS, 0, numPoints);		
 			}
 			
 			// TODO hack
@@ -7469,7 +7647,7 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree{
 		//	renderer.context.readPixels( 0, 0, width, height, 
 		//		renderer.context.RGBA, renderer.context.UNSIGNED_BYTE, bp);
 		//	
-		//	var img = pixelsArrayToImage(bp, width, height);
+		//	var img = Potree.utils.pixelsArrayToImage(bp, width, height);
 		//	var screenshot = img.src;
 		//	
 		//	var w = window.open();
@@ -8349,6 +8527,7 @@ Potree.utils = class{
 		let selectedPointcloud = null;
 		let closestDistance = Infinity;
 		let closestIntersection = null;
+		let closestPoint = null;
 		
 		for(let pointcloud of pointclouds){
 			let point = pointcloud.pick(renderer, camera, ray);
@@ -8363,6 +8542,7 @@ Potree.utils = class{
 				closestDistance = distance;
 				selectedPointcloud = pointcloud;
 				closestIntersection = point.position;
+				closestPoint = point;
 			}
 		}
 		
@@ -8370,7 +8550,8 @@ Potree.utils = class{
 			return {
 				location: closestIntersection,
 				distance: closestDistance,
-				pointcloud: selectedPointcloud
+				pointcloud: selectedPointcloud,
+				point: closestPoint
 			};
 		}else{
 			return null;
@@ -8877,6 +9058,9 @@ Potree.Measure = class Measure extends THREE.Object3D{
 	constructor(){
 		super();
 		
+		this.constructor.counter = (this.constructor.counter === undefined) ? 0 : this.constructor.counter + 1;
+		
+		this.name = "Measure_" + this.constructor.counter;
 		this.points = [];
 		this._showDistances = true;
 		this._showCoordinates = false;
@@ -9024,12 +9208,13 @@ Potree.Measure = class Measure extends THREE.Object3D{
 				if(I){
 					let i = this.spheres.indexOf(e.drag.object);
 					if(i !== -1){
+						
+						let point = this.points[i];
+						for(let key of Object.keys(I.point).filter(e => e !== "position")){
+							point[key] = I.point[key];
+						}
+						
 						this.setPosition(i, I.location);
-						this.dispatchEvent({
-							"type": "marker_moved",
-							"measurement": this,
-							"index": i
-						});
 					}
 				}
 			};
@@ -9120,7 +9305,7 @@ Potree.Measure = class Measure extends THREE.Object3D{
 		for(let i = 0; i < this.points.length; i++){
 			let p1 = this.points[i].position;
 			let p2 = this.points[j].position;
-			area += (p2.x + p1.x) * (p1.z - p2.z);
+			area += (p2.x + p1.x) * (p1.y - p2.y);
 			j = i;
 		}
 		
@@ -9470,6 +9655,7 @@ Potree.MeasuringTool = class MeasuringTool extends THREE.EventDispatcher{
 		measure.showHeight = args.showHeight || false;
 		measure.closed = args.closed || false;
 		measure.maxMarkers = args.maxMarkers || Infinity;
+		measure.name = args.name || "Measurement";
 		
 		this.sceneMeasurement.add(measure);
 		
@@ -9650,6 +9836,9 @@ Potree.Profile = class extends THREE.Object3D{
 	constructor(){
 		super();
 		
+		this.constructor.counter = (this.constructor.counter === undefined) ? 0 : this.constructor.counter + 1;
+		
+		this.name = "Profile_" + this.constructor.counter;
 		this.points = [];
 		this.spheres = [];
 		this.edges = [];
@@ -9985,6 +10174,7 @@ Potree.ProfileTool = class ProfileTool extends THREE.EventDispatcher{
 		let domElement = this.viewer.renderer.domElement;
 		
 		let profile = new Potree.Profile();
+		profile.name = args.name || "Profile";
 		
 		this.dispatchEvent({
 			type: "start_inserting_profile",
@@ -10855,6 +11045,7 @@ Potree.VolumeTool = class VolumeTool extends THREE.EventDispatcher{
 		
 		let volume = new Potree.Volume();
 		volume.clip = args.clip || false;
+		volume.name = args.name || "Volume";
 		
 		this.dispatchEvent({
 			type: "start_inserting_volume",
@@ -10945,67 +11136,69 @@ Potree.VolumeTool = class VolumeTool extends THREE.EventDispatcher{
 
 Potree.GeoJSONExporter = class GeoJSONExporter{
 	
-	static toString(measurement){
-		
-		let geojson = {
-			"type": "FeatureCollection",
-			"features": []
-		};
-		
-		let isLine = measurement.showDistances && !measurement.showArea && !measurement.showAngles;
-		let isPolygon = measurement.showDistances && measurement.showArea && !measurement.showAngles;
-		
-		if(isLine){
-			geojson.features.push({
-				"type": "Feature",
-				"geometry": {
-				"type": "LineString",
-				"coordinates": []
-				},
-				"properties": {
-				}
-			});
-		}else if (isPolygon) {
-			geojson.features.push({
-				"type": "Feature",
-				"geometry": {
-					"type": "Polygon",
-					"coordinates": []
-				},
-				"properties": {
-				}
-			});
-		}
+	static measurementToFeatures(measurement){
 		
 		let coords = measurement.points.map(e => e.position.toArray());
 		
-		if(isLine){
-			geojson.features[0].geometry.coordinates = coords;
-		}else if(isPolygon){
-			coords.push(coords[0]);
-			geojson.features[0].geometry.coordinates.push(coords);
-		}
+		let features = [];
 		
-		measurement.edgeLabels.forEach(function (label) {
-			var labelPoint = {
+		if(coords.length === 1){
+			let feature = {
 				type: 'Feature',
 				geometry: {
 					type: 'Point',
-					coordinates: label.position.toArray(),
+					coordinates: coords[0],
 				},
 				properties: {
-					name: label.text
+					name: measurement.name
 				}
 			};
-			geojson.features.push(labelPoint);
-		});
-		
-		if (isLine) {
-			// There is one point more than the number of edges.
-			geojson.features.pop();
+			features.push(feature);
+		}else if(coords.length > 1 && !measurement.closed){
+			let object = {
+				"type": "Feature",
+				"geometry": {
+					"type": "LineString",
+					"coordinates": coords
+				},
+				"properties": {
+					name: measurement.name
+				}
+			};
+			
+			features.push(object);
+		}else if(coords.length > 1 && measurement.closed){
+
+			let object = {
+				"type": "Feature",
+				"geometry": {
+					"type": "Polygon",
+					"coordinates": [[...coords, coords[0]]]
+				},
+				"properties": {
+					name: measurement.name
+				}
+			};
+			features.push(object);
+		}
+
+		if(measurement.showDistances){
+			measurement.edgeLabels.forEach((label) => {
+				let labelPoint = {
+					type: 'Feature',
+					geometry: {
+						type: 'Point',
+						coordinates: label.position.toArray(),
+					},
+					properties: {
+						distance: label.text
+					}
+				};
+				features.push(labelPoint);
+			});
 		}
 		
-		if (isPolygon) {
+		if(measurement.showArea){
 			var point = measurement.areaLabel.position;
 			var labelArea = {
 				type: 'Feature',
@@ -11014,13 +11207,36 @@ Potree.GeoJSONExporter = class GeoJSONExporter{
 					coordinates: point.toArray(),
 				},
 				properties: {
-					name: measurement.areaLabel.text
+					area: measurement.areaLabel.text
 				}
 			};
-			geojson.features.push(labelArea);
+			features.push(labelArea);
 		}
 		
-		return JSON.stringify(geojson);
+		return features;
+	}
+	
+	static toString(measurements){
+		
+		if(!(measurements instanceof Array)){
+			measurements = [measurements];
+		}
+		
+		measurements = measurements.filter(m => m instanceof Potree.Measure);
+		
+		let features = [];
+		for(let measure of measurements){
+			let f = Potree.GeoJSONExporter.measurementToFeatures(measure);
+			
+			features = features.concat(f);
+		}
+		
+		let geojson = {
+			"type": "FeatureCollection",
+			"features": features
+		};
+		
+		return JSON.stringify(geojson, null, "\t");
 	}
 
 }
@@ -11030,117 +11246,154 @@ Potree.GeoJSONExporter = class GeoJSONExporter{
 /**
  *
  * @author sigeom sa / http://sigeom.ch
- * @author Ioda-Net Sàrl / https://www.ioda-net.ch/
- * @author Markus Schütz / http://potree.org
+ * @author Ioda-Net Sï¿½rl / https://www.ioda-net.ch/
+ * @author Markus Schï¿½tz / http://potree.org
  *
  */
 
 Potree.DXFExporter = class DXFExporter{
 	
-	static toString(measurement){
-		let isLine = measurement.showDistances && !measurement.showArea && !measurement.showAngles;
-		let isPolygon = measurement.showDistances && measurement.showArea && !measurement.showAngles;
+	static measurementSection(measurement){
 		
-		 if (!isLine && !isPolygon) {
-			return;
+		if(measurement.points.length <= 1){
+			return "";
 		}
 		
-		let geomCode = isLine ? 8 : 9;
 		
-		let dxfBody = '0\n\
-SECTION\n\
-2\n\
-ENTITIES\n\
-0\n\
-POLYLINE\n\
-8\n\
-0\n\
-62\n\
-1\n\
-66\n\
-1\n\
-10\n\
-0.0\n\
-20\n\
-0.0\n\
-30\n\
-0.0\n\
-70\n\
-{geomCode}\n'.replace('{geomCode}', geomCode);
+		
+		// bit code for polygons/polylines: 
+		// https://www.autodesk.com/techpubs/autocad/acad2000/dxf/polyline_dxf_06.htm
+		let geomCode = 8; 
+		if(measurement.closed){
+			geomCode += 1;
+		}
+		
+		let dxfSection = `0
+SECTION
+2
+ENTITIES
+0
+POLYLINE
+8
+0
+62
+1
+66
+1
+10
+0.0
+20
+0.0
+30
+0.0
+70
+${geomCode}
+`;
 
 		let xMax = 0.0;
 		let yMax = 0.0;
 		let zMax = 0.0;
-		measurement.points.forEach(function (point) {
+		for(let point of measurement.points){
 			point = point.position;
 			xMax = Math.max(xMax, point.x);
 			yMax = Math.max(yMax, point.y);
 			zMax = Math.max(zMax, point.z);
-			dxfBody += '0\n\
-VERTEX\n\
-8\n\
-0\n\
-10\n\
-{X}\n\
-20\n\
-{Y}\n\
-30\n\
-{Z}\n\
-70\n\
-32\n'.replace('{X}', point.x)
-                .replace('{Y}', point.y)
-                .replace('{Z}', point.z);
-            });
+			
+			dxfSection += `0
+VERTEX
+8
+0
+10
+${point.x}
+20
+${point.y}
+30
+${point.z}
+70
+32
+`;
 
-            dxfBody += '0\n\
-SEQEND\n\
-0\n\
-ENDSEC\n';
+            dxfSection += `0
+SEQEND
+0
+ENDSEC
+`;
+		}
 
-            var dxfHeader = '999\n\
-DXF created from potree\n\
-0\n\
-SECTION\n\
-2\n\
-HEADER\n\
-9\n\
-$ACADVER\n\
-1\n\
-AC1006\n\
-9\n\
-$INSBASE\n\
-10\n\
-0.0\n\
-20\n\
-0.0\n\
-30\n\
-0.0\n\
-9\n\
-$EXTMIN\n\
-10\n\
-0.0\n\
-20\n\
-0.0\n\
-30\n\
-0\n\
-9\n\
-$EXTMAX\n\
-10\n\
-{xMax}\n\
-20\n\
-{yMax}\n\
-30\n\
-{zMax}\n\
-0\n\
-ENDSEC\n'.replace('{xMax}', xMax)
-                .replace('{yMax}', yMax)
-                .replace('{zMax}', zMax);
+		return dxfSection;
+	}
+	
+	
+	static toString(measurements){
+		
+		if(!(measurements instanceof Array)){
+			measurements = [measurements];
+		}
+		measurements = measurements.filter(m => m instanceof Potree.Measure);
+		
+		let points = measurements.filter(m => (m instanceof Potree.Measure))
+			.map(m => m.points)
+			.reduce((a, v) => a.concat(v))
+			.map(p => p.position);
+			
+		let min = new THREE.Vector3(Infinity, Infinity, Infinity);
+		let max = new THREE.Vector3(-Infinity, -Infinity, -Infinity);
+		for(let point of points){
+			min.min(point);
+			max.max(point);
+		}
+		
+		
+		
+		let dxfHeader = `999
+DXF created from potree
+0
+SECTION
+2
+HEADER
+9
+$ACADVER
+1
+AC1006
+9
+$INSBASE
+10
+0.0
+20
+0.0
+30
+0.0
+9
+$EXTMIN
+10
+${min.x}
+20
+${min.y}
+30
+${min.z}
+9
+$EXTMAX
+10
+${max.x}
+20
+${max.y}
+30
+${max.z}
+0
+ENDSEC
+`;
 
-            let dxf = dxfHeader + dxfBody + '0\n\
-EOF';
+		let dxfBody = "";
+		
+		for(let measurement of measurements){
+			dxfBody += Potree.DXFExporter.measurementSection(measurement);
+		}
 
+		let dxf = dxfHeader + dxfBody + '0\nEOF';
+		
 		return dxf;
 	}
+
 	
 }
 
@@ -12672,28 +12925,6 @@ Potree.Scene = class extends THREE.EventDispatcher{
 		} 
 		let annotation = new Potree.Annotation(args);
 		this.annotations.add(annotation);
-		
-		//if(position instanceof Array){
-		//	args.position = new THREE.Vector3().fromArray(position);
-		//}else if(position instanceof THREE.Vector3){
-		//	args.position = position;
-		//}
-		//
-		//
-		//if(!args.cameraTarget){
-		//	args.cameraTarget = position;
-		//}
-		//
-		//var annotation = new Potree.Annotation(this, args);
-		//
-		//this.annotations.push(annotation);
-		//
-		//this.dispatchEvent({
-		//	"type": "annotation_added", 
-		//	"scene": this,
-		//	"annotation": annotation});
-		//
-		//return annotation;
 	}
 	
 	getAnnotations(){
@@ -12754,6 +12985,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		this.moveSpeed = 10;
 
 		this.showBoundingBox = false;
+		this.showAnnotations = true;
 		this.freeze = false;
 
 		this.mapView;
@@ -12761,9 +12993,9 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		this.progressBar = new ProgressBar();
 
 		this.stats = new Stats();
-		this.stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
-		document.body.appendChild( this.stats.dom );
-		this.stats.dom.style.left = "100px";
+		//this.stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
+		//document.body.appendChild( this.stats.dom );
+		//this.stats.dom.style.left = "100px";
 		
 		this.potreeRenderer = null;
 		this.highQualityRenderer = null;
@@ -12896,18 +13128,14 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			
 			if(!this.onAnnotationAdded){
 				this.onAnnotationAdded = e => {
-					//this.renderArea.appendChild(e.annotation.domElement[0]);
-					
-					e.annotation.traverse(node => {
-						this.renderArea.appendChild(node.domElement[0]);
-					});
-					
-					////focusing_finished
-					//e.annotation.addEventListener("focusing_finished", (event) => {
-					//	let distance = this.scene.view.position.distanceTo(this.scene.view.getPivot());
-					//	this.setMoveSpeed(Math.pow(distance, 0.4));
-					//	this.renderer.domElement.focus();
-					//});
+
+				//console.log("annotation added: " + e.annotation.title);
+				
+				e.annotation.traverse(node => {
+					this.renderArea.appendChild(node.domElement[0]);
+					node.scene = this.scene;
+				});
+
 				};
 			}
 		
@@ -13238,7 +13466,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 	
 	setPointBudget(value){
 
-		if(Potree.pointBudget != value){
+		if(Potree.pointBudget !== value){
 			Potree.pointBudget = parseInt(value);
 			this.dispatchEvent({"type": "point_budget_changed", "viewer": this});
 		}
@@ -13248,8 +13476,19 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		return Potree.pointBudget;
 	};
 	
+	setShowAnnotations(value){
+		if(this.showAnnotations !== value){
+			this.showAnnotations = value;
+			this.dispatchEvent({"type": "show_annotations_changed", "viewer": this});
+		}
+	}
+	
+	getShowAnnotations(){
+		return this.showAnnotations;
+	}
+	
 	setClipMode(clipMode){
-		if(this.clipMode != clipMode){
+		if(this.clipMode !== clipMode){
 			this.clipMode = clipMode;
 			this.dispatchEvent({"type": "clip_mode_changed", "viewer": this});
 		}
@@ -13831,7 +14070,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			i18n.init({ 
 				lng: 'en',
 				resGetPath: Potree.resourcePath + '/lang/__lng__/__ns__.json',
-				preload: ['en', 'fr', 'de'],
+				preload: ['en', 'fr', 'de', 'jp'],
 				getAsync: true,
 				debug: false
 				}, function(t) { 
@@ -13884,6 +14123,22 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 	
 	updateAnnotations(){
 		
+		if(!this.getShowAnnotations()){
+			this.scene.annotations.traverseDescendants(descendant => {
+				if(!descendant.__visible || !descendant.visible){
+					return false;
+				}else{
+					descendant.__visible = false;
+					//descendant.domElement[0].style.display = "none";
+					descendant.domElement.fadeOut(200);
+				}
+				
+				return;
+			});
+			
+			return;
+		}
+		
 		this.scene.annotations.updateBounds();
 		this.scene.camera.updateMatrixWorld();
 		
@@ -13895,9 +14150,13 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 				return true;
 			}
 			
+			if(!annotation.visible){
+				return false;
+			}
+			
 			annotation.scene = this.scene;
 			
-			let element = annotation.domElement[0];
+			let element = annotation.domElement;
 			
 			let position = annotation.position;
 			if(!position){
@@ -13915,7 +14174,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 				screenPos.x = this.renderArea.clientWidth * (screenPos.x + 1) / 2;
 				screenPos.y = this.renderArea.clientHeight * (1 - (screenPos.y + 1) / 2);
 				
-				screenPos.x = Math.floor(screenPos.x - element.clientWidth / 2);
+				screenPos.x = Math.floor(screenPos.x - element[0].clientWidth / 2);
 				screenPos.y = Math.floor(screenPos.y - annotation.elTitlebar[0].clientHeight / 2);
 				
 				// SCREEN SIZE
@@ -13926,105 +14185,48 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 				screenSize = radius * projFactor;
 			}
 			
-			element.style.left = screenPos.x + "px";
-			element.style.top = screenPos.y + "px";
+			element.css("left", screenPos.x + "px");
+			element.css("top", screenPos.y + "px");
 			
 			let zIndex = 10000000 - distance * (10000000 / this.scene.camera.far);
 			if(annotation.descriptionVisible){
 				zIndex += 10000000;
 			}
 			
-			element.style.zIndex = parseInt(zIndex);
+			element.css("z-index", parseInt(zIndex));
 			
 			if(annotation.children.length > 0){
-				let expand = screenSize > 100 || annotation.boundingBox.containsPoint(this.scene.camera.position);
+				let expand = screenSize > annotation.collapseThreshold || annotation.boundingBox.containsPoint(this.scene.camera.position);
 				
 				if(!expand){
-					// TODO make sure descendants are invisible
 					annotation.traverseDescendants(descendant => {
-						if(!descendant.visible){
+						if(!descendant.__visible){
 							return;
 						}else{
-							descendant.visible = false;
-							descendant.domElement[0].style.display = "none";
+							descendant.__visible = false;
+							//descendant.domElement.fadeOut(200);
+							descendant.domElement.hide();
 						}
 					});
-					annotation.visible = true;
-					element.style.display = "inline-block";
+					annotation.__visible = true;
+					element.fadeIn(200);
 				}else{
-					annotation.visible = true;
-					element.style.display = "none";
+					annotation.__visible = true;
+					element.fadeOut(200);
 				}
 				
 				return expand;
 			}else{
-				annotation.visible = (-1 <= screenPos.z && screenPos.z <= 1);
-				if(annotation.visible){
-					element.style.display = "inline-block";
+				annotation.__visible = (-1 <= screenPos.z && screenPos.z <= 1);
+				if(annotation.__visible){
+					$(element).fadeIn(200);
 				}else{
-					element.style.display = "none";
+					$(element).fadeOut(200);
 				}
 			}
+			
+			
 		});
-		
-		//let distances = [];
-		//let annotations = this.scene.annotations.descendants();
-        //
-		//let i = 0;
-		//for(let annotation of annotations){
-		//	
-		//	let element = annotation.domElement[0];
-		//	
-		//	let position = annotation.position;
-		//	if(!position){
-		//		position = annotation.boundingBox.getCenter();
-		//	}
-		//	
-		//	let distance = viewer.scene.camera.position.distanceTo(position);
-		//	
-		//	let screenPos = new THREE.Vector3();
-		//	let screenSize = 0;
-		//	{
-		//		// SCREEN POS
-		//		screenPos.copy(position).project(this.scene.camera);
-		//		screenPos.x = this.renderArea.clientWidth * (screenPos.x + 1) / 2;
-		//		screenPos.y = this.renderArea.clientHeight * (1 - (screenPos.y + 1) / 2);
-		//		
-		//		screenPos.x = Math.floor(screenPos.x - element.clientWidth / 2);
-		//		screenPos.y = Math.floor(screenPos.y - annotation.elTitlebar[0].clientHeight / 2);
-		//		
-		//		// SCREEN SIZE
-		//		let fov = Math.PI * viewer.scene.camera.fov / 180;
-		//		let slope = Math.tan(fov / 2.0);
-		//		let projFactor =  0.5 * this.renderArea.clientHeight / (slope * distance);
-		//		
-		//		let radius = annotation.boundingBox.getBoundingSphere().radius;
-		//		screenSize = radius * projFactor;
-		//	}
-		//	
-		//	element.style.left = screenPos.x + "px";
-		//	element.style.top = screenPos.y + "px";
-		//	
-		//	
-		//	let visible = screenSize > 100 && (-1 <= screenPos.z && screenPos.z <= 1);
-		//	
-		//	if(visible){
-		//		element.style.display = "inline-block";
-		//	}else{
-		//		element.style.display = "none";
-		//	}
-		//	
-		//	annotation.visible = visible;
-		//	
-		//	let zIndex = 10000000 - distance * (10000000 / this.scene.camera.far);
-		//	if(annotation.descriptionVisible){
-		//		zIndex += 10000000;
-		//	}
-		//	
-		//	element.style.zIndex = parseInt(zIndex);
-		//
-		//	i++;
-		//}
 	}
 
 	update(delta, timestamp){
@@ -16284,6 +16486,43 @@ Potree.MapView = class{
 		var view = this.map.getView();
 		view.setCenter(mapCenter);
 		
+		//{
+		//	let bb = this.viewer.getBoundingBox();
+		//	let corners = [
+		//		[bb.min.x, bb.min.y],
+		//		[bb.max.x, bb.min.y],
+		//		[bb.max.x, bb.max.y],
+		//		[bb.min.x, bb.max.y],
+		//		[bb.min.x, bb.min.y]];
+		//		
+		//	let vertices = [];
+		//	
+		//	for(let i = 0; i < corners.length - 1; i++){
+		//		let pieces = 5;
+		//		
+		//		for(let j = 0; j < pieces; j++){
+		//			let t0 = j / pieces;
+		//			let t1 = (j+1) / pieces;
+		//			
+		//			let c0 = corners[i+0];
+		//			let c1 = corners[i+1];
+		//			
+		//			let p0 = [
+		//				(1 - t0) * c0[0] + t0 * c1[0],
+		//				(1 - t0) * c0[1] + t0 * c1[1]];
+		//				
+		//			let p1 = [
+		//				(1 - t1) * c0[0] + t1 * c1[0],
+		//				(1 - t1) * c0[1] + t1 * c1[1]];
+		//			
+		//			vertices.push(this.toMap.forward(p0));
+		//			vertices.push(this.toMap.forward(p1));
+		//		}
+		//	}
+		//	
+		//	this.gExtent.setCoordinates(vertices);
+		//}
+		
 		this.gExtent.setCoordinates([
 			mapExtent.bottomLeft, 
 			mapExtent.bottomRight, 
@@ -16418,22 +16657,24 @@ Potree.MapView = class{
 
 
 
-var createToolIcon = function(icon, title, callback){
-	var elImg = document.createElement("img");
-	elImg.src = icon;
-	elImg.onclick = callback;
-	elImg.style.width = "32px";
-	elImg.style.height = "32px";
-	elImg.classList.add("button-icon");
-	elImg.setAttribute("data-i18n", title);
-	return elImg;
+let createToolIcon = function(icon, title, callback){
+	let element = $(`
+		<img src="${icon}" 
+			style="width: 32px; height: 32px" 
+			class="button-icon" 
+			data-i18n="${title}" />
+	`);
+	
+	element.click(callback);
+	
+	return element;
 };
 
 function initToolbar(){
 
 	// ANGLE
-	let elToolbar = document.getElementById("tools");
-	elToolbar.appendChild(createToolIcon(
+	let elToolbar = $("#tools");
+	elToolbar.append(createToolIcon(
 		Potree.resourcePath + "/icons/angle.png",
 		"[title]tt.angle_measurement",
 		function(){
@@ -16443,12 +16684,13 @@ function initToolbar(){
 				showAngles: true, 
 				showArea: false, 
 				closed: true, 
-				maxMarkers: 3});
+				maxMarkers: 3,
+				name: "Angle"});
 		}
 	));
 	
 	// POINT
-	elToolbar.appendChild(createToolIcon(
+	elToolbar.append(createToolIcon(
 		Potree.resourcePath + "/icons/point.svg",
 		"[title]tt.angle_measurement",
 		function(){
@@ -16459,12 +16701,13 @@ function initToolbar(){
 				showCoordinates: true, 
 				showArea: false, 
 				closed: true, 
-				maxMarkers: 1});
+				maxMarkers: 1,
+				name: "Point"});
 		}
 	));
 	
 	// DISTANCE
-	elToolbar.appendChild(createToolIcon(
+	elToolbar.append(createToolIcon(
 		Potree.resourcePath + "/icons/distance.svg",
 		"[title]tt.distance_measurement",
 		function(){
@@ -16472,12 +16715,13 @@ function initToolbar(){
 			viewer.measuringTool.startInsertion({
 				showDistances: true, 
 				showArea: false, 
-				closed: false});
+				closed: false,
+				name: "Distance"});
 		}
 	));
 	
 	// HEIGHT
-	elToolbar.appendChild(createToolIcon(
+	elToolbar.append(createToolIcon(
 		Potree.resourcePath + "/icons/height.svg",
 		"[title]tt.height_measurement",
 		function(){
@@ -16487,12 +16731,13 @@ function initToolbar(){
 				showHeight: true, 
 				showArea: false, 
 				closed: false, 
-				maxMarkers: 2});
+				maxMarkers: 2,
+				name: "Height"});
 		}
 	));
 	
 	// AREA
-	elToolbar.appendChild(createToolIcon(
+	elToolbar.append(createToolIcon(
 		Potree.resourcePath + "/icons/area.svg",
 		"[title]tt.area_measurement",
 		function(){
@@ -16500,19 +16745,20 @@ function initToolbar(){
 			viewer.measuringTool.startInsertion({
 				showDistances: true, 
 				showArea: true, 
-				closed: true});
+				closed: true,
+				name: "Area"});
 		}
 	));
 	
 	// VOLUME
-	elToolbar.appendChild(createToolIcon(
+	elToolbar.append(createToolIcon(
 		Potree.resourcePath + "/icons/volume.svg",
 		"[title]tt.volume_measurement",
 		function(){viewer.volumeTool.startInsertion()}
 	));
 	
 	// PROFILE
-	elToolbar.appendChild(createToolIcon(
+	elToolbar.append(createToolIcon(
 		Potree.resourcePath + "/icons/profile.svg",
 		"[title]tt.height_profile",
 		function(){
@@ -16522,14 +16768,14 @@ function initToolbar(){
 	));
 	
 	// CLIP VOLUME
-	elToolbar.appendChild(createToolIcon(
+	elToolbar.append(createToolIcon(
 		Potree.resourcePath + "/icons/clip_volume.svg",
 		"[title]tt.clip_volume",
 		function(){viewer.volumeTool.startInsertion({clip: true})}
 	));
 	
 	// REMOVE ALL
-	elToolbar.appendChild(createToolIcon(
+	elToolbar.append(createToolIcon(
 		Potree.resourcePath + "/icons/reset_tools.svg",
 		"[title]tt.remove_all_measurement",
 		function(){
@@ -16676,7 +16922,7 @@ function initMaterials(){
 		slide: function( event, ui ) {viewer.setWeightSourceID(ui.value);}
 	});
 
-	var updateHeightRange = function(){
+	let updateHeightRange = function(){
 		let box = viewer.getBoundingBox();
 		let bWidth = box.max.z - box.min.z;
 		bMin = box.min.z - 0.2 * bWidth;
@@ -16763,7 +17009,7 @@ function initMaterials(){
 	$('#lblRGBContrast')[0].innerHTML = viewer.getRGBContrast().toFixed(2);
 	$('#lblRGBBrightness')[0].innerHTML = viewer.getRGBBrightness().toFixed(2);
 
-	var options = [ 
+	let options = [ 
 		"RGB", 
 		"RGB and Elevation",
 		"Color", 
@@ -16778,15 +17024,16 @@ function initMaterials(){
 		"Composite",
 	];
 	
-	var elMaterialList = document.getElementById("optMaterial");
-	for(var i = 0; i < options.length; i++){
-		var option = options[i];
-		
-		var elOption = document.createElement("option");
-		elOption.innerHTML = option;
-		elOption.id = "optMaterial_" + option;
-		
-		elMaterialList.appendChild(elOption);
+	let elMaterialList = $("#optMaterial");
+	for(let i = 0; i < options.length; i++){
+		let option = options[i];
+		let id = "optMaterial_" + option;
+
+		let elOption = $(`
+			<option id="${id}">
+				${option}
+			</option>`);
+		elMaterialList.append(elOption);
 	}
 	
 	let updateMaterialPanel = function(event, ui){
@@ -16846,27 +17093,28 @@ function initMaterials(){
 }
 
 function initClassificationList(){
-	var addClassificationItem = function(code, name){
-		var elClassificationList = document.getElementById("classificationList");
+	let elClassificationList = $("#classificationList");
+	
+	let addClassificationItem = function(code, name){
 		
-		var elLi = document.createElement("li");
-		var elLabel = document.createElement("label");
-		var elInput = document.createElement("input");
-		var elText = document.createTextNode(" " + name);
+		let inputID = "chkClassification_" + code;
 		
-		elInput.id = "chkClassification_" + code;
-		elInput.type = "checkbox";
-		elInput.checked = true;
-		elInput.onclick = function(event){
+		let element = $(`
+			<li>
+				<label style="whitespace: nowrap">
+					<input id="${inputID}" type="checkbox" checked/>
+					<span>${name}</span>
+				</label>
+			</li>
+		`);
+		
+		let elInput = element.find("input");
+		
+		elInput.click(event => {
 			viewer.setClassificationVisibility(code, event.target.checked);
-		}
+		});
 		
-		elLabel.style.whiteSpace = "nowrap";
-		
-		elClassificationList.appendChild(elLi);
-		elLi.appendChild(elLabel);
-		elLabel.appendChild(elInput);
-		elLabel.appendChild(elText);
+		elClassificationList.append(element);
 	};
 	
 	addClassificationItem(0, "never classified");
@@ -17048,57 +17296,57 @@ function initAppearance(){
 	
 function initNavigation(){
 
-	var elNavigation = document.getElementById("navigation");
+	let elNavigation = $("#navigation");
 	
-	elNavigation.appendChild(createToolIcon(
+	elNavigation.append(createToolIcon(
 		Potree.resourcePath + "/icons/earth_controls_1.png",
         "[title]tt.earth_control",
 		function(){viewer.setNavigationMode(Potree.EarthControls)}
 	));
 	
-	elNavigation.appendChild(createToolIcon(
+	elNavigation.append(createToolIcon(
 		Potree.resourcePath + "/icons/fps_controls.png",
         "[title]tt.flight_control",
 		function(){viewer.setNavigationMode(Potree.FirstPersonControls)}
 	));
 	
-	elNavigation.appendChild(createToolIcon(
+	elNavigation.append(createToolIcon(
 		Potree.resourcePath + "/icons/orbit_controls.svg",
 		"[title]tt.orbit_control",
 		function(){viewer.setNavigationMode(Potree.OrbitControls)}
 	));
 	
-	elNavigation.appendChild(createToolIcon(
+	elNavigation.append(createToolIcon(
 		Potree.resourcePath + "/icons/focus.svg",
 		"[title]tt.focus_control",
 		function(){viewer.fitToScreen()}
 	));
 	
-	elNavigation.appendChild(createToolIcon(
+	elNavigation.append(createToolIcon(
 		Potree.resourcePath + "/icons/topview.svg",
 		"[title]tt.top_view_control",
 		function(){viewer.setTopView()}
 	));
 	
-	elNavigation.appendChild(createToolIcon(
+	elNavigation.append(createToolIcon(
 		Potree.resourcePath + "/icons/frontview.svg",
 		"[title]tt.front_view_control",
 		function(){viewer.setFrontView()}
 	));
 	
-	elNavigation.appendChild(createToolIcon(
+	elNavigation.append(createToolIcon(
 		Potree.resourcePath + "/icons/leftview.svg",
 		"[title]tt.left_view_control",
 		function(){viewer.setLeftView()}
 	));
 	
-	var speedRange = new THREE.Vector2(1, 10*1000);
+	let speedRange = new THREE.Vector2(1, 10*1000);
 	
-	var toLinearSpeed = function(value){
+	let toLinearSpeed = function(value){
 		return Math.pow(value, 4) * speedRange.y + speedRange.x;
 	};
 	
-	var toExpSpeed = function(value){
+	let toExpSpeed = function(value){
 		return Math.pow((value - speedRange.x) / speedRange.y, 1 / 4);
 	};
 
@@ -17123,10 +17371,29 @@ function initAnnotationDetails(){
 	// annotation_details
 	let annotationPanel = $("#annotation_details");
 	
+	let registeredEvents = [];
+	
 	let rebuild = () => {
 		console.log("rebuild");
 		
 		annotationPanel.empty();
+		for(let registeredEvent of registeredEvents){
+			let {type, dispatcher, callback} = registeredEvent;
+			dispatcher.removeEventListener(type, callback);
+		}
+		registeredEvents = [];
+		
+		let checked = viewer.getShowAnnotations() ? "checked" : "";
+		
+		let chkEnable = $(`
+			<li><label>
+				<input type="checkbox" id="chkShowAnnotations" ${checked}
+					onClick="viewer.setShowAnnotations(this.checked)"/>
+				<span data-i18n="annotations.show"></span>
+			</label></li>
+		`);
+		annotationPanel.append(chkEnable);
+		
 		
 		let stack = viewer.scene.annotations.children.reverse().map(
 			a => ({annotation: a, container: annotationPanel}));
@@ -17158,10 +17425,10 @@ function initAnnotationDetails(){
 			let actions = [];
 			{ // ACTIONS, INCLUDING GOTO LOCATION
 				if(annotation.hasView()){
-					let action = {
+					let action = new Potree.Action({
 						"icon": Potree.resourcePath + "/icons/target.svg",
 						"onclick": (e) => {annotation.moveHere(viewer.scene.camera)}
-					};
+					});
 					
 					actions.push(action);
 				}
@@ -17171,16 +17438,36 @@ function initAnnotationDetails(){
 				}
 			}
 			
+			actions = actions.filter(
+				a => a.showIn === undefined || a.showIn.includes("sidebar"));
+			
 			// FIRST ACTION
 			if(annotation.children.length === 0 && actions.length > 0){
 				let action = actions[0];
 				
 				let elIcon = $(`<img src="${action.icon}" class="annotation-icon">`);
 				
+				if(action.tooltip){
+					elIcon.attr("title", action.tooltip);
+				}
+				
 				elMain.append(elIcon);
-				elMain.click(e => action.onclick(e));
+				elMain.click(e => action.onclick({annotation: annotation}));
 				elMain.mouseover(e => elIcon.css("opacity", 1));
 				elMain.mouseout(e => elIcon.css("opacity", 0.5));
+				
+				{
+					let iconChanged = e => {
+						elIcon.attr("src", e.icon);
+					};
+					
+					action.addEventListener("icon_changed", iconChanged);
+					registeredEvents.push({
+						type: "icon_changed",
+						dispatcher: action,
+						callback: iconChanged
+					});
+				}
 				
 				actions.splice(0, 1);
 			}
@@ -17190,12 +17477,29 @@ function initAnnotationDetails(){
 				
 				let elIcon = $(`<img src="${action.icon}" class="annotation-icon">`);
 				
+				if(action.tooltip){
+					elIcon.attr("title", action.tooltip);
+				}
+				
 				elIcon.click(e => {
-					action.onclick(e); 
+					action.onclick({annotation: annotation}); 
 					return false;
 				});
 				elIcon.mouseover(e => elIcon.css("opacity", 1));
 				elIcon.mouseout(e => elIcon.css("opacity", 0.5));
+				
+				{
+					let iconChanged = e => {
+						elIcon.attr("src", e.icon);
+					};
+					
+					action.addEventListener("icon_changed", iconChanged);
+					registeredEvents.push({
+						type: "icon_changed",
+						dispatcher: action,
+						callback: iconChanged
+					});
+				}
 				
 				element.append(elIcon);
 			}
@@ -17220,7 +17524,8 @@ function initAnnotationDetails(){
 					element.next().toggle(100);
 				});
 				
-				let left = ((annotation.level()) * 20) + "px";
+				//let left = ((annotation.level()) * 20) + "px";
+				let left = "20px";
 				let childContainer = $(`<div style="margin: 0px; padding: 0px 0px 0px ${left}; display: none"></div>`);
 				for(let child of annotation.children){
 					container.append(childContainer);
@@ -17229,6 +17534,8 @@ function initAnnotationDetails(){
 			}
 			
 		};
+		
+		annotationPanel.i18n();
 	};
 	
 	let annotationsChanged = e => {
@@ -17236,441 +17543,743 @@ function initAnnotationDetails(){
 	};
 	
 	viewer.addEventListener("scene_changed", e => {
-		e.oldScene.removeEventListener("annotation_added", annotationsChanged);
-		e.scene.addEventListener("annotation_added", annotationsChanged);
+		e.oldScene.annotations.removeEventListener("annotation_added", annotationsChanged);
+		e.scene.annotations.addEventListener("annotation_added", annotationsChanged);
 		
 		rebuild();
 	});
+	
+	viewer.scene.annotations.addEventListener("annotation_added", annotationsChanged);
 	
 	rebuild();
 }
 
 function initMeasurementDetails(){
-
-	var id = 0;
+	
+	let id = 0;
 	let trackedItems = new Map();
 	
-	var trackMeasurement = function(scene, measurement){
-		id++;
-		
-		let track = {
-			scene: scene,
-			measurement: measurement,
-			untrack: null
-		};
-		
-		trackedItems.set(measurement, track);
+	let removeIconPath = Potree.resourcePath + "/icons/remove.svg";
+	let mlist = $("#measurement_list");
 	
-		var elLi = document.createElement("li");
-		var elPanel = document.createElement("div");
-		var elPanelHeader = document.createElement("div");
-		var elPanelBody = document.createElement("div");
-		var elPanelIcon = document.createElement("img");
-		var elPanelStretch = document.createElement("span");
-		var elPanelRemove = document.createElement("img");
+	let createCoordinatesTable = (measurement) => {
 		
-		elPanel.classList.add("potree-panel", "panel-default");
-		elPanelHeader.classList.add("potree-panel-heading", "pv-panel-heading");
+		let table = $(`
+			<table class="measurement_value_table">
+				<tr>
+					<th>x</th>
+					<th>y</th>
+					<th>z</th>
+				</tr>
+			</table>
+		`);
 		
-		if(measurement instanceof Potree.Measure){
-			if(measurement.showDistances && !measurement.showArea && !measurement.showAngles){
-				elPanelIcon.src = Potree.resourcePath + "/icons/distance.svg";
-				elPanelStretch.innerHTML = "Distance";
-			}else if(measurement.showDistances && measurement.showArea && !measurement.showAngles){
-				elPanelIcon.src = Potree.resourcePath + "/icons/area.svg";
-				elPanelStretch.innerHTML = "Area";
-			}else if(measurement.maxMarkers === 1){
-				elPanelIcon.src = Potree.resourcePath + "/icons/point.svg";
-				elPanelStretch.innerHTML = "Coordinate";
-			}else if(!measurement.showDistances && !measurement.showArea && measurement.showAngles){
-				elPanelIcon.src = Potree.resourcePath + "/icons/angle.png";
-				elPanelStretch.innerHTML = "Angle";
-			}else if(measurement.showHeight){
-				elPanelIcon.src = Potree.resourcePath + "/icons/height.svg";
-				elPanelStretch.innerHTML = "Height";
-			}
+		for(let point of measurement.points){
+			let position = point instanceof THREE.Vector3 ? point : point.position;
 			
-			elPanelRemove.onclick = function(){scene.removeMeasurement(measurement);};
-		} else if(measurement instanceof Potree.Profile){
-			elPanelIcon.src = Potree.resourcePath + "/icons/profile.svg";
-			elPanelStretch.innerHTML = "Profile";
+			let x = Potree.utils.addCommas(position.x.toFixed(3));
+			let y = Potree.utils.addCommas(position.y.toFixed(3));
+			let z = Potree.utils.addCommas(position.z.toFixed(3));
 			
-			elPanelRemove.onclick = function(){scene.removeProfile(measurement);};
-		} else if(measurement instanceof Potree.Volume){
-			elPanelIcon.src = Potree.resourcePath + "/icons/volume.svg";
-			elPanelStretch.innerHTML = "Volume";
+			let row = $(`
+				<tr>
+					<td>${x}</td>
+					<td>${y}</td>
+					<td>${z}</td>
+				</tr>
+			`);
 			
-			elPanelRemove.onclick = function(){scene.removeVolume(volume);};
+			table.append(row);
 		}
 		
-		elPanelIcon.style.width = "16px";
-		elPanelIcon.style.height = "16px";
-		elPanelStretch.style.flexGrow = 1;
-		elPanelStretch.style.textAlign = "center";
-		elPanelRemove.src = Potree.resourcePath + "/icons/remove.svg";
-		elPanelRemove.style.width = "16px";
-		elPanelRemove.style.height = "16px";
-		elPanelBody.classList.add("panel-body");
+		return table;
+	};
+	
+	let createAttributesTable = (measurement) => {
 		
-		elLi.appendChild(elPanel);
-		elPanel.appendChild(elPanelHeader);
-		elPanelHeader.appendChild(elPanelIcon);
-		elPanelHeader.appendChild(elPanelStretch);
-		elPanelHeader.appendChild(elPanelRemove);
-		elPanel.appendChild(elPanelBody);
+		let elTable = $('<table class="measurement_value_table"></table>');
 		
-		document.getElementById("measurement_details").appendChild(elLi);
+		let point = measurement.points[0];
 		
-		let widthListener = null;
-		var updateDisplay = function(event){
-		
-			$(elPanelBody).empty();
+		if(point.color){
+			let color = point.color;
+			let text = color.join(", ");
 			
-			if(measurement instanceof Potree.Profile){
-				var elLi = $('<li style="margin-bottom: 5px">');
-				var elText = document.createTextNode("width: ");
-				var elWidthLabel = $('<span id="lblProfileWidth_' + id + '">');
-				var elWidthSlider = $('<div id="sldProfileWidth_' + id + '">');
-				
-				elWidthSlider.slider({
-					value: Math.pow((measurement.getWidth() / 1000), 1/4).toFixed(3),
-					min: 0,
-					max: 1,
-					step: 0.01,
-					slide: function(event, ui){
-						var val = Math.pow(ui.value, 4) * 1000;
-						measurement.setWidth(val);
-					}
-				});
-				if(measurement.getWidth()){
-					elWidthLabel.html(Potree.utils.addCommas(measurement.getWidth().toFixed(3)));
-				}else{
-					elWidthLabel.html("-");
-				}
-				
-				if(widthListener === null){
-					widthListener = function(event){
-						var val = Math.pow((event.width / 1000), 1/4);
-						elWidthLabel.html(Potree.utils.addCommas(event.width.toFixed(3)));
-						elWidthSlider.slider({value: val});
-					};
-				}
-				if(!measurement.hasEventListener("width_changed", widthListener)){
-					measurement.addEventListener("width_changed", widthListener);
-				}
-				
-				elLi.append(elText);
-				elLi.append(elWidthLabel);
-				elLi.append(elWidthSlider);
-				
-				elPanelBody.appendChild(elLi[0]);
+			elTable.append($(`
+				<tr>
+					<td>rgb</td>
+					<td>${text}</td>
+				</tr>
+			`));
+		}
+		
+		return elTable;
+	};
+	
+	class MeasurePanel{
+		constructor(scene, measurement){
+			this.scene = scene;
+			this.measurement = measurement;
+			this.icon = null;
+			
+			this.constructor.counter = (this.constructor.counter === undefined) ? 0 : this.constructor.counter + 1;
+			this.id = this.constructor.counter;
+			
+			let title = measurement.name;
+			
+			this.elPanel = $(`
+				<span class="measurement_item">
+					<!-- HEADER -->
+					<div class="measurement_header" onclick="$(this).next().slideToggle(200)">
+						<span class="measurement_icon"><img src="" class="measurement_item_icon" /></span>
+						<span class="measurement_header_title">${title}</span>
+					</div>
+					
+					<!-- DETAIL -->
+					<div class="measurement_content selectable" style="display: none">
+						
+					</div>
+				</span>
+			`);
+			
+			this.elContentContainer = this.elPanel.find(".measurement_content");
+			this.elIcon = this.elPanel.find(".measurement_item_icon");
+			
+			this._update = () => {this.update()};
+		}
+		
+		destroy(){
+			
+		}
+		
+		update(){
+			
+		}
+	};
+	
+	class DistancePanel extends MeasurePanel{
+		constructor(scene, measurement){
+			super(scene, measurement);
+			
+			this.typename = "Distance";
+			this.icon = Potree.resourcePath + "/icons/distance.svg";
+			this.elIcon.attr("src", this.icon);
+			
+			this.elContent = $(`
+				<div>
+					<span class="coordinates_table_container"></span>
+					
+					
+					
+					<br>
+					<table id="distances_table_${this.id}" class="measurement_value_table">
+					</table>
+					
+					<!-- ACTIONS -->
+					<div style="display: flex; margin-top: 12px">
+						<span></span>
+						<span style="flex-grow: 1"></span>
+						<img class="measurement_action_remove" src="${removeIconPath}" style="width: 16px; height: 16px"/>
+					</div>
+				</div>
+			`);
+			this.elContentContainer.append(this.elContent);
+			
+			let elRemove = this.elContent.find(".measurement_action_remove");
+			elRemove.click(() => {this.scene.removeMeasurement(measurement)});
+			
+			this.measurement.addEventListener("marker_added", this._update);
+			this.measurement.addEventListener("marker_removed", this._update);
+			this.measurement.addEventListener("marker_moved", this._update);
+			
+			this.update();
+		}
+		
+		update(){
+			let elCoordiantesContainer = this.elContent.find(".coordinates_table_container");
+			elCoordiantesContainer.empty();
+			elCoordiantesContainer.append(createCoordinatesTable(this.measurement));
+			
+			
+			let positions = this.measurement.points.map(p => p.position);
+			let distances = [];
+			for(let i = 0; i < positions.length - 1; i++){
+				let d = positions[i].distanceTo(positions[i+1]);
+				distances.push(d.toFixed(3));
 			}
 			
-			var positions = [];
-			var points;
+			let totalDistance = this.measurement.getTotalDistance().toFixed(3);
+			let elDistanceTable = this.elContent.find(`#distances_table_${this.id}`);
+			elDistanceTable.empty();
 			
-			if(measurement instanceof Potree.Measure){
-				points = measurement.points;
-				for(var i = 0; i < points.length; i++){
-					positions.push(points[i].position);
-				}
-			} else if(measurement instanceof Potree.Profile){
-				positions = measurement.points;
+			for(let i = 0; i < distances.length; i++){
+				let label = (i === 0) ? "Distances: " : "";
+				let distance = distances[i];
+				let elDistance = $(`
+					<tr>
+						<th>${label}</th>
+						<td style="width: 100%; padding-left: 10px">${distance}</td>
+					</tr>`);
+				elDistanceTable.append(elDistance);
 			}
 			
-			if(measurement instanceof Potree.Measure && measurement.showHeight){
-				let points = measurement.points;
-				
+			
+			let elTotal = $(`
+				<tr>
+					<th>Total: </td><td style="width: 100%; padding-left: 10px">${totalDistance}</th>
+				</tr>`);
+			elDistanceTable.append(elTotal);
+			
+			//let elDistance = this.elContent.find(`#distance_${this.id}`);
+			//elDistance.html(totalDistance);
+		}
+		
+		destroy(){
+			this.elPanel.remove();
+			
+			this.measurement.removeEventListener("marker_added", this._update);
+			this.measurement.removeEventListener("marker_removed", this._update);
+			this.measurement.removeEventListener("marker_moved", this._update);
+		}
+		
+	};
+	
+	class PointPanel extends MeasurePanel{
+		constructor(scene, measurement){
+			super(scene, measurement);
+			
+			this.typename = "Point";
+			this.icon = Potree.resourcePath + "/icons/point.svg";
+			
+			this.elIcon.attr("src", this.icon);
+			
+			let totalDistance = this.measurement.getTotalDistance().toFixed(3);
+			this.elContent = $(`
+				<div>
+					<span class="coordinates_table_container"></span>
+					
+					<br>
+					
+					<span class="attributes_table_container"></span>
+					
+					
+					<!-- ACTIONS -->
+					<div style="display: flex; margin-top: 12px">
+						<span></span>
+						<span style="flex-grow: 1"></span>
+						<img class="measurement_action_remove" src="${removeIconPath}" style="width: 16px; height: 16px"/>
+					</div>
+				</div>
+			`);
+			this.elContentContainer.append(this.elContent);
+			
+			let elRemove = this.elContent.find(".measurement_action_remove");
+			elRemove.click(() => {this.scene.removeMeasurement(measurement)});
+			
+			this.measurement.addEventListener("marker_added", this._update);
+			this.measurement.addEventListener("marker_removed", this._update);
+			this.measurement.addEventListener("marker_moved", this._update);
+			
+			this.update();
+		}
+		
+		update(){
+			let elCoordiantesContainer = this.elContent.find(".coordinates_table_container");
+			elCoordiantesContainer.empty();
+			elCoordiantesContainer.append(createCoordinatesTable(this.measurement));
+			
+			let elAttributesContainer = this.elContent.find(".attributes_table_container");
+			elAttributesContainer.empty();
+			elAttributesContainer.append(createAttributesTable(this.measurement));
+		}
+		
+		destroy(){
+			this.elPanel.remove();
+			
+			this.measurement.removeEventListener("marker_added", this._update);
+			this.measurement.removeEventListener("marker_removed", this._update);
+			this.measurement.removeEventListener("marker_moved", this._update);
+		}
+		
+	};
+	
+	class AreaPanel extends MeasurePanel{
+		constructor(scene, measurement){
+			super(scene, measurement);
+			
+			this.typename = "Area";
+			this.icon = Potree.resourcePath + "/icons/area.svg";
+			
+			this.elIcon.attr("src", this.icon);
+			
+			let totalDistance = this.measurement.getTotalDistance().toFixed(3);
+			this.elContent = $(`
+				<div>
+					<span class="coordinates_table_container"></span>
+					
+					<br>
+					
+					<span style="font-weight: bold">Area: </span>
+					<span id="measurement_area_${this.id}"></span>
+					
+					<!-- ACTIONS -->
+					<div style="display: flex; margin-top: 12px">
+						<span></span>
+						<span style="flex-grow: 1"></span>
+						<img class="measurement_action_remove" src="${removeIconPath}" style="width: 16px; height: 16px"/>
+					</div>
+				</div>
+			`);
+			this.elContentContainer.append(this.elContent);
+			
+			let elRemove = this.elContent.find(".measurement_action_remove");
+			elRemove.click(() => {this.scene.removeMeasurement(measurement)});
+			
+			this.measurement.addEventListener("marker_added", this._update);
+			this.measurement.addEventListener("marker_removed", this._update);
+			this.measurement.addEventListener("marker_moved", this._update);
+			
+			this.update();
+		}
+		
+		update(){
+			let elCoordiantesContainer = this.elContent.find(".coordinates_table_container");
+			elCoordiantesContainer.empty();
+			elCoordiantesContainer.append(createCoordinatesTable(this.measurement));
+			
+			let elArea = this.elContent.find(`#measurement_area_${this.id}`);
+			elArea.html(this.measurement.getArea().toFixed(3));
+		}
+		
+		destroy(){
+			this.elPanel.remove();
+			
+			this.measurement.removeEventListener("marker_added", this._update);
+			this.measurement.removeEventListener("marker_removed", this._update);
+			this.measurement.removeEventListener("marker_moved", this._update);
+		}
+		
+	};
+	
+	class AnglePanel extends MeasurePanel{
+		constructor(scene, measurement){
+			super(scene, measurement);
+			
+			this.typename = "Angle";
+			this.icon = Potree.resourcePath + "/icons/angle.png";
+			
+			this.elIcon.attr("src", this.icon);
+			
+			let totalDistance = this.measurement.getTotalDistance().toFixed(3);
+			this.elContent = $(`
+				<div>
+					<span class="coordinates_table_container"></span>
+					
+					<br>
+					
+					<table class="measurement_value_table">
+						<tr>
+							<th>\u03b1</th>
+							<th>\u03b2</th>
+							<th>\u03b3</th>
+						</tr>
+						<tr>
+							<td align="center" id="angle_cell_alpha_${this.id}" style="width: 33%"></td>
+							<td align="center" id="angle_cell_betta_${this.id}" style="width: 33%"></td>
+							<td align="center" id="angle_cell_gamma_${this.id}" style="width: 33%"></td>
+						</tr>
+					</table>
+					
+					<!-- ACTIONS -->
+					<div style="display: flex; margin-top: 12px">
+						<span></span>
+						<span style="flex-grow: 1"></span>
+						<img class="measurement_action_remove" src="${removeIconPath}" style="width: 16px; height: 16px"/>
+					</div>
+				</div>
+			`);
+			this.elContentContainer.append(this.elContent);
+			
+			let elRemove = this.elContent.find(".measurement_action_remove");
+			elRemove.click(() => {this.scene.removeMeasurement(measurement)});
+			
+			this.measurement.addEventListener("marker_added", this._update);
+			this.measurement.addEventListener("marker_removed", this._update);
+			this.measurement.addEventListener("marker_moved", this._update);
+			
+			this.update();
+		}
+		
+		update(){
+			let elCoordiantesContainer = this.elContent.find(".coordinates_table_container");
+			elCoordiantesContainer.empty();
+			elCoordiantesContainer.append(createCoordinatesTable(this.measurement));
+			
+			let angles = [];
+			for(let i = 0; i < this.measurement.points.length; i++){
+				angles.push(this.measurement.getAngle(i) * (180.0/Math.PI));
+			}
+			angles = angles.map(a => a.toFixed(1) + '\u00B0');
+			
+			let elAlpha = this.elContent.find(`#angle_cell_alpha_${this.id}`);
+			let elBetta = this.elContent.find(`#angle_cell_betta_${this.id}`);
+			let elGamma = this.elContent.find(`#angle_cell_gamma_${this.id}`);
+			
+			elAlpha.html(angles[0]);
+			elBetta.html(angles[1]);
+			elGamma.html(angles[2]);
+		}
+		
+		destroy(){
+			this.elPanel.remove();
+			
+			this.measurement.removeEventListener("marker_added", this._update);
+			this.measurement.removeEventListener("marker_removed", this._update);
+			this.measurement.removeEventListener("marker_moved", this._update);
+		}
+		
+	};
+	
+	class HeightPanel extends MeasurePanel{
+		constructor(scene, measurement){
+			super(scene, measurement);
+			
+			this.typename = "Height";
+			this.icon = Potree.resourcePath + "/icons/height.svg";
+			
+			this.elIcon.attr("src", this.icon);
+			
+			this.elContent = $(`
+				<div>
+					<span class="coordinates_table_container"></span>
+					
+					<br>
+					
+					<span id="height_label_${this.id}">Height: </span><br>
+					
+					<!-- ACTIONS -->
+					<div style="display: flex; margin-top: 12px">
+						<span></span>
+						<span style="flex-grow: 1"></span>
+						<img class="measurement_action_remove" src="${removeIconPath}" style="width: 16px; height: 16px"/>
+					</div>
+				</div>
+			`);
+			this.elContentContainer.append(this.elContent);
+			
+			let elRemove = this.elContent.find(".measurement_action_remove");
+			elRemove.click(() => {this.scene.removeMeasurement(measurement)});
+			
+			this.measurement.addEventListener("marker_added", this._update);
+			this.measurement.addEventListener("marker_removed", this._update);
+			this.measurement.addEventListener("marker_moved", this._update);
+			
+			this.update();
+		}
+		
+		update(){
+			let elCoordiantesContainer = this.elContent.find(".coordinates_table_container");
+			elCoordiantesContainer.empty();
+			elCoordiantesContainer.append(createCoordinatesTable(this.measurement));
+			
+			{
+				let points = this.measurement.points;
+					
 				let sorted = points.slice().sort( (a, b) => a.position.z - b.position.z );
 				let lowPoint = sorted[0].position.clone();
 				let highPoint = sorted[sorted.length - 1].position.clone();
 				let min = lowPoint.z;
 				let max = highPoint.z;
 				let height = max - min;
+				height = height.toFixed(3);
 				
-				let txt = height.toFixed(3);
-				
-				var elNodeHeight = $('<div>').addClass("measurement-detail-node-marker");
-				elNodeHeight.html(txt);
-				$(elPanelBody).append(elNodeHeight);
+				this.elHeightLabel = this.elContent.find(`#height_label_${this.id}`);
+				this.elHeightLabel.html(`<b>Height:</b> ${height}`);
 			}
-			
-			for(var i = 0; i < positions.length; i++){
-				// TODO clean this up from the toGeo legacy
-				var point = positions[i];
-				var geoCoord = point;
-	
-				var txt = geoCoord.x.toFixed(2) + ", ";
-				txt += (geoCoord.y).toFixed(2) + ", ";
-				txt += geoCoord.z.toFixed(2);
-				
-				if(measurement && !measurement.showHeight){
-					var elNodeMarker = $('<div>').addClass("measurement-detail-node-marker");
-					elNodeMarker.html(txt);
-					$(elPanelBody).append(elNodeMarker);
-				}
-				
-				if(i < positions.length - 1){
-					if(measurement && measurement.showDistances){
-						
-						var elEdge = $('<div>').addClass("measurement-detail-edge");
-						$(elPanelBody).append(elEdge);
-						
-						var nextPoint = positions[i+1];
-						var nextGeo = nextPoint;
-						var distance = nextGeo.distanceTo(geoCoord);
-						var txt = Potree.utils.addCommas(distance.toFixed(2));
-						
-						var elNodeDistance = $('<div>').addClass("measurement-detail-node-distance");
-						elNodeDistance.html(txt);
-						
-						$(elPanelBody).append(elNodeDistance);
-						
-					}
-				}
-				
-				if(measurement && measurement.showAngles){
-					var elEdge = $('<div>').addClass("measurement-detail-edge");
-					$(elPanelBody).append(elEdge);
-					
-					var angle = measurement.getAngle(i);
-					var txt = Potree.utils.addCommas((angle*(180.0/Math.PI)).toFixed(1)) + '\u00B0';
-					var elNodeAngle = $('<div>').addClass("measurement-detail-node-angle");
-					elNodeAngle.html(txt);
-					$(elPanelBody).append(elNodeAngle);
-				}
-				
-				if(i < positions.length - 1){
-					var elEdge = $('<div>').addClass("measurement-detail-edge");
-					$(elPanelBody).append(elEdge);
-				}
-			}
-			
-			if(points && points.length === 1){
-				var point = points[0];
-				
-				var elTable = $('<table>').css("width", "100%");
-				$(elPanelBody).append(elTable);
-				
-				if(point.color){
-					var color = point.color;
-					
-					var elTr = $('<tr>');
-					var elKey = $('<td>').css("padding", "1px 5px");
-					var elValue = $('<td>').css("width", "100%").css("padding", "1px 5px");
-					
-					var value = parseInt(color[0]) 
-						+ ", " + parseInt(color[1]) 
-						+ ", " + parseInt(color[2]);
-					
-					elKey.html("rgb");
-					elValue.html(value);
-					
-					elTable.append(elTr);
-					elTr.append(elKey);
-					elTr.append(elValue);
-				}
-				
-				if(typeof point.intensity !== "undefined"){
-					var intensity = point.intensity;
-					
-					var elTr = $('<tr>');
-					var elKey = $('<td>').css("padding", "1px 5px");
-					var elValue = $('<td>').css("width", "100%").css("padding", "1px 5px");
-					
-					elKey.html("intensity");
-					elValue.html(intensity);
-					
-					elTable.append(elTr);
-					elTr.append(elKey);
-					elTr.append(elValue);
-				}
-				
-				if(typeof point.classification !== "undefined"){
-					var classification = point.classification;
-					
-					var elTr = $('<tr>');
-					var elKey = $('<td>').css("padding", "1px 5px");
-					var elValue = $('<td>').css("width", "100%").css("padding", "1px 5px");
-					
-					elKey.html("classification");
-					elValue.html(classification);
-					
-					elTable.append(elTr);
-					elTr.append(elKey);
-					elTr.append(elValue);
-				}
-				
-				if(typeof point.returnNumber !== "undefined"){
-					var returnNumber = point.returnNumber;
-					
-					var elTr = $('<tr>');
-					var elKey = $('<td>').css("padding", "1px 5px");
-					var elValue = $('<td>').css("width", "100%").css("padding", "1px 5px");
-					
-					elKey.html("return nr.");
-					elValue.html(returnNumber);
-					
-					elTable.append(elTr);
-					elTr.append(elKey);
-					elTr.append(elValue);
-				}
-				
-				if(typeof point.pointSourceID !== "undefined"){
-					var source = point.pointSourceID;
-					
-					var elTr = $('<tr>');
-					var elKey = $('<td>').css("padding", "1px 5px");
-					var elValue = $('<td>').css("width", "100%").css("padding", "1px 5px");
-					
-					elKey.html("source");
-					elValue.html(source);
-					
-					elTable.append(elTr);
-					elTr.append(elKey);
-					elTr.append(elValue);
-				}
-				
-				
-			}
-			
-			if(measurement && measurement.showDistances && measurement.points.length > 1){
-				var txt = "Total: " + Potree.utils.addCommas(measurement.getTotalDistance().toFixed(3));
-				
-				var elNodeTotalDistance = $('<div>').addClass("measurement-detail-node-distance");
-				elNodeTotalDistance.html(txt);
-				
-				$(elPanelBody).append(elNodeTotalDistance);
-			}
-			
-			if(measurement && measurement.showArea){
-				var txt = Potree.utils.addCommas(measurement.getArea().toFixed(1)) + "\u00B2";
-				
-				var elNodeArea = $('<div>').addClass("measurement-detail-node-area");
-				elNodeArea.html(txt);
-				
-				$(elPanelBody).append(elNodeArea);
-			}
-			
-			if(measurement instanceof Potree.Profile){
-				var elOpenProfileWindow = $('<input type="button" value="show 2d profile">')
-					.addClass("measurement-detail-button");
-				elOpenProfileWindow[0].onclick = function(){
-					viewer._2dprofile.show();
-					viewer._2dprofile.draw(measurement);
-				};
-				$(elPanelBody).append(elOpenProfileWindow);
-			}
-			
-			let doExport = measurement.showDistances && !measurement.showAngles;
-			if(doExport){
-				let elBottomBar = $(`<span style="display:flex">
-					<span style="flex-grow: 1"></span>
-				</span>`);
-				$(elPanelBody).append(elBottomBar);
-				
-				{
-					let icon = Potree.resourcePath + "/icons/file_geojson.svg";
-					let elDownload = $(`<a href="#" download="measure.json" class="measurepanel_downloads"><img src="${icon}"></img></a>`);
-					
-					elDownload.click(function(e){
-						let geojson = Potree.GeoJSONExporter.toString(measurement);
-						let url = window.URL.createObjectURL(new Blob([geojson], {type: 'data:application/octet-stream'}));
-						elDownload.attr("href", url);
-					});
-					
-					elBottomBar.append(elDownload);
-				}
-				
-				{
-					let icon = Potree.resourcePath + "/icons/file_dxf.svg";
-					let elDownload = $(`<a href="#" download="measure.dxf" class="measurepanel_downloads"><img src="${icon}"></img></a>`);
-					
-					elDownload.click(function(e){
-						let dxf = Potree.DXFExporter.toString(measurement);
-						let url = window.URL.createObjectURL(new Blob([dxf], {type: 'data:application/octet-stream'}));
-						elDownload.attr("href", url);
-					});
-					
-					elBottomBar.append(elDownload);
-				}
-			}
-		};
-		
-		updateDisplay();
-		
-		if(measurement instanceof Potree.Measure){
-			let onremove = function(event){
-				if(event.measurement === measurement){
-					//scene.removeEventListener("marker_added", updateDisplay);
-					//scene.removeEventListener("marker_removed", updateDisplay);
-					//scene.removeEventListener("marker_moved", updateDisplay);
-					$(elLi).remove();
-				}
-			};
-		
-			measurement.addEventListener("marker_added", updateDisplay);
-			measurement.addEventListener("marker_removed", updateDisplay);
-			measurement.addEventListener("marker_moved", updateDisplay);
-			scene.addEventListener("measurement_removed", onremove);
-			
-			track.stopTracking = (e) => {
-				measurement.removeEventListener("marker_added", updateDisplay);
-				measurement.removeEventListener("marker_removed", updateDisplay);
-				measurement.removeEventListener("marker_moved", updateDisplay);
-				scene.removeEventListener("measurement_added", onremove);
-				scene.removeEventListener("measurement_removed", onremove);
-			};
-		} else if(measurement instanceof Potree.Profile){
-			let onremove = function(event){
-				if(event.profile === measurement){
-					scene.removeEventListener("marker_added", updateDisplay);
-					scene.removeEventListener("marker_removed", updateDisplay);
-					scene.removeEventListener("marker_moved", updateDisplay);
-					$(elLi).remove();
-				}
-			};
-		
-			measurement.addEventListener("marker_added", updateDisplay);
-			measurement.addEventListener("marker_removed", updateDisplay);
-			measurement.addEventListener("marker_moved", updateDisplay);
-			scene.addEventListener("profile_removed", onremove);
-			
-			track.stopTracking = (e) => {
-				measurement.removeEventListener("marker_added", updateDisplay);
-				measurement.removeEventListener("marker_removed", updateDisplay);
-				measurement.removeEventListener("marker_moved", updateDisplay);
-				scene.removeEventListener("profile_added", onremove);
-				scene.removeEventListener("profile_removed", onremove);
-			};
 		}
 		
+		destroy(){
+			this.elPanel.remove();
+			
+			this.measurement.removeEventListener("marker_added", this._update);
+			this.measurement.removeEventListener("marker_removed", this._update);
+			this.measurement.removeEventListener("marker_moved", this._update);
+		}
+		
+	};
+	
+	class ProfilePanel extends MeasurePanel{
+		constructor(scene, measurement){
+			super(scene, measurement);
+			
+			this.typename = "Profile";
+			this.icon = Potree.resourcePath + "/icons/profile.svg";
+			
+			this.elIcon.attr("src", this.icon);
+			
+			let labelID = "lblProfileWidth_" + this.id;
+			let sliderID = "sldProfileWidth_" + this.id;
+			
+			this.elContent = $(`
+				<div>
+					<span class="coordinates_table_container"></span>
+					
+					<br>
+					
+					<span style="display:flex">
+						<span style="display:flex; align-items: center; padding-right: 10px">Width: </span>
+						<input id="${sliderID}" name="${sliderID}" value="5.06" style="flex-grow: 1; width:100%">
+					</span>
+					<br>
+					<input type="button" id="show_2d_profile_${this.id}" value="show 2d profile" style="width: 100%"/>
+					
+					<!-- ACTIONS -->
+					<div style="display: flex; margin-top: 12px">
+						<span></span>
+						<span style="flex-grow: 1"></span>
+						<img class="measurement_action_remove" src="${removeIconPath}" style="width: 16px; height: 16px"/>
+					</div>
+				</div>
+			`);
+			this.elContentContainer.append(this.elContent);
+			this.elShow2DProfile = this.elContent.find(`#show_2d_profile_${this.id}`);
+			this.elShow2DProfile.click(() => {
+				viewer._2dprofile.show();
+				viewer._2dprofile.draw(measurement);
+			});
+			
+			{ // width spinner
+				let elWidthLabel = this.elContent.find(`#${labelID}`);
+				let elWidthSlider = this.elContent.find(`#${sliderID}`);
+				
+				let startValue = 0;
+				
+				elWidthSlider.spinner({
+					min: 0,
+					max: 10*1000*1000,
+					step: 0.01,
+					numberFormat: "n",
+					start: (event, ui) => {
+						startValue = measurement.getWidth();
+					},
+					spin: (event, ui) => {
+						let value = elWidthSlider.spinner("value");
+						measurement.setWidth(value);
+					},
+					change: (event, ui) => {
+						let value = elWidthSlider.spinner("value");
+						measurement.setWidth(value);
+					},
+					stop: (event, ui) => {
+						let value = elWidthSlider.spinner("value");
+						measurement.setWidth(value);
+					},
+					incremental: (count) => {
+						let value = elWidthSlider.spinner("value");
+						let step = elWidthSlider.spinner("option", "step");
+						
+						let delta = value * 0.05;
+						let increments = parseInt(delta / step);
+						
+						return increments;
+					}
+				});
+				elWidthSlider.spinner("value", measurement.getWidth());
+				elWidthSlider.spinner("widget").css("width", "100%");
+
+				this.widthListener = (event) => {
+					let value = elWidthSlider.spinner("value");
+					if(value !== measurement.getWidth()){
+						elWidthSlider.spinner("value", measurement.getWidth());
+					}
+				};
+				
+				measurement.addEventListener("width_changed", this.widthListener);
+			}
+			
+			
+			let elRemove = this.elContent.find(".measurement_action_remove");
+			elRemove.click(() => {this.scene.removeProfile(measurement)});
+			
+			this.measurement.addEventListener("marker_added", this._update);
+			this.measurement.addEventListener("marker_removed", this._update);
+			this.measurement.addEventListener("marker_moved", this._update);
+			
+			this.update();
+		}
+		
+		update(){
+			let elCoordiantesContainer = this.elContent.find(".coordinates_table_container");
+			elCoordiantesContainer.empty();
+			elCoordiantesContainer.append(createCoordinatesTable(this.measurement));
+		}
+		
+		destroy(){
+			this.elPanel.remove();
+			
+			this.measurement.removeEventListener("marker_added", this._update);
+			this.measurement.removeEventListener("marker_removed", this._update);
+			this.measurement.removeEventListener("marker_moved", this._update);
+			this.measurement.removeEventListener("width_changed", this.widthListener);
+		}
+		
+	};
+	
+	class VolumePanel extends MeasurePanel{
+		constructor(scene, measurement){
+			super(scene, measurement);
+			
+			this.typename = "Volume";
+			this.icon = Potree.resourcePath + "/icons/volume.svg";
+			
+			this.elIcon.attr("src", this.icon);
+			
+			this.elContent = $(`
+				<div>
+					
+					<input type="button" value="download" id="download_volume_${this.id}"/>
+					
+					<!-- ACTIONS -->
+					<div style="display: flex; margin-top: 12px">
+						<span></span>
+						<span style="flex-grow: 1"></span>
+						<img class="measurement_action_remove" src="${removeIconPath}" style="width: 16px; height: 16px"/>
+					</div>
+				</div>
+			`);
+			this.elContentContainer.append(this.elContent);
+			
+			this.elDownloadButton = this.elContent.find(`#download_volume_${this.id}`);
+			this.elDownloadButton.click(() => this.download());
+			
+			let elRemove = this.elContent.find(".measurement_action_remove");
+			elRemove.click(() => {this.scene.removeVolume(measurement)});
+			
+			this.measurement.addEventListener("marker_added", this._update);
+			this.measurement.addEventListener("marker_removed", this._update);
+			this.measurement.addEventListener("marker_moved", this._update);
+			
+			this.update();
+		}
+		
+		download(){
+			
+			
+			
+		}
+		
+		update(){
+			
+		}
+		
+		destroy(){
+			this.elPanel.remove();
+			
+			this.measurement.removeEventListener("marker_added", this._update);
+			this.measurement.removeEventListener("marker_removed", this._update);
+			this.measurement.removeEventListener("marker_moved", this._update);
+		}
+		
+	};
+	
+	let TYPE = {
+		DISTANCE: {panel: DistancePanel},
+		AREA: {panel: AreaPanel},
+		POINT: {panel: PointPanel},
+		ANGLE: {panel: AnglePanel},
+		HEIGHT: {panel: HeightPanel},
+		PROFILE: {panel: ProfilePanel},
+		VOLUME: {panel: VolumePanel},
+	};
+	
+	let getType = (measurement) => {
+		if(measurement instanceof Potree.Measure){
+			if(measurement.showDistances && !measurement.showArea && !measurement.showAngles){
+				return TYPE.DISTANCE;
+			}else if(measurement.showDistances && measurement.showArea && !measurement.showAngles){
+				return TYPE.AREA;
+			}else if(measurement.maxMarkers === 1){
+				return TYPE.POINT;
+			}else if(!measurement.showDistances && !measurement.showArea && measurement.showAngles){
+				return TYPE.ANGLE;
+			}else if(measurement.showHeight){
+				return TYPE.HEIGHT;
+			}else{
+				return TYPE.OTHER;
+			}
+		}else if(measurement instanceof Potree.Profile){
+			return TYPE.PROFILE;
+		}else if(measurement instanceof Potree.Volume){
+			return TYPE.VOLUME;
+		}
+	};
+	
+	let trackMeasurement = (scene, measurement) => {
+		id++;
+		
+		let type = getType(measurement);
+		
+		let panel = new type.panel(scene, measurement);
+		mlist.append(panel.elPanel);
+		
+		let track = {
+			scene: scene,
+			measurement: measurement,
+			panel: panel,
+			stopTracking: (e) => {panel.destroy()}
+		};
+		trackedItems.set(measurement, track);
+
+		let onremove = (e) => {
+			
+			let remove = () => {
+				panel.destroy();
+				scene.removeEventListener("measurement_removed", onremove);
+				scene.removeEventListener("profile_removed", onremove);
+				scene.removeEventListener("volume_removed", onremove);
+			};
+			
+			if(e.measurement instanceof Potree.Measure && e.measurement === measurement){
+				remove();
+			}else if(e.profile instanceof Potree.Profile && e.profile === measurement){
+				remove();
+			}else if(e.volume instanceof Potree.Volume && e.volume === measurement){
+				remove();
+			}
+			
+		};
+		
+		scene.addEventListener("measurement_removed", onremove);
+		scene.addEventListener("profile_removed", onremove);
+		scene.addEventListener("volume_removed", onremove);
 	};
 	
 	let scenelistener = (e) => {
 		if(e.measurement){
 			trackMeasurement(e.scene, e.measurement);
-		} else if(e.profile){
+		}else if(e.profile){
 			trackMeasurement(e.scene, e.profile);
 			
 			viewer._2dprofile.show();
 			viewer._2dprofile.draw(e.profile);
+		}else if(e.volume){
+			trackMeasurement(e.scene, e.volume);
 		}
 	};
 	
 	let trackScene = (scene) => {
-		$("#measurement_details").empty();
+		$("#measurement_list").empty();
 		
 		trackedItems.forEach(function(trackedItem, key, map){
 			trackedItem.stopTracking();
 		});
 		
-		for(var i = 0; i < scene.measurements.length; i++){
-			trackMeasurement(scene, scene.measurements[i]);
-		}
+		let items = scene.measurements
+			.concat(scene.profiles)
+			.concat(scene.volumes);
 		
-		for(var i = 0; i < scene.profiles.length; i++){
-			trackMeasurement(scene, scene.profiles[i]);
+		for(let measurement of items){
+			trackMeasurement(scene, measurement);
 		}
 		
 		if(!scene.hasEventListener("measurement_added", scenelistener)){
@@ -17680,73 +18289,119 @@ function initMeasurementDetails(){
 		if(!scene.hasEventListener("profile_added", scenelistener)){
 			scene.addEventListener("profile_added", scenelistener);
 		}
+		
+		if(!scene.hasEventListener("volume_added", scenelistener)){
+			scene.addEventListener("volume_added", scenelistener);
+		}
 	};
 	
 	trackScene(viewer.scene);
 	
 	viewer.addEventListener("scene_changed", (e) => {trackScene(e.scene)});
+	
+	
+	
+	
+	{ // BOTTOM ACTIONS
+		let elActionsB = $("#measurement_list_after");
+	
+		{
+			let icon = Potree.resourcePath + "/icons/file_geojson.svg";
+			let elDownload = $(`
+				<a href="#" download="measure.json" class="measurepanel_downloads">
+					<img src="${icon}" style="height: 24px" />
+				</a>`);
+			elActionsB.append(elDownload);
+			
+			elDownload.click(function(e){
+				let scene = viewer.scene;
+				let measurements = [scene.measurements, scene.profiles, scene.volumes].reduce((a, v) => a.concat(v));
+				
+				let geojson = Potree.GeoJSONExporter.toString(measurements);
+				
+				let url = window.URL.createObjectURL(new Blob([geojson], {type: 'data:application/octet-stream'}));
+				elDownload.attr("href", url);
+			});
+		}
+		
+		{
+			let icon = Potree.resourcePath + "/icons/file_dxf.svg";
+			let elDownload = $(`
+				<a href="#" download="measure.dxf" class="measurepanel_downloads">
+					<img src="${icon}" style="height: 24px" />
+				</a>`);
+			elActionsB.append(elDownload);
+			
+			elDownload.click(function(e){
+				let scene = viewer.scene;
+				let measurements = [scene.measurements, scene.profiles, scene.volumes].reduce((a, v) => a.concat(v));
+				
+				let dxf = Potree.DXFExporter.toString(measurements);
+				
+				let url = window.URL.createObjectURL(new Blob([dxf], {type: 'data:application/octet-stream'}));
+				elDownload.attr("href", url);
+			});
+		}
+	
+	}
 };
 
 function initSceneList(){
 
-	var scenelist = $('#sceneList');
+	let scenelist = $('#sceneList');
 	
-	var id = 0;
-	// this works but it looks so wrong. any better way to create a closure around pointcloud?
-	var addPointcloud = function(pointcloud){
-		(function(pointcloud){
-			var elLi = $('<li>');
-			var elLabel = $('<label>');
-			var elInput = $('<input type="checkbox">');
-			
-			elInput[0].checked = pointcloud.visible;
-			elInput[0].id = "scene_list_item_pointcloud_" + id;
-			elLabel[0].id = "scene_list_item_label_pointcloud_" + id;
-			elLabel[0].htmlFor = "scene_list_item_pointcloud_" + id;
-			elLabel.addClass("menu-item");
-			elInput.click(function(event){
-				pointcloud.visible = event.target.checked;
-				if(viewer._2dprofile){
-					viewer._2dprofile.redraw();
-				}
-			});
-			
-			elLi.append(elLabel);
-			elLabel.append(elInput);
-			var pointcloudName = " " + (pointcloud.name ? pointcloud.name : "point cloud " + id);
-			var elPointCloudName = document.createTextNode(pointcloudName);
-			elLabel.append(elPointCloudName);
-			
-			scenelist.append(elLi);
-			
-			pointcloud.addEventListener("name_changed", function(e){
-				if(e.name){
-					elPointCloudName.textContent = " " + e.name;
-				}else{
-					elPointCloudName.textContent = " point cloud " + id;
-				}
-			});
-			
-			id++;
-		})(pointcloud);
+	let id = 0;
+	let addPointcloud = (pointcloud) => {
+		
+		let labelID = "scene_list_item_label_pointcloud_" + id;
+		let inputID = "scene_list_item_pointcloud_" + id;
+		let checked = pointcloud.visible ? "checked" : "";
+		let pointcloudName = " " + (pointcloud.name ? pointcloud.name : "point cloud " + id);
+		
+		let elPointclouds = $(`
+			<li>
+				<label id="${labelID}" for="${inputID}" class="menu-item">
+					<input id="${inputID}" type="checkbox" ${checked}/>
+					<span>${pointcloudName}</span>
+				</label>
+			</li>
+		`);
+		
+		let elInput = elPointclouds.find("input");
+		let elPointCloudLabel = elPointclouds.find("span");
+		
+		elInput.click(function(event){
+			pointcloud.visible = event.target.checked;
+			if(viewer._2dprofile){
+				viewer._2dprofile.redraw();
+			}
+		});
+		
+		scenelist.append(elPointclouds);
+		
+		pointcloud.addEventListener("name_changed", function(e){
+			if(e.name){
+				elPointCloudLabel.innerHTML = " " + e.name;
+			}else{
+				elPointCloudLabel.innerHTML = " point cloud " + id;
+			}
+		});
+		
+		id++;
 	};
 	
-	for(var i = 0; i < viewer.scene.pointclouds.length; i++){
-		var pointcloud = viewer.scene.pointclouds[i];
+	for(let pointcloud of  viewer.scene.pointclouds){
 		addPointcloud(pointcloud);
 	}
 	
 	viewer.addEventListener("scene_changed", (e) => {
 		scenelist.empty();
 		
-		let scene = e.scene;
-		for(var i = 0; i < scene.pointclouds.length; i++){
-			var pointcloud = scene.pointclouds[i];
+		for(let pointcloud of  e.scene.pointclouds){
 			addPointcloud(pointcloud);
 		}
 	});
 	
-	// TODO update scene list on scene switch
 	viewer.addEventListener("pointcloud_loaded", function(event){
 		addPointcloud(event.pointcloud);
 	});
@@ -17772,8 +18427,7 @@ function initSceneList(){
 	});
 };
 
-initSettings = function(){
-	//<li>Min Node Size: <span id="lblMinNodeSize"></span><div id="sldMinNodeSize"></div>	</li>
+let initSettings = function(){
 	
 	$( "#sldMinNodeSize" ).slider({
 		value: viewer.getMinNodeSize(),
@@ -17789,7 +18443,7 @@ initSettings = function(){
 	});
 	
 	
-	var toClipModeCode = function(string){
+	let toClipModeCode = function(string){
 		if(string === "No Clipping"){
 			return Potree.ClipMode.DISABLED;
 		}else if(string === "Highlight Inside"){
@@ -17799,7 +18453,7 @@ initSettings = function(){
 		}
 	};
 	
-	var toClipModeString = function(code){
+	let toClipModeString = function(code){
 		if(code === Potree.ClipMode.DISABLED){
 			return "No Clipping";
 		}else if(code === Potree.ClipMode.HIGHLIGHT_INSIDE){
@@ -17842,6 +18496,7 @@ let initSidebar = function(){
 	$('#potree_version_number').html(Potree.version.major + "." + Potree.version.minor + Potree.version.suffix);
 	$('.perfect_scrollbar').perfectScrollbar();
 }
+
 class HoverMenuItem{
 
 	constructor(icon, callback){

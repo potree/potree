@@ -1,4 +1,99 @@
 
+Potree.ProfilePointStore = class ProfilePointStore{
+	
+	constructor(profile){
+		this.profile = profile;
+		this.boundingBox = new THREE.Box3();
+		this.projectedBoundingBox = new THREE.Box3();
+		this.maxPoints = 50*1000;
+		this.numPoints = 0;
+		
+		this.buffers = {
+			position: new Float32Array(3 * this.maxPoints),
+			color: new Uint8Array(3 * this.maxPoints)
+		};
+		
+		this.segments = [];
+		for(let i = 0; i < profile.points.length - 1; i++){
+			let start = profile.points[i + 0];
+			let end = profile.points[i + 1];
+			
+			let startGround = new THREE.Vector3(start.x, start.y, 0);
+			let endGround = new THREE.Vector3(end.x, end.y, 0);
+			
+			let center = new THREE.Vector3().addVectors(endGround, startGround).multiplyScalar(0.5);
+			let length = startGround.distanceTo(endGround);
+			
+			let segment = {
+				start: start,
+				end: end,
+				points: {},
+				length: length,
+				numPoints: 0
+			};
+			
+			this.segments.push(segment);
+		}
+	}
+	
+	onProgress(progress){
+		
+		if(this.segments.length !== progress.segments.length){
+			return;
+		}
+		
+		
+		for(let i = 0; i < progress.segments.length; i++){
+			let sourceSegment = progress.segments[i];
+			let targetSegment = this.segments[i];
+
+			for(let attribute of Object.keys(sourceSegment.points)){
+				if(targetSegment.points[attribute] === undefined){
+					targetSegment.points[attribute] = new Array(targetSegment.numPoints).fill(0);
+				}
+				
+				targetSegment.points[attribute] = targetSegment.points[attribute]
+					.concat(sourceSegment.points[attribute]);
+					
+				if(attribute === "position"){
+					for(let j = 0; j < sourceSegment.numPoints; j++){
+						
+						let x = sourceSegment.points.mileage[j];
+						let y = sourceSegment.points.position[j].z;
+						let z = 0;
+						
+						let offset = 3 * (this.numPoints + j);
+						
+						this.buffers.position[offset + 0] = x;
+						this.buffers.position[offset + 1] = y;
+						this.buffers.position[offset + 2] = z;
+					}
+				}else if(attribute === "color"){
+					for(let j = 0; j < sourceSegment.numPoints; j++){
+						
+						let r = sourceSegment.points.color[j][0];
+						let g = sourceSegment.points.color[j][1];
+						let b = sourceSegment.points.color[j][2];
+						
+						let offset = 3 * (this.numPoints + j);
+						
+						this.buffers.color[offset + 0] = r;
+						this.buffers.color[offset + 1] = g;
+						this.buffers.color[offset + 2] = b;
+					}
+				}
+				
+			}
+			
+			targetSegment.numPoints += sourceSegment.numPoints;
+			this.numPoints += sourceSegment.numPoints;
+		}
+		
+	}
+	
+	
+}
+
 Potree.Viewer.Profile = class ProfileWindow{
 	
 	constructor(viewer, element){
@@ -11,13 +106,15 @@ Potree.Viewer.Profile = class ProfileWindow{
 		this.margin = {top: 0, right: 0, bottom: 20, left: 40};
 		this.maximized = false;
 		this.threshold = 20*1000;
+		this.autoFit = true;
 		
 		this.elRoot = $("#profile_window");
 		
 		this.renderArea = this.elRoot.find("#profileCanvasContainer");
-		this.renderer = new THREE.WebGLRenderer({premultipliedAlpha: false});
+		this.renderer = new THREE.WebGLRenderer({alpha: true, premultipliedAlpha: false});
+		this.renderer.setClearColor( 0x000000, 0 );
 		this.renderer.setSize(10, 10);
-		this.renderer.autoClear = false;
+		this.renderer.autoClear = true;
 		this.renderArea.append($(this.renderer.domElement));
 		this.renderer.domElement.tabIndex = "2222";
 		this.renderer.context.getExtension("EXT_frag_depth");
@@ -27,13 +124,8 @@ Potree.Viewer.Profile = class ProfileWindow{
 		this.camera = new THREE.OrthographicCamera(-10, 10, 10, -10, -1000, 1000);
 		
 		this.scene = new THREE.Scene();
-		this.scene.background = new THREE.Color( 0x00ff00 );
 		
-		let sg = new THREE.SphereGeometry(5, 32, 32);
-		let sm = new THREE.MeshNormalMaterial();
-		let s = new THREE.Mesh(sg, sm);
-		s.position.set(100, 100, 0);
-		this.scene.add(s);
+		this.points = null;
 		
 		this.maxPoints = 50*1000;
 		this.geometry = new THREE.BufferGeometry();
@@ -49,12 +141,82 @@ Potree.Viewer.Profile = class ProfileWindow{
 		this.tPoints = new THREE.Points(this.geometry, this.material);
 		this.scene.add(this.tPoints);
 		
+		this.mouse = new THREE.Vector2();
+		
 		this.min = new THREE.Vector3(0, 0, 0);
 		this.max = new THREE.Vector3(0, 0, 0);
+		this.size = new THREE.Vector3(0, 0, 0);
+		this.center = new THREE.Vector3(0, 0, 0);
+		this.scale = new THREE.Vector3(1, 1, 1);
 		
-		//this.renderArea.mousemove(event => {
-		//	this.render();
-		//});
+		this.mouseIsDown = false;
+		
+		$(window).resize( () => {
+			this.render();
+		});
+		
+		this.renderArea.mousedown(e => {
+			this.mouseIsDown = true;
+		});
+		
+		this.renderArea.mouseup(e => {
+			this.mouseIsDown = false;
+		});
+
+		this.renderArea.mousemove( e => {
+			let rect = this.renderArea[0].getBoundingClientRect();
+			let x = e.clientX - rect.left;
+			let y = e.clientY - rect.top;
+			
+			let newMouse = new THREE.Vector2(x, y);
+			
+			
+			if(this.mouseIsDown){
+				let cPos = this.toCamSpace(new THREE.Vector3(this.mouse.x, this.mouse.y, 0));
+				let ncPos = this.toCamSpace(new THREE.Vector3(newMouse.x, newMouse.y, 0));
+				
+				let diff = new THREE.Vector3().subVectors(ncPos, cPos);
+				this.camera.position.sub(diff);
+				this.render();
+			}
+			
+			this.mouse.copy(newMouse);
+		});
+		
+		let onWheel = e => {
+			this.autoFit = false;
+			let delta = 0;
+			if( e.wheelDelta !== undefined ) { // WebKit / Opera / Explorer 9
+				delta = e.wheelDelta;
+			} else if ( e.detail !== undefined ) { // Firefox
+				delta = -e.detail;
+			}
+			
+			let ndelta = Math.sign(delta);
+			
+			let sPos = new THREE.Vector3(this.mouse.x, this.mouse.y, 0);
+			let cPos = this.toCamSpace(sPos);
+			
+			if(ndelta > 0){
+				// + 10%
+				this.scale.multiplyScalar(1.1);
+			}else{
+				// - 10%
+				this.scale.multiplyScalar(100/110);
+			}
+			
+			this.scale.max(new THREE.Vector3(0.5, 0.5, 0.5));
+			this.scale.min(new THREE.Vector3(100, 100, 100));
+			
+			let ncPos = this.toCamSpace(sPos);
+			
+			let diff = new THREE.Vector3().subVectors(ncPos, cPos);
+			this.camera.position.sub(diff);
+			
+			this.render();
+		};
+		$(this.renderArea)[0].addEventListener("mousewheel", onWheel, false );
+		$(this.renderArea)[0].addEventListener("DOMMouseScroll", onWheel, false ); // Firefox
 		
 		
 		this.scheduledDraw = null;
@@ -78,24 +240,104 @@ Potree.Viewer.Profile = class ProfileWindow{
 			}else{
 				$('#profile_window').css("height", "30%");
 			}
+			
+			this.render();
 		});
 		
 
+	}
+	
+	toCamSpace(coord){
+		let width = this.renderArea[0].clientWidth;
+		let height = this.renderArea[0].clientHeight;
+		
+		let cam = new THREE.Vector3(
+			coord.x - width / 2,
+			-coord.y + height / 2,
+			0);
+		
+		cam.divide(this.scale);
+		cam.add(this.camera.position);
+		
+		return cam;
+	}
+	
+	toScreenSpace(coord){
+		let width = this.renderArea[0].clientWidth;
+		let height = this.renderArea[0].clientHeight;
+		
+		let v = new THREE.Vector3().subVectors(coord, this.camera.position);
+		v.multiply(this.scale);
+		
+		let screen = new THREE.Vector3(
+			width / 2 + v.x,
+			height / 2 - v.y,
+			0);
+		
+		return screen;
 	}
 	
 	render(){
 		let width = this.renderArea[0].clientWidth;
 		let height = this.renderArea[0].clientHeight;
 		
-		this.camera.left = -width/2;
-		this.camera.right = width/2;
-		this.camera.top = height/2;
-		this.camera.bottom = -height/2;
-		this.camera.updateProjectionMatrix();
+		{ // THREEJS
+			
+			let left   = (-width  / 2) / this.scale.x;
+			let right  = (+width  / 2) / this.scale.x;
+			let top    = (+height / 2) / this.scale.y;
+			let bottom = (-height / 2) / this.scale.y;
+			
+			this.camera.left = left;
+			this.camera.right = right;
+			this.camera.top = top;
+			this.camera.bottom = bottom;
+			this.camera.updateProjectionMatrix();
+			
+			this.renderer.setSize(width, height);
+			
+			this.renderer.render(this.scene, this.camera);
+		}
 		
-		this.renderer.setSize(width, height);
+		{ // SVG SCALES
+			let marginLeft = viewer._2dprofile.renderArea[0].offsetLeft;
 		
-		this.renderer.render(this.scene, this.camera);
+			let svg = d3.select("svg#profileSVG");
+			svg.selectAll("*").remove();
+			
+			this.scaleX = d3.scale.linear()
+				.domain([this.camera.left + this.camera.position.x, this.camera.right + this.camera.position.x])
+				.range([0, width]);
+			this.scaleY = d3.scale.linear()
+				.domain([this.camera.bottom + this.camera.position.y, this.camera.top + this.camera.position.y])
+				.range([height, 0]);
+			
+			let xAxis = d3.svg.axis()
+				.scale(this.scaleX)
+				.orient("bottom")
+				.innerTickSize(-height)
+				.outerTickSize(0)
+				.tickPadding(10)
+				.ticks(width / 50);
+				
+			let yAxis = d3.svg.axis()
+				.scale(this.scaleY)
+				.orient("left")
+				.innerTickSize(-width)
+				.outerTickSize(0)
+				.tickPadding(10)
+				.ticks(height / 20);
+		
+			svg.append("g")
+				.attr("class", "x axis")
+				.attr("transform", `translate(${marginLeft}, ${height})`)
+				.call(xAxis);
+				
+			svg.append("g")
+				.attr("class", "y axis")
+				.attr("transform", `translate(${marginLeft}, 0)`)
+				.call(yAxis)
+		}
 	}
 	
 	show(){
@@ -116,6 +358,8 @@ Potree.Viewer.Profile = class ProfileWindow{
 	};
 	
 	handleNewPoints(profileProgress){
+		this.points.onProgress(profileProgress);
+		
 		let prepared = this.preparePoints(profileProgress);
 		
 		if(prepared.numPoints === 0){
@@ -133,18 +377,16 @@ Potree.Viewer.Profile = class ProfileWindow{
 			this.min.min(pos);
 			this.max.max(pos);
 		}
+		let newSize = new THREE.Vector3().subVectors(this.max, this.min);
+		this.size.copy(newSize);
 		
 		let newNumPoints = this.numPoints + prepared.numPoints;
 		
 		let position = this.buffers.position;
 		let color = this.buffers.color;
 		
-		position.set(prepared.buffers.position, 3 * this.numPoints);
-		color.set(prepared.buffers.color, 3 * this.numPoints);
-		
-		for(let i = 1; i < 100; i+=3){
-			position[i] = position[i] - 700;
-		}
+		position.set(this.points.buffers.position.slice(3 * this.numPoints, 3 * newNumPoints), 3 * this.numPoints);
+		color.set(this.points.buffers.color.slice(3 * this.numPoints, 3 * newNumPoints), 3 * this.numPoints);
 		
 		this.geometry.attributes.position.needsUpdate = true;
 		this.geometry.attributes.color.needsUpdate = true;
@@ -153,9 +395,25 @@ Potree.Viewer.Profile = class ProfileWindow{
 		
 		this.numPoints = newNumPoints;
 		
-		let center = new THREE.Vector3().addVectors(this.min, this.max)
+		this.center = new THREE.Vector3().addVectors(this.min, this.max)
 			.multiplyScalar(0.5);
-		this.camera.position.copy(center);
+
+		if(this.autoFit){ // SCALE
+			let width = this.renderArea[0].clientWidth;
+			let height = this.renderArea[0].clientHeight;
+			
+			let sx = width / this.size.x;
+			let sy = height / this.size.y;
+			let scale = Math.min(sx, sy);
+			
+			this.scale.set(scale, scale, 1);
+			this.camera.position.copy(this.center);
+		}
+		
+		this.firstUpdateFollows = false;
+		
+		this.elRoot.find("#profile_num_points").html(
+			Potree.utils.addCommas(this.numPoints.toFixed(0)));
 	}
 	
 	preparePoints(profileProgress){
@@ -179,26 +437,21 @@ Potree.Viewer.Profile = class ProfileWindow{
 		let i = 0;
 		for(let segment of segments){
 			let sv = new THREE.Vector3().subVectors(segment.end, segment.start).setZ(0)
-			let segmentLength = sv.length();
+			let segmentDir = sv.clone().normalize();
 			let points = segment.points;
 
 			// Iterate the segments' points
-			for(let j = 0; j < points.numPoints; j++){
+			for(let j = 0; j < segment.numPoints; j++){
 				let p = points.position[j];
-				let pl = new THREE.Vector3().subVectors(p, segment.start).setZ(0);
+				
+				//let svp = new THREE.Vector3().subVectors(p, segment.start);
+				//let distance = segmentDir.dot(svp);
 				
 				min.min(p);
 				max.max(p);
 				
-				// TODO length is probably wrong here
-				let distance = totalDistance + pl.length();
-				
-				// important are 
-				// distance
-				// p.z
-				// points.color ? points.color[j] : [0, 0, 0]
-				
-				position[3*i + 0] = distance;
+				//position[3*i + 0] = distance + totalDistance;
+				position[3*i + 0] = points.mileage[j];
 				position[3*i + 1] = p.z;
 				position[3*i + 2] = 0;
 				
@@ -211,7 +464,7 @@ Potree.Viewer.Profile = class ProfileWindow{
 				i++;
 			}
 
-			totalDistance += segmentLength;
+			totalDistance += segment.length;
 		}
 		
 		let result = {
@@ -255,6 +508,7 @@ Potree.Viewer.Profile = class ProfileWindow{
 	}
 		
 	prepareDraw(profile){
+		this.autoFit = true;
 		this.numPoints = 0;
 		this.geometry.setDrawRange(0, this.numPoints);
 		
@@ -266,10 +520,15 @@ Potree.Viewer.Profile = class ProfileWindow{
 			viewer.removeEventListener("material_changed", this.redraw);
 			viewer.removeEventListener("height_range_changed", this.redraw);
 			viewer.removeEventListener("intensity_range_changed", this.redraw);
+			
+			for(let request of this.requests){
+				request.cancel();
+			}
 		}
 		
 		
 		this.currentProfile = profile;
+		this.points = new Potree.ProfilePointStore(this.currentProfile);
 		
 		{
 			this.currentProfile.addEventListener("marker_moved", this.redraw);
@@ -326,70 +585,80 @@ Potree.Viewer.Profile = class ProfileWindow{
 		}
 		
 		let file = "";
-		let points = this.points.slice();
 		
-		points.sort((a, b) => (a.distance - b.distance));
+		let pointsPerSegment = this.points.segments.map(s => s.points);
+		let points = {};
+		let attributes = Object.keys(pointsPerSegment[0]);
+		for(let attribute of attributes){
+			let arrays = pointsPerSegment.map(p => p[attribute]);
+			points[attribute] = arrays.reduce( (a, v) => a.concat(v));
+		}
 		
 		{ // header-line
 			let header = "x, y";
 			
-			if(points[0].hasOwnProperty("color")){
+			if(points.hasOwnProperty("color")){
 				header += ", r, g, b";
 			}
 			
-			if(points[0].hasOwnProperty("intensity")){
+			if(points.hasOwnProperty("intensity")){
 				header += ", intensity";
 			}
 			
-			if(points[0].hasOwnProperty("classification")){
+			if(points.hasOwnProperty("classification")){
 				header += ", classification";
 			}
 			
-			if(points[0].hasOwnProperty("numberOfReturns")){
+			if(points.hasOwnProperty("numberOfReturns")){
 				header += ", numberOfReturns";
 			}
 			
-			if(points[0].hasOwnProperty("pointSourceID")){
+			if(points.hasOwnProperty("pointSourceID")){
 				header += ", pointSourceID";
 			}
 			
-			if(points[0].hasOwnProperty("returnNumber")){
+			if(points.hasOwnProperty("returnNumber")){
 				header += ", returnNumber";
 			}
 			
 			file += header + "\n";
 		}
+		
+		let numPoints = points.position.length;
 
 		// actual data
-		for(let point of points){
-			let line = point.distance.toFixed(4) + ", ";
-			line += point.altitude.toFixed(4) + ", ";
+		for(let i = 0; i < numPoints; i++){
 			
-			if(point.hasOwnProperty("color")){
-				line += point.color.join(", ");
+			let values = [];
+			
+			values.push(points.mileage[i].toFixed(4));
+			values.push(points.position[i].z.toFixed(4));
+			
+			if(attributes.includes("color")){
+				values.push(points.color[i].join(", "));
 			}
 			
-			if(point.hasOwnProperty("intensity")){
-				line += ", " + point.intensity;
+			if(attributes.includes("intensity")){
+				values.push(points.intensity[i]);
 			}
 			
-			if(point.hasOwnProperty("classification")){
-				line += ", " + point.classification;
+			if(attributes.includes("classification")){
+				values.push(points.classification[i]);
 			}
 			
-			if(point.hasOwnProperty("numberOfReturns")){
-				line += ", " + point.numberOfReturns;
+			if(attributes.includes("numberOfReturns")){
+				values.push(points.numberOfReturns[i]);
 			}
 			
-			if(point.hasOwnProperty("pointSourceID")){
-				line += ", " + point.pointSourceID;
+			if(attributes.includes("pointSourceID")){
+				values.push(points.pointSourceID[i]);
 			}
 			
-			if(point.hasOwnProperty("returnNumber")){
-				line += ", " + point.returnNumber;
+			if(attributes.includes("returnNumber")){
+				values.push(points.returnNumber[i]);
 			}
 			
-			line += "\n";
+			let line = values.join(", ") + "\n";
 			
 			file = file + line;
 		}
@@ -398,12 +667,23 @@ Potree.Viewer.Profile = class ProfileWindow{
 	}
 	
 	getPointsInProfileAsLas(){
-		let points = this.points;
+		
+		let pointsPerSegment = this.points.segments.map(s => s.points);
+		let points = {};
+		let attributes = Object.keys(pointsPerSegment[0]);
+		for(let attribute of attributes){
+			let arrays = pointsPerSegment.map(p => p[attribute]);
+			points[attribute] = arrays.reduce( (a, v) => a.concat(v));
+		}
+		let numPoints = points.position.length;
+		
 		let boundingBox = new THREE.Box3();
 		
-		for(let point of points){
-			boundingBox.expandByPoint(point);
+		for(let i = 0; i < numPoints; i++){
+			let position = points.position[i];
+			boundingBox.expandByPoint(position);
 		}
+		
 		
 		let offset = boundingBox.min.clone();
 		let diagonal = boundingBox.min.distanceTo(boundingBox.max);
@@ -411,7 +691,7 @@ Potree.Viewer.Profile = class ProfileWindow{
 		if(diagonal > 100*1000){
 			scale = new THREE.Vector3(0.01, 0.01, 0.01);
 		}else{
-			scale = new THREE.Vector3(1.1, 0.001, 0.001);
+			scale = new THREE.Vector3(0.001, 0.001, 0.001);
 		}
 		
 		let setString = function(string, offset, buffer){
@@ -423,10 +703,9 @@ Potree.Viewer.Profile = class ProfileWindow{
 			}
 		}
 		
-		let buffer = new ArrayBuffer(227 + 28 * points.length);
+		let buffer = new ArrayBuffer(227 + 28 * numPoints);
 		let view = new DataView(buffer);
 		let u8View = new Uint8Array(buffer);
-		//let u16View = new Uint16Array(buffer);
 		
 		setString("LASF", 0, buffer);
 		u8View[24] = 1;
@@ -455,7 +734,7 @@ Potree.Viewer.Profile = class ProfileWindow{
 		view.setUint16(105, 28, true);
 		
 		// number of point records 107 4 
-		view.setUint32(107, points.length, true);
+		view.setUint32(107, numPoints, true);
 		
 		// number of points by return 111 20
 		
@@ -477,10 +756,16 @@ Potree.Viewer.Profile = class ProfileWindow{
 		// z offset 171 8
 		view.setFloat64(171, offset.z, true);
 		
+		let hasIntensity = attributes.includes("intensity");
+		let hasReturnNumber = attributes.includes("returnNumber");
+		let hasClassification = attributes.includes("classification");
+		let hasPointSourceID = attributes.includes("pointSourceID");
+		
 		let boffset = 227;
-		for(let i = 0; i < points.length; i++){
-			let point = points[i];
-			let position = new THREE.Vector3(point.x, point.y, point.z);
+		for(let i = 0; i < numPoints; i++){
+			//let point = points[i];
+			//let position = new THREE.Vector3(point.x, point.y, point.z);
+			let position = points.position[i];
 			
 			let ux = parseInt((position.x - offset.x) / scale.x);
 			let uy = parseInt((position.y - offset.y) / scale.y);
@@ -489,21 +774,30 @@ Potree.Viewer.Profile = class ProfileWindow{
 			view.setUint32(boffset + 0, ux, true);
 			view.setUint32(boffset + 4, uy, true);
 			view.setUint32(boffset + 8, uz, true);
+		
+			if(hasIntensity){
+				view.setUint16(boffset + 12, (points.intensity[i]), true);
+			}
 			
-			view.setUint16(boffset + 12, (point.intensity), true);
-			let rt = point.returnNumber;
-			rt += (point.numberOfReturns << 3);
-			view.setUint8(boffset + 14, rt);
+			if(hasReturnNumber){
+				let rt = points.returnNumber[i];
+				rt += (points.numberOfReturns[i] << 3);
+				view.setUint8(boffset + 14, rt);
+			}
 			
-			// classification
-			view.setUint8(boffset + 15, point.classification);
+			if(hasClassification){
+				view.setUint8(boffset + 15, points.classification[i]);
+			}
+			
 			// scan angle rank
 			// user data
 			// point source id
-			view.setUint16(boffset + 18, point.pointSourceID);
-			view.setUint16(boffset + 20, (point.color[0] * 255), true);
-			view.setUint16(boffset + 22, (point.color[1] * 255), true);
-			view.setUint16(boffset + 24, (point.color[2] * 255), true);
+			if(hasPointSourceID){
+				view.setUint16(boffset + 18, points.pointSourceID[i]);
+			}
+			view.setUint16(boffset + 20, (points.color[i][0] * 255), true);
+			view.setUint16(boffset + 22, (points.color[i][1] * 255), true);
+			view.setUint16(boffset + 24, (points.color[i][2] * 255), true);
 			
 			boffset += 28;
 		}

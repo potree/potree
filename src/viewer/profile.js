@@ -91,57 +91,148 @@ Potree.ProfilePointStore = class ProfilePointStore{
 		
 	}
 	
+	selectPoint(mileage, elevation, radius){
+		
+		let closest = {
+			distance: Infinity,
+			segment: null,
+			index: null
+		};
+		
+		for(let segment of this.segments){
+			for(let i = 0; i < segment.numPoints; i++){
+				
+				let m = segment.points.mileage[i] - mileage;
+				let e = segment.points.position[i].z - elevation;
+				
+				let r = Math.sqrt(m * m + e * e);
+				
+				if(r < radius && r < closest.distance){
+					closest = {
+						distance: r,
+						segment: segment,
+						index: i
+					};
+				}
+			}
+		}
+		
+		if(closest.distance < Infinity){
+			let point = {};
+			
+			let attributes = Object.keys(closest.segment.points);
+			for(let attribute of attributes){
+				point[attribute] = closest.segment.points[attribute][closest.index];
+			}
+			
+			return point;
+		}else{
+			return null;
+		}
+	}
+	
 	
 }
 
 Potree.Viewer.Profile = class ProfileWindow{
 	
-	constructor(viewer, element){
+	constructor(viewer){
 		this.viewer = viewer;
 		this.enabled = true;
-		this.element = element;
 		this.currentProfile = null;
 		this.requests = [];
-		this.pointsProcessed = 0;
-		this.margin = {top: 0, right: 0, bottom: 20, left: 40};
 		this.maximized = false;
 		this.threshold = 20*1000;
 		this.autoFit = true;
+		this.numPoints = 0;
+		this.mouse = new THREE.Vector2();
+		this.points = null;
+		this.selectedPoint = null;
 		
 		this.elRoot = $("#profile_window");
 		
 		this.renderArea = this.elRoot.find("#profileCanvasContainer");
-		this.renderer = new THREE.WebGLRenderer({alpha: true, premultipliedAlpha: false});
-		this.renderer.setClearColor( 0x000000, 0 );
-		this.renderer.setSize(10, 10);
-		this.renderer.autoClear = true;
-		this.renderArea.append($(this.renderer.domElement));
-		this.renderer.domElement.tabIndex = "2222";
-		this.renderer.context.getExtension("EXT_frag_depth");
-		$(this.renderer.domElement).css("width", "100%");
-		$(this.renderer.domElement).css("height", "100%");
 		
-		this.camera = new THREE.OrthographicCamera(-10, 10, 10, -10, -1000, 1000);
+		{ // THREE.JS
+			this.renderer = new THREE.WebGLRenderer({alpha: true, premultipliedAlpha: false});
+			this.renderer.setClearColor( 0x000000, 0 );
+			this.renderer.setSize(10, 10);
+			this.renderer.autoClear = true;
+			this.renderArea.append($(this.renderer.domElement));
+			this.renderer.domElement.tabIndex = "2222";
+			this.renderer.context.getExtension("EXT_frag_depth");
+			$(this.renderer.domElement).css("width", "100%");
+			$(this.renderer.domElement).css("height", "100%");
+			
+			this.camera = new THREE.OrthographicCamera(-10, 10, 10, -10, -1000, 1000);
+			
+			this.scene = new THREE.Scene();
+			
+			this.maxPoints = 50*1000;
+			this.geometry = new THREE.BufferGeometry();
+			this.buffers = {
+				position: new Float32Array(3 * this.maxPoints),
+				color: new Uint8Array(3 * this.maxPoints),
+			};
+			
+			this.geometry.addAttribute("position", new THREE.BufferAttribute(this.buffers.position, 3));
+			this.geometry.addAttribute("color", new THREE.BufferAttribute(this.buffers.color, 3, true));
+			this.geometry.setDrawRange(0, 100);
+			//this.material =  new THREE.PointsMaterial( { size: 0.001, vertexColors: THREE.VertexColors } );
+			this.material =  new Potree.PointCloudMaterial({size: 2.0});
+			this.material.pointSizeType = Potree.PointSizeType.FIXED;
+			this.tPoints = new THREE.Points(this.geometry, this.material);
+			this.scene.add(this.tPoints);
+			
+			
+			let sg = new THREE.SphereGeometry(1, 16, 16);
+			let sm = new THREE.MeshNormalMaterial();
+			this.pickSphere = new THREE.Mesh(sg, sm);
+			this.pickSphere.visible = false;
+			this.scene.add(this.pickSphere);
+		}
 		
-		this.scene = new THREE.Scene();
+		{ // SVG
+			let width = this.renderArea[0].clientWidth;
+			let height = this.renderArea[0].clientHeight;
+			let marginLeft = this.renderArea[0].offsetLeft;
 		
-		this.points = null;
+			this.svg = d3.select("svg#profileSVG");
+			this.svg.selectAll("*").remove();
+			
+			this.scaleX = d3.scale.linear()
+				.domain([this.camera.left + this.camera.position.x, this.camera.right + this.camera.position.x])
+				.range([0, width]);
+			this.scaleY = d3.scale.linear()
+				.domain([this.camera.bottom + this.camera.position.y, this.camera.top + this.camera.position.y])
+				.range([height, 0]);
+			
+			this.xAxis = d3.svg.axis()
+				.scale(this.scaleX)
+				.orient("bottom")
+				.innerTickSize(-height)
+				.outerTickSize(1)
+				.tickPadding(10)
+				.ticks(width / 50);
+				
+			this.yAxis = d3.svg.axis()
+				.scale(this.scaleY)
+				.orient("left")
+				.innerTickSize(-width)
+				.outerTickSize(1)
+				.tickPadding(10)
+				.ticks(height / 20);
 		
-		this.maxPoints = 50*1000;
-		this.geometry = new THREE.BufferGeometry();
-		this.buffers = {
-			position: new Float32Array(3 * this.maxPoints),
-			color: new Uint8Array(3 * this.maxPoints),
-		};
-		this.numPoints = 0;
-		this.geometry.addAttribute("position", new THREE.BufferAttribute(this.buffers.position, 3));
-		this.geometry.addAttribute("color", new THREE.BufferAttribute(this.buffers.color, 3, true));
-		this.geometry.setDrawRange(0, 100);
-		this.material =  new THREE.PointsMaterial( { size: 0.001, vertexColors: THREE.VertexColors } );
-		this.tPoints = new THREE.Points(this.geometry, this.material);
-		this.scene.add(this.tPoints);
-		
-		this.mouse = new THREE.Vector2();
+			this.svg.append("g")
+				.attr("class", "x axis")
+				.attr("transform", `translate(${marginLeft}, ${height})`)
+				.call(this.xAxis);
+				
+			this.svg.append("g")
+				.attr("class", "y axis")
+				.attr("transform", `translate(${marginLeft}, 0)`)
+				.call(this.yAxis);
+		}
 		
 		this.min = new THREE.Vector3(0, 0, 0);
 		this.max = new THREE.Vector3(0, 0, 0);
@@ -164,20 +255,93 @@ Potree.Viewer.Profile = class ProfileWindow{
 		});
 
 		this.renderArea.mousemove( e => {
+			if(this.points === null || this.points.numPoints === 0){
+				return;
+			}
+			
 			let rect = this.renderArea[0].getBoundingClientRect();
 			let x = e.clientX - rect.left;
 			let y = e.clientY - rect.top;
 			
 			let newMouse = new THREE.Vector2(x, y);
 			
-			
 			if(this.mouseIsDown){
+				// DRAG
 				let cPos = this.toCamSpace(new THREE.Vector3(this.mouse.x, this.mouse.y, 0));
 				let ncPos = this.toCamSpace(new THREE.Vector3(newMouse.x, newMouse.y, 0));
 				
 				let diff = new THREE.Vector3().subVectors(ncPos, cPos);
 				this.camera.position.sub(diff);
 				this.render();
+			}else if(this.points){
+				// FIND HOVERED POINT 
+				let pixelRadius = 10;
+				let ncPos = this.toCamSpace(new THREE.Vector3(newMouse.x, newMouse.y, 0));
+				let ncPosBorder = this.toCamSpace(new THREE.Vector3(newMouse.x + pixelRadius, newMouse.y, 0));
+				let mileage = ncPos.x;
+				let elevation = ncPos.y;
+				let radius = Math.abs(ncPosBorder.x - ncPos.x);
+				let point = this.points.selectPoint(mileage, elevation, radius);
+				
+				if(point){
+					this.elRoot.find("#profileSelectionProperties").fadeIn(200);
+					this.pickSphere.visible = true;
+					this.pickSphere.scale.set(0.5 * radius, 0.5 * radius, 0.5 * radius);
+					this.pickSphere.position.set(point.mileage, point.position.z, 0);
+					
+					let info = this.elRoot.find("#profileSelectionProperties");
+					let html = "<table>";
+					for(let attribute of Object.keys(point)){
+						let value = point[attribute];
+						if(attribute === "position"){
+							let values = value.toArray().map(v => Potree.utils.addCommas(v.toFixed(3)));
+							html += `
+								<tr>
+									<td>x</td>
+									<td>${values[0]}</td>
+								</tr>
+								<tr>
+									<td>y</td>
+									<td>${values[1]}</td>
+								</tr>
+								<tr>
+									<td>z</td>
+									<td>${values[2]}</td>
+								</tr>`;
+						}else if(attribute === "color"){
+							html += `
+								<tr>
+									<td>${attribute}</td>
+									<td>${value.join(", ")}</td>
+								</tr>`;
+						}else if(attribute === "normal"){
+							continue;
+						}else if(attribute === "mileage"){
+							html += `
+								<tr>
+									<td>${attribute}</td>
+									<td>${value.toFixed(3)}</td>
+								</tr>`;
+						}else{
+							html += `
+								<tr>
+									<td>${attribute}</td>
+									<td>${value}</td>
+								</tr>`;
+						}
+						
+					}
+					html += "</table>"
+					info.html(html);
+					
+					this.selectedPoint = point;
+				}else{
+					//this.pickSphere.visible = false;
+					//this.selectedPoint = null;
+				}
+				this.render();
+				
+				
 			}
 			
 			this.mouse.copy(newMouse);
@@ -232,17 +396,17 @@ Potree.Viewer.Profile = class ProfileWindow{
 			this.enabled = false;
 		});
 		
-		$('#profile_toggle_size_button').click(() => {
-			this.maximized = !this.maximized;
-		
-			if(this.maximized){
-				$('#profile_window').css("height", "100%");
-			}else{
-				$('#profile_window').css("height", "30%");
-			}
-			
-			this.render();
-		});
+		//$('#profile_toggle_size_button').click(() => {
+		//	this.maximized = !this.maximized;
+		//
+		//	if(this.maximized){
+		//		$('#profile_window').css("height", "100%");
+		//	}else{
+		//		$('#profile_window').css("height", "30%");
+		//	}
+		//	
+		//	this.render();
+		//});
 		
 
 	}
@@ -293,6 +457,13 @@ Potree.Viewer.Profile = class ProfileWindow{
 			this.camera.top = top;
 			this.camera.bottom = bottom;
 			this.camera.updateProjectionMatrix();
+
+			let radius = 
+				this.toCamSpace(new THREE.Vector3(0, 0, 0)).distanceTo(
+				this.toCamSpace(new THREE.Vector3(5, 0, 0)));
+			this.pickSphere.scale.set(radius, radius, radius);
+			this.pickSphere.position.z = this.camera.far - radius;
+			
 			
 			this.renderer.setSize(width, height);
 			
@@ -300,43 +471,32 @@ Potree.Viewer.Profile = class ProfileWindow{
 		}
 		
 		{ // SVG SCALES
-			let marginLeft = viewer._2dprofile.renderArea[0].offsetLeft;
+			let marginLeft = this.renderArea[0].offsetLeft;
 		
-			let svg = d3.select("svg#profileSVG");
-			svg.selectAll("*").remove();
-			
-			this.scaleX = d3.scale.linear()
-				.domain([this.camera.left + this.camera.position.x, this.camera.right + this.camera.position.x])
+			this.scaleX.domain([this.camera.left + this.camera.position.x, this.camera.right + this.camera.position.x])
 				.range([0, width]);
-			this.scaleY = d3.scale.linear()
-				.domain([this.camera.bottom + this.camera.position.y, this.camera.top + this.camera.position.y])
+			this.scaleY.domain([this.camera.bottom + this.camera.position.y, this.camera.top + this.camera.position.y])
 				.range([height, 0]);
-			
-			let xAxis = d3.svg.axis()
-				.scale(this.scaleX)
+				
+			this.xAxis.scale(this.scaleX)
 				.orient("bottom")
 				.innerTickSize(-height)
-				.outerTickSize(0)
+				.outerTickSize(1)
 				.tickPadding(10)
 				.ticks(width / 50);
-				
-			let yAxis = d3.svg.axis()
-				.scale(this.scaleY)
+			this.yAxis.scale(this.scaleY)
 				.orient("left")
 				.innerTickSize(-width)
-				.outerTickSize(0)
+				.outerTickSize(1)
 				.tickPadding(10)
 				.ticks(height / 20);
-		
-			svg.append("g")
-				.attr("class", "x axis")
-				.attr("transform", `translate(${marginLeft}, ${height})`)
-				.call(xAxis);
 				
-			svg.append("g")
-				.attr("class", "y axis")
+			d3.select(".x,axis")
+				.attr("transform", `translate(${marginLeft}, ${height})`)
+				.call(this.xAxis);
+			d3.select(".y,axis")
 				.attr("transform", `translate(${marginLeft}, 0)`)
-				.call(yAxis)
+				.call(this.yAxis);
 		}
 	}
 	
@@ -511,6 +671,8 @@ Potree.Viewer.Profile = class ProfileWindow{
 		this.autoFit = true;
 		this.numPoints = 0;
 		this.geometry.setDrawRange(0, this.numPoints);
+		this.pickSphere.visible = false;
+		this.elRoot.find("#profileSelectionProperties").hide();
 		
 		if(this.currentProfile){
 			this.currentProfile.removeEventListener("marker_moved", this.redraw);

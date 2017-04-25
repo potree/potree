@@ -1466,13 +1466,21 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			});
 			
 			let elProfile = $('<div>').load(new URL(Potree.scriptPath + "/profile.html").href, () => {
-				$('#potree_render_area').append(elProfile.children());
-				this._2dprofile = new Potree.Viewer.Profile(this, document.getElementById("profile_draw_container"));
+				$(document.body).append(elProfile.children());
+				this._2dprofile = new Potree.Viewer.Profile(this);
+				
+				$("#profile_window").draggable({
+					handle: $("#profile_titlebar"),
+					containment: $(document.body)
+				});
+				$("#profile_window").resizable();
 				
 				if(callback){
 					$(callback);
 				}
 			});
+			
+			
 			
 		});
 		

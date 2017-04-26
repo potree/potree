@@ -395,20 +395,6 @@ Potree.Viewer.Profile = class ProfileWindow{
 			this.hide();
 			this.enabled = false;
 		});
-		
-		//$('#profile_toggle_size_button').click(() => {
-		//	this.maximized = !this.maximized;
-		//
-		//	if(this.maximized){
-		//		$('#profile_window').css("height", "100%");
-		//	}else{
-		//		$('#profile_window').css("height", "30%");
-		//	}
-		//	
-		//	this.render();
-		//});
-		
-
 	}
 	
 	toCamSpace(coord){

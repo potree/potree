@@ -89,7 +89,7 @@ Potree.TreeType = {
 Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMaterial{
 	
 	constructor(parameters = {}){
-		super(this);
+		super();
 		
 		this.visibleNodesTexture = Potree.utils.generateDataTexture( 2048, 1, new THREE.Color( 0xffffff ) );
 		this.visibleNodesTexture.minFilter = THREE.NearestFilter;
@@ -452,7 +452,7 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 	}
 	
 	set opacity(value){
-		if(this.uniforms.opacity){
+		if(this.uniforms && this.uniforms.opacity){
 			if(this.uniforms.opacity.value !== value){
 				this.uniforms.opacity.value = value;
 				this.updateShaderSource();
@@ -605,7 +605,7 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 		this.uniforms.heightMax.value = value;
 	}
 
-	generateGradientTexture(gradient){
+	static generateGradientTexture(gradient){
 		let size = 64;
 
 		// create canvas
@@ -636,7 +636,7 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 		return texture;
 	}
 	
-	generateClassificationTexture(classification){
+	static generateClassificationTexture(classification){
 		let width = 256;
 		let height = 256;
 		let size = width*height;

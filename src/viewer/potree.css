@@ -443,12 +443,8 @@ body{
 	width: 100% !important;
 }
 
-.pv-menu-list .ui-selectmenu-button span.ui-selectmenu-text{
-	line-height: 0.8em;
-}
-
-.ui-selectmenu-text{
-	background-color: white;
+.ui-widget{
+	box-sizing:border-box
 }
 
 .panel-body > li > .ui-slider{
@@ -714,31 +710,3 @@ body{
 
 
 
-
-
-
-
-
-
-
-/*
-.axis path,
-  .axis line{
-    fill: none;
-    stroke: white;
-  }
-
-  .line{
-    fill: none;
-    stroke: blue;
-    stroke-width: 2px;
-  }
-
-  .tick text{
-    font-size: 12px;
-  }
-
-  .tick line{
-    opacity: 0.2;
-  }
- */

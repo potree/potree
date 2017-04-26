@@ -10,7 +10,9 @@ Potree.ProfilePointStore = class ProfilePointStore{
 		
 		this.buffers = {
 			position: new Float32Array(3 * this.maxPoints),
-			color: new Uint8Array(3 * this.maxPoints)
+			color: new Uint8Array(3 * this.maxPoints),
+			intensity: new Uint16Array(this.maxPoints),
+			classification: new Uint8Array(this.maxPoints),
 		};
 		
 		this.segments = [];
@@ -41,7 +43,6 @@ Potree.ProfilePointStore = class ProfilePointStore{
 		if(this.segments.length !== progress.segments.length){
 			return;
 		}
-		
 		
 		for(let i = 0; i < progress.segments.length; i++){
 			let sourceSegment = progress.segments[i];
@@ -80,6 +81,14 @@ Potree.ProfilePointStore = class ProfilePointStore{
 						this.buffers.color[offset + 0] = r;
 						this.buffers.color[offset + 1] = g;
 						this.buffers.color[offset + 2] = b;
+					}
+				}else if(attribute === "intensity"){
+					for(let j = 0; j < sourceSegment.numPoints; j++){
+						this.buffers.intensity[this.numPoints + j] = sourceSegment.points.intensity[j];
+					}
+				}else if(attribute === "classification"){
+					for(let j = 0; j < sourceSegment.numPoints; j++){
+						this.buffers.classification[this.numPoints + j] = sourceSegment.points.classification[j];
 					}
 				}
 				
@@ -148,6 +157,7 @@ Potree.Viewer.Profile = class ProfileWindow{
 		this.mouse = new THREE.Vector2();
 		this.points = null;
 		this.selectedPoint = null;
+		this.pointColorType = Potree.PointColorType.RGB;
 		
 		this.elRoot = $("#profile_window");
 		
@@ -173,12 +183,22 @@ Potree.Viewer.Profile = class ProfileWindow{
 			this.buffers = {
 				position: new Float32Array(3 * this.maxPoints),
 				color: new Uint8Array(3 * this.maxPoints),
+				intensity: new Uint16Array(this.maxPoints),
+				classification: new Uint8Array(this.maxPoints),
+				returnNumber: new Uint8Array(this.maxPoints),
+				numberOfReturns: new Uint8Array(this.maxPoints),
+				pointSourceID: new Uint16Array(this.maxPoints)
 			};
 			
 			this.geometry.addAttribute("position", new THREE.BufferAttribute(this.buffers.position, 3));
 			this.geometry.addAttribute("color", new THREE.BufferAttribute(this.buffers.color, 3, true));
+			this.geometry.addAttribute("intensity", new THREE.BufferAttribute(this.buffers.intensity, 1, false));
+			this.geometry.addAttribute("classification", new THREE.BufferAttribute(this.buffers.classification, 1, false));
+			this.geometry.addAttribute("returnNumber", new THREE.BufferAttribute(this.buffers.returnNumber, 1, false));
+			this.geometry.addAttribute("numberOfReturns", new THREE.BufferAttribute(this.buffers.numberOfReturns, 1, false));
+			this.geometry.addAttribute("pointSourceID", new THREE.BufferAttribute(this.buffers.pointSourceID, 1, false));
+			
 			this.geometry.setDrawRange(0, 100);
-			//this.material =  new THREE.PointsMaterial( { size: 0.001, vertexColors: THREE.VertexColors } );
 			this.material =  new Potree.PointCloudMaterial({size: 2.0});
 			this.material.pointSizeType = Potree.PointSizeType.FIXED;
 			this.tPoints = new THREE.Points(this.geometry, this.material);
@@ -450,6 +470,10 @@ Potree.Viewer.Profile = class ProfileWindow{
 			this.pickSphere.scale.set(radius, radius, radius);
 			this.pickSphere.position.z = this.camera.far - radius;
 			
+			this.material.pointColorType = this.viewer.pointColorType;
+			this.material.uniforms.intensityRange.value = this.viewer.getIntensityRange();
+			this.material.heightMin = this.viewer.getHeightRange().min;
+			this.material.heightMax = this.viewer.getHeightRange().max;
 			
 			this.renderer.setSize(width, height);
 			
@@ -530,12 +554,19 @@ Potree.Viewer.Profile = class ProfileWindow{
 		
 		let position = this.buffers.position;
 		let color = this.buffers.color;
+		let intensity = this.buffers.intensity;
+		let classification = this.buffers.classification;
 		
 		position.set(this.points.buffers.position.slice(3 * this.numPoints, 3 * newNumPoints), 3 * this.numPoints);
 		color.set(this.points.buffers.color.slice(3 * this.numPoints, 3 * newNumPoints), 3 * this.numPoints);
+		intensity.set(this.points.buffers.intensity.slice(this.numPoints, newNumPoints), this.numPoints);
+		classification.set(this.points.buffers.classification.slice(this.numPoints, newNumPoints), this.numPoints);
 		
-		this.geometry.attributes.position.needsUpdate = true;
-		this.geometry.attributes.color.needsUpdate = true;
+		
+		for(let key of Object.keys(this.geometry.attributes)){
+			this.geometry.attributes[key].needsUpdate = true;
+		}
+		
         
 		this.geometry.setDrawRange(0, newNumPoints);
 		
@@ -543,6 +574,11 @@ Potree.Viewer.Profile = class ProfileWindow{
 		
 		this.center = new THREE.Vector3().addVectors(this.min, this.max)
 			.multiplyScalar(0.5);
+		
+		if(this.geometry.boundingSphere){
+			this.geometry.boundingSphere.center.copy(this.center);
+			this.geometry.boundingSphere.radius = this.min.distanceTo(this.max) / 2;
+		}
 
 		if(this.autoFit){ // SCALE
 			let width = this.renderArea[0].clientWidth;
@@ -573,6 +609,8 @@ Potree.Viewer.Profile = class ProfileWindow{
 		
 		let position = new Float32Array(3 * numPoints);
 		let color = new Uint8Array(3 * numPoints);
+		let intensity = new Uint16Array(numPoints);
+		let classification = new Uint8Array(numPoints);
 		
 		let distance = 0;
 		let totalDistance = 0;
@@ -606,6 +644,8 @@ Potree.Viewer.Profile = class ProfileWindow{
 				color[3*i + 1] = c[1];
 				color[3*i + 2] = c[2];
 				
+				intensity[i] = points.intensity ? points.intensity[j] : 0;
+				classification[i] = points.classification ? points.classification[j] : 0;
 				
 				i++;
 			}
@@ -619,7 +659,9 @@ Potree.Viewer.Profile = class ProfileWindow{
 			max: max,
 			buffers: {
 				position: position,
-				color: color
+				color: color,
+				intensity: intensity,
+				classification: classification
 			}
 		};
 

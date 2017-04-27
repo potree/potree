@@ -3068,8 +3068,6 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 			bbSize:				{ type: "fv", value: [0,0,0] },
 			heightMin:			{ type: "f", value: 0.0 },
 			heightMax:			{ type: "f", value: 1.0 },
-			intensityMin:		{ type: "f", value: 0.0 },
-			intensityMax:		{ type: "f", value: 1.0 },
 			clipBoxCount:		{ type: "f", value: 0 },
 			visibleNodes:		{ type: "t", value: this.visibleNodesTexture },
 			pcIndex:   			{ type: "f", value: 0 },
@@ -3508,6 +3506,7 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 		this.uniforms.size.value = value;
 	}
 
+	// getter/setter for uniforms
 
 	get heightMin(){
 		return this.uniforms.heightMin.value;
@@ -3525,6 +3524,134 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 	set heightMax(value){
 		this.uniforms.heightMax.value = value;
 	}
+
+
+	get transition(){
+		return this.uniforms.transition.value;
+	}
+	
+	set transition(value){
+		this.uniforms.transition.value = value;
+	}
+
+
+	get intensityRange(){
+		return this.uniforms.intensityRange.value;
+	}
+	
+	set intensityRange(value){
+		this.uniforms.intensityRange.value = value;
+	}
+
+
+	get intensityGamma(){
+		return this.uniforms.intensityGamma.value;
+	}
+	
+	set intensityGamma(value){
+		this.uniforms.intensityGamma.value = value;
+	}
+
+
+	get intensityContrast(){
+		return this.uniforms.intensityContrast.value;
+	}
+	
+	set intensityContrast(value){
+		this.uniforms.intensityContrast.value = value;
+	}
+
+
+	get intensityBrightness(){
+		return this.uniforms.intensityBrightness.value;
+	}
+	
+	set intensityBrightness(value){
+		this.uniforms.intensityBrightness.value = value;
+	}
+
+
+	get rgbGamma(){
+		return this.uniforms.rgbGamma.value;
+	}
+	
+	set rgbGamma(value){
+		this.uniforms.rgbGamma.value = value;
+	}
+
+
+	get rgbContrast(){
+		return this.uniforms.rgbContrast.value;
+	}
+	
+	set rgbContrast(value){
+		this.uniforms.rgbContrast.value = value;
+	}
+
+
+	get rgbBrightness(){
+		return this.uniforms.rgbBrightness.value;
+	}
+	
+	set rgbBrightness(value){
+		this.uniforms.rgbBrightness.value = value;
+	}
+
+
+	get weightRGB(){
+		return this.uniforms.wRGB.value;
+	}
+	
+	set weightRGB(value){
+		this.uniforms.wRGB.value = value;
+	}
+
+
+	get weightIntensity(){
+		return this.uniforms.wIntensity.value;
+	}
+	
+	set weightIntensity(value){
+		this.uniforms.wIntensity.value = value;
+	}
+
+
+	get weightElevation(){
+		return this.uniforms.wElevation.value;
+	}
+	
+	set weightElevation(value){
+		this.uniforms.wElevation.value = value;
+	}
+
+
+	get weightClassification(){
+		return this.uniforms.wClassification.value;
+	}
+	
+	set weightClassification(value){
+		this.uniforms.wClassification.value = value;
+	}
+
+
+	get weightReturnNumber(){
+		return this.uniforms.wReturnNumber.value;
+	}
+	
+	set weightReturnNumber(value){
+		this.uniforms.wReturnNumber.value = value;
+	}
+
+
+	get weightSourceID(){
+		return this.uniforms.wSourceID.value;
+	}
+	
+	set weightSourceID(value){
+		this.uniforms.wSourceID.value = value;
+	}
+
+
 
 	static generateGradientTexture(gradient){
 		let size = 64;
@@ -12950,7 +13077,6 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		this.opacity = 1;
 		this.sizeType = "Fixed";
 		this.pointSizeType = Potree.PointSizeType.FIXED;
-		this.pointColorType = null;
 		this.clipMode = Potree.ClipMode.HIGHLIGHT_INSIDE;
 		this.quality = "Squares";
 		this.isFlipYZ = false;
@@ -12961,22 +13087,6 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		this.edlRadius = 1.4;
 		this.useEDL = false;
 		this.intensityMax = null;
-		this.heightMin = 0;
-		this.heightMax = 1;
-		this.materialTransition = 0.5;
-		this.weightRGB = 1.0;
-		this.weightIntensity = 0.0;
-		this.weightElevation = 0.0;
-		this.weightClassification = 0.0;
-		this.weightReturnNumber = 0.0;
-		this.weightSourceID = 0.0;
-		this.intensityRange = [0, 65000];
-		this.intensityGamma = 1;
-		this.intensityContrast = 0;
-		this.intensityBrightness = 0;
-		this.rgbGamma = 1;
-		this.rgbContrast = 0;
-		this.rgbBrightness = 0;
 		
 		this.moveSpeed = 10;		
 
@@ -13271,180 +13381,32 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 	//};
 	
 	setHeightRange(min, max){
-		if(this.heightMin !== min || this.heightMax !== max){
-			this.heightMin = min || this.heightMin;
-			this.heightMax = max || this.heightMax;
-			this.dispatchEvent({"type": "height_range_changed", "viewer": this});
+		for(let i = 0; i < this.scene.pointclouds.length; i++) {
+			this.scene.pointclouds[i].material.heightMin = min;	
+			this.scene.pointclouds[i].material.heightMax = max;	
+			this.dispatchEvent({"type": "height_range_changed" + i, "viewer": this});		
 		}
 	};
-	
-	getHeightRange(){
-		return {min: this.heightMin, max: this.heightMax};
-	};
-	
-	getElevationRange(){
-		return this.getHeightRange();
-	};
-	
+		
 	setElevationRange(min, max){
 		this.setHeightRange(min, max);
 	}
 	
 	setIntensityRange(min, max){
-		if(this.intensityRange[0] !== min || this.intensityRange[1] !== max){
-			this.intensityRange[0] = min || this.intensityRange[0];
-			this.intensityRange[1] = max || this.intensityRange[1];
-			this.dispatchEvent({"type": "intensity_range_changed", "viewer": this});
+		for(let i = 0; i < this.scene.pointclouds.length; i++) {
+			this.scene.pointclouds[i].material.intensityRange[0] = min;	
+			this.scene.pointclouds[i].material.intensityRange[1] = max;	
+			this.dispatchEvent({"type": "intensity_range_changed" + i, "viewer": this});		
 		}
-	};
-	
-	getIntensityRange(){
-		return this.intensityRange;
-	};
-	
-	setIntensityGamma(value){
-		if(this.intensityGamma !== value){
-			this.intensityGamma = value;
-			this.dispatchEvent({"type": "intensity_gamma_changed", "viewer": this});
-		}
-	};
-	
-	getIntensityGamma(){
-		return this.intensityGamma;
-	};
-	
-	setIntensityContrast(value){
-		if(this.intensityContrast !== value){
-			this.intensityContrast = value;
-			this.dispatchEvent({"type": "intensity_contrast_changed", "viewer": this});
-		}
-	};
-	
-	getIntensityContrast(){
-		return this.intensityContrast;
-	};
-	
-	setIntensityBrightness(value){
-		if(this.intensityBrightness !== value){
-			this.intensityBrightness = value;
-			this.dispatchEvent({"type": "intensity_brightness_changed", "viewer": this});
-		}
-	};
-	
-	getIntensityBrightness(){
-		return this.intensityBrightness;
-	};
-	
-	setRGBGamma(value){
-		if(this.rgbGamma !== value){
-			this.rgbGamma = value;
-			this.dispatchEvent({"type": "rgb_gamma_changed", "viewer": this});
-		}
-	};
-	
-	getRGBGamma(){
-		return this.rgbGamma;
-	};
-	
-	setRGBContrast(value){
-		if(this.rgbContrast !== value){
-			this.rgbContrast = value;
-			this.dispatchEvent({"type": "rgb_contrast_changed", "viewer": this});
-		}
-	};
-	
-	getRGBContrast(){
-		return this.rgbContrast;
-	};
-	
-	setRGBBrightness(value){
-		if(this.rgbBrightness !== value){
-			this.rgbBrightness = value;
-			this.dispatchEvent({"type": "rgb_brightness_changed", "viewer": this});
-		}
-	};
-	
-	getRGBBrightness(){
-		return this.rgbBrightness;
-	};
-	
-	setMaterialTransition(t){
-		if(this.materialTransition !== t){
-			this.materialTransition = t;
-			this.dispatchEvent({"type": "material_transition_changed", "viewer": this});
-		}
-	};
-	
-	getMaterialTransition(){
-		return this.materialTransition;
-	};
-	
-	setWeightRGB(w){
-		if(this.weightRGB !== w){
-			this.weightRGB = w;
-			this.dispatchEvent({"type": "attribute_weights_changed", "viewer": this});
-		}
-	};
-	
-	getWeightRGB(){
-		return this.weightRGB;
-	};
-	
-	setWeightIntensity(w){
-		if(this.weightIntensity !== w){
-			this.weightIntensity = w;
-			this.dispatchEvent({"type": "attribute_weights_changed", "viewer": this});
-		}
-	};
-	
-	getWeightIntensity(){
-		return this.weightIntensity;
-	};
-	
-	setWeightElevation(w){
-		if(this.weightElevation !== w){
-			this.weightElevation = w;
-			this.dispatchEvent({"type": "attribute_weights_changed", "viewer": this});
-		}
-	};
-	
-	getWeightElevation(){
-		return this.weightElevation;
-	};
+	};	
 	
 	setWeightClassification(w){
-		if(this.weightClassification !== w){
-			this.weightClassification = w;
-			this.dispatchEvent({"type": "attribute_weights_changed", "viewer": this});
+		for(let i = 0; i < this.scene.pointclouds.length; i++) {
+			this.scene.pointclouds[i].material.weightClassification = w;	
+			this.dispatchEvent({"type": "attribute_weights_changed" + i, "viewer": this});		
 		}
 	};
-	
-	getWeightClassification(){
-		return this.weightClassification;
-	};
-	
-	setWeightReturnNumber(w){
-		if(this.weightReturnNumber !== w){
-			this.weightReturnNumber = w;
-			this.dispatchEvent({"type": "attribute_weights_changed", "viewer": this});
-		}
-	};
-	
-	getWeightReturnNumber(){
-		return this.weightReturnNumber;
-	};
-	
-	setWeightSourceID(w){
-		if(this.weightSourceID !== w){
-			this.weightSourceID = w;
-			this.dispatchEvent({"type": "attribute_weights_changed", "viewer": this});
-		}
-	};
-	
-	getWeightSourceID(){
-		return this.weightSourceID;
-	};
-	
+		
 	setIntensityMax(max){
 		if(this.intensityMax !== max){
 			this.intensityMax = max;
@@ -13676,20 +13638,11 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 	};
 
 	setMaterial(value){
-		if(this.pointColorType !== this.toMaterialID(value)){
-			this.pointColorType = this.toMaterialID(value);
-			
-			this.dispatchEvent({"type": "material_changed", "viewer": this});
+		for(let i = 0; i < this.scene.pointclouds.length; i++) {
+			this.scene.pointclouds[i].material.pointColorType = value;	
+			this.dispatchEvent({"type": "material_changed" + i, "viewer": this});		
 		}
 	};
-	
-	setMaterialID(value){
-		if(this.pointColorType !== value){
-			this.pointColorType = value;
-			
-			this.dispatchEvent({"type": "material_changed", "viewer": this});
-		}
-	}
 
 	setLengthUnit(value) {
 		switch(value) {
@@ -13706,14 +13659,6 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 
 		this.dispatchEvent({"type": "length_unit_changed", "viewer": this});
 	}
-	
-	getMaterial(){
-		return this.pointColorType;
-	};
-	
-	getMaterialName(){
-		return this.toMaterialName(this.pointColorType);
-	};
 	
 	toMaterialID(materialName){
 
@@ -13884,7 +13829,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 	
 	updateHeightRange(){
 		var bbWorld = this.getBoundingBox();
-		this.setHeightRange(bbWorld.min.z, bbWorld.max.z);
+		this.setHeightRange(bbWorld.min.z, bbWorld.max.z);		
 	};
 	
 	loadSettingsFromURL(){
@@ -14345,28 +14290,10 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			//}
 				
 			pointcloud.material.clipMode = this.clipMode;
-			pointcloud.material.heightMin = this.heightMin;
-			pointcloud.material.heightMax = this.heightMax;
-			//pointcloud.material.intensityMin = 0;
-			//pointcloud.material.intensityMax = this.intensityMax;
-			pointcloud.material.uniforms.intensityRange.value = this.getIntensityRange();
-			pointcloud.material.uniforms.intensityGamma.value = this.getIntensityGamma();
-			pointcloud.material.uniforms.intensityContrast.value = this.getIntensityContrast();
-			pointcloud.material.uniforms.intensityBrightness.value = this.getIntensityBrightness();
-			pointcloud.material.uniforms.rgbGamma.value = this.getRGBGamma();
-			pointcloud.material.uniforms.rgbContrast.value = this.getRGBContrast();
-			pointcloud.material.uniforms.rgbBrightness.value = this.getRGBBrightness();
 			pointcloud.showBoundingBox = this.showBoundingBox;
 			pointcloud.generateDEM = this.useDEMCollisions;
 			pointcloud.minimumNodePixelSize = this.minNodeSize;
-			pointcloud.material.uniforms.transition.value = this.materialTransition;
 			
-			pointcloud.material.uniforms.wRGB.value = this.getWeightRGB();
-			pointcloud.material.uniforms.wIntensity.value = this.getWeightIntensity();
-			pointcloud.material.uniforms.wElevation.value = this.getWeightElevation();
-			pointcloud.material.uniforms.wClassification.value = this.getWeightClassification();
-			pointcloud.material.uniforms.wReturnNumber.value = this.getWeightReturnNumber();
-			pointcloud.material.uniforms.wSourceID.value = this.getWeightSourceID();
 			
 			//if(!this.freeze){
 			//	pointcloud.update(this.scene.camera, this.renderer);
@@ -14760,7 +14687,7 @@ class PotreeRenderer{
 			pointcloud.material.minSize = viewer.minPointSize;
 			pointcloud.material.maxSize = viewer.maxPointSize;
 			pointcloud.material.opacity = viewer.opacity;
-			pointcloud.material.pointColorType = viewer.pointColorType;
+			//pointcloud.material.pointColorType = viewer.pointColorType;
 			pointcloud.material.pointSizeType = viewer.pointSizeType;
 			pointcloud.material.pointShape = (viewer.quality === "Circles") ? Potree.PointShape.CIRCLE : Potree.PointShape.SQUARE;
 			pointcloud.material.interpolate = (viewer.quality === "Interpolation");
@@ -14925,8 +14852,8 @@ class HighQualityRenderer{
 				this.depthMaterial.spacing = pointcloud.pcoGeometry.spacing * Math.max(pointcloud.scale.x, pointcloud.scale.y, pointcloud.scale.z);
 				this.depthMaterial.near = viewer.scene.camera.near;
 				this.depthMaterial.far = viewer.scene.camera.far;
-				this.depthMaterial.heightMin = viewer.heightMin;
-				this.depthMaterial.heightMax = viewer.heightMax;
+				this.depthMaterial.heightMin = pointcloud.material.heightMin;
+				this.depthMaterial.heightMax = pointcloud.material.heightMax;
 				this.depthMaterial.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
 				this.depthMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.getSize().x;
 				this.depthMaterial.bbSize = pointcloud.material.bbSize;
@@ -14944,7 +14871,7 @@ class HighQualityRenderer{
 				this.attributeMaterial.pointSizeType = viewer.pointSizeType;
 				this.attributeMaterial.screenWidth = width;
 				this.attributeMaterial.screenHeight = height;
-				this.attributeMaterial.pointColorType = viewer.pointColorType;
+				this.attributeMaterial.pointColorType = pointcloud.material.pointColorType;
 				this.attributeMaterial.depthMap = this.rtDepth;
 				this.attributeMaterial.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
 				this.attributeMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.getSize().x;
@@ -14954,10 +14881,8 @@ class HighQualityRenderer{
 				this.attributeMaterial.spacing = pointcloud.pcoGeometry.spacing * Math.max(pointcloud.scale.x, pointcloud.scale.y, pointcloud.scale.z);
 				this.attributeMaterial.near = viewer.scene.camera.near;
 				this.attributeMaterial.far = viewer.scene.camera.far;
-				this.attributeMaterial.heightMin = viewer.heightMin;
-				this.attributeMaterial.heightMax = viewer.heightMax;
-				this.attributeMaterial.intensityMin = pointcloud.material.intensityMin;
-				this.attributeMaterial.intensityMax = pointcloud.material.intensityMax;
+				this.attributeMaterial.heightMin = pointcloud.material.heightMin;
+				this.attributeMaterial.heightMax = pointcloud.material.heightMax;
 				this.attributeMaterial.setClipBoxes(pointcloud.material.clipBoxes);
 				this.attributeMaterial.clipMode = pointcloud.material.clipMode;
 				this.attributeMaterial.bbSize = pointcloud.material.bbSize;
@@ -15120,17 +15045,15 @@ class EDLRenderer{
 				attributeMaterial.pointSizeType = viewer.pointSizeType;
 				attributeMaterial.screenWidth = width;
 				attributeMaterial.screenHeight = height;
-				attributeMaterial.pointColorType = viewer.pointColorType;
+				attributeMaterial.pointColorType = pointcloud.material.pointColorType;
 				attributeMaterial.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
 				attributeMaterial.uniforms.octreeSize.value = octreeSize;
 				attributeMaterial.fov = viewer.scene.camera.fov * (Math.PI / 180);
 				attributeMaterial.spacing = pointcloud.pcoGeometry.spacing * Math.max(pointcloud.scale.x, pointcloud.scale.y, pointcloud.scale.z);
 				attributeMaterial.near = viewer.scene.camera.near;
 				attributeMaterial.far = viewer.scene.camera.far;
-				attributeMaterial.heightMin = viewer.heightMin;
-				attributeMaterial.heightMax = viewer.heightMax;
-				attributeMaterial.intensityMin = pointcloud.material.intensityMin;
-				attributeMaterial.intensityMax = pointcloud.material.intensityMax;
+				attributeMaterial.heightMin = pointcloud.material.heightMin;
+				attributeMaterial.heightMax = pointcloud.material.heightMax;
 				attributeMaterial.setClipBoxes(pointcloud.material.clipBoxes);
 				attributeMaterial.clipMode = pointcloud.material.clipMode;
 				attributeMaterial.bbSize = pointcloud.material.bbSize;
@@ -17021,314 +16944,6 @@ function initToolbar(){
 	));
 }
 
-function initMaterials(){
-	
-	$( "#optMaterial" ).selectmenu({
-		style:'popup',
-		position: { 
-			my: "top", 
-			at: "bottom", 
-			collision: "flip" }	
-	});
-		
-	$( "#sldHeightRange" ).slider({
-		range: true,
-		min:	0,
-		max:	1000,
-		values: [0, 1000],
-		step: 	0.01,
-		slide: function( event, ui ) {
-			viewer.setHeightRange(ui.values[0], ui.values[1]);
-		}
-	});
-	
-	$( "#sldTransition" ).slider({
-		value: viewer.getMaterialTransition(),
-		min: 0,
-		max: 1,
-		step: 0.01,
-		slide: function( event, ui ) {viewer.setMaterialTransition(ui.value);}
-	});
-	
-	$( "#sldIntensityRange" ).slider({
-		range: true,
-		min:	0,
-		max:	1,
-		values: [0, 1],
-		step: 	0.01,
-		slide: function( event, ui ) {
-			let min = (ui.values[0] == 0) ? 0 : parseInt(Math.pow(2, 16 * ui.values[0]));
-			let max = parseInt(Math.pow(2, 16 * ui.values[1]));
-			viewer.setIntensityRange(min, max);
-		}
-	});
-	
-	$( "#sldIntensityGamma" ).slider({
-		value: viewer.getIntensityGamma(),
-		min: 0,
-		max: 4,
-		step: 0.01,
-		slide: function( event, ui ) {viewer.setIntensityGamma(ui.value);}
-	});
-	
-	$( "#sldIntensityContrast" ).slider({
-		value: viewer.getIntensityContrast(),
-		min: -1,
-		max: 1,
-		step: 0.01,
-		slide: function( event, ui ) {viewer.setIntensityContrast(ui.value);}
-	});
-	
-	$( "#sldIntensityBrightness" ).slider({
-		value: viewer.getIntensityBrightness(),
-		min: -1,
-		max: 1,
-		step: 0.01,
-		slide: function( event, ui ) {viewer.setIntensityBrightness(ui.value);}
-	});
-	
-	$( "#sldRGBGamma" ).slider({
-		value: viewer.getRGBGamma(),
-		min: 0,
-		max: 4,
-		step: 0.01,
-		slide: function( event, ui ) {viewer.setRGBGamma(ui.value);}
-	});
-	
-	$( "#sldRGBContrast" ).slider({
-		value: viewer.getRGBContrast(),
-		min: -1,
-		max: 1,
-		step: 0.01,
-		slide: function( event, ui ) {viewer.setRGBContrast(ui.value);}
-	});
-	
-	$( "#sldRGBBrightness" ).slider({
-		value: viewer.getRGBBrightness(),
-		min: -1,
-		max: 1,
-		step: 0.01,
-		slide: function( event, ui ) {viewer.setRGBBrightness(ui.value);}
-	});
-	
-	$( "#sldWeightRGB" ).slider({
-		value: viewer.getWeightRGB(),
-		min: 0,
-		max: 1,
-		step: 0.01,
-		slide: function( event, ui ) {viewer.setWeightRGB(ui.value);}
-	});
-	
-	$( "#sldWeightIntensity" ).slider({
-		value: viewer.getWeightIntensity(),
-		min: 0,
-		max: 1,
-		step: 0.01,
-		slide: function( event, ui ) {viewer.setWeightIntensity(ui.value);}
-	});
-	
-	$( "#sldWeightElevation" ).slider({
-		value: viewer.getWeightElevation(),
-		min: 0,
-		max: 1,
-		step: 0.01,
-		slide: function( event, ui ) {viewer.setWeightElevation(ui.value);}
-	});
-	
-	$( "#sldWeightClassification" ).slider({
-		value: viewer.getWeightClassification(),
-		min: 0,
-		max: 1,
-		step: 0.01,
-		slide: function( event, ui ) {viewer.setWeightClassification(ui.value);}
-	});
-	
-	$( "#sldWeightReturnNumber" ).slider({
-		value: viewer.getWeightReturnNumber(),
-		min: 0,
-		max: 1,
-		step: 0.01,
-		slide: function( event, ui ) {viewer.setWeightReturnNumber(ui.value);}
-	});
-	
-	$( "#sldWeightSourceID" ).slider({
-		value: viewer.getWeightSourceID(),
-		min: 0,
-		max: 1,
-		step: 0.01,
-		slide: function( event, ui ) {viewer.setWeightSourceID(ui.value);}
-	});
-
-	let updateHeightRange = function(){
-		let box = viewer.getBoundingBox();
-		let bWidth = box.max.z - box.min.z;
-		bMin = box.min.z - 0.2 * bWidth;
-		bMax = box.max.z + 0.2 * bWidth;
-		
-		let hr = viewer.getHeightRange();
-		let hrWidth = hr.max - hr.min;
-		
-		$( '#lblHeightRange')[0].innerHTML = hr.min.toFixed(2) + " to " + hr.max.toFixed(2);
-		$( "#sldHeightRange" ).slider({
-			min: bMin,
-			max: bMax,
-			values: [hr.min, hr.max]
-		});
-	};
-	
-	let updateIntensityRange = function(){
-		let range = viewer.getIntensityRange();
-		let min = Math.log2(range[0]) / 16;
-		let max = Math.log2(range[1]) / 16;
-		
-		$('#lblIntensityRange')[0].innerHTML = 
-			parseInt(viewer.getIntensityRange()[0]) + " to " + 
-			parseInt(viewer.getIntensityRange()[1]);
-		$( "#sldIntensityRange" ).slider({
-			values: [min, max]
-		});
-	};
-	
-	viewer.addEventListener("height_range_changed", updateHeightRange);
-	viewer.addEventListener("intensity_range_changed", updateIntensityRange);
-	
-	viewer.addEventListener("intensity_gamma_changed", function(event){
-		let gamma = viewer.getIntensityGamma();
-		
-		$('#lblIntensityGamma')[0].innerHTML = gamma.toFixed(2);
-		$("#sldIntensityGamma").slider({value: gamma});
-	});
-	
-	viewer.addEventListener("intensity_contrast_changed", function(event){
-		let contrast = viewer.getIntensityContrast();
-		
-		$('#lblIntensityContrast')[0].innerHTML = contrast.toFixed(2);
-		$("#sldIntensityContrast").slider({value: contrast});
-	});
-	
-	viewer.addEventListener("intensity_brightness_changed", function(event){
-		let brightness = viewer.getIntensityBrightness();
-		
-		$('#lblIntensityBrightness')[0].innerHTML = brightness.toFixed(2);
-		$("#sldIntensityBrightness").slider({value: brightness});
-	});
-	
-	viewer.addEventListener("rgb_gamma_changed", function(event){
-		let gamma = viewer.getRGBGamma();
-		
-		$('#lblRGBGamma')[0].innerHTML = gamma.toFixed(2);
-		$("#sldRGBGamma").slider({value: gamma});
-	});
-	
-	viewer.addEventListener("rgb_contrast_changed", function(event){
-		let contrast = viewer.getRGBContrast();
-		
-		$('#lblRGBContrast')[0].innerHTML = contrast.toFixed(2);
-		$("#sldRGBContrast").slider({value: contrast});
-	});
-	
-	viewer.addEventListener("rgb_brightness_changed", function(event){
-		let brightness = viewer.getRGBBrightness();
-		
-		$('#lblRGBBrightness')[0].innerHTML = brightness.toFixed(2);
-		$("#sldRGBBrightness").slider({value: brightness});
-	});
-	
-	viewer.addEventListener("pointcloud_loaded", updateHeightRange);
-	
-	updateHeightRange();
-	updateIntensityRange();
-	$('#lblIntensityGamma')[0].innerHTML = viewer.getIntensityGamma().toFixed(2);
-	$('#lblIntensityContrast')[0].innerHTML = viewer.getIntensityContrast().toFixed(2);
-	$('#lblIntensityBrightness')[0].innerHTML = viewer.getIntensityBrightness().toFixed(2);
-	
-	$('#lblRGBGamma')[0].innerHTML = viewer.getRGBGamma().toFixed(2);
-	$('#lblRGBContrast')[0].innerHTML = viewer.getRGBContrast().toFixed(2);
-	$('#lblRGBBrightness')[0].innerHTML = viewer.getRGBBrightness().toFixed(2);
-
-	let options = [ 
-		"RGB", 
-		"RGB and Elevation",
-		"Color", 
-		"Elevation", 
-		"Intensity", 
-		"Intensity Gradient", 
-		"Classification", 
-		"Return Number", 
-		"Source", 
-		"Phong",
-		"Level of Detail",
-		"Composite",
-	];
-	
-	let elMaterialList = $("#optMaterial");
-	for(let i = 0; i < options.length; i++){
-		let option = options[i];
-		let id = "optMaterial_" + option;
-
-		let elOption = $(`
-			<option id="${id}">
-				${option}
-			</option>`);
-		elMaterialList.append(elOption);
-	}
-	
-	let updateMaterialPanel = function(event, ui){
-		//viewer.setMaterial(ui.item.value);
-		
-		let selectedValue = $("#optMaterial").selectmenu().val();
-		viewer.setMaterial(selectedValue);
-		
-		let blockWeights = $("#materials\\.composite_weight_container");
-		let blockElevation = $("#materials\\.elevation_container");
-		let blockRGB = $("#materials\\.rgb_container");
-		let blockIntensity = $("#materials\\.intensity_container");
-		let blockTransition = $("#materials\\.transition_container");
-		
-		blockIntensity.css("display", "none");
-		blockElevation.css("display", "none");
-		blockRGB.css("display", "none");
-		blockWeights.css("display", "none");
-		blockTransition.css("display", "none");
-		
-		if(selectedValue === "Composite"){
-			blockWeights.css("display", "block");
-			blockElevation.css("display", "block");
-			blockRGB.css("display", "block");
-			blockIntensity.css("display", "block");
-		}
-		
-		if(selectedValue === "Elevation"){
-			blockElevation.css("display", "block");
-		}
-		
-		if(selectedValue === "RGB and Elevation"){
-			blockRGB.css("display", "block");
-			blockElevation.css("display", "block");
-		}
-		
-		if(selectedValue === "RGB"){
-			blockRGB.css("display", "block");
-		}
-		
-		if(selectedValue === "Intensity"){
-			blockIntensity.css("display", "block");
-		}
-		
-		if(selectedValue === "Intensity Gradient"){
-			blockIntensity.css("display", "block");
-		}
-	};
-	
-	$("#optMaterial").selectmenu({change: updateMaterialPanel});
-	$("#optMaterial").val(viewer.getMaterialName()).selectmenu("refresh");
-	updateMaterialPanel();
-	
-	viewer.addEventListener("material_changed", e => {
-		$("#optMaterial").val(viewer.getMaterialName()).selectmenu("refresh");
-	});
-}
-
 function initClassificationList(){
 	let elClassificationList = $("#classificationList");
 	
@@ -18596,9 +18211,9 @@ function initMeasurementDetails(){
 
 function initSceneList(){
 
-	let scenelist = $('#sceneList');
+	let scenelist = $('#scene_list');
 	
-	let id = 0;
+	/*let id = 0;
 	let addPointcloud = (pointcloud) => {
 		
 		let labelID = "scene_list_item_label_pointcloud_" + id;
@@ -18636,22 +18251,471 @@ function initSceneList(){
 		});
 		
 		id++;
-	};
-	
-	for(let pointcloud of  viewer.scene.pointclouds){
-		addPointcloud(pointcloud);
+	};*/
+
+	let initUIElements = function(i) {
+		// scene panel in scene list
+
+		let title = viewer.scene.pointclouds[i].name;
+		let pcMaterial = viewer.scene.pointclouds[i].material;
+		let checked = viewer.scene.pointclouds[i].visible ? "checked" : "";
+
+		let scenePanel = $(`
+			<span class="scene_item">
+				<!-- HEADER -->
+				<div style="float: right; margin: 6px; margin-right: 15px"><input id="scene_list_item_pointcloud_${i}" type="checkbox" ${checked} /></div>
+				<div class="scene_header" onclick="$(this).next().slideToggle(200)">
+					<span class="scene_icon"><img src="${Potree.resourcePath + "/icons/cloud_icon.svg"}" class="scene_item_icon" /></span>
+					<span class="scene_header_title">${title}</span>
+				</div>
+				
+				<!-- DETAIL -->
+				<div class="scene_content selectable" style="display: none">
+					<div>
+						<ul class="pv-menu-list">
+						<li>
+						   <label for="optMaterial${i}" class="pv-select-label">Attributes:</label><br>
+						   <select id="optMaterial${i}" name="optMaterial${i}">
+						   </select>
+						</li>
+						
+						<div id="materials.composite_weight_container${i}">
+							<div class="divider">
+								<span>Attribute Weights</span>
+							</div>
+						
+							<li>RGB: <span id="lblWeightRGB${i}"></span> <div id="sldWeightRGB${i}"></div>	</li>
+							<li>Intensity: <span id="lblWeightIntensity${i}"></span> <div id="sldWeightIntensity${i}"></div>	</li>
+							<li>Elevation: <span id="lblWeightElevation${i}"></span> <div id="sldWeightElevation${i}"></div>	</li>
+							<li>Classification: <span id="lblWeightClassification${i}"></span> <div id="sldWeightClassification${i}"></div>	</li>
+							<li>Return Number: <span id="lblWeightReturnNumber${i}"></span> <div id="sldWeightReturnNumber${i}"></div>	</li>
+							<li>Source ID: <span id="lblWeightSourceID${i}"></span> <div id="sldWeightSourceID${i}"></div>	</li>
+						</div>
+						
+						<div id="materials.rgb_container${i}">
+							<div class="divider">
+								<span>RGB</span>
+							</div>
+						
+							<li>Gamma: <span id="lblRGBGamma${i}"></span> <div id="sldRGBGamma${i}"></div>	</li>
+							<li>Brightness: <span id="lblRGBBrightness${i}"></span> <div id="sldRGBBrightness${i}"></div>	</li>
+							<li>Contrast: <span id="lblRGBContrast${i}"></span> <div id="sldRGBContrast${i}"></div>	</li>
+						</div>
+						
+						
+						<div id="materials.elevation_container${i}">
+							<div class="divider">
+								<span>Elevation</span>
+							</div>
+						
+							<li><span data-i18n="appearance.elevation_range"></span>: <span id="lblHeightRange${i}"></span> <div id="sldHeightRange${i}"></div>	</li>
+						</div>
+						
+						<div id="materials.transition_container${i}">
+							<div class="divider">
+								<span>Transition</span>
+							</div>
+						
+							<li>transition: <span id="lblTransition${i}"></span> <div id="sldTransition${i}"></div>	</li>
+						</div>
+						
+						<div id="materials.intensity_container${i}">
+							<div class="divider">
+								<span>Intensity</span>
+							</div>
+						
+							<li>Range: <span id="lblIntensityRange${i}"></span> <div id="sldIntensityRange${i}"></div>	</li>
+							<li>Gamma: <span id="lblIntensityGamma${i}"></span> <div id="sldIntensityGamma${i}"></div>	</li>
+							<li>Brightness: <span id="lblIntensityBrightness${i}"></span> <div id="sldIntensityBrightness${i}"></div>	</li>
+							<li>Contrast: <span id="lblIntensityContrast${i}"></span> <div id="sldIntensityContrast${i}"></div>	</li>
+						</div>
+							
+						
+						</ul>
+					</div>
+				</div>
+			</span>
+		`);
+
+		let inputVis = scenePanel.find("input[type='checkbox']");
+		
+		inputVis.click(function(event){
+			viewer.scene.pointclouds[i].visible = event.target.checked;
+			if(viewer._2dprofile){
+				viewer._2dprofile.redraw();
+			}
+		});
+
+		scenelist.append(scenePanel);
+
+
+		// ui elements
+		$( "#optMaterial" + i ).selectmenu({
+			style:'popup',
+			position: { 
+				my: "top", 
+				at: "bottom", 
+				collision: "flip" }	
+		});
+			
+		$( "#sldHeightRange" + i ).slider({
+			range: true,
+			min:	0,
+			max:	1000,
+			values: [0, 1000],
+			step: 	0.01,
+			slide: function( event, ui ) {
+				pcMaterial.heightMin = ui.values[0];
+				pcMaterial.heightMax = ui.values[1];
+				viewer.dispatchEvent({"type": "height_range_changed" + i, "viewer": viewer});
+			}
+		});
+		
+		$( "#sldTransition" + i ).slider({
+			value: pcMaterial.materialTransition,
+			min: 0,
+			max: 1,
+			step: 0.01,
+			slide: function( event, ui ) {
+				pcMaterial.materialTransition = ui.value;
+				viewer.dispatchEvent({"type": "material_transition_changed" + i, "viewer": viewer});
+			}
+		});
+		
+		$( "#sldIntensityRange" + i ).slider({
+			range: true,
+			min:	0,
+			max:	1,
+			values: [0, 1],
+			step: 	0.01,
+			slide: function( event, ui ) {
+				let min = (ui.values[0] == 0) ? 0 : parseInt(Math.pow(2, 16 * ui.values[0]));
+				let max = parseInt(Math.pow(2, 16 * ui.values[1]));
+				pcMaterial.intensityRange[0] = min;
+				pcMaterial.intensityRange[1] = max;
+				viewer.dispatchEvent({"type": "intensity_range_changed" + i, "viewer": viewer});
+			}
+		});
+		
+		$( "#sldIntensityGamma" + i ).slider({
+			value: pcMaterial.intensityGamma,
+			min: 0,
+			max: 4,
+			step: 0.01,
+			slide: function( event, ui ) {
+				pcMaterial.intensityGamma = ui.value;
+				viewer.dispatchEvent({"type": "intensity_gamma_changed" + i, "viewer": viewer});
+			}
+		});
+		
+		$( "#sldIntensityContrast" + i ).slider({
+			value: pcMaterial.intensityContrast,
+			min: -1,
+			max: 1,
+			step: 0.01,
+			slide: function( event, ui ) {
+				pcMaterial.intensityContrast = ui.value;
+				viewer.dispatchEvent({"type": "intensity_contrast_changed" + i, "viewer": viewer});
+			}
+		});
+		
+		$( "#sldIntensityBrightness" + i ).slider({
+			value: pcMaterial.intensityBrightness,
+			min: -1,
+			max: 1,
+			step: 0.01,
+			slide: function( event, ui ) {
+				pcMaterial.intensityBrightness = ui.value;
+				viewer.dispatchEvent({"type": "intensity_brightness_changed" + i, "viewer": viewer});
+			}
+		});
+		
+		$( "#sldRGBGamma" + i ).slider({
+			value: pcMaterial.rgbGamma,
+			min: 0,
+			max: 4,
+			step: 0.01,
+			slide: function( event, ui ) {
+				pcMaterial.rgbGamma = ui.value;
+				viewer.dispatchEvent({"type": "rgb_gamma_changed" + i, "viewer": viewer});
+			}
+		});
+		
+		$( "#sldRGBContrast" + i ).slider({
+			value: pcMaterial.rgbContrast,
+			min: -1,
+			max: 1,
+			step: 0.01,
+			slide: function( event, ui ) {
+				pcMaterial.rgbContrast = ui.value;
+				viewer.dispatchEvent({"type": "rgb_contrast_changed" + i, "viewer": viewer});
+			}
+		});
+		
+		$( "#sldRGBBrightness" + i ).slider({
+			value: pcMaterial.rgbBrightness,
+			min: -1,
+			max: 1,
+			step: 0.01,
+			slide: function( event, ui ) {
+				pcMaterial.rgbBrightness = ui.value;
+				viewer.dispatchEvent({"type": "rgb_brightness_changed" + i, "viewer": viewer});
+			}
+		});
+		
+		$( "#sldWeightRGB" + i ).slider({
+			value: pcMaterial.weightRGB,
+			min: 0,
+			max: 1,
+			step: 0.01,
+			slide: function( event, ui ) {
+				pcMaterial.weightRGB = ui.value;
+				viewer.dispatchEvent({"type": "attribute_weights_changed" + i, "viewer": viewer});
+			}
+		});
+		
+		$( "#sldWeightIntensity" + i ).slider({
+			value: pcMaterial.weightIntensity,
+			min: 0,
+			max: 1,
+			step: 0.01,
+			slide: function( event, ui ) {
+				pcMaterial.weightIntensity = ui.value;
+				viewer.dispatchEvent({"type": "attribute_weights_changed" + i, "viewer": viewer});
+			}
+		});
+		
+		$( "#sldWeightElevation" + i ).slider({
+			value: pcMaterial.weightElevation,
+			min: 0,
+			max: 1,
+			step: 0.01,
+			slide: function( event, ui ) {
+				pcMaterial.weightElevation = ui.value;
+				viewer.dispatchEvent({"type": "attribute_weights_changed" + i, "viewer": viewer});
+			}
+		});
+		
+		$( "#sldWeightClassification" + i ).slider({
+			value: pcMaterial.weightClassification,
+			min: 0,
+			max: 1,
+			step: 0.01,
+			slide: function( event, ui ) {
+				pcMaterial.weightClassification = ui.value;
+				viewer.dispatchEvent({"type": "attribute_weights_changed" + i, "viewer": viewer});
+			}
+		});
+		
+		$( "#sldWeightReturnNumber" + i ).slider({
+			value: pcMaterial.weightReturnNumber,
+			min: 0,
+			max: 1,
+			step: 0.01,
+			slide: function( event, ui ) {
+				pcMaterial.weightReturnNumber = ui.value;
+				viewer.dispatchEvent({"type": "attribute_weights_changed" + i, "viewer": viewer});
+			}
+		});
+		
+		$( "#sldWeightSourceID" + i ).slider({
+			value: pcMaterial.weightSourceID,
+			min: 0,
+			max: 1,
+			step: 0.01,
+			slide: function( event, ui ) {
+				pcMaterial.weightSourceID = ui.value;
+				viewer.dispatchEvent({"type": "attribute_weights_changed" + i, "viewer": viewer});
+			}
+		});
+
+		let updateHeightRange = function(){
+			let box = viewer.getBoundingBox();
+			let bWidth = box.max.z - box.min.z;
+			bMin = box.min.z - 0.2 * bWidth;
+			bMax = box.max.z + 0.2 * bWidth;
+			
+			let hrWidth = pcMaterial.heightMax - pcMaterial.heightMin;
+			
+			$( "#lblHeightRange" + i )[0].innerHTML = pcMaterial.heightMin.toFixed(2) + " to " + pcMaterial.heightMax.toFixed(2);
+			$( "#sldHeightRange" + i ).slider({
+				min: bMin,
+				max: bMax,
+				values: [pcMaterial.heightMin, pcMaterial.heightMax]
+			});
+		};
+		
+		let updateIntensityRange = function(){
+			let range = pcMaterial.intensityRange;
+			let min = Math.log2(range[0]) / 16;
+			let max = Math.log2(range[1]) / 16;
+			
+			$( "#lblIntensityRange" + i )[0].innerHTML = 
+				parseInt(pcMaterial.intensityRange[0]) + " to " + 
+				parseInt(pcMaterial.intensityRange[1]);
+			$( "#sldIntensityRange" + i ).slider({
+				values: [min, max]
+			});
+		};
+		
+		viewer.addEventListener("height_range_changed" + i, updateHeightRange);
+		viewer.addEventListener("intensity_range_changed" + i, updateIntensityRange);
+		
+		viewer.addEventListener("intensity_gamma_changed" + i, function(event){
+			let gamma = pcMaterial.intensityGamma;
+			
+			$('#lblIntensityGamma' + i)[0].innerHTML = gamma.toFixed(2);
+			$("#sldIntensityGamma" + i).slider({value: gamma});
+		});
+		
+		viewer.addEventListener("intensity_contrast_changed" + i, function(event){
+			let contrast = pcMaterial.intensityContrast;
+			
+			$('#lblIntensityContrast' + i)[0].innerHTML = contrast.toFixed(2);
+			$("#sldIntensityContrast" + i).slider({value: contrast});
+		});
+		
+		viewer.addEventListener("intensity_brightness_changed" + i, function(event){
+			let brightness = pcMaterial.intensityBrightness;
+			
+			$('#lblIntensityBrightness' + i)[0].innerHTML = brightness.toFixed(2);
+			$("#sldIntensityBrightness" + i).slider({value: brightness});
+		});
+		
+		viewer.addEventListener("rgb_gamma_changed" + i, function(event){
+			let gamma = pcMaterial.rgbGamma;
+			
+			$('#lblRGBGamma' + i)[0].innerHTML = gamma.toFixed(2);
+			$("#sldRGBGamma" + i).slider({value: gamma});
+		});
+		
+		viewer.addEventListener("rgb_contrast_changed" + i, function(event){
+			let contrast = pcMaterial.rgbContrast;
+			
+			$('#lblRGBContrast' + i)[0].innerHTML = contrast.toFixed(2);
+			$("#sldRGBContrast" + i).slider({value: contrast});
+		});
+		
+		viewer.addEventListener("rgb_brightness_changed" + i, function(event){
+			let brightness = pcMaterial.rgbBrightness;
+			
+			$('#lblRGBBrightness' + i)[0].innerHTML = brightness.toFixed(2);
+			$("#sldRGBBrightness" + i).slider({value: brightness});
+		});
+		
+		viewer.addEventListener("pointcloud_loaded", updateHeightRange);
+		
+		updateHeightRange();
+		updateIntensityRange();
+		$('#lblIntensityGamma' + i)[0].innerHTML = pcMaterial.intensityGamma.toFixed(2);
+		$('#lblIntensityContrast' + i)[0].innerHTML = pcMaterial.intensityContrast.toFixed(2);
+		$('#lblIntensityBrightness' + i)[0].innerHTML = pcMaterial.intensityBrightness.toFixed(2);
+		
+		$('#lblRGBGamma' + i)[0].innerHTML = pcMaterial.rgbGamma.toFixed(2);
+		$('#lblRGBContrast' + i)[0].innerHTML = pcMaterial.rgbContrast.toFixed(2);
+		$('#lblRGBBrightness' + i)[0].innerHTML = pcMaterial.rgbBrightness.toFixed(2);
+
+		let options = [ 
+			"RGB", 
+			"RGB and Elevation",
+			"Color", 
+			"Elevation", 
+			"Intensity", 
+			"Intensity Gradient", 
+			"Classification", 
+			"Return Number", 
+			"Source", 
+			"Phong",
+			"Level of Detail",
+			"Composite",
+		];
+		
+		let elMaterialList = $("#optMaterial" + i);
+		for(let i = 0; i < options.length; i++){
+			let option = options[i];
+			let id = "optMaterial_" + option + "_" + i;
+
+			let elOption = $(`
+				<option id="${id}">
+					${option}
+				</option>`);
+			elMaterialList.append(elOption);
+		}
+		
+		let updateMaterialPanel = function(event, ui){			
+			let selectedValue = $("#optMaterial" + i).selectmenu().val();
+			pcMaterial.pointColorType = viewer.toMaterialID(selectedValue);
+			viewer.dispatchEvent({"type": "material_changed" + i, "viewer": viewer});
+			
+			let blockWeights = $("#materials\\.composite_weight_container" + i);
+			let blockElevation = $("#materials\\.elevation_container" + i);
+			let blockRGB = $("#materials\\.rgb_container" + i);
+			let blockIntensity = $("#materials\\.intensity_container" + i);
+			let blockTransition = $("#materials\\.transition_container" + i);
+			
+			blockIntensity.css("display", "none");
+			blockElevation.css("display", "none");
+			blockRGB.css("display", "none");
+			blockWeights.css("display", "none");
+			blockTransition.css("display", "none");
+			
+			if(selectedValue === "Composite"){
+				blockWeights.css("display", "block");
+				blockElevation.css("display", "block");
+				blockRGB.css("display", "block");
+				blockIntensity.css("display", "block");
+			}
+			
+			if(selectedValue === "Elevation"){
+				blockElevation.css("display", "block");
+			}
+			
+			if(selectedValue === "RGB and Elevation"){
+				blockRGB.css("display", "block");
+				blockElevation.css("display", "block");
+			}
+			
+			if(selectedValue === "RGB"){
+				blockRGB.css("display", "block");
+			}
+			
+			if(selectedValue === "Intensity"){
+				blockIntensity.css("display", "block");
+			}
+			
+			if(selectedValue === "Intensity Gradient"){
+				blockIntensity.css("display", "block");
+			}
+		};
+		
+		$("#optMaterial" + i).selectmenu({change: updateMaterialPanel});
+		$("#optMaterial" + i).val(viewer.toMaterialName(pcMaterial.pointColorType)).selectmenu("refresh");
+		updateMaterialPanel();
+		
+		viewer.addEventListener("material_changed" + i, e => {
+			$("#optMaterial" + i).val(viewer.toMaterialName(pcMaterial.pointColorType)).selectmenu("refresh");
+		});
+
+	};	
+
+	for(let i = 0; i < viewer.scene.pointclouds.length; i++) {
+		initUIElements(i);
 	}
 	
 	viewer.addEventListener("scene_changed", (e) => {
 		scenelist.empty();
 		
-		for(let pointcloud of  e.scene.pointclouds){
-			addPointcloud(pointcloud);
+		for(let i = 0; i < viewer.scene.pointclouds.length; i++) {
+			initUIElements(i);
 		}
 	});
 	
 	viewer.addEventListener("pointcloud_loaded", function(event){
-		addPointcloud(event.pointcloud);
+		scenelist.empty();
+		
+		for(let i = 0; i < viewer.scene.pointclouds.length; i++) {
+			initUIElements(i);
+		}
 	});
 	
 	let lastPos = new THREE.Vector3();
@@ -18734,7 +18798,6 @@ let initSidebar = function(){
 	initAppearance();
 	initToolbar();
 	initNavigation();
-	initMaterials();
 	initClassificationList();
 	initAnnotationDetails();
 	initMeasurementDetails();

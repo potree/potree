@@ -285,6 +285,44 @@ body{
 	font-size: 12px;
 }
 
+
+.scene_item{
+	border-bottom: 1px solid rgba(0, 0, 0, 0.5);
+	display: block;
+	position: relative;
+}
+
+.scene_header{
+	display:flex;
+	cursor: pointer;
+	padding: 2px;
+}
+
+.scene_item:hover{
+	background-color: rgba(255, 255, 255, 0.1);
+}
+
+.scene_item_icon{
+	width: 24px; 
+	height: 24px;
+}
+
+.scene_header_title{
+	flex-grow: 1;
+	display: flex;
+	align-items: center;
+}
+
+.scene_icon{
+	padding: 0px 6px 0px 4px;
+}
+
+.scene_content{
+	padding: 5px 15px 5px 10px;
+	background-color: rgba(0, 0, 0, 0.4);
+}
+
+
 .measurement_item{
 	border-bottom: 1px solid rgba(0, 0, 0, 0.5);
 	display: block;

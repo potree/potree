@@ -285,44 +285,6 @@ body{
 	font-size: 12px;
 }
 
-
-.scene_item{
-	border-bottom: 1px solid rgba(0, 0, 0, 0.5);
-	display: block;
-	position: relative;
-}
-
-.scene_header{
-	display:flex;
-	cursor: pointer;
-	padding: 2px;
-}
-
-.scene_item:hover{
-	background-color: rgba(255, 255, 255, 0.1);
-}
-
-.scene_item_icon{
-	width: 24px; 
-	height: 24px;
-}
-
-.scene_header_title{
-	flex-grow: 1;
-	display: flex;
-	align-items: center;
-}
-
-.scene_icon{
-	padding: 0px 6px 0px 4px;
-}
-
-.scene_content{
-	padding: 5px 15px 5px 10px;
-	background-color: rgba(0, 0, 0, 0.4);
-}
-
-
 .measurement_item{
 	border-bottom: 1px solid rgba(0, 0, 0, 0.5);
 	display: block;
@@ -481,8 +443,12 @@ body{
 	width: 100% !important;
 }
 
-.ui-widget{
-	box-sizing:border-box
+.pv-menu-list .ui-selectmenu-button span.ui-selectmenu-text{
+	line-height: 0.8em;
+}
+
+.ui-selectmenu-text{
+	background-color: white;
 }
 
 .panel-body > li > .ui-slider{
@@ -748,3 +714,31 @@ body{
 
 
 
+
+
+
+
+
+
+
+/*
+.axis path,
+  .axis line{
+    fill: none;
+    stroke: white;
+  }
+
+  .line{
+    fill: none;
+    stroke: blue;
+    stroke-width: 2px;
+  }
+
+  .tick text{
+    font-size: 12px;
+  }
+
+  .tick line{
+    opacity: 0.2;
+  }
+ */

@@ -1,5 +1,0 @@
-TODO: material per pointcloud
-
-- material_changed event in profile.js
-
-- intensity correct? (range, gamma)

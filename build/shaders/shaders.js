@@ -40,6 +40,8 @@ Potree.Shaders["pointcloud.vs"] = [
  "",
  "uniform float heightMin;",
  "uniform float heightMax;",
+ "uniform float intensityMin;",
+ "uniform float intensityMax;",
  "uniform float size;				// pixel size factor",
  "uniform float minSize;			// minimum pixel size",
  "uniform float maxSize;			// maximum pixel size",

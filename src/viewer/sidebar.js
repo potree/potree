@@ -128,314 +128,6 @@ function initToolbar(){
 	));
 }
 
-function initMaterials(){
-	
-	$( "#optMaterial" ).selectmenu({
-		style:'popup',
-		position: { 
-			my: "top", 
-			at: "bottom", 
-			collision: "flip" }	
-	});
-		
-	$( "#sldHeightRange" ).slider({
-		range: true,
-		min:	0,
-		max:	1000,
-		values: [0, 1000],
-		step: 	0.01,
-		slide: function( event, ui ) {
-			viewer.setHeightRange(ui.values[0], ui.values[1]);
-		}
-	});
-	
-	$( "#sldTransition" ).slider({
-		value: viewer.getMaterialTransition(),
-		min: 0,
-		max: 1,
-		step: 0.01,
-		slide: function( event, ui ) {viewer.setMaterialTransition(ui.value);}
-	});
-	
-	$( "#sldIntensityRange" ).slider({
-		range: true,
-		min:	0,
-		max:	1,
-		values: [0, 1],
-		step: 	0.01,
-		slide: function( event, ui ) {
-			let min = (ui.values[0] == 0) ? 0 : parseInt(Math.pow(2, 16 * ui.values[0]));
-			let max = parseInt(Math.pow(2, 16 * ui.values[1]));
-			viewer.setIntensityRange(min, max);
-		}
-	});
-	
-	$( "#sldIntensityGamma" ).slider({
-		value: viewer.getIntensityGamma(),
-		min: 0,
-		max: 4,
-		step: 0.01,
-		slide: function( event, ui ) {viewer.setIntensityGamma(ui.value);}
-	});
-	
-	$( "#sldIntensityContrast" ).slider({
-		value: viewer.getIntensityContrast(),
-		min: -1,
-		max: 1,
-		step: 0.01,
-		slide: function( event, ui ) {viewer.setIntensityContrast(ui.value);}
-	});
-	
-	$( "#sldIntensityBrightness" ).slider({
-		value: viewer.getIntensityBrightness(),
-		min: -1,
-		max: 1,
-		step: 0.01,
-		slide: function( event, ui ) {viewer.setIntensityBrightness(ui.value);}
-	});
-	
-	$( "#sldRGBGamma" ).slider({
-		value: viewer.getRGBGamma(),
-		min: 0,
-		max: 4,
-		step: 0.01,
-		slide: function( event, ui ) {viewer.setRGBGamma(ui.value);}
-	});
-	
-	$( "#sldRGBContrast" ).slider({
-		value: viewer.getRGBContrast(),
-		min: -1,
-		max: 1,
-		step: 0.01,
-		slide: function( event, ui ) {viewer.setRGBContrast(ui.value);}
-	});
-	
-	$( "#sldRGBBrightness" ).slider({
-		value: viewer.getRGBBrightness(),
-		min: -1,
-		max: 1,
-		step: 0.01,
-		slide: function( event, ui ) {viewer.setRGBBrightness(ui.value);}
-	});
-	
-	$( "#sldWeightRGB" ).slider({
-		value: viewer.getWeightRGB(),
-		min: 0,
-		max: 1,
-		step: 0.01,
-		slide: function( event, ui ) {viewer.setWeightRGB(ui.value);}
-	});
-	
-	$( "#sldWeightIntensity" ).slider({
-		value: viewer.getWeightIntensity(),
-		min: 0,
-		max: 1,
-		step: 0.01,
-		slide: function( event, ui ) {viewer.setWeightIntensity(ui.value);}
-	});
-	
-	$( "#sldWeightElevation" ).slider({
-		value: viewer.getWeightElevation(),
-		min: 0,
-		max: 1,
-		step: 0.01,
-		slide: function( event, ui ) {viewer.setWeightElevation(ui.value);}
-	});
-	
-	$( "#sldWeightClassification" ).slider({
-		value: viewer.getWeightClassification(),
-		min: 0,
-		max: 1,
-		step: 0.01,
-		slide: function( event, ui ) {viewer.setWeightClassification(ui.value);}
-	});
-	
-	$( "#sldWeightReturnNumber" ).slider({
-		value: viewer.getWeightReturnNumber(),
-		min: 0,
-		max: 1,
-		step: 0.01,
-		slide: function( event, ui ) {viewer.setWeightReturnNumber(ui.value);}
-	});
-	
-	$( "#sldWeightSourceID" ).slider({
-		value: viewer.getWeightSourceID(),
-		min: 0,
-		max: 1,
-		step: 0.01,
-		slide: function( event, ui ) {viewer.setWeightSourceID(ui.value);}
-	});
-
-	let updateHeightRange = function(){
-		let box = viewer.getBoundingBox();
-		let bWidth = box.max.z - box.min.z;
-		bMin = box.min.z - 0.2 * bWidth;
-		bMax = box.max.z + 0.2 * bWidth;
-		
-		let hr = viewer.getHeightRange();
-		let hrWidth = hr.max - hr.min;
-		
-		$( '#lblHeightRange')[0].innerHTML = hr.min.toFixed(2) + " to " + hr.max.toFixed(2);
-		$( "#sldHeightRange" ).slider({
-			min: bMin,
-			max: bMax,
-			values: [hr.min, hr.max]
-		});
-	};
-	
-	let updateIntensityRange = function(){
-		let range = viewer.getIntensityRange();
-		let min = Math.log2(range[0]) / 16;
-		let max = Math.log2(range[1]) / 16;
-		
-		$('#lblIntensityRange')[0].innerHTML = 
-			parseInt(viewer.getIntensityRange()[0]) + " to " + 
-			parseInt(viewer.getIntensityRange()[1]);
-		$( "#sldIntensityRange" ).slider({
-			values: [min, max]
-		});
-	};
-	
-	viewer.addEventListener("height_range_changed", updateHeightRange);
-	viewer.addEventListener("intensity_range_changed", updateIntensityRange);
-	
-	viewer.addEventListener("intensity_gamma_changed", function(event){
-		let gamma = viewer.getIntensityGamma();
-		
-		$('#lblIntensityGamma')[0].innerHTML = gamma.toFixed(2);
-		$("#sldIntensityGamma").slider({value: gamma});
-	});
-	
-	viewer.addEventListener("intensity_contrast_changed", function(event){
-		let contrast = viewer.getIntensityContrast();
-		
-		$('#lblIntensityContrast')[0].innerHTML = contrast.toFixed(2);
-		$("#sldIntensityContrast").slider({value: contrast});
-	});
-	
-	viewer.addEventListener("intensity_brightness_changed", function(event){
-		let brightness = viewer.getIntensityBrightness();
-		
-		$('#lblIntensityBrightness')[0].innerHTML = brightness.toFixed(2);
-		$("#sldIntensityBrightness").slider({value: brightness});
-	});
-	
-	viewer.addEventListener("rgb_gamma_changed", function(event){
-		let gamma = viewer.getRGBGamma();
-		
-		$('#lblRGBGamma')[0].innerHTML = gamma.toFixed(2);
-		$("#sldRGBGamma").slider({value: gamma});
-	});
-	
-	viewer.addEventListener("rgb_contrast_changed", function(event){
-		let contrast = viewer.getRGBContrast();
-		
-		$('#lblRGBContrast')[0].innerHTML = contrast.toFixed(2);
-		$("#sldRGBContrast").slider({value: contrast});
-	});
-	
-	viewer.addEventListener("rgb_brightness_changed", function(event){
-		let brightness = viewer.getRGBBrightness();
-		
-		$('#lblRGBBrightness')[0].innerHTML = brightness.toFixed(2);
-		$("#sldRGBBrightness").slider({value: brightness});
-	});
-	
-	viewer.addEventListener("pointcloud_loaded", updateHeightRange);
-	
-	updateHeightRange();
-	updateIntensityRange();
-	$('#lblIntensityGamma')[0].innerHTML = viewer.getIntensityGamma().toFixed(2);
-	$('#lblIntensityContrast')[0].innerHTML = viewer.getIntensityContrast().toFixed(2);
-	$('#lblIntensityBrightness')[0].innerHTML = viewer.getIntensityBrightness().toFixed(2);
-	
-	$('#lblRGBGamma')[0].innerHTML = viewer.getRGBGamma().toFixed(2);
-	$('#lblRGBContrast')[0].innerHTML = viewer.getRGBContrast().toFixed(2);
-	$('#lblRGBBrightness')[0].innerHTML = viewer.getRGBBrightness().toFixed(2);
-
-	let options = [ 
-		"RGB", 
-		"RGB and Elevation",
-		"Color", 
-		"Elevation", 
-		"Intensity", 
-		"Intensity Gradient", 
-		"Classification", 
-		"Return Number", 
-		"Source", 
-		"Phong",
-		"Level of Detail",
-		"Composite",
-	];
-	
-	let elMaterialList = $("#optMaterial");
-	for(let i = 0; i < options.length; i++){
-		let option = options[i];
-		let id = "optMaterial_" + option;
-
-		let elOption = $(`
-			<option id="${id}">
-				${option}
-			</option>`);
-		elMaterialList.append(elOption);
-	}
-	
-	let updateMaterialPanel = function(event, ui){
-		//viewer.setMaterial(ui.item.value);
-		
-		let selectedValue = $("#optMaterial").selectmenu().val();
-		viewer.setMaterial(selectedValue);
-		
-		let blockWeights = $("#materials\\.composite_weight_container");
-		let blockElevation = $("#materials\\.elevation_container");
-		let blockRGB = $("#materials\\.rgb_container");
-		let blockIntensity = $("#materials\\.intensity_container");
-		let blockTransition = $("#materials\\.transition_container");
-		
-		blockIntensity.css("display", "none");
-		blockElevation.css("display", "none");
-		blockRGB.css("display", "none");
-		blockWeights.css("display", "none");
-		blockTransition.css("display", "none");
-		
-		if(selectedValue === "Composite"){
-			blockWeights.css("display", "block");
-			blockElevation.css("display", "block");
-			blockRGB.css("display", "block");
-			blockIntensity.css("display", "block");
-		}
-		
-		if(selectedValue === "Elevation"){
-			blockElevation.css("display", "block");
-		}
-		
-		if(selectedValue === "RGB and Elevation"){
-			blockRGB.css("display", "block");
-			blockElevation.css("display", "block");
-		}
-		
-		if(selectedValue === "RGB"){
-			blockRGB.css("display", "block");
-		}
-		
-		if(selectedValue === "Intensity"){
-			blockIntensity.css("display", "block");
-		}
-		
-		if(selectedValue === "Intensity Gradient"){
-			blockIntensity.css("display", "block");
-		}
-	};
-	
-	$("#optMaterial").selectmenu({change: updateMaterialPanel});
-	$("#optMaterial").val(viewer.getMaterialName()).selectmenu("refresh");
-	updateMaterialPanel();
-	
-	viewer.addEventListener("material_changed", e => {
-		$("#optMaterial").val(viewer.getMaterialName()).selectmenu("refresh");
-	});
-}
-
 function initClassificationList(){
 	let elClassificationList = $("#classificationList");
 	
@@ -1612,7 +1304,7 @@ function initMeasurementDetails(){
 	};
 	
 	let trackScene = (scene) => {
-		$("#measurement_list").empty();
+		//$("#measurement_details").empty();
 		
 		trackedItems.forEach(function(trackedItem, key, map){
 			trackedItem.stopTracking();
@@ -1642,8 +1334,6 @@ function initMeasurementDetails(){
 	trackScene(viewer.scene);
 	
 	viewer.addEventListener("scene_changed", (e) => {trackScene(e.scene)});
-	
-	
 	
 	
 	{ // BOTTOM ACTIONS
@@ -1688,66 +1378,488 @@ function initMeasurementDetails(){
 		}
 	
 	}
+
+	// length units
+	$("#optLengthUnit").selectmenu({
+		style:'popup',
+		position: { 
+			my: "top", 
+			at: "bottom", 
+			collision: "flip" },
+		change: function(e) {
+			let selectedValue = $("#optLengthUnit").selectmenu().val();
+			viewer.setLengthUnit(selectedValue);
+		}
+	});	
 };
 
 function initSceneList(){
 
-	let scenelist = $('#sceneList');
+	let scenelist = $('#scene_list');
 	
-	let id = 0;
-	let addPointcloud = (pointcloud) => {
-		
-		let labelID = "scene_list_item_label_pointcloud_" + id;
-		let inputID = "scene_list_item_pointcloud_" + id;
-		let checked = pointcloud.visible ? "checked" : "";
-		let pointcloudName = " " + (pointcloud.name ? pointcloud.name : "point cloud " + id);
-		
-		let elPointclouds = $(`
-			<li>
-				<label id="${labelID}" for="${inputID}" class="menu-item">
-					<input id="${inputID}" type="checkbox" ${checked}/>
-					<span>${pointcloudName}</span>
-				</label>
-			</li>
+	let initUIElements = function(i) {
+		// scene panel in scene list
+
+		let title = viewer.scene.pointclouds[i].name;
+		let pcMaterial = viewer.scene.pointclouds[i].material;
+		let checked = viewer.scene.pointclouds[i].visible ? "checked" : "";
+
+		let scenePanel = $(`
+			<span class="scene_item">
+				<!-- HEADER -->
+				<div style="float: right; margin: 6px; margin-right: 15px"><input id="scene_list_item_pointcloud_${i}" type="checkbox" ${checked} /></div>
+				<div class="scene_header" onclick="$(this).next().slideToggle(200)">
+					<span class="scene_icon"><img src="${Potree.resourcePath + "/icons/cloud_icon.svg"}" class="scene_item_icon" /></span>
+					<span class="scene_header_title">${title}</span>
+				</div>
+				
+				<!-- DETAIL -->
+				<div class="scene_content selectable" style="display: none">
+					<div>
+						<ul class="pv-menu-list">
+						<li>
+						   <label for="optMaterial${i}" class="pv-select-label">Attributes:</label><br>
+						   <select id="optMaterial${i}" name="optMaterial${i}">
+						   </select>
+						</li>
+						
+						<div id="materials.composite_weight_container${i}">
+							<div class="divider">
+								<span>Attribute Weights</span>
+							</div>
+						
+							<li>RGB: <span id="lblWeightRGB${i}"></span> <div id="sldWeightRGB${i}"></div>	</li>
+							<li>Intensity: <span id="lblWeightIntensity${i}"></span> <div id="sldWeightIntensity${i}"></div>	</li>
+							<li>Elevation: <span id="lblWeightElevation${i}"></span> <div id="sldWeightElevation${i}"></div>	</li>
+							<li>Classification: <span id="lblWeightClassification${i}"></span> <div id="sldWeightClassification${i}"></div>	</li>
+							<li>Return Number: <span id="lblWeightReturnNumber${i}"></span> <div id="sldWeightReturnNumber${i}"></div>	</li>
+							<li>Source ID: <span id="lblWeightSourceID${i}"></span> <div id="sldWeightSourceID${i}"></div>	</li>
+						</div>
+						
+						<div id="materials.rgb_container${i}">
+							<div class="divider">
+								<span>RGB</span>
+							</div>
+						
+							<li>Gamma: <span id="lblRGBGamma${i}"></span> <div id="sldRGBGamma${i}"></div>	</li>
+							<li>Brightness: <span id="lblRGBBrightness${i}"></span> <div id="sldRGBBrightness${i}"></div>	</li>
+							<li>Contrast: <span id="lblRGBContrast${i}"></span> <div id="sldRGBContrast${i}"></div>	</li>
+						</div>
+						
+						
+						<div id="materials.elevation_container${i}">
+							<div class="divider">
+								<span>Elevation</span>
+							</div>
+						
+							<li><span data-i18n="appearance.elevation_range"></span>: <span id="lblHeightRange${i}"></span> <div id="sldHeightRange${i}"></div>	</li>
+						</div>
+						
+						<div id="materials.transition_container${i}">
+							<div class="divider">
+								<span>Transition</span>
+							</div>
+						
+							<li>transition: <span id="lblTransition${i}"></span> <div id="sldTransition${i}"></div>	</li>
+						</div>
+						
+						<div id="materials.intensity_container${i}">
+							<div class="divider">
+								<span>Intensity</span>
+							</div>
+						
+							<li>Range: <span id="lblIntensityRange${i}"></span> <div id="sldIntensityRange${i}"></div>	</li>
+							<li>Gamma: <span id="lblIntensityGamma${i}"></span> <div id="sldIntensityGamma${i}"></div>	</li>
+							<li>Brightness: <span id="lblIntensityBrightness${i}"></span> <div id="sldIntensityBrightness${i}"></div>	</li>
+							<li>Contrast: <span id="lblIntensityContrast${i}"></span> <div id="sldIntensityContrast${i}"></div>	</li>
+						</div>
+							
+						
+						</ul>
+					</div>
+				</div>
+			</span>
 		`);
+
+		let inputVis = scenePanel.find("input[type='checkbox']");
 		
-		let elInput = elPointclouds.find("input");
-		let elPointCloudLabel = elPointclouds.find("span");
-		
-		elInput.click(function(event){
-			pointcloud.visible = event.target.checked;
+		inputVis.click(function(event){
+			viewer.scene.pointclouds[i].visible = event.target.checked;
 			if(viewer._2dprofile){
 				viewer._2dprofile.redraw();
 			}
 		});
-		
-		scenelist.append(elPointclouds);
-		
-		pointcloud.addEventListener("name_changed", function(e){
-			if(e.name){
-				elPointCloudLabel.innerHTML = " " + e.name;
-			}else{
-				elPointCloudLabel.innerHTML = " point cloud " + id;
+
+		scenelist.append(scenePanel);
+
+
+		// ui elements
+		$( "#optMaterial" + i ).selectmenu({
+			style:'popup',
+			position: { 
+				my: "top", 
+				at: "bottom", 
+				collision: "flip" }	
+		});
+			
+		$( "#sldHeightRange" + i ).slider({
+			range: true,
+			min:	0,
+			max:	1000,
+			values: [0, 1000],
+			step: 	0.01,
+			slide: function( event, ui ) {
+				pcMaterial.heightMin = ui.values[0];
+				pcMaterial.heightMax = ui.values[1];
+				viewer.dispatchEvent({"type": "height_range_changed" + i, "viewer": viewer});
 			}
 		});
 		
-		id++;
-	};
-	
-	for(let pointcloud of  viewer.scene.pointclouds){
-		addPointcloud(pointcloud);
+		$( "#sldTransition" + i ).slider({
+			value: pcMaterial.materialTransition,
+			min: 0,
+			max: 1,
+			step: 0.01,
+			slide: function( event, ui ) {
+				pcMaterial.materialTransition = ui.value;
+				viewer.dispatchEvent({"type": "material_transition_changed" + i, "viewer": viewer});
+			}
+		});
+		
+		$( "#sldIntensityRange" + i ).slider({
+			range: true,
+			min:	0,
+			max:	1,
+			values: [0, 1],
+			step: 	0.01,
+			slide: function( event, ui ) {
+				let min = (ui.values[0] == 0) ? 0 : parseInt(Math.pow(2, 16 * ui.values[0]));
+				let max = parseInt(Math.pow(2, 16 * ui.values[1]));
+				pcMaterial.intensityRange[0] = min;
+				pcMaterial.intensityRange[1] = max;
+				viewer.dispatchEvent({"type": "intensity_range_changed" + i, "viewer": viewer});
+			}
+		});
+		
+		$( "#sldIntensityGamma" + i ).slider({
+			value: pcMaterial.intensityGamma,
+			min: 0,
+			max: 4,
+			step: 0.01,
+			slide: function( event, ui ) {
+				pcMaterial.intensityGamma = ui.value;
+				viewer.dispatchEvent({"type": "intensity_gamma_changed" + i, "viewer": viewer});
+			}
+		});
+		
+		$( "#sldIntensityContrast" + i ).slider({
+			value: pcMaterial.intensityContrast,
+			min: -1,
+			max: 1,
+			step: 0.01,
+			slide: function( event, ui ) {
+				pcMaterial.intensityContrast = ui.value;
+				viewer.dispatchEvent({"type": "intensity_contrast_changed" + i, "viewer": viewer});
+			}
+		});
+		
+		$( "#sldIntensityBrightness" + i ).slider({
+			value: pcMaterial.intensityBrightness,
+			min: -1,
+			max: 1,
+			step: 0.01,
+			slide: function( event, ui ) {
+				pcMaterial.intensityBrightness = ui.value;
+				viewer.dispatchEvent({"type": "intensity_brightness_changed" + i, "viewer": viewer});
+			}
+		});
+		
+		$( "#sldRGBGamma" + i ).slider({
+			value: pcMaterial.rgbGamma,
+			min: 0,
+			max: 4,
+			step: 0.01,
+			slide: function( event, ui ) {
+				pcMaterial.rgbGamma = ui.value;
+				viewer.dispatchEvent({"type": "rgb_gamma_changed" + i, "viewer": viewer});
+			}
+		});
+		
+		$( "#sldRGBContrast" + i ).slider({
+			value: pcMaterial.rgbContrast,
+			min: -1,
+			max: 1,
+			step: 0.01,
+			slide: function( event, ui ) {
+				pcMaterial.rgbContrast = ui.value;
+				viewer.dispatchEvent({"type": "rgb_contrast_changed" + i, "viewer": viewer});
+			}
+		});
+		
+		$( "#sldRGBBrightness" + i ).slider({
+			value: pcMaterial.rgbBrightness,
+			min: -1,
+			max: 1,
+			step: 0.01,
+			slide: function( event, ui ) {
+				pcMaterial.rgbBrightness = ui.value;
+				viewer.dispatchEvent({"type": "rgb_brightness_changed" + i, "viewer": viewer});
+			}
+		});
+		
+		$( "#sldWeightRGB" + i ).slider({
+			value: pcMaterial.weightRGB,
+			min: 0,
+			max: 1,
+			step: 0.01,
+			slide: function( event, ui ) {
+				pcMaterial.weightRGB = ui.value;
+				viewer.dispatchEvent({"type": "attribute_weights_changed" + i, "viewer": viewer});
+			}
+		});
+		
+		$( "#sldWeightIntensity" + i ).slider({
+			value: pcMaterial.weightIntensity,
+			min: 0,
+			max: 1,
+			step: 0.01,
+			slide: function( event, ui ) {
+				pcMaterial.weightIntensity = ui.value;
+				viewer.dispatchEvent({"type": "attribute_weights_changed" + i, "viewer": viewer});
+			}
+		});
+		
+		$( "#sldWeightElevation" + i ).slider({
+			value: pcMaterial.weightElevation,
+			min: 0,
+			max: 1,
+			step: 0.01,
+			slide: function( event, ui ) {
+				pcMaterial.weightElevation = ui.value;
+				viewer.dispatchEvent({"type": "attribute_weights_changed" + i, "viewer": viewer});
+			}
+		});
+		
+		$( "#sldWeightClassification" + i ).slider({
+			value: pcMaterial.weightClassification,
+			min: 0,
+			max: 1,
+			step: 0.01,
+			slide: function( event, ui ) {
+				pcMaterial.weightClassification = ui.value;
+				viewer.dispatchEvent({"type": "attribute_weights_changed" + i, "viewer": viewer});
+			}
+		});
+		
+		$( "#sldWeightReturnNumber" + i ).slider({
+			value: pcMaterial.weightReturnNumber,
+			min: 0,
+			max: 1,
+			step: 0.01,
+			slide: function( event, ui ) {
+				pcMaterial.weightReturnNumber = ui.value;
+				viewer.dispatchEvent({"type": "attribute_weights_changed" + i, "viewer": viewer});
+			}
+		});
+		
+		$( "#sldWeightSourceID" + i ).slider({
+			value: pcMaterial.weightSourceID,
+			min: 0,
+			max: 1,
+			step: 0.01,
+			slide: function( event, ui ) {
+				pcMaterial.weightSourceID = ui.value;
+				viewer.dispatchEvent({"type": "attribute_weights_changed" + i, "viewer": viewer});
+			}
+		});
+
+		let updateHeightRange = function(){
+			let box = viewer.getBoundingBox();
+			let bWidth = box.max.z - box.min.z;
+			bMin = box.min.z - 0.2 * bWidth;
+			bMax = box.max.z + 0.2 * bWidth;
+			
+			let hrWidth = pcMaterial.heightMax - pcMaterial.heightMin;
+			
+			$( "#lblHeightRange" + i )[0].innerHTML = pcMaterial.heightMin.toFixed(2) + " to " + pcMaterial.heightMax.toFixed(2);
+			$( "#sldHeightRange" + i ).slider({
+				min: bMin,
+				max: bMax,
+				values: [pcMaterial.heightMin, pcMaterial.heightMax]
+			});
+		};
+		
+		let updateIntensityRange = function(){
+			let range = pcMaterial.intensityRange;
+			let min = Math.log2(range[0]) / 16;
+			let max = Math.log2(range[1]) / 16;
+			
+			$( "#lblIntensityRange" + i )[0].innerHTML = 
+				parseInt(pcMaterial.intensityRange[0]) + " to " + 
+				parseInt(pcMaterial.intensityRange[1]);
+			$( "#sldIntensityRange" + i ).slider({
+				values: [min, max]
+			});
+		};
+		
+		viewer.addEventListener("height_range_changed" + i, updateHeightRange);
+		viewer.addEventListener("intensity_range_changed" + i, updateIntensityRange);
+		
+		viewer.addEventListener("intensity_gamma_changed" + i, function(event){
+			let gamma = pcMaterial.intensityGamma;
+			
+			$('#lblIntensityGamma' + i)[0].innerHTML = gamma.toFixed(2);
+			$("#sldIntensityGamma" + i).slider({value: gamma});
+		});
+		
+		viewer.addEventListener("intensity_contrast_changed" + i, function(event){
+			let contrast = pcMaterial.intensityContrast;
+			
+			$('#lblIntensityContrast' + i)[0].innerHTML = contrast.toFixed(2);
+			$("#sldIntensityContrast" + i).slider({value: contrast});
+		});
+		
+		viewer.addEventListener("intensity_brightness_changed" + i, function(event){
+			let brightness = pcMaterial.intensityBrightness;
+			
+			$('#lblIntensityBrightness' + i)[0].innerHTML = brightness.toFixed(2);
+			$("#sldIntensityBrightness" + i).slider({value: brightness});
+		});
+		
+		viewer.addEventListener("rgb_gamma_changed" + i, function(event){
+			let gamma = pcMaterial.rgbGamma;
+			
+			$('#lblRGBGamma' + i)[0].innerHTML = gamma.toFixed(2);
+			$("#sldRGBGamma" + i).slider({value: gamma});
+		});
+		
+		viewer.addEventListener("rgb_contrast_changed" + i, function(event){
+			let contrast = pcMaterial.rgbContrast;
+			
+			$('#lblRGBContrast' + i)[0].innerHTML = contrast.toFixed(2);
+			$("#sldRGBContrast" + i).slider({value: contrast});
+		});
+		
+		viewer.addEventListener("rgb_brightness_changed" + i, function(event){
+			let brightness = pcMaterial.rgbBrightness;
+			
+			$('#lblRGBBrightness' + i)[0].innerHTML = brightness.toFixed(2);
+			$("#sldRGBBrightness" + i).slider({value: brightness});
+		});
+		
+		viewer.addEventListener("pointcloud_loaded", updateHeightRange);
+		
+		updateHeightRange();
+		updateIntensityRange();
+		$('#lblIntensityGamma' + i)[0].innerHTML = pcMaterial.intensityGamma.toFixed(2);
+		$('#lblIntensityContrast' + i)[0].innerHTML = pcMaterial.intensityContrast.toFixed(2);
+		$('#lblIntensityBrightness' + i)[0].innerHTML = pcMaterial.intensityBrightness.toFixed(2);
+		
+		$('#lblRGBGamma' + i)[0].innerHTML = pcMaterial.rgbGamma.toFixed(2);
+		$('#lblRGBContrast' + i)[0].innerHTML = pcMaterial.rgbContrast.toFixed(2);
+		$('#lblRGBBrightness' + i)[0].innerHTML = pcMaterial.rgbBrightness.toFixed(2);
+
+		let options = [ 
+			"RGB", 
+			"RGB and Elevation",
+			"Color", 
+			"Elevation", 
+			"Intensity", 
+			"Intensity Gradient", 
+			"Classification", 
+			"Return Number", 
+			"Source", 
+			"Phong",
+			"Level of Detail",
+			"Composite",
+		];
+		
+		let elMaterialList = $("#optMaterial" + i);
+		for(let i = 0; i < options.length; i++){
+			let option = options[i];
+			let id = "optMaterial_" + option + "_" + i;
+
+			let elOption = $(`
+				<option id="${id}">
+					${option}
+				</option>`);
+			elMaterialList.append(elOption);
+		}
+		
+		let updateMaterialPanel = function(event, ui){			
+			let selectedValue = $("#optMaterial" + i).selectmenu().val();
+			pcMaterial.pointColorType = viewer.toMaterialID(selectedValue);
+			viewer.dispatchEvent({"type": "material_changed" + i, "viewer": viewer});
+			
+			let blockWeights = $("#materials\\.composite_weight_container" + i);
+			let blockElevation = $("#materials\\.elevation_container" + i);
+			let blockRGB = $("#materials\\.rgb_container" + i);
+			let blockIntensity = $("#materials\\.intensity_container" + i);
+			let blockTransition = $("#materials\\.transition_container" + i);
+			
+			blockIntensity.css("display", "none");
+			blockElevation.css("display", "none");
+			blockRGB.css("display", "none");
+			blockWeights.css("display", "none");
+			blockTransition.css("display", "none");
+			
+			if(selectedValue === "Composite"){
+				blockWeights.css("display", "block");
+				blockElevation.css("display", "block");
+				blockRGB.css("display", "block");
+				blockIntensity.css("display", "block");
+			}
+			
+			if(selectedValue === "Elevation"){
+				blockElevation.css("display", "block");
+			}
+			
+			if(selectedValue === "RGB and Elevation"){
+				blockRGB.css("display", "block");
+				blockElevation.css("display", "block");
+			}
+			
+			if(selectedValue === "RGB"){
+				blockRGB.css("display", "block");
+			}
+			
+			if(selectedValue === "Intensity"){
+				blockIntensity.css("display", "block");
+			}
+			
+			if(selectedValue === "Intensity Gradient"){
+				blockIntensity.css("display", "block");
+			}
+		};
+		
+		$("#optMaterial" + i).selectmenu({change: updateMaterialPanel});
+		$("#optMaterial" + i).val(viewer.toMaterialName(pcMaterial.pointColorType)).selectmenu("refresh");
+		updateMaterialPanel();
+		
+		viewer.addEventListener("material_changed" + i, e => {
+			$("#optMaterial" + i).val(viewer.toMaterialName(pcMaterial.pointColorType)).selectmenu("refresh");
+		});
+
+	};	
+
+	for(let i = 0; i < viewer.scene.pointclouds.length; i++) {
+		initUIElements(i);
 	}
 	
 	viewer.addEventListener("scene_changed", (e) => {
 		scenelist.empty();
 		
-		for(let pointcloud of  e.scene.pointclouds){
-			addPointcloud(pointcloud);
+		for(let i = 0; i < viewer.scene.pointclouds.length; i++) {
+			initUIElements(i);
 		}
 	});
 	
 	viewer.addEventListener("pointcloud_loaded", function(event){
-		addPointcloud(event.pointcloud);
+		scenelist.empty();
+		
+		for(let i = 0; i < viewer.scene.pointclouds.length; i++) {
+			initUIElements(i);
+		}
 	});
 	
 	let lastPos = new THREE.Vector3();
@@ -1830,7 +1942,6 @@ let initSidebar = function(){
 	initAppearance();
 	initToolbar();
 	initNavigation();
-	initMaterials();
 	initClassificationList();
 	initAnnotationDetails();
 	initMeasurementDetails();

@@ -147,8 +147,6 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 			bbSize:				{ type: "fv", value: [0,0,0] },
 			heightMin:			{ type: "f", value: 0.0 },
 			heightMax:			{ type: "f", value: 1.0 },
-			intensityMin:		{ type: "f", value: 0.0 },
-			intensityMax:		{ type: "f", value: 1.0 },
 			clipBoxCount:		{ type: "f", value: 0 },
 			visibleNodes:		{ type: "t", value: this.visibleNodesTexture },
 			pcIndex:   			{ type: "f", value: 0 },
@@ -587,6 +585,7 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 		this.uniforms.size.value = value;
 	}
 
+	// getter/setter for uniforms
 
 	get heightMin(){
 		return this.uniforms.heightMin.value;
@@ -604,6 +603,134 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 	set heightMax(value){
 		this.uniforms.heightMax.value = value;
 	}
+
+
+	get transition(){
+		return this.uniforms.transition.value;
+	}
+	
+	set transition(value){
+		this.uniforms.transition.value = value;
+	}
+
+
+	get intensityRange(){
+		return this.uniforms.intensityRange.value;
+	}
+	
+	set intensityRange(value){
+		this.uniforms.intensityRange.value = value;
+	}
+
+
+	get intensityGamma(){
+		return this.uniforms.intensityGamma.value;
+	}
+	
+	set intensityGamma(value){
+		this.uniforms.intensityGamma.value = value;
+	}
+
+
+	get intensityContrast(){
+		return this.uniforms.intensityContrast.value;
+	}
+	
+	set intensityContrast(value){
+		this.uniforms.intensityContrast.value = value;
+	}
+
+
+	get intensityBrightness(){
+		return this.uniforms.intensityBrightness.value;
+	}
+	
+	set intensityBrightness(value){
+		this.uniforms.intensityBrightness.value = value;
+	}
+
+
+	get rgbGamma(){
+		return this.uniforms.rgbGamma.value;
+	}
+	
+	set rgbGamma(value){
+		this.uniforms.rgbGamma.value = value;
+	}
+
+
+	get rgbContrast(){
+		return this.uniforms.rgbContrast.value;
+	}
+	
+	set rgbContrast(value){
+		this.uniforms.rgbContrast.value = value;
+	}
+
+
+	get rgbBrightness(){
+		return this.uniforms.rgbBrightness.value;
+	}
+	
+	set rgbBrightness(value){
+		this.uniforms.rgbBrightness.value = value;
+	}
+
+
+	get weightRGB(){
+		return this.uniforms.wRGB.value;
+	}
+	
+	set weightRGB(value){
+		this.uniforms.wRGB.value = value;
+	}
+
+
+	get weightIntensity(){
+		return this.uniforms.wIntensity.value;
+	}
+	
+	set weightIntensity(value){
+		this.uniforms.wIntensity.value = value;
+	}
+
+
+	get weightElevation(){
+		return this.uniforms.wElevation.value;
+	}
+	
+	set weightElevation(value){
+		this.uniforms.wElevation.value = value;
+	}
+
+
+	get weightClassification(){
+		return this.uniforms.wClassification.value;
+	}
+	
+	set weightClassification(value){
+		this.uniforms.wClassification.value = value;
+	}
+
+
+	get weightReturnNumber(){
+		return this.uniforms.wReturnNumber.value;
+	}
+	
+	set weightReturnNumber(value){
+		this.uniforms.wReturnNumber.value = value;
+	}
+
+
+	get weightSourceID(){
+		return this.uniforms.wSourceID.value;
+	}
+	
+	set weightSourceID(value){
+		this.uniforms.wSourceID.value = value;
+	}
+
+
 
 	static generateGradientTexture(gradient){
 		let size = 64;

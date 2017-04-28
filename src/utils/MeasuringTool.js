@@ -115,6 +115,9 @@ Potree.MeasuringTool = class MeasuringTool extends THREE.EventDispatcher{
 		// make size independant of distance
 		for(let measure of measurements){
 			
+			measure.lengthUnit = this.viewer.lengthUnit;
+			measure.update();
+
 			// spheres
 			for(let sphere of measure.spheres){
 				let distance = camera.position.distanceTo(sphere.getWorldPosition());

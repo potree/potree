@@ -183,6 +183,7 @@ Potree.Scene = class extends THREE.EventDispatcher{
 	};
 	
 	addMeasurement(measurement){
+		measurement.lengthUnit = this.lengthUnit;
 		this.measurements.push(measurement);
 		this.dispatchEvent({
 			"type": "measurement_added",
@@ -317,6 +318,7 @@ Potree.Scene = class extends THREE.EventDispatcher{
 };
 
 Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
+
 	
 	constructor(domElement, args){
 		super();
@@ -337,7 +339,6 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		this.opacity = 1;
 		this.sizeType = "Fixed";
 		this.pointSizeType = Potree.PointSizeType.FIXED;
-		this.pointColorType = null;
 		this.clipMode = Potree.ClipMode.HIGHLIGHT_INSIDE;
 		this.quality = "Squares";
 		this.isFlipYZ = false;
@@ -348,24 +349,15 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		this.edlRadius = 1.4;
 		this.useEDL = false;
 		this.intensityMax = null;
-		this.heightMin = 0;
-		this.heightMax = 1;
-		this.materialTransition = 0.5;
-		this.weightRGB = 1.0;
-		this.weightIntensity = 0.0;
-		this.weightElevation = 0.0;
-		this.weightClassification = 0.0;
-		this.weightReturnNumber = 0.0;
-		this.weightSourceID = 0.0;
-		this.intensityRange = [0, 65000];
-		this.intensityGamma = 1;
-		this.intensityContrast = 0;
-		this.intensityBrightness = 0;
-		this.rgbGamma = 1;
-		this.rgbContrast = 0;
-		this.rgbBrightness = 0;
 		
-		this.moveSpeed = 10;
+		this.moveSpeed = 10;		
+
+		this.LENGTH_UNITS = {
+			METER : {code: "m"},
+			FEET: {code: "ft"},
+			INCH: {code: "\u2033"}
+		};
+		this.lengthUnit = this.LENGTH_UNITS.METER;
 
 		this.showBoundingBox = false;
 		this.showAnnotations = true;
@@ -651,180 +643,32 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 	//};
 	
 	setHeightRange(min, max){
-		if(this.heightMin !== min || this.heightMax !== max){
-			this.heightMin = min || this.heightMin;
-			this.heightMax = max || this.heightMax;
-			this.dispatchEvent({"type": "height_range_changed", "viewer": this});
+		for(let i = 0; i < this.scene.pointclouds.length; i++) {
+			this.scene.pointclouds[i].material.heightMin = min;	
+			this.scene.pointclouds[i].material.heightMax = max;	
+			this.dispatchEvent({"type": "height_range_changed" + i, "viewer": this});		
 		}
 	};
-	
-	getHeightRange(){
-		return {min: this.heightMin, max: this.heightMax};
-	};
-	
-	getElevationRange(){
-		return this.getHeightRange();
-	};
-	
+		
 	setElevationRange(min, max){
 		this.setHeightRange(min, max);
 	}
 	
 	setIntensityRange(min, max){
-		if(this.intensityRange[0] !== min || this.intensityRange[1] !== max){
-			this.intensityRange[0] = min || this.intensityRange[0];
-			this.intensityRange[1] = max || this.intensityRange[1];
-			this.dispatchEvent({"type": "intensity_range_changed", "viewer": this});
+		for(let i = 0; i < this.scene.pointclouds.length; i++) {
+			this.scene.pointclouds[i].material.intensityRange[0] = min;	
+			this.scene.pointclouds[i].material.intensityRange[1] = max;	
+			this.dispatchEvent({"type": "intensity_range_changed" + i, "viewer": this});		
 		}
-	};
-	
-	getIntensityRange(){
-		return this.intensityRange;
-	};
-	
-	setIntensityGamma(value){
-		if(this.intensityGamma !== value){
-			this.intensityGamma = value;
-			this.dispatchEvent({"type": "intensity_gamma_changed", "viewer": this});
-		}
-	};
-	
-	getIntensityGamma(){
-		return this.intensityGamma;
-	};
-	
-	setIntensityContrast(value){
-		if(this.intensityContrast !== value){
-			this.intensityContrast = value;
-			this.dispatchEvent({"type": "intensity_contrast_changed", "viewer": this});
-		}
-	};
-	
-	getIntensityContrast(){
-		return this.intensityContrast;
-	};
-	
-	setIntensityBrightness(value){
-		if(this.intensityBrightness !== value){
-			this.intensityBrightness = value;
-			this.dispatchEvent({"type": "intensity_brightness_changed", "viewer": this});
-		}
-	};
-	
-	getIntensityBrightness(){
-		return this.intensityBrightness;
-	};
-	
-	setRGBGamma(value){
-		if(this.rgbGamma !== value){
-			this.rgbGamma = value;
-			this.dispatchEvent({"type": "rgb_gamma_changed", "viewer": this});
-		}
-	};
-	
-	getRGBGamma(){
-		return this.rgbGamma;
-	};
-	
-	setRGBContrast(value){
-		if(this.rgbContrast !== value){
-			this.rgbContrast = value;
-			this.dispatchEvent({"type": "rgb_contrast_changed", "viewer": this});
-		}
-	};
-	
-	getRGBContrast(){
-		return this.rgbContrast;
-	};
-	
-	setRGBBrightness(value){
-		if(this.rgbBrightness !== value){
-			this.rgbBrightness = value;
-			this.dispatchEvent({"type": "rgb_brightness_changed", "viewer": this});
-		}
-	};
-	
-	getRGBBrightness(){
-		return this.rgbBrightness;
-	};
-	
-	setMaterialTransition(t){
-		if(this.materialTransition !== t){
-			this.materialTransition = t;
-			this.dispatchEvent({"type": "material_transition_changed", "viewer": this});
-		}
-	};
-	
-	getMaterialTransition(){
-		return this.materialTransition;
-	};
-	
-	setWeightRGB(w){
-		if(this.weightRGB !== w){
-			this.weightRGB = w;
-			this.dispatchEvent({"type": "attribute_weights_changed", "viewer": this});
-		}
-	};
-	
-	getWeightRGB(){
-		return this.weightRGB;
-	};
-	
-	setWeightIntensity(w){
-		if(this.weightIntensity !== w){
-			this.weightIntensity = w;
-			this.dispatchEvent({"type": "attribute_weights_changed", "viewer": this});
-		}
-	};
-	
-	getWeightIntensity(){
-		return this.weightIntensity;
-	};
-	
-	setWeightElevation(w){
-		if(this.weightElevation !== w){
-			this.weightElevation = w;
-			this.dispatchEvent({"type": "attribute_weights_changed", "viewer": this});
-		}
-	};
-	
-	getWeightElevation(){
-		return this.weightElevation;
-	};
+	};	
 	
 	setWeightClassification(w){
-		if(this.weightClassification !== w){
-			this.weightClassification = w;
-			this.dispatchEvent({"type": "attribute_weights_changed", "viewer": this});
+		for(let i = 0; i < this.scene.pointclouds.length; i++) {
+			this.scene.pointclouds[i].material.weightClassification = w;	
+			this.dispatchEvent({"type": "attribute_weights_changed" + i, "viewer": this});		
 		}
 	};
-	
-	getWeightClassification(){
-		return this.weightClassification;
-	};
-	
-	setWeightReturnNumber(w){
-		if(this.weightReturnNumber !== w){
-			this.weightReturnNumber = w;
-			this.dispatchEvent({"type": "attribute_weights_changed", "viewer": this});
-		}
-	};
-	
-	getWeightReturnNumber(){
-		return this.weightReturnNumber;
-	};
-	
-	setWeightSourceID(w){
-		if(this.weightSourceID !== w){
-			this.weightSourceID = w;
-			this.dispatchEvent({"type": "attribute_weights_changed", "viewer": this});
-		}
-	};
-	
-	getWeightSourceID(){
-		return this.weightSourceID;
-	};
-	
+		
 	setIntensityMax(max){
 		if(this.intensityMax !== max){
 			this.intensityMax = max;
@@ -1056,28 +900,27 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 	};
 
 	setMaterial(value){
-		if(this.pointColorType !== this.toMaterialID(value)){
-			this.pointColorType = this.toMaterialID(value);
-			
-			this.dispatchEvent({"type": "material_changed", "viewer": this});
+		for(let i = 0; i < this.scene.pointclouds.length; i++) {
+			this.scene.pointclouds[i].material.pointColorType = value;	
+			this.dispatchEvent({"type": "material_changed" + i, "viewer": this});		
 		}
 	};
-	
-	setMaterialID(value){
-		if(this.pointColorType !== value){
-			this.pointColorType = value;
-			
-			this.dispatchEvent({"type": "material_changed", "viewer": this});
+
+	setLengthUnit(value) {
+		switch(value) {
+			case "m":
+				this.lengthUnit = this.LENGTH_UNITS.METER;
+				break;
+			case "ft":				
+				this.lengthUnit = this.LENGTH_UNITS.FEET;
+				break;
+			case "in":				
+				this.lengthUnit = this.LENGTH_UNITS.INCH;
+				break;
 		}
+
+		this.dispatchEvent({"type": "length_unit_changed", "viewer": this});
 	}
-	
-	getMaterial(){
-		return this.pointColorType;
-	};
-	
-	getMaterialName(){
-		return this.toMaterialName(this.pointColorType);
-	};
 	
 	toMaterialID(materialName){
 
@@ -1248,7 +1091,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 	
 	updateHeightRange(){
 		var bbWorld = this.getBoundingBox();
-		this.setHeightRange(bbWorld.min.z, bbWorld.max.z);
+		this.setHeightRange(bbWorld.min.z, bbWorld.max.z);		
 	};
 	
 	loadSettingsFromURL(){
@@ -1709,28 +1552,10 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			//}
 				
 			pointcloud.material.clipMode = this.clipMode;
-			pointcloud.material.heightMin = this.heightMin;
-			pointcloud.material.heightMax = this.heightMax;
-			//pointcloud.material.intensityMin = 0;
-			//pointcloud.material.intensityMax = this.intensityMax;
-			pointcloud.material.uniforms.intensityRange.value = this.getIntensityRange();
-			pointcloud.material.uniforms.intensityGamma.value = this.getIntensityGamma();
-			pointcloud.material.uniforms.intensityContrast.value = this.getIntensityContrast();
-			pointcloud.material.uniforms.intensityBrightness.value = this.getIntensityBrightness();
-			pointcloud.material.uniforms.rgbGamma.value = this.getRGBGamma();
-			pointcloud.material.uniforms.rgbContrast.value = this.getRGBContrast();
-			pointcloud.material.uniforms.rgbBrightness.value = this.getRGBBrightness();
 			pointcloud.showBoundingBox = this.showBoundingBox;
 			pointcloud.generateDEM = this.useDEMCollisions;
 			pointcloud.minimumNodePixelSize = this.minNodeSize;
-			pointcloud.material.uniforms.transition.value = this.materialTransition;
 			
-			pointcloud.material.uniforms.wRGB.value = this.getWeightRGB();
-			pointcloud.material.uniforms.wIntensity.value = this.getWeightIntensity();
-			pointcloud.material.uniforms.wElevation.value = this.getWeightElevation();
-			pointcloud.material.uniforms.wClassification.value = this.getWeightClassification();
-			pointcloud.material.uniforms.wReturnNumber.value = this.getWeightReturnNumber();
-			pointcloud.material.uniforms.wSourceID.value = this.getWeightSourceID();
 			
 			//if(!this.freeze){
 			//	pointcloud.update(this.scene.camera, this.renderer);
@@ -2124,7 +1949,7 @@ class PotreeRenderer{
 			pointcloud.material.minSize = viewer.minPointSize;
 			pointcloud.material.maxSize = viewer.maxPointSize;
 			pointcloud.material.opacity = viewer.opacity;
-			pointcloud.material.pointColorType = viewer.pointColorType;
+			//pointcloud.material.pointColorType = viewer.pointColorType;
 			pointcloud.material.pointSizeType = viewer.pointSizeType;
 			pointcloud.material.pointShape = (viewer.quality === "Circles") ? Potree.PointShape.CIRCLE : Potree.PointShape.SQUARE;
 			pointcloud.material.interpolate = (viewer.quality === "Interpolation");
@@ -2289,8 +2114,8 @@ class HighQualityRenderer{
 				this.depthMaterial.spacing = pointcloud.pcoGeometry.spacing * Math.max(pointcloud.scale.x, pointcloud.scale.y, pointcloud.scale.z);
 				this.depthMaterial.near = viewer.scene.camera.near;
 				this.depthMaterial.far = viewer.scene.camera.far;
-				this.depthMaterial.heightMin = viewer.heightMin;
-				this.depthMaterial.heightMax = viewer.heightMax;
+				this.depthMaterial.heightMin = pointcloud.material.heightMin;
+				this.depthMaterial.heightMax = pointcloud.material.heightMax;
 				this.depthMaterial.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
 				this.depthMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.getSize().x;
 				this.depthMaterial.bbSize = pointcloud.material.bbSize;
@@ -2308,7 +2133,7 @@ class HighQualityRenderer{
 				this.attributeMaterial.pointSizeType = viewer.pointSizeType;
 				this.attributeMaterial.screenWidth = width;
 				this.attributeMaterial.screenHeight = height;
-				this.attributeMaterial.pointColorType = viewer.pointColorType;
+				this.attributeMaterial.pointColorType = pointcloud.material.pointColorType;
 				this.attributeMaterial.depthMap = this.rtDepth;
 				this.attributeMaterial.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
 				this.attributeMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.getSize().x;
@@ -2318,10 +2143,8 @@ class HighQualityRenderer{
 				this.attributeMaterial.spacing = pointcloud.pcoGeometry.spacing * Math.max(pointcloud.scale.x, pointcloud.scale.y, pointcloud.scale.z);
 				this.attributeMaterial.near = viewer.scene.camera.near;
 				this.attributeMaterial.far = viewer.scene.camera.far;
-				this.attributeMaterial.heightMin = viewer.heightMin;
-				this.attributeMaterial.heightMax = viewer.heightMax;
-				this.attributeMaterial.intensityMin = pointcloud.material.intensityMin;
-				this.attributeMaterial.intensityMax = pointcloud.material.intensityMax;
+				this.attributeMaterial.heightMin = pointcloud.material.heightMin;
+				this.attributeMaterial.heightMax = pointcloud.material.heightMax;
 				this.attributeMaterial.setClipBoxes(pointcloud.material.clipBoxes);
 				this.attributeMaterial.clipMode = pointcloud.material.clipMode;
 				this.attributeMaterial.bbSize = pointcloud.material.bbSize;
@@ -2484,17 +2307,15 @@ class EDLRenderer{
 				attributeMaterial.pointSizeType = viewer.pointSizeType;
 				attributeMaterial.screenWidth = width;
 				attributeMaterial.screenHeight = height;
-				attributeMaterial.pointColorType = viewer.pointColorType;
+				attributeMaterial.pointColorType = pointcloud.material.pointColorType;
 				attributeMaterial.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
 				attributeMaterial.uniforms.octreeSize.value = octreeSize;
 				attributeMaterial.fov = viewer.scene.camera.fov * (Math.PI / 180);
 				attributeMaterial.spacing = pointcloud.pcoGeometry.spacing * Math.max(pointcloud.scale.x, pointcloud.scale.y, pointcloud.scale.z);
 				attributeMaterial.near = viewer.scene.camera.near;
 				attributeMaterial.far = viewer.scene.camera.far;
-				attributeMaterial.heightMin = viewer.heightMin;
-				attributeMaterial.heightMax = viewer.heightMax;
-				attributeMaterial.intensityMin = pointcloud.material.intensityMin;
-				attributeMaterial.intensityMax = pointcloud.material.intensityMax;
+				attributeMaterial.heightMin = pointcloud.material.heightMin;
+				attributeMaterial.heightMax = pointcloud.material.heightMax;
 				attributeMaterial.setClipBoxes(pointcloud.material.clipBoxes);
 				attributeMaterial.clipMode = pointcloud.material.clipMode;
 				attributeMaterial.bbSize = pointcloud.material.bbSize;

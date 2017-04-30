@@ -51,7 +51,8 @@ Potree.PointSizeType = {
 
 Potree.PointShape = {
 	SQUARE: 0,
-	CIRCLE: 1
+	CIRCLE: 1,
+	PARABOLOID: 2
 };
 
 Potree.PointColorType = {
@@ -100,9 +101,8 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 		let maxSize = parameters.maxSize || 50.0;
 		let treeType = parameters.treeType || Potree.TreeType.OCTREE;
 		
-		this._pointSizeType = Potree.PointSizeType.ATTENUATED;
-		this._pointShape = Potree.PointShape.SQUARE;
-		this._interpolate = false;
+		this._pointSizeType = Potree.PointSizeType.FIXED;
+		this._shape = Potree.PointShape.SQUARE;
 		this._pointColorType = Potree.PointColorType.RGB;
 		this._useClipBox = false;
 		this.numClipBoxes = 0;
@@ -225,14 +225,12 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 			defines += "#define adaptive_point_size\n";
 		}
 		
-		if(this.pointShape === Potree.PointShape.SQUARE){
+		if(this.shape === Potree.PointShape.SQUARE){
 			defines += "#define square_point_shape\n";
-		}else if(this.pointShape === Potree.PointShape.CIRCLE){
+		}else if(this.shape === Potree.PointShape.CIRCLE){
 			defines += "#define circle_point_shape\n";
-		}
-		
-		if(this._interpolate){
-			defines += "#define use_interpolation\n";
+		}else if(this.shape === Potree.PointShape.PARABOLOID){
+			defines += "#define paraboloid_point_shape\n";
 		}
 		
 		if(this._useEDL){
@@ -454,6 +452,10 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 			if(this.uniforms.opacity.value !== value){
 				this.uniforms.opacity.value = value;
 				this.updateShaderSource();
+				this.dispatchEvent({
+					type: "opacity_changed",
+					target: this
+				});
 			}
 		}
 	}
@@ -491,6 +493,10 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 		if(this._pointSizeType !== value){
 			this._pointSizeType = value;
 			this.updateShaderSource();
+			this.dispatchEvent({
+				type: "point_size_type_changed",
+				target: this
+			});
 		}
 	}
 
@@ -502,18 +508,6 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 	set clipMode(value){
 		if(this._clipMode !== value){
 			this._clipMode = value;
-			this.updateShaderSource();
-		}
-	}
-
-
-	get interpolate(){
-		return this._interpolate;
-	}
-	
-	set interpolate(value){
-		if(this._interpolate !== value){
-			this._interpolate = value;
 			this.updateShaderSource();
 		}
 	}
@@ -543,14 +537,15 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 	}
 
 
-	get pointShape(){
-		return this._pointShape;
+	get shape(){
+		return this._shape;
 	}
 	
-	set pointShape(value){
-		if(this._pointShape !== value){
-			this._pointShape = value;
+	set shape(value){
+		if(this._shape !== value){
+			this._shape = value;
 			this.updateShaderSource();
+			this.dispatchEvent("point_shape_changed");
 		}
 	}
 
@@ -582,10 +577,15 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 	}
 	
 	set size(value){
-		this.uniforms.size.value = value;
+		if(this.uniforms.size.value !== value){
+			this.uniforms.size.value = value;
+			
+			this.dispatchEvent({
+				type: "point_size_changed",
+				target: this
+			});
+		}
 	}
-
-	// getter/setter for uniforms
 
 	get heightMin(){
 		return this.uniforms.heightMin.value;

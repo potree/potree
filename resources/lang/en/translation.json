@@ -37,6 +37,7 @@
         "point_material": "Materials",
         "elevation_range": "Elevation range",
         "point_quality": "Quality",
+        "point_shape": "Shape",
         "edl_radius": "Radius",
         "edl_strength": "Strength",
         "edl_enable": "Enable",

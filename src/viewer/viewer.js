@@ -842,25 +842,6 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 	getPointSizing(){
 		return this.sizeType;
 	};
-
-	setQuality(value){
-		var oldQuality = this.quality;
-		if(value == "Interpolation" && !Potree.Features.SHADER_INTERPOLATION.isSupported()){
-			this.quality = "Squares";
-		}else if(value == "Splats" && !Potree.Features.SHADER_SPLATS.isSupported()){
-			this.quality = "Squares";
-		}else{
-			this.quality = value;
-		}
-		
-		if(oldQuality !== this.quality){
-			this.dispatchEvent({"type": "quality_changed", "viewer": this});
-		}
-	};
-	
-	getQuality(){
-		return this.quality;
-	};
 	
 	disableAnnotations(){
 		this.scene.annotations.traverse(annotation => {
@@ -1899,7 +1880,6 @@ class PotreeRenderer{
 				let pointcloud = new THREE.Points(node.geometryNode.geometry, material);
 				scene.add(pointcloud);
 				
-				
 				viewer.renderer.render(pointcloud, camera, dems.targetElevation);
 				
 				dems.medianFilterMaterial.uniforms.uWidth.value = dems.targetMedian.width;
@@ -1945,14 +1925,6 @@ class PotreeRenderer{
 			let bbWorld = Potree.utils.computeTransformedBoundingBox(pointcloud.boundingBox, pointcloud.matrixWorld);
 			
 			pointcloud.material.useEDL = false;
-			pointcloud.material.size = viewer.pointSize;
-			pointcloud.material.minSize = viewer.minPointSize;
-			pointcloud.material.maxSize = viewer.maxPointSize;
-			pointcloud.material.opacity = viewer.opacity;
-			//pointcloud.material.pointColorType = viewer.pointColorType;
-			pointcloud.material.pointSizeType = viewer.pointSizeType;
-			pointcloud.material.pointShape = (viewer.quality === "Circles") ? Potree.PointShape.CIRCLE : Potree.PointShape.SQUARE;
-			pointcloud.material.interpolate = (viewer.quality === "Interpolation");
 			pointcloud.material.weighted = false;
 		}
 		
@@ -1984,207 +1956,6 @@ class PotreeRenderer{
 		//Potree.resolveQueries(viewer.renderer.getContext());
 	};
 };
-
-// high quality rendering using splats
-class HighQualityRenderer{
-	
-	constructor(viewer){
-		this.viewer = viewer;
-		
-		this.depthMaterial = null;
-		this.attributeMaterial = null;
-		this.normalizationMaterial = null;
-		
-		this.rtDepth;
-		this.rtNormalize;
-	};
-
-	
-	
-	initHQSPlats(){
-		if(this.depthMaterial != null){
-			return;
-		}
-	
-		this.depthMaterial = new Potree.PointCloudMaterial();
-		this.attributeMaterial = new Potree.PointCloudMaterial();
-	
-		this.depthMaterial.pointColorType = Potree.PointColorType.DEPTH;
-		this.depthMaterial.pointShape = Potree.PointShape.CIRCLE;
-		this.depthMaterial.interpolate = false;
-		this.depthMaterial.weighted = false;
-		this.depthMaterial.minSize = viewer.minPointSize;
-		this.depthMaterial.maxSize = viewer.maxPointSize;
-					
-		this.attributeMaterial.pointShape = Potree.PointShape.CIRCLE;
-		this.attributeMaterial.interpolate = false;
-		this.attributeMaterial.weighted = true;
-		this.attributeMaterial.minSize = viewer.minPointSize;
-		this.attributeMaterial.maxSize = viewer.maxPointSize;
-
-		this.rtDepth = new THREE.WebGLRenderTarget( 1024, 1024, { 
-			minFilter: THREE.NearestFilter, 
-			magFilter: THREE.NearestFilter, 
-			format: THREE.RGBAFormat, 
-			type: THREE.FloatType
-		} );
-
-		this.rtNormalize = new THREE.WebGLRenderTarget( 1024, 1024, { 
-			minFilter: THREE.LinearFilter, 
-			magFilter: THREE.NearestFilter, 
-			format: THREE.RGBAFormat, 
-			type: THREE.FloatType
-		} );
-		
-		var uniformsNormalize = {
-			depthMap: { type: "t", value: this.rtDepth },
-			texture: { type: "t", value: this.rtNormalize }
-		};
-		
-		this.normalizationMaterial = new THREE.ShaderMaterial({
-			uniforms: uniformsNormalize,
-			vertexShader: Potree.Shaders["normalize.vs"],
-			fragmentShader: Potree.Shaders["normalize.fs"]
-		});
-	};
-	
-	resize(width, height){
-		if(this.rtDepth.width == width && this.rtDepth.height == height){
-			return;
-		}
-		
-		this.rtDepth.dispose();
-		this.rtNormalize.dispose();
-		
-		viewer.scene.camera.aspect = width / height;
-		viewer.scene.camera.updateProjectionMatrix();
-		
-		viewer.renderer.setSize(width, height);
-		this.rtDepth.setSize(width, height);
-		this.rtNormalize.setSize(width, height);
-	};
-
-	// render with splats
-	render(renderer){
-	
-		var width = viewer.renderArea.clientWidth;
-		var height = viewer.renderArea.clientHeight;
-	
-		this.initHQSPlats();
-		
-		this.resize(width, height);
-		
-		
-		viewer.renderer.clear();
-		if(viewer.background === "skybox"){
-			viewer.renderer.clear();
-			viewer.skybox.camera.rotation.copy(viewer.scene.camera.rotation);
-			viewer.skybox.camera.fov = viewer.scene.camera.fov;
-			viewer.skybox.camera.aspect = viewer.scene.camera.aspect;
-			viewer.skybox.camera.updateProjectionMatrix();
-			viewer.renderer.render(viewer.skybox.scene, viewer.skybox.camera);
-		}else if(viewer.background === "gradient"){
-			viewer.renderer.clear();
-			viewer.renderer.render(viewer.scene.sceneBG, viewer.scene.cameraBG);
-		}else if(viewer.background === "black"){
-			viewer.renderer.setClearColor(0x000000, 0);
-			viewer.renderer.clear();
-		}else if(viewer.background === "white"){
-			viewer.renderer.setClearColor(0xFFFFFF, 0);
-			viewer.renderer.clear();
-		}
-		
-		viewer.renderer.render(viewer.scene.scene, viewer.scene.camera);
-		
-		for(let pointcloud of viewer.scene.pointclouds){
-		
-			this.depthMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.getSize().x;
-			this.attributeMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.getSize().x;
-		
-			let originalMaterial = pointcloud.material;
-			
-			{// DEPTH PASS
-				this.depthMaterial.size = viewer.pointSize;
-				this.depthMaterial.pointSizeType = viewer.pointSizeType;
-				this.depthMaterial.screenWidth = width;
-				this.depthMaterial.screenHeight = height;
-				this.depthMaterial.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
-				this.depthMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.getSize().x;
-				this.depthMaterial.fov = viewer.scene.camera.fov * (Math.PI / 180);
-				this.depthMaterial.spacing = pointcloud.pcoGeometry.spacing * Math.max(pointcloud.scale.x, pointcloud.scale.y, pointcloud.scale.z);
-				this.depthMaterial.near = viewer.scene.camera.near;
-				this.depthMaterial.far = viewer.scene.camera.far;
-				this.depthMaterial.heightMin = pointcloud.material.heightMin;
-				this.depthMaterial.heightMax = pointcloud.material.heightMax;
-				this.depthMaterial.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
-				this.depthMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.getSize().x;
-				this.depthMaterial.bbSize = pointcloud.material.bbSize;
-				this.depthMaterial.treeType = pointcloud.material.treeType;
-				this.depthMaterial.uniforms.classificationLUT.value = pointcloud.material.uniforms.classificationLUT.value;
-				
-				viewer.scene.scenePointCloud.overrideMaterial = this.depthMaterial;
-				viewer.renderer.clearTarget( this.rtDepth, true, true, true );
-				viewer.renderer.render(viewer.scene.scenePointCloud, viewer.scene.camera, this.rtDepth);
-				viewer.scene.scenePointCloud.overrideMaterial = null;
-			}
-			
-			{// ATTRIBUTE PASS
-				this.attributeMaterial.size = viewer.pointSize;
-				this.attributeMaterial.pointSizeType = viewer.pointSizeType;
-				this.attributeMaterial.screenWidth = width;
-				this.attributeMaterial.screenHeight = height;
-				this.attributeMaterial.pointColorType = pointcloud.material.pointColorType;
-				this.attributeMaterial.depthMap = this.rtDepth;
-				this.attributeMaterial.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
-				this.attributeMaterial.uniforms.octreeSize.value = pointcloud.pcoGeometry.boundingBox.getSize().x;
-				this.attributeMaterial.fov = viewer.scene.camera.fov * (Math.PI / 180);
-				this.attributeMaterial.uniforms.blendHardness.value = pointcloud.material.uniforms.blendHardness.value;
-				this.attributeMaterial.uniforms.blendDepthSupplement.value = pointcloud.material.uniforms.blendDepthSupplement.value;
-				this.attributeMaterial.spacing = pointcloud.pcoGeometry.spacing * Math.max(pointcloud.scale.x, pointcloud.scale.y, pointcloud.scale.z);
-				this.attributeMaterial.near = viewer.scene.camera.near;
-				this.attributeMaterial.far = viewer.scene.camera.far;
-				this.attributeMaterial.heightMin = pointcloud.material.heightMin;
-				this.attributeMaterial.heightMax = pointcloud.material.heightMax;
-				this.attributeMaterial.setClipBoxes(pointcloud.material.clipBoxes);
-				this.attributeMaterial.clipMode = pointcloud.material.clipMode;
-				this.attributeMaterial.bbSize = pointcloud.material.bbSize;
-				this.attributeMaterial.treeType = pointcloud.material.treeType;
-				this.attributeMaterial.uniforms.classificationLUT.value = pointcloud.material.uniforms.classificationLUT.value;
-				
-				viewer.scene.scenePointCloud.overrideMaterial = this.attributeMaterial;
-				viewer.renderer.clearTarget( this.rtNormalize, true, true, true );
-				viewer.renderer.render(viewer.scene.scenePointCloud, viewer.scene.camera, this.rtNormalize);
-				viewer.scene.scenePointCloud.overrideMaterial = null;
-				
-				pointcloud.material = originalMaterial;
-			}
-		}
-		
-		if(viewer.scene.pointclouds.length > 0){
-			{// NORMALIZATION PASS
-				this.normalizationMaterial.uniforms.depthMap.value = this.rtDepth;
-				this.normalizationMaterial.uniforms.texture.value = this.rtNormalize;
-				Potree.utils.screenPass.render(viewer.renderer, this.normalizationMaterial);
-			}
-			
-			viewer.volumeTool.update();
-			viewer.renderer.render(viewer.volumeTool.sceneVolume, viewer.scene.camera);
-			viewer.renderer.render(viewer.controls.sceneControls, viewer.scene.camera);
-			
-			viewer.renderer.clearDepth();
-			
-			viewer.measuringTool.update();
-			viewer.profileTool.update();
-			viewer.transformationTool.update();
-			
-			viewer.renderer.render(viewer.measuringTool.sceneMeasurement, viewer.scene.camera);
-			viewer.renderer.render(viewer.profileTool.sceneProfile, viewer.scene.camera);
-			viewer.renderer.render(viewer.transformationTool.sceneTransform, viewer.scene.camera);
-		}
-
-	}
-};
-
 
 
 class EDLRenderer{
@@ -2278,8 +2049,7 @@ class EDLRenderer{
 			if(this.attributeMaterials.length <= i ){
 				var attributeMaterial = new Potree.PointCloudMaterial();
 					
-				attributeMaterial.pointShape = Potree.PointShape.CIRCLE;
-				attributeMaterial.interpolate = (viewer.quality === "Interpolation");
+				attributeMaterial.shape = Potree.PointShape.CIRCLE;
 				attributeMaterial.weighted = false;
 				attributeMaterial.minSize = viewer.minPointSize;
 				attributeMaterial.maxSize = viewer.maxPointSize;
@@ -2295,8 +2065,7 @@ class EDLRenderer{
 			
 			{// COLOR & DEPTH PASS
 				attributeMaterial = pointcloud.material;
-				attributeMaterial.pointShape = Potree.PointShape.CIRCLE;
-				attributeMaterial.interpolate = (viewer.quality === "Interpolation");
+				attributeMaterial.shape = Potree.PointShape.CIRCLE;
 				attributeMaterial.weighted = false;
 				attributeMaterial.minSize = viewer.minPointSize;
 				attributeMaterial.maxSize = viewer.maxPointSize;

@@ -26,10 +26,11 @@
 		<div>
 			<ul class="pv-menu-list">
 			<li><span data-i18n="appearance.nb_max_pts"></span>:<span id="lblPointBudget"></span> <div id="sldPointBudget"></div>	</li>
-			<li><span data-i18n="appearance.point_size"></span>:<span id="lblPointSize"></span> <div id="sldPointSize"></div>		</li>
+			<!-- <li><span data-i18n="appearance.point_size"></span>:<span id="lblPointSize"></span> <div id="sldPointSize"></div>		</li> -->
 			<li><span data-i18n="appearance.field_view"></span>:<span id="lblFOV"></span><div id="sldFOV"></div>					</li>
-			<li><span data-i18n="appearance.point_opacity"></span>:<span id="lblOpacity"></span><div id="sldOpacity"></div>				</li>
+			<!-- <li><span data-i18n="appearance.point_opacity"></span>:<span id="lblOpacity"></span><div id="sldOpacity"></div>				</li> -->
 		   
+		   <!--
 		   <li>
 			   <label for="optPointSizing" class="pv-select-label" data-i18n="appearance.point_size_type">Point Sizing </label>
 			   <select id="optPointSizing" name="optPointSizing">
@@ -38,16 +39,18 @@
 					<option>Adaptive</option>
 				</select>
 			</li>
+			-->
 			
+			<!--
 			<li>
 			   <label for="optQuality" class="pv-select-label" data-i18n="appearance.point_quality"></label>
 			   <select id="optQuality" name="optQuality">
 					<option>Squares</option>
 					<option>Circles</option>
 					<option>Interpolation</option>
-					<!--<option value="Splats">HQ-Splats</option>-->
 				</select>
-			</li>		
+			</li>
+			-->			
 		   
 			<div>
 				<div class="divider">
@@ -189,19 +192,21 @@
 							<option value="in">Inch (&#8243)</option>
 						</select>
 					</li>
-					
-				
-					<div class="divider" style="padding: 10px 0px 15px 0px">
-						<span>Point Clouds</span>
-					</div>
-				
 				</div>
 			</ul>
-			<div id="scene_details">			
-				<div id="scene_list_before" style="margin: 2px 2px 2px 2px"></div>
-				<div id="scene_list"></div>
-				<div id="scene_list_after" style="margin: 6px 2px 12px 2px"></div>			
+			
+			<div>
+				<div class="divider" style="padding: 10px 0px 15px 0px">
+					<span>Point Clouds</span>
+				</div>
+				
+				<div id="scene_details">			
+					<div id="scene_list_before" style="margin: 2px 2px 2px 2px"></div>
+					<div id="scene_list"></div>
+					<div id="scene_list_after" style="margin: 6px 2px 12px 2px"></div>			
+				</div>
 			</div>
+			
 		</div>
 	
 		<!-- Classification -->

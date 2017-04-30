@@ -192,22 +192,14 @@ function initAccordion(){
 
 function initAppearance(){
 
-	$( "#optPointSizing" ).selectmenu();
-	$( "#optQuality" ).selectmenu();
+	//$( "#optQuality" ).selectmenu();
 	
-	$("#optPointSizing").val(viewer.getPointSizing()).selectmenu("refresh")
-	$("#optPointSizing").selectmenu({
-		change: function(event, ui){
-			viewer.setPointSizing(ui.item.value);
-		}
-	});
-	
-	$("#optQuality").val(viewer.getQuality()).selectmenu("refresh")
-	$("#optQuality").selectmenu({
-		change: function(event, ui){
-			viewer.setQuality(ui.item.value);
-		}
-	});
+	//$("#optQuality").val(viewer.getQuality()).selectmenu("refresh")
+	//$("#optQuality").selectmenu({
+	//	change: function(event, ui){
+	//		viewer.setQuality(ui.item.value);
+	//	}
+	//});
 
 
 	$( "#sldPointBudget" ).slider({
@@ -218,28 +210,12 @@ function initAppearance(){
 		slide: function( event, ui ) {viewer.setPointBudget(ui.value);}
 	});
 	
-	$( "#sldPointSize" ).slider({
-		value: viewer.getPointSize(),
-		min: 0,
-		max: 3,
-		step: 0.01,
-		slide: function( event, ui ) {viewer.setPointSize(ui.value);}
-	});
-	
 	$( "#sldFOV" ).slider({
 		value: viewer.getFOV(),
 		min: 20,
 		max: 100,
 		step: 1,
 		slide: function( event, ui ) {viewer.setFOV(ui.value);}
-	});
-	
-	$( "#sldOpacity" ).slider({
-		value: viewer.getOpacity(),
-		min: 0,
-		max: 1,
-		step: 0.01,
-		slide: function( event, ui ) {viewer.setOpacity(ui.value);}
 	});
 	
 	$( "#sldEDLRadius" ).slider({
@@ -263,46 +239,20 @@ function initAppearance(){
 		$( "#sldPointBudget" ).slider({value: viewer.getPointBudget()});
 	});
 	
-	viewer.addEventListener("point_size_changed", function(event){
-		$('#lblPointSize')[0].innerHTML = viewer.getPointSize().toFixed(2);
-		$( "#sldPointSize" ).slider({value: viewer.getPointSize()});
-	});
-	
 	viewer.addEventListener("fov_changed", function(event){
 		$('#lblFOV')[0].innerHTML = parseInt(viewer.getFOV());
 		$( "#sldFOV" ).slider({value: viewer.getFOV()});
 	});
-	
-	viewer.addEventListener("opacity_changed", function(event){
-		$('#lblOpacity')[0].innerHTML = viewer.getOpacity().toFixed(2);
-		$( "#sldOpacity" ).slider({value: viewer.getOpacity()});
-	});
-	
-	viewer.addEventListener("point_sizing_changed", e => {
-		let type = viewer.pointSizeType;
-		let conversion = new Map([
-			[Potree.PointSizeType.FIXED, "Fixed"],
-			[Potree.PointSizeType.ATTENUATED, "Attenuated"],
-			[Potree.PointSizeType.ADAPTIVE, "Adaptive"]
-		]);
-		
-		let typename = conversion.get(type);
-		
-		$( "#optPointSizing" )
-			.selectmenu()
-			.val(typename)
-			.selectmenu("refresh");
-	});
-	
-	viewer.addEventListener("quality_changed", e => {
-		
-		let name = viewer.quality;
-		
-		$( "#optQuality" )
-			.selectmenu()
-			.val(name)
-			.selectmenu("refresh");
-	});
+
+	//viewer.addEventListener("quality_changed", e => {
+	//	
+	//	let name = viewer.quality;
+	//	
+	//	$( "#optQuality" )
+	//		.selectmenu()
+	//		.val(name)
+	//		.selectmenu("refresh");
+	//});
 	
 	viewer.addEventListener("edl_radius_changed", function(event){
 		$('#lblEDLRadius')[0].innerHTML = viewer.getEDLRadius().toFixed(1);
@@ -320,9 +270,7 @@ function initAppearance(){
 	
 	
 	$('#lblPointBudget')[0].innerHTML = Potree.utils.addCommas(viewer.getPointBudget());
-	$('#lblPointSize')[0].innerHTML = viewer.getPointSize().toFixed(2);
 	$('#lblFOV')[0].innerHTML = parseInt(viewer.getFOV());
-	$('#lblOpacity')[0].innerHTML = viewer.getOpacity().toFixed(2);
 	$('#lblEDLRadius')[0].innerHTML = viewer.getEDLRadius().toFixed(1);
 	$('#lblEDLStrength')[0].innerHTML = viewer.getEDLStrength().toFixed(1);
 	$('#chkEDLEnabled')[0].checked = viewer.getEDLEnabled();
@@ -1417,8 +1365,52 @@ function initSceneList(){
 				<div class="scene_content selectable" style="display: none">
 					<div>
 						<ul class="pv-menu-list">
+						
 						<li>
-						   <label for="optMaterial${i}" class="pv-select-label">Attributes:</label><br>
+						<span data-i18n="appearance.point_size"></span>:<span id="lblPointSize_${i}"></span> <div id="sldPointSize_${i}"></div>
+						</li>
+						
+						<!-- SIZE TYPE -->
+						<li>
+							<label for="optPointSizing_${i}" class="pv-select-label" data-i18n="appearance.point_size_type">Point Sizing </label>
+							<select id="optPointSizing_${i}" name="optPointSizing_${i}">
+								<option>FIXED</option>
+								<option>ATTENUATED</option>
+								<option>ADAPTIVE</option>
+							</select>
+						</li>
+	
+						<!--
+						Shape:
+						<div id="sizing_${i}">
+							<label for="radio_${i}_1">FIXED</label>
+							<input type="radio" name="radio_${i}" id="radio_${i}_1">
+							<label for="radio_${i}_2">ATTENUATED</label>
+							<input type="radio" name="radio_${i}" id="radio_${i}_2">
+							<label for="radio_${i}_3">ADAPTIVE</label>
+							<input type="radio" name="radio_${i}" id="radio_${i}_3">
+						</div>
+						-->
+						
+						<!-- SHAPE -->
+						<li>
+							<label for="optShape_" class="pv-select-label" data-i18n="appearance.point_shape"></label>
+							<select id="optShape_${i}" name="optShape_${i}">
+								<option>SQUARE</option>
+								<option>CIRCLE</option>
+								<option>PARABOLOID</option>
+							</select>
+						</li>	
+						
+						<!-- OPACITY -->
+						<li><span data-i18n="appearance.point_opacity"></span>:<span id="lblOpacity_${i}"></span><div id="sldOpacity_${i}"></div></li>
+						
+						<div class="divider">
+							<span>Attribute</span>
+						</div>
+						
+						<li>
+						   <!--<label for="optMaterial${i}" class="pv-select-label">Attributes:</label><br>-->
 						   <select id="optMaterial${i}" name="optMaterial${i}">
 						   </select>
 						</li>
@@ -1480,6 +1472,87 @@ function initSceneList(){
 				</div>
 			</span>
 		`);
+		
+		{ // POINT SIZE
+			let sldPointSize = scenePanel.find(`#sldPointSize_${i}`);
+			let lblPointSize = scenePanel.find(`#lblPointSize_${i}`);
+			
+			sldPointSize.slider({
+				value: pcMaterial.size,
+				min: 0,
+				max: 3,
+				step: 0.01,
+				slide: function( event, ui ) {pcMaterial.size = ui.value;}
+			});
+			
+			let update = (e) => {
+				lblPointSize.html(pcMaterial.size.toFixed(2));
+				sldPointSize.slider({value: pcMaterial.size});
+			};
+			
+			pcMaterial.addEventListener("point_size_changed", update);
+			update();
+		}
+		
+		{ // POINT SIZE TYPE
+			let strSizeType = Object.keys(Potree.PointSizeType)[pcMaterial.pointSizeType];
+			
+			let opt = scenePanel.find(`#optPointSizing_${i}`);
+			opt.selectmenu();
+			opt.val(strSizeType).selectmenu("refresh");
+			
+			opt.selectmenu({
+				change: (event, ui) => {
+					pcMaterial.pointSizeType = Potree.PointSizeType[ui.item.value];
+				}
+			});
+			
+			pcMaterial.addEventListener("point_size_type_changed", e => {
+				let typename = Object.keys(Potree.PointSizeType)[pcMaterial.pointSizeType];
+				
+				$( "#optPointSizing" ).selectmenu().val(typename).selectmenu("refresh");
+			});
+		}
+		
+		{ // SHAPE
+			
+			let opt = scenePanel.find(`#optShape_${i}`);
+			
+			opt.selectmenu({
+				change: (event, ui) => {
+					let value = ui.item.value;
+					
+					pcMaterial.shape = Potree.PointShape[value];
+				}
+			});
+			
+			pcMaterial.addEventListener("point_shape_changed", e => {
+				let typename = Object.keys(Potree.PointShape)[pcMaterial.shape];
+				
+				opt.selectmenu().val(typename).selectmenu("refresh");
+			});
+		}
+		
+		{ // OPACITY
+			let sldOpacity = scenePanel.find(`#sldOpacity_${i}`);
+			let lblOpacity = scenePanel.find(`#lblOpacity_${i}`);
+			
+			sldOpacity.slider({
+				value: pcMaterial.opacity,
+				min: 0,
+				max: 1,
+				step: 0.001,
+				slide: function( event, ui ) {pcMaterial.opacity = ui.value;}
+			});
+			
+			let update = (e) => {
+				lblOpacity.html(pcMaterial.opacity.toFixed(2));
+				sldOpacity.slider({value: pcMaterial.opacity});
+			};
+			
+			pcMaterial.addEventListener("opacity_changed", update);
+			update();
+		}
 
 		let inputVis = scenePanel.find("input[type='checkbox']");
 		

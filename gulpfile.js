@@ -1,22 +1,19 @@
 
-var path = require('path');
-var gulp = require('gulp');
+const path = require('path');
+const gulp = require('gulp');
 
-var concat = require('gulp-concat');
-var size = require('gulp-size');
-var rename = require('gulp-rename');
-var uglify = require('gulp-uglify');
-var gutil = require('gulp-util');
-var through = require('through');
-var jshint=require('gulp-jshint');
+const concat = require('gulp-concat');
+const size = require('gulp-size');
+const rename = require('gulp-rename');
+const uglify = require('gulp-uglify');
+const gutil = require('gulp-util');
+const through = require('through');
+const jshint = require('gulp-jshint');
+const os = require('os');
+const File = gutil.File;
+const connect = require('gulp-connect');
 
-
-var os = require('os');
-var File = gutil.File;
-
-//We need this one for the in-built webserver
-var connect = require('gulp-connect');
-
+var server;
 
 var paths = {
 	potree : [
@@ -195,13 +192,16 @@ gulp.task('linter', function(){
 gulp.task('build', ['scripts']);
 
 gulp.task('watch', function() {
-    gulp.watch('src/**/*.js', ['scripts']);
-})
+	gulp.run("build");
+	gulp.run("webserver");
+	
+    gulp.watch(['src/**/*.js', 'src/**/*.css', 'src/**/*.html'], ["build"]);
+});
 
 // For development, it is now possible to use 'gulp webserver'
 // from the command line to start the server (default port is 8080)
 gulp.task('webserver', function() {
-  connect.server();
+	server = connect.server();
 });
 
 

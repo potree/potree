@@ -729,13 +729,8 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree{
 				doRecompile = true;
 			}
 			
-			if(pickMaterial.pointShape !== this.material.pointShape){
-				pickMaterial.pointShape = this.material.pointShape;
-				doRecompile = true;
-			}
-			
-			if(pickMaterial.interpolate !== this.material.interpolate){
-				pickMaterial.interpolate = this.material.interpolate;
+			if(pickMaterial.shape !== this.material.shape){
+				pickMaterial.shape = this.material.shape;
 				doRecompile = true;
 			}
 			

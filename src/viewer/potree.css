@@ -318,7 +318,7 @@ body{
 }
 
 .scene_content{
-	padding: 5px 15px 5px 10px;
+	padding: 5px 0px 5px 0px;
 	background-color: rgba(0, 0, 0, 0.4);
 }
 
@@ -746,5 +746,11 @@ body{
 
 
 
+
+/*
+label:hover{
+	background-color: white;
+}
+*/
 
 

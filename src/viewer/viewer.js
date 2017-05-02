@@ -1882,138 +1882,68 @@ class EDLRenderer{
 			viewer.renderer.clear();
 		}
 		
+		viewer.measuringTool.update();
+		viewer.profileTool.update();
+		viewer.transformationTool.update();
+		viewer.volumeTool.update();
+		
 		
 		viewer.renderer.render(viewer.scene.scene, viewer.scene.camera);
 		
 		viewer.renderer.clearTarget( this.rtColor, true, true, true );
 		
-		var originalMaterials = [];
-		for(var i = 0; i < viewer.scene.pointclouds.length; i++){
-			var pointcloud = viewer.scene.pointclouds[i];
-			var width = viewer.renderArea.clientWidth;
-			var height = viewer.renderArea.clientHeight;
-			
-			if(this.attributeMaterials.length <= i ){
-				var attributeMaterial = new Potree.PointCloudMaterial();
-					
-				attributeMaterial.shape = Potree.PointShape.CIRCLE;
-				attributeMaterial.weighted = false;
-				attributeMaterial.useLogarithmicDepthBuffer = false;
-				attributeMaterial.useEDL = true;
-				this.attributeMaterials.push(attributeMaterial);
-			}
-			var attributeMaterial = this.attributeMaterials[i];
+		let width = viewer.renderArea.clientWidth;
+		let height = viewer.renderArea.clientHeight;
 		
-			var octreeSize = pointcloud.pcoGeometry.boundingBox.getSize().x;
+		// COLOR & DEPTH PASS
+		for(let pointcloud of viewer.scene.pointclouds){
+			let octreeSize = pointcloud.pcoGeometry.boundingBox.getSize().x;
 		
-			originalMaterials.push(pointcloud.material);
+			let material = pointcloud.material;
+			material.weighted = false;
+			material.useLogarithmicDepthBuffer = false;
+			material.useEDL = true;
 			
-			{// COLOR & DEPTH PASS
-				attributeMaterial = pointcloud.material;
-				attributeMaterial.weighted = false;
-				attributeMaterial.useLogarithmicDepthBuffer = false;
-				attributeMaterial.useEDL = true;
-				
-				attributeMaterial.screenWidth = width;
-				attributeMaterial.screenHeight = height;
-				attributeMaterial.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
-				attributeMaterial.uniforms.octreeSize.value = octreeSize;
-				attributeMaterial.fov = viewer.scene.camera.fov * (Math.PI / 180);
-				attributeMaterial.spacing = pointcloud.pcoGeometry.spacing * Math.max(pointcloud.scale.x, pointcloud.scale.y, pointcloud.scale.z);
-				attributeMaterial.near = viewer.scene.camera.near;
-				attributeMaterial.far = viewer.scene.camera.far;
-				attributeMaterial.heightMin = pointcloud.material.heightMin;
-				attributeMaterial.heightMax = pointcloud.material.heightMax;
-				attributeMaterial.setClipBoxes(pointcloud.material.clipBoxes);
-				attributeMaterial.clipMode = pointcloud.material.clipMode;
-				attributeMaterial.bbSize = pointcloud.material.bbSize;
-				attributeMaterial.treeType = pointcloud.material.treeType;
-				attributeMaterial.uniforms.classificationLUT.value = pointcloud.material.uniforms.classificationLUT.value;
-				
-				pointcloud.material = attributeMaterial;
-
-				for(var j = 0; j < pointcloud.visibleNodes.length; j++){
-					var node = pointcloud.visibleNodes[j];
-					if(pointcloud instanceof Potree.PointCloudOctree){
-						node.sceneNode.material = attributeMaterial;
-					}else if(pointcloud instanceof Potree.PointCloudArena4D){
-						node.material = attributeMaterial;
-					}
-				}
-			}
-			
+			material.screenWidth = width;
+			material.screenHeight = height;
+			material.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
+			material.uniforms.octreeSize.value = octreeSize;
+			material.fov = viewer.scene.camera.fov * (Math.PI / 180);
+			material.spacing = pointcloud.pcoGeometry.spacing * Math.max(pointcloud.scale.x, pointcloud.scale.y, pointcloud.scale.z);
+			material.near = viewer.scene.camera.near;
+			material.far = viewer.scene.camera.far;
 		}
 		
-		//var queryPC = Potree.startQuery("PointCloud", viewer.renderer.getContext());
 		viewer.renderer.render(viewer.scene.scenePointCloud, viewer.scene.camera, this.rtColor);
 		viewer.renderer.render(viewer.scene.scene, viewer.scene.camera, this.rtColor);
-		//Potree.endQuery(queryPC, viewer.renderer.getContext());
-		
-		
+
 		// bit of a hack here. The EDL pass will mess up the text of the volume tool
 		// so volume tool is rendered again afterwards
 		//viewer.volumeTool.render(this.rtColor);
 				
-		for(var i = 0; i < viewer.scene.pointclouds.length; i++){
-			var pointcloud = viewer.scene.pointclouds[i];
-			var originalMaterial = originalMaterials[i];
-			pointcloud.material = originalMaterial;
-			for(var j = 0; j < pointcloud.visibleNodes.length; j++){
-				var node = pointcloud.visibleNodes[j];
-				if(pointcloud instanceof Potree.PointCloudOctree){
-					node.sceneNode.material = originalMaterial;
-				}else if(pointcloud instanceof Potree.PointCloudArena4D){
-					node.material = originalMaterial;
-				}
-			}
-		}
 		
-		viewer.volumeTool.update();
 		viewer.renderer.render(viewer.volumeTool.sceneVolume, viewer.scene.camera, this.rtColor);
-			
-		if(viewer.scene.pointclouds.length > 0){
-			
-			//var ext = viewer.renderer.getContext().getExtension("EXT_disjoint_timer_query");
-			//if(window.timerQuery == null){
-			//	window.timerQuery = ext.createQueryEXT();
-			//	ext.beginQueryEXT(ext.TIME_ELAPSED_EXT, window.timerQuery);
-			//}
-			
-			//var query = Potree.startQuery("EDL", viewer.renderer.getContext());
-			
-			{ // EDL OCCLUSION PASS
-				this.edlMaterial.uniforms.screenWidth.value = width;
-				this.edlMaterial.uniforms.screenHeight.value = height;
-				this.edlMaterial.uniforms.colorMap.value = this.rtColor;
-				this.edlMaterial.uniforms.edlStrength.value = viewer.edlStrength;
-				this.edlMaterial.uniforms.radius.value = viewer.edlRadius;
-				this.edlMaterial.uniforms.opacity.value = viewer.opacity;
-				this.edlMaterial.depthTest = true;
-				this.edlMaterial.depthWrite = true;
-				this.edlMaterial.transparent = true;
-			
-				Potree.utils.screenPass.render(viewer.renderer, this.edlMaterial);
-			}	
-			
-//			viewer.renderer.render(viewer.scene.scene, viewer.scene.camera);
-			
-			//Potree.endQuery(query, viewer.renderer.getContext());
-			//Potree.resolveQueries(viewer.renderer.getContext());
-			
-			
-			viewer.renderer.clearDepth();
-			viewer.renderer.render(viewer.controls.sceneControls, viewer.scene.camera);
-			
-			
-			viewer.measuringTool.update();
-			viewer.profileTool.update();
-			viewer.transformationTool.update();
-			
-			viewer.renderer.render(viewer.measuringTool.sceneMeasurement, viewer.scene.camera);
-			viewer.renderer.render(viewer.profileTool.sceneProfile, viewer.scene.camera);
-			viewer.renderer.render(viewer.transformationTool.sceneTransform, viewer.scene.camera);
-			
-		}
 		
+		{ // EDL OCCLUSION PASS
+			this.edlMaterial.uniforms.screenWidth.value = width;
+			this.edlMaterial.uniforms.screenHeight.value = height;
+			this.edlMaterial.uniforms.colorMap.value = this.rtColor;
+			this.edlMaterial.uniforms.edlStrength.value = viewer.edlStrength;
+			this.edlMaterial.uniforms.radius.value = viewer.edlRadius;
+			this.edlMaterial.uniforms.opacity.value = 1;
+			this.edlMaterial.depthTest = true;
+			this.edlMaterial.depthWrite = true;
+			this.edlMaterial.transparent = true;
+		
+			Potree.utils.screenPass.render(viewer.renderer, this.edlMaterial);
+		}	
+		
+		viewer.renderer.clearDepth();
+		viewer.renderer.render(viewer.controls.sceneControls, viewer.scene.camera);
+		
+		viewer.renderer.render(viewer.measuringTool.sceneMeasurement, viewer.scene.camera);
+		viewer.renderer.render(viewer.profileTool.sceneProfile, viewer.scene.camera);
+		viewer.renderer.render(viewer.transformationTool.sceneTransform, viewer.scene.camera);
+
 	}
 };

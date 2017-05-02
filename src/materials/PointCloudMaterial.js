@@ -456,6 +456,10 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 					type: "opacity_changed",
 					target: this
 				});
+				this.dispatchEvent({
+				type: "material_property_changed",
+				target: this
+			});
 			}
 		}
 	}
@@ -469,6 +473,14 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 		if(this._pointColorType !== value){
 			this._pointColorType = value;
 			this.updateShaderSource();
+			this.dispatchEvent({
+				type: "point_color_type_changed",
+				target: this
+			});
+			this.dispatchEvent({
+				type: "material_property_changed",
+				target: this
+			});
 		}
 	}
 
@@ -495,6 +507,10 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 			this.updateShaderSource();
 			this.dispatchEvent({
 				type: "point_size_type_changed",
+				target: this
+			});
+			this.dispatchEvent({
+				type: "material_property_changed",
 				target: this
 			});
 		}
@@ -545,7 +561,11 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 		if(this._shape !== value){
 			this._shape = value;
 			this.updateShaderSource();
-			this.dispatchEvent("point_shape_changed");
+			this.dispatchEvent({type: "point_shape_changed", target: this});
+			this.dispatchEvent({
+				type: "material_property_changed",
+				target: this
+			});
 		}
 	}
 
@@ -582,6 +602,10 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 			
 			this.dispatchEvent({
 				type: "point_size_changed",
+				target: this
+			});
+			this.dispatchEvent({
+				type: "material_property_changed",
 				target: this
 			});
 		}

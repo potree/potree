@@ -333,14 +333,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		//}
 		
 		this.fov = 60;
-		this.pointSize = 1;
-		this.minPointSize = 1;
-		this.maxPointSize = 50;
-		this.opacity = 1;
-		this.sizeType = "Fixed";
-		this.pointSizeType = Potree.PointSizeType.FIXED;
 		this.clipMode = Potree.ClipMode.HIGHLIGHT_INSIDE;
-		this.quality = "Squares";
 		this.isFlipYZ = false;
 		this.useDEMCollisions = false;
 		this.minNodeSize = 100;
@@ -348,7 +341,6 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		this.edlStrength = 1.0;
 		this.edlRadius = 1.4;
 		this.useEDL = false;
-		this.intensityMax = null;
 		
 		this.moveSpeed = 10;		
 
@@ -373,7 +365,6 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		//this.stats.dom.style.left = "100px";
 		
 		this.potreeRenderer = null;
-		this.highQualityRenderer = null;
 		this.edlRenderer = null;
 		this.renderer = null;
 		
@@ -409,24 +400,13 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			this.measuringTool.setScene(this.scene);
 			this.profileTool.setScene(this.scene);
 			this.volumeTool.setScene(this.scene);
-			//this.transformationTool.setScene(this.scene);
 			
 			let onPointcloudAdded = (e) => {
-				this.updateHeightRange();
-				
 				if(this.scene.pointclouds.length === 1){
 					let speed = e.pointcloud.boundingBox.getSize().length();
 					speed = speed / 5;
 					this.setMoveSpeed(speed);
-					//this.scene.view.radius = speed * 2.5;
-				}
-				
-				
-				//if(e.pointcloud.projection){
-				//	this.mapView = new Potree.MapView(this);
-				//	this.mapView.init();
-				//}
-				
+				}				
 			};
 			
 			this.addEventListener("scene_changed", (e) => {
@@ -434,7 +414,6 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 				this.measuringTool.setScene(e.scene);
 				this.profileTool.setScene(e.scene);
 				this.volumeTool.setScene(e.scene);
-				this.updateHeightRange();
 				
 				if(!e.scene.hasEventListener("pointcloud_added", onPointcloudAdded)){
 					e.scene.addEventListener("pointcloud_added", onPointcloudAdded);
@@ -445,9 +424,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		}
 		
 		{// set defaults
-			this.setPointSize(1);
 			this.setFOV(60);
-			this.setOpacity(1);
 			this.setEDLEnabled(false);
 			this.setEDLRadius(1.4);
 			this.setEDLStrength(1.0);
@@ -631,53 +608,11 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		return this.moveSpeed;
 	};
 	
-	//setShowSkybox(value){
-	//	if(this.showSkybox !== value){
-	//		this.showSkybox = value;
-	//		this.dispatchEvent({"type": "show_skybox_changed", "viewer": this});
-	//	}
-	//};
-	//
-	//getShowSkybox(){
-	//	return this.showSkybox;
-	//};
-	
-	setHeightRange(min, max){
-		for(let i = 0; i < this.scene.pointclouds.length; i++) {
-			this.scene.pointclouds[i].material.heightMin = min;	
-			this.scene.pointclouds[i].material.heightMax = max;	
-			this.dispatchEvent({"type": "height_range_changed" + i, "viewer": this});		
-		}
-	};
-		
-	setElevationRange(min, max){
-		this.setHeightRange(min, max);
-	}
-	
-	setIntensityRange(min, max){
-		for(let i = 0; i < this.scene.pointclouds.length; i++) {
-			this.scene.pointclouds[i].material.intensityRange[0] = min;	
-			this.scene.pointclouds[i].material.intensityRange[1] = max;	
-			this.dispatchEvent({"type": "intensity_range_changed" + i, "viewer": this});		
-		}
-	};	
-	
 	setWeightClassification(w){
 		for(let i = 0; i < this.scene.pointclouds.length; i++) {
 			this.scene.pointclouds[i].material.weightClassification = w;	
 			this.dispatchEvent({"type": "attribute_weights_changed" + i, "viewer": this});		
 		}
-	};
-		
-	setIntensityMax(max){
-		if(this.intensityMax !== max){
-			this.intensityMax = max;
-			this.dispatchEvent({"type": "intensity_max_changed", "viewer": this});
-		}
-	};
-	
-	getIntensityMax(){
-		return this.intensityMax;
 	};
 	
 	setFreeze(value){
@@ -769,39 +704,6 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		return this.edlStrength;
 	};
 	
-	setPointSize(value){
-		if(this.pointSize !== value){
-			this.pointSize = value;
-			this.dispatchEvent({"type": "point_size_changed", "viewer": this});
-		}
-	};
-	
-	getPointSize(){
-		return this.pointSize;
-	};
-	
-	setMinPointSize(value){
-		if(this.minPointSize !== value){
-			this.minPointSize = value;
-			this.dispatchEvent({"type": "min_point_size_changed", "viewer": this});
-		}
-	}
-	
-	getMinPointSize(){
-		return this.minPointSize;
-	}
-	
-	setMaxPointSize(value){
-		if(this.maxPointSize !== value){
-			this.maxPointSize = value;
-			this.dispatchEvent({"type": "max_point_size_changed", "viewer": this});
-		}
-	}
-	
-	getMaxPointSize(){
-		return this.maxPointSize;
-	}
-	
 	setFOV(value){
 		if(this.fov !== value){
 			this.fov = value;
@@ -811,36 +713,6 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 	
 	getFOV(){
 		return this.fov;
-	};
-	
-	setOpacity(value){
-		if(this.opacity !== value){
-			this.opacity = value;
-			this.dispatchEvent({"type": "opacity_changed", "viewer": this});
-		}
-	};
-	
-	getOpacity(){
-		return this.opacity;
-	};
-
-	setPointSizing(value){
-		if(this.sizeType !== value){
-			this.sizeType = value;
-			if(value === "Fixed"){
-				this.pointSizeType = Potree.PointSizeType.FIXED;
-			}else if(value === "Attenuated"){
-				this.pointSizeType = Potree.PointSizeType.ATTENUATED;
-			}else if(value === "Adaptive"){
-				this.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-			}
-			
-			this.dispatchEvent({"type": "point_sizing_changed", "viewer": this});
-		}
-	};
-	
-	getPointSizing(){
-		return this.sizeType;
 	};
 	
 	disableAnnotations(){
@@ -877,13 +749,6 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 
 		if(changed){
 			this.dispatchEvent({"type": "classification_visibility_changed", "viewer": this});
-		}
-	};
-
-	setMaterial(value){
-		for(let i = 0; i < this.scene.pointclouds.length; i++) {
-			this.scene.pointclouds[i].material.pointColorType = value;	
-			this.dispatchEvent({"type": "material_changed" + i, "viewer": this});		
 		}
 	};
 
@@ -1069,11 +934,6 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		// TODO flipyz 
 		console.log("TODO");
 	}
-	
-	updateHeightRange(){
-		var bbWorld = this.getBoundingBox();
-		this.setHeightRange(bbWorld.min.z, bbWorld.max.z);		
-	};
 	
 	loadSettingsFromURL(){
 		if(Potree.utils.getParameterByName("pointSize")){
@@ -1291,7 +1151,8 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			
 			let elProfile = $('<div>').load(new URL(Potree.scriptPath + "/profile.html").href, () => {
 				$(document.body).append(elProfile.children());
-				this._2dprofile = new Potree.Viewer.Profile(this);
+				this.profileWindow = new Potree.ProfileWindow(this);
+				this.profileWindowController = new Potree.ProfileWindowController(this);
 				
 				$("#profile_window").draggable({
 					handle: $("#profile_titlebar"),
@@ -1528,19 +1389,10 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 				}
 			}
 			
-			//if(this.heightMin === null){
-			//	this.setHeightRange(bbWorld.min.y, bbWorld.max.y);
-			//}
-				
 			pointcloud.material.clipMode = this.clipMode;
 			pointcloud.showBoundingBox = this.showBoundingBox;
 			pointcloud.generateDEM = this.useDEMCollisions;
 			pointcloud.minimumNodePixelSize = this.minNodeSize;
-			
-			
-			//if(!this.freeze){
-			//	pointcloud.update(this.scene.camera, this.renderer);
-			//}
 
 			visibleNodes += pointcloud.numVisibleNodes;
 			visiblePoints += pointcloud.numVisiblePoints;
@@ -1648,11 +1500,6 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 				this.edlRenderer = new EDLRenderer(this);
 			}
 			this.edlRenderer.render(this.renderer);
-		}else if(this.quality === "Splats"){
-			if(!this.highQualityRenderer){
-				this.highQualityRenderer = new HighQualityRenderer(this);
-			}
-			this.highQualityRenderer.render(this.renderer);
 		}else{
 			if(!this.potreeRenderer){
 				this.potreeRenderer = new PotreeRenderer(this);
@@ -2051,8 +1898,6 @@ class EDLRenderer{
 					
 				attributeMaterial.shape = Potree.PointShape.CIRCLE;
 				attributeMaterial.weighted = false;
-				attributeMaterial.minSize = viewer.minPointSize;
-				attributeMaterial.maxSize = viewer.maxPointSize;
 				attributeMaterial.useLogarithmicDepthBuffer = false;
 				attributeMaterial.useEDL = true;
 				this.attributeMaterials.push(attributeMaterial);
@@ -2065,18 +1910,12 @@ class EDLRenderer{
 			
 			{// COLOR & DEPTH PASS
 				attributeMaterial = pointcloud.material;
-				attributeMaterial.shape = Potree.PointShape.CIRCLE;
 				attributeMaterial.weighted = false;
-				attributeMaterial.minSize = viewer.minPointSize;
-				attributeMaterial.maxSize = viewer.maxPointSize;
 				attributeMaterial.useLogarithmicDepthBuffer = false;
 				attributeMaterial.useEDL = true;
 				
-				attributeMaterial.size = viewer.pointSize;
-				attributeMaterial.pointSizeType = viewer.pointSizeType;
 				attributeMaterial.screenWidth = width;
 				attributeMaterial.screenHeight = height;
-				attributeMaterial.pointColorType = pointcloud.material.pointColorType;
 				attributeMaterial.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
 				attributeMaterial.uniforms.octreeSize.value = octreeSize;
 				attributeMaterial.fov = viewer.scene.camera.fov * (Math.PI / 180);
@@ -2163,8 +2002,6 @@ class EDLRenderer{
 			
 			
 			viewer.renderer.clearDepth();
-			//viewer.volumeTool.update();
-			//viewer.renderer.render(viewer.volumeTool.sceneVolume, viewer.scene.camera);
 			viewer.renderer.render(viewer.controls.sceneControls, viewer.scene.camera);
 			
 			
@@ -2176,30 +2013,7 @@ class EDLRenderer{
 			viewer.renderer.render(viewer.profileTool.sceneProfile, viewer.scene.camera);
 			viewer.renderer.render(viewer.transformationTool.sceneTransform, viewer.scene.camera);
 			
-			//viewer.profileTool.render();
-			//viewer.volumeTool.render();
-			//viewer.renderer.clearDepth();
-			//viewer.measuringTool.render();
-			//viewer.transformationTool.render();
 		}
 		
-		
-		//{
-		//	let renderer = viewer.renderer;
-		//	let pickWindowSize = 128;
-		//	let pixelCount = pickWindowSize * pickWindowSize;
-		//	let buffer = new ArrayBuffer(pixelCount*4);
-		//	let pixels = new Uint8Array(buffer);
-		//	let ibuffer = new Uint32Array(buffer);
-		//	renderer.context.readPixels(
-		//		800 - (pickWindowSize-1) / 2, 500 - (pickWindowSize-1) / 2, 
-		//		pickWindowSize, pickWindowSize, 
-		//		renderer.context.RGBA, renderer.context.UNSIGNED_BYTE, pixels);
-		//		
-		//	console.log(pixels[i]);
-		//}
-
-		
-
 	}
 };

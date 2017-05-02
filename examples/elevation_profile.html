@@ -58,14 +58,8 @@
 		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
 		
 		viewer.setEDLEnabled(false);
-		viewer.setPointSize(1);
-		viewer.setMaterial("RGB");
 		viewer.setFOV(60);
-		viewer.setPointSizing("Adaptive");
-		viewer.setQuality("Squares");
 		viewer.setPointBudget(1*1000*1000);
-		viewer.setIntensityRange(0, 300);
-		viewer.setWeightClassification(1);
 		viewer.loadSettingsFromURL();
 		
 		viewer.setDescription("Point cloud courtesy of <a target='_blank' href='https://www.sigeom.ch/'>sigeom sa</a>");
@@ -75,8 +69,8 @@
 			$("#menu_tools").next().show();
 			$("#menu_measurements").next().show();
 			viewer.toggleSidebar();
-			viewer._2dprofile.show();
-			viewer._2dprofile.draw(viewer.scene.profiles[0]);
+			viewer.profileWindow.show();
+			viewer.profileWindowController.setProfile(viewer.scene.profiles[0]);
 		});
 		
 		// Sigeom
@@ -93,9 +87,9 @@
 				
 				scene.addProfile(profile);
 				
-				if(viewer._2dprofile){
-					viewer._2dprofile.draw(profile);
-				}
+				//if(viewer.profileWindow){
+				//	viewer.profileWindowController.setProfile(profile);
+				//}
 			}
 			
 			scene.view.position.set(589974.341, 231698.397, 986.146);

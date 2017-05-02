@@ -1028,8 +1028,9 @@ function initMeasurementDetails(){
 			this.elContentContainer.append(this.elContent);
 			this.elShow2DProfile = this.elContent.find(`#show_2d_profile_${this.id}`);
 			this.elShow2DProfile.click(() => {
-				viewer._2dprofile.show();
-				viewer._2dprofile.draw(measurement);
+				viewer.profileWindow.show();
+				viewer.profileWindowController.setProfile(measurement);
+				//viewer.profileWindow.draw(measurement);
 			});
 			
 			{ // width spinner
@@ -1244,8 +1245,8 @@ function initMeasurementDetails(){
 		}else if(e.profile){
 			trackMeasurement(e.scene, e.profile);
 			
-			viewer._2dprofile.show();
-			viewer._2dprofile.draw(e.profile);
+			viewer.profileWindow.show();
+			viewer.profileWindowController.setProfile(e.profile);
 		}else if(e.volume){
 			trackMeasurement(e.scene, e.volume);
 		}
@@ -1558,8 +1559,8 @@ function initSceneList(){
 		
 		inputVis.click(function(event){
 			viewer.scene.pointclouds[i].visible = event.target.checked;
-			if(viewer._2dprofile){
-				viewer._2dprofile.redraw();
+			if(viewer.profileWindow){
+				viewer.profileWindow.redraw();
 			}
 		});
 

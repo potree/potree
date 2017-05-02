@@ -4,7 +4,6 @@ Potree.ProfileData = function(profile){
 	
 	this.segments = [];
 	this.boundingBox = new THREE.Box3();
-	this.projectedBoundingBox = new THREE.Box2();
 	
 	var mileage = new THREE.Vector3();
 	for(var i = 0; i < profile.points.length - 1; i++){
@@ -59,7 +58,7 @@ Potree.ProfileData = function(profile){
 			cutPlane: cutPlane,
 			halfPlane: halfPlane,
 			length: length,
-			points: null,
+			points: new Potree.Points(),
 			project: project
 		};
 		
@@ -69,18 +68,13 @@ Potree.ProfileData = function(profile){
 		mileage.z += end.z - start.z;
 	}
 	
-	this.projectedBoundingBox.min.x = 0;
-	this.projectedBoundingBox.min.z = Number.POSITIVE_INFINITY;
-	this.projectedBoundingBox.max.x = mileage.x;
-	this.projectedBoundingBox.max.z = Number.NEGATIVE_INFINITY;
-	
 	this.size = function(){
-		var size = 0;
-		for(var i = 0; i < this.segments.length; i++){
-			if(this.segments[i].points){
-				size += this.segments[i].numPoints;
-			}
+		
+		let size = 0;
+		for(let segment of this.segments){
+			size += segment.points.numPoints;
 		}
+		
 		return size;
 	}
 	
@@ -191,36 +185,23 @@ Potree.ProfileRequest = function(pointcloud, profile, maxDepth, callback){
 	this.getPointsInsideProfile = function(nodes, target){
 	
 		let totalMileage = 0;
-		for(var pi = 0; pi < target.segments.length; pi++){
-			var segment = target.segments[pi];
+		
+		
+		for(let segment of target.segments){
 			
-			for(var ni = 0; ni < nodes.length; ni++){
-				var node = nodes[ni];
-				
-				var geometry = node.geometry;
-				var positions = geometry.attributes.position;
-				var p = positions.array;
-				var numPoints = node.numPoints;
-				
-				if(!segment.points){
-					segment.points = {};
-					segment.boundingBox = new THREE.Box3();
-					
-					for (var property in geometry.attributes) {
-						if (geometry.attributes.hasOwnProperty(property)) {
-							if(property === "indices"){
-							
-							}else{
-								segment.points[property] = [];
-							}
-						}
-					}
-					
-					segment.points["mileage"] = [];
-				}
+			for(let node of nodes){
+				let geometry = node.geometry;
+				let positions = geometry.attributes.position;
+				let p = positions.array;
+				let numPoints = node.numPoints;
 				
 				let sv = new THREE.Vector3().subVectors(segment.end, segment.start).setZ(0);
 				let segmentDir = sv.clone().normalize();
+				
+				let accepted = [];
+				let mileage = [];
+				let acceptedPositions = [];
+				let points = new Potree.Points();
 				
 				for(var i = 0; i < numPoints; i++){
 					var pos = new THREE.Vector3(p[3*i], p[3*i+1], p[3*i+2]);
@@ -229,58 +210,74 @@ Potree.ProfileRequest = function(pointcloud, profile, maxDepth, callback){
 					var centerDistance = Math.abs(segment.halfPlane.distanceToPoint(pos));
 					
 					if(distance < profile.width / 2 && centerDistance < segment.length / 2){
-						segment.boundingBox.expandByPoint(pos);
 						
 						let svp = new THREE.Vector3().subVectors(pos, segment.start);
 						let localMileage = segmentDir.dot(svp);
 						
-						let mileage = localMileage + totalMileage;
-						segment.points["mileage"].push(mileage);
+						accepted.push(i);
+						mileage.push(localMileage + totalMileage);
+						points.boundingBox.expandByPoint(pos);
 						
-						for (var property in geometry.attributes) {
-							if (geometry.attributes.hasOwnProperty(property)) {
-							
-								if(property === "position"){
-									segment.points[property].push(pos);
-								}else if(property === "indices"){
-									// skip indices
-								}else{
-									var values = geometry.attributes[property];
-									if(values.itemSize === 1){
-										segment.points[property].push(values.array[i]);
-									}else{
-										var value = [];
-										for(var j = 0; j < values.itemSize; j++){
-											value.push(values.array[i*values.itemSize + j]);
-										}
-										segment.points[property].push(value);
-									}
-								}
-								
-							}
-						}
-					}else{
-						var a;
+						acceptedPositions.push(pos.x);
+						acceptedPositions.push(pos.y);
+						acceptedPositions.push(pos.z);
 					}
 				}
-			}
-		
-			segment.numPoints = segment.points.position.length;
-			
-			if(segment.numPoints > 0){
-				target.boundingBox.expandByPoint(segment.boundingBox.min);
-				target.boundingBox.expandByPoint(segment.boundingBox.max);
 				
-				target.projectedBoundingBox.expandByPoint(new THREE.Vector2(0, target.boundingBox.min.y));
-				target.projectedBoundingBox.expandByPoint(new THREE.Vector2(0, target.boundingBox.max.y));
+				for(let attribute of Object.keys(geometry.attributes).filter(a => a !== "indices")) {
+
+					let bufferedAttribute = geometry.attributes[attribute];
+					let type = bufferedAttribute.array.constructor;
+					
+					let filteredBuffer = null;
+					
+					if(attribute === "position"){
+						filteredBuffer = new type(acceptedPositions);
+					}else{
+						filteredBuffer = new type(accepted.length * bufferedAttribute.itemSize);
+					
+						for(let i = 0; i < accepted.length; i++){
+							let index = accepted[i];
+							
+							filteredBuffer.set(
+								bufferedAttribute.array.subarray(
+									bufferedAttribute.itemSize * index, 
+									bufferedAttribute.itemSize * index + bufferedAttribute.itemSize),
+								bufferedAttribute.itemSize * i)
+						}
+					}
+					points.data[attribute] = filteredBuffer;
+					
+					
+				}
+				
+				points.data["mileage"] = new Float64Array(mileage);
+				points.numPoints = accepted.length;
+				
+				segment.points.add(points);
+				
 			}
 			
 			totalMileage += segment.length;
 		}
+	
+		for(let segment of target.segments){
+			target.boundingBox.union(segment.points.boundingBox);
+		}
+		
+		
+		
 	};
 	
 	this.finishLevelThenCancel = function(){
-		this.maxDepth = this.highestLevelServed;
+		if(this.cancelRequested){
+			return;
+		}
+		
+		this.maxDepth = this.highestLevelServed + 1;
+		this.cancelRequested = true;
+		
+		console.log(`maxDepth: ${this.maxDepth}`);
 	};
 	
 	this.cancel = function(){

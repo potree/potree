@@ -88,29 +88,3 @@
 	</div>
 
 </div>
-
-
-<script>
-
-$('#potree_download_profile_ortho_button').click(function(){
-	let string = viewer._2dprofile.getPointsInProfileAsCSV();
-	let uri = "data:application/octet-stream;base64,"+btoa(string);
-	$('#potree_download_profile_ortho_link').attr("href", uri);
-});
-
-$('#potree_download_profile_button').click(function(){
-	let las = viewer._2dprofile.getPointsInProfileAsLas();
-	let u8view = new Uint8Array(las);
-	
-	let binString = "";
-	for(let i = 0; i < u8view.length; i++){
-		binString += String.fromCharCode(u8view[i]);
-	}
-	
-	let uri = "data:application/octet-stream;base64,"+btoa(binString);
-	$('#potree_download_profile_link').attr("href", uri);
-	//elDownloadProfileLink.href = uri;
-	
-});
-
-</script>

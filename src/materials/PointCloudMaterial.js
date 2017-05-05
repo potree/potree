@@ -616,7 +616,13 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 	}
 	
 	set heightMin(value){
-		this.uniforms.heightMin.value = value;
+		if(this.uniforms.heightMin.value !== value){
+			this.uniforms.heightMin.value = value;
+			this.dispatchEvent({
+				type: "material_property_changed",
+				target: this
+			});
+		}
 	}
 
 
@@ -625,7 +631,13 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 	}
 	
 	set heightMax(value){
-		this.uniforms.heightMax.value = value;
+		if(this.uniforms.heightMax.value !== value){
+			this.uniforms.heightMax.value = value;
+			this.dispatchEvent({
+				type: "material_property_changed",
+				target: this
+			});
+		}
 	}
 
 
@@ -644,6 +656,20 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 	
 	set intensityRange(value){
 		this.uniforms.intensityRange.value = value;
+		
+		if(value.length !== 2){
+			return;
+		}else if(this.uniforms.heightMax.value[0] !== value[0]){
+			return;
+		}else if(this.uniforms.heightMax.value[1] !== value[1]){
+			return;
+		}
+		
+		this.uniforms.heightMax.value = value;
+		this.dispatchEvent({
+			type: "material_property_changed",
+			target: this
+		});
 	}
 
 
@@ -652,7 +678,13 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 	}
 	
 	set intensityGamma(value){
-		this.uniforms.intensityGamma.value = value;
+		if(this.uniforms.intensityGamma.value !== value){
+			this.uniforms.intensityGamma.value = value;
+			this.dispatchEvent({
+				type: "material_property_changed",
+				target: this
+			});
+		}
 	}
 
 
@@ -661,7 +693,13 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 	}
 	
 	set intensityContrast(value){
-		this.uniforms.intensityContrast.value = value;
+		if(this.uniforms.intensityContrast.value !== value){
+			this.uniforms.intensityContrast.value = value;
+			this.dispatchEvent({
+				type: "material_property_changed",
+				target: this
+			});
+		}
 	}
 
 
@@ -670,7 +708,13 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 	}
 	
 	set intensityBrightness(value){
-		this.uniforms.intensityBrightness.value = value;
+		if(this.uniforms.intensityBrightness.value !== value){
+			this.uniforms.intensityBrightness.value = value;
+			this.dispatchEvent({
+				type: "material_property_changed",
+				target: this
+			});
+		}
 	}
 
 
@@ -679,7 +723,13 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 	}
 	
 	set rgbGamma(value){
-		this.uniforms.rgbGamma.value = value;
+		if(this.uniforms.rgbGamma.value !== value){
+			this.uniforms.rgbGamma.value = value;
+			this.dispatchEvent({
+				type: "material_property_changed",
+				target: this
+			});
+		}
 	}
 
 
@@ -688,7 +738,13 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 	}
 	
 	set rgbContrast(value){
-		this.uniforms.rgbContrast.value = value;
+		if(this.uniforms.rgbContrast.value !== value){
+			this.uniforms.rgbContrast.value = value;
+			this.dispatchEvent({
+				type: "material_property_changed",
+				target: this
+			});
+		}
 	}
 
 
@@ -697,7 +753,13 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 	}
 	
 	set rgbBrightness(value){
-		this.uniforms.rgbBrightness.value = value;
+		if(this.uniforms.rgbBrightness.value !== value){
+			this.uniforms.rgbBrightness.value = value;
+			this.dispatchEvent({
+				type: "material_property_changed",
+				target: this
+			});
+		}
 	}
 
 

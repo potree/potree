@@ -75,6 +75,12 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher{
 		this.mouse = new THREE.Vector2(0, 0);
 		this.scale = new THREE.Vector3(1, 1, 1);
 		
+		let csvIcon = `${Potree.resourcePath}/icons/file_csv_2d.svg`;
+		$("#potree_download_csv_icon").attr("src", csvIcon);
+		
+		let lasIcon = `${Potree.resourcePath}/icons/file_las_3d.svg`;
+		$("#potree_download_las_icon").attr("src", lasIcon);
+		
 		this.initTHREE();
 		this.initSVG();
 		this.initListeners();
@@ -115,73 +121,71 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher{
 				this.camera.position.y -= ncPos[1] - cPos[1];
 				
 				this.render();
-			}else if(this.points){
+			}else if(this.pointclouds.size > 0){
 				// FIND HOVERED POINT 
-				//let pixelRadius = 10;
-				//let ncPos = this.toCamSpace(new THREE.Vector3(newMouse.x, newMouse.y, 0));
-				//let ncPosBorder = this.toCamSpace(new THREE.Vector3(newMouse.x + pixelRadius, newMouse.y, 0));
-				//let mileage = ncPos.x;
-				//let elevation = ncPos.y;
-				//let radius = Math.abs(ncPosBorder.x - ncPos.x);
-				//let point = this.points.selectPoint(mileage, elevation, radius);
-				//
-				//if(point){
-				//	this.elRoot.find("#profileSelectionProperties").fadeIn(200);
-				//	this.pickSphere.visible = true;
-				//	this.pickSphere.scale.set(0.5 * radius, 0.5 * radius, 0.5 * radius);
-				//	this.pickSphere.position.set(point.mileage, point.position.z, 0);
-				//	
-				//	let info = this.elRoot.find("#profileSelectionProperties");
-				//	let html = "<table>";
-				//	for(let attribute of Object.keys(point)){
-				//		let value = point[attribute];
-				//		if(attribute === "position"){
-				//			let values = value.toArray().map(v => Potree.utils.addCommas(v.toFixed(3)));
-				//			html += `
-				//				<tr>
-				//					<td>x</td>
-				//					<td>${values[0]}</td>
-				//				</tr>
-				//				<tr>
-				//					<td>y</td>
-				//					<td>${values[1]}</td>
-				//				</tr>
-				//				<tr>
-				//					<td>z</td>
-				//					<td>${values[2]}</td>
-				//				</tr>`;
-				//		}else if(attribute === "color"){
-				//			html += `
-				//				<tr>
-				//					<td>${attribute}</td>
-				//					<td>${value.join(", ")}</td>
-				//				</tr>`;
-				//		}else if(attribute === "normal"){
-				//			continue;
-				//		}else if(attribute === "mileage"){
-				//			html += `
-				//				<tr>
-				//					<td>${attribute}</td>
-				//					<td>${value.toFixed(3)}</td>
-				//				</tr>`;
-				//		}else{
-				//			html += `
-				//				<tr>
-				//					<td>${attribute}</td>
-				//					<td>${value}</td>
-				//				</tr>`;
-				//		}
-				//		
-				//	}
-				//	html += "</table>"
-				//	info.html(html);
-				//	
-				//	this.selectedPoint = point;
-				//}else{
-				//	//this.pickSphere.visible = false;
-				//	//this.selectedPoint = null;
-				//}
-				//this.render();
+				let pixelRadius = 10;
+				let radius = Math.abs(this.scaleX.invert(0) - this.scaleX.invert(5));
+				let mileage = this.scaleX.invert(newMouse.x);
+				let elevation = this.scaleY.invert(newMouse.y);
+				let point = this.selectPoint(mileage, elevation, radius);
+				
+				if(point){
+					this.elRoot.find("#profileSelectionProperties").fadeIn(200);
+					this.pickSphere.visible = true;
+					this.pickSphere.scale.set(0.5 * radius, 0.5 * radius, 0.5 * radius);
+					this.pickSphere.position.set(point.mileage, point.position[2], 0);
+					
+					let info = this.elRoot.find("#profileSelectionProperties");
+					let html = "<table>";
+					for(let attribute of Object.keys(point)){
+						let value = point[attribute];
+						if(attribute === "position"){
+							let values = [...value].map(v => Potree.utils.addCommas(v.toFixed(3)));
+							html += `
+								<tr>
+									<td>x</td>
+									<td>${values[0]}</td>
+								</tr>
+								<tr>
+									<td>y</td>
+									<td>${values[1]}</td>
+								</tr>
+								<tr>
+									<td>z</td>
+									<td>${values[2]}</td>
+								</tr>`;
+						}else if(attribute === "color"){
+							html += `
+								<tr>
+									<td>${attribute}</td>
+									<td>${value.join(", ")}</td>
+								</tr>`;
+						}else if(attribute === "normal"){
+							continue;
+						}else if(attribute === "mileage"){
+							html += `
+								<tr>
+									<td>${attribute}</td>
+									<td>${value.toFixed(3)}</td>
+								</tr>`;
+						}else{
+							html += `
+								<tr>
+									<td>${attribute}</td>
+									<td>${value}</td>
+								</tr>`;
+						}
+						
+					}
+					html += "</table>"
+					info.html(html);
+					
+					this.selectedPoint = point;
+				}else{
+					//this.pickSphere.visible = false;
+					//this.selectedPoint = null;
+				}
+				this.render();
 				
 				
 			}
@@ -230,8 +234,62 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher{
 		
 		$('#closeProfileContainer').click(() => {
 			this.hide();
-			this.enabled = false;
 		});
+	}
+	
+	selectPoint(mileage, elevation, radius){
+		
+		let closest = {
+			distance: Infinity,
+			pointcloud: null,
+			points: null,
+			index: null
+		};
+
+		for(let [pointcloud, entry] of this.pointclouds){
+			let points = entry.points;
+			
+			for(let i = 0; i < points.numPoints; i++){
+				
+				//let pos = new THREE.Vector3(...points.data.position.subarray(3*i, 3*i+3));
+				let m = points.data.mileage[i] - mileage;
+				let e = points.data.position[3*i+2] - elevation;
+				
+				let r = Math.sqrt(m*m + e*e);
+				
+				if(r < radius && r < closest.distance){
+					closest = {
+						distance: r,
+						pointcloud: pointcloud,
+						points: points,
+						index: i
+					};
+				}
+			}
+		}
+		
+		if(closest.distance < Infinity){
+			let points = closest.points;
+			
+			let point = {};
+			
+			let attributes = Object.keys(points.data);
+			for(let attribute of attributes){
+				let attributeData = points.data[attribute];
+				let itemSize = attributeData.length / points.numPoints;
+				let value = attributeData.subarray(itemSize * closest.index, itemSize * closest.index + itemSize);
+				
+				if(value.length === 1){
+					point[attribute] = value[0];
+				}else{
+					point[attribute] = value;
+				}
+			}
+			
+			return point;
+		}else{
+			return null;
+		}
 	}
 	
 	initTHREE(){
@@ -352,7 +410,7 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher{
 						
 						posBuffer[3*i + 0] = x;
 						posBuffer[3*i + 1] = y;
-						posBuffer[3*i + 2] = 0;
+						posBuffer[3*i + 2] = y;
 						projectedBox.expandByPoint(new THREE.Vector3(x, y, 0));
 					}
 					
@@ -442,6 +500,11 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher{
 		this.enabled = true;
 	}
 	
+	hide(){
+		this.elRoot.fadeOut();
+		this.enabled = false;
+	}
+	
 	updateScales(){
 		let width = this.renderArea[0].clientWidth;
 		let height = this.renderArea[0].clientHeight;
@@ -483,6 +546,13 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher{
 				material.uniforms.intensityRange.value = pointcloud.material.uniforms.intensityRange.value;
 				material.heightMin = pointcloud.material.heightMin;
 				material.heightMax = pointcloud.material.heightMax;
+				material.rgbGamma = pointcloud.material.rgbGamma;
+				material.rgbContrast = pointcloud.material.rgbContrast;
+				material.rgbBrightness = pointcloud.material.rgbBrightness;
+				material.intensityRange = pointcloud.material.intensityRange;
+				material.intensityGamma = pointcloud.material.rgbGamma;
+				material.intensityContrast = pointcloud.material.rgbContrast;
+				material.intensityBrightness = pointcloud.material.rgbBrightness;
 			}
 			
 			this.renderer.setSize(width, height);

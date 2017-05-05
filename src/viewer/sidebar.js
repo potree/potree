@@ -1122,7 +1122,8 @@ function initMeasurementDetails(){
 			this.elContent = $(`
 				<div>
 					
-					<input type="button" value="download" id="download_volume_${this.id}"/>
+					<input type="button" value="Prepare Download" id="download_volume_${this.id}"/>
+					<span id="download_volume_status_${this.id}"></span>
 					
 					<!-- ACTIONS -->
 					<div style="display: flex; margin-top: 12px">
@@ -1135,7 +1136,12 @@ function initMeasurementDetails(){
 			this.elContentContainer.append(this.elContent);
 			
 			this.elDownloadButton = this.elContent.find(`#download_volume_${this.id}`);
-			this.elDownloadButton.click(() => this.download());
+			
+			if(viewer.server){
+				this.elDownloadButton.click(() => this.download());
+			}else{
+				this.elDownloadButton.hide();
+			}
 			
 			let elRemove = this.elContent.find(".measurement_action_remove");
 			elRemove.click(() => {this.scene.removeVolume(measurement)});
@@ -1149,7 +1155,84 @@ function initMeasurementDetails(){
 		
 		download(){
 			
+			let volume = this.measurement;
+			let box = volume.boundingBox.clone().applyMatrix4(volume.matrixWorld);
 			
+			let coordinates = `{${box.min.x}, ${box.min.y}},{${box.max.x}, ${box.max.y}}`;
+			let width = box.getSize().x;
+			let minLOD = 0;
+			let maxLOD = 8;
+			
+			let urlIsAbsolute = new RegExp('^(?:[a-z]+:)?//', 'i').test(this.scene.pointclouds[0].pcoGeometry.url);
+			let pc = "";
+			if(urlIsAbsolute){
+				pc = this.scene.pointclouds[0].pcoGeometry.url;
+			}else{
+				pc = `${window.location.href}/${viewer.scene.pointclouds[0].pcoGeometry.url}`;
+			}
+			
+			let request = `${viewer.server}/start_profile_worker?minLOD=${minLOD}&maxLOD=${maxLOD}&width=${width}&coordinates=${coordinates}&pointCloud=${pc}`;
+			//console.log(request);
+			//http://localhost:3000/start_profile_worker?minLOD=0&maxLOD=10&width=1500&coordinates={693550.968,3915914.169},{693890.618,3916387.819},{694584.820,3916458.180}&pointCloud=http://localhost/dev/pointclouds/converted/CA13/cloud.js&attributes=
+			
+			let elMessage = this.elContent.find(`#download_volume_status_${this.id}`);
+			elMessage.html("sending request...");
+			
+			let workerID = null;
+			
+			let checkUntilFinished = () => {
+				//http://localhost:3000/get_status?workerID=ef7bd824-a32d-4086-9547-09dfdf700c19
+				
+				if(!workerID){
+					return;
+				}
+				
+				let request = `${viewer.server}/get_status?workerID=${workerID}`;
+				
+				let xhr = new XMLHttpRequest();
+				xhr.onreadystatechange = () => {
+					if (xhr.readyState == XMLHttpRequest.DONE) {
+						//alert(xhr.responseText);
+						let res = JSON.parse(xhr.responseText);
+						console.log(res);
+						
+						
+						
+						
+						
+						if(!res.finished){
+							elMessage.html(`request status: ${res.status}`);
+							checkUntilFinished();
+						}else{
+							elMessage.html(`<a href="${viewer.server}/get_las?workerID=${workerID}">Download ready</a>`);
+						}
+					}
+				}
+				xhr.open('GET', request, true);
+				xhr.send(null)
+				
+			};
+			
+			let xhr = new XMLHttpRequest();
+			xhr.onreadystatechange = () => {
+				if (xhr.readyState == XMLHttpRequest.DONE) {
+					//alert(xhr.responseText);
+					let res = JSON.parse(xhr.responseText);
+					console.log(res);
+					
+					if(res.status === "OK"){
+						workerID = res.workerID;
+						elMessage.html("request is being processed");
+						checkUntilFinished();
+					}else if(res.status === "ERROR_POINT_PROCESSED_ESTIMATE_TOO_LARGE"){
+						elMessage.html("Too many candidate points in selection.");
+					}else{
+						elMessage.html(`${res.status}`);
+					}
+				}
+			}
+			xhr.open('GET', request, true);
+			xhr.send(null);
 			
 		}
 		

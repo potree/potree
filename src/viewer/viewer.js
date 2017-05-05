@@ -332,6 +332,8 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		//	defaultSettings.navigation = "Orbit";
 		//}
 		
+		this.server = null;
+		
 		this.fov = 60;
 		this.clipMode = Potree.ClipMode.HIGHLIGHT_INSIDE;
 		this.isFlipYZ = false;
@@ -1158,7 +1160,9 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 					handle: $("#profile_titlebar"),
 					containment: $(document.body)
 				});
-				$("#profile_window").resizable();
+				$("#profile_window").resizable({
+					containment: $(document.body)
+				});
 				
 				if(callback){
 					$(callback);
@@ -1176,7 +1180,11 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
     setLanguage(lang){
         i18n.setLng(lang);
         $("body").i18n();
-    }	
+    }
+	
+	setServer(server){
+		this.server = server;
+	}
 	
 	initThree(){
 		let width = this.renderArea.clientWidth;

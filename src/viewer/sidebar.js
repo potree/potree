@@ -1156,10 +1156,8 @@ function initMeasurementDetails(){
 		download(){
 			
 			let volume = this.measurement;
-			let box = volume.boundingBox.clone().applyMatrix4(volume.matrixWorld);
-			
-			let coordinates = `{${box.min.x}, ${box.min.y}},{${box.max.x}, ${box.max.y}}`;
-			let width = box.getSize().x;
+			//let box = volume.boundingBox.clone().applyMatrix4(volume.matrixWorld);
+			let box = volume.matrixWorld.elements.join(", ");
 			let minLOD = 0;
 			let maxLOD = 8;
 			
@@ -1171,9 +1169,8 @@ function initMeasurementDetails(){
 				pc = `${window.location.href}/${viewer.scene.pointclouds[0].pcoGeometry.url}`;
 			}
 			
-			let request = `${viewer.server}/start_profile_worker?minLOD=${minLOD}&maxLOD=${maxLOD}&width=${width}&coordinates=${coordinates}&pointCloud=${pc}`;
+			let request = `${viewer.server}/start_extract_region_worker?minLOD=${minLOD}&maxLOD=${maxLOD}&box=${box}&pointCloud=${pc}`;
 			//console.log(request);
-			//http://localhost:3000/start_profile_worker?minLOD=0&maxLOD=10&width=1500&coordinates={693550.968,3915914.169},{693890.618,3916387.819},{694584.820,3916458.180}&pointCloud=http://localhost/dev/pointclouds/converted/CA13/cloud.js&attributes=
 			
 			let elMessage = this.elContent.find(`#download_volume_status_${this.id}`);
 			elMessage.html("sending request...");
@@ -1195,10 +1192,6 @@ function initMeasurementDetails(){
 						//alert(xhr.responseText);
 						let res = JSON.parse(xhr.responseText);
 						console.log(res);
-						
-						
-						
-						
 						
 						if(!res.finished){
 							elMessage.html(`request status: ${res.status}`);

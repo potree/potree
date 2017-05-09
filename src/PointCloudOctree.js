@@ -626,6 +626,8 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree{
 		
 		let gl = renderer.context;
 		
+		//renderer.resetGLState();
+		
 		let compileMaterial = function(material){
 			if(material._glstate === undefined){
 				material._glstate = {};
@@ -857,7 +859,7 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree{
 			gl.enableVertexAttribArray( apIndices );
 		}
 		
-		//renderer.resetGLState();
+//		renderer.resetGLState();
 		
 		for(let i = 0; i < nodes.length; i++){
 			let node = nodes[i];

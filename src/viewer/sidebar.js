@@ -1177,6 +1177,8 @@ function initMeasurementDetails(){
 			
 			let workerID = null;
 			
+			let start = new Date().getTime();
+			
 			let checkUntilFinished = () => {
 				//http://localhost:3000/get_status?workerID=ef7bd824-a32d-4086-9547-09dfdf700c19
 				
@@ -1194,10 +1196,15 @@ function initMeasurementDetails(){
 						console.log(res);
 						
 						if(!res.finished){
-							elMessage.html(`request status: ${res.status}`);
-							checkUntilFinished();
+							//elMessage.html(`request status: ${res.status}`);
+							let end = new Date().getTime();
+							let duration = (end - start);
+							let seconds = parseInt(duration / 1000);
+							elMessage.html(`<br>preparing download... ${seconds}s`);
+							//checkUntilFinished();
+							setTimeout(checkUntilFinished, 500);
 						}else{
-							elMessage.html(`<a href="${viewer.server}/get_las?workerID=${workerID}">Download ready</a>`);
+							elMessage.html(`<br><a href="${viewer.server}/get_las?workerID=${workerID}">Download ready</a>`);
 						}
 					}
 				}

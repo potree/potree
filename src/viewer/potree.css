@@ -746,6 +746,15 @@ body{
 }
 
 
+.text-icon{
+	opacity:	0.5;
+	height:		24px;
+}
+
+.text-icon:hover{
+	opacity:	1.0;
+}
+
 
 
 /*
@@ -753,5 +762,7 @@ label:hover{
 	background-color: white;
 }
 */
+
+
 
 

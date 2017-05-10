@@ -1750,6 +1750,8 @@ class PotreeRenderer{
 
 		//var queryAll = Potree.startQuery("All", viewer.renderer.getContext());
 		
+		//viewer.renderer.resetGLState();
+		
 		// render skybox
 		if(viewer.background === "skybox"){
 			viewer.renderer.clear(true, true, false);

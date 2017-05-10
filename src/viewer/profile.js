@@ -11,6 +11,7 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher{
 		
 		this.projectedBox = new THREE.Box3();
 		this.pointclouds = new Map();
+		this.numPoints = 0
 		
 		this.geometryPool = new class{
 			constructor(){
@@ -218,8 +219,8 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher{
 				this.scale.multiplyScalar(100/110);
 			}
 			
-			this.scale.max(new THREE.Vector3(0.5, 0.5, 0.5));
-			this.scale.min(new THREE.Vector3(100, 100, 100));
+			//this.scale.max(new THREE.Vector3(0.5, 0.5, 0.5));
+			//this.scale.min(new THREE.Vector3(100, 100, 100));
 			
 			this.updateScales();
 			let ncPos = [this.scaleX.invert(this.mouse.x), this.scaleY.invert(this.mouse.y)];
@@ -234,6 +235,33 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher{
 		
 		$('#closeProfileContainer').click(() => {
 			this.hide();
+		});
+		
+		$('#potree_download_csv_icon').click(() => {
+			//let string = viewer.profileWindow.getPointsInProfileAsCSV();
+			
+			let points = new Potree.Points();
+			this.pointclouds.forEach((value, key) => {
+				points.add(value.points);
+			});
+			
+			let string = Potree.CSVExporter.toString(points);
+			
+			let uri = "data:application/octet-stream;base64,"+btoa(string);
+			$('#potree_download_profile_ortho_link').attr("href", uri);
+		});
+		
+		$('#potree_download_las_icon').click(function(){
+			let las = viewer.profileWindow.getPointsInProfileAsLas();
+			let u8view = new Uint8Array(las);
+			
+			let binString = "";
+			for(let i = 0; i < u8view.length; i++){
+				binString += String.fromCharCode(u8view[i]);
+			}
+			
+			let uri = "data:application/octet-stream;base64,"+btoa(binString);
+			$('#potree_download_profile_link').attr("href", uri);
 		});
 	}
 	
@@ -453,6 +481,13 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher{
 			let center = this.projectedBox.getCenter();
 			this.scale.set(scale, scale, 1);
 			this.camera.position.copy(center);
+		}
+		
+		let numPoints = 0;
+		for(let entry of this.pointclouds.entries()){
+			numPoints += entry[1].points.numPoints;
+			
+			$(`#profile_num_points`).html(Potree.utils.addCommas(numPoints));
 		}
 		
 		this.render();
@@ -700,68 +735,49 @@ Potree.ProfileWindowController = class ProfileWindowController{
 	
 };
 
-function test(){
-	
-	let numPoints = 1000;
-	let position = new Float32Array(3 * numPoints);
-	let color = new Uint8Array(3 * numPoints);
-	let intensity = new Uint16Array(numPoints);
-	
-	let points = new Potree.Points();
-	points.data = {
-		position: position,
-		color: color,
-		intensity: intensity
-	};
-	points.numPoints = numPoints;
-	
-	
-	for(let i = 0; i < numPoints; i++){
-		let u = i / numPoints;
-		
-		let x = 100 * u;
-		let y = Math.sin(2 * Math.PI * u);
-		let z = 0;
-		
-		position[3*i + 0] = x;
-		position[3*i + 1] = y;
-		position[3*i + 2] = z;
-		
-		points.boundingBox.expandByPoint(new THREE.Vector3(x, y, z));
-		
-		let r = 255 * u;
-		let g = 255 * (y + 1) / 2;
-		let b = 0;
-		
-		color[3*i + 0] = r;
-		color[3*i + 1] = g;
-		color[3*i + 2] = b;
-		
-		intensity[i] = Math.random() * 255;
-	}
-	
-
-	
-	let pointcloud = "abc";
-	
-	viewer.profileWindow.addPoints(pointcloud, points);
-}
-
-//$('#potree_download_profile_ortho_button').click(function(){
-//	let string = viewer.profileWindow.getPointsInProfileAsCSV();
-//	let uri = "data:application/octet-stream;base64,"+btoa(string);
-//	$('#potree_download_profile_ortho_link').attr("href", uri);
-//});
-//
-//$('#potree_download_profile_button').click(function(){
-//	let las = viewer.profileWindow.getPointsInProfileAsLas();
-//	let u8view = new Uint8Array(las);
+//function test(){
 //	
-//	let binString = "";
-//	for(let i = 0; i < u8view.length; i++){
-//		binString += String.fromCharCode(u8view[i]);
+//	let numPoints = 1000;
+//	let position = new Float32Array(3 * numPoints);
+//	let color = new Uint8Array(3 * numPoints);
+//	let intensity = new Uint16Array(numPoints);
+//	
+//	let points = new Potree.Points();
+//	points.data = {
+//		position: position,
+//		color: color,
+//		intensity: intensity
+//	};
+//	points.numPoints = numPoints;
+//	
+//	
+//	for(let i = 0; i < numPoints; i++){
+//		let u = i / numPoints;
+//		
+//		let x = 100 * u;
+//		let y = Math.sin(2 * Math.PI * u);
+//		let z = 0;
+//		
+//		position[3*i + 0] = x;
+//		position[3*i + 1] = y;
+//		position[3*i + 2] = z;
+//		
+//		points.boundingBox.expandByPoint(new THREE.Vector3(x, y, z));
+//		
+//		let r = 255 * u;
+//		let g = 255 * (y + 1) / 2;
+//		let b = 0;
+//		
+//		color[3*i + 0] = r;
+//		color[3*i + 1] = g;
+//		color[3*i + 2] = b;
+//		
+//		intensity[i] = Math.random() * 255;
 //	}
 //	
-//	let uri = "data:application/octet-stream;base64,"+btoa(binString);
-//	$('#potree_download_profile_link').attr("href", uri);
-//});
+//
+//	
+//	let pointcloud = "abc";
+//	
+//	viewer.profileWindow.addPoints(pointcloud, points);
+//}

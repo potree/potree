@@ -55,7 +55,7 @@
 		"show": "show annotations"
     }, 
 	"profile": {
-        "nb_points": "Point number",
+        "nb_points": "Number of Points",
         "title": "Height profile",
         "save_las": "Save LAS(3D)",
         "save_ortho": "Save CSV(2D)"

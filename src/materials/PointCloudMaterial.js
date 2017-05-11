@@ -343,11 +343,25 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 	}
 	
 	set classification(value){
-		//if(this._classification !== value){
+		
+		let isEqual = Object.keys(value).length === Object.keys(this._classification).length;
+		
+		for(let key of Object.keys(value)){
+			isEqual = isEqual && this._classification[key] !== undefined;
+			isEqual = isEqual && value[key].equals(this._classification[key]);
+		}
+		
+		
+		if(!isEqual){
 			this._classification = value;
 			this.classificationTexture = Potree.PointCloudMaterial.generateClassificationTexture(this._classification);
 			this.uniforms.classificationLUT.value = this.classificationTexture;
-		//}
+			
+			this.dispatchEvent({
+				type: "material_property_changed",
+				target: this
+			});
+		}
 	}
 
 	get spacing(){
@@ -457,9 +471,9 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 					target: this
 				});
 				this.dispatchEvent({
-				type: "material_property_changed",
-				target: this
-			});
+					type: "material_property_changed",
+					target: this
+				});
 			}
 		}
 	}

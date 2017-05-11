@@ -1,74 +1,44 @@
 
-Potree.ProfileData = function(profile){
-	this.profile = profile;
-	
-	this.segments = [];
-	this.boundingBox = new THREE.Box3();
-	
-	var mileage = new THREE.Vector3();
-	for(var i = 0; i < profile.points.length - 1; i++){
-		var start = profile.points[i];
-		var end = profile.points[i+1];
-		
-		var startGround = new THREE.Vector3(start.x, start.y, 0);
-		var endGround = new THREE.Vector3(end.x, end.y, 0);
-		
-		var center = new THREE.Vector3().addVectors(endGround, startGround).multiplyScalar(0.5);
-		var length = startGround.distanceTo(endGround);
-		var side = new THREE.Vector3().subVectors(endGround, startGround).normalize();
-		var up = new THREE.Vector3(0, 0, 1);
-		var forward = new THREE.Vector3().crossVectors(side, up).normalize();
-		var N = forward;
-		var cutPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(N, startGround);
-		var halfPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(side, center);
-		
-		var project = function(_start, _end, _mileage){
-			var start = _start;
-			var end = _end;
-			var mileage = _mileage;
-			
-			var xAxis = new THREE.Vector3(1,0,0);
-			var dir = new THREE.Vector3().subVectors(end, start);
-			dir.z = 0;
-			dir.normalize();
-			var alpha = Math.acos(xAxis.dot(dir));
-			if(dir.y > 0){
-				alpha = -alpha;
-			}
-			
-			
-			return function(position){
-				var toOrigin = new THREE.Matrix4().makeTranslation(-start.x, -start.y, 0);
-				var alignWithX = new THREE.Matrix4().makeRotationZ(-alpha);
-				var applyMileage = new THREE.Matrix4().makeTranslation(mileage.x, 0, 0);
 
-				var pos = position.clone();
-				pos.applyMatrix4(toOrigin);
-				pos.applyMatrix4(alignWithX);
-				pos.applyMatrix4(applyMileage);
-				
-				return pos;
+
+Potree.ProfileData = class ProfileData{
+	
+	constructor(profile){
+		this.profile = profile;
+		
+		this.segments = [];
+		this.boundingBox = new THREE.Box3();
+		
+		for(let i = 0; i < profile.points.length - 1; i++){
+			let start = profile.points[i];
+			let end = profile.points[i+1];
+			
+			let startGround = new THREE.Vector3(start.x, start.y, 0);
+			let endGround = new THREE.Vector3(end.x, end.y, 0);
+			
+			let center = new THREE.Vector3().addVectors(endGround, startGround).multiplyScalar(0.5);
+			let length = startGround.distanceTo(endGround);
+			let side = new THREE.Vector3().subVectors(endGround, startGround).normalize();
+			let up = new THREE.Vector3(0, 0, 1);
+			let forward = new THREE.Vector3().crossVectors(side, up).normalize();
+			let N = forward;
+			let cutPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(N, startGround);
+			let halfPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(side, center);
+			
+			let segment = {
+				start: start,
+				end: end,
+				cutPlane: cutPlane,
+				halfPlane: halfPlane,
+				length: length,
+				points: new Potree.Points()
 			};
 			
-		}(start, end, mileage.clone());
-		
-		var segment = {
-			start: start,
-			end: end,
-			cutPlane: cutPlane,
-			halfPlane: halfPlane,
-			length: length,
-			points: new Potree.Points(),
-			project: project
-		};
-		
-		this.segments.push(segment);
-		
-		mileage.x += length;
-		mileage.z += end.z - start.z;
+			this.segments.push(segment);
+		}
 	}
 	
-	this.size = function(){
+	size(){
 		
 		let size = 0;
 		for(let segment of this.segments){
@@ -80,64 +50,69 @@ Potree.ProfileData = function(profile){
 	
 };
 
-Potree.ProfileRequest = function(pointcloud, profile, maxDepth, callback){
-
-	this.pointcloud = pointcloud;
-	this.profile = profile;
-	this.maxDepth = maxDepth || Number.MAX_VALUE;
-	this.callback = callback;
-	this.temporaryResult = new Potree.ProfileData(this.profile);
-	this.pointsServed = 0;
-	this.highestLevelServed = 0;
-
-	this.priorityQueue = new BinaryHeap(function(x){return 1 / x.weight;});
+Potree.ProfileRequest = class ProfileRequest{
 	
-	this.initialize = function(){
-		this.priorityQueue.push({node: pointcloud.pcoGeometry.root, weight: 1});
-		this.traverse(pointcloud.pcoGeometry.root);
+	constructor(pointcloud, profile, maxDepth, callback){
+		this.pointcloud = pointcloud;
+		this.profile = profile;
+		this.maxDepth = maxDepth || Number.MAX_VALUE;
+		this.callback = callback;
+		this.temporaryResult = new Potree.ProfileData(this.profile);
+		this.pointsServed = 0;
+		this.highestLevelServed = 0;
+
+		this.priorityQueue = new BinaryHeap(function(x){return 1 / x.weight;});
+		
+		this.initialize();
+	}
+
+	initialize(){
+		this.priorityQueue.push({node: this.pointcloud.pcoGeometry.root, weight: 1});
+		this.traverse(this.pointcloud.pcoGeometry.root);
 	};
 	
 	// traverse the node and add intersecting descendants to queue
-	this.traverse = function(node){
+	traverse(node){
 		
-		var stack = [];
-		for(var i = 0; i < 8; i++){
-			var child = node.children[i];
-			if(child && pointcloud.nodeIntersectsProfile(child, this.profile)){
+		let stack = [];
+		for(let i = 0; i < 8; i++){
+			let child = node.children[i];
+			if(child && this.pointcloud.nodeIntersectsProfile(child, this.profile)){
 				stack.push(child);
 			}
 		}
 		
 		while(stack.length > 0){
-			var node = stack.pop();
-			var weight = node.boundingSphere.radius;
+			let node = stack.pop();
+			let weight = node.boundingSphere.radius;
 			
 			this.priorityQueue.push({node: node, weight: weight});
 		
 			// add children that intersect the cutting plane
 			if(node.level < this.maxDepth){
-				for(var i = 0; i < 8; i++){
-					var child = node.children[i];
-					if(child && pointcloud.nodeIntersectsProfile(child, this.profile)){
+				for(let i = 0; i < 8; i++){
+					let child = node.children[i];
+					if(child && this.pointcloud.nodeIntersectsProfile(child, this.profile)){
 						stack.push(child);
 					}
 				}
 			}
 		}
-	};
+	}
 	
-	this.update = function(){
+	update(){
 		
 		// load nodes in queue
 		// if hierarchy expands, also load nodes from expanded hierarchy
 		// once loaded, add data to this.points and remove node from queue
 		// only evaluate 1-50 nodes per frame to maintain responsiveness
 		
-		var intersectedNodes = [];
+		let maxNodesPerUpdate = 1;
+		let intersectedNodes = [];
 		
-		for(var i = 0; i < Math.min(2, this.priorityQueue.size()); i++){
-			var element = this.priorityQueue.pop();
-			var node = element.node;
+		for(let i = 0; i < Math.min(maxNodesPerUpdate, this.priorityQueue.size()); i++){
+			let element = this.priorityQueue.pop();
+			let node = element.node;
 			
 			
 			if(node.loaded){
@@ -159,7 +134,7 @@ Potree.ProfileRequest = function(pointcloud, profile, maxDepth, callback){
 			this.getPointsInsideProfile(intersectedNodes, this.temporaryResult);
 			if(this.temporaryResult.size() > 100){
 				this.pointsServed += this.temporaryResult.size();
-				callback.onProgress({request: this, points: this.temporaryResult});
+				this.callback.onProgress({request: this, points: this.temporaryResult});
 				this.temporaryResult = new Potree.ProfileData(this.profile);
 			}
 		}
@@ -169,20 +144,20 @@ Potree.ProfileRequest = function(pointcloud, profile, maxDepth, callback){
 
 			if(this.temporaryResult.size() > 0){
 				this.pointsServed += this.temporaryResult.size();
-				callback.onProgress({request: this, points: this.temporaryResult});
+				this.callback.onProgress({request: this, points: this.temporaryResult});
 				this.temporaryResult = new Potree.ProfileData(this.profile);
 			}
 			
-			callback.onFinish({request: this});
+			this.callback.onFinish({request: this});
 			
-			var index = pointcloud.profileRequests.indexOf(this);
+			let index = this.pointcloud.profileRequests.indexOf(this);
 			if(index >= 0){
-				pointcloud.profileRequests.splice(index, 1);
+				this.pointcloud.profileRequests.splice(index, 1);
 			}
 		}
 	};
 	
-	this.getPointsInsideProfile = function(nodes, target){
+	getPointsInsideProfile(nodes, target){
 	
 		let totalMileage = 0;
 		
@@ -203,13 +178,13 @@ Potree.ProfileRequest = function(pointcloud, profile, maxDepth, callback){
 				let acceptedPositions = [];
 				let points = new Potree.Points();
 				
-				for(var i = 0; i < numPoints; i++){
-					var pos = new THREE.Vector3(p[3*i], p[3*i+1], p[3*i+2]);
-					pos.applyMatrix4(pointcloud.matrixWorld);
-					var distance = Math.abs(segment.cutPlane.distanceToPoint(pos));
-					var centerDistance = Math.abs(segment.halfPlane.distanceToPoint(pos));
+				for(let i = 0; i < numPoints; i++){
+					let pos = new THREE.Vector3(p[3*i], p[3*i+1], p[3*i+2]);
+					pos.applyMatrix4(this.pointcloud.matrixWorld);
+					let distance = Math.abs(segment.cutPlane.distanceToPoint(pos));
+					let centerDistance = Math.abs(segment.halfPlane.distanceToPoint(pos));
 					
-					if(distance < profile.width / 2 && centerDistance < segment.length / 2){
+					if(distance < this.profile.width / 2 && centerDistance < segment.length / 2){
 						
 						let svp = new THREE.Vector3().subVectors(pos, segment.start);
 						let localMileage = segmentDir.dot(svp);
@@ -269,7 +244,7 @@ Potree.ProfileRequest = function(pointcloud, profile, maxDepth, callback){
 		
 	};
 	
-	this.finishLevelThenCancel = function(){
+	finishLevelThenCancel(){
 		if(this.cancelRequested){
 			return;
 		}
@@ -280,17 +255,15 @@ Potree.ProfileRequest = function(pointcloud, profile, maxDepth, callback){
 		console.log(`maxDepth: ${this.maxDepth}`);
 	};
 	
-	this.cancel = function(){
-		callback.onCancel();
+	cancel(){
+		this.callback.onCancel();
 		
 		this.priorityQueue = new BinaryHeap(function(x){return 1 / x.weight;});
 		
-		var index = pointcloud.profileRequests.indexOf(this);
+		let index = this.pointcloud.profileRequests.indexOf(this);
 		if(index >= 0){
-			pointcloud.profileRequests.splice(index, 1);
+			this.pointcloud.profileRequests.splice(index, 1);
 		}
 	};
-	
-	this.initialize();
 	
 };

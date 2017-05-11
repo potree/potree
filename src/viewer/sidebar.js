@@ -281,6 +281,8 @@ function initAppearance(){
 function initNavigation(){
 
 	let elNavigation = $("#navigation");
+	let sldMoveSpeed = $("#sldMoveSpeed");
+	let lblMoveSpeed = $('#lblMoveSpeed');
 	
 	elNavigation.append(createToolIcon(
 		Potree.resourcePath + "/icons/earth_controls_1.png",
@@ -334,7 +336,7 @@ function initNavigation(){
 		return Math.pow((value - speedRange.x) / speedRange.y, 1 / 4);
 	};
 
-	$( "#sldMoveSpeed" ).slider({
+	sldMoveSpeed.slider({
 		value: toExpSpeed( viewer.getMoveSpeed() ),
 		min: 0,
 		max: 1,
@@ -343,11 +345,11 @@ function initNavigation(){
 	});
 	
 	viewer.addEventListener("move_speed_changed", function(event){
-		$('#lblMoveSpeed')[0].innerHTML = viewer.getMoveSpeed().toFixed(1);
-		$( "#sldMoveSpeed" ).slider({value: toExpSpeed(viewer.getMoveSpeed())});
+		lblMoveSpeed.html(viewer.getMoveSpeed().toFixed(1));
+		sldMoveSpeed.slider({value: toExpSpeed(viewer.getMoveSpeed())});
 	});
 	
-	$('#lblMoveSpeed')[0].innerHTML = viewer.getMoveSpeed().toFixed(1);
+	lblMoveSpeed.html(viewer.getMoveSpeed().toFixed(1));
 }
 
 function initAnnotationDetails(){
@@ -1642,8 +1644,8 @@ function initSceneList(){
 		
 		inputVis.click(function(event){
 			viewer.scene.pointclouds[i].visible = event.target.checked;
-			if(viewer.profileWindow){
-				viewer.profileWindow.redraw();
+			if(viewer.profileWindowController){
+				viewer.profileWindowController.recompute();
 			}
 		});
 
@@ -1692,8 +1694,9 @@ function initSceneList(){
 			slide: function( event, ui ) {
 				let min = (ui.values[0] == 0) ? 0 : parseInt(Math.pow(2, 16 * ui.values[0]));
 				let max = parseInt(Math.pow(2, 16 * ui.values[1]));
-				pcMaterial.intensityRange[0] = min;
-				pcMaterial.intensityRange[1] = max;
+				pcMaterial.intensityRange = [min, max];
+				//pcMaterial.intensityRange[0] = min;
+				//pcMaterial.intensityRange[1] = max;
 				viewer.dispatchEvent({"type": "intensity_range_changed" + i, "viewer": viewer});
 			}
 		});
@@ -1997,27 +2000,34 @@ function initSceneList(){
 			$("#optMaterial" + i).val(viewer.toMaterialName(pcMaterial.pointColorType)).selectmenu("refresh");
 		});
 
+		scenePanel.i18n();
 	};	
+	
+	let buildSceneList = () => {
+		scenelist.empty();
+		
+		for(let i = 0; i < viewer.scene.pointclouds.length; i++) {
+			initUIElements(i);
+		}
+	};
+	
+	buildSceneList();
 
-	for(let i = 0; i < viewer.scene.pointclouds.length; i++) {
-		initUIElements(i);
-	}
+	//for(let i = 0; i < viewer.scene.pointclouds.length; i++) {
+	//	initUIElements(i);
+	//}
 	
 	viewer.addEventListener("scene_changed", (e) => {
-		scenelist.empty();
+		buildSceneList();
 		
-		for(let i = 0; i < viewer.scene.pointclouds.length; i++) {
-			initUIElements(i);
+		if(e.oldScene){
+			e.oldScene.removeEventListener("pointcloud_added", buildSceneList);
 		}
+		e.scene.addEventListener("pointcloud_added", buildSceneList);
 	});
 	
-	viewer.addEventListener("pointcloud_loaded", function(event){
-		scenelist.empty();
-		
-		for(let i = 0; i < viewer.scene.pointclouds.length; i++) {
-			initUIElements(i);
-		}
-	});
+	viewer.scene.addEventListener("pointcloud_added", buildSceneList);
+	
 	
 	let lastPos = new THREE.Vector3();
 	let lastTarget = new THREE.Vector3();

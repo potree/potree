@@ -233,6 +233,10 @@ Potree.Scene = class extends THREE.EventDispatcher{
 		while(this.profiles.length > 0){
 			this.removeProfile(this.profiles[0]);
 		}
+		
+		while(this.volumes.length > 0){
+			this.removeVolume(this.volumes[0]);
+		}
 	}
 	
 	initialize(){
@@ -1161,7 +1165,8 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 					containment: $(document.body)
 				});
 				$("#profile_window").resizable({
-					containment: $(document.body)
+					containment: $(document.body),
+					handles: "n, e, s, w"
 				});
 				
 				if(callback){

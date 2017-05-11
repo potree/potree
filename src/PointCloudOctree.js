@@ -768,6 +768,11 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree{
 		gl.uniform1f(uniforms["maxSize"], this.material.maxSize);
 		gl.uniform1f(uniforms["octreeSize"], this.pcoGeometry.boundingBox.getSize().x);
 		
+		if(uniforms["clipBoxes[0]"]){
+			gl.uniform1f(uniforms["clipBoxCount"], pickMaterial.uniforms.clipBoxCount.value);
+			gl.uniformMatrix4fv(uniforms["clipBoxes[0]"], false, pickMaterial.uniforms.clipBoxes.value);
+		}
+		
 		{
 			let apPosition = gl.getAttribLocation(program, "position");
 			let apNormal = gl.getAttribLocation(program, "normal");

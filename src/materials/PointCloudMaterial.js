@@ -153,7 +153,6 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 			gradient: 			{ type: "t", value: this.gradientTexture },
 			classificationLUT: 	{ type: "t", value: this.classificationTexture },
 			clipBoxes:			{ type: "Matrix4fv", value: [] },
-			clipBoxPositions:	{ type: "fv", value: null },
 			depthMap: 			{ type: "t", value: null },
 			diffuse:			{ type: "fv", value: [1,1,1]},
 			transition:         { type: "f", value: 0.5 },
@@ -311,16 +310,11 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 		}
 		
 		this.uniforms.clipBoxes.value = new Float32Array(this.numClipBoxes * 16);
-		this.uniforms.clipBoxPositions.value = new Float32Array(this.numClipBoxes * 3);
 		
 		for(let i = 0; i < this.numClipBoxes; i++){
 			let box = clipBoxes[i];
 			
 			this.uniforms.clipBoxes.value.set(box.inverse.elements, 16*i);
-
-			this.uniforms.clipBoxPositions.value[3*i+0] = box.position.x;
-			this.uniforms.clipBoxPositions.value[3*i+1] = box.position.y;
-			this.uniforms.clipBoxPositions.value[3*i+2] = box.position.z;
 		}
 	}
 	
@@ -669,17 +663,19 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 	}
 	
 	set intensityRange(value){
-		this.uniforms.intensityRange.value = value;
 		
-		if(value.length !== 2){
-			return;
-		}else if(this.uniforms.heightMax.value[0] !== value[0]){
-			return;
-		}else if(this.uniforms.heightMax.value[1] !== value[1]){
+		if(!(value instanceof Array && value.length === 2)){
 			return;
 		}
 		
-		this.uniforms.heightMax.value = value;
+		if(value[0] === this.uniforms.intensityRange.value[0] &&
+			value[1] === this.uniforms.intensityRange.value[1]){
+			
+			return;
+		}
+		
+		this.uniforms.intensityRange.value = value;
+		
 		this.dispatchEvent({
 			type: "material_property_changed",
 			target: this

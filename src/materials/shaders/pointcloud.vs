@@ -33,7 +33,6 @@ uniform float far;
 
 #if defined use_clip_box
 	uniform mat4 clipBoxes[max_clip_boxes];
-	uniform vec3 clipBoxPositions[max_clip_boxes];
 #endif
 
 

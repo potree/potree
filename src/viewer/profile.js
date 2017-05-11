@@ -602,9 +602,9 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher{
 				material.rgbContrast = pointcloud.material.rgbContrast;
 				material.rgbBrightness = pointcloud.material.rgbBrightness;
 				material.intensityRange = pointcloud.material.intensityRange;
-				material.intensityGamma = pointcloud.material.rgbGamma;
-				material.intensityContrast = pointcloud.material.rgbContrast;
-				material.intensityBrightness = pointcloud.material.rgbBrightness;
+				material.intensityGamma = pointcloud.material.intensityGamma;
+				material.intensityContrast = pointcloud.material.intensityContrast;
+				material.intensityBrightness = pointcloud.material.intensityBrightness;
 			}
 			
 			this.renderer.setSize(width, height);
@@ -708,6 +708,10 @@ Potree.ProfileWindowController = class ProfileWindowController{
 	};
 	
 	recompute(){
+		
+		if(!this.profile){
+			return;
+		}
 		
 		if(this.scheduledRecomputeTime !== null && this.scheduledRecomputeTime > new Date().getTime()){
 			return;

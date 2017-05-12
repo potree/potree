@@ -11,11 +11,13 @@
 	<link rel="stylesheet" type="text/css" href="../libs/jquery-ui/jquery-ui.min.css">
 	<link rel="stylesheet" type="text/css" href="../libs/perfect-scrollbar/css/perfect-scrollbar.css">
 	<link rel="stylesheet" href="../libs/openlayers3/ol.css" type="text/css">
+	<link rel="stylesheet" href="../libs/spectrum/spectrum.css" type="text/css">
   </head>
 
   <body>
   
 	<script src="../libs/jquery/jquery-3.1.1.js"></script>
+	<script src="../libs/spectrum/spectrum.js"></script>
 	
 	<!--<script src="../libs/other/webgl-debug.js"></script>-->
 	<script src="../libs/perfect-scrollbar/js/perfect-scrollbar.jquery.js"></script>
@@ -59,14 +61,8 @@
 		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
 		
 		viewer.setEDLEnabled(true);
-		viewer.setPointSize(1);
-		viewer.setMaterial("RGB");
 		viewer.setFOV(60);
-		viewer.setPointSizing("Adaptive");
-		viewer.setQuality("Squares");
-		viewer.setPointBudget(2*1000*1000);
-		viewer.setIntensityRange(0, 300);
-		viewer.setWeightClassification(1);
+		viewer.setPointBudget(1*1000*1000);
 		viewer.loadSettingsFromURL();
 		
 		viewer.loadGUI(() => {
@@ -82,10 +78,15 @@
 		
 		viewer.setScene(sceneSG);
 
+		// Sorvilier point cloud in scene 1
 		Potree.loadPointCloud("../pointclouds/vol_total/cloud.js", "sigeom.sa", function(e){
 			sceneSG.addPointCloud(e.pointcloud);
 			sceneSG.view.position.set(590030, 231767, 1007);
 			sceneSG.view.lookAt(new THREE.Vector3(589844, 231376, 710));
+			
+			let material = e.pointcloud.material;
+			material.size = 1;
+			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
 			
 			sceneSG.addAnnotation([589847.17, 231436.78, 892.60], {
 				"cameraPosition": [590034.03, 231814.02, 961.68],
@@ -130,6 +131,7 @@
 			
 		});
 		
+		// Lion point cloud in scene 2
 		Potree.loadPointCloud("../pointclouds/lion_takanawa/cloud.js", "lion", function(e){
 			sceneLion.addPointCloud(e.pointcloud);
 			sceneLion.view.position.set(4.15, -6.12, 8.54);

@@ -193,7 +193,7 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
             }
 
             if (GreyhoundUtils.getQueryParam('scale')) {
-                scale = parseFloat(getQueryParam('scale'));
+                scale = parseFloat(GreyhoundUtils.getQueryParam('scale'));
             }
 
             var baseDepth = Math.max(8, greyhoundInfo.baseDepth);
@@ -238,7 +238,7 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
             pgg.hierarchyStepSize = HIERARCHY_STEP_SIZE;
 
             pgg.schema = GreyhoundUtils.createSchema(attributes);
-            var pointSize = pointSizeFrom(pgg.schema);
+            var pointSize = GreyhoundUtils.pointSizeFrom(pgg.schema);
 
             pgg.pointAttributes = new Potree.PointAttributes(attributes);
             pgg.pointAttributes.byteSize = pointSize;

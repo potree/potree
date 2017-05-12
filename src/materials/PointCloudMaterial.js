@@ -568,7 +568,6 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 				type: "material_property_changed",
 				target: this
 			});
-			//this.updateShaderSource();
 		}
 	}
 

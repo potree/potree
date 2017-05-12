@@ -1841,7 +1841,7 @@ function initSceneList(){
 			}
 		});
 		
-		$(`#materials\\.color\\.picker0`).spectrum({
+		$(`#materials\\.color\\.picker${i}`).spectrum({
 			flat: true,
 			showInput: true,
 			preferredFormat: "rgb",
@@ -1861,7 +1861,7 @@ function initSceneList(){
 		});
 		
 		pcMaterial.addEventListener("color_changed", e => {
-			$(`#materials\\.color\\.picker0`)
+			$(`#materials\\.color\\.picker${i}`)
 				.spectrum("set", `#${pcMaterial.color.getHexString()}`);
 		});
 

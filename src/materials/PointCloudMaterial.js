@@ -557,9 +557,18 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 	}
 	
 	set color(value){
-		if(this.uniforms.uColor.value !== value){
+		if(!this.uniforms.uColor.value.equals(value)){
 			this.uniforms.uColor.value.copy(value);
-			this.updateShaderSource();
+			
+			this.dispatchEvent({
+				type: "color_changed",
+				target: this
+			});
+			this.dispatchEvent({
+				type: "material_property_changed",
+				target: this
+			});
+			//this.updateShaderSource();
 		}
 	}
 

@@ -1524,6 +1524,14 @@ function initSceneList(){
 							<li>Contrast: <span id="lblRGBContrast${i}"></span> <div id="sldRGBContrast${i}"></div>	</li>
 						</div>
 						
+						<div id="materials.color_container${i}">
+							<div class="divider">
+								<span>Color</span>
+							</div>
+							
+							<input id="materials.color.picker${i}" />
+						</div>
+					
 						
 						<div id="materials.elevation_container${i}">
 							<div class="divider">
@@ -1832,6 +1840,30 @@ function initSceneList(){
 				viewer.dispatchEvent({"type": "attribute_weights_changed" + i, "viewer": viewer});
 			}
 		});
+		
+		$(`#materials\\.color\\.picker0`).spectrum({
+			flat: true,
+			showInput: true,
+			preferredFormat: "rgb",
+			cancelText: "",
+			chooseText: "Apply",
+			color: `#${pcMaterial.color.getHexString()}`,
+			move: color => {
+				let cRGB = color.toRgb();
+				let tc = new THREE.Color().setRGB(cRGB.r / 255, cRGB.g / 255, cRGB.b / 255);
+				pcMaterial.color = tc;
+			}, 
+			change: color => {
+				let cRGB = color.toRgb();
+				let tc = new THREE.Color().setRGB(cRGB.r / 255, cRGB.g / 255, cRGB.b / 255);
+				pcMaterial.color = tc;
+			}
+		});
+		
+		pcMaterial.addEventListener("color_changed", e => {
+			$(`#materials\\.color\\.picker0`)
+				.spectrum("set", `#${pcMaterial.color.getHexString()}`);
+		});
 
 		let updateHeightRange = function(){
 			let box = viewer.getBoundingBox();
@@ -1954,12 +1986,14 @@ function initSceneList(){
 			let blockWeights = $("#materials\\.composite_weight_container" + i);
 			let blockElevation = $("#materials\\.elevation_container" + i);
 			let blockRGB = $("#materials\\.rgb_container" + i);
+			let blockColor = $("#materials\\.color_container" + i);
 			let blockIntensity = $("#materials\\.intensity_container" + i);
 			let blockTransition = $("#materials\\.transition_container" + i);
 			
 			blockIntensity.css("display", "none");
 			blockElevation.css("display", "none");
 			blockRGB.css("display", "none");
+			blockColor.css("display", "none");
 			blockWeights.css("display", "none");
 			blockTransition.css("display", "none");
 			
@@ -1968,26 +2002,18 @@ function initSceneList(){
 				blockElevation.css("display", "block");
 				blockRGB.css("display", "block");
 				blockIntensity.css("display", "block");
-			}
-			
-			if(selectedValue === "Elevation"){
+			}else if(selectedValue === "Elevation"){
 				blockElevation.css("display", "block");
-			}
-			
-			if(selectedValue === "RGB and Elevation"){
+			}else if(selectedValue === "RGB and Elevation"){
 				blockRGB.css("display", "block");
 				blockElevation.css("display", "block");
-			}
-			
-			if(selectedValue === "RGB"){
+			}else if(selectedValue === "RGB"){
 				blockRGB.css("display", "block");
-			}
-			
-			if(selectedValue === "Intensity"){
+			}else if(selectedValue === "Color"){
+				blockColor.css("display", "block");
+			}else if(selectedValue === "Intensity"){
 				blockIntensity.css("display", "block");
-			}
-			
-			if(selectedValue === "Intensity Gradient"){
+			}else if(selectedValue === "Intensity Gradient"){
 				blockIntensity.css("display", "block");
 			}
 		};

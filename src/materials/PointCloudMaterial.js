@@ -347,15 +347,18 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 		
 		
 		if(!isEqual){
-			this._classification = value;
-			this.classificationTexture = Potree.PointCloudMaterial.generateClassificationTexture(this._classification);
-			this.uniforms.classificationLUT.value = this.classificationTexture;
-			
-			this.dispatchEvent({
-				type: "material_property_changed",
-				target: this
-			});
+			recomputeClassification();
 		}
+	}
+	
+	recomputeClassification(){
+		this.classificationTexture = Potree.PointCloudMaterial.generateClassificationTexture(this._classification);
+		this.uniforms.classificationLUT.value = this.classificationTexture;
+		
+		this.dispatchEvent({
+			type: "material_property_changed",
+			target: this
+		});
 	}
 
 	get spacing(){

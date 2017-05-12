@@ -347,6 +347,19 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		this.edlStrength = 1.0;
 		this.edlRadius = 1.4;
 		this.useEDL = false;
+		this.classifications = {
+			0:  { visible: true, name: "never classified" },
+			1:  { visible: true, name: "unclassified"     },
+			2:  { visible: true, name: "ground"           },
+			3:  { visible: true, name: "low vegetation"   },
+			4:  { visible: true, name: "medium vegetation"},
+			5:  { visible: true, name: "high vegetation"  },
+			6:  { visible: true, name: "building"         },
+			7:  { visible: true, name: "low point(noise)" },
+			8:  { visible: true, name: "key-point"        },
+			9:  { visible: true, name: "water"            },
+			12: { visible: true, name: "overlap"          }
+		};
 		
 		this.moveSpeed = 10;		
 
@@ -738,22 +751,12 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 	};
 	
 	setClassificationVisibility(key, value){
-
-		var changed = false;
-		for(var i = 0; i < this.scene.pointclouds.length; i++){
-			var pointcloud = this.scene.pointclouds[i];
-			var newClass = pointcloud.material.classification;
-			var oldValue = newClass[key].w;
-			newClass[key].w = value ? 1 : 0;
-
-			if(oldValue !== newClass[key].w){
-				changed = true;
-			}
-
-			pointcloud.material.classification = newClass;
-		}
-
-		if(changed){
+		
+		if(!this.classifications[key]){
+			this.classifications[key] = {visible: value, name: "no name"};
+			this.dispatchEvent({"type": "classification_visibility_changed", "viewer": this});
+		}else if(this.classifications[key].visible !== value){
+			this.classifications[key].visible = value;
 			this.dispatchEvent({"type": "classification_visibility_changed", "viewer": this});
 		}
 	};
@@ -1371,8 +1374,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		var visiblePoints = 0;
 		var progress = 0;
 		
-		for(var i = 0; i < this.scene.pointclouds.length; i++){
-			var pointcloud = this.scene.pointclouds[i];
+		for(let pointcloud of this.scene.pointclouds){
 			var bbWorld = Potree.utils.computeTransformedBoundingBox(pointcloud.boundingBox, pointcloud.matrixWorld);
 				
 			if(!this.intensityMax){
@@ -1411,6 +1413,33 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			visiblePoints += pointcloud.numVisiblePoints;
 
 			progress += pointcloud.progress;
+		}
+		
+		for(let pointcloud of this.scene.pointclouds){
+			
+			let classification = pointcloud.material.classification;
+			let somethingChanged = false;
+			for(let key of Object.keys(this.classifications)){
+				
+				let w = this.classifications[key].visible ? 1 : 0;
+				
+				if(classification[key]){
+					if(classification[key].w !== w){
+						classification[key].w = w;
+						somethingChanged = true;
+					}
+				}else if(classification.DEFAULT){
+					classification[key] = classification.DEFAULT;
+					somethingChanged = true;
+				}else{
+					classification[key] = new THREE.Vector4(0.3, 0.6, 0.6, 0.5);
+					somethingChanged = true;
+				}
+			}
+			
+			if(somethingChanged){
+				pointcloud.material.recomputeClassification();
+			}
 		}
 		
 		if(!this.freeze){

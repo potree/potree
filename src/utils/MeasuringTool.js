@@ -106,7 +106,9 @@ Potree.MeasuringTool = class MeasuringTool extends THREE.EventDispatcher{
 	}
 	
 	update(){
-		let camera = this.viewer.scene.camera;
+		//TODO ortho
+
+		let camera = this.viewer.scene.cameraP;
 		let domElement = this.renderer.domElement;
 		let measurements = this.viewer.scene.measurements;
 		

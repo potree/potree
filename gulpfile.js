@@ -23,6 +23,7 @@ var paths = {
 		"build/shaders/shaders.js",
 		"src/extensions/EventDispatcher.js",
 		"src/extensions/PerspectiveCamera.js",
+		"src/extensions/OrthographicCamera.js",
 		"src/extensions/Ray.js",
 		"src/loader/POCLoader.js",
 		"src/loader/PointAttributes.js",

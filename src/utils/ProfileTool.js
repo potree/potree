@@ -60,7 +60,8 @@ Potree.ProfileTool = class ProfileTool extends THREE.EventDispatcher{
 		let insertionCallback = (e) => {
 			if(e.button === THREE.MOUSE.LEFT){
 				if(profile.points.length <= 1){
-					let camera = this.viewer.scene.camera;
+					// TODO ortho
+					let camera = this.viewer.scene.cameraP;
 					let distance = camera.position.distanceTo(profile.points[0]);
 					let pr = Potree.utils.projectedRadius(1, camera.fov * Math.PI / 180, distance, domElement.clientHeight);
 					let width = (10 / pr);
@@ -96,7 +97,8 @@ Potree.ProfileTool = class ProfileTool extends THREE.EventDispatcher{
 	}
 	
 	update(){
-		let camera = this.viewer.scene.camera;
+		// TODO ortho
+		let camera = this.viewer.scene.cameraP;
 		let domElement = this.renderer.domElement;
 		let profiles = this.viewer.scene.profiles;
 		

@@ -471,7 +471,7 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 	getMousePointCloudIntersection(mouse){
 		return Potree.utils.getMousePointCloudIntersection(
 			this.mouse, 
-			this.scene.camera, 
+			this.scene.getActiveCamera(), 
 			this.renderer, 
 			this.scene.pointclouds);
 	}
@@ -577,10 +577,11 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 		};
 		
 		let vector = new THREE.Vector3( nmouse.x, nmouse.y, 0.5 );
-		vector.unproject(this.scene.camera);
+		let camera = this.scene.getActiveCamera();
+		vector.unproject(camera);
 		
 		let raycaster = new THREE.Raycaster();
-		raycaster.ray.set( this.scene.camera.position, vector.sub( this.scene.camera.position ).normalize() );
+		raycaster.ray.set( camera.position, vector.sub( camera.position ).normalize() );
 		raycaster.linePrecision = 0.2;
 		
 		let intersections = raycaster.intersectObjects(interactables, false);

@@ -595,9 +595,10 @@ Potree.MapView = class{
 			this.map.updateSize();
 		}
 		
-		// camera
+		// 
+		var camera = this.viewer.scene.cameraMode == Potree.CameraMode.PERSPECTIVE ? this.viewer.scene.cameraP : this.viewer.scene.cameraO;
+
 		var scale = this.map.getView().getResolution();
-		var camera = this.viewer.scene.camera;
 		var campos = camera.position;
 		var camdir = camera.getWorldDirection();
 		var sceneLookAt = camdir.clone().multiplyScalar(30 * scale).add(campos);

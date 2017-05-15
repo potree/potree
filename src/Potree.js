@@ -308,6 +308,9 @@ function updateVisibilityStructures(pointclouds, camera, renderer){
 }
 
 Potree.updateVisibility = function(pointclouds, camera, renderer){
+
+	// TODO ortho visibility
+			
 	let numVisibleNodes = 0;
 	let numVisiblePoints = 0;
 	

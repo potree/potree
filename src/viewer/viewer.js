@@ -819,11 +819,15 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		//this.scene.camera.zoomTo(node, factor);
 		let view = this.scene.view;
 	
-		let camera = this.scene.getActiveCamera();
-		camera.position.copy(view.position);
-		camera.lookAt(view.getPivot());
-		camera.updateMatrixWorld();
-		camera.zoomTo(node, factor);
+		this.scene.cameraP.position.copy(view.position);
+		this.scene.cameraP.lookAt(view.getPivot());
+		this.scene.cameraP.updateMatrixWorld();
+		this.scene.cameraP.zoomTo(node, factor);
+
+		this.scene.cameraO.position.copy(view.position);
+		this.scene.cameraO.lookAt(view.getPivot());
+		this.scene.cameraO.updateMatrixWorld();
+		this.scene.cameraO.zoomTo(node, factor);
 		
 		let bs;
 		if(node.boundingSphere){
@@ -836,7 +840,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		
 		bs = bs.clone().applyMatrix4(node.matrixWorld); 
 		
-		view.position.copy(camera.position);
+		view.position.copy(this.scene.getActiveCamera().position);
 		view.radius = view.position.distanceTo(bs.center);
 		//let target = bs.center;
 		//target.z = target.z - bs.radius * 0.8;
@@ -1441,14 +1445,19 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			this.controls.setScene(scene);
 			this.controls.update(delta);
 
-			camera.position.copy(scene.view.position);
+			this.scene.cameraP.position.copy(scene.view.position);
 			//camera.rotation.x = scene.view.pitch;
 			//camera.rotation.y = scene.view.yaw;
 			
 			//camera.lookAt(scene.view.getPivot());
-			camera.rotation.order = "ZXY";
-			camera.rotation.x = Math.PI / 2 + this.scene.view.pitch;
-			camera.rotation.z = this.scene.view.yaw;
+			this.scene.cameraP.rotation.order = "ZXY";
+			this.scene.cameraP.rotation.x = Math.PI / 2 + this.scene.view.pitch;
+			this.scene.cameraP.rotation.z = this.scene.view.yaw;
+
+			this.scene.cameraO.position.copy(scene.view.position);
+			this.scene.cameraO.rotation.order = "ZXY";
+			this.scene.cameraO.rotation.x = Math.PI / 2 + this.scene.view.pitch;
+			this.scene.cameraO.rotation.z = this.scene.view.yaw;
 		}
 
 		{ // update clip boxes
@@ -1566,17 +1575,15 @@ class PotreeRenderer{
 			let height = viewer.scaleFactor * viewer.renderArea.clientHeight;
 			let aspect = width / height;
 
-			if(viewer.scene.cameraMode == Potree.CameraMode.PERSPECTIVE) {
-				viewer.scene.cameraP.aspect = aspect;
-				viewer.scene.cameraP.updateProjectionMatrix();
-			} else {
-				let frustumScale = viewer.moveSpeed * 4.5;
-				viewer.scene.cameraO.left = -frustumScale;
-				viewer.scene.cameraO.right = frustumScale;		
-				viewer.scene.cameraO.top = frustumScale * 1/aspect;
-				viewer.scene.cameraO.bottom = -frustumScale * 1/aspect;		
-				viewer.scene.cameraO.updateProjectionMatrix();
-			}
+			viewer.scene.cameraP.aspect = aspect;
+			viewer.scene.cameraP.updateProjectionMatrix();
+
+			let frustumScale = viewer.moveSpeed * 4.5;
+			viewer.scene.cameraO.left = -frustumScale;
+			viewer.scene.cameraO.right = frustumScale;		
+			viewer.scene.cameraO.top = frustumScale * 1/aspect;
+			viewer.scene.cameraO.bottom = -frustumScale * 1/aspect;		
+			viewer.scene.cameraO.updateProjectionMatrix();
 			
 			viewer.renderer.setSize(width, height);
 		}
@@ -1860,17 +1867,15 @@ class EDLRenderer{
 			this.rtColor.dispose();
 		}
 		
-		if(viewer.scene.cameraMode == Potree.CameraMode.PERSPECTIVE) {
-			viewer.scene.cameraP.aspect = aspect;
-			viewer.scene.cameraP.updateProjectionMatrix();
-		} else {
-			let frustumScale = viewer.moveSpeed * 4.5;
-			viewer.scene.cameraO.left = -frustumScale;
-			viewer.scene.cameraO.right = frustumScale;		
-			viewer.scene.cameraO.top = frustumScale * 1/aspect;
-			viewer.scene.cameraO.bottom = -frustumScale * 1/aspect;		
-			viewer.scene.cameraO.updateProjectionMatrix();
-		}
+		viewer.scene.cameraP.aspect = aspect;
+		viewer.scene.cameraP.updateProjectionMatrix();
+
+		let frustumScale = viewer.moveSpeed * 4.5;
+		viewer.scene.cameraO.left = -frustumScale;
+		viewer.scene.cameraO.right = frustumScale;		
+		viewer.scene.cameraO.top = frustumScale * 1/aspect;
+		viewer.scene.cameraO.bottom = -frustumScale * 1/aspect;		
+		viewer.scene.cameraO.updateProjectionMatrix();
 		
 		viewer.renderer.setSize(width, height);
 		this.rtColor.setSize(width, height);

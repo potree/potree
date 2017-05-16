@@ -725,16 +725,17 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree{
 		}
 		pickState.pickTarget.setSize(width, height);
 		
-		gl.enable(gl.SCISSOR_TEST);
-		gl.scissor(
-			pixelPos.x - (pickWindowSize - 1) / 2, 
-			pixelPos.y - (pickWindowSize - 1) / 2,
-			pickWindowSize,pickWindowSize);
-		
 		renderer.setRenderTarget( pickState.pickTarget );
 		
-		renderer.state.setDepthTest(pickMaterial.depthTest);
-		renderer.state.setDepthWrite(pickMaterial.depthWrite);
+		gl.enable(gl.SCISSOR_TEST);
+		gl.scissor(
+			parseInt(pixelPos.x - (pickWindowSize - 1) / 2), 
+			parseInt(pixelPos.y - (pickWindowSize - 1) / 2),
+			parseInt(pickWindowSize), parseInt(pickWindowSize));
+		
+		renderer.state.buffers.depth.setTest(pickMaterial.depthTest);
+		//renderer.state.setDepthWrite(pickMaterial.depthWrite);
+		renderer.state.buffers.depth.setMask(pickMaterial.depthWrite);
 		renderer.state.setBlending(THREE.NoBlending);
 		
 		renderer.clear( renderer.autoClearColor, renderer.autoClearDepth, renderer.autoClearStencil );

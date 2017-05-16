@@ -450,8 +450,10 @@ Potree.PointCloudArena4D.prototype.pick = function(renderer, camera, ray, params
 	
 	renderer.setRenderTarget( this.pickTarget );
 	
-	renderer.state.setDepthTest( pickMaterial.depthTest );
-	renderer.state.setDepthWrite( pickMaterial.depthWrite );
+	//renderer.state.setDepthTest( pickMaterial.depthTest );
+	//renderer.state.setDepthWrite( pickMaterial.depthWrite );
+	renderer.state.buffers.depth.setTest(pickMaterial.depthTest);
+	renderer.state.buffers.depth.setMask(pickMaterial.depthWrite);
 	renderer.state.setBlending( THREE.NoBlending );
 	
 	renderer.clear( renderer.autoClearColor, renderer.autoClearDepth, renderer.autoClearStencil );

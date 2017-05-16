@@ -1425,6 +1425,9 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			camera.near = result.lowestSpacing * 10.0;
 			camera.far = -this.getBoundingBox().applyMatrix4(camera.matrixWorldInverse).min.z;
 			camera.far = Math.max(camera.far * 1.5, 1000);
+			if(this.scene.cameraMode == Potree.CameraMode.ORTHOGRAPHIC) {
+				camera.near = -camera.far;
+			}
 		} 
 		
 		this.scene.cameraP.fov = this.fov;

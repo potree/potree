@@ -199,7 +199,7 @@ gulp.task('watch', function() {
 	gulp.run("build");
 	gulp.run("webserver");
 	
-    gulp.watch(['src/**/*.js', 'src/**/*.css', 'src/**/*.html'], ["build"]);
+    gulp.watch(['src/**/*.js', 'src/**/*.css', 'src/**/*.html', 'src/**/*.vs', 'src/**/*.fs'], ["build"]);
 });
 
 // For development, it is now possible to use 'gulp webserver'

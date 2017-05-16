@@ -168,7 +168,8 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 			wElevation:			{ type: "f", value: 0 },
 			wClassification:	{ type: "f", value: 0 },
 			wReturnNumber:		{ type: "f", value: 0 },
-			wSourceID:		{ type: "f", value: 0 },
+			wSourceID:			{ type: "f", value: 0 },
+			useOrthographicCamera: { type: "b", value: true }
 		};
 		
 		this.defaultAttributeValues.normal = [0,0,0];

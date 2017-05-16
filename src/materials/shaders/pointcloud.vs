@@ -22,6 +22,7 @@ uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
 uniform mat4 viewMatrix;
 uniform mat3 normalMatrix;
+uniform bool useOrthographicCamera;
 
 
 uniform float screenWidth;
@@ -384,10 +385,21 @@ void main() {
 	#if defined fixed_point_size
 		pointSize = size;
 	#elif defined attenuated_point_size
-		pointSize = size * projFactor;
+		pointSize = size;
+		if(!useOrthographicCamera)
+			pointSize = pointSize * projFactor;
 	#elif defined adaptive_point_size
-		float worldSpaceSize = size * r / getPointSizeAttenuation();
-		pointSize = worldSpaceSize * projFactor;
+		if(useOrthographicCamera) {
+			/*vec3 p1 = (projectionMatrix * vec4(0, 0, 0, 1)).xyz;
+			vec3 p2 = (projectionMatrix * vec4(r, 0, 0, 1)).xyz;
+			float projSpacing = length(p2 - p1);
+			projSpacing = (projSpacing + 1.0) * 0.5 * screenWidth;*/
+			// TODO
+			pointSize = size * r / pow(2.0, getLOD());
+		} else {
+			float worldSpaceSize = size * r / getPointSizeAttenuation();
+			pointSize = worldSpaceSize * projFactor;
+		}
 	#endif
 
 	pointSize = max(minSize, pointSize);

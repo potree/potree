@@ -1121,8 +1121,50 @@ function initMeasurementDetails(){
 			
 			this.elIcon.attr("src", this.icon);
 			
+			this.values = {};
+			
 			this.elContent = $(`
 				<div>
+
+					<div style="width: 100%;">
+						<div style="display:inline-flex; width: 100%; ">
+							<span class="input-grid-label">x</span>
+							<span class="input-grid-label">y</span>
+							<span class="input-grid-label">z</span>
+						</div>
+						<div style="display:inline-flex; width: 100%;">
+							<span class="input-grid-cell"><input type="text" id="volume_input_x_${measurement.id}"/></span>
+							<span class="input-grid-cell"><input type="text" id="volume_input_y_${measurement.id}"/></span>
+							<span class="input-grid-cell"><input type="text" id="volume_input_z_${measurement.id}"/></span>
+						</div>
+					</div>
+					
+					<div style="width: 100%;">
+						<div style="display:inline-flex; width: 100%; ">
+							<span class="input-grid-label">length</span>
+							<span class="input-grid-label">width</span>
+							<span class="input-grid-label">height</span>
+						</div>
+						<div style="display:inline-flex; width: 100%;">
+							<span class="input-grid-cell"><input type="text" id="volume_input_length_${measurement.id}"/></span>
+							<span class="input-grid-cell"><input type="text" id="volume_input_width_${measurement.id}"/></span>
+							<span class="input-grid-cell"><input type="text" id="volume_input_height_${measurement.id}"/></span>
+						</div>
+					</div>
+
+					<div style="width: 100%;">
+						<div style="display:inline-flex; width: 100%; ">
+							<span class="input-grid-label">&alpha;</span>
+							<span class="input-grid-label">&beta;</span>
+							<span class="input-grid-label">&gamma;</span>
+						</div>
+						<div style="display:inline-flex; width: 100%;">
+							<span class="input-grid-cell"><input type="text" id="volume_input_alpha_${measurement.id}"/></span>
+							<span class="input-grid-cell"><input type="text" id="volume_input_beta_${measurement.id}"/></span>
+							<span class="input-grid-cell"><input type="text" id="volume_input_gamma_${measurement.id}"/></span>
+						</div>
+					</div>
+				
 					
 					<input type="button" value="Prepare Download" id="download_volume_${this.id}"/>
 					<span id="download_volume_status_${this.id}"></span>
@@ -1136,6 +1178,104 @@ function initMeasurementDetails(){
 				</div>
 			`);
 			this.elContentContainer.append(this.elContent);
+			
+			this.elX = this.elContent.find(`#volume_input_x_${this.measurement.id}`);
+			this.elY = this.elContent.find(`#volume_input_y_${this.measurement.id}`);
+			this.elZ = this.elContent.find(`#volume_input_z_${this.measurement.id}`);
+			
+			this.elLength = this.elContent.find(`#volume_input_length_${this.measurement.id}`);
+			this.elWidth  = this.elContent.find(`#volume_input_width_${this.measurement.id}`);
+			this.elHeight = this.elContent.find(`#volume_input_height_${this.measurement.id}`);
+			
+			this.elAlpha = this.elContent.find(`#volume_input_alpha_${this.measurement.id}`);
+			this.elBeta = this.elContent.find(`#volume_input_beta_${this.measurement.id}`);
+			this.elGamma = this.elContent.find(`#volume_input_gamma_${this.measurement.id}`);
+			
+			
+			this.elX.on("change", (e) => {
+				let val = this.elX.val();
+				if($.isNumeric(val)){
+					val = parseFloat(val);
+					
+					this.measurement.position.x = val;
+				}
+			});
+			
+			this.elY.on("change", (e) => {
+				let val = this.elY.val();
+				if($.isNumeric(val)){
+					val = parseFloat(val);
+					
+					this.measurement.position.y = val;
+				}
+			});
+			
+			this.elZ.on("change", (e) => {
+				let val = this.elZ.val();
+				if($.isNumeric(val)){
+					val = parseFloat(val);
+					
+					this.measurement.position.z = val;
+				}
+			});
+			
+			this.elLength.on("change", (e) => {
+				let val = this.elLength.val();
+				if($.isNumeric(val)){
+					val = parseFloat(val);
+					
+					this.measurement.scale.x = val;
+				}
+			});
+			
+			this.elWidth.on("change", (e) => {
+				let val = this.elWidth.val();
+				if($.isNumeric(val)){
+					val = parseFloat(val);
+					
+					this.measurement.scale.y = val;
+				}
+			});
+			
+			this.elHeight.on("change", (e) => {
+				let val = this.elHeight.val();
+				if($.isNumeric(val)){
+					val = parseFloat(val);
+					
+					this.measurement.scale.z = val;
+				}
+			});
+			
+			let toRadians = (d) => Math.PI * d / 180;
+			
+			this.elAlpha.on("change", (e) => {
+				let val = this.elAlpha.val();
+				if($.isNumeric(val)){
+					val = parseFloat(val);
+					
+					this.measurement.rotation.x = toRadians(val);
+				}
+			});
+			
+			this.elBeta.on("change", (e) => {
+				let val = this.elBeta.val();
+				if($.isNumeric(val)){
+					val = parseFloat(val);
+					
+					this.measurement.rotation.y = toRadians(val);
+				}
+			});
+			
+			this.elGamma.on("change", (e) => {
+				let val = this.elGamma.val();
+				if($.isNumeric(val)){
+					val = parseFloat(val);
+					
+					this.measurement.rotation.z = toRadians(val);
+				}
+			});
+			
+			
 			
 			this.elDownloadButton = this.elContent.find(`#download_volume_${this.id}`);
 			
@@ -1239,6 +1379,62 @@ function initMeasurementDetails(){
 		}
 		
 		update(){
+			if(!this.destroyed){
+				requestAnimationFrame(this._update);
+			}
+			
+			if(!this.elContent.is(":visible")){
+				return;
+			}
+			
+			if(this.measurement.position.x !== this.values.x){
+				this.elX.val(this.measurement.position.x.toFixed(3));
+				this.values.x = this.measurement.position.x;
+			}
+			
+			if(this.measurement.position.y !== this.values.y){
+				let elY = this.elContent.find(`#volume_input_y_${this.measurement.id}`);
+				elY.val(this.measurement.position.y.toFixed(3));
+				this.values.y = this.measurement.position.y;
+			}
+			
+			if(this.measurement.position.z !== this.values.z){
+				let elZ = this.elContent.find(`#volume_input_z_${this.measurement.id}`);
+				elZ.val(this.measurement.position.z.toFixed(3));
+				this.values.z = this.measurement.position.z;
+			}
+			
+			if(this.measurement.scale.x !== this.values.length){
+				this.elLength.val(this.measurement.scale.x.toFixed(3));
+				this.values.length = this.measurement.scale.x;
+			}
+			
+			if(this.measurement.scale.y !== this.values.width){
+				this.elWidth.val(this.measurement.scale.y.toFixed(3));
+				this.values.width = this.measurement.scale.y;
+			}
+			
+			if(this.measurement.scale.z !== this.values.height){
+				this.elHeight.val(this.measurement.scale.z.toFixed(3));
+				this.values.height = this.measurement.scale.z;
+			}
+			
+			let toDegrees = (r) => 180 * r / Math.PI;
+			
+			if(this.measurement.rotation.x !== this.values.alpha){
+				this.elAlpha.val(toDegrees(this.measurement.rotation.x).toFixed(1));
+				this.values.alpha = this.measurement.rotation.x;
+			}
+			
+			if(this.measurement.rotation.y !== this.values.beta){
+				this.elBeta.val(toDegrees(this.measurement.rotation.y).toFixed(1));
+				this.values.beta = this.measurement.rotation.y;
+			}
+			
+			if(this.measurement.rotation.z !== this.values.gamma){
+				this.elGamma.val(toDegrees(this.measurement.rotation.z).toFixed(1));
+				this.values.gamma = this.measurement.rotation.z;
+			}
 			
 		}
 		
@@ -1248,6 +1444,8 @@ function initMeasurementDetails(){
 			this.measurement.removeEventListener("marker_added", this._update);
 			this.measurement.removeEventListener("marker_removed", this._update);
 			this.measurement.removeEventListener("marker_moved", this._update);
+			
+			this.destroyed = true;
 		}
 		
 	};

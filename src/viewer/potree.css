@@ -70,7 +70,7 @@
 #potree_sidebar_container{
 	position:	absolute;
 	z-index:	0;
-	width:		300px;
+	width:		350px;
 	height:		100%;
 	overflow-y:	auto;
 	font-size:	85%;
@@ -764,5 +764,18 @@ label:hover{
 */
 
 
+.input-grid-cell{
+	flex-grow: 1; margin: 0px 3px 0px 3px;
+}
 
+.input-grid-label{
+	flex-grow: 1; 
+	margin: 0px 3px 0px 3px; 
+	text-align:center; 
+	font-weight: bold;
+}
+
+.input-grid-cell > input{
+	width: 100%
+}
 

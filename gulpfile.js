@@ -281,14 +281,8 @@ var encodeShader = function(fileName, varname, opt){
 			console.log(fname);
 
 			var content = new Buffer(b).toString();
-			var prep = "Potree.Shaders[\"" + fname  + "\"] = [\n";
-			var lines = content.split("\n");
-			for(var j = 0; j < lines.length; j++){
-				var line = lines[j];
-				line = line.replace(/(\r\n|\n|\r)/gm,"");
-				prep += " \"" + line + "\",\n";
-			}
-			prep += "].join(\"\\n\");\n\n";
+			
+			let prep = `\nPotree.Shaders["${fname}"] = \`${content}\`\n`;
 
 			joinedContent += prep;
 		}

@@ -1449,7 +1449,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 				box.updateMatrixWorld();
 				let boxInverse = new THREE.Matrix4().getInverse(box.matrixWorld);
 				let boxPosition = box.getWorldPosition();
-				return {inverse: boxInverse, position: boxPosition};
+				return {matrix: box.matrixWorld, inverse: boxInverse, position: boxPosition};
 			});
 			
 			for(let pointcloud of this.scene.pointclouds){

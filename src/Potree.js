@@ -340,6 +340,25 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 		visible = visible && !(numVisiblePoints + node.getNumPoints() > Potree.pointBudget);
 		visible = visible && level < maxLevel;
 		
+		if (pointcloud.material.numClipBoxes > 0 && visible && pointcloud.material.clipMode == Potree.ClipMode.CLIP_OUTSIDE) {
+			let box2 = box.clone(); 
+			pointcloud.updateMatrixWorld(true);
+			box2.applyMatrix4(pointcloud.matrixWorld);
+			let intersectsClipBoxes = false;
+			for(let clipBox of pointcloud.material.clipBoxes) {
+				let clipMatrixWorld = clipBox.matrix;
+				let clipBoxWorld = new THREE.Box3(
+						new THREE.Vector3(-0.5, -0.5, -0.5), 
+						new THREE.Vector3(0.5, 0.5, 0.5))
+					.applyMatrix4(clipMatrixWorld);
+				if (box2.intersectsBox(clipBoxWorld)) {
+					intersectsClipBoxes = true;
+					break;
+				}
+			}
+			visible = visible && intersectsClipBoxes;
+		}
+		
 		if(node.spacing){
 			lowestSpacing = Math.min(lowestSpacing, node.spacing);
 		}else if(node.geometryNode && node.geometryNode.spacing){

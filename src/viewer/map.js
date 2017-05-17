@@ -596,7 +596,7 @@ Potree.MapView = class{
 		}
 		
 		// 
-		var camera = this.viewer.scene.cameraMode == Potree.CameraMode.PERSPECTIVE ? this.viewer.scene.cameraP : this.viewer.scene.cameraO;
+		var camera = this.viewer.scene.getActiveCamera();
 
 		var scale = this.map.getView().getResolution();
 		var campos = camera.position;

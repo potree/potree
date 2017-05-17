@@ -317,7 +317,7 @@ void main() {
 	gl_Position = projectionMatrix * mvPosition;
 	vOpacity = opacity;
 	vLinearDepth = gl_Position.w;
-	vLogDepth = log2(gl_Position.w);
+	vLogDepth = log2(-mvPosition.z);
 	vNormal = normalize(normalMatrix * normal);
 
 	// ---------------------
@@ -394,7 +394,7 @@ void main() {
 			vec3 p2 = (projectionMatrix * vec4(r, 0, 0, 1)).xyz;
 			float projSpacing = length(p2 - p1);
 			projSpacing = (projSpacing + 1.0) * 0.5 * screenWidth;*/
-			// TODO
+			// TODO ortho
 			pointSize = size * r / pow(2.0, getLOD());
 		} else {
 			float worldSpaceSize = size * r / getPointSizeAttenuation();

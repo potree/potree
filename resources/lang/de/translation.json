@@ -24,7 +24,9 @@
         "focus_control": "Volle Ausdehnung",
         "orbit_control": "Orbit Kontrolle ",
         "flight_control": "Fly Kontrolle",
-        "earth_control": "Earth Kontrolle"
+        "earth_control": "Earth Kontrolle",
+        "perspective_camera_control": "Perspektivische Kamera",
+        "orthographic_camera_control": "Orthografische Kamera"
     },
     "appearance": {
         "nb_max_pts": "Max Punkte", 

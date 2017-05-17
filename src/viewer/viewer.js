@@ -824,10 +824,11 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		this.scene.cameraP.updateMatrixWorld();
 		this.scene.cameraP.zoomTo(node, factor);
 
+		
 		this.scene.cameraO.position.copy(view.position);
 		this.scene.cameraO.lookAt(view.getPivot());
 		this.scene.cameraO.updateMatrixWorld();
-		this.scene.cameraO.zoomTo(node, factor);
+
 		
 		let bs;
 		if(node.boundingSphere){
@@ -840,7 +841,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		
 		bs = bs.clone().applyMatrix4(node.matrixWorld); 
 		
-		view.position.copy(this.scene.getActiveCamera().position);
+		view.position.copy(this.scene.cameraP.position);
 		view.radius = view.position.distanceTo(bs.center);
 		//let target = bs.center;
 		//target.z = target.z - bs.radius * 0.8;
@@ -916,6 +917,14 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		
 		// TODO flipyz 
 		console.log("TODO");
+	}
+
+	switchCameraMode(mode) {
+		this.scene.cameraMode = mode;
+
+		for(let pointcloud of this.scene.pointclouds) {
+			pointcloud.material.useOrthographicCamera = mode == Potree.CameraMode.ORTHOGRAPHIC;
+		}
 	}
 	
 	loadSettingsFromURL(){
@@ -1229,8 +1238,6 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			if(!position){
 				position = annotation.boundingBox.getCenter();
 			}
-
-			// TODO ortho
 			
 			let distance = viewer.scene.cameraP.position.distanceTo(position);
 			let radius = annotation.boundingBox.getBoundingSphere().radius;
@@ -1247,11 +1254,14 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 				screenPos.y = Math.floor(screenPos.y - annotation.elTitlebar[0].clientHeight / 2);
 				
 				// SCREEN SIZE
-				let fov = Math.PI * viewer.scene.cameraP.fov / 180;
-				let slope = Math.tan(fov / 2.0);
-				let projFactor =  0.5 * this.renderArea.clientHeight / (slope * distance);
-				
-				screenSize = radius * projFactor;
+				if(viewer.scene.cameraMode == Potree.CameraMode.PERSPECTIVE) {
+					let fov = Math.PI * viewer.scene.cameraP.fov / 180;
+					let slope = Math.tan(fov / 2.0);
+					let projFactor =  0.5 * this.renderArea.clientHeight / (slope * distance);
+					screenSize = radius * projFactor;
+				} else {
+					screenSize = Potree.utils.projectedRadiusOrtho(radius, viewer.scene.cameraO.projectionMatrix, this.renderArea.clientWidth, this.renderArea.clientHeight);
+				}				
 			}
 			
 			element.css("left", screenPos.x + "px");
@@ -1581,7 +1591,7 @@ class PotreeRenderer{
 			viewer.scene.cameraP.aspect = aspect;
 			viewer.scene.cameraP.updateProjectionMatrix();
 
-			let frustumScale = viewer.moveSpeed * 4.5;
+			let frustumScale = viewer.moveSpeed * 2.0;
 			viewer.scene.cameraO.left = -frustumScale;
 			viewer.scene.cameraO.right = frustumScale;		
 			viewer.scene.cameraO.top = frustumScale * 1/aspect;
@@ -1873,7 +1883,7 @@ class EDLRenderer{
 		viewer.scene.cameraP.aspect = aspect;
 		viewer.scene.cameraP.updateProjectionMatrix();
 
-		let frustumScale = viewer.moveSpeed * 4.5;
+		let frustumScale = viewer.moveSpeed * 2.0;
 		viewer.scene.cameraO.left = -frustumScale;
 		viewer.scene.cameraO.right = frustumScale;		
 		viewer.scene.cameraO.top = frustumScale * 1/aspect;
@@ -1890,7 +1900,7 @@ class EDLRenderer{
 		
 		this.resize();
 		
-		// TODO ortho
+		let camera = viewer.scene.getActiveCamera();
 		
 		if(viewer.background === "skybox"){
 			viewer.renderer.clear();
@@ -1916,7 +1926,7 @@ class EDLRenderer{
 		viewer.volumeTool.update();
 		
 		
-		viewer.renderer.render(viewer.scene.scene, viewer.scene.cameraP);
+		viewer.renderer.render(viewer.scene.scene, camera);
 		
 		viewer.renderer.clearTarget( this.rtColor, true, true, true );
 		
@@ -1936,21 +1946,21 @@ class EDLRenderer{
 			material.screenHeight = height;
 			material.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
 			material.uniforms.octreeSize.value = octreeSize;
-			material.fov = viewer.scene.cameraP.fov * (Math.PI / 180);
+			//material.fov = viewer.scene.cameraP.fov * (Math.PI / 180);
 			material.spacing = pointcloud.pcoGeometry.spacing * Math.max(pointcloud.scale.x, pointcloud.scale.y, pointcloud.scale.z);
-			material.near = viewer.scene.cameraP.near;
-			material.far = viewer.scene.cameraP.far;
+			//material.near = camera.near;
+			//material.far = camera.far;
 		}
 		
-		viewer.renderer.render(viewer.scene.scenePointCloud, viewer.scene.cameraP, this.rtColor);
-		viewer.renderer.render(viewer.scene.scene, viewer.scene.cameraP, this.rtColor);
+		viewer.renderer.render(viewer.scene.scenePointCloud, camera, this.rtColor);
+		viewer.renderer.render(viewer.scene.scene, camera, this.rtColor);
 
 		// bit of a hack here. The EDL pass will mess up the text of the volume tool
 		// so volume tool is rendered again afterwards
 		//viewer.volumeTool.render(this.rtColor);
 				
 		
-		viewer.renderer.render(viewer.volumeTool.sceneVolume, viewer.scene.cameraP, this.rtColor);
+		viewer.renderer.render(viewer.volumeTool.sceneVolume, camera, this.rtColor);
 		
 		{ // EDL OCCLUSION PASS
 			this.edlMaterial.uniforms.screenWidth.value = width;
@@ -1967,11 +1977,11 @@ class EDLRenderer{
 		}	
 		
 		viewer.renderer.clearDepth();
-		viewer.renderer.render(viewer.controls.sceneControls, viewer.scene.cameraP);
+		viewer.renderer.render(viewer.controls.sceneControls, camera);
 		
-		viewer.renderer.render(viewer.measuringTool.sceneMeasurement, viewer.scene.cameraP);
-		viewer.renderer.render(viewer.profileTool.sceneProfile, viewer.scene.cameraP);
-		viewer.renderer.render(viewer.transformationTool.sceneTransform, viewer.scene.cameraP);
+		viewer.renderer.render(viewer.measuringTool.sceneMeasurement, camera);
+		viewer.renderer.render(viewer.profileTool.sceneProfile, camera);
+		viewer.renderer.render(viewer.transformationTool.sceneTransform, camera);
 
 	}
 };

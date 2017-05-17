@@ -26,7 +26,9 @@
         "focus_control": "Full extent",
         "orbit_control": "Orbit control",
         "flight_control": "Fly control",
-        "earth_control": "Earth control"
+        "earth_control": "Earth control",
+        "perspective_camera_control": "Perspective camera",
+        "orthographic_camera_control": "Orthographic camera"
     },
     "appearance": {
         "nb_max_pts": "Point budget", 

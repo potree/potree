@@ -72,7 +72,7 @@ Potree.Profile = class extends THREE.Object3D{
 			let drag = (e) => {
 				let I = Potree.utils.getMousePointCloudIntersection(
 					e.drag.end, 
-					e.viewer.scene.camera, 
+					e.viewer.scene.getActiveCamera(), 
 					e.viewer.renderer, 
 					e.viewer.scene.pointclouds);
 				

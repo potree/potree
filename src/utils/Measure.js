@@ -148,7 +148,7 @@ Potree.Measure = class Measure extends THREE.Object3D{
 			let drag = (e) => {
 				let I = Potree.utils.getMousePointCloudIntersection(
 					e.drag.end, 
-					e.viewer.scene.camera, 
+					e.viewer.scene.getActiveCamera(), 
 					e.viewer.renderer, 
 					e.viewer.scene.pointclouds);
 				
@@ -317,8 +317,8 @@ Potree.Measure = class Measure extends THREE.Object3D{
 			{// coordinate labels
 				let coordinateLabel = this.coordinateLabels[0];
 				
-				let labelPos = position.clone().add(new THREE.Vector3(0,1,0));
-				coordinateLabel.position.copy(labelPos);
+				//let labelPos = position.clone();//.add(new THREE.Vector3(0,1,0));
+				//coordinateLabel.position.copy(labelPos);
 				
 				/*let msg = Potree.utils.addCommas(position.x.toFixed(2)) 
 					+ " / " + Potree.utils.addCommas(position.y.toFixed(2)) 

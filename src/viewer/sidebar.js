@@ -325,6 +325,18 @@ function initNavigation(){
 		"[title]tt.left_view_control",
 		function(){viewer.setLeftView()}
 	));
+
+	elNavigation.append(createToolIcon(
+		Potree.resourcePath + "/icons/perspective-camera.svg",
+		"[title]tt.perspective_camera_control",
+		function(){viewer.switchCameraMode(Potree.CameraMode.PERSPECTIVE)}
+	));
+
+	elNavigation.append(createToolIcon(
+		Potree.resourcePath + "/icons/orthographic-camera.svg",
+		"[title]tt.orthographic_camera_control",
+		function(){viewer.switchCameraMode(Potree.CameraMode.ORTHOGRAPHIC)}
+	));
 	
 	let speedRange = new THREE.Vector2(1, 10*1000);
 	
@@ -413,7 +425,7 @@ function initAnnotationDetails(){
 				if(annotation.hasView()){
 					let action = new Potree.Action({
 						"icon": Potree.resourcePath + "/icons/target.svg",
-						"onclick": (e) => {annotation.moveHere(viewer.scene.camera)}
+						"onclick": (e) => {annotation.moveHere(viewer.scene.getActiveCamera())}
 					});
 					
 					actions.push(action);

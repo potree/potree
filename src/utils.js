@@ -183,8 +183,16 @@ Potree.utils = class{
 		let vector = new THREE.Vector3( nmouse.x, nmouse.y, 0.5 );
 		vector.unproject(camera);
 
-		let direction = vector.sub(camera.position).normalize();
-		let ray = new THREE.Ray(camera.position, direction);
+		let ray = new THREE.Ray();
+		if(camera.isPerspectiveCamera) {
+			let direction = vector.sub(camera.position).normalize();
+			ray.origin = camera.position;
+			ray.direction = direction;
+		} else {
+			// TODO ortho
+			ray.direction = camera.getWorldDirection().clone();
+			ray.origin = vector.clone();
+		}
 		
 		let selectedPointcloud = null;
 		let closestDistance = Infinity;
@@ -250,6 +258,21 @@ Potree.utils = class{
 		
 		return radius * projFactor;
 	};
+
+	static projectedRadiusOrtho(radius, proj, screenWidth, screenHeight) {
+		let p1 = new THREE.Vector4(0);
+		let p2 = new THREE.Vector4(radius);
+
+		p1.applyMatrix4(proj);
+		p2.applyMatrix4(proj);
+		p1 = new THREE.Vector3(p1.x, p1.y, p1.z);
+		p2 = new THREE.Vector3(p2.x, p2.y, p2.z);
+		p1.x = (p1.x + 1.0) * 0.5 * screenWidth;
+		p1.y = (p1.y + 1.0) * 0.5 * screenHeight;
+		p2.x = (p2.x + 1.0) * 0.5 * screenWidth;
+		p2.y = (p2.y + 1.0) * 0.5 * screenHeight;
+		return p1.distanceTo(p2);
+	}
 		
 		
 	static topView(camera, node){

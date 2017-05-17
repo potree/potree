@@ -169,7 +169,7 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 			wClassification:	{ type: "f", value: 0 },
 			wReturnNumber:		{ type: "f", value: 0 },
 			wSourceID:			{ type: "f", value: 0 },
-			useOrthographicCamera: { type: "b", value: true }
+			useOrthographicCamera: { type: "b", value: false }
 		};
 		
 		this.defaultAttributeValues.normal = [0,0,0];
@@ -331,7 +331,15 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 		}
 	}
 	
-	
+	get useOrthographicCamera() {
+		return this.uniforms.useOrthographicCamera.value;
+	}
+
+	set useOrthographicCamera(value) {
+		if(this.uniforms.useOrthographicCamera.value !== value){
+			this.uniforms.useOrthographicCamera.value = value;
+		}
+	}
 
 	get classification(){
 		return this._classification;

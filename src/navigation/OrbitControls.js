@@ -127,7 +127,7 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 	}
 	
 	zoomToLocation(mouse){
-		let camera = this.scene.camera;
+		let camera = this.scene.getActiveCamera();
 		
 		let I = Potree.utils.getMousePointCloudIntersection(
 			mouse, 

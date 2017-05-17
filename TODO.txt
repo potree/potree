@@ -1,6 +1,5 @@
 TODO orthographic cameras:
 
 - point size (shader)
-- side/top/front view fitting + navigation cube
-- ortho EDL
-- UI switching mechanism
+- navigation cube
+- ortho picking

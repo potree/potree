@@ -1017,6 +1017,12 @@ function initMeasurementDetails(){
 						<input id="${sliderID}" name="${sliderID}" value="5.06" style="flex-grow: 1; width:100%">
 					</span>
 					<br>
+					
+					<input type="button" value="Prepare Download" id="download_profile_${this.id}"/>
+					<span id="download_profile_status_${this.id}"></span>
+					
+					<br>
+					
 					<input type="button" id="show_2d_profile_${this.id}" value="show 2d profile" style="width: 100%"/>
 					
 					<!-- ACTIONS -->
@@ -1034,6 +1040,16 @@ function initMeasurementDetails(){
 				viewer.profileWindowController.setProfile(measurement);
 				//viewer.profileWindow.draw(measurement);
 			});
+			
+			{ // download
+				this.elDownloadButton = this.elContent.find(`#download_profile_${this.id}`);
+				
+				if(viewer.server){
+					this.elDownloadButton.click(() => this.download());
+				}else{
+					this.elDownloadButton.hide();
+				}
+			}
 			
 			{ // width spinner
 				let elWidthLabel = this.elContent.find(`#${labelID}`);
@@ -1099,6 +1115,91 @@ function initMeasurementDetails(){
 			let elCoordiantesContainer = this.elContent.find(".coordinates_table_container");
 			elCoordiantesContainer.empty();
 			elCoordiantesContainer.append(createCoordinatesTable(this.measurement));
+		}
+		
+		download(){
+			
+			let profile = this.measurement;
+			let boxes = profile.getSegmentMatrices()
+				.map(m => m.elements.join(", "))
+				.join(", ");
+			
+			let minLOD = 0;
+			let maxLOD = 100;
+			
+			let urlIsAbsolute = new RegExp('^(?:[a-z]+:)?//', 'i').test(this.scene.pointclouds[0].pcoGeometry.url);
+			let pc = "";
+			if(urlIsAbsolute){
+				pc = this.scene.pointclouds[0].pcoGeometry.url;
+			}else{
+				pc = `${window.location.href}/${viewer.scene.pointclouds[0].pcoGeometry.url}`;
+			}
+			
+			let request = `${viewer.server}/start_extract_region_worker?minLOD=${minLOD}&maxLOD=${maxLOD}&box=${boxes}&pointCloud=${pc}`;
+			console.log(request);
+			
+			let elMessage = this.elContent.find(`#download_profile_status_${this.id}`);
+			elMessage.html("sending request...");
+			
+			let workerID = null;
+			
+			let start = new Date().getTime();
+			
+			let checkUntilFinished = () => {
+				//http://localhost:3000/get_status?workerID=ef7bd824-a32d-4086-9547-09dfdf700c19
+				
+				if(!workerID){
+					return;
+				}
+				
+				let request = `${viewer.server}/get_status?workerID=${workerID}`;
+				
+				let xhr = new XMLHttpRequest();
+				xhr.onreadystatechange = () => {
+					if (xhr.readyState == XMLHttpRequest.DONE) {
+						//alert(xhr.responseText);
+						let res = JSON.parse(xhr.responseText);
+						console.log(res);
+						
+						if(!res.finished){
+							//elMessage.html(`request status: ${res.status}`);
+							let end = new Date().getTime();
+							let duration = (end - start);
+							let seconds = parseInt(duration / 1000);
+							elMessage.html(`<br>preparing download... ${seconds}s`);
+							//checkUntilFinished();
+							setTimeout(checkUntilFinished, 500);
+						}else{
+							elMessage.html(`<br><a href="${viewer.server}/get_las?workerID=${workerID}">Download ready</a>`);
+						}
+					}
+				}
+				xhr.open('GET', request, true);
+				xhr.send(null)
+				
+			};
+			
+			let xhr = new XMLHttpRequest();
+			xhr.onreadystatechange = () => {
+				if (xhr.readyState == XMLHttpRequest.DONE) {
+					//alert(xhr.responseText);
+					let res = JSON.parse(xhr.responseText);
+					console.log(res);
+					
+					if(res.status === "OK"){
+						workerID = res.workerID;
+						elMessage.html("request is being processed");
+						checkUntilFinished();
+					}else if(res.status === "ERROR_POINT_PROCESSED_ESTIMATE_TOO_LARGE"){
+						elMessage.html("Too many candidate points in selection.");
+					}else{
+						elMessage.html(`${res.status}`);
+					}
+				}
+			}
+			xhr.open('GET', request, true);
+			xhr.send(null);
+			
 		}
 		
 		destroy(){
@@ -1301,7 +1402,7 @@ function initMeasurementDetails(){
 			//let box = volume.boundingBox.clone().applyMatrix4(volume.matrixWorld);
 			let box = volume.matrixWorld.elements.join(", ");
 			let minLOD = 0;
-			let maxLOD = 8;
+			let maxLOD = 100;
 			
 			let urlIsAbsolute = new RegExp('^(?:[a-z]+:)?//', 'i').test(this.scene.pointclouds[0].pcoGeometry.url);
 			let pc = "";

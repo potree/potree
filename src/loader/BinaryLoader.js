@@ -102,6 +102,7 @@ Potree.BinaryLoader.prototype.parse = function(node, buffer){
 		//geometry.boundingBox = tightBoundingBox;
 		node.geometry = geometry;
 		//node.boundingBox = tightBoundingBox;
+		//node.position.copy(node.boundingBox.min);
 		node.tightBoundingBox = tightBoundingBox;
 		node.loaded = true;
 		node.loading = false;

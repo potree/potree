@@ -104,6 +104,41 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree{
 		//}
 		let sceneNode = new THREE.Points(geometryNode.geometry, this.material);
 		sceneNode.name = geometryNode.name;
+		sceneNode.position.copy(geometryNode.boundingBox.min);
+		sceneNode.onBeforeRender = (_this, scene, camera, geometry, material, group) => {
+			
+			//if(sceneNode.name !== "r2"){
+			//	geometry.setDrawRange(0, 0);
+			//}
+			
+			let level = geometryNode.getLevel();
+			let vnStart = this.visibleNodeTextureOffsets.get(node);
+			
+			material.uniforms.level.value = level;
+			material.uniforms.vnStart.value = vnStart;
+			material.uniforms.pcIndex.value = node.pcIndex;
+			
+			if(material.program){
+				_this.getContext().useProgram(material.program.program);
+				
+				if(material.program.getUniforms().map.level){
+					_this.getContext().useProgram(material.program.program);
+					
+					material.program.getUniforms().map.level.setValue(_this.getContext(), level);
+					
+					if(this.visibleNodeTextureOffsets){
+						material.program.getUniforms().map.vnStart.setValue(_this.getContext(), vnStart);
+					}
+				}
+				
+				if(material.program.getUniforms().map.pcIndex){
+					material.program.getUniforms().map.pcIndex.setValue(_this.getContext(), node.pcIndex);
+				}
+			}
+			
+			
+			
+		};
 		
 		node.geometryNode = geometryNode;
 		node.sceneNode = sceneNode;
@@ -188,6 +223,9 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree{
 		
 		let texture = material.visibleNodesTexture;
 		let data = texture.image.data;
+		data.fill(0);
+		
+		this.visibleNodeTextureOffsets = new Map();
 		
 		// copy array
 		visibleNodes = visibleNodes.slice();
@@ -206,6 +244,8 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree{
 		
 		for(let i = 0; i < visibleNodes.length; i++){
 			let node = visibleNodes[i];
+			
+			this.visibleNodeTextureOffsets.set(node, i);
 			
 			let children = [];
 			for(let j = 0; j < 8; j++){
@@ -619,12 +659,8 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree{
 	 * 
 	 */
 	pick(renderer, camera, ray, params = {}){
-		// this function finds intersections by rendering point indices and then checking the point index at the mouse location.
-		// point indices are 3 byte and rendered to the RGB component.
-		// point cloud node indices are 1 byte and stored in the ALPHA component.
-		// this limits picking capabilities to 256 nodes and 2^24 points per node. 
 		
-		let pickWindowSize = params.pickWindowSize || 17;
+		let pickWindowSize = params.pickWindowSize || 101;
 		let pickOutsideClipRegion = params.pickOutsideClipRegion || false;
 		let width = Math.ceil(renderer.domElement.clientWidth);
 		let height = Math.ceil(renderer.domElement.clientHeight);
@@ -635,26 +671,14 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree{
 			return null;
 		}
 		
-		let gl = renderer.context;
-		
 		if(!this.pickState){
 			
+			let scene = new THREE.Scene();
+			
 			let material = new Potree.PointCloudMaterial();
-			material.pointColorType = Potree.PointColorType.POINT_INDEX;		
+			material.pointColorType = Potree.PointColorType.POINT_INDEX;	
 			
-			let glProgram = new Potree.GLProgram(gl, material);
-			
-			let image = material.visibleNodesTexture.image;
-			let texture = gl.createTexture();
-			gl.bindTexture(gl.TEXTURE_2D, texture);
-			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, image.width, image.height, 0, gl.RGB, gl.UNSIGNED_BYTE, image.data);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-			gl.bindTexture(gl.TEXTURE_2D, null);
-			
-			let pickTarget = new THREE.WebGLRenderTarget( 
+			let renderTarget = new THREE.WebGLRenderTarget( 
 				1, 1, 
 				{ minFilter: THREE.LinearFilter, 
 				magFilter: THREE.NearestFilter, 
@@ -662,23 +686,14 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree{
 			);
 			
 			this.pickState = {
-				pickTarget: pickTarget,
+				renderTarget: renderTarget,
 				material: material,
-				glProgram: glProgram,
-				visibleNodesTexture: texture
+				scene: scene
 			};
 		};
+		
 		let pickState = this.pickState;
-		
-		let oldClearColor = {
-			rgb: renderer.getClearColor().clone(),
-			a: renderer.getClearAlpha()
-		};
-		
-		renderer.setClearColor(new THREE.Color(0, 0, 0), 0);
-		
 		let pickMaterial = pickState.material;
-		let glProgram = pickState.glProgram;
 		
 		{ // update pick material
 			pickMaterial.pointSizeType = this.material.pointSizeType;
@@ -701,175 +716,134 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree{
 			}
 			
 			this.updateMaterial(pickMaterial, nodes, camera, renderer);
-			
-			if(pickMaterial.needsUpdate){
-				glProgram.recompile();
-				pickMaterial.needsUpdate = false;
-			};
 		}
 		
-		let pixelPos = new THREE.Vector3().addVectors(camera.position, ray.direction)
-			.project(camera);
-		pixelPos.addScalar(1).multiplyScalar(0.5);
-		pixelPos.x *= width;
-		pixelPos.y *= height;
-		
-		if(pickState.pickTarget.width != width || pickState.pickTarget.height != height){
-			pickState.pickTarget.dispose();
-			pickState.pickTarget = new THREE.WebGLRenderTarget( 
+		if(pickState.renderTarget.width != width || pickState.renderTarget.height != height){
+			pickState.renderTarget.dispose();
+			pickState.renderTarget = new THREE.WebGLRenderTarget( 
 				1, 1, 
 				{ minFilter: THREE.LinearFilter, 
 				magFilter: THREE.NearestFilter, 
 				format: THREE.RGBAFormat } 
 			);
 		}
-		pickState.pickTarget.setSize(width, height);
+		pickState.renderTarget.setSize(width, height);
+		renderer.setRenderTarget( pickState.renderTarget );
 		
-		renderer.setRenderTarget( pickState.pickTarget );
+		let pixelPos = new THREE.Vector3()
+			.addVectors(camera.position, ray.direction)
+			.project(camera)
+			.addScalar(1)
+			.multiplyScalar(0.5);
+		pixelPos.x *= width;
+		pixelPos.y *= height;
 		
-		gl.enable(gl.SCISSOR_TEST);
-		gl.scissor(
+		renderer.setScissor(
 			parseInt(pixelPos.x - (pickWindowSize - 1) / 2), 
 			parseInt(pixelPos.y - (pickWindowSize - 1) / 2),
 			parseInt(pickWindowSize), parseInt(pickWindowSize));
+		renderer.setScissorTest(true);
 		
 		renderer.state.buffers.depth.setTest(pickMaterial.depthTest);
-		//renderer.state.setDepthWrite(pickMaterial.depthWrite);
 		renderer.state.buffers.depth.setMask(pickMaterial.depthWrite);
 		renderer.state.setBlending(THREE.NoBlending);
 		
-		renderer.clear( renderer.autoClearColor, renderer.autoClearDepth, renderer.autoClearStencil );
+		renderer.clearTarget( pickState.renderTarget, true, true, true );
 		
-		let program = glProgram.program;
-		let uniforms = glProgram.uniforms;
-		gl.useProgram(program);
-			
-		gl.uniformMatrix4fv(uniforms["projectionMatrix"], false, new Float32Array(camera.projectionMatrix.elements));
-		gl.uniformMatrix4fv(uniforms["viewMatrix"], false, new Float32Array(camera.matrixWorldInverse.elements));
+		//pickState.scene.children = nodes.map(n => n.sceneNode);
 		
-		{
-			let texture = pickState.visibleNodesTexture;
-			let image = pickMaterial.visibleNodesTexture.image;
-			
-			gl.uniform1i(uniforms["visibleNodes"], 0);
-			gl.activeTexture(gl.TEXTURE0);
-			gl.bindTexture( gl.TEXTURE_2D, texture );
-			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, image.width, image.height, 0, gl.RGB, gl.UNSIGNED_BYTE, image.data);
-			
-		}
-		
-		gl.uniform1f(uniforms["fov"], this.material.fov);
-		gl.uniform1f(uniforms["screenWidth"], this.material.screenWidth);
-		gl.uniform1f(uniforms["screenHeight"], this.material.screenHeight);
-		gl.uniform1f(uniforms["spacing"], this.material.spacing);
-		gl.uniform1f(uniforms["near"], this.material.near);
-		gl.uniform1f(uniforms["far"], this.material.far);
-		gl.uniform1f(uniforms["size"], this.material.size);
-		gl.uniform1f(uniforms["minSize"], this.material.minSize);
-		gl.uniform1f(uniforms["maxSize"], this.material.maxSize);
-		gl.uniform1f(uniforms["octreeSize"], this.pcoGeometry.boundingBox.getSize().x);
-		
-		if(uniforms["clipBoxes[0]"]){
-			gl.uniform1f(uniforms["clipBoxCount"], pickMaterial.uniforms.clipBoxCount.value);
-			gl.uniformMatrix4fv(uniforms["clipBoxes[0]"], false, pickMaterial.uniforms.clipBoxes.value);
-		}
-		
-		{
-			let apPosition = gl.getAttribLocation(program, "position");
-			let apNormal = gl.getAttribLocation(program, "normal");
-			let apClassification = gl.getAttribLocation(program, "classification");
-			let apIndices = gl.getAttribLocation(program, "indices");
-			
-			gl.enableVertexAttribArray( apPosition );
-			gl.enableVertexAttribArray( apNormal );
-			gl.enableVertexAttribArray( apClassification );		
-			gl.enableVertexAttribArray( apIndices );
-		}
-		
+		//let childStates = [];
+		let tempNodes = [];
 		for(let i = 0; i < nodes.length; i++){
 			let node = nodes[i];
-			let object = node.sceneNode;
-			let geometry = object.geometry;
+			node.pcIndex = i+1;
+			let sceneNode = node.sceneNode;
 			
-			pickMaterial.pcIndex = i + 1;
+			let tempNode = new THREE.Points(sceneNode.geometry, pickMaterial);
+			tempNode.matrix = sceneNode.matrix;
+			tempNode.matrixWorld = sceneNode.matrixWorld;
+			tempNode.matrixAutoUpdate = false;
+			tempNode.frustumCulled = false;
+			tempNode.pcIndex = i+1;
 			
-			let modelView = new THREE.Matrix4().multiplyMatrices(camera.matrixWorldInverse, object.matrixWorld);
-			gl.uniformMatrix4fv(uniforms["modelMatrix"], false, new Float32Array(object.matrixWorld.elements));
-			gl.uniformMatrix4fv(uniforms["modelViewMatrix"], false, new Float32Array(modelView.elements));
-			
-			let apPosition = gl.getAttribLocation(program, "position");
-			let apNormal = gl.getAttribLocation(program, "normal");
-			let apClassification = gl.getAttribLocation(program, "classification");
-			let apIndices = gl.getAttribLocation(program, "indices");
-			
-			let positionBuffer = renderer.properties.get(geometry.attributes.position).__webglBuffer;
-			
-			if(positionBuffer === undefined){
-				continue;
-			}
-			
-			let oldstate = {
-				enabled: []
+			let geometryNode = node.geometryNode;
+			let material = pickMaterial;
+			tempNode.onBeforeRender = (_this, scene, camera, geometry, material, group) => {
+				let level = geometryNode.getLevel();
+				let vnStart = this.visibleNodeTextureOffsets.get(node);
+				
+				material.uniforms.level.value = level;
+				material.uniforms.vnStart.value = vnStart;
+				material.uniforms.pcIndex.value = node.pcIndex;
+				
+				if(material.program){
+					_this.getContext().useProgram(material.program.program);
+					
+					if(material.program.getUniforms().map.level){
+						_this.getContext().useProgram(material.program.program);
+						
+						material.program.getUniforms().map.level.setValue(_this.getContext(), level);
+						
+						if(this.visibleNodeTextureOffsets){
+							material.program.getUniforms().map.vnStart.setValue(_this.getContext(), vnStart);
+						}
+					}
+					
+					if(material.program.getUniforms().map.pcIndex){
+						material.program.getUniforms().map.pcIndex.setValue(_this.getContext(), node.pcIndex);
+					}
+				}
+				
+				
+				
 			};
+			tempNodes.push(tempNode);
 			
-			// TODO hack
-			for(let i = 0; i < 16; i++){
-				oldstate.enabled[i] = gl.getVertexAttrib(i, gl.VERTEX_ATTRIB_ARRAY_ENABLED);
-				gl.disableVertexAttribArray(i);
-			}
-			
-			gl.bindBuffer( gl.ARRAY_BUFFER, positionBuffer );
-			gl.vertexAttribPointer( apPosition, 3, gl.FLOAT, false, 0, 0 ); 
-			gl.enableVertexAttribArray(apPosition);
-			
-			let indexBuffer = renderer.properties.get(geometry.attributes.indices).__webglBuffer;
-			gl.bindBuffer( gl.ARRAY_BUFFER, indexBuffer );
-			gl.vertexAttribPointer( apIndices, 4, gl.UNSIGNED_BYTE, true, 0, 0 ); 
-			gl.enableVertexAttribArray(apIndices);
-			
-			gl.uniform1f(uniforms["pcIndex"], pickMaterial.pcIndex);
-
-			//let numPoints = node.getNumPoints();
-			let numPoints = geometry.attributes.position.count;
-			if(numPoints > 0){
-				gl.drawArrays( gl.POINTS, 0, numPoints);		
-			}
-			
-			// TODO hack
-			for(let i = 0; i < 16; i++){
-				gl.disableVertexAttribArray(i);
-			}
-			gl.enableVertexAttribArray(0);
-			gl.enableVertexAttribArray(1);
+			//for(let child of nodes[i].sceneNode.children){
+			//	childStates.push({child: child, visible: child.visible});
+			//	child.visible = false;
+			//}
 		}
+		pickState.scene.autoUpdate = false;
+		pickState.scene.children = tempNodes;
+		pickState.scene.overrideMaterial = pickMaterial;
 		
-		let pixelCount = pickWindowSize * pickWindowSize;
-		let buffer = new ArrayBuffer(pixelCount*4);
-		let pixels = new Uint8Array(buffer);
-		let ibuffer = new Uint32Array(buffer);
-		renderer.context.readPixels(
-			pixelPos.x - (pickWindowSize-1) / 2, pixelPos.y - (pickWindowSize-1) / 2, 
-			pickWindowSize, pickWindowSize, 
-			renderer.context.RGBA, renderer.context.UNSIGNED_BYTE, pixels);
-			
-		gl.disable(gl.SCISSOR_TEST);
-
-
-		//{ // open window with image
-		//	let br = new ArrayBuffer(width*height*4);
-		//	let bp = new Uint8Array(br);
-		//	renderer.context.readPixels( 0, 0, width, height, 
-		//		renderer.context.RGBA, renderer.context.UNSIGNED_BYTE, bp);
-		//	
-		//	let img = Potree.utils.pixelsArrayToImage(bp, width, height);
-		//	let screenshot = img.src;
-		//	
-		//	let w = window.open();
-		//	w.document.write('<img src="'+screenshot+'"/>');
+		renderer.state.setBlending(THREE.NoBlending);
+		
+		// RENDER
+		renderer.render(pickState.scene, camera, pickState.renderTarget);
+		
+		//for(let childState of childStates){
+		//	childState.child = childState.visible;
 		//}
 		
+		pickState.scene.overrideMaterial = null;
+		
+		//renderer.context.readPixels(
+		//	pixelPos.x - (pickWindowSize-1) / 2, pixelPos.y - (pickWindowSize-1) / 2, 
+		//	pickWindowSize, pickWindowSize, 
+		//	renderer.context.RGBA, renderer.context.UNSIGNED_BYTE, pixels);
+		
+		let pixelCount = pickWindowSize * pickWindowSize;
+		let buffer = new Uint8Array(4 * pixelCount);
+		renderer.readRenderTargetPixels(pickState.renderTarget, 
+			pixelPos.x - (pickWindowSize-1) / 2, 
+			pixelPos.y - (pickWindowSize-1) / 2, 
+			pickWindowSize, pickWindowSize, 
+			buffer);
+		
+		//let pixelCount = width * height;
+		//let buffer = new Uint8Array(4 * pixelCount);
+		//renderer.readRenderTargetPixels(pickState.renderTarget, 
+		//	0, 0, width, height, buffer);
+		
+		renderer.setScissorTest(false);
+		
 		renderer.setRenderTarget(null);
-			
+		
+		let pixels = buffer;
+		let ibuffer = new Uint32Array(buffer.buffer);
+		
 		// find closest hit inside pixelWindow boundaries
 		let min = Number.MAX_VALUE;
 		let hit = null;
@@ -892,6 +866,31 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree{
 				}
 			}
 		}
+		//console.log(pixels);
+		
+		{ // open window with image
+			let img = Potree.utils.pixelsArrayToImage(buffer, pickWindowSize, pickWindowSize);
+			let screenshot = img.src;
+			
+			if(!this.debugDIV){
+				this.debugDIV = $(`
+					<div id="pickDebug" 
+					style="position: absolute; 
+					right: 400px; width: 300px;
+					bottom: 44px; width: 300px;
+					z-index: 1000;
+					"></div>`);
+				$(document.body).append(this.debugDIV);
+			}
+			
+			this.debugDIV.empty();
+			this.debugDIV.append($(`<img src="${screenshot}"
+				style="transform: scaleY(-1);"/>`));
+			//$(this.debugWindow.document).append($(`<img src="${screenshot}"/>`));
+			//this.debugWindow.document.write('<img src="'+screenshot+'"/>');
+		}
+		
+		//return;
 		
 		let point = null;
 		
@@ -931,15 +930,26 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree{
 			}
 		}
 		
-		renderer.resetGLState();
-			
-		renderer.setClearColor(oldClearColor.rgb, oldClearColor.a);
-		
 		return point;
+		
+		
 	};
 	
 	get progress(){
 		return this.visibleNodes.length / this.visibleGeometry.length;
 	}
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
 

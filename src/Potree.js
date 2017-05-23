@@ -365,11 +365,10 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 			lowestSpacing = Math.min(lowestSpacing, node.geometryNode.spacing);
 		}
 		
-		
-		
 		if(numVisiblePoints + node.getNumPoints() > Potree.pointBudget){
 			break;
 		}
+		
 		
 		if(!visible){
 			continue;
@@ -398,21 +397,19 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 			visibleNodes.push(node);
 			pointcloud.visibleNodes.push(node);
 
-			if(node.parent){
-				node.sceneNode.matrixWorld.multiplyMatrices( node.parent.sceneNode.matrixWorld, node.sceneNode.matrix );
-			}else{
-				node.sceneNode.matrixWorld.multiplyMatrices( pointcloud.matrixWorld, node.sceneNode.matrix );
-			}
+			node.sceneNode.updateMatrix();
+			node.sceneNode.matrixWorld.multiplyMatrices( pointcloud.matrixWorld, node.sceneNode.matrix );
 
-			if(pointcloud.showBoundingBox && !node.boundingBoxNode){
-				let boxHelper = new THREE.BoxHelper(node.getBoundingBox());
+			if(pointcloud.showBoundingBox && !node.boundingBoxNode && node.getBoundingBox){
+				let boxHelper = new Potree.Box3Helper(node.getBoundingBox());
+				//let boxHelper = new THREE.BoxHelper(node.sceneNode);
 				pointcloud.add(boxHelper);
 				pointcloud.boundingBoxNodes.push(boxHelper);
 				node.boundingBoxNode = boxHelper;
-				node.boundingBoxNode.matrixWorld.copy(node.sceneNode.matrixWorld);
+				node.boundingBoxNode.matrixWorld.copy(pointcloud.matrixWorld);
 			}else if(pointcloud.showBoundingBox){
 				node.boundingBoxNode.visible = true;
-				node.boundingBoxNode.matrixWorld.copy(node.sceneNode.matrixWorld);
+				node.boundingBoxNode.matrixWorld.copy(pointcloud.matrixWorld);
 			}else if(!pointcloud.showBoundingBox && node.boundingBoxNode){
 				node.boundingBoxNode.visible = false;
 			}
@@ -466,7 +463,7 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 	//}
 	
 	
-	Potree.updateDEMs(renderer, visibleNodes);
+	//Potree.updateDEMs(renderer, visibleNodes);
 
 	return {
 		visibleNodes: visibleNodes, 
@@ -475,63 +472,64 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 	};
 };
 
-Potree.updateDEMs = function(renderer, visibleNodes){
-	
-	return;
-	
-	let dems = Potree.__dems;
-	if(dems === undefined){
-		Potree.__dems = {};
-		dems = Potree.__dems;
-		
-		dems.target = new THREE.WebGLRenderTarget(128, 128, {
-			minFilter: THREE.NearestFilter, 
-			magFilter: THREE.NearestFilter, 
-			format: THREE.RGBAFormat, 
-			type: THREE.FloatType
-		});
-		dems.scene = new THREE.Scene();
-		dems.camera = new THREE.OrthographicCamera( 0, 128, 128, 0, 0, 10000 );
-		dems.camera.up.set(0, 0, 1);
-	}
-	for(let node of visibleNodes){
-		
-		if(node.dem !== undefined){
-			continue;
-		}
-		
-		let geometry = node.geometryNode.geometry;
-		let material = new THREE.PointsMaterial({color: 0x888888 });
-		
-		renderer.clearTarget( dems.target, true, true, true );
-		var pc = new THREE.Points(geometry, material);
-		let box = geometry.boundingBox;
-		
-		dems.scene.add(pc);
-		dems.camera.position.set(0, 0, box.max.z);
-		
-		renderer.render(dems.scene, dems.camera, dems.target);
-		
-		dems.scene.remove(pc);
-		
-		//{
-		//	let pickWindowSize = 128;
-		//	let pixelCount = pickWindowSize * pickWindowSize;
-		//	let buffer = new ArrayBuffer(pixelCount*4*4);
-		//	let pixels = new Uint8Array(buffer);
-		//	let ibuffer = new Uint32Array(buffer);
-		//	renderer.context.readPixels(
-		//		0, 0, 
-		//		pickWindowSize, pickWindowSize, 
-		//		renderer.context.RGBA, renderer.context.FLOAT, pixels);
-		//		
-		//	console.log(pixels[i]);
-		//}
-		
-	}
-	
-	
-};
+//Potree.updateDEMs = function(renderer, visibleNodes){
+//	
+//	return;
+//	
+//	let dems = Potree.__dems;
+//	if(dems === undefined){
+//		Potree.__dems = {};
+//		dems = Potree.__dems;
+//		
+//		dems.target = new THREE.WebGLRenderTarget(128, 128, {
+//			minFilter: THREE.NearestFilter, 
+//			magFilter: THREE.NearestFilter, 
+//			format: THREE.RGBAFormat, 
+//			type: THREE.FloatType
+//		});
+//		dems.scene = new THREE.Scene();
+//		dems.camera = new THREE.OrthographicCamera( 0, 128, 128, 0, 0, 10000 );
+//		dems.camera.up.set(0, 0, 1);
+//	}
+//	for(let node of visibleNodes){
+//		
+//		if(node.dem !== undefined){
+//			continue;
+//		}
+//		
+//		let geometry = node.geometryNode.geometry;
+//		let material = new THREE.PointsMaterial({color: 0x888888 });
+//		
+//		renderer.clearTarget( dems.target, true, true, true );
+//		var pc = new THREE.Points(geometry, material);
+//			
+//		let box = geometry.boundingBox;
+//		
+//		dems.scene.add(pc);
+//		dems.camera.position.set(0, 0, box.max.z);
+//		
+//		renderer.render(dems.scene, dems.camera, dems.target);
+//		
+//		dems.scene.remove(pc);
+//		
+//		//{
+//		//	let pickWindowSize = 128;
+//		//	let pixelCount = pickWindowSize * pickWindowSize;
+//		//	let buffer = new ArrayBuffer(pixelCount*4*4);
+//		//	let pixels = new Uint8Array(buffer);
+//		//	let ibuffer = new Uint32Array(buffer);
+//		//	renderer.context.readPixels(
+//		//		0, 0, 
+//		//		pickWindowSize, pickWindowSize, 
+//		//		renderer.context.RGBA, renderer.context.FLOAT, pixels);
+//		//		
+//		//	console.log(pixels[i]);
+//		//}
+//		
+//	}
+//	
+//	
+//};
 
 //Potree.Shader = class Shader{
 //	constructor(vertexShader, fragmentShader, program, uniforms){

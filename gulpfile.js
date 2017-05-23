@@ -58,6 +58,7 @@ var paths = {
 		"src/utils/TransformationTool.js",
 		"src/utils/Volume.js",
 		"src/utils/VolumeTool.js",
+		"src/utils/Box3Helper.js",
 		"src/exporter/GeoJSONExporter.js",
 		"src/exporter/DXFExporter.js",
 		"src/exporter/CSVExporter.js",
@@ -198,7 +199,12 @@ gulp.task('watch', function() {
 	gulp.run("build");
 	gulp.run("webserver");
 	
-    gulp.watch(['src/**/*.js', 'src/**/*.css', 'src/**/*.html'], ["build"]);
+    gulp.watch([
+		'src/**/*.js', 
+		'src/**/*.css', 
+		'src/**/*.fs', 
+		'src/**/*.vs', 
+		'src/**/*.html'], ["build"]);
 });
 
 // For development, it is now possible to use 'gulp webserver'

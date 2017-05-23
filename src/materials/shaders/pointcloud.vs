@@ -31,6 +31,7 @@ uniform float fov;
 uniform float spacing;
 uniform float near;
 uniform float far;
+uniform float orthoRange;
 
 #if defined use_clip_box
 	uniform mat4 clipBoxes[max_clip_boxes];
@@ -390,12 +391,7 @@ void main() {
 			pointSize = pointSize * projFactor;
 	#elif defined adaptive_point_size
 		if(useOrthographicCamera) {
-			/*vec3 p1 = (projectionMatrix * vec4(0, 0, 0, 1)).xyz;
-			vec3 p2 = (projectionMatrix * vec4(r, 0, 0, 1)).xyz;
-			float projSpacing = length(p2 - p1);
-			projSpacing = (projSpacing + 1.0) * 0.5 * screenWidth;*/
-			// TODO ortho
-			pointSize = size * r / pow(2.0, getLOD());
+			pointSize = size * r / (orthoRange * pow(2.0, getLOD())) * screenWidth;
 		} else {
 			float worldSpaceSize = size * r / getPointSizeAttenuation();
 			pointSize = worldSpaceSize * projFactor;

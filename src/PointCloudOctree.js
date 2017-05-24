@@ -49,6 +49,10 @@ Potree.PointCloudOctreeNode = class PointCloudOctreeNode extends Potree.PointClo
 		
 		return children;
 	};
+	
+	get name(){
+		return this.geometryNode.name;
+	}
 };
 
 
@@ -107,31 +111,23 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree{
 		sceneNode.position.copy(geometryNode.boundingBox.min);
 		sceneNode.onBeforeRender = (_this, scene, camera, geometry, material, group) => {
 			
-			//if(sceneNode.name !== "r2"){
-			//	geometry.setDrawRange(0, 0);
-			//}
-			
-			let level = geometryNode.getLevel();
-			let vnStart = this.visibleNodeTextureOffsets.get(node);
-			
-			material.uniforms.level.value = level;
-			material.uniforms.vnStart.value = vnStart;
-			material.uniforms.pcIndex.value = node.pcIndex;
-			
 			if(material.program){
 				_this.getContext().useProgram(material.program.program);
 				
 				if(material.program.getUniforms().map.level){
-					_this.getContext().useProgram(material.program.program);
-					
+					let level = geometryNode.getLevel();
+					material.uniforms.level.value = level;
 					material.program.getUniforms().map.level.setValue(_this.getContext(), level);
-					
-					if(this.visibleNodeTextureOffsets){
-						material.program.getUniforms().map.vnStart.setValue(_this.getContext(), vnStart);
-					}
+				}
+				
+				if(this.visibleNodeTextureOffsets && material.program.getUniforms().map.vnStart){
+					let vnStart = this.visibleNodeTextureOffsets.get(node);
+					material.uniforms.vnStart.value = vnStart;
+					material.program.getUniforms().map.vnStart.setValue(_this.getContext(), vnStart);
 				}
 				
 				if(material.program.getUniforms().map.pcIndex){
+					material.uniforms.pcIndex.value = node.pcIndex;
 					material.program.getUniforms().map.pcIndex.setValue(_this.getContext(), node.pcIndex);
 				}
 			}
@@ -306,7 +302,8 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree{
 		for(let i = 0; i < nodes.length; i++){
 			let node = nodes[i];
 			//var inverseWorld = new THREE.Matrix4().getInverse(node.matrixWorld);
-			let sphere = node.getBoundingSphere().clone().applyMatrix4(node.sceneNode.matrixWorld);
+			//let sphere = node.getBoundingSphere().clone().applyMatrix4(node.sceneNode.matrixWorld);
+			let sphere = node.getBoundingSphere().clone().applyMatrix4(this.matrixWorld);
 			
 			if(_ray.intersectsSphere(sphere)){
 				nodesOnRay.push(node);
@@ -769,32 +766,27 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree{
 			let geometryNode = node.geometryNode;
 			let material = pickMaterial;
 			tempNode.onBeforeRender = (_this, scene, camera, geometry, material, group) => {
-				let level = geometryNode.getLevel();
-				let vnStart = this.visibleNodeTextureOffsets.get(node);
-				
-				material.uniforms.level.value = level;
-				material.uniforms.vnStart.value = vnStart;
-				material.uniforms.pcIndex.value = node.pcIndex;
 				
 				if(material.program){
 					_this.getContext().useProgram(material.program.program);
 					
 					if(material.program.getUniforms().map.level){
-						_this.getContext().useProgram(material.program.program);
-						
+						let level = geometryNode.getLevel();
+						material.uniforms.level.value = level;
 						material.program.getUniforms().map.level.setValue(_this.getContext(), level);
-						
-						if(this.visibleNodeTextureOffsets){
-							material.program.getUniforms().map.vnStart.setValue(_this.getContext(), vnStart);
-						}
+					}
+					
+					if(this.visibleNodeTextureOffsets && material.program.getUniforms().map.vnStart){
+						let vnStart = this.visibleNodeTextureOffsets.get(node);
+						material.uniforms.vnStart.value = vnStart;
+						material.program.getUniforms().map.vnStart.setValue(_this.getContext(), vnStart);
 					}
 					
 					if(material.program.getUniforms().map.pcIndex){
+						material.uniforms.pcIndex.value = node.pcIndex;
 						material.program.getUniforms().map.pcIndex.setValue(_this.getContext(), node.pcIndex);
 					}
 				}
-				
-				
 				
 			};
 			tempNodes.push(tempNode);
@@ -806,7 +798,7 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree{
 		}
 		pickState.scene.autoUpdate = false;
 		pickState.scene.children = tempNodes;
-		pickState.scene.overrideMaterial = pickMaterial;
+		//pickState.scene.overrideMaterial = pickMaterial;
 		
 		renderer.state.setBlending(THREE.NoBlending);
 		
@@ -817,25 +809,25 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree{
 		//	childState.child = childState.visible;
 		//}
 		
-		pickState.scene.overrideMaterial = null;
+		//pickState.scene.overrideMaterial = null;
 		
 		//renderer.context.readPixels(
 		//	pixelPos.x - (pickWindowSize-1) / 2, pixelPos.y - (pickWindowSize-1) / 2, 
 		//	pickWindowSize, pickWindowSize, 
 		//	renderer.context.RGBA, renderer.context.UNSIGNED_BYTE, pixels);
 		
-		let pixelCount = pickWindowSize * pickWindowSize;
+		let clamp = (number, min, max) => Math.min(Math.max(min, number), max);
+		
+		let x = parseInt(clamp(pixelPos.x - (pickWindowSize-1) / 2, 0, width));
+		let y = parseInt(clamp(pixelPos.y - (pickWindowSize-1) / 2, 0, height));
+		let w = parseInt(Math.min(x + pickWindowSize, width) - x);
+		let h = parseInt(Math.min(y + pickWindowSize, height) - y);
+		
+		let pixelCount = w * h;
 		let buffer = new Uint8Array(4 * pixelCount);
 		renderer.readRenderTargetPixels(pickState.renderTarget, 
-			pixelPos.x - (pickWindowSize-1) / 2, 
-			pixelPos.y - (pickWindowSize-1) / 2, 
-			pickWindowSize, pickWindowSize, 
+			x, y, w, h, 
 			buffer);
-		
-		//let pixelCount = width * height;
-		//let buffer = new Uint8Array(4 * pixelCount);
-		//renderer.readRenderTargetPixels(pickState.renderTarget, 
-		//	0, 0, width, height, buffer);
 		
 		renderer.setScissorTest(false);
 		
@@ -856,39 +848,43 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree{
 				pixels[4*offset + 3] = 0;
 				let pIndex = ibuffer[offset];
 				
-				if((pIndex !== 0 || pcIndex !== 0) && distance < min){
+				//if((pIndex !== 0 || pcIndex !== 0) && distance < min){
+				if(pcIndex > 0 && distance < min){
+					
 					
 					hit = {
 						pIndex: pIndex,
 						pcIndex: pcIndex - 1
 					};
 					min = distance;
+					
+					//console.log(hit);
 				}
 			}
 		}
 		//console.log(pixels);
 		
-		{ // open window with image
-			let img = Potree.utils.pixelsArrayToImage(buffer, pickWindowSize, pickWindowSize);
-			let screenshot = img.src;
-			
-			if(!this.debugDIV){
-				this.debugDIV = $(`
-					<div id="pickDebug" 
-					style="position: absolute; 
-					right: 400px; width: 300px;
-					bottom: 44px; width: 300px;
-					z-index: 1000;
-					"></div>`);
-				$(document.body).append(this.debugDIV);
-			}
-			
-			this.debugDIV.empty();
-			this.debugDIV.append($(`<img src="${screenshot}"
-				style="transform: scaleY(-1);"/>`));
-			//$(this.debugWindow.document).append($(`<img src="${screenshot}"/>`));
-			//this.debugWindow.document.write('<img src="'+screenshot+'"/>');
-		}
+		//{ // open window with image
+		//	let img = Potree.utils.pixelsArrayToImage(buffer, w, h);
+		//	let screenshot = img.src;
+		//	
+		//	if(!this.debugDIV){
+		//		this.debugDIV = $(`
+		//			<div id="pickDebug" 
+		//			style="position: absolute; 
+		//			right: 400px; width: 300px;
+		//			bottom: 44px; width: 300px;
+		//			z-index: 1000;
+		//			"></div>`);
+		//		$(document.body).append(this.debugDIV);
+		//	}
+		//	
+		//	this.debugDIV.empty();
+		//	this.debugDIV.append($(`<img src="${screenshot}"
+		//		style="transform: scaleY(-1);"/>`));
+		//	//$(this.debugWindow.document).append($(`<img src="${screenshot}"/>`));
+		//	//this.debugWindow.document.write('<img src="'+screenshot+'"/>');
+		//}
 		
 		//return;
 		
@@ -896,6 +892,10 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree{
 		
 		if(hit){
 			point = {};
+			
+			if(!nodes[hit.pcIndex]){
+				return null;
+			}
 			
 			let pc = nodes[hit.pcIndex].sceneNode;
 			let attributes = pc.geometry.attributes;
@@ -910,7 +910,7 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree{
 						let y = positionArray[3*hit.pIndex+1];
 						let z = positionArray[3*hit.pIndex+2];
 						let position = new THREE.Vector3(x, y, z);
-						position.applyMatrix4(this.matrixWorld);
+						position.applyMatrix4(pc.matrixWorld);
 					
 						point[property] = position;
 					}else if(property === "indices"){

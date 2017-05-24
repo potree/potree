@@ -359,6 +359,9 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 			visible = visible && intersectsClipBoxes;
 		}
 		
+		//visible = ["r", "r0", "r06", "r060"].includes(node.name);
+		//visible = ["r"].includes(node.name);
+		
 		if(node.spacing){
 			lowestSpacing = Math.min(lowestSpacing, node.spacing);
 		}else if(node.geometryNode && node.geometryNode.spacing){

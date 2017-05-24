@@ -207,11 +207,11 @@ onmessage = function(event){
 	}
 
 	let indices = new ArrayBuffer(numPoints*4);
-	let fIndices = new Float32Array(indices);
-	//let iIndices = new Uint32Array(indices);
+	//let fIndices = new Float32Array(indices);
+	let iIndices = new Uint32Array(indices);
 	for(let i = 0; i < numPoints; i++){
-		//iIndices[i] = i;
-		fIndices[i] = i;
+		iIndices[i] = i;
+		//fIndices[i] = i;
 	}
 	
 	if(attributeBuffers[Potree.PointAttribute.CLASSIFICATION.name] === undefined){

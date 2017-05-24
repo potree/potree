@@ -1,5 +1,6 @@
 TODO orthographic cameras:
 
-- point size (shader)
-- navigation cube
 - ortho picking
+- ortho zoom to double click
+- navigation cube
+- (weights for node refinement for large pointclouds)

@@ -180,11 +180,15 @@ Potree.utils = class{
 			y: - (mouse.y / renderer.domElement.clientHeight ) * 2 + 1
 		};
 		
-		let vector = new THREE.Vector3( nmouse.x, nmouse.y, 0.5 );
-		vector.unproject(camera);
+		//let vector = new THREE.Vector3( nmouse.x, nmouse.y, 0.5 );
+		//vector.unproject(camera);
 
-		let direction = vector.sub(camera.position).normalize();
-		let ray = new THREE.Ray(camera.position, direction);
+		//let direction = vector.sub(camera.position).normalize();
+		//let ray = new THREE.Ray(camera.position, direction);
+		
+		let raycaster = new THREE.Raycaster();
+		raycaster.setFromCamera(nmouse, camera);
+		let ray = raycaster.ray;
 		
 		let selectedPointcloud = null;
 		let closestDistance = Infinity;

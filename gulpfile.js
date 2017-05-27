@@ -88,23 +88,26 @@ var paths = {
 };
 
 var workers = {
-	"laslaz": [
+	"LASLAZWorker": [
 		"libs/plasio/workers/laz-perf.js",
 		"libs/plasio/workers/laz-loader-worker.js"
 	],
-	"LASDecoder": [
+	"LASDecoderWorker": [
 		"src/workers/LASDecoderWorker.js"
 	],
-	"BinaryDecoder": [
+	"BinaryDecoderWorker": [
 		"src/workers/BinaryDecoderWorker.js",
 		"src/Version.js",
 		"src/loader/PointAttributes.js"
 	],
-	"GreyhoundBinaryDecoder": [
+	"GreyhoundBinaryDecoderWorker": [
 		"libs/plasio/workers/laz-perf.js",
 		"src/workers/GreyhoundBinaryDecoderWorker.js",
 		"src/Version.js",
 		"src/loader/PointAttributes.js"
+	],
+	"DEMWorker": [
+		"src/workers/DEMWorker.js"
 	]
 };
 
@@ -121,25 +124,16 @@ var shaders = [
 
 
 gulp.task("workers", function(){
-	gulp.src(workers.laslaz)
-		.pipe(encodeWorker('laslaz-worker.js', "Potree.workers.laslaz"))
-		.pipe(size({showFiles: true}))
-		.pipe(gulp.dest('build/potree/workers'));
 
-	gulp.src(workers.LASDecoder)
-		.pipe(encodeWorker('lasdecoder-worker.js', "Potree.workers.lasdecoder"))
-		.pipe(size({showFiles: true}))
-		.pipe(gulp.dest('build/potree/workers'));
+	for(let workerName of Object.keys(workers)){
+		
+		gulp.src(workers[workerName])
+			.pipe(concat(`${workerName}.js`))
+			.pipe(size({showFiles: true}))
+			.pipe(gulp.dest('build/potree/workers'));
+		
+	}
 
-	gulp.src(workers.BinaryDecoder)
-		.pipe(encodeWorker('BinaryDecoderWorker.js', "Potree.workers.binaryDecoder"))
-		.pipe(size({showFiles: true}))
-		.pipe(gulp.dest('build/potree/workers'));
-
-	gulp.src(workers.GreyhoundBinaryDecoder)
-		.pipe(encodeWorker('GreyhoundBinaryDecoderWorker.js', "Potree.workers.greyhoundBinaryDecoder"))
-		.pipe(size({showFiles: true}))
-		.pipe(gulp.dest('build/potree/workers'));
 });
 
 gulp.task("shaders", function(){
@@ -214,7 +208,7 @@ gulp.task('webserver', function() {
 });
 
 
-var encodeWorker = function(fileName, varname, opt){
+var encodeWorker = function(fileName, opt){
 	if (!fileName) throw new PluginError('gulp-concat',  'Missing fileName option for gulp-concat');
 	if (!opt) opt = {};
 	if (!opt.newLine) opt.newLine = gutil.linefeed;
@@ -236,7 +230,6 @@ var encodeWorker = function(fileName, varname, opt){
 		if (buffer.length === 0) return this.emit('end');
 
 		var joinedContents = buffer.join("");
-		//var content = varname + " = new Potree.WorkerManager(atob(\"" + new Buffer(joinedContents).toString('base64') + "\"));";
 		let content = joinedContents;
 
 		var joinedPath = path.join(firstFile.base, fileName);

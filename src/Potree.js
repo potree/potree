@@ -307,6 +307,102 @@ function updateVisibilityStructures(pointclouds, camera, renderer){
 	};
 }
 
+Potree.getDEMWorkerInstance = function(){
+	if(!Potree.DEMWorkerInstance){
+		let workerPath = Potree.scriptPath + "/workers/DEMWorker.js";
+		Potree.DEMWorkerInstance = Potree.workerPool.getWorker(workerPath);
+	}
+	
+	return Potree.DEMWorkerInstance;
+}
+
+
+function demHeight(pointcloud, position){
+	
+	if(!pointcloud.root.dem){
+		return;
+	}
+	
+	let node = pointcloud.root;
+	let dem = pointcloud.root.dem;
+	let demHeights = new Float32Array(dem.data);
+	let boxSize = pointcloud.boundingBox.getSize();
+	
+	let u = (position.x - pointcloud.position.x) / boxSize.x;
+	let v = (position.y - pointcloud.position.y) / boxSize.y;
+	
+	let demX = u * dem.width;
+	let demY = v * dem.height;
+
+	let clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+	let sample = (x, y) => {
+		x = parseInt(clamp(x, 0, dem.width - 1));
+		y = parseInt(clamp(y, 0, dem.height - 1));
+		let i = x + dem.width * y;
+		
+		return demHeights[i];
+	};
+	
+	let p00 = sample(Math.floor(demX), Math.floor(demY));
+	let p10 = sample(Math.ceil(demX), Math.floor(demY));
+	let p01 = sample(Math.floor(demX), Math.ceil(demY));
+	let p11 = sample(Math.ceil(demX), Math.ceil(demY));
+	
+	let value = 
+		p00 * (demX % 1) * (demY % 1) +
+		p10 * (1 - demX % 1) * (demY % 1) +
+		p01 * (demX % 1) * (1 - demY % 1) +
+		p11 * (1 - demX % 1) * (1 - demY % 1);
+	
+	return value;
+}
+
+function createDemMesh(){
+	let pointcloud = viewer.scene.pointclouds[0];
+	let triangles =  [];
+	let steps = 200;
+	for(let i = 0; i <= steps; i++){
+		for(let j = 0; j <= steps; j++){
+			let u0 = i / steps;
+			let u1 = (i+1) / steps;
+			let v0 = j / steps;
+			let v1 = (j+1) / steps;
+			
+			let x0 = pointcloud.position.x + u0 * pointcloud.boundingBox.getSize().x;
+			let x1 = pointcloud.position.x + u1 * pointcloud.boundingBox.getSize().x;
+			let y0 = pointcloud.position.y + v0 * pointcloud.boundingBox.getSize().y;
+			let y1 = pointcloud.position.y + v1 * pointcloud.boundingBox.getSize().y;
+			
+			let h00 = demHeight(pointcloud, new THREE.Vector2(x0, y0));
+			let h10 = demHeight(pointcloud, new THREE.Vector2(x1, y0));
+			let h01 = demHeight(pointcloud, new THREE.Vector2(x0, y1));
+			let h11 = demHeight(pointcloud, new THREE.Vector2(x1, y1));
+			
+			if(![h00, h10, h01, h11].every(n => isFinite(n))){
+				continue;
+			}
+			
+			triangles.push(x0, y0, h00);
+			triangles.push(x0, y1, h01);
+			triangles.push(x1, y0, h10);
+			
+			triangles.push(x0, y1, h01);
+			triangles.push(x1, y1, h11);
+			triangles.push(x1, y0, h10);
+		}
+	}
+
+	let geometry = new THREE.BufferGeometry();
+	let positions = new Float32Array(triangles);
+	geometry.addAttribute( 'position', new THREE.BufferAttribute(positions, 3));
+	geometry.computeBoundingSphere();
+	geometry.computeVertexNormals();
+	let material = new THREE.MeshNormalMaterial({side: THREE.DoubleSide});
+	let mesh = new THREE.Mesh(geometry, material);
+	//mesh.position.copy(pointcloud.position);
+	viewer.scene.scene.add(mesh);
+}
+
 Potree.updateVisibility = function(pointclouds, camera, renderer){
 	let numVisibleNodes = 0;
 	let numVisiblePoints = 0;
@@ -316,7 +412,7 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 	let unloadedGeometry = [];
 	
 	let lowestSpacing = Infinity;
-
+	
 	// calculate object space frustum and cam pos and setup priority queue
 	let s = updateVisibilityStructures(pointclouds, camera, renderer);
 	let frustums = s.frustums;
@@ -416,6 +512,35 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 			}else if(!pointcloud.showBoundingBox && node.boundingBoxNode){
 				node.boundingBoxNode.visible = false;
 			}
+			
+			if(!node.dem){
+				if(!Potree.getDEMWorkerInstance().working){
+					Potree.getDEMWorkerInstance().onmessage = (e) => {
+						
+						node.dem = e.data.dem;
+					
+						Potree.getDEMWorkerInstance().working = false;
+					};
+					
+					let position = node.geometryNode.geometry.attributes.position.array;
+					
+					let message = {
+						boundingBox: {
+							min: node.getBoundingBox().min.toArray(),
+							max:node.getBoundingBox().max.toArray()
+						},
+						position: new Float32Array(position).buffer
+					};
+					
+					let transferables = [message.position];
+					
+					Potree.getDEMWorkerInstance().working = true;
+					
+					Potree.getDEMWorkerInstance().postMessage(message, transferables);
+					
+				}
+			}
+			
 		}
 
 		// add child nodes to priorityQueue

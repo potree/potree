@@ -657,7 +657,7 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree{
 	 */
 	pick(renderer, camera, ray, params = {}){
 		
-		let pickWindowSize = params.pickWindowSize || 101;
+		let pickWindowSize = params.pickWindowSize || 17;
 		let pickOutsideClipRegion = params.pickOutsideClipRegion || false;
 		let width = Math.ceil(renderer.domElement.clientWidth);
 		let height = Math.ceil(renderer.domElement.clientHeight);

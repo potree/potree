@@ -57,12 +57,14 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 		this.elDescriptionClose = this.elDescription.find(".annotation-description-close");
 		//this.elDescriptionContent = this.elDescription.find(".annotation-description-content");
 		
-		this.elTitle.click(() => {
+		this.clickTitle = () => {
 			if(this.hasView()){
 				this.moveHere(this.scene.camera);
 			}
 			this.dispatchEvent({type: "click", target: this});
-		});
+		};
+		
+		this.elTitle.click(this.clickTitle);
 		
 		this.actions = this.actions.map(a => {
 			if(a instanceof Potree.Action){

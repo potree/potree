@@ -109,14 +109,20 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 			this.children.push(annotation);
 			annotation.parent = this;
 			
-			let c = this;
-			while(c !== null){
-				c.dispatchEvent({
-					"type": "annotation_added",
-					"annotation": annotation
-				});
-				c = c.parent;
+			let descendants = [];
+			annotation.traverse(a => {descendants.push(a)});
+			
+			for(let descendant of descendants){
+				let c = this;
+				while(c !== null){
+					c.dispatchEvent({
+						"type": "annotation_added",
+						"annotation": descendant
+					});
+					c = c.parent;
+				}
 			}
+			
 		}
 	}
 	

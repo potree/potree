@@ -388,13 +388,16 @@ function initAnnotationDetails(){
 		annotationPanel.append(chkEnable);
 		
 		
-		let stack = viewer.scene.annotations.children.reverse().map(
+		//let stack = viewer.scene.annotations.children.reverse().map(
+		//	a => ({annotation: a, container: annotationPanel}));
+		
+		let stack = viewer.scene.annotations.children.map(
 			a => ({annotation: a, container: annotationPanel}));
 		
 		
 		while(stack.length > 0){
 			
-			let {annotation, container} = stack.pop();
+			let {annotation, container} = stack.shift();
 			
 			// ►	U+25BA	\u25BA
 			// ▼	U+25BC	\u25BC

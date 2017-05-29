@@ -657,6 +657,8 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree{
 	 */
 	pick(renderer, camera, ray, params = {}){
 		
+		//let start = new Date().getTime();
+		
 		let pickWindowSize = params.pickWindowSize || 17;
 		let pickOutsideClipRegion = params.pickOutsideClipRegion || false;
 		let width = Math.ceil(renderer.domElement.clientWidth);
@@ -929,6 +931,10 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree{
 				}
 			}
 		}
+		
+		//let end = new Date().getTime();
+		//let duration = end - start;
+		//console.log(`pick duration: ${duration}ms`);
 		
 		return point;
 		

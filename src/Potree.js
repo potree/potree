@@ -307,101 +307,362 @@ function updateVisibilityStructures(pointclouds, camera, renderer){
 	};
 }
 
-Potree.getDEMWorkerInstance = function(){
-	if(!Potree.DEMWorkerInstance){
-		let workerPath = Potree.scriptPath + "/workers/DEMWorker.js";
-		Potree.DEMWorkerInstance = Potree.workerPool.getWorker(workerPath);
-	}
-	
-	return Potree.DEMWorkerInstance;
-}
-
-
-function demHeight(pointcloud, position){
-	
-	if(!pointcloud.root.dem){
-		return;
-	}
-	
-	let node = pointcloud.root;
-	let dem = pointcloud.root.dem;
-	let demHeights = new Float32Array(dem.data);
-	let boxSize = pointcloud.boundingBox.getSize();
-	
-	let u = (position.x - pointcloud.position.x) / boxSize.x;
-	let v = (position.y - pointcloud.position.y) / boxSize.y;
-	
-	let demX = u * dem.width;
-	let demY = v * dem.height;
-
-	let clamp = (value, min, max) => Math.min(Math.max(value, min), max);
-	let sample = (x, y) => {
-		x = parseInt(clamp(x, 0, dem.width - 1));
-		y = parseInt(clamp(y, 0, dem.height - 1));
-		let i = x + dem.width * y;
+/*
+//
+// WAY TOO SLOW WITH SYNCHRONOUS READ PIXEL
+//
+Potree.DEMRenderer = class{
+	constructor(renderer){
+		this.renderer = renderer;
 		
-		return demHeights[i];
-	};
+		this.tileWidth = 64;
+		this.tileHeight = 64;
+		
+		//this.target = new THREE.WebGLRenderTarget( 64, 64, { 
+		//	minFilter: THREE.NearestFilter, 
+		//	magFilter: THREE.NearestFilter, 
+		//	format: THREE.RGBAFormat, 
+		//	type: THREE.FloatType
+		//} );
+		//this.target.depthTexture = new THREE.DepthTexture();
+        //this.target.depthTexture.type = THREE.UnsignedIntType;
+		
+		this.targetElevation = new THREE.WebGLRenderTarget( this.tileWidth, this.tileHeight, { 
+			minFilter: THREE.NearestFilter, 
+			magFilter: THREE.NearestFilter, 
+			format: THREE.RGBAFormat,
+			//type: THREE.FloatType
+		});
+		
+		this.targetMedian = new THREE.WebGLRenderTarget( this.tileWidth, this.tileHeight, { 
+			minFilter: THREE.NearestFilter, 
+			magFilter: THREE.NearestFilter, 
+			format: THREE.RGBAFormat,
+			//type: THREE.FloatType
+		});
 	
-	let p00 = sample(Math.floor(demX), Math.floor(demY));
-	let p10 = sample(Math.ceil(demX), Math.floor(demY));
-	let p01 = sample(Math.floor(demX), Math.ceil(demY));
-	let p11 = sample(Math.ceil(demX), Math.ceil(demY));
-	
-	let value = 
-		p00 * (demX % 1) * (demY % 1) +
-		p10 * (1 - demX % 1) * (demY % 1) +
-		p01 * (demX % 1) * (1 - demY % 1) +
-		p11 * (1 - demX % 1) * (1 - demY % 1);
-	
-	return value;
-}
-
-function createDemMesh(){
-	let pointcloud = viewer.scene.pointclouds[0];
-	let triangles =  [];
-	let steps = 200;
-	for(let i = 0; i <= steps; i++){
-		for(let j = 0; j <= steps; j++){
-			let u0 = i / steps;
-			let u1 = (i+1) / steps;
-			let v0 = j / steps;
-			let v1 = (j+1) / steps;
+		this.vsElevation = `
+			precision mediump float;
+			precision mediump int;
 			
-			let x0 = pointcloud.position.x + u0 * pointcloud.boundingBox.getSize().x;
-			let x1 = pointcloud.position.x + u1 * pointcloud.boundingBox.getSize().x;
-			let y0 = pointcloud.position.y + v0 * pointcloud.boundingBox.getSize().y;
-			let y1 = pointcloud.position.y + v1 * pointcloud.boundingBox.getSize().y;
+			attribute vec3 position;
 			
-			let h00 = demHeight(pointcloud, new THREE.Vector2(x0, y0));
-			let h10 = demHeight(pointcloud, new THREE.Vector2(x1, y0));
-			let h01 = demHeight(pointcloud, new THREE.Vector2(x0, y1));
-			let h11 = demHeight(pointcloud, new THREE.Vector2(x1, y1));
+			uniform mat4 modelMatrix;
+			uniform mat4 modelViewMatrix;
+			uniform mat4 projectionMatrix;
 			
-			if(![h00, h10, h01, h11].every(n => isFinite(n))){
-				continue;
+			varying float vElevation;
+			
+			void main(){
+				vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
+				gl_Position = projectionMatrix * mvPosition;
+				gl_PointSize = 1.0;
+				
+				vElevation = position.z;
 			}
+		`;
+	
+		this.fsElevation = `
+					precision mediump float;
+					precision mediump int;
+					
+					varying float vElevation;
+					
+					void main(){
+						gl_FragColor = vec4(vElevation, 0.0, 0.0, 1.0);
+					}
+		`;
+		
+		this.vsMedian = `
+			precision mediump float;
+			precision mediump int;
 			
-			triangles.push(x0, y0, h00);
-			triangles.push(x0, y1, h01);
-			triangles.push(x1, y0, h10);
+			attribute vec3 position;
+			attribute vec2 uv;
 			
-			triangles.push(x0, y1, h01);
-			triangles.push(x1, y1, h11);
-			triangles.push(x1, y0, h10);
-		}
-	}
+			uniform mat4 modelMatrix;
+			uniform mat4 modelViewMatrix;
+			uniform mat4 projectionMatrix;
+		
+			varying vec2 vUV;
 
-	let geometry = new THREE.BufferGeometry();
-	let positions = new Float32Array(triangles);
-	geometry.addAttribute( 'position', new THREE.BufferAttribute(positions, 3));
-	geometry.computeBoundingSphere();
-	geometry.computeVertexNormals();
-	let material = new THREE.MeshNormalMaterial({side: THREE.DoubleSide});
-	let mesh = new THREE.Mesh(geometry, material);
-	//mesh.position.copy(pointcloud.position);
-	viewer.scene.scene.add(mesh);
-}
+			void main() {
+				vUV = uv;
+				
+				vec4 mvPosition = modelViewMatrix * vec4(position,1.0);
+
+				gl_Position = projectionMatrix * mvPosition;
+			}
+		`;
+		
+		this.fsMedian = `
+		
+			precision mediump float;
+			precision mediump int;
+			
+			uniform float uWidth;
+			uniform float uHeight;					
+			uniform sampler2D uTexture;
+
+			varying vec2 vUV;
+			
+			void main(){
+				vec2 uv = gl_FragCoord.xy / vec2(uWidth, uHeight);						
+				
+				vec4 color = texture2D(uTexture, uv);
+				gl_FragColor = color;
+                if(color.a == 0.0){
+					
+                    vec4 sum;
+                    
+                    float minVal = 1.0 / 0.0;
+                    
+                    float sumA = 0.0;
+					for(int i = -1; i <= 1; i++){
+						for(int j = -1; j <= 1; j++){
+							vec2 n = gl_FragCoord.xy + vec2(i, j);
+                            vec2 uv = n / vec2(uWidth, uHeight);	
+                            vec4 c = texture2D(uTexture, uv);
+                            
+                            if(c.a == 1.0){
+                            	minVal = min(c.r, minVal);
+                            }
+                            
+                            sumA += c.a;
+						}
+					}
+                    
+                    if(sumA > 0.0){
+                    	gl_FragColor = vec4(minVal, 0.0, 0.0, 1.0);
+                    }else{
+                    	discard;   
+                    }
+				}else{
+					//gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);
+					gl_FragColor = vec4(color.rgb, 1.0);
+				}
+				
+				
+			}
+		
+		`;
+		
+		this.elevationMaterial = new THREE.RawShaderMaterial( {
+			vertexShader: this.vsElevation,
+			fragmentShader: this.fsElevation,
+		} );
+		
+		this.medianFilterMaterial = new THREE.RawShaderMaterial( {
+			uniforms: {
+				uWidth: {value: 1.0},
+				uHeight: {value: 1.0},
+				uTexture: {type: "t", value: this.targetElevation.texture}
+			},
+			vertexShader: this.vsMedian,
+			fragmentShader: this.fsMedian,
+		});
+		
+		this.camera = new THREE.OrthographicCamera(0, 1, 1, 0, 0, 1);
+		
+		
+	}
+	
+	render(pointcloud, node){
+		if(!node.geometryNode){
+			return;
+		}
+		
+		Potree.timerQueriesEnabled = true;
+		let start = new Date().getTime();
+		let queryAll = Potree.startQuery("All", this.renderer.getContext());
+		
+		this.renderer.setClearColor(0x0000FF, 0);
+		this.renderer.clearTarget( this.target, true, true, true );
+		this.renderer.clearTarget(this.targetElevation, true, true, false );
+		this.renderer.clearTarget(this.targetMedian, true, true, false );
+		
+		let box = node.geometryNode.boundingBox;
+		
+		this.camera.up.set(0, 0, 1);
+		//this.camera.rotation.x = Math.PI / 2;
+		this.camera.left = box.min.x;
+		this.camera.right = box.max.x;
+		this.camera.top = box.max.y;
+		this.camera.bottom = box.min.y;
+		this.camera.near = -1000;
+		this.camera.far = 1000;
+		this.camera.updateProjectionMatrix();
+		
+		let scene = new THREE.Scene();
+		//let material = new THREE.PointsMaterial({color: 0x00ff00, size: 0.0001});
+		let material = this.elevationMaterial;
+		let points = new THREE.Points(node.geometryNode.geometry, material);
+		scene.add(points);
+		
+		this.renderer.render(points, this.camera, this.targetElevation);
+		
+		this.medianFilterMaterial.uniforms.uWidth.value = this.targetMedian.width;
+		this.medianFilterMaterial.uniforms.uHeight.value = this.targetMedian.height;
+		this.medianFilterMaterial.uniforms.uTexture.value = this.targetElevation.texture;
+		
+		Potree.utils.screenPass.render(this.renderer, this.medianFilterMaterial, this.targetMedian);
+		
+		Potree.endQuery(queryAll, this.renderer.getContext());
+		Potree.resolveQueries(this.renderer.getContext());
+		Potree.timerQueriesEnabled = false;
+		
+		
+		setTimeout( () => {
+			let start = new Date().getTime();
+			
+			let pixelCount = this.tileWidth * this.tileHeight;
+			let buffer = new Uint8Array(4 * pixelCount);
+			this.renderer.readRenderTargetPixels(this.targetMedian, 
+				0, 0, this.tileWidth, this.tileHeight, 
+				buffer);
+				
+			let end = new Date().getTime();
+			let duration = end - start;
+			console.log(`read duration: ${duration}ms`);
+		}, 3000);
+			
+		let end = new Date().getTime();
+		let duration = end - start;
+		
+		console.log(`duration: ${duration}ms`);
+		
+		//{ // open window with image
+		//
+		//	let pixelCount = this.tileWidth * this.tileHeight;
+		//	let buffer = new Float32Array(4 * pixelCount);
+		//	this.renderer.readRenderTargetPixels(this.targetMedian, 
+		//		0, 0, this.tileWidth, this.tileHeight, 
+		//		buffer);
+		//		
+		//	let uiBuffer = new Uint8Array(4 * pixelCount);
+		//	for(let i = 0; i < pixelCount; i++){
+		//		uiBuffer[i] = buffer[i] / 1.0;
+		//	}
+		//
+		//	let img = Potree.utils.pixelsArrayToImage(uiBuffer, this.tileWidth, this.tileHeight);
+		//	let screenshot = img.src;
+		//	
+		//	if(!this.debugDIV){
+		//		this.debugDIV = $(`
+		//			<div id="pickDebug" 
+		//			style="position: absolute; 
+		//			right: 400px; width: 300px;
+		//			bottom: 44px; width: 300px;
+		//			z-index: 1000;
+		//			"></div>`);
+		//		$(document.body).append(this.debugDIV);
+		//	}
+		//	
+		//	this.debugDIV.empty();
+		//	this.debugDIV.append($(`<img src="${screenshot}"
+		//		style="transform: scaleY(-1);"/>`));
+		//	//$(this.debugWindow.document).append($(`<img src="${screenshot}"/>`));
+		//	//this.debugWindow.document.write('<img src="'+screenshot+'"/>');
+		//}
+	}
+};
+*/
+
+//Potree.getDEMWorkerInstance = function(){
+//	if(!Potree.DEMWorkerInstance){
+//		let workerPath = Potree.scriptPath + "/workers/DEMWorker.js";
+//		Potree.DEMWorkerInstance = Potree.workerPool.getWorker(workerPath);
+//	}
+//	
+//	return Potree.DEMWorkerInstance;
+//}
+
+
+//function demHeight(pointcloud, position){
+//	
+//	if(!pointcloud.root.dem){
+//		return;
+//	}
+//	
+//	let node = pointcloud.root;
+//	let dem = pointcloud.root.dem;
+//	let demHeights = new Float32Array(dem.data);
+//	let boxSize = pointcloud.boundingBox.getSize();
+//	
+//	let u = (position.x - pointcloud.position.x) / boxSize.x;
+//	let v = (position.y - pointcloud.position.y) / boxSize.y;
+//	
+//	let demX = u * dem.width;
+//	let demY = v * dem.height;
+//
+//	let clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+//	let sample = (x, y) => {
+//		x = parseInt(clamp(x, 0, dem.width - 1));
+//		y = parseInt(clamp(y, 0, dem.height - 1));
+//		let i = x + dem.width * y;
+//		
+//		return demHeights[i];
+//	};
+//	
+//	let p00 = sample(Math.floor(demX), Math.floor(demY));
+//	let p10 = sample(Math.ceil(demX), Math.floor(demY));
+//	let p01 = sample(Math.floor(demX), Math.ceil(demY));
+//	let p11 = sample(Math.ceil(demX), Math.ceil(demY));
+//	
+//	let value = 
+//		p00 * (demX % 1) * (demY % 1) +
+//		p10 * (1 - demX % 1) * (demY % 1) +
+//		p01 * (demX % 1) * (1 - demY % 1) +
+//		p11 * (1 - demX % 1) * (1 - demY % 1);
+//	
+//	return value;
+//}
+//
+//function createDemMesh(){
+//	let pointcloud = viewer.scene.pointclouds[0];
+//	let triangles =  [];
+//	let steps = 200;
+//	for(let i = 0; i <= steps; i++){
+//		for(let j = 0; j <= steps; j++){
+//			let u0 = i / steps;
+//			let u1 = (i+1) / steps;
+//			let v0 = j / steps;
+//			let v1 = (j+1) / steps;
+//			
+//			let x0 = pointcloud.position.x + u0 * pointcloud.boundingBox.getSize().x;
+//			let x1 = pointcloud.position.x + u1 * pointcloud.boundingBox.getSize().x;
+//			let y0 = pointcloud.position.y + v0 * pointcloud.boundingBox.getSize().y;
+//			let y1 = pointcloud.position.y + v1 * pointcloud.boundingBox.getSize().y;
+//			
+//			let h00 = demHeight(pointcloud, new THREE.Vector2(x0, y0));
+//			let h10 = demHeight(pointcloud, new THREE.Vector2(x1, y0));
+//			let h01 = demHeight(pointcloud, new THREE.Vector2(x0, y1));
+//			let h11 = demHeight(pointcloud, new THREE.Vector2(x1, y1));
+//			
+//			if(![h00, h10, h01, h11].every(n => isFinite(n))){
+//				continue;
+//			}
+//			
+//			triangles.push(x0, y0, h00);
+//			triangles.push(x0, y1, h01);
+//			triangles.push(x1, y0, h10);
+//			
+//			triangles.push(x0, y1, h01);
+//			triangles.push(x1, y1, h11);
+//			triangles.push(x1, y0, h10);
+//		}
+//	}
+//
+//	let geometry = new THREE.BufferGeometry();
+//	let positions = new Float32Array(triangles);
+//	geometry.addAttribute( 'position', new THREE.BufferAttribute(positions, 3));
+//	geometry.computeBoundingSphere();
+//	geometry.computeVertexNormals();
+//	let material = new THREE.MeshNormalMaterial({side: THREE.DoubleSide});
+//	let mesh = new THREE.Mesh(geometry, material);
+//	//mesh.position.copy(pointcloud.position);
+//	viewer.scene.scene.add(mesh);
+//}
 
 Potree.updateVisibility = function(pointclouds, camera, renderer){
 	let numVisibleNodes = 0;
@@ -514,32 +775,40 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 			}
 			
 			if(!node.dem){
-				if(!Potree.getDEMWorkerInstance().working){
-					Potree.getDEMWorkerInstance().onmessage = (e) => {
-						
-						node.dem = e.data.dem;
-					
-						Potree.getDEMWorkerInstance().working = false;
-					};
-					
-					let position = node.geometryNode.geometry.attributes.position.array;
-					
-					let message = {
-						boundingBox: {
-							min: node.getBoundingBox().min.toArray(),
-							max:node.getBoundingBox().max.toArray()
-						},
-						position: new Float32Array(position).buffer
-					};
-					
-					let transferables = [message.position];
-					
-					Potree.getDEMWorkerInstance().working = true;
-					
-					Potree.getDEMWorkerInstance().postMessage(message, transferables);
-					
-				}
+				
+				
+				
+				
+				
 			}
+			
+			//if(!node.dem){
+			//	if(!Potree.getDEMWorkerInstance().working){
+			//		Potree.getDEMWorkerInstance().onmessage = (e) => {
+			//			
+			//			node.dem = e.data.dem;
+			//		
+			//			Potree.getDEMWorkerInstance().working = false;
+			//		};
+			//		
+			//		let position = node.geometryNode.geometry.attributes.position.array;
+			//		
+			//		let message = {
+			//			boundingBox: {
+			//				min: node.getBoundingBox().min.toArray(),
+			//				max:node.getBoundingBox().max.toArray()
+			//			},
+			//			position: new Float32Array(position).buffer
+			//		};
+			//		
+			//		let transferables = [message.position];
+			//		
+			//		Potree.getDEMWorkerInstance().working = true;
+			//		
+			//		Potree.getDEMWorkerInstance().postMessage(message, transferables);
+			//		
+			//	}
+			//}
 			
 		}
 

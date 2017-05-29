@@ -18,29 +18,6 @@ Potree.MapView = class{
 		this.sourcesLayer = null;
 		this.sourcesLabelLayer = null;
 		
-		//this.annotationStyleFunction = function() {
-		//	return [
-		//		new ol.style.Style({
-		//			fill: new ol.style.Fill({
-			//			color: 'rgba(255,255,255,0.4)'
-			//		}),
-			//		stroke: new ol.style.Stroke({
-			//			color: '#3399CC',
-			//			width: 1.25
-			//		}),
-			//		text: new ol.style.Text({
-			//			font: '12px Calibri,sans-serif',
-			//			fill: new ol.style.Fill({ color: '#000' }),
-			//			stroke: new ol.style.Stroke({
-			//			color: '#fff', width: 2
-			//			}),
-			//			// get the text from the feature - `this` is ol.Feature
-			//			text: this.get('description')
-			//		})
-		//		})
-		//	];
-		//};
-		
 		this.createAnnotationStyle = (text) => {
 			return [
 				new ol.style.Style({
@@ -130,9 +107,9 @@ Potree.MapView = class{
 			let btToggleTiles = document.createElement('button');
 			btToggleTiles.innerHTML = 'T';
 			btToggleTiles.addEventListener('click', () => {
-				let visible = this.sourcesLayer.getVisible();
-				this.sourcesLayer.setVisible(!visible);
-				this.sourcesLabelLayer.setVisible(!visible);
+				let visible = sourcesLayer.getVisible();
+				sourcesLayer.setVisible(!visible);
+				sourcesLabelLayer.setVisible(!visible);
 			}, false);
 			btToggleTiles.style.float = "left";
 			btToggleTiles.title = "show / hide tiles";
@@ -260,7 +237,8 @@ Potree.MapView = class{
 			});
 			
 			//console.log(feature);
-			this.elTooltip.css("display", feature ? '' : 'none');
+			//this.elTooltip.css("display", feature ? '' : 'none');
+			this.elTooltip.css("display", "none");
 			if(feature && feature.onHover){
 				feature.onHover(evt);
 				//overlay.setPosition(evt.coordinate);
@@ -284,7 +262,7 @@ Potree.MapView = class{
 			// selected features, and their names are displayed in the "info"
 			// div
 			let extent = dragBox.getGeometry().getExtent();
-			this.sourcesLayer.getSource().forEachFeatureIntersectingExtent(extent, (feature) => {
+			this.getSourcesLayer().getSource().forEachFeatureIntersectingExtent(extent, (feature) => {
 				selectedFeatures.push(feature);
 			});
 		});
@@ -321,6 +299,7 @@ Potree.MapView = class{
 				let p = this.map.getPixelFromCoordinate(coordinates);
 				
 				this.elTooltip.html(annotation.title);
+				this.elTooltip.css("display", "");
 				this.elTooltip.css("left", `${p[0]}px`);
 				this.elTooltip.css("top", `${p[1]}px`);
 			};
@@ -648,7 +627,7 @@ Potree.MapView = class{
 				});
 				feature.source = source;
 				feature.pointcloud = pointcloud;
-				this.sourcesLayer.getSource().addFeature(feature);
+				this.getSourcesLayer().getSource().addFeature(feature);
 				
                 
 				feature = new ol.Feature({
@@ -700,6 +679,14 @@ Potree.MapView = class{
 
 		
 		this.gCamera.setCoordinates([p1, p2, p3, p1]);
+	}
+	
+	get sourcesVisible(){
+		return this.getSourcesLayer().getVisible();
+	}
+	
+	set sourcesVisible(value){
+		this.getSourcesLayer().setVisible(value);
 	}
 	
 };

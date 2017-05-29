@@ -372,11 +372,18 @@ function initAnnotationDetails(){
 		let checked = viewer.getShowAnnotations() ? "checked" : "";
 		
 		let chkEnable = $(`
-			<li><label>
-				<input type="checkbox" id="chkShowAnnotations" ${checked}
-					onClick="viewer.setShowAnnotations(this.checked)"/>
-				<span data-i18n="annotations.show"></span>
-			</label></li>
+			<li>
+				<label>
+					<input type="checkbox" id="chkShowAnnotations" ${checked}
+						onClick="viewer.setShowAnnotations(this.checked)"/>
+					<span data-i18n="annotations.show3D"></span>
+				</label>
+				<label>
+					<input type="checkbox" id="chkShowAnnotationsMap" ${checked}
+						onClick="viewer.mapView.getAnnotationsLayer().setVisible(this.checked)"/>
+					<span data-i18n="annotations.showMap"></span>
+				</label>
+			</li>
 		`);
 		annotationPanel.append(chkEnable);
 		

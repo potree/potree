@@ -52,7 +52,8 @@
         "language": "Language"
     },
 	"annotations": {
-		"show": "show annotations"
+		"show3D": "show in 3D",
+		"showMap": "show on map"
     }, 
 	"profile": {
         "nb_points": "Number of Points",

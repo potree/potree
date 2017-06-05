@@ -145,6 +145,7 @@ a:hover, a:visited, a:link, a:active{
 	position:		absolute;
 	padding:		10px;
 	opacity:		0.5;
+	transform:		translate(-50%, -30px);
 }
 
 .annotation-titlebar{

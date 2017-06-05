@@ -1191,6 +1191,8 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		
 		let distances = [];
 
+		let renderAreaWidth = this.renderArea.clientWidth;
+		let renderAreaHeight = this.renderArea.clientHeight;
 		this.scene.annotations.traverse(annotation => {
 			
 			if(annotation === this.scene.annotations){
@@ -1218,59 +1220,62 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			{
 				// SCREEN POS
 				screenPos.copy(position).project(this.scene.camera);
-				screenPos.x = this.renderArea.clientWidth * (screenPos.x + 1) / 2;
-				screenPos.y = this.renderArea.clientHeight * (1 - (screenPos.y + 1) / 2);
+				screenPos.x = renderAreaWidth * (screenPos.x + 1) / 2;
+				screenPos.y = renderAreaHeight * (1 - (screenPos.y + 1) / 2);
 				
-				screenPos.x = Math.floor(screenPos.x - element[0].clientWidth / 2);
-				screenPos.y = Math.floor(screenPos.y - annotation.elTitlebar[0].clientHeight / 2);
+				//screenPos.x = Math.floor(screenPos.x - element[0].clientWidth / 2);
+				//screenPos.y = Math.floor(screenPos.y - annotation.elTitlebar[0].clientHeight / 2);
+				screenPos.x = Math.floor(screenPos.x);
+				screenPos.y = Math.floor(screenPos.y);
 				
 				// SCREEN SIZE
 				let fov = Math.PI * viewer.scene.camera.fov / 180;
 				let slope = Math.tan(fov / 2.0);
-				let projFactor =  0.5 * this.renderArea.clientHeight / (slope * distance);
+				let projFactor =  0.5 * renderAreaHeight / (slope * distance);
 				
 				screenSize = radius * projFactor;
 			}
 			
-			element.css("left", screenPos.x + "px");
-			element.css("top", screenPos.y + "px");
+			//element.css("left", screenPos.x + "px");
+			//element.css("top", screenPos.y + "px");
+			element[0].style.left = screenPos.x + "px";
+			element[0].style.top = screenPos.y + "px";
 			
 			let zIndex = 10000000 - distance * (10000000 / this.scene.camera.far);
 			if(annotation.descriptionVisible){
 				zIndex += 10000000;
 			}
 			
-			element.css("z-index", parseInt(zIndex));
+			//element.css("z-index", parseInt(zIndex));
 			
-			if(annotation.children.length > 0){
-				let expand = screenSize > annotation.collapseThreshold || annotation.boundingBox.containsPoint(this.scene.camera.position);
-				
-				if(!expand){
-					annotation.traverseDescendants(descendant => {
-						if(!descendant.__visible){
-							return;
-						}else{
-							descendant.__visible = false;
-							//descendant.domElement.fadeOut(200);
-							descendant.domElement.hide();
-						}
-					});
-					annotation.__visible = true;
-					element.fadeIn(200);
-				}else{
-					annotation.__visible = true;
-					element.fadeOut(200);
-				}
-				
-				return expand;
-			}else{
-				annotation.__visible = (-1 <= screenPos.z && screenPos.z <= 1);
-				if(annotation.__visible){
-					$(element).fadeIn(200);
-				}else{
-					$(element).fadeOut(200);
-				}
-			}
+			//if(annotation.children.length > 0){
+			//	let expand = screenSize > annotation.collapseThreshold || annotation.boundingBox.containsPoint(this.scene.camera.position);
+			//	
+			//	if(!expand){
+			//		annotation.traverseDescendants(descendant => {
+			//			if(!descendant.__visible){
+			//				return;
+			//			}else{
+			//				descendant.__visible = false;
+			//				descendant.domElement.hide();
+			//			}
+			//		});
+			//		annotation.__visible = true;
+			//		element.fadeIn(200);
+			//	}else{
+			//		annotation.__visible = true;
+			//		element.fadeOut(200);
+			//	}
+			//	
+			//	return expand;
+			//}else{
+			//	annotation.__visible = (-1 <= screenPos.z && screenPos.z <= 1);
+			//	if(annotation.__visible){
+			//		$(element).fadeIn(200);
+			//	}else{
+			//		$(element).fadeOut(200);
+			//	}
+			//}
 			
 			
 		});

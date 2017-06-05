@@ -321,6 +321,12 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 			
 			this.uniforms.clipBoxes.value.set(box.inverse.elements, 16*i);
 		}
+		
+		for(let i = 0; i < this.uniforms.clipBoxes.value.length; i++){
+			if(Number.isNaN(this.uniforms.clipBoxes.value[i])){
+				this.uniforms.clipBoxes.value[i] = Infinity;
+			}
+		}
 	}
 	
 	get gradient(){

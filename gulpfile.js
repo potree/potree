@@ -1,19 +1,19 @@
 
-var path = require('path');
-var gulp = require('gulp');
+const path = require('path');
+const gulp = require('gulp');
 
-var concat = require('gulp-concat');
-var size = require('gulp-size');
-var rename = require('gulp-rename');
-var uglify = require('gulp-uglify');
-var gutil = require('gulp-util');
-var through = require('through');
-var os = require('os');
-var File = gutil.File;
+const concat = require('gulp-concat');
+const size = require('gulp-size');
+const rename = require('gulp-rename');
+const uglify = require('gulp-uglify');
+const gutil = require('gulp-util');
+const through = require('through');
+const jshint = require('gulp-jshint');
+const os = require('os');
+const File = gutil.File;
+const connect = require('gulp-connect');
 
-//We need this one for the in-built webserver
-var connect = require('gulp-connect');
-
+var server;
 
 var paths = {
 	potree : [
@@ -40,6 +40,7 @@ var paths = {
 		"src/navigation/EarthControls.js",
 		"src/LRU.js",
 		"src/Annotation.js",
+		"src/Actions.js",
 		"src/ProfileRequest.js",
 		"src/PointCloudOctree.js",
 		"src/PointCloudOctreeGeometry.js",
@@ -57,8 +58,11 @@ var paths = {
 		"src/utils/TransformationTool.js",
 		"src/utils/Volume.js",
 		"src/utils/VolumeTool.js",
+		"src/utils/Box3Helper.js",
 		"src/exporter/GeoJSONExporter.js",
 		"src/exporter/DXFExporter.js",
+		"src/exporter/CSVExporter.js",
+		"src/exporter/LASExporter.js",
 		"src/arena4d/PointCloudArena4D.js",
 		"src/arena4d/PointCloudArena4DGeometry.js",
 		"src/viewer/ProgressBar.js",
@@ -66,7 +70,8 @@ var paths = {
 		"src/viewer/profile.js",
 		"src/viewer/map.js",
 		"src/viewer/sidebar.js",
-		"src/stuff/HoverMenu.js"
+		"src/stuff/HoverMenu.js",
+		"src/webgl/GLProgram.js"
 	],
 	laslaz: [
 		"build/workers/laslaz-worker.js",
@@ -83,23 +88,26 @@ var paths = {
 };
 
 var workers = {
-	"laslaz": [
+	"LASLAZWorker": [
 		"libs/plasio/workers/laz-perf.js",
 		"libs/plasio/workers/laz-loader-worker.js"
 	],
-	"LASDecoder": [
+	"LASDecoderWorker": [
 		"src/workers/LASDecoderWorker.js"
 	],
-	"BinaryDecoder": [
+	"BinaryDecoderWorker": [
 		"src/workers/BinaryDecoderWorker.js",
 		"src/Version.js",
 		"src/loader/PointAttributes.js"
 	],
-	"GreyhoundBinaryDecoder": [
+	"GreyhoundBinaryDecoderWorker": [
 		"libs/plasio/workers/laz-perf.js",
 		"src/workers/GreyhoundBinaryDecoderWorker.js",
 		"src/Version.js",
 		"src/loader/PointAttributes.js"
+	],
+	"DEMWorker": [
+		"src/workers/DEMWorker.js"
 	]
 };
 
@@ -116,25 +124,16 @@ var shaders = [
 
 
 gulp.task("workers", function(){
-	gulp.src(workers.laslaz)
-		.pipe(encodeWorker('laslaz-worker.js', "Potree.workers.laslaz"))
-		.pipe(size({showFiles: true}))
-		.pipe(gulp.dest('build/potree/workers'));
 
-	gulp.src(workers.LASDecoder)
-		.pipe(encodeWorker('lasdecoder-worker.js', "Potree.workers.lasdecoder"))
-		.pipe(size({showFiles: true}))
-		.pipe(gulp.dest('build/potree/workers'));
+	for(let workerName of Object.keys(workers)){
+		
+		gulp.src(workers[workerName])
+			.pipe(concat(`${workerName}.js`))
+			.pipe(size({showFiles: true}))
+			.pipe(gulp.dest('build/potree/workers'));
+		
+	}
 
-	gulp.src(workers.BinaryDecoder)
-		.pipe(encodeWorker('BinaryDecoderWorker.js', "Potree.workers.binaryDecoder"))
-		.pipe(size({showFiles: true}))
-		.pipe(gulp.dest('build/potree/workers'));
-
-	gulp.src(workers.GreyhoundBinaryDecoder)
-		.pipe(encodeWorker('GreyhoundBinaryDecoderWorker.js', "Potree.workers.greyhoundBinaryDecoder"))
-		.pipe(size({showFiles: true}))
-		.pipe(gulp.dest('build/potree/workers'));
 });
 
 gulp.task("shaders", function(){
@@ -167,20 +166,49 @@ gulp.task("scripts", ['workers','shaders'], function(){
 	return;
 });
 
+gulp.task('linter', function(){
+	gulp.src(paths.potree)
+		.pipe(jshint())
+		.pipe(jshint.reporter('default'));
+	gulp.src(paths.laslaz)
+		.pipe(jshint())
+		.pipe(jshint.reporter('default'));
+	gulp.src(workers.laslaz)
+		.pipe(jshint())
+		.pipe(jshint.reporter('default'));
+	gulp.src(workers.LASDecoder)
+		.pipe(jshint())
+		.pipe(jshint.reporter('default'));
+	gulp.src(workers.BinaryDecoder)
+		.pipe(jshint())
+		.pipe(jshint.reporter('default'));
+	gulp.src(workers.GreyhoundBinaryDecoder)
+		.pipe(jshint())
+		.pipe(jshint.reporter('default'));
+});
+
 gulp.task('build', ['scripts']);
 
 gulp.task('watch', function() {
-    gulp.watch('src/**/*.js', ['scripts']);
-})
+	gulp.run("build");
+	gulp.run("webserver");
+	
+    gulp.watch([
+		'src/**/*.js', 
+		'src/**/*.css', 
+		'src/**/*.fs', 
+		'src/**/*.vs', 
+		'src/**/*.html'], ["build"]);
+});
 
 // For development, it is now possible to use 'gulp webserver'
 // from the command line to start the server (default port is 8080)
 gulp.task('webserver', function() {
-  connect.server();
+	server = connect.server();
 });
 
 
-var encodeWorker = function(fileName, varname, opt){
+var encodeWorker = function(fileName, opt){
 	if (!fileName) throw new PluginError('gulp-concat',  'Missing fileName option for gulp-concat');
 	if (!opt) opt = {};
 	if (!opt.newLine) opt.newLine = gutil.linefeed;
@@ -202,7 +230,6 @@ var encodeWorker = function(fileName, varname, opt){
 		if (buffer.length === 0) return this.emit('end');
 
 		var joinedContents = buffer.join("");
-		//var content = varname + " = new Potree.WorkerManager(atob(\"" + new Buffer(joinedContents).toString('base64') + "\"));";
 		let content = joinedContents;
 
 		var joinedPath = path.join(firstFile.base, fileName);
@@ -253,14 +280,8 @@ var encodeShader = function(fileName, varname, opt){
 			console.log(fname);
 
 			var content = new Buffer(b).toString();
-			var prep = "Potree.Shaders[\"" + fname  + "\"] = [\n";
-			var lines = content.split("\n");
-			for(var j = 0; j < lines.length; j++){
-				var line = lines[j];
-				line = line.replace(/(\r\n|\n|\r)/gm,"");
-				prep += " \"" + line + "\",\n";
-			}
-			prep += "].join(\"\\n\");\n\n";
+			
+			let prep = `\nPotree.Shaders["${fname}"] = \`${content}\`\n`;
 
 			joinedContent += prep;
 		}

@@ -19,16 +19,16 @@ Potree.POCLoader = function(){
  */
 Potree.POCLoader.load = function load(url, callback) {
 	try{
-		var pco = new Potree.PointCloudOctreeGeometry();
+		let pco = new Potree.PointCloudOctreeGeometry();
 		pco.url = url;
-		var xhr = new XMLHttpRequest();
+		let xhr = new XMLHttpRequest();
 		xhr.open('GET', url, true);
 		
 		xhr.onreadystatechange = function(){
 			if(xhr.readyState === 4 && (xhr.status === 200 || xhr.status === 0)){
-				var fMno = JSON.parse(xhr.responseText);
+				let fMno = JSON.parse(xhr.responseText);
 				
-				var version = new Potree.Version(fMno.version);
+				let version = new Potree.Version(fMno.version);
 				
 				// assume octreeDir is absolute if it starts with http
 				if(fMno.octreeDir.indexOf("http") === 0){
@@ -42,10 +42,10 @@ Potree.POCLoader.load = function load(url, callback) {
 
 				pco.pointAttributes = fMno.pointAttributes;
 				
-				var min = new THREE.Vector3(fMno.boundingBox.lx, fMno.boundingBox.ly, fMno.boundingBox.lz);
-				var max = new THREE.Vector3(fMno.boundingBox.ux, fMno.boundingBox.uy, fMno.boundingBox.uz);
-				var boundingBox = new THREE.Box3(min, max);
-				var tightBoundingBox = boundingBox.clone();
+				let min = new THREE.Vector3(fMno.boundingBox.lx, fMno.boundingBox.ly, fMno.boundingBox.lz);
+				let max = new THREE.Vector3(fMno.boundingBox.ux, fMno.boundingBox.uy, fMno.boundingBox.uz);
+				let boundingBox = new THREE.Box3(min, max);
+				let tightBoundingBox = boundingBox.clone();
 				
 				if(fMno.tightBoundingBox){
 					tightBoundingBox.min.copy(new THREE.Vector3(fMno.tightBoundingBox.lx, fMno.tightBoundingBox.ly, fMno.tightBoundingBox.lz));
@@ -75,12 +75,12 @@ Potree.POCLoader.load = function load(url, callback) {
 					pco.pointAttributes = new Potree.PointAttributes(pco.pointAttributes);
 				}
 				
-				var nodes = {};
+				let nodes = {};
 				
 				{ // load root
-					var name = "r";
+					let name = "r";
 					
-					var root = new Potree.PointCloudOctreeGeometryNode(name, pco, boundingBox);
+					let root = new Potree.PointCloudOctreeGeometryNode(name, pco, boundingBox);
 					root.level = 0;
 					root.hasChildren = true;
 					root.spacing = pco.spacing;
@@ -96,16 +96,16 @@ Potree.POCLoader.load = function load(url, callback) {
 				
 				// load remaining hierarchy
 				if(version.upTo("1.4")){
-					for( var i = 1; i < fMno.hierarchy.length; i++){
-						var name = fMno.hierarchy[i][0];
-						var numPoints = fMno.hierarchy[i][1];
-						var index = parseInt(name.charAt(name.length-1));
-						var parentName = name.substring(0, name.length-1);
-						var parentNode = nodes[parentName];
-						var level = name.length-1;
-						var boundingBox = Potree.POCLoader.createChildAABB(parentNode.boundingBox, index);
+					for( let i = 1; i < fMno.hierarchy.length; i++){
+						let name = fMno.hierarchy[i][0];
+						let numPoints = fMno.hierarchy[i][1];
+						let index = parseInt(name.charAt(name.length-1));
+						let parentName = name.substring(0, name.length-1);
+						let parentNode = nodes[parentName];
+						let level = name.length-1;
+						let boundingBox = Potree.POCLoader.createChildAABB(parentNode.boundingBox, index);
 						
-						var node = new Potree.PointCloudOctreeGeometryNode(name, pco, boundingBox);
+						let node = new Potree.PointCloudOctreeGeometryNode(name, pco, boundingBox);
 						node.level = level;
 						node.numPoints = numPoints;
 						node.spacing = pco.spacing / Math.pow(2, level);
@@ -131,11 +131,11 @@ Potree.POCLoader.load = function load(url, callback) {
 
 Potree.POCLoader.loadPointAttributes = function(mno){
 	
-	var fpa = mno.pointAttributes;
-	var pa = new Potree.PointAttributes();
+	let fpa = mno.pointAttributes;
+	let pa = new Potree.PointAttributes();
 	
-	for(var i = 0; i < fpa.length; i++){   
-		var pointAttribute = Potree.PointAttribute[fpa[i]];
+	for(let i = 0; i < fpa.length; i++){   
+		let pointAttribute = Potree.PointAttribute[fpa[i]];
 		pa.add(pointAttribute);
 	}                                                                     
 	
@@ -143,43 +143,28 @@ Potree.POCLoader.loadPointAttributes = function(mno){
 };
 
 
-Potree.POCLoader.createChildAABB = function(aabb, childIndex){
-	var V3 = THREE.Vector3;
-	var min = aabb.min;
-	var max = aabb.max;
-	var dHalfLength = new THREE.Vector3().copy(max).sub(min).multiplyScalar(0.5);
-	var xHalfLength = new THREE.Vector3(dHalfLength.x, 0, 0);
-	var yHalfLength = new THREE.Vector3(0, dHalfLength.y, 0);
-	var zHalfLength = new THREE.Vector3(0, 0, dHalfLength.z);
-
-	var cmin = min;
-	var cmax = new THREE.Vector3().add(min).add(dHalfLength);
-
-	var min, max;
-	if (childIndex === 1) {
-		min = new THREE.Vector3().copy(cmin).add(zHalfLength);
-		max = new THREE.Vector3().copy(cmax).add(zHalfLength);
-	}else if (childIndex === 3) {
-		min = new THREE.Vector3().copy(cmin).add(zHalfLength).add(yHalfLength);
-		max = new THREE.Vector3().copy(cmax).add(zHalfLength).add(yHalfLength);
-	}else if (childIndex === 0) {
-		min = cmin;
-		max = cmax;
-	}else if (childIndex === 2) {
-		min = new THREE.Vector3().copy(cmin).add(yHalfLength);
-		max = new THREE.Vector3().copy(cmax).add(yHalfLength);
-	}else if (childIndex === 5) {
-		min = new THREE.Vector3().copy(cmin).add(zHalfLength).add(xHalfLength);
-		max = new THREE.Vector3().copy(cmax).add(zHalfLength).add(xHalfLength);
-	}else if (childIndex === 7) {
-		min = new THREE.Vector3().copy(cmin).add(dHalfLength);
-		max = new THREE.Vector3().copy(cmax).add(dHalfLength);
-	}else if (childIndex === 4) {
-		min = new THREE.Vector3().copy(cmin).add(xHalfLength);
-		max = new THREE.Vector3().copy(cmax).add(xHalfLength);
-	}else if (childIndex === 6) {
-		min = new THREE.Vector3().copy(cmin).add(xHalfLength).add(yHalfLength);
-		max = new THREE.Vector3().copy(cmax).add(xHalfLength).add(yHalfLength);
+Potree.POCLoader.createChildAABB = function(aabb, index){
+	
+	let min = aabb.min.clone();
+	let max = aabb.max.clone();
+	let size = new THREE.Vector3().subVectors(max, min);
+	
+	if((index & 0b0001) > 0){
+		min.z += size.z / 2;
+	}else{
+		max.z -= size.z / 2;
+	}
+	
+	if((index & 0b0010) > 0){
+		min.y += size.y / 2;
+	}else{
+		max.y -= size.y / 2;
+	}
+	
+	if((index & 0b0100) > 0){
+		min.x += size.x / 2;
+	}else{
+		max.x -= size.x / 2;
 	}
 	
 	return new THREE.Box3(min, max);

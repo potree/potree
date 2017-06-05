@@ -1,9 +1,15 @@
-<div id="profile_window" style="position: absolute; width: 100%; height: 30%; bottom: 0px; border: 1px solid black; display: none; box-sizing: border-box;">
+<div id="profile_window" style="
+	position: absolute; 
+	width: 84%;
+	left: 15%; top: 55%; height: 44%;
+	margin: 5px;
+	border: 1px solid black; 
+	display: none; box-sizing: border-box; z-index:10000">
 	
 	<div id="profile_titlebar" class="pv-titlebar" style="display: flex; position: absolute; height: 30px; width: 100%; box-sizing: border-box;">
 		<span style="padding-right: 10px"><span data-i18n="profile.title"></span></span>
 		<span id="profileInfo" style="flex-grow: 1; flex-direction: row"> </span>
-		<span id="profile_toggle_size_button" class="ui-icon ui-icon-newwin profile-button"> </span>
+		<!-- <span id="profile_toggle_size_button" class="ui-icon ui-icon-newwin profile-button"> </span> -->
 		<span id="closeProfileContainer" class="ui-icon ui-icon-close profile-button"> </span>
 	</div>
 	
@@ -20,11 +26,13 @@
 				<span>
 				
 					<a id="potree_download_profile_ortho_link" href="#" download="profile.csv">
-						<input id="potree_download_profile_ortho_button" type="button" data-i18n="[value]profile.save_ortho">
+						<img id="potree_download_csv_icon" class="text-icon"/>
+						<!-- <input id="potree_download_profile_ortho_button" type="button" data-i18n="[value]profile.save_ortho"> -->
 					</a>
 					
 					<a id="potree_download_profile_link" href="#" download="profile.las">
-						<input id="potree_download_profile_button" type="button" data-i18n="[value]profile.save_las">
+						<img id="potree_download_las_icon" class="text-icon"/>
+						<!-- <input id="potree_download_profile_button" type="button" data-i18n="[value]profile.save_las"> -->
 					</a>
 					
 				</span>
@@ -34,7 +42,7 @@
 				width: 100%; 
 				flex-grow: 1; 
 				position: relative; height: 100%; 
-				box-sizing: border-box;">
+				box-sizing: border-box; user-select: none">
 				<div style="
 					position: absolute; 
 					left: 41px; 
@@ -52,7 +60,7 @@
 					width: 100%; 
 					height: 100%;
 					"></svg>
-				<canvas id="profileCanvas" style="
+				<div id="profileCanvasContainer" style="
 					position: absolute; 
 					left: 41px; 
 					top: 0; 
@@ -60,37 +68,25 @@
 					width: calc(100% - 41px); 
 					height: calc(100% - 20px); 
 					/*background-color: #000000;*/
-					"></canvas>
-				<div id="profile_selection_marker" style="position: absolute; pointer-events:none;"></div>
+					"></div>
+				
+				<div id="profileSelectionProperties" style="
+					position: absolute; 
+					left: 50px; 
+					top: 10px; 
+					background-color: black;
+					color: white;
+					opacity: 0.7;
+					padding: 5px;
+					border: 1px solid white;
+					user-select: auto;
+					">
+					position: asdsadf asdf<br>
+					rgb: 123 423 123
+					</div>
 				
 			</div>
 		</span>
 	</div>
 
 </div>
-
-
-<script>
-
-$('#potree_download_profile_ortho_button').click(function(){
-	let string = viewer._2dprofile.getPointsInProfileAsCSV();
-	let uri = "data:application/octet-stream;base64,"+btoa(string);
-	$('#potree_download_profile_ortho_link').attr("href", uri);
-});
-
-$('#potree_download_profile_button').click(function(){
-	let las = viewer._2dprofile.getPointsInProfileAsLas();
-	let u8view = new Uint8Array(las);
-	
-	let binString = "";
-	for(let i = 0; i < u8view.length; i++){
-		binString += String.fromCharCode(u8view[i]);
-	}
-	
-	let uri = "data:application/octet-stream;base64,"+btoa(binString);
-	$('#potree_download_profile_link').attr("href", uri);
-	//elDownloadProfileLink.href = uri;
-	
-});
-
-</script>

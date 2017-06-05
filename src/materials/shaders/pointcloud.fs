@@ -2,7 +2,7 @@
 precision mediump float;
 precision mediump int;
 
-#if defined use_interpolation
+#if defined paraboloid_point_shape
 	#extension GL_EXT_frag_depth : enable
 #endif
 
@@ -40,7 +40,7 @@ void main() {
 	vec3 color = vColor;
 	float depth = gl_FragCoord.z;
 
-	#if defined(circle_point_shape) || defined(use_interpolation) || defined (weighted_splats)
+	#if defined(circle_point_shape) || defined(paraboloid_point_shape) || defined (weighted_splats)
 		float u = 2.0 * gl_PointCoord.x - 1.0;
 		float v = 2.0 * gl_PointCoord.y - 1.0;
 	#endif
@@ -201,7 +201,7 @@ void main() {
 		gl_FragColor.a = w;
 	#endif
 	
-	#if defined use_interpolation
+	#if defined paraboloid_point_shape
 		float wi = 0.0 - ( u*u + v*v);
 		vec4 pos = vec4(vViewPosition, 1.0);
 		pos.z += wi * vRadius;

@@ -44,6 +44,7 @@ Potree.ProfileTool = class ProfileTool extends THREE.EventDispatcher{
 		let domElement = this.viewer.renderer.domElement;
 		
 		let profile = new Potree.Profile();
+		profile.name = args.name || "Profile";
 		
 		this.dispatchEvent({
 			type: "start_inserting_profile",

@@ -35,6 +35,7 @@
         "point_material": "Materials",
         "elevation_range": "Elevation Bereich",
         "point_quality": "Qualität",
+		"point_shape": "Form",
         "edl_radius": "Radius",
         "edl_strength": "Stärke",
         "edl_enable": "Ein",
@@ -44,6 +45,7 @@
         "skybox": "Sky",
         "bottom_lock": "Halten über dem Boden",
         "box": "Box",
+        "length_unit": "Lenght unit",
         "freeze": "Lock view",
         "language": "Sprache"
     },

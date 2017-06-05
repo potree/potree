@@ -164,9 +164,9 @@ onmessage = function(event){
 			tempUint8[1] = bufferView[i*pointSize+25];
 			var b = tempUint16[0];
 			
-			colors[3*i+0] = r / 255;
-			colors[3*i+1] = g / 255;
-			colors[3*i+2] = b / 255;
+			colors[3*i+0] = r / 256;
+			colors[3*i+1] = g / 256;
+			colors[3*i+2] = b / 256;
 		}
 	}
 	

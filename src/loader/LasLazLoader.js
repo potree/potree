@@ -152,7 +152,7 @@ Potree.LasLazLoader.prototype.handle = function(node, url){
 Potree.LasLazBatcher = function(node){	
 	this.push = function(lasBuffer){
 		
-		let workerPath = Potree.scriptPath + "/workers/lasdecoder-worker.js";
+		let workerPath = Potree.scriptPath + "/workers/LASDecoderWorker.js";
 		let worker = Potree.workerPool.getWorker(workerPath);
 		
 		var mins = new THREE.Vector3(lasBuffer.mins[0], lasBuffer.mins[1], lasBuffer.mins[2]);

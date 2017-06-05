@@ -3,6 +3,9 @@ Potree.Measure = class Measure extends THREE.Object3D{
 	constructor(){
 		super();
 		
+		this.constructor.counter = (this.constructor.counter === undefined) ? 0 : this.constructor.counter + 1;
+		
+		this.name = "Measure_" + this.constructor.counter;
 		this.points = [];
 		this._showDistances = true;
 		this._showCoordinates = false;
@@ -14,6 +17,8 @@ Potree.Measure = class Measure extends THREE.Object3D{
 		
 		this.sphereGeometry = new THREE.SphereGeometry(0.4, 10, 10);
 		this.color = new THREE.Color( 0xff0000 );
+
+		this.lengthUnit = {code: "m"};
 		
 		this.spheres = [];
 		this.edges = [];
@@ -150,12 +155,13 @@ Potree.Measure = class Measure extends THREE.Object3D{
 				if(I){
 					let i = this.spheres.indexOf(e.drag.object);
 					if(i !== -1){
+						
+						let point = this.points[i];
+						for(let key of Object.keys(I.point).filter(e => e !== "position")){
+							point[key] = I.point[key];
+						}
+						
 						this.setPosition(i, I.location);
-						this.dispatchEvent({
-							"type": "marker_moved",
-							"measurement": this,
-							"index": i
-						});
 					}
 				}
 			};
@@ -246,7 +252,7 @@ Potree.Measure = class Measure extends THREE.Object3D{
 		for(let i = 0; i < this.points.length; i++){
 			let p1 = this.points[i].position;
 			let p2 = this.points[j].position;
-			area += (p2.x + p1.x) * (p1.z - p2.z);
+			area += (p2.x + p1.x) * (p1.y - p2.y);
 			j = i;
 		}
 		
@@ -314,9 +320,10 @@ Potree.Measure = class Measure extends THREE.Object3D{
 				let labelPos = position.clone().add(new THREE.Vector3(0,1,0));
 				coordinateLabel.position.copy(labelPos);
 				
-				let msg = Potree.utils.addCommas(position.x.toFixed(2)) 
+				/*let msg = Potree.utils.addCommas(position.x.toFixed(2)) 
 					+ " / " + Potree.utils.addCommas(position.y.toFixed(2)) 
-					+ " / " + Potree.utils.addCommas(position.z.toFixed(2));
+					+ " / " + Potree.utils.addCommas(position.z.toFixed(2));*/
+				let msg = Potree.utils.addCommas(position.z.toFixed(2) + " " + this.lengthUnit.code);
 				coordinateLabel.setText(msg);
 				
 				coordinateLabel.visible = this.showCoordinates;
@@ -373,7 +380,7 @@ Potree.Measure = class Measure extends THREE.Object3D{
 				let distance = point.position.distanceTo(nextPoint.position);
 				
 				edgeLabel.position.copy(center);
-				edgeLabel.setText(Potree.utils.addCommas(distance.toFixed(2)));
+				edgeLabel.setText(Potree.utils.addCommas(distance.toFixed(2)) + " " + this.lengthUnit.code);
 				edgeLabel.visible = this.showDistances && (index < lastIndex || this.closed) && this.points.length >= 2 && distance > 0;
 			}
 			
@@ -403,9 +410,11 @@ Potree.Measure = class Measure extends THREE.Object3D{
 				let labelPos = point.position.clone().add(new THREE.Vector3(0,1,0));
 				coordinateLabel.position.copy(labelPos);
 				
-				let msg = Potree.utils.addCommas(point.position.x.toFixed(2)) 
+				/*let msg = Potree.utils.addCommas(point.position.x.toFixed(2)) 
 					+ " / " + Potree.utils.addCommas(point.position.y.toFixed(2)) 
-					+ " / " + Potree.utils.addCommas(point.position.z.toFixed(2));
+					+ " / " + Potree.utils.addCommas(point.position.z.toFixed(2));*/
+
+				let msg = Potree.utils.addCommas(point.position.z.toFixed(2) + " " + this.lengthUnit.code);
 				coordinateLabel.setText(msg);
 				
 				//coordinateLabel.visible = this.showCoordinates && (index < lastIndex || this.closed);
@@ -447,7 +456,7 @@ Potree.Measure = class Measure extends THREE.Object3D{
 				
 				let heightLabelPosition = start.clone().add(end).multiplyScalar(0.5);
 				this.heightLabel.position.copy(heightLabelPosition);
-				let msg = Potree.utils.addCommas(height.toFixed(2));
+				let msg = Potree.utils.addCommas(height.toFixed(2)) + " " + this.lengthUnit.code;
 				this.heightLabel.setText(msg);
 			}
 			
@@ -456,7 +465,7 @@ Potree.Measure = class Measure extends THREE.Object3D{
 		{ // update area label
 			this.areaLabel.position.copy(centroid);
 			this.areaLabel.visible = this.showArea && this.points.length >= 3;
-			let msg = Potree.utils.addCommas(this.getArea().toFixed(1)) + "\u00B2";
+			let msg = Potree.utils.addCommas(this.getArea().toFixed(1)) + " " + this.lengthUnit.code + "\u00B2";
 			this.areaLabel.setText(msg);
 		}
 	};

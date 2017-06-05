@@ -180,15 +180,20 @@ Potree.utils = class{
 			y: - (mouse.y / renderer.domElement.clientHeight ) * 2 + 1
 		};
 		
-		let vector = new THREE.Vector3( nmouse.x, nmouse.y, 0.5 );
-		vector.unproject(camera);
+		//let vector = new THREE.Vector3( nmouse.x, nmouse.y, 0.5 );
+		//vector.unproject(camera);
 
-		let direction = vector.sub(camera.position).normalize();
-		let ray = new THREE.Ray(camera.position, direction);
+		//let direction = vector.sub(camera.position).normalize();
+		//let ray = new THREE.Ray(camera.position, direction);
+		
+		let raycaster = new THREE.Raycaster();
+		raycaster.setFromCamera(nmouse, camera);
+		let ray = raycaster.ray;
 		
 		let selectedPointcloud = null;
 		let closestDistance = Infinity;
 		let closestIntersection = null;
+		let closestPoint = null;
 		
 		for(let pointcloud of pointclouds){
 			let point = pointcloud.pick(renderer, camera, ray);
@@ -203,6 +208,7 @@ Potree.utils = class{
 				closestDistance = distance;
 				selectedPointcloud = pointcloud;
 				closestIntersection = point.position;
+				closestPoint = point;
 			}
 		}
 		
@@ -210,7 +216,8 @@ Potree.utils = class{
 			return {
 				location: closestIntersection,
 				distance: closestDistance,
-				pointcloud: selectedPointcloud
+				pointcloud: selectedPointcloud,
+				point: closestPoint
 			};
 		}else{
 			return null;

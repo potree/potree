@@ -1069,8 +1069,12 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 	};
 	
 	toggleMap(){
-		let map = $('#potree_map');
-		map.toggle(100);
+		//let map = $('#potree_map');
+		//map.toggle(100);
+		
+		if(this.mapView){
+			this.mapView.toggle();
+		}
 
 	};
 
@@ -1089,7 +1093,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			let imgMapToggle = document.createElement("img");
 			imgMapToggle.src = new URL(Potree.resourcePath + "/icons/map_icon.png").href;
 			imgMapToggle.style.display = "none";
-			imgMapToggle.onclick = this.toggleMap;
+			imgMapToggle.onclick = e => {this.toggleMap()};
 			imgMapToggle.id = "potree_map_toggle";
 			
 			viewer.renderArea.insertBefore(imgMapToggle, viewer.renderArea.children[0]);
@@ -1468,6 +1472,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			this.mapView.update(delta, this.scene.camera);
 			if(this.mapView.sceneProjection){
 				$( "#potree_map_toggle" ).css("display", "block");
+				
 			}
 		}
 

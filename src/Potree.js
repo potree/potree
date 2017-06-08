@@ -568,101 +568,113 @@ Potree.DEMRenderer = class{
 };
 */
 
-//Potree.getDEMWorkerInstance = function(){
-//	if(!Potree.DEMWorkerInstance){
-//		let workerPath = Potree.scriptPath + "/workers/DEMWorker.js";
-//		Potree.DEMWorkerInstance = Potree.workerPool.getWorker(workerPath);
-//	}
-//	
-//	return Potree.DEMWorkerInstance;
-//}
+Potree.getDEMWorkerInstance = function(){
+	if(!Potree.DEMWorkerInstance){
+		let workerPath = Potree.scriptPath + "/workers/DEMWorker.js";
+		Potree.DEMWorkerInstance = Potree.workerPool.getWorker(workerPath);
+	}
+	
+	return Potree.DEMWorkerInstance;
+}
 
+function createDEMMesh(dem){
+	
+	let box = dem.boundingBox;
 
-//function demHeight(pointcloud, position){
-//	
-//	if(!pointcloud.root.dem){
-//		return;
-//	}
-//	
-//	let node = pointcloud.root;
-//	let dem = pointcloud.root.dem;
-//	let demHeights = new Float32Array(dem.data);
-//	let boxSize = pointcloud.boundingBox.getSize();
-//	
-//	let u = (position.x - pointcloud.position.x) / boxSize.x;
-//	let v = (position.y - pointcloud.position.y) / boxSize.y;
-//	
-//	let demX = u * dem.width;
-//	let demY = v * dem.height;
-//
-//	let clamp = (value, min, max) => Math.min(Math.max(value, min), max);
-//	let sample = (x, y) => {
-//		x = parseInt(clamp(x, 0, dem.width - 1));
-//		y = parseInt(clamp(y, 0, dem.height - 1));
-//		let i = x + dem.width * y;
-//		
-//		return demHeights[i];
-//	};
-//	
-//	let p00 = sample(Math.floor(demX), Math.floor(demY));
-//	let p10 = sample(Math.ceil(demX), Math.floor(demY));
-//	let p01 = sample(Math.floor(demX), Math.ceil(demY));
-//	let p11 = sample(Math.ceil(demX), Math.ceil(demY));
-//	
-//	let value = 
-//		p00 * (demX % 1) * (demY % 1) +
-//		p10 * (1 - demX % 1) * (demY % 1) +
-//		p01 * (demX % 1) * (1 - demY % 1) +
-//		p11 * (1 - demX % 1) * (1 - demY % 1);
-//	
-//	return value;
-//}
-//
-//function createDemMesh(){
-//	let pointcloud = viewer.scene.pointclouds[0];
-//	let triangles =  [];
-//	let steps = 200;
-//	for(let i = 0; i <= steps; i++){
-//		for(let j = 0; j <= steps; j++){
-//			let u0 = i / steps;
-//			let u1 = (i+1) / steps;
-//			let v0 = j / steps;
-//			let v1 = (j+1) / steps;
-//			
-//			let x0 = pointcloud.position.x + u0 * pointcloud.boundingBox.getSize().x;
-//			let x1 = pointcloud.position.x + u1 * pointcloud.boundingBox.getSize().x;
-//			let y0 = pointcloud.position.y + v0 * pointcloud.boundingBox.getSize().y;
-//			let y1 = pointcloud.position.y + v1 * pointcloud.boundingBox.getSize().y;
-//			
-//			let h00 = demHeight(pointcloud, new THREE.Vector2(x0, y0));
-//			let h10 = demHeight(pointcloud, new THREE.Vector2(x1, y0));
-//			let h01 = demHeight(pointcloud, new THREE.Vector2(x0, y1));
-//			let h11 = demHeight(pointcloud, new THREE.Vector2(x1, y1));
-//			
-//			if(![h00, h10, h01, h11].every(n => isFinite(n))){
-//				continue;
-//			}
-//			
-//			triangles.push(x0, y0, h00);
-//			triangles.push(x0, y1, h01);
-//			triangles.push(x1, y0, h10);
-//			
-//			triangles.push(x0, y1, h01);
-//			triangles.push(x1, y1, h11);
-//			triangles.push(x1, y0, h10);
-//		}
-//	}
-//
-//	let geometry = new THREE.BufferGeometry();
-//	let positions = new Float32Array(triangles);
-//	geometry.addAttribute( 'position', new THREE.BufferAttribute(positions, 3));
-//	geometry.computeBoundingSphere();
-//	geometry.computeVertexNormals();
-//	let material = new THREE.MeshNormalMaterial({side: THREE.DoubleSide});
-//	let mesh = new THREE.Mesh(geometry, material);
-//	//mesh.position.copy(pointcloud.position);
-//	viewer.scene.scene.add(mesh);
-//}
+	let steps = 512;
+	let triangles =  [];
+	for(let i = 0; i < steps; i++){
+		for(let j = 0; j < steps; j++){
+			let u0 = i / steps;
+			let u1 = (i+1) / steps;
+			let v0 = j / steps;
+			let v1 = (j+1) / steps;
+			
+			let x0 = box.min.x + u0 * box.getSize().x;
+			let x1 = box.min.x + u1 * box.getSize().x;
+			let y0 = box.min.y + v0 * box.getSize().y;
+			let y1 = box.min.y + v1 * box.getSize().y;
+			
+			let h00 = dem.height(new THREE.Vector3(x0, y0, 0));
+			let h10 = dem.height(new THREE.Vector3(x1, y0, 0));
+			let h01 = dem.height(new THREE.Vector3(x0, y1, 0));
+			let h11 = dem.height(new THREE.Vector3(x1, y1, 0));
+			
+			if(![h00, h10, h01, h11].every(n => isFinite(n))){
+				continue;
+			}
+			
+			triangles.push(x0, y0, h00);
+			triangles.push(x0, y1, h01);
+			triangles.push(x1, y0, h10);
+			
+			triangles.push(x0, y1, h01);
+			triangles.push(x1, y1, h11);
+			triangles.push(x1, y0, h10);
+		}
+	}
+    
+	let geometry = new THREE.BufferGeometry();
+	let positions = new Float32Array(triangles);
+	geometry.addAttribute( 'position', new THREE.BufferAttribute(positions, 3));
+	geometry.computeBoundingSphere();
+	geometry.computeVertexNormals();
+	let material = new THREE.MeshNormalMaterial({side: THREE.DoubleSide});
+	let mesh = new THREE.Mesh(geometry, material);
+	//mesh.position.copy(box.min);
+	//mesh.position.copy(pointcloud.position);
+	viewer.scene.scene.add(mesh);
+}
+
+function createDEMMeshNode(dem, demNode){
+	
+	let box = demNode.box;
+	let tileSize = dem.tileSize;
+	
+	let triangles =  [];
+	for(let i = 0; i < tileSize; i++){
+		//for(let j = 0; j < 1; j++){
+		for(let j = 0; j < tileSize; j++){
+			let u0 = i / tileSize;
+			let u1 = (i+1) / tileSize;
+			let v0 = j / tileSize;
+			let v1 = (j+1) / tileSize;
+			
+			let x0 = u0 * box.getSize().x;
+			let x1 = u1 * box.getSize().x;
+			let y0 = v0 * box.getSize().y;
+			let y1 = v1 * box.getSize().y;
+			
+			let h00 = demNode.data[(i+0) + tileSize * (j+0)];
+			let h10 = demNode.data[(i+1) + tileSize * (j+0)];
+			let h01 = demNode.data[(i+0) + tileSize * (j+1)];
+			let h11 = demNode.data[(i+1) + tileSize * (j+1)];
+			
+			if(![h00, h10, h01, h11].every(n => isFinite(n))){
+				continue;
+			}
+			
+			triangles.push(x0, y0, h00);
+			triangles.push(x0, y1, h01);
+			triangles.push(x1, y0, h10);
+			
+			triangles.push(x0, y1, h01);
+			triangles.push(x1, y1, h11);
+			triangles.push(x1, y0, h10);
+		}
+	}
+    
+	let geometry = new THREE.BufferGeometry();
+	let positions = new Float32Array(triangles);
+	geometry.addAttribute( 'position', new THREE.BufferAttribute(positions, 3));
+	geometry.computeBoundingSphere();
+	geometry.computeVertexNormals();
+	let material = new THREE.MeshNormalMaterial({side: THREE.DoubleSide});
+	let mesh = new THREE.Mesh(geometry, material);
+	mesh.position.copy(box.min);
+	//mesh.position.copy(pointcloud.position);
+	viewer.scene.scene.add(mesh);
+}
 
 Potree.updateVisibility = function(pointclouds, camera, renderer){
 	let numVisibleNodes = 0;
@@ -774,13 +786,10 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 				node.boundingBoxNode.visible = false;
 			}
 			
-			if(!node.dem){
-				
-				
-				
-				
-				
+			if(pointcloud.dem){
+				pointcloud.dem.update(pointcloud.visibleNodes);
 			}
+			
 			
 			//if(!node.dem){
 			//	if(!Potree.getDEMWorkerInstance().working){
@@ -868,281 +877,3 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 		lowestSpacing: lowestSpacing
 	};
 };
-
-//Potree.updateDEMs = function(renderer, visibleNodes){
-//	
-//	return;
-//	
-//	let dems = Potree.__dems;
-//	if(dems === undefined){
-//		Potree.__dems = {};
-//		dems = Potree.__dems;
-//		
-//		dems.target = new THREE.WebGLRenderTarget(128, 128, {
-//			minFilter: THREE.NearestFilter, 
-//			magFilter: THREE.NearestFilter, 
-//			format: THREE.RGBAFormat, 
-//			type: THREE.FloatType
-//		});
-//		dems.scene = new THREE.Scene();
-//		dems.camera = new THREE.OrthographicCamera( 0, 128, 128, 0, 0, 10000 );
-//		dems.camera.up.set(0, 0, 1);
-//	}
-//	for(let node of visibleNodes){
-//		
-//		if(node.dem !== undefined){
-//			continue;
-//		}
-//		
-//		let geometry = node.geometryNode.geometry;
-//		let material = new THREE.PointsMaterial({color: 0x888888 });
-//		
-//		renderer.clearTarget( dems.target, true, true, true );
-//		var pc = new THREE.Points(geometry, material);
-//			
-//		let box = geometry.boundingBox;
-//		
-//		dems.scene.add(pc);
-//		dems.camera.position.set(0, 0, box.max.z);
-//		
-//		renderer.render(dems.scene, dems.camera, dems.target);
-//		
-//		dems.scene.remove(pc);
-//		
-//		//{
-//		//	let pickWindowSize = 128;
-//		//	let pixelCount = pickWindowSize * pickWindowSize;
-//		//	let buffer = new ArrayBuffer(pixelCount*4*4);
-//		//	let pixels = new Uint8Array(buffer);
-//		//	let ibuffer = new Uint32Array(buffer);
-//		//	renderer.context.readPixels(
-//		//		0, 0, 
-//		//		pickWindowSize, pickWindowSize, 
-//		//		renderer.context.RGBA, renderer.context.FLOAT, pixels);
-//		//		
-//		//	console.log(pixels[i]);
-//		//}
-//		
-//	}
-//	
-//	
-//};
-
-//Potree.Shader = class Shader{
-//	constructor(vertexShader, fragmentShader, program, uniforms){
-//		this.vertexShader = vertexShader;
-//		this.fragmentShader = fragmentShader;
-//		this.program = program;
-//		this.uniforms = uniforms;
-//	}
-//};
-//
-//Potree.VBO = class VBO{
-//	constructor(name, id, attribute){
-//		this.name = name;
-//		this.id = id;
-//		this.attribute = attribute;
-//	}
-//};
-//
-//Potree.VAO = class VAO{
-//	constructor(id, geometry, vbos){
-//		this.id = id;
-//		this.geometry = geometry;
-//		this.vbos = vbos;
-//	}
-//};
-//
-//Potree.compileShader = function(gl, vertexShader, fragmentShader){
-//	// VERTEX SHADER
-//	let vs = gl.createShader(gl.VERTEX_SHADER);
-//	{
-//		gl.shaderSource(vs, vertexShader);
-//		gl.compileShader(vs);
-//		
-//		let success = gl.getShaderParameter(vs, gl.COMPILE_STATUS);
-//		if (!success) {
-//			console.error("could not compile vertex shader:");
-//			
-//			let log = gl.getShaderInfoLog(vs);
-//			console.error(log, vertexShader);
-//			
-//			return;
-//		}
-//	}
-//	
-//	// FRAGMENT SHADER
-//	let fs = gl.createShader(gl.FRAGMENT_SHADER);
-//	{
-//		gl.shaderSource(fs, fragmentShader);
-//		gl.compileShader(fs);
-//		
-//		let success = gl.getShaderParameter(fs, gl.COMPILE_STATUS);
-//		if (!success) {
-//			console.error("could not compile fragment shader:");
-//			console.error(fragmentShader);
-//			
-//			return;
-//		}
-//	}
-//	
-//	// PROGRAM
-//	let program = gl.createProgram();
-//	gl.attachShader(program, vs);
-//	gl.attachShader(program, fs);
-//	gl.linkProgram(program);
-//	let success = gl.getProgramParameter(program, gl.LINK_STATUS);
-//	if (!success) {
-//		console.error("could not compile shader:");
-//		console.error(vertexShader);
-//		console.error(fragmentShader);
-//			
-//		return;
-//	}
-//	
-//	gl.useProgram(program);
-//	
-//	let uniforms = {};
-//	{ // UNIFORMS
-//		let n = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
-//
-//		for(let i = 0; i < n; i++){
-//			let uniform = gl.getActiveUniform(program, i);
-//			let name = uniform.name;
-//			let loc = gl.getUniformLocation(program, name);
-//
-//			uniforms[name] = loc;
-//		}
-//	}
-//	
-//	let shader = new Potree.Shader(vertexShader, fragmentShader, program, uniforms);
-//	
-//	return shader;
-//};
-//
-//// http://blog.tojicode.com/2012/10/oesvertexarrayobject-extension.html
-//Potree.createVAO = function(gl, geometry){
-//	if(Potree.vaos[geometry.uuid] ==! undefined){
-//		return Potree.vaos[geometry.uuid];
-//	}
-//	
-//	let ext = gl.getExtension("OES_vertex_array_object");
-//	let id = ext.createVertexArrayOES();
-//	
-//	ext.bindVertexArrayOES(id);  
-//	
-//	let vbos = {};
-//	for(let key in geometry.attributes){
-//		let attribute = geometry.attributes[key];
-//		
-//		let type = gl.FLOAT;
-//		if(attribute.array instanceof Uint8Array){
-//			type = gl.UNSIGNED_BYTE;
-//		}else if(attribute.array instanceof Uint16Array){
-//			type = gl.UNSIGNED_SHORT;
-//		}else if(attribute.array instanceof Uint32Array){
-//			type = gl.UNSIGNED_INT;
-//		}else if(attribute.array instanceof Int8Array){
-//			type = gl.BYTE;
-//		}else if(attribute.array instanceof Int16Array){
-//			type = gl.SHORT;
-//		}else if(attribute.array instanceof Int32Array){
-//			type = gl.INT;
-//		}else if(attribute.array instanceof Float32Array){
-//			type = gl.FLOAT;
-//		}
-//		
-//		let vbo = gl.createBuffer();
-//		gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-//		gl.bufferData(gl.ARRAY_BUFFER, attribute.array, gl.STATIC_DRAW);
-//		//gl.enableVertexAttribArray(attributePointer);
-//		//gl.vertexAttribPointer(attributePointer, numElements, type, attribute.normalized, 0, 0);
-//		
-//		vbos[key] = new Potree.VBO(key, vbo, attribute);
-//	}
-//	
-//	ext.bindVertexArrayOES(null);
-//	
-//	let vao = new Potree.VAO(id, geometry, vbos);
-//	Potree.vaos[geometry.uuid] = vao;
-//	
-//	return vao;
-//};
-//
-//Potree.renderPointcloud = function(pointcloud, camera, renderer){
-//	let gl = renderer.context;
-//	let webgl = Potree.webgl;
-//	let material = pointcloud.material;
-//	
-//	if(gl.getExtension("OES_vertex_array_object") === null){
-//		console.error("OES_vertex_array_object extension not supported");
-//		return;
-//	}
-//	
-//	if(material.needsUpdate){
-//		Potree.pointcloudShader = Potree.compileShader(gl,
-//			material.vertexShader, material.fragmentShader);
-//			
-//		material.needsUpdate = false;
-//	}
-//	
-//	let shader = Potree.pointcloudShader;
-//	let uniforms = shader.uniforms;
-//	
-//	gl.useProgram(shader.program);
-//	
-//	gl.uniformMatrix4fv(uniforms["projectionMatrix"], false, camera.projectionMatrix.elements);
-//	gl.uniformMatrix4fv(uniforms["viewMatrix"], false, camera.matrixWorldInverse.elements);
-//	gl.uniform1f(uniforms["fov"], this.material.fov);
-//	gl.uniform1f(uniforms["screenWidth"], material.screenWidth);
-//	gl.uniform1f(uniforms["screenHeight"], material.screenHeight);
-//	gl.uniform1f(uniforms["spacing"], material.spacing);
-//	gl.uniform1f(uniforms["near"], material.near);
-//	gl.uniform1f(uniforms["far"], material.far);
-//	gl.uniform1f(uniforms["size"], material.size);
-//	gl.uniform1f(uniforms["minSize"], material.minSize);
-//	gl.uniform1f(uniforms["maxSize"], material.maxSize);
-//	gl.uniform1f(uniforms["octreeSize"], pointcloud.pcoGeometry.boundingBox.getSize().x);
-//	
-//	{
-//		let apPosition = gl.getAttribLocation(program, "position");
-//		let apColor = gl.getAttribLocation(program, "color");
-//		let apNormal = gl.getAttribLocation(program, "normal");
-//		let apClassification = gl.getAttribLocation(program, "classification");
-//		let apIndices = gl.getAttribLocation(program, "indices");
-//		
-//		gl.enableVertexAttribArray(apPosition);
-//		gl.enableVertexAttribArray(apColor);
-//		gl.enableVertexAttribArray(apNormal);
-//		gl.enableVertexAttribArray(apClassification);		
-//		gl.enableVertexAttribArray(apIndices);
-//	}
-//	
-//	let nodes = pointcloud.visibleNodes;
-//	for(let node of nodes){
-//		let object = node.sceneNode;
-//		let geometry = object.geometry;
-//		
-//		
-//	}
-//	
-//};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

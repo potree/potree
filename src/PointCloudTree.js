@@ -10,6 +10,7 @@ Potree.DEMNode = class DEMNode{
 		this.tileSize = tileSize;
 		this.level = this.name.length - 1;
 		this.data = new Float32Array(tileSize * tileSize);
+		this.data.fill(-Infinity);
 		this.children = [];
 	}
 	
@@ -25,12 +26,44 @@ Potree.DEMNode = class DEMNode{
 	height(position){
 		let uv = this.uv(position);
 		
-		uv.map(n => Math.min(Math.floor(n), this.tileSize));
+		let i = Math.min(uv[0] * this.tileSize, this.tileSize - 1);
+		let j = Math.min(uv[1] * this.tileSize, this.tileSize - 1);
 		
-		let i = parseInt(this.tileSize * uv[0] + (this.tileSize ** 2) * uv[1]);
+		let [i0, i1] = [Math.floor(i), Math.ceil(i)];
+		let [j0, j1] = [Math.floor(j), Math.ceil(j)];
 		
-		let height = this.data[i];
-		return height;
+		let h00 = this.data[i0 + this.tileSize * j0];
+		let h01 = this.data[i0 + this.tileSize * j1];
+		let h10 = this.data[i1 + this.tileSize * j0];
+		let h11 = this.data[i1 + this.tileSize * j1];
+		
+		if([h00, h01, h10, h11].some(n => n === -Infinity)){
+			return null;
+		}
+		
+		let a = i % 1;
+		let b = j % 1;
+		
+		let h = h00 * (1 - a) * (1 - b) + 
+			    h01 * (1 - a) * b + 
+			    h10 * a * (1 - b) + 
+			    h11 * a * b;
+			
+		return h;
+		
+		
+		//let index = i + this.tileSize * j;
+		//
+		//let height = this.data[index];
+		//return height;
+	}
+	
+	traverse(callback, level = 0){
+		callback(this, level);
+		
+		for(let child of this.children.filter(c => c !== undefined)){
+			child.traverse(callback, level + 1);
+		}
 	}
 }
 
@@ -127,13 +160,22 @@ Potree.DEM = class DEM{
 	
 	height(position){
 		
+		//return this.root.height(position);
+		
 		if(!this.root){
 			return 0;
 		}
-
+        
+		let height = null;
 		let list = [this.root];
 		while(true){
 			let node = list[list.length - 1];
+			
+			let currentHeight = node.height(position);
+			
+			if(currentHeight !== null){
+				height = currentHeight;
+			}
 			
 			let uv = node.uv(position);
 			let childIndex = this.childIndex(uv);
@@ -145,9 +187,9 @@ Potree.DEM = class DEM{
 			}
 		}
 		
-		let leaf = list[list.length - 1];
-		let height = leaf.height(position);
-	
+		//let leaf = list[list.length - 1];
+		//let height = leaf.height(position);
+	    
 		return height;
 	}
 	
@@ -176,6 +218,7 @@ Potree.DEM = class DEM{
 		if(node === null){
 			return;
 		}
+		
 		
 		// update node
 		let projectedBox = node.getBoundingBox().clone().applyMatrix4(this.matrix);

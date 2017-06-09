@@ -307,6 +307,339 @@ function updateVisibilityStructures(pointclouds, camera, renderer){
 	};
 }
 
+Potree.getDEMWorkerInstance = function(){
+	if(!Potree.DEMWorkerInstance){
+		let workerPath = Potree.scriptPath + "/workers/DEMWorker.js";
+		Potree.DEMWorkerInstance = Potree.workerPool.getWorker(workerPath);
+	}
+	
+	return Potree.DEMWorkerInstance;
+}
+
+function createDEMMesh(dem){
+	
+	let box = dem.boundingBox;
+
+	let steps = 1024;
+	let triangles =  [];
+	for(let i = 0; i < steps; i++){
+		for(let j = 0; j < steps; j++){
+			let u0 = i / steps;
+			let u1 = (i+1) / steps;
+			let v0 = j / steps;
+			let v1 = (j+1) / steps;
+			
+			//let x0 = box.min.x + u0 * box.getSize().x;
+			//let x1 = box.min.x + u1 * box.getSize().x;
+			//let y0 = box.min.y + v0 * box.getSize().y;
+			//let y1 = box.min.y + v1 * box.getSize().y;
+			//
+			//let h00 = dem.height(new THREE.Vector3(x0, y0, 0));
+			//let h10 = dem.height(new THREE.Vector3(x1, y0, 0));
+			//let h01 = dem.height(new THREE.Vector3(x0, y1, 0));
+			//let h11 = dem.height(new THREE.Vector3(x1, y1, 0));
+			
+			let x0 = u0 * box.getSize().x;
+			let x1 = u1 * box.getSize().x;
+			let y0 = v0 * box.getSize().y;
+			let y1 = v1 * box.getSize().y;
+			
+			//let h00 = demNode.data[(i+0) + tileSize * (j+0)];
+			//let h10 = demNode.data[(i+1) + tileSize * (j+0)];
+			//let h01 = demNode.data[(i+0) + tileSize * (j+1)];
+			//let h11 = demNode.data[(i+1) + tileSize * (j+1)];
+			
+			let h00 = dem.height(new THREE.Vector3(box.min.x + x0, box.min.y + y0));
+			let h10 = dem.height(new THREE.Vector3(box.min.x + x1, box.min.y + y0));
+			let h01 = dem.height(new THREE.Vector3(box.min.x + x0, box.min.y + y1));
+			let h11 = dem.height(new THREE.Vector3(box.min.x + x1, box.min.y + y1));
+			
+			if(![h00, h10, h01, h11].every(n => isFinite(n))){
+				continue;
+			}
+			
+			triangles.push(x0, y0, h00);
+			triangles.push(x0, y1, h01);
+			triangles.push(x1, y0, h10);
+			
+			triangles.push(x0, y1, h01);
+			triangles.push(x1, y1, h11);
+			triangles.push(x1, y0, h10);
+		}
+	}
+    
+	let geometry = new THREE.BufferGeometry();
+	let positions = new Float32Array(triangles);
+	geometry.addAttribute( 'position', new THREE.BufferAttribute(positions, 3));
+	geometry.computeBoundingSphere();
+	geometry.computeVertexNormals();
+	let material = new THREE.MeshNormalMaterial({side: THREE.DoubleSide});
+	let mesh = new THREE.Mesh(geometry, material);
+	mesh.position.copy(box.min);
+	//mesh.position.copy(pointcloud.position);
+	viewer.scene.scene.add(mesh);
+}
+
+function createDEMMeshNode(dem, demNode){
+	
+	let box = demNode.box;
+	let tileSize = dem.tileSize;
+	
+	let triangles =  [];
+	for(let i = 0; i < tileSize; i++){
+		//for(let j = 0; j < 1; j++){
+		for(let j = 0; j < tileSize; j++){
+			let u0 = i / tileSize;
+			let u1 = (i+1) / tileSize;
+			let v0 = j / tileSize;
+			let v1 = (j+1) / tileSize;
+			
+			let x0 = u0 * box.getSize().x;
+			let x1 = u1 * box.getSize().x;
+			let y0 = v0 * box.getSize().y;
+			let y1 = v1 * box.getSize().y;
+			
+			//let h00 = demNode.data[(i+0) + tileSize * (j+0)];
+			//let h10 = demNode.data[(i+1) + tileSize * (j+0)];
+			//let h01 = demNode.data[(i+0) + tileSize * (j+1)];
+			//let h11 = demNode.data[(i+1) + tileSize * (j+1)];
+			
+			let h00 = demNode.height(new THREE.Vector3(box.min.x + x0, box.min.y + y0));
+			let h10 = demNode.height(new THREE.Vector3(box.min.x + x1, box.min.y + y0));
+			let h01 = demNode.height(new THREE.Vector3(box.min.x + x0, box.min.y + y1));
+			let h11 = demNode.height(new THREE.Vector3(box.min.x + x1, box.min.y + y1));
+			
+			if(![h00, h10, h01, h11].every(n => isFinite(n))){
+				continue;
+			}
+			
+			triangles.push(x0, y0, h00);
+			triangles.push(x0, y1, h01);
+			triangles.push(x1, y0, h10);
+			
+			triangles.push(x0, y1, h01);
+			triangles.push(x1, y1, h11);
+			triangles.push(x1, y0, h10);
+		}
+	}
+    
+	let geometry = new THREE.BufferGeometry();
+	let positions = new Float32Array(triangles);
+	geometry.addAttribute( 'position', new THREE.BufferAttribute(positions, 3));
+	geometry.computeBoundingSphere();
+	geometry.computeVertexNormals();
+	let material = new THREE.MeshNormalMaterial({side: THREE.DoubleSide});
+	let mesh = new THREE.Mesh(geometry, material);
+	mesh.position.copy(box.min);
+	//mesh.position.copy(pointcloud.position);
+	viewer.scene.scene.add(mesh);
+}
+
+Potree.updateVisibility = function(pointclouds, camera, renderer){
+	let numVisibleNodes = 0;
+	let numVisiblePoints = 0;
+	
+	let visibleNodes = [];
+	let visibleGeometry = [];
+	let unloadedGeometry = [];
+	
+	let lowestSpacing = Infinity;
+	
+	// calculate object space frustum and cam pos and setup priority queue
+	let s = updateVisibilityStructures(pointclouds, camera, renderer);
+	let frustums = s.frustums;
+	let camObjPositions = s.camObjPositions;
+	let priorityQueue = s.priorityQueue;
+	
+	while(priorityQueue.size() > 0){
+		let element = priorityQueue.pop();
+		let node = element.node;
+		let parent = element.parent;
+		let pointcloud = pointclouds[element.pointcloud];
+		
+		let box = node.getBoundingBox();
+		let frustum = frustums[element.pointcloud];
+		let camObjPos = camObjPositions[element.pointcloud];
+		
+		let insideFrustum = frustum.intersectsBox(box);
+		let maxLevel = pointcloud.maxLevel || Infinity;
+		let level = node.getLevel();
+		let visible = insideFrustum;
+		visible = visible && !(numVisiblePoints + node.getNumPoints() > Potree.pointBudget);
+		visible = visible && level < maxLevel;
+		
+		if (pointcloud.material.numClipBoxes > 0 && visible && pointcloud.material.clipMode == Potree.ClipMode.CLIP_OUTSIDE) {
+			let box2 = box.clone(); 
+			pointcloud.updateMatrixWorld(true);
+			box2.applyMatrix4(pointcloud.matrixWorld);
+			let intersectsClipBoxes = false;
+			for(let clipBox of pointcloud.material.clipBoxes) {
+				let clipMatrixWorld = clipBox.matrix;
+				let clipBoxWorld = new THREE.Box3(
+						new THREE.Vector3(-0.5, -0.5, -0.5), 
+						new THREE.Vector3(0.5, 0.5, 0.5))
+					.applyMatrix4(clipMatrixWorld);
+				if (box2.intersectsBox(clipBoxWorld)) {
+					intersectsClipBoxes = true;
+					break;
+				}
+			}
+			visible = visible && intersectsClipBoxes;
+		}
+		
+		//visible = ["r", "r0", "r06", "r060"].includes(node.name);
+		//visible = ["r"].includes(node.name);
+		
+		if(node.spacing){
+			lowestSpacing = Math.min(lowestSpacing, node.spacing);
+		}else if(node.geometryNode && node.geometryNode.spacing){
+			lowestSpacing = Math.min(lowestSpacing, node.geometryNode.spacing);
+		}
+		
+		if(numVisiblePoints + node.getNumPoints() > Potree.pointBudget){
+			break;
+		}
+		
+		
+		if(!visible){
+			continue;
+		}
+
+		numVisibleNodes++;
+		numVisiblePoints += node.getNumPoints();
+
+		pointcloud.numVisibleNodes++;
+		pointcloud.numVisiblePoints += node.getNumPoints();
+
+		if(node.isGeometryNode() && (!parent || parent.isTreeNode())){
+			if(node.isLoaded()){
+				node = pointcloud.toTreeNode(node, parent);
+			}else{
+				unloadedGeometry.push(node);
+				visibleGeometry.push(node);
+			}
+		}
+
+		if(node.isTreeNode()){
+			Potree.getLRU().touch(node.geometryNode);
+			node.sceneNode.visible = true;
+			node.sceneNode.material = pointcloud.material;
+
+			visibleNodes.push(node);
+			pointcloud.visibleNodes.push(node);
+
+			node.sceneNode.updateMatrix();
+			node.sceneNode.matrixWorld.multiplyMatrices( pointcloud.matrixWorld, node.sceneNode.matrix );
+
+			if(pointcloud.showBoundingBox && !node.boundingBoxNode && node.getBoundingBox){
+				let boxHelper = new Potree.Box3Helper(node.getBoundingBox());
+				//let boxHelper = new THREE.BoxHelper(node.sceneNode);
+				pointcloud.add(boxHelper);
+				pointcloud.boundingBoxNodes.push(boxHelper);
+				node.boundingBoxNode = boxHelper;
+				node.boundingBoxNode.matrixWorld.copy(pointcloud.matrixWorld);
+			}else if(pointcloud.showBoundingBox){
+				node.boundingBoxNode.visible = true;
+				node.boundingBoxNode.matrixWorld.copy(pointcloud.matrixWorld);
+			}else if(!pointcloud.showBoundingBox && node.boundingBoxNode){
+				node.boundingBoxNode.visible = false;
+			}
+			
+			//if(!node.dem){
+			//	if(!Potree.getDEMWorkerInstance().working){
+			//		Potree.getDEMWorkerInstance().onmessage = (e) => {
+			//			
+			//			node.dem = e.data.dem;
+			//		
+			//			Potree.getDEMWorkerInstance().working = false;
+			//		};
+			//		
+			//		let position = node.geometryNode.geometry.attributes.position.array;
+			//		
+			//		let message = {
+			//			boundingBox: {
+			//				min: node.getBoundingBox().min.toArray(),
+			//				max:node.getBoundingBox().max.toArray()
+			//			},
+			//			position: new Float32Array(position).buffer
+			//		};
+			//		
+			//		let transferables = [message.position];
+			//		
+			//		Potree.getDEMWorkerInstance().working = true;
+			//		
+			//		Potree.getDEMWorkerInstance().postMessage(message, transferables);
+			//		
+			//	}
+			//}
+			
+		}
+
+		// add child nodes to priorityQueue
+		let children = node.getChildren();
+		for(let i = 0; i < children.length; i++){
+			let child = children[i];
+			
+			let sphere = child.getBoundingSphere();
+			let distance = sphere.center.distanceTo(camObjPos);
+			let radius = sphere.radius;
+			
+			let fov = (camera.fov * Math.PI) / 180;
+			let slope = Math.tan(fov / 2);
+			let projFactor = (0.5 * renderer.domElement.clientHeight) / (slope * distance);
+			let screenPixelRadius = radius * projFactor;
+			
+			if(screenPixelRadius < pointcloud.minimumNodePixelSize){
+				continue;
+			}
+			
+			let weight = screenPixelRadius;
+
+			if(distance - radius < 0){
+				weight = Number.MAX_VALUE;
+			}
+
+			priorityQueue.push({pointcloud: element.pointcloud, node: child, parent: node, weight: weight});
+		}
+
+
+	}// end priority queue loop
+	
+	for(let pointcloud of pointclouds.filter(p => p.dem instanceof Potree.DEM)){
+		let updatingNodes = pointcloud.visibleNodes.filter(n => n.getLevel() <= 8);
+		pointcloud.dem.update(updatingNodes);
+	}
+	
+	
+	for(let i = 0; i < Math.min(5, unloadedGeometry.length); i++){
+		unloadedGeometry[i].load();
+	}
+	
+	//for(let node of visibleNodes){
+	//	//let allowedNodes = ["r", "r0", "r4", "r04", "r40", "r402", "r4020", "r4022", "r40206", "r40224", "r40202", "r40220", "r00", "r042"];
+	//	//let allowedNodes = ["r", "r0", "r4", "r04", "r40", "r402", "r4020", "r4022", "r00", "r042"];
+	//	//let allowedNodes = ["r", "r0", "r04", "r042"];
+	//	let allowedNodes = ["r", "r4", "r40", "r402", "r4020", "r40206"];
+	//	//let allowedNodes = ["r", "r4", "r40", "r402", "r4020"];
+	//	node.sceneNode.visible = allowedNodes.includes(node.geometryNode.name);
+	//	
+	//	if(node.boundingBoxNode){
+	//		node.boundingBoxNode.visible = node.boundingBoxNode.visible && node.sceneNode.visible;
+	//	}
+	//}
+	
+	
+	//Potree.updateDEMs(renderer, visibleNodes);
+
+	return {
+		visibleNodes: visibleNodes, 
+		numVisiblePoints: numVisiblePoints,
+		lowestSpacing: lowestSpacing
+	};
+};
+
+
+
 /*
 //
 // WAY TOO SLOW WITH SYNCHRONOUS READ PIXEL
@@ -567,313 +900,3 @@ Potree.DEMRenderer = class{
 	}
 };
 */
-
-Potree.getDEMWorkerInstance = function(){
-	if(!Potree.DEMWorkerInstance){
-		let workerPath = Potree.scriptPath + "/workers/DEMWorker.js";
-		Potree.DEMWorkerInstance = Potree.workerPool.getWorker(workerPath);
-	}
-	
-	return Potree.DEMWorkerInstance;
-}
-
-function createDEMMesh(dem){
-	
-	let box = dem.boundingBox;
-
-	let steps = 512;
-	let triangles =  [];
-	for(let i = 0; i < steps; i++){
-		for(let j = 0; j < steps; j++){
-			let u0 = i / steps;
-			let u1 = (i+1) / steps;
-			let v0 = j / steps;
-			let v1 = (j+1) / steps;
-			
-			let x0 = box.min.x + u0 * box.getSize().x;
-			let x1 = box.min.x + u1 * box.getSize().x;
-			let y0 = box.min.y + v0 * box.getSize().y;
-			let y1 = box.min.y + v1 * box.getSize().y;
-			
-			let h00 = dem.height(new THREE.Vector3(x0, y0, 0));
-			let h10 = dem.height(new THREE.Vector3(x1, y0, 0));
-			let h01 = dem.height(new THREE.Vector3(x0, y1, 0));
-			let h11 = dem.height(new THREE.Vector3(x1, y1, 0));
-			
-			if(![h00, h10, h01, h11].every(n => isFinite(n))){
-				continue;
-			}
-			
-			triangles.push(x0, y0, h00);
-			triangles.push(x0, y1, h01);
-			triangles.push(x1, y0, h10);
-			
-			triangles.push(x0, y1, h01);
-			triangles.push(x1, y1, h11);
-			triangles.push(x1, y0, h10);
-		}
-	}
-    
-	let geometry = new THREE.BufferGeometry();
-	let positions = new Float32Array(triangles);
-	geometry.addAttribute( 'position', new THREE.BufferAttribute(positions, 3));
-	geometry.computeBoundingSphere();
-	geometry.computeVertexNormals();
-	let material = new THREE.MeshNormalMaterial({side: THREE.DoubleSide});
-	let mesh = new THREE.Mesh(geometry, material);
-	//mesh.position.copy(box.min);
-	//mesh.position.copy(pointcloud.position);
-	viewer.scene.scene.add(mesh);
-}
-
-function createDEMMeshNode(dem, demNode){
-	
-	let box = demNode.box;
-	let tileSize = dem.tileSize;
-	
-	let triangles =  [];
-	for(let i = 0; i < tileSize; i++){
-		//for(let j = 0; j < 1; j++){
-		for(let j = 0; j < tileSize; j++){
-			let u0 = i / tileSize;
-			let u1 = (i+1) / tileSize;
-			let v0 = j / tileSize;
-			let v1 = (j+1) / tileSize;
-			
-			let x0 = u0 * box.getSize().x;
-			let x1 = u1 * box.getSize().x;
-			let y0 = v0 * box.getSize().y;
-			let y1 = v1 * box.getSize().y;
-			
-			let h00 = demNode.data[(i+0) + tileSize * (j+0)];
-			let h10 = demNode.data[(i+1) + tileSize * (j+0)];
-			let h01 = demNode.data[(i+0) + tileSize * (j+1)];
-			let h11 = demNode.data[(i+1) + tileSize * (j+1)];
-			
-			if(![h00, h10, h01, h11].every(n => isFinite(n))){
-				continue;
-			}
-			
-			triangles.push(x0, y0, h00);
-			triangles.push(x0, y1, h01);
-			triangles.push(x1, y0, h10);
-			
-			triangles.push(x0, y1, h01);
-			triangles.push(x1, y1, h11);
-			triangles.push(x1, y0, h10);
-		}
-	}
-    
-	let geometry = new THREE.BufferGeometry();
-	let positions = new Float32Array(triangles);
-	geometry.addAttribute( 'position', new THREE.BufferAttribute(positions, 3));
-	geometry.computeBoundingSphere();
-	geometry.computeVertexNormals();
-	let material = new THREE.MeshNormalMaterial({side: THREE.DoubleSide});
-	let mesh = new THREE.Mesh(geometry, material);
-	mesh.position.copy(box.min);
-	//mesh.position.copy(pointcloud.position);
-	viewer.scene.scene.add(mesh);
-}
-
-Potree.updateVisibility = function(pointclouds, camera, renderer){
-	let numVisibleNodes = 0;
-	let numVisiblePoints = 0;
-	
-	let visibleNodes = [];
-	let visibleGeometry = [];
-	let unloadedGeometry = [];
-	
-	let lowestSpacing = Infinity;
-	
-	// calculate object space frustum and cam pos and setup priority queue
-	let s = updateVisibilityStructures(pointclouds, camera, renderer);
-	let frustums = s.frustums;
-	let camObjPositions = s.camObjPositions;
-	let priorityQueue = s.priorityQueue;
-	
-	while(priorityQueue.size() > 0){
-		let element = priorityQueue.pop();
-		let node = element.node;
-		let parent = element.parent;
-		let pointcloud = pointclouds[element.pointcloud];
-		
-		let box = node.getBoundingBox();
-		let frustum = frustums[element.pointcloud];
-		let camObjPos = camObjPositions[element.pointcloud];
-		
-		let insideFrustum = frustum.intersectsBox(box);
-		let maxLevel = pointcloud.maxLevel || Infinity;
-		let level = node.getLevel();
-		let visible = insideFrustum;
-		visible = visible && !(numVisiblePoints + node.getNumPoints() > Potree.pointBudget);
-		visible = visible && level < maxLevel;
-		
-		if (pointcloud.material.numClipBoxes > 0 && visible && pointcloud.material.clipMode == Potree.ClipMode.CLIP_OUTSIDE) {
-			let box2 = box.clone(); 
-			pointcloud.updateMatrixWorld(true);
-			box2.applyMatrix4(pointcloud.matrixWorld);
-			let intersectsClipBoxes = false;
-			for(let clipBox of pointcloud.material.clipBoxes) {
-				let clipMatrixWorld = clipBox.matrix;
-				let clipBoxWorld = new THREE.Box3(
-						new THREE.Vector3(-0.5, -0.5, -0.5), 
-						new THREE.Vector3(0.5, 0.5, 0.5))
-					.applyMatrix4(clipMatrixWorld);
-				if (box2.intersectsBox(clipBoxWorld)) {
-					intersectsClipBoxes = true;
-					break;
-				}
-			}
-			visible = visible && intersectsClipBoxes;
-		}
-		
-		//visible = ["r", "r0", "r06", "r060"].includes(node.name);
-		//visible = ["r"].includes(node.name);
-		
-		if(node.spacing){
-			lowestSpacing = Math.min(lowestSpacing, node.spacing);
-		}else if(node.geometryNode && node.geometryNode.spacing){
-			lowestSpacing = Math.min(lowestSpacing, node.geometryNode.spacing);
-		}
-		
-		if(numVisiblePoints + node.getNumPoints() > Potree.pointBudget){
-			break;
-		}
-		
-		
-		if(!visible){
-			continue;
-		}
-
-		numVisibleNodes++;
-		numVisiblePoints += node.getNumPoints();
-
-		pointcloud.numVisibleNodes++;
-		pointcloud.numVisiblePoints += node.getNumPoints();
-
-		if(node.isGeometryNode() && (!parent || parent.isTreeNode())){
-			if(node.isLoaded()){
-				node = pointcloud.toTreeNode(node, parent);
-			}else{
-				unloadedGeometry.push(node);
-				visibleGeometry.push(node);
-			}
-		}
-
-		if(node.isTreeNode()){
-			Potree.getLRU().touch(node.geometryNode);
-			node.sceneNode.visible = true;
-			node.sceneNode.material = pointcloud.material;
-
-			visibleNodes.push(node);
-			pointcloud.visibleNodes.push(node);
-
-			node.sceneNode.updateMatrix();
-			node.sceneNode.matrixWorld.multiplyMatrices( pointcloud.matrixWorld, node.sceneNode.matrix );
-
-			if(pointcloud.showBoundingBox && !node.boundingBoxNode && node.getBoundingBox){
-				let boxHelper = new Potree.Box3Helper(node.getBoundingBox());
-				//let boxHelper = new THREE.BoxHelper(node.sceneNode);
-				pointcloud.add(boxHelper);
-				pointcloud.boundingBoxNodes.push(boxHelper);
-				node.boundingBoxNode = boxHelper;
-				node.boundingBoxNode.matrixWorld.copy(pointcloud.matrixWorld);
-			}else if(pointcloud.showBoundingBox){
-				node.boundingBoxNode.visible = true;
-				node.boundingBoxNode.matrixWorld.copy(pointcloud.matrixWorld);
-			}else if(!pointcloud.showBoundingBox && node.boundingBoxNode){
-				node.boundingBoxNode.visible = false;
-			}
-			
-			if(pointcloud.dem){
-				pointcloud.dem.update(pointcloud.visibleNodes);
-			}
-			
-			
-			//if(!node.dem){
-			//	if(!Potree.getDEMWorkerInstance().working){
-			//		Potree.getDEMWorkerInstance().onmessage = (e) => {
-			//			
-			//			node.dem = e.data.dem;
-			//		
-			//			Potree.getDEMWorkerInstance().working = false;
-			//		};
-			//		
-			//		let position = node.geometryNode.geometry.attributes.position.array;
-			//		
-			//		let message = {
-			//			boundingBox: {
-			//				min: node.getBoundingBox().min.toArray(),
-			//				max:node.getBoundingBox().max.toArray()
-			//			},
-			//			position: new Float32Array(position).buffer
-			//		};
-			//		
-			//		let transferables = [message.position];
-			//		
-			//		Potree.getDEMWorkerInstance().working = true;
-			//		
-			//		Potree.getDEMWorkerInstance().postMessage(message, transferables);
-			//		
-			//	}
-			//}
-			
-		}
-
-		// add child nodes to priorityQueue
-		let children = node.getChildren();
-		for(let i = 0; i < children.length; i++){
-			let child = children[i];
-			
-			let sphere = child.getBoundingSphere();
-			let distance = sphere.center.distanceTo(camObjPos);
-			let radius = sphere.radius;
-			
-			let fov = (camera.fov * Math.PI) / 180;
-			let slope = Math.tan(fov / 2);
-			let projFactor = (0.5 * renderer.domElement.clientHeight) / (slope * distance);
-			let screenPixelRadius = radius * projFactor;
-			
-			if(screenPixelRadius < pointcloud.minimumNodePixelSize){
-				continue;
-			}
-			
-			let weight = screenPixelRadius;
-
-			if(distance - radius < 0){
-				weight = Number.MAX_VALUE;
-			}
-
-			priorityQueue.push({pointcloud: element.pointcloud, node: child, parent: node, weight: weight});
-		}
-
-
-	}// end priority queue loop
-	
-	for(let i = 0; i < Math.min(5, unloadedGeometry.length); i++){
-		unloadedGeometry[i].load();
-	}
-	
-	//for(let node of visibleNodes){
-	//	//let allowedNodes = ["r", "r0", "r4", "r04", "r40", "r402", "r4020", "r4022", "r40206", "r40224", "r40202", "r40220", "r00", "r042"];
-	//	//let allowedNodes = ["r", "r0", "r4", "r04", "r40", "r402", "r4020", "r4022", "r00", "r042"];
-	//	//let allowedNodes = ["r", "r0", "r04", "r042"];
-	//	let allowedNodes = ["r", "r4", "r40", "r402", "r4020", "r40206"];
-	//	//let allowedNodes = ["r", "r4", "r40", "r402", "r4020"];
-	//	node.sceneNode.visible = allowedNodes.includes(node.geometryNode.name);
-	//	
-	//	if(node.boundingBoxNode){
-	//		node.boundingBoxNode.visible = node.boundingBoxNode.visible && node.sceneNode.visible;
-	//	}
-	//}
-	
-	
-	//Potree.updateDEMs(renderer, visibleNodes);
-
-	return {
-		visibleNodes: visibleNodes, 
-		numVisiblePoints: numVisiblePoints,
-		lowestSpacing: lowestSpacing
-	};
-};

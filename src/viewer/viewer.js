@@ -1158,6 +1158,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		let height = this.renderArea.clientHeight;
 
 		this.renderer = new THREE.WebGLRenderer({premultipliedAlpha: false});
+		this.renderer.sortObjects = false;
 		this.renderer.setSize(width, height);
 		this.renderer.autoClear = false;
 		this.renderArea.appendChild(this.renderer.domElement);
@@ -1239,6 +1240,28 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 				
 				screenSize = radius * projFactor;
 			}
+			
+			{
+				let p = position.clone().applyMatrix4(viewer.scene.camera.matrixWorldInverse);
+				let visible = p.z < 0;
+				
+				if(annotation.__visible !== visible){
+					if(visible){
+						annotation.domElement.show();
+					}else{
+						annotation.domElement.hide();
+					}
+					
+					annotation.__visible = visible;
+				}
+				//annotation.__visible = p.z < 0;
+				//if(p.z > 0){
+				//	annotation.domElement.hide();
+				//}else{
+				//	annotation.domElement.show();
+				//}
+			}
+			
 			
 			//element.css("left", screenPos.x + "px");
 			//element.css("top", screenPos.y + "px");

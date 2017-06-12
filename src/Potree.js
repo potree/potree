@@ -320,7 +320,7 @@ function createDEMMesh(dem){
 	
 	let box = dem.boundingBox;
 
-	let steps = 1024;
+	let steps = 256;
 	let triangles =  [];
 	for(let i = 0; i < steps; i++){
 		for(let j = 0; j < steps; j++){
@@ -545,34 +545,6 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 				node.boundingBoxNode.visible = false;
 			}
 			
-			//if(!node.dem){
-			//	if(!Potree.getDEMWorkerInstance().working){
-			//		Potree.getDEMWorkerInstance().onmessage = (e) => {
-			//			
-			//			node.dem = e.data.dem;
-			//		
-			//			Potree.getDEMWorkerInstance().working = false;
-			//		};
-			//		
-			//		let position = node.geometryNode.geometry.attributes.position.array;
-			//		
-			//		let message = {
-			//			boundingBox: {
-			//				min: node.getBoundingBox().min.toArray(),
-			//				max:node.getBoundingBox().max.toArray()
-			//			},
-			//			position: new Float32Array(position).buffer
-			//		};
-			//		
-			//		let transferables = [message.position];
-			//		
-			//		Potree.getDEMWorkerInstance().working = true;
-			//		
-			//		Potree.getDEMWorkerInstance().postMessage(message, transferables);
-			//		
-			//	}
-			//}
-			
 		}
 
 		// add child nodes to priorityQueue
@@ -605,10 +577,10 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 
 	}// end priority queue loop
 	
-	for(let pointcloud of pointclouds.filter(p => p.dem instanceof Potree.DEM)){
-		let updatingNodes = pointcloud.visibleNodes.filter(n => n.getLevel() <= 8);
-		pointcloud.dem.update(updatingNodes);
-	}
+	//for(let pointcloud of pointclouds.filter(p => p.dem instanceof Potree.DEM)){
+	//	let updatingNodes = pointcloud.visibleNodes.filter(n => n.getLevel() <= 8);
+	//	pointcloud.dem.update(updatingNodes);
+	//}
 	
 	
 	for(let i = 0; i < Math.min(5, unloadedGeometry.length); i++){

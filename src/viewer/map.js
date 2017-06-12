@@ -286,6 +286,10 @@ Potree.MapView = class{
 		
 		this.onAnnotationAdded = e => {
 			
+			if(!this.sceneProjection){
+				return;
+			}
+			
 			let annotation = e.annotation;
 			let position = annotation.position;
 			let mapPos = this.toMap.forward([position.x, position.y]);

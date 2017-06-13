@@ -342,6 +342,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		this.clipMode = Potree.ClipMode.HIGHLIGHT_INSIDE;
 		this.isFlipYZ = false;
 		this.useDEMCollisions = false;
+		this.generateDEM = false;
 		this.minNodeSize = 100;
 		this.directionalLight;
 		this.edlStrength = 1.0;
@@ -1069,8 +1070,12 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 	};
 	
 	toggleMap(){
-		let map = $('#potree_map');
-		map.toggle(100);
+		//let map = $('#potree_map');
+		//map.toggle(100);
+		
+		if(this.mapView){
+			this.mapView.toggle();
+		}
 
 	};
 
@@ -1089,7 +1094,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			let imgMapToggle = document.createElement("img");
 			imgMapToggle.src = new URL(Potree.resourcePath + "/icons/map_icon.png").href;
 			imgMapToggle.style.display = "none";
-			imgMapToggle.onclick = this.toggleMap;
+			imgMapToggle.onclick = e => {this.toggleMap()};
 			imgMapToggle.id = "potree_map_toggle";
 			
 			viewer.renderArea.insertBefore(imgMapToggle, viewer.renderArea.children[0]);
@@ -1154,6 +1159,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		let height = this.renderArea.clientHeight;
 
 		this.renderer = new THREE.WebGLRenderer({premultipliedAlpha: false});
+		this.renderer.sortObjects = false;
 		this.renderer.setSize(width, height);
 		this.renderer.autoClear = false;
 		this.renderArea.appendChild(this.renderer.domElement);
@@ -1235,6 +1241,28 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 				
 				screenSize = radius * projFactor;
 			}
+			
+			{
+				let p = position.clone().applyMatrix4(viewer.scene.camera.matrixWorldInverse);
+				let visible = p.z < 0;
+				
+				if(annotation.__visible !== visible){
+					if(visible){
+						annotation.domElement.show();
+					}else{
+						annotation.domElement.hide();
+					}
+					
+					annotation.__visible = visible;
+				}
+				//annotation.__visible = p.z < 0;
+				//if(p.z > 0){
+				//	annotation.domElement.hide();
+				//}else{
+				//	annotation.domElement.show();
+				//}
+			}
+			
 			
 			//element.css("left", screenPos.x + "px");
 			//element.css("top", screenPos.y + "px");
@@ -1366,7 +1394,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			
 			pointcloud.material.clipMode = this.clipMode;
 			pointcloud.showBoundingBox = this.showBoundingBox;
-			pointcloud.generateDEM = this.useDEMCollisions;
+			pointcloud.generateDEM = this.generateDEM;
 			pointcloud.minimumNodePixelSize = this.minNodeSize;
 
 			visibleNodes += pointcloud.numVisibleNodes;
@@ -1468,6 +1496,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			this.mapView.update(delta, this.scene.camera);
 			if(this.mapView.sceneProjection){
 				$( "#potree_map_toggle" ).css("display", "block");
+				
 			}
 		}
 

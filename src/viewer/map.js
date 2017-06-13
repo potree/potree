@@ -17,6 +17,7 @@ Potree.MapView = class{
 		this.toolLayer = null;
 		this.sourcesLayer = null;
 		this.sourcesLabelLayer = null;
+		this.enabled = false;
 		
 		this.createAnnotationStyle = (text) => {
 			return [
@@ -284,6 +285,10 @@ Potree.MapView = class{
 		};
 		
 		this.onAnnotationAdded = e => {
+			
+			if(!this.sceneProjection){
+				return;
+			}
 			
 			let annotation = e.annotation;
 			let position = annotation.position;
@@ -640,6 +645,18 @@ Potree.MapView = class{
 		});
 	}
 	
+	toggle(){
+		
+		if(this.elMap.is(":visible")){
+			this.elMap.css("display", "none");
+			this.enabled = false;
+		}else{
+			this.elMap.css("display", "block");
+			this.enabled = true;
+		}
+		
+	}
+	
 	update(delta){
 		if(!this.sceneProjection){
 			return;
@@ -647,7 +664,7 @@ Potree.MapView = class{
 		
 		let pm = $( "#potree_map" );
 		
-		if(!pm.is(":visible")){
+		if(!this.enabled){
 			return;
 		}
 		

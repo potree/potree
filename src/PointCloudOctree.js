@@ -109,6 +109,7 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree{
 		let sceneNode = new THREE.Points(geometryNode.geometry, this.material);
 		sceneNode.name = geometryNode.name;
 		sceneNode.position.copy(geometryNode.boundingBox.min);
+		sceneNode.frustumCulled = false;
 		sceneNode.onBeforeRender = (_this, scene, camera, geometry, material, group) => {
 			
 			if(material.program){

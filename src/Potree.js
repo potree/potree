@@ -451,6 +451,8 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 	let camObjPositions = s.camObjPositions;
 	let priorityQueue = s.priorityQueue;
 	
+	let loadedToGPUThisFrame = 0;
+	
 	while(priorityQueue.size() > 0){
 		let element = priorityQueue.pop();
 		let node = element.node;
@@ -512,8 +514,9 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 		pointcloud.numVisiblePoints += node.getNumPoints();
 
 		if(node.isGeometryNode() && (!parent || parent.isTreeNode())){
-			if(node.isLoaded()){
+			if(node.isLoaded() && loadedToGPUThisFrame < 2){
 				node = pointcloud.toTreeNode(node, parent);
+				loadedToGPUThisFrame++;
 			}else{
 				unloadedGeometry.push(node);
 				visibleGeometry.push(node);
@@ -577,11 +580,15 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 
 	}// end priority queue loop
 	
-	//for(let pointcloud of pointclouds.filter(p => p.dem instanceof Potree.DEM)){
-	//	let updatingNodes = pointcloud.visibleNodes.filter(n => n.getLevel() <= 8);
-	//	pointcloud.dem.update(updatingNodes);
-	//}
-	
+	{ // update DEM
+		let maxDEMLevel = 1;
+		let candidates = pointclouds
+			.filter(p => (p.generateDEM && p.dem instanceof Potree.DEM));
+		for(let pointcloud of candidates){
+			let updatingNodes = pointcloud.visibleNodes.filter(n => n.getLevel() <= maxDEMLevel);
+			pointcloud.dem.update(updatingNodes);
+		}
+	}
 	
 	for(let i = 0; i < Math.min(5, unloadedGeometry.length); i++){
 		unloadedGeometry[i].load();

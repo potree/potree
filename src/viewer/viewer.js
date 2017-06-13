@@ -342,6 +342,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		this.clipMode = Potree.ClipMode.HIGHLIGHT_INSIDE;
 		this.isFlipYZ = false;
 		this.useDEMCollisions = false;
+		this.generateDEM = false;
 		this.minNodeSize = 100;
 		this.directionalLight;
 		this.edlStrength = 1.0;
@@ -1393,7 +1394,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			
 			pointcloud.material.clipMode = this.clipMode;
 			pointcloud.showBoundingBox = this.showBoundingBox;
-			pointcloud.generateDEM = this.useDEMCollisions;
+			pointcloud.generateDEM = this.generateDEM;
 			pointcloud.minimumNodePixelSize = this.minNodeSize;
 
 			visibleNodes += pointcloud.numVisibleNodes;

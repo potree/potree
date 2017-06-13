@@ -62,7 +62,6 @@ onmessage = function(event){
 	var offset = event.data.offset;
 	var mins = event.data.mins;
 	var maxs = event.data.maxs;
-	var bbOffset = event.data.bbOffset;
 	
 	var temp = new ArrayBuffer(4);
 	var tempUint8 = new Uint8Array(temp);
@@ -115,9 +114,9 @@ onmessage = function(event){
 		tempUint8[3] = bufferView[i*pointSize+11];
 		var z = tempInt32[0];
 		
-		positions[3*i+0] = x * scale[0] + offset[0] - bbOffset[0];
-		positions[3*i+1] = y * scale[1] + offset[1] - bbOffset[1];
-		positions[3*i+2] = z * scale[2] + offset[2] - bbOffset[2];
+		positions[3*i+0] = x * scale[0] + offset[0] - offset[0] - event.data.mins[0];
+		positions[3*i+1] = y * scale[1] + offset[1] - offset[1] - event.data.mins[1];
+		positions[3*i+2] = z * scale[2] + offset[2] - offset[2] - event.data.mins[2];
 		
 		tightBoundingBox.min[0] = Math.min(tightBoundingBox.min[0], positions[3*i+0]);
 		tightBoundingBox.min[1] = Math.min(tightBoundingBox.min[1], positions[3*i+1]);
@@ -170,6 +169,12 @@ onmessage = function(event){
 		}
 	}
 	
+	var indices = new ArrayBuffer(numPoints*4);
+	var iIndices = new Uint32Array(indices);
+	for(var i = 0; i < numPoints; i++){
+		iIndices[i] = i;
+	}
+	
 	var message = {
 		position: pBuff, 
 		color: cBuff, 
@@ -178,7 +183,8 @@ onmessage = function(event){
 		returnNumber: rnBuff,
 		numberOfReturns: nrBuff,
 		pointSourceID: psBuff,
-		tightBoundingBox: tightBoundingBox
+		tightBoundingBox: tightBoundingBox,
+		indices: indices
 	};
 		
 	var transferables = [
@@ -188,7 +194,8 @@ onmessage = function(event){
 		message.classification,
 		message.returnNumber,
 		message.numberOfReturns,
-		message.pointSourceID];
+		message.pointSourceID,
+		message.indices];
 		
 	postMessage(message, transferables);
 };

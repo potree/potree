@@ -459,6 +459,13 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 		let parent = element.parent;
 		let pointcloud = pointclouds[element.pointcloud];
 		
+		//{ // restrict to certain nodes for debugging
+		//	let allowedNodes = ["r", "r0", "r4"];
+		//	if(!allowedNodes.includes(node.name)){
+		//		continue;
+		//	}
+		//}
+		
 		let box = node.getBoundingBox();
 		let frustum = frustums[element.pointcloud];
 		let camObjPos = camObjPositions[element.pointcloud];
@@ -595,11 +602,7 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 	}
 	
 	//for(let node of visibleNodes){
-	//	//let allowedNodes = ["r", "r0", "r4", "r04", "r40", "r402", "r4020", "r4022", "r40206", "r40224", "r40202", "r40220", "r00", "r042"];
-	//	//let allowedNodes = ["r", "r0", "r4", "r04", "r40", "r402", "r4020", "r4022", "r00", "r042"];
-	//	//let allowedNodes = ["r", "r0", "r04", "r042"];
-	//	let allowedNodes = ["r", "r4", "r40", "r402", "r4020", "r40206"];
-	//	//let allowedNodes = ["r", "r4", "r40", "r402", "r4020"];
+	//	let allowedNodes = ["r", "r0", "r4"];
 	//	node.sceneNode.visible = allowedNodes.includes(node.geometryNode.name);
 	//	
 	//	if(node.boundingBoxNode){

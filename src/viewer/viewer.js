@@ -1242,30 +1242,21 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 				screenSize = radius * projFactor;
 			}
 			
-			{
-				let p = position.clone().applyMatrix4(viewer.scene.camera.matrixWorldInverse);
-				let visible = p.z < 0;
-				
-				if(annotation.__visible !== visible){
-					if(visible){
-						annotation.domElement.show();
-					}else{
-						annotation.domElement.hide();
-					}
-					
-					annotation.__visible = visible;
-				}
-				//annotation.__visible = p.z < 0;
-				//if(p.z > 0){
-				//	annotation.domElement.hide();
-				//}else{
-				//	annotation.domElement.show();
-				//}
-			}
+			//{
+			//	let p = position.clone().applyMatrix4(viewer.scene.camera.matrixWorldInverse);
+			//	let visible = p.z < 0;
+			//	
+			//	if(annotation.__visible !== visible){
+			//		if(visible){
+			//			annotation.domElement.show();
+			//		}else{
+			//			annotation.domElement.hide();
+			//		}
+			//		
+			//		annotation.__visible = visible;
+			//	}
+			//}
 			
-			
-			//element.css("left", screenPos.x + "px");
-			//element.css("top", screenPos.y + "px");
 			element[0].style.left = screenPos.x + "px";
 			element[0].style.top = screenPos.y + "px";
 			
@@ -1273,39 +1264,19 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			if(annotation.descriptionVisible){
 				zIndex += 10000000;
 			}
-			
-			//element.css("z-index", parseInt(zIndex));
-			
-			//if(annotation.children.length > 0){
-			//	let expand = screenSize > annotation.collapseThreshold || annotation.boundingBox.containsPoint(this.scene.camera.position);
-			//	
-			//	if(!expand){
-			//		annotation.traverseDescendants(descendant => {
-			//			if(!descendant.__visible){
-			//				return;
-			//			}else{
-			//				descendant.__visible = false;
-			//				descendant.domElement.hide();
-			//			}
-			//		});
-			//		annotation.__visible = true;
-			//		element.fadeIn(200);
-			//	}else{
-			//		annotation.__visible = true;
-			//		element.fadeOut(200);
-			//	}
-			//	
-			//	return expand;
-			//}else{
-			//	annotation.__visible = (-1 <= screenPos.z && screenPos.z <= 1);
-			//	if(annotation.__visible){
-			//		$(element).fadeIn(200);
-			//	}else{
-			//		$(element).fadeOut(200);
-			//	}
-			//}
-			
-			
+
+			if(annotation.children.length > 0){
+				let expand = screenSize > annotation.collapseThreshold || annotation.boundingBox.containsPoint(this.scene.camera.position);
+				annotation.expand = expand;
+				
+				if(!expand){
+					annotation.display = (-1 <= screenPos.z && screenPos.z <= 1);
+				}
+				
+				return expand;
+			}else{
+				annotation.display = (-1 <= screenPos.z && screenPos.z <= 1);
+			}
 		});
 	}
 

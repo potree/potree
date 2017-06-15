@@ -29,6 +29,7 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 		this.isHighlighted = false;
 		this._visible = true;
 		this.__visible = true;
+		this._expand = false;
 		this.collapseThreshold = [args.collapseThreshold, 100].find(e => e !== undefined);
 		
 		this.children = [];
@@ -102,6 +103,82 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 		this.domElement.on("touchstart", e => {
 			this.setHighlighted(!this.isHighlighted);
 		});
+	}
+	
+	get visible(){
+		return this._visible;
+	}
+	
+	set visible(value){
+		if(this._visible === value){
+			return;
+		}
+		
+		this._visible = value;
+		
+		this.traverse(node => {
+			node.display = value;
+		});
+		
+		//if(!value){
+		//	this.traverse(node => {
+		//		node.display = value;
+		//		//node.__visible = false;
+		//		//node.domElement.css("display", "none");
+		//	});
+		//}else{
+		//	this.traverse(node => {
+		//		node.__visible = true;
+		//	});
+		//}
+		
+		this.dispatchEvent({
+			type: "visibility_changed",
+			annotation: this
+		});
+	}
+	
+	get display(){
+		return this._display;
+	}
+	
+	set display(display){
+		
+		if(this._display === display){
+			return;
+		}
+		
+		this._display = display;
+		
+		if(display){
+			//this.domElement.fadeIn(200);
+			this.domElement.show();
+		}else{
+			//this.domElement.fadeOut(200);
+			this.domElement.hide();
+		}
+	}
+	
+	get expand(){
+		return this._expand;
+	}
+	
+	set expand(expand){
+		
+		if(this._expand === expand){
+			return;
+		}
+		
+		if(expand){
+			this.display = false;
+		}else{
+			this.display = true;
+			this.traverseDescendants(node => {
+				node.display = false;
+			});
+		}
+		
+		this._expand = expand;
 	}
 	
 	add(annotation){
@@ -311,33 +388,7 @@ Potree.Annotation = class extends THREE.EventDispatcher{
     
 	};
 	
-	get visible(){
-		return this._visible;
-	}
 	
-	set visible(value){
-		if(this._visible === value){
-			return;
-		}
-		
-		this._visible = value;
-		
-		if(!value){
-			this.traverse(node => {
-				node.__visible = false;
-				node.domElement.css("display", "none");
-			});
-		}else{
-			this.traverse(node => {
-				node.__visible = true;
-			});
-		}
-		
-		this.dispatchEvent({
-			type: "visibility_changed",
-			annotation: this
-		});
-	}
 	
 	toString(){
 		return "Annotation: " + this.title;

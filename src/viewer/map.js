@@ -80,6 +80,11 @@ Potree.MapView = class{
 		
 	}
 	
+	showSources(show){
+		this.sourcesLayer.setVisible(show);
+		this.sourcesLabelLayer.setVisible(show);
+	}
+	
 	init(){
 		this.elMap = $("#potree_map");
 		this.elMap.draggable({ handle: $('#potree_map_header') });
@@ -101,6 +106,7 @@ Potree.MapView = class{
 			undefinedHTML: '&nbsp;'
 		});
 		
+		let _this = this;
 		let DownloadSelectionControl = function(opt_options){
 			let options = opt_options || {};
 			
@@ -109,8 +115,9 @@ Potree.MapView = class{
 			btToggleTiles.innerHTML = 'T';
 			btToggleTiles.addEventListener('click', () => {
 				let visible = sourcesLayer.getVisible();
-				sourcesLayer.setVisible(!visible);
-				sourcesLabelLayer.setVisible(!visible);
+				_this.showSources(!visible);
+				//sourcesLayer.setVisible(!visible);
+				//sourcesLabelLayer.setVisible(!visible);
 			}, false);
 			btToggleTiles.style.float = "left";
 			btToggleTiles.title = "show / hide tiles";

@@ -29,6 +29,7 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 		this.isHighlighted = false;
 		this._visible = true;
 		this.__visible = true;
+		this._display = true;
 		this._expand = false;
 		this.collapseThreshold = [args.collapseThreshold, 100].find(e => e !== undefined);
 		
@@ -103,6 +104,8 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 		this.domElement.on("touchstart", e => {
 			this.setHighlighted(!this.isHighlighted);
 		});
+		
+		this.display = false;
 	}
 	
 	get visible(){
@@ -119,18 +122,6 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 		this.traverse(node => {
 			node.display = value;
 		});
-		
-		//if(!value){
-		//	this.traverse(node => {
-		//		node.display = value;
-		//		//node.__visible = false;
-		//		//node.domElement.css("display", "none");
-		//	});
-		//}else{
-		//	this.traverse(node => {
-		//		node.__visible = true;
-		//	});
-		//}
 		
 		this.dispatchEvent({
 			type: "visibility_changed",

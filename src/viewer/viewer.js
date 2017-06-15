@@ -1202,6 +1202,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		this.scene.annotations.traverse(annotation => {
 			
 			if(annotation === this.scene.annotations){
+				annotation.display = false;
 				return true;
 			}
 			
@@ -1241,21 +1242,6 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 				
 				screenSize = radius * projFactor;
 			}
-			
-			//{
-			//	let p = position.clone().applyMatrix4(viewer.scene.camera.matrixWorldInverse);
-			//	let visible = p.z < 0;
-			//	
-			//	if(annotation.__visible !== visible){
-			//		if(visible){
-			//			annotation.domElement.show();
-			//		}else{
-			//			annotation.domElement.hide();
-			//		}
-			//		
-			//		annotation.__visible = visible;
-			//	}
-			//}
 			
 			element[0].style.left = screenPos.x + "px";
 			element[0].style.top = screenPos.y + "px";

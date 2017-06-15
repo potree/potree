@@ -126,46 +126,6 @@ Potree.DEMNode = class DEMNode{
 		}
 		
 		return h;
-		
-		//let uv = this.uv(position);
-		//
-		//let i = Math.min(uv[0] * this.tileSize, this.tileSize - 1);
-		//let j = Math.min(uv[1] * this.tileSize, this.tileSize - 1);
-		//
-		//let a = i % 1;
-		//let b = j % 1;
-		//
-		//let [i0, i1] = [Math.floor(i), Math.ceil(i)];
-		//let [j0, j1] = [Math.floor(j), Math.ceil(j)];
-		//
-		//let h00 = this.data[i0 + this.tileSize * j0];
-		//let h01 = this.data[i0 + this.tileSize * j1];
-		//let h10 = this.data[i1 + this.tileSize * j0];
-		//let h11 = this.data[i1 + this.tileSize * j1];
-		//
-		//let wh00 = isFinite(h00) ? (1 - a) * (1 - b) : 0;
-		//let wh01 = isFinite(h01) ? (1 - a) * b : 0;
-		//let wh10 = isFinite(h10) ? a * (1 - b) : 0;
-		//let wh11 = isFinite(h11) ? a * b : 0;
-		//
-		//let wsum = wh00 + wh01 + wh10 + wh11;
-		//wh00 = wh00 / wsum;
-		//wh01 = wh01 / wsum;
-		//wh10 = wh10 / wsum;
-		//wh11 = wh11 / wsum;
-		//
-		//if(wsum === 0){
-		//	return null;
-		//}
-		//
-		//let h = 0;
-		//
-		//if(isFinite(h00)) h += h00 * wh00;
-		//if(isFinite(h01)) h += h01 * wh01;
-		//if(isFinite(h10)) h += h10 * wh10;
-		//if(isFinite(h11)) h += h11 * wh11;
-		//
-		//return h;
 	}
 	
 	traverse(callback, level = 0){
@@ -297,10 +257,7 @@ Potree.DEM = class DEM{
 			}
 		}
 		
-		//let leaf = list[list.length - 1];
-		//let height = leaf.height(position);
-	    
-		return height;
+		return height + this.pointcloud.position.z;
 	}
 	
 	update(visibleNodes){

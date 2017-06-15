@@ -383,7 +383,7 @@ function createDEMMesh(dem){
 function createDEMMeshNode(dem, demNode){
 	
 	let box = demNode.box;
-	let tileSize = dem.tileSize;
+	let tileSize = dem.tileSize * 1;
 	
 	let triangles =  [];
 	for(let i = 0; i < tileSize; i++){
@@ -433,6 +433,74 @@ function createDEMMeshNode(dem, demNode){
 	mesh.position.copy(box.min);
 	//mesh.position.copy(pointcloud.position);
 	viewer.scene.scene.add(mesh);
+	
+	{ // DEBUG code
+		//let data = demNode.data;
+		
+		let steps = 64;
+		let data = new Float32Array(steps * steps);
+		let imgData = new Uint8Array(data.length * 4);
+		let box = demNode.box;
+		let boxSize = box.getSize();
+		for(let i = 0; i < steps; i++){
+			for(let j = 0; j < steps; j++){
+				let [u, v] = [i / (steps - 1), j / (steps - 1)];
+				let pos = new THREE.Vector3(
+					u * boxSize.x + box.min.x,
+					v * boxSize.y + box.min.y,
+					0
+				);
+				
+				let height = demNode.height(pos);
+				
+				let index = i + steps * j;
+				data[index] = height
+				
+				//let index = i + steps * j;
+				//imgData[4*index + 0] = 255 * (height - min) / (max - min);
+				//imgData[4*index + 1] = 100;
+				//imgData[4*index + 2] = 0;
+				//imgData[4*index + 3] = 255;
+			}
+		}
+		
+		let [min, max] = [Infinity, -Infinity];
+		for(let height of data){
+			if(!isFinite(height)){
+				continue;
+			}
+			
+			min = Math.min(min, height);
+			max = Math.max(max, height);
+		}
+		
+		for(let i = 0; i < data.length; i++){
+			imgData[4*i + 0] = 255 * (data[i] - min) / (max - min);
+			imgData[4*i + 1] = 100;
+			imgData[4*i + 2] = 0;
+			imgData[4*i + 3] = 255;
+		}
+		
+		let img = Potree.utils.pixelsArrayToImage(imgData, steps, steps);
+		
+		let screenshot = img.src;
+		
+		if(!this.debugDIV){
+			this.debugDIV = $(`
+				<div id="pickDebug" 
+				style="position: absolute; 
+				right: 400px; width: 300px;
+				bottom: 44px; width: 300px;
+				z-index: 1000;
+				"></div>`);
+			$(document.body).append(this.debugDIV);
+		}
+		
+		this.debugDIV.empty();
+		this.debugDIV.append($(`<img src="${screenshot}"
+			style="transform: scaleY(-1); width: 256px; height: 256px;"/>`));
+		
+	}
 }
 
 Potree.updateVisibility = function(pointclouds, camera, renderer){
@@ -588,7 +656,7 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 	}// end priority queue loop
 	
 	{ // update DEM
-		let maxDEMLevel = 1;
+		let maxDEMLevel = 4;
 		let candidates = pointclouds
 			.filter(p => (p.generateDEM && p.dem instanceof Potree.DEM));
 		for(let pointcloud of candidates){

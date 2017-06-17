@@ -13,6 +13,7 @@
     },
     "tt": {
         "angle_measurement": "Angle measurement",
+        "point_measurement": "Point measurement",
         "distance_measurement": "Distance measurement",
         "height_measurement": "Height measurement",
         "area_measurement": "Area measurement",

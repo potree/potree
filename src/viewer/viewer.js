@@ -802,14 +802,15 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 	};
 	
 	zoomTo(node, factor){
-		//this.scene.camera.zoomTo(node, factor);
 		let view = this.scene.view;
 		
 		let camera = this.scene.camera.clone();
 		camera.position.copy(view.position);
-		camera.lookAt(view.getPivot());
+		camera.rotation.order = "ZXY";
+		camera.rotation.x = Math.PI / 2 + view.pitch;
+		camera.rotation.z = view.yaw;
+		camera.updateMatrix();
 		camera.updateMatrixWorld();
-		camera.zoomTo(node, factor);
 		
 		let bs;
 		if(node.boundingSphere){
@@ -820,13 +821,17 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			bs = node.boundingBox.getBoundingSphere();
 		}
 		
-		bs = bs.clone().applyMatrix4(node.matrixWorld); 
+		bs = bs.clone().applyMatrix4(node.matrixWorld);
 		
-		view.position.copy(camera.position);
-		view.radius = view.position.distanceTo(bs.center);
-		//let target = bs.center;
-		//target.z = target.z - bs.radius * 0.8;
-		//view.lookAt(target);
+		let fov = Math.PI * this.scene.camera.fov / 180;
+		let target = bs.center;
+		let dir = view.direction;
+		let radius = bs.radius;
+		let distance = radius / (Math.tan(fov / 2));
+		let position = target.clone().sub(dir.clone().multiplyScalar(distance));
+		
+		view.position.copy(position);
+		view.radius = distance;
 		
 		this.dispatchEvent({"type": "zoom_to", "viewer": this});
 	};
@@ -1416,10 +1421,6 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			this.controls.update(delta);
 			
 			camera.position.copy(scene.view.position);
-			//camera.rotation.x = scene.view.pitch;
-			//camera.rotation.y = scene.view.yaw;
-			
-			//camera.lookAt(scene.view.getPivot());
 			camera.rotation.order = "ZXY";
 			camera.rotation.x = Math.PI / 2 + this.scene.view.pitch;
 			camera.rotation.z = this.scene.view.yaw;

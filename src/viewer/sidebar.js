@@ -36,7 +36,7 @@ function initToolbar(){
 	// POINT
 	elToolbar.append(createToolIcon(
 		Potree.resourcePath + "/icons/point.svg",
-		"[title]tt.angle_measurement",
+		"[title]tt.point_measurement",
 		function(){
 			$("#menu_measurements").next().slideDown();
 			viewer.measuringTool.startInsertion({

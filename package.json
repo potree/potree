@@ -5,7 +5,7 @@
   "description": "WebGL point cloud viewer",
   "dependencies": {},
   "author": "Markus Schütz",
-  "license": "MIT",
+  "license": "BSD-2-CLAUSE",
   "devDependencies": {
     "gulp": "~3.5.2",
     "gulp-concat": "~2.1.7",

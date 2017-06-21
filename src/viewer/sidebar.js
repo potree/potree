@@ -1439,6 +1439,61 @@ function initMeasurementDetails(){
 	});	
 };
 
+function initClipper() {
+	$("#clipping_box_container").hide();
+	$("#clipping_polygon_container").hide();
+	$("#clipping_profile_container").hide();
+
+	$("#optClipping").selectmenu();
+	$("#optClipping").val(0).selectmenu("refresh");
+	$("#optClipping").selectmenu({
+		change: function(event, ui){
+			viewer.clipper.setClipMode(ui.item.value);
+		}
+	});
+
+	$("#optClipInside").selectmenu();
+	$("#optClipInside").val(1).selectmenu("refresh");
+	$("#optClipInside").selectmenu({
+		change: function(event, ui){
+			viewer.clipper.setClipInside(ui.item.value == "0");
+		}
+	});
+
+	viewer.addEventListener("clipper.clipInside_changed", function(event){		
+		$("#optClipInside").val(viewer.clipper.clipInside == true ? 0 : 1).selectmenu("refresh");
+	});
+
+	viewer.addEventListener("clipper.clipMode_changed", function(event){
+		let clipmode = viewer.clipper.clipMode;
+		$("#optClipping").val(clipmode).selectmenu("refresh");
+
+		if(clipmode == Potree.Clipper.ClipMode.NONE) {
+			$("#clipping_box_container").hide();
+			$("#clipping_polygon_container").hide();
+			$("#clipping_profile_container").hide();
+		} else if(clipmode == Potree.Clipper.ClipMode.BOX) {
+			$("#clipping_box_container").show();
+			$("#clipping_polygon_container").hide();
+			$("#clipping_profile_container").hide();
+		} else if(clipmode == Potree.Clipper.ClipMode.POLYGON) {
+			$("#clipping_box_container").hide();
+			$("#clipping_polygon_container").show();
+			$("#clipping_profile_container").hide();
+		} else if(clipmode == Potree.Clipper.ClipMode.PROFILE) {
+			$("#clipping_box_container").hide();
+			$("#clipping_polygon_container").hide();
+			$("#clipping_profile_container").show();
+		}
+	});
+
+	$("#clipping_insertion").append(createToolIcon(
+		Potree.resourcePath + "/icons/clip_volume.svg",
+		"[title]tt.clip_volume",
+		function(){viewer.volumeTool.startInsertion({clip: true})}
+	));
+}
+
 function initSceneList(){
 
 	let scenelist = $('#scene_list');
@@ -2150,8 +2205,9 @@ let initSidebar = function(){
 	initClassificationList();
 	initAnnotationDetails();
 	initMeasurementDetails();
+	initClipper();
 	initSceneList();
-	initSettings()
+	initSettings();
 	
 	$('#potree_version_number').html(Potree.version.major + "." + Potree.version.minor + Potree.version.suffix);
 	$('.perfect_scrollbar').perfectScrollbar();

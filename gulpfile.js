@@ -71,7 +71,8 @@ var paths = {
 		"src/viewer/map.js",
 		"src/viewer/sidebar.js",
 		"src/stuff/HoverMenu.js",
-		"src/webgl/GLProgram.js"
+		"src/webgl/GLProgram.js",
+		"src/Clipper.js"
 	],
 	laslaz: [
 		"build/workers/laslaz-worker.js",

@@ -105,6 +105,49 @@
 			<div id="measurement_list"></div>
 			<div id="measurement_list_after" style="margin: 6px 2px 6px 2px"></div>			
 		</div>
+
+		<!-- CLIPPING -->
+		<h3 id="menu_clipping"><span data-i18n="tb.clipping_opt"></span></h3>
+		<div>
+			<ul class="pv-menu-list">
+				<li>
+					<label for="optClipInside" class="pv-select-label">Clip</label>
+				    <select id="optClipInside" name="optClipInside">
+				    	<option value="0">Inside</option>
+				    	<option value="1">Outside</option>
+				    </select>
+				</li>
+				<li>
+					<label for="optClipping" class="pv-select-label">Mode</label>
+				    <select id="optClipping" name="optClipping">
+				    	<option value="0">None</option>
+				    	<option value="1">Box</option>
+				    	<option value="2">Polygon</option>
+				    	<option value="3">Profile</option>
+				    </select>
+				</li>
+				<div id="clipping_box_container">					
+					<div class="divider">
+						<span>Box</span>
+					</div>
+
+					<li id="clipping_insertion"></li>
+
+				</div>
+				<div id="clipping_polygon_container">					
+					<div class="divider">
+						<span>Polygon</span>						
+					</div>
+
+				</div>
+				<div id="clipping_profile_container">					
+					<div class="divider">
+						<span>Profile</span>						
+					</div>
+
+				</div>
+			</ul>
+		</div>
 	  
 		<!-- ANNOTATIONS -->
 		<h3 id="menu_annotations"><span data-i18n="tb.annotations_opt"></span></h3>

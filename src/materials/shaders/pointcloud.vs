@@ -33,6 +33,8 @@ uniform float near;
 uniform float far;
 uniform float orthoRange;
 
+uniform int clipMode;
+uniform bool clipInside;
 #if defined use_clip_box
 	uniform mat4 clipBoxes[max_clip_boxes];
 #endif
@@ -411,29 +413,34 @@ void main() {
 	// ---------------------
 	
 	#if defined use_clip_box
-		bool insideAny = false;
-		for(int i = 0; i < max_clip_boxes; i++){
-			if(i == int(clipBoxCount)){
-				break;
-			}
-		
-			vec4 clipPosition = clipBoxes[i] * modelMatrix * vec4( position, 1.0 );
-			bool inside = -0.5 <= clipPosition.x && clipPosition.x <= 0.5;
-			inside = inside && -0.5 <= clipPosition.y && clipPosition.y <= 0.5;
-			inside = inside && -0.5 <= clipPosition.z && clipPosition.z <= 0.5;
-			insideAny = insideAny || inside;
-		}
-		if(!insideAny){
-	
-			#if defined clip_outside
+		if(clipMode == 1) { // CLIP BOX
+			bool insideAny = false;
+			for(int i = 0; i < max_clip_boxes; i++){
+				if(i == int(clipBoxCount)){
+					break;
+				}
+			
+				vec4 clipPosition = clipBoxes[i] * modelMatrix * vec4( position, 1.0 );
+				bool inside = -0.5 <= clipPosition.x && clipPosition.x <= 0.5;
+				inside = inside && -0.5 <= clipPosition.y && clipPosition.y <= 0.5;
+				inside = inside && -0.5 <= clipPosition.z && clipPosition.z <= 0.5;
+				insideAny = insideAny || inside;
+			}		
+			if(insideAny && clipInside || !insideAny && !clipInside) {
 				gl_Position = vec4(1000.0, 1000.0, 1000.0, 1.0);
-			#elif defined clip_highlight_inside && !defined(color_type_depth)
-				float c = (vColor.r + vColor.g + vColor.b) / 6.0;
-			#endif
-		}else{
-			#if defined clip_highlight_inside
-			vColor.r += 0.5;
-			#endif
+			}
+			/*if(!insideAny){
+		
+				#if defined clip_outside
+					gl_Position = vec4(1000.0, 1000.0, 1000.0, 1.0);
+				#elif defined clip_highlight_inside && !defined(color_type_depth)
+					float c = (vColor.r + vColor.g + vColor.b) / 6.0;
+				#endif
+			}else{
+				#if defined clip_highlight_inside
+				vColor.r += 0.5;
+				#endif
+			}*/
 		}
 	#endif
 	

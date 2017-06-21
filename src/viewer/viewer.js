@@ -403,6 +403,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		this.renderer = null;
 		
 		this.scene = null;
+		this.clipper = new Potree.Clipper(this);
 		
 		this.inputHandler = null;
 
@@ -1389,7 +1390,6 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 				}
 			}
 			
-			pointcloud.material.clipMode = this.clipMode;
 			pointcloud.showBoundingBox = this.showBoundingBox;
 			pointcloud.generateDEM = this.useDEMCollisions;
 			pointcloud.minimumNodePixelSize = this.minNodeSize;
@@ -1492,6 +1492,8 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			
 			for(let pointcloud of this.scene.pointclouds){
 				pointcloud.material.setClipBoxes(clipBoxes);
+				pointcloud.material.clipMode = this.clipper.clipMode;
+				pointcloud.material.clipInside = this.clipper.clipInside;
 			}
 		}
 

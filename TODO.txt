@@ -4,3 +4,9 @@ TODO orthographic cameras:
 - ortho zoom to double click
 - navigation cube
 - (weights for node refinement for large pointclouds)
+
+TODO clipping:
+
+- move clipbox to clipper, remove from measurements
+- polygon clipping (define polygon in screenspace)
+- profile clipping

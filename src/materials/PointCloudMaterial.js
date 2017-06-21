@@ -106,7 +106,7 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 		this._pointColorType = Potree.PointColorType.RGB;
 		this._useClipBox = false;
 		this.numClipBoxes = 0;
-		this._clipMode = Potree.ClipMode.DISABLED;
+		//this._clipMode = Potree.ClipMode.DISABLED;
 		this._weighted = false;
 		this._depthMap = null;
 		this._gradient = Potree.Gradients.RAINBOW;
@@ -170,7 +170,9 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 			wReturnNumber:		{ type: "f", value: 0 },
 			wSourceID:			{ type: "f", value: 0 },
 			useOrthographicCamera: { type: "b", value: false },
-			orthoRange: 		{ type: "f", value: 10.0 }
+			orthoRange: 		{ type: "f", value: 10.0 },
+			clipMode: 			{ type: "i", value: 0},
+			clipInside: 		{ type: "b", value: false}
 		};
 		
 		this.defaultAttributeValues.normal = [0,0,0];
@@ -270,13 +272,13 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 			defines += "#define color_type_composite\n";
 		}
 		
-		if(this.clipMode === Potree.ClipMode.DISABLED){
+		/*if(this.clipMode === Potree.ClipMode.DISABLED){
 			defines += "#define clip_disabled\n";
 		}else if(this.clipMode === Potree.ClipMode.CLIP_OUTSIDE){
 			defines += "#define clip_outside\n";
 		}else if(this.clipMode === Potree.ClipMode.HIGHLIGHT_INSIDE){
 			defines += "#define clip_highlight_inside\n";
-		}
+		}*/
 		
 		if(this._treeType === Potree.TreeType.OCTREE){
 			defines += "#define tree_type_octree\n";
@@ -393,6 +395,26 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 			this.updateShaderSource();
 		}
 	}
+
+
+	get clipInside() {
+		return this.uniforms.clipInside.value;
+	}
+
+	set clipInside(inside) {
+		this.uniforms.clipInside.value = inside;
+	}
+
+
+
+	get clipMode() {
+		return this.uniforms.clipMode.value;
+	}
+
+	set clipMode(mode) {
+		this.uniforms.clipMode.value = mode;
+	}
+
 
 
 	get weighted(){
@@ -545,18 +567,6 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 				type: "material_property_changed",
 				target: this
 			});
-		}
-	}
-
-
-	get clipMode(){
-		return this._clipMode;
-	}
-	
-	set clipMode(value){
-		if(this._clipMode !== value){
-			this._clipMode = value;
-			this.updateShaderSource();
 		}
 	}
 

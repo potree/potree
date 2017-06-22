@@ -171,7 +171,6 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 			wSourceID:			{ type: "f", value: 0 },
 			useOrthographicCamera: { type: "b", value: false },
 			orthoRange: 		{ type: "f", value: 10.0 },
-			clipMode: 			{ type: "i", value: 0},
 			clipInside: 		{ type: "b", value: false}
 		};
 		
@@ -403,16 +402,6 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 
 	set clipInside(inside) {
 		this.uniforms.clipInside.value = inside;
-	}
-
-
-
-	get clipMode() {
-		return this.uniforms.clipMode.value;
-	}
-
-	set clipMode(mode) {
-		this.uniforms.clipMode.value = mode;
 	}
 
 

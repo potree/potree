@@ -117,32 +117,16 @@
 				    	<option value="1">Outside</option>
 				    </select>
 				</li>
-				<li>
-					<label for="optClipping" class="pv-select-label">Mode</label>
-				    <select id="optClipping" name="optClipping">
-				    	<option value="0">None</option>
-				    	<option value="1">Box</option>
-				    	<option value="2">Polygon</option>
-				    	<option value="3">Profile</option>
-				    </select>
-				</li>
-				<div id="clipping_box_container">					
+				<div id="clipping_tools_container">					
 					<div class="divider">
-						<span>Box</span>
+						<span>Tools</span>
 					</div>
 
-					<li id="clipping_insertion"></li>
-
+					<li id="clipping_tools"></li>
 				</div>
-				<div id="clipping_polygon_container">					
+				<div id="clipping_volumes_container">					
 					<div class="divider">
-						<span>Polygon</span>						
-					</div>
-
-				</div>
-				<div id="clipping_profile_container">					
-					<div class="divider">
-						<span>Profile</span>						
+						<span>Volumes</span>
 					</div>
 
 				</div>
@@ -263,14 +247,14 @@
 		<div>
 			<ul class="pv-menu-list">
 				<li><span data-i18n="appearance.min_node_size"></span><span id="lblMinNodeSize"></span><div id="sldMinNodeSize"></div>	</li>
-				<li>
+				<!--<li>
 				   <label for="optClipMode" class="pv-select-label"><span data-i18n="appearance.clip_mode"></span></label>
 				   <select id="optClipMode" name="optClipMode">
 						<option>No Clipping</option>
 						<option>Highlight Inside</option>
 						<option>Clip Outside</option>
 					</select>
-				</li>
+				</li>-->
 				<li><label><input type="checkbox" onClick="viewer.setShowBoundingBox(this.checked)"/><span data-i18n="appearance.box"></span></label></li>
 				<li><label><input type="checkbox" onClick="viewer.setFreeze(this.checked)"/><span data-i18n="appearance.freeze"></span></label></li>
 			</ul>

@@ -1440,17 +1440,7 @@ function initMeasurementDetails(){
 };
 
 function initClippingTool() {
-	$("#clipping_box_container").hide();
-	$("#clipping_polygon_container").hide();
-	$("#clipping_profile_container").hide();
-
-	$("#optClipping").selectmenu();
-	$("#optClipping").val(0).selectmenu("refresh");
-	$("#optClipping").selectmenu({
-		change: function(event, ui){
-			viewer.clippingTool.setClipMode(ui.item.value);
-		}
-	});
+	$("#clipping_volumes_container").hide();
 
 	$("#optClipInside").selectmenu();
 	$("#optClipInside").val(1).selectmenu("refresh");
@@ -1464,34 +1454,37 @@ function initClippingTool() {
 		$("#optClipInside").val(viewer.clippingTool.clipInside == true ? 0 : 1).selectmenu("refresh");
 	});
 
-	viewer.addEventListener("clipper.clipMode_changed", function(event){
-		let clipmode = viewer.clippingTool.clipMode;
-		$("#optClipping").val(clipmode).selectmenu("refresh");
+	let clippingToolBar = $("#clipping_tools");
 
-		if(clipmode == Potree.ClippingTool.ClipMode.NONE) {
-			$("#clipping_box_container").hide();
-			$("#clipping_polygon_container").hide();
-			$("#clipping_profile_container").hide();
-		} else if(clipmode == Potree.ClippingTool.ClipMode.BOX) {
-			$("#clipping_box_container").show();
-			$("#clipping_polygon_container").hide();
-			$("#clipping_profile_container").hide();
-		} else if(clipmode == Potree.ClippingTool.ClipMode.POLYGON) {
-			$("#clipping_box_container").hide();
-			$("#clipping_polygon_container").show();
-			$("#clipping_profile_container").hide();
-		} else if(clipmode == Potree.ClippingTool.ClipMode.PROFILE) {
-			$("#clipping_box_container").hide();
-			$("#clipping_polygon_container").hide();
-			$("#clipping_profile_container").show();
-		}
-	});
-
-	$("#clipping_insertion").append(createToolIcon(
+	clippingToolBar.append(createToolIcon(
 		Potree.resourcePath + "/icons/clip_volume.svg",
 		"[title]tt.clip_volume",
-		function(){viewer.volumeTool.startInsertion({clip: true})}
+		function(){
+			viewer.volumeTool.startInsertion({clip: true})
+		}
 	));
+
+	clippingToolBar.append(createToolIcon(
+		Potree.resourcePath + "/icons/area.svg",
+		"[title]tt.area_measurement",
+		function(){
+			// TODO
+		}
+	));
+
+	clippingToolBar.append(createToolIcon(
+		Potree.resourcePath + "/icons/profile.svg",
+		"[title]tt.height_profile",
+		function(){
+			// TODO
+		}
+	));
+
+	viewer.addEventListener("start_inserting_volume", function(event) {
+		$("#clipping_volumes_container").show();
+
+		// TODO add volume to list
+	});
 }
 
 function initSceneList(){
@@ -2159,7 +2152,7 @@ let initSettings = function(){
 	});
 	
 	
-	let toClipModeCode = function(string){
+	/*let toClipModeCode = function(string){
 		if(string === "No Clipping"){
 			return Potree.ClipMode.DISABLED;
 		}else if(string === "Highlight Inside"){
@@ -2194,7 +2187,7 @@ let initSettings = function(){
 			.selectmenu()
 			.val(string)
 			.selectmenu("refresh");
-	});
+	});*/
 };
 
 let initSidebar = function(){

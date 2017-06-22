@@ -354,7 +354,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		this.server = null;
 		
 		this.fov = 60;
-		this.clipMode = Potree.ClipMode.HIGHLIGHT_INSIDE;
+		//this.clipMode = Potree.ClipMode.HIGHLIGHT_INSIDE;
 		this.isFlipYZ = false;
 		this.useDEMCollisions = false;
 		this.minNodeSize = 100;
@@ -463,7 +463,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			this.setEDLEnabled(false);
 			this.setEDLRadius(1.4);
 			this.setEDLStrength(1.0);
-			this.setClipMode(Potree.ClipMode.HIGHLIGHT_INSIDE);
+			//this.setClipMode(Potree.ClipMode.HIGHLIGHT_INSIDE);
 			this.setPointBudget(1*1000*1000);
 			this.setShowBoundingBox(false);
 			this.setFreeze(false);
@@ -641,7 +641,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		return this.showAnnotations;
 	}
 	
-	setClipMode(clipMode){
+	/*setClipMode(clipMode){
 		if(this.clipMode !== clipMode){
 			this.clipMode = clipMode;
 			this.dispatchEvent({"type": "clip_mode_changed", "viewer": this});
@@ -650,7 +650,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 	
 	getClipMode(){
 		return this.clipMode;
-	};
+	};*/
 	
 	setDEMCollisionsEnabled(value){
 		if(this.useDEMCollisions !== value){
@@ -954,7 +954,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			this.setEDLStrength(parseFloat(Potree.utils.getParameterByName("edlStrength")));
 		}
 		
-		if(Potree.utils.getParameterByName("clipMode")){
+		/*if(Potree.utils.getParameterByName("clipMode")){
 			let clipMode = Potree.utils.getParameterByName("clipMode");
 			if(clipMode === "HIGHLIGHT_INSIDE"){
 				this.setClipMode(Potree.ClipMode.HIGHLIGHT_INSIDE);
@@ -963,7 +963,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			}else if(clipMode === "DISABLED"){
 				this.setClipMode(Potree.ClipMode.DISABLED);
 			}
-		}
+		}*/
 
 		if(Potree.utils.getParameterByName("pointBudget")){
 			this.setPointBudget(parseFloat(Potree.utils.getParameterByName("pointBudget")));
@@ -1492,7 +1492,6 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			
 			for(let pointcloud of this.scene.pointclouds){
 				pointcloud.material.setClipBoxes(clipBoxes);
-				pointcloud.material.clipMode = this.clippingTool.clipMode;
 				pointcloud.material.clipInside = this.clippingTool.clipInside;
 			}
 		}

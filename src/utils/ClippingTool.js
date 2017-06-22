@@ -4,20 +4,13 @@ Potree.ClippingTool = class {
 	constructor(viewer){
 		this.viewer = viewer;
 
-		this.clipMode = 0;
 		this.clipInside = false; 
-	}
-
-	setClipMode(mode) {
-		this.clipMode = mode;
-		viewer.dispatchEvent({"type": "clipper.clipMode_changed", "viewer": viewer});
 	}
 
 	setClipInside(inside) {
 		this.clipInside = inside;
 		viewer.dispatchEvent({"type": "clipper.clipInside_changed", "viewer": viewer});		
-	}
-
+	}	
 };
 
 Potree.ClippingTool.ClipMode = {

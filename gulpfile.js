@@ -59,6 +59,7 @@ var paths = {
 		"src/utils/TransformationTool.js",
 		"src/utils/Volume.js",
 		"src/utils/VolumeTool.js",
+		"src/utils/ClippingTool.js",
 		"src/exporter/GeoJSONExporter.js",
 		"src/exporter/DXFExporter.js",
 		"src/exporter/CSVExporter.js",
@@ -72,7 +73,6 @@ var paths = {
 		"src/viewer/sidebar.js",
 		"src/stuff/HoverMenu.js",
 		"src/webgl/GLProgram.js",
-		"src/Clipper.js"
 	],
 	laslaz: [
 		"build/workers/laslaz-worker.js",

@@ -1,5 +1,5 @@
 
-Potree.Clipper = class {
+Potree.ClippingTool = class {
 
 	constructor(viewer){
 		this.viewer = viewer;
@@ -20,7 +20,7 @@ Potree.Clipper = class {
 
 };
 
-Potree.Clipper.ClipMode = {
+Potree.ClippingTool.ClipMode = {
 	NONE: 0,
 	BOX: 1,
 	POLYGON: 2,

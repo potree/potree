@@ -1439,7 +1439,7 @@ function initMeasurementDetails(){
 	});	
 };
 
-function initClipper() {
+function initClippingTool() {
 	$("#clipping_box_container").hide();
 	$("#clipping_polygon_container").hide();
 	$("#clipping_profile_container").hide();
@@ -1448,7 +1448,7 @@ function initClipper() {
 	$("#optClipping").val(0).selectmenu("refresh");
 	$("#optClipping").selectmenu({
 		change: function(event, ui){
-			viewer.clipper.setClipMode(ui.item.value);
+			viewer.clippingTool.setClipMode(ui.item.value);
 		}
 	});
 
@@ -1456,31 +1456,31 @@ function initClipper() {
 	$("#optClipInside").val(1).selectmenu("refresh");
 	$("#optClipInside").selectmenu({
 		change: function(event, ui){
-			viewer.clipper.setClipInside(ui.item.value == "0");
+			viewer.clippingTool.setClipInside(ui.item.value == "0");
 		}
 	});
 
 	viewer.addEventListener("clipper.clipInside_changed", function(event){		
-		$("#optClipInside").val(viewer.clipper.clipInside == true ? 0 : 1).selectmenu("refresh");
+		$("#optClipInside").val(viewer.clippingTool.clipInside == true ? 0 : 1).selectmenu("refresh");
 	});
 
 	viewer.addEventListener("clipper.clipMode_changed", function(event){
-		let clipmode = viewer.clipper.clipMode;
+		let clipmode = viewer.clippingTool.clipMode;
 		$("#optClipping").val(clipmode).selectmenu("refresh");
 
-		if(clipmode == Potree.Clipper.ClipMode.NONE) {
+		if(clipmode == Potree.ClippingTool.ClipMode.NONE) {
 			$("#clipping_box_container").hide();
 			$("#clipping_polygon_container").hide();
 			$("#clipping_profile_container").hide();
-		} else if(clipmode == Potree.Clipper.ClipMode.BOX) {
+		} else if(clipmode == Potree.ClippingTool.ClipMode.BOX) {
 			$("#clipping_box_container").show();
 			$("#clipping_polygon_container").hide();
 			$("#clipping_profile_container").hide();
-		} else if(clipmode == Potree.Clipper.ClipMode.POLYGON) {
+		} else if(clipmode == Potree.ClippingTool.ClipMode.POLYGON) {
 			$("#clipping_box_container").hide();
 			$("#clipping_polygon_container").show();
 			$("#clipping_profile_container").hide();
-		} else if(clipmode == Potree.Clipper.ClipMode.PROFILE) {
+		} else if(clipmode == Potree.ClippingTool.ClipMode.PROFILE) {
 			$("#clipping_box_container").hide();
 			$("#clipping_polygon_container").hide();
 			$("#clipping_profile_container").show();
@@ -2205,7 +2205,7 @@ let initSidebar = function(){
 	initClassificationList();
 	initAnnotationDetails();
 	initMeasurementDetails();
-	initClipper();
+	initClippingTool();
 	initSceneList();
 	initSettings();
 	

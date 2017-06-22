@@ -403,7 +403,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		this.renderer = null;
 		
 		this.scene = null;
-		this.clipper = new Potree.Clipper(this);
+		this.clippingTool = new Potree.ClippingTool(this);
 		
 		this.inputHandler = null;
 
@@ -1492,8 +1492,8 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			
 			for(let pointcloud of this.scene.pointclouds){
 				pointcloud.material.setClipBoxes(clipBoxes);
-				pointcloud.material.clipMode = this.clipper.clipMode;
-				pointcloud.material.clipInside = this.clipper.clipInside;
+				pointcloud.material.clipMode = this.clippingTool.clipMode;
+				pointcloud.material.clipInside = this.clippingTool.clipInside;
 			}
 		}
 

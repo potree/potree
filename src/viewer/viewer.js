@@ -431,7 +431,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		this.renderer = null;
 		
 		this.scene = null;
-		this.clippingTool = new Potree.ClippingTool(this);
+		this.clippingTool =  null;
 		
 		this.inputHandler = null;
 
@@ -456,6 +456,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			this.measuringTool = new Potree.MeasuringTool(this);
 			this.profileTool = new Potree.ProfileTool(this);
 			this.volumeTool = new Potree.VolumeTool(this);
+			this.clippingTool = new Potree.ClippingTool(this);
 			this.transformationTool = new Potree.TransformationTool(this);
 			
 			this.createControls();
@@ -463,6 +464,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			this.measuringTool.setScene(this.scene);
 			this.profileTool.setScene(this.scene);
 			this.volumeTool.setScene(this.scene);
+			this.clippingTool.setScene(this.scene);
 			
 			let onPointcloudAdded = (e) => {
 				if(this.scene.pointclouds.length === 1){
@@ -477,6 +479,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 				this.measuringTool.setScene(e.scene);
 				this.profileTool.setScene(e.scene);
 				this.volumeTool.setScene(e.scene);
+				this.clippingTool.setScene(this.scene);
 				
 				if(!e.scene.hasEventListener("pointcloud_added", onPointcloudAdded)){
 					e.scene.addEventListener("pointcloud_added", onPointcloudAdded);
@@ -1849,6 +1852,10 @@ class PotreeRenderer{
 		
 		viewer.volumeTool.update();
 		viewer.renderer.render(viewer.volumeTool.sceneVolume, activeCam);
+
+		viewer.clippingTool.update();
+		viewer.renderer.render(viewer.clippingTool.sceneVolume, activeCam);
+
 		viewer.renderer.render(viewer.controls.sceneControls, activeCam);
 		
 		viewer.renderer.clearDepth();
@@ -1995,6 +2002,7 @@ class EDLRenderer{
 				
 		
 		viewer.renderer.render(viewer.volumeTool.sceneVolume, camera, this.rtColor);
+		viewer.renderer.render(viewer.clippingTool.sceneVolume, camera, this.rtColor);
 		
 		{ // EDL OCCLUSION PASS
 			this.edlMaterial.uniforms.screenWidth.value = width;

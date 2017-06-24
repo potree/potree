@@ -7,6 +7,9 @@ TODO orthographic cameras:
 
 TODO clipping:
 
-- move clipbox to clipper, remove from measurements
 - polygon clipping (define polygon in screenspace)
 - profile clipping
+  - resize after 1st click
+  - x, y, z planes
+  - do clipping (shader)
+  - properties

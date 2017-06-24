@@ -6,44 +6,13 @@ Potree.ClipVolume = class extends THREE.Object3D{
 		
 		this.constructor.counter = (this.constructor.counter === undefined) ? 0 : this.constructor.counter + 1;
 		
-		this.name = "volume_" + this.constructor.counter;
-		
-		this._clip = args.clip || false;
-		this._modifiable = args.modifiable || true;
-		
+		this.name = "clip_volume_" + this.constructor.counter;
+				
 		let boxGeometry = new THREE.BoxGeometry(1, 1, 1);
 		boxGeometry.computeBoundingBox();
 		
 		let boxFrameGeometry = new THREE.Geometry();
-		{
-			let l = 0.1;
-			
-			// corner vertices
-			let v = [
-				[-0.5, -0.5, -0.5],
-				[-0.5, -0.5, +0.5],
-				[-0.5, +0.5, -0.5],
-				[-0.5, +0.5, +0.5],
-				[+0.5, -0.5, -0.5],
-				[+0.5, -0.5, +0.5],
-				[+0.5, +0.5, -0.5],
-				[+0.5, +0.5, +0.5]
-			];
-			//
-			//// create a cross at each corner with cross length l
-			//for(let b of v){
-			//	
-			//	let b1 = [ b[0] - l * Math.sign(b[0]), b[1], b[2] ];
-			//	let b2 = [ b[0], b[1] - l * Math.sign(b[1]), b[2] ];
-			//	let b3 = [ b[0], b[1], b[2] - l * Math.sign(b[2]) ];
-			//	
-			//	// create the 3 lines that a cross consists of
-			//	for(let d of [b, b1, b, b2, b, b3]){
-			//		boxFrameGeometry.vertices.push(new THREE.Vector3().fromArray(d));
-			//	}
-			//	
-			//}
-			
+		{			
 			// bottom
 			boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, -0.5, 0.5));
 			boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, -0.5, 0.5));
@@ -89,7 +58,7 @@ Potree.ClipVolume = class extends THREE.Object3D{
 		//this.frame.mode = THREE.Lines;
 		this.add(this.frame);
 		
-		this.label = new Potree.TextSprite("0");
+		/*this.label = new Potree.TextSprite("0");
 		this.label.setBorderColor({r:0, g:255, b:0, a:0.0});
 		this.label.setBackgroundColor({r:0, g:255, b:0, a:0.0});
 		this.label.material.depthTest = false;
@@ -110,7 +79,7 @@ Potree.ClipVolume = class extends THREE.Object3D{
 				this.label.children[ i ].updateMatrixWorld( true );
 			}
 		};
-		
+		*/
 		{ // event listeners
 			this.addEventListener("select", e => {});
 			this.addEventListener("deselect", e => {});
@@ -118,22 +87,13 @@ Potree.ClipVolume = class extends THREE.Object3D{
 		
 		this.update();
 	}
-
-	getVolume(){
-		return Math.abs(this.scale.x * this.scale.y * this.scale.z);
-	}
 	
 	update(){
 		this.boundingBox = this.box.geometry.boundingBox;
 		this.boundingSphere = this.boundingBox.getBoundingSphere();
 		
-		if(this._clip){
-			this.box.visible = false;
-			this.label.visible = false;
-		}else{
-			this.box.visible = true;
-			this.label.visible = true;
-		}
+		this.box.visible = false;
+		//this.label.visible = false;
 	};
 	
 	raycast(raycaster, intersects){
@@ -150,24 +110,4 @@ Potree.ClipVolume = class extends THREE.Object3D{
 			});
 		}
 	};
-	
-	get clip(){
-		return this._clip;
-	}
-	
-	set clip(value){
-		this._clip = value;
-		
-		this.update();
-	}
-	
-	get modifieable(){
-		return this._modifiable;
-	}
-	
-	set modifieable(value){
-		this._modifiable = value;
-		
-		this.update();
-	}
 };

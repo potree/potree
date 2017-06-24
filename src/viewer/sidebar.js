@@ -1522,8 +1522,8 @@ function initClippingTool() {
 
 		let cvRemove = cvItem.find(".clipping_volume_action_remove");
 		cvRemove.click(() => {viewer.scene.removeClipVolume(cv)});
+		
 		cvList.append(cvItem);
-
 	});
 
 	viewer.scene.addEventListener("clip_volume_removed", function(event) {

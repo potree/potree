@@ -106,17 +106,17 @@ function initToolbar(){
 		Potree.resourcePath + "/icons/profile.svg",
 		"[title]tt.height_profile",
 		function(){
-			$("#menu_measurements").next().slideDown();;
+			$("#menu_measurements").next().slideDown();
 			viewer.profileTool.startInsertion();
 		}
 	));
 	
 	// CLIP VOLUME
-	elToolbar.append(createToolIcon(
+	/*elToolbar.append(createToolIcon(
 		Potree.resourcePath + "/icons/clip_volume.svg",
 		"[title]tt.clip_volume",
 		function(){viewer.volumeTool.startInsertion({clip: true})}
-	));
+	));*/
 	
 	// REMOVE ALL
 	elToolbar.append(createToolIcon(
@@ -1454,6 +1454,7 @@ function initClippingTool() {
 		$("#optClipInside").val(viewer.clippingTool.clipInside == true ? 0 : 1).selectmenu("refresh");
 	});
 
+
 	let clippingToolBar = $("#clipping_tools");
 
 	clippingToolBar.append(createToolIcon(
@@ -1476,14 +1477,61 @@ function initClippingTool() {
 		Potree.resourcePath + "/icons/profile.svg",
 		"[title]tt.height_profile",
 		function(){
-			// TODO
+			viewer.clippingTool.startInsertion();
 		}
 	));
 
-	viewer.addEventListener("start_inserting_volume", function(event) {
+	clippingToolBar.append(createToolIcon(
+		Potree.resourcePath + "/icons/reset_tools.svg",
+		"[title]tt.remove_all_clipping_volumes",
+		function(){
+			viewer.scene.removeAllClipVolumes();
+		}
+	));
+
+	viewer.scene.addEventListener("clip_volume_added", function(event) {
+		let cv = event.volume;
 		$("#clipping_volumes_container").show();
 
-		// TODO add volume to list
+		let removeIconPath = Potree.resourcePath + "/icons/remove.svg";
+
+		let cvList = $("#clipping_volumes_list");
+		let title = cv.name;
+		let cvItem = $(`
+			<span class="scene_item" id="${cv.name}">
+				<!-- HEADER -->				
+				<div class="scene_header" onclick="$(this).next().slideToggle(200)">
+					<span class="scene_icon"><img src="${Potree.resourcePath + "/icons/profile.svg"}" class="scene_item_icon" /></span>
+					<span class="scene_header_title">${title}</span>
+				</div>
+				
+				<!-- DETAIL -->
+				<div class="measurement_content selectable" style="display: none">
+					<div>
+
+
+						<div style="display: flex; margin-top: 12px">
+							<span></span>
+							<span style="flex-grow: 1"></span>
+							<img class="clipping_volume_action_remove" src="${removeIconPath}" style="width: 16px; height: 16px">
+						</div>
+					</div>
+				</div>
+			</span>
+		`);
+
+		let cvRemove = cvItem.find(".clipping_volume_action_remove");
+		cvRemove.click(() => {viewer.scene.removeClipVolume(cv)});
+		cvList.append(cvItem);
+
+	});
+
+	viewer.scene.addEventListener("clip_volume_removed", function(event) {
+		$("#" + event.volume.name).remove();
+
+		if(viewer.scene.clipVolumes.length == 0) {
+			$("#clipping_volumes_container").hide();
+		}
 	});
 }
 

@@ -27,7 +27,8 @@
         "flight_control": "Fly Kontrolle",
         "earth_control": "Earth Kontrolle",
         "perspective_camera_control": "Perspektivische Kamera",
-        "orthographic_camera_control": "Orthografische Kamera"
+        "orthographic_camera_control": "Orthografische Kamera",
+        "remove_all_clipping_volumes": "Alle Clipvolumen entfernen"
     },
     "appearance": {
         "nb_max_pts": "Max Punkte", 

@@ -53,8 +53,12 @@ Potree.ClippingTool = class ClippingTool extends THREE.EventDispatcher{
 		viewer.dispatchEvent({"type": "clipper.clipInside_changed", "viewer": viewer});		
 	}	
 
-	startInsertion() {
-		let clipVolume = new Potree.ClipVolume();
+	startInsertion(args = {}) {
+		let axis = -1;
+		if(args.axis + 1)
+			axis = args.axis;
+		let clipVolume = new Potree.ClipVolume(axis);
+
 		this.dispatchEvent({"type": "start_inserting_clipping_volume"});
 
 		this.viewer.scene.addClipVolume(clipVolume);
@@ -88,6 +92,8 @@ Potree.ClippingTool = class ClippingTool extends THREE.EventDispatcher{
 			clipVolume.removeEventListener("drop", drop);
 			
 			cancel.callback();
+
+			//this.dispatchEvent({"type": "start_resizing_clipping_volume"});
 		};
 		
 		cancel.callback = e => {
@@ -95,6 +101,46 @@ Potree.ClippingTool = class ClippingTool extends THREE.EventDispatcher{
 			clipVolume.removeEventListener("drop", drop);
 			this.viewer.removeEventListener("cancel_insertions", cancel.callback);
 		};
+
+
+		/*let cancel2 = {
+			callback: null
+		};		
+
+		let drag2 = e => {
+			let mouse = e.drag.end;
+
+			let nmouse =  {
+				x: (mouse.x / this.viewer.renderer.domElement.clientWidth ) * 2 - 1,
+				y: - (mouse.y / this.viewer.renderer.domElement.clientHeight ) * 2 + 1
+			};
+			
+			let camera = this.viewer.scene.getActiveCamera();
+			let mouseWS = new THREE.Vector3( nmouse.x, nmouse.y, 0.5 );
+			mouseWS.unproject(camera);
+
+			let distance = clipVolume.position.distanceTo(mouseWS);
+
+			clipVolume.scale.set(distance, distance, distance);		
+		};
+
+		let drop2 = e => {
+			cancel2.callback();
+		};
+
+		cancel2.callback = e => {
+			clipVolume.removeEventListener("drag", drag2);
+			clipVolume.removeEventListener("drop", drop2);
+			this.viewer.removeEventListener("cancel_insertions", cancel2.callback);
+		};
+
+		this.addEventListener("start_resizing_clipping_volume", function(event) {			
+			clipVolume.addEventListener("drag", drag2);
+			clipVolume.addEventListener("drop", drop2);
+			this.viewer.addEventListener("cancel_insertions", cancel2.callback);
+
+			this.viewer.inputHandler.startDragging(clipVolume);
+		});*/
 		
 		clipVolume.addEventListener("drag", drag);
 		clipVolume.addEventListener("drop", drop);

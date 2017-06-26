@@ -1477,7 +1477,23 @@ function initClippingTool() {
 		Potree.resourcePath + "/icons/profile.svg",
 		"[title]tt.height_profile",
 		function(){
-			viewer.clippingTool.startInsertion();
+			viewer.clippingTool.startInsertion({axis: Potree.ClipVolume.Axis.X});
+		}
+	));
+
+	clippingToolBar.append(createToolIcon(
+		Potree.resourcePath + "/icons/profile.svg",
+		"[title]tt.height_profile",
+		function(){
+			viewer.clippingTool.startInsertion({axis: Potree.ClipVolume.Axis.Y});
+		}
+	));
+
+	clippingToolBar.append(createToolIcon(
+		Potree.resourcePath + "/icons/profile.svg",
+		"[title]tt.height_profile",
+		function(){
+			viewer.clippingTool.startInsertion({axis: Potree.ClipVolume.Axis.Z});
 		}
 	));
 

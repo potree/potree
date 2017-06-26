@@ -10,6 +10,4 @@ TODO clipping:
 - polygon clipping (define polygon in screenspace)
 - profile clipping
   - resize after 1st click
-  - x, y, z planes
-  - do clipping (shader)
   - properties

@@ -1,12 +1,25 @@
 
+
 Potree.ClipVolume = class extends THREE.Object3D{
 	
-	constructor(args = {}){
+	constructor(axis){
 		super();
 		
 		this.constructor.counter = (this.constructor.counter === undefined) ? 0 : this.constructor.counter + 1;
 		
 		this.name = "clip_volume_" + this.constructor.counter;
+
+		this.volWidth = 0.1;
+
+		if(axis != -1) {
+			this.scale.set(1, 1, 1);
+			if(axis == Potree.ClipVolume.Axis.X)
+				this.scale.x = this.volWidth;
+			else if(axis == Potree.ClipVolume.Axis.Y)
+				this.scale.y = this.volWidth;
+			else if(axis == Potree.ClipVolume.Axis.Z)
+				this.scale.z = this.volWidth;
+		}
 				
 		let boxGeometry = new THREE.BoxGeometry(1, 1, 1);
 		boxGeometry.computeBoundingBox();
@@ -110,4 +123,10 @@ Potree.ClipVolume = class extends THREE.Object3D{
 			});
 		}
 	};
+};
+
+Potree.ClipVolume.Axis = {
+	X: 0,
+	Y: 1,
+	Z: 2
 };

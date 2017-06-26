@@ -1508,10 +1508,11 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			//let boxes = this.scene.profiles.reduce( (a, b) => {return a.boxes.concat(b.boxes)}, []);
 			//boxes = boxes.concat(this.scene.volumes.filter(v => v.clip));
 			
-			let boxes = this.scene.volumes.filter(v => v.clip);
-			for(let profile of this.scene.profiles){
+			//let boxes = this.scene.volumes.filter(v => v.clip);
+			let boxes = this.scene.clipVolumes;
+			/*for(let profile of this.scene.profiles){
 				boxes = boxes.concat(profile.boxes);
-			}
+			}*/
 			
 			
 			let clipBoxes = boxes.map( box => {

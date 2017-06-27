@@ -93,6 +93,8 @@ Potree.ClippingTool = class ClippingTool extends THREE.EventDispatcher{
 			
 			cancel.callback();
 
+			clipVolume.dispatchEvent({"type": "clip_volume_changed", "volume": clipVolume});
+
 			//this.dispatchEvent({"type": "start_resizing_clipping_volume"});
 		};
 		

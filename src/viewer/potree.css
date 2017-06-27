@@ -436,7 +436,10 @@ body{
 }
 
 
-
+.coordinates_table_container table td {
+	width: 33%;
+	text-align: center;
+}
 
 
 

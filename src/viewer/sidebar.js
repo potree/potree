@@ -1461,7 +1461,8 @@ function initClippingTool() {
 		Potree.resourcePath + "/icons/clip_volume.svg",
 		"[title]tt.clip_volume",
 		function(){
-			viewer.volumeTool.startInsertion({clip: true})
+			//viewer.volumeTool.startInsertion({clip: true})
+			viewer.clippingTool.startInsertion();
 		}
 	));
 
@@ -1507,39 +1508,100 @@ function initClippingTool() {
 
 	viewer.scene.addEventListener("clip_volume_added", function(event) {
 		let cv = event.volume;
-		$("#clipping_volumes_container").show();
-
-		let removeIconPath = Potree.resourcePath + "/icons/remove.svg";
+		$("#clipping_volumes_container").show();		
 
 		let cvList = $("#clipping_volumes_list");
-		let title = cv.name;
-		let cvItem = $(`
-			<span class="scene_item" id="${cv.name}">
-				<!-- HEADER -->				
-				<div class="scene_header" onclick="$(this).next().slideToggle(200)">
-					<span class="scene_icon"><img src="${Potree.resourcePath + "/icons/profile.svg"}" class="scene_item_icon" /></span>
-					<span class="scene_header_title">${title}</span>
-				</div>
-				
-				<!-- DETAIL -->
-				<div class="measurement_content selectable" style="display: none">
-					<div>
 
+		let createCVitem = (volume) => {			
+			let x = Potree.utils.addCommas(volume.position.x.toFixed(3));
+			let y = Potree.utils.addCommas(volume.position.y.toFixed(3));
+			let z = Potree.utils.addCommas(volume.position.z.toFixed(3));
+			let sc_width = Potree.utils.addCommas(volume.scale.x.toFixed(3));
+			let sc_height = Potree.utils.addCommas(volume.scale.y.toFixed(3));
+			let sc_thickness = Potree.utils.addCommas(volume.scale.z.toFixed(3));
+			let removeIconPath = Potree.resourcePath + "/icons/remove.svg";
+			let icon = "/icons/clip_volume.svg";
+			if(volume.axis == Potree.ClipVolume.Axis.X) {
+				icon = "/icons/profile.svg";
+				sc_width = Potree.utils.addCommas(volume.scale.y.toFixed(3));
+				sc_height = Potree.utils.addCommas(volume.scale.z.toFixed(3));
+				sc_thickness = Potree.utils.addCommas(volume.scale.x.toFixed(3));
+			} else if(volume.axis == Potree.ClipVolume.Axis.Y) {
+				icon = "/icons/profile.svg";
+				sc_width = Potree.utils.addCommas(volume.scale.x.toFixed(3));
+				sc_height = Potree.utils.addCommas(volume.scale.z.toFixed(3));
+				sc_thickness = Potree.utils.addCommas(volume.scale.y.toFixed(3));
+			} else if(volume.axis == Potree.ClipVolume.Axis.Z) {
+				icon = "/icons/profile.svg";
+				sc_width = Potree.utils.addCommas(volume.scale.x.toFixed(3));
+				sc_height = Potree.utils.addCommas(volume.scale.y.toFixed(3));
+				sc_thickness = Potree.utils.addCommas(volume.scale.z.toFixed(3));
+			}
+			let cvItem = $(`
+				<span class="scene_item" id="${volume.name}">
+					<!-- HEADER -->				
+					<div class="scene_header" onclick="$(this).next().slideToggle(200)">
+						<span class="scene_icon"><img src="${Potree.resourcePath + icon}" class="scene_item_icon" /></span>
+						<span class="scene_header_title">${volume.name}</span>
+					</div>
+					
+					<!-- DETAIL -->
+					<div class="measurement_content selectable" style="display: none">
+						<div>
+							<span class="coordinates_table_container">
+								<table style="width: 100%">
+									<tr>
+										<th>x</th>
+										<th>y</th>
+										<th>z</th>
+									</tr>
+									<tr>
+										<td>${x}</td>
+										<td>${y}</td>
+										<td>${z}</td>
+									</tr>
+								</table>
+							</span>
+							<br />
+							<span class="coordinates_table_container">
+								<table style="width: 100%">
+									<tr>
+										<th>width</th>
+										<th>height</th>
+										<th>thickness</th>
+									</tr>
+									<tr>
+										<td>${sc_width}${viewer.lengthUnit.code}</td>
+										<td>${sc_height}${viewer.lengthUnit.code}</td>
+										<td>${sc_thickness}${viewer.lengthUnit.code}</td>
+									</tr>
+								</table>
+							</span>
 
-						<div style="display: flex; margin-top: 12px">
-							<span></span>
-							<span style="flex-grow: 1"></span>
-							<img class="clipping_volume_action_remove" src="${removeIconPath}" style="width: 16px; height: 16px">
+							<div style="display: flex; margin-top: 12px">
+								<span></span>
+								<span style="flex-grow: 1"></span>
+								<img class="clipping_volume_action_remove" src="${removeIconPath}" style="width: 16px; height: 16px">
+							</div>
 						</div>
 					</div>
-				</div>
-			</span>
-		`);
+				</span>
+			`);
+			let cvRemove = cvItem.find(".clipping_volume_action_remove");
+			cvRemove.click(() => {viewer.scene.removeClipVolume(cv)});
 
-		let cvRemove = cvItem.find(".clipping_volume_action_remove");
-		cvRemove.click(() => {viewer.scene.removeClipVolume(cv)});
+			return cvItem;
+		};
+
+
+		cv.addEventListener("clip_volume_changed", function(event) {
+			let cv = event.volume;
+			let prevCVItem = $("span#" + cv.name);
+			prevCVItem.after(createCVitem(cv));
+			prevCVItem.remove();
+		});
 		
-		cvList.append(cvItem);
+		cvList.append(createCVitem(cv));
 	});
 
 	viewer.scene.addEventListener("clip_volume_removed", function(event) {

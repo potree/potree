@@ -151,6 +151,58 @@ Potree.Scene = class extends THREE.EventDispatcher{
 		
 	}
 	
+	estimateHeightAt(position){
+		
+		let height = null;
+		let fromSpacing = Infinity;
+		
+		
+		for(let pointcloud of this.pointclouds){
+			
+			let pHeight = null;
+			let pFromSpacing = null;
+			
+			let lpos = position.clone().sub(pointcloud.position);
+			lpos.z = 0;
+			let ray = new THREE.Ray(lpos, new THREE.Vector3(0, 0, 1));
+			
+			let stack = [pointcloud.root];
+			while(stack.length > 0){
+				let node = stack.pop();
+				let box = node.getBoundingBox();
+				
+				let inside = ray.intersectBox(box);
+				
+				if(!inside){
+					continue;
+				}
+				
+				let h = node.geometryNode.mean.z 
+					+ pointcloud.position.z 
+					+ node.geometryNode.boundingBox.min.z;
+					
+				if(node.geometryNode.spacing <= pFromSpacing){
+					pHeight = h;
+					pFromSpacing = node.geometryNode.spacing;
+				}
+				
+				for(let index of Object.keys(node.children)){
+					let child = node.children[index];
+					if(child.geometryNode){
+						stack.push(node.children[index]);
+					}
+				}
+			}
+			
+			if(height === null || pFromSpacing < fromSpacing){
+				height = pHeight;
+				fromSpacing = pFromSpacing;
+			}
+		}
+		
+		return height;
+	}
+	
 	addPointCloud(pointcloud){
 		this.pointclouds.push(pointcloud);
 		this.scenePointCloud.add(pointcloud);

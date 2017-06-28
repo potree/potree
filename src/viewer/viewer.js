@@ -511,10 +511,10 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 				};
 			}
 		
-			this.scene.annotations.addEventListener("annotation_added", this.onAnnotationAdded);
 			if(oldScene){
 				oldScene.annotations.removeEventListener("annotation_added", this.onAnnotationAdded);
 			}
+			this.scene.annotations.addEventListener("annotation_added", this.onAnnotationAdded);
 		}
 		
 	};
@@ -1183,13 +1183,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		
 		if(!this.getShowAnnotations()){
 			this.scene.annotations.traverseDescendants(descendant => {
-				if(!descendant.__visible || !descendant.visible){
-					return false;
-				}else{
-					descendant.__visible = false;
-					//descendant.domElement[0].style.display = "none";
-					descendant.domElement.fadeOut(200);
-				}
+				descendant.display = false;
 				
 				return;
 			});

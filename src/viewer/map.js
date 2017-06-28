@@ -292,7 +292,6 @@ Potree.MapView = class{
 		};
 		
 		this.onAnnotationAdded = e => {
-			
 			if(!this.sceneProjection){
 				return;
 			}
@@ -321,7 +320,6 @@ Potree.MapView = class{
 			};
 			
 			this.getAnnotationsLayer().getSource().addFeature(feature);
-			
 		};
 		
 		this.setScene(this.viewer.scene);
@@ -342,9 +340,14 @@ Potree.MapView = class{
 		this.scene.addEventListener("pointcloud_added", this.onPointcloudAdded);
 		this.scene.annotations.addEventListener("annotation_added", this.onAnnotationAdded);
 		
-		for(var i = 0; i < this.viewer.scene.pointclouds.length; i++){
-			this.load(this.viewer.scene.pointclouds[i]);
+		for(let pointcloud of this.viewer.scene.pointclouds){
+			this.load(pointcloud);
 		}
+		
+		console.log("map.setScene");
+		this.viewer.scene.annotations.traverseDescendants(annotation => {
+			this.onAnnotationAdded({annotation: annotation});
+		});
 	}
 	
 	getExtentsLayer(){

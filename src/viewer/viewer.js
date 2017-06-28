@@ -159,6 +159,10 @@ Potree.Scene = class extends THREE.EventDispatcher{
 		
 		for(let pointcloud of this.pointclouds){
 			
+			if(pointcloud.root.geometryNode === undefined){
+				continue;
+			}
+			
 			let pHeight = null;
 			let pFromSpacing = null;
 			

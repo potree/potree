@@ -164,7 +164,7 @@ Potree.Scene = class extends THREE.EventDispatcher{
 			}
 			
 			let pHeight = null;
-			let pFromSpacing = null;
+			let pFromSpacing = Infinity;
 			
 			let lpos = position.clone().sub(pointcloud.position);
 			lpos.z = 0;

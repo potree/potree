@@ -50,6 +50,8 @@ onmessage = function(event){
 	let tightBoxMax = [ Number.NEGATIVE_INFINITY , Number.NEGATIVE_INFINITY , Number.NEGATIVE_INFINITY ];
 
 	let attributeBuffers = {};
+	
+	let mean = [0, 0, 0];
 
 	let offset = 0;
 	for(let i = 0; i < pointAttributes.attributes.length; i++){
@@ -62,15 +64,26 @@ onmessage = function(event){
 
 			let startPos = new Date().getTime();
 			for(let j = 0; j < numPoints; j++){
+				
+				let x, y, z;
+				
 				if(version.newerThan("1.3")){
-					positions[3*j+0] = (cv.getUint32(offset + j*pointAttributes.byteSize+0, true) * scale);
-					positions[3*j+1] = (cv.getUint32(offset + j*pointAttributes.byteSize+4, true) * scale);
-					positions[3*j+2] = (cv.getUint32(offset + j*pointAttributes.byteSize+8, true) * scale);
+					x = (cv.getUint32(offset + j*pointAttributes.byteSize+0, true) * scale);
+					y = (cv.getUint32(offset + j*pointAttributes.byteSize+4, true) * scale);
+					z = (cv.getUint32(offset + j*pointAttributes.byteSize+8, true) * scale);
 				}else{
-					positions[3*j+0] = cv.getFloat32(j*pointAttributes.byteSize+0, true) + nodeOffset[0];
-					positions[3*j+1] = cv.getFloat32(j*pointAttributes.byteSize+4, true) + nodeOffset[1];
-					positions[3*j+2] = cv.getFloat32(j*pointAttributes.byteSize+8, true) + nodeOffset[2];
+					x = cv.getFloat32(j*pointAttributes.byteSize+0, true) + nodeOffset[0];
+					y = cv.getFloat32(j*pointAttributes.byteSize+4, true) + nodeOffset[1];
+					z = cv.getFloat32(j*pointAttributes.byteSize+8, true) + nodeOffset[2];
 				}
+				
+				positions[3*j+0] = x;
+				positions[3*j+1] = y;
+				positions[3*j+2] = z;
+				
+				mean[0] += x / numPoints;
+				mean[1] += y / numPoints;
+				mean[2] += z / numPoints;
 
 				tightBoxMin[0] = Math.min(tightBoxMin[0], positions[3*j+0]);
 				tightBoxMin[1] = Math.min(tightBoxMin[1], positions[3*j+1]);
@@ -224,6 +237,7 @@ onmessage = function(event){
 	}
 	
 	let message = {
+		mean: mean,
 		attributeBuffers: attributeBuffers,
 		tightBoundingBox: { min: tightBoxMin, max: tightBoxMax },
 		indices: indices

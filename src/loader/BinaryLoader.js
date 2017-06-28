@@ -101,10 +101,8 @@ Potree.BinaryLoader.prototype.parse = function(node, buffer){
 		}
 
 		geometry.boundingBox = node.boundingBox;
-		//geometry.boundingBox = tightBoundingBox;
 		node.geometry = geometry;
-		//node.boundingBox = tightBoundingBox;
-		//node.position.copy(node.boundingBox.min);
+		node.mean = new THREE.Vector3(...data.mean);
 		node.tightBoundingBox = tightBoundingBox;
 		node.loaded = true;
 		node.loading = false;

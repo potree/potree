@@ -174,14 +174,12 @@ Potree.LasLazBatcher = class LasLazBatcher{
 			//let indices = new ArrayBuffer(numPoints*4);
 			//let iIndices = new Uint32Array(indices);
 			
-			let box = new THREE.Box3();
-			
-			let fPositions = new Float32Array(positions);
-			for(let i = 0; i < numPoints; i++){				
-				//iIndices[i] = i;
-				
-				box.expandByPoint(new THREE.Vector3(fPositions[3*i+0], fPositions[3*i+1], fPositions[3*i+2]));
-			}
+			//let box = new THREE.Box3();
+			//
+			//let fPositions = new Float32Array(positions);
+			//for(let i = 0; i < numPoints; i++){				
+			//	box.expandByPoint(new THREE.Vector3(fPositions[3*i+0], fPositions[3*i+1], fPositions[3*i+2]));
+			//}
 			
 			geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
 			geometry.addAttribute('color', new THREE.BufferAttribute(colors, 3, true));
@@ -190,7 +188,6 @@ Potree.LasLazBatcher = class LasLazBatcher{
 			geometry.addAttribute('returnNumber', new THREE.BufferAttribute(returnNumbers, 1));
 			geometry.addAttribute('numberOfReturns', new THREE.BufferAttribute(numberOfReturns, 1));
 			geometry.addAttribute('pointSourceID', new THREE.BufferAttribute(pointSourceIDs, 1));
-			//geometry.addAttribute('indices', new THREE.BufferAttribute(indices, 1));
 			geometry.addAttribute("normal", new THREE.BufferAttribute(new Float32Array(numPoints*3), 3));
 			
 			let indicesAttribute = new THREE.Uint8BufferAttribute(e.data.indices, 4);
@@ -209,6 +206,7 @@ Potree.LasLazBatcher = class LasLazBatcher{
 			this.node.loaded = true;
 			this.node.loading = false;
 			this.node.pcoGeometry.numNodesLoading--;
+			this.node.mean = new THREE.Vector3(...e.data.mean);
 			
 			Potree.workerPool.returnWorker(workerPath, worker);
 		};

@@ -383,6 +383,26 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 	constructor(domElement, args){
 		super();
 		
+		
+		{ // generate missing dom hierarchy
+			if($(domElement).find("#potree_map").length === 0){
+				let potreeMap = $(`
+					<div id="potree_map" class="mapBox" style="position: absolute; left: 50px; top: 50px; width: 400px; height: 400px; display: none">
+						<div id="potree_map_header" style="position: absolute; width: 100%; height: 25px; top: 0px; background-color: rgba(0,0,0,0.5); z-index: 1000; border-top-left-radius: 3px; border-top-right-radius: 3px;">
+						</div>
+						<div id="potree_map_content" class="map" style="position: absolute; z-index: 100; top: 25px; width: 100%; height: calc(100% - 25px); border: 2px solid rgba(0,0,0,0.5); box-sizing: border-box;"></div>
+					</div>
+				`);
+				$(domElement).append(potreeMap);
+			}
+			
+			if($(domElement).find("#potree_description").length === 0){
+				let potreeDescription = $(`<div id="potree_description" class="potree_info_text"></div>`);
+				$(domElement).append(potreeDescription);
+			}
+		}
+		
+		
 		let a = args || {};
 		this.pointCloudLoadedCallback = a.onPointCloudLoaded || function(){};
 		

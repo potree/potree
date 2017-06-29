@@ -8,6 +8,9 @@
   "license": "BSD-2-CLAUSE",
   "devDependencies": {
     "gulp": "~3.5.2",
+	"gulp-jshint": "^2.0.4",
+    "gulp-size": "^2.1.0",
+    "jshint": "^2.9.5"
     "gulp-concat": "~2.1.7",
     "gulp-connect": "^2.3.1",
     "gulp-rename": "~1.0.0",

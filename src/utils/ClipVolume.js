@@ -4,13 +4,11 @@ Potree.ClipVolume = class extends THREE.Object3D{
 	
 	constructor(axis){
 		super();
-
-		this.axis = axis;
 		
 		this.constructor.counter = (this.constructor.counter === undefined) ? 0 : this.constructor.counter + 1;
-		
 		this.name = "clip_volume_" + this.constructor.counter;
 
+		this.axis = axis;
 		this.volWidth = 0.1;
 
 		if(axis != -1) {
@@ -101,7 +99,21 @@ Potree.ClipVolume = class extends THREE.Object3D{
 		}
 		
 		this.update();
-	}
+	};
+
+	offset(value) {
+		if(this.axis == Potree.ClipVolume.Axis.X) {
+			this.position.x = this.position.x + value;
+		} else if(this.axis == Potree.ClipVolume.Axis.Y) {
+			this.position.y = this.position.y + value;
+		} else if(this.axis == Potree.ClipVolume.Axis.Z) {
+			this.position.z = this.position.z + value;
+		} else {
+			// TODO, offset box?
+		}
+
+		this.dispatchEvent({"type": "clip_volume_changed", "volume": this});
+	};
 	
 	update(){
 		this.boundingBox = this.box.geometry.boundingBox;

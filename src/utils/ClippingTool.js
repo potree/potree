@@ -7,6 +7,7 @@ Potree.ClippingTool = class ClippingTool extends THREE.EventDispatcher{
 		this.viewer = viewer;
 
 		this.clipInside = false; 
+		this.clipOffset = 0.1;
 		
 		this.addEventListener("start_inserting_clipping_volume", e => {
 			this.viewer.dispatchEvent({
@@ -49,9 +50,18 @@ Potree.ClippingTool = class ClippingTool extends THREE.EventDispatcher{
 	}
 
 	setClipInside(inside) {
+		if(this.clipInside == inside) return;
+
 		this.clipInside = inside;
-		viewer.dispatchEvent({"type": "clipper.clipInside_changed", "viewer": viewer});		
+		viewer.dispatchEvent({"type": "clipper.clipInside_changed", "viewer": viewer, "inside": inside});		
 	}	
+
+	setClipOffset(offset) {
+		if(this.clipOffset == offset) return;
+		
+		this.clipOffset = offset;
+		viewer.dispatchEvent({"type": "clipper.clipOffset_changed", "viewer": viewer, "offset": offset});		
+	}
 
 	startInsertion(args = {}) {
 		let axis = -1;

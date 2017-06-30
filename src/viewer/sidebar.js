@@ -1577,6 +1577,13 @@ function initClippingTool() {
 									</tr>
 								</table>
 							</span>
+							<br />
+							<div class="clip_offset_container">
+								<label for="${volume.name}_offset">Offset</label>
+								<input type="text" id="${volume.name}_offset" name="${volume.name}_offset" value="0.1" />
+								<button id="${volume.name}_neg_offset" class="clip_offset_negative">&lt;</button>
+								<button id="${volume.name}_pos_offset" class="clip_offset_positive">&gt;</button>
+							</div>
 
 							<div style="display: flex; margin-top: 12px">
 								<span></span>
@@ -1587,18 +1594,37 @@ function initClippingTool() {
 					</div>
 				</span>
 			`);
+			
+			let clipOffsetInputs = cvItem.find(".clip_offset_container input");
+			clipOffsetInputs.change(function(e) {
+				viewer.clippingTool.setClipOffset(parseInt(e.target.value());
+			});
+
+			let clipOffsetButtonNeg = cvItem.find(".clip_offset_container .clip_offset_negative");
+			let clipOffsetButtonPos = cvItem.find(".clip_offset_container .clip_offset_positive");
+			clipOffsetButtonNeg.click(function(e) {
+				volume.offset(-viewer.clippingTool.clipOffset);
+			});
+			clipOffsetButtonPos.click(function(e) {
+				volume.offset(viewer.clippingTool.clipOffset);
+			});
+
 			let cvRemove = cvItem.find(".clipping_volume_action_remove");
 			cvRemove.click(() => {viewer.scene.removeClipVolume(cv)});
 
 			return cvItem;
 		};
 
-
 		cv.addEventListener("clip_volume_changed", function(event) {
 			let cv = event.volume;
 			let prevCVItem = $("span#" + cv.name);
 			prevCVItem.after(createCVitem(cv));
 			prevCVItem.remove();
+		});
+
+			
+		viewer.addEventListener("clipper.clipOffset_changed", function(event){		
+			$(".clip_offset_container input").val(viewer.clippingTool.clipOffset);
 		});
 		
 		cvList.append(createCVitem(cv));

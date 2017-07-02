@@ -1722,6 +1722,12 @@ function initMeasurementDetails(){
 	
 	}
 
+};
+
+function initSceneList(){
+
+	let scenelist = $('#scene_list');
+	
 	// length units
 	$("#optLengthUnit").selectmenu({
 		style:'popup',
@@ -1734,11 +1740,8 @@ function initMeasurementDetails(){
 			viewer.setLengthUnit(selectedValue);
 		}
 	});	
-};
-
-function initSceneList(){
-
-	let scenelist = $('#scene_list');
+	$("#optLengthUnit").selectmenu().val(viewer.lengthUnit.code);
+	$("#optLengthUnit").selectmenu("refresh");
 	
 	let initUIElements = function(i) {
 		// scene panel in scene list
@@ -2246,6 +2249,11 @@ function initSceneList(){
 			
 			$('#lblRGBBrightness' + i)[0].innerHTML = brightness.toFixed(2);
 			$("#sldRGBBrightness" + i).slider({value: brightness});
+		});
+		
+		viewer.addEventListener("length_unit_changed", e => {
+			$("#optLengthUnit").selectmenu().val(e.value);
+			$("#optLengthUnit").selectmenu("refresh");
 		});
 		
 		viewer.addEventListener("pointcloud_loaded", updateHeightRange);

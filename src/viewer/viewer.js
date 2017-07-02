@@ -808,7 +808,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 				break;
 		}
 
-		this.dispatchEvent({"type": "length_unit_changed", "viewer": this});
+		this.dispatchEvent({"type": "length_unit_changed", "viewer": this, value: value});
 	}
 	
 	toMaterialID(materialName){

@@ -1142,7 +1142,7 @@ function initMeasurementDetails(){
 			if(urlIsAbsolute){
 				pc = this.scene.pointclouds[0].pcoGeometry.url;
 			}else{
-				pc = `${window.location.href}/${viewer.scene.pointclouds[0].pcoGeometry.url}`;
+				pc = `${window.location.href}/../${viewer.scene.pointclouds[0].pcoGeometry.url}`;
 			}
 			
 			let request = `${viewer.server}/start_extract_region_worker?minLOD=${minLOD}&maxLOD=${maxLOD}&box=${boxes}&pointCloud=${pc}`;
@@ -1155,41 +1155,38 @@ function initMeasurementDetails(){
 			
 			let start = new Date().getTime();
 			
-			let checkUntilFinished = () => {
-				//http://localhost:3000/get_status?workerID=ef7bd824-a32d-4086-9547-09dfdf700c19
+			let observe = () => {
+				let request = `${viewer.server}/observe_status?workerID=${workerID}`;
 				
-				if(!workerID){
-					return;
-				}
-				
-				let request = `${viewer.server}/get_status?workerID=${workerID}`;
+				let loaded = 0;
 				
 				let xhr = new XMLHttpRequest();
-				xhr.onreadystatechange = () => {
-					if (xhr.readyState == XMLHttpRequest.DONE) {
-						//alert(xhr.responseText);
-						let res = JSON.parse(xhr.responseText);
-						console.log(res);
+				xhr.withCredentials = true;
+				xhr.addEventListener("progress", e => {
+					let nowLoaded = e.loaded;
+					
+					let response = xhr.responseText.substring(loaded, nowLoaded);
+					response = JSON.parse(response);
+					
+					if(response.status === "FINISHED"){
+						elMessage.html(`<br><a href="${viewer.server}/get_las?workerID=${workerID}">Download ready</a>`);
+					}else{
+						let current = new Date().getTime();
+						let duration = (current - start);
+						let seconds = parseInt(duration / 1000);
 						
-						if(!res.finished){
-							//elMessage.html(`request status: ${res.status}`);
-							let end = new Date().getTime();
-							let duration = (end - start);
-							let seconds = parseInt(duration / 1000);
-							elMessage.html(`<br>preparing download... ${seconds}s`);
-							//checkUntilFinished();
-							setTimeout(checkUntilFinished, 500);
-						}else{
-							elMessage.html(`<br><a href="${viewer.server}/get_las?workerID=${workerID}">Download ready</a>`);
-						}
+						elMessage.html(`processing request... ${seconds}s`);
 					}
-				}
+					
+					
+					loaded = nowLoaded;
+				});
 				xhr.open('GET', request, true);
 				xhr.send(null)
-				
 			};
 			
 			let xhr = new XMLHttpRequest();
+			xhr.withCredentials = true;
 			xhr.onreadystatechange = () => {
 				if (xhr.readyState == XMLHttpRequest.DONE) {
 					//alert(xhr.responseText);
@@ -1199,7 +1196,8 @@ function initMeasurementDetails(){
 					if(res.status === "OK"){
 						workerID = res.workerID;
 						elMessage.html("request is being processed");
-						checkUntilFinished();
+						//checkUntilFinished();
+						observe();
 					}else if(res.status === "ERROR_POINT_PROCESSED_ESTIMATE_TOO_LARGE"){
 						elMessage.html("Too many candidate points in selection.");
 					}else{
@@ -1409,8 +1407,7 @@ function initMeasurementDetails(){
 		download(){
 			
 			let volume = this.measurement;
-			//let box = volume.boundingBox.clone().applyMatrix4(volume.matrixWorld);
-			let box = volume.matrixWorld.elements.join(", ");
+			let box = volume.matrixWorld.elements.join(",");
 			let minLOD = 0;
 			let maxLOD = 100;
 			
@@ -1419,7 +1416,7 @@ function initMeasurementDetails(){
 			if(urlIsAbsolute){
 				pc = this.scene.pointclouds[0].pcoGeometry.url;
 			}else{
-				pc = `${window.location.href}/${viewer.scene.pointclouds[0].pcoGeometry.url}`;
+				pc = `${window.location.href}/../${viewer.scene.pointclouds[0].pcoGeometry.url}`;
 			}
 			
 			let request = `${viewer.server}/start_extract_region_worker?minLOD=${minLOD}&maxLOD=${maxLOD}&box=${box}&pointCloud=${pc}`;
@@ -1432,41 +1429,38 @@ function initMeasurementDetails(){
 			
 			let start = new Date().getTime();
 			
-			let checkUntilFinished = () => {
-				//http://localhost:3000/get_status?workerID=ef7bd824-a32d-4086-9547-09dfdf700c19
+			let observe = () => {
+				let request = `${viewer.server}/observe_status?workerID=${workerID}`;
 				
-				if(!workerID){
-					return;
-				}
-				
-				let request = `${viewer.server}/get_status?workerID=${workerID}`;
+				let loaded = 0;
 				
 				let xhr = new XMLHttpRequest();
-				xhr.onreadystatechange = () => {
-					if (xhr.readyState == XMLHttpRequest.DONE) {
-						//alert(xhr.responseText);
-						let res = JSON.parse(xhr.responseText);
-						console.log(res);
+				xhr.withCredentials = true;
+				xhr.addEventListener("progress", e => {
+					let nowLoaded = e.loaded;
+					
+					let response = xhr.responseText.substring(loaded, nowLoaded);
+					response = JSON.parse(response);
+					
+					if(response.status === "FINISHED"){
+						elMessage.html(`<br><a href="${viewer.server}/get_las?workerID=${workerID}">Download ready</a>`);
+					}else{
+						let current = new Date().getTime();
+						let duration = (current - start);
+						let seconds = parseInt(duration / 1000);
 						
-						if(!res.finished){
-							//elMessage.html(`request status: ${res.status}`);
-							let end = new Date().getTime();
-							let duration = (end - start);
-							let seconds = parseInt(duration / 1000);
-							elMessage.html(`<br>preparing download... ${seconds}s`);
-							//checkUntilFinished();
-							setTimeout(checkUntilFinished, 500);
-						}else{
-							elMessage.html(`<br><a href="${viewer.server}/get_las?workerID=${workerID}">Download ready</a>`);
-						}
+						elMessage.html(`processing request... ${seconds}s`);
 					}
-				}
+					
+					
+					loaded = nowLoaded;
+				});
 				xhr.open('GET', request, true);
 				xhr.send(null)
-				
 			};
 			
 			let xhr = new XMLHttpRequest();
+			xhr.withCredentials = true;
 			xhr.onreadystatechange = () => {
 				if (xhr.readyState == XMLHttpRequest.DONE) {
 					//alert(xhr.responseText);
@@ -1476,7 +1470,8 @@ function initMeasurementDetails(){
 					if(res.status === "OK"){
 						workerID = res.workerID;
 						elMessage.html("request is being processed");
-						checkUntilFinished();
+						//checkUntilFinished();
+						observe();
 					}else if(res.status === "ERROR_POINT_PROCESSED_ESTIMATE_TOO_LARGE"){
 						elMessage.html("Too many candidate points in selection.");
 					}else{

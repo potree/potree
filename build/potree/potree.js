@@ -10787,7 +10787,7 @@ Potree.Profile = class extends THREE.Object3D{
 			let box = new THREE.Object3D();
 			
 			let length = start.clone().setZ(0).distanceTo(end.clone().setZ(0));
-			box.scale.set(length, 1000000, this.width);
+			box.scale.set(length, 10, this.width);
 			box.up.set(0, 0, 1);
 
 			let center = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
@@ -18409,22 +18409,31 @@ function initMeasurementDetails(){
 			
 			let profile = this.measurement;
 			let boxes = profile.getSegmentMatrices()
-				.map(m => m.elements.join(", "))
-				.join(", ");
+				.map(m => m.elements.join(","))
+				.join(",");
 			
 			let minLOD = 0;
 			let maxLOD = 100;
 			
-			let urlIsAbsolute = new RegExp('^(?:[a-z]+:)?//', 'i').test(this.scene.pointclouds[0].pcoGeometry.url);
-			let pc = "";
-			if(urlIsAbsolute){
-				pc = this.scene.pointclouds[0].pcoGeometry.url;
-			}else{
-				pc = `${window.location.href}/../${viewer.scene.pointclouds[0].pcoGeometry.url}`;
+			let pcs = [];
+			for(let pointcloud of this.scene.pointclouds){
+				let urlIsAbsolute = new RegExp('^(?:[a-z]+:)?//', 'i').test(pointcloud.pcoGeometry.url);
+				let pc = "";
+				if(urlIsAbsolute){
+					pc = pointcloud.pcoGeometry.url;
+				}else{
+					pc = `${window.location.href}/../${pointcloud.pcoGeometry.url}`;
+				}
+				
+				pcs.push(pc);
 			}
 			
-			let request = `${viewer.server}/start_extract_region_worker?minLOD=${minLOD}&maxLOD=${maxLOD}&box=${boxes}&pointCloud=${pc}`;
-			console.log(request);
+			let pc = pcs
+				.map( v => `pointcloud[]=${v}`)
+				.join("&");
+			
+			let request = `${viewer.server}/start_extract_region_worker?minLOD=${minLOD}&maxLOD=${maxLOD}&box=${boxes}&${pc}`;
+			//console.log(request);
 			
 			let elMessage = this.elContent.find(`#download_profile_status_${this.id}`);
 			elMessage.html("sending request...");
@@ -18685,7 +18694,7 @@ function initMeasurementDetails(){
 		download(){
 			
 			let volume = this.measurement;
-			let box = volume.matrixWorld.elements.join(",");
+			let boxes = volume.matrixWorld.elements.join(",");
 			let minLOD = 0;
 			let maxLOD = 100;
 			
@@ -18706,7 +18715,7 @@ function initMeasurementDetails(){
 				.map( v => `pointcloud[]=${v}`)
 				.join("&");
 			
-			let request = `${viewer.server}/start_extract_region_worker?minLOD=${minLOD}&maxLOD=${maxLOD}&box=${box}&${pc}`;//&pointCloud=${pc}`;
+			let request = `${viewer.server}/start_extract_region_worker?minLOD=${minLOD}&maxLOD=${maxLOD}&box=${boxes}&${pc}`;//&pointCloud=${pc}`;
 			//console.log(request);
 			
 			let elMessage = this.elContent.find(`#download_volume_status_${this.id}`);

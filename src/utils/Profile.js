@@ -53,7 +53,7 @@ Potree.Profile = class extends THREE.Object3D{
 			let box = new THREE.Object3D();
 			
 			let length = start.clone().setZ(0).distanceTo(end.clone().setZ(0));
-			box.scale.set(length, 10, this.width);
+			box.scale.set(length, 10000, this.width);
 			box.up.set(0, 0, 1);
 
 			let center = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);

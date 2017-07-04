@@ -1411,15 +1411,24 @@ function initMeasurementDetails(){
 			let minLOD = 0;
 			let maxLOD = 100;
 			
-			let urlIsAbsolute = new RegExp('^(?:[a-z]+:)?//', 'i').test(this.scene.pointclouds[0].pcoGeometry.url);
-			let pc = "";
-			if(urlIsAbsolute){
-				pc = this.scene.pointclouds[0].pcoGeometry.url;
-			}else{
-				pc = `${window.location.href}/../${viewer.scene.pointclouds[0].pcoGeometry.url}`;
+			let pcs = [];
+			for(let pointcloud of this.scene.pointclouds){
+				let urlIsAbsolute = new RegExp('^(?:[a-z]+:)?//', 'i').test(pointcloud.pcoGeometry.url);
+				let pc = "";
+				if(urlIsAbsolute){
+					pc = pointcloud.pcoGeometry.url;
+				}else{
+					pc = `${window.location.href}/../${pointcloud.pcoGeometry.url}`;
+				}
+				
+				pcs.push(pc);
 			}
 			
-			let request = `${viewer.server}/start_extract_region_worker?minLOD=${minLOD}&maxLOD=${maxLOD}&box=${box}&pointCloud=${pc}`;
+			let pc = pcs
+				.map( v => `pointcloud[]=${v}`)
+				.join("&");
+			
+			let request = `${viewer.server}/start_extract_region_worker?minLOD=${minLOD}&maxLOD=${maxLOD}&box=${box}&${pc}`;//&pointCloud=${pc}`;
 			//console.log(request);
 			
 			let elMessage = this.elContent.find(`#download_volume_status_${this.id}`);

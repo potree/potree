@@ -2,24 +2,24 @@
 
 Potree.ClipVolume = class extends THREE.Object3D{
 	
-	constructor(axis){
+	constructor(args){
 		super();
 		
 		this.constructor.counter = (this.constructor.counter === undefined) ? 0 : this.constructor.counter + 1;
 		this.name = "clip_volume_" + this.constructor.counter;
 
-		this.axis = axis;
-		this.volWidth = 0.1;
+		this.clipOffset = 0.001;
+		this.clipRotOffset = 1;
 
-		if(axis != -1) {
-			this.scale.set(1, 1, 1);
-			if(axis == Potree.ClipVolume.Axis.X)
-				this.scale.x = this.volWidth;
-			else if(axis == Potree.ClipVolume.Axis.Y)
-				this.scale.y = this.volWidth;
-			else if(axis == Potree.ClipVolume.Axis.Z)
-				this.scale.z = this.volWidth;
-		}
+		this.scale.z = 0.1;
+
+		let alpha = args.alpha || 0;
+		let beta = args.beta || 0;
+		let gamma = args.gamma || 0;
+
+		this.rotation.x = alpha;
+		this.rotation.y = beta;
+		this.rotation.z = gamma;
 				
 		let boxGeometry = new THREE.BoxGeometry(1, 1, 1);
 		boxGeometry.computeBoundingBox();
@@ -101,20 +101,78 @@ Potree.ClipVolume = class extends THREE.Object3D{
 		this.update();
 	};
 
-	offset(value) {
-		if(this.axis == Potree.ClipVolume.Axis.X) {
-			this.position.x = this.position.x + value;
-		} else if(this.axis == Potree.ClipVolume.Axis.Y) {
-			this.position.y = this.position.y + value;
-		} else if(this.axis == Potree.ClipVolume.Axis.Z) {
-			this.position.z = this.position.z + value;
-		} else {
-			// TODO, offset box?
-		}
+	setClipOffset(offset) {
+		if(this.clipOffset == offset) return;
+		
+		this.clipOffset = offset;
+		this.dispatchEvent({"type": "clip_volume_changed", "viewer": viewer, "volume": this});		
+	}
 
-		this.dispatchEvent({"type": "clip_volume_changed", "volume": this});
-	};
-	
+	setClipRotOffset(offset) {
+		if(this.clipRotOffset == offset) return;
+		
+		this.clipRotOffset = offset;
+		this.dispatchEvent({"type": "clip_volume_changed", "viewer": viewer, "volume": this});			
+	}
+
+	offset(args) {
+		let cs = args.cs || null;
+		let axis = args.axis || null;
+		let dir = args.dir || null;
+
+		if(!cs || !axis || !dir) return;
+
+		if(axis == "x") {
+			if(cs == "local") {
+
+			} else if(cs == "global") {
+				this.position.x = this.position.x + dir * this.clipOffset;
+			}
+		}else if(axis == "y") {
+			if(cs == "local") {
+
+			} else if(cs == "global") {
+				this.position.y = this.position.y + dir * this.clipOffset;
+			}
+		}else if(axis == "z") {
+			if(cs == "local") {
+
+			} else if(cs == "global") {
+				this.position.z = this.position.z + dir * this.clipOffset;
+			}
+		}
+		this.dispatchEvent({"type": "clip_volume_changed", "viewer": viewer, "volume": this});
+	}	
+
+	rotate(args) {
+		let cs = args.cs || null;
+		let axis = args.axis || null;
+		let dir = args.dir || null;
+
+		if(!cs || !axis || !dir) return;
+
+		if(axis == "x") {
+			if(cs == "local") {
+
+			} else if(cs == "global") {
+				this.rotation.x = this.rotation.x + dir * this.clipRotOffset * Math.PI/180;
+			}
+		}else if(axis == "y") {
+			if(cs == "local") {
+
+			} else if(cs == "global") {
+				this.rotation.y = this.rotation.y + dir * this.clipRotOffset * Math.PI/180;
+			}
+		}else if(axis == "z") {
+			if(cs == "local") {
+
+			} else if(cs == "global") {
+				this.rotation.z = this.rotation.z + dir * this.clipRotOffset * Math.PI/180;
+			}
+		}
+		this.dispatchEvent({"type": "clip_volume_changed", "viewer": viewer, "volume": this});
+	}	
+
 	update(){
 		this.boundingBox = this.box.geometry.boundingBox;
 		this.boundingSphere = this.boundingBox.getBoundingSphere();
@@ -137,10 +195,4 @@ Potree.ClipVolume = class extends THREE.Object3D{
 			});
 		}
 	};
-};
-
-Potree.ClipVolume.Axis = {
-	X: 0,
-	Y: 1,
-	Z: 2
 };

@@ -1524,7 +1524,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			
 			for(let pointcloud of this.scene.pointclouds){
 				pointcloud.material.setClipBoxes(clipBoxes);
-				pointcloud.material.clipInside = this.clippingTool.clipInside;
+				pointcloud.material.clipMode = this.clippingTool.clipMode;
 			}
 		}
 

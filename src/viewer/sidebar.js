@@ -1442,16 +1442,16 @@ function initMeasurementDetails(){
 function initClippingTool() {
 	$("#clipping_volumes_container").hide();
 
-	$("#optClipInside").selectmenu();
-	$("#optClipInside").val(1).selectmenu("refresh");
-	$("#optClipInside").selectmenu({
+	$("#optClipMode").selectmenu();
+	$("#optClipMode").val(0).selectmenu("refresh");
+	$("#optClipMode").selectmenu({
 		change: function(event, ui){
-			viewer.clippingTool.setClipInside(ui.item.value == "0");
+			viewer.clippingTool.setClipMode(parseInt(ui.item.value));
 		}
 	});
 
-	viewer.addEventListener("clipper.clipInside_changed", function(event){		
-		$("#optClipInside").val(viewer.clippingTool.clipInside == true ? 0 : 1).selectmenu("refresh");
+	viewer.addEventListener("clipper.clipMode_changed", function(event){		
+		$("#optClipMode").val(viewer.clippingTool.clipMode).selectmenu("refresh");
 	});
 
 
@@ -1461,7 +1461,6 @@ function initClippingTool() {
 		Potree.resourcePath + "/icons/clip_volume.svg",
 		"[title]tt.clip_volume",
 		function(){
-			//viewer.volumeTool.startInsertion({clip: true})
 			viewer.clippingTool.startInsertion();
 		}
 	));
@@ -1478,7 +1477,7 @@ function initClippingTool() {
 		Potree.resourcePath + "/icons/profile.svg",
 		"[title]tt.height_profile",
 		function(){
-			viewer.clippingTool.startInsertion({axis: Potree.ClipVolume.Axis.X});
+			viewer.clippingTool.startInsertion({alpha: 0, beta: Math.PI/2, gamma: 0});
 		}
 	));
 
@@ -1486,7 +1485,7 @@ function initClippingTool() {
 		Potree.resourcePath + "/icons/profile.svg",
 		"[title]tt.height_profile",
 		function(){
-			viewer.clippingTool.startInsertion({axis: Potree.ClipVolume.Axis.Y});
+			viewer.clippingTool.startInsertion({alpha: Math.PI/2, beta: 0, gamma: 0});
 		}
 	));
 
@@ -1494,7 +1493,7 @@ function initClippingTool() {
 		Potree.resourcePath + "/icons/profile.svg",
 		"[title]tt.height_profile",
 		function(){
-			viewer.clippingTool.startInsertion({axis: Potree.ClipVolume.Axis.Z});
+			viewer.clippingTool.startInsertion({alpha: 0, beta: 0, gamma: Math.PI/2});
 		}
 	));
 
@@ -1516,98 +1515,244 @@ function initClippingTool() {
 			let x = Potree.utils.addCommas(volume.position.x.toFixed(3));
 			let y = Potree.utils.addCommas(volume.position.y.toFixed(3));
 			let z = Potree.utils.addCommas(volume.position.z.toFixed(3));
+			let rot_alpha = (volume.rotation.x * 180/Math.PI).toFixed(0);
+			let rot_beta = (volume.rotation.y * 180/Math.PI).toFixed(0);
+			let rot_gamma = (volume.rotation.z * 180/Math.PI).toFixed(0);
 			let sc_width = Potree.utils.addCommas(volume.scale.x.toFixed(3));
-			let sc_height = Potree.utils.addCommas(volume.scale.y.toFixed(3));
+			let sc_length = Potree.utils.addCommas(volume.scale.y.toFixed(3));
 			let sc_thickness = Potree.utils.addCommas(volume.scale.z.toFixed(3));
 			let removeIconPath = Potree.resourcePath + "/icons/remove.svg";
-			let icon = "/icons/clip_volume.svg";
-			if(volume.axis == Potree.ClipVolume.Axis.X) {
-				icon = "/icons/profile.svg";
-				sc_width = Potree.utils.addCommas(volume.scale.y.toFixed(3));
-				sc_height = Potree.utils.addCommas(volume.scale.z.toFixed(3));
-				sc_thickness = Potree.utils.addCommas(volume.scale.x.toFixed(3));
-			} else if(volume.axis == Potree.ClipVolume.Axis.Y) {
-				icon = "/icons/profile.svg";
-				sc_width = Potree.utils.addCommas(volume.scale.x.toFixed(3));
-				sc_height = Potree.utils.addCommas(volume.scale.z.toFixed(3));
-				sc_thickness = Potree.utils.addCommas(volume.scale.y.toFixed(3));
-			} else if(volume.axis == Potree.ClipVolume.Axis.Z) {
-				icon = "/icons/profile.svg";
-				sc_width = Potree.utils.addCommas(volume.scale.x.toFixed(3));
-				sc_height = Potree.utils.addCommas(volume.scale.y.toFixed(3));
-				sc_thickness = Potree.utils.addCommas(volume.scale.z.toFixed(3));
-			}
-			let cvItem = $(`
-				<span class="scene_item" id="${volume.name}">
-					<!-- HEADER -->				
-					<div class="scene_header" onclick="$(this).next().slideToggle(200)">
-						<span class="scene_icon"><img src="${Potree.resourcePath + icon}" class="scene_item_icon" /></span>
-						<span class="scene_header_title">${volume.name}</span>
+			
+			let cvItem = $(`				
+				<div class="clip_volume_body" style="margin: 5px 0px">								
+					<div class="divider">
+						<span>Size</span>
 					</div>
-					
-					<!-- DETAIL -->
-					<div class="measurement_content selectable" style="display: none">
-						<div>
-							<span class="coordinates_table_container">
-								<table style="width: 100%">
-									<tr>
-										<th>x</th>
-										<th>y</th>
-										<th>z</th>
-									</tr>
-									<tr>
-										<td>${x}</td>
-										<td>${y}</td>
-										<td>${z}</td>
-									</tr>
-								</table>
-							</span>
-							<br />
-							<span class="coordinates_table_container">
-								<table style="width: 100%">
-									<tr>
-										<th>width</th>
-										<th>height</th>
-										<th>thickness</th>
-									</tr>
-									<tr>
-										<td>${sc_width}${viewer.lengthUnit.code}</td>
-										<td>${sc_height}${viewer.lengthUnit.code}</td>
-										<td>${sc_thickness}${viewer.lengthUnit.code}</td>
-									</tr>
-								</table>
-							</span>
-							<br />
-							<div class="clip_offset_container">
-								<label for="${volume.name}_offset">Offset</label>
-								<input type="text" id="${volume.name}_offset" name="${volume.name}_offset" value="0.1" />
-								<button id="${volume.name}_neg_offset" class="clip_offset_negative">&lt;</button>
-								<button id="${volume.name}_pos_offset" class="clip_offset_positive">&gt;</button>
-							</div>
+					<div style="margin: 10px 0px">
+						<span class="coordinates_table_container">
+							<table style="width: 100%">
+								<tr>
+									<th>width</th>
+									<th>length</th>
+									<th>thickness</th>
+								</tr>
+								<tr>
+									<td><input class="clip_volume_spinner" id="cv_sp_width_${volume.id}" style="width: 55px" value="${sc_width}" /></td>
+									<td><input class="clip_volume_spinner" id="cv_sp_length_${volume.id}" style="width: 55px" value="${sc_length}" /></td>
+									<td><input class="clip_volume_spinner" id="cv_sp_thickness_${volume.id}" style="width: 55px" value="${sc_thickness}" /></td>
+								</tr>
+							</table>
+						</span>
+					</div>
 
-							<div style="display: flex; margin-top: 12px">
-								<span></span>
-								<span style="flex-grow: 1"></span>
-								<img class="clipping_volume_action_remove" src="${removeIconPath}" style="width: 16px; height: 16px">
-							</div>
+					<div class="divider" style="padding-top: 10px">
+						<span>Position</span>
+					</div>
+					<div style="margin: 10px 0px">
+						<span class="coordinates_table_container">
+							<table style="width: 100%">
+								<tr>
+									<th>x</th>
+									<th>y</th>
+									<th>z</th>
+								</tr>
+								<tr>
+									<td>${x}</td>
+									<td>${y}</td>
+									<td>${z}</td>
+								</tr>
+							</table>
+						</span>
+					</div>
+					<div style="margin: 10px 0px">
+						<div style="display:flex; margin: 7px 0px">
+							<span style="display:flex; align-items: center; padding-right: 10px">Offset: </span>
+							<input class="clip_volume_spinner" id="cv_sp_offset_${volume.id}" value="${volume.clipOffset}" style="flex-grow: 1; width:100%">
+						</div>
+						<div style="display:flex; margin: 7px 0px">
+							<span style="display:flex; align-items: center; padding-right: 10px; width: 55px">Global: </span>
+							<div style="display:flex; flex-grow: 1; width:100%">
+								<button class="cv_btn_offset cv_btn_offset_decr" id="cv_btn_global_x_decr_${volume.id}">&lt;</button>
+								<span style="padding:2px">x</span>
+								<button class="cv_btn_offset cv_btn_offset_incr" id="cv_btn_global_x_incr_${volume.id}">&gt;</button>
+								<button class="cv_btn_offset cv_btn_offset_decr" id="cv_btn_global_y_decr_${volume.id}">&lt;</button>
+								<span style="padding:2px">y</span>
+								<button class="cv_btn_offset cv_btn_offset_incr" id="cv_btn_global_y_incr_${volume.id}">&gt;</button>
+								<button class="cv_btn_offset cv_btn_offset_decr" id="cv_btn_global_z_decr_${volume.id}">&lt;</button>
+								<span style="padding:2px">z</span>
+								<button class="cv_btn_offset cv_btn_offset_incr" id="cv_btn_global_z_incr_${volume.id}">&gt;</button>
+							</div>	
+						</div>
+						<div style="display:flex; margin: 7px 0px">
+							<span style="display:flex; align-items: center; padding-right: 10px; width: 55px">Local: </span>
+							<div style="display:flex; flex-grow: 1; width:100%">
+								<button class="cv_btn_offset cv_btn_offset_decr" id="cv_btn_local_x_decr_${volume.id}">&lt;</button>
+								<span style="padding:2px">x</span>
+								<button class="cv_btn_offset cv_btn_offset_incr" id="cv_btn_local_x_incr_${volume.id}">&gt;</button>
+								<button class="cv_btn_offset cv_btn_offset_decr" id="cv_btn_local_y_decr_${volume.id}">&lt;</button>
+								<span style="padding:2px">y</span>
+								<button class="cv_btn_offset cv_btn_offset_incr" id="cv_btn_local_y_incr_${volume.id}">&gt;</button>
+								<button class="cv_btn_offset cv_btn_offset_decr" id="cv_btn_local_z_decr_${volume.id}">&lt;</button>
+								<span style="padding:2px">z</span>
+								<button class="cv_btn_offset cv_btn_offset_incr" id="cv_btn_local_z_incr_${volume.id}">&gt;</button>
+							</div>	
 						</div>
 					</div>
-				</span>
+
+					<div class="divider" style="padding-top: 10px">
+						<span>Rotation</span>
+					</div>
+					<div style="margin: 10px 0px;">
+						<span class="coordinates_table_container">
+							<table style="width: 100%">
+								<tr>
+									<th>&alpha;</th>
+									<th>&beta;</th>
+									<th>&gamma;</th>
+								</tr>
+								<tr>
+									<td>${rot_alpha}°</td>
+									<td>${rot_beta}°</td>
+									<td>${rot_gamma}°</td>
+								</tr>
+							</table>
+						</span>
+					</div>
+					<div style="margin: 10px 0px; padding-bottom: 10px">
+						<div style="display:flex; margin: 7px 0px">
+							<span style="display:flex; align-items: center; padding-right: 10px">Angle: </span>
+							<input class="clip_volume_spinner" id="cv_sp_rot_offset_${volume.id}" value="${volume.clipRotOffset}" style="flex-grow: 1; width:100%">
+						</div>
+						<div style="display:flex; margin: 7px 0px">
+							<span style="display:flex; align-items: center; padding-right: 10px; width: 55px">Global: </span>
+							<div style="display:flex; flex-grow: 1; width:100%">
+								<button class="cv_btn_offset cv_btn_offset_decr" id="cv_btn_global_alpha_decr_${volume.id}">&lt;</button>
+								<span style="padding:2px">&alpha;</span>
+								<button class="cv_btn_offset cv_btn_offset_incr" id="cv_btn_global_alpha_incr_${volume.id}">&gt;</button>
+								<button class="cv_btn_offset cv_btn_offset_decr" id="cv_btn_global_beta_decr_${volume.id}">&lt;</button>
+								<span style="padding:2px">&beta;</span>
+								<button class="cv_btn_offset cv_btn_offset_incr" id="cv_btn_global_beta_incr_${volume.id}">&gt;</button>
+								<button class="cv_btn_offset cv_btn_offset_decr" id="cv_btn_global_gamma_decr_${volume.id}">&lt;</button>
+								<span style="padding:2px">&gamma;</span>
+								<button class="cv_btn_offset cv_btn_offset_incr" id="cv_btn_global_gamma_incr_${volume.id}">&gt;</button>
+							</div>	
+						</div>
+						<div style="display:flex; margin: 7px 0px">
+							<span style="display:flex; align-items: center; padding-right: 10px; width: 55px">Local: </span>
+							<div style="display:flex; flex-grow: 1; width:100%">
+								<button class="cv_btn_offset cv_btn_offset_decr" id="cv_btn_local_alpha_decr_${volume.id}">&lt;</button>
+								<span style="padding:2px">&alpha;</span>
+								<button class="cv_btn_offset cv_btn_offset_incr" id="cv_btn_local_alpha_incr_${volume.id}">&gt;</button>
+								<button class="cv_btn_offset cv_btn_offset_decr" id="cv_btn_local_beta_decr_${volume.id}">&lt;</button>
+								<span style="padding:2px">&beta;</span>
+								<button class="cv_btn_offset cv_btn_offset_incr" id="cv_btn_local_beta_incr_${volume.id}">&gt;</button>
+								<button class="cv_btn_offset cv_btn_offset_decr" id="cv_btn_local_gamma_decr_${volume.id}">&lt;</button>
+								<span style="padding:2px">&gamma;</span>
+								<button class="cv_btn_offset cv_btn_offset_incr" id="cv_btn_local_gamma_incr_${volume.id}">&gt;</button>
+							</div>	
+						</div>
+					</div>
+
+					<div style="display: flex; margin-top: 5px">
+						<span></span>
+						<span style="flex-grow: 1"></span>
+						<img class="clipping_volume_action_remove" src="${removeIconPath}" style="width: 16px; height: 16px">
+					</div>
+				</div>
 			`);
-			
-			let clipOffsetInputs = cvItem.find(".clip_offset_container input");
-			clipOffsetInputs.change(function(e) {
-				viewer.clippingTool.setClipOffset(parseInt(e.target.value());
+
+			cvItem.find(".clip_volume_spinner").spinner();
+
+			let cv_btn_offset = cvItem.find(".cv_btn_offset");
+			cv_btn_offset.button();
+			cv_btn_offset.css("padding", "2px");
+			cv_btn_offset.css("margin", "0px 3px");
+
+			let cv_sp_offset = cvItem.find("#cv_sp_offset_" + volume.id);
+			cv_sp_offset.spinner({
+				min: 0.001,
+				max: 1000,
+				step: 1.0,
+				numberFormat: "n",
+				spin: (event, ui) => {
+					let value = cv_sp_offset.spinner("value");
+					volume.setClipOffset(value);
+				},
+				stop: (event, ui) => {
+					let value = cv_sp_offset.spinner("value");
+					volume.setClipOffset(value);
+				}
 			});
 
-			let clipOffsetButtonNeg = cvItem.find(".clip_offset_container .clip_offset_negative");
-			let clipOffsetButtonPos = cvItem.find(".clip_offset_container .clip_offset_positive");
-			clipOffsetButtonNeg.click(function(e) {
-				volume.offset(-viewer.clippingTool.clipOffset);
+			let cv_sp_rot_offset = cvItem.find("#cv_sp_rot_offset_" + volume.id);
+			cv_sp_rot_offset.spinner({
+				min: 1,
+				max: 360,
+				step: 1,
+				numberFormat: "n",
+				spin: (event, ui) => {
+					let value = cv_sp_rot_offset.spinner("value");
+					volume.setClipRotOffset(value);
+				},
+				stop: (event, ui) => {
+					let value = cv_sp_rot_offset.spinner("value");
+					volume.setClipRotOffset(value);
+				}
 			});
-			clipOffsetButtonPos.click(function(e) {
-				volume.offset(viewer.clippingTool.clipOffset);
+
+			let cv_btn_global_x_decr = cvItem.find("#cv_btn_global_x_decr_" + volume.id);
+			let cv_btn_global_x_incr = cvItem.find("#cv_btn_global_x_incr_" + volume.id);
+			let cv_btn_global_y_decr = cvItem.find("#cv_btn_global_y_decr_" + volume.id);
+			let cv_btn_global_y_incr = cvItem.find("#cv_btn_global_y_incr_" + volume.id);
+			let cv_btn_global_z_decr = cvItem.find("#cv_btn_global_z_decr_" + volume.id);
+			let cv_btn_global_z_incr = cvItem.find("#cv_btn_global_z_incr_" + volume.id);
+
+			cv_btn_global_x_decr.click(function(event) {
+				volume.offset({cs: "global", axis: "x", dir: -1});
 			});
+			cv_btn_global_x_incr.click(function(event) {
+				volume.offset({cs: "global", axis: "x", dir: 1});
+			});
+			cv_btn_global_y_decr.click(function(event) {
+				volume.offset({cs: "global", axis: "y", dir: -1});
+			});
+			cv_btn_global_y_incr.click(function(event) {
+				volume.offset({cs: "global", axis: "y", dir: 1});
+			});
+			cv_btn_global_z_decr.click(function(event) {
+				volume.offset({cs: "global", axis: "z", dir: -1});
+			});
+			cv_btn_global_z_incr.click(function(event) {
+				volume.offset({cs: "global", axis: "z", dir: 1});
+			});
+
+
+			let cv_btn_global_alpha_decr = cvItem.find("#cv_btn_global_alpha_decr_" + volume.id);
+			let cv_btn_global_alpha_incr = cvItem.find("#cv_btn_global_alpha_incr_" + volume.id);
+			let cv_btn_global_beta_decr = cvItem.find("#cv_btn_global_beta_decr_" + volume.id);
+			let cv_btn_global_beta_incr = cvItem.find("#cv_btn_global_beta_incr_" + volume.id);
+			let cv_btn_global_gamma_decr = cvItem.find("#cv_btn_global_gamma_decr_" + volume.id);
+			let cv_btn_global_gamma_incr = cvItem.find("#cv_btn_global_gamma_incr_" + volume.id);
+
+			cv_btn_global_alpha_decr.click(function(event) {
+				volume.rotate({cs: "global", axis: "x", dir: -1});
+			});
+			cv_btn_global_alpha_incr.click(function(event) {
+				volume.rotate({cs: "global", axis: "x", dir: 1});
+			});
+			cv_btn_global_beta_decr.click(function(event) {
+				volume.rotate({cs: "global", axis: "y", dir: -1});
+			});
+			cv_btn_global_beta_incr.click(function(event) {
+				volume.rotate({cs: "global", axis: "y", dir: 1});
+			});
+			cv_btn_global_gamma_decr.click(function(event) {
+				volume.rotate({cs: "global", axis: "z", dir: -1});
+			});
+			cv_btn_global_gamma_incr.click(function(event) {
+				volume.rotate({cs: "global", axis: "z", dir: 1});
+			});
+
 
 			let cvRemove = cvItem.find(".clipping_volume_action_remove");
 			cvRemove.click(() => {viewer.scene.removeClipVolume(cv)});
@@ -1615,19 +1760,32 @@ function initClippingTool() {
 			return cvItem;
 		};
 
+
 		cv.addEventListener("clip_volume_changed", function(event) {
 			let cv = event.volume;
-			let prevCVItem = $("span#" + cv.name);
-			prevCVItem.after(createCVitem(cv));
+			let prevCVItem = $("span#" + cv.name + " .clip_volume_body");
+			let cvItem = createCVitem(cv);
+			prevCVItem.after(cvItem);
 			prevCVItem.remove();
 		});
-
 			
-		viewer.addEventListener("clipper.clipOffset_changed", function(event){		
-			$(".clip_offset_container input").val(viewer.clippingTool.clipOffset);
-		});
+		let icon = "/icons/clip_volume.svg";
+		let cvWrapper = $(`
+			<span class="scene_item" id="${cv.name}">
+				<!-- HEADER -->				
+				<div class="scene_header" onclick="$(this).next().slideToggle(200)">
+					<span class="scene_icon"><img src="${Potree.resourcePath + icon}" class="scene_item_icon" /></span>
+					<span class="scene_header_title">${cv.name}</span>
+				</div>
+				
+				<!-- DETAIL -->
+				<div class="measurement_content selectable" style="display: none">
+					${createCVitem(cv).get(0).outerHTML}
+				</div>
+			</span>
+		`);
 		
-		cvList.append(createCVitem(cv));
+		cvList.append(cvWrapper);
 	});
 
 	viewer.scene.addEventListener("clip_volume_removed", function(event) {

@@ -769,3 +769,16 @@ label:hover{
 
 
 
+/* Clipping sidebar */
+.cv_btn_offset {
+	width: 20px;
+	margin: 0px 5px;
+}
+
+.cv_btn_offset_incr {
+
+}
+
+.cv_btn_offset_decr {
+
+}

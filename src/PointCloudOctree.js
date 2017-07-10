@@ -689,7 +689,7 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree{
 			pickMaterial.maxSize = this.material.maxSize;
 			pickMaterial.classification = this.material.classification;
 			
-			if(pickOutsideClipRegion){
+			/*if(pickOutsideClipRegion){
 				pickMaterial.clipMode = Potree.ClipMode.DISABLED;
 			}else{
 				pickMaterial.clipMode = this.material.clipMode;
@@ -698,7 +698,7 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree{
 				}else{
 					pickMaterial.setClipBoxes([]);
 				}
-			}
+			}*/
 			
 			this.updateMaterial(pickMaterial, nodes, camera, renderer);
 			

@@ -1,4 +1,11 @@
 
+
+Potree.ClipMode = {
+	HIGHLIGHT: 0,
+	INSIDE: 1,
+	OUTSIDE: 2
+};
+
 Potree.ClippingTool = class ClippingTool extends THREE.EventDispatcher{
 
 	constructor(viewer){
@@ -6,8 +13,7 @@ Potree.ClippingTool = class ClippingTool extends THREE.EventDispatcher{
 
 		this.viewer = viewer;
 
-		this.clipInside = false; 
-		this.clipOffset = 0.1;
+		this.clipMode = Potree.ClipMode.HIGHLIGHT; 
 		
 		this.addEventListener("start_inserting_clipping_volume", e => {
 			this.viewer.dispatchEvent({
@@ -49,25 +55,15 @@ Potree.ClippingTool = class ClippingTool extends THREE.EventDispatcher{
 		this.scene.addEventListener("clip_volume_removed", this.onRemove);
 	}
 
-	setClipInside(inside) {
-		if(this.clipInside == inside) return;
+	setClipMode(mode) {
+		if(this.clipMode == mode) return;
 
-		this.clipInside = inside;
-		viewer.dispatchEvent({"type": "clipper.clipInside_changed", "viewer": viewer, "inside": inside});		
+		this.clipMode = mode;
+		viewer.dispatchEvent({"type": "clipper.clipMode_changed", "viewer": viewer, "mode": mode});		
 	}	
 
-	setClipOffset(offset) {
-		if(this.clipOffset == offset) return;
-		
-		this.clipOffset = offset;
-		viewer.dispatchEvent({"type": "clipper.clipOffset_changed", "viewer": viewer, "offset": offset});		
-	}
-
-	startInsertion(args = {}) {
-		let axis = -1;
-		if(args.axis + 1)
-			axis = args.axis;
-		let clipVolume = new Potree.ClipVolume(axis);
+	startInsertion(args = {}) {		
+		let clipVolume = new Potree.ClipVolume(args);
 
 		this.dispatchEvent({"type": "start_inserting_clipping_volume"});
 
@@ -164,11 +160,4 @@ Potree.ClippingTool = class ClippingTool extends THREE.EventDispatcher{
 	update() {
 
 	}
-};
-
-Potree.ClippingTool.ClipMode = {
-	NONE: 0,
-	BOX: 1,
-	POLYGON: 2,
-	PROFILE: 3
 };

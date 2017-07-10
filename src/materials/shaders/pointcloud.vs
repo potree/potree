@@ -33,7 +33,7 @@ uniform float near;
 uniform float far;
 uniform float orthoRange;
 
-uniform bool clipInside;
+uniform int clipMode;
 #if defined use_clip_box
 	uniform mat4 clipBoxes[max_clip_boxes];
 #endif
@@ -424,8 +424,10 @@ void main() {
 			inside = inside && -0.5 <= clipPosition.z && clipPosition.z <= 0.5;
 			insideAny = insideAny || inside;
 		}		
-		if(insideAny && clipInside || !insideAny && !clipInside) {
+		if(insideAny && clipMode == 1 || !insideAny && clipMode == 2) {
 			gl_Position = vec4(1000.0, 1000.0, 1000.0, 1.0);
+		} else if(clipMode == 0 && insideAny) {
+			vColor.r += 0.5;
 		}
 		/*if(!insideAny){
 	

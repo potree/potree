@@ -398,7 +398,7 @@ Potree.PointCloudArena4D.prototype.pick = function(renderer, camera, ray, params
 		pickMaterial.maxSize = this.material.maxSize;
 		pickMaterial.classification = this.material.classification;
 		
-		if(pickOutsideClipRegion){
+		/*if(pickOutsideClipRegion){
 			pickMaterial.clipMode = Potree.ClipMode.DISABLED;
 		}else{
 			pickMaterial.clipMode = this.material.clipMode;
@@ -407,7 +407,7 @@ Potree.PointCloudArena4D.prototype.pick = function(renderer, camera, ray, params
 			}else{
 				pickMaterial.setClipBoxes([]);
 			}
-		}
+		}*/
 		
 		this.updateMaterial(pickMaterial, nodes, camera, renderer);
 		

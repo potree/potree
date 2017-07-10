@@ -75,11 +75,11 @@ Potree.PointColorType = {
 	COMPOSITE: 			50
 };
 
-Potree.ClipMode = {
+/*Potree.ClipMode = {
 	DISABLED: 			0,
 	CLIP_OUTSIDE: 		1,
 	HIGHLIGHT_INSIDE:	2
-};
+};*/
 
 Potree.TreeType = {
 	OCTREE:				0,
@@ -171,7 +171,7 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 			wSourceID:			{ type: "f", value: 0 },
 			useOrthographicCamera: { type: "b", value: false },
 			orthoRange: 		{ type: "f", value: 10.0 },
-			clipInside: 		{ type: "b", value: false}
+			clipMode: 			{ type: "i", value: 0}
 		};
 		
 		this.defaultAttributeValues.normal = [0,0,0];
@@ -396,12 +396,12 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 	}
 
 
-	get clipInside() {
-		return this.uniforms.clipInside.value;
+	get clipMode() {
+		return this.uniforms.clipMode.value;
 	}
 
-	set clipInside(inside) {
-		this.uniforms.clipInside.value = inside;
+	set clipMode(mode) {
+		this.uniforms.clipMode.value = mode;
 	}
 
 

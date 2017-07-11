@@ -1493,7 +1493,7 @@ function initClippingTool() {
 		Potree.resourcePath + "/icons/profile.svg",
 		"[title]tt.height_profile",
 		function(){
-			viewer.clippingTool.startInsertion({alpha: 0, beta: 0, gamma: Math.PI/2});
+			viewer.clippingTool.startInsertion({alpha: 0, beta: 0, gamma: 0});
 		}
 	));
 
@@ -1518,9 +1518,9 @@ function initClippingTool() {
 			let rot_alpha = (volume.rotation.x * 180/Math.PI).toFixed(0);
 			let rot_beta = (volume.rotation.y * 180/Math.PI).toFixed(0);
 			let rot_gamma = (volume.rotation.z * 180/Math.PI).toFixed(0);
-			let sc_width = Potree.utils.addCommas(volume.scale.x.toFixed(3));
-			let sc_length = Potree.utils.addCommas(volume.scale.y.toFixed(3));
-			let sc_thickness = Potree.utils.addCommas(volume.scale.z.toFixed(3));
+			let sc_width = Potree.utils.addCommas(volume.children[0].scale.x.toFixed(3));
+			let sc_length = Potree.utils.addCommas(volume.children[0].scale.y.toFixed(3));
+			let sc_thickness = Potree.utils.addCommas(volume.children[0].scale.z.toFixed(3));
 			let removeIconPath = Potree.resourcePath + "/icons/remove.svg";
 			
 			let cvItem = $(`				
@@ -1660,14 +1660,67 @@ function initClippingTool() {
 					</div>
 				</div>
 			`);
-
+	
+			// spinner style
 			cvItem.find(".clip_volume_spinner").spinner();
 
+			// button style
 			let cv_btn_offset = cvItem.find(".cv_btn_offset");
 			cv_btn_offset.button();
 			cv_btn_offset.css("padding", "2px");
 			cv_btn_offset.css("margin", "0px 3px");
 
+			// scale spinner
+			let cv_sp_width = cvItem.find("#cv_sp_width_" + volume.id);
+			let cv_sp_length = cvItem.find("#cv_sp_length_" + volume.id);
+			let cv_sp_thickness = cvItem.find("#cv_sp_thickness_" + volume.id);
+
+			cv_sp_width.spinner({
+				min: 0.001,
+				max: 100,
+				step: 0.1,
+				numberFormat: "n",
+				spin: (event, ui) => {
+					let value = cv_sp_width.spinner("value");
+					volume.setScaleX(value);
+				},
+				stop: (event, ui) => {
+					let value = cv_sp_width.spinner("value");
+					volume.setScaleX(value);
+				}
+			});
+
+			cv_sp_length.spinner({
+				min: 0.001,
+				max: 100,
+				step: 0.1,
+				numberFormat: "n",
+				spin: (event, ui) => {
+					let value = cv_sp_length.spinner("value");
+					volume.setScaleY(value);
+				},
+				stop: (event, ui) => {
+					let value = cv_sp_length.spinner("value");
+					volume.setScaleY(value);
+				}
+			});
+
+			cv_sp_thickness.spinner({
+				min: 0.001,
+				max: 100,
+				step: 0.1,
+				numberFormat: "n",
+				spin: (event, ui) => {
+					let value = cv_sp_thickness.spinner("value");
+					volume.setScaleZ(value);
+				},
+				stop: (event, ui) => {
+					let value = cv_sp_thickness.spinner("value");
+					volume.setScaleZ(value);
+				}
+			});
+
+			// offset spinner
 			let cv_sp_offset = cvItem.find("#cv_sp_offset_" + volume.id);
 			cv_sp_offset.spinner({
 				min: 0.001,
@@ -1684,6 +1737,7 @@ function initClippingTool() {
 				}
 			});
 
+			// angle offset spinner
 			let cv_sp_rot_offset = cvItem.find("#cv_sp_rot_offset_" + volume.id);
 			cv_sp_rot_offset.spinner({
 				min: 1,
@@ -1700,6 +1754,7 @@ function initClippingTool() {
 				}
 			});
 
+			// global offset buttons
 			let cv_btn_global_x_decr = cvItem.find("#cv_btn_global_x_decr_" + volume.id);
 			let cv_btn_global_x_incr = cvItem.find("#cv_btn_global_x_incr_" + volume.id);
 			let cv_btn_global_y_decr = cvItem.find("#cv_btn_global_y_decr_" + volume.id);
@@ -1726,7 +1781,34 @@ function initClippingTool() {
 				volume.offset({cs: "global", axis: "z", dir: 1});
 			});
 
+			// local offset buttons
+			let cv_btn_local_x_decr = cvItem.find("#cv_btn_local_x_decr_" + volume.id);
+			let cv_btn_local_x_incr = cvItem.find("#cv_btn_local_x_incr_" + volume.id);
+			let cv_btn_local_y_decr = cvItem.find("#cv_btn_local_y_decr_" + volume.id);
+			let cv_btn_local_y_incr = cvItem.find("#cv_btn_local_y_incr_" + volume.id);
+			let cv_btn_local_z_decr = cvItem.find("#cv_btn_local_z_decr_" + volume.id);
+			let cv_btn_local_z_incr = cvItem.find("#cv_btn_local_z_incr_" + volume.id);
 
+			cv_btn_local_x_decr.click(function(event) {
+				volume.offset({cs: "local", axis: "x", dir: -1});
+			});
+			cv_btn_local_x_incr.click(function(event) {
+				volume.offset({cs: "local", axis: "x", dir: 1});
+			});
+			cv_btn_local_y_decr.click(function(event) {
+				volume.offset({cs: "local", axis: "y", dir: -1});
+			});
+			cv_btn_local_y_incr.click(function(event) {
+				volume.offset({cs: "local", axis: "y", dir: 1});
+			});
+			cv_btn_local_z_decr.click(function(event) {
+				volume.offset({cs: "local", axis: "z", dir: -1});
+			});
+			cv_btn_local_z_incr.click(function(event) {
+				volume.offset({cs: "local", axis: "z", dir: 1});
+			});
+
+			// global angle offset
 			let cv_btn_global_alpha_decr = cvItem.find("#cv_btn_global_alpha_decr_" + volume.id);
 			let cv_btn_global_alpha_incr = cvItem.find("#cv_btn_global_alpha_incr_" + volume.id);
 			let cv_btn_global_beta_decr = cvItem.find("#cv_btn_global_beta_decr_" + volume.id);
@@ -1753,14 +1835,41 @@ function initClippingTool() {
 				volume.rotate({cs: "global", axis: "z", dir: 1});
 			});
 
+			// local angle offset
+			let cv_btn_local_alpha_decr = cvItem.find("#cv_btn_local_alpha_decr_" + volume.id);
+			let cv_btn_local_alpha_incr = cvItem.find("#cv_btn_local_alpha_incr_" + volume.id);
+			let cv_btn_local_beta_decr = cvItem.find("#cv_btn_local_beta_decr_" + volume.id);
+			let cv_btn_local_beta_incr = cvItem.find("#cv_btn_local_beta_incr_" + volume.id);
+			let cv_btn_local_gamma_decr = cvItem.find("#cv_btn_local_gamma_decr_" + volume.id);
+			let cv_btn_local_gamma_incr = cvItem.find("#cv_btn_local_gamma_incr_" + volume.id);
 
+			cv_btn_local_alpha_decr.click(function(event) {
+				volume.rotate({cs: "local", axis: "x", dir: -1});
+			});
+			cv_btn_local_alpha_incr.click(function(event) {
+				volume.rotate({cs: "local", axis: "x", dir: 1});
+			});
+			cv_btn_local_beta_decr.click(function(event) {
+				volume.rotate({cs: "local", axis: "y", dir: -1});
+			});
+			cv_btn_local_beta_incr.click(function(event) {
+				volume.rotate({cs: "local", axis: "y", dir: 1});
+			});
+			cv_btn_local_gamma_decr.click(function(event) {
+				volume.rotate({cs: "local", axis: "z", dir: -1});
+			});
+			cv_btn_local_gamma_incr.click(function(event) {
+				volume.rotate({cs: "local", axis: "z", dir: 1});
+			});
+
+			// remove button
 			let cvRemove = cvItem.find(".clipping_volume_action_remove");
 			cvRemove.click(() => {viewer.scene.removeClipVolume(cv)});
 
 			return cvItem;
 		};
 
-
+		// update body when clip volume changes
 		cv.addEventListener("clip_volume_changed", function(event) {
 			let cv = event.volume;
 			let prevCVItem = $("span#" + cv.name + " .clip_volume_body");
@@ -1769,6 +1878,7 @@ function initClippingTool() {
 			prevCVItem.remove();
 		});
 			
+		// wrappe which doesnt change 
 		let icon = "/icons/clip_volume.svg";
 		let cvWrapper = $(`
 			<span class="scene_item" id="${cv.name}">

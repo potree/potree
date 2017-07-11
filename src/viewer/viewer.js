@@ -1517,8 +1517,10 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			
 			let clipBoxes = boxes.map( box => {
 				box.updateMatrixWorld();
-				let boxInverse = new THREE.Matrix4().getInverse(box.matrixWorld);
+				//let boxInverse = new THREE.Matrix4().getInverse(box.matrixWorld);				
 				let boxPosition = box.getWorldPosition();
+				let boxMatrixWorld = new THREE.Matrix4().compose(boxPosition, box.getWorldQuaternion(), box.children[0].scale);
+				let boxInverse = new THREE.Matrix4().getInverse(boxMatrixWorld);
 				return {inverse: boxInverse, position: boxPosition};
 			});
 			

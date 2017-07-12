@@ -1883,7 +1883,7 @@ function initClippingTool() {
 		let cvWrapper = $(`
 			<span class="scene_item" id="${cv.name}">
 				<!-- HEADER -->				
-				<div class="scene_header" onclick="$(this).next().slideToggle(200)">
+				<div class="scene_header">
 					<span class="scene_icon"><img src="${Potree.resourcePath + icon}" class="scene_item_icon" /></span>
 					<span class="scene_header_title">${cv.name}</span>
 				</div>
@@ -1894,6 +1894,15 @@ function initClippingTool() {
 				</div>
 			</span>
 		`);
+
+		cvWrapper.find(".scene_header").click(function(event) {
+			if($(this).next().is(":visible")) {
+				cv.dispatchEvent({"type": "ui_deselect"});
+			} else {
+				cv.dispatchEvent({"type": "ui_select"});
+			}
+			$(this).next().slideToggle(200);
+		});
 		
 		cvList.append(cvWrapper);
 	});

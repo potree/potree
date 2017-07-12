@@ -51,30 +51,21 @@ Potree.ClipVolume = class extends THREE.Object3D{
 			boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, 0.5, -0.5));
 			boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, -0.5, -0.5));
 			boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, 0.5, -0.5));
-			// middle line
-			/*boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, -0.5, 0.0));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, 0.5, 0.0));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, 0.5, 0.0));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, -0.5, 0.0));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, 0.5, 0.0));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, 0.5, 0.0));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, -0.5, 0.0));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, -0.5, 0.0));*/
 
+			boxFrameGeometry.colors.push(new THREE.Vector3(1, 1, 1));
 		}
 
 		let planeFrameGeometry = new THREE.Geometry();
 		{						
 			// middle line
-			boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, -0.5, 0.0));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, 0.5, 0.0));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, 0.5, 0.0));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, -0.5, 0.0));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, 0.5, 0.0));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, 0.5, 0.0));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, -0.5, 0.0));
-			boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, -0.5, 0.0));
-
+			planeFrameGeometry.vertices.push(new THREE.Vector3(-0.5, -0.5, 0.0));
+			planeFrameGeometry.vertices.push(new THREE.Vector3(-0.5, 0.5, 0.0));
+			planeFrameGeometry.vertices.push(new THREE.Vector3(0.5, 0.5, 0.0));
+			planeFrameGeometry.vertices.push(new THREE.Vector3(0.5, -0.5, 0.0));
+			planeFrameGeometry.vertices.push(new THREE.Vector3(-0.5, 0.5, 0.0));
+			planeFrameGeometry.vertices.push(new THREE.Vector3(0.5, 0.5, 0.0));
+			planeFrameGeometry.vertices.push(new THREE.Vector3(-0.5, -0.5, 0.0));
+			planeFrameGeometry.vertices.push(new THREE.Vector3(0.5, -0.5, 0.0));
 		}
 
 		this.dimension = new THREE.Vector3(1,1,1);
@@ -91,6 +82,8 @@ Potree.ClipVolume = class extends THREE.Object3D{
 		
 		this.frame = new THREE.LineSegments( boxFrameGeometry, new THREE.LineBasicMaterial({color: 0x000000}));
 		this.add(this.frame);
+		this.planeFrame = new THREE.LineSegments( planeFrameGeometry, new THREE.LineBasicMaterial({color: 0xff0000}));
+		this.add(this.planeFrame);
 
 		// set default thickness
 		this.setScaleZ(0.1);
@@ -108,8 +101,8 @@ Potree.ClipVolume = class extends THREE.Object3D{
 			
 			let shaftMaterial = new THREE.LineBasicMaterial({
 				color: color, 
-				depthTest: true, 
-				depthWrite: true,
+				depthTest: false, 
+				depthWrite: false,
 				transparent: true
 				});
 			let shaft = new THREE.Line(shaftGeometry, shaftMaterial);
@@ -199,52 +192,73 @@ Potree.ClipVolume = class extends THREE.Object3D{
 			return arrow;
 		};
 		
-		let arrowX = createArrow("arrow_x", new THREE.Vector3(1, 0, 0), 0xFF0000);
-		let arrowY = createArrow("arrow_y", new THREE.Vector3(0, 1, 0), 0x00FF00);
-		let arrowZ = createArrow("arrow_z", new THREE.Vector3(0, 0, 1), 0x0000FF);
+		this.arrowX = createArrow("arrow_x", new THREE.Vector3(1, 0, 0), 0xFF0000);
+		this.arrowY = createArrow("arrow_y", new THREE.Vector3(0, 1, 0), 0x00FF00);
+		this.arrowZ = createArrow("arrow_z", new THREE.Vector3(0, 0, 1), 0x0000FF);
 		
-		arrowX.rotation.z = -Math.PI/2;
-		arrowZ.rotation.x = Math.PI/2;	
+		this.arrowX.rotation.z = -Math.PI/2;
+		this.arrowZ.rotation.x = Math.PI/2;	
 
-		this.add(arrowX);
-		this.add(arrowY);
-		this.add(arrowZ);
+		this.arrowX.visible = false;
+		this.arrowY.visible = false;
+		this.arrowZ.visible = false;
+
+		this.add(this.arrowX);
+		this.add(this.arrowY);
+		this.add(this.arrowZ);
 		
 		{ // event listeners
-			//this.addEventListener("select", e => {});
-			//this.addEventListener("deselect", e => {});
+			this.addEventListener("ui_select", e => { 
+				this.arrowX.visible = true;
+				this.arrowY.visible = true;
+				this.arrowZ.visible = true; 
+			});
+			this.addEventListener("ui_deselect", e => {
+				this.arrowX.visible = false;
+				this.arrowY.visible = false;
+				this.arrowZ.visible = false; 				
+			});
+			this.addEventListener("select", e => { 
+				let scene_header = $("#" + this.name + " .scene_header");
+				if(!scene_header.next().is(":visible")) {
+					scene_header.click();
+				}
+			});
+			this.addEventListener("deselect", e => { 
+				let scene_header = $("#" + this.name + " .scene_header");
+				if(scene_header.next().is(":visible")) {
+					scene_header.click();
+				}
+			});
 		}
 		
 		this.update();
 	};
 
-	setClipOffset(offset) {
-		if(this.clipOffset == offset) return;
-		
-		this.clipOffset = offset;
-		//this.dispatchEvent({"type": "clip_volume_changed", "viewer": viewer, "volume": this});		
+	setClipOffset(offset) {		
+		this.clipOffset = offset;	
 	}
 
-	setClipRotOffset(offset) {
-		if(this.clipRotOffset == offset) return;
-		
-		this.clipRotOffset = offset;
-		//this.dispatchEvent({"type": "clip_volume_changed", "viewer": viewer, "volume": this});			
+	setClipRotOffset(offset) {		
+		this.clipRotOffset = offset;		
 	}
 
 	setScaleX(x) {
-		this.children[0].scale.x = x;
-		this.children[1].scale.x = x;		
+		this.box.scale.x = x;
+		this.frame.scale.x = x;
+		this.planeFrame.scale.x = x;			
 	}
 
 	setScaleY(y) {
-		this.children[0].scale.y = y;
-		this.children[1].scale.y = y;		
+		this.box.scale.y = y;
+		this.frame.scale.y = y;
+		this.planeFrame.scale.y = y;		
 	}
 
 	setScaleZ(z) {
-		this.children[0].scale.z = z;
-		this.children[1].scale.z = z;		
+		this.box.scale.z = z;
+		this.frame.scale.z = z;
+		this.planeFrame.scale.z = z;		
 	}
 
 	offset(args) {
@@ -284,27 +298,27 @@ Potree.ClipVolume = class extends THREE.Object3D{
 
 		if(!cs || !axis || !dir) return;
 
-		if(axis == "x") {
-			if(cs == "local") {
-				this.rotation.x = this.rotation.x + dir * this.clipRotOffset * Math.PI/180;
-			} else if(cs == "global") {
-
+		if(cs == "local") {
+			if(axis == "x") {
+				this.rotateOnAxis(this.localX, dir * this.clipRotOffset * Math.PI/180);
+			} else if(axis == "y") {
+				this.rotateOnAxis(this.localY, dir * this.clipRotOffset * Math.PI/180);
+			} else if(axis == "z") {
+				this.rotateOnAxis(this.localZ, dir * this.clipRotOffset * Math.PI/180);
 			}
-		}else if(axis == "y") {
-			if(cs == "local") {
-				this.rotation.y = this.rotation.y + dir * this.clipRotOffset * Math.PI/180;
-			} else if(cs == "global") {
-
+		} else if(cs == "global") {
+			let rotaxis = new THREE.Vector4(1, 0, 0, 0);	
+			if(axis == "y") {
+				rotaxis = new THREE.Vector4(0, 1, 0, 0);
+			} else if(axis == "z") {
+				rotaxis = new THREE.Vector4(0, 0, 1, 0);
 			}
-		}else if(axis == "z") {
-			if(cs == "local") {
-				this.rotation.z = this.rotation.z + dir * this.clipRotOffset * Math.PI/180;
-			} else if(cs == "global") {
-
-			}
+			this.updateMatrixWorld();
+			let invM = new THREE.Matrix4().getInverse(this.matrixWorld);
+			rotaxis = rotaxis.applyMatrix4(invM).normalize();
+			rotaxis = new THREE.Vector3(rotaxis.x, rotaxis.y, rotaxis.z);
+			this.rotateOnAxis(rotaxis, dir * this.clipRotOffset * Math.PI/180);
 		}
-
-		this.updateLocalSystem();
 
 		this.dispatchEvent({"type": "clip_volume_changed", "viewer": viewer, "volume": this});
 	}	
@@ -314,7 +328,6 @@ Potree.ClipVolume = class extends THREE.Object3D{
 		this.boundingSphere = this.boundingBox.getBoundingSphere();
 		
 		this.box.visible = false;
-		//this.label.visible = false;
 
 		this.updateLocalSystem();
 	};

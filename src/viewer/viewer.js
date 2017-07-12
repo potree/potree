@@ -2004,8 +2004,8 @@ class EDLRenderer{
 		//viewer.volumeTool.render(this.rtColor);
 				
 		
-		viewer.renderer.render(viewer.volumeTool.sceneVolume, camera, this.rtColor);
-		viewer.renderer.render(viewer.clippingTool.sceneVolume, camera, this.rtColor);
+		//viewer.renderer.render(viewer.volumeTool.sceneVolume, camera, this.rtColor);
+		//viewer.renderer.render(viewer.clippingTool.sceneVolume, camera, this.rtColor);
 		
 		{ // EDL OCCLUSION PASS
 			this.edlMaterial.uniforms.screenWidth.value = width;
@@ -2024,7 +2024,9 @@ class EDLRenderer{
 		viewer.renderer.clearDepth();
 		viewer.renderer.render(viewer.controls.sceneControls, camera);
 		
-		viewer.renderer.render(viewer.measuringTool.sceneMeasurement, camera);
+		viewer.renderer.render(viewer.measuringTool.sceneMeasurement, camera);		
+		viewer.renderer.render(viewer.volumeTool.sceneVolume, camera);
+		viewer.renderer.render(viewer.clippingTool.sceneVolume, camera);
 		viewer.renderer.render(viewer.profileTool.sceneProfile, camera);
 		viewer.renderer.render(viewer.transformationTool.sceneTransform, camera);
 

@@ -61,6 +61,7 @@ var paths = {
 		"src/utils/VolumeTool.js",
 		"src/utils/ClippingTool.js",
 		"src/utils/ClipVolume.js",
+		"src/utils/PolygonClipVolume.js",
 		"src/exporter/GeoJSONExporter.js",
 		"src/exporter/DXFExporter.js",
 		"src/exporter/CSVExporter.js",

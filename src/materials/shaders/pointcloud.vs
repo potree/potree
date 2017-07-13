@@ -6,6 +6,7 @@ precision mediump int;
 
 
 #define max_clip_boxes 30
+#define max_clip_polygons 8
 
 attribute vec3 position;
 attribute vec3 color;
@@ -37,6 +38,11 @@ uniform int clipMode;
 #if defined use_clip_box
 	uniform mat4 clipBoxes[max_clip_boxes];
 #endif
+
+uniform int clipPolygonCount;
+uniform int clipPolygonVCount[max_clip_polygons];
+uniform vec3 clipPolygons[max_clip_polygons * 8];
+uniform mat4 clipPolygonVP[max_clip_polygons];
 
 
 uniform float heightMin;
@@ -429,18 +435,37 @@ void main() {
 		} else if(clipMode == 0 && insideAny) {
 			vColor.r += 0.5;
 		}
-		/*if(!insideAny){
-	
-			#if defined clip_outside
-				gl_Position = vec4(1000.0, 1000.0, 1000.0, 1.0);
-			#elif defined clip_highlight_inside && !defined(color_type_depth)
-				float c = (vColor.r + vColor.g + vColor.b) / 6.0;
-			#endif
-		}else{
-			#if defined clip_highlight_inside
-			vColor.r += 0.5;
-			#endif
-		}*/
+	#endif
+
+	#if defined use_clip_polygon
+		bool polyInsideAny = false;
+		for(int i = 0; i < max_clip_polygons; i++) {
+			if(i == clipPolygonCount) {
+				break;
+			}
+
+			vec4 screenClipPos = clipPolygonVP[i] * modelMatrix * vec4(position, 1.0);
+			int k = clipPolygonVCount[i] - 1;
+			bool c = false;
+			for(int j = 0; j < 8; j++) {
+				if(j == clipPolygonVCount[i]) {
+					break;
+				}
+
+				// TODO test if point in polygon
+
+				vec4 vertj = clipPolygonVP[i] * vec4(clipPolygons[i * 8 + j], 1);
+				vec4 vertk = clipPolygonVP[i] * vec4(clipPolygons[i * 8 + k], 1);
+				if( ((vertj.y > screenClipPos.y) != (vertk.y > screenClipPos.y)) && 
+					(screenClipPos.x < (vertk.x-vertj.x) * (screenClipPos.y-vertj.y) / (vertk.y-vertj.y) + vertj.x) ) {
+					c = !c;
+				}
+				k = j + 1;
+			}	
+			if(c) {
+				vColor.r += 0.5;
+			}
+		}
 	#endif
 	
 }

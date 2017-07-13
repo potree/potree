@@ -13,7 +13,8 @@ Potree.ClippingTool = class ClippingTool extends THREE.EventDispatcher{
 
 		this.viewer = viewer;
 
-		this.clipMode = Potree.ClipMode.HIGHLIGHT; 
+		this.clipMode = Potree.ClipMode.HIGHLIGHT;
+		this.maxPolygonVertices = 8; 
 		
 		this.addEventListener("start_inserting_clipping_volume", e => {
 			this.viewer.dispatchEvent({
@@ -36,6 +37,8 @@ Potree.ClippingTool = class ClippingTool extends THREE.EventDispatcher{
 		this.viewer.inputHandler.addEventListener("delete", e => {
 			let volumes = e.selection.filter(e => (e instanceof Potree.ClipVolume));
 			volumes.forEach(e => this.viewer.scene.removeClipVolume(e));
+			let polyVolumes = e.selection.filter(e => (e instanceof Potree.PolygonClipVolume));
+			polyVolumes.forEach(e => this.viewer.scene.removePolygonClipVolume(e));
 		});
 	}
 
@@ -47,12 +50,16 @@ Potree.ClippingTool = class ClippingTool extends THREE.EventDispatcher{
 		if(this.scene){
 			this.scene.removeEventListeners("clip_volume_added", this.onAdd);
 			this.scene.removeEventListeners("clip_volume_removed", this.onRemove);
+			this.scene.removeEventListeners("polygon_clip_volume_added", this.onAdd);
+			this.scene.removeEventListeners("polygon_clip_volume_removed", this.onRemove);
 		}
 		
 		this.scene = scene;
 		
 		this.scene.addEventListener("clip_volume_added", this.onAdd);
 		this.scene.addEventListener("clip_volume_removed", this.onRemove);
+		this.scene.addEventListener("polygon_clip_volume_added", this.onAdd);
+		this.scene.addEventListener("polygon_clip_volume_removed", this.onRemove);
 	}
 
 	setClipMode(mode) {
@@ -62,99 +69,107 @@ Potree.ClippingTool = class ClippingTool extends THREE.EventDispatcher{
 		viewer.dispatchEvent({"type": "clipper.clipMode_changed", "viewer": viewer, "mode": mode});		
 	}	
 
-	startInsertion(args = {}) {		
-		let clipVolume = new Potree.ClipVolume(args);
+	startInsertion(args = {}) {	
+		let type = args.type || null;
 
-		this.dispatchEvent({"type": "start_inserting_clipping_volume"});
+		if(!type) return;
 
-		this.viewer.scene.addClipVolume(clipVolume);
-		//this.sceneVolume.add(clipVolume);
+		if(type == "plane") {
+			let clipVolume = new Potree.ClipVolume(args);
 
-		let cancel = {
-			callback: null
-		};
+			this.dispatchEvent({"type": "start_inserting_clipping_volume"});
 
-		let drag = e => {
-			let camera = this.viewer.scene.getActiveCamera();
-			
-			let I = Potree.utils.getMousePointCloudIntersection(
-				e.drag.end, 
-				this.viewer.scene.getActiveCamera(), 
-				this.viewer.renderer, 
-				this.viewer.scene.pointclouds);
+			this.viewer.scene.addClipVolume(clipVolume);
+
+			let cancel = {
+				callback: null
+			};
+
+			let drag = e => {
+				let camera = this.viewer.scene.getActiveCamera();
 				
-			if(I){
-				clipVolume.position.copy(I.location);
-				
-				/*var wp = clipVolume.getWorldPosition().applyMatrix4(camera.matrixWorldInverse);
-				var pp = new THREE.Vector4(wp.x, wp.y, wp.z).applyMatrix4(camera.projectionMatrix);
-				var w = Math.abs((wp.z  / 10)); 
-				clipVolume.scale.set(w,w,w);*/
-			}
-		};
-		
-		let drop = e => {
-			clipVolume.removeEventListener("drag", drag);
-			clipVolume.removeEventListener("drop", drop);
-			
-			cancel.callback();
-
-			clipVolume.dispatchEvent({"type": "clip_volume_changed", "volume": clipVolume});
-
-			//this.dispatchEvent({"type": "start_resizing_clipping_volume"});
-		};
-		
-		cancel.callback = e => {
-			clipVolume.removeEventListener("drag", drag);
-			clipVolume.removeEventListener("drop", drop);
-			this.viewer.removeEventListener("cancel_insertions", cancel.callback);
-		};
-
-
-		/*let cancel2 = {
-			callback: null
-		};		
-
-		let drag2 = e => {
-			let mouse = e.drag.end;
-
-			let nmouse =  {
-				x: (mouse.x / this.viewer.renderer.domElement.clientWidth ) * 2 - 1,
-				y: - (mouse.y / this.viewer.renderer.domElement.clientHeight ) * 2 + 1
+				let I = Potree.utils.getMousePointCloudIntersection(
+					e.drag.end, 
+					this.viewer.scene.getActiveCamera(), 
+					this.viewer.renderer, 
+					this.viewer.scene.pointclouds);
+					
+				if(I){
+					clipVolume.position.copy(I.location);
+				}
 			};
 			
-			let camera = this.viewer.scene.getActiveCamera();
-			let mouseWS = new THREE.Vector3( nmouse.x, nmouse.y, 0.5 );
-			mouseWS.unproject(camera);
+			let drop = e => {
+				clipVolume.removeEventListener("drag", drag);
+				clipVolume.removeEventListener("drop", drop);
+				
+				cancel.callback();
 
-			let distance = clipVolume.position.distanceTo(mouseWS);
-
-			clipVolume.scale.set(distance, distance, distance);		
-		};
-
-		let drop2 = e => {
-			cancel2.callback();
-		};
-
-		cancel2.callback = e => {
-			clipVolume.removeEventListener("drag", drag2);
-			clipVolume.removeEventListener("drop", drop2);
-			this.viewer.removeEventListener("cancel_insertions", cancel2.callback);
-		};
-
-		this.addEventListener("start_resizing_clipping_volume", function(event) {			
-			clipVolume.addEventListener("drag", drag2);
-			clipVolume.addEventListener("drop", drop2);
-			this.viewer.addEventListener("cancel_insertions", cancel2.callback);
-
+				clipVolume.dispatchEvent({"type": "clip_volume_changed", "volume": clipVolume});
+			};
+			
+			cancel.callback = e => {
+				clipVolume.removeEventListener("drag", drag);
+				clipVolume.removeEventListener("drop", drop);
+				this.viewer.removeEventListener("cancel_insertions", cancel.callback);
+			};
+			
+			clipVolume.addEventListener("drag", drag);
+			clipVolume.addEventListener("drop", drop);
+			this.viewer.addEventListener("cancel_insertions", cancel.callback);
+			
 			this.viewer.inputHandler.startDragging(clipVolume);
-		});*/
-		
-		clipVolume.addEventListener("drag", drag);
-		clipVolume.addEventListener("drop", drop);
-		this.viewer.addEventListener("cancel_insertions", cancel.callback);
-		
-		this.viewer.inputHandler.startDragging(clipVolume);
+		} else if(type == "polygon") {
+			let camera = this.viewer.scene.getActiveCamera();
+			camera.updateMatrixWorld();
+			let polyClipVol = new Potree.PolygonClipVolume(camera.matrixWorldInverse, camera.projectionMatrix);
+
+			this.dispatchEvent({"type": "start_inserting_clipping_volume"});
+
+			this.viewer.scene.addPolygonClipVolume(polyClipVol);
+
+			let cancel = {
+				callback: null
+			};
+
+			let insertionCallback = (e) => {
+				if(e.button === THREE.MOUSE.LEFT){
+					if(polyClipVol.markers.length > 1) {
+						polyClipVol.addEdge(polyClipVol.markers.length - 2, polyClipVol.markers.length - 1);				
+					}
+					
+					polyClipVol.addMarker();
+					
+					if(polyClipVol.markers.length > this.maxPolygonVertices){
+						cancel.callback();
+					}
+					
+					this.viewer.inputHandler.startDragging(
+						polyClipVol.markers[polyClipVol.markers.length - 1]);
+				}else if(e.button === THREE.MOUSE.RIGHT){
+					cancel.callback();
+				}
+			};
+			
+			cancel.callback = e => {
+				if(polyClipVol.markers.length > 3) {
+					polyClipVol.removeLastMarker();
+					polyClipVol.addEdge(polyClipVol.markers.length - 1, 0);
+					polyClipVol.initialized = true;
+				} else {
+					this.viewer.scene.removePolygonClipVolume(polyClipVol);
+				}
+				this.viewer.renderer.domElement.removeEventListener("mouseup", insertionCallback, true);
+				this.viewer.removeEventListener("cancel_insertions", cancel.callback);
+			};
+			
+			this.viewer.addEventListener("cancel_insertions", cancel.callback);
+			this.viewer.renderer.domElement.addEventListener("mouseup", insertionCallback , true);
+			
+			polyClipVol.addMarker();
+			this.viewer.inputHandler.startDragging(
+				polyClipVol.markers[polyClipVol.markers.length - 1]);
+		}
 	}
 
 	update() {

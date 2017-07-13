@@ -147,6 +147,7 @@ Potree.Scene = class extends THREE.EventDispatcher{
 		this.profiles = [];
 		this.volumes = [];
 		this.clipVolumes = [];
+		this.polygonClipVolumes = [];
 		
 		this.fpControls;
 		this.orbitControls;
@@ -207,6 +208,27 @@ Potree.Scene = class extends THREE.EventDispatcher{
 			this.clipVolumes.splice(index, 1);
 			this.dispatchEvent({
 				"type": "clip_volume_removed",
+				"scene": this,
+				"volume": volume
+			});
+		}
+	};
+
+	addPolygonClipVolume(volume){
+		this.polygonClipVolumes.push(volume);
+		this.dispatchEvent({
+			"type": "polygon_clip_volume_added",
+			"scene": this,
+			"volume": volume
+		});
+	};
+	
+	removePolygonClipVolume(volume){
+		let index = this.polygonClipVolumes.indexOf(volume);
+		if (index > -1) {
+			this.polygonClipVolumes.splice(index, 1);
+			this.dispatchEvent({
+				"type": "polygon_clip_volume_removed",
 				"scene": this,
 				"volume": volume
 			});
@@ -273,6 +295,10 @@ Potree.Scene = class extends THREE.EventDispatcher{
 	removeAllClipVolumes(){
 		while(this.clipVolumes.length > 0){
 			this.removeClipVolume(this.clipVolumes[0]);
+		}
+
+		while(this.polygonClipVolumes.length > 0){
+			this.removePolygonClipVolume(this.polygonClipVolumes[0]);
 		}
 	}
 
@@ -1504,28 +1530,28 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			this.scene.cameraO.rotation.z = this.scene.view.yaw;
 		}
 
-		{ // update clip boxes
-			//let boxes = this.scene.profiles.reduce( (a, b) => {return a.boxes.concat(b.boxes)}, []);
-			//boxes = boxes.concat(this.scene.volumes.filter(v => v.clip));
-			
-			//let boxes = this.scene.volumes.filter(v => v.clip);
-			let boxes = this.scene.clipVolumes;
-			/*for(let profile of this.scene.profiles){
-				boxes = boxes.concat(profile.boxes);
-			}*/
-			
+		{ // update clip boxes			
+			let boxes = this.scene.clipVolumes;			
 			
 			let clipBoxes = boxes.map( box => {
-				box.updateMatrixWorld();
-				//let boxInverse = new THREE.Matrix4().getInverse(box.matrixWorld);				
+				box.updateMatrixWorld();			
 				let boxPosition = box.getWorldPosition();
 				let boxMatrixWorld = new THREE.Matrix4().compose(boxPosition, box.getWorldQuaternion(), box.children[0].scale);
 				let boxInverse = new THREE.Matrix4().getInverse(boxMatrixWorld);
 				return {inverse: boxInverse, position: boxPosition};
 			});
+
+			let clipPolygons = this.scene.polygonClipVolumes.filter(vol => vol.initialized).map(vol => {
+				let vertices = vol.markers.map(marker => {
+					return marker.position;
+				});
+				let vp = vol.projMatrix.clone().multiply(vol.viewMatrix);
+				return {polygon: vertices, count: vertices.length, view: vp};
+			});
 			
 			for(let pointcloud of this.scene.pointclouds){
 				pointcloud.material.setClipBoxes(clipBoxes);
+				pointcloud.material.setClipPolygons(clipPolygons, this.clippingTool.maxPolygonVertices);
 				pointcloud.material.clipMode = this.clippingTool.clipMode;
 			}
 		}

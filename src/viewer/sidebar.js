@@ -1458,42 +1458,34 @@ function initClippingTool() {
 	let clippingToolBar = $("#clipping_tools");
 
 	clippingToolBar.append(createToolIcon(
-		Potree.resourcePath + "/icons/clip_volume.svg",
-		"[title]tt.clip_volume",
-		function(){
-			viewer.clippingTool.startInsertion();
-		}
-	));
-
-	clippingToolBar.append(createToolIcon(
 		Potree.resourcePath + "/icons/area.svg",
 		"[title]tt.area_measurement",
 		function(){
-			// TODO
+			viewer.clippingTool.startInsertion({type: "polygon"});
 		}
 	));
 
 	clippingToolBar.append(createToolIcon(
-		Potree.resourcePath + "/icons/profile.svg",
+		Potree.resourcePath + "/icons/clip_volume.svg",
 		"[title]tt.height_profile",
 		function(){
-			viewer.clippingTool.startInsertion({alpha: 0, beta: Math.PI/2, gamma: 0});
+			viewer.clippingTool.startInsertion({type: "plane", alpha: 0, beta: Math.PI/2, gamma: 0});
 		}
 	));
 
 	clippingToolBar.append(createToolIcon(
-		Potree.resourcePath + "/icons/profile.svg",
+		Potree.resourcePath + "/icons/clip_volume.svg",
 		"[title]tt.height_profile",
 		function(){
-			viewer.clippingTool.startInsertion({alpha: Math.PI/2, beta: 0, gamma: 0});
+			viewer.clippingTool.startInsertion({type: "plane", alpha: Math.PI/2, beta: 0, gamma: 0});
 		}
 	));
 
 	clippingToolBar.append(createToolIcon(
-		Potree.resourcePath + "/icons/profile.svg",
+		Potree.resourcePath + "/icons/clip_volume.svg",
 		"[title]tt.height_profile",
 		function(){
-			viewer.clippingTool.startInsertion({alpha: 0, beta: 0, gamma: 0});
+			viewer.clippingTool.startInsertion({type: "plane", alpha: 0, beta: 0, gamma: 0});
 		}
 	));
 
@@ -1504,6 +1496,72 @@ function initClippingTool() {
 			viewer.scene.removeAllClipVolumes();
 		}
 	));
+
+	viewer.scene.addEventListener("polygon_clip_volume_added", function(event) {
+		let pcv = event.volume;
+		$("#clipping_volumes_container").show();
+
+		let cvList = $("#clipping_volumes_list");
+
+		let createPCVitem = (volume) => {			
+			let removeIconPath = Potree.resourcePath + "/icons/remove.svg";
+			
+			let pcvItem = $(`				
+				<div class="clip_volume_body" style="margin: 5px 0px">		
+					<div style="display: flex; margin-top: 5px">
+						<span></span>
+						<span style="flex-grow: 1"></span>
+						<img class="clipping_volume_action_remove" src="${removeIconPath}" style="width: 16px; height: 16px">
+					</div>
+				</div>
+			`);			
+
+			// remove button
+			let pcvRemove = pcvItem.find(".clipping_volume_action_remove");
+			pcvRemove.click(() => {
+				viewer.scene.removePolygonClipVolume(volume)
+			});
+
+			return pcvItem;
+		};
+			
+		// wrapper which doesnt change 
+		let icon = "/icons/area.svg";
+		let pcvWrapper = $(`
+			<span class="scene_item" id="${pcv.name}">
+				<!-- HEADER -->				
+				<div class="scene_header">
+					<span class="scene_icon"><img src="${Potree.resourcePath + icon}" class="scene_item_icon" /></span>
+					<span class="scene_header_title">${pcv.name}</span>
+				</div>
+				
+				<!-- DETAIL -->
+				<div class="measurement_content selectable" style="display: none">
+				</div>
+			</span>
+		`);
+
+		pcvWrapper.find(".measurement_content").append(createPCVitem(pcv));
+
+		pcvWrapper.find(".scene_header").click(function(event) {
+			if($(this).next().is(":visible")) {
+				pcv.dispatchEvent({"type": "ui_deselect"});
+			} else {
+				pcv.dispatchEvent({"type": "ui_select"});
+			}
+			$(this).next().slideToggle(200);
+		});
+		
+		cvList.append(pcvWrapper);
+	});
+
+	viewer.scene.addEventListener("polygon_clip_volume_removed", function(event) {
+		$("#" + event.volume.name).remove();
+
+		if(viewer.scene.clipVolumes.length == 0 && viewer.scene.polygonClipVolumes.length == 0) {
+			$("#clipping_volumes_container").hide();
+		}
+	});
 
 	viewer.scene.addEventListener("clip_volume_added", function(event) {
 		let cv = event.volume;
@@ -1864,7 +1922,7 @@ function initClippingTool() {
 
 			// remove button
 			let cvRemove = cvItem.find(".clipping_volume_action_remove");
-			cvRemove.click(() => {viewer.scene.removeClipVolume(cv)});
+			cvRemove.click(() => {viewer.scene.removeClipVolume(volume)});
 
 			return cvItem;
 		};
@@ -1878,7 +1936,7 @@ function initClippingTool() {
 			prevCVItem.remove();
 		});
 			
-		// wrappe which doesnt change 
+		// wrapper which doesnt change 
 		let icon = "/icons/clip_volume.svg";
 		let cvWrapper = $(`
 			<span class="scene_item" id="${cv.name}">
@@ -1890,10 +1948,11 @@ function initClippingTool() {
 				
 				<!-- DETAIL -->
 				<div class="measurement_content selectable" style="display: none">
-					${createCVitem(cv).get(0).outerHTML}
 				</div>
 			</span>
 		`);
+
+		cvWrapper.find(".measurement_content").append(createCVitem(cv));
 
 		cvWrapper.find(".scene_header").click(function(event) {
 			if($(this).next().is(":visible")) {
@@ -1910,7 +1969,7 @@ function initClippingTool() {
 	viewer.scene.addEventListener("clip_volume_removed", function(event) {
 		$("#" + event.volume.name).remove();
 
-		if(viewer.scene.clipVolumes.length == 0) {
+		if(viewer.scene.clipVolumes.length == 0 && viewer.scene.polygonClipVolumes.length == 0) {
 			$("#clipping_volumes_container").hide();
 		}
 	});

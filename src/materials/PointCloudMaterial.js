@@ -148,11 +148,15 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 			heightMin:			{ type: "f", value: 0.0 },
 			heightMax:			{ type: "f", value: 1.0 },
 			clipBoxCount:		{ type: "f", value: 0 },
+			clipPolygonCount:	{ type: "i", value: 0 },
 			visibleNodes:		{ type: "t", value: this.visibleNodesTexture },
 			pcIndex:   			{ type: "f", value: 0 },
 			gradient: 			{ type: "t", value: this.gradientTexture },
 			classificationLUT: 	{ type: "t", value: this.classificationTexture },
 			clipBoxes:			{ type: "Matrix4fv", value: [] },
+			clipPolygons:		{ type: "3fv", value: [] },
+			clipPolygonVCount:	{ type: "iv", value: [] },
+			clipPolygonVP:		{ type: "Matrix4fv", value: [] },
 			depthMap: 			{ type: "t", value: null },
 			diffuse:			{ type: "fv", value: [1,1,1]},
 			transition:         { type: "f", value: 0.5 },
@@ -293,6 +297,10 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 			defines += "#define use_clip_box\n";
 		}
 
+		if(this.numClipPolygons > 0) {
+			defines += "#define use_clip_polygon\n";			
+		}
+
 		return defines;
 	}
 
@@ -318,6 +326,39 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 			let box = clipBoxes[i];
 			
 			this.uniforms.clipBoxes.value.set(box.inverse.elements, 16*i);
+		}
+	}
+
+	setClipPolygons(clipPolygons, maxPolygonVertices) {
+		if(!clipPolygons){
+			return;
+		}
+
+		this.clipPolygons = clipPolygons;
+
+		let doUpdate = (this.numClipPolygons !== clipPolygons.length) && (clipPolygons.length === 0 || this.numClipPolygons === 0);
+
+		this.numClipPolygons = clipPolygons.length;
+		this.uniforms.clipPolygonCount.value = this.numClipPolygons;
+
+		if(doUpdate){
+			this.updateShaderSource();
+		}
+
+		this.uniforms.clipPolygons.value = new Float32Array(this.numClipPolygons * maxPolygonVertices * 3); 
+		this.uniforms.clipPolygonVP.value = new Float32Array(this.numClipPolygons * 16);
+		this.uniforms.clipPolygonVCount.value = new Int32Array(this.numClipPolygons);
+
+		for(let i = 0; i < this.numClipPolygons; i++){
+			let poly = clipPolygons[i];
+			
+			this.uniforms.clipPolygonVCount.value[i] = poly.count;
+			this.uniforms.clipPolygonVP.value.set(poly.view.elements, 16*i);
+			for(let j = 0; j < poly.count; j++) {
+				this.uniforms.clipPolygons.value[i * 8 + (j * 3 + 0)] = poly.polygon[j].x;				
+				this.uniforms.clipPolygons.value[i * 8 + (j * 3 + 1)] = poly.polygon[j].y;
+				this.uniforms.clipPolygons.value[i * 8 + (j * 3 + 2)] = poly.polygon[j].z;
+			}
 		}
 	}
 	

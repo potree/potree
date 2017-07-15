@@ -319,6 +319,31 @@ vec3 getCompositeColor(){
 	return c;
 }
 
+bool pointInClipPolygon(vec3 point, int polyIdx) {
+	vec4 screenClipPos = clipPolygonVP[polyIdx] * modelMatrix * vec4(point, 1.0);
+	screenClipPos.xy = screenClipPos.xy / screenClipPos.w * 0.5 + 0.5;
+
+	int j = clipPolygonVCount[polyIdx] - 1;
+	bool c = false;
+	for(int i = 0; i < 8; i++) {
+		if(i == clipPolygonVCount[polyIdx]) {
+			break;
+		}
+
+		vec4 verti = clipPolygonVP[polyIdx] * vec4(clipPolygons[polyIdx * 8 + i], 1);
+		vec4 vertj = clipPolygonVP[polyIdx] * vec4(clipPolygons[polyIdx * 8 + j], 1);
+		verti.xy = verti.xy / verti.w * 0.5 + 0.5;
+		vertj.xy = vertj.xy / vertj.w * 0.5 + 0.5;
+		if( ((verti.y > screenClipPos.y) != (vertj.y > screenClipPos.y)) && 
+			(screenClipPos.x < (vertj.x-verti.x) * (screenClipPos.y-verti.y) / (vertj.y-verti.y) + verti.x) ) {
+			c = !c;
+		}
+		j = i;
+	}
+
+	return c;
+}
+
 void main() {
 	vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
 	vViewPosition = mvPosition.xyz;
@@ -444,27 +469,12 @@ void main() {
 				break;
 			}
 
-			vec4 screenClipPos = clipPolygonVP[i] * modelMatrix * vec4(position, 1.0);
-			int k = clipPolygonVCount[i] - 1;
-			bool c = false;
-			for(int j = 0; j < 8; j++) {
-				if(j == clipPolygonVCount[i]) {
-					break;
-				}
-
-				// TODO test if point in polygon
-
-				vec4 vertj = clipPolygonVP[i] * vec4(clipPolygons[i * 8 + j], 1);
-				vec4 vertk = clipPolygonVP[i] * vec4(clipPolygons[i * 8 + k], 1);
-				if( ((vertj.y > screenClipPos.y) != (vertk.y > screenClipPos.y)) && 
-					(screenClipPos.x < (vertk.x-vertj.x) * (screenClipPos.y-vertj.y) / (vertk.y-vertj.y) + vertj.x) ) {
-					c = !c;
-				}
-				k = j + 1;
-			}	
-			if(c) {
-				vColor.r += 0.5;
-			}
+			polyInsideAny = polyInsideAny || pointInClipPolygon(position, i);
+		}
+		if(polyInsideAny && clipMode == 1 || !polyInsideAny && clipMode == 2) {
+			gl_Position = vec4(1000.0, 1000.0, 1000.0, 1.0);
+		} else if(clipMode == 0 && polyInsideAny) {
+			vColor.r += 0.5;
 		}
 	#endif
 	

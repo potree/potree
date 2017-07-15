@@ -355,9 +355,9 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 			this.uniforms.clipPolygonVCount.value[i] = poly.count;
 			this.uniforms.clipPolygonVP.value.set(poly.view.elements, 16*i);
 			for(let j = 0; j < poly.count; j++) {
-				this.uniforms.clipPolygons.value[i * 8 + (j * 3 + 0)] = poly.polygon[j].x;				
-				this.uniforms.clipPolygons.value[i * 8 + (j * 3 + 1)] = poly.polygon[j].y;
-				this.uniforms.clipPolygons.value[i * 8 + (j * 3 + 2)] = poly.polygon[j].z;
+				this.uniforms.clipPolygons.value[i * 24 + (j * 3 + 0)] = poly.polygon[j].x;				
+				this.uniforms.clipPolygons.value[i * 24 + (j * 3 + 1)] = poly.polygon[j].y;
+				this.uniforms.clipPolygons.value[i * 24 + (j * 3 + 2)] = poly.polygon[j].z;
 			}
 		}
 	}

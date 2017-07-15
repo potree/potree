@@ -16,7 +16,7 @@
 Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 	
 	constructor(viewer){
-		super()
+		super();
 		
 		this.viewer = viewer;
 		this.renderer = viewer.renderer;

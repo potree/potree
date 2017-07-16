@@ -18,8 +18,8 @@ Potree.PolygonClipVolume = class extends THREE.Object3D{
 		this.material = this.createSphereMaterial();
 	}
 
-	createSphereMaterial(){
-		let sphereMaterial = new THREE.MeshBasicMaterial( {
+	createSphereMaterial() {
+		let sphereMaterial = new THREE.MeshBasicMaterial({
 			color: this.color, 
 			depthTest: false, 
 			depthWrite: false}

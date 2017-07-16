@@ -8,7 +8,6 @@ TODO orthographic cameras:
 TODO clipping:
 
 - polygon clipping 
-  - lock camera when selecting polygon vertices (disable controls, navigationMode)
   - vertices are distorted at the boundaries of the render area (caused by perspective projection)
   - picking with ortho cameras (fix ortho camera picking first)
   - TODO: 

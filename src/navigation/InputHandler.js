@@ -11,6 +11,7 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 		this.viewer = viewer;
 		this.renderer = viewer.renderer;
 		this.domElement = this.renderer.domElement;
+		this.enabled = true;
 		
 		this.scene = null;
 		this.interactiveScenes = [];
@@ -420,6 +421,8 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 	}
 	
 	onMouseWheel(e){
+		if(!this.enabled) return;
+
 		if(this.logMessages) console.log(this.constructor.name + ": onMouseWheel");
 		
 		e.preventDefault();

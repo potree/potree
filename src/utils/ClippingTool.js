@@ -161,10 +161,12 @@ Potree.ClippingTool = class ClippingTool extends THREE.EventDispatcher{
 				}
 				this.viewer.renderer.domElement.removeEventListener("mouseup", insertionCallback, true);
 				this.viewer.removeEventListener("cancel_insertions", cancel.callback);
+				this.viewer.inputHandler.enabled = true;
 			};
 			
 			this.viewer.addEventListener("cancel_insertions", cancel.callback);
 			this.viewer.renderer.domElement.addEventListener("mouseup", insertionCallback , true);
+			this.viewer.inputHandler.enabled = false;
 			
 			polyClipVol.addMarker();
 			this.viewer.inputHandler.startDragging(

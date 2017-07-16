@@ -77,7 +77,6 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree{
 		this.visibleBounds = new THREE.Box3();	
 		this.visibleNodes = [];
 		this.visibleGeometry = [];
-		this.pickTarget = null;
 		this.generateDEM = false;
 		this.profileRequests = [];
 		this.name = "";
@@ -128,8 +127,9 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree{
 				}
 				
 				if(material.program.getUniforms().map.pcIndex){
-					material.uniforms.pcIndex.value = node.pcIndex;
-					material.program.getUniforms().map.pcIndex.setValue(_this.getContext(), node.pcIndex);
+					let i = node.pcIndex ? node.pcIndex : this.visibleNodes.indexOf(node);
+					material.uniforms.pcIndex.value = i;
+					material.program.getUniforms().map.pcIndex.setValue(_this.getContext(), i);
 				}
 			}
 		};

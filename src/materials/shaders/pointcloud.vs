@@ -24,6 +24,8 @@ uniform mat4 projectionMatrix;
 uniform mat4 viewMatrix;
 uniform mat3 normalMatrix;
 
+uniform float pcIndex;
+
 //uniform mat4 toModel;
 
 uniform float screenWidth;
@@ -238,6 +240,10 @@ vec3 getRGB(){
 	rgb = (rgb - 0.5) * getContrastFactor(rgbContrast) + 0.5;
 	rgb = clamp(rgb, 0.0, 1.0);
 	
+	//rgb = indices.rgb;
+	//rgb.b = pcIndex / 255.0;
+	
+	
 	return rgb;
 }
 
@@ -410,6 +416,8 @@ void main() {
 	vRadius = pointSize / projFactor;
 	
 	gl_PointSize = pointSize;
+	
+	//gl_Position = vec4(1000.0, 1000.0, 1000.0, 1.0);
 	
 	
 	// ---------------------

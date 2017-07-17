@@ -126,10 +126,13 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 			classification: 	{ type: "f", value: [] },
 			returnNumber: 		{ type: "f", value: [] },
 			numberOfReturns: 	{ type: "f", value: [] },
-			pointSourceID: 		{ type: "f", value: [] }
+			pointSourceID: 		{ type: "f", value: [] },
+			indices: 			{ type: "fv", value: [] }
 		};
 		
 		this.uniforms = {
+			level:				{ type: "f", value: 0.0 },
+			vnStart:				{ type: "f", value: 0.0 },
 			spacing:			{ type: "f", value: 1.0 },
 			blendHardness:		{ type: "f", value: 2.0 },
 			blendDepthSupplement:	{ type: "f", value: 0.0 },
@@ -157,6 +160,7 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 			clipPolygons:		{ type: "3fv", value: [] },
 			clipPolygonVCount:	{ type: "iv", value: [] },
 			clipPolygonVP:		{ type: "Matrix4fv", value: [] },
+			toModel:			{ type: "Matrix4f", value: [] },
 			depthMap: 			{ type: "t", value: null },
 			diffuse:			{ type: "fv", value: [1,1,1]},
 			transition:         { type: "f", value: 0.5 },
@@ -180,6 +184,7 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 		
 		this.defaultAttributeValues.normal = [0,0,0];
 		this.defaultAttributeValues.classification = [0,0,0];
+		this.defaultAttributeValues.indices = [0,0,0,0];
 		
 		this.vertexShader = this.getDefines() + Potree.Shaders["pointcloud.vs"];
 		this.fragmentShader = this.getDefines() + Potree.Shaders["pointcloud.fs"];
@@ -326,6 +331,12 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 			let box = clipBoxes[i];
 			
 			this.uniforms.clipBoxes.value.set(box.inverse.elements, 16*i);
+		}
+		
+		for(let i = 0; i < this.uniforms.clipBoxes.value.length; i++){
+			if(Number.isNaN(this.uniforms.clipBoxes.value[i])){
+				this.uniforms.clipBoxes.value[i] = Infinity;
+			}
 		}
 	}
 

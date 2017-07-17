@@ -3,19 +3,14 @@
   "private": true,
   "version": "0.0.1",
   "description": "WebGL point cloud viewer",
-  "dependencies": {
-    "gulp": "*",
-    "gulp-size": "*",
-    "gulp-concat": "*",
-    "gulp-uglify": "*",
-    "gulp-rename": "*",
-    "jshint": "*",
-    "gulp-jshint": "*"
-  },
-  "author": {},
-  "license": "",
+  "dependencies": {},
+  "author": "Markus Schütz",
+  "license": "BSD-2-CLAUSE",
   "devDependencies": {
     "gulp": "~3.5.2",
+	"gulp-jshint": "^2.0.4",
+    "gulp-size": "^2.1.0",
+    "jshint": "^2.9.5"
     "gulp-concat": "~2.1.7",
     "gulp-connect": "^2.3.1",
     "gulp-rename": "~1.0.0",

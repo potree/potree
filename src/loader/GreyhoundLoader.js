@@ -116,7 +116,7 @@ class GreyhoundUtils{
 					colorNorm = true;
 				}
 
-				if (view.getUint16(18, true) > 255) {
+				if (view.getUint16(offset + 18, true) > 255) {
 					intensityNorm = true;
 				}
 

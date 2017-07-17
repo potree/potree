@@ -36,7 +36,7 @@ function initToolbar(){
 	// POINT
 	elToolbar.append(createToolIcon(
 		Potree.resourcePath + "/icons/point.svg",
-		"[title]tt.angle_measurement",
+		"[title]tt.point_measurement",
 		function(){
 			$("#menu_measurements").next().slideDown();
 			viewer.measuringTool.startInsertion({
@@ -384,22 +384,32 @@ function initAnnotationDetails(){
 		let checked = viewer.getShowAnnotations() ? "checked" : "";
 		
 		let chkEnable = $(`
-			<li><label>
-				<input type="checkbox" id="chkShowAnnotations" ${checked}
-					onClick="viewer.setShowAnnotations(this.checked)"/>
-				<span data-i18n="annotations.show"></span>
-			</label></li>
+			<li>
+				<label>
+					<input type="checkbox" id="chkShowAnnotations" ${checked}
+						onClick="viewer.setShowAnnotations(this.checked)"/>
+					<span data-i18n="annotations.show3D"></span>
+				</label>
+				<label>
+					<input type="checkbox" id="chkShowAnnotationsMap" ${checked}
+						onClick="viewer.mapView.getAnnotationsLayer().setVisible(this.checked)"/>
+					<span data-i18n="annotations.showMap"></span>
+				</label>
+			</li>
 		`);
 		annotationPanel.append(chkEnable);
 		
 		
-		let stack = viewer.scene.annotations.children.reverse().map(
+		//let stack = viewer.scene.annotations.children.reverse().map(
+		//	a => ({annotation: a, container: annotationPanel}));
+		
+		let stack = viewer.scene.annotations.children.map(
 			a => ({annotation: a, container: annotationPanel}));
 		
 		
 		while(stack.length > 0){
 			
-			let {annotation, container} = stack.pop();
+			let {annotation, container} = stack.shift();
 			
 			// ►	U+25BA	\u25BA
 			// ▼	U+25BC	\u25BC
@@ -1029,6 +1039,12 @@ function initMeasurementDetails(){
 						<input id="${sliderID}" name="${sliderID}" value="5.06" style="flex-grow: 1; width:100%">
 					</span>
 					<br>
+					
+					<input type="button" value="Prepare Download" id="download_profile_${this.id}"/>
+					<span id="download_profile_status_${this.id}"></span>
+					
+					<br>
+					
 					<input type="button" id="show_2d_profile_${this.id}" value="show 2d profile" style="width: 100%"/>
 					
 					<!-- ACTIONS -->
@@ -1046,6 +1062,16 @@ function initMeasurementDetails(){
 				viewer.profileWindowController.setProfile(measurement);
 				//viewer.profileWindow.draw(measurement);
 			});
+			
+			{ // download
+				this.elDownloadButton = this.elContent.find(`#download_profile_${this.id}`);
+				
+				if(viewer.server){
+					this.elDownloadButton.click(() => this.download());
+				}else{
+					this.elDownloadButton.hide();
+				}
+			}
 			
 			{ // width spinner
 				let elWidthLabel = this.elContent.find(`#${labelID}`);
@@ -1113,6 +1139,98 @@ function initMeasurementDetails(){
 			elCoordiantesContainer.append(createCoordinatesTable(this.measurement));
 		}
 		
+		download(){
+			
+			let profile = this.measurement;
+			let boxes = profile.getSegmentMatrices()
+				.map(m => m.elements.join(","))
+				.join(",");
+			
+			let minLOD = 0;
+			let maxLOD = 100;
+			
+			let pcs = [];
+			for(let pointcloud of this.scene.pointclouds){
+				let urlIsAbsolute = new RegExp('^(?:[a-z]+:)?//', 'i').test(pointcloud.pcoGeometry.url);
+				let pc = "";
+				if(urlIsAbsolute){
+					pc = pointcloud.pcoGeometry.url;
+				}else{
+					pc = `${window.location.href}/../${pointcloud.pcoGeometry.url}`;
+				}
+				
+				pcs.push(pc);
+			}
+			
+			let pc = pcs
+				.map( v => `pointcloud[]=${v}`)
+				.join("&");
+			
+			let request = `${viewer.server}/start_extract_region_worker?minLOD=${minLOD}&maxLOD=${maxLOD}&box=${boxes}&${pc}`;
+			//console.log(request);
+			
+			let elMessage = this.elContent.find(`#download_profile_status_${this.id}`);
+			elMessage.html("sending request...");
+			
+			let workerID = null;
+			
+			let start = new Date().getTime();
+			
+			let observe = () => {
+				let request = `${viewer.server}/observe_status?workerID=${workerID}`;
+				
+				let loaded = 0;
+				
+				let xhr = new XMLHttpRequest();
+				xhr.withCredentials = true;
+				xhr.addEventListener("progress", e => {
+					let nowLoaded = e.loaded;
+					
+					let response = xhr.responseText.substring(loaded, nowLoaded);
+					response = JSON.parse(response);
+					
+					if(response.status === "FINISHED"){
+						elMessage.html(`<br><a href="${viewer.server}/get_las?workerID=${workerID}">Download ready</a>`);
+					}else{
+						let current = new Date().getTime();
+						let duration = (current - start);
+						let seconds = parseInt(duration / 1000);
+						
+						elMessage.html(`processing request... ${seconds}s`);
+					}
+					
+					
+					loaded = nowLoaded;
+				});
+				xhr.open('GET', request, true);
+				xhr.send(null)
+			};
+			
+			let xhr = new XMLHttpRequest();
+			xhr.withCredentials = true;
+			xhr.onreadystatechange = () => {
+				if (xhr.readyState == XMLHttpRequest.DONE) {
+					//alert(xhr.responseText);
+					let res = JSON.parse(xhr.responseText);
+					console.log(res);
+					
+					if(res.status === "OK"){
+						workerID = res.workerID;
+						elMessage.html("request is being processed");
+						//checkUntilFinished();
+						observe();
+					}else if(res.status === "ERROR_POINT_PROCESSED_ESTIMATE_TOO_LARGE"){
+						elMessage.html("Too many candidate points in selection.");
+					}else{
+						elMessage.html(`${res.status}`);
+					}
+				}
+			}
+			xhr.open('GET', request, true);
+			xhr.send(null);
+			
+		}
+		
 		destroy(){
 			this.elPanel.remove();
 			
@@ -1133,8 +1251,50 @@ function initMeasurementDetails(){
 			
 			this.elIcon.attr("src", this.icon);
 			
+			this.values = {};
+			
 			this.elContent = $(`
 				<div>
+
+					<div style="width: 100%;">
+						<div style="display:inline-flex; width: 100%; ">
+							<span class="input-grid-label">x</span>
+							<span class="input-grid-label">y</span>
+							<span class="input-grid-label">z</span>
+						</div>
+						<div style="display:inline-flex; width: 100%;">
+							<span class="input-grid-cell"><input type="text" id="volume_input_x_${measurement.id}"/></span>
+							<span class="input-grid-cell"><input type="text" id="volume_input_y_${measurement.id}"/></span>
+							<span class="input-grid-cell"><input type="text" id="volume_input_z_${measurement.id}"/></span>
+						</div>
+					</div>
+					
+					<div style="width: 100%;">
+						<div style="display:inline-flex; width: 100%; ">
+							<span class="input-grid-label">length</span>
+							<span class="input-grid-label">width</span>
+							<span class="input-grid-label">height</span>
+						</div>
+						<div style="display:inline-flex; width: 100%;">
+							<span class="input-grid-cell"><input type="text" id="volume_input_length_${measurement.id}"/></span>
+							<span class="input-grid-cell"><input type="text" id="volume_input_width_${measurement.id}"/></span>
+							<span class="input-grid-cell"><input type="text" id="volume_input_height_${measurement.id}"/></span>
+						</div>
+					</div>
+
+					<div style="width: 100%;">
+						<div style="display:inline-flex; width: 100%; ">
+							<span class="input-grid-label">&alpha;</span>
+							<span class="input-grid-label">&beta;</span>
+							<span class="input-grid-label">&gamma;</span>
+						</div>
+						<div style="display:inline-flex; width: 100%;">
+							<span class="input-grid-cell"><input type="text" id="volume_input_alpha_${measurement.id}"/></span>
+							<span class="input-grid-cell"><input type="text" id="volume_input_beta_${measurement.id}"/></span>
+							<span class="input-grid-cell"><input type="text" id="volume_input_gamma_${measurement.id}"/></span>
+						</div>
+					</div>
+				
 					
 					<input type="button" value="Prepare Download" id="download_volume_${this.id}"/>
 					<span id="download_volume_status_${this.id}"></span>
@@ -1148,6 +1308,104 @@ function initMeasurementDetails(){
 				</div>
 			`);
 			this.elContentContainer.append(this.elContent);
+			
+			this.elX = this.elContent.find(`#volume_input_x_${this.measurement.id}`);
+			this.elY = this.elContent.find(`#volume_input_y_${this.measurement.id}`);
+			this.elZ = this.elContent.find(`#volume_input_z_${this.measurement.id}`);
+			
+			this.elLength = this.elContent.find(`#volume_input_length_${this.measurement.id}`);
+			this.elWidth  = this.elContent.find(`#volume_input_width_${this.measurement.id}`);
+			this.elHeight = this.elContent.find(`#volume_input_height_${this.measurement.id}`);
+			
+			this.elAlpha = this.elContent.find(`#volume_input_alpha_${this.measurement.id}`);
+			this.elBeta = this.elContent.find(`#volume_input_beta_${this.measurement.id}`);
+			this.elGamma = this.elContent.find(`#volume_input_gamma_${this.measurement.id}`);
+			
+			
+			this.elX.on("change", (e) => {
+				let val = this.elX.val();
+				if($.isNumeric(val)){
+					val = parseFloat(val);
+					
+					this.measurement.position.x = val;
+				}
+			});
+			
+			this.elY.on("change", (e) => {
+				let val = this.elY.val();
+				if($.isNumeric(val)){
+					val = parseFloat(val);
+					
+					this.measurement.position.y = val;
+				}
+			});
+			
+			this.elZ.on("change", (e) => {
+				let val = this.elZ.val();
+				if($.isNumeric(val)){
+					val = parseFloat(val);
+					
+					this.measurement.position.z = val;
+				}
+			});
+			
+			this.elLength.on("change", (e) => {
+				let val = this.elLength.val();
+				if($.isNumeric(val)){
+					val = parseFloat(val);
+					
+					this.measurement.scale.x = val;
+				}
+			});
+			
+			this.elWidth.on("change", (e) => {
+				let val = this.elWidth.val();
+				if($.isNumeric(val)){
+					val = parseFloat(val);
+					
+					this.measurement.scale.y = val;
+				}
+			});
+			
+			this.elHeight.on("change", (e) => {
+				let val = this.elHeight.val();
+				if($.isNumeric(val)){
+					val = parseFloat(val);
+					
+					this.measurement.scale.z = val;
+				}
+			});
+			
+			let toRadians = (d) => Math.PI * d / 180;
+			
+			this.elAlpha.on("change", (e) => {
+				let val = this.elAlpha.val();
+				if($.isNumeric(val)){
+					val = parseFloat(val);
+					
+					this.measurement.rotation.x = toRadians(val);
+				}
+			});
+			
+			this.elBeta.on("change", (e) => {
+				let val = this.elBeta.val();
+				if($.isNumeric(val)){
+					val = parseFloat(val);
+					
+					this.measurement.rotation.y = toRadians(val);
+				}
+			});
+			
+			this.elGamma.on("change", (e) => {
+				let val = this.elGamma.val();
+				if($.isNumeric(val)){
+					val = parseFloat(val);
+					
+					this.measurement.rotation.z = toRadians(val);
+				}
+			});
+			
+			
 			
 			this.elDownloadButton = this.elContent.find(`#download_volume_${this.id}`);
 			
@@ -1170,20 +1428,28 @@ function initMeasurementDetails(){
 		download(){
 			
 			let volume = this.measurement;
-			//let box = volume.boundingBox.clone().applyMatrix4(volume.matrixWorld);
-			let box = volume.matrixWorld.elements.join(", ");
+			let boxes = volume.matrixWorld.elements.join(",");
 			let minLOD = 0;
-			let maxLOD = 8;
+			let maxLOD = 100;
 			
-			let urlIsAbsolute = new RegExp('^(?:[a-z]+:)?//', 'i').test(this.scene.pointclouds[0].pcoGeometry.url);
-			let pc = "";
-			if(urlIsAbsolute){
-				pc = this.scene.pointclouds[0].pcoGeometry.url;
-			}else{
-				pc = `${window.location.href}/${viewer.scene.pointclouds[0].pcoGeometry.url}`;
+			let pcs = [];
+			for(let pointcloud of this.scene.pointclouds){
+				let urlIsAbsolute = new RegExp('^(?:[a-z]+:)?//', 'i').test(pointcloud.pcoGeometry.url);
+				let pc = "";
+				if(urlIsAbsolute){
+					pc = pointcloud.pcoGeometry.url;
+				}else{
+					pc = `${window.location.href}/../${pointcloud.pcoGeometry.url}`;
+				}
+				
+				pcs.push(pc);
 			}
 			
-			let request = `${viewer.server}/start_extract_region_worker?minLOD=${minLOD}&maxLOD=${maxLOD}&box=${box}&pointCloud=${pc}`;
+			let pc = pcs
+				.map( v => `pointcloud[]=${v}`)
+				.join("&");
+			
+			let request = `${viewer.server}/start_extract_region_worker?minLOD=${minLOD}&maxLOD=${maxLOD}&box=${boxes}&${pc}`;//&pointCloud=${pc}`;
 			//console.log(request);
 			
 			let elMessage = this.elContent.find(`#download_volume_status_${this.id}`);
@@ -1193,41 +1459,38 @@ function initMeasurementDetails(){
 			
 			let start = new Date().getTime();
 			
-			let checkUntilFinished = () => {
-				//http://localhost:3000/get_status?workerID=ef7bd824-a32d-4086-9547-09dfdf700c19
+			let observe = () => {
+				let request = `${viewer.server}/observe_status?workerID=${workerID}`;
 				
-				if(!workerID){
-					return;
-				}
-				
-				let request = `${viewer.server}/get_status?workerID=${workerID}`;
+				let loaded = 0;
 				
 				let xhr = new XMLHttpRequest();
-				xhr.onreadystatechange = () => {
-					if (xhr.readyState == XMLHttpRequest.DONE) {
-						//alert(xhr.responseText);
-						let res = JSON.parse(xhr.responseText);
-						console.log(res);
+				xhr.withCredentials = true;
+				xhr.addEventListener("progress", e => {
+					let nowLoaded = e.loaded;
+					
+					let response = xhr.responseText.substring(loaded, nowLoaded);
+					response = JSON.parse(response);
+					
+					if(response.status === "FINISHED"){
+						elMessage.html(`<br><a href="${viewer.server}/get_las?workerID=${workerID}">Download ready</a>`);
+					}else{
+						let current = new Date().getTime();
+						let duration = (current - start);
+						let seconds = parseInt(duration / 1000);
 						
-						if(!res.finished){
-							//elMessage.html(`request status: ${res.status}`);
-							let end = new Date().getTime();
-							let duration = (end - start);
-							let seconds = parseInt(duration / 1000);
-							elMessage.html(`<br>preparing download... ${seconds}s`);
-							//checkUntilFinished();
-							setTimeout(checkUntilFinished, 500);
-						}else{
-							elMessage.html(`<br><a href="${viewer.server}/get_las?workerID=${workerID}">Download ready</a>`);
-						}
+						elMessage.html(`processing request... ${seconds}s`);
 					}
-				}
+					
+					
+					loaded = nowLoaded;
+				});
 				xhr.open('GET', request, true);
 				xhr.send(null)
-				
 			};
 			
 			let xhr = new XMLHttpRequest();
+			xhr.withCredentials = true;
 			xhr.onreadystatechange = () => {
 				if (xhr.readyState == XMLHttpRequest.DONE) {
 					//alert(xhr.responseText);
@@ -1237,7 +1500,8 @@ function initMeasurementDetails(){
 					if(res.status === "OK"){
 						workerID = res.workerID;
 						elMessage.html("request is being processed");
-						checkUntilFinished();
+						//checkUntilFinished();
+						observe();
 					}else if(res.status === "ERROR_POINT_PROCESSED_ESTIMATE_TOO_LARGE"){
 						elMessage.html("Too many candidate points in selection.");
 					}else{
@@ -1251,6 +1515,62 @@ function initMeasurementDetails(){
 		}
 		
 		update(){
+			if(!this.destroyed){
+				requestAnimationFrame(this._update);
+			}
+			
+			if(!this.elContent.is(":visible")){
+				return;
+			}
+			
+			if(this.measurement.position.x !== this.values.x){
+				this.elX.val(this.measurement.position.x.toFixed(3));
+				this.values.x = this.measurement.position.x;
+			}
+			
+			if(this.measurement.position.y !== this.values.y){
+				let elY = this.elContent.find(`#volume_input_y_${this.measurement.id}`);
+				elY.val(this.measurement.position.y.toFixed(3));
+				this.values.y = this.measurement.position.y;
+			}
+			
+			if(this.measurement.position.z !== this.values.z){
+				let elZ = this.elContent.find(`#volume_input_z_${this.measurement.id}`);
+				elZ.val(this.measurement.position.z.toFixed(3));
+				this.values.z = this.measurement.position.z;
+			}
+			
+			if(this.measurement.scale.x !== this.values.length){
+				this.elLength.val(this.measurement.scale.x.toFixed(3));
+				this.values.length = this.measurement.scale.x;
+			}
+			
+			if(this.measurement.scale.y !== this.values.width){
+				this.elWidth.val(this.measurement.scale.y.toFixed(3));
+				this.values.width = this.measurement.scale.y;
+			}
+			
+			if(this.measurement.scale.z !== this.values.height){
+				this.elHeight.val(this.measurement.scale.z.toFixed(3));
+				this.values.height = this.measurement.scale.z;
+			}
+			
+			let toDegrees = (r) => 180 * r / Math.PI;
+			
+			if(this.measurement.rotation.x !== this.values.alpha){
+				this.elAlpha.val(toDegrees(this.measurement.rotation.x).toFixed(1));
+				this.values.alpha = this.measurement.rotation.x;
+			}
+			
+			if(this.measurement.rotation.y !== this.values.beta){
+				this.elBeta.val(toDegrees(this.measurement.rotation.y).toFixed(1));
+				this.values.beta = this.measurement.rotation.y;
+			}
+			
+			if(this.measurement.rotation.z !== this.values.gamma){
+				this.elGamma.val(toDegrees(this.measurement.rotation.z).toFixed(1));
+				this.values.gamma = this.measurement.rotation.z;
+			}
 			
 		}
 		
@@ -1260,6 +1580,8 @@ function initMeasurementDetails(){
 			this.measurement.removeEventListener("marker_added", this._update);
 			this.measurement.removeEventListener("marker_removed", this._update);
 			this.measurement.removeEventListener("marker_moved", this._update);
+			
+			this.destroyed = true;
 		}
 		
 	};
@@ -1425,6 +1747,12 @@ function initMeasurementDetails(){
 	
 	}
 
+};
+
+function initSceneList(){
+
+	let scenelist = $('#scene_list');
+	
 	// length units
 	$("#optLengthUnit").selectmenu({
 		style:'popup',
@@ -1437,6 +1765,9 @@ function initMeasurementDetails(){
 			viewer.setLengthUnit(selectedValue);
 		}
 	});	
+
+	$("#optLengthUnit").selectmenu().val(viewer.lengthUnit.code);
+	$("#optLengthUnit").selectmenu("refresh");
 };
 
 function initClippingTool() {
@@ -2485,6 +2816,11 @@ function initSceneList(){
 			
 			$('#lblRGBBrightness' + i)[0].innerHTML = brightness.toFixed(2);
 			$("#sldRGBBrightness" + i).slider({value: brightness});
+		});
+		
+		viewer.addEventListener("length_unit_changed", e => {
+			$("#optLengthUnit").selectmenu().val(e.value);
+			$("#optLengthUnit").selectmenu("refresh");
 		});
 		
 		viewer.addEventListener("pointcloud_loaded", updateHeightRange);

@@ -14,6 +14,7 @@
     },
     "tt": {
         "angle_measurement": "Angle measurement",
+        "point_measurement": "Point measurement",
         "distance_measurement": "Distance measurement",
         "height_measurement": "Height measurement",
         "area_measurement": "Area measurement",
@@ -56,7 +57,8 @@
         "language": "Language"
     },
 	"annotations": {
-		"show": "show annotations"
+		"show3D": "show in 3D",
+		"showMap": "show on map"
     }, 
 	"profile": {
         "nb_points": "Number of Points",

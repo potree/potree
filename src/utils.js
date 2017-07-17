@@ -2,6 +2,33 @@
 
 Potree.utils = class{
 	
+	static loadShapefileFeatures(file, callback){
+		
+		let features = [];
+			
+		let handleFinish = () => {
+			callback(features);
+		};
+		
+		shapefile.open(file)
+		.then(source => {source.read()
+			.then(function log(result){
+				if(result.done){
+					handleFinish();
+					return;
+				}
+				
+				//console.log(result.value);
+				
+				if(result.value && result.value.type === "Feature" && result.value.geometry !== undefined){
+					features.push(result.value);
+				}
+			
+				return source.read().then(log);
+			})
+		});
+	}
+	
 	static toString(value){
 		if(value instanceof THREE.Vector3){
 			return value.x.toFixed(2) + ", " + value.y.toFixed(2) + ", " + value.z.toFixed(2);
@@ -103,8 +130,8 @@ Potree.utils = class{
 		}
 		
 		var skyGeometry = new THREE.CubeGeometry( 5000, 5000, 5000 );
-		var skyMaterial = new THREE.MultiMaterial( materialArray );
-		var skybox = new THREE.Mesh( skyGeometry, skyMaterial );
+		//var skyMaterial = new THREE.MultiMaterial( materialArray );
+		var skybox = new THREE.Mesh( skyGeometry, materialArray );
 
 		scene.add(skybox);
 		
@@ -180,19 +207,15 @@ Potree.utils = class{
 			y: - (mouse.y / renderer.domElement.clientHeight ) * 2 + 1
 		};
 		
-		let vector = new THREE.Vector3( nmouse.x, nmouse.y, 0.5 );
-		vector.unproject(camera);
+		//let vector = new THREE.Vector3( nmouse.x, nmouse.y, 0.5 );
+		//vector.unproject(camera);
 
-		let ray = new THREE.Ray();
-		if(camera.isPerspectiveCamera) {
-			let direction = vector.sub(camera.position).normalize();
-			ray.origin = camera.position;
-			ray.direction = direction;
-		} else {
-			// TODO ortho
-			ray.direction = camera.getWorldDirection().clone();
-			ray.origin = vector.clone();
-		}
+		//let direction = vector.sub(camera.position).normalize();
+		//let ray = new THREE.Ray(camera.position, direction);
+		
+		let raycaster = new THREE.Raycaster();
+		raycaster.setFromCamera(nmouse, camera);
+		let ray = raycaster.ray;
 		
 		let selectedPointcloud = null;
 		let closestDistance = Infinity;
@@ -200,7 +223,7 @@ Potree.utils = class{
 		let closestPoint = null;
 		
 		for(let pointcloud of pointclouds){
-			let point = pointcloud.pick(renderer, camera, ray);
+			let point = pointcloud.pick(renderer, camera, ray, {x: mouse.x, y: renderer.domElement.clientHeight - mouse.y});
 			
 			if(!point){
 				continue;

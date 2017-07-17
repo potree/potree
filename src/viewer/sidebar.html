@@ -2,55 +2,33 @@
 <div id="sidebar_root" 
 	class="perfect_scrollbar navmenu navmenu-default navmenu-fixed-left unselectable" 
 	style="position: absolute; min-height: 100%; height: 100%; width: calc(100% - 1px); border-right: 1px solid black !important; overflow: hidden">
-	<span class="potree_sidebar_brand" style="display: flex; flex-direction: row">
-		<a href="http://potree.org" target="_blank">potree.org</a> 
-		<span style="margin: 0px 3px; color: #9AA1A4"> - </span> 
-		<a href="https://github.com/potree/potree" target="_blank">github</a>
-		<span style="margin: 0px 3px; color: #9AA1A4"> - </span> 
-		<a href="https://twitter.com/m_schuetz" target="_blank">twitter</a>
-		<span style="flex-grow: 1"></span>
-		<span id="potree_version_number" style="color: #9AA1A4; font-size: 80%; font-weight: 100"></span>
-	</span>
-	<div style="font-family:arial;">
-		<a href="javascript:viewer.setLanguage('en');" style="margin-left: 30px;">EN</a> -  
-		<a href="javascript:viewer.setLanguage('fr');">FR</a> - 
-		<a href="javascript:viewer.setLanguage('de');">DE</a> - 
-		<a href="javascript:viewer.setLanguage('jp');">JP</a>
+	<div id="sidebar_header">
+		<span id="potree_branding" class="potree_sidebar_brand" style="display: flex; flex-direction: row">
+			<a href="http://potree.org" target="_blank">potree.org</a> 
+			<span style="margin: 0px 3px; color: #9AA1A4"> - </span> 
+			<a href="https://github.com/potree/potree" target="_blank">github</a>
+			<span style="margin: 0px 3px; color: #9AA1A4"> - </span> 
+			<a href="https://twitter.com/m_schuetz" target="_blank">twitter</a>
+			<span style="flex-grow: 1"></span>
+			<span id="potree_version_number" style="color: #9AA1A4; font-size: 80%; font-weight: 100"></span>
+		</span>
+		<div id="potree_languages" style="font-family:arial;">
+			<a href="javascript:viewer.setLanguage('en');" style="margin-left: 30px;">EN</a> -  
+			<a href="javascript:viewer.setLanguage('fr');">FR</a> - 
+			<a href="javascript:viewer.setLanguage('de');">DE</a> - 
+			<a href="javascript:viewer.setLanguage('jp');">JP</a>
+		</div>
 	</div>
 	<div>
 	<!--<div id="accordion" class="accordion">-->
-	<div class="accordion">
+	<div id="potree_menu" class="accordion">
 	
 		<!-- APPEARANCE -->
 		<h3 id="menu_appearance"><span data-i18n="tb.rendering_opt"></span></h3>
 		<div>
 			<ul class="pv-menu-list">
 			<li><span data-i18n="appearance.nb_max_pts"></span>:<span id="lblPointBudget"></span> <div id="sldPointBudget"></div>	</li>
-			<!-- <li><span data-i18n="appearance.point_size"></span>:<span id="lblPointSize"></span> <div id="sldPointSize"></div>		</li> -->
-			<li><span data-i18n="appearance.field_view"></span>:<span id="lblFOV"></span><div id="sldFOV"></div>					</li>
-			<!-- <li><span data-i18n="appearance.point_opacity"></span>:<span id="lblOpacity"></span><div id="sldOpacity"></div>				</li> -->
-		   
-		   <!--
-		   <li>
-			   <label for="optPointSizing" class="pv-select-label" data-i18n="appearance.point_size_type">Point Sizing </label>
-			   <select id="optPointSizing" name="optPointSizing">
-					<option>Fixed</option>
-					<option>Attenuated</option>
-					<option>Adaptive</option>
-				</select>
-			</li>
-			-->
-			
-			<!--
-			<li>
-			   <label for="optQuality" class="pv-select-label" data-i18n="appearance.point_quality"></label>
-			   <select id="optQuality" name="optQuality">
-					<option>Squares</option>
-					<option>Circles</option>
-					<option>Interpolation</option>
-				</select>
-			</li>
-			-->			
+			<li><span data-i18n="appearance.field_view"></span>:<span id="lblFOV"></span><div id="sldFOV"></div>					</li>		
 		   
 			<div>
 				<div class="divider">
@@ -79,20 +57,14 @@
 		
 		<!-- TOOLS -->
 		<h3 id="menu_tools"><span data-i18n="tb.tools_opt"></span></h3>
-		<div>
-			<ul class="pv-menu-list">
-				<div>
-				
-					<li id="tools"></li>
-					
-					<div class="divider" style="padding: 10px 0px 15px 0px">
-						<span>Navigation</span>
-					</div>
-					<li id="navigation"></li>
-					<li><span data-i18n="appearance.move_speed"></span>: <span id="lblMoveSpeed"></span><div id="sldMoveSpeed"></div></li>
-					
-				</div>
-			</ul>
+		<div class="pv-menu-list">
+			<li id="tools"></li>
+			
+			<div class="divider" style="padding: 10px 0px 15px 0px">
+				<span>Navigation</span>
+			</div>
+			<li id="navigation"></li>
+			<li><span data-i18n="appearance.move_speed"></span>: <span id="lblMoveSpeed"></span><div id="sldMoveSpeed"></div></li>
 		</div>
 
 	  
@@ -144,71 +116,6 @@
 		<div>
 			<ul class="pv-menu-list selectable" id="annotation_details"></ul>
 		</div>
-	  
-		<!-- MATERIALS -->
-		<!--<h3 id="menu_materials"><span data-i18n="tb.materials_opt"></span></h3>
-		<div>
-			<ul class="pv-menu-list">
-			<li>
-			   <label for="optMaterial" class="pv-select-label">Attributes:</label><br>
-			   <select id="optMaterial" name="optMaterial">
-			   </select>
-			</li>
-			
-			<div id="materials.composite_weight_container">
-				<div class="divider">
-					<span>Attribute Weights</span>
-				</div>
-			
-				<li>RGB: <span id="lblWeightRGB"></span> <div id="sldWeightRGB"></div>	</li>
-				<li>Intensity: <span id="lblWeightIntensity"></span> <div id="sldWeightIntensity"></div>	</li>
-				<li>Elevation: <span id="lblWeightElevation"></span> <div id="sldWeightElevation"></div>	</li>
-				<li>Classification: <span id="lblWeightClassification"></span> <div id="sldWeightClassification"></div>	</li>
-				<li>Return Number: <span id="lblWeightReturnNumber"></span> <div id="sldWeightReturnNumber"></div>	</li>
-				<li>Source ID: <span id="lblWeightSourceID"></span> <div id="sldWeightSourceID"></div>	</li>
-			</div>
-			
-			<div id="materials.rgb_container">
-				<div class="divider">
-					<span>RGB</span>
-				</div>
-			
-				<li>Gamma: <span id="lblRGBGamma"></span> <div id="sldRGBGamma"></div>	</li>
-				<li>Brightness: <span id="lblRGBBrightness"></span> <div id="sldRGBBrightness"></div>	</li>
-				<li>Contrast: <span id="lblRGBContrast"></span> <div id="sldRGBContrast"></div>	</li>
-			</div>
-			
-			
-			<div id="materials.elevation_container">
-				<div class="divider">
-					<span>Elevation</span>
-				</div>
-			
-				<li><span data-i18n="appearance.elevation_range"></span>: <span id="lblHeightRange"></span> <div id="sldHeightRange"></div>	</li>
-			</div>
-			
-			<div id="materials.transition_container">
-				<div class="divider">
-					<span>Transition</span>
-				</div>
-			
-				<li>transition: <span id="lblTransition"></span> <div id="sldTransition"></div>	</li>
-			</div>
-			
-			<div id="materials.intensity_container">
-				<div class="divider">
-					<span>Intensity</span>
-				</div>
-			
-				<li>Range: <span id="lblIntensityRange"></span> <div id="sldIntensityRange"></div>	</li>
-				<li>Gamma: <span id="lblIntensityGamma"></span> <div id="sldIntensityGamma"></div>	</li>
-				<li>Brightness: <span id="lblIntensityBrightness"></span> <div id="sldIntensityBrightness"></div>	</li>
-				<li>Contrast: <span id="lblIntensityContrast"></span> <div id="sldIntensityContrast"></div>	</li>
-			</div>
-				
-			
-			</ul>
-		</div>-->
 	
 		<!-- Scene -->
 		<h3 id="menu_scene"><span data-i18n="tb.scene_opt"></span></h3>

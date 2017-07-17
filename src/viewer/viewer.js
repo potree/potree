@@ -162,6 +162,62 @@ Potree.Scene = class extends THREE.EventDispatcher{
 		
 	}
 	
+	estimateHeightAt(position){
+		
+		let height = null;
+		let fromSpacing = Infinity;
+		
+		
+		for(let pointcloud of this.pointclouds){
+			
+			if(pointcloud.root.geometryNode === undefined){
+				continue;
+			}
+			
+			let pHeight = null;
+			let pFromSpacing = Infinity;
+			
+			let lpos = position.clone().sub(pointcloud.position);
+			lpos.z = 0;
+			let ray = new THREE.Ray(lpos, new THREE.Vector3(0, 0, 1));
+			
+			let stack = [pointcloud.root];
+			while(stack.length > 0){
+				let node = stack.pop();
+				let box = node.getBoundingBox();
+				
+				let inside = ray.intersectBox(box);
+				
+				if(!inside){
+					continue;
+				}
+				
+				let h = node.geometryNode.mean.z 
+					+ pointcloud.position.z 
+					+ node.geometryNode.boundingBox.min.z;
+					
+				if(node.geometryNode.spacing <= pFromSpacing){
+					pHeight = h;
+					pFromSpacing = node.geometryNode.spacing;
+				}
+				
+				for(let index of Object.keys(node.children)){
+					let child = node.children[index];
+					if(child.geometryNode){
+						stack.push(node.children[index]);
+					}
+				}
+			}
+			
+			if(height === null || pFromSpacing < fromSpacing){
+				height = pHeight;
+				fromSpacing = pFromSpacing;
+			}
+		}
+		
+		return height;
+	}
+	
 	addPointCloud(pointcloud){
 		this.pointclouds.push(pointcloud);
 		this.scenePointCloud.add(pointcloud);
@@ -396,6 +452,26 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 	constructor(domElement, args){
 		super();
 		
+		
+		{ // generate missing dom hierarchy
+			if($(domElement).find("#potree_map").length === 0){
+				let potreeMap = $(`
+					<div id="potree_map" class="mapBox" style="position: absolute; left: 50px; top: 50px; width: 400px; height: 400px; display: none">
+						<div id="potree_map_header" style="position: absolute; width: 100%; height: 25px; top: 0px; background-color: rgba(0,0,0,0.5); z-index: 1000; border-top-left-radius: 3px; border-top-right-radius: 3px;">
+						</div>
+						<div id="potree_map_content" class="map" style="position: absolute; z-index: 100; top: 25px; width: 100%; height: calc(100% - 25px); border: 2px solid rgba(0,0,0,0.5); box-sizing: border-box;"></div>
+					</div>
+				`);
+				$(domElement).append(potreeMap);
+			}
+			
+			if($(domElement).find("#potree_description").length === 0){
+				let potreeDescription = $(`<div id="potree_description" class="potree_info_text"></div>`);
+				$(domElement).append(potreeDescription);
+			}
+		}
+		
+		
 		let a = args || {};
 		this.pointCloudLoadedCallback = a.onPointCloudLoaded || function(){};
 		
@@ -411,6 +487,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		//this.clipMode = Potree.ClipMode.HIGHLIGHT_INSIDE;
 		this.isFlipYZ = false;
 		this.useDEMCollisions = false;
+		this.generateDEM = false;
 		this.minNodeSize = 100;
 		this.directionalLight;
 		this.edlStrength = 1.0;
@@ -583,10 +660,10 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 				};
 			}
 		
-			this.scene.annotations.addEventListener("annotation_added", this.onAnnotationAdded);
 			if(oldScene){
 				oldScene.annotations.removeEventListener("annotation_added", this.onAnnotationAdded);
 			}
+			this.scene.annotations.addEventListener("annotation_added", this.onAnnotationAdded);
 		}
 		
 	};
@@ -804,7 +881,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 				break;
 		}
 
-		this.dispatchEvent({"type": "length_unit_changed", "viewer": this});
+		this.dispatchEvent({"type": "length_unit_changed", "viewer": this, value: value});
 	}
 	
 	toMaterialID(materialName){
@@ -1155,8 +1232,12 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 	};
 	
 	toggleMap(){
-		let map = $('#potree_map');
-		map.toggle(100);
+		//let map = $('#potree_map');
+		//map.toggle(100);
+		
+		if(this.mapView){
+			this.mapView.toggle();
+		}
 
 	};
 
@@ -1175,7 +1256,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			let imgMapToggle = document.createElement("img");
 			imgMapToggle.src = new URL(Potree.resourcePath + "/icons/map_icon.png").href;
 			imgMapToggle.style.display = "none";
-			imgMapToggle.onclick = this.toggleMap;
+			imgMapToggle.onclick = e => {this.toggleMap()};
 			imgMapToggle.id = "potree_map_toggle";
 			
 			viewer.renderArea.insertBefore(imgMapToggle, viewer.renderArea.children[0]);
@@ -1240,6 +1321,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		let height = this.renderArea.clientHeight;
 
 		this.renderer = new THREE.WebGLRenderer({premultipliedAlpha: false});
+		this.renderer.sortObjects = false;
 		this.renderer.setSize(width, height);
 		this.renderer.autoClear = false;
 		this.renderArea.appendChild(this.renderer.domElement);
@@ -1258,13 +1340,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		
 		if(!this.getShowAnnotations()){
 			this.scene.annotations.traverseDescendants(descendant => {
-				if(!descendant.__visible || !descendant.visible){
-					return false;
-				}else{
-					descendant.__visible = false;
-					//descendant.domElement[0].style.display = "none";
-					descendant.domElement.fadeOut(200);
-				}
+				descendant.display = false;
 				
 				return;
 			});
@@ -1278,9 +1354,12 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		
 		let distances = [];
 
+		let renderAreaWidth = this.renderArea.clientWidth;
+		let renderAreaHeight = this.renderArea.clientHeight;
 		this.scene.annotations.traverse(annotation => {
 			
 			if(annotation === this.scene.annotations){
+				annotation.display = false;
 				return true;
 			}
 			
@@ -1304,12 +1383,14 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			let screenSize = 0;
 			{
 				// SCREEN POS
-				screenPos.copy(position).project(this.scene.cameraP);
+				screenPos.copy(position).project(this.scene.getActiveCamera());
 				screenPos.x = this.renderArea.clientWidth * (screenPos.x + 1) / 2;
 				screenPos.y = this.renderArea.clientHeight * (1 - (screenPos.y + 1) / 2);
 				
-				screenPos.x = Math.floor(screenPos.x - element[0].clientWidth / 2);
-				screenPos.y = Math.floor(screenPos.y - annotation.elTitlebar[0].clientHeight / 2);
+				//screenPos.x = Math.floor(screenPos.x - element[0].clientWidth / 2);
+				//screenPos.y = Math.floor(screenPos.y - annotation.elTitlebar[0].clientHeight / 2);
+				screenPos.x = Math.floor(screenPos.x);
+				screenPos.y = Math.floor(screenPos.y);
 				
 				// SCREEN SIZE
 				if(viewer.scene.cameraMode == Potree.CameraMode.PERSPECTIVE) {
@@ -1322,47 +1403,26 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 				}				
 			}
 			
-			element.css("left", screenPos.x + "px");
-			element.css("top", screenPos.y + "px");
+			element[0].style.left = screenPos.x + "px";
+			element[0].style.top = screenPos.y + "px";
 			
 			let zIndex = 10000000 - distance * (10000000 / this.scene.cameraP.far);
 			if(annotation.descriptionVisible){
 				zIndex += 10000000;
 			}
-			
-			element.css("z-index", parseInt(zIndex));
-			
+
 			if(annotation.children.length > 0){
-				let expand = screenSize > annotation.collapseThreshold || annotation.boundingBox.containsPoint(this.scene.cameraP.position);
+				let expand = screenSize > annotation.collapseThreshold || annotation.boundingBox.containsPoint(this.scene.getActiveCamera().position.position);
+				annotation.expand = expand;
 				
 				if(!expand){
-					annotation.traverseDescendants(descendant => {
-						if(!descendant.__visible){
-							return;
-						}else{
-							descendant.__visible = false;
-							//descendant.domElement.fadeOut(200);
-							descendant.domElement.hide();
-						}
-					});
-					annotation.__visible = true;
-					element.fadeIn(200);
-				}else{
-					annotation.__visible = true;
-					element.fadeOut(200);
+					annotation.display = (-1 <= screenPos.z && screenPos.z <= 1);
 				}
 				
 				return expand;
 			}else{
-				annotation.__visible = (-1 <= screenPos.z && screenPos.z <= 1);
-				if(annotation.__visible){
-					$(element).fadeIn(200);
-				}else{
-					$(element).fadeOut(200);
-				}
+				annotation.display = (-1 <= screenPos.z && screenPos.z <= 1);
 			}
-			
-			
 		});
 	}
 
@@ -1448,7 +1508,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			}
 			
 			pointcloud.showBoundingBox = this.showBoundingBox;
-			pointcloud.generateDEM = this.useDEMCollisions;
+			pointcloud.generateDEM = this.generateDEM;
 			pointcloud.minimumNodePixelSize = this.minNodeSize;
 
 			visibleNodes += pointcloud.numVisibleNodes;
@@ -1562,6 +1622,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			this.mapView.update(delta);
 			if(this.mapView.sceneProjection){
 				$( "#potree_map_toggle" ).css("display", "block");
+				
 			}
 		}
 
@@ -1590,7 +1651,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		//	toggleMessage = 0;
 		//}
 		
-		let queryAll = Potree.startQuery("All", viewer.renderer.getContext());
+		//let queryAll = Potree.startQuery("All", viewer.renderer.getContext());
 		
 		if(this.useEDL && Potree.Features.SHADER_EDL.isSupported()){
 			if(!this.edlRenderer){
@@ -1605,8 +1666,11 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			this.potreeRenderer.render();
 		}
 		
-		Potree.endQuery(queryAll, viewer.renderer.getContext());
-		Potree.resolveQueries(viewer.renderer.getContext());
+		//Potree.endQuery(queryAll, viewer.renderer.getContext());
+		//Potree.resolveQueries(viewer.renderer.getContext());
+		
+		//let pointsRendered = viewer.scene.pointclouds[0].visibleNodes.map(n => n.geometryNode.geometry.attributes.position.count).reduce( (a, v) => a + v, 0);
+		//console.log("rendered: ", pointsRendered);
 		
 		//if(this.takeScreenshot == true){
 		//	this.takeScreenshot = false;
@@ -2055,6 +2119,5 @@ class EDLRenderer{
 		viewer.renderer.render(viewer.clippingTool.sceneVolume, camera);
 		viewer.renderer.render(viewer.profileTool.sceneProfile, camera);
 		viewer.renderer.render(viewer.transformationTool.sceneTransform, camera);
-
 	}
 };

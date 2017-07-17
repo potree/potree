@@ -48,10 +48,16 @@ Potree.PolygonClipVolume = class extends THREE.Object3D{
 				-(e.drag.end.y / e.viewer.renderer.domElement.clientHeight) * 2 + 1, 
 				0.5);
 			let camera = e.viewer.scene.getActiveCamera();
-			pos.unproject(camera);
-			var dir = pos.sub(camera.position).normalize();
-			var distance = -camera.position.z / dir.z;
-			pos = camera.position.clone().add( dir.multiplyScalar(1));
+			if(camera.isPerspectiveCamera) {
+				pos.unproject(camera);
+				var dir = pos.sub(camera.position).normalize();
+				var distance = -camera.position.z / dir.z;
+				pos = camera.position.clone().add( dir.multiplyScalar(1));
+			} else {
+				pos.unproject(camera);
+				pos.add(camera.getWorldDirection().clone().multiplyScalar(-(Math.abs(camera.near) - 1)));
+				let depthRange = camera.far - camera.near;
+			}
 
 			marker.position.copy(pos);
 		};

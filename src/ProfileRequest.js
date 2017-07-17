@@ -178,9 +178,14 @@ Potree.ProfileRequest = class ProfileRequest{
 				let acceptedPositions = [];
 				let points = new Potree.Points();
 				
+				let nodeMatrix = new THREE.Matrix4().makeTranslation(...node.boundingBox.min.toArray());
+				
+				let matrix = new THREE.Matrix4().multiplyMatrices(
+					this.pointcloud.matrixWorld, nodeMatrix);
+				
 				for(let i = 0; i < numPoints; i++){
 					let pos = new THREE.Vector3(p[3*i], p[3*i+1], p[3*i+2]);
-					pos.applyMatrix4(this.pointcloud.matrixWorld);
+					pos.applyMatrix4(matrix);
 					let distance = Math.abs(segment.cutPlane.distanceToPoint(pos));
 					let centerDistance = Math.abs(segment.halfPlane.distanceToPoint(pos));
 					

@@ -91,7 +91,9 @@ Potree.BinaryLoader.prototype.parse = function(node, buffer){
 				}
 			}
 		}
-		geometry.addAttribute("indices", new THREE.BufferAttribute(new Float32Array(data.indices), 1));
+		let indicesAttribute = new THREE.Uint8BufferAttribute(data.indices, 4);
+		indicesAttribute.normalized = true;
+		geometry.addAttribute("indices", indicesAttribute);
 
 		if(!geometry.attributes.normal){
 			let buffer = new Float32Array(numPoints*3);
@@ -99,9 +101,8 @@ Potree.BinaryLoader.prototype.parse = function(node, buffer){
 		}
 
 		geometry.boundingBox = node.boundingBox;
-		//geometry.boundingBox = tightBoundingBox;
 		node.geometry = geometry;
-		//node.boundingBox = tightBoundingBox;
+		node.mean = new THREE.Vector3(...data.mean);
 		node.tightBoundingBox = tightBoundingBox;
 		node.loaded = true;
 		node.loading = false;

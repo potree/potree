@@ -1,7 +1,5 @@
 TODO orthographic cameras:
 
-- ortho picking
-- ortho zoom to double click
 - navigation cube
 - (weights for node refinement for large pointclouds)
 
@@ -9,7 +7,7 @@ TODO clipping:
 
 - polygon clipping 
   - vertices are distorted at the boundaries of the render area (caused by perspective projection)
-  - picking with ortho cameras (fix ortho camera picking first)
+  - marker spheres ot equally big (depneds on camera mode and distance)
   - EDL renderer: no depth of volumes stored -> no depth test possible
 - clip planes
   - EDL renderer: no depth of volumes stored -> no depth test possible

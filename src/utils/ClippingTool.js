@@ -120,9 +120,7 @@ Potree.ClippingTool = class ClippingTool extends THREE.EventDispatcher{
 			
 			this.viewer.inputHandler.startDragging(clipVolume);
 		} else if(type == "polygon") {
-			let camera = this.viewer.scene.getActiveCamera();
-			camera.updateMatrixWorld();
-			let polyClipVol = new Potree.PolygonClipVolume(camera.matrixWorldInverse, camera.projectionMatrix);
+			let polyClipVol = new Potree.PolygonClipVolume(this.viewer.scene.getActiveCamera().clone());
 
 			this.dispatchEvent({"type": "start_inserting_clipping_volume"});
 
@@ -161,6 +159,7 @@ Potree.ClippingTool = class ClippingTool extends THREE.EventDispatcher{
 				}
 				this.viewer.renderer.domElement.removeEventListener("mouseup", insertionCallback, true);
 				this.viewer.removeEventListener("cancel_insertions", cancel.callback);
+				polyClipVol.addExtrudedEdges();
 				this.viewer.inputHandler.enabled = true;
 			};
 			

@@ -10,7 +10,6 @@ TODO clipping:
 - polygon clipping 
   - vertices are distorted at the boundaries of the render area (caused by perspective projection)
   - picking with ortho cameras (fix ortho camera picking first)
-  - TODO: 
-  	+ render extruded clip polygon
+  - EDL renderer: no depth of volumes stored -> no depth test possible
 - clip planes
   - EDL renderer: no depth of volumes stored -> no depth test possible

@@ -1,16 +1,19 @@
 
 Potree.PolygonClipVolume = class extends THREE.Object3D{
 	
-	constructor(viewMatrix, projMatrix){
+	constructor(camera){
 		super();
 
 		this.constructor.counter = (this.constructor.counter === undefined) ? 0 : this.constructor.counter + 1;
 		this.name = "polygon_clip_volume_" + this.constructor.counter;
 
-		this.viewMatrix = viewMatrix.clone();
-		this.projMatrix = projMatrix.clone();
+		this.camera = camera;
+		this.camera.updateMatrixWorld();
+		this.viewMatrix = this.camera.matrixWorldInverse.clone();
+		this.projMatrix = this.camera.projectionMatrix.clone();
 		this.markers = [];
 		this.edges = [];
+		this.extrudedEdges = [];
 		this.sphereGeometry = new THREE.SphereGeometry(0.01, 5, 5);
 		this.color = new THREE.Color( 0xff0000 );
 		this.initialized = false;
@@ -103,6 +106,37 @@ Potree.PolygonClipVolume = class extends THREE.Object3D{
 		if(this.markers.length > 0) {
 			this.remove(this.markers[this.markers.length - 1]);
 			this.markers.splice(this.markers.length - 1, 1);
+		}
+	}
+
+	addExtrudedEdges() {
+		let dir = this.camera.getWorldDirection().normalize();
+		let camPos = this.camera.getWorldPosition();
+		for(let i = 0; i < this.markers.length; i++) {
+			let frontMarker = this.markers[i].position.clone();
+			let backMarker = this.markers[i].position.clone();
+			if(this.camera.isOrthographicCamera) {
+				frontMarker.add(dir.clone().multiplyScalar(1000));
+				backMarker.add(dir.clone().multiplyScalar(-1000));
+			} else {
+				let markerDir = backMarker.clone().sub(camPos);
+				backMarker.add(markerDir.clone().multiplyScalar(1000));
+				frontMarker.copy(camPos);
+			}
+
+			let lineGeometry = new THREE.Geometry();
+			lineGeometry.vertices.push(frontMarker, backMarker);
+			lineGeometry.colors.push(this.color, this.color, this.color);
+			let lineMaterial = new THREE.LineBasicMaterial( { 
+				linewidth: 1
+			});
+			lineMaterial.depthWrite = false;
+			lineMaterial.depthTest = true;
+			let edge = new THREE.Line(lineGeometry, lineMaterial);
+			edge.visible = true;
+
+			this.add(edge);
+			this.extrudedEdges.push(edge);				
 		}
 	}
 

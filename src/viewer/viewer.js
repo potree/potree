@@ -1976,7 +1976,7 @@ class EDLRenderer{
 		{ // EDL OCCLUSION PASS
 			this.edlMaterial.uniforms.screenWidth.value = width;
 			this.edlMaterial.uniforms.screenHeight.value = height;
-			this.edlMaterial.uniforms.colorMap.value = this.rtColor;
+			this.edlMaterial.uniforms.colorMap.value = this.rtColor.texture;
 			this.edlMaterial.uniforms.edlStrength.value = viewer.edlStrength;
 			this.edlMaterial.uniforms.radius.value = viewer.edlRadius;
 			this.edlMaterial.uniforms.opacity.value = 1;

@@ -11,6 +11,7 @@
 	<link rel="stylesheet" type="text/css" href="../libs/jquery-ui/jquery-ui.min.css">
 	<link rel="stylesheet" type="text/css" href="../libs/perfect-scrollbar/css/perfect-scrollbar.css">
 	<link rel="stylesheet" href="../libs/openlayers3/ol.css" type="text/css">
+	<link rel="stylesheet" href="../libs/spectrum/spectrum.css" type="text/css">
   </head>
 
   <body>
@@ -30,12 +31,19 @@
     <script src="../libs/i18next/i18next.js"></script>
 	
 	<script src="../build/potree/potree.js"></script>
+	<!--<script src="../src/viewer/sidebar.js"></script>-->
 	
+	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
+	<!-- INCLUDE SETTINGS HERE -->
+	
+	<script src="../libs/plasio/js/laslaz.js"></script>
+	<script src="../libs/plasio/vendor/bluebird.js"></script>
+
     <div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
 		<div id="potree_render_area"></div>
 		<div id="potree_sidebar_container"> </div>
     </div>
-
+	
 	<script>
 	
 		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
@@ -59,8 +67,7 @@
 				Take a look at src/viewer/sidebar.html and sidebar.js to 
 				learn how the other sections were populated.
 			`);
-			//content.hide();
-			section.click(() => content.slideToggle());
+			section.first().click(() => content.slideToggle());
 			section.insertBefore($('#menu_about'));
 			
 		});

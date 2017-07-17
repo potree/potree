@@ -344,7 +344,6 @@ Potree.MapView = class{
 			this.load(pointcloud);
 		}
 		
-		console.log("map.setScene");
 		this.viewer.scene.annotations.traverseDescendants(annotation => {
 			this.onAnnotationAdded({annotation: annotation});
 		});

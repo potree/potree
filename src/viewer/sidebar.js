@@ -360,8 +360,6 @@ function initAnnotationDetails(){
 	let registeredEvents = [];
 	
 	let rebuild = () => {
-		console.log("rebuild");
-		
 		annotationPanel.empty();
 		for(let registeredEvent of registeredEvents){
 			let {type, dispatcher, callback} = registeredEvent;
@@ -1092,7 +1090,7 @@ function initMeasurementDetails(){
 						let step = elWidthSlider.spinner("option", "step");
 						
 						let delta = value * 0.05;
-						let increments = parseInt(delta / step);
+						let increments = Math.max(1, parseInt(delta / step));
 						
 						return increments;
 					}

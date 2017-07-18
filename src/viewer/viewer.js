@@ -429,8 +429,7 @@ Potree.Scene = class extends THREE.EventDispatcher{
 		}
 	}
 	
-	addAnnotation(position, args = {}){
-		
+	addAnnotation(position, args = {}){		
 		if(position instanceof Array){
 			args.position = new THREE.Vector3().fromArray(position);
 		}else if(position instanceof THREE.Vector3){
@@ -450,8 +449,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 
 	
 	constructor(domElement, args){
-		super();
-		
+		super();		
 		
 		{ // generate missing dom hierarchy
 			if($(domElement).find("#potree_map").length === 0){
@@ -534,14 +532,15 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		this.renderer = null;
 		
 		this.scene = null;
-		this.clippingTool =  null;
 		
 		this.inputHandler = null;
 
 		this.measuringTool = null;
 		this.profileTool = null;
 		this.volumeTool = null;
+		this.clippingTool =  null;
 		this.transformationTool = null;
+		this.navigationCube = null;
 		
 		this.skybox = null;
 		this.clock = new THREE.Clock();
@@ -561,6 +560,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			this.volumeTool = new Potree.VolumeTool(this);
 			this.clippingTool = new Potree.ClippingTool(this);
 			this.transformationTool = new Potree.TransformationTool(this);
+			this.navigationCube = new Potree.NavigationCube(this);
 			
 			this.createControls();
 			
@@ -1616,6 +1616,10 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			}
 		}
 
+		{ // update navigation cube
+			this.navigationCube.update(camera.rotation);
+		}
+
 		this.updateAnnotations();
 		
 		if(this.mapView){
@@ -1960,6 +1964,12 @@ class PotreeRenderer{
 		viewer.renderer.render(viewer.measuringTool.sceneMeasurement, activeCam);
 		viewer.renderer.render(viewer.profileTool.sceneProfile, activeCam);
 		viewer.renderer.render(viewer.transformationTool.sceneTransform, activeCam);
+
+		viewer.renderer.setViewport(viewer.renderer.domElement.clientWidth - viewer.navigationCube.width, 
+									viewer.renderer.domElement.clientHeight - viewer.navigationCube.width, 
+									viewer.navigationCube.width, viewer.navigationCube.width);
+		viewer.renderer.render(viewer.navigationCube, viewer.navigationCube.camera);		
+		viewer.renderer.setViewport(0, 0, viewer.renderer.domElement.clientWidth, viewer.renderer.domElement.clientHeight);
 		
 		
 		//Potree.endQuery(queryAll, viewer.renderer.getContext());
@@ -2112,6 +2122,7 @@ class EDLRenderer{
 		}	
 		
 		viewer.renderer.clearDepth();
+		viewer.renderer.render(viewer.navigationCube, viewer.navigationCube.camera);
 		viewer.renderer.render(viewer.controls.sceneControls, camera);
 		
 		viewer.renderer.render(viewer.measuringTool.sceneMeasurement, camera);		

@@ -1,13 +1,16 @@
 TODO orthographic cameras:
 
 - navigation cube
+  - toggle in UI
+  - change view on click
+  - check with front/side view buttons in UI
 - (weights for node refinement for large pointclouds)
 
 TODO clipping:
 
 - polygon clipping 
   - vertices are distorted at the boundaries of the render area (caused by perspective projection)
-  - marker spheres ot equally big (depneds on camera mode and distance)
+  - marker spheres not equally big (depneds on camera mode and distance)
   - EDL renderer: no depth of volumes stored -> no depth test possible
 - clip planes
   - EDL renderer: no depth of volumes stored -> no depth test possible

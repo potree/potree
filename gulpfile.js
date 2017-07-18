@@ -74,6 +74,7 @@ var paths = {
 		"src/viewer/profile.js",
 		"src/viewer/map.js",
 		"src/viewer/sidebar.js",
+		"src/viewer/NavigationCube.js",
 		"src/stuff/HoverMenu.js",
 		"src/webgl/GLProgram.js",
 	],

@@ -1749,27 +1749,6 @@ function initMeasurementDetails(){
 
 };
 
-function initSceneList(){
-
-	let scenelist = $('#scene_list');
-	
-	// length units
-	$("#optLengthUnit").selectmenu({
-		style:'popup',
-		position: { 
-			my: "top", 
-			at: "bottom", 
-			collision: "flip" },
-		change: function(e) {
-			let selectedValue = $("#optLengthUnit").selectmenu().val();
-			viewer.setLengthUnit(selectedValue);
-		}
-	});	
-
-	$("#optLengthUnit").selectmenu().val(viewer.lengthUnit.code);
-	$("#optLengthUnit").selectmenu("refresh");
-};
-
 function initClippingTool() {
 	$("#clipping_volumes_container").hide();
 
@@ -2309,6 +2288,22 @@ function initClippingTool() {
 function initSceneList(){
 
 	let scenelist = $('#scene_list');
+
+	// length units
+	$("#optLengthUnit").selectmenu({
+		style:'popup',
+		position: { 
+			my: "top", 
+			at: "bottom", 
+			collision: "flip" },
+		change: function(e) {
+			let selectedValue = $("#optLengthUnit").selectmenu().val();
+			viewer.setLengthUnit(selectedValue);
+		}
+	});	
+
+	$("#optLengthUnit").selectmenu().val(viewer.lengthUnit.code);
+	$("#optLengthUnit").selectmenu("refresh");
 	
 	let initUIElements = function(i) {
 		// scene panel in scene list

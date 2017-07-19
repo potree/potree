@@ -1,7 +1,5 @@
 TODO orthographic cameras:
 
-- navigation cube
-  - bottom view doesnt work
 - (weights for node refinement for large pointclouds)
 
 TODO clipping:

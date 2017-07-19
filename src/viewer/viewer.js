@@ -951,19 +951,22 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 	};
 	
 	zoomTo(node, factor){
-		//this.scene.camera.zoomTo(node, factor);
 		let view = this.scene.view;
 	
 		this.scene.cameraP.position.copy(view.position);
-		this.scene.cameraP.lookAt(view.getPivot());
+		this.scene.cameraP.rotation.order = "ZXY";
+		this.scene.cameraP.rotation.x = Math.PI / 2 + view.pitch;
+		this.scene.cameraP.rotation.z = view.yaw;
+		this.scene.cameraP.updateMatrix();
 		this.scene.cameraP.updateMatrixWorld();
 		this.scene.cameraP.zoomTo(node, factor);
-
 		
 		this.scene.cameraO.position.copy(view.position);
-		this.scene.cameraO.lookAt(view.getPivot());
+		this.scene.cameraO.rotation.order = "ZXY";
+		this.scene.cameraO.rotation.x = Math.PI / 2 + view.pitch;
+		this.scene.cameraO.rotation.z = view.yaw;
+		this.scene.cameraO.updateMatrix();
 		this.scene.cameraO.updateMatrixWorld();
-
 		
 		let bs;
 		if(node.boundingSphere){
@@ -977,11 +980,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		bs = bs.clone().applyMatrix4(node.matrixWorld); 
 		
 		view.position.copy(this.scene.cameraP.position);
-		view.radius = view.position.distanceTo(bs.center);
-		//let target = bs.center;
-		//target.z = target.z - bs.radius * 0.8;
-		//view.lookAt(target);
-		
+		view.radius = view.position.distanceTo(bs.center);		
 		this.dispatchEvent({"type": "zoom_to", "viewer": this});
 	};
 	
@@ -1056,7 +1055,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 	};
 	
 	setBottomView(){
-		this.scene.view.yaw = Math.PI;
+		this.scene.view.yaw = -Math.PI;
 		this.scene.view.pitch = Math.PI / 2;
 		
 		this.fitToScreen();

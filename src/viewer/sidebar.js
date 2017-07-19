@@ -1122,7 +1122,76 @@ function initMeasurementDetails(){
 		update(){
 			let elCoordiantesContainer = this.elContent.find(".coordinates_table_container");
 			elCoordiantesContainer.empty();
-			elCoordiantesContainer.append(createCoordinatesTable(this.measurement));
+			let coordinatesTable = createCoordinatesTable(this.measurement);
+			
+			let validate = input => {
+				return !isNaN(Number(input));
+			};
+			
+			let cells = coordinatesTable.find("td");
+			cells.attr("contenteditable", "true");
+			
+			cells = cells.toArray();
+			
+			for(let i = 0; i < cells.length; i++){
+				let cell = cells[i];
+				let measure = this.measurement;
+				let updateCallback = this._update;
+				
+				let assignValue = () => {
+					let text = Potree.utils.removeCommas($(cell).html());
+					
+					let num = Number(text);
+					
+					if(!isNaN(num)){
+						$(cell).removeClass("invalid_value");
+						
+						measure.removeEventListener("marker_moved", updateCallback);
+						
+						let index = parseInt(i / 3);
+						let coordinateComponent = i % 3;
+						
+						let position = measure.points[index].clone();
+						
+						if(coordinateComponent === 0){
+							position.x = num;
+						} else if(coordinateComponent === 1){
+							position.y = num;
+						} else if(coordinateComponent === 2){
+							position.z = num;
+						}
+						
+						measure.setPosition(index, position);
+						measure.addEventListener("marker_moved", updateCallback);
+					}else{
+						$(cell).addClass("invalid_value");
+					}
+				};
+				
+				$(cell).on("keypress", (e) => {
+					if(e.which === 13){
+						assignValue();
+						return false;
+					}
+				});
+				
+				$(cell).focusout(() => assignValue());
+				
+				$(cell).on("input", function(e){
+					let text = Potree.utils.removeCommas($(this).html());
+					
+					let num = Number(text);
+					
+					if(!isNaN(num)){
+						$(this).removeClass("invalid_value");
+					}else{
+						$(this).addClass("invalid_value");
+					}
+					
+				});
+			}
+			
+			elCoordiantesContainer.append(coordinatesTable);
 		}
 		
 		download(){

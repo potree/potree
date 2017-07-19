@@ -93,6 +93,10 @@ Potree.utils = class{
 		}
 		return x1 + x2;
 	};
+	
+	static removeCommas(str){
+		return str.replace(/,/g, "");
+	}
 
 	/**
 	 * create worker from a string

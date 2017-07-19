@@ -780,3 +780,13 @@ label:hover{
 	width: 100%
 }
 
+.invalid_value{
+	color: #e05e5e;
+}
+
+
+//[contenteditable]:focus {
+//	outline: 1px solid red;
+//	outline-radius: 2px;
+//}
+

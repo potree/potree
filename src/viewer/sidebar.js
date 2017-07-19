@@ -325,6 +325,12 @@ function initNavigation(){
 		"[title]tt.left_view_control",
 		function(){viewer.setLeftView()}
 	));
+	
+	elNavigation.append(createToolIcon(
+		Potree.resourcePath + "/icons/navigation_cube.svg",
+		"[title]tt.navigation_cube_control",
+		function(){viewer.toggleNavigationCube()}
+	));
 
 	elNavigation.append(createToolIcon(
 		Potree.resourcePath + "/icons/perspective-camera.svg",

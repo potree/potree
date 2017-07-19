@@ -4,6 +4,8 @@ Potree.NavigationCube = class NavigationCube extends THREE.Object3D {
 	constructor(viewer){
 		super();
 
+		this.viewer = viewer;
+
 		let createPlaneMaterial = (img) => {
 			let material = new THREE.MeshBasicMaterial( {
 				depthTest: true, 
@@ -23,28 +25,28 @@ Potree.NavigationCube = class NavigationCube extends THREE.Object3D {
 		let planeGeometry = new THREE.PlaneGeometry(1, 1);
 
 		this.front = new THREE.Mesh(planeGeometry, createPlaneMaterial('F.png'));
-		this.front.position.y = 0.5;
+		this.front.position.y = -0.5;
 		this.front.rotation.x = Math.PI / 2.0;
 		this.front.updateMatrixWorld();
 		this.front.name = "F";
 		this.add(this.front);
 
 		this.back = new THREE.Mesh(planeGeometry, createPlaneMaterial('B.png'));
-		this.back.position.y = -0.5;
+		this.back.position.y = 0.5;
 		this.back.rotation.x = Math.PI / 2.0;
 		this.back.updateMatrixWorld();
 		this.back.name = "B";
 		this.add(this.back);
 
 		this.left = new THREE.Mesh(planeGeometry, createPlaneMaterial('L.png'));
-		this.left.position.x = 0.5;
+		this.left.position.x = -0.5;
 		this.left.rotation.y = Math.PI / 2.0;
 		this.left.updateMatrixWorld();
 		this.left.name = "L";
 		this.add(this.left);
 
 		this.right = new THREE.Mesh(planeGeometry, createPlaneMaterial('R.png'));
-		this.right.position.x = -0.5;
+		this.right.position.x = 0.5;
 		this.right.rotation.y = Math.PI / 2.0;
 		this.right.updateMatrixWorld();
 		this.right.name = "R";
@@ -73,7 +75,7 @@ Potree.NavigationCube = class NavigationCube extends THREE.Object3D {
 		let onMouseDown = (event) => {
 			this.pickedFace = null;
 			let mouse = new THREE.Vector2();
-			mouse.x = event.clientX - (viewer.renderer.domElement.clientWidth - this.width);
+			mouse.x = event.clientX - (window.innerWidth - this.width);
 			mouse.y = event.clientY;
 
 			if(mouse.x < 0 || mouse.y > this.width) return;
@@ -95,11 +97,11 @@ Potree.NavigationCube = class NavigationCube extends THREE.Object3D {
 				}
 			}
 			if(this.pickedFace) {
-				alert(this.pickedFace);
+				this.viewer.setView(this.pickedFace);
 			}
 		};
 
-		viewer.renderer.domElement.addEventListener('mousedown', onMouseDown, false);
+		this.viewer.renderer.domElement.addEventListener('mousedown', onMouseDown, false);
 	}
 
 	update(rotation) {

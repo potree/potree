@@ -1,9 +1,7 @@
 TODO orthographic cameras:
 
 - navigation cube
-  - toggle in UI
-  - change view on click
-  - check with front/side view buttons in UI
+  - bottom view doesnt work
 - (weights for node refinement for large pointclouds)
 
 TODO clipping:
@@ -14,3 +12,10 @@ TODO clipping:
   - EDL renderer: no depth of volumes stored -> no depth test possible
 - clip planes
   - EDL renderer: no depth of volumes stored -> no depth test possible
+
+TODO general:
+ - icons and tooltips
+   - navigation cube
+   - perspective/ortho camera
+   - polygon clipping
+   - axis aligned clipplanes

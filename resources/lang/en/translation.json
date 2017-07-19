@@ -31,6 +31,7 @@
         "earth_control": "Earth control",
         "perspective_camera_control": "Perspective camera",
         "orthographic_camera_control": "Orthographic camera",
+        "navigation_cube_control": "Navigation cube",
         "remove_all_clipping_volumes": "Remove all clipping volumes"
     },
     "appearance": {

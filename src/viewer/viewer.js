@@ -1018,10 +1018,46 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		
 		this.zoomTo(node, factor);
 	};
+
+	toggleNavigationCube() {
+		this.navigationCube.visible = !this.navigationCube.visible;
+	}
+
+	setView(view) {
+		if(!view) return;
+
+		switch(view) {
+			case "F":
+				this.setFrontView();
+				break;
+			case "B":
+				this.setBackView();
+				break;
+			case "L":
+				this.setLeftView();
+				break;
+			case "R":
+				this.setRightView();
+				break;
+			case "U":
+				this.setTopView();
+				break;
+			case "D":
+				this.setBottomView();
+				break;
+		}
+	}
 	
 	setTopView(){
 		this.scene.view.yaw = 0;
 		this.scene.view.pitch = -Math.PI / 2;
+		
+		this.fitToScreen();
+	};
+	
+	setBottomView(){
+		this.scene.view.yaw = Math.PI;
+		this.scene.view.pitch = Math.PI / 2;
 		
 		this.fitToScreen();
 	};
@@ -1033,6 +1069,13 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		this.fitToScreen();
 	};
 	
+	setBackView(){
+		this.scene.view.yaw = Math.PI;
+		this.scene.view.pitch = 0;
+		
+		this.fitToScreen();
+	};
+
 	setLeftView(){
 		this.scene.view.yaw = -Math.PI / 2;
 		this.scene.view.pitch = 0;
@@ -2122,7 +2165,6 @@ class EDLRenderer{
 		}	
 		
 		viewer.renderer.clearDepth();
-		viewer.renderer.render(viewer.navigationCube, viewer.navigationCube.camera);
 		viewer.renderer.render(viewer.controls.sceneControls, camera);
 		
 		viewer.renderer.render(viewer.measuringTool.sceneMeasurement, camera);		
@@ -2130,5 +2172,11 @@ class EDLRenderer{
 		viewer.renderer.render(viewer.clippingTool.sceneVolume, camera);
 		viewer.renderer.render(viewer.profileTool.sceneProfile, camera);
 		viewer.renderer.render(viewer.transformationTool.sceneTransform, camera);
+		
+		viewer.renderer.setViewport(viewer.renderer.domElement.clientWidth - viewer.navigationCube.width, 
+									viewer.renderer.domElement.clientHeight - viewer.navigationCube.width, 
+									viewer.navigationCube.width, viewer.navigationCube.width);
+		viewer.renderer.render(viewer.navigationCube, viewer.navigationCube.camera);		
+		viewer.renderer.setViewport(0, 0, viewer.renderer.domElement.clientWidth, viewer.renderer.domElement.clientHeight);
 	}
 };

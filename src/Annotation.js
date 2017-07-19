@@ -303,7 +303,7 @@ Potree.Annotation = class extends THREE.EventDispatcher{
 
 		let view = this.scene.view;
 		
-		var animationDuration = 800;
+		var animationDuration = 300;
 		var easing = TWEEN.Easing.Quartic.Out;
 		
 		

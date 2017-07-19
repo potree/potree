@@ -1280,6 +1280,9 @@ function initMeasurementDetails(){
 							<span class="input-grid-cell"><input type="text" id="volume_input_gamma_${measurement.id}"/></span>
 						</div>
 					</div>
+					
+					<label><input type="checkbox" id="chkClip_${this.measurement.id}"/><span data-i18n="measurements.clip"></span></label>
+					<label><input type="checkbox" id="chkVisible_${this.measurement.id}"/><span data-i18n="measurements.show"></span></label>
 				
 					
 					<input type="button" value="Prepare Download" id="download_volume_${this.id}"/>
@@ -1294,6 +1297,20 @@ function initMeasurementDetails(){
 				</div>
 			`);
 			this.elContentContainer.append(this.elContent);
+			
+			this.elClip = this.elContent.find(`#chkClip_${this.measurement.id}`);
+			this.elVisible = this.elContent.find(`#chkVisible_${this.measurement.id}`);
+			
+			this.elClip.click( () => {
+				this.measurement.clip = this.elClip.is(":checked");
+			});
+			
+			this.elVisible.click( () => {
+				this.measurement.visible = this.elVisible.is(":checked");
+			});
+			
+			this.elClip.prop('checked', this.measurement.clip);
+			this.elVisible.prop('checked', this.measurement.visible);
 			
 			this.elX = this.elContent.find(`#volume_input_x_${this.measurement.id}`);
 			this.elY = this.elContent.find(`#volume_input_y_${this.measurement.id}`);
@@ -1407,6 +1424,8 @@ function initMeasurementDetails(){
 			this.measurement.addEventListener("marker_added", this._update);
 			this.measurement.addEventListener("marker_removed", this._update);
 			this.measurement.addEventListener("marker_moved", this._update);
+			
+			this.elContent.i18n();
 			
 			this.update();
 		}
@@ -1757,9 +1776,10 @@ function initSceneList(){
 	let initUIElements = function(i) {
 		// scene panel in scene list
 
-		let title = viewer.scene.pointclouds[i].name;
-		let pcMaterial = viewer.scene.pointclouds[i].material;
-		let checked = viewer.scene.pointclouds[i].visible ? "checked" : "";
+		let pointcloud = viewer.scene.pointclouds[i];
+		let title = pointcloud.name;
+		let pcMaterial = pointcloud.material;
+		let checked = pointcloud.visible ? "checked" : "";
 
 		let scenePanel = $(`
 			<span class="scene_item">
@@ -1974,7 +1994,7 @@ function initSceneList(){
 		let inputVis = scenePanel.find("input[type='checkbox']");
 		
 		inputVis.click(function(event){
-			viewer.scene.pointclouds[i].visible = event.target.checked;
+			pointcloud.visible = event.target.checked;
 			if(viewer.profileWindowController){
 				viewer.profileWindowController.recompute();
 			}
@@ -2189,12 +2209,15 @@ function initSceneList(){
 		});
 
 		let updateHeightRange = function(){
-			let box = viewer.getBoundingBox();
+			let box = [pointcloud.pcoGeometry.tightBoundingBox, pointcloud.getBoundingBoxWorld()]
+				.find(v => v !== undefined);
+				
+			pointcloud.updateMatrixWorld(true);
+			box = Potree.utils.computeTransformedBoundingBox(box, pointcloud.matrixWorld);
+			
 			let bWidth = box.max.z - box.min.z;
 			bMin = box.min.z - 0.2 * bWidth;
 			bMax = box.max.z + 0.2 * bWidth;
-			
-			let hrWidth = pcMaterial.heightMax - pcMaterial.heightMin;
 			
 			$( "#lblHeightRange" + i )[0].innerHTML = pcMaterial.heightMin.toFixed(2) + " to " + pcMaterial.heightMax.toFixed(2);
 			$( "#sldHeightRange" + i ).slider({
@@ -2217,6 +2240,14 @@ function initSceneList(){
 			});
 		};
 		
+		{
+			updateHeightRange();
+			let min =  $(`#sldHeightRange${i}`).slider("option", "min");
+			let max =  $(`#sldHeightRange${i}`).slider("option", "max");
+			pcMaterial.heightMin = 0.8 * min + 0.2 * max;
+			pcMaterial.heightMax = 0.2 * min + 0.8 * max;
+		}
+			
 		viewer.addEventListener("height_range_changed" + i, updateHeightRange);
 		viewer.addEventListener("intensity_range_changed" + i, updateIntensityRange);
 		
@@ -2415,9 +2446,10 @@ let initSettings = function(){
 	});
 	
 	viewer.addEventListener("minnodesize_changed", function(event){
-		$('#lblMinNodeSize')[0].innerHTML = parseInt(viewer.getMinNodeSize());
-		$( "#lblMinNodeSize" ).slider({value: viewer.getMinNodeSize()});
+		$('#lblMinNodeSize').html(parseInt(viewer.getMinNodeSize()));
+		$("#sldMinNodeSize").slider({value: viewer.getMinNodeSize()});
 	});
+	$('#lblMinNodeSize').html(parseInt(viewer.getMinNodeSize()));
 	
 	
 	let toClipModeCode = function(string){

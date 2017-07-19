@@ -276,7 +276,8 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree{
 				
 				if(j === 0){
 					let vArrayIndex = visibleNodes.indexOf(child);
-					data[i*3 + 1] = vArrayIndex - i;
+					data[i*3 + 1] = (vArrayIndex - i) >> 8;
+					data[i*3 + 2] = (vArrayIndex - i) % 256;
 				}
 				
 			}

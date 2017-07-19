@@ -136,7 +136,7 @@ float getLOD(){
 		float mask = value.r * 255.0;
 		if(isBitSet(mask, index)){
 			// there are more visible child nodes at this position
-			iOffset = iOffset + value.g * 255.0 + numberOfOnes(mask, index - 1.0);
+			iOffset = iOffset + value.g * 255.0 * 256.0 + value.b * 255.0 + numberOfOnes(mask, index - 1.0);
 			depth++;
 		}else{
 			// no more visible child nodes at this position

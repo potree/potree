@@ -577,9 +577,9 @@ function initMeasurementDetails(){
 			
 			let row = $(`
 				<tr>
-					<td>${x}</td>
-					<td>${y}</td>
-					<td>${z}</td>
+					<td><span>${x}</span></td>
+					<td><span>${y}</span></td>
+					<td><span>${z}</span></td>
 				</tr>
 			`);
 			
@@ -1128,7 +1128,7 @@ function initMeasurementDetails(){
 				return !isNaN(Number(input));
 			};
 			
-			let cells = coordinatesTable.find("td");
+			let cells = coordinatesTable.find("span");
 			cells.attr("contenteditable", "true");
 			
 			cells = cells.toArray();

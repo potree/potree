@@ -54,10 +54,16 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 			if(e.drag.mouse === Potree.MOUSE.LEFT){
 				this.yawDelta += ndrag.x * this.rotationSpeed;
 				this.pitchDelta += ndrag.y * this.rotationSpeed;
+				
+				this.stopTweens();
 			}else if(e.drag.mouse === Potree.MOUSE.RIGHT){
 				this.panDelta.x += ndrag.x;
 				this.panDelta.y += ndrag.y;
+				
+				this.stopTweens();
 			}
+			
+			
 		};
 		
 		let drop = e => {
@@ -69,7 +75,7 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 			
 			this.radiusDelta += -e.delta * resolvedRadius * 0.1;
 			
-			//this.radiusDelta -= e.delta;
+			this.stopTweens();
 		};
 		
 		let dblclick = (e) => {
@@ -104,9 +110,8 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 				let resolvedRadius = this.scene.view.radius + this.radiusDelta;
 				let newRadius = resolvedRadius / delta;
 				this.radiusDelta = newRadius - resolvedRadius;
-				
-				//let newRadius = prevDist * (resolvedRadius / currDist);
-				//this.radiusDelta = newRadius - resolvedRadius;
+
+				this.stopTweens();
 			}
 			
 			previousTouch = e;
@@ -198,18 +203,14 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 		}
 	}
 	
+	stopTweens(){
+		this.tweens.forEach( e => e.stop() );
+		this.tweens = [];
+	}
+	
 	update(delta){
 		
 		let view = this.scene.view;
-		
-		{ // cancel move animations on user input
-			let changes = [ this.yawDelta, this.pitchDelta, this.radiusDelta, this.panDelta.length() ];
-			let changeHappens = changes.some( e => Math.abs(e) > 0.001);
-			if(changeHappens && this.tweens.length > 0){
-				this.tweens.forEach( e => e.stop() );
-				this.tweens = [];
-			}
-		}
 		
 		{ // apply rotation
 			let progression = Math.min(1, this.fadeFactor * delta);

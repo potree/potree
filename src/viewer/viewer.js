@@ -523,7 +523,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			this.setFOV(60);
 			this.setEDLEnabled(false);
 			this.setEDLRadius(1.4);
-			this.setEDLStrength(1.0);
+			this.setEDLStrength(0.4);
 			this.setClipMode(Potree.ClipMode.HIGHLIGHT_INSIDE);
 			this.setPointBudget(1*1000*1000);
 			this.setShowBoundingBox(false);

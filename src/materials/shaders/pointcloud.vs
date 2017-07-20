@@ -446,7 +446,13 @@ void main() {
 			#endif
 		}else{
 			#if defined clip_highlight_inside
-			vColor.r += 0.5;
+				vColor.r += 0.5;
+				
+				//vec3 hsv = rgb2hsv(vColor);
+            	//hsv.x = hsv.x - 0.3;
+            	//hsv.z = hsv.z + 0.1;
+            	//vColor = hsv2rgb(hsv);
+				
 			#endif
 		}
 	#endif

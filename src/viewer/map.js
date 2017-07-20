@@ -652,6 +652,7 @@ Potree.MapView = class{
 				this.sourcesLabelLayer.getSource().addFeature(feature);
 			}
 		});
+		
 	}
 	
 	toggle(){

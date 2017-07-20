@@ -790,3 +790,8 @@ label:hover{
 //	outline-radius: 2px;
 //}
 
+
+.ui-slider {
+	margin-top: 3px;
+	margin-bottom: 10px;
+}

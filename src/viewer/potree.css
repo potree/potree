@@ -461,6 +461,10 @@ body{
 	margin: 	8px 20px;
 }
 
+.ui-slider {
+	margin-top: 5px;
+	margin-bottom: 10px;
+}
 
 .pv-menu-list > li > .ui-slider{
 	background-color: 	var(--color-1) !important;

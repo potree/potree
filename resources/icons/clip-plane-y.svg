@@ -11,23 +11,22 @@
    height="24"
    viewBox="0 0 24 24"
    version="1.1"
-   id="svg3722"
-   sodipodi:docname="perspective-camera.svg"
+   id="svg35"
+   sodipodi:docname="clip-plane-y.svg"
    inkscape:version="0.92.1 r15371">
   <metadata
-     id="metadata3728">
+     id="metadata41">
     <rdf:RDF>
       <cc:Work
          rdf:about="">
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
   <defs
-     id="defs3726" />
+     id="defs39" />
   <sodipodi:namedview
      pagecolor="#ffffff"
      bordercolor="#666666"
@@ -39,24 +38,24 @@
      inkscape:pageshadow="2"
      inkscape:window-width="1920"
      inkscape:window-height="1001"
-     id="namedview3724"
+     id="namedview37"
      showgrid="false"
-     inkscape:zoom="13.906433"
-     inkscape:cx="13.102073"
-     inkscape:cy="11.612785"
+     inkscape:zoom="27.812867"
+     inkscape:cx="15.739941"
+     inkscape:cy="13.312402"
      inkscape:window-x="-9"
      inkscape:window-y="-9"
      inkscape:window-maximized="1"
-     inkscape:current-layer="svg3722" />
+     inkscape:current-layer="svg35" />
   <style
      type="text/css"
-     id="style3718">
-.st0{fill:#DDDDDD;stroke:#DDDDDD}
+     id="style3694">
+.st0{fill:#DDDDDD;stroke:#DDDDDD;}
 </style>
   <path
      class="st0"
-     d="M 7.231152,7.0269974 H 5.1322117 V 6.3273506 H 7.231152 Z m 9.795055,6.2968216 c 0,1.157216 -0.941724,2.09894 -2.09894,2.09894 -1.157216,0 -2.098941,-0.941724 -2.098941,-2.09894 0,-1.157216 0.941725,-2.098941 2.098941,-2.098941 1.157216,0 2.09894,0.941725 2.09894,2.098941 z m -0.699647,0 c 0,-0.77241 -0.626883,-1.399294 -1.399293,-1.399294 -0.77241,0 -1.399294,0.626884 -1.399294,1.399294 0,0.77241 0.626884,1.399293 1.399294,1.399293 0.77241,0 1.399293,-0.626883 1.399293,-1.399293 z M 20.524441,7.7266441 V 18.920993 H 3.7329182 V 7.7266441 Z M 9.3300924,9.8255844 H 5.8318585 v 1.3992936 h 3.4982339 z m 9.0954086,3.4982346 c 0,-1.931725 -1.56581,-3.4982346 -3.498234,-3.4982346 -1.932425,0 -3.498233,1.5665096 -3.498233,3.4982346 0,1.931724 1.565808,3.498233 3.498233,3.498233 1.932424,0 3.498234,-1.566509 3.498234,-3.498233 z"
-     id="path3720"
+     d="M 11.983343,3.156765 3.4754522,7.797433 v 9.382656 l 8.5078908,4.539347 8.507891,-4.539347 V 7.847707 Z M 18.10129,8.297078 11.98721,11.559467 5.8986542,8.238296 11.979476,4.9209921 Z M 5.0223414,9.522214 11.209898,12.896753 v 6.657038 L 5.0223414,16.252729 Z m 7.7344466,10.031577 v -6.651624 l 6.187557,-3.301835 v 6.651624 z m 4.640667,-7.374021 v 3.144826 l -3.093778,1.65053 v -3.144825 z"
+     id="path33"
      inkscape:connector-curvature="0"
-     style="fill:#dddddd;stroke:#dddddd;stroke-width:0.69964677" />
+     style="fill:#dddddd;stroke:#dddddd;stroke-width:0.77344459" />
 </svg>

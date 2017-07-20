@@ -1774,32 +1774,32 @@ function initClippingTool() {
 	let clippingToolBar = $("#clipping_tools");
 
 	clippingToolBar.append(createToolIcon(
-		Potree.resourcePath + "/icons/area.svg",
-		"[title]tt.area_measurement",
+		Potree.resourcePath + "/icons/clip-polygon.svg",
+		"[title]tt.clip_polygon",
 		function(){
 			viewer.clippingTool.startInsertion({type: "polygon"});
 		}
 	));
 
 	clippingToolBar.append(createToolIcon(
-		Potree.resourcePath + "/icons/clip_volume.svg",
-		"[title]tt.height_profile",
+		Potree.resourcePath + "/icons/clip-plane-x.svg",
+		"[title]tt.clip_plane_x",
 		function(){
 			viewer.clippingTool.startInsertion({type: "plane", alpha: 0, beta: Math.PI/2, gamma: 0});
 		}
 	));
 
 	clippingToolBar.append(createToolIcon(
-		Potree.resourcePath + "/icons/clip_volume.svg",
-		"[title]tt.height_profile",
+		Potree.resourcePath + "/icons/clip-plane-y.svg",
+		"[title]tt.clip_plane_y",
 		function(){
 			viewer.clippingTool.startInsertion({type: "plane", alpha: Math.PI/2, beta: 0, gamma: 0});
 		}
 	));
 
 	clippingToolBar.append(createToolIcon(
-		Potree.resourcePath + "/icons/clip_volume.svg",
-		"[title]tt.height_profile",
+		Potree.resourcePath + "/icons/clip-plane-z.svg",
+		"[title]tt.clip_plane_z",
 		function(){
 			viewer.clippingTool.startInsertion({type: "plane", alpha: 0, beta: 0, gamma: 0});
 		}

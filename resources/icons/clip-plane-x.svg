@@ -11,11 +11,11 @@
    height="24"
    viewBox="0 0 24 24"
    version="1.1"
-   id="svg3722"
-   sodipodi:docname="perspective-camera.svg"
+   id="svg13"
+   sodipodi:docname="clip-plane-x.svg"
    inkscape:version="0.92.1 r15371">
   <metadata
-     id="metadata3728">
+     id="metadata19">
     <rdf:RDF>
       <cc:Work
          rdf:about="">
@@ -27,7 +27,7 @@
     </rdf:RDF>
   </metadata>
   <defs
-     id="defs3726" />
+     id="defs17" />
   <sodipodi:namedview
      pagecolor="#ffffff"
      bordercolor="#666666"
@@ -39,24 +39,24 @@
      inkscape:pageshadow="2"
      inkscape:window-width="1920"
      inkscape:window-height="1001"
-     id="namedview3724"
+     id="namedview15"
      showgrid="false"
-     inkscape:zoom="13.906433"
-     inkscape:cx="13.102073"
-     inkscape:cy="11.612785"
+     inkscape:zoom="23.805928"
+     inkscape:cx="8.4566285"
+     inkscape:cy="9.6500557"
      inkscape:window-x="-9"
      inkscape:window-y="-9"
      inkscape:window-maximized="1"
-     inkscape:current-layer="svg3722" />
+     inkscape:current-layer="svg13" />
   <style
      type="text/css"
-     id="style3718">
-.st0{fill:#DDDDDD;stroke:#DDDDDD}
+     id="style3694">
+.st0{fill:#DDDDDD;stroke:#DDDDDD;}
 </style>
   <path
      class="st0"
-     d="M 7.231152,7.0269974 H 5.1322117 V 6.3273506 H 7.231152 Z m 9.795055,6.2968216 c 0,1.157216 -0.941724,2.09894 -2.09894,2.09894 -1.157216,0 -2.098941,-0.941724 -2.098941,-2.09894 0,-1.157216 0.941725,-2.098941 2.098941,-2.098941 1.157216,0 2.09894,0.941725 2.09894,2.098941 z m -0.699647,0 c 0,-0.77241 -0.626883,-1.399294 -1.399293,-1.399294 -0.77241,0 -1.399294,0.626884 -1.399294,1.399294 0,0.77241 0.626884,1.399293 1.399294,1.399293 0.77241,0 1.399293,-0.626883 1.399293,-1.399293 z M 20.524441,7.7266441 V 18.920993 H 3.7329182 V 7.7266441 Z M 9.3300924,9.8255844 H 5.8318585 v 1.3992936 h 3.4982339 z m 9.0954086,3.4982346 c 0,-1.931725 -1.56581,-3.4982346 -3.498234,-3.4982346 -1.932425,0 -3.498233,1.5665096 -3.498233,3.4982346 0,1.931724 1.565808,3.498233 3.498233,3.498233 1.932424,0 3.498234,-1.566509 3.498234,-3.498233 z"
-     id="path3720"
+     d="M 11.95212,2.5364655 3.0470973,7.3937514 v 9.8206226 l 8.9050227,4.751235 8.905025,-4.751235 V 7.4463721 Z M 18.355643,7.9167192 11.956168,11.331392 5.5834101,7.8551936 11.948074,4.3830437 Z M 4.6661927,9.1990428 11.142574,12.731099 v 6.967776 L 4.6661927,16.243726 Z M 12.761668,19.698875 V 12.736766 L 19.23805,9.2808065 V 16.242917 Z M 6.2852879,11.92641 9.5234785,13.692842 v 3.307002 L 6.2852879,15.27227 Z"
+     id="path11"
      inkscape:connector-curvature="0"
-     style="fill:#dddddd;stroke:#dddddd;stroke-width:0.69964677" />
+     style="fill:#dddddd;stroke:#dddddd;stroke-width:0.8095476" />
 </svg>

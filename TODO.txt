@@ -6,10 +6,3 @@ TODO clipping:
 
 - polygon clipping / clip planes / measurement volumes
   - EDL renderer: no depth of volumes stored -> no depth test possible
-
-TODO general:
- - icons and tooltips
-   - navigation cube
-   - perspective/ortho camera
-   - polygon clipping
-   - axis aligned clipplanes

@@ -139,6 +139,7 @@ Potree.Scene = class extends THREE.EventDispatcher{
 		this.cameraP = new THREE.PerspectiveCamera(this.fov, 1, 0.1, 1000*1000);
 		this.cameraO = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 1000*1000);
 		this.cameraBG = new THREE.Camera();
+		this.cameraScreenSpace = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 10);
 		this.cameraMode = Potree.CameraMode.PERSPECTIVE;
 		this.pointclouds = [];
 		this.referenceFrame;
@@ -374,6 +375,7 @@ Potree.Scene = class extends THREE.EventDispatcher{
 		this.cameraO.position.set(1000, 1000, 1000);
 		//this.camera.rotation.y = -Math.PI / 4;
 		//this.camera.rotation.x = -Math.PI / 6;
+		this.cameraScreenSpace.lookAt(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, -1), new THREE.Vector3(0, 1, 0));
 		
 		this.directionalLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
 		this.directionalLight.position.set( 10, 10, 10 );
@@ -1644,11 +1646,8 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			});
 
 			let clipPolygons = this.scene.polygonClipVolumes.filter(vol => vol.initialized).map(vol => {
-				let vertices = vol.markers.map(marker => {
-					return marker.position;
-				});
 				let vp = vol.projMatrix.clone().multiply(vol.viewMatrix);
-				return {polygon: vertices, count: vertices.length, view: vp};
+				return {polygon: vol.markersPosWorld, count: vol.markersPosWorld.length, view: vp};
 			});
 			
 			for(let pointcloud of this.scene.pointclouds){
@@ -1768,6 +1767,10 @@ class PotreeRenderer{
 			viewer.scene.cameraO.top = frustumScale * 1/aspect;
 			viewer.scene.cameraO.bottom = -frustumScale * 1/aspect;		
 			viewer.scene.cameraO.updateProjectionMatrix();
+
+			viewer.scene.cameraScreenSpace.top = 1/aspect;
+			viewer.scene.cameraScreenSpace.bottom = -1/aspect;
+			viewer.scene.cameraScreenSpace.updateProjectionMatrix();
 
 			// update frustum size for adaptive point size with ortho cameras
 			for(let pointcloud of viewer.scene.pointclouds){
@@ -1993,6 +1996,7 @@ class PotreeRenderer{
 		viewer.renderer.render(viewer.volumeTool.sceneVolume, activeCam);
 
 		viewer.clippingTool.update();
+		viewer.renderer.render(viewer.clippingTool.sceneMarker, viewer.scene.cameraScreenSpace); //viewer.scene.cameraScreenSpace);
 		viewer.renderer.render(viewer.clippingTool.sceneVolume, activeCam);
 
 		viewer.renderer.render(viewer.controls.sceneControls, activeCam);
@@ -2075,6 +2079,10 @@ class EDLRenderer{
 		viewer.scene.cameraO.top = frustumScale * 1/aspect;
 		viewer.scene.cameraO.bottom = -frustumScale * 1/aspect;		
 		viewer.scene.cameraO.updateProjectionMatrix();
+
+		viewer.scene.cameraScreenSpace.top = 1/aspect;
+		viewer.scene.cameraScreenSpace.bottom = -1/aspect;
+		viewer.scene.cameraScreenSpace.updateProjectionMatrix();
 		
 		viewer.renderer.setSize(width, height);
 		this.rtColor.setSize(width, height);

@@ -4,11 +4,7 @@ TODO orthographic cameras:
 
 TODO clipping:
 
-- polygon clipping 
-  - vertices are distorted at the boundaries of the render area (caused by perspective projection)
-  - marker spheres not equally big (depneds on camera mode and distance)
-  - EDL renderer: no depth of volumes stored -> no depth test possible
-- clip planes
+- polygon clipping / clip planes / measurement volumes
   - EDL renderer: no depth of volumes stored -> no depth test possible
 
 TODO general:

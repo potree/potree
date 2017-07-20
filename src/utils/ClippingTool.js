@@ -22,6 +22,7 @@ Potree.ClippingTool = class ClippingTool extends THREE.EventDispatcher{
 			});
 		});
 
+		this.sceneMarker = new THREE.Scene();
 		this.sceneVolume = new THREE.Scene();
 		this.sceneVolume.name = "scene_clip_volume";
 		this.viewer.inputHandler.registerInteractiveScene(this.sceneVolume);
@@ -124,7 +125,8 @@ Potree.ClippingTool = class ClippingTool extends THREE.EventDispatcher{
 
 			this.dispatchEvent({"type": "start_inserting_clipping_volume"});
 
-			this.viewer.scene.addPolygonClipVolume(polyClipVol);
+			//this.viewer.scene.addPolygonClipVolume(polyClipVol);
+			this.sceneMarker.add(polyClipVol);
 
 			let cancel = {
 				callback: null
@@ -150,16 +152,28 @@ Potree.ClippingTool = class ClippingTool extends THREE.EventDispatcher{
 			};
 			
 			cancel.callback = e => {
+				this.sceneMarker.remove(polyClipVol);
 				if(polyClipVol.markers.length > 3) {
 					polyClipVol.removeLastMarker();
+					for(let i = 0; i < polyClipVol.markers.length; i++) {
+						polyClipVol.markers[i].position.copy(polyClipVol.markersPosWorld[i]);
+						polyClipVol.markers[i].visible = false;
+						polyClipVol.remove(polyClipVol.edges[i]);
+					}				
+					polyClipVol.edges = [];
+					for(let i = 0; i < polyClipVol.markers.length - 1; i++) {
+						polyClipVol.addEdge(i, i+1);
+					}
 					polyClipVol.addEdge(polyClipVol.markers.length - 1, 0);
-					polyClipVol.initialized = true;
+					polyClipVol.addExtrudedEdges();
+					polyClipVol.initialized = true;	
+					this.viewer.scene.addPolygonClipVolume(polyClipVol);
 				} else {
 					this.viewer.scene.removePolygonClipVolume(polyClipVol);
 				}
+
 				this.viewer.renderer.domElement.removeEventListener("mouseup", insertionCallback, true);
 				this.viewer.removeEventListener("cancel_insertions", cancel.callback);
-				polyClipVol.addExtrudedEdges();
 				this.viewer.inputHandler.enabled = true;
 			};
 			

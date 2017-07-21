@@ -163,17 +163,21 @@ ${max.y}
 ${max.z}
 0
 ENDSEC
-0
+`;
+
+		let dxfBody = `0
 SECTION
 2
 ENTITIES
 `;
-
-		let dxfBody = "";
 		
 		for(let measurement of measurements){
 			dxfBody += Potree.DXFExporter.measurementSection(measurement);
 		}
+		
+		dxfBody += `0
+ENDSEC
+`;
 
 		let dxf = dxfHeader + dxfBody + '0\nEOF';
 		

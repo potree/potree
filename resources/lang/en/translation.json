@@ -13,6 +13,7 @@
     },
     "tt": {
         "angle_measurement": "Angle measurement",
+        "point_measurement": "Point measurement",
         "distance_measurement": "Distance measurement",
         "height_measurement": "Height measurement",
         "area_measurement": "Area measurement",
@@ -37,6 +38,7 @@
         "point_material": "Materials",
         "elevation_range": "Elevation range",
         "point_quality": "Quality",
+        "point_shape": "Shape",
         "edl_radius": "Radius",
         "edl_strength": "Strength",
         "edl_enable": "Enable",
@@ -46,11 +48,20 @@
         "skybox": "Sky",
         "bottom_lock": "Keep above ground",
         "box": "Box",
+        "length_unit": "Length unit",
         "freeze": "Lock view",
         "language": "Language"
     },
-    "profile": {
-        "nb_points": "Point number",
+	"measurements": {
+		"clip": "clip",
+		"show": "show volume"
+	},
+	"annotations": {
+		"show3D": "show in 3D",
+		"showMap": "show on map"
+    }, 
+	"profile": {
+        "nb_points": "Number of Points",
         "title": "Height profile",
         "save_las": "Save LAS(3D)",
         "save_ortho": "Save CSV(2D)"

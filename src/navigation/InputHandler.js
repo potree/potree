@@ -184,7 +184,7 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher{
 		
 		this.pressedKeys[e.keyCode] = true;
 		
-		e.preventDefault();
+		//e.preventDefault();
 	}
 	
 	onKeyUp(e){

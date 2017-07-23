@@ -2,6 +2,33 @@
 
 Potree.utils = class{
 	
+	static loadShapefileFeatures(file, callback){
+		
+		let features = [];
+			
+		let handleFinish = () => {
+			callback(features);
+		};
+		
+		shapefile.open(file)
+		.then(source => {source.read()
+			.then(function log(result){
+				if(result.done){
+					handleFinish();
+					return;
+				}
+				
+				//console.log(result.value);
+				
+				if(result.value && result.value.type === "Feature" && result.value.geometry !== undefined){
+					features.push(result.value);
+				}
+			
+				return source.read().then(log);
+			})
+		});
+	}
+	
 	static toString(value){
 		if(value instanceof THREE.Vector3){
 			return value.x.toFixed(2) + ", " + value.y.toFixed(2) + ", " + value.z.toFixed(2);
@@ -66,6 +93,10 @@ Potree.utils = class{
 		}
 		return x1 + x2;
 	};
+	
+	static removeCommas(str){
+		return str.replace(/,/g, "");
+	}
 
 	/**
 	 * create worker from a string
@@ -91,20 +122,48 @@ Potree.utils = class{
 			path + 'pz' + format, path + 'nz' + format
 		];
 		
-		var materialArray = [];
-		for (var i = 0; i < 6; i++){
-			materialArray.push( new THREE.MeshBasicMaterial({
-				map: THREE.ImageUtils.loadTexture( urls[i] ),
-				side: THREE.BackSide,
-				depthTest: false,
-				depthWrite: false
-				})
-			);
+		//var materialArray = [];
+		//for (var i = 0; i < 6; i++){
+		//	materialArray.push( new THREE.MeshBasicMaterial({
+		//		map: THREE.ImageUtils.loadTexture( urls[i] ),
+		//		side: THREE.BackSide,
+		//		depthTest: false,
+		//		depthWrite: false
+		//		})
+		//	);
+		//}
+		
+		let materialArray = [];
+		{
+			for (let i = 0; i < 6; i++){
+				
+				let material = new THREE.MeshBasicMaterial({
+					map: null,
+					side: THREE.BackSide,
+					depthTest: false,
+					depthWrite: false
+				});
+				
+				materialArray.push(material);
+				
+				let loader = new THREE.TextureLoader();
+				loader.load( urls[i],
+					function loaded(texture){
+						material.map = texture;
+						material.needsUpdate = true;
+					},function progress(xhr){
+						//console.log( (xhr.loaded / xhr.total * 100) + '% loaded' );
+					},function error(xhr){
+						console.log( 'An error happened', xhr );
+					}
+				);
+			}
+			
+			
 		}
 		
 		var skyGeometry = new THREE.CubeGeometry( 5000, 5000, 5000 );
-		var skyMaterial = new THREE.MultiMaterial( materialArray );
-		var skybox = new THREE.Mesh( skyGeometry, skyMaterial );
+		var skybox = new THREE.Mesh( skyGeometry, materialArray );
 
 		scene.add(skybox);
 		
@@ -180,15 +239,20 @@ Potree.utils = class{
 			y: - (mouse.y / renderer.domElement.clientHeight ) * 2 + 1
 		};
 		
-		let vector = new THREE.Vector3( nmouse.x, nmouse.y, 0.5 );
-		vector.unproject(camera);
+		//let vector = new THREE.Vector3( nmouse.x, nmouse.y, 0.5 );
+		//vector.unproject(camera);
 
-		let direction = vector.sub(camera.position).normalize();
-		let ray = new THREE.Ray(camera.position, direction);
+		//let direction = vector.sub(camera.position).normalize();
+		//let ray = new THREE.Ray(camera.position, direction);
+		
+		let raycaster = new THREE.Raycaster();
+		raycaster.setFromCamera(nmouse, camera);
+		let ray = raycaster.ray;
 		
 		let selectedPointcloud = null;
 		let closestDistance = Infinity;
 		let closestIntersection = null;
+		let closestPoint = null;
 		
 		for(let pointcloud of pointclouds){
 			let point = pointcloud.pick(renderer, camera, ray);
@@ -203,6 +267,7 @@ Potree.utils = class{
 				closestDistance = distance;
 				selectedPointcloud = pointcloud;
 				closestIntersection = point.position;
+				closestPoint = point;
 			}
 		}
 		
@@ -210,7 +275,8 @@ Potree.utils = class{
 			return {
 				location: closestIntersection,
 				distance: closestDistance,
-				pointcloud: selectedPointcloud
+				pointcloud: selectedPointcloud,
+				point: closestPoint
 			};
 		}else{
 			return null;

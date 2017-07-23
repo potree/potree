@@ -116,7 +116,11 @@ Potree.GreyhoundBinaryLoader.prototype.parse = function(node, buffer){
 			}
 		}
 
-        addAttribute('indices', data.indices, 1);
+        //addAttribute('indices', data.indices, 1);
+		
+		let indicesAttribute = new THREE.Uint8BufferAttribute(data.indices, 4);
+		indicesAttribute.normalized = true;
+		geometry.addAttribute("indices", indicesAttribute);
 
 		if (!geometry.attributes.normal) {
             addAttribute('normal', new Float32Array(numPoints * 3), 3);
@@ -134,9 +138,10 @@ Potree.GreyhoundBinaryLoader.prototype.parse = function(node, buffer){
     var pco = node.pcoGeometry;
 
 
-	//let nodeOffset = node.boundingBox.getSize().multiplyScalar(0.5);
+	//let nodeOffset = node.boundingBox.getCenter();
 	//let nodeOffset = new THREE.Vector3(0, 0, 0);
-	let nodeOffset = node.pcoGeometry.boundingBox.getCenter();
+	let nodeOffset = node.pcoGeometry.boundingBox.getCenter().sub(node.boundingBox.min);
+	//let nodeOffset = node.pcoGeometry.boundingBox.min;
 
 	var message = {
 		buffer: buffer,

@@ -1,574 +1,738 @@
 
-Potree.Viewer.Profile = class ProfileWindow{
+Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher{
 	
-	constructor(viewer, element){
-		this.viewer = viewer;
-		this.enabled = true;
-		this.element = element;
-		this.currentProfile = null;
-		this.requests = [];
-		this.pointsProcessed = 0;
-		this.margin = {top: 0, right: 0, bottom: 20, left: 40};
-		this.maximized = false;
-		this.threshold = 20*1000;
+	constructor(){
+		super();
 		
-		this.scheduledDraw = null;
+		this.elRoot = $("#profile_window");
+		this.renderArea = this.elRoot.find("#profileCanvasContainer");
+		this.svg = d3.select("svg#profileSVG");
+		this.mouseIsDown = false;
+		
+		this.projectedBox = new THREE.Box3();
+		this.pointclouds = new Map();
+		this.numPoints = 0
+		
+		this.geometryPool = new class{
+			constructor(){
+				this.geometries = [];
+				this.maxPoints = 50000;
+			}
+			
+			getGeometry(){
+				if(this.geometries.length === 0){
+					
+					let geometry = new THREE.BufferGeometry();
+					let buffers = {
+						position: new Float32Array(3 * this.maxPoints),
+						color: new Uint8Array(3 * this.maxPoints),
+						intensity: new Uint16Array(this.maxPoints),
+						classification: new Uint8Array(this.maxPoints),
+						returnNumber: new Uint8Array(this.maxPoints),
+						numberOfReturns: new Uint8Array(this.maxPoints),
+						pointSourceID: new Uint16Array(this.maxPoints)
+					};
+					
+					geometry.addAttribute("position", new THREE.BufferAttribute(buffers.position, 3));
+					geometry.addAttribute("color", new THREE.BufferAttribute(buffers.color, 3, true));
+					geometry.addAttribute("intensity", new THREE.BufferAttribute(buffers.intensity, 1, false));
+					geometry.addAttribute("classification", new THREE.BufferAttribute(buffers.classification, 1, false));
+					geometry.addAttribute("returnNumber", new THREE.BufferAttribute(buffers.returnNumber, 1, false));
+					geometry.addAttribute("numberOfReturns", new THREE.BufferAttribute(buffers.numberOfReturns, 1, false));
+					geometry.addAttribute("pointSourceID", new THREE.BufferAttribute(buffers.pointSourceID, 1, false));
+					
+					geometry.setDrawRange(0, 0);
+					
+					this.geometries.push(geometry);
+				}
+				
+				return this.geometries.pop();
+			}
+			
+			returnGeometry(geometry){
+				this.geometries.push(geometry);
+			}
+		};
+		
+		this.materialPool = new class{
+			constructor(){
+				this.materials = [];
+			}
+			
+			getMaterial(){
+				if(this.materials.length === 0){
+					let material = new Potree.PointCloudMaterial();
+					this.materials.push(material);
+				}
+				
+				return this.materials.pop();
+			}
+			
+			returnMaterial(material){
+				this.materials.push(material);
+			}
+		};
+		
+		this.mouse = new THREE.Vector2(0, 0);
+		this.scale = new THREE.Vector3(1, 1, 1);
+		
+		let csvIcon = `${Potree.resourcePath}/icons/file_csv_2d.svg`;
+		$("#potree_download_csv_icon").attr("src", csvIcon);
+		
+		let lasIcon = `${Potree.resourcePath}/icons/file_las_3d.svg`;
+		$("#potree_download_las_icon").attr("src", lasIcon);
+		
+		this.initTHREE();
+		this.initSVG();
+		this.initListeners();
+	}
+	
+	initListeners(){
+		$(window).resize( () => {
+			this.render();
+		});
+		
+		this.renderArea.mousedown(e => {
+			this.mouseIsDown = true;
+		});
+		
+		this.renderArea.mouseup(e => {
+			this.mouseIsDown = false;
+		});
+		
+		this.renderArea.mousemove( e => {
+			if(this.pointclouds.size === 0){
+				return;
+			}
+			
+			let rect = this.renderArea[0].getBoundingClientRect();
+			let x = e.clientX - rect.left;
+			let y = e.clientY - rect.top;
+			
+			let newMouse = new THREE.Vector2(x, y);
+			
+			if(this.mouseIsDown){
+				// DRAG
+				this.autoFit = false;
+				
+				let cPos = [this.scaleX.invert(this.mouse.x), this.scaleY.invert(this.mouse.y)];
+				let ncPos = [this.scaleX.invert(newMouse.x), this.scaleY.invert(newMouse.y)];
+				
+				this.camera.position.x -= ncPos[0] - cPos[0];
+				this.camera.position.y -= ncPos[1] - cPos[1];
+				
+				this.render();
+			}else if(this.pointclouds.size > 0){
+				// FIND HOVERED POINT 
+				let pixelRadius = 10;
+				let radius = Math.abs(this.scaleX.invert(0) - this.scaleX.invert(5));
+				let mileage = this.scaleX.invert(newMouse.x);
+				let elevation = this.scaleY.invert(newMouse.y);
+				let point = this.selectPoint(mileage, elevation, radius);
+				
+				if(point){
+					this.elRoot.find("#profileSelectionProperties").fadeIn(200);
+					this.pickSphere.visible = true;
+					this.pickSphere.scale.set(0.5 * radius, 0.5 * radius, 0.5 * radius);
+					this.pickSphere.position.set(point.mileage, point.position[2], 0);
+					
+					let info = this.elRoot.find("#profileSelectionProperties");
+					let html = "<table>";
+					for(let attribute of Object.keys(point)){
+						let value = point[attribute];
+						if(attribute === "position"){
+							let values = [...value].map(v => Potree.utils.addCommas(v.toFixed(3)));
+							html += `
+								<tr>
+									<td>x</td>
+									<td>${values[0]}</td>
+								</tr>
+								<tr>
+									<td>y</td>
+									<td>${values[1]}</td>
+								</tr>
+								<tr>
+									<td>z</td>
+									<td>${values[2]}</td>
+								</tr>`;
+						}else if(attribute === "color"){
+							html += `
+								<tr>
+									<td>${attribute}</td>
+									<td>${value.join(", ")}</td>
+								</tr>`;
+						}else if(attribute === "normal"){
+							continue;
+						}else if(attribute === "mileage"){
+							html += `
+								<tr>
+									<td>${attribute}</td>
+									<td>${value.toFixed(3)}</td>
+								</tr>`;
+						}else{
+							html += `
+								<tr>
+									<td>${attribute}</td>
+									<td>${value}</td>
+								</tr>`;
+						}
+						
+					}
+					html += "</table>"
+					info.html(html);
+					
+					this.selectedPoint = point;
+				}else{
+					//this.pickSphere.visible = false;
+					//this.selectedPoint = null;
+				}
+				this.render();
+				
+				
+			}
+			
+			this.mouse.copy(newMouse);
+		});
+		
+		
+		let onWheel = e => {
+			this.autoFit = false;
+			let delta = 0;
+			if( e.wheelDelta !== undefined ) { // WebKit / Opera / Explorer 9
+				delta = e.wheelDelta;
+			} else if ( e.detail !== undefined ) { // Firefox
+				delta = -e.detail;
+			}
+			
+			let ndelta = Math.sign(delta);
+			
+			//let sPos = new THREE.Vector3(this.mouse.x, this.mouse.y, 0);
+			//let cPos = this.toCamSpace(sPos);
+			
+			let cPos = [this.scaleX.invert(this.mouse.x), this.scaleY.invert(this.mouse.y)];
+			
+			if(ndelta > 0){
+				// + 10%
+				this.scale.multiplyScalar(1.1);
+			}else{
+				// - 10%
+				this.scale.multiplyScalar(100/110);
+			}
+			
+			//this.scale.max(new THREE.Vector3(0.5, 0.5, 0.5));
+			//this.scale.min(new THREE.Vector3(100, 100, 100));
+			
+			this.updateScales();
+			let ncPos = [this.scaleX.invert(this.mouse.x), this.scaleY.invert(this.mouse.y)];
+			
+			this.camera.position.x -= ncPos[0] - cPos[0];
+			this.camera.position.y -= ncPos[1] - cPos[1];
+			
+			this.render();
+		};
+		$(this.renderArea)[0].addEventListener("mousewheel", onWheel, false );
+		$(this.renderArea)[0].addEventListener("DOMMouseScroll", onWheel, false ); // Firefox
 		
 		$('#closeProfileContainer').click(() => {
 			this.hide();
-			this.enabled = false;
 		});
 		
-		$('#profile_toggle_size_button').click(() => {
-			this.maximized = !this.maximized;
-		
-			if(this.maximized){
-				$('#profile_window').css("height", "100%");
-			}else{
-				$('#profile_window').css("height", "30%");
-			}
+		$('#potree_download_csv_icon').click(() => {
+			let points = new Potree.Points();
+			this.pointclouds.forEach((value, key) => {
+				points.add(value.points);
+			});
+			
+			let string = Potree.CSVExporter.toString(points);
+			
+			let uri = "data:application/octet-stream;base64,"+btoa(string);
+			$('#potree_download_profile_ortho_link').attr("href", uri);
 		});
 		
-		//this.drawOnChange = (event) => {
-		//	this.redraw();
-		//};
-		
-		this.redraw = () => {
-			if(this.currentProfile){
-				this.draw(this.currentProfile);
+		$('#potree_download_las_icon').click(() => {
+			let points = new Potree.Points();
+			this.pointclouds.forEach((value, key) => {
+				points.add(value.points);
+			});
+			
+			let buffer = Potree.LASExporter.toLAS(points);
+			let u8view = new Uint8Array(buffer);
+
+			let binString = "";
+			for(let i = 0; i < u8view.length; i++){
+				binString += String.fromCharCode(u8view[i]);
 			}
+			
+			let uri = "data:application/octet-stream;base64,"+btoa(binString);
+			$('#potree_download_profile_link').attr("href", uri);
+			
+			//let uri = "data:application/octet-stream;base64,"+btoa(string);
+			//$('#potree_download_profile_ortho_link').attr("href", uri);
+			
+			//let las = viewer.profileWindow.getPointsInProfileAsLas();
+			//let u8view = new Uint8Array(las);
+			//
+			//let binString = "";
+			//for(let i = 0; i < u8view.length; i++){
+			//	binString += String.fromCharCode(u8view[i]);
+			//}
+			//
+			//let uri = "data:application/octet-stream;base64,"+btoa(binString);
+			//$('#potree_download_profile_link').attr("href", uri);
+		});
+	}
+	
+	selectPoint(mileage, elevation, radius){
+		
+		let closest = {
+			distance: Infinity,
+			pointcloud: null,
+			points: null,
+			index: null
 		};
-		
-		viewer.addEventListener("height_range_changed", this.redraw);
-		
-		let width = document.getElementById('profile_window').clientWidth;
-		let height = document.getElementById('profile_window').clientHeight;
-		let resizeLoop = () => {
-			requestAnimationFrame(resizeLoop);
 
-			let newWidth = document.getElementById('profile_window').clientWidth;
-			let newHeight = document.getElementById('profile_window').clientHeight;
-
-			if(newWidth !== width || newHeight !== height){
-				setTimeout(this.redraw, 50, {profile: this.currentProfile});
+		for(let [pointcloud, entry] of this.pointclouds){
+			let points = entry.points;
+			
+			for(let i = 0; i < points.numPoints; i++){
+				
+				//let pos = new THREE.Vector3(...points.data.position.subarray(3*i, 3*i+3));
+				let m = points.data.mileage[i] - mileage;
+				let e = points.data.position[3*i+2] - elevation;
+				
+				let r = Math.sqrt(m*m + e*e);
+				
+				if(r < radius && r < closest.distance){
+					closest = {
+						distance: r,
+						pointcloud: pointcloud,
+						points: points,
+						index: i
+					};
+				}
 			}
-
-			width = newWidth;
-			height = newHeight;
-		};
-		requestAnimationFrame(resizeLoop);
+		}
+		
+		if(closest.distance < Infinity){
+			let points = closest.points;
+			
+			let point = {};
+			
+			let attributes = Object.keys(points.data);
+			for(let attribute of attributes){
+				let attributeData = points.data[attribute];
+				let itemSize = attributeData.length / points.numPoints;
+				let value = attributeData.subarray(itemSize * closest.index, itemSize * closest.index + itemSize);
+				
+				if(value.length === 1){
+					point[attribute] = value[0];
+				}else{
+					point[attribute] = value;
+				}
+			}
+			
+			return point;
+		}else{
+			return null;
+		}
+	}
+	
+	initTHREE(){
+		this.renderer = new THREE.WebGLRenderer({alpha: true, premultipliedAlpha: false});
+		this.renderer.setClearColor( 0x000000, 0 );
+		this.renderer.setSize(10, 10);
+		this.renderer.autoClear = true;
+		this.renderArea.append($(this.renderer.domElement));
+		this.renderer.domElement.tabIndex = "2222";
+		this.renderer.context.getExtension("EXT_frag_depth");
+		$(this.renderer.domElement).css("width", "100%");
+		$(this.renderer.domElement).css("height", "100%");
+		
+		this.camera = new THREE.OrthographicCamera(-10, 10, 10, -10, -1000, 1000);
+		
+		this.scene = new THREE.Scene();
+		
+		let sg = new THREE.SphereGeometry(1, 16, 16);
+		let sm = new THREE.MeshNormalMaterial();
+		this.pickSphere = new THREE.Mesh(sg, sm);
+		this.pickSphere.visible = false;
+		this.scene.add(this.pickSphere);
+	}
+	
+	initSVG(){
+		let width = this.renderArea[0].clientWidth;
+		let height = this.renderArea[0].clientHeight;
+		let marginLeft = this.renderArea[0].offsetLeft;
+		
+		this.svg.selectAll("*").remove();
+		
+		this.scaleX = d3.scale.linear()
+			.domain([this.camera.left + this.camera.position.x, this.camera.right + this.camera.position.x])
+			.range([0, width]);
+		this.scaleY = d3.scale.linear()
+			.domain([this.camera.bottom + this.camera.position.y, this.camera.top + this.camera.position.y])
+			.range([height, 0]);
+		
+		this.xAxis = d3.svg.axis()
+			.scale(this.scaleX)
+			.orient("bottom")
+			.innerTickSize(-height)
+			.outerTickSize(1)
+			.tickPadding(10)
+			.ticks(width / 50);
+			
+		this.yAxis = d3.svg.axis()
+			.scale(this.scaleY)
+			.orient("left")
+			.innerTickSize(-width)
+			.outerTickSize(1)
+			.tickPadding(10)
+			.ticks(height / 20);
+		
+		this.svg.append("g")
+			.attr("class", "x axis")
+			.attr("transform", `translate(${marginLeft}, ${height})`)
+			.call(this.xAxis);
+			
+		this.svg.append("g")
+			.attr("class", "y axis")
+			.attr("transform", `translate(${marginLeft}, 0)`)
+			.call(this.yAxis);
+	}
+	
+	setProfile(profile){
+		
+		this.render();
+	}
+	
+	addPoints(pointcloud, points){
+		
+		if(this.pointclouds.get(pointcloud) === undefined){
+			
+			let material = this.materialPool.getMaterial();
+			let geometry = this.geometryPool.getGeometry();
+			let model = new THREE.Points(geometry, material);
+			this.scene.add(model);
+			
+			let materialChanged = e => {
+				this.render();
+			};
+			
+			pointcloud.material.addEventListener("material_property_changed", materialChanged);
+			
+			this.pointclouds.set(pointcloud, {
+				points: new Potree.Points(),
+				material: material,
+				geometry: geometry,
+				model: model,
+				listeners: [{
+					target: pointcloud.material, 
+					type: "material_property_changed", 
+					callback: materialChanged}]
+			});
+		}
+		
+		let pc = this.pointclouds.get(pointcloud);
+		pc.points.add(points);
+		
+		// rebuild 3d model
+		let projectedBox = new THREE.Box3();
+		{
+			let geometry = pc.geometry;
+			
+			for(let attribute of Object.keys(pc.points.data)){
+				
+				let buffer = pc.points.data[attribute];
+				let itemSize = buffer.length / pc.points.numPoints;
+				
+				if(attribute === "position"){
+					
+					let posBuffer = new Float32Array(buffer.length);
+					
+					for(let i = 0; i < pc.points.numPoints; i++){
+						let x = pc.points.data.mileage[i];
+						let y = buffer[3*i + 2];
+						
+						posBuffer[3*i + 0] = x;
+						posBuffer[3*i + 1] = y;
+						posBuffer[3*i + 2] = y;
+						projectedBox.expandByPoint(new THREE.Vector3(x, y, 0));
+					}
+					
+					if(!posBuffer){
+						console.log("wtf");
+					}
+					
+					geometry.attributes[attribute].array.set(posBuffer);
+				}else if(attribute === "color"){
+					geometry.attributes[attribute].array.set(buffer);
+				}else if(attribute === "mileage"){
+					continue;
+				}else if(geometry.attributes[attribute] === undefined){
+					continue;
+				}else{
+					geometry.attributes[attribute].array.set(buffer);
+				}
+				
+				geometry.attributes[attribute].needsUpdate = true;
+				geometry.setDrawRange(0, pc.points.numPoints);
+			}
+			
+			let radius = pc.points.boundingBox.getSize().toArray().reduce((a, v) => Math.max(a, v))
+			geometry.boundingSphere = new THREE.Sphere(this.camera.position, radius)
+			geometry.boundingBox = geometry.boundingSphere.getBoundingBox();
+		}
+		
+		this.projectedBox.union(projectedBox);
+		
+		if(this.autoFit){ // SCALE
+			let width = this.renderArea[0].clientWidth;
+			let height = this.renderArea[0].clientHeight;
+			
+			let size = this.projectedBox.getSize();
+			
+			let sx = width / size.x;
+			let sy = height / size.y;
+			let scale = Math.min(sx, sy);
+			
+			let center = this.projectedBox.getCenter();
+			this.scale.set(scale, scale, 1);
+			this.camera.position.copy(center);
+		}
+		
+		let numPoints = 0;
+		for(let entry of this.pointclouds.entries()){
+			numPoints += entry[1].points.numPoints;
+			
+			$(`#profile_num_points`).html(Potree.utils.addCommas(numPoints));
+		}
+		
+		this.render();
+	}
+	
+	reset(){
+		
+		this.autoFit = true;
+		this.projectedBox = new THREE.Box3();
+		
+		for(let entry of this.pointclouds){
+			
+			let pointcloud = entry[0];
+			let material = entry[1].model.material;
+			let geometry = entry[1].model.geometry;
+			this.materialPool.returnMaterial(material);
+			this.geometryPool.returnGeometry(geometry);
+			entry[1].model.material = null;
+			entry[1].model.geometry = null;
+			
+			for(let listener of entry[1].listeners){
+				listener.target.removeEventListener(listener.type, listener.callback);
+			}
+			
+		}
+		
+		this.pointclouds.clear();
+		this.mouseIsDown = false;
+		this.mouse.set(0, 0);
+		this.scale.set(1, 1, 1);
+		this.pickSphere.visible = false;
+		
+		this.scene.children
+			.filter(c => c instanceof THREE.Points)
+			.forEach(c => this.scene.remove(c));
+			
+		this.elRoot.find("#profileSelectionProperties").hide();
+			
+		
+		this.render();
 	}
 	
 	show(){
-		$('#profile_window').fadeIn();
+		this.elRoot.fadeIn();
 		this.enabled = true;
-	};
+	}
 	
 	hide(){
-		$('#profile_window').fadeOut();
-	};
+		this.elRoot.fadeOut();
+		this.enabled = false;
+	}
+	
+	updateScales(){
+		let width = this.renderArea[0].clientWidth;
+		let height = this.renderArea[0].clientHeight;
+		
+		let left   = (-width  / 2) / this.scale.x;
+		let right  = (+width  / 2) / this.scale.x;
+		let top    = (+height / 2) / this.scale.y;
+		let bottom = (-height / 2) / this.scale.y;
+		
+		this.camera.left = left;
+		this.camera.right = right;
+		this.camera.top = top;
+		this.camera.bottom = bottom;
+		this.camera.updateProjectionMatrix();
+		
+		this.scaleX.domain([this.camera.left + this.camera.position.x, this.camera.right + this.camera.position.x])
+			.range([0, width]);
+		this.scaleY.domain([this.camera.bottom + this.camera.position.y, this.camera.top + this.camera.position.y])
+			.range([height, 0]);
+	}
+	
+	render(){
+		let width = this.renderArea[0].clientWidth;
+		let height = this.renderArea[0].clientHeight;
+		
+		this.updateScales();
+		
+		{ // THREEJS
+
+			let radius = Math.abs(this.scaleX.invert(0) - this.scaleX.invert(5));
+			this.pickSphere.scale.set(radius, radius, radius);
+			this.pickSphere.position.z = this.camera.far - radius;
+			
+			for(let entry of this.pointclouds){
+				let pointcloud = entry[0];
+				let material = entry[1].material;
+				
+				material.pointColorType = pointcloud.material.pointColorType;
+				material.uniforms.intensityRange.value = pointcloud.material.uniforms.intensityRange.value;
+				material.heightMin = pointcloud.material.heightMin;
+				material.heightMax = pointcloud.material.heightMax;
+				material.rgbGamma = pointcloud.material.rgbGamma;
+				material.rgbContrast = pointcloud.material.rgbContrast;
+				material.rgbBrightness = pointcloud.material.rgbBrightness;
+				material.intensityRange = pointcloud.material.intensityRange;
+				material.intensityGamma = pointcloud.material.intensityGamma;
+				material.intensityContrast = pointcloud.material.intensityContrast;
+				material.intensityBrightness = pointcloud.material.intensityBrightness;
+			}
+			
+			this.renderer.setSize(width, height);
+			
+			this.renderer.render(this.scene, this.camera);
+		}
+		
+		{ // SVG SCALES
+			let marginLeft = this.renderArea[0].offsetLeft;
+				
+			this.xAxis.scale(this.scaleX)
+				.orient("bottom")
+				.innerTickSize(-height)
+				.outerTickSize(1)
+				.tickPadding(10)
+				.ticks(width / 50);
+			this.yAxis.scale(this.scaleY)
+				.orient("left")
+				.innerTickSize(-width)
+				.outerTickSize(1)
+				.tickPadding(10)
+				.ticks(height / 20);
+				
+			d3.select(".x,axis")
+				.attr("transform", `translate(${marginLeft}, ${height})`)
+				.call(this.xAxis);
+			d3.select(".y,axis")
+				.attr("transform", `translate(${marginLeft}, 0)`)
+				.call(this.yAxis);
+		}
+	}
+	
+};
+
+Potree.ProfileWindowController = class ProfileWindowController{
+	
+	constructor(viewer){
+		this.viewer = viewer;
+		this.profileWindow = viewer.profileWindow;
+		this.profile = null;
+		this.numPoints = 0;
+		this.threshold = 30*1000;
+		this.scheduledRecomputeTime = null;
+		
+		this.enabled = true;
+		
+		this.requests = [];
+		
+		this._recompute = () => {this.recompute()};
+	}
+	
+	setProfile(profile){
+		
+		if(this.profile !== null && this.profile !== profile){
+			this.profile.removeEventListener("marker_moved", this._recompute);
+			this.profile.removeEventListener("marker_added", this._recompute);
+			this.profile.removeEventListener("marker_removed", this._recompute);
+			this.profile.removeEventListener("width_changed", this._recompute);
+		}
+		
+		this.profile = profile;
+		
+		{
+			this.profile.addEventListener("marker_moved", this._recompute);
+			this.profile.addEventListener("marker_added", this._recompute);
+			this.profile.addEventListener("marker_removed", this._recompute);
+			this.profile.addEventListener("width_changed", this._recompute);
+
+		}
+		
+		this.recompute();
+	}
+	
+	reset(){
+		this.profileWindow.reset();
+		
+		this.numPoints = 0;
+		
+		if(this.profile){
+			for(let request of this.requests){
+				request.cancel();
+			}
+		}
+	}
+	
+	progressHandler(pointcloud, progress){
+		
+		for(let segment of progress.segments){
+			this.profileWindow.addPoints(pointcloud, segment.points);
+			this.numPoints += segment.points.numPoints;
+		}
+	}
 	
 	cancel(){
 		for(let request of this.requests){
 			request.cancel();
+			//request.finishLevelThenCancel();
 		}
 		
 		this.requests = [];
 	};
 	
-	preparePoints(profileProgress){
-	
-		let segments = profileProgress.segments;
-		if (segments.length === 0){
-			return false;
-		}
+	recompute(){
 		
-		let data = [];
-		let distance = 0;
-		let totalDistance = 0;
-		let min = new THREE.Vector3(Math.max());
-		let max = new THREE.Vector3(0);
-
-		// Get the same color map as Three
-		let hr = this.viewer.getHeightRange();
-		
-		let heightRange = hr.max - hr.min;
-		let colorRange = [];
-		let colorDomain = [];
-		
-		// Read the altitude gradient used in 3D scene
-		let gradient = viewer.scene.pointclouds[0].material.gradient;
-		for (let c = 0; c < gradient.length; c++){
-			colorDomain.push(hr.min + heightRange * gradient[c][0]);
-			colorRange.push('#' + gradient[c][1].getHexString());
-		}
-		
-		// Altitude color map scale
-		let colorRamp = d3.scale.linear()
-		  .domain(colorDomain)
-		  .range(colorRange)
-		  .clamp(true);
-		  
-		// Iterate the profile's segments
-		for(let segment of segments){
-			let sv = new THREE.Vector3().subVectors(segment.end, segment.start).setZ(0)
-			let segmentLength = sv.length();
-			let points = segment.points;
-
-			// Iterate the segments' points
-			for(let j = 0; j < points.numPoints; j++){
-				let p = points.position[j];
-				let pl = new THREE.Vector3().subVectors(p, segment.start).setZ(0);
-				
-				min.min(p);
-				max.max(p);
-				
-				let distance = totalDistance + pl.length();
-				
-				let d = {
-					distance: distance,
-					x: p.x,
-					y: p.y,
-					z: p.z,
-					altitude: p.z,
-					heightColor: colorRamp(p.z),
-					color: points.color ? points.color[j] : [0, 0, 0],
-					intensity: points.intensity ? points.intensity[j] : 0,
-					classification: points.classification ? points.classification[j] : 0,
-					returnNumber: points.returnNumber ? points.returnNumber[j] : 0,
-					numberOfReturns: points.numberOfReturns ? points.numberOfReturns[j] : 0,
-					pointSourceID: points.pointSourceID ? points.pointSourceID[j] : 0,
-				};
-				
-				data.push(d);
-			}
-
-			// Increment distance from the profile start point
-			totalDistance += segmentLength;
-		}
-
-		let output = {
-			'data': data,
-			'minX': min.x,
-			'minY': min.y,
-			'minZ': min.z,
-			'maxX': max.x,
-			'maxY': max.y,
-			'maxZ': max.z
-		};
-
-		return output;
-	};
-	
-	pointHighlight(coordinates){
-    
-		let pointSize = 6;
-		
-		let svg = d3.select("svg#profileSVG");
-		
-		// Find the hovered point if applicable
-		let d = this.points;
-		let sx = this.scaleX;
-		let sy = this.scaleY;
-		let xs = coordinates[0];
-		let ys = coordinates[1];
-		
-		// Fix FF vs Chrome discrepancy
-		//if(navigator.userAgent.indexOf("Firefox") == -1 ) {
-		//	xs = xs - this.margin.left;
-		//	ys = ys - this.margin.top;
-		//}
-		let hP = [];
-		let tol = pointSize;
-
-		for (let i=0; i < d.length; i++){
-			if(sx(d[i].distance) < xs + tol && sx(d[i].distance) > xs - tol && sy(d[i].altitude) < ys + tol && sy(d[i].altitude) > ys -tol){
-				hP.push(d[i]); 
-			}
-		}
-
-		if(hP.length > 0){
-			let p = hP[0];
-			this.hoveredPoint = hP[0];
-			let cx, cy;
-			if(navigator.userAgent.indexOf("Firefox") == -1 ) {
-				cx = this.scaleX(p.distance) + this.margin.left;
-				cy = this.scaleY(p.altitude) + this.margin.top;
-			} else {
-				cx = this.scaleX(p.distance);
-				cy = this.scaleY(p.altitude);
-			}
-			
-			//cx -= pointSize / 2;
-			cy -= pointSize / 2;
-			
-			//let svg = d3.select("svg#profileSVG");
-			d3.selectAll("rect").remove();
-			let rectangle = svg.append("rect")
-				.attr("x", cx)
-				.attr("y", cy)
-				.attr("id", p.id)
-				.attr("width", pointSize)
-				.attr("height", pointSize)
-				.style("fill", 'yellow');
-				
-				
-			let marker = $("#profile_selection_marker");
-			marker.css("display", "initial");
-			marker.css("left", cx + "px");
-			marker.css("top", cy + "px");
-			marker.css("width", pointSize + "px");
-			marker.css("height", pointSize + "px");
-			marker.css("background-color", "yellow");
-
-			//let html = 'x: ' + Math.round(10 * p.x) / 10 + ' y: ' + Math.round(10 * p.y) / 10 + ' z: ' + Math.round( 10 * p.altitude) / 10 + '  -  ';
-			//html += i18n.t('tools.classification') + ': ' + p.classificationCode + '  -  ';
-			//html += i18n.t('tools.intensity') + ': ' + p.intensityCode;
-			
-			let html = 'x: ' + Math.round(10 * p.x) / 10 + ' y: ' + Math.round(10 * p.y) / 10 + ' z: ' + Math.round( 10 * p.altitude) / 10 + '  -  ';
-			html += "offset: " + p.distance.toFixed(3) + '  -  ';
-			html += "Classification: " + p.classification + '  -  ';
-			html += "Intensity: " + p.intensity;
-			
-			$('#profileInfo').css('color', 'yellow');
-			$('#profileInfo').html(html);
-
-		} else {
-			d3.selectAll("rect").remove();
-			$('#profileInfo').html("");
-			
-			let marker = $("#profile_selection_marker");
-			marker.css("display", "none");
-		}
-	};
-	
-	strokeColor(d){
-		let material = this.viewer.getMaterial();
-		if (material === Potree.PointColorType.RGB) {
-			let [r, g, b] = d.color.map(e => parseInt(e));
-			
-			return `rgb( ${r}, ${g}, ${b})`;
-		} else if (material === Potree.PointColorType.INTENSITY) {
-			let irange = viewer.getIntensityRange();
-			let i = parseInt(255 * (d.intensity - irange[0]) / (irange[1] - irange[0]));
-			
-			return `rgb(${i}, ${i}, ${i})`;
-		} else if (material === Potree.PointColorType.CLASSIFICATION) {
-			let classif = this.viewer.scene.pointclouds[0].material.classification;
-			if (typeof classif[d.classification] != 'undefined'){
-				let color = 'rgb(' + classif[d.classification].x * 100 + '%,';
-				color += classif[d.classification].y * 100 + '%,';
-				color += classif[d.classification].z * 100 + '%)';
-				return color;
-			} else {
-				return 'rgb(255,255,255)';
-			}
-		} else if (material === Potree.PointColorType.HEIGHT) {
-			return d.heightColor;
-		} else if (material === Potree.PointColorType.RETURN_NUMBER) {
-			
-			if(d.numberOfReturns === 1){
-					return 'rgb(255, 255, 0)';
-			}else{
-				if(d.returnNumber === 1){
-					return 'rgb(255, 0, 0)';
-				}else if(d.returnNumber === d.numberOfReturns){
-					return 'rgb(0, 0, 255)';
-				}else{
-					return 'rgb(0, 255, 0)';
-				}
-			}
-			
-			return d.heightColor;
-		} else {
-			return d.color;
-		}
-	}
-
-	draw(profile){
-		if(!this.enabled){
+		if(!this.profile){
 			return;
 		}
 		
-		if(!profile){
+		if(this.scheduledRecomputeTime !== null && this.scheduledRecomputeTime > new Date().getTime()){
 			return;
+		}else{
+			this.scheduledRecomputeTime = new Date().getTime() + 100;
 		}
+		this.scheduledRecomputeTime = null;
 		
-		if(this.viewer.scene.pointclouds.length === 0){
-			return;
-		}
-		
-		// avoid too many expensive draws/redraws
-		// 2d profile draws don't need frame-by-frame granularity, it's
-		// fine to handle a redraw once every 100ms
-		let executeScheduledDraw = () => {
-			this.actuallyDraw(this.scheduledDraw);
-			this.scheduledDraw = null;
-		};
-		
-		if(!this.scheduledDraw){
-			setTimeout(executeScheduledDraw, 100);
-		}
-		this.scheduledDraw = profile;
-	}
-		
-	actuallyDraw(profile){
-
-		if(this.context){
-			let containerWidth = this.element.clientWidth;
-			let containerHeight = this.element.clientHeight;
-			
-			let width = containerWidth - (this.margin.left + this.margin.right);
-			let height = containerHeight - (this.margin.top + this.margin.bottom);
-			this.context.clearRect(0, 0, width, height);
-		}
-		
-		if(this.currentProfile){
-			this.currentProfile.removeEventListener("marker_moved", this.redraw);
-			this.currentProfile.removeEventListener("marker_added", this.redraw);
-			this.currentProfile.removeEventListener("marker_removed", this.redraw);
-			this.currentProfile.removeEventListener("width_changed", this.redraw);
-			viewer.removeEventListener("material_changed", this.redraw);
-			viewer.removeEventListener("height_range_changed", this.redraw);
-			viewer.removeEventListener("intensity_range_changed", this.redraw);
-		}
-		
-		
-		this.currentProfile = profile;
-		
-		{
-			this.currentProfile.addEventListener("marker_moved", this.redraw);
-			this.currentProfile.addEventListener("marker_added", this.redraw);
-			this.currentProfile.addEventListener("marker_removed", this.redraw);
-			this.currentProfile.addEventListener("width_changed", this.redraw);
-			viewer.addEventListener("material_changed", this.redraw);
-			viewer.addEventListener("height_range_changed", this.redraw);
-			viewer.addEventListener("intensity_range_changed", this.redraw);
-		}
-
-		if(!this.__drawData){
-			this.__drawData = {};
-		}
-		this.points = [];
-		this.rangeX = [Infinity, -Infinity];
-		this.rangeY = [Infinity, -Infinity];
-		
-		this.pointsProcessed = 0;
-		
-		for(let request of this.requests){
-			request.cancel();
-		}
-		this.requests = [];
-		
-		let drawPoints = (points, rangeX, rangeY) => {
-		
-			let mileage = 0;
-			for(let i = 0; i < profile.points.length; i++){
-				let point = profile.points[i];
-				
-				if(i > 0){
-					let previous = profile.points[i-1];
-					let dx = point.x - previous.x;
-					let dy = point.y - previous.y;
-					let distance = Math.sqrt(dx * dx + dy * dy);
-					mileage += distance;
-				}
-				
-				let radius = 4;
-				
-				let cx = this.scaleX(mileage);
-				let cy = this.context.canvas.clientHeight;
-				
-				this.context.beginPath();
-				this.context.arc(cx, cy, radius, 0, 2 * Math.PI, false);
-				this.context.fillStyle = '#a22';
-				this.context.fill();
-			};
-		
-		
-			let pointSize = 2;
-			let i = -1, n = points.length, d, cx, cy;
-			while (++i < n) {
-				d = points[i];
-				cx = this.scaleX(d.distance);
-				cy = this.scaleY(d.altitude);
-				this.context.beginPath();
-				this.context.moveTo(cx, cy);
-				this.context.fillStyle = this.strokeColor(d);
-				this.context.fillRect(cx, cy, pointSize, pointSize);
-			}
-		};
-		
-		let projectedBoundingBox = null;
-		
-		let setupAndDraw = () => {
-			let containerWidth = this.element.clientWidth;
-			let containerHeight = this.element.clientHeight;
-			
-			let width = containerWidth - (this.margin.left + this.margin.right);
-			let height = containerHeight - (this.margin.top + this.margin.bottom);
-			
-			this.scaleX = d3.scale.linear();
-			this.scaleY = d3.scale.linear();
-			
-			let domainProfileWidth = this.rangeX[1] - this.rangeX[0];
-			let domainProfileHeight = this.rangeY[1] - this.rangeY[0];
-			let domainRatio = domainProfileWidth / domainProfileHeight;
-			let rangeProfileWidth = width;
-			let rangeProfileHeight = height;
-			let rangeRatio = rangeProfileWidth / rangeProfileHeight;
-			
-			if(domainRatio < rangeRatio){
-				// canvas scale
-				let targetWidth = domainProfileWidth * (rangeProfileHeight / domainProfileHeight);
-				this.scaleY.range([height, 0]);
-				this.scaleX.range([width / 2 - targetWidth / 2, width / 2 + targetWidth / 2]);
-				
-				// axis scale
-				let domainScale = rangeRatio / domainRatio;
-				let domainScaledWidth = domainProfileWidth * domainScale;
-				this.axisScaleX = d3.scale.linear()
-					.domain([
-						domainProfileWidth / 2 - domainScaledWidth / 2 , 
-						domainProfileWidth / 2 + domainScaledWidth / 2 ])
-					.range([0, width]);
-				this.axisScaleY = d3.scale.linear()
-					.domain(this.rangeY)
-					.range([height, 0]);
-			}else{
-				// canvas scale
-				let targetHeight = domainProfileHeight* (rangeProfileWidth / domainProfileWidth);
-				this.scaleX.range([0, width]);
-				this.scaleY.range([height / 2 + targetHeight / 2, height / 2 - targetHeight / 2]);
-				
-				// axis scale
-				let domainScale =  domainRatio / rangeRatio;
-				let domainScaledHeight = domainProfileHeight * domainScale;
-				let domainHeightCentroid = (this.rangeY[1] + this.rangeY[0]) / 2;
-				this.axisScaleX = d3.scale.linear()
-					.domain(this.rangeX)
-					.range([0, width]);
-				this.axisScaleY = d3.scale.linear()
-					.domain([
-						domainHeightCentroid - domainScaledHeight / 2 , 
-						domainHeightCentroid + domainScaledHeight / 2 ])
-					.range([height, 0]);
-			}
-			this.scaleX.domain(this.rangeX);
-			this.scaleY.domain(this.rangeY);
-			
-			
-
-			this.axisZoom = d3.behavior.zoom()
-				.x(this.axisScaleX)
-				.y(this.axisScaleY)
-				.scaleExtent([0,128])
-				.size([width, height]);
-				
-			this.zoom = d3.behavior.zoom()
-			.x(this.scaleX)
-			.y(this.scaleY)
-			.scaleExtent([0,128])
-			.size([width, height])
-			.on("zoom",  () => {
-				this.axisZoom.translate(this.zoom.translate());
-				this.axisZoom.scale(this.zoom.scale());
-					
-				let svg = d3.select("svg#profileSVG");
-				svg.select(".x.axis").call(xAxis);
-				svg.select(".y.axis").call(yAxis);
-
-				this.context.clearRect(0, 0, width, height);
-				drawPoints(this.points, this.rangeX, this.rangeY);
-			});
-			
-			this.context = d3.select("#profileCanvas")
-				.attr("width", width)
-				.attr("height", height)
-				.call(this.zoom)
-				.node().getContext("2d");
-			
-			d3.select("svg#profileSVG").selectAll("*").remove();
-			
-			let svg = d3.select("svg#profileSVG")
-				.call(this.zoom)
-				.attr("width", (width + this.margin.left + this.margin.right).toString())
-				.attr("height", (height + this.margin.top + this.margin.bottom).toString())
-				.attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")");
-			
-			let scope = this;
-			d3.select("#profileCanvas").on("mousemove", function(){
-				let coord = d3.mouse(this);
-				scope.pointHighlight(coord);
-			});
-			
-			// Create x axis
-			let xAxis = d3.svg.axis()
-				.scale(this.axisScaleX)
-				.innerTickSize(-height)
-				.outerTickSize(5)
-				.orient("bottom")
-				.ticks(10, "m");
-
-			// Create y axis
-			let yAxis = d3.svg.axis()
-				.scale(this.axisScaleY)
-				.innerTickSize(-width)
-				.outerTickSize(5)
-				.orient("left")
-				.ticks(10, "m");
-				
-			// Append axis to the chart
-			let gx = svg.append("g")
-				.attr("class", "x axis")
-				.call(xAxis);
-
-			svg.append("g")
-				.attr("class", "y axis")
-				.call(yAxis);
-				
-			if(navigator.userAgent.indexOf("Firefox") == -1 ) {
-				svg.select(".y.axis").attr("transform", "translate("+ (this.margin.left).toString() + "," + this.margin.top.toString() + ")");
-				svg.select(".x.axis").attr("transform", "translate(" + this.margin.left.toString() + "," + (height + this.margin.top).toString() + ")");
-			} else {
-				svg.select(".x.axis").attr("transform", "translate( 0 ," + height.toString() + ")");
-			}
-			
-			drawPoints(this.points, this.rangeX, this.rangeY);
-			
-			document.getElementById("profile_num_points").innerHTML = Potree.utils.addCommas(this.pointsProcessed) + " ";
-		};
-		
+		this.reset();
 		
 		for(let pointcloud of this.viewer.scene.pointclouds.filter(p => p.visible)){
 			
-			let request = pointcloud.getPointsInProfile(profile, null, {
+			let request = pointcloud.getPointsInProfile(this.profile, null, {
 				"onProgress": (event) => {
 					if(!this.enabled){
 						return;
 					}
 					
-					if(!projectedBoundingBox){
-						projectedBoundingBox = event.points.projectedBoundingBox;
-					}else{
-						projectedBoundingBox.union(event.points.projectedBoundingBox);
-					}
+					this.progressHandler(pointcloud, event.points);
 					
-					let result = this.preparePoints(event.points);
-					let points = result.data;
-					this.points = this.points.concat(points);
-					
-					let batchRangeX = [d3.min(points, function(d) { return d.distance; }), d3.max(points, function(d) { return d.distance; })];
-					let batchRangeY = [d3.min(points, function(d) { return d.altitude; }), d3.max(points, function(d) { return d.altitude; })];
-					
-					this.rangeX = [ Math.min(this.rangeX[0], batchRangeX[0]), Math.max(this.rangeX[1], batchRangeX[1]) ];
-					this.rangeY = [ Math.min(this.rangeY[0], batchRangeY[0]), Math.max(this.rangeY[1], batchRangeY[1]) ];
-					
-					this.pointsProcessed += result.data.length;
-					
-					setupAndDraw();
-					
-					if(this.pointsProcessed > this.threshold){
+					if(this.numPoints > this.threshold){
 						this.cancel();
 					}
 				},
@@ -586,221 +750,8 @@ Potree.Viewer.Profile = class ProfileWindow{
 			
 			this.requests.push(request);
 		}
+		
 	}
 	
-	setThreshold(value){
-		this.threshold = value;
-		
-		this.redraw();
-	}
 	
-	getPointsInProfileAsCSV(){
-		if(this.points.length === 0){
-			return "no points in profile";
-		}
-		
-		let file = "";
-		let points = this.points.slice();
-		
-		points.sort((a, b) => (a.distance - b.distance));
-		
-		{ // header-line
-			let header = "x, y";
-			
-			if(points[0].hasOwnProperty("color")){
-				header += ", r, g, b";
-			}
-			
-			if(points[0].hasOwnProperty("intensity")){
-				header += ", intensity";
-			}
-			
-			if(points[0].hasOwnProperty("classification")){
-				header += ", classification";
-			}
-			
-			if(points[0].hasOwnProperty("numberOfReturns")){
-				header += ", numberOfReturns";
-			}
-			
-			if(points[0].hasOwnProperty("pointSourceID")){
-				header += ", pointSourceID";
-			}
-			
-			if(points[0].hasOwnProperty("returnNumber")){
-				header += ", returnNumber";
-			}
-			
-			file += header + "\n";
-		}
-
-		// actual data
-		for(let point of points){
-			let line = point.distance.toFixed(4) + ", ";
-			line += point.altitude.toFixed(4) + ", ";
-			
-			if(point.hasOwnProperty("color")){
-				line += point.color.join(", ");
-			}
-			
-			if(point.hasOwnProperty("intensity")){
-				line += ", " + point.intensity;
-			}
-			
-			if(point.hasOwnProperty("classification")){
-				line += ", " + point.classification;
-			}
-			
-			if(point.hasOwnProperty("numberOfReturns")){
-				line += ", " + point.numberOfReturns;
-			}
-			
-			if(point.hasOwnProperty("pointSourceID")){
-				line += ", " + point.pointSourceID;
-			}
-			
-			if(point.hasOwnProperty("returnNumber")){
-				line += ", " + point.returnNumber;
-			}
-			
-			line += "\n";
-			
-			file = file + line;
-		}
-		
-		return file;
-	}
-	
-	getPointsInProfileAsLas(){
-		let points = this.points;
-		let boundingBox = new THREE.Box3();
-		
-		for(let point of points){
-			boundingBox.expandByPoint(point);
-		}
-		
-		let offset = boundingBox.min.clone();
-		let diagonal = boundingBox.min.distanceTo(boundingBox.max);
-		let scale = new THREE.Vector3(0.01, 0.01, 0.01);
-		if(diagonal > 100*1000){
-			scale = new THREE.Vector3(0.01, 0.01, 0.01);
-		}else{
-			scale = new THREE.Vector3(0.001, 0.001, 0.001);
-		}
-		
-		let setString = function(string, offset, buffer){
-			let view = new Uint8Array(buffer);
-			
-			for(let i = 0; i < string.length; i++){
-				let charCode = string.charCodeAt(i);
-				view[offset + i] = charCode;
-			}
-		}
-		
-		let buffer = new ArrayBuffer(227 + 28 * points.length);
-		let view = new DataView(buffer);
-		let u8View = new Uint8Array(buffer);
-		//let u16View = new Uint16Array(buffer);
-		
-		setString("LASF", 0, buffer);
-		u8View[24] = 1;
-		u8View[25] = 2;
-		
-		// system identifier o:26 l:32
-		
-		// generating software o:58 l:32
-		setString("potree 1.4", 58, buffer); 
-		
-		// file creation day of year o:90 l:2
-		// file creation year o:92 l:2
-		
-		// header size o:94 l:2
-		view.setUint16(94, 227, true);
-		
-		// offset to point data o:96 l:4
-		view.setUint32(96, 227, true);
-		
-		// number of letiable length records o:100 l:4
-		
-		// point data record format 104 1
-		u8View[104] = 2;
-		
-		// point data record length 105 2
-		view.setUint16(105, 28, true);
-		
-		// number of point records 107 4 
-		view.setUint32(107, points.length, true);
-		
-		// number of points by return 111 20
-		
-		// x scale factor 131 8
-		view.setFloat64(131, scale.x, true);
-		
-		// y scale factor 139 8
-		view.setFloat64(139, scale.y, true);
-		
-		// z scale factor 147 8
-		view.setFloat64(147, scale.z, true);
-		
-		// x offset 155 8
-		view.setFloat64(155, offset.x, true);
-		
-		// y offset 163 8
-		view.setFloat64(163, offset.y, true);
-		
-		// z offset 171 8
-		view.setFloat64(171, offset.z, true);
-		
-		let boffset = 227;
-		for(let i = 0; i < points.length; i++){
-			let point = points[i];
-			let position = new THREE.Vector3(point.x, point.y, point.z);
-			
-			let ux = parseInt((position.x - offset.x) / scale.x);
-			let uy = parseInt((position.y - offset.y) / scale.y);
-			let uz = parseInt((position.z - offset.z) / scale.z);
-			
-			view.setUint32(boffset + 0, ux, true);
-			view.setUint32(boffset + 4, uy, true);
-			view.setUint32(boffset + 8, uz, true);
-			
-			view.setUint16(boffset + 12, (point.intensity), true);
-			let rt = point.returnNumber;
-			rt += (point.numberOfReturns << 3);
-			view.setUint8(boffset + 14, rt);
-			
-			// classification
-			view.setUint8(boffset + 15, point.classification);
-			// scan angle rank
-			// user data
-			// point source id
-			view.setUint16(boffset + 18, point.pointSourceID);
-			view.setUint16(boffset + 20, (point.color[0] * 255), true);
-			view.setUint16(boffset + 22, (point.color[1] * 255), true);
-			view.setUint16(boffset + 24, (point.color[2] * 255), true);
-			
-			boffset += 28;
-		}
-		
-		// max x 179 8
-		view.setFloat64(179, boundingBox.max.x, true);
-		
-		// min x 187 8
-		view.setFloat64(187, boundingBox.min.x, true);
-		
-		// max y 195 8
-		view.setFloat64(195, boundingBox.max.y, true);
-		
-		// min y 203 8
-		view.setFloat64(203, boundingBox.min.y, true);
-		
-		// max z 211 8
-		view.setFloat64(211, boundingBox.max.z, true);
-		
-		// min z 219 8
-		view.setFloat64(219, boundingBox.min.z, true);
-		
-		return buffer;
-	}
-
 };

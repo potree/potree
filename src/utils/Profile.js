@@ -4,6 +4,9 @@ Potree.Profile = class extends THREE.Object3D{
 	constructor(){
 		super();
 		
+		this.constructor.counter = (this.constructor.counter === undefined) ? 0 : this.constructor.counter + 1;
+		
+		this.name = "Profile_" + this.constructor.counter;
 		this.points = [];
 		this.spheres = [];
 		this.edges = [];
@@ -27,6 +30,46 @@ Potree.Profile = class extends THREE.Object3D{
 		
 		return sphereMaterial;
 	};
+	
+	getSegments(){
+		let segments = [];
+		
+		for(let i = 0; i < this.points.length - 1; i++){
+			let start = this.points[i].clone();
+			let end = this.points[i+1].clone();
+			segments.push({start: start, end: end});
+		}
+		
+		return segments;
+	}
+	
+	getSegmentMatrices(){
+		let segments = this.getSegments();
+		let matrices = [];
+	
+		for(let segment of segments){
+			let {start, end} = segment;
+			
+			let box = new THREE.Object3D();
+			
+			let length = start.clone().setZ(0).distanceTo(end.clone().setZ(0));
+			box.scale.set(length, 10000, this.width);
+			box.up.set(0, 0, 1);
+
+			let center = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
+			let diff = new THREE.Vector3().subVectors(end, start);
+			let target = new THREE.Vector3(diff.y, -diff.x, 0);
+
+			box.position.set(0,0,0);
+			box.lookAt(target);
+			box.position.copy(center);
+			
+			box.updateMatrixWorld();
+			matrices.push(box.matrixWorld);
+		}
+		
+		return matrices;
+	}
 	
 	addMarker(point){
 		this.points.push(point);

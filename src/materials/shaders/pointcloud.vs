@@ -16,6 +16,7 @@ attribute float returnNumber;
 attribute float numberOfReturns;
 attribute float pointSourceID;
 attribute vec4 indices;
+//attribute float indices;
 
 uniform mat4 modelMatrix;
 uniform mat4 modelViewMatrix;
@@ -23,6 +24,9 @@ uniform mat4 projectionMatrix;
 uniform mat4 viewMatrix;
 uniform mat3 normalMatrix;
 
+uniform float pcIndex;
+
+//uniform mat4 toModel;
 
 uniform float screenWidth;
 uniform float screenHeight;
@@ -33,14 +37,11 @@ uniform float far;
 
 #if defined use_clip_box
 	uniform mat4 clipBoxes[max_clip_boxes];
-	uniform vec3 clipBoxPositions[max_clip_boxes];
 #endif
 
 
 uniform float heightMin;
 uniform float heightMax;
-uniform float intensityMin;
-uniform float intensityMax;
 uniform float size;				// pixel size factor
 uniform float minSize;			// minimum pixel size
 uniform float maxSize;			// maximum pixel size
@@ -49,6 +50,8 @@ uniform vec3 bbSize;
 uniform vec3 uColor;
 uniform float opacity;
 uniform float clipBoxCount;
+uniform float level;
+uniform float vnStart;
 
 uniform vec2 intensityRange;
 uniform float intensityGamma;
@@ -118,26 +121,30 @@ bool isBitSet(float number, float index){
  * find the LOD at the point position
  */
 float getLOD(){
+	
 	vec3 offset = vec3(0.0, 0.0, 0.0);
-	float iOffset = 0.0;
-	float depth = 0.0;
-	for(float i = 0.0; i <= 1000.0; i++){
-		float nodeSizeAtLevel = octreeSize  / pow(2.0, i);
-		vec3 index3d = (position - offset) / nodeSizeAtLevel;
+	float iOffset = vnStart;
+	float depth = level;
+	for(float i = 0.0; i <= 30.0; i++){
+		float nodeSizeAtLevel = octreeSize  / pow(2.0, i + level + 0.0);
+		
+		vec3 index3d = (position-offset) / nodeSizeAtLevel;
 		index3d = floor(index3d + 0.5);
-		float index = 4.0*index3d.x + 2.0*index3d.y + index3d.z;
+		float index = 4.0 * index3d.x + 2.0 * index3d.y + index3d.z;
 		
 		vec4 value = texture2D(visibleNodes, vec2(iOffset / 2048.0, 0.0));
 		float mask = value.r * 255.0;
 		if(isBitSet(mask, index)){
 			// there are more visible child nodes at this position
-			iOffset = iOffset + value.g * 255.0 + numberOfOnes(mask, index - 1.0);
+			iOffset = iOffset + value.g * 255.0 * 256.0 + value.b * 255.0 + numberOfOnes(mask, index - 1.0);
 			depth++;
 		}else{
 			// no more visible child nodes at this position
 			return depth;
 		}
+		
 		offset = offset + (vec3(1.0, 1.0, 1.0) * nodeSizeAtLevel * 0.5) * index3d;
+        
 	}
 		
 	return depth;
@@ -232,6 +239,10 @@ vec3 getRGB(){
 	rgb = rgb + rgbBrightness;
 	rgb = (rgb - 0.5) * getContrastFactor(rgbContrast) + 0.5;
 	rgb = clamp(rgb, 0.0, 1.0);
+	
+	//rgb = indices.rgb;
+	//rgb.b = pcIndex / 255.0;
+	
 	
 	return rgb;
 }
@@ -348,10 +359,16 @@ void main() {
 		vColor = uColor;
 	#elif defined color_type_lod
 		float depth = getLOD();
-		float w = depth / 10.0;
+		float w = depth / 5.0;
 		vColor = texture2D(gradient, vec2(w,1.0-w)).rgb;
 	#elif defined color_type_point_index
+		//vColor = indices.rgb * 255.0;
 		vColor = indices.rgb;
+		
+		//vColor.r = mod(indices, 256.0) / 255.0;
+		//vColor.g = mod(indices / 256.0, 256.0) / 255.0;
+		//vColor.b = 0.0;
+		
 	#elif defined color_type_classification
 		vColor = cl.rgb;
 	#elif defined color_type_return_number
@@ -400,6 +417,8 @@ void main() {
 	
 	gl_PointSize = pointSize;
 	
+	//gl_Position = vec4(1000.0, 1000.0, 1000.0, 1.0);
+	
 	
 	// ---------------------
 	// CLIPPING
@@ -427,9 +446,17 @@ void main() {
 			#endif
 		}else{
 			#if defined clip_highlight_inside
-			vColor.r += 0.5;
+				vColor.r += 0.5;
+				
+				//vec3 hsv = rgb2hsv(vColor);
+            	//hsv.x = hsv.x - 0.3;
+            	//hsv.z = hsv.z + 0.1;
+            	//vColor = hsv2rgb(hsv);
+				
 			#endif
 		}
 	#endif
+
+	//vColor = indices.rgb * 255.0;
 	
 }

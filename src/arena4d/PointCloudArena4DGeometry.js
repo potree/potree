@@ -90,16 +90,17 @@ Potree.PointCloudArena4DGeometryNode.prototype.load = function(){
 		var numPoints = buffer.byteLength / 17;
 		
 		var positions = new Float32Array(numPoints*3);
-		var colors = new Float32Array(numPoints*3);
-		var indices = new Uint32Array(numPoints);
+		var colors = new Uint8Array(numPoints*3);
+		var indices = new ArrayBuffer(numPoints*4);
+		var iIndices = new Uint32Array(indices);
 		
 		for(var i = 0; i < numPoints; i++){
 			var x = view.getFloat32(i*17 + 0, true) + scope.boundingBox.min.x;
 			var y = view.getFloat32(i*17 + 4, true) + scope.boundingBox.min.y;
 			var z = view.getFloat32(i*17 + 8, true) + scope.boundingBox.min.z;
-			var r = view.getUint8(i*17 + 12, true) / 256;
-			var g = view.getUint8(i*17 + 13, true) / 256;
-			var b = view.getUint8(i*17 + 14, true) / 256;
+			var r = view.getUint8(i*17 + 12, true);
+			var g = view.getUint8(i*17 + 13, true);
+			var b = view.getUint8(i*17 + 14, true);
 			
 			positions[i*3+0] = x;
 			positions[i*3+1] = y;
@@ -109,14 +110,18 @@ Potree.PointCloudArena4DGeometryNode.prototype.load = function(){
 			colors[i*3+1] = g;
 			colors[i*3+2] = b;
 			
-			indices[i] = i;
+			iIndices[i] = i;
 		}
+		
 		
 		var geometry = new THREE.BufferGeometry();
 		geometry.addAttribute("position", new THREE.BufferAttribute(positions, 3));
-		geometry.addAttribute("color", new THREE.BufferAttribute(colors, 3));
-		geometry.addAttribute("indices", new THREE.BufferAttribute(indices, 1));
+		geometry.addAttribute("color", new THREE.BufferAttribute(colors, 3, true));
 		geometry.addAttribute("normal", new THREE.BufferAttribute(new Float32Array(numPoints*3), 3));
+		
+		let indicesAttribute = new THREE.Uint8BufferAttribute(indices, 4);
+		indicesAttribute.normalized = true;
+		geometry.addAttribute("indices", indicesAttribute);
 		
 		scope.geometry = geometry;
 		scope.loaded = true;

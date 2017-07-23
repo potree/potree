@@ -98,6 +98,8 @@ onmessage = function(event){
 	var attributeBuffers = {};
 	var offset = 0;
     var pointSize = pointAttributes.byteSize;
+	
+	let mean = [0, 0, 0];
 
     var logged = 0;
 
@@ -121,11 +123,10 @@ onmessage = function(event){
 				positions[3*j+0] = x;
 				positions[3*j+1] = y;
 				positions[3*j+2] = z;
-
-				//if(j < 2){
-				//	console.log("u:" + ux + ", " + uy + ", " + uz);
-				//	console.log("f:" + x + ", " + y + ", " + z);
-				//}
+				
+				mean[0] += x / numPoints;
+				mean[1] += y / numPoints;
+				mean[2] += z / numPoints;
 
 				tightBoxMin[0] = Math.min(tightBoxMin[0], positions[3*j+0]);
 				tightBoxMin[1] = Math.min(tightBoxMin[1], positions[3*j+1]);
@@ -271,6 +272,7 @@ onmessage = function(event){
 	}
 
 	var message = {
+		mean: mean,
 		attributeBuffers: attributeBuffers,
 		tightBoundingBox: { min: tightBoxMin, max: tightBoxMax },
 		indices: indices

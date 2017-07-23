@@ -48,7 +48,6 @@
 
 
 .potree_container{
-	/*font-size:	75%;*/
 }
 
 .potree_info_text{
@@ -71,7 +70,7 @@
 #potree_sidebar_container{
 	position:	absolute;
 	z-index:	0;
-	width:		300px;
+	width:		350px;
 	height:		100%;
 	overflow-y:	auto;
 	font-size:	85%;
@@ -89,7 +88,6 @@
 
 #potree_sidebar_container a{
 	color: 			#8Aa1c4;
-	//color: 			red;
 }
 
 .potree_menu_toggle{
@@ -144,8 +142,40 @@ a:hover, a:visited, a:link, a:active{
 }
 
 .annotation{
-	-webkit-transition: opacity .1s;
-	transition: opacity .1s;
+	position:		absolute;
+	padding:		10px;
+	opacity:		0.5;
+	transform:		translate(-50%, -30px);
+}
+
+.annotation-titlebar{
+	color:			white;
+	background-color:	black;
+	border-radius:	1.5em;
+	font-size:		1em;
+	opacity:		1;
+	margin:			auto;
+	display:		table;
+}
+
+.annotation-expand{
+	color:			white;
+	font-size:		0.6em;
+	opacity:		1;
+}
+
+.annotation-action-icon{
+	width:			24px;
+	height:			24px;
+	filter:			invert(1);
+	display:		inline-block;
+	vertical-align:	middle;
+	line-height:	1.5em;
+	text-align:		center;
+	font-family:	Arial;
+	font-weight:	bold;
+	padding:		1px 8px 0px 1px;
+	cursor:			default;
 }
 
 .annotation-item {
@@ -172,11 +202,43 @@ a:hover, a:visited, a:link, a:active{
 }
 
 .annotation-label{
-	display:		block;
+	display:		inline-block;
 	height:			100%;
 	flex-grow:		1;
-	margin:			2px 8px;
 	user-select:	none;
+	-moz-user-select: none;
+	z-index:		100;
+	vertical-align:	middle;
+	line-height:	1.5em;
+	font-family:	Arial;
+	font-weight:	bold;
+	padding:		1px 8px 0px 8px;
+	cursor:			default;
+	white-space:	nowrap;
+}
+
+.annotation-description{
+	position:		relative;
+	color:			white;
+	background-color:	black;
+	padding:		10px;
+	margin:			5px 0px 0px 0px;
+	border-radius:	4px;
+	display:		none;
+	max-width:		500px;
+	width:			500px;
+}
+
+.annotation-description-close{
+	filter:			invert(100%);
+	float:			right;
+	opacity:		0.5;
+	margin:			0px 0px 8px 8px;
+}
+
+	
+.annotation-description-content{
+	color:			white;
 }
 
 .annotation-icon{
@@ -196,6 +258,10 @@ canvas {
 body{ 
 	margin: 	0; 
 	padding: 	0;
+	position:	absolute;
+	width: 		100%;
+	height: 	100%;
+	overflow:	hidden;
 }
 
 .axis {
@@ -204,21 +270,116 @@ body{
 }
 
 .axis path{
-  fill: 		none;
-  stroke: 		var(--font-color);
-  shape-rendering: crispEdges;
-  opacity: 		0.7;
+	fill: 		rgba(255, 255, 255, 0.5);
+	stroke: 		var(--font-color);
+	shape-rendering: crispEdges;
+	opacity: 		0.7;
 }
 
 .axis line {
-  fill: 		none;
-  stroke: 		var(--font-color);
-  shape-rendering: crispEdges;
-  opacity: 		0.1;
+	fill: 		rgba(255, 255, 255, 0.5);
+	stroke: 		var(--font-color);
+	shape-rendering: crispEdges;
+	opacity: 		0.1;
+}
+
+.tick text{
+	font-size: 12px;
 }
 
 
+.scene_item{
+	border-bottom: 1px solid rgba(0, 0, 0, 0.5);
+	display: block;
+	position: relative;
+}
 
+.scene_header{
+	display:flex;
+	cursor: pointer;
+	padding: 2px;
+}
+
+.scene_item:hover{
+	background-color: rgba(255, 255, 255, 0.1);
+}
+
+.scene_item_icon{
+	width: 24px; 
+	height: 24px;
+}
+
+.scene_header_title{
+	flex-grow: 1;
+	display: flex;
+	align-items: center;
+}
+
+.scene_icon{
+	padding: 0px 6px 0px 4px;
+}
+
+.scene_content{
+	padding: 5px 0px 5px 0px;
+	background-color: rgba(0, 0, 0, 0.4);
+}
+
+
+.measurement_item{
+	border-bottom: 1px solid rgba(0, 0, 0, 0.5);
+	display: block;
+	position: relative;
+}
+
+.measurement_header{
+	display:flex;
+	cursor: pointer;
+	padding: 2px;
+}
+
+.measurement_header:hover{
+	background-color: rgba(255, 255, 255, 0.1);
+}
+
+.measurement_item_icon{
+	width: 24px; 
+	height: 24px;
+}
+
+.measurement_header_title{
+	flex-grow: 1;
+	display: flex;
+	align-items: center;
+}
+
+.measurement_icon{
+	padding: 0px 6px 0px 4px;
+}
+
+.measurement_content{
+	padding: 5px 15px 5px 10px;
+	background-color: rgba(0, 0, 0, 0.4);
+}
+
+.measurement_value_table{
+	width: 100%;
+}
+
+
+.measurement-panel-icon{
+	width:			16px;
+	height:			16px;
+}
+
+.measurement-panel-title{
+	flex-grow:		1;
+	text-align:		center;
+}
+
+.measurement-panel-remove{
+	width:			16px;
+	height:			16px;
+}
 
 .measurement-detail-node-marker{
 	border: 		1px solid var(--border-color);
@@ -236,7 +397,7 @@ body{
 	margin-top: 	15px;
 	text-align: 	center;
 	background-color: var(--measurement-detail-node-bg-light);
-	color: 				var(--border-color);
+	color: 			var(--border-color);
 }
 
 .measurement-detail-node-angle{
@@ -274,6 +435,13 @@ body{
 	width: 		100%;
 	margin-top:	8px;
 }
+
+
+
+
+
+
+
 
 .pv-panel-heading{
 	padding: 	4px !important;
@@ -315,12 +483,8 @@ body{
 	width: 100% !important;
 }
 
-.pv-menu-list .ui-selectmenu-button span.ui-selectmenu-text{
-	line-height: 0.8em;
-}
-
-.ui-selectmenu-text{
-	background-color: white;
+.ui-widget{
+	box-sizing:border-box
 }
 
 .panel-body > li > .ui-slider{
@@ -346,7 +510,6 @@ body{
 }
 
 .ui-widget-content{
-	background-color: none !important;
 	color: var(--font-color) !important;
 }
 
@@ -367,6 +530,10 @@ body{
 	color: var(--color-2);
 	padding: 4px 10px 4px 30px;
 	cursor: pointer;
+}
+
+.accordion > h3:hover{
+	filter: brightness(125%);
 }
 
 .accordion > div{
@@ -418,22 +585,9 @@ body{
 
 
 
-/* no scrollbar styling in firefox, sadly */
-.navmenu::-webkit-scrollbar{
-  height: 12px;
-}
-
-.navmenu::-webkit-scrollbar-track{
-  background: rgba(0, 0, 0, 0.1);
-}
-
-.navmenu::-webkit-scrollbar-thumb{
-  background: rgba(0, 0, 0, 0.5);
-}
-
 .pv-titlebar{
 	background-color: var(--color-1);
-	color: #var(--color-2);
+	color: var(--color-2);
 	font-weight: 700;
 	padding: 5px;
 }
@@ -524,7 +678,7 @@ body{
 
 
 
-/* HOVER MENU */
+
 
 .hover_menu{
 	position: absolute;
@@ -534,11 +688,11 @@ body{
 	border-radius: 100px;
 	display: block;
 	user-select: none;
+	-moz-user-select: none;
 }
 
 .hover_menu_icon{
 	position: absolute;
-	//border: 1px solid black;
 	display: inline-block;
 	width: 16px;
 	height: 16px;
@@ -592,3 +746,52 @@ body{
 	opacity: 1.0;
 }
 
+
+.text-icon{
+	opacity:	0.5;
+	height:		24px;
+}
+
+.text-icon:hover{
+	opacity:	1.0;
+}
+
+
+
+/*
+label:hover{
+	background-color: white;
+}
+*/
+
+
+.input-grid-cell{
+	flex-grow: 1; margin: 0px 3px 0px 3px;
+}
+
+.input-grid-label{
+	flex-grow: 1; 
+	margin: 0px 3px 0px 3px; 
+	text-align:center; 
+	font-weight: bold;
+}
+
+.input-grid-cell > input{
+	width: 100%
+}
+
+.invalid_value{
+	color: #e05e5e;
+}
+
+
+//[contenteditable]:focus {
+//	outline: 1px solid red;
+//	outline-radius: 2px;
+//}
+
+
+.ui-slider {
+	margin-top: 3px;
+	margin-bottom: 10px;
+}

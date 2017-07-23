@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="description" content="">
+    <meta name="author" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Potree Viewer</title>
+
+	<link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
+	<link rel="stylesheet" type="text/css" href="../libs/jquery-ui/jquery-ui.min.css">
+	<link rel="stylesheet" type="text/css" href="../libs/perfect-scrollbar/css/perfect-scrollbar.css">
+	<link rel="stylesheet" href="../libs/openlayers3/ol.css" type="text/css">
+	<link rel="stylesheet" href="../libs/spectrum/spectrum.css" type="text/css">
+  </head>
+
+  <body>
+  
+	<script src="../libs/jquery/jquery-3.1.1.js"></script>
+	<script src="../libs/spectrum/spectrum.js"></script>
+	
+	<script src="../libs/perfect-scrollbar/js/perfect-scrollbar.jquery.js"></script>
+	<script src="../libs/jquery-ui/jquery-ui.min.js"></script>
+	<script src="../libs/three.js/build/three.js"></script>
+	<script src="../libs/other/stats.min.js"></script>
+	<script src="../libs/other/BinaryHeap.js"></script>
+	<script src="../libs/shapefile/shapefile.js"></script>
+	<script src="../libs/tween/tween.min.js"></script>
+	<script src="../libs/d3/d3.js"></script>
+	<script src="../libs/proj4/proj4.js"></script>
+	<script src="../libs/openlayers3/ol.js"></script>
+    <script src="../libs/i18next/i18next.js"></script>
+	
+	<script src="../build/potree/potree.js"></script>
+	<!--<script src="../src/viewer/sidebar.js"></script>-->
+	
+	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
+	<!-- INCLUDE SETTINGS HERE -->
+	
+	<script src="../libs/plasio/js/laslaz.js"></script>
+	<script src="../libs/plasio/vendor/bluebird.js"></script>
+
+    <div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
+		<div id="potree_render_area"></div>
+		<div id="potree_sidebar_container"> </div>
+    </div>
+	
+	<script>
+	
+		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
+		
+		viewer.setServer("http://localhost:3000");
+		
+		viewer.setEDLEnabled(false);
+		viewer.setFOV(60);
+		viewer.setPointBudget(3*1000*1000);
+		viewer.setMinNodeSize(1);
+		viewer.setBackground("gradient"); // ["skybox", "gradient", "black", "white"];
+		viewer.generateDEM = true;
+		<!-- INCLUDE SETTINGS HERE -->
+		//viewer.loadSettingsFromURL();
+		
+		viewer.setDescription('San Simeon, CA Central Coast point cloud taken from <a href="http://opentopo.sdsc.edu/gridsphere/gridsphere?cid=geonlidarframeportlet&gs_action=lidarDataset&opentopoID=OTLAS.032013.26910.2" target="_blank">Open Topography</a> (17.7b points)');
+		
+		viewer.loadGUI(() => {
+			viewer.setLanguage('en');
+			$("#menu_tools").next().show();
+			viewer.toggleSidebar();
+		});
+		
+		// Load and add point cloud to scene
+		Potree.loadPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/opentopography/CA13_1.4/cloud.js", "CA13", e => {
+			let scene = viewer.scene;
+			let pointcloud = e.pointcloud;
+			let material = pointcloud.material;
+			
+			material.size = 1;
+			material.pointSizeType = Potree.PointSizeType.FIXED;
+			material.shape = Potree.PointShape.SQUARE;
+			material.intensityRange = [0, 1000];
+			
+			scene.addPointCloud(pointcloud);
+			
+			window.dem = new Potree.DEM(pointcloud);
+			window.dem.update(pointcloud.visibleNodes);
+
+			//scene.view.position.set(696507.51, 3915713.17, 1891.85);
+			scene.view.position.set(697757.85, 3913444.33, 2827.33);
+			scene.view.lookAt(new THREE.Vector3(695231.74, 3916988.94, 87.64));
+			
+			{
+		
+				proj4.defs("pointcloud", pointcloud.projection);
+				proj4.defs("WGS84", "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs");
+				let toScene = proj4("WGS84", "pointcloud");
+				
+				let featureToSceneNode = (feature, color) => {
+					let geometry = feature.geometry;
+					
+					var color = color ? color : new THREE.Color(1, 1, 1);
+					
+					if(feature.geometry.type === "Point"){
+						let sg = new THREE.SphereGeometry(1, 18, 18);
+						let sm = new THREE.MeshNormalMaterial();
+						let s = new THREE.Mesh(sg, sm);
+						
+						let [long, lat] = geometry.coordinates;
+						let pos = toScene.forward([long, lat]);
+						
+						s.position.set(...pos, 20);
+						
+						s.scale.set(10, 10, 10);
+						
+						return s;
+					}else if(geometry.type === "LineString"){
+						let coordinates = [];
+						
+						let min = new THREE.Vector3(Infinity, Infinity, Infinity);
+						for(let i = 0; i < geometry.coordinates.length; i++){
+							let [long, lat] = geometry.coordinates[i];
+							let pos = toScene.forward([long, lat]);
+							
+							min.x = Math.min(min.x, pos[0]);
+							min.y = Math.min(min.y, pos[1]);
+							min.z = Math.min(min.z, 20);
+							
+							coordinates.push(...pos, 20);
+							if(i > 0 && i < geometry.coordinates.length - 1){
+								coordinates.push(...pos, 20);
+							}
+						}
+						
+						for(let i = 0; i < coordinates.length; i += 3){
+							coordinates[i+0] -= min.x;
+							coordinates[i+1] -= min.y;
+							coordinates[i+2] -= min.z;
+						}
+						
+						let positions = new Float32Array(coordinates);
+						
+						let lineGeometry = new THREE.BufferGeometry();
+						lineGeometry.addAttribute("position", new THREE.BufferAttribute(positions, 3));
+						
+						let material = new THREE.LineBasicMaterial( { color: color} );
+						let line = new THREE.LineSegments(lineGeometry, material);
+						line.position.copy(min);
+						
+						return line;
+					}else if(geometry.type === "Polygon"){
+						for(let pc of geometry.coordinates){
+							let coordinates = [];
+							
+							let min = new THREE.Vector3(Infinity, Infinity, Infinity);
+							for(let i = 0; i < pc.length; i++){
+								let [long, lat] = pc[i];
+								let pos = toScene.forward([long, lat]);
+								
+								min.x = Math.min(min.x, pos[0]);
+								min.y = Math.min(min.y, pos[1]);
+								min.z = Math.min(min.z, 20);
+								
+								coordinates.push(...pos, 20);
+								if(i > 0 && i < pc.length - 1){
+									coordinates.push(...pos, 20);
+								}
+							}
+							
+							for(let i = 0; i < coordinates.length; i += 3){
+								coordinates[i+0] -= min.x;
+								coordinates[i+1] -= min.y;
+								coordinates[i+2] -= min.z;
+							}
+							
+							let positions = new Float32Array(coordinates);
+							
+							let lineGeometry = new THREE.BufferGeometry();
+							lineGeometry.addAttribute("position", new THREE.BufferAttribute(positions, 3));
+							
+							let material = new THREE.LineBasicMaterial( { color: color} );
+							let line = new THREE.LineSegments(lineGeometry, material);
+							line.position.copy(min);
+							
+							return line;
+						}
+					}else{
+						console.log("unhandled feature: ", feature);
+					}
+				};
+				
+				Potree.utils.loadShapefileFeatures("./morro_bay_shp/shape/points.shp", features => {
+					for(let feature of features){
+						let node = featureToSceneNode(feature, 0x00ff00);
+						viewer.scene.scene.add(node);
+					}
+				});
+				
+				Potree.utils.loadShapefileFeatures("./morro_bay_shp/shape/natural.shp", features => {
+					for(let feature of features){
+						let node = featureToSceneNode(feature, 0x00ff00);
+						viewer.scene.scene.add(node);
+					}
+				});
+				
+				Potree.utils.loadShapefileFeatures("./morro_bay_shp/shape/waterways.shp", features => {
+					for(let feature of features){
+						let node = featureToSceneNode(feature, 0x0000ff);
+						viewer.scene.scene.add(node);
+					}
+				});
+				
+				Potree.utils.loadShapefileFeatures("./morro_bay_shp/shape/roads.shp", features => {
+					for(let feature of features){
+						let node = featureToSceneNode(feature, 0xffffff);
+						viewer.scene.scene.add(node);
+					}
+				});
+				
+			}
+		});
+		
+		
+		
+		
+	</script>
+	
+	
+  </body>
+</html>

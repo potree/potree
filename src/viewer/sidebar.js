@@ -2316,9 +2316,6 @@ function initSceneList(){
 			pcMaterial.heightMin = 0.8 * min + 0.2 * max;
 			pcMaterial.heightMax = 0.2 * min + 0.8 * max;
 		}
-			
-		viewer.addEventListener("height_range_changed" + i, updateHeightRange);
-		viewer.addEventListener("intensity_range_changed" + i, updateIntensityRange);
 		
 		viewer.addEventListener("intensity_gamma_changed" + i, function(event){
 			let gamma = pcMaterial.intensityGamma;
@@ -2467,10 +2464,6 @@ function initSceneList(){
 	
 	buildSceneList();
 
-	//for(let i = 0; i < viewer.scene.pointclouds.length; i++) {
-	//	initUIElements(i);
-	//}
-	
 	viewer.addEventListener("scene_changed", (e) => {
 		buildSceneList();
 		
@@ -2501,6 +2494,8 @@ function initSceneList(){
 		
 		$('#lblCameraPosition').html(strCamPos);
 		$('#lblCameraTarget').html(strCamTarget);
+		
+		
 	});
 };
 

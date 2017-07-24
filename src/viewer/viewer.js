@@ -1397,13 +1397,13 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		for(let pointcloud of this.scene.pointclouds){
 			let bbWorld = Potree.utils.computeTransformedBoundingBox(pointcloud.boundingBox, pointcloud.matrixWorld);
 				
-			if(!this.intensityMax){
+			if(!pointcloud.material._defaultIntensityRangeChanged){
 				let root = pointcloud.pcoGeometry.root;
 				if(root != null && root.loaded){
 					let attributes = pointcloud.pcoGeometry.root.geometry.attributes;
 					if(attributes.intensity){
 						let array = attributes.intensity.array;
-
+            
 						// chose max value from the 0.75 percentile
 						let ordered = [];
 						for(let j = 0; j < array.length; j++){
@@ -1412,15 +1412,16 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 						ordered.sort();
 						let capIndex = parseInt((ordered.length - 1) * 0.75);
 						let cap = ordered[capIndex];
-
+            
 						if(cap <= 1){
-							this.intensityMax = 1;
+							pointcloud.material.intensityRange = [0, 1];
 						}else if(cap <= 256){
-							this.intensityMax = 255;
+							pointcloud.material.intensityRange = [0, 255];
 						}else{
-							this.intensityMax = cap;
+							pointcloud.material.intensityRange = [0, cap];
 						}
 					}
+					//pointcloud._intensityMaxEvaluated = true;
 				}
 			}
 			

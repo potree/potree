@@ -2313,51 +2313,45 @@ function initSceneList(){
 			updateHeightRange();
 			let min =  $(`#sldHeightRange${i}`).slider("option", "min");
 			let max =  $(`#sldHeightRange${i}`).slider("option", "max");
-			pcMaterial.heightMin = 0.8 * min + 0.2 * max;
-			pcMaterial.heightMax = 0.2 * min + 0.8 * max;
 		}
 		
-		viewer.addEventListener("intensity_gamma_changed" + i, function(event){
-			let gamma = pcMaterial.intensityGamma;
+		pcMaterial.addEventListener("material_property_changed", (event) => {
 			
-			$('#lblIntensityGamma' + i)[0].innerHTML = gamma.toFixed(2);
-			$("#sldIntensityGamma" + i).slider({value: gamma});
+			updateHeightRange();
+			
+			{ // INTENSITY
+				let gamma = pcMaterial.intensityGamma;
+				let contrast = pcMaterial.intensityContrast;
+				let brightness = pcMaterial.intensityBrightness;
+				
+				updateIntensityRange();
+				
+				$('#lblIntensityGamma' + i)[0].innerHTML = gamma.toFixed(2);
+				$("#sldIntensityGamma" + i).slider({value: gamma});
+				
+				$('#lblIntensityContrast' + i)[0].innerHTML = contrast.toFixed(2);
+				$("#sldIntensityContrast" + i).slider({value: contrast});
+				
+				$('#lblIntensityBrightness' + i)[0].innerHTML = brightness.toFixed(2);
+				$("#sldIntensityBrightness" + i).slider({value: brightness});
+			}
+			
+			{ // RGB
+				let gamma = pcMaterial.rgbGamma;
+				let contrast = pcMaterial.rgbContrast;
+				let brightness = pcMaterial.rgbBrightness;
+				
+				$('#lblRGBGamma' + i)[0].innerHTML = gamma.toFixed(2);
+				$("#sldRGBGamma" + i).slider({value: gamma});
+			
+				$('#lblRGBContrast' + i)[0].innerHTML = contrast.toFixed(2);
+				$("#sldRGBContrast" + i).slider({value: contrast});
+				
+				$('#lblRGBBrightness' + i)[0].innerHTML = brightness.toFixed(2);
+				$("#sldRGBBrightness" + i).slider({value: brightness});
+			}
 		});
 		
-		viewer.addEventListener("intensity_contrast_changed" + i, function(event){
-			let contrast = pcMaterial.intensityContrast;
-			
-			$('#lblIntensityContrast' + i)[0].innerHTML = contrast.toFixed(2);
-			$("#sldIntensityContrast" + i).slider({value: contrast});
-		});
-		
-		viewer.addEventListener("intensity_brightness_changed" + i, function(event){
-			let brightness = pcMaterial.intensityBrightness;
-			
-			$('#lblIntensityBrightness' + i)[0].innerHTML = brightness.toFixed(2);
-			$("#sldIntensityBrightness" + i).slider({value: brightness});
-		});
-		
-		viewer.addEventListener("rgb_gamma_changed" + i, function(event){
-			let gamma = pcMaterial.rgbGamma;
-			
-			$('#lblRGBGamma' + i)[0].innerHTML = gamma.toFixed(2);
-			$("#sldRGBGamma" + i).slider({value: gamma});
-		});
-		
-		viewer.addEventListener("rgb_contrast_changed" + i, function(event){
-			let contrast = pcMaterial.rgbContrast;
-			
-			$('#lblRGBContrast' + i)[0].innerHTML = contrast.toFixed(2);
-			$("#sldRGBContrast" + i).slider({value: contrast});
-		});
-		
-		viewer.addEventListener("rgb_brightness_changed" + i, function(event){
-			let brightness = pcMaterial.rgbBrightness;
-			
-			$('#lblRGBBrightness' + i)[0].innerHTML = brightness.toFixed(2);
-			$("#sldRGBBrightness" + i).slider({value: brightness});
-		});
 		
 		viewer.addEventListener("length_unit_changed", e => {
 			$("#optLengthUnit").selectmenu().val(e.value);

@@ -216,6 +216,9 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 		this._treeType = treeType;
 		this._useEDL = false;
 		
+		this._defaultIntensityRangeChanged = false;
+		this._defaultElevationRangeChanged = false;
+		
 		this.attributes = {
 			position: 			{ type: "fv", value: [] },
 			color: 				{ type: "fv", value: [] },
@@ -739,6 +742,15 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 			});
 		}
 	}
+	
+	get elevationRange(){
+		return [this.heightMin, this.heightMax];
+	}
+	
+	set elevationRange(value){
+		this.heightMin = value[0];
+		this.heightMax = value[1];
+	}
 
 	get heightMin(){
 		return this.uniforms.heightMin.value;
@@ -747,6 +759,9 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 	set heightMin(value){
 		if(this.uniforms.heightMin.value !== value){
 			this.uniforms.heightMin.value = value;
+			
+			this._defaultElevationRangeChanged = true;
+			
 			this.dispatchEvent({
 				type: "material_property_changed",
 				target: this
@@ -762,6 +777,9 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 	set heightMax(value){
 		if(this.uniforms.heightMax.value !== value){
 			this.uniforms.heightMax.value = value;
+			
+			this._defaultElevationRangeChanged = true;
+			
 			this.dispatchEvent({
 				type: "material_property_changed",
 				target: this
@@ -796,6 +814,8 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 		}
 		
 		this.uniforms.intensityRange.value = value;
+		
+		this._defaultIntensityRangeChanged = true;
 		
 		this.dispatchEvent({
 			type: "material_property_changed",

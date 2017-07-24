@@ -63,8 +63,8 @@
 			viewer.toggleSidebar();
 		});
 		
-		viewer.scene.view.position.set(1478.53, -701.28, 740.88);
-		viewer.scene.view.lookAt(new THREE.Vector3(326.49, -18.21, 43.45));
+		viewer.scene.view.position.set(1441.04, -826.93, 1604.68);
+		viewer.scene.view.lookAt(new THREE.Vector3(296.27, -162.42, 786.24));
 		
 		let gradientNames = Object.keys(Potree.Gradients);
 		let radius = 520;
@@ -76,7 +76,6 @@
 			
 			let x = 0; //Math.cos(u) * radius + 2.5;
 			let y = 300 * u - 900; //Math.sin(u) * radius + 0.8;
-			let z = 0;
 			
 			Potree.loadPointCloud("../pointclouds/vol_total/cloud.js", gradientName, e => {
 				viewer.scene.addPointCloud(e.pointcloud);
@@ -85,12 +84,12 @@
 				material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
 				material.pointColorType = Potree.PointColorType.ELEVATION;
 				material.gradient = gradient;
+				material.elevationRange = [720, 800];
 				
-				e.pointcloud.position.set(x, y, z);
-				//e.pointcloud.rotation.set(0, 0, u + 1.2);
+				e.pointcloud.position.set(x, y, e.pointcloud.position.z);
 				
 				e.pointcloud.updateMatrixWorld();
-				let box = e.pointcloud.pcoGeometry.tightBoundingBox;
+				let box = e.pointcloud.pcoGeometry.tightBoundingBox.clone();
 				box.applyMatrix4(e.pointcloud.matrixWorld);
 				let center = box.getCenter();
 				
@@ -124,16 +123,16 @@
 				[0.9, new THREE.Color(0.910, 0.955, 0.400)],
 				[1.0, new THREE.Color(1.000, 1.000, 0.400)],
 			];
+			material.elevationRange = [720, 800];
 			
-			e.pointcloud.position.set(0, -1200, 0);
-			//e.pointcloud.rotation.set(0, 0, 0.8 * Math.PI);
+			e.pointcloud.position.set(0, -1200, e.pointcloud.position.z);
 			
 			let annotation = new Potree.Annotation({
 				title: "custom",
 				radius: 600
 			});
 			e.pointcloud.updateMatrixWorld();
-			let box = e.pointcloud.pcoGeometry.tightBoundingBox;
+			let box = e.pointcloud.pcoGeometry.tightBoundingBox.clone();
 			box.applyMatrix4(e.pointcloud.matrixWorld);
 			let center = box.getCenter();
 			annotation.position = center;

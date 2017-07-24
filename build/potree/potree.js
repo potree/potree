@@ -2813,6 +2813,9 @@ Potree.BinaryLoader.prototype.parse = function(node, buffer){
 			let buffer = new Float32Array(numPoints*3);
 			geometry.addAttribute("normal", new THREE.BufferAttribute(new Float32Array(buffer), 3));
 		}
+		
+		tightBoundingBox.max.sub(tightBoundingBox.min);
+		tightBoundingBox.min.set(0, 0, 0);
 
 		geometry.boundingBox = node.boundingBox;
 		node.geometry = geometry;
@@ -3800,6 +3803,9 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 		this._treeType = treeType;
 		this._useEDL = false;
 		
+		this._defaultIntensityRangeChanged = false;
+		this._defaultElevationRangeChanged = false;
+		
 		this.attributes = {
 			position: 			{ type: "fv", value: [] },
 			color: 				{ type: "fv", value: [] },
@@ -4323,6 +4329,15 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 			});
 		}
 	}
+	
+	get elevationRange(){
+		return [this.heightMin, this.heightMax];
+	}
+	
+	set elevationRange(value){
+		this.heightMin = value[0];
+		this.heightMax = value[1];
+	}
 
 	get heightMin(){
 		return this.uniforms.heightMin.value;
@@ -4331,6 +4346,9 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 	set heightMin(value){
 		if(this.uniforms.heightMin.value !== value){
 			this.uniforms.heightMin.value = value;
+			
+			this._defaultElevationRangeChanged = true;
+			
 			this.dispatchEvent({
 				type: "material_property_changed",
 				target: this
@@ -4346,6 +4364,9 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 	set heightMax(value){
 		if(this.uniforms.heightMax.value !== value){
 			this.uniforms.heightMax.value = value;
+			
+			this._defaultElevationRangeChanged = true;
+			
 			this.dispatchEvent({
 				type: "material_property_changed",
 				target: this
@@ -4380,6 +4401,8 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 		}
 		
 		this.uniforms.intensityRange.value = value;
+		
+		this._defaultIntensityRangeChanged = true;
 		
 		this.dispatchEvent({
 			type: "material_property_changed",
@@ -7810,6 +7833,20 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree{
 		this.profileRequests = [];
 		this.name = "";
 		
+		{
+			let box = [this.pcoGeometry.tightBoundingBox, this.getBoundingBoxWorld()]
+				.find(v => v !== undefined);
+				
+			this.updateMatrixWorld(true);
+			box = Potree.utils.computeTransformedBoundingBox(box, this.matrixWorld);
+			
+			let bWidth = box.max.z - box.min.z;
+			let bMin = box.min.z - 0.2 * bWidth;
+			let bMax = box.max.z + 0.2 * bWidth;
+			this.material.heightMin = bMin;
+			this.material.heightMax = bMax;
+		}
+		
 		// TODO read projection from file instead
 		this.projection = geometry.projection;
 		
@@ -8058,7 +8095,7 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree{
 
 		if ( this.matrixWorldNeedsUpdate === true || force === true ) {
 
-			if ( this.parent === undefined ) {
+			if ( !this.parent ) {
 
 				this.matrixWorld.copy( this.matrix );
 
@@ -15281,13 +15318,13 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		for(let pointcloud of this.scene.pointclouds){
 			let bbWorld = Potree.utils.computeTransformedBoundingBox(pointcloud.boundingBox, pointcloud.matrixWorld);
 				
-			if(!this.intensityMax){
+			if(!pointcloud.material._defaultIntensityRangeChanged){
 				let root = pointcloud.pcoGeometry.root;
 				if(root != null && root.loaded){
 					let attributes = pointcloud.pcoGeometry.root.geometry.attributes;
 					if(attributes.intensity){
 						let array = attributes.intensity.array;
-
+            
 						// chose max value from the 0.75 percentile
 						let ordered = [];
 						for(let j = 0; j < array.length; j++){
@@ -15296,15 +15333,16 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 						ordered.sort();
 						let capIndex = parseInt((ordered.length - 1) * 0.75);
 						let cap = ordered[capIndex];
-
+            
 						if(cap <= 1){
-							this.intensityMax = 1;
+							pointcloud.material.intensityRange = [0, 1];
 						}else if(cap <= 256){
-							this.intensityMax = 255;
+							pointcloud.material.intensityRange = [0, 255];
 						}else{
-							this.intensityMax = cap;
+							pointcloud.material.intensityRange = [0, cap];
 						}
 					}
+					//pointcloud._intensityMaxEvaluated = true;
 				}
 			}
 			
@@ -19497,54 +19535,45 @@ function initSceneList(){
 			updateHeightRange();
 			let min =  $(`#sldHeightRange${i}`).slider("option", "min");
 			let max =  $(`#sldHeightRange${i}`).slider("option", "max");
-			pcMaterial.heightMin = 0.8 * min + 0.2 * max;
-			pcMaterial.heightMax = 0.2 * min + 0.8 * max;
 		}
-			
-		viewer.addEventListener("height_range_changed" + i, updateHeightRange);
-		viewer.addEventListener("intensity_range_changed" + i, updateIntensityRange);
 		
-		viewer.addEventListener("intensity_gamma_changed" + i, function(event){
-			let gamma = pcMaterial.intensityGamma;
+		pcMaterial.addEventListener("material_property_changed", (event) => {
 			
-			$('#lblIntensityGamma' + i)[0].innerHTML = gamma.toFixed(2);
-			$("#sldIntensityGamma" + i).slider({value: gamma});
+			updateHeightRange();
+			
+			{ // INTENSITY
+				let gamma = pcMaterial.intensityGamma;
+				let contrast = pcMaterial.intensityContrast;
+				let brightness = pcMaterial.intensityBrightness;
+				
+				updateIntensityRange();
+				
+				$('#lblIntensityGamma' + i)[0].innerHTML = gamma.toFixed(2);
+				$("#sldIntensityGamma" + i).slider({value: gamma});
+				
+				$('#lblIntensityContrast' + i)[0].innerHTML = contrast.toFixed(2);
+				$("#sldIntensityContrast" + i).slider({value: contrast});
+				
+				$('#lblIntensityBrightness' + i)[0].innerHTML = brightness.toFixed(2);
+				$("#sldIntensityBrightness" + i).slider({value: brightness});
+			}
+			
+			{ // RGB
+				let gamma = pcMaterial.rgbGamma;
+				let contrast = pcMaterial.rgbContrast;
+				let brightness = pcMaterial.rgbBrightness;
+				
+				$('#lblRGBGamma' + i)[0].innerHTML = gamma.toFixed(2);
+				$("#sldRGBGamma" + i).slider({value: gamma});
+			
+				$('#lblRGBContrast' + i)[0].innerHTML = contrast.toFixed(2);
+				$("#sldRGBContrast" + i).slider({value: contrast});
+				
+				$('#lblRGBBrightness' + i)[0].innerHTML = brightness.toFixed(2);
+				$("#sldRGBBrightness" + i).slider({value: brightness});
+			}
 		});
 		
-		viewer.addEventListener("intensity_contrast_changed" + i, function(event){
-			let contrast = pcMaterial.intensityContrast;
-			
-			$('#lblIntensityContrast' + i)[0].innerHTML = contrast.toFixed(2);
-			$("#sldIntensityContrast" + i).slider({value: contrast});
-		});
-		
-		viewer.addEventListener("intensity_brightness_changed" + i, function(event){
-			let brightness = pcMaterial.intensityBrightness;
-			
-			$('#lblIntensityBrightness' + i)[0].innerHTML = brightness.toFixed(2);
-			$("#sldIntensityBrightness" + i).slider({value: brightness});
-		});
-		
-		viewer.addEventListener("rgb_gamma_changed" + i, function(event){
-			let gamma = pcMaterial.rgbGamma;
-			
-			$('#lblRGBGamma' + i)[0].innerHTML = gamma.toFixed(2);
-			$("#sldRGBGamma" + i).slider({value: gamma});
-		});
-		
-		viewer.addEventListener("rgb_contrast_changed" + i, function(event){
-			let contrast = pcMaterial.rgbContrast;
-			
-			$('#lblRGBContrast' + i)[0].innerHTML = contrast.toFixed(2);
-			$("#sldRGBContrast" + i).slider({value: contrast});
-		});
-		
-		viewer.addEventListener("rgb_brightness_changed" + i, function(event){
-			let brightness = pcMaterial.rgbBrightness;
-			
-			$('#lblRGBBrightness' + i)[0].innerHTML = brightness.toFixed(2);
-			$("#sldRGBBrightness" + i).slider({value: brightness});
-		});
 		
 		viewer.addEventListener("length_unit_changed", e => {
 			$("#optLengthUnit").selectmenu().val(e.value);
@@ -19651,10 +19680,6 @@ function initSceneList(){
 	
 	buildSceneList();
 
-	//for(let i = 0; i < viewer.scene.pointclouds.length; i++) {
-	//	initUIElements(i);
-	//}
-	
 	viewer.addEventListener("scene_changed", (e) => {
 		buildSceneList();
 		
@@ -19685,6 +19710,8 @@ function initSceneList(){
 		
 		$('#lblCameraPosition').html(strCamPos);
 		$('#lblCameraTarget').html(strCamTarget);
+		
+		
 	});
 };
 

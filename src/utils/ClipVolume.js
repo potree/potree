@@ -8,9 +8,6 @@ Potree.ClipVolume = class extends THREE.Object3D{
 		this.constructor.counter = (this.constructor.counter === undefined) ? 0 : this.constructor.counter + 1;
 		this.name = "clip_volume_" + this.constructor.counter;
 
-		this.clipOffset = 0.001;
-		this.clipRotOffset = 1;
-
 		let alpha = args.alpha || 0;
 		let beta = args.beta || 0;
 		let gamma = args.gamma || 0;
@@ -18,6 +15,9 @@ Potree.ClipVolume = class extends THREE.Object3D{
 		this.rotation.x = alpha;
 		this.rotation.y = beta;
 		this.rotation.z = gamma;
+
+		this.clipOffset = 0.001;
+		this.clipRotOffset = 1;
 				
 		let boxGeometry = new THREE.BoxGeometry(1, 1, 1);
 		boxGeometry.computeBoundingBox();
@@ -230,11 +230,11 @@ Potree.ClipVolume = class extends THREE.Object3D{
 
 		if(cs == "local") {
 			if(axis == "x") {
-				this.rotateOnAxis(this.localX, dir * this.clipRotOffset * Math.PI/180);
+				this.rotateOnAxis(new THREE.Vector3(1, 0, 0), dir * this.clipRotOffset * Math.PI/180);
 			} else if(axis == "y") {
-				this.rotateOnAxis(this.localY, dir * this.clipRotOffset * Math.PI/180);
+				this.rotateOnAxis(new THREE.Vector3(0, 1, 0), dir * this.clipRotOffset * Math.PI/180);
 			} else if(axis == "z") {
-				this.rotateOnAxis(this.localZ, dir * this.clipRotOffset * Math.PI/180);
+				this.rotateOnAxis(new THREE.Vector3(0, 0, 1), dir * this.clipRotOffset * Math.PI/180);
 			}
 		} else if(cs == "global") {
 			let rotaxis = new THREE.Vector4(1, 0, 0, 0);	
@@ -249,6 +249,8 @@ Potree.ClipVolume = class extends THREE.Object3D{
 			rotaxis = new THREE.Vector3(rotaxis.x, rotaxis.y, rotaxis.z);
 			this.rotateOnAxis(rotaxis, dir * this.clipRotOffset * Math.PI/180);
 		}
+
+		this.updateLocalSystem();
 
 		this.dispatchEvent({"type": "clip_volume_changed", "viewer": viewer, "volume": this});
 	}	

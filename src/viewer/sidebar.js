@@ -111,13 +111,6 @@ function initToolbar(){
 		}
 	));
 	
-	// CLIP VOLUME
-	/*elToolbar.append(createToolIcon(
-		Potree.resourcePath + "/icons/clip_volume.svg",
-		"[title]tt.clip_volume",
-		function(){viewer.volumeTool.startInsertion({clip: true})}
-	));*/
-	
 	// REMOVE ALL
 	elToolbar.append(createToolIcon(
 		Potree.resourcePath + "/icons/reset_tools.svg",

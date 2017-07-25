@@ -1,8 +1,0 @@
-TODO orthographic cameras:
-
-- (weights for node refinement for large pointclouds)
-
-TODO clipping:
-
-- polygon clipping / clip planes / measurement volumes
-  - EDL renderer: no depth of volumes stored -> no depth test possible

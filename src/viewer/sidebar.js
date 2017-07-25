@@ -378,8 +378,6 @@ function initAnnotationDetails(){
 	let registeredEvents = [];
 	
 	let rebuild = () => {
-		console.log("rebuild");
-		
 		annotationPanel.empty();
 		for(let registeredEvent of registeredEvents){
 			let {type, dispatcher, callback} = registeredEvent;
@@ -597,9 +595,9 @@ function initMeasurementDetails(){
 			
 			let row = $(`
 				<tr>
-					<td>${x}</td>
-					<td>${y}</td>
-					<td>${z}</td>
+					<td><span>${x}</span></td>
+					<td><span>${y}</span></td>
+					<td><span>${z}</span></td>
 				</tr>
 			`);
 			
@@ -1110,7 +1108,7 @@ function initMeasurementDetails(){
 						let step = elWidthSlider.spinner("option", "step");
 						
 						let delta = value * 0.05;
-						let increments = parseInt(delta / step);
+						let increments = Math.max(1, parseInt(delta / step));
 						
 						return increments;
 					}
@@ -1142,7 +1140,76 @@ function initMeasurementDetails(){
 		update(){
 			let elCoordiantesContainer = this.elContent.find(".coordinates_table_container");
 			elCoordiantesContainer.empty();
-			elCoordiantesContainer.append(createCoordinatesTable(this.measurement));
+			let coordinatesTable = createCoordinatesTable(this.measurement);
+			
+			let validate = input => {
+				return !isNaN(Number(input));
+			};
+			
+			let cells = coordinatesTable.find("span");
+			cells.attr("contenteditable", "true");
+			
+			cells = cells.toArray();
+			
+			for(let i = 0; i < cells.length; i++){
+				let cell = cells[i];
+				let measure = this.measurement;
+				let updateCallback = this._update;
+				
+				let assignValue = () => {
+					let text = Potree.utils.removeCommas($(cell).html());
+					
+					let num = Number(text);
+					
+					if(!isNaN(num)){
+						$(cell).removeClass("invalid_value");
+						
+						measure.removeEventListener("marker_moved", updateCallback);
+						
+						let index = parseInt(i / 3);
+						let coordinateComponent = i % 3;
+						
+						let position = measure.points[index].clone();
+						
+						if(coordinateComponent === 0){
+							position.x = num;
+						} else if(coordinateComponent === 1){
+							position.y = num;
+						} else if(coordinateComponent === 2){
+							position.z = num;
+						}
+						
+						measure.setPosition(index, position);
+						measure.addEventListener("marker_moved", updateCallback);
+					}else{
+						$(cell).addClass("invalid_value");
+					}
+				};
+				
+				$(cell).on("keypress", (e) => {
+					if(e.which === 13){
+						assignValue();
+						return false;
+					}
+				});
+				
+				$(cell).focusout(() => assignValue());
+				
+				$(cell).on("input", function(e){
+					let text = Potree.utils.removeCommas($(this).html());
+					
+					let num = Number(text);
+					
+					if(!isNaN(num)){
+						$(this).removeClass("invalid_value");
+					}else{
+						$(this).addClass("invalid_value");
+					}
+					
+				});
+			}
+			
+			elCoordiantesContainer.append(coordinatesTable);
 		}
 		
 		download(){
@@ -1300,6 +1367,9 @@ function initMeasurementDetails(){
 							<span class="input-grid-cell"><input type="text" id="volume_input_gamma_${measurement.id}"/></span>
 						</div>
 					</div>
+					
+					<label><input type="checkbox" id="chkClip_${this.measurement.id}"/><span data-i18n="measurements.clip"></span></label>
+					<label><input type="checkbox" id="chkVisible_${this.measurement.id}"/><span data-i18n="measurements.show"></span></label>
 				
 					
 					<input type="button" value="Prepare Download" id="download_volume_${this.id}"/>
@@ -1314,6 +1384,20 @@ function initMeasurementDetails(){
 				</div>
 			`);
 			this.elContentContainer.append(this.elContent);
+			
+			this.elClip = this.elContent.find(`#chkClip_${this.measurement.id}`);
+			this.elVisible = this.elContent.find(`#chkVisible_${this.measurement.id}`);
+			
+			this.elClip.click( () => {
+				this.measurement.clip = this.elClip.is(":checked");
+			});
+			
+			this.elVisible.click( () => {
+				this.measurement.visible = this.elVisible.is(":checked");
+			});
+			
+			this.elClip.prop('checked', this.measurement.clip);
+			this.elVisible.prop('checked', this.measurement.visible);
 			
 			this.elX = this.elContent.find(`#volume_input_x_${this.measurement.id}`);
 			this.elY = this.elContent.find(`#volume_input_y_${this.measurement.id}`);
@@ -1427,6 +1511,8 @@ function initMeasurementDetails(){
 			this.measurement.addEventListener("marker_added", this._update);
 			this.measurement.addEventListener("marker_removed", this._update);
 			this.measurement.addEventListener("marker_moved", this._update);
+			
+			this.elContent.i18n();
 			
 			this.update();
 		}
@@ -2314,9 +2400,10 @@ function initSceneList(){
 	let initUIElements = function(i) {
 		// scene panel in scene list
 
-		let title = viewer.scene.pointclouds[i].name;
-		let pcMaterial = viewer.scene.pointclouds[i].material;
-		let checked = viewer.scene.pointclouds[i].visible ? "checked" : "";
+		let pointcloud = viewer.scene.pointclouds[i];
+		let title = pointcloud.name;
+		let pcMaterial = pointcloud.material;
+		let checked = pointcloud.visible ? "checked" : "";
 
 		let scenePanel = $(`
 			<span class="scene_item">
@@ -2531,7 +2618,7 @@ function initSceneList(){
 		let inputVis = scenePanel.find("input[type='checkbox']");
 		
 		inputVis.click(function(event){
-			viewer.scene.pointclouds[i].visible = event.target.checked;
+			pointcloud.visible = event.target.checked;
 			if(viewer.profileWindowController){
 				viewer.profileWindowController.recompute();
 			}
@@ -2746,12 +2833,15 @@ function initSceneList(){
 		});
 
 		let updateHeightRange = function(){
-			let box = viewer.getBoundingBox();
+			let box = [pointcloud.pcoGeometry.tightBoundingBox, pointcloud.getBoundingBoxWorld()]
+				.find(v => v !== undefined);
+				
+			pointcloud.updateMatrixWorld(true);
+			box = Potree.utils.computeTransformedBoundingBox(box, pointcloud.matrixWorld);
+			
 			let bWidth = box.max.z - box.min.z;
 			bMin = box.min.z - 0.2 * bWidth;
 			bMax = box.max.z + 0.2 * bWidth;
-			
-			let hrWidth = pcMaterial.heightMax - pcMaterial.heightMin;
 			
 			$( "#lblHeightRange" + i )[0].innerHTML = pcMaterial.heightMin.toFixed(2) + " to " + pcMaterial.heightMax.toFixed(2);
 			$( "#sldHeightRange" + i ).slider({
@@ -2774,50 +2864,49 @@ function initSceneList(){
 			});
 		};
 		
-		viewer.addEventListener("height_range_changed" + i, updateHeightRange);
-		viewer.addEventListener("intensity_range_changed" + i, updateIntensityRange);
+		{
+			updateHeightRange();
+			let min =  $(`#sldHeightRange${i}`).slider("option", "min");
+			let max =  $(`#sldHeightRange${i}`).slider("option", "max");
+		}
 		
-		viewer.addEventListener("intensity_gamma_changed" + i, function(event){
-			let gamma = pcMaterial.intensityGamma;
+		pcMaterial.addEventListener("material_property_changed", (event) => {
 			
-			$('#lblIntensityGamma' + i)[0].innerHTML = gamma.toFixed(2);
-			$("#sldIntensityGamma" + i).slider({value: gamma});
+			updateHeightRange();
+			
+			{ // INTENSITY
+				let gamma = pcMaterial.intensityGamma;
+				let contrast = pcMaterial.intensityContrast;
+				let brightness = pcMaterial.intensityBrightness;
+				
+				updateIntensityRange();
+				
+				$('#lblIntensityGamma' + i)[0].innerHTML = gamma.toFixed(2);
+				$("#sldIntensityGamma" + i).slider({value: gamma});
+				
+				$('#lblIntensityContrast' + i)[0].innerHTML = contrast.toFixed(2);
+				$("#sldIntensityContrast" + i).slider({value: contrast});
+				
+				$('#lblIntensityBrightness' + i)[0].innerHTML = brightness.toFixed(2);
+				$("#sldIntensityBrightness" + i).slider({value: brightness});
+			}
+			
+			{ // RGB
+				let gamma = pcMaterial.rgbGamma;
+				let contrast = pcMaterial.rgbContrast;
+				let brightness = pcMaterial.rgbBrightness;
+				
+				$('#lblRGBGamma' + i)[0].innerHTML = gamma.toFixed(2);
+				$("#sldRGBGamma" + i).slider({value: gamma});
+			
+				$('#lblRGBContrast' + i)[0].innerHTML = contrast.toFixed(2);
+				$("#sldRGBContrast" + i).slider({value: contrast});
+				
+				$('#lblRGBBrightness' + i)[0].innerHTML = brightness.toFixed(2);
+				$("#sldRGBBrightness" + i).slider({value: brightness});
+			}
 		});
 		
-		viewer.addEventListener("intensity_contrast_changed" + i, function(event){
-			let contrast = pcMaterial.intensityContrast;
-			
-			$('#lblIntensityContrast' + i)[0].innerHTML = contrast.toFixed(2);
-			$("#sldIntensityContrast" + i).slider({value: contrast});
-		});
-		
-		viewer.addEventListener("intensity_brightness_changed" + i, function(event){
-			let brightness = pcMaterial.intensityBrightness;
-			
-			$('#lblIntensityBrightness' + i)[0].innerHTML = brightness.toFixed(2);
-			$("#sldIntensityBrightness" + i).slider({value: brightness});
-		});
-		
-		viewer.addEventListener("rgb_gamma_changed" + i, function(event){
-			let gamma = pcMaterial.rgbGamma;
-			
-			$('#lblRGBGamma' + i)[0].innerHTML = gamma.toFixed(2);
-			$("#sldRGBGamma" + i).slider({value: gamma});
-		});
-		
-		viewer.addEventListener("rgb_contrast_changed" + i, function(event){
-			let contrast = pcMaterial.rgbContrast;
-			
-			$('#lblRGBContrast' + i)[0].innerHTML = contrast.toFixed(2);
-			$("#sldRGBContrast" + i).slider({value: contrast});
-		});
-		
-		viewer.addEventListener("rgb_brightness_changed" + i, function(event){
-			let brightness = pcMaterial.rgbBrightness;
-			
-			$('#lblRGBBrightness' + i)[0].innerHTML = brightness.toFixed(2);
-			$("#sldRGBBrightness" + i).slider({value: brightness});
-		});
 		
 		viewer.addEventListener("length_unit_changed", e => {
 			$("#optLengthUnit").selectmenu().val(e.value);
@@ -2924,10 +3013,6 @@ function initSceneList(){
 	
 	buildSceneList();
 
-	//for(let i = 0; i < viewer.scene.pointclouds.length; i++) {
-	//	initUIElements(i);
-	//}
-	
 	viewer.addEventListener("scene_changed", (e) => {
 		buildSceneList();
 		
@@ -2958,6 +3043,8 @@ function initSceneList(){
 		
 		$('#lblCameraPosition').html(strCamPos);
 		$('#lblCameraTarget').html(strCamTarget);
+		
+		
 	});
 };
 
@@ -2972,9 +3059,10 @@ let initSettings = function(){
 	});
 	
 	viewer.addEventListener("minnodesize_changed", function(event){
-		$('#lblMinNodeSize')[0].innerHTML = parseInt(viewer.getMinNodeSize());
-		$( "#lblMinNodeSize" ).slider({value: viewer.getMinNodeSize()});
+		$('#lblMinNodeSize').html(parseInt(viewer.getMinNodeSize()));
+		$("#sldMinNodeSize").slider({value: viewer.getMinNodeSize()});
 	});
+	$('#lblMinNodeSize').html(parseInt(viewer.getMinNodeSize()));
 	
 	
 	/*let toClipModeCode = function(string){

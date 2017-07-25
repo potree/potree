@@ -81,6 +81,20 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree{
 		this.profileRequests = [];
 		this.name = "";
 		
+		{
+			let box = [this.pcoGeometry.tightBoundingBox, this.getBoundingBoxWorld()]
+				.find(v => v !== undefined);
+				
+			this.updateMatrixWorld(true);
+			box = Potree.utils.computeTransformedBoundingBox(box, this.matrixWorld);
+			
+			let bWidth = box.max.z - box.min.z;
+			let bMin = box.min.z - 0.2 * bWidth;
+			let bMax = box.max.z + 0.2 * bWidth;
+			this.material.heightMin = bMin;
+			this.material.heightMax = bMax;
+		}
+		
 		// TODO read projection from file instead
 		this.projection = geometry.projection;
 		
@@ -276,7 +290,8 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree{
 				
 				if(j === 0){
 					let vArrayIndex = visibleNodes.indexOf(child);
-					data[i*3 + 1] = vArrayIndex - i;
+					data[i*3 + 1] = (vArrayIndex - i) >> 8;
+					data[i*3 + 2] = (vArrayIndex - i) % 256;
 				}
 				
 			}
@@ -328,7 +343,7 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree{
 
 		if ( this.matrixWorldNeedsUpdate === true || force === true ) {
 
-			if ( this.parent === undefined ) {
+			if ( !this.parent ) {
 
 				this.matrixWorld.copy( this.matrix );
 

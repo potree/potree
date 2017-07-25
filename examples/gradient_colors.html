@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="description" content="">
+    <meta name="author" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Potree Viewer</title>
+
+	<link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
+	<link rel="stylesheet" type="text/css" href="../libs/jquery-ui/jquery-ui.min.css">
+	<link rel="stylesheet" type="text/css" href="../libs/perfect-scrollbar/css/perfect-scrollbar.css">
+	<link rel="stylesheet" href="../libs/openlayers3/ol.css" type="text/css">
+	<link rel="stylesheet" href="../libs/spectrum/spectrum.css" type="text/css">
+  </head>
+
+  <body>
+  
+	<script src="../libs/jquery/jquery-3.1.1.js"></script>
+	<script src="../libs/spectrum/spectrum.js"></script>
+	
+	<script src="../libs/perfect-scrollbar/js/perfect-scrollbar.jquery.js"></script>
+	<script src="../libs/jquery-ui/jquery-ui.min.js"></script>
+	<script src="../libs/three.js/build/three.js"></script>
+	<script src="../libs/other/stats.min.js"></script>
+	<script src="../libs/other/BinaryHeap.js"></script>
+	<script src="../libs/tween/tween.min.js"></script>
+	<script src="../libs/d3/d3.js"></script>
+	<script src="../libs/proj4/proj4.js"></script>
+	<script src="../libs/openlayers3/ol.js"></script>
+    <script src="../libs/i18next/i18next.js"></script>
+	
+	<script src="../build/potree/potree.js"></script>
+	<!--<script src="../src/viewer/sidebar.js"></script>-->
+	
+	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
+	<!-- INCLUDE SETTINGS HERE -->
+	
+	<script src="../libs/plasio/js/laslaz.js"></script>
+	<script src="../libs/plasio/vendor/bluebird.js"></script>
+
+    <div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
+		<div id="potree_render_area"></div>
+		<div id="potree_sidebar_container"> </div>
+    </div>
+	
+	<script>
+	
+		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
+		
+		viewer.setEDLEnabled(true);
+		viewer.setFOV(60);
+		viewer.setPointBudget(1*1000*1000);
+		viewer.setMinNodeSize(10);
+		viewer.loadSettingsFromURL();
+		
+		viewer.setDescription(`Available gradient color schemes.<br>
+		Set scheme with 'pointcloud.material.gradient = Potree.Gradients.&lt;name&gt;'`);
+		
+		viewer.loadGUI(() => {
+			viewer.setLanguage('en');
+			$("#menu_scene").next().show();
+			viewer.toggleSidebar();
+		});
+		
+		viewer.scene.view.position.set(1441.04, -826.93, 1604.68);
+		viewer.scene.view.lookAt(new THREE.Vector3(296.27, -162.42, 786.24));
+		
+		let gradientNames = Object.keys(Potree.Gradients);
+		let radius = 520;
+		for(let i = 0; i < gradientNames.length; i++){
+			let gradientName = gradientNames[i];
+			let gradient = Potree.Gradients[gradientName];
+			
+			let u = 2 * Math.PI * i / gradientNames.length;
+			
+			let x = 0; //Math.cos(u) * radius + 2.5;
+			let y = 300 * u - 900; //Math.sin(u) * radius + 0.8;
+			
+			Potree.loadPointCloud("../pointclouds/vol_total/cloud.js", gradientName, e => {
+				viewer.scene.addPointCloud(e.pointcloud);
+				
+				let material = e.pointcloud.material;
+				material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+				material.pointColorType = Potree.PointColorType.ELEVATION;
+				material.gradient = gradient;
+				material.elevationRange = [720, 800];
+				
+				e.pointcloud.position.set(x, y, e.pointcloud.position.z);
+				
+				e.pointcloud.updateMatrixWorld();
+				let box = e.pointcloud.pcoGeometry.tightBoundingBox.clone();
+				box.applyMatrix4(e.pointcloud.matrixWorld);
+				let center = box.getCenter();
+				
+				
+				let annotation = new Potree.Annotation({
+					title: gradientName,
+					radius: 600
+				});
+				annotation.position = center;
+				annotation.position.z += 30;
+				viewer.scene.annotations.add(annotation);
+			});
+		}
+		
+		Potree.loadPointCloud("../pointclouds/vol_total/cloud.js", "custom", e => {
+			viewer.scene.addPointCloud(e.pointcloud);
+			
+			let material = e.pointcloud.material;
+			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+			material.pointColorType = Potree.PointColorType.ELEVATION;
+			material.gradient = [
+				[0.0, new THREE.Color(0.090, 0.545, 0.400)],
+				[0.1, new THREE.Color(0.180, 0.590, 0.400)],
+				[0.2, new THREE.Color(0.271, 0.635, 0.400)],
+				[0.3, new THREE.Color(0.365, 0.682, 0.400)],
+				[0.4, new THREE.Color(0.455, 0.727, 0.400)],
+				[0.5, new THREE.Color(0.545, 0.773, 0.400)],
+				[0.6, new THREE.Color(0.635, 0.818, 0.400)],
+				[0.7, new THREE.Color(0.729, 0.865, 0.400)],
+				[0.8, new THREE.Color(0.820, 0.910, 0.400)],
+				[0.9, new THREE.Color(0.910, 0.955, 0.400)],
+				[1.0, new THREE.Color(1.000, 1.000, 0.400)],
+			];
+			material.elevationRange = [720, 800];
+			
+			e.pointcloud.position.set(0, -1200, e.pointcloud.position.z);
+			
+			let annotation = new Potree.Annotation({
+				title: "custom",
+				radius: 600
+			});
+			e.pointcloud.updateMatrixWorld();
+			let box = e.pointcloud.pcoGeometry.tightBoundingBox.clone();
+			box.applyMatrix4(e.pointcloud.matrixWorld);
+			let center = box.getCenter();
+			annotation.position = center;
+			annotation.position.z += 30;
+			//annotation.position = new THREE.Vector3(0, 0, 5);
+			viewer.scene.annotations.add(annotation);
+		});
+		
+	</script>
+	
+	
+  </body>
+</html>

@@ -598,8 +598,8 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			this.setFOV(60);
 			this.setEDLEnabled(false);
 			this.setEDLRadius(1.4);
-			this.setEDLStrength(1.0);
-			//this.setClipMode(Potree.ClipMode.HIGHLIGHT_INSIDE);
+			this.setEDLStrength(0.4);
+			this.clippingTool.setClipMode(Potree.ClipMode.HIGHLIGHT);
 			this.setPointBudget(1*1000*1000);
 			this.setShowBoundingBox(false);
 			this.setFreeze(false);
@@ -1524,13 +1524,13 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		for(let pointcloud of this.scene.pointclouds){
 			let bbWorld = Potree.utils.computeTransformedBoundingBox(pointcloud.boundingBox, pointcloud.matrixWorld);
 				
-			if(!this.intensityMax){
+			if(!pointcloud.material._defaultIntensityRangeChanged){
 				let root = pointcloud.pcoGeometry.root;
 				if(root != null && root.loaded){
 					let attributes = pointcloud.pcoGeometry.root.geometry.attributes;
 					if(attributes.intensity){
 						let array = attributes.intensity.array;
-
+            
 						// chose max value from the 0.75 percentile
 						let ordered = [];
 						for(let j = 0; j < array.length; j++){
@@ -1539,15 +1539,16 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 						ordered.sort();
 						let capIndex = parseInt((ordered.length - 1) * 0.75);
 						let cap = ordered[capIndex];
-
+            
 						if(cap <= 1){
-							this.intensityMax = 1;
+							pointcloud.material.intensityRange = [0, 1];
 						}else if(cap <= 256){
-							this.intensityMax = 255;
+							pointcloud.material.intensityRange = [0, 255];
 						}else{
-							this.intensityMax = cap;
+							pointcloud.material.intensityRange = [0, cap];
 						}
 					}
+					//pointcloud._intensityMaxEvaluated = true;
 				}
 			}
 			
@@ -1796,191 +1797,6 @@ class PotreeRenderer{
 			viewer.renderer.setSize(width, height);
 		}
 		
-		/*
-		if(Potree.framenumber > 20 && false){
-			
-			if(Potree.__dems === undefined){
-				Potree.__dems = {};
-				Potree.__dems.targetElevation = new THREE.WebGLRenderTarget( 128, 128, { 
-					minFilter: THREE.NearestFilter, 
-					magFilter: THREE.NearestFilter, 
-					format: THREE.RGBAFormat
-				} );
-				
-				Potree.__dems.targetMedian = new THREE.WebGLRenderTarget( 128, 128, { 
-					minFilter: THREE.NearestFilter, 
-					magFilter: THREE.NearestFilter, 
-					format: THREE.RGBAFormat
-				} );
-				
-				Potree.__dems.camera = new THREE.OrthographicCamera(0, 1, 1, 0, 0, 1);
-				
-				// VERTEX SHADER
-				let vsElevation = `
-					precision mediump float;
-					precision mediump int;
-					
-					attribute vec3 position;
-					
-					uniform mat4 modelMatrix;
-					uniform mat4 modelViewMatrix;
-					uniform mat4 projectionMatrix;
-					
-					varying float vElevation;
-					
-					void main(){
-						vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
-						gl_Position = projectionMatrix * mvPosition;
-						gl_PointSize = 1.0;
-						
-						vElevation = position.z;
-					}
-				`;
-				
-				// FRAGMENT SHADER
-				let fsElevation = `
-					precision mediump float;
-					precision mediump int;
-					
-					varying float vElevation;
-					
-					void main(){
-						gl_FragColor = vec4(vElevation / 50.0, 0.0, 0.0, 1.0);
-					}
-				`;
-				
-				let vsMedian = `
-					precision mediump float;
-					precision mediump int;
-					
-					attribute vec3 position;
-					attribute vec2 uv;
-					
-					uniform mat4 modelMatrix;
-					uniform mat4 modelViewMatrix;
-					uniform mat4 projectionMatrix;
-				
-					varying vec2 vUV;
-
-					void main() {
-						vUV = uv;
-						
-						vec4 mvPosition = modelViewMatrix * vec4(position,1.0);
-
-						gl_Position = projectionMatrix * mvPosition;
-					}
-				`;
-				
-				let fsMedian = `
-				
-					precision mediump float;
-					precision mediump int;
-					
-					uniform float uWidth;
-					uniform float uHeight;					
-					uniform sampler2D uTexture;
-
-					varying vec2 vUV;
-					
-					void main(){
-						vec2 uv = gl_FragCoord.xy / vec2(uWidth, uHeight);						
-						
-						vec4 color = texture2D(uTexture, uv);
-						gl_FragColor = color;
-                        if(color.a == 0.0){
-							
-                            vec4 sum;
-                            
-                            float minVal = 1.0 / 0.0;
-                            
-                            float sumA = 0.0;
-							for(int i = -1; i <= 1; i++){
-								for(int j = -1; j <= 1; j++){
-									vec2 n = gl_FragCoord.xy + vec2(i, j);
-                                    vec2 uv = n / vec2(uWidth, uHeight);	
-                                    vec4 c = texture2D(uTexture, uv);
-                                    
-                                    if(c.a == 1.0){
-                                    	minVal = min(c.r, minVal);
-                                    }
-                                    
-                                    sumA += c.a;
-								}
-							}
-                            
-                            if(sumA > 0.0){
-                            	gl_FragColor = vec4(minVal, 0.0, 0.0, 1.0);
-                            }else{
-                            	discard;   
-                            }
-						}else{
-							//gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);
-							gl_FragColor = vec4(color.rgb, 1.0);
-						}
-						
-						
-					}
-				
-				`;
-				
-				Potree.__dems.elevationMaterial = new THREE.RawShaderMaterial( {
-					vertexShader: vsElevation,
-					fragmentShader: fsElevation,
-				} );
-				
-				Potree.__dems.medianFilterMaterial = new THREE.RawShaderMaterial( {
-					uniforms: {
-						uWidth: {value: 1.0},
-						uHeight: {value: 1.0},
-						uTexture: {type: "t", value: Potree.__dems.targetElevation.texture}
-					},
-					vertexShader: vsMedian,
-					fragmentShader: fsMedian,
-				} );
-				
-			}
-			let dems = Potree.__dems;
-			let camera = dems.camera;
-			viewer.renderer.setClearColor(0x0000FF, 0);
-			viewer.renderer.clearTarget(dems.targetElevation, true, true, false );
-			viewer.renderer.clearTarget(dems.targetMedian, true, true, false );
-
-			let node = viewer.scene.pointclouds[0].root;
-			if(node.geometryNode){
-				let box = node.geometryNode.boundingBox;
-				
-				
-				camera.up.set(0, 0, 1);
-				//camera.rotation.x = Math.PI / 2;
-				camera.left = box.min.x;
-				camera.right = box.max.x;
-				camera.top = box.max.y;
-				camera.bottom = box.min.y;
-				camera.near = -1000;
-				camera.far = 1000;
-				camera.updateProjectionMatrix();
-				
-				let scene = new THREE.Scene();
-				//let material = new THREE.PointsMaterial({color: 0x00ff00, size: 0.0001});
-				let material = dems.elevationMaterial;
-				let pointcloud = new THREE.Points(node.geometryNode.geometry, material);
-				scene.add(pointcloud);
-				
-				viewer.renderer.render(pointcloud, camera, dems.targetElevation);
-				
-				dems.medianFilterMaterial.uniforms.uWidth.value = dems.targetMedian.width;
-				dems.medianFilterMaterial.uniforms.uHeight.value = dems.targetMedian.height;
-				dems.medianFilterMaterial.uniforms.uTexture.value = dems.targetElevation.texture;
-				
-				Potree.utils.screenPass.render(viewer.renderer, dems.medianFilterMaterial, dems.targetMedian);
-
-				plane.material = new THREE.MeshBasicMaterial({map: dems.targetMedian.texture});
-			}
-		}*/
-		
-
-		//var queryAll = Potree.startQuery("All", viewer.renderer.getContext());
-		
 		// render skybox
 		if(viewer.background === "skybox"){
 			viewer.renderer.clear(true, true, false);
@@ -1998,6 +1814,10 @@ class PotreeRenderer{
 		}else if(viewer.background === "white"){
 			viewer.renderer.setClearColor(0xFFFFFF, 1);
 			viewer.renderer.clear(true, true, false);
+		}
+		
+		for(let pointcloud of this.viewer.scene.pointclouds){
+			pointcloud.material.useEDL = false;
 		}
 		
 		//var queryPC = Potree.startQuery("PointCloud", viewer.renderer.getContext());
@@ -2113,6 +1933,7 @@ class EDLRenderer{
 		let camera = viewer.scene.getActiveCamera();
 		
 		if(viewer.background === "skybox"){
+			viewer.renderer.setClearColor(0x000000, 0);
 			viewer.renderer.clear();
 			viewer.skybox.camera.rotation.copy(viewer.scene.cameraP.rotation);
 			viewer.skybox.camera.fov = viewer.scene.cameraP.fov;
@@ -2120,6 +1941,7 @@ class EDLRenderer{
 			viewer.skybox.camera.updateProjectionMatrix();
 			viewer.renderer.render(viewer.skybox.scene, viewer.skybox.camera);
 		}else if(viewer.background === "gradient"){
+			viewer.renderer.setClearColor(0x000000, 0);
 			viewer.renderer.clear();
 			viewer.renderer.render(viewer.scene.sceneBG, viewer.scene.cameraBG);
 		}else if(viewer.background === "black"){
@@ -2176,7 +1998,7 @@ class EDLRenderer{
 		{ // EDL OCCLUSION PASS
 			this.edlMaterial.uniforms.screenWidth.value = width;
 			this.edlMaterial.uniforms.screenHeight.value = height;
-			this.edlMaterial.uniforms.colorMap.value = this.rtColor;
+			this.edlMaterial.uniforms.colorMap.value = this.rtColor.texture;
 			this.edlMaterial.uniforms.edlStrength.value = viewer.edlStrength;
 			this.edlMaterial.uniforms.radius.value = viewer.edlRadius;
 			this.edlMaterial.uniforms.opacity.value = 1;

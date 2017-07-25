@@ -93,6 +93,10 @@ Potree.utils = class{
 		}
 		return x1 + x2;
 	};
+	
+	static removeCommas(str){
+		return str.replace(/,/g, "");
+	}
 
 	/**
 	 * create worker from a string
@@ -118,19 +122,47 @@ Potree.utils = class{
 			path + 'pz' + format, path + 'nz' + format
 		];
 		
-		var materialArray = [];
-		for (var i = 0; i < 6; i++){
-			materialArray.push( new THREE.MeshBasicMaterial({
-				map: THREE.ImageUtils.loadTexture( urls[i] ),
-				side: THREE.BackSide,
-				depthTest: false,
-				depthWrite: false
-				})
-			);
+		//var materialArray = [];
+		//for (var i = 0; i < 6; i++){
+		//	materialArray.push( new THREE.MeshBasicMaterial({
+		//		map: THREE.ImageUtils.loadTexture( urls[i] ),
+		//		side: THREE.BackSide,
+		//		depthTest: false,
+		//		depthWrite: false
+		//		})
+		//	);
+		//}
+		
+		let materialArray = [];
+		{
+			for (let i = 0; i < 6; i++){
+				
+				let material = new THREE.MeshBasicMaterial({
+					map: null,
+					side: THREE.BackSide,
+					depthTest: false,
+					depthWrite: false
+				});
+				
+				materialArray.push(material);
+				
+				let loader = new THREE.TextureLoader();
+				loader.load( urls[i],
+					function loaded(texture){
+						material.map = texture;
+						material.needsUpdate = true;
+					},function progress(xhr){
+						//console.log( (xhr.loaded / xhr.total * 100) + '% loaded' );
+					},function error(xhr){
+						console.log( 'An error happened', xhr );
+					}
+				);
+			}
+			
+			
 		}
 		
 		var skyGeometry = new THREE.CubeGeometry( 5000, 5000, 5000 );
-		//var skyMaterial = new THREE.MultiMaterial( materialArray );
 		var skybox = new THREE.Mesh( skyGeometry, materialArray );
 
 		scene.add(skybox);

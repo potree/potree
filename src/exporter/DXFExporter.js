@@ -8,14 +8,32 @@
 
 Potree.DXFExporter = class DXFExporter{
 	
-	static measurementSection(measurement){
+	static measurementPointSection(measurement){
 		
-		if(measurement.points.length <= 1){
+		let position = measurement.points[0].position;
+		
+		if(!position){
 			return "";
 		}
 		
-		
-		
+		let dxfSection = `0
+CIRCLE
+8
+layer_point
+10
+${position.x}
+20
+${position.y}
+30
+${position.z}
+40
+1.0
+`;
+
+		return dxfSection;
+	}
+	
+	static measurementPolylineSection(measurement){
 		// bit code for polygons/polylines: 
 		// https://www.autodesk.com/techpubs/autocad/acad2000/dxf/polyline_dxf_06.htm
 		let geomCode = 8; 
@@ -24,13 +42,9 @@ Potree.DXFExporter = class DXFExporter{
 		}
 		
 		let dxfSection = `0
-SECTION
-2
-ENTITIES
-0
 POLYLINE
 8
-0
+layer_polyline
 62
 1
 66
@@ -68,14 +82,27 @@ ${point.z}
 32
 `;
 
+		}
             dxfSection += `0
 SEQEND
-0
-ENDSEC
 `;
-		}
 
 		return dxfSection;
+	}
+	
+	static measurementSection(measurement){
+		
+		//if(measurement.points.length <= 1){
+		//	return "";
+		//}
+		
+		if(measurement.points.length === 0){
+			return "";
+		}else if(measurement.points.length === 1){
+			return Potree.DXFExporter.measurementPointSection(measurement);
+		}else if(measurement.points.length >= 2){
+			return Potree.DXFExporter.measurementPolylineSection(measurement);
+		}
 	}
 	
 	
@@ -138,11 +165,19 @@ ${max.z}
 ENDSEC
 `;
 
-		let dxfBody = "";
+		let dxfBody = `0
+SECTION
+2
+ENTITIES
+`;
 		
 		for(let measurement of measurements){
 			dxfBody += Potree.DXFExporter.measurementSection(measurement);
 		}
+		
+		dxfBody += `0
+ENDSEC
+`;
 
 		let dxf = dxfHeader + dxfBody + '0\nEOF';
 		

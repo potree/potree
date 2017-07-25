@@ -61,6 +61,10 @@
         "freeze": "Lock view",
         "language": "Language"
     },
+	"measurements": {
+		"clip": "clip",
+		"show": "show volume"
+	},
 	"annotations": {
 		"show3D": "show in 3D",
 		"showMap": "show on map"

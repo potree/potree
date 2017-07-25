@@ -145,7 +145,7 @@ float getLOD(){
 		float mask = value.r * 255.0;
 		if(isBitSet(mask, index)){
 			// there are more visible child nodes at this position
-			iOffset = iOffset + value.g * 255.0 + numberOfOnes(mask, index - 1.0);
+			iOffset = iOffset + value.g * 255.0 * 256.0 + value.b * 255.0 + numberOfOnes(mask, index - 1.0);
 			depth++;
 		}else{
 			// no more visible child nodes at this position
@@ -358,6 +358,14 @@ bool pointInClipPolygon(vec3 point, int polyIdx) {
 	return c;
 }
 
+void testInsideClipVolume(bool inside) {
+	if(inside && clipMode == 2 || !inside && clipMode == 3) {
+		gl_Position = vec4(1000.0, 1000.0, 1000.0, 1.0);
+	} else if(clipMode == 1 && inside) {
+		vColor.r += 0.5;
+	}
+}
+
 void main() {
 	vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
 	vViewPosition = mvPosition.xyz;
@@ -475,12 +483,8 @@ void main() {
 				inside = inside && -0.5 <= clipPosition.y && clipPosition.y <= 0.5;
 				inside = inside && -0.5 <= clipPosition.z && clipPosition.z <= 0.5;
 				insideAny = insideAny || inside;
-			}		
-			if(insideAny && clipMode == 2 || !insideAny && clipMode == 3) {
-				gl_Position = vec4(1000.0, 1000.0, 1000.0, 1.0);
-			} else if(clipMode == 1 && insideAny) {
-				vColor.r += 0.5;
-			}
+			}	
+			testInsideClipVolume(insideAny);
 		}
 	#endif
 
@@ -494,11 +498,7 @@ void main() {
 
 				polyInsideAny = polyInsideAny || pointInClipPolygon(position, i);
 			}
-			if(polyInsideAny && clipMode == 2 || !polyInsideAny && clipMode == 3) {
-				gl_Position = vec4(1000.0, 1000.0, 1000.0, 1.0);
-			} else if(clipMode == 1 && polyInsideAny) {
-				vColor.r += 0.5;
-			}
+			testInsideClipVolume(polyInsideAny);
 		}
 	#endif	
 }

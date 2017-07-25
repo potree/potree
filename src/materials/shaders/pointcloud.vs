@@ -457,49 +457,48 @@ void main() {
 	
 	gl_PointSize = pointSize;
 	
-	//gl_Position = vec4(1000.0, 1000.0, 1000.0, 1.0);
-	
 	
 	// ---------------------
 	// CLIPPING
 	// ---------------------
 	
 	#if defined use_clip_box
-		bool insideAny = false;
-		for(int i = 0; i < max_clip_boxes; i++){
-			if(i == int(clipBoxCount)){
-				break;
+		if(clipMode != 0) {
+			bool insideAny = false;
+			for(int i = 0; i < max_clip_boxes; i++){
+				if(i == int(clipBoxCount)){
+					break;
+				}
+			
+				vec4 clipPosition = clipBoxes[i] * modelMatrix * vec4( position, 1.0 );
+				bool inside = -0.5 <= clipPosition.x && clipPosition.x <= 0.5;
+				inside = inside && -0.5 <= clipPosition.y && clipPosition.y <= 0.5;
+				inside = inside && -0.5 <= clipPosition.z && clipPosition.z <= 0.5;
+				insideAny = insideAny || inside;
+			}		
+			if(insideAny && clipMode == 2 || !insideAny && clipMode == 3) {
+				gl_Position = vec4(1000.0, 1000.0, 1000.0, 1.0);
+			} else if(clipMode == 1 && insideAny) {
+				vColor.r += 0.5;
 			}
-		
-			vec4 clipPosition = clipBoxes[i] * modelMatrix * vec4( position, 1.0 );
-			bool inside = -0.5 <= clipPosition.x && clipPosition.x <= 0.5;
-			inside = inside && -0.5 <= clipPosition.y && clipPosition.y <= 0.5;
-			inside = inside && -0.5 <= clipPosition.z && clipPosition.z <= 0.5;
-			insideAny = insideAny || inside;
-		}		
-		if(insideAny && clipMode == 1 || !insideAny && clipMode == 2) {
-			gl_Position = vec4(1000.0, 1000.0, 1000.0, 1.0);
-		} else if(clipMode == 0 && insideAny) {
-			vColor.r += 0.5;
 		}
 	#endif
 
 	#if defined use_clip_polygon
-		bool polyInsideAny = false;
-		for(int i = 0; i < max_clip_polygons; i++) {
-			if(i == clipPolygonCount) {
-				break;
+		if(clipMode != 0) {
+			bool polyInsideAny = false;
+			for(int i = 0; i < max_clip_polygons; i++) {
+				if(i == clipPolygonCount) {
+					break;
+				}
+
+				polyInsideAny = polyInsideAny || pointInClipPolygon(position, i);
 			}
-
-			polyInsideAny = polyInsideAny || pointInClipPolygon(position, i);
+			if(polyInsideAny && clipMode == 2 || !polyInsideAny && clipMode == 3) {
+				gl_Position = vec4(1000.0, 1000.0, 1000.0, 1.0);
+			} else if(clipMode == 1 && polyInsideAny) {
+				vColor.r += 0.5;
+			}
 		}
-		if(polyInsideAny && clipMode == 1 || !polyInsideAny && clipMode == 2) {
-			gl_Position = vec4(1000.0, 1000.0, 1000.0, 1.0);
-		} else if(clipMode == 0 && polyInsideAny) {
-			vColor.r += 0.5;
-		}
-	#endif
-
-	//vColor = indices.rgb * 255.0;
-	
+	#endif	
 }

@@ -1634,7 +1634,8 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			this.scene.cameraO.rotation.z = this.scene.view.yaw;
 		}
 
-		{ // update clip boxes			
+		{ // update clip boxes		
+			// ordinary clip boxes (clip planes)	
 			let boxes = this.scene.clipVolumes;			
 			
 			let clipBoxes = boxes.map( box => {
@@ -1645,11 +1646,26 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 				return {inverse: boxInverse, position: boxPosition};
 			});
 
+			// extraordinary clip boxes (volume, profile)
+			boxes = this.scene.volumes.filter(v => v.clip);
+			for(let profile of this.scene.profiles){
+				boxes = boxes.concat(profile.boxes);
+			}			
+			
+			clipBoxes = clipBoxes.concat(boxes.map( box => {
+				box.updateMatrixWorld();
+				let boxInverse = new THREE.Matrix4().getInverse(box.matrixWorld);
+				let boxPosition = box.getWorldPosition();
+				return {inverse: boxInverse, position: boxPosition};
+			}));
+
+			// clip polygons
 			let clipPolygons = this.scene.polygonClipVolumes.filter(vol => vol.initialized).map(vol => {
 				let vp = vol.projMatrix.clone().multiply(vol.viewMatrix);
 				return {polygon: vol.markersPosWorld, count: vol.markersPosWorld.length, view: vp};
 			});
 			
+			// set clip volumes in material
 			for(let pointcloud of this.scene.pointclouds){
 				pointcloud.material.setClipBoxes(clipBoxes);
 				pointcloud.material.setClipPolygons(clipPolygons, this.clippingTool.maxPolygonVertices);

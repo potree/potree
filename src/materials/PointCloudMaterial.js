@@ -75,12 +75,6 @@ Potree.PointColorType = {
 	COMPOSITE: 			50
 };
 
-/*Potree.ClipMode = {
-	DISABLED: 			0,
-	CLIP_OUTSIDE: 		1,
-	HIGHLIGHT_INSIDE:	2
-};*/
-
 Potree.TreeType = {
 	OCTREE:				0,
 	KDTREE:				1
@@ -106,7 +100,6 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 		this._pointColorType = Potree.PointColorType.RGB;
 		this._useClipBox = false;
 		this.numClipBoxes = 0;
-		//this._clipMode = Potree.ClipMode.DISABLED;
 		this._weighted = false;
 		this._depthMap = null;
 		this._gradient = Potree.Gradients.RAINBOW;
@@ -179,7 +172,7 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 			wSourceID:			{ type: "f", value: 0 },
 			useOrthographicCamera: { type: "b", value: false },
 			orthoRange: 		{ type: "f", value: 10.0 },
-			clipMode: 			{ type: "i", value: 0}
+			clipMode: 			{ type: "i", value: 1}
 		};
 		
 		this.defaultAttributeValues.normal = [0,0,0];
@@ -279,14 +272,6 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 		}else if(this._pointColorType === Potree.PointColorType.COMPOSITE){
 			defines += "#define color_type_composite\n";
 		}
-		
-		/*if(this.clipMode === Potree.ClipMode.DISABLED){
-			defines += "#define clip_disabled\n";
-		}else if(this.clipMode === Potree.ClipMode.CLIP_OUTSIDE){
-			defines += "#define clip_outside\n";
-		}else if(this.clipMode === Potree.ClipMode.HIGHLIGHT_INSIDE){
-			defines += "#define clip_highlight_inside\n";
-		}*/
 		
 		if(this._treeType === Potree.TreeType.OCTREE){
 			defines += "#define tree_type_octree\n";

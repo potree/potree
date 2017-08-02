@@ -1154,8 +1154,8 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher {
 				$('body').i18n();
 			});
 
-			$(function () {
-				initSidebar();
+			$(() => {
+				initSidebar(this);
 			});
 
 			let elProfile = $('<div>').load(new URL(Potree.scriptPath + '/profile.html').href, () => {

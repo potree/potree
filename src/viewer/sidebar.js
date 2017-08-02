@@ -1,4 +1,4 @@
-initSidebar = (function (viewer) {
+initSidebar = (viewer) => {
 	let createToolIcon = function (icon, title, callback) {
 		let element = $(`
 			<img src="${icon}"
@@ -2479,7 +2479,7 @@ initSidebar = (function (viewer) {
 		});
 	};
 
-	return function () {
+	//return function () {
 		initAccordion();
 		initAppearance();
 		initToolbar();
@@ -2492,5 +2492,5 @@ initSidebar = (function (viewer) {
 
 		$('#potree_version_number').html(Potree.version.major + '.' + Potree.version.minor + Potree.version.suffix);
 		$('.perfect_scrollbar').perfectScrollbar();
-	};
-})(viewer);
+	//};
+};

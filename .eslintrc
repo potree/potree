@@ -1,0 +1,35 @@
+{
+  "extends": "happiness",
+  "globals": {
+    "THREE": false,
+    "TWEEN": false,
+    "$": false,
+    "XMLHttpRequest": false,
+    "requestAnimationFrame": false,
+    "Blob": false,
+    "i18n": false,
+    "URL": false,
+    "Stats": false,
+    "ProgressBar": false,
+    "d3": false,
+    "btoa": false,
+    "alert": false,
+    "ol": false,
+    "proj4": false,
+    "shapefile": false,
+    "Worker": false,
+    "Image": false,
+    "LASFile": false,
+    "LASDecoder": false,
+    "BinaryHeap": false,
+    "Potree": true,
+    "initSidebar": true,
+    "HoverMenu": true,
+    "HoverMenuItem": true,
+    "LRU": true,
+    "viewer": true
+  },
+  "rules": {
+    "no-lone-blocks": "off"
+  }
+}

@@ -127,7 +127,7 @@ Potree.LasLazLoader = class LasLazLoader {
 		}).catch(Promise.CancellationError, function (e) {
 			// If there was a cancellation, make sure the file is closed, if the file is open
 			// close and then fail
-			if (lf.isOpen)				{
+			if (lf.isOpen) {
 				return lf.close().then(function () {
 					lf.isOpen = false;
 					throw e;

@@ -1,8 +1,8 @@
 /**
  *
  * @author sigeom sa / http://sigeom.ch
- * @author Ioda-Net S�rl / https://www.ioda-net.ch/
- * @author Markus Sch�tz / http://potree.org
+ * @author Ioda-Net Sàrl / https://www.ioda-net.ch/
+ * @author Markus Schuetz / http://potree.org
  *
  */
 

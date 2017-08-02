@@ -300,7 +300,7 @@ Potree.TransformationTool = class TransformationTool {
 				});
 
 				let sphere = new THREE.Mesh(sg, sm);
-				sphere.name = name + '_sphere';
+				sphere.name = 'transformation_sphere';
 				sphere.scale.set(0.9, 0.9, 0.9);
 				this.rotationNode.add(sphere);
 			}

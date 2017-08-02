@@ -7,7 +7,11 @@
     "lint": "eslint src",
     "test": "npm run lint"
   },
-  "dependencies": {},
+  "dependencies": {
+    "process-nextick-args": "^1.0.7",
+    "safe-buffer": "^5.1.1",
+    "util-deprecate": "^1.0.2"
+  },
   "author": "Markus Schütz",
   "license": "BSD-2-CLAUSE",
   "devDependencies": {

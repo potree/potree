@@ -2479,18 +2479,16 @@ initSidebar = (viewer) => {
 		});
 	};
 
-	//return function () {
-		initAccordion();
-		initAppearance();
-		initToolbar();
-		initNavigation();
-		initClassificationList();
-		initAnnotationDetails();
-		initMeasurementDetails();
-		initSceneList();
-		initSettings();
+	initAccordion();
+	initAppearance();
+	initToolbar();
+	initNavigation();
+	initClassificationList();
+	initAnnotationDetails();
+	initMeasurementDetails();
+	initSceneList();
+	initSettings();
 
-		$('#potree_version_number').html(Potree.version.major + '.' + Potree.version.minor + Potree.version.suffix);
-		$('.perfect_scrollbar').perfectScrollbar();
-	//};
+	$('#potree_version_number').html(Potree.version.major + '.' + Potree.version.minor + Potree.version.suffix);
+	$('.perfect_scrollbar').perfectScrollbar();
 };

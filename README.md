@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/potree/potree.svg?branch=master)](https://travis-ci.org/potree/potree) [![js-happiness-style](https://img.shields.io/badge/code%20style-happiness-brightgreen.svg)](https://github.com/JedWatson/happiness)
 
 # README
 

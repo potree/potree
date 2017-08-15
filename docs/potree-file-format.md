@@ -62,10 +62,10 @@ data _(name misleading)_.
     the [Data files](#data-index-files). Its possible to be one of the following
     keys:
 
-    - `POSITION_CARTESIAN`: 3 _([float][Float])_ numbers: x, y, z
+    - `POSITION_CARTESIAN`: 3 _(uint32)_ numbers: x, y, z
     - `RGBA_PACKED`: 4 x _(uint8)_ numbers for the color: r, g, b, a
         _(Note: Could it be that this is unused?)_
-    - `COLOR_PACKED`: 3 x _(uint8)_ numbers for the color: r, g, b
+    - `COLOR_PACKED`: 4 x _(uint8)_ numbers for the color: r, g, b, a
     - `RGB_PACKED`: 3 x _(uint8)_ numbers for the color: r, g, b
         _(Note: Could it be that this is unused?)_
     - `NORMAL_FLOATS`: 3 x _(float)_ numbers: x', y', z'
@@ -78,12 +78,10 @@ data _(name misleading)_.
     - `NORMAL_OCT16`: _(Note: might need to be revisited, best don't use)_
     - `NORMAL`: 3 x _(float)_ numbers: x', y', z'
 
-    _Note:_ JavaScript operates exclusively with [`little endian`][LittleEndian]
-    number types. Which is why all types mentioned here are in little endian
-    as well.
+    _Note:_ All types mentioned here are in little endian.
 
-- `spacing`: _(Number)_ Space between points
-- `scale`: _(Number)_ Scale applied to the floating point numbers
+- `spacing`: _(Number)_ Space between points at the root node. This value is halved at each octree level.
+- `scale`: _(Number)_ Scale applied to convert POSITION_CARTESIAN components from _uint32_ values to floating point values. The full transformation to world coordinates is ```position = (POSITION_CARTESIAN * scale) + boundingBox.min```
 - `hierarchyStepSize`: _(Number)_ Amount of Octree levels before a new folder
     hierarchy is expected.
 - `hierarchy`: _(Array)_ **(deprecated)** The hierarchy of files, now loaded
@@ -169,7 +167,7 @@ a simple binary mask is used:
 ```
 
 So if in a hierarchy the child node 3 and node 7 exist then the hierarchies
-mask has to be `16 | 256` → `272`.
+mask has to be `0b00001000 | 0b10000000` → `0b10001000` (=136).
 
 _Example:_ A simple, non-realistic tree:
 
@@ -199,15 +197,15 @@ of binary data following the `pointAttributes` specified in the
 [meta information](#meta-information).
 
 _Example:_ With `pointAttributes=['POSITION_CARTESIAN']`, the `.bin` file is a
-sequence of points with each consisting of 3 `float` numbers.
+sequence of points with each consisting of 3 `uint32` numbers.
 
 _Example2:_ With `pointAttributes=['POSITION_CARTESIAN','INTENSITY']`, the
-`.bin` files contain a sequence of points consisting of 3 `float` numbers
+`.bin` files contain a sequence of points consisting of 3 `uint32` numbers
 followed by one `uint16` number.
 
 _Example3:_ With `pointAttributes=['INTENSITY','POSITION_CARTESIAN']`, the
 `.bin` files contain a sequence of points consisting of one `uint16` number
-followed by 3 `float` numbers.
+followed by 3 `uint32` numbers.
 
 ### Las Data files
 

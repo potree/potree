@@ -15,7 +15,7 @@
   "author": "Markus Schütz",
   "license": "BSD-2-CLAUSE",
   "devDependencies": {
-    "eslint": "^4.3.0",
+    "eslint": "^4.4.1",
     "eslint-config-happiness": "^10.2.1",
     "eslint-plugin-import": "^2.7.0",
     "eslint-plugin-node": "^5.1.1",

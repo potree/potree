@@ -155,16 +155,16 @@ An index file contains a list of tuple values with the first being a `uint8`
 Per hierarchy level we have 8 possible nodes. To indicate whether a node exists
 a simple binary mask is used:
 
-```
-0 → 1
-1 → 2
-2 → 8
-3 → 16
-4 → 32
-5 → 64
-6 → 128
-7 → 256
-```
+| Position | Mask | [Binary][bin] |
+|----------|------|---------------|
+| 0        | 1    | 0b00000001    |
+| 1        | 2    | 0b00000010    |
+| 2        | 8    | 0b00000100    |
+| 3        | 16   | 0b00001000    |
+| 4        | 32   | 0b00010000    |
+| 5        | 64   | 0b00100000    |
+| 6        | 128  | 0b01000000    |
+| 7        | 256  | 0b10000000    |
 
 So if in a hierarchy the child node 3 and node 7 exist then the hierarchies
 mask has to be `0b00001000 | 0b10000000` → `0b10001000` (=136).
@@ -185,10 +185,12 @@ _Example:_ A simple, non-realistic tree:
 
 Would have an index looking like this:
 
-- mask: `2 | 8 → 10`, points: `3`
-- mask: `16`, points: `2`
-- mask: `1 | 32 → 33`, points: `2`
-- mask: `128`, points: `1`
+| mask | points |
+|------|--------|
+| `0b00001010` (=10) | `3` |
+| `0b00010000` (=32) | `2` |
+| `0b00010001` (=65) | `2` |
+| `0b01000000` (=128) | `1` |
 
 ### PointCloud Data files
 
@@ -225,3 +227,4 @@ Compressed [`.las`](#las-data-files) files. See [LasZip][LasZip].
 [LasSpec1.3]: https://www.liblas.org/_static/files/specifications/asprs_las_format_v13.pdf]
 [LasZip]: http://www.laszip.org/
 [LittleEndian]: https://en.wikipedia.org/wiki/Endianness#Little-endian
+[bin]: http://www.javascripttutorial.net/es6/octal-and-binary-literals/

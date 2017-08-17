@@ -68,6 +68,10 @@ var paths = {
 		"src/viewer/viewer.js",
 		"src/viewer/profile.js",
 		"src/viewer/map.js",
+		"src/viewer/VREffect.js",
+		"src/viewer/VRControls.js",
+		"libs/WebVR.js",
+		"libs/ScreenFull.js",
 		"src/viewer/sidebar.js",
 		"src/stuff/HoverMenu.js",
 		"src/webgl/GLProgram.js"
@@ -125,12 +129,12 @@ var shaders = [
 gulp.task("workers", function(){
 
 	for(let workerName of Object.keys(workers)){
-		
+
 		gulp.src(workers[workerName])
 			.pipe(concat(`${workerName}.js`))
 			.pipe(size({showFiles: true}))
 			.pipe(gulp.dest('build/potree/workers'));
-		
+
 	}
 
 });
@@ -176,12 +180,12 @@ gulp.task('webserver', function() {
 gulp.task('watch', function() {
 	gulp.run("build");
 	gulp.run("webserver");
-	
+
     gulp.watch([
-		'src/**/*.js', 
-		'src/**/*.css', 
-		'src/**/*.fs', 
-		'src/**/*.vs', 
+		'src/**/*.js',
+		'src/**/*.css',
+		'src/**/*.fs',
+		'src/**/*.vs',
 		'src/**/*.html'], ["build"]);
 });
 
@@ -258,7 +262,7 @@ var encodeShader = function(fileName, varname, opt){
 			console.log(fname);
 
 			var content = new Buffer(b).toString();
-			
+
 			let prep = `\nPotree.Shaders["${fname}"] = \`${content}\`\n`;
 
 			joinedContent += prep;

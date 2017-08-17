@@ -22,12 +22,16 @@
     "LASFile": false,
     "LASDecoder": false,
     "BinaryHeap": false,
+    "Element": false,
+    "WEBVR": false,
+    "screenfull": false,
+    "VRFrameData": false,
     "Potree": true,
     "initSidebar": true,
     "HoverMenu": true,
     "HoverMenuItem": true,
     "LRU": true,
-    "viewer": true
+    "viewer": true,
   },
   "rules": {
     "no-lone-blocks": "off"

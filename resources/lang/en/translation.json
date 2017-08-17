@@ -42,6 +42,7 @@
         "edl_radius": "Radius",
         "edl_strength": "Strength",
         "edl_enable": "Enable",
+        "vr_enable": "Enable",
         "min_node_size": "Min node size",
         "clip_mode": "Clip mode",
         "move_speed": "Speed",

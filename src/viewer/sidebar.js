@@ -265,6 +265,7 @@ initSidebar = (viewer) => {
 		$('#lblEDLRadius')[0].innerHTML = viewer.getEDLRadius().toFixed(1);
 		$('#lblEDLStrength')[0].innerHTML = viewer.getEDLStrength().toFixed(1);
 		$('#chkEDLEnabled')[0].checked = viewer.getEDLEnabled();
+		$('#chkVREnabled')[0].checked = viewer.getVREnabled();
 		$("input[name=background][value='" + viewer.getBackground() + "']").prop('checked', true);
 	}
 

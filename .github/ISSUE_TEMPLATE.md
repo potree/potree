@@ -11,5 +11,10 @@ for you to consider a few things:
 
 - Did you reach out on Gitter?
     We have a gitter [channel for potree](https://gitter.im/potree/Lobby). Did you try to ask about your issue there?
+    
+- Is all information accessible for us?
+    A cryptical error message like "Doesn't work on my computer" will only consume our time. It would be awesome if
+    you could provide a permalink or code sample to the problematic section for us to reproduce (logs can help
+    too!). [Gists](https://help.github.com/articles/creating-gists/) are a good idea.
 
 Thank you for considering. Please delete this text after you read it.

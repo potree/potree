@@ -150,7 +150,8 @@ As mentioned in the former section, the `.hrc` files contain the index structure
 meaning a list of all the files stored within the directory tree.
 
 An index file contains a list of tuple values with the first being a `uint8`
-"mask" and the second being `uint32` "number of points" of a hierarchy level.
+"mask" and the second being `uint32` "number of points" of a hierarchy level
+in a [breadth first level order][breadth-first].
 
 Per hierarchy level we have 8 possible nodes. To indicate whether a node exists
 a simple binary mask is used:
@@ -172,25 +173,24 @@ mask has to be `0b00001000 | 0b10000000` → `0b10001000` (=136).
 _Example:_ A simple, non-realistic tree:
 
 ```
- 01234567
-  | |
-  | \-------------\
-  |               |
-  \01234567       01234567
-       |                |
-       \01234567        P
-        |    |
-        P    P
+|- r1
+|  |
+|  \- r14 (2 Points)
+|
+\- r3
+   |
+   \- r36 (1 Point)
 ```
 
 Would have an index looking like this:
 
-| mask | points |
-|------|--------|
-| `0b00001010` (=10) | `3` |
-| `0b00010000` (=16) | `2` |
-| `0b00100001` (=33) | `2` |
-| `0b01000000` (=64) | `1` |
+| name | mask               | points |
+|------|--------------------|--------|
+| r    | `0b00001010` (=10) | `3`    |
+| r1   | `0b00010000` (=16) | `2`    |
+| r3   | `0b01000000` (=64) | `1`    |
+| r14  | `0b00000000` (=0)  | `2`    |
+| r36  | `0b00000000` (=0)  | `1`    |
 
 ### PointCloud Data files
 
@@ -228,3 +228,4 @@ Compressed [`.las`](#las-data-files) files. See [LasZip][LasZip].
 [LasZip]: http://www.laszip.org/
 [LittleEndian]: https://en.wikipedia.org/wiki/Endianness#Little-endian
 [bin]: http://www.javascripttutorial.net/es6/octal-and-binary-literals/
+[breadth-first]: https://en.wikipedia.org/wiki/Breadth-first_search

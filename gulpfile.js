@@ -34,6 +34,7 @@ var paths = {
 		"src/loader/PointAttributes.js",
 		"src/loader/BinaryLoader.js",
 		"src/loader/GreyhoundBinaryLoader.js",
+		"src/loader/GreyhoundUtils.js",
 		"src/loader/GreyhoundLoader.js",
 		"src/loader/LasLazLoader.js",
 		"src/loader/LasLazBatcher.js",

@@ -1477,7 +1477,10 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher {
 		//	toggleMessage = 0;
 		// }
 
-		// let queryAll = Potree.startQuery("All", viewer.renderer.getContext());
+		let queryAll;
+		if(Potree.timerQueriesEnabled){
+			queryAll = Potree.startQuery("frame", viewer.renderer.getContext());
+		}
 
 		if (this.useEDL && Potree.Features.SHADER_EDL.isSupported()) {
 			if (!this.edlRenderer) {
@@ -1490,6 +1493,11 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher {
 			}
 
 			this.potreeRenderer.render();
+		}
+		
+		if(Potree.timerQueriesEnabled){
+			Potree.endQuery(queryAll, viewer.renderer.getContext());
+			Potree.resolveQueries(viewer.renderer.getContext());
 		}
 
 		// Potree.endQuery(queryAll, viewer.renderer.getContext());

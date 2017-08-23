@@ -17,7 +17,10 @@ var server;
 var paths = {
 	potree : [
 		"src/Potree.js",
-		"src/PointCloudTree.js",
+		"src/tree/DEMNode.js",
+		"src/tree/DEM.js",
+		"src/tree/PointCloudTreeNode.js",
+		"src/tree/PointCloudTree.js",
 		"src/WorkerPool.js",
 		"build/shaders/shaders.js",
 		"src/extensions/EventDispatcher.js",
@@ -182,7 +185,12 @@ gulp.task('watch', function() {
 	gulp.run("build");
 	gulp.run("webserver");
 	
-    gulp.watch(['src/**/*.js', 'src/**/*.css', 'src/**/*.html', 'src/**/*.vs', 'src/**/*.fs'], ["build"]);
+	gulp.watch([
+		'src/**/*.js',
+		'src/**/*.css',
+		'src/**/*.fs',
+		'src/**/*.vs',
+		'src/**/*.html'], ["build"]);
 });
 
 

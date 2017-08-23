@@ -51,3 +51,5 @@ Potree.PointCloudOctreeNode = class PointCloudOctreeNode extends Potree.PointClo
 		return this.geometryNode.name;
 	}
 };
+
+Potree.PointCloudOctreeNode.prototype = Object.create(Potree.PointCloudTreeNode.prototype);

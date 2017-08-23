@@ -76,6 +76,7 @@ var paths = {
 		"src/exporter/DXFExporter.js",
 		"src/exporter/CSVExporter.js",
 		"src/exporter/LASExporter.js",
+		"src/arena4d/PointCloudArena4DNode.js",
 		"src/arena4d/PointCloudArena4D.js",
 		"src/arena4d/PointCloudArena4DGeometry.js",
 		"src/viewer/ProgressBar.js",

@@ -1,6 +1,6 @@
 
-Potree.utils = class {
-	static loadShapefileFeatures (file, callback) {
+Potree.utils = {}
+Potree.utils.loadShapefileFeatures = (file, callback) => {
 		let features = [];
 
 		let handleFinish = () => {
@@ -27,7 +27,7 @@ Potree.utils = class {
 			});
 	}
 
-	static toString (value) {
+Potree.utils.toString = (value) => {
 		if (value instanceof THREE.Vector3) {
 			return value.x.toFixed(2) + ', ' + value.y.toFixed(2) + ', ' + value.z.toFixed(2);
 		} else {
@@ -35,13 +35,13 @@ Potree.utils = class {
 		}
 	}
 
-	static normalizeURL (url) {
+Potree.utils.normalizeURL = (url) => {
 		let u = new URL(url);
 
 		return u.protocol + '//' + u.hostname + u.pathname.replace(/\/+/g, '/');
 	};
 
-	static pathExists (url) {
+Potree.utils.pathExists = (url) => {
 		let req = new XMLHttpRequest();
 		req.open('GET', url, false);
 		req.send(null);
@@ -54,7 +54,7 @@ Potree.utils = class {
 	/**
 	 * adapted from mhluska at https://github.com/mrdoob/three.js/issues/1561
 	 */
-	static computeTransformedBoundingBox (box, transform) {
+Potree.utils.computeTransformedBoundingBox = (box, transform) => {
 		let vertices = [
 			new THREE.Vector3(box.min.x, box.min.y, box.min.z).applyMatrix4(transform),
 			new THREE.Vector3(box.min.x, box.min.y, box.min.z).applyMatrix4(transform),
@@ -79,7 +79,7 @@ Potree.utils = class {
 	 * @param nStr
 	 * @returns
 	 */
-	static addCommas (nStr) {
+Potree.utils.addCommas = (nStr) => {
 		nStr += '';
 		let x = nStr.split('.');
 		let x1 = x[0];
@@ -91,7 +91,7 @@ Potree.utils = class {
 		return x1 + x2;
 	};
 
-	static removeCommas (str) {
+Potree.utils.removeCommas = (str) => {
 		return str.replace(/,/g, '');
 	}
 
@@ -100,14 +100,14 @@ Potree.utils = class {
 	 *
 	 * code from http://stackoverflow.com/questions/10343913/how-to-create-a-web-worker-from-a-string
 	 */
-	static createWorker (code) {
+Potree.utils.createWorker = (code) => {
 		let blob = new Blob([code], {type: 'application/javascript'});
 		let worker = new Worker(URL.createObjectURL(blob));
 
 		return worker;
 	};
 
-	static loadSkybox (path) {
+Potree.utils.loadSkybox = (path) => {
 		let camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 100000);
 		camera.up.set(0, 0, 1);
 		let scene = new THREE.Scene();
@@ -167,7 +167,7 @@ Potree.utils = class {
 		return {'camera': camera, 'scene': scene};
 	};
 
-	static createGrid (width, length, spacing, color) {
+Potree.utils.createGrid = (width, length, spacing, color) => {
 		let material = new THREE.LineBasicMaterial({
 			color: color || 0x888888
 		});
@@ -188,7 +188,7 @@ Potree.utils = class {
 		return line;
 	};
 
-	static createBackgroundTexture (width, height) {
+Potree.utils.createBackgroundTexture = (width, height) => {
 		function gauss (x, y) {
 			return (1 / (2 * Math.PI)) * Math.exp(-(x * x + y * y) / 2);
 		};
@@ -225,7 +225,7 @@ Potree.utils = class {
 		return texture;
 	};
 
-	static getMousePointCloudIntersection (mouse, camera, renderer, pointclouds) {
+Potree.utils.getMousePointCloudIntersection = (mouse, camera, renderer, pointclouds) => {
 		let nmouse = {
 			x: (mouse.x / renderer.domElement.clientWidth) * 2 - 1,
 			y: -(mouse.y / renderer.domElement.clientHeight) * 2 + 1
@@ -275,7 +275,7 @@ Potree.utils = class {
 		}
 	};
 
-	static pixelsArrayToImage (pixels, width, height) {
+Potree.utils.pixelsArrayToImage = (pixels, width, height) => {
 		let canvas = document.createElement('canvas');
 		canvas.width = width;
 		canvas.height = height;
@@ -299,14 +299,14 @@ Potree.utils = class {
 		return img;
 	};
 
-	static projectedRadius (radius, fov, distance, screenHeight) {
+Potree.utils.projectedRadius = (radius, fov, distance, screenHeight) => {
 		let projFactor = (1 / Math.tan(fov / 2)) / distance;
 		projFactor = projFactor * screenHeight / 2;
 
 		return radius * projFactor;
 	};
 
-	static projectedRadiusOrtho (radius, proj, screenWidth, screenHeight) {
+Potree.utils.projectedRadiusOrtho (radius, proj, screenWidth, screenHeight) {
 		let p1 = new THREE.Vector4(0);
 		let p2 = new THREE.Vector4(radius);
 
@@ -321,25 +321,25 @@ Potree.utils = class {
 		return p1.distanceTo(p2);
 	}
 
-	static topView (camera, node) {
+Potree.utils.topView = (camera, node) => {
 		camera.position.set(0, 1, 0);
 		camera.rotation.set(-Math.PI / 2, 0, 0);
 		camera.zoomTo(node, 1);
 	};
 
-	static frontView (camera, node) {
+Potree.utils.frontView = (camera, node) => {
 		camera.position.set(0, 0, 1);
 		camera.rotation.set(0, 0, 0);
 		camera.zoomTo(node, 1);
 	};
 
-	static leftView (camera, node) {
+Potree.utils.leftView = (camera, node) => {
 		camera.position.set(-1, 0, 0);
 		camera.rotation.set(0, -Math.PI / 2, 0);
 		camera.zoomTo(node, 1);
 	};
 
-	static rightView (camera, node) {
+Potree.utils.rightView = (camera, node) => {
 		camera.position.set(1, 0, 0);
 		camera.rotation.set(0, Math.PI / 2, 0);
 		camera.zoomTo(node, 1);
@@ -351,7 +351,7 @@ Potree.utils = class {
 	 * 1: intersection
 	 * 2: fully inside
 	 */
-	static frustumSphereIntersection (frustum, sphere) {
+Potree.utils.frustumSphereIntersection = (frustum, sphere) => {
 		let planes = frustum.planes;
 		let center = sphere.center;
 		let negRadius = -sphere.radius;
@@ -373,7 +373,7 @@ Potree.utils = class {
 
 	// code taken from three.js
 	// ImageUtils - generateDataTexture()
-	static generateDataTexture (width, height, color) {
+Potree.utils.generateDataTexture = (width, height, color) => {
 		let size = width * height;
 		let data = new Uint8Array(3 * width * height);
 
@@ -395,14 +395,14 @@ Potree.utils = class {
 	};
 
 	// from http://stackoverflow.com/questions/901115/how-can-i-get-query-string-values-in-javascript
-	static getParameterByName (name) {
+Potree.utils.getParameterByName = (name) => {
 		name = name.replace(/[[]/, '\\[').replace(/[\]]/, '\\]');
 		let regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
 		let results = regex.exec(document.location.search);
 		return results === null ? null : decodeURIComponent(results[1].replace(/\+/g, ' '));
 	}
 
-	static setParameter (name, value) {
+Potree.utils.setParameter = (name, value) => {
 		// value = encodeURIComponent(value);
 
 		name = name.replace(/[[]/, '\\[').replace(/[\]]/, '\\]');

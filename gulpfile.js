@@ -36,6 +36,7 @@ var paths = {
 		"src/loader/GreyhoundBinaryLoader.js",
 		"src/loader/GreyhoundLoader.js",
 		"src/loader/LasLazLoader.js",
+		"src/loader/LasLazBatcher.js",
 		"src/materials/PointCloudMaterial.js",
 		"src/materials/EyeDomeLightingMaterial.js",
 		"src/materials/BlurMaterial.js",

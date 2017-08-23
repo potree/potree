@@ -58,6 +58,29 @@ var paths = {
 		"src/PointCloudGreyhoundGeometryNode.js",
 		"src/utils.js",
 		"src/utils/screenPass.js",
+		"src/utils/loadShapefileFeatures",
+		"src/utils/toString",
+		"src/utils/normalizeURL",
+		"src/utils/pathExists",
+		"src/utils/computeTransformedBoundingBox",
+		"src/utils/addCommas",
+		"src/utils/removeCommas",
+		"src/utils/createWorker",
+		"src/utils/loadSkybox",
+		"src/utils/createGrid",
+		"src/utils/createBackgroundTexture",
+		"src/utils/getMousePointCloudIntersection",
+		"src/utils/pixelsArrayToImage",
+		"src/utils/projectedRadius",
+		"src/utils/projectedRadiusOrtho",
+		"src/utils/topView",
+		"src/utils/frontView",
+		"src/utils/leftView",
+		"src/utils/rightView",
+		"src/utils/frustumSphereIntersection",
+		"src/utils/generateDataTexture",
+		"src/utils/getParameterByName",
+		"src/utils/setParameter",
 		"src/Features.js",
 		"src/TextSprite.js",
 		"src/AnimationPath.js",
@@ -142,12 +165,12 @@ var shaders = [
 gulp.task("workers", function(){
 
 	for(let workerName of Object.keys(workers)){
-		
+
 		gulp.src(workers[workerName])
 			.pipe(concat(`${workerName}.js`))
 			.pipe(size({showFiles: true}))
 			.pipe(gulp.dest('build/potree/workers'));
-		
+
 	}
 
 });
@@ -193,7 +216,7 @@ gulp.task('webserver', function() {
 gulp.task('watch', function() {
 	gulp.run("build");
 	gulp.run("webserver");
-	
+
 	gulp.watch([
 		'src/**/*.js',
 		'src/**/*.css',
@@ -275,7 +298,7 @@ var encodeShader = function(fileName, varname, opt){
 			console.log(fname);
 
 			var content = new Buffer(b).toString();
-			
+
 			let prep = `\nPotree.Shaders["${fname}"] = \`${content}\`\n`;
 
 			joinedContent += prep;

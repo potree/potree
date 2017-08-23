@@ -43,6 +43,7 @@ var paths = {
 		"src/navigation/EarthControls.js",
 		"src/LRU.js",
 		"src/Annotation.js",
+		"src/Action.js",
 		"src/Actions.js",
 		"src/ProfileRequest.js",
 		"src/tree/PointCloudOctreeNode.js",

@@ -29,8 +29,9 @@ Potree.ProfileTool = class ProfileTool extends THREE.EventDispatcher {
 		}
 
 		if (this.scene) {
-			this.scene.removeEventListeners('profile_added', this.onAdd);
-			this.scene.removeEventListeners('profile_removed', this.onRemove);
+			// TODO: the API is used wrong, removeEventListeners has only two parameters!
+			Potree.utils.removeEventListeners(this.scene, 'profile_added', this.onAdd);
+			Potree.utils.removeEventListeners(this.scene, 'profile_removed', this.onRemove);
 		}
 
 		this.scene = scene;

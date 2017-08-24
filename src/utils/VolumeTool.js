@@ -37,8 +37,9 @@ Potree.VolumeTool = class VolumeTool extends THREE.EventDispatcher {
 		}
 
 		if (this.scene) {
-			this.scene.removeEventListeners('volume_added', this.onAdd);
-			this.scene.removeEventListeners('volume_removed', this.onRemove);
+			// TODO: the API is used wrong, removeEventListeners has only two parameters!
+			Potree.utils.removeEventListeners(this.scene, 'volume_added', this.onAdd);
+			Potree.utils.removeEventListeners(this.scene, 'volume_removed', this.onRemove);
 		}
 
 		this.scene = scene;

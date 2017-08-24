@@ -114,7 +114,7 @@ var paths = {
 		"src/ProfileWindow.js",
 		"src/ProfileWindowController.js",
 		"src/viewer/map.js",
-		"src/viewer/sidebar.js",
+		"src/viewer/initSidebar.js",
 		"src/viewer/NavigationCube.js",
 		"src/stuff/HoverMenu.js",
 		"src/webgl/GLProgram.js",

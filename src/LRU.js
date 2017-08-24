@@ -1,15 +1,3 @@
-
-/**
- *
- * @param node
- * @class an item in the lru list.
- */
-function LRUItem (node) {
-	this.previous = null;
-	this.next = null;
-	this.node = node;
-}
-
 /**
  *
  * @class A doubly-linked-list of the least recently used elements.

@@ -53,6 +53,7 @@ var paths = {
 		"src/navigation/GeoControls.js",
 		"src/navigation/OrbitControls.js",
 		"src/navigation/EarthControls.js",
+		"src/LRUItem.js",
 		"src/LRU.js",
 		"src/Annotation.js",
 		"src/Action.js",

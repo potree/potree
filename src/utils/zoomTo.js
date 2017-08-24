@@ -73,7 +73,7 @@ Potree.utils.zoomTo = function (camera, node, factor) {
 //		for(var j = 0; j < frustum.planes.length-2; j++){
 //			var plane = frustum.planes[j];
 //			var ray = new THREE.Ray(p, dir);
-//			var dI = ray.distanceToPlaneWithNegative(plane);
+//			var dI = Potree.utils.distanceToPlaneWithNegative(ray, plane);
 //			distance = Math.max(distance, dI);
 //		}
 //		max = Math.max(max, distance);

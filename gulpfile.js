@@ -113,7 +113,7 @@ var paths = {
 		"src/viewer/EDLRenderer.js",
 		"src/ProfileWindow.js",
 		"src/ProfileWindowController.js",
-		"src/viewer/map.js",
+		"src/viewer/MapView.js",
 		"src/viewer/initSidebar.js",
 		"src/viewer/NavigationCube.js",
 		"src/stuff/HoverMenu.js",

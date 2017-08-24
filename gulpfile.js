@@ -62,6 +62,7 @@ var paths = {
 		"src/tree/PointCloudOctreeNode.js",
 		"src/tree/PointCloudOctree.js",
 		"src/PointCloudOctreeGeometry.js",
+		"src/PointCloudOctreeGeometryNode.js",
 		"src/PointCloudGreyhoundGeometry.js",
 		"src/PointCloudGreyhoundGeometryNode.js",
 		"src/utils.js",

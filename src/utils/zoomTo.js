@@ -1,5 +1,5 @@
 
-THREE.PerspectiveCamera.prototype.zoomTo = function (node, factor) {
+Potree.utils.zoomTo = function (camera, node, factor) {
 	if (!node.geometry && !node.boundingSphere && !node.boundingBox) {
 		return;
 	}
@@ -24,29 +24,29 @@ THREE.PerspectiveCamera.prototype.zoomTo = function (node, factor) {
 
 	bs = bs.clone().applyMatrix4(node.matrixWorld);
 	var radius = bs.radius;
-	var fovr = this.fov * Math.PI / 180;
+	var fovr = camera.fov * Math.PI / 180;
 
-	if (this.aspect < 1) {
-		fovr = fovr * this.aspect;
+	if (camera.aspect < 1) {
+		fovr = fovr * camera.aspect;
 	}
 
 	var distanceFactor = Math.abs(radius / Math.sin(fovr / 2)) * _factor;
 
-	var offset = this.getWorldDirection().multiplyScalar(-distanceFactor);
-	this.position.copy(bs.center.clone().add(offset));
+	var offset = camera.getWorldDirection().multiplyScalar(-distanceFactor);
+	camera.position.copy(bs.center.clone().add(offset));
 };
 
-// THREE.PerspectiveCamera.prototype.zoomTo = function(node, factor){
+// Potree.utils.zoomTo = function(camera, node, factor){
 //	if(factor === undefined){
 //		factor = 1;
 //	}
 //
 //	node.updateMatrixWorld();
-//	this.updateMatrix();
-//	this.updateMatrixWorld();
+//	camera.updateMatrix();
+//	camera.updateMatrixWorld();
 //
 //	var box = Potree.utils.computeTransformedBoundingBox(node.boundingBox, node.matrixWorld);
-//	var dir = new THREE.Vector3(0, 0, -1).applyQuaternion(this.quaternion);
+//	var dir = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
 //	var pos = box.center().sub(dir);
 //
 //	var ps = [
@@ -62,7 +62,7 @@ THREE.PerspectiveCamera.prototype.zoomTo = function (node, factor) {
 //	];
 //
 //	var frustum = new THREE.Frustum();
-//	frustum.setFromMatrix(new THREE.Matrix4().multiplyMatrices(this.projectionMatrix, this.matrixWorldInverse));
+//	frustum.setFromMatrix(new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
 //
 //	var max = Number.MIN_VALUE;
 //	for(var i = 0; i < ps.length; i++){
@@ -81,6 +81,6 @@ THREE.PerspectiveCamera.prototype.zoomTo = function (node, factor) {
 //	var offset = dir.clone().multiplyScalar(-max);
 //	offset.multiplyScalar(factor);
 //	pos.add(offset);
-//	this.position.copy(pos);
+//	camera.position.copy(pos);
 //
 // }

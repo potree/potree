@@ -65,6 +65,7 @@ var paths = {
 		"src/PointCloudGreyhoundGeometryNode.js",
 		"src/utils.js",
 		"src/utils/removeEventListeners.js",
+		"src/utils/zoomTo.js",
 		"src/utils/screenPass.js",
 		"src/utils/loadShapefileFeatures",
 		"src/utils/toString",

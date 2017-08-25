@@ -1,4 +1,5 @@
-// stats.js - http://github.com/mrdoob/stats.js
+// stats.js -
+// @author mrdoob http://github.com/mrdoob/stats.js
 
 // The MIT License
 // 

@@ -1,7 +1,10 @@
-/**
- * from: http://eloquentjavascript.net/1st_edition/appendix2.html
- *
- */
+/*
+** Binary Heap Implementation in Javascript
+** From: http://eloquentjavascript.net/1st_edition/appendix2.htmlt
+**
+** Licensed under a Creative Commons attribution-noncommercial license. 
+** All code in that book may also be considered licensed under an MIT license.
+*/
 
 function BinaryHeap(scoreFunction){
   this.content = [];

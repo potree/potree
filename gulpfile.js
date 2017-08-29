@@ -128,6 +128,7 @@ var paths = {
 		"src/viewer/MapView.js",
 		"src/viewer/initSidebar.js",
 		"src/viewer/NavigationCube.js",
+		"src/stuff/HoverMenuItem.js",
 		"src/stuff/HoverMenu.js",
 		"src/webgl/GLProgram.js",
 	],

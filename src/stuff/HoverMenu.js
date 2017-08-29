@@ -1,24 +1,4 @@
-/* globals HoverMenu:true HoverMenuItem:true */
-/* exported HoverMenu */
-/* exported HoverMenuItem */
-HoverMenuItem = class {
-	constructor (icon, callback) {
-		this.icon = icon;
-		this.callback = callback;
-
-		this.element = $(`
-			<span class="hover_menu_item">
-				<img src="${icon}">
-			</span>
-		`);
-
-		this.element.click(function () {
-			callback();
-		});
-	}
-};
-
-HoverMenu = class {
+class HoverMenu {
 	constructor (icon) {
 		let scope = this;
 
@@ -88,3 +68,5 @@ HoverMenu = class {
 		this.element.css('top', (this.y - rect.height / 2) + 'px');
 	}
 };
+
+module.exports = HoverMenu;

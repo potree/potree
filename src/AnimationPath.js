@@ -10,22 +10,22 @@ Potree.AnimationPath = class {
 	get (t) {
 		return this.spline.getPoint(t);
 	}
-	
-	getLength(){
+
+	getLength () {
 		return this.spline.getLength();
 	}
 
 	animate (start, end, metersPerSecond, callback) {
 		this.pause();
-		
+
 		let length = this.spline.getLength();
-		
+
 		start = Math.max(start, 0);
 		end = Math.min(end, length);
-		
+
 		let tStart = start / length;
 		let tEnd = end / length;
-		
+
 		let animationDuration = (end - start) * 1000 / metersPerSecond;
 
 		let progress = {t: tStart};
@@ -33,7 +33,7 @@ Potree.AnimationPath = class {
 		this.tween.easing(TWEEN.Easing.Linear.None);
 		this.tween.onUpdate((e) => {
 			callback(progress.t);
-			//viewer.scene.view.position.copy(this.spline.getPoint(progress.t));
+			// viewer.scene.view.position.copy(this.spline.getPoint(progress.t));
 		});
 
 		this.tween.start();
@@ -80,16 +80,16 @@ Potree.AnimationPath = class {
 	];
 
 	let path = new Potree.AnimationPath(points);
-	
+
 	let geometry = path.getGeometry();
 	let material = new THREE.LineBasicMaterial();
 	let line = new THREE.Line(geometry, material);
 	viewer.scene.scene.add(line);
-	
+
 	let [start, end, speed] = [0, path.getLength(), 10];
 	path.animate(start, end, speed, t => {
 		viewer.scene.view.position.copy(path.spline.getPoint(t));
 	});
-	
+
 }
 */

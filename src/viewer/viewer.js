@@ -1478,8 +1478,8 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher {
 		// }
 
 		let queryAll;
-		if(Potree.timerQueriesEnabled){
-			queryAll = Potree.startQuery("frame", viewer.renderer.getContext());
+		if (Potree.timerQueriesEnabled) {
+			queryAll = Potree.startQuery('frame', viewer.renderer.getContext());
 		}
 
 		if (this.useEDL && Potree.Features.SHADER_EDL.isSupported()) {
@@ -1494,8 +1494,8 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher {
 
 			this.potreeRenderer.render();
 		}
-		
-		if(Potree.timerQueriesEnabled){
+
+		if (Potree.timerQueriesEnabled) {
 			Potree.endQuery(queryAll, viewer.renderer.getContext());
 			Potree.resolveQueries(viewer.renderer.getContext());
 		}

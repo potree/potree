@@ -23,4 +23,4 @@ module.exports = (file, callback) => {
 					return source.read().then(log);
 				});
 		});
-}
+};

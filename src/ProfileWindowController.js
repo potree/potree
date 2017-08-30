@@ -106,4 +106,4 @@ class ProfileWindowController {
 	}
 };
 
-module.exports = Potree.ProfileWindowController;
+module.exports = ProfileWindowController;

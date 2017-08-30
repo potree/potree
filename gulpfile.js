@@ -115,6 +115,7 @@ var paths = {
 		"src/exporter/LASExporter.js",
 		"src/arena4d/PointCloudArena4DNode.js",
 		"src/arena4d/PointCloudArena4D.js",
+		"src/arena4d/PointCloudArena4DGeometryNode.js",
 		"src/arena4d/PointCloudArena4DGeometry.js",
 		"src/viewer/ProgressBar.js",
 		"src/viewer/CameraMode.js",

@@ -1,5 +1,5 @@
 
-Potree.TranslationTool = function (camera) {
+const TranslationTool = function (camera) {
 	THREE.Object3D.call(this);
 	var scope = this;
 
@@ -213,4 +213,5 @@ Potree.TranslationTool = function (camera) {
 	this.build();
 };
 
-Potree.TranslationTool.prototype = Object.create(THREE.Object3D.prototype);
+TranslationTool.prototype = Object.create(THREE.Object3D.prototype);
+module.exports = TranslationTool;

@@ -1,4 +1,4 @@
-Potree.DEM = class DEM {
+module.exports = class DEM {
 	constructor (pointcloud) {
 		this.pointcloud = pointcloud;
 		this.matrix = null;

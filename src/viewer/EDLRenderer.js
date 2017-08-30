@@ -165,3 +165,5 @@ class EDLRenderer {
 		viewer.renderer.setViewport(0, 0, viewer.renderer.domElement.clientWidth, viewer.renderer.domElement.clientHeight);
 	}
 };
+
+module.exports = EDLRenderer;

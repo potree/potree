@@ -4,7 +4,7 @@
  * @class
  *
  */
-Potree.PointAttributes = function (pointAttributes) {
+const PointAttributes = function (pointAttributes) {
 	this.attributes = [];
 	this.byteSize = 0;
 	this.size = 0;
@@ -20,13 +20,13 @@ Potree.PointAttributes = function (pointAttributes) {
 	}
 };
 
-Potree.PointAttributes.prototype.add = function (pointAttribute) {
+PointAttributes.prototype.add = function (pointAttribute) {
 	this.attributes.push(pointAttribute);
 	this.byteSize += pointAttribute.byteSize;
 	this.size++;
 };
 
-Potree.PointAttributes.prototype.hasColors = function () {
+PointAttributes.prototype.hasColors = function () {
 	for (var name in this.attributes) {
 		var pointAttribute = this.attributes[name];
 		if (pointAttribute.name === Potree.PointAttributeNames.COLOR_PACKED) {
@@ -37,7 +37,7 @@ Potree.PointAttributes.prototype.hasColors = function () {
 	return false;
 };
 
-Potree.PointAttributes.prototype.hasNormals = function () {
+PointAttributes.prototype.hasNormals = function () {
 	for (var name in this.attributes) {
 		var pointAttribute = this.attributes[name];
 		if (
@@ -51,3 +51,5 @@ Potree.PointAttributes.prototype.hasNormals = function () {
 
 	return false;
 };
+
+module.exports = PointAttributes;

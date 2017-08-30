@@ -1,4 +1,4 @@
-Potree.Gradients = {
+module.exports = {
 	RAINBOW: [
 		[0, new THREE.Color(0.278, 0, 0.714)],
 		[1 / 6, new THREE.Color(0, 0, 1)],

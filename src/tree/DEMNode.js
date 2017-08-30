@@ -2,7 +2,7 @@
 // index is in order xyzxyzxyz
 //
 
-Potree.DEMNode = class DEMNode {
+module.exports = class DEMNode {
 	constructor (name, box, tileSize) {
 		this.name = name;
 		this.box = box;

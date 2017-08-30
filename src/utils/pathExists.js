@@ -1,4 +1,4 @@
-Potree.utils.pathExists = (url) => {
+module.exports = (url) => {
 	let req = new XMLHttpRequest();
 	req.open('GET', url, false);
 	req.send(null);

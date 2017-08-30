@@ -1,5 +1,5 @@
-Potree.GreyhoundLoader = function () { };
-Potree.GreyhoundLoader.loadInfoJSON = function load (url, callback) { };
+const GreyhoundLoader = function () { };
+GreyhoundLoader.loadInfoJSON = function load (url, callback) { };
 
 /**
  * @return a point cloud octree with the root node data loaded.
@@ -9,7 +9,7 @@ Potree.GreyhoundLoader.loadInfoJSON = function load (url, callback) { };
  * @param loadingFinishedListener executed after loading the binary has been
  * finished
  */
-Potree.GreyhoundLoader.load = function load (url, callback) {
+GreyhoundLoader.load = function load (url, callback) {
 	var HIERARCHY_STEP_SIZE = 5;
 
 	try {
@@ -170,7 +170,7 @@ Potree.GreyhoundLoader.load = function load (url, callback) {
 	}
 };
 
-Potree.GreyhoundLoader.loadPointAttributes = function (mno) {
+GreyhoundLoader.loadPointAttributes = function (mno) {
 	var fpa = mno.pointAttributes;
 	var pa = new Potree.PointAttributes();
 
@@ -182,7 +182,7 @@ Potree.GreyhoundLoader.loadPointAttributes = function (mno) {
 	return pa;
 };
 
-Potree.GreyhoundLoader.createChildAABB = function (aabb, childIndex) {
+GreyhoundLoader.createChildAABB = function (aabb, childIndex) {
 	var min = aabb.min;
 	var max = aabb.max;
 	var dHalfLength = new THREE.Vector3().copy(max).sub(min).multiplyScalar(0.5);
@@ -221,3 +221,5 @@ Potree.GreyhoundLoader.createChildAABB = function (aabb, childIndex) {
 
 	return new THREE.Box3(min, max);
 };
+
+module.exports = GreyhoundLoader;

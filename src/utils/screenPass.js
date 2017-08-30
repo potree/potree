@@ -1,4 +1,4 @@
-Potree.utils.screenPass = new function () {
+module.exports = new function () {
 	this.screenScene = new THREE.Scene();
 	this.screenQuad = new THREE.Mesh(new THREE.PlaneBufferGeometry(2, 2, 0));
 	this.screenQuad.material.depthTest = true;

@@ -1,5 +1,5 @@
 
-Potree.PointCloudOctreeGeometry = function () {
+module.exports = function () {
 	this.url = null;
 	this.octreeDir = null;
 	this.spacing = 0;

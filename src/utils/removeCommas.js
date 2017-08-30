@@ -1,3 +1,3 @@
-Potree.utils.removeCommas = (str) => {
+module.exports = (str) => {
 	return str.replace(/,/g, '');
 };

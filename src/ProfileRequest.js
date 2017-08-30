@@ -1,4 +1,4 @@
-Potree.ProfileRequest = class ProfileRequest {
+class ProfileRequest {
 	constructor (pointcloud, profile, maxDepth, callback) {
 		this.pointcloud = pointcloud;
 		this.profile = profile;
@@ -204,3 +204,5 @@ Potree.ProfileRequest = class ProfileRequest {
 		}
 	};
 };
+
+module.exports = ProfileRequest;

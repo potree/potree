@@ -1,4 +1,4 @@
-Potree.utils.loadShapefileFeatures = (file, callback) => {
+module.exports = (file, callback) => {
 	let features = [];
 
 	let handleFinish = () => {

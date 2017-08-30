@@ -8,7 +8,7 @@
  *
  */
 
-Potree.LasLazLoader = class LasLazLoader {
+module.exports = class LasLazLoader {
 	constructor (version) {
 		if (typeof (version) === 'string') {
 			this.version = new Potree.Version(version);

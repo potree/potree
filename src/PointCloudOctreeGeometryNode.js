@@ -1,6 +1,6 @@
 
-Potree.PointCloudOctreeGeometryNode = function (name, pcoGeometry, boundingBox) {
-	this.id = Potree.PointCloudOctreeGeometryNode.IDCount++;
+function PointCloudOctreeGeometryNode (name, pcoGeometry, boundingBox) {
+	this.id = PointCloudOctreeGeometryNode.IDCount++;
 	this.name = name;
 	this.index = parseInt(name.charAt(name.length - 1));
 	this.pcoGeometry = pcoGeometry;
@@ -14,35 +14,35 @@ Potree.PointCloudOctreeGeometryNode = function (name, pcoGeometry, boundingBox) 
 	this.oneTimeDisposeHandlers = [];
 };
 
-Potree.PointCloudOctreeGeometryNode.IDCount = 0;
+PointCloudOctreeGeometryNode.IDCount = 0;
 
-Potree.PointCloudOctreeGeometryNode.prototype = Object.create(Potree.PointCloudTreeNode.prototype);
+PointCloudOctreeGeometryNode.prototype = Object.create(Potree.PointCloudTreeNode.prototype);
 
-Potree.PointCloudOctreeGeometryNode.prototype.isGeometryNode = function () {
+PointCloudOctreeGeometryNode.prototype.isGeometryNode = function () {
 	return true;
 };
 
-Potree.PointCloudOctreeGeometryNode.prototype.getLevel = function () {
+PointCloudOctreeGeometryNode.prototype.getLevel = function () {
 	return this.level;
 };
 
-Potree.PointCloudOctreeGeometryNode.prototype.isTreeNode = function () {
+PointCloudOctreeGeometryNode.prototype.isTreeNode = function () {
 	return false;
 };
 
-Potree.PointCloudOctreeGeometryNode.prototype.isLoaded = function () {
+PointCloudOctreeGeometryNode.prototype.isLoaded = function () {
 	return this.loaded;
 };
 
-Potree.PointCloudOctreeGeometryNode.prototype.getBoundingSphere = function () {
+PointCloudOctreeGeometryNode.prototype.getBoundingSphere = function () {
 	return this.boundingSphere;
 };
 
-Potree.PointCloudOctreeGeometryNode.prototype.getBoundingBox = function () {
+PointCloudOctreeGeometryNode.prototype.getBoundingBox = function () {
 	return this.boundingBox;
 };
 
-Potree.PointCloudOctreeGeometryNode.prototype.getChildren = function () {
+PointCloudOctreeGeometryNode.prototype.getChildren = function () {
 	var children = [];
 
 	for (var i = 0; i < 8; i++) {
@@ -54,11 +54,11 @@ Potree.PointCloudOctreeGeometryNode.prototype.getChildren = function () {
 	return children;
 };
 
-Potree.PointCloudOctreeGeometryNode.prototype.getBoundingBox = function () {
+PointCloudOctreeGeometryNode.prototype.getBoundingBox = function () {
 	return this.boundingBox;
 };
 
-Potree.PointCloudOctreeGeometryNode.prototype.getURL = function () {
+PointCloudOctreeGeometryNode.prototype.getURL = function () {
 	var url = '';
 
 	var version = this.pcoGeometry.loader.version;
@@ -74,7 +74,7 @@ Potree.PointCloudOctreeGeometryNode.prototype.getURL = function () {
 	return url;
 };
 
-Potree.PointCloudOctreeGeometryNode.prototype.getHierarchyPath = function () {
+PointCloudOctreeGeometryNode.prototype.getHierarchyPath = function () {
 	var path = 'r/';
 
 	var hierarchyStepSize = this.pcoGeometry.hierarchyStepSize;
@@ -90,12 +90,12 @@ Potree.PointCloudOctreeGeometryNode.prototype.getHierarchyPath = function () {
 	return path;
 };
 
-Potree.PointCloudOctreeGeometryNode.prototype.addChild = function (child) {
+PointCloudOctreeGeometryNode.prototype.addChild = function (child) {
 	this.children[child.index] = child;
 	child.parent = this;
 };
 
-Potree.PointCloudOctreeGeometryNode.prototype.load = function () {
+PointCloudOctreeGeometryNode.prototype.load = function () {
 	if (this.loading === true || this.loaded === true || this.pcoGeometry.numNodesLoading > 3) {
 		return;
 	}
@@ -115,11 +115,11 @@ Potree.PointCloudOctreeGeometryNode.prototype.load = function () {
 	}
 };
 
-Potree.PointCloudOctreeGeometryNode.prototype.loadPoints = function () {
+PointCloudOctreeGeometryNode.prototype.loadPoints = function () {
 	this.pcoGeometry.loader.load(this);
 };
 
-Potree.PointCloudOctreeGeometryNode.prototype.loadHierachyThenPoints = function () {
+PointCloudOctreeGeometryNode.prototype.loadHierachyThenPoints = function () {
 	var node = this;
 
 	// load hierarchy
@@ -175,7 +175,7 @@ Potree.PointCloudOctreeGeometryNode.prototype.loadHierachyThenPoints = function 
 			var level = name.length - 1;
 			var boundingBox = Potree.POCLoader.createChildAABB(parentNode.boundingBox, index);
 
-			var currentNode = new Potree.PointCloudOctreeGeometryNode(name, pco, boundingBox);
+			var currentNode = new PointCloudOctreeGeometryNode(name, pco, boundingBox);
 			currentNode.level = level;
 			currentNode.numPoints = decodedNumPoints;
 			currentNode.hasChildren = decoded[i].children > 0;
@@ -212,11 +212,11 @@ Potree.PointCloudOctreeGeometryNode.prototype.loadHierachyThenPoints = function 
 	}
 };
 
-Potree.PointCloudOctreeGeometryNode.prototype.getNumPoints = function () {
+PointCloudOctreeGeometryNode.prototype.getNumPoints = function () {
 	return this.numPoints;
 };
 
-Potree.PointCloudOctreeGeometryNode.prototype.dispose = function () {
+PointCloudOctreeGeometryNode.prototype.dispose = function () {
 	if (this.geometry && this.parent != null) {
 		this.geometry.dispose();
 		this.geometry = null;
@@ -231,5 +231,7 @@ Potree.PointCloudOctreeGeometryNode.prototype.dispose = function () {
 	}
 };
 
-// THREE.EventDispatcher.prototype.apply( Potree.PointCloudOctreeGeometryNode.prototype );
-Object.assign(Potree.PointCloudOctreeGeometryNode.prototype, THREE.EventDispatcher.prototype);
+// THREE.EventDispatcher.prototype.apply( PointCloudOctreeGeometryNode.prototype );
+Object.assign(PointCloudOctreeGeometryNode.prototype, THREE.EventDispatcher.prototype);
+
+module.exports = PointCloudOctreeGeometryNode;

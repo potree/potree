@@ -1,5 +1,5 @@
 // from http://stackoverflow.com/questions/901115/how-can-i-get-query-string-values-in-javascript
-Potree.utils.getParameterByName = (name) => {
+module.exports = (name) => {
 	name = name.replace(/[[]/, '\\[').replace(/[\]]/, '\\]');
 	let regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
 	let results = regex.exec(document.location.search);

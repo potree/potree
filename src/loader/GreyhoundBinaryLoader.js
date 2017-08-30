@@ -5,7 +5,7 @@ function networkToNative (val) {
 		((val >> 24) & 0x00FF);
 }
 
-Potree.GreyhoundBinaryLoader = function (version, boundingBox, scale) {
+const GreyhoundBinaryLoader = function (version, boundingBox, scale) {
 	if (typeof (version) === 'string') {
 		this.version = new Potree.Version(version);
 	} else {
@@ -16,7 +16,7 @@ Potree.GreyhoundBinaryLoader = function (version, boundingBox, scale) {
 	this.scale = scale;
 };
 
-Potree.GreyhoundBinaryLoader.prototype.load = function (node) {
+GreyhoundBinaryLoader.prototype.load = function (node) {
 	if (node.loaded) return;
 
 	var scope = this;
@@ -47,7 +47,7 @@ Potree.GreyhoundBinaryLoader.prototype.load = function (node) {
 	}
 };
 
-Potree.GreyhoundBinaryLoader.prototype.parse = function (node, buffer) {
+GreyhoundBinaryLoader.prototype.parse = function (node, buffer) {
 	var NUM_POINTS_BYTES = 4;
 
 	var view = new DataView(
@@ -153,3 +153,5 @@ Potree.GreyhoundBinaryLoader.prototype.parse = function (node, buffer) {
 
 	worker.postMessage(message, [message.buffer]);
 };
+
+module.exports = GreyhoundBinaryLoader;

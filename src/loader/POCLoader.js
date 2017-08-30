@@ -5,7 +5,7 @@
  *
  * @author Markus Schuetz
  */
-Potree.POCLoader = function () {
+const POCLoader = function () {
 
 };
 
@@ -16,7 +16,7 @@ Potree.POCLoader = function () {
  * @param url
  * @param loadingFinishedListener executed after loading the binary has been finished
  */
-Potree.POCLoader.load = function load (url, callback) {
+POCLoader.load = function load (url, callback) {
 	try {
 		let pco = new Potree.PointCloudOctreeGeometry();
 		pco.url = url;
@@ -102,7 +102,7 @@ Potree.POCLoader.load = function load (url, callback) {
 						let parentName = name.substring(0, name.length - 1);
 						let parentNode = nodes[parentName];
 						let level = name.length - 1;
-						let boundingBox = Potree.POCLoader.createChildAABB(parentNode.boundingBox, index);
+						let boundingBox = POCLoader.createChildAABB(parentNode.boundingBox, index);
 
 						let node = new Potree.PointCloudOctreeGeometryNode(name, pco, boundingBox);
 						node.level = level;
@@ -128,7 +128,7 @@ Potree.POCLoader.load = function load (url, callback) {
 	}
 };
 
-Potree.POCLoader.loadPointAttributes = function (mno) {
+POCLoader.loadPointAttributes = function (mno) {
 	let fpa = mno.pointAttributes;
 	let pa = new Potree.PointAttributes();
 
@@ -140,7 +140,7 @@ Potree.POCLoader.loadPointAttributes = function (mno) {
 	return pa;
 };
 
-Potree.POCLoader.createChildAABB = function (aabb, index) {
+POCLoader.createChildAABB = function (aabb, index) {
 	let min = aabb.min.clone();
 	let max = aabb.max.clone();
 	let size = new THREE.Vector3().subVectors(max, min);
@@ -165,3 +165,5 @@ Potree.POCLoader.createChildAABB = function (aabb, index) {
 
 	return new THREE.Box3(min, max);
 };
+
+module.exports = POCLoader;

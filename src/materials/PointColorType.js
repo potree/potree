@@ -1,4 +1,4 @@
-Potree.PointColorType = {
+module.exports = {
 	RGB: 0,
 	COLOR: 1,
 	DEPTH: 2,

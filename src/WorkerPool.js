@@ -1,5 +1,5 @@
 
-Potree.WorkerPool = class WorkerPool {
+module.exports = class WorkerPool {
 	constructor () {
 		this.workers = {};
 	}
@@ -23,5 +23,3 @@ Potree.WorkerPool = class WorkerPool {
 		this.workers[url].push(worker);
 	}
 };
-
-Potree.workerPool = new Potree.WorkerPool();

@@ -1,5 +1,5 @@
 
-Potree.ProfileTool = class ProfileTool extends THREE.EventDispatcher {
+class ProfileTool extends THREE.EventDispatcher {
 	constructor (viewer) {
 		super();
 
@@ -121,3 +121,5 @@ Potree.ProfileTool = class ProfileTool extends THREE.EventDispatcher {
 		}
 	}
 };
+
+module.exports = ProfileTool;

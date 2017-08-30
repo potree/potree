@@ -3,7 +3,7 @@
  *
  *
  */
-Potree.InputHandler = class InputHandler extends THREE.EventDispatcher {
+class InputHandler extends THREE.EventDispatcher {
 	constructor (viewer) {
 		super();
 
@@ -629,3 +629,5 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher {
 		return lastDrag;
 	}
 };
+
+module.exports = InputHandler;

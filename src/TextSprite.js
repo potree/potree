@@ -2,7 +2,7 @@
  * adapted from http://stemkoski.github.io/Three.js/Sprite-Text-Labels.html
  */
 
-Potree.TextSprite = function (text) {
+const TextSprite = function (text) {
 	THREE.Object3D.call(this);
 
 	var texture = new THREE.Texture();
@@ -31,9 +31,9 @@ Potree.TextSprite = function (text) {
 	this.setText(text);
 };
 
-Potree.TextSprite.prototype = new THREE.Object3D();
+TextSprite.prototype = new THREE.Object3D();
 
-Potree.TextSprite.prototype.setText = function (text) {
+TextSprite.prototype.setText = function (text) {
 	if (this.text !== text) {
 		this.text = text;
 
@@ -41,25 +41,25 @@ Potree.TextSprite.prototype.setText = function (text) {
 	}
 };
 
-Potree.TextSprite.prototype.setTextColor = function (color) {
+TextSprite.prototype.setTextColor = function (color) {
 	this.textColor = color;
 
 	this.update();
 };
 
-Potree.TextSprite.prototype.setBorderColor = function (color) {
+TextSprite.prototype.setBorderColor = function (color) {
 	this.borderColor = color;
 
 	this.update();
 };
 
-Potree.TextSprite.prototype.setBackgroundColor = function (color) {
+TextSprite.prototype.setBackgroundColor = function (color) {
 	this.backgroundColor = color;
 
 	this.update();
 };
 
-Potree.TextSprite.prototype.update = function () {
+TextSprite.prototype.update = function () {
 	var canvas = document.createElement('canvas');
 	var context = canvas.getContext('2d');
 	context.font = 'Bold ' + this.fontsize + 'px ' + this.fontface;
@@ -108,7 +108,7 @@ Potree.TextSprite.prototype.update = function () {
 	// this.material = spriteMaterial;
 };
 
-Potree.TextSprite.prototype.roundRect = function (ctx, x, y, w, h, r) {
+TextSprite.prototype.roundRect = function (ctx, x, y, w, h, r) {
 	ctx.beginPath();
 	ctx.moveTo(x + r, y);
 	ctx.lineTo(x + w - r, y);
@@ -123,3 +123,5 @@ Potree.TextSprite.prototype.roundRect = function (ctx, x, y, w, h, r) {
 	ctx.fill();
 	ctx.stroke();
 };
+
+module.exports = TextSprite;

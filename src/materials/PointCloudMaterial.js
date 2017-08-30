@@ -1,3 +1,5 @@
+const vs = require('./shaders/pointcloud.vs');
+const fs = require('./shaders/pointcloud.fs');
 
 //
 //
@@ -37,7 +39,7 @@
 //    rgb = ["{0:.3f}".format(v) for v in rgb]
 //    rgb = "[" + str(u) + ", new THREE.Color(" +  ", ".join(rgb) + ")],"
 //    print(rgb)
-Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMaterial {
+module.exports = class PointCloudMaterial extends THREE.RawShaderMaterial {
 	constructor (parameters = {}) {
 		super();
 
@@ -137,14 +139,14 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 		this.defaultAttributeValues.classification = [0, 0, 0];
 		this.defaultAttributeValues.indices = [0, 0, 0, 0];
 
-		this.vertexShader = this.getDefines() + Potree.Shaders['pointcloud.vs'];
-		this.fragmentShader = this.getDefines() + Potree.Shaders['pointcloud.fs'];
+		this.vertexShader = vs({defines: this.getDefines()});
+		this.fragmentShader = fs({defines: this.getDefines()});
 		this.vertexColors = THREE.VertexColors;
 	}
 
 	updateShaderSource () {
-		this.vertexShader = this.getDefines() + Potree.Shaders['pointcloud.vs'];
-		this.fragmentShader = this.getDefines() + Potree.Shaders['pointcloud.fs'];
+		this.vertexShader = vs({defines: this.getDefines()});
+		this.fragmentShader = fs({defines: this.getDefines()});
 
 		if (this.depthMap) {
 			this.uniforms.depthMap.value = this.depthMap;

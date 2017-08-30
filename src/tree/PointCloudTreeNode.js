@@ -1,4 +1,4 @@
-Potree.PointCloudTreeNode = class {
+module.exports = class {
 	getChildren () {
 		throw new Error('override function');
 	}

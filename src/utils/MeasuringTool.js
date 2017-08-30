@@ -1,5 +1,5 @@
 
-Potree.MeasuringTool = class MeasuringTool extends THREE.EventDispatcher {
+class MeasuringTool extends THREE.EventDispatcher {
 	constructor (viewer) {
 		super();
 
@@ -243,3 +243,5 @@ Potree.MeasuringTool = class MeasuringTool extends THREE.EventDispatcher {
 		}
 	}
 };
+
+module.exports = MeasuringTool;

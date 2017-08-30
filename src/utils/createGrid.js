@@ -1,4 +1,4 @@
-Potree.utils.createGrid = (width, length, spacing, color) => {
+module.exports = (width, length, spacing, color) => {
 	let material = new THREE.LineBasicMaterial({
 		color: color || 0x888888
 	});

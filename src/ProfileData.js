@@ -1,4 +1,4 @@
-Potree.ProfileData = class ProfileData {
+class ProfileData {
 	constructor (profile) {
 		this.profile = profile;
 
@@ -43,3 +43,5 @@ Potree.ProfileData = class ProfileData {
 		return size;
 	}
 };
+
+module.exports = ProfileData;

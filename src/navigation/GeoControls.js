@@ -21,7 +21,7 @@
  *
  */
 
-Potree.GeoControls = function (object, domElement) {
+const GeoControls = function (object, domElement) {
 	this.object = object;
 	this.domElement = (domElement !== undefined) ? domElement : document;
 
@@ -489,4 +489,6 @@ Potree.GeoControls = function (object, domElement) {
 	scope.domElement.addEventListener('keyup', onKeyUp, false);
 };
 
-Potree.GeoControls.prototype = Object.create(THREE.EventDispatcher.prototype);
+GeoControls.prototype = Object.create(THREE.EventDispatcher.prototype);
+
+module.exports = GeoControls;

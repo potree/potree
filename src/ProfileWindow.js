@@ -1,4 +1,4 @@
-Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
+class ProfileWindow extends THREE.EventDispatcher {
 	constructor () {
 		super();
 
@@ -616,3 +616,5 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 		}
 	}
 };
+
+module.exports = ProfileWindow;

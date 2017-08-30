@@ -1,5 +1,5 @@
 
-Potree.Profile = class extends THREE.Object3D {
+class Profile extends THREE.Object3D {
 	constructor () {
 		super();
 
@@ -316,3 +316,5 @@ Potree.Profile = class extends THREE.Object3D {
 		this.update();
 	}
 };
+
+module.exports = Profile;

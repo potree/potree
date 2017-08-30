@@ -7,7 +7,7 @@
 //    return decodeURIComponent(results[2].replace(/\+/g, " "));
 // }
 
-Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher {
+class PotreeViewer extends THREE.EventDispatcher {
 	constructor (domElement, args) {
 		super();
 
@@ -1248,3 +1248,5 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher {
 		Potree.framenumber++;
 	};
 };
+
+module.exports = PotreeViewer;

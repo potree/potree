@@ -13,7 +13,7 @@
  *
  */
 
-Potree.FirstPersonControls = class FirstPersonControls extends THREE.EventDispatcher {
+class FirstPersonControls extends THREE.EventDispatcher {
 	constructor (viewer) {
 		super();
 
@@ -261,3 +261,5 @@ Potree.FirstPersonControls = class FirstPersonControls extends THREE.EventDispat
 		}
 	}
 };
+
+module.exports = FirstPersonControls;

@@ -1,4 +1,4 @@
-Potree.PointCloudArena4D = class PointCloudArena4D extends Potree.PointCloudTree {
+class PointCloudArena4D extends Potree.PointCloudTree {
 	constructor (geometry) {
 		super();
 
@@ -555,3 +555,5 @@ Potree.PointCloudArena4D = class PointCloudArena4D extends Potree.PointCloudTree
 		}
 	}
 };
+
+module.exports = PointCloudArena4D;

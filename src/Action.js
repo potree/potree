@@ -1,4 +1,4 @@
-Potree.Action = class Action extends THREE.EventDispatcher {
+class Action extends THREE.EventDispatcher {
 	constructor (args = {}) {
 		super();
 
@@ -35,3 +35,5 @@ Potree.Action = class Action extends THREE.EventDispatcher {
 		});
 	}
 };
+
+module.exports = Action;

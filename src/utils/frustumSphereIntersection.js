@@ -4,7 +4,7 @@
  * 1: intersection
  * 2: fully inside
  */
-Potree.utils.frustumSphereIntersection = (frustum, sphere) => {
+module.exports = (frustum, sphere) => {
 	let planes = frustum.planes;
 	let center = sphere.center;
 	let negRadius = -sphere.radius;

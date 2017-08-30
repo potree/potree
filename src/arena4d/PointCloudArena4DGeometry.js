@@ -1,5 +1,5 @@
 
-Potree.PointCloudArena4DGeometry = function () {
+const PointCloudArena4DGeometry = function () {
 	this.numPoints = 0;
 	this.version = 0;
 	this.boundingBox = null;
@@ -16,9 +16,9 @@ Potree.PointCloudArena4DGeometry = function () {
 	]);
 };
 
-Potree.PointCloudArena4DGeometry.prototype = Object.create(THREE.EventDispatcher.prototype);
+PointCloudArena4DGeometry.prototype = Object.create(THREE.EventDispatcher.prototype);
 
-Potree.PointCloudArena4DGeometry.load = function (url, callback) {
+PointCloudArena4DGeometry.load = function (url, callback) {
 	var xhr = new XMLHttpRequest();
 	xhr.open('GET', url + '?info', true);
 
@@ -67,7 +67,7 @@ Potree.PointCloudArena4DGeometry.load = function (url, callback) {
 	xhr.send(null);
 };
 
-Potree.PointCloudArena4DGeometry.prototype.loadHierarchy = function () {
+PointCloudArena4DGeometry.prototype.loadHierarchy = function () {
 	var url = this.url + '?tree';
 	var xhr = new XMLHttpRequest();
 	xhr.open('GET', url, true);
@@ -196,7 +196,7 @@ Potree.PointCloudArena4DGeometry.prototype.loadHierarchy = function () {
 	xhr.send(null);
 };
 
-Object.defineProperty(Potree.PointCloudArena4DGeometry.prototype, 'spacing', {
+Object.defineProperty(PointCloudArena4DGeometry.prototype, 'spacing', {
 	get: function () {
 		if (this._spacing) {
 			return this._spacing;
@@ -210,3 +210,5 @@ Object.defineProperty(Potree.PointCloudArena4DGeometry.prototype, 'spacing', {
 		this._spacing = value;
 	}
 });
+
+module.exports = PointCloudArena4DGeometry;

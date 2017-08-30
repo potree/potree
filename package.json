@@ -4,8 +4,16 @@
   "version": "0.0.1",
   "description": "WebGL point cloud viewer",
   "scripts": {
-    "lint": "eslint src",
-    "test": "npm run lint"
+    "lint": "./node_modules/.bin/eslint src",
+    "test": "npm run lint",
+    "browserify": "./node_modules/.bin/browserify -o build/potree/potree.js -s Potree -e ./src/index.js"
+  },
+  "main": "./src/index.js",
+  "browser": "./src/index.js",
+  "browserify": {
+    "transform": [
+      "browserify-shader"
+    ]
   },
   "dependencies": {
     "process-nextick-args": "^1.0.7",
@@ -15,6 +23,8 @@
   "author": "Markus Schütz",
   "license": "BSD-2-CLAUSE",
   "devDependencies": {
+    "browserify": "^14.4.0",
+    "browserify-shader": "^0.1.2",
     "eslint": "^4.4.1",
     "eslint-config-happiness": "^10.2.1",
     "eslint-plugin-import": "^2.7.0",
@@ -30,6 +40,7 @@
     "gulp-uglify": "~0.2.1",
     "gulp-util": "~2.2.20",
     "jshint": "^2.9.5",
-    "through": "~2.3.4"
+    "through": "~2.3.4",
+    "workerify": "^1.0.0"
   }
 }

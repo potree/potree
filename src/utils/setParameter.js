@@ -1,4 +1,4 @@
-Potree.utils.setParameter = (name, value) => {
+module.exports = (name, value) => {
 		// value = encodeURIComponent(value);
 
 		name = name.replace(/[[]/, '\\[').replace(/[\]]/, '\\]');
@@ -19,5 +19,4 @@ Potree.utils.setParameter = (name, value) => {
 			url = url.replace(results[2], newValue);
 		}
 		window.history.replaceState({}, '', url);
-	}
-};
+	};

@@ -7,51 +7,51 @@
  * @param size
  * @returns
  */
-Potree.PointAttribute = function (name, type, numElements) {
+const PointAttribute = function (name, type, numElements) {
 	this.name = name;
 	this.type = type;
 	this.numElements = numElements;
 	this.byteSize = this.numElements * this.type.size;
 };
 
-Potree.PointAttribute.POSITION_CARTESIAN = new Potree.PointAttribute(
-	Potree.PointAttributeNames.POSITION_CARTESIAN,
-	Potree.PointAttributeTypes.DATA_TYPE_FLOAT, 3);
+PointAttribute.POSITION_CARTESIAN = new PointAttribute(
+	PointAttributeNames.POSITION_CARTESIAN,
+	PointAttributeTypes.DATA_TYPE_FLOAT, 3);
 
-Potree.PointAttribute.RGBA_PACKED = new Potree.PointAttribute(
-	Potree.PointAttributeNames.COLOR_PACKED,
-	Potree.PointAttributeTypes.DATA_TYPE_INT8, 4);
+PointAttribute.RGBA_PACKED = new PointAttribute(
+	PointAttributeNames.COLOR_PACKED,
+	PointAttributeTypes.DATA_TYPE_INT8, 4);
 
-Potree.PointAttribute.COLOR_PACKED = Potree.PointAttribute.RGBA_PACKED;
+PointAttribute.COLOR_PACKED = PointAttribute.RGBA_PACKED;
 
-Potree.PointAttribute.RGB_PACKED = new Potree.PointAttribute(
-	Potree.PointAttributeNames.COLOR_PACKED,
-	Potree.PointAttributeTypes.DATA_TYPE_INT8, 3);
+PointAttribute.RGB_PACKED = new PointAttribute(
+	PointAttributeNames.COLOR_PACKED,
+	PointAttributeTypes.DATA_TYPE_INT8, 3);
 
-Potree.PointAttribute.NORMAL_FLOATS = new Potree.PointAttribute(
-	Potree.PointAttributeNames.NORMAL_FLOATS,
-	Potree.PointAttributeTypes.DATA_TYPE_FLOAT, 3);
+PointAttribute.NORMAL_FLOATS = new PointAttribute(
+	PointAttributeNames.NORMAL_FLOATS,
+	PointAttributeTypes.DATA_TYPE_FLOAT, 3);
 
-Potree.PointAttribute.FILLER_1B = new Potree.PointAttribute(
-	Potree.PointAttributeNames.FILLER,
-	Potree.PointAttributeTypes.DATA_TYPE_UINT8, 1);
+PointAttribute.FILLER_1B = new PointAttribute(
+	PointAttributeNames.FILLER,
+	PointAttributeTypes.DATA_TYPE_UINT8, 1);
 
-Potree.PointAttribute.INTENSITY = new Potree.PointAttribute(
-	Potree.PointAttributeNames.INTENSITY,
-	Potree.PointAttributeTypes.DATA_TYPE_UINT16, 1);
+PointAttribute.INTENSITY = new PointAttribute(
+	PointAttributeNames.INTENSITY,
+	PointAttributeTypes.DATA_TYPE_UINT16, 1);
 
-Potree.PointAttribute.CLASSIFICATION = new Potree.PointAttribute(
-	Potree.PointAttributeNames.CLASSIFICATION,
-	Potree.PointAttributeTypes.DATA_TYPE_UINT8, 1);
+PointAttribute.CLASSIFICATION = new PointAttribute(
+	PointAttributeNames.CLASSIFICATION,
+	PointAttributeTypes.DATA_TYPE_UINT8, 1);
 
-Potree.PointAttribute.NORMAL_SPHEREMAPPED = new Potree.PointAttribute(
-	Potree.PointAttributeNames.NORMAL_SPHEREMAPPED,
-	Potree.PointAttributeTypes.DATA_TYPE_UINT8, 2);
+PointAttribute.NORMAL_SPHEREMAPPED = new PointAttribute(
+	PointAttributeNames.NORMAL_SPHEREMAPPED,
+	PointAttributeTypes.DATA_TYPE_UINT8, 2);
 
-Potree.PointAttribute.NORMAL_OCT16 = new Potree.PointAttribute(
-	Potree.PointAttributeNames.NORMAL_OCT16,
-	Potree.PointAttributeTypes.DATA_TYPE_UINT8, 2);
+PointAttribute.NORMAL_OCT16 = new PointAttribute(
+	PointAttributeNames.NORMAL_OCT16,
+	PointAttributeTypes.DATA_TYPE_UINT8, 2);
 
-Potree.PointAttribute.NORMAL = new Potree.PointAttribute(
-	Potree.PointAttributeNames.NORMAL,
-	Potree.PointAttributeTypes.DATA_TYPE_FLOAT, 3);
+PointAttribute.NORMAL = new PointAttribute(
+	PointAttributeNames.NORMAL,
+	PointAttributeTypes.DATA_TYPE_FLOAT, 3);

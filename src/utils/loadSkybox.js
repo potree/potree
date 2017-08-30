@@ -1,4 +1,4 @@
-Potree.utils.loadSkybox = (path) => {
+module.exports = (path) => {
 	let camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 100000);
 	camera.up.set(0, 0, 1);
 	let scene = new THREE.Scene();

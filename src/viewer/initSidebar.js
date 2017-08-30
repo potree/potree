@@ -1,4 +1,4 @@
-initSidebar = (viewer) => {
+module.exports = (viewer) => {
 	let createToolIcon = function (icon, title, callback) {
 		let element = $(`
 			<img src="${icon}"

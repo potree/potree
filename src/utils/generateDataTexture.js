@@ -1,6 +1,6 @@
 // code taken from three.js
 // ImageUtils - generateDataTexture()
-Potree.utils.generateDataTexture = (width, height, color) => {
+module.exports = (width, height, color) => {
 	let size = width * height;
 	let data = new Uint8Array(3 * width * height);
 

@@ -1,4 +1,4 @@
-Potree.utils.getMousePointCloudIntersection = (mouse, camera, renderer, pointclouds) => {
+module.exports = (mouse, camera, renderer, pointclouds) => {
 	let nmouse = {
 		x: (mouse.x / renderer.domElement.clientWidth) * 2 - 1,
 		y: -(mouse.y / renderer.domElement.clientHeight) * 2 + 1

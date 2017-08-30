@@ -1,4 +1,4 @@
-Potree.Classification = {
+module.exports = {
 	'DEFAULT': {
 		0: new THREE.Vector4(0.5, 0.5, 0.5, 1.0),
 		1: new THREE.Vector4(0.5, 0.5, 0.5, 1.0),

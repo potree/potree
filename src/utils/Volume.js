@@ -1,5 +1,5 @@
 
-Potree.Volume = class extends THREE.Object3D {
+class Volume extends THREE.Object3D {
 	constructor (args = {}) {
 		super();
 
@@ -169,3 +169,5 @@ Potree.Volume = class extends THREE.Object3D {
 		this.update();
 	}
 };
+
+module.exports = Volume;

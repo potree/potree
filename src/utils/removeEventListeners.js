@@ -1,5 +1,5 @@
 
-Potree.utils.removeEventListeners = function (dispatcher, type) {
+module.exports = function (dispatcher, type) {
 	if (dispatcher._listeners === undefined) {
 		return;
 	}

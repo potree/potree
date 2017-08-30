@@ -1,4 +1,4 @@
-Potree.PointCloudArena4DNode = class PointCloudArena4DNode extends Potree.PointCloudTreeNode {
+class PointCloudArena4DNode extends Potree.PointCloudTreeNode {
 	constructor () {
 		super();
 
@@ -81,3 +81,5 @@ Potree.PointCloudArena4DNode = class PointCloudArena4DNode extends Potree.PointC
 //       Which I assume used to mean
 //       Potree.PointCloudArena4DNode.prototype = Object.create(Potree.PointCloudTreeNode.prototype);
 //       This was maybe just not necessary?
+
+module.exports = PointCloudArena4DNode;

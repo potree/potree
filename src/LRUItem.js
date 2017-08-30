@@ -8,3 +8,5 @@ function LRUItem (node) {
 	this.next = null;
 	this.node = node;
 }
+
+module.exports = LRUItem;

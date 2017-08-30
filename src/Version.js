@@ -1,5 +1,5 @@
 
-Potree.Version = function (version) {
+const Version = function (version) {
 	this.version = version;
 	var vmLength = (version.indexOf('.') === -1) ? version.length : version.indexOf('.');
 	this.versionMajor = parseInt(version.substr(0, vmLength));
@@ -9,8 +9,8 @@ Potree.Version = function (version) {
 	}
 };
 
-Potree.Version.prototype.newerThan = function (version) {
-	var v = new Potree.Version(version);
+Version.prototype.newerThan = function (version) {
+	var v = new Version(version);
 
 	if (this.versionMajor > v.versionMajor) {
 		return true;
@@ -21,8 +21,8 @@ Potree.Version.prototype.newerThan = function (version) {
 	}
 };
 
-Potree.Version.prototype.equalOrHigher = function (version) {
-	var v = new Potree.Version(version);
+Version.prototype.equalOrHigher = function (version) {
+	var v = new Version(version);
 
 	if (this.versionMajor > v.versionMajor) {
 		return true;
@@ -33,6 +33,8 @@ Potree.Version.prototype.equalOrHigher = function (version) {
 	}
 };
 
-Potree.Version.prototype.upTo = function (version) {
+Version.prototype.upTo = function (version) {
 	return !this.newerThan(version);
 };
+
+module.exports = Version;

@@ -1,5 +1,5 @@
 
-Potree.utils.zoomTo = function (camera, node, factor) {
+module.exports = function (camera, node, factor) {
 	if (!node.geometry && !node.boundingSphere && !node.boundingBox) {
 		return;
 	}

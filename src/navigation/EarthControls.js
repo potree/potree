@@ -1,4 +1,4 @@
-Potree.EarthControls = class EarthControls extends THREE.EventDispatcher {
+class EarthControls extends THREE.EventDispatcher {
 	constructor (viewer) {
 		super(viewer);
 
@@ -288,3 +288,5 @@ Potree.EarthControls = class EarthControls extends THREE.EventDispatcher {
 		}
 	}
 };
+
+module.exports = EarthControls;

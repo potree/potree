@@ -1,7 +1,7 @@
 /**
  * adapted from mhluska at https://github.com/mrdoob/three.js/issues/1561
  */
-Potree.utils.computeTransformedBoundingBox = (box, transform) => {
+module.exports = (box, transform) => {
 	let vertices = [
 		new THREE.Vector3(box.min.x, box.min.y, box.min.z).applyMatrix4(transform),
 		new THREE.Vector3(box.min.x, box.min.y, box.min.z).applyMatrix4(transform),

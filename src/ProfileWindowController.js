@@ -1,4 +1,4 @@
-Potree.ProfileWindowController = class ProfileWindowController {
+class ProfileWindowController {
 	constructor (viewer) {
 		this.viewer = viewer;
 		this.profileWindow = viewer.profileWindow;
@@ -105,3 +105,5 @@ Potree.ProfileWindowController = class ProfileWindowController {
 		}
 	}
 };
+
+module.exports = Potree.ProfileWindowController;

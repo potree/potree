@@ -1,4 +1,4 @@
-Potree.utils.distanceToPlaneWithNegative = function (ray, plane) {
+module.exports = function (ray, plane) {
 	var denominator = plane.normal.dot(ray.direction);
 	if (denominator === 0) {
 		// line is coplanar, return origin

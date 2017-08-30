@@ -1,4 +1,4 @@
-Potree.PointCloudArena4DGeometryNode = function () {
+const PointCloudArena4DGeometryNode = function () {
 	this.left = null;
 	this.right = null;
 	this.boundingBox = null;
@@ -11,29 +11,29 @@ Potree.PointCloudArena4DGeometryNode = function () {
 	this.oneTimeDisposeHandlers = [];
 };
 
-Potree.PointCloudArena4DGeometryNode.nodesLoading = 0;
+PointCloudArena4DGeometryNode.nodesLoading = 0;
 
-Potree.PointCloudArena4DGeometryNode.prototype.isGeometryNode = function () {
+PointCloudArena4DGeometryNode.prototype.isGeometryNode = function () {
 	return true;
 };
 
-Potree.PointCloudArena4DGeometryNode.prototype.isTreeNode = function () {
+PointCloudArena4DGeometryNode.prototype.isTreeNode = function () {
 	return false;
 };
 
-Potree.PointCloudArena4DGeometryNode.prototype.isLoaded = function () {
+PointCloudArena4DGeometryNode.prototype.isLoaded = function () {
 	return this.loaded;
 };
 
-Potree.PointCloudArena4DGeometryNode.prototype.getBoundingSphere = function () {
+PointCloudArena4DGeometryNode.prototype.getBoundingSphere = function () {
 	return this.boundingSphere;
 };
 
-Potree.PointCloudArena4DGeometryNode.prototype.getBoundingBox = function () {
+PointCloudArena4DGeometryNode.prototype.getBoundingBox = function () {
 	return this.boundingBox;
 };
 
-Potree.PointCloudArena4DGeometryNode.prototype.getChildren = function () {
+PointCloudArena4DGeometryNode.prototype.getChildren = function () {
 	var children = [];
 
 	if (this.left) {
@@ -47,26 +47,26 @@ Potree.PointCloudArena4DGeometryNode.prototype.getChildren = function () {
 	return children;
 };
 
-Potree.PointCloudArena4DGeometryNode.prototype.getBoundingBox = function () {
+PointCloudArena4DGeometryNode.prototype.getBoundingBox = function () {
 	return this.boundingBox;
 };
 
-Potree.PointCloudArena4DGeometryNode.prototype.getLevel = function () {
+PointCloudArena4DGeometryNode.prototype.getLevel = function () {
 	return this.level;
 };
 
-Potree.PointCloudArena4DGeometryNode.prototype.load = function () {
+PointCloudArena4DGeometryNode.prototype.load = function () {
 	if (this.loaded || this.loading) {
 		return;
 	}
 
-	if (Potree.PointCloudArena4DGeometryNode.nodesLoading >= 5) {
+	if (PointCloudArena4DGeometryNode.nodesLoading >= 5) {
 		return;
 	}
 
 	this.loading = true;
 
-	Potree.PointCloudArena4DGeometryNode.nodesLoading++;
+	PointCloudArena4DGeometryNode.nodesLoading++;
 
 	var url = this.pcoGeometry.url + '?node=' + this.number;
 	var xhr = new XMLHttpRequest();
@@ -119,7 +119,7 @@ Potree.PointCloudArena4DGeometryNode.prototype.load = function () {
 
 		scope.geometry = geometry;
 		scope.loaded = true;
-		Potree.PointCloudArena4DGeometryNode.nodesLoading--;
+		PointCloudArena4DGeometryNode.nodesLoading--;
 
 		geometry.boundingBox = scope.boundingBox;
 		geometry.boundingSphere = scope.boundingSphere;
@@ -132,7 +132,7 @@ Potree.PointCloudArena4DGeometryNode.prototype.load = function () {
 	xhr.send(null);
 };
 
-Potree.PointCloudArena4DGeometryNode.prototype.dispose = function () {
+PointCloudArena4DGeometryNode.prototype.dispose = function () {
 	if (this.geometry && this.parent != null) {
 		this.geometry.dispose();
 		this.geometry = null;
@@ -147,6 +147,8 @@ Potree.PointCloudArena4DGeometryNode.prototype.dispose = function () {
 	}
 };
 
-Potree.PointCloudArena4DGeometryNode.prototype.getNumPoints = function () {
+PointCloudArena4DGeometryNode.prototype.getNumPoints = function () {
 	return this.numPoints;
 };
+
+module.exports = PointCloudArena4DGeometryNode;

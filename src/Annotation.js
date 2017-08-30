@@ -1,4 +1,4 @@
-Potree.Annotation = class extends THREE.EventDispatcher {
+class Annotation extends THREE.EventDispatcher {
 	constructor (args = {}) {
 		super();
 
@@ -375,3 +375,5 @@ Potree.Annotation = class extends THREE.EventDispatcher {
 		return 'Annotation: ' + this.title;
 	}
 };
+
+module.exports = Annotation;

@@ -3,7 +3,7 @@
  *
  * @class
  */
-Potree.PointAttributeTypes = {
+const PointAttributeTypes = {
 	DATA_TYPE_DOUBLE: {ordinal: 0, size: 8},
 	DATA_TYPE_FLOAT: {ordinal: 1, size: 4},
 	DATA_TYPE_INT8: {ordinal: 2, size: 1},
@@ -17,7 +17,9 @@ Potree.PointAttributeTypes = {
 };
 
 var i = 0;
-for (var obj in Potree.PointAttributeTypes) {
-	Potree.PointAttributeTypes[i] = Potree.PointAttributeTypes[obj];
+for (var obj in PointAttributeTypes) {
+	PointAttributeTypes[i] = PointAttributeTypes[obj];
 	i++;
 }
+
+module.exports = PointAttributeTypes;

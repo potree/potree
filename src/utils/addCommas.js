@@ -4,7 +4,7 @@
  * @param nStr
  * @returns
  */
-Potree.utils.addCommas = (nStr) => {
+module.exports = (nStr) => {
 	nStr += '';
 	let x = nStr.split('.');
 	let x1 = x[0];

@@ -1,6 +1,6 @@
-Potree.Actions = {};
+const Actions = {};
 
-Potree.Actions.ToggleAnnotationVisibility = class ToggleAnnotationVisibility extends Potree.Action {
+Actions.ToggleAnnotationVisibility = class ToggleAnnotationVisibility extends Potree.Action {
 	constructor (args = {}) {
 		super(args);
 
@@ -39,3 +39,5 @@ Potree.Actions.ToggleAnnotationVisibility = class ToggleAnnotationVisibility ext
 		}
 	}
 };
+
+module.exports = Actions;

@@ -12,7 +12,7 @@
  *
  *
  */
-Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher {
+class OrbitControls extends THREE.EventDispatcher {
 	constructor (viewer) {
 		super();
 
@@ -261,3 +261,5 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher {
 		}
 	}
 };
+
+module.exports = OrbitControls;

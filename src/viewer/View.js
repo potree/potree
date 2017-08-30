@@ -1,4 +1,4 @@
-Potree.View = class {
+class View {
 	constructor () {
 		this.position = new THREE.Vector3(0, 0, 0);
 
@@ -110,3 +110,5 @@ Potree.View = class {
 		this.position.z += z;
 	}
 };
+
+module.exports = View;

@@ -76,3 +76,5 @@ Object.defineProperty(ProgressBar.prototype, 'message', {
 		this.elProgressMessage.innerHTML = message;
 	}
 });
+
+module.exports = ProgressBar;

@@ -1,5 +1,5 @@
 
-Potree.BinaryLoader = function (version, boundingBox, scale) {
+const BinaryLoader = function (version, boundingBox, scale) {
 	if (typeof (version) === 'string') {
 		this.version = new Potree.Version(version);
 	} else {
@@ -10,7 +10,7 @@ Potree.BinaryLoader = function (version, boundingBox, scale) {
 	this.scale = scale;
 };
 
-Potree.BinaryLoader.prototype.load = function (node) {
+BinaryLoader.prototype.load = function (node) {
 	if (node.loaded) {
 		return;
 	}
@@ -44,7 +44,7 @@ Potree.BinaryLoader.prototype.load = function (node) {
 	}
 };
 
-Potree.BinaryLoader.prototype.parse = function (node, buffer) {
+BinaryLoader.prototype.parse = function (node, buffer) {
 	let numPoints = buffer.byteLength / node.pcoGeometry.pointAttributes.byteSize;
 	let pointAttributes = node.pcoGeometry.pointAttributes;
 
@@ -121,3 +121,5 @@ Potree.BinaryLoader.prototype.parse = function (node, buffer) {
 	};
 	worker.postMessage(message, [message.buffer]);
 };
+
+module.exports = BinaryLoader;

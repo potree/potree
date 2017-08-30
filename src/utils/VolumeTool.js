@@ -1,5 +1,5 @@
 
-Potree.VolumeTool = class VolumeTool extends THREE.EventDispatcher {
+class VolumeTool extends THREE.EventDispatcher {
 	constructor (viewer) {
 		super();
 
@@ -134,3 +134,5 @@ Potree.VolumeTool = class VolumeTool extends THREE.EventDispatcher {
 		}
 	}
 };
+
+module.exports = VolumeTool;

@@ -191,3 +191,5 @@ LRU.prototype.disposeDescendants = function (node) {
 		}
 	}
 };
+
+module.exports = LRU;

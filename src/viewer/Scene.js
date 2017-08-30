@@ -1,4 +1,4 @@
-Potree.Scene = class extends THREE.EventDispatcher {
+class Scene extends THREE.EventDispatcher {
 	constructor () {
 		super();
 
@@ -308,3 +308,5 @@ Potree.Scene = class extends THREE.EventDispatcher {
 		return this.annotations;
 	};
 };
+
+module.exports = Scene;

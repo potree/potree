@@ -1,4 +1,4 @@
-Potree.LasLazBatcher = class LasLazBatcher {
+module.exports = class LasLazBatcher {
 	constructor (node) {
 		this.node = node;
 	}
@@ -78,3 +78,5 @@ Potree.LasLazBatcher = class LasLazBatcher {
 		worker.postMessage(message, [message.buffer]);
 	};
 };
+
+module.exports = LasLazBatcher;

@@ -1,18 +1,29 @@
 
 function Potree () {
-
 }
-Potree.version = {
-	major: 1,
-	minor: 5,
-	suffix: 'RC'
-};
 
-console.log('Potree ' + Potree.version.major + '.' + Potree.version.minor + Potree.version.suffix);
+const context = require('./context');
+Potree.version = context.version;
 
-Potree.pointBudget = 1 * 1000 * 1000;
+console.log('Potree ' + context.version.major + '.' + context.version.minor + context.version.suffix);
 
-Potree.framenumber = 0;
+// LEGACY: this property exists just in case someone used it.
+Object.defineProperty(Potree, 'pointBudget', {
+	get: () => context.pointBudget,
+	set: (value) => context.pointBudget = value,
+});
+
+// LEGACY: this property exists just in case someone used it.
+Object.defineProperty(Potree, 'framenumber', {
+	get: () => context.framenumber,
+	set: (value) => context.framenumber = value,
+});
+
+// LEGACY: this property exists just in case someone used it.
+Object.defineProperty(Potree, 'pointLoadLimit', {
+	get: () => context.pointBudget,
+	set: (value) => context.pointBudget = value,
+});
 
 // contains WebWorkers with base64 encoded code
 // Potree.workers = {};
@@ -25,17 +36,9 @@ Potree.webgl = {
 	vbos: {}
 };
 
-Potree.scriptPath = null;
-if (document.currentScript.src) {
-	Potree.scriptPath = new URL(document.currentScript.src + '/..').href;
-	if (Potree.scriptPath.slice(-1) === '/') {
-		Potree.scriptPath = Potree.scriptPath.slice(0, -1);
-	}
-} else {
-	console.error('Potree was unable to find its script path using document.currentScript. Is Potree included with a script tag? Does your browser support this function?');
-}
-
-Potree.resourcePath = Potree.scriptPath + '/resources';
+Potree.scriptPath = context.scriptPath;
+Potree.resourcePath = context.resourcePath;
+Potree.workerPool = context.workerPool;
 
 Potree.timerQueries = {};
 
@@ -216,11 +219,9 @@ Potree.updatePointClouds = function (pointclouds, camera, renderer) {
 	return result;
 };
 
+// LEGACY: placeholder
 Potree.getLRU = function () {
-	if (!Potree.lru) {
-		Potree.lru = new LRU();
-	}
-
+	Potree.lru = context.getLRU();
 	return Potree.lru;
 };
 
@@ -283,14 +284,11 @@ function updateVisibilityStructures (pointclouds, camera, renderer) {
 	};
 }
 
+// LEGACY: placeholder
 Potree.getDEMWorkerInstance = function () {
-	if (!Potree.DEMWorkerInstance) {
-		let workerPath = Potree.scriptPath + '/workers/DEMWorker.js';
-		Potree.DEMWorkerInstance = Potree.workerPool.getWorker(workerPath);
-	}
-
+	Potree.DEMWorkerInstance = context.getDEMWorkerInstance()
 	return Potree.DEMWorkerInstance;
-};
+}
 
 /*
 function createDEMMesh (dem) {

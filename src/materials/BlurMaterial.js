@@ -1,3 +1,4 @@
+const THREE = require('three');
 const vs = require('./shaders/blur.vs');
 const fs = require('./shaders/blur.fs');
 // see http://john-chapman-graphics.blogspot.co.at/2013/01/ssao-tutorial.html

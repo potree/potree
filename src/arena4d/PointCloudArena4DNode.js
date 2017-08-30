@@ -1,4 +1,6 @@
-class PointCloudArena4DNode extends Potree.PointCloudTreeNode {
+const PointCloudTreeNode = require('../tree/PointCloudTreeNode');
+
+class PointCloudArena4DNode extends PointCloudTreeNode {
 	constructor () {
 		super();
 
@@ -49,7 +51,7 @@ class PointCloudArena4DNode extends Potree.PointCloudTreeNode {
 			return;
 		}
 
-		var node = new Potree.PointCloudArena4DNode();
+		var node = new PointCloudArena4DNode();
 		var sceneNode = THREE.PointCloud(geometryNode.geometry, this.kdtree.material);
 		sceneNode.visible = false;
 

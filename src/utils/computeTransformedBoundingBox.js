@@ -1,3 +1,5 @@
+const THREE = require('three');
+
 /**
  * adapted from mhluska at https://github.com/mrdoob/three.js/issues/1561
  */

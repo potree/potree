@@ -1,3 +1,5 @@
+const THREE = require('three');
+
 /**
  *
  * code adapted from three.js BoxHelper.js

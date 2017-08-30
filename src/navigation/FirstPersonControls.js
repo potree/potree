@@ -1,3 +1,7 @@
+const THREE = require('three');
+const MOUSE = require('../utils/Mouse');
+const getMousePointCloudIntersection = require('../utils/getMousePointCloudIntersection');
+
 /**
  * @author mschuetz / http://mschuetz.at
  *
@@ -61,10 +65,10 @@ class FirstPersonControls extends THREE.EventDispatcher {
 				y: e.drag.lastDrag.y / this.renderer.domElement.clientHeight
 			};
 
-			if (e.drag.mouse === Potree.MOUSE.LEFT) {
+			if (e.drag.mouse === MOUSE.LEFT) {
 				this.yawDelta += ndrag.x * this.rotationSpeed;
 				this.pitchDelta += ndrag.y * this.rotationSpeed;
-			} else if (e.drag.mouse === Potree.MOUSE.RIGHT) {
+			} else if (e.drag.mouse === MOUSE.RIGHT) {
 				this.translationDelta.x -= ndrag.x * moveSpeed * 100;
 				this.translationDelta.z += ndrag.y * moveSpeed * 100;
 			}
@@ -105,7 +109,7 @@ class FirstPersonControls extends THREE.EventDispatcher {
 	zoomToLocation (mouse) {
 		let camera = this.scene.getActiveCamera();
 
-		let I = Potree.utils.getMousePointCloudIntersection(
+		let I = getMousePointCloudIntersection(
 			mouse,
 			camera,
 			this.renderer,

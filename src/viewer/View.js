@@ -1,3 +1,6 @@
+const THREE = require('three');
+const OrbitControls = require('../navigation/OrbitControls');
+
 class View {
 	constructor () {
 		this.position = new THREE.Vector3(0, 0, 0);
@@ -9,11 +12,11 @@ class View {
 		this.maxPitch = Math.PI / 2;
 		this.minPitch = -Math.PI / 2;
 
-		this.navigationMode = Potree.OrbitControls;
+		this.navigationMode = OrbitControls;
 	}
 
 	clone () {
-		let c = new Potree.View();
+		let c = new View();
 		c.yaw = this.yaw;
 		c._pitch = this.pitch;
 		c.radius = this.radius;

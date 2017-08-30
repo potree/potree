@@ -1,3 +1,8 @@
+const THREE = require('three');
+const getMousePointCloudIntersection = require('../utils/getMousePointCloudIntersection');
+const projectedRadius = require('../utils/projectedRadius');
+const MOUSE = require('../utils/Mouse');
+
 class EarthControls extends THREE.EventDispatcher {
 	constructor (viewer) {
 		super(viewer);
@@ -47,7 +52,7 @@ class EarthControls extends THREE.EventDispatcher {
 			let mouse = e.drag.end;
 			let domElement = this.viewer.renderer.domElement;
 
-			if (e.drag.mouse === Potree.MOUSE.LEFT) {
+			if (e.drag.mouse === MOUSE.LEFT) {
 				let nmouse = {
 					x: (mouse.x / domElement.clientWidth) * 2 - 1,
 					y: -(mouse.y / domElement.clientHeight) * 2 + 1
@@ -83,7 +88,7 @@ class EarthControls extends THREE.EventDispatcher {
 						this.viewer.setMoveSpeed(speed);
 					}
 				}
-			} else if (e.drag.mouse === Potree.MOUSE.RIGHT) {
+			} else if (e.drag.mouse === MOUSE.RIGHT) {
 				let ndrag = {
 					x: e.drag.lastDrag.x / this.renderer.domElement.clientWidth,
 					y: e.drag.lastDrag.y / this.renderer.domElement.clientHeight
@@ -117,7 +122,7 @@ class EarthControls extends THREE.EventDispatcher {
 		};
 
 		let onMouseDown = e => {
-			let I = Potree.utils.getMousePointCloudIntersection(
+			let I = getMousePointCloudIntersection(
 				e.mouse,
 				this.scene.getActiveCamera(),
 				this.renderer,
@@ -164,7 +169,7 @@ class EarthControls extends THREE.EventDispatcher {
 	zoomToLocation (mouse) {
 		let camera = this.scene.getActiveCamera();
 
-		let I = Potree.utils.getMousePointCloudIntersection(
+		let I = getMousePointCloudIntersection(
 			mouse,
 			camera,
 			this.renderer,
@@ -240,7 +245,7 @@ class EarthControls extends THREE.EventDispatcher {
 
 		// compute zoom
 		if (this.wheelDelta !== 0) {
-			let I = Potree.utils.getMousePointCloudIntersection(
+			let I = getMousePointCloudIntersection(
 				this.viewer.inputHandler.mouse,
 				this.scene.getActiveCamera(),
 				this.renderer,
@@ -276,7 +281,7 @@ class EarthControls extends THREE.EventDispatcher {
 		if (this.pivotIndicator.visible) {
 			let distance = this.pivotIndicator.position.distanceTo(view.position);
 			let pixelHeight = this.renderer.domElement.clientHeight;
-			let pr = Potree.utils.projectedRadius(1, camera.fov * Math.PI / 180, distance, pixelHeight);
+			let pr = projectedRadius(1, camera.fov * Math.PI / 180, distance, pixelHeight);
 			let scale = (10 / pr);
 			this.pivotIndicator.scale.set(scale, scale, scale);
 		}

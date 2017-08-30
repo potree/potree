@@ -1,3 +1,6 @@
+const DEMNode = require('./DEMNode');
+const context = require('../context');
+
 module.exports = class DEM {
 	constructor (pointcloud) {
 		this.pointcloud = pointcloud;
@@ -60,7 +63,7 @@ module.exports = class DEM {
 						childBox.max.y -= nodeBoxSize.y / 2.0;
 					}
 
-					let child = new Potree.DEMNode(node.name + index, childBox, this.tileSize);
+					let child = new DEMNode(node.name + index, childBox, this.tileSize);
 					node.children[index] = child;
 				}
 
@@ -117,7 +120,7 @@ module.exports = class DEM {
 	}
 
 	update (visibleNodes) {
-		if (Potree.getDEMWorkerInstance().working) {
+		if (context.getDEMWorkerInstance().working) {
 			return;
 		}
 
@@ -125,7 +128,7 @@ module.exports = class DEM {
 		if (this.matrix === null || !this.matrix.equals(this.pointcloud.matrixWorld)) {
 			this.matrix = this.pointcloud.matrixWorld.clone();
 			this.boundingBox = this.pointcloud.boundingBox.clone().applyMatrix4(this.matrix);
-			this.root = new Potree.DEMNode('r', this.boundingBox, this.tileSize);
+			this.root = new DEMNode('r', this.boundingBox, this.tileSize);
 			this.version++;
 		}
 
@@ -148,7 +151,7 @@ module.exports = class DEM {
 		let targetNodes = this.expandAndFindByBox(projectedBox, node.getLevel());
 		node.demVersion = this.version;
 
-		Potree.getDEMWorkerInstance().onmessage = (e) => {
+		context.getDEMWorkerInstance().onmessage = (e) => {
 			let data = new Float32Array(e.data.dem.data);
 
 			for (let demNode of targetNodes) {
@@ -183,7 +186,7 @@ module.exports = class DEM {
 				demNode.createMipMap();
 				demNode.mipMapNeedsUpdate = true;
 
-				Potree.getDEMWorkerInstance().working = false;
+				context.getDEMWorkerInstance().working = false;
 			}
 
 			// TODO only works somewhat if there is no rotation to the point cloud
@@ -194,11 +197,11 @@ module.exports = class DEM {
 			//
 			/// /node.dem = e.data.dem;
 			//
-			// Potree.getDEMWorkerInstance().working = false;
+			// context.getDEMWorkerInstance().working = false;
 			//
 			// { // create scene objects for debugging
 			//	//for(let demNode of targetNodes){
-			//		var bb = new Potree.Box3Helper(box);
+			//		var bb = new Box3Helper(box);
 			//		viewer.scene.scene.add(bb);
 			//
 			//		createDEMMesh(this, target);
@@ -216,7 +219,7 @@ module.exports = class DEM {
 			position: new Float32Array(position).buffer
 		};
 		let transferables = [message.position];
-		Potree.getDEMWorkerInstance().working = true;
-		Potree.getDEMWorkerInstance().postMessage(message, transferables);
+		context.getDEMWorkerInstance().working = true;
+		context.getDEMWorkerInstance().postMessage(message, transferables);
 	}
 };

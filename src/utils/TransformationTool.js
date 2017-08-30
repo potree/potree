@@ -1,3 +1,10 @@
+const THREE = require('three');
+const HoverMenu = require('../stuff/HoverMenu');
+const HoverMenuItem = require('../stuff/HoverMenuItem');
+const context = require('../context');
+const projectedRadius = require('./projectedRadius');
+const projectedRadiusOrtho = require('./projectedRadiusOrtho');
+const ClipMode = require('../viewer/ClipMode');
 
 class TransformationTool {
 	constructor (viewer) {
@@ -23,7 +30,7 @@ class TransformationTool {
 
 		this.mode = this.TRANSFORMATION_MODES.DEFAULT;
 
-		this.menu = new HoverMenu(Potree.resourcePath + '/icons/menu_icon.svg');
+		this.menu = new HoverMenu(context.resourcePath + '/icons/menu_icon.svg');
 
 		this.selection = [];
 
@@ -44,15 +51,15 @@ class TransformationTool {
 		});
 
 		{ // Menu
-			this.menu.addItem(new HoverMenuItem(Potree.resourcePath + '/icons/translate.svg', e => {
+			this.menu.addItem(new HoverMenuItem(context.resourcePath + '/icons/translate.svg', e => {
 				// console.log("translate!");
 				this.setMode(this.TRANSFORMATION_MODES.TRANSLATE);
 			}));
-			this.menu.addItem(new HoverMenuItem(Potree.resourcePath + '/icons/rotate.svg', e => {
+			this.menu.addItem(new HoverMenuItem(context.resourcePath + '/icons/rotate.svg', e => {
 				// console.log("rotate!");
 				this.setMode(this.TRANSFORMATION_MODES.ROTATE);
 			}));
-			this.menu.addItem(new HoverMenuItem(Potree.resourcePath + '/icons/scale.svg', e => {
+			this.menu.addItem(new HoverMenuItem(context.resourcePath + '/icons/scale.svg', e => {
 				// console.log("scale!");
 				this.setMode(this.TRANSFORMATION_MODES.SCALE);
 			}));
@@ -525,11 +532,11 @@ class TransformationTool {
 		{ // size
 			let camera = scene.getActiveCamera();
 			let pr = 0;
-			if (scene.cameraMode === Potree.CameraMode.PERSPECTIVE) {
+			if (scene.cameraMode === CameraMode.PERSPECTIVE) {
 				let distance = camera.position.distanceTo(pivot);
-				pr = Potree.utils.projectedRadius(1, camera.fov * Math.PI / 180, distance, domElement.clientHeight);
+				pr = projectedRadius(1, camera.fov * Math.PI / 180, distance, domElement.clientHeight);
 			} else {
-				pr = Potree.utils.projectedRadiusOrtho(1, camera.projectionMatrix, domElement.clientWidth, domElement.clientHeight);
+				pr = projectedRadiusOrtho(1, camera.projectionMatrix, domElement.clientWidth, domElement.clientHeight);
 			}
 			let scale = (120 / pr);
 			this.sceneTransform.scale.set(scale, scale, scale);

@@ -1,4 +1,14 @@
-class PointCloudArena4D extends Potree.PointCloudTree {
+const PointCloudTree = require('../tree/PointCloudTree');
+const PointCloudMaterial = require('../materials/PointCloudMaterial');
+const TreeType = require('../materials/TreeType');
+const PointSizeType = require('../materials/PointSizeType');
+const PointColorType = require('../materials/PointColorType');
+const ClipMode = require('../materials/ClipMode');
+const PointCloudArena4DNode = require('./PointCloudArena4DNode');
+const PointCloudArena4DGeometryNode = require('./PointCloudArena4DGeometryNode');
+const THREE = require('three');
+
+class PointCloudArena4D extends PointCloudTree {
 	constructor (geometry) {
 		super();
 
@@ -27,8 +37,8 @@ class PointCloudArena4D extends Potree.PointCloudTree {
 		this.pcoGeometry = geometry;
 		this.boundingBox = this.pcoGeometry.boundingBox;
 		this.boundingSphere = this.pcoGeometry.boundingSphere;
-		this.material = new Potree.PointCloudMaterial({vertexColors: THREE.VertexColors, size: 0.05, treeType: Potree.TreeType.KDTREE});
-		this.material.sizeType = Potree.PointSizeType.ATTENUATED;
+		this.material = new PointCloudMaterial({vertexColors: THREE.VertexColors, size: 0.05, treeType: TreeType.KDTREE});
+		this.material.sizeType = PointSizeType.ATTENUATED;
 		this.material.size = 0.05;
 		this.profileRequests = [];
 		this.name = '';
@@ -50,7 +60,7 @@ class PointCloudArena4D extends Potree.PointCloudTree {
 	}
 
 	toTreeNode (geometryNode, parent) {
-		var node = new Potree.PointCloudArena4DNode();
+		var node = new PointCloudArena4DNode();
 		var sceneNode = new THREE.Points(geometryNode.geometry, this.material);
 
 		sceneNode.frustumCulled = false;
@@ -132,8 +142,8 @@ class PointCloudArena4D extends Potree.PointCloudTree {
 
 		// update visibility texture
 		if (material.pointSizeType) {
-			if (material.pointSizeType === Potree.PointSizeType.ADAPTIVE ||
-				material.pointColorType === Potree.PointColorType.LOD) {
+			if (material.pointSizeType === PointSizeType.ADAPTIVE ||
+				material.pointColorType === PointColorType.LOD) {
 				this.updateVisibilityTexture(material, visibleNodes);
 			}
 		}
@@ -224,8 +234,8 @@ class PointCloudArena4D extends Potree.PointCloudTree {
 		if (!this.pickState) {
 			let scene = new THREE.Scene();
 
-			let material = new Potree.PointCloudMaterial();
-			material.pointColorType = Potree.PointColorType.POINT_INDEX;
+			let material = new PointCloudMaterial();
+			material.pointColorType = PointColorType.POINT_INDEX;
 
 			let renderTarget = new THREE.WebGLRenderTarget(
 				1, 1,
@@ -254,10 +264,10 @@ class PointCloudArena4D extends Potree.PointCloudTree {
 			pickMaterial.classification = this.material.classification;
 
 			if (pickOutsideClipRegion) {
-				pickMaterial.clipMode = Potree.ClipMode.HIGHLIGHT;
+				pickMaterial.clipMode = ClipMode.HIGHLIGHT;
 			} else {
 				pickMaterial.clipMode = this.material.clipMode;
-				if (this.material.clipMode === Potree.ClipMode.CLIP_OUTSIDE) {
+				if (this.material.clipMode === ClipMode.CLIP_OUTSIDE) {
 					pickMaterial.setClipBoxes(this.material.clipBoxes);
 				} else {
 					pickMaterial.setClipBoxes([]);
@@ -549,7 +559,7 @@ class PointCloudArena4D extends Potree.PointCloudTree {
 
 	get progress () {
 		if (this.pcoGeometry.root) {
-			return Potree.PointCloudArena4DGeometryNode.nodesLoading > 0 ? 0 : 1;
+			return PointCloudArena4DGeometryNode.nodesLoading > 0 ? 0 : 1;
 		} else {
 			return 0;
 		}

@@ -1,3 +1,5 @@
+const THREE = require('three');
+
 const PointCloudArena4DGeometryNode = function () {
 	this.left = null;
 	this.right = null;

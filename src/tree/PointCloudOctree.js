@@ -1,11 +1,16 @@
-class PointCloudOctree extends Potree.PointCloudTree {
+const THREE = require('three');
+const PointCloudTree = require('./PointCloudTree');
+const PointCloudMaterial = require('../materials/PointCloudMaterial');
+const computeTransformedBoundingBox = require('../utils/computeTransformedBoundingBox');
+
+class PointCloudOctree extends PointCloudTree {
 	constructor (geometry, material) {
 		super();
 
 		this.pcoGeometry = geometry;
 		this.boundingBox = this.pcoGeometry.boundingBox;
 		this.boundingSphere = this.boundingBox.getBoundingSphere();
-		this.material = material || new Potree.PointCloudMaterial();
+		this.material = material || new PointCloudMaterial();
 		this.visiblePointsTarget = 2 * 1000 * 1000;
 		this.minimumNodePixelSize = 150;
 		this.level = 0;
@@ -27,7 +32,7 @@ class PointCloudOctree extends Potree.PointCloudTree {
 				.find(v => v !== undefined);
 
 			this.updateMatrixWorld(true);
-			box = Potree.utils.computeTransformedBoundingBox(box, this.matrixWorld);
+			box = computeTransformedBoundingBox(box, this.matrixWorld);
 
 			let bWidth = box.max.z - box.min.z;
 			let bMin = box.min.z - 0.2 * bWidth;

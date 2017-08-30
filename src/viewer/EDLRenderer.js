@@ -1,3 +1,7 @@
+const EyeDomeLightingMaterial = require('../materials/EyeDomeLightingMaterial');
+const THREE = require('three');
+const screenPass = require('./screenPass');
+
 class EDLRenderer {
 	constructor (viewer) {
 		this.viewer = viewer;
@@ -20,7 +24,7 @@ class EDLRenderer {
 
 		// var depthTextureExt = gl.getExtension("WEBGL_depth_texture");
 
-		this.edlMaterial = new Potree.EyeDomeLightingMaterial();
+		this.edlMaterial = new EyeDomeLightingMaterial();
 
 		this.rtColor = new THREE.WebGLRenderTarget(1024, 1024, {
 			minFilter: THREE.NearestFilter,
@@ -143,7 +147,7 @@ class EDLRenderer {
 			this.edlMaterial.depthWrite = true;
 			this.edlMaterial.transparent = true;
 
-			Potree.utils.screenPass.render(viewer.renderer, this.edlMaterial);
+			screenPass.render(viewer.renderer, this.edlMaterial);
 		}
 
 		viewer.renderer.clearDepth();

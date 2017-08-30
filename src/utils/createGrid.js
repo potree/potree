@@ -1,3 +1,5 @@
+const THREE = require('three');
+
 module.exports = (width, length, spacing, color) => {
 	let material = new THREE.LineBasicMaterial({
 		color: color || 0x888888

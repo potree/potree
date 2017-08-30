@@ -1,8 +1,11 @@
+const DEM = require('./DEM');
+const THREE = require('three');
+
 module.exports = class PointCloudTree extends THREE.Object3D {
 	constructor () {
 		super();
 
-		this.dem = new Potree.DEM(this);
+		this.dem = new DEM(this);
 	}
 
 	initialized () {

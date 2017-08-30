@@ -1,4 +1,7 @@
-class PointCloudOctreeNode extends Potree.PointCloudTreeNode {
+const THREE = require('three');
+const PointCloudTreeNode = require('./PointCloudTreeNode');
+
+class PointCloudOctreeNode extends PointCloudTreeNode {
 	constructor () {
 		super();
 

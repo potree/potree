@@ -1,3 +1,5 @@
+const PointColorType = require('./PointColorType');
+const THREE = require('three');
 const vs = require('./shaders/edl.vs');
 const fs = require('./shaders/edl.fs');
 
@@ -48,7 +50,7 @@ EyeDomeLightingMaterial.prototype = new THREE.ShaderMaterial();
 EyeDomeLightingMaterial.prototype.updateShaderSource = function () {
 	var attributes = {};
 
-	let PC = Potree.PointColorType;
+	let PC = PointColorType;
 
 	if ([PC.INTENSITY, PC.INTENSITY_GRADIENT].includes(this.pointColorType)) {
 		attributes.intensity = { type: 'f', value: [] };
@@ -59,7 +61,7 @@ EyeDomeLightingMaterial.prototype.updateShaderSource = function () {
 		attributes.numberOfReturns = { type: 'f', value: [] };
 	} else if (this.pointColorType === PC.SOURCE) {
 		attributes.pointSourceID = { type: 'f', value: [] };
-	} else if (this.pointColorType === PC.NORMAL || this.pointColorType === Potree.PointColorType.PHONG) {
+	} else if (this.pointColorType === PC.NORMAL || this.pointColorType === PointColorType.PHONG) {
 		attributes.normal = { type: 'f', value: [] };
 	}
 	attributes.classification = { type: 'f', value: 0 };

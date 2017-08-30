@@ -1,3 +1,5 @@
+const $ = require('jquery');
+
 class HoverMenuItem {
 	constructor (icon, callback) {
 		this.icon = icon;

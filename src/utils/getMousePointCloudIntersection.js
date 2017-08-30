@@ -1,3 +1,5 @@
+const THREE = require('three');
+
 module.exports = (mouse, camera, renderer, pointclouds) => {
 	let nmouse = {
 		x: (mouse.x / renderer.domElement.clientWidth) * 2 - 1,

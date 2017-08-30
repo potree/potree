@@ -1,3 +1,13 @@
+const Version = require('../Version');
+const GreyhoundUtils = require('./GreyhoundUtils');
+const PointCloudGreyhoundGeometry = require('../PointCloudGreyhoundGeometry');
+const PointAttributes = require('./PointAttributes');
+const GreyhoundBinaryLoader = require('./GreyhoundBinaryLoader');
+const PointCloudGreyhoundGeometryNode = require('../PointCloudGreyhoundGeometryNode');
+const PointAttributes = require('./PointAttributes');
+const PointAttribute = require('./PointAttribute');
+const THREE = require('three');
+
 const GreyhoundLoader = function () { };
 GreyhoundLoader.loadInfoJSON = function load (url, callback) { };
 
@@ -42,7 +52,7 @@ GreyhoundLoader.load = function load (url, callback) {
 			}
 			*/
 			var greyhoundInfo = JSON.parse(data);
-			var version = new Potree.Version('1.4');
+			var version = new Version('1.4');
 
 			var bounds = greyhoundInfo.bounds;
 			// TODO Unused: var boundsConforming = greyhoundInfo.boundsConforming;
@@ -97,7 +107,7 @@ GreyhoundLoader.load = function load (url, callback) {
 			if (red && green && blue) attributes.push('COLOR_PACKED');
 
 			// Fill in geometry fields.
-			var pgg = new Potree.PointCloudGreyhoundGeometry();
+			var pgg = new PointCloudGreyhoundGeometry();
 			pgg.serverURL = serverURL;
 			pgg.spacing = (bounds[3] - bounds[0]) / Math.pow(2, baseDepth);
 			pgg.baseDepth = baseDepth;
@@ -106,7 +116,7 @@ GreyhoundLoader.load = function load (url, callback) {
 			pgg.schema = GreyhoundUtils.createSchema(attributes);
 			var pointSize = GreyhoundUtils.pointSizeFrom(pgg.schema);
 
-			pgg.pointAttributes = new Potree.PointAttributes(attributes);
+			pgg.pointAttributes = new PointAttributes(attributes);
 			pgg.pointAttributes.byteSize = pointSize;
 
 			var boundingBox = new THREE.Box3(
@@ -130,14 +140,14 @@ GreyhoundLoader.load = function load (url, callback) {
 			console.log('Offset:', offset);
 			console.log('Bounds:', boundingBox);
 
-			pgg.loader = new Potree.GreyhoundBinaryLoader(version, boundingBox, pgg.scale);
+			pgg.loader = new GreyhoundBinaryLoader(version, boundingBox, pgg.scale);
 
 			var nodes = {};
 
 			{ // load root
 				var name = 'r';
 
-				var root = new Potree.PointCloudGreyhoundGeometryNode(
+				var root = new PointCloudGreyhoundGeometryNode(
 					name, pgg, boundingBox,
 					scale, offset
 				);
@@ -172,10 +182,10 @@ GreyhoundLoader.load = function load (url, callback) {
 
 GreyhoundLoader.loadPointAttributes = function (mno) {
 	var fpa = mno.pointAttributes;
-	var pa = new Potree.PointAttributes();
+	var pa = new PointAttributes();
 
 	for (var i = 0; i < fpa.length; i++) {
-		var pointAttribute = Potree.PointAttribute[fpa[i]];
+		var pointAttribute = PointAttribute[fpa[i]];
 		pa.add(pointAttribute);
 	}
 

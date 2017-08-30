@@ -1,3 +1,9 @@
+const Version = require('../Version');
+const LasLazBatcher = require('./LasLazBatcher');
+const laslaz = require('../../libs/plasio/js/laslaz');
+const LASDecoder = laslaz.LASDecoder;
+const LASFile = laslaz.LASFile;
+const Promise = require('bluebird');
 
 /**
  * laslaz code taken and adapted from plas.io js-laslaz
@@ -11,7 +17,7 @@
 module.exports = class LasLazLoader {
 	constructor (version) {
 		if (typeof (version) === 'string') {
-			this.version = new Potree.Version(version);
+			this.version = new Version(version);
 		} else {
 			this.version = version;
 		}
@@ -55,7 +61,7 @@ module.exports = class LasLazLoader {
 
 	parse (node, buffer) {
 		let lf = new LASFile(buffer);
-		let handler = new Potree.LasLazBatcher(node);
+		let handler = new LasLazBatcher(node);
 
 		return Promise.resolve(lf).cancellable().then(function (lf) {
 			return lf.open()
@@ -93,7 +99,7 @@ module.exports = class LasLazLoader {
 						header.mins, header.maxs));
 
 					totalRead += data.count;
-					Potree.LasLazLoader.progressCB(totalRead / totalToRead);
+					LasLazLoader.progressCB(totalRead / totalToRead);
 
 					if (data.hasMoreData) {
 						return reader();
@@ -111,7 +117,7 @@ module.exports = class LasLazLoader {
 			let lf = v[0];
 			// we're done loading this file
 			//
-			Potree.LasLazLoader.progressCB(1);
+			LasLazLoader.progressCB(1);
 
 			// Close it
 			return lf.close().then(function () {

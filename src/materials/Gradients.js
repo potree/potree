@@ -1,3 +1,4 @@
+const THREE = require('three');
 module.exports = {
 	RAINBOW: [
 		[0, new THREE.Color(0.278, 0, 0.714)],

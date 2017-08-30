@@ -91,7 +91,7 @@
 
 		// call the callback in a separate context, make sure we've cleaned our
 		// state out before the callback is invoked since it may queue more doExchanges
-		setTimeout(function() { 
+		setTimeout(function() {
 			if (msg.error)
 				return resolver.reject(new Error(msg.message || "Unknown Error"));
 
@@ -205,7 +205,7 @@
 	//
 	var LAZLoader = function(arraybuffer) {
 		this.arraybuffer = arraybuffer;
-		
+
 		let workerPath = Potree.scriptPath + "/workers/LASLAZWorker.js";
 		this.ww = Potree.workerPool.getWorker(workerPath);
 
@@ -276,7 +276,7 @@
 			o.dorr({type:'close'}, function(r) {
 				let workerPath = Potree.scriptPath + "/workers/LASLAZWorker.js";
 				Potree.workerPool.returnWorker(workerPath, o.ww);
-			
+
 				if (r.status !== 1)
 					return rej(new Error("Failed to close file"));
 
@@ -376,7 +376,7 @@
 				common.attachDefaultListeners();
 				common.createNaClModule(name, tc, config, width, height);
 		},
-		function(e) { 
+		function(e) {
 			$.event.trigger({
 				type: "plasio.nacl.error",
 				message: "Could not allocate persistant storage"
@@ -393,6 +393,4 @@
 	scope.LASFile = LASFile;
 	scope.LASDecoder = LASDecoder;
 	scope.LASModuleWasLoaded = false;
-//})(module.exports);
-})(this);
-
+})(module.exports);

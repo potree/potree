@@ -1,3 +1,6 @@
+const PointAttributeNames = require('./PointAttributeNames');
+const PointAttributeTypes = require('./PointAttributeTypes');
+
 /**
  * A single point attribute such as color/normal/.. and its data format/number of elements/...
  *

@@ -5,8 +5,9 @@
  * @author Markus Schuetz / http://potree.org
  *
  */
+const Measure = require('../utils/Measure');
 
-Potree.DXFExporter = class DXFExporter {
+class DXFExporter {
 	static measurementPointSection (measurement) {
 		let position = measurement.points[0].position;
 
@@ -95,9 +96,9 @@ SEQEND
 		if (measurement.points.length === 0) {
 			return '';
 		} else if (measurement.points.length === 1) {
-			return Potree.DXFExporter.measurementPointSection(measurement);
+			return DXFExporter.measurementPointSection(measurement);
 		} else if (measurement.points.length >= 2) {
-			return Potree.DXFExporter.measurementPolylineSection(measurement);
+			return DXFExporter.measurementPolylineSection(measurement);
 		}
 	}
 
@@ -105,9 +106,9 @@ SEQEND
 		if (!(measurements instanceof Array)) {
 			measurements = [measurements];
 		}
-		measurements = measurements.filter(m => m instanceof Potree.Measure);
+		measurements = measurements.filter(m => m instanceof Measure);
 
-		let points = measurements.filter(m => (m instanceof Potree.Measure))
+		let points = measurements.filter(m => (m instanceof Measure))
 			.map(m => m.points)
 			.reduce((a, v) => a.concat(v))
 			.map(p => p.position);
@@ -164,7 +165,7 @@ ENTITIES
 `;
 
 		for (let measurement of measurements) {
-			dxfBody += Potree.DXFExporter.measurementSection(measurement);
+			dxfBody += DXFExporter.measurementSection(measurement);
 		}
 
 		dxfBody += `0
@@ -176,3 +177,5 @@ ENDSEC
 		return dxf;
 	}
 };
+
+module.exports = DXFExporter;

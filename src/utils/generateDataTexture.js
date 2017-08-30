@@ -1,3 +1,5 @@
+const THREE = require('three');
+
 // code taken from three.js
 // ImageUtils - generateDataTexture()
 module.exports = (width, height, color) => {

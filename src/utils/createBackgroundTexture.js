@@ -1,3 +1,5 @@
+const THREE = require('three');
+
 module.exports = (width, height) => {
 	function gauss (x, y) {
 		return (1 / (2 * Math.PI)) * Math.exp(-(x * x + y * y) / 2);

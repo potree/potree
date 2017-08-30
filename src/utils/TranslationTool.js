@@ -1,3 +1,4 @@
+const THREE = require('three');
 
 const TranslationTool = function (camera) {
 	THREE.Object3D.call(this);

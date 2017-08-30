@@ -1,3 +1,9 @@
+const THREE = require('three');
+const removeEventListeners = require('./removeEventListeners');
+const Profile = require('./Profile');
+const projectedRadius = require('./projectedRadius');
+const projectedRadiusOrtho = require('./projectedRadiusOrtho');
+const CameraMode = require('../viewer/CameraMode');
 
 class ProfileTool extends THREE.EventDispatcher {
 	constructor (viewer) {
@@ -30,8 +36,8 @@ class ProfileTool extends THREE.EventDispatcher {
 
 		if (this.scene) {
 			// TODO: the API is used wrong, removeEventListeners has only two parameters!
-			Potree.utils.removeEventListeners(this.scene, 'profile_added', this.onAdd);
-			Potree.utils.removeEventListeners(this.scene, 'profile_removed', this.onRemove);
+			removeEventListeners(this.scene, 'profile_added', this.onAdd);
+			removeEventListeners(this.scene, 'profile_removed', this.onRemove);
 		}
 
 		this.scene = scene;
@@ -43,7 +49,7 @@ class ProfileTool extends THREE.EventDispatcher {
 	startInsertion (args = {}) {
 		let domElement = this.viewer.renderer.domElement;
 
-		let profile = new Potree.Profile();
+		let profile = new Profile();
 		profile.name = args.name || 'Profile';
 
 		this.dispatchEvent({
@@ -62,11 +68,11 @@ class ProfileTool extends THREE.EventDispatcher {
 				if (profile.points.length <= 1) {
 					let camera = this.viewer.scene.getActiveCamera();
 					let pr = 0;
-					if (this.viewer.scene.cameraMode === Potree.CameraMode.PERSPECTIVE) {
+					if (this.viewer.scene.cameraMode === CameraMode.PERSPECTIVE) {
 						let distance = camera.position.distanceTo(profile.points[0]);
-						pr = Potree.utils.projectedRadius(1, camera.fov * Math.PI / 180, distance, domElement.clientHeight);
+						pr = projectedRadius(1, camera.fov * Math.PI / 180, distance, domElement.clientHeight);
 					} else {
-						pr = Potree.utils.projectedRadiusOrtho(1, camera.projectionMatrix, domElement.clientWidth, domElement.clientHeight);
+						pr = projectedRadiusOrtho(1, camera.projectionMatrix, domElement.clientWidth, domElement.clientHeight);
 					}
 					let width = (10 / pr);
 
@@ -109,11 +115,11 @@ class ProfileTool extends THREE.EventDispatcher {
 		for (let profile of profiles) {
 			for (let sphere of profile.spheres) {
 				let pr = 0;
-				if (this.viewer.scene.cameraMode === Potree.CameraMode.PERSPECTIVE) {
+				if (this.viewer.scene.cameraMode === CameraMode.PERSPECTIVE) {
 					let distance = camera.position.distanceTo(sphere.getWorldPosition());
-					pr = Potree.utils.projectedRadius(1, camera.fov * Math.PI / 180, distance, domElement.clientHeight);
+					pr = projectedRadius(1, camera.fov * Math.PI / 180, distance, domElement.clientHeight);
 				} else {
-					pr = Potree.utils.projectedRadiusOrtho(1, camera.projectionMatrix, domElement.clientWidth, domElement.clientHeight);
+					pr = projectedRadiusOrtho(1, camera.projectionMatrix, domElement.clientWidth, domElement.clientHeight);
 				}
 				let scale = (15 / pr);
 				sphere.scale.set(scale, scale, scale);

@@ -1,3 +1,5 @@
+const $ = require('jquery');
+
 class HoverMenu {
 	constructor (icon) {
 		let scope = this;

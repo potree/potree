@@ -1,3 +1,6 @@
+const PointAttributes = require('../loader/PointAttributes');
+const PointCloudArena4DGeometryNode = require('./PointCloudArena4DGeometryNode');
+const THREE = require('three');
 
 const PointCloudArena4DGeometry = function () {
 	this.numPoints = 0;
@@ -10,7 +13,7 @@ const PointCloudArena4DGeometry = function () {
 	this.root = null;
 	this.levels = 0;
 	this._spacing = null;
-	this.pointAttributes = new Potree.PointAttributes([
+	this.pointAttributes = new PointAttributes([
 		'POSITION_CARTESIAN',
 		'COLOR_PACKED'
 	]);
@@ -27,7 +30,7 @@ PointCloudArena4DGeometry.load = function (url, callback) {
 			if (xhr.readyState === 4 && xhr.status === 200) {
 				var response = JSON.parse(xhr.responseText);
 
-				var geometry = new Potree.PointCloudArena4DGeometry();
+				var geometry = new PointCloudArena4DGeometry();
 				geometry.url = url;
 				geometry.name = response.Name;
 				geometry.provider = response.Provider;
@@ -108,7 +111,7 @@ PointCloudArena4DGeometry.prototype.loadHierarchy = function () {
 				split = 'Z';
 			}
 
-			var node = new Potree.PointCloudArena4DGeometryNode();
+			var node = new PointCloudArena4DGeometryNode();
 			node.hasLeft = hasLeft;
 			node.hasRight = hasRight;
 			node.split = split;

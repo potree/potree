@@ -1,3 +1,7 @@
+const THREE = require('three');
+const TextSprite = require('./TextSprite');
+const getMousePointCloudIntersection = require('./getMousePointCloudIntersection')
+const addCommas = require('./addCommas');
 
 class Measure extends THREE.Object3D {
 	constructor () {
@@ -49,7 +53,7 @@ class Measure extends THREE.Object3D {
 			}
 
 			{ // height label
-				this.heightLabel = new Potree.TextSprite('');
+				this.heightLabel = new TextSprite('');
 				this.heightLabel.setBorderColor({r: 0, g: 0, b: 0, a: 0.8});
 				this.heightLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 0.3});
 				this.heightLabel.setTextColor({r: 180, g: 220, b: 180, a: 1.0});
@@ -60,7 +64,7 @@ class Measure extends THREE.Object3D {
 			}
 		}
 
-		this.areaLabel = new Potree.TextSprite('');
+		this.areaLabel = new TextSprite('');
 		this.areaLabel.setBorderColor({r: 0, g: 0, b: 0, a: 0.8});
 		this.areaLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 0.3});
 		this.areaLabel.setTextColor({r: 180, g: 220, b: 180, a: 1.0});
@@ -109,7 +113,7 @@ class Measure extends THREE.Object3D {
 		}
 
 		{ // edge labels
-			let edgeLabel = new Potree.TextSprite();
+			let edgeLabel = new TextSprite();
 			edgeLabel.setBorderColor({r: 0, g: 0, b: 0, a: 0.8});
 			edgeLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 0.3});
 			edgeLabel.material.depthTest = false;
@@ -119,7 +123,7 @@ class Measure extends THREE.Object3D {
 		}
 
 		{ // angle labels
-			let angleLabel = new Potree.TextSprite();
+			let angleLabel = new TextSprite();
 			angleLabel.setBorderColor({r: 0, g: 0, b: 0, a: 0.8});
 			angleLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 0.3});
 			angleLabel.material.depthTest = false;
@@ -130,7 +134,7 @@ class Measure extends THREE.Object3D {
 		}
 
 		{ // coordinate labels
-			let coordinateLabel = new Potree.TextSprite();
+			let coordinateLabel = new TextSprite();
 			coordinateLabel.setBorderColor({r: 0, g: 0, b: 0, a: 0.8});
 			coordinateLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 0.3});
 			coordinateLabel.material.depthTest = false;
@@ -142,7 +146,7 @@ class Measure extends THREE.Object3D {
 
 		{ // Event Listeners
 			let drag = (e) => {
-				let I = Potree.utils.getMousePointCloudIntersection(
+				let I = getMousePointCloudIntersection(
 					e.drag.end,
 					e.viewer.scene.getActiveCamera(),
 					e.viewer.renderer,
@@ -312,12 +316,10 @@ class Measure extends THREE.Object3D {
 				// let labelPos = position.clone();//.add(new THREE.Vector3(0,1,0));
 				// coordinateLabel.position.copy(labelPos);
 
-				/*
-				let msg = Potree.utils.addCommas(position.x.toFixed(2))
-					+ " / " + Potree.utils.addCommas(position.y.toFixed(2))
-					+ " / " + Potree.utils.addCommas(position.z.toFixed(2));
-				*/
-				let msg = Potree.utils.addCommas(position.z.toFixed(2) + ' ' + this.lengthUnit.code);
+				/* let msg = addCommas(position.x.toFixed(2))
+					+ " / " + addCommas(position.y.toFixed(2))
+					+ " / " + addCommas(position.z.toFixed(2)); */
+				let msg = addCommas(position.z.toFixed(2) + ' ' + this.lengthUnit.code);
 				coordinateLabel.setText(msg);
 
 				coordinateLabel.visible = this.showCoordinates;
@@ -374,7 +376,7 @@ class Measure extends THREE.Object3D {
 				let distance = point.position.distanceTo(nextPoint.position);
 
 				edgeLabel.position.copy(center);
-				edgeLabel.setText(Potree.utils.addCommas(distance.toFixed(2)) + ' ' + this.lengthUnit.code);
+				edgeLabel.setText(addCommas(distance.toFixed(2)) + ' ' + this.lengthUnit.code);
 				edgeLabel.visible = this.showDistances && (index < lastIndex || this.closed) && this.points.length >= 2 && distance > 0;
 			}
 
@@ -392,7 +394,7 @@ class Measure extends THREE.Object3D {
 				let labelPos = point.position.clone().add(dir.multiplyScalar(dist));
 				angleLabel.position.copy(labelPos);
 
-				let msg = Potree.utils.addCommas((angle * (180.0 / Math.PI)).toFixed(1)) + '\u00B0';
+				let msg = addCommas((angle * (180.0 / Math.PI)).toFixed(1)) + '\u00B0';
 				angleLabel.setText(msg);
 
 				angleLabel.visible = this.showAngles && (index < lastIndex || this.closed) && this.points.length >= 3 && angle > 0;
@@ -404,11 +406,11 @@ class Measure extends THREE.Object3D {
 				let labelPos = point.position.clone().add(new THREE.Vector3(0, 1, 0));
 				coordinateLabel.position.copy(labelPos);
 
-				/* let msg = Potree.utils.addCommas(point.position.x.toFixed(2))
-					+ " / " + Potree.utils.addCommas(point.position.y.toFixed(2))
-					+ " / " + Potree.utils.addCommas(point.position.z.toFixed(2)); */
+				/* let msg = addCommas(point.position.x.toFixed(2))
+					+ " / " + addCommas(point.position.y.toFixed(2))
+					+ " / " + addCommas(point.position.z.toFixed(2)); */
 
-				let msg = Potree.utils.addCommas(point.position.z.toFixed(2) + ' ' + this.lengthUnit.code);
+				let msg = addCommas(point.position.z.toFixed(2) + ' ' + this.lengthUnit.code);
 				coordinateLabel.setText(msg);
 
 				// coordinateLabel.visible = this.showCoordinates && (index < lastIndex || this.closed);
@@ -449,7 +451,7 @@ class Measure extends THREE.Object3D {
 
 				let heightLabelPosition = start.clone().add(end).multiplyScalar(0.5);
 				this.heightLabel.position.copy(heightLabelPosition);
-				let msg = Potree.utils.addCommas(height.toFixed(2)) + ' ' + this.lengthUnit.code;
+				let msg = addCommas(height.toFixed(2)) + ' ' + this.lengthUnit.code;
 				this.heightLabel.setText(msg);
 			}
 		}
@@ -457,7 +459,7 @@ class Measure extends THREE.Object3D {
 		{ // update area label
 			this.areaLabel.position.copy(centroid);
 			this.areaLabel.visible = this.showArea && this.points.length >= 3;
-			let msg = Potree.utils.addCommas(this.getArea().toFixed(1)) + ' ' + this.lengthUnit.code + '\u00B2';
+			let msg = addCommas(this.getArea().toFixed(1)) + ' ' + this.lengthUnit.code + '\u00B2';
 			this.areaLabel.setText(msg);
 		}
 	};

@@ -1,3 +1,21 @@
+const $ = require('jquery');
+const context = require('../context');
+const addCommas = require('../utils/addCommas');
+const removeCommas = require('../utils/removeCommas');
+const PointSizeType = require('../materials/PointSizeType');
+const PointShape = require('../materials/PointShape');
+const EarthControls = require('../navigation/EarthControls');
+const Action = require('../Action');
+const FirstPersonControls = require('../navigation/FirstPersonControls');
+const OrbitControls = require('../navigation/OrbitControls');
+const Measure = require('../utils/Measure');
+const Profile = require('../utils/Profile');
+const Volume = require('../utils/Volume');
+const GeoJSONExporter = require('../exporter/GeoJSONExporter');
+const DXFExporter = require('../exporter/DXFExporter');
+const computeTransformedBoundingBox = require('../utils/computeTransformedBoundingBox');
+const ClipMode = require('../materials/ClipMode');
+
 module.exports = (viewer) => {
 	let createToolIcon = function (icon, title, callback) {
 		let element = $(`
@@ -16,7 +34,7 @@ module.exports = (viewer) => {
 		// ANGLE
 		let elToolbar = $('#tools');
 		elToolbar.append(createToolIcon(
-			Potree.resourcePath + '/icons/angle.png',
+			context.resourcePath + '/icons/angle.png',
 			'[title]tt.angle_measurement',
 			function () {
 				$('#menu_measurements').next().slideDown();
@@ -32,7 +50,7 @@ module.exports = (viewer) => {
 
 		// POINT
 		elToolbar.append(createToolIcon(
-			Potree.resourcePath + '/icons/point.svg',
+			context.resourcePath + '/icons/point.svg',
 			'[title]tt.point_measurement',
 			function () {
 				$('#menu_measurements').next().slideDown();
@@ -49,7 +67,7 @@ module.exports = (viewer) => {
 
 		// DISTANCE
 		elToolbar.append(createToolIcon(
-			Potree.resourcePath + '/icons/distance.svg',
+			context.resourcePath + '/icons/distance.svg',
 			'[title]tt.distance_measurement',
 			function () {
 				$('#menu_measurements').next().slideDown();
@@ -63,7 +81,7 @@ module.exports = (viewer) => {
 
 		// HEIGHT
 		elToolbar.append(createToolIcon(
-			Potree.resourcePath + '/icons/height.svg',
+			context.resourcePath + '/icons/height.svg',
 			'[title]tt.height_measurement',
 			function () {
 				$('#menu_measurements').next().slideDown();
@@ -79,7 +97,7 @@ module.exports = (viewer) => {
 
 		// AREA
 		elToolbar.append(createToolIcon(
-			Potree.resourcePath + '/icons/area.svg',
+			context.resourcePath + '/icons/area.svg',
 			'[title]tt.area_measurement',
 			function () {
 				$('#menu_measurements').next().slideDown();
@@ -93,14 +111,14 @@ module.exports = (viewer) => {
 
 		// VOLUME
 		elToolbar.append(createToolIcon(
-			Potree.resourcePath + '/icons/volume.svg',
+			context.resourcePath + '/icons/volume.svg',
 			'[title]tt.volume_measurement',
 			function () { viewer.volumeTool.startInsertion(); }
 		));
 
 		// PROFILE
 		elToolbar.append(createToolIcon(
-			Potree.resourcePath + '/icons/profile.svg',
+			context.resourcePath + '/icons/profile.svg',
 			'[title]tt.height_profile',
 			function () {
 				$('#menu_measurements').next().slideDown(); ;
@@ -110,14 +128,14 @@ module.exports = (viewer) => {
 
 		// CLIP VOLUME
 		elToolbar.append(createToolIcon(
-			Potree.resourcePath + '/icons/clip_volume.svg',
+			context.resourcePath + '/icons/clip_volume.svg',
 			'[title]tt.clip_volume',
 			function () { viewer.volumeTool.startInsertion({clip: true}); }
 		));
 
 		// REMOVE ALL
 		elToolbar.append(createToolIcon(
-			Potree.resourcePath + '/icons/reset_tools.svg',
+			context.resourcePath + '/icons/reset_tools.svg',
 			'[title]tt.remove_all_measurement',
 			function () {
 				viewer.scene.removeAllMeasurements();
@@ -227,7 +245,7 @@ module.exports = (viewer) => {
 		});
 
 		viewer.addEventListener('point_budget_changed', function (event) {
-			$('#lblPointBudget')[0].innerHTML = Potree.utils.addCommas(viewer.getPointBudget());
+			$('#lblPointBudget')[0].innerHTML = addCommas(viewer.getPointBudget());
 			$('#sldPointBudget').slider({value: viewer.getPointBudget()});
 		});
 
@@ -260,7 +278,7 @@ module.exports = (viewer) => {
 			$("input[name=background][value='" + viewer.getBackground() + "']").prop('checked', true);
 		});
 
-		$('#lblPointBudget')[0].innerHTML = Potree.utils.addCommas(viewer.getPointBudget());
+		$('#lblPointBudget')[0].innerHTML = addCommas(viewer.getPointBudget());
 		$('#lblFOV')[0].innerHTML = parseInt(viewer.getFOV());
 		$('#lblEDLRadius')[0].innerHTML = viewer.getEDLRadius().toFixed(1);
 		$('#lblEDLStrength')[0].innerHTML = viewer.getEDLStrength().toFixed(1);
@@ -274,43 +292,43 @@ module.exports = (viewer) => {
 		let lblMoveSpeed = $('#lblMoveSpeed');
 
 		elNavigation.append(createToolIcon(
-			Potree.resourcePath + '/icons/earth_controls_1.png',
+			context.resourcePath + '/icons/earth_controls_1.png',
 			'[title]tt.earth_control',
-			function () { viewer.setNavigationMode(Potree.EarthControls); }
+			function () { viewer.setNavigationMode(EarthControls); }
 		));
 
 		elNavigation.append(createToolIcon(
-			Potree.resourcePath + '/icons/fps_controls.png',
+			context.resourcePath + '/icons/fps_controls.png',
 			'[title]tt.flight_control',
-			function () { viewer.setNavigationMode(Potree.FirstPersonControls); }
+			function () { viewer.setNavigationMode(FirstPersonControls); }
 		));
 
 		elNavigation.append(createToolIcon(
-			Potree.resourcePath + '/icons/orbit_controls.svg',
+			context.resourcePath + '/icons/orbit_controls.svg',
 			'[title]tt.orbit_control',
-			function () { viewer.setNavigationMode(Potree.OrbitControls); }
+			function () { viewer.setNavigationMode(OrbitControls); }
 		));
 
 		elNavigation.append(createToolIcon(
-			Potree.resourcePath + '/icons/focus.svg',
+			context.resourcePath + '/icons/focus.svg',
 			'[title]tt.focus_control',
 			function () { viewer.fitToScreen(); }
 		));
 
 		elNavigation.append(createToolIcon(
-			Potree.resourcePath + '/icons/topview.svg',
+			context.resourcePath + '/icons/topview.svg',
 			'[title]tt.top_view_control',
 			function () { viewer.setTopView(); }
 		));
 
 		elNavigation.append(createToolIcon(
-			Potree.resourcePath + '/icons/frontview.svg',
+			context.resourcePath + '/icons/frontview.svg',
 			'[title]tt.front_view_control',
 			function () { viewer.setFrontView(); }
 		));
 
 		elNavigation.append(createToolIcon(
-			Potree.resourcePath + '/icons/leftview.svg',
+			context.resourcePath + '/icons/leftview.svg',
 			'[title]tt.left_view_control',
 			function () { viewer.setLeftView(); }
 		));
@@ -957,8 +975,8 @@ module.exports = (viewer) => {
 				let actions = [];
 				{ // ACTIONS, INCLUDING GOTO LOCATION
 					if (annotation.hasView()) {
-						let action = new Potree.Action({
-							'icon': Potree.resourcePath + '/icons/target.svg',
+						let action = new Action({
+							'icon': context.resourcePath + '/icons/target.svg',
 							'onclick': (e) => { annotation.moveHere(viewer.scene.camera); }
 						});
 
@@ -1085,7 +1103,7 @@ module.exports = (viewer) => {
 	function initMeasurementDetails () {
 		let trackedItems = new Map();
 
-		let removeIconPath = Potree.resourcePath + '/icons/remove.svg';
+		let removeIconPath = context.resourcePath + '/icons/remove.svg';
 		let mlist = $('#measurement_list');
 
 		let createCoordinatesTable = (measurement) => {
@@ -1102,9 +1120,9 @@ module.exports = (viewer) => {
 			for (let point of measurement.points) {
 				let position = point instanceof THREE.Vector3 ? point : point.position;
 
-				let x = Potree.utils.addCommas(position.x.toFixed(3));
-				let y = Potree.utils.addCommas(position.y.toFixed(3));
-				let z = Potree.utils.addCommas(position.z.toFixed(3));
+				let x = addCommas(position.x.toFixed(3));
+				let y = addCommas(position.y.toFixed(3));
+				let z = addCommas(position.z.toFixed(3));
 
 				let row = $(`
 					<tr>
@@ -1186,7 +1204,7 @@ module.exports = (viewer) => {
 				super(scene, measurement);
 
 				this.typename = 'Distance';
-				this.icon = Potree.resourcePath + '/icons/distance.svg';
+				this.icon = context.resourcePath + '/icons/distance.svg';
 				this.elIcon.attr('src', this.icon);
 
 				this.elContent = $(`
@@ -1270,7 +1288,7 @@ module.exports = (viewer) => {
 				super(scene, measurement);
 
 				this.typename = 'Point';
-				this.icon = Potree.resourcePath + '/icons/point.svg';
+				this.icon = context.resourcePath + '/icons/point.svg';
 
 				this.elIcon.attr('src', this.icon);
 
@@ -1327,7 +1345,7 @@ module.exports = (viewer) => {
 				super(scene, measurement);
 
 				this.typename = 'Area';
-				this.icon = Potree.resourcePath + '/icons/area.svg';
+				this.icon = context.resourcePath + '/icons/area.svg';
 
 				this.elIcon.attr('src', this.icon);
 
@@ -1383,7 +1401,7 @@ module.exports = (viewer) => {
 				super(scene, measurement);
 
 				this.typename = 'Angle';
-				this.icon = Potree.resourcePath + '/icons/angle.png';
+				this.icon = context.resourcePath + '/icons/angle.png';
 
 				this.elIcon.attr('src', this.icon);
 
@@ -1460,7 +1478,7 @@ module.exports = (viewer) => {
 				super(scene, measurement);
 
 				this.typename = 'Height';
-				this.icon = Potree.resourcePath + '/icons/height.svg';
+				this.icon = context.resourcePath + '/icons/height.svg';
 
 				this.elIcon.attr('src', this.icon);
 
@@ -1527,7 +1545,7 @@ module.exports = (viewer) => {
 				super(scene, measurement);
 
 				this.typename = 'Profile';
-				this.icon = Potree.resourcePath + '/icons/profile.svg';
+				this.icon = context.resourcePath + '/icons/profile.svg';
 
 				this.elIcon.attr('src', this.icon);
 
@@ -1648,7 +1666,7 @@ module.exports = (viewer) => {
 					let updateCallback = this._update;
 
 					let assignValue = () => {
-						let text = Potree.utils.removeCommas($(cell).html());
+						let text = removeCommas($(cell).html());
 
 						let num = Number(text);
 
@@ -1687,7 +1705,7 @@ module.exports = (viewer) => {
 					$(cell).focusout(() => assignValue());
 
 					$(cell).on('input', function (e) {
-						let text = Potree.utils.removeCommas($(this).html());
+						let text = removeCommas($(this).html());
 
 						let num = Number(text);
 
@@ -1806,7 +1824,7 @@ module.exports = (viewer) => {
 				super(scene, measurement);
 
 				this.typename = 'Volume';
-				this.icon = Potree.resourcePath + '/icons/volume.svg';
+				this.icon = context.resourcePath + '/icons/volume.svg';
 
 				this.elIcon.attr('src', this.icon);
 
@@ -2167,7 +2185,7 @@ module.exports = (viewer) => {
 		};
 
 		let getType = (measurement) => {
-			if (measurement instanceof Potree.Measure) {
+			if (measurement instanceof Measure) {
 				if (measurement.showDistances && !measurement.showArea && !measurement.showAngles) {
 					return TYPE.DISTANCE;
 				} else if (measurement.showDistances && measurement.showArea && !measurement.showAngles) {
@@ -2181,9 +2199,9 @@ module.exports = (viewer) => {
 				} else {
 					return TYPE.OTHER;
 				}
-			} else if (measurement instanceof Potree.Profile) {
+			} else if (measurement instanceof Profile) {
 				return TYPE.PROFILE;
-			} else if (measurement instanceof Potree.Volume) {
+			} else if (measurement instanceof Volume) {
 				return TYPE.VOLUME;
 			}
 		};
@@ -2215,11 +2233,11 @@ module.exports = (viewer) => {
 					scene.removeEventListener('volume_removed', onremove);
 				};
 
-				if (e.measurement instanceof Potree.Measure && e.measurement === measurement) {
+				if (e.measurement instanceof Measure && e.measurement === measurement) {
 					remove();
-				} else if (e.profile instanceof Potree.Profile && e.profile === measurement) {
+				} else if (e.profile instanceof Profile && e.profile === measurement) {
 					remove();
-				} else if (e.volume instanceof Potree.Volume && e.volume === measurement) {
+				} else if (e.volume instanceof Volume && e.volume === measurement) {
 					remove();
 				}
 			};
@@ -2278,7 +2296,7 @@ module.exports = (viewer) => {
 			let elActionsB = $('#measurement_list_after');
 
 			{
-				let icon = Potree.resourcePath + '/icons/file_geojson.svg';
+				let icon = context.resourcePath + '/icons/file_geojson.svg';
 				let elDownload = $(`
 					<a href="#" download="measure.json" class="measurepanel_downloads">
 						<img src="${icon}" style="height: 24px" />
@@ -2289,7 +2307,7 @@ module.exports = (viewer) => {
 					let scene = viewer.scene;
 					let measurements = [scene.measurements, scene.profiles, scene.volumes].reduce((a, v) => a.concat(v));
 
-					let geojson = Potree.GeoJSONExporter.toString(measurements);
+					let geojson = GeoJSONExporter.toString(measurements);
 
 					let url = window.URL.createObjectURL(new Blob([geojson], {type: 'data:application/octet-stream'}));
 					elDownload.attr('href', url);
@@ -2297,7 +2315,7 @@ module.exports = (viewer) => {
 			}
 
 			{
-				let icon = Potree.resourcePath + '/icons/file_dxf.svg';
+				let icon = context.resourcePath + '/icons/file_dxf.svg';
 				let elDownload = $(`
 					<a href="#" download="measure.dxf" class="measurepanel_downloads">
 						<img src="${icon}" style="height: 24px" />
@@ -2308,7 +2326,7 @@ module.exports = (viewer) => {
 					let scene = viewer.scene;
 					let measurements = [scene.measurements, scene.profiles, scene.volumes].reduce((a, v) => a.concat(v));
 
-					let dxf = Potree.DXFExporter.toString(measurements);
+					let dxf = DXFExporter.toString(measurements);
 
 					let url = window.URL.createObjectURL(new Blob([dxf], {type: 'data:application/octet-stream'}));
 					elDownload.attr('href', url);
@@ -2348,7 +2366,7 @@ module.exports = (viewer) => {
 					<!-- HEADER -->
 					<div style="float: right; margin: 6px; margin-right: 15px"><input id="scene_list_item_pointcloud_${i}" type="checkbox" ${checked} /></div>
 					<div class="scene_header" onclick="$(this).next().slideToggle(200)">
-						<span class="scene_icon"><img src="${Potree.resourcePath + '/icons/cloud_icon.svg'}" class="scene_item_icon" /></span>
+						<span class="scene_icon"><img src="${context.resourcePath + '/icons/cloud_icon.svg'}" class="scene_item_icon" /></span>
 						<span class="scene_header_title">${title}</span>
 					</div>
 
@@ -2494,7 +2512,7 @@ module.exports = (viewer) => {
 			}
 
 			{ // POINT SIZE TYPE
-				let strSizeType = Object.keys(Potree.PointSizeType)[pcMaterial.pointSizeType];
+				let strSizeType = Object.keys(PointSizeType)[pcMaterial.pointSizeType];
 
 				let opt = scenePanel.find(`#optPointSizing_${i}`);
 				opt.selectmenu();
@@ -2502,12 +2520,12 @@ module.exports = (viewer) => {
 
 				opt.selectmenu({
 					change: (event, ui) => {
-						pcMaterial.pointSizeType = Potree.PointSizeType[ui.item.value];
+						pcMaterial.pointSizeType = PointSizeType[ui.item.value];
 					}
 				});
 
 				pcMaterial.addEventListener('point_size_type_changed', e => {
-					let typename = Object.keys(Potree.PointSizeType)[pcMaterial.pointSizeType];
+					let typename = Object.keys(PointSizeType)[pcMaterial.pointSizeType];
 
 					$('#optPointSizing').selectmenu().val(typename).selectmenu('refresh');
 				});
@@ -2520,12 +2538,12 @@ module.exports = (viewer) => {
 					change: (event, ui) => {
 						let value = ui.item.value;
 
-						pcMaterial.shape = Potree.PointShape[value];
+						pcMaterial.shape = PointShape[value];
 					}
 				});
 
 				pcMaterial.addEventListener('point_shape_changed', e => {
-					let typename = Object.keys(Potree.PointShape)[pcMaterial.shape];
+					let typename = Object.keys(PointShape)[pcMaterial.shape];
 
 					opt.selectmenu().val(typename).selectmenu('refresh');
 				});
@@ -2773,7 +2791,7 @@ module.exports = (viewer) => {
 					.find(v => v !== undefined);
 
 				pointcloud.updateMatrixWorld(true);
-				box = Potree.utils.computeTransformedBoundingBox(box, pointcloud.matrixWorld);
+				box = computeTransformedBoundingBox(box, pointcloud.matrixWorld);
 
 				let bWidth = box.max.z - box.min.z;
 				let bMin = box.min.z - 0.2 * bWidth;
@@ -2996,20 +3014,20 @@ module.exports = (viewer) => {
 
 		let toClipModeCode = function (string) {
 			if (string === 'No Clipping') {
-				return Potree.ClipMode.DISABLED;
+				return ClipMode.DISABLED;
 			} else if (string === 'Highlight Inside') {
-				return Potree.ClipMode.HIGHLIGHT_INSIDE;
+				return ClipMode.HIGHLIGHT_INSIDE;
 			} else if (string === 'Clip Outside') {
-				return Potree.ClipMode.CLIP_OUTSIDE;
+				return ClipMode.CLIP_OUTSIDE;
 			}
 		};
 
 		let toClipModeString = function (code) {
-			if (code === Potree.ClipMode.DISABLED) {
+			if (code === ClipMode.DISABLED) {
 				return 'No Clipping';
-			} else if (code === Potree.ClipMode.HIGHLIGHT_INSIDE) {
+			} else if (code === ClipMode.HIGHLIGHT_INSIDE) {
 				return 'Highlight Inside';
-			} else if (code === Potree.ClipMode.CLIP_OUTSIDE) {
+			} else if (code === ClipMode.CLIP_OUTSIDE) {
 				return 'Clip Outside';
 			}
 		};
@@ -3038,6 +3056,6 @@ module.exports = (viewer) => {
 	initSceneList();
 	initSettings();
 
-	$('#potree_version_number').html(Potree.version.major + '.' + Potree.version.minor + Potree.version.suffix);
+	$('#potree_version_number').html(context.version.major + '.' + context.version.minor + context.version.suffix);
 	$('.perfect_scrollbar').perfectScrollbar();
 };

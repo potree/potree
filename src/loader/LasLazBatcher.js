@@ -1,11 +1,14 @@
+const context = require('../context');
+const THREE = require('three');
+
 module.exports = class LasLazBatcher {
 	constructor (node) {
 		this.node = node;
 	}
 
 	push (lasBuffer) {
-		let workerPath = Potree.scriptPath + '/workers/LASDecoderWorker.js';
-		let worker = Potree.workerPool.getWorker(workerPath);
+		let workerPath = context.scriptPath + '/workers/LASDecoderWorker.js';
+		let worker = context.workerPool.getWorker(workerPath);
 
 		worker.onmessage = (e) => {
 			let geometry = new THREE.BufferGeometry();
@@ -62,7 +65,7 @@ module.exports = class LasLazBatcher {
 			this.node.pcoGeometry.numNodesLoading--;
 			this.node.mean = new THREE.Vector3(...e.data.mean);
 
-			Potree.workerPool.returnWorker(workerPath, worker);
+			context.workerPool.returnWorker(workerPath, worker);
 		};
 
 		let message = {

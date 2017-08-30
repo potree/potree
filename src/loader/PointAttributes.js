@@ -1,3 +1,6 @@
+const PointAttribute = require('./PointAttribute');
+const PointAttributeNames = require('./PointAttributeNames');
+
 /**
  * Ordered list of PointAttributes used to identify how points are aligned in a buffer.
  *
@@ -12,7 +15,7 @@ const PointAttributes = function (pointAttributes) {
 	if (pointAttributes != null) {
 		for (var i = 0; i < pointAttributes.length; i++) {
 			var pointAttributeName = pointAttributes[i];
-			var pointAttribute = Potree.PointAttribute[pointAttributeName];
+			var pointAttribute = PointAttribute[pointAttributeName];
 			this.attributes.push(pointAttribute);
 			this.byteSize += pointAttribute.byteSize;
 			this.size++;
@@ -29,7 +32,7 @@ PointAttributes.prototype.add = function (pointAttribute) {
 PointAttributes.prototype.hasColors = function () {
 	for (var name in this.attributes) {
 		var pointAttribute = this.attributes[name];
-		if (pointAttribute.name === Potree.PointAttributeNames.COLOR_PACKED) {
+		if (pointAttribute.name === PointAttributeNames.COLOR_PACKED) {
 			return true;
 		}
 	}
@@ -41,10 +44,10 @@ PointAttributes.prototype.hasNormals = function () {
 	for (var name in this.attributes) {
 		var pointAttribute = this.attributes[name];
 		if (
-			pointAttribute === Potree.PointAttribute.NORMAL_SPHEREMAPPED ||
-			pointAttribute === Potree.PointAttribute.NORMAL_FLOATS ||
-			pointAttribute === Potree.PointAttribute.NORMAL ||
-			pointAttribute === Potree.PointAttribute.NORMAL_OCT16) {
+			pointAttribute === PointAttribute.NORMAL_SPHEREMAPPED ||
+			pointAttribute === PointAttribute.NORMAL_FLOATS ||
+			pointAttribute === PointAttribute.NORMAL ||
+			pointAttribute === PointAttribute.NORMAL_OCT16) {
 			return true;
 		}
 	}

@@ -16,8 +16,10 @@
     ]
   },
   "dependencies": {
+    "jquery": "^3.2.1",
     "process-nextick-args": "^1.0.7",
     "safe-buffer": "^5.1.1",
+    "three": "^0.87.1",
     "util-deprecate": "^1.0.2"
   },
   "author": "Markus Schütz",

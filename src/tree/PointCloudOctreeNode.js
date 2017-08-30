@@ -1,4 +1,4 @@
-Potree.PointCloudOctreeNode = class PointCloudOctreeNode extends Potree.PointCloudTreeNode {
+class PointCloudOctreeNode extends Potree.PointCloudTreeNode {
 	constructor () {
 		super();
 
@@ -52,4 +52,5 @@ Potree.PointCloudOctreeNode = class PointCloudOctreeNode extends Potree.PointClo
 	}
 };
 
-Potree.PointCloudOctreeNode.prototype = Object.create(Potree.PointCloudTreeNode.prototype);
+PointCloudOctreeNode.prototype = Object.create(Potree.PointCloudTreeNode.prototype);
+module.exports = PointCloudOctreeNode;

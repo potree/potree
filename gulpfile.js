@@ -17,6 +17,7 @@ var server;
 var paths = {
 	potree : [
 		"src/Potree.js",
+		"src/Points.js",
 		"src/utils/Mouse.js",
 		"src/tree/DEMNode.js",
 		"src/tree/DEM.js",

@@ -1,4 +1,4 @@
-Potree.Points = class Points {
+class Points {
 	constructor () {
 		this.boundingBox = new THREE.Box3();
 		this.numPoints = 0;
@@ -44,3 +44,5 @@ Potree.Points = class Points {
 		this.boundingBox.union(points.boundingBox);
 	}
 };
+
+module.exports = Points;

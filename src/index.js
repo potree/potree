@@ -1,4 +1,5 @@
 Potree = require('./Potree');
+Potree.Points = require('./Points');
 Potree.MOUSE = require('./utils/Mouse');
 Potree.DEMNode = require('./tree/DEMNode');
 Potree.DEM = require('./tree/DEM');

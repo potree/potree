@@ -4,7 +4,7 @@
 **
 ** Copyright (c) 2007 Marijn Haverbeke, last modified on November 28 2013.
 **
-** Licensed under a Creative Commons attribution-noncommercial license. 
+** Licensed under a Creative Commons attribution-noncommercial license.
 ** All code in this book may also be considered licensed under an MIT license.
 */
 
@@ -122,3 +122,5 @@ BinaryHeap.prototype = {
     }
   }
 };
+
+module.exports = BinaryHeap;

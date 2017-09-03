@@ -1,5 +1,6 @@
+const LRU = require('./LRU');
 const WorkerPool = require('./WorkerPool');
-const scriptPath = null;
+let scriptPath = null;
 if (document.currentScript.src) {
 	scriptPath = new URL(document.currentScript.src + '/..').href;
 	if (scriptPath.slice(-1) === '/') {
@@ -37,5 +38,5 @@ module.exports = {
 		}
 
 		return LRUInstance;
-	};
+	}
 };

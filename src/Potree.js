@@ -1,3 +1,6 @@
+const PointCloudOctree = require('./PointCloudOctree');
+const PointCloudArena4D = require('./arena4d/PointCloudArena4D');
+
 
 function Potree () {
 }
@@ -115,29 +118,29 @@ Potree.loadPointCloud = function (path, name, callback) {
 		// TODO: callback? comment? Hello? Bueller? Anyone?
 	} else if (path.indexOf('greyhound://') === 0) {
 		// We check if the path string starts with 'greyhound:', if so we assume it's a greyhound server URL.
-		Potree.GreyhoundLoader.load(path, function (geometry) {
+		require('./loader/GreyhoundLoader').load(path, function (geometry) {
 			if (!geometry) {
 				callback({type: 'loading_failed'});
 			} else {
-				let pointcloud = new Potree.PointCloudOctree(geometry);
+				let pointcloud = new PointCloudOctree(geometry);
 				loaded(pointcloud);
 			}
 		});
 	} else if (path.indexOf('cloud.js') > 0) {
-		Potree.POCLoader.load(path, function (geometry) {
+		require('./loader/POCLoader').load(path, function (geometry) {
 			if (!geometry) {
 				callback({type: 'loading_failed'});
 			} else {
-				let pointcloud = new Potree.PointCloudOctree(geometry);
+				let pointcloud = new PointCloudOctree(geometry);
 				loaded(pointcloud);
 			}
 		});
 	} else if (path.indexOf('.vpc') > 0) {
-		Potree.PointCloudArena4DGeometry.load(path, function (geometry) {
+		require('./loader/PointCloudArena4DGeometry').load(path, function (geometry) {
 			if (!geometry) {
 				callback({type: 'loading_failed'});
 			} else {
-				let pointcloud = new Potree.PointCloudArena4D(geometry);
+				let pointcloud = new PointCloudArena4D(geometry);
 				loaded(pointcloud);
 			}
 		});

@@ -16,9 +16,14 @@
     ]
   },
   "dependencies": {
+    "@tweenjs/tween.js": "^17.1.0",
+    "i18next": "^1.9.0",
     "jquery": "^3.2.1",
+    "openlayers": "^3.15.1",
     "process-nextick-args": "^1.0.7",
+    "proj4": "^2.3.12",
     "safe-buffer": "^5.1.1",
+    "shapefile": "^0.6.2",
     "three": "^0.87.1",
     "util-deprecate": "^1.0.2"
   },

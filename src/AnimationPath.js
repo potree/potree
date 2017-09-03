@@ -1,3 +1,5 @@
+const THREE = require('three');
+const TWEEN = require('@tweenjs/tween.js');
 
 class AnimationPath {
 	constructor (points = []) {

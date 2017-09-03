@@ -1,4 +1,3 @@
-const THREE = require('three');
 const PointCloudTreeNode = require('./PointCloudTreeNode');
 
 class PointCloudOctreeNode extends PointCloudTreeNode {
@@ -55,5 +54,5 @@ class PointCloudOctreeNode extends PointCloudTreeNode {
 	}
 };
 
-PointCloudOctreeNode.prototype = Object.create(Potree.PointCloudTreeNode.prototype);
+PointCloudOctreeNode.prototype = Object.create(PointCloudTreeNode.prototype);
 module.exports = PointCloudOctreeNode;

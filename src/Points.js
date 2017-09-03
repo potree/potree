@@ -1,3 +1,5 @@
+const THREE = require('three');
+
 class Points {
 	constructor () {
 		this.boundingBox = new THREE.Box3();

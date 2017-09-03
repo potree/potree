@@ -1,3 +1,5 @@
+const THREE = require('three');
+
 class Action extends THREE.EventDispatcher {
 	constructor (args = {}) {
 		super();

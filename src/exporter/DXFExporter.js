@@ -6,6 +6,7 @@
  *
  */
 const Measure = require('../utils/Measure');
+const THREE = require('three');
 
 class DXFExporter {
 	static measurementPointSection (measurement) {

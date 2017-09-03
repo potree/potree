@@ -1,8 +1,11 @@
 var baseLoaded = false;
+const PointCloudTreeNode = require('./tree/PointCloudTreeNode');
+const GreyhoundLoader = require('./loader/GreyhoundLoader');
+const THREE = require('three');
 
-Potree.PointCloudGreyhoundGeometryNode = function (
+function PointCloudGreyhoundGeometryNode (
 	name, pcoGeometry, boundingBox, scale, offset) {
-	this.id = Potree.PointCloudGreyhoundGeometryNode.IDCount++;
+	this.id = PointCloudGreyhoundGeometryNode.IDCount++;
 	this.name = name;
 	this.index = parseInt(name.charAt(name.length - 1));
 	this.pcoGeometry = pcoGeometry;
@@ -38,36 +41,35 @@ Potree.PointCloudGreyhoundGeometryNode = function (
 	);
 };
 
-Potree.PointCloudGreyhoundGeometryNode.IDCount = 0;
+PointCloudGreyhoundGeometryNode.IDCount = 0;
 
-Potree.PointCloudGreyhoundGeometryNode.prototype =
-	Object.create(Potree.PointCloudTreeNode.prototype);
+PointCloudGreyhoundGeometryNode.prototype = Object.create(PointCloudTreeNode.prototype);
 
-Potree.PointCloudGreyhoundGeometryNode.prototype.isGeometryNode = function () {
+PointCloudGreyhoundGeometryNode.prototype.isGeometryNode = function () {
 	return true;
 };
 
-Potree.PointCloudGreyhoundGeometryNode.prototype.isTreeNode = function () {
+PointCloudGreyhoundGeometryNode.prototype.isTreeNode = function () {
 	return false;
 };
 
-Potree.PointCloudGreyhoundGeometryNode.prototype.isLoaded = function () {
+PointCloudGreyhoundGeometryNode.prototype.isLoaded = function () {
 	return this.loaded;
 };
 
-Potree.PointCloudGreyhoundGeometryNode.prototype.getBoundingSphere = function () {
+PointCloudGreyhoundGeometryNode.prototype.getBoundingSphere = function () {
 	return this.boundingSphere;
 };
 
-Potree.PointCloudGreyhoundGeometryNode.prototype.getBoundingBox = function () {
+PointCloudGreyhoundGeometryNode.prototype.getBoundingBox = function () {
 	return this.boundingBox;
 };
 
-Potree.PointCloudGreyhoundGeometryNode.prototype.getLevel = function () {
+PointCloudGreyhoundGeometryNode.prototype.getLevel = function () {
 	return this.level;
 };
 
-Potree.PointCloudGreyhoundGeometryNode.prototype.getChildren = function () {
+PointCloudGreyhoundGeometryNode.prototype.getChildren = function () {
 	var children = [];
 
 	for (var i = 0; i < 8; ++i) {
@@ -79,7 +81,7 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.getChildren = function () {
 	return children;
 };
 
-Potree.PointCloudGreyhoundGeometryNode.prototype.getURL = function () {
+PointCloudGreyhoundGeometryNode.prototype.getURL = function () {
 	var schema = this.pcoGeometry.schema;
 	let bounds = this.greyhoundBounds;
 
@@ -109,12 +111,12 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.getURL = function () {
 	return url;
 };
 
-Potree.PointCloudGreyhoundGeometryNode.prototype.addChild = function (child) {
+PointCloudGreyhoundGeometryNode.prototype.addChild = function (child) {
 	this.children[child.index] = child;
 	child.parent = this;
 };
 
-Potree.PointCloudGreyhoundGeometryNode.prototype.load = function () {
+PointCloudGreyhoundGeometryNode.prototype.load = function () {
 	if (
 		this.loading === true ||
 		this.loaded === true ||
@@ -134,11 +136,11 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.load = function () {
 	}
 };
 
-Potree.PointCloudGreyhoundGeometryNode.prototype.loadPoints = function () {
+PointCloudGreyhoundGeometryNode.prototype.loadPoints = function () {
 	this.pcoGeometry.loader.load(this);
 };
 
-Potree.PointCloudGreyhoundGeometryNode.prototype.loadHierarchyThenPoints = function () {
+PointCloudGreyhoundGeometryNode.prototype.loadHierarchyThenPoints = function () {
 	// From Greyhound (Cartesian) ordering for the octree to Potree-default
 	var transform = [0, 2, 1, 3, 4, 6, 5, 7];
 
@@ -220,10 +222,10 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.loadHierarchyThenPoints = funct
 			var parentName = name.substring(0, name.length - 1);
 			var parentNode = nodes[parentName];
 			var level = name.length - 1;
-			var boundingBox = Potree.GreyhoundLoader.createChildAABB(
+			var boundingBox = GreyhoundLoader.createChildAABB(
 				parentNode.boundingBox, index);
 
-			var currentNode = new Potree.PointCloudGreyhoundGeometryNode(
+			var currentNode = new PointCloudGreyhoundGeometryNode(
 				name, pgg, boundingBox, node.scale, node.offset);
 
 			currentNode.level = level;
@@ -287,11 +289,11 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.loadHierarchyThenPoints = funct
 	}
 };
 
-Potree.PointCloudGreyhoundGeometryNode.prototype.getNumPoints = function () {
+PointCloudGreyhoundGeometryNode.prototype.getNumPoints = function () {
 	return this.numPoints;
 };
 
-Potree.PointCloudGreyhoundGeometryNode.prototype.dispose = function () {
+PointCloudGreyhoundGeometryNode.prototype.dispose = function () {
 	if (this.geometry && this.parent != null) {
 		this.geometry.dispose();
 		this.geometry = null;
@@ -307,5 +309,7 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.dispose = function () {
 };
 
 // THREE.EventDispatcher.prototype.apply(
-//        Potree.PointCloudGreyhoundGeometryNode.prototype);
-Object.assign(Potree.PointCloudGreyhoundGeometryNode.prototype, THREE.EventDispatcher.prototype);
+//        PointCloudGreyhoundGeometryNode.prototype);
+Object.assign(PointCloudGreyhoundGeometryNode.prototype, THREE.EventDispatcher.prototype);
+
+module.exports = PointCloudGreyhoundGeometryNode;

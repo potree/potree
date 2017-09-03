@@ -1,4 +1,5 @@
 const PointCloudTreeNode = require('../tree/PointCloudTreeNode');
+const THREE = require('three');
 
 class PointCloudArena4DNode extends PointCloudTreeNode {
 	constructor () {

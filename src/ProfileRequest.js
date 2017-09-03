@@ -1,10 +1,16 @@
+const ProfileData = require('./ProfileData');
+const context = require('./context');
+const Points = require('./Points');
+const BinaryHeap = require('./utils/BinaryHeap');
+const THREE = require('three');
+
 class ProfileRequest {
 	constructor (pointcloud, profile, maxDepth, callback) {
 		this.pointcloud = pointcloud;
 		this.profile = profile;
 		this.maxDepth = maxDepth || Number.MAX_VALUE;
 		this.callback = callback;
-		this.temporaryResult = new Potree.ProfileData(this.profile);
+		this.temporaryResult = new ProfileData(this.profile);
 		this.pointsServed = 0;
 		this.highestLevelServed = 0;
 
@@ -62,7 +68,7 @@ class ProfileRequest {
 			if (node.loaded) {
 				// add points to result
 				intersectedNodes.push(node);
-				Potree.getLRU().touch(node);
+				context.getLRU().touch(node);
 				this.highestLevelServed = node.getLevel();
 
 				if ((node.level % node.pcoGeometry.hierarchyStepSize) === 0 && node.hasChildren) {
@@ -79,7 +85,7 @@ class ProfileRequest {
 			if (this.temporaryResult.size() > 100) {
 				this.pointsServed += this.temporaryResult.size();
 				this.callback.onProgress({request: this, points: this.temporaryResult});
-				this.temporaryResult = new Potree.ProfileData(this.profile);
+				this.temporaryResult = new ProfileData(this.profile);
 			}
 		}
 
@@ -89,7 +95,7 @@ class ProfileRequest {
 			if (this.temporaryResult.size() > 0) {
 				this.pointsServed += this.temporaryResult.size();
 				this.callback.onProgress({request: this, points: this.temporaryResult});
-				this.temporaryResult = new Potree.ProfileData(this.profile);
+				this.temporaryResult = new ProfileData(this.profile);
 			}
 
 			this.callback.onFinish({request: this});
@@ -117,7 +123,7 @@ class ProfileRequest {
 				let accepted = [];
 				let mileage = [];
 				let acceptedPositions = [];
-				let points = new Potree.Points();
+				let points = new Points();
 
 				let nodeMatrix = new THREE.Matrix4().makeTranslation(...node.boundingBox.min.toArray());
 

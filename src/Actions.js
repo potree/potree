@@ -1,28 +1,30 @@
 const Actions = {};
+const Action = require('./Action');
+const context = require('./context');
 
-Actions.ToggleAnnotationVisibility = class ToggleAnnotationVisibility extends Potree.Action {
+Actions.ToggleAnnotationVisibility = class ToggleAnnotationVisibility extends Action {
 	constructor (args = {}) {
 		super(args);
 
-		this.icon = Potree.resourcePath + '/icons/eye.svg';
+		this.icon = context.resourcePath + '/icons/eye.svg';
 		this.showIn = 'sidebar';
 		this.tooltip = 'toggle visibility';
 	}
 
 	pairWith (annotation) {
 		if (annotation.visible) {
-			this.setIcon(Potree.resourcePath + '/icons/eye.svg');
+			this.setIcon(context.resourcePath + '/icons/eye.svg');
 		} else {
-			this.setIcon(Potree.resourcePath + '/icons/eye_crossed.svg');
+			this.setIcon(context.resourcePath + '/icons/eye_crossed.svg');
 		}
 
 		annotation.addEventListener('visibility_changed', e => {
 			let annotation = e.annotation;
 
 			if (annotation.visible) {
-				this.setIcon(Potree.resourcePath + '/icons/eye.svg');
+				this.setIcon(context.resourcePath + '/icons/eye.svg');
 			} else {
-				this.setIcon(Potree.resourcePath + '/icons/eye_crossed.svg');
+				this.setIcon(context.resourcePath + '/icons/eye_crossed.svg');
 			}
 		});
 	}
@@ -33,9 +35,9 @@ Actions.ToggleAnnotationVisibility = class ToggleAnnotationVisibility extends Po
 		annotation.visible = !annotation.visible;
 
 		if (annotation.visible) {
-			this.setIcon(Potree.resourcePath + '/icons/eye.svg');
+			this.setIcon(context.resourcePath + '/icons/eye.svg');
 		} else {
-			this.setIcon(Potree.resourcePath + '/icons/eye_crossed.svg');
+			this.setIcon(context.resourcePath + '/icons/eye_crossed.svg');
 		}
 	}
 };

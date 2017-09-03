@@ -1,6 +1,9 @@
 /* global onmessage:true postMessage:false */
 /* exported onmessage */
 // http://jsperf.com/uint8array-vs-dataview3/3
+const Version = require('../Version');
+const PointAttribute = require('../loader/PointAttribute');
+
 function CustomView (buffer) {
 	this.buffer = buffer;
 	this.u8 = new Uint8Array(buffer);
@@ -31,15 +34,13 @@ function CustomView (buffer) {
 	};
 }
 
-Potree = {};
-
 onmessage = function (event) {
 	let buffer = event.data.buffer;
 	let pointAttributes = event.data.pointAttributes;
 	let numPoints = buffer.byteLength / pointAttributes.byteSize;
 	let cv = new CustomView(buffer);
 	// let cv = new DataView(buffer);
-	let version = new Potree.Version(event.data.version);
+	let version = new Version(event.data.version);
 	// event.data.min
 	let nodeOffset = event.data.offset;
 	let scale = event.data.scale;
@@ -54,7 +55,7 @@ onmessage = function (event) {
 	for (let i = 0; i < pointAttributes.attributes.length; i++) {
 		let pointAttribute = pointAttributes.attributes[i];
 
-		if (pointAttribute.name === Potree.PointAttribute.POSITION_CARTESIAN.name) {
+		if (pointAttribute.name === PointAttribute.POSITION_CARTESIAN.name) {
 			let buff = new ArrayBuffer(numPoints * 4 * 3);
 			let positions = new Float32Array(buff);
 
@@ -89,7 +90,7 @@ onmessage = function (event) {
 			}
 
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
-		} else if (pointAttribute.name === Potree.PointAttribute.COLOR_PACKED.name) {
+		} else if (pointAttribute.name === PointAttribute.COLOR_PACKED.name) {
 			let buff = new ArrayBuffer(numPoints * 3);
 			let colors = new Uint8Array(buff);
 
@@ -100,7 +101,7 @@ onmessage = function (event) {
 			}
 
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
-		} else if (pointAttribute.name === Potree.PointAttribute.INTENSITY.name) {
+		} else if (pointAttribute.name === PointAttribute.INTENSITY.name) {
 			let buff = new ArrayBuffer(numPoints * 4);
 			let intensities = new Float32Array(buff);
 
@@ -110,7 +111,7 @@ onmessage = function (event) {
 			}
 
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
-		} else if (pointAttribute.name === Potree.PointAttribute.CLASSIFICATION.name) {
+		} else if (pointAttribute.name === PointAttribute.CLASSIFICATION.name) {
 			let buff = new ArrayBuffer(numPoints);
 			let classifications = new Uint8Array(buff);
 
@@ -120,7 +121,7 @@ onmessage = function (event) {
 			}
 
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
-		} else if (pointAttribute.name === Potree.PointAttribute.NORMAL_SPHEREMAPPED.name) {
+		} else if (pointAttribute.name === PointAttribute.NORMAL_SPHEREMAPPED.name) {
 			let buff = new ArrayBuffer(numPoints * 4 * 3);
 			let normals = new Float32Array(buff);
 
@@ -151,7 +152,7 @@ onmessage = function (event) {
 			}
 
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
-		} else if (pointAttribute.name === Potree.PointAttribute.NORMAL_OCT16.name) {
+		} else if (pointAttribute.name === PointAttribute.NORMAL_OCT16.name) {
 			let buff = new ArrayBuffer(numPoints * 4 * 3);
 			let normals = new Float32Array(buff);
 			for (let j = 0; j < numPoints; j++) {
@@ -183,7 +184,7 @@ onmessage = function (event) {
 				normals[3 * j + 2] = z;
 			}
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
-		} else if (pointAttribute.name === Potree.PointAttribute.NORMAL.name) {
+		} else if (pointAttribute.name === PointAttribute.NORMAL.name) {
 			let buff = new ArrayBuffer(numPoints * 4 * 3);
 			let normals = new Float32Array(buff);
 			for (let j = 0; j < numPoints; j++) {
@@ -207,7 +208,7 @@ onmessage = function (event) {
 		iIndices[i] = i;
 	}
 
-	if (attributeBuffers[Potree.PointAttribute.CLASSIFICATION.name] === undefined) {
+	if (attributeBuffers[PointAttribute.CLASSIFICATION.name] === undefined) {
 		let buff = new ArrayBuffer(numPoints * 4);
 		let classifications = new Float32Array(buff);
 
@@ -215,7 +216,7 @@ onmessage = function (event) {
 			classifications[j] = 0;
 		}
 
-		attributeBuffers[Potree.PointAttribute.CLASSIFICATION.name] = { buffer: buff, attribute: Potree.PointAttribute.CLASSIFICATION };
+		attributeBuffers[PointAttribute.CLASSIFICATION.name] = { buffer: buff, attribute: PointAttribute.CLASSIFICATION };
 	}
 
 	let message = {

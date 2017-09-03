@@ -1,3 +1,13 @@
+const $ = require('jquery');
+const THREE = require('three');
+const d3 = require('d3');
+const PointCloudMaterial = require('./materials/PointCloudMaterial');
+const context = require('./context');
+const addCommas = require('./utils/addCommas');
+const Points = require('./Points');
+const CSVExporter = require('./exporter/CSVExporter');
+const LASExporter = require('./exporter/LASExporter');
+
 class ProfileWindow extends THREE.EventDispatcher {
 	constructor () {
 		super();
@@ -58,7 +68,7 @@ class ProfileWindow extends THREE.EventDispatcher {
 
 			getMaterial () {
 				if (this.materials.length === 0) {
-					let material = new Potree.PointCloudMaterial();
+					let material = new PointCloudMaterial();
 					this.materials.push(material);
 				}
 
@@ -73,10 +83,10 @@ class ProfileWindow extends THREE.EventDispatcher {
 		this.mouse = new THREE.Vector2(0, 0);
 		this.scale = new THREE.Vector3(1, 1, 1);
 
-		let csvIcon = `${Potree.resourcePath}/icons/file_csv_2d.svg`;
+		let csvIcon = `${context.resourcePath}/icons/file_csv_2d.svg`;
 		$('#potree_download_csv_icon').attr('src', csvIcon);
 
-		let lasIcon = `${Potree.resourcePath}/icons/file_las_3d.svg`;
+		let lasIcon = `${context.resourcePath}/icons/file_las_3d.svg`;
 		$('#potree_download_las_icon').attr('src', lasIcon);
 
 		this.initTHREE();
@@ -137,7 +147,7 @@ class ProfileWindow extends THREE.EventDispatcher {
 					for (let attribute of Object.keys(point)) {
 						let value = point[attribute];
 						if (attribute === 'position') {
-							let values = [...value].map(v => Potree.utils.addCommas(v.toFixed(3)));
+							let values = [...value].map(v => addCommas(v.toFixed(3)));
 							html += `
 								<tr>
 									<td>x</td>
@@ -230,24 +240,24 @@ class ProfileWindow extends THREE.EventDispatcher {
 		});
 
 		$('#potree_download_csv_icon').click(() => {
-			let points = new Potree.Points();
+			let points = new Points();
 			this.pointclouds.forEach((value, key) => {
 				points.add(value.points);
 			});
 
-			let string = Potree.CSVExporter.toString(points);
+			let string = CSVExporter.toString(points);
 
 			let uri = 'data:application/octet-stream;base64,' + btoa(string);
 			$('#potree_download_profile_ortho_link').attr('href', uri);
 		});
 
 		$('#potree_download_las_icon').click(() => {
-			let points = new Potree.Points();
+			let points = new Points();
 			this.pointclouds.forEach((value, key) => {
 				points.add(value.points);
 			});
 
-			let buffer = Potree.LASExporter.toLAS(points);
+			let buffer = LASExporter.toLAS(points);
 			let u8view = new Uint8Array(buffer);
 
 			let binString = '';
@@ -408,7 +418,7 @@ class ProfileWindow extends THREE.EventDispatcher {
 			pointcloud.material.addEventListener('material_property_changed', materialChanged);
 
 			this.pointclouds.set(pointcloud, {
-				points: new Potree.Points(),
+				points: new Points(),
 				material: material,
 				geometry: geometry,
 				model: model,
@@ -488,7 +498,7 @@ class ProfileWindow extends THREE.EventDispatcher {
 		for (let entry of this.pointclouds.entries()) {
 			numPoints += entry[1].points.numPoints;
 
-			$(`#profile_num_points`).html(Potree.utils.addCommas(numPoints));
+			$(`#profile_num_points`).html(addCommas(numPoints));
 		}
 
 		this.render();

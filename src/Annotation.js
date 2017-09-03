@@ -1,3 +1,9 @@
+const THREE = require('three');
+const context = require('./context');
+const Action = require('./Action');
+const TWEEN = require('@tweenjs/tween.js');
+const $ = require('jquery');
+
 class Annotation extends THREE.EventDispatcher {
 	constructor (args = {}) {
 		super();
@@ -36,7 +42,7 @@ class Annotation extends THREE.EventDispatcher {
 		this.parent = null;
 		this.boundingBox = new THREE.Box3();
 
-		let iconClose = Potree.resourcePath + '/icons/close.svg';
+		let iconClose = context.resourcePath + '/icons/close.svg';
 
 		this.domElement = $(`
 			<div class="annotation" oncontextmenu="return false;">
@@ -68,10 +74,10 @@ class Annotation extends THREE.EventDispatcher {
 		this.elTitle.click(this.clickTitle);
 
 		this.actions = this.actions.map(a => {
-			if (a instanceof Potree.Action) {
+			if (a instanceof Action) {
 				return a;
 			} else {
-				return new Potree.Action(a);
+				return new Action(a);
 			}
 		});
 

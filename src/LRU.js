@@ -1,3 +1,6 @@
+const LRUItem = require('./LRUItem');
+const context = require('./context');
+
 /**
  *
  * @class A doubly-linked-list of the least recently used elements.
@@ -163,7 +166,7 @@ LRU.prototype.freeMemory = function () {
 		return;
 	}
 
-	while (this.numPoints > Potree.pointLoadLimit) {
+	while (this.numPoints > context.pointLoadLimit) {
 		var element = this.first;
 		var node = element.node;
 		this.disposeDescendants(node);

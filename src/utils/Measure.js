@@ -1,6 +1,6 @@
 const THREE = require('three');
 const TextSprite = require('./TextSprite');
-const getMousePointCloudIntersection = require('./getMousePointCloudIntersection')
+const getMousePointCloudIntersection = require('./getMousePointCloudIntersection');
 const addCommas = require('./addCommas');
 
 class Measure extends THREE.Object3D {

@@ -1,3 +1,6 @@
+const PointCloudTreeNode = require('./tree/PointCloudTreeNode');
+const THREE = require('three');
+const POCLoader = require('./loader/POCLoader');
 
 function PointCloudOctreeGeometryNode (name, pcoGeometry, boundingBox) {
 	this.id = PointCloudOctreeGeometryNode.IDCount++;
@@ -16,7 +19,7 @@ function PointCloudOctreeGeometryNode (name, pcoGeometry, boundingBox) {
 
 PointCloudOctreeGeometryNode.IDCount = 0;
 
-PointCloudOctreeGeometryNode.prototype = Object.create(Potree.PointCloudTreeNode.prototype);
+PointCloudOctreeGeometryNode.prototype = Object.create(PointCloudTreeNode.prototype);
 
 PointCloudOctreeGeometryNode.prototype.isGeometryNode = function () {
 	return true;
@@ -173,7 +176,7 @@ PointCloudOctreeGeometryNode.prototype.loadHierachyThenPoints = function () {
 			var parentName = name.substring(0, name.length - 1);
 			var parentNode = nodes[parentName];
 			var level = name.length - 1;
-			var boundingBox = Potree.POCLoader.createChildAABB(parentNode.boundingBox, index);
+			var boundingBox = POCLoader.createChildAABB(parentNode.boundingBox, index);
 
 			var currentNode = new PointCloudOctreeGeometryNode(name, pco, boundingBox);
 			currentNode.level = level;

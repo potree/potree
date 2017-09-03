@@ -1,4 +1,5 @@
 const THREE = require('three');
+const TWEEN = require('@tweenjs/tween.js');
 const MOUSE = require('../utils/Mouse');
 const getMousePointCloudIntersection = require('../utils/getMousePointCloudIntersection');
 

@@ -18,7 +18,7 @@
  * and the remaining 2 bits at the next 32 bit integer.
  *
  */
-BitReader = function (buf) {
+module.exports = function (buf) {
 	var buffer = new Uint32Array(buf);
 	var bitOffset = 0;
 

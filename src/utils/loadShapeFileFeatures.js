@@ -1,3 +1,5 @@
+const shapefile = require('shapefile');
+
 module.exports = (file, callback) => {
 	let features = [];
 

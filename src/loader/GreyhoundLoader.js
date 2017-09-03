@@ -1,7 +1,6 @@
 const Version = require('../Version');
 const GreyhoundUtils = require('./GreyhoundUtils');
 const PointCloudGreyhoundGeometry = require('../PointCloudGreyhoundGeometry');
-const PointAttributes = require('./PointAttributes');
 const GreyhoundBinaryLoader = require('./GreyhoundBinaryLoader');
 const PointCloudGreyhoundGeometryNode = require('../PointCloudGreyhoundGeometryNode');
 const PointAttributes = require('./PointAttributes');

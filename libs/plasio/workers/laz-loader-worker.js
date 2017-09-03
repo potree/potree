@@ -3,6 +3,8 @@
 
 //importScripts('laz-perf.js');
 
+const Module = require('./laz-perf');
+
 var instance = null; // laz-perf instance
 
 function readAs(buf, Type, offset, count) {
@@ -131,5 +133,3 @@ onmessage = function(event) {
 		postMessage({type: event.data.type, status: 0, details: e});
 	}
 };
-
-

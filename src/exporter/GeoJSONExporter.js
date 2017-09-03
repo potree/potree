@@ -6,7 +6,7 @@
  *
  */
 
-Measure = require('../utils/Measure');
+const Measure = require('../utils/Measure');
 
 class GeoJSONExporter {
 	static measurementToFeatures (measurement) {

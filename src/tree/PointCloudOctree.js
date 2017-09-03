@@ -1,7 +1,13 @@
 const THREE = require('three');
 const PointCloudTree = require('./PointCloudTree');
 const PointCloudMaterial = require('../materials/PointCloudMaterial');
+const PointCloudOctreeNode = require('./PointCloudOctreeNode');
+const PointCloudOctreeGeometryNode = require('../PointCloudOctreeGeometryNode');
 const computeTransformedBoundingBox = require('../utils/computeTransformedBoundingBox');
+const PointSizeType = require('../materials/PointSizeType');
+const PointColorType = require('../materials/PointColorType');
+const ProfileRequest = require('../ProfileRequest');
+const ClipMode = require('../materials/ClipMode');
 
 class PointCloudOctree extends PointCloudTree {
 	constructor (geometry, material) {
@@ -59,7 +65,7 @@ class PointCloudOctree extends PointCloudTree {
 	}
 
 	toTreeNode (geometryNode, parent) {
-		let node = new Potree.PointCloudOctreeNode();
+		let node = new PointCloudOctreeNode();
 
 		// if(geometryNode.name === "r40206"){
 		//	console.log("creating node for r40206");
@@ -139,9 +145,9 @@ class PointCloudOctree extends PointCloudTree {
 
 			for (let j = 0; j < node.children.length; j++) {
 				let child = node.children[j];
-				if (child instanceof Potree.PointCloudOctreeNode) {
+				if (child instanceof PointCloudOctreeNode) {
 					isLeaf = isLeaf && !child.sceneNode.visible;
-				} else if (child instanceof Potree.PointCloudOctreeGeometryNode) {
+				} else if (child instanceof PointCloudOctreeGeometryNode) {
 					isLeaf = true;
 				}
 			}
@@ -172,8 +178,8 @@ class PointCloudOctree extends PointCloudTree {
 
 		// update visibility texture
 		if (material.pointSizeType >= 0) {
-			if (material.pointSizeType === Potree.PointSizeType.ADAPTIVE ||
-				material.pointColorType === Potree.PointColorType.LOD) {
+			if (material.pointSizeType === PointSizeType.ADAPTIVE ||
+				material.pointColorType === PointColorType.LOD) {
 				this.updateVisibilityTexture(material, visibleNodes);
 			}
 		}
@@ -212,7 +218,7 @@ class PointCloudOctree extends PointCloudTree {
 			let children = [];
 			for (let j = 0; j < 8; j++) {
 				let child = node.children[j];
-				if (child instanceof Potree.PointCloudOctreeNode && child.sceneNode.visible && visibleNodes.indexOf(child) >= 0) {
+				if (child instanceof PointCloudOctreeNode && child.sceneNode.visible && visibleNodes.indexOf(child) >= 0) {
 					children.push(child);
 				}
 			}
@@ -322,7 +328,7 @@ class PointCloudOctree extends PointCloudTree {
 		this.updateMatrixWorld(true);
 		let box = this.boundingBox;
 		let transform = this.matrixWorld;
-		let tBox = Potree.utils.computeTransformedBoundingBox(box, transform);
+		let tBox = computeTransformedBoundingBox(box, transform);
 		this.position.set(0, 0, 0).sub(tBox.getCenter());
 	};
 
@@ -330,7 +336,7 @@ class PointCloudOctree extends PointCloudTree {
 		this.updateMatrixWorld(true);
 		let box = this.boundingBox;
 		let transform = this.matrixWorld;
-		let tBox = Potree.utils.computeTransformedBoundingBox(box, transform);
+		let tBox = computeTransformedBoundingBox(box, transform);
 		this.position.y += -tBox.min.y;
 	};
 
@@ -338,7 +344,7 @@ class PointCloudOctree extends PointCloudTree {
 		this.updateMatrixWorld(true);
 		let box = this.boundingBox;
 		let transform = this.matrixWorld;
-		let tBox = Potree.utils.computeTransformedBoundingBox(box, transform);
+		let tBox = computeTransformedBoundingBox(box, transform);
 
 		return tBox;
 	};
@@ -364,7 +370,7 @@ class PointCloudOctree extends PointCloudTree {
 	 */
 	getPointsInProfile (profile, maxDepth, callback) {
 		if (callback) {
-			let request = new Potree.ProfileRequest(this, profile, maxDepth, callback);
+			let request = new ProfileRequest(this, profile, maxDepth, callback);
 			this.profileRequests.push(request);
 
 			return request;
@@ -457,7 +463,7 @@ class PointCloudOctree extends PointCloudTree {
 	 *
 	 */
 	getProfile (start, end, width, depth, callback) {
-		let request = new Potree.ProfileRequest(start, end, width, depth, callback);
+		let request = new ProfileRequest(start, end, width, depth, callback);
 		this.profileRequests.push(request);
 	};
 
@@ -493,8 +499,8 @@ class PointCloudOctree extends PointCloudTree {
 		if (!this.pickState) {
 			let scene = new THREE.Scene();
 
-			let material = new Potree.PointCloudMaterial();
-			material.pointColorType = Potree.PointColorType.POINT_INDEX;
+			let material = new PointCloudMaterial();
+			material.pointColorType = PointColorType.POINT_INDEX;
 
 			let renderTarget = new THREE.WebGLRenderTarget(
 				1, 1,
@@ -525,10 +531,10 @@ class PointCloudOctree extends PointCloudTree {
 			/*
 			TODO:
 			if(pickOutsideClipRegion){
-				pickMaterial.clipMode = Potree.ClipMode.DISABLED;
+				pickMaterial.clipMode = ClipMode.DISABLED;
 			} else {
 				pickMaterial.clipMode = this.material.clipMode;
-				if (this.material.clipMode === Potree.ClipMode.CLIP_OUTSIDE) {
+				if (this.material.clipMode === ClipMode.CLIP_OUTSIDE) {
 					pickMaterial.setClipBoxes(this.material.clipBoxes);
 				} else {
 					pickMaterial.setClipBoxes([]);
@@ -688,7 +694,7 @@ class PointCloudOctree extends PointCloudTree {
 		// console.log(pixels);
 
 		// { // open window with image
-		//	let img = Potree.utils.pixelsArrayToImage(buffer, w, h);
+		//	let img = pixelsArrayToImage(buffer, w, h);
 		//	let screenshot = img.src;
 		//
 		//	if(!this.debugDIV){

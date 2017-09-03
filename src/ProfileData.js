@@ -1,3 +1,6 @@
+const THREE = require('three');
+const Points = require('./Points');
+
 class ProfileData {
 	constructor (profile) {
 		this.profile = profile;
@@ -27,7 +30,7 @@ class ProfileData {
 				cutPlane: cutPlane,
 				halfPlane: halfPlane,
 				length: length,
-				points: new Potree.Points()
+				points: new Points()
 			};
 
 			this.segments.push(segment);

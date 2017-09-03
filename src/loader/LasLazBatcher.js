@@ -81,5 +81,3 @@ module.exports = class LasLazBatcher {
 		worker.postMessage(message, [message.buffer]);
 	};
 };
-
-module.exports = LasLazBatcher;

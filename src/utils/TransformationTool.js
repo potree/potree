@@ -5,6 +5,7 @@ const context = require('../context');
 const projectedRadius = require('./projectedRadius');
 const projectedRadiusOrtho = require('./projectedRadiusOrtho');
 const ClipMode = require('../viewer/ClipMode');
+const $ = require('jquery');
 
 class TransformationTool {
 	constructor (viewer) {

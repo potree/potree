@@ -15,6 +15,7 @@ const GeoJSONExporter = require('../exporter/GeoJSONExporter');
 const DXFExporter = require('../exporter/DXFExporter');
 const computeTransformedBoundingBox = require('../utils/computeTransformedBoundingBox');
 const ClipMode = require('../materials/ClipMode');
+const THREE = require('three');
 
 module.exports = (viewer) => {
 	let createToolIcon = function (icon, title, callback) {

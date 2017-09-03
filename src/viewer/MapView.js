@@ -1,4 +1,7 @@
 const THREE = require('three');
+const $ = require('$');
+const ol = require('openlayers');
+const proj4 = require('proj4');
 
 // http://epsg.io/
 proj4.defs('UTM10N', '+proj=utm +zone=10 +ellps=GRS80 +datum=NAD83 +units=m +no_defs');

@@ -35,7 +35,7 @@ const Features = require('../Features');
 const i18n = require('i18n');
 const ProgressBar = require('./ProgressBar');
 const Stats = require('stats.js');
-const updatePointClouds = Todo.Tricky;
+const updatePointClouds = require('../utils/updatePointClouds');
 const GLQueries = require('../webgl/GLQueries');
 
 class PotreeViewer extends THREE.EventDispatcher {

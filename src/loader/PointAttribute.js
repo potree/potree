@@ -58,3 +58,5 @@ PointAttribute.NORMAL_OCT16 = new PointAttribute(
 PointAttribute.NORMAL = new PointAttribute(
 	PointAttributeNames.NORMAL,
 	PointAttributeTypes.DATA_TYPE_FLOAT, 3);
+
+module.exports = PointAttribute;

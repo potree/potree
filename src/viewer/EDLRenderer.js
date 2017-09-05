@@ -1,6 +1,6 @@
 const EyeDomeLightingMaterial = require('../materials/EyeDomeLightingMaterial');
 const THREE = require('three');
-const screenPass = require('./screenPass');
+const screenPass = require('../utils/screenPass');
 
 class EDLRenderer {
 	constructor (viewer) {

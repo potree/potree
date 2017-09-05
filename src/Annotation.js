@@ -2,7 +2,7 @@ const THREE = require('three');
 const context = require('./context');
 const Action = require('./Action');
 const TWEEN = require('@tweenjs/tween.js');
-const $ = require('jquery');
+const $ = require('./jquery');
 
 class Annotation extends THREE.EventDispatcher {
 	constructor (args = {}) {

@@ -1,4 +1,4 @@
-const $ = require('jquery');
+const $ = require('../jquery');
 const context = require('../context');
 const addCommas = require('../utils/addCommas');
 const removeCommas = require('../utils/removeCommas');

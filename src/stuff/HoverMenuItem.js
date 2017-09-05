@@ -1,4 +1,4 @@
-const $ = require('jquery');
+const $ = require('../jquery');
 
 class HoverMenuItem {
 	constructor (icon, callback) {

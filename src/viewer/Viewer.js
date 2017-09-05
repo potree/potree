@@ -8,7 +8,7 @@
 // }
 const THREE = require('three');
 const TWEEN = require('@tweenjs/tween.js');
-const $ = require('jquery');
+const $ = require('../jquery');
 const ClipMode = require('../materials/ClipMode');
 const Scene = require('./Scene');
 const InputHandler = require('../navigation/InputHandler');
@@ -32,7 +32,7 @@ const OrbitControls = require('../navigation/OrbitControls');
 const EarthControls = require('../navigation/EarthControls');
 const initSidebar = require('./initSidebar');
 const Features = require('../Features');
-const i18n = require('i18next-client');
+const i18n = require('../i18n');
 const ProgressBar = require('./ProgressBar');
 const Stats = require('stats.js');
 const updatePointClouds = require('../utils/updatePointClouds');

@@ -1,4 +1,4 @@
-const $ = require('jquery');
+const $ = require('./jquery');
 const THREE = require('three');
 const d3 = require('d3');
 const PointCloudMaterial = require('./materials/PointCloudMaterial');

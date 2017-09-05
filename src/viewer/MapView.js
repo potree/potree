@@ -1,5 +1,5 @@
 const THREE = require('three');
-const $ = require('jquery');
+const $ = require('../jquery');
 const ol = require('openlayers');
 const proj4 = require('proj4');
 

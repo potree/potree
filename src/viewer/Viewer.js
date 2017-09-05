@@ -188,7 +188,7 @@ class PotreeViewer extends THREE.EventDispatcher {
 			this.setPointBudget(1 * 1000 * 1000);
 			this.setShowBoundingBox(false);
 			this.setFreeze(false);
-			this(OrbitControls);
+			this.setNavigationMode(OrbitControls);
 			this.setBackground('gradient');
 
 			this.scaleFactor = 1;

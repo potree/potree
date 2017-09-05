@@ -1229,11 +1229,10 @@ class PotreeViewer extends THREE.EventDispatcher {
 		//	toggleMessage = 0;
 		// }
 
-		let queryAll;
 		const viewer = this;
-		if (Potree.timerQueriesEnabled) {
-			queryAll = Potree.startQuery('frame', viewer.renderer.getContext());
-		}
+
+		const queries = GLQueries.forGL(this.renderer.getContext());
+		queries.start('frame');
 
 		if (this.useEDL && Features.SHADER_EDL.isSupported()) {
 			if (!this.edlRenderer) {
@@ -1249,13 +1248,10 @@ class PotreeViewer extends THREE.EventDispatcher {
 			this.potreeRenderer.render();
 		}
 
-		if (Potree.timerQueriesEnabled) {
-			Potree.endQuery(queryAll, viewer.renderer.getContext());
-			Potree.resolveQueries(viewer.renderer.getContext());
+		if (queries.enabled) {
+			queries.end();
+			queries.resolve();
 		}
-
-		// Potree.endQuery(queryAll, viewer.renderer.getContext());
-		// Potree.resolveQueries(viewer.renderer.getContext());
 
 		// let pointsRendered = viewer.scene.pointclouds[0].visibleNodes.map(n => n.geometryNode.geometry.attributes.position.count).reduce( (a, v) => a + v, 0);
 		// console.log("rendered: ", pointsRendered);

@@ -1,6 +1,6 @@
 const PointCloudOctree = require('./PointCloudOctree');
 const PointCloudArena4D = require('./arena4d/PointCloudArena4D');
-
+const GLQueries = require('./webgl/GLQueries');
 
 function Potree () {
 }
@@ -43,67 +43,32 @@ Potree.scriptPath = context.scriptPath;
 Potree.resourcePath = context.resourcePath;
 Potree.workerPool = context.workerPool;
 
-Potree.timerQueries = {};
+function legacyGL () {
+	return window.viewer.renderer.getContext();
+}
 
-Potree.timerQueriesEnabled = false;
+// LEGACY: this property exists just in case someone used it.
+Object.defineProperty(Potree, 'timerQueriesEnabled', {
+	get: () => GLQueries.forGL(legacyGL()).enabled,
+	set: (value) => GLQueries.forGL(legacyGL()).enabled = true,
+});
+
+// LEGACY: this property exists just in case someone used it.
+Object.defineProperty(Potree, 'timerQueries', {
+	get: () => GLQueries.forGL(legacyGL()).queries,
+	set: (value) => GLQueries.forGL(legacyGL()).queries = {},
+});
 
 Potree.startQuery = function (name, gl) {
-	if (!Potree.timerQueriesEnabled) {
-		return null;
-	}
-
-	if (Potree.timerQueries[name] === undefined) {
-		Potree.timerQueries[name] = [];
-	}
-
-	let ext = gl.getExtension('EXT_disjoint_timer_query');
-	let query = ext.createQueryEXT();
-	ext.beginQueryEXT(ext.TIME_ELAPSED_EXT, query);
-
-	Potree.timerQueries[name].push(query);
-
-	return query;
-};
+	return GLQueries.forGL(gl || legacyGL()).start(name);
+}
 
 Potree.endQuery = function (query, gl) {
-	if (!Potree.timerQueriesEnabled) {
-		return;
-	}
-
-	let ext = gl.getExtension('EXT_disjoint_timer_query');
-	ext.endQueryEXT(ext.TIME_ELAPSED_EXT);
+	return GLQueries.forGL(gl || legacyGL()).end();
 };
 
 Potree.resolveQueries = function (gl) {
-	if (!Potree.timerQueriesEnabled) {
-		return;
-	}
-
-	let ext = gl.getExtension('EXT_disjoint_timer_query');
-
-	for (let name in Potree.timerQueries) {
-		let queries = Potree.timerQueries[name];
-
-		if (queries.length > 0) {
-			let query = queries[0];
-
-			let available = ext.getQueryObjectEXT(query, ext.QUERY_RESULT_AVAILABLE_EXT);
-			let disjoint = viewer.renderer.getContext().getParameter(ext.GPU_DISJOINT_EXT);
-
-			if (available && !disjoint) {
-				// See how much time the rendering of the object took in nanoseconds.
-				let timeElapsed = ext.getQueryObjectEXT(query, ext.QUERY_RESULT_EXT);
-				let miliseconds = timeElapsed / (1000 * 1000);
-
-				console.log(name + ': ' + miliseconds + 'ms');
-				queries.shift();
-			}
-		}
-
-		if (queries.length === 0) {
-			delete Potree.timerQueries[name];
-		}
-	}
+	return GLQueries.forGL(gl || legacyGL()).resolve();
 };
 
 /* eslint-disable standard/no-callback-literal */

@@ -1,6 +1,8 @@
 const PointCloudOctree = require('./PointCloudOctree');
 const PointCloudArena4D = require('./arena4d/PointCloudArena4D');
 const GLQueries = require('./webgl/GLQueries');
+const BinaryHeap = require('./utils/BinaryHeap');
+const THREE = require('three');
 
 function Potree () {
 }
@@ -13,19 +15,19 @@ console.log('Potree ' + context.version.major + '.' + context.version.minor + co
 // LEGACY: this property exists just in case someone used it.
 Object.defineProperty(Potree, 'pointBudget', {
 	get: () => context.pointBudget,
-	set: (value) => context.pointBudget = value,
+	set: (value) => (context.pointBudget = value)
 });
 
 // LEGACY: this property exists just in case someone used it.
 Object.defineProperty(Potree, 'framenumber', {
 	get: () => context.framenumber,
-	set: (value) => context.framenumber = value,
+	set: (value) => (context.framenumber = value)
 });
 
 // LEGACY: this property exists just in case someone used it.
 Object.defineProperty(Potree, 'pointLoadLimit', {
 	get: () => context.pointBudget,
-	set: (value) => context.pointBudget = value,
+	set: (value) => (context.pointBudget = value)
 });
 
 // contains WebWorkers with base64 encoded code
@@ -45,23 +47,23 @@ Potree.workerPool = context.workerPool;
 
 function legacyGL () {
 	return window.viewer.renderer.getContext();
-}
+};
 
 // LEGACY: this property exists just in case someone used it.
 Object.defineProperty(Potree, 'timerQueriesEnabled', {
 	get: () => GLQueries.forGL(legacyGL()).enabled,
-	set: (value) => GLQueries.forGL(legacyGL()).enabled = true,
+	set: (value) => (GLQueries.forGL(legacyGL()).enabled = value)
 });
 
 // LEGACY: this property exists just in case someone used it.
 Object.defineProperty(Potree, 'timerQueries', {
 	get: () => GLQueries.forGL(legacyGL()).queries,
-	set: (value) => GLQueries.forGL(legacyGL()).queries = {},
+	set: (value) => (GLQueries.forGL(legacyGL()).queries = value)
 });
 
 Potree.startQuery = function (name, gl) {
 	return GLQueries.forGL(gl || legacyGL()).start(name);
-}
+};
 
 Potree.endQuery = function (query, gl) {
 	return GLQueries.forGL(gl || legacyGL()).end();
@@ -199,13 +201,13 @@ function updateVisibilityStructures (pointclouds, camera, renderer) {
 		'camObjPositions': camObjPositions,
 		'priorityQueue': priorityQueue
 	};
-}
+};
 
 // LEGACY: placeholder
 Potree.getDEMWorkerInstance = function () {
-	Potree.DEMWorkerInstance = context.getDEMWorkerInstance()
+	Potree.DEMWorkerInstance = context.getDEMWorkerInstance();
 	return Potree.DEMWorkerInstance;
-}
+};
 
 /*
 function createDEMMesh (dem) {

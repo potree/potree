@@ -36,6 +36,7 @@ const i18n = require('i18n');
 const ProgressBar = require('./ProgressBar');
 const Stats = Todo.Tricky;
 const updatePointClouds = Todo.Tricky;
+const GLQueries = require('../webgl/GLQueries');
 
 class PotreeViewer extends THREE.EventDispatcher {
 	constructor (domElement, args) {
@@ -1228,8 +1229,6 @@ class PotreeViewer extends THREE.EventDispatcher {
 		//	document.getElementById("lblMessage").innerHTML = "update: " + duration + "ms";
 		//	toggleMessage = 0;
 		// }
-
-		const viewer = this;
 
 		const queries = GLQueries.forGL(this.renderer.getContext());
 		queries.start('frame');

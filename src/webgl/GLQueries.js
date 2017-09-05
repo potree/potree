@@ -12,7 +12,7 @@ class GLQueries {
 		return queries;
 	}
 	constructor (gl) {
-		if (!chached) {
+		if (!cached) {
 			throw new Error('GLQueries can only be created by GLQueries.forGL() ');
 		}
 		this.gl = gl;
@@ -29,7 +29,7 @@ class GLQueries {
 			this.queries[name] = [];
 		}
 
-		let ext = gl.getExtension('EXT_disjoint_timer_query');
+		let ext = this.gl.getExtension('EXT_disjoint_timer_query');
 		let query = ext.createQueryEXT();
 		ext.beginQueryEXT(ext.TIME_ELAPSED_EXT, query);
 

@@ -1,6 +1,6 @@
 /* eslint-disable standard/no-callback-literal */
-const PointCloudOctree = require('./PointCloudOctree');
-const PointCloudArena4D = require('./arena4d/PointCloudArena4D');
+const PointCloudOctree = require('../tree/PointCloudOctree');
+const PointCloudArena4D = require('../arena4d/PointCloudArena4D');
 
 module.exports = function (path, name, callback) {
 	let loaded = function (pointcloud) {
@@ -31,7 +31,7 @@ module.exports = function (path, name, callback) {
 			}
 		});
 	} else if (path.indexOf('.vpc') > 0) {
-		require('../loader/PointCloudArena4DGeometry').load(path, function (geometry) {
+		require('../arena4d/PointCloudArena4DGeometry').load(path, function (geometry) {
 			if (!geometry) {
 				callback({type: 'loading_failed'});
 			} else {

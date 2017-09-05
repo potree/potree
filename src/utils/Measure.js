@@ -1,5 +1,5 @@
 const THREE = require('three');
-const TextSprite = require('./TextSprite');
+const TextSprite = require('../TextSprite');
 const getMousePointCloudIntersection = require('./getMousePointCloudIntersection');
 const addCommas = require('./addCommas');
 

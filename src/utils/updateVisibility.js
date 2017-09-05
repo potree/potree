@@ -1,9 +1,9 @@
 const updateVisibilityStructures = require('./updateVisibilityStructures');
 const THREE = require('three');
-const context = require('context');
-const ClipMode = require('./materials/ClipMode');
-const Box3Helper = require('./utils/Box3Helper');
-const DEM = require('./tree/DEM');
+const context = require('../context');
+const ClipMode = require('../materials/ClipMode');
+const Box3Helper = require('../utils/Box3Helper');
+const DEM = require('../tree/DEM');
 
 module.exports = function (pointclouds, camera, renderer) {
 	// TODO: unused: let numVisibleNodes = 0;

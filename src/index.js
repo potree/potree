@@ -1,6 +1,6 @@
 // TODO: Legacy: All this is because all those properties used to be
 //       exported to Window. They should be accessed differently.
-window.Potree = require('./Potree');
+module.exports = require('./Potree');
 window.GreyhoundUtils = require('./loader/GreyhoundUtils');
 window.LRUItem = require('./LRUItem');
 window.LRU = require('./LRU');

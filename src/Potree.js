@@ -30,7 +30,10 @@ Object.defineProperty(Potree, 'pointLoadLimit', {
 // contains WebWorkers with base64 encoded code
 // Potree.workers = {};
 
-Potree.Shaders = {};
+Object.defineProperty(Potree, 'Shaders', {
+	get: function () { throw new Error('legacy, has been removed for the greater good'); },
+	set: function () { throw new Error('legacy, has been removed for the greater good'); }
+});
 
 Potree.webgl = {
 	shaders: {},

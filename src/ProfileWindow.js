@@ -366,26 +366,24 @@ class ProfileWindow extends THREE.EventDispatcher {
 
 		this.svg.selectAll('*').remove();
 
-		this.scaleX = d3.scale.linear()
+		this.scaleX = d3.scaleLinear()
 			.domain([this.camera.left + this.camera.position.x, this.camera.right + this.camera.position.x])
 			.range([0, width]);
-		this.scaleY = d3.scale.linear()
+		this.scaleY = d3.scaleLinear()
 			.domain([this.camera.bottom + this.camera.position.y, this.camera.top + this.camera.position.y])
 			.range([height, 0]);
 
-		this.xAxis = d3.svg.axis()
+		this.xAxis = d3.axisBottom()
 			.scale(this.scaleX)
-			.orient('bottom')
-			.innerTickSize(-height)
-			.outerTickSize(1)
+			.tickSizeInner(-height)
+			.tickSizeOuter(1)
 			.tickPadding(10)
 			.ticks(width / 50);
 
-		this.yAxis = d3.svg.axis()
+		this.yAxis = d3.axisLeft()
 			.scale(this.scaleY)
-			.orient('left')
-			.innerTickSize(-width)
-			.outerTickSize(1)
+			.tickSizeInner(-width)
+			.tickSizeOuter(1)
 			.tickPadding(10)
 			.ticks(height / 20);
 
@@ -605,15 +603,13 @@ class ProfileWindow extends THREE.EventDispatcher {
 			let marginLeft = this.renderArea[0].offsetLeft;
 
 			this.xAxis.scale(this.scaleX)
-				.orient('bottom')
-				.innerTickSize(-height)
-				.outerTickSize(1)
+				.tickInnerSize(-height)
+				.tickOuterSize(1)
 				.tickPadding(10)
 				.ticks(width / 50);
 			this.yAxis.scale(this.scaleY)
-				.orient('left')
-				.innerTickSize(-width)
-				.outerTickSize(1)
+				.tickInnerSize(-width)
+				.tickOuterSize(1)
 				.tickPadding(10)
 				.ticks(height / 20);
 

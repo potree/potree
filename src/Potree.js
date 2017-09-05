@@ -154,10 +154,10 @@ Potree.ProfileWindow = require('./ProfileWindow');
 Potree.ProfileWindowController = require('./ProfileWindowController');
 Potree.MapView = require('./viewer/MapView');
 Potree.GLProgram = require('./webgl/GLProgram');
-Potree.updatePointClouds = require('./util/updatePointClouds');
-Potree.updateVisibility = require('./util/updateVisibility');
-Potree.updateVisibilityStructures = require('./util/updateVisibilityStructures');
-Potree.loadPointCloud = require('./util/loadPointCloud');
+Potree.updatePointClouds = require('./utils/updatePointClouds');
+Potree.updateVisibility = require('./utils/updateVisibility');
+Potree.updateVisibilityStructures = require('./utils/updateVisibilityStructures');
+Potree.loadPointCloud = require('./utils/loadPointCloud');
 
 module.exports = Potree;
 

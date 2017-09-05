@@ -34,7 +34,7 @@ const initSidebar = require('./initSidebar');
 const Features = require('../Features');
 const i18n = require('i18n');
 const ProgressBar = require('./ProgressBar');
-const Stats = Todo.Tricky;
+const Stats = require('stats.js');
 const updatePointClouds = Todo.Tricky;
 const GLQueries = require('../webgl/GLQueries');
 

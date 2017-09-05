@@ -81,3 +81,4 @@ Potree.GLProgram = require('./webgl/GLProgram');
 Potree.updatePointClouds = require('./util/updatePointClouds');
 Potree.updateVisibility = require('./util/updateVisibility');
 Potree.updateVisibilityStructures = require('./util/updateVisibilityStructures');
+Potree.loadPointCloud = require('./util/loadPointCloud');

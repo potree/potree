@@ -151,10 +151,6 @@ Potree.loadPointCloud = function (path, name, callback) {
 /* eslint-enable standard/no-callback-literal */
 
 Potree.updatePointClouds = function (pointclouds, camera, renderer) {
-	if (!Potree.lru) {
-		Potree.lru = new LRU();
-	}
-
 	for (let i = 0; i < pointclouds.length; i++) {
 		let pointcloud = pointclouds[i];
 		for (let j = 0; j < pointcloud.profileRequests.length; j++) {

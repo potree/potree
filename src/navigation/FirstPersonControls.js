@@ -101,10 +101,10 @@ Potree.FirstPersonControls = class FirstPersonControls extends THREE.EventDispat
 	setScene (scene) {
 		this.scene = scene;
 	}
-	
-	zoomToLocation(mouse){
+
+	zoomToLocation (mouse) {
 		let camera = this.scene.getActiveCamera();
-		
+
 		let I = Potree.utils.getMousePointCloudIntersection(
 			mouse,
 			camera,

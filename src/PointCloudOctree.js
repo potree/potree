@@ -530,7 +530,7 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 		// let start = new Date().getTime();
 
 		let pickWindowSize = params.pickWindowSize || 17;
-		let pickOutsideClipRegion = params.pickOutsideClipRegion || false;
+		// TODO: let pickOutsideClipRegion = params.pickOutsideClipRegion || false;
 		let width = Math.ceil(renderer.domElement.clientWidth);
 		let height = Math.ceil(renderer.domElement.clientHeight);
 
@@ -571,8 +571,10 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 			pickMaterial.minSize = this.material.minSize;
 			pickMaterial.maxSize = this.material.maxSize;
 			pickMaterial.classification = this.material.classification;
-			
-			/*if(pickOutsideClipRegion){
+
+			/*
+			TODO:
+			if(pickOutsideClipRegion){
 				pickMaterial.clipMode = Potree.ClipMode.DISABLED;
 			} else {
 				pickMaterial.clipMode = this.material.clipMode;
@@ -581,8 +583,9 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 				} else {
 					pickMaterial.setClipBoxes([]);
 				}
-			}*/
-			
+			}
+			*/
+
 			this.updateMaterial(pickMaterial, nodes, camera, renderer);
 		}
 
@@ -596,18 +599,20 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 			);
 		}
 		pickState.renderTarget.setSize(width, height);
-		renderer.setRenderTarget( pickState.renderTarget );
-		
-		/*let pixelPos = new THREE.Vector3()
+		renderer.setRenderTarget(pickState.renderTarget);
+
+		/*
+		let pixelPos = new THREE.Vector3()
 			.addVectors(camera.position, ray.direction)
 			.project(camera)
 			.addScalar(1)
 			.multiplyScalar(0.5);
 		pixelPos.x *= width;
-		pixelPos.y *= height;*/
+		pixelPos.y *= height;
+		*/
 
 		let pixelPos = new THREE.Vector2(params.x, params.y);
-		
+
 		renderer.setScissor(
 			parseInt(pixelPos.x - (pickWindowSize - 1) / 2),
 			parseInt(pixelPos.y - (pickWindowSize - 1) / 2),

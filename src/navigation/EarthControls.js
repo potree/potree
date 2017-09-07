@@ -1,4 +1,3 @@
-
 Potree.EarthControls = class EarthControls extends THREE.EventDispatcher {
 	constructor (viewer) {
 		super(viewer);
@@ -119,9 +118,9 @@ Potree.EarthControls = class EarthControls extends THREE.EventDispatcher {
 
 		let onMouseDown = e => {
 			let I = Potree.utils.getMousePointCloudIntersection(
-				e.mouse, 
-				this.scene.getActiveCamera(), 
-				this.renderer, 
+				e.mouse,
+				this.scene.getActiveCamera(),
+				this.renderer,
 				this.scene.pointclouds);
 
 			if (I) {
@@ -161,10 +160,10 @@ Potree.EarthControls = class EarthControls extends THREE.EventDispatcher {
 	setScene (scene) {
 		this.scene = scene;
 	}
-	
-	zoomToLocation(mouse){
+
+	zoomToLocation (mouse) {
 		let camera = this.scene.getActiveCamera();
-		
+
 		let I = Potree.utils.getMousePointCloudIntersection(
 			mouse,
 			camera,
@@ -238,13 +237,13 @@ Potree.EarthControls = class EarthControls extends THREE.EventDispatcher {
 		let fade = Math.pow(0.5, this.fadeFactor * delta);
 		let progression = 1 - fade;
 		let camera = this.scene.getActiveCamera();
-		
+
 		// compute zoom
 		if (this.wheelDelta !== 0) {
 			let I = Potree.utils.getMousePointCloudIntersection(
-				this.viewer.inputHandler.mouse, 
-				this.scene.getActiveCamera(), 
-				this.renderer, 
+				this.viewer.inputHandler.mouse,
+				this.scene.getActiveCamera(),
+				this.renderer,
 				this.scene.pointclouds);
 
 			if (I) {

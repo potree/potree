@@ -314,23 +314,23 @@ initSidebar = (viewer) => {
 			'[title]tt.left_view_control',
 			function () { viewer.setLeftView(); }
 		));
-		
+
 		elNavigation.append(createToolIcon(
-			Potree.resourcePath + "/icons/navigation_cube.svg",
-			"[title]tt.navigation_cube_control",
-			function(){viewer.toggleNavigationCube()}
+			Potree.resourcePath + '/icons/navigation_cube.svg',
+			'[title]tt.navigation_cube_control',
+			function () { viewer.toggleNavigationCube(); }
 		));
 
 		elNavigation.append(createToolIcon(
-			Potree.resourcePath + "/icons/perspective-camera.svg",
-			"[title]tt.perspective_camera_control",
-			function(){viewer.switchCameraMode(Potree.CameraMode.PERSPECTIVE)}
+			Potree.resourcePath + '/icons/perspective-camera.svg',
+			'[title]tt.perspective_camera_control',
+			function () { viewer.switchCameraMode(Potree.CameraMode.PERSPECTIVE); }
 		));
 
 		elNavigation.append(createToolIcon(
-			Potree.resourcePath + "/icons/orthographic-camera.svg",
-			"[title]tt.orthographic_camera_control",
-			function(){viewer.switchCameraMode(Potree.CameraMode.ORTHOGRAPHIC)}
+			Potree.resourcePath + '/icons/orthographic-camera.svg',
+			'[title]tt.orthographic_camera_control',
+			function () { viewer.switchCameraMode(Potree.CameraMode.ORTHOGRAPHIC); }
 		));
 
 		let speedRange = new THREE.Vector2(1, 10 * 1000);
@@ -358,151 +358,150 @@ initSidebar = (viewer) => {
 
 		lblMoveSpeed.html(viewer.getMoveSpeed().toFixed(1));
 	}
-	
-	function initClippingTool() {
-		$("#clipping_volumes_container").hide();
 
-		$("#optClipMode").selectmenu();
-		$("#optClipMode").val(1).selectmenu("refresh");
-		$("#optClipMode").selectmenu({
-			change: function(event, ui){
+	function initClippingTool () {
+		$('#clipping_volumes_container').hide();
+
+		$('#optClipMode').selectmenu();
+		$('#optClipMode').val(1).selectmenu('refresh');
+		$('#optClipMode').selectmenu({
+			change: function (event, ui) {
 				viewer.clippingTool.setClipMode(parseInt(ui.item.value));
 			}
 		});
 
-		viewer.addEventListener("clipper.clipMode_changed", function(event){		
-			$("#optClipMode").val(viewer.clippingTool.clipMode).selectmenu("refresh");
+		viewer.addEventListener('clipper.clipMode_changed', function (event) {
+			$('#optClipMode').val(viewer.clippingTool.clipMode).selectmenu('refresh');
 		});
 
-
-		let clippingToolBar = $("#clipping_tools");
+		let clippingToolBar = $('#clipping_tools');
 
 		clippingToolBar.append(createToolIcon(
-			Potree.resourcePath + "/icons/clip-polygon.svg",
-			"[title]tt.clip_polygon",
-			function(){
-				viewer.clippingTool.startInsertion({type: "polygon"});
+			Potree.resourcePath + '/icons/clip-polygon.svg',
+			'[title]tt.clip_polygon',
+			function () {
+				viewer.clippingTool.startInsertion({type: 'polygon'});
 			}
 		));
 
 		clippingToolBar.append(createToolIcon(
-			Potree.resourcePath + "/icons/clip-plane-x.svg",
-			"[title]tt.clip_plane_x",
-			function(){
-				viewer.clippingTool.startInsertion({type: "plane", alpha: 0, beta: Math.PI/2, gamma: 0});
+			Potree.resourcePath + '/icons/clip-plane-x.svg',
+			'[title]tt.clip_plane_x',
+			function () {
+				viewer.clippingTool.startInsertion({type: 'plane', alpha: 0, beta: Math.PI / 2, gamma: 0});
 			}
 		));
 
 		clippingToolBar.append(createToolIcon(
-			Potree.resourcePath + "/icons/clip-plane-y.svg",
-			"[title]tt.clip_plane_y",
-			function(){
-				viewer.clippingTool.startInsertion({type: "plane", alpha: Math.PI/2, beta: 0, gamma: 0});
+			Potree.resourcePath + '/icons/clip-plane-y.svg',
+			'[title]tt.clip_plane_y',
+			function () {
+				viewer.clippingTool.startInsertion({type: 'plane', alpha: Math.PI / 2, beta: 0, gamma: 0});
 			}
 		));
 
 		clippingToolBar.append(createToolIcon(
-			Potree.resourcePath + "/icons/clip-plane-z.svg",
-			"[title]tt.clip_plane_z",
-			function(){
-				viewer.clippingTool.startInsertion({type: "plane", alpha: 0, beta: 0, gamma: 0});
+			Potree.resourcePath + '/icons/clip-plane-z.svg',
+			'[title]tt.clip_plane_z',
+			function () {
+				viewer.clippingTool.startInsertion({type: 'plane', alpha: 0, beta: 0, gamma: 0});
 			}
 		));
 
 		clippingToolBar.append(createToolIcon(
-			Potree.resourcePath + "/icons/reset_tools.svg",
-			"[title]tt.remove_all_clipping_volumes",
-			function(){
+			Potree.resourcePath + '/icons/reset_tools.svg',
+			'[title]tt.remove_all_clipping_volumes',
+			function () {
 				viewer.scene.removeAllClipVolumes();
 			}
 		));
 
-		viewer.scene.addEventListener("polygon_clip_volume_added", function(event) {
+		viewer.scene.addEventListener('polygon_clip_volume_added', function (event) {
 			let pcv = event.volume;
-			$("#clipping_volumes_container").show();
+			$('#clipping_volumes_container').show();
 
-			let cvList = $("#clipping_volumes_list");
+			let cvList = $('#clipping_volumes_list');
 
-			let createPCVitem = (volume) => {			
-				let removeIconPath = Potree.resourcePath + "/icons/remove.svg";
-				
-				let pcvItem = $(`				
-					<div class="clip_volume_body" style="margin: 5px 0px">		
+			let createPCVitem = (volume) => {
+				let removeIconPath = Potree.resourcePath + '/icons/remove.svg';
+
+				let pcvItem = $(`
+					<div class="clip_volume_body" style="margin: 5px 0px">
 						<div style="display: flex; margin-top: 5px">
 							<span></span>
 							<span style="flex-grow: 1"></span>
 							<img class="clipping_volume_action_remove" src="${removeIconPath}" style="width: 16px; height: 16px">
 						</div>
 					</div>
-				`);			
+				`);
 
 				// remove button
-				let pcvRemove = pcvItem.find(".clipping_volume_action_remove");
+				let pcvRemove = pcvItem.find('.clipping_volume_action_remove');
 				pcvRemove.click(() => {
-					viewer.scene.removePolygonClipVolume(volume)
+					viewer.scene.removePolygonClipVolume(volume);
 				});
 
 				return pcvItem;
 			};
-				
-			// wrapper which doesnt change 
-			let icon = "/icons/area.svg";
+
+			// wrapper which doesnt change
+			let icon = '/icons/area.svg';
 			let pcvWrapper = $(`
 				<span class="scene_item" id="${pcv.name}">
-					<!-- HEADER -->				
+					<!-- HEADER -->
 					<div class="scene_header">
 						<span class="scene_icon"><img src="${Potree.resourcePath + icon}" class="scene_item_icon" /></span>
 						<span class="scene_header_title">${pcv.name}</span>
 					</div>
-					
+
 					<!-- DETAIL -->
 					<div class="measurement_content selectable" style="display: none">
 					</div>
 				</span>
 			`);
 
-			pcvWrapper.find(".measurement_content").append(createPCVitem(pcv));
+			pcvWrapper.find('.measurement_content').append(createPCVitem(pcv));
 
-			pcvWrapper.find(".scene_header").click(function(event) {
-				if($(this).next().is(":visible")) {
-					pcv.dispatchEvent({"type": "ui_deselect"});
+			pcvWrapper.find('.scene_header').click(function (event) {
+				if ($(this).next().is(':visible')) {
+					pcv.dispatchEvent({'type': 'ui_deselect'});
 				} else {
-					pcv.dispatchEvent({"type": "ui_select"});
+					pcv.dispatchEvent({'type': 'ui_select'});
 				}
 				$(this).next().slideToggle(200);
 			});
-			
+
 			cvList.append(pcvWrapper);
 		});
 
-		viewer.scene.addEventListener("polygon_clip_volume_removed", function(event) {
-			$("#" + event.volume.name).remove();
+		viewer.scene.addEventListener('polygon_clip_volume_removed', function (event) {
+			$('#' + event.volume.name).remove();
 
-			if(viewer.scene.clipVolumes.length == 0 && viewer.scene.polygonClipVolumes.length == 0) {
-				$("#clipping_volumes_container").hide();
+			if (viewer.scene.clipVolumes.length === 0 && viewer.scene.polygonClipVolumes.length === 0) {
+				$('#clipping_volumes_container').hide();
 			}
 		});
 
-		viewer.scene.addEventListener("clip_volume_added", function(event) {
+		viewer.scene.addEventListener('clip_volume_added', function (event) {
 			let cv = event.volume;
-			$("#clipping_volumes_container").show();		
+			$('#clipping_volumes_container').show();
 
-			let cvList = $("#clipping_volumes_list");
+			let cvList = $('#clipping_volumes_list');
 
-			let createCVitem = (volume) => {			
+			let createCVitem = (volume) => {
 				let x = Potree.utils.addCommas(volume.position.x.toFixed(3));
 				let y = Potree.utils.addCommas(volume.position.y.toFixed(3));
 				let z = Potree.utils.addCommas(volume.position.z.toFixed(3));
-				let rot_alpha = (volume.rotation.x * 180/Math.PI).toFixed(0);
-				let rot_beta = (volume.rotation.y * 180/Math.PI).toFixed(0);
-				let rot_gamma = (volume.rotation.z * 180/Math.PI).toFixed(0);
-				let sc_width = Potree.utils.addCommas(volume.children[0].scale.x.toFixed(3));
-				let sc_length = Potree.utils.addCommas(volume.children[0].scale.y.toFixed(3));
-				let sc_thickness = Potree.utils.addCommas(volume.children[0].scale.z.toFixed(3));
-				let removeIconPath = Potree.resourcePath + "/icons/remove.svg";
-				
-				let cvItem = $(`				
-					<div class="clip_volume_body" style="margin: 5px 0px">								
+				let rotAlpha = (volume.rotation.x * 180 / Math.PI).toFixed(0);
+				let rotBeta = (volume.rotation.y * 180 / Math.PI).toFixed(0);
+				let rotGamma = (volume.rotation.z * 180 / Math.PI).toFixed(0);
+				let scWidth = Potree.utils.addCommas(volume.children[0].scale.x.toFixed(3));
+				let scLength = Potree.utils.addCommas(volume.children[0].scale.y.toFixed(3));
+				let scThickness = Potree.utils.addCommas(volume.children[0].scale.z.toFixed(3));
+				let removeIconPath = Potree.resourcePath + '/icons/remove.svg';
+
+				let cvItem = $(`
+					<div class="clip_volume_body" style="margin: 5px 0px">
 						<div class="divider">
 							<span>Size</span>
 						</div>
@@ -515,9 +514,9 @@ initSidebar = (viewer) => {
 										<th>thickness</th>
 									</tr>
 									<tr>
-										<td><input class="clip_volume_spinner" id="cv_sp_width_${volume.id}" style="width: 55px" value="${sc_width}" /></td>
-										<td><input class="clip_volume_spinner" id="cv_sp_length_${volume.id}" style="width: 55px" value="${sc_length}" /></td>
-										<td><input class="clip_volume_spinner" id="cv_sp_thickness_${volume.id}" style="width: 55px" value="${sc_thickness}" /></td>
+										<td><input class="clip_volume_spinner" id="cv_sp_width_${volume.id}" style="width: 55px" value="${scWidth}" /></td>
+										<td><input class="clip_volume_spinner" id="cv_sp_length_${volume.id}" style="width: 55px" value="${scLength}" /></td>
+										<td><input class="clip_volume_spinner" id="cv_sp_thickness_${volume.id}" style="width: 55px" value="${scThickness}" /></td>
 									</tr>
 								</table>
 							</span>
@@ -559,7 +558,7 @@ initSidebar = (viewer) => {
 									<button class="cv_btn_offset cv_btn_offset_decr" id="cv_btn_global_z_decr_${volume.id}">&lt;</button>
 									<span style="padding:2px">z</span>
 									<button class="cv_btn_offset cv_btn_offset_incr" id="cv_btn_global_z_incr_${volume.id}">&gt;</button>
-								</div>	
+								</div>
 							</div>
 							<div style="display:flex; margin: 7px 0px">
 								<span style="display:flex; align-items: center; padding-right: 10px; width: 55px">Local: </span>
@@ -573,7 +572,7 @@ initSidebar = (viewer) => {
 									<button class="cv_btn_offset cv_btn_offset_decr" id="cv_btn_local_z_decr_${volume.id}">&lt;</button>
 									<span style="padding:2px">z</span>
 									<button class="cv_btn_offset cv_btn_offset_incr" id="cv_btn_local_z_incr_${volume.id}">&gt;</button>
-								</div>	
+								</div>
 							</div>
 						</div>
 
@@ -589,9 +588,9 @@ initSidebar = (viewer) => {
 										<th>&gamma;</th>
 									</tr>
 									<tr>
-										<td>${rot_alpha}°</td>
-										<td>${rot_beta}°</td>
-										<td>${rot_gamma}°</td>
+										<td>${rotAlpha}°</td>
+										<td>${rotBeta}°</td>
+										<td>${rotGamma}°</td>
 									</tr>
 								</table>
 							</span>
@@ -613,7 +612,7 @@ initSidebar = (viewer) => {
 									<button class="cv_btn_offset cv_btn_offset_decr" id="cv_btn_global_gamma_decr_${volume.id}">&lt;</button>
 									<span style="padding:2px">&gamma;</span>
 									<button class="cv_btn_offset cv_btn_offset_incr" id="cv_btn_global_gamma_incr_${volume.id}">&gt;</button>
-								</div>	
+								</div>
 							</div>
 							<div style="display:flex; margin: 7px 0px">
 								<span style="display:flex; align-items: center; padding-right: 10px; width: 55px">Local: </span>
@@ -627,7 +626,7 @@ initSidebar = (viewer) => {
 									<button class="cv_btn_offset cv_btn_offset_decr" id="cv_btn_local_gamma_decr_${volume.id}">&lt;</button>
 									<span style="padding:2px">&gamma;</span>
 									<button class="cv_btn_offset cv_btn_offset_incr" id="cv_btn_local_gamma_incr_${volume.id}">&gt;</button>
-								</div>	
+								</div>
 							</div>
 						</div>
 
@@ -638,259 +637,259 @@ initSidebar = (viewer) => {
 						</div>
 					</div>
 				`);
-		
+
 				// spinner style
-				cvItem.find(".clip_volume_spinner").spinner();
+				cvItem.find('.clip_volume_spinner').spinner();
 
 				// button style
-				let cv_btn_offset = cvItem.find(".cv_btn_offset");
-				cv_btn_offset.button();
-				cv_btn_offset.css("padding", "2px");
-				cv_btn_offset.css("margin", "0px 3px");
+				let cvBtnOffset = cvItem.find('.cv_btn_offset');
+				cvBtnOffset.button();
+				cvBtnOffset.css('padding', '2px');
+				cvBtnOffset.css('margin', '0px 3px');
 
 				// scale spinner
-				let cv_sp_width = cvItem.find("#cv_sp_width_" + volume.id);
-				let cv_sp_length = cvItem.find("#cv_sp_length_" + volume.id);
-				let cv_sp_thickness = cvItem.find("#cv_sp_thickness_" + volume.id);
+				let cvSpWidth = cvItem.find('#cv_sp_width_' + volume.id);
+				let cvSpLength = cvItem.find('#cv_sp_length_' + volume.id);
+				let cvSpThickness = cvItem.find('#cv_sp_thickness_' + volume.id);
 
-				cv_sp_width.spinner({
+				cvSpWidth.spinner({
 					min: 0.001,
 					max: 100,
 					step: 0.1,
-					numberFormat: "n",
+					numberFormat: 'n',
 					spin: (event, ui) => {
-						let value = cv_sp_width.spinner("value");
+						let value = cvSpWidth.spinner('value');
 						volume.setScaleX(value);
 					},
 					stop: (event, ui) => {
-						let value = cv_sp_width.spinner("value");
+						let value = cvSpWidth.spinner('value');
 						volume.setScaleX(value);
 					}
 				});
 
-				cv_sp_length.spinner({
+				cvSpLength.spinner({
 					min: 0.001,
 					max: 100,
 					step: 0.1,
-					numberFormat: "n",
+					numberFormat: 'n',
 					spin: (event, ui) => {
-						let value = cv_sp_length.spinner("value");
+						let value = cvSpLength.spinner('value');
 						volume.setScaleY(value);
 					},
 					stop: (event, ui) => {
-						let value = cv_sp_length.spinner("value");
+						let value = cvSpLength.spinner('value');
 						volume.setScaleY(value);
 					}
 				});
 
-				cv_sp_thickness.spinner({
+				cvSpThickness.spinner({
 					min: 0.001,
 					max: 100,
 					step: 0.1,
-					numberFormat: "n",
+					numberFormat: 'n',
 					spin: (event, ui) => {
-						let value = cv_sp_thickness.spinner("value");
+						let value = cvSpThickness.spinner('value');
 						volume.setScaleZ(value);
 					},
 					stop: (event, ui) => {
-						let value = cv_sp_thickness.spinner("value");
+						let value = cvSpThickness.spinner('value');
 						volume.setScaleZ(value);
 					}
 				});
 
 				// offset spinner
-				let cv_sp_offset = cvItem.find("#cv_sp_offset_" + volume.id);
-				cv_sp_offset.spinner({
+				let cvSpOffset = cvItem.find('#cv_sp_offset_' + volume.id);
+				cvSpOffset.spinner({
 					min: 0.001,
 					max: 1000,
 					step: 1.0,
-					numberFormat: "n",
+					numberFormat: 'n',
 					spin: (event, ui) => {
-						let value = cv_sp_offset.spinner("value");
+						let value = cvSpOffset.spinner('value');
 						volume.setClipOffset(value);
 					},
 					stop: (event, ui) => {
-						let value = cv_sp_offset.spinner("value");
+						let value = cvSpOffset.spinner('value');
 						volume.setClipOffset(value);
 					}
 				});
 
 				// angle offset spinner
-				let cv_sp_rot_offset = cvItem.find("#cv_sp_rot_offset_" + volume.id);
-				cv_sp_rot_offset.spinner({
+				let cvSpRotOffset = cvItem.find('#cv_sp_rot_offset_' + volume.id);
+				cvSpRotOffset.spinner({
 					min: 1,
 					max: 360,
 					step: 1,
-					numberFormat: "n",
+					numberFormat: 'n',
 					spin: (event, ui) => {
-						let value = cv_sp_rot_offset.spinner("value");
+						let value = cvSpRotOffset.spinner('value');
 						volume.setClipRotOffset(value);
 					},
 					stop: (event, ui) => {
-						let value = cv_sp_rot_offset.spinner("value");
+						let value = cvSpRotOffset.spinner('value');
 						volume.setClipRotOffset(value);
 					}
 				});
 
 				// global offset buttons
-				let cv_btn_global_x_decr = cvItem.find("#cv_btn_global_x_decr_" + volume.id);
-				let cv_btn_global_x_incr = cvItem.find("#cv_btn_global_x_incr_" + volume.id);
-				let cv_btn_global_y_decr = cvItem.find("#cv_btn_global_y_decr_" + volume.id);
-				let cv_btn_global_y_incr = cvItem.find("#cv_btn_global_y_incr_" + volume.id);
-				let cv_btn_global_z_decr = cvItem.find("#cv_btn_global_z_decr_" + volume.id);
-				let cv_btn_global_z_incr = cvItem.find("#cv_btn_global_z_incr_" + volume.id);
+				let cvBtnGlobalXDecr = cvItem.find('#cv_btn_global_x_decr_' + volume.id);
+				let cvBtnGlobalXIncr = cvItem.find('#cv_btn_global_x_incr_' + volume.id);
+				let cvBtnGlobalYDecr = cvItem.find('#cv_btn_global_y_decr_' + volume.id);
+				let cvBtnGlobalYIncr = cvItem.find('#cv_btn_global_y_incr_' + volume.id);
+				let cvBtnGlobalZDecr = cvItem.find('#cv_btn_global_z_decr_' + volume.id);
+				let cvBtnGlobalZIncr = cvItem.find('#cv_btn_global_z_incr_' + volume.id);
 
-				cv_btn_global_x_decr.click(function(event) {
-					volume.offset({cs: "global", axis: "x", dir: -1});
+				cvBtnGlobalXDecr.click(function (event) {
+					volume.offset({cs: 'global', axis: 'x', dir: -1});
 				});
-				cv_btn_global_x_incr.click(function(event) {
-					volume.offset({cs: "global", axis: "x", dir: 1});
+				cvBtnGlobalXIncr.click(function (event) {
+					volume.offset({cs: 'global', axis: 'x', dir: 1});
 				});
-				cv_btn_global_y_decr.click(function(event) {
-					volume.offset({cs: "global", axis: "y", dir: -1});
+				cvBtnGlobalYDecr.click(function (event) {
+					volume.offset({cs: 'global', axis: 'y', dir: -1});
 				});
-				cv_btn_global_y_incr.click(function(event) {
-					volume.offset({cs: "global", axis: "y", dir: 1});
+				cvBtnGlobalYIncr.click(function (event) {
+					volume.offset({cs: 'global', axis: 'y', dir: 1});
 				});
-				cv_btn_global_z_decr.click(function(event) {
-					volume.offset({cs: "global", axis: "z", dir: -1});
+				cvBtnGlobalZDecr.click(function (event) {
+					volume.offset({cs: 'global', axis: 'z', dir: -1});
 				});
-				cv_btn_global_z_incr.click(function(event) {
-					volume.offset({cs: "global", axis: "z", dir: 1});
+				cvBtnGlobalZIncr.click(function (event) {
+					volume.offset({cs: 'global', axis: 'z', dir: 1});
 				});
 
 				// local offset buttons
-				let cv_btn_local_x_decr = cvItem.find("#cv_btn_local_x_decr_" + volume.id);
-				let cv_btn_local_x_incr = cvItem.find("#cv_btn_local_x_incr_" + volume.id);
-				let cv_btn_local_y_decr = cvItem.find("#cv_btn_local_y_decr_" + volume.id);
-				let cv_btn_local_y_incr = cvItem.find("#cv_btn_local_y_incr_" + volume.id);
-				let cv_btn_local_z_decr = cvItem.find("#cv_btn_local_z_decr_" + volume.id);
-				let cv_btn_local_z_incr = cvItem.find("#cv_btn_local_z_incr_" + volume.id);
+				let cvBtnLocalXDecr = cvItem.find('#cv_btn_local_x_decr_' + volume.id);
+				let cvBtnLocalXIncr = cvItem.find('#cv_btn_local_x_incr_' + volume.id);
+				let cvBtnLocalYDecr = cvItem.find('#cv_btn_local_y_decr_' + volume.id);
+				let cvBtnLocalYIncr = cvItem.find('#cv_btn_local_y_incr_' + volume.id);
+				let cvBtnLocalZDecr = cvItem.find('#cv_btn_local_z_decr_' + volume.id);
+				let cvBtnLocalZIncr = cvItem.find('#cv_btn_local_z_incr_' + volume.id);
 
-				cv_btn_local_x_decr.click(function(event) {
-					volume.offset({cs: "local", axis: "x", dir: -1});
+				cvBtnLocalXDecr.click(function (event) {
+					volume.offset({cs: 'local', axis: 'x', dir: -1});
 				});
-				cv_btn_local_x_incr.click(function(event) {
-					volume.offset({cs: "local", axis: "x", dir: 1});
+				cvBtnLocalXIncr.click(function (event) {
+					volume.offset({cs: 'local', axis: 'x', dir: 1});
 				});
-				cv_btn_local_y_decr.click(function(event) {
-					volume.offset({cs: "local", axis: "y", dir: -1});
+				cvBtnLocalYDecr.click(function (event) {
+					volume.offset({cs: 'local', axis: 'y', dir: -1});
 				});
-				cv_btn_local_y_incr.click(function(event) {
-					volume.offset({cs: "local", axis: "y", dir: 1});
+				cvBtnLocalYIncr.click(function (event) {
+					volume.offset({cs: 'local', axis: 'y', dir: 1});
 				});
-				cv_btn_local_z_decr.click(function(event) {
-					volume.offset({cs: "local", axis: "z", dir: -1});
+				cvBtnLocalZDecr.click(function (event) {
+					volume.offset({cs: 'local', axis: 'z', dir: -1});
 				});
-				cv_btn_local_z_incr.click(function(event) {
-					volume.offset({cs: "local", axis: "z", dir: 1});
+				cvBtnLocalZIncr.click(function (event) {
+					volume.offset({cs: 'local', axis: 'z', dir: 1});
 				});
 
 				// global angle offset
-				let cv_btn_global_alpha_decr = cvItem.find("#cv_btn_global_alpha_decr_" + volume.id);
-				let cv_btn_global_alpha_incr = cvItem.find("#cv_btn_global_alpha_incr_" + volume.id);
-				let cv_btn_global_beta_decr = cvItem.find("#cv_btn_global_beta_decr_" + volume.id);
-				let cv_btn_global_beta_incr = cvItem.find("#cv_btn_global_beta_incr_" + volume.id);
-				let cv_btn_global_gamma_decr = cvItem.find("#cv_btn_global_gamma_decr_" + volume.id);
-				let cv_btn_global_gamma_incr = cvItem.find("#cv_btn_global_gamma_incr_" + volume.id);
+				let cvBtnGlobalAlphaDecr = cvItem.find('#cv_btn_global_alpha_decr_' + volume.id);
+				let cvBtnGlobalAlphaIncr = cvItem.find('#cv_btn_global_alpha_incr_' + volume.id);
+				let cvBtnGlobalBetaDecr = cvItem.find('#cv_btn_global_beta_decr_' + volume.id);
+				let cvBtnGlobalBetaIncr = cvItem.find('#cv_btn_global_beta_incr_' + volume.id);
+				let cvBtnGlobalGammaDecr = cvItem.find('#cv_btn_global_gamma_decr_' + volume.id);
+				let cvBtnGlobalGammaIncr = cvItem.find('#cv_btn_global_gamma_incr_' + volume.id);
 
-				cv_btn_global_alpha_decr.click(function(event) {
-					volume.rotate({cs: "global", axis: "x", dir: -1});
+				cvBtnGlobalAlphaDecr.click(function (event) {
+					volume.rotate({cs: 'global', axis: 'x', dir: -1});
 				});
-				cv_btn_global_alpha_incr.click(function(event) {
-					volume.rotate({cs: "global", axis: "x", dir: 1});
+				cvBtnGlobalAlphaIncr.click(function (event) {
+					volume.rotate({cs: 'global', axis: 'x', dir: 1});
 				});
-				cv_btn_global_beta_decr.click(function(event) {
-					volume.rotate({cs: "global", axis: "y", dir: -1});
+				cvBtnGlobalBetaDecr.click(function (event) {
+					volume.rotate({cs: 'global', axis: 'y', dir: -1});
 				});
-				cv_btn_global_beta_incr.click(function(event) {
-					volume.rotate({cs: "global", axis: "y", dir: 1});
+				cvBtnGlobalBetaIncr.click(function (event) {
+					volume.rotate({cs: 'global', axis: 'y', dir: 1});
 				});
-				cv_btn_global_gamma_decr.click(function(event) {
-					volume.rotate({cs: "global", axis: "z", dir: -1});
+				cvBtnGlobalGammaDecr.click(function (event) {
+					volume.rotate({cs: 'global', axis: 'z', dir: -1});
 				});
-				cv_btn_global_gamma_incr.click(function(event) {
-					volume.rotate({cs: "global", axis: "z", dir: 1});
+				cvBtnGlobalGammaIncr.click(function (event) {
+					volume.rotate({cs: 'global', axis: 'z', dir: 1});
 				});
 
 				// local angle offset
-				let cv_btn_local_alpha_decr = cvItem.find("#cv_btn_local_alpha_decr_" + volume.id);
-				let cv_btn_local_alpha_incr = cvItem.find("#cv_btn_local_alpha_incr_" + volume.id);
-				let cv_btn_local_beta_decr = cvItem.find("#cv_btn_local_beta_decr_" + volume.id);
-				let cv_btn_local_beta_incr = cvItem.find("#cv_btn_local_beta_incr_" + volume.id);
-				let cv_btn_local_gamma_decr = cvItem.find("#cv_btn_local_gamma_decr_" + volume.id);
-				let cv_btn_local_gamma_incr = cvItem.find("#cv_btn_local_gamma_incr_" + volume.id);
+				let cvBtnLocalAlphaDecr = cvItem.find('#cv_btn_local_alpha_decr_' + volume.id);
+				let cvBtnLocalAlphaIncr = cvItem.find('#cv_btn_local_alpha_incr_' + volume.id);
+				let cvBtnLocalBetaDecr = cvItem.find('#cv_btn_local_beta_decr_' + volume.id);
+				let cvBtnLocalBetaIncr = cvItem.find('#cv_btn_local_beta_incr_' + volume.id);
+				let cvBtnLocalGammaDecr = cvItem.find('#cv_btn_local_gamma_decr_' + volume.id);
+				let cvBtnLocalGammaIncr = cvItem.find('#cv_btn_local_gamma_incr_' + volume.id);
 
-				cv_btn_local_alpha_decr.click(function(event) {
-					volume.rotate({cs: "local", axis: "x", dir: -1});
+				cvBtnLocalAlphaDecr.click(function (event) {
+					volume.rotate({cs: 'local', axis: 'x', dir: -1});
 				});
-				cv_btn_local_alpha_incr.click(function(event) {
-					volume.rotate({cs: "local", axis: "x", dir: 1});
+				cvBtnLocalAlphaIncr.click(function (event) {
+					volume.rotate({cs: 'local', axis: 'x', dir: 1});
 				});
-				cv_btn_local_beta_decr.click(function(event) {
-					volume.rotate({cs: "local", axis: "y", dir: -1});
+				cvBtnLocalBetaDecr.click(function (event) {
+					volume.rotate({cs: 'local', axis: 'y', dir: -1});
 				});
-				cv_btn_local_beta_incr.click(function(event) {
-					volume.rotate({cs: "local", axis: "y", dir: 1});
+				cvBtnLocalBetaIncr.click(function (event) {
+					volume.rotate({cs: 'local', axis: 'y', dir: 1});
 				});
-				cv_btn_local_gamma_decr.click(function(event) {
-					volume.rotate({cs: "local", axis: "z", dir: -1});
+				cvBtnLocalGammaDecr.click(function (event) {
+					volume.rotate({cs: 'local', axis: 'z', dir: -1});
 				});
-				cv_btn_local_gamma_incr.click(function(event) {
-					volume.rotate({cs: "local", axis: "z", dir: 1});
+				cvBtnLocalGammaIncr.click(function (event) {
+					volume.rotate({cs: 'local', axis: 'z', dir: 1});
 				});
 
 				// remove button
-				let cvRemove = cvItem.find(".clipping_volume_action_remove");
-				cvRemove.click(() => {viewer.scene.removeClipVolume(volume)});
+				let cvRemove = cvItem.find('.clipping_volume_action_remove');
+				cvRemove.click(() => { viewer.scene.removeClipVolume(volume); });
 
 				return cvItem;
 			};
 
 			// update body when clip volume changes
-			cv.addEventListener("clip_volume_changed", function(event) {
+			cv.addEventListener('clip_volume_changed', function (event) {
 				let cv = event.volume;
-				let prevCVItem = $("span#" + cv.name + " .clip_volume_body");
+				let prevCVItem = $('span#' + cv.name + ' .clip_volume_body');
 				let cvItem = createCVitem(cv);
 				prevCVItem.after(cvItem);
 				prevCVItem.remove();
 			});
-				
-			// wrapper which doesnt change 
-			let icon = "/icons/clip_volume.svg";
+
+			// wrapper which doesnt change
+			let icon = '/icons/clip_volume.svg';
 			let cvWrapper = $(`
 				<span class="scene_item" id="${cv.name}">
-					<!-- HEADER -->				
+					<!-- HEADER -->
 					<div class="scene_header">
 						<span class="scene_icon"><img src="${Potree.resourcePath + icon}" class="scene_item_icon" /></span>
 						<span class="scene_header_title">${cv.name}</span>
 					</div>
-					
+
 					<!-- DETAIL -->
 					<div class="measurement_content selectable" style="display: none">
 					</div>
 				</span>
 			`);
 
-			cvWrapper.find(".measurement_content").append(createCVitem(cv));
+			cvWrapper.find('.measurement_content').append(createCVitem(cv));
 
-			cvWrapper.find(".scene_header").click(function(event) {
-				if($(this).next().is(":visible")) {
-					cv.dispatchEvent({"type": "ui_deselect"});
+			cvWrapper.find('.scene_header').click(function (event) {
+				if ($(this).next().is(':visible')) {
+					cv.dispatchEvent({'type': 'ui_deselect'});
 				} else {
-					cv.dispatchEvent({"type": "ui_select"});
+					cv.dispatchEvent({'type': 'ui_select'});
 				}
 				$(this).next().slideToggle(200);
 			});
-			
+
 			cvList.append(cvWrapper);
 		});
 
-		viewer.scene.addEventListener("clip_volume_removed", function(event) {
-			$("#" + event.volume.name).remove();
+		viewer.scene.addEventListener('clip_volume_removed', function (event) {
+			$('#' + event.volume.name).remove();
 
-			if(viewer.scene.clipVolumes.length == 0 && viewer.scene.polygonClipVolumes.length == 0) {
-				$("#clipping_volumes_container").hide();
+			if (viewer.scene.clipVolumes.length === 0 && viewer.scene.polygonClipVolumes.length === 0) {
+				$('#clipping_volumes_container').hide();
 			}
 		});
 	}
@@ -3024,7 +3023,7 @@ initSidebar = (viewer) => {
 		});
 
 		viewer.addEventListener('clip_mode_changed', e => {
-			let string = toClipModeString(viewer.clipMode);
+			// TODO: Unused: let string = toClipModeString(viewer.clipMode);
 		});
 	};
 
@@ -3038,7 +3037,7 @@ initSidebar = (viewer) => {
 	initClippingTool();
 	initSceneList();
 	initSettings();
-	
-	$('#potree_version_number').html(Potree.version.major + "." + Potree.version.minor + Potree.version.suffix);
+
+	$('#potree_version_number').html(Potree.version.major + '.' + Potree.version.minor + Potree.version.suffix);
 	$('.perfect_scrollbar').perfectScrollbar();
 };

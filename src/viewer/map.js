@@ -666,8 +666,8 @@ Potree.MapView = class {
 		if (resized) {
 			this.map.updateSize();
 		}
-		
-		// 
+
+		//
 		var camera = this.viewer.scene.getActiveCamera();
 
 		var scale = this.map.getView().getResolution();

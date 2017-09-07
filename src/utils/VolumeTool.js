@@ -66,11 +66,11 @@ Potree.VolumeTool = class VolumeTool extends THREE.EventDispatcher {
 
 		let drag = e => {
 			let camera = this.viewer.scene.getActiveCamera();
-			
+
 			let I = Potree.utils.getMousePointCloudIntersection(
-				e.drag.end, 
-				this.viewer.scene.getActiveCamera(), 
-				this.viewer.renderer, 
+				e.drag.end,
+				this.viewer.scene.getActiveCamera(),
+				this.viewer.renderer,
 				this.viewer.scene.pointclouds);
 
 			if (I) {
@@ -107,7 +107,7 @@ Potree.VolumeTool = class VolumeTool extends THREE.EventDispatcher {
 		if (!this.scene) {
 			return;
 		}
-		
+
 		let camera = this.viewer.scene.getActiveCamera();
 		let domElement = this.viewer.renderer.domElement;
 		// let labels = this.viewer.scene.volumes.map(e => e.label);
@@ -115,10 +115,10 @@ Potree.VolumeTool = class VolumeTool extends THREE.EventDispatcher {
 		let volumes = this.viewer.scene.volumes;
 		for (let volume of volumes) {
 			let label = volume.label;
-			
-			{				
+
+			{
 				let pr = 0;
-				if(viewer.scene.cameraMode == Potree.CameraMode.PERSPECTIVE) {
+				if (viewer.scene.cameraMode === Potree.CameraMode.PERSPECTIVE) {
 					let distance = label.position.distanceTo(camera.position);
 					pr = Potree.utils.projectedRadius(1, camera.fov * Math.PI / 180, distance, domElement.clientHeight);
 				} else {

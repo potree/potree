@@ -245,11 +245,11 @@ Potree.utils = class {
 		let closestDistance = Infinity;
 		let closestIntersection = null;
 		let closestPoint = null;
-		
-		for(let pointcloud of pointclouds){
+
+		for (let pointcloud of pointclouds) {
 			let point = pointcloud.pick(renderer, camera, ray, {x: mouse.x, y: renderer.domElement.clientHeight - mouse.y});
-			
-			if(!point){
+
+			if (!point) {
 				continue;
 			}
 
@@ -306,7 +306,7 @@ Potree.utils = class {
 		return radius * projFactor;
 	};
 
-	static projectedRadiusOrtho(radius, proj, screenWidth, screenHeight) {
+	static projectedRadiusOrtho (radius, proj, screenWidth, screenHeight) {
 		let p1 = new THREE.Vector4(0);
 		let p2 = new THREE.Vector4(radius);
 
@@ -320,9 +320,8 @@ Potree.utils = class {
 		p2.y = (p2.y + 1.0) * 0.5 * screenHeight;
 		return p1.distanceTo(p2);
 	}
-		
-		
-	static topView(camera, node){
+
+	static topView (camera, node) {
 		camera.position.set(0, 1, 0);
 		camera.rotation.set(-Math.PI / 2, 0, 0);
 		camera.zoomTo(node, 1);

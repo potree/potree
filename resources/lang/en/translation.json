@@ -4,6 +4,7 @@
         "rendering_opt": "Appearance",
         "tools_opt": "Tools",
         "measurments_opt": "Measurements",
+        "clipping_opt": "Clipping",
         "annotations_opt": "Annotations",
         "materials_opt": "Materials",
         "scene_opt": "Scene",
@@ -20,6 +21,10 @@
         "volume_measurement": "Volume measurement",
         "height_profile": "Height profile",
         "clip_volume": "Volume clip",
+        "clip_polygon": "Polygon clip",
+        "clip_plane_x": "Clip plane on x axis",
+        "clip_plane_y": "Clip plane on y axis",
+        "clip_plane_z": "Clip plane on z axis",
         "remove_all_measurement": "Remove all measurements",
         "left_view_control": "Left view",
         "front_view_control": "Front view",
@@ -27,7 +32,11 @@
         "focus_control": "Full extent",
         "orbit_control": "Orbit control",
         "flight_control": "Fly control",
-        "earth_control": "Earth control"
+        "earth_control": "Earth control",
+        "perspective_camera_control": "Perspective camera",
+        "orthographic_camera_control": "Orthographic camera",
+        "navigation_cube_control": "Navigation cube",
+        "remove_all_clipping_volumes": "Remove all clipping volumes"
     },
     "appearance": {
         "nb_max_pts": "Point budget", 

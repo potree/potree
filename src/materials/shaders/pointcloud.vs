@@ -6,6 +6,7 @@ precision mediump int;
 
 
 #define max_clip_boxes 30
+#define max_clip_polygons 8
 
 attribute vec3 position;
 attribute vec3 color;
@@ -23,6 +24,7 @@ uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
 uniform mat4 viewMatrix;
 uniform mat3 normalMatrix;
+uniform bool useOrthographicCamera;
 
 uniform float pcIndex;
 
@@ -34,10 +36,17 @@ uniform float fov;
 uniform float spacing;
 uniform float near;
 uniform float far;
+uniform float orthoRange;
 
+uniform int clipMode;
 #if defined use_clip_box
 	uniform mat4 clipBoxes[max_clip_boxes];
 #endif
+
+uniform int clipPolygonCount;
+uniform int clipPolygonVCount[max_clip_polygons];
+uniform vec3 clipPolygons[max_clip_polygons * 8];
+uniform mat4 clipPolygonVP[max_clip_polygons];
 
 
 uniform float heightMin;
@@ -324,13 +333,46 @@ vec3 getCompositeColor(){
 	return c;
 }
 
+bool pointInClipPolygon(vec3 point, int polyIdx) {
+	vec4 screenClipPos = clipPolygonVP[polyIdx] * modelMatrix * vec4(point, 1.0);
+	screenClipPos.xy = screenClipPos.xy / screenClipPos.w * 0.5 + 0.5;
+
+	int j = clipPolygonVCount[polyIdx] - 1;
+	bool c = false;
+	for(int i = 0; i < 8; i++) {
+		if(i == clipPolygonVCount[polyIdx]) {
+			break;
+		}
+
+		vec4 verti = clipPolygonVP[polyIdx] * vec4(clipPolygons[polyIdx * 8 + i], 1);
+		vec4 vertj = clipPolygonVP[polyIdx] * vec4(clipPolygons[polyIdx * 8 + j], 1);
+		verti.xy = verti.xy / verti.w * 0.5 + 0.5;
+		vertj.xy = vertj.xy / vertj.w * 0.5 + 0.5;
+		if( ((verti.y > screenClipPos.y) != (vertj.y > screenClipPos.y)) && 
+			(screenClipPos.x < (vertj.x-verti.x) * (screenClipPos.y-verti.y) / (vertj.y-verti.y) + verti.x) ) {
+			c = !c;
+		}
+		j = i;
+	}
+
+	return c;
+}
+
+void testInsideClipVolume(bool inside) {
+	if(inside && clipMode == 2 || !inside && clipMode == 3) {
+		gl_Position = vec4(1000.0, 1000.0, 1000.0, 1.0);
+	} else if(clipMode == 1 && inside) {
+		vColor.r += 0.5;
+	}
+}
+
 void main() {
 	vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
 	vViewPosition = mvPosition.xyz;
 	gl_Position = projectionMatrix * mvPosition;
 	vOpacity = opacity;
 	vLinearDepth = gl_Position.w;
-	vLogDepth = log2(gl_Position.w);
+	vLogDepth = log2(-mvPosition.z);
 	vNormal = normalize(normalMatrix * normal);
 
 	// ---------------------
@@ -404,10 +446,16 @@ void main() {
 	#if defined fixed_point_size
 		pointSize = size;
 	#elif defined attenuated_point_size
-		pointSize = size * projFactor;
+		pointSize = size;
+		if(!useOrthographicCamera)
+			pointSize = pointSize * projFactor;
 	#elif defined adaptive_point_size
-		float worldSpaceSize = size * r / getPointSizeAttenuation();
-		pointSize = worldSpaceSize * projFactor;
+		if(useOrthographicCamera) {
+			pointSize = size * r / (orthoRange * pow(2.0, getLOD())) * screenWidth;
+		} else {
+			float worldSpaceSize = size * r / getPointSizeAttenuation();
+			pointSize = worldSpaceSize * projFactor;
+		}
 	#endif
 
 	pointSize = max(minSize, pointSize);
@@ -417,46 +465,40 @@ void main() {
 	
 	gl_PointSize = pointSize;
 	
-	//gl_Position = vec4(1000.0, 1000.0, 1000.0, 1.0);
-	
 	
 	// ---------------------
 	// CLIPPING
 	// ---------------------
 	
 	#if defined use_clip_box
-		bool insideAny = false;
-		for(int i = 0; i < max_clip_boxes; i++){
-			if(i == int(clipBoxCount)){
-				break;
-			}
-		
-			vec4 clipPosition = clipBoxes[i] * modelMatrix * vec4( position, 1.0 );
-			bool inside = -0.5 <= clipPosition.x && clipPosition.x <= 0.5;
-			inside = inside && -0.5 <= clipPosition.y && clipPosition.y <= 0.5;
-			inside = inside && -0.5 <= clipPosition.z && clipPosition.z <= 0.5;
-			insideAny = insideAny || inside;
-		}
-		if(!insideAny){
-	
-			#if defined clip_outside
-				gl_Position = vec4(1000.0, 1000.0, 1000.0, 1.0);
-			#elif defined clip_highlight_inside && !defined(color_type_depth)
-				float c = (vColor.r + vColor.g + vColor.b) / 6.0;
-			#endif
-		}else{
-			#if defined clip_highlight_inside
-				vColor.r += 0.5;
-				
-				//vec3 hsv = rgb2hsv(vColor);
-            	//hsv.x = hsv.x - 0.3;
-            	//hsv.z = hsv.z + 0.1;
-            	//vColor = hsv2rgb(hsv);
-				
-			#endif
+		if(clipMode != 0) {
+			bool insideAny = false;
+			for(int i = 0; i < max_clip_boxes; i++){
+				if(i == int(clipBoxCount)){
+					break;
+				}
+			
+				vec4 clipPosition = clipBoxes[i] * modelMatrix * vec4( position, 1.0 );
+				bool inside = -0.5 <= clipPosition.x && clipPosition.x <= 0.5;
+				inside = inside && -0.5 <= clipPosition.y && clipPosition.y <= 0.5;
+				inside = inside && -0.5 <= clipPosition.z && clipPosition.z <= 0.5;
+				insideAny = insideAny || inside;
+			}	
+			testInsideClipVolume(insideAny);
 		}
 	#endif
 
-	//vColor = indices.rgb * 255.0;
-	
+	#if defined use_clip_polygon
+		if(clipMode != 0) {
+			bool polyInsideAny = false;
+			for(int i = 0; i < max_clip_polygons; i++) {
+				if(i == clipPolygonCount) {
+					break;
+				}
+
+				polyInsideAny = polyInsideAny || pointInClipPolygon(position, i);
+			}
+			testInsideClipVolume(polyInsideAny);
+		}
+	#endif	
 }

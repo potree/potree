@@ -57,11 +57,16 @@ Potree.ProfileTool = class ProfileTool extends THREE.EventDispatcher {
 		};
 
 		let insertionCallback = (e) => {
-			if (e.button === THREE.MOUSE.LEFT) {
-				if (profile.points.length <= 1) {
-					let camera = this.viewer.scene.camera;
-					let distance = camera.position.distanceTo(profile.points[0]);
-					let pr = Potree.utils.projectedRadius(1, camera.fov * Math.PI / 180, distance, domElement.clientHeight);
+			if(e.button === THREE.MOUSE.LEFT){
+				if(profile.points.length <= 1){
+					let camera = this.viewer.scene.getActiveCamera();
+					let pr = 0;
+					if(this.viewer.scene.cameraMode == Potree.CameraMode.PERSPECTIVE) {
+						let distance = camera.position.distanceTo(profile.points[0]);
+						pr = Potree.utils.projectedRadius(1, camera.fov * Math.PI / 180, distance, domElement.clientHeight);
+					} else {
+						pr = Potree.utils.projectedRadiusOrtho(1, camera.projectionMatrix, domElement.clientWidth, domElement.clientHeight);
+					}
 					let width = (10 / pr);
 
 					profile.setWidth(width);
@@ -91,19 +96,24 @@ Potree.ProfileTool = class ProfileTool extends THREE.EventDispatcher {
 
 		this.viewer.scene.addProfile(profile);
 	}
-
-	update () {
-		let camera = this.viewer.scene.camera;
+	
+	update(){
+		let camera = this.viewer.scene.getActiveCamera();
 		let domElement = this.renderer.domElement;
 		let profiles = this.viewer.scene.profiles;
 
 		this.light.position.copy(camera.position);
 
 		// make size independant of distance
-		for (let profile of profiles) {
-			for (let sphere of profile.spheres) {
-				let distance = camera.position.distanceTo(sphere.getWorldPosition());
-				let pr = Potree.utils.projectedRadius(1, camera.fov * Math.PI / 180, distance, domElement.clientHeight);
+		for(let profile of profiles){
+			for(let sphere of profile.spheres){				
+				let pr = 0;
+				if(this.viewer.scene.cameraMode == Potree.CameraMode.PERSPECTIVE) {
+					let distance = camera.position.distanceTo(sphere.getWorldPosition());
+					pr = Potree.utils.projectedRadius(1, camera.fov * Math.PI / 180, distance, domElement.clientHeight);
+				} else {
+					pr = Potree.utils.projectedRadiusOrtho(1, camera.projectionMatrix, domElement.clientWidth, domElement.clientHeight);
+				}
 				let scale = (15 / pr);
 				sphere.scale.set(scale, scale, scale);
 			}

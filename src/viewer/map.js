@@ -666,18 +666,20 @@ Potree.MapView = class {
 		if (resized) {
 			this.map.updateSize();
 		}
+		
+		// 
+		var camera = this.viewer.scene.getActiveCamera();
 
-		// camera
-		let scale = this.map.getView().getResolution();
-		let camera = this.viewer.scene.camera;
-		let campos = camera.position;
-		let camdir = camera.getWorldDirection();
-		let sceneLookAt = camdir.clone().multiplyScalar(30 * scale).add(campos);
-		let geoPos = camera.position;
-		let geoLookAt = sceneLookAt;
-		let mapPos = new THREE.Vector2().fromArray(this.toMap.forward([geoPos.x, geoPos.y]));
-		let mapLookAt = new THREE.Vector2().fromArray(this.toMap.forward([geoLookAt.x, geoLookAt.y]));
-		let mapDir = new THREE.Vector2().subVectors(mapLookAt, mapPos).normalize();
+		var scale = this.map.getView().getResolution();
+		var campos = camera.position;
+		var camdir = camera.getWorldDirection();
+		var sceneLookAt = camdir.clone().multiplyScalar(30 * scale).add(campos);
+		var geoPos = camera.position;
+		var geoLookAt = sceneLookAt;
+		var mapPos = new THREE.Vector2().fromArray(this.toMap.forward([geoPos.x, geoPos.y]));
+		var mapLookAt = new THREE.Vector2().fromArray(this.toMap.forward([geoLookAt.x, geoLookAt.y]));
+		var mapDir = new THREE.Vector2().subVectors(mapLookAt, mapPos).normalize();
+
 		mapLookAt = mapPos.clone().add(mapDir.clone().multiplyScalar(30 * scale));
 		let mapLength = mapPos.distanceTo(mapLookAt);
 		let mapSide = new THREE.Vector2(-mapDir.y, mapDir.x);

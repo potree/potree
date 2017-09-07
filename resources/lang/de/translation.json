@@ -4,6 +4,7 @@
         "rendering_opt": "Aussehen",
         "tools_opt": "Tools",
         "measurments_opt": "Messungen",
+        "clipping_opt": "Clipping",
         "materials_opt": "Materials",
         "scene_opt": "Szene",
         "classification_filter_opt": "Klassifizierung  Filter",
@@ -17,6 +18,10 @@
         "volume_measurement": "Volumenmessung",
         "height_profile": "Höhenprofil",
         "clip_volume": "Volume clip",
+        "clip_polygon": "Polygon clip",
+        "clip_plane_x": "Clipebene auf x-Achse",
+        "clip_plane_y": "Clipebene auf y-Achse",
+        "clip_plane_z": "Clipebene auf z-Achse",
         "remove_all_measurement": "Alle Messungen entfernen",
         "left_view_control": "Linke Seite",
         "front_view_control": "Vorderseite",
@@ -24,7 +29,11 @@
         "focus_control": "Volle Ausdehnung",
         "orbit_control": "Orbit Kontrolle ",
         "flight_control": "Fly Kontrolle",
-        "earth_control": "Earth Kontrolle"
+        "earth_control": "Earth Kontrolle",
+        "perspective_camera_control": "Perspektivische Kamera",
+        "orthographic_camera_control": "Orthografische Kamera",
+        "navigation_cube_control": "Navigationswürfel",
+        "remove_all_clipping_volumes": "Alle Clipvolumen entfernen"
     },
     "appearance": {
         "nb_max_pts": "Max Punkte", 

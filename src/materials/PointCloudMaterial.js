@@ -169,12 +169,6 @@ Potree.PointColorType = {
 	COMPOSITE: 50
 };
 
-Potree.ClipMode = {
-	DISABLED: 0,
-	CLIP_OUTSIDE: 1,
-	HIGHLIGHT_INSIDE:	2
-};
-
 Potree.TreeType = {
 	OCTREE:	0,
 	KDTREE:	1
@@ -198,7 +192,6 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 		this._pointColorType = Potree.PointColorType.RGB;
 		this._useClipBox = false;
 		this.numClipBoxes = 0;
-		this._clipMode = Potree.ClipMode.DISABLED;
 		this._weighted = false;
 		this._depthMap = null;
 		this._gradient = Potree.Gradients.SPECTRAL;
@@ -226,48 +219,55 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 		};
 
 		this.uniforms = {
-			level: { type: 'f', value: 0.0 },
-			vnStart: { type: 'f', value: 0.0 },
-			spacing: { type: 'f', value: 1.0 },
-			blendHardness: { type: 'f', value: 2.0 },
-			blendDepthSupplement: { type: 'f', value: 0.0 },
-			fov: { type: 'f', value: 1.0 },
-			screenWidth: { type: 'f', value: 1.0 },
-			screenHeight: { type: 'f', value: 1.0 },
-			near: { type: 'f', value: 0.1 },
-			far: { type: 'f', value: 1.0 },
-			uColor: { type: 'c', value: new THREE.Color(0xffffff) },
-			opacity: { type: 'f', value: 1.0 },
-			size: { type: 'f', value: pointSize },
-			minSize: { type: 'f', value: minSize },
-			maxSize: { type: 'f', value: maxSize },
-			octreeSize: { type: 'f', value: 0 },
-			bbSize: { type: 'fv', value: [0, 0, 0] },
-			heightMin: { type: 'f', value: 0.0 },
-			heightMax: { type: 'f', value: 1.0 },
-			clipBoxCount: { type: 'f', value: 0 },
-			visibleNodes: { type: 't', value: this.visibleNodesTexture },
-			pcIndex: { type: 'f', value: 0 },
-			gradient: { type: 't', value: this.gradientTexture },
-			classificationLUT: { type: 't', value: this.classificationTexture },
-			clipBoxes: { type: 'Matrix4fv', value: [] },
-			toModel: { type: 'Matrix4f', value: [] },
-			depthMap: { type: 't', value: null },
-			diffuse: { type: 'fv', value: [1, 1, 1] },
-			transition: { type: 'f', value: 0.5 },
-			intensityRange: { type: 'fv', value: [0, 65000] },
-			intensityGamma: { type: 'f', value: 1 },
-			intensityContrast: { type: 'f', value: 0 },
-			intensityBrightness: { type: 'f', value: 0 },
-			rgbGamma: { type: 'f', value: 1 },
-			rgbContrast: { type: 'f', value: 0 },
-			rgbBrightness: { type: 'f', value: 0 },
-			wRGB: { type: 'f', value: 1 },
-			wIntensity: { type: 'f', value: 0 },
-			wElevation: { type: 'f', value: 0 },
-			wClassification: { type: 'f', value: 0 },
-			wReturnNumber: { type: 'f', value: 0 },
-			wSourceID: { type: 'f', value: 0 }
+			level:				{ type: "f", value: 0.0 },
+			vnStart:				{ type: "f", value: 0.0 },
+			spacing:			{ type: "f", value: 1.0 },
+			blendHardness:		{ type: "f", value: 2.0 },
+			blendDepthSupplement:	{ type: "f", value: 0.0 },
+			fov:				{ type: "f", value: 1.0 },
+			screenWidth:		{ type: "f", value: 1.0 },
+			screenHeight:		{ type: "f", value: 1.0 },
+			near:				{ type: "f", value: 0.1 },
+			far:				{ type: "f", value: 1.0 },
+			uColor:   			{ type: "c", value: new THREE.Color( 0xffffff ) },
+			opacity:   			{ type: "f", value: 1.0 },
+			size:   			{ type: "f", value: pointSize },
+			minSize:   			{ type: "f", value: minSize },
+			maxSize:   			{ type: "f", value: maxSize },
+			octreeSize:			{ type: "f", value: 0 },
+			bbSize:				{ type: "fv", value: [0,0,0] },
+			heightMin:			{ type: "f", value: 0.0 },
+			heightMax:			{ type: "f", value: 1.0 },
+			clipBoxCount:		{ type: "f", value: 0 },
+			clipPolygonCount:	{ type: "i", value: 0 },
+			visibleNodes:		{ type: "t", value: this.visibleNodesTexture },
+			pcIndex:   			{ type: "f", value: 0 },
+			gradient: 			{ type: "t", value: this.gradientTexture },
+			classificationLUT: 	{ type: "t", value: this.classificationTexture },
+			clipBoxes:			{ type: "Matrix4fv", value: [] },
+			clipPolygons:		{ type: "3fv", value: [] },
+			clipPolygonVCount:	{ type: "iv", value: [] },
+			clipPolygonVP:		{ type: "Matrix4fv", value: [] },
+			toModel:			{ type: "Matrix4f", value: [] },
+			depthMap: 			{ type: "t", value: null },
+			diffuse:			{ type: "fv", value: [1,1,1]},
+			transition:         { type: "f", value: 0.5 },
+			intensityRange:     { type: "fv", value: [0, 65000] },
+			intensityGamma:     { type: "f", value: 1 },
+			intensityContrast:	{ type: "f", value: 0 },
+			intensityBrightness:{ type: "f", value: 0 },
+			rgbGamma:     		{ type: "f", value: 1 },
+			rgbContrast:		{ type: "f", value: 0 },
+			rgbBrightness:		{ type: "f", value: 0 },
+			wRGB:				{ type: "f", value: 1 },
+			wIntensity:			{ type: "f", value: 0 },
+			wElevation:			{ type: "f", value: 0 },
+			wClassification:	{ type: "f", value: 0 },
+			wReturnNumber:		{ type: "f", value: 0 },
+			wSourceID:			{ type: "f", value: 0 },
+			useOrthographicCamera: { type: "b", value: false },
+			orthoRange: 		{ type: "f", value: 10.0 },
+			clipMode: 			{ type: "i", value: 1}
 		};
 
 		this.defaultAttributeValues.normal = [0, 0, 0];
@@ -368,19 +368,11 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 		} else if (this._pointColorType === Potree.PointColorType.COMPOSITE) {
 			defines += '#define color_type_composite\n';
 		}
-
-		if (this.clipMode === Potree.ClipMode.DISABLED) {
-			defines += '#define clip_disabled\n';
-		} else if (this.clipMode === Potree.ClipMode.CLIP_OUTSIDE) {
-			defines += '#define clip_outside\n';
-		} else if (this.clipMode === Potree.ClipMode.HIGHLIGHT_INSIDE) {
-			defines += '#define clip_highlight_inside\n';
-		}
-
-		if (this._treeType === Potree.TreeType.OCTREE) {
-			defines += '#define tree_type_octree\n';
-		} else if (this._treeType === Potree.TreeType.KDTREE) {
-			defines += '#define tree_type_kdtree\n';
+		
+		if(this._treeType === Potree.TreeType.OCTREE){
+			defines += "#define tree_type_octree\n";
+		}else if(this._treeType === Potree.TreeType.KDTREE){
+			defines += "#define tree_type_kdtree\n";
 		}
 
 		if (this.weighted) {
@@ -389,6 +381,10 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 
 		if (this.numClipBoxes > 0) {
 			defines += '#define use_clip_box\n';
+		}
+
+		if(this.numClipPolygons > 0) {
+			defines += "#define use_clip_polygon\n";			
 		}
 
 		return defines;
@@ -424,7 +420,40 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 		}
 	}
 
-	get gradient () {
+	setClipPolygons(clipPolygons, maxPolygonVertices) {
+		if(!clipPolygons){
+			return;
+		}
+
+		this.clipPolygons = clipPolygons;
+
+		let doUpdate = (this.numClipPolygons !== clipPolygons.length) && (clipPolygons.length === 0 || this.numClipPolygons === 0);
+
+		this.numClipPolygons = clipPolygons.length;
+		this.uniforms.clipPolygonCount.value = this.numClipPolygons;
+
+		if(doUpdate){
+			this.updateShaderSource();
+		}
+
+		this.uniforms.clipPolygons.value = new Float32Array(this.numClipPolygons * maxPolygonVertices * 3); 
+		this.uniforms.clipPolygonVP.value = new Float32Array(this.numClipPolygons * 16);
+		this.uniforms.clipPolygonVCount.value = new Int32Array(this.numClipPolygons);
+
+		for(let i = 0; i < this.numClipPolygons; i++){
+			let poly = clipPolygons[i];
+			
+			this.uniforms.clipPolygonVCount.value[i] = poly.count;
+			this.uniforms.clipPolygonVP.value.set(poly.view.elements, 16*i);
+			for(let j = 0; j < poly.count; j++) {
+				this.uniforms.clipPolygons.value[i * 24 + (j * 3 + 0)] = poly.polygon[j].x;				
+				this.uniforms.clipPolygons.value[i * 24 + (j * 3 + 1)] = poly.polygon[j].y;
+				this.uniforms.clipPolygons.value[i * 24 + (j * 3 + 2)] = poly.polygon[j].z;
+			}
+		}
+	}
+	
+	get gradient(){
 		return this._gradient;
 	}
 
@@ -435,6 +464,17 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 			this.uniforms.gradient.value = this.gradientTexture;
 		}
 	}
+	
+	get useOrthographicCamera() {
+		return this.uniforms.useOrthographicCamera.value;
+	}
+
+	set useOrthographicCamera(value) {
+		if(this.uniforms.useOrthographicCamera.value !== value){
+			this.uniforms.useOrthographicCamera.value = value;
+		}
+	}
+
 
 	get classification () {
 		return this._classification;
@@ -484,7 +524,16 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 		}
 	}
 
-	get weighted () {
+	get clipMode() {
+		return this.uniforms.clipMode.value;
+	}
+
+	set clipMode(mode) {
+		this.uniforms.clipMode.value = mode;
+	}
+
+
+	get weighted(){
 		return this._weighted;
 	}
 
@@ -548,7 +597,18 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 		}
 	}
 
-	get opacity () {
+	get orthoRange(){
+		return this.uniforms.orthoRange.value;
+	}
+	
+	set orthoRange(value){
+		if(this.uniforms.orthoRange.value !== value){
+			this.uniforms.orthoRange.value = value;
+		}
+	}
+
+
+	get opacity(){
 		return this.uniforms.opacity.value;
 	}
 
@@ -618,18 +678,7 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 		}
 	}
 
-	get clipMode () {
-		return this._clipMode;
-	}
-
-	set clipMode (value) {
-		if (this._clipMode !== value) {
-			this._clipMode = value;
-			this.updateShaderSource();
-		}
-	}
-
-	get useEDL () {
+	get useEDL(){
 		return this._useEDL;
 	}
 

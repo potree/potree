@@ -77,6 +77,40 @@
 			<div id="measurement_list"></div>
 			<div id="measurement_list_after" style="margin: 6px 2px 6px 2px"></div>			
 		</div>
+
+		<!-- CLIPPING -->
+		<h3 id="menu_clipping"><span data-i18n="tb.clipping_opt"></span></h3>
+		<div>
+			<ul class="pv-menu-list">
+				<li>
+					<label for="optClipMode" class="pv-select-label">Clip mode</label>
+				    <select id="optClipMode" name="optClipMode">
+				    	<option value="0">Disabled</option>
+				    	<option value="1">Highlight</option>
+				    	<option value="2">Inside</option>
+				    	<option value="3">Outside</option>
+				    </select>
+				</li>
+				<div id="clipping_tools_container">					
+					<div class="divider">
+						<span>Tools</span>
+					</div>
+
+					<li id="clipping_tools"></li>
+				</div>
+			</ul>
+			<div id="clipping_volumes_container">					
+				<div class="divider">
+					<span>Volumes</span>
+				</div>
+
+				<div id="clipping_volumes_list_before" style="margin: 2px 2px 2px 2px"></div>
+				<div id="clipping_volumes_list">
+					
+				</div>
+				<div id="clipping_volumes_list_after" style="margin: 6px 2px 12px 2px"></div>
+			</div>
+		</div>
 	  
 		<!-- ANNOTATIONS -->
 		<h3 id="menu_annotations"><span data-i18n="tb.annotations_opt"></span></h3>
@@ -126,15 +160,15 @@
 		<h3 id="menu_other_settings"><span data-i18n="tb.parameters_opt"></span></h3>
 		<div>
 			<ul class="pv-menu-list">
-				<li><span data-i18n="appearance.min_node_size"></span>:<span id="lblMinNodeSize"></span><div id="sldMinNodeSize"></div>	</li>
-				<li>
+				<li><span data-i18n="appearance.min_node_size"></span><span id="lblMinNodeSize"></span><div id="sldMinNodeSize"></div>	</li>
+				<!--<li>
 				   <label for="optClipMode" class="pv-select-label"><span data-i18n="appearance.clip_mode"></span></label>
 				   <select id="optClipMode" name="optClipMode">
 						<option>No Clipping</option>
 						<option>Highlight Inside</option>
 						<option>Clip Outside</option>
 					</select>
-				</li>
+				</li>-->
 				<li><label><input type="checkbox" onClick="viewer.setShowBoundingBox(this.checked)"/><span data-i18n="appearance.box"></span></label></li>
 				<li><label><input type="checkbox" onClick="viewer.setFreeze(this.checked)"/><span data-i18n="appearance.freeze"></span></label></li>
 			</ul>

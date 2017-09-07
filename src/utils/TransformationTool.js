@@ -105,9 +105,10 @@ Potree.TransformationTool = class TransformationTool {
 				};
 
 				let drag = e => {
-					let camera = this.viewer.scene.camera;
-
-					if (!e.drag.intersectionStart) {
+					
+					let camera = this.viewer.scene.getActiveCamera();
+					
+					if(!e.drag.intersectionStart){
 						e.drag.intersectionStart = e.drag.location;
 						e.drag.objectStart = e.drag.object.getWorldPosition();
 
@@ -215,7 +216,8 @@ Potree.TransformationTool = class TransformationTool {
 				};
 
 				let drag = e => {
-					let camera = this.viewer.scene.camera;
+					
+					let camera = this.viewer.scene.getActiveCamera();
 					let n = normal.clone().applyEuler(this.sceneTransform.rotation);
 
 					if (!e.drag.intersectionStart) {
@@ -358,9 +360,10 @@ Potree.TransformationTool = class TransformationTool {
 				};
 
 				let drag = e => {
-					let camera = this.viewer.scene.camera;
-
-					if (!e.drag.intersectionStart) {
+					
+					let camera = this.viewer.scene.getActiveCamera();
+					
+					if(!e.drag.intersectionStart){
 						e.drag.intersectionStart = e.drag.location;
 						e.drag.scaleStart = this.selection[0].scale.clone();
 
@@ -523,14 +526,20 @@ Potree.TransformationTool = class TransformationTool {
 		this.sceneTransform.position.copy(pivot);
 
 		{ // size
-			let distance = scene.camera.position.distanceTo(pivot);
-			let pr = Potree.utils.projectedRadius(1, scene.camera.fov * Math.PI / 180, distance, renderer.domElement.clientHeight);
+			let camera = scene.getActiveCamera();
+			let pr = 0;
+			if(scene.cameraMode == Potree.CameraMode.PERSPECTIVE) {
+				let distance = camera.position.distanceTo(pivot);
+				let pr = Potree.utils.projectedRadius(1, camera.fov * Math.PI / 180, distance, domElement.clientHeight);
+			} else {
+				pr = Potree.utils.projectedRadiusOrtho(1, camera.projectionMatrix, domElement.clientWidth, domElement.clientHeight);
+			}
 			let scale = (120 / pr);
 			this.sceneTransform.scale.set(scale, scale, scale);
 		}
 
 		{ // menu
-			let screenPos = pivot.clone().project(scene.camera);
+			let screenPos = pivot.clone().project(scene.getActiveCamera());
 			screenPos.x = domElement.clientWidth * (screenPos.x + 1) / 2;
 			screenPos.y = domElement.clientHeight * (1 - (screenPos.y + 1) / 2);
 

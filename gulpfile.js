@@ -22,6 +22,7 @@ var paths = {
 		"build/shaders/shaders.js",
 		"src/extensions/EventDispatcher.js",
 		"src/extensions/PerspectiveCamera.js",
+		"src/extensions/OrthographicCamera.js",
 		"src/extensions/Ray.js",
 		"src/loader/POCLoader.js",
 		"src/loader/PointAttributes.js",
@@ -57,6 +58,9 @@ var paths = {
 		"src/utils/TransformationTool.js",
 		"src/utils/Volume.js",
 		"src/utils/VolumeTool.js",
+		"src/utils/ClippingTool.js",
+		"src/utils/ClipVolume.js",
+		"src/utils/PolygonClipVolume.js",
 		"src/utils/Box3Helper.js",
 		"src/exporter/GeoJSONExporter.js",
 		"src/exporter/DXFExporter.js",
@@ -69,8 +73,9 @@ var paths = {
 		"src/viewer/profile.js",
 		"src/viewer/map.js",
 		"src/viewer/sidebar.js",
+		"src/viewer/NavigationCube.js",
 		"src/stuff/HoverMenu.js",
-		"src/webgl/GLProgram.js"
+		"src/webgl/GLProgram.js",
 	],
 	laslaz: [
 		"build/workers/laslaz-worker.js",
@@ -177,12 +182,7 @@ gulp.task('watch', function() {
 	gulp.run("build");
 	gulp.run("webserver");
 	
-    gulp.watch([
-		'src/**/*.js', 
-		'src/**/*.css', 
-		'src/**/*.fs', 
-		'src/**/*.vs', 
-		'src/**/*.html'], ["build"]);
+    gulp.watch(['src/**/*.js', 'src/**/*.css', 'src/**/*.html', 'src/**/*.vs', 'src/**/*.fs'], ["build"]);
 });
 
 

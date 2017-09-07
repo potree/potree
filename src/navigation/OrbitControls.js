@@ -12,11 +12,12 @@
  *
  *
  */
-
-Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher {
-	constructor (viewer) {
+ 
+Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
+	
+	constructor(viewer){
 		super();
-
+		
 		this.viewer = viewer;
 		this.renderer = viewer.renderer;
 
@@ -123,10 +124,10 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher {
 	setScene (scene) {
 		this.scene = scene;
 	}
-
-	zoomToLocation (mouse) {
-		let camera = this.scene.camera;
-
+	
+	zoomToLocation(mouse){
+		let camera = this.scene.getActiveCamera();
+		
 		let I = Potree.utils.getMousePointCloudIntersection(
 			mouse,
 			camera,

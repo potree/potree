@@ -486,8 +486,9 @@ function createDEMMeshNode (dem, demNode) {
 }
 */
 
-Potree.updateVisibility = function (pointclouds, camera, renderer) {
-	// let numVisibleNodes = 0;
+Potree.updateVisibility = function(pointclouds, camera, renderer){
+
+	let numVisibleNodes = 0;
 	let numVisiblePoints = 0;
 
 	let visibleNodes = [];
@@ -612,23 +613,32 @@ Potree.updateVisibility = function (pointclouds, camera, renderer) {
 		for (let i = 0; i < children.length; i++) {
 			let child = children[i];
 
-			let sphere = child.getBoundingSphere();
-			let distance = sphere.center.distanceTo(camObjPos);
-			let radius = sphere.radius;
+			let weight = 0; 
+			if(camera.isPerspectiveCamera) {			
+				let sphere = child.getBoundingSphere();
+				let distance = sphere.center.distanceTo(camObjPos);
+				let radius = sphere.radius;
+				
+				let fov = (camera.fov * Math.PI) / 180;
+				let slope = Math.tan(fov / 2);
+				let projFactor = (0.5 * renderer.domElement.clientHeight) / (slope * distance);
+				let screenPixelRadius = radius * projFactor;
+				
+				if(screenPixelRadius < pointcloud.minimumNodePixelSize){
+					continue;
+				}
+			
+				weight = screenPixelRadius;
 
-			let fov = (camera.fov * Math.PI) / 180;
-			let slope = Math.tan(fov / 2);
-			let projFactor = (0.5 * renderer.domElement.clientHeight) / (slope * distance);
-			let screenPixelRadius = radius * projFactor;
-
-			if (screenPixelRadius < pointcloud.minimumNodePixelSize) {
-				continue;
-			}
-
-			let weight = screenPixelRadius;
-
-			if (distance - radius < 0) {
-				weight = Number.MAX_VALUE;
+				if(distance - radius < 0){
+					weight = Number.MAX_VALUE;
+				}
+			} else {
+				// TODO ortho visibility
+				let bb = child.getBoundingBox();				
+				let distance = child.getBoundingSphere().center.distanceTo(camObjPos);
+				let diagonal = bb.max.clone().sub(bb.min).length();
+				weight = diagonal / distance;
 			}
 
 			priorityQueue.push({pointcloud: element.pointcloud, node: child, parent: node, weight: weight});

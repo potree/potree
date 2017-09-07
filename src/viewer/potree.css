@@ -437,7 +437,10 @@ body{
 }
 
 
-
+.coordinates_table_container table td {
+	width: 33%;
+	text-align: center;
+}
 
 
 
@@ -458,6 +461,10 @@ body{
 	margin: 	8px 20px;
 }
 
+.ui-slider {
+	margin-top: 5px;
+	margin-bottom: 10px;
+}
 
 .pv-menu-list > li > .ui-slider{
 	background-color: 	var(--color-1) !important;
@@ -778,6 +785,20 @@ label:hover{
 
 .input-grid-cell > input{
 	width: 100%
+}
+
+/* Clipping sidebar */
+.cv_btn_offset {
+	width: 20px;
+	margin: 0px 5px;
+}
+
+.cv_btn_offset_incr {
+
+}
+
+.cv_btn_offset_decr {
+
 }
 
 .invalid_value{

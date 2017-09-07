@@ -548,6 +548,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			this.clippingTool = new Potree.ClippingTool(this);
 			this.transformationTool = new Potree.TransformationTool(this);
 			this.navigationCube = new Potree.NavigationCube(this);
+			this.navigationCube.visible = false;
 			
 			this.createControls();
 

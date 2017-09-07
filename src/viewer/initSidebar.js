@@ -16,6 +16,7 @@ const DXFExporter = require('../exporter/DXFExporter');
 const computeTransformedBoundingBox = require('../utils/computeTransformedBoundingBox');
 const ClipMode = require('../materials/ClipMode');
 const THREE = require('three');
+const CameraMode = require('./CameraMode');
 
 module.exports = (viewer) => {
 	let createToolIcon = function (icon, title, callback) {
@@ -335,21 +336,21 @@ module.exports = (viewer) => {
 		));
 
 		elNavigation.append(createToolIcon(
-			Potree.resourcePath + '/icons/navigation_cube.svg',
+			context.resourcePath + '/icons/navigation_cube.svg',
 			'[title]tt.navigation_cube_control',
 			function () { viewer.toggleNavigationCube(); }
 		));
 
 		elNavigation.append(createToolIcon(
-			Potree.resourcePath + '/icons/perspective-camera.svg',
+			context.resourcePath + '/icons/perspective-camera.svg',
 			'[title]tt.perspective_camera_control',
-			function () { viewer.switchCameraMode(Potree.CameraMode.PERSPECTIVE); }
+			function () { viewer.switchCameraMode(CameraMode.PERSPECTIVE); }
 		));
 
 		elNavigation.append(createToolIcon(
-			Potree.resourcePath + '/icons/orthographic-camera.svg',
+			context.resourcePath + '/icons/orthographic-camera.svg',
 			'[title]tt.orthographic_camera_control',
-			function () { viewer.switchCameraMode(Potree.CameraMode.ORTHOGRAPHIC); }
+			function () { viewer.switchCameraMode(CameraMode.ORTHOGRAPHIC); }
 		));
 
 		let speedRange = new THREE.Vector2(1, 10 * 1000);
@@ -396,7 +397,7 @@ module.exports = (viewer) => {
 		let clippingToolBar = $('#clipping_tools');
 
 		clippingToolBar.append(createToolIcon(
-			Potree.resourcePath + '/icons/clip-polygon.svg',
+			context.resourcePath + '/icons/clip-polygon.svg',
 			'[title]tt.clip_polygon',
 			function () {
 				viewer.clippingTool.startInsertion({type: 'polygon'});
@@ -404,7 +405,7 @@ module.exports = (viewer) => {
 		));
 
 		clippingToolBar.append(createToolIcon(
-			Potree.resourcePath + '/icons/clip-plane-x.svg',
+			context.resourcePath + '/icons/clip-plane-x.svg',
 			'[title]tt.clip_plane_x',
 			function () {
 				viewer.clippingTool.startInsertion({type: 'plane', alpha: 0, beta: Math.PI / 2, gamma: 0});
@@ -412,7 +413,7 @@ module.exports = (viewer) => {
 		));
 
 		clippingToolBar.append(createToolIcon(
-			Potree.resourcePath + '/icons/clip-plane-y.svg',
+			context.resourcePath + '/icons/clip-plane-y.svg',
 			'[title]tt.clip_plane_y',
 			function () {
 				viewer.clippingTool.startInsertion({type: 'plane', alpha: Math.PI / 2, beta: 0, gamma: 0});
@@ -420,7 +421,7 @@ module.exports = (viewer) => {
 		));
 
 		clippingToolBar.append(createToolIcon(
-			Potree.resourcePath + '/icons/clip-plane-z.svg',
+			context.resourcePath + '/icons/clip-plane-z.svg',
 			'[title]tt.clip_plane_z',
 			function () {
 				viewer.clippingTool.startInsertion({type: 'plane', alpha: 0, beta: 0, gamma: 0});
@@ -428,7 +429,7 @@ module.exports = (viewer) => {
 		));
 
 		clippingToolBar.append(createToolIcon(
-			Potree.resourcePath + '/icons/reset_tools.svg',
+			context.resourcePath + '/icons/reset_tools.svg',
 			'[title]tt.remove_all_clipping_volumes',
 			function () {
 				viewer.scene.removeAllClipVolumes();
@@ -442,7 +443,7 @@ module.exports = (viewer) => {
 			let cvList = $('#clipping_volumes_list');
 
 			let createPCVitem = (volume) => {
-				let removeIconPath = Potree.resourcePath + '/icons/remove.svg';
+				let removeIconPath = context.resourcePath + '/icons/remove.svg';
 
 				let pcvItem = $(`
 					<div class="clip_volume_body" style="margin: 5px 0px">
@@ -469,7 +470,7 @@ module.exports = (viewer) => {
 				<span class="scene_item" id="${pcv.name}">
 					<!-- HEADER -->
 					<div class="scene_header">
-						<span class="scene_icon"><img src="${Potree.resourcePath + icon}" class="scene_item_icon" /></span>
+						<span class="scene_icon"><img src="${context.resourcePath + icon}" class="scene_item_icon" /></span>
 						<span class="scene_header_title">${pcv.name}</span>
 					</div>
 
@@ -508,16 +509,16 @@ module.exports = (viewer) => {
 			let cvList = $('#clipping_volumes_list');
 
 			let createCVitem = (volume) => {
-				let x = Potree.utils.addCommas(volume.position.x.toFixed(3));
-				let y = Potree.utils.addCommas(volume.position.y.toFixed(3));
-				let z = Potree.utils.addCommas(volume.position.z.toFixed(3));
+				let x = addCommas(volume.position.x.toFixed(3));
+				let y = addCommas(volume.position.y.toFixed(3));
+				let z = addCommas(volume.position.z.toFixed(3));
 				let rotAlpha = (volume.rotation.x * 180 / Math.PI).toFixed(0);
 				let rotBeta = (volume.rotation.y * 180 / Math.PI).toFixed(0);
 				let rotGamma = (volume.rotation.z * 180 / Math.PI).toFixed(0);
-				let scWidth = Potree.utils.addCommas(volume.children[0].scale.x.toFixed(3));
-				let scLength = Potree.utils.addCommas(volume.children[0].scale.y.toFixed(3));
-				let scThickness = Potree.utils.addCommas(volume.children[0].scale.z.toFixed(3));
-				let removeIconPath = Potree.resourcePath + '/icons/remove.svg';
+				let scWidth = addCommas(volume.children[0].scale.x.toFixed(3));
+				let scLength = addCommas(volume.children[0].scale.y.toFixed(3));
+				let scThickness = addCommas(volume.children[0].scale.z.toFixed(3));
+				let removeIconPath = context.resourcePath + '/icons/remove.svg';
 
 				let cvItem = $(`
 					<div class="clip_volume_body" style="margin: 5px 0px">
@@ -880,7 +881,7 @@ module.exports = (viewer) => {
 				<span class="scene_item" id="${cv.name}">
 					<!-- HEADER -->
 					<div class="scene_header">
-						<span class="scene_icon"><img src="${Potree.resourcePath + icon}" class="scene_item_icon" /></span>
+						<span class="scene_icon"><img src="${context.resourcePath + icon}" class="scene_item_icon" /></span>
 						<span class="scene_header_title">${cv.name}</span>
 					</div>
 

@@ -4,7 +4,7 @@ const removeEventListeners = require('./removeEventListeners');
 const getMousePointCloudIntersection = require('./getMousePointCloudIntersection');
 const projectedRadius = require('./projectedRadius');
 const projectedRadiusOrtho = require('./projectedRadiusOrtho');
-const ClipMode = require('../viewer/ClipMode');
+const CameraMode = require('../viewer/CameraMode');
 const addCommas = require('./addCommas');
 
 class VolumeTool extends THREE.EventDispatcher {
@@ -127,7 +127,7 @@ class VolumeTool extends THREE.EventDispatcher {
 
 			{
 				let pr = 0;
-				if (viewer.scene.cameraMode === CameraMode.PERSPECTIVE) {
+				if (this.viewer.scene.cameraMode === CameraMode.PERSPECTIVE) {
 					let distance = label.position.distanceTo(camera.position);
 					pr = projectedRadius(1, camera.fov * Math.PI / 180, distance, domElement.clientHeight);
 				} else {

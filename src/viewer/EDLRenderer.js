@@ -37,12 +37,12 @@ class EDLRenderer {
 	};
 
 	resize () {
-		let width = this.viewer.scaleFactor * this.viewer.renderArea.clientWidth;
-		let height = this.viewer.scaleFactor * this.viewer.renderArea.clientHeight;
+		const viewer = this.viewer;
+		let width = viewer.scaleFactor * viewer.renderArea.clientWidth;
+		let height = viewer.scaleFactor * viewer.renderArea.clientHeight;
 		let aspect = width / height;
 
 		let needsResize = (this.rtColor.width !== width || this.rtColor.height !== height);
-
 		// disposal will be unnecessary once this fix made it into three.js master:
 		// https://github.com/mrdoob/three.js/pull/6355
 		if (needsResize) {

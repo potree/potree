@@ -4,6 +4,7 @@ class PotreeRenderer {
 	};
 
 	render () {
+		const viewer = this.viewer;
 		{ // resize
 			let width = viewer.scaleFactor * viewer.renderArea.clientWidth;
 			let height = viewer.scaleFactor * viewer.renderArea.clientHeight;

@@ -120,7 +120,7 @@ class MeasuringTool extends THREE.EventDispatcher {
 			// spheres
 			for (let sphere of measure.spheres) {
 				let pr = 0;
-				if (viewer.scene.cameraMode === CameraMode.PERSPECTIVE) {
+				if (this.viewer.scene.cameraMode === CameraMode.PERSPECTIVE) {
 					let distance = camera.position.distanceTo(sphere.getWorldPosition());
 					pr = projectedRadius(1, camera.fov * Math.PI / 180, distance, domElement.clientHeight);
 				} else {
@@ -134,7 +134,7 @@ class MeasuringTool extends THREE.EventDispatcher {
 			let labels = measure.edgeLabels.concat(measure.angleLabels);
 			for (let label of labels) {
 				let pr = 0;
-				if (viewer.scene.cameraMode === CameraMode.PERSPECTIVE) {
+				if (this.viewer.scene.cameraMode === CameraMode.PERSPECTIVE) {
 					let distance = camera.position.distanceTo(label.getWorldPosition());
 					pr = projectedRadius(1, camera.fov * Math.PI / 180, distance, domElement.clientHeight);
 				} else {
@@ -171,7 +171,7 @@ class MeasuringTool extends THREE.EventDispatcher {
 				label.position.copy(labelPos);
 
 				let pr = 0;
-				if (viewer.scene.cameraMode === CameraMode.PERSPECTIVE) {
+				if (this.viewer.scene.cameraMode === CameraMode.PERSPECTIVE) {
 					pr = projectedRadius(1, camera.fov * Math.PI / 180, distance, domElement.clientHeight);
 				} else {
 					pr = projectedRadiusOrtho(1, camera.projectionMatrix, domElement.clientWidth, domElement.clientHeight);
@@ -187,7 +187,7 @@ class MeasuringTool extends THREE.EventDispatcher {
 
 				{
 					let pr = 0;
-					if (viewer.scene.cameraMode === CameraMode.PERSPECTIVE) {
+					if (this.viewer.scene.cameraMode === CameraMode.PERSPECTIVE) {
 						let distance = label.position.distanceTo(camera.position);
 						pr = projectedRadius(1, camera.fov * Math.PI / 180, distance, domElement.clientHeight);
 					} else {
@@ -235,7 +235,7 @@ class MeasuringTool extends THREE.EventDispatcher {
 				let label = measure.areaLabel;
 
 				let pr = 0;
-				if (viewer.scene.cameraMode === CameraMode.PERSPECTIVE) {
+				if (this.viewer.scene.cameraMode === CameraMode.PERSPECTIVE) {
 					let distance = label.position.distanceTo(camera.position);
 					pr = projectedRadius(1, camera.fov * Math.PI / 180, distance, domElement.clientHeight);
 				} else {

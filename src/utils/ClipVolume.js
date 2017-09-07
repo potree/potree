@@ -1,8 +1,11 @@
+const THREE = require('three');
+const $ = require('../jquery');
 
-Potree.ClipVolume = class extends THREE.Object3D {
-	constructor (args) {
+class ClipVolume extends THREE.Object3D {
+	constructor (viewer, args) {
 		super();
 
+		this.viewer = viewer;
 		this.constructor.counter = (this.constructor.counter === undefined) ? 0 : this.constructor.counter + 1;
 		this.name = `clip_volume_${this.constructor.counter}`;
 
@@ -220,7 +223,7 @@ Potree.ClipVolume = class extends THREE.Object3D {
 			}
 		}
 
-		this.dispatchEvent({'type': 'clip_volume_changed', 'viewer': viewer, 'volume': this});
+		this.dispatchEvent({'type': 'clip_volume_changed', 'viewer': this.viewer, 'volume': this});
 	}
 
 	rotate (args) {
@@ -256,7 +259,7 @@ Potree.ClipVolume = class extends THREE.Object3D {
 
 		this.updateLocalSystem();
 
-		this.dispatchEvent({'type': 'clip_volume_changed', 'viewer': viewer, 'volume': this});
+		this.dispatchEvent({'type': 'clip_volume_changed', 'viewer': this.viewer, 'volume': this});
 	}
 
 	update () {
@@ -290,3 +293,5 @@ Potree.ClipVolume = class extends THREE.Object3D {
 		}
 	};
 };
+
+module.exports = ClipVolume;

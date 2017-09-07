@@ -4,7 +4,7 @@ const HoverMenuItem = require('../stuff/HoverMenuItem');
 const context = require('../context');
 const projectedRadius = require('./projectedRadius');
 const projectedRadiusOrtho = require('./projectedRadiusOrtho');
-const ClipMode = require('../viewer/ClipMode');
+const CameraMode = require('../viewer/CameraMode');
 const $ = require('../jquery');
 
 class TransformationTool {

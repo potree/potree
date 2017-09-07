@@ -1,5 +1,7 @@
+const THREE = require('three');
+const context = require('../context');
 
-Potree.NavigationCube = class NavigationCube extends THREE.Object3D {
+class NavigationCube extends THREE.Object3D {
 	constructor (viewer) {
 		super();
 
@@ -12,7 +14,7 @@ Potree.NavigationCube = class NavigationCube extends THREE.Object3D {
 				side: THREE.DoubleSide
 			});
 			new THREE.TextureLoader().load(
-				Potree.resourcePath + '/textures/navigation/' + img,
+				context.resourcePath + '/textures/navigation/' + img,
 				function (texture) {
 					texture.anisotropy = viewer.renderer.getMaxAnisotropy();
 					material.map = texture;
@@ -108,3 +110,5 @@ Potree.NavigationCube = class NavigationCube extends THREE.Object3D {
 		this.camera.updateMatrixWorld();
 	}
 };
+
+module.exports = NavigationCube;

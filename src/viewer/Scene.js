@@ -3,6 +3,7 @@ const Annotation = require('../Annotation');
 const View = require('./View');
 const createGrid = require('../utils/createGrid');
 const createBackgroundTexture = require('../utils/createBackgroundTexture');
+const CameraMode = require('./CameraMode');
 
 class Scene extends THREE.EventDispatcher {
 	constructor () {
@@ -16,7 +17,7 @@ class Scene extends THREE.EventDispatcher {
 		this.cameraO = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 1000 * 1000);
 		this.cameraBG = new THREE.Camera();
 		this.cameraScreenSpace = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 10);
-		this.cameraMode = Potree.CameraMode.PERSPECTIVE;
+		this.cameraMode = CameraMode.PERSPECTIVE;
 		this.pointclouds = [];
 
 		this.measurements = [];
@@ -232,7 +233,7 @@ class Scene extends THREE.EventDispatcher {
 	}
 
 	getActiveCamera () {
-		return this.cameraMode === Potree.CameraMode.PERSPECTIVE ? this.cameraP : this.cameraO;
+		return this.cameraMode === CameraMode.PERSPECTIVE ? this.cameraP : this.cameraO;
 	}
 
 	initialize () {

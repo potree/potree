@@ -17,6 +17,7 @@ module.exports = {
 	getMousePointCloudIntersection: require('./utils/getMousePointCloudIntersection.js'),
 	pixelsArrayToImage: require('./utils/pixelsArrayToImage.js'),
 	projectedRadius: require('./utils/projectedRadius.js'),
+	projectedRadiusOrtho: require('./utils/projectedRadiusOrtho'),
 	topView: require('./utils/topView.js'),
 	frontView: require('./utils/frontView.js'),
 	leftView: require('./utils/leftView.js'),

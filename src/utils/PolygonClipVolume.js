@@ -1,5 +1,6 @@
+const THREE = require('three');
 
-Potree.PolygonClipVolume = class extends THREE.Object3D {
+class PolygonClipVolume extends THREE.Object3D {
 	constructor (camera) {
 		super();
 
@@ -141,3 +142,5 @@ Potree.PolygonClipVolume = class extends THREE.Object3D {
 		}
 	}
 };
+
+module.exports = PolygonClipVolume;

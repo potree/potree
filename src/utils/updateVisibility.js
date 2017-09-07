@@ -44,7 +44,7 @@ module.exports = function (pointclouds, camera, renderer) {
 		let maxLevel = pointcloud.maxLevel || Infinity;
 		let level = node.getLevel();
 		let visible = insideFrustum;
-		visible = visible && !(numVisiblePoints + node.getNumPoints() > contet.pointBudget);
+		visible = visible && !(numVisiblePoints + node.getNumPoints() > context.pointBudget);
 		visible = visible && level < maxLevel;
 
 		if (pointcloud.material.numClipBoxes > 0 && visible && pointcloud.material.clipMode === ClipMode.CLIP_OUTSIDE) {

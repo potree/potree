@@ -1,4 +1,6 @@
-Potree.utils.projectedRadiusOrtho (radius, proj, screenWidth, screenHeight) {
+const THREE = require('three');
+
+module.exports = function (radius, proj, screenWidth, screenHeight) {
 	let p1 = new THREE.Vector4(0);
 	let p2 = new THREE.Vector4(radius);
 

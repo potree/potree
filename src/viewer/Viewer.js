@@ -26,7 +26,7 @@ const getParameterByName = require('../utils/getParameterByName');
 const loadSkybox = require('../utils/loadSkybox');
 const context = require('../context');
 const ClippingTool = require('../utils/ClippingTool');
-const NavigationCube = require('../NavigationCube');
+const NavigationCube = require('./NavigationCube');
 const CameraMode = require('./CameraMode');
 const OrbitControls = require('../navigation/OrbitControls');
 const EarthControls = require('../navigation/EarthControls');
@@ -37,6 +37,7 @@ const ProgressBar = require('./ProgressBar');
 const Stats = require('stats.js');
 const updatePointClouds = require('../utils/updatePointClouds');
 const GLQueries = require('../webgl/GLQueries');
+const projectedRadiusOrtho = require('../utils/projectedRadiusOrtho');
 
 class PotreeViewer extends THREE.EventDispatcher {
 	constructor (domElement, args) {
@@ -977,7 +978,7 @@ class PotreeViewer extends THREE.EventDispatcher {
 					let projFactor = 0.5 * this.renderArea.clientHeight / (slope * distance);
 					screenSize = radius * projFactor;
 				} else {
-					screenSize = Potree.utils.projectedRadiusOrtho(radius, viewer.scene.cameraO.projectionMatrix, this.renderArea.clientWidth, this.renderArea.clientHeight);
+					screenSize = projectedRadiusOrtho(radius, viewer.scene.cameraO.projectionMatrix, this.renderArea.clientWidth, this.renderArea.clientHeight);
 				}
 			}
 

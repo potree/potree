@@ -7,7 +7,6 @@ const computeTransformedBoundingBox = require('../utils/computeTransformedBoundi
 const PointSizeType = require('../materials/PointSizeType');
 const PointColorType = require('../materials/PointColorType');
 const ProfileRequest = require('../ProfileRequest');
-const ClipMode = require('../materials/ClipMode');
 
 class PointCloudOctree extends PointCloudTree {
 	constructor (geometry, material) {

@@ -8,8 +8,6 @@
 ** All code in this book may also be considered licensed under an MIT license.
 */
 
-
-
 function BinaryHeap (scoreFunction) {
 	this.content = [];
 	this.scoreFunction = scoreFunction;

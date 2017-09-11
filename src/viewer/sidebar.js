@@ -3015,8 +3015,8 @@ initSidebar = (viewer) => {
 			}
 		};
 
-		$('#optClipMode').selectmenu();
-		$('#optClipMode').val(toClipModeString(viewer.getClipMode())).selectmenu('refresh');
+		//$('#optClipMode').selectmenu();
+		//$('#optClipMode').val(toClipModeString(viewer.getClipMode())).selectmenu('refresh');
 		$('#optClipMode').selectmenu({
 			change: function (event, ui) {
 				viewer.setClipMode(toClipModeCode(ui.item.value));

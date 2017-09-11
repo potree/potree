@@ -659,17 +659,6 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 		unloadedGeometry[i].load();
 	}
 
-	// for(let node of visibleNodes){
-	//	let allowedNodes = ["r", "r0", "r4"];
-	//	node.sceneNode.visible = allowedNodes.includes(node.geometryNode.name);
-	//
-	//	if(node.boundingBoxNode){
-	//		node.boundingBoxNode.visible = node.boundingBoxNode.visible && node.sceneNode.visible;
-	//	}
-	// }
-
-	// Potree.updateDEMs(renderer, visibleNodes);
-
 	return {
 		visibleNodes: visibleNodes,
 		numVisiblePoints: numVisiblePoints,
@@ -677,260 +666,596 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 	};
 };
 
-/*
-//
-// WAY TOO SLOW WITH SYNCHRONOUS READ PIXEL
-//
-Potree.DEMRenderer = class{
-	constructor(renderer){
-		this.renderer = renderer;
 
-		this.tileWidth = 64;
-		this.tileHeight = 64;
 
-		//this.target = new THREE.WebGLRenderTarget( 64, 64, {
-		//	minFilter: THREE.NearestFilter,
-		//	magFilter: THREE.NearestFilter,
-		//	format: THREE.RGBAFormat,
-		//	type: THREE.FloatType
-		//} );
-		//this.target.depthTexture = new THREE.DepthTexture();
-        //this.target.depthTexture.type = THREE.UnsignedIntType;
 
-		this.targetElevation = new THREE.WebGLRenderTarget( this.tileWidth, this.tileHeight, {
-			minFilter: THREE.NearestFilter,
-			magFilter: THREE.NearestFilter,
-			format: THREE.RGBAFormat,
-			//type: THREE.FloatType
-		});
 
-		this.targetMedian = new THREE.WebGLRenderTarget( this.tileWidth, this.tileHeight, {
-			minFilter: THREE.NearestFilter,
-			magFilter: THREE.NearestFilter,
-			format: THREE.RGBAFormat,
-			//type: THREE.FloatType
-		});
 
-		this.vsElevation = `
-			precision mediump float;
-			precision mediump int;
 
-			attribute vec3 position;
 
-			uniform mat4 modelMatrix;
-			uniform mat4 modelViewMatrix;
-			uniform mat4 projectionMatrix;
 
-			varying float vElevation;
 
-			void main(){
-				vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
-				gl_Position = projectionMatrix * mvPosition;
-				gl_PointSize = 1.0;
 
-				vElevation = position.z;
-			}
-		`;
 
-		this.fsElevation = `
-					precision mediump float;
-					precision mediump int;
 
-					varying float vElevation;
 
-					void main(){
-						gl_FragColor = vec4(vElevation, 0.0, 0.0, 1.0);
-					}
-		`;
 
-		this.vsMedian = `
-			precision mediump float;
-			precision mediump int;
+// Copied from three.js: WebGLRenderer.js
+Potree.paramThreeToGL = function paramThreeToGL(_gl, p) {
 
-			attribute vec3 position;
-			attribute vec2 uv;
+	var extension;
 
-			uniform mat4 modelMatrix;
-			uniform mat4 modelViewMatrix;
-			uniform mat4 projectionMatrix;
+	if ( p === THREE.RepeatWrapping ) return _gl.REPEAT;
+	if ( p === THREE.ClampToEdgeWrapping ) return _gl.CLAMP_TO_EDGE;
+	if ( p === THREE.MirroredRepeatWrapping ) return _gl.MIRRORED_REPEAT;
 
-			varying vec2 vUV;
+	if ( p === THREE.NearestFilter ) return _gl.NEAREST;
+	if ( p === THREE.NearestMipMapNearestFilter ) return _gl.NEAREST_MIPMAP_NEAREST;
+	if ( p === THREE.NearestMipMapLinearFilter ) return _gl.NEAREST_MIPMAP_LINEAR;
 
-			void main() {
-				vUV = uv;
+	if ( p === THREE.LinearFilter ) return _gl.LINEAR;
+	if ( p === THREE.LinearMipMapNearestFilter ) return _gl.LINEAR_MIPMAP_NEAREST;
+	if ( p === THREE.LinearMipMapLinearFilter ) return _gl.LINEAR_MIPMAP_LINEAR;
 
-				vec4 mvPosition = modelViewMatrix * vec4(position,1.0);
+	if ( p === THREE.UnsignedByteType ) return _gl.UNSIGNED_BYTE;
+	if ( p === THREE.UnsignedShort4444Type ) return _gl.UNSIGNED_SHORT_4_4_4_4;
+	if ( p === THREE.UnsignedShort5551Type ) return _gl.UNSIGNED_SHORT_5_5_5_1;
+	if ( p === THREE.UnsignedShort565Type ) return _gl.UNSIGNED_SHORT_5_6_5;
 
-				gl_Position = projectionMatrix * mvPosition;
-			}
-		`;
+	if ( p === THREE.ByteType ) return _gl.BYTE;
+	if ( p === THREE.ShortType ) return _gl.SHORT;
+	if ( p === THREE.UnsignedShortType ) return _gl.UNSIGNED_SHORT;
+	if ( p === THREE.IntType ) return _gl.INT;
+	if ( p === THREE.UnsignedIntType ) return _gl.UNSIGNED_INT;
+	if ( p === THREE.FloatType ) return _gl.FLOAT;
 
-		this.fsMedian = `
+	if ( p === THREE.HalfFloatType ) {
 
-			precision mediump float;
-			precision mediump int;
+		extension = extensions.get( 'OES_texture_half_float' );
 
-			uniform float uWidth;
-			uniform float uHeight;
-			uniform sampler2D uTexture;
-
-			varying vec2 vUV;
-
-			void main(){
-				vec2 uv = gl_FragCoord.xy / vec2(uWidth, uHeight);
-
-				vec4 color = texture2D(uTexture, uv);
-				gl_FragColor = color;
-                if(color.a == 0.0){
-
-                    vec4 sum;
-
-                    float minVal = 1.0 / 0.0;
-
-                    float sumA = 0.0;
-					for(int i = -1; i <= 1; i++){
-						for(int j = -1; j <= 1; j++){
-							vec2 n = gl_FragCoord.xy + vec2(i, j);
-                            vec2 uv = n / vec2(uWidth, uHeight);
-                            vec4 c = texture2D(uTexture, uv);
-
-                            if(c.a == 1.0){
-                            	minVal = min(c.r, minVal);
-                            }
-
-                            sumA += c.a;
-						}
-					}
-
-                    if(sumA > 0.0){
-                    	gl_FragColor = vec4(minVal, 0.0, 0.0, 1.0);
-                    }else{
-                    	discard;
-                    }
-				}else{
-					//gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);
-					gl_FragColor = vec4(color.rgb, 1.0);
-				}
-
-			}
-
-		`;
-
-		this.elevationMaterial = new THREE.RawShaderMaterial( {
-			vertexShader: this.vsElevation,
-			fragmentShader: this.fsElevation,
-		} );
-
-		this.medianFilterMaterial = new THREE.RawShaderMaterial( {
-			uniforms: {
-				uWidth: {value: 1.0},
-				uHeight: {value: 1.0},
-				uTexture: {type: "t", value: this.targetElevation.texture}
-			},
-			vertexShader: this.vsMedian,
-			fragmentShader: this.fsMedian,
-		});
-
-		this.camera = new THREE.OrthographicCamera(0, 1, 1, 0, 0, 1);
+		if ( extension !== null ) return extension.HALF_FLOAT_OES;
 
 	}
 
-	render(pointcloud, node){
-		if(!node.geometryNode){
-			return;
+	if ( p === THREE.AlphaFormat ) return _gl.ALPHA;
+	if ( p === THREE.RGBFormat ) return _gl.RGB;
+	if ( p === THREE.RGBAFormat ) return _gl.RGBA;
+	if ( p === THREE.LuminanceFormat ) return _gl.LUMINANCE;
+	if ( p === THREE.LuminanceAlphaFormat ) return _gl.LUMINANCE_ALPHA;
+	if ( p === THREE.DepthFormat ) return _gl.DEPTH_COMPONENT;
+	if ( p === THREE.DepthStencilFormat ) return _gl.DEPTH_STENCIL;
+
+	if ( p === THREE.AddEquation ) return _gl.FUNC_ADD;
+	if ( p === THREE.SubtractEquation ) return _gl.FUNC_SUBTRACT;
+	if ( p === THREE.ReverseSubtractEquation ) return _gl.FUNC_REVERSE_SUBTRACT;
+
+	if ( p === THREE.ZeroFactor ) return _gl.ZERO;
+	if ( p === THREE.OneFactor ) return _gl.ONE;
+	if ( p === THREE.SrcColorFactor ) return _gl.SRC_COLOR;
+	if ( p === THREE.OneMinusSrcColorFactor ) return _gl.ONE_MINUS_SRC_COLOR;
+	if ( p === THREE.SrcAlphaFactor ) return _gl.SRC_ALPHA;
+	if ( p === THREE.OneMinusSrcAlphaFactor ) return _gl.ONE_MINUS_SRC_ALPHA;
+	if ( p === THREE.DstAlphaFactor ) return _gl.DST_ALPHA;
+	if ( p === THREE.OneMinusDstAlphaFactor ) return _gl.ONE_MINUS_DST_ALPHA;
+
+	if ( p === THREE.DstColorFactor ) return _gl.DST_COLOR;
+	if ( p === THREE.OneMinusDstColorFactor ) return _gl.ONE_MINUS_DST_COLOR;
+	if ( p === THREE.SrcAlphaSaturateFactor ) return _gl.SRC_ALPHA_SATURATE;
+
+	if ( p === THREE.RGB_S3TC_DXT1_Format || p === RGBA_S3TC_DXT1_Format ||
+		p === THREE.RGBA_S3TC_DXT3_Format || p === RGBA_S3TC_DXT5_Format ) {
+
+		extension = extensions.get( 'WEBGL_compressed_texture_s3tc' );
+
+		if ( extension !== null ) {
+
+			if ( p === THREE.RGB_S3TC_DXT1_Format ) return extension.COMPRESSED_RGB_S3TC_DXT1_EXT;
+			if ( p === THREE.RGBA_S3TC_DXT1_Format ) return extension.COMPRESSED_RGBA_S3TC_DXT1_EXT;
+			if ( p === THREE.RGBA_S3TC_DXT3_Format ) return extension.COMPRESSED_RGBA_S3TC_DXT3_EXT;
+			if ( p === THREE.RGBA_S3TC_DXT5_Format ) return extension.COMPRESSED_RGBA_S3TC_DXT5_EXT;
+
 		}
 
-		Potree.timerQueriesEnabled = true;
-		let start = new Date().getTime();
-		let queryAll = Potree.startQuery("All", this.renderer.getContext());
-
-		this.renderer.setClearColor(0x0000FF, 0);
-		this.renderer.clearTarget( this.target, true, true, true );
-		this.renderer.clearTarget(this.targetElevation, true, true, false );
-		this.renderer.clearTarget(this.targetMedian, true, true, false );
-
-		let box = node.geometryNode.boundingBox;
-
-		this.camera.up.set(0, 0, 1);
-		//this.camera.rotation.x = Math.PI / 2;
-		this.camera.left = box.min.x;
-		this.camera.right = box.max.x;
-		this.camera.top = box.max.y;
-		this.camera.bottom = box.min.y;
-		this.camera.near = -1000;
-		this.camera.far = 1000;
-		this.camera.updateProjectionMatrix();
-
-		let scene = new THREE.Scene();
-		//let material = new THREE.PointsMaterial({color: 0x00ff00, size: 0.0001});
-		let material = this.elevationMaterial;
-		let points = new THREE.Points(node.geometryNode.geometry, material);
-		scene.add(points);
-
-		this.renderer.render(points, this.camera, this.targetElevation);
-
-		this.medianFilterMaterial.uniforms.uWidth.value = this.targetMedian.width;
-		this.medianFilterMaterial.uniforms.uHeight.value = this.targetMedian.height;
-		this.medianFilterMaterial.uniforms.uTexture.value = this.targetElevation.texture;
-
-		Potree.utils.screenPass.render(this.renderer, this.medianFilterMaterial, this.targetMedian);
-
-		Potree.endQuery(queryAll, this.renderer.getContext());
-		Potree.resolveQueries(this.renderer.getContext());
-		Potree.timerQueriesEnabled = false;
-
-		setTimeout( () => {
-			let start = new Date().getTime();
-
-			let pixelCount = this.tileWidth * this.tileHeight;
-			let buffer = new Uint8Array(4 * pixelCount);
-			this.renderer.readRenderTargetPixels(this.targetMedian,
-				0, 0, this.tileWidth, this.tileHeight,
-				buffer);
-
-			let end = new Date().getTime();
-			let duration = end - start;
-			console.log(`read duration: ${duration}ms`);
-		}, 3000);
-
-		let end = new Date().getTime();
-		let duration = end - start;
-
-		console.log(`duration: ${duration}ms`);
-
-		//{ // open window with image
-		//
-		//	let pixelCount = this.tileWidth * this.tileHeight;
-		//	let buffer = new Float32Array(4 * pixelCount);
-		//	this.renderer.readRenderTargetPixels(this.targetMedian,
-		//		0, 0, this.tileWidth, this.tileHeight,
-		//		buffer);
-		//
-		//	let uiBuffer = new Uint8Array(4 * pixelCount);
-		//	for(let i = 0; i < pixelCount; i++){
-		//		uiBuffer[i] = buffer[i] / 1.0;
-		//	}
-		//
-		//	let img = Potree.utils.pixelsArrayToImage(uiBuffer, this.tileWidth, this.tileHeight);
-		//	let screenshot = img.src;
-		//
-		//	if(!this.debugDIV){
-		//		this.debugDIV = $(`
-		//			<div id="pickDebug"
-		//			style="position: absolute;
-		//			right: 400px; width: 300px;
-		//			bottom: 44px; width: 300px;
-		//			z-index: 1000;
-		//			"></div>`);
-		//		$(document.body).append(this.debugDIV);
-		//	}
-		//
-		//	this.debugDIV.empty();
-		//	this.debugDIV.append($(`<img src="${screenshot}"
-		//		style="transform: scaleY(-1);"/>`));
-		//	//$(this.debugWindow.document).append($(`<img src="${screenshot}"/>`));
-		//	//this.debugWindow.document.write('<img src="'+screenshot+'"/>');
-		//}
 	}
+
+	if ( p === THREE.RGB_PVRTC_4BPPV1_Format || p === THREE.RGB_PVRTC_2BPPV1_Format ||
+		p === THREE.RGBA_PVRTC_4BPPV1_Format || p === THREE.RGBA_PVRTC_2BPPV1_Format ) {
+
+		extension = extensions.get( 'WEBGL_compressed_texture_pvrtc' );
+
+		if ( extension !== null ) {
+
+			if ( p === THREE.RGB_PVRTC_4BPPV1_Format ) return extension.COMPRESSED_RGB_PVRTC_4BPPV1_IMG;
+			if ( p === THREE.RGB_PVRTC_2BPPV1_Format ) return extension.COMPRESSED_RGB_PVRTC_2BPPV1_IMG;
+			if ( p === THREE.RGBA_PVRTC_4BPPV1_Format ) return extension.COMPRESSED_RGBA_PVRTC_4BPPV1_IMG;
+			if ( p === THREE.RGBA_PVRTC_2BPPV1_Format ) return extension.COMPRESSED_RGBA_PVRTC_2BPPV1_IMG;
+
+		}
+
+	}
+
+	if ( p === THREE.RGB_ETC1_Format ) {
+
+		extension = extensions.get( 'WEBGL_compressed_texture_etc1' );
+
+		if ( extension !== null ) return extension.COMPRESSED_RGB_ETC1_WEBGL;
+
+	}
+
+	if ( p === THREE.MinEquation || p ===THREE. MaxEquation ) {
+
+		extension = extensions.get( 'EXT_blend_minmax' );
+
+		if ( extension !== null ) {
+
+			if ( p === THREE.MinEquation ) return extension.MIN_EXT;
+			if ( p === THREE.MaxEquation ) return extension.MAX_EXT;
+
+		}
+
+	}
+
+	if ( p === UnsignedInt248Type ) {
+
+		extension = extensions.get( 'WEBGL_depth_texture' );
+
+		if ( extension !== null ) return extension.UNSIGNED_INT_24_8_WEBGL;
+
+	}
+
+	return 0;
+
 };
-*/
+
+Potree.Shader = class Shader{
+	
+	constructor(gl, name, vsSource, fsSource){
+		this.gl = gl;
+		this.name = name;
+		this.vsSource = vsSource;
+		this.fsSource = fsSource;
+		
+		this.vs = gl.createShader(gl.VERTEX_SHADER);
+		this.fs = gl.createShader(gl.FRAGMENT_SHADER);
+		this.program = gl.createProgram();
+		
+		this.uniformLocations = {};
+		this.attributeLocations = {};
+		
+		this.update(vsSource, fsSource);
+	}
+	
+	update(vsSource, fsSource){
+		this.vsSource = vsSource;
+		this.fsSource = fsSource;
+		
+		this.linkProgram();
+	}
+	
+	compileShader(shader, source){
+		let gl = this.gl;
+		
+		gl.shaderSource(shader, source);
+		
+		gl.compileShader(shader);
+		
+		let success = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
+		if(!success){
+			let info = gl.getShaderInfoLog(shader);
+			throw `could not compile shader ${this.name}: ${info}`;
+		}
+	}
+	
+	linkProgram(){
+		
+		let gl = this.gl;
+		
+		this.compileShader(this.vs, this.vsSource);
+		this.compileShader(this.fs, this.fsSource);
+		
+		let program = this.program;
+		
+		gl.attachShader(program, this.vs);
+		gl.attachShader(program, this.fs);
+		
+		gl.linkProgram(program);
+		
+		gl.detachShader(program, this.vs);
+		gl.detachShader(program, this.fs);
+		
+		let success = gl.getProgramParameter(program, gl.LINK_STATUS);
+		if(!success){
+			let info = gl.getProgramInfoLog (program);
+			throw `could not link program ${this.name}: ${info}`;
+		}
+		
+		{ // attribute locations
+			let numAttributes = gl.getProgramParameter(program, gl.ACTIVE_ATTRIBUTES);
+			
+			for(let i = 0; i < numAttributes; i++){
+				let attribute = gl.getActiveAttrib(program, i);
+				
+				let location = gl.getAttribLocation(program, attribute.name);
+				
+				this.attributeLocations[attribute.name] = location;
+			}
+		}
+		
+		{ // uniform locations
+			let numUniforms = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
+			
+			for(let i = 0; i < numUniforms; i++){
+				let uniform = gl.getActiveUniform(program, i);
+				
+				let location = gl.getUniformLocation(program, uniform.name);
+				
+				this.uniformLocations[uniform.name] = location;
+			}
+		}
+		
+		
+	}
+	
+	setUniform(name, value){
+		
+		let gl = this.gl;
+		let location = this.uniformLocations[name];
+		
+		if(location == null){
+			return;
+		}
+		
+		if(value instanceof THREE.Matrix4){
+			gl.uniformMatrix4fv(location, false, value.elements);
+		}else if(typeof value === "number"){
+			gl.uniform1f(location, value);
+		}else if(typeof value === "boolean"){
+			gl.uniform1i(location, value);
+		}else if(value instanceof Potree.WebGLTexture){
+			gl.uniform1i(location, value);
+		}else{
+			console.error("unhandled uniform type: ", name, value);
+		}
+	}
+		
+		
+	setUniform1i(name, value){
+		let gl = this.gl;
+		let location = this.uniformLocations[name];
+		
+		if(location == null){
+			return;
+		}
+		
+		gl.uniform1i(location, value);
+	}
+	
+};
+
+
+Potree.WebGLBuffers = class WebGLBuffers{
+	
+	constructor(){
+		this.bufferGeometry = null;
+		this.vbos = new Map();
+	}
+	
+};
+
+Potree.WebGLTexture = class WebGLTexture{
+	
+	constructor(gl, texture){
+		this.gl = gl;
+		
+		this.texture = texture;
+		this.id = gl.createTexture();
+		
+		this.target = gl.TEXTURE_2D;
+		this.version = -1;
+		
+		this.update(texture);
+	}
+	
+	update(){
+		
+		let gl = this.gl;
+		let texture = this.texture;
+		
+		if(texture.version <= this.version){
+			return;
+		}
+		
+		this.target = gl.TEXTURE_2D;
+		
+		gl.bindTexture(this.target, this.id);
+		
+		let level = 0;
+		let internalFormat = Potree.paramThreeToGL(gl, texture.format);
+		let width = texture.image.width;
+		let height = texture.image.height;
+		let border = 0;
+		let srcFormat = internalFormat;
+		let srcType = Potree.paramThreeToGL(gl, texture.type);
+		let data = texture.image.data;
+		
+		gl.texImage2D(this.target, level, internalFormat,
+                width, height, border, srcFormat, srcType,
+                data);
+		
+		gl.texParameteri(this.target, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+		gl.texParameteri(this.target, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+		
+		gl.texParameteri(this.target, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+		gl.texParameteri(this.target, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+		
+		gl.bindTexture(this.target, null);
+		
+		texture.needsUpdate = false;
+	}
+	
+	
+	
+};
+
+
+Potree.Renderer = class{
+	
+	constructor(threeRenderer){
+		this.threeRenderer = threeRenderer;
+		this.gl = this.threeRenderer.context;
+		
+		this.buffers = new Map();
+		this.shaders = new Map();
+		this.textures = new Map();
+		
+		
+		this.toggle = 0;
+	}
+	
+	createBuffers(bufferGeometry){
+		
+		let gl = this.gl;
+		let buffers = new Potree.WebGLBuffers();
+		buffers.bufferGeometry = bufferGeometry;
+		
+		for(let attribute of Object.values(bufferGeometry.attributes)){
+			
+			let vbo = gl.createBuffer();
+			gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+			gl.bufferData(gl.ARRAY_BUFFER, attribute.array, gl.STATIC_DRAW);
+
+			let type = gl.FLOAT;
+			if(attribute.array instanceof Float32Array){
+				type = gl.FLOAT;
+			}else if(attribute.array instanceof Uint8Array){
+				type = gl.UNSIGNED_BYTE;
+			}else if(attribute.array instanceof Int8Array){
+				type = gl.BYTE;
+			}else if(attribute.array instanceof Uint16Array){
+				type = gl.UNSIGNED_SHORT;
+			}else if(attribute.array instanceof Int16Array){
+				type = gl.SHORT;
+			}else if(attribute.array instanceof Uint32Array){
+				type = gl.UNSIGNED_INT;
+			}else if(attribute.array instanceof Int32Array){
+				type = gl.INT;
+			}
+			
+			buffers.vbos.set(attribute, {
+				id: vbo,
+				type: type
+			});
+		}
+		
+		gl.bindBuffer(gl.ARRAY_BUFFER, null);
+		
+		return buffers;
+	}
+	
+	traverse(scene){
+		
+		let octrees = [];
+		
+		let stack = [scene];
+		while(stack.length > 0){
+			
+			let node = stack.pop();
+			
+			if(node instanceof Potree.PointCloudTree){
+				octrees.push(node);
+				continue;
+			}
+			
+			let visibleChildren = node.children.filter(c => c.visible);
+			stack.push(...visibleChildren);
+			
+		}
+		
+		let result = {
+			octrees: octrees
+		};
+		
+		return result;
+	}
+	
+	render(scene, camera, target, params = {}){
+		
+		let gl = this.gl;
+		
+		let doLog = this.toggle > 100;
+		this.toggle = this.toggle > 100 ? 0 : this.toggle + 1;
+		
+		let shadowMaps = params.shadowMaps == null ? [] : params.shadowMaps;
+		
+		if(target != null){
+			this.threeRenderer.setRenderTarget(target);
+		}
+		
+		
+		let traversalResult = this.traverse(scene);
+		
+		let view = camera.matrixWorldInverse;
+		let proj = camera.projectionMatrix;
+		let worldView = new THREE.Matrix4();
+		
+		for(let octree of traversalResult.octrees){
+			
+			let material = octree.material;
+			
+			if(!this.shaders.has(material)){
+				let [vs, fs] = [material.vertexShader, material.fragmentShader];
+				let shader = new Potree.Shader(gl, "pointcloud", vs, fs);
+				
+				this.shaders.set(material, shader);
+			}
+			let shader = this.shaders.get(material);
+			if(material.needsUpdate){
+				let [vs, fs] = [material.vertexShader, material.fragmentShader];
+				shader.update(vs, fs);
+				
+				material.needsUpdate = false;
+			}
+			
+			for(let uniformName of Object.keys(material.uniforms)){
+				let uniform = material.uniforms[uniformName];
+				
+				if(uniform.type == "t"){
+					
+					let texture = uniform.value;
+					
+					if(!this.textures.has(texture)){
+						let webglTexture = new Potree.WebGLTexture(gl, texture);
+						
+						this.textures.set(texture, webglTexture);
+					}
+					
+					let webGLTexture = this.textures.get(texture);
+					webGLTexture.update();
+					
+					
+				}
+			}
+			
+			gl.useProgram(shader.program);
+			
+			shader.setUniform("projectionMatrix", proj);
+			shader.setUniform("viewMatrix", view);
+			shader.setUniform("fov", Math.PI * camera.fov / 180);
+			shader.setUniform("maxSize", 50);
+			shader.setUniform("minSize", 2);
+			shader.setUniform("rgbGamma", material.rgbGamma);
+			shader.setUniform("rgbContrast", material.rgbContrast);
+			shader.setUniform("rgbBrightness", material.rgbBrightness);
+			shader.setUniform("screenHeight", material.screenHeight);
+			shader.setUniform("screenWidth", material.screenWidth);
+			shader.setUniform("size", material.size);
+			shader.setUniform("spacing", material.spacing);
+			shader.setUniform("useOrthographicCamera", material.useOrthographicCamera);
+			shader.setUniform("octreeSize", material.uniforms.octreeSize.value);
+			
+			shader.setUniform("useShadowMap", shadowMaps.length > 0);
+			
+			
+			let vnWebGLTexture = this.textures.get(material.visibleNodesTexture);
+			shader.setUniform1i("visibleNodesTexture", 0);
+			gl.activeTexture(gl.TEXTURE0);
+			gl.bindTexture(vnWebGLTexture.target, vnWebGLTexture.id);
+			//shader.setUniform("visibleNodesTexture", vnWebGLTexture);
+			
+			
+			for(let node of octree.visibleNodes){
+				
+				let world = node.sceneNode.matrixWorld;
+				worldView.multiplyMatrices(view, world);
+				
+				let vnStart = octree.visibleNodeTextureOffsets.get(node);
+				
+				shader.setUniform("modelMatrix", world);
+				shader.setUniform("modelViewMatrix", worldView);
+				shader.setUniform("level", node.getLevel());
+				shader.setUniform("vnStart", vnStart);
+				
+				if(shadowMaps.length > 0){
+				
+					let view = shadowMaps[0].camera.matrixWorldInverse;
+					let proj = shadowMaps[0].camera.projectionMatrix;
+					
+					let worldView = new THREE.Matrix4()
+						.multiplyMatrices(view, world);
+					let worldViewProj = new THREE.Matrix4()
+						.multiplyMatrices(proj, worldView);
+					shader.setUniform("smWorldViewProj", worldViewProj);
+					
+					shader.setUniform1i("shadowMap", 1);
+					let id = this.threeRenderer.properties.get(shadowMaps[0].map.depthTexture)
+						.__webglTexture;
+					gl.activeTexture(gl.TEXTURE1);
+					gl.bindTexture(gl.TEXTURE_2D, id)
+				}
+				
+				let bufferGeometry = node.geometryNode.geometry;
+				
+				if(!this.buffers.has(bufferGeometry)){
+					let buffers = this.createBuffers(bufferGeometry);
+					this.buffers.set(bufferGeometry, buffers);
+				}
+				
+				let buffers = this.buffers.get(bufferGeometry);
+				
+				for(let attributeName of Object.keys(bufferGeometry.attributes)){
+					
+					let attribute = bufferGeometry.attributes[attributeName];
+					let buffer = buffers.vbos.get(attribute);
+
+					let itemSize = attribute.itemSize;
+					let normalized = attribute.normalized;
+					let stride = 0;
+					let offset = 0;
+					
+					let location = shader.attributeLocations[attributeName];
+					
+					if(location == null){
+						//gl.bindBuffer(gl.ARRAY_BUFFER, buffer.id);
+						//gl.disableVertexAttribArray(location);
+					}else{
+						gl.bindBuffer(gl.ARRAY_BUFFER, buffer.id);
+						gl.vertexAttribPointer(location, 
+							itemSize, buffer.type, normalized, stride, offset);
+						gl.enableVertexAttribArray(location);
+					}
+					
+					
+				}
+				
+				let numPoints = bufferGeometry.attributes.position.count;
+				gl.drawArrays(gl.POINTS, 0, numPoints);
+				
+				
+				
+			}
+			
+			//if(doLog) console.log(octree);
+			//if(doLog) console.log(octree.visibleNodes);
+			
+		}
+		
+		gl.activeTexture(gl.TEXTURE1);
+		gl.bindTexture(gl.TEXTURE_2D, null)
+		
+		
+		
+		//if(doLog) console.log(traversalResult);
+		this.threeRenderer.resetGLState();
+	}
+	
+	
+	
+};
+
+
+
+
+
+
+
+

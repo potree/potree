@@ -193,7 +193,6 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 		this._useClipBox = false;
 		this.numClipBoxes = 0;
 		this._weighted = false;
-		this._depthMap = null;
 		this._gradient = Potree.Gradients.SPECTRAL;
 		this._classification = Potree.Classification.DEFAULT;
 		this.gradientTexture = Potree.PointCloudMaterial.generateGradientTexture(this._gradient);
@@ -249,7 +248,6 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 			clipPolygonVCount:	{ type: "iv", value: [] },
 			clipPolygonVP:		{ type: "Matrix4fv", value: [] },
 			toModel:			{ type: "Matrix4f", value: [] },
-			depthMap: 			{ type: "t", value: null },
 			diffuse:			{ type: "fv", value: [1,1,1]},
 			transition:         { type: "f", value: 0.5 },
 			intensityRange:     { type: "fv", value: [0, 65000] },
@@ -282,14 +280,6 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 	updateShaderSource () {
 		this.vertexShader = this.getDefines() + Potree.Shaders['pointcloud.vs'];
 		this.fragmentShader = this.getDefines() + Potree.Shaders['pointcloud.fs'];
-
-		if (this.depthMap) {
-			this.uniforms.depthMap.value = this.depthMap;
-			// this.depthMap = depthMap;
-			// this.setValues({
-			//	depthMap: this.depthMap,
-			// });
-		}
 
 		if (this.opacity === 1.0) {
 			this.blending = THREE.NoBlending;
@@ -645,17 +635,6 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 				type: 'material_property_changed',
 				target: this
 			});
-		}
-	}
-
-	get depthMap () {
-		return this._depthMap;
-	}
-
-	set depthMap (value) {
-		if (this._depthMap !== value) {
-			this._depthMap = value;
-			this.updateShaderSource();
 		}
 	}
 

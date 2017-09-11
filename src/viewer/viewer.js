@@ -520,6 +520,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		this.potreeRenderer = null;
 		this.edlRenderer = null;
 		this.renderer = null;
+		this.pRenderer = null;
 
 		this.scene = null;
 
@@ -537,6 +538,19 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		this.background = null;
 
 		this.initThree();
+		
+		this.pRenderer = new Potree.Renderer(this.renderer);
+		
+		{
+			let near = 2.5;
+			let far = 10.0;
+			let fov = 90;
+			
+			this.shadowTestCam = new THREE.PerspectiveCamera(90, 1, near, far);
+			this.shadowTestCam.position.set(3.50, -2.80, 8.561);
+			this.shadowTestCam.lookAt(new THREE.Vector3(0, 0, 4.87));
+		}
+		
 
 		let scene = new Potree.Scene(this.renderer);
 		this.setScene(scene);
@@ -1321,6 +1335,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 
 		// enable frag_depth extension for the interpolation shader, if available
 		this.renderer.context.getExtension('EXT_frag_depth');
+		this.renderer.context.getExtension('WEBGL_depth_texture');
 	}
 
 	updateAnnotations () {
@@ -1449,6 +1464,16 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		//
 		//	window.urlToggle += delta;
 		//}
+		
+		{
+			let u = Math.sin(0.0005 * timestamp) * 0.5 - 0.4;
+			
+			let x = Math.cos(u);
+			let y = Math.sin(u);
+			
+			this.shadowTestCam.position.set(7 * x, 7 * y, 8.561);
+			this.shadowTestCam.lookAt(new THREE.Vector3(0, 0, 0));
+		}
 		
 		
 		let scene = this.scene;
@@ -1745,7 +1770,11 @@ class PotreeRenderer {
 		
 		//var queryPC = Potree.startQuery("PointCloud", viewer.renderer.getContext());
 		let activeCam = viewer.scene.getActiveCamera();
-		viewer.renderer.render(viewer.scene.scenePointCloud, activeCam);
+		//viewer.renderer.render(viewer.scene.scenePointCloud, activeCam);
+		
+		viewer.pRenderer.render(viewer.scene.scenePointCloud, activeCam);
+		
+		
 		//Potree.endQuery(queryPC, viewer.renderer.getContext());
 		
 		// render scene
@@ -1796,6 +1825,9 @@ class EDLRenderer {
 		this.initEDL = this.initEDL.bind(this);
 		this.resize = this.resize.bind(this);
 		this.render = this.render.bind(this);
+		
+		
+		
 	}
 
 	initEDL () {
@@ -1815,6 +1847,26 @@ class EDLRenderer {
 		});
 		this.rtColor.depthTexture = new THREE.DepthTexture();
 		this.rtColor.depthTexture.type = THREE.UnsignedIntType;
+		
+		
+		this.rtShadow = new THREE.WebGLRenderTarget(1024, 1024, {
+			minFilter: THREE.NearestFilter,
+			magFilter: THREE.NearestFilter,
+			format: THREE.RGBAFormat,
+			type: THREE.FloatType
+		});
+		this.rtShadow.depthTexture = new THREE.DepthTexture();
+		this.rtShadow.depthTexture.type = THREE.UnsignedIntType;
+		
+		
+		//{
+		//	let geometry = new THREE.PlaneBufferGeometry( 10, 7, 32 );
+		//	let material = new THREE.MeshBasicMaterial( {side: THREE.DoubleSide, map: this.rtShadow.texture} );
+		//	let plane = new THREE.Mesh( geometry, material );
+		//	plane.position.z = 0.2;
+		//	plane.position.y = -1;
+		//	this.viewer.scene.scene.add( plane );
+		//}
 	};
 
 	resize () {
@@ -1883,6 +1935,7 @@ class EDLRenderer {
 		
 		viewer.renderer.render(viewer.scene.scene, camera);
 		
+		viewer.renderer.clearTarget( this.rtShadow, true, true, true );
 		viewer.renderer.clearTarget( this.rtColor, true, true, true );
 		
 		let width = viewer.renderArea.clientWidth;
@@ -1901,22 +1954,20 @@ class EDLRenderer {
 			material.screenHeight = height;
 			material.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
 			material.uniforms.octreeSize.value = octreeSize;
-			//material.fov = viewer.scene.cameraP.fov * (Math.PI / 180);
 			material.spacing = pointcloud.pcoGeometry.spacing * Math.max(pointcloud.scale.x, pointcloud.scale.y, pointcloud.scale.z);
-			//material.near = camera.near;
-			//material.far = camera.far;
 		}
-		
-		viewer.renderer.render(viewer.scene.scenePointCloud, camera, this.rtColor);
-		viewer.renderer.render(viewer.scene.scene, camera, this.rtColor);
 
-		// bit of a hack here. The EDL pass will mess up the text of the volume tool
-		// so volume tool is rendered again afterwards
-		//viewer.volumeTool.render(this.rtColor);
-				
+		viewer.shadowTestCam.updateMatrixWorld();
+		viewer.shadowTestCam.matrixWorldInverse.getInverse(viewer.shadowTestCam.matrixWorld);
+		viewer.shadowTestCam.updateProjectionMatrix();
 		
-		//viewer.renderer.render(viewer.volumeTool.sceneVolume, camera, this.rtColor);
-		//viewer.renderer.render(viewer.clippingTool.sceneVolume, camera, this.rtColor);
+		viewer.pRenderer.render(viewer.scene.scenePointCloud, viewer.shadowTestCam, this.rtShadow);
+		
+		viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, this.rtColor, {
+			shadowMaps: [{map: this.rtShadow, camera: viewer.shadowTestCam}]
+		});
+		
+		viewer.renderer.render(viewer.scene.scene, camera, this.rtColor);
 		
 		{ // EDL OCCLUSION PASS
 			this.edlMaterial.uniforms.screenWidth.value = width;

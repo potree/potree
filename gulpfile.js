@@ -76,6 +76,8 @@ var paths = {
 		"src/viewer/NavigationCube.js",
 		"src/stuff/HoverMenu.js",
 		"src/webgl/GLProgram.js",
+		"src/InterleavedBuffer.js",
+		"src/utils/toInterleavedBufferAttribute.js",
 	],
 	laslaz: [
 		"build/workers/laslaz-worker.js",
@@ -102,7 +104,9 @@ var workers = {
 	"BinaryDecoderWorker": [
 		"src/workers/BinaryDecoderWorker.js",
 		"src/Version.js",
-		"src/loader/PointAttributes.js"
+		"src/loader/PointAttributes.js",
+		"src/InterleavedBuffer.js",
+		"src/utils/toInterleavedBufferAttribute.js",
 	],
 	"GreyhoundBinaryDecoderWorker": [
 		"libs/plasio/workers/laz-perf.js",

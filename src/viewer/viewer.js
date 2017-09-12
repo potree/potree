@@ -1334,8 +1334,15 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		this.skybox = Potree.utils.loadSkybox(new URL(Potree.resourcePath + '/textures/skybox2/').href);
 
 		// enable frag_depth extension for the interpolation shader, if available
-		this.renderer.context.getExtension('EXT_frag_depth');
-		this.renderer.context.getExtension('WEBGL_depth_texture');
+		let gl = this.renderer.context;
+		gl.getExtension('EXT_frag_depth');
+		gl.getExtension('WEBGL_depth_texture');
+		
+		let extVAO = gl.getExtension('OES_vertex_array_object');
+		gl.createVertexArray = extVAO.createVertexArrayOES.bind(extVAO);
+		gl.bindVertexArray = extVAO.bindVertexArrayOES.bind(extVAO);
+		
+		
 	}
 
 	updateAnnotations () {
@@ -1488,26 +1495,31 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			if (!pointcloud.material._defaultIntensityRangeChanged) {
 				let root = pointcloud.pcoGeometry.root;
 				if (root != null && root.loaded) {
-					let attributes = pointcloud.pcoGeometry.root.geometry.attributes;
-					if (attributes.intensity) {
-						let array = attributes.intensity.array;
-
-						// chose max value from the 0.75 percentile
-						let ordered = [];
-						for (let j = 0; j < array.length; j++) {
-							ordered.push(array[j]);
-						}
-						ordered.sort();
-						let capIndex = parseInt((ordered.length - 1) * 0.75);
-						let cap = ordered[capIndex];
-
-						if (cap <= 1) {
-							pointcloud.material.intensityRange = [0, 1];
-						} else if (cap <= 256) {
-							pointcloud.material.intensityRange = [0, 255];
-						} else {
-							pointcloud.material.intensityRange = [0, cap];
-						}
+					//let attributes = pointcloud.pcoGeometry.root.geometry.attributes;
+					let buffer = pointcloud.pcoGeometry.root.buffer;
+					let attIntensity = buffer.attributes.find(a => a.name === "intensity");
+					if (attIntensity) {
+						
+						console.error("not implemented");
+						
+						//let array = attributes.intensity.array;
+                        //
+						//// chose max value from the 0.75 percentile
+						//let ordered = [];
+						//for (let j = 0; j < array.length; j++) {
+						//	ordered.push(array[j]);
+						//}
+						//ordered.sort();
+						//let capIndex = parseInt((ordered.length - 1) * 0.75);
+						//let cap = ordered[capIndex];
+                        //
+						//if (cap <= 1) {
+						//	pointcloud.material.intensityRange = [0, 1];
+						//} else if (cap <= 256) {
+						//	pointcloud.material.intensityRange = [0, 255];
+						//} else {
+						//	pointcloud.material.intensityRange = [0, cap];
+						//}
 					}
 					// pointcloud._intensityMaxEvaluated = true;
 				}
@@ -1849,14 +1861,14 @@ class EDLRenderer {
 		this.rtColor.depthTexture.type = THREE.UnsignedIntType;
 		
 		
-		this.rtShadow = new THREE.WebGLRenderTarget(1024, 1024, {
-			minFilter: THREE.NearestFilter,
-			magFilter: THREE.NearestFilter,
-			format: THREE.RGBAFormat,
-			type: THREE.FloatType
-		});
-		this.rtShadow.depthTexture = new THREE.DepthTexture();
-		this.rtShadow.depthTexture.type = THREE.UnsignedIntType;
+		//this.rtShadow = new THREE.WebGLRenderTarget(1024, 1024, {
+		//	minFilter: THREE.NearestFilter,
+		//	magFilter: THREE.NearestFilter,
+		//	format: THREE.RGBAFormat,
+		//	type: THREE.FloatType
+		//});
+		//this.rtShadow.depthTexture = new THREE.DepthTexture();
+		//this.rtShadow.depthTexture.type = THREE.UnsignedIntType;
 		
 		
 		//{
@@ -1935,7 +1947,7 @@ class EDLRenderer {
 		
 		viewer.renderer.render(viewer.scene.scene, camera);
 		
-		viewer.renderer.clearTarget( this.rtShadow, true, true, true );
+		//viewer.renderer.clearTarget( this.rtShadow, true, true, true );
 		viewer.renderer.clearTarget( this.rtColor, true, true, true );
 		
 		let width = viewer.renderArea.clientWidth;
@@ -1961,10 +1973,10 @@ class EDLRenderer {
 		viewer.shadowTestCam.matrixWorldInverse.getInverse(viewer.shadowTestCam.matrixWorld);
 		viewer.shadowTestCam.updateProjectionMatrix();
 		
-		viewer.pRenderer.render(viewer.scene.scenePointCloud, viewer.shadowTestCam, this.rtShadow);
+		//viewer.pRenderer.render(viewer.scene.scenePointCloud, viewer.shadowTestCam, this.rtShadow);
 		
 		viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, this.rtColor, {
-			shadowMaps: [{map: this.rtShadow, camera: viewer.shadowTestCam}]
+			//shadowMaps: [{map: this.rtShadow, camera: viewer.shadowTestCam}]
 		});
 		
 		viewer.renderer.render(viewer.scene.scene, camera, this.rtColor);

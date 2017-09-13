@@ -2,9 +2,6 @@
 precision mediump float;
 precision mediump int;
 
-
-
-
 #define max_clip_boxes 30
 #define max_clip_polygons 8
 
@@ -16,28 +13,24 @@ attribute float returnNumber;
 attribute float numberOfReturns;
 attribute float pointSourceID;
 attribute vec4 indices;
-//attribute float indices;
 
 uniform mat4 modelMatrix;
 uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
 uniform mat4 viewMatrix;
-uniform bool useOrthographicCamera;
-
-uniform float pcIndex;
-
-//uniform mat4 toModel;
 
 uniform float screenWidth;
 uniform float screenHeight;
 uniform float fov;
-uniform float spacing;
 uniform float near;
 uniform float far;
+
+uniform bool useOrthographicCamera;
 uniform float orthoRange;
 
 uniform int clipMode;
 #if defined use_clip_box
+	uniform float clipBoxCount;
 	uniform mat4 clipBoxes[max_clip_boxes];
 #endif
 
@@ -46,20 +39,21 @@ uniform int clipPolygonVCount[max_clip_polygons];
 uniform vec3 clipPolygons[max_clip_polygons * 8];
 uniform mat4 clipPolygonVP[max_clip_polygons];
 
-
-uniform float heightMin;
-uniform float heightMax;
 uniform float size;				// pixel size factor
 uniform float minSize;			// minimum pixel size
 uniform float maxSize;			// maximum pixel size
+
+uniform float pcIndex;
+uniform float spacing;
 uniform float octreeSize;
 uniform vec3 bbSize;
-uniform vec3 uColor;
-uniform float opacity;
-uniform float clipBoxCount;
 uniform float level;
 uniform float vnStart;
 
+uniform vec3 uColor;
+uniform float opacity;
+
+uniform vec2 elevationRange;
 uniform vec2 intensityRange;
 uniform float intensityGamma;
 uniform float intensityContrast;
@@ -81,8 +75,10 @@ uniform sampler2D shadowMap;
 uniform sampler2D gradient;
 uniform sampler2D classificationLUT;
 
+
 uniform bool useShadowMap;
 uniform mat4 smWorldViewProj;
+
 
 varying float	vOpacity;
 varying vec3	vColor;
@@ -268,7 +264,7 @@ float getIntensity(){
 
 vec3 getElevation(){
 	vec4 world = modelMatrix * vec4( position, 1.0 );
-	float w = (world.z - heightMin) / (heightMax-heightMin);
+	float w = (world.z - elevationRange.x) / (elevationRange.y - elevationRange.x);
 	vec3 cElevation = texture2D(gradient, vec2(w,1.0-w)).rgb;
 	
 	return cElevation;

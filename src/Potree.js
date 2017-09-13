@@ -504,6 +504,9 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 	let priorityQueue = s.priorityQueue;
 
 	let loadedToGPUThisFrame = 0;
+	
+	let domWidth = renderer.domElement.clientWidth;
+	let domHeight = renderer.domElement.clientHeight;
 
 	while (priorityQueue.size() > 0) {
 		let element = priorityQueue.pop();
@@ -616,12 +619,22 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 			let weight = 0; 
 			if(camera.isPerspectiveCamera) {			
 				let sphere = child.getBoundingSphere();
-				let distance = sphere.center.distanceTo(camObjPos);
+				let center = sphere.center;
+				//let distance = sphere.center.distanceTo(camObjPos);
+				
+				let dx = camObjPos.x - center.x;
+				let dy = camObjPos.y - center.y;
+				let dz = camObjPos.z - center.z;
+				
+				let dd = dx * dx + dy * dy + dz * dz;
+				let distance = Math.sqrt(dd);
+				
+				
 				let radius = sphere.radius;
 				
 				let fov = (camera.fov * Math.PI) / 180;
 				let slope = Math.tan(fov / 2);
-				let projFactor = (0.5 * renderer.domElement.clientHeight) / (slope * distance);
+				let projFactor = (0.5 * domHeight) / (slope * distance);
 				let screenPixelRadius = radius * projFactor;
 				
 				if(screenPixelRadius < pointcloud.minimumNodePixelSize){
@@ -850,6 +863,11 @@ Potree.Shader = class Shader{
 		
 		let gl = this.gl;
 		
+		this.uniformLocations = {};
+		this.attributeLocations = {};
+		
+		gl.useProgram(null);
+		
 		this.compileShader(this.vs, this.vsSource);
 		this.compileShader(this.fs, this.fsSource);
 		
@@ -907,13 +925,21 @@ Potree.Shader = class Shader{
 		
 		if(value instanceof THREE.Matrix4){
 			gl.uniformMatrix4fv(location, false, value.elements);
-		}else if(typeof value === "number"){
+		} else if(typeof value === "number"){
 			gl.uniform1f(location, value);
-		}else if(typeof value === "boolean"){
+		} else if(typeof value === "boolean"){
 			gl.uniform1i(location, value);
-		}else if(value instanceof Potree.WebGLTexture){
+		} else if(value instanceof Potree.WebGLTexture){
 			gl.uniform1i(location, value);
-		}else{
+		} else if(value instanceof Array){
+			
+			if(value.length === 2){
+				gl.uniform2f(location, value[0], value[1]);
+			}else if(value.length === 3){
+				gl.uniform3f(location, value[0], value[1], value[2]);
+			}
+			
+		} else{
 			console.error("unhandled uniform type: ", name, value);
 		}
 	}
@@ -962,7 +988,7 @@ Potree.WebGLTexture = class WebGLTexture{
 		let gl = this.gl;
 		let texture = this.texture;
 		
-		if(texture.version <= this.version){
+		if(this.version === texture.version){
 			return;
 		}
 		
@@ -977,21 +1003,40 @@ Potree.WebGLTexture = class WebGLTexture{
 		let border = 0;
 		let srcFormat = internalFormat;
 		let srcType = Potree.paramThreeToGL(gl, texture.type);
-		let data = texture.image.data;
+		let data;
 		
-		gl.texImage2D(this.target, level, internalFormat,
+		gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, texture.flipY);
+		gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, texture.premultiplyAlpha);
+		gl.pixelStorei(gl.UNPACK_ALIGNMENT, texture.unpackAlignment);
+		
+		if(texture instanceof THREE.DataTexture){
+			data = texture.image.data;
+			
+			gl.texParameteri(this.target, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+			gl.texParameteri(this.target, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+			
+			gl.texParameteri(this.target, gl.TEXTURE_MAG_FILTER, Potree.paramThreeToGL(gl, texture.magFilter));
+			gl.texParameteri(this.target, gl.TEXTURE_MIN_FILTER, Potree.paramThreeToGL(gl, texture.minFilter));
+			
+			gl.texImage2D(this.target, level, internalFormat,
                 width, height, border, srcFormat, srcType,
                 data);
-		
-		gl.texParameteri(this.target, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-		gl.texParameteri(this.target, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-		
-		gl.texParameteri(this.target, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-		gl.texParameteri(this.target, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+		}else if(texture instanceof THREE.CanvasTexture){
+			data = texture.image;
+			
+			gl.texParameteri(this.target, gl.TEXTURE_WRAP_S, Potree.paramThreeToGL(gl, texture.wrapS));
+			gl.texParameteri(this.target, gl.TEXTURE_WRAP_T, Potree.paramThreeToGL(gl, texture.wrapT));
+			
+			gl.texParameteri(this.target, gl.TEXTURE_MAG_FILTER, Potree.paramThreeToGL(gl, texture.magFilter));
+			gl.texParameteri(this.target, gl.TEXTURE_MIN_FILTER, Potree.paramThreeToGL(gl, texture.minFilter));
+			
+			gl.texImage2D(this.target, level, internalFormat, 
+				internalFormat, srcType, data);
+		}
 		
 		gl.bindTexture(this.target, null);
 		
-		texture.needsUpdate = false;
+		this.version = texture.version;
 	}
 	
 	
@@ -1132,20 +1177,60 @@ Potree.Renderer = class{
 			
 			gl.useProgram(shader.program);
 			
+			
 			shader.setUniform("projectionMatrix", proj);
 			shader.setUniform("viewMatrix", view);
+			
+			shader.setUniform("screenHeight", material.screenHeight);
+			shader.setUniform("screenWidth", material.screenWidth);
 			shader.setUniform("fov", Math.PI * camera.fov / 180);
+			shader.setUniform("near", camera.near);
+			shader.setUniform("far", camera.far);
+			
+			shader.setUniform("useOrthographicCamera", material.useOrthographicCamera);
+			// uniform float orthoRange;
+			
+			
+			//uniform int clipMode;
+			//#if defined use_clip_box
+			//	uniform float clipBoxCount;
+			//	uniform mat4 clipBoxes[max_clip_boxes];
+			//#endif
+			
+			//uniform int clipPolygonCount;
+			//uniform int clipPolygonVCount[max_clip_polygons];
+			//uniform vec3 clipPolygons[max_clip_polygons * 8];
+			//uniform mat4 clipPolygonVP[max_clip_polygons];
+			
+			shader.setUniform("size", material.size);
 			shader.setUniform("maxSize", 50);
 			shader.setUniform("minSize", 2);
+			
+			
+			// uniform float pcIndex
+			shader.setUniform("spacing", material.spacing);
+			shader.setUniform("octreeSize", material.uniforms.octreeSize.value);
+			
+			
+			//uniform vec3 uColor;
+			//uniform float opacity;
+			
+			shader.setUniform("elevationRange", material.elevationRange);
+			shader.setUniform("intensityRange", material.intensityRange);
+			//uniform float intensityGamma;
+			//uniform float intensityContrast;
+			//uniform float intensityBrightness;
 			shader.setUniform("rgbGamma", material.rgbGamma);
 			shader.setUniform("rgbContrast", material.rgbContrast);
 			shader.setUniform("rgbBrightness", material.rgbBrightness);
-			shader.setUniform("screenHeight", material.screenHeight);
-			shader.setUniform("screenWidth", material.screenWidth);
-			shader.setUniform("size", material.size);
-			shader.setUniform("spacing", material.spacing);
-			shader.setUniform("useOrthographicCamera", material.useOrthographicCamera);
-			shader.setUniform("octreeSize", material.uniforms.octreeSize.value);
+			//uniform float transition;
+			//uniform float wRGB;
+			//uniform float wIntensity;
+			//uniform float wElevation;
+			//uniform float wClassification;
+			//uniform float wReturnNumber;
+			//uniform float wSourceID;
+			
 			
 			shader.setUniform("useShadowMap", shadowMaps.length > 0);
 			
@@ -1154,24 +1239,34 @@ Potree.Renderer = class{
 			shader.setUniform1i("visibleNodesTexture", 0);
 			gl.activeTexture(gl.TEXTURE0);
 			gl.bindTexture(vnWebGLTexture.target, vnWebGLTexture.id);
-			//shader.setUniform("visibleNodesTexture", vnWebGLTexture);
 			
+			let gradientTexture = this.textures.get(material.gradientTexture);
+			shader.setUniform1i("gradient", 1);
+			gl.activeTexture(gl.TEXTURE1);
+			gl.bindTexture(gradientTexture.target, gradientTexture.id);
+
 			gl.bindAttribLocation(shader.program, 0, "position");
 			gl.bindAttribLocation(shader.program, 1, "color");
+			gl.bindAttribLocation(shader.program, 2, "intensity");
+			gl.bindAttribLocation(shader.program, 3, "classification");
+			gl.bindAttribLocation(shader.program, 4, "returnNumber");
+			gl.bindAttribLocation(shader.program, 5, "numberOfReturns");
+			gl.bindAttribLocation(shader.program, 6, "pointSourceID");
+			gl.bindAttribLocation(shader.program, 7, "indices");
 			
-			//for(let i = 2; i < Math.min(3, octree.visibleNodes.length); i++){
-				//let node = octree.visibleNodes[i];
 			for(let node of octree.visibleNodes){
 				
-				
 				let world = node.sceneNode.matrixWorld;
+				//let world = octree.matrixWorld;
 				worldView.multiplyMatrices(view, world);
 				
 				let vnStart = octree.visibleNodeTextureOffsets.get(node);
 				
+				let level = node.getLevel();
+				
 				shader.setUniform("modelMatrix", world);
 				shader.setUniform("modelViewMatrix", worldView);
-				shader.setUniform("level", node.getLevel());
+				shader.setUniform("level", level);
 				shader.setUniform("vnStart", vnStart);
 				
 				if(shadowMaps.length > 0){
@@ -1201,54 +1296,20 @@ Potree.Renderer = class{
 				
 				let buffer = this.buffers.get(iBuffer);
 				
-				//for(let attributeName of Object.keys(bufferGeometry.attributes)){
-				//	
-				//	let attribute = bufferGeometry.attributes[attributeName];
-				//	let buffer = buffers.vbos.get(attribute);
-                //
-				//	let itemSize = attribute.itemSize;
-				//	let normalized = attribute.normalized;
-				//	let stride = 0;
-				//	let offset = 0;
-				//	
-				//	let location = shader.attributeLocations[attributeName];
-				//	
-				//	if(location == null){
-				//		//gl.bindBuffer(gl.ARRAY_BUFFER, buffer.id);
-				//		//gl.disableVertexAttribArray(location);
-				//	}else{
-				//		gl.bindBuffer(gl.ARRAY_BUFFER, buffer.id);
-				//		gl.vertexAttribPointer(location, 
-				//			itemSize, buffer.type, normalized, stride, offset);
-				//		gl.enableVertexAttribArray(location);
-				//	}
-				//	
-				//	
-				//}
-				
-				//gl.bindBuffer(gl.ARRAY_BUFFER, null);
 				gl.bindVertexArray(buffer.vao);
 				
 				let numPoints = iBuffer.numElements;
 				gl.drawArrays(gl.POINTS, 0, numPoints);
 				
-				
-				
 			}
 			
 			gl.bindVertexArray(null);
-			
-			//if(doLog) console.log(octree);
-			//if(doLog) console.log(octree.visibleNodes);
 			
 		}
 		
 		gl.activeTexture(gl.TEXTURE1);
 		gl.bindTexture(gl.TEXTURE_2D, null)
 		
-		
-		
-		//if(doLog) console.log(traversalResult);
 		this.threeRenderer.resetGLState();
 	}
 	

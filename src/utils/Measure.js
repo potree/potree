@@ -143,9 +143,9 @@ Potree.Measure = class Measure extends THREE.Object3D {
 		{ // Event Listeners
 			let drag = (e) => {
 				let I = Potree.utils.getMousePointCloudIntersection(
-					e.drag.end, 
-					e.viewer.scene.getActiveCamera(), 
-					e.viewer.renderer, 
+					e.drag.end,
+					e.viewer.scene.getActiveCamera(),
+					e.viewer.renderer,
 					e.viewer.scene.pointclouds);
 
 				if (I) {
@@ -308,14 +308,16 @@ Potree.Measure = class Measure extends THREE.Object3D {
 
 			{ // coordinate labels
 				let coordinateLabel = this.coordinateLabels[0];
-				
-				//let labelPos = position.clone();//.add(new THREE.Vector3(0,1,0));
-				//coordinateLabel.position.copy(labelPos);
-				
-				/*let msg = Potree.utils.addCommas(position.x.toFixed(2)) 
-					+ " / " + Potree.utils.addCommas(position.y.toFixed(2)) 
-					+ " / " + Potree.utils.addCommas(position.z.toFixed(2));*/
-				let msg = Potree.utils.addCommas(position.z.toFixed(2) + " " + this.lengthUnit.code);
+
+				// let labelPos = position.clone();//.add(new THREE.Vector3(0,1,0));
+				// coordinateLabel.position.copy(labelPos);
+
+				/*
+				let msg = Potree.utils.addCommas(position.x.toFixed(2))
+					+ " / " + Potree.utils.addCommas(position.y.toFixed(2))
+					+ " / " + Potree.utils.addCommas(position.z.toFixed(2));
+				*/
+				let msg = Potree.utils.addCommas(position.z.toFixed(2) + ' ' + this.lengthUnit.code);
 				coordinateLabel.setText(msg);
 
 				coordinateLabel.visible = this.showCoordinates;

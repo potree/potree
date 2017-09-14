@@ -333,10 +333,10 @@ Potree.PointCloudArena4D = class PointCloudArena4D extends Potree.PointCloudTree
 			pickMaterial.minSize = this.material.minSize;
 			pickMaterial.maxSize = this.material.maxSize;
 			pickMaterial.classification = this.material.classification;
-			
-			if(pickOutsideClipRegion){
+
+			if (pickOutsideClipRegion) {
 				pickMaterial.clipMode = Potree.ClipMode.HIGHLIGHT;
-			}else{
+			} else {
 				pickMaterial.clipMode = this.material.clipMode;
 				if (this.material.clipMode === Potree.ClipMode.CLIP_OUTSIDE) {
 					pickMaterial.setClipBoxes(this.material.clipBoxes);

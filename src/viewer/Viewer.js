@@ -38,6 +38,7 @@ const Stats = require('stats.js');
 const updatePointClouds = require('../utils/updatePointClouds');
 const GLQueries = require('../webgl/GLQueries');
 const projectedRadiusOrtho = require('../utils/projectedRadiusOrtho');
+const zoomTo = require('../utils/zoomTo');
 
 class PotreeViewer extends THREE.EventDispatcher {
 	constructor (domElement, args) {
@@ -528,7 +529,7 @@ class PotreeViewer extends THREE.EventDispatcher {
 		this.scene.cameraP.rotation.z = view.yaw;
 		this.scene.cameraP.updateMatrix();
 		this.scene.cameraP.updateMatrixWorld();
-		this.scene.cameraP.zoomTo(node, factor);
+		zoomTo(this.scene.cameraP, node, factor);
 
 		this.scene.cameraO.position.copy(view.position);
 		this.scene.cameraO.rotation.order = 'ZXY';

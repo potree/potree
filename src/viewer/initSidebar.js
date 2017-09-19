@@ -14,7 +14,6 @@ const Volume = require('../utils/Volume');
 const GeoJSONExporter = require('../exporter/GeoJSONExporter');
 const DXFExporter = require('../exporter/DXFExporter');
 const computeTransformedBoundingBox = require('../utils/computeTransformedBoundingBox');
-const ClipMode = require('../materials/ClipMode');
 const THREE = require('three');
 const CameraMode = require('./CameraMode');
 
@@ -3014,31 +3013,13 @@ module.exports = (viewer) => {
 		});
 		$('#lblMinNodeSize').html(parseInt(viewer.getMinNodeSize()));
 
-		let toClipModeCode = function (string) {
-			if (string === 'No Clipping') {
-				return ClipMode.DISABLED;
-			} else if (string === 'Highlight Inside') {
-				return ClipMode.HIGHLIGHT_INSIDE;
-			} else if (string === 'Clip Outside') {
-				return ClipMode.CLIP_OUTSIDE;
-			}
-		};
-
-		let toClipModeString = function (code) {
-			if (code === ClipMode.DISABLED) {
-				return 'No Clipping';
-			} else if (code === ClipMode.HIGHLIGHT_INSIDE) {
-				return 'Highlight Inside';
-			} else if (code === ClipMode.CLIP_OUTSIDE) {
-				return 'Clip Outside';
-			}
-		};
-
-		$('#optClipMode').selectmenu();
-		$('#optClipMode').val(toClipModeString(viewer.getClipMode())).selectmenu('refresh');
-		$('#optClipMode').selectmenu({
+		const $mode = $('#optClipMode');
+		$mode.selectmenu();
+		$mode.val(viewer.clippingTool.getClipMode());
+		$mode.selectmenu('refresh');
+		$mode.selectmenu({
 			change: function (event, ui) {
-				viewer.setClipMode(toClipModeCode(ui.item.value));
+				viewer.clippingTool.setClipMode(Number(ui.item.value));
 			}
 		});
 

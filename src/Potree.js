@@ -162,7 +162,6 @@ Potree.CameraMode = require('./viewer/CameraMode');
 Potree.NavigationCube = require('./viewer/NavigationCube');
 Potree.ClipVolume = require('./utils/PolygonClipVolume');
 Potree.PolygonClipVolume = require('./utils/PolygonClipVolume');
-Potree.ClipMode = require('./utils/ClipMode');
 
 module.exports = Potree;
 

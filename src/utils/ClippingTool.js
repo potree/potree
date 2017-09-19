@@ -1,5 +1,5 @@
 const THREE = require('three');
-const ClipMode = require('./ClipMode');
+const ClipMode = require('../materials/ClipMode');
 const ClipVolume = require('./ClipVolume');
 const PolygonClipVolume = require('./PolygonClipVolume');
 const getMousePointCloudIntersection = require('./getMousePointCloudIntersection');
@@ -64,9 +64,18 @@ class ClippingTool extends THREE.EventDispatcher {
 		if (this.clipMode === mode) {
 			return;
 		}
+		if (ClipMode.forCode(mode) === undefined) {
+			return;
+		}
 
 		this.clipMode = mode;
 		this.viewer.dispatchEvent({'type': 'clipper.clipMode_changed', 'viewer': this.viewer, 'mode': mode});
+	}
+
+	getClipMode () {
+		// Note: We could simply use the clipMode but getClipMode suggests there is a
+		//       setClipMode.
+		return this.clipMode;
 	}
 
 	startInsertion (args = {}) {

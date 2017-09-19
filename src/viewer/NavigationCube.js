@@ -16,7 +16,7 @@ class NavigationCube extends THREE.Object3D {
 			new THREE.TextureLoader().load(
 				context.resourcePath + '/textures/navigation/' + img,
 				function (texture) {
-					texture.anisotropy = viewer.renderer.getMaxAnisotropy();
+					texture.anisotropy = viewer.renderer.capabilities.getMaxAnisotropy();
 					material.map = texture;
 					material.needsUpdate = true;
 				});

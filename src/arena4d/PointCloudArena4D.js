@@ -7,6 +7,7 @@ const ClipMode = require('../materials/ClipMode');
 const PointCloudArena4DNode = require('./PointCloudArena4DNode');
 const PointCloudArena4DGeometryNode = require('./PointCloudArena4DGeometryNode');
 const THREE = require('three');
+const computeTransformedBoundingBox = require('../utils/computeTransformedBoundingBox');
 
 class PointCloudArena4D extends PointCloudTree {
 	constructor (geometry) {
@@ -196,6 +197,16 @@ class PointCloudArena4D extends PointCloudTree {
 			force = true;
 		}
 	}
+
+	getBoundingBoxWorld () {
+		this.updateMatrixWorld(true);
+		let box = this.boundingBox;
+		let transform = this.matrixWorld;
+		let tBox = computeTransformedBoundingBox(box, transform);
+
+		return tBox;
+	};
+
 
 	nodesOnRay (nodes, ray) {
 		var nodesOnRay = [];

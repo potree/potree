@@ -3,6 +3,7 @@ const ClipMode = require('../materials/ClipMode');
 const ClipVolume = require('./ClipVolume');
 const PolygonClipVolume = require('./PolygonClipVolume');
 const getMousePointCloudIntersection = require('./getMousePointCloudIntersection');
+const removeEventListeners = require('../utils/removeEventListeners');
 
 class ClippingTool extends THREE.EventDispatcher {
 	constructor (viewer) {
@@ -46,10 +47,10 @@ class ClippingTool extends THREE.EventDispatcher {
 		}
 
 		if (this.scene) {
-			this.scene.removeEventListeners('clip_volume_added', this.onAdd);
-			this.scene.removeEventListeners('clip_volume_removed', this.onRemove);
-			this.scene.removeEventListeners('polygon_clip_volume_added', this.onAdd);
-			this.scene.removeEventListeners('polygon_clip_volume_removed', this.onRemove);
+			removeEventListeners(this.scene, 'clip_volume_added', this.onAdd);
+			removeEventListeners(this.scene, 'clip_volume_removed', this.onRemove);
+			removeEventListeners(this.scene, 'polygon_clip_volume_added', this.onAdd);
+			removeEventListeners(this.scene, 'polygon_clip_volume_removed', this.onRemove);
 		}
 
 		this.scene = scene;

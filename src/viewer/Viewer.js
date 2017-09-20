@@ -414,6 +414,14 @@ class PotreeViewer extends THREE.EventDispatcher {
 		return this.fov;
 	};
 
+	setClipMode (clipMode) {
+		return this.clippingTool.setClipMode(clipMode);
+	};
+
+	getClipMode () {
+		return this.clippingTool.getClipMode();
+	};
+
 	disableAnnotations () {
 		this.scene.annotations.traverse(annotation => {
 			annotation.domElement.css('pointer-events', 'none');

@@ -2,8 +2,7 @@
 // LAS/LAZ loading
 //
 
-//var common = require("./common"),
-//	Promise = require("bluebird");
+const Promise = require("bluebird");
 
 (function(scope) {
 	"use strict";

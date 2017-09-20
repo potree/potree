@@ -9,6 +9,7 @@
     "p": "./node_modules/.bin/run-p --aggregate-output",
     "b": "./node_modules/.bin/browserify",
     "cpx": "./node_modules/.bin/cpx",
+    "clean": "./node_modules/.bin/rimraf ./build",
     "copy": "npm run p -- c-resources c-license c-extra",
     "c-resources": "npm run cpx -- \"resources/**/*\" build/potree/resources",
     "c-license": "npm run cpx -- LICENSE build/potree",
@@ -66,6 +67,7 @@
     "gulp-util": "~2.2.20",
     "jshint": "^2.9.5",
     "npm-run-all": "^4.1.1",
+    "rimraf": "^2.6.2",
     "through": "~2.3.4",
     "workerify": "^1.0.0"
   }

@@ -6,7 +6,16 @@
   "scripts": {
     "lint": "./node_modules/.bin/eslint src",
     "test": "npm run lint",
-    "browserify": "./node_modules/.bin/browserify -o build/potree/potree.js -s Potree -e ./src/index.js"
+    "p": "./node_modules/.bin/run-p --aggregate-output",
+    "b": "./node_modules/.bin/browserify",
+    "b-worker": "    npm run p -- b-worker-bin b-worker-dem b-worker-las b-worker-laz b-worker-gre",
+    "b-main": "      npm run b -- -o build/potree/potree.js                               -e ./src/index.js                                -s Potree",
+    "b-worker-bin": "npm run b -- -o build/potree/workers/BinaryDecoderWorker.js          -e ./src/workers/BinaryDecoderWorker.js",
+    "b-worker-dem": "npm run b -- -o build/potree/workers/DEMWorker.js                    -e ./src/workers/DEMWorker.js",
+    "b-worker-gre": "npm run b -- -o build/potree/workers/GreyhoundBinaryDecoderWorker.js -e ./src/workers/GreyhoundBinaryDecoderWorker.js --external ws",
+    "b-worker-las": "npm run b -- -o build/potree/workers/LASDecoderWorker.js             -e ./src/workers/LASDecoderWorker.js             --external ws",
+    "b-worker-laz": "npm run b -- -o build/potree/workers/LASLAZWorker.js                 -e ./libs/plasio/workers/laz-loader-worker.js    --external ws",
+    "b-all": "npm run p -- b-main b-worker"
   },
   "main": "./src/index.js",
   "browser": "./src/index.js",
@@ -50,6 +59,7 @@
     "gulp-uglify": "~0.2.1",
     "gulp-util": "~2.2.20",
     "jshint": "^2.9.5",
+    "npm-run-all": "^4.1.1",
     "through": "~2.3.4",
     "workerify": "^1.0.0"
   }

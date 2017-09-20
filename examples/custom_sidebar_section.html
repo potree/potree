@@ -4,28 +4,28 @@
     <meta charset="utf-8">
     <meta name="description" content="">
     <meta name="author" content="">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Potree Viewer</title>
 
-	<link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
-	<link rel="stylesheet" type="text/css" href="../libs/jquery-ui/jquery-ui.min.css">
-	<link rel="stylesheet" type="text/css" href="../libs/perfect-scrollbar/css/perfect-scrollbar.css">
-	<link rel="stylesheet" href="../libs/openlayers3/ol.css" type="text/css">
-	<link rel="stylesheet" href="../libs/spectrum/spectrum.css" type="text/css">
+    <link rel="stylesheet" type="text/css" href="../libs/jquery-ui/jquery-ui.min.css">
+    <link rel="stylesheet" type="text/css" href="../node_modules/perfect-scrollbar/dist/css/perfect-scrollbar.min.css">
+    <link rel="stylesheet" type="text/css" href="../node_modules/spectrum-colorpicker/spectrum.css">
+    <link rel="stylesheet" type="text/css" href="../node_modules/openlayers/dist/ol.css">
+    <link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
   </head>
 
   <body>
 
-	<script src="../libs/jquery/jquery-3.1.1.js"></script>
-	<script src="../libs/spectrum/spectrum.js"></script>
-	<script src="../libs/perfect-scrollbar/js/perfect-scrollbar.jquery.js"></script>
-	<script src="../libs/jquery-ui/jquery-ui.min.js"></script>
-    <script src="../libs/i18next/i18next.js"></script>
+    <script src="../node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="../libs/jquery-ui/jquery-ui.min.js"></script>
+    <script src="../node_modules/perfect-scrollbar/dist/js/perfect-scrollbar.jquery.min.js"></script>
+    <script src="../node_modules/spectrum-colorpicker/spectrum.js"></script>>
+    <script src="../node_modules/i18next-client/i18next.min.js"></script>
 
-	<script src="../build/potree/potree.js"></script>
+    <script src="../build/potree/potree.js"></script>
 
-	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
-	<!-- INCLUDE SETTINGS HERE -->
+    <!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
+    <!-- INCLUDE SETTINGS HERE -->
 
     <div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
 		<div id="potree_render_area"></div>
@@ -49,10 +49,10 @@
 			let content = section.last();
 			content.html(`
 				A custom Section in the sidebar!<br>
-				<br>	
+				<br>
 				Uncomment "content.hide();" to hide content by default.<br>
 				<br>
-				Take a look at src/viewer/sidebar.html and sidebar.js to 
+				Take a look at src/viewer/sidebar.html and sidebar.js to
 				learn how the other sections were populated.
 			`);
 			section.first().click(() => content.slideToggle());

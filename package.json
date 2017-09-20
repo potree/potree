@@ -37,7 +37,6 @@
   "dependencies": {
     "@tweenjs/tween.js": "^17.1.0",
     "d3": "^4.10.2",
-    "jquery": "^3.2.1",
     "openlayers": "^3.15.1",
     "process-nextick-args": "^1.0.7",
     "proj4": "^2.3.12",
@@ -54,6 +53,7 @@
     "browserify": "^14.4.0",
     "browserify-shader": "^0.1.2",
     "cpx": "^1.5.0",
+    "download.jqueryui.com": "^2.1.15",
     "eslint": "^4.4.1",
     "eslint-config-happiness": "^10.2.1",
     "eslint-plugin-import": "^2.7.0",
@@ -68,10 +68,15 @@
     "gulp-size": "^2.1.0",
     "gulp-uglify": "~0.2.1",
     "gulp-util": "~2.2.20",
+    "i18next-client": "^1.11.4",
+    "jquery": "^3.2.1",
+    "jquery-ui": "^1.12.1",
     "jshint": "^2.9.5",
     "mkdirp": "^0.5.1",
     "npm-run-all": "^4.1.1",
+    "perfect-scrollbar": "^0.8.1",
     "rimraf": "^2.6.2",
+    "spectrum-colorpicker": "^1.8.0",
     "through": "~2.3.4",
     "workerify": "^1.0.0"
   }

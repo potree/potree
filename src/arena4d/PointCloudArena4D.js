@@ -207,7 +207,6 @@ class PointCloudArena4D extends PointCloudTree {
 		return tBox;
 	};
 
-
 	nodesOnRay (nodes, ray) {
 		var nodesOnRay = [];
 

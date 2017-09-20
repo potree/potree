@@ -603,13 +603,13 @@ class ProfileWindow extends THREE.EventDispatcher {
 			let marginLeft = this.renderArea[0].offsetLeft;
 
 			this.xAxis.scale(this.scaleX)
-				.tickInnerSize(-height)
-				.tickOuterSize(1)
+				.tickSizeInner(-height)
+				.tickSizeOuter(1)
 				.tickPadding(10)
 				.ticks(width / 50);
 			this.yAxis.scale(this.scaleY)
-				.tickInnerSize(-width)
-				.tickOuterSize(1)
+				.tickSizeInner(-width)
+				.tickSizeOuter(1)
 				.tickPadding(10)
 				.ticks(height / 20);
 

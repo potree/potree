@@ -13,9 +13,7 @@ const PointAttribute = require('./PointAttribute');
  *
  * @author Markus Schuetz
  */
-const POCLoader = function () {
-
-};
+const POCLoader = exports;
 
 /**
  * @return a point cloud octree with the root node data loaded.
@@ -173,5 +171,3 @@ POCLoader.createChildAABB = function (aabb, index) {
 
 	return new THREE.Box3(min, max);
 };
-
-module.exports = POCLoader;

@@ -93,6 +93,9 @@ class Scene extends THREE.EventDispatcher {
 	}
 
 	addPointCloud (pointcloud) {
+		if (!pointcloud) {
+			throw new Error(`Empty pointcloud can not be added!`);
+		}
 		this.pointclouds.push(pointcloud);
 		this.scenePointCloud.add(pointcloud);
 

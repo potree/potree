@@ -1,7 +1,7 @@
-/* global onmessage:true postMessage:false Module */
-/* exported onmessage */
+/* global self:false */
 // http://jsperf.com/uint8array-vs-dataview3/3
 const PointAttribute = require('../loader/PointAttribute');
+const Module = require('../../libs/plasio/workers/laz-perf.js');
 
 function CustomView (buffer) {
 	this.buffer = buffer;
@@ -74,7 +74,7 @@ var decompress = function (schema, input, numPoints) {
 	return ret.buffer;
 };
 
-onmessage = function (event) {
+self.onmessage = function (event) {
 	var NUM_POINTS_BYTES = 4;
 
 	var buffer = event.data.buffer;
@@ -276,5 +276,5 @@ onmessage = function (event) {
 
 	transferables.push(message.indices);
 
-	postMessage(message, transferables);
+	self.postMessage(message, transferables);
 };

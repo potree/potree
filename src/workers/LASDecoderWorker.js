@@ -1,5 +1,4 @@
-/* global onmessage:true postMessage:false */
-/* exported onmessage */
+/* global self:false */
 // var pointFormatReaders = {
 //	0: function(dv) {
 //		return {
@@ -53,7 +52,7 @@
 //	return this.decoder(dv);
 // };
 
-onmessage = function (event) {
+self.onmessage = function (event) {
 	var buffer = event.data.buffer;
 	var numPoints = event.data.numPoints;
 	var pointSize = event.data.pointSize;
@@ -205,5 +204,5 @@ onmessage = function (event) {
 		message.pointSourceID,
 		message.indices];
 
-	postMessage(message, transferables);
+	self.postMessage(message, transferables);
 };

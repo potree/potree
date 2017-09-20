@@ -1,5 +1,4 @@
-/* global onmessage:true postMessage:false */
-/* exported onmessage */
+/* global self:false */
 // http://jsperf.com/uint8array-vs-dataview3/3
 const Version = require('../Version');
 const PointAttribute = require('../loader/PointAttribute');
@@ -34,7 +33,7 @@ function CustomView (buffer) {
 	};
 }
 
-onmessage = function (event) {
+self.onmessage = function (event) {
 	let buffer = event.data.buffer;
 	let pointAttributes = event.data.pointAttributes;
 	let numPoints = buffer.byteLength / pointAttributes.byteSize;
@@ -236,5 +235,5 @@ onmessage = function (event) {
 
 	transferables.push(message.indices);
 
-	postMessage(message, transferables);
+	self.postMessage(message, transferables);
 };

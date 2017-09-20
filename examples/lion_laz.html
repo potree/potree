@@ -15,10 +15,9 @@
   </head>
 
   <body>
-  
+
 	<script src="../libs/jquery/jquery-3.1.1.js"></script>
 	<script src="../libs/spectrum/spectrum.js"></script>
-	
 	<script src="../libs/perfect-scrollbar/js/perfect-scrollbar.jquery.js"></script>
 	<script src="../libs/jquery-ui/jquery-ui.min.js"></script>
 	<script src="../libs/three.js/build/three.js"></script>
@@ -29,13 +28,12 @@
 	<script src="../libs/proj4/proj4.js"></script>
 	<script src="../libs/openlayers3/ol.js"></script>
     <script src="../libs/i18next/i18next.js"></script>
-	
+
 	<script src="../build/potree/potree.js"></script>
 	<!--<script src="../src/viewer/sidebar.js"></script>-->
-	
+
 	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
 	<!-- INCLUDE SETTINGS HERE -->
-	
 	<script src="../libs/plasio/js/laslaz.js"></script>
 	<script src="../libs/plasio/vendor/bluebird.js"></script>
 
@@ -43,41 +41,41 @@
 		<div id="potree_render_area"></div>
 		<div id="potree_sidebar_container"> </div>
     </div>
-	
+
 	<script>
-	
+
 		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
-		
+
 		viewer.setEDLEnabled(true);
 		viewer.setFOV(60);
 		viewer.setPointBudget(1*1000*1000);
 		viewer.loadSettingsFromURL();
-		
+
 		viewer.setDescription("Loading LAZ compressed octree format");
-		
+
 		viewer.loadGUI(() => {
 			viewer.setLanguage('en');
 			$("#menu_appearance").next().show();
 			//viewer.toggleSidebar();
 		});
-		
+
 		Potree.loadPointCloud("../pointclouds/lion_takanawa_laz/cloud.js", "lion", function(e){
 			viewer.scene.addPointCloud(e.pointcloud);
-			
+
 			let material = e.pointcloud.material;
 			material.size = 1;
 			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-			
+
 			e.pointcloud.position.x += 3;
 			e.pointcloud.position.y -= 3;
 			e.pointcloud.position.z += 4;
-			
+
 			viewer.fitToScreen();
 		});
-		
-		
+
+
 	</script>
-	
-	
+
+
   </body>
 </html>

@@ -15,10 +15,9 @@
   </head>
 
   <body>
-  
+
 	<script src="../libs/jquery/jquery-3.1.1.js"></script>
 	<script src="../libs/spectrum/spectrum.js"></script>
-	
 	<script src="../libs/perfect-scrollbar/js/perfect-scrollbar.jquery.js"></script>
 	<script src="../libs/jquery-ui/jquery-ui.min.js"></script>
 	<script src="../libs/three.js/build/three.js"></script>
@@ -29,13 +28,12 @@
 	<script src="../libs/proj4/proj4.js"></script>
 	<script src="../libs/openlayers3/ol.js"></script>
     <script src="../libs/i18next/i18next.js"></script>
-	
+
 	<script src="../build/potree/potree.js"></script>
 	<!--<script src="../src/viewer/sidebar.js"></script>-->
-	
+
 	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
 	<!-- INCLUDE SETTINGS HERE -->
-	
 	<script src="../libs/plasio/js/laslaz.js"></script>
 	<script src="../libs/plasio/vendor/bluebird.js"></script>
 
@@ -45,36 +43,36 @@
     </div>
 
 	<script>
-	
+
 		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
-		
+
 		viewer.setEDLEnabled(true);
 		viewer.setFOV(60);
 		viewer.setPointBudget(2*1000*1000);
 		viewer.loadSettingsFromURL();
-		
+
 		viewer.setDescription("");
-		
+
 		viewer.loadGUI(() => {
 			viewer.setLanguage('en');
 			$("#menu_tools").next().show();
 			//viewer.toggleSidebar();
 		});
-		
+
 		Potree.loadPointCloud("http://arena4d.uksouth.cloudapp.azure.com:8080/Arena4DWebServer/PointServer/Office_Example2.vpc", "Arena4D", function(e){
 			viewer.scene.addPointCloud(e.pointcloud);
-			
+
 			e.pointcloud.material.size = 1;
 			e.pointcloud.material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
 			e.pointcloud.material.shape = Potree.PointShape.SQUARE;
-			
+
 			//viewer.fitToScreen();
 			viewer.scene.view.position.set(-12.60, 24.26, 149.91);
 			viewer.scene.view.lookAt(new THREE.Vector3(16.81, 0.48, 127.0));
 		});
-		
+
 	</script>
-	
-	
+
+
   </body>
 </html>

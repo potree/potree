@@ -49,6 +49,7 @@
   "devDependencies": {
     "browserify": "^14.4.0",
     "browserify-shader": "^0.1.2",
+    "cpx": "^1.5.0",
     "eslint": "^4.4.1",
     "eslint-config-happiness": "^10.2.1",
     "eslint-plugin-import": "^2.7.0",

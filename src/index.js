@@ -9,7 +9,8 @@ window.EDLRenderer = require('./viewer/EDLRenderer');
 window.initSidebar = require('./viewer/initSidebar');
 window.HoverMenuItem = require('./stuff/HoverMenuItem');
 window.HoverMenu = require('./stuff/HoverMenu');
-// Bluebird & THREE used to be exposed, it still is
+// Bluebird & THREE & proj4 used to be exposed, it still is
 window.Promise = require('bluebird');
+window.proj4 = require('proj4');
 window.THREE = require('three');
 require('three-ply-loader')(window.THREE);

@@ -7,7 +7,7 @@ const PointAttributes = require('./PointAttributes');
 const PointAttribute = require('./PointAttribute');
 const THREE = require('three');
 
-const GreyhoundLoader = function () { };
+const GreyhoundLoader = module.exports;
 GreyhoundLoader.loadInfoJSON = function load (url, callback) { };
 
 /**

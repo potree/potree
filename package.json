@@ -27,6 +27,7 @@
     "shapefile": "^0.6.2",
     "stats.js": "^0.17.0",
     "three": "^0.87.1",
+    "three-ply-loader": "^1.0.0",
     "util-deprecate": "^1.0.2"
   },
   "author": "Markus Schütz",

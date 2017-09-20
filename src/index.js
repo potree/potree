@@ -12,3 +12,4 @@ window.HoverMenu = require('./stuff/HoverMenu');
 // Bluebird & THREE used to be exposed, it still is
 window.Promise = require('bluebird');
 window.THREE = require('three');
+require('three-ply-loader')(window.THREE);

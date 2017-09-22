@@ -3,6 +3,7 @@
 //
 
 const Promise = require("bluebird");
+const context = require('../../../src/context');
 
 (function(scope) {
 	"use strict";
@@ -205,8 +206,8 @@ const Promise = require("bluebird");
 	var LAZLoader = function(arraybuffer) {
 		this.arraybuffer = arraybuffer;
 
-		let workerPath = Potree.scriptPath + "/workers/LASLAZWorker.js";
-		this.ww = Potree.workerPool.getWorker(workerPath);
+		let workerPath = context.scriptPath + "/workers/LASLAZWorker.js";
+		this.ww = context.workerPool.getWorker(workerPath);
 
 		this.nextCB = null;
 		var o = this;
@@ -273,8 +274,8 @@ const Promise = require("bluebird");
 
 		return new Promise(function(res, rej) {
 			o.dorr({type:'close'}, function(r) {
-				let workerPath = Potree.scriptPath + "/workers/LASLAZWorker.js";
-				Potree.workerPool.returnWorker(workerPath, o.ww);
+				let workerPath = context.scriptPath + "/workers/LASLAZWorker.js";
+				context.workerPool.returnWorker(workerPath, o.ww);
 
 				if (r.status !== 1)
 					return rej(new Error("Failed to close file"));

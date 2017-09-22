@@ -703,9 +703,10 @@ Potree.XHRFactory = {
 			Array.isArray(this.config.customHeaders) &&
 			this.config.customHeaders.length > 0) {
 			let baseOpen = xhr.open;
+			let customHeaders = this.config.customHeaders;
 			xhr.open = function () {
 				baseOpen.apply(this, [].slice.call(arguments));
-				this.config.customHeaders.forEach(function (customHeader) {
+				customHeaders.forEach(function (customHeader) {
 					if (!!customHeader.header && !!customHeader.value) {
 						xhr.setRequestHeader(customHeader.header, customHeader.value);
 					}

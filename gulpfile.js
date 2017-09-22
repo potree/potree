@@ -153,7 +153,7 @@ gulp.task('watch+webserver', ['watch:*', 'webserver']);
 
 // Liveserver will automatically update once resources change.
 const liveServer = () => {
-	browserSync.bind(null, {
+	browserSync.init({
 		port: 8080,
 		server: {
 			baseDir: __dirname,
@@ -161,5 +161,6 @@ const liveServer = () => {
 		}
 	});
 };
+
 gulp.task('liveserver', liveServer);
 gulp.task('watch+liveserver', ['watch:*'], liveServer);

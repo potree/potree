@@ -64,8 +64,7 @@ const through = require('through');
 			const w = watchify(b)
 			w.on('update', bundle); // on any dep update, runs the bundler
 			w.on('log', gutil.log); // output build logs to terminal
-			w.on('error', gutil.log.bind(gutil, 'Browserify Error'))
-
+			w.on('error', gutil.log.bind(gutil, 'Browserify Error'));
 			return bundle(b);
 		});
 	});
@@ -77,22 +76,54 @@ const through = require('through');
 
 {
 	const COPY = {
-		resources: {source: 'resources/**/*', target: 'build/potree/resources'},
-		license: {source: 'LICENSE', target: 'build/potree'},
-		extra: {source: 'src/viewer/{potree.css,profile.html,sidebar.html}', target: 'build/potree'}
+		resources: {source: '**/*', target: 'build/potree/resources', cwd: 'resources'},
+		license: {source: 'LICENSE', target: 'build/potree', cwd: '.'},
+		extra: {source: '{potree.css,profile.html,sidebar.html}', target: 'build/potree', cwd: 'src/viewer'},
+		examples: {source: '**/*', target: 'build/potree/examples', cwd: 'examples'},
+		pointclouds: {source: '**/*', target: 'build/pointclouds', cwd: 'pointclouds'},
+		jqueryUi: {source: '**/*', target: 'build/deps/jquery-ui', cwd: 'libs/jquery-ui'},
+		jquery: {source: '**/*', target: 'build/deps/jquery', cwd: 'node_modules/jquery/dist'},
+		perfectScrollbar: {source: '**/*', target: 'build/deps/perfect-scrollbar', cwd: 'node_modules/perfect-scrollbar'},
+		spectrumColorpicker: {source: '**/*', target: 'build/deps/spectrum-colorpicker', cwd: 'node_modules/spectrum-colorpicker'},
+		i18nextClient: {source: '**/*', target: 'build/deps/i18next-client', cwd: 'node_modules/i18next-client'},
+		openlayers: {source: '**/*', target: 'build/deps/openlayers', cwd: 'node_modules/openlayers'}
 	};
 	const mappings = {};
+	const minimatch = require('minimatch');
+	function replaceDependencies (buffer, fileDir, sourceDir, targetDir) {
+		let content = buffer.toString();
+		content = content.replace(/\s+(href|src)\s*=\s*\"([^"]*)\"/ig, (all, type, url) => {
+			if (!/^(https?:\/\/|javascript:|#|mailto:)/.test(url)) {
+				url = path.resolve(fileDir, url);
+				const lookPath = path.relative(__dirname, url);
+				Object.keys(COPY).forEach((key) => {
+					const copy = COPY[key];
+					if (minimatch(lookPath, path.join(copy.cwd, copy.source))) {
+						url = path.join(__dirname, copy.target + lookPath.substr(copy.cwd.length));
+					}
+				});
+				url = path.relative(targetDir, url);
+			}
+			return ` ${type}="${url}"`;
+		})
+		return new Buffer(content);
+	}
+
 	Object.keys(COPY).forEach((key) => {
 		const copy = COPY[key];
 		gulp.task(`copy:${key}`, () => gulp
-			.src(path.join(__dirname, copy.source))
+			.src(path.join(copy.cwd, copy.source))
 			.pipe(through(function (file) {
 				mappings[file.path] = path.join(__dirname, copy.target, file.relative);
+				if (file._contents && path.extname(file.path) === '.html') {
+					file._contents = replaceDependencies(file._contents, path.dirname(file.path), copy.cwd, copy.target);
+				}
 				this.queue(file);
 			}))
 			.pipe(gulp.dest(path.join(__dirname, copy.target)))
 			.pipe(reload({stream: true})));
-		gulp.task(`watch:copy:${key}`, [`copy:${key}`], () => gulp.watch(copy.source, [`copy:${key}`])
+		gulp.task(`watch:copy:${key}`, [`copy:${key}`], () => gulp
+			.watch(path.join(copy.cwd, copy.source), [`copy:${key}`])
 			.on('change', (event) => {
 				if (event.type === 'deleted') {
 					const targetPath = mappings[event.path];

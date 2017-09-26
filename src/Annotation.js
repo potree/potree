@@ -363,7 +363,7 @@ class Annotation extends THREE.EventDispatcher {
 				let tween = new TWEEN.Tween(t)
 					.to({x: 1}, animationDuration)
 					.onUpdate(function () {
-						view.radius = this.x * endRadius + (1 - this.x) * startRadius;
+						view.radius = t.x * endRadius + (1 - t.x) * startRadius;
 					});
 				tween.easing(easing);
 				tween.start();

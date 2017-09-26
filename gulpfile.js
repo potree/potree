@@ -92,7 +92,7 @@ const through = require('through');
 	const minimatch = require('minimatch');
 	function replaceDependencies (buffer, fileDir, sourceDir, targetDir) {
 		let content = buffer.toString();
-		content = content.replace(/(\s+(href|src)\s*=|loadPointCloud\()\s*[\"']([^"']*)[\"']/ig, (all, before, type, url) => {
+		content = content.replace(/\s*(\s(href|src)=|loadPointCloud\()\s*([\"'])([^"']*)[\"']/ig, (all, before, type, quote, url) => {
 			if (!/^(https?:\/\/|javascript:|#|mailto:)/.test(url)) {
 				url = path.resolve(fileDir, url);
 				const lookPath = path.relative(__dirname, url);
@@ -104,7 +104,7 @@ const through = require('through');
 				});
 				url = path.relative(targetDir, url);
 			}
-			return ` ${before}"${url}"`;
+			return ` ${before}${quote}${url}${quote}`;
 		})
 		return new Buffer(content);
 	}

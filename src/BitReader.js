@@ -1,5 +1,3 @@
-/* globals BitReader:true */
-/* exported BitReader */
 /**
  * Reads unsigned integers encoded in a variable amount of bits from the buffer.
  * Bits are aligned into 32bit unsigned integers.

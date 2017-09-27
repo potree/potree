@@ -26,13 +26,17 @@ const through = require('through');
 		laz: {source: 'libs/plasio/workers/laz-loader-worker.js', target: 'build/potree/workers/LASLAZWorker.js'}
 	};
 
+	function createBrowserify (script, isMin) {
+		let b = browserify(createArgs(script, isMin)).external('ws');
+		if (isMin) {
+			b = b.transform(uglifyify, {global: true});
+		}
+		return b;
+	}
+
 	function createArgs (script, isMin) {
 		return Object.assign({
 			entries: script.source,
-			noParse: [
- 				// laz-perf has been generated, is huge and supports Node.js optionally. Better to leave it as-is.
-				path.join(__dirname, 'libs/plasio/workers/laz-perf.js')
-			],
 			transform: [browserifyShader],
 			cache: {},
 			debug: !isMin
@@ -43,9 +47,8 @@ const through = require('through');
 		const script = SCRIPTS[key];
 		script.source = path.join(__dirname, script.source);
 		script.target = path.join(__dirname, script.target);
-		const b = browserify(createArgs(script, false));
-		const bMin = browserify(createArgs(script, true))
-			.transform(uglifyify, {global: true});
+		const b = createBrowserify(script, false);
+		const bMin = createBrowserify(script, true);
 		const bundle = (b, isMin) => b
 			.bundle()
 			.pipe(source(path.basename(script.target)))

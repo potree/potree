@@ -65,7 +65,7 @@ const through = require('through');
 		gulp.task(`min:script:${key}`, bundle.bind(null, bMin, true));
 		gulp.task(`watch:script:${key}`, () => {
 			const w = watchify(b)
-			w.on('update', bundle); // on any dep update, runs the bundler
+			w.on('update', () => bundle(b)); // on any dep update, runs the bundler
 			w.on('log', gutil.log); // output build logs to terminal
 			w.on('error', gutil.log.bind(gutil, 'Browserify Error'));
 			return bundle(b);

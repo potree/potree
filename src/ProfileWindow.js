@@ -1,6 +1,9 @@
 const $ = require('./jquery');
 const THREE = require('three');
-const d3 = require('d3');
+const d3Selection = require('d3-selection');
+const d3Scale = require('d3-scale');
+const d3Axis = require('d3-axis');
+
 const PointCloudMaterial = require('./materials/PointCloudMaterial');
 const context = require('./context');
 const addCommas = require('./utils/addCommas');
@@ -14,7 +17,7 @@ class ProfileWindow extends THREE.EventDispatcher {
 
 		this.elRoot = $('#profile_window');
 		this.renderArea = this.elRoot.find('#profileCanvasContainer');
-		this.svg = d3.select('svg#profileSVG');
+		this.svg = d3Selection.select('svg#profileSVG');
 		this.mouseIsDown = false;
 
 		this.projectedBox = new THREE.Box3();
@@ -366,21 +369,21 @@ class ProfileWindow extends THREE.EventDispatcher {
 
 		this.svg.selectAll('*').remove();
 
-		this.scaleX = d3.scaleLinear()
+		this.scaleX = d3Scale.scaleLinear()
 			.domain([this.camera.left + this.camera.position.x, this.camera.right + this.camera.position.x])
 			.range([0, width]);
-		this.scaleY = d3.scaleLinear()
+		this.scaleY = d3Scale.scaleLinear()
 			.domain([this.camera.bottom + this.camera.position.y, this.camera.top + this.camera.position.y])
 			.range([height, 0]);
 
-		this.xAxis = d3.axisBottom()
+		this.xAxis = d3Axis.axisBottom()
 			.scale(this.scaleX)
 			.tickSizeInner(-height)
 			.tickSizeOuter(1)
 			.tickPadding(10)
 			.ticks(width / 50);
 
-		this.yAxis = d3.axisLeft()
+		this.yAxis = d3Axis.axisLeft()
 			.scale(this.scaleY)
 			.tickSizeInner(-width)
 			.tickSizeOuter(1)
@@ -613,10 +616,10 @@ class ProfileWindow extends THREE.EventDispatcher {
 				.tickPadding(10)
 				.ticks(height / 20);
 
-			d3.select('.x,axis')
+			d3Selection.select('.x,axis')
 				.attr('transform', `translate(${marginLeft}, ${height})`)
 				.call(this.xAxis);
-			d3.select('.y,axis')
+			d3Selection.select('.y,axis')
 				.attr('transform', `translate(${marginLeft}, 0)`)
 				.call(this.yAxis);
 		}

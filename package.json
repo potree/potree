@@ -64,7 +64,9 @@
   "browser": "./src/index.js",
   "dependencies": {
     "@tweenjs/tween.js": "^17.1.0",
-    "d3": "^4.10.2",
+    "d3-axis": "^1.0.8",
+    "d3-scale": "^1.0.6",
+    "d3-selection": "^1.1.0",
     "openlayers": "^4.3.4",
     "process-nextick-args": "^1.0.7",
     "proj4": "^2.3.12",
@@ -100,7 +102,7 @@
     "perfect-scrollbar": "^0.8.1",
     "spectrum-colorpicker": "^1.8.0",
     "through": "~2.3.4",
-    "uglifyify": "^4.0.3",
+    "uglifyify": "^4.0.4",
     "vinyl-source-stream": "^1.1.0",
     "watchify": "^3.9.0"
   }

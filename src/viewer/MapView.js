@@ -596,7 +596,8 @@ class MapView {
 			mapExtent.bottomLeft
 		]);
 
-		view.fit(this.gExtent, [300, 300], {
+		view.fit(this.gExtent, {
+			size: [300, 300],
 			constrainResolution: false
 		});
 

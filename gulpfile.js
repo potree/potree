@@ -126,7 +126,7 @@ const through = require('through');
 			.pipe(gulp.dest(path.join(__dirname, copy.target)))
 			.pipe(reload({stream: true})));
 		gulp.task(`watch:copy:${key}`, [`copy:${key}`], () => gulp
-			.watch(path.join(copy.cwd, copy.source), [`copy:${key}`])
+			.watch(path.join(copy.cwd, copy.source), {interval: 500}, [`copy:${key}`])
 			.on('change', (event) => {
 				if (event.type === 'deleted') {
 					const targetPath = mappings[event.path];

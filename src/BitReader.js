@@ -1,5 +1,3 @@
-/* globals BitReader:true */
-/* exported BitReader */
 /**
  * Reads unsigned integers encoded in a variable amount of bits from the buffer.
  * Bits are aligned into 32bit unsigned integers.
@@ -18,7 +16,7 @@
  * and the remaining 2 bits at the next 32 bit integer.
  *
  */
-BitReader = function (buf) {
+module.exports = function (buf) {
 	var buffer = new Uint32Array(buf);
 	var bitOffset = 0;
 

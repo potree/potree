@@ -1,3 +1,8 @@
+const THREE = require('three');
+const TWEEN = require('@tweenjs/tween.js');
+const MOUSE = require('../utils/Mouse');
+const getMousePointCloudIntersection = require('../utils/getMousePointCloudIntersection');
+
 /**
  * @author mschuetz / http://mschuetz.at
  *
@@ -13,7 +18,7 @@
  *
  */
 
-Potree.FirstPersonControls = class FirstPersonControls extends THREE.EventDispatcher {
+class FirstPersonControls extends THREE.EventDispatcher {
 	constructor (viewer) {
 		super();
 
@@ -61,10 +66,10 @@ Potree.FirstPersonControls = class FirstPersonControls extends THREE.EventDispat
 				y: e.drag.lastDrag.y / this.renderer.domElement.clientHeight
 			};
 
-			if (e.drag.mouse === Potree.MOUSE.LEFT) {
+			if (e.drag.mouse === MOUSE.LEFT) {
 				this.yawDelta += ndrag.x * this.rotationSpeed;
 				this.pitchDelta += ndrag.y * this.rotationSpeed;
-			} else if (e.drag.mouse === Potree.MOUSE.RIGHT) {
+			} else if (e.drag.mouse === MOUSE.RIGHT) {
 				this.translationDelta.x -= ndrag.x * moveSpeed * 100;
 				this.translationDelta.z += ndrag.y * moveSpeed * 100;
 			}
@@ -105,7 +110,7 @@ Potree.FirstPersonControls = class FirstPersonControls extends THREE.EventDispat
 	zoomToLocation (mouse) {
 		let camera = this.scene.getActiveCamera();
 
-		let I = Potree.utils.getMousePointCloudIntersection(
+		let I = getMousePointCloudIntersection(
 			mouse,
 			camera,
 			this.renderer,
@@ -261,3 +266,5 @@ Potree.FirstPersonControls = class FirstPersonControls extends THREE.EventDispat
 		}
 	}
 };
+
+module.exports = FirstPersonControls;

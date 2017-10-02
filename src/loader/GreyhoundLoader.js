@@ -1,134 +1,14 @@
-/**
- * @class Loads greyhound metadata and returns a PointcloudOctree
- *
- * @author Maarten van Meersbergen
- * @author Oscar Martinez Rubi
- * @author Connor Manning
- */
+const Version = require('../Version');
+const GreyhoundUtils = require('./GreyhoundUtils');
+const PointCloudGreyhoundGeometry = require('../PointCloudGreyhoundGeometry');
+const GreyhoundBinaryLoader = require('./GreyhoundBinaryLoader');
+const PointCloudGreyhoundGeometryNode = require('../PointCloudGreyhoundGeometryNode');
+const PointAttributes = require('./PointAttributes');
+const PointAttribute = require('./PointAttribute');
+const THREE = require('three');
 
-class GreyhoundUtils {
-	static getQueryParam (name) {
-		name = name.replace(/[[\]]/g, '\\$&');
-		var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)');
-		var results = regex.exec(window.location.href);
-		if (!results) return null;
-		if (!results[2]) return '';
-		return decodeURIComponent(results[2].replace(/\+/g, ' '));
-	}
-
-	static createSchema (attributes) {
-		var schema = [
-			{ 'name': 'X', 'size': 4, 'type': 'signed' },
-			{ 'name': 'Y', 'size': 4, 'type': 'signed' },
-			{ 'name': 'Z', 'size': 4, 'type': 'signed' }
-		];
-
-		// Once we include options in the UI to load a dynamic list of available
-		// attributes for visualization (f.e. Classification, Intensity etc.)
-		// we will be able to ask for that specific attribute from the server,
-		// where we are now requesting all attributes for all points all the time.
-		// If we do that though, we also need to tell Potree to redraw the points
-		// that are already loaded (with different attributes).
-		// This is not default behaviour.
-		attributes.forEach(function (item) {
-			if (item === 'COLOR_PACKED') {
-				schema.push({ 'name': 'Red', 'size': 2, 'type': 'unsigned' });
-				schema.push({ 'name': 'Green', 'size': 2, 'type': 'unsigned' });
-				schema.push({ 'name': 'Blue', 'size': 2, 'type': 'unsigned' });
-			} else if (item === 'INTENSITY') {
-				schema.push({ 'name': 'Intensity', 'size': 2, 'type': 'unsigned' });
-			} else if (item === 'CLASSIFICATION') {
-				schema.push({ 'name': 'Classification', 'size': 1, 'type': 'unsigned' });
-			}
-		});
-
-		return schema;
-	}
-
-	static fetch (url, cb) {
-		var xhr = new XMLHttpRequest();
-		xhr.open('GET', url, true);
-		xhr.onreadystatechange = function () {
-			if (xhr.readyState === 4) {
-				if (xhr.status === 200 || xhr.status === 0) {
-					cb(null, xhr.responseText);
-				} else {
-					cb(xhr.responseText);
-				}
-			}
-		};
-		xhr.send(null);
-	};
-
-	static fetchBinary (url, cb) {
-		var xhr = new XMLHttpRequest();
-		xhr.open('GET', url, true);
-		xhr.responseType = 'arraybuffer';
-		xhr.onreadystatechange = function () {
-			if (xhr.readyState === 4) {
-				if (xhr.status === 200 || xhr.status === 0) {
-					cb(null, xhr.response);
-				}				else {
-					cb(xhr.responseText);
-				}
-			}
-		};
-		xhr.send(null);
-	};
-
-	static pointSizeFrom (schema) {
-		return schema.reduce((p, c) => p + c.size, 0);
-	};
-
-	static getNormalization (serverURL, baseDepth, cb) {
-		var s = [
-			{ 'name': 'X', 'size': 4, 'type': 'floating' },
-			{ 'name': 'Y', 'size': 4, 'type': 'floating' },
-			{ 'name': 'Z', 'size': 4, 'type': 'floating' },
-			{ 'name': 'Red', 'size': 2, 'type': 'unsigned' },
-			{ 'name': 'Green', 'size': 2, 'type': 'unsigned' },
-			{ 'name': 'Blue', 'size': 2, 'type': 'unsigned' },
-			{ 'name': 'Intensity', 'size': 2, 'type': 'unsigned' }
-		];
-
-		var url = serverURL + 'read?depth=' + baseDepth +
-			'&schema=' + JSON.stringify(s);
-
-		GreyhoundUtils.fetchBinary(url, function (err, buffer) {
-			if (err) throw new Error(err);
-
-			var view = new DataView(buffer);
-			var numBytes = buffer.byteLength - 4;
-			// TODO Unused: var numPoints = view.getUint32(numBytes, true);
-			var pointSize = GreyhoundUtils.pointSizeFrom(s);
-
-			var colorNorm = false;
-			var intensityNorm = false;
-
-			for (var offset = 0; offset < numBytes; offset += pointSize) {
-				if (view.getUint16(offset + 12, true) > 255 ||
-					view.getUint16(offset + 14, true) > 255 ||
-					view.getUint16(offset + 16, true) > 255) {
-					colorNorm = true;
-				}
-
-				if (view.getUint16(offset + 18, true) > 255) {
-					intensityNorm = true;
-				}
-
-				if (colorNorm && intensityNorm) break;
-			}
-
-			if (colorNorm) console.log('Normalizing color');
-			if (intensityNorm) console.log('Normalizing intensity');
-
-			cb(null, { color: colorNorm, intensity: intensityNorm });
-		});
-	};
-};
-
-Potree.GreyhoundLoader = function () { };
-Potree.GreyhoundLoader.loadInfoJSON = function load (url, callback) { };
+const GreyhoundLoader = module.exports;
+GreyhoundLoader.loadInfoJSON = function load (url, callback) { };
 
 /**
  * @return a point cloud octree with the root node data loaded.
@@ -138,7 +18,7 @@ Potree.GreyhoundLoader.loadInfoJSON = function load (url, callback) { };
  * @param loadingFinishedListener executed after loading the binary has been
  * finished
  */
-Potree.GreyhoundLoader.load = function load (url, callback) {
+GreyhoundLoader.load = function load (url, callback) {
 	var HIERARCHY_STEP_SIZE = 5;
 
 	try {
@@ -171,7 +51,7 @@ Potree.GreyhoundLoader.load = function load (url, callback) {
 			}
 			*/
 			var greyhoundInfo = JSON.parse(data);
-			var version = new Potree.Version('1.4');
+			var version = new Version('1.4');
 
 			var bounds = greyhoundInfo.bounds;
 			// TODO Unused: var boundsConforming = greyhoundInfo.boundsConforming;
@@ -226,7 +106,7 @@ Potree.GreyhoundLoader.load = function load (url, callback) {
 			if (red && green && blue) attributes.push('COLOR_PACKED');
 
 			// Fill in geometry fields.
-			var pgg = new Potree.PointCloudGreyhoundGeometry();
+			var pgg = new PointCloudGreyhoundGeometry();
 			pgg.serverURL = serverURL;
 			pgg.spacing = (bounds[3] - bounds[0]) / Math.pow(2, baseDepth);
 			pgg.baseDepth = baseDepth;
@@ -235,7 +115,7 @@ Potree.GreyhoundLoader.load = function load (url, callback) {
 			pgg.schema = GreyhoundUtils.createSchema(attributes);
 			var pointSize = GreyhoundUtils.pointSizeFrom(pgg.schema);
 
-			pgg.pointAttributes = new Potree.PointAttributes(attributes);
+			pgg.pointAttributes = new PointAttributes(attributes);
 			pgg.pointAttributes.byteSize = pointSize;
 
 			var boundingBox = new THREE.Box3(
@@ -259,14 +139,14 @@ Potree.GreyhoundLoader.load = function load (url, callback) {
 			console.log('Offset:', offset);
 			console.log('Bounds:', boundingBox);
 
-			pgg.loader = new Potree.GreyhoundBinaryLoader(version, boundingBox, pgg.scale);
+			pgg.loader = new GreyhoundBinaryLoader(version, boundingBox, pgg.scale);
 
 			var nodes = {};
 
 			{ // load root
 				var name = 'r';
 
-				var root = new Potree.PointCloudGreyhoundGeometryNode(
+				var root = new PointCloudGreyhoundGeometryNode(
 					name, pgg, boundingBox,
 					scale, offset
 				);
@@ -299,19 +179,19 @@ Potree.GreyhoundLoader.load = function load (url, callback) {
 	}
 };
 
-Potree.GreyhoundLoader.loadPointAttributes = function (mno) {
+GreyhoundLoader.loadPointAttributes = function (mno) {
 	var fpa = mno.pointAttributes;
-	var pa = new Potree.PointAttributes();
+	var pa = new PointAttributes();
 
 	for (var i = 0; i < fpa.length; i++) {
-		var pointAttribute = Potree.PointAttribute[fpa[i]];
+		var pointAttribute = PointAttribute[fpa[i]];
 		pa.add(pointAttribute);
 	}
 
 	return pa;
 };
 
-Potree.GreyhoundLoader.createChildAABB = function (aabb, childIndex) {
+GreyhoundLoader.createChildAABB = function (aabb, childIndex) {
 	var min = aabb.min;
 	var max = aabb.max;
 	var dHalfLength = new THREE.Vector3().copy(max).sub(min).multiplyScalar(0.5);
@@ -350,3 +230,5 @@ Potree.GreyhoundLoader.createChildAABB = function (aabb, childIndex) {
 
 	return new THREE.Box3(min, max);
 };
+
+module.exports = GreyhoundLoader;

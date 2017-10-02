@@ -1,23 +1,37 @@
+const GLQueries = require('./webgl/GLQueries');
 
-function Potree () {
+function Potree () {}
 
-}
-Potree.version = {
-	major: 1,
-	minor: 5,
-	suffix: 'RC'
-};
+const context = require('./context');
+Potree.version = context.version;
 
-console.log('Potree ' + Potree.version.major + '.' + Potree.version.minor + Potree.version.suffix);
+console.log('Potree ' + context.version.major + '.' + context.version.minor + context.version.suffix);
 
-Potree.pointBudget = 1 * 1000 * 1000;
+// LEGACY: this property exists just in case someone used it.
+Object.defineProperty(Potree, 'pointBudget', {
+	get: () => context.pointBudget,
+	set: (value) => (context.pointBudget = value)
+});
 
-Potree.framenumber = 0;
+// LEGACY: this property exists just in case someone used it.
+Object.defineProperty(Potree, 'framenumber', {
+	get: () => context.framenumber,
+	set: (value) => (context.framenumber = value)
+});
+
+// LEGACY: this property exists just in case someone used it.
+Object.defineProperty(Potree, 'pointLoadLimit', {
+	get: () => context.pointBudget,
+	set: (value) => (context.pointBudget = value)
+});
 
 // contains WebWorkers with base64 encoded code
 // Potree.workers = {};
 
-Potree.Shaders = {};
+Object.defineProperty(Potree, 'Shaders', {
+	get: function () { throw new Error('legacy, has been removed for the greater good'); },
+	set: function () { throw new Error('legacy, has been removed for the greater good'); }
+});
 
 Potree.webgl = {
 	shaders: {},
@@ -25,278 +39,131 @@ Potree.webgl = {
 	vbos: {}
 };
 
-Potree.scriptPath = null;
-if (document.currentScript.src) {
-	Potree.scriptPath = new URL(document.currentScript.src + '/..').href;
-	if (Potree.scriptPath.slice(-1) === '/') {
-		Potree.scriptPath = Potree.scriptPath.slice(0, -1);
-	}
-} else {
-	console.error('Potree was unable to find its script path using document.currentScript. Is Potree included with a script tag? Does your browser support this function?');
-}
+Potree.scriptPath = context.scriptPath;
+Potree.resourcePath = context.resourcePath;
+Potree.workerPool = context.workerPool;
 
-Potree.resourcePath = Potree.scriptPath + '/resources';
+function legacyGL () {
+	return window.viewer.renderer.getContext();
+};
 
-Potree.timerQueries = {};
+// LEGACY: this property exists just in case someone used it.
+Object.defineProperty(Potree, 'timerQueriesEnabled', {
+	get: () => GLQueries.forGL(legacyGL()).enabled,
+	set: (value) => (GLQueries.forGL(legacyGL()).enabled = value)
+});
 
-Potree.timerQueriesEnabled = false;
+// LEGACY: this property exists just in case someone used it.
+Object.defineProperty(Potree, 'timerQueries', {
+	get: () => GLQueries.forGL(legacyGL()).queries,
+	set: (value) => (GLQueries.forGL(legacyGL()).queries = value)
+});
 
 Potree.startQuery = function (name, gl) {
-	if (!Potree.timerQueriesEnabled) {
-		return null;
-	}
-
-	if (Potree.timerQueries[name] === undefined) {
-		Potree.timerQueries[name] = [];
-	}
-
-	let ext = gl.getExtension('EXT_disjoint_timer_query');
-	let query = ext.createQueryEXT();
-	ext.beginQueryEXT(ext.TIME_ELAPSED_EXT, query);
-
-	Potree.timerQueries[name].push(query);
-
-	return query;
+	return GLQueries.forGL(gl || legacyGL()).start(name);
 };
 
 Potree.endQuery = function (query, gl) {
-	if (!Potree.timerQueriesEnabled) {
-		return;
-	}
-
-	let ext = gl.getExtension('EXT_disjoint_timer_query');
-	ext.endQueryEXT(ext.TIME_ELAPSED_EXT);
+	return GLQueries.forGL(gl || legacyGL()).end();
 };
 
 Potree.resolveQueries = function (gl) {
-	if (!Potree.timerQueriesEnabled) {
-		return;
-	}
-
-	let ext = gl.getExtension('EXT_disjoint_timer_query');
-
-	for (let name in Potree.timerQueries) {
-		let queries = Potree.timerQueries[name];
-
-		if (queries.length > 0) {
-			let query = queries[0];
-
-			let available = ext.getQueryObjectEXT(query, ext.QUERY_RESULT_AVAILABLE_EXT);
-			let disjoint = viewer.renderer.getContext().getParameter(ext.GPU_DISJOINT_EXT);
-
-			if (available && !disjoint) {
-				// See how much time the rendering of the object took in nanoseconds.
-				let timeElapsed = ext.getQueryObjectEXT(query, ext.QUERY_RESULT_EXT);
-				let miliseconds = timeElapsed / (1000 * 1000);
-
-				console.log(name + ': ' + miliseconds + 'ms');
-				queries.shift();
-			}
-		}
-
-		if (queries.length === 0) {
-			delete Potree.timerQueries[name];
-		}
-	}
+	return GLQueries.forGL(gl || legacyGL()).resolve();
 };
 
-Potree.MOUSE = {
-	LEFT: 0b0001,
-	RIGHT: 0b0010,
-	MIDDLE: 0b0100
-};
-
-Potree.Points = class Points {
-	constructor () {
-		this.boundingBox = new THREE.Box3();
-		this.numPoints = 0;
-		this.data = {};
-	}
-
-	add (points) {
-		let currentSize = this.numPoints;
-		let additionalSize = points.numPoints;
-		let newSize = currentSize + additionalSize;
-
-		let thisAttributes = Object.keys(this.data);
-		let otherAttributes = Object.keys(points.data);
-		let attributes = new Set([...thisAttributes, ...otherAttributes]);
-
-		for (let attribute of attributes) {
-			if (thisAttributes.includes(attribute) && otherAttributes.includes(attribute)) {
-				// attribute in both, merge
-				let Type = this.data[attribute].constructor;
-				let merged = new Type(this.data[attribute].length + points.data[attribute].length);
-				merged.set(this.data[attribute], 0);
-				merged.set(points.data[attribute], this.data[attribute].length);
-				this.data[attribute] = merged;
-			} else if (thisAttributes.includes(attribute) && !otherAttributes.includes(attribute)) {
-				// attribute only in this; take over this and expand to new size
-				let elementsPerPoint = this.data[attribute].length / this.numPoints;
-				let Type = this.data[attribute].constructor;
-				let expanded = new Type(elementsPerPoint * newSize);
-				expanded.set(this.data[attribute], 0);
-				this.data[attribute] = expanded;
-			} else if (!thisAttributes.includes(attribute) && otherAttributes.includes(attribute)) {
-				// attribute only in points to be added; take over new points and expand to new size
-				let elementsPerPoint = points.data[attribute].length / points.numPoints;
-				let Type = points.data[attribute].constructor;
-				let expanded = new Type(elementsPerPoint * newSize);
-				expanded.set(points.data[attribute], elementsPerPoint * currentSize);
-				this.data[attribute] = expanded;
-			}
-		}
-
-		this.numPoints = newSize;
-
-		this.boundingBox.union(points.boundingBox);
-	}
-};
-
-/* eslint-disable standard/no-callback-literal */
-Potree.loadPointCloud = function (path, name, callback) {
-	let loaded = function (pointcloud) {
-		pointcloud.name = name;
-		callback({type: 'pointcloud_loaded', pointcloud: pointcloud});
-	};
-
-	// load pointcloud
-	if (!path) {
-		// TODO: callback? comment? Hello? Bueller? Anyone?
-	} else if (path.indexOf('greyhound://') === 0) {
-		// We check if the path string starts with 'greyhound:', if so we assume it's a greyhound server URL.
-		Potree.GreyhoundLoader.load(path, function (geometry) {
-			if (!geometry) {
-				callback({type: 'loading_failed'});
-			} else {
-				let pointcloud = new Potree.PointCloudOctree(geometry);
-				loaded(pointcloud);
-			}
-		});
-	} else if (path.indexOf('cloud.js') > 0) {
-		Potree.POCLoader.load(path, function (geometry) {
-			if (!geometry) {
-				callback({type: 'loading_failed'});
-			} else {
-				let pointcloud = new Potree.PointCloudOctree(geometry);
-				loaded(pointcloud);
-			}
-		});
-	} else if (path.indexOf('.vpc') > 0) {
-		Potree.PointCloudArena4DGeometry.load(path, function (geometry) {
-			if (!geometry) {
-				callback({type: 'loading_failed'});
-			} else {
-				let pointcloud = new Potree.PointCloudArena4D(geometry);
-				loaded(pointcloud);
-			}
-		});
-	} else {
-		callback({'type': 'loading_failed'});
-	}
-};
-/* eslint-enable standard/no-callback-literal */
-
-Potree.updatePointClouds = function (pointclouds, camera, renderer) {
-	if (!Potree.lru) {
-		Potree.lru = new LRU();
-	}
-
-	for (let i = 0; i < pointclouds.length; i++) {
-		let pointcloud = pointclouds[i];
-		for (let j = 0; j < pointcloud.profileRequests.length; j++) {
-			pointcloud.profileRequests[j].update();
-		}
-	}
-
-	let result = Potree.updateVisibility(pointclouds, camera, renderer);
-
-	for (let i = 0; i < pointclouds.length; i++) {
-		let pointcloud = pointclouds[i];
-		pointcloud.updateMaterial(pointcloud.material, pointcloud.visibleNodes, camera, renderer);
-		pointcloud.updateVisibleBounds();
-	}
-
-	Potree.getLRU().freeMemory();
-
-	return result;
-};
-
+// LEGACY: placeholder
 Potree.getLRU = function () {
-	if (!Potree.lru) {
-		Potree.lru = new LRU();
-	}
-
+	Potree.lru = context.getLRU();
 	return Potree.lru;
 };
 
-function updateVisibilityStructures (pointclouds, camera, renderer) {
-	let frustums = [];
-	let camObjPositions = [];
-	let priorityQueue = new BinaryHeap(function (x) { return 1 / x.weight; });
-
-	for (let i = 0; i < pointclouds.length; i++) {
-		let pointcloud = pointclouds[i];
-
-		if (!pointcloud.initialized()) {
-			continue;
-		}
-
-		pointcloud.numVisibleNodes = 0;
-		pointcloud.numVisiblePoints = 0;
-		pointcloud.deepestVisibleLevel = 0;
-		pointcloud.visibleNodes = [];
-		pointcloud.visibleGeometry = [];
-
-		// frustum in object space
-		camera.updateMatrixWorld();
-		let frustum = new THREE.Frustum();
-		let viewI = camera.matrixWorldInverse;
-		let world = pointcloud.matrixWorld;
-		let proj = camera.projectionMatrix;
-		let fm = new THREE.Matrix4().multiply(proj).multiply(viewI).multiply(world);
-		frustum.setFromMatrix(fm);
-		frustums.push(frustum);
-
-		// camera position in object space
-		let view = camera.matrixWorld;
-		let worldI = new THREE.Matrix4().getInverse(world);
-		let camMatrixObject = new THREE.Matrix4().multiply(worldI).multiply(view);
-		let camObjPos = new THREE.Vector3().setFromMatrixPosition(camMatrixObject);
-		camObjPositions.push(camObjPos);
-
-		if (pointcloud.visible && pointcloud.root !== null) {
-			priorityQueue.push({pointcloud: i, node: pointcloud.root, weight: Number.MAX_VALUE});
-		}
-
-		// hide all previously visible nodes
-		// if(pointcloud.root instanceof Potree.PointCloudOctreeNode){
-		//	pointcloud.hideDescendants(pointcloud.root.sceneNode);
-		// }
-		if (pointcloud.root.isTreeNode()) {
-			pointcloud.hideDescendants(pointcloud.root.sceneNode);
-		}
-
-		for (let j = 0; j < pointcloud.boundingBoxNodes.length; j++) {
-			pointcloud.boundingBoxNodes[j].visible = false;
-		}
-	}
-
-	return {
-		'frustums': frustums,
-		'camObjPositions': camObjPositions,
-		'priorityQueue': priorityQueue
-	};
-}
-
+// LEGACY: placeholder
 Potree.getDEMWorkerInstance = function () {
-	if (!Potree.DEMWorkerInstance) {
-		let workerPath = Potree.scriptPath + '/workers/DEMWorker.js';
-		Potree.DEMWorkerInstance = Potree.workerPool.getWorker(workerPath);
-	}
-
+	Potree.DEMWorkerInstance = context.getDEMWorkerInstance();
 	return Potree.DEMWorkerInstance;
 };
+
+Potree.Points = require('./Points');
+Potree.MOUSE = require('./utils/Mouse');
+Potree.DEMNode = require('./tree/DEMNode');
+Potree.DEM = require('./tree/DEM');
+Potree.PointCloudTreeNode = require('./tree/PointCloudTreeNode');
+Potree.PointCloudTree = require('./tree/PointCloudTree');
+Potree.WorkerPool = require('./WorkerPool');
+Potree.POCLoader = require('./loader/POCLoader');
+Potree.PointAttributeNames = require('./loader/PointAttributeNames');
+Potree.PointAttributeTypes = require('./loader/PointAttributeTypes');
+Potree.PointAttribute = require('./loader/PointAttribute');
+Potree.PointAttributes = require('./loader/PointAttributes');
+Potree.BinaryLoader = require('./loader/BinaryLoader');
+Potree.GreyhoundBinaryLoader = require('./loader/GreyhoundBinaryLoader');
+Potree.GreyhoundLoader = require('./loader/GreyhoundLoader');
+Potree.LasLazLoader = require('./loader/LasLazLoader');
+Potree.LasLazBatcher = require('./loader/LasLazBatcher');
+Potree.Gradients = require('./materials/Gradients');
+Potree.Classification = require('./materials/Classification');
+Potree.PointSizeType = require('./materials/PointSizeType');
+Potree.PointShape = require('./materials/PointShape');
+Potree.PointColorType = require('./materials/PointColorType');
+Potree.ClipMode = require('./materials/ClipMode');
+Potree.TreeType = require('./materials/TreeType');
+Potree.PointCloudMaterial = require('./materials/PointCloudMaterial');
+Potree.EyeDomeLightingMaterial = require('./materials/EyeDomeLightingMaterial');
+Potree.BlurMaterial = require('./materials/BlurMaterial');
+Potree.InputHandler = require('./navigation/InputHandler');
+Potree.FirstPersonControls = require('./navigation/FirstPersonControls');
+Potree.GeoControls = require('./navigation/GeoControls');
+Potree.OrbitControls = require('./navigation/OrbitControls');
+Potree.EarthControls = require('./navigation/EarthControls');
+Potree.Annotation = require('./Annotation');
+Potree.Action = require('./Action');
+Potree.Actions = require('./Actions');
+Potree.ProfileData = require('./ProfileData');
+Potree.PointCloudOctreeNode = require('./tree/PointCloudOctreeNode');
+Potree.PointCloudOctree = require('./tree/PointCloudOctree');
+Potree.PointCloudOctreeGeometry = require('./PointCloudOctreeGeometry');
+Potree.PointCloudOctreeGeometryNode = require('./PointCloudOctreeGeometry');
+Potree.PointCloudGreyhoundGeometry = require('./PointCloudGreyhoundGeometry');
+Potree.PointCloudGreyhoundGeometryNode = require('./PointCloudGreyhoundGeometryNode');
+Potree.utils = require('./utils');
+Potree.Features = require('./Features');
+Potree.TextSprite = require('./TextSprite');
+Potree.AnimationPath = require('./AnimationPath');
+Potree.Measure = require('./utils/Measure');
+Potree.MeasuringTool = require('./utils/MeasuringTool');
+Potree.Profile = require('./utils/Profile');
+Potree.ProfileTool = require('./utils/ProfileTool');
+Potree.TransformationTool = require('./utils/TransformationTool');
+Potree.Volume = require('./utils/Volume');
+Potree.VolumeTool = require('./utils/VolumeTool');
+Potree.Box3Helper = require('./utils/Box3Helper');
+Potree.Version = require('./Version');
+Potree.GeoJSONExporter = require('./exporter/GeoJSONExporter');
+Potree.DXFExporter = require('./exporter/DXFExporter');
+Potree.CSVExporter = require('./exporter/CSVExporter');
+Potree.LASExporter = require('./exporter/LASExporter');
+Potree.PointCloudArena4DNode = require('./arena4d/PointCloudArena4DNode');
+Potree.PointCloudArena4D = require('./arena4d/PointCloudArena4D');
+Potree.PointCloudArena4DGeometryNode = require('./arena4d/PointCloudArena4DGeometryNode');
+Potree.PointCloudArena4DGeometry = require('./arena4d/PointCloudArena4DGeometry');
+Potree.ProgressBar = require('./viewer/ProgressBar');
+Potree.View = require('./viewer/View');
+Potree.Scene = require('./viewer/Scene');
+Potree.Viewer = require('./viewer/Viewer');
+Potree.ProfileWindow = require('./ProfileWindow');
+Potree.ProfileWindowController = require('./ProfileWindowController');
+Potree.MapView = require('./viewer/MapView');
+Potree.GLProgram = require('./webgl/GLProgram');
+Potree.updatePointClouds = require('./utils/updatePointClouds');
+Potree.updateVisibility = require('./utils/updateVisibility');
+Potree.updateVisibilityStructures = require('./utils/updateVisibilityStructures');
+Potree.loadPointCloud = require('./utils/loadPointCloud');
+Potree.CameraMode = require('./viewer/CameraMode');
+Potree.NavigationCube = require('./viewer/NavigationCube');
+Potree.ClipVolume = require('./utils/PolygonClipVolume');
+Potree.PolygonClipVolume = require('./utils/PolygonClipVolume');
+
+module.exports = Potree;
 
 /*
 function createDEMMesh (dem) {
@@ -485,197 +352,6 @@ function createDEMMeshNode (dem, demNode) {
 	}
 }
 */
-
-Potree.updateVisibility = function (pointclouds, camera, renderer) {
-	// TODO: unused: let numVisibleNodes = 0;
-	let numVisiblePoints = 0;
-
-	let visibleNodes = [];
-	let visibleGeometry = [];
-	let unloadedGeometry = [];
-
-	let lowestSpacing = Infinity;
-
-	// calculate object space frustum and cam pos and setup priority queue
-	let s = updateVisibilityStructures(pointclouds, camera, renderer);
-	let frustums = s.frustums;
-	let camObjPositions = s.camObjPositions;
-	let priorityQueue = s.priorityQueue;
-
-	let loadedToGPUThisFrame = 0;
-
-	while (priorityQueue.size() > 0) {
-		let element = priorityQueue.pop();
-		let node = element.node;
-		let parent = element.parent;
-		let pointcloud = pointclouds[element.pointcloud];
-
-		// { // restrict to certain nodes for debugging
-		//	let allowedNodes = ["r", "r0", "r4"];
-		//	if(!allowedNodes.includes(node.name)){
-		//		continue;
-		//	}
-		// }
-
-		let box = node.getBoundingBox();
-		let frustum = frustums[element.pointcloud];
-		let camObjPos = camObjPositions[element.pointcloud];
-
-		let insideFrustum = frustum.intersectsBox(box);
-		let maxLevel = pointcloud.maxLevel || Infinity;
-		let level = node.getLevel();
-		let visible = insideFrustum;
-		visible = visible && !(numVisiblePoints + node.getNumPoints() > Potree.pointBudget);
-		visible = visible && level < maxLevel;
-
-		if (pointcloud.material.numClipBoxes > 0 && visible && pointcloud.material.clipMode === Potree.ClipMode.CLIP_OUTSIDE) {
-			let box2 = box.clone();
-			pointcloud.updateMatrixWorld(true);
-			box2.applyMatrix4(pointcloud.matrixWorld);
-			let intersectsClipBoxes = false;
-			for (let clipBox of pointcloud.material.clipBoxes) {
-				let clipMatrixWorld = clipBox.matrix;
-				let clipBoxWorld = new THREE.Box3(
-					new THREE.Vector3(-0.5, -0.5, -0.5),
-					new THREE.Vector3(0.5, 0.5, 0.5)
-				).applyMatrix4(clipMatrixWorld);
-				if (box2.intersectsBox(clipBoxWorld)) {
-					intersectsClipBoxes = true;
-					break;
-				}
-			}
-			visible = visible && intersectsClipBoxes;
-		}
-
-		// visible = ["r", "r0", "r06", "r060"].includes(node.name);
-		// visible = ["r"].includes(node.name);
-
-		if (node.spacing) {
-			lowestSpacing = Math.min(lowestSpacing, node.spacing);
-		} else if (node.geometryNode && node.geometryNode.spacing) {
-			lowestSpacing = Math.min(lowestSpacing, node.geometryNode.spacing);
-		}
-
-		if (numVisiblePoints + node.getNumPoints() > Potree.pointBudget) {
-			break;
-		}
-
-		if (!visible) {
-			continue;
-		}
-
-		// TODO: not used, same as the declaration?
-		// numVisibleNodes++;
-		numVisiblePoints += node.getNumPoints();
-
-		pointcloud.numVisibleNodes++;
-		pointcloud.numVisiblePoints += node.getNumPoints();
-
-		if (node.isGeometryNode() && (!parent || parent.isTreeNode())) {
-			if (node.isLoaded() && loadedToGPUThisFrame < 2) {
-				node = pointcloud.toTreeNode(node, parent);
-				loadedToGPUThisFrame++;
-			} else {
-				unloadedGeometry.push(node);
-				visibleGeometry.push(node);
-			}
-		}
-
-		if (node.isTreeNode()) {
-			Potree.getLRU().touch(node.geometryNode);
-			node.sceneNode.visible = true;
-			node.sceneNode.material = pointcloud.material;
-
-			visibleNodes.push(node);
-			pointcloud.visibleNodes.push(node);
-
-			node.sceneNode.updateMatrix();
-			node.sceneNode.matrixWorld.multiplyMatrices(pointcloud.matrixWorld, node.sceneNode.matrix);
-
-			if (pointcloud.showBoundingBox && !node.boundingBoxNode && node.getBoundingBox) {
-				let boxHelper = new Potree.Box3Helper(node.getBoundingBox());
-				// let boxHelper = new THREE.BoxHelper(node.sceneNode);
-				pointcloud.add(boxHelper);
-				pointcloud.boundingBoxNodes.push(boxHelper);
-				node.boundingBoxNode = boxHelper;
-				node.boundingBoxNode.matrixWorld.copy(pointcloud.matrixWorld);
-			} else if (pointcloud.showBoundingBox) {
-				node.boundingBoxNode.visible = true;
-				node.boundingBoxNode.matrixWorld.copy(pointcloud.matrixWorld);
-			} else if (!pointcloud.showBoundingBox && node.boundingBoxNode) {
-				node.boundingBoxNode.visible = false;
-			}
-		}
-
-		// add child nodes to priorityQueue
-		let children = node.getChildren();
-		for (let i = 0; i < children.length; i++) {
-			let child = children[i];
-
-			let weight = 0;
-			if (camera.isPerspectiveCamera) {
-				let sphere = child.getBoundingSphere();
-				let distance = sphere.center.distanceTo(camObjPos);
-				let radius = sphere.radius;
-
-				let fov = (camera.fov * Math.PI) / 180;
-				let slope = Math.tan(fov / 2);
-				let projFactor = (0.5 * renderer.domElement.clientHeight) / (slope * distance);
-				let screenPixelRadius = radius * projFactor;
-
-				if (screenPixelRadius < pointcloud.minimumNodePixelSize) {
-					continue;
-				}
-
-				weight = screenPixelRadius;
-
-				if (distance - radius < 0) {
-					weight = Number.MAX_VALUE;
-				}
-			} else {
-				// TODO ortho visibility
-				let bb = child.getBoundingBox();
-				let distance = child.getBoundingSphere().center.distanceTo(camObjPos);
-				let diagonal = bb.max.clone().sub(bb.min).length();
-				weight = diagonal / distance;
-			}
-
-			priorityQueue.push({pointcloud: element.pointcloud, node: child, parent: node, weight: weight});
-		}
-	}// end priority queue loop
-
-	{ // update DEM
-		let maxDEMLevel = 4;
-		let candidates = pointclouds
-			.filter(p => (p.generateDEM && p.dem instanceof Potree.DEM));
-		for (let pointcloud of candidates) {
-			let updatingNodes = pointcloud.visibleNodes.filter(n => n.getLevel() <= maxDEMLevel);
-			pointcloud.dem.update(updatingNodes);
-		}
-	}
-
-	for (let i = 0; i < Math.min(5, unloadedGeometry.length); i++) {
-		unloadedGeometry[i].load();
-	}
-
-	// for(let node of visibleNodes){
-	//	let allowedNodes = ["r", "r0", "r4"];
-	//	node.sceneNode.visible = allowedNodes.includes(node.geometryNode.name);
-	//
-	//	if(node.boundingBoxNode){
-	//		node.boundingBoxNode.visible = node.boundingBoxNode.visible && node.sceneNode.visible;
-	//	}
-	// }
-
-	// Potree.updateDEMs(renderer, visibleNodes);
-
-	return {
-		visibleNodes: visibleNodes,
-		numVisiblePoints: numVisiblePoints,
-		lowestSpacing: lowestSpacing
-	};
-};
-
 /*
 //
 // WAY TOO SLOW WITH SYNCHRONOUS READ PIXEL

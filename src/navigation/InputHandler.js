@@ -1,9 +1,12 @@
+const THREE = require('three');
+const getMousePointCloudIntersection = require('../utils/getMousePointCloudIntersection');
+
 /**
  * @author mschuetz / http://mschuetz.at
  *
  *
  */
-Potree.InputHandler = class InputHandler extends THREE.EventDispatcher {
+class InputHandler extends THREE.EventDispatcher {
 	constructor (viewer) {
 		super();
 
@@ -471,7 +474,7 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher {
 	}
 
 	getMousePointCloudIntersection (mouse) {
-		return Potree.utils.getMousePointCloudIntersection(
+		return getMousePointCloudIntersection(
 			this.mouse,
 			this.scene.getActiveCamera(),
 			this.renderer,
@@ -629,3 +632,5 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher {
 		return lastDrag;
 	}
 };
+
+module.exports = InputHandler;

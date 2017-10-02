@@ -1,5 +1,7 @@
+const THREE = require('three');
+const TWEEN = require('@tweenjs/tween.js');
 
-Potree.AnimationPath = class {
+class AnimationPath {
 	constructor (points = []) {
 		this.points = points;
 		this.spline = new THREE.CatmullRomCurve3(points);
@@ -93,3 +95,5 @@ Potree.AnimationPath = class {
 
 }
 */
+
+module.exports = AnimationPath;

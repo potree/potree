@@ -1,3 +1,11 @@
+const PointCloudOctreeGeometry = require('../PointCloudOctreeGeometry');
+const PointCloudOctreeGeometryNode = require('../PointCloudOctreeGeometryNode');
+const Version = require('../Version');
+const THREE = require('three');
+const LasLazLoader = require('./LasLazLoader');
+const BinaryLoader = require('./BinaryLoader');
+const PointAttributes = require('./PointAttributes');
+const PointAttribute = require('./PointAttribute');
 
 /**
  * @class Loads mno files and returns a PointcloudOctree
@@ -5,9 +13,7 @@
  *
  * @author Markus Schuetz
  */
-Potree.POCLoader = function () {
-
-};
+const POCLoader = exports;
 
 /**
  * @return a point cloud octree with the root node data loaded.
@@ -16,9 +22,9 @@ Potree.POCLoader = function () {
  * @param url
  * @param loadingFinishedListener executed after loading the binary has been finished
  */
-Potree.POCLoader.load = function load (url, callback) {
+POCLoader.load = function load (url, callback) {
 	try {
-		let pco = new Potree.PointCloudOctreeGeometry();
+		let pco = new PointCloudOctreeGeometry();
 		pco.url = url;
 		let xhr = new XMLHttpRequest();
 		xhr.open('GET', url, true);
@@ -27,7 +33,7 @@ Potree.POCLoader.load = function load (url, callback) {
 			if (xhr.readyState === 4 && (xhr.status === 200 || xhr.status === 0)) {
 				let fMno = JSON.parse(xhr.responseText);
 
-				let version = new Potree.Version(fMno.version);
+				let version = new Version(fMno.version);
 
 				// assume octreeDir is absolute if it starts with http
 				if (fMno.octreeDir.indexOf('http') === 0) {
@@ -66,12 +72,12 @@ Potree.POCLoader.load = function load (url, callback) {
 				pco.tightBoundingSphere = tightBoundingBox.getBoundingSphere();
 				pco.offset = offset;
 				if (fMno.pointAttributes === 'LAS') {
-					pco.loader = new Potree.LasLazLoader(fMno.version);
+					pco.loader = new LasLazLoader(fMno.version);
 				} else if (fMno.pointAttributes === 'LAZ') {
-					pco.loader = new Potree.LasLazLoader(fMno.version);
+					pco.loader = new LasLazLoader(fMno.version);
 				} else {
-					pco.loader = new Potree.BinaryLoader(fMno.version, boundingBox, fMno.scale);
-					pco.pointAttributes = new Potree.PointAttributes(pco.pointAttributes);
+					pco.loader = new BinaryLoader(fMno.version, boundingBox, fMno.scale);
+					pco.pointAttributes = new PointAttributes(pco.pointAttributes);
 				}
 
 				let nodes = {};
@@ -79,7 +85,7 @@ Potree.POCLoader.load = function load (url, callback) {
 				{ // load root
 					let name = 'r';
 
-					let root = new Potree.PointCloudOctreeGeometryNode(name, pco, boundingBox);
+					let root = new PointCloudOctreeGeometryNode(name, pco, boundingBox);
 					root.level = 0;
 					root.hasChildren = true;
 					root.spacing = pco.spacing;
@@ -102,9 +108,9 @@ Potree.POCLoader.load = function load (url, callback) {
 						let parentName = name.substring(0, name.length - 1);
 						let parentNode = nodes[parentName];
 						let level = name.length - 1;
-						let boundingBox = Potree.POCLoader.createChildAABB(parentNode.boundingBox, index);
+						let boundingBox = POCLoader.createChildAABB(parentNode.boundingBox, index);
 
-						let node = new Potree.PointCloudOctreeGeometryNode(name, pco, boundingBox);
+						let node = new PointCloudOctreeGeometryNode(name, pco, boundingBox);
 						node.level = level;
 						node.numPoints = numPoints;
 						node.spacing = pco.spacing / Math.pow(2, level);
@@ -128,19 +134,19 @@ Potree.POCLoader.load = function load (url, callback) {
 	}
 };
 
-Potree.POCLoader.loadPointAttributes = function (mno) {
+POCLoader.loadPointAttributes = function (mno) {
 	let fpa = mno.pointAttributes;
-	let pa = new Potree.PointAttributes();
+	let pa = new PointAttributes();
 
 	for (let i = 0; i < fpa.length; i++) {
-		let pointAttribute = Potree.PointAttribute[fpa[i]];
+		let pointAttribute = PointAttribute[fpa[i]];
 		pa.add(pointAttribute);
 	}
 
 	return pa;
 };
 
-Potree.POCLoader.createChildAABB = function (aabb, index) {
+POCLoader.createChildAABB = function (aabb, index) {
 	let min = aabb.min.clone();
 	let max = aabb.max.clone();
 	let size = new THREE.Vector3().subVectors(max, min);

@@ -1,18 +1,17 @@
+const THREE = require('three');
+const ClipMode = require('../materials/ClipMode');
+const ClipVolume = require('./ClipVolume');
+const PolygonClipVolume = require('./PolygonClipVolume');
+const getMousePointCloudIntersection = require('./getMousePointCloudIntersection');
+const removeEventListeners = require('../utils/removeEventListeners');
 
-Potree.ClipMode = {
-	DISABLED: 0,
-	HIGHLIGHT: 1,
-	INSIDE: 2,
-	OUTSIDE: 3
-};
-
-Potree.ClippingTool = class ClippingTool extends THREE.EventDispatcher {
+class ClippingTool extends THREE.EventDispatcher {
 	constructor (viewer) {
 		super();
 
 		this.viewer = viewer;
 
-		this.clipMode = Potree.ClipMode.HIGHLIGHT;
+		this.clipMode = ClipMode.HIGHLIGHT;
 		this.maxPolygonVertices = 8;
 
 		this.addEventListener('start_inserting_clipping_volume', e => {
@@ -35,9 +34,9 @@ Potree.ClippingTool = class ClippingTool extends THREE.EventDispatcher {
 		};
 
 		this.viewer.inputHandler.addEventListener('delete', e => {
-			let volumes = e.selection.filter(e => (e instanceof Potree.ClipVolume));
+			let volumes = e.selection.filter(e => (e instanceof ClipVolume));
 			volumes.forEach(e => this.viewer.scene.removeClipVolume(e));
-			let polyVolumes = e.selection.filter(e => (e instanceof Potree.PolygonClipVolume));
+			let polyVolumes = e.selection.filter(e => (e instanceof PolygonClipVolume));
 			polyVolumes.forEach(e => this.viewer.scene.removePolygonClipVolume(e));
 		});
 	}
@@ -48,10 +47,10 @@ Potree.ClippingTool = class ClippingTool extends THREE.EventDispatcher {
 		}
 
 		if (this.scene) {
-			this.scene.removeEventListeners('clip_volume_added', this.onAdd);
-			this.scene.removeEventListeners('clip_volume_removed', this.onRemove);
-			this.scene.removeEventListeners('polygon_clip_volume_added', this.onAdd);
-			this.scene.removeEventListeners('polygon_clip_volume_removed', this.onRemove);
+			removeEventListeners(this.scene, 'clip_volume_added', this.onAdd);
+			removeEventListeners(this.scene, 'clip_volume_removed', this.onRemove);
+			removeEventListeners(this.scene, 'polygon_clip_volume_added', this.onAdd);
+			removeEventListeners(this.scene, 'polygon_clip_volume_removed', this.onRemove);
 		}
 
 		this.scene = scene;
@@ -66,9 +65,18 @@ Potree.ClippingTool = class ClippingTool extends THREE.EventDispatcher {
 		if (this.clipMode === mode) {
 			return;
 		}
+		if (ClipMode.forCode(mode) === undefined) {
+			return;
+		}
 
 		this.clipMode = mode;
-		viewer.dispatchEvent({'type': 'clipper.clipMode_changed', 'viewer': viewer, 'mode': mode});
+		this.viewer.dispatchEvent({'type': 'clipper.clipMode_changed', 'viewer': this.viewer, 'mode': mode});
+	}
+
+	getClipMode () {
+		// Note: We could simply use the clipMode but getClipMode suggests there is a
+		//       setClipMode.
+		return this.clipMode;
 	}
 
 	startInsertion (args = {}) {
@@ -79,7 +87,7 @@ Potree.ClippingTool = class ClippingTool extends THREE.EventDispatcher {
 		}
 
 		if (type === 'plane') {
-			let clipVolume = new Potree.ClipVolume(args);
+			let clipVolume = new ClipVolume(this.viewer, args);
 
 			this.dispatchEvent({'type': 'start_inserting_clipping_volume'});
 
@@ -92,7 +100,7 @@ Potree.ClippingTool = class ClippingTool extends THREE.EventDispatcher {
 			let drag = e => {
 				// TODO: unused: let camera = this.viewer.scene.getActiveCamera();
 
-				let I = Potree.utils.getMousePointCloudIntersection(
+				let I = getMousePointCloudIntersection(
 					e.drag.end,
 					this.viewer.scene.getActiveCamera(),
 					this.viewer.renderer,
@@ -124,7 +132,7 @@ Potree.ClippingTool = class ClippingTool extends THREE.EventDispatcher {
 
 			this.viewer.inputHandler.startDragging(clipVolume);
 		} else if (type === 'polygon') {
-			let polyClipVol = new Potree.PolygonClipVolume(this.viewer.scene.getActiveCamera().clone());
+			let polyClipVol = new PolygonClipVolume(this.viewer.scene.getActiveCamera().clone());
 
 			this.dispatchEvent({'type': 'start_inserting_clipping_volume'});
 
@@ -193,3 +201,5 @@ Potree.ClippingTool = class ClippingTool extends THREE.EventDispatcher {
 	update () {
 	}
 };
+
+module.exports = ClippingTool;

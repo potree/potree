@@ -1,7 +1,11 @@
+const Version = require('../Version');
+const PointAttributeNames = require('./PointAttributeNames');
+const THREE = require('three');
+const context = require('../context');
 
-Potree.BinaryLoader = function (version, boundingBox, scale) {
+const BinaryLoader = function (version, boundingBox, scale) {
 	if (typeof (version) === 'string') {
-		this.version = new Potree.Version(version);
+		this.version = new Version(version);
 	} else {
 		this.version = version;
 	}
@@ -10,7 +14,7 @@ Potree.BinaryLoader = function (version, boundingBox, scale) {
 	this.scale = scale;
 };
 
-Potree.BinaryLoader.prototype.load = function (node) {
+BinaryLoader.prototype.load = function (node) {
 	if (node.loaded) {
 		return;
 	}
@@ -44,7 +48,7 @@ Potree.BinaryLoader.prototype.load = function (node) {
 	}
 };
 
-Potree.BinaryLoader.prototype.parse = function (node, buffer) {
+BinaryLoader.prototype.parse = function (node, buffer) {
 	let numPoints = buffer.byteLength / node.pcoGeometry.pointAttributes.byteSize;
 	let pointAttributes = node.pcoGeometry.pointAttributes;
 
@@ -52,8 +56,8 @@ Potree.BinaryLoader.prototype.parse = function (node, buffer) {
 		node.numPoints = numPoints;
 	}
 
-	let workerPath = Potree.scriptPath + '/workers/BinaryDecoderWorker.js';
-	let worker = Potree.workerPool.getWorker(workerPath);
+	let workerPath = context.scriptPath + '/workers/BinaryDecoderWorker.js';
+	let worker = context.workerPool.getWorker(workerPath);
 
 	worker.onmessage = function (e) {
 		let data = e.data;
@@ -63,7 +67,7 @@ Potree.BinaryLoader.prototype.parse = function (node, buffer) {
 			new THREE.Vector3().fromArray(data.tightBoundingBox.max)
 		);
 
-		Potree.workerPool.returnWorker(workerPath, worker);
+		context.workerPool.returnWorker(workerPath, worker);
 
 		let geometry = new THREE.BufferGeometry();
 
@@ -73,19 +77,19 @@ Potree.BinaryLoader.prototype.parse = function (node, buffer) {
 				// TODO Unused: let attribute = buffers[property].attribute;
 				// TODO Unused: let numElements = attribute.numElements;
 
-				if (parseInt(property) === Potree.PointAttributeNames.POSITION_CARTESIAN) {
+				if (parseInt(property) === PointAttributeNames.POSITION_CARTESIAN) {
 					geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(buffer), 3));
-				} else if (parseInt(property) === Potree.PointAttributeNames.COLOR_PACKED) {
+				} else if (parseInt(property) === PointAttributeNames.COLOR_PACKED) {
 					geometry.addAttribute('color', new THREE.BufferAttribute(new Uint8Array(buffer), 3, true));
-				} else if (parseInt(property) === Potree.PointAttributeNames.INTENSITY) {
+				} else if (parseInt(property) === PointAttributeNames.INTENSITY) {
 					geometry.addAttribute('intensity', new THREE.BufferAttribute(new Float32Array(buffer), 1));
-				} else if (parseInt(property) === Potree.PointAttributeNames.CLASSIFICATION) {
+				} else if (parseInt(property) === PointAttributeNames.CLASSIFICATION) {
 					geometry.addAttribute('classification', new THREE.BufferAttribute(new Uint8Array(buffer), 1));
-				} else if (parseInt(property) === Potree.PointAttributeNames.NORMAL_SPHEREMAPPED) {
+				} else if (parseInt(property) === PointAttributeNames.NORMAL_SPHEREMAPPED) {
 					geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
-				} else if (parseInt(property) === Potree.PointAttributeNames.NORMAL_OCT16) {
+				} else if (parseInt(property) === PointAttributeNames.NORMAL_OCT16) {
 					geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
-				} else if (parseInt(property) === Potree.PointAttributeNames.NORMAL) {
+				} else if (parseInt(property) === PointAttributeNames.NORMAL) {
 					geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
 				}
 			}
@@ -121,3 +125,5 @@ Potree.BinaryLoader.prototype.parse = function (node, buffer) {
 	};
 	worker.postMessage(message, [message.buffer]);
 };
+
+module.exports = BinaryLoader;

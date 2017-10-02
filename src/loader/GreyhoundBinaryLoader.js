@@ -1,3 +1,8 @@
+const Version = require('../Version');
+const THREE = require('three');
+const PointAttributeNames = require('./PointAttributeNames');
+const context = require('../context');
+
 function networkToNative (val) {
 	return ((val & 0x00FF) << 24) |
 		((val & 0xFF00) << 8) |
@@ -5,9 +10,9 @@ function networkToNative (val) {
 		((val >> 24) & 0x00FF);
 }
 
-Potree.GreyhoundBinaryLoader = function (version, boundingBox, scale) {
+const GreyhoundBinaryLoader = function (version, boundingBox, scale) {
 	if (typeof (version) === 'string') {
-		this.version = new Potree.Version(version);
+		this.version = new Version(version);
 	} else {
 		this.version = version;
 	}
@@ -16,7 +21,7 @@ Potree.GreyhoundBinaryLoader = function (version, boundingBox, scale) {
 	this.scale = scale;
 };
 
-Potree.GreyhoundBinaryLoader.prototype.load = function (node) {
+GreyhoundBinaryLoader.prototype.load = function (node) {
 	if (node.loaded) return;
 
 	var scope = this;
@@ -47,7 +52,7 @@ Potree.GreyhoundBinaryLoader.prototype.load = function (node) {
 	}
 };
 
-Potree.GreyhoundBinaryLoader.prototype.parse = function (node, buffer) {
+GreyhoundBinaryLoader.prototype.parse = function (node, buffer) {
 	var NUM_POINTS_BYTES = 4;
 
 	var view = new DataView(
@@ -57,8 +62,8 @@ Potree.GreyhoundBinaryLoader.prototype.parse = function (node, buffer) {
 
 	node.numPoints = numPoints;
 
-	let workerPath = Potree.scriptPath + '/workers/GreyhoundBinaryDecoderWorker.js';
-	let worker = Potree.workerPool.getWorker(workerPath);
+	let workerPath = context.scriptPath + '/workers/GreyhoundBinaryDecoderWorker.js';
+	let worker = context.workerPool.getWorker(workerPath);
 
 	worker.onmessage = function (e) {
 		var data = e.data;
@@ -68,7 +73,7 @@ Potree.GreyhoundBinaryLoader.prototype.parse = function (node, buffer) {
 			new THREE.Vector3().fromArray(data.tightBoundingBox.max)
 		);
 
-		Potree.workerPool.returnWorker(workerPath, worker);
+		context.workerPool.returnWorker(workerPath, worker);
 
 		var geometry = new THREE.BufferGeometry();
 
@@ -84,7 +89,7 @@ Potree.GreyhoundBinaryLoader.prototype.parse = function (node, buffer) {
 				// TODO Unused: var attribute = buffers[property].attribute;
 				// TODO Unused: var numElements = attribute.numElements;
 
-				var pointAttributes = Potree.PointAttributeNames;
+				var pointAttributes = PointAttributeNames;
 
 				switch (parseInt(property)) {
 					case pointAttributes.POSITION_CARTESIAN:
@@ -153,3 +158,5 @@ Potree.GreyhoundBinaryLoader.prototype.parse = function (node, buffer) {
 
 	worker.postMessage(message, [message.buffer]);
 };
+
+module.exports = GreyhoundBinaryLoader;

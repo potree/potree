@@ -1,5 +1,13 @@
+const THREE = require('three');
+const Volume = require('./Volume');
+const removeEventListeners = require('./removeEventListeners');
+const getMousePointCloudIntersection = require('./getMousePointCloudIntersection');
+const projectedRadius = require('./projectedRadius');
+const projectedRadiusOrtho = require('./projectedRadiusOrtho');
+const CameraMode = require('../viewer/CameraMode');
+const addCommas = require('./addCommas');
 
-Potree.VolumeTool = class VolumeTool extends THREE.EventDispatcher {
+class VolumeTool extends THREE.EventDispatcher {
 	constructor (viewer) {
 		super();
 
@@ -26,7 +34,7 @@ Potree.VolumeTool = class VolumeTool extends THREE.EventDispatcher {
 		};
 
 		this.viewer.inputHandler.addEventListener('delete', e => {
-			let volumes = e.selection.filter(e => (e instanceof Potree.Volume));
+			let volumes = e.selection.filter(e => (e instanceof Volume));
 			volumes.forEach(e => this.viewer.scene.removeVolume(e));
 		});
 	}
@@ -37,8 +45,9 @@ Potree.VolumeTool = class VolumeTool extends THREE.EventDispatcher {
 		}
 
 		if (this.scene) {
-			this.scene.removeEventListeners('volume_added', this.onAdd);
-			this.scene.removeEventListeners('volume_removed', this.onRemove);
+			// TODO: the API is used wrong, removeEventListeners has only two parameters!
+			removeEventListeners(this.scene, 'volume_added', this.onAdd);
+			removeEventListeners(this.scene, 'volume_removed', this.onRemove);
 		}
 
 		this.scene = scene;
@@ -48,7 +57,7 @@ Potree.VolumeTool = class VolumeTool extends THREE.EventDispatcher {
 	}
 
 	startInsertion (args = {}) {
-		let volume = new Potree.Volume();
+		let volume = new Volume();
 		volume.clip = args.clip || false;
 		volume.name = args.name || 'Volume';
 
@@ -67,7 +76,7 @@ Potree.VolumeTool = class VolumeTool extends THREE.EventDispatcher {
 		let drag = e => {
 			let camera = this.viewer.scene.getActiveCamera();
 
-			let I = Potree.utils.getMousePointCloudIntersection(
+			let I = getMousePointCloudIntersection(
 				e.drag.end,
 				this.viewer.scene.getActiveCamera(),
 				this.viewer.renderer,
@@ -118,18 +127,20 @@ Potree.VolumeTool = class VolumeTool extends THREE.EventDispatcher {
 
 			{
 				let pr = 0;
-				if (viewer.scene.cameraMode === Potree.CameraMode.PERSPECTIVE) {
+				if (this.viewer.scene.cameraMode === CameraMode.PERSPECTIVE) {
 					let distance = label.position.distanceTo(camera.position);
-					pr = Potree.utils.projectedRadius(1, camera.fov * Math.PI / 180, distance, domElement.clientHeight);
+					pr = projectedRadius(1, camera.fov * Math.PI / 180, distance, domElement.clientHeight);
 				} else {
-					pr = Potree.utils.projectedRadiusOrtho(1, camera.projectionMatrix, domElement.clientWidth, domElement.clientHeight);
+					pr = projectedRadiusOrtho(1, camera.projectionMatrix, domElement.clientWidth, domElement.clientHeight);
 				}
 				let scale = (70 / pr);
 				label.scale.set(scale, scale, scale);
 			}
 
-			let text = Potree.utils.addCommas(volume.getVolume().toFixed(3)) + '\u00B3';
+			let text = addCommas(volume.getVolume().toFixed(3)) + '\u00B3';
 			label.setText(text);
 		}
 	}
 };
+
+module.exports = VolumeTool;

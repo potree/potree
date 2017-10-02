@@ -1,3 +1,8 @@
+const THREE = require('three');
+const getMousePointCloudIntersection = require('../utils/getMousePointCloudIntersection');
+const MOUSE = require('../utils/Mouse');
+const TWEEN = require('@tweenjs/tween.js');
+
 /**
  * @author mschuetz / http://mschuetz.at
  *
@@ -12,7 +17,7 @@
  *
  *
  */
-Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher {
+class OrbitControls extends THREE.EventDispatcher {
 	constructor (viewer) {
 		super();
 
@@ -48,12 +53,12 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher {
 				y: e.drag.lastDrag.y / this.renderer.domElement.clientHeight
 			};
 
-			if (e.drag.mouse === Potree.MOUSE.LEFT) {
+			if (e.drag.mouse === MOUSE.LEFT) {
 				this.yawDelta += ndrag.x * this.rotationSpeed;
 				this.pitchDelta += ndrag.y * this.rotationSpeed;
 
 				this.stopTweens();
-			} else if (e.drag.mouse === Potree.MOUSE.RIGHT) {
+			} else if (e.drag.mouse === MOUSE.RIGHT) {
 				this.panDelta.x += ndrag.x;
 				this.panDelta.y += ndrag.y;
 
@@ -126,7 +131,7 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher {
 	zoomToLocation (mouse) {
 		let camera = this.scene.getActiveCamera();
 
-		let I = Potree.utils.getMousePointCloudIntersection(
+		let I = getMousePointCloudIntersection(
 			mouse,
 			camera,
 			this.renderer,
@@ -261,3 +266,5 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher {
 		}
 	}
 };
+
+module.exports = OrbitControls;

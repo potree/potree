@@ -1,5 +1,4 @@
-
-Potree.GLProgram = class GLProgram {
+class GLProgram {
 	constructor (gl, material) {
 		this.gl = gl;
 		this.material = material;
@@ -76,3 +75,5 @@ Potree.GLProgram = class GLProgram {
 		}
 	}
 };
+
+module.exports = GLProgram;

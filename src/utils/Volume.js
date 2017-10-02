@@ -1,5 +1,7 @@
+const THREE = require('three');
+const TextSprite = require('../TextSprite');
 
-Potree.Volume = class extends THREE.Object3D {
+class Volume extends THREE.Object3D {
 	constructor (args = {}) {
 		super();
 
@@ -88,7 +90,7 @@ Potree.Volume = class extends THREE.Object3D {
 		// this.frame.mode = THREE.Lines;
 		this.add(this.frame);
 
-		this.label = new Potree.TextSprite('0');
+		this.label = new TextSprite('0');
 		this.label.setBorderColor({r: 0, g: 255, b: 0, a: 0.0});
 		this.label.setBackgroundColor({r: 0, g: 255, b: 0, a: 0.0});
 		this.label.material.depthTest = false;
@@ -169,3 +171,5 @@ Potree.Volume = class extends THREE.Object3D {
 		this.update();
 	}
 };
+
+module.exports = Volume;

@@ -1,5 +1,7 @@
+const THREE = require('three');
+const getMousePointCloudIntersection = require('./getMousePointCloudIntersection');
 
-Potree.Profile = class extends THREE.Object3D {
+class Profile extends THREE.Object3D {
 	constructor () {
 		super();
 
@@ -21,7 +23,6 @@ Potree.Profile = class extends THREE.Object3D {
 
 	createSphereMaterial () {
 		let sphereMaterial = new THREE.MeshLambertMaterial({
-			shading: THREE.SmoothShading,
 			color: 0xff0000,
 			depthTest: false,
 			depthWrite: false}
@@ -107,7 +108,7 @@ Potree.Profile = class extends THREE.Object3D {
 
 		{ // event listeners
 			let drag = (e) => {
-				let I = Potree.utils.getMousePointCloudIntersection(
+				let I = getMousePointCloudIntersection(
 					e.drag.end,
 					e.viewer.scene.getActiveCamera(),
 					e.viewer.renderer,
@@ -316,3 +317,5 @@ Potree.Profile = class extends THREE.Object3D {
 		this.update();
 	}
 };
+
+module.exports = Profile;

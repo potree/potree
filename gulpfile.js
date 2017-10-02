@@ -106,8 +106,9 @@ const through = require('through');
 					}
 				});
 				url = path.relative(targetDir, url);
+				return ` ${before}${quote}${url}${quote}`;
 			}
-			return ` ${before}${quote}${url}${quote}`;
+			return all;
 		})
 		return new Buffer(content);
 	}

@@ -3,7 +3,6 @@ const LasLazBatcher = require('./LasLazBatcher');
 const laslaz = require('../../libs/plasio/js/laslaz');
 const LASDecoder = laslaz.LASDecoder;
 const LASFile = laslaz.LASFile;
-const Promise = require('bluebird');
 
 /**
  * laslaz code taken and adapted from plas.io js-laslaz
@@ -62,20 +61,15 @@ module.exports = class LasLazLoader {
 	parse (node, buffer) {
 		let lf = new LASFile(buffer);
 		let handler = new LasLazBatcher(node);
-
-		return Promise.resolve(lf).cancellable().then(function (lf) {
-			return lf.open()
+		
+		let p = new Promise( (resolve, reject) => {
+			
+			lf.open()
 				.then(function () {
 					lf.isOpen = true;
-					return lf;
-				})
-				.catch(Promise.CancellationError, function (e) {
-					// open message was sent at this point, but then handler was not called
-					// because the operation was cancelled, explicitly close the file
-					return lf.close().then(function () {
-						throw e;
-					});
+					resolve(lf);
 				});
+			
 		}).then(function (lf) {
 			return lf.getHeader().then(function (h) {
 				return [lf, h];
@@ -122,25 +116,9 @@ module.exports = class LasLazLoader {
 			// Close it
 			return lf.close().then(function () {
 				lf.isOpen = false;
-				// Delay this a bit so that the user sees 100% completion
-				//
-				return Promise.delay(200).cancellable();
-			}).then(function () {
-				// trim off the first element (our LASFile which we don't really want to pass to the user)
-				//
-				return v.slice(1);
 			});
-		}).catch(Promise.CancellationError, function (e) {
-			// If there was a cancellation, make sure the file is closed, if the file is open
-			// close and then fail
-			if (lf.isOpen) {
-				return lf.close().then(function () {
-					lf.isOpen = false;
-					throw e;
-				});
-			}
-			throw e;
 		});
+
 	}
 
 	handle (node, url) {

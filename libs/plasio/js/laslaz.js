@@ -2,7 +2,6 @@
 // LAS/LAZ loading
 //
 
-const Promise = require("bluebird");
 const context = require('../../../src/context');
 
 (function(scope) {

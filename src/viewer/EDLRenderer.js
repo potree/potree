@@ -76,13 +76,16 @@ class EDLRenderer {
 		let camera = viewer.scene.getActiveCamera();
 
 		if (viewer.background === 'skybox') {
+			let skybox = viewer.getSkybox();
+			
 			viewer.renderer.setClearColor(0x000000, 0);
 			viewer.renderer.clear();
-			viewer.skybox.camera.rotation.copy(viewer.scene.cameraP.rotation);
-			viewer.skybox.camera.fov = viewer.scene.cameraP.fov;
-			viewer.skybox.camera.aspect = viewer.scene.cameraP.aspect;
-			viewer.skybox.camera.updateProjectionMatrix();
-			viewer.renderer.render(viewer.skybox.scene, viewer.skybox.camera);
+			skybox.camera.rotation.copy(viewer.scene.cameraP.rotation);
+			skybox.camera.fov = viewer.scene.cameraP.fov;
+			skybox.camera.aspect = viewer.scene.cameraP.aspect;
+			skybox.camera.updateProjectionMatrix();
+			
+			viewer.renderer.render(skybox.scene, skybox.camera);
 		} else if (viewer.background === 'gradient') {
 			viewer.renderer.setClearColor(0x000000, 0);
 			viewer.renderer.clear();

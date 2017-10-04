@@ -2894,9 +2894,9 @@ module.exports = (viewer) => {
 			];
 
 			let elMaterialList = $('#optMaterial' + i);
-			for (let i = 0; i < options.length; i++) {
-				let option = options[i];
-				let id = 'optMaterial_' + option + '_' + i;
+			for (let j = 0; j < options.length; j++) {
+				let option = options[j];
+				let id = 'optMaterial_' + option + '_' + j;
 
 				let elOption = $(`
 					<option id="${id}">

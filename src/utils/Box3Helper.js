@@ -1,3 +1,5 @@
+const THREE = require('three');
+
 /**
  *
  * code adapted from three.js BoxHelper.js
@@ -8,7 +10,7 @@
  * @author mschuetz / http://potree.org
  */
 
-Potree.Box3Helper = class Box3Helper extends THREE.LineSegments {
+class Box3Helper extends THREE.LineSegments {
 	constructor (box, color) {
 		if (color === undefined) color = 0xffff00;
 
@@ -33,3 +35,5 @@ Potree.Box3Helper = class Box3Helper extends THREE.LineSegments {
 		super(geometry, material);
 	}
 };
+
+module.exports = Box3Helper;

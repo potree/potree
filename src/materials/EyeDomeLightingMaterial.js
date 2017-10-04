@@ -1,3 +1,7 @@
+const PointColorType = require('./PointColorType');
+const THREE = require('three');
+const vs = require('./shaders/edl.vs');
+const fs = require('./shaders/edl.fs');
 
 //
 // Algorithm by Christian Boucheny
@@ -8,7 +12,7 @@
 // http://www.kitware.com/source/home/post/9
 // https://tel.archives-ouvertes.fr/tel-00438464/document p. 115+ (french)
 
-Potree.EyeDomeLightingMaterial = function (parameters) {
+const EyeDomeLightingMaterial = function (parameters) {
 	THREE.Material.call(this);
 
 	parameters = parameters || {};
@@ -35,26 +39,18 @@ Potree.EyeDomeLightingMaterial = function (parameters) {
 
 	this.setValues({
 		uniforms: uniforms,
-		vertexShader: this.getDefines() + Potree.Shaders['edl.vs'],
-		fragmentShader: this.getDefines() + Potree.Shaders['edl.fs'],
+		vertexShader: vs({neighbourCount: this.neighbourCount}),
+		fragmentShader: fs({neighbourCount: this.neighbourCount}),
 		lights: false
 	});
 };
 
-Potree.EyeDomeLightingMaterial.prototype = new THREE.ShaderMaterial();
+EyeDomeLightingMaterial.prototype = new THREE.ShaderMaterial();
 
-Potree.EyeDomeLightingMaterial.prototype.getDefines = function () {
-	var defines = '';
-
-	defines += '#define NEIGHBOUR_COUNT ' + this.neighbourCount + '\n';
-
-	return defines;
-};
-
-Potree.EyeDomeLightingMaterial.prototype.updateShaderSource = function () {
+EyeDomeLightingMaterial.prototype.updateShaderSource = function () {
 	var attributes = {};
 
-	let PC = Potree.PointColorType;
+	let PC = PointColorType;
 
 	if ([PC.INTENSITY, PC.INTENSITY_GRADIENT].includes(this.pointColorType)) {
 		attributes.intensity = { type: 'f', value: [] };
@@ -65,17 +61,14 @@ Potree.EyeDomeLightingMaterial.prototype.updateShaderSource = function () {
 		attributes.numberOfReturns = { type: 'f', value: [] };
 	} else if (this.pointColorType === PC.SOURCE) {
 		attributes.pointSourceID = { type: 'f', value: [] };
-	} else if (this.pointColorType === PC.NORMAL || this.pointColorType === Potree.PointColorType.PHONG) {
+	} else if (this.pointColorType === PC.NORMAL || this.pointColorType === PointColorType.PHONG) {
 		attributes.normal = { type: 'f', value: [] };
 	}
 	attributes.classification = { type: 'f', value: 0 };
 
-	var vs = this.getDefines() + Potree.Shaders['edl.vs'];
-	var fs = this.getDefines() + Potree.Shaders['edl.fs'];
-
 	this.setValues({
-		vertexShader: vs,
-		fragmentShader: fs
+		vertexShader: vs({neighbourCount: this.neighbourCount}),
+		fragmentShader: fs({neighbourCount: this.neighbourCount})
 	});
 
 	this.uniforms.neighbours.value = this.neighbours;
@@ -83,7 +76,7 @@ Potree.EyeDomeLightingMaterial.prototype.updateShaderSource = function () {
 	this.needsUpdate = true;
 };
 
-Object.defineProperty(Potree.EyeDomeLightingMaterial.prototype, 'neighbourCount', {
+Object.defineProperty(EyeDomeLightingMaterial.prototype, 'neighbourCount', {
 	get: function () {
 		return this._neighbourCount;
 	},
@@ -100,3 +93,5 @@ Object.defineProperty(Potree.EyeDomeLightingMaterial.prototype, 'neighbourCount'
 		}
 	}
 });
+
+module.exports = EyeDomeLightingMaterial;

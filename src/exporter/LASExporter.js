@@ -1,5 +1,6 @@
+const THREE = require('three');
 
-Potree.LASExporter = class LASExporter {
+class LASExporter {
 	static toLAS (points) {
 		// TODO Unused: let string = '';
 
@@ -146,3 +147,5 @@ Potree.LASExporter = class LASExporter {
 		return buffer;
 	}
 };
+
+module.exports = LASExporter;

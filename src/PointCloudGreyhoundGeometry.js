@@ -1,4 +1,4 @@
-Potree.PointCloudGreyhoundGeometry = function () {
+module.exports = function () {
 	this.spacing = 0;
 	this.boundingBox = null;
 	this.root = null;

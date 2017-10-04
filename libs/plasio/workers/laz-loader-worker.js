@@ -1,7 +1,5 @@
 // laz-loader-worker.js
-//
-
-//importScripts('laz-perf.js');
+const Module = require('./laz-perf');
 
 var instance = null; // laz-perf instance
 
@@ -56,10 +54,10 @@ function handleEvent(msg) {
 
 				instance.readOffset = 0;
 
-				postMessage({ type: "open", status: 1});
+				self.postMessage({ type: "open", status: 1});
 			}
 			catch(e) {
-				postMessage({ type: "open", status: 0, details: e });
+				self.postMessage({ type: "open", status: 0, details: e });
 			}
 			break;
 
@@ -72,7 +70,7 @@ function handleEvent(msg) {
 			var header = parseLASHeader(instance.arraybuffer);
 			header.pointsFormatId &= 0x3f;
 			instance.header = header;
-			postMessage({type: "header", status: 1, header: header});
+			self.postMessage({type: "header", status: 1, header: header});
 			break;
 
 		case "read":
@@ -103,7 +101,7 @@ function handleEvent(msg) {
 				o.readOffset ++;
 			}
 
-			postMessage({
+			self.postMessage({
 				type: 'header',
 				status: 1,
 				buffer: this_buf.buffer,
@@ -119,17 +117,15 @@ function handleEvent(msg) {
 				instance.delete();
 				instance = null;
 			}
-			postMessage({ type: "close", status: 1});
+			self.postMessage({ type: "close", status: 1});
 			break;
 	}
 }
 
-onmessage = function(event) {
+self.onmessage = function(event) {
 	try {
 		handleEvent(event.data);
 	} catch(e) {
-		postMessage({type: event.data.type, status: 0, details: e});
+		self.postMessage({type: event.data.type, status: 0, details: e});
 	}
 };
-
-

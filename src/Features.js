@@ -1,5 +1,5 @@
 
-Potree.Features = (function () {
+module.exports = (function () {
 	var ftCanvas = document.createElement('canvas');
 	var gl = ftCanvas.getContext('webgl') || ftCanvas.getContext('experimental-webgl');
 	if (gl === null)		{ return null; }

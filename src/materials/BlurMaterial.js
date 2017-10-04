@@ -1,7 +1,9 @@
-
+const THREE = require('three');
+const vs = require('./shaders/blur.vs');
+const fs = require('./shaders/blur.fs');
 // see http://john-chapman-graphics.blogspot.co.at/2013/01/ssao-tutorial.html
 
-Potree.BlurMaterial = function (parameters) {
+const BlurMaterial = function (parameters) {
 	THREE.Material.call(this);
 
 	parameters = parameters || {};
@@ -16,9 +18,10 @@ Potree.BlurMaterial = function (parameters) {
 
 	this.setValues({
 		uniforms: uniforms,
-		vertexShader: Potree.Shaders['blur.vs'],
-		fragmentShader: Potree.Shaders['blur.fs']
+		vertexShader: vs(),
+		fragmentShader: fs()
 	});
 };
 
-Potree.BlurMaterial.prototype = new THREE.ShaderMaterial();
+BlurMaterial.prototype = new THREE.ShaderMaterial();
+module.exports = BlurMaterial;

@@ -1,6 +1,5 @@
-/* global onmessage:true postMessage:false */
-/* exported onmessage */
-onmessage = function (event) {
+/* global self:false */
+self.onmessage = function (event) {
 	let boundingBox = event.data.boundingBox;
 	let position = new Float32Array(event.data.position);
 	let width = 64;
@@ -38,5 +37,5 @@ onmessage = function (event) {
 		}
 	};
 
-	postMessage(message, [message.dem.data]);
+	self.postMessage(message, [message.dem.data]);
 };

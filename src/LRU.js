@@ -1,14 +1,5 @@
-
-/**
- *
- * @param node
- * @class an item in the lru list.
- */
-function LRUItem (node) {
-	this.previous = null;
-	this.next = null;
-	this.node = node;
-}
+const LRUItem = require('./LRUItem');
+const context = require('./context');
 
 /**
  *
@@ -175,7 +166,7 @@ LRU.prototype.freeMemory = function () {
 		return;
 	}
 
-	while (this.numPoints > Potree.pointLoadLimit) {
+	while (this.numPoints > context.pointLoadLimit) {
 		var element = this.first;
 		var node = element.node;
 		this.disposeDescendants(node);
@@ -203,3 +194,5 @@ LRU.prototype.disposeDescendants = function (node) {
 		}
 	}
 };
+
+module.exports = LRU;

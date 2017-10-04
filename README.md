@@ -25,6 +25,38 @@ Contact: Markus Schütz - mschuetz@potree.org
 
 [PotreeConverter source and Win64 binaries](https://github.com/potree/PotreeConverter/releases)
 
+## Build
+
+* Install [Node.js](https://nodejs.org/en/) and download this repository.
+* Open a console window
+* Change into the potree directory and install the dependencies:
+
+```
+cd <potree_directory>
+npm install --save-dev
+```
+
+* Create the build, including a minified version:
+
+```
+npm run build
+npm run min:script:*
+```
+
+Watch commands are helpful during development since they automatically rebuild the project whenever you modify a source file. The ```+webserver``` variant also starts a webserver, which is needed to test potree pages on your local machine.
+The ```+liveserver``` version is the same as the webserver version, except it also automatically refreshes your browser when you modify the source.
+
+It's recommended to use ```npm run watch+liveserver```. 
+On startup, it will open a browser page at ```http://localhost:8080/```. Open the examples folder to select various demo pages.
+
+```
+npm run watch
+npm run watch+webserver
+npm run watch+liveserver
+```
+
+
+
 ## Showcase
 
 Take a look at the [potree showcase](http://potree.org/wp/demo/) for some live examples.

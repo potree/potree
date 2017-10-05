@@ -7,6 +7,7 @@ class GLQueries {
 		if (!queries) {
 			cached = true;
 			queries = new GLQueries(gl);
+			queriesPerGL.set(gl, queries);
 			cached = false;
 		}
 		return queries;

@@ -1247,7 +1247,7 @@ class PotreeViewer extends THREE.EventDispatcher {
 		// if(toggleMessage > 30){
 		//	document.getElementById("lblMessage").innerHTML = "update: " + duration + "ms";
 		//	toggleMessage = 0;
-		// }
+		// } 
 
 		const queries = GLQueries.forGL(this.renderer.getContext());
 		queries.start('frame');

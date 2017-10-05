@@ -12,6 +12,7 @@ const through = require('through');
 {
 	const browserify = require('browserify');
 	const uglifyify = require('uglifyify');
+	const exorcist = require('exorcist');
 	const watchify = require('watchify');
 	const source = require('vinyl-source-stream');
 	const browserifyShader = require('browserify-shader');
@@ -27,20 +28,29 @@ const through = require('through');
 	};
 
 	function createBrowserify (script, isMin) {
-		let b = browserify(createArgs(script, isMin)).external('ws');
-		if (isMin) {
-			b = b.transform(uglifyify, {global: true});
-		}
-		return b;
+		return browserify(createArgs(script))
+			.external('ws')
+			.transform(uglifyify, {global: true});
 	}
 
-	function createArgs (script, isMin) {
+	function createArgs (script) {
 		return Object.assign({
 			entries: script.source,
 			transform: [browserifyShader],
 			cache: {},
-			debug: !isMin
+			debug: true
 		}, script.args || {})
+	}
+
+	function createExorcistPath (target, isMin) {
+		let ext = path.extname(target);
+		let file = path.basename(target);
+		file = file.substr(0, file.length - ext.length);
+		const dir = path.dirname(target);
+		if (isMin) {
+			ext = `.min${ext}`;
+		}
+		return path.join(dir, `${file}${ext}.map`);
 	}
 
 	Object.keys(SCRIPTS).forEach((key) => {
@@ -51,6 +61,7 @@ const through = require('through');
 		const bMin = createBrowserify(script, true);
 		const bundle = (b, isMin) => b
 			.bundle()
+			.pipe(exorcist(createExorcistPath(script.target, isMin)))
 			.pipe(source(path.basename(script.target)))
 			.pipe(rename(path => {
 				if (isMin) {
@@ -59,16 +70,18 @@ const through = require('through');
 			}))
 			.pipe(gulp.dest(path.dirname(script.target)))
 			.pipe(reload({stream: true}))
-			.pipe(through(file => gutil.log(`Finished writing ${file.path}`)));
+			.pipe(through(file => {
+				gutil.log(`Finished writing ${file.path} & source-map`);
+			}));
 
 		gulp.task(`script:${key}`, bundle.bind(null, b, false));
 		gulp.task(`min:script:${key}`, bundle.bind(null, bMin, true));
 		gulp.task(`watch:script:${key}`, () => {
 			const w = watchify(b)
-			w.on('update', () => bundle(b)); // on any dep update, runs the bundler
+			w.on('update', () => bundle(b, false)); // on any dep update, runs the bundler
 			w.on('log', gutil.log); // output build logs to terminal
 			w.on('error', gutil.log.bind(gutil, 'Browserify Error'));
-			return bundle(b);
+			return bundle(b, false);
 		});
 	});
 

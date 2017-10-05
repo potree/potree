@@ -61,15 +61,13 @@ module.exports = class LasLazLoader {
 	parse (node, buffer) {
 		let lf = new LASFile(buffer);
 		let handler = new LasLazBatcher(node);
-		
-		let p = new Promise( (resolve, reject) => {
-			
+
+		new Promise((resolve, reject) => {
 			lf.open()
 				.then(function () {
 					lf.isOpen = true;
 					resolve(lf);
 				});
-			
 		}).then(function (lf) {
 			return lf.getHeader().then(function (h) {
 				return [lf, h];
@@ -118,7 +116,6 @@ module.exports = class LasLazLoader {
 				lf.isOpen = false;
 			});
 		});
-
 	}
 
 	handle (node, url) {

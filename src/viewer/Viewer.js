@@ -775,14 +775,14 @@ class PotreeViewer extends THREE.EventDispatcher {
 	// Viewer Internals
 	// ------------------------------------------------------------------------------------
 
-	getSkybox(){
-		if(this.skybox == null){
+	getSkybox () {
+		if (!this.skybox) {
 			this.skybox = loadSkybox(new URL(context.resourcePath + '/textures/skybox2/').href);
 		}
-		
+
 		return this.skybox;
 	}
-	
+
 	createControls () {
 		{ // create FIRST PERSON CONTROLS
 			this.fpControls = new FirstPersonControls(this);
@@ -926,7 +926,7 @@ class PotreeViewer extends THREE.EventDispatcher {
 			this.renderer.domElement.focus();
 		}.bind(this));
 
-		//this.skybox = loadSkybox(new URL(context.resourcePath + '/textures/skybox2/').href);
+		// this.skybox = loadSkybox(new URL(context.resourcePath + '/textures/skybox2/').href);
 		this.skybox = null;
 
 		// enable frag_depth extension for the interpolation shader, if available
@@ -1247,7 +1247,7 @@ class PotreeViewer extends THREE.EventDispatcher {
 		// if(toggleMessage > 30){
 		//	document.getElementById("lblMessage").innerHTML = "update: " + duration + "ms";
 		//	toggleMessage = 0;
-		// } 
+		// }
 
 		const queries = GLQueries.forGL(this.renderer.getContext());
 		queries.start('frame');

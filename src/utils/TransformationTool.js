@@ -105,10 +105,9 @@ Potree.TransformationTool = class TransformationTool {
 				};
 
 				let drag = e => {
-					
 					let camera = this.viewer.scene.getActiveCamera();
-					
-					if(!e.drag.intersectionStart){
+
+					if (!e.drag.intersectionStart) {
 						e.drag.intersectionStart = e.drag.location;
 						e.drag.objectStart = e.drag.object.getWorldPosition();
 
@@ -216,7 +215,6 @@ Potree.TransformationTool = class TransformationTool {
 				};
 
 				let drag = e => {
-					
 					let camera = this.viewer.scene.getActiveCamera();
 					let n = normal.clone().applyEuler(this.sceneTransform.rotation);
 
@@ -360,10 +358,9 @@ Potree.TransformationTool = class TransformationTool {
 				};
 
 				let drag = e => {
-					
 					let camera = this.viewer.scene.getActiveCamera();
-					
-					if(!e.drag.intersectionStart){
+
+					if (!e.drag.intersectionStart) {
 						e.drag.intersectionStart = e.drag.location;
 						e.drag.scaleStart = this.selection[0].scale.clone();
 
@@ -528,9 +525,9 @@ Potree.TransformationTool = class TransformationTool {
 		{ // size
 			let camera = scene.getActiveCamera();
 			let pr = 0;
-			if(scene.cameraMode == Potree.CameraMode.PERSPECTIVE) {
+			if (scene.cameraMode === Potree.CameraMode.PERSPECTIVE) {
 				let distance = camera.position.distanceTo(pivot);
-				let pr = Potree.utils.projectedRadius(1, camera.fov * Math.PI / 180, distance, domElement.clientHeight);
+				pr = Potree.utils.projectedRadius(1, camera.fov * Math.PI / 180, distance, domElement.clientHeight);
 			} else {
 				pr = Potree.utils.projectedRadiusOrtho(1, camera.projectionMatrix, domElement.clientWidth, domElement.clientHeight);
 			}

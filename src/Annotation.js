@@ -59,7 +59,7 @@ Potree.Annotation = class extends THREE.EventDispatcher {
 		// this.elDescriptionContent = this.elDescription.find(".annotation-description-content");
 
 		this.clickTitle = () => {
-			if(this.hasView()){
+			if (this.hasView()) {
 				this.moveHere(this.scene.getActiveCamera());
 			}
 			this.dispatchEvent({type: 'click', target: this});

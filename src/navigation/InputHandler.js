@@ -11,7 +11,7 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher {
 		this.renderer = viewer.renderer;
 		this.domElement = this.renderer.domElement;
 		this.enabled = true;
-		
+
 		this.scene = null;
 		this.interactiveScenes = [];
 		this.inputListeners = [];
@@ -414,12 +414,16 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher {
 
 		this.hoveredElements = hoveredElements;
 	}
-	
-	onMouseWheel(e){
-		if(!this.enabled) return;
 
-		if(this.logMessages) console.log(this.constructor.name + ": onMouseWheel");
-		
+	onMouseWheel (e) {
+		if (!this.enabled) {
+			return;
+		}
+
+		if (this.logMessages) {
+			console.log(`${this.constructor.name}: onMouseWheel`);
+		}
+
 		e.preventDefault();
 
 		let delta = 0;
@@ -468,9 +472,9 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher {
 
 	getMousePointCloudIntersection (mouse) {
 		return Potree.utils.getMousePointCloudIntersection(
-			this.mouse, 
-			this.scene.getActiveCamera(), 
-			this.renderer, 
+			this.mouse,
+			this.scene.getActiveCamera(),
+			this.renderer,
 			this.scene.pointclouds);
 	}
 
@@ -569,13 +573,13 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher {
 			x: (this.mouse.x / this.domElement.clientWidth) * 2 - 1,
 			y: -(this.mouse.y / this.domElement.clientHeight) * 2 + 1
 		};
-		
-		let vector = new THREE.Vector3( nmouse.x, nmouse.y, 0.5 );
+
+		let vector = new THREE.Vector3(nmouse.x, nmouse.y, 0.5);
 		let camera = this.scene.getActiveCamera();
 		vector.unproject(camera);
-		
+
 		let raycaster = new THREE.Raycaster();
-		raycaster.ray.set( camera.position, vector.sub( camera.position ).normalize() );
+		raycaster.ray.set(camera.position, vector.sub(camera.position).normalize());
 		raycaster.linePrecision = 0.2;
 
 		let intersections = raycaster.intersectObjects(interactables, false);

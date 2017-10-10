@@ -20,4 +20,18 @@ Potree.InterleavedBuffer = class InterleavedBuffer{
 		this.numElements = numElements;
 	}
 	
+	offset(name){
+		let offset = 0;
+		
+		for(let att of this.attributes){
+			if(att.name === name){
+				return offset;
+			}
+			
+			offset += att.bytes;
+		}
+		
+		return null;
+	}
+	
 };

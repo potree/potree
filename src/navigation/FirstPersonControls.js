@@ -108,7 +108,7 @@ Potree.FirstPersonControls = class FirstPersonControls extends THREE.EventDispat
 		let I = Potree.utils.getMousePointCloudIntersection(
 			mouse,
 			camera,
-			this.renderer,
+			this.viewer,
 			this.scene.pointclouds);
 
 		if (I === null) {

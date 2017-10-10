@@ -515,7 +515,12 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 	 * TODO: only draw pixels that are actually read with readPixels().
 	 *
 	 */
-	pick (renderer, camera, ray, params = {}) {
+	pick (viewer, camera, ray, params = {}) {
+		
+		let renderer = viewer.renderer;
+		let pRenderer = viewer.pRenderer;
+		
+		performance.mark("pick-start");
 		
 		let pickWindowSize = params.pickWindowSize || 17;
 		let pickOutsideClipRegion = params.pickOutsideClipRegion || false;
@@ -556,8 +561,8 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 			pickMaterial.shape = this.material.shape;
 
 			pickMaterial.size = this.material.size;
-			pickMaterial.minSize = this.material.minSize;
-			pickMaterial.maxSize = this.material.maxSize;
+			pickMaterial.uniforms.minSize.value = this.material.uniforms.minSize.value;
+			pickMaterial.uniforms.maxSize.value = this.material.uniforms.maxSize.value;
 			pickMaterial.classification = this.material.classification;
 			
 			this.updateMaterial(pickMaterial, nodes, camera, renderer);
@@ -573,14 +578,25 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 			);
 		}
 		pickState.renderTarget.setSize(width, height);
+		//pickState.renderTarget.setSize(parseInt(width / 4), parseInt(height / 4));
+		//pickState.renderTarget.setSize(16, 16);
+		
 		
 		let pixelPos = new THREE.Vector2(params.x, params.y);
 		
-		renderer.setScissor(
+		//renderer.setScissor(
+		//	parseInt(pixelPos.x - (pickWindowSize - 1) / 2),
+		//	parseInt(pixelPos.y - (pickWindowSize - 1) / 2),
+		//	parseInt(pickWindowSize), parseInt(pickWindowSize));
+		//renderer.setScissorTest(true);
+		
+		let gl = renderer.getContext();
+		//gl.enable(gl.SCISSOR_TEST);
+		gl.scissor(
 			parseInt(pixelPos.x - (pickWindowSize - 1) / 2),
 			parseInt(pixelPos.y - (pickWindowSize - 1) / 2),
 			parseInt(pickWindowSize), parseInt(pickWindowSize));
-		renderer.setScissorTest(true);
+
 		
 		renderer.state.buffers.depth.setTest(pickMaterial.depthTest);
 		renderer.state.buffers.depth.setMask(pickMaterial.depthWrite);
@@ -588,17 +604,17 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 		
 		{ // RENDER
 			renderer.setRenderTarget(pickState.renderTarget);
+			renderer.clearTarget( pickState.renderTarget, true, true, true );
 			
 			let tmp = this.material;
 			this.material = pickMaterial;
 			
-			let pRenderer = new Potree.Renderer(renderer);
+			//let pRenderer = new Potree.Renderer(renderer);
 			pRenderer.renderOctree(this, nodes, camera, pickState.renderTarget);
 			
 			this.material = tmp;
 			
-			renderer.setRenderTarget(null);
-			renderer.resetGLState();
+			
 		}
 		
 		
@@ -611,11 +627,23 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 
 		let pixelCount = w * h;
 		let buffer = new Uint8Array(4 * pixelCount);
-		renderer.readRenderTargetPixels(pickState.renderTarget,
-			x, y, w, h,
-			buffer);
+		
+		//var start = performance.now();
+		gl.readPixels(x, y, 16, 16, gl.RGBA, gl.UNSIGNED_BYTE, buffer); 
+		//var end = performance.now();
+		//var duration = end - start;
+		//console.log(`duration: ${duration.toFixed(3)}ms`);
+		
+		
+		//renderer.readRenderTargetPixels(pickState.renderTarget,
+		//	x, y, w, h,
+		//	buffer);
 
+		renderer.setRenderTarget(null);
+		renderer.resetGLState();
 		renderer.setScissorTest(false);
+		gl.disable(gl.SCISSOR_TEST);
+		
 
 		
 		let pixels = buffer;
@@ -634,10 +662,10 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 				let pIndex = ibuffer[offset];
 
 				// if((pIndex !== 0 || pcIndex !== 0) && distance < min){
-				if (pcIndex > 0 && distance < min) {
+				if (!(pcIndex === 0 && pIndex === 0) && distance < min) {
 					hit = {
 						pIndex: pIndex,
-						pcIndex: pcIndex - 1
+						pcIndex: pcIndex
 					};
 					min = distance;
 
@@ -646,53 +674,80 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 			}
 		}
 		
-		let point = null;
-
-		console.log(hit);
 		
+		//{ // open window with image
+		//	let img = Potree.utils.pixelsArrayToImage(buffer, w, h);
+		//	let screenshot = img.src;
+		//
+		//	if(!this.debugDIV){
+		//		this.debugDIV = $(`
+		//			<div id="pickDebug"
+		//			style="position: absolute;
+		//			right: 400px; width: 300px;
+		//			bottom: 44px; width: 300px;
+		//			z-index: 1000;
+		//			"></div>`);
+		//		$(document.body).append(this.debugDIV);
+		//	}
+		//
+		//	this.debugDIV.empty();
+		//	this.debugDIV.append($(`<img src="${screenshot}"
+		//		style="transform: scaleY(-1);"/>`));
+		//	//$(this.debugWindow.document).append($(`<img src="${screenshot}"/>`));
+		//	//this.debugWindow.document.write('<img src="'+screenshot+'"/>');
+		//}
+		
+		let point = null;
+        
 		if (hit) {
 			point = {};
-
+        
 			if (!nodes[hit.pcIndex]) {
 				return null;
 			}
-
+        
 			let node = nodes[hit.pcIndex];
+			let pc = node.sceneNode;
 			let iBuffer = node.geometryNode.buffer;
-
-			for (let property in attributes) {
-				if (attributes.hasOwnProperty(property)) {
-					let values = pc.geometry.attributes[property];
-
-					if (property === 'position') {
-						let positionArray = values.array;
-						let x = positionArray[3 * hit.pIndex + 0];
-						let y = positionArray[3 * hit.pIndex + 1];
-						let z = positionArray[3 * hit.pIndex + 2];
-						let position = new THREE.Vector3(x, y, z);
-						position.applyMatrix4(pc.matrixWorld);
-
-						point[property] = position;
-					} else if (property === 'indices') {
-
-					} else {
-						if (values.itemSize === 1) {
-							point[property] = values.array[hit.pIndex];
-						} else {
-							let value = [];
-							for (let j = 0; j < values.itemSize; j++) {
-								value.push(values.array[values.itemSize * hit.pIndex + j]);
-							}
-							point[property] = value;
-						}
-					}
+			let data = iBuffer.data;
+			let view = new DataView(data);
+			
+			let offset = 0;
+			for (let attribute of iBuffer.attributes) {
+        
+				if (attribute.name === 'position') {
+					let x = view.getFloat32(iBuffer.stride * hit.pIndex + offset + 0, true);
+					let y = view.getFloat32(iBuffer.stride * hit.pIndex + offset + 4, true);
+					let z = view.getFloat32(iBuffer.stride * hit.pIndex + offset + 8, true);
+					
+					let position = new THREE.Vector3(x, y, z);
+					position.applyMatrix4(pc.matrixWorld);
+        
+					point[attribute.name] = position;
+				} else if (attribute.name === 'indices') {
+        
+				} else {
+					//if (values.itemSize === 1) {
+					//	point[attribute.name] = values.array[hit.pIndex];
+					//} else {
+					//	let value = [];
+					//	for (let j = 0; j < values.itemSize; j++) {
+					//		value.push(values.array[values.itemSize * hit.pIndex + j]);
+					//	}
+					//	point[attribute.name] = value;
+					//}
 				}
+				
+				offset += attribute.bytes;
 			}
 		}
 
-		// let end = new Date().getTime();
-		// let duration = end - start;
-		// console.log(`pick duration: ${duration}ms`);
+		//let end = new Date().getTime();
+		//let duration = end - start;
+		//console.log(`pick duration: ${duration}ms`);
+		performance.mark("pick-end");
+		performance.measure("pick", "pick-start", "pick-end");
+		
 
 		return point;
 		

@@ -39,7 +39,7 @@ Potree.resourcePath = Potree.scriptPath + '/resources';
 
 Potree.timerQueries = {};
 
-Potree.measureTimings = true;
+Potree.measureTimings = false;
 Potree.timerQueriesEnabled = false;
 
 Potree.startQuery = function (name, gl) {
@@ -1389,7 +1389,7 @@ Potree.Renderer = class{
 		gl.bindAttribLocation(shader.program, 4, "returnNumber");
 		gl.bindAttribLocation(shader.program, 5, "numberOfReturns");
 		gl.bindAttribLocation(shader.program, 6, "pointSourceID");
-		gl.bindAttribLocation(shader.program, 7, "indices");
+		gl.bindAttribLocation(shader.program, 7, "index");
 		
 		
 		

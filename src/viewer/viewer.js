@@ -897,6 +897,8 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			return Potree.PointColorType.NORMAL;
 		} else if (materialName === 'Phong') {
 			return Potree.PointColorType.PHONG;
+		} else if (materialName === 'Index') {
+			return Potree.PointColorType.POINT_INDEX;
 		} else if (materialName === 'RGB and Elevation') {
 			return Potree.PointColorType.RGB_HEIGHT;
 		} else if (materialName === 'Composite') {
@@ -923,12 +925,12 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			return 'Source';
 		} else if (materialID === Potree.PointColorType.LOD) {
 			return 'Level of Detail';
-		} else if (materialID === Potree.PointColorType.POINT_INDEX) {
-			return 'Point Index';
 		} else if (materialID === Potree.PointColorType.NORMAL) {
 			return 'Normal';
 		} else if (materialID === Potree.PointColorType.PHONG) {
 			return 'Phong';
+		}  else if (materialID === Potree.PointColorType.POINT_INDEX) {
+			return 'Index';
 		} else if (materialID === Potree.PointColorType.RGB_HEIGHT) {
 			return 'RGB and Elevation';
 		} else if (materialID === Potree.PointColorType.COMPOSITE) {
@@ -1721,27 +1723,63 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 				let groups = new Map();
 				for(let name of names){
 					groups.set(name, {
+						measures: [],
 						sum: 0,
-						n: 0
+						n: 0,
+						min: Infinity,
+						max: -Infinity
 					});
 				}
 				
 				for(let measure of measures){
 					let group = groups.get(measure.name);
+					group.measures.push(measure);
 					group.sum += measure.duration;
 					group.n++;
+					group.min = Math.min(group.min, measure.duration);
+					group.max = Math.max(group.max, measure.duration);
 				}
 				
-				let message = "===   TIMINGS   ===\n";
-				for(let group of groups){
-					let name = group[0];
-					let mean = group[1].sum / group[1].n;
+				for(let [name, group] of groups){
+					group.mean = group.sum / group.n;
+					group.measures.sort( (a, b) => a.duration - b.duration );
 					
-					message += `${name}: ${mean.toFixed(3)}ms\n`;
+					if(group.n === 1){
+						group.median = group.measures[0].duration;
+					}else if(group.n > 1){
+						group.median = group.measures[parseInt(group.n / 2)].duration;
+					}
+					
 				}
 				
-				message += "===================\n"; 
+				let cn = Array.from(names).reduce( (a, i) => Math.max(a, i.length), 0) + 5;
+				let cmin = 10;
+				let cmed = 10;
+				let cmax = 10;
+				let csam = 6;
 				
+				let message = ` ${"NAME".padEnd(cn)} |` 
+					+ ` ${"MIN".padStart(cmin)} |`
+					+ ` ${"MEDIAN".padStart(cmed)} |`
+					+ ` ${"MAX".padStart(cmax)} |`
+					+ ` ${"SAMPLES".padStart(csam)} \n`;
+				message += ` ${"-".repeat(message.length) }\n`;
+				
+				names = Array.from(names).sort();
+				for(let name of names){
+					let group = groups.get(name);
+					let min = group.min.toFixed(3);
+					let median = group.median.toFixed(3);
+					let max = group.max.toFixed(3);
+					let n = group.n;
+					
+					message += ` ${name.padEnd(cn)} |`
+						+ ` ${min.padStart(cmin)} |`
+						+ ` ${median.padStart(cmed)} |`
+						+ ` ${max.padStart(cmax)} |`
+						+ ` ${n.toString().padStart(csam)}\n`;
+				}
+				message += `\n`;
 				console.log(message);
 				
 				performance.clearMarks();

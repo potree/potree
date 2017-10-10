@@ -39,6 +39,7 @@ Potree.resourcePath = Potree.scriptPath + '/resources';
 
 Potree.timerQueries = {};
 
+Potree.measureTimings = true;
 Potree.timerQueriesEnabled = false;
 
 Potree.startQuery = function (name, gl) {
@@ -1339,7 +1340,7 @@ Potree.Renderer = class{
 			
 			shader.setUniform1f("size", material.size);
 			shader.setUniform1f("maxSize", 50);
-			shader.setUniform1f("minSize", 2);
+			shader.setUniform1f("minSize", 1);
 			
 			
 			// uniform float pcIndex

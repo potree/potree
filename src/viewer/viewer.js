@@ -1663,22 +1663,25 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 	loop (timestamp) {
 		requestAnimationFrame(this.loop.bind(this));
 
+		if(Potree.measureTimings) performance.mark("loop-start");
+
 		this.stats.begin();
 
-		// var start = new Date().getTime();
+		if(Potree.measureTimings) performance.mark("update-start");
+
 		this.update(this.clock.getDelta(), timestamp);
-		// var end = new Date().getTime();
-		// var duration = end - start;
-		// toggleMessage++;
-		// if(toggleMessage > 30){
-		//	document.getElementById("lblMessage").innerHTML = "update: " + duration + "ms";
-		//	toggleMessage = 0;
-		// }
+		
+		if(Potree.measureTimings) {
+			performance.mark("update-end");
+			performance.measure("update", "update-start", "update-end");
+		}
 
 		let queryAll;
 		if (Potree.timerQueriesEnabled) {
 			queryAll = Potree.startQuery('frame', viewer.renderer.getContext());
 		}
+
+		if(Potree.measureTimings) performance.mark("render-start");
 
 		if (this.useEDL && Potree.Features.SHADER_EDL.isSupported()) {
 			if (!this.edlRenderer) {
@@ -1693,26 +1696,66 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			this.potreeRenderer.render();
 		}
 
+		if(Potree.measureTimings){
+			performance.mark("render-end");
+			performance.measure("render", "render-start", "render-end");
+
+			performance.mark("loop-end");
+			performance.measure("loop", "loop-start", "loop-end");
+		}
+		
+		if(Potree.measureTimings){
+			if(!this.toggle){
+				this.toggle = timestamp;
+			}
+			let duration = timestamp - this.toggle;
+			if(duration > 1000.0){
+				
+				let measures = performance.getEntriesByType("measure");
+				
+				let names = new Set();
+				for(let measure of measures){
+					names.add(measure.name);
+				}
+				
+				let groups = new Map();
+				for(let name of names){
+					groups.set(name, {
+						sum: 0,
+						n: 0
+					});
+				}
+				
+				for(let measure of measures){
+					let group = groups.get(measure.name);
+					group.sum += measure.duration;
+					group.n++;
+				}
+				
+				let message = "===   TIMINGS   ===\n";
+				for(let group of groups){
+					let name = group[0];
+					let mean = group[1].sum / group[1].n;
+					
+					message += `${name}: ${mean.toFixed(3)}ms\n`;
+				}
+				
+				message += "===================\n"; 
+				
+				console.log(message);
+				
+				performance.clearMarks();
+				performance.clearMeasures();
+				this.toggle = timestamp;
+			}
+		}
+
 		if (Potree.timerQueriesEnabled) {
 			Potree.endQuery(queryAll, viewer.renderer.getContext());
 			Potree.resolveQueries(viewer.renderer.getContext());
 		}
 
-		// Potree.endQuery(queryAll, viewer.renderer.getContext());
-		// Potree.resolveQueries(viewer.renderer.getContext());
 
-		// let pointsRendered = viewer.scene.pointclouds[0].visibleNodes.map(n => n.geometryNode.geometry.attributes.position.count).reduce( (a, v) => a + v, 0);
-		// console.log("rendered: ", pointsRendered);
-
-		// if(this.takeScreenshot == true){
-		//	this.takeScreenshot = false;
-		//
-		//	let screenshot = this.renderer.domElement.toDataURL();
-		//
-		//	//document.body.appendChild(screenshot);
-		//	let w = this.open();
-		//	w.document.write('<img src="'+screenshot+'"/>');
-		// }
 
 		this.stats.end();
 

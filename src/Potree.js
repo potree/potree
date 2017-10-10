@@ -39,6 +39,7 @@ Potree.resourcePath = Potree.scriptPath + '/resources';
 
 Potree.timerQueries = {};
 
+Potree.measureTimings = true;
 Potree.timerQueriesEnabled = false;
 
 Potree.startQuery = function (name, gl) {

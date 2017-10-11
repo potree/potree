@@ -203,30 +203,63 @@ Potree.ProfileRequest = class ProfileRequest {
 				points.data.position = new Float32Array(acceptedPositions);
 				points.data.color = new Uint8Array(accepted.length * 4).fill(100);
 				
+				let relevantAttributes = buffer.attributes.filter(a => !["position", "index"].includes(a.name));
+				for(let attribute of relevantAttributes){
 
-				//for(let attribute of buffer.attributes){
-				//	let bufferedAttribute = geometry.attributes[attribute];
-				//	let Type = bufferedAttribute.array.constructor;
-                //
-				//	let filteredBuffer = null;
-                //
-				//	if (attribute === 'position') {
-				//		filteredBuffer = new Type(acceptedPositions);
-				//	} else {
-				//		filteredBuffer = new Type(accepted.length * bufferedAttribute.itemSize);
-                //
-				//		for (let i = 0; i < accepted.length; i++) {
-				//			let index = accepted[i];
-                //
-				//			filteredBuffer.set(
-				//				bufferedAttribute.array.subarray(
-				//					bufferedAttribute.itemSize * index,
-				//					bufferedAttribute.itemSize * index + bufferedAttribute.itemSize),
-				//				bufferedAttribute.itemSize * i);
-				//		}
-				//	}
-				//	points.data[attribute] = filteredBuffer;
-				//}
+					let filteredBuffer = null;
+					if(attribute.type === "FLOAT"){
+						filteredBuffer = new Float32Array(attribute.numElements * accepted.length);
+					}else if(attribute.type === "UNSIGNED_BYTE"){
+						filteredBuffer = new Uint8Array(attribute.numElements * accepted.length);
+					}else if(attribute.type === "UNSIGNED_SHORT"){
+						filteredBuffer = new Uint16Array(attribute.numElements * accepted.length);
+					}else if(attribute.type === "UNSIGNED_INT"){
+						filteredBuffer = new Uint32Array(attribute.numElements * accepted.length);
+					}
+
+					let source = new Uint8Array(buffer.data);
+					let target = new Uint8Array(filteredBuffer.buffer);
+
+					let offset = buffer.offset(attribute.name);
+
+					for(let i = 0; i < accepted.length; i++){
+
+						let index = accepted[i];
+						
+						let start = buffer.stride * index + offset;
+						let end = start + attribute.bytes;
+						let sub = source.subarray(start, end);
+
+						target.set(sub, i * attribute.bytes);
+					}
+
+					points.data[attribute.name] = filteredBuffer;
+
+
+
+
+					//let bufferedAttribute = geometry.attributes[attribute];
+					//let Type = bufferedAttribute.array.constructor;
+                
+					//let filteredBuffer = null;
+                
+					//if (attribute === 'position') {
+					//	filteredBuffer = new Type(acceptedPositions);
+					//} else {
+					//	filteredBuffer = new Type(accepted.length * bufferedAttribute.itemSize);
+                
+					//	for (let i = 0; i < accepted.length; i++) {
+					//		let index = accepted[i];
+                
+					//		filteredBuffer.set(
+					//			bufferedAttribute.array.subarray(
+					//				bufferedAttribute.itemSize * index,
+					//				bufferedAttribute.itemSize * index + bufferedAttribute.itemSize),
+					//			bufferedAttribute.itemSize * i);
+					//	}
+					//}
+					//points.data[attribute] = filteredBuffer;
+				}
 
 				points.data['mileage'] = new Float64Array(mileage);
 				points.numPoints = accepted.length;

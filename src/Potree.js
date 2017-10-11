@@ -1326,7 +1326,16 @@ Potree.Renderer = class{
 			shader.setUniform("useOrthographicCamera", material.useOrthographicCamera);
 			// uniform float orthoRange;
 			
-			
+			if(material.clipBoxes && material.clipBoxes.length > 0){
+				shader.setUniform1i("clipMode", material.clipMode);
+				shader.setUniform("clipBoxCount", material.clipBoxes.length);
+				let flattenedMatrices = [].concat(...material.clipBoxes.map(c => c.inverse.elements));
+				//shader.setUniformMatrix4fv("clipBoxes", flattenedMatrices);
+
+				const lClipBoxes = shader.uniformLocations["clipBoxes[0]"];
+				gl.uniformMatrix4fv(lClipBoxes, false, flattenedMatrices);
+			}
+
 			//uniform int clipMode;
 			//#if defined use_clip_box
 			//	uniform float clipBoxCount;

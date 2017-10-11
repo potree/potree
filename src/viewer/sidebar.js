@@ -3028,15 +3028,15 @@ initSidebar = (viewer) => {
 
 		//$('#optClipMode').selectmenu();
 		//$('#optClipMode').val(toClipModeString(viewer.getClipMode())).selectmenu('refresh');
-		$('#optClipMode').selectmenu({
-			change: function (event, ui) {
-				viewer.setClipMode(toClipModeCode(ui.item.value));
-			}
-		});
+		//$('#optClipMode').selectmenu({
+		//	change: function (event, ui) {
+		//		viewer.setClipMode(toClipModeCode(ui.item.value));
+		//	}
+		//});
 
-		viewer.addEventListener('clip_mode_changed', e => {
-			let string = toClipModeString(viewer.clipMode);
-		});
+		//viewer.addEventListener('clip_mode_changed', e => {
+		//	let string = toClipModeString(viewer.clipMode);
+		//});
 	};
 
 	initAccordion();

@@ -923,7 +923,8 @@ Potree.Shader = class Shader{
 			return;
 		}
 		
-		gl.uniformMatrix4fv(location, false, value.elements);
+		let tmp = new Float32Array(value.elements);
+		gl.uniformMatrix4fv(location, false, tmp);
 	}
 	
 	setUniform1f(name, value){
@@ -1180,11 +1181,15 @@ Potree.Renderer = class{
 	
 	renderNodes(octree, nodes, visibilityTextureData, camera, target, shader, params){
 		
+		if(Potree.measureTimings) performance.mark("renderNodes-start");
+		
 		let gl = this.gl;
 		
 		let shadowMaps = params.shadowMaps == null ? [] : params.shadowMaps;
 		let view = camera.matrixWorldInverse;
 		let worldView = new THREE.Matrix4();
+		
+		let mat4holder = new Float32Array(16);
 		
 		let i = 0;
 		for(let node of nodes){
@@ -1196,11 +1201,18 @@ Potree.Renderer = class{
 			
 			let level = node.getLevel();
 			
+			
+			// TODO consider passing matrices in an array to avoid uniformMatrix4fv overhead
 			const lModel = shader.uniformLocations["modelMatrix"];
-			gl.uniformMatrix4fv(lModel, false, world.elements);
+			if(lModel){
+				mat4holder.set(world.elements);
+				gl.uniformMatrix4fv(lModel, false, mat4holder);
+			}
 			
 			const lModelView = shader.uniformLocations["modelViewMatrix"];
-			gl.uniformMatrix4fv(lModelView, false, worldView.elements);
+			mat4holder.set(worldView.elements);
+			gl.uniformMatrix4fv(lModelView, false, mat4holder);
+			
 			
 			//shader.setUniformMatrix4("modelMatrix", world);
 			//shader.setUniformMatrix4("modelViewMatrix", worldView);
@@ -1244,6 +1256,11 @@ Potree.Renderer = class{
 		}
 		
 		gl.bindVertexArray(null);
+		
+		if(Potree.measureTimings){
+			performance.mark("renderNodes-end");
+			performance.measure("render.renderNodes", "renderNodes-start", "renderNodes-end");
+		} 
 	}
 	
 	renderOctree(octree, nodes, camera, target, params = {}){
@@ -1330,7 +1347,6 @@ Potree.Renderer = class{
 				shader.setUniform1i("clipMode", material.clipMode);
 				shader.setUniform("clipBoxCount", material.clipBoxes.length);
 				let flattenedMatrices = [].concat(...material.clipBoxes.map(c => c.inverse.elements));
-				//shader.setUniformMatrix4fv("clipBoxes", flattenedMatrices);
 
 				const lClipBoxes = shader.uniformLocations["clipBoxes[0]"];
 				gl.uniformMatrix4fv(lClipBoxes, false, flattenedMatrices);

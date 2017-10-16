@@ -40,13 +40,8 @@ Potree.resourcePath = Potree.scriptPath + '/resources';
 Potree.timerQueries = {};
 
 Potree.measureTimings = false;
-Potree.timerQueriesEnabled = false;
 
 Potree.startQuery = function (name, gl) {
-	if (!Potree.timerQueriesEnabled) {
-		return null;
-	}
-
 	if (Potree.timerQueries[name] === undefined) {
 		Potree.timerQueries[name] = [];
 	}
@@ -61,26 +56,20 @@ Potree.startQuery = function (name, gl) {
 };
 
 Potree.endQuery = function (query, gl) {
-	if (!Potree.timerQueriesEnabled) {
-		return;
-	}
-
 	let ext = gl.getExtension('EXT_disjoint_timer_query');
 	ext.endQueryEXT(ext.TIME_ELAPSED_EXT);
 };
 
 Potree.resolveQueries = function (gl) {
-	if (!Potree.timerQueriesEnabled) {
-		return;
-	}
-
 	let ext = gl.getExtension('EXT_disjoint_timer_query');
 
 	for (let name in Potree.timerQueries) {
 		let queries = Potree.timerQueries[name];
 
-		if (queries.length > 0) {
-			let query = queries[0];
+		let sum = 0;
+		let n = 0;
+		let remainingQueries = [];
+		for(let query of queries){
 
 			let available = ext.getQueryObjectEXT(query, ext.QUERY_RESULT_AVAILABLE_EXT);
 			let disjoint = viewer.renderer.getContext().getParameter(ext.GPU_DISJOINT_EXT);
@@ -90,13 +79,20 @@ Potree.resolveQueries = function (gl) {
 				let timeElapsed = ext.getQueryObjectEXT(query, ext.QUERY_RESULT_EXT);
 				let miliseconds = timeElapsed / (1000 * 1000);
 
-				console.log(name + ': ' + miliseconds + 'ms');
-				queries.shift();
+				sum += miliseconds;
+				n++;
+			}else{
+				remainingQueries.push(query);
 			}
 		}
 
-		if (queries.length === 0) {
+		let mean = sum / n;
+		console.log(`mean: ${mean.toFixed(3)}, samples: ${n}`);
+
+		if (remainingQueries.length === 0) {
 			delete Potree.timerQueries[name];
+		}else{
+			Potree.timerQueries[name] = remainingQueries;
 		}
 	}
 };

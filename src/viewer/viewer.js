@@ -1665,7 +1665,11 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 	loop (timestamp) {
 		requestAnimationFrame(this.loop.bind(this));
 
-		if(Potree.measureTimings) performance.mark("loop-start");
+		let queryAll;
+		if(Potree.measureTimings){
+			performance.mark("loop-start");
+			queryAll = Potree.startQuery('frame', viewer.renderer.getContext());
+		}
 
 		this.stats.begin();
 
@@ -1676,11 +1680,6 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		if(Potree.measureTimings) {
 			performance.mark("update-end");
 			performance.measure("update", "update-start", "update-end");
-		}
-
-		let queryAll;
-		if (Potree.timerQueriesEnabled) {
-			queryAll = Potree.startQuery('frame', viewer.renderer.getContext());
 		}
 
 		if(Potree.measureTimings) performance.mark("render-start");
@@ -1704,15 +1703,17 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 
 			performance.mark("loop-end");
 			performance.measure("loop", "loop-start", "loop-end");
+
+			Potree.endQuery(queryAll, viewer.renderer.getContext());
 		}
-		
+
 		if(Potree.measureTimings){
 			if(!this.toggle){
 				this.toggle = timestamp;
 			}
 			let duration = timestamp - this.toggle;
 			if(duration > 1000.0){
-				
+			
 				let measures = performance.getEntriesByType("measure");
 				
 				let names = new Set();
@@ -1781,6 +1782,8 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 				}
 				message += `\n`;
 				console.log(message);
+
+				Potree.resolveQueries(viewer.renderer.getContext());
 				
 				performance.clearMarks();
 				performance.clearMeasures();
@@ -1788,10 +1791,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			}
 		}
 
-		if (Potree.timerQueriesEnabled) {
-			Potree.endQuery(queryAll, viewer.renderer.getContext());
-			Potree.resolveQueries(viewer.renderer.getContext());
-		}
+		
 
 
 

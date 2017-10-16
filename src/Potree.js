@@ -42,11 +42,16 @@ Potree.timerQueries = {};
 Potree.measureTimings = false;
 
 Potree.startQuery = function (name, gl) {
+	let ext = gl.getExtension('EXT_disjoint_timer_query');
+
+	if(!ext){
+		return;
+	}
+
 	if (Potree.timerQueries[name] === undefined) {
 		Potree.timerQueries[name] = [];
 	}
 
-	let ext = gl.getExtension('EXT_disjoint_timer_query');
 	let query = ext.createQueryEXT();
 	ext.beginQueryEXT(ext.TIME_ELAPSED_EXT, query);
 
@@ -57,11 +62,18 @@ Potree.startQuery = function (name, gl) {
 
 Potree.endQuery = function (query, gl) {
 	let ext = gl.getExtension('EXT_disjoint_timer_query');
+
+	if(!ext){
+		return;
+	}
+
 	ext.endQueryEXT(ext.TIME_ELAPSED_EXT);
 };
 
 Potree.resolveQueries = function (gl) {
 	let ext = gl.getExtension('EXT_disjoint_timer_query');
+
+	let resolved = new Map();
 
 	for (let name in Potree.timerQueries) {
 		let queries = Potree.timerQueries[name];
@@ -79,15 +91,20 @@ Potree.resolveQueries = function (gl) {
 				let timeElapsed = ext.getQueryObjectEXT(query, ext.QUERY_RESULT_EXT);
 				let miliseconds = timeElapsed / (1000 * 1000);
 
-				sum += miliseconds;
-				n++;
+				if(!resolved.get(name)){
+					resolved.set(name, []);
+				}
+				resolved.get(name).push(miliseconds);
+
+				//sum += miliseconds;
+				//n++;
 			}else{
 				remainingQueries.push(query);
 			}
 		}
 
-		let mean = sum / n;
-		console.log(`mean: ${mean.toFixed(3)}, samples: ${n}`);
+		//let mean = sum / n;
+		//console.log(`mean: ${mean.toFixed(3)}, samples: ${n}`);
 
 		if (remainingQueries.length === 0) {
 			delete Potree.timerQueries[name];
@@ -95,6 +112,8 @@ Potree.resolveQueries = function (gl) {
 			Potree.timerQueries[name] = remainingQueries;
 		}
 	}
+
+	return resolved;
 };
 
 Potree.MOUSE = {
@@ -1193,7 +1212,11 @@ Potree.Renderer = class{
 			let world = node.sceneNode.matrixWorld;
 			worldView.multiplyMatrices(view, world);
 			
-			let vnStart = visibilityTextureData.offsets.get(node);
+			if(visibilityTextureData){
+				let vnStart = visibilityTextureData.offsets.get(node);
+				shader.setUniform1f("vnStart", vnStart);
+			}
+			
 			
 			let level = node.getLevel();
 			
@@ -1213,7 +1236,7 @@ Potree.Renderer = class{
 			//shader.setUniformMatrix4("modelMatrix", world);
 			//shader.setUniformMatrix4("modelViewMatrix", worldView);
 			shader.setUniform1f("level", level);
-			shader.setUniform1f("vnStart", vnStart);
+			
 			shader.setUniform1f("pcIndex", i);
 			
 			if(shadowMaps.length > 0){
@@ -1271,6 +1294,25 @@ Potree.Renderer = class{
 		let material = octree.material;
 		let shader = null;
 		let visibilityTextureData = null;
+
+
+		if(window.atoggle == null){
+			window.atoggle = 0;
+		}else{
+			window.atoggle++;
+		}
+
+		let sub = nodes.slice(0, 10);
+		let rem = nodes.slice(10);
+		let numAdd = 40;
+		if(numAdd * window.atoggle > rem.length){
+			window.atoggle = 0;
+		}
+		let add = rem.slice(20 * window.atoggle, 20 * (window.atoggle + 1));
+		nodes = sub.concat(add);
+
+
+
 		
 		if (material.pointSizeType >= 0) {
 			if (material.pointSizeType === Potree.PointSizeType.ADAPTIVE ||

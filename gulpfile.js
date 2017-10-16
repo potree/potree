@@ -69,6 +69,8 @@ var paths = {
 		"src/arena4d/PointCloudArena4D.js",
 		"src/arena4d/PointCloudArena4DGeometry.js",
 		"src/viewer/ProgressBar.js",
+		"src/viewer/PotreeRenderer.js",
+		"src/viewer/EDLRenderer.js",
 		"src/viewer/viewer.js",
 		"src/viewer/profile.js",
 		"src/viewer/map.js",

@@ -1684,7 +1684,12 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 
 		if(Potree.measureTimings) performance.mark("render-start");
 
-		if (this.useEDL && Potree.Features.SHADER_EDL.isSupported()) {
+		if(this.useRep){
+			if (!this.repRenderer) {
+				this.repRenderer = new RepRenderer(this);
+			}
+			this.repRenderer.render(this.renderer);
+		} if (this.useEDL && Potree.Features.SHADER_EDL.isSupported()) {
 			if (!this.edlRenderer) {
 				this.edlRenderer = new EDLRenderer(this);
 			}

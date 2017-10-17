@@ -1061,6 +1061,12 @@ Potree.WebGLTexture = class WebGLTexture{
 	}
 	
 	update(){
+
+		if(!this.texture.image){
+			this.version = this.texture.version;
+
+			return;
+		}
 		
 		let gl = this.gl;
 		let texture = this.texture;
@@ -1296,20 +1302,20 @@ Potree.Renderer = class{
 		let visibilityTextureData = null;
 
 
-		if(window.atoggle == null){
-			window.atoggle = 0;
-		}else{
-			window.atoggle++;
-		}
+		//f(window.atoggle == null){
+		//	window.atoggle = 0;
+		//else{
+		//	window.atoggle++;
+		//
 
-		let sub = nodes.slice(0, 10);
-		let rem = nodes.slice(10);
-		let numAdd = 40;
-		if(numAdd * window.atoggle > rem.length){
-			window.atoggle = 0;
-		}
-		let add = rem.slice(20 * window.atoggle, 20 * (window.atoggle + 1));
-		nodes = sub.concat(add);
+		//et sub = nodes.slice(0, 10);
+		//et rem = nodes.slice(10);
+		//et numAdd = 40;
+		//f(numAdd * window.atoggle > rem.length){
+		//	window.atoggle = 0;
+		//
+		//et add = rem.slice(20 * window.atoggle, 20 * (window.atoggle + 1));
+		//odes = sub.concat(add);
 
 
 
@@ -1350,6 +1356,10 @@ Potree.Renderer = class{
 				if(uniform.type == "t"){
 					
 					let texture = uniform.value;
+
+					if(!texture){
+						continue;
+					}
 					
 					if(!this.textures.has(texture)){
 						let webglTexture = new Potree.WebGLTexture(gl, texture);
@@ -1442,6 +1452,26 @@ Potree.Renderer = class{
 			shader.setUniform1i("gradient", 1);
 			gl.activeTexture(gl.TEXTURE1);
 			gl.bindTexture(gradientTexture.target, gradientTexture.id);
+
+
+
+			if(material.snapEnabled === true){
+				//let snapTexture = this.textures.get(material.uniforms.snapshot.value);
+				let texture = material.uniforms.snapshot.value;
+				let snapTexture = this.threeRenderer.properties.get(texture).__webglTexture;
+				shader.setUniform1i("snapshot", 2);
+				gl.activeTexture(gl.TEXTURE2);
+
+				
+
+				//let gradientTexture = this.textures.get(material.gradientTexture);
+				gl.bindTexture(gl.TEXTURE_2D, snapTexture);
+
+				shader.setUniformMatrix4("snapView", material.uniforms.snapView.value);
+				shader.setUniformMatrix4("snapProj", material.uniforms.snapProj.value);
+				
+			}
+			shader.setUniform("snapEnabled", material.uniforms.snapEnabled.value);
 		}
 		
 
@@ -1457,6 +1487,10 @@ Potree.Renderer = class{
 		
 		
 		this.renderNodes(octree, nodes, visibilityTextureData, camera, target, shader, params);
+
+		gl.activeTexture(gl.TEXTURE2);
+		gl.bindTexture(gl.TEXTURE_2D, null);
+		gl.activeTexture(gl.TEXTURE0);
 	}
 	
 	render(scene, camera, target, params = {}){

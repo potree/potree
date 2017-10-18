@@ -79,11 +79,12 @@ uniform sampler2D classificationLUT;
 uniform bool useShadowMap;
 uniform mat4 smWorldViewProj;
 
-#if defined(snap_enabled)
+//#if defined(snap_enabled)
 uniform sampler2D snapshot;
 uniform mat4 snapView;
 uniform mat4 snapProj;
-#endif
+uniform bool snapEnabled;
+//#endif
 
 varying float	vOpacity;
 varying vec3	vColor;
@@ -92,6 +93,8 @@ varying float	vLogDepth;
 varying vec3	vViewPosition;
 varying float 	vRadius;
 varying vec3	vWorldPosition;
+varying vec4	vSP;
+varying float 	vPointSize;
 
 
 // ---------------------
@@ -465,6 +468,7 @@ void main() {
 	vRadius = pointSize / projFactor;
 	
 	gl_PointSize = pointSize;
+	vPointSize = gl_PointSize;
 	
 	
 	//if(useShadowMap){
@@ -525,14 +529,21 @@ void main() {
 	#endif	
 
 
-	#if defined(snap_enabled)
-		vColor = vec3(1.0, 0.0, 0.0);
+	if(snapEnabled){
+		//vColor = vec3(1.0, 0.0, 0.0);
+		//vec4 snapPos = snapProj * snapView * modelMatrix * vec4( position, 1.0 );
+		//vec2 uv = (snapPos.xy / snapPos.w) * 0.5 + 0.5;
+		//vec4 c = texture2D(snapshot, uv);
+		//vColor = vec3(c.rgb);
 
-		vec4 snapPos = snapProj * snapView * modelMatrix * vec4( position, 1.0 );
-		vec2 uv = (snapPos.xy / snapPos.w) * 0.5 + 0.5;
 
-		vec4 c = texture2D(snapshot, uv);
+		vec4 sp = snapProj * snapView * modelMatrix * vec4(position, 1.0);
+		vec2 uv = 0.5 * (sp.xy / sp.w) + 0.5;
+		vec4 col = texture2D(snapshot, uv);
+		vColor = col.rgb;
 
-		vColor = vec3(c.rgb);
-	#endif
+		vSP = sp;
+		//vColor = vec3(uv, 0.0);
+		
+	}
 }

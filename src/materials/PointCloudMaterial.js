@@ -270,7 +270,7 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 			snapshot:			{ type: "t", value: null},
 			snapView:			{ type: "Matrix4f", value: []},
 			snapProj:			{ type: "Matrix4f", value: []},
-			snapEnabled:		{ type: "b", value: false},
+			snapEnabled:		{ type: "b", value: this._snapEnabled},
 		};
 
 		this.defaultAttributeValues.normal = [0, 0, 0];
@@ -332,9 +332,9 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 			defines += '#define use_edl\n';
 		}
 
-		if (this._snapEnabled) {
-			defines += '#define snap_enabled\n';
-		}
+		//if (this._snapEnabled) {
+		//	defines += '#define snap_enabled\n';
+		//}
 
 		if (this._pointColorType === Potree.PointColorType.RGB) {
 			defines += '#define color_type_rgb\n';
@@ -509,7 +509,8 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 	set snapEnabled(value){
 		if(this._snapEnabled !== value){
 			this._snapEnabled = value;
-			this.updateShaderSource();
+			this.uniforms.snapEnabled.value = value;
+			//this.updateShaderSource();
 		}
 	}
 

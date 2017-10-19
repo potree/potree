@@ -20,6 +20,10 @@ class RepRenderer {
 			target: null,
 			matrix: null	
 		};
+
+		this.aug = {
+
+		};
 		
 	}
 
@@ -178,7 +182,7 @@ class RepRenderer {
 			this.snap.camera = camera.clone();
 			for(const octree of viewer.scene.pointclouds){
 				octree.material.snapEnabled = false;
-				//octree.material.needsUpdate = true;
+				octree.material.needsUpdate = true;
 				viewer.pRenderer.renderOctree(octree, octree.visibleNodes, camera, this.snap.target, {});
 			}
 			this.snapshotRequested = false;
@@ -188,7 +192,7 @@ class RepRenderer {
 		viewer.renderer.setRenderTarget(this.rtColor);
 		for(const octree of viewer.scene.pointclouds){
 			octree.material.snapEnabled = true;
-			//octree.material.needsUpdate = true;
+			octree.material.needsUpdate = true;
 			octree.material.uniforms.snapshot.value = this.snap.target.texture;
 			octree.material.uniforms.snapView.value = this.snap.camera.matrixWorldInverse;
 			octree.material.uniforms.snapProj.value = this.snap.camera.projectionMatrix;

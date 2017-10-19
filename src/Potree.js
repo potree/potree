@@ -843,10 +843,12 @@ Potree.Shader = class Shader{
 		this.name = name;
 		this.vsSource = vsSource;
 		this.fsSource = fsSource;
+
+		this.cache = new Map();
 		
-		this.vs = gl.createShader(gl.VERTEX_SHADER);
-		this.fs = gl.createShader(gl.FRAGMENT_SHADER);
-		this.program = gl.createProgram();
+		this.vs = null;
+		this.fs = null;
+		this.program = null;
 		
 		this.uniformLocations = {};
 		this.attributeLocations = {};
@@ -883,49 +885,77 @@ Potree.Shader = class Shader{
 		this.attributeLocations = {};
 		
 		gl.useProgram(null);
-		
-		this.compileShader(this.vs, this.vsSource);
-		this.compileShader(this.fs, this.fsSource);
-		
-		let program = this.program;
-		
-		gl.attachShader(program, this.vs);
-		gl.attachShader(program, this.fs);
-		
-		gl.linkProgram(program);
-		
-		gl.detachShader(program, this.vs);
-		gl.detachShader(program, this.fs);
-		
-		let success = gl.getProgramParameter(program, gl.LINK_STATUS);
-		if(!success){
-			let info = gl.getProgramInfoLog (program);
-			throw `could not link program ${this.name}: ${info}`;
-		}
-		
-		{ // attribute locations
-			let numAttributes = gl.getProgramParameter(program, gl.ACTIVE_ATTRIBUTES);
+
+		let cached = this.cache.get(`${this.vsSource}, ${this.fsSource}`);
+		if(cached){
+			this.program = cached.program;
+			this.vs = cached.vs;
+			this.fs = cached.fs;
+			this.attributeLocations = cached.attributeLocations;
+			this.uniformLocations = cached.uniformLocations;
+
+			return;
+		}else{
+
+			this.vs = gl.createShader(gl.VERTEX_SHADER);
+			this.fs = gl.createShader(gl.FRAGMENT_SHADER);
+			this.program = gl.createProgram();
+
+			this.compileShader(this.vs, this.vsSource);
+			this.compileShader(this.fs, this.fsSource);
 			
-			for(let i = 0; i < numAttributes; i++){
-				let attribute = gl.getActiveAttrib(program, i);
-				
-				let location = gl.getAttribLocation(program, attribute.name);
-				
-				this.attributeLocations[attribute.name] = location;
+			let program = this.program;
+			
+			gl.attachShader(program, this.vs);
+			gl.attachShader(program, this.fs);
+			
+			gl.linkProgram(program);
+			
+			gl.detachShader(program, this.vs);
+			gl.detachShader(program, this.fs);
+			
+			let success = gl.getProgramParameter(program, gl.LINK_STATUS);
+			if(!success){
+				let info = gl.getProgramInfoLog (program);
+				throw `could not link program ${this.name}: ${info}`;
 			}
+			
+			{ // attribute locations
+				let numAttributes = gl.getProgramParameter(program, gl.ACTIVE_ATTRIBUTES);
+				
+				for(let i = 0; i < numAttributes; i++){
+					let attribute = gl.getActiveAttrib(program, i);
+					
+					let location = gl.getAttribLocation(program, attribute.name);
+					
+					this.attributeLocations[attribute.name] = location;
+				}
+			}
+			
+			{ // uniform locations
+				let numUniforms = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
+				
+				for(let i = 0; i < numUniforms; i++){
+					let uniform = gl.getActiveUniform(program, i);
+					
+					let location = gl.getUniformLocation(program, uniform.name);
+					
+					this.uniformLocations[uniform.name] = location;
+				}
+			}
+
+			let cached = {
+				program: this.program,
+				vs: this.vs,
+				fs: this.fs,
+				attributeLocations: this.attributeLocations,
+				uniformLocations: this.uniformLocations
+			};
+
+			this.cache.set(`${this.vsSource}, ${this.fsSource}`, cached);
 		}
 		
-		{ // uniform locations
-			let numUniforms = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
-			
-			for(let i = 0; i < numUniforms; i++){
-				let uniform = gl.getActiveUniform(program, i);
-				
-				let location = gl.getUniformLocation(program, uniform.name);
-				
-				this.uniformLocations[uniform.name] = location;
-			}
-		}
+		
 		
 		
 	}
@@ -1471,7 +1501,6 @@ Potree.Renderer = class{
 				shader.setUniformMatrix4("snapProj", material.uniforms.snapProj.value);
 				
 			}
-			shader.setUniform("snapEnabled", material.uniforms.snapEnabled.value);
 		}
 		
 

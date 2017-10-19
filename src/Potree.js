@@ -1353,7 +1353,9 @@ Potree.Renderer = class{
 		if (material.pointSizeType >= 0) {
 			if (material.pointSizeType === Potree.PointSizeType.ADAPTIVE ||
 				material.pointColorType === Potree.PointColorType.LOD) {
-				visibilityTextureData = octree.computeVisibilityTextureData(nodes);
+
+				let vnNodes = (params.vnTextureNodes != null) ? params.vnTextureNodes : nodes;
+				visibilityTextureData = octree.computeVisibilityTextureData(vnNodes);
 				
 				const vnt = material.visibleNodesTexture;
 				const data = vnt.image.data;
@@ -1487,19 +1489,57 @@ Potree.Renderer = class{
 
 			if(material.snapEnabled === true){
 				//let snapTexture = this.textures.get(material.uniforms.snapshot.value);
-				let texture = material.uniforms.snapshot.value;
-				let snapTexture = this.threeRenderer.properties.get(texture).__webglTexture;
-				shader.setUniform1i("snapshot", 2);
-				gl.activeTexture(gl.TEXTURE2);
+				//let texture = material.uniforms.snapshot.value;
+				//let snapTexture = this.threeRenderer.properties.get(texture).__webglTexture;
+				//shader.setUniform1i("snapshot", 2);
+				//gl.activeTexture(gl.TEXTURE2);
 
-				
+				//for(let i = 0; i < 5; i++){
+				//	let texture = material.uniforms[`uSnapshot_${i}`].value;
+//
+				//	if(!texture){
+				//		break;
+				//	}
+//
+				//	let snapTexture = this.threeRenderer.properties.get(texture).__webglTexture;
+//
+				//	shader.setUniform1i(`uSnapshot_${i}`, 2 + i);
+				//	gl.activeTexture(gl[`TEXTURE${2+i}`]);
+				//	gl.bindTexture(gl.TEXTURE_2D, snapTexture);
+//
+				//	//shader.setUniformMatrix4(`uSnapView_${i}`, material.uniforms[`uSnapView_${i}`].value);
+				//	//shader.setUniformMatrix4(`uSnapProj_${i}`, material.uniforms[`uSnapProj_${i}`].value);
+				//}
 
-				//let gradientTexture = this.textures.get(material.gradientTexture);
-				gl.bindTexture(gl.TEXTURE_2D, snapTexture);
+				{
+					const lSnapshot = shader.uniformLocations["uSnapshot[0]"];
+					gl.uniform1iv(lSnapshot, new Array(5).fill(0).map( (a, i) => (2 + i)));
 
-				shader.setUniformMatrix4("snapView", material.uniforms.snapView.value);
-				shader.setUniformMatrix4("snapProj", material.uniforms.snapProj.value);
-				
+					for(let i = 0; i < 5; i++){
+						let texture = material.uniforms[`uSnapshot`].value[i];
+	
+						if(!texture){
+							break;
+						}
+	
+						let snapTexture = this.threeRenderer.properties.get(texture).__webglTexture;
+	
+						gl.activeTexture(gl[`TEXTURE${2+i}`]);
+						gl.bindTexture(gl.TEXTURE_2D, snapTexture);
+					}
+				}
+
+				{
+					let flattenedMatrices = [].concat(...material.uniforms.uSnapView.value.map(c => c.elements));
+					const lSnapView = shader.uniformLocations["uSnapView[0]"];
+					gl.uniformMatrix4fv(lSnapView, false, flattenedMatrices);
+				}
+				{
+					let flattenedMatrices = [].concat(...material.uniforms.uSnapProj.value.map(c => c.elements));
+					const lSnapProj = shader.uniformLocations["uSnapProj[0]"];
+					gl.uniformMatrix4fv(lSnapProj, false, flattenedMatrices);
+				}
+
 			}
 		}
 		

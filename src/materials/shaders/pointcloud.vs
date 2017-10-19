@@ -79,10 +79,16 @@ uniform sampler2D classificationLUT;
 uniform bool useShadowMap;
 uniform mat4 smWorldViewProj;
 
+#define max_snapshots 5
 #if defined(snap_enabled)
-uniform sampler2D snapshot;
-uniform mat4 snapView;
-uniform mat4 snapProj;
+uniform sampler2D uSnapshot_0;
+uniform sampler2D uSnapshot_1;
+uniform sampler2D uSnapshot_2;
+uniform sampler2D uSnapshot_3;
+uniform sampler2D uSnapshot_4;
+
+uniform mat4 uSnapView[max_snapshots];
+uniform mat4 uSnapProj[max_snapshots];
 #endif
 
 varying float	vOpacity;
@@ -95,6 +101,7 @@ varying vec3	vWorldPosition;
 varying vec4	vSP;
 varying float 	vPointSize;
 
+varying vec4 vSnapProjected[max_snapshots];
 
 // ---------------------
 // OCTREE
@@ -529,20 +536,15 @@ void main() {
 
 
 	#if defined(snap_enabled)
-		//vColor = vec3(1.0, 0.0, 0.0);
-		//vec4 snapPos = snapProj * snapView * modelMatrix * vec4( position, 1.0 );
-		//vec2 uv = (snapPos.xy / snapPos.w) * 0.5 + 0.5;
-		//vec4 c = texture2D(snapshot, uv);
-		//vColor = vec3(c.rgb);
 
-
-		vec4 sp = snapProj * snapView * modelMatrix * vec4(position, 1.0);
-		vec2 uv = 0.5 * (sp.xy / sp.w) + 0.5;
-		vec4 col = texture2D(snapshot, uv);
-		vColor = col.rgb;
-
-		vSP = sp;
-		//vColor = vec3(uv, 0.0);
+		for(int i = 0; i < 5; i++){
+			vSnapProjected[i] = uSnapProj[i] * uSnapView[i] * modelMatrix * vec4(position, 1.0);	
+		}
+		//vSnapProjected[0] = uSnapProj[0] * uSnapView[0] * modelMatrix * vec4(position, 1.0);
+		//vSnapProjected[1] = uSnapProj[1] * uSnapView[1] * modelMatrix * vec4(position, 1.0);
+		//vSnapProjected[2] = uSnapProj[2] * uSnapView[2] * modelMatrix * vec4(position, 1.0);
+		//vSnapProjected[3] = uSnapProj[3] * uSnapView[3] * modelMatrix * vec4(position, 1.0);
+		//vSnapProjected[4] = uSnapProj[4] * uSnapView[4] * modelMatrix * vec4(position, 1.0);
 		
 	#endif
 }

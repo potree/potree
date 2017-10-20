@@ -87,7 +87,6 @@ class RepRenderer {
 		// https://github.com/mrdoob/three.js/pull/6355
 		if (needsResize) {
 			this.rtColor.dispose();
-			this.snap.target.dispose();
 		}
 		
 		viewer.scene.cameraP.aspect = aspect;
@@ -106,7 +105,6 @@ class RepRenderer {
 		
 		viewer.renderer.setSize(width, height);
 		this.rtColor.setSize(width, height);
-		this.snap.target.setSize(width, height);
 	}
 
 	makeSnapshot(){
@@ -176,7 +174,10 @@ class RepRenderer {
 		
 		//viewer.pRenderer.render(viewer.scene.scenePointCloud, viewer.shadowTestCam, this.rtShadow);
 
-		{ // NEW SNAPSHOT
+		//if(this.snapshotRequested){ // NEW SNAPSHOT
+		//if(performance.now() < 2000 || this.snapshotRequested){
+		{
+			this.snapshotRequested = false;
 
 			let snap;
 			if(this.history.snapshots.length < this.history.maxSnapshots){
@@ -187,8 +188,8 @@ class RepRenderer {
 					format: THREE.RGBAFormat,
 					type: THREE.FloatType
 				});
-				//snap.target.depthTexture = new THREE.DepthTexture();
-				//snap.target.depthTexture.type = THREE.UnsignedIntType;
+				snap.target.depthTexture = new THREE.DepthTexture();
+				snap.target.depthTexture.type = THREE.UnsignedIntType;
 			}else{
 				snap = this.history.snapshots.pop();
 			}
@@ -217,6 +218,10 @@ class RepRenderer {
 			
 				let from = this.history.version * (octree.visibleNodes.length / this.history.maxSnapshots);
 				let to = (this.history.version + 1) * (octree.visibleNodes.length / this.history.maxSnapshots);
+				
+				// DEBUG!!!
+				//let from = 0;
+				//let to = 20;
 				let nodes = octree.visibleNodes.slice(from, to);
 				
 				viewer.pRenderer.renderOctree(octree, nodes, camera, snap.target, {vnTextureNodes: nodes});
@@ -241,14 +246,14 @@ class RepRenderer {
 			let uniforms = octree.material.uniforms;
 			if(this.history.snapshots.length === this.history.maxSnapshots){
 				uniforms[`uSnapshot`].value = this.history.snapshots.map(s => s.target.texture);
-				uniforms[`uSnapshot`].value = this.history.snapshots.map(s => s.target.texture);
+				uniforms[`uSnapshotDepth`].value = this.history.snapshots.map(s => s.target.depthTexture);
 				uniforms[`uSnapView`].value = this.history.snapshots.map(s => s.camera.matrixWorldInverse);
 				uniforms[`uSnapProj`].value = this.history.snapshots.map(s => s.camera.projectionMatrix);
 				uniforms[`uSnapProjInv`].value = this.history.snapshots.map(s => new THREE.Matrix4().getInverse(s.camera.projectionMatrix));
 				uniforms[`uSnapViewInv`].value = this.history.snapshots.map(s => new THREE.Matrix4().getInverse(s.camera.matrixWorld));
 			}
 		
-			let nodes = octree.visibleNodes.slice(0, 10);
+			let nodes = octree.visibleNodes.slice(0, 5);
 			//let nodes = octree.visibleNodes;
 			viewer.pRenderer.renderOctree(octree, nodes, camera, this.rtColor, {vnTextureNodes: nodes});
 		}

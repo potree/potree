@@ -1324,7 +1324,9 @@ Potree.Renderer = class{
 		
 		let shadowMaps = params.shadowMaps == null ? [] : params.shadowMaps;
 		let view = camera.matrixWorldInverse;
+		let viewInv = camera.matrixWorld;
 		let proj = camera.projectionMatrix;
+		let projInv = new THREE.Matrix4().getInverse(camera.projectionMatrix);
 		let worldView = new THREE.Matrix4();
 		
 		let material = octree.material;
@@ -1413,6 +1415,8 @@ Potree.Renderer = class{
 		{ // UPDATE UNIFORMS
 			shader.setUniformMatrix4("projectionMatrix", proj);
 			shader.setUniformMatrix4("viewMatrix", view);
+			shader.setUniformMatrix4("uViewInv", viewInv);
+			shader.setUniformMatrix4("uProjInv", projInv);
 			
 			shader.setUniform1f("screenHeight", material.screenHeight);
 			shader.setUniform1f("screenWidth", material.screenWidth);
@@ -1488,44 +1492,39 @@ Potree.Renderer = class{
 
 
 			if(material.snapEnabled === true){
-				//let snapTexture = this.textures.get(material.uniforms.snapshot.value);
-				//let texture = material.uniforms.snapshot.value;
-				//let snapTexture = this.threeRenderer.properties.get(texture).__webglTexture;
-				//shader.setUniform1i("snapshot", 2);
-				//gl.activeTexture(gl.TEXTURE2);
-
-				//for(let i = 0; i < 5; i++){
-				//	let texture = material.uniforms[`uSnapshot_${i}`].value;
-//
-				//	if(!texture){
-				//		break;
-				//	}
-//
-				//	let snapTexture = this.threeRenderer.properties.get(texture).__webglTexture;
-//
-				//	shader.setUniform1i(`uSnapshot_${i}`, 2 + i);
-				//	gl.activeTexture(gl[`TEXTURE${2+i}`]);
-				//	gl.bindTexture(gl.TEXTURE_2D, snapTexture);
-//
-				//	//shader.setUniformMatrix4(`uSnapView_${i}`, material.uniforms[`uSnapView_${i}`].value);
-				//	//shader.setUniformMatrix4(`uSnapProj_${i}`, material.uniforms[`uSnapProj_${i}`].value);
-				//}
 
 				{
 					const lSnapshot = shader.uniformLocations["uSnapshot[0]"];
-					gl.uniform1iv(lSnapshot, new Array(5).fill(0).map( (a, i) => (2 + i)));
+					const lSnapshotDepth = shader.uniformLocations["uSnapshotDepth[0]"];
+
+					let bindingStart = 2;
+					let lSnapshotBindingPoints = new Array(5).fill(bindingStart).map( (a, i) => (a + i));
+					let lSnapshotDepthBindingPoints = new Array(5)
+						.fill(1 + Math.max(...lSnapshotBindingPoints))
+						.map( (a, i) => (a + i));
+
+					gl.uniform1iv(lSnapshot, lSnapshotBindingPoints);
+					gl.uniform1iv(lSnapshotDepth, lSnapshotDepthBindingPoints);
 
 					for(let i = 0; i < 5; i++){
 						let texture = material.uniforms[`uSnapshot`].value[i];
+						let textureDepth = material.uniforms[`uSnapshotDepth`].value[i];
 	
 						if(!texture){
 							break;
 						}
 	
 						let snapTexture = this.threeRenderer.properties.get(texture).__webglTexture;
+						let snapTextureDepth = this.threeRenderer.properties.get(textureDepth).__webglTexture;
 	
-						gl.activeTexture(gl[`TEXTURE${2+i}`]);
+						let bindingPoint = lSnapshotBindingPoints[i];
+						let depthBindingPoint = lSnapshotDepthBindingPoints[i];
+
+						gl.activeTexture(gl[`TEXTURE${bindingPoint}`]);
 						gl.bindTexture(gl.TEXTURE_2D, snapTexture);
+
+						gl.activeTexture(gl[`TEXTURE${depthBindingPoint}`]);
+						gl.bindTexture(gl.TEXTURE_2D, snapTextureDepth);
 					}
 				}
 

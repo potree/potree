@@ -65,24 +65,15 @@ class RepRenderer {
 		this.rtShadow.depthTexture = new THREE.DepthTexture();
 		this.rtShadow.depthTexture.type = THREE.UnsignedIntType;
 
-		this.snap.target = new THREE.WebGLRenderTarget(1024, 1024, {
-			minFilter: THREE.NearestFilter,
-			magFilter: THREE.NearestFilter,
-			format: THREE.RGBAFormat,
-			type: THREE.FloatType
-		});
-		this.snap.target.generateMipMaps = false;
-	
-	
-		{
-			let geometry = new THREE.PlaneBufferGeometry( 20, 20, 32 );
-			let material = new THREE.MeshBasicMaterial( {side: THREE.DoubleSide, map: this.snap.target.texture} );
-			let plane = new THREE.Mesh( geometry, material );
-			plane.position.z = 0.2;
-			plane.position.y = -1;
-			this.viewer.scene.scene.add( plane );
-			this.debugPlane = plane;
-		}
+		//{
+		//	let geometry = new THREE.PlaneBufferGeometry( 20, 20, 32 );
+		//	let material = new THREE.MeshBasicMaterial( {side: THREE.DoubleSide, map: this.snap.target.texture} );
+		//	let plane = new THREE.Mesh( geometry, material );
+		//	plane.position.z = 0.2;
+		//	plane.position.y = -1;
+		//	this.viewer.scene.scene.add( plane );
+		//	this.debugPlane = plane;
+		//}
 	};
 
 	resize () {
@@ -185,20 +176,6 @@ class RepRenderer {
 		
 		//viewer.pRenderer.render(viewer.scene.scenePointCloud, viewer.shadowTestCam, this.rtShadow);
 
-
-		//if(this.snapshotRequested || !this.snap.camera){
-		//	viewer.renderer.clearTarget(this.snap.target, true, true, true);
-		//	viewer.renderer.setRenderTarget(this.snap.target);
-		//	camera.updateProjectionMatrix();
-		//	this.snap.camera = camera.clone();
-		//	for(const octree of viewer.scene.pointclouds){
-		//		octree.material.snapEnabled = false;
-		//		octree.material.needsUpdate = true;
-		//		viewer.pRenderer.renderOctree(octree, octree.visibleNodes, camera, this.snap.target, {});
-		//	}
-		//	this.snapshotRequested = false;
-		//}
-
 		{ // NEW SNAPSHOT
 
 			let snap;
@@ -210,6 +187,8 @@ class RepRenderer {
 					format: THREE.RGBAFormat,
 					type: THREE.FloatType
 				});
+				//snap.target.depthTexture = new THREE.DepthTexture();
+				//snap.target.depthTexture.type = THREE.UnsignedIntType;
 			}else{
 				snap = this.history.snapshots.pop();
 			}
@@ -258,20 +237,15 @@ class RepRenderer {
 		for(const octree of viewer.scene.pointclouds){
 			octree.material.snapEnabled = true;
 			octree.material.needsUpdate = true;
-			//octree.material.uniforms.snapshot.value = this.history.snapshots[0].target.texture;
-			//octree.material.uniforms.snapView.value = this.history.snapshots[0].camera.matrixWorldInverse;
-			//octree.material.uniforms.snapProj.value = this.history.snapshots[0].camera.projectionMatrix;
 
 			let uniforms = octree.material.uniforms;
 			if(this.history.snapshots.length === this.history.maxSnapshots){
 				uniforms[`uSnapshot`].value = this.history.snapshots.map(s => s.target.texture);
+				uniforms[`uSnapshot`].value = this.history.snapshots.map(s => s.target.texture);
 				uniforms[`uSnapView`].value = this.history.snapshots.map(s => s.camera.matrixWorldInverse);
 				uniforms[`uSnapProj`].value = this.history.snapshots.map(s => s.camera.projectionMatrix);
-				
-				//for(let i = 0; i < 5; i++){
-				//	let snap = this.history.snapshots[i];
-				//	uniforms[`uSnapshot_${i}`].value = snap.target.texture;
-				//}
+				uniforms[`uSnapProjInv`].value = this.history.snapshots.map(s => new THREE.Matrix4().getInverse(s.camera.projectionMatrix));
+				uniforms[`uSnapViewInv`].value = this.history.snapshots.map(s => new THREE.Matrix4().getInverse(s.camera.matrixWorld));
 			}
 		
 			let nodes = octree.visibleNodes.slice(0, 10);

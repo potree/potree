@@ -1539,6 +1539,16 @@ Potree.Renderer = class{
 					const lSnapProj = shader.uniformLocations["uSnapProj[0]"];
 					gl.uniformMatrix4fv(lSnapProj, false, flattenedMatrices);
 				}
+				{
+					let flattenedMatrices = [].concat(...material.uniforms.uSnapProjInv.value.map(c => c.elements));
+					const lSnapProjInv = shader.uniformLocations["uSnapProjInv[0]"];
+					gl.uniformMatrix4fv(lSnapProjInv, false, flattenedMatrices);
+				}
+				{
+					let flattenedMatrices = [].concat(...material.uniforms.uSnapViewInv.value.map(c => c.elements));
+					const lSnapViewInv = shader.uniformLocations["uSnapViewInv[0]"];
+					gl.uniformMatrix4fv(lSnapViewInv, false, flattenedMatrices);
+				}
 
 			}
 		}

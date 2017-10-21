@@ -873,7 +873,8 @@ Potree.Shader = class Shader{
 		let success = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
 		if(!success){
 			let info = gl.getShaderInfoLog(shader);
-			throw `could not compile shader ${this.name}: ${info}`;
+			let numberedSource = source.split("\n").map( (a, i) => `${i+1}`.padEnd(5) + a).join("\n");
+			throw `could not compile shader ${this.name}: ${info}, \n${numberedSource}`;
 		}
 	}
 	
@@ -1276,21 +1277,34 @@ Potree.Renderer = class{
 			shader.setUniform1f("pcIndex", i);
 			
 			if(shadowMaps.length > 0){
+
+				const lShadowMap = shader.uniformLocations["uShadowMap[0]"];
+
+				let bindingStart = 5;
+				let bindingPoints = new Array(shadowMaps.length).fill(bindingStart).map( (a, i) => (a + i));
+				gl.uniform1iv(lShadowMap, bindingPoints);
+
+				for(let i = 0; i < shadowMaps.length; i++){
+					let shadowMap = shadowMaps[i];
+					let bindingPoint = bindingPoints[i];
+					let glTexture = this.threeRenderer.properties.get(shadowMap.target.depthTexture).__webglTexture;
+
+					gl.activeTexture(gl[`TEXTURE${bindingPoint}`]);
+					gl.bindTexture(gl.TEXTURE_2D, glTexture);
+				}
+				
+				{
+					let worldViewMatrices = shadowMaps
+						.map(sm => new THREE.Matrix4().makeTranslation(...sm.lightPos.clone().multiplyScalar(-1).toArray()))
+						.map(view => new THREE.Matrix4().multiplyMatrices(view, world))
+
+					let flattenedMatrices = [].concat(...worldViewMatrices.map(c => c.elements));
+					const lWorldView = shader.uniformLocations["uShadowWorldView[0]"];
+					gl.uniformMatrix4fv(lWorldView, false, flattenedMatrices);
+				}
+
+
 			
-				let view = shadowMaps[0].camera.matrixWorldInverse;
-				let proj = shadowMaps[0].camera.projectionMatrix;
-				
-				let worldView = new THREE.Matrix4()
-					.multiplyMatrices(view, world);
-				let worldViewProj = new THREE.Matrix4()
-					.multiplyMatrices(proj, worldView);
-				shader.setUniformMatrix4("smWorldViewProj", worldViewProj);
-				
-				shader.setUniform1i("shadowMap", 1);
-				let id = this.threeRenderer.properties.get(shadowMaps[0].map.depthTexture)
-					.__webglTexture;
-				gl.activeTexture(gl.TEXTURE1);
-				gl.bindTexture(gl.TEXTURE_2D, id)
 			}
 			
 			let iBuffer = node.geometryNode.buffer;
@@ -1334,22 +1348,6 @@ Potree.Renderer = class{
 		let visibilityTextureData = null;
 
 
-		//f(window.atoggle == null){
-		//	window.atoggle = 0;
-		//else{
-		//	window.atoggle++;
-		//
-
-		//et sub = nodes.slice(0, 10);
-		//et rem = nodes.slice(10);
-		//et numAdd = 40;
-		//f(numAdd * window.atoggle > rem.length){
-		//	window.atoggle = 0;
-		//
-		//et add = rem.slice(20 * window.atoggle, 20 * (window.atoggle + 1));
-		//odes = sub.concat(add);
-
-
 
 		
 		if (material.pointSizeType >= 0) {
@@ -1377,8 +1375,13 @@ Potree.Renderer = class{
 			
 			shader = this.shaders.get(material);
 			
-			if(material.needsUpdate){
+			//if(material.needsUpdate){
+			{
 				let [vs, fs] = [material.vertexShader, material.fragmentShader];
+
+				vs = `#define num_shadowmaps ${shadowMaps.length}\n` + vs;
+				fs = `#define num_shadowmaps ${shadowMaps.length}\n` + fs;
+
 				shader.update(vs, fs);
 				
 				material.needsUpdate = false;
@@ -1475,9 +1478,6 @@ Potree.Renderer = class{
 			//uniform float wClassification;
 			//uniform float wReturnNumber;
 			//uniform float wSourceID;
-			
-			shader.setUniform("useShadowMap", shadowMaps.length > 0);
-			
 			
 			let vnWebGLTexture = this.textures.get(material.visibleNodesTexture);
 			shader.setUniform1i("visibleNodesTexture", 0);

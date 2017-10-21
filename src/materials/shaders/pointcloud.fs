@@ -42,6 +42,7 @@ uniform mat4 uSnapProjInv[max_snapshots];
 uniform mat4 uSnapViewInv[max_snapshots];
 #endif
 
+
 varying vec4	vSP;
 varying float 	vPointSize;
 varying vec3 	vPosition;

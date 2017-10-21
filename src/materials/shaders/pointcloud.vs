@@ -4,6 +4,7 @@ precision mediump int;
 
 #define max_clip_boxes 30
 #define max_clip_polygons 8
+#define PI 3.141592653589793
 
 attribute vec3 position;
 attribute vec3 color;
@@ -33,6 +34,7 @@ uniform int clipMode;
 	uniform float clipBoxCount;
 	uniform mat4 clipBoxes[max_clip_boxes];
 #endif
+
 
 uniform int clipPolygonCount;
 uniform int clipPolygonVCount[max_clip_polygons];
@@ -71,13 +73,13 @@ uniform float wSourceID;
 
 
 uniform sampler2D visibleNodes;
-uniform sampler2D shadowMap;
 uniform sampler2D gradient;
 uniform sampler2D classificationLUT;
 
-
-uniform bool useShadowMap;
-uniform mat4 smWorldViewProj;
+#if defined(num_shadowmaps) && num_shadowmaps > 0
+uniform sampler2D uShadowMap[num_shadowmaps];
+uniform mat4 uShadowWorldView[num_shadowmaps];
+#endif
 
 #define max_snapshots 5
 #if defined(snap_enabled)
@@ -539,5 +541,59 @@ void main() {
 			vSnapProjectedDistance[i] = -(uSnapView[i] * modelMatrix * vec4(position, 1.0)).z;
 		}
 		
+	#endif
+
+
+
+	#if defined(num_shadowmaps) && num_shadowmaps > 0
+
+		const float sm_near = 0.1;
+		const float sm_far = 1000.0;
+
+		vColor = vec3(1.0, 1.0, 1.0);
+
+		for(int i = 0; i < num_shadowmaps; i++){
+			vec3 viewPos = (uShadowWorldView[i] * vec4(position, 1.0)).xyz;
+			float u = atan(viewPos.y, viewPos.x) / PI;
+			float v = atan(viewPos.z, length(viewPos.xy)) / PI;
+			float distance = length(viewPos);
+			float depth = ((distance - sm_near) / (sm_far - sm_near));
+
+			vec2 uv = vec2(u, v) * 0.5 + 0.5;
+			vec2 step = vec2(1.0 / 1024.0, 1.0 / 1024.0);
+
+			vec2 sampleLocations[5];
+			sampleLocations[0] = vec2(0.0, 0.0);
+			sampleLocations[1] = step;
+			sampleLocations[2] = -step;
+			sampleLocations[3] = vec2(step.x, step.y);
+			sampleLocations[4] = vec2(-step.x, step.y);
+
+
+			float visible_samples = 0.0;
+			float visibility = 0.0;
+			float sumSamples = 0.0;
+
+			for(int j = 0; j < 5; j++){
+				float sm_depth = texture2D(uShadowMap[j], uv).r;
+
+				if((depth - sm_depth) * sm_far > 0.1){
+					visible_samples += 1.0;
+					visibility += (log2(depth * sm_far) - log2(sm_depth * sm_far));
+				}
+
+				sumSamples = sumSamples + 1.0;
+			}
+
+			float coverage = 1.0 - visible_samples / sumSamples;
+			vColor = vColor * (1.0-visibility);
+
+			
+			//if((depth - sm_depth) * sm_far > 0.1){
+			//	vColor = vColor * 0.3;
+			//}
+
+		}
+
 	#endif
 }

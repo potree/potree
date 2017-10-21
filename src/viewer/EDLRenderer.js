@@ -14,6 +14,7 @@ class EDLRenderer {
 		this.resize = this.resize.bind(this);
 		this.render = this.render.bind(this);
 		
+		this.shadowMap = new Potree.PointCloudSM(this.viewer.pRenderer);
 		
 		
 	}
@@ -47,12 +48,21 @@ class EDLRenderer {
 		this.rtShadow.depthTexture.type = THREE.UnsignedIntType;
 	
 	
+		//{
+		//	let geometry = new THREE.PlaneBufferGeometry( 10, 7, 32 );
+		//	let material = new THREE.MeshBasicMaterial( {side: THREE.DoubleSide, map: this.rtShadow.texture} );
+		//	let plane = new THREE.Mesh( geometry, material );
+		//	plane.position.z = 0.2;
+		//	plane.position.y = -1;
+		//	this.viewer.scene.scene.add( plane );
+		//}
+
 		{
-			let geometry = new THREE.PlaneBufferGeometry( 10, 7, 32 );
-			let material = new THREE.MeshBasicMaterial( {side: THREE.DoubleSide, map: this.rtShadow.texture} );
+			let geometry = new THREE.PlaneBufferGeometry( 10, 10, 32 );
+			let material = new THREE.MeshBasicMaterial( {side: THREE.DoubleSide, map: this.shadowMap.target.texture} );
 			let plane = new THREE.Mesh( geometry, material );
 			plane.position.z = 0.2;
-			plane.position.y = -1;
+			plane.position.y = 20;
 			this.viewer.scene.scene.add( plane );
 		}
 	};
@@ -123,8 +133,12 @@ class EDLRenderer {
 		
 		viewer.renderer.render(viewer.scene.scene, camera);
 		
-		viewer.renderer.clearTarget( this.rtShadow, true, true, true );
 		viewer.renderer.clearTarget( this.rtColor, true, true, true );
+
+		for(let octree of viewer.scene.pointclouds){
+			this.shadowMap.renderOctree(octree, octree.visibleNodes);
+		}
+		
 		
 		let width = viewer.renderArea.clientWidth;
 		let height = viewer.renderArea.clientHeight;
@@ -152,7 +166,7 @@ class EDLRenderer {
 		//viewer.pRenderer.render(viewer.scene.scenePointCloud, viewer.shadowTestCam, this.rtShadow);
 		
 		viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, this.rtColor, {
-			//shadowMaps: [{map: this.rtShadow, camera: viewer.shadowTestCam}]
+			shadowMaps: [this.shadowMap]
 		});
 		
 		viewer.renderer.render(viewer.scene.scene, camera, this.rtColor);

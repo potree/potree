@@ -62,6 +62,7 @@ var paths = {
 		"src/utils/ClipVolume.js",
 		"src/utils/PolygonClipVolume.js",
 		"src/utils/Box3Helper.js",
+		"src/utils/PointCloudSM.js",
 		"src/exporter/GeoJSONExporter.js",
 		"src/exporter/DXFExporter.js",
 		"src/exporter/CSVExporter.js",
@@ -116,15 +117,14 @@ var workers = {
 		"src/workers/GreyhoundBinaryDecoderWorker.js",
 		"src/Version.js",
 		"src/loader/PointAttributes.js"
-	],
-	"DEMWorker": [
-		"src/workers/DEMWorker.js"
 	]
 };
 
 var shaders = [
 	"src/materials/shaders/pointcloud.vs",
 	"src/materials/shaders/pointcloud.fs",
+	"src/materials/shaders/pointcloud_sm.vs",
+	"src/materials/shaders/pointcloud_sm.fs",
 	"src/materials/shaders/normalize.vs",
 	"src/materials/shaders/normalize.fs",
 	"src/materials/shaders/edl.vs",

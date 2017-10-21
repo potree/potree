@@ -23,6 +23,7 @@ class RepRenderer {
 		this.render = this.render.bind(this);
 
 		this.snapshotRequested = false;
+		this.disableSnapshots = false;
 		
 		this.snap = {
 			target: null,
@@ -118,6 +119,8 @@ class RepRenderer {
 		this.resize();
 		
 		let camera = viewer.scene.getActiveCamera();
+
+		let query = Potree.startQuery('stuff', viewer.renderer.getContext());
 		
 		if(viewer.background === "skybox"){
 			viewer.renderer.setClearColor(0x000000, 0);
@@ -172,12 +175,15 @@ class RepRenderer {
 		viewer.shadowTestCam.matrixWorldInverse.getInverse(viewer.shadowTestCam.matrixWorld);
 		viewer.shadowTestCam.updateProjectionMatrix();
 		
+
+		Potree.endQuery(query, viewer.renderer.getContext());
+
 		//viewer.pRenderer.render(viewer.scene.scenePointCloud, viewer.shadowTestCam, this.rtShadow);
 
-		//if(this.snapshotRequested){ // NEW SNAPSHOT
-		//if(performance.now() < 2000 || this.snapshotRequested){
-		{
+		if(!this.disableSnapshots){
 			this.snapshotRequested = false;
+
+			let query = Potree.startQuery('create snapshot', viewer.renderer.getContext());
 
 			let snap;
 			if(this.history.snapshots.length < this.history.maxSnapshots){
@@ -186,7 +192,7 @@ class RepRenderer {
 					minFilter: THREE.NearestFilter,
 					magFilter: THREE.NearestFilter,
 					format: THREE.RGBAFormat,
-					type: THREE.FloatType
+					//type: THREE.FloatType
 				});
 				snap.target.depthTexture = new THREE.DepthTexture();
 				snap.target.depthTexture.type = THREE.UnsignedIntType;
@@ -235,28 +241,50 @@ class RepRenderer {
 			}
 
 			this.history.snapshots.unshift(snap);
+
+			Potree.endQuery(query, viewer.renderer.getContext());
 		}
 
-		viewer.renderer.clearTarget(this.rtColor, true, true, true);
-		viewer.renderer.setRenderTarget(this.rtColor);
-		for(const octree of viewer.scene.pointclouds){
-			octree.material.snapEnabled = true;
-			octree.material.needsUpdate = true;
 
-			let uniforms = octree.material.uniforms;
-			if(this.history.snapshots.length === this.history.maxSnapshots){
-				uniforms[`uSnapshot`].value = this.history.snapshots.map(s => s.target.texture);
-				uniforms[`uSnapshotDepth`].value = this.history.snapshots.map(s => s.target.depthTexture);
-				uniforms[`uSnapView`].value = this.history.snapshots.map(s => s.camera.matrixWorldInverse);
-				uniforms[`uSnapProj`].value = this.history.snapshots.map(s => s.camera.projectionMatrix);
-				uniforms[`uSnapProjInv`].value = this.history.snapshots.map(s => new THREE.Matrix4().getInverse(s.camera.projectionMatrix));
-				uniforms[`uSnapViewInv`].value = this.history.snapshots.map(s => new THREE.Matrix4().getInverse(s.camera.matrixWorld));
+		{
+
+			let query = Potree.startQuery('render snapshots', viewer.renderer.getContext());
+
+			viewer.renderer.clearTarget(this.rtColor, true, true, true);
+			viewer.renderer.setRenderTarget(this.rtColor);
+			for(const octree of viewer.scene.pointclouds){
+
+				if(!this.disableSnapshots){
+					octree.material.snapEnabled = true;
+					octree.material.needsUpdate = true;
+
+					let uniforms = octree.material.uniforms;
+					if(this.history.snapshots.length === this.history.maxSnapshots){
+						uniforms[`uSnapshot`].value = this.history.snapshots.map(s => s.target.texture);
+						uniforms[`uSnapshotDepth`].value = this.history.snapshots.map(s => s.target.depthTexture);
+						uniforms[`uSnapView`].value = this.history.snapshots.map(s => s.camera.matrixWorldInverse);
+						uniforms[`uSnapProj`].value = this.history.snapshots.map(s => s.camera.projectionMatrix);
+						uniforms[`uSnapProjInv`].value = this.history.snapshots.map(s => new THREE.Matrix4().getInverse(s.camera.projectionMatrix));
+						uniforms[`uSnapViewInv`].value = this.history.snapshots.map(s => new THREE.Matrix4().getInverse(s.camera.matrixWorld));
+					}
+				}else{
+					octree.material.snapEnabled = false;
+					octree.material.needsUpdate = true;
+				}
+			
+				let nodes = octree.visibleNodes.slice(0, 5);
+				//let nodes = octree.visibleNodes;
+				viewer.pRenderer.renderOctree(octree, nodes, camera, this.rtColor, {vnTextureNodes: nodes});
+
+				if(!this.disableSnapshots){
+					octree.material.snapEnabled = false;
+					octree.material.needsUpdate = false;
+				}
 			}
-		
-			let nodes = octree.visibleNodes.slice(0, 5);
-			//let nodes = octree.visibleNodes;
-			viewer.pRenderer.renderOctree(octree, nodes, camera, this.rtColor, {vnTextureNodes: nodes});
+
+			Potree.endQuery(query, viewer.renderer.getContext());
 		}
+		
 		
 		//viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, this.rtColor, {
 		//	shadowMaps: [{map: this.rtShadow, camera: viewer.shadowTestCam}]
@@ -264,7 +292,12 @@ class RepRenderer {
 		
 		//viewer.renderer.render(viewer.scene.scene, camera, this.rtColor);
 		
+
+		
+
 		{ // EDL OCCLUSION PASS
+
+			let query = Potree.startQuery('EDL', viewer.renderer.getContext());
 			this.edlMaterial.uniforms.screenWidth.value = width;
 			this.edlMaterial.uniforms.screenHeight.value = height;
 			this.edlMaterial.uniforms.colorMap.value = this.rtColor.texture;
@@ -276,7 +309,11 @@ class RepRenderer {
 			this.edlMaterial.transparent = true;
 
 			Potree.utils.screenPass.render(viewer.renderer, this.edlMaterial);
+
+			Potree.endQuery(query, viewer.renderer.getContext());
 		}
+
+		
 
 		viewer.renderer.clearDepth();
 		viewer.renderer.render(viewer.controls.sceneControls, camera);
@@ -292,6 +329,8 @@ class RepRenderer {
 									viewer.navigationCube.width, viewer.navigationCube.width);
 		viewer.renderer.render(viewer.navigationCube, viewer.navigationCube.camera);		
 		viewer.renderer.setViewport(0, 0, viewer.renderer.domElement.clientWidth, viewer.renderer.domElement.clientHeight);
+
+		//
 
 	}
 };

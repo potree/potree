@@ -1668,7 +1668,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		let queryAll;
 		if(Potree.measureTimings){
 			performance.mark("loop-start");
-			queryAll = Potree.startQuery('frame', viewer.renderer.getContext());
+			//queryAll = Potree.startQuery('frame', viewer.renderer.getContext());
 		}
 
 		this.stats.begin();
@@ -1709,7 +1709,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			performance.mark("loop-end");
 			performance.measure("loop", "loop-start", "loop-end");
 
-			Potree.endQuery(queryAll, viewer.renderer.getContext());
+			//Potree.endQuery(queryAll, viewer.renderer.getContext());
 		}
 
 		if(Potree.measureTimings){

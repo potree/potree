@@ -1251,7 +1251,7 @@ Potree.Renderer = class{
 			
 			if(visibilityTextureData){
 				let vnStart = visibilityTextureData.offsets.get(node);
-				shader.setUniform1f("vnStart", vnStart);
+				shader.setUniform1f("uVNStart", vnStart);
 			}
 			
 			
@@ -1272,9 +1272,9 @@ Potree.Renderer = class{
 			
 			//shader.setUniformMatrix4("modelMatrix", world);
 			//shader.setUniformMatrix4("modelViewMatrix", worldView);
-			shader.setUniform1f("level", level);
+			shader.setUniform1f("uLevel", level);
 			
-			shader.setUniform1f("pcIndex", i);
+			shader.setUniform1f("uPCIndex", i);
 			
 			if(shadowMaps.length > 0){
 
@@ -1421,8 +1421,8 @@ Potree.Renderer = class{
 			shader.setUniformMatrix4("uViewInv", viewInv);
 			shader.setUniformMatrix4("uProjInv", projInv);
 			
-			shader.setUniform1f("screenHeight", material.screenHeight);
-			shader.setUniform1f("screenWidth", material.screenWidth);
+			shader.setUniform1f("uScreenHeight", material.screenHeight);
+			shader.setUniform1f("uScreenWidth", material.screenWidth);
 			shader.setUniform1f("fov", Math.PI * camera.fov / 180);
 			shader.setUniform1f("near", camera.near);
 			shader.setUniform1f("far", camera.far);
@@ -1455,9 +1455,9 @@ Potree.Renderer = class{
 			shader.setUniform1f("minSize", 1);
 			
 			
-			// uniform float pcIndex
-			shader.setUniform1f("spacing", material.spacing);
-			shader.setUniform("octreeSize", material.uniforms.octreeSize.value);
+			// uniform float uPCIndex
+			shader.setUniform1f("uSpacing", material.spacing);
+			shader.setUniform("uOctreeSize", material.uniforms.octreeSize.value);
 			
 			
 			//uniform vec3 uColor;

@@ -20,8 +20,8 @@ uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
 uniform mat4 viewMatrix;
 
-uniform float screenWidth;
-uniform float screenHeight;
+uniform float uScreenWidth;
+uniform float uScreenHeight;
 uniform float fov;
 uniform float near;
 uniform float far;
@@ -45,12 +45,12 @@ uniform float size;				// pixel size factor
 uniform float minSize;			// minimum pixel size
 uniform float maxSize;			// maximum pixel size
 
-uniform float pcIndex;
-uniform float spacing;
-uniform float octreeSize;
-uniform vec3 bbSize;
-uniform float level;
-uniform float vnStart;
+uniform float uPCIndex;
+uniform float uSpacing;
+uniform float uOctreeSize;
+uniform vec3 uBBSize;
+uniform float uLevel;
+uniform float uVNStart;
 
 uniform vec3 uColor;
 uniform float opacity;
@@ -141,10 +141,10 @@ bool isBitSet(float number, float index){
 float getLOD(){
 	
 	vec3 offset = vec3(0.0, 0.0, 0.0);
-	float iOffset = vnStart;
-	float depth = level;
+	float iOffset = uVNStart;
+	float depth = uLevel;
 	for(float i = 0.0; i <= 30.0; i++){
-		float nodeSizeAtLevel = octreeSize  / pow(2.0, i + level + 0.0);
+		float nodeSizeAtLevel = uOctreeSize  / pow(2.0, i + uLevel + 0.0);
 		
 		vec3 index3d = (position-offset) / nodeSizeAtLevel;
 		index3d = floor(index3d + 0.5);
@@ -448,9 +448,9 @@ void main() {
 	float pointSize = 1.0;
 	
 	float slope = tan(fov / 2.0);
-	float projFactor =  -0.5 * screenHeight / (slope * vViewPosition.z);
+	float projFactor =  -0.5 * uScreenHeight / (slope * vViewPosition.z);
 	
-	float r = spacing * 1.5;
+	float r = uSpacing * 1.5;
 	vRadius = r;
 	#if defined fixed_point_size
 		pointSize = size;
@@ -460,7 +460,7 @@ void main() {
 			pointSize = pointSize * projFactor;
 	#elif defined adaptive_point_size
 		if(useOrthographicCamera) {
-			pointSize = size * r / (orthoRange * pow(2.0, getLOD())) * screenWidth;
+			pointSize = size * r / (orthoRange * pow(2.0, getLOD())) * uScreenWidth;
 		} else {
 			float worldSpaceSize = size * r / getPointSizeAttenuation();
 			pointSize = worldSpaceSize * projFactor;
@@ -550,7 +550,7 @@ void main() {
 		const float sm_near = 0.1;
 		const float sm_far = 1000.0;
 
-		vColor = vec3(1.0, 1.0, 1.0);
+		//vColor = vec3(1.0, 1.0, 1.0);
 
 		for(int i = 0; i < num_shadowmaps; i++){
 			vec3 viewPos = (uShadowWorldView[i] * vec4(position, 1.0)).xyz;
@@ -562,36 +562,57 @@ void main() {
 			vec2 uv = vec2(u, v) * 0.5 + 0.5;
 			vec2 step = vec2(1.0 / 1024.0, 1.0 / 1024.0);
 
-			vec2 sampleLocations[5];
-			sampleLocations[0] = vec2(0.0, 0.0);
-			sampleLocations[1] = step;
-			sampleLocations[2] = -step;
-			sampleLocations[3] = vec2(step.x, step.y);
-			sampleLocations[4] = vec2(-step.x, step.y);
+
+			float sm_depth = sm_far * texture2D(uShadowMap[i], uv).r + sm_near;
+			float sm_depthx0 = sm_far * texture2D(uShadowMap[i], uv - vec2(step.x, 0.0)).r + sm_near;
+			float sm_depthx2 = sm_far * texture2D(uShadowMap[i], uv + vec2(step.x, 0.0)).r + sm_near;
+			float sm_depthy0 = sm_far * texture2D(uShadowMap[i], uv - vec2(0.0, step.y)).r + sm_near;
+			float sm_depthy2 = sm_far * texture2D(uShadowMap[i], uv + vec2(0.0, step.y)).r + sm_near;
+
+			float dx = sm_depthx0 - sm_depthx2;
+			float dy = sm_depthy0 - sm_depthy2;
 
 
-			float visible_samples = 0.0;
-			float visibility = 0.0;
-			float sumSamples = 0.0;
+			//vColor = vec3(dx, dy, 0.0);
+			//vColor = vec3(1.0, 1.0, 1.0) * (distance - sm_depth);
 
-			for(int j = 0; j < 5; j++){
-				float sm_depth = texture2D(uShadowMap[j], uv).r;
-
-				if((depth - sm_depth) * sm_far > 0.1){
-					visible_samples += 1.0;
-					visibility += (log2(depth * sm_far) - log2(sm_depth * sm_far));
-				}
-
-				sumSamples = sumSamples + 1.0;
+			if((distance - sm_depth) > 0.1){
+				vColor = vColor * 0.2;
 			}
 
-			float coverage = 1.0 - visible_samples / sumSamples;
-			vColor = vColor * (1.0-visibility);
+
+			//vec2 sampleLocations[5];
+			//sampleLocations[0] = vec2(0.0, 0.0);
+			//sampleLocations[1] = step;
+			//sampleLocations[2] = -step;
+			//sampleLocations[3] = vec2(step.x, step.y);
+			//sampleLocations[4] = vec2(-step.x, step.y);
+
+			//float visible_samples = 0.0;
+			//float visibility = 0.0;
+			//float sumSamples = 0.0;
+			//float sum = 0.0;
+
+			//for(int j = 0; j < 5; j++){
+			//	float sm_depth = texture2D(uShadowMap[i], uv).r;
+
+			//	if((depth - sm_depth) * sm_far > 0.05){
+			//		visible_samples += 1.0;
+			//		visibility += (log2(depth * sm_far) - log2(sm_depth * sm_far));
+
+			//		sum += max(0.0, log2(depth * sm_far) - log2(sm_depth * sm_far));
+			//	}
+
+			//	sumSamples = sumSamples + 1.0;
+			//}
+
+			//float response = sum / sumSamples;
+			//float shade = exp(-response * 300.0);
+
+			//float coverage = 1.0 - visible_samples / sumSamples;
+			//vColor = vColor * response;
 
 			
-			//if((depth - sm_depth) * sm_far > 0.1){
-			//	vColor = vColor * 0.3;
-			//}
 
 		}
 

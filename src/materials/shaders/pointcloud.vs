@@ -560,59 +560,39 @@ void main() {
 			float depth = ((distance - sm_near) / (sm_far - sm_near));
 
 			vec2 uv = vec2(u, v) * 0.5 + 0.5;
-			vec2 step = vec2(1.0 / 1024.0, 1.0 / 1024.0);
+			vec2 step = vec2(1.0 / (4.0*1024.0), 1.0 / (4.0*1024.0));
 
+			vec2 sampleLocations[9];
+			sampleLocations[0] = vec2(0.0, 0.0);
+			sampleLocations[1] = step;
+			sampleLocations[2] = -step;
+			sampleLocations[3] = vec2(step.x, -step.y);
+			sampleLocations[4] = vec2(-step.x, step.y);
 
-			float sm_depth = sm_far * texture2D(uShadowMap[i], uv).r + sm_near;
-			float sm_depthx0 = sm_far * texture2D(uShadowMap[i], uv - vec2(step.x, 0.0)).r + sm_near;
-			float sm_depthx2 = sm_far * texture2D(uShadowMap[i], uv + vec2(step.x, 0.0)).r + sm_near;
-			float sm_depthy0 = sm_far * texture2D(uShadowMap[i], uv - vec2(0.0, step.y)).r + sm_near;
-			float sm_depthy2 = sm_far * texture2D(uShadowMap[i], uv + vec2(0.0, step.y)).r + sm_near;
+			sampleLocations[5] = vec2(0.0, step.y);
+			sampleLocations[6] = vec2(0.0, -step.y);
+			sampleLocations[7] = vec2(step.x, 0.0);
+			sampleLocations[8] = vec2(-step.x, 0.0);
 
-			float dx = sm_depthx0 - sm_depthx2;
-			float dy = sm_depthy0 - sm_depthy2;
+			float visible_samples = 0.0;
+			float sumSamples = 0.0;
 
+			float bias = uSpacing / pow(2.0, getLOD());
+			for(int j = 0; j < 9; j++){
+				float sm_depth = sm_far * texture2D(uShadowMap[j], uv + sampleLocations[j]).r + sm_near;
 
-			//vColor = vec3(dx, dy, 0.0);
-			//vColor = vec3(1.0, 1.0, 1.0) * (distance - sm_depth);
+				if((distance - sm_depth) > 10.0 * bias){
+					visible_samples += 1.0;
+				}
 
-			if((distance - sm_depth) > 0.1){
-				vColor = vColor * 0.2;
+				sumSamples = sumSamples + 1.0;
 			}
 
+			float coverage = 1.0 - visible_samples / sumSamples;
+			float shade = coverage * 0.5 + 0.5;
 
-			//vec2 sampleLocations[5];
-			//sampleLocations[0] = vec2(0.0, 0.0);
-			//sampleLocations[1] = step;
-			//sampleLocations[2] = -step;
-			//sampleLocations[3] = vec2(step.x, step.y);
-			//sampleLocations[4] = vec2(-step.x, step.y);
-
-			//float visible_samples = 0.0;
-			//float visibility = 0.0;
-			//float sumSamples = 0.0;
-			//float sum = 0.0;
-
-			//for(int j = 0; j < 5; j++){
-			//	float sm_depth = texture2D(uShadowMap[i], uv).r;
-
-			//	if((depth - sm_depth) * sm_far > 0.05){
-			//		visible_samples += 1.0;
-			//		visibility += (log2(depth * sm_far) - log2(sm_depth * sm_far));
-
-			//		sum += max(0.0, log2(depth * sm_far) - log2(sm_depth * sm_far));
-			//	}
-
-			//	sumSamples = sumSamples + 1.0;
-			//}
-
-			//float response = sum / sumSamples;
-			//float shade = exp(-response * 300.0);
-
-			//float coverage = 1.0 - visible_samples / sumSamples;
-			//vColor = vColor * response;
-
-			
+			vColor = vColor * shade;
+			vColor.r = vColor.r + (1.0 - shade);
 
 		}
 

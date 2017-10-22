@@ -45,12 +45,20 @@ Potree.PathAnimation = class{
 		}
 
 		stop(){
+			if(!this.tween){
+				return;
+			}
+
 			this.tween.stop();
 			this.tween = null;
 			this.t = 0;
 		}
 
 		pause(){
+			if(!this.tween){
+				return;
+			}
+			
 			this.tween.stop();
 			TWEEN.remove(this.tween);
 			this.tween = null;

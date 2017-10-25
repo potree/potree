@@ -31,24 +31,25 @@ varying float	vLinearDepth;
 varying float	vLogDepth;
 varying vec3	vViewPosition;
 varying float	vRadius;
-
-#define max_snapshots 5
-#if defined(snap_enabled)
-uniform sampler2D uSnapshot[max_snapshots];
-uniform sampler2D uSnapshotDepth[max_snapshots];
-uniform mat4 uSnapView[max_snapshots];
-uniform mat4 uSnapProj[max_snapshots];
-uniform mat4 uSnapProjInv[max_snapshots];
-uniform mat4 uSnapViewInv[max_snapshots];
-#endif
-
-
-varying vec4	vSP;
 varying float 	vPointSize;
 varying vec3 	vPosition;
 
-varying vec4 vSnapProjected[max_snapshots];
-varying float vSnapProjectedDistance[max_snapshots];
+#if defined(num_snapshots) && num_snapshots > 0
+uniform sampler2D uSnapshot[num_snapshots];
+uniform sampler2D uSnapshotDepth[num_snapshots];
+uniform mat4 uSnapView[num_snapshots];
+uniform mat4 uSnapProj[num_snapshots];
+uniform mat4 uSnapProjInv[num_snapshots];
+uniform mat4 uSnapViewInv[num_snapshots];
+
+varying vec4 vSnapProjected[num_snapshots];
+varying float vSnapProjectedDistance[num_snapshots];
+#endif
+
+
+
+
+
 
 float specularStrength = 1.0;
 
@@ -58,11 +59,11 @@ void main() {
 	float depth = gl_FragCoord.z;
 
 
-	#if defined(snap_enabled)
+	#if defined(num_snapshots) && num_snapshots > 0
 		vec3 sRGB = vec3(0.0, 0.0, 0.0);
 		float sA = 0.0;
 
-		for(int i = 0; i < max_snapshots; i++){
+		for(int i = 0; i < num_snapshots; i++){
 
 			float snapLinearDistance = 0.0;
 			float currentLinearDistance = vSnapProjectedDistance[i];

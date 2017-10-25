@@ -256,6 +256,7 @@ class RepRenderer {
 
 				if(!this.disableSnapshots){
 					octree.material.snapEnabled = true;
+					octree.material.numSnapshots = this.history.maxSnapshots;
 					octree.material.needsUpdate = true;
 
 					let uniforms = octree.material.uniforms;

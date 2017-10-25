@@ -2,7 +2,6 @@
 precision mediump float;
 precision mediump int;
 
-#define max_clip_boxes 30
 #define max_clip_polygons 8
 #define PI 3.141592653589793
 
@@ -30,16 +29,15 @@ uniform bool useOrthographicCamera;
 uniform float orthoRange;
 
 uniform int clipMode;
-#if defined use_clip_box
-	uniform float clipBoxCount;
-	uniform mat4 clipBoxes[max_clip_boxes];
+#if defined(num_clipboxes) && num_clipboxes > 0
+	uniform mat4 clipBoxes[num_clipboxes];
 #endif
 
-
-uniform int clipPolygonCount;
-uniform int clipPolygonVCount[max_clip_polygons];
-uniform vec3 clipPolygons[max_clip_polygons * 8];
-uniform mat4 clipPolygonVP[max_clip_polygons];
+#if defined(num_clippolygons) && num_clippolygons > 0
+uniform int clipPolygonVCount[num_clippolygons];
+uniform vec3 clipPolygons[num_clippolygons * 8];
+uniform mat4 clipPolygonVP[num_clippolygons];
+#endif
 
 uniform float size;				// pixel size factor
 uniform float minSize;			// minimum pixel size
@@ -81,12 +79,14 @@ uniform sampler2D uShadowMap[num_shadowmaps];
 uniform mat4 uShadowWorldView[num_shadowmaps];
 #endif
 
-#define max_snapshots 5
-#if defined(snap_enabled)
-uniform sampler2D uSnapshot[max_snapshots];
-uniform mat4 uSnapView[max_snapshots];
-uniform mat4 uSnapProj[max_snapshots];
-uniform mat4 uSnapScreenToCurrentView[max_snapshots];
+#if defined(num_snapshots) && num_snapshots > 0
+uniform sampler2D uSnapshot[num_snapshots];
+uniform mat4 uSnapView[num_snapshots];
+uniform mat4 uSnapProj[num_snapshots];
+uniform mat4 uSnapScreenToCurrentView[num_snapshots];
+
+varying vec4 vSnapProjected[num_snapshots];
+varying float vSnapProjectedDistance[num_snapshots];
 #endif
 
 varying float	vOpacity;
@@ -96,11 +96,20 @@ varying float	vLogDepth;
 varying vec3	vViewPosition;
 varying float 	vRadius;
 varying vec3	vWorldPosition;
-varying vec4	vSP;
 varying float 	vPointSize;
 
-varying vec4 vSnapProjected[max_snapshots];
-varying float vSnapProjectedDistance[max_snapshots];
+
+
+// 
+//    ###    ########     ###    ########  ######## #### ##     ## ########     ######  #### ######## ########  ######  
+//   ## ##   ##     ##   ## ##   ##     ##    ##     ##  ##     ## ##          ##    ##  ##       ##  ##       ##    ## 
+//  ##   ##  ##     ##  ##   ##  ##     ##    ##     ##  ##     ## ##          ##        ##      ##   ##       ##       
+// ##     ## ##     ## ##     ## ########     ##     ##  ##     ## ######       ######   ##     ##    ######    ######  
+// ######### ##     ## ######### ##           ##     ##   ##   ##  ##                ##  ##    ##     ##             ## 
+// ##     ## ##     ## ##     ## ##           ##     ##    ## ##   ##          ##    ##  ##   ##      ##       ##    ## 
+// ##     ## ########  ##     ## ##           ##    ####    ###    ########     ######  #### ######## ########  ######  
+// 																			
+
 
 // ---------------------
 // OCTREE
@@ -245,6 +254,20 @@ float getPointSizeAttenuation(){
 
 #endif
 
+
+
+// 
+//    ###    ######## ######## ########  #### ########  ##     ## ######## ########  ######  
+//   ## ##      ##       ##    ##     ##  ##  ##     ## ##     ##    ##    ##       ##    ## 
+//  ##   ##     ##       ##    ##     ##  ##  ##     ## ##     ##    ##    ##       ##       
+// ##     ##    ##       ##    ########   ##  ########  ##     ##    ##    ######    ######  
+// #########    ##       ##    ##   ##    ##  ##     ## ##     ##    ##    ##             ## 
+// ##     ##    ##       ##    ##    ##   ##  ##     ## ##     ##    ##    ##       ##    ## 
+// ##     ##    ##       ##    ##     ## #### ########   #######     ##    ########  ######                                                                               
+// 
+
+
+
 // formula adapted from: http://www.dfstudios.co.uk/articles/programming/image-programming-algorithms/image-processing-algorithms-part-5-contrast-adjustment/
 float getContrastFactor(float contrast){
 	return (1.0158730158730156 * (contrast + 1.0)) / (1.0158730158730156 - contrast);
@@ -342,6 +365,20 @@ vec3 getCompositeColor(){
 	return c;
 }
 
+
+// 
+//  ######  ##       #### ########  ########  #### ##    ##  ######   
+// ##    ## ##        ##  ##     ## ##     ##  ##  ###   ## ##    ##  
+// ##       ##        ##  ##     ## ##     ##  ##  ####  ## ##        
+// ##       ##        ##  ########  ########   ##  ## ## ## ##   #### 
+// ##       ##        ##  ##        ##         ##  ##  #### ##    ##  
+// ##    ## ##        ##  ##        ##         ##  ##   ### ##    ##  
+//  ######  ######## #### ##        ##        #### ##    ##  ######                                                          
+// 
+
+
+
+#if defined(num_clippolygons) && num_clippolygons > 0
 bool pointInClipPolygon(vec3 point, int polyIdx) {
 	vec4 screenClipPos = clipPolygonVP[polyIdx] * modelMatrix * vec4(point, 1.0);
 	screenClipPos.xy = screenClipPos.xy / screenClipPos.w * 0.5 + 0.5;
@@ -366,6 +403,7 @@ bool pointInClipPolygon(vec3 point, int polyIdx) {
 
 	return c;
 }
+#endif
 
 void testInsideClipVolume(bool inside) {
 	if(inside && clipMode == 2 || !inside && clipMode == 3) {
@@ -375,76 +413,53 @@ void testInsideClipVolume(bool inside) {
 	}
 }
 
-void main() {
-	vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
-	vViewPosition = mvPosition.xyz;
-	gl_Position = projectionMatrix * mvPosition;
-	vOpacity = opacity;
-	vLinearDepth = gl_Position.w;
-	vLogDepth = log2(-mvPosition.z);
-
-	// ---------------------
-	// POINT COLOR
-	// ---------------------
-	vec4 cl = getClassification(); 
+vec3 getColor(){
+	vec3 color;
 	
 	#ifdef color_type_rgb
-		vColor = getRGB();
+		color = getRGB();
 	#elif defined color_type_height
-		vColor = getElevation();
+		color = getElevation();
 	#elif defined color_type_rgb_height
 		vec3 cHeight = getElevation();
-		vColor = (1.0 - transition) * getRGB() + transition * cHeight;
+		color = (1.0 - transition) * getRGB() + transition * cHeight;
 	#elif defined color_type_depth
 		float linearDepth = -mvPosition.z ;
 		float expDepth = (gl_Position.z / gl_Position.w) * 0.5 + 0.5;
-		vColor = vec3(linearDepth, expDepth, 0.0);
+		color = vec3(linearDepth, expDepth, 0.0);
 	#elif defined color_type_intensity
 		float w = getIntensity();
-		vColor = vec3(w, w, w);
+		color = vec3(w, w, w);
 	#elif defined color_type_intensity_gradient
 		float w = getIntensity();
-		vColor = texture2D(gradient, vec2(w,1.0-w)).rgb;
+		color = texture2D(gradient, vec2(w,1.0-w)).rgb;
 	#elif defined color_type_color
-		vColor = uColor;
+		color = uColor;
 	#elif defined color_type_lod
 		float depth = getLOD();
 		float w = depth / 5.0;
-		vColor = texture2D(gradient, vec2(w,1.0-w)).rgb;
+		color = texture2D(gradient, vec2(w,1.0-w)).rgb;
 	#elif defined color_type_point_index
-		//vColor = indices.rgb * 255.0;
-		vColor = index.rgb;
-		//vColor = vec3(1.0, 0.0, 0.0);
-		
-		//vColor.r = mod(indices, 256.0) / 255.0;
-		//vColor.g = mod(indices / 256.0, 256.0) / 255.0;
-		//vColor.b = 0.0;
-		
+		color = index.rgb;
 	#elif defined color_type_classification
-		vColor = cl.rgb;
+		vec4 cl = getClassification(); 
+		color = cl.rgb;
 	#elif defined color_type_return_number
-		vColor = getReturnNumber();
+		color = getReturnNumber();
 	#elif defined color_type_source
-		vColor = getSourceID();
+		color = getSourceID();
 	#elif defined color_type_normal
-		vColor = (modelMatrix * vec4(normal, 0.0)).xyz;
+		color = (modelMatrix * vec4(normal, 0.0)).xyz;
 	#elif defined color_type_phong
-		vColor = color;
+		color = color;
 	#elif defined color_type_composite
-		vColor = getCompositeColor();
+		color = getCompositeColor();
 	#endif
 	
-	#if !defined color_type_composite
-		if(cl.a == 0.0){
-			gl_Position = vec4(100.0, 100.0, 100.0, 0.0);
-			
-			return;
-		}
-	#endif
-	
-	// ---------------------
-	// POINT SIZE
-	// ---------------------
+	return color;
+}
+
+float getPointSize(){
 	float pointSize = 1.0;
 	
 	float slope = tan(fov / 2.0);
@@ -471,44 +486,25 @@ void main() {
 	pointSize = min(maxSize, pointSize);
 	
 	vRadius = pointSize / projFactor;
-	
-	gl_PointSize = pointSize;
-	vPointSize = gl_PointSize;
-	
-	
-	//if(useShadowMap){
-	//	
-	//	vec4 smPosition = smWorldViewProj * vec4( position, 1.0 );
-	//	smPosition.z = smPosition.z - 0.1;
-	//	vec2 smUV = (smPosition.xy / smPosition.w) * 0.5 + 0.5;
-	//	
-	//	vec4 sval = texture2D(shadowMap, smUV);
-	//	
-	//	float vertexDepth = ((smPosition.z / smPosition.w) * 0.5 + 0.5);
-	//	float smDepth = sval.x;
-	//	
-	//	if(vertexDepth > smDepth){
-	//		//vColor = vec3(1.0, 0.0, 0.0);
-	//		vColor.r = 1.0;
-	//	}else{
-	//		vColor.g = 1.0;
-	//	}
-	//	
-	//}
-	
-	
-	// ---------------------
-	// CLIPPING
-	// ---------------------
-	
-	#if defined use_clip_box
+
+	return pointSize;
+}
+
+void doClipping(){
+
+	#if !defined color_type_composite
+		vec4 cl = getClassification(); 
+		if(cl.a == 0.0){
+			gl_Position = vec4(100.0, 100.0, 100.0, 0.0);
+			
+			return;
+		}
+	#endif
+
+	#if defined(num_clipboxes) && num_clipboxes > 0
 		if(clipMode != 0) {
 			bool insideAny = false;
-			for(int i = 0; i < max_clip_boxes; i++){
-				if(i == int(clipBoxCount)){
-					break;
-				}
-			
+			for(int i = 0; i < num_clipboxes; i++){
 				vec4 clipPosition = clipBoxes[i] * modelMatrix * vec4( position, 1.0 );
 				bool inside = -0.5 <= clipPosition.x && clipPosition.x <= 0.5;
 				inside = inside && -0.5 <= clipPosition.y && clipPosition.y <= 0.5;
@@ -519,24 +515,58 @@ void main() {
 		}
 	#endif
 
-	#if defined use_clip_polygon
+	#if defined(num_clippolygons) && num_clippolygons > 0
 		if(clipMode != 0) {
 			bool polyInsideAny = false;
-			for(int i = 0; i < max_clip_polygons; i++) {
-				if(i == clipPolygonCount) {
-					break;
-				}
-
+			for(int i = 0; i < num_clippolygons; i++) {
 				polyInsideAny = polyInsideAny || pointInClipPolygon(position, i);
 			}
 			testInsideClipVolume(polyInsideAny);
 		}
 	#endif	
+}
 
 
-	#if defined(snap_enabled)
 
-		for(int i = 0; i < max_snapshots; i++){
+// 
+// ##     ##    ###    #### ##    ## 
+// ###   ###   ## ##    ##  ###   ## 
+// #### ####  ##   ##   ##  ####  ## 
+// ## ### ## ##     ##  ##  ## ## ## 
+// ##     ## #########  ##  ##  #### 
+// ##     ## ##     ##  ##  ##   ### 
+// ##     ## ##     ## #### ##    ## 
+//
+
+void main() {
+	vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
+	vViewPosition = mvPosition.xyz;
+	gl_Position = projectionMatrix * mvPosition;
+	vOpacity = opacity;
+	vLinearDepth = gl_Position.w;
+	vLogDepth = log2(-mvPosition.z);
+
+
+	// POINT SIZE
+	float pointSize = getPointSize();
+	gl_PointSize = pointSize;
+	vPointSize = pointSize;
+
+	// COLOR
+	vColor = getColor();
+
+	// CLIPPING
+	doClipping();
+
+	
+	
+	
+
+
+	
+	#if defined(num_snapshots) && num_snapshots > 0
+
+		for(int i = 0; i < num_snapshots; i++){
 			vSnapProjected[i] = uSnapProj[i] * uSnapView[i] * modelMatrix * vec4(position, 1.0);	
 			vSnapProjectedDistance[i] = -(uSnapView[i] * modelMatrix * vec4(position, 1.0)).z;
 		}
@@ -549,8 +579,6 @@ void main() {
 
 		const float sm_near = 0.1;
 		const float sm_far = 1000.0;
-
-		//vColor = vec3(1.0, 1.0, 1.0);
 
 		for(int i = 0; i < num_shadowmaps; i++){
 			vec3 viewPos = (uShadowWorldView[i] * vec4(position, 1.0)).xyz;
@@ -592,8 +620,6 @@ void main() {
 			float shade = coverage * 0.5 + 0.5;
 
 			vColor = vColor * shade;
-			//vColor.r = vColor.r + (1.0 - shade);
-
 		}
 
 	#endif

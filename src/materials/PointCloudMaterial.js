@@ -202,6 +202,7 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 		this._treeType = treeType;
 		this._useEDL = false;
 		this._snapEnabled = false;
+		this._numSnapshots = 0;
 
 		this._defaultIntensityRangeChanged = false;
 		this._defaultElevationRangeChanged = false;
@@ -502,6 +503,14 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 			type: 'material_property_changed',
 			target: this
 		});
+	}
+
+	get numSnapshots(){
+		return this._numSnapshots;
+	}
+
+	set numSnapshots(value){
+		this._numSnapshots = value;
 	}
 
 	get snapEnabled(){

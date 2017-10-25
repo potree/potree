@@ -105,6 +105,8 @@ class EDLRenderer {
 		this.resize();
 		
 		let camera = viewer.scene.getActiveCamera();
+
+		let query = Potree.startQuery('EDLRenderer', viewer.renderer.getContext());
 		
 		if(viewer.background === "skybox"){
 			viewer.renderer.setClearColor(0x000000, 0);
@@ -200,6 +202,8 @@ class EDLRenderer {
 		viewer.renderer.render(viewer.navigationCube, viewer.navigationCube.camera);		
 		viewer.renderer.setViewport(0, 0, viewer.renderer.domElement.clientWidth, viewer.renderer.domElement.clientHeight);
 
+		Potree.endQuery(query, viewer.renderer.getContext());
+		
 	}
 };
 

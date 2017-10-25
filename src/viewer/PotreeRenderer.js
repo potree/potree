@@ -5,6 +5,9 @@ class PotreeRenderer {
 	};
  
 	render(){
+
+		let query = Potree.startQuery('render', viewer.renderer.getContext());
+
 		{// resize
 			let width = viewer.scaleFactor * viewer.renderArea.clientWidth;
 			let height = viewer.scaleFactor * viewer.renderArea.clientHeight;
@@ -92,9 +95,6 @@ class PotreeRenderer {
 		viewer.renderer.render(viewer.navigationCube, viewer.navigationCube.camera);		
 		viewer.renderer.setViewport(0, 0, viewer.renderer.domElement.clientWidth, viewer.renderer.domElement.clientHeight);
 		
-		
-		//Potree.endQuery(queryAll, viewer.renderer.getContext());
-		
-		//Potree.resolveQueries(viewer.renderer.getContext());
+		Potree.endQuery(query, viewer.renderer.getContext());
 	};
 };

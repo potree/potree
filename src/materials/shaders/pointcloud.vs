@@ -592,7 +592,7 @@ void main() {
 			float shade = coverage * 0.5 + 0.5;
 
 			vColor = vColor * shade;
-			vColor.r = vColor.r + (1.0 - shade);
+			//vColor.r = vColor.r + (1.0 - shade);
 
 		}
 

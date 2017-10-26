@@ -146,7 +146,8 @@ Potree.Measure = class Measure extends THREE.Object3D {
 					e.drag.end, 
 					e.viewer.scene.getActiveCamera(), 
 					e.viewer, 
-					e.viewer.scene.pointclouds);
+					e.viewer.scene.pointclouds,
+					{pickClipped: true});
 
 				if (I) {
 					let i = this.spheres.indexOf(e.drag.object);

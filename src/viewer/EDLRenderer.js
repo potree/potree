@@ -137,9 +137,9 @@ class EDLRenderer {
 		
 		viewer.renderer.clearTarget( this.rtColor, true, true, true );
 
-		for(let octree of viewer.scene.pointclouds){
-			this.shadowMap.renderOctree(octree, octree.visibleNodes);
-		}
+		//for(let octree of viewer.scene.pointclouds){
+		//	this.shadowMap.renderOctree(octree, octree.visibleNodes);
+		//}
 		
 		
 		let width = viewer.renderArea.clientWidth;
@@ -161,14 +161,14 @@ class EDLRenderer {
 			material.spacing = pointcloud.pcoGeometry.spacing * Math.max(pointcloud.scale.x, pointcloud.scale.y, pointcloud.scale.z);
 		}
 
-		viewer.shadowTestCam.updateMatrixWorld();
-		viewer.shadowTestCam.matrixWorldInverse.getInverse(viewer.shadowTestCam.matrixWorld);
-		viewer.shadowTestCam.updateProjectionMatrix();
+		//viewer.shadowTestCam.updateMatrixWorld();
+		//viewer.shadowTestCam.matrixWorldInverse.getInverse(viewer.shadowTestCam.matrixWorld);
+		//viewer.shadowTestCam.updateProjectionMatrix();
 		
 		//viewer.pRenderer.render(viewer.scene.scenePointCloud, viewer.shadowTestCam, this.rtShadow);
 		
 		viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, this.rtColor, {
-			shadowMaps: [this.shadowMap]
+			//shadowMaps: [this.shadowMap]
 		});
 		
 		viewer.renderer.render(viewer.scene.scene, camera, this.rtColor);

@@ -314,193 +314,6 @@ Potree.getDEMWorkerInstance = function () {
 	return Potree.DEMWorkerInstance;
 };
 
-/*
-function createDEMMesh (dem) {
-	let box = dem.boundingBox;
-
-	let steps = 256;
-	let triangles = [];
-	for (let i = 0; i < steps; i++) {
-		for (let j = 0; j < steps; j++) {
-			let u0 = i / steps;
-			let u1 = (i + 1) / steps;
-			let v0 = j / steps;
-			let v1 = (j + 1) / steps;
-
-			// let x0 = box.min.x + u0 * box.getSize().x;
-			// let x1 = box.min.x + u1 * box.getSize().x;
-			// let y0 = box.min.y + v0 * box.getSize().y;
-			// let y1 = box.min.y + v1 * box.getSize().y;
-			//
-			// let h00 = dem.height(new THREE.Vector3(x0, y0, 0));
-			// let h10 = dem.height(new THREE.Vector3(x1, y0, 0));
-			// let h01 = dem.height(new THREE.Vector3(x0, y1, 0));
-			// let h11 = dem.height(new THREE.Vector3(x1, y1, 0));
-
-			let x0 = u0 * box.getSize().x;
-			let x1 = u1 * box.getSize().x;
-			let y0 = v0 * box.getSize().y;
-			let y1 = v1 * box.getSize().y;
-
-			// let h00 = demNode.data[(i+0) + tileSize * (j+0)];
-			// let h10 = demNode.data[(i+1) + tileSize * (j+0)];
-			// let h01 = demNode.data[(i+0) + tileSize * (j+1)];
-			// let h11 = demNode.data[(i+1) + tileSize * (j+1)];
-
-			let h00 = dem.height(new THREE.Vector3(box.min.x + x0, box.min.y + y0));
-			let h10 = dem.height(new THREE.Vector3(box.min.x + x1, box.min.y + y0));
-			let h01 = dem.height(new THREE.Vector3(box.min.x + x0, box.min.y + y1));
-			let h11 = dem.height(new THREE.Vector3(box.min.x + x1, box.min.y + y1));
-
-			if (![h00, h10, h01, h11].every(n => isFinite(n))) {
-				continue;
-			}
-
-			triangles.push(x0, y0, h00);
-			triangles.push(x0, y1, h01);
-			triangles.push(x1, y0, h10);
-
-			triangles.push(x0, y1, h01);
-			triangles.push(x1, y1, h11);
-			triangles.push(x1, y0, h10);
-		}
-	}
-
-	let geometry = new THREE.BufferGeometry();
-	let positions = new Float32Array(triangles);
-	geometry.addAttribute('position', new THREE.BufferAttribute(positions, 3));
-	geometry.computeBoundingSphere();
-	geometry.computeVertexNormals();
-	let material = new THREE.MeshNormalMaterial({side: THREE.DoubleSide});
-	let mesh = new THREE.Mesh(geometry, material);
-	mesh.position.copy(box.min);
-	// mesh.position.copy(pointcloud.position);
-	viewer.scene.scene.add(mesh);
-}
-*/
-
-/*
-function createDEMMeshNode (dem, demNode) {
-	let box = demNode.box;
-	let tileSize = dem.tileSize * 1;
-
-	let triangles = [];
-	for (let i = 0; i < tileSize; i++) {
-		// for(let j = 0; j < 1; j++){
-		for (let j = 0; j < tileSize; j++) {
-			let u0 = i / tileSize;
-			let u1 = (i + 1) / tileSize;
-			let v0 = j / tileSize;
-			let v1 = (j + 1) / tileSize;
-
-			let x0 = u0 * box.getSize().x;
-			let x1 = u1 * box.getSize().x;
-			let y0 = v0 * box.getSize().y;
-			let y1 = v1 * box.getSize().y;
-
-			// let h00 = demNode.data[(i+0) + tileSize * (j+0)];
-			// let h10 = demNode.data[(i+1) + tileSize * (j+0)];
-			// let h01 = demNode.data[(i+0) + tileSize * (j+1)];
-			// let h11 = demNode.data[(i+1) + tileSize * (j+1)];
-
-			let h00 = demNode.height(new THREE.Vector3(box.min.x + x0, box.min.y + y0));
-			let h10 = demNode.height(new THREE.Vector3(box.min.x + x1, box.min.y + y0));
-			let h01 = demNode.height(new THREE.Vector3(box.min.x + x0, box.min.y + y1));
-			let h11 = demNode.height(new THREE.Vector3(box.min.x + x1, box.min.y + y1));
-
-			if (![h00, h10, h01, h11].every(n => isFinite(n))) {
-				continue;
-			}
-
-			triangles.push(x0, y0, h00);
-			triangles.push(x0, y1, h01);
-			triangles.push(x1, y0, h10);
-
-			triangles.push(x0, y1, h01);
-			triangles.push(x1, y1, h11);
-			triangles.push(x1, y0, h10);
-		}
-	}
-
-	let geometry = new THREE.BufferGeometry();
-	let positions = new Float32Array(triangles);
-	geometry.addAttribute('position', new THREE.BufferAttribute(positions, 3));
-	geometry.computeBoundingSphere();
-	geometry.computeVertexNormals();
-	let material = new THREE.MeshNormalMaterial({side: THREE.DoubleSide});
-	let mesh = new THREE.Mesh(geometry, material);
-	mesh.position.copy(box.min);
-	// mesh.position.copy(pointcloud.position);
-	viewer.scene.scene.add(mesh);
-
-	{ // DEBUG code
-		// let data = demNode.data;
-
-		let steps = 64;
-		let data = new Float32Array(steps * steps);
-		let imgData = new Uint8Array(data.length * 4);
-		let box = demNode.box;
-		let boxSize = box.getSize();
-		for (let i = 0; i < steps; i++) {
-			for (let j = 0; j < steps; j++) {
-				let [u, v] = [i / (steps - 1), j / (steps - 1)];
-				let pos = new THREE.Vector3(
-					u * boxSize.x + box.min.x,
-					v * boxSize.y + box.min.y,
-					0
-				);
-
-				let height = demNode.height(pos);
-
-				let index = i + steps * j;
-				data[index] = height;
-
-				// let index = i + steps * j;
-				// imgData[4*index + 0] = 255 * (height - min) / (max - min);
-				// imgData[4*index + 1] = 100;
-				// imgData[4*index + 2] = 0;
-				// imgData[4*index + 3] = 255;
-			}
-		}
-
-		let [min, max] = [Infinity, -Infinity];
-		for (let height of data) {
-			if (!isFinite(height)) {
-				continue;
-			}
-
-			min = Math.min(min, height);
-			max = Math.max(max, height);
-		}
-
-		for (let i = 0; i < data.length; i++) {
-			imgData[4 * i + 0] = 255 * (data[i] - min) / (max - min);
-			imgData[4 * i + 1] = 100;
-			imgData[4 * i + 2] = 0;
-			imgData[4 * i + 3] = 255;
-		}
-
-		let img = Potree.utils.pixelsArrayToImage(imgData, steps, steps);
-
-		let screenshot = img.src;
-
-		if (!this.debugDIV) {
-			this.debugDIV = $(`
-				<div id="pickDebug"
-				style="position: absolute;
-				right: 400px; width: 300px;
-				bottom: 44px; width: 300px;
-				z-index: 1000;
-				"></div>`);
-			$(document.body).append(this.debugDIV);
-		}
-
-		this.debugDIV.empty();
-		this.debugDIV.append($(`<img src="${screenshot}"
-			style="transform: scaleY(-1); width: 256px; height: 256px;"/>`));
-	}
-}
-*/
 
 Potree.updateVisibility = function(pointclouds, camera, renderer){
 
@@ -699,9 +512,15 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 
 
 
-
-
-
+// 
+// ########  ######## ##    ## ########  ######## ########  #### ##    ##  ######   
+// ##     ## ##       ###   ## ##     ## ##       ##     ##  ##  ###   ## ##    ##  
+// ##     ## ##       ####  ## ##     ## ##       ##     ##  ##  ####  ## ##        
+// ########  ######   ## ## ## ##     ## ######   ########   ##  ## ## ## ##   #### 
+// ##   ##   ##       ##  #### ##     ## ##       ##   ##    ##  ##  #### ##    ##  
+// ##    ##  ##       ##   ### ##     ## ##       ##    ##   ##  ##   ### ##    ##  
+// ##     ## ######## ##    ## ########  ######## ##     ## #### ##    ##  ######   
+// 
 
 
 
@@ -1426,6 +1245,17 @@ Potree.Renderer = class{
 		}
 		
 		gl.useProgram(shader.program);
+
+		if(material.opacity < 1){
+			gl.enable(gl.BLEND);
+			gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+			gl.depthMask(false);
+			gl.disable(gl.DEPTH_TEST);
+		}else{
+			gl.disable(gl.BLEND);
+			gl.depthMask(true);
+			gl.enable(gl.DEPTH_TEST);
+		}
 		
 		
 		{ // UPDATE UNIFORMS
@@ -1441,7 +1271,7 @@ Potree.Renderer = class{
 			shader.setUniform1f("far", camera.far);
 			
 			shader.setUniform("useOrthographicCamera", material.useOrthographicCamera);
-			// uniform float orthoRange;
+			shader.setUniform("orthoRange", material.orthoRange);
 			
 			if(material.clipBoxes && material.clipBoxes.length > 0){
 				shader.setUniform1i("clipMode", material.clipMode);
@@ -1451,12 +1281,6 @@ Potree.Renderer = class{
 				gl.uniformMatrix4fv(lClipBoxes, false, flattenedMatrices);
 			}
 
-			//uniform int clipMode;
-			//#if defined use_clip_box
-			//	uniform float clipBoxCount;
-			//	uniform mat4 clipBoxes[max_clip_boxes];
-			//#endif
-			
 			//uniform int clipPolygonCount;
 			//uniform int clipPolygonVCount[max_clip_polygons];
 			//uniform vec3 clipPolygons[max_clip_polygons * 8];
@@ -1474,6 +1298,7 @@ Potree.Renderer = class{
 			
 			//uniform vec3 uColor;
 			//uniform float opacity;
+			shader.setUniform1f("uOpacity", material.opacity);
 			
 			shader.setUniform2f("elevationRange", material.elevationRange);
 			shader.setUniform2f("intensityRange", material.intensityRange);

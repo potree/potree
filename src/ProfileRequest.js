@@ -212,7 +212,7 @@ Potree.ProfileRequest = class ProfileRequest{
 					let filteredBuffer = null;
 					
 					if(attribute === "position"){
-						filteredBuffer = new type(acceptedPositions);
+						filteredBuffer = new Float64Array(acceptedPositions);
 					}else{
 						filteredBuffer = new type(accepted.length * bufferedAttribute.itemSize);
 					

@@ -7690,7 +7690,7 @@ Potree.ProfileRequest = class ProfileRequest{
 					let filteredBuffer = null;
 					
 					if(attribute === "position"){
-						filteredBuffer = new type(acceptedPositions);
+						filteredBuffer = new Float64Array(acceptedPositions);
 					}else{
 						filteredBuffer = new type(accepted.length * bufferedAttribute.itemSize);
 					
@@ -16197,7 +16197,7 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher{
 						
 						posBuffer[3*i + 0] = x;
 						posBuffer[3*i + 1] = y;
-						posBuffer[3*i + 2] = y;
+						posBuffer[3*i + 2] = 0;
 						projectedBox.expandByPoint(new THREE.Vector3(x, y, 0));
 					}
 					

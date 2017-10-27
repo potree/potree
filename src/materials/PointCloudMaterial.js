@@ -231,7 +231,7 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 			near:				{ type: "f", value: 0.1 },
 			far:				{ type: "f", value: 1.0 },
 			uColor:   			{ type: "c", value: new THREE.Color( 0xffffff ) },
-			opacity:   			{ type: "f", value: 1.0 },
+			uOpacity:  			{ type: "f", value: 1.0 },
 			size:   			{ type: "f", value: pointSize },
 			minSize:   			{ type: "f", value: minSize },
 			maxSize:   			{ type: "f", value: maxSize },
@@ -631,13 +631,13 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 
 
 	get opacity(){
-		return this.uniforms.opacity.value;
+		return this.uniforms.uOpacity.value;
 	}
 
 	set opacity (value) {
 		if (this.uniforms && this.uniforms.opacity) {
-			if (this.uniforms.opacity.value !== value) {
-				this.uniforms.opacity.value = value;
+			if (this.uniforms.uOpacity.value !== value) {
+				this.uniforms.uOpacity.value = value;
 				this.updateShaderSource();
 				this.dispatchEvent({
 					type: 'opacity_changed',

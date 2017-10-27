@@ -5,18 +5,16 @@ class EDLRenderer {
 		this.viewer = viewer;
 
 		this.edlMaterial = null;
-		this.attributeMaterials = [];
 
 		this.rtColor = null;
 		this.gl = viewer.renderer.context;
 
-		this.initEDL = this.initEDL.bind(this);
-		this.resize = this.resize.bind(this);
-		this.render = this.render.bind(this);
+		// TODO obsolete?
+		//this.initEDL = this.initEDL.bind(this);
+		//this.resize = this.resize.bind(this);
+		//this.render = this.render.bind(this);
 		
 		this.shadowMap = new Potree.PointCloudSM(this.viewer.pRenderer);
-		
-		
 	}
 
 	initEDL () {
@@ -24,47 +22,27 @@ class EDLRenderer {
 			return;
 		}
 
-		// var depthTextureExt = gl.getExtension("WEBGL_depth_texture");
-
 		this.edlMaterial = new Potree.EyeDomeLightingMaterial();
+		this.edlMaterial.depthTest = true;
+		this.edlMaterial.depthWrite = true;
+		this.edlMaterial.transparent = true;
 
 		this.rtColor = new THREE.WebGLRenderTarget(1024, 1024, {
 			minFilter: THREE.NearestFilter,
 			magFilter: THREE.NearestFilter,
 			format: THREE.RGBAFormat,
-			type: THREE.FloatType
+			type: THREE.FloatType,
+			depthTexture: new THREE.DepthTexture(undefined, undefined, THREE.UnsignedIntType)
 		});
-		this.rtColor.depthTexture = new THREE.DepthTexture();
-		this.rtColor.depthTexture.type = THREE.UnsignedIntType;
 		
-		
-		this.rtShadow = new THREE.WebGLRenderTarget(1024, 1024, {
-			minFilter: THREE.NearestFilter,
-			magFilter: THREE.NearestFilter,
-			format: THREE.RGBAFormat,
-			type: THREE.FloatType
-		});
-		this.rtShadow.depthTexture = new THREE.DepthTexture();
-		this.rtShadow.depthTexture.type = THREE.UnsignedIntType;
-	
-	
 		//{
-		//	let geometry = new THREE.PlaneBufferGeometry( 10, 7, 32 );
-		//	let material = new THREE.MeshBasicMaterial( {side: THREE.DoubleSide, map: this.rtShadow.texture} );
+		//	let geometry = new THREE.PlaneBufferGeometry( 10, 10, 32 );
+		//	let material = new THREE.MeshBasicMaterial( {side: THREE.DoubleSide, map: this.shadowMap.target.texture} );
 		//	let plane = new THREE.Mesh( geometry, material );
 		//	plane.position.z = 0.2;
-		//	plane.position.y = -1;
+		//	plane.position.y = 20;
 		//	this.viewer.scene.scene.add( plane );
 		//}
-
-		{
-			let geometry = new THREE.PlaneBufferGeometry( 10, 10, 32 );
-			let material = new THREE.MeshBasicMaterial( {side: THREE.DoubleSide, map: this.shadowMap.target.texture} );
-			let plane = new THREE.Mesh( geometry, material );
-			plane.position.z = 0.2;
-			plane.position.y = 20;
-			this.viewer.scene.scene.add( plane );
-		}
 	};
 
 	resize () {
@@ -72,14 +50,6 @@ class EDLRenderer {
 		let height = this.viewer.scaleFactor * this.viewer.renderArea.clientHeight;
 		let aspect = width / height;
 
-		let needsResize = (this.rtColor.width !== width || this.rtColor.height !== height);
-
-		// disposal will be unnecessary once this fix made it into three.js master:
-		// https://github.com/mrdoob/three.js/pull/6355
-		if (needsResize) {
-			this.rtColor.dispose();
-		}
-		
 		viewer.scene.cameraP.aspect = aspect;
 		viewer.scene.cameraP.updateProjectionMatrix();
 
@@ -106,7 +76,17 @@ class EDLRenderer {
 		
 		let camera = viewer.scene.getActiveCamera();
 
-		let query = Potree.startQuery('EDLRenderer', viewer.renderer.getContext());
+		
+
+
+		let lights = [];
+		viewer.scene.scene.traverse(node => {
+			if(node instanceof THREE.PointLight){
+				lights.push(node);
+			}
+		});
+
+		let querySkybox = Potree.startQuery('EDL - Skybox', viewer.renderer.getContext());
 		
 		if(viewer.background === "skybox"){
 			viewer.renderer.setClearColor(0x000000, 0);
@@ -128,6 +108,30 @@ class EDLRenderer {
 			viewer.renderer.clear();
 		}
 
+		Potree.endQuery(querySkybox, viewer.renderer.getContext());
+
+		
+
+		// TODO adapt to multiple lights
+		if(lights.length > 0){
+
+			let queryShadows = Potree.startQuery('EDL - shadows', viewer.renderer.getContext());
+
+			this.shadowMap.setLightPos(lights[0].position);
+
+			for(let octree of viewer.scene.pointclouds){
+				this.shadowMap.renderOctree(octree, octree.visibleNodes);
+			}
+
+			viewer.shadowTestCam.updateMatrixWorld();
+			viewer.shadowTestCam.matrixWorldInverse.getInverse(viewer.shadowTestCam.matrixWorld);
+			viewer.shadowTestCam.updateProjectionMatrix();
+
+			Potree.endQuery(queryShadows, viewer.renderer.getContext());
+		}
+
+		let queryColors = Potree.startQuery('EDL - colorpass', viewer.renderer.getContext());
+
 		viewer.measuringTool.update();
 		viewer.profileTool.update();
 		viewer.transformationTool.update();
@@ -137,11 +141,6 @@ class EDLRenderer {
 		
 		viewer.renderer.clearTarget( this.rtColor, true, true, true );
 
-		//for(let octree of viewer.scene.pointclouds){
-		//	this.shadowMap.renderOctree(octree, octree.visibleNodes);
-		//}
-		
-		
 		let width = viewer.renderArea.clientWidth;
 		let height = viewer.renderArea.clientHeight;
 
@@ -160,32 +159,37 @@ class EDLRenderer {
 			material.uniforms.octreeSize.value = octreeSize;
 			material.spacing = pointcloud.pcoGeometry.spacing * Math.max(pointcloud.scale.x, pointcloud.scale.y, pointcloud.scale.z);
 		}
-
-		//viewer.shadowTestCam.updateMatrixWorld();
-		//viewer.shadowTestCam.matrixWorldInverse.getInverse(viewer.shadowTestCam.matrixWorld);
-		//viewer.shadowTestCam.updateProjectionMatrix();
 		
-		//viewer.pRenderer.render(viewer.scene.scenePointCloud, viewer.shadowTestCam, this.rtShadow);
-		
-		viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, this.rtColor, {
-			//shadowMaps: [this.shadowMap]
-		});
+		// TODO adapt to multiple lights
+		if(lights.length > 0){
+			viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, this.rtColor, {
+				shadowMaps: [this.shadowMap]
+			});
+		}else{
+			viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, this.rtColor, {});
+		}
 		
 		viewer.renderer.render(viewer.scene.scene, camera, this.rtColor);
+
+		Potree.endQuery(queryColors, viewer.renderer.getContext());
+		
 		
 		{ // EDL OCCLUSION PASS
+			let queryEDL = Potree.startQuery('EDL - resolve', viewer.renderer.getContext());
+
 			this.edlMaterial.uniforms.screenWidth.value = width;
 			this.edlMaterial.uniforms.screenHeight.value = height;
 			this.edlMaterial.uniforms.colorMap.value = this.rtColor.texture;
 			this.edlMaterial.uniforms.edlStrength.value = viewer.edlStrength;
 			this.edlMaterial.uniforms.radius.value = viewer.edlRadius;
 			this.edlMaterial.uniforms.opacity.value = 1;
-			this.edlMaterial.depthTest = true;
-			this.edlMaterial.depthWrite = true;
-			this.edlMaterial.transparent = true;
-
+			
 			Potree.utils.screenPass.render(viewer.renderer, this.edlMaterial);
+
+			Potree.endQuery(queryEDL, viewer.renderer.getContext());
 		}
+
+		let queryRest = Potree.startQuery('EDL - rest', viewer.renderer.getContext());
 
 		viewer.renderer.clearDepth();
 		viewer.renderer.render(viewer.controls.sceneControls, camera);
@@ -202,7 +206,7 @@ class EDLRenderer {
 		viewer.renderer.render(viewer.navigationCube, viewer.navigationCube.camera);		
 		viewer.renderer.setViewport(0, 0, viewer.renderer.domElement.clientWidth, viewer.renderer.domElement.clientHeight);
 
-		Potree.endQuery(query, viewer.renderer.getContext());
+		Potree.endQuery(queryRest, viewer.renderer.getContext());
 		
 	}
 };

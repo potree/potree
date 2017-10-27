@@ -535,7 +535,7 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 		
 		performance.mark("pick-start");
 		
-		let pickWindowSize = params.pickWindowSize || 17;
+		let pickWindowSize = params.pickWindowSize || 65;
 		let pickOutsideClipRegion = params.pickOutsideClipRegion || false;
 		let width = Math.ceil(renderer.domElement.clientWidth);
 		let height = Math.ceil(renderer.domElement.clientHeight);
@@ -587,31 +587,13 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 			
 			this.updateMaterial(pickMaterial, nodes, camera, renderer);
 		}
-		
-		if (pickState.renderTarget.width !== width || pickState.renderTarget.height !== height) {
-			pickState.renderTarget.dispose();
-			pickState.renderTarget = new THREE.WebGLRenderTarget(
-				1, 1,
-				{ minFilter: THREE.LinearFilter,
-					magFilter: THREE.NearestFilter,
-					format: THREE.RGBAFormat }
-			);
-		}
+
 		pickState.renderTarget.setSize(width, height);
-		//pickState.renderTarget.setSize(parseInt(width / 4), parseInt(height / 4));
-		//pickState.renderTarget.setSize(16, 16);
-		
 		
 		let pixelPos = new THREE.Vector2(params.x, params.y);
 		
-		//renderer.setScissor(
-		//	parseInt(pixelPos.x - (pickWindowSize - 1) / 2),
-		//	parseInt(pixelPos.y - (pickWindowSize - 1) / 2),
-		//	parseInt(pickWindowSize), parseInt(pickWindowSize));
-		//renderer.setScissorTest(true);
-		
 		let gl = renderer.getContext();
-		//gl.enable(gl.SCISSOR_TEST);
+		gl.enable(gl.SCISSOR_TEST);
 		gl.scissor(
 			parseInt(pixelPos.x - (pickWindowSize - 1) / 2),
 			parseInt(pixelPos.y - (pickWindowSize - 1) / 2),
@@ -629,14 +611,10 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 			let tmp = this.material;
 			this.material = pickMaterial;
 			
-			//let pRenderer = new Potree.Renderer(renderer);
 			pRenderer.renderOctree(this, nodes, camera, pickState.renderTarget);
 			
 			this.material = tmp;
-			
-			
 		}
-		
 		
 		let clamp = (number, min, max) => Math.min(Math.max(min, number), max);
 
@@ -649,22 +627,15 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 		let buffer = new Uint8Array(4 * pixelCount);
 		
 		//var start = performance.now();
-		gl.readPixels(x, y, 16, 16, gl.RGBA, gl.UNSIGNED_BYTE, buffer); 
+		gl.readPixels(x, y, pickWindowSize, pickWindowSize, gl.RGBA, gl.UNSIGNED_BYTE, buffer); 
 		//var end = performance.now();
 		//var duration = end - start;
 		//console.log(`duration: ${duration.toFixed(3)}ms`);
 		
-		
-		//renderer.readRenderTargetPixels(pickState.renderTarget,
-		//	x, y, w, h,
-		//	buffer);
-
 		renderer.setRenderTarget(null);
 		renderer.resetGLState();
 		renderer.setScissorTest(false);
 		gl.disable(gl.SCISSOR_TEST);
-		
-
 		
 		let pixels = buffer;
 		let ibuffer = new Uint32Array(buffer.buffer);
@@ -762,9 +733,6 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 			}
 		}
 
-		//let end = new Date().getTime();
-		//let duration = end - start;
-		//console.log(`pick duration: ${duration}ms`);
 		performance.mark("pick-end");
 		performance.measure("pick", "pick-start", "pick-end");
 		

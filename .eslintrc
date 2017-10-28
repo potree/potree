@@ -30,6 +30,19 @@
     "viewer": true
   },
   "rules": {
-    "no-lone-blocks": "off"
+    "no-lone-blocks": "off",
+    "space-before-function-paren": "off",
+    "space-before-blocks": "off",
+    "indent": "off",
+    "no-trailing-spaces": "off",
+    "keyword-spacing": "off",
+    "no-multiple-empty-lines" : "off",
+    "key-spacing": "off",
+    "spaced-comment": "off",
+    "quotes": "off",
+    "space-in-parens": "off"
+  },
+  "parserOptions": { 
+    "ecmaVersion": 6 
   }
 }

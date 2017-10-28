@@ -84,7 +84,7 @@ Potree.resolveQueries = function (gl) {
 		for(let query of queries){
 
 			let available = ext.getQueryObjectEXT(query, ext.QUERY_RESULT_AVAILABLE_EXT);
-			let disjoint = viewer.renderer.getContext().getParameter(ext.GPU_DISJOINT_EXT);
+			let disjoint = gl.getParameter(ext.GPU_DISJOINT_EXT);
 
 			if (available && !disjoint) {
 				// See how much time the rendering of the object took in nanoseconds.
@@ -1166,7 +1166,19 @@ Potree.Renderer = class{
 		let shader = null;
 		let visibilityTextureData = null;
 
+		//if(!["r", "r2", "r0", "r26", "r22", "r06", "r24", "r20", "r04", "r00", "r02"].includes(node.name)){
+		//	if(!["r", "r2", "r0"].includes(node.name)){
+		//		continue;
+		//	}
 
+		//nodes = nodes.filter(node => {
+		//	//return ["r", 
+		//	//	"r3", "r1", "r0", "r2", 
+		//	//	"r30", "r21", "r03", "r02", "r01", "r12", "r20", "r15", "r05", "r14", "r00", "r10", "r04"].includes(node.name)
+
+		//	return ["r", 
+		//		"r06", "r07"].includes(node.name)
+		//});
 
 		
 		if (material.pointSizeType >= 0) {

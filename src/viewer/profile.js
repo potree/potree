@@ -633,6 +633,14 @@ Potree.ProfileWindowController = class ProfileWindowController {
 		this.requests = [];
 	};
 
+	finishLevelThenCancel(){
+		for (let request of this.requests) {
+			request.finishLevelThenCancel();
+		}
+
+		this.requests = [];
+	}
+
 	recompute () {
 		if (!this.profile) {
 			return;
@@ -657,7 +665,7 @@ Potree.ProfileWindowController = class ProfileWindowController {
 					this.progressHandler(pointcloud, event.points);
 
 					if (this.numPoints > this.threshold) {
-						this.cancel();
+						this.finishLevelThenCancel();
 					}
 				},
 				'onFinish': (event) => {

@@ -5,7 +5,7 @@ class PotreeRenderer {
 	};
  
 	render(){
-
+		const viewer = this.viewer;
 		let query = Potree.startQuery('render', viewer.renderer.getContext());
 
 		{// resize

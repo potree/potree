@@ -177,6 +177,31 @@ initSidebar = (viewer) => {
 			});
 		});
 
+		let languages = [
+			["EN", "en"],
+			["FR", "fr"],
+			["DE", "de"],
+			["JP", "jp"]
+		];
+
+		let elLanguages = $('#potree_languages');
+		for(let i = 0; i < languages.length; i++){
+			let [key, value] = languages[i];
+			let element = $(`<a>${key}</a>`);
+			element.click(() => viewer.setLanguage(value));
+
+			if(i === 0){
+				element.css("margin-left", "30px");
+			}
+			
+			elLanguages.append(element);
+
+			if(i < languages.length - 1){
+				elLanguages.append($(document.createTextNode(' - ')));	
+			}
+		}
+
+
 		// to close all, call
 		// $(".accordion > div").hide()
 
@@ -266,6 +291,14 @@ initSidebar = (viewer) => {
 		$('#lblEDLStrength')[0].innerHTML = viewer.getEDLStrength().toFixed(1);
 		$('#chkEDLEnabled')[0].checked = viewer.getEDLEnabled();
 		$("input[name=background][value='" + viewer.getBackground() + "']").prop('checked', true);
+
+		$("input[name=background]").click(function(){
+			viewer.setBackground(this.value);
+		});
+
+		$('#chkEDLEnabled').click( () => {
+			viewer.setEDLEnabled($('#chkEDLEnabled').prop("checked"));
+		});
 	}
 
 	function initNavigation () {
@@ -3006,37 +3039,16 @@ initSidebar = (viewer) => {
 		});
 		$('#lblMinNodeSize').html(parseInt(viewer.getMinNodeSize()));
 
-		let toClipModeCode = function (string) {
-			if (string === 'No Clipping') {
-				return Potree.ClipMode.DISABLED;
-			} else if (string === 'Highlight Inside') {
-				return Potree.ClipMode.HIGHLIGHT_INSIDE;
-			} else if (string === 'Clip Outside') {
-				return Potree.ClipMode.CLIP_OUTSIDE;
-			}
-		};
+		$('#show_bounding_box').click(() => {
+			viewer.setShowBoundingBox(this.checked);
+		});
 
-		let toClipModeString = function (code) {
-			if (code === Potree.ClipMode.DISABLED) {
-				return 'No Clipping';
-			} else if (code === Potree.ClipMode.HIGHLIGHT_INSIDE) {
-				return 'Highlight Inside';
-			} else if (code === Potree.ClipMode.CLIP_OUTSIDE) {
-				return 'Clip Outside';
-			}
-		};
+		$('#set_freeze').click(function(){
+			viewer.setFreeze(this.checked);
+		});
+		
 
-		//$('#optClipMode').selectmenu();
-		//$('#optClipMode').val(toClipModeString(viewer.getClipMode())).selectmenu('refresh');
-		//$('#optClipMode').selectmenu({
-		//	change: function (event, ui) {
-		//		viewer.setClipMode(toClipModeCode(ui.item.value));
-		//	}
-		//});
-
-		//viewer.addEventListener('clip_mode_changed', e => {
-		//	let string = toClipModeString(viewer.clipMode);
-		//});
+		
 	};
 
 	initAccordion();

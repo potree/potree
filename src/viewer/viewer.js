@@ -1746,7 +1746,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 					group.max = Math.max(group.max, measure.duration);
 				}
 
-				let glQueries = Potree.resolveQueries(viewer.renderer.getContext());
+				let glQueries = Potree.resolveQueries(this.renderer.getContext());
 				for(let [key, value] of glQueries){
 
 					let group = {

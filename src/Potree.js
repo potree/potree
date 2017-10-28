@@ -721,6 +721,15 @@ Potree.Shader = class Shader{
 			this.fs = gl.createShader(gl.FRAGMENT_SHADER);
 			this.program = gl.createProgram();
 
+			gl.bindAttribLocation(this.program, 0, "position");
+			gl.bindAttribLocation(this.program, 1, "color");
+			gl.bindAttribLocation(this.program, 2, "intensity");
+			gl.bindAttribLocation(this.program, 3, "classification");
+			gl.bindAttribLocation(this.program, 4, "returnNumber");
+			gl.bindAttribLocation(this.program, 5, "numberOfReturns");
+			gl.bindAttribLocation(this.program, 6, "pointSourceID");
+			gl.bindAttribLocation(this.program, 7, "index");
+
 			this.compileShader(this.vs, this.vsSource);
 			this.compileShader(this.fs, this.fsSource);
 			
@@ -1006,7 +1015,7 @@ Potree.Renderer = class{
 		let offset = 0;
 		let i = 0;
 		for(let attribute of iBuffer.attributes){
-			
+
 			let type = gl[attribute.type];
 			let normalized = attribute.normalized;
 			let stride = iBuffer.stride;
@@ -1015,7 +1024,7 @@ Potree.Renderer = class{
 			gl.vertexAttribPointer(i, numElements, type, normalized, stride, offset);
 			gl.enableVertexAttribArray(i);
 
-			offset += attribute.bytes;
+			offset += Math.ceil(attribute.bytes / 4) * 4;
 			i++;
 		}
 		
@@ -1317,6 +1326,10 @@ Potree.Renderer = class{
 			//uniform float intensityGamma;
 			//uniform float intensityContrast;
 			//uniform float intensityBrightness;
+			shader.setUniform1f("intensityGamma", material.intensityGamma);
+			shader.setUniform1f("intensityContrast", material.intensityContrast);
+			shader.setUniform1f("intensityBrightness", material.intensityBrightness);
+
 			shader.setUniform1f("rgbGamma", material.rgbGamma);
 			shader.setUniform1f("rgbContrast", material.rgbContrast);
 			shader.setUniform1f("rgbBrightness", material.rgbBrightness);
@@ -1402,14 +1415,14 @@ Potree.Renderer = class{
 		}
 		
 
-		gl.bindAttribLocation(shader.program, 0, "position");
-		gl.bindAttribLocation(shader.program, 1, "color");
-		gl.bindAttribLocation(shader.program, 2, "intensity");
-		gl.bindAttribLocation(shader.program, 3, "classification");
-		gl.bindAttribLocation(shader.program, 4, "returnNumber");
-		gl.bindAttribLocation(shader.program, 5, "numberOfReturns");
-		gl.bindAttribLocation(shader.program, 6, "pointSourceID");
-		gl.bindAttribLocation(shader.program, 7, "index");
+		//gl.bindAttribLocation(shader.program, 0, "position");
+		//gl.bindAttribLocation(shader.program, 1, "color");
+		//gl.bindAttribLocation(shader.program, 2, "intensity");
+		//gl.bindAttribLocation(shader.program, 3, "classification");
+		//gl.bindAttribLocation(shader.program, 4, "returnNumber");
+		//gl.bindAttribLocation(shader.program, 5, "numberOfReturns");
+		//gl.bindAttribLocation(shader.program, 6, "pointSourceID");
+		//gl.bindAttribLocation(shader.program, 7, "index");
 		
 		
 		

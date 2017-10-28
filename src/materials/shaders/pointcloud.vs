@@ -293,7 +293,11 @@ float getIntensity(){
 	w = w + intensityBrightness;
 	w = (w - 0.5) * getContrastFactor(intensityContrast) + 0.5;
 	w = clamp(w, 0.0, 1.0);
+
+	//w = w + color.x * 0.0001;
 	
+	//float w = color.x * 0.001 + intensity / 1.0;
+
 	return w;
 }
 

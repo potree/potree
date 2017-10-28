@@ -1501,27 +1501,30 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 					let buffer = pointcloud.pcoGeometry.root.buffer;
 					let attIntensity = buffer.attributes.find(a => a.name === "intensity");
 					if (attIntensity) {
-						
-						console.error("not implemented");
-						
-						//let array = attributes.intensity.array;
-                        //
-						//// chose max value from the 0.75 percentile
-						//let ordered = [];
-						//for (let j = 0; j < array.length; j++) {
-						//	ordered.push(array[j]);
-						//}
-						//ordered.sort();
-						//let capIndex = parseInt((ordered.length - 1) * 0.75);
-						//let cap = ordered[capIndex];
-                        //
-						//if (cap <= 1) {
-						//	pointcloud.material.intensityRange = [0, 1];
-						//} else if (cap <= 256) {
-						//	pointcloud.material.intensityRange = [0, 255];
-						//} else {
-						//	pointcloud.material.intensityRange = [0, cap];
-						//}
+
+						let byteOffset = buffer.attributes
+							.slice(0, buffer.attributes.indexOf(attIntensity))
+							.map(a => Math.ceil(a.bytes / 4) * 4)
+							.reduce( (a, i) => a + i, 0);
+
+						let view = new DataView(buffer.data)
+						let intensities = [];
+						for(let i = 0; i < buffer.numElements; i++){
+							let index = i * buffer.stride + byteOffset;
+							intensities.push(view.getFloat32(index, true));
+						}
+						intensities.sort();
+
+						let capIndex = parseInt((intensities.length - 1) * 0.75);
+						let cap = intensities[capIndex];
+                        
+						if (cap <= 1) {
+							pointcloud.material.intensityRange = [0, 1];
+						} else if (cap <= 256) {
+							pointcloud.material.intensityRange = [0, 255];
+						} else {
+							pointcloud.material.intensityRange = [0, cap];
+						}
 					}
 					// pointcloud._intensityMaxEvaluated = true;
 				}

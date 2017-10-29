@@ -533,6 +533,13 @@ void doClipping(){
 	#endif	
 }
 
+//float step(float edge, float v){
+//	return v < edge ? 0.0 : 1.0;
+//}
+
+float linearStep(float min, float max, float v){
+	return clamp((v - min) / (max - min), 0.0, 1.0);
+}
 
 
 // 
@@ -588,36 +595,39 @@ void main() {
 
 		for(int i = 0; i < num_shadowmaps; i++){
 			vec3 viewPos = (uShadowWorldView[i] * vec4(position, 1.0)).xyz;
+			float distanceToLight = length(viewPos);
 			float u = atan(viewPos.y, viewPos.x) / PI;
 			float v = atan(viewPos.z, length(viewPos.xy)) / PI;
 			float distance = length(viewPos);
 			float depth = ((distance - sm_near) / (sm_far - sm_near));
 
 			vec2 uv = vec2(u, v) * 0.5 + 0.5;
-			vec2 step = vec2(1.0 / (4.0*1024.0), 1.0 / (4.0*1024.0));
+			vec2 sampleStep = vec2(1.0 / (4.0*1024.0), 1.0 / (4.0*1024.0));
 
 			vec2 sampleLocations[9];
 			sampleLocations[0] = vec2(0.0, 0.0);
-			sampleLocations[1] = step;
-			sampleLocations[2] = -step;
-			sampleLocations[3] = vec2(step.x, -step.y);
-			sampleLocations[4] = vec2(-step.x, step.y);
+			sampleLocations[1] = sampleStep;
+			sampleLocations[2] = -sampleStep;
+			sampleLocations[3] = vec2(sampleStep.x, -sampleStep.y);
+			sampleLocations[4] = vec2(-sampleStep.x, sampleStep.y);
 
-			sampleLocations[5] = vec2(0.0, step.y);
-			sampleLocations[6] = vec2(0.0, -step.y);
-			sampleLocations[7] = vec2(step.x, 0.0);
-			sampleLocations[8] = vec2(-step.x, 0.0);
+			sampleLocations[5] = vec2(0.0, sampleStep.y);
+			sampleLocations[6] = vec2(0.0, -sampleStep.y);
+			sampleLocations[7] = vec2(sampleStep.x, 0.0);
+			sampleLocations[8] = vec2(-sampleStep.x, 0.0);
 
 			float visible_samples = 0.0;
 			float sumSamples = 0.0;
 
-			float bias = vRadius;
+			float bias = vRadius * 1.0;
 			for(int j = 0; j < 9; j++){
-				float sm_depth = sm_far * texture2D(uShadowMap[j], uv + sampleLocations[j]).r + sm_near;
 
-				if((distance - sm_depth) > 10.0 * bias){
-					visible_samples += 1.0;
-				}
+				vec2 moments = texture2D(uShadowMap[j], uv + sampleLocations[j]).xy + sm_near;
+				//float p = smoothstep(distanceToLight - 10.0 * bias, distanceToLight, moments.x);
+				float p = step(distanceToLight - 5.0 * bias, moments.x);
+
+				visible_samples += (1.0 - p);
+
 
 				sumSamples = sumSamples + 1.0;
 			}

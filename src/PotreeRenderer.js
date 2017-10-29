@@ -623,7 +623,7 @@ Potree.Renderer = class Renderer {
                 for (let i = 0; i < shadowMaps.length; i++) {
                     let shadowMap = shadowMaps[i];
                     let bindingPoint = bindingPoints[i];
-                    let glTexture = this.threeRenderer.properties.get(shadowMap.target.depthTexture).__webglTexture;
+                    let glTexture = this.threeRenderer.properties.get(shadowMap.target.texture).__webglTexture;
 
                     gl.activeTexture(gl[`TEXTURE${bindingPoint}`]);
                     gl.bindTexture(gl.TEXTURE_2D, glTexture);

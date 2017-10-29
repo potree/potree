@@ -12,8 +12,8 @@ Potree.PointCloudSM = class PointCloudSM{
         this.lightPos = new THREE.Vector3();
 
         this.target = new THREE.WebGLRenderTarget(4*1024, 4*1024, {
-			minFilter: THREE.NearestFilter,
-			magFilter: THREE.NearestFilter,
+			minFilter: THREE.LinearFilter,
+			magFilter: THREE.LinearFilter,
 			format: THREE.RGBAFormat,
 			type: THREE.FloatType
         });

@@ -19,6 +19,7 @@ uniform float uVNStart;
 
 uniform sampler2D visibleNodes;
 
+varying float vLinearDepth;
 varying vec3 vColor;
 
 #define PI 3.141592653589793
@@ -112,6 +113,7 @@ void main() {
 
 	vec3 planar = sphericalToPlanar(viewPos);
 	float distance = planar.z;
+	vLinearDepth = distance;
 
 	float t = 2.0 * ((planar.z - near) / (far - near)) - 1.0;
 

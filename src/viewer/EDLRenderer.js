@@ -115,11 +115,12 @@ class EDLRenderer {
 		
 
 		// TODO adapt to multiple lights
-		if(lights.length > 0){
+		if(lights.length > 0 && !(lights[0].disableShadowUpdates)){
+			let light = lights[0];
 
 			let queryShadows = Potree.startQuery('EDL - shadows', viewer.renderer.getContext());
 
-			this.shadowMap.setLightPos(lights[0].position);
+			this.shadowMap.setLightPos(light.position);
 
 			for(let octree of viewer.scene.pointclouds){
 				this.shadowMap.renderOctree(octree, octree.visibleNodes);

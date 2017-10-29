@@ -1,4 +1,3 @@
-var baseLoaded = false;
 
 Potree.PointCloudGreyhoundGeometryNode = function (
 	name, pcoGeometry, boundingBox, scale, offset) {
@@ -16,6 +15,7 @@ Potree.PointCloudGreyhoundGeometryNode = function (
 	this.level = null;
 	this.loaded = false;
 	this.oneTimeDisposeHandlers = [];
+	this.baseLoaded = false;
 
 	let bounds = this.boundingBox.clone();
 	bounds.min.sub(this.pcoGeometry.boundingBox.getCenter());
@@ -89,7 +89,7 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.getURL = function () {
 
 	var url = '' + this.pcoGeometry.serverURL +
 				'read?depthBegin=' +
-				(baseLoaded ? (this.level + this.pcoGeometry.baseDepth) : 0) +
+				(this.baseLoaded ? (this.level + this.pcoGeometry.baseDepth) : 0) +
 				'&depthEnd=' + (this.level + this.pcoGeometry.baseDepth + 1) +
 				'&bounds=[' + boundsString + ']' +
 				'&schema=' + JSON.stringify(schema) +
@@ -104,7 +104,7 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.getURL = function () {
 		url += '&offset=[' + offset.x + ',' + offset.y + ',' + offset.z + ']';
 	}
 
-	if (!baseLoaded) baseLoaded = true;
+	if (!this.baseLoaded) this.baseLoaded = true;
 
 	return url;
 };

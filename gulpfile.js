@@ -17,6 +17,7 @@ var server;
 var paths = {
 	potree : [
 		"src/Potree.js",
+		"src/PotreeRenderer.js",
 		"src/PointCloudTree.js",
 		"src/WorkerPool.js",
 		"build/shaders/shaders.js",
@@ -69,7 +70,6 @@ var paths = {
 		"src/exporter/LASExporter.js",
 		"src/arena4d/PointCloudArena4D.js",
 		"src/arena4d/PointCloudArena4DGeometry.js",
-		"src/viewer/ProgressBar.js",
 		"src/viewer/PotreeRenderer.js",
 		"src/viewer/EDLRenderer.js",
 		"src/viewer/RepRenderer.js",

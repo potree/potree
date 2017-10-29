@@ -274,6 +274,7 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 			uSnapProj:			{ type: "Matrix4fv", value: []},
 			uSnapProjInv:		{ type: "Matrix4fv", value: []},
 			uSnapViewInv:		{ type: "Matrix4fv", value: []},
+			uShadowColor: 		{ type: "3fv", value: [0, 0, 0]}
 		};
 
 		this.defaultAttributeValues.normal = [0, 0, 0];

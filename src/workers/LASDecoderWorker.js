@@ -1,4 +1,3 @@
-/* global self:false */
 // var pointFormatReaders = {
 //	0: function(dv) {
 //		return {
@@ -52,13 +51,13 @@
 //	return this.decoder(dv);
 // };
 
-self.onmessage = function (event) {
-	var buffer = event.data.buffer;
-	var numPoints = event.data.numPoints;
-	var pointSize = event.data.pointSize;
-	var pointFormatID = event.data.pointFormatID;
-	var scale = event.data.scale;
-	var offset = event.data.offset;
+module.exports = function (data, self, cb) {
+	var buffer = data.buffer;
+	var numPoints = data.numPoints;
+	var pointSize = data.pointSize;
+	var pointFormatID = data.pointFormatID;
+	var scale = data.scale;
+	var offset = data.offset;
 	// event.data.mins
 	// event.data.maxs
 
@@ -112,9 +111,9 @@ self.onmessage = function (event) {
 		tempUint8[3] = bufferView[i * pointSize + 11];
 		var z = tempInt32[0];
 
-		x = x * scale[0] + offset[0] - event.data.mins[0];
-		y = y * scale[1] + offset[1] - event.data.mins[1];
-		z = z * scale[2] + offset[2] - event.data.mins[2];
+		x = x * scale[0] + offset[0] - data.mins[0];
+		y = y * scale[1] + offset[1] - data.mins[1];
+		z = z * scale[2] + offset[2] - data.mins[2];
 
 		positions[3 * i + 0] = x;
 		positions[3 * i + 1] = y;
@@ -204,5 +203,5 @@ self.onmessage = function (event) {
 		message.pointSourceID,
 		message.indices];
 
-	self.postMessage(message, transferables);
+	cb(message, transferables);
 };

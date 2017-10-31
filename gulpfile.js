@@ -20,11 +20,7 @@ const through = require('through');
 
 	const SCRIPTS = {
 		main: {source: 'src/index.js', target: 'build/potree/potree.js', args: {standalone: 'Potree'}},
-		bin: {source: 'src/workers/BinaryDecoderWorker.js', target: 'build/potree/workers/BinaryDecoderWorker.js'},
-		dem: {source: 'src/workers/DEMWorker.js', target: 'build/potree/workers/DEMWorker.js'},
-		gre: {source: 'src/workers/GreyhoundBinaryDecoderWorker.js', target: 'build/potree/workers/GreyhoundBinaryDecoderWorker.js'},
-		las: {source: 'src/workers/LASDecoderWorker.js', target: 'build/potree/workers/LASDecoderWorker.js'},
-		laz: {source: 'libs/plasio/workers/laz-loader-worker.js', target: 'build/potree/workers/LASLAZWorker.js'}
+		worker: {source: 'src/workers/index.js', target: 'build/potree/workers/index.js'}
 	};
 
 	function createBrowserify (script, isMin) {

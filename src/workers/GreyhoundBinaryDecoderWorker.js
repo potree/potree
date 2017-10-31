@@ -1,4 +1,3 @@
-/* global self:false */
 // http://jsperf.com/uint8array-vs-dataview3/3
 const PointAttribute = require('../loader/PointAttribute');
 const Module = require('../../libs/plasio/workers/laz-perf.js');
@@ -74,25 +73,25 @@ var decompress = function (schema, input, numPoints) {
 	return ret.buffer;
 };
 
-self.onmessage = function (event) {
+module.exports = function (data, self, cb) {
 	var NUM_POINTS_BYTES = 4;
 
-	var buffer = event.data.buffer;
-	var pointAttributes = event.data.pointAttributes;
+	var buffer = data.buffer;
+	var pointAttributes = data.pointAttributes;
 
 	var view = new DataView(
 		buffer, buffer.byteLength - NUM_POINTS_BYTES, NUM_POINTS_BYTES);
 	var numPoints = networkToNative(view.getUint32(0));
 	buffer = buffer.slice(0, buffer.byteLength - NUM_POINTS_BYTES);
 
-	buffer = decompress(event.data.schema, buffer, numPoints);
+	buffer = decompress(data.schema, buffer, numPoints);
 
 	var cv = new CustomView(buffer);
 	// event.data.version
 	// event.data.min
 	// event.data.max
-	var nodeOffset = event.data.offset;
-	var scale = event.data.scale;
+	var nodeOffset = data.offset;
+	var scale = data.scale;
 	var tightBoxMin = [ Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY ];
 	var tightBoxMax = [ Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY ];
 
@@ -140,7 +139,7 @@ self.onmessage = function (event) {
 			let buff = new ArrayBuffer(numPoints * 3);
 			let colors = new Uint8Array(buff);
 
-			let div = event.data.normalize.color ? 256 : 1;
+			let div = data.normalize.color ? 256 : 1;
 
 			for (let j = 0; j < numPoints; ++j) {
 				colors[3 * j + 0] = cv.getUint16(offset + j * pointSize + 0) / div;
@@ -276,5 +275,5 @@ self.onmessage = function (event) {
 
 	transferables.push(message.indices);
 
-	self.postMessage(message, transferables);
+	cb(message, transferables);
 };

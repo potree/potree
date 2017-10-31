@@ -9,7 +9,7 @@ if (document.currentScript.src) {
 } else {
 	console.error('Potree was unable to find its script path using document.currentScript. Is Potree included with a script tag? Does your browser support this function?');
 }
-const workerPool = new WorkerPool();
+const workerPool = new WorkerPool(scriptPath + '/workers/index.js');
 let DEMWorkerInstance = null;
 let LRUInstance = null;
 
@@ -26,8 +26,7 @@ module.exports = {
 	workerPool: workerPool,
 	getDEMWorkerInstance: function () {
 		if (DEMWorkerInstance === null) {
-			let workerPath = scriptPath + '/workers/DEMWorker.js';
-			DEMWorkerInstance = workerPool.getWorker(workerPath);
+			DEMWorkerInstance = {working: false};
 		}
 
 		return DEMWorkerInstance;

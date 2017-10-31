@@ -62,18 +62,12 @@ GreyhoundBinaryLoader.prototype.parse = function (node, buffer) {
 
 	node.numPoints = numPoints;
 
-	let workerPath = context.scriptPath + '/workers/GreyhoundBinaryDecoderWorker.js';
-	let worker = context.workerPool.getWorker(workerPath);
-
-	worker.onmessage = function (e) {
-		var data = e.data;
+	function cb (data) {
 		var buffers = data.attributeBuffers;
 		var tightBoundingBox = new THREE.Box3(
 			new THREE.Vector3().fromArray(data.tightBoundingBox.min),
 			new THREE.Vector3().fromArray(data.tightBoundingBox.max)
 		);
-
-		context.workerPool.returnWorker(workerPath, worker);
 
 		var geometry = new THREE.BufferGeometry();
 
@@ -156,7 +150,7 @@ GreyhoundBinaryLoader.prototype.parse = function (node, buffer) {
 		normalize: node.pcoGeometry.normalize
 	};
 
-	worker.postMessage(message, [message.buffer]);
+	context.workerPool.runTask('greyhoundBinary', message, [message.buffer], cb);
 };
 
 module.exports = GreyhoundBinaryLoader;

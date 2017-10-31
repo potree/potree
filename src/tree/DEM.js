@@ -150,9 +150,8 @@ module.exports = class DEM {
 
 		let targetNodes = this.expandAndFindByBox(projectedBox, node.getLevel());
 		node.demVersion = this.version;
-
-		context.getDEMWorkerInstance().onmessage = (e) => {
-			let data = new Float32Array(e.data.dem.data);
+		const cb = (d) => {
+			let data = new Float32Array(d.dem.data);
 
 			for (let demNode of targetNodes) {
 				let boxSize = demNode.box.getSize();
@@ -185,7 +184,6 @@ module.exports = class DEM {
 
 				demNode.createMipMap();
 				demNode.mipMapNeedsUpdate = true;
-
 				context.getDEMWorkerInstance().working = false;
 			}
 
@@ -216,10 +214,11 @@ module.exports = class DEM {
 				min: node.getBoundingBox().min.toArray(),
 				max: node.getBoundingBox().max.toArray()
 			},
-			position: new Float32Array(position).buffer
+			position: new Float32Array(position).buffer,
+			type: 'demWorker'
 		};
 		let transferables = [message.position];
 		context.getDEMWorkerInstance().working = true;
-		context.getDEMWorkerInstance().postMessage(message, transferables);
+		context.workerPool.runTask('demWorker', message, transferables, cb);
 	}
 };

@@ -1,7 +1,7 @@
-/* global self:false */
-self.onmessage = function (event) {
-	let boundingBox = event.data.boundingBox;
-	let position = new Float32Array(event.data.position);
+
+module.exports = function (data, self, cb) {
+	let boundingBox = data.boundingBox;
+	let position = new Float32Array(data.position);
 	let width = 64;
 	let height = 64;
 	let numPoints = position.length / 3;
@@ -37,5 +37,5 @@ self.onmessage = function (event) {
 		}
 	};
 
-	self.postMessage(message, [message.dem.data]);
+	cb(message, [message.dem.data]);
 };

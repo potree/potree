@@ -1,25 +1,46 @@
+const onErr = err => {
+	console.log('err', err);
+};
 
 module.exports = class WorkerPool {
-	constructor () {
-		this.workers = {};
+	constructor (url, max = 4) {
+		this.workers = [];
+		this.url = url;
+		this.max = max;
 	}
 
-	getWorker (url) {
-		if (!this.workers[url]) {
-			this.workers[url] = [];
+	getWorker () {
+		if (this.workers.length === 0) {
+			let worker = new Worker(this.url);
+			worker.addEventListener('error', onErr);
+			this.workers.push(worker);
 		}
 
-		if (this.workers[url].length === 0) {
-			let worker = new Worker(url);
-			this.workers[url].push(worker);
-		}
-
-		let worker = this.workers[url].pop();
+		let worker = this.workers.pop();
 
 		return worker;
 	}
 
-	returnWorker (url, worker) {
-		this.workers[url].push(worker);
+	returnWorker (worker) {
+		if (this.workers.length >= this.max) {
+			worker.terminate();
+			return;
+		}
+		this.workers.push(worker);
+	}
+
+	runTask (type, data, transfers, callback) {
+		let worker = this.getWorker();
+		data.type = type;
+		let cb = (e) => {
+			if (!e.data || e.data.type !== type) {
+				return;
+			}
+			worker.removeEventListener('message', cb);
+			this.returnWorker(worker);
+			callback(e.data);
+		};
+		worker.addEventListener('message', cb);
+		worker.postMessage(data, transfers);
 	}
 };

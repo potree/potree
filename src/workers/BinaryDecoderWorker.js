@@ -1,4 +1,3 @@
-/* global self:false */
 // http://jsperf.com/uint8array-vs-dataview3/3
 const Version = require('../Version');
 const PointAttribute = require('../loader/PointAttribute');
@@ -33,16 +32,16 @@ function CustomView (buffer) {
 	};
 }
 
-self.onmessage = function (event) {
-	let buffer = event.data.buffer;
-	let pointAttributes = event.data.pointAttributes;
+module.exports = function (data, self, cb) {
+	let buffer = data.buffer;
+	let pointAttributes = data.pointAttributes;
 	let numPoints = buffer.byteLength / pointAttributes.byteSize;
 	let cv = new CustomView(buffer);
 	// let cv = new DataView(buffer);
-	let version = new Version(event.data.version);
+	let version = new Version(data.version);
 	// event.data.min
-	let nodeOffset = event.data.offset;
-	let scale = event.data.scale;
+	let nodeOffset = data.offset;
+	let scale = data.scale;
 	let tightBoxMin = [ Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY ];
 	let tightBoxMax = [ Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY ];
 
@@ -235,5 +234,5 @@ self.onmessage = function (event) {
 
 	transferables.push(message.indices);
 
-	self.postMessage(message, transferables);
+	cb(message, transferables);
 };

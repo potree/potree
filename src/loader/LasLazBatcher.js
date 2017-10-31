@@ -7,10 +7,17 @@ module.exports = class LasLazBatcher {
 	}
 
 	push (lasBuffer) {
-		let workerPath = context.scriptPath + '/workers/LASDecoderWorker.js';
-		let worker = context.workerPool.getWorker(workerPath);
-
-		worker.onmessage = (e) => {
+		let message = {
+			buffer: lasBuffer.arrayb,
+			numPoints: lasBuffer.pointsCount,
+			pointSize: lasBuffer.pointSize,
+			pointFormatID: 2,
+			scale: lasBuffer.scale,
+			offset: lasBuffer.offset,
+			mins: lasBuffer.mins,
+			maxs: lasBuffer.maxs
+		};
+		let cb = (data) => {
 			let geometry = new THREE.BufferGeometry();
 			let numPoints = lasBuffer.pointsCount;
 
@@ -21,13 +28,13 @@ module.exports = class LasLazBatcher {
 			};
 			*/
 
-			let positions = e.data.position;
-			let colors = new Uint8Array(e.data.color);
-			let intensities = e.data.intensity;
-			let classifications = new Uint8Array(e.data.classification);
-			let returnNumbers = new Uint8Array(e.data.returnNumber);
-			let numberOfReturns = new Uint8Array(e.data.numberOfReturns);
-			let pointSourceIDs = new Uint16Array(e.data.pointSourceID);
+			let positions = data.position;
+			let colors = new Uint8Array(data.color);
+			let intensities = data.intensity;
+			let classifications = new Uint8Array(data.classification);
+			let returnNumbers = new Uint8Array(data.returnNumber);
+			let numberOfReturns = new Uint8Array(data.numberOfReturns);
+			let pointSourceIDs = new Uint16Array(data.pointSourceID);
 			// let indices = new ArrayBuffer(numPoints*4);
 			// let iIndices = new Uint32Array(indices);
 
@@ -47,13 +54,13 @@ module.exports = class LasLazBatcher {
 			geometry.addAttribute('pointSourceID', new THREE.BufferAttribute(pointSourceIDs, 1));
 			geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(numPoints * 3), 3));
 
-			let indicesAttribute = new THREE.Uint8BufferAttribute(e.data.indices, 4);
+			let indicesAttribute = new THREE.Uint8BufferAttribute(data.indices, 4);
 			indicesAttribute.normalized = true;
 			geometry.addAttribute('indices', indicesAttribute);
 
 			let tightBoundingBox = new THREE.Box3(
-				new THREE.Vector3().fromArray(e.data.tightBoundingBox.min),
-				new THREE.Vector3().fromArray(e.data.tightBoundingBox.max)
+				new THREE.Vector3().fromArray(data.tightBoundingBox.min),
+				new THREE.Vector3().fromArray(data.tightBoundingBox.max)
 			);
 
 			geometry.boundingBox = this.node.boundingBox;
@@ -63,21 +70,8 @@ module.exports = class LasLazBatcher {
 			this.node.loaded = true;
 			this.node.loading = false;
 			this.node.pcoGeometry.numNodesLoading--;
-			this.node.mean = new THREE.Vector3(...e.data.mean);
-
-			context.workerPool.returnWorker(workerPath, worker);
+			this.node.mean = new THREE.Vector3(...data.mean);
 		};
-
-		let message = {
-			buffer: lasBuffer.arrayb,
-			numPoints: lasBuffer.pointsCount,
-			pointSize: lasBuffer.pointSize,
-			pointFormatID: 2,
-			scale: lasBuffer.scale,
-			offset: lasBuffer.offset,
-			mins: lasBuffer.mins,
-			maxs: lasBuffer.maxs
-		};
-		worker.postMessage(message, [message.buffer]);
+		context.workerPool.runTask('lasDecoder', message, [message.buffer], cb);
 	};
 };

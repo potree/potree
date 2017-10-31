@@ -56,18 +56,12 @@ BinaryLoader.prototype.parse = function (node, buffer) {
 		node.numPoints = numPoints;
 	}
 
-	let workerPath = context.scriptPath + '/workers/BinaryDecoderWorker.js';
-	let worker = context.workerPool.getWorker(workerPath);
-
-	worker.onmessage = function (e) {
-		let data = e.data;
+	function cb (data) {
 		let buffers = data.attributeBuffers;
 		let tightBoundingBox = new THREE.Box3(
 			new THREE.Vector3().fromArray(data.tightBoundingBox.min),
 			new THREE.Vector3().fromArray(data.tightBoundingBox.max)
 		);
-
-		context.workerPool.returnWorker(workerPath, worker);
 
 		let geometry = new THREE.BufferGeometry();
 
@@ -123,7 +117,7 @@ BinaryLoader.prototype.parse = function (node, buffer) {
 		offset: [node.pcoGeometry.offset.x, node.pcoGeometry.offset.y, node.pcoGeometry.offset.z],
 		scale: this.scale
 	};
-	worker.postMessage(message, [message.buffer]);
+	context.workerPool.runTask('binaryDecoder', message, [message.buffer], cb);
 };
 
 module.exports = BinaryLoader;

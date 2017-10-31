@@ -71,7 +71,7 @@
     "process-nextick-args": "^1.0.7",
     "proj4": "^2.3.12",
     "safe-buffer": "^5.1.1",
-    "shapefile": "^0.6.2",
+    "shpjs": "^3.4.1",
     "stats.js": "^0.17.0",
     "three": "^0.87.1",
     "three-ply-loader": "^1.0.0",

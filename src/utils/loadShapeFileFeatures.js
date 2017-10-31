@@ -1,28 +1,13 @@
-const shapefile = require('shapefile');
+const shapefile = require('shpjs');
 
 module.exports = (file, callback) => {
-	let features = [];
-
-	let handleFinish = () => {
-		callback(features);
-	};
-
-	shapefile.open(file)
-		.then(source => {
-			source.read()
-				.then(function log (result) {
-					if (result.done) {
-						handleFinish();
-						return;
-					}
-
-					// console.log(result.value);
-
-					if (result.value && result.value.type === 'Feature' && result.value.geometry !== undefined) {
-						features.push(result.value);
-					}
-
-					return source.read().then(log);
-				});
-		});
+	if (file.slice(-4).toLowerCase() === '.shp') {
+		file = file.slice(0, -4);
+	}
+	shapefile(file)
+			.then(function log (result) {
+				callback(result.features)
+			}).catch(err=> {
+				console.log(err);
+			});
 };

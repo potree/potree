@@ -5,9 +5,9 @@ module.exports = (file, callback) => {
 		file = file.slice(0, -4);
 	}
 	shapefile(file)
-			.then(function log (result) {
-				callback(result.features)
-			}).catch(err=> {
-				console.log(err);
-			});
+		.then(function log (result) {
+			callback(result.features);
+		}).catch(err => {
+			console.log(err);
+		});
 };

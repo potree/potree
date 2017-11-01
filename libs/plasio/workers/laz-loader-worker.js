@@ -1,5 +1,5 @@
 // laz-loader-worker.js
-const Module = require('./laz-perf');
+
 
 var instance = null; // laz-perf instance
 
@@ -119,6 +119,9 @@ function handleEvent(msg) {
 }
 
 module.exports = function (data, cb) {
+	if (!self.Module) {
+		importScripts('./laz-perf.js');
+	}
 	try {
 		cb(handleEvent(data));
 

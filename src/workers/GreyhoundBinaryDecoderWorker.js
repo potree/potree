@@ -1,6 +1,5 @@
 // http://jsperf.com/uint8array-vs-dataview3/3
 const PointAttribute = require('../loader/PointAttribute');
-const Module = require('../../libs/plasio/workers/laz-perf.js');
 
 function CustomView (buffer) {
 	this.buffer = buffer;
@@ -74,6 +73,9 @@ var decompress = function (schema, input, numPoints) {
 };
 
 module.exports = function (data, cb) {
+	if (!self.Module) {
+		importScripts('./laz-perf.js');
+	}
 	var NUM_POINTS_BYTES = 4;
 
 	var buffer = data.buffer;

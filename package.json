@@ -61,7 +61,10 @@
     "release": "npm run gulp -- release"
   },
   "main": "./src/index.js",
-  "browser": "./src/index.js",
+  "browser": {
+    "crypto": false,
+    "fs": false
+  },
   "dependencies": {
     "@tweenjs/tween.js": "^17.1.0",
     "d3-axis": "^1.0.8",

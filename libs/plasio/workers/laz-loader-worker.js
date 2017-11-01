@@ -54,10 +54,10 @@ function handleEvent(msg) {
 
 				instance.readOffset = 0;
 
-				self.postMessage({ type: "open", status: 1});
+				return { type: "open", status: 1 };
 			}
 			catch(e) {
-				self.postMessage({ type: "open", status: 0, details: e });
+				return { type: "open", status: 0, details: e };
 			}
 			break;
 
@@ -70,8 +70,8 @@ function handleEvent(msg) {
 			var header = parseLASHeader(instance.arraybuffer);
 			header.pointsFormatId &= 0x3f;
 			instance.header = header;
-			self.postMessage({type: "header", status: 1, header: header});
-			break;
+			return {type: "header", status: 1, header: header};
+
 
 		case "read":
 			if (!instance)
@@ -101,31 +101,28 @@ function handleEvent(msg) {
 				o.readOffset ++;
 			}
 
-			self.postMessage({
+			return {
 				type: 'header',
 				status: 1,
 				buffer: this_buf.buffer,
 				count: pointsRead,
 				hasMoreData: o.readOffset < o.header.pointsCount
-			});
-
-			break;
-
+			};
 
 		case "close":
 			if (instance !== null) {
 				instance.delete();
 				instance = null;
 			}
-			self.postMessage({ type: "close", status: 1});
-			break;
+			return { type: "close", status: 1 };
 	}
 }
 
-self.onmessage = function(event) {
+module.exports = function (data, cb) {
 	try {
-		handleEvent(event.data);
+		cb(handleEvent(data));
+
 	} catch(e) {
-		self.postMessage({type: event.data.type, status: 0, details: e});
+		cb({type: data.type, status: 0, details: e});
 	}
 };

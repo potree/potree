@@ -205,22 +205,24 @@ const context = require('../../../src/context');
 	var LAZLoader = function(arraybuffer) {
 		this.arraybuffer = arraybuffer;
 
-		let workerPath = context.scriptPath + "/workers/LASLAZWorker.js";
-		this.ww = context.workerPool.getWorker(workerPath);
+		this.ww = context.workerPool.getWorker();
 
 		this.nextCB = null;
 		var o = this;
 
-		this.ww.onmessage = function(e) {
+		this.onmessage = function(e) {
 			if (o.nextCB !== null) {
 				o.nextCB(e.data);
 				o.nextCB = null;
 			}
 		};
-
+		this.ww.addEventListener('message', this.onmessage);
 		this.dorr = function(req, cb) {
 			o.nextCB = cb;
-			o.ww.postMessage(req);
+			o.ww.postMessage({
+				type: 'lazload',
+				data: req
+			});
 		};
 	};
 
@@ -273,8 +275,8 @@ const context = require('../../../src/context');
 
 		return new Promise(function(res, rej) {
 			o.dorr({type:'close'}, function(r) {
-				let workerPath = context.scriptPath + "/workers/LASLAZWorker.js";
-				context.workerPool.returnWorker(workerPath, o.ww);
+				o.ww.removeEventListener('message', o.onmessage);
+				context.workerPool.returnWorker(o.ww);
 
 				if (r.status !== 1)
 					return rej(new Error("Failed to close file"));

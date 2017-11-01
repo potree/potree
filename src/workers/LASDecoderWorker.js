@@ -51,7 +51,7 @@
 //	return this.decoder(dv);
 // };
 
-module.exports = function (data, self, cb) {
+module.exports = function (data, cb) {
 	var buffer = data.buffer;
 	var numPoints = data.numPoints;
 	var pointSize = data.pointSize;

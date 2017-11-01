@@ -4,6 +4,8 @@ funcs.lasDecoder = require('./LasDecoderWorker');
 funcs.greyhoundBinary = require('./greyhoundBinaryDecoderWorker');
 funcs.demWorker = require('./DEMWorker');
 funcs.binaryDecoder = require('./BinaryDecoderWorker');
+funcs.lazload = require('../../libs/plasio/workers/laz-loader-worker.js');
+
 self.onmessage = function (event) {
 	if (!event.data) {
 		return;
@@ -12,9 +14,8 @@ self.onmessage = function (event) {
 	if (!func) {
 		return;
 	}
-	func(event.data, self, (data, transferables) => {
+	func(event.data.data, (data, transferables) => {
 		data = data || {};
-		data.type = event.data.type;
 		self.postMessage(data, transferables);
 	});
 };

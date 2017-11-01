@@ -1,5 +1,5 @@
 
-module.exports = function (data, self, cb) {
+module.exports = function (data, cb) {
 	let boundingBox = data.boundingBox;
 	let position = new Float32Array(data.position);
 	let width = 64;

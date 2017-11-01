@@ -73,7 +73,7 @@ var decompress = function (schema, input, numPoints) {
 	return ret.buffer;
 };
 
-module.exports = function (data, self, cb) {
+module.exports = function (data, cb) {
 	var NUM_POINTS_BYTES = 4;
 
 	var buffer = data.buffer;

@@ -32,7 +32,7 @@ function CustomView (buffer) {
 	};
 }
 
-module.exports = function (data, self, cb) {
+module.exports = function (data, cb) {
 	let buffer = data.buffer;
 	let pointAttributes = data.pointAttributes;
 	let numPoints = buffer.byteLength / pointAttributes.byteSize;

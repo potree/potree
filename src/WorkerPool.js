@@ -31,9 +31,12 @@ module.exports = class WorkerPool {
 
 	runTask (type, data, transfers, callback) {
 		let worker = this.getWorker();
-		data.type = type;
+		let msg = {
+			data,
+			type
+		};
 		let cb = (e) => {
-			if (!e.data || e.data.type !== type) {
+			if (!e.data) {
 				return;
 			}
 			worker.removeEventListener('message', cb);
@@ -41,6 +44,6 @@ module.exports = class WorkerPool {
 			callback(e.data);
 		};
 		worker.addEventListener('message', cb);
-		worker.postMessage(data, transfers);
+		worker.postMessage(msg, transfers);
 	}
 };

@@ -1,3 +1,5 @@
+/* eslint-env worker */
+/* global Module:false */
 // http://jsperf.com/uint8array-vs-dataview3/3
 const PointAttribute = require('../loader/PointAttribute');
 

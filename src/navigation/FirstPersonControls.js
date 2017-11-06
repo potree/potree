@@ -37,7 +37,9 @@ class FirstPersonControls extends THREE.EventDispatcher {
 			LEFT: ['A'.charCodeAt(0), 37],
 			RIGHT: ['D'.charCodeAt(0), 39],
 			UP: ['R'.charCodeAt(0), 33],
-			DOWN: ['F'.charCodeAt(0), 34]
+			DOWN: ['F'.charCodeAt(0), 34],
+			JUMP: [' '.charCodeAt(0), 32],
+			CROUCH: [16, 17]
 		};
 
 		this.fadeFactor = 50;
@@ -202,6 +204,8 @@ class FirstPersonControls extends THREE.EventDispatcher {
 			let moveRight = this.keys.RIGHT.some(e => ih.pressedKeys[e]);
 			let moveUp = this.keys.UP.some(e => ih.pressedKeys[e]);
 			let moveDown = this.keys.DOWN.some(e => ih.pressedKeys[e]);
+			let jump = this.keys.JUMP.some(e => ih.pressedKeys[e]);
+			let crouch = this.keys.CROUCH.some(e => ih.pressedKeys[e]);
 
 			if (moveForward && moveBackward) {
 				this.translationDelta.y = 0;
@@ -225,6 +229,14 @@ class FirstPersonControls extends THREE.EventDispatcher {
 				this.translationWorldDelta.z = this.viewer.getMoveSpeed();
 			} else if (moveDown) {
 				this.translationWorldDelta.z = -this.viewer.getMoveSpeed();
+			}
+
+			if (jump && crouch) {
+				this.translationDelta.z = 0;
+			} else if (jump) {
+				this.translationDelta.z = this.viewer.getMoveSpeed();
+			} else if (crouch) {
+				this.translationDelta.z = -this.viewer.getMoveSpeed();
 			}
 		}
 

@@ -24,9 +24,12 @@ const through = require('through');
 	};
 
 	function createBrowserify (script, isMin) {
-		return browserify(createArgs(script))
-			.external('ws')
-			.transform(uglifyify, {global: true});
+		var out = browserify(createArgs(script))
+			.external('ws');
+		if (isMin) {
+			return out.transform(uglifyify, {global: true});
+		}
+		return out;
 	}
 
 	function createArgs (script) {

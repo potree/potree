@@ -442,7 +442,7 @@ Potree.Scene = class extends THREE.EventDispatcher{
 Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 
 	
-	constructor(domElement, args){
+	constructor(domElement, args = {}){
 		super();		
 		
 		{ // generate missing dom hierarchy
@@ -463,8 +463,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			}
 		}
 
-		let a = args || {};
-		this.pointCloudLoadedCallback = a.onPointCloudLoaded || function () {};
+		this.pointCloudLoadedCallback = args.onPointCloudLoaded || function () {};
 
 		this.renderArea = domElement;
 
@@ -612,8 +611,10 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			this.loadSettingsFromURL();
 		}
 
-		// start rendering!
-		requestAnimationFrame(this.loop.bind(this));
+        // start rendering!
+        if(args.useDefaultRenderLoop === undefined || args.useDefaultRenderLoop === true){
+            requestAnimationFrame(this.loop.bind(this));
+        }
 
 		this.loadGUI = this.loadGUI.bind(this);
 	}
@@ -1321,12 +1322,13 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		let width = this.renderArea.clientWidth;
 		let height = this.renderArea.clientHeight;
 
-		this.renderer = new THREE.WebGLRenderer({premultipliedAlpha: false});
+		this.renderer = new THREE.WebGLRenderer({alpha: true, premultipliedAlpha: false});
 		this.renderer.sortObjects = false;
 		this.renderer.setSize(width, height);
 		this.renderer.autoClear = false;
 		this.renderArea.appendChild(this.renderer.domElement);
 		this.renderer.domElement.tabIndex = '2222';
+		this.renderer.domElement.style.position = 'absolute';
 		this.renderer.domElement.addEventListener('mousedown', function () {
 			this.renderer.domElement.focus();
 		}.bind(this));
@@ -1436,6 +1438,9 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 	}
 
 	update (delta, timestamp) {
+
+        if(Potree.measureTimings) performance.mark("update-start");
+
 		// if(window.urlToggle === undefined){
 		//	window.urlToggle = 0;
 		// }else{
@@ -1561,12 +1566,12 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 
 		if (!this.freeze) {
 			let result = Potree.updatePointClouds(scene.pointclouds, camera, this.renderer);
-			camera.near = result.lowestSpacing * 10.0;
-			camera.far = -this.getBoundingBox().applyMatrix4(camera.matrixWorldInverse).min.z;
-			camera.far = Math.max(camera.far * 1.5, 1000);
-			if(this.scene.cameraMode == Potree.CameraMode.ORTHOGRAPHIC) {
-				camera.near = -camera.far;
-			}
+			//camera.near = result.lowestSpacing * 10.0;
+			//camera.far = -this.getBoundingBox().applyMatrix4(camera.matrixWorldInverse).min.z;
+			//camera.far = Math.max(camera.far * 1.5, 1000);
+			//if(this.scene.cameraMode == Potree.CameraMode.ORTHOGRAPHIC) {
+			//	camera.near = -camera.far;
+			//}
 		} 
 		
 		this.scene.cameraP.fov = this.fov;
@@ -1660,30 +1665,16 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		this.dispatchEvent({
 			'type': 'update',
 			'delta': delta,
-			'timestamp': timestamp});
-	}
-
-	loop (timestamp) {
-		requestAnimationFrame(this.loop.bind(this));
-
-		let queryAll;
-		if(Potree.measureTimings){
-			performance.mark("loop-start");
-			//queryAll = Potree.startQuery('frame', viewer.renderer.getContext());
-		}
-
-		this.stats.begin();
-
-		if(Potree.measureTimings) performance.mark("update-start");
-
-		this.update(this.clock.getDelta(), timestamp);
-		
-		if(Potree.measureTimings) {
+            'timestamp': timestamp});
+            
+        if(Potree.measureTimings) {
 			performance.mark("update-end");
 			performance.measure("update", "update-start", "update-end");
 		}
-
-		if(Potree.measureTimings) performance.mark("render-start");
+    }
+    
+    render(){
+        if(Potree.measureTimings) performance.mark("render-start");
 
 		if(this.useRep){
 			if (!this.repRenderer) {
@@ -1701,19 +1692,16 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			}
 
 			this.potreeRenderer.render();
-		}
-
-		if(Potree.measureTimings){
+        }
+        
+        if(Potree.measureTimings){
 			performance.mark("render-end");
 			performance.measure("render", "render-start", "render-end");
-
-			performance.mark("loop-end");
-			performance.measure("loop", "loop-start", "loop-end");
-
-			//Potree.endQuery(queryAll, viewer.renderer.getContext());
 		}
+    }
 
-		if(Potree.measureTimings){
+    resolveTimings(timestamp){
+        if(Potree.measureTimings){
 			if(!this.toggle){
 				this.toggle = timestamp;
 			}
@@ -1810,6 +1798,28 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 				this.toggle = timestamp;
 			}
 		}
+    }
+
+	loop (timestamp) {
+		requestAnimationFrame(this.loop.bind(this));
+
+		let queryAll;
+		if(Potree.measureTimings){
+			performance.mark("loop-start");
+		}
+
+		this.stats.begin();
+
+		this.update(this.clock.getDelta(), timestamp);
+
+		this.render();
+
+		if(Potree.measureTimings){
+			performance.mark("loop-end");
+			performance.measure("loop", "loop-start", "loop-end");
+        }
+        
+        this.resolveTimings(timestamp);
 
 		this.stats.end();
 

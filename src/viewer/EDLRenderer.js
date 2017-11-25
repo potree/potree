@@ -64,7 +64,7 @@ class EDLRenderer {
 
 		viewer.scene.cameraScreenSpace.top = 1/aspect;
 		viewer.scene.cameraScreenSpace.bottom = -1/aspect;
-		viewer.scene.cameraScreenSpace.updateProjectionMatrix();
+        viewer.scene.cameraScreenSpace.updateProjectionMatrix();
 		
 		viewer.renderer.setSize(width, height);
 		this.rtColor.setSize(width, height);
@@ -108,7 +108,10 @@ class EDLRenderer {
 		} else if (viewer.background === 'white') {
 			viewer.renderer.setClearColor(0xFFFFFF, 0);
 			viewer.renderer.clear();
-		}
+        } else {
+            viewer.renderer.setClearColor(0xFF0000, 0);
+			viewer.renderer.clear();
+        }
 
 		Potree.endQuery(querySkybox, viewer.renderer.getContext());
 

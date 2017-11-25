@@ -52,6 +52,9 @@ class PotreeRenderer {
 		}else if(viewer.background === "white"){
 			viewer.renderer.setClearColor(0xFFFFFF, 1);
 			viewer.renderer.clear(true, true, false);
+		}else{
+			viewer.renderer.setClearColor(0xFF0000, 0);
+			viewer.renderer.clear(true, true, false);
 		}
 		
 		for(let pointcloud of this.viewer.scene.pointclouds){

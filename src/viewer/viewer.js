@@ -212,7 +212,24 @@ Potree.Scene = class extends THREE.EventDispatcher{
 		}
 
 		return height;
-	}
+    }
+    
+    getBoundingBox(pointclouds = this.pointclouds){
+		let box = new THREE.Box3();
+
+		this.scenePointCloud.updateMatrixWorld(true);
+		this.referenceFrame.updateMatrixWorld(true);
+
+		for (let pointcloud of this.pointclouds) {
+			pointcloud.updateMatrixWorld(true);
+
+			let pointcloudBox = pointcloud.pcoGeometry.tightBoundingBox ? pointcloud.pcoGeometry.tightBoundingBox : pointcloud.boundingBox;
+			let boxWorld = Potree.utils.computeTransformedBoundingBox(pointcloudBox, pointcloud.matrixWorld);
+			box.union(boxWorld);
+		}
+
+		return box;
+    }
 
 	addPointCloud (pointcloud) {
 		this.pointclouds.push(pointcloud);
@@ -380,8 +397,8 @@ Potree.Scene = class extends THREE.EventDispatcher{
 		let light = new THREE.AmbientLight( 0x555555 ); // soft white light
 		this.scenePointCloud.add( light );
 		
-		let grid = Potree.utils.createGrid(5, 5, 2);
-		this.scene.add(grid);
+		//let grid = Potree.utils.createGrid(5, 5, 2);
+		//this.scene.add(grid);
 
 		{ // background
 		// var texture = THREE.ImageUtils.loadTexture( Potree.resourcePath + '/textures/background.gif' );
@@ -979,22 +996,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 	};
 
 	getBoundingBox (pointclouds) {
-		pointclouds = pointclouds || this.scene.pointclouds;
-
-		let box = new THREE.Box3();
-
-		this.scene.scenePointCloud.updateMatrixWorld(true);
-		this.scene.referenceFrame.updateMatrixWorld(true);
-
-		for (let pointcloud of this.scene.pointclouds) {
-			pointcloud.updateMatrixWorld(true);
-
-			let pointcloudBox = pointcloud.pcoGeometry.tightBoundingBox ? pointcloud.pcoGeometry.tightBoundingBox : pointcloud.boundingBox;
-			let boxWorld = Potree.utils.computeTransformedBoundingBox(pointcloudBox, pointcloud.matrixWorld);
-			box.union(boxWorld);
-		}
-
-		return box;
+        return this.scene.getBoundingBox(pointclouds);
 	};
 
 	fitToScreen (factor = 1) {
@@ -1048,7 +1050,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		
 		this.fitToScreen();
 	};
-	
+
 	setFrontView(){
 		this.scene.view.yaw = 0;
 		this.scene.view.pitch = 0;
@@ -1489,7 +1491,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		
 		
 		let scene = this.scene;
-		let camera = scene.getActiveCamera();
+        let camera = scene.getActiveCamera();
 		
 		Potree.pointLoadLimit = Potree.pointBudget * 2;
 
@@ -1566,12 +1568,12 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 
 		if (!this.freeze) {
 			let result = Potree.updatePointClouds(scene.pointclouds, camera, this.renderer);
-			//camera.near = result.lowestSpacing * 10.0;
-			//camera.far = -this.getBoundingBox().applyMatrix4(camera.matrixWorldInverse).min.z;
-			//camera.far = Math.max(camera.far * 1.5, 1000);
-			//if(this.scene.cameraMode == Potree.CameraMode.ORTHOGRAPHIC) {
-			//	camera.near = -camera.far;
-			//}
+			camera.near = result.lowestSpacing * 10.0;
+			camera.far = -this.getBoundingBox().applyMatrix4(camera.matrixWorldInverse).min.z;
+			camera.far = Math.max(camera.far * 1.5, 1000);
+			if(this.scene.cameraMode == Potree.CameraMode.ORTHOGRAPHIC) {
+				camera.near = -camera.far;
+			}
 		} 
 		
 		this.scene.cameraP.fov = this.fov;
@@ -1605,7 +1607,11 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			this.scene.cameraO.rotation.order = "ZXY";
 			this.scene.cameraO.rotation.x = Math.PI / 2 + this.scene.view.pitch;
 			this.scene.cameraO.rotation.z = this.scene.view.yaw;
-		}
+        }
+        
+        camera.updateMatrix();
+        camera.updateMatrixWorld();
+        camera.matrixWorldInverse.getInverse(camera.matrixWorld);
 
 		{ // update clip boxes		
 			// ordinary clip boxes (clip planes)	

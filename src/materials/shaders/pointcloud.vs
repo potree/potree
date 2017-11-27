@@ -61,7 +61,7 @@ uniform float intensityBrightness;
 uniform float rgbGamma;
 uniform float rgbContrast;
 uniform float rgbBrightness;
-uniform float transition;
+uniform float uTransition;
 uniform float wRGB;
 uniform float wIntensity;
 uniform float wElevation;
@@ -427,7 +427,7 @@ vec3 getColor(){
 		color = getElevation();
 	#elif defined color_type_rgb_height
 		vec3 cHeight = getElevation();
-		color = (1.0 - transition) * getRGB() + transition * cHeight;
+		color = (1.0 - uTransition) * getRGB() + uTransition * cHeight;
 	#elif defined color_type_depth
 		float linearDepth = -mvPosition.z ;
 		float expDepth = (gl_Position.z / gl_Position.w) * 0.5 + 0.5;

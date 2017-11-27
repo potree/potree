@@ -118,7 +118,7 @@ Potree.VolumeTool = class VolumeTool extends THREE.EventDispatcher {
 			
 			{				
 				let pr = 0;
-				if(viewer.scene.cameraMode == Potree.CameraMode.PERSPECTIVE) {
+				if(this.viewer.scene.cameraMode == Potree.CameraMode.PERSPECTIVE) {
 					let distance = label.position.distanceTo(camera.position);
 					pr = Potree.utils.projectedRadius(1, camera.fov * Math.PI / 180, distance, domElement.clientHeight);
 				} else {

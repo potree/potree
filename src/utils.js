@@ -186,7 +186,7 @@ Potree.utils = class {
 		let line = new THREE.LineSegments(geometry, material, THREE.LinePieces);
 		line.receiveShadow = true;
 		return line;
-	};
+    };
 
 	static createBackgroundTexture (width, height) {
 		function gauss (x, y) {

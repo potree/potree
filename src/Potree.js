@@ -427,14 +427,13 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 
 			if (pointcloud.showBoundingBox && !node.boundingBoxNode && node.getBoundingBox) {
 				let boxHelper = new Potree.Box3Helper(node.getBoundingBox());
-				// let boxHelper = new THREE.BoxHelper(node.sceneNode);
-				pointcloud.add(boxHelper);
+                boxHelper.matrixAutoUpdate = false;
 				pointcloud.boundingBoxNodes.push(boxHelper);
 				node.boundingBoxNode = boxHelper;
-				node.boundingBoxNode.matrixWorld.copy(pointcloud.matrixWorld);
+				node.boundingBoxNode.matrix.copy(pointcloud.matrixWorld);
 			} else if (pointcloud.showBoundingBox) {
 				node.boundingBoxNode.visible = true;
-				node.boundingBoxNode.matrixWorld.copy(pointcloud.matrixWorld);
+				node.boundingBoxNode.matrix.copy(pointcloud.matrixWorld);
 			} else if (!pointcloud.showBoundingBox && node.boundingBoxNode) {
 				node.boundingBoxNode.visible = false;
 			}

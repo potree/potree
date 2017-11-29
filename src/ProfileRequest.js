@@ -125,6 +125,7 @@ Potree.ProfileRequest = class ProfileRequest {
 		}
 
 		if (intersectedNodes.length > 0) {
+
 			this.getPointsInsideProfile(intersectedNodes, this.temporaryResult);
 			if (this.temporaryResult.size() > 100) {
 				this.pointsServed += this.temporaryResult.size();
@@ -159,10 +160,17 @@ Potree.ProfileRequest = class ProfileRequest {
 				let numPoints = node.numPoints;
 				let buffer = node.buffer;
 				let view = new DataView(buffer.data);
-				
+
 				if(!numPoints){
 					continue;
 				}
+
+                {// DEBUG
+                    let boxHelper = new Potree.Box3Helper(node.getBoundingBox());
+                    boxHelper.matrixAutoUpdate = false;
+                    boxHelper.matrix.copy(viewer.scene.pointclouds[0].matrixWorld);
+                    viewer.scene.scene.add(boxHelper);
+                }
 
 				let sv = new THREE.Vector3().subVectors(segment.end, segment.start).setZ(0);
 				let segmentDir = sv.clone().normalize();
@@ -266,6 +274,8 @@ Potree.ProfileRequest = class ProfileRequest {
 
 				points.data['mileage'] = new Float64Array(mileage);
 				points.numPoints = accepted.length;
+
+                //console.log(`getPointsInsideProfile - ${node.name} - accepted: ${accepted.length}`);
 
 				segment.points.add(points);
 			}

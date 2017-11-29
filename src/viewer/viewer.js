@@ -1566,6 +1566,28 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			}
 		}
 
+        {
+            if(this.showBoundingBox){
+                let bbRoot = this.scene.scene.getObjectByName("potree_bounding_box_root");
+                if(!bbRoot){
+                    let node = new THREE.Object3D();
+                    node.name = "potree_bounding_box_root";
+                    this.scene.scene.add(node);
+                    bbRoot = node;
+                }
+
+                let visibleBoxes = [];
+                for(let pointcloud of this.scene.pointclouds){
+                    for(let node of pointcloud.visibleNodes){
+                        let box = node.boundingBoxNode;
+                        visibleBoxes.push(box);
+                    }
+                }
+
+                bbRoot.children = visibleBoxes;
+            }
+        }
+
 		if (!this.freeze) {
 			let result = Potree.updatePointClouds(scene.pointclouds, camera, this.renderer);
 			camera.near = result.lowestSpacing * 10.0;

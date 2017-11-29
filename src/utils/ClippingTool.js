@@ -93,7 +93,7 @@ Potree.ClippingTool = class ClippingTool extends THREE.EventDispatcher{
 				let I = Potree.utils.getMousePointCloudIntersection(
 					e.drag.end, 
 					this.viewer.scene.getActiveCamera(), 
-					this.viewer.renderer, 
+					this.viewer, 
 					this.viewer.scene.pointclouds);
 					
 				if(I){

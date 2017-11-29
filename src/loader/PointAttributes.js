@@ -12,6 +12,9 @@ Potree.PointAttributeNames.CLASSIFICATION = 7;
 Potree.PointAttributeNames.NORMAL_SPHEREMAPPED = 8;
 Potree.PointAttributeNames.NORMAL_OCT16 = 9;
 Potree.PointAttributeNames.NORMAL = 10;
+Potree.PointAttributeNames.RETURN_NUMBER = 11;
+Potree.PointAttributeNames.NUMBER_OF_RETURNS = 12;
+Potree.PointAttributeNames.SOURCE_ID = 13;
 
 /**
  * Some types of possible point attribute data formats
@@ -93,7 +96,19 @@ Potree.PointAttribute.NORMAL_OCT16 = new Potree.PointAttribute(
 
 Potree.PointAttribute.NORMAL = new Potree.PointAttribute(
 	Potree.PointAttributeNames.NORMAL,
-	Potree.PointAttributeTypes.DATA_TYPE_FLOAT, 3);
+    Potree.PointAttributeTypes.DATA_TYPE_FLOAT, 3);
+    
+Potree.PointAttribute.RETURN_NUMBER = new Potree.PointAttribute(
+	Potree.PointAttributeNames.RETURN_NUMBER,
+    Potree.PointAttributeTypes.DATA_TYPE_UINT8, 1);
+    
+Potree.PointAttribute.NUMBER_OF_RETURNS = new Potree.PointAttribute(
+	Potree.PointAttributeNames.NUMBER_OF_RETURNS,
+    Potree.PointAttributeTypes.DATA_TYPE_UINT8, 1);
+    
+Potree.PointAttribute.SOURCE_ID = new Potree.PointAttribute(
+	Potree.PointAttributeNames.SOURCE_ID,
+	Potree.PointAttributeTypes.DATA_TYPE_UINT8, 1);
 
 /**
  * Ordered list of PointAttributes used to identify how points are aligned in a buffer.

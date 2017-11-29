@@ -145,8 +145,9 @@ Potree.Measure = class Measure extends THREE.Object3D {
 				let I = Potree.utils.getMousePointCloudIntersection(
 					e.drag.end, 
 					e.viewer.scene.getActiveCamera(), 
-					e.viewer.renderer, 
-					e.viewer.scene.pointclouds);
+					e.viewer, 
+					e.viewer.scene.pointclouds,
+					{pickClipped: true});
 
 				if (I) {
 					let i = this.spheres.indexOf(e.drag.object);

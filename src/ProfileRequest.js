@@ -61,8 +61,7 @@ Potree.ProfileRequest = class ProfileRequest {
 	}
 
 	initialize () {
-		this.priorityQueue.push({node: this.pointcloud.pcoGeometry.root, weight: 1});
-		this.traverse(this.pointcloud.pcoGeometry.root);
+		this.priorityQueue.push({node: this.pointcloud.pcoGeometry.root, weight: Infinity});
 	};
 
 	// traverse the node and add intersecting descendants to queue
@@ -105,6 +104,10 @@ Potree.ProfileRequest = class ProfileRequest {
 		for (let i = 0; i < Math.min(maxNodesPerUpdate, this.priorityQueue.size()); i++) {
 			let element = this.priorityQueue.pop();
 			let node = element.node;
+
+			if(node.level > this.maxDepth){
+				continue;
+			}
 
 			if (node.loaded) {
 				// add points to result
@@ -153,10 +156,13 @@ Potree.ProfileRequest = class ProfileRequest {
 
 		for (let segment of target.segments) {
 			for (let node of nodes) {
-				let geometry = node.geometry;
-				let positions = geometry.attributes.position;
-				let p = positions.array;
 				let numPoints = node.numPoints;
+				let buffer = node.buffer;
+				let view = new DataView(buffer.data);
+				
+				if(!numPoints){
+					continue;
+				}
 
 				let sv = new THREE.Vector3().subVectors(segment.end, segment.start).setZ(0);
 				let segmentDir = sv.clone().normalize();
@@ -171,8 +177,14 @@ Potree.ProfileRequest = class ProfileRequest {
 				let matrix = new THREE.Matrix4().multiplyMatrices(
 					this.pointcloud.matrixWorld, nodeMatrix);
 
+				let posOffset = buffer.offset("position");
 				for (let i = 0; i < numPoints; i++) {
-					let pos = new THREE.Vector3(p[3 * i], p[3 * i + 1], p[3 * i + 2]);
+					
+					let pos = new THREE.Vector3(
+						view.getFloat32(i * buffer.stride + posOffset + 0, true),
+						view.getFloat32(i * buffer.stride + posOffset + 4, true),
+						view.getFloat32(i * buffer.stride + posOffset + 8, true));
+					
 					pos.applyMatrix4(matrix);
 					let distance = Math.abs(segment.cutPlane.distanceToPoint(pos));
 					let centerDistance = Math.abs(segment.halfPlane.distanceToPoint(pos));
@@ -190,29 +202,66 @@ Potree.ProfileRequest = class ProfileRequest {
 						acceptedPositions.push(pos.z);
 					}
 				}
-
-				for (let attribute of Object.keys(geometry.attributes).filter(a => a !== 'indices')) {
-					let bufferedAttribute = geometry.attributes[attribute];
-					let Type = bufferedAttribute.array.constructor;
+				
+				points.data.position = new Float32Array(acceptedPositions);
+				points.data.color = new Uint8Array(accepted.length * 4).fill(100);
+				
+				let relevantAttributes = buffer.attributes.filter(a => !["position", "index"].includes(a.name));
+				for(let attribute of relevantAttributes){
 
 					let filteredBuffer = null;
-
-					if (attribute === 'position') {
-						filteredBuffer = new Type(acceptedPositions);
-					} else {
-						filteredBuffer = new Type(accepted.length * bufferedAttribute.itemSize);
-
-						for (let i = 0; i < accepted.length; i++) {
-							let index = accepted[i];
-
-							filteredBuffer.set(
-								bufferedAttribute.array.subarray(
-									bufferedAttribute.itemSize * index,
-									bufferedAttribute.itemSize * index + bufferedAttribute.itemSize),
-								bufferedAttribute.itemSize * i);
-						}
+					if(attribute.type === "FLOAT"){
+						filteredBuffer = new Float32Array(attribute.numElements * accepted.length);
+					}else if(attribute.type === "UNSIGNED_BYTE"){
+						filteredBuffer = new Uint8Array(attribute.numElements * accepted.length);
+					}else if(attribute.type === "UNSIGNED_SHORT"){
+						filteredBuffer = new Uint16Array(attribute.numElements * accepted.length);
+					}else if(attribute.type === "UNSIGNED_INT"){
+						filteredBuffer = new Uint32Array(attribute.numElements * accepted.length);
 					}
-					points.data[attribute] = filteredBuffer;
+
+					let source = new Uint8Array(buffer.data);
+					let target = new Uint8Array(filteredBuffer.buffer);
+
+					let offset = buffer.offset(attribute.name);
+
+					for(let i = 0; i < accepted.length; i++){
+
+						let index = accepted[i];
+						
+						let start = buffer.stride * index + offset;
+						let end = start + attribute.bytes;
+						let sub = source.subarray(start, end);
+
+						target.set(sub, i * attribute.bytes);
+					}
+
+					points.data[attribute.name] = filteredBuffer;
+
+
+
+
+					//let bufferedAttribute = geometry.attributes[attribute];
+					//let Type = bufferedAttribute.array.constructor;
+                
+					//let filteredBuffer = null;
+                
+					//if (attribute === 'position') {
+					//	filteredBuffer = new Type(acceptedPositions);
+					//} else {
+					//	filteredBuffer = new Type(accepted.length * bufferedAttribute.itemSize);
+                
+					//	for (let i = 0; i < accepted.length; i++) {
+					//		let index = accepted[i];
+                
+					//		filteredBuffer.set(
+					//			bufferedAttribute.array.subarray(
+					//				bufferedAttribute.itemSize * index,
+					//				bufferedAttribute.itemSize * index + bufferedAttribute.itemSize),
+					//			bufferedAttribute.itemSize * i);
+					//	}
+					//}
+					//points.data[attribute] = filteredBuffer;
 				}
 
 				points.data['mileage'] = new Float64Array(mileage);
@@ -234,7 +283,7 @@ Potree.ProfileRequest = class ProfileRequest {
 			return;
 		}
 
-		this.maxDepth = this.highestLevelServed + 1;
+		this.maxDepth = this.highestLevelServed;
 		this.cancelRequested = true;
 
 		console.log(`maxDepth: ${this.maxDepth}`);

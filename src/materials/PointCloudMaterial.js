@@ -193,7 +193,6 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 		this._useClipBox = false;
 		this.numClipBoxes = 0;
 		this._weighted = false;
-		this._depthMap = null;
 		this._gradient = Potree.Gradients.SPECTRAL;
 		this._classification = Potree.Classification.DEFAULT;
 		this.gradientTexture = Potree.PointCloudMaterial.generateGradientTexture(this._gradient);
@@ -202,6 +201,8 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 		this.fog = false;
 		this._treeType = treeType;
 		this._useEDL = false;
+		this._snapEnabled = false;
+		this._numSnapshots = 0;
 
 		this._defaultIntensityRangeChanged = false;
 		this._defaultElevationRangeChanged = false;
@@ -230,7 +231,7 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 			near:				{ type: "f", value: 0.1 },
 			far:				{ type: "f", value: 1.0 },
 			uColor:   			{ type: "c", value: new THREE.Color( 0xffffff ) },
-			opacity:   			{ type: "f", value: 1.0 },
+			uOpacity:  			{ type: "f", value: 1.0 },
 			size:   			{ type: "f", value: pointSize },
 			minSize:   			{ type: "f", value: minSize },
 			maxSize:   			{ type: "f", value: maxSize },
@@ -249,7 +250,6 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 			clipPolygonVCount:	{ type: "iv", value: [] },
 			clipPolygonVP:		{ type: "Matrix4fv", value: [] },
 			toModel:			{ type: "Matrix4f", value: [] },
-			depthMap: 			{ type: "t", value: null },
 			diffuse:			{ type: "fv", value: [1,1,1]},
 			transition:         { type: "f", value: 0.5 },
 			intensityRange:     { type: "fv", value: [0, 65000] },
@@ -267,7 +267,14 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 			wSourceID:			{ type: "f", value: 0 },
 			useOrthographicCamera: { type: "b", value: false },
 			orthoRange: 		{ type: "f", value: 10.0 },
-			clipMode: 			{ type: "i", value: 1}
+			clipMode: 			{ type: "i", value: 1},
+			uSnapshot:			{ type: "tv", value: []},
+			uSnapshotDepth:		{ type: "tv", value: []},
+			uSnapView:			{ type: "Matrix4fv", value: []},
+			uSnapProj:			{ type: "Matrix4fv", value: []},
+			uSnapProjInv:		{ type: "Matrix4fv", value: []},
+			uSnapViewInv:		{ type: "Matrix4fv", value: []},
+			uShadowColor: 		{ type: "3fv", value: [0, 0, 0]}
 		};
 
 		this.defaultAttributeValues.normal = [0, 0, 0];
@@ -282,14 +289,6 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 	updateShaderSource () {
 		this.vertexShader = this.getDefines() + Potree.Shaders['pointcloud.vs'];
 		this.fragmentShader = this.getDefines() + Potree.Shaders['pointcloud.fs'];
-
-		if (this.depthMap) {
-			this.uniforms.depthMap.value = this.depthMap;
-			// this.depthMap = depthMap;
-			// this.setValues({
-			//	depthMap: this.depthMap,
-			// });
-		}
 
 		if (this.opacity === 1.0) {
 			this.blending = THREE.NoBlending;
@@ -335,6 +334,10 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 
 		if (this._useEDL) {
 			defines += '#define use_edl\n';
+		}
+
+		if (this._snapEnabled) {
+			defines += '#define snap_enabled\n';
 		}
 
 		if (this._pointColorType === Potree.PointColorType.RGB) {
@@ -503,6 +506,26 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 		});
 	}
 
+	get numSnapshots(){
+		return this._numSnapshots;
+	}
+
+	set numSnapshots(value){
+		this._numSnapshots = value;
+	}
+
+	get snapEnabled(){
+		return this._snapEnabled;
+	}
+
+	set snapEnabled(value){
+		if(this._snapEnabled !== value){
+			this._snapEnabled = value;
+			//this.uniforms.snapEnabled.value = value;
+			this.updateShaderSource();
+		}
+	}
+
 	get spacing () {
 		return this.uniforms.spacing.value;
 	}
@@ -609,13 +632,13 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 
 
 	get opacity(){
-		return this.uniforms.opacity.value;
+		return this.uniforms.uOpacity.value;
 	}
 
 	set opacity (value) {
 		if (this.uniforms && this.uniforms.opacity) {
-			if (this.uniforms.opacity.value !== value) {
-				this.uniforms.opacity.value = value;
+			if (this.uniforms.uOpacity.value !== value) {
+				this.uniforms.uOpacity.value = value;
 				this.updateShaderSource();
 				this.dispatchEvent({
 					type: 'opacity_changed',
@@ -645,17 +668,6 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 				type: 'material_property_changed',
 				target: this
 			});
-		}
-	}
-
-	get depthMap () {
-		return this._depthMap;
-	}
-
-	set depthMap (value) {
-		if (this._depthMap !== value) {
-			this._depthMap = value;
-			this.updateShaderSource();
 		}
 	}
 
@@ -992,9 +1004,12 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 
 		context.fillStyle = ctxGradient;
 		context.fill();
-
-		let texture = new THREE.Texture(canvas);
+		
+		//let texture = new THREE.Texture(canvas);
+		let texture = new THREE.CanvasTexture(canvas);
 		texture.needsUpdate = true;
+		
+		texture.minFilter = THREE.LinearFilter;
 		// textureImage = texture.image;
 
 		return texture;
@@ -1032,5 +1047,15 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 		texture.needsUpdate = true;
 
 		return texture;
+	}
+
+	copyFrom(from){
+
+		for(let name of this.uniforms){
+			this.uniforms[name].value = from.uniforms[name].value;
+		}
+
+		
+
 	}
 };

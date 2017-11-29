@@ -470,7 +470,7 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher {
 		return Potree.utils.getMousePointCloudIntersection(
 			this.mouse, 
 			this.scene.getActiveCamera(), 
-			this.renderer, 
+			this.viewer, 
 			this.scene.pointclouds);
 	}
 

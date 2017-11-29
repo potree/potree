@@ -17,6 +17,7 @@ var server;
 var paths = {
 	potree : [
 		"src/Potree.js",
+		"src/PotreeRenderer.js",
 		"src/PointCloudTree.js",
 		"src/WorkerPool.js",
 		"build/shaders/shaders.js",
@@ -62,13 +63,16 @@ var paths = {
 		"src/utils/ClipVolume.js",
 		"src/utils/PolygonClipVolume.js",
 		"src/utils/Box3Helper.js",
+		"src/utils/PointCloudSM.js",
 		"src/exporter/GeoJSONExporter.js",
 		"src/exporter/DXFExporter.js",
 		"src/exporter/CSVExporter.js",
 		"src/exporter/LASExporter.js",
 		"src/arena4d/PointCloudArena4D.js",
 		"src/arena4d/PointCloudArena4DGeometry.js",
-		"src/viewer/ProgressBar.js",
+		"src/viewer/PotreeRenderer.js",
+		"src/viewer/EDLRenderer.js",
+		"src/viewer/RepRenderer.js",
 		"src/viewer/viewer.js",
 		"src/viewer/profile.js",
 		"src/viewer/map.js",
@@ -76,6 +80,8 @@ var paths = {
 		"src/viewer/NavigationCube.js",
 		"src/stuff/HoverMenu.js",
 		"src/webgl/GLProgram.js",
+		"src/InterleavedBuffer.js",
+		"src/utils/toInterleavedBufferAttribute.js",
 	],
 	laslaz: [
 		"build/workers/laslaz-worker.js",
@@ -102,22 +108,23 @@ var workers = {
 	"BinaryDecoderWorker": [
 		"src/workers/BinaryDecoderWorker.js",
 		"src/Version.js",
-		"src/loader/PointAttributes.js"
+		"src/loader/PointAttributes.js",
+		"src/InterleavedBuffer.js",
+		"src/utils/toInterleavedBufferAttribute.js",
 	],
 	"GreyhoundBinaryDecoderWorker": [
 		"libs/plasio/workers/laz-perf.js",
 		"src/workers/GreyhoundBinaryDecoderWorker.js",
 		"src/Version.js",
 		"src/loader/PointAttributes.js"
-	],
-	"DEMWorker": [
-		"src/workers/DEMWorker.js"
 	]
 };
 
 var shaders = [
 	"src/materials/shaders/pointcloud.vs",
 	"src/materials/shaders/pointcloud.fs",
+	"src/materials/shaders/pointcloud_sm.vs",
+	"src/materials/shaders/pointcloud_sm.fs",
 	"src/materials/shaders/normalize.vs",
 	"src/materials/shaders/normalize.fs",
 	"src/materials/shaders/edl.vs",

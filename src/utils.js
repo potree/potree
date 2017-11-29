@@ -186,7 +186,7 @@ Potree.utils = class {
 		let line = new THREE.LineSegments(geometry, material, THREE.LinePieces);
 		line.receiveShadow = true;
 		return line;
-	};
+    };
 
 	static createBackgroundTexture (width, height) {
 		function gauss (x, y) {
@@ -225,17 +225,23 @@ Potree.utils = class {
 		return texture;
 	};
 
-	static getMousePointCloudIntersection (mouse, camera, renderer, pointclouds) {
+	static getMousePointCloudIntersection (mouse, camera, viewer, pointclouds, params = {}) {
+		
+		let renderer = viewer.renderer;
+		
 		let nmouse = {
 			x: (mouse.x / renderer.domElement.clientWidth) * 2 - 1,
 			y: -(mouse.y / renderer.domElement.clientHeight) * 2 + 1
 		};
 
-		// let vector = new THREE.Vector3( nmouse.x, nmouse.y, 0.5 );
-		// vector.unproject(camera);
+		let pickParams = {};
 
-		// let direction = vector.sub(camera.position).normalize();
-		// let ray = new THREE.Ray(camera.position, direction);
+		if(params.pickClipped){
+			pickParams.pickClipped = params.pickClipped;
+		}
+
+		pickParams.x = mouse.x;
+		pickParams.y = renderer.domElement.clientHeight - mouse.y;
 
 		let raycaster = new THREE.Raycaster();
 		raycaster.setFromCamera(nmouse, camera);
@@ -247,7 +253,7 @@ Potree.utils = class {
 		let closestPoint = null;
 		
 		for(let pointcloud of pointclouds){
-			let point = pointcloud.pick(renderer, camera, ray, {x: mouse.x, y: renderer.domElement.clientHeight - mouse.y});
+			let point = pointcloud.pick(viewer, camera, ray, pickParams);
 			
 			if(!point){
 				continue;

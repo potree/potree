@@ -12,12 +12,7 @@
 			<span style="flex-grow: 1"></span>
 			<span id="potree_version_number" style="color: #9AA1A4; font-size: 80%; font-weight: 100"></span>
 		</span>
-		<div id="potree_languages" style="font-family:arial;">
-			<a href="javascript:viewer.setLanguage('en');" style="margin-left: 30px;">EN</a> -  
-			<a href="javascript:viewer.setLanguage('fr');">FR</a> - 
-			<a href="javascript:viewer.setLanguage('de');">DE</a> - 
-			<a href="javascript:viewer.setLanguage('jp');">JP</a>
-		</div>
+		<div id="potree_languages" style="font-family:arial;"></div>
 	</div>
 	<div>
 	<!--<div id="accordion" class="accordion">-->
@@ -35,7 +30,7 @@
 					<span>Eye-Dome-Lighting</span>
 				</div>
 				
-				<li><label><input type="checkbox" id="chkEDLEnabled" onClick="viewer.setEDLEnabled(this.checked)"/><span data-i18n="appearance.edl_enable"></span></label></li>
+				<li><label><input type="checkbox" id="chkEDLEnabled"/><span data-i18n="appearance.edl_enable"></span></label></li>
 				<li><span data-i18n="appearance.edl_radius"></span>:<span id="lblEDLRadius"></span><div id="sldEDLRadius"></div></li>
 				<li><span data-i18n="appearance.edl_strength"></span>:<span id="lblEDLStrength"></span><div id="sldEDLStrength"></div></li>
 			</div>
@@ -45,10 +40,10 @@
 					<span>Background</span>
 				</div>
 				
-				<li><label><input type="radio" name="background" value="skybox" onClick='viewer.setBackground("skybox")'/><span>Skybox</span></label></li>
-				<li><label><input type="radio" name="background" value="gradient" onClick='viewer.setBackground("gradient")'/><span>Gradient</span></label></li>
-				<li><label><input type="radio" name="background" value="black" onClick='viewer.setBackground("black")'/><span>Black</span></label></li>
-				<li><label><input type="radio" name="background" value="white" onClick='viewer.setBackground("white")'/><span>White</span></label></li>
+				<li><label><input type="radio" name="background" value="skybox" /><span>Skybox</span></label></li>
+				<li><label><input type="radio" name="background" value="gradient" /><span>Gradient</span></label></li>
+				<li><label><input type="radio" name="background" value="black" /><span>Black</span></label></li>
+				<li><label><input type="radio" name="background" value="white" /><span>White</span></label></li>
 			</div>
 				
 			</ul>
@@ -125,14 +120,6 @@
 				<div>
 					<li><span data-i18n="scene.camera_position"></span>:<span id="lblCameraPosition"></span></li>
 					<li><span data-i18n="scene.camera_target"></span>:<span id="lblCameraTarget"></span></li>
-					<li style="margin: 10px 0px">						
-						<label for="optLengthUnit" class="pv-select-label"><span data-i18n="appearance.length_unit"></span></label>
-					    <select id="optLengthUnit" name="optLengthUnit">
-							<option value="m">Meter (m)</option>
-							<option value="ft">Feet (ft)</option>
-							<option value="in">Inch (&#8243)</option>
-						</select>
-					</li>
 				</div>
 			</ul>
 			
@@ -169,8 +156,8 @@
 						<option>Clip Outside</option>
 					</select>
 				</li>-->
-				<li><label><input type="checkbox" onClick="viewer.setShowBoundingBox(this.checked)"/><span data-i18n="appearance.box"></span></label></li>
-				<li><label><input type="checkbox" onClick="viewer.setFreeze(this.checked)"/><span data-i18n="appearance.freeze"></span></label></li>
+				<li><label><input id="show_bounding_box" type="checkbox" /><span data-i18n="appearance.box"></span></label></li>
+				<li><label><input id="set_freeze" type="checkbox" /><span data-i18n="appearance.freeze"></span></label></li>
 			</ul>
 		  </div>
 		  

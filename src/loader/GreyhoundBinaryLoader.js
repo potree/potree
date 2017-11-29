@@ -1,9 +1,3 @@
-function networkToNative (val) {
-	return ((val & 0x00FF) << 24) |
-		((val & 0xFF00) << 8) |
-		((val >> 8) & 0xFF00) |
-		((val >> 24) & 0x00FF);
-}
 
 Potree.GreyhoundBinaryLoader = function (version, boundingBox, scale) {
 	if (typeof (version) === 'string') {
@@ -15,6 +9,13 @@ Potree.GreyhoundBinaryLoader = function (version, boundingBox, scale) {
 	this.boundingBox = boundingBox;
 	this.scale = scale;
 };
+
+Potree.GreyhoundBinaryLoader.prototype.networkToNative = function (val) {
+	return ((val & 0x00FF) << 24) |
+		((val & 0xFF00) << 8) |
+		((val >> 8) & 0xFF00) |
+		((val >> 24) & 0x00FF);
+}
 
 Potree.GreyhoundBinaryLoader.prototype.load = function (node) {
 	if (node.loaded) return;
@@ -52,7 +53,7 @@ Potree.GreyhoundBinaryLoader.prototype.parse = function (node, buffer) {
 
 	var view = new DataView(
 		buffer, buffer.byteLength - NUM_POINTS_BYTES, NUM_POINTS_BYTES);
-	var numPoints = networkToNative(view.getUint32(0));
+	var numPoints = this.networkToNative(view.getUint32(0));
 	var pointAttributes = node.pcoGeometry.pointAttributes;
 
 	node.numPoints = numPoints;

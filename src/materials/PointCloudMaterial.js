@@ -237,8 +237,7 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 			maxSize:   			{ type: "f", value: maxSize },
 			octreeSize:			{ type: "f", value: 0 },
 			bbSize:				{ type: "fv", value: [0,0,0] },
-			heightMin:			{ type: "f", value: 0.0 },
-			heightMax:			{ type: "f", value: 1.0 },
+            elevationRange:     { type: "2fv", value: [0,0] },
 			clipBoxCount:		{ type: "f", value: 0 },
 			clipPolygonCount:	{ type: "i", value: 0 },
 			visibleNodes:		{ type: "t", value: this.visibleNodesTexture },
@@ -775,46 +774,44 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 	}
 
 	get elevationRange () {
-		return [this.heightMin, this.heightMax];
+		//return [this.heightMin, this.heightMax];
+        return this.uniforms.elevationRange.value;
 	}
 
 	set elevationRange (value) {
-		this.heightMin = value[0];
-		this.heightMax = value[1];
+		//this.heightMin = value[0];
+		//this.heightMax = value[1];
+
+        let changed = this.uniforms.elevationRange.value[0] !== value[0]
+            || this.uniforms.elevationRange.value[1] !== value[1];
+
+        if(changed){
+            this.uniforms.elevationRange.value = value;
+
+            this._defaultElevationRangeChanged = true;
+
+			this.dispatchEvent({
+				type: 'material_property_changed',
+				target: this
+			});
+        }
+        
 	}
 
 	get heightMin () {
-		return this.uniforms.heightMin.value;
+		return this.uniforms.elevationRange.value[0];
 	}
 
 	set heightMin (value) {
-		if (this.uniforms.heightMin.value !== value) {
-			this.uniforms.heightMin.value = value;
-
-			this._defaultElevationRangeChanged = true;
-
-			this.dispatchEvent({
-				type: 'material_property_changed',
-				target: this
-			});
-		}
+		this.elevationRange = [value, this.elevationRange[1]];
 	}
 
 	get heightMax () {
-		return this.uniforms.heightMax.value;
+		return this.uniforms.elevationRange.value[1];
 	}
 
 	set heightMax (value) {
-		if (this.uniforms.heightMax.value !== value) {
-			this.uniforms.heightMax.value = value;
-
-			this._defaultElevationRangeChanged = true;
-
-			this.dispatchEvent({
-				type: 'material_property_changed',
-				target: this
-			});
-		}
+		this.elevationRange = [this.elevationRange[0], value];
 	}
 
 	get transition () {

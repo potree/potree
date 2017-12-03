@@ -297,6 +297,8 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 		let bbWorld = node.boundingBox.clone().applyMatrix4(this.matrixWorld);
 		let bsWorld = bbWorld.getBoundingSphere();
 
+        let intersects = false;
+
 		for (let i = 0; i < profile.points.length - 1; i++) {
 
 			let start = new THREE.Vector3(profile.points[i + 0].x, profile.points[i + 0].y, bsWorld.center.z);
@@ -305,10 +307,12 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 			let closest = new THREE.Line3(start, end).closestPointToPoint(bsWorld.center, true);
 			let distance = closest.distanceTo(bsWorld.center);
 
-			return distance < (bsWorld.radius + profile.width);
+			intersects = intersects || (distance < (bsWorld.radius + profile.width));
 		}
 
-		return false;
+        //console.log(`${node.name}: ${intersects}`);
+
+		return intersects;
 	}
 
 	nodesOnRay (nodes, ray) {

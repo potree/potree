@@ -113,9 +113,11 @@ Potree.ProfileRequest = class ProfileRequest {
 				// add points to result
 				intersectedNodes.push(node);
 				Potree.getLRU().touch(node);
-				this.highestLevelServed = node.getLevel();
+				this.highestLevelServed = Math.max(node.getLevel(), this.highestLevelServed);
 
-				if ((node.level % node.pcoGeometry.hierarchyStepSize) === 0 && node.hasChildren) {
+                let doTraverse = (node.level % node.pcoGeometry.hierarchyStepSize) === 0 && node.hasChildren;
+                doTraverse = doTraverse || node.getLevel() === 0;
+				if (doTraverse) {
 					this.traverse(node);
 				}
 			} else {
@@ -165,12 +167,13 @@ Potree.ProfileRequest = class ProfileRequest {
 					continue;
 				}
 
-                {// DEBUG
-                    let boxHelper = new Potree.Box3Helper(node.getBoundingBox());
-                    boxHelper.matrixAutoUpdate = false;
-                    boxHelper.matrix.copy(viewer.scene.pointclouds[0].matrixWorld);
-                    viewer.scene.scene.add(boxHelper);
-                }
+                //{// DEBUG
+                //    console.log(node.name);
+                //    let boxHelper = new Potree.Box3Helper(node.getBoundingBox());
+                //    boxHelper.matrixAutoUpdate = false;
+                //    boxHelper.matrix.copy(viewer.scene.pointclouds[0].matrixWorld);
+                //    viewer.scene.scene.add(boxHelper);
+                //}
 
 				let sv = new THREE.Vector3().subVectors(segment.end, segment.start).setZ(0);
 				let segmentDir = sv.clone().normalize();

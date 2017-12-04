@@ -294,6 +294,7 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 			this.transparent = false;
 			this.depthTest = true;
 			this.depthWrite = true;
+			this.depthFunc = THREE.LessEqualDepth;
 		} else if (this.opacity < 1.0 && !this.useEDL) {
 			this.blending = THREE.AdditiveBlending;
 			this.transparent = true;

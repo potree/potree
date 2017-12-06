@@ -154,8 +154,56 @@ Potree.ProfileRequest = class ProfileRequest {
 		}
 	};
 
+	getAccepted(numPoints, buffer, posOffset, matrix, segment, segmentDir, points, totalMileage){
+		let view = new DataView(buffer.data);
+
+		let accepted = new Uint32Array(numPoints);
+		let mileage = new Float64Array(numPoints);
+		let acceptedPositions = new Float32Array(numPoints * 3);
+		let numAccepted = 0;
+
+		let pos = new THREE.Vector3();
+		let svp = new THREE.Vector3();
+
+		for (let i = 0; i < numPoints; i++) {
+
+			pos.set(
+				view.getFloat32(i * buffer.stride + posOffset + 0, true),
+				view.getFloat32(i * buffer.stride + posOffset + 4, true),
+				view.getFloat32(i * buffer.stride + posOffset + 8, true));
+		
+			pos.applyMatrix4(matrix);
+			let distance = Math.abs(segment.cutPlane.distanceToPoint(pos));
+			let centerDistance = Math.abs(segment.halfPlane.distanceToPoint(pos));
+
+			if (distance < this.profile.width / 2 && centerDistance < segment.length / 2) {
+				svp.subVectors(pos, segment.start);
+				let localMileage = segmentDir.dot(svp);
+
+				accepted[numAccepted] = i;
+				mileage[numAccepted] = localMileage + totalMileage;
+				points.boundingBox.expandByPoint(pos);
+
+				acceptedPositions[3 * numAccepted + 0] = pos.x;
+				acceptedPositions[3 * numAccepted + 1] = pos.y;
+				acceptedPositions[3 * numAccepted + 2] = pos.z;
+
+				numAccepted++;
+			}
+		}
+
+		accepted = accepted.subarray(0, numAccepted);
+		mileage = mileage.subarray(0, numAccepted);
+		acceptedPositions = acceptedPositions.subarray(0, numAccepted * 3);
+
+		return [accepted, mileage, acceptedPositions];
+	}
+
 	getPointsInsideProfile (nodes, target) {
 		let totalMileage = 0;
+
+		let tStart = new Date().getTime();
+		let pointsProcessed = 0;
 
 		for (let segment of target.segments) {
 			for (let node of nodes) {
@@ -167,6 +215,7 @@ Potree.ProfileRequest = class ProfileRequest {
 					continue;
 				}
 
+
                 //{// DEBUG
                 //    console.log(node.name);
                 //    let boxHelper = new Potree.Box3Helper(node.getBoundingBox());
@@ -175,12 +224,14 @@ Potree.ProfileRequest = class ProfileRequest {
                 //    viewer.scene.scene.add(boxHelper);
                 //}
 
+				//performance.mark("getPointsInsideProfile-10");
+
 				let sv = new THREE.Vector3().subVectors(segment.end, segment.start).setZ(0);
 				let segmentDir = sv.clone().normalize();
 
-				let accepted = [];
-				let mileage = [];
-				let acceptedPositions = [];
+				//let accepted = [];
+				//let mileage = [];
+				//let acceptedPositions = [];
 				let points = new Potree.Points();
 
 				let nodeMatrix = new THREE.Matrix4().makeTranslation(...node.boundingBox.min.toArray());
@@ -188,35 +239,20 @@ Potree.ProfileRequest = class ProfileRequest {
 				let matrix = new THREE.Matrix4().multiplyMatrices(
 					this.pointcloud.matrixWorld, nodeMatrix);
 
+				//performance.mark("getPointsInsideProfile-20");
+
 				let posOffset = buffer.offset("position");
-				for (let i = 0; i < numPoints; i++) {
-					
-					let pos = new THREE.Vector3(
-						view.getFloat32(i * buffer.stride + posOffset + 0, true),
-						view.getFloat32(i * buffer.stride + posOffset + 4, true),
-						view.getFloat32(i * buffer.stride + posOffset + 8, true));
-					
-					pos.applyMatrix4(matrix);
-					let distance = Math.abs(segment.cutPlane.distanceToPoint(pos));
-					let centerDistance = Math.abs(segment.halfPlane.distanceToPoint(pos));
+				pointsProcessed = pointsProcessed + numPoints;
 
-					if (distance < this.profile.width / 2 && centerDistance < segment.length / 2) {
-						let svp = new THREE.Vector3().subVectors(pos, segment.start);
-						let localMileage = segmentDir.dot(svp);
+				let [accepted, mileage, acceptedPositions] = this.getAccepted(numPoints, buffer, posOffset, matrix, segment, segmentDir, points,totalMileage);
 
-						accepted.push(i);
-						mileage.push(localMileage + totalMileage);
-						points.boundingBox.expandByPoint(pos);
-
-						acceptedPositions.push(pos.x);
-						acceptedPositions.push(pos.y);
-						acceptedPositions.push(pos.z);
-					}
-				}
+				//performance.mark("getPointsInsideProfile-30");
 				
-				points.data.position = new Float32Array(acceptedPositions);
-				points.data.color = new Uint8Array(accepted.length * 4).fill(100);
+				points.data.position = acceptedPositions;
+				//points.data.color = new Uint8Array(accepted.length * 4).fill(100);
 				
+				//performance.mark("getPointsInsideProfile-40");
+
 				let relevantAttributes = buffer.attributes.filter(a => !["position", "index"].includes(a.name));
 				for(let attribute of relevantAttributes){
 
@@ -248,43 +284,37 @@ Potree.ProfileRequest = class ProfileRequest {
 					}
 
 					points.data[attribute.name] = filteredBuffer;
-
-
-
-
-					//let bufferedAttribute = geometry.attributes[attribute];
-					//let Type = bufferedAttribute.array.constructor;
-                
-					//let filteredBuffer = null;
-                
-					//if (attribute === 'position') {
-					//	filteredBuffer = new Type(acceptedPositions);
-					//} else {
-					//	filteredBuffer = new Type(accepted.length * bufferedAttribute.itemSize);
-                
-					//	for (let i = 0; i < accepted.length; i++) {
-					//		let index = accepted[i];
-                
-					//		filteredBuffer.set(
-					//			bufferedAttribute.array.subarray(
-					//				bufferedAttribute.itemSize * index,
-					//				bufferedAttribute.itemSize * index + bufferedAttribute.itemSize),
-					//			bufferedAttribute.itemSize * i);
-					//	}
-					//}
-					//points.data[attribute] = filteredBuffer;
 				}
 
-				points.data['mileage'] = new Float64Array(mileage);
+				//performance.mark("getPointsInsideProfile-50");
+
+				points.data['mileage'] = mileage;
 				points.numPoints = accepted.length;
 
                 //console.log(`getPointsInsideProfile - ${node.name} - accepted: ${accepted.length}`);
+
+
+				//performance.measure("20 - 30", "getPointsInsideProfile-20", "getPointsInsideProfile-30");
+				//performance.measure("10 - 50", "getPointsInsideProfile-10", "getPointsInsideProfile-50");
+
+				//var measures = performance.getEntriesByType("measure");
+				//for(let measure of measures){
+				//	console.log(measure.name, measure.duration);
+				//}
+  				
+
+
+				performance.clearMarks();
+  				performance.clearMeasures();
 
 				segment.points.add(points);
 			}
 
 			totalMileage += segment.length;
 		}
+
+		let tEnd = new Date().getTime();
+		console.log((tEnd - tStart).toFixed(2) + ", " + pointsProcessed);
 
 		for (let segment of target.segments) {
 			target.boundingBox.union(segment.points.boundingBox);

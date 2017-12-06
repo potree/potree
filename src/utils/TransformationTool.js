@@ -530,7 +530,7 @@ Potree.TransformationTool = class TransformationTool {
 			let pr = 0;
 			if(scene.cameraMode == Potree.CameraMode.PERSPECTIVE) {
 				let distance = camera.position.distanceTo(pivot);
-				let pr = Potree.utils.projectedRadius(1, camera.fov * Math.PI / 180, distance, domElement.clientHeight);
+				pr = Potree.utils.projectedRadius(1, camera.fov * Math.PI / 180, distance, domElement.clientHeight);
 			} else {
 				pr = Potree.utils.projectedRadiusOrtho(1, camera.projectionMatrix, domElement.clientWidth, domElement.clientHeight);
 			}

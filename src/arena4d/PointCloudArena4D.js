@@ -115,6 +115,15 @@ Potree.PointCloudArena4D = class PointCloudArena4D extends Potree.PointCloudTree
 		this.name = '';
 	}
 
+	getBoundingBoxWorld () {
+		this.updateMatrixWorld(true);
+		let box = this.boundingBox;
+		let transform = this.matrixWorld;
+		let tBox = Potree.utils.computeTransformedBoundingBox(box, transform);
+
+		return tBox;
+	};
+
 	setName (name) {
 		if (this.name !== name) {
 			this.name = name;

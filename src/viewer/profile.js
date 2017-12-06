@@ -7,7 +7,8 @@ class ProfilePointCloudEntry{
 		this.points = [];
 
 		let geometry = new THREE.BufferGeometry();
-		let material = new Potree.PointCloudMaterial();
+		//let material = new Potree.PointCloudMaterial();
+		let material = ProfilePointCloudEntry.getMaterialInstance();
 		material.uniforms.minSize.value = 2;
 		material.uniforms.maxSize.value = 2;
 		material.pointColorType = Potree.PointColorType.RGB;
@@ -15,11 +16,26 @@ class ProfilePointCloudEntry{
 		this.sceneNode = new THREE.Points(geometry, material);
 	}
 
+	static releaseMaterialInstance(instance){
+		ProfilePointCloudEntry.materialPool.push(instance);
+	}
+
+	static getMaterialInstance(){
+		let instance = ProfilePointCloudEntry.materialPool.pop();
+		if(!instance){
+			instance = new Potree.PointCloudMaterial();
+		}
+
+		return instance;
+	}
+
+	dispose(){
+		this.sceneNode.geometry.dispose();
+		ProfilePointCloudEntry.releaseMaterialInstance(this.sceneNode.material);
+	}
 
 	addPoints(data){
 		this.points.push(data);
-
-		
 		
 		{ // REBUILD MODEL
 
@@ -89,6 +105,8 @@ class ProfilePointCloudEntry{
 
 };
 
+ProfilePointCloudEntry.materialPool = [];
+
 Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 	constructor () {
 		super();
@@ -101,6 +119,7 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 		this.projectedBox = new THREE.Box3();
 		this.pointclouds = new Map();
 		this.numPoints = 0;
+		this.lastAddPointsTimestamp = undefined;
 
 		this.mouse = new THREE.Vector2(0, 0);
 		this.scale = new THREE.Vector3(1, 1, 1);
@@ -143,6 +162,7 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 			if (this.mouseIsDown) {
 				// DRAG
 				this.autoFit = false;
+				this.lastDrag = new Date().getTime();
 
 				let cPos = [this.scaleX.invert(this.mouse.x), this.scaleY.invert(this.mouse.y)];
 				let ncPos = [this.scaleX.invert(newMouse.x), this.scaleY.invert(newMouse.y)];
@@ -454,12 +474,12 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 			.tickPadding(10)
 			.ticks(height / 20);
 
-		this.svg.append('g')
+		this.elXAxis = this.svg.append('g')
 			.attr('class', 'x axis')
 			.attr('transform', `translate(${marginLeft}, ${height})`)
 			.call(this.xAxis);
 
-		this.svg.append('g')
+		this.elYAxis = this.svg.append('g')
 			.attr('class', 'y axis')
 			.attr('transform', `translate(${marginLeft}, 0)`)
 			.call(this.yAxis);
@@ -470,6 +490,8 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 	}
 
 	addPoints (pointcloud, points) {
+
+		//this.lastAddPointsTimestamp = new Date().getTime();
 
 		let entry = this.pointclouds.get(pointcloud);
 		if(!entry){
@@ -514,11 +536,17 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 	}
 
 	reset () {
+		this.lastReset = new Date().getTime();
+
 		this.dispatchEvent({type: "on_reset_once"});
 		this.removeEventListeners("on_reset_once");
 
 		this.autoFit = true;
 		this.projectedBox = new THREE.Box3();
+
+		for(let [key, entry] of this.pointclouds){
+			entry.dispose();
+		}
 
 		this.pointclouds.clear();
 		this.mouseIsDown = false;
@@ -526,13 +554,7 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 		this.scale.set(1, 1, 1);
 		this.pickSphere.visible = false;
 
-		this.pointCloudRoot.children
-			.filter(c => c instanceof THREE.Points)
-			.forEach(c => {
-				this.pointCloudRoot.remove(c);
-				c.geometry.dispose();
-				c.material.dispose();
-			});
+		this.pointCloudRoot.children = [];
 
 		this.elRoot.find('#profileSelectionProperties').hide();
 
@@ -570,6 +592,51 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 			.range([height, 0]);
 	}
 
+	requestScaleUpdate(){
+
+		let threshold = 100;
+		let allowUpdate = (this.lastReset === undefined) 
+			|| (this.lastScaleUpdate === undefined) 
+			|| (new Date().getTime() - this.lastReset) > threshold
+			|| (new Date().getTime() - this.lastScaleUpdate) > threshold;
+
+		if(allowUpdate){
+
+			this.lastScaleUpdate = new Date().getTime();
+
+			let width = this.renderArea[0].clientWidth;
+			let height = this.renderArea[0].clientHeight;
+			let marginLeft = this.renderArea[0].offsetLeft;
+
+			this.xAxis.scale(this.scaleX)
+				.orient('bottom')
+				.innerTickSize(-height)
+				.outerTickSize(1)
+				.tickPadding(10)
+				.ticks(width / 50);
+			this.yAxis.scale(this.scaleY)
+				.orient('left')
+				.innerTickSize(-width)
+				.outerTickSize(1)
+				.tickPadding(10)
+				.ticks(height / 20);
+
+
+			this.elXAxis
+				.attr('transform', `translate(${marginLeft}, ${height})`)
+				.call(this.xAxis);
+			this.elYAxis
+				.attr('transform', `translate(${marginLeft}, 0)`)
+				.call(this.yAxis);
+
+			this.scaleUpdatePending = false;
+		}else if(!this.scaleUpdatePending) {
+			setTimeout(this.requestScaleUpdate.bind(this), 100);
+			this.scaleUpdatePending = true;
+		}
+		
+	}
+
 	render () {
 		let width = this.renderArea[0].clientWidth;
 		let height = this.renderArea[0].clientHeight;
@@ -605,29 +672,7 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 			this.renderer.render(this.scene, this.camera);
 		}
 
-		{ // SVG SCALES
-			let marginLeft = this.renderArea[0].offsetLeft;
-
-			this.xAxis.scale(this.scaleX)
-				.orient('bottom')
-				.innerTickSize(-height)
-				.outerTickSize(1)
-				.tickPadding(10)
-				.ticks(width / 50);
-			this.yAxis.scale(this.scaleY)
-				.orient('left')
-				.innerTickSize(-width)
-				.outerTickSize(1)
-				.tickPadding(10)
-				.ticks(height / 20);
-
-			d3.select('.x,axis')
-				.attr('transform', `translate(${marginLeft}, ${height})`)
-				.call(this.xAxis);
-			d3.select('.y,axis')
-				.attr('transform', `translate(${marginLeft}, 0)`)
-				.call(this.yAxis);
-		}
+		this.requestScaleUpdate();
 	}
 };
 

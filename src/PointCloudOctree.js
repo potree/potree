@@ -297,7 +297,7 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 		let bbWorld = node.boundingBox.clone().applyMatrix4(this.matrixWorld);
 		let bsWorld = bbWorld.getBoundingSphere();
 
-        let intersects = false;
+		let intersects = false;
 
 		for (let i = 0; i < profile.points.length - 1; i++) {
 
@@ -310,7 +310,7 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 			intersects = intersects || (distance < (bsWorld.radius + profile.width));
 		}
 
-        //console.log(`${node.name}: ${intersects}`);
+		//console.log(`${node.name}: ${intersects}`);
 
 		return intersects;
 	}
@@ -692,14 +692,14 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 		//}
 		
 		let point = null;
-        
+		
 		if (hit) {
 			point = {};
-        
+		
 			if (!nodes[hit.pcIndex]) {
 				return null;
 			}
-        
+		
 			let node = nodes[hit.pcIndex];
 			let pc = node.sceneNode;
 			let iBuffer = node.geometryNode.buffer;
@@ -708,7 +708,7 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 			
 			let offset = 0;
 			for (let attribute of iBuffer.attributes) {
-        
+		
 				if (attribute.name === 'position') {
 					let x = view.getFloat32(iBuffer.stride * hit.pIndex + offset + 0, true);
 					let y = view.getFloat32(iBuffer.stride * hit.pIndex + offset + 4, true);
@@ -716,10 +716,10 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 					
 					let position = new THREE.Vector3(x, y, z);
 					position.applyMatrix4(pc.matrixWorld);
-        
+		
 					point[attribute.name] = position;
 				} else if (attribute.name === 'indices') {
-        
+		
 				} else {
 					//if (values.itemSize === 1) {
 					//	point[attribute.name] = values.array[hit.pIndex];

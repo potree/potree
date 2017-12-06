@@ -1,10 +1,10 @@
 // let getQueryParam = function(name) {
-//    name = name.replace(/[\[\]]/g, "\\$&");
-//    let regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
-//        results = regex.exec(window.location.href);
-//    if (!results) return null;
-//    if (!results[2]) return '';
-//    return decodeURIComponent(results[2].replace(/\+/g, " "));
+//	name = name.replace(/[\[\]]/g, "\\$&");
+//	let regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+//		results = regex.exec(window.location.href);
+//	if (!results) return null;
+//	if (!results[2]) return '';
+//	return decodeURIComponent(results[2].replace(/\+/g, " "));
 // }
 
 Potree.View = class {
@@ -212,9 +212,9 @@ Potree.Scene = class extends THREE.EventDispatcher{
 		}
 
 		return height;
-    }
-    
-    getBoundingBox(pointclouds = this.pointclouds){
+	}
+	
+	getBoundingBox(pointclouds = this.pointclouds){
 		let box = new THREE.Box3();
 
 		this.scenePointCloud.updateMatrixWorld(true);
@@ -229,7 +229,7 @@ Potree.Scene = class extends THREE.EventDispatcher{
 		}
 
 		return box;
-    }
+	}
 
 	addPointCloud (pointcloud) {
 		this.pointclouds.push(pointcloud);
@@ -628,10 +628,10 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			this.loadSettingsFromURL();
 		}
 
-        // start rendering!
-        if(args.useDefaultRenderLoop === undefined || args.useDefaultRenderLoop === true){
-            requestAnimationFrame(this.loop.bind(this));
-        }
+		// start rendering!
+		if(args.useDefaultRenderLoop === undefined || args.useDefaultRenderLoop === true){
+			requestAnimationFrame(this.loop.bind(this));
+		}
 
 		this.loadGUI = this.loadGUI.bind(this);
 	}
@@ -996,7 +996,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 	};
 
 	getBoundingBox (pointclouds) {
-        return this.scene.getBoundingBox(pointclouds);
+		return this.scene.getBoundingBox(pointclouds);
 	};
 
 	fitToScreen (factor = 1) {
@@ -1441,7 +1441,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 
 	update (delta, timestamp) {
 
-        if(Potree.measureTimings) performance.mark("update-start");
+		if(Potree.measureTimings) performance.mark("update-start");
 
 		// if(window.urlToggle === undefined){
 		//	window.urlToggle = 0;
@@ -1491,7 +1491,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		
 		
 		let scene = this.scene;
-        let camera = scene.getActiveCamera();
+		let camera = scene.getActiveCamera();
 		
 		Potree.pointLoadLimit = Potree.pointBudget * 2;
 
@@ -1522,7 +1522,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 
 						let capIndex = parseInt((intensities.length - 1) * 0.75);
 						let cap = intensities[capIndex];
-                        
+						
 						if (cap <= 1) {
 							pointcloud.material.intensityRange = [0, 1];
 						} else if (cap <= 256) {
@@ -1566,27 +1566,27 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			}
 		}
 
-        {
-            if(this.showBoundingBox){
-                let bbRoot = this.scene.scene.getObjectByName("potree_bounding_box_root");
-                if(!bbRoot){
-                    let node = new THREE.Object3D();
-                    node.name = "potree_bounding_box_root";
-                    this.scene.scene.add(node);
-                    bbRoot = node;
-                }
+		{
+			if(this.showBoundingBox){
+				let bbRoot = this.scene.scene.getObjectByName("potree_bounding_box_root");
+				if(!bbRoot){
+					let node = new THREE.Object3D();
+					node.name = "potree_bounding_box_root";
+					this.scene.scene.add(node);
+					bbRoot = node;
+				}
 
-                let visibleBoxes = [];
-                for(let pointcloud of this.scene.pointclouds){
-                    for(let node of pointcloud.visibleNodes){
-                        let box = node.boundingBoxNode;
-                        visibleBoxes.push(box);
-                    }
-                }
+				let visibleBoxes = [];
+				for(let pointcloud of this.scene.pointclouds){
+					for(let node of pointcloud.visibleNodes){
+						let box = node.boundingBoxNode;
+						visibleBoxes.push(box);
+					}
+				}
 
-                bbRoot.children = visibleBoxes;
-            }
-        }
+				bbRoot.children = visibleBoxes;
+			}
+		}
 
 		if (!this.freeze) {
 			let result = Potree.updatePointClouds(scene.pointclouds, camera, this.renderer);
@@ -1629,11 +1629,11 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			this.scene.cameraO.rotation.order = "ZXY";
 			this.scene.cameraO.rotation.x = Math.PI / 2 + this.scene.view.pitch;
 			this.scene.cameraO.rotation.z = this.scene.view.yaw;
-        }
-        
-        camera.updateMatrix();
-        camera.updateMatrixWorld();
-        camera.matrixWorldInverse.getInverse(camera.matrixWorld);
+		}
+		
+		camera.updateMatrix();
+		camera.updateMatrixWorld();
+		camera.matrixWorldInverse.getInverse(camera.matrixWorld);
 
 		{ // update clip boxes		
 			// ordinary clip boxes (clip planes)	
@@ -1693,16 +1693,16 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		this.dispatchEvent({
 			'type': 'update',
 			'delta': delta,
-            'timestamp': timestamp});
-            
-        if(Potree.measureTimings) {
+			'timestamp': timestamp});
+			
+		if(Potree.measureTimings) {
 			performance.mark("update-end");
 			performance.measure("update", "update-start", "update-end");
 		}
-    }
-    
-    render(){
-        if(Potree.measureTimings) performance.mark("render-start");
+	}
+	
+	render(){
+		if(Potree.measureTimings) performance.mark("render-start");
 
 		if(this.useRep){
 			if (!this.repRenderer) {
@@ -1720,16 +1720,16 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			}
 
 			this.potreeRenderer.render();
-        }
-        
-        if(Potree.measureTimings){
+		}
+		
+		if(Potree.measureTimings){
 			performance.mark("render-end");
 			performance.measure("render", "render-start", "render-end");
 		}
-    }
+	}
 
-    resolveTimings(timestamp){
-        if(Potree.measureTimings){
+	resolveTimings(timestamp){
+		if(Potree.measureTimings){
 			if(!this.toggle){
 				this.toggle = timestamp;
 			}
@@ -1826,7 +1826,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 				this.toggle = timestamp;
 			}
 		}
-    }
+	}
 
 	loop (timestamp) {
 		requestAnimationFrame(this.loop.bind(this));
@@ -1845,9 +1845,9 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		if(Potree.measureTimings){
 			performance.mark("loop-end");
 			performance.measure("loop", "loop-start", "loop-end");
-        }
-        
-        this.resolveTimings(timestamp);
+		}
+		
+		this.resolveTimings(timestamp);
 
 		this.stats.end();
 

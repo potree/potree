@@ -427,7 +427,7 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 
 			if (pointcloud.showBoundingBox && !node.boundingBoxNode && node.getBoundingBox) {
 				let boxHelper = new Potree.Box3Helper(node.getBoundingBox());
-                boxHelper.matrixAutoUpdate = false;
+				boxHelper.matrixAutoUpdate = false;
 				pointcloud.boundingBoxNodes.push(boxHelper);
 				node.boundingBoxNode = boxHelper;
 				node.boundingBoxNode.matrix.copy(pointcloud.matrixWorld);

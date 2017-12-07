@@ -205,6 +205,7 @@ Potree.ProfileRequest = class ProfileRequest {
 		let tStart = new Date().getTime();
 		let pointsProcessed = 0;
 
+
 		for (let segment of target.segments) {
 			for (let node of nodes) {
 				let numPoints = node.numPoints;
@@ -216,6 +217,24 @@ Potree.ProfileRequest = class ProfileRequest {
 				}
 
 
+				{ // skip if current node doesn't intersect current segment
+					let bbWorld = node.boundingBox.clone().applyMatrix4(this.pointcloud.matrixWorld);
+					let bsWorld = bbWorld.getBoundingSphere();
+
+					let start = new THREE.Vector3(segment.start.x, segment.start.y, bsWorld.center.z);
+					let end = new THREE.Vector3(segment.end.x, segment.end.y, bsWorld.center.z);
+						
+					let closest = new THREE.Line3(start, end).closestPointToPoint(bsWorld.center, true);
+					let distance = closest.distanceTo(bsWorld.center);
+
+					let intersects = (distance < (bsWorld.radius + target.profile.width));
+
+					if(!intersects){
+						continue;
+					}
+				}
+
+
                 //{// DEBUG
                 //    console.log(node.name);
                 //    let boxHelper = new Potree.Box3Helper(node.getBoundingBox());
@@ -224,14 +243,9 @@ Potree.ProfileRequest = class ProfileRequest {
                 //    viewer.scene.scene.add(boxHelper);
                 //}
 
-				//performance.mark("getPointsInsideProfile-10");
-
 				let sv = new THREE.Vector3().subVectors(segment.end, segment.start).setZ(0);
 				let segmentDir = sv.clone().normalize();
 
-				//let accepted = [];
-				//let mileage = [];
-				//let acceptedPositions = [];
 				let points = new Potree.Points();
 
 				let nodeMatrix = new THREE.Matrix4().makeTranslation(...node.boundingBox.min.toArray());
@@ -239,19 +253,12 @@ Potree.ProfileRequest = class ProfileRequest {
 				let matrix = new THREE.Matrix4().multiplyMatrices(
 					this.pointcloud.matrixWorld, nodeMatrix);
 
-				//performance.mark("getPointsInsideProfile-20");
-
 				let posOffset = buffer.offset("position");
 				pointsProcessed = pointsProcessed + numPoints;
 
 				let [accepted, mileage, acceptedPositions] = this.getAccepted(numPoints, buffer, posOffset, matrix, segment, segmentDir, points,totalMileage);
 
-				//performance.mark("getPointsInsideProfile-30");
-				
 				points.data.position = acceptedPositions;
-				//points.data.color = new Uint8Array(accepted.length * 4).fill(100);
-				
-				//performance.mark("getPointsInsideProfile-40");
 
 				let relevantAttributes = buffer.attributes.filter(a => !["position", "index"].includes(a.name));
 				for(let attribute of relevantAttributes){
@@ -286,26 +293,19 @@ Potree.ProfileRequest = class ProfileRequest {
 					points.data[attribute.name] = filteredBuffer;
 				}
 
-				//performance.mark("getPointsInsideProfile-50");
-
 				points.data['mileage'] = mileage;
 				points.numPoints = accepted.length;
 
                 //console.log(`getPointsInsideProfile - ${node.name} - accepted: ${accepted.length}`);
 
-
 				//performance.measure("20 - 30", "getPointsInsideProfile-20", "getPointsInsideProfile-30");
 				//performance.measure("10 - 50", "getPointsInsideProfile-10", "getPointsInsideProfile-50");
-
 				//var measures = performance.getEntriesByType("measure");
 				//for(let measure of measures){
 				//	console.log(measure.name, measure.duration);
 				//}
-  				
-
-
-				performance.clearMarks();
-  				performance.clearMeasures();
+				//performance.clearMarks();
+  				//performance.clearMeasures();
 
 				segment.points.add(points);
 			}

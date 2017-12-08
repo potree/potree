@@ -251,18 +251,10 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 			for (let j = 0; j < 8; j++) {
 				let child = node.children[j];
 
-				//if (child instanceof Potree.PointCloudOctreeNode && nodes.includes(child)) {
-				// "child.constructor" version is slightly faster than the "child instanceof" version in chrome 61,
-				// especially if the profiler is running
 				if( child && child.constructor === Potree.PointCloudOctreeNode && nodes.includes(child, i)){
 					children.push(child);
 				}
 			}
-			//children.sort(function (a, b) {
-			//	if (a.geometryNode.name < b.geometryNode.name) return -1;
-			//	if (a.geometryNode.name > b.geometryNode.name) return 1;
-			//	return 0;
-			//});
 
 			data[i * 3 + 0] = 0;
 			data[i * 3 + 1] = 0;
@@ -285,7 +277,6 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 			performance.mark("computeVisibilityTextureData-end");
 			performance.measure("render.computeVisibilityTextureData", "computeVisibilityTextureData-start", "computeVisibilityTextureData-end");
 		} 
-		
 
 		return {
 			data: data,

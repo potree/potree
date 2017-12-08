@@ -198,7 +198,7 @@ float getLOD(){
 	float depth = 0.0;
 		
 		
-	vec3 size = bbSize;	
+	vec3 size = uBBSize;	
 	vec3 pos = position;
 		
 	for(float i = 0.0; i <= 1000.0; i++){

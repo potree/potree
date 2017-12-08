@@ -610,6 +610,7 @@ Potree.Renderer = class Renderer {
 			shader.setUniform1f("uLevel", level);
 
 			shader.setUniform1f("uPCIndex", i);
+			// uBBSize
 
 			if (shadowMaps.length > 0) {
 

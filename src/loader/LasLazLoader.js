@@ -149,43 +149,43 @@ Potree.LasLazBatcher = class LasLazBatcher {
 
 	push (lasBuffer) {
 		let workerPath = Potree.scriptPath + '/workers/LASDecoderWorker.js';
-        let worker = Potree.workerPool.getWorker(workerPath);
-        let node = this.node;
+		let worker = Potree.workerPool.getWorker(workerPath);
+		let node = this.node;
 
 		worker.onmessage = (e) => {
 			let numPoints = lasBuffer.pointsCount;
 
-            let attributes = [
-                Potree.PointAttribute.POSITION_CARTESIAN,
-                Potree.PointAttribute.RGBA_PACKED,
-                Potree.PointAttribute.INTENSITY,
-                Potree.PointAttribute.CLASSIFICATION,
-                Potree.PointAttribute.RETURN_NUMBER,
-                Potree.PointAttribute.NUMBER_OF_RETURNS,
-                Potree.PointAttribute.SOURCE_ID,
-            ];
+			let attributes = [
+				Potree.PointAttribute.POSITION_CARTESIAN,
+				Potree.PointAttribute.RGBA_PACKED,
+				Potree.PointAttribute.INTENSITY,
+				Potree.PointAttribute.CLASSIFICATION,
+				Potree.PointAttribute.RETURN_NUMBER,
+				Potree.PointAttribute.NUMBER_OF_RETURNS,
+				Potree.PointAttribute.SOURCE_ID,
+			];
 
-            let data = e.data;
-            let iAttributes = attributes
-                .map(pa => Potree.toInterleavedBufferAttribute(pa))
-                .filter(ia => ia != null);
-            iAttributes.push(new Potree.InterleavedBufferAttribute("index", 4, 4, "UNSIGNED_BYTE", true));
-            let iBuffer = new Potree.InterleavedBuffer(data.data, iAttributes, numPoints);
+			let data = e.data;
+			let iAttributes = attributes
+				.map(pa => Potree.toInterleavedBufferAttribute(pa))
+				.filter(ia => ia != null);
+			iAttributes.push(new Potree.InterleavedBufferAttribute("index", 4, 4, "UNSIGNED_BYTE", true));
+			let iBuffer = new Potree.InterleavedBuffer(data.data, iAttributes, numPoints);
 
 			let tightBoundingBox = new THREE.Box3(
 				new THREE.Vector3().fromArray(e.data.tightBoundingBox.min),
 				new THREE.Vector3().fromArray(e.data.tightBoundingBox.max)
-            );
-            
-            Potree.workerPool.returnWorker(workerPath, worker);
+			);
+			
+			Potree.workerPool.returnWorker(workerPath, worker);
 
-            node.numPoints = iBuffer.numElements;
-            node.buffer = iBuffer;
-            node.mean = new THREE.Vector3(...data.mean);
-            node.tightBoundingBox = tightBoundingBox;
-            node.loaded = true;
-            node.loading = false;
-            node.pcoGeometry.numNodesLoading--;
+			node.numPoints = iBuffer.numElements;
+			node.buffer = iBuffer;
+			node.mean = new THREE.Vector3(...data.mean);
+			node.tightBoundingBox = tightBoundingBox;
+			node.loaded = true;
+			node.loading = false;
+			node.pcoGeometry.numNodesLoading--;
 
 			
 		};

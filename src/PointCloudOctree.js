@@ -583,7 +583,7 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 		}
 
 		pickState.renderTarget.setSize(width, height);
-		
+
 		let pixelPos = new THREE.Vector2(params.x, params.y);
 		
 		let gl = renderer.getContext();
@@ -600,6 +600,7 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 		
 		{ // RENDER
 			renderer.setRenderTarget(pickState.renderTarget);
+			gl.clearColor(0, 0, 0, 0);
 			renderer.clearTarget( pickState.renderTarget, true, true, true );
 			
 			let tmp = this.material;

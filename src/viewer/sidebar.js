@@ -3035,11 +3035,11 @@ initSidebar = (viewer) => {
 		$('#lblMinNodeSize').html(parseInt(viewer.getMinNodeSize()));
 
 		$('#show_bounding_box').click(() => {
-			viewer.setShowBoundingBox(this.checked);
+			viewer.setShowBoundingBox($('#show_bounding_box').prop("checked"));
 		});
 
 		$('#set_freeze').click(function(){
-			viewer.setFreeze(this.checked);
+			viewer.setFreeze($('#set_freeze').prop("checked"));
 		});
 		
 

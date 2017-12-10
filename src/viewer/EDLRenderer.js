@@ -103,10 +103,10 @@ class EDLRenderer {
 			viewer.renderer.clear();
 			viewer.renderer.render(viewer.scene.sceneBG, viewer.scene.cameraBG);
 		} else if (viewer.background === 'black') {
-			viewer.renderer.setClearColor(0x000000, 0);
+			viewer.renderer.setClearColor(0x000000, 1);
 			viewer.renderer.clear();
 		} else if (viewer.background === 'white') {
-			viewer.renderer.setClearColor(0xFFFFFF, 0);
+			viewer.renderer.setClearColor(0xFFFFFF, 1);
 			viewer.renderer.clear();
         } else {
             viewer.renderer.setClearColor(0xFF0000, 0);

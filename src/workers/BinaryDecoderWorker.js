@@ -64,7 +64,6 @@ onmessage = function (event) {
 		
 		if(iAttribute){
 			if (pointAttribute.name === Potree.PointAttribute.POSITION_CARTESIAN.name) {
-				//let positions = new Float32Array(iData, outOffset);
 			
 				for (let j = 0; j < numPoints; j++) {
 					let x, y, z;
@@ -79,9 +78,6 @@ onmessage = function (event) {
 						z = cv.getFloat32(j * pointAttributes.byteSize + 8, true) + nodeOffset[2];
 					}
 
-					//positions[iStride * j + 0] = x;
-					//positions[iStride * j + 1] = y;
-					//positions[iStride * j + 2] = z;
 					let firstByte = j * iStride + outOffset;
 					iView.setFloat32(firstByte + 0, x, true);
 					iView.setFloat32(firstByte + 4, y, true);
@@ -101,13 +97,8 @@ onmessage = function (event) {
 				}
 				
 			} else if (pointAttribute.name === Potree.PointAttribute.COLOR_PACKED.name) {
-				//let colors = new Uint8Array(iData, outOffset);
 
 				for (let j = 0; j < numPoints; j++) {
-					//colors[iStride * j + 0] = cv.getUint8(inOffset + j * pointAttributes.byteSize + 0);
-					//colors[iStride * j + 1] = cv.getUint8(inOffset + j * pointAttributes.byteSize + 1);
-					//colors[iStride * j + 2] = cv.getUint8(inOffset + j * pointAttributes.byteSize + 2);
-					
 					let r = cv.getUint8(inOffset + j * pointAttributes.byteSize + 0);
 					let g = cv.getUint8(inOffset + j * pointAttributes.byteSize + 1);
 					let b = cv.getUint8(inOffset + j * pointAttributes.byteSize + 2);
@@ -117,26 +108,24 @@ onmessage = function (event) {
 					iView.setUint8(firstByte + 1, g, true);
 					iView.setUint8(firstByte + 2, b, true);
 				}
+
 			} else if (pointAttribute.name === Potree.PointAttribute.INTENSITY.name) {
-				//let intensities = new Float32Array(iData, outOffset);
 
 				for (let j = 0; j < numPoints; j++) {
 					let intensity = cv.getUint16(inOffset + j * pointAttributes.byteSize, true);
-					//intensities[iStride * j] = intensity;
 					let firstByte = j * iStride + outOffset;
 					iView.setFloat32(firstByte + 0, intensity, true);
 				}
+
 			} else if (pointAttribute.name === Potree.PointAttribute.CLASSIFICATION.name) {
-				//let classifications = new Uint8Array(iData, outOffset);
 
 				for (let j = 0; j < numPoints; j++) {
 					let classification = cv.getUint8(inOffset + j * pointAttributes.byteSize);
-					//classifications[iStride * j] = classification;
 					let firstByte = j * iStride + outOffset;
 					iView.setUint8(firstByte + 0, classification, true);
 				}
+
 			} else if (pointAttribute.name === Potree.PointAttribute.NORMAL_SPHEREMAPPED.name) {
-				//let normals = new Float32Array(iData, outOffset);
 
 				for (let j = 0; j < numPoints; j++) {
 					let bx = cv.getUint8(inOffset + j * pointAttributes.byteSize + 0);
@@ -159,17 +148,14 @@ onmessage = function (event) {
 					ny = ny * 2;
 					nz = nz * 2 - 1;
 
-					//normals[iStride * j + 0] = nx;
-					//normals[iStride * j + 1] = ny;
-					//normals[iStride * j + 2] = nz;
-					
 					let firstByte = j * iStride + outOffset;
 					iView.setFloat32(firstByte + 0, nx, true);
 					iView.setFloat32(firstByte + 4, ny, true);
 					iView.setFloat32(firstByte + 8, nz, true);
 				}
+
 			} else if (pointAttribute.name === Potree.PointAttribute.NORMAL_OCT16.name) {
-				//let normals = new Float32Array(iData, outOffset);
+
 				for (let j = 0; j < numPoints; j++) {
 					let bx = cv.getUint8(inOffset + j * pointAttributes.byteSize + 0);
 					let by = cv.getUint8(inOffset + j * pointAttributes.byteSize + 1);
@@ -193,32 +179,26 @@ onmessage = function (event) {
 					x = x / length;
 					y = y / length;
 					z = z / length;
-
-					//normals[iStride * j + 0] = x;
-					//normals[iStride * j + 1] = y;
-					//normals[iStride * j + 2] = z;
 					
 					let firstByte = j * iStride + outOffset;
 					iView.setFloat32(firstByte + 0, x, true);
 					iView.setFloat32(firstByte + 4, y, true);
 					iView.setFloat32(firstByte + 8, z, true);
 				}
+
 			} else if (pointAttribute.name === Potree.PointAttribute.NORMAL.name) {
-				//let normals = new Float32Array(iData, outOffset);
+
 				for (let j = 0; j < numPoints; j++) {
 					let x = cv.getFloat32(inOffset + j * pointAttributes.byteSize + 0, true);
 					let y = cv.getFloat32(inOffset + j * pointAttributes.byteSize + 4, true);
 					let z = cv.getFloat32(inOffset + j * pointAttributes.byteSize + 8, true);
-
-					//normals[iStride * j + 0] = x;
-					//normals[iStride * j + 1] = y;
-					//normals[iStride * j + 2] = z;
 					
 					let firstByte = j * iStride + outOffset;
 					iView.setFloat32(firstByte + 0, x, true);
 					iView.setFloat32(firstByte + 4, y, true);
 					iView.setFloat32(firstByte + 8, z, true);
 				}
+
 			}
 		}
 
@@ -227,9 +207,7 @@ onmessage = function (event) {
 	}
 
 	{ // add indices
-		//let iIndices = new Uint32Array(iData, outOffset);
 		for (let i = 0; i < numPoints; i++) {
-			//iIndices[iStride * i] = i;
 			let firstByte = i * iStride + outOffset;
 			iView.setUint32(firstByte, i, true);
 		}

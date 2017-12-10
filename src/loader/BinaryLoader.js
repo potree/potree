@@ -57,13 +57,13 @@ Potree.BinaryLoader.prototype.parse = function (node, buffer) {
 
 	worker.onmessage = function (e) {
 
-        let data = e.data;
+		let data = e.data;
 		let iAttributes = pointAttributes.attributes
 			.map(pa => Potree.toInterleavedBufferAttribute(pa))
 			.filter(ia => ia != null);
 		iAttributes.push(new Potree.InterleavedBufferAttribute("index", 4, 4, "UNSIGNED_BYTE", true));
-        let iBuffer = new Potree.InterleavedBuffer(data.data, iAttributes, numPoints);
-        
+		let iBuffer = new Potree.InterleavedBuffer(data.data, iAttributes, numPoints);
+
 		let tightBoundingBox = new THREE.Box3(
 			new THREE.Vector3().fromArray(data.tightBoundingBox.min),
 			new THREE.Vector3().fromArray(data.tightBoundingBox.max)

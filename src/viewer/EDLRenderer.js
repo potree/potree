@@ -36,12 +36,12 @@ class EDLRenderer {
 		});
 		
 		//{
-		//	let geometry = new THREE.PlaneBufferGeometry( 10, 10, 32 );
+		//	let geometry = new THREE.PlaneBufferGeometry( 1, 1, 32, 32);
 		//	let material = new THREE.MeshBasicMaterial( {side: THREE.DoubleSide, map: this.shadowMap.target.texture} );
 		//	let plane = new THREE.Mesh( geometry, material );
-		//	plane.position.z = 0.2;
-		//	plane.position.y = 20;
-		//	this.viewer.scene.scene.add( plane );
+		//	plane.scale.set(0.5, 0.5, 1.0);
+		//	plane.position.set(plane.scale.x / 2, plane.scale.y / 2, 0);
+		//	this.viewer.overlay.add(plane);
 		//}
 	};
 

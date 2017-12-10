@@ -205,7 +205,6 @@ Potree.ProfileRequest = class ProfileRequest {
 		let tStart = new Date().getTime();
 		let pointsProcessed = 0;
 
-
 		for (let segment of target.segments) {
 			for (let node of nodes) {
 				let numPoints = node.numPoints;
@@ -215,7 +214,6 @@ Potree.ProfileRequest = class ProfileRequest {
 				if(!numPoints){
 					continue;
 				}
-
 
 				{ // skip if current node doesn't intersect current segment
 					let bbWorld = node.boundingBox.clone().applyMatrix4(this.pointcloud.matrixWorld);
@@ -235,13 +233,13 @@ Potree.ProfileRequest = class ProfileRequest {
 				}
 
 
-                //{// DEBUG
-                //    console.log(node.name);
-                //    let boxHelper = new Potree.Box3Helper(node.getBoundingBox());
-                //    boxHelper.matrixAutoUpdate = false;
-                //    boxHelper.matrix.copy(viewer.scene.pointclouds[0].matrixWorld);
-                //    viewer.scene.scene.add(boxHelper);
-                //}
+				//{// DEBUG
+				//    console.log(node.name);
+				//    let boxHelper = new Potree.Box3Helper(node.getBoundingBox());
+				//    boxHelper.matrixAutoUpdate = false;
+				//    boxHelper.matrix.copy(viewer.scene.pointclouds[0].matrixWorld);
+				//    viewer.scene.scene.add(boxHelper);
+				//}
 
 				let sv = new THREE.Vector3().subVectors(segment.end, segment.start).setZ(0);
 				let segmentDir = sv.clone().normalize();
@@ -296,7 +294,7 @@ Potree.ProfileRequest = class ProfileRequest {
 				points.data['mileage'] = mileage;
 				points.numPoints = accepted.length;
 
-                //console.log(`getPointsInsideProfile - ${node.name} - accepted: ${accepted.length}`);
+				//console.log(`getPointsInsideProfile - ${node.name} - accepted: ${accepted.length}`);
 
 				//performance.measure("20 - 30", "getPointsInsideProfile-20", "getPointsInsideProfile-30");
 				//performance.measure("10 - 50", "getPointsInsideProfile-10", "getPointsInsideProfile-50");
@@ -305,7 +303,7 @@ Potree.ProfileRequest = class ProfileRequest {
 				//	console.log(measure.name, measure.duration);
 				//}
 				//performance.clearMarks();
-  				//performance.clearMeasures();
+				//performance.clearMeasures();
 
 				segment.points.add(points);
 			}

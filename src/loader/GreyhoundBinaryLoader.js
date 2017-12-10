@@ -20,10 +20,10 @@ Potree.GreyhoundBinaryLoader.prototype.networkToNative = function (val) {
 Potree.GreyhoundBinaryLoader.prototype.load = function (node) {
 	if (node.loaded) return;
 
-	var scope = this;
-	var url = node.getURL();
+	let scope = this;
+	let url = node.getURL();
 
-	var xhr = new XMLHttpRequest();
+	let xhr = new XMLHttpRequest();
 	xhr.open('GET', url, true);
 	xhr.responseType = 'arraybuffer';
 	xhr.overrideMimeType('text/plain; charset=x-user-defined');
@@ -31,7 +31,7 @@ Potree.GreyhoundBinaryLoader.prototype.load = function (node) {
 	xhr.onreadystatechange = function () {
 		if (xhr.readyState === 4) {
 			if (xhr.status === 200 || xhr.status === 0) {
-				var buffer = xhr.response;
+				let buffer = xhr.response;
 				scope.parse(node, buffer);
 			} else {
 				console.log(
@@ -49,12 +49,12 @@ Potree.GreyhoundBinaryLoader.prototype.load = function (node) {
 };
 
 Potree.GreyhoundBinaryLoader.prototype.parse = function (node, buffer) {
-	var NUM_POINTS_BYTES = 4;
+	let NUM_POINTS_BYTES = 4;
 
-	var view = new DataView(
+	let view = new DataView(
 		buffer, buffer.byteLength - NUM_POINTS_BYTES, NUM_POINTS_BYTES);
-	var numPoints = this.networkToNative(view.getUint32(0));
-	var pointAttributes = node.pcoGeometry.pointAttributes;
+	let numPoints = view.getUint32(0, true);
+	let pointAttributes = node.pcoGeometry.pointAttributes;
 
 	node.numPoints = numPoints;
 
@@ -62,85 +62,37 @@ Potree.GreyhoundBinaryLoader.prototype.parse = function (node, buffer) {
 	let worker = Potree.workerPool.getWorker(workerPath);
 
 	worker.onmessage = function (e) {
-		var data = e.data;
-		var buffers = data.attributeBuffers;
-		var tightBoundingBox = new THREE.Box3(
+
+		let data = e.data;
+		let iAttributes = pointAttributes.attributes
+			.map(pa => Potree.toInterleavedBufferAttribute(pa))
+			.filter(ia => ia != null);
+		iAttributes.push(new Potree.InterleavedBufferAttribute("index", 4, 4, "UNSIGNED_BYTE", true));
+		let iBuffer = new Potree.InterleavedBuffer(data.data, iAttributes, numPoints);
+
+		let tightBoundingBox = new THREE.Box3(
 			new THREE.Vector3().fromArray(data.tightBoundingBox.min),
 			new THREE.Vector3().fromArray(data.tightBoundingBox.max)
 		);
 
 		Potree.workerPool.returnWorker(workerPath, worker);
 
-		var geometry = new THREE.BufferGeometry();
+		tightBoundingBox.max.sub(tightBoundingBox.min);
+		tightBoundingBox.min.set(0, 0, 0);
 
-		var addAttribute = function (name, buffer, size) {
-			geometry.addAttribute(
-				name,
-				new THREE.BufferAttribute(new Float32Array(buffer), size));
-		};
-
-		for (var property in buffers) {
-			if (buffers.hasOwnProperty(property)) {
-				var buffer = buffers[property].buffer;
-				// TODO Unused: var attribute = buffers[property].attribute;
-				// TODO Unused: var numElements = attribute.numElements;
-
-				var pointAttributes = Potree.PointAttributeNames;
-
-				switch (parseInt(property)) {
-					case pointAttributes.POSITION_CARTESIAN:
-						addAttribute('position', buffer, 3);
-						// let fb = new Float32Array(buffer);
-						// console.log(fb);
-						break;
-					case pointAttributes.COLOR_PACKED:
-						geometry.addAttribute('color',
-							new THREE.BufferAttribute(new Uint8Array(buffer), 3, true));
-						break;
-					case pointAttributes.INTENSITY:
-						addAttribute('intensity', buffer, 1);
-						break;
-					case pointAttributes.CLASSIFICATION:
-						addAttribute('classification', buffer, 1);
-						break;
-					case pointAttributes.NORMAL_SPHEREMAPPED:
-					case pointAttributes.NORMAL_OCT16:
-					case pointAttributes.NORMAL:
-						addAttribute('normal', buffer, 3);
-						break;
-					default:
-						break;
-				}
-			}
-		}
-
-		// addAttribute('indices', data.indices, 1);
-
-		let indicesAttribute = new THREE.Uint8BufferAttribute(data.indices, 4);
-		indicesAttribute.normalized = true;
-		geometry.addAttribute('indices', indicesAttribute);
-
-		if (!geometry.attributes.normal) {
-			addAttribute('normal', new Float32Array(numPoints * 3), 3);
-		}
-
-		geometry.boundingBox = node.boundingBox;
-		node.geometry = geometry;
+		node.numPoints = iBuffer.numElements;
+		node.buffer = iBuffer;
+		node.mean = new THREE.Vector3(...data.mean);
 		node.tightBoundingBox = tightBoundingBox;
 		node.loaded = true;
 		node.loading = false;
-		--node.pcoGeometry.numNodesLoading;
+		node.pcoGeometry.numNodesLoading--;
 	};
 
-	var bb = node.boundingBox;
-	// TODO Unused: var pco = node.pcoGeometry;
-
-	// let nodeOffset = node.boundingBox.getCenter();
-	// let nodeOffset = new THREE.Vector3(0, 0, 0);
+	let bb = node.boundingBox;
 	let nodeOffset = node.pcoGeometry.boundingBox.getCenter().sub(node.boundingBox.min);
-	// let nodeOffset = node.pcoGeometry.boundingBox.min;
 
-	var message = {
+	let message = {
 		buffer: buffer,
 		pointAttributes: pointAttributes,
 		version: this.version.version,

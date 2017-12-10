@@ -537,6 +537,8 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		this.pRenderer = null;
 
 		this.scene = null;
+		this.overlay = null;
+		this.overlayCamera = null;
 
 		this.inputHandler = null;
 
@@ -552,6 +554,20 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		this.background = null;
 
 		this.initThree();
+
+		{
+			this.overlay = new THREE.Scene();
+			this.overlayCamera = new THREE.OrthographicCamera(
+				0, 1,
+				1, 0,
+				-1000, 1000
+			);
+
+			//let sg = new THREE.SphereGeometry(0.1, 32, 32);
+			//let sm = new THREE.MeshNormalMaterial();
+			//var s = new THREE.Mesh(sg, sm);
+			//this.overlay.add(s);
+		}
 		
 		this.pRenderer = new Potree.Renderer(this.renderer);
 		
@@ -1721,6 +1737,8 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 
 			this.potreeRenderer.render();
 		}
+
+		this.renderer.render(this.overlay, this.overlayCamera);
 		
 		if(Potree.measureTimings){
 			performance.mark("render-end");

@@ -340,9 +340,6 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 
 			let ndelta = Math.sign(delta);
 
-			// let sPos = new THREE.Vector3(this.mouse.x, this.mouse.y, 0);
-			// let cPos = this.toCamSpace(sPos);
-
 			let cPos = [this.scaleX.invert(this.mouse.x), this.scaleY.invert(this.mouse.y)];
 
 			if (ndelta > 0) {
@@ -353,9 +350,6 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 				this.scale.multiplyScalar(100 / 110);
 			}
 
-			// this.scale.max(new THREE.Vector3(0.5, 0.5, 0.5));
-			// this.scale.min(new THREE.Vector3(100, 100, 100));
-
 			this.updateScales();
 			let ncPos = [this.scaleX.invert(this.mouse.x), this.scaleY.invert(this.mouse.y)];
 
@@ -363,6 +357,7 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 			this.camera.position.y -= ncPos[1] - cPos[1];
 
 			this.render();
+			this.updateScales();
 		};
 		$(this.renderArea)[0].addEventListener('mousewheel', onWheel, false);
 		$(this.renderArea)[0].addEventListener('DOMMouseScroll', onWheel, false); // Firefox
@@ -682,6 +677,29 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 			.range([0, width]);
 		this.scaleY.domain([this.camera.bottom + this.camera.position.y, this.camera.top + this.camera.position.y])
 			.range([height, 0]);
+
+		let marginLeft = this.renderArea[0].offsetLeft;
+
+		this.xAxis.scale(this.scaleX)
+			.orient('bottom')
+			.innerTickSize(-height)
+			.outerTickSize(1)
+			.tickPadding(10)
+			.ticks(width / 50);
+		this.yAxis.scale(this.scaleY)
+			.orient('left')
+			.innerTickSize(-width)
+			.outerTickSize(1)
+			.tickPadding(10)
+			.ticks(height / 20);
+
+
+		this.elXAxis
+			.attr('transform', `translate(${marginLeft}, ${height})`)
+			.call(this.xAxis);
+		this.elYAxis
+			.attr('transform', `translate(${marginLeft}, 0)`)
+			.call(this.yAxis);
 	}
 
 	requestScaleUpdate(){
@@ -696,30 +714,7 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 
 			this.lastScaleUpdate = new Date().getTime();
 
-			let width = this.renderArea[0].clientWidth;
-			let height = this.renderArea[0].clientHeight;
-			let marginLeft = this.renderArea[0].offsetLeft;
-
-			this.xAxis.scale(this.scaleX)
-				.orient('bottom')
-				.innerTickSize(-height)
-				.outerTickSize(1)
-				.tickPadding(10)
-				.ticks(width / 50);
-			this.yAxis.scale(this.scaleY)
-				.orient('left')
-				.innerTickSize(-width)
-				.outerTickSize(1)
-				.tickPadding(10)
-				.ticks(height / 20);
-
-
-			this.elXAxis
-				.attr('transform', `translate(${marginLeft}, ${height})`)
-				.call(this.xAxis);
-			this.elYAxis
-				.attr('transform', `translate(${marginLeft}, 0)`)
-				.call(this.yAxis);
+			
 
 			this.scaleUpdatePending = false;
 		}else if(!this.scaleUpdatePending) {

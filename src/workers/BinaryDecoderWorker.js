@@ -122,7 +122,7 @@ onmessage = function (event) {
 				for (let j = 0; j < numPoints; j++) {
 					let classification = cv.getUint8(inOffset + j * pointAttributes.byteSize);
 					let firstByte = j * iStride + outOffset;
-					iView.setUint8(firstByte + 0, classification, true);
+					iView.setFloat32(firstByte + 0, classification, true);
 				}
 
 			} else if (pointAttribute.name === Potree.PointAttribute.NORMAL_SPHEREMAPPED.name) {

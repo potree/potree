@@ -312,7 +312,7 @@ Potree.ProfileRequest = class ProfileRequest {
 		}
 
 		let tEnd = new Date().getTime();
-		console.log((tEnd - tStart).toFixed(2) + ", " + pointsProcessed);
+		//console.log((tEnd - tStart).toFixed(2) + ", " + pointsProcessed);
 
 		for (let segment of target.segments) {
 			target.boundingBox.union(segment.points.boundingBox);

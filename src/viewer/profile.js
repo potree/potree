@@ -82,7 +82,6 @@ class ProfilePointCloudEntry{
 		if(!this.currentBatch){
 			createNewBatch();
 		}
-
 		
 		{ // REBUILD MODEL
 
@@ -99,7 +98,6 @@ class ProfilePointCloudEntry{
 				if(updateRange.start + updateRange.count >= batchSize){
 					// finalize current batch, start new batch
 
-					//for(let attribute of Object.values(this.currentBatch.geometry.attributes)){
 					for(let key of Object.keys(this.currentBatch.geometry.attributes)){
 						let attribute = this.currentBatch.geometry.attributes[key];
 						attribute.updateRange.offset = updateRange.start;
@@ -118,22 +116,46 @@ class ProfilePointCloudEntry{
 
 
 				let x = data.data.mileage[i];
-				let y = data.data.position[3 * i + 2];
-				let z = 0;
+				let y = 0;
+				let z = data.data.position[3 * i + 2];
 
-				projectedBox.expandByPoint(new THREE.Vector3(x, y, 0));
+				projectedBox.expandByPoint(new THREE.Vector3(x, y, z));
 
 				let currentIndex = updateRange.start + updateRange.count;
 
-				this.currentBatch.geometry.attributes.position.array[3 * currentIndex + 0] = x;
-				this.currentBatch.geometry.attributes.position.array[3 * currentIndex + 1] = y;
-				this.currentBatch.geometry.attributes.position.array[3 * currentIndex + 2] = z;
+				let attributes = this.currentBatch.geometry.attributes;
 
-				if( data.data.color){
-					this.currentBatch.geometry.attributes.color.array[4 * currentIndex + 0] = data.data.color[4 * i + 0];
-					this.currentBatch.geometry.attributes.color.array[4 * currentIndex + 1] = data.data.color[4 * i + 1];
-					this.currentBatch.geometry.attributes.color.array[4 * currentIndex + 2] = data.data.color[4 * i + 2];
-					this.currentBatch.geometry.attributes.color.array[4 * currentIndex + 3] = 255;
+				{
+					attributes.position.array[3 * currentIndex + 0] = x;
+					attributes.position.array[3 * currentIndex + 1] = y;
+					attributes.position.array[3 * currentIndex + 2] = z;
+				}
+
+				if(data.data.color){
+					attributes.color.array[4 * currentIndex + 0] = data.data.color[4 * i + 0];
+					attributes.color.array[4 * currentIndex + 1] = data.data.color[4 * i + 1];
+					attributes.color.array[4 * currentIndex + 2] = data.data.color[4 * i + 2];
+					attributes.color.array[4 * currentIndex + 3] = 255;
+				}
+
+				if(data.data.intensity){
+					attributes.intensity.array[currentIndex] = data.data.intensity[i];
+				}
+
+				if(data.data.classification){
+					attributes.classification.array[currentIndex] = data.data.classification[i];
+				}
+
+				if(data.data.returnNumber){
+					attributes.returnNumber.array[currentIndex] = data.data.returnNumber[i];
+				}
+
+				if(data.data.numberOfReturns){
+					attributes.numberOfReturns.array[currentIndex] = data.data.numberOfReturns[i];
+				}
+
+				if(data.data.pointSourceID){
+					attributes.pointSourceID.array[currentIndex] = data.data.pointSourceID[i];
 				}
 
 				updateRange.count++;
@@ -150,8 +172,6 @@ class ProfilePointCloudEntry{
 
 			data.projectedBox = projectedBox;
 			
-			//debugger;
-
 			this.projectedBox = this.points.reduce( (a, i) => a.union(i.projectedBox), new THREE.Box3());
 		}
 
@@ -238,7 +258,7 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 				let ncPos = [this.scaleX.invert(newMouse.x), this.scaleY.invert(newMouse.y)];
 
 				this.camera.position.x -= ncPos[0] - cPos[0];
-				this.camera.position.y -= ncPos[1] - cPos[1];
+				this.camera.position.z -= ncPos[1] - cPos[1];
 
 				this.render();
 			} else if (this.pointclouds.size > 0) {
@@ -246,13 +266,14 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 				let radius = Math.abs(this.scaleX.invert(0) - this.scaleX.invert(40));
 				let mileage = this.scaleX.invert(newMouse.x);
 				let elevation = this.scaleY.invert(newMouse.y);
+
 				let point = this.selectPoint(mileage, elevation, radius);
 
 				if (point) {
 					this.elRoot.find('#profileSelectionProperties').fadeIn(200);
 					this.pickSphere.visible = true;
 					this.pickSphere.scale.set(0.5 * radius, 0.5 * radius, 0.5 * radius);
-					this.pickSphere.position.set(point.mileage, point.position[2], 0);
+					this.pickSphere.position.set(point.mileage, 0, point.position[2]);
 
 					this.viewerPickSphere.position.set(...point.position);
 					
@@ -354,7 +375,7 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 			let ncPos = [this.scaleX.invert(this.mouse.x), this.scaleY.invert(this.mouse.y)];
 
 			this.camera.position.x -= ncPos[0] - cPos[0];
-			this.camera.position.y -= ncPos[1] - cPos[1];
+			this.camera.position.z -= ncPos[1] - cPos[1];
 
 			this.render();
 			this.updateScales();
@@ -438,9 +459,10 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 			for(let points of entry.points){
 
 				let collisionBox = new THREE.Box2(
-					new THREE.Vector2(points.projectedBox.min.x, points.projectedBox.min.y),
-					new THREE.Vector2(points.projectedBox.max.x, points.projectedBox.max.y)
+					new THREE.Vector2(points.projectedBox.min.x, points.projectedBox.min.z),
+					new THREE.Vector2(points.projectedBox.max.x, points.projectedBox.max.z)
 				);
+
 				let intersects = collisionBox.intersectsBox(pointBox);
 
 				if(!intersects){
@@ -515,7 +537,12 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 		$(this.renderer.domElement).css('width', '100%');
 		$(this.renderer.domElement).css('height', '100%');
 
-		this.camera = new THREE.OrthographicCamera(-10, 10, 10, -10, -1000, 1000);
+		this.camera = new THREE.OrthographicCamera(-1000, 1000, 1000, -1000, -1000, 1000);
+		this.camera.up.set(0, 0, 1);
+		this.camera.rotation.order = "ZXY";
+		this.camera.rotation.x = Math.PI / 2.0;
+		
+
 
 		this.scene = new THREE.Scene();
 
@@ -542,7 +569,7 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 			.domain([this.camera.left + this.camera.position.x, this.camera.right + this.camera.position.x])
 			.range([0, width]);
 		this.scaleY = d3.scale.linear()
-			.domain([this.camera.bottom + this.camera.position.y, this.camera.top + this.camera.position.y])
+			.domain([this.camera.bottom + this.camera.position.z, this.camera.top + this.camera.position.z])
 			.range([height, 0]);
 
 		this.xAxis = d3.svg.axis()
@@ -675,7 +702,7 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 
 		this.scaleX.domain([this.camera.left + this.camera.position.x, this.camera.right + this.camera.position.x])
 			.range([0, width]);
-		this.scaleY.domain([this.camera.bottom + this.camera.position.y, this.camera.top + this.camera.position.y])
+		this.scaleY.domain([this.camera.bottom + this.camera.position.z, this.camera.top + this.camera.position.z])
 			.range([height, 0]);
 
 		let marginLeft = this.renderArea[0].offsetLeft;
@@ -734,21 +761,31 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 			let radius = Math.abs(this.scaleX.invert(0) - this.scaleX.invert(5));
 			this.pickSphere.scale.set(radius, radius, radius);
 			//this.pickSphere.position.z = this.camera.far - radius;
-			this.pickSphere.position.z = 0;
+			//this.pickSphere.position.y = 0;
 
 			for (let [pointcloud, entry] of this.pointclouds) {
 				let material = entry.material;
 			
 				material.pointColorType = pointcloud.material.pointColorType;
+				material.uniforms.uColor = pointcloud.material.uniforms.uColor;
 				material.uniforms.intensityRange.value = pointcloud.material.uniforms.intensityRange.value;
 				material.elevationRange = pointcloud.material.elevationRange;
+
 				material.rgbGamma = pointcloud.material.rgbGamma;
 				material.rgbContrast = pointcloud.material.rgbContrast;
 				material.rgbBrightness = pointcloud.material.rgbBrightness;
+
 				material.intensityRange = pointcloud.material.intensityRange;
 				material.intensityGamma = pointcloud.material.intensityGamma;
 				material.intensityContrast = pointcloud.material.intensityContrast;
 				material.intensityBrightness = pointcloud.material.intensityBrightness;
+
+				material.uniforms.wRGB.value = pointcloud.material.uniforms.wRGB.value;
+				material.uniforms.wIntensity.value = pointcloud.material.uniforms.wIntensity.value;
+				material.uniforms.wElevation.value = pointcloud.material.uniforms.wElevation.value;
+				material.uniforms.wClassification.value = pointcloud.material.uniforms.wClassification.value;
+				material.uniforms.wReturnNumber.value = pointcloud.material.uniforms.wReturnNumber.value;
+				material.uniforms.wSourceID.value = pointcloud.material.uniforms.wSourceID.value;
 
 			}
 

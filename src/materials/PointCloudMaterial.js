@@ -194,9 +194,7 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 		this.numClipBoxes = 0;
 		this._weighted = false;
 		this._gradient = Potree.Gradients.SPECTRAL;
-		this._classification = Potree.Classification.DEFAULT;
 		this.gradientTexture = Potree.PointCloudMaterial.generateGradientTexture(this._gradient);
-		this.classificationTexture = Potree.PointCloudMaterial.generateClassificationTexture(this._classification);
 		this.lights = false;
 		this.fog = false;
 		this._treeType = treeType;
@@ -275,6 +273,8 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 			uSnapViewInv:		{ type: "Matrix4fv", value: []},
 			uShadowColor: 		{ type: "3fv", value: [0, 0, 0]}
 		};
+
+		this.classification = Potree.Classification.DEFAULT;
 
 		this.defaultAttributeValues.normal = [0, 0, 0];
 		this.defaultAttributeValues.classification = [0, 0, 0];
@@ -483,14 +483,26 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 	}
 
 	set classification (value) {
-		let isEqual = Object.keys(value).length === Object.keys(this._classification).length;
 
-		for (let key of Object.keys(value)) {
-			isEqual = isEqual && this._classification[key] !== undefined;
-			isEqual = isEqual && value[key].equals(this._classification[key]);
+		let copy = {};
+		for(let key of Object.keys(value)){
+			copy[key] = value[key].clone();
+		}
+
+		let isEqual = false;
+		if(this._classification === undefined){
+			isEqual = false;
+		}else{
+			isEqual = Object.keys(copy).length === Object.keys(this._classification).length;
+
+			for(let key of Object.keys(copy)){
+				isEqual = isEqual && this._classification[key] !== undefined;
+				isEqual = isEqual && copy[key].equals(this._classification[key]);
+			}
 		}
 
 		if (!isEqual) {
+			this._classification = copy;
 			this.recomputeClassification();
 		}
 	}

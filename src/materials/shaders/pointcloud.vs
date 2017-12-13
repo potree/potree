@@ -100,6 +100,9 @@ varying vec3	vWorldPosition;
 varying float 	vPointSize;
 
 
+float round(float number){
+	return floor(number + 0.5);
+}
 
 // 
 //    ###    ########     ###    ########  ######## #### ##     ## ########     ######  #### ######## ########  ######  
@@ -123,14 +126,16 @@ varying float 	vPointSize;
  *
  */
 float numberOfOnes(float number, float index){
-	float tmp = mod(number, pow(2.0, index + 1.0));
+	float tmp = round(mod(number, pow(2.0, index + 1.0)));
 	float numOnes = 0.0;
+	
 	for(float i = 0.0; i < 8.0; i++){
 		if(mod(tmp, 2.0) != 0.0){
 			numOnes++;
 		}
 		tmp = floor(tmp / 2.0);
 	}
+
 	return numOnes;
 }
 
@@ -162,9 +167,17 @@ float getLOD(){
 		
 		vec4 value = texture2D(visibleNodes, vec2(iOffset / 2048.0, 0.0));
 		float mask = value.r * 255.0;
+
 		if(isBitSet(mask, index)){
 			// there are more visible child nodes at this position
-			iOffset = iOffset + value.g * 255.0 * 256.0 + value.b * 255.0 + numberOfOnes(mask, index - 1.0);
+			float advanceG = floor(value.g * 255.0 * 256.0);
+			float advanceB = floor(value.b * 256.0);
+			float advanceChild = numberOfOnes(mask, index - 1.0);
+
+			float advance = floor(advanceG + advanceB + advanceChild);
+
+			iOffset = round(iOffset + advance);
+			
 			depth++;
 		}else{
 			// no more visible child nodes at this position
@@ -172,7 +185,7 @@ float getLOD(){
 		}
 		
 		offset = offset + (vec3(1.0, 1.0, 1.0) * nodeSizeAtLevel * 0.5) * index3d;
-        
+
 	}
 		
 	return depth;

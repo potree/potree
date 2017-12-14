@@ -125,15 +125,20 @@ float round(float number){
  * number is treated as if it were an integer in the range 0-255
  *
  */
-float numberOfOnes(float number, float index){
-	float tmp = round(mod(number, pow(2.0, index + 1.0)));
-	float numOnes = 0.0;
-	
-	for(float i = 0.0; i < 8.0; i++){
-		if(mod(tmp, 2.0) != 0.0){
-			numOnes++;
+int numberOfOnes(int number, int index){
+	int numOnes = 0;
+	int tmp = 128;
+	for(int i = 7; i >= 0; i--){
+		
+		if(number >= tmp){
+			number = number - tmp;
+
+			if(i <= index){
+				numOnes++;
+			}
 		}
-		tmp = floor(tmp / 2.0);
+		
+		tmp = tmp / 2;
 	}
 
 	return numOnes;
@@ -145,8 +150,28 @@ float numberOfOnes(float number, float index){
  * number is treated as if it were an integer in the range 0-255
  *
  */
-bool isBitSet(float number, float index){
-	return mod(floor(number / pow(2.0, index)), 2.0) != 0.0;
+bool isBitSet(int number, int index){
+
+	int powi = 1;
+	if(index == 1){
+		powi = 2;
+	}else if(index == 2){
+		powi = 4;
+	}else if(index == 3){
+		powi = 8;
+	}else if(index == 4){
+		powi = 16;
+	}else if(index == 5){
+		powi = 32;
+	}else if(index == 6){
+		powi = 64;
+	}else if(index == 7){
+		powi = 128;
+	}
+
+	int ndp = number / powi;
+
+	return mod(float(ndp), 2.0) != 0.0;
 }
 
 
@@ -156,27 +181,26 @@ bool isBitSet(float number, float index){
 float getLOD(){
 	
 	vec3 offset = vec3(0.0, 0.0, 0.0);
-	float iOffset = uVNStart;
+	int iOffset = int(uVNStart);
 	float depth = uLevel;
 	for(float i = 0.0; i <= 30.0; i++){
 		float nodeSizeAtLevel = uOctreeSize  / pow(2.0, i + uLevel + 0.0);
 		
 		vec3 index3d = (position-offset) / nodeSizeAtLevel;
 		index3d = floor(index3d + 0.5);
-		float index = 4.0 * index3d.x + 2.0 * index3d.y + index3d.z;
+		int index = int(round(4.0 * index3d.x + 2.0 * index3d.y + index3d.z));
 		
-		vec4 value = texture2D(visibleNodes, vec2(iOffset / 2048.0, 0.0));
-		float mask = value.r * 255.0;
+		vec4 value = texture2D(visibleNodes, vec2(float(iOffset) / 2048.0, 0.0));
+		int mask = int(round(value.r * 255.0));
 
 		if(isBitSet(mask, index)){
 			// there are more visible child nodes at this position
-			float advanceG = floor(value.g * 255.0 * 256.0);
-			float advanceB = floor(value.b * 256.0);
-			float advanceChild = numberOfOnes(mask, index - 1.0);
+			int advanceG = int(round(value.g * 255.0)) * 256;
+			int advanceB = int(round(value.b * 255.0));
+			int advanceChild = numberOfOnes(mask, index - 1);
+			int advance = advanceG + advanceB + advanceChild;
 
-			float advance = floor(advanceG + advanceB + advanceChild);
-
-			iOffset = round(iOffset + advance);
+			iOffset = iOffset + advance;
 			
 			depth++;
 		}else{
@@ -185,7 +209,6 @@ float getLOD(){
 		}
 		
 		offset = offset + (vec3(1.0, 1.0, 1.0) * nodeSizeAtLevel * 0.5) * index3d;
-
 	}
 		
 	return depth;

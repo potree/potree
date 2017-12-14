@@ -64,6 +64,8 @@ Potree.BinaryLoader.prototype.parse = function (node, buffer) {
 		iAttributes.push(new Potree.InterleavedBufferAttribute("index", 4, 4, "UNSIGNED_BYTE", true));
 		let iBuffer = new Potree.InterleavedBuffer(data.data, iAttributes, numPoints);
 
+		console.log(data.estimatedSpacing);
+
 		let tightBoundingBox = new THREE.Box3(
 			new THREE.Vector3().fromArray(data.tightBoundingBox.min),
 			new THREE.Vector3().fromArray(data.tightBoundingBox.max)
@@ -89,7 +91,9 @@ Potree.BinaryLoader.prototype.parse = function (node, buffer) {
 		version: this.version.version,
 		min: [ node.boundingBox.min.x, node.boundingBox.min.y, node.boundingBox.min.z ],
 		offset: [node.pcoGeometry.offset.x, node.pcoGeometry.offset.y, node.pcoGeometry.offset.z],
-		scale: this.scale
+		scale: this.scale,
+		spacing: node.spacing,
+		hasChildren: node.hasChildren,
 	};
 	worker.postMessage(message, [message.buffer]);
 };

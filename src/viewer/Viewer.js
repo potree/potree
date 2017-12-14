@@ -1,6 +1,6 @@
 // let getQueryParam = function(name) {
 //    name = name.replace(/[\[\]]/g, "\\$&");
-//    let regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+//    let regex = new RegExp('[?&]" + name + "(=([^&#]*)|&|#|$)"),
 //        results = regex.exec(window.location.href);
 //    if (!results) return null;
 //    if (!results[2]) return '';
@@ -235,7 +235,7 @@ class PotreeViewer extends THREE.EventDispatcher {
 
 			if (!this.onAnnotationAdded) {
 				this.onAnnotationAdded = e => {
-				// console.log("annotation added: " + e.annotation.title);
+				// console.log('annotation added: " + e.annotation.title);
 
 					e.annotation.traverse(node => {
 						this.renderArea.appendChild(node.domElement[0]);
@@ -759,10 +759,10 @@ class PotreeViewer extends THREE.EventDispatcher {
 			this.setBackground(value);
 		}
 
-		// if(getParameterByName("elevationRange")){
-		//	let value = getParameterByName("elevationRange");
-		//	value = value.replace("[", "").replace("]", "");
-		//	let tokens = value.split(";");
+		// if(getParameterByName('elevationRange")){
+		//	let value = getParameterByName('elevationRange");
+		//	value = value.replace('[", "").replace(']", "");
+		//	let tokens = value.split(';");
 		//	let x = parseFloat(tokens[0]);
 		//	let y = parseFloat(tokens[1]);
 		//
@@ -789,11 +789,11 @@ class PotreeViewer extends THREE.EventDispatcher {
 			this.fpControls.enabled = false;
 			this.fpControls.addEventListener('start', this.disableAnnotations.bind(this));
 			this.fpControls.addEventListener('end', this.enableAnnotations.bind(this));
-			// this.fpControls.addEventListener("double_click_move", (event) => {
+			// this.fpControls.addEventListener('double_click_move", (event) => {
 			//	let distance = event.targetLocation.distanceTo(event.position);
 			//	this.setMoveSpeed(Math.pow(distance, 0.4));
 			// });
-			// this.fpControls.addEventListener("move_speed_changed", (event) => {
+			// this.fpControls.addEventListener('move_speed_changed", (event) => {
 			//	this.setMoveSpeed(this.fpControls.moveSpeed);
 			// });
 		}
@@ -801,9 +801,9 @@ class PotreeViewer extends THREE.EventDispatcher {
 		// { // create GEO CONTROLS
 		//	this.geoControls = new GeoControls(this.scene.camera, this.renderer.domElement);
 		//	this.geoControls.enabled = false;
-		//	this.geoControls.addEventListener("start", this.disableAnnotations.bind(this));
-		//	this.geoControls.addEventListener("end", this.enableAnnotations.bind(this));
-		//	this.geoControls.addEventListener("move_speed_changed", (event) => {
+		//	this.geoControls.addEventListener('start", this.disableAnnotations.bind(this));
+		//	this.geoControls.addEventListener('end", this.enableAnnotations.bind(this));
+		//	this.geoControls.addEventListener('move_speed_changed", (event) => {
 		//		this.setMoveSpeed(this.geoControls.moveSpeed);
 		//	});
 		// }
@@ -1034,26 +1034,26 @@ class PotreeViewer extends THREE.EventDispatcher {
 		//	if(window.urlToggle > 1){
 		//		{
 		//
-		//			let currentValue = getParameterByName("position");
+		//			let currentValue = getParameterByName('position");
 		//			let strPosition = "["
 		//				+ this.scene.view.position.x.toFixed(3) + ";"
 		//				+ this.scene.view.position.y.toFixed(3) + ";"
 		//				+ this.scene.view.position.z.toFixed(3) + "]";
 		//			if(currentValue !== strPosition){
-		//				setParameter("position", strPosition);
+		//				setParameter('position", strPosition);
 		//			}
 		//
 		//		}
 		//
 		//		{
-		//			let currentValue = getParameterByName("target");
+		//			let currentValue = getParameterByName('target");
 		//			let pivot = this.scene.view.getPivot();
 		//			let strTarget = "["
 		//				+ pivot.x.toFixed(3) + ";"
 		//				+ pivot.y.toFixed(3) + ";"
 		//				+ pivot.z.toFixed(3) + "]";
 		//			if(currentValue !== strTarget){
-		//				setParameter("target", strTarget);
+		//				setParameter('target", strTarget);
 		//			}
 		//		}
 		//
@@ -1237,20 +1237,29 @@ class PotreeViewer extends THREE.EventDispatcher {
 	loop (timestamp) {
 		requestAnimationFrame(this.loop.bind(this));
 
+		if (context.measureTimings) {
+			performance.mark('loop-start');
+		}
+
 		this.stats.begin();
 
-		// var start = new Date().getTime();
+		if (context.measureTimings) {
+			performance.mark('update-start');
+		}
+
 		this.update(this.clock.getDelta(), timestamp);
-		// var end = new Date().getTime();
-		// var duration = end - start;
-		// toggleMessage++;
-		// if(toggleMessage > 30){
-		//	document.getElementById("lblMessage").innerHTML = "update: " + duration + "ms";
-		//	toggleMessage = 0;
-		// }
+
+		if (context.measureTimings) {
+			performance.mark('update-end');
+			performance.measure('update', 'update-start', 'update-end');
+		}
 
 		const queries = GLQueries.forGL(this.renderer.getContext());
 		queries.start('frame');
+
+		if (context.measureTimings) {
+			performance.mark('render-start');
+		}
 
 		if (this.useEDL && Features.SHADER_EDL.isSupported()) {
 			if (!this.edlRenderer) {
@@ -1266,23 +1275,62 @@ class PotreeViewer extends THREE.EventDispatcher {
 			this.potreeRenderer.render();
 		}
 
+		if (context.measureTimings) {
+			performance.mark('render-end');
+			performance.measure('render', 'render-start', 'render-end');
+
+			performance.mark('loop-end');
+			performance.measure('loop', 'loop-start', 'loop-end');
+
+			if (!this.toggle) {
+				this.toggle = timestamp;
+			}
+
+			let duration = timestamp - this.toggle;
+			if (duration > 1000.0) {
+				let measures = performance.getEntriesByType('measure');
+
+				let names = new Set();
+				for (let measure of measures) {
+					names.add(measure.name);
+				}
+
+				let groups = new Map();
+				for (let name of names) {
+					groups.set(name, {
+						sum: 0,
+						n: 0
+					});
+				}
+
+				for (let measure of measures) {
+					let group = groups.get(measure.name);
+					group.sum += measure.duration;
+					group.n++;
+				}
+
+				let message = '===   TIMINGS   ===\n';
+				for (let group of groups) {
+					let name = group[0];
+					let mean = group[1].sum / group[1].n;
+
+					message += `${name}: ${mean.toFixed(3)}ms\n`;
+				}
+
+				message += '===================\n';
+
+				console.log(message);
+
+				performance.clearMarks();
+				performance.clearMeasures();
+				this.toggle = timestamp;
+			}
+		}
+
 		if (queries.enabled) {
 			queries.end();
 			queries.resolve();
 		}
-
-		// let pointsRendered = viewer.scene.pointclouds[0].visibleNodes.map(n => n.geometryNode.geometry.attributes.position.count).reduce( (a, v) => a + v, 0);
-		// console.log("rendered: ", pointsRendered);
-
-		// if(this.takeScreenshot == true){
-		//	this.takeScreenshot = false;
-		//
-		//	let screenshot = this.renderer.domElement.toDataURL();
-		//
-		//	//document.body.appendChild(screenshot);
-		//	let w = this.open();
-		//	w.document.write('<img src="'+screenshot+'"/>');
-		// }
 
 		this.stats.end();
 

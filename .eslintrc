@@ -8,7 +8,8 @@
     "alert": false,
     "btoa": false,
     "Worker": false,
-    "Image": false
+    "Image": false,
+    "performance": false
   },
   "rules": {
     "no-lone-blocks": "off"

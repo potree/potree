@@ -25,6 +25,12 @@ Object.defineProperty(Potree, 'pointLoadLimit', {
 	set: (value) => (context.pointBudget = value)
 });
 
+// LEGACY: this property exists just in case someone used it.
+Object.defineProperty(Potree, 'measureTimings', {
+	get: () => context.measureTimings,
+	set: (value) => (context.measureTimings = value)
+});
+
 // contains WebWorkers with base64 encoded code
 // Potree.workers = {};
 

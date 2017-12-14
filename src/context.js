@@ -24,6 +24,7 @@ module.exports = {
 	scriptPath: scriptPath,
 	resourcePath: scriptPath + '/resources',
 	workerPool: workerPool,
+	measureTimings: false,
 	getDEMWorkerInstance: function () {
 		if (DEMWorkerInstance === null) {
 			let workerPath = scriptPath + '/workers/DEMWorker.js';

@@ -105,6 +105,7 @@ class EDLRenderer {
 
 		viewer.renderer.render(viewer.scene.scene, camera);
 
+		viewer.renderer.clearTarget(this.rtShadow, true, true, true);
 		viewer.renderer.clearTarget(this.rtColor, true, true, true);
 
 		let width = viewer.renderArea.clientWidth;
@@ -123,21 +124,20 @@ class EDLRenderer {
 			material.screenHeight = height;
 			material.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
 			material.uniforms.octreeSize.value = octreeSize;
-			// material.fov = viewer.scene.cameraP.fov * (Math.PI / 180);
 			material.spacing = pointcloud.pcoGeometry.spacing * Math.max(pointcloud.scale.x, pointcloud.scale.y, pointcloud.scale.z);
-			// material.near = camera.near;
-			// material.far = camera.far;
 		}
 
-		viewer.renderer.render(viewer.scene.scenePointCloud, camera, this.rtColor);
+		viewer.shadowTestCam.updateMatrixWorld();
+		viewer.shadowTestCam.matrixWorldInverse.getInverse(viewer.shadowTestCam.matrixWorld);
+		viewer.shadowTestCam.updateProjectionMatrix();
+
+		viewer.pRenderer.render(viewer.scene.scenePointCloud, viewer.shadowTestCam, this.rtShadow);
+
+		viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, this.rtColor, {
+			shadowMaps: [{map: this.rtShadow, camera: viewer.shadowTestCam}]
+		});
+
 		viewer.renderer.render(viewer.scene.scene, camera, this.rtColor);
-
-		// bit of a hack here. The EDL pass will mess up the text of the volume tool
-		// so volume tool is rendered again afterwards
-		// viewer.volumeTool.render(this.rtColor);
-
-		// viewer.renderer.render(viewer.volumeTool.sceneVolume, camera, this.rtColor);
-		// viewer.renderer.render(viewer.clippingTool.sceneVolume, camera, this.rtColor);
 
 		{ // EDL OCCLUSION PASS
 			this.edlMaterial.uniforms.screenWidth.value = width;

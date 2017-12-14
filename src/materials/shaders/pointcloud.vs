@@ -10,7 +10,6 @@ precision mediump int;
 
 attribute vec3 position;
 attribute vec3 color;
-attribute vec3 normal;
 attribute float intensity;
 attribute float classification;
 attribute float returnNumber;
@@ -23,7 +22,6 @@ uniform mat4 modelMatrix;
 uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
 uniform mat4 viewMatrix;
-uniform mat3 normalMatrix;
 uniform bool useOrthographicCamera;
 
 uniform float pcIndex;
@@ -79,9 +77,12 @@ uniform float wSourceID;
 
 
 uniform sampler2D visibleNodes;
+uniform sampler2D shadowMap;
 uniform sampler2D gradient;
 uniform sampler2D classificationLUT;
-uniform sampler2D depthMap;
+
+uniform bool useShadowMap;
+uniform mat4 smWorldViewProj;
 
 varying float	vOpacity;
 varying vec3	vColor;
@@ -90,7 +91,6 @@ varying float	vLogDepth;
 varying vec3	vViewPosition;
 varying float 	vRadius;
 varying vec3	vWorldPosition;
-varying vec3	vNormal;
 
 
 // ---------------------
@@ -373,7 +373,6 @@ void main() {
 	vOpacity = opacity;
 	vLinearDepth = gl_Position.w;
 	vLogDepth = log2(-mvPosition.z);
-	vNormal = normalize(normalMatrix * normal);
 
 	// ---------------------
 	// POINT COLOR
@@ -464,6 +463,24 @@ void main() {
 	vRadius = pointSize / projFactor;
 
 	gl_PointSize = pointSize;
+	if (useShadowMap) {
+
+		vec4 smPosition = smWorldViewProj * vec4( position, 1.0 );
+		smPosition.z = smPosition.z - 0.1;
+		vec2 smUV = (smPosition.xy / smPosition.w) * 0.5 + 0.5;
+
+		vec4 sval = texture2D(shadowMap, smUV);
+
+		float vertexDepth = ((smPosition.z / smPosition.w) * 0.5 + 0.5);
+		float smDepth = sval.x;
+
+		if(vertexDepth > smDepth){
+			//vColor = vec3(1.0, 0.0, 0.0);
+			vColor.r = 1.0;
+		}else{
+			vColor.g = 1.0;
+		}
+	}
 
 	// ---------------------
 	// CLIPPING

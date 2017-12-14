@@ -39,6 +39,7 @@ const updatePointClouds = require('../utils/updatePointClouds');
 const GLQueries = require('../webgl/GLQueries');
 const projectedRadiusOrtho = require('../utils/projectedRadiusOrtho');
 const zoomTo = require('../utils/zoomTo');
+const Renderer = require('../Renderer');
 
 class PotreeViewer extends THREE.EventDispatcher {
 	constructor (domElement, args) {
@@ -118,6 +119,7 @@ class PotreeViewer extends THREE.EventDispatcher {
 		this.potreeRenderer = null;
 		this.edlRenderer = null;
 		this.renderer = null;
+		this.pRenderer = null;
 
 		this.scene = null;
 
@@ -135,6 +137,18 @@ class PotreeViewer extends THREE.EventDispatcher {
 		this.background = null;
 
 		this.initThree();
+
+		this.pRenderer = new Renderer(this.renderer);
+
+		{
+			let near = 2.5;
+			let far = 10.0;
+			// TODO unused: let fov = 90;
+
+			this.shadowTestCam = new THREE.PerspectiveCamera(90, 1, near, far);
+			this.shadowTestCam.position.set(3.50, -2.80, 8.561);
+			this.shadowTestCam.lookAt(new THREE.Vector3(0, 0, 4.87));
+		}
 
 		let scene = new Scene(this.renderer);
 		this.setScene(scene);
@@ -931,6 +945,7 @@ class PotreeViewer extends THREE.EventDispatcher {
 
 		// enable frag_depth extension for the interpolation shader, if available
 		this.renderer.context.getExtension('EXT_frag_depth');
+		this.renderer.context.getExtension('WEBGL_depth_texture');
 	}
 
 	updateAnnotations () {
@@ -1062,6 +1077,16 @@ class PotreeViewer extends THREE.EventDispatcher {
 		//
 		//	window.urlToggle += delta;
 		// }
+
+		{
+			let u = Math.sin(0.0005 * timestamp) * 0.5 - 0.4;
+
+			let x = Math.cos(u);
+			let y = Math.sin(u);
+
+			this.shadowTestCam.position.set(7 * x, 7 * y, 8.561);
+			this.shadowTestCam.lookAt(new THREE.Vector3(0, 0, 0));
+		}
 
 		let scene = this.scene;
 		let camera = scene.getActiveCamera();

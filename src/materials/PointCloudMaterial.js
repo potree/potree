@@ -66,7 +66,6 @@ module.exports = class PointCloudMaterial extends THREE.RawShaderMaterial {
 		this._useClipBox = false;
 		this.numClipBoxes = 0;
 		this._weighted = false;
-		this._depthMap = null;
 		this._gradient = Gradients.SPECTRAL;
 		this._classification = Classification.DEFAULT;
 		this.gradientTexture = PointCloudMaterial.generateGradientTexture(this._gradient);
@@ -122,7 +121,6 @@ module.exports = class PointCloudMaterial extends THREE.RawShaderMaterial {
 			clipPolygonVCount: { type: 'iv', value: [] },
 			clipPolygonVP: { type: 'Matrix4fv', value: [] },
 			toModel: { type: 'Matrix4f', value: [] },
-			depthMap: { type: 't', value: null },
 			diffuse: { type: 'fv', value: [1, 1, 1] },
 			transition: { type: 'f', value: 0.5 },
 			intensityRange: { type: 'fv', value: [0, 65000] },
@@ -155,14 +153,6 @@ module.exports = class PointCloudMaterial extends THREE.RawShaderMaterial {
 	updateShaderSource () {
 		this.vertexShader = vs({defines: this.getDefines()});
 		this.fragmentShader = fs({defines: this.getDefines()});
-
-		if (this.depthMap) {
-			this.uniforms.depthMap.value = this.depthMap;
-			// this.depthMap = depthMap;
-			// this.setValues({
-			//	depthMap: this.depthMap,
-			// });
-		}
 
 		if (this.opacity === 1.0) {
 			this.blending = THREE.NoBlending;
@@ -515,17 +505,6 @@ module.exports = class PointCloudMaterial extends THREE.RawShaderMaterial {
 				type: 'material_property_changed',
 				target: this
 			});
-		}
-	}
-
-	get depthMap () {
-		return this._depthMap;
-	}
-
-	set depthMap (value) {
-		if (this._depthMap !== value) {
-			this._depthMap = value;
-			this.updateShaderSource();
 		}
 	}
 

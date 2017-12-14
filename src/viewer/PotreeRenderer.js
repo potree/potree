@@ -61,6 +61,9 @@ class PotreeRenderer {
 		// var queryPC = Potree.startQuery("PointCloud", viewer.renderer.getContext());
 		let activeCam = viewer.scene.getActiveCamera();
 		viewer.renderer.render(viewer.scene.scenePointCloud, activeCam);
+		// viewer.renderer.render(viewer.scene.scenePointCloud, activeCam);
+		viewer.pRenderer.render(viewer.scene.scenePointCloud, activeCam);
+
 		// Potree.endQuery(queryPC, viewer.renderer.getContext());
 
 		// render scene

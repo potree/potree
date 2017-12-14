@@ -381,8 +381,8 @@ module.exports = (viewer) => {
 	function initClippingTool () {
 		$('#clipping_volumes_container').hide();
 
-		$('#optClipMode').selectmenu();
-		$('#optClipMode').val(1).selectmenu('refresh');
+		// $('#optClipMode').selectmenu();
+		// $('#optClipMode').val(1).selectmenu('refresh');
 		$('#optClipMode').selectmenu({
 			change: function (event, ui) {
 				viewer.clippingTool.setClipMode(parseInt(ui.item.value));

@@ -126,7 +126,7 @@ class EarthControls extends THREE.EventDispatcher {
 			let I = getMousePointCloudIntersection(
 				e.mouse,
 				this.scene.getActiveCamera(),
-				this.renderer,
+				this.viewer,
 				this.scene.pointclouds);
 
 			if (I) {
@@ -173,7 +173,7 @@ class EarthControls extends THREE.EventDispatcher {
 		let I = getMousePointCloudIntersection(
 			mouse,
 			camera,
-			this.renderer,
+			this.viewer,
 			this.scene.pointclouds);
 
 		if (I === null) {
@@ -249,7 +249,7 @@ class EarthControls extends THREE.EventDispatcher {
 			let I = getMousePointCloudIntersection(
 				this.viewer.inputHandler.mouse,
 				this.scene.getActiveCamera(),
-				this.renderer,
+				this.viewer,
 				this.scene.pointclouds);
 
 			if (I) {

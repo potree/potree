@@ -112,10 +112,13 @@ class ProfileRequest {
 
 		for (let segment of target.segments) {
 			for (let node of nodes) {
-				let geometry = node.geometry;
-				let positions = geometry.attributes.position;
-				let p = positions.array;
 				let numPoints = node.numPoints;
+				let buffer = node.buffer;
+				let view = new DataView(buffer.data);
+
+				if (!numPoints) {
+					continue;
+				}
 
 				let sv = new THREE.Vector3().subVectors(segment.end, segment.start).setZ(0);
 				let segmentDir = sv.clone().normalize();
@@ -130,8 +133,13 @@ class ProfileRequest {
 				let matrix = new THREE.Matrix4().multiplyMatrices(
 					this.pointcloud.matrixWorld, nodeMatrix);
 
+				let posOffset = buffer.offset('position');
 				for (let i = 0; i < numPoints; i++) {
-					let pos = new THREE.Vector3(p[3 * i], p[3 * i + 1], p[3 * i + 2]);
+					let pos = new THREE.Vector3(
+						view.getFloat32(i * buffer.stride + posOffset + 0, true),
+						view.getFloat32(i * buffer.stride + posOffset + 4, true),
+						view.getFloat32(i * buffer.stride + posOffset + 8, true));
+
 					pos.applyMatrix4(matrix);
 					let distance = Math.abs(segment.cutPlane.distanceToPoint(pos));
 					let centerDistance = Math.abs(segment.halfPlane.distanceToPoint(pos));
@@ -150,29 +158,32 @@ class ProfileRequest {
 					}
 				}
 
-				for (let attribute of Object.keys(geometry.attributes).filter(a => a !== 'indices')) {
-					let bufferedAttribute = geometry.attributes[attribute];
-					let Type = bufferedAttribute.array.constructor;
+				points.data.position = new Float32Array(acceptedPositions);
+				points.data.color = new Uint8Array(accepted.length * 4).fill(100);
 
-					let filteredBuffer = null;
-
-					if (attribute === 'position') {
-						filteredBuffer = new Type(acceptedPositions);
-					} else {
-						filteredBuffer = new Type(accepted.length * bufferedAttribute.itemSize);
-
-						for (let i = 0; i < accepted.length; i++) {
-							let index = accepted[i];
-
-							filteredBuffer.set(
-								bufferedAttribute.array.subarray(
-									bufferedAttribute.itemSize * index,
-									bufferedAttribute.itemSize * index + bufferedAttribute.itemSize),
-								bufferedAttribute.itemSize * i);
-						}
-					}
-					points.data[attribute] = filteredBuffer;
-				}
+				// for(let attribute of buffer.attributes){
+				// 	let bufferedAttribute = geometry.attributes[attribute];
+				// 	let Type = bufferedAttribute.array.constructor;
+				//
+				// 	let filteredBuffer = null;
+				//
+				// 	if (attribute === 'position') {
+				// 		filteredBuffer = new Type(acceptedPositions);
+				// 	} else {
+				// 		filteredBuffer = new Type(accepted.length * bufferedAttribute.itemSize);
+				//
+				// 		for (let i = 0; i < accepted.length; i++) {
+				// 			let index = accepted[i];
+				//
+				// 			filteredBuffer.set(
+				// 				bufferedAttribute.array.subarray(
+				// 					bufferedAttribute.itemSize * index,
+				// 					bufferedAttribute.itemSize * index + bufferedAttribute.itemSize),
+				// 				bufferedAttribute.itemSize * i);
+				// 		}
+				// 	}
+				// 	points.data[attribute] = filteredBuffer;
+				// }
 
 				points.data['mileage'] = new Float64Array(mileage);
 				points.numPoints = accepted.length;

@@ -113,7 +113,7 @@ class FirstPersonControls extends THREE.EventDispatcher {
 		let I = getMousePointCloudIntersection(
 			mouse,
 			camera,
-			this.renderer,
+			this.viewer,
 			this.scene.pointclouds);
 
 		if (I === null) {

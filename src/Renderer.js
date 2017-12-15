@@ -267,7 +267,7 @@ module.exports = class Renderer {
 		gl.bindAttribLocation(shader.program, 4, 'returnNumber');
 		gl.bindAttribLocation(shader.program, 5, 'numberOfReturns');
 		gl.bindAttribLocation(shader.program, 6, 'pointSourceID');
-		gl.bindAttribLocation(shader.program, 7, 'indices');
+		gl.bindAttribLocation(shader.program, 7, 'index');
 
 		this.renderNodes(octree, nodes, visibilityTextureData, camera, target, shader, params);
 	}

@@ -2484,6 +2484,11 @@ module.exports = (viewer) => {
 								<li>Contrast: <span id="lblIntensityContrast${i}"></span> <div id="sldIntensityContrast${i}"></div>	</li>
 							</div>
 
+							<div id="materials.index_container${i}">
+								<div class="divider">
+									<span>Indices</span>
+								</div>
+							</div>
 
 							</ul>
 						</div>
@@ -2888,6 +2893,7 @@ module.exports = (viewer) => {
 				'Classification',
 				'Return Number',
 				'Source',
+				'Index',
 				'Phong',
 				'Level of Detail',
 				'Composite'
@@ -2915,8 +2921,10 @@ module.exports = (viewer) => {
 				let blockRGB = $('#materials\\.rgb_container' + i);
 				let blockColor = $('#materials\\.color_container' + i);
 				let blockIntensity = $('#materials\\.intensity_container' + i);
+				let blockIndex = $('#materials\\.index_container' + i);
 				let blockTransition = $('#materials\\.transition_container' + i);
 
+				blockIndex.css('display', 'none');
 				blockIntensity.css('display', 'none');
 				blockElevation.css('display', 'none');
 				blockRGB.css('display', 'none');
@@ -2942,6 +2950,8 @@ module.exports = (viewer) => {
 					blockIntensity.css('display', 'block');
 				} else if (selectedValue === 'Intensity Gradient') {
 					blockIntensity.css('display', 'block');
+				} else if (selectedValue === 'Index') {
+					blockIndex.css('display', 'block');
 				}
 			};
 

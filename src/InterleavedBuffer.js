@@ -5,4 +5,18 @@ module.exports = class InterleavedBuffer {
 		this.stride = attributes.reduce((a, att) => a + att.bytes, 0);
 		this.numElements = numElements;
 	}
+
+	offset (name) {
+		let offset = 0;
+
+		for (let att of this.attributes) {
+			if (att.name === name) {
+				return offset;
+			}
+
+			offset += att.bytes;
+		}
+
+		return null;
+	}
 };

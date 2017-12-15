@@ -79,7 +79,7 @@ class VolumeTool extends THREE.EventDispatcher {
 			let I = getMousePointCloudIntersection(
 				e.drag.end,
 				this.viewer.scene.getActiveCamera(),
-				this.viewer.renderer,
+				this.viewer,
 				this.viewer.scene.pointclouds);
 
 			if (I) {

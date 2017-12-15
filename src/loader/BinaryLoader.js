@@ -66,7 +66,7 @@ BinaryLoader.prototype.parse = function (node, buffer) {
 		let iAttributes = pointAttributes.attributes
 			.map(pa => toInterleavedBufferAttribute(pa))
 			.filter(ia => ia != null);
-		iAttributes.push(new InterleavedBufferAttribute('index', 4, 4, 'UNSIGNED_BYTE'));
+		iAttributes.push(new InterleavedBufferAttribute('index', 4, 4, 'UNSIGNED_BYTE', true));
 		let iBuffer = new InterleavedBuffer(data.data, iAttributes, numPoints);
 
 		let tightBoundingBox = new THREE.Box3(
@@ -79,6 +79,7 @@ BinaryLoader.prototype.parse = function (node, buffer) {
 		tightBoundingBox.max.sub(tightBoundingBox.min);
 		tightBoundingBox.min.set(0, 0, 0);
 
+		node.numPoints = iBuffer.numElements;
 		node.buffer = iBuffer;
 		node.mean = new THREE.Vector3(...data.mean);
 		node.tightBoundingBox = tightBoundingBox;

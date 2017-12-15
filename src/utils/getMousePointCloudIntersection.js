@@ -1,6 +1,7 @@
 const THREE = require('three');
 
-module.exports = (mouse, camera, renderer, pointclouds) => {
+module.exports = (mouse, camera, viewer, pointclouds) => {
+	let renderer = viewer.renderer;
 	let nmouse = {
 		x: (mouse.x / renderer.domElement.clientWidth) * 2 - 1,
 		y: -(mouse.y / renderer.domElement.clientHeight) * 2 + 1
@@ -22,7 +23,7 @@ module.exports = (mouse, camera, renderer, pointclouds) => {
 	let closestPoint = null;
 
 	for (let pointcloud of pointclouds) {
-		let point = pointcloud.pick(renderer, camera, ray, {x: mouse.x, y: renderer.domElement.clientHeight - mouse.y});
+		let point = pointcloud.pick(viewer, camera, ray, {x: mouse.x, y: renderer.domElement.clientHeight - mouse.y});
 
 		if (!point) {
 			continue;

@@ -15,7 +15,7 @@ attribute float classification;
 attribute float returnNumber;
 attribute float numberOfReturns;
 attribute float pointSourceID;
-attribute vec4 indices;
+attribute vec4 index;
 
 uniform mat4 modelMatrix;
 uniform mat4 modelViewMatrix;
@@ -398,7 +398,8 @@ void main() {
 		vColor = texture2D(gradient, vec2(w,1.0-w)).rgb;
 	#elif defined color_type_point_index
 		//vColor = indices.rgb * 255.0;
-		vColor = indices.rgb;
+		vColor = index.rgb;
+		//vColor = vec3(1.0, 0.0, 0.0);
 
 		//vColor.r = mod(indices, 256.0) / 255.0;
 		//vColor.g = mod(indices / 256.0, 256.0) / 255.0;

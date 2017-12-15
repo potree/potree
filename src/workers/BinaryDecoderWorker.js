@@ -51,7 +51,7 @@ self.onmessage = function (event) {
 	let iAttributes = pointAttributes.attributes
 		.map(pa => toInterleavedBufferAttribute(pa))
 		.filter(ia => ia != null);
-	iAttributes.push(new InterleavedBufferAttribute('index', 4, 4, 'UNSIGNED_BYTE', false));
+	iAttributes.push(new InterleavedBufferAttribute('index', 4, 4, 'UNSIGNED_BYTE', true));
 	let iStride = iAttributes.reduce((a, att) => a + att.bytes, 0);
 	let iData = new ArrayBuffer(numPoints * iStride);
 	// let iBuffer = new InterleavedBuffer(iData, iAttributes);

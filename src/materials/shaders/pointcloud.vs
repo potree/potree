@@ -152,8 +152,11 @@ int numberOfOnes(int number, int index){
  */
 bool isBitSet(int number, int index){
 
+	// weird multi else if due to lack of proper array, int and bitwise support in WebGL 1.0
 	int powi = 1;
-	if(index == 1){
+	if(index == 0){
+		powi = 1;
+	}else if(index == 1){
 		powi = 2;
 	}else if(index == 2){
 		powi = 4;
@@ -167,6 +170,8 @@ bool isBitSet(int number, int index){
 		powi = 64;
 	}else if(index == 7){
 		powi = 128;
+	}else{
+		return false;
 	}
 
 	int ndp = number / powi;
@@ -262,19 +267,19 @@ float getLOD(){
 		
 		float factor = length(pos * splitv / size);
 		if(factor < 0.5){
-		 	// left
-		    if(children == 0 || children == 2){
-		    	return depth;
-		    }
+			// left
+		if(children == 0 || children == 2){
+				return depth;
+			}
 		}else{
-		  	// right
-		    pos = pos - size * splitv * 0.5;
-		    if(children == 0 || children == 1){
-		    	return depth;
-		    }
-		    if(children == 3){
-		    	iOffset = iOffset + 1.0;
-		    }
+			// right
+			pos = pos - size * splitv * 0.5;
+			if(children == 0 || children == 1){
+				return depth;
+			}
+			if(children == 3){
+				iOffset = iOffset + 1.0;
+			}
 		}
 		size = size * ((1.0 - (splitv + 1.0) / 2.0) + 0.5);
 		

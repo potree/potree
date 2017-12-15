@@ -40,6 +40,7 @@ const GLQueries = require('../webgl/GLQueries');
 const projectedRadiusOrtho = require('../utils/projectedRadiusOrtho');
 const zoomTo = require('../utils/zoomTo');
 const Renderer = require('../Renderer');
+const RepRenderer = require('./RepRenderer');
 
 class PotreeViewer extends THREE.EventDispatcher {
 	constructor (domElement, args) {
@@ -1298,7 +1299,12 @@ class PotreeViewer extends THREE.EventDispatcher {
 			performance.mark('render-start');
 		}
 
-		if (this.useEDL && Features.SHADER_EDL.isSupported()) {
+		if (this.useRep) {
+			if (!this.repRenderer) {
+				this.repRenderer = new RepRenderer(this);
+			}
+			this.repRenderer.render(this.renderer);
+		} if (this.useEDL && Features.SHADER_EDL.isSupported()) {
 			if (!this.edlRenderer) {
 				const EDLRenderer = require('./EDLRenderer');
 				this.edlRenderer = new EDLRenderer(this);
@@ -1355,11 +1361,10 @@ class PotreeViewer extends THREE.EventDispatcher {
 				}
 
 				let glQueries = GLQueries.forGL(this.renderer.getContext()).resolve();
-				for(let [key, value] of glQueries){
-
+				for (let [key, value] of glQueries) {
 					let group = {
-						measures: value.map(v => {return {duration: v}}),
-						sum: value.reduce( (a, i) => a + i, 0),
+						measures: value.map(v => { return {duration: v}; }),
+						sum: value.reduce((a, i) => a + i, 0),
 						n: value.length,
 						min: Math.min(...value),
 						max: Math.max(...value)

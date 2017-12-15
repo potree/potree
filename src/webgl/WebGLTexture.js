@@ -15,6 +15,11 @@ module.exports = class WebGLTexture {
 	}
 
 	update () {
+		if (!this.texture.image) {
+			this.version = this.texture.version;
+			return;
+		}
+
 		let gl = this.gl;
 		let texture = this.texture;
 

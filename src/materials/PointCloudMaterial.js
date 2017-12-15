@@ -74,6 +74,7 @@ module.exports = class PointCloudMaterial extends THREE.RawShaderMaterial {
 		this.fog = false;
 		this._treeType = treeType;
 		this._useEDL = false;
+		this._snapEnabled = false;
 
 		this._defaultIntensityRangeChanged = false;
 		this._defaultElevationRangeChanged = false;
@@ -138,7 +139,11 @@ module.exports = class PointCloudMaterial extends THREE.RawShaderMaterial {
 			wSourceID: { type: 'f', value: 0 },
 			useOrthographicCamera: { type: 'b', value: false },
 			orthoRange: { type: 'f', value: 10.0 },
-			clipMode: { type: 'i', value: 1 }
+			clipMode: { type: 'i', value: 1 },
+			snapshot: { type: 't', value: null },
+			snapView: { type: 'Matrix4f', value: [] },
+			snapProj: { type: 'Matrix4f', value: [] },
+			snapEnabled: { type: 'b', value: false }
 		};
 
 		this.defaultAttributeValues.normal = [0, 0, 0];
@@ -198,6 +203,10 @@ module.exports = class PointCloudMaterial extends THREE.RawShaderMaterial {
 
 		if (this._useEDL) {
 			defines += '#define use_edl\n';
+		}
+
+		if (this._snapEnabled) {
+			defines += '#define snap_enabled\n';
 		}
 
 		if (this._pointColorType === PointColorType.RGB) {
@@ -363,6 +372,17 @@ module.exports = class PointCloudMaterial extends THREE.RawShaderMaterial {
 			type: 'material_property_changed',
 			target: this
 		});
+	}
+
+	get snapEnabled () {
+		return this._snapEnabled;
+	}
+
+	set snapEnabled (value) {
+		if (this._snapEnabled !== value) {
+			this._snapEnabled = value;
+			this.updateShaderSource();
+		}
 	}
 
 	get spacing () {

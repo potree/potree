@@ -14,4 +14,5 @@ window.HoverMenu = require('./stuff/HoverMenu');
 window.proj4 = require('proj4');
 window.THREE = require('three');
 window.ProfilePointCloud = require('./ProfilePointCloud');
+window.RepRenderer = require('./viewer/RepRenderer');
 require('three-ply-loader')(window.THREE);

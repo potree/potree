@@ -167,20 +167,20 @@ module.exports = class Renderer {
 		let shader = null;
 		let visibilityTextureData = null;
 
-		if (window.atoggle == null) {
-			window.atoggle = 0;
-		} else {
-			window.atoggle++;
-		}
-
-		let sub = nodes.slice(0, 10);
-		let rem = nodes.slice(10);
-		let numAdd = 40;
-		if (numAdd * window.atoggle > rem.length) {
-			window.atoggle = 0;
-		}
-		let add = rem.slice(20 * window.atoggle, 20 * (window.atoggle + 1));
-		nodes = sub.concat(add);
+		// if (window.atoggle == null) {
+		// 	window.atoggle = 0;
+		// } else {
+		// 	window.atoggle++;
+		// }
+		//
+		// let sub = nodes.slice(0, 10);
+		// let rem = nodes.slice(10);
+		// let numAdd = 40;
+		// if (numAdd * window.atoggle > rem.length) {
+		// 	window.atoggle = 0;
+		// }
+		// let add = rem.slice(20 * window.atoggle, 20 * (window.atoggle + 1));
+		// nodes = sub.concat(add);
 
 		if (material.pointSizeType >= 0) {
 			if (material.pointSizeType === PointSizeType.ADAPTIVE ||
@@ -216,6 +216,10 @@ module.exports = class Renderer {
 
 				if (uniform.type === 't') {
 					let texture = uniform.value;
+
+					if (!texture) {
+						continue;
+					}
 
 					if (!this.textures.has(texture)) {
 						let webglTexture = new WebGLTexture(gl, texture);
@@ -302,6 +306,21 @@ module.exports = class Renderer {
 			shader.setUniform1i('gradient', 1);
 			gl.activeTexture(gl.TEXTURE1);
 			gl.bindTexture(gradientTexture.target, gradientTexture.id);
+
+			if (material.snapEnabled === true) {
+				// let snapTexture = this.textures.get(material.uniforms.snapshot.value);
+				let texture = material.uniforms.snapshot.value;
+				let snapTexture = this.threeRenderer.properties.get(texture).__webglTexture;
+				shader.setUniform1i('snapshot', 2);
+				gl.activeTexture(gl.TEXTURE2);
+
+				// let gradientTexture = this.textures.get(material.gradientTexture);
+				gl.bindTexture(gl.TEXTURE_2D, snapTexture);
+
+				shader.setUniformMatrix4('snapView', material.uniforms.snapView.value);
+				shader.setUniformMatrix4('snapProj', material.uniforms.snapProj.value);
+			}
+			shader.setUniform('snapEnabled', material.uniforms.snapEnabled.value);
 		}
 
 		gl.bindAttribLocation(shader.program, 0, 'position');
@@ -314,6 +333,10 @@ module.exports = class Renderer {
 		gl.bindAttribLocation(shader.program, 7, 'index');
 
 		this.renderNodes(octree, nodes, visibilityTextureData, camera, target, shader, params);
+
+		gl.activeTexture(gl.TEXTURE2);
+		gl.bindTexture(gl.TEXTURE_2D, null);
+		gl.activeTexture(gl.TEXTURE0);
 	}
 
 	render (scene, camera, target, params = {}) {

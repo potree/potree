@@ -44,7 +44,8 @@ uniform float minSize;			// minimum pixel size
 uniform float maxSize;			// maximum pixel size
 
 uniform float uPCIndex;
-uniform float uSpacing;
+uniform float uOctreeSpacing;
+uniform float uNodeSpacing;
 uniform float uOctreeSize;
 uniform vec3 uBBSize;
 uniform float uLevel;
@@ -217,6 +218,51 @@ float getLOD(){
 	}
 		
 	return depth;
+}
+
+float getSpacing(){
+	vec3 offset = vec3(0.0, 0.0, 0.0);
+	int iOffset = int(uVNStart);
+	float depth = uLevel;
+	float spacing = uNodeSpacing;
+	for(float i = 0.0; i <= 30.0; i++){
+		float nodeSizeAtLevel = uOctreeSize  / pow(2.0, i + uLevel + 0.0);
+		
+		vec3 index3d = (position-offset) / nodeSizeAtLevel;
+		index3d = floor(index3d + 0.5);
+		int index = int(round(4.0 * index3d.x + 2.0 * index3d.y + index3d.z));
+		
+		vec4 value = texture2D(visibleNodes, vec2(float(iOffset) / 2048.0, 0.0));
+		int mask = int(round(value.r * 255.0));
+		float spacingFactor = value.a;
+
+		if(i > 0.0){
+			spacing = spacing / (255.0 * spacingFactor);
+		}
+		
+
+		if(isBitSet(mask, index)){
+			// there are more visible child nodes at this position
+			int advanceG = int(round(value.g * 255.0)) * 256;
+			int advanceB = int(round(value.b * 255.0));
+			int advanceChild = numberOfOnes(mask, index - 1);
+			int advance = advanceG + advanceB + advanceChild;
+
+			iOffset = iOffset + advance;
+
+			//spacing = spacing / (255.0 * spacingFactor);
+			//spacing = spacing / 3.0;
+			
+			depth++;
+		}else{
+			// no more visible child nodes at this position
+			return spacing;
+		}
+		
+		offset = offset + (vec3(1.0, 1.0, 1.0) * nodeSizeAtLevel * 0.5) * index3d;
+	}
+		
+	return spacing;
 }
 
 float getPointSizeAttenuation(){
@@ -483,7 +529,7 @@ vec3 getColor(){
 		color = uColor;
 	#elif defined color_type_lod
 		float depth = getLOD();
-		float w = depth / 5.0;
+		float w = depth / 10.0;
 		color = texture2D(gradient, vec2(w,1.0-w)).rgb;
 	#elif defined color_type_point_index
 		color = index.rgb;
@@ -511,7 +557,7 @@ float getPointSize(){
 	float slope = tan(fov / 2.0);
 	float projFactor =  -0.5 * uScreenHeight / (slope * vViewPosition.z);
 	
-	float r = uSpacing * 1.5;
+	float r = uOctreeSpacing * 1.5;
 	vRadius = r;
 	#if defined fixed_point_size
 		pointSize = size;
@@ -522,9 +568,11 @@ float getPointSize(){
 			pointSize = pointSize * projFactor;
 		}
 	#elif defined adaptive_point_size
+
 		if(useOrthographicCamera) {
 			pointSize = size * r / (orthoRange * pow(2.0, getLOD())) * uScreenWidth;
 		} else {
+			//float worldSpaceSize = 1.5 * size * getSpacing();
 			float worldSpaceSize = size * r / getPointSizeAttenuation();
 			pointSize = worldSpaceSize * projFactor;
 		}

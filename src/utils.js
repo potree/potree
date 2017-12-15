@@ -382,7 +382,7 @@ Potree.utils = class {
 	// ImageUtils - generateDataTexture()
 	static generateDataTexture (width, height, color) {
 		let size = width * height;
-		let data = new Uint8Array(3 * width * height);
+		let data = new Uint8Array(4 * width * height);
 
 		let r = Math.floor(color.r * 255);
 		let g = Math.floor(color.g * 255);
@@ -394,7 +394,7 @@ Potree.utils = class {
 			data[ i * 3 + 2 ] = b;
 		}
 
-		let texture = new THREE.DataTexture(data, width, height, THREE.RGBFormat);
+		let texture = new THREE.DataTexture(data, width, height, THREE.RGBAFormat);
 		texture.needsUpdate = true;
 		texture.magFilter = THREE.NearestFilter;
 

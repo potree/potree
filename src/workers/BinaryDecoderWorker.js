@@ -209,10 +209,12 @@ onmessage = function (event) {
 	}
 
 	let estimatedSpacing;
-	if(hasChildren){ 
+	if(hasChildren || true){ 
 		estimatedSpacing = spacing;
 	}else{
 		performance.mark("spacing-start");
+
+		let knnCount = 5;
 		let n = 5;
 		let choice = [];
 		for(let i = 0; i < Math.min(n, numPoints); i++){
@@ -223,7 +225,7 @@ onmessage = function (event) {
 			let z = iView.getFloat32(index * iStride + 8, true);
 
 			choice.push({
-				closest: Infinity,
+				knn: [],
 				position: [x, y, z]
 			});
 		}
@@ -249,21 +251,27 @@ onmessage = function (event) {
 				let distance = squaredDistanceBetween(pos, point.position);
 
 				if(distance > 0){
-					point.closest = Math.min(point.closest, distance);
+					point.knn.push(distance);
+					point.knn.sort();
+					point.knn = point.knn.slice(0, knnCount);
 				}
 			}
 		}
 
-		//for(let point of choice){
-		//	point.closest = Math.sqrt(point.closest);
-		//}
+		{
+			let knns = [];
+			for(let knn of choice.map(point => point.knn)){
+				knns.push(...knn);
+			}
+			knns = knns.map(value => Math.sqrt(value));
 
-		let distances = choice.map(point => Math.sqrt(point.closest));
-		distances.sort();
-		let medianPos = Math.floor(distances.length / 2);
-		let medianSpacing = distances[medianPos];
+			knns.sort();
+			let medianPos = Math.floor(knns.length / 2);
+			let medianSpacing = knns[medianPos];
 
-		estimatedSpacing = medianSpacing;
+			estimatedSpacing = Math.min(medianSpacing, spacing);
+		}
+
 		performance.mark("spacing-end");
 
 		{ // print timings

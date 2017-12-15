@@ -330,6 +330,7 @@ Potree.PointCloudArena4DGeometry.prototype.loadHierarchy = function () {
 
 			let bbSize = node.boundingBox.getSize();
 			node.spacing = ((bbSize.x + bbSize.y + bbSize.z) / 3) / 75;
+			node.estimatedSpacing = node.spacing;
 
 			stack.push(node);
 

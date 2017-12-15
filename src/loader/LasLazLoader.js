@@ -179,6 +179,7 @@ Potree.LasLazBatcher = class LasLazBatcher {
 			
 			Potree.workerPool.returnWorker(workerPath, worker);
 
+			node.estimatedSpacing = node.spacing;
 			node.numPoints = iBuffer.numElements;
 			node.buffer = iBuffer;
 			node.mean = new THREE.Vector3(...data.mean);

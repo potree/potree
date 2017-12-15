@@ -225,7 +225,7 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 		
 		if(Potree.measureTimings) performance.mark("computeVisibilityTextureData-start");
 
-		let data = new Uint8Array(nodes.length * 3);
+		let data = new Uint8Array(nodes.length * 4);
 		let visibleNodeTextureOffsets = new Map();
 
 		// copy array
@@ -256,19 +256,24 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 				}
 			}
 
-			data[i * 3 + 0] = 0;
-			data[i * 3 + 1] = 0;
-			data[i * 3 + 2] = 0;
+			let spacing = node.geometryNode.estimatedSpacing;
+			let parentSpacing = node.geometryNode.parent ? node.geometryNode.parent.estimatedSpacing : spacing;
+			let spacingFactor = parentSpacing / spacing;
+
+			data[i * 4 + 0] = 0;
+			data[i * 4 + 1] = 0;
+			data[i * 4 + 2] = 0;
+			data[i * 4 + 3] = Math.max(0, Math.min(255, Math.round(spacingFactor)));
 			for (let j = 0; j < children.length; j++) {
 				let child = children[j];
 				let index = parseInt(child.geometryNode.name.substr(-1));
-				data[i * 3 + 0] += Math.pow(2, index);
+				data[i * 4 + 0] += Math.pow(2, index);
 
 				if (j === 0) {
 					let vArrayIndex = nodes.indexOf(child, i);
 					//let vArrayIndex = child._index;
-					data[i * 3 + 1] = (vArrayIndex - i) >> 8;
-					data[i * 3 + 2] = (vArrayIndex - i) % 256;
+					data[i * 4 + 1] = (vArrayIndex - i) >> 8;
+					data[i * 4 + 2] = (vArrayIndex - i) % 256;
 				}
 			}
 		}

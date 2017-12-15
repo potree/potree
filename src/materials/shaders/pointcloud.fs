@@ -33,8 +33,11 @@ varying float	vRadius;
 #define max_snapshots 5
 #if defined(snap_enabled)
 uniform sampler2D uSnapshot[max_snapshots];
+uniform sampler2D uSnapshotDepth[max_snapshots];
 uniform mat4 uSnapView[max_snapshots];
 uniform mat4 uSnapProj[max_snapshots];
+uniform mat4 uSnapProjInv[max_snapshots];
+uniform mat4 uSnapViewInv[max_snapshots];
 #endif
 
 varying vec4	vSP;
@@ -52,63 +55,23 @@ void main() {
 	#if defined(snap_enabled)
 		//vec2 uv = 0.5 * (vSP.xy / vSP.w) + 0.5;
 
-
-		vec2 pc = vec2(
-			gl_PointCoord.x - 0.5,
-			(1.0 - gl_PointCoord.y) - 0.5
-		);
+		vec2 pc = vec2(gl_PointCoord.x - 0.5, (1.0 - gl_PointCoord.y) - 0.5);
 		vec2 offset = (pc * vPointSize) / vec2(screenWidth, screenHeight);
-
-		vec2 uv0 = 0.5 * (vSnapProjected[0].xy /vSnapProjected[0].w) + 0.5 + offset;
-		vec2 uv1 = 0.5 * (vSnapProjected[1].xy /vSnapProjected[1].w) + 0.5 + offset;
-		vec2 uv2 = 0.5 * (vSnapProjected[2].xy /vSnapProjected[2].w) + 0.5 + offset;
-		vec2 uv3 = 0.5 * (vSnapProjected[3].xy /vSnapProjected[3].w) + 0.5 + offset;
-		vec2 uv4 = 0.5 * (vSnapProjected[4].xy /vSnapProjected[4].w) + 0.5 + offset;
-
-		vec4 tc_0 = texture2D(uSnapshot[0], uv0);
-		vec4 tc_1 = texture2D(uSnapshot[1], uv1);
-		vec4 tc_2 = texture2D(uSnapshot[2], uv2);
-		vec4 tc_3 = texture2D(uSnapshot[3], uv3);
-		vec4 tc_4 = texture2D(uSnapshot[4], uv4);
-
-		//color = ((tc_0 + tc_1 + tc_2 + tc_3 + tc_4) / 5.0).rgb;
-		//color = ((tc_0 + tc_1 + tc_2 + tc_3) / 4.0).rgb;
-		//color = (tc_0.rgb + tc_1.rgb + tc_2.rgb + tc_3.rgb + tc_4.rgb) / 5.0;
 
 		vec3 sRGB = vec3(0.0, 0.0, 0.0);
 		float sA = 0.0;
 
-		if(tc_0.a > 0.0){
-			sRGB += tc_0.rgb;
-			sA += tc_0.a;
-		}
-		if(tc_1.a > 0.0){
-			sRGB += tc_1.rgb;
-			sA += tc_1.a;
-		}
-		if(tc_2.a > 0.0){
-			sRGB += tc_2.rgb;
-			sA += tc_2.a;
-		}
-		if(tc_3.a > 0.0){
-			sRGB += tc_3.rgb;
-			sA += tc_3.a;
-		}
-		if(tc_4.a > 0.0){
-			sRGB += tc_4.rgb;
-			sA += tc_4.a;
+		for(int i = 0; i < max_snapshots; i++){
+			vec2 uv = 0.5 * (vSnapProjected[i].xy /vSnapProjected[i].w) + 0.5 + offset;
+			vec4 tc = texture2D(uSnapshot[i], uv);
+
+			if(tc.a > 0.0){
+				sRGB += tc.rgb;
+				sA += tc.a;
+			}
 		}
 
-		//color = sRGB / sA;
 		color = sRGB * 0.5;
-
-		//color = tc.rgb;
-
-		//if(tc.a == 0.0){
-		//	discard;
-		//	return;
-		//}
-
 	#endif
 
 	#if defined(circle_point_shape) || defined(paraboloid_point_shape)

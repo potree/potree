@@ -80,14 +80,10 @@ uniform mat4 smWorldViewProj;
 
 #define max_snapshots 5
 #if defined(snap_enabled)
-uniform sampler2D uSnapshot_0;
-uniform sampler2D uSnapshot_1;
-uniform sampler2D uSnapshot_2;
-uniform sampler2D uSnapshot_3;
-uniform sampler2D uSnapshot_4;
-
+uniform sampler2D uSnapshot[max_snapshots];
 uniform mat4 uSnapView[max_snapshots];
 uniform mat4 uSnapProj[max_snapshots];
+uniform mat4 uSnapScreenToCurrentView[max_snapshots];
 #endif
 
 varying float	vOpacity;

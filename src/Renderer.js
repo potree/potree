@@ -1,4 +1,4 @@
-const WebGLBuffers = require('./webgl/WebGLBuffers');
+const WebGLBuffer = require('./webgl/WebGLBuffer');
 const PointCloudTree = require('./tree/PointCloudTree');
 const THREE = require('three');
 const Shader = require('./webgl/Shader');
@@ -16,42 +16,35 @@ module.exports = class Renderer {
 		this.toggle = 0;
 	}
 
-	createBuffers (bufferGeometry) {
+	createBuffer (iBuffer) {
 		let gl = this.gl;
-		let buffers = new WebGLBuffers();
-		buffers.bufferGeometry = bufferGeometry;
+		let buffer = new WebGLBuffer();
+		buffer.iBuffer = iBuffer;
+		buffer.vao = gl.createVertexArray();
+		buffer.vbo = gl.createBuffer();
 
-		for (let attribute of Object.values(bufferGeometry.attributes)) {
-			let vbo = gl.createBuffer();
-			gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-			gl.bufferData(gl.ARRAY_BUFFER, attribute.array, gl.STATIC_DRAW);
+		gl.bindVertexArray(buffer.vao);
+		gl.bindBuffer(gl.ARRAY_BUFFER, buffer.vbo);
+		gl.bufferData(gl.ARRAY_BUFFER, iBuffer.data, gl.STATIC_DRAW);
 
-			let type = gl.FLOAT;
-			if (attribute.array instanceof Float32Array) {
-				type = gl.FLOAT;
-			} else if (attribute.array instanceof Uint8Array) {
-				type = gl.UNSIGNED_BYTE;
-			} else if (attribute.array instanceof Int8Array) {
-				type = gl.BYTE;
-			} else if (attribute.array instanceof Uint16Array) {
-				type = gl.UNSIGNED_SHORT;
-			} else if (attribute.array instanceof Int16Array) {
-				type = gl.SHORT;
-			} else if (attribute.array instanceof Uint32Array) {
-				type = gl.UNSIGNED_INT;
-			} else if (attribute.array instanceof Int32Array) {
-				type = gl.INT;
-			}
+		let offset = 0;
+		let i = 0;
+		for (let attribute of iBuffer.attributes) {
+			let type = gl[attribute.type];
+			let normalized = attribute.normalized;
+			let stride = iBuffer.stride;
+			let numElements = attribute.numElements;
 
-			buffers.vbos.set(attribute, {
-				id: vbo,
-				type: type
-			});
+			gl.vertexAttribPointer(i, numElements, type, normalized, stride, offset);
+			gl.enableVertexAttribArray(i);
+
+			offset += attribute.bytes;
+			i++;
 		}
 
-		gl.bindBuffer(gl.ARRAY_BUFFER, null);
+		gl.bindVertexArray(null);
 
-		return buffers;
+		return buffer;
 	}
 
 	traverse (scene) {
@@ -153,6 +146,11 @@ module.exports = class Renderer {
 			gl.bindTexture(vnWebGLTexture.target, vnWebGLTexture.id);
 			// shader.setUniform("visibleNodesTexture", vnWebGLTexture);
 
+			gl.bindAttribLocation(shader.program, 0, 'position');
+			gl.bindAttribLocation(shader.program, 1, 'color');
+
+			// for(let i = 2; i < Math.min(3, octree.visibleNodes.length); i++){
+			// 	let node = octree.visibleNodes[i];
 			for (let node of octree.visibleNodes) {
 				let world = node.sceneNode.matrixWorld;
 				worldView.multiplyMatrices(view, world);
@@ -181,40 +179,48 @@ module.exports = class Renderer {
 					gl.bindTexture(gl.TEXTURE_2D, id);
 				}
 
-				let bufferGeometry = node.geometryNode.geometry;
+				let iBuffer = node.geometryNode.buffer;
 
-				if (!this.buffers.has(bufferGeometry)) {
-					let buffers = this.createBuffers(bufferGeometry);
-					this.buffers.set(bufferGeometry, buffers);
+				if (!this.buffers.has(iBuffer)) {
+					let buffers = this.createBuffer(iBuffer);
+					this.buffers.set(iBuffer, buffers);
 				}
 
-				let buffers = this.buffers.get(bufferGeometry);
+				let buffer = this.buffers.get(iBuffer);
 
-				for (let attributeName of Object.keys(bufferGeometry.attributes)) {
-					let attribute = bufferGeometry.attributes[attributeName];
-					let buffer = buffers.vbos.get(attribute);
+				// for(let attributeName of Object.keys(bufferGeometry.attributes)){
+				//
+				// 	let attribute = bufferGeometry.attributes[attributeName];
+				// 	let buffer = buffers.vbos.get(attribute);
+				//
+				// 	let itemSize = attribute.itemSize;
+				// 	let normalized = attribute.normalized;
+				// 	let stride = 0;
+				// 	let offset = 0;
+				//
+				// 	let location = shader.attributeLocations[attributeName];
+				//
+				// 	if(location == null){
+				// 		//gl.bindBuffer(gl.ARRAY_BUFFER, buffer.id);
+				// 		//gl.disableVertexAttribArray(location);
+				// 	}else{
+				// 		gl.bindBuffer(gl.ARRAY_BUFFER, buffer.id);
+				// 		gl.vertexAttribPointer(location,
+				// 			itemSize, buffer.type, normalized, stride, offset);
+				// 		gl.enableVertexAttribArray(location);
+				// 	}
+				//
+				//
+				// }
 
-					let itemSize = attribute.itemSize;
-					let normalized = attribute.normalized;
-					let stride = 0;
-					let offset = 0;
+				// gl.bindBuffer(gl.ARRAY_BUFFER, null);
+				gl.bindVertexArray(buffer.vao);
 
-					let location = shader.attributeLocations[attributeName];
-
-					if (location == null) {
-						// gl.bindBuffer(gl.ARRAY_BUFFER, buffer.id);
-						// gl.disableVertexAttribArray(location);
-					} else {
-						gl.bindBuffer(gl.ARRAY_BUFFER, buffer.id);
-						gl.vertexAttribPointer(location,
-							itemSize, buffer.type, normalized, stride, offset);
-						gl.enableVertexAttribArray(location);
-					}
-				}
-
-				let numPoints = bufferGeometry.attributes.position.count;
+				let numPoints = iBuffer.numElements;
 				gl.drawArrays(gl.POINTS, 0, numPoints);
 			}
+
+			gl.bindVertexArray(null);
 
 			// if(doLog) console.log(octree);
 			// if(doLog) console.log(octree.visibleNodes);

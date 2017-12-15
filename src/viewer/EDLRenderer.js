@@ -34,6 +34,14 @@ class EDLRenderer {
 		});
 		this.rtColor.depthTexture = new THREE.DepthTexture();
 		this.rtColor.depthTexture.type = THREE.UnsignedIntType;
+		// this.rtShadow = new THREE.WebGLRenderTarget(1024, 1024, {
+		// 	minFilter: THREE.NearestFilter,
+		// 	magFilter: THREE.NearestFilter,
+		// 	format: THREE.RGBAFormat,
+		// 	type: THREE.FloatType
+		// });
+		// this.rtShadow.depthTexture = new THREE.DepthTexture();
+		// this.rtShadow.depthTexture.type = THREE.UnsignedIntType;
 	};
 
 	resize () {
@@ -105,7 +113,7 @@ class EDLRenderer {
 
 		viewer.renderer.render(viewer.scene.scene, camera);
 
-		viewer.renderer.clearTarget(this.rtShadow, true, true, true);
+		// viewer.renderer.clearTarget(this.rtShadow, true, true, true);
 		viewer.renderer.clearTarget(this.rtColor, true, true, true);
 
 		let width = viewer.renderArea.clientWidth;
@@ -131,10 +139,10 @@ class EDLRenderer {
 		viewer.shadowTestCam.matrixWorldInverse.getInverse(viewer.shadowTestCam.matrixWorld);
 		viewer.shadowTestCam.updateProjectionMatrix();
 
-		viewer.pRenderer.render(viewer.scene.scenePointCloud, viewer.shadowTestCam, this.rtShadow);
+		// viewer.pRenderer.render(viewer.scene.scenePointCloud, viewer.shadowTestCam, this.rtShadow);
 
 		viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, this.rtColor, {
-			shadowMaps: [{map: this.rtShadow, camera: viewer.shadowTestCam}]
+			// shadowMaps: [{map: this.rtShadow, camera: viewer.shadowTestCam}]
 		});
 
 		viewer.renderer.render(viewer.scene.scene, camera, this.rtColor);

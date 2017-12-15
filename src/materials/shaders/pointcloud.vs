@@ -463,24 +463,25 @@ void main() {
 	vRadius = pointSize / projFactor;
 
 	gl_PointSize = pointSize;
-	if (useShadowMap) {
-
-		vec4 smPosition = smWorldViewProj * vec4( position, 1.0 );
-		smPosition.z = smPosition.z - 0.1;
-		vec2 smUV = (smPosition.xy / smPosition.w) * 0.5 + 0.5;
-
-		vec4 sval = texture2D(shadowMap, smUV);
-
-		float vertexDepth = ((smPosition.z / smPosition.w) * 0.5 + 0.5);
-		float smDepth = sval.x;
-
-		if(vertexDepth > smDepth){
-			//vColor = vec3(1.0, 0.0, 0.0);
-			vColor.r = 1.0;
-		}else{
-			vColor.g = 1.0;
-		}
-	}
+	//if(useShadowMap){
+	//
+	//	vec4 smPosition = smWorldViewProj * vec4( position, 1.0 );
+	//	smPosition.z = smPosition.z - 0.1;
+	//	vec2 smUV = (smPosition.xy / smPosition.w) * 0.5 + 0.5;
+	//
+	//	vec4 sval = texture2D(shadowMap, smUV);
+	//
+	//	float vertexDepth = ((smPosition.z / smPosition.w) * 0.5 + 0.5);
+	//	float smDepth = sval.x;
+	//
+	//	if(vertexDepth > smDepth){
+	//		//vColor = vec3(1.0, 0.0, 0.0);
+	//		vColor.r = 1.0;
+	//	}else{
+	//		vColor.g = 1.0;
+	//	}
+	//
+	//}
 
 	// ---------------------
 	// CLIPPING

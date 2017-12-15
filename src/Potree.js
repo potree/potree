@@ -170,9 +170,12 @@ Potree.ClipVolume = require('./utils/PolygonClipVolume');
 Potree.PolygonClipVolume = require('./utils/PolygonClipVolume');
 Potree.paramThreeToGL = require('./utils/paramThreeToGL');
 Potree.Shader = require('./webgl/Shader');
-Potree.WebGLBuffers = require('./webgl/WebGLBuffers');
+Potree.WebGLBuffer = require('./webgl/WebGLBuffer');
 Potree.WebGLTexture = require('./webgl/WebGLTexture');
 Potree.Renderer = require('./Renderer');
+Potree.InterleavedBuffer = require('./InterleavedBuffer');
+Potree.InterleavedBufferAttribute = require('./InterleavedBufferAttribute');
+Potree.toInterleavedBufferAttribute = require('./utils/toInterleavedBufferAttribute');
 
 module.exports = Potree;
 

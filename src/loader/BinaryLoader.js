@@ -2,6 +2,9 @@ const Version = require('../Version');
 const PointAttributeNames = require('./PointAttributeNames');
 const THREE = require('three');
 const context = require('../context');
+const InterleavedBuffer = require('../InterleavedBuffer');
+const InterleavedBufferAttribute = require('../InterleavedBufferAttribute');
+const toInterleavedBufferAttribute = require('../utils/toInterleavedBufferAttribute');
 
 const BinaryLoader = function (version, boundingBox, scale) {
 	if (typeof (version) === 'string') {
@@ -49,8 +52,8 @@ BinaryLoader.prototype.load = function (node) {
 };
 
 BinaryLoader.prototype.parse = function (node, buffer) {
-	let numPoints = buffer.byteLength / node.pcoGeometry.pointAttributes.byteSize;
 	let pointAttributes = node.pcoGeometry.pointAttributes;
+	let numPoints = buffer.byteLength / node.pcoGeometry.pointAttributes.byteSize;
 
 	if (this.version.upTo('1.5')) {
 		node.numPoints = numPoints;
@@ -61,7 +64,12 @@ BinaryLoader.prototype.parse = function (node, buffer) {
 
 	worker.onmessage = function (e) {
 		let data = e.data;
-		let buffers = data.attributeBuffers;
+		let iAttributes = pointAttributes.attributes
+			.map(pa => toInterleavedBufferAttribute(pa))
+			.filter(ia => ia != null);
+		iAttributes.push(new InterleavedBufferAttribute("index", 4, 4, "UNSIGNED_BYTE"));
+		let iBuffer = new InterleavedBuffer(data.data, iAttributes, numPoints);
+
 		let tightBoundingBox = new THREE.Box3(
 			new THREE.Vector3().fromArray(data.tightBoundingBox.min),
 			new THREE.Vector3().fromArray(data.tightBoundingBox.max)
@@ -69,45 +77,10 @@ BinaryLoader.prototype.parse = function (node, buffer) {
 
 		context.workerPool.returnWorker(workerPath, worker);
 
-		let geometry = new THREE.BufferGeometry();
-
-		for (let property in buffers) {
-			if (buffers.hasOwnProperty(property)) {
-				let buffer = buffers[property].buffer;
-				// TODO Unused: let attribute = buffers[property].attribute;
-				// TODO Unused: let numElements = attribute.numElements;
-
-				if (parseInt(property) === PointAttributeNames.POSITION_CARTESIAN) {
-					geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(buffer), 3));
-				} else if (parseInt(property) === PointAttributeNames.COLOR_PACKED) {
-					geometry.addAttribute('color', new THREE.BufferAttribute(new Uint8Array(buffer), 3, true));
-				} else if (parseInt(property) === PointAttributeNames.INTENSITY) {
-					geometry.addAttribute('intensity', new THREE.BufferAttribute(new Float32Array(buffer), 1));
-				} else if (parseInt(property) === PointAttributeNames.CLASSIFICATION) {
-					geometry.addAttribute('classification', new THREE.BufferAttribute(new Uint8Array(buffer), 1));
-				} else if (parseInt(property) === PointAttributeNames.NORMAL_SPHEREMAPPED) {
-					geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
-				} else if (parseInt(property) === PointAttributeNames.NORMAL_OCT16) {
-					geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
-				} else if (parseInt(property) === PointAttributeNames.NORMAL) {
-					geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
-				}
-			}
-		}
-		let indicesAttribute = new THREE.Uint8BufferAttribute(data.indices, 4);
-		indicesAttribute.normalized = true;
-		geometry.addAttribute('indices', indicesAttribute);
-
-		if (!geometry.attributes.normal) {
-			let buffer = new Float32Array(numPoints * 3);
-			geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
-		}
-
 		tightBoundingBox.max.sub(tightBoundingBox.min);
 		tightBoundingBox.min.set(0, 0, 0);
 
-		geometry.boundingBox = node.boundingBox;
-		node.geometry = geometry;
+		node.buffer = iBuffer;
 		node.mean = new THREE.Vector3(...data.mean);
 		node.tightBoundingBox = tightBoundingBox;
 		node.loaded = true;

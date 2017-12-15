@@ -6,6 +6,7 @@ const PointCloudOctreeGeometryNode = require('../PointCloudOctreeGeometryNode');
 const computeTransformedBoundingBox = require('../utils/computeTransformedBoundingBox');
 const PointColorType = require('../materials/PointColorType');
 const ProfileRequest = require('../ProfileRequest');
+const context = require('../context');
 
 class PointCloudOctree extends PointCloudTree {
 	constructor (geometry, material) {
@@ -176,6 +177,9 @@ class PointCloudOctree extends PointCloudTree {
 	}
 
 	computeVisibilityTextureData (nodes) {
+		if (context.measureTimings) {
+			performance.mark('computeVisibilityTextureData-start');
+		}
 		let data = new Uint8Array(nodes.length * 3);
 		let visibleNodeTextureOffsets = new Map();
 
@@ -225,6 +229,11 @@ class PointCloudOctree extends PointCloudTree {
 					data[i * 3 + 2] = (vArrayIndex - i) % 256;
 				}
 			}
+		}
+
+		if (context.measureTimings) {
+			performance.mark('computeVisibilityTextureData-end');
+			performance.measure('render.computeVisibilityTextureData', 'computeVisibilityTextureData-start', 'computeVisibilityTextureData-end');
 		}
 
 		return {

@@ -4,7 +4,6 @@ const d3Selection = require('d3-selection');
 const d3Scale = require('d3-scale');
 const d3Axis = require('d3-axis');
 
-const PointCloudMaterial = require('./materials/PointCloudMaterial');
 const context = require('./context');
 const addCommas = require('./utils/addCommas');
 const Points = require('./Points');
@@ -23,66 +22,6 @@ class ProfileWindow extends THREE.EventDispatcher {
 		this.projectedBox = new THREE.Box3();
 		this.pointclouds = new Map();
 		this.numPoints = 0;
-
-		this.geometryPool = new class {
-			constructor () {
-				this.geometries = [];
-				this.maxPoints = 100 * 1000;
-			}
-
-			getGeometry () {
-				if (this.geometries.length === 0) {
-					let geometry = new THREE.BufferGeometry();
-					let buffers = {
-						position: new Float32Array(3 * this.maxPoints),
-						color: new Uint8Array(4 * this.maxPoints),
-						intensity: new Uint16Array(this.maxPoints),
-						classification: new Uint8Array(this.maxPoints),
-						returnNumber: new Uint8Array(this.maxPoints),
-						numberOfReturns: new Uint8Array(this.maxPoints),
-						pointSourceID: new Uint16Array(this.maxPoints)
-					};
-
-					geometry.addAttribute('position', new THREE.BufferAttribute(buffers.position, 3));
-					geometry.addAttribute('color', new THREE.BufferAttribute(buffers.color, 4, true));
-					geometry.addAttribute('intensity', new THREE.BufferAttribute(buffers.intensity, 1, false));
-					geometry.addAttribute('classification', new THREE.BufferAttribute(buffers.classification, 1, false));
-					geometry.addAttribute('returnNumber', new THREE.BufferAttribute(buffers.returnNumber, 1, false));
-					geometry.addAttribute('numberOfReturns', new THREE.BufferAttribute(buffers.numberOfReturns, 1, false));
-					geometry.addAttribute('pointSourceID', new THREE.BufferAttribute(buffers.pointSourceID, 1, false));
-
-					geometry.setDrawRange(0, 0);
-
-					this.geometries.push(geometry);
-				}
-
-				return this.geometries.pop();
-			}
-
-			returnGeometry (geometry) {
-				this.geometries.push(geometry);
-			}
-		}();
-
-		this.materialPool = new class {
-			constructor () {
-				this.materials = [];
-			}
-
-			getMaterial () {
-				if (this.materials.length === 0) {
-					let material = new PointCloudMaterial();
-					material.uniforms.minSize.value = 2;
-					this.materials.push(material);
-				}
-
-				return this.materials.pop();
-			}
-
-			returnMaterial (material) {
-				this.materials.push(material);
-			}
-		}();
 
 		this.mouse = new THREE.Vector2(0, 0);
 		this.scale = new THREE.Vector3(1, 1, 1);
@@ -356,6 +295,9 @@ class ProfileWindow extends THREE.EventDispatcher {
 
 		this.scene = new THREE.Scene();
 
+		// this.model = new THREE.Points(this.geometry, this.material);
+		// this.scene.add(model);
+
 		let sg = new THREE.SphereGeometry(1, 16, 16);
 		let sm = new THREE.MeshNormalMaterial();
 		this.pickSphere = new THREE.Mesh(sg, sm);
@@ -407,30 +349,6 @@ class ProfileWindow extends THREE.EventDispatcher {
 	}
 
 	addPoints (pointcloud, points) {
-		if (this.pointclouds.get(pointcloud) === undefined) {
-			let material = this.materialPool.getMaterial();
-			let geometry = this.geometryPool.getGeometry();
-			let model = new THREE.Points(geometry, material);
-			this.scene.add(model);
-
-			let materialChanged = e => {
-				this.render();
-			};
-
-			pointcloud.material.addEventListener('material_property_changed', materialChanged);
-
-			this.pointclouds.set(pointcloud, {
-				points: new Points(),
-				material: material,
-				geometry: geometry,
-				model: model,
-				listeners: [{
-					target: pointcloud.material,
-					type: 'material_property_changed',
-					callback: materialChanged}]
-			});
-		}
-
 		let pc = this.pointclouds.get(pointcloud);
 		pc.points.add(points);
 
@@ -510,19 +428,11 @@ class ProfileWindow extends THREE.EventDispatcher {
 		this.autoFit = true;
 		this.projectedBox = new THREE.Box3();
 
-		for (let entry of this.pointclouds) {
-			// entry[0]; -> pointcloud
-			let material = entry[1].model.material;
-			let geometry = entry[1].model.geometry;
-			this.materialPool.returnMaterial(material);
-			this.geometryPool.returnGeometry(geometry);
-			entry[1].model.material = null;
-			entry[1].model.geometry = null;
-
-			for (let listener of entry[1].listeners) {
-				listener.target.removeEventListener(listener.type, listener.callback);
-			}
-		}
+		// for (let entry of this.pointclouds) {
+		//	for (let listener of entry[1].listeners) {
+		//		listener.target.removeEventListener(listener.type, listener.callback);
+		//	}
+		// }
 
 		this.pointclouds.clear();
 		this.mouseIsDown = false;

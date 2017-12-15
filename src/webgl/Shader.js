@@ -98,7 +98,8 @@ module.exports = class Shader {
 			return;
 		}
 
-		gl.uniformMatrix4fv(location, false, value.elements);
+		let tmp = new Float32Array(value.elements);
+		gl.uniformMatrix4fv(location, false, tmp);
 	}
 
 	setUniform1f (name, value) {

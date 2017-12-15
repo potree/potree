@@ -13,4 +13,5 @@ window.HoverMenu = require('./stuff/HoverMenu');
 // THREE & proj4 used to be exposed, it still is
 window.proj4 = require('proj4');
 window.THREE = require('three');
+window.ProfilePointCloud = require('./ProfilePointCloud');
 require('three-ply-loader')(window.THREE);

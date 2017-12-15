@@ -222,7 +222,7 @@ module.exports = class Renderer {
 
 			shader.setUniform1f('size', material.size);
 			shader.setUniform1f('maxSize', 50);
-			shader.setUniform1f('minSize', 2);
+			shader.setUniform1f('minSize', 1);
 
 			// uniform float pcIndex
 			shader.setUniform1f('spacing', material.spacing);

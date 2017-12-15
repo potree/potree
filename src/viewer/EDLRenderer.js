@@ -34,14 +34,23 @@ class EDLRenderer {
 		});
 		this.rtColor.depthTexture = new THREE.DepthTexture();
 		this.rtColor.depthTexture.type = THREE.UnsignedIntType;
-		// this.rtShadow = new THREE.WebGLRenderTarget(1024, 1024, {
-		// 	minFilter: THREE.NearestFilter,
-		// 	magFilter: THREE.NearestFilter,
-		// 	format: THREE.RGBAFormat,
-		// 	type: THREE.FloatType
-		// });
-		// this.rtShadow.depthTexture = new THREE.DepthTexture();
-		// this.rtShadow.depthTexture.type = THREE.UnsignedIntType;
+		this.rtShadow = new THREE.WebGLRenderTarget(1024, 1024, {
+			minFilter: THREE.NearestFilter,
+			magFilter: THREE.NearestFilter,
+			format: THREE.RGBAFormat,
+			type: THREE.FloatType
+		});
+		this.rtShadow.depthTexture = new THREE.DepthTexture();
+		this.rtShadow.depthTexture.type = THREE.UnsignedIntType;
+
+		{
+			let geometry = new THREE.PlaneBufferGeometry( 10, 7, 32 );
+			let material = new THREE.MeshBasicMaterial( {side: THREE.DoubleSide, map: this.rtShadow.texture} );
+			let plane = new THREE.Mesh( geometry, material );
+			plane.position.z = 0.2;
+			plane.position.y = -1;
+			this.viewer.scene.scene.add( plane );
+		}
 	};
 
 	resize () {
@@ -113,7 +122,7 @@ class EDLRenderer {
 
 		viewer.renderer.render(viewer.scene.scene, camera);
 
-		// viewer.renderer.clearTarget(this.rtShadow, true, true, true);
+		viewer.renderer.clearTarget(this.rtShadow, true, true, true);
 		viewer.renderer.clearTarget(this.rtColor, true, true, true);
 
 		let width = viewer.renderArea.clientWidth;

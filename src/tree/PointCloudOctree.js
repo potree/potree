@@ -205,15 +205,19 @@ class PointCloudOctree extends PointCloudTree {
 			let children = [];
 			for (let j = 0; j < 8; j++) {
 				let child = node.children[j];
-				if (child instanceof PointCloudOctreeNode && nodes.includes(child)) {
+
+				// if (child instanceof PointCloudOctreeNode && nodes.includes(child)) {
+				// "child.constructor" version is slightly faster than the "child instanceof" version in chrome 61,
+				// especially if the profiler is running
+				if (child && child.constructor === PointCloudOctreeNode && nodes.includes(child, i)) {
 					children.push(child);
 				}
 			}
-			children.sort(function (a, b) {
-				if (a.geometryNode.name < b.geometryNode.name) return -1;
-				if (a.geometryNode.name > b.geometryNode.name) return 1;
-				return 0;
-			});
+			// children.sort(function (a, b) {
+			// 	if (a.geometryNode.name < b.geometryNode.name) return -1;
+			// 	if (a.geometryNode.name > b.geometryNode.name) return 1;
+			// 	return 0;
+			// });
 
 			data[i * 3 + 0] = 0;
 			data[i * 3 + 1] = 0;
@@ -224,7 +228,8 @@ class PointCloudOctree extends PointCloudTree {
 				data[i * 3 + 0] += Math.pow(2, index);
 
 				if (j === 0) {
-					let vArrayIndex = nodes.indexOf(child);
+					let vArrayIndex = nodes.indexOf(child, i);
+					// let vArrayIndex = child._index;
 					data[i * 3 + 1] = (vArrayIndex - i) >> 8;
 					data[i * 3 + 2] = (vArrayIndex - i) % 256;
 				}

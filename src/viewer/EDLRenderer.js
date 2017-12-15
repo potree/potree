@@ -44,12 +44,12 @@ class EDLRenderer {
 		this.rtShadow.depthTexture.type = THREE.UnsignedIntType;
 
 		{
-			let geometry = new THREE.PlaneBufferGeometry( 10, 7, 32 );
-			let material = new THREE.MeshBasicMaterial( {side: THREE.DoubleSide, map: this.rtShadow.texture} );
-			let plane = new THREE.Mesh( geometry, material );
+			let geometry = new THREE.PlaneBufferGeometry(10, 7, 32);
+			let material = new THREE.MeshBasicMaterial({side: THREE.DoubleSide, map: this.rtShadow.texture});
+			let plane = new THREE.Mesh(geometry, material);
 			plane.position.z = 0.2;
 			plane.position.y = -1;
-			this.viewer.scene.scene.add( plane );
+			this.viewer.scene.scene.add(plane);
 		}
 	};
 

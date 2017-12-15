@@ -54,12 +54,6 @@ function legacyGL () {
 };
 
 // LEGACY: this property exists just in case someone used it.
-Object.defineProperty(Potree, 'timerQueriesEnabled', {
-	get: () => GLQueries.forGL(legacyGL()).enabled,
-	set: (value) => (GLQueries.forGL(legacyGL()).enabled = value)
-});
-
-// LEGACY: this property exists just in case someone used it.
 Object.defineProperty(Potree, 'timerQueries', {
 	get: () => GLQueries.forGL(legacyGL()).queries,
 	set: (value) => (GLQueries.forGL(legacyGL()).queries = value)

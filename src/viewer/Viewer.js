@@ -1275,8 +1275,10 @@ class PotreeViewer extends THREE.EventDispatcher {
 	loop (timestamp) {
 		requestAnimationFrame(this.loop.bind(this));
 
+		let queryAll;
 		if (context.measureTimings) {
 			performance.mark('loop-start');
+			queryAll = GLQueries.forGL(this.renderer.getContext()).start('frame');
 		}
 
 		this.stats.begin();
@@ -1291,9 +1293,6 @@ class PotreeViewer extends THREE.EventDispatcher {
 			performance.mark('update-end');
 			performance.measure('update', 'update-start', 'update-end');
 		}
-
-		const queries = GLQueries.forGL(this.renderer.getContext());
-		queries.start('frame');
 
 		if (context.measureTimings) {
 			performance.mark('render-start');
@@ -1319,6 +1318,8 @@ class PotreeViewer extends THREE.EventDispatcher {
 
 			performance.mark('loop-end');
 			performance.measure('loop', 'loop-start', 'loop-end');
+
+			GLQueries.forGL(this.renderer.getContext()).end(queryAll);
 
 			if (!this.toggle) {
 				this.toggle = timestamp;
@@ -1394,15 +1395,11 @@ class PotreeViewer extends THREE.EventDispatcher {
 				message += `\n`;
 				console.log(message);
 
+				GLQueries.forGL(this.renderer.getContext()).resolve();
 				performance.clearMarks();
 				performance.clearMeasures();
 				this.toggle = timestamp;
 			}
-		}
-
-		if (queries.enabled) {
-			queries.end();
-			queries.resolve();
 		}
 
 		this.stats.end();

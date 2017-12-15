@@ -18,14 +18,9 @@ class GLQueries {
 		}
 		this.gl = gl;
 		this.queries = {};
-		this.enabled = false;
 	}
 
 	start (name) {
-		if (!this.enabled) {
-			return null;
-		}
-
 		if (this.queries[name] === undefined) {
 			this.queries[name] = [];
 		}
@@ -40,10 +35,6 @@ class GLQueries {
 	};
 
 	end (query) {
-		if (!this.enabled) {
-			return;
-		}
-
 		// TODO: This is not how I imagine this happen? doesn't it need
 		// to be deleteQueryEXT(); and only
 		let ext = this.gl.getExtension('EXT_disjoint_timer_query');
@@ -51,18 +42,15 @@ class GLQueries {
 	};
 
 	resolve () {
-		if (!this.enabled) {
-			return;
-		}
-
 		let ext = this.gl.getExtension('EXT_disjoint_timer_query');
 
 		for (let name in this.queries) {
 			let queries = this.queries[name];
 
-			if (queries.length > 0) {
-				let query = queries[0];
-
+			let sum = 0;
+			let n = 0;
+			let remainingQueries = [];
+			for (let query of queries) {
 				let available = ext.getQueryObjectEXT(query, ext.QUERY_RESULT_AVAILABLE_EXT);
 				let disjoint = this.gl.getParameter(ext.GPU_DISJOINT_EXT);
 
@@ -72,12 +60,20 @@ class GLQueries {
 					let miliseconds = timeElapsed / (1000 * 1000);
 
 					console.log(name + ': ' + miliseconds + 'ms');
-					queries.shift();
+					sum += miliseconds;
+					n++;
+				} else {
+					remainingQueries.push(query);
 				}
 			}
 
-			if (queries.length === 0) {
+			let mean = sum / n;
+			console.log(`mean: ${mean.toFixed(3)}, samples: ${n}`);
+
+			if (remainingQueries.length === 0) {
 				delete this.queries[name];
+			} else {
+				this.queries[name] = remainingQueries;
 			}
 		}
 	};

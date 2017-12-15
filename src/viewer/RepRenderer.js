@@ -59,14 +59,14 @@ class RepRenderer {
 		});
 		this.snap.target.generateMipMaps = false;
 
-		{
-			let geometry = new THREE.PlaneBufferGeometry(10, 7, 32);
-			let material = new THREE.MeshBasicMaterial({side: THREE.DoubleSide, map: this.snap.target.texture});
-			let plane = new THREE.Mesh(geometry, material);
-			plane.position.z = 0.2;
-			plane.position.y = -1;
-			this.viewer.scene.scene.add(plane);
-		}
+		// {
+		// 	let geometry = new THREE.PlaneBufferGeometry(10, 7, 32);
+		// 	let material = new THREE.MeshBasicMaterial({side: THREE.DoubleSide, map: this.snap.target.texture});
+		// 	let plane = new THREE.Mesh(geometry, material);
+		// 	plane.position.z = 0.2;
+		// 	plane.position.y = -1;
+		// 	this.viewer.scene.scene.add(plane);
+		// }
 	};
 
 	resize () {
@@ -177,7 +177,7 @@ class RepRenderer {
 			this.snap.camera = camera.clone();
 			for (const octree of viewer.scene.pointclouds) {
 				octree.material.snapEnabled = false;
-				octree.material.needsUpdate = true;
+				// octree.material.needsUpdate = true;
 				viewer.pRenderer.renderOctree(octree, octree.visibleNodes, camera, this.snap.target, {});
 			}
 			this.snapshotRequested = false;
@@ -187,7 +187,7 @@ class RepRenderer {
 		viewer.renderer.setRenderTarget(this.rtColor);
 		for (const octree of viewer.scene.pointclouds) {
 			octree.material.snapEnabled = true;
-			octree.material.needsUpdate = true;
+			// octree.material.needsUpdate = true;
 			octree.material.uniforms.snapshot.value = this.snap.target.texture;
 			octree.material.uniforms.snapView.value = this.snap.camera.matrixWorldInverse;
 			octree.material.uniforms.snapProj.value = this.snap.camera.projectionMatrix;

@@ -30,12 +30,42 @@ varying float	vLogDepth;
 varying vec3	vViewPosition;
 varying float	vRadius;
 
+//#if defined(snap_enabled)
+uniform sampler2D snapshot;
+uniform mat4 snapView;
+uniform mat4 snapProj;
+uniform bool snapEnabled;
+//#endif
+
+varying vec4	vSP;
+varying float 	vPointSize;
+
 float specularStrength = 1.0;
 
 void main() {
 
 	vec3 color = vColor;
 	float depth = gl_FragCoord.z;
+
+	if(snapEnabled){
+		vec2 uv = 0.5 * (vSP.xy / vSP.w) + 0.5;
+
+		vec2 pc = vec2(
+			gl_PointCoord.x - 0.5,
+			(1.0 - gl_PointCoord.y) - 0.5
+		);
+		vec2 offset = (pc * vPointSize) / vec2(screenWidth, screenHeight);
+
+		uv = uv + offset;
+
+		vec4 tc = texture2D(snapshot, uv);
+		color = tc.rgb;
+
+		if(tc.a == 0.0){
+			discard;
+			return;
+		}
+	}
 
 	#if defined(circle_point_shape) || defined(paraboloid_point_shape)
 		float u = 2.0 * gl_PointCoord.x - 1.0;

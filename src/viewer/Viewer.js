@@ -1304,7 +1304,7 @@ class PotreeViewer extends THREE.EventDispatcher {
 				this.repRenderer = new RepRenderer(this);
 			}
 			this.repRenderer.render(this.renderer);
-		} if (this.useEDL && Features.SHADER_EDL.isSupported()) {
+		} else if (this.useEDL && Features.SHADER_EDL.isSupported()) {
 			if (!this.edlRenderer) {
 				const EDLRenderer = require('./EDLRenderer');
 				this.edlRenderer = new EDLRenderer(this);

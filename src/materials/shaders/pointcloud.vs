@@ -78,12 +78,11 @@ uniform sampler2D classificationLUT;
 uniform bool useShadowMap;
 uniform mat4 smWorldViewProj;
 
-//#if defined(snap_enabled)
+#if defined(snap_enabled)
 uniform sampler2D snapshot;
 uniform mat4 snapView;
 uniform mat4 snapProj;
-uniform bool snapEnabled;
-//#endif
+#endif
 
 varying float	vOpacity;
 varying vec3	vColor;
@@ -525,7 +524,7 @@ void main() {
 		}
 	#endif
 
-	if(snapEnabled){
+	#if defined(snap_enabled)
 		//vColor = vec3(1.0, 0.0, 0.0);
 		//vec4 snapPos = snapProj * snapView * modelMatrix * vec4( position, 1.0 );
 		//vec2 uv = (snapPos.xy / snapPos.w) * 0.5 + 0.5;
@@ -538,5 +537,5 @@ void main() {
 		vColor = col.rgb;
 		vSP = sp;
 		//vColor = vec3(uv, 0.0);
-	}
+	#endif
 }

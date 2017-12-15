@@ -30,12 +30,11 @@ varying float	vLogDepth;
 varying vec3	vViewPosition;
 varying float	vRadius;
 
-//#if defined(snap_enabled)
+#if defined(snap_enabled)
 uniform sampler2D snapshot;
 uniform mat4 snapView;
 uniform mat4 snapProj;
-uniform bool snapEnabled;
-//#endif
+#endif
 
 varying vec4	vSP;
 varying float 	vPointSize;
@@ -47,7 +46,7 @@ void main() {
 	vec3 color = vColor;
 	float depth = gl_FragCoord.z;
 
-	if(snapEnabled){
+	#if defined(snap_enabled)
 		vec2 uv = 0.5 * (vSP.xy / vSP.w) + 0.5;
 
 		vec2 pc = vec2(
@@ -65,7 +64,7 @@ void main() {
 			discard;
 			return;
 		}
-	}
+	#endif
 
 	#if defined(circle_point_shape) || defined(paraboloid_point_shape)
 		float u = 2.0 * gl_PointCoord.x - 1.0;

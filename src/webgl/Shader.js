@@ -8,9 +8,10 @@ module.exports = class Shader {
 		this.vsSource = vsSource;
 		this.fsSource = fsSource;
 
-		this.vs = gl.createShader(gl.VERTEX_SHADER);
-		this.fs = gl.createShader(gl.FRAGMENT_SHADER);
-		this.program = gl.createProgram();
+		this.cache = new Map();
+		this.vs = null;
+		this.fs = null;
+		this.program = null;
 
 		this.uniformLocations = {};
 		this.attributeLocations = {};
@@ -47,46 +48,66 @@ module.exports = class Shader {
 
 		gl.useProgram(null);
 
-		this.compileShader(this.vs, this.vsSource);
-		this.compileShader(this.fs, this.fsSource);
+		let cached = this.cache.get(`${this.vsSource}, ${this.fsSource}`);
+		if (cached) {
+			this.program = cached.program;
+			this.vs = cached.vs;
+			this.fs = cached.fs;
+			this.attributeLocations = cached.attributeLocations;
+			this.uniformLocations = cached.uniformLocations;
+		} else {
+			this.vs = gl.createShader(gl.VERTEX_SHADER);
+			this.fs = gl.createShader(gl.FRAGMENT_SHADER);
+			this.program = gl.createProgram();
 
-		let program = this.program;
+			this.compileShader(this.vs, this.vsSource);
+			this.compileShader(this.fs, this.fsSource);
+			let program = this.program;
 
-		gl.attachShader(program, this.vs);
-		gl.attachShader(program, this.fs);
+			gl.attachShader(program, this.vs);
+			gl.attachShader(program, this.fs);
 
-		gl.linkProgram(program);
+			gl.linkProgram(program);
 
-		gl.detachShader(program, this.vs);
-		gl.detachShader(program, this.fs);
+			gl.detachShader(program, this.vs);
+			gl.detachShader(program, this.fs);
 
-		let success = gl.getProgramParameter(program, gl.LINK_STATUS);
-		if (!success) {
-			let info = gl.getProgramInfoLog(program);
-			throw new Error(`could not link program ${this.name}: ${info}`);
-		}
-
-		{ // attribute locations
-			let numAttributes = gl.getProgramParameter(program, gl.ACTIVE_ATTRIBUTES);
-
-			for (let i = 0; i < numAttributes; i++) {
-				let attribute = gl.getActiveAttrib(program, i);
-				let location = gl.getAttribLocation(program, attribute.name);
-
-				this.attributeLocations[attribute.name] = location;
+			let success = gl.getProgramParameter(program, gl.LINK_STATUS);
+			if (!success) {
+				let info = gl.getProgramInfoLog(program);
+				throw new Error(`could not link program ${this.name}: ${info}`);
 			}
-		}
+			{ // attribute locations
+				let numAttributes = gl.getProgramParameter(program, gl.ACTIVE_ATTRIBUTES);
+				for (let i = 0; i < numAttributes; i++) {
+					let attribute = gl.getActiveAttrib(program, i);
 
-		{ // uniform locations
-			let numUniforms = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
+					let location = gl.getAttribLocation(program, attribute.name);
 
-			for (let i = 0; i < numUniforms; i++) {
-				let uniform = gl.getActiveUniform(program, i);
-
-				let location = gl.getUniformLocation(program, uniform.name);
-
-				this.uniformLocations[uniform.name] = location;
+					this.attributeLocations[attribute.name] = location;
+				}
 			}
+
+			{ // uniform locations
+				let numUniforms = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
+				for (let i = 0; i < numUniforms; i++) {
+					let uniform = gl.getActiveUniform(program, i);
+
+					let location = gl.getUniformLocation(program, uniform.name);
+
+					this.uniformLocations[uniform.name] = location;
+				}
+			}
+
+			let cached = {
+				program: this.program,
+				vs: this.vs,
+				fs: this.fs,
+				attributeLocations: this.attributeLocations,
+				uniformLocations: this.uniformLocations
+			};
+
+			this.cache.set(`${this.vsSource}, ${this.fsSource}`, cached);
 		}
 	}
 

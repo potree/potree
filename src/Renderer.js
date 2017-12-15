@@ -320,7 +320,6 @@ module.exports = class Renderer {
 				shader.setUniformMatrix4('snapView', material.uniforms.snapView.value);
 				shader.setUniformMatrix4('snapProj', material.uniforms.snapProj.value);
 			}
-			shader.setUniform('snapEnabled', material.uniforms.snapEnabled.value);
 		}
 
 		gl.bindAttribLocation(shader.program, 0, 'position');

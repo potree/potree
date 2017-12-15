@@ -142,8 +142,7 @@ module.exports = class PointCloudMaterial extends THREE.RawShaderMaterial {
 			clipMode: { type: 'i', value: 1 },
 			snapshot: { type: 't', value: null },
 			snapView: { type: 'Matrix4f', value: [] },
-			snapProj: { type: 'Matrix4f', value: [] },
-			snapEnabled: { type: 'b', value: this._snapEnabled }
+			snapProj: { type: 'Matrix4f', value: [] }
 		};
 
 		this.defaultAttributeValues.normal = [0, 0, 0];
@@ -205,9 +204,9 @@ module.exports = class PointCloudMaterial extends THREE.RawShaderMaterial {
 			defines += '#define use_edl\n';
 		}
 
-		// if (this._snapEnabled) {
-		// 	defines += '#define snap_enabled\n';
-		// }
+		if (this._snapEnabled) {
+			defines += '#define snap_enabled\n';
+		}
 
 		if (this._pointColorType === PointColorType.RGB) {
 			defines += '#define color_type_rgb\n';
@@ -381,8 +380,8 @@ module.exports = class PointCloudMaterial extends THREE.RawShaderMaterial {
 	set snapEnabled (value) {
 		if (this._snapEnabled !== value) {
 			this._snapEnabled = value;
-			this.uniforms.snapEnabled.value = value;
-			// this.updateShaderSource();
+			// this.uniforms.snapEnabled.value = value;
+			this.updateShaderSource();
 		}
 	}
 
@@ -905,5 +904,11 @@ module.exports = class PointCloudMaterial extends THREE.RawShaderMaterial {
 		texture.needsUpdate = true;
 
 		return texture;
+	}
+
+	copyFrom (from) {
+		for (let name of this.uniforms) {
+			this.uniforms[name].value = from.uniforms[name].value;
+		}
 	}
 };

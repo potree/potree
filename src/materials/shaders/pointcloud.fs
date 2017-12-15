@@ -7,6 +7,8 @@ precision mediump int;
 #endif
 
 uniform mat4 viewMatrix;
+uniform mat4 uViewInv;
+uniform mat4 uProjInv;
 uniform vec3 cameraPosition;
 
 
@@ -42,6 +44,7 @@ uniform mat4 uSnapViewInv[max_snapshots];
 
 varying vec4	vSP;
 varying float 	vPointSize;
+varying vec3 	vPosition;
 
 varying vec4 vSnapProjected[max_snapshots];
 
@@ -55,6 +58,7 @@ void main() {
 	#if defined(snap_enabled)
 		//vec2 uv = 0.5 * (vSP.xy / vSP.w) + 0.5;
 
+/*
 		vec2 pc = vec2(gl_PointCoord.x - 0.5, (1.0 - gl_PointCoord.y) - 0.5);
 		vec2 offset = (pc * vPointSize) / vec2(screenWidth, screenHeight);
 
@@ -64,14 +68,75 @@ void main() {
 		for(int i = 0; i < max_snapshots; i++){
 			vec2 uv = 0.5 * (vSnapProjected[i].xy /vSnapProjected[i].w) + 0.5 + offset;
 			vec4 tc = texture2D(uSnapshot[i], uv);
+			vec4 td = texture2D(uSnapshotDepth[i], uv);
+
+			vec4 tmp = uSnapProjInv[i] * vec4(uv * 2.0 - 1.0, td.r, 1.0);
+			tmp = tmp / tmp.w;
+			tmp = viewMatrix * uSnapViewInv[i] * tmp;
 
 			if(tc.a > 0.0){
-				sRGB += tc.rgb;
+				//sRGB += tc.rgb;
+				//sRGB += vec3(1.0, 1.0, 1.0) * td.r;
+				sRGB += tmp.rgb;
+
 				sA += tc.a;
 			}
 		}
 
 		color = sRGB * 0.5;
+		*/
+
+		vec3 sRGB = vec3(0.0, 0.0, 0.0);
+		float sA = 0.0;
+
+		for(int i = 0; i < max_snapshots; i++){
+		//{
+			//const int i = 1;
+
+
+			float snapLinearDistance = 0.0;
+			float currentLinearDistance = 0.0;
+			vec4 col;
+
+			{
+				vec2 pc = vec2(gl_PointCoord.x - 0.5, (1.0 - gl_PointCoord.y) - 0.5);
+				vec2 offset = (pc * vPointSize) / vec2(screenWidth, screenHeight);
+
+				vec2 uv = 0.5 * (vSnapProjected[i].xy /vSnapProjected[i].w) + 0.5 + offset;
+				col = texture2D(uSnapshot[i], uv);
+				vec4 td = texture2D(uSnapshotDepth[i], uv);
+				float d = td.r;
+
+				vec4 snapViewPos = uSnapProjInv[i] * vec4(uv * 2.0 - 1.0, d * 2.0 - 1.0, 1.0);
+				snapViewPos = snapViewPos / snapViewPos.w;
+				snapLinearDistance = -snapViewPos.z;
+			}
+
+			{
+				vec4 currentViewPos = uSnapProjInv[i] * vSnapProjected[i];
+				currentLinearDistance = -currentViewPos.z;
+			}
+
+			//if(abs(currentLinearDistance - snapLinearDistance) > 0.2){
+			//	color = vec3(1.0, 0.0, 0.0);
+			//}
+			if(abs(currentLinearDistance - snapLinearDistance) < vRadius * 2.0){
+				sRGB += col.rgb;
+
+				if(col.a != 0.0){
+					sA = sA + 1.0;
+				}
+				//sA += col.a;
+			}
+
+		}
+
+
+		color = sRGB / sA;
+		if(sA == 0.0){
+			discard;
+		}
+		//color = vec3(1.0, 1.0, 1.0) * sA * 0.5;
 	#endif
 
 	#if defined(circle_point_shape) || defined(paraboloid_point_shape)

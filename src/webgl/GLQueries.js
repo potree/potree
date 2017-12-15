@@ -21,11 +21,16 @@ class GLQueries {
 	}
 
 	start (name) {
+		let ext = this.gl.getExtension('EXT_disjoint_timer_query');
+
+		if (!ext) {
+			return;
+		}
+
 		if (this.queries[name] === undefined) {
 			this.queries[name] = [];
 		}
 
-		let ext = this.gl.getExtension('EXT_disjoint_timer_query');
 		let query = ext.createQueryEXT();
 		ext.beginQueryEXT(ext.TIME_ELAPSED_EXT, query);
 
@@ -38,17 +43,22 @@ class GLQueries {
 		// TODO: This is not how I imagine this happen? doesn't it need
 		// to be deleteQueryEXT(); and only
 		let ext = this.gl.getExtension('EXT_disjoint_timer_query');
+		if (!ext) {
+			return;
+		}
 		ext.endQueryEXT(ext.TIME_ELAPSED_EXT);
 	};
 
 	resolve () {
 		let ext = this.gl.getExtension('EXT_disjoint_timer_query');
 
+		let resolved = new Map();
+
 		for (let name in this.queries) {
 			let queries = this.queries[name];
 
-			let sum = 0;
-			let n = 0;
+			// TODO: unused: let sum = 0;
+			// TODO: unused: let n = 0;
 			let remainingQueries = [];
 			for (let query of queries) {
 				let available = ext.getQueryObjectEXT(query, ext.QUERY_RESULT_AVAILABLE_EXT);
@@ -60,15 +70,20 @@ class GLQueries {
 					let miliseconds = timeElapsed / (1000 * 1000);
 
 					console.log(name + ': ' + miliseconds + 'ms');
-					sum += miliseconds;
-					n++;
+					if (!resolved.get(name)) {
+						resolved.set(name, []);
+					}
+					resolved.get(name).push(miliseconds);
+
+					// sum += miliseconds;
+					// n++;
 				} else {
 					remainingQueries.push(query);
 				}
 			}
 
-			let mean = sum / n;
-			console.log(`mean: ${mean.toFixed(3)}, samples: ${n}`);
+			// let mean = sum / n;
+			// console.log(`mean: ${mean.toFixed(3)}, samples: ${n}`);
 
 			if (remainingQueries.length === 0) {
 				delete this.queries[name];
@@ -76,6 +91,8 @@ class GLQueries {
 				this.queries[name] = remainingQueries;
 			}
 		}
+
+		return resolved;
 	};
 };
 

@@ -55,8 +55,8 @@ class EDLRenderer {
 
 	resize () {
 		const viewer = this.viewer;
-		let width = viewer.scaleFactor * viewer.renderArea.clientWidth;
-		let height = viewer.scaleFactor * viewer.renderArea.clientHeight;
+		let width = this.viewer.scaleFactor * this.viewer.renderArea.clientWidth;
+		let height = this.viewer.scaleFactor * this.viewer.renderArea.clientHeight;
 		let aspect = width / height;
 
 		let needsResize = (this.rtColor.width !== width || this.rtColor.height !== height);
@@ -93,16 +93,13 @@ class EDLRenderer {
 		let camera = viewer.scene.getActiveCamera();
 
 		if (viewer.background === 'skybox') {
-			let skybox = viewer.getSkybox();
-
 			viewer.renderer.setClearColor(0x000000, 0);
 			viewer.renderer.clear();
-			skybox.camera.rotation.copy(viewer.scene.cameraP.rotation);
-			skybox.camera.fov = viewer.scene.cameraP.fov;
-			skybox.camera.aspect = viewer.scene.cameraP.aspect;
-			skybox.camera.updateProjectionMatrix();
-
-			viewer.renderer.render(skybox.scene, skybox.camera);
+			viewer.skybox.camera.rotation.copy(viewer.scene.cameraP.rotation);
+			viewer.skybox.camera.fov = viewer.scene.cameraP.fov;
+			viewer.skybox.camera.aspect = viewer.scene.cameraP.aspect;
+			viewer.skybox.camera.updateProjectionMatrix();
+			viewer.renderer.render(viewer.skybox.scene, viewer.skybox.camera);
 		} else if (viewer.background === 'gradient') {
 			viewer.renderer.setClearColor(0x000000, 0);
 			viewer.renderer.clear();

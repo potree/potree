@@ -1354,6 +1354,22 @@ class PotreeViewer extends THREE.EventDispatcher {
 					group.max = Math.max(group.max, measure.duration);
 				}
 
+				let glQueries = GLQueries.forGL(this.renderer.getContext()).resolve();
+				for(let [key, value] of glQueries){
+
+					let group = {
+						measures: value.map(v => {return {duration: v}}),
+						sum: value.reduce( (a, i) => a + i, 0),
+						n: value.length,
+						min: Math.min(...value),
+						max: Math.max(...value)
+					};
+
+					let groupname = `[tq] ${key}`;
+					groups.set(groupname, group);
+					names.add(groupname);
+				}
+
 				for (let [group] of groups) {
 					group.mean = group.sum / group.n;
 					group.measures.sort((a, b) => a.duration - b.duration);
@@ -1395,7 +1411,6 @@ class PotreeViewer extends THREE.EventDispatcher {
 				message += `\n`;
 				console.log(message);
 
-				GLQueries.forGL(this.renderer.getContext()).resolve();
 				performance.clearMarks();
 				performance.clearMeasures();
 				this.toggle = timestamp;

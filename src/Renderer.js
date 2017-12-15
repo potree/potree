@@ -88,7 +88,10 @@ module.exports = class Renderer {
 			let world = node.sceneNode.matrixWorld;
 			worldView.multiplyMatrices(view, world);
 
-			let vnStart = visibilityTextureData.offsets.get(node);
+			if (visibilityTextureData) {
+				let vnStart = visibilityTextureData.offsets.get(node);
+				shader.setUniform1f('vnStart', vnStart);
+			}
 
 			let level = node.getLevel();
 
@@ -108,7 +111,6 @@ module.exports = class Renderer {
 			// shader.setUniformMatrix4("modelMatrix", world);
 			// shader.setUniformMatrix4("modelViewMatrix", worldView);
 			shader.setUniform1f('level', level);
-			shader.setUniform1f('vnStart', vnStart);
 			shader.setUniform1f('pcIndex', i);
 
 			if (shadowMaps.length > 0) {
@@ -164,6 +166,21 @@ module.exports = class Renderer {
 		let material = octree.material;
 		let shader = null;
 		let visibilityTextureData = null;
+
+		if (window.atoggle == null) {
+			window.atoggle = 0;
+		} else {
+			window.atoggle++;
+		}
+
+		let sub = nodes.slice(0, 10);
+		let rem = nodes.slice(10);
+		let numAdd = 40;
+		if (numAdd * window.atoggle > rem.length) {
+			window.atoggle = 0;
+		}
+		let add = rem.slice(20 * window.atoggle, 20 * (window.atoggle + 1));
+		nodes = sub.concat(add);
 
 		if (material.pointSizeType >= 0) {
 			if (material.pointSizeType === PointSizeType.ADAPTIVE ||

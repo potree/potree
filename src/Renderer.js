@@ -241,8 +241,8 @@ module.exports = class Renderer {
 		{ // UPDATE UNIFORMS
 			shader.setUniformMatrix4('projectionMatrix', proj);
 			shader.setUniformMatrix4('viewMatrix', view);
-			shader.setUniformMatrix4("uViewInv", viewInv);
-			shader.setUniformMatrix4("uProjInv", projInv);
+			shader.setUniformMatrix4('uViewInv', viewInv);
+			shader.setUniformMatrix4('uProjInv', projInv);
 
 			shader.setUniform1f('screenHeight', material.screenHeight);
 			shader.setUniform1f('screenWidth', material.screenWidth);
@@ -313,20 +313,18 @@ module.exports = class Renderer {
 			gl.bindTexture(gradientTexture.target, gradientTexture.id);
 
 			if (material.snapEnabled === true) {
-
 				{
 					const lSnapshot = shader.uniformLocations['uSnapshot[0]'];
-					const lSnapshotDepth = shader.uniformLocations["uSnapshotDepth[0]"];
+					const lSnapshotDepth = shader.uniformLocations['uSnapshotDepth[0]'];
 
 					let bindingStart = 2;
-					let lSnapshotBindingPoints = new Array(5).fill(bindingStart).map( (a, i) => (a + i));
+					let lSnapshotBindingPoints = new Array(5).fill(bindingStart).map((a, i) => (a + i));
 					let lSnapshotDepthBindingPoints = new Array(5)
 						.fill(1 + Math.max(...lSnapshotBindingPoints))
-						.map( (a, i) => (a + i));
+						.map((a, i) => (a + i));
 
 					gl.uniform1iv(lSnapshot, lSnapshotBindingPoints);
 					gl.uniform1iv(lSnapshotDepth, lSnapshotDepthBindingPoints);
-
 
 					for (let i = 0; i < 5; i++) {
 						let texture = material.uniforms[`uSnapshot`].value[i];
@@ -361,12 +359,12 @@ module.exports = class Renderer {
 				}
 				{
 					let flattenedMatrices = [].concat(...material.uniforms.uSnapProjInv.value.map(c => c.elements));
-					const lSnapProjInv = shader.uniformLocations["uSnapProjInv[0]"];
+					const lSnapProjInv = shader.uniformLocations['uSnapProjInv[0]'];
 					gl.uniformMatrix4fv(lSnapProjInv, false, flattenedMatrices);
 				}
 				{
 					let flattenedMatrices = [].concat(...material.uniforms.uSnapViewInv.value.map(c => c.elements));
-					const lSnapViewInv = shader.uniformLocations["uSnapViewInv[0]"];
+					const lSnapViewInv = shader.uniformLocations['uSnapViewInv[0]'];
 					gl.uniformMatrix4fv(lSnapViewInv, false, flattenedMatrices);
 				}
 			}

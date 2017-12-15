@@ -141,11 +141,11 @@ module.exports = class PointCloudMaterial extends THREE.RawShaderMaterial {
 			orthoRange: { type: 'f', value: 10.0 },
 			clipMode: { type: 'i', value: 1 },
 			uSnapshot: { type: 'tv', value: [] },
-			uSnapshotDepth: { type: "tv", value: [] },
+			uSnapshotDepth: { type: 'tv', value: [] },
 			uSnapView: { type: 'Matrix4fv', value: [] },
 			uSnapProj: { type: 'Matrix4fv', value: [] },
-			uSnapProjInv: { type: "Matrix4fv", value: [] },
-			uSnapViewInv: { type: "Matrix4fv", value: [] }
+			uSnapProjInv: { type: 'Matrix4fv', value: [] },
+			uSnapViewInv: { type: 'Matrix4fv', value: [] }
 		};
 
 		this.defaultAttributeValues.normal = [0, 0, 0];

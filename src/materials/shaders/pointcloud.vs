@@ -97,6 +97,7 @@ varying vec4	vSP;
 varying float 	vPointSize;
 
 varying vec4 vSnapProjected[max_snapshots];
+varying float vSnapProjectedDistance[max_snapshots];
 
 // ---------------------
 // OCTREE
@@ -528,13 +529,9 @@ void main() {
 	#endif
 
 	#if defined(snap_enabled)
-		for (int i = 0; i < 5; i++) {
+		for(int i = 0; i < max_snapshots; i++){
 			vSnapProjected[i] = uSnapProj[i] * uSnapView[i] * modelMatrix * vec4(position, 1.0);
+			vSnapProjectedDistance[i] = -(uSnapView[i] * modelMatrix * vec4(position, 1.0)).z;
 		}
-		//vSnapProjected[0] = uSnapProj[0] * uSnapView[0] * modelMatrix * vec4(position, 1.0);
-		//vSnapProjected[1] = uSnapProj[1] * uSnapView[1] * modelMatrix * vec4(position, 1.0);
-		//vSnapProjected[2] = uSnapProj[2] * uSnapView[2] * modelMatrix * vec4(position, 1.0);
-		//vSnapProjected[3] = uSnapProj[3] * uSnapView[3] * modelMatrix * vec4(position, 1.0);
-		//vSnapProjected[4] = uSnapProj[4] * uSnapView[4] * modelMatrix * vec4(position, 1.0);
 	#endif
 }

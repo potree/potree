@@ -1276,10 +1276,10 @@ class PotreeViewer extends THREE.EventDispatcher {
 	loop (timestamp) {
 		requestAnimationFrame(this.loop.bind(this));
 
-		let queryAll;
+		// TODO: unused: let queryAll;
 		if (context.measureTimings) {
 			performance.mark('loop-start');
-			queryAll = GLQueries.forGL(this.renderer.getContext()).start('frame');
+			// queryAll = GLQueries.forGL(this.renderer.getContext()).start('frame');
 		}
 
 		this.stats.begin();
@@ -1325,7 +1325,7 @@ class PotreeViewer extends THREE.EventDispatcher {
 			performance.mark('loop-end');
 			performance.measure('loop', 'loop-start', 'loop-end');
 
-			GLQueries.forGL(this.renderer.getContext()).end(queryAll);
+			// GLQueries.forGL(this.renderer.getContext()).end(queryAll);
 
 			if (!this.toggle) {
 				this.toggle = timestamp;

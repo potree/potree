@@ -27,7 +27,7 @@ class ProfileWindow extends THREE.EventDispatcher {
 		this.geometryPool = new class {
 			constructor () {
 				this.geometries = [];
-				this.maxPoints = 50000;
+				this.maxPoints = 100 * 1000;
 			}
 
 			getGeometry () {
@@ -35,7 +35,7 @@ class ProfileWindow extends THREE.EventDispatcher {
 					let geometry = new THREE.BufferGeometry();
 					let buffers = {
 						position: new Float32Array(3 * this.maxPoints),
-						color: new Uint8Array(3 * this.maxPoints),
+						color: new Uint8Array(4 * this.maxPoints),
 						intensity: new Uint16Array(this.maxPoints),
 						classification: new Uint8Array(this.maxPoints),
 						returnNumber: new Uint8Array(this.maxPoints),
@@ -44,7 +44,7 @@ class ProfileWindow extends THREE.EventDispatcher {
 					};
 
 					geometry.addAttribute('position', new THREE.BufferAttribute(buffers.position, 3));
-					geometry.addAttribute('color', new THREE.BufferAttribute(buffers.color, 3, true));
+					geometry.addAttribute('color', new THREE.BufferAttribute(buffers.color, 4, true));
 					geometry.addAttribute('intensity', new THREE.BufferAttribute(buffers.intensity, 1, false));
 					geometry.addAttribute('classification', new THREE.BufferAttribute(buffers.classification, 1, false));
 					geometry.addAttribute('returnNumber', new THREE.BufferAttribute(buffers.returnNumber, 1, false));
@@ -72,6 +72,7 @@ class ProfileWindow extends THREE.EventDispatcher {
 			getMaterial () {
 				if (this.materials.length === 0) {
 					let material = new PointCloudMaterial();
+					material.uniforms.minSize.value = 2;
 					this.materials.push(material);
 				}
 

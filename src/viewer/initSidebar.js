@@ -383,15 +383,15 @@ module.exports = (viewer) => {
 
 		// $('#optClipMode').selectmenu();
 		// $('#optClipMode').val(1).selectmenu('refresh');
-		$('#optClipMode').selectmenu({
-			change: function (event, ui) {
-				viewer.clippingTool.setClipMode(parseInt(ui.item.value));
-			}
-		});
+		// $('#optClipMode').selectmenu({
+		// 	change: function (event, ui) {
+		// 		viewer.clippingTool.setClipMode(parseInt(ui.item.value));
+		// 	}
+		// });
 
-		viewer.addEventListener('clipper.clipMode_changed', function (event) {
-			$('#optClipMode').val(viewer.clippingTool.clipMode).selectmenu('refresh');
-		});
+		// viewer.addEventListener('clipper.clipMode_changed', function (event) {
+		// 	$('#optClipMode').val(viewer.clippingTool.clipMode).selectmenu('refresh');
+		// });
 
 		let clippingToolBar = $('#clipping_tools');
 
@@ -3033,9 +3033,9 @@ module.exports = (viewer) => {
 			}
 		});
 
-		viewer.addEventListener('clip_mode_changed', e => {
-			// TODO: Unused: let string = toClipModeString(viewer.clipMode);
-		});
+		// viewer.addEventListener('clip_mode_changed', e => {
+		// 	// TODO: Unused: let string = toClipModeString(viewer.clipMode);
+		// });
 	};
 
 	initAccordion();

@@ -4,7 +4,7 @@ class ProfileWindowController {
 		this.profileWindow = viewer.profileWindow;
 		this.profile = null;
 		this.numPoints = 0;
-		this.threshold = 30 * 1000;
+		this.threshold = 60 * 1000;
 		this.scheduledRecomputeTime = null;
 
 		this.enabled = true;

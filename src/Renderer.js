@@ -3,6 +3,8 @@ const PointCloudTree = require('./tree/PointCloudTree');
 const THREE = require('three');
 const Shader = require('./webgl/Shader');
 const WebGLTexture = require('./webgl/WebGLTexture');
+const PointSizeType = require('./materials/PointSizeType');
+const PointColorType = require('./materials/PointColorType');
 
 module.exports = class Renderer {
 	constructor (threeRenderer) {
@@ -69,34 +71,104 @@ module.exports = class Renderer {
 		return result;
 	}
 
-	render (scene, camera, target, params = {}) {
+	renderNodes (octree, nodes, visibilityTextureData, camera, target, shader, params) {
 		let gl = this.gl;
 
-		// TODO unused: let doLog = this.toggle > 100;
-		this.toggle = this.toggle > 100 ? 0 : this.toggle + 1;
-
 		let shadowMaps = params.shadowMaps == null ? [] : params.shadowMaps;
+		let view = camera.matrixWorldInverse;
+		let worldView = new THREE.Matrix4();
+		let i = 0;
+		for (let node of nodes) {
+			let world = node.sceneNode.matrixWorld;
+			worldView.multiplyMatrices(view, world);
 
-		if (target != null) {
-			this.threeRenderer.setRenderTarget(target);
+			let vnStart = visibilityTextureData.offsets.get(node);
+
+			let level = node.getLevel();
+
+			const lModel = shader.uniformLocations['modelMatrix'];
+			gl.uniformMatrix4fv(lModel, false, world.elements);
+
+			const lModelView = shader.uniformLocations['modelViewMatrix'];
+			gl.uniformMatrix4fv(lModelView, false, worldView.elements);
+
+			// shader.setUniformMatrix4("modelMatrix", world);
+			// shader.setUniformMatrix4("modelViewMatrix", worldView);
+			shader.setUniform1f('level', level);
+			shader.setUniform1f('vnStart', vnStart);
+			shader.setUniform1f('pcIndex', i);
+
+			if (shadowMaps.length > 0) {
+				let view = shadowMaps[0].camera.matrixWorldInverse;
+				let proj = shadowMaps[0].camera.projectionMatrix;
+
+				let worldView = new THREE.Matrix4()
+					.multiplyMatrices(view, world);
+				let worldViewProj = new THREE.Matrix4()
+					.multiplyMatrices(proj, worldView);
+				shader.setUniformMatrix4('smWorldViewProj', worldViewProj);
+
+				shader.setUniform1i('shadowMap', 1);
+				let id = this.threeRenderer.properties.get(shadowMaps[0].map.depthTexture)
+					.__webglTexture;
+				gl.activeTexture(gl.TEXTURE1);
+				gl.bindTexture(gl.TEXTURE_2D, id);
+			}
+
+			let iBuffer = node.geometryNode.buffer;
+
+			if (!this.buffers.has(iBuffer)) {
+				let buffers = this.createBuffer(iBuffer);
+				this.buffers.set(iBuffer, buffers);
+			}
+
+			let buffer = this.buffers.get(iBuffer);
+
+			gl.bindVertexArray(buffer.vao);
+
+			let numPoints = iBuffer.numElements;
+			gl.drawArrays(gl.POINTS, 0, numPoints);
+
+			i++;
 		}
 
-		let traversalResult = this.traverse(scene);
+		gl.bindVertexArray(null);
+	}
 
+	renderOctree (octree, nodes, camera, target, params = {}) {
+		let gl = this.gl;
+
+		let shadowMaps = params.shadowMaps == null ? [] : params.shadowMaps;
 		let view = camera.matrixWorldInverse;
 		let proj = camera.projectionMatrix;
-		let worldView = new THREE.Matrix4();
+		// TODO: unused: let worldView = new THREE.Matrix4();
 
-		for (let octree of traversalResult.octrees) {
-			let material = octree.material;
+		let material = octree.material;
+		let shader = null;
+		let visibilityTextureData = null;
 
+		if (material.pointSizeType >= 0) {
+			if (material.pointSizeType === PointSizeType.ADAPTIVE ||
+				material.pointColorType === PointColorType.LOD) {
+				visibilityTextureData = octree.computeVisibilityTextureData(nodes);
+
+				const vnt = material.visibleNodesTexture;
+				const data = vnt.image.data;
+				data.set(visibilityTextureData.data);
+				vnt.needsUpdate = true;
+			}
+		}
+
+		{ // UPDATE SHADER AND TEXTURES
 			if (!this.shaders.has(material)) {
 				let [vs, fs] = [material.vertexShader, material.fragmentShader];
 				let shader = new Shader(gl, 'pointcloud', vs, fs);
 
 				this.shaders.set(material, shader);
 			}
-			let shader = this.shaders.get(material);
+
+			shader = this.shaders.get(material);
+
 			if (material.needsUpdate) {
 				let [vs, fs] = [material.vertexShader, material.fragmentShader];
 				shader.update(vs, fs);
@@ -120,16 +192,19 @@ module.exports = class Renderer {
 					webGLTexture.update();
 				}
 			}
+		}
 
-			gl.useProgram(shader.program);
+		gl.useProgram(shader.program);
 
-			shader.setUniform('projectionMatrix', proj);
-			shader.setUniform('viewMatrix', view);
-			shader.setUniform('screenHeight', material.screenHeight);
-			shader.setUniform('screenWidth', material.screenWidth);
-			shader.setUniform('fov', Math.PI * camera.fov / 180);
-			shader.setUniform('near', camera.near);
-			shader.setUniform('far', camera.far);
+		{ // UPDATE UNIFORMS
+			shader.setUniformMatrix4('projectionMatrix', proj);
+			shader.setUniformMatrix4('viewMatrix', view);
+
+			shader.setUniform1f('screenHeight', material.screenHeight);
+			shader.setUniform1f('screenWidth', material.screenWidth);
+			shader.setUniform1f('fov', Math.PI * camera.fov / 180);
+			shader.setUniform1f('near', camera.near);
+			shader.setUniform1f('far', camera.far);
 
 			shader.setUniform('useOrthographicCamera', material.useOrthographicCamera);
 			// uniform float orthoRange;
@@ -145,26 +220,25 @@ module.exports = class Renderer {
 			// uniform vec3 clipPolygons[max_clip_polygons * 8];
 			// uniform mat4 clipPolygonVP[max_clip_polygons];
 
-			shader.setUniform('size', material.size);
-			shader.setUniform('maxSize', 50);
-			shader.setUniform('minSize', 2);
+			shader.setUniform1f('size', material.size);
+			shader.setUniform1f('maxSize', 50);
+			shader.setUniform1f('minSize', 2);
 
 			// uniform float pcIndex
-			shader.setUniform('spacing', material.spacing);
+			shader.setUniform1f('spacing', material.spacing);
 			shader.setUniform('octreeSize', material.uniforms.octreeSize.value);
 
 			// uniform vec3 uColor;
 			// uniform float opacity;
 
-			shader.setUniform('elevationRange', material.elevationRange);
-			shader.setUniform('intensityRange', material.intensityRange);
+			shader.setUniform2f('elevationRange', material.elevationRange);
+			shader.setUniform2f('intensityRange', material.intensityRange);
 			// uniform float intensityGamma;
 			// uniform float intensityContrast;
 			// uniform float intensityBrightness;
-
-			shader.setUniform('rgbGamma', material.rgbGamma);
-			shader.setUniform('rgbContrast', material.rgbContrast);
-			shader.setUniform('rgbBrightness', material.rgbBrightness);
+			shader.setUniform1f('rgbGamma', material.rgbGamma);
+			shader.setUniform1f('rgbContrast', material.rgbContrast);
+			shader.setUniform1f('rgbBrightness', material.rgbBrightness);
 			// uniform float transition;
 			// uniform float wRGB;
 			// uniform float wIntensity;
@@ -184,69 +258,42 @@ module.exports = class Renderer {
 			shader.setUniform1i('gradient', 1);
 			gl.activeTexture(gl.TEXTURE1);
 			gl.bindTexture(gradientTexture.target, gradientTexture.id);
-
-			gl.bindAttribLocation(shader.program, 0, 'position');
-			gl.bindAttribLocation(shader.program, 1, 'color');
-			gl.bindAttribLocation(shader.program, 2, 'intensity');
-			gl.bindAttribLocation(shader.program, 3, 'classification');
-			gl.bindAttribLocation(shader.program, 4, 'returnNumber');
-			gl.bindAttribLocation(shader.program, 5, 'numberOfReturns');
-			gl.bindAttribLocation(shader.program, 6, 'pointSourceID');
-			gl.bindAttribLocation(shader.program, 7, 'indices');
-
-			for (let node of octree.visibleNodes) {
-				let world = node.sceneNode.matrixWorld;
-				// let world = octree.matrixWorld;
-				worldView.multiplyMatrices(view, world);
-
-				let vnStart = octree.visibleNodeTextureOffsets.get(node);
-
-				let level = node.getLevel();
-
-				shader.setUniform('modelMatrix', world);
-				shader.setUniform('modelViewMatrix', worldView);
-				shader.setUniform('level', level);
-				shader.setUniform('vnStart', vnStart);
-
-				if (shadowMaps.length > 0) {
-					let view = shadowMaps[0].camera.matrixWorldInverse;
-					let proj = shadowMaps[0].camera.projectionMatrix;
-
-					let worldView = new THREE.Matrix4()
-						.multiplyMatrices(view, world);
-					let worldViewProj = new THREE.Matrix4()
-						.multiplyMatrices(proj, worldView);
-					shader.setUniform('smWorldViewProj', worldViewProj);
-
-					shader.setUniform1i('shadowMap', 1);
-					let id = this.threeRenderer.properties.get(shadowMaps[0].map.depthTexture)
-						.__webglTexture;
-					gl.activeTexture(gl.TEXTURE1);
-					gl.bindTexture(gl.TEXTURE_2D, id);
-				}
-
-				let iBuffer = node.geometryNode.buffer;
-
-				if (!this.buffers.has(iBuffer)) {
-					let buffers = this.createBuffer(iBuffer);
-					this.buffers.set(iBuffer, buffers);
-				}
-
-				let buffer = this.buffers.get(iBuffer);
-
-				gl.bindVertexArray(buffer.vao);
-
-				let numPoints = iBuffer.numElements;
-				gl.drawArrays(gl.POINTS, 0, numPoints);
-			}
-
-			gl.bindVertexArray(null);
 		}
 
+		gl.bindAttribLocation(shader.program, 0, 'position');
+		gl.bindAttribLocation(shader.program, 1, 'color');
+		gl.bindAttribLocation(shader.program, 2, 'intensity');
+		gl.bindAttribLocation(shader.program, 3, 'classification');
+		gl.bindAttribLocation(shader.program, 4, 'returnNumber');
+		gl.bindAttribLocation(shader.program, 5, 'numberOfReturns');
+		gl.bindAttribLocation(shader.program, 6, 'pointSourceID');
+		gl.bindAttribLocation(shader.program, 7, 'indices');
+
+		this.renderNodes(octree, nodes, visibilityTextureData, camera, target, shader, params);
+	}
+
+	render (scene, camera, target, params = {}) {
+		const gl = this.gl;
+
+		// PREPARE
+		if (target != null) {
+			this.threeRenderer.setRenderTarget(target);
+		}
+
+		camera.updateProjectionMatrix();
+
+		const traversalResult = this.traverse(scene);
+
+		// RENDER
+		for (const octree of traversalResult.octrees) {
+			let nodes = octree.visibleNodes;
+			this.renderOctree(octree, nodes, camera, target, params);
+		}
+
+		// CLEANUP
 		gl.activeTexture(gl.TEXTURE1);
 		gl.bindTexture(gl.TEXTURE_2D, null);
 
-		// if(doLog) console.log(traversalResult);
 		this.threeRenderer.resetGLState();
 	}
 };

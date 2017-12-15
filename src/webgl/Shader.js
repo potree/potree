@@ -90,27 +90,86 @@ module.exports = class Shader {
 		}
 	}
 
-	setUniform (name, value) {
-		let gl = this.gl;
-		let location = this.uniformLocations[name];
+	setUniformMatrix4 (name, value) {
+		const gl = this.gl;
+		const location = this.uniformLocations[name];
 
 		if (location == null) {
 			return;
 		}
 
-		if (value instanceof THREE.Matrix4) {
-			gl.uniformMatrix4fv(location, false, value.elements);
+		gl.uniformMatrix4fv(location, false, value.elements);
+	}
+
+	setUniform1f (name, value) {
+		const gl = this.gl;
+		const location = this.uniformLocations[name];
+
+		if (location == null) {
+			return;
+		}
+
+		gl.uniform1f(location, value);
+	}
+
+	setUniformBoolean (name, value) {
+		const gl = this.gl;
+		const location = this.uniformLocations[name];
+
+		if (location == null) {
+			return;
+		}
+
+		gl.uniform1i(location, value);
+	}
+
+	setUniformTexture (name, value) {
+		const gl = this.gl;
+		const location = this.uniformLocations[name];
+
+		if (location == null) {
+			return;
+		}
+
+		gl.uniform1i(location, value);
+	}
+
+	setUniform2f (name, value) {
+		const gl = this.gl;
+		const location = this.uniformLocations[name];
+
+		if (location == null) {
+			return;
+		}
+
+		gl.uniform2f(location, value[0], value[1]);
+	}
+
+	setUniform3f (name, value) {
+		const gl = this.gl;
+		const location = this.uniformLocations[name];
+
+		if (location == null) {
+			return;
+		}
+
+		gl.uniform3f(location, value[0], value[1], value[2]);
+	}
+
+	setUniform (name, value) {
+		if (value.constructor === THREE.Matrix4) {
+			this.setUniformMatrix4(name, value);
 		} else if (typeof value === 'number') {
-			gl.uniform1f(location, value);
+			this.setUniform1f(name, value);
 		} else if (typeof value === 'boolean') {
-			gl.uniform1i(location, value);
+			this.setUniformBoolean(name, value);
 		} else if (value instanceof WebGLTexture) {
-			gl.uniform1i(location, value);
+			this.setUniformTexture(name, value);
 		} else if (value instanceof Array) {
 			if (value.length === 2) {
-				gl.uniform2f(location, value[0], value[1]);
+				this.setUniform2f(name, value);
 			} else if (value.length === 3) {
-				gl.uniform3f(location, value[0], value[1], value[2]);
+				this.setUniform3f(name, value);
 			}
 		} else {
 			console.error('unhandled uniform type: ', name, value);

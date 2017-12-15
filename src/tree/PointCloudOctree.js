@@ -4,9 +4,9 @@ const PointCloudMaterial = require('../materials/PointCloudMaterial');
 const PointCloudOctreeNode = require('./PointCloudOctreeNode');
 const PointCloudOctreeGeometryNode = require('../PointCloudOctreeGeometryNode');
 const computeTransformedBoundingBox = require('../utils/computeTransformedBoundingBox');
-const PointSizeType = require('../materials/PointSizeType');
 const PointColorType = require('../materials/PointColorType');
 const ProfileRequest = require('../ProfileRequest');
+const Renderer = require('../Renderer');
 
 class PointCloudOctree extends PointCloudTree {
 	constructor (geometry, material) {
@@ -174,29 +174,14 @@ class PointCloudOctree extends PointCloudTree {
 		material.near = camera.near;
 		material.far = camera.far;
 		material.uniforms.octreeSize.value = this.pcoGeometry.boundingBox.getSize().x;
-
-		// update visibility texture
-		if (material.pointSizeType >= 0) {
-			if (material.pointSizeType === PointSizeType.ADAPTIVE ||
-				material.pointColorType === PointColorType.LOD) {
-				this.updateVisibilityTexture(material, visibleNodes);
-			}
-		}
 	}
 
-	updateVisibilityTexture (material, visibleNodes) {
-		if (!material) {
-			return;
-		}
-
-		let texture = material.visibleNodesTexture;
-		let data = texture.image.data;
-		data.fill(0);
-
-		this.visibleNodeTextureOffsets = new Map();
+	computeVisibilityTextureData (nodes) {
+		let data = new Uint8Array(nodes.length * 3);
+		let visibleNodeTextureOffsets = new Map();
 
 		// copy array
-		visibleNodes = visibleNodes.slice();
+		nodes = nodes.slice();
 
 		// sort by level and index, e.g. r, r0, r3, r4, r01, r07, r30, ...
 		let sort = function (a, b) {
@@ -207,17 +192,17 @@ class PointCloudOctree extends PointCloudTree {
 			if (na > nb) return 1;
 			return 0;
 		};
-		visibleNodes.sort(sort);
+		nodes.sort(sort);
 
-		for (let i = 0; i < visibleNodes.length; i++) {
-			let node = visibleNodes[i];
+		for (let i = 0; i < nodes.length; i++) {
+			let node = nodes[i];
 
-			this.visibleNodeTextureOffsets.set(node, i);
+			visibleNodeTextureOffsets.set(node, i);
 
 			let children = [];
 			for (let j = 0; j < 8; j++) {
 				let child = node.children[j];
-				if (child instanceof PointCloudOctreeNode && child.sceneNode.visible && visibleNodes.indexOf(child) >= 0) {
+				if (child instanceof PointCloudOctreeNode && nodes.includes(child)) {
 					children.push(child);
 				}
 			}
@@ -236,14 +221,17 @@ class PointCloudOctree extends PointCloudTree {
 				data[i * 3 + 0] += Math.pow(2, index);
 
 				if (j === 0) {
-					let vArrayIndex = visibleNodes.indexOf(child);
+					let vArrayIndex = nodes.indexOf(child);
 					data[i * 3 + 1] = (vArrayIndex - i) >> 8;
 					data[i * 3 + 2] = (vArrayIndex - i) % 256;
 				}
 			}
 		}
 
-		texture.needsUpdate = true;
+		return {
+			data: data,
+			offsets: visibleNodeTextureOffsets
+		};
 	}
 
 	nodeIntersectsProfile (node, profile) {
@@ -482,8 +470,6 @@ class PointCloudOctree extends PointCloudTree {
 	 *
 	 */
 	pick (renderer, camera, ray, params = {}) {
-		// let start = new Date().getTime();
-
 		let pickWindowSize = params.pickWindowSize || 17;
 		// TODO: let pickOutsideClipRegion = params.pickOutsideClipRegion || false;
 		let width = Math.ceil(renderer.domElement.clientWidth);
@@ -554,17 +540,6 @@ class PointCloudOctree extends PointCloudTree {
 			);
 		}
 		pickState.renderTarget.setSize(width, height);
-		renderer.setRenderTarget(pickState.renderTarget);
-
-		/*
-		let pixelPos = new THREE.Vector3()
-			.addVectors(camera.position, ray.direction)
-			.project(camera)
-			.addScalar(1)
-			.multiplyScalar(0.5);
-		pixelPos.x *= width;
-		pixelPos.y *= height;
-		*/
 
 		let pixelPos = new THREE.Vector2(params.x, params.y);
 
@@ -578,74 +553,20 @@ class PointCloudOctree extends PointCloudTree {
 		renderer.state.buffers.depth.setMask(pickMaterial.depthWrite);
 		renderer.state.setBlending(THREE.NoBlending);
 
-		renderer.clearTarget(pickState.renderTarget, true, true, true);
+		{ // RENDER
+			renderer.setRenderTarget(pickState.renderTarget);
 
-		// pickState.scene.children = nodes.map(n => n.sceneNode);
+			let tmp = this.material;
+			this.material = pickMaterial;
 
-		// let childStates = [];
-		let tempNodes = [];
-		for (let i = 0; i < nodes.length; i++) {
-			let node = nodes[i];
-			node.pcIndex = i + 1;
-			let sceneNode = node.sceneNode;
+			let pRenderer = new Renderer(renderer);
+			pRenderer.renderOctree(this, nodes, camera, pickState.renderTarget);
 
-			let tempNode = new THREE.Points(sceneNode.geometry, pickMaterial);
-			tempNode.matrix = sceneNode.matrix;
-			tempNode.matrixWorld = sceneNode.matrixWorld;
-			tempNode.matrixAutoUpdate = false;
-			tempNode.frustumCulled = false;
-			tempNode.pcIndex = i + 1;
+			this.material = tmp;
 
-			let geometryNode = node.geometryNode;
-			tempNode.onBeforeRender = (_this, scene, camera, geometry, material, group) => {
-				if (material.program) {
-					_this.getContext().useProgram(material.program.program);
-
-					if (material.program.getUniforms().map.level) {
-						let level = geometryNode.getLevel();
-						material.uniforms.level.value = level;
-						material.program.getUniforms().map.level.setValue(_this.getContext(), level);
-					}
-
-					if (this.visibleNodeTextureOffsets && material.program.getUniforms().map.vnStart) {
-						let vnStart = this.visibleNodeTextureOffsets.get(node);
-						material.uniforms.vnStart.value = vnStart;
-						material.program.getUniforms().map.vnStart.setValue(_this.getContext(), vnStart);
-					}
-
-					if (material.program.getUniforms().map.pcIndex) {
-						material.uniforms.pcIndex.value = node.pcIndex;
-						material.program.getUniforms().map.pcIndex.setValue(_this.getContext(), node.pcIndex);
-					}
-				}
-			};
-			tempNodes.push(tempNode);
-
-			// for(let child of nodes[i].sceneNode.children){
-			//	childStates.push({child: child, visible: child.visible});
-			//	child.visible = false;
-			// }
+			renderer.setRenderTarget(null);
+			renderer.resetGLState();
 		}
-		pickState.scene.autoUpdate = false;
-		pickState.scene.children = tempNodes;
-		// pickState.scene.overrideMaterial = pickMaterial;
-
-		renderer.state.setBlending(THREE.NoBlending);
-
-		// RENDER
-		renderer.render(pickState.scene, camera, pickState.renderTarget);
-
-		// for(let childState of childStates){
-		//	childState.child = childState.visible;
-		// }
-
-		// pickState.scene.overrideMaterial = null;
-
-		// renderer.context.readPixels(
-		//	pixelPos.x - (pickWindowSize-1) / 2, pixelPos.y - (pickWindowSize-1) / 2,
-		//	pickWindowSize, pickWindowSize,
-		//	renderer.context.RGBA, renderer.context.UNSIGNED_BYTE, pixels);
-
 		let clamp = (number, min, max) => Math.min(Math.max(min, number), max);
 
 		let x = parseInt(clamp(pixelPos.x - (pickWindowSize - 1) / 2, 0, width));
@@ -660,8 +581,6 @@ class PointCloudOctree extends PointCloudTree {
 			buffer);
 
 		renderer.setScissorTest(false);
-
-		renderer.setRenderTarget(null);
 
 		let pixels = buffer;
 		let ibuffer = new Uint32Array(buffer.buffer);
@@ -690,33 +609,9 @@ class PointCloudOctree extends PointCloudTree {
 				}
 			}
 		}
-		// console.log(pixels);
-
-		// { // open window with image
-		//	let img = pixelsArrayToImage(buffer, w, h);
-		//	let screenshot = img.src;
-		//
-		//	if(!this.debugDIV){
-		//		this.debugDIV = $(`
-		//			<div id="pickDebug"
-		//			style="position: absolute;
-		//			right: 400px; width: 300px;
-		//			bottom: 44px; width: 300px;
-		//			z-index: 1000;
-		//			"></div>`);
-		//		$(document.body).append(this.debugDIV);
-		//	}
-		//
-		//	this.debugDIV.empty();
-		//	this.debugDIV.append($(`<img src="${screenshot}"
-		//		style="transform: scaleY(-1);"/>`));
-		//	//$(this.debugWindow.document).append($(`<img src="${screenshot}"/>`));
-		//	//this.debugWindow.document.write('<img src="'+screenshot+'"/>');
-		// }
-
-		// return;
-
 		let point = null;
+
+		console.log(hit);
 
 		if (hit) {
 			point = {};
@@ -725,8 +620,8 @@ class PointCloudOctree extends PointCloudTree {
 				return null;
 			}
 
-			let pc = nodes[hit.pcIndex].sceneNode;
-			let attributes = pc.geometry.attributes;
+			let node = nodes[hit.pcIndex];
+			let iBuffer = node.geometryNode.buffer;
 
 			for (let property in attributes) {
 				if (attributes.hasOwnProperty(property)) {

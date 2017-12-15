@@ -1,6 +1,7 @@
 const THREE = require('three');
 const EyeDomeLightingMaterial = require('../materials/EyeDomeLightingMaterial');
 const screenPass = require('../utils/screenPass');
+const RepSnapshot = require('./RepSnapshot');
 
 class RepRenderer {
 	constructor (viewer) {
@@ -23,7 +24,10 @@ class RepRenderer {
 			matrix: null
 		};
 
-		this.aug = {
+		this.history = {
+			maxSnapshots: 5,
+			snapshots: [],
+			version: 0
 		};
 	}
 
@@ -62,14 +66,15 @@ class RepRenderer {
 		});
 		this.snap.target.generateMipMaps = false;
 
-		// {
-		// 	let geometry = new THREE.PlaneBufferGeometry(10, 7, 32);
-		// 	let material = new THREE.MeshBasicMaterial({side: THREE.DoubleSide, map: this.snap.target.texture});
-		// 	let plane = new THREE.Mesh(geometry, material);
-		// 	plane.position.z = 0.2;
-		// 	plane.position.y = -1;
-		// 	this.viewer.scene.scene.add(plane);
-		// }
+		{
+			let geometry = new THREE.PlaneBufferGeometry(20, 20, 32);
+			let material = new THREE.MeshBasicMaterial({side: THREE.DoubleSide, map: this.snap.target.texture});
+			let plane = new THREE.Mesh(geometry, material);
+			plane.position.z = 0.2;
+			plane.position.y = -1;
+			this.viewer.scene.scene.add(plane);
+			this.debugPlane = plane;
+		}
 	};
 
 	resize () {
@@ -173,17 +178,69 @@ class RepRenderer {
 
 		// viewer.pRenderer.render(viewer.scene.scenePointCloud, viewer.shadowTestCam, this.rtShadow);
 
-		if (this.snapshotRequested || !this.snap.camera) {
-			viewer.renderer.clearTarget(this.snap.target, true, true, true);
-			viewer.renderer.setRenderTarget(this.snap.target);
-			camera.updateProjectionMatrix();
-			this.snap.camera = camera.clone();
+		// if(this.snapshotRequested || !this.snap.camera){
+		//	viewer.renderer.clearTarget(this.snap.target, true, true, true);
+		//	viewer.renderer.setRenderTarget(this.snap.target);
+		//	camera.updateProjectionMatrix();
+		//	this.snap.camera = camera.clone();
+		//	for(const octree of viewer.scene.pointclouds){
+		//		octree.material.snapEnabled = false;
+		//		octree.material.needsUpdate = true;
+		//		viewer.pRenderer.renderOctree(octree, octree.visibleNodes, camera, this.snap.target, {});
+		//	}
+		//	this.snapshotRequested = false;
+		// }
+
+		{ // NEW SNAPSHOT
+			let snap;
+			if (this.history.snapshots.length < this.history.maxSnapshots) {
+				snap = new RepSnapshot();
+				snap.target = new THREE.WebGLRenderTarget(1024, 1024, {
+					minFilter: THREE.NearestFilter,
+					magFilter: THREE.NearestFilter,
+					format: THREE.RGBAFormat,
+					type: THREE.FloatType
+				});
+			} else {
+				snap = this.history.snapshots.pop();
+			}
+
+			{ // resize
+				let width = viewer.scaleFactor * viewer.renderArea.clientWidth;
+				let height = viewer.scaleFactor * viewer.renderArea.clientHeight;
+				// TODO: unused: let aspect = width / height;
+
+				let needsResize = (snap.target.width !== width || snap.target.height !== height);
+
+				if (needsResize) {
+					snap.target.dispose();
+				}
+
+				snap.target.setSize(width, height);
+			}
+
+			viewer.renderer.clearTarget(snap.target, true, true, true);
+			viewer.renderer.setRenderTarget(snap.target);
+
 			for (const octree of viewer.scene.pointclouds) {
 				octree.material.snapEnabled = false;
 				octree.material.needsUpdate = true;
-				viewer.pRenderer.renderOctree(octree, octree.visibleNodes, camera, this.snap.target, {});
+
+				let from = this.history.version * (octree.visibleNodes.length / this.history.maxSnapshots);
+				let to = (this.history.version + 1) * (octree.visibleNodes.length / this.history.maxSnapshots);
+				let nodes = octree.visibleNodes.slice(from, to);
+
+				viewer.pRenderer.renderOctree(octree, nodes, camera, snap.target, {vnTextureNodes: nodes});
 			}
-			this.snapshotRequested = false;
+
+			snap.camera = camera.clone();
+			this.history.version = (this.history.version + 1) % this.history.maxSnapshots;
+
+			if (this.debugPlane) {
+				this.debugPlane.material.map = snap.target.texture;
+			}
+
+			this.history.snapshots.unshift(snap);
 		}
 
 		viewer.renderer.clearTarget(this.rtColor, true, true, true);
@@ -191,13 +248,25 @@ class RepRenderer {
 		for (const octree of viewer.scene.pointclouds) {
 			octree.material.snapEnabled = true;
 			octree.material.needsUpdate = true;
-			octree.material.uniforms.snapshot.value = this.snap.target.texture;
-			octree.material.uniforms.snapView.value = this.snap.camera.matrixWorldInverse;
-			octree.material.uniforms.snapProj.value = this.snap.camera.projectionMatrix;
+			// octree.material.uniforms.snapshot.value = this.history.snapshots[0].target.texture;
+			// octree.material.uniforms.snapView.value = this.history.snapshots[0].camera.matrixWorldInverse;
+			// octree.material.uniforms.snapProj.value = this.history.snapshots[0].camera.projectionMatrix;
 
-			// let nodes = octree.visibleNodes.slice(0, 10);
-			let nodes = octree.visibleNodes;
-			viewer.pRenderer.renderOctree(octree, nodes, camera, this.rtColor, {});
+			let uniforms = octree.material.uniforms;
+			if (this.history.snapshots.length === this.history.maxSnapshots) {
+				uniforms[`uSnapshot`].value = this.history.snapshots.map(s => s.target.texture);
+				uniforms[`uSnapView`].value = this.history.snapshots.map(s => s.camera.matrixWorldInverse);
+				uniforms[`uSnapProj`].value = this.history.snapshots.map(s => s.camera.projectionMatrix);
+
+				// for(let i = 0; i < 5; i++){
+				//	let snap = this.history.snapshots[i];
+				//	uniforms[`uSnapshot_${i}`].value = snap.target.texture;
+				// }
+			}
+
+			let nodes = octree.visibleNodes.slice(0, 10);
+			// let nodes = octree.visibleNodes;
+			viewer.pRenderer.renderOctree(octree, nodes, camera, this.rtColor, {vnTextureNodes: nodes});
 		}
 
 		// viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, this.rtColor, {

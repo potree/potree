@@ -30,14 +30,17 @@ varying float	vLogDepth;
 varying vec3	vViewPosition;
 varying float	vRadius;
 
+#define max_snapshots 5
 #if defined(snap_enabled)
-uniform sampler2D snapshot;
-uniform mat4 snapView;
-uniform mat4 snapProj;
+uniform sampler2D uSnapshot[max_snapshots];
+uniform mat4 uSnapView[max_snapshots];
+uniform mat4 uSnapProj[max_snapshots];
 #endif
 
 varying vec4	vSP;
 varying float 	vPointSize;
+
+varying vec4 vSnapProjected[max_snapshots];
 
 float specularStrength = 1.0;
 
@@ -47,7 +50,8 @@ void main() {
 	float depth = gl_FragCoord.z;
 
 	#if defined(snap_enabled)
-		vec2 uv = 0.5 * (vSP.xy / vSP.w) + 0.5;
+		//vec2 uv = 0.5 * (vSP.xy / vSP.w) + 0.5;
+
 
 		vec2 pc = vec2(
 			gl_PointCoord.x - 0.5,
@@ -55,15 +59,56 @@ void main() {
 		);
 		vec2 offset = (pc * vPointSize) / vec2(screenWidth, screenHeight);
 
-		uv = uv + offset;
+		vec2 uv0 = 0.5 * (vSnapProjected[0].xy /vSnapProjected[0].w) + 0.5 + offset;
+		vec2 uv1 = 0.5 * (vSnapProjected[1].xy /vSnapProjected[1].w) + 0.5 + offset;
+		vec2 uv2 = 0.5 * (vSnapProjected[2].xy /vSnapProjected[2].w) + 0.5 + offset;
+		vec2 uv3 = 0.5 * (vSnapProjected[3].xy /vSnapProjected[3].w) + 0.5 + offset;
+		vec2 uv4 = 0.5 * (vSnapProjected[4].xy /vSnapProjected[4].w) + 0.5 + offset;
 
-		vec4 tc = texture2D(snapshot, uv);
-		color = tc.rgb;
+		vec4 tc_0 = texture2D(uSnapshot[0], uv0);
+		vec4 tc_1 = texture2D(uSnapshot[1], uv1);
+		vec4 tc_2 = texture2D(uSnapshot[2], uv2);
+		vec4 tc_3 = texture2D(uSnapshot[3], uv3);
+		vec4 tc_4 = texture2D(uSnapshot[4], uv4);
 
-		if(tc.a == 0.0){
-			discard;
-			return;
+		//color = ((tc_0 + tc_1 + tc_2 + tc_3 + tc_4) / 5.0).rgb;
+		//color = ((tc_0 + tc_1 + tc_2 + tc_3) / 4.0).rgb;
+		//color = (tc_0.rgb + tc_1.rgb + tc_2.rgb + tc_3.rgb + tc_4.rgb) / 5.0;
+
+		vec3 sRGB = vec3(0.0, 0.0, 0.0);
+		float sA = 0.0;
+
+		if(tc_0.a > 0.0){
+			sRGB += tc_0.rgb;
+			sA += tc_0.a;
 		}
+		if(tc_1.a > 0.0){
+			sRGB += tc_1.rgb;
+			sA += tc_1.a;
+		}
+		if(tc_2.a > 0.0){
+			sRGB += tc_2.rgb;
+			sA += tc_2.a;
+		}
+		if(tc_3.a > 0.0){
+			sRGB += tc_3.rgb;
+			sA += tc_3.a;
+		}
+		if(tc_4.a > 0.0){
+			sRGB += tc_4.rgb;
+			sA += tc_4.a;
+		}
+
+		//color = sRGB / sA;
+		color = sRGB * 0.5;
+
+		//color = tc.rgb;
+
+		//if(tc.a == 0.0){
+		//	discard;
+		//	return;
+		//}
+
 	#endif
 
 	#if defined(circle_point_shape) || defined(paraboloid_point_shape)

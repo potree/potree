@@ -140,9 +140,9 @@ module.exports = class PointCloudMaterial extends THREE.RawShaderMaterial {
 			useOrthographicCamera: { type: 'b', value: false },
 			orthoRange: { type: 'f', value: 10.0 },
 			clipMode: { type: 'i', value: 1 },
-			snapshot: { type: 't', value: null },
-			snapView: { type: 'Matrix4f', value: [] },
-			snapProj: { type: 'Matrix4f', value: [] }
+			uSnapshot: { type: 'tv', value: [] },
+			uSnapView: { type: 'Matrix4fv', value: [] },
+			uSnapProj: { type: 'Matrix4fv', value: [] }
 		};
 
 		this.defaultAttributeValues.normal = [0, 0, 0];

@@ -15,4 +15,5 @@ window.proj4 = require('proj4');
 window.THREE = require('three');
 window.ProfilePointCloud = require('./ProfilePointCloud');
 window.RepRenderer = require('./viewer/RepRenderer');
+window.RepSnapshot = require('./viewer/RepSnapshot');
 require('three-ply-loader')(window.THREE);

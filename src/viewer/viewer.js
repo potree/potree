@@ -466,8 +466,12 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 
 	
 	constructor(domElement, args = {}){
-		super();		
+		super();
+
+		this.renderArea = domElement;	
 		
+		try{
+
 		{ // generate missing dom hierarchy
 			if ($(domElement).find('#potree_map').length === 0) {
 				let potreeMap = $(`
@@ -487,8 +491,6 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		}
 
 		this.pointCloudLoadedCallback = args.onPointCloudLoaded || function () {};
-
-		this.renderArea = domElement;
 
 		// if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
 		//	defaultSettings.navigation = "Orbit";
@@ -656,6 +658,54 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		}
 
 		this.loadGUI = this.loadGUI.bind(this);
+
+		}catch(e){
+			this.onCrash(e);
+		}
+	}
+
+	onCrash(error){
+
+		$(this.renderArea).empty();
+
+		if ($(this.renderArea).find('#potree_failpage').length === 0) {
+			let elFailPage = $(`
+			<div id="#potree_failpage" class="potree_failpage"> 
+				
+				<h1>Potree Encountered An Error </h1>
+
+				<p>
+				This may happen if your browser or graphics card is not supported.
+				<br>
+				We recommend to use 
+				<a href="https://www.google.com/chrome/browser" target="_blank" style="color:initial">Chrome</a>
+				or 
+				<a href="https://www.mozilla.org/" target="_blank">Firefox</a>.
+				</p>
+
+				<p>
+				Please also visit <a href="http://webglreport.com/" target="_blank">webglreport.com</a> and 
+				check whether your system supports WebGL.
+				</p>
+				<p>
+				If you are already using one of the recommended browsers and WebGL is enabled, 
+				consider filing an issue report at <a href="https://github.com/potree/potree/issues" target="_blank">github</a>,<br>
+				including your operating system, graphics card, browser and browser version, as well as the 
+				error message below.<br>
+				Please do not report errors on unsupported browsers.
+				</p>
+
+				<pre id="potree_error_console" style="width: 100%; height: 100%"></pre>
+				
+			</div>`);
+
+			let elErrorMessage = elFailPage.find('#potree_error_console');
+			elErrorMessage.html(error.stack);
+
+			$(this.renderArea).append(elFailPage);
+		}
+
+		
 	}
 
 	// ------------------------------------------------------------------------------------
@@ -1367,6 +1417,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		let extVAO = gl.getExtension('OES_vertex_array_object');
 		gl.createVertexArray = extVAO.createVertexArrayOES.bind(extVAO);
 		gl.bindVertexArray = extVAO.bindVertexArrayOES.bind(extVAO);
+		//gl.bindVertexArray = extVAO.asdfbindVertexArrayOES.bind(extVAO);
 		
 		
 	}
@@ -1726,6 +1777,8 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 	render(){
 		if(Potree.measureTimings) performance.mark("render-start");
 
+		try{
+
 		if(this.useRep){
 			if (!this.repRenderer) {
 				this.repRenderer = new RepRenderer(this);
@@ -1745,6 +1798,10 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		}
 
 		this.renderer.render(this.overlay, this.overlayCamera);
+
+		}catch(e){
+			this.onCrash(e);
+		}
 		
 		if(Potree.measureTimings){
 			performance.mark("render-end");

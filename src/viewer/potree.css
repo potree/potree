@@ -50,6 +50,19 @@
 .potree_container{
 }
 
+.potree_failpage{
+	width: 100%;
+	height: 100%;
+	background-color: white;
+	position: absolute;
+	margin: 15px;
+}
+
+.potree_failpage a{
+	color: initial !important;
+	text-decoration: underline !important;
+}
+
 .potree_info_text{
 	color:		white;
 	font-weight: bold;
@@ -115,7 +128,7 @@
 
 #potree_render_area{
     position: 	absolute;
-    background: linear-gradient(-90deg, red, yellow);
+    /*background: linear-gradient(-90deg, red, yellow);*/
 	top: 		0px;
 	bottom: 	0px;
 	left: 		0px;

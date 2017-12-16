@@ -36,7 +36,8 @@ module.exports = class Shader {
 		let success = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
 		if (!success) {
 			let info = gl.getShaderInfoLog(shader);
-			throw new Error(`could not compile shader ${this.name}: ${info}`);
+			let numberedSource = source.split('\n').map((a, i) => `${i + 1}`.padEnd(5) + a).join('\n');
+			throw new Error(`could not compile shader ${this.name}: ${info}, \n${numberedSource}`);
 		}
 	}
 

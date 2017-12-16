@@ -114,20 +114,29 @@ module.exports = class Renderer {
 			shader.setUniform1f('pcIndex', i);
 
 			if (shadowMaps.length > 0) {
-				let view = shadowMaps[0].camera.matrixWorldInverse;
-				let proj = shadowMaps[0].camera.projectionMatrix;
+				const lShadowMap = shader.uniformLocations['uShadowMap[0]'];
 
-				let worldView = new THREE.Matrix4()
-					.multiplyMatrices(view, world);
-				let worldViewProj = new THREE.Matrix4()
-					.multiplyMatrices(proj, worldView);
-				shader.setUniformMatrix4('smWorldViewProj', worldViewProj);
+				let bindingStart = 5;
+				let bindingPoints = new Array(shadowMaps.length).fill(bindingStart).map((a, i) => (a + i));
+				gl.uniform1iv(lShadowMap, bindingPoints);
 
-				shader.setUniform1i('shadowMap', 1);
-				let id = this.threeRenderer.properties.get(shadowMaps[0].map.depthTexture)
-					.__webglTexture;
-				gl.activeTexture(gl.TEXTURE1);
-				gl.bindTexture(gl.TEXTURE_2D, id);
+				for (let i = 0; i < shadowMaps.length; i++) {
+					let shadowMap = shadowMaps[i];
+					let bindingPoint = bindingPoints[i];
+					let glTexture = this.threeRenderer.properties.get(shadowMap.target.depthTexture).__webglTexture;
+
+					gl.activeTexture(gl[`TEXTURE${bindingPoint}`]);
+					gl.bindTexture(gl.TEXTURE_2D, glTexture);
+				}
+				{
+					let worldViewMatrices = shadowMaps
+						.map(sm => new THREE.Matrix4().makeTranslation(...sm.lightPos.clone().multiplyScalar(-1).toArray()))
+						.map(view => new THREE.Matrix4().multiplyMatrices(view, world));
+
+					let flattenedMatrices = [].concat(...worldViewMatrices.map(c => c.elements));
+					const lWorldView = shader.uniformLocations['uShadowWorldView[0]'];
+					gl.uniformMatrix4fv(lWorldView, false, flattenedMatrices);
+				}
 			}
 
 			let iBuffer = node.geometryNode.buffer;
@@ -169,21 +178,6 @@ module.exports = class Renderer {
 		let shader = null;
 		let visibilityTextureData = null;
 
-		// if (window.atoggle == null) {
-		// 	window.atoggle = 0;
-		// } else {
-		// 	window.atoggle++;
-		// }
-		//
-		// let sub = nodes.slice(0, 10);
-		// let rem = nodes.slice(10);
-		// let numAdd = 40;
-		// if (numAdd * window.atoggle > rem.length) {
-		// 	window.atoggle = 0;
-		// }
-		// let add = rem.slice(20 * window.atoggle, 20 * (window.atoggle + 1));
-		// nodes = sub.concat(add);
-
 		if (material.pointSizeType >= 0) {
 			if (material.pointSizeType === PointSizeType.ADAPTIVE ||
 				material.pointColorType === PointColorType.LOD) {
@@ -207,8 +201,13 @@ module.exports = class Renderer {
 
 			shader = this.shaders.get(material);
 
-			if (material.needsUpdate) {
+			// if (material.needsUpdate) {
+			{
 				let [vs, fs] = [material.vertexShader, material.fragmentShader];
+
+				vs = `#define num_shadowmaps ${shadowMaps.length}\n` + vs;
+				fs = `#define num_shadowmaps ${shadowMaps.length}\n` + fs;
+
 				shader.update(vs, fs);
 
 				material.needsUpdate = false;
@@ -299,8 +298,6 @@ module.exports = class Renderer {
 			// uniform float wClassification;
 			// uniform float wReturnNumber;
 			// uniform float wSourceID;
-
-			shader.setUniform('useShadowMap', shadowMaps.length > 0);
 
 			let vnWebGLTexture = this.textures.get(material.visibleNodesTexture);
 			shader.setUniform1i('visibleNodesTexture', 0);

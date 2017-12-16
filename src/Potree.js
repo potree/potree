@@ -170,6 +170,7 @@ Potree.Renderer = require('./Renderer');
 Potree.InterleavedBuffer = require('./InterleavedBuffer');
 Potree.InterleavedBufferAttribute = require('./InterleavedBufferAttribute');
 Potree.toInterleavedBufferAttribute = require('./utils/toInterleavedBufferAttribute');
+Potree.PointCloudSM = require('./utils/PointCloudSM');
 
 module.exports = Potree;
 

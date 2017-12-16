@@ -842,8 +842,11 @@ module.exports = class PointCloudMaterial extends THREE.RawShaderMaterial {
 		context.fillStyle = ctxGradient;
 		context.fill();
 
-		let texture = new THREE.Texture(canvas);
+		// let texture = new THREE.Texture(canvas);
+		let texture = new THREE.CanvasTexture(canvas);
 		texture.needsUpdate = true;
+
+		texture.minFilter = THREE.LinearFilter;
 		// textureImage = texture.image;
 
 		return texture;

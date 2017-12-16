@@ -23,6 +23,9 @@ module.exports = function (pointclouds, camera, renderer) {
 
 	let loadedToGPUThisFrame = 0;
 
+	// TODO: unused: let domWidth = renderer.domElement.clientWidth;
+	let domHeight = renderer.domElement.clientHeight;
+
 	while (priorityQueue.size() > 0) {
 		let element = priorityQueue.pop();
 		let node = element.node;
@@ -134,12 +137,21 @@ module.exports = function (pointclouds, camera, renderer) {
 			let weight = 0;
 			if (camera.isPerspectiveCamera) {
 				let sphere = child.getBoundingSphere();
-				let distance = sphere.center.distanceTo(camObjPos);
+				let center = sphere.center;
+				// let distance = sphere.center.distanceTo(camObjPos);
+
+				let dx = camObjPos.x - center.x;
+				let dy = camObjPos.y - center.y;
+				let dz = camObjPos.z - center.z;
+
+				let dd = dx * dx + dy * dy + dz * dz;
+				let distance = Math.sqrt(dd);
+
 				let radius = sphere.radius;
 
 				let fov = (camera.fov * Math.PI) / 180;
 				let slope = Math.tan(fov / 2);
-				let projFactor = (0.5 * renderer.domElement.clientHeight) / (slope * distance);
+				let projFactor = (0.5 * domHeight) / (slope * distance);
 				let screenPixelRadius = radius * projFactor;
 
 				if (screenPixelRadius < pointcloud.minimumNodePixelSize) {
@@ -176,17 +188,6 @@ module.exports = function (pointclouds, camera, renderer) {
 	for (let i = 0; i < Math.min(5, unloadedGeometry.length); i++) {
 		unloadedGeometry[i].load();
 	}
-
-	// for(let node of visibleNodes){
-	//	let allowedNodes = ["r", "r0", "r4"];
-	//	node.sceneNode.visible = allowedNodes.includes(node.geometryNode.name);
-	//
-	//	if(node.boundingBoxNode){
-	//		node.boundingBoxNode.visible = node.boundingBoxNode.visible && node.sceneNode.visible;
-	//	}
-	// }
-
-	// Potree.updateDEMs(renderer, visibleNodes);
 
 	return {
 		visibleNodes: visibleNodes,

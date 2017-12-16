@@ -125,18 +125,53 @@ module.exports = class Renderer {
 
 			shader.setUniform('projectionMatrix', proj);
 			shader.setUniform('viewMatrix', view);
+			shader.setUniform('screenHeight', material.screenHeight);
+			shader.setUniform('screenWidth', material.screenWidth);
 			shader.setUniform('fov', Math.PI * camera.fov / 180);
+			shader.setUniform('near', camera.near);
+			shader.setUniform('far', camera.far);
+
+			shader.setUniform('useOrthographicCamera', material.useOrthographicCamera);
+			// uniform float orthoRange;
+
+			// uniform int clipMode;
+			// #if defined use_clip_box
+			//	uniform float clipBoxCount;
+			//	uniform mat4 clipBoxes[max_clip_boxes];
+			// #endif
+
+			// uniform int clipPolygonCount;
+			// uniform int clipPolygonVCount[max_clip_polygons];
+			// uniform vec3 clipPolygons[max_clip_polygons * 8];
+			// uniform mat4 clipPolygonVP[max_clip_polygons];
+
+			shader.setUniform('size', material.size);
 			shader.setUniform('maxSize', 50);
 			shader.setUniform('minSize', 2);
+
+			// uniform float pcIndex
+			shader.setUniform('spacing', material.spacing);
+			shader.setUniform('octreeSize', material.uniforms.octreeSize.value);
+
+			// uniform vec3 uColor;
+			// uniform float opacity;
+
+			shader.setUniform('elevationRange', material.elevationRange);
+			shader.setUniform('intensityRange', material.intensityRange);
+			// uniform float intensityGamma;
+			// uniform float intensityContrast;
+			// uniform float intensityBrightness;
+
 			shader.setUniform('rgbGamma', material.rgbGamma);
 			shader.setUniform('rgbContrast', material.rgbContrast);
 			shader.setUniform('rgbBrightness', material.rgbBrightness);
-			shader.setUniform('screenHeight', material.screenHeight);
-			shader.setUniform('screenWidth', material.screenWidth);
-			shader.setUniform('size', material.size);
-			shader.setUniform('spacing', material.spacing);
-			shader.setUniform('useOrthographicCamera', material.useOrthographicCamera);
-			shader.setUniform('octreeSize', material.uniforms.octreeSize.value);
+			// uniform float transition;
+			// uniform float wRGB;
+			// uniform float wIntensity;
+			// uniform float wElevation;
+			// uniform float wClassification;
+			// uniform float wReturnNumber;
+			// uniform float wSourceID;
 
 			shader.setUniform('useShadowMap', shadowMaps.length > 0);
 
@@ -144,22 +179,33 @@ module.exports = class Renderer {
 			shader.setUniform1i('visibleNodesTexture', 0);
 			gl.activeTexture(gl.TEXTURE0);
 			gl.bindTexture(vnWebGLTexture.target, vnWebGLTexture.id);
-			// shader.setUniform("visibleNodesTexture", vnWebGLTexture);
+
+			let gradientTexture = this.textures.get(material.gradientTexture);
+			shader.setUniform1i('gradient', 1);
+			gl.activeTexture(gl.TEXTURE1);
+			gl.bindTexture(gradientTexture.target, gradientTexture.id);
 
 			gl.bindAttribLocation(shader.program, 0, 'position');
 			gl.bindAttribLocation(shader.program, 1, 'color');
+			gl.bindAttribLocation(shader.program, 2, 'intensity');
+			gl.bindAttribLocation(shader.program, 3, 'classification');
+			gl.bindAttribLocation(shader.program, 4, 'returnNumber');
+			gl.bindAttribLocation(shader.program, 5, 'numberOfReturns');
+			gl.bindAttribLocation(shader.program, 6, 'pointSourceID');
+			gl.bindAttribLocation(shader.program, 7, 'indices');
 
-			// for(let i = 2; i < Math.min(3, octree.visibleNodes.length); i++){
-			// 	let node = octree.visibleNodes[i];
 			for (let node of octree.visibleNodes) {
 				let world = node.sceneNode.matrixWorld;
+				// let world = octree.matrixWorld;
 				worldView.multiplyMatrices(view, world);
 
 				let vnStart = octree.visibleNodeTextureOffsets.get(node);
 
+				let level = node.getLevel();
+
 				shader.setUniform('modelMatrix', world);
 				shader.setUniform('modelViewMatrix', worldView);
-				shader.setUniform('level', node.getLevel());
+				shader.setUniform('level', level);
 				shader.setUniform('vnStart', vnStart);
 
 				if (shadowMaps.length > 0) {
@@ -188,32 +234,6 @@ module.exports = class Renderer {
 
 				let buffer = this.buffers.get(iBuffer);
 
-				// for(let attributeName of Object.keys(bufferGeometry.attributes)){
-				//
-				// 	let attribute = bufferGeometry.attributes[attributeName];
-				// 	let buffer = buffers.vbos.get(attribute);
-				//
-				// 	let itemSize = attribute.itemSize;
-				// 	let normalized = attribute.normalized;
-				// 	let stride = 0;
-				// 	let offset = 0;
-				//
-				// 	let location = shader.attributeLocations[attributeName];
-				//
-				// 	if(location == null){
-				// 		//gl.bindBuffer(gl.ARRAY_BUFFER, buffer.id);
-				// 		//gl.disableVertexAttribArray(location);
-				// 	}else{
-				// 		gl.bindBuffer(gl.ARRAY_BUFFER, buffer.id);
-				// 		gl.vertexAttribPointer(location,
-				// 			itemSize, buffer.type, normalized, stride, offset);
-				// 		gl.enableVertexAttribArray(location);
-				// 	}
-				//
-				//
-				// }
-
-				// gl.bindBuffer(gl.ARRAY_BUFFER, null);
 				gl.bindVertexArray(buffer.vao);
 
 				let numPoints = iBuffer.numElements;
@@ -221,9 +241,6 @@ module.exports = class Renderer {
 			}
 
 			gl.bindVertexArray(null);
-
-			// if(doLog) console.log(octree);
-			// if(doLog) console.log(octree.visibleNodes);
 		}
 
 		gl.activeTexture(gl.TEXTURE1);

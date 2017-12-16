@@ -1,4 +1,5 @@
 const paramThreeToGL = require('../utils/paramThreeToGL');
+const THREE = require('three');
 
 module.exports = class WebGLTexture {
 	constructor (gl, texture) {
@@ -17,7 +18,7 @@ module.exports = class WebGLTexture {
 		let gl = this.gl;
 		let texture = this.texture;
 
-		if (texture.version <= this.version) {
+		if (this.version === texture.version) {
 			return;
 		}
 
@@ -32,11 +33,36 @@ module.exports = class WebGLTexture {
 		let border = 0;
 		let srcFormat = internalFormat;
 		let srcType = paramThreeToGL(gl, texture.type);
-		let data = texture.image.data;
+		let data;
 
-		gl.texImage2D(this.target, level, internalFormat,
-			width, height, border, srcFormat, srcType,
-			data);
+		gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, texture.flipY);
+		gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, texture.premultiplyAlpha);
+		gl.pixelStorei(gl.UNPACK_ALIGNMENT, texture.unpackAlignment);
+
+		if (texture instanceof THREE.DataTexture) {
+			data = texture.image.data;
+
+			gl.texParameteri(this.target, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+			gl.texParameteri(this.target, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+			gl.texParameteri(this.target, gl.TEXTURE_MAG_FILTER, paramThreeToGL(gl, texture.magFilter));
+			gl.texParameteri(this.target, gl.TEXTURE_MIN_FILTER, paramThreeToGL(gl, texture.minFilter));
+
+			gl.texImage2D(this.target, level, internalFormat,
+				width, height, border, srcFormat, srcType,
+				data);
+		} else if (texture instanceof THREE.CanvasTexture) {
+			data = texture.image;
+
+			gl.texParameteri(this.target, gl.TEXTURE_WRAP_S, paramThreeToGL(gl, texture.wrapS));
+			gl.texParameteri(this.target, gl.TEXTURE_WRAP_T, paramThreeToGL(gl, texture.wrapT));
+
+			gl.texParameteri(this.target, gl.TEXTURE_MAG_FILTER, paramThreeToGL(gl, texture.magFilter));
+			gl.texParameteri(this.target, gl.TEXTURE_MIN_FILTER, paramThreeToGL(gl, texture.minFilter));
+
+			gl.texImage2D(this.target, level, internalFormat,
+				internalFormat, srcType, data);
+		}
 
 		gl.texParameteri(this.target, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 		gl.texParameteri(this.target, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
@@ -46,6 +72,6 @@ module.exports = class WebGLTexture {
 
 		gl.bindTexture(this.target, null);
 
-		texture.needsUpdate = false;
+		this.version = texture.version;
 	}
 };

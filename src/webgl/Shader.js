@@ -42,6 +42,11 @@ module.exports = class Shader {
 	linkProgram () {
 		let gl = this.gl;
 
+		this.uniformLocations = {};
+		this.attributeLocations = {};
+
+		gl.useProgram(null);
+
 		this.compileShader(this.vs, this.vsSource);
 		this.compileShader(this.fs, this.fsSource);
 
@@ -101,6 +106,12 @@ module.exports = class Shader {
 			gl.uniform1i(location, value);
 		} else if (value instanceof WebGLTexture) {
 			gl.uniform1i(location, value);
+		} else if (value instanceof Array) {
+			if (value.length === 2) {
+				gl.uniform2f(location, value[0], value[1]);
+			} else if (value.length === 3) {
+				gl.uniform3f(location, value[0], value[1], value[2]);
+			}
 		} else {
 			console.error('unhandled uniform type: ', name, value);
 		}

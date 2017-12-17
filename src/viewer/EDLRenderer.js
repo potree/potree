@@ -2,6 +2,7 @@ const EyeDomeLightingMaterial = require('../materials/EyeDomeLightingMaterial');
 const THREE = require('three');
 const screenPass = require('../utils/screenPass');
 const PointCloudSM = require('../utils/PointCloudSM');
+const GLQueries = require('../webgl/GLQueries');
 
 class EDLRenderer {
 	constructor (viewer) {
@@ -103,6 +104,8 @@ class EDLRenderer {
 
 		let camera = viewer.scene.getActiveCamera();
 
+		let query = GLQueries.forGL(viewer.renderer.getContext()).start('EDLRenderer');
+
 		if (viewer.background === 'skybox') {
 			viewer.renderer.setClearColor(0x000000, 0);
 			viewer.renderer.clear();
@@ -198,6 +201,8 @@ class EDLRenderer {
 		);
 		viewer.renderer.render(viewer.navigationCube, viewer.navigationCube.camera);
 		viewer.renderer.setViewport(0, 0, viewer.renderer.domElement.clientWidth, viewer.renderer.domElement.clientHeight);
+
+		GLQueries.forGL(viewer.renderer.getContext()).end(query);
 	}
 };
 

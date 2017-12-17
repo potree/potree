@@ -349,6 +349,11 @@ class ProfileWindow extends THREE.EventDispatcher {
 	}
 
 	addPoints (pointcloud, points) {
+		console.log(pointcloud);
+		console.log(points);
+
+		return;
+
 		let pc = this.pointclouds.get(pointcloud);
 		pc.points.add(points);
 

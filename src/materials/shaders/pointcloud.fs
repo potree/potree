@@ -18,12 +18,12 @@ uniform float opacity;
 uniform float blendHardness;
 uniform float blendDepthSupplement;
 uniform float fov;
-uniform float spacing;
+uniform float uSpacing;
 uniform float near;
 uniform float far;
-uniform float pcIndex;
-uniform float screenWidth;
-uniform float screenHeight;
+uniform float uPCIndex;
+uniform float uScreenWidth;
+uniform float uScreenHeight;
 
 varying vec3	vColor;
 varying float	vOpacity;
@@ -68,7 +68,7 @@ void main() {
 
 			{
 				vec2 pc = vec2(gl_PointCoord.x - 0.5, (1.0 - gl_PointCoord.y) - 0.5);
-				vec2 offset = (pc * vPointSize) / vec2(screenWidth, screenHeight);
+				vec2 offset = (pc * vPointSize) / vec2(uScreenWidth, uScreenHeight);
 
 				uv = 0.5 * (vSnapProjected[i].xy /vSnapProjected[i].w) + 0.5 + offset;
 
@@ -118,7 +118,7 @@ void main() {
 	#endif
 
 	#if defined color_type_point_index
-		gl_FragColor = vec4(color, pcIndex / 255.0);
+		gl_FragColor = vec4(color, uPCIndex / 255.0);
 	#else
 		gl_FragColor = vec4(color, vOpacity);
 	#endif

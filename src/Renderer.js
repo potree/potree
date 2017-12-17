@@ -206,8 +206,21 @@ module.exports = class Renderer {
 			{
 				let [vs, fs] = [material.vertexShader, material.fragmentShader];
 
-				vs = `#define num_shadowmaps ${shadowMaps.length}\n` + vs;
-				fs = `#define num_shadowmaps ${shadowMaps.length}\n` + fs;
+				let numSnapshots = material.snapEnabled ? material.numSnapshots : 0;
+				let numClipBoxes = (material.clipBoxes && material.clipBoxes.length) ? material.clipBoxes.length : 0;
+				let defines = [
+					`#define num_shadowmaps ${shadowMaps.length}`,
+					`#define num_snapshots ${numSnapshots}`,
+					`#define num_clipboxes ${numClipBoxes}`
+				];
+
+				// vs = `#define num_shadowmaps ${shadowMaps.length}\n` + vs;
+				// fs = `#define num_shadowmaps ${shadowMaps.length}\n` + fs;
+
+				let definesString = defines.join('\n');
+
+				vs = `${definesString}\n${vs}`;
+				fs = `${definesString}\n${fs}`;
 
 				shader.update(vs, fs);
 
@@ -255,7 +268,6 @@ module.exports = class Renderer {
 
 			if (material.clipBoxes && material.clipBoxes.length > 0) {
 				shader.setUniform1i('clipMode', material.clipMode);
-				shader.setUniform('clipBoxCount', material.clipBoxes.length);
 				let flattenedMatrices = [].concat(...material.clipBoxes.map(c => c.inverse.elements));
 
 				const lClipBoxes = shader.uniformLocations['clipBoxes[0]'];

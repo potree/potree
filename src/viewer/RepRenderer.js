@@ -259,6 +259,7 @@ class RepRenderer {
 			for (const octree of viewer.scene.pointclouds) {
 				if (!this.disableSnapshots) {
 					octree.material.snapEnabled = true;
+					octree.material.numSnapshots = this.history.maxSnapshots;
 					octree.material.needsUpdate = true;
 
 					let uniforms = octree.material.uniforms;

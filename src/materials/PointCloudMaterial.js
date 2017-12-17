@@ -75,6 +75,7 @@ module.exports = class PointCloudMaterial extends THREE.RawShaderMaterial {
 		this._treeType = treeType;
 		this._useEDL = false;
 		this._snapEnabled = false;
+		this._numSnapshots = 0;
 
 		this._defaultIntensityRangeChanged = false;
 		this._defaultElevationRangeChanged = false;
@@ -374,6 +375,14 @@ module.exports = class PointCloudMaterial extends THREE.RawShaderMaterial {
 			type: 'material_property_changed',
 			target: this
 		});
+	}
+
+	get numSnapshots () {
+		return this._numSnapshots;
+	}
+
+	set numSnapshots (value) {
+		this._numSnapshots = value;
 	}
 
 	get snapEnabled () {

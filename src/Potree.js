@@ -171,6 +171,7 @@ Potree.InterleavedBuffer = require('./InterleavedBuffer');
 Potree.InterleavedBufferAttribute = require('./InterleavedBufferAttribute');
 Potree.toInterleavedBufferAttribute = require('./utils/toInterleavedBufferAttribute');
 Potree.PointCloudSM = require('./utils/PointCloudSM');
+Potree.PathAnimation = require('./PathAnimation');
 
 module.exports = Potree;
 

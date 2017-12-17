@@ -1,12 +1,11 @@
 const THREE = require('three');
-const TWEEN = require('@tweenjs/tween.js');
+const PathAnimation = require('./PathAnimation');
 
 class AnimationPath {
 	constructor (points = []) {
 		this.points = points;
 		this.spline = new THREE.CatmullRomCurve3(points);
 		// this.spline.reparametrizeByArcLength(1 / this.spline.getLength().total);
-		this.tween = null;
 	}
 
 	get (t) {
@@ -17,33 +16,17 @@ class AnimationPath {
 		return this.spline.getLength();
 	}
 
-	animate (start, end, metersPerSecond, callback) {
-		this.pause();
+	animate (start, end, speed, callback) {
+		let animation = new PathAnimation(this, start, end, speed, callback);
+		animation.start();
 
-		let length = this.spline.getLength();
-
-		start = Math.max(start, 0);
-		end = Math.min(end, length);
-
-		let tStart = start / length;
-		let tEnd = end / length;
-
-		let animationDuration = (end - start) * 1000 / metersPerSecond;
-
-		let progress = {t: tStart};
-		this.tween = new TWEEN.Tween(progress).to({t: tEnd}, animationDuration);
-		this.tween.easing(TWEEN.Easing.Linear.None);
-		this.tween.onUpdate((e) => {
-			callback(progress.t);
-			// viewer.scene.view.position.copy(this.spline.getPoint(progress.t));
-		});
-
-		this.tween.start();
+		return animation;
 	}
 
 	pause () {
 		if (this.tween) {
-			this.tween.stop();
+			// this.tween.stop();
+			// TWEEN.remove()
 		}
 	}
 
@@ -56,7 +39,7 @@ class AnimationPath {
 	getGeometry () {
 		let geometry = new THREE.Geometry();
 
-		let samples = 100;
+		let samples = 500;
 		let i = 0;
 		for (let u = 0; u <= 1; u += 1 / samples) {
 			let position = this.spline.getPoint(u);
@@ -65,7 +48,20 @@ class AnimationPath {
 			i++;
 		}
 
+		if (this.closed) {
+			let position = this.spline.getPoint(0);
+			geometry.vertices[i] = new THREE.Vector3(position.x, position.y, position.z);
+		}
+
 		return geometry;
+	}
+
+	get closed () {
+		return this.spline.closed;
+	}
+
+	set closed (value) {
+		this.spline.closed = value;
 	}
 };
 

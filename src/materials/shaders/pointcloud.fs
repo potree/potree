@@ -13,7 +13,7 @@ uniform vec3 cameraPosition;
 
 
 uniform mat4 projectionMatrix;
-uniform float opacity;
+uniform float uOpacity;
 
 uniform float blendHardness;
 uniform float blendDepthSupplement;
@@ -26,7 +26,6 @@ uniform float uScreenWidth;
 uniform float uScreenHeight;
 
 varying vec3	vColor;
-varying float	vOpacity;
 varying float	vLinearDepth;
 varying float	vLogDepth;
 varying vec3	vViewPosition;
@@ -126,7 +125,7 @@ void main() {
 	#if defined color_type_point_index
 		gl_FragColor = vec4(color, uPCIndex / 255.0);
 	#else
-		gl_FragColor = vec4(color, vOpacity);
+		gl_FragColor = vec4(color, uOpacity);
 	#endif
 
 	#if defined paraboloid_point_shape

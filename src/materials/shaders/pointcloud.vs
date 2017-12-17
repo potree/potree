@@ -51,7 +51,7 @@ uniform float uLevel;
 uniform float uVNStart;
 
 uniform vec3 uColor;
-uniform float opacity;
+uniform float uOpacity;
 
 uniform vec2 elevationRange;
 uniform vec2 intensityRange;
@@ -89,7 +89,6 @@ varying vec4 vSnapProjected[num_snapshots];
 varying float vSnapProjectedDistance[num_snapshots];
 #endif
 
-varying float	vOpacity;
 varying vec3	vColor;
 varying float	vLinearDepth;
 varying float	vLogDepth;
@@ -470,9 +469,11 @@ float getPointSize(){
 	#if defined fixed_point_size
 		pointSize = size;
 	#elif defined attenuated_point_size
-		pointSize = size;
-		if(!useOrthographicCamera)
+		if(useOrthographicCamera){
+			pointSize = size;
+		}else{
 			pointSize = pointSize * projFactor;
+		}
 	#elif defined adaptive_point_size
 		if(useOrthographicCamera) {
 			pointSize = size * r / (orthoRange * pow(2.0, getLOD())) * uScreenWidth;
@@ -542,7 +543,6 @@ void main() {
 	vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
 	vViewPosition = mvPosition.xyz;
 	gl_Position = projectionMatrix * mvPosition;
-	vOpacity = opacity;
 	vLinearDepth = gl_Position.w;
 	vLogDepth = log2(-mvPosition.z);
 

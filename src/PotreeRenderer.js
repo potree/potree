@@ -727,10 +727,12 @@ Potree.Renderer = class Renderer {
 
 				let numSnapshots = material.snapEnabled ? material.numSnapshots : 0;
 				let numClipBoxes = (material.clipBoxes && material.clipBoxes.length) ? material.clipBoxes.length : 0;
+				let numClipPolygons = (material.clipPolygons && material.clipPolygons.length) ? material.clipPolygons.length : 0;
 				let defines = [
 					`#define num_shadowmaps ${shadowMaps.length}`,
 					`#define num_snapshots ${numSnapshots}`,
 					`#define num_clipboxes ${numClipBoxes}`,
+					`#define num_clippolygons ${numClipPolygons}`,
 				];
 
 				//vs = `#define num_shadowmaps ${shadowMaps.length}\n` + vs;
@@ -800,18 +802,40 @@ Potree.Renderer = class Renderer {
 			shader.setUniform("useOrthographicCamera", material.useOrthographicCamera);
 			shader.setUniform("orthoRange", material.orthoRange);
 
+			shader.setUniform1i("clipMode", material.clipMode);
+
 			if (material.clipBoxes && material.clipBoxes.length > 0) {
-				shader.setUniform1i("clipMode", material.clipMode);
+				
 				let flattenedMatrices = [].concat(...material.clipBoxes.map(c => c.inverse.elements));
 
 				const lClipBoxes = shader.uniformLocations["clipBoxes[0]"];
 				gl.uniformMatrix4fv(lClipBoxes, false, flattenedMatrices);
 			}
 
-			//uniform int clipPolygonCount;
-			//uniform int clipPolygonVCount[max_clip_polygons];
-			//uniform vec3 clipPolygons[max_clip_polygons * 8];
-			//uniform mat4 clipPolygonVP[max_clip_polygons];
+			if(material.clipPolygons && material.clipPolygons.length > 0){
+				let clipPolygonVCount = material.clipPolygons.map(p => p.polygon.length);
+				let flattenedMatrices = [].concat(...material.clipPolygons.map(c => c.view.elements));
+
+				let flattenedVertices = new Array(8 * 3 * material.clipPolygons.length);
+				for(let i = 0; i < material.clipPolygons.length; i++){
+					let polygon = material.clipPolygons[i];
+					for(let j = 0; j < polygon.polygon.length; j++){
+						flattenedVertices[i * 24 + (j * 3 + 0)] = polygon.polygon[j].x;
+						flattenedVertices[i * 24 + (j * 3 + 1)] = polygon.polygon[j].y;
+						flattenedVertices[i * 24 + (j * 3 + 2)] = polygon.polygon[j].z;
+					}
+				}
+
+				const lClipPolygonVCount = shader.uniformLocations["uClipPolygonVCount[0]"];
+				gl.uniform1iv(lClipPolygonVCount, clipPolygonVCount);
+
+				const lClipPolygonVP = shader.uniformLocations["uClipPolygonVP[0]"];
+				gl.uniformMatrix4fv(lClipPolygonVP, false, flattenedMatrices);
+
+				const lClipPolygons = shader.uniformLocations["uClipPolygonVertices[0]"];
+				gl.uniform3fv(lClipPolygons, flattenedVertices);
+
+			}
 
 			shader.setUniform1f("size", material.size);
 			shader.setUniform1f("maxSize", 50);

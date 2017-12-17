@@ -34,14 +34,14 @@ uniform int clipMode;
 #endif
 
 #if defined(num_clippolygons) && num_clippolygons > 0
-uniform int clipPolygonVCount[num_clippolygons];
-uniform vec3 clipPolygons[num_clippolygons * 8];
-uniform mat4 clipPolygonVP[num_clippolygons];
+	uniform int uClipPolygonVCount[num_clippolygons];
+	uniform vec3 uClipPolygonVertices[num_clippolygons * 8];
+	uniform mat4 uClipPolygonVP[num_clippolygons];
 #endif
 
-uniform float size;				// pixel size factor
-uniform float minSize;			// minimum pixel size
-uniform float maxSize;			// maximum pixel size
+uniform float size;
+uniform float minSize;
+uniform float maxSize;
 
 uniform float uPCIndex;
 uniform float uOctreeSpacing;
@@ -472,18 +472,18 @@ vec3 getCompositeColor(){
 
 #if defined(num_clippolygons) && num_clippolygons > 0
 bool pointInClipPolygon(vec3 point, int polyIdx) {
-	vec4 screenClipPos = clipPolygonVP[polyIdx] * modelMatrix * vec4(point, 1.0);
+	vec4 screenClipPos = uClipPolygonVP[polyIdx] * modelMatrix * vec4(point, 1.0);
 	screenClipPos.xy = screenClipPos.xy / screenClipPos.w * 0.5 + 0.5;
 
-	int j = clipPolygonVCount[polyIdx] - 1;
+	int j = uClipPolygonVCount[polyIdx] - 1;
 	bool c = false;
 	for(int i = 0; i < 8; i++) {
-		if(i == clipPolygonVCount[polyIdx]) {
+		if(i == uClipPolygonVCount[polyIdx]) {
 			break;
 		}
 
-		vec4 verti = clipPolygonVP[polyIdx] * vec4(clipPolygons[polyIdx * 8 + i], 1);
-		vec4 vertj = clipPolygonVP[polyIdx] * vec4(clipPolygons[polyIdx * 8 + j], 1);
+		vec4 verti = uClipPolygonVP[polyIdx] * vec4(uClipPolygonVertices[polyIdx * 8 + i], 1);
+		vec4 vertj = uClipPolygonVP[polyIdx] * vec4(uClipPolygonVertices[polyIdx * 8 + j], 1);
 		verti.xy = verti.xy / verti.w * 0.5 + 0.5;
 		vertj.xy = vertj.xy / vertj.w * 0.5 + 0.5;
 		if( ((verti.y > screenClipPos.y) != (vertj.y > screenClipPos.y)) && 
@@ -612,6 +612,8 @@ void doClipping(){
 	#endif
 
 	#if defined(num_clippolygons) && num_clippolygons > 0
+
+	
 		if(clipMode != 0) {
 			bool polyInsideAny = false;
 			for(int i = 0; i < num_clippolygons; i++) {
@@ -662,10 +664,10 @@ void main() {
 
 	
 	
-	
 
 
 	
+
 	#if defined(num_snapshots) && num_snapshots > 0
 
 		for(int i = 0; i < num_snapshots; i++){

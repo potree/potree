@@ -61,6 +61,15 @@ module.exports = class Shader {
 			this.fs = gl.createShader(gl.FRAGMENT_SHADER);
 			this.program = gl.createProgram();
 
+			gl.bindAttribLocation(this.program, 0, 'position');
+			gl.bindAttribLocation(this.program, 1, 'color');
+			gl.bindAttribLocation(this.program, 2, 'intensity');
+			gl.bindAttribLocation(this.program, 3, 'classification');
+			gl.bindAttribLocation(this.program, 4, 'returnNumber');
+			gl.bindAttribLocation(this.program, 5, 'numberOfReturns');
+			gl.bindAttribLocation(this.program, 6, 'pointSourceID');
+			gl.bindAttribLocation(this.program, 7, 'index');
+
 			this.compileShader(this.vs, this.vsSource);
 			this.compileShader(this.fs, this.fsSource);
 			let program = this.program;

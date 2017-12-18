@@ -41,7 +41,7 @@ module.exports = class Renderer {
 			gl.vertexAttribPointer(i, numElements, type, normalized, stride, offset);
 			gl.enableVertexAttribArray(i);
 
-			offset += attribute.bytes;
+			offset += Math.ceil(attribute.bytes / 4) * 4;
 			i++;
 		}
 
@@ -183,13 +183,13 @@ module.exports = class Renderer {
 		// 	if(!["r", "r2", "r0"].includes(node.name)){
 		// 		continue;
 		// 	}
-		// 
+		//
 		// nodes = nodes.filter(node => {
-		// 	//return ["r", 
-		// 	//	"r3", "r1", "r0", "r2", 
+		// 	//return ["r",
+		// 	//	"r3", "r1", "r0", "r2",
 		// 	//	"r30", "r21", "r03", "r02", "r01", "r12", "r20", "r15", "r05", "r14", "r00", "r10", "r04"].includes(node.name)
-		// 
-		// 	return ["r", 
+		//
+		// 	return ["r",
 		// 		"r06", "r07"].includes(node.name)
 		// });
 
@@ -315,6 +315,10 @@ module.exports = class Renderer {
 			// uniform float intensityGamma;
 			// uniform float intensityContrast;
 			// uniform float intensityBrightness;
+			shader.setUniform1f('intensityGamma', material.intensityGamma);
+			shader.setUniform1f('intensityContrast', material.intensityContrast);
+			shader.setUniform1f('intensityBrightness', material.intensityBrightness);
+
 			shader.setUniform1f('rgbGamma', material.rgbGamma);
 			shader.setUniform1f('rgbContrast', material.rgbContrast);
 			shader.setUniform1f('rgbBrightness', material.rgbBrightness);
@@ -394,14 +398,14 @@ module.exports = class Renderer {
 			}
 		}
 
-		gl.bindAttribLocation(shader.program, 0, 'position');
-		gl.bindAttribLocation(shader.program, 1, 'color');
-		gl.bindAttribLocation(shader.program, 2, 'intensity');
-		gl.bindAttribLocation(shader.program, 3, 'classification');
-		gl.bindAttribLocation(shader.program, 4, 'returnNumber');
-		gl.bindAttribLocation(shader.program, 5, 'numberOfReturns');
-		gl.bindAttribLocation(shader.program, 6, 'pointSourceID');
-		gl.bindAttribLocation(shader.program, 7, 'index');
+		// gl.bindAttribLocation(shader.program, 0, 'position');
+		// gl.bindAttribLocation(shader.program, 1, 'color');
+		// gl.bindAttribLocation(shader.program, 2, 'intensity');
+		// gl.bindAttribLocation(shader.program, 3, 'classification');
+		// gl.bindAttribLocation(shader.program, 4, 'returnNumber');
+		// gl.bindAttribLocation(shader.program, 5, 'numberOfReturns');
+		// gl.bindAttribLocation(shader.program, 6, 'pointSourceID');
+		// gl.bindAttribLocation(shader.program, 7, 'index');
 
 		this.renderNodes(octree, nodes, visibilityTextureData, camera, target, shader, params);
 

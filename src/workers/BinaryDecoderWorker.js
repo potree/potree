@@ -53,8 +53,8 @@ self.onmessage = function (event) {
 		.filter(ia => ia != null);
 	iAttributes.push(new InterleavedBufferAttribute('index', 4, 4, 'UNSIGNED_BYTE', true));
 	let iStride = iAttributes.reduce((a, att) => a + att.bytes, 0);
+	iStride = Math.ceil(iStride / 4) * 4; // round to nearest multiple of 4
 	let iData = new ArrayBuffer(numPoints * iStride);
-	// let iBuffer = new InterleavedBuffer(iData, iAttributes);
 	let iView = new DataView(iData);
 
 	let inOffset = 0;
@@ -223,7 +223,7 @@ self.onmessage = function (event) {
 		}
 
 		inOffset += pointAttribute.byteSize;
-		outOffset += iAttribute.bytes;
+		outOffset += Math.ceil(iAttribute.bytes / 4) * 4;
 	}
 
 	{ // add indices

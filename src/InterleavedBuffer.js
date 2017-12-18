@@ -3,6 +3,7 @@ module.exports = class InterleavedBuffer {
 		this.data = data;
 		this.attributes = attributes;
 		this.stride = attributes.reduce((a, att) => a + att.bytes, 0);
+		this.stride = Math.ceil(this.stride / 4) * 4;
 		this.numElements = numElements;
 	}
 

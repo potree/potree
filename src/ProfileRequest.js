@@ -20,7 +20,7 @@ class ProfileRequest {
 	}
 
 	initialize () {
-		this.priorityQueue.push({node: this.pointcloud.pcoGeometry.root, weight: 1});
+		this.priorityQueue.push({node: this.pointcloud.pcoGeometry.root, weight: Infinity});
 		this.traverse(this.pointcloud.pcoGeometry.root);
 	};
 
@@ -64,6 +64,10 @@ class ProfileRequest {
 		for (let i = 0; i < Math.min(maxNodesPerUpdate, this.priorityQueue.size()); i++) {
 			let element = this.priorityQueue.pop();
 			let node = element.node;
+
+			if (node.level > this.maxDepth) {
+				continue;
+			}
 
 			if (node.loaded) {
 				// add points to result
@@ -233,7 +237,8 @@ class ProfileRequest {
 			return;
 		}
 
-		this.maxDepth = this.highestLevelServed + 1;
+		this.maxDepth = this.highestLevelServed;
+
 		this.cancelRequested = true;
 
 		console.log(`maxDepth: ${this.maxDepth}`);

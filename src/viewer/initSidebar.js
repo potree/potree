@@ -196,6 +196,30 @@ module.exports = (viewer) => {
 			});
 		});
 
+		let languages = [
+			['EN', 'en'],
+			['FR', 'fr'],
+			['DE', 'de'],
+			['JP', 'jp']
+		];
+
+		let elLanguages = $('#potree_languages');
+		for (let i = 0; i < languages.length; i++) {
+			let [key, value] = languages[i];
+			let element = $(`<a>${key}</a>`);
+			element.click(() => viewer.setLanguage(value));
+
+			if (i === 0) {
+				element.css('margin-left', '30px');
+			}
+
+			elLanguages.append(element);
+
+			if (i < languages.length - 1) {
+				elLanguages.append($(document.createTextNode(' - ')));
+			}
+		}
+
 		// to close all, call
 		// $(".accordion > div").hide()
 
@@ -285,6 +309,14 @@ module.exports = (viewer) => {
 		$('#lblEDLStrength')[0].innerHTML = viewer.getEDLStrength().toFixed(1);
 		$('#chkEDLEnabled')[0].checked = viewer.getEDLEnabled();
 		$("input[name=background][value='" + viewer.getBackground() + "']").prop('checked', true);
+
+		$('input[name=background]').click(function () {
+			viewer.setBackground(this.value);
+		});
+
+		$('#chkEDLEnabled').click(() => {
+			viewer.setEDLEnabled($('#chkEDLEnabled').prop('checked'));
+		});
 	}
 
 	function initNavigation () {
@@ -3033,9 +3065,13 @@ module.exports = (viewer) => {
 			}
 		});
 
-		// viewer.addEventListener('clip_mode_changed', e => {
-		// 	// TODO: Unused: let string = toClipModeString(viewer.clipMode);
-		// });
+		$('#show_bounding_box').click(() => {
+			viewer.setShowBoundingBox(this.checked);
+		});
+
+		$('#set_freeze').click(function () {
+			viewer.setFreeze(this.checked);
+		});
 	};
 
 	initAccordion();

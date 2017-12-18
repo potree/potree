@@ -50,8 +50,8 @@ class EDLRenderer {
 
 	resize () {
 		const viewer = this.viewer;
-		let width = this.viewer.scaleFactor * this.viewer.renderArea.clientWidth;
-		let height = this.viewer.scaleFactor * this.viewer.renderArea.clientHeight;
+		let width = viewer.scaleFactor * viewer.renderArea.clientWidth;
+		let height = viewer.scaleFactor * viewer.renderArea.clientHeight;
 		let aspect = width / height;
 
 		viewer.scene.cameraP.aspect = aspect;

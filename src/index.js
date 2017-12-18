@@ -13,7 +13,7 @@ window.HoverMenu = require('./stuff/HoverMenu');
 // THREE & proj4 used to be exposed, it still is
 window.proj4 = require('proj4');
 window.THREE = require('three');
-window.ProfilePointCloud = require('./ProfilePointCloud');
+window.ProfilePointCloudEntry = require('./ProfilePointCloudEntry');
 window.RepRenderer = require('./viewer/RepRenderer');
 window.RepSnapshot = require('./viewer/RepSnapshot');
 require('three-ply-loader')(window.THREE);

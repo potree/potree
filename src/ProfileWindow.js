@@ -9,6 +9,7 @@ const addCommas = require('./utils/addCommas');
 const Points = require('./Points');
 const CSVExporter = require('./exporter/CSVExporter');
 const LASExporter = require('./exporter/LASExporter');
+const ProfilePointCloudEntry = require('./ProfilePointCloudEntry');
 
 class ProfileWindow extends THREE.EventDispatcher {
 	constructor () {
@@ -210,20 +211,6 @@ class ProfileWindow extends THREE.EventDispatcher {
 
 			let uri = 'data:application/octet-stream;base64,' + btoa(binString);
 			$('#potree_download_profile_link').attr('href', uri);
-
-			// let uri = "data:application/octet-stream;base64,"+btoa(string);
-			// $('#potree_download_profile_ortho_link').attr("href", uri);
-
-			// let las = viewer.profileWindow.getPointsInProfileAsLas();
-			// let u8view = new Uint8Array(las);
-			//
-			// let binString = "";
-			// for(let i = 0; i < u8view.length; i++){
-			//	binString += String.fromCharCode(u8view[i]);
-			// }
-			//
-			// let uri = "data:application/octet-stream;base64,"+btoa(binString);
-			// $('#potree_download_profile_link').attr("href", uri);
 		});
 	}
 
@@ -295,13 +282,10 @@ class ProfileWindow extends THREE.EventDispatcher {
 
 		this.scene = new THREE.Scene();
 
-		// this.model = new THREE.Points(this.geometry, this.material);
-		// this.scene.add(model);
-
 		let sg = new THREE.SphereGeometry(1, 16, 16);
 		let sm = new THREE.MeshNormalMaterial();
 		this.pickSphere = new THREE.Mesh(sg, sm);
-		this.pickSphere.visible = false;
+		// this.pickSphere.visible = false;
 		this.scene.add(this.pickSphere);
 	}
 
@@ -349,95 +333,51 @@ class ProfileWindow extends THREE.EventDispatcher {
 	}
 
 	addPoints (pointcloud, points) {
-		console.log(pointcloud);
-		console.log(points);
+		let entry = this.pointclouds.get(pointcloud);
+		if (!entry) {
+			entry = new ProfilePointCloudEntry();
+			this.pointclouds.set(pointcloud, entry);
 
-		return;
-
-		let pc = this.pointclouds.get(pointcloud);
-		pc.points.add(points);
-
-		// rebuild 3d model
-		let projectedBox = new THREE.Box3();
-		{
-			let geometry = pc.geometry;
-
-			for (let attribute of Object.keys(pc.points.data)) {
-				let buffer = pc.points.data[attribute];
-
-				if (attribute === 'position') {
-					let posBuffer = new Float32Array(buffer.length);
-
-					for (let i = 0; i < pc.points.numPoints; i++) {
-						let x = pc.points.data.mileage[i];
-						let y = buffer[3 * i + 2];
-
-						posBuffer[3 * i + 0] = x;
-						posBuffer[3 * i + 1] = y;
-						posBuffer[3 * i + 2] = y;
-						projectedBox.expandByPoint(new THREE.Vector3(x, y, 0));
-					}
-
-					if (!posBuffer) {
-						console.log('wtf');
-					}
-
-					geometry.attributes[attribute].array.set(posBuffer);
-				} else if (attribute === 'color') {
-					geometry.attributes[attribute].array.set(buffer);
-				} else if (attribute === 'mileage') {
-					continue;
-				} else if (geometry.attributes[attribute] === undefined) {
-					continue;
-				} else {
-					geometry.attributes[attribute].array.set(buffer);
-				}
-
-				geometry.attributes[attribute].needsUpdate = true;
-				geometry.setDrawRange(0, pc.points.numPoints);
-			}
-
-			let radius = pc.points.boundingBox.getSize().toArray().reduce((a, v) => Math.max(a, v));
-			geometry.boundingSphere = new THREE.Sphere(this.camera.position, radius);
-			geometry.boundingBox = geometry.boundingSphere.getBoundingBox();
+			let materialChanged = () => this.render();
+			pointcloud.material.addEventListener('material_property_changed', materialChanged);
+			this.addEventListener('on_reset_once', () => {
+				pointcloud.material.removeEventListener('material_property_changed', materialChanged);
+			});
 		}
 
-		this.projectedBox.union(projectedBox);
+		entry.addPoints(points);
+		this.scene.add(entry.sceneNode);
 
-		if (this.autoFit) { // SCALE
+		if (this.autoFit) {
 			let width = this.renderArea[0].clientWidth;
 			let height = this.renderArea[0].clientHeight;
 
-			let size = this.projectedBox.getSize();
+			let size = entry.projectedBox.getSize();
 
 			let sx = width / size.x;
 			let sy = height / size.y;
 			let scale = Math.min(sx, sy);
 
-			let center = this.projectedBox.getCenter();
+			let center = entry.projectedBox.getCenter();
 			this.scale.set(scale, scale, 1);
 			this.camera.position.copy(center);
 		}
 
-		let numPoints = 0;
-		for (let entry of this.pointclouds.entries()) {
-			numPoints += entry[1].points.numPoints;
-
-			$(`#profile_num_points`).html(addCommas(numPoints));
-		}
-
 		this.render();
+
+		let numPoints = 0;
+		for (let [key, value] of this.pointclouds.entries()) { // eslint-disable-line no-unused-vars
+			numPoints += value.points.reduce((a, i) => a + i.numPoints, 0);
+		}
+		$(`#profile_num_points`).html(addCommas(numPoints));
 	}
 
 	reset () {
+		this.dispatchEvent({type: 'on_reset_once'});
+		this.removeEventListeners('on_reset_once');
+
 		this.autoFit = true;
 		this.projectedBox = new THREE.Box3();
-
-		// for (let entry of this.pointclouds) {
-		//	for (let listener of entry[1].listeners) {
-		//		listener.target.removeEventListener(listener.type, listener.callback);
-		//	}
-		// }
 
 		this.pointclouds.clear();
 		this.mouseIsDown = false;
@@ -447,7 +387,11 @@ class ProfileWindow extends THREE.EventDispatcher {
 
 		this.scene.children
 			.filter(c => c instanceof THREE.Points)
-			.forEach(c => this.scene.remove(c));
+			.forEach(c => {
+				this.scene.remove(c);
+				c.geometry.dispose();
+				c.material.dispose();
+			});
 
 		this.elRoot.find('#profileSelectionProperties').hide();
 
@@ -496,9 +440,8 @@ class ProfileWindow extends THREE.EventDispatcher {
 			this.pickSphere.scale.set(radius, radius, radius);
 			this.pickSphere.position.z = this.camera.far - radius;
 
-			for (let entry of this.pointclouds) {
-				let pointcloud = entry[0];
-				let material = entry[1].material;
+			for (let [pointcloud, entry] of this.pointclouds) {
+				let material = entry.sceneNode.material;
 
 				material.pointColorType = pointcloud.material.pointColorType;
 				material.uniforms.intensityRange.value = pointcloud.material.uniforms.intensityRange.value;
@@ -512,6 +455,8 @@ class ProfileWindow extends THREE.EventDispatcher {
 				material.intensityContrast = pointcloud.material.intensityContrast;
 				material.intensityBrightness = pointcloud.material.intensityBrightness;
 			}
+
+			this.pickSphere.visible = false;
 
 			this.renderer.setSize(width, height);
 

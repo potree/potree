@@ -146,7 +146,6 @@ Potree.PointCloudArena4DNode = require('./arena4d/PointCloudArena4DNode');
 Potree.PointCloudArena4D = require('./arena4d/PointCloudArena4D');
 Potree.PointCloudArena4DGeometryNode = require('./arena4d/PointCloudArena4DGeometryNode');
 Potree.PointCloudArena4DGeometry = require('./arena4d/PointCloudArena4DGeometry');
-Potree.ProgressBar = require('./viewer/ProgressBar');
 Potree.View = require('./viewer/View');
 Potree.Scene = require('./viewer/Scene');
 Potree.Viewer = require('./viewer/Viewer');
@@ -172,5 +171,7 @@ Potree.InterleavedBufferAttribute = require('./InterleavedBufferAttribute');
 Potree.toInterleavedBufferAttribute = require('./utils/toInterleavedBufferAttribute');
 Potree.PointCloudSM = require('./utils/PointCloudSM');
 Potree.PathAnimation = require('./PathAnimation');
+Potree.updateVisibilityStructures = require('./utils/updateVisibilityStructures');
+Potree.attributeLocations = require('./attributeLocations');
 
 module.exports = Potree;

@@ -6,6 +6,7 @@ const WebGLTexture = require('./webgl/WebGLTexture');
 const PointSizeType = require('./materials/PointSizeType');
 const PointColorType = require('./materials/PointColorType');
 const context = require('./context');
+const attributeLocations = require('./attributeLocations');
 
 module.exports = class Renderer {
 	constructor (threeRenderer) {
@@ -31,18 +32,17 @@ module.exports = class Renderer {
 		gl.bufferData(gl.ARRAY_BUFFER, iBuffer.data, gl.STATIC_DRAW);
 
 		let offset = 0;
-		let i = 0;
 		for (let attribute of iBuffer.attributes) {
 			let type = gl[attribute.type];
 			let normalized = attribute.normalized;
 			let stride = iBuffer.stride;
 			let numElements = attribute.numElements;
 
-			gl.vertexAttribPointer(i, numElements, type, normalized, stride, offset);
-			gl.enableVertexAttribArray(i);
+			let location = attributeLocations[attribute.name];
+			gl.vertexAttribPointer(location, numElements, type, normalized, stride, offset);
+			gl.enableVertexAttribArray(location);
 
 			offset += Math.ceil(attribute.bytes / 4) * 4;
-			i++;
 		}
 
 		gl.bindVertexArray(null);
@@ -90,7 +90,6 @@ module.exports = class Renderer {
 
 			if (visibilityTextureData) {
 				let vnStart = visibilityTextureData.offsets.get(node);
-				shader.setUniform1f('vnStart', vnStart);
 				shader.setUniform1f('uVNStart', vnStart);
 			}
 
@@ -98,14 +97,12 @@ module.exports = class Renderer {
 
 			// TODO consider passing matrices in an array to avoid uniformMatrix4fv overhead
 			const lModel = shader.uniformLocations['modelMatrix'];
-			gl.uniformMatrix4fv(lModel, false, world.elements);
 			if (lModel) {
 				mat4holder.set(world.elements);
 				gl.uniformMatrix4fv(lModel, false, mat4holder);
 			}
 
 			const lModelView = shader.uniformLocations['modelViewMatrix'];
-			gl.uniformMatrix4fv(lModelView, false, worldView.elements);
 			mat4holder.set(worldView.elements);
 			gl.uniformMatrix4fv(lModelView, false, mat4holder);
 
@@ -116,6 +113,8 @@ module.exports = class Renderer {
 
 			if (shadowMaps.length > 0) {
 				const lShadowMap = shader.uniformLocations['uShadowMap[0]'];
+
+				shader.setUniform3f('uShadowColor', octree.material.uniforms.uShadowColor.value);
 
 				let bindingStart = 5;
 				let bindingPoints = new Array(shadowMaps.length).fill(bindingStart).map((a, i) => (a + i));
@@ -216,7 +215,7 @@ module.exports = class Renderer {
 
 			shader = this.shaders.get(material);
 
-			// if (material.needsUpdate) {
+			// if (material.needsUpdate){
 			{
 				let [vs, fs] = [material.vertexShader, material.fragmentShader];
 
@@ -265,6 +264,17 @@ module.exports = class Renderer {
 
 		gl.useProgram(shader.program);
 
+		if (material.opacity < 1) {
+			gl.enable(gl.BLEND);
+			gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+			gl.depthMask(false);
+			gl.disable(gl.DEPTH_TEST);
+		} else {
+			gl.disable(gl.BLEND);
+			gl.depthMask(true);
+			gl.enable(gl.DEPTH_TEST);
+		}
+
 		{ // UPDATE UNIFORMS
 			shader.setUniformMatrix4('projectionMatrix', proj);
 			shader.setUniformMatrix4('viewMatrix', view);
@@ -278,7 +288,7 @@ module.exports = class Renderer {
 			shader.setUniform1f('far', camera.far);
 
 			shader.setUniform('useOrthographicCamera', material.useOrthographicCamera);
-			// uniform float orthoRange;
+			shader.setUniform('orthoRange', material.orthoRange);
 
 			if (material.clipBoxes && material.clipBoxes.length > 0) {
 				shader.setUniform1i('clipMode', material.clipMode);
@@ -287,12 +297,6 @@ module.exports = class Renderer {
 				const lClipBoxes = shader.uniformLocations['clipBoxes[0]'];
 				gl.uniformMatrix4fv(lClipBoxes, false, flattenedMatrices);
 			}
-
-			// uniform int clipMode;
-			// #if defined use_clip_box
-			//	uniform float clipBoxCount;
-			//	uniform mat4 clipBoxes[max_clip_boxes];
-			// #endif
 
 			// uniform int clipPolygonCount;
 			// uniform int clipPolygonVCount[max_clip_polygons];
@@ -309,6 +313,7 @@ module.exports = class Renderer {
 
 			// uniform vec3 uColor;
 			// uniform float opacity;
+			shader.setUniform1f('uOpacity', material.opacity);
 
 			shader.setUniform2f('elevationRange', material.elevationRange);
 			shader.setUniform2f('intensityRange', material.intensityRange);
@@ -339,6 +344,11 @@ module.exports = class Renderer {
 			shader.setUniform1i('gradient', 1);
 			gl.activeTexture(gl.TEXTURE1);
 			gl.bindTexture(gradientTexture.target, gradientTexture.id);
+
+			let classificationTexture = this.textures.get(material.classificationTexture);
+			shader.setUniform1i('classificationLUT', 2);
+			gl.activeTexture(gl.TEXTURE2);
+			gl.bindTexture(classificationTexture.target, classificationTexture.id);
 
 			if (material.snapEnabled === true) {
 				{

@@ -69,12 +69,6 @@ module.exports = class WebGLTexture {
 				internalFormat, srcType, data);
 		}
 
-		gl.texParameteri(this.target, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-		gl.texParameteri(this.target, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
-		gl.texParameteri(this.target, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-		gl.texParameteri(this.target, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-
 		gl.bindTexture(this.target, null);
 
 		this.version = texture.version;

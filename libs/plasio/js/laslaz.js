@@ -359,33 +359,33 @@ const context = require('../../../src/context');
 	// NACL Module support
 	// Called by the common.js module.
 	//
-	window.startNaCl = function(name, tc, config, width, height) {
-		// check browser support for nacl
-		//
-		if(!common.browserSupportsNaCl()) {
-			return $.event.trigger({
-				type: "plasio.nacl.error",
-				message: "NaCl support is not available"
-			});
-		}
-
-		navigator.webkitPersistentStorage.requestQuota(2048 * 2048, function(bytes) {
-			common.updateStatus(
-				'Allocated ' + bytes + ' bytes of persistant storage.');
-				common.attachDefaultListeners();
-				common.createNaClModule(name, tc, config, width, height);
-		},
-		function(e) {
-			$.event.trigger({
-				type: "plasio.nacl.error",
-				message: "Could not allocate persistant storage"
-			});
-		});
-
-		$(document).on("plasio.nacl.available", function() {
-			scope.LASModuleWasLoaded = true;
-		});
-	};
+	// window.startNaCl = function(name, tc, config, width, height) {
+	// 	// check browser support for nacl
+	// 	//
+	// 	if(!common.browserSupportsNaCl()) {
+	// 		return $.event.trigger({
+	// 			type: "plasio.nacl.error",
+	// 			message: "NaCl support is not available"
+	// 		});
+	// 	}
+	//
+	// 	navigator.webkitPersistentStorage.requestQuota(2048 * 2048, function(bytes) {
+	// 		common.updateStatus(
+	// 			'Allocated ' + bytes + ' bytes of persistant storage.');
+	// 			common.attachDefaultListeners();
+	// 			common.createNaClModule(name, tc, config, width, height);
+	// 	},
+	// 	function(e) {
+	// 		$.event.trigger({
+	// 			type: "plasio.nacl.error",
+	// 			message: "Could not allocate persistant storage"
+	// 		});
+	// 	});
+	//
+	// 	$(document).on("plasio.nacl.available", function() {
+	// 		scope.LASModuleWasLoaded = true;
+	// 	});
+	// };
 
 	scope.LAZLoader = LAZLoader;
 	scope.LASLoader = LASLoader;

@@ -111,10 +111,11 @@ class EDLRenderer {
 		GLQueries.forGL(viewer.renderer.getContext()).end(querySkybox);
 
 		// TODO adapt to multiple lights
-		if (lights.length > 0) {
+		if (lights.length > 0 && !(lights[0].disableShadowUpdates)) {
+			let light = lights[0];
 			let queryShadows = GLQueries.forGL(viewer.renderer.getContext()).start('EDL - shadows');
 
-			this.shadowMap.setLightPos(lights[0].position);
+			this.shadowMap.setLightPos(light.position);
 
 			for (let octree of viewer.scene.pointclouds) {
 				this.shadowMap.renderOctree(octree, octree.visibleNodes);

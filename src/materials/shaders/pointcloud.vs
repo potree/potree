@@ -69,6 +69,7 @@ uniform float wClassification;
 uniform float wReturnNumber;
 uniform float wSourceID;
 
+uniform vec3 uShadowColor;
 
 uniform sampler2D visibleNodes;
 uniform sampler2D gradient;
@@ -177,7 +178,7 @@ float getLOD(){
 }
 
 float getPointSizeAttenuation(){
-	return pow(1.9, getLOD());
+	return pow(2.0, getLOD());
 }
 
 
@@ -609,7 +610,7 @@ void main() {
 			float visible_samples = 0.0;
 			float sumSamples = 0.0;
 
-			float bias = uSpacing / pow(2.0, getLOD());
+			float bias = vRadius;
 			for(int j = 0; j < 9; j++){
 				float sm_depth = sm_far * texture2D(uShadowMap[j], uv + sampleLocations[j]).r + sm_near;
 
@@ -623,7 +624,7 @@ void main() {
 			float coverage = 1.0 - visible_samples / sumSamples;
 			float shade = coverage * 0.5 + 0.5;
 
-			vColor = vColor * shade;
+			vColor = vColor * shade + uShadowColor * (1.0 - shade);
 		}
 
 	#endif

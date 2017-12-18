@@ -2,6 +2,7 @@ const ProfileData = require('./ProfileData');
 const context = require('./context');
 const Points = require('./Points');
 const BinaryHeap = require('./utils/BinaryHeap');
+const Box3Helper = require('./utils/Box3Helper');
 const THREE = require('three');
 
 class ProfileRequest {
@@ -124,6 +125,14 @@ class ProfileRequest {
 					continue;
 				}
 
+				{ // DEBUG
+					let boxHelper = new Box3Helper(node.getBoundingBox());
+					boxHelper.matrixAutoUpdate = false;
+					// TODO: viewer does not exist in this branch!
+					// boxHelper.matrix.copy(viewer.scene.pointclouds[0].matrixWorld);
+					// viewer.scene.scene.add(boxHelper);
+				}
+
 				let sv = new THREE.Vector3().subVectors(segment.end, segment.start).setZ(0);
 				let segmentDir = sv.clone().normalize();
 
@@ -220,6 +229,8 @@ class ProfileRequest {
 
 				points.data['mileage'] = new Float64Array(mileage);
 				points.numPoints = accepted.length;
+
+				// console.log(`getPointsInsideProfile - ${node.name} - accepted: ${accepted.length}`);
 
 				segment.points.add(points);
 			}

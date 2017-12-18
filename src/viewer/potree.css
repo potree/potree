@@ -115,6 +115,7 @@
 
 #potree_render_area{
 	position: 	absolute;
+	background: linear-gradient(-90deg, red, yellow);
 	top: 		0px;
 	bottom: 	0px;
 	left: 		0px;

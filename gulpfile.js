@@ -105,7 +105,8 @@ const through = require('through');
 		perfectScrollbar: {source: '**/*', target: 'build/deps/perfect-scrollbar', cwd: 'node_modules/perfect-scrollbar'},
 		spectrumColorpicker: {source: '**/*', target: 'build/deps/spectrum-colorpicker', cwd: 'node_modules/spectrum-colorpicker'},
 		i18nextClient: {source: '**/*', target: 'build/deps/i18next-client', cwd: 'node_modules/i18next-client'},
-		openlayers: {source: '**/*', target: 'build/deps/openlayers', cwd: 'node_modules/openlayers'}
+		openlayers: {source: '**/*', target: 'build/deps/openlayers', cwd: 'node_modules/openlayers'},
+		cesium: {source: '**/*', target: 'build/deps/cesium', cwd: 'node_modules/cesium/Build/Cesium'}
 	};
 	const mappings = {};
 	const minimatch = require('minimatch');

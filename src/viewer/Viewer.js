@@ -42,7 +42,7 @@ const Renderer = require('../Renderer');
 const RepRenderer = require('./RepRenderer');
 
 class PotreeViewer extends THREE.EventDispatcher {
-	constructor (domElement, args) {
+	constructor (domElement, args = {}) {
 		super();
 
 		{ // generate missing dom hierarchy
@@ -63,8 +63,7 @@ class PotreeViewer extends THREE.EventDispatcher {
 			}
 		}
 
-		let a = args || {};
-		this.pointCloudLoadedCallback = a.onPointCloudLoaded || function () {};
+		this.pointCloudLoadedCallback = args.onPointCloudLoaded || function () {};
 
 		this.renderArea = domElement;
 
@@ -211,7 +210,9 @@ class PotreeViewer extends THREE.EventDispatcher {
 		}
 
 		// start rendering!
-		requestAnimationFrame(this.loop.bind(this));
+		if (args.useDefaultRenderLoop === undefined || args.useDefaultRenderLoop === true) {
+			requestAnimationFrame(this.loop.bind(this));
+		}
 
 		this.loadGUI = this.loadGUI.bind(this);
 	}
@@ -932,12 +933,13 @@ class PotreeViewer extends THREE.EventDispatcher {
 		let width = this.renderArea.clientWidth;
 		let height = this.renderArea.clientHeight;
 
-		this.renderer = new THREE.WebGLRenderer({premultipliedAlpha: false});
+		this.renderer = new THREE.WebGLRenderer({alpha: true, premultipliedAlpha: false});
 		this.renderer.sortObjects = false;
 		this.renderer.setSize(width, height);
 		this.renderer.autoClear = false;
 		this.renderArea.appendChild(this.renderer.domElement);
 		this.renderer.domElement.tabIndex = '2222';
+		this.renderer.domElement.style.position = 'absolute';
 		this.renderer.domElement.addEventListener('mousedown', function () {
 			this.renderer.domElement.focus();
 		}.bind(this));
@@ -1049,6 +1051,10 @@ class PotreeViewer extends THREE.EventDispatcher {
 	}
 
 	update (delta, timestamp) {
+		if (context.measureTimings) {
+			performance.mark('update-start');
+		}
+
 		// if(window.urlToggle === undefined){
 		//	window.urlToggle = 0;
 		// }else{
@@ -1172,12 +1178,12 @@ class PotreeViewer extends THREE.EventDispatcher {
 
 		if (!this.freeze) {
 			let result = updatePointClouds(scene.pointclouds, camera, this.renderer);
-			camera.near = result.lowestSpacing * 10.0;
-			camera.far = -this.getBoundingBox().applyMatrix4(camera.matrixWorldInverse).min.z;
-			camera.far = Math.max(camera.far * 1.5, 1000);
-			if (this.scene.cameraMode === CameraMode.ORTHOGRAPHIC) {
-				camera.near = -camera.far;
-			}
+			// camera.near = result.lowestSpacing * 10.0;
+			// camera.far = -this.getBoundingBox().applyMatrix4(camera.matrixWorldInverse).min.z;
+			// camera.far = Math.max(camera.far * 1.5, 1000);
+			// if (this.scene.cameraMode === CameraMode.ORTHOGRAPHIC) {
+			// 	camera.near = -camera.far;
+			// }
 		}
 
 		this.scene.cameraP.fov = this.fov;
@@ -1271,30 +1277,14 @@ class PotreeViewer extends THREE.EventDispatcher {
 			'type': 'update',
 			'delta': delta,
 			'timestamp': timestamp});
-	}
-
-	loop (timestamp) {
-		requestAnimationFrame(this.loop.bind(this));
-
-		// TODO: unused: let queryAll;
-		if (context.measureTimings) {
-			performance.mark('loop-start');
-			// queryAll = GLQueries.forGL(this.renderer.getContext()).start('frame');
-		}
-
-		this.stats.begin();
-
-		if (context.measureTimings) {
-			performance.mark('update-start');
-		}
-
-		this.update(this.clock.getDelta(), timestamp);
 
 		if (context.measureTimings) {
 			performance.mark('update-end');
 			performance.measure('update', 'update-start', 'update-end');
 		}
+	}
 
+	render () {
 		if (context.measureTimings) {
 			performance.mark('render-start');
 		}
@@ -1321,12 +1311,10 @@ class PotreeViewer extends THREE.EventDispatcher {
 		if (context.measureTimings) {
 			performance.mark('render-end');
 			performance.measure('render', 'render-start', 'render-end');
-
-			performance.mark('loop-end');
-			performance.measure('loop', 'loop-start', 'loop-end');
-
-			// GLQueries.forGL(this.renderer.getContext()).end(queryAll);
-
+		}
+	}
+	resolveTimings (timestamp) {
+		if (context.measureTimings) {
 			if (!this.toggle) {
 				this.toggle = timestamp;
 			}
@@ -1421,6 +1409,29 @@ class PotreeViewer extends THREE.EventDispatcher {
 				this.toggle = timestamp;
 			}
 		}
+	}
+
+	loop (timestamp) {
+		requestAnimationFrame(this.loop.bind(this));
+
+		// TODO: unused: let queryAll;
+		if (context.measureTimings) {
+			performance.mark('loop-start');
+			// queryAll = GLQueries.forGL(this.renderer.getContext()).start('frame');
+		}
+
+		this.stats.begin();
+
+		this.update(this.clock.getDelta(), timestamp);
+
+		this.render();
+
+		if (context.measureTimings) {
+			performance.mark('loop-end');
+			performance.measure('loop', 'loop-start', 'loop-end');
+		}
+
+		this.resolveTimings(timestamp);
 
 		this.stats.end();
 

@@ -106,6 +106,9 @@ class EDLRenderer {
 		} else if (viewer.background === 'white') {
 			viewer.renderer.setClearColor(0xFFFFFF, 0);
 			viewer.renderer.clear();
+		} else {
+			viewer.renderer.setClearColor(0xFF0000, 0);
+			viewer.renderer.clear();
 		}
 
 		GLQueries.forGL(viewer.renderer.getContext()).end(querySkybox);

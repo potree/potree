@@ -345,10 +345,10 @@ module.exports = class Renderer {
 			gl.activeTexture(gl.TEXTURE1);
 			gl.bindTexture(gradientTexture.target, gradientTexture.id);
 
-			let classificationTexture = this.textures.get(material.classificationTexture);
-			shader.setUniform1i('classificationLUT', 2);
-			gl.activeTexture(gl.TEXTURE2);
-			gl.bindTexture(classificationTexture.target, classificationTexture.id);
+			// let classificationTexture = this.textures.get(material.classificationTexture);
+			// shader.setUniform1i('classificationLUT', 2);
+			// gl.activeTexture(gl.TEXTURE2);
+			// gl.bindTexture(classificationTexture.target, classificationTexture.id);
 
 			if (material.snapEnabled === true) {
 				{

@@ -96,6 +96,9 @@ class ProfilePointCloudEntry {
 						attribute.updateRange.count = updateRange.count;
 						attribute.needsUpdate = true;
 					}
+					this.currentBatch.geometry.computeBoundingBox();
+					this.currentBatch.geometry.computeBoundingSphere();
+
 					createNewBatch();
 					updateRange = {
 						start: 0,

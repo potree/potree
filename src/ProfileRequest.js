@@ -173,6 +173,23 @@ class ProfileRequest {
 					continue;
 				}
 
+				{ // skip if current node doesn't intersect current segment
+					let bbWorld = node.boundingBox.clone().applyMatrix4(this.pointcloud.matrixWorld);
+					let bsWorld = bbWorld.getBoundingSphere();
+
+					let start = new THREE.Vector3(segment.start.x, segment.start.y, bsWorld.center.z);
+					let end = new THREE.Vector3(segment.end.x, segment.end.y, bsWorld.center.z);
+
+					let closest = new THREE.Line3(start, end).closestPointToPoint(bsWorld.center, true);
+					let distance = closest.distanceTo(bsWorld.center);
+
+					let intersects = (distance < (bsWorld.radius + target.profile.width));
+
+					if(!intersects){
+						continue;
+					}
+				}
+
 				// { // DEBUG
 				// 	let boxHelper = new Box3Helper(node.getBoundingBox());
 				// 	boxHelper.matrixAutoUpdate = false;
@@ -181,14 +198,9 @@ class ProfileRequest {
 				// 	// viewer.scene.scene.add(boxHelper);
 				// }
 
-				// performance.mark('getPointsInsideProfile-10');
-
 				let sv = new THREE.Vector3().subVectors(segment.end, segment.start).setZ(0);
 				let segmentDir = sv.clone().normalize();
 
-				// let accepted = [];
-				// let mileage = [];
-				// let acceptedPositions = [];
 				let points = new Points();
 
 				let nodeMatrix = new THREE.Matrix4().makeTranslation(...node.boundingBox.min.toArray());
@@ -196,19 +208,12 @@ class ProfileRequest {
 				let matrix = new THREE.Matrix4().multiplyMatrices(
 					this.pointcloud.matrixWorld, nodeMatrix);
 
-				// performance.mark('getPointsInsideProfile-20');
-
 				let posOffset = buffer.offset('position');
 				pointsProcessed = pointsProcessed + numPoints;
 
 				let [accepted, mileage, acceptedPositions] = this.getAccepted(numPoints, buffer, posOffset, matrix, segment, segmentDir, points, totalMileage);
 
-				// performance.mark('getPointsInsideProfile-30');
-
 				points.data.position = acceptedPositions;
-				// points.data.color = new Uint8Array(accepted.length * 4).fill(100);
-
-				// performance.mark('getPointsInsideProfile-40');
 
 				let relevantAttributes = buffer.attributes.filter(a => !['position', 'index'].includes(a.name));
 				for (let attribute of relevantAttributes) {
@@ -241,8 +246,6 @@ class ProfileRequest {
 					points.data[attribute.name] = filteredBuffer;
 				}
 
-				// performance.mark("getPointsInsideProfile-50");
-
 				points.data['mileage'] = mileage;
 				points.numPoints = accepted.length;
 
@@ -259,8 +262,8 @@ class ProfileRequest {
 				// 	console.log(measure.name, measure.duration);
 				// }
 
-				performance.clearMarks();
-				performance.clearMeasures();
+				// performance.clearMarks();
+				// performance.clearMeasures();
 
 				segment.points.add(points);
 			}

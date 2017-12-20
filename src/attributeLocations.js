@@ -6,5 +6,6 @@ module.exports = {
 	'returnNumber': 4,
 	'numberOfReturns': 5,
 	'pointSourceID': 6,
-	'index': 7
+	'index': 7,
+	'normal': 8
 };

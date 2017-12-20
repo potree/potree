@@ -6,84 +6,57 @@ class ProfilePointCloudEntry {
 	constructor () {
 		this.points = [];
 
-		let geometry = new THREE.BufferGeometry();
-		// let material = new PointCloudMaterial();
+		// let geometry = new THREE.BufferGeometry();
 		let material = ProfilePointCloudEntry.getMaterialInstance();
 		material.uniforms.minSize.value = 2;
 		material.uniforms.maxSize.value = 2;
 		material.pointColorType = PointColorType.RGB;
 		material.opacity = 1.0;
-		this.sceneNode = new THREE.Points(geometry, material);
+
+		this.material = material;
+
+		this.sceneNode = new THREE.Object3D();
+		// this.sceneNode = new THREE.Points(geometry, material);
 	}
 
 	static releaseMaterialInstance (instance) {
-		ProfilePointCloudEntry.materialPool.push(instance);
+		ProfilePointCloudEntry.materialPool.add(instance);
 	}
 
 	static getMaterialInstance () {
-		let instance = ProfilePointCloudEntry.materialPool.pop();
+		let instance = ProfilePointCloudEntry.materialPool.values().next().value;
 		if (!instance) {
 			instance = new PointCloudMaterial();
+		} else {
+			ProfilePointCloudEntry.materialPool.delete(instance);
 		}
 
 		return instance;
 	}
 
 	dispose () {
-		this.sceneNode.geometry.dispose();
-		ProfilePointCloudEntry.releaseMaterialInstance(this.sceneNode.material);
+		for (let child of this.sceneNode.children) {
+			ProfilePointCloudEntry.releaseMaterialInstance(child.material);
+			child.geometry.dispose();
+		}
+
+		this.sceneNode.children = [];
 	}
 
 	addPoints (data) {
 		this.points.push(data);
-
-		{ // REBUILD MODEL
-			if (this.sceneNode) {
-				this.sceneNode.geometry.dispose();
-			}
-
-			let numPoints = this.points.reduce((a, i) => a + i.numPoints, 0);
-
+		let batchSize = 10 * 1000;
+		let createNewBatch = () => {
 			let geometry = new THREE.BufferGeometry();
 			let buffers = {
-				position: new Float32Array(3 * numPoints),
-				color: new Uint8Array(4 * numPoints),
-				intensity: new Uint16Array(numPoints),
-				classification: new Uint8Array(numPoints),
-				returnNumber: new Uint8Array(numPoints),
-				numberOfReturns: new Uint8Array(numPoints),
-				pointSourceID: new Uint16Array(numPoints)
+				position: new Float32Array(3 * batchSize),
+				color: new Uint8Array(4 * batchSize),
+				intensity: new Uint16Array(batchSize),
+				classification: new Uint8Array(batchSize),
+				returnNumber: new Uint8Array(batchSize),
+				numberOfReturns: new Uint8Array(batchSize),
+				pointSourceID: new Uint16Array(batchSize)
 			};
-
-			let pointsProcessed = 0;
-			for (let part of this.points) {
-				let projectedBox = new THREE.Box3();
-
-				for (let i = 0; i < part.numPoints; i++) {
-					let x = part.data.mileage[i];
-					let y = part.data.position[3 * i + 2];
-					let z = 0;
-
-					projectedBox.expandByPoint(new THREE.Vector3(x, y, 0));
-
-					buffers.position[3 * pointsProcessed + 0] = x;
-					buffers.position[3 * pointsProcessed + 1] = y;
-					buffers.position[3 * pointsProcessed + 2] = z;
-
-					if (part.data.color) {
-						buffers.color[4 * pointsProcessed + 0] = part.data.color[4 * i + 0];
-						buffers.color[4 * pointsProcessed + 1] = part.data.color[4 * i + 1];
-						buffers.color[4 * pointsProcessed + 2] = part.data.color[4 * i + 2];
-						buffers.color[4 * pointsProcessed + 3] = 255;
-					}
-
-					pointsProcessed++;
-				}
-
-				data.projectedBox = projectedBox;
-			}
-
-			this.projectedBox = this.points.reduce((a, i) => a.union(i.projectedBox), new THREE.Box3());
 
 			geometry.addAttribute('position', new THREE.BufferAttribute(buffers.position, 3));
 			geometry.addAttribute('color', new THREE.BufferAttribute(buffers.color, 4, true));
@@ -93,7 +66,74 @@ class ProfilePointCloudEntry {
 			geometry.addAttribute('numberOfReturns', new THREE.BufferAttribute(buffers.numberOfReturns, 1, false));
 			geometry.addAttribute('pointSourceID', new THREE.BufferAttribute(buffers.pointSourceID, 1, false));
 
-			this.sceneNode.geometry = geometry;
+			geometry.drawRange.start = 0;
+			geometry.drawRange.count = 0;
+
+			this.currentBatch = new THREE.Points(geometry, this.material);
+			this.sceneNode.add(this.currentBatch);
+		};
+
+		if (!this.currentBatch) {
+			createNewBatch();
+		}
+
+		{ // REBUILD MODEL
+			// TODO: unused: let pointsProcessed = 0;
+
+			let updateRange = {
+				start: this.currentBatch.geometry.drawRange.count,
+				count: 0
+			};
+
+			let projectedBox = new THREE.Box3();
+
+			for (let i = 0; i < data.numPoints; i++) {
+				if (updateRange.start + updateRange.count >= batchSize) {
+					// finalize current batch, start new batch
+
+					for (let attribute of Object.values(this.currentBatch.geometry.attributes)) {
+						attribute.updateRange.offset = updateRange.start;
+						attribute.updateRange.count = updateRange.count;
+						attribute.needsUpdate = true;
+					}
+					createNewBatch();
+					updateRange = {
+						start: 0,
+						count: 0
+					};
+				}
+
+				let x = data.data.mileage[i];
+				let y = data.data.position[3 * i + 2];
+				let z = 0;
+				projectedBox.expandByPoint(new THREE.Vector3(x, y, 0));
+				let currentIndex = updateRange.start + updateRange.count;
+				this.currentBatch.geometry.attributes.position.array[3 * currentIndex + 0] = x;
+				this.currentBatch.geometry.attributes.position.array[3 * currentIndex + 1] = y;
+				this.currentBatch.geometry.attributes.position.array[3 * currentIndex + 2] = z;
+
+				if (data.data.color) {
+					this.currentBatch.geometry.attributes.color.array[4 * currentIndex + 0] = data.data.color[4 * i + 0];
+					this.currentBatch.geometry.attributes.color.array[4 * currentIndex + 1] = data.data.color[4 * i + 1];
+					this.currentBatch.geometry.attributes.color.array[4 * currentIndex + 2] = data.data.color[4 * i + 2];
+					this.currentBatch.geometry.attributes.color.array[4 * currentIndex + 3] = 255;
+				}
+
+				updateRange.count++;
+				this.currentBatch.geometry.drawRange.count++;
+			}
+
+			for (let attribute of Object.values(this.currentBatch.geometry.attributes)) {
+				attribute.updateRange.offset = updateRange.start;
+				attribute.updateRange.count = updateRange.count;
+				attribute.needsUpdate = true;
+			}
+
+			data.projectedBox = projectedBox;
+
+			// debugger;
+
+			this.projectedBox = this.points.reduce((a, i) => a.union(i.projectedBox), new THREE.Box3());
 		}
 	}
 };

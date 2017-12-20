@@ -484,16 +484,14 @@ class ProfileWindow extends THREE.EventDispatcher {
 			.range([height, 0]);
 	}
 
-	requestScaleUpdate(){
-
+	requestScaleUpdate () {
 		let threshold = 100;
-		let allowUpdate = (this.lastReset === undefined)
-			|| (this.lastScaleUpdate === undefined)
-			|| (new Date().getTime() - this.lastReset) > threshold
-			|| (new Date().getTime() - this.lastScaleUpdate) > threshold;
+		let allowUpdate = (this.lastReset === undefined) ||
+			(this.lastScaleUpdate === undefined) ||
+			(new Date().getTime() - this.lastReset) > threshold ||
+			(new Date().getTime() - this.lastScaleUpdate) > threshold;
 
-		if(allowUpdate){
-
+		if (allowUpdate) {
 			this.lastScaleUpdate = new Date().getTime();
 
 			let width = this.renderArea[0].clientWidth;
@@ -519,11 +517,10 @@ class ProfileWindow extends THREE.EventDispatcher {
 				.call(this.yAxis);
 
 			this.scaleUpdatePending = false;
-		}else if(!this.scaleUpdatePending) {
+		} else if (!this.scaleUpdatePending) {
 			setTimeout(this.requestScaleUpdate.bind(this), 100);
 			this.scaleUpdatePending = true;
 		}
-
 	}
 
 	render () {

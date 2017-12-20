@@ -2,17 +2,36 @@ const THREE = require('three');
 const PointCloudMaterial = require('./materials/PointCloudMaterial');
 const PointColorType = require('./materials/PointColorType');
 
-module.exports = class ProfilePointCloudEntry {
+class ProfilePointCloudEntry {
 	constructor () {
 		this.points = [];
 
 		let geometry = new THREE.BufferGeometry();
-		let material = new PointCloudMaterial();
+		// let material = new PointCloudMaterial();
+		let material = ProfilePointCloudEntry.getMaterialInstance();
 		material.uniforms.minSize.value = 2;
 		material.uniforms.maxSize.value = 2;
 		material.pointColorType = PointColorType.RGB;
 		material.opacity = 1.0;
 		this.sceneNode = new THREE.Points(geometry, material);
+	}
+
+	static releaseMaterialInstance (instance) {
+		ProfilePointCloudEntry.materialPool.push(instance);
+	}
+
+	static getMaterialInstance () {
+		let instance = ProfilePointCloudEntry.materialPool.pop();
+		if (!instance) {
+			instance = new PointCloudMaterial();
+		}
+
+		return instance;
+	}
+
+	dispose () {
+		this.sceneNode.geometry.dispose();
+		ProfilePointCloudEntry.releaseMaterialInstance(this.sceneNode.material);
 	}
 
 	addPoints (data) {
@@ -78,3 +97,5 @@ module.exports = class ProfilePointCloudEntry {
 		}
 	}
 };
+ProfilePointCloudEntry.materialPool = [];
+module.exports = ProfilePointCloudEntry;

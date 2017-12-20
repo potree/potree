@@ -23,6 +23,7 @@ class ProfileWindow extends THREE.EventDispatcher {
 		this.projectedBox = new THREE.Box3();
 		this.pointclouds = new Map();
 		this.numPoints = 0;
+		this.lastAddPointsTimestamp = undefined;
 
 		this.mouse = new THREE.Vector2(0, 0);
 		this.scale = new THREE.Vector3(1, 1, 1);
@@ -65,6 +66,7 @@ class ProfileWindow extends THREE.EventDispatcher {
 			if (this.mouseIsDown) {
 				// DRAG
 				this.autoFit = false;
+				this.lastDrag = new Date().getTime();
 
 				let cPos = [this.scaleX.invert(this.mouse.x), this.scaleY.invert(this.mouse.y)];
 				let ncPos = [this.scaleX.invert(newMouse.x), this.scaleY.invert(newMouse.y)];
@@ -369,12 +371,12 @@ class ProfileWindow extends THREE.EventDispatcher {
 			.tickPadding(10)
 			.ticks(height / 20);
 
-		this.svg.append('g')
+		this.elXAxis = this.svg.append('g')
 			.attr('class', 'x axis')
 			.attr('transform', `translate(${marginLeft}, ${height})`)
 			.call(this.xAxis);
 
-		this.svg.append('g')
+		this.elYAxis = this.svg.append('g')
 			.attr('class', 'y axis')
 			.attr('transform', `translate(${marginLeft}, 0)`)
 			.call(this.yAxis);
@@ -426,11 +428,17 @@ class ProfileWindow extends THREE.EventDispatcher {
 	}
 
 	reset () {
+		this.lastReset = new Date().getTime();
+
 		this.dispatchEvent({type: 'on_reset_once'});
 		this.removeEventListeners('on_reset_once');
 
 		this.autoFit = true;
 		this.projectedBox = new THREE.Box3();
+
+		for (let [key, entry] of this.pointclouds) { // eslint-disable-line no-unused-vars
+			entry.dispose();
+		}
 
 		this.pointclouds.clear();
 		this.mouseIsDown = false;
@@ -438,13 +446,7 @@ class ProfileWindow extends THREE.EventDispatcher {
 		this.scale.set(1, 1, 1);
 		this.pickSphere.visible = false;
 
-		this.pointCloudRoot.children
-			.filter(c => c instanceof THREE.Points)
-			.forEach(c => {
-				this.pointCloudRoot.remove(c);
-				c.geometry.dispose();
-				c.material.dispose();
-			});
+		this.pointCloudRoot.children = [];
 
 		this.elRoot.find('#profileSelectionProperties').hide();
 
@@ -482,6 +484,48 @@ class ProfileWindow extends THREE.EventDispatcher {
 			.range([height, 0]);
 	}
 
+	requestScaleUpdate(){
+
+		let threshold = 100;
+		let allowUpdate = (this.lastReset === undefined)
+			|| (this.lastScaleUpdate === undefined)
+			|| (new Date().getTime() - this.lastReset) > threshold
+			|| (new Date().getTime() - this.lastScaleUpdate) > threshold;
+
+		if(allowUpdate){
+
+			this.lastScaleUpdate = new Date().getTime();
+
+			let width = this.renderArea[0].clientWidth;
+			let height = this.renderArea[0].clientHeight;
+			let marginLeft = this.renderArea[0].offsetLeft;
+
+			this.xAxis.scale(this.scaleX)
+				.tickSizeInner(-height)
+				.tickSizeOuter(1)
+				.tickPadding(10)
+				.ticks(width / 50);
+			this.yAxis.scale(this.scaleY)
+				.tickSizeInner(-width)
+				.tickSizeOuter(1)
+				.tickPadding(10)
+				.ticks(height / 20);
+
+			this.elXAxis
+				.attr('transform', `translate(${marginLeft}, ${height})`)
+				.call(this.xAxis);
+			this.elYAxis
+				.attr('transform', `translate(${marginLeft}, 0)`)
+				.call(this.yAxis);
+
+			this.scaleUpdatePending = false;
+		}else if(!this.scaleUpdatePending) {
+			setTimeout(this.requestScaleUpdate.bind(this), 100);
+			this.scaleUpdatePending = true;
+		}
+
+	}
+
 	render () {
 		let width = this.renderArea[0].clientWidth;
 		let height = this.renderArea[0].clientHeight;
@@ -516,27 +560,7 @@ class ProfileWindow extends THREE.EventDispatcher {
 			this.renderer.render(this.scene, this.camera);
 		}
 
-		{ // SVG SCALES
-			let marginLeft = this.renderArea[0].offsetLeft;
-
-			this.xAxis.scale(this.scaleX)
-				.tickSizeInner(-height)
-				.tickSizeOuter(1)
-				.tickPadding(10)
-				.ticks(width / 50);
-			this.yAxis.scale(this.scaleY)
-				.tickSizeInner(-width)
-				.tickSizeOuter(1)
-				.tickPadding(10)
-				.ticks(height / 20);
-
-			d3Selection.select('.x,axis')
-				.attr('transform', `translate(${marginLeft}, ${height})`)
-				.call(this.xAxis);
-			d3Selection.select('.y,axis')
-				.attr('transform', `translate(${marginLeft}, 0)`)
-				.call(this.yAxis);
-		}
+		this.requestScaleUpdate();
 	}
 };
 

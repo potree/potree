@@ -118,11 +118,11 @@ class Profile extends THREE.Object3D {
 					let i = this.spheres.indexOf(e.drag.object);
 					if (i !== -1) {
 						this.setPosition(i, I.location);
-						this.dispatchEvent({
-							'type': 'marker_moved',
-							'profile': this,
-							'index': i
-						});
+						// this.dispatchEvent({
+						// 	'type': 'marker_moved',
+						// 	'profile': this,
+						// 	'index': i
+						// });
 					}
 				}
 			};

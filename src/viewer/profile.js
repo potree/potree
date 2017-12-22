@@ -621,20 +621,25 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 
 		entry.addPoints(points);
 		this.pointCloudRoot.add(entry.sceneNode);
+		this.projectedBox.union(entry.projectedBox);
+		//console.log(this.projectedBox.min.toArray().map(v => v.toFixed(2)).join(", "));
+		//console.log(this.projectedBox.getSize().toArray().map(v => v.toFixed(2)).join(", "));
 
 		if (this.autoFit) { 
 			let width = this.renderArea[0].clientWidth;
 			let height = this.renderArea[0].clientHeight;
 
-			let size = entry.projectedBox.getSize();
+			let size = this.projectedBox.getSize();
 
 			let sx = width / size.x;
-			let sy = height / size.y;
+			let sy = height / size.z;
 			let scale = Math.min(sx, sy);
 
-			let center = entry.projectedBox.getCenter();
+			let center = this.projectedBox.getCenter();
 			this.scale.set(scale, scale, 1);
 			this.camera.position.copy(center);
+
+			//console.log("camera: ", this.camera.position.toArray().join(", "));
 		}
 
 		//console.log(entry);

@@ -132,7 +132,8 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 			mouse,
 			camera,
 			this.viewer,
-			this.scene.pointclouds);
+			this.scene.pointclouds,
+			{pickClipped: true});
 
 		if (I === null) {
 			return;

@@ -795,6 +795,10 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		$('#potree_description')[0].innerHTML = value;
 	};
 
+	setClipMode(clipMode){
+		this.clippingTool.setClipMode(clipMode);
+	}
+
 	setNavigationMode (value) {
 		this.scene.view.navigationMode = value;
 	};

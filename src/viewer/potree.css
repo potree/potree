@@ -127,8 +127,8 @@
 }
 
 #potree_render_area{
-    position: 	absolute;
-    /*background: linear-gradient(-90deg, red, yellow);*/
+	position: 	absolute;
+	/*background: linear-gradient(-90deg, red, yellow);*/
 	top: 		0px;
 	bottom: 	0px;
 	left: 		0px;
@@ -140,10 +140,10 @@
 }
 
 .potree-panel {
-    border: 		1px solid black;
-    border-radius: 	0.4em;
-    padding: 		0px;
-    background-color: var(--bg-light-color);
+	border: 		1px solid black;
+	border-radius: 	0.4em;
+	padding: 		0px;
+	background-color: var(--bg-light-color);
 }
 
 .potree-panel-heading{
@@ -472,7 +472,7 @@ body{
 }
 
 .pv-menu-list > *{
-	margin: 	8px 20px;
+	margin: 	4px 20px;
 }
 
 .ui-slider {
@@ -623,59 +623,62 @@ body{
 
 .unselectable{
 	-webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
 }
 
 .selectable{
 	-webkit-touch-callout: text;
-    -webkit-user-select: text;
-    -khtml-user-select: text;
-    -moz-user-select: text;
-    -ms-user-select: text;
-    user-select: text;
+	-webkit-user-select: text;
+	-khtml-user-select: text;
+	-moz-user-select: text;
+	-ms-user-select: text;
+	user-select: text;
 }
 
 
 
 .divider {
-    display: 		block;
-    text-align: 	center;
-    overflow: 		hidden;
-    white-space: 	nowrap; 
+	display: 		block;
+	text-align: 	center;
+	overflow: 		hidden;
+	white-space: 	nowrap; 
 	font-weight:	bold;
 	font-size:		90%;
 	letter-spacing:	1px;
 	margin-left:	-20px;
 	margin-right:	-20px;
+	margin-top: 	1px;
+	margin-bottom: 	1px;
+	padding:		1px !important;
 }
 
 .divider > span {
-    position: 	relative;
-    display: 	inline-block;
+	position: 	relative;
+	display: 	inline-block;
 }
 
 .divider > span:before,
 .divider > span:after {
-    content: 	"";
-    position: 	absolute;
-    top: 		50%;
-    width: 		9999px;
-    height: 	1px;
-    background: #b2b2b2;
+	content: 	"";
+	position: 	absolute;
+	top: 		50%;
+	width: 		9999px;
+	height: 	1px;
+	background: #b2b2b2;
 }
 
 .divider > span:before {
-    right: 100%;
-    margin-right: 5px;
+	right: 100%;
+	margin-right: 5px;
 }
 
 .divider > span:after {
-    left: 100%;
-    margin-left: 5px;
+	left: 100%;
+	margin-left: 5px;
 }
 
 
@@ -829,4 +832,58 @@ label:hover{
 .ui-slider {
 	margin-top: 3px;
 	margin-bottom: 10px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/** 
+ * OVERRIDES
+ */
+
+
+.jstree-themeicon-custom{
+	background-size: 16px !important;
+}
+
+.jstree-default .jstree-clicked{
+	/*background-color: #ffffff !important;*/
+	background-color: #34494f !important;
+}
+
+.jstree-default .jstree-hovered{
+	background-color: #34494f !important;
+}
+
+.jstree-anchor{
+	width: 100% !important;
 }

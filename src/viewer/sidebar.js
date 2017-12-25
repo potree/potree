@@ -121,10 +121,161 @@ initSidebar = (viewer) => {
 	function initScene(){
 
 		let elScene = $("#menu_scene");
-		let elObjects = elScene.find("#scene_objects");
-		let elProperties = elScene.find("#scene_object_properties");
+		let elObjects = elScene.next().find("#scene_objects");
+		let elProperties = elScene.next().find("#scene_object_properties");
+
+		let propertiesPanel = new Potree.PropertiesPanel(elProperties, viewer);
+		propertiesPanel.setScene(viewer.scene);
 		
-		
+		localStorage.removeItem('jstree');
+
+		let tree = $(`<div id="jstree_scene"></div>`);
+		elObjects.append(tree);
+
+		tree.jstree({
+			'plugins': ["checkbox", "state"],
+			'core': {
+				"dblclick_toggle": false,
+				"state": {
+					"checked" : true
+				},
+				'check_callback': true
+			},
+			"checkbox" : {
+				"keep_selected_style": true,
+				"three_state": false,
+				"whole_node": false,
+				"tie_selection": false,
+			},
+		});
+
+		let createNode = (parent, text, icon, object) => {
+			let nodeID = tree.jstree('create_node', parent, { 
+					"text": text, 
+					"checked": true, 
+					"icon": icon,
+					"object": object
+				}, 
+				"last", false, false);
+			
+			tree.jstree("check_node", nodeID);
+			
+			return nodeID;
+		}
+
+		let pcID = tree.jstree('create_node', "#", { "text": "<b>Point Clouds</b>", "id": "pointclouds"}, "last", false, false);
+		let measurementID = tree.jstree('create_node', "#", { "text": "<b>Measurements</b>", "id": "measurements" }, "last", false, false);
+		let annotationsID = tree.jstree('create_node', "#", { "text": "<b>Annotations</b>", "id": "annotations" }, "last", false, false);
+
+		tree.jstree("check_node", pcID);
+		tree.jstree("check_node", measurementID);
+		tree.jstree("check_node", annotationsID);
+
+		tree.on('ready.jstree', function() {
+			tree.jstree("open_all");
+		});
+
+		tree.on("select_node.jstree", function (e, data) { 
+			let object = data.node.original.object;
+			propertiesPanel.set(object);
+		});
+
+		tree.on('dblclick','.jstree-anchor', function (e) {
+			let instance = $.jstree.reference(this);
+			let node = instance.get_node(this);
+			let object = node.original.object;
+
+			// ignore double click on checkbox
+			if(e.target.classList.contains("jstree-checkbox")){
+				return;
+			}
+			
+			if(object instanceof Potree.PointCloudTree){
+				let box = viewer.getBoundingBox([object]);
+				let node = new THREE.Object3D();
+				node.boundingBox = box;
+				viewer.zoomTo(node, 1, 300);
+			}else if(object instanceof Potree.Measure){
+				let points = object.points.map(p => p.position);
+				let box = new THREE.Box3().setFromPoints(points);
+				if(box.getSize().length() > 0){
+					let node = new THREE.Object3D();
+					node.boundingBox = box;
+					viewer.zoomTo(node, 2, 300);
+				}
+			}else if(object instanceof Potree.Profile){
+				let points = object.points;
+				let box = new THREE.Box3().setFromPoints(points);
+				if(box.getSize().length() > 0){
+					let node = new THREE.Object3D();
+					node.boundingBox = box;
+					viewer.zoomTo(node, 1, 300);
+				}
+			}
+		});
+
+		tree.on("uncheck_node.jstree", function(e, data){
+			let object = data.node.original.object;
+
+			if(object){
+				object.visible = false;
+			}
+		});
+
+		tree.on("check_node.jstree", function(e, data){
+			let object = data.node.original.object;
+
+			if(object){
+				object.visible = true;
+			}
+		});
+
+
+		let onPointCloudAdded = (e) => {
+			let pointcloud = e.pointcloud;
+			createNode(pcID, pointcloud.name, `${Potree.resourcePath}/icons/cloud.svg`, pointcloud);
+		};
+
+		let onMeasurementAdded = (e) => {
+			let measurement = e.measurement;
+			let icon = Potree.getMeasurementIcon(measurement);
+			createNode(measurementID, measurement.name, icon, measurement);
+		};
+
+		let onProfileAdded = (e) => {
+			let profile = e.profile;
+			let icon = Potree.getMeasurementIcon(profile);
+			createNode(measurementID, profile.name, icon, profile);
+		};
+
+		viewer.scene.addEventListener("pointcloud_added", onPointCloudAdded);
+		viewer.scene.addEventListener("measurement_added", onMeasurementAdded);
+		viewer.scene.addEventListener("profile_added", onProfileAdded);
+
+		for(let pointcloud of viewer.scene.pointclouds){
+			onPointCloudAdded({pointcloud: pointcloud});
+		}
+
+		let measurements = [...viewer.scene.measurements, ...viewer.scene.volumes];
+		for(let measurement of measurements){
+			onMeasurementAdded({measurement: measurement});
+		}
+		for(let profile of viewer.scene.profiles){
+			onProfileAdded({profile: profile});
+		}
+
+		viewer.addEventListener("scene_changed", (e) => {
+			propertiesPanel.setScene(e.scene);
+
+			e.oldScene.removeEventListener("pointcloud_added", onPointCloudAdded);
+			e.oldScene.removeEventListener("measurement_added", onMeasurementAdded);
+			e.oldScene.removeEventListener("profile_added", onProfileAdded);
+
+			e.scene.addEventListener("pointcloud_added", onPointCloudAdded);
+			e.scene.addEventListener("measurement_added", onMeasurementAdded);
+			e.scene.addEventListener("profile_added", onProfileAdded);
+		});
+
 	}
 
 	function initClippingTool() {

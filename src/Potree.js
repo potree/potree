@@ -122,6 +122,94 @@ Potree.MOUSE = {
 	MIDDLE: 0b0100
 };
 
+Potree.toMaterialID = function(materialName){
+	if (materialName === 'RGB'){
+		return Potree.PointColorType.RGB;
+	} else if (materialName === 'Color') {
+		return Potree.PointColorType.COLOR;
+	} else if (materialName === 'Elevation') {
+		return Potree.PointColorType.HEIGHT;
+	} else if (materialName === 'Intensity') {
+		return Potree.PointColorType.INTENSITY;
+	} else if (materialName === 'Intensity Gradient') {
+		return Potree.PointColorType.INTENSITY_GRADIENT;
+	} else if (materialName === 'Classification') {
+		return Potree.PointColorType.CLASSIFICATION;
+	} else if (materialName === 'Return Number') {
+		return Potree.PointColorType.RETURN_NUMBER;
+	} else if (materialName === 'Source') {
+		return Potree.PointColorType.SOURCE;
+	} else if (materialName === 'Level of Detail') {
+		return Potree.PointColorType.LOD;
+	} else if (materialName === 'Point Index') {
+		return Potree.PointColorType.POINT_INDEX;
+	} else if (materialName === 'Normal') {
+		return Potree.PointColorType.NORMAL;
+	} else if (materialName === 'Phong') {
+		return Potree.PointColorType.PHONG;
+	} else if (materialName === 'Index') {
+		return Potree.PointColorType.POINT_INDEX;
+	} else if (materialName === 'RGB and Elevation') {
+		return Potree.PointColorType.RGB_HEIGHT;
+	} else if (materialName === 'Composite') {
+		return Potree.PointColorType.COMPOSITE;
+	}
+};
+
+Potree.toMaterialName = function(materialID) {
+	if (materialID === Potree.PointColorType.RGB) {
+		return 'RGB';
+	} else if (materialID === Potree.PointColorType.COLOR) {
+		return 'Color';
+	} else if (materialID === Potree.PointColorType.HEIGHT) {
+		return 'Elevation';
+	} else if (materialID === Potree.PointColorType.INTENSITY) {
+		return 'Intensity';
+	} else if (materialID === Potree.PointColorType.INTENSITY_GRADIENT) {
+		return 'Intensity Gradient';
+	} else if (materialID === Potree.PointColorType.CLASSIFICATION) {
+		return 'Classification';
+	} else if (materialID === Potree.PointColorType.RETURN_NUMBER) {
+		return 'Return Number';
+	} else if (materialID === Potree.PointColorType.SOURCE) {
+		return 'Source';
+	} else if (materialID === Potree.PointColorType.LOD) {
+		return 'Level of Detail';
+	} else if (materialID === Potree.PointColorType.NORMAL) {
+		return 'Normal';
+	} else if (materialID === Potree.PointColorType.PHONG) {
+		return 'Phong';
+	}  else if (materialID === Potree.PointColorType.POINT_INDEX) {
+		return 'Index';
+	} else if (materialID === Potree.PointColorType.RGB_HEIGHT) {
+		return 'RGB and Elevation';
+	} else if (materialID === Potree.PointColorType.COMPOSITE) {
+		return 'Composite';
+	}
+};
+
+Potree.getMeasurementIcon = function(measurement){
+	if (measurement instanceof Potree.Measure) {
+		if (measurement.showDistances && !measurement.showArea && !measurement.showAngles) {
+			return `${Potree.resourcePath}/icons/distance.svg`;
+		} else if (measurement.showDistances && measurement.showArea && !measurement.showAngles) {
+			return `${Potree.resourcePath}/icons/area.svg`;
+		} else if (measurement.maxMarkers === 1) {
+			return `${Potree.resourcePath}/icons/point.svg`;
+		} else if (!measurement.showDistances && !measurement.showArea && measurement.showAngles) {
+			return `${Potree.resourcePath}/icons/angle.png`;
+		} else if (measurement.showHeight) {
+			return `${Potree.resourcePath}/icons/height.svg`;
+		} else {
+			return `${Potree.resourcePath}/icons/distance.svg`;
+		}
+	} else if (measurement instanceof Potree.Profile) {
+		return `${Potree.resourcePath}/icons/profile.svg`;
+	} else if (measurement instanceof Potree.Volume) {
+		return `${Potree.resourcePath}/icons/volume.svg`;
+	}
+}
+
 Potree.Points = class Points {
 	constructor () {
 		this.boundingBox = new THREE.Box3();

@@ -226,7 +226,7 @@ Potree.Scene = class extends THREE.EventDispatcher{
 		this.scenePointCloud.updateMatrixWorld(true);
 		this.referenceFrame.updateMatrixWorld(true);
 
-		for (let pointcloud of this.pointclouds) {
+		for (let pointcloud of pointclouds) {
 			pointcloud.updateMatrixWorld(true);
 
 			let pointcloudBox = pointcloud.pcoGeometry.tightBoundingBox ? pointcloud.pcoGeometry.tightBoundingBox : pointcloud.boundingBox;
@@ -964,90 +964,18 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		this.dispatchEvent({'type': 'length_unit_changed', 'viewer': this, value: value});
 	}
 
-	toMaterialID (materialName) {
-		if (materialName === 'RGB') {
-			return Potree.PointColorType.RGB;
-		} else if (materialName === 'Color') {
-			return Potree.PointColorType.COLOR;
-		} else if (materialName === 'Elevation') {
-			return Potree.PointColorType.HEIGHT;
-		} else if (materialName === 'Intensity') {
-			return Potree.PointColorType.INTENSITY;
-		} else if (materialName === 'Intensity Gradient') {
-			return Potree.PointColorType.INTENSITY_GRADIENT;
-		} else if (materialName === 'Classification') {
-			return Potree.PointColorType.CLASSIFICATION;
-		} else if (materialName === 'Return Number') {
-			return Potree.PointColorType.RETURN_NUMBER;
-		} else if (materialName === 'Source') {
-			return Potree.PointColorType.SOURCE;
-		} else if (materialName === 'Level of Detail') {
-			return Potree.PointColorType.LOD;
-		} else if (materialName === 'Point Index') {
-			return Potree.PointColorType.POINT_INDEX;
-		} else if (materialName === 'Normal') {
-			return Potree.PointColorType.NORMAL;
-		} else if (materialName === 'Phong') {
-			return Potree.PointColorType.PHONG;
-		} else if (materialName === 'Index') {
-			return Potree.PointColorType.POINT_INDEX;
-		} else if (materialName === 'RGB and Elevation') {
-			return Potree.PointColorType.RGB_HEIGHT;
-		} else if (materialName === 'Composite') {
-			return Potree.PointColorType.COMPOSITE;
-		}
-	};
-
-	toMaterialName (materialID) {
-		if (materialID === Potree.PointColorType.RGB) {
-			return 'RGB';
-		} else if (materialID === Potree.PointColorType.COLOR) {
-			return 'Color';
-		} else if (materialID === Potree.PointColorType.HEIGHT) {
-			return 'Elevation';
-		} else if (materialID === Potree.PointColorType.INTENSITY) {
-			return 'Intensity';
-		} else if (materialID === Potree.PointColorType.INTENSITY_GRADIENT) {
-			return 'Intensity Gradient';
-		} else if (materialID === Potree.PointColorType.CLASSIFICATION) {
-			return 'Classification';
-		} else if (materialID === Potree.PointColorType.RETURN_NUMBER) {
-			return 'Return Number';
-		} else if (materialID === Potree.PointColorType.SOURCE) {
-			return 'Source';
-		} else if (materialID === Potree.PointColorType.LOD) {
-			return 'Level of Detail';
-		} else if (materialID === Potree.PointColorType.NORMAL) {
-			return 'Normal';
-		} else if (materialID === Potree.PointColorType.PHONG) {
-			return 'Phong';
-		}  else if (materialID === Potree.PointColorType.POINT_INDEX) {
-			return 'Index';
-		} else if (materialID === Potree.PointColorType.RGB_HEIGHT) {
-			return 'RGB and Elevation';
-		} else if (materialID === Potree.PointColorType.COMPOSITE) {
-			return 'Composite';
-		}
-	};
-
-	zoomTo (node, factor) {
+	zoomTo(node, factor, animationDuration = 0){
 		let view = this.scene.view;
-	
-		this.scene.cameraP.position.copy(view.position);
-		this.scene.cameraP.rotation.order = "ZXY";
-		this.scene.cameraP.rotation.x = Math.PI / 2 + view.pitch;
-		this.scene.cameraP.rotation.z = view.yaw;
-		this.scene.cameraP.updateMatrix();
-		this.scene.cameraP.updateMatrixWorld();
-		this.scene.cameraP.zoomTo(node, factor);
-		
-		this.scene.cameraO.position.copy(view.position);
-		this.scene.cameraO.rotation.order = "ZXY";
-		this.scene.cameraO.rotation.x = Math.PI / 2 + view.pitch;
-		this.scene.cameraO.rotation.z = view.yaw;
-		this.scene.cameraO.updateMatrix();
-		this.scene.cameraO.updateMatrixWorld();
-		
+
+		let camera = this.scene.cameraP.clone();
+		camera.rotation.copy(this.scene.cameraP.rotation);
+		camera.rotation.order = "ZXY";
+		camera.rotation.x = Math.PI / 2 + view.pitch;
+		camera.rotation.z = view.yaw;
+		camera.updateMatrix();
+		camera.updateMatrixWorld();
+		camera.zoomTo(node, factor);
+
 		let bs;
 		if (node.boundingSphere) {
 			bs = node.boundingSphere;
@@ -1056,13 +984,44 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		} else {
 			bs = node.boundingBox.getBoundingSphere();
 		}
-		
 		bs = bs.clone().applyMatrix4(node.matrixWorld); 
-		
-		view.position.copy(this.scene.cameraP.position);
-		view.radius = view.position.distanceTo(bs.center);		
-		this.dispatchEvent({"type": "zoom_to", "viewer": this});
 
+		let startPosition = view.position.clone();
+		let endPosition = camera.position.clone();
+		let startTarget = view.getPivot();
+		let endTarget = bs.center;
+		let startRadius = view.radius;
+		let endRadius = endPosition.distanceTo(endTarget);
+
+		let easing = TWEEN.Easing.Quartic.Out;
+
+		{ // animate camera position
+			let pos = startPosition.clone();
+			let tween = new TWEEN.Tween(pos).to(endPosition, animationDuration);
+			tween.easing(easing);
+
+			tween.onUpdate(() => {
+				view.position.copy(pos);
+			});
+
+			tween.start();
+		}
+
+		{ // animate camera target
+			let target = startTarget.clone();
+			let tween = new TWEEN.Tween(target).to(endTarget, animationDuration);
+			tween.easing(easing);
+			tween.onUpdate(() => {
+				view.lookAt(target);
+			});
+			tween.onComplete(() => {
+				view.lookAt(target);
+				this.dispatchEvent({type: 'focusing_finished', target: this});
+			});
+
+			this.dispatchEvent({type: 'focusing_started', target: this});
+			tween.start();
+		}
 	};
 
 	showAbout () {
@@ -1075,13 +1034,13 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		return this.scene.getBoundingBox(pointclouds);
 	};
 
-	fitToScreen (factor = 1) {
+	fitToScreen (factor = 1, animationDuration = 0) {
 		let box = this.getBoundingBox(this.scene.pointclouds);
 
 		let node = new THREE.Object3D();
 		node.boundingBox = box;
 
-		this.zoomTo(node, factor);
+		this.zoomTo(node, factor, animationDuration);
 	};
 
 	toggleNavigationCube() {

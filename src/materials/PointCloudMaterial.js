@@ -219,7 +219,7 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 
 		this.uniforms = {
 			level:				{ type: "f", value: 0.0 },
-			vnStart:				{ type: "f", value: 0.0 },
+			vnStart:			{ type: "f", value: 0.0 },
 			spacing:			{ type: "f", value: 1.0 },
 			blendHardness:		{ type: "f", value: 2.0 },
 			blendDepthSupplement:	{ type: "f", value: 0.0 },
@@ -235,7 +235,7 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 			maxSize:   			{ type: "f", value: maxSize },
 			octreeSize:			{ type: "f", value: 0 },
 			bbSize:				{ type: "fv", value: [0,0,0] },
-            elevationRange:     { type: "2fv", value: [0,0] },
+			elevationRange:     { type: "2fv", value: [0,0] },
 			clipBoxCount:		{ type: "f", value: 0 },
 			clipPolygonCount:	{ type: "i", value: 0 },
 			visibleNodes:		{ type: "t", value: this.visibleNodesTexture },
@@ -719,7 +719,7 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 	set color (value) {
 		if (!this.uniforms.uColor.value.equals(value)) {
 			this.uniforms.uColor.value.copy(value);
-
+			
 			this.dispatchEvent({
 				type: 'color_changed',
 				target: this
@@ -786,28 +786,23 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 	}
 
 	get elevationRange () {
-		//return [this.heightMin, this.heightMax];
-        return this.uniforms.elevationRange.value;
+		return this.uniforms.elevationRange.value;
 	}
 
 	set elevationRange (value) {
-		//this.heightMin = value[0];
-		//this.heightMax = value[1];
+		let changed = this.uniforms.elevationRange.value[0] !== value[0]
+			|| this.uniforms.elevationRange.value[1] !== value[1];
 
-        let changed = this.uniforms.elevationRange.value[0] !== value[0]
-            || this.uniforms.elevationRange.value[1] !== value[1];
+		if(changed){
+			this.uniforms.elevationRange.value = value;
 
-        if(changed){
-            this.uniforms.elevationRange.value = value;
-
-            this._defaultElevationRangeChanged = true;
+			this._defaultElevationRangeChanged = true;
 
 			this.dispatchEvent({
 				type: 'material_property_changed',
 				target: this
 			});
-        }
-        
+		}
 	}
 
 	get heightMin () {

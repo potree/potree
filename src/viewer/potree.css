@@ -335,7 +335,7 @@ body{
 
 .scene_content{
 	padding: 5px 0px 5px 0px;
-	background-color: rgba(0, 0, 0, 0.4);
+	/*background-color: rgba(0, 0, 0, 0.4);*/
 }
 
 
@@ -372,7 +372,7 @@ body{
 
 .measurement_content{
 	padding: 5px 15px 5px 10px;
-	background-color: rgba(0, 0, 0, 0.4);
+	/*background-color: rgba(0, 0, 0, 0.4);*/
 }
 
 .measurement_value_table{

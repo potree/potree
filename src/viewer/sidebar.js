@@ -152,13 +152,16 @@ initSidebar = (viewer) => {
 		let createNode = (parent, text, icon, object) => {
 			let nodeID = tree.jstree('create_node', parent, { 
 					"text": text, 
-					"checked": true, 
 					"icon": icon,
 					"object": object
 				}, 
 				"last", false, false);
 			
-			tree.jstree("check_node", nodeID);
+			if(object.visible){
+				tree.jstree('check_node', nodeID);
+			}else{
+				tree.jstree('uncheck_node', nodeID);
+			}
 			
 			return nodeID;
 		}
@@ -194,14 +197,14 @@ initSidebar = (viewer) => {
 				let box = viewer.getBoundingBox([object]);
 				let node = new THREE.Object3D();
 				node.boundingBox = box;
-				viewer.zoomTo(node, 1, 300);
+				viewer.zoomTo(node, 1, 500);
 			}else if(object instanceof Potree.Measure){
 				let points = object.points.map(p => p.position);
 				let box = new THREE.Box3().setFromPoints(points);
 				if(box.getSize().length() > 0){
 					let node = new THREE.Object3D();
 					node.boundingBox = box;
-					viewer.zoomTo(node, 2, 300);
+					viewer.zoomTo(node, 2, 500);
 				}
 			}else if(object instanceof Potree.Profile){
 				let points = object.points;
@@ -209,8 +212,26 @@ initSidebar = (viewer) => {
 				if(box.getSize().length() > 0){
 					let node = new THREE.Object3D();
 					node.boundingBox = box;
-					viewer.zoomTo(node, 1, 300);
+					viewer.zoomTo(node, 1, 500);
 				}
+			}else if(object instanceof Potree.Volume){
+				
+				let box = object.boundingBox.clone().applyMatrix4(object.matrixWorld);
+
+				if(box.getSize().length() > 0){
+					let node = new THREE.Object3D();
+					node.boundingBox = box;
+					viewer.zoomTo(node, 1, 500);
+				}
+			}else if(object instanceof Potree.Annotation){
+				object.moveHere(viewer.scene.getActiveCamera());
+			}else if(object instanceof Potree.PolygonClipVolume){
+				let dir = object.camera.getWorldDirection();
+				dir.multiplyScalar(viewer.scene.view.radius);
+				let target = new THREE.Vector3().addVectors(object.camera.position, dir);
+				
+				viewer.scene.view.position.copy(object.camera.position);
+				viewer.scene.view.lookAt(target);
 			}
 		});
 
@@ -233,13 +254,20 @@ initSidebar = (viewer) => {
 
 		let onPointCloudAdded = (e) => {
 			let pointcloud = e.pointcloud;
-			createNode(pcID, pointcloud.name, `${Potree.resourcePath}/icons/cloud.svg`, pointcloud);
+			let cloudIcon = `${Potree.resourcePath}/icons/cloud.svg`;
+			createNode(pcID, pointcloud.name, cloudIcon, pointcloud);
 		};
 
 		let onMeasurementAdded = (e) => {
 			let measurement = e.measurement;
 			let icon = Potree.getMeasurementIcon(measurement);
 			createNode(measurementID, measurement.name, icon, measurement);
+		};
+
+		let onVolumeAdded = (e) => {
+			let volume = e.volume;
+			let icon = Potree.getMeasurementIcon(volume);
+			createNode(measurementID, volume.name, icon, volume);
 		};
 
 		let onProfileAdded = (e) => {
@@ -251,15 +279,33 @@ initSidebar = (viewer) => {
 		viewer.scene.addEventListener("pointcloud_added", onPointCloudAdded);
 		viewer.scene.addEventListener("measurement_added", onMeasurementAdded);
 		viewer.scene.addEventListener("profile_added", onProfileAdded);
+		viewer.scene.addEventListener("volume_added", onVolumeAdded);
+		viewer.scene.addEventListener("polygon_clip_volume_added", onVolumeAdded);
+
+		{
+			let annotationIcon = `${Potree.resourcePath}/icons/target.svg`;
+			this.annotationMapping = new Map(); 
+			this.annotationMapping.set(viewer.scene.annotations, annotationsID);
+			viewer.scene.annotations.traverseDescendants(annotation => {
+				let parentID = this.annotationMapping.get(annotation.parent);
+				let annotationID = createNode(parentID, annotation.title, annotationIcon, annotation);
+				this.annotationMapping.set(annotation, annotationID);
+			});
+		}
 
 		for(let pointcloud of viewer.scene.pointclouds){
 			onPointCloudAdded({pointcloud: pointcloud});
 		}
 
-		let measurements = [...viewer.scene.measurements, ...viewer.scene.volumes];
-		for(let measurement of measurements){
+		for(let measurement of viewer.scene.measurements){
 			onMeasurementAdded({measurement: measurement});
 		}
+
+		for(let volume of [...viewer.scene.volumes, ...viewer.scene.polygonClipVolumes]){
+			onVolumeAdded({volume: volume});
+		}
+
+
 		for(let profile of viewer.scene.profiles){
 			onProfileAdded({profile: profile});
 		}
@@ -270,10 +316,14 @@ initSidebar = (viewer) => {
 			e.oldScene.removeEventListener("pointcloud_added", onPointCloudAdded);
 			e.oldScene.removeEventListener("measurement_added", onMeasurementAdded);
 			e.oldScene.removeEventListener("profile_added", onProfileAdded);
+			e.oldScene.removeEventListener("volume_added", onVolumeAdded);
+			e.oldScene.removeEventListener("polygon_clip_volume_added", onVolumeAdded);
 
 			e.scene.addEventListener("pointcloud_added", onPointCloudAdded);
 			e.scene.addEventListener("measurement_added", onMeasurementAdded);
 			e.scene.addEventListener("profile_added", onProfileAdded);
+			e.scene.addEventListener("volume_added", onVolumeAdded);
+			e.scene.addEventListener("polygon_clip_volume_added", onVolumeAdded);
 		});
 
 	}

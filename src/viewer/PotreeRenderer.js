@@ -26,11 +26,6 @@ class PotreeRenderer {
 			viewer.scene.cameraScreenSpace.top = 1/aspect;
 			viewer.scene.cameraScreenSpace.bottom = -1/aspect;
 			viewer.scene.cameraScreenSpace.updateProjectionMatrix();
-
-			// update frustum size for adaptive point size with ortho cameras
-			for(let pointcloud of viewer.scene.pointclouds){
-				pointcloud.material.orthoRange = 2.0 * frustumScale;
-			}
 			
 			viewer.renderer.setSize(width, height);
 		}

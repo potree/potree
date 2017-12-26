@@ -25,8 +25,9 @@ uniform float fov;
 uniform float near;
 uniform float far;
 
-uniform bool useOrthographicCamera;
-uniform float orthoRange;
+uniform bool uUseOrthographicCamera;
+uniform float uOrthoWidth;
+uniform float uOrthoHeight;
 
 uniform int clipMode;
 #if defined(num_clipboxes) && num_clipboxes > 0
@@ -562,18 +563,17 @@ float getPointSize(){
 	#if defined fixed_point_size
 		pointSize = size;
 	#elif defined attenuated_point_size
-		if(useOrthographicCamera){
+		if(uUseOrthographicCamera){
 			pointSize = size;			
 		}else{
 			pointSize = pointSize * projFactor;
 		}
 	#elif defined adaptive_point_size
-
-		if(useOrthographicCamera) {
-			pointSize = size * r / (orthoRange * pow(2.0, getLOD())) * uScreenWidth;
+		if(uUseOrthographicCamera) {
+			float worldSpaceSize = 1.5 * size * r / getPointSizeAttenuation();
+			pointSize = (worldSpaceSize / uOrthoWidth) * uScreenWidth;
 		} else {
-			//float worldSpaceSize = 1.5 * size * getSpacing();
-			float worldSpaceSize = size * r / getPointSizeAttenuation();
+			float worldSpaceSize = 1.5 * size * r / getPointSizeAttenuation();
 			pointSize = worldSpaceSize * projFactor;
 		}
 	#endif

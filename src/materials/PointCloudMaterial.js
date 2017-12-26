@@ -263,7 +263,6 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 			wReturnNumber:		{ type: "f", value: 0 },
 			wSourceID:			{ type: "f", value: 0 },
 			useOrthographicCamera: { type: "b", value: false },
-			orthoRange: 		{ type: "f", value: 10.0 },
 			clipMode: 			{ type: "i", value: 1},
 			uSnapshot:			{ type: "tv", value: []},
 			uSnapshotDepth:		{ type: "tv", value: []},
@@ -630,18 +629,7 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 			this.uniforms.far.value = value;
 		}
 	}
-
-	get orthoRange(){
-		return this.uniforms.orthoRange.value;
-	}
 	
-	set orthoRange(value){
-		if(this.uniforms.orthoRange.value !== value){
-			this.uniforms.orthoRange.value = value;
-		}
-	}
-
-
 	get opacity(){
 		return this.uniforms.uOpacity.value;
 	}

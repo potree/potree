@@ -207,6 +207,8 @@ Potree.getMeasurementIcon = function(measurement){
 		return `${Potree.resourcePath}/icons/profile.svg`;
 	} else if (measurement instanceof Potree.Volume) {
 		return `${Potree.resourcePath}/icons/volume.svg`;
+	} else if (measurement instanceof Potree.PolygonClipVolume) {
+		return `${Potree.resourcePath}/icons/clip-polygon.svg`;
 	}
 }
 

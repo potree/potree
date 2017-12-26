@@ -672,7 +672,7 @@ Potree.Renderer = class Renderer {
 		let view = camera.matrixWorldInverse;
 		let viewInv = camera.matrixWorld;
 		let proj = camera.projectionMatrix;
-		let projInv = new THREE.Matrix4().getInverse(camera.projectionMatrix);
+		let projInv = new THREE.Matrix4().getInverse(proj);
 		let worldView = new THREE.Matrix4();
 
 		let material = octree.material;
@@ -799,8 +799,14 @@ Potree.Renderer = class Renderer {
 			shader.setUniform1f("near", camera.near);
 			shader.setUniform1f("far", camera.far);
 
-			shader.setUniform("useOrthographicCamera", material.useOrthographicCamera);
-			shader.setUniform("orthoRange", material.orthoRange);
+			
+			if(camera instanceof THREE.OrthographicCamera){
+				shader.setUniform("uUseOrthographicCamera", true);
+				shader.setUniform("uOrthoWidth", camera.right - camera.left); 
+				shader.setUniform("uOrthoHeight", camera.top - camera.bottom);
+			}else{
+				shader.setUniform("uUseOrthographicCamera", false);
+			}
 
 			shader.setUniform1i("clipMode", material.clipMode);
 
@@ -839,7 +845,7 @@ Potree.Renderer = class Renderer {
 
 			shader.setUniform1f("size", material.size);
 			shader.setUniform1f("maxSize", 50);
-			shader.setUniform1f("minSize", 1);
+			shader.setUniform1f("minSize", 2);
 
 
 			// uniform float uPCIndex

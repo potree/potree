@@ -1461,7 +1461,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			}
 
 			if(annotation.children.length > 0){
-				let expand = screenSize > annotation.collapseThreshold || annotation.boundingBox.containsPoint(this.scene.getActiveCamera().position.position);
+				let expand = screenSize > annotation.collapseThreshold || annotation.boundingBox.containsPoint(this.scene.getActiveCamera().position);
 				annotation.expand = expand;
 
 				if (!expand) {

@@ -1435,11 +1435,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 				screenPos.copy(position).project(this.scene.getActiveCamera());
 				screenPos.x = this.renderArea.clientWidth * (screenPos.x + 1) / 2;
 				screenPos.y = this.renderArea.clientHeight * (1 - (screenPos.y + 1) / 2);
-				
-				//screenPos.x = Math.floor(screenPos.x - element[0].clientWidth / 2);
-				//screenPos.y = Math.floor(screenPos.y - annotation.elTitlebar[0].clientHeight / 2);
-				screenPos.x = Math.floor(screenPos.x);
-				screenPos.y = Math.floor(screenPos.y);
+
 
 				// SCREEN SIZE
 				if(viewer.scene.cameraMode == Potree.CameraMode.PERSPECTIVE) {
@@ -1451,7 +1447,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 					screenSize = Potree.utils.projectedRadiusOrtho(radius, viewer.scene.cameraO.projectionMatrix, this.renderArea.clientWidth, this.renderArea.clientHeight);
 				}				
 			}
-			
+
 			element[0].style.left = screenPos.x + "px";
 			element[0].style.top = screenPos.y + "px";
 			

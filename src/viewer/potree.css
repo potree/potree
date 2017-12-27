@@ -166,10 +166,13 @@ a:hover, a:visited, a:link, a:active{
 	color:			white;
 	background-color:	black;
 	border-radius:	1.5em;
+	border:			1px solid rgba(255, 255, 255, 0.7);
 	font-size:		1em;
 	opacity:		1;
 	margin:			auto;
 	display:		table;
+	padding:		1px 8px;
+	cursor: 	pointer;
 }
 
 .annotation-expand{
@@ -179,17 +182,23 @@ a:hover, a:visited, a:link, a:active{
 }
 
 .annotation-action-icon{
-	width:			24px;
-	height:			24px;
-	filter:			invert(1);
+	width:			20px;
+	height:			20px;
 	display:		inline-block;
 	vertical-align:	middle;
 	line-height:	1.5em;
 	text-align:		center;
 	font-family:	Arial;
 	font-weight:	bold;
-	padding:		1px 8px 0px 1px;
-	cursor:			default;
+	cursor: 		pointer;
+}
+
+.annotation-action-icon:hover{
+	filter:			drop-shadow(0px 0px 1px white);
+	width:			24px;
+	height:			24px;
+	cursor: 		pointer;
+	
 }
 
 .annotation-item {
@@ -226,8 +235,7 @@ a:hover, a:visited, a:link, a:active{
 	line-height:	1.5em;
 	font-family:	Arial;
 	font-weight:	bold;
-	padding:		1px 8px 0px 8px;
-	cursor:			default;
+	cursor: 		pointer;
 	white-space:	nowrap;
 }
 

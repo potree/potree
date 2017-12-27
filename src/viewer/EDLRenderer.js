@@ -50,6 +50,7 @@ class EDLRenderer {
 
 		let width = viewer.scaleFactor * viewer.renderArea.clientWidth;
 		let height = viewer.scaleFactor * viewer.renderArea.clientHeight;
+		let pixelRatio = viewer.renderer.getPixelRatio();
 		let aspect = width / height;
 
 		viewer.scene.cameraP.aspect = aspect;
@@ -64,10 +65,10 @@ class EDLRenderer {
 
 		viewer.scene.cameraScreenSpace.top = 1/aspect;
 		viewer.scene.cameraScreenSpace.bottom = -1/aspect;
-        viewer.scene.cameraScreenSpace.updateProjectionMatrix();
+		viewer.scene.cameraScreenSpace.updateProjectionMatrix();
 		
 		viewer.renderer.setSize(width, height);
-		this.rtColor.setSize(width, height);
+		this.rtColor.setSize(width * pixelRatio , height * pixelRatio);
 	}
 
 	render () {

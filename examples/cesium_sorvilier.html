@@ -16,9 +16,8 @@
     <link rel="stylesheet" type="text/css" href="../node_modules/spectrum-colorpicker/spectrum.css">
     <link rel="stylesheet" type="text/css" href="../node_modules/openlayers/dist/ol.css">
     <link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
-  </head>
-
-  <body>
+</head>
+<body>
 
   <script src="../node_modules/jquery/dist/jquery.min.js"></script>
   <script src="../libs/jquery-ui/jquery-ui.min.js"></script>
@@ -65,9 +64,10 @@
         sceneModePicker: false,
         selectionIndicator: false,
         timeline: false,
+
         navigationHelpButton: false,
+
         imageryProvider : Cesium.createOpenStreetMapImageryProvider({url : 'https://a.tile.openstreetmap.org/'}),
-        terrainShadows: Cesium.ShadowMode.DISABLED,
     });
 
     let cp = new Cesium.Cartesian3(4303414.154026048, 552161.235598733, 4660771.704035539);
@@ -85,7 +85,7 @@
     });
     potreeViewer.setEDLEnabled(true);
 	potreeViewer.setFOV(60);
-	potreeViewer.setPointBudget(100*1000);
+	potreeViewer.setPointBudget(2000*1000);
 	potreeViewer.setMinNodeSize(0);
     potreeViewer.loadSettingsFromURL();
     potreeViewer.setBackground(null);
@@ -97,15 +97,14 @@
     });
 
     //Potree.loadPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/archpro/heidentor/cloud.js", "Heidentor", function(e){
-    Potree.loadPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/opentopography/CA13_1.4/cloud.js", "CA13", function(e){
-    //Potree.loadPointCloud("../pointclouds/vol_total/cloud.js", "sigeom.sa", e => {
+    Potree.loadPointCloud("../pointclouds/vol_total/cloud.js", "sigeom.sa", e => {
 		potreeViewer.scene.addPointCloud(e.pointcloud);
 		e.pointcloud.position.z = 0;
 		let material = e.pointcloud.material;
-        material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+		material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
 
-        potreeViewer.scene.view.position.set(689429.64, 3877023.77, 42878.97);
-		potreeViewer.scene.view.lookAt(new THREE.Vector3(696072.86, 3916730.04, 82.04));
+        potreeViewer.scene.view.position.set(590096.63, 231923.89, 509.60);
+		potreeViewer.scene.view.lookAt(new THREE.Vector3(589807.61, 231393.30, 25.07));
 
         Potree.measureTimings = true;
 
@@ -121,6 +120,21 @@
 
             let minWGS84 = proj4(pointcloudProjection, mapProjection, bb.min.toArray());
             let maxWGS84 = proj4(pointcloudProjection, mapProjection, bb.max.toArray());
+
+            let entity = {
+                name : 'Sorvilier',
+                polygon : {
+                    hierarchy : Cesium.Cartesian3.fromDegreesArray([
+                        minWGS84[0], minWGS84[1],
+                        maxWGS84[0], minWGS84[1],
+                        maxWGS84[0], maxWGS84[1],
+                        minWGS84[0], maxWGS84[1],
+                        ]),
+                    material : Cesium.Color.RED.withAlpha(0.5)
+                }
+            };
+
+            let sorvilier = cesiumViewer.entities.add(entity);
         }
 
 

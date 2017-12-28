@@ -97,9 +97,6 @@ class LASExporter {
 
 		let boffset = 227;
 		for (let i = 0; i < points.numPoints; i++) {
-			// let point = points[i];
-			// let position = new THREE.Vector3(point.x, point.y, point.z);
-
 			let px = points.data.position[3 * i + 0];
 			let py = points.data.position[3 * i + 1];
 			let pz = points.data.position[3 * i + 2];
@@ -136,9 +133,9 @@ class LASExporter {
 			}
 
 			if (points.data.color) {
-				view.setUint16(boffset + 20, (points.data.color[3 * i + 0] * 255), true);
-				view.setUint16(boffset + 22, (points.data.color[3 * i + 1] * 255), true);
-				view.setUint16(boffset + 24, (points.data.color[3 * i + 2] * 255), true);
+				view.setUint16(boffset + 20, (points.data.color[4 * i + 0] * 255), true);
+				view.setUint16(boffset + 22, (points.data.color[4 * i + 1] * 255), true);
+				view.setUint16(boffset + 24, (points.data.color[4 * i + 2] * 255), true);
 			}
 
 			boffset += 28;

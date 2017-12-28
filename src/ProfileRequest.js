@@ -2,7 +2,6 @@ const ProfileData = require('./ProfileData');
 const context = require('./context');
 const Points = require('./Points');
 const BinaryHeap = require('./utils/BinaryHeap');
-const Box3Helper = require('./utils/Box3Helper');
 const THREE = require('three');
 
 class ProfileRequest {
@@ -74,9 +73,11 @@ class ProfileRequest {
 				// add points to result
 				intersectedNodes.push(node);
 				context.getLRU().touch(node);
-				this.highestLevelServed = node.getLevel();
+				this.highestLevelServed = Math.max(node.getLevel(), this.highestLevelServed);
 
-				if ((node.level % node.pcoGeometry.hierarchyStepSize) === 0 && node.hasChildren) {
+				let doTraverse = (node.level % node.pcoGeometry.hierarchyStepSize) === 0 && node.hasChildren;
+				doTraverse = doTraverse || node.getLevel() === 0;
+				if (doTraverse) {
 					this.traverse(node);
 				}
 			} else {
@@ -125,13 +126,13 @@ class ProfileRequest {
 					continue;
 				}
 
-				{ // DEBUG
-					let boxHelper = new Box3Helper(node.getBoundingBox());
-					boxHelper.matrixAutoUpdate = false;
-					// TODO: viewer does not exist in this branch!
-					// boxHelper.matrix.copy(viewer.scene.pointclouds[0].matrixWorld);
-					// viewer.scene.scene.add(boxHelper);
-				}
+				// { // DEBUG
+				// 	let boxHelper = new Box3Helper(node.getBoundingBox());
+				// 	boxHelper.matrixAutoUpdate = false;
+				// 	// TODO: viewer does not exist in this branch!
+				// 	// boxHelper.matrix.copy(viewer.scene.pointclouds[0].matrixWorld);
+				// 	// viewer.scene.scene.add(boxHelper);
+				// }
 
 				let sv = new THREE.Vector3().subVectors(segment.end, segment.start).setZ(0);
 				let segmentDir = sv.clone().normalize();

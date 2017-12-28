@@ -18,8 +18,6 @@ module.exports = class ProfilePointCloudEntry {
 	addPoints (data) {
 		this.points.push(data);
 
-		let projectedBox = new THREE.Box3();
-
 		{ // REBUILD MODEL
 			if (this.sceneNode) {
 				this.sceneNode.geometry.dispose();
@@ -40,6 +38,8 @@ module.exports = class ProfilePointCloudEntry {
 
 			let pointsProcessed = 0;
 			for (let part of this.points) {
+				let projectedBox = new THREE.Box3();
+
 				for (let i = 0; i < part.numPoints; i++) {
 					let x = part.data.mileage[i];
 					let y = part.data.position[3 * i + 2];
@@ -60,9 +60,9 @@ module.exports = class ProfilePointCloudEntry {
 
 					pointsProcessed++;
 				}
-			}
 
-			data.projectedBox = projectedBox;
+				data.projectedBox = projectedBox;
+			}
 
 			this.projectedBox = this.points.reduce((a, i) => a.union(i.projectedBox), new THREE.Box3());
 

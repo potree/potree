@@ -75,7 +75,7 @@ class ProfileWindow extends THREE.EventDispatcher {
 				this.render();
 			} else if (this.pointclouds.size > 0) {
 				// FIND HOVERED POINT
-				let radius = Math.abs(this.scaleX.invert(0) - this.scaleX.invert(5));
+				let radius = Math.abs(this.scaleX.invert(0) - this.scaleX.invert(10));
 				let mileage = this.scaleX.invert(newMouse.x);
 				let elevation = this.scaleY.invert(newMouse.y);
 				let point = this.selectPoint(mileage, elevation, radius);
@@ -185,9 +185,12 @@ class ProfileWindow extends THREE.EventDispatcher {
 
 		$('#potree_download_csv_icon').click(() => {
 			let points = new Points();
-			this.pointclouds.forEach((value, key) => {
-				points.add(value.points);
-			});
+
+			for (let [pointcloud, entry] of this.pointclouds) { // eslint-disable-line no-unused-vars
+				for (let pointSet of entry.points) {
+					points.add(pointSet);
+				}
+			}
 
 			let string = CSVExporter.toString(points);
 
@@ -197,9 +200,11 @@ class ProfileWindow extends THREE.EventDispatcher {
 
 		$('#potree_download_las_icon').click(() => {
 			let points = new Points();
-			this.pointclouds.forEach((value, key) => {
-				points.add(value.points);
-			});
+			for (let [pointcloud, entry] of this.pointclouds) { // eslint-disable-line no-unused-vars
+				for (let pointSet of entry.points) {
+					points.add(pointSet);
+				}
+			}
 
 			let buffer = LASExporter.toLAS(points);
 			let u8view = new Uint8Array(buffer);
@@ -222,26 +227,70 @@ class ProfileWindow extends THREE.EventDispatcher {
 			index: null
 		};
 
+		let pointBox = new THREE.Box2(
+			new THREE.Vector2(mileage - radius, elevation - radius),
+			new THREE.Vector2(mileage + radius, elevation + radius));
+
+		// let debugNode = this.scene.getObjectByName("select_debug_node");
+		// if(!debugNode){
+		// 	debugNode = new THREE.Object3D();
+		// 	debugNode.name = "select_debug_node";
+		// 	this.scene.add(debugNode);
+		// }
+		// debugNode.children = [];
+		// let debugPointBox = new THREE.Box3(
+		// 	new THREE.Vector3(...pointBox.min.toArray(), -1),
+		// 	new THREE.Vector3(...pointBox.max.toArray(), +1)
+		// );
+		// debugNode.add(new Box3Helper(debugPointBox, 0xff0000));
+
+		// TODO: unused: let numTested = 0;
+		// TODO: unused: let numSkipped = 0;
+		// TODO: unused: let numTestedPoints = 0;
+		// TODO: unused: let numSkippedPoints = 0;
+
 		for (let [pointcloud, entry] of this.pointclouds) {
-			let points = entry.points;
+			for (let points of entry.points) {
+				let collisionBox = new THREE.Box2(
+					new THREE.Vector2(points.projectedBox.min.x, points.projectedBox.min.y),
+					new THREE.Vector2(points.projectedBox.max.x, points.projectedBox.max.y)
+				);
+				let intersects = collisionBox.intersectsBox(pointBox);
 
-			for (let i = 0; i < points.numPoints; i++) {
-				// let pos = new THREE.Vector3(...points.data.position.subarray(3*i, 3*i+3));
-				let m = points.data.mileage[i] - mileage;
-				let e = points.data.position[3 * i + 2] - elevation;
+				if (!intersects) {
+					// TODO: unused: numSkipped++;
+					// TODO: unused: numSkippedPoints += points.numPoints;
+					continue;
+				}
 
-				let r = Math.sqrt(m * m + e * e);
+				// let debugCollisionBox = new THREE.Box3(
+				//	new THREE.Vector3(...collisionBox.min.toArray(), -1),
+				//	new THREE.Vector3(...collisionBox.max.toArray(), +1)
+				// );
+				// debugNode.add(new Potree.Box3Helper(debugCollisionBox));
 
-				if (r < radius && r < closest.distance) {
-					closest = {
-						distance: r,
-						pointcloud: pointcloud,
-						points: points,
-						index: i
-					};
+				// TODO: unused: numTested++;
+				// TODO: unused: numTestedPoints += points.numPoints;
+
+				for (let i = 0; i < points.numPoints; i++) {
+					let m = points.data.mileage[i] - mileage;
+					let e = points.data.position[3 * i + 2] - elevation;
+
+					let r = Math.sqrt(m * m + e * e);
+
+					if (r < radius && r < closest.distance) {
+						closest = {
+							distance: r,
+							pointcloud: pointcloud,
+							points: points,
+							index: i
+						};
+					}
 				}
 			}
 		}
+
+		// console.log(`nodes: ${numTested}, ${numSkipped} || points: ${numTestedPoints}, ${numSkippedPoints}`);
 
 		if (closest.distance < Infinity) {
 			let points = closest.points;
@@ -287,6 +336,9 @@ class ProfileWindow extends THREE.EventDispatcher {
 		this.pickSphere = new THREE.Mesh(sg, sm);
 		// this.pickSphere.visible = false;
 		this.scene.add(this.pickSphere);
+
+		this.pointCloudRoot = new THREE.Object3D();
+		this.scene.add(this.pointCloudRoot);
 	}
 
 	initSVG () {
@@ -346,7 +398,7 @@ class ProfileWindow extends THREE.EventDispatcher {
 		}
 
 		entry.addPoints(points);
-		this.scene.add(entry.sceneNode);
+		this.pointCloudRoot.add(entry.sceneNode);
 
 		if (this.autoFit) {
 			let width = this.renderArea[0].clientWidth;
@@ -363,6 +415,7 @@ class ProfileWindow extends THREE.EventDispatcher {
 			this.camera.position.copy(center);
 		}
 
+		// console.log(entry);
 		this.render();
 
 		let numPoints = 0;
@@ -385,10 +438,10 @@ class ProfileWindow extends THREE.EventDispatcher {
 		this.scale.set(1, 1, 1);
 		this.pickSphere.visible = false;
 
-		this.scene.children
+		this.pointCloudRoot.children
 			.filter(c => c instanceof THREE.Points)
 			.forEach(c => {
-				this.scene.remove(c);
+				this.pointCloudRoot.remove(c);
 				c.geometry.dispose();
 				c.material.dispose();
 			});
@@ -438,15 +491,15 @@ class ProfileWindow extends THREE.EventDispatcher {
 		{ // THREEJS
 			let radius = Math.abs(this.scaleX.invert(0) - this.scaleX.invert(5));
 			this.pickSphere.scale.set(radius, radius, radius);
-			this.pickSphere.position.z = this.camera.far - radius;
+			// this.pickSphere.position.z = this.camera.far - radius;
+			this.pickSphere.position.z = 0;
 
 			for (let [pointcloud, entry] of this.pointclouds) {
 				let material = entry.sceneNode.material;
 
 				material.pointColorType = pointcloud.material.pointColorType;
 				material.uniforms.intensityRange.value = pointcloud.material.uniforms.intensityRange.value;
-				material.heightMin = pointcloud.material.heightMin;
-				material.heightMax = pointcloud.material.heightMax;
+				material.elevationRange = pointcloud.material.elevationRange;
 				material.rgbGamma = pointcloud.material.rgbGamma;
 				material.rgbContrast = pointcloud.material.rgbContrast;
 				material.rgbBrightness = pointcloud.material.rgbBrightness;
@@ -456,7 +509,7 @@ class ProfileWindow extends THREE.EventDispatcher {
 				material.intensityBrightness = pointcloud.material.intensityBrightness;
 			}
 
-			this.pickSphere.visible = false;
+			this.pickSphere.visible = true;
 
 			this.renderer.setSize(width, height);
 

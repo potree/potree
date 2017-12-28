@@ -800,7 +800,13 @@ module.exports = class PointCloudMaterial extends THREE.RawShaderMaterial {
 	}
 
 	set weightRGB (value) {
-		this.uniforms.wRGB.value = value;
+		if (this.uniforms.wRGB.value !== value) {
+			this.uniforms.wRGB.value = value;
+			this.dispatchEvent({
+				type: 'material_property_changed',
+				target: this
+			});
+		}
 	}
 
 	get weightIntensity () {
@@ -808,7 +814,13 @@ module.exports = class PointCloudMaterial extends THREE.RawShaderMaterial {
 	}
 
 	set weightIntensity (value) {
-		this.uniforms.wIntensity.value = value;
+		if (this.uniforms.wIntensity.value !== value) {
+			this.uniforms.wIntensity.value = value;
+			this.dispatchEvent({
+				type: 'material_property_changed',
+				target: this
+			});
+		}
 	}
 
 	get weightElevation () {
@@ -816,7 +828,13 @@ module.exports = class PointCloudMaterial extends THREE.RawShaderMaterial {
 	}
 
 	set weightElevation (value) {
-		this.uniforms.wElevation.value = value;
+		if (this.uniforms.wElevation.value !== value) {
+			this.uniforms.wElevation.value = value;
+			this.dispatchEvent({
+				type: 'material_property_changed',
+				target: this
+			});
+		}
 	}
 
 	get weightClassification () {
@@ -824,7 +842,13 @@ module.exports = class PointCloudMaterial extends THREE.RawShaderMaterial {
 	}
 
 	set weightClassification (value) {
-		this.uniforms.wClassification.value = value;
+		if (this.uniforms.wClassification.value !== value) {
+			this.uniforms.wClassification.value = value;
+			this.dispatchEvent({
+				type: 'material_property_changed',
+				target: this
+			});
+		}
 	}
 
 	get weightReturnNumber () {
@@ -832,7 +856,13 @@ module.exports = class PointCloudMaterial extends THREE.RawShaderMaterial {
 	}
 
 	set weightReturnNumber (value) {
-		this.uniforms.wReturnNumber.value = value;
+		if (this.uniforms.wReturnNumber.value !== value) {
+			this.uniforms.wReturnNumber.value = value;
+			this.dispatchEvent({
+				type: 'material_property_changed',
+				target: this
+			});
+		}
 	}
 
 	get weightSourceID () {
@@ -840,7 +870,13 @@ module.exports = class PointCloudMaterial extends THREE.RawShaderMaterial {
 	}
 
 	set weightSourceID (value) {
-		this.uniforms.wSourceID.value = value;
+		if (this.uniforms.wSourceID.value !== value) {
+			this.uniforms.wSourceID.value = value;
+			this.dispatchEvent({
+				type: 'material_property_changed',
+				target: this
+			});
+		}
 	}
 
 	static generateGradientTexture (gradient) {

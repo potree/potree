@@ -91,7 +91,6 @@ class ProfilePointCloudEntry {
 				if (updateRange.start + updateRange.count >= batchSize) {
 					// finalize current batch, start new batch
 
-					// for (let attribute of Object.values(this.currentBatch.geometry.attributes)) {
 					for (let key of Object.keys(this.currentBatch.geometry.attributes)) {
 						let attribute = this.currentBatch.geometry.attributes[key];
 
@@ -110,19 +109,44 @@ class ProfilePointCloudEntry {
 				}
 
 				let x = data.data.mileage[i];
-				let y = data.data.position[3 * i + 2];
-				let z = 0;
-				projectedBox.expandByPoint(new THREE.Vector3(x, y, 0));
+				let y = 0;
+				let z = data.data.position[3 * i + 2];
+
+				projectedBox.expandByPoint(new THREE.Vector3(x, y, z));
 				let currentIndex = updateRange.start + updateRange.count;
-				this.currentBatch.geometry.attributes.position.array[3 * currentIndex + 0] = x;
-				this.currentBatch.geometry.attributes.position.array[3 * currentIndex + 1] = y;
-				this.currentBatch.geometry.attributes.position.array[3 * currentIndex + 2] = z;
+				let attributes = this.currentBatch.geometry.attributes;
+
+				{
+					attributes.position.array[3 * currentIndex + 0] = x;
+					attributes.position.array[3 * currentIndex + 1] = y;
+					attributes.position.array[3 * currentIndex + 2] = z;
+				}
 
 				if (data.data.color) {
-					this.currentBatch.geometry.attributes.color.array[4 * currentIndex + 0] = data.data.color[4 * i + 0];
-					this.currentBatch.geometry.attributes.color.array[4 * currentIndex + 1] = data.data.color[4 * i + 1];
-					this.currentBatch.geometry.attributes.color.array[4 * currentIndex + 2] = data.data.color[4 * i + 2];
-					this.currentBatch.geometry.attributes.color.array[4 * currentIndex + 3] = 255;
+					attributes.color.array[4 * currentIndex + 0] = data.data.color[4 * i + 0];
+					attributes.color.array[4 * currentIndex + 1] = data.data.color[4 * i + 1];
+					attributes.color.array[4 * currentIndex + 2] = data.data.color[4 * i + 2];
+					attributes.color.array[4 * currentIndex + 3] = 255;
+				}
+
+				if (data.data.intensity) {
+					attributes.intensity.array[currentIndex] = data.data.intensity[i];
+				}
+
+				if (data.data.classification) {
+					attributes.classification.array[currentIndex] = data.data.classification[i];
+				}
+
+				if (data.data.returnNumber) {
+					attributes.returnNumber.array[currentIndex] = data.data.returnNumber[i];
+				}
+
+				if (data.data.numberOfReturns) {
+					attributes.numberOfReturns.array[currentIndex] = data.data.numberOfReturns[i];
+				}
+
+				if (data.data.pointSourceID) {
+					attributes.pointSourceID.array[currentIndex] = data.data.pointSourceID[i];
 				}
 
 				updateRange.count++;
@@ -138,8 +162,6 @@ class ProfilePointCloudEntry {
 			}
 
 			data.projectedBox = projectedBox;
-
-			// debugger;
 
 			this.projectedBox = this.points.reduce((a, i) => a.union(i.projectedBox), new THREE.Box3());
 		}

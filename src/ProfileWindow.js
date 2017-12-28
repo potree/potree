@@ -90,7 +90,7 @@ class ProfileWindow extends THREE.EventDispatcher {
 				let ncPos = [this.scaleX.invert(newMouse.x), this.scaleY.invert(newMouse.y)];
 
 				this.camera.position.x -= ncPos[0] - cPos[0];
-				this.camera.position.y -= ncPos[1] - cPos[1];
+				this.camera.position.z -= ncPos[1] - cPos[1];
 
 				this.render();
 			} else if (this.pointclouds.size > 0) {
@@ -98,13 +98,14 @@ class ProfileWindow extends THREE.EventDispatcher {
 				let radius = Math.abs(this.scaleX.invert(0) - this.scaleX.invert(40));
 				let mileage = this.scaleX.invert(newMouse.x);
 				let elevation = this.scaleY.invert(newMouse.y);
+
 				let point = this.selectPoint(mileage, elevation, radius);
 
 				if (point) {
 					this.elRoot.find('#profileSelectionProperties').fadeIn(200);
 					this.pickSphere.visible = true;
 					this.pickSphere.scale.set(0.5 * radius, 0.5 * radius, 0.5 * radius);
-					this.pickSphere.position.set(point.mileage, point.position[2], 0);
+					this.pickSphere.position.set(point.mileage, 0, point.position[2]);
 					this.viewerPickSphere.position.set(...point.position);
 
 					if (!this.viewer.scene.scene.children.includes(this.viewerPickSphere)) {
@@ -202,7 +203,7 @@ class ProfileWindow extends THREE.EventDispatcher {
 			let ncPos = [this.scaleX.invert(this.mouse.x), this.scaleY.invert(this.mouse.y)];
 
 			this.camera.position.x -= ncPos[0] - cPos[0];
-			this.camera.position.y -= ncPos[1] - cPos[1];
+			this.camera.position.z -= ncPos[1] - cPos[1];
 
 			this.render();
 			this.updateScales();
@@ -283,9 +284,10 @@ class ProfileWindow extends THREE.EventDispatcher {
 		for (let [pointcloud, entry] of this.pointclouds) {
 			for (let points of entry.points) {
 				let collisionBox = new THREE.Box2(
-					new THREE.Vector2(points.projectedBox.min.x, points.projectedBox.min.y),
-					new THREE.Vector2(points.projectedBox.max.x, points.projectedBox.max.y)
+					new THREE.Vector2(points.projectedBox.min.x, points.projectedBox.min.z),
+					new THREE.Vector2(points.projectedBox.max.x, points.projectedBox.max.z)
 				);
+
 				let intersects = collisionBox.intersectsBox(pointBox);
 
 				if (!intersects) {
@@ -358,7 +360,10 @@ class ProfileWindow extends THREE.EventDispatcher {
 		$(this.renderer.domElement).css('width', '100%');
 		$(this.renderer.domElement).css('height', '100%');
 
-		this.camera = new THREE.OrthographicCamera(-10, 10, 10, -10, -1000, 1000);
+		this.camera = new THREE.OrthographicCamera(-1000, 1000, 1000, -1000, -1000, 1000);
+		this.camera.up.set(0, 0, 1);
+		this.camera.rotation.order = 'ZXY';
+		this.camera.rotation.x = Math.PI / 2.0;
 
 		this.scene = new THREE.Scene();
 
@@ -385,7 +390,7 @@ class ProfileWindow extends THREE.EventDispatcher {
 			.domain([this.camera.left + this.camera.position.x, this.camera.right + this.camera.position.x])
 			.range([0, width]);
 		this.scaleY = d3Scale.scaleLinear()
-			.domain([this.camera.bottom + this.camera.position.y, this.camera.top + this.camera.position.y])
+			.domain([this.camera.bottom + this.camera.position.z, this.camera.top + this.camera.position.z])
 			.range([height, 0]);
 
 		this.xAxis = d3Axis.axisBottom()
@@ -511,8 +516,28 @@ class ProfileWindow extends THREE.EventDispatcher {
 
 		this.scaleX.domain([this.camera.left + this.camera.position.x, this.camera.right + this.camera.position.x])
 			.range([0, width]);
-		this.scaleY.domain([this.camera.bottom + this.camera.position.y, this.camera.top + this.camera.position.y])
+		this.scaleY.domain([this.camera.bottom + this.camera.position.z, this.camera.top + this.camera.position.z])
 			.range([height, 0]);
+
+		let marginLeft = this.renderArea[0].offsetLeft;
+
+		this.xAxis.scale(this.scaleX)
+			.tickSizeInner(-height)
+			.tickSizeOuter(1)
+			.tickPadding(10)
+			.ticks(width / 50);
+		this.yAxis.scale(this.scaleY)
+			.tickSizeInner(-width)
+			.tickSizeOuter(1)
+			.tickPadding(10)
+			.ticks(height / 20);
+
+		this.elXAxis
+			.attr('transform', `translate(${marginLeft}, ${height})`)
+			.call(this.xAxis);
+		this.elYAxis
+			.attr('transform', `translate(${marginLeft}, 0)`)
+			.call(this.yAxis);
 	}
 
 	requestScaleUpdate () {
@@ -524,29 +549,6 @@ class ProfileWindow extends THREE.EventDispatcher {
 
 		if (allowUpdate) {
 			this.lastScaleUpdate = new Date().getTime();
-
-			let width = this.renderArea[0].clientWidth;
-			let height = this.renderArea[0].clientHeight;
-			let marginLeft = this.renderArea[0].offsetLeft;
-
-			this.xAxis.scale(this.scaleX)
-				.tickSizeInner(-height)
-				.tickSizeOuter(1)
-				.tickPadding(10)
-				.ticks(width / 50);
-			this.yAxis.scale(this.scaleY)
-				.tickSizeInner(-width)
-				.tickSizeOuter(1)
-				.tickPadding(10)
-				.ticks(height / 20);
-
-			this.elXAxis
-				.attr('transform', `translate(${marginLeft}, ${height})`)
-				.call(this.xAxis);
-			this.elYAxis
-				.attr('transform', `translate(${marginLeft}, 0)`)
-				.call(this.yAxis);
-
 			this.scaleUpdatePending = false;
 		} else if (!this.scaleUpdatePending) {
 			setTimeout(this.requestScaleUpdate.bind(this), 100);
@@ -563,22 +565,31 @@ class ProfileWindow extends THREE.EventDispatcher {
 		{ // THREEJS
 			let radius = Math.abs(this.scaleX.invert(0) - this.scaleX.invert(5));
 			this.pickSphere.scale.set(radius, radius, radius);
-			// this.pickSphere.position.z = this.camera.far - radius;
 			this.pickSphere.position.z = 0;
 
 			for (let [pointcloud, entry] of this.pointclouds) {
 				let material = entry.sceneNode.material;
 
 				material.pointColorType = pointcloud.material.pointColorType;
+				material.uniforms.uColor = pointcloud.material.uniforms.uColor;
 				material.uniforms.intensityRange.value = pointcloud.material.uniforms.intensityRange.value;
 				material.elevationRange = pointcloud.material.elevationRange;
+
 				material.rgbGamma = pointcloud.material.rgbGamma;
 				material.rgbContrast = pointcloud.material.rgbContrast;
 				material.rgbBrightness = pointcloud.material.rgbBrightness;
+
 				material.intensityRange = pointcloud.material.intensityRange;
 				material.intensityGamma = pointcloud.material.intensityGamma;
 				material.intensityContrast = pointcloud.material.intensityContrast;
 				material.intensityBrightness = pointcloud.material.intensityBrightness;
+
+				material.uniforms.wRGB.value = pointcloud.material.uniforms.wRGB.value;
+				material.uniforms.wIntensity.value = pointcloud.material.uniforms.wIntensity.value;
+				material.uniforms.wElevation.value = pointcloud.material.uniforms.wElevation.value;
+				material.uniforms.wClassification.value = pointcloud.material.uniforms.wClassification.value;
+				material.uniforms.wReturnNumber.value = pointcloud.material.uniforms.wReturnNumber.value;
+				material.uniforms.wSourceID.value = pointcloud.material.uniforms.wSourceID.value;
 			}
 
 			this.pickSphere.visible = true;

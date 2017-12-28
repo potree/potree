@@ -53,7 +53,12 @@ class View {
 	}
 
 	lookAt (t) {
-		let V = new THREE.Vector3().subVectors(t, this.position);
+		let V;
+		if (arguments.length === 1) {
+			V = new THREE.Vector3().subVectors(t, this.position);
+		} else if (arguments.length === 3) {
+			V = new THREE.Vector3().subVectors(new THREE.Vector3(...arguments), this.position);
+		}
 		let radius = V.length();
 		let dir = V.normalize();
 

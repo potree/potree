@@ -160,7 +160,7 @@ class ProfileRequest {
 	getPointsInsideProfile (nodes, target) {
 		let totalMileage = 0;
 
-		let tStart = new Date().getTime();
+		// TODO: unused: let tStart = new Date().getTime();
 		let pointsProcessed = 0;
 
 		for (let segment of target.segments) {
@@ -271,8 +271,8 @@ class ProfileRequest {
 			totalMileage += segment.length;
 		}
 
-		let tEnd = new Date().getTime();
-		console.log((tEnd - tStart).toFixed(2) + ', ' + pointsProcessed);
+		// TODO: unused: let tEnd = new Date().getTime();
+		// console.log((tEnd - tStart).toFixed(2) + ', ' + pointsProcessed);
 
 		for (let segment of target.segments) {
 			target.boundingBox.union(segment.points.boundingBox);

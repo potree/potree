@@ -22,15 +22,15 @@ const PointCloudArena4DGeometry = function () {
 PointCloudArena4DGeometry.prototype = Object.create(THREE.EventDispatcher.prototype);
 
 PointCloudArena4DGeometry.load = function (url, callback) {
-	var xhr = new XMLHttpRequest();
+	let xhr = new XMLHttpRequest();
 	xhr.open('GET', url + '?info', true);
 
 	xhr.onreadystatechange = function () {
 		try {
 			if (xhr.readyState === 4 && xhr.status === 200) {
-				var response = JSON.parse(xhr.responseText);
+				let response = JSON.parse(xhr.responseText);
 
-				var geometry = new PointCloudArena4DGeometry();
+				let geometry = new PointCloudArena4DGeometry();
 				geometry.url = url;
 				geometry.name = response.Name;
 				geometry.provider = response.Provider;
@@ -45,14 +45,14 @@ PointCloudArena4DGeometry.load = function (url, callback) {
 					geometry.spacing = response.Spacing;
 				}
 
-				var offset = geometry.boundingBox.min.clone().multiplyScalar(-1);
+				let offset = geometry.boundingBox.min.clone().multiplyScalar(-1);
 
 				geometry.boundingBox.min.add(offset);
 				geometry.boundingBox.max.add(offset);
 				geometry.offset = offset;
 
-				var center = geometry.boundingBox.getCenter();
-				var radius = geometry.boundingBox.getSize().length() / 2;
+				let center = geometry.boundingBox.getCenter();
+				let radius = geometry.boundingBox.getSize().length() / 2;
 				geometry.boundingSphere = new THREE.Sphere(center, radius);
 
 				geometry.loadHierarchy();
@@ -71,38 +71,38 @@ PointCloudArena4DGeometry.load = function (url, callback) {
 };
 
 PointCloudArena4DGeometry.prototype.loadHierarchy = function () {
-	var url = this.url + '?tree';
-	var xhr = new XMLHttpRequest();
+	let url = this.url + '?tree';
+	let xhr = new XMLHttpRequest();
 	xhr.open('GET', url, true);
 	xhr.responseType = 'arraybuffer';
 
-	var scope = this;
+	let scope = this;
 
 	xhr.onreadystatechange = function () {
 		if (!(xhr.readyState === 4 && xhr.status === 200)) {
 			return;
 		}
 
-		var buffer = xhr.response;
-		var numNodes = buffer.byteLength /	3;
-		var view = new DataView(buffer);
-		var stack = [];
-		var root = null;
+		let buffer = xhr.response;
+		let numNodes = buffer.byteLength /	3;
+		let view = new DataView(buffer);
+		let stack = [];
+		let root = null;
 
-		var levels = 0;
+		let levels = 0;
 
-		// TODO Debug: var start = new Date().getTime();
+		// TODO Debug: let start = new Date().getTime();
 		// read hierarchy
-		for (var i = 0; i < numNodes; i++) {
-			var mask = view.getUint8(i * 3 + 0, true);
-			// TODO Unused: var numPoints = view.getUint16(i * 3 + 1, true);
+		for (let i = 0; i < numNodes; i++) {
+			let mask = view.getUint8(i * 3 + 0, true);
+			// TODO Unused: let numPoints = view.getUint16(i * 3 + 1, true);
 
-			var hasLeft = (mask & 1) > 0;
-			var hasRight = (mask & 2) > 0;
-			var splitX = (mask & 4) > 0;
-			var splitY = (mask & 8) > 0;
-			var splitZ = (mask & 16) > 0;
-			var split = null;
+			let hasLeft = (mask & 1) > 0;
+			let hasRight = (mask & 2) > 0;
+			let splitX = (mask & 4) > 0;
+			let splitY = (mask & 8) > 0;
+			let splitZ = (mask & 16) > 0;
+			let split = null;
 			if (splitX) {
 				split = 'X';
 			} else if (splitY) {
@@ -111,7 +111,7 @@ PointCloudArena4DGeometry.prototype.loadHierarchy = function () {
 				split = 'Z';
 			}
 
-			var node = new PointCloudArena4DGeometryNode();
+			let node = new PointCloudArena4DGeometryNode();
 			node.hasLeft = hasLeft;
 			node.hasRight = hasRight;
 			node.split = split;
@@ -124,7 +124,7 @@ PointCloudArena4DGeometry.prototype.loadHierarchy = function () {
 			levels = Math.max(levels, node.level);
 
 			if (stack.length > 0) {
-				var parent = stack[stack.length - 1];
+				let parent = stack[stack.length - 1];
 				node.boundingBox = parent.boundingBox.clone();
 				var parentBBSize = parent.boundingBox.getSize();
 
@@ -167,7 +167,7 @@ PointCloudArena4DGeometry.prototype.loadHierarchy = function () {
 				root.boundingSphere = new THREE.Sphere(center, radius);
 			}
 
-			var bbSize = node.boundingBox.getSize();
+			let bbSize = node.boundingBox.getSize();
 			node.spacing = ((bbSize.x + bbSize.y + bbSize.z) / 3) / 75;
 
 			stack.push(node);
@@ -177,16 +177,16 @@ PointCloudArena4DGeometry.prototype.loadHierarchy = function () {
 				while (!done && stack.length > 0) {
 					stack.pop();
 
-					var top = stack[stack.length - 1];
+					let top = stack[stack.length - 1];
 
 					done = stack.length > 0 && top.hasRight && top.right == null;
 				}
 			}
 		}
 		// TODO Debug:
-		// var end = new Date().getTime();
-		// var parseDuration = end - start;
-		// var msg = parseDuration;
+		// let end = new Date().getTime();
+		// let parseDuration = end - start;
+		// let msg = parseDuration;
 		// document.getElementById("lblDebug").innerHTML = msg;
 
 		scope.root = root;

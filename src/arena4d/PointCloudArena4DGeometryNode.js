@@ -1,4 +1,8 @@
 const THREE = require('three');
+const toInterleavedBufferAttribute = require('../utils/toInterleavedBufferAttribute');
+const InterleavedBuffer = require('../InterleavedBuffer');
+const InterleavedBufferAttribute = require('../InterleavedBufferAttribute');
+const PointAttribute = require('../loader/PointAttribute');
 
 const PointCloudArena4DGeometryNode = function () {
 	this.left = null;
@@ -36,7 +40,7 @@ PointCloudArena4DGeometryNode.prototype.getBoundingBox = function () {
 };
 
 PointCloudArena4DGeometryNode.prototype.getChildren = function () {
-	var children = [];
+	let children = [];
 
 	if (this.left) {
 		children.push(this.left);
@@ -70,65 +74,74 @@ PointCloudArena4DGeometryNode.prototype.load = function () {
 
 	PointCloudArena4DGeometryNode.nodesLoading++;
 
-	var url = this.pcoGeometry.url + '?node=' + this.number;
-	var xhr = new XMLHttpRequest();
+	let url = this.pcoGeometry.url + '?node=' + this.number;
+	let xhr = new XMLHttpRequest();
 	xhr.open('GET', url, true);
 	xhr.responseType = 'arraybuffer';
 
-	var scope = this;
+	let node = this;
 
 	xhr.onreadystatechange = function () {
 		if (!(xhr.readyState === 4 && xhr.status === 200)) {
 			return;
 		}
 
-		var buffer = xhr.response;
-		var view = new DataView(buffer);
-		var numPoints = buffer.byteLength / 17;
+		let buffer = xhr.response;
+		let sourceView = new DataView(buffer);
+		let numPoints = buffer.byteLength / 17;
+		let bytesPerPoint = 28;
 
-		var positions = new Float32Array(numPoints * 3);
-		var colors = new Uint8Array(numPoints * 3);
-		var indices = new ArrayBuffer(numPoints * 4);
-		var iIndices = new Uint32Array(indices);
+		let data = new ArrayBuffer(numPoints * bytesPerPoint);
+		let targetView = new DataView(data);
 
-		for (var i = 0; i < numPoints; i++) {
-			var x = view.getFloat32(i * 17 + 0, true) + scope.boundingBox.min.x;
-			var y = view.getFloat32(i * 17 + 4, true) + scope.boundingBox.min.y;
-			var z = view.getFloat32(i * 17 + 8, true) + scope.boundingBox.min.z;
-			var r = view.getUint8(i * 17 + 12, true);
-			var g = view.getUint8(i * 17 + 13, true);
-			var b = view.getUint8(i * 17 + 14, true);
+		let attributes = [
+			PointAttribute.POSITION_CARTESIAN,
+			PointAttribute.RGBA_PACKED,
+			PointAttribute.INTENSITY,
+			PointAttribute.CLASSIFICATION
+		];
 
-			positions[i * 3 + 0] = x;
-			positions[i * 3 + 1] = y;
-			positions[i * 3 + 2] = z;
+		let iAttributes = attributes
+			.map(toInterleavedBufferAttribute)
+			.filter(ia => ia != null);
+		iAttributes.push(new InterleavedBufferAttribute('index', 4, 4, 'UNSIGNED_BYTE', true));
+		let iBuffer = new InterleavedBuffer(data, iAttributes, numPoints);
 
-			colors[i * 3 + 0] = r;
-			colors[i * 3 + 1] = g;
-			colors[i * 3 + 2] = b;
+		let tightBoundingBox = new THREE.Box3();
+		// debugger;
 
-			iIndices[i] = i;
+		for (let i = 0; i < numPoints; i++) {
+			let x = sourceView.getFloat32(i * 17 + 0, true) + node.boundingBox.min.x;
+			let y = sourceView.getFloat32(i * 17 + 4, true) + node.boundingBox.min.y;
+			let z = sourceView.getFloat32(i * 17 + 8, true) + node.boundingBox.min.z;
+			let r = sourceView.getUint8(i * 17 + 12, true);
+			let g = sourceView.getUint8(i * 17 + 13, true);
+			let b = sourceView.getUint8(i * 17 + 14, true);
+			let intensity = sourceView.getUint8(i * 17 + 15, true);
+			let classification = sourceView.getUint8(i * 17 + 16, true);
+
+			tightBoundingBox.expandByPoint(new THREE.Vector3(x, y, z));
+
+			targetView.setFloat32(i * bytesPerPoint + 0, x, true);
+			targetView.setFloat32(i * bytesPerPoint + 4, y, true);
+			targetView.setFloat32(i * bytesPerPoint + 8, z, true);
+
+			targetView.setUint8(i * bytesPerPoint + 12, r);
+			targetView.setUint8(i * bytesPerPoint + 13, g);
+			targetView.setUint8(i * bytesPerPoint + 14, b);
+			targetView.setUint8(i * bytesPerPoint + 15, 255);
+
+			targetView.setFloat32(i * bytesPerPoint + 16, intensity, true);
+			targetView.setUint8(i * bytesPerPoint + 20, classification, true);
+			targetView.setUint32(i * bytesPerPoint + 24, i, true);
 		}
 
-		var geometry = new THREE.BufferGeometry();
-		geometry.addAttribute('position', new THREE.BufferAttribute(positions, 3));
-		geometry.addAttribute('color', new THREE.BufferAttribute(colors, 3, true));
-		geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(numPoints * 3), 3));
-
-		let indicesAttribute = new THREE.Uint8BufferAttribute(indices, 4);
-		indicesAttribute.normalized = true;
-		geometry.addAttribute('indices', indicesAttribute);
-
-		scope.geometry = geometry;
-		scope.loaded = true;
+		node.numPoints = iBuffer.numElements;
+		node.buffer = iBuffer;
+		// node.tightBoundingBox = tightBoundingBox;
+		node.loaded = true;
+		node.loading = false;
 		PointCloudArena4DGeometryNode.nodesLoading--;
-
-		geometry.boundingBox = scope.boundingBox;
-		geometry.boundingSphere = scope.boundingSphere;
-
-		scope.numPoints = numPoints;
-
-		scope.loading = false;
 	};
 
 	xhr.send(null);

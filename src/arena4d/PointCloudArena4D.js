@@ -8,6 +8,7 @@ const PointCloudArena4DNode = require('./PointCloudArena4DNode');
 const PointCloudArena4DGeometryNode = require('./PointCloudArena4DGeometryNode');
 const THREE = require('three');
 const computeTransformedBoundingBox = require('../utils/computeTransformedBoundingBox');
+const context = require('../context');
 
 class PointCloudArena4D extends PointCloudTree {
 	constructor (geometry) {
@@ -135,19 +136,9 @@ class PointCloudArena4D extends PointCloudTree {
 			material.levels = this.maxLevel + 2;
 		}
 
-		// material.minSize = 3;
-
 		// material.uniforms.octreeSize.value = this.boundingBox.size().x;
 		var bbSize = this.boundingBox.getSize();
 		material.bbSize = [bbSize.x, bbSize.y, bbSize.z];
-
-		// update visibility texture
-		if (material.pointSizeType) {
-			if (material.pointSizeType === PointSizeType.ADAPTIVE ||
-				material.pointColorType === PointColorType.LOD) {
-				this.updateVisibilityTexture(material, visibleNodes);
-			}
-		}
 	}
 
 	updateVisibleBounds () {
@@ -505,19 +496,19 @@ class PointCloudArena4D extends PointCloudTree {
 		return point;
 	}
 
-	updateVisibilityTexture (material, visibleNodes) {
-		if (!material) {
-			return;
+	computeVisibilityTextureData (nodes) {
+		if (context.measureTimings) {
+			performance.mark('computeVisibilityTextureData-start');
 		}
 
-		var texture = material.visibleNodesTexture;
-		var data = texture.image.data;
+		let data = new Uint8Array(nodes.length * 3);
+		let visibleNodeTextureOffsets = new Map();
 
 		// copy array
-		visibleNodes = visibleNodes.slice();
+		nodes = nodes.slice();
 
 		// sort by level and number
-		var sort = function (a, b) {
+		let sort = function (a, b) {
 			var la = a.geometryNode.level;
 			var lb = b.geometryNode.level;
 			var na = a.geometryNode.number;
@@ -527,20 +518,21 @@ class PointCloudArena4D extends PointCloudTree {
 			if (na > nb) return 1;
 			return 0;
 		};
-		visibleNodes.sort(sort);
+		nodes.sort(sort);
 
-		var visibleNodeNames = [];
-		for (let i = 0; i < visibleNodes.length; i++) {
-			// visibleNodeNames[visibleNodes[i].pcoGeometry.number] = true;
-			visibleNodeNames.push(visibleNodes[i].geometryNode.number);
+		let visibleNodeNames = [];
+		for (let i = 0; i < nodes.length; i++) {
+			visibleNodeNames.push(nodes[i].geometryNode.number);
 		}
 
-		for (let i = 0; i < visibleNodes.length; i++) {
-			var node = visibleNodes[i];
+		for (let i = 0; i < nodes.length; i++) {
+			let node = nodes[i];
 
-			var b1 = 0;	// children
-			var b2 = 0;	// offset to first child
-			var b3 = 0;	// split
+			visibleNodeTextureOffsets.set(node, i);
+
+			let b1 = 0;	// children
+			let b2 = 0;	// offset to first child
+			let b3 = 0;	// split
 
 			if (node.geometryNode.left && visibleNodeNames.indexOf(node.geometryNode.left.number) > 0) {
 				b1 += 1;
@@ -564,7 +556,15 @@ class PointCloudArena4D extends PointCloudTree {
 			data[i * 3 + 2] = b3;
 		}
 
-		texture.needsUpdate = true;
+		if (context.measureTimings) {
+			performance.mark('computeVisibilityTextureData-end');
+			performance.measure('render.computeVisibilityTextureData', 'computeVisibilityTextureData-start', 'computeVisibilityTextureData-end');
+		}
+
+		return {
+			data: data,
+			offsets: visibleNodeTextureOffsets
+		};
 	}
 
 	get progress () {

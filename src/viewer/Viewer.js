@@ -44,192 +44,237 @@ class PotreeViewer extends THREE.EventDispatcher {
 	constructor (domElement, args = {}) {
 		super();
 
-		{ // generate missing dom hierarchy
-			if ($(domElement).find('#potree_map').length === 0) {
-				let potreeMap = $(`
+		this.renderArea = domElement;
+
+		try {
+			{ // generate missing dom hierarchy
+				if ($(domElement).find('#potree_map').length === 0) {
+					let potreeMap = $(`
 					<div id="potree_map" class="mapBox" style="position: absolute; left: 50px; top: 50px; width: 400px; height: 400px; display: none">
 						<div id="potree_map_header" style="position: absolute; width: 100%; height: 25px; top: 0px; background-color: rgba(0,0,0,0.5); z-index: 1000; border-top-left-radius: 3px; border-top-right-radius: 3px;">
 						</div>
 						<div id="potree_map_content" class="map" style="position: absolute; z-index: 100; top: 25px; width: 100%; height: calc(100% - 25px); border: 2px solid rgba(0,0,0,0.5); box-sizing: border-box;"></div>
 					</div>
 				`);
-				$(domElement).append(potreeMap);
+					$(domElement).append(potreeMap);
+				}
+
+				if ($(domElement).find('#potree_description').length === 0) {
+					let potreeDescription = $(`<div id="potree_description" class="potree_info_text"></div>`);
+					$(domElement).append(potreeDescription);
+				}
 			}
 
-			if ($(domElement).find('#potree_description').length === 0) {
-				let potreeDescription = $(`<div id="potree_description" class="potree_info_text"></div>`);
-				$(domElement).append(potreeDescription);
-			}
-		}
+			this.pointCloudLoadedCallback = args.onPointCloudLoaded || function () {};
 
-		this.pointCloudLoadedCallback = args.onPointCloudLoaded || function () {};
+			// if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
+			//	defaultSettings.navigation = "Orbit";
+			// }
 
-		this.renderArea = domElement;
+			this.server = null;
 
-		// if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
-		//	defaultSettings.navigation = "Orbit";
-		// }
+			this.fov = 60;
+			this.isFlipYZ = false;
+			this.useDEMCollisions = false;
+			this.generateDEM = false;
+			this.minNodeSize = 100;
+			this.edlStrength = 1.0;
+			this.edlRadius = 1.4;
+			this.useEDL = false;
+			this.classifications = {
+				0: { visible: true, name: 'never classified' },
+				1: { visible: true, name: 'unclassified' },
+				2: { visible: true, name: 'ground' },
+				3: { visible: true, name: 'low vegetation' },
+				4: { visible: true, name: 'medium vegetation' },
+				5: { visible: true, name: 'high vegetation' },
+				6: { visible: true, name: 'building' },
+				7: { visible: true, name: 'low point(noise)' },
+				8: { visible: true, name: 'key-point' },
+				9: { visible: true, name: 'water' },
+				12: { visible: true, name: 'overlap' }
+			};
 
-		this.server = null;
+			this.moveSpeed = 10;
 
-		this.fov = 60;
-		this.isFlipYZ = false;
-		this.useDEMCollisions = false;
-		this.generateDEM = false;
-		this.minNodeSize = 100;
-		this.edlStrength = 1.0;
-		this.edlRadius = 1.4;
-		this.useEDL = false;
-		this.classifications = {
-			0: { visible: true, name: 'never classified' },
-			1: { visible: true, name: 'unclassified' },
-			2: { visible: true, name: 'ground' },
-			3: { visible: true, name: 'low vegetation' },
-			4: { visible: true, name: 'medium vegetation' },
-			5: { visible: true, name: 'high vegetation' },
-			6: { visible: true, name: 'building' },
-			7: { visible: true, name: 'low point(noise)' },
-			8: { visible: true, name: 'key-point' },
-			9: { visible: true, name: 'water' },
-			12: { visible: true, name: 'overlap' }
-		};
+			this.LENGTH_UNITS = {
+				METER: {code: 'm'},
+				FEET: {code: 'ft'},
+				INCH: {code: '\u2033'}
+			};
+			this.lengthUnit = this.LENGTH_UNITS.METER;
 
-		this.moveSpeed = 10;
+			this.showBoundingBox = false;
+			this.showAnnotations = true;
+			this.freeze = false;
 
-		this.LENGTH_UNITS = {
-			METER: {code: 'm'},
-			FEET: {code: 'ft'},
-			INCH: {code: '\u2033'}
-		};
-		this.lengthUnit = this.LENGTH_UNITS.METER;
+			this.stats = new Stats();
+			// this.stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
+			// document.body.appendChild( this.stats.dom );
+			// this.stats.dom.style.left = "100px";
 
-		this.showBoundingBox = false;
-		this.showAnnotations = true;
-		this.freeze = false;
+			this.potreeRenderer = null;
+			this.edlRenderer = null;
+			this.renderer = null;
+			this.pRenderer = null;
 
-		this.stats = new Stats();
-		// this.stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
-		// document.body.appendChild( this.stats.dom );
-		// this.stats.dom.style.left = "100px";
+			this.scene = null;
+			this.overlay = null;
+			this.overlayCamera = null;
 
-		this.potreeRenderer = null;
-		this.edlRenderer = null;
-		this.renderer = null;
-		this.pRenderer = null;
+			this.inputHandler = null;
 
-		this.scene = null;
-		this.overlay = null;
-		this.overlayCamera = null;
+			this.measuringTool = null;
+			this.profileTool = null;
+			this.volumeTool = null;
+			this.clippingTool = null;
+			this.transformationTool = null;
+			this.navigationCube = null;
 
-		this.inputHandler = null;
+			this.skybox = null;
+			this.clock = new THREE.Clock();
+			this.background = null;
 
-		this.measuringTool = null;
-		this.profileTool = null;
-		this.volumeTool = null;
-		this.clippingTool = null;
-		this.transformationTool = null;
-		this.navigationCube = null;
+			this.initThree();
 
-		this.skybox = null;
-		this.clock = new THREE.Clock();
-		this.background = null;
-
-		this.initThree();
-
-		{
-			this.overlay = new THREE.Scene();
-			this.overlayCamera = new THREE.OrthographicCamera(
-				0, 1,
-				1, 0,
-				-1000, 1000
-			);
+			{
+				this.overlay = new THREE.Scene();
+				this.overlayCamera = new THREE.OrthographicCamera(
+					0, 1,
+					1, 0,
+					-1000, 1000
+				);
 
 			// let sg = new THREE.SphereGeometry(0.1, 32, 32);
 			// let sm = new THREE.MeshNormalMaterial();
 			// var s = new THREE.Mesh(sg, sm);
 			// this.overlay.add(s);
-		}
+			}
 
-		this.pRenderer = new Renderer(this.renderer);
+			this.pRenderer = new Renderer(this.renderer);
 
-		{
-			let near = 2.5;
-			let far = 10.0;
-			// TODO unused: let fov = 90;
+			{
+				let near = 2.5;
+				let far = 10.0;
+				// TODO unused: let fov = 90;
 
-			this.shadowTestCam = new THREE.PerspectiveCamera(90, 1, near, far);
-			this.shadowTestCam.position.set(3.50, -2.80, 8.561);
-			this.shadowTestCam.lookAt(new THREE.Vector3(0, 0, 4.87));
-		}
+				this.shadowTestCam = new THREE.PerspectiveCamera(90, 1, near, far);
+				this.shadowTestCam.position.set(3.50, -2.80, 8.561);
+				this.shadowTestCam.lookAt(new THREE.Vector3(0, 0, 4.87));
+			}
 
-		let scene = new Scene(this.renderer);
-		this.setScene(scene);
+			let scene = new Scene(this.renderer);
+			this.setScene(scene);
 
-		{
-			this.inputHandler = new InputHandler(this);
-			this.inputHandler.setScene(this.scene);
+			{
+				this.inputHandler = new InputHandler(this);
+				this.inputHandler.setScene(this.scene);
 
-			this.measuringTool = new MeasuringTool(this);
-			this.profileTool = new ProfileTool(this);
-			this.volumeTool = new VolumeTool(this);
-			this.clippingTool = new ClippingTool(this);
-			this.transformationTool = new TransformationTool(this);
-			this.navigationCube = new NavigationCube(this);
-			this.navigationCube.visible = false;
+				this.measuringTool = new MeasuringTool(this);
+				this.profileTool = new ProfileTool(this);
+				this.volumeTool = new VolumeTool(this);
+				this.clippingTool = new ClippingTool(this);
+				this.transformationTool = new TransformationTool(this);
+				this.navigationCube = new NavigationCube(this);
+				this.navigationCube.visible = false;
 
-			this.createControls();
+				this.createControls();
 
-			this.measuringTool.setScene(this.scene);
-			this.profileTool.setScene(this.scene);
-			this.volumeTool.setScene(this.scene);
-			this.clippingTool.setScene(this.scene);
-
-			let onPointcloudAdded = (e) => {
-				if (this.scene.pointclouds.length === 1) {
-					let speed = e.pointcloud.boundingBox.getSize().length();
-					speed = speed / 5;
-					this.setMoveSpeed(speed);
-				}
-			};
-
-			this.addEventListener('scene_changed', (e) => {
-				this.inputHandler.setScene(e.scene);
-				this.measuringTool.setScene(e.scene);
-				this.profileTool.setScene(e.scene);
-				this.volumeTool.setScene(e.scene);
+				this.measuringTool.setScene(this.scene);
+				this.profileTool.setScene(this.scene);
+				this.volumeTool.setScene(this.scene);
 				this.clippingTool.setScene(this.scene);
 
-				if (!e.scene.hasEventListener('pointcloud_added', onPointcloudAdded)) {
-					e.scene.addEventListener('pointcloud_added', onPointcloudAdded);
-				}
-			});
+				let onPointcloudAdded = (e) => {
+					if (this.scene.pointclouds.length === 1) {
+						let speed = e.pointcloud.boundingBox.getSize().length();
+						speed = speed / 5;
+						this.setMoveSpeed(speed);
+					}
+				};
 
-			this.scene.addEventListener('pointcloud_added', onPointcloudAdded);
+				this.addEventListener('scene_changed', (e) => {
+					this.inputHandler.setScene(e.scene);
+					this.measuringTool.setScene(e.scene);
+					this.profileTool.setScene(e.scene);
+					this.volumeTool.setScene(e.scene);
+					this.clippingTool.setScene(this.scene);
+
+					if (!e.scene.hasEventListener('pointcloud_added', onPointcloudAdded)) {
+						e.scene.addEventListener('pointcloud_added', onPointcloudAdded);
+					}
+				});
+
+				this.scene.addEventListener('pointcloud_added', onPointcloudAdded);
+			}
+
+			{ // set defaults
+				this.setFOV(60);
+				this.setEDLEnabled(false);
+				this.setEDLRadius(1.4);
+				this.setEDLStrength(0.4);
+				this.clippingTool.setClipMode(ClipMode.HIGHLIGHT);
+				this.setPointBudget(1 * 1000 * 1000);
+				this.setShowBoundingBox(false);
+				this.setFreeze(false);
+				this.setNavigationMode(OrbitControls);
+				this.setBackground('gradient');
+
+				this.scaleFactor = 1;
+
+				this.loadSettingsFromURL();
+			}
+
+			// start rendering!
+			if (args.useDefaultRenderLoop === undefined || args.useDefaultRenderLoop === true) {
+				requestAnimationFrame(this.loop.bind(this));
+			}
+
+			this.loadGUI = this.loadGUI.bind(this);
+		} catch (e) {
+			this.onCrash(e);
 		}
+	}
 
-		{ // set defaults
-			this.setFOV(60);
-			this.setEDLEnabled(false);
-			this.setEDLRadius(1.4);
-			this.setEDLStrength(0.4);
-			this.clippingTool.setClipMode(ClipMode.HIGHLIGHT);
-			this.setPointBudget(1 * 1000 * 1000);
-			this.setShowBoundingBox(false);
-			this.setFreeze(false);
-			this.setNavigationMode(OrbitControls);
-			this.setBackground('gradient');
+	onCrash (error) {
+		$(this.renderArea).empty();
 
-			this.scaleFactor = 1;
+		if ($(this.renderArea).find('#potree_failpage').length === 0) {
+			let elFailPage = $(`
+			<div id="#potree_failpage" class="potree_failpage">
 
-			this.loadSettingsFromURL();
+				<h1>Potree Encountered An Error </h1>
+
+				<p>
+				This may happen if your browser or graphics card is not supported.
+				<br>
+				We recommend to use
+				<a href="https://www.google.com/chrome/browser" target="_blank" style="color:initial">Chrome</a>
+				or
+				<a href="https://www.mozilla.org/" target="_blank">Firefox</a>.
+				</p>
+
+				<p>
+				Please also visit <a href="http://webglreport.com/" target="_blank">webglreport.com</a> and
+				check whether your system supports WebGL.
+				</p>
+				<p>
+				If you are already using one of the recommended browsers and WebGL is enabled,
+				consider filing an issue report at <a href="https://github.com/potree/potree/issues" target="_blank">github</a>,<br>
+				including your operating system, graphics card, browser and browser version, as well as the
+				error message below.<br>
+				Please do not report errors on unsupported browsers.
+				</p>
+
+				<pre id="potree_error_console" style="width: 100%; height: 100%"></pre>
+
+			</div>`);
+
+			let elErrorMessage = elFailPage.find('#potree_error_console');
+			elErrorMessage.html(error.stack);
+
+			$(this.renderArea).append(elFailPage);
 		}
-
-		// start rendering!
-		if (args.useDefaultRenderLoop === undefined || args.useDefaultRenderLoop === true) {
-			requestAnimationFrame(this.loop.bind(this));
-		}
-
-		this.loadGUI = this.loadGUI.bind(this);
 	}
 
 	// ------------------------------------------------------------------------------------
@@ -955,6 +1000,7 @@ class PotreeViewer extends THREE.EventDispatcher {
 		let extVAO = gl.getExtension('OES_vertex_array_object');
 		gl.createVertexArray = extVAO.createVertexArrayOES.bind(extVAO);
 		gl.bindVertexArray = extVAO.bindVertexArrayOES.bind(extVAO);
+		// gl.bindVertexArray = extVAO.asdfbindVertexArrayOES.bind(extVAO);
 	}
 
 	updateAnnotations () {
@@ -1315,26 +1361,30 @@ class PotreeViewer extends THREE.EventDispatcher {
 			performance.mark('render-start');
 		}
 
-		if (this.useRep) {
-			if (!this.repRenderer) {
-				this.repRenderer = new RepRenderer(this);
+		try {
+			if (this.useRep) {
+				if (!this.repRenderer) {
+					this.repRenderer = new RepRenderer(this);
+				}
+				this.repRenderer.render(this.renderer);
+			} else if (this.useEDL && Features.SHADER_EDL.isSupported()) {
+				if (!this.edlRenderer) {
+					const EDLRenderer = require('./EDLRenderer');
+					this.edlRenderer = new EDLRenderer(this);
+				}
+				this.edlRenderer.render(this.renderer);
+			} else {
+				if (!this.potreeRenderer) {
+					const PotreeRenderer = require('./PotreeRenderer');
+					this.potreeRenderer = new PotreeRenderer(this);
+				}
+				this.potreeRenderer.render();
 			}
-			this.repRenderer.render(this.renderer);
-		} else if (this.useEDL && Features.SHADER_EDL.isSupported()) {
-			if (!this.edlRenderer) {
-				const EDLRenderer = require('./EDLRenderer');
-				this.edlRenderer = new EDLRenderer(this);
-			}
-			this.edlRenderer.render(this.renderer);
-		} else {
-			if (!this.potreeRenderer) {
-				const PotreeRenderer = require('./PotreeRenderer');
-				this.potreeRenderer = new PotreeRenderer(this);
-			}
-			this.potreeRenderer.render();
-		}
 
-		this.renderer.render(this.overlay, this.overlayCamera);
+			this.renderer.render(this.overlay, this.overlayCamera);
+		} catch (e) {
+			this.onCrash(e);
+		}
 
 		if (context.measureTimings) {
 			performance.mark('render-end');

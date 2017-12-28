@@ -65,13 +65,18 @@ class PointCloudSM {
 		let shader = this.shader;
 		let material = octree.material;
 
-		let vsSource = `#define adaptive_point_size\n` + this.vsSource;
-		let fsSource = `#define adaptive_point_size\n` + this.fsSource;
-		shader.update(vsSource, fsSource);
+		let vsSource = `#define adaptive_point_size\n` + vs();
+		let fsSource = `#define adaptive_point_size\n` + fs();
+
+		try {
+			shader.update(vsSource, fsSource);
+		} catch (e) {
+			console.log(e);
+		}
 
 		gl.useProgram(shader.program);
 
-		this.threeRenderer.setClearColor(0x00ff00, 0);
+		this.threeRenderer.setClearColor(0x000000, 1);
 		this.threeRenderer.clearTarget(this.target, true, true, true);
 		this.threeRenderer.setClearColor(0x000000, 0);
 

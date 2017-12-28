@@ -59,4 +59,16 @@ PointAttribute.NORMAL = new PointAttribute(
 	PointAttributeNames.NORMAL,
 	PointAttributeTypes.DATA_TYPE_FLOAT, 3);
 
+PointAttribute.RETURN_NUMBER = new PointAttribute(
+	PointAttributeNames.RETURN_NUMBER,
+	PointAttributeTypes.DATA_TYPE_UINT8, 1);
+
+PointAttribute.NUMBER_OF_RETURNS = new PointAttribute(
+	PointAttributeNames.NUMBER_OF_RETURNS,
+	PointAttributeTypes.DATA_TYPE_UINT8, 1);
+
+PointAttribute.SOURCE_ID = new PointAttribute(
+	PointAttributeNames.SOURCE_ID,
+	PointAttributeTypes.DATA_TYPE_UINT8, 1);
+
 module.exports = PointAttribute;

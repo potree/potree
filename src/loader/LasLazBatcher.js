@@ -1,5 +1,9 @@
 const context = require('../context');
 const THREE = require('three');
+const PointAttribute = require('./PointAttribute');
+const InterleavedBuffer = require('../InterleavedBuffer');
+const toInterleavedBufferAttribute = require('../utils/toInterleavedBufferAttribute');
+const InterleavedBufferAttribute = require('../InterleavedBufferAttribute');
 
 module.exports = class LasLazBatcher {
 	constructor (node) {
@@ -11,61 +15,39 @@ module.exports = class LasLazBatcher {
 		let worker = context.workerPool.getWorker(workerPath);
 
 		worker.onmessage = (e) => {
-			let geometry = new THREE.BufferGeometry();
 			let numPoints = lasBuffer.pointsCount;
 
-			/*
-			TODO Unused:
-			let endsWith = function (str, suffix) {
-				return str.indexOf(suffix, str.length - suffix.length) !== -1;
-			};
-			*/
+			let attributes = [
+				PointAttribute.POSITION_CARTESIAN,
+				PointAttribute.RGBA_PACKED,
+				PointAttribute.INTENSITY,
+				PointAttribute.CLASSIFICATION,
+				PointAttribute.RETURN_NUMBER,
+				PointAttribute.NUMBER_OF_RETURNS,
+				PointAttribute.SOURCE_ID
+			];
 
-			let positions = e.data.position;
-			let colors = new Uint8Array(e.data.color);
-			let intensities = e.data.intensity;
-			let classifications = new Uint8Array(e.data.classification);
-			let returnNumbers = new Uint8Array(e.data.returnNumber);
-			let numberOfReturns = new Uint8Array(e.data.numberOfReturns);
-			let pointSourceIDs = new Uint16Array(e.data.pointSourceID);
-			// let indices = new ArrayBuffer(numPoints*4);
-			// let iIndices = new Uint32Array(indices);
-
-			// let box = new THREE.Box3();
-			//
-			// let fPositions = new Float32Array(positions);
-			// for(let i = 0; i < numPoints; i++){
-			//	box.expandByPoint(new THREE.Vector3(fPositions[3*i+0], fPositions[3*i+1], fPositions[3*i+2]));
-			// }
-
-			geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
-			geometry.addAttribute('color', new THREE.BufferAttribute(colors, 3, true));
-			geometry.addAttribute('intensity', new THREE.BufferAttribute(new Float32Array(intensities), 1));
-			geometry.addAttribute('classification', new THREE.BufferAttribute(classifications, 1));
-			geometry.addAttribute('returnNumber', new THREE.BufferAttribute(returnNumbers, 1));
-			geometry.addAttribute('numberOfReturns', new THREE.BufferAttribute(numberOfReturns, 1));
-			geometry.addAttribute('pointSourceID', new THREE.BufferAttribute(pointSourceIDs, 1));
-			geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(numPoints * 3), 3));
-
-			let indicesAttribute = new THREE.Uint8BufferAttribute(e.data.indices, 4);
-			indicesAttribute.normalized = true;
-			geometry.addAttribute('indices', indicesAttribute);
+			let data = e.data;
+			let iAttributes = attributes
+				.map(pa => toInterleavedBufferAttribute(pa))
+				.filter(ia => ia != null);
+			iAttributes.push(new InterleavedBufferAttribute('index', 4, 4, 'UNSIGNED_BYTE', true));
+			let iBuffer = new InterleavedBuffer(data.data, iAttributes, numPoints);
 
 			let tightBoundingBox = new THREE.Box3(
 				new THREE.Vector3().fromArray(e.data.tightBoundingBox.min),
 				new THREE.Vector3().fromArray(e.data.tightBoundingBox.max)
 			);
 
-			geometry.boundingBox = this.node.boundingBox;
-			this.node.tightBoundingBox = tightBoundingBox;
+			context.workerPool.returnWorker(workerPath, worker);
 
-			this.node.geometry = geometry;
+			this.node.numPoints = iBuffer.numElements;
+			this.node.buffer = iBuffer;
+			this.node.mean = new THREE.Vector3(...data.mean);
+			this.node.tightBoundingBox = tightBoundingBox;
 			this.node.loaded = true;
 			this.node.loading = false;
 			this.node.pcoGeometry.numNodesLoading--;
-			this.node.mean = new THREE.Vector3(...e.data.mean);
-
-			context.workerPool.returnWorker(workerPath, worker);
 		};
 
 		let message = {

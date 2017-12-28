@@ -2898,11 +2898,6 @@ module.exports = (viewer) => {
 				}
 			});
 
-			viewer.addEventListener('length_unit_changed', e => {
-				$('#optLengthUnit').selectmenu().val(e.value);
-				$('#optLengthUnit').selectmenu('refresh');
-			});
-
 			viewer.addEventListener('pointcloud_loaded', updateHeightRange);
 
 			updateHeightRange();

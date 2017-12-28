@@ -177,6 +177,7 @@ module.exports = class Renderer {
 		let material = octree.material;
 		let shader = null;
 		let visibilityTextureData = null;
+		let currentTextureBindingPoint = 0;
 
 		// if(!["r", "r2", "r0", "r26", "r22", "r06", "r24", "r20", "r04", "r00", "r02"].includes(node.name)){
 		// 	if(!["r", "r2", "r0"].includes(node.name)){
@@ -312,6 +313,7 @@ module.exports = class Renderer {
 			shader.setUniform('uOctreeSize', material.uniforms.octreeSize.value);
 
 			// uniform vec3 uColor;
+			shader.setUniform3f('uColor', material.color.toArray());
 			// uniform float opacity;
 			shader.setUniform1f('uOpacity', material.opacity);
 
@@ -327,39 +329,43 @@ module.exports = class Renderer {
 			shader.setUniform1f('rgbGamma', material.rgbGamma);
 			shader.setUniform1f('rgbContrast', material.rgbContrast);
 			shader.setUniform1f('rgbBrightness', material.rgbBrightness);
-			// uniform float transition;
-			// uniform float wRGB;
-			// uniform float wIntensity;
-			// uniform float wElevation;
-			// uniform float wClassification;
-			// uniform float wReturnNumber;
-			// uniform float wSourceID;
+			shader.setUniform1f('uTransition', material.transition);
+			shader.setUniform1f('wRGB', material.weightRGB);
+			shader.setUniform1f('wIntensity', material.weightIntensity);
+			shader.setUniform1f('wElevation', material.weightElevation);
+			shader.setUniform1f('wClassification', material.weightClassification);
+			shader.setUniform1f('wReturnNumber', material.weightReturnNumber);
+			shader.setUniform1f('wSourceID', material.weightSourceID);
 
 			let vnWebGLTexture = this.textures.get(material.visibleNodesTexture);
-			shader.setUniform1i('visibleNodesTexture', 0);
-			gl.activeTexture(gl.TEXTURE0);
+			shader.setUniform1i('visibleNodesTexture', currentTextureBindingPoint);
+			gl.activeTexture(gl.TEXTURE0 + currentTextureBindingPoint);
 			gl.bindTexture(vnWebGLTexture.target, vnWebGLTexture.id);
+			currentTextureBindingPoint++;
 
 			let gradientTexture = this.textures.get(material.gradientTexture);
-			shader.setUniform1i('gradient', 1);
-			gl.activeTexture(gl.TEXTURE1);
+			shader.setUniform1i('gradient', currentTextureBindingPoint);
+			gl.activeTexture(gl.TEXTURE0 + currentTextureBindingPoint);
 			gl.bindTexture(gradientTexture.target, gradientTexture.id);
+			currentTextureBindingPoint++;
 
-			// let classificationTexture = this.textures.get(material.classificationTexture);
-			// shader.setUniform1i('classificationLUT', 2);
-			// gl.activeTexture(gl.TEXTURE2);
-			// gl.bindTexture(classificationTexture.target, classificationTexture.id);
+			let classificationTexture = this.textures.get(material.classificationTexture);
+			shader.setUniform1i('classificationLUT', currentTextureBindingPoint);
+			gl.activeTexture(gl.TEXTURE0 + currentTextureBindingPoint);
+			gl.bindTexture(classificationTexture.target, classificationTexture.id);
+			currentTextureBindingPoint++;
 
 			if (material.snapEnabled === true) {
 				{
 					const lSnapshot = shader.uniformLocations['uSnapshot[0]'];
 					const lSnapshotDepth = shader.uniformLocations['uSnapshotDepth[0]'];
 
-					let bindingStart = 2;
+					let bindingStart = currentTextureBindingPoint;
 					let lSnapshotBindingPoints = new Array(5).fill(bindingStart).map((a, i) => (a + i));
 					let lSnapshotDepthBindingPoints = new Array(5)
 						.fill(1 + Math.max(...lSnapshotBindingPoints))
 						.map((a, i) => (a + i));
+					currentTextureBindingPoint = 1 + Math.max(...lSnapshotDepthBindingPoints);
 
 					gl.uniform1iv(lSnapshot, lSnapshotBindingPoints);
 					gl.uniform1iv(lSnapshotDepth, lSnapshotDepthBindingPoints);

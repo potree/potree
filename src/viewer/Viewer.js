@@ -21,7 +21,6 @@ const MapView = require('./MapView');
 const ProfileWindowController = require('../ProfileWindowController');
 const ProfileWindow = require('../ProfileWindow');
 const PointColorType = require('../materials/PointColorType');
-const computeTransformedBoundingBox = require('../utils/computeTransformedBoundingBox');
 const getParameterByName = require('../utils/getParameterByName');
 const loadSkybox = require('../utils/loadSkybox');
 const context = require('../context');
@@ -586,22 +585,7 @@ class PotreeViewer extends THREE.EventDispatcher {
 	};
 
 	getBoundingBox (pointclouds) {
-		pointclouds = pointclouds || this.scene.pointclouds;
-
-		let box = new THREE.Box3();
-
-		this.scene.scenePointCloud.updateMatrixWorld(true);
-		this.scene.referenceFrame.updateMatrixWorld(true);
-
-		for (let pointcloud of this.scene.pointclouds) {
-			pointcloud.updateMatrixWorld(true);
-
-			let pointcloudBox = pointcloud.pcoGeometry.tightBoundingBox ? pointcloud.pcoGeometry.tightBoundingBox : pointcloud.boundingBox;
-			let boxWorld = computeTransformedBoundingBox(pointcloudBox, pointcloud.matrixWorld);
-			box.union(boxWorld);
-		}
-
-		return box;
+		return this.scene.getBoundingBox(pointclouds);
 	};
 
 	fitToScreen (factor = 1) {
@@ -1178,12 +1162,12 @@ class PotreeViewer extends THREE.EventDispatcher {
 
 		if (!this.freeze) {
 			let result = updatePointClouds(scene.pointclouds, camera, this.renderer);
-			// camera.near = result.lowestSpacing * 10.0;
-			// camera.far = -this.getBoundingBox().applyMatrix4(camera.matrixWorldInverse).min.z;
-			// camera.far = Math.max(camera.far * 1.5, 1000);
-			// if (this.scene.cameraMode === CameraMode.ORTHOGRAPHIC) {
-			// 	camera.near = -camera.far;
-			// }
+			camera.near = result.lowestSpacing * 10.0;
+			camera.far = -this.getBoundingBox().applyMatrix4(camera.matrixWorldInverse).min.z;
+			camera.far = Math.max(camera.far * 1.5, 1000);
+			if (this.scene.cameraMode === CameraMode.ORTHOGRAPHIC) {
+				camera.near = -camera.far;
+			}
 		}
 
 		this.scene.cameraP.fov = this.fov;
@@ -1218,6 +1202,10 @@ class PotreeViewer extends THREE.EventDispatcher {
 			this.scene.cameraO.rotation.x = Math.PI / 2 + this.scene.view.pitch;
 			this.scene.cameraO.rotation.z = this.scene.view.yaw;
 		}
+
+		camera.updateMatrix();
+		camera.updateMatrixWorld();
+		camera.matrixWorldInverse.getInverse(camera.matrixWorld);
 
 		{ // update clip boxes
 			// ordinary clip boxes (clip planes)

@@ -39,9 +39,9 @@ class PointCloudOctree extends PointCloudTree {
 			this.updateMatrixWorld(true);
 			box = computeTransformedBoundingBox(box, this.matrixWorld);
 
-			let bWidth = box.max.z - box.min.z;
-			let bMin = box.min.z - 0.2 * bWidth;
-			let bMax = box.max.z + 0.2 * bWidth;
+			// TODO: unused: let bWidth = box.max.z - box.min.z;
+			let bMin = box.min.z; // - 0.2 * bWidth;
+			let bMax = box.max.z; // + 0.2 * bWidth;
 			this.material.heightMin = bMin;
 			this.material.heightMax = bMax;
 		}

@@ -11,5 +11,8 @@ PointAttributeNames.CLASSIFICATION = 7;
 PointAttributeNames.NORMAL_SPHEREMAPPED = 8;
 PointAttributeNames.NORMAL_OCT16 = 9;
 PointAttributeNames.NORMAL = 10;
+PointAttributeNames.RETURN_NUMBER = 11;
+PointAttributeNames.NUMBER_OF_RETURNS = 12;
+PointAttributeNames.SOURCE_ID = 13;
 
 module.exports = PointAttributeNames;

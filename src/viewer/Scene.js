@@ -1,9 +1,9 @@
 const THREE = require('three');
 const Annotation = require('../Annotation');
 const View = require('./View');
-const createGrid = require('../utils/createGrid');
 const createBackgroundTexture = require('../utils/createBackgroundTexture');
 const CameraMode = require('./CameraMode');
+const computeTransformedBoundingBox = require('../utils/computeTransformedBoundingBox');
 
 class Scene extends THREE.EventDispatcher {
 	constructor () {
@@ -90,6 +90,23 @@ class Scene extends THREE.EventDispatcher {
 		}
 
 		return height;
+	}
+
+	getBoundingBox (pointclouds = this.pointclouds) {
+		let box = new THREE.Box3();
+
+		this.scenePointCloud.updateMatrixWorld(true);
+		this.referenceFrame.updateMatrixWorld(true);
+
+		for (let pointcloud of this.pointclouds) {
+			pointcloud.updateMatrixWorld(true);
+
+			let pointcloudBox = pointcloud.pcoGeometry.tightBoundingBox ? pointcloud.pcoGeometry.tightBoundingBox : pointcloud.boundingBox;
+			let boxWorld = computeTransformedBoundingBox(pointcloudBox, pointcloud.matrixWorld);
+			box.union(boxWorld);
+		}
+
+		return box;
 	}
 
 	addPointCloud (pointcloud) {
@@ -260,8 +277,8 @@ class Scene extends THREE.EventDispatcher {
 		let light = new THREE.AmbientLight(0x555555); // soft white light
 		this.scenePointCloud.add(light);
 
-		let grid = createGrid(5, 5, 2);
-		this.scene.add(grid);
+		// let grid = createGrid(5, 5, 2);
+		// this.scene.add(grid);
 
 		{ // background
 		// var texture = THREE.ImageUtils.loadTexture( context.resourcePath + '/textures/background.gif' );

@@ -36,6 +36,8 @@ function CustomView (buffer) {
 }
 
 self.onmessage = function (event) {
+	performance.mark('binary-decoder-start');
+
 	let buffer = event.data.buffer;
 	let pointAttributes = event.data.pointAttributes;
 	let numPoints = buffer.byteLength / pointAttributes.byteSize;
@@ -257,17 +259,6 @@ self.onmessage = function (event) {
 		}
 
 		performance.mark('spacing-end');
-
-		{ // print timings
-			performance.measure('spacing', 'spacing-start', 'spacing-end');
-			let measure = performance.getEntriesByType('measure')[0];
-			let dpp = 1000 * measure.duration / numPoints;
-			let debugMessage = `${measure.duration.toFixed(3)} ms, ${numPoints} points, ${dpp.toFixed(3)} µs / point`;
-			console.log(debugMessage);
-		}
-
-		performance.clearMarks();
-		performance.clearMeasures();
 	}
 
 	{ // add indices
@@ -276,6 +267,20 @@ self.onmessage = function (event) {
 			iView.setUint32(firstByte, i, true);
 		}
 	}
+
+	performance.mark('binary-decoder-end');
+
+	// { // print timings
+	// 	//performance.measure("spacing", "spacing-start", "spacing-end");
+	// 	performance.measure("binary-decoder", "binary-decoder-start", "binary-decoder-end");
+	// 	let measure = performance.getEntriesByType("measure")[0];
+	// 	let dpp = 1000 * measure.duration / numPoints;
+	// 	let debugMessage = `${measure.duration.toFixed(3)} ms, ${numPoints} points, ${dpp.toFixed(3)} µs / point`;
+	// 	console.log(debugMessage);
+	// }
+
+	performance.clearMarks();
+	performance.clearMeasures();
 
 	let message = {
 		mean: mean,

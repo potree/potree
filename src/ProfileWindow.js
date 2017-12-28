@@ -188,9 +188,6 @@ class ProfileWindow extends THREE.EventDispatcher {
 
 			let ndelta = Math.sign(delta);
 
-			// let sPos = new THREE.Vector3(this.mouse.x, this.mouse.y, 0);
-			// let cPos = this.toCamSpace(sPos);
-
 			let cPos = [this.scaleX.invert(this.mouse.x), this.scaleY.invert(this.mouse.y)];
 
 			if (ndelta > 0) {
@@ -201,9 +198,6 @@ class ProfileWindow extends THREE.EventDispatcher {
 				this.scale.multiplyScalar(100 / 110);
 			}
 
-			// this.scale.max(new THREE.Vector3(0.5, 0.5, 0.5));
-			// this.scale.min(new THREE.Vector3(100, 100, 100));
-
 			this.updateScales();
 			let ncPos = [this.scaleX.invert(this.mouse.x), this.scaleY.invert(this.mouse.y)];
 
@@ -211,6 +205,7 @@ class ProfileWindow extends THREE.EventDispatcher {
 			this.camera.position.y -= ncPos[1] - cPos[1];
 
 			this.render();
+			this.updateScales();
 		};
 		$(this.renderArea)[0].addEventListener('mousewheel', onWheel, false);
 		$(this.renderArea)[0].addEventListener('DOMMouseScroll', onWheel, false); // Firefox

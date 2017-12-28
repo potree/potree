@@ -201,9 +201,9 @@ function readUsingDataView (event) {
 
 	for (let i = 0; i < numPoints; i++) {
 		// POSITION
-		let x = sourceView.getUint32(i * sourcePointSize + 0, true);
-		let y = sourceView.getUint32(i * sourcePointSize + 4, true);
-		let z = sourceView.getUint32(i * sourcePointSize + 8, true);
+		let x = sourceView.getInt32(i * sourcePointSize + 0, true);
+		let y = sourceView.getInt32(i * sourcePointSize + 4, true);
+		let z = sourceView.getInt32(i * sourcePointSize + 8, true);
 
 		x = x * scale[0] + offset[0] - event.data.mins[0];
 		y = y * scale[1] + offset[1] - event.data.mins[1];

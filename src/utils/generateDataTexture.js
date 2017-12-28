@@ -4,7 +4,7 @@ const THREE = require('three');
 // ImageUtils - generateDataTexture()
 module.exports = (width, height, color) => {
 	let size = width * height;
-	let data = new Uint8Array(3 * width * height);
+	let data = new Uint8Array(4 * width * height);
 
 	let r = Math.floor(color.r * 255);
 	let g = Math.floor(color.g * 255);
@@ -16,7 +16,7 @@ module.exports = (width, height, color) => {
 		data[ i * 3 + 2 ] = b;
 	}
 
-	let texture = new THREE.DataTexture(data, width, height, THREE.RGBFormat);
+	let texture = new THREE.DataTexture(data, width, height, THREE.RGBAFormat);
 	texture.needsUpdate = true;
 	texture.magFilter = THREE.NearestFilter;
 

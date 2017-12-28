@@ -69,7 +69,7 @@ BinaryLoader.prototype.parse = function (node, buffer) {
 		iAttributes.push(new InterleavedBufferAttribute('index', 4, 4, 'UNSIGNED_BYTE', true));
 		let iBuffer = new InterleavedBuffer(data.data, iAttributes, numPoints);
 
-		console.log(data.estimatedSpacing);
+		// console.log(data.estimatedSpacing);
 
 		let tightBoundingBox = new THREE.Box3(
 			new THREE.Vector3().fromArray(data.tightBoundingBox.min),
@@ -87,6 +87,7 @@ BinaryLoader.prototype.parse = function (node, buffer) {
 		node.tightBoundingBox = tightBoundingBox;
 		node.loaded = true;
 		node.loading = false;
+		node.estimatedSpacing = data.estimatedSpacing;
 		node.pcoGeometry.numNodesLoading--;
 	};
 

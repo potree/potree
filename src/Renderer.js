@@ -109,6 +109,7 @@ module.exports = class Renderer {
 			// shader.setUniformMatrix4("modelMatrix", world);
 			// shader.setUniformMatrix4("modelViewMatrix", worldView);
 			shader.setUniform1f('uLevel', level);
+			shader.setUniform1f('uNodeSpacing', node.geometryNode.estimatedSpacing);
 			shader.setUniform1f('uPCIndex', i);
 
 			if (shadowMaps.length > 0) {
@@ -309,7 +310,7 @@ module.exports = class Renderer {
 			shader.setUniform1f('minSize', 1);
 
 			// uniform float uPCIndex
-			shader.setUniform1f('uSpacing', material.spacing);
+			shader.setUniform1f('uOctreeSpacing', material.spacing);
 			shader.setUniform('uOctreeSize', material.uniforms.octreeSize.value);
 
 			// uniform vec3 uColor;

@@ -41,6 +41,7 @@ module.exports = class LasLazBatcher {
 
 			context.workerPool.returnWorker(workerPath, worker);
 
+			this.node.estimatedSpacing = this.node.spacing;
 			this.node.numPoints = iBuffer.numElements;
 			this.node.buffer = iBuffer;
 			this.node.mean = new THREE.Vector3(...data.mean);

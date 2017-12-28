@@ -1188,7 +1188,7 @@ class PotreeViewer extends THREE.EventDispatcher {
 
 				let visibleBoxes = [];
 				for (let pointcloud of this.scene.pointclouds) {
-					for (let node of pointcloud.visibleNodes) {
+					for (let node of pointcloud.visibleNodes.filter(vn => vn.boundingBoxNode !== undefined)) {
 						let box = node.boundingBoxNode;
 						visibleBoxes.push(box);
 					}

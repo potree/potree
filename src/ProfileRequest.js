@@ -185,7 +185,7 @@ class ProfileRequest {
 
 					let intersects = (distance < (bsWorld.radius + target.profile.width));
 
-					if(!intersects){
+					if (!intersects) {
 						continue;
 					}
 				}

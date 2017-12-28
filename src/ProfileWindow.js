@@ -10,11 +10,15 @@ const Points = require('./Points');
 const CSVExporter = require('./exporter/CSVExporter');
 const LASExporter = require('./exporter/LASExporter');
 const ProfilePointCloudEntry = require('./ProfilePointCloudEntry');
+const CameraMode = require('./viewer/CameraMode');
+const projectedRadius = require('./utils/projectedRadius');
+const projectedRadiusOrtho = require('./utils/projectedRadiusOrtho');
 
 class ProfileWindow extends THREE.EventDispatcher {
-	constructor () {
+	constructor (viewer) {
 		super();
 
+		this.viewer = viewer;
 		this.elRoot = $('#profile_window');
 		this.renderArea = this.elRoot.find('#profileCanvasContainer');
 		this.svg = d3Selection.select('svg#profileSVG');
@@ -52,6 +56,20 @@ class ProfileWindow extends THREE.EventDispatcher {
 			this.mouseIsDown = false;
 		});
 
+		let viewerPickSphereSizeHandler = () => {
+			let pr = 0;
+			let camera = this.viewer.scene.getActiveCamera();
+			let domElement = this.viewer.renderer.domElement;
+			if (this.viewer.scene.cameraMode === CameraMode.PERSPECTIVE) {
+				let distance = this.viewerPickSphere.position.distanceTo(camera.position);
+				pr = projectedRadius(1, camera.fov * Math.PI / 180, distance, domElement.clientHeight);
+			} else {
+				pr = projectedRadiusOrtho(1, camera.projectionMatrix, domElement.clientWidth, domElement.clientHeight);
+			}
+			let scale = (10 / pr);
+			this.viewerPickSphere.scale.set(scale, scale, scale);
+		};
+
 		this.renderArea.mousemove(e => {
 			if (this.pointclouds.size === 0) {
 				return;
@@ -77,7 +95,7 @@ class ProfileWindow extends THREE.EventDispatcher {
 				this.render();
 			} else if (this.pointclouds.size > 0) {
 				// FIND HOVERED POINT
-				let radius = Math.abs(this.scaleX.invert(0) - this.scaleX.invert(10));
+				let radius = Math.abs(this.scaleX.invert(0) - this.scaleX.invert(40));
 				let mileage = this.scaleX.invert(newMouse.x);
 				let elevation = this.scaleY.invert(newMouse.y);
 				let point = this.selectPoint(mileage, elevation, radius);
@@ -87,6 +105,14 @@ class ProfileWindow extends THREE.EventDispatcher {
 					this.pickSphere.visible = true;
 					this.pickSphere.scale.set(0.5 * radius, 0.5 * radius, 0.5 * radius);
 					this.pickSphere.position.set(point.mileage, point.position[2], 0);
+					this.viewerPickSphere.position.set(...point.position);
+
+					if (!this.viewer.scene.scene.children.includes(this.viewerPickSphere)) {
+						this.viewer.scene.scene.add(this.viewerPickSphere);
+						if (!this.viewer.hasEventListener('update', viewerPickSphereSizeHandler)) {
+							this.viewer.addEventListener('update', viewerPickSphereSizeHandler);
+						}
+					}
 
 					let info = this.elRoot.find('#profileSelectionProperties');
 					let html = '<table>';
@@ -136,6 +162,14 @@ class ProfileWindow extends THREE.EventDispatcher {
 				} else {
 					// this.pickSphere.visible = false;
 					// this.selectedPoint = null;
+
+					this.viewer.scene.scene.add(this.viewerPickSphere);
+
+					let index = this.viewer.scene.scene.children.indexOf(this.viewerPickSphere);
+					if (index >= 0) {
+						this.viewer.scene.scene.children.splice(index, 1);
+					}
+					this.viewer.removeEventListener('update', viewerPickSphereSizeHandler);
 				}
 				this.render();
 			}
@@ -338,6 +372,8 @@ class ProfileWindow extends THREE.EventDispatcher {
 		this.pickSphere = new THREE.Mesh(sg, sm);
 		// this.pickSphere.visible = false;
 		this.scene.add(this.pickSphere);
+
+		this.viewerPickSphere = new THREE.Mesh(sg, sm);
 
 		this.pointCloudRoot = new THREE.Object3D();
 		this.scene.add(this.pointCloudRoot);

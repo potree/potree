@@ -407,7 +407,6 @@ Potree.Scene = class extends THREE.EventDispatcher{
 		//this.scene.add(grid);
 
 		{ // background
-		// var texture = THREE.ImageUtils.loadTexture( Potree.resourcePath + '/textures/background.gif' );
 			let texture = Potree.utils.createBackgroundTexture(512, 512);
 
 			texture.minFilter = texture.magFilter = THREE.NearestFilter;
@@ -468,7 +467,9 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 	constructor(domElement, args = {}){
 		super();
 
-		this.renderArea = domElement;	
+		this.renderArea = domElement;
+		this.guiLoaded = false;	
+		this.guiLoadTasks = [];
 		
 		try{
 
@@ -1286,7 +1287,15 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		}
 	};
 
-	loadGUI (callback) {
+	onGUILoaded(callback){
+		if(this.guiLoaded){
+			callback();
+		}else{
+			this.guiLoadTasks.push(callback);
+		}
+	}
+
+	loadGUI(callback){
 		let viewer = this;
 		let sidebarContainer = $('#potree_sidebar_container');
 		sidebarContainer.load(new URL(Potree.scriptPath + '/sidebar.html').href, () => {
@@ -1341,6 +1350,12 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 
 				if (callback) {
 					$(callback);
+				}
+
+				this.guiLoaded = true;
+
+				for(let task of this.guiLoadTasks){
+					task();
 				}
 			});
 		});

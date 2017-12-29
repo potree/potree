@@ -153,7 +153,7 @@ initSidebar = (viewer) => {
 			let nodeID = tree.jstree('create_node', parent, { 
 					"text": text, 
 					"icon": icon,
-					"object": object
+					"data": object
 				}, 
 				"last", false, false);
 			
@@ -169,30 +169,32 @@ initSidebar = (viewer) => {
 		let pcID = tree.jstree('create_node', "#", { "text": "<b>Point Clouds</b>", "id": "pointclouds"}, "last", false, false);
 		let measurementID = tree.jstree('create_node', "#", { "text": "<b>Measurements</b>", "id": "measurements" }, "last", false, false);
 		let annotationsID = tree.jstree('create_node', "#", { "text": "<b>Annotations</b>", "id": "annotations" }, "last", false, false);
+		let otherID = tree.jstree('create_node', "#", { "text": "<b>Other</b>", "id": "other" }, "last", false, false);
 
 		tree.jstree("check_node", pcID);
 		tree.jstree("check_node", measurementID);
 		tree.jstree("check_node", annotationsID);
+		tree.jstree("check_node", otherID);
 
 		tree.on('ready.jstree', function() {
 			tree.jstree("open_all");
 		});
 
 		tree.on("select_node.jstree", function (e, data) { 
-			let object = data.node.original.object;
+			let object = data.node.data;
 			propertiesPanel.set(object);
 		});
 
 		tree.on('dblclick','.jstree-anchor', function (e) {
 			let instance = $.jstree.reference(this);
 			let node = instance.get_node(this);
-			let object = node.original.object;
+			let object = node.data;
 
 			// ignore double click on checkbox
 			if(e.target.classList.contains("jstree-checkbox")){
 				return;
 			}
-			
+
 			if(object instanceof Potree.PointCloudTree){
 				let box = viewer.getBoundingBox([object]);
 				let node = new THREE.Object3D();
@@ -232,11 +234,19 @@ initSidebar = (viewer) => {
 				
 				viewer.scene.view.position.copy(object.camera.position);
 				viewer.scene.view.lookAt(target);
+			}else if(object instanceof THREE.Object3D){
+				let box = new THREE.Box3().setFromObject(object);
+
+				if(box.getSize().length() > 0){
+					let node = new THREE.Object3D();
+					node.boundingBox = box;
+					viewer.zoomTo(node, 1, 500);
+				}
 			}
 		});
 
 		tree.on("uncheck_node.jstree", function(e, data){
-			let object = data.node.original.object;
+			let object = data.node.data;
 
 			if(object){
 				object.visible = false;
@@ -244,7 +254,7 @@ initSidebar = (viewer) => {
 		});
 
 		tree.on("check_node.jstree", function(e, data){
-			let object = data.node.original.object;
+			let object = data.node.data;
 
 			if(object){
 				object.visible = true;
@@ -282,6 +292,17 @@ initSidebar = (viewer) => {
 		viewer.scene.addEventListener("volume_added", onVolumeAdded);
 		viewer.scene.addEventListener("polygon_clip_volume_added", onVolumeAdded);
 
+		let onMeasurementRemoved = (e) => {
+			console.log(e);
+
+			let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
+			let jsonNode = measurementsRoot.children.find(child => child.data.uuid === e.measurement.uuid);
+			
+			tree.jstree("delete_node", jsonNode.id);
+		};
+
+		viewer.scene.addEventListener("measurement_removed", onMeasurementRemoved);
+
 		{
 			let annotationIcon = `${Potree.resourcePath}/icons/target.svg`;
 			this.annotationMapping = new Map(); 
@@ -318,12 +339,14 @@ initSidebar = (viewer) => {
 			e.oldScene.removeEventListener("profile_added", onProfileAdded);
 			e.oldScene.removeEventListener("volume_added", onVolumeAdded);
 			e.oldScene.removeEventListener("polygon_clip_volume_added", onVolumeAdded);
+			e.oldScene.removeEventListener("measurement_removed", onMeasurementRemoved);
 
 			e.scene.addEventListener("pointcloud_added", onPointCloudAdded);
 			e.scene.addEventListener("measurement_added", onMeasurementAdded);
 			e.scene.addEventListener("profile_added", onProfileAdded);
 			e.scene.addEventListener("volume_added", onVolumeAdded);
 			e.scene.addEventListener("polygon_clip_volume_added", onVolumeAdded);
+			e.scene.addEventListener("measurement_removed", onMeasurementRemoved);
 		});
 
 	}

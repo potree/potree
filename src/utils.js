@@ -305,7 +305,27 @@ Potree.utils = class {
 		return img;
 	};
 
-	static projectedRadius (radius, fov, distance, screenHeight) {
+	static removeListeners(dispatcher, type){
+		if (dispatcher._listeners === undefined) {
+			return;
+		}
+
+		if (dispatcher._listeners[ type ]) {
+			delete dispatcher._listeners[ type ];
+		}
+	}
+
+	static projectedRadius(radius, camera, distance, screenWidth, screenHeight){
+		if(camera instanceof THREE.OrthographicCamera){
+			return Potree.utils.projectedRadiusOrtho(radius, camera.projectionMatrix, screenWidth, screenHeight);
+		}else if(camera instanceof THREE.PerspectiveCamera){
+			return Potree.utils.projectedRadiusPerspective(radius, camera.fov * Math.PI / 180, distance, screenHeight);
+		}else{
+			throw "invalid parameters";
+		}
+	}
+
+	static projectedRadiusPerspective(radius, fov, distance, screenHeight) {
 		let projFactor = (1 / Math.tan(fov / 2)) / distance;
 		projFactor = projFactor * screenHeight / 2;
 

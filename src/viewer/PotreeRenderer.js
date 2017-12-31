@@ -85,7 +85,7 @@ class PotreeRenderer {
 		
 		viewer.renderer.render(viewer.measuringTool.sceneMeasurement, activeCam);
 		viewer.renderer.render(viewer.profileTool.sceneProfile, activeCam);
-		viewer.renderer.render(viewer.transformationTool.sceneTransform, activeCam);
+		viewer.renderer.render(viewer.transformationTool.scene, activeCam);
 
 		viewer.renderer.setViewport(viewer.renderer.domElement.clientWidth - viewer.navigationCube.width, 
 									viewer.renderer.domElement.clientHeight - viewer.navigationCube.width, 

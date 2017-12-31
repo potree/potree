@@ -79,9 +79,6 @@ class EDLRenderer {
 		
 		let camera = viewer.scene.getActiveCamera();
 
-		
-
-
 		let lights = [];
 		viewer.scene.scene.traverse(node => {
 			if(node instanceof THREE.PointLight){
@@ -109,14 +106,12 @@ class EDLRenderer {
 		} else if (viewer.background === 'white') {
 			viewer.renderer.setClearColor(0xFFFFFF, 1);
 			viewer.renderer.clear();
-        } else {
-            viewer.renderer.setClearColor(0xFF0000, 0);
+		} else {
+			viewer.renderer.setClearColor(0xFF0000, 0);
 			viewer.renderer.clear();
-        }
+		}
 
 		Potree.endQuery(querySkybox, viewer.renderer.getContext());
-
-		
 
 		// TODO adapt to multiple lights
 		if(lights.length > 0 && !(lights[0].disableShadowUpdates)){
@@ -177,7 +172,7 @@ class EDLRenderer {
 		}
 		
 		viewer.renderer.render(viewer.scene.scene, camera, this.rtColor);
-
+		viewer.renderer.render(viewer.volumeTool.sceneVolume, camera, this.rtColor);
 		Potree.endQuery(queryColors, viewer.renderer.getContext());
 		
 		
@@ -202,10 +197,10 @@ class EDLRenderer {
 		viewer.renderer.render(viewer.controls.sceneControls, camera);
 		
 		viewer.renderer.render(viewer.measuringTool.sceneMeasurement, camera);		
-		viewer.renderer.render(viewer.volumeTool.sceneVolume, camera);
+		//viewer.renderer.render(viewer.volumeTool.sceneVolume, camera);
 		viewer.renderer.render(viewer.clippingTool.sceneVolume, camera);
 		viewer.renderer.render(viewer.profileTool.sceneProfile, camera);
-		viewer.renderer.render(viewer.transformationTool.sceneTransform, camera);
+		viewer.renderer.render(viewer.transformationTool.scene, camera);
 		
 		viewer.renderer.setViewport(viewer.renderer.domElement.clientWidth - viewer.navigationCube.width, 
 									viewer.renderer.domElement.clientHeight - viewer.navigationCube.width, 

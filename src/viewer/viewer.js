@@ -706,7 +706,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			$(this.renderArea).append(elFailPage);
 		}
 
-		
+		throw error;
 	}
 
 	// ------------------------------------------------------------------------------------

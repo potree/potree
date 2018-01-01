@@ -197,7 +197,6 @@ class EDLRenderer {
 		viewer.renderer.render(viewer.controls.sceneControls, camera);
 		
 		viewer.renderer.render(viewer.measuringTool.sceneMeasurement, camera);		
-		//viewer.renderer.render(viewer.volumeTool.sceneVolume, camera);
 		viewer.renderer.render(viewer.clippingTool.sceneVolume, camera);
 		viewer.renderer.render(viewer.profileTool.sceneProfile, camera);
 		viewer.renderer.render(viewer.transformationTool.scene, camera);

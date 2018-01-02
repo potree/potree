@@ -107,6 +107,38 @@ Potree.utils = class {
 		return worker;
 	};
 
+	static moveTo(scene, endPosition, endTarget){
+
+		let view = scene.view;
+		let camera = scene.getActiveCamera();
+		let animationDuration = 500;
+		let easing = TWEEN.Easing.Quartic.Out;
+
+		{ // animate camera position
+			let tween = new TWEEN.Tween(view.position).to(endPosition, animationDuration);
+			tween.easing(easing);
+			tween.start();
+		}
+
+		{ // animate camera target
+			let camTargetDistance = camera.position.distanceTo(endTarget);
+			let target = new THREE.Vector3().addVectors(
+				camera.position,
+				camera.getWorldDirection().clone().multiplyScalar(camTargetDistance)
+			);
+			let tween = new TWEEN.Tween(target).to(endTarget, animationDuration);
+			tween.easing(easing);
+			tween.onUpdate(() => {
+				view.lookAt(target);
+			});
+			tween.onComplete(() => {
+				view.lookAt(target);
+			});
+			tween.start();
+		}
+
+	}
+
 	static loadSkybox (path) {
 		let camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 100000);
 		camera.up.set(0, 0, 1);

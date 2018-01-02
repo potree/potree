@@ -51,11 +51,17 @@ Potree.View = class {
 	}
 
 	set direction (dir) {
-		let yaw = Math.atan2(dir.y, dir.x) - Math.PI / 2;
-		let pitch = Math.atan2(dir.z, Math.sqrt(dir.x * dir.x + dir.y * dir.y));
 
-		this.yaw = yaw;
-		this.pitch = pitch;
+		if(dir.x === dir.y){
+			this.pitch = Math.PI / 2 * Math.sign(dir.z);
+		}else{
+			let yaw = Math.atan2(dir.y, dir.x) - Math.PI / 2;
+			let pitch = Math.atan2(dir.z, Math.sqrt(dir.x * dir.x + dir.y * dir.y));
+
+			this.yaw = yaw;
+			this.pitch = pitch;
+		}
+		
 	}
 
 	lookAt(t){

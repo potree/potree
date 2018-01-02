@@ -14,6 +14,7 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher {
 		
 		this.scene = null;
 		this.interactiveScenes = [];
+		this.interactiveObjects = new Set();
 		this.inputListeners = [];
 		this.blacklist = new Set();
 
@@ -236,6 +237,8 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher {
 
 		e.preventDefault();
 
+		let consumed = false;
+		let consume = () => consumed = true;
 		if (this.hoveredElements.length === 0) {
 			for (let inputListener of this.inputListeners) {
 				inputListener.dispatchEvent({
@@ -243,6 +246,19 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher {
 					viewer: this.viewer,
 					mouse: this.mouse
 				});
+			}
+		}else{
+			for(let hovered of this.hoveredElements){
+				let object = hovered.object;
+				object.dispatchEvent({
+					type: 'mousedown',
+					viewer: this.viewer,
+					consume: consume
+				});
+
+				if(consumed){
+					break;
+				}
 			}
 		}
 
@@ -301,6 +317,39 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher {
 			}
 		}
 
+		if (this.drag) {
+			if (this.drag.object) {
+				if (this.logMessages) console.log(`${this.constructor.name}: drop ${this.drag.object.name}`);
+				this.drag.object.dispatchEvent({
+					type: 'drop',
+					drag: this.drag,
+					viewer: this.viewer
+
+				});
+			} else {
+				for (let inputListener of this.inputListeners) {
+					inputListener.dispatchEvent({
+						type: 'drop',
+						drag: this.drag,
+						viewer: this.viewer
+					});
+				}
+			}
+
+			// check for a click
+			let clicked = this.hoveredElements.map(h => h.object).find(v => v === this.drag.object) !== undefined;
+			if(clicked){
+				if (this.logMessages) console.log(`${this.constructor.name}: click ${this.drag.object.name}`);
+				this.drag.object.dispatchEvent({
+					type: 'click',
+					viewer: this.viewer,
+					consume: consume,
+				});
+			}
+
+			this.drag = null;
+		}
+
 		if(!consumed){
 			if (e.button === THREE.MOUSE.LEFT) {
 				if (noMovement) {
@@ -326,39 +375,21 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher {
 				this.deselectAll();
 			}
 		}
-
-		if (this.drag) {
-			if (this.drag.object) {
-				this.drag.object.dispatchEvent({
-					type: 'drop',
-					drag: this.drag,
-					viewer: this.viewer
-
-				});
-			} else {
-				if (this.logMessages) console.log(this.constructor.name + ': drop: ');
-				for (let inputListener of this.inputListeners) {
-					inputListener.dispatchEvent({
-						type: 'drop',
-						drag: this.drag,
-						viewer: this.viewer
-					});
-				}
-			}
-
-			this.drag = null;
-		}
 	}
 
 	onMouseMove (e) {
-		if (this.logMessages) console.log(this.constructor.name + ': onMouseMove');
-
 		e.preventDefault();
 
 		let rect = this.domElement.getBoundingClientRect();
 		let x = e.clientX - rect.left;
 		let y = e.clientY - rect.top;
 		this.mouse.set(x, y);
+
+		let hoveredElements = this.getHoveredElements();
+		if(hoveredElements.length > 0){
+			let names = hoveredElements.map(h => h.object.name).join(", ");
+			if (this.logMessages) console.log(`${this.constructor.name}: onMouseMove; hovered: '${names}'`);
+		}
 
 		if (this.drag) {
 			this.drag.mouse = e.buttons;
@@ -387,28 +418,29 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher {
 			}
 		}
 
-		let hoveredElements = this.getHoveredElements();
-		//console.log(hoveredElements);
-		let currentlyHoveredObjects = hoveredElements.map(e => e.object);
-		let previouslyHoveredObjects = this.hoveredElements.map(e => e.object);
+		{
+			let curr = hoveredElements.map(a => a.object).find(a => true);
+			let prev = this.hoveredElements.map(a => a.object).find(a => true);
 
-		let now = currentlyHoveredObjects.find(e => (e._listeners && e._listeners['mouseover']));
-		let prev = previouslyHoveredObjects.find(e => (e._listeners && e._listeners['mouseover']));
-
-		if (now !== prev) {
-			if (now) {
-				now.dispatchEvent({
-					type: 'mouseover',
-					object: now
-				});
+			if(curr !== prev){
+				if(curr){
+					if (this.logMessages) console.log(`${this.constructor.name}: mouseover: ${curr.name}`);
+					curr.dispatchEvent({
+						type: 'mouseover',
+						object: curr,
+					});
+				}
+				if(prev){
+					if (this.logMessages) console.log(`${this.constructor.name}: mouseleave: ${prev.name}`);
+					prev.dispatchEvent({
+						type: 'mouseleave',
+						object: prev,
+					});
+				}
 			}
 
-			if (prev) {
-				prev.dispatchEvent({
-					type: 'mouseleave',
-					object: prev
-				});
-			}
+			
+
 		}
 		
 		if(hoveredElements.length > 0){
@@ -423,30 +455,6 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher {
 				});
 			}
 		}
-
-		// let justHovered = currentlyHoveredObjects
-		//	.filter(e => previouslyHoveredObjects.indexOf(e) === -1);
-		// let justUnhovered = previouslyHoveredObjects
-		//	.filter(e => currentlyHoveredObjects.indexOf(e) === -1);
-		//
-		// justHovered = justHovered.find(e => (e._listeners && e._listeners["mouseover"]));
-		// justUnhovered = justUnhovered.find(e => (e._listeners && e._listeners["mouseover"]));
-
-		// let over = justHovered.find(e => (e._listeners && e._listeners["mouseover"]));
-		// if(over){
-		//	over.dispatchEvent({
-		//		type: "mouseover",
-		//		object: over
-		//	});
-		// }
-		//
-		// let leave = justUnhovered.find(e => (e._listeners && e._listeners["mouseleave"]));
-		// if(leave){
-		//	leave.dispatchEvent({
-		//		type: "mouseleave",
-		//		object: leave
-		//	});
-		// }
 
 		this.hoveredElements = hoveredElements;
 	}
@@ -487,6 +495,10 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher {
 	}
 
 	startDragging (object, args = null) {
+
+		let name = object ? object.name : "no name";
+		if (this.logMessages) console.log(`${this.constructor.name}: startDragging: '${name}'`);
+
 		this.drag = {
 			start: this.mouse.clone(),
 			end: this.mouse.clone(),
@@ -557,6 +569,14 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher {
 		let index = this.selection.indexOf(object);
 
 		return index !== -1;
+	}
+
+	registerInteractiveObject(object){
+		this.interactiveObjects.add(object);
+	}
+
+	removeInteractiveObject(object){
+		this.interactiveObjects.delete(object);
 	}
 
 	registerInteractiveScene (scene) {

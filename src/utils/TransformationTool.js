@@ -32,7 +32,6 @@ Potree.TransformationTool = class TransformationTool {
 
 		this.viewer.inputHandler.registerInteractiveScene(this.scene);
 		this.viewer.inputHandler.addEventListener('selection_changed', (e) => {
-			
 			for(let selected of this.selection){
 				this.viewer.inputHandler.blacklist.delete(selected);
 			}
@@ -57,7 +56,7 @@ Potree.TransformationTool = class TransformationTool {
 		this.pickVolumes = [];
 
 		let sgSphere = new THREE.SphereGeometry(1, 32, 32);
-		let sgLowPolySphere = new THREE.SphereGeometry(1, 8, 8);
+		let sgLowPolySphere = new THREE.SphereGeometry(1, 16, 16);
 		let sgBox = new THREE.BoxGeometry(1, 1, 1);
 
 		//for(let face of sgLowPolySphere.faces){
@@ -103,21 +102,46 @@ Potree.TransformationTool = class TransformationTool {
 					opacity: 0.2,
 					transparent: true,
 					visible: false
-					}));
+				}));
+				pickSphere.name = `${handleName}.scale_pick_sphere`;
 				pickSphere.scale.set(6, 6, 6);
 				sphere.add(pickSphere);
 				pickSphere.handle = handleName;
 				this.pickVolumes.push(pickSphere);
 
+				sphere.setOpacity = (target) => {
+					let opacity = {x: material.opacity};
+					let t = new TWEEN.Tween(opacity).to({x: target}, 100);
+					t.onUpdate(() => {
+						sphere.visible = opacity.x > 0;
+						material.opacity = opacity.x;
+						outlineMaterial.opacity = opacity.x;
+						pickSphere.material.opacity = opacity.x * 0.5;
+					});
+					t.start();
+				};
+
 				pickSphere.addEventListener("drag", (e) => this.dragScaleHandle(e));
 				pickSphere.addEventListener("drop", (e) => this.dropScaleHandle(e));
+
+				pickSphere.addEventListener("mouseover", e => {
+					sphere.setOpacity(1);
+				});
+
+				pickSphere.addEventListener("click", e => {
+					e.consume();
+				});
+
+				pickSphere.addEventListener("mouseleave", e => {
+					sphere.setOpacity(0.4);
+				});
 			}
 
 			{
 				
 				let material = new THREE.MeshBasicMaterial({
 					color: handle.color,
-					opacity: 0.4,
+					opacity: 0,
 					transparent: true
 					});
 				let box = new THREE.Mesh(sgBox, material);
@@ -127,11 +151,10 @@ Potree.TransformationTool = class TransformationTool {
 				box.visible = false;
 				node.add(box);
 				
-
 				let outlineMaterial = new THREE.MeshBasicMaterial({
 					color: 0x000000, 
 					side: THREE.BackSide,
-					opacity: 0.4,
+					opacity: 0,
 					transparent: true});
 				let outline = new THREE.Mesh(sgBox, outlineMaterial);
 				outline.scale.set(1.4, 1.4, 1.4);
@@ -141,39 +164,66 @@ Potree.TransformationTool = class TransformationTool {
 					//opacity: 0,
 					transparent: true,
 					visible: false
-					}));
-				pickSphere.scale.set(3, 3, 3);
+				}));
+				pickSphere.name = `${handleName}.focus_pick_sphere`;
+				pickSphere.scale.set(4, 4, 4);
 				box.add(pickSphere);
 				pickSphere.handle = handleName;
 
 				this.pickVolumes.push(pickSphere);
 
+
+				box.setOpacity = (target) => {
+					let opacity = {x: material.opacity};
+					let t = new TWEEN.Tween(opacity).to({x: target}, 100);
+					t.onUpdate(() => {
+						box.visible = opacity.x > 0;
+						material.opacity = opacity.x;
+						outlineMaterial.opacity = opacity.x;
+						pickSphere.material.opacity = opacity.x * 0.5;
+					});
+					t.start();
+				};
+
+
+				pickSphere.addEventListener("drag", e => {});
+
 				pickSphere.addEventListener("mouseup", e => {
+					e.consume();
+				});
+
+				pickSphere.addEventListener("mousedown", e => {
+					e.consume();
+				});
+
+				pickSphere.addEventListener("click", e => {
 					e.consume();
 
 					let selected = this.selection[0];
-					let alignment = new THREE.Vector3(...handle.alignment).multiplyScalar(2);
+					let maxScale = Math.max(...selected.scale.toArray());
+					let minScale = Math.min(...selected.scale.toArray());
+					let handleLength = Math.abs(selected.scale.dot(new THREE.Vector3(...handle.alignment)));
+					let alignment = new THREE.Vector3(...handle.alignment).multiplyScalar(2 * maxScale / handleLength);
 					alignment.applyMatrix4(selected.matrixWorld);
 					let newCamPos = alignment;
-					let view = this.viewer.scene.view;
-					view.position.copy(newCamPos);
-					view.lookAt(selected.getWorldPosition());
-					this.viewer.zoomTo(selected);
+					let newCamTarget = selected.getWorldPosition();
+
+					Potree.utils.moveTo(this.viewer.scene, newCamPos, newCamTarget);
 				});
 
-				pickSphere.addEventListener("mousemove", e => {
-					//e.consume();
-					console.log("moved");
+				pickSphere.addEventListener("mouseover", e => {
+					box.setOpacity(1);
 				});
+
+				pickSphere.addEventListener("mouseleave", e => {
+					box.setOpacity(0.4);
+				});
+
 
 			}
 
 
 
-
-			
-			//pickSphere.addEventListener("mouseover", (e) => this.mouseOver(e, handleName));
-			//pickSphere.addEventListener("mouseleave", (e) => this.mouseLeave(e, handleName));
 
 			this.scene.add(node);
 
@@ -294,6 +344,10 @@ Potree.TransformationTool = class TransformationTool {
 			return;
 		}
 
+		if(this.activeHandle === handleName){
+			return;
+		}
+
 		this.activeHandle = handleName;
 
 		for(let handleName of Object.keys(this.handles)){
@@ -303,17 +357,19 @@ Potree.TransformationTool = class TransformationTool {
 			let focusHandle = node.getObjectByName("focus_handle");
 
 			if(handleName === this.activeHandle){
-				scaleHandle.traverse(n => {if(n.material){n.material.opacity = 1;}});
-				focusHandle.visible = true;
+				//scaleHandle.traverse(n => {if(n.material){n.material.opacity = 1;}});
+				scaleHandle.setOpacity(1.0);
+				focusHandle.setOpacity(0.4);
 			}else{
-				scaleHandle.traverse(n => {if(n.material){n.material.opacity = 0.2;}});
-				focusHandle.visible = false;
+				//scaleHandle.traverse(n => {if(n.material){n.material.opacity = 0.2;}});
+				scaleHandle.setOpacity(0.4);
+				focusHandle.setOpacity(0);
 			}
 		}
 
-		for(let pickVolume of this.pickVolumes){
-			pickVolume.material.opacity = Math.min(0.4, pickVolume.material.opacity);
-		}
+		//for(let pickVolume of this.pickVolumes){
+		//	pickVolume.material.opacity = Math.min(0.4, pickVolume.material.opacity);
+		//}
 
 		
 	}
@@ -361,21 +417,28 @@ Potree.TransformationTool = class TransformationTool {
 					let scaleHandle = node.getObjectByName("scale_handle");
 					let focusHandle = node.getObjectByName("focus_handle");
 
+					let toWorld = scaleHandle.matrixWorld.clone();
+					let toObject = new THREE.Matrix4().getInverse(toWorld);
 
-					//let scalePosWorld = scaleHandle.position.clone().applyMatrix4(scaleHandle.matrixWorld);
-					//let scalePosProj = scalePosWorld.clone().project(camera);
-					//
-					//let pixelOffset = 30;
-					//let focusPosProj = new THREE.Vector3(
-					//	scalePosProj.x + 2 * pixelOffset / domElement.clientWidth,
-					//	scalePosProj.y,
-					//	scalePosProj.z
-					//);
-					//let focusPosWorld = focusPosProj.unproject(camera);
+					let scalePosWorld = scaleHandle.position.clone().applyMatrix4(scaleHandle.matrixWorld);
+					let scalePosProj = scalePosWorld.clone().project(camera);
 					
+					let pixelOffset = 45;
+					let focusPosProj = new THREE.Vector3(
+						scalePosProj.x + 2 * pixelOffset / domElement.clientWidth,
+						scalePosProj.y,
+						scalePosProj.z
+					);
+					let focusPosWorld = focusPosProj.unproject(camera);
+					let camScaleHandleDistance = scalePosWorld.distanceTo(camera.position);
+					let camFocusHandleDistance = focusPosWorld.distanceTo(camera.position);
 
+					let camToFocusHandle = new THREE.Vector3().subVectors(focusPosWorld, camera.position);
+					camToFocusHandle.multiplyScalar(camScaleHandleDistance / camFocusHandleDistance);
+					focusPosWorld = new THREE.Vector3().addVectors(camera.position, camToFocusHandle);
 
-
+					let focusPosObject = focusPosWorld.clone().applyMatrix4(toObject);
+					focusHandle.position.copy(focusPosObject);
 				}
 
 				{

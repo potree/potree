@@ -634,7 +634,7 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher {
 		raycaster.ray.set( camera.position, vector.sub( camera.position ).normalize() );
 		raycaster.linePrecision = 0.2;
 
-		let intersections = raycaster.intersectObjects(interactables, false);
+		let intersections = raycaster.intersectObjects(interactables.filter(o => o.visible), false);
 
 		return intersections;
 

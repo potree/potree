@@ -29,6 +29,7 @@ Potree.TransformationTool = class TransformationTool {
 		this.selection = [];
 		this.pivot = new THREE.Vector3();
 		this.dragging = false;
+		this.showPickVolumes = true;
 
 		this.viewer.inputHandler.registerInteractiveScene(this.scene);
 		this.viewer.inputHandler.addEventListener('selection_changed', (e) => {
@@ -53,181 +54,246 @@ Potree.TransformationTool = class TransformationTool {
 			"z+": {node: null, color: 0x2669E7, alignment: [+0, +0, +1]},
 			"z-": {node: null, color: 0x2669E7, alignment: [+0, +0, -1]},
 		};
-		this.pickVolumes = [];
+		this.createHandleObjects();
+	}
 
+	createScaleHandle(handleName){
 		let sgSphere = new THREE.SphereGeometry(1, 32, 32);
+		let sgLowPolySphere = new THREE.SphereGeometry(1, 16, 16);
+
+		let handle = this.handles[handleName];
+		let node = handle.node;
+
+		let material = new THREE.MeshBasicMaterial({
+			color: handle.color,
+			opacity: 0.4,
+			transparent: true
+			});
+		let sphere = new THREE.Mesh(sgSphere, material);
+		sphere.name = "scale_handle";
+		node.add(sphere);
+		handle.scaleNode = sphere;
+
+		let outlineMaterial = new THREE.MeshBasicMaterial({
+			color: 0x000000, 
+			side: THREE.BackSide,
+			opacity: 0.4,
+			transparent: true});
+		let outline = new THREE.Mesh(sgSphere, outlineMaterial);
+		outline.scale.set(1.4, 1.4, 1.4);
+		sphere.add(outline);
+
+		let pickSphere = new THREE.Mesh(sgLowPolySphere, new THREE.MeshNormalMaterial({
+			color: 0xaaaaaa,
+			opacity: 0.2,
+			transparent: true,
+			visible: this.showPickVolumes
+		}));
+		pickSphere.name = `${handleName}.scale_pick_sphere`;
+		pickSphere.scale.set(6, 6, 6);
+		sphere.add(pickSphere);
+		pickSphere.handle = handleName;
+		this.pickVolumes.push(pickSphere);
+
+		sphere.setOpacity = (target) => {
+			let opacity = {x: material.opacity};
+			let t = new TWEEN.Tween(opacity).to({x: target}, 100);
+			t.onUpdate(() => {
+				sphere.visible = opacity.x > 0;
+				pickSphere.visible = opacity.x > 0;
+				material.opacity = opacity.x;
+				outlineMaterial.opacity = opacity.x;
+				pickSphere.material.opacity = opacity.x * 0.5;
+			});
+			t.start();
+		};
+
+		pickSphere.addEventListener("drag", (e) => this.dragScaleHandle(e));
+		pickSphere.addEventListener("drop", (e) => this.dropScaleHandle(e));
+
+		pickSphere.addEventListener("mouseover", e => {
+			sphere.setOpacity(1);
+		});
+
+		pickSphere.addEventListener("click", e => {
+			e.consume();
+		});
+
+		pickSphere.addEventListener("mouseleave", e => {
+			sphere.setOpacity(0.4);
+		});
+	}
+
+	createFocusHandle(handleName){
 		let sgLowPolySphere = new THREE.SphereGeometry(1, 16, 16);
 		let sgBox = new THREE.BoxGeometry(1, 1, 1);
 
-		//for(let face of sgLowPolySphere.faces){
-		//	[face.a, face.c] = [face.c, face.a];
-		//	face.normal.multiplyScalar(-1);
-		//	for(let normal of face.vertexNormals){
-		//		normal.multiplyScalar(-1);
-		//	}
-		//}
-		//sgLowPolySphere.computeFaceNormals();
-		//sgLowPolySphere.computeVertexNormals();
+		let handle = this.handles[handleName];
+		let node = handle.node;
 
+		let material = new THREE.MeshBasicMaterial({
+			color: handle.color,
+			opacity: 0,
+			transparent: true
+			});
+		let box = new THREE.Mesh(sgBox, material);
+		box.name = "focus_handle";
+		box.scale.set(1.5, 1.5, 1.5);
+		box.position.set(0, 6, 0);
+		box.visible = false;
+		node.add(box);
+		handle.focusNode = box;
+		
+		let outlineMaterial = new THREE.MeshBasicMaterial({
+			color: 0x000000, 
+			side: THREE.BackSide,
+			opacity: 0,
+			transparent: true});
+		let outline = new THREE.Mesh(sgBox, outlineMaterial);
+		outline.scale.set(1.4, 1.4, 1.4);
+		box.add(outline);
+
+		let pickSphere = new THREE.Mesh(sgLowPolySphere, new THREE.MeshNormalMaterial({
+			//opacity: 0,
+			transparent: true,
+			visible: this.showPickVolumes
+		}));
+		pickSphere.name = `${handleName}.focus_pick_sphere`;
+		pickSphere.scale.set(4, 4, 4);
+		box.add(pickSphere);
+		pickSphere.handle = handleName;
+
+		this.pickVolumes.push(pickSphere);
+
+
+		box.setOpacity = (target) => {
+			let opacity = {x: material.opacity};
+			let t = new TWEEN.Tween(opacity).to({x: target}, 100);
+			t.onUpdate(() => {
+				pickSphere.visible = opacity.x > 0;
+				box.visible = opacity.x > 0;
+				material.opacity = opacity.x;
+				outlineMaterial.opacity = opacity.x;
+				pickSphere.material.opacity = opacity.x * 0.5;
+			});
+			t.start();
+		};
+
+
+		pickSphere.addEventListener("drag", e => {});
+
+		pickSphere.addEventListener("mouseup", e => {
+			e.consume();
+		});
+
+		pickSphere.addEventListener("mousedown", e => {
+			e.consume();
+		});
+
+		pickSphere.addEventListener("click", e => {
+			e.consume();
+
+			let selected = this.selection[0];
+			let maxScale = Math.max(...selected.scale.toArray());
+			let minScale = Math.min(...selected.scale.toArray());
+			let handleLength = Math.abs(selected.scale.dot(new THREE.Vector3(...handle.alignment)));
+			let alignment = new THREE.Vector3(...handle.alignment).multiplyScalar(2 * maxScale / handleLength);
+			alignment.applyMatrix4(selected.matrixWorld);
+			let newCamPos = alignment;
+			let newCamTarget = selected.getWorldPosition();
+
+			Potree.utils.moveTo(this.viewer.scene, newCamPos, newCamTarget);
+		});
+
+		pickSphere.addEventListener("mouseover", e => {
+			box.setOpacity(1);
+		});
+
+		pickSphere.addEventListener("mouseleave", e => {
+			box.setOpacity(0.4);
+		});
+	}
+
+	createTranslateHandle(handleName){
+		let handle = this.handles[handleName];
+		let node = handle.node;
+
+		if(handleName.includes("-")){
+			let otherHandleName = handleName.replace("-", "+");
+			let otherHandle = this.handles[otherHandleName];
+			handle.translateNode = otherHandle.translateNode;
+
+			return;
+		}
+
+		let boxGeometry = new THREE.BoxGeometry(1, 1, 1);
+
+		let material = new THREE.MeshBasicMaterial({
+			color: handle.color,
+			opacity: 0,
+			transparent: true});
+
+		let outlineMaterial = new THREE.MeshBasicMaterial({
+			color: 0x000000, 
+			side: THREE.BackSide,
+			opacity: 0,
+			transparent: true});
+
+		let pickMaterial = new THREE.MeshNormalMaterial({
+			color: 0xaaaaaa,
+			opacity: 0.2,
+			transparent: true,
+			visible: this.showPickVolumes
+		});
+
+		let box = new THREE.Mesh(boxGeometry, material);
+		box.name = "translate_handle";
+		box.scale.set(0.2, 0.2, 5000);
+		box.lookAt(new THREE.Vector3(...handle.alignment));
+		node.add(box);
+		handle.translateNode = box;
+
+		let outline = new THREE.Mesh(boxGeometry, outlineMaterial);
+		outline.name = "translate_handle_outline";
+		outline.scale.set(3, 3, 1.03);
+		box.add(outline);
+
+
+		let pickVolume = new THREE.Mesh(boxGeometry, pickMaterial);
+		pickVolume.name = `${handleName}.translation_pick_volume`;
+		pickVolume.scale.set(16, 16, 2225);
+		//pickVolume.handle = handleName;
+		box.add(pickVolume);
+		this.pickVolumes.push(pickVolume);
+
+		box.setOpacity = (target) => {
+			let opacity = {x: material.opacity};
+			let t = new TWEEN.Tween(opacity).to({x: target}, 100);
+			t.onUpdate(() => {
+				box.visible = opacity.x > 0;
+				pickVolume.visible = opacity.x > 0;
+				material.opacity = opacity.x;
+				outlineMaterial.opacity = opacity.x;
+				pickMaterial.opacity = opacity.x * 0.5;
+			});
+			t.start();
+		};
+
+	}
+
+	createHandleObjects(){
+		this.pickVolumes = [];
 
 		for(let handleName of Object.keys(this.handles)){
 			let handle = this.handles[handleName];
 
-			let node = new THREE.Object3D();
-			node.name = handleName;
-			
-			
+			handle.node = new THREE.Object3D();
+			handle.node.name = handleName;
+			this.scene.add(handle.node);
 
-			{
-				let material = new THREE.MeshBasicMaterial({
-					color: handle.color,
-					opacity: 0.4,
-					transparent: true
-					});
-				let sphere = new THREE.Mesh(sgSphere, material);
-				sphere.name = "scale_handle";
-				node.add(sphere);
-
-				let outlineMaterial = new THREE.MeshBasicMaterial({
-					color: 0x000000, 
-					side: THREE.BackSide,
-					opacity: 0.4,
-					transparent: true});
-				let outline = new THREE.Mesh(sgSphere, outlineMaterial);
-				outline.scale.set(1.4, 1.4, 1.4);
-				sphere.add(outline);
-
-				let pickSphere = new THREE.Mesh(sgLowPolySphere, new THREE.MeshNormalMaterial({
-					color: 0xaaaaaa,
-					opacity: 0.2,
-					transparent: true,
-					visible: false
-				}));
-				pickSphere.name = `${handleName}.scale_pick_sphere`;
-				pickSphere.scale.set(6, 6, 6);
-				sphere.add(pickSphere);
-				pickSphere.handle = handleName;
-				this.pickVolumes.push(pickSphere);
-
-				sphere.setOpacity = (target) => {
-					let opacity = {x: material.opacity};
-					let t = new TWEEN.Tween(opacity).to({x: target}, 100);
-					t.onUpdate(() => {
-						sphere.visible = opacity.x > 0;
-						material.opacity = opacity.x;
-						outlineMaterial.opacity = opacity.x;
-						pickSphere.material.opacity = opacity.x * 0.5;
-					});
-					t.start();
-				};
-
-				pickSphere.addEventListener("drag", (e) => this.dragScaleHandle(e));
-				pickSphere.addEventListener("drop", (e) => this.dropScaleHandle(e));
-
-				pickSphere.addEventListener("mouseover", e => {
-					sphere.setOpacity(1);
-				});
-
-				pickSphere.addEventListener("click", e => {
-					e.consume();
-				});
-
-				pickSphere.addEventListener("mouseleave", e => {
-					sphere.setOpacity(0.4);
-				});
-			}
-
-			{
-				
-				let material = new THREE.MeshBasicMaterial({
-					color: handle.color,
-					opacity: 0,
-					transparent: true
-					});
-				let box = new THREE.Mesh(sgBox, material);
-				box.name = "focus_handle";
-				box.scale.set(1.5, 1.5, 1.5);
-				box.position.set(0, 6, 0);
-				box.visible = false;
-				node.add(box);
-				
-				let outlineMaterial = new THREE.MeshBasicMaterial({
-					color: 0x000000, 
-					side: THREE.BackSide,
-					opacity: 0,
-					transparent: true});
-				let outline = new THREE.Mesh(sgBox, outlineMaterial);
-				outline.scale.set(1.4, 1.4, 1.4);
-				box.add(outline);
-
-				let pickSphere = new THREE.Mesh(sgLowPolySphere, new THREE.MeshNormalMaterial({
-					//opacity: 0,
-					transparent: true,
-					visible: false
-				}));
-				pickSphere.name = `${handleName}.focus_pick_sphere`;
-				pickSphere.scale.set(4, 4, 4);
-				box.add(pickSphere);
-				pickSphere.handle = handleName;
-
-				this.pickVolumes.push(pickSphere);
-
-
-				box.setOpacity = (target) => {
-					let opacity = {x: material.opacity};
-					let t = new TWEEN.Tween(opacity).to({x: target}, 100);
-					t.onUpdate(() => {
-						box.visible = opacity.x > 0;
-						material.opacity = opacity.x;
-						outlineMaterial.opacity = opacity.x;
-						pickSphere.material.opacity = opacity.x * 0.5;
-					});
-					t.start();
-				};
-
-
-				pickSphere.addEventListener("drag", e => {});
-
-				pickSphere.addEventListener("mouseup", e => {
-					e.consume();
-				});
-
-				pickSphere.addEventListener("mousedown", e => {
-					e.consume();
-				});
-
-				pickSphere.addEventListener("click", e => {
-					e.consume();
-
-					let selected = this.selection[0];
-					let maxScale = Math.max(...selected.scale.toArray());
-					let minScale = Math.min(...selected.scale.toArray());
-					let handleLength = Math.abs(selected.scale.dot(new THREE.Vector3(...handle.alignment)));
-					let alignment = new THREE.Vector3(...handle.alignment).multiplyScalar(2 * maxScale / handleLength);
-					alignment.applyMatrix4(selected.matrixWorld);
-					let newCamPos = alignment;
-					let newCamTarget = selected.getWorldPosition();
-
-					Potree.utils.moveTo(this.viewer.scene, newCamPos, newCamTarget);
-				});
-
-				pickSphere.addEventListener("mouseover", e => {
-					box.setOpacity(1);
-				});
-
-				pickSphere.addEventListener("mouseleave", e => {
-					box.setOpacity(0.4);
-				});
-
-
-			}
-
-
-
-
-			this.scene.add(node);
-
-			handle.node = node;
+			this.createScaleHandle(handleName);
+			this.createFocusHandle(handleName);
+			this.createTranslateHandle(handleName);
 		}
 	}
 
@@ -350,20 +416,26 @@ Potree.TransformationTool = class TransformationTool {
 
 		this.activeHandle = handleName;
 
-		for(let handleName of Object.keys(this.handles)){
+		let keys = Object.keys(this.handles);
+		keys.filter(key => key !== this.activeHandle);
+		if(this.activeHandle){
+			keys.push(this.activeHandle);
+		}
+		for(let handleName of keys){
 			let handle = this.handles[handleName];
 			let node = handle.node;
-			let scaleHandle = node.getObjectByName("scale_handle");
-			let focusHandle = node.getObjectByName("focus_handle");
+			let scaleHandle = handle.scaleNode;
+			let focusHandle = handle.focusNode;
+			let translateHandle = handle.translateNode;
 
 			if(handleName === this.activeHandle){
-				//scaleHandle.traverse(n => {if(n.material){n.material.opacity = 1;}});
 				scaleHandle.setOpacity(1.0);
 				focusHandle.setOpacity(0.4);
+				translateHandle.setOpacity(0.4);
 			}else{
-				//scaleHandle.traverse(n => {if(n.material){n.material.opacity = 0.2;}});
 				scaleHandle.setOpacity(0.4);
 				focusHandle.setOpacity(0);
+				translateHandle.setOpacity(0);
 			}
 		}
 
@@ -452,7 +524,7 @@ Potree.TransformationTool = class TransformationTool {
 
 					let direction = vector.clone().sub(camera.position).normalize();
 					let raycaster = new THREE.Raycaster(camera.position, direction);
-					let intersects = raycaster.intersectObjects(this.pickVolumes, true);
+					let intersects = raycaster.intersectObjects(this.pickVolumes.filter(v => v.visible), true);
 
 					if(intersects.length > 0){
 						let I = intersects[0];

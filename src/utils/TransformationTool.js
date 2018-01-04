@@ -1,26 +1,5 @@
 
 
-
-let displayLine = line => {
-	var material = new THREE.LineBasicMaterial({ color: 0xff0000 }); 
-	var geometry = new THREE.Geometry(); 
-	geometry.vertices.push( 
-		line.start, 
-		line.end
-		); 
-	var tl = new THREE.Line( geometry, material ); 
-	tl.frustumCulled = false;
-	this.viewer.scene.scene.add( tl );
-};
-
-let displaySphere = (pos) => {
-	var sg = new THREE.SphereGeometry(2, 12, 12);
-	var sm = new THREE.MeshNormalMaterial();
-	var s = new THREE.Mesh(sg, sm);
-	s.position.copy(pos);
-	this.viewer.scene.scene.add(s);
-};
-
 Potree.TransformationTool = class TransformationTool {
 	constructor(viewer) {
 		this.viewer = viewer;
@@ -30,7 +9,7 @@ Potree.TransformationTool = class TransformationTool {
 		this.selection = [];
 		this.pivot = new THREE.Vector3();
 		this.dragging = false;
-		this.showPickVolumes = true;
+		this.showPickVolumes = false;
 
 		this.viewer.inputHandler.registerInteractiveScene(this.scene);
 		this.viewer.inputHandler.addEventListener('selection_changed', (e) => {
@@ -147,7 +126,7 @@ Potree.TransformationTool = class TransformationTool {
 
 			let pickSphere = new THREE.Mesh(sgLowPolySphere, pickMaterial);
 			pickSphere.name = `${handleName}.pick_volume`;
-			pickSphere.scale.set(6, 6, 6);
+			pickSphere.scale.set(3, 3, 3);
 			sphere.add(pickSphere);
 			pickSphere.handle = handleName;
 			this.pickVolumes.push(pickSphere);
@@ -223,7 +202,7 @@ Potree.TransformationTool = class TransformationTool {
 
 			let pickSphere = new THREE.Mesh(sgLowPolySphere, pickMaterial);
 			pickSphere.name = `${handleName}.pick_volume`;
-			pickSphere.scale.set(4, 4, 4);
+			pickSphere.scale.set(3, 3, 3);
 			box.add(pickSphere);
 			pickSphere.handle = handleName;
 			this.pickVolumes.push(pickSphere);
@@ -319,7 +298,7 @@ Potree.TransformationTool = class TransformationTool {
 
 			let pickVolume = new THREE.Mesh(boxGeometry, pickMaterial);
 			pickVolume.name = `${handleName}.pick_volume`;
-			pickVolume.scale.set(16, 16, 1.1);
+			pickVolume.scale.set(12, 12, 1.1);
 			pickVolume.handle = handleName;
 			box.add(pickVolume);
 			this.pickVolumes.push(pickVolume);
@@ -420,10 +399,20 @@ Potree.TransformationTool = class TransformationTool {
 		let handle = this.activeHandle;
 		let camera = this.viewer.scene.getActiveCamera();
 
-		let n = new THREE.Vector3().copy(
-			new THREE.Vector4(...handle.alignment, 0).applyMatrix4(handle.node.matrixWorld).normalize());
+		let localNormal = new THREE.Vector3(...handle.alignment);
+		let n = new THREE.Vector3();
+		n.copy(new THREE.Vector4(...localNormal.toArray(), 0).applyMatrix4(handle.node.matrixWorld));
+		n.normalize();
 
 		if (!drag.intersectionStart) {
+
+			//this.viewer.scene.scene.remove(this.debug);
+			//this.debug = new THREE.Object3D();
+			//this.viewer.scene.scene.add(this.debug);
+			//Potree.utils.debugSphere(this.debug, drag.location, 3, 0xaaaaaa);
+			//let debugEnd = drag.location.clone().add(n.clone().multiplyScalar(20));
+			//Potree.utils.debugLine(this.debug, drag.location, debugEnd, 0xff0000);
+
 			drag.intersectionStart = drag.location;
 			drag.objectStart = drag.object.getWorldPosition();
 			drag.handle = handle;
@@ -769,7 +758,7 @@ Potree.TransformationTool = class TransformationTool {
 					node.updateMatrixWorld();
 				}
 
-				{
+				if(!this.dragging){
 					let tWorld = this.scene.matrixWorld;
 					let tObject = new THREE.Matrix4().getInverse(tWorld)
 					let camObjectPos = camera.getWorldPosition().applyMatrix4(tObject);
@@ -781,32 +770,47 @@ Potree.TransformationTool = class TransformationTool {
 					x.order = "ZYX";
 					y.order = "ZYX";
 
-					if(camObjectPos.z > 0){
-						y.y = -Math.PI / 2;
-						x.x = +Math.PI / 2;
-					}else{
-						y.y = 0;
-						x.x = 0;
-					}
+					let above = camObjectPos.z > 0;
+					let below = !above;
+					let PI_HALF = Math.PI / 2;
 
-					if(camObjectPos.x > 0 && camObjectPos.y > 0){
-						x.z = 0;
-						y.z = 0;
-						z.z = 0;
-					}else if(camObjectPos.x < 0 && camObjectPos.y > 0){
-						x.z = 0;
-						y.z = 2 * Math.PI / 2;
-						z.z = Math.PI / 2;
-					}else if(camObjectPos.x < 0 && camObjectPos.y < 0){
-						x.z = 2 * Math.PI / 2;
-						y.z = 2 * Math.PI / 2;
-						z.z = 2 * Math.PI / 2;
-					}else if(camObjectPos.x > 0 && camObjectPos.y < 0){
-						x.z = 2 * Math.PI / 2;
-						y.z = 0;
-						z.z = 3 * Math.PI / 2;
+					if(above){
+						if(camObjectPos.x > 0 && camObjectPos.y > 0){
+							x.x = 1 * PI_HALF;
+							y.y = 3 * PI_HALF;
+							z.z = 0 * PI_HALF;
+						}else if(camObjectPos.x < 0 && camObjectPos.y > 0){
+							x.x = 1 * PI_HALF;
+							y.y = 2 * PI_HALF;
+							z.z = 1 * PI_HALF;
+						}else if(camObjectPos.x < 0 && camObjectPos.y < 0){
+							x.x = 2 * PI_HALF;
+							y.y = 2 * PI_HALF;
+							z.z = 2 * PI_HALF;
+						}else if(camObjectPos.x > 0 && camObjectPos.y < 0){
+							x.x = 2 * PI_HALF;
+							y.y = 3 * PI_HALF;
+							z.z = 3 * PI_HALF;
+						}
+					}else if(below){
+						if(camObjectPos.x > 0 && camObjectPos.y > 0){
+							x.x = 0 * PI_HALF;
+							y.y = 0 * PI_HALF;
+							z.z = 0 * PI_HALF;
+						}else if(camObjectPos.x < 0 && camObjectPos.y > 0){
+							x.x = 0 * PI_HALF;
+							y.y = 1 * PI_HALF;
+							z.z = 1 * PI_HALF;
+						}else if(camObjectPos.x < 0 && camObjectPos.y < 0){
+							x.x = 3 * PI_HALF;
+							y.y = 1 * PI_HALF;
+							z.z = 2 * PI_HALF;
+						}else if(camObjectPos.x > 0 && camObjectPos.y < 0){
+							x.x = 3 * PI_HALF;
+							y.y = 0 * PI_HALF;
+							z.z = 3 * PI_HALF;
+						}
 					}
-
 				}
 
 				for(let handleName of Object.keys(this.focusHandles)){

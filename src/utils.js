@@ -51,6 +51,23 @@ Potree.utils = class {
 		return true;
 	};
 
+	static debugSphere(parent, position, scale, color){
+		let geometry = new THREE.SphereGeometry(1, 32, 32);
+		let material = new THREE.MeshBasicMaterial({color: color});
+		let sphere = new THREE.Mesh(geometry, material);
+		sphere.position.copy(position);
+		sphere.scale.set(scale, scale, scale);
+		parent.add(sphere);
+	}
+
+	static debugLine(parent, start, end, color){
+		let material = new THREE.LineBasicMaterial({ color: color }); 
+		let geometry = new THREE.Geometry(); 
+		geometry.vertices.push( start, end); 
+		let tl = new THREE.Line( geometry, material ); 
+		parent.add(tl);
+	}
+
 	/**
 	 * adapted from mhluska at https://github.com/mrdoob/three.js/issues/1561
 	 */

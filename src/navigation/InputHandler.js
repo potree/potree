@@ -620,18 +620,12 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher {
 				}
 			});
 		}
-
-		let nmouse = {
-			x: (this.mouse.x / this.domElement.clientWidth) * 2 - 1,
-			y: -(this.mouse.y / this.domElement.clientHeight) * 2 + 1
-		};
 		
-		let vector = new THREE.Vector3( nmouse.x, nmouse.y, 0.5 );
 		let camera = this.scene.getActiveCamera();
-		vector.unproject(camera);
+		let ray = Potree.utils.mouseToRay(this.mouse, camera, this.domElement.clientWidth, this.domElement.clientHeight);
 		
 		let raycaster = new THREE.Raycaster();
-		raycaster.ray.set( camera.position, vector.sub( camera.position ).normalize() );
+		raycaster.ray.set(ray.origin, ray.direction);
 		raycaster.linePrecision = 0.2;
 
 		let intersections = raycaster.intersectObjects(interactables.filter(o => o.visible), false);

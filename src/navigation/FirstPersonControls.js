@@ -115,20 +115,12 @@ Potree.FirstPersonControls = class FirstPersonControls extends THREE.EventDispat
 			return;
 		}
 
-		let nmouse = {
-			x: +(mouse.x / this.renderer.domElement.clientWidth) * 2 - 1,
-			y: -(mouse.y / this.renderer.domElement.clientHeight) * 2 + 1
-		};
-
 		let targetRadius = 0;
 		{
 			let minimumJumpDistance = 0.2;
 
-			let vector = new THREE.Vector3(nmouse.x, nmouse.y, 0.5);
-			vector.unproject(camera);
-
-			let direction = vector.sub(camera.position).normalize();
-			let ray = new THREE.Ray(camera.position, direction);
+			let domElement = this.renderer.domElement;
+			let ray = Potree.utils.mouseToRay(mouse, camera, domElement.clientWidth, domElement.clientHeight);
 
 			let nodes = I.pointcloud.nodesOnRay(I.pointcloud.visibleNodes, ray);
 			let lastNode = nodes[nodes.length - 1];

@@ -364,13 +364,31 @@ Potree.utils = class {
 		}
 	}
 
+	static mouseToRay(mouse, camera, width, height){
+
+		let normalizedMouse = {
+			x: (mouse.x / width) * 2 - 1,
+			y: -(mouse.y / height) * 2 + 1
+		};
+
+		let vector = new THREE.Vector3(normalizedMouse.x, normalizedMouse.y, 0.5);
+		let origin = new THREE.Vector3(normalizedMouse.x, normalizedMouse.y, 0);
+		vector.unproject(camera);
+		origin.unproject(camera);
+		let direction = new THREE.Vector3().subVectors(vector, origin).normalize();
+
+		let ray = new THREE.Ray(origin, direction);
+
+		return ray;
+	}
+
 	static projectedRadius(radius, camera, distance, screenWidth, screenHeight){
 		if(camera instanceof THREE.OrthographicCamera){
 			return Potree.utils.projectedRadiusOrtho(radius, camera.projectionMatrix, screenWidth, screenHeight);
 		}else if(camera instanceof THREE.PerspectiveCamera){
 			return Potree.utils.projectedRadiusPerspective(radius, camera.fov * Math.PI / 180, distance, screenHeight);
 		}else{
-			throw "invalid parameters";
+			throw new Error("invalid parameters");
 		}
 	}
 

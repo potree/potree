@@ -97,7 +97,6 @@ Potree.TransformationTool = class TransformationTool {
 
 			let material = new THREE.MeshBasicMaterial({
 				color: handle.color,
-				emmisive: handle.color,
 				opacity: 0.4,
 				transparent: true
 				});
@@ -109,7 +108,6 @@ Potree.TransformationTool = class TransformationTool {
 				transparent: true});
 
 			let pickMaterial = new THREE.MeshNormalMaterial({
-				color: 0xaaaaaa,
 				opacity: 0.2,
 				transparent: true,
 				visible: this.showPickVolumes});
@@ -265,7 +263,6 @@ Potree.TransformationTool = class TransformationTool {
 
 			let material = new THREE.MeshBasicMaterial({
 				color: handle.color,
-				emmisive: handle.color,
 				opacity: 0,
 				transparent: true});
 
@@ -276,7 +273,6 @@ Potree.TransformationTool = class TransformationTool {
 				transparent: true});
 
 			let pickMaterial = new THREE.MeshNormalMaterial({
-				color: 0xaaaaaa,
 				opacity: 0.2,
 				transparent: true,
 				visible: this.showPickVolumes
@@ -284,7 +280,7 @@ Potree.TransformationTool = class TransformationTool {
 
 			let box = new THREE.Mesh(boxGeometry, material);
 			box.name = `${handleName}.handle`;
-			box.scale.set(0.3, 0.3, 50);
+			box.scale.set(0.2, 0.2, 50);
 			box.lookAt(new THREE.Vector3(...handle.alignment));
 			box.renderOrder = 10;
 			node.add(box);
@@ -322,9 +318,10 @@ Potree.TransformationTool = class TransformationTool {
 	}
 
 	initializeRotationHandles(){
-		let torusGeometry = new THREE.TorusGeometry(1, 0.015, 8, 64, Math.PI / 2);
-		let outlineGeometry = new THREE.TorusGeometry(1, 0.04, 8, 64, Math.PI / 2);
-		let pickGeometry = new THREE.TorusGeometry(1, 0.1, 6, 4, Math.PI / 2);
+		let adjust = 0.5;
+		let torusGeometry = new THREE.TorusGeometry(1, adjust * 0.015, 8, 64, Math.PI / 2);
+		let outlineGeometry = new THREE.TorusGeometry(1, adjust * 0.04, 8, 64, Math.PI / 2);
+		let pickGeometry = new THREE.TorusGeometry(1, adjust * 0.1, 6, 4, Math.PI / 2);
 
 		for(let handleName of Object.keys(this.rotationHandles)){
 			let handle = this.handles[handleName];
@@ -333,7 +330,6 @@ Potree.TransformationTool = class TransformationTool {
 
 			let material = new THREE.MeshBasicMaterial({
 				color: handle.color,
-				emmisive: handle.color,
 				opacity: 0,
 				transparent: true});
 
@@ -344,7 +340,6 @@ Potree.TransformationTool = class TransformationTool {
 				transparent: true});
 
 			let pickMaterial = new THREE.MeshNormalMaterial({
-				color: 0xaaaaaa,
 				opacity: 0.2,
 				transparent: true,
 				visible: this.showPickVolumes
@@ -429,21 +424,11 @@ Potree.TransformationTool = class TransformationTool {
 
 		let mouse = drag.end;
 		let domElement = viewer.renderer.domElement;
-		let nmouse = {
-			x: (mouse.x / domElement.clientWidth) * 2 - 1,
-			y: -(mouse.y / domElement.clientHeight) * 2 + 1
-		};
-
-		let vector = new THREE.Vector3(nmouse.x, nmouse.y, 0.5);
-		vector.unproject(camera);
-
-		let ray = new THREE.Ray(camera.position, vector.sub(camera.position));
+		let ray = Potree.utils.mouseToRay(mouse, camera, domElement.clientWidth, domElement.clientHeight);
+		
 		let I = ray.intersectPlane(drag.dragPlane);
 
 		if (I) {
-
-			//displaySphere(I);
-
 			let center = this.scene.getWorldPosition();
 			let from = drag.pivot;
 			let to = I;
@@ -501,15 +486,7 @@ Potree.TransformationTool = class TransformationTool {
 		{
 			let mouse = drag.end;
 			let domElement = this.viewer.renderer.domElement;
-			let nmouse = {
-				x: (mouse.x / domElement.clientWidth) * 2 - 1,
-				y: -(mouse.y / domElement.clientHeight) * 2 + 1
-			};
-
-			let vector = new THREE.Vector3(nmouse.x, nmouse.y, 0.5);
-			vector.unproject(camera);
-
-			let ray = new THREE.Ray(camera.position, vector.sub(camera.position));
+			let ray = Potree.utils.mouseToRay(mouse, camera, domElement.clientWidth, domElement.clientHeight);
 			let I = ray.intersectPlane(drag.dragPlane);
 
 			if (I) {
@@ -566,15 +543,7 @@ Potree.TransformationTool = class TransformationTool {
 		{
 			let mouse = drag.end;
 			let domElement = this.viewer.renderer.domElement;
-			let nmouse = {
-				x: (mouse.x / domElement.clientWidth) * 2 - 1,
-				y: -(mouse.y / domElement.clientHeight) * 2 + 1
-			};
-
-			let vector = new THREE.Vector3(nmouse.x, nmouse.y, 0.5);
-			vector.unproject(camera);
-
-			let ray = new THREE.Ray(camera.position, vector.sub(camera.position));
+			let ray = Potree.utils.mouseToRay(mouse, camera, domElement.clientWidth, domElement.clientHeight);
 			let I = ray.intersectPlane(drag.dragPlane);
 
 			if (I) {
@@ -845,16 +814,8 @@ Potree.TransformationTool = class TransformationTool {
 				}
 
 				{
-					let nmouse = {
-						x: (mouse.x / domElement.clientWidth) * 2 - 1,
-						y: -(mouse.y / domElement.clientHeight) * 2 + 1
-					};
-
-					let vector = new THREE.Vector3(nmouse.x, nmouse.y, 0.5);
-					vector.unproject(camera);
-
-					let direction = vector.clone().sub(camera.position).normalize();
-					let raycaster = new THREE.Raycaster(camera.position, direction);
+					let ray = Potree.utils.mouseToRay(mouse, camera, domElement.clientWidth, domElement.clientHeight);
+					let raycaster = new THREE.Raycaster(ray.origin, ray.direction);
 					let intersects = raycaster.intersectObjects(this.pickVolumes.filter(v => v.visible), true);
 
 					if(intersects.length > 0){

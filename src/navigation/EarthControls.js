@@ -49,16 +49,8 @@ Potree.EarthControls = class EarthControls extends THREE.EventDispatcher {
 			let domElement = this.viewer.renderer.domElement;
 
 			if (e.drag.mouse === Potree.MOUSE.LEFT) {
-				let nmouse = {
-					x: (mouse.x / domElement.clientWidth) * 2 - 1,
-					y: -(mouse.y / domElement.clientHeight) * 2 + 1
-				};
 
-				let vector = new THREE.Vector3(nmouse.x, nmouse.y, 0.5);
-				vector.unproject(camStart);
-
-				let dir = vector.sub(camStart.position).normalize();
-				let ray = new THREE.Ray(camStart.position, dir);
+				let ray = Potree.utils.mouseToRay(mouse, camStart, domElement.clientWidth, domElement.clientHeight);
 				let plane = new THREE.Plane().setFromNormalAndCoplanarPoint(
 					new THREE.Vector3(0, 0, 1),
 					this.pivot);
@@ -68,7 +60,7 @@ Potree.EarthControls = class EarthControls extends THREE.EventDispatcher {
 				if (distanceToPlane > 0) {
 					let I = new THREE.Vector3().addVectors(
 						camStart.position,
-						dir.clone().multiplyScalar(distanceToPlane));
+						ray.direction.clone().multiplyScalar(distanceToPlane));
 
 					let movedBy = new THREE.Vector3().subVectors(
 						I, this.pivot);
@@ -176,20 +168,12 @@ Potree.EarthControls = class EarthControls extends THREE.EventDispatcher {
 			return;
 		}
 
-		let nmouse = {
-			x: +(mouse.x / this.renderer.domElement.clientWidth) * 2 - 1,
-			y: -(mouse.y / this.renderer.domElement.clientHeight) * 2 + 1
-		};
-
 		let targetRadius = 0;
 		{
 			let minimumJumpDistance = 0.2;
 
-			let vector = new THREE.Vector3(nmouse.x, nmouse.y, 0.5);
-			vector.unproject(camera);
-
-			let direction = vector.sub(camera.position).normalize();
-			let ray = new THREE.Ray(camera.position, direction);
+			let domElement = this.renderer.domElement;
+			let ray = Potree.utils.mouseToRay(mouse, camera, domElement.clientWidth, domElement.clientHeight);
 
 			let nodes = I.pointcloud.nodesOnRay(I.pointcloud.visibleNodes, ray);
 			let lastNode = nodes[nodes.length - 1];
@@ -277,8 +261,9 @@ Potree.EarthControls = class EarthControls extends THREE.EventDispatcher {
 
 		if (this.pivotIndicator.visible) {
 			let distance = this.pivotIndicator.position.distanceTo(view.position);
+			let pixelwidth = this.renderer.domElement.clientwidth;
 			let pixelHeight = this.renderer.domElement.clientHeight;
-			let pr = Potree.utils.projectedRadius(1, camera.fov * Math.PI / 180, distance, pixelHeight);
+			let pr = Potree.utils.projectedRadius(1, camera, distance, pixelwidth, pixelHeight);
 			let scale = (10 / pr);
 			this.pivotIndicator.scale.set(scale, scale, scale);
 		}

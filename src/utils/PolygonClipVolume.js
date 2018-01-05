@@ -7,8 +7,11 @@ Potree.PolygonClipVolume = class extends THREE.Object3D{
 		this.constructor.counter = (this.constructor.counter === undefined) ? 0 : this.constructor.counter + 1;
 		this.name = "polygon_clip_volume_" + this.constructor.counter;
 
-		this.camera = camera;
+		this.camera = camera.clone();
+		this.camera.rotation.set(...camera.rotation.toArray()); // [r85] workaround because camera.clone() doesn't work on rotation
 		this.camera.updateMatrixWorld();
+		this.camera.updateProjectionMatrix();
+		this.camera.matrixWorldInverse.getInverse(this.camera.matrixWorld);
 		this.viewMatrix = this.camera.matrixWorldInverse.clone();
 		this.projMatrix = this.camera.projectionMatrix.clone();
 		this.markers = [];
@@ -50,7 +53,8 @@ Potree.PolygonClipVolume = class extends THREE.Object3D{
 				0.5);
 
 			let posWorld = pos.clone();
-			let camera = e.viewer.scene.getActiveCamera();
+			//let camera = e.viewer.scene.getActiveCamera();
+			let camera = this.camera;
 			if(camera.isPerspectiveCamera) {
 				posWorld.unproject(camera);
 				var dir = posWorld.clone().sub(camera.position).normalize();

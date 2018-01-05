@@ -12,6 +12,7 @@
 	<link rel="stylesheet" type="text/css" href="../libs/perfect-scrollbar/css/perfect-scrollbar.css">
 	<link rel="stylesheet" href="../libs/openlayers3/ol.css" type="text/css">
 	<link rel="stylesheet" href="../libs/spectrum/spectrum.css" type="text/css">
+	<link rel="stylesheet" href="../libs/jstree/themes/mixed/style.css" type="text/css">
   </head>
 
   <body>
@@ -29,6 +30,7 @@
 	<script src="../libs/proj4/proj4.js"></script>
 	<script src="../libs/openlayers3/ol.js"></script>
     <script src="../libs/i18next/i18next.js"></script>
+	<script src="../libs/jstree/jstree.js"></script>
 	
 	<script src="../build/potree/potree.js"></script>
 	<!--<script src="../src/viewer/sidebar.js"></script>-->
@@ -59,6 +61,7 @@
 		viewer.loadGUI(() => {
 			viewer.setLanguage('en');
 			$("#menu_scene").next().show();
+			$("#menu_tools").next().show();
 			viewer.toggleSidebar();
 		});
 		
@@ -121,7 +124,7 @@
 			e.pointcloud.visible = true;
 			// viewer.fitToScreen();
 		});
-		
+
 	</script>
 	
 	

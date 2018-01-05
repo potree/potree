@@ -51,6 +51,23 @@ Potree.utils = class {
 		return true;
 	};
 
+	static debugSphere(parent, position, scale, color){
+		let geometry = new THREE.SphereGeometry(1, 32, 32);
+		let material = new THREE.MeshBasicMaterial({color: color});
+		let sphere = new THREE.Mesh(geometry, material);
+		sphere.position.copy(position);
+		sphere.scale.set(scale, scale, scale);
+		parent.add(sphere);
+	}
+
+	static debugLine(parent, start, end, color){
+		let material = new THREE.LineBasicMaterial({ color: color }); 
+		let geometry = new THREE.Geometry(); 
+		geometry.vertices.push( start, end); 
+		let tl = new THREE.Line( geometry, material ); 
+		parent.add(tl);
+	}
+
 	/**
 	 * adapted from mhluska at https://github.com/mrdoob/three.js/issues/1561
 	 */
@@ -106,6 +123,38 @@ Potree.utils = class {
 
 		return worker;
 	};
+
+	static moveTo(scene, endPosition, endTarget){
+
+		let view = scene.view;
+		let camera = scene.getActiveCamera();
+		let animationDuration = 500;
+		let easing = TWEEN.Easing.Quartic.Out;
+
+		{ // animate camera position
+			let tween = new TWEEN.Tween(view.position).to(endPosition, animationDuration);
+			tween.easing(easing);
+			tween.start();
+		}
+
+		{ // animate camera target
+			let camTargetDistance = camera.position.distanceTo(endTarget);
+			let target = new THREE.Vector3().addVectors(
+				camera.position,
+				camera.getWorldDirection().clone().multiplyScalar(camTargetDistance)
+			);
+			let tween = new TWEEN.Tween(target).to(endTarget, animationDuration);
+			tween.easing(easing);
+			tween.onUpdate(() => {
+				view.lookAt(target);
+			});
+			tween.onComplete(() => {
+				view.lookAt(target);
+			});
+			tween.start();
+		}
+
+	}
 
 	static loadSkybox (path) {
 		let camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 100000);
@@ -305,7 +354,45 @@ Potree.utils = class {
 		return img;
 	};
 
-	static projectedRadius (radius, fov, distance, screenHeight) {
+	static removeListeners(dispatcher, type){
+		if (dispatcher._listeners === undefined) {
+			return;
+		}
+
+		if (dispatcher._listeners[ type ]) {
+			delete dispatcher._listeners[ type ];
+		}
+	}
+
+	static mouseToRay(mouse, camera, width, height){
+
+		let normalizedMouse = {
+			x: (mouse.x / width) * 2 - 1,
+			y: -(mouse.y / height) * 2 + 1
+		};
+
+		let vector = new THREE.Vector3(normalizedMouse.x, normalizedMouse.y, 0.5);
+		let origin = new THREE.Vector3(normalizedMouse.x, normalizedMouse.y, 0);
+		vector.unproject(camera);
+		origin.unproject(camera);
+		let direction = new THREE.Vector3().subVectors(vector, origin).normalize();
+
+		let ray = new THREE.Ray(origin, direction);
+
+		return ray;
+	}
+
+	static projectedRadius(radius, camera, distance, screenWidth, screenHeight){
+		if(camera instanceof THREE.OrthographicCamera){
+			return Potree.utils.projectedRadiusOrtho(radius, camera.projectionMatrix, screenWidth, screenHeight);
+		}else if(camera instanceof THREE.PerspectiveCamera){
+			return Potree.utils.projectedRadiusPerspective(radius, camera.fov * Math.PI / 180, distance, screenHeight);
+		}else{
+			throw new Error("invalid parameters");
+		}
+	}
+
+	static projectedRadiusPerspective(radius, fov, distance, screenHeight) {
 		let projFactor = (1 / Math.tan(fov / 2)) / distance;
 		projFactor = projFactor * screenHeight / 2;
 

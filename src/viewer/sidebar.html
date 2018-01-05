@@ -45,6 +45,18 @@
 				<li><label><input type="radio" name="background" value="black" /><span>Black</span></label></li>
 				<li><label><input type="radio" name="background" value="white" /><span>White</span></label></li>
 			</div>
+
+			<div>
+				<div class="divider">
+					<span>Other</span>
+				</div>
+				
+				<li><span data-i18n="appearance.min_node_size"></span><span id="lblMinNodeSize"></span><div id="sldMinNodeSize"></div>	</li>
+				<li><label><input id="show_bounding_box" type="checkbox" /><span data-i18n="appearance.box"></span></label></li>
+				<li><label><input id="set_freeze" type="checkbox" /><span data-i18n="appearance.freeze"></span></label></li>
+			</div>
+
+			
 				
 			</ul>
 			
@@ -53,7 +65,26 @@
 		<!-- TOOLS -->
 		<h3 id="menu_tools"><span data-i18n="tb.tools_opt"></span></h3>
 		<div class="pv-menu-list">
+
+			<div class="divider" style="padding: 10px 0px 15px 0px">
+				<span>Measurement</span>
+			</div>
 			<li id="tools"></li>
+
+			<div class="divider" style="padding: 10px 0px 15px 0px">
+				<span>Clipping</span>
+			</div>
+			<li id="clipping_tools"></li>
+
+			<li>
+				<label for="optClipMode" class="pv-select-label">Clip mode</label>
+				<select id="optClipMode" name="optClipMode">
+					<option value="0">Disabled</option>
+					<option value="1">Highlight</option>
+					<option value="2">Inside</option>
+					<option value="3">Outside</option>
+				</select>
+			</li>
 			
 			<div class="divider" style="padding: 10px 0px 15px 0px">
 				<span>Navigation</span>
@@ -62,107 +93,28 @@
 			<li><span data-i18n="appearance.move_speed"></span>: <span id="lblMoveSpeed"></span><div id="sldMoveSpeed"></div></li>
 		</div>
 
-	  
-		<!-- MEASUREMENTS -->
-		<h3 id="menu_measurements"><span data-i18n="tb.measurments_opt"></span></h3>
-		<div id="measurement_details">
-			<!-- <ul class="pv-menu-list selectable" id="measurement_details"></ul> -->
-		
-			<div id="measurement_list_before" style="margin: 6px 2px 6px 2px"></div>
-			<div id="measurement_list"></div>
-			<div id="measurement_list_after" style="margin: 6px 2px 6px 2px"></div>			
-		</div>
-
-		<!-- CLIPPING -->
-		<h3 id="menu_clipping"><span data-i18n="tb.clipping_opt"></span></h3>
-		<div>
-			<ul class="pv-menu-list">
-				<li>
-					<label for="optClipMode" class="pv-select-label">Clip mode</label>
-				    <select id="optClipMode" name="optClipMode">
-				    	<option value="0">Disabled</option>
-				    	<option value="1">Highlight</option>
-				    	<option value="2">Inside</option>
-				    	<option value="3">Outside</option>
-				    </select>
-				</li>
-				<div id="clipping_tools_container">					
-					<div class="divider">
-						<span>Tools</span>
-					</div>
-
-					<li id="clipping_tools"></li>
-				</div>
-			</ul>
-			<div id="clipping_volumes_container">					
-				<div class="divider">
-					<span>Volumes</span>
-				</div>
-
-				<div id="clipping_volumes_list_before" style="margin: 2px 2px 2px 2px"></div>
-				<div id="clipping_volumes_list">
-					
-				</div>
-				<div id="clipping_volumes_list_after" style="margin: 6px 2px 12px 2px"></div>
-			</div>
-		</div>
-	  
-		<!-- ANNOTATIONS -->
-		<h3 id="menu_annotations"><span data-i18n="tb.annotations_opt"></span></h3>
-		<div>
-			<ul class="pv-menu-list selectable" id="annotation_details"></ul>
-		</div>
-	
-		<!-- Scene -->
+		<!-- SCENE -->
 		<h3 id="menu_scene"><span data-i18n="tb.scene_opt"></span></h3>
-		<div>
-			<ul class="pv-menu-list selectable">
-				<div>
-					<li><span data-i18n="scene.camera_position"></span>:<span id="lblCameraPosition"></span></li>
-					<li><span data-i18n="scene.camera_target"></span>:<span id="lblCameraTarget"></span></li>
-				</div>
-			</ul>
-			
-			<div>
-				<div class="divider" style="padding: 10px 0px 15px 0px">
-					<span>Point Clouds</span>
-				</div>
-				
-				<div id="scene_details">			
-					<div id="scene_list_before" style="margin: 2px 2px 2px 2px"></div>
-					<div id="scene_list"></div>
-					<div id="scene_list_after" style="margin: 6px 2px 12px 2px"></div>			
-				</div>
-			</div>
-			
+		<div class="pv-menu-list">
+
+			<div class="divider" style="padding: 10px 0px 15px 0px"><span>Objects</span></div>
+
+			<div id="scene_objects"></div>
+
+			<div class="divider" style="padding: 10px 0px 15px 0px"><span>Properties</span></div>
+
+			<div id="scene_object_properties"></div>
 		</div>
-	
+
 		<!-- Classification -->
 		<h3 id="menu_classification"><span data-i18n="tb.classification_filter_opt"></span></h3>
 		<div>
 			<ul id="classificationList" class="pv-menu-list"></ul>
 		</div>
-	
-		<!-- Other Settings -->
-		<h3 id="menu_other_settings"><span data-i18n="tb.parameters_opt"></span></h3>
+		
+		<!-- ABOUT -->
+		<h3 id="menu_about"><span data-i18n="tb.about_opt"></span></h3>
 		<div>
-			<ul class="pv-menu-list">
-				<li><span data-i18n="appearance.min_node_size"></span><span id="lblMinNodeSize"></span><div id="sldMinNodeSize"></div>	</li>
-				<!--<li>
-				   <label for="optClipMode" class="pv-select-label"><span data-i18n="appearance.clip_mode"></span></label>
-				   <select id="optClipMode" name="optClipMode">
-						<option>No Clipping</option>
-						<option>Highlight Inside</option>
-						<option>Clip Outside</option>
-					</select>
-				</li>-->
-				<li><label><input id="show_bounding_box" type="checkbox" /><span data-i18n="appearance.box"></span></label></li>
-				<li><label><input id="set_freeze" type="checkbox" /><span data-i18n="appearance.freeze"></span></label></li>
-			</ul>
-		  </div>
-		  
-		  <h3 id="menu_about"><span data-i18n="tb.about_opt"></span></h3>
-		  <div>
 			<ul class="pv-menu-list">
 				<li><a href="http://potree.org" target="_blank">Potree</a> is a viewer for large point cloud / LIDAR data sets, developed at the Vienna University of Technology. 
 				<a href="https://github.com/potree/potree" target="_blank">(github)</a>
@@ -206,9 +158,26 @@
 				</li>
 			
 			</ul>
-		  </div>
+		</div>
 	</div>
+
+	<div>
+			<br>
+			<br>
+			<br>
+			<br>
+			<br>
+			<br>
+			<br>
+			<br>
+			<br>
+			<br>
+			<br>
+			<br>
+			<br>
+		</div>
 	</div>
+	
 </div>
 
 

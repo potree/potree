@@ -12,6 +12,7 @@
 	<link rel="stylesheet" type="text/css" href="../libs/perfect-scrollbar/css/perfect-scrollbar.css">
 	<link rel="stylesheet" href="../libs/openlayers3/ol.css" type="text/css">
 	<link rel="stylesheet" href="../libs/spectrum/spectrum.css" type="text/css">
+	<link rel="stylesheet" href="../libs/jstree/themes/mixed/style.css" type="text/css">
   </head>
 
   <body>
@@ -30,6 +31,7 @@
 	<script src="../libs/proj4/proj4.js"></script>
 	<script src="../libs/openlayers3/ol.js"></script>
     <script src="../libs/i18next/i18next.js"></script>
+	<script src="../libs/jstree/jstree.js"></script>
 	
 	<script src="../build/potree/potree.js"></script>
 	<!--<script src="../src/viewer/sidebar.js"></script>-->
@@ -59,6 +61,7 @@
 		viewer.loadGUI(() => {
 			viewer.setLanguage('en');
 			$("#menu_tools").next().show();
+			$("#menu_scene").next().show();
 			//viewer.toggleSidebar();
 		});
 		
@@ -82,27 +85,30 @@
 			
 			// place three instances of this bunny into the scene
 			
+			let mesh1;
 			{
 				let material = new THREE.MeshNormalMaterial();
-				let mesh = new THREE.Mesh( geometry, material );
-				mesh.position.set(589951.587, 231428.213, 710.634);
-				mesh.scale.multiplyScalar(500);
-				mesh.rotation.set(Math.PI / 2, Math.PI, 0)
-				viewer.scene.scene.add(mesh);
+				mesh1 = new THREE.Mesh( geometry, material );
+				mesh1.position.set(589951.587, 231428.213, 710.634);
+				mesh1.scale.multiplyScalar(500);
+				mesh1.rotation.set(Math.PI / 2, Math.PI, 0)
+				viewer.scene.scene.add(mesh1);
 			}
 			
+			let mesh2;
 			{
 				let material = new THREE.MeshStandardMaterial( { 
 					color: 0x0055ff, 
 					shading: THREE.FlatShading,
 					metalness: 0.2} );
-				let mesh = new THREE.Mesh( geometry, material );
-				mesh.position.set(589851.587, 231348.213, 720.634);
-				mesh.scale.multiplyScalar(500);
-				mesh.rotation.set(Math.PI / 2, Math.PI, 0)
-				viewer.scene.scene.add(mesh);
+				mesh2 = new THREE.Mesh( geometry, material );
+				mesh2.position.set(589851.587, 231348.213, 720.634);
+				mesh2.scale.multiplyScalar(500);
+				mesh2.rotation.set(Math.PI / 2, Math.PI, 0)
+				viewer.scene.scene.add(mesh2);
 			}
 			
+			let mesh3;
 			{
 				let material = new THREE.MeshPhysicalMaterial( {
 					color: 0x226666,
@@ -112,12 +118,42 @@
 					clearCoatRoughness: 1.0,
 					reflectivity: 1.0
 				} );
-				let mesh = new THREE.Mesh( geometry, material );
-				mesh.position.set(589751.587, 231428.213, 725.634);
-				mesh.scale.multiplyScalar(500);
-				mesh.rotation.set(Math.PI / 2, Math.PI, 0)
-				viewer.scene.scene.add(mesh);
+				mesh3 = new THREE.Mesh( geometry, material );
+				mesh3.position.set(589751.587, 231428.213, 725.634);
+				mesh3.scale.multiplyScalar(500);
+				mesh3.rotation.set(Math.PI / 2, Math.PI, 0)
+				viewer.scene.scene.add(mesh3);
 			}
+
+			viewer.onGUILoaded(() => {
+				// Add entries to object list in sidebar
+				let tree = $(`#jstree_scene`);
+				let parentNode = "other";
+
+				let bunny1ID = tree.jstree('create_node', parentNode, { 
+						"text": "Bunny 1", 
+						"icon": `${Potree.resourcePath}/icons/triangle.svg`,
+						"object": mesh1
+					}, 
+					"last", false, false);
+				tree.jstree(mesh1.visible ? "check_node" : "uncheck_node", bunny1ID);
+
+				let bunny2ID = tree.jstree('create_node', parentNode, { 
+						"text": "Bunny 2", 
+						"icon": `${Potree.resourcePath}/icons/triangle.svg`,
+						"object": mesh2
+					}, 
+					"last", false, false);
+				tree.jstree(mesh2.visible ? "check_node" : "uncheck_node", bunny2ID);
+
+				let bunny3ID = tree.jstree('create_node', parentNode, { 
+						"text": "Bunny 3", 
+						"icon": `${Potree.resourcePath}/icons/triangle.svg`,
+						"object": mesh3
+					}, 
+					"last", false, false);
+				tree.jstree(mesh3.visible ? "check_node" : "uncheck_node", bunny3ID);
+			});
 			
 		});
 

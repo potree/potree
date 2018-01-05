@@ -51,11 +51,17 @@ Potree.View = class {
 	}
 
 	set direction (dir) {
-		let yaw = Math.atan2(dir.y, dir.x) - Math.PI / 2;
-		let pitch = Math.atan2(dir.z, Math.sqrt(dir.x * dir.x + dir.y * dir.y));
 
-		this.yaw = yaw;
-		this.pitch = pitch;
+		if(dir.x === dir.y){
+			this.pitch = Math.PI / 2 * Math.sign(dir.z);
+		}else{
+			let yaw = Math.atan2(dir.y, dir.x) - Math.PI / 2;
+			let pitch = Math.atan2(dir.z, Math.sqrt(dir.x * dir.x + dir.y * dir.y));
+
+			this.yaw = yaw;
+			this.pitch = pitch;
+		}
+		
 	}
 
 	lookAt(t){
@@ -226,7 +232,7 @@ Potree.Scene = class extends THREE.EventDispatcher{
 		this.scenePointCloud.updateMatrixWorld(true);
 		this.referenceFrame.updateMatrixWorld(true);
 
-		for (let pointcloud of this.pointclouds) {
+		for (let pointcloud of pointclouds) {
 			pointcloud.updateMatrixWorld(true);
 
 			let pointcloudBox = pointcloud.pcoGeometry.tightBoundingBox ? pointcloud.pcoGeometry.tightBoundingBox : pointcloud.boundingBox;
@@ -407,7 +413,6 @@ Potree.Scene = class extends THREE.EventDispatcher{
 		//this.scene.add(grid);
 
 		{ // background
-		// var texture = THREE.ImageUtils.loadTexture( Potree.resourcePath + '/textures/background.gif' );
 			let texture = Potree.utils.createBackgroundTexture(512, 512);
 
 			texture.minFilter = texture.magFilter = THREE.NearestFilter;
@@ -468,7 +473,9 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 	constructor(domElement, args = {}){
 		super();
 
-		this.renderArea = domElement;	
+		this.renderArea = domElement;
+		this.guiLoaded = false;	
+		this.guiLoadTasks = [];
 		
 		try{
 
@@ -705,7 +712,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			$(this.renderArea).append(elFailPage);
 		}
 
-		
+		throw error;
 	}
 
 	// ------------------------------------------------------------------------------------
@@ -794,6 +801,10 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 	setDescription (value) {
 		$('#potree_description')[0].innerHTML = value;
 	};
+
+	setClipMode(clipMode){
+		this.clippingTool.setClipMode(clipMode);
+	}
 
 	setNavigationMode (value) {
 		this.scene.view.navigationMode = value;
@@ -960,90 +971,18 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		this.dispatchEvent({'type': 'length_unit_changed', 'viewer': this, value: value});
 	}
 
-	toMaterialID (materialName) {
-		if (materialName === 'RGB') {
-			return Potree.PointColorType.RGB;
-		} else if (materialName === 'Color') {
-			return Potree.PointColorType.COLOR;
-		} else if (materialName === 'Elevation') {
-			return Potree.PointColorType.HEIGHT;
-		} else if (materialName === 'Intensity') {
-			return Potree.PointColorType.INTENSITY;
-		} else if (materialName === 'Intensity Gradient') {
-			return Potree.PointColorType.INTENSITY_GRADIENT;
-		} else if (materialName === 'Classification') {
-			return Potree.PointColorType.CLASSIFICATION;
-		} else if (materialName === 'Return Number') {
-			return Potree.PointColorType.RETURN_NUMBER;
-		} else if (materialName === 'Source') {
-			return Potree.PointColorType.SOURCE;
-		} else if (materialName === 'Level of Detail') {
-			return Potree.PointColorType.LOD;
-		} else if (materialName === 'Point Index') {
-			return Potree.PointColorType.POINT_INDEX;
-		} else if (materialName === 'Normal') {
-			return Potree.PointColorType.NORMAL;
-		} else if (materialName === 'Phong') {
-			return Potree.PointColorType.PHONG;
-		} else if (materialName === 'Index') {
-			return Potree.PointColorType.POINT_INDEX;
-		} else if (materialName === 'RGB and Elevation') {
-			return Potree.PointColorType.RGB_HEIGHT;
-		} else if (materialName === 'Composite') {
-			return Potree.PointColorType.COMPOSITE;
-		}
-	};
-
-	toMaterialName (materialID) {
-		if (materialID === Potree.PointColorType.RGB) {
-			return 'RGB';
-		} else if (materialID === Potree.PointColorType.COLOR) {
-			return 'Color';
-		} else if (materialID === Potree.PointColorType.HEIGHT) {
-			return 'Elevation';
-		} else if (materialID === Potree.PointColorType.INTENSITY) {
-			return 'Intensity';
-		} else if (materialID === Potree.PointColorType.INTENSITY_GRADIENT) {
-			return 'Intensity Gradient';
-		} else if (materialID === Potree.PointColorType.CLASSIFICATION) {
-			return 'Classification';
-		} else if (materialID === Potree.PointColorType.RETURN_NUMBER) {
-			return 'Return Number';
-		} else if (materialID === Potree.PointColorType.SOURCE) {
-			return 'Source';
-		} else if (materialID === Potree.PointColorType.LOD) {
-			return 'Level of Detail';
-		} else if (materialID === Potree.PointColorType.NORMAL) {
-			return 'Normal';
-		} else if (materialID === Potree.PointColorType.PHONG) {
-			return 'Phong';
-		}  else if (materialID === Potree.PointColorType.POINT_INDEX) {
-			return 'Index';
-		} else if (materialID === Potree.PointColorType.RGB_HEIGHT) {
-			return 'RGB and Elevation';
-		} else if (materialID === Potree.PointColorType.COMPOSITE) {
-			return 'Composite';
-		}
-	};
-
-	zoomTo (node, factor) {
+	zoomTo(node, factor, animationDuration = 0){
 		let view = this.scene.view;
-	
-		this.scene.cameraP.position.copy(view.position);
-		this.scene.cameraP.rotation.order = "ZXY";
-		this.scene.cameraP.rotation.x = Math.PI / 2 + view.pitch;
-		this.scene.cameraP.rotation.z = view.yaw;
-		this.scene.cameraP.updateMatrix();
-		this.scene.cameraP.updateMatrixWorld();
-		this.scene.cameraP.zoomTo(node, factor);
-		
-		this.scene.cameraO.position.copy(view.position);
-		this.scene.cameraO.rotation.order = "ZXY";
-		this.scene.cameraO.rotation.x = Math.PI / 2 + view.pitch;
-		this.scene.cameraO.rotation.z = view.yaw;
-		this.scene.cameraO.updateMatrix();
-		this.scene.cameraO.updateMatrixWorld();
-		
+
+		let camera = this.scene.cameraP.clone();
+		camera.rotation.copy(this.scene.cameraP.rotation);
+		camera.rotation.order = "ZXY";
+		camera.rotation.x = Math.PI / 2 + view.pitch;
+		camera.rotation.z = view.yaw;
+		camera.updateMatrix();
+		camera.updateMatrixWorld();
+		camera.zoomTo(node, factor);
+
 		let bs;
 		if (node.boundingSphere) {
 			bs = node.boundingSphere;
@@ -1052,13 +991,44 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		} else {
 			bs = node.boundingBox.getBoundingSphere();
 		}
-		
 		bs = bs.clone().applyMatrix4(node.matrixWorld); 
-		
-		view.position.copy(this.scene.cameraP.position);
-		view.radius = view.position.distanceTo(bs.center);		
-		this.dispatchEvent({"type": "zoom_to", "viewer": this});
 
+		let startPosition = view.position.clone();
+		let endPosition = camera.position.clone();
+		let startTarget = view.getPivot();
+		let endTarget = bs.center;
+		let startRadius = view.radius;
+		let endRadius = endPosition.distanceTo(endTarget);
+
+		let easing = TWEEN.Easing.Quartic.Out;
+
+		{ // animate camera position
+			let pos = startPosition.clone();
+			let tween = new TWEEN.Tween(pos).to(endPosition, animationDuration);
+			tween.easing(easing);
+
+			tween.onUpdate(() => {
+				view.position.copy(pos);
+			});
+
+			tween.start();
+		}
+
+		{ // animate camera target
+			let target = startTarget.clone();
+			let tween = new TWEEN.Tween(target).to(endTarget, animationDuration);
+			tween.easing(easing);
+			tween.onUpdate(() => {
+				view.lookAt(target);
+			});
+			tween.onComplete(() => {
+				view.lookAt(target);
+				this.dispatchEvent({type: 'focusing_finished', target: this});
+			});
+
+			this.dispatchEvent({type: 'focusing_started', target: this});
+			tween.start();
+		}
 	};
 
 	showAbout () {
@@ -1071,13 +1041,13 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		return this.scene.getBoundingBox(pointclouds);
 	};
 
-	fitToScreen (factor = 1) {
+	fitToScreen (factor = 1, animationDuration = 0) {
 		let box = this.getBoundingBox(this.scene.pointclouds);
 
 		let node = new THREE.Object3D();
 		node.boundingBox = box;
 
-		this.zoomTo(node, factor);
+		this.zoomTo(node, factor, animationDuration);
 	};
 
 	toggleNavigationCube() {
@@ -1323,7 +1293,15 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		}
 	};
 
-	loadGUI (callback) {
+	onGUILoaded(callback){
+		if(this.guiLoaded){
+			callback();
+		}else{
+			this.guiLoadTasks.push(callback);
+		}
+	}
+
+	loadGUI(callback){
 		let viewer = this;
 		let sidebarContainer = $('#potree_sidebar_container');
 		sidebarContainer.load(new URL(Potree.scriptPath + '/sidebar.html').href, () => {
@@ -1378,6 +1356,12 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 
 				if (callback) {
 					$(callback);
+				}
+
+				this.guiLoaded = true;
+
+				for(let task of this.guiLoadTasks){
+					task();
 				}
 			});
 		});
@@ -1472,11 +1456,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 				screenPos.copy(position).project(this.scene.getActiveCamera());
 				screenPos.x = this.renderArea.clientWidth * (screenPos.x + 1) / 2;
 				screenPos.y = this.renderArea.clientHeight * (1 - (screenPos.y + 1) / 2);
-				
-				//screenPos.x = Math.floor(screenPos.x - element[0].clientWidth / 2);
-				//screenPos.y = Math.floor(screenPos.y - annotation.elTitlebar[0].clientHeight / 2);
-				screenPos.x = Math.floor(screenPos.x);
-				screenPos.y = Math.floor(screenPos.y);
+
 
 				// SCREEN SIZE
 				if(viewer.scene.cameraMode == Potree.CameraMode.PERSPECTIVE) {
@@ -1488,7 +1468,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 					screenSize = Potree.utils.projectedRadiusOrtho(radius, viewer.scene.cameraO.projectionMatrix, this.renderArea.clientWidth, this.renderArea.clientHeight);
 				}				
 			}
-			
+
 			element[0].style.left = screenPos.x + "px";
 			element[0].style.top = screenPos.y + "px";
 			
@@ -1498,7 +1478,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			}
 
 			if(annotation.children.length > 0){
-				let expand = screenSize > annotation.collapseThreshold || annotation.boundingBox.containsPoint(this.scene.getActiveCamera().position.position);
+				let expand = screenSize > annotation.collapseThreshold || annotation.boundingBox.containsPoint(this.scene.getActiveCamera().position);
 				annotation.expand = expand;
 
 				if (!expand) {

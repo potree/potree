@@ -84,6 +84,8 @@ Potree.Measure = class Measure extends THREE.Object3D {
 	addMarker (point) {
 		if (point instanceof THREE.Vector3) {
 			point = {position: point};
+		}else if(point instanceof Array){
+			point = {position: new THREE.Vector3(...point)};
 		}
 		this.points.push(point);
 

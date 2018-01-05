@@ -139,16 +139,6 @@ Potree.attributeLocations = {
 	"normal": 8,
 };
 
-// 
-// ######  ##	 ##	###	########  ######## ########  
-// ##	## ##	 ##   ## ##   ##	 ## ##	   ##	 ## 
-// ##	   ##	 ##  ##   ##  ##	 ## ##	   ##	 ## 
-//  ######  ######### ##	 ## ##	 ## ######   ########  
-//	   ## ##	 ## ######### ##	 ## ##	   ##   ##   
-// ##	## ##	 ## ##	 ## ##	 ## ##	   ##	##  
-//  ######  ##	 ## ##	 ## ########  ######## ##	 ## 
-// 
-
 Potree.Shader = class Shader {
 
 	constructor(gl, name, vsSource, fsSource) {
@@ -474,16 +464,6 @@ Potree.WebGLTexture = class WebGLTexture {
 
 };
 
-// 
-// ########  ######## ##	## ########  ######## ########  ######## ########  
-// ##	 ## ##	   ###   ## ##	 ## ##	   ##	 ## ##	   ##	 ## 
-// ##	 ## ##	   ####  ## ##	 ## ##	   ##	 ## ##	   ##	 ## 
-// ########  ######   ## ## ## ##	 ## ######   ########  ######   ########  
-// ##   ##   ##	   ##  #### ##	 ## ##	   ##   ##   ##	   ##   ##   
-// ##	##  ##	   ##   ### ##	 ## ##	   ##	##  ##	   ##	##  
-// ##	 ## ######## ##	## ########  ######## ##	 ## ######## ##	 ## 
-// 
-
 Potree.Renderer = class Renderer {
 
 	constructor(threeRenderer) {
@@ -672,7 +652,7 @@ Potree.Renderer = class Renderer {
 		let view = camera.matrixWorldInverse;
 		let viewInv = camera.matrixWorld;
 		let proj = camera.projectionMatrix;
-		let projInv = new THREE.Matrix4().getInverse(camera.projectionMatrix);
+		let projInv = new THREE.Matrix4().getInverse(proj);
 		let worldView = new THREE.Matrix4();
 
 		let material = octree.material;
@@ -799,8 +779,14 @@ Potree.Renderer = class Renderer {
 			shader.setUniform1f("near", camera.near);
 			shader.setUniform1f("far", camera.far);
 
-			shader.setUniform("useOrthographicCamera", material.useOrthographicCamera);
-			shader.setUniform("orthoRange", material.orthoRange);
+			
+			if(camera instanceof THREE.OrthographicCamera){
+				shader.setUniform("uUseOrthographicCamera", true);
+				shader.setUniform("uOrthoWidth", camera.right - camera.left); 
+				shader.setUniform("uOrthoHeight", camera.top - camera.bottom);
+			}else{
+				shader.setUniform("uUseOrthographicCamera", false);
+			}
 
 			shader.setUniform1i("clipMode", material.clipMode);
 
@@ -839,7 +825,7 @@ Potree.Renderer = class Renderer {
 
 			shader.setUniform1f("size", material.size);
 			shader.setUniform1f("maxSize", 50);
-			shader.setUniform1f("minSize", 1);
+			shader.setUniform1f("minSize", 2);
 
 
 			// uniform float uPCIndex
@@ -952,18 +938,6 @@ Potree.Renderer = class Renderer {
 
 			}
 		}
-
-
-		//gl.bindAttribLocation(shader.program, 0, "position");
-		//gl.bindAttribLocation(shader.program, 1, "color");
-		//gl.bindAttribLocation(shader.program, 2, "intensity");
-		//gl.bindAttribLocation(shader.program, 3, "classification");
-		//gl.bindAttribLocation(shader.program, 4, "returnNumber");
-		//gl.bindAttribLocation(shader.program, 5, "numberOfReturns");
-		//gl.bindAttribLocation(shader.program, 6, "pointSourceID");
-		//gl.bindAttribLocation(shader.program, 7, "index");
-
-
 
 		this.renderNodes(octree, nodes, visibilityTextureData, camera, target, shader, params);
 

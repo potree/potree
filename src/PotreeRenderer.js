@@ -139,16 +139,6 @@ Potree.attributeLocations = {
 	"normal": 8,
 };
 
-// 
-// ######  ##	 ##	###	########  ######## ########  
-// ##	## ##	 ##   ## ##   ##	 ## ##	   ##	 ## 
-// ##	   ##	 ##  ##   ##  ##	 ## ##	   ##	 ## 
-//  ######  ######### ##	 ## ##	 ## ######   ########  
-//	   ## ##	 ## ######### ##	 ## ##	   ##   ##   
-// ##	## ##	 ## ##	 ## ##	 ## ##	   ##	##  
-//  ######  ##	 ## ##	 ## ########  ######## ##	 ## 
-// 
-
 Potree.Shader = class Shader {
 
 	constructor(gl, name, vsSource, fsSource) {
@@ -473,16 +463,6 @@ Potree.WebGLTexture = class WebGLTexture {
 
 
 };
-
-// 
-// ########  ######## ##	## ########  ######## ########  ######## ########  
-// ##	 ## ##	   ###   ## ##	 ## ##	   ##	 ## ##	   ##	 ## 
-// ##	 ## ##	   ####  ## ##	 ## ##	   ##	 ## ##	   ##	 ## 
-// ########  ######   ## ## ## ##	 ## ######   ########  ######   ########  
-// ##   ##   ##	   ##  #### ##	 ## ##	   ##   ##   ##	   ##   ##   
-// ##	##  ##	   ##   ### ##	 ## ##	   ##	##  ##	   ##	##  
-// ##	 ## ######## ##	## ########  ######## ##	 ## ######## ##	 ## 
-// 
 
 Potree.Renderer = class Renderer {
 
@@ -958,18 +938,6 @@ Potree.Renderer = class Renderer {
 
 			}
 		}
-
-
-		//gl.bindAttribLocation(shader.program, 0, "position");
-		//gl.bindAttribLocation(shader.program, 1, "color");
-		//gl.bindAttribLocation(shader.program, 2, "intensity");
-		//gl.bindAttribLocation(shader.program, 3, "classification");
-		//gl.bindAttribLocation(shader.program, 4, "returnNumber");
-		//gl.bindAttribLocation(shader.program, 5, "numberOfReturns");
-		//gl.bindAttribLocation(shader.program, 6, "pointSourceID");
-		//gl.bindAttribLocation(shader.program, 7, "index");
-
-
 
 		this.renderNodes(octree, nodes, visibilityTextureData, camera, target, shader, params);
 

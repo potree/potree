@@ -9,7 +9,7 @@ class MeasurePanel{
 		this._update = () => { this.update(); };
 	}
 
-	createCoordinatesTable(){
+	createCoordinatesTable(points){
 		let table = $(`
 			<table class="measurement_value_table">
 				<tr>
@@ -20,12 +20,10 @@ class MeasurePanel{
 			</table>
 		`);
 
-		for (let point of this.measurement.points) {
-			let position = point instanceof THREE.Vector3 ? point : point.position;
-
-			let x = Potree.utils.addCommas(position.x.toFixed(3));
-			let y = Potree.utils.addCommas(position.y.toFixed(3));
-			let z = Potree.utils.addCommas(position.z.toFixed(3));
+		for (let point of points) {
+			let x = Potree.utils.addCommas(point.x.toFixed(3));
+			let y = Potree.utils.addCommas(point.y.toFixed(3));
+			let z = Potree.utils.addCommas(point.z.toFixed(3));
 
 			let row = $(`
 				<tr>
@@ -96,7 +94,7 @@ class DistancePanel extends MeasurePanel{
 	update(){
 		let elCoordiantesContainer = this.elContent.find('.coordinates_table_container');
 		elCoordiantesContainer.empty();
-		elCoordiantesContainer.append(this.createCoordinatesTable());
+		elCoordiantesContainer.append(this.createCoordinatesTable(this.measurement.points.map(p => p.position)));
 
 		let positions = this.measurement.points.map(p => p.position);
 		let distances = [];
@@ -159,7 +157,7 @@ class PointPanel extends MeasurePanel{
 	update(){
 		let elCoordiantesContainer = this.elContent.find('.coordinates_table_container');
 		elCoordiantesContainer.empty();
-		elCoordiantesContainer.append(this.createCoordinatesTable());
+		elCoordiantesContainer.append(this.createCoordinatesTable(this.measurement.points.map(p => p.position)));
 
 		let elAttributesContainer = this.elContent.find('.attributes_table_container');
 		elAttributesContainer.empty();
@@ -199,7 +197,7 @@ class AreaPanel extends MeasurePanel{
 	update(){
 		let elCoordiantesContainer = this.elContent.find('.coordinates_table_container');
 		elCoordiantesContainer.empty();
-		elCoordiantesContainer.append(this.createCoordinatesTable());
+		elCoordiantesContainer.append(this.createCoordinatesTable(this.measurement.points.map(p => p.position)));
 
 		let elArea = this.elContent.find(`#measurement_area`);
 		elArea.html(this.measurement.getArea().toFixed(3));
@@ -248,7 +246,7 @@ class AnglePanel extends MeasurePanel{
 	update(){
 		let elCoordiantesContainer = this.elContent.find('.coordinates_table_container');
 		elCoordiantesContainer.empty();
-		elCoordiantesContainer.append(this.createCoordinatesTable());
+		elCoordiantesContainer.append(this.createCoordinatesTable(this.measurement.points.map(p => p.position)));
 
 		let angles = [];
 		for(let i = 0; i < this.measurement.points.length; i++){
@@ -297,7 +295,7 @@ class HeightPanel extends MeasurePanel{
 	update(){
 		let elCoordiantesContainer = this.elContent.find('.coordinates_table_container');
 		elCoordiantesContainer.empty();
-		elCoordiantesContainer.append(this.createCoordinatesTable());
+		elCoordiantesContainer.append(this.createCoordinatesTable(this.measurement.points.map(p => p.position)));
 
 		{
 			let points = this.measurement.points;
@@ -312,6 +310,115 @@ class HeightPanel extends MeasurePanel{
 
 			this.elHeightLabel = this.elContent.find(`#height_label`);
 			this.elHeightLabel.html(`<b>Height:</b> ${height}`);
+		}
+	}
+}
+
+class VolumePanel extends MeasurePanel{
+	constructor(scene, measurement, propertiesPanel){
+		super(scene, measurement, propertiesPanel);
+
+		let removeIconPath = Potree.resourcePath + '/icons/remove.svg';
+		this.elContent = $(`
+			<div class="measurement_content">
+				<span class="coordinates_table_container"></span>
+
+				<table class="measurement_value_table">
+					<tr>
+						<th>\u03b1</th>
+						<th>\u03b2</th>
+						<th>\u03b3</th>
+					</tr>
+					<tr>
+						<td align="center" id="angle_cell_alpha" style="width: 33%"></td>
+						<td align="center" id="angle_cell_betta" style="width: 33%"></td>
+						<td align="center" id="angle_cell_gamma" style="width: 33%"></td>
+					</tr>
+				</table>
+
+				<table class="measurement_value_table">
+					<tr>
+						<th>length</th>
+						<th>width</th>
+						<th>height</th>
+					</tr>
+					<tr>
+						<td align="center" id="cell_length" style="width: 33%"></td>
+						<td align="center" id="cell_width" style="width: 33%"></td>
+						<td align="center" id="cell_height" style="width: 33%"></td>
+					</tr>
+				</table>
+
+				<br>
+				<span style="font-weight: bold">Volume: </span>
+				<span id="measurement_volume"></span>
+
+				<li>
+					<label style="whitespace: nowrap">
+						<input id="volume_clip" type="checkbox"/>
+						<span>clip volume</span>
+					</label>
+				</li>
+
+
+				<!-- ACTIONS -->
+				<!--<div style="display: flex; margin-top: 12px">
+					<span></span>
+					<span style="flex-grow: 1"></span>
+					<img class="measurement_action_remove" src="${removeIconPath}" style="width: 16px; height: 16px"/>
+				</div>-->
+			</div>
+		`);
+
+		this.elCheckClip = this.elContent.find('#volume_clip');
+		this.elCheckClip.click(event => {
+			this.measurement.clip = event.target.checked;
+		});
+
+		this.propertiesPanel.addVolatileListener(measurement, "position_changed", this._update);
+		this.propertiesPanel.addVolatileListener(measurement, "orientation_changed", this._update);
+		this.propertiesPanel.addVolatileListener(measurement, "scale_changed", this._update);
+
+		this.update();
+	}
+
+	update(){
+		let elCoordiantesContainer = this.elContent.find('.coordinates_table_container');
+		elCoordiantesContainer.empty();
+		elCoordiantesContainer.append(this.createCoordinatesTable([this.measurement.position]));
+
+		{
+			let angles = this.measurement.rotation.toVector3();
+			angles = [angles.z, angles.x, angles.y];
+			angles = angles.map(v => 180 * v / Math.PI);
+			angles = angles.map(a => a.toFixed(1) + '\u00B0');
+
+			let elAlpha = this.elContent.find(`#angle_cell_alpha`);
+			let elBetta = this.elContent.find(`#angle_cell_betta`);
+			let elGamma = this.elContent.find(`#angle_cell_gamma`);
+
+			elAlpha.html(angles[0]);
+			elBetta.html(angles[1]);
+			elGamma.html(angles[2]);
+		}
+
+		{
+			let dimensions = this.measurement.scale.toArray();
+			dimensions = dimensions.map(v => Potree.utils.addCommas(v.toFixed(2)));
+
+			let elLength = this.elContent.find(`#cell_length`);
+			let elWidth = this.elContent.find(`#cell_width`);
+			let elHeight = this.elContent.find(`#cell_height`);
+
+			elLength.html(dimensions[0]);
+			elWidth.html(dimensions[1]);
+			elHeight.html(dimensions[2]);
+		}
+
+		{
+			let elVolume = this.elContent.find(`#measurement_volume`);
+			let volume = this.measurement.getVolume();
+			elVolume.html(Potree.utils.addCommas(volume.toFixed(2)));
 		}
 	}
 }
@@ -413,7 +520,7 @@ class ProfilePanel extends MeasurePanel{
 	update(){
 		let elCoordiantesContainer = this.elContent.find('.coordinates_table_container');
 		elCoordiantesContainer.empty();
-		elCoordiantesContainer.append(this.createCoordinatesTable());
+		elCoordiantesContainer.append(this.createCoordinatesTable(this.measurement.points));
 	}
 }
 
@@ -436,18 +543,16 @@ Potree.PropertiesPanel = class PropertriesPanel{
 		if(this.object === object){
 			return;
 		}
-
 		
 		for(let task of this.cleanupTasks){
 			task();
 		}
 		this.cleanupTasks = [];
 		this.container.empty();
-		
 
 		if(object instanceof Potree.PointCloudTree){
 			this.setPointCloud(object);
-		}else if(object instanceof Potree.Measure || object instanceof Potree.Profile){
+		}else if(object instanceof Potree.Measure || object instanceof Potree.Profile || object instanceof Potree.Volume){
 			this.setMeasurement(object);
 		}else{
 
@@ -941,7 +1046,7 @@ Potree.PropertiesPanel = class PropertriesPanel{
 			ANGLE: {panel: AnglePanel},
 			HEIGHT: {panel: HeightPanel},
 			PROFILE: {panel: ProfilePanel},
-			//VOLUME: {panel: VolumePanel}
+			VOLUME: {panel: VolumePanel}
 		};
 
 		let getType = (measurement) => {

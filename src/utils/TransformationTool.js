@@ -446,6 +446,10 @@ Potree.TransformationTool = class TransformationTool {
 			let normal = new THREE.Vector3(...handle.alignment);
 			for (let selection of this.selection) {
 				selection.rotateOnAxis(normal, angle);
+				selection.dispatchEvent({
+					type: "orientation_changed",
+					object: selection
+				});
 			}
 
 			drag.pivot = I;
@@ -496,6 +500,10 @@ Potree.TransformationTool = class TransformationTool {
 
 				for (let selection of this.selection) {
 					selection.position.add(diff);
+					selection.dispatchEvent({
+						type: "position_changed",
+						object: selection
+					});
 				}
 
 				drag.pivot = drag.pivot.add(diff);
@@ -567,6 +575,14 @@ Potree.TransformationTool = class TransformationTool {
 				for (let selection of this.selection) {
 					selection.scale.add(diffScale);
 					selection.position.add(diffPosition);
+					selection.dispatchEvent({
+						type: "position_changed",
+						object: selection
+					});
+					selection.dispatchEvent({
+						type: "scale_changed",
+						object: selection
+					});
 				}
 
 				drag.pivot.copy(iOnLine);

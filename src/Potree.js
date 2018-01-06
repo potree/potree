@@ -300,11 +300,19 @@ Potree.updatePointClouds = function (pointclouds, camera, renderer) {
 		Potree.lru = new LRU();
 	}
 
-	for (let i = 0; i < pointclouds.length; i++) {
-		let pointcloud = pointclouds[i];
-		for (let j = 0; j < pointcloud.profileRequests.length; j++) {
-			pointcloud.profileRequests[j].update();
+	for (let pointcloud of pointclouds) {
+		let start = performance.now();
+
+		for (let profileRequest of pointcloud.profileRequests) {
+			profileRequest.update();
+
+			let duration = performance.now() - start;
+			if(duration > 5){
+				break;
+			}
 		}
+
+		let duration = performance.now() - start;
 	}
 
 	let result = Potree.updateVisibility(pointclouds, camera, renderer);

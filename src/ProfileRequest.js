@@ -92,11 +92,24 @@ Potree.ProfileRequest = class ProfileRequest {
 		}
 	}
 
-	update () {
+	update(){
+		if(!this.updateGeneratorInstance){
+			this.updateGeneratorInstance = this.updateGenerator();
+		}
+
+		let result = this.updateGeneratorInstance.next();
+		if(result.done){
+			this.updateGeneratorInstance = null;
+		}
+	}
+
+	* updateGenerator(){
 		// load nodes in queue
 		// if hierarchy expands, also load nodes from expanded hierarchy
 		// once loaded, add data to this.points and remove node from queue
 		// only evaluate 1-50 nodes per frame to maintain responsiveness
+
+		let start = performance.now();
 
 		let maxNodesPerUpdate = 1;
 		let intersectedNodes = [];
@@ -128,7 +141,12 @@ Potree.ProfileRequest = class ProfileRequest {
 
 		if (intersectedNodes.length > 0) {
 
-			this.getPointsInsideProfile(intersectedNodes, this.temporaryResult);
+			for(let done of this.getPointsInsideProfile(intersectedNodes, this.temporaryResult)){
+				if(!done){
+					//console.log("updateGenerator yields");
+					yield false;
+				}
+			}
 			if (this.temporaryResult.size() > 100) {
 				this.pointsServed += this.temporaryResult.size();
 				this.callback.onProgress({request: this, points: this.temporaryResult});
@@ -152,9 +170,14 @@ Potree.ProfileRequest = class ProfileRequest {
 				this.pointcloud.profileRequests.splice(index, 1);
 			}
 		}
+
+		//console.log("updateGenerator finished");
+		yield true;
 	};
 
-	getAccepted(numPoints, buffer, posOffset, matrix, segment, segmentDir, points, totalMileage){
+	* getAccepted(numPoints, buffer, posOffset, matrix, segment, segmentDir, points, totalMileage){
+		let checkpoint = performance.now();
+
 		let view = new DataView(buffer.data);
 
 		let accepted = new Uint32Array(numPoints);
@@ -190,19 +213,34 @@ Potree.ProfileRequest = class ProfileRequest {
 
 				numAccepted++;
 			}
+
+			if((i % 1000) === 0){
+				let duration = performance.now() - checkpoint;
+				if(duration > 4){
+					//console.log(`getAccepted yield after ${duration}ms`);
+					yield false;
+					checkpoint = performance.now();
+				}
+			}
 		}
 
 		accepted = accepted.subarray(0, numAccepted);
 		mileage = mileage.subarray(0, numAccepted);
 		acceptedPositions = acceptedPositions.subarray(0, numAccepted * 3);
 
-		return [accepted, mileage, acceptedPositions];
+		//let end = performance.now();
+		//let duration = end - start;
+		//console.log("accepted duration ", duration)
+
+		//console.log(`getAccepted finished`);
+
+		yield [accepted, mileage, acceptedPositions];
 	}
 
-	getPointsInsideProfile (nodes, target) {
+	* getPointsInsideProfile(nodes, target){
+		let checkpoint = performance.now();
 		let totalMileage = 0;
 
-		let tStart = new Date().getTime();
 		let pointsProcessed = 0;
 
 		for (let segment of target.segments) {
@@ -232,13 +270,12 @@ Potree.ProfileRequest = class ProfileRequest {
 					}
 				}
 
-
 				//{// DEBUG
-				//    console.log(node.name);
-				//    let boxHelper = new Potree.Box3Helper(node.getBoundingBox());
-				//    boxHelper.matrixAutoUpdate = false;
-				//    boxHelper.matrix.copy(viewer.scene.pointclouds[0].matrixWorld);
-				//    viewer.scene.scene.add(boxHelper);
+				//	console.log(node.name);
+				//	let boxHelper = new Potree.Box3Helper(node.getBoundingBox());
+				//	boxHelper.matrixAutoUpdate = false;
+				//	boxHelper.matrix.copy(viewer.scene.pointclouds[0].matrixWorld);
+				//	viewer.scene.scene.add(boxHelper);
 				//}
 
 				let sv = new THREE.Vector3().subVectors(segment.end, segment.start).setZ(0);
@@ -254,7 +291,26 @@ Potree.ProfileRequest = class ProfileRequest {
 				let posOffset = buffer.offset("position");
 				pointsProcessed = pointsProcessed + numPoints;
 
-				let [accepted, mileage, acceptedPositions] = this.getAccepted(numPoints, buffer, posOffset, matrix, segment, segmentDir, points,totalMileage);
+				let accepted = null;
+				let mileage = null;
+				let acceptedPositions = null;
+				for(let result of this.getAccepted(numPoints, buffer, posOffset, matrix, segment, segmentDir, points,totalMileage)){
+					if(!result){
+						let duration = performance.now() - checkpoint;
+						//console.log(`getPointsInsideProfile yield after ${duration}ms`);
+						yield false;
+						checkpoint = performance.now();
+					}else{
+						[accepted, mileage, acceptedPositions] = result;
+					}
+				}
+
+				let duration = performance.now() - checkpoint;
+				if(duration > 4){
+					//console.log(`getPointsInsideProfile yield after ${duration}ms`);
+					yield false;
+					checkpoint = performance.now();
+				}
 
 				points.data.position = acceptedPositions;
 
@@ -294,29 +350,18 @@ Potree.ProfileRequest = class ProfileRequest {
 				points.data['mileage'] = mileage;
 				points.numPoints = accepted.length;
 
-				//console.log(`getPointsInsideProfile - ${node.name} - accepted: ${accepted.length}`);
-
-				//performance.measure("20 - 30", "getPointsInsideProfile-20", "getPointsInsideProfile-30");
-				//performance.measure("10 - 50", "getPointsInsideProfile-10", "getPointsInsideProfile-50");
-				//var measures = performance.getEntriesByType("measure");
-				//for(let measure of measures){
-				//	console.log(measure.name, measure.duration);
-				//}
-				//performance.clearMarks();
-				//performance.clearMeasures();
-
 				segment.points.add(points);
 			}
 
 			totalMileage += segment.length;
 		}
 
-		let tEnd = new Date().getTime();
-		//console.log((tEnd - tStart).toFixed(2) + ", " + pointsProcessed);
-
 		for (let segment of target.segments) {
 			target.boundingBox.union(segment.points.boundingBox);
 		}
+
+		//console.log(`getPointsInsideProfile finished`);
+		yield true;
 	};
 
 	finishLevelThenCancel () {
@@ -327,7 +372,7 @@ Potree.ProfileRequest = class ProfileRequest {
 		this.maxDepth = this.highestLevelServed;
 		this.cancelRequested = true;
 
-		console.log(`maxDepth: ${this.maxDepth}`);
+		//console.log(`maxDepth: ${this.maxDepth}`);
 	};
 
 	cancel () {

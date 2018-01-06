@@ -25,4 +25,4 @@ Potree.toInterleavedBufferAttribute = function toInterleavedBufferAttribute(poin
 	}
 	
 	return att;
-}
+};

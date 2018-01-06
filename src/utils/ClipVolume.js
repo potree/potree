@@ -68,7 +68,7 @@ Potree.ClipVolume = class extends THREE.Object3D{
 			planeFrameGeometry.vertices.push(new THREE.Vector3(0.5, -0.5, 0.0));
 		}
 
-		this.dimension = new THREE.Vector3(1,1,1);
+		this.dimension = new THREE.Vector3(1, 1, 1);
 		this.material = new THREE.MeshBasicMaterial( {
 			color: 0x00ff00, 
 			transparent: true, 
@@ -109,7 +109,7 @@ Potree.ClipVolume = class extends THREE.Object3D{
 			shaft.name = name + "_shaft";
 			
 			let headGeometry = new THREE.CylinderGeometry(0, 0.04, 0.1, 10, 1, false);
-			let headMaterial  = material;
+			let headMaterial = material;
 			let head = new THREE.Mesh(headGeometry, headMaterial);
 			head.name = name + "_head";
 			head.position.y = 1;
@@ -126,8 +126,8 @@ Potree.ClipVolume = class extends THREE.Object3D{
 		this.arrowY = createArrow("arrow_y", new THREE.Vector3(0, 1, 0), 0x00FF00);
 		this.arrowZ = createArrow("arrow_z", new THREE.Vector3(0, 0, 1), 0x0000FF);
 		
-		this.arrowX.rotation.z = -Math.PI/2;
-		this.arrowZ.rotation.x = Math.PI/2;	
+		this.arrowX.rotation.z = -Math.PI / 2;
+		this.arrowZ.rotation.x = Math.PI / 2;
 
 		this.arrowX.visible = false;
 		this.arrowY.visible = false;
@@ -198,22 +198,22 @@ Potree.ClipVolume = class extends THREE.Object3D{
 
 		if(!cs || !axis || !dir) return;
 
-		if(axis == "x") {
-			if(cs == "local") {
+		if(axis === "x") {
+			if(cs === "local") {
 				this.position.add(this.localX.clone().multiplyScalar(dir * this.clipOffset));
-			} else if(cs == "global") {
+			} else if(cs === "global") {
 				this.position.x = this.position.x + dir * this.clipOffset;
 			}
-		}else if(axis == "y") {
-			if(cs == "local") {
+		}else if(axis === "y") {
+			if(cs === "local") {
 				this.position.add(this.localY.clone().multiplyScalar(dir * this.clipOffset));
-			} else if(cs == "global") {
+			} else if(cs === "global") {
 				this.position.y = this.position.y + dir * this.clipOffset;
 			}
-		}else if(axis == "z") {
-			if(cs == "local") {
+		}else if(axis === "z") {
+			if(cs === "local") {
 				this.position.add(this.localZ.clone().multiplyScalar(dir * this.clipOffset));
-			} else if(cs == "global") {
+			} else if(cs === "global") {
 				this.position.z = this.position.z + dir * this.clipOffset;
 			}
 		}
@@ -228,26 +228,26 @@ Potree.ClipVolume = class extends THREE.Object3D{
 
 		if(!cs || !axis || !dir) return;
 
-		if(cs == "local") {
-			if(axis == "x") {
-				this.rotateOnAxis(new THREE.Vector3(1, 0, 0), dir * this.clipRotOffset * Math.PI/180);
-			} else if(axis == "y") {
-				this.rotateOnAxis(new THREE.Vector3(0, 1, 0), dir * this.clipRotOffset * Math.PI/180);
-			} else if(axis == "z") {
-				this.rotateOnAxis(new THREE.Vector3(0, 0, 1), dir * this.clipRotOffset * Math.PI/180);
+		if(cs === "local") {
+			if(axis === "x") {
+				this.rotateOnAxis(new THREE.Vector3(1, 0, 0), dir * this.clipRotOffset * Math.PI / 180);
+			} else if(axis === "y") {
+				this.rotateOnAxis(new THREE.Vector3(0, 1, 0), dir * this.clipRotOffset * Math.PI / 180);
+			} else if(axis === "z") {
+				this.rotateOnAxis(new THREE.Vector3(0, 0, 1), dir * this.clipRotOffset * Math.PI / 180);
 			}
-		} else if(cs == "global") {
+		} else if(cs === "global") {
 			let rotaxis = new THREE.Vector4(1, 0, 0, 0);	
-			if(axis == "y") {
+			if(axis === "y") {
 				rotaxis = new THREE.Vector4(0, 1, 0, 0);
-			} else if(axis == "z") {
+			} else if(axis === "z") {
 				rotaxis = new THREE.Vector4(0, 0, 1, 0);
 			}
 			this.updateMatrixWorld();
 			let invM = new THREE.Matrix4().getInverse(this.matrixWorld);
 			rotaxis = rotaxis.applyMatrix4(invM).normalize();
 			rotaxis = new THREE.Vector3(rotaxis.x, rotaxis.y, rotaxis.z);
-			this.rotateOnAxis(rotaxis, dir * this.clipRotOffset * Math.PI/180);
+			this.rotateOnAxis(rotaxis, dir * this.clipRotOffset * Math.PI / 180);
 		}
 
 		this.updateLocalSystem();

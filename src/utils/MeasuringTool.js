@@ -49,7 +49,7 @@ Potree.MeasuringTool = class MeasuringTool extends THREE.EventDispatcher {
 			measure: measure
 		});
 
-		measure.showDistances = (args.showDistances == null) ? true : args.showDistances;
+		measure.showDistances = (args.showDistances === null) ? true : args.showDistances;
 		measure.showArea = args.showArea || false;
 		measure.showAngles = args.showAngles || false;
 		measure.showCoordinates = args.showCoordinates || false;

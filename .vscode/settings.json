@@ -1,0 +1,12 @@
+{
+	"workbench.editor.enablePreview": false,
+	"files.associations": {
+		"*.vs": "cpp",
+		"*.fs": "cpp"
+	},
+	"editor.fontSize": 16,
+	"editor.autoIndent": false,
+	"editor.detectIndentation": false,
+	"editor.renderWhitespace": "all",
+	"editor.insertSpaces": false,
+}

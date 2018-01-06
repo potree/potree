@@ -154,9 +154,18 @@ Potree.Volume = class extends THREE.Object3D {
 	}
 
 	set clip (value) {
-		this._clip = value;
 
-		this.update();
+		if(this._clip !== value){
+			this._clip = value;
+
+			this.update();
+
+			this.dispatchEvent({
+				type: "clip_changed",
+				object: this
+			});
+		}
+		
 	}
 
 	get modifieable () {

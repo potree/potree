@@ -44,8 +44,6 @@ Potree.EyeDomeLightingMaterial = class EyeDomeLightingMaterial extends THREE.Sha
 
 	updateShaderSource() {
 
-		let PC = Potree.PointColorType;
-
 		let vs = this.getDefines() + Potree.Shaders['edl.vs'];
 		let fs = this.getDefines() + Potree.Shaders['edl.fs'];
 

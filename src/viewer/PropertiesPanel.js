@@ -70,7 +70,7 @@ class DistancePanel extends MeasurePanel{
 
 		let removeIconPath = Potree.resourcePath + '/icons/remove.svg';
 		this.elContent = $(`
-			<div class="measurement_content">
+			<div class="measurement_content selectable">
 				<span class="coordinates_table_container"></span>
 				<br>
 				<table id="distances_table" class="measurement_value_table"></table>
@@ -84,9 +84,9 @@ class DistancePanel extends MeasurePanel{
 			</div>
 		`);
 
-		this.propertiesPanel.addVolatileListener(measurement, "marker_added", this._update)
-		this.propertiesPanel.addVolatileListener(measurement, "marker_removed", this._update)
-		this.propertiesPanel.addVolatileListener(measurement, "marker_moved", this._update)
+		this.propertiesPanel.addVolatileListener(measurement, "marker_added", this._update);
+		this.propertiesPanel.addVolatileListener(measurement, "marker_removed", this._update);
+		this.propertiesPanel.addVolatileListener(measurement, "marker_moved", this._update);
 
 		this.update();
 	}
@@ -133,7 +133,7 @@ class PointPanel extends MeasurePanel{
 
 		let removeIconPath = Potree.resourcePath + '/icons/remove.svg';
 		this.elContent = $(`
-			<div class="measurement_content">
+			<div class="measurement_content selectable">
 				<span class="coordinates_table_container"></span>
 				<br>
 				<span class="attributes_table_container"></span>
@@ -147,9 +147,9 @@ class PointPanel extends MeasurePanel{
 			</div>
 		`);
 
-		this.propertiesPanel.addVolatileListener(measurement, "marker_added", this._update)
-		this.propertiesPanel.addVolatileListener(measurement, "marker_removed", this._update)
-		this.propertiesPanel.addVolatileListener(measurement, "marker_moved", this._update)
+		this.propertiesPanel.addVolatileListener(measurement, "marker_added", this._update);
+		this.propertiesPanel.addVolatileListener(measurement, "marker_removed", this._update);
+		this.propertiesPanel.addVolatileListener(measurement, "marker_moved", this._update);
 
 		this.update();
 	}
@@ -172,7 +172,7 @@ class AreaPanel extends MeasurePanel{
 
 		let removeIconPath = Potree.resourcePath + '/icons/remove.svg';
 		this.elContent = $(`
-			<div class="measurement_content">
+			<div class="measurement_content selectable">
 				<span class="coordinates_table_container"></span>
 				<br>
 				<span style="font-weight: bold">Area: </span>
@@ -187,9 +187,9 @@ class AreaPanel extends MeasurePanel{
 			</div>
 		`);
 
-		this.propertiesPanel.addVolatileListener(measurement, "marker_added", this._update)
-		this.propertiesPanel.addVolatileListener(measurement, "marker_removed", this._update)
-		this.propertiesPanel.addVolatileListener(measurement, "marker_moved", this._update)
+		this.propertiesPanel.addVolatileListener(measurement, "marker_added", this._update);
+		this.propertiesPanel.addVolatileListener(measurement, "marker_removed", this._update);
+		this.propertiesPanel.addVolatileListener(measurement, "marker_moved", this._update);
 
 		this.update();
 	}
@@ -211,7 +211,7 @@ class AnglePanel extends MeasurePanel{
 
 		let removeIconPath = Potree.resourcePath + '/icons/remove.svg';
 		this.elContent = $(`
-			<div class="measurement_content">
+			<div class="measurement_content selectable">
 				<span class="coordinates_table_container"></span>
 				<br>
 				<table class="measurement_value_table">
@@ -236,9 +236,9 @@ class AnglePanel extends MeasurePanel{
 			</div>
 		`);
 
-		this.propertiesPanel.addVolatileListener(measurement, "marker_added", this._update)
-		this.propertiesPanel.addVolatileListener(measurement, "marker_removed", this._update)
-		this.propertiesPanel.addVolatileListener(measurement, "marker_moved", this._update)
+		this.propertiesPanel.addVolatileListener(measurement, "marker_added", this._update);
+		this.propertiesPanel.addVolatileListener(measurement, "marker_removed", this._update);
+		this.propertiesPanel.addVolatileListener(measurement, "marker_moved", this._update);
 
 		this.update();
 	}
@@ -271,7 +271,7 @@ class HeightPanel extends MeasurePanel{
 
 		let removeIconPath = Potree.resourcePath + '/icons/remove.svg';
 		this.elContent = $(`
-			<div class="measurement_content">
+			<div class="measurement_content selectable">
 				<span class="coordinates_table_container"></span>
 				<br>
 				<span id="height_label">Height: </span><br>
@@ -285,9 +285,9 @@ class HeightPanel extends MeasurePanel{
 			</div>
 		`);
 
-		this.propertiesPanel.addVolatileListener(measurement, "marker_added", this._update)
-		this.propertiesPanel.addVolatileListener(measurement, "marker_removed", this._update)
-		this.propertiesPanel.addVolatileListener(measurement, "marker_moved", this._update)
+		this.propertiesPanel.addVolatileListener(measurement, "marker_added", this._update);
+		this.propertiesPanel.addVolatileListener(measurement, "marker_removed", this._update);
+		this.propertiesPanel.addVolatileListener(measurement, "marker_moved", this._update);
 
 		this.update();
 	}
@@ -320,7 +320,7 @@ class VolumePanel extends MeasurePanel{
 
 		let removeIconPath = Potree.resourcePath + '/icons/remove.svg';
 		this.elContent = $(`
-			<div class="measurement_content">
+			<div class="measurement_content selectable">
 				<span class="coordinates_table_container"></span>
 
 				<table class="measurement_value_table">
@@ -378,6 +378,7 @@ class VolumePanel extends MeasurePanel{
 		this.propertiesPanel.addVolatileListener(measurement, "position_changed", this._update);
 		this.propertiesPanel.addVolatileListener(measurement, "orientation_changed", this._update);
 		this.propertiesPanel.addVolatileListener(measurement, "scale_changed", this._update);
+		this.propertiesPanel.addVolatileListener(measurement, "clip_changed", this._update);
 
 		this.update();
 	}
@@ -420,6 +421,9 @@ class VolumePanel extends MeasurePanel{
 			let volume = this.measurement.getVolume();
 			elVolume.html(Potree.utils.addCommas(volume.toFixed(2)));
 		}
+
+		this.elCheckClip.prop("checked", this.measurement.clip);
+
 	}
 }
 
@@ -430,7 +434,7 @@ class ProfilePanel extends MeasurePanel{
 
 		let removeIconPath = Potree.resourcePath + '/icons/remove.svg';
 		this.elContent = $(`
-			<div class="measurement_content">
+			<div class="measurement_content selectable">
 				<span class="coordinates_table_container"></span>
 				<br>
 				<span style="display:flex">
@@ -510,9 +514,9 @@ class ProfilePanel extends MeasurePanel{
 			this.propertiesPanel.viewer.profileWindowController.setProfile(measurement);
 		});
 
-		this.propertiesPanel.addVolatileListener(measurement, "marker_added", this._update)
-		this.propertiesPanel.addVolatileListener(measurement, "marker_removed", this._update)
-		this.propertiesPanel.addVolatileListener(measurement, "marker_moved", this._update)
+		this.propertiesPanel.addVolatileListener(measurement, "marker_added", this._update);
+		this.propertiesPanel.addVolatileListener(measurement, "marker_removed", this._update);
+		this.propertiesPanel.addVolatileListener(measurement, "marker_moved", this._update);
 
 		this.update();
 	}

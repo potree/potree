@@ -238,7 +238,7 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher {
 		e.preventDefault();
 
 		let consumed = false;
-		let consume = () => consumed = true;
+		let consume = () => { return consumed = true; };
 		if (this.hoveredElements.length === 0) {
 			for (let inputListener of this.inputListeners) {
 				inputListener.dispatchEvent({
@@ -290,7 +290,7 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher {
 
 		
 		let consumed = false;
-		let consume = () => {consumed = true};
+		let consume = () => { return consumed = true; };
 		if (this.hoveredElements.length === 0) {
 			for (let inputListener of this.inputListeners) {
 				inputListener.dispatchEvent({

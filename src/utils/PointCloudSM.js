@@ -9,7 +9,7 @@ Potree.PointCloudSM = class PointCloudSM{
 		this.shader = new Potree.Shader(this.gl, "shadow_map", Potree.Shaders['pointcloud_sm.vs'], Potree.Shaders['pointcloud_sm.fs']);
 		this.lightPos = new THREE.Vector3();
 
-		this.target = new THREE.WebGLRenderTarget(4*1024, 4*1024, {
+		this.target = new THREE.WebGLRenderTarget(4 * 1024, 4 * 1024, {
 			minFilter: THREE.LinearFilter,
 			magFilter: THREE.LinearFilter,
 			format: THREE.RGBAFormat,
@@ -33,10 +33,10 @@ Potree.PointCloudSM = class PointCloudSM{
 			const border = 0;
 			const srcFormat = gl.RGB;
 			const srcType = gl.UNSIGNED_BYTE;
-			const pixel = new Uint8Array(3*width);
+			const pixel = new Uint8Array(3 * width);
 			gl.texImage2D(gl.TEXTURE_2D, level, internalFormat,
-						  width, height, border, srcFormat, srcType,
-						  pixel);
+						width, height, border, srcFormat, srcType,
+						pixel);
 
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
@@ -84,7 +84,7 @@ Potree.PointCloudSM = class PointCloudSM{
 
 		let visibilityTextureData = octree.computeVisibilityTextureData(nodes);
 		gl.bindTexture(gl.TEXTURE_2D, this.vnTexture);
-		let vnData = new Uint8Array(3*2048);
+		let vnData = new Uint8Array(3 * 2048);
 		vnData.set(visibilityTextureData.data);
 		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, 2048, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, vnData);
 		gl.bindTexture(gl.TEXTURE_2D, null);

@@ -115,8 +115,8 @@ Potree.ProfileRequest = class ProfileRequest {
 				Potree.getLRU().touch(node);
 				this.highestLevelServed = Math.max(node.getLevel(), this.highestLevelServed);
 
-                let doTraverse = (node.level % node.pcoGeometry.hierarchyStepSize) === 0 && node.hasChildren;
-                doTraverse = doTraverse || node.getLevel() === 0;
+				let doTraverse = (node.level % node.pcoGeometry.hierarchyStepSize) === 0 && node.hasChildren;
+				doTraverse = doTraverse || node.getLevel() === 0;
 				if (doTraverse) {
 					this.traverse(node);
 				}

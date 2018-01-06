@@ -84,9 +84,8 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 			this.updateMatrixWorld(true);
 			box = Potree.utils.computeTransformedBoundingBox(box, this.matrixWorld);
 
-			let bWidth = box.max.z - box.min.z;
-			let bMin = box.min.z; // - 0.2 * bWidth;
-			let bMax = box.max.z; // + 0.2 * bWidth;
+			let bMin = box.min.z;
+			let bMax = box.max.z;
 			this.material.heightMin = bMin;
 			this.material.heightMax = bMax;
 		}

@@ -58,7 +58,6 @@ Potree.PolygonClipVolume = class extends THREE.Object3D{
 			if(camera.isPerspectiveCamera) {
 				posWorld.unproject(camera);
 				var dir = posWorld.clone().sub(camera.position).normalize();
-				var distance = -camera.position.z / dir.z;
 				posWorld = camera.position.clone().add( dir.multiplyScalar(1));
 			} else {
 				posWorld.unproject(camera);
@@ -69,7 +68,7 @@ Potree.PolygonClipVolume = class extends THREE.Object3D{
 			let width = e.viewer.scaleFactor * e.viewer.renderArea.clientWidth;
 			let height = e.viewer.scaleFactor * e.viewer.renderArea.clientHeight;
 			let aspect = width / height;
-			pos.y = pos.y * 1/aspect;
+			pos.y = pos.y * 1 / aspect;
 			pos.z = -pos.z;
 			marker.position.copy(pos);
 		};
@@ -111,7 +110,7 @@ Potree.PolygonClipVolume = class extends THREE.Object3D{
 		if(this.markers.length > 0) {
 			this.remove(this.markers[this.markers.length - 1]);
 			this.markers.splice(this.markers.length - 1, 1);
-			this.markersPosWorld.splice(this.markersPosWorld.length -1, 1);
+			this.markersPosWorld.splice(this.markersPosWorld.length - 1, 1);
 		}
 	}
 

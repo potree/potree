@@ -1,108 +1,108 @@
 
-Potree.GreyhoundBinaryLoader = function (version, boundingBox, scale) {
-	if (typeof (version) === 'string') {
-		this.version = new Potree.Version(version);
-	} else {
-		this.version = version;
-	}
 
-	this.boundingBox = boundingBox;
-	this.scale = scale;
-};
 
-Potree.GreyhoundBinaryLoader.prototype.networkToNative = function (val) {
-	return ((val & 0x00FF) << 24) |
-		((val & 0xFF00) << 8) |
-		((val >> 8) & 0xFF00) |
-		((val >> 24) & 0x00FF);
-}
 
-Potree.GreyhoundBinaryLoader.prototype.load = function (node) {
-	if (node.loaded) return;
 
-	let scope = this;
-	let url = node.getURL();
+Potree.GreyhoundBinaryLoader = class{
 
-	let xhr = new XMLHttpRequest();
-	xhr.open('GET', url, true);
-	xhr.responseType = 'arraybuffer';
-	xhr.overrideMimeType('text/plain; charset=x-user-defined');
-
-	xhr.onreadystatechange = function () {
-		if (xhr.readyState === 4) {
-			if (xhr.status === 200 || xhr.status === 0) {
-				let buffer = xhr.response;
-				scope.parse(node, buffer);
-			} else {
-				console.log(
-					'Failed to load file! HTTP status:', xhr.status,
-					'file:', url);
-			}
+	constructor(version, boundingBox, scale){
+		if (typeof (version) === 'string') {
+			this.version = new Potree.Version(version);
+		} else {
+			this.version = version;
 		}
-	};
 
-	try {
-		xhr.send(null);
-	} catch (e) {
-		console.log('error loading point cloud: ' + e);
+		this.boundingBox = boundingBox;
+		this.scale = scale;
 	}
-};
 
-Potree.GreyhoundBinaryLoader.prototype.parse = function (node, buffer) {
-	let NUM_POINTS_BYTES = 4;
+	load(node){
+		if (node.loaded) return;
 
-	let view = new DataView(
-		buffer, buffer.byteLength - NUM_POINTS_BYTES, NUM_POINTS_BYTES);
-	let numPoints = view.getUint32(0, true);
-	let pointAttributes = node.pcoGeometry.pointAttributes;
+		let scope = this;
+		let url = node.getURL();
 
-	node.numPoints = numPoints;
+		let xhr = new XMLHttpRequest();
+		xhr.open('GET', url, true);
+		xhr.responseType = 'arraybuffer';
+		xhr.overrideMimeType('text/plain; charset=x-user-defined');
 
-	let workerPath = Potree.scriptPath + '/workers/GreyhoundBinaryDecoderWorker.js';
-	let worker = Potree.workerPool.getWorker(workerPath);
+		xhr.onreadystatechange = function () {
+			if (xhr.readyState === 4) {
+				if (xhr.status === 200 || xhr.status === 0) {
+					let buffer = xhr.response;
+					scope.parse(node, buffer);
+				} else {
+					console.log(
+						'Failed to load file! HTTP status:', xhr.status,
+						'file:', url);
+				}
+			}
+		};
 
-	worker.onmessage = function (e) {
+		try {
+			xhr.send(null);
+		} catch (e) {
+			console.log('error loading point cloud: ' + e);
+		}
+	}
 
-		let data = e.data;
-		let iAttributes = pointAttributes.attributes
-			.map(pa => Potree.toInterleavedBufferAttribute(pa))
-			.filter(ia => ia != null);
-		iAttributes.push(new Potree.InterleavedBufferAttribute("index", 4, 4, "UNSIGNED_BYTE", true));
-		let iBuffer = new Potree.InterleavedBuffer(data.data, iAttributes, numPoints);
+	parse(node, buffer){
+		let NUM_POINTS_BYTES = 4;
 
-		let tightBoundingBox = new THREE.Box3(
-			new THREE.Vector3().fromArray(data.tightBoundingBox.min),
-			new THREE.Vector3().fromArray(data.tightBoundingBox.max)
-		);
+		let view = new DataView(
+			buffer, buffer.byteLength - NUM_POINTS_BYTES, NUM_POINTS_BYTES);
+		let numPoints = view.getUint32(0, true);
+		let pointAttributes = node.pcoGeometry.pointAttributes;
 
-		Potree.workerPool.returnWorker(workerPath, worker);
+		node.numPoints = numPoints;
 
-		tightBoundingBox.max.sub(tightBoundingBox.min);
-		tightBoundingBox.min.set(0, 0, 0);
+		let workerPath = Potree.scriptPath + '/workers/GreyhoundBinaryDecoderWorker.js';
+		let worker = Potree.workerPool.getWorker(workerPath);
 
-		node.numPoints = iBuffer.numElements;
-		node.buffer = iBuffer;
-		node.mean = new THREE.Vector3(...data.mean);
-		node.tightBoundingBox = tightBoundingBox;
-		node.loaded = true;
-		node.loading = false;
-		node.pcoGeometry.numNodesLoading--;
-	};
+		worker.onmessage = function (e) {
 
-	let bb = node.boundingBox;
-	let nodeOffset = node.pcoGeometry.boundingBox.getCenter().sub(node.boundingBox.min);
+			let data = e.data;
+			let iAttributes = pointAttributes.attributes
+				.map(pa => Potree.toInterleavedBufferAttribute(pa))
+				.filter(ia => ia != null);
+			iAttributes.push(new Potree.InterleavedBufferAttribute("index", 4, 4, "UNSIGNED_BYTE", true));
+			let iBuffer = new Potree.InterleavedBuffer(data.data, iAttributes, numPoints);
 
-	let message = {
-		buffer: buffer,
-		pointAttributes: pointAttributes,
-		version: this.version.version,
-		schema: node.pcoGeometry.schema,
-		min: [bb.min.x, bb.min.y, bb.min.z],
-		max: [bb.max.x, bb.max.y, bb.max.z],
-		offset: nodeOffset.toArray(),
-		scale: this.scale,
-		normalize: node.pcoGeometry.normalize
-	};
+			let tightBoundingBox = new THREE.Box3(
+				new THREE.Vector3().fromArray(data.tightBoundingBox.min),
+				new THREE.Vector3().fromArray(data.tightBoundingBox.max)
+			);
 
-	worker.postMessage(message, [message.buffer]);
-};
+			Potree.workerPool.returnWorker(workerPath, worker);
+
+			tightBoundingBox.max.sub(tightBoundingBox.min);
+			tightBoundingBox.min.set(0, 0, 0);
+
+			node.numPoints = iBuffer.numElements;
+			node.buffer = iBuffer;
+			node.mean = new THREE.Vector3(...data.mean);
+			node.tightBoundingBox = tightBoundingBox;
+			node.loaded = true;
+			node.loading = false;
+			node.pcoGeometry.numNodesLoading--;
+		};
+
+		let bb = node.boundingBox;
+		let nodeOffset = node.pcoGeometry.boundingBox.getCenter().sub(node.boundingBox.min);
+
+		let message = {
+			buffer: buffer,
+			pointAttributes: pointAttributes,
+			version: this.version.version,
+			schema: node.pcoGeometry.schema,
+			min: [bb.min.x, bb.min.y, bb.min.z],
+			max: [bb.max.x, bb.max.y, bb.max.z],
+			offset: nodeOffset.toArray(),
+			scale: this.scale,
+			normalize: node.pcoGeometry.normalize
+		};
+
+		worker.postMessage(message, [message.buffer]);
+	}
+}

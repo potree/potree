@@ -160,11 +160,11 @@ Potree.Scene = class extends THREE.EventDispatcher{
 		this.clipVolumes = [];
 		this.polygonClipVolumes = [];
 		
-		this.fpControls;
-		this.orbitControls;
-		this.earthControls;
-		this.geoControls;
-		this.inputHandler;
+		this.fpControls = null;
+		this.orbitControls = null;
+		this.earthControls = null;
+		this.geoControls = null;
+		this.inputHandler = null;
 
 		this.view = new Potree.View();
 
@@ -577,11 +577,6 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 				1, 0,
 				-1000, 1000
 			);
-
-			//let sg = new THREE.SphereGeometry(0.1, 32, 32);
-			//let sm = new THREE.MeshNormalMaterial();
-			//var s = new THREE.Mesh(sg, sm);
-			//this.overlay.add(s);
 		}
 		
 		this.pRenderer = new Potree.Renderer(this.renderer);

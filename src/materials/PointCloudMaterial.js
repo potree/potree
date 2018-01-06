@@ -228,32 +228,32 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 			screenHeight:		{ type: "f", value: 1.0 },
 			near:				{ type: "f", value: 0.1 },
 			far:				{ type: "f", value: 1.0 },
-			uColor:   			{ type: "c", value: new THREE.Color( 0xffffff ) },
-			uOpacity:  			{ type: "f", value: 1.0 },
-			size:   			{ type: "f", value: pointSize },
-			minSize:   			{ type: "f", value: minSize },
-			maxSize:   			{ type: "f", value: maxSize },
+			uColor:				{ type: "c", value: new THREE.Color( 0xffffff ) },
+			uOpacity:			{ type: "f", value: 1.0 },
+			size:				{ type: "f", value: pointSize },
+			minSize:			{ type: "f", value: minSize },
+			maxSize:			{ type: "f", value: maxSize },
 			octreeSize:			{ type: "f", value: 0 },
-			bbSize:				{ type: "fv", value: [0,0,0] },
-			elevationRange:     { type: "2fv", value: [0,0] },
+			bbSize:				{ type: "fv", value: [0, 0, 0] },
+			elevationRange:		{ type: "2fv", value: [0, 0] },
 			clipBoxCount:		{ type: "f", value: 0 },
 			clipPolygonCount:	{ type: "i", value: 0 },
 			visibleNodes:		{ type: "t", value: this.visibleNodesTexture },
-			pcIndex:   			{ type: "f", value: 0 },
-			gradient: 			{ type: "t", value: this.gradientTexture },
-			classificationLUT: 	{ type: "t", value: this.classificationTexture },
+			pcIndex:			{ type: "f", value: 0 },
+			gradient:			{ type: "t", value: this.gradientTexture },
+			classificationLUT:	{ type: "t", value: this.classificationTexture },
 			clipBoxes:			{ type: "Matrix4fv", value: [] },
 			clipPolygons:		{ type: "3fv", value: [] },
 			clipPolygonVCount:	{ type: "iv", value: [] },
 			clipPolygonVP:		{ type: "Matrix4fv", value: [] },
 			toModel:			{ type: "Matrix4f", value: [] },
-			diffuse:			{ type: "fv", value: [1,1,1]},
-			transition:         { type: "f", value: 0.5 },
-			intensityRange:     { type: "fv", value: [0, 65000] },
-			intensityGamma:     { type: "f", value: 1 },
+			diffuse:			{ type: "fv", value: [1, 1, 1] },
+			transition:			{ type: "f", value: 0.5 },
+			intensityRange:		{ type: "fv", value: [0, 65000] },
+			intensityGamma:		{ type: "f", value: 1 },
 			intensityContrast:	{ type: "f", value: 0 },
 			intensityBrightness:{ type: "f", value: 0 },
-			rgbGamma:     		{ type: "f", value: 1 },
+			rgbGamma:			{ type: "f", value: 1 },
 			rgbContrast:		{ type: "f", value: 0 },
 			rgbBrightness:		{ type: "f", value: 0 },
 			wRGB:				{ type: "f", value: 1 },
@@ -263,14 +263,14 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 			wReturnNumber:		{ type: "f", value: 0 },
 			wSourceID:			{ type: "f", value: 0 },
 			useOrthographicCamera: { type: "b", value: false },
-			clipMode: 			{ type: "i", value: 1},
-			uSnapshot:			{ type: "tv", value: []},
-			uSnapshotDepth:		{ type: "tv", value: []},
-			uSnapView:			{ type: "Matrix4fv", value: []},
-			uSnapProj:			{ type: "Matrix4fv", value: []},
-			uSnapProjInv:		{ type: "Matrix4fv", value: []},
-			uSnapViewInv:		{ type: "Matrix4fv", value: []},
-			uShadowColor: 		{ type: "3fv", value: [0, 0, 0]}
+			clipMode:			{ type: "i", value: 1 },
+			uSnapshot:			{ type: "tv", value: [] },
+			uSnapshotDepth:		{ type: "tv", value: [] },
+			uSnapView:			{ type: "Matrix4fv", value: [] },
+			uSnapProj:			{ type: "Matrix4fv", value: [] },
+			uSnapProjInv:		{ type: "Matrix4fv", value: [] },
+			uSnapViewInv:		{ type: "Matrix4fv", value: [] },
+			uShadowColor:		{ type: "3fv", value: [0, 0, 0] }
 		};
 
 		this.classification = Potree.Classification.DEFAULT;
@@ -445,7 +445,7 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 			let poly = clipPolygons[i];
 			
 			this.uniforms.clipPolygonVCount.value[i] = poly.count;
-			this.uniforms.clipPolygonVP.value.set(poly.view.elements, 16*i);
+			this.uniforms.clipPolygonVP.value.set(poly.view.elements, 16 * i);
 			for(let j = 0; j < poly.count; j++) {
 				this.uniforms.clipPolygons.value[i * 24 + (j * 3 + 0)] = poly.polygon[j].x;				
 				this.uniforms.clipPolygons.value[i * 24 + (j * 3 + 1)] = poly.polygon[j].y;

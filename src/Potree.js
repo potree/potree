@@ -78,8 +78,6 @@ Potree.resolveQueries = function (gl) {
 	for (let name in Potree.timerQueries) {
 		let queries = Potree.timerQueries[name];
 
-		let sum = 0;
-		let n = 0;
 		let remainingQueries = [];
 		for(let query of queries){
 
@@ -95,16 +93,10 @@ Potree.resolveQueries = function (gl) {
 					resolved.set(name, []);
 				}
 				resolved.get(name).push(miliseconds);
-
-				//sum += miliseconds;
-				//n++;
 			}else{
 				remainingQueries.push(query);
 			}
 		}
-
-		//let mean = sum / n;
-		//console.log(`mean: ${mean.toFixed(3)}, samples: ${n}`);
 
 		if (remainingQueries.length === 0) {
 			delete Potree.timerQueries[name];
@@ -179,7 +171,7 @@ Potree.toMaterialName = function(materialID) {
 		return 'Normal';
 	} else if (materialID === Potree.PointColorType.PHONG) {
 		return 'Phong';
-	}  else if (materialID === Potree.PointColorType.POINT_INDEX) {
+	} else if (materialID === Potree.PointColorType.POINT_INDEX) {
 		return 'Index';
 	} else if (materialID === Potree.PointColorType.RGB_HEIGHT) {
 		return 'RGB and Elevation';
@@ -210,7 +202,7 @@ Potree.getMeasurementIcon = function(measurement){
 	} else if (measurement instanceof Potree.PolygonClipVolume) {
 		return `${Potree.resourcePath}/icons/clip-polygon.svg`;
 	}
-}
+};
 
 Potree.Points = class Points {
 	constructor () {
@@ -393,7 +385,7 @@ Potree.updateVisibilityStructures = function(pointclouds, camera, renderer) {
 		'camObjPositions': camObjPositions,
 		'priorityQueue': priorityQueue
 	};
-}
+};
 
 Potree.getDEMWorkerInstance = function () {
 	if (!Potree.DEMWorkerInstance) {

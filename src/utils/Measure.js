@@ -315,10 +315,8 @@ Potree.Measure = class Measure extends THREE.Object3D {
 				//let labelPos = position.clone();//.add(new THREE.Vector3(0,1,0));
 				//coordinateLabel.position.copy(labelPos);
 				
-				/*let msg = Potree.utils.addCommas(position.x.toFixed(2)) 
-					+ " / " + Potree.utils.addCommas(position.y.toFixed(2)) 
-					+ " / " + Potree.utils.addCommas(position.z.toFixed(2));*/
-				let msg = Potree.utils.addCommas(position.z.toFixed(2) + " " + this.lengthUnit.code);
+				let msg = position.toArray().map(p => Potree.utils.addCommas(p.toFixed(2))).join(", ");
+				//let msg = Potree.utils.addCommas(position.z.toFixed(2) + " " + this.lengthUnit.code);
 				coordinateLabel.setText(msg);
 
 				coordinateLabel.visible = this.showCoordinates;

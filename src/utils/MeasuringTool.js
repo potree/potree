@@ -98,6 +98,8 @@ Potree.MeasuringTool = class MeasuringTool extends THREE.EventDispatcher {
 			measure.spheres[measure.spheres.length - 1]);
 
 		this.viewer.scene.addMeasurement(measure);
+
+		return measure;
 	}
 	
 	update(){

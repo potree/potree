@@ -20,13 +20,17 @@ initSidebar = (viewer) => {
 			'[title]tt.angle_measurement',
 			function () {
 				$('#menu_measurements').next().slideDown();
-				viewer.measuringTool.startInsertion({
+				let measurement = viewer.measuringTool.startInsertion({
 					showDistances: false,
 					showAngles: true,
 					showArea: false,
 					closed: true,
 					maxMarkers: 3,
 					name: 'Angle'});
+
+				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
+				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === measurement.uuid);
+				$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
 			}
 		));
 
@@ -36,7 +40,7 @@ initSidebar = (viewer) => {
 			'[title]tt.point_measurement',
 			function () {
 				$('#menu_measurements').next().slideDown();
-				viewer.measuringTool.startInsertion({
+				let measurement = viewer.measuringTool.startInsertion({
 					showDistances: false,
 					showAngles: false,
 					showCoordinates: true,
@@ -44,6 +48,10 @@ initSidebar = (viewer) => {
 					closed: true,
 					maxMarkers: 1,
 					name: 'Point'});
+
+				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
+				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === measurement.uuid);
+				$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
 			}
 		));
 
@@ -53,11 +61,15 @@ initSidebar = (viewer) => {
 			'[title]tt.distance_measurement',
 			function () {
 				$('#menu_measurements').next().slideDown();
-				viewer.measuringTool.startInsertion({
+				let measurement = viewer.measuringTool.startInsertion({
 					showDistances: true,
 					showArea: false,
 					closed: false,
 					name: 'Distance'});
+
+				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
+				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === measurement.uuid);
+				$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
 			}
 		));
 
@@ -67,13 +79,17 @@ initSidebar = (viewer) => {
 			'[title]tt.height_measurement',
 			function () {
 				$('#menu_measurements').next().slideDown();
-				viewer.measuringTool.startInsertion({
+				let measurement = viewer.measuringTool.startInsertion({
 					showDistances: false,
 					showHeight: true,
 					showArea: false,
 					closed: false,
 					maxMarkers: 2,
 					name: 'Height'});
+
+				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
+				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === measurement.uuid);
+				$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
 			}
 		));
 
@@ -83,11 +99,15 @@ initSidebar = (viewer) => {
 			'[title]tt.area_measurement',
 			function () {
 				$('#menu_measurements').next().slideDown();
-				viewer.measuringTool.startInsertion({
+				let measurement = viewer.measuringTool.startInsertion({
 					showDistances: true,
 					showArea: true,
 					closed: true,
 					name: 'Area'});
+
+				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
+				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === measurement.uuid);
+				$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
 			}
 		));
 
@@ -95,7 +115,13 @@ initSidebar = (viewer) => {
 		elToolbar.append(createToolIcon(
 			Potree.resourcePath + '/icons/volume.svg',
 			'[title]tt.volume_measurement',
-			function () { viewer.volumeTool.startInsertion(); }
+			function () { 
+				let volume = viewer.volumeTool.startInsertion(); 
+
+				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
+				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === volume.uuid);
+				$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
+			}
 		));
 
 		// PROFILE
@@ -104,7 +130,11 @@ initSidebar = (viewer) => {
 			'[title]tt.height_profile',
 			function () {
 				$('#menu_measurements').next().slideDown(); ;
-				viewer.profileTool.startInsertion();
+				let profile = viewer.profileTool.startInsertion();
+
+				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
+				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === profile.uuid);
+				$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
 			}
 		));
 
@@ -139,7 +169,8 @@ initSidebar = (viewer) => {
 				"state": {
 					"checked" : true
 				},
-				'check_callback': true
+				'check_callback': true,
+				"expand_selected_onload": true
 			},
 			"checkbox" : {
 				"keep_selected_style": true,
@@ -176,7 +207,7 @@ initSidebar = (viewer) => {
 		tree.jstree("check_node", annotationsID);
 		tree.jstree("check_node", otherID);
 
-		tree.on('ready.jstree', function() {
+		tree.on('create_node.jstree', function(e, data) {
 			tree.jstree("open_all");
 		});
 

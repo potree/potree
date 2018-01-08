@@ -90,6 +90,8 @@ Potree.ProfileTool = class ProfileTool extends THREE.EventDispatcher {
 			profile.spheres[profile.spheres.length - 1]);
 
 		this.viewer.scene.addProfile(profile);
+
+		return profile;
 	}
 	
 	update(){

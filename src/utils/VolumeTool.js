@@ -101,6 +101,8 @@ Potree.VolumeTool = class VolumeTool extends THREE.EventDispatcher {
 		this.viewer.addEventListener('cancel_insertions', cancel.callback);
 
 		this.viewer.inputHandler.startDragging(volume);
+
+		return volume;
 	}
 
 	update (delta) {

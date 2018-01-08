@@ -416,9 +416,7 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher {
 					});
 				}
 			}
-		}
-
-		{
+		}else{
 			let curr = hoveredElements.map(a => a.object).find(a => true);
 			let prev = this.hoveredElements.map(a => a.object).find(a => true);
 
@@ -439,22 +437,22 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher {
 				}
 			}
 
-			
+			if(hoveredElements.length > 0){
+				let object = hoveredElements
+					.map(e => e.object)
+					.find(e => (e._listeners && e._listeners['mousemove']));
+				
+				if(object){
+					object.dispatchEvent({
+						type: 'mousemove',
+						object: object
+					});
+				}
+			}
 
 		}
 		
-		if(hoveredElements.length > 0){
-			let object = hoveredElements
-				.map(e => e.object)
-				.find(e => (e._listeners && e._listeners['mousemove']));
-			
-			if(object){
-				object.dispatchEvent({
-					type: 'mousemove',
-					object: object
-				});
-			}
-		}
+		
 
 		this.hoveredElements = hoveredElements;
 	}

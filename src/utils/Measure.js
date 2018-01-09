@@ -312,9 +312,6 @@ Potree.Measure = class Measure extends THREE.Object3D {
 			{ // coordinate labels
 				let coordinateLabel = this.coordinateLabels[0];
 				
-				//let labelPos = position.clone();//.add(new THREE.Vector3(0,1,0));
-				//coordinateLabel.position.copy(labelPos);
-				
 				let msg = position.toArray().map(p => Potree.utils.addCommas(p.toFixed(2))).join(", ");
 				//let msg = Potree.utils.addCommas(position.z.toFixed(2) + " " + this.lengthUnit.code);
 				coordinateLabel.setText(msg);
@@ -395,23 +392,6 @@ Potree.Measure = class Measure extends THREE.Object3D {
 				angleLabel.setText(msg);
 
 				angleLabel.visible = this.showAngles && (index < lastIndex || this.closed) && this.points.length >= 3 && angle > 0;
-			}
-
-			{ // coordinate labels
-				let coordinateLabel = this.coordinateLabels[0];
-
-				let labelPos = point.position.clone().add(new THREE.Vector3(0, 1, 0));
-				coordinateLabel.position.copy(labelPos);
-
-				/* let msg = Potree.utils.addCommas(point.position.x.toFixed(2))
-					+ " / " + Potree.utils.addCommas(point.position.y.toFixed(2))
-					+ " / " + Potree.utils.addCommas(point.position.z.toFixed(2)); */
-
-				let msg = Potree.utils.addCommas(point.position.z.toFixed(2) + ' ' + this.lengthUnit.code);
-				coordinateLabel.setText(msg);
-
-				// coordinateLabel.visible = this.showCoordinates && (index < lastIndex || this.closed);
-				coordinateLabel.visible = this.showCoordinates;
 			}
 		}
 

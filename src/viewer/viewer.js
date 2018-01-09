@@ -1888,6 +1888,29 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 	loop (timestamp) {
 		requestAnimationFrame(this.loop.bind(this));
 
+		{ // resize
+			let width = this.scaleFactor * this.renderArea.clientWidth;
+			let height = this.scaleFactor * this.renderArea.clientHeight;
+			let pixelRatio = this.renderer.getPixelRatio();
+			let aspect = width / height;
+
+			this.scene.cameraP.aspect = aspect;
+			this.scene.cameraP.updateProjectionMatrix();
+
+			let frustumScale = viewer.moveSpeed * 2.0;
+			this.scene.cameraO.left = -frustumScale;
+			this.scene.cameraO.right = frustumScale;		
+			this.scene.cameraO.top = frustumScale * 1/aspect;
+			this.scene.cameraO.bottom = -frustumScale * 1/aspect;		
+			this.scene.cameraO.updateProjectionMatrix();
+
+			this.scene.cameraScreenSpace.top = 1/aspect;
+			this.scene.cameraScreenSpace.bottom = -1/aspect;
+			this.scene.cameraScreenSpace.updateProjectionMatrix();
+			
+			this.renderer.setSize(width, height);
+		}
+
 		let queryAll;
 		if(Potree.measureTimings){
 			performance.mark("loop-start");

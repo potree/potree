@@ -107,6 +107,9 @@ Potree.MeasuringTool = class MeasuringTool extends THREE.EventDispatcher {
 		let domElement = this.renderer.domElement;
 		let measurements = this.viewer.scene.measurements;
 
+		let clientWidth = this.renderer.getSize().width;
+		let clientHeight = this.renderer.getSize().height;
+
 		this.light.position.copy(camera.position);
 
 		// make size independant of distance
@@ -117,7 +120,7 @@ Potree.MeasuringTool = class MeasuringTool extends THREE.EventDispatcher {
 			// spheres
 			for(let sphere of measure.spheres){			
 				let distance = camera.position.distanceTo(sphere.getWorldPosition());
-				let pr = Potree.utils.projectedRadius(1, camera, distance, domElement.clientWidth, domElement.clientHeight);
+				let pr = Potree.utils.projectedRadius(1, camera, distance, clientWidth, clientHeight);
 				let scale = (15 / pr);
 				sphere.scale.set(scale, scale, scale);
 			}
@@ -126,7 +129,7 @@ Potree.MeasuringTool = class MeasuringTool extends THREE.EventDispatcher {
 			let labels = measure.edgeLabels.concat(measure.angleLabels);
 			for(let label of labels){
 				let distance = camera.position.distanceTo(label.getWorldPosition());
-				let pr = Potree.utils.projectedRadius(1, camera, distance, domElement.clientWidth, domElement.clientHeight);
+				let pr = Potree.utils.projectedRadius(1, camera, distance, clientWidth, clientHeight);
 				let scale = (70 / pr);
 				label.scale.set(scale, scale, scale);
 			}
@@ -140,24 +143,24 @@ Potree.MeasuringTool = class MeasuringTool extends THREE.EventDispatcher {
 				let distance = camera.position.distanceTo(sphere.getWorldPosition());
 
 				let screenPos = sphere.getWorldPosition().clone().project(camera);
-				screenPos.x = Math.round((screenPos.x + 1) * domElement.clientWidth / 2);
-				screenPos.y = Math.round((-screenPos.y + 1) * domElement.clientHeight / 2);
+				screenPos.x = Math.round((screenPos.x + 1) * clientWidth / 2);
+				screenPos.y = Math.round((-screenPos.y + 1) * clientHeight / 2);
 				screenPos.z = 0;
 				screenPos.y -= 30;
 
 				let labelPos = new THREE.Vector3( 
-					(screenPos.x / domElement.clientWidth) * 2 - 1, 
-					-(screenPos.y / domElement.clientHeight) * 2 + 1, 
+					(screenPos.x / clientWidth) * 2 - 1, 
+					-(screenPos.y / clientHeight) * 2 + 1, 
 					0.5 );
 				labelPos.unproject(camera);
-				if(this.viewer.scene.cameraMode == Potree.CameraMode.PERSPECTIVE) {			                
+				if(this.viewer.scene.cameraMode == Potree.CameraMode.PERSPECTIVE) {
 					let direction = labelPos.sub(camera.position).normalize();
 					labelPos = new THREE.Vector3().addVectors(
 						camera.position, direction.multiplyScalar(distance));
 
 				}
 				label.position.copy(labelPos);
-				let pr = Potree.utils.projectedRadius(1, camera, distance, domElement.clientWidth, domElement.clientHeight);
+				let pr = Potree.utils.projectedRadius(1, camera, distance, clientWidth, clientHeight);
 				let scale = (70 / pr);
 				label.scale.set(scale, scale, scale);
 			}
@@ -168,7 +171,7 @@ Potree.MeasuringTool = class MeasuringTool extends THREE.EventDispatcher {
 
 				{
 					let distance = label.position.distanceTo(camera.position);
-					let pr = Potree.utils.projectedRadius(1, camera, distance, domElement.clientWidth, domElement.clientHeight);
+					let pr = Potree.utils.projectedRadius(1, camera, distance, clientWidth, clientHeight);
 					let scale = (70 / pr);
 					label.scale.set(scale, scale, scale);
 				}
@@ -185,8 +188,8 @@ Potree.MeasuringTool = class MeasuringTool extends THREE.EventDispatcher {
 
 					let toPixelCoordinates = v => {
 						let r = v.clone().addScalar(1).divideScalar(2);
-						r.x = r.x * domElement.clientWidth;
-						r.y = r.y * domElement.clientHeight;
+						r.x = r.x * clientWidth;
+						r.y = r.y * clientHeight;
 						r.z = 0;
 
 						return r;
@@ -210,7 +213,7 @@ Potree.MeasuringTool = class MeasuringTool extends THREE.EventDispatcher {
 			{ // area label
 				let label = measure.areaLabel;
 				let distance = label.position.distanceTo(camera.position);
-				let pr = Potree.utils.projectedRadius(1, camera, distance, domElement.clientWidth, domElement.clientHeight);
+				let pr = Potree.utils.projectedRadius(1, camera, distance, clientWidth, clientHeight);
 
 				let scale = (70 / pr);
 				label.scale.set(scale, scale, scale);

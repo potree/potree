@@ -48,26 +48,9 @@ class EDLRenderer {
 	resize () {
 		const viewer = this.viewer;
 
-		let width = viewer.scaleFactor * viewer.renderArea.clientWidth;
-		let height = viewer.scaleFactor * viewer.renderArea.clientHeight;
 		let pixelRatio = viewer.renderer.getPixelRatio();
-		let aspect = width / height;
-
-		viewer.scene.cameraP.aspect = aspect;
-		viewer.scene.cameraP.updateProjectionMatrix();
-
-		let frustumScale = viewer.moveSpeed * 2.0;
-		viewer.scene.cameraO.left = -frustumScale;
-		viewer.scene.cameraO.right = frustumScale;		
-		viewer.scene.cameraO.top = frustumScale * 1/aspect;
-		viewer.scene.cameraO.bottom = -frustumScale * 1/aspect;		
-		viewer.scene.cameraO.updateProjectionMatrix();
-
-		viewer.scene.cameraScreenSpace.top = 1/aspect;
-		viewer.scene.cameraScreenSpace.bottom = -1/aspect;
-		viewer.scene.cameraScreenSpace.updateProjectionMatrix();
-		
-		viewer.renderer.setSize(width, height);
+		let width = viewer.renderer.getSize().width;
+		let height = viewer.renderer.getSize().height;
 		this.rtColor.setSize(width * pixelRatio , height * pixelRatio);
 	}
 
@@ -143,8 +126,8 @@ class EDLRenderer {
 		
 		viewer.renderer.clearTarget( this.rtColor, true, true, true );
 
-		let width = viewer.renderArea.clientWidth;
-		let height = viewer.renderArea.clientHeight;
+		let width = viewer.renderer.getSize().width;
+		let height = viewer.renderer.getSize().height;
 
 		// COLOR & DEPTH PASS
 		for (let pointcloud of viewer.scene.pointclouds) {
@@ -201,11 +184,11 @@ class EDLRenderer {
 		viewer.renderer.render(viewer.profileTool.sceneProfile, camera);
 		viewer.renderer.render(viewer.transformationTool.scene, camera);
 		
-		viewer.renderer.setViewport(viewer.renderer.domElement.clientWidth - viewer.navigationCube.width, 
-									viewer.renderer.domElement.clientHeight - viewer.navigationCube.width, 
+		viewer.renderer.setViewport(width - viewer.navigationCube.width, 
+									height - viewer.navigationCube.width, 
 									viewer.navigationCube.width, viewer.navigationCube.width);
 		viewer.renderer.render(viewer.navigationCube, viewer.navigationCube.camera);		
-		viewer.renderer.setViewport(0, 0, viewer.renderer.domElement.clientWidth, viewer.renderer.domElement.clientHeight);
+		viewer.renderer.setViewport(0, 0, width, height);
 
 		Potree.endQuery(queryRest, viewer.renderer.getContext());
 		

@@ -538,6 +538,48 @@ Potree.Renderer = class Renderer {
 		return result;
 	}
 
+	// adapted from three.js Matrix4.js multiplyMatrices()
+	// removed terms that evaluate to zero if world matrix has no rotation
+	//multiplyViewWithScaleTrans(view, scaleTrans, target){
+	//	var ae = view.elements;
+	//	var be = scaleTrans.elements;
+	//	var te = target.elements;
+
+	//	let a11 = ae[ 0 ], a12 = ae[ 4 ], a13 = ae[ 8 ], a14 = ae[ 12 ];
+	//	let a21 = ae[ 1 ], a22 = ae[ 5 ], a23 = ae[ 9 ], a24 = ae[ 13 ];
+	//	let a31 = ae[ 2 ], a32 = ae[ 6 ], a33 = ae[ 10 ], a34 = ae[ 14 ];
+	//	let a41 = ae[ 3 ], a42 = ae[ 7 ], a43 = ae[ 11 ], a44 = ae[ 15 ];
+
+	//	let sx = be[0];
+	//	let sy = be[5]; 
+	//	let sz = be[10];
+	//	let tx = be[12];
+	//	let ty = be[13] 
+	//	let tz = be[14];
+
+	//	te[ 0 ] = a11 * sx;
+	//	te[ 4 ] = a12 * sy;
+	//	te[ 8 ] = a13 * sz;
+	//	te[ 12 ] = a11 * tx + a12 * ty + a13 * tz + a14;
+
+	//	te[ 1 ] = a21 * sx;
+	//	te[ 5 ] = a22 * sy ;
+	//	te[ 9 ] = a23 * sz;
+	//	te[ 13 ] = a21 * tx + a22 * ty + a23 * tz + a24;
+
+	//	te[ 2 ] = a31 * sx;
+	//	te[ 6 ] = a32 * sy;
+	//	te[ 10 ] = a33 * sz;
+	//	te[ 14 ] = a31 * tx + a32 * ty + a33 * tz + a34;
+
+	//	te[ 3 ] =  0;
+	//	te[ 7 ] =  0;
+	//	te[ 11 ] = 0;
+	//	te[ 15 ] = 1;
+
+	//	return target;
+	//}
+
 	renderNodes(octree, nodes, visibilityTextureData, camera, target, shader, params) {
 
 		if (Potree.measureTimings) performance.mark("renderNodes-start");
@@ -555,6 +597,7 @@ Potree.Renderer = class Renderer {
 
 			let world = node.sceneNode.matrixWorld;
 			worldView.multiplyMatrices(view, world);
+			//this.multiplyViewWithScaleTrans(view, world, worldView);
 
 			if (visibilityTextureData) {
 				let vnStart = visibilityTextureData.offsets.get(node);
@@ -573,7 +616,11 @@ Potree.Renderer = class Renderer {
 			}
 
 			const lModelView = shader.uniformLocations["modelViewMatrix"];
-			mat4holder.set(worldView.elements);
+			//mat4holder.set(worldView.elements);
+			// faster then set in chrome 63
+			for(let j = 0; j < 16; j++){
+				mat4holder[j] = worldView.elements[j];
+			}
 			gl.uniformMatrix4fv(lModelView, false, mat4holder);
 
 

@@ -317,8 +317,7 @@ Potree.updatePointClouds = function (pointclouds, camera, renderer) {
 
 	let result = Potree.updateVisibility(pointclouds, camera, renderer);
 
-	for (let i = 0; i < pointclouds.length; i++) {
-		let pointcloud = pointclouds[i];
+	for (let pointcloud of pointclouds) {
 		pointcloud.updateMaterial(pointcloud.material, pointcloud.visibleNodes, camera, renderer);
 		pointcloud.updateVisibleBounds();
 	}
@@ -427,6 +426,8 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 	let domWidth = renderer.domElement.clientWidth;
 	let domHeight = renderer.domElement.clientHeight;
 
+	let pointcloudTransformChanged = new Map();
+
 	while (priorityQueue.size() > 0) {
 		let element = priorityQueue.pop();
 		let node = element.node;
@@ -512,8 +513,20 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 			visibleNodes.push(node);
 			pointcloud.visibleNodes.push(node);
 
-			node.sceneNode.updateMatrix();
-			node.sceneNode.matrixWorld.multiplyMatrices(pointcloud.matrixWorld, node.sceneNode.matrix);
+			if(!pointcloudTransformChanged.has(pointcloud)){
+
+				let originalMatrixWorld = node.sceneNode.matrixWorld.clone();
+
+				node.sceneNode.updateMatrix();
+				node.sceneNode.matrixWorld.multiplyMatrices(pointcloud.matrixWorld, node.sceneNode.matrix);	
+				
+				pointcloudTransformChanged.set(pointcloud, !originalMatrixWorld.equals(node.sceneNode.matrixWorld));
+			}else if(pointcloudTransformChanged.get(pointcloud) || node.needsTransformUpdate){
+				node.sceneNode.updateMatrix();
+				node.sceneNode.matrixWorld.multiplyMatrices(pointcloud.matrixWorld, node.sceneNode.matrix);
+				node.needsTransformUpdate = false;
+			}
+			
 
 			if (pointcloud.showBoundingBox && !node.boundingBoxNode && node.getBoundingBox) {
 				let boxHelper = new Potree.Box3Helper(node.getBoundingBox());

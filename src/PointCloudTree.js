@@ -360,6 +360,11 @@ Potree.DEM = class DEM {
 };
 
 Potree.PointCloudTreeNode = class {
+
+	constructor(){
+		this.needsTransformUpdate = true;
+	}
+
 	getChildren () {
 		throw new Error('override function');
 	}

@@ -98,6 +98,14 @@
 			// viewer.fitToScreen();
 		});
 
+		function test(){
+			let volume = viewer.scene.volumes[0];
+			let pointcloud = viewer.scene.pointclouds[0];
+			let points = pointcloud.root.getPointsInBox(volume);
+
+			pointcloud.root.getPointsInBox(viewer.scene.volumes[1]);
+		}
+
 	</script>
 
 

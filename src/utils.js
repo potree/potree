@@ -52,8 +52,14 @@ Potree.utils = class {
 	};
 
 	static debugSphere(parent, position, scale, color){
-		let geometry = new THREE.SphereGeometry(1, 32, 32);
-		let material = new THREE.MeshBasicMaterial({color: color});
+		let geometry = new THREE.SphereGeometry(1, 8, 8);
+		let material;
+
+		if(color !== undefined){
+			material = new THREE.MeshBasicMaterial({color: color});
+		}else{
+			material = new THREE.MeshNormalMaterial();
+		}
 		let sphere = new THREE.Mesh(geometry, material);
 		sphere.position.copy(position);
 		sphere.scale.set(scale, scale, scale);

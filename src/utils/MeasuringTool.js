@@ -19,8 +19,8 @@ Potree.MeasuringTool = class MeasuringTool extends THREE.EventDispatcher {
 
 		this.viewer.inputHandler.registerInteractiveScene(this.sceneMeasurement);
 
-		this.onRemove = (e) => { this.sceneMeasurement.remove(e.measurement); };
-		this.onAdd = e => { this.sceneMeasurement.add(e.measurement); };
+		this.onRemove = (e) => { this.sceneMeasurement.remove(e.measurement);};
+		this.onAdd = e => {this.sceneMeasurement.add(e.measurement);};
 	}
 
 	setScene (scene) {

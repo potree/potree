@@ -59,6 +59,15 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher {
 		this.inputListeners = this.inputListeners.filter(e => e !== listener);
 	}
 
+	getSortedListeners(){
+		return this.inputListeners.sort( (a, b) => {
+			let ia = (a.importance !== undefined) ? a.importance : 0;
+			let ib = (b.importance !== undefined) ? b.importance : 0;
+
+			return ib - ia;
+		});
+	}
+
 	onTouchStart (e) {
 		if (this.logMessages) console.log(this.constructor.name + ': onTouchStart');
 
@@ -73,7 +82,8 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher {
 			this.startDragging(null);
 		}
 
-		for (let inputListener of this.inputListeners) {
+		
+		for (let inputListener of this.getSortedListeners()) {
 			inputListener.dispatchEvent({
 				type: e.type,
 				touches: e.touches,
@@ -87,7 +97,7 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher {
 
 		e.preventDefault();
 
-		for (let inputListener of this.inputListeners) {
+		for (let inputListener of this.getSortedListeners()) {
 			inputListener.dispatchEvent({
 				type: 'drop',
 				drag: this.drag,
@@ -97,7 +107,7 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher {
 
 		this.drag = null;
 
-		for (let inputListener of this.inputListeners) {
+		for (let inputListener of this.getSortedListeners()) {
 			inputListener.dispatchEvent({
 				type: e.type,
 				touches: e.touches,
@@ -126,7 +136,7 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher {
 				this.drag.end.set(x, y);
 
 				if (this.logMessages) console.log(this.constructor.name + ': drag: ');
-				for (let inputListener of this.inputListeners) {
+				for (let inputListener of this.getSortedListeners()) {
 					inputListener.dispatchEvent({
 						type: 'drag',
 						drag: this.drag,
@@ -136,7 +146,7 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher {
 			}
 		}
 
-		for (let inputListener of this.inputListeners) {
+		for (let inputListener of this.getSortedListeners()) {
 			inputListener.dispatchEvent({
 				type: e.type,
 				touches: e.touches,
@@ -148,7 +158,7 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher {
 		// let debugTouches = [...e.touches, {
 		//	pageX: this.domElement.clientWidth / 2,
 		//	pageY: this.domElement.clientHeight / 2}];
-		// for(let inputListener of this.inputListeners){
+		// for(let inputListener of this.getSortedListeners()){
 		//	inputListener.dispatchEvent({
 		//		type: e.type,
 		//		touches: debugTouches,
@@ -176,7 +186,7 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher {
 			event: e
 		});
 
-		// for(let l of this.inputListeners){
+		// for(let l of this.getSortedListeners()){
 		//	l.dispatchEvent({
 		//		type: "keydown",
 		//		keyCode: e.keyCode,
@@ -214,7 +224,7 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher {
 		}
 
 		if (!consumed) {
-			for (let inputListener of this.inputListeners) {
+			for (let inputListener of this.getSortedListeners()) {
 				inputListener.dispatchEvent({
 					type: 'dblclick',
 					mouse: this.mouse,
@@ -240,7 +250,7 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher {
 		let consumed = false;
 		let consume = () => { return consumed = true; };
 		if (this.hoveredElements.length === 0) {
-			for (let inputListener of this.inputListeners) {
+			for (let inputListener of this.getSortedListeners()) {
 				inputListener.dispatchEvent({
 					type: 'mousedown',
 					viewer: this.viewer,
@@ -292,7 +302,7 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher {
 		let consumed = false;
 		let consume = () => { return consumed = true; };
 		if (this.hoveredElements.length === 0) {
-			for (let inputListener of this.inputListeners) {
+			for (let inputListener of this.getSortedListeners()) {
 				inputListener.dispatchEvent({
 					type: 'mouseup',
 					viewer: this.viewer,
@@ -327,7 +337,7 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher {
 
 				});
 			} else {
-				for (let inputListener of this.inputListeners) {
+				for (let inputListener of this.getSortedListeners()) {
 					inputListener.dispatchEvent({
 						type: 'drop',
 						drag: this.drag,
@@ -408,12 +418,19 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher {
 				});
 			} else {
 				if (this.logMessages) console.log(this.constructor.name + ': drag: ');
-				for (let inputListener of this.inputListeners) {
+
+				let dragConsumed = false;
+				for (let inputListener of this.getSortedListeners()) {
 					inputListener.dispatchEvent({
 						type: 'drag',
 						drag: this.drag,
-						viewer: this.viewer
+						viewer: this.viewer,
+						consume: () => {dragConsumed = true;}
 					});
+
+					if(dragConsumed){
+						break;
+					}
 				}
 			}
 		}else{
@@ -482,7 +499,7 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher {
 				object: this.hoveredElement.object
 			});
 		} else {
-			for (let inputListener of this.inputListeners) {
+			for (let inputListener of this.getSortedListeners()) {
 				inputListener.dispatchEvent({
 					type: 'mousewheel',
 					delta: ndelta,

@@ -37,6 +37,11 @@ if (document.currentScript.src) {
 
 Potree.resourcePath = Potree.scriptPath + '/resources';
 
+Potree.CameraMode = {
+	ORTHOGRAPHIC: 0,
+	PERSPECTIVE: 1
+};
+
 Potree.timerQueries = {};
 
 Potree.measureTimings = false;

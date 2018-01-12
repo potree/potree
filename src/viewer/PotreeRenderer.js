@@ -8,6 +8,8 @@ class PotreeRenderer {
 		const viewer = this.viewer;
 		let query = Potree.startQuery('render', viewer.renderer.getContext());
 
+		viewer.dispatchEvent({type: "render.pass.begin",viewer: viewer});
+
 		{// resize
 			let width = viewer.scaleFactor * viewer.renderArea.clientWidth;
 			let height = viewer.scaleFactor * viewer.renderArea.clientHeight;
@@ -83,6 +85,8 @@ class PotreeRenderer {
 		viewer.profileTool.update();
 		viewer.transformationTool.update();
 		
+		viewer.dispatchEvent({type: "render.pass.perspective_overlay",viewer: viewer});
+		
 		viewer.renderer.render(viewer.measuringTool.sceneMeasurement, activeCam);
 		viewer.renderer.render(viewer.profileTool.sceneProfile, activeCam);
 		viewer.renderer.render(viewer.transformationTool.scene, activeCam);
@@ -92,6 +96,8 @@ class PotreeRenderer {
 									viewer.navigationCube.width, viewer.navigationCube.width);
 		viewer.renderer.render(viewer.navigationCube, viewer.navigationCube.camera);		
 		viewer.renderer.setViewport(0, 0, viewer.renderer.domElement.clientWidth, viewer.renderer.domElement.clientHeight);
+
+		viewer.dispatchEvent({type: "render.pass.end",viewer: viewer});
 		
 		Potree.endQuery(query, viewer.renderer.getContext());
 	};

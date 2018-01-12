@@ -58,6 +58,8 @@ class EDLRenderer {
 		this.initEDL();
 		const viewer = this.viewer;
 
+		viewer.dispatchEvent({type: "render.pass.begin",viewer: viewer});
+
 		this.resize();
 		
 		let camera = viewer.scene.getActiveCamera();
@@ -177,9 +179,13 @@ class EDLRenderer {
 		let queryRest = Potree.startQuery('EDL - rest', viewer.renderer.getContext());
 
 		viewer.renderer.clearDepth();
+
+		viewer.dispatchEvent({
+			type: "render.pass.perspective_overlay",
+			viewer: viewer});
+
 		viewer.renderer.render(viewer.controls.sceneControls, camera);
-		
-		viewer.renderer.render(viewer.measuringTool.sceneMeasurement, camera);		
+		viewer.renderer.render(viewer.measuringTool.sceneMeasurement, camera);
 		viewer.renderer.render(viewer.clippingTool.sceneVolume, camera);
 		viewer.renderer.render(viewer.profileTool.sceneProfile, camera);
 		viewer.renderer.render(viewer.transformationTool.scene, camera);
@@ -189,6 +195,8 @@ class EDLRenderer {
 									viewer.navigationCube.width, viewer.navigationCube.width);
 		viewer.renderer.render(viewer.navigationCube, viewer.navigationCube.camera);		
 		viewer.renderer.setViewport(0, 0, width, height);
+
+		viewer.dispatchEvent({type: "render.pass.end",viewer: viewer});
 
 		Potree.endQuery(queryRest, viewer.renderer.getContext());
 		

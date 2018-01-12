@@ -74,6 +74,8 @@ var paths = {
 		"src/viewer/PotreeRenderer.js",
 		"src/viewer/EDLRenderer.js",
 		"src/viewer/RepRenderer.js",
+		"src/viewer/View.js",
+		"src/viewer/Scene.js",
 		"src/viewer/viewer.js",
 		"src/viewer/profile.js",
 		"src/viewer/map.js",

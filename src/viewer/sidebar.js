@@ -434,15 +434,6 @@ initSidebar = (viewer) => {
 			}
 		));
 
-		// SCREEN SPACE BOX
-		clippingToolBar.append(createToolIcon(
-			Potree.resourcePath + "/icons/clip-polygon.svg",
-			"[title]tt.clip_polygon",
-			function(){
-				let item = viewer.screenBoxSelectTool.startInsertion();
-			}
-		));
-
 	}
 
 	function initClassificationList () {

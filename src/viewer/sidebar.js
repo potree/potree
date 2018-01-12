@@ -30,6 +30,7 @@ initSidebar = (viewer) => {
 
 				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
 				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === measurement.uuid);
+				$.jstree.reference(jsonNode.id).deselect_all();
 				$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
 			}
 		));
@@ -51,6 +52,7 @@ initSidebar = (viewer) => {
 
 				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
 				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === measurement.uuid);
+				$.jstree.reference(jsonNode.id).deselect_all();
 				$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
 			}
 		));
@@ -69,6 +71,7 @@ initSidebar = (viewer) => {
 
 				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
 				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === measurement.uuid);
+				$.jstree.reference(jsonNode.id).deselect_all();
 				$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
 			}
 		));
@@ -89,6 +92,7 @@ initSidebar = (viewer) => {
 
 				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
 				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === measurement.uuid);
+				$.jstree.reference(jsonNode.id).deselect_all();
 				$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
 			}
 		));
@@ -107,6 +111,7 @@ initSidebar = (viewer) => {
 
 				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
 				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === measurement.uuid);
+				$.jstree.reference(jsonNode.id).deselect_all();
 				$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
 			}
 		));
@@ -120,6 +125,7 @@ initSidebar = (viewer) => {
 
 				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
 				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === volume.uuid);
+				$.jstree.reference(jsonNode.id).deselect_all();
 				$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
 			}
 		));
@@ -134,6 +140,7 @@ initSidebar = (viewer) => {
 
 				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
 				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === profile.uuid);
+				$.jstree.reference(jsonNode.id).deselect_all();
 				$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
 			}
 		));
@@ -403,7 +410,14 @@ initSidebar = (viewer) => {
 		clippingToolBar.append(createToolIcon(
 			Potree.resourcePath + '/icons/clip_volume.svg',
 			'[title]tt.clip_volume',
-			function () { viewer.volumeTool.startInsertion({clip: true}); }
+			function () { 
+				let item = viewer.volumeTool.startInsertion({clip: true}); 
+
+				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
+				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === item.uuid);
+				$.jstree.reference(jsonNode.id).deselect_all();
+				$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
+			}
 		));
 
 		// CLIP POLYGON
@@ -411,7 +425,21 @@ initSidebar = (viewer) => {
 			Potree.resourcePath + "/icons/clip-polygon.svg",
 			"[title]tt.clip_polygon",
 			function(){
-				viewer.clippingTool.startInsertion({type: "polygon"});
+				let item = viewer.clippingTool.startInsertion({type: "polygon"});
+
+				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
+				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === item.uuid);
+				$.jstree.reference(jsonNode.id).deselect_all();
+				$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
+			}
+		));
+
+		// SCREEN SPACE BOX
+		clippingToolBar.append(createToolIcon(
+			Potree.resourcePath + "/icons/clip-polygon.svg",
+			"[title]tt.clip_polygon",
+			function(){
+				let item = viewer.screenBoxSelectTool.startInsertion();
 			}
 		));
 

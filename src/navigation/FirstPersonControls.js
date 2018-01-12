@@ -101,6 +101,12 @@ Potree.FirstPersonControls = class FirstPersonControls extends THREE.EventDispat
 	setScene (scene) {
 		this.scene = scene;
 	}
+
+	stop(){
+		this.yawDelta = 0;
+		this.pitchDelta = 0;
+		this.translationDelta.set(0, 0, 0);
+	}
 	
 	zoomToLocation(mouse){
 		let camera = this.scene.getActiveCamera();

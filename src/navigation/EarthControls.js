@@ -154,6 +154,11 @@ Potree.EarthControls = class EarthControls extends THREE.EventDispatcher {
 	setScene (scene) {
 		this.scene = scene;
 	}
+
+	stop(){
+		this.wheelDelta = 0;
+		this.zoomDelta.set(0, 0, 0);
+	}
 	
 	zoomToLocation(mouse){
 		let camera = this.scene.getActiveCamera();

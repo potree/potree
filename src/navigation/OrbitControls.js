@@ -124,6 +124,13 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 	setScene (scene) {
 		this.scene = scene;
 	}
+
+	stop(){
+		this.yawDelta = 0;
+		this.pitchDelta = 0;
+		this.radiusDelta = 0;
+		this.panDelta.set(0, 0);
+	}
 	
 	zoomToLocation(mouse){
 		let camera = this.scene.getActiveCamera();

@@ -561,6 +561,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		this.profileTool = null;
 		this.volumeTool = null;
 		this.clippingTool =  null;
+		this.screenBoxSelect =  null;
 		this.transformationTool = null;
 		this.navigationCube = null;
 		
@@ -603,6 +604,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			this.profileTool = new Potree.ProfileTool(this);
 			this.volumeTool = new Potree.VolumeTool(this);
 			this.clippingTool = new Potree.ClippingTool(this);
+			this.screenBoxSelectTool = new Potree.ScreenBoxSelectTool(this);
 			this.transformationTool = new Potree.TransformationTool(this);
 			this.navigationCube = new Potree.NavigationCube(this);
 			this.navigationCube.visible = false;
@@ -1043,6 +1045,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		node.boundingBox = box;
 
 		this.zoomTo(node, factor, animationDuration);
+		this.controls.stop();
 	};
 
 	toggleNavigationCube() {

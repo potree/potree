@@ -60,6 +60,7 @@ var paths = {
 		"src/utils/Volume.js",
 		"src/utils/VolumeTool.js",
 		"src/utils/ClippingTool.js",
+		"src/utils/ScreenBoxSelectTool.js",
 		"src/utils/ClipVolume.js",
 		"src/utils/PolygonClipVolume.js",
 		"src/utils/Box3Helper.js",

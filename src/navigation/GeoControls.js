@@ -142,6 +142,10 @@ Potree.GeoControls = function (object, domElement) {
 		}
 	};
 
+	this.stop = function(){
+		
+	}
+
 	this.getTrackPos = function () {
 		return this.trackPos;
 	};

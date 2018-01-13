@@ -84,45 +84,7 @@ Potree.PointCloudOctreeNode = class PointCloudOctreeNode extends Potree.PointClo
 			}
 		}
 
-		let geometry = new THREE.SphereGeometry(1, 8, 8);
-		let material = new THREE.MeshNormalMaterial();
-		
-		
-		function* generator(){
-			let i = 0;
-			for(let pos of inBox){
-				let scale = 1.9;
-				let parent = viewer.scene.scene;
-				//Potree.utils.debugSphere(parent, pos, scale);
-
-				let sphere = new THREE.Mesh(geometry, material);
-				sphere.position.copy(pos);
-				sphere.scale.set(scale, scale, scale);
-				parent.add(sphere);
-
-				if((i % 15) === 0){
-					yield;
-				}
-
-				i++;
-			}
-		}
-
-		let gen = generator();
-
-		let process = () => {
-			let result = gen.next();
-
-			if(!result.done){
-				setTimeout(process, 2);
-			}
-		};
-		process();
-		
-		
-		
-
-
+		return inBox;
 	}
 
 	get name () {
@@ -820,6 +782,56 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 		return point;
 		
 	};
+
+	getFittedBox(boxNode, maxLevel = Infinity){
+
+		let shrinkedLocalBounds = new THREE.Box3();
+		let worldToBox = new THREE.Matrix4().getInverse(boxNode.matrixWorld);
+
+		for(let node of this.visibleNodes){
+			if(!node.sceneNode || node.getLevel() > maxLevel){
+				continue;
+			}
+
+			let buffer = node.geometryNode.buffer;
+
+			let posOffset = buffer.offset("position");
+			let stride = buffer.stride;
+			let view = new DataView(buffer.data);
+			
+			let objectToBox = new THREE.Matrix4().multiplyMatrices(worldToBox, node.sceneNode.matrixWorld);
+
+			let pos = new THREE.Vector4();
+			for(let i = 0; i < buffer.numElements; i++){
+				let x = view.getFloat32(i * stride + posOffset + 0, true);
+				let y = view.getFloat32(i * stride + posOffset + 4, true);
+				let z = view.getFloat32(i * stride + posOffset + 8, true);
+
+				pos.set(x, y, z, 1);
+				pos.applyMatrix4(objectToBox);
+
+				if(-0.5 < pos.x && pos.x < 0.5){
+					if(-0.5 < pos.y && pos.y < 0.5){
+						if(-0.5 < pos.z && pos.z < 0.5){
+							shrinkedLocalBounds.expandByPoint(pos);
+						}
+					}
+				}
+			}
+		}
+
+		let fittedPosition = shrinkedLocalBounds.getCenter().applyMatrix4(boxNode.matrixWorld);
+
+		let fitted = new THREE.Object3D();
+		fitted.position.copy(fittedPosition);
+		fitted.scale.copy(boxNode.scale);
+		fitted.rotation.copy(boxNode.rotation);
+
+		let ds = new THREE.Vector3().subVectors(shrinkedLocalBounds.max, shrinkedLocalBounds.min);
+		fitted.scale.multiply(ds);
+
+		return fitted;
+	}
 
 	get progress () {
 		return this.visibleNodes.length / this.visibleGeometry.length;

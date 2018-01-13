@@ -95,12 +95,6 @@
 
 			viewer.onGUILoaded(() => {
 				let boxSelectTool = new Potree.ScreenBoxSelectTool(viewer);
-				let sg = new THREE.SphereGeometry(1, 32, 32);
-				let sm = new THREE.MeshNormalMaterial();
-				let s = new THREE.Mesh(sg, sm);
-				s.position.set(-0.068, -2.112, 8.060);
-				boxSelectTool.scene.add(s);
-				
 				window.boxSelectTool = boxSelectTool;
 
 				let createToolIcon = function (icon, title, callback) {

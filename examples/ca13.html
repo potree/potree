@@ -87,6 +87,34 @@
 			
 			viewer.fitToScreen();
 		});
+
+		viewer.onGUILoaded(() => {
+			let boxSelectTool = new Potree.ScreenBoxSelectTool(viewer);
+			window.boxSelectTool = boxSelectTool;
+
+			let createToolIcon = function (icon, title, callback) {
+				let element = $(`
+					<img src="${icon}"
+						style="width: 32px; height: 32px"
+						class="button-icon"
+						data-i18n="${title}" />
+				`);
+
+				element.click(callback);
+
+				return element;
+			};
+
+			let clippingToolBar = $("#clipping_tools");
+			clippingToolBar.append(createToolIcon(
+				Potree.resourcePath + "/icons/clip-polygon.svg",
+				"[title]tt.clip_polygon",
+				function(){
+					let item = boxSelectTool.startInsertion();
+				}
+			));
+
+		});
 		
 	</script>
 	

@@ -40,12 +40,11 @@ Potree.ScreenBoxSelectTool = class ScreenBoxSelectTool extends THREE.EventDispat
 
 			let diff = new THREE.Vector2().subVectors(e.drag.end, e.drag.start);
 			diff.divide(size).multiply(frustumSize);
-
 			
 			volume.position.copy(ray.origin);
 			volume.up.copy(camera.up);
 			volume.rotation.copy(camera.rotation);
-			volume.scale.set(diff.x, diff.y, 100);
+			volume.scale.set(diff.x, diff.y, 1000 * 1000);
 
 			e.consume();
 		};
@@ -55,6 +54,23 @@ Potree.ScreenBoxSelectTool = class ScreenBoxSelectTool extends THREE.EventDispat
 
 			this.viewer.inputHandler.deselectAll();
 			this.viewer.inputHandler.toggleSelection(volume);
+
+			let camera = e.viewer.scene.getActiveCamera();
+			let size = new THREE.Vector2(
+				e.viewer.renderer.getSize().width,
+				e.viewer.renderer.getSize().height);
+			let screenCentroid = new THREE.Vector2().addVectors(e.drag.end, e.drag.start).multiplyScalar(0.5);
+			let ray = Potree.utils.mouseToRay(screenCentroid, camera, size.width, size.height);
+
+			let line = new THREE.Line3(ray.origin, new THREE.Vector3().addVectors(ray.origin, ray.direction));
+
+			for(let pointcloud of this.viewer.scene.pointclouds){
+				let fitted = pointcloud.getFittedBox(volume, 3);
+				volume.scale.z = fitted.scale.z * 1.25;
+
+				let position = line.closestPointToPoint(fitted.position, false);
+				volume.position.copy(position);
+			}
 
 			this.removeEventListener("drag", drag);
 			this.removeEventListener("drop", drop);

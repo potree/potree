@@ -566,16 +566,24 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 	 *
 	 */
 	pick (viewer, camera, ray, params = {}) {
-		
+
 		let renderer = viewer.renderer;
 		let pRenderer = viewer.pRenderer;
 		
 		performance.mark("pick-start");
 		
-		let pickWindowSize = params.pickWindowSize || 65;
-		let pickOutsideClipRegion = params.pickOutsideClipRegion || false;
-		let width = Math.ceil(renderer.domElement.clientWidth);
-		let height = Math.ceil(renderer.domElement.clientHeight);
+		let getVal = (a, b) => a !== undefined ? a : b;
+
+		let pickWindowSize = getVal(params.pickWindowSize, 65);
+		let pickOutsideClipRegion = getVal(params.pickOutsideClipRegion, false);
+
+		let size = renderer.getSize();
+
+		let width = Math.ceil(getVal(params.width, size.width));
+		let height = Math.ceil(getVal(params.height, size.height));
+
+		let pointSizeType = getVal(params.pointSizeType, this.material.pointSizeType);
+		let pointSize = getVal(params.pointSize, this.material.size);
 
 		let nodes = this.nodesOnRay(this.visibleNodes, ray);
 
@@ -607,10 +615,10 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 		let pickMaterial = pickState.material;
 
 		{ // update pick material
-			pickMaterial.pointSizeType = this.material.pointSizeType;
+			pickMaterial.pointSizeType = pointSizeType;
 			pickMaterial.shape = this.material.shape;
 
-			pickMaterial.size = this.material.size;
+			pickMaterial.size = pointSize;
 			pickMaterial.uniforms.minSize.value = this.material.uniforms.minSize.value;
 			pickMaterial.uniforms.maxSize.value = this.material.uniforms.maxSize.value;
 			pickMaterial.classification = this.material.classification;
@@ -684,7 +692,7 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 
 		// find closest hit inside pixelWindow boundaries
 		let min = Number.MAX_VALUE;
-		let hit = null;
+		let hits = [];
 		for (let u = 0; u < pickWindowSize; u++) {
 			for (let v = 0; v < pickWindowSize; v++) {
 				let offset = (u + v * pickWindowSize);
@@ -694,15 +702,14 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 				pixels[4 * offset + 3] = 0;
 				let pIndex = ibuffer[offset];
 
-				// if((pIndex !== 0 || pcIndex !== 0) && distance < min){
-				if (!(pcIndex === 0 && pIndex === 0) && distance < min) {
-					hit = {
+				if (!(pcIndex === 0 && pIndex === 0)) {
+					let hit = {
 						pIndex: pIndex,
-						pcIndex: pcIndex
+						pcIndex: pcIndex,
+						distanceToCenter: distance
 					};
-					min = distance;
 
-					// console.log(hit);
+					hits.push(hit);
 				}
 			}
 		}
@@ -725,15 +732,14 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 		//
 		//	this.debugDIV.empty();
 		//	this.debugDIV.append($(`<img src="${screenshot}"
-		//		style="transform: scaleY(-1);"/>`));
+		//		style="transform: scaleY(-1); width: 300px"/>`));
 		//	//$(this.debugWindow.document).append($(`<img src="${screenshot}"/>`));
 		//	//this.debugWindow.document.write('<img src="'+screenshot+'"/>');
 		//}
 		
-		let point = null;
-		
-		if (hit) {
-			point = {};
+
+		for(let hit of hits){
+			let point = {};
 		
 			if (!nodes[hit.pcIndex]) {
 				return null;
@@ -773,17 +779,88 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 				
 				offset += attribute.bytes;
 			}
+
+			hit.point = point;
 		}
 
 		performance.mark("pick-end");
 		performance.measure("pick", "pick-start", "pick-end");
-		
 
-		return point;
+		if(params.all){
+			return hits.map(hit => hit.point);
+		}else{
+			if(hits.length === 0){
+				return null;
+			}else{
+				let sorted = hits.sort( (a, b) => a.distanceToCenter - b.distanceToCenter);
+
+				return sorted[0].point;
+			}
+		}
 		
 	};
 
+	* getFittedBoxGen(boxNode){
+		let start = performance.now();
+
+		let shrinkedLocalBounds = new THREE.Box3();
+		let worldToBox = new THREE.Matrix4().getInverse(boxNode.matrixWorld);
+
+		for(let node of this.visibleNodes){
+			if(!node.sceneNode){
+				continue;
+			}
+
+			let buffer = node.geometryNode.buffer;
+
+			let posOffset = buffer.offset("position");
+			let stride = buffer.stride;
+			let view = new DataView(buffer.data);
+			
+			let objectToBox = new THREE.Matrix4().multiplyMatrices(worldToBox, node.sceneNode.matrixWorld);
+
+			let pos = new THREE.Vector4();
+			for(let i = 0; i < buffer.numElements; i++){
+				let x = view.getFloat32(i * stride + posOffset + 0, true);
+				let y = view.getFloat32(i * stride + posOffset + 4, true);
+				let z = view.getFloat32(i * stride + posOffset + 8, true);
+
+				pos.set(x, y, z, 1);
+				pos.applyMatrix4(objectToBox);
+
+				if(-0.5 < pos.x && pos.x < 0.5){
+					if(-0.5 < pos.y && pos.y < 0.5){
+						if(-0.5 < pos.z && pos.z < 0.5){
+							shrinkedLocalBounds.expandByPoint(pos);
+						}
+					}
+				}
+			}
+
+			yield;
+		}
+
+		let fittedPosition = shrinkedLocalBounds.getCenter().applyMatrix4(boxNode.matrixWorld);
+
+		let fitted = new THREE.Object3D();
+		fitted.position.copy(fittedPosition);
+		fitted.scale.copy(boxNode.scale);
+		fitted.rotation.copy(boxNode.rotation);
+
+		let ds = new THREE.Vector3().subVectors(shrinkedLocalBounds.max, shrinkedLocalBounds.min);
+		fitted.scale.multiply(ds);
+
+		let duration = performance.now() - start;
+		console.log("duration: ", duration);
+
+		yield fitted;
+	}
+
 	getFittedBox(boxNode, maxLevel = Infinity){
+
+		maxLevel = Infinity;
+
+		let start = performance.now();
 
 		let shrinkedLocalBounds = new THREE.Box3();
 		let worldToBox = new THREE.Matrix4().getInverse(boxNode.matrixWorld);
@@ -829,6 +906,9 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 
 		let ds = new THREE.Vector3().subVectors(shrinkedLocalBounds.max, shrinkedLocalBounds.min);
 		fitted.scale.multiply(ds);
+
+		let duration = performance.now() - start;
+		console.log("duration: ", duration);
 
 		return fitted;
 	}

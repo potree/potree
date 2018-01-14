@@ -56,7 +56,7 @@
 		</div>
 		
 		<div id="potree_sidebar_container"> </div>
-    </div>
+	</div>
 	
 	<script>
 	
@@ -64,7 +64,7 @@
 		
 		viewer.setEDLEnabled(true);
 		viewer.setFOV(60);
-		viewer.setPointBudget(1*1000*1000);
+		viewer.setPointBudget(5 * 1000 * 1000);
 		viewer.loadSettingsFromURL();
 		
 		viewer.setDescription("");
@@ -85,7 +85,11 @@
 			material.size = 1;
 			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
 			
-			viewer.fitToScreen();
+			viewer.switchCameraMode(Potree.CameraMode.ORTHOGRAPHIC);
+			viewer.scene.view.position.set(695363.0922733713, 3917242.331591645, 4028.0733017667667);
+			viewer.scene.view.lookAt(695363.0922733713, 3917242.331591645, 64.48734585580951);
+
+			//viewer.fitToScreen();
 		});
 
 		viewer.onGUILoaded(() => {

@@ -12,7 +12,12 @@ initSidebar = (viewer) => {
 		return element;
 	};
 
+	let measuringTool = new Potree.MeasuringTool(viewer);
+	let profileTool = new Potree.ProfileTool(viewer);
+	let volumeTool = new Potree.VolumeTool(viewer);
+
 	function initToolbar () {
+
 		// ANGLE
 		let elToolbar = $('#tools');
 		elToolbar.append(createToolIcon(
@@ -20,7 +25,7 @@ initSidebar = (viewer) => {
 			'[title]tt.angle_measurement',
 			function () {
 				$('#menu_measurements').next().slideDown();
-				let measurement = viewer.measuringTool.startInsertion({
+				let measurement = measuringTool.startInsertion({
 					showDistances: false,
 					showAngles: true,
 					showArea: false,
@@ -41,7 +46,7 @@ initSidebar = (viewer) => {
 			'[title]tt.point_measurement',
 			function () {
 				$('#menu_measurements').next().slideDown();
-				let measurement = viewer.measuringTool.startInsertion({
+				let measurement = measuringTool.startInsertion({
 					showDistances: false,
 					showAngles: false,
 					showCoordinates: true,
@@ -63,7 +68,7 @@ initSidebar = (viewer) => {
 			'[title]tt.distance_measurement',
 			function () {
 				$('#menu_measurements').next().slideDown();
-				let measurement = viewer.measuringTool.startInsertion({
+				let measurement = measuringTool.startInsertion({
 					showDistances: true,
 					showArea: false,
 					closed: false,
@@ -82,7 +87,7 @@ initSidebar = (viewer) => {
 			'[title]tt.height_measurement',
 			function () {
 				$('#menu_measurements').next().slideDown();
-				let measurement = viewer.measuringTool.startInsertion({
+				let measurement = measuringTool.startInsertion({
 					showDistances: false,
 					showHeight: true,
 					showArea: false,
@@ -103,7 +108,7 @@ initSidebar = (viewer) => {
 			'[title]tt.area_measurement',
 			function () {
 				$('#menu_measurements').next().slideDown();
-				let measurement = viewer.measuringTool.startInsertion({
+				let measurement = measuringTool.startInsertion({
 					showDistances: true,
 					showArea: true,
 					closed: true,
@@ -121,7 +126,7 @@ initSidebar = (viewer) => {
 			Potree.resourcePath + '/icons/volume.svg',
 			'[title]tt.volume_measurement',
 			function () { 
-				let volume = viewer.volumeTool.startInsertion(); 
+				let volume = volumeTool.startInsertion(); 
 
 				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
 				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === volume.uuid);
@@ -136,7 +141,7 @@ initSidebar = (viewer) => {
 			'[title]tt.height_profile',
 			function () {
 				$('#menu_measurements').next().slideDown(); ;
-				let profile = viewer.profileTool.startInsertion();
+				let profile = profileTool.startInsertion();
 
 				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
 				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === profile.uuid);
@@ -411,7 +416,7 @@ initSidebar = (viewer) => {
 			Potree.resourcePath + '/icons/clip_volume.svg',
 			'[title]tt.clip_volume',
 			function () { 
-				let item = viewer.volumeTool.startInsertion({clip: true}); 
+				let item = volumeTool.startInsertion({clip: true}); 
 
 				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
 				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === item.uuid);

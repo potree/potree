@@ -12,31 +12,36 @@ Potree.MeasuringTool = class MeasuringTool extends THREE.EventDispatcher {
 			});
 		});
 
-		this.sceneMeasurement = new THREE.Scene();
-		this.sceneMeasurement.name = 'scene_measurement';
+		this.scene = new THREE.Scene();
+		this.scene.name = 'scene_measurement';
 		this.light = new THREE.PointLight(0xffffff, 1.0);
-		this.sceneMeasurement.add(this.light);
+		this.scene.add(this.light);
 
-		this.viewer.inputHandler.registerInteractiveScene(this.sceneMeasurement);
+		this.viewer.inputHandler.registerInteractiveScene(this.scene);
 
-		this.onRemove = (e) => { this.sceneMeasurement.remove(e.measurement);};
-		this.onAdd = e => {this.sceneMeasurement.add(e.measurement);};
+		this.onRemove = (e) => { this.scene.remove(e.measurement);};
+		this.onAdd = e => {this.scene.add(e.measurement);};
+
+		for(let measurement of viewer.scene.measurements){
+			this.onAdd({measurement: measurement});
+		}
+
+		viewer.addEventListener("update", this.update.bind(this));
+		viewer.addEventListener("render.pass.perspective_overlay", this.render.bind(this));
+		viewer.addEventListener("scene_changed", this.onSceneChange.bind(this));
+
+		viewer.scene.addEventListener('measurement_added', this.onAdd);
+		viewer.scene.addEventListener('measurement_removed', this.onRemove);
 	}
 
-	setScene (scene) {
-		if (this.scene === scene) {
-			return;
+	onSceneChange(e){
+		if(e.oldScene){
+			e.oldScene.removeEventListener('measurement_added', this.onAdd);
+			e.oldScene.removeEventListener('measurement_removed', this.onRemove);
 		}
 
-		if (this.scene) {
-			this.scene.removeEventListener('measurement_added', this.onAdd);
-			this.scene.removeEventListener('measurement_removed', this.onRemove);
-		}
-
-		this.scene = scene;
-
-		this.scene.addEventListener('measurement_added', this.onAdd);
-		this.scene.addEventListener('measurement_removed', this.onRemove);
+		e.scene.addEventListener('measurement_added', this.onAdd);
+		e.scene.addEventListener('measurement_removed', this.onRemove);
 	}
 
 	startInsertion (args = {}) {
@@ -58,7 +63,7 @@ Potree.MeasuringTool = class MeasuringTool extends THREE.EventDispatcher {
 		measure.maxMarkers = args.maxMarkers || Infinity;
 		measure.name = args.name || 'Measurement';
 
-		this.sceneMeasurement.add(measure);
+		this.scene.add(measure);
 
 		let cancel = {
 			removeLastMarker: measure.maxMarkers > 3,
@@ -219,5 +224,9 @@ Potree.MeasuringTool = class MeasuringTool extends THREE.EventDispatcher {
 				label.scale.set(scale, scale, scale);
 			}
 		}
+	}
+
+	render(){
+		this.viewer.renderer.render(this.scene, viewer.scene.getActiveCamera());
 	}
 };

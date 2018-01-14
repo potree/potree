@@ -119,11 +119,7 @@ class EDLRenderer {
 
 		let queryColors = Potree.startQuery('EDL - colorpass', viewer.renderer.getContext());
 
-		viewer.measuringTool.update();
-		viewer.profileTool.update();
 		viewer.transformationTool.update();
-		viewer.volumeTool.update();	
-		
 		viewer.renderer.render(viewer.scene.scene, camera);
 		
 		viewer.renderer.clearTarget( this.rtColor, true, true, true );
@@ -157,7 +153,12 @@ class EDLRenderer {
 		}
 		
 		viewer.renderer.render(viewer.scene.scene, camera, this.rtColor);
-		viewer.renderer.render(viewer.volumeTool.sceneVolume, camera, this.rtColor);
+
+		viewer.renderer.setRenderTarget(this.rtColor);
+		viewer.dispatchEvent({type: "render.pass.scene", viewer: viewer, renderTarget: this.rtColor});
+		
+		//viewer.dispatchEvent({type: "render.pass.scene",viewer: viewer});
+
 		Potree.endQuery(queryColors, viewer.renderer.getContext());
 		
 		
@@ -180,14 +181,10 @@ class EDLRenderer {
 
 		viewer.renderer.clearDepth();
 
-		viewer.dispatchEvent({
-			type: "render.pass.perspective_overlay",
-			viewer: viewer});
+		viewer.dispatchEvent({type: "render.pass.perspective_overlay",viewer: viewer});
 
 		viewer.renderer.render(viewer.controls.sceneControls, camera);
-		viewer.renderer.render(viewer.measuringTool.sceneMeasurement, camera);
 		viewer.renderer.render(viewer.clippingTool.sceneVolume, camera);
-		viewer.renderer.render(viewer.profileTool.sceneProfile, camera);
 		viewer.renderer.render(viewer.transformationTool.scene, camera);
 		
 		viewer.renderer.setViewport(width - viewer.navigationCube.width, 

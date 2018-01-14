@@ -12,39 +12,44 @@ Potree.VolumeTool = class VolumeTool extends THREE.EventDispatcher {
 			});
 		});
 
-		this.sceneVolume = new THREE.Scene();
-		this.sceneVolume.name = 'scene_volume';
+		this.scene = new THREE.Scene();
+		this.scene.name = 'scene_volume';
 
-		this.viewer.inputHandler.registerInteractiveScene(this.sceneVolume);
+		this.viewer.inputHandler.registerInteractiveScene(this.scene);
 
 		this.onRemove = e => {
-			this.sceneVolume.remove(e.volume);
+			this.scene.remove(e.volume);
 		};
 
 		this.onAdd = e => {
-			this.sceneVolume.add(e.volume);
+			this.scene.add(e.volume);
 		};
+
+		for(let volume of viewer.scene.volumes){
+			this.onAdd({volume: volume});
+		}
 
 		this.viewer.inputHandler.addEventListener('delete', e => {
 			let volumes = e.selection.filter(e => (e instanceof Potree.Volume));
 			volumes.forEach(e => this.viewer.scene.removeVolume(e));
 		});
+
+		viewer.addEventListener("update", this.update.bind(this));
+		viewer.addEventListener("render.pass.scene", e => this.render(e));
+		viewer.addEventListener("scene_changed", this.onSceneChange.bind(this));
+
+		viewer.scene.addEventListener('volume_added', this.onAdd);
+		viewer.scene.addEventListener('volume_removed', this.onRemove);
 	}
 
-	setScene (scene) {
-		if (this.scene === scene) {
-			return;
+	onSceneChange(e){
+		if(e.oldScene){
+			e.oldScene.removeEventListeners('volume_added', this.onAdd);
+			e.oldScene.removeEventListeners('volume_removed', this.onRemove);
 		}
 
-		if (this.scene) {
-			this.scene.removeEventListeners('volume_added', this.onAdd);
-			this.scene.removeEventListeners('volume_removed', this.onRemove);
-		}
-
-		this.scene = scene;
-
-		this.scene.addEventListener('volume_added', this.onAdd);
-		this.scene.addEventListener('volume_removed', this.onRemove);
+		e.scene.addEventListener('volume_added', this.onAdd);
+		e.scene.addEventListener('volume_removed', this.onRemove);
 	}
 
 	startInsertion (args = {}) {
@@ -57,8 +62,8 @@ Potree.VolumeTool = class VolumeTool extends THREE.EventDispatcher {
 			volume: volume
 		});
 
-		// this.sceneVolume.add(volume);
 		this.viewer.scene.addVolume(volume);
+		this.scene.add(volume);
 
 		let cancel = {
 			callback: null
@@ -105,8 +110,8 @@ Potree.VolumeTool = class VolumeTool extends THREE.EventDispatcher {
 		return volume;
 	}
 
-	update (delta) {
-		if (!this.scene) {
+	update(){
+		if (!this.viewer.scene) {
 			return;
 		}
 		
@@ -131,4 +136,9 @@ Potree.VolumeTool = class VolumeTool extends THREE.EventDispatcher {
 			label.setText(text);
 		}
 	}
+
+	render(params){
+		this.viewer.renderer.render(this.scene, this.viewer.scene.getActiveCamera(), params.renderTarget);
+	}
+
 };

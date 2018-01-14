@@ -88,9 +88,6 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 
 		this.inputHandler = null;
 
-		this.measuringTool = null;
-		this.profileTool = null;
-		this.volumeTool = null;
 		this.clippingTool =  null;
 		this.transformationTool = null;
 		this.navigationCube = null;
@@ -130,9 +127,6 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			this.inputHandler = new Potree.InputHandler(this);
 			this.inputHandler.setScene(this.scene);
 
-			this.measuringTool = new Potree.MeasuringTool(this);
-			this.profileTool = new Potree.ProfileTool(this);
-			this.volumeTool = new Potree.VolumeTool(this);
 			this.clippingTool = new Potree.ClippingTool(this);
 			this.transformationTool = new Potree.TransformationTool(this);
 			this.navigationCube = new Potree.NavigationCube(this);
@@ -140,9 +134,6 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			
 			this.createControls();
 
-			this.measuringTool.setScene(this.scene);
-			this.profileTool.setScene(this.scene);
-			this.volumeTool.setScene(this.scene);
 			this.clippingTool.setScene(this.scene);
 			
 			let onPointcloudAdded = (e) => {
@@ -155,9 +146,6 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 
 			this.addEventListener('scene_changed', (e) => {
 				this.inputHandler.setScene(e.scene);
-				this.measuringTool.setScene(e.scene);
-				this.profileTool.setScene(e.scene);
-				this.volumeTool.setScene(e.scene);
 				this.clippingTool.setScene(this.scene);
 				
 				if(!e.scene.hasEventListener("pointcloud_added", onPointcloudAdded)){

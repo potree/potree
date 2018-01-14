@@ -12,31 +12,36 @@ Potree.ProfileTool = class ProfileTool extends THREE.EventDispatcher {
 			});
 		});
 
-		this.sceneProfile = new THREE.Scene();
-		this.sceneProfile.name = 'scene_profile';
+		this.scene = new THREE.Scene();
+		this.scene.name = 'scene_profile';
 		this.light = new THREE.PointLight(0xffffff, 1.0);
-		this.sceneProfile.add(this.light);
+		this.scene.add(this.light);
 
-		this.viewer.inputHandler.registerInteractiveScene(this.sceneProfile);
+		this.viewer.inputHandler.registerInteractiveScene(this.scene);
 
-		this.onRemove = e => this.sceneProfile.remove(e.profile);
-		this.onAdd = e => this.sceneProfile.add(e.profile);
+		this.onRemove = e => this.scene.remove(e.profile);
+		this.onAdd = e => this.scene.add(e.profile);
+
+		for(let profile of viewer.scene.profiles){
+			this.onAdd({profile: profile});
+		}
+
+		viewer.addEventListener("update", this.update.bind(this));
+		viewer.addEventListener("render.pass.perspective_overlay", this.render.bind(this));
+		viewer.addEventListener("scene_changed", this.onSceneChange.bind(this));
+
+		viewer.scene.addEventListener('profile_added', this.onAdd);
+		viewer.scene.addEventListener('profile_removed', this.onRemove);
 	}
 
-	setScene (scene) {
-		if (this.scene === scene) {
-			return;
+	onSceneChange(e){
+		if(e.oldScene){
+			e.oldScene.removeEventListeners('profile_added', this.onAdd);
+			e.oldScene.removeEventListeners('profile_removed', this.onRemove);
 		}
 
-		if (this.scene) {
-			this.scene.removeEventListeners('profile_added', this.onAdd);
-			this.scene.removeEventListeners('profile_removed', this.onRemove);
-		}
-
-		this.scene = scene;
-
-		this.scene.addEventListener('profile_added', this.onAdd);
-		this.scene.addEventListener('profile_removed', this.onRemove);
+		e.scene.addEventListener('profile_added', this.onAdd);
+		e.scene.addEventListener('profile_removed', this.onRemove);
 	}
 
 	startInsertion (args = {}) {
@@ -50,7 +55,7 @@ Potree.ProfileTool = class ProfileTool extends THREE.EventDispatcher {
 			profile: profile
 		});
 
-		this.sceneProfile.add(profile);
+		this.scene.add(profile);
 
 		let cancel = {
 			callback: null
@@ -112,5 +117,9 @@ Potree.ProfileTool = class ProfileTool extends THREE.EventDispatcher {
 				sphere.scale.set(scale, scale, scale);
 			}
 		}
+	}
+
+	render(){
+		this.viewer.renderer.render(this.scene, viewer.scene.getActiveCamera());
 	}
 };

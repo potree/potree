@@ -69,10 +69,9 @@ class PotreeRenderer {
 		
 		// render scene
 		viewer.renderer.render(viewer.scene.scene, activeCam);
-		
-		viewer.volumeTool.update();
-		viewer.renderer.render(viewer.volumeTool.sceneVolume, activeCam);
 
+		viewer.dispatchEvent({type: "render.pass.scene",viewer: viewer});
+		
 		viewer.clippingTool.update();
 		viewer.renderer.render(viewer.clippingTool.sceneMarker, viewer.scene.cameraScreenSpace); //viewer.scene.cameraScreenSpace);
 		viewer.renderer.render(viewer.clippingTool.sceneVolume, activeCam);
@@ -81,14 +80,10 @@ class PotreeRenderer {
 		
 		viewer.renderer.clearDepth();
 		
-		viewer.measuringTool.update();
-		viewer.profileTool.update();
 		viewer.transformationTool.update();
 		
 		viewer.dispatchEvent({type: "render.pass.perspective_overlay",viewer: viewer});
 		
-		viewer.renderer.render(viewer.measuringTool.sceneMeasurement, activeCam);
-		viewer.renderer.render(viewer.profileTool.sceneProfile, activeCam);
 		viewer.renderer.render(viewer.transformationTool.scene, activeCam);
 
 		viewer.renderer.setViewport(viewer.renderer.domElement.clientWidth - viewer.navigationCube.width, 

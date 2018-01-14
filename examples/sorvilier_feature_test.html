@@ -33,7 +33,6 @@
 	<script src="../libs/openlayers3/ol.js"></script>
     <script src="../libs/i18next/i18next.js"></script>
 	<script src="../libs/jstree/jstree.js"></script>
-	<script src="../libs/MeshLine/src/THREE.MeshLine.js"></script>
 	
 	<script src="../build/potree/potree.js"></script>
 	<!--<script src="../src/viewer/sidebar.js"></script>-->
@@ -251,52 +250,6 @@
 			volume.rotation.set(0, 0, 0.6338484063020134);
 			volume.clip = true;
 			viewer.scene.addVolume(volume);
-		}
-
-		{
-			let material = new MeshLineMaterial({sizeAttenuation: 1, color: new THREE.Color(0xff0000)});
-			let line = new MeshLine();
-			let line2 = new MeshLine();
-			
-			let mesh = new THREE.Mesh( line.geometry, material );
-			let mesh2 = new THREE.Mesh( line2.geometry, material );
-
-			viewer.measuringTool.sceneMeasurement.add(mesh);
-			viewer.measuringTool.sceneMeasurement.add(mesh2);
-
-			let setCoordinates = (mesh, line, p1, p2) => {
-				let us = [0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.75, 0.1, 0.5, 0.925, 0.95, 0.96, 0.97, 0.98, 0.99, 1];
-				let geometry = new THREE.Geometry();
-
-				let pl1 = new THREE.Vector3(0, 0, 0);
-				let pl2 = p2.clone().sub(p1);
-				for(let u of us){
-					let p = pl2.clone().multiplyScalar(u);
-
-					geometry.vertices.push(p);
-				}
-
-				line.setGeometry( geometry, w => {
-					return 4 + 10 * (0.1 + 200 * Math.pow(Math.abs(w - 0.5), 8));
-				});
-				mesh.position.copy(p1);
-			}
-
-			viewer.addEventListener("update", () => {
-				material.uniforms.near.value = viewer.scene.getActiveCamera().near;
-				material.uniforms.far.value = viewer.scene.getActiveCamera().far;
-				material.uniforms.sizeAttenuation.value = 0;
-
-				let width = viewer.renderer.getSize().width;
-				let height = viewer.renderer.getSize().height;
-				material.uniforms.resolution.value.set(width, height);
-
-				let points = viewer.scene.measurements[0].points.map(p => p.position);
-
-				setCoordinates(mesh, line, points[0], points[1]);
-				setCoordinates(mesh2, line2, points[1], points[2]);
-			});
-
 		}
 
 		{

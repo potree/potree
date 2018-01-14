@@ -618,3 +618,71 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 
 
 
+
+(function($){
+	$.fn.extend({
+		selectgroup: function(args = {}){
+
+			let elGroup = $(this);
+			let rootID = elGroup.prop("id");
+			let groupID = `${rootID}`;
+			let groupTitle = (args.title !== undefined) ? args.title : "";
+
+			let elButtons = [];
+			elGroup.find("option").each((index, value) => {
+				let buttonID = $(value).prop("id");
+				let label = $(value).html();
+				let optionValue = $(value).prop("value");
+
+				let elButton = $(`
+					<span style="flex-grow: 1; display: inherit">
+					<label for="${buttonID}" class="ui-button" style="width: 100%; padding: .4em .1em">${label}</label>
+					<input type="radio" name="${groupID}" id="${buttonID}" value="${optionValue}" style="display: none"/>
+					</span>
+				`);
+				let elLabel = elButton.find("label");
+				let elInput = elButton.find("input");
+
+				elInput.change( () => {
+					elGroup.find("label").removeClass("ui-state-active");
+					if(elInput.is(":checked")){
+						elLabel.addClass("ui-state-active");
+					}
+				});
+
+				elButtons.push(elButton);
+			});
+
+			let elFieldset = $(`
+				<fieldset style="border: none; margin: 0px; padding: 0px">
+					<legend>${groupTitle}</legend>
+					<span style="display: flex">
+
+					</span>
+				</fieldset>
+			`);
+
+			let elButtonContainer = elFieldset.find("span");
+			for(let elButton of elButtons){
+				elButtonContainer.append(elButton);
+			}
+
+			elButtonContainer.find("label").each( (index, value) => {
+				$(value).css("margin", "0px");
+				$(value).css("border-radius", "0px");
+			});
+			elButtonContainer.find("label:first").each( (index, value) => {
+				$(value).css("border-radius", "4px 0px 0px 4px");
+			});
+			elButtonContainer.find("label:last").each( (index, value) => {
+				$(value).css("border-radius", "0px 4px 4px 0px");
+			});
+
+			elGroup.empty();
+			elGroup.append(elFieldset);
+
+
+
+		}
+	});
+})(jQuery);

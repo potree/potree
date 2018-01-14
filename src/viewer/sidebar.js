@@ -396,18 +396,24 @@ initSidebar = (viewer) => {
 
 	function initClippingTool() {
 
-		$("#optClipMode").selectmenu();
-		$("#optClipMode").val(1).selectmenu("refresh");
-		$("#optClipMode").selectmenu({
-			change: function(event, ui){
-				viewer.clippingTool.setClipMode(parseInt(ui.item.value));
-			}
+
+		viewer.addEventListener("clipper.clipMode_changed", function(event){
+			console.log("TODO");
 		});
 
-		//viewer.addEventListener("clipper.clipMode_changed", function(event){		
-		//	$("#optClipMode").val(viewer.clippingTool.clipMode).selectmenu("refresh");
-		//});
+		{
+			let elClipModes = $("#optClipMode");
+			elClipModes.selectgroup({title: "Clip Mode"});
 
+			elClipModes.find("input").click( (e) => {
+				viewer.clippingTool.setClipMode(Potree.ClipMode[e.target.value]);
+			});
+
+			let currentClipMode = Object.keys(Potree.ClipMode)
+				.filter(key => Potree.ClipMode[key] === viewer.clippingTool.clipMode);
+			elClipModes.find(`input[value=${currentClipMode}]`).trigger("click");
+
+		}
 
 		let clippingToolBar = $("#clipping_tools");
 
@@ -627,11 +633,18 @@ initSidebar = (viewer) => {
 		$('#lblEDLRadius')[0].innerHTML = viewer.getEDLRadius().toFixed(1);
 		$('#lblEDLStrength')[0].innerHTML = viewer.getEDLStrength().toFixed(1);
 		$('#chkEDLEnabled')[0].checked = viewer.getEDLEnabled();
-		$("input[name=background][value='" + viewer.getBackground() + "']").prop('checked', true);
+		
+		{
+			let elBackground = $(`#background_options`);
+			elBackground.selectgroup();
 
-		$("input[name=background]").click(function(){
-			viewer.setBackground(this.value);
-		});
+			elBackground.find("input").click( (e) => {
+				viewer.setBackground(e.target.value);
+			});
+
+			let currentBackground = viewer.getBackground();
+			$(`input[name=background_options][value=${currentBackground}]`).trigger("click");
+		}
 
 		$('#chkEDLEnabled').click( () => {
 			viewer.setEDLEnabled($('#chkEDLEnabled').prop("checked"));
@@ -691,17 +704,20 @@ initSidebar = (viewer) => {
 			function(){viewer.toggleNavigationCube()}
 		));
 
-		elNavigation.append(createToolIcon(
-			Potree.resourcePath + "/icons/perspective-camera.svg",
-			"[title]tt.perspective_camera_control",
-			function(){viewer.switchCameraMode(Potree.CameraMode.PERSPECTIVE)}
-		));
-
-		elNavigation.append(createToolIcon(
-			Potree.resourcePath + "/icons/orthographic-camera.svg",
-			"[title]tt.orthographic_camera_control",
-			function(){viewer.switchCameraMode(Potree.CameraMode.ORTHOGRAPHIC)}
-		));
+		let elCameraProjection = $(`
+			<selectgroup id="camera_projection_options">
+				<option id="camera_projection_options_perspective" value="PERSPECTIVE">Perspective</option>
+				<option id="camera_projection_options_orthigraphic" value="ORTHOGRAPHIC">Orthographic</option>
+			</selectgroup>
+		`);
+		elNavigation.append(elCameraProjection);
+		elCameraProjection.selectgroup({title: "Camera Projection"});
+		elCameraProjection.find("input").click( (e) => {
+			viewer.switchCameraMode(Potree.CameraMode[e.target.value]);
+		});
+		let cameraMode = Object.keys(Potree.CameraMode)
+			.filter(key => Potree.CameraMode[key] === viewer.scene.cameraMode);
+		elCameraProjection.find(`input[value=${cameraMode}]`).trigger("click");
 
 		let speedRange = new THREE.Vector2(1, 10 * 1000);
 

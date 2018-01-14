@@ -39,11 +39,18 @@
 				<div class="divider">
 					<span>Background</span>
 				</div>
+
+				<selectgroup id="background_options">
+					<option id="background_options_skybox" value="skybox">Skybox</option>
+					<option id="background_options_gradient" value="gradient">Gradient</option>
+					<option id="background_options_black" value="black">Black</option>
+					<option id="background_options_white" value="white">White</option>
+				</selectgroup>
 				
-				<li><label><input type="radio" name="background" value="skybox" /><span>Skybox</span></label></li>
+				<!--<li><label><input type="radio" name="background" value="skybox" /><span>Skybox</span></label></li>
 				<li><label><input type="radio" name="background" value="gradient" /><span>Gradient</span></label></li>
 				<li><label><input type="radio" name="background" value="black" /><span>Black</span></label></li>
-				<li><label><input type="radio" name="background" value="white" /><span>White</span></label></li>
+				<li><label><input type="radio" name="background" value="white" /><span>White</span></label></li>-->
 			</div>
 
 			<div>
@@ -77,13 +84,12 @@
 			<li id="clipping_tools"></li>
 
 			<li>
-				<label for="optClipMode" class="pv-select-label">Clip mode</label>
-				<select id="optClipMode" name="optClipMode">
-					<option value="0">Disabled</option>
-					<option value="1">Highlight</option>
-					<option value="2">Inside</option>
-					<option value="3">Outside</option>
-				</select>
+				<selectgroup id="optClipMode">
+					<option id="clip_option_none" value="DISABLED">None</option>
+					<option id="clip_option_highlight" value="HIGHLIGHT">Highlight</option>
+					<option id="clip_option_inside" value="INSIDE">Inside</option>
+					<option id="clip_option_outside" value="OUTSIDE">Outside</option>
+				</selectgroup>
 			</li>
 			
 			<div class="divider" style="padding: 10px 0px 15px 0px">

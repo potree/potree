@@ -44,7 +44,7 @@ Potree.ScreenBoxSelectTool = class ScreenBoxSelectTool extends THREE.EventDispat
 			volume.position.copy(ray.origin);
 			volume.up.copy(camera.up);
 			volume.rotation.copy(camera.rotation);
-			volume.scale.set(diff.x, diff.y, 1000 * 1000);
+			volume.scale.set(diff.x, diff.y, 1000 * 100);
 
 			e.consume();
 		};
@@ -121,16 +121,15 @@ Potree.ScreenBoxSelectTool = class ScreenBoxSelectTool extends THREE.EventDispat
 					volume.position.copy(centroid);
 					
 				}
-				
 			}
-
-			
 		};
 
 		this.addEventListener("drag", drag);
 		this.addEventListener("drop", drop);
 
 		viewer.inputHandler.addInputListener(this);
+
+		return volume;
 	}
 
 	update(e){

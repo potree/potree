@@ -443,7 +443,7 @@ initSidebar = (viewer) => {
 			let boxSelectTool = new Potree.ScreenBoxSelectTool(viewer);
 
 			clippingToolBar.append(createToolIcon(
-				Potree.resourcePath + "/icons/clip-polygon.svg",
+				Potree.resourcePath + "/icons/clip-screen.svg",
 				"[title]tt.screen_clip_box",
 				function(){
 					if(!(viewer.scene.getActiveCamera() instanceof THREE.OrthographicCamera)){

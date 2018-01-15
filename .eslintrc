@@ -1,0 +1,53 @@
+{
+	"extends": "happiness",
+	"globals": {
+		"THREE": false,
+		"TWEEN": false,
+		"$": false,
+		"XMLHttpRequest": false,
+		"requestAnimationFrame": false,
+		"Blob": false,
+		"i18n": false,
+		"URL": false,
+		"Stats": false,
+		"ProgressBar": false,
+		"d3": false,
+		"btoa": false,
+		"alert": false,
+		"ol": false,
+		"proj4": false,
+		"shapefile": false,
+		"Worker": false,
+		"Image": false,
+		"LASFile": false,
+		"LASDecoder": false,
+		"BinaryHeap": false,
+		"performance": false,
+		"Potree": true,
+		"initSidebar": true,
+		"HoverMenu": true,
+		"HoverMenuItem": true,
+		"LRU": true,
+		"viewer": true
+	},
+	"rules": {
+		"no-lone-blocks": "off",
+		"space-before-function-paren": "off",
+		"space-before-blocks": "off",
+		"indent": "off",
+		"no-trailing-spaces": "off",
+		"keyword-spacing": "off",
+		"no-multiple-empty-lines" : "off",
+		"key-spacing": "off",
+		"spaced-comment": "off",
+		"quotes": "off",
+		"space-in-parens": "off",
+		"padded-blocks": "off",
+		"comma-dangle": "off",
+		"object-property-newline": "off",
+		"eol-last": "off"
+	},
+	"parserOptions": { 
+		"ecmaVersion": 6 
+	}
+}

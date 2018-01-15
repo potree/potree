@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="description" content="">
+    <meta name="author" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Potree Viewer</title>
+
+	<link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
+	<link rel="stylesheet" type="text/css" href="../libs/jquery-ui/jquery-ui.min.css">
+	<link rel="stylesheet" type="text/css" href="../libs/perfect-scrollbar/css/perfect-scrollbar.css">
+	<link rel="stylesheet" href="../libs/openlayers3/ol.css" type="text/css">
+	<link rel="stylesheet" href="../libs/spectrum/spectrum.css" type="text/css">
+	<link rel="stylesheet" href="../libs/jstree/themes/mixed/style.css" type="text/css">
+  </head>
+
+  <body>
+  
+	<script src="../libs/jquery/jquery-3.1.1.js"></script>
+	<script src="../libs/spectrum/spectrum.js"></script>
+	
+	<!--<script src="../libs/other/webgl-debug.js"></script>-->
+	<script src="../libs/perfect-scrollbar/js/perfect-scrollbar.jquery.js"></script>
+	<script src="../libs/jquery-ui/jquery-ui.min.js"></script>
+	<script src="../libs/three.js/build/three.js"></script>
+	<script src="../libs/other/stats.min.js"></script>
+	<script src="../libs/other/BinaryHeap.js"></script>
+	<script src="../libs/tween/tween.min.js"></script>
+	<script src="../libs/d3/d3.js"></script>
+	<script src="../libs/proj4/proj4.js"></script>
+	<script src="../libs/openlayers3/ol.js"></script>
+    <script src="../libs/i18next/i18next.js"></script>
+	<script src="../libs/jstree/jstree.js"></script>
+	
+	<script src="../build/potree/potree.js"></script>
+	<!--<script src="../src/viewer/sidebar.js"></script>-->
+	
+	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
+	<!-- INCLUDE SETTINGS HERE -->
+	
+	<script src="../libs/plasio/js/laslaz.js"></script>
+	<script src="../libs/plasio/vendor/bluebird.js"></script>
+	
+
+    <div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
+	
+		<div id="potree_render_area">
+			<div id="potree_map" class="mapBox" style="position: absolute; left: 50px; top: 50px; width: 400px; height: 400px; display: none">
+				<div id="potree_map_header" style="position: absolute; width: 100%; height: 25px; top: 0px; background-color: rgba(0,0,0,0.5); z-index: 1000; border-top-left-radius: 3px; border-top-right-radius: 3px;">
+				</div>
+				<div id="potree_map_content" class="map" style="position: absolute; z-index: 100; top: 25px; width: 100%; height: calc(100% - 25px); border: 2px solid rgba(0,0,0,0.5); box-sizing: border-box;"></div>
+			</div>
+		
+			<div id="potree_description" class="potree_info_text"></div>
+		</div>
+		
+		<div id="potree_sidebar_container"> </div>
+	</div>
+	
+	<script>
+	
+		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
+		
+		viewer.setEDLEnabled(true);
+		viewer.setFOV(60);
+		viewer.setPointBudget(5 * 1000 * 1000);
+		viewer.loadSettingsFromURL();
+		
+		viewer.setDescription("");
+		
+		viewer.loadGUI(() => {
+			viewer.setLanguage('en');
+			$("#menu_appearance").next().show();
+			$("#menu_tools").next().show();
+			$("#menu_scene").next().show();
+			viewer.toggleSidebar();
+		});
+		
+		// Sigeom
+		Potree.loadPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/opentopography/CA13/cloud.js", "CA13", function(e){
+			viewer.scene.addPointCloud(e.pointcloud);
+			e.pointcloud.position.z = 0;
+			let material = e.pointcloud.material;
+			material.size = 1;
+			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+			
+			viewer.switchCameraMode(Potree.CameraMode.ORTHOGRAPHIC);
+			viewer.scene.view.position.set(695363.0922733713, 3917242.331591645, 4028.0733017667667);
+			viewer.scene.view.lookAt(695363.0922733713, 3917242.331591645, 64.48734585580951);
+
+			//viewer.fitToScreen();
+		});
+
+		viewer.onGUILoaded(() => {
+			let boxSelectTool = new Potree.ScreenBoxSelectTool(viewer);
+			window.boxSelectTool = boxSelectTool;
+
+			let createToolIcon = function (icon, title, callback) {
+				let element = $(`
+					<img src="${icon}"
+						style="width: 32px; height: 32px"
+						class="button-icon"
+						data-i18n="${title}" />
+				`);
+
+				element.click(callback);
+
+				return element;
+			};
+
+			let clippingToolBar = $("#clipping_tools");
+			clippingToolBar.append(createToolIcon(
+				Potree.resourcePath + "/icons/clip-polygon.svg",
+				"[title]tt.clip_polygon",
+				function(){
+					let item = boxSelectTool.startInsertion();
+				}
+			));
+
+		});
+		
+	</script>
+	
+	
+  </body>
+</html>

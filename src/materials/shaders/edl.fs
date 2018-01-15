@@ -47,6 +47,7 @@ void main(){
 		discard;
 	}else{
 		gl_FragColor = vec4(color.rgb * shade, opacity);
+		//gl_FragColor = vec4(color.rgb * res, opacity);
 	}
 	
 }

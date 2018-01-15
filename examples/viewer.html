@@ -39,10 +39,36 @@
 	<script src="../libs/plasio/js/laslaz.js"></script>
 	<script src="../libs/plasio/vendor/bluebird.js"></script>
 
-    <div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
-		<div id="potree_render_area"></div>
+	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
+		<div id="potree_render_area">
+			<div id="#potree_failpage" class="potree_failpage"> 
+				<h1>Potree Encountered An Error </h1>
+
+				<p>
+				This may happen if your browser or graphics card is not supported.
+				<br>
+				We recommend to use 
+				<a href="https://www.google.com/chrome/browser" target="_blank" style="color:initial">Chrome</a>
+				or 
+				<a href="https://www.mozilla.org/" target="_blank">Firefox</a>.
+				</p>
+
+				<p>
+				Please also visit <a href="http://webglreport.com/" target="_blank">webglreport.com</a> and 
+				check whether your system supports WebGL.
+				</p>
+				<p>
+				If you are already using one of the recommended browsers and WebGL is enabled, 
+				consider filing an issue report at <a href="https://github.com/potree/potree/issues" target="_blank">github</a>,<br>
+				including your operating system, graphics card, browser and browser version, as well as any 
+				error messages in your browsers dev console (usually F12).<br>
+				Please do not report errors on unsupported browsers.
+				</p>
+			</div>
+
+		</div>
 		<div id="potree_sidebar_container"> </div>
-    </div>
+	</div>
 	
 	<script>
 	
@@ -58,7 +84,8 @@
 		viewer.loadGUI(() => {
 			viewer.setLanguage('en');
 			$("#menu_tools").next().show();
-			//viewer.toggleSidebar();
+			$("#menu_clipping").next().show();
+			viewer.toggleSidebar();
 		});
 		
 		// Load and add point cloud to scene

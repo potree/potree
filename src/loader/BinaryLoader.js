@@ -1,8 +1,8 @@
 
-Potree.BinaryLoader = function(version, boundingBox, scale){
-	if(typeof(version) === "string"){
+Potree.BinaryLoader = function (version, boundingBox, scale) {
+	if (typeof (version) === 'string') {
 		this.version = new Potree.Version(version);
-	}else{
+	} else {
 		this.version = version;
 	}
 
@@ -10,8 +10,8 @@ Potree.BinaryLoader = function(version, boundingBox, scale){
 	this.scale = scale;
 };
 
-Potree.BinaryLoader.prototype.load = function(node){
-	if(node.loaded){
+Potree.BinaryLoader.prototype.load = function (node) {
+	if (node.loaded) {
 		return;
 	}
 
@@ -19,46 +19,53 @@ Potree.BinaryLoader.prototype.load = function(node){
 
 	let url = node.getURL();
 
-	if(this.version.equalOrHigher("1.4")){
-		url += ".bin";
+	if (this.version.equalOrHigher('1.4')) {
+		url += '.bin';
 	}
 
 	let xhr = Potree.XHRFactory.createXMLHttpRequest();
 	xhr.open('GET', url, true);
 	xhr.responseType = 'arraybuffer';
 	xhr.overrideMimeType('text/plain; charset=x-user-defined');
-	xhr.onreadystatechange = function() {
+	xhr.onreadystatechange = function () {
 		if (xhr.readyState === 4) {
 			if (xhr.status === 200 || xhr.status === 0) {
 				let buffer = xhr.response;
 				scope.parse(node, buffer);
 			} else {
-				console.log('Failed to load file! HTTP status: ' + xhr.status + ", file: " + url);
+				console.log('Failed to load file! HTTP status: ' + xhr.status + ', file: ' + url);
 			}
 		}
 	};
-	try{
+	try {
 		xhr.send(null);
-	}catch(e){
-		console.log("fehler beim laden der punktwolke: " + e);
+	} catch (e) {
+		console.log('fehler beim laden der punktwolke: ' + e);
 	}
 };
 
-Potree.BinaryLoader.prototype.parse = function(node, buffer){
-
-	let numPoints = buffer.byteLength / node.pcoGeometry.pointAttributes.byteSize;
+Potree.BinaryLoader.prototype.parse = function (node, buffer) {
 	let pointAttributes = node.pcoGeometry.pointAttributes;
+	let numPoints = buffer.byteLength / node.pcoGeometry.pointAttributes.byteSize;
 
-	if(this.version.upTo("1.5")){
+	if (this.version.upTo('1.5')) {
 		node.numPoints = numPoints;
 	}
 
-	let workerPath = Potree.scriptPath + "/workers/BinaryDecoderWorker.js";
+	let workerPath = Potree.scriptPath + '/workers/BinaryDecoderWorker.js';
 	let worker = Potree.workerPool.getWorker(workerPath);
-	
-	worker.onmessage = function(e){
+
+	worker.onmessage = function (e) {
+
 		let data = e.data;
-		let buffers = data.attributeBuffers;
+		let iAttributes = pointAttributes.attributes
+			.map(pa => Potree.toInterleavedBufferAttribute(pa))
+			.filter(ia => ia != null);
+		iAttributes.push(new Potree.InterleavedBufferAttribute("index", 4, 4, "UNSIGNED_BYTE", true));
+		let iBuffer = new Potree.InterleavedBuffer(data.data, iAttributes, numPoints);
+
+		//console.log(data.estimatedSpacing);
+
 		let tightBoundingBox = new THREE.Box3(
 			new THREE.Vector3().fromArray(data.tightBoundingBox.min),
 			new THREE.Vector3().fromArray(data.tightBoundingBox.max)
@@ -66,49 +73,16 @@ Potree.BinaryLoader.prototype.parse = function(node, buffer){
 
 		Potree.workerPool.returnWorker(workerPath, worker);
 
-		let geometry = new THREE.BufferGeometry();
-
-		for(let property in buffers){
-			if(buffers.hasOwnProperty(property)){
-				let buffer = buffers[property].buffer;
-				let attribute = buffers[property].attribute;
-				let numElements = attribute.numElements;
-
-				if(parseInt(property) === Potree.PointAttributeNames.POSITION_CARTESIAN){
-					geometry.addAttribute("position", new THREE.BufferAttribute(new Float32Array(buffer), 3));
-				}else if(parseInt(property) === Potree.PointAttributeNames.COLOR_PACKED){
-					geometry.addAttribute("color", new THREE.BufferAttribute(new Uint8Array(buffer), 3, true));
-				}else if(parseInt(property) === Potree.PointAttributeNames.INTENSITY){
-					geometry.addAttribute("intensity", new THREE.BufferAttribute(new Float32Array(buffer), 1));
-				}else if(parseInt(property) === Potree.PointAttributeNames.CLASSIFICATION){
-					geometry.addAttribute("classification", new THREE.BufferAttribute(new Uint8Array(buffer), 1));
-				}else if(parseInt(property) === Potree.PointAttributeNames.NORMAL_SPHEREMAPPED){
-					geometry.addAttribute("normal", new THREE.BufferAttribute(new Float32Array(buffer), 3));
-				}else if(parseInt(property) === Potree.PointAttributeNames.NORMAL_OCT16){
-					geometry.addAttribute("normal", new THREE.BufferAttribute(new Float32Array(buffer), 3));
-				}else if(parseInt(property) === Potree.PointAttributeNames.NORMAL){
-					geometry.addAttribute("normal", new THREE.BufferAttribute(new Float32Array(buffer), 3));
-				}
-			}
-		}
-		let indicesAttribute = new THREE.Uint8BufferAttribute(data.indices, 4);
-		indicesAttribute.normalized = true;
-		geometry.addAttribute("indices", indicesAttribute);
-
-		if(!geometry.attributes.normal){
-			let buffer = new Float32Array(numPoints*3);
-			geometry.addAttribute("normal", new THREE.BufferAttribute(new Float32Array(buffer), 3));
-		}
-		
 		tightBoundingBox.max.sub(tightBoundingBox.min);
 		tightBoundingBox.min.set(0, 0, 0);
-
-		geometry.boundingBox = node.boundingBox;
-		node.geometry = geometry;
+		
+		node.numPoints = iBuffer.numElements;
+		node.buffer = iBuffer;
 		node.mean = new THREE.Vector3(...data.mean);
 		node.tightBoundingBox = tightBoundingBox;
 		node.loaded = true;
 		node.loading = false;
+		node.estimatedSpacing = data.estimatedSpacing;
 		node.pcoGeometry.numNodesLoading--;
 	};
 
@@ -118,8 +92,9 @@ Potree.BinaryLoader.prototype.parse = function(node, buffer){
 		version: this.version.version,
 		min: [ node.boundingBox.min.x, node.boundingBox.min.y, node.boundingBox.min.z ],
 		offset: [node.pcoGeometry.offset.x, node.pcoGeometry.offset.y, node.pcoGeometry.offset.z],
-		scale: this.scale
+		scale: this.scale,
+		spacing: node.spacing,
+		hasChildren: node.hasChildren,
 	};
 	worker.postMessage(message, [message.buffer]);
-
 };

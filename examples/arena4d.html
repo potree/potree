@@ -58,19 +58,20 @@
 		viewer.loadGUI(() => {
 			viewer.setLanguage('en');
 			$("#menu_tools").next().show();
-			//viewer.toggleSidebar();
+			viewer.toggleSidebar();
 		});
 		
-		Potree.loadPointCloud("http://arena4d.uksouth.cloudapp.azure.com:8080/Arena4DWebServer/PointServer/Office_Example2.vpc", "Arena4D", function(e){
+		//Potree.loadPointCloud("http://arena4d.uksouth.cloudapp.azure.com:8080/0227c168-00bc-421c-99d7-5eb0ace3a1ff/Garage.vpc", "Arena4D", function(e){
+		Potree.loadPointCloud("http://arena4d.uksouth.cloudapp.azure.com:8080/4e5059c4-f701-4a8f-8830-59e78a2c0816/BLK360 Sample.vpc", "Arena4D", function(e){
 			viewer.scene.addPointCloud(e.pointcloud);
 			
-			e.pointcloud.material.size = 1;
-			e.pointcloud.material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+			e.pointcloud.material.size = 2;
+			e.pointcloud.material.pointSizeType = Potree.PointSizeType.FIXED;
 			e.pointcloud.material.shape = Potree.PointShape.SQUARE;
 			
 			//viewer.fitToScreen();
-			viewer.scene.view.position.set(-12.60, 24.26, 149.91);
-			viewer.scene.view.lookAt(new THREE.Vector3(16.81, 0.48, 127.0));
+			viewer.scene.view.position.set(-93.47, 8.70, 48.54);
+			viewer.scene.view.lookAt(new THREE.Vector3(-10.27, 4.97, 7.20));
 		});
 		
 	</script>

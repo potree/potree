@@ -1,6 +1,8 @@
 /**
  * @author Wei Meng / http://about.me/menway
  *
+ * Utilizes Three.js which is made available under the MIT license.
+ * Copyright © 2010-2015 three.js authors Ricardo Cabello (mrdoob) 
  * Description: A THREE loader for PLY ASCII files (known as the Polygon
  * File Format or the Stanford Triangle Format).
  *

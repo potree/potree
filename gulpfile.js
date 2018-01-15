@@ -8,7 +8,6 @@ const rename = require('gulp-rename');
 const uglify = require('gulp-uglify');
 const gutil = require('gulp-util');
 const through = require('through');
-const jshint = require('gulp-jshint');
 const os = require('os');
 const File = gutil.File;
 const connect = require('gulp-connect');
@@ -18,11 +17,13 @@ var server;
 var paths = {
 	potree : [
 		"src/Potree.js",
+		"src/PotreeRenderer.js",
 		"src/PointCloudTree.js",
 		"src/WorkerPool.js",
 		"build/shaders/shaders.js",
 		"src/extensions/EventDispatcher.js",
 		"src/extensions/PerspectiveCamera.js",
+		"src/extensions/OrthographicCamera.js",
 		"src/extensions/Ray.js",
 		"src/loader/POCLoader.js",
 		"src/loader/PointAttributes.js",
@@ -58,20 +59,33 @@ var paths = {
 		"src/utils/TransformationTool.js",
 		"src/utils/Volume.js",
 		"src/utils/VolumeTool.js",
+		"src/utils/ClippingTool.js",
+		"src/utils/ScreenBoxSelectTool.js",
+		"src/utils/ClipVolume.js",
+		"src/utils/PolygonClipVolume.js",
 		"src/utils/Box3Helper.js",
+		"src/utils/PointCloudSM.js",
 		"src/exporter/GeoJSONExporter.js",
 		"src/exporter/DXFExporter.js",
 		"src/exporter/CSVExporter.js",
 		"src/exporter/LASExporter.js",
 		"src/arena4d/PointCloudArena4D.js",
 		"src/arena4d/PointCloudArena4DGeometry.js",
-		"src/viewer/ProgressBar.js",
+		"src/viewer/PotreeRenderer.js",
+		"src/viewer/EDLRenderer.js",
+		"src/viewer/RepRenderer.js",
+		"src/viewer/View.js",
+		"src/viewer/Scene.js",
 		"src/viewer/viewer.js",
 		"src/viewer/profile.js",
 		"src/viewer/map.js",
 		"src/viewer/sidebar.js",
+		"src/viewer/PropertiesPanel.js",
+		"src/viewer/NavigationCube.js",
 		"src/stuff/HoverMenu.js",
-		"src/webgl/GLProgram.js"
+		"src/webgl/GLProgram.js",
+		"src/InterleavedBuffer.js",
+		"src/utils/toInterleavedBufferAttribute.js",
 	],
 	laslaz: [
 		"build/workers/laslaz-worker.js",
@@ -98,22 +112,25 @@ var workers = {
 	"BinaryDecoderWorker": [
 		"src/workers/BinaryDecoderWorker.js",
 		"src/Version.js",
-		"src/loader/PointAttributes.js"
+		"src/loader/PointAttributes.js",
+		"src/InterleavedBuffer.js",
+		"src/utils/toInterleavedBufferAttribute.js",
 	],
 	"GreyhoundBinaryDecoderWorker": [
 		"libs/plasio/workers/laz-perf.js",
 		"src/workers/GreyhoundBinaryDecoderWorker.js",
 		"src/Version.js",
-		"src/loader/PointAttributes.js"
-	],
-	"DEMWorker": [
-		"src/workers/DEMWorker.js"
+		"src/loader/PointAttributes.js",
+		"src/InterleavedBuffer.js",
+		"src/utils/toInterleavedBufferAttribute.js",
 	]
 };
 
 var shaders = [
 	"src/materials/shaders/pointcloud.vs",
 	"src/materials/shaders/pointcloud.fs",
+	"src/materials/shaders/pointcloud_sm.vs",
+	"src/materials/shaders/pointcloud_sm.fs",
 	"src/materials/shaders/normalize.vs",
 	"src/materials/shaders/normalize.fs",
 	"src/materials/shaders/edl.vs",
@@ -166,45 +183,19 @@ gulp.task("scripts", ['workers','shaders'], function(){
 	return;
 });
 
-gulp.task('linter', function(){
-	gulp.src(paths.potree)
-		.pipe(jshint())
-		.pipe(jshint.reporter('default'));
-	gulp.src(paths.laslaz)
-		.pipe(jshint())
-		.pipe(jshint.reporter('default'));
-	gulp.src(workers.laslaz)
-		.pipe(jshint())
-		.pipe(jshint.reporter('default'));
-	gulp.src(workers.LASDecoder)
-		.pipe(jshint())
-		.pipe(jshint.reporter('default'));
-	gulp.src(workers.BinaryDecoder)
-		.pipe(jshint())
-		.pipe(jshint.reporter('default'));
-	gulp.src(workers.GreyhoundBinaryDecoder)
-		.pipe(jshint())
-		.pipe(jshint.reporter('default'));
-});
-
 gulp.task('build', ['scripts']);
+
+// For development, it is now possible to use 'gulp webserver'
+// from the command line to start the server (default port is 8080)
+gulp.task('webserver', function() {
+	server = connect.server({port: 1234});
+});
 
 gulp.task('watch', function() {
 	gulp.run("build");
 	gulp.run("webserver");
 	
-    gulp.watch([
-		'src/**/*.js', 
-		'src/**/*.css', 
-		'src/**/*.fs', 
-		'src/**/*.vs', 
-		'src/**/*.html'], ["build"]);
-});
-
-// For development, it is now possible to use 'gulp webserver'
-// from the command line to start the server (default port is 8080)
-gulp.task('webserver', function() {
-	server = connect.server();
+    gulp.watch(['src/**/*.js', 'src/**/*.css', 'src/**/*.html', 'src/**/*.vs', 'src/**/*.fs'], ["build"]);
 });
 
 

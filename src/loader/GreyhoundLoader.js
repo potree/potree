@@ -7,7 +7,7 @@
  */
 
 class GreyhoundUtils{
-
+	
 	static getQueryParam(name) {
 		name = name.replace(/[\[\]]/g, "\\$&");
 		var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
@@ -16,7 +16,7 @@ class GreyhoundUtils{
 		if (!results[2]) return '';
 		return decodeURIComponent(results[2].replace(/\+/g, " "));
 	}
-
+	
 	static createSchema(attributes) {
 		var schema = [
 			{ "name": "X", "size": 4, "type": "signed" },
@@ -46,7 +46,7 @@ class GreyhoundUtils{
 
 	  return schema;
 	}
-
+	
 	static fetch(url, cb) {
 		var xhr = Potree.XHRFactory.createXMLHttpRequest();
 		xhr.open('GET', url, true);
@@ -129,7 +129,7 @@ class GreyhoundUtils{
 			cb(null, { color: colorNorm, intensity: intensityNorm });
 		});
 	};
-
+	
 };
 
 Potree.GreyhoundLoader = function() { };

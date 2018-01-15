@@ -176,7 +176,7 @@ Potree.LasLazBatcher = class LasLazBatcher {
 				new THREE.Vector3().fromArray(e.data.tightBoundingBox.min),
 				new THREE.Vector3().fromArray(e.data.tightBoundingBox.max)
 			);
-
+			
 			Potree.workerPool.returnWorker(workerPath, worker);
 
 			node.estimatedSpacing = node.spacing;
@@ -188,7 +188,7 @@ Potree.LasLazBatcher = class LasLazBatcher {
 			node.loading = false;
 			node.pcoGeometry.numNodesLoading--;
 
-
+			
 		};
 
 		let message = {

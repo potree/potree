@@ -132,7 +132,7 @@ Potree.PointCloudArena4DGeometryNode.prototype.load = function () {
 
 			targetView.setUint32(i * bytesPerPoint + 24, i, true);
 		}
-
+	
 		node.numPoints = iBuffer.numElements;
 		node.buffer = iBuffer;
 		//node.tightBoundingBox = tightBoundingBox;

@@ -125,8 +125,8 @@ initSidebar = (viewer) => {
 		elToolbar.append(createToolIcon(
 			Potree.resourcePath + '/icons/volume.svg',
 			'[title]tt.volume_measurement',
-			function () {
-				let volume = volumeTool.startInsertion();
+			function () { 
+				let volume = volumeTool.startInsertion(); 
 
 				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
 				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === volume.uuid);
@@ -168,7 +168,7 @@ initSidebar = (viewer) => {
 
 		let propertiesPanel = new Potree.PropertiesPanel(elProperties, viewer);
 		propertiesPanel.setScene(viewer.scene);
-
+		
 		localStorage.removeItem('jstree');
 
 		let tree = $(`<div id="jstree_scene"></div>`);
@@ -193,19 +193,19 @@ initSidebar = (viewer) => {
 		});
 
 		let createNode = (parent, text, icon, object) => {
-			let nodeID = tree.jstree('create_node', parent, {
-					"text": text,
+			let nodeID = tree.jstree('create_node', parent, { 
+					"text": text, 
 					"icon": icon,
 					"data": object
-				},
+				}, 
 				"last", false, false);
-
+			
 			if(object.visible){
 				tree.jstree('check_node', nodeID);
 			}else{
 				tree.jstree('uncheck_node', nodeID);
 			}
-
+			
 			return nodeID;
 		}
 
@@ -223,7 +223,7 @@ initSidebar = (viewer) => {
 			tree.jstree("open_all");
 		});
 
-		tree.on("select_node.jstree", function (e, data) {
+		tree.on("select_node.jstree", function (e, data) { 
 			let object = data.node.data;
 			propertiesPanel.set(object);
 		});
@@ -260,7 +260,7 @@ initSidebar = (viewer) => {
 					viewer.zoomTo(node, 1, 500);
 				}
 			}else if(object instanceof Potree.Volume){
-
+				
 				let box = object.boundingBox.clone().applyMatrix4(object.matrixWorld);
 
 				if(box.getSize().length() > 0){
@@ -274,7 +274,7 @@ initSidebar = (viewer) => {
 				let dir = object.camera.getWorldDirection();
 				dir.multiplyScalar(viewer.scene.view.radius);
 				let target = new THREE.Vector3().addVectors(object.camera.position, dir);
-
+				
 				viewer.scene.view.position.copy(object.camera.position);
 				viewer.scene.view.lookAt(target);
 			}else if(object instanceof THREE.Object3D){
@@ -340,7 +340,7 @@ initSidebar = (viewer) => {
 
 			let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
 			let jsonNode = measurementsRoot.children.find(child => child.data.uuid === e.measurement.uuid);
-
+			
 			tree.jstree("delete_node", jsonNode.id);
 		};
 
@@ -348,7 +348,7 @@ initSidebar = (viewer) => {
 
 		{
 			let annotationIcon = `${Potree.resourcePath}/icons/target.svg`;
-			this.annotationMapping = new Map();
+			this.annotationMapping = new Map(); 
 			this.annotationMapping.set(viewer.scene.annotations, annotationsID);
 			viewer.scene.annotations.traverseDescendants(annotation => {
 				let parentID = this.annotationMapping.get(annotation.parent);
@@ -421,8 +421,8 @@ initSidebar = (viewer) => {
 		clippingToolBar.append(createToolIcon(
 			Potree.resourcePath + '/icons/clip_volume.svg',
 			'[title]tt.clip_volume',
-			function () {
-				let item = volumeTool.startInsertion({clip: true});
+			function () { 
+				let item = volumeTool.startInsertion({clip: true}); 
 
 				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
 				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === item.uuid);
@@ -455,7 +455,7 @@ initSidebar = (viewer) => {
 					if(!(viewer.scene.getActiveCamera() instanceof THREE.OrthographicCamera)){
 						return;
 					}
-
+					
 					let item = boxSelectTool.startInsertion();
 
 					let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
@@ -536,11 +536,11 @@ initSidebar = (viewer) => {
 			if(i === 0){
 				element.css("margin-left", "30px");
 			}
-
+			
 			elLanguages.append(element);
 
 			if(i < languages.length - 1){
-				elLanguages.append($(document.createTextNode(' - ')));
+				elLanguages.append($(document.createTextNode(' - ')));	
 			}
 		}
 
@@ -633,7 +633,7 @@ initSidebar = (viewer) => {
 		$('#lblEDLRadius')[0].innerHTML = viewer.getEDLRadius().toFixed(1);
 		$('#lblEDLStrength')[0].innerHTML = viewer.getEDLStrength().toFixed(1);
 		$('#chkEDLEnabled')[0].checked = viewer.getEDLEnabled();
-
+		
 		{
 			let elBackground = $(`#background_options`);
 			elBackground.selectgroup();
@@ -697,7 +697,7 @@ initSidebar = (viewer) => {
 			'[title]tt.left_view_control',
 			function () { viewer.setLeftView(); }
 		));
-
+		
 		elNavigation.append(createToolIcon(
 			Potree.resourcePath + "/icons/navigation_cube.svg",
 			"[title]tt.navigation_cube_control",
@@ -768,9 +768,9 @@ initSidebar = (viewer) => {
 		$('#set_freeze').click(function(){
 			viewer.setFreeze($('#set_freeze').prop("checked"));
 		});
+		
 
-
-
+		
 	};
 
 	initAccordion();
@@ -781,7 +781,7 @@ initSidebar = (viewer) => {
 	initClassificationList();
 	initClippingTool();
 	initSettings();
-
+	
 	$('#potree_version_number').html(Potree.version.major + "." + Potree.version.minor + Potree.version.suffix);
 	$('.perfect_scrollbar').perfectScrollbar();
 };

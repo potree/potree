@@ -1,0 +1,76 @@
+{
+    "tb": {
+        "navigation_opt": "Navegação",
+        "rendering_opt": "Aparência",
+        "tools_opt": "Ferramentas",
+        "measurments_opt": "Medidas",
+        "annotations_opt": "Anotações",
+        "materials_opt": "Materiais",
+        "scene_opt": "Cena",
+        "classification_filter_opt": "Filtro de Classificação",
+        "parameters_opt": "Outras Configurações",
+        "about_opt": "Sobre"
+    },
+    "tt": {
+        "angle_measurement": "Medida de Ângulo",
+        "point_measurement": "Medida de Ponto",
+        "distance_measurement": "Distancia",
+        "height_measurement": "Altura",
+        "area_measurement": "Área",
+        "volume_measurement": "Volume",
+        "height_profile": "Altura do Perfil",
+        "clip_volume": "Volume de Corte",
+        "remove_all_measurement": "Remove todas as medidas",
+        "left_view_control": "Vista Lateral Esquerda",
+        "front_view_control": "Vista Frontal",
+        "top_view_control": "Vista Superior",
+        "focus_control": "Toda extensão",
+        "orbit_control": "Navegação Orbital",
+        "flight_control": "Navegação em Voo",
+        "earth_control": "Navegação Terrestre"
+    },
+    "appearance": {
+        "nb_max_pts": "Numero de Pontos", 
+        "point_size": "Tamanho dos Pontos",
+        "point_opacity": "Opacidade",
+        "field_view": "Campo de Visão",
+        "point_size_type": "Dimensionamento dos Pontos",
+        "point_material": "Materiais",
+        "elevation_range": "Elevação",
+        "point_quality": "Qualidade",
+        "point_shape": "Forma",
+        "edl_radius": "Raio",
+        "edl_strength": "Força",
+        "edl_enable": "Habilitado",
+        "min_node_size": "Tamanho minimo do nodo",
+        "clip_mode": "Modo de Corte",
+        "move_speed": "Velocidade",
+        "skybox": "Céu",
+        "bottom_lock": "Matenha-se acima do solo",
+        "box": "Caixa",
+        "length_unit": "Unidade de Comprimento",
+        "freeze": "Congelar",
+        "language": "Linguagem"
+    },
+	"measurements": {
+		"clip": "Corte",
+		"show": "Mostrar Volume"
+	},
+	"annotations": {
+		"show3D": "3D",
+		"showMap": "Mapa"
+    }, 
+	"profile": {
+        "nb_points": "Numero de Pontos",
+        "title": "Altura do Perfil",
+        "save_las": "Salvar LAS(3D)",
+        "save_ortho": "Salvar CSV(2D)"
+    },
+	"scene": {
+		"camera_position": "Posição da Camera",
+		"camera_target": "Alvo da Camera"
+	},
+    "settings": {
+        "language": "Linguagem"
+    }
+}

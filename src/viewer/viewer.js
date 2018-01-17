@@ -843,7 +843,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			i18n.init({
 				lng: 'en',
 				resGetPath: Potree.resourcePath + '/lang/__lng__/__ns__.json',
-				preload: ['en', 'fr', 'de', 'jp', 'pt'],
+				preload: ['en', 'fr', 'de', 'jp'],
 				getAsync: true,
 				debug: false
 			}, function (t) {

@@ -20,7 +20,7 @@ Potree.POCLoader.load = function load (url, callback) {
 	try {
 		let pco = new Potree.PointCloudOctreeGeometry();
 		pco.url = url;
-		let xhr = new XMLHttpRequest();
+		let xhr = Potree.XHRFactory.createXMLHttpRequest();
 		xhr.open('GET', url, true);
 
 		xhr.onreadystatechange = function () {

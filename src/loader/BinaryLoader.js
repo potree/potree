@@ -23,7 +23,7 @@ Potree.BinaryLoader.prototype.load = function (node) {
 		url += '.bin';
 	}
 
-	let xhr = new XMLHttpRequest();
+	let xhr = Potree.XHRFactory.createXMLHttpRequest();
 	xhr.open('GET', url, true);
 	xhr.responseType = 'arraybuffer';
 	xhr.overrideMimeType('text/plain; charset=x-user-defined');

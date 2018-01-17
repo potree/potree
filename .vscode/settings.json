@@ -4,6 +4,7 @@
 		"*.vs": "cpp",
 		"*.fs": "cpp"
 	},
+	"files.trimTrailingWhitespace": false,
 	"editor.fontSize": 16,
 	"editor.autoIndent": false,
 	"editor.detectIndentation": false,

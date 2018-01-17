@@ -203,7 +203,7 @@ Potree.PointCloudOctreeGeometryNode.prototype.loadHierachyThenPoints = function 
 		// var hurl = node.pcoGeometry.octreeDir + "/../hierarchy/" + node.name + ".hrc";
 		var hurl = node.pcoGeometry.octreeDir + '/' + node.getHierarchyPath() + '/' + node.name + '.hrc';
 
-		var xhr = new XMLHttpRequest();
+		var xhr = Potree.XHRFactory.createXMLHttpRequest();
 		xhr.open('GET', hurl, true);
 		xhr.responseType = 'arraybuffer';
 		xhr.overrideMimeType('text/plain; charset=x-user-defined');

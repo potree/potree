@@ -22,7 +22,7 @@ Potree.GreyhoundBinaryLoader = class{
 		let scope = this;
 		let url = node.getURL();
 
-		let xhr = new XMLHttpRequest();
+		let xhr = Potree.XHRFactory.createXMLHttpRequest();
 		xhr.open('GET', url, true);
 		xhr.responseType = 'arraybuffer';
 		xhr.overrideMimeType('text/plain; charset=x-user-defined');

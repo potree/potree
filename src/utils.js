@@ -42,7 +42,7 @@ Potree.utils = class {
 	};
 
 	static pathExists (url) {
-		let req = new XMLHttpRequest();
+		let req = Potree.XHRFactory.createXMLHttpRequest();
 		req.open('GET', url, false);
 		req.send(null);
 		if (req.status !== 200) {

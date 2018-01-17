@@ -834,12 +834,6 @@ label:hover{
 }
 
 
-//[contenteditable]:focus {
-//	outline: 1px solid red;
-//	outline-radius: 2px;
-//}
-
-
 .ui-slider {
 	margin-top: 3px;
 	margin-bottom: 10px;
@@ -897,4 +891,16 @@ label:hover{
 
 .jstree-anchor{
 	width: 100% !important;
+}
+
+.ui-state-default{
+	background: #a6a9aa !important;
+	border: 1px solid black;
+	color: black;
+}
+
+.ui-state-active{
+	background: #c6c9ca !important;
+	border: 1px solid black;
+	color: black;
 }

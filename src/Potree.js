@@ -673,8 +673,11 @@ Potree.XHRFactory = {
 
 				elInput.change( () => {
 					elGroup.find("label").removeClass("ui-state-active");
+					elGroup.find("label").addClass("ui-state-default");
 					if(elInput.is(":checked")){
 						elLabel.addClass("ui-state-active");
+					}else{
+						//elLabel.addClass("ui-state-default");
 					}
 				});
 
@@ -698,12 +701,16 @@ Potree.XHRFactory = {
 			elButtonContainer.find("label").each( (index, value) => {
 				$(value).css("margin", "0px");
 				$(value).css("border-radius", "0px");
+				$(value).css("border", "1px solid black");
+				$(value).css("border-left", "none");
 			});
 			elButtonContainer.find("label:first").each( (index, value) => {
 				$(value).css("border-radius", "4px 0px 0px 4px");
+				
 			});
 			elButtonContainer.find("label:last").each( (index, value) => {
 				$(value).css("border-radius", "0px 4px 4px 0px");
+				$(value).css("border-left", "none");
 			});
 
 			elGroup.empty();

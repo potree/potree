@@ -531,8 +531,8 @@ initSidebar = (viewer) => {
 			let header = $(this);
 			let content = $(this).next();
 
-			header.addClass('accordion-header ui-widget');
-			content.addClass('accordion-content ui-widget');
+			//header.addClass('accordion-header ui-widget');
+			//content.addClass('accordion-content ui-widget');
 
 			content.hide();
 

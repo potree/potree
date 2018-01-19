@@ -129,6 +129,7 @@ Potree.Scene = class extends THREE.EventDispatcher{
 		let index = this.volumes.indexOf(volume);
 		if (index > -1) {
 			this.volumes.splice(index, 1);
+
 			this.dispatchEvent({
 				'type': 'volume_removed',
 				'scene': this,

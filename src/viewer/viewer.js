@@ -144,6 +144,10 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 				}
 			};
 
+			let onVolumeRemoved = (e) => {
+				this.inputHandler.deselect(e.volume);
+			};
+
 			this.addEventListener('scene_changed', (e) => {
 				this.inputHandler.setScene(e.scene);
 				this.clippingTool.setScene(this.scene);
@@ -151,8 +155,14 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 				if(!e.scene.hasEventListener("pointcloud_added", onPointcloudAdded)){
 					e.scene.addEventListener("pointcloud_added", onPointcloudAdded);
 				}
+
+				if(!e.scene.hasEventListener("volume_removed", onPointcloudAdded)){
+					e.scene.addEventListener("volume_removed", onVolumeRemoved);
+				}
+				
 			});
 
+			this.scene.addEventListener("volume_removed", onVolumeRemoved);
 			this.scene.addEventListener('pointcloud_added', onPointcloudAdded);
 		}
 
@@ -1162,6 +1172,12 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			camera.near = result.lowestSpacing * 10.0;
 			camera.far = -this.getBoundingBox().applyMatrix4(camera.matrixWorldInverse).min.z;
 			camera.far = Math.max(camera.far * 1.5, 1000);
+			camera.near = Math.max(0.01, camera.near);
+			if(camera.near === Infinity){
+				camera.near = 0.1;
+			}
+			//camera.far = Math.min();
+
 			if(this.scene.cameraMode == Potree.CameraMode.ORTHOGRAPHIC) {
 				camera.near = -camera.far;
 			}

@@ -561,6 +561,26 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher {
 		});
 	}
 
+	deselect(object){
+
+		let oldSelection = this.selection;
+
+		let index = this.selection.indexOf(object);
+
+		if(index >= 0){
+			this.selection.splice(index, 1);
+			object.dispatchEvent({
+				type: 'deselect'
+			});
+
+			this.dispatchEvent({
+				type: 'selection_changed',
+				oldSelection: oldSelection,
+				selection: this.selection
+			});
+		}
+	}
+
 	deselectAll () {
 		for (let object of this.selection) {
 			object.dispatchEvent({

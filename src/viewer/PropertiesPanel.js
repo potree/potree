@@ -353,15 +353,24 @@ class VolumePanel extends MeasurePanel{
 				<span style="font-weight: bold">Volume: </span>
 				<span id="measurement_volume"></span>
 
+				<!--
+				<li>
+					<label style="whitespace: nowrap">
+						<input id="volume_show" type="checkbox"/>
+						<span>show volume</span>
+					</label>
+				</li>-->
+
 				<li>
 					<label style="whitespace: nowrap">
 						<input id="volume_clip" type="checkbox"/>
-						<span>clip volume</span>
+						<span>make clip volume</span>
 					</label>
 				</li>
 
 
 				<!-- ACTIONS -->
+				<input id="volume_reset_orientation" type="button" value="reset orientation"/>
 				<!--<div style="display: flex; margin-top: 12px">
 					<span></span>
 					<span style="flex-grow: 1"></span>
@@ -370,9 +379,18 @@ class VolumePanel extends MeasurePanel{
 			</div>
 		`);
 
+		this.elContent.find("#volume_reset_orientation").click(() => {
+			measurement.rotation.set(0, 0, 0);
+		});
+
 		this.elCheckClip = this.elContent.find('#volume_clip');
 		this.elCheckClip.click(event => {
 			this.measurement.clip = event.target.checked;
+		});
+
+		this.elCheckShow = this.elContent.find('#volume_show');
+		this.elCheckShow.click(event => {
+			this.measurement.visible = event.target.checked;
 		});
 
 		this.propertiesPanel.addVolatileListener(measurement, "position_changed", this._update);
@@ -423,6 +441,7 @@ class VolumePanel extends MeasurePanel{
 		}
 
 		this.elCheckClip.prop("checked", this.measurement.clip);
+		this.elCheckShow.prop("checked", this.measurement.visible);
 
 	}
 }

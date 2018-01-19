@@ -20,6 +20,7 @@ Potree.ScreenBoxSelectTool = class ScreenBoxSelectTool extends THREE.EventDispat
 		let domElement = this.viewer.renderer.domElement;
 
 		let volume = new Potree.Volume();
+		volume.position.set(12345, 12345, 12345);
 		volume.showVolumeLabel = false;
 		volume.visible = false;
 		volume.update();
@@ -118,6 +119,7 @@ Potree.ScreenBoxSelectTool = class ScreenBoxSelectTool extends THREE.EventDispat
 					height: 8, 
 					pickWindowSize: 8, 
 					all: true,
+					pickClipped: true,
 					pointSizeType: Potree.PointSizeType.FIXED,
 					pointSize: 1};
 				let pointsNear = pointcloud.pick(viewer, volCam, ray, pickerSettings);

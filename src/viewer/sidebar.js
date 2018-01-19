@@ -226,6 +226,11 @@ initSidebar = (viewer) => {
 		tree.on("select_node.jstree", function (e, data) { 
 			let object = data.node.data;
 			propertiesPanel.set(object);
+
+			if(object instanceof Potree.Volume){
+				viewer.inputHandler.deselectAll();
+				viewer.inputHandler.toggleSelection(object);
+			}
 		});
 
 		tree.on('dblclick','.jstree-anchor', function (e) {
@@ -320,7 +325,15 @@ initSidebar = (viewer) => {
 		let onVolumeAdded = (e) => {
 			let volume = e.volume;
 			let icon = Potree.getMeasurementIcon(volume);
-			createNode(measurementID, volume.name, icon, volume);
+			let node = createNode(measurementID, volume.name, icon, volume);
+
+			volume.addEventListener("visibility_changed", () => {
+				if(volume.visible){
+					tree.jstree('check_node', node);
+				}else{
+					tree.jstree('uncheck_node', node);
+				}
+			});
 		};
 
 		let onProfileAdded = (e) => {
@@ -336,15 +349,23 @@ initSidebar = (viewer) => {
 		viewer.scene.addEventListener("polygon_clip_volume_added", onVolumeAdded);
 
 		let onMeasurementRemoved = (e) => {
-			console.log(e);
-
 			let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
 			let jsonNode = measurementsRoot.children.find(child => child.data.uuid === e.measurement.uuid);
 			
 			tree.jstree("delete_node", jsonNode.id);
 		};
 
+		let onVolumeRemoved = (e) => {
+			let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
+			let jsonNode = measurementsRoot.children.find(child => child.data.uuid === e.volume.uuid);
+			
+			tree.jstree("delete_node", jsonNode.id);
+		};
+
+
+
 		viewer.scene.addEventListener("measurement_removed", onMeasurementRemoved);
+		viewer.scene.addEventListener("volume_removed", onVolumeRemoved);
 
 		{
 			let annotationIcon = `${Potree.resourcePath}/icons/target.svg`;

@@ -498,14 +498,6 @@ bool pointInClipPolygon(vec3 point, int polyIdx) {
 }
 #endif
 
-void testInsideClipVolume(bool inside) {
-	if(inside && clipMode == 2 || !inside && clipMode == 3) {
-		gl_Position = vec4(1000.0, 1000.0, 1000.0, 1.0);
-	} else if(clipMode == 1 && inside) {
-		vColor.r += 0.5;
-	}
-}
-
 vec3 getColor(){
 	vec3 color;
 	
@@ -586,6 +578,24 @@ float getPointSize(){
 	return pointSize;
 }
 
+#define CLIP_DISABLED  0
+#define CLIP_HIGHLIGHT 1
+#define CLIP_INSIDE 2
+#define CLIP_OUTSIDE 3
+
+void testInsideClipVolume(bool insideAny, bool insideAll) {
+
+	if(clipMode == CLIP_INSIDE && !insideAll){
+		gl_Position = vec4(1000.0, 1000.0, 1000.0, 1.0);	
+	}
+
+	//if(insideAny && clipMode == 2 || !inside && clipMode == 3) {
+	//	gl_Position = vec4(1000.0, 1000.0, 1000.0, 1.0);
+	//} else if(clipMode == 1 && inside) {
+	//	vColor.r += 0.5;
+	//}
+}
+
 void doClipping(){
 
 	#if !defined color_type_composite
@@ -600,14 +610,16 @@ void doClipping(){
 	#if defined(num_clipboxes) && num_clipboxes > 0
 		if(clipMode != 0) {
 			bool insideAny = false;
+			bool insideAll = true;
 			for(int i = 0; i < num_clipboxes; i++){
 				vec4 clipPosition = clipBoxes[i] * modelMatrix * vec4( position, 1.0 );
 				bool inside = -0.5 <= clipPosition.x && clipPosition.x <= 0.5;
 				inside = inside && -0.5 <= clipPosition.y && clipPosition.y <= 0.5;
 				inside = inside && -0.5 <= clipPosition.z && clipPosition.z <= 0.5;
 				insideAny = insideAny || inside;
+				insideAll = insideAll && inside;
 			}	
-			testInsideClipVolume(insideAny);
+			testInsideClipVolume(insideAny, insideAll);
 		}
 	#endif
 
@@ -615,11 +627,14 @@ void doClipping(){
 
 	
 		if(clipMode != 0) {
-			bool polyInsideAny = false;
+			bool insideAny = false;
+			bool insideAll = false;
 			for(int i = 0; i < num_clippolygons; i++) {
-				polyInsideAny = polyInsideAny || pointInClipPolygon(position, i);
+				bool inside = pointInClipPolygon(position, i);;
+				insideAny = insideAny || inside;
+				insideAll = insideAll // inside;
 			}
-			testInsideClipVolume(polyInsideAny);
+			testInsideClipVolume(insideAny, insideAll);
 		}
 	#endif	
 }

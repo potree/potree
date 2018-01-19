@@ -8,6 +8,7 @@ Potree.Volume = class extends THREE.Object3D {
 		this.name = 'volume_' + this.constructor.counter;
 
 		this._clip = args.clip || false;
+		this.showVolumeLabel = true;
 		this._modifiable = args.modifiable || true;
 
 		let boxGeometry = new THREE.BoxGeometry(1, 1, 1);
@@ -131,7 +132,7 @@ Potree.Volume = class extends THREE.Object3D {
 			this.label.visible = false;
 		} else {
 			this.box.visible = true;
-			this.label.visible = true;
+			this.label.visible = this.showVolumeLabel;
 		}
 	};
 

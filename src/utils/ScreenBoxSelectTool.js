@@ -20,12 +20,33 @@ Potree.ScreenBoxSelectTool = class ScreenBoxSelectTool extends THREE.EventDispat
 		let domElement = this.viewer.renderer.domElement;
 
 		let volume = new Potree.Volume();
-		volume.clip = true;
+		volume.showVolumeLabel = false;
+		volume.visible = false;
+		volume.update();
 		this.viewer.scene.addVolume(volume);
 
 		this.importance = 10;
 
+		let selectionBox = $(`<div style="position: absolute; border: 2px solid white; pointer-events: none; border-style:dashed"></div>`);
+		$(domElement.parentElement).append(selectionBox);
+		selectionBox.css("right", "10px");
+		selectionBox.css("bottom", "10px");
+
 		let drag = e =>{
+
+			volume.visible = true;
+
+			let mStart = e.drag.start;
+			let mEnd = e.drag.end;
+
+			let box2D = new THREE.Box2();
+			box2D.expandByPoint(mStart);
+			box2D.expandByPoint(mEnd);
+
+			selectionBox.css("left", `${box2D.min.x}px`);
+			selectionBox.css("top", `${box2D.min.y}px`);
+			selectionBox.css("width", `${box2D.max.x - box2D.min.x}px`);
+			selectionBox.css("height", `${box2D.max.y - box2D.min.y}px`);
 
 			let camera = e.viewer.scene.getActiveCamera();
 			let size = new THREE.Vector2(
@@ -51,6 +72,8 @@ Potree.ScreenBoxSelectTool = class ScreenBoxSelectTool extends THREE.EventDispat
 
 		let drop = e => {
 			this.importance = 0;
+
+			$(selectionBox).remove();
 
 			this.viewer.inputHandler.deselectAll();
 			this.viewer.inputHandler.toggleSelection(volume);
@@ -121,6 +144,8 @@ Potree.ScreenBoxSelectTool = class ScreenBoxSelectTool extends THREE.EventDispat
 					volume.position.copy(centroid);
 					
 				}
+
+				volume.clip = true;
 			}
 		};
 

@@ -12,7 +12,7 @@ attribute float classification;
 attribute float returnNumber;
 attribute float numberOfReturns;
 attribute float pointSourceID;
-attribute vec4 index;
+attribute vec4 indices;
 
 uniform mat4 modelMatrix;
 uniform mat4 modelViewMatrix;
@@ -73,15 +73,10 @@ uniform float wSourceID;
 
 uniform vec3 uShadowColor;
 
-
 uniform sampler2D visibleNodes;
 uniform sampler2D gradient;
 uniform sampler2D classificationLUT;
-
-#if defined(num_shadowmaps) && num_shadowmaps > 0
-uniform sampler2D uShadowMap[num_shadowmaps];
-uniform mat4 uShadowWorldView[num_shadowmaps];
-#endif
+uniform sampler2D uShadow;
 
 #if defined(num_snapshots) && num_snapshots > 0
 uniform sampler2D uSnapshot[num_snapshots];
@@ -525,7 +520,7 @@ vec3 getColor(){
 		float w = depth / 10.0;
 		color = texture2D(gradient, vec2(w,1.0-w)).rgb;
 	#elif defined color_type_point_index
-		color = index.rgb;
+		color = indices.rgb;
 	#elif defined color_type_classification
 		vec4 cl = getClassification(); 
 		color = cl.rgb;
@@ -745,5 +740,7 @@ void main() {
 		}
 
 	#endif
+
+
 
 }

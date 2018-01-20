@@ -374,16 +374,6 @@ Potree.Shader = class Shader {
 
 };
 
-Potree.WebGLBuffer = class WebGLBuffer {
-
-	constructor() {
-		this.iBuffer = null;
-		this.vao = null;
-		this.vbo = null;
-	}
-
-};
-
 Potree.WebGLTexture = class WebGLTexture {
 
 	constructor(gl, texture) {
@@ -460,7 +450,15 @@ Potree.WebGLTexture = class WebGLTexture {
 		this.version = texture.version;
 	}
 
+};
 
+Potree.WebGLBuffer = class WebGLBuffer {
+
+	constructor() {
+		this.numElements = 0;
+		this.vao = null;
+		this.vbos = new Map();
+	}
 
 };
 
@@ -474,42 +472,90 @@ Potree.Renderer = class Renderer {
 		this.shaders = new Map();
 		this.textures = new Map();
 
+		this.glTypeMapping = new Map();
+		this.glTypeMapping.set(Float32Array, this.gl.FLOAT);
+		this.glTypeMapping.set(Uint8Array, this.gl.UNSIGNED_BYTE);
 
 		this.toggle = 0;
 	}
 
-	createBuffer(iBuffer) {
-
+	createBuffer(geometry){
 		let gl = this.gl;
-		let buffer = new Potree.WebGLBuffer();
-		buffer.iBuffer = iBuffer;
-		buffer.vao = gl.createVertexArray();
-		buffer.vbo = gl.createBuffer();
+		let webglBuffer = new Potree.WebGLBuffer();
+		webglBuffer.vao = gl.createVertexArray();
+		webglBuffer.numElements = geometry.attributes.position.count;
 
-		gl.bindVertexArray(buffer.vao);
-		gl.bindBuffer(gl.ARRAY_BUFFER, buffer.vbo);
-		gl.bufferData(gl.ARRAY_BUFFER, iBuffer.data, gl.STATIC_DRAW);
+		gl.bindVertexArray(webglBuffer.vao);
 
-		let offset = 0;
-		let i = 0;
-		for (let attribute of iBuffer.attributes) {
+		for(let attributeName in geometry.attributes){
+			let bufferAttribute = geometry.attributes[attributeName];
 
-			let type = gl[attribute.type];
-			let normalized = attribute.normalized;
-			let stride = iBuffer.stride;
-			let numElements = attribute.numElements;
+			let vbo = gl.createBuffer();
+			gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+			gl.bufferData(gl.ARRAY_BUFFER, bufferAttribute.array, gl.STATIC_DRAW);
 
-			let location = Potree.attributeLocations[attribute.name];
-			gl.vertexAttribPointer(location, numElements, type, normalized, stride, offset);
-			gl.enableVertexAttribArray(location);
+			let attributeLocation = Potree.attributeLocations[attributeName];
+			let normalized = bufferAttribute.normalized;
+			let type = this.glTypeMapping.get(bufferAttribute.array.constructor);
 
-			offset += Math.ceil(attribute.bytes / 4) * 4;
-			i++;
+			gl.vertexAttribPointer(attributeLocation, bufferAttribute.itemSize, type, normalized, 0, 0);
+			gl.enableVertexAttribArray(attributeLocation);
+
+			webglBuffer.vbos.set(attributeName, {
+				handle: vbo,
+				name: attributeName,
+				count: bufferAttribute.count,
+				itemSize: bufferAttribute.itemSize,
+				type: geometry.attributes.position.array.constructor,
+				version: 0
+			});
 		}
 
+		gl.bindBuffer(gl.ARRAY_BUFFER, null);
 		gl.bindVertexArray(null);
 
-		return buffer;
+		return webglBuffer;
+	}
+
+	updateBuffer(geometry){
+		let gl = this.gl;
+
+		let webglBuffer = this.buffers.get(geometry);
+
+		gl.bindVertexArray(webglBuffer.vao);
+
+		for(let attributeName in geometry.attributes){
+			let bufferAttribute = geometry.attributes[attributeName];
+
+			let attributeLocation = Potree.attributeLocations[attributeName];
+			let normalized = bufferAttribute.normalized;
+			let type = this.glTypeMapping.get(bufferAttribute.array.constructor);
+
+			let vbo = null;
+			if(!webglBuffer.vbos.has(attributeName)){
+				vbo = gl.createBuffer();
+
+				webglBuffer.vbos.set(attributeName, {
+					handle: vbo,
+					name: attributeName,
+					count: bufferAttribute.count,
+					itemSize: bufferAttribute.itemSize,
+					type: geometry.attributes.position.array.constructor,
+					version: bufferAttribute.version
+				});
+			}else{
+				vbo = webglBuffer.vbos.get(attributeName).handle;
+				webglBuffer.vbos.get(attributeName).version = bufferAttribute.version;
+			}
+
+			gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+			gl.bufferData(gl.ARRAY_BUFFER, bufferAttribute.array, gl.STATIC_DRAW);
+			gl.vertexAttribPointer(attributeLocation, bufferAttribute.itemSize, type, normalized, 0, 0);
+			gl.enableVertexAttribArray(attributeLocation);
+		}
+
+		gl.bindBuffer(gl.ARRAY_BUFFER, null);
+		gl.bindVertexArray(null);
 	}
 
 	traverse(scene) {
@@ -538,47 +584,7 @@ Potree.Renderer = class Renderer {
 		return result;
 	}
 
-	// adapted from three.js Matrix4.js multiplyMatrices()
-	// removed terms that evaluate to zero if world matrix has no rotation
-	//multiplyViewWithScaleTrans(view, scaleTrans, target){
-	//	var ae = view.elements;
-	//	var be = scaleTrans.elements;
-	//	var te = target.elements;
 
-	//	let a11 = ae[ 0 ], a12 = ae[ 4 ], a13 = ae[ 8 ], a14 = ae[ 12 ];
-	//	let a21 = ae[ 1 ], a22 = ae[ 5 ], a23 = ae[ 9 ], a24 = ae[ 13 ];
-	//	let a31 = ae[ 2 ], a32 = ae[ 6 ], a33 = ae[ 10 ], a34 = ae[ 14 ];
-	//	let a41 = ae[ 3 ], a42 = ae[ 7 ], a43 = ae[ 11 ], a44 = ae[ 15 ];
-
-	//	let sx = be[0];
-	//	let sy = be[5]; 
-	//	let sz = be[10];
-	//	let tx = be[12];
-	//	let ty = be[13] 
-	//	let tz = be[14];
-
-	//	te[ 0 ] = a11 * sx;
-	//	te[ 4 ] = a12 * sy;
-	//	te[ 8 ] = a13 * sz;
-	//	te[ 12 ] = a11 * tx + a12 * ty + a13 * tz + a14;
-
-	//	te[ 1 ] = a21 * sx;
-	//	te[ 5 ] = a22 * sy ;
-	//	te[ 9 ] = a23 * sz;
-	//	te[ 13 ] = a21 * tx + a22 * ty + a23 * tz + a24;
-
-	//	te[ 2 ] = a31 * sx;
-	//	te[ 6 ] = a32 * sy;
-	//	te[ 10 ] = a33 * sz;
-	//	te[ 14 ] = a31 * tx + a32 * ty + a33 * tz + a34;
-
-	//	te[ 3 ] =  0;
-	//	te[ 7 ] =  0;
-	//	te[ 11 ] = 0;
-	//	te[ 15 ] = 1;
-
-	//	return target;
-	//}
 
 	renderNodes(octree, nodes, visibilityTextureData, camera, target, shader, params) {
 
@@ -660,24 +666,28 @@ Potree.Renderer = class Renderer {
 					const lWorldView = shader.uniformLocations["uShadowWorldView[0]"];
 					gl.uniformMatrix4fv(lWorldView, false, flattenedMatrices);
 				}
-
-
-
 			}
 
+			let geometry = node.geometryNode.geometry;
 
-			let iBuffer = node.geometryNode.buffer;
+			let webglBuffer = null;
+			if(!this.buffers.has(geometry)){
+				webglBuffer = this.createBuffer(geometry);
+				this.buffers.set(geometry, webglBuffer);
+			}else{
+				webglBuffer = this.buffers.get(geometry);
+				for(let attributeName in geometry.attributes){
+					let attribute = geometry.attributes[attributeName];
 
-			if (!this.buffers.has(iBuffer)) {
-				let buffers = this.createBuffer(iBuffer);
-				this.buffers.set(iBuffer, buffers);
+					if(attribute.version > webglBuffer.vbos.get(attributeName).version){
+						this.updateBuffer(geometry);
+					}
+				}
 			}
 
-			let buffer = this.buffers.get(iBuffer);
+			gl.bindVertexArray(webglBuffer.vao);
 
-			gl.bindVertexArray(buffer.vao);
-
-			let numPoints = iBuffer.numElements;
+			let numPoints = webglBuffer.numElements;
 			gl.drawArrays(gl.POINTS, 0, numPoints);
 
 			i++;

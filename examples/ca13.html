@@ -82,12 +82,21 @@
 			viewer.scene.addPointCloud(e.pointcloud);
 			e.pointcloud.position.z = 0;
 			let material = e.pointcloud.material;
-			material.size = 1;
-			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+			material.size = 3;
+			//material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
 			
-			viewer.switchCameraMode(Potree.CameraMode.ORTHOGRAPHIC);
+			//viewer.switchCameraMode(Potree.CameraMode.ORTHOGRAPHIC);
 			viewer.scene.view.position.set(695363.0922733713, 3917242.331591645, 4028.0733017667667);
 			viewer.scene.view.lookAt(695363.0922733713, 3917242.331591645, 64.48734585580951);
+
+			//viewer.scene.view.position.set(718764.4204117344, 3844982.7670604168, 75920.3357242614);
+			//viewer.scene.view.lookAt(700075.3335721092, 3922856.372034359, 4963.633805953286);
+
+			viewer.scene.view.position.set(694703.0370105016, 3916032.9522472788, 243.5959654984507);
+			viewer.scene.view.lookAt(694676.9779166604, 3916416.8064250476, 25.309048289985384);
+
+			viewer.scene.view.position.set(694991.9150582966, 3916274.3733733483, 76.41774609890476);
+			viewer.scene.view.lookAt(694878.4097257275, 3916332.0674868184, 14.497470898558227);
 
 			//viewer.fitToScreen();
 		});

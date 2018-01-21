@@ -97,6 +97,29 @@
 			//viewer.fitToScreen();
 
 			//Potree.measureTimings = true;
+
+
+
+
+			viewer.addEventListener("update", () => {
+
+				let sceneNode = viewer.scene.pointclouds[0].root.sceneNode;
+
+				if(!sceneNode){
+					return;
+				}
+
+				let geometry = sceneNode.geometry;
+				let aColor = geometry.attributes.color;
+
+				aColor.array = aColor.array.map(v => Math.random() * 255);
+				aColor.needsUpdate = true;
+
+
+
+			});
+
+
 		});
 		
 	</script>

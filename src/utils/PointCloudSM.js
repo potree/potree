@@ -117,18 +117,18 @@ Potree.PointCloudSM = class PointCloudSM{
 			let level = node.getLevel();
 			shader.setUniform1f("uLevel", level);
 
-			let iBuffer = node.geometryNode.buffer;
+			let geometry = node.geometryNode.geometry;
 			
-			if(!this.potreeRenderer.buffers.has(iBuffer)){
-				let buffers = this.potreeRenderer.createBuffer(iBuffer);
-				this.potreeRenderer.buffers.set(iBuffer, buffers);
+			if(!this.potreeRenderer.buffers.has(geometry)){
+				let webglBuffer = this.potreeRenderer.createBuffer(geometry);
+				this.potreeRenderer.buffers.set(geometry, webglBuffer);
 			}
 			
-			let buffer = this.potreeRenderer.buffers.get(iBuffer);
+			let buffer = this.potreeRenderer.buffers.get(geometry);
 
 			gl.bindVertexArray(buffer.vao);
 			
-			let numPoints = iBuffer.numElements;
+			let numPoints = geometry.attributes.position.count;
 			gl.drawArrays(gl.POINTS, 0, numPoints);
 
 		}

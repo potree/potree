@@ -76,7 +76,11 @@ uniform vec3 uShadowColor;
 uniform sampler2D visibleNodes;
 uniform sampler2D gradient;
 uniform sampler2D classificationLUT;
-uniform sampler2D uShadow;
+
+#if defined(num_shadowmaps) && num_shadowmaps > 0
+uniform sampler2D uShadowMap[num_shadowmaps];
+uniform mat4 uShadowWorldView[num_shadowmaps];
+#endif
 
 #if defined(num_snapshots) && num_snapshots > 0
 uniform sampler2D uSnapshot[num_snapshots];

@@ -374,10 +374,24 @@ body{
 	border: 			1px solid black;
 }
 
+.ui-selectmenu-button.ui-button{
+	width: 		100% !important;
+}
+
 .pv-menu-list > li > .ui-slider{
 	background-color: 	var(--color-1) !important;
 	background: 		none;
 	border: 			1px solid black;
+}
+
+.pv-menu-list .ui-slider{
+	background-color: 	var(--color-1) !important;
+	background: 		none;
+	border: 			1px solid black !important;
+}
+
+.ui-slider-handle{
+	border: 			1px solid black !important;
 }
 
 .ui-widget{

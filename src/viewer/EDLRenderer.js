@@ -106,12 +106,20 @@ class EDLRenderer {
 
 			this.shadowMap.setLight(light);
 
-			let originalMaterials = viewer.scene.pointclouds.map(pc => pc.material.pointColorType);
-			viewer.scene.pointclouds.map(pc => pc.material.pointColorType = Potree.PointColorType.DEPTH);
+			let originalAttributes = new Map();
+			for(let pointcloud of viewer.scene.pointclouds){
+				originalAttributes.set(pointcloud, pointcloud.material.pointColorType);
+				pointcloud.material.disableEvents();
+				pointcloud.material.pointColorType = Potree.PointColorType.DEPTH;
+			}
 
 			this.shadowMap.render(viewer.scene.scenePointCloud, camera);
 
-			viewer.scene.pointclouds.map( (pc, index) => pc.material.pointColorType = originalMaterials[index]);;
+			for(let pointcloud of viewer.scene.pointclouds){
+				let originalAttribute = originalAttributes.get(pointcloud);
+				pointcloud.material.pointColorType = originalAttribute;
+				pointcloud.material.enableEvents();
+			}
 
 			viewer.shadowTestCam.updateMatrixWorld();
 			viewer.shadowTestCam.matrixWorldInverse.getInverse(viewer.shadowTestCam.matrixWorld);

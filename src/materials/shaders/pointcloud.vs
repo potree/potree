@@ -692,8 +692,6 @@ void main() {
 		
 	#endif
 
-
-
 	#if defined(num_shadowmaps) && num_shadowmaps > 0
 
 		const float sm_near = 0.1;
@@ -763,6 +761,6 @@ void main() {
 
 	#endif
 
-
+	
 
 }

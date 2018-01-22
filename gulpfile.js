@@ -16,15 +16,15 @@ var server;
 
 var paths = {
 	potree : [
+		"src/extensions/EventDispatcher.js",
+		"src/extensions/PerspectiveCamera.js",
+		"src/extensions/OrthographicCamera.js",
+		"src/extensions/Ray.js",
 		"src/Potree.js",
 		"src/PotreeRenderer.js",
 		"src/PointCloudTree.js",
 		"src/WorkerPool.js",
 		"build/shaders/shaders.js",
-		"src/extensions/EventDispatcher.js",
-		"src/extensions/PerspectiveCamera.js",
-		"src/extensions/OrthographicCamera.js",
-		"src/extensions/Ray.js",
 		"src/loader/POCLoader.js",
 		"src/loader/PointAttributes.js",
 		"src/loader/BinaryLoader.js",

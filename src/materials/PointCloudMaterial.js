@@ -1077,6 +1077,18 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 		return texture;
 	}
 
+	disableEvents(){
+		if(this._hiddenListeners === undefined){
+			this._hiddenListeners = this._listeners;
+			this._listeners = {};
+		}
+	};
+
+	enableEvents(){
+		this._listeners = this._hiddenListeners;
+		this._hiddenListeners = undefined;
+	};
+
 	copyFrom(from){
 
 		for(let name of this.uniforms){

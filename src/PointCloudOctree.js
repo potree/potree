@@ -702,7 +702,7 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 				pixels[4 * offset + 3] = 0;
 				let pIndex = ibuffer[offset];
 
-				if (!(pcIndex === 0 && pIndex === 0)) {
+				if(!(pcIndex === 0 && pIndex === 0) && (pcIndex !== undefined) && (pIndex !== undefined)){
 					let hit = {
 						pIndex: pIndex,
 						pcIndex: pcIndex,
@@ -747,23 +747,21 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 		
 			let node = nodes[hit.pcIndex];
 			let pc = node.sceneNode;
-			let iBuffer = node.geometryNode.buffer;
-			let data = iBuffer.data;
-			let view = new DataView(data);
+			let geometry = node.geometryNode.geometry;
 			
-			let offset = 0;
-			for (let attribute of iBuffer.attributes) {
+			for(let attributeName in geometry.attributes){
+				let attribute = geometry.attributes[attributeName];
 		
-				if (attribute.name === 'position') {
-					let x = view.getFloat32(iBuffer.stride * hit.pIndex + offset + 0, true);
-					let y = view.getFloat32(iBuffer.stride * hit.pIndex + offset + 4, true);
-					let z = view.getFloat32(iBuffer.stride * hit.pIndex + offset + 8, true);
+				if (attributeName === 'position') {
+					let x = attribute.array[3 * hit.pIndex + 0];
+					let y = attribute.array[3 * hit.pIndex + 1];
+					let z = attribute.array[3 * hit.pIndex + 2];
 					
 					let position = new THREE.Vector3(x, y, z);
 					position.applyMatrix4(pc.matrixWorld);
 		
-					point[attribute.name] = position;
-				} else if (attribute.name === 'indices') {
+					point[attributeName] = position;
+				} else if (attributeName === 'indices') {
 		
 				} else {
 					//if (values.itemSize === 1) {
@@ -777,7 +775,6 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 					//}
 				}
 				
-				offset += attribute.bytes;
 			}
 
 			hit.point = point;

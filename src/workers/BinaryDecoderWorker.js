@@ -281,7 +281,7 @@ onmessage = function (event) {
 		for (let i = 0; i < numPoints; i++) {
 			indices[i] = i;
 		}
-
+		
 		attributeBuffers[Potree.PointAttribute.INDICES.name] = { buffer: buff, attribute: Potree.PointAttribute.INDICES };
 	}
 

@@ -621,7 +621,7 @@ Potree.PropertiesPanel = class PropertriesPanel{
 
 				<!-- SHAPE -->
 				<li>
-					<label for="optShape" class="pv-select-label" data-i18n="appearance.point_shape"></label>
+					<label for="optShape" class="pv-select-label" data-i18n="appearance.point_shape"></label><br>
 					<select id="optShape" name="optShape">
 						<option>SQUARE</option>
 						<option>CIRCLE</option>

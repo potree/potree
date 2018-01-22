@@ -1294,6 +1294,11 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 				this.edlRenderer = new EDLRenderer(this);
 			}
 			this.edlRenderer.render(this.renderer);
+		} else if (this.useHQ) {
+			if (!this.hqRenderer) {
+				this.hqRenderer = new HQSplatRenderer(this);
+			}
+			this.hqRenderer.render(this.renderer);
 		} else {
 			if (!this.potreeRenderer) {
 				this.potreeRenderer = new PotreeRenderer(this);

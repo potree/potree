@@ -153,6 +153,10 @@ void main() {
 			gl_FragColor.a = vLogDepth;
 		#endif
 	#endif
+
+	#if defined(weighted_splats)
+		asdfafsd
+	#endif
 	
 }
 

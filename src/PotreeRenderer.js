@@ -166,7 +166,7 @@ Potree.Shader = class Shader {
 		this.linkProgram();
 	}
 
-	compileShader(shader, source) {
+	compileShader(shader, source){
 		let gl = this.gl;
 
 		gl.shaderSource(shader, source);
@@ -593,6 +593,7 @@ Potree.Renderer = class Renderer {
 
 		let gl = this.gl;
 
+		let material = params.material ? params.material : octree.material;
 		let shadowMaps = params.shadowMaps == null ? [] : params.shadowMaps;
 		let view = camera.matrixWorldInverse;
 		let worldView = new THREE.Matrix4();
@@ -604,112 +605,6 @@ Potree.Renderer = class Renderer {
 
 			//if(![
 			//	"r42006420226",
-			//	"r42006420602",
-			//	"r42006420462",
-			//	"r42006420265",
-			//	"r42006422041",
-			//	"r42006420426",
-			//	"r42006422064",
-			//	"r42006420264",
-			//	"r42006420664",
-			//	"r42006424200",
-			//	"r42006420626",
-			//	"r42006420642",
-			//	"r42006420621",
-			//	"r42006420604",
-			//	"r42006422400",
-			//	"r42006420225",
-			//	"r42006420062",
-			//	"r42006422440",
-			//	"r42006420267",
-			//	"r42006420240",
-			//	"r42006422406",
-			//	"r42006420644",
-			//	"r42006422046",
-			//	"r42006420662",
-			//	"r42006420660",
-			//	"r42006420266",
-			//	"r42006420624",
-			//	"r42006420620",
-			//	"r42006420243",
-			//	"r42006424026",
-			//	"r42006420640",
-			//	"r42006420227",
-			//	"r42006420242",
-			//	"r42006420466",
-			//	"r42006420422",
-			//	"r42006422040",
-			//	"r42006420066",
-			//	"r42006420666",
-			//	"r42006420244",
-			//	"r42006420261",
-			//	"r42006420206",
-			//	"r42006420260",
-			//	"r42006420646",
-			//	"r42006424204",
-			//	"r42006420600",
-			//	"r42006422402",
-			//	"r42006422044",
-			//	"r42006420247",
-			//	"r42006420606",
-			//	"r42006420224",
-			//	"r42006424202",
-			//	"r42006424220",
-			//	"r42006420603",
-			//	"r42006422404",
-			//	"r42006420263",
-			//	"r42006420246",
-			//	"r42006420262",
-			//	"r42006420022",
-			//	"r42006420026",
-			//	"r42006424022",
-			//	"r42006422420",
-			//	"r42006420204",
-			//	"r42006420622",
-			//	"r42006420200",
-			//	"r420064206442",
-			//	"r420064206604",
-			//	"r420064206044",
-			//	"r420064204266",
-			//	"r420064206420",
-			//	"r420064206426",
-			//	"r420064206422",
-			//	"r420064206402",
-			//	"r420064206400",
-			//	"r420064206046",
-			//	"r420064204620",
-			//	"r420064204622",
-			//	"r420064206424",
-			//	"r420064206425",
-			//	"r420064206406",
-			//	"r420064206404",
-			//	"r420064204624",
-			//	"r420064206407",
-			//	"r420064204626",
-			//	"r420064206405",
-			//	"r420064204627",
-			//	"r420064204264",
-			//	"r420064206440",
-			//	"r420064206443",
-			//	"r420064206064",
-			//	"r420064204662",
-			//	"r420064206441",
-			//	"r420064206606",
-			//	"r420064206446",
-			//	"r420064206600",
-			//	"r420064204663",
-			//	"r420064206444",
-			//	"r420064204664",
-			//	"r420064206447",
-			//	"r420064206660",
-			//	"r420064204262",
-			//	"r420064204666",
-			//	"r420064206445",
-			//	"r420064204665",
-			//	"r420064206040",
-			//	"r420064204667",
-			//	"r420064206066",
-			//	"r420064204660",
 			//	]
 			//	.includes(node.name)){
 			//	continue;
@@ -756,7 +651,7 @@ Potree.Renderer = class Renderer {
 
 				const lShadowMap = shader.uniformLocations["uShadowMap[0]"];
 
-				shader.setUniform3f("uShadowColor", octree.material.uniforms.uShadowColor.value);
+				shader.setUniform3f("uShadowColor", material.uniforms.uShadowColor.value);
 
 				let bindingStart = 5;
 				let bindingPoints = new Array(shadowMaps.length).fill(bindingStart).map((a, i) => (a + i));
@@ -826,6 +721,7 @@ Potree.Renderer = class Renderer {
 
 		let gl = this.gl;
 
+		let material = params.material ? params.material : octree.material;
 		let shadowMaps = params.shadowMaps == null ? [] : params.shadowMaps;
 		let view = camera.matrixWorldInverse;
 		let viewInv = camera.matrixWorld;
@@ -833,7 +729,6 @@ Potree.Renderer = class Renderer {
 		let projInv = new THREE.Matrix4().getInverse(proj);
 		let worldView = new THREE.Matrix4();
 
-		let material = octree.material;
 		let shader = null;
 		let visibilityTextureData = null;
 
@@ -942,6 +837,11 @@ Potree.Renderer = class Renderer {
 			gl.disable(gl.BLEND);
 			gl.depthMask(true);
 			gl.enable(gl.DEPTH_TEST);
+		}
+
+		if(params.blendFunc){
+			gl.enable(gl.BLEND);
+			gl.blendFunc(...params.blendFunc);
 		}
 
 

@@ -708,7 +708,7 @@ void main() {
 			float u = nc.x * 0.5 + 0.5;
 			float v = nc.y * 0.5 + 0.5;
 
-			vec2 sampleStep = vec2(1.0 / (2.0*1024.0), 1.0 / (2.0*1024.0)) * 1.5;
+			vec2 sampleStep = vec2(1.0 / (4.0*1024.0), 1.0 / (4.0*1024.0)) * 1.5;
 			vec2 sampleLocations[9];
 			sampleLocations[0] = vec2(0.0, 0.0);
 			sampleLocations[1] = sampleStep;
@@ -743,7 +743,7 @@ void main() {
 
 			float visibility = visibleSamples / numSamples;
 			//vColor = visibility * vColor + (1.0 - visibility) * vColor * vec3(0.5, 0.0, 0.0);
-			vColor = vec3(1.0, 1.0, 1.0) * visibility;
+			vColor = vec3(1.0, 1.0, 1.0) * visibility + vec3(0.5, 0.0, 0.0) * (1.0 - visibility);
 
 			//vec4 depthMapValue = texture2D(uShadowMap[i], vec2(u, v));
 

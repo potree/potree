@@ -130,7 +130,6 @@ class EDLRenderer {
 
 		let queryColors = Potree.startQuery('EDL - colorpass', viewer.renderer.getContext());
 
-		viewer.transformationTool.update();
 		viewer.renderer.render(viewer.scene.scene, camera);
 		
 		viewer.renderer.clearTarget( this.rtColor, true, true, true );

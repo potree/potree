@@ -174,6 +174,7 @@ Potree.LasLazBatcher = class LasLazBatcher {
 			//geometry.addAttribute('pointSourceID', new THREE.BufferAttribute(pointSourceIDs, 1));
 			//geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(numPoints * 3), 3));
 			geometry.addAttribute('indices', new THREE.BufferAttribute(indices, 4));
+			geometry.attributes.indices.normalized = true;
 
 			let tightBoundingBox = new THREE.Box3(
 				new THREE.Vector3().fromArray(e.data.tightBoundingBox.min),

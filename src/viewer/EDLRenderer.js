@@ -162,19 +162,12 @@ class EDLRenderer {
 			viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, this.rtColor, {});
 		}
 
-		//viewer.renderer.setClearColor(0x00ff00, 1);
-		//viewer.renderer.clearTarget( this.shadowMap.target, true, true, true );
-		//viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, this.shadowMap.target, {});
-		
 		viewer.renderer.render(viewer.scene.scene, camera, this.rtColor);
 
 		viewer.renderer.setRenderTarget(this.rtColor);
 		viewer.dispatchEvent({type: "render.pass.scene", viewer: viewer, renderTarget: this.rtColor});
-		
-		//viewer.dispatchEvent({type: "render.pass.scene",viewer: viewer});
 
 		Potree.endQuery(queryColors, viewer.renderer.getContext());
-		
 		
 		{ // EDL OCCLUSION PASS
 			let queryEDL = Potree.startQuery('EDL - resolve', viewer.renderer.getContext());
@@ -194,6 +187,8 @@ class EDLRenderer {
 		let queryRest = Potree.startQuery('EDL - rest', viewer.renderer.getContext());
 
 		viewer.renderer.clearDepth();
+
+		viewer.transformationTool.update();
 
 		viewer.dispatchEvent({type: "render.pass.perspective_overlay",viewer: viewer});
 

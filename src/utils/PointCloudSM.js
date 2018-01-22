@@ -6,7 +6,7 @@ Potree.PointCloudSM = class PointCloudSM{
 		this.potreeRenderer = potreeRenderer;
 		this.threeRenderer = this.potreeRenderer.threeRenderer;
 
-		this.target = new THREE.WebGLRenderTarget(4 * 1024, 4 * 1024, {
+		this.target = new THREE.WebGLRenderTarget(2 * 1024, 2 * 1024, {
 			minFilter: THREE.LinearFilter,
 			magFilter: THREE.LinearFilter,
 			format: THREE.RGBAFormat,

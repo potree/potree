@@ -709,7 +709,19 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 						distanceToCenter: distance
 					};
 
-					hits.push(hit);
+					if(params.all){
+						hits.push(hit);
+					}else{
+						if(hits.length > 0){
+							if(distance < hits[0].distanceToCenter){
+								hits[0] = hit;
+							}
+						}else{
+							hits.push(hit);
+						}
+					}
+
+					
 				}
 			}
 		}
@@ -789,9 +801,10 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 			if(hits.length === 0){
 				return null;
 			}else{
-				let sorted = hits.sort( (a, b) => a.distanceToCenter - b.distanceToCenter);
+				return hits[0].point;
+				//let sorted = hits.sort( (a, b) => a.distanceToCenter - b.distanceToCenter);
 
-				return sorted[0].point;
+				//return sorted[0].point;
 			}
 		}
 		

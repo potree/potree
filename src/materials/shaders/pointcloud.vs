@@ -367,10 +367,10 @@ vec3 getRGB(){
 	
 	rgb = pow(rgb, vec3(rgbGamma));
 	rgb = rgb + rgbBrightness;
-	rgb = (rgb - 0.5) * getContrastFactor(rgbContrast) + 0.5;
+	//rgb = (rgb - 0.5) * getContrastFactor(rgbContrast) + 0.5;
 	rgb = clamp(rgb, 0.0, 1.0);
-	
-	//rgb = indices.rgb;
+
+		//rgb = indices.rgb;
 	//rgb.b = pcIndex / 255.0;
 	
 	
@@ -672,7 +672,7 @@ void main() {
 	vPointSize = pointSize;
 
 	// COLOR
-	vColor = getColor();
+	vec3 color = getColor();
 
 	// CLIPPING
 	doClipping();
@@ -699,7 +699,6 @@ void main() {
 
 		for(int i = 0; i < num_shadowmaps; i++){
 			vec3 viewPos = (uShadowWorldView[i] * vec4(position, 1.0)).xyz;
-			//float distanceToLight = length(viewPos);
 			float distanceToLight = abs(viewPos.z);
 			
 			vec4 projPos = uShadowProj[i] * uShadowWorldView[i] * vec4(position, 1);
@@ -708,7 +707,7 @@ void main() {
 			float u = nc.x * 0.5 + 0.5;
 			float v = nc.y * 0.5 + 0.5;
 
-			vec2 sampleStep = vec2(1.0 / (4.0*1024.0), 1.0 / (4.0*1024.0)) * 1.5;
+			vec2 sampleStep = vec2(1.0 / (2.0*1024.0), 1.0 / (2.0*1024.0)) * 1.5;
 			vec2 sampleLocations[9];
 			sampleLocations[0] = vec2(0.0, 0.0);
 			sampleLocations[1] = sampleStep;
@@ -732,9 +731,7 @@ void main() {
 				float linearDepthFromSM = depthMapValue.x + bias;
 				float linearDepthFromViewer = distanceToLight;
 
-				if(linearDepthFromSM < linearDepthFromViewer){
-					vColor = vColor * vec3(0.5, 0.0, 0.0);
-				}else{
+				if(linearDepthFromSM > linearDepthFromViewer){
 					visibleSamples += 1.0;
 				}
 
@@ -742,25 +739,18 @@ void main() {
 			}
 
 			float visibility = visibleSamples / numSamples;
-			//vColor = visibility * vColor + (1.0 - visibility) * vColor * vec3(0.5, 0.0, 0.0);
-			vColor = vec3(1.0, 1.0, 1.0) * visibility + vec3(0.5, 0.0, 0.0) * (1.0 - visibility);
 
-			//vec4 depthMapValue = texture2D(uShadowMap[i], vec2(u, v));
-
-			//float linearDepthFromSM = depthMapValue.x + 0.2;
-			//float linearDepthFromViewer = distanceToLight;
-
-			//if(linearDepthFromSM < linearDepthFromViewer){
-			//	vColor = vColor * vec3(0.5, 0.0, 0.0);
-			//}
-
-			if(u < 0.0 || u > 1.0 || v < 0.0 || v > 1.0){
-				vColor = vec3(0.0, 0.0, 0.2);
+			if(u < 0.0 || u > 1.0 || v < 0.0 || v > 1.0 || nc.x < -1.0 || nc.x > 1.0 || nc.y < -1.0 || nc.y > 1.0 || nc.z < -1.0 || nc.z > 1.0){
+				color = vec3(0.0, 0.0, 0.2);
+			}else{
+				//color = color * visibility + color * vec3(0.5, 0.0, 0.0) * (1.0 - visibility);
+				color = vec3(1.0, 1.0, 1.0) * visibility + vec3(1.0, 1.0, 1.0) * vec3(0.5, 0.0, 0.0) * (1.0 - visibility);
 			}
 		}
 
 	#endif
 
-	
+
+	vColor = color;
 
 }

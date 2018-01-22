@@ -80,6 +80,7 @@ uniform sampler2D classificationLUT;
 #if defined(num_shadowmaps) && num_shadowmaps > 0
 uniform sampler2D uShadowMap[num_shadowmaps];
 uniform mat4 uShadowWorldView[num_shadowmaps];
+uniform mat4 uShadowProj[num_shadowmaps];
 #endif
 
 #if defined(num_snapshots) && num_snapshots > 0
@@ -508,7 +509,7 @@ vec3 getColor(){
 		vec3 cHeight = getElevation();
 		color = (1.0 - uTransition) * getRGB() + uTransition * cHeight;
 	#elif defined color_type_depth
-		float linearDepth = -mvPosition.z ;
+		float linearDepth = gl_Position.w;
 		float expDepth = (gl_Position.z / gl_Position.w) * 0.5 + 0.5;
 		color = vec3(linearDepth, expDepth, 0.0);
 	#elif defined color_type_intensity
@@ -700,47 +701,25 @@ void main() {
 
 		for(int i = 0; i < num_shadowmaps; i++){
 			vec3 viewPos = (uShadowWorldView[i] * vec4(position, 1.0)).xyz;
-			float distanceToLight = length(viewPos);
-			float u = atan(viewPos.y, viewPos.x) / PI;
-			float v = atan(viewPos.z, length(viewPos.xy)) / PI;
-			float distance = length(viewPos);
-			float depth = ((distance - sm_near) / (sm_far - sm_near));
+			//float distanceToLight = length(viewPos);
+			float distanceToLight = abs(viewPos.z);
+			
+			vec4 projPos = uShadowProj[i] * uShadowWorldView[i] * vec4(position, 1);
+			vec3 nc = projPos.xyz / projPos.w;
+			
+			float u = nc.x * 0.5 + 0.5;
+			float v = nc.y * 0.5 + 0.5;
 
-			vec2 uv = vec2(u, v) * 0.5 + 0.5;
-			vec2 sampleStep = vec2(1.0 / (4.0*1024.0), 1.0 / (4.0*1024.0));
+			vec4 depthMapValue = texture2D(uShadowMap[i], vec2(u, v));
 
-			vec2 sampleLocations[9];
-			sampleLocations[0] = vec2(0.0, 0.0);
-			sampleLocations[1] = sampleStep;
-			sampleLocations[2] = -sampleStep;
-			sampleLocations[3] = vec2(sampleStep.x, -sampleStep.y);
-			sampleLocations[4] = vec2(-sampleStep.x, sampleStep.y);
+			float linearDepthFromSM = depthMapValue.x + 0.1;
+			float linearDepthFromViewer = distanceToLight;
 
-			sampleLocations[5] = vec2(0.0, sampleStep.y);
-			sampleLocations[6] = vec2(0.0, -sampleStep.y);
-			sampleLocations[7] = vec2(sampleStep.x, 0.0);
-			sampleLocations[8] = vec2(-sampleStep.x, 0.0);
-
-			float visible_samples = 0.0;
-			float sumSamples = 0.0;
-
-			float bias = vRadius * 1.0;
-			for(int j = 0; j < 9; j++){
-
-				vec2 moments = texture2D(uShadowMap[j], uv + sampleLocations[j]).xy + sm_near;
-				//float p = smoothstep(distanceToLight - 10.0 * bias, distanceToLight, moments.x);
-				float p = step(distanceToLight - 5.0 * bias, moments.x);
-
-				visible_samples += (1.0 - p);
-
-
-				sumSamples = sumSamples + 1.0;
+			if(linearDepthFromSM < linearDepthFromViewer){
+				vColor = vec3(0.2, 0.2, 0.2);
 			}
 
-			float coverage = 1.0 - visible_samples / sumSamples;
-			float shade = coverage * 0.5 + 0.5;
-
-			vColor = vColor * shade + uShadowColor * (1.0 - shade);
+			//vColor = vec3(1.0, 1.0, 1.0) * distanceToLight * 0.05;
 		}
 
 	#endif

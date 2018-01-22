@@ -5,7 +5,10 @@ precision mediump int;
 attribute vec3 position;
 attribute vec3 color;
 
-uniform mat4 uWorldView;
+uniform mat4 modelMatrix;
+uniform mat4 modelViewMatrix;
+uniform mat4 projectionMatrix;
+uniform mat4 viewMatrix;
 
 uniform float uScreenWidth;
 uniform float uScreenHeight;
@@ -86,7 +89,6 @@ float getLOD(){
 		}
 		
 		offset = offset + (vec3(1.0, 1.0, 1.0) * nodeSizeAtLevel * 0.5) * index3d;
-        
 	}
 		
 	return depth;
@@ -94,84 +96,47 @@ float getLOD(){
 
 #endif
 
+float getPointSize(){
+	float pointSize = 1.0;
+	
+	float slope = tan(fov / 2.0);
+	float projFactor =  -0.5 * uScreenHeight / (slope * vViewPosition.z);
+	
+	float r = uOctreeSpacing * 1.5;
+	vRadius = r;
+	#if defined fixed_point_size
+		pointSize = size;
+	#elif defined attenuated_point_size
+		if(uUseOrthographicCamera){
+			pointSize = size;			
+		}else{
+			pointSize = pointSize * projFactor;
+		}
+	#elif defined adaptive_point_size
+		if(uUseOrthographicCamera) {
+			float worldSpaceSize = 1.5 * size * r / getPointSizeAttenuation();
+			pointSize = (worldSpaceSize / uOrthoWidth) * uScreenWidth;
+		} else {
+			float worldSpaceSize = 1.5 * size * r / getPointSizeAttenuation();
+			pointSize = worldSpaceSize * projFactor;
+		}
+	#endif
 
-vec3 sphericalToPlanar(vec3 pos){
-	float u = atan(pos.y, pos.x) / PI;
-	float v = atan(pos.z, length(pos.xy)) / PI;
-	float distance = length(pos);
+	pointSize = max(minSize, pointSize);
+	pointSize = min(maxSize, pointSize);
+	
+	vRadius = pointSize / projFactor;
 
-	return vec3(u, v, distance);
+	return pointSize;
 }
+
 
 void main() {
 
-	vec3 viewPos = (uWorldView * vec4(position, 1.0)).xyz;
-	
-	//float u = atan(viewPos.y, viewPos.x) / PI;
-	//float v = atan(viewPos.z, length(viewPos.xy)) / PI;
-	//float distance = length(viewPos);
+	vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
+	vLinearDepth = gl_Position.w;
 
-	vec3 planar = sphericalToPlanar(viewPos);
-	float distance = planar.z;
-	vLinearDepth = distance;
-
-	float t = 2.0 * ((planar.z - near) / (far - near)) - 1.0;
-
-	gl_Position = vec4(planar.xy, t, 1.0);
-
-	vColor = vec3(1.0, 1.0, 1.0) * (distance / 20.0);
-
-	float pointSize = 2.0;
-	#if defined(adaptive_point_size)
-		float lod = getLOD();
-		float r = uSpacing / pow(2.0, lod);
-		float pr = 0.5 * r / distance;
-
-		pointSize = pr * uScreenWidth;
-
-
-		vColor = vec3(1.0, 1.0, 1.0) * lod * 0.2;
-
-	#else 
-		pointSize = 2.0;
-	#endif
-
-	pointSize = min(pointSize, 20.0);
-
+	float pointSize = getPointSize();
 	gl_PointSize = pointSize;
 
-
-	// ---------------------
-	// POINT SIZE
-	// ---------------------
-	//float pointSize = 1.0;
-	//
-	//float slope = tan(fov / 2.0);
-	//float projFactor =  -0.5 * uScreenHeight / (slope * vViewPosition.z);
-	//
-	//float r = uSpacing * 1.5;
-	//vRadius = r;
-	//#if defined fixed_point_size
-	//	pointSize = size;
-	//#elif defined attenuated_point_size
-	//	pointSize = size;
-	//	if(!useOrthographicCamera)
-	//		pointSize = pointSize * projFactor;
-	//#elif defined adaptive_point_size
-	//	if(useOrthographicCamera) {
-	//		pointSize = size * r / (orthoRange * pow(2.0, getLOD())) * uScreenWidth;
-	//	} else {
-	//		float worldSpaceSize = size * r / getPointSizeAttenuation();
-	//		pointSize = worldSpaceSize * projFactor;
-	//	}
-	//#endif
-//
-	//pointSize = max(minSize, pointSize);
-	//pointSize = min(maxSize, pointSize);
-	//
-	//vRadius = pointSize / projFactor;
-	//
-	//gl_PointSize = pointSize;
-	//vPointSize = gl_PointSize;
-	
 }

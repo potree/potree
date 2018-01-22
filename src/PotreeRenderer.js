@@ -772,13 +772,20 @@ Potree.Renderer = class Renderer {
 				}
 
 				{
+
 					let worldViewMatrices = shadowMaps
-						.map(sm => new THREE.Matrix4().makeTranslation(...sm.lightPos.clone().multiplyScalar(-1).toArray()))
+						.map(sm => sm.camera.matrixWorldInverse)
 						.map(view => new THREE.Matrix4().multiplyMatrices(view, world))
 
 					let flattenedMatrices = [].concat(...worldViewMatrices.map(c => c.elements));
 					const lWorldView = shader.uniformLocations["uShadowWorldView[0]"];
 					gl.uniformMatrix4fv(lWorldView, false, flattenedMatrices);
+				}
+
+				{
+					let flattenedMatrices = [].concat(...shadowMaps.map(sm => sm.camera.projectionMatrix.elements));
+					const lProj = shader.uniformLocations["uShadowProj[0]"];
+					gl.uniformMatrix4fv(lProj, false, flattenedMatrices);
 				}
 			}
 

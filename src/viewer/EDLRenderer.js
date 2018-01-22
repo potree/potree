@@ -35,14 +35,19 @@ class EDLRenderer {
 			depthTexture: new THREE.DepthTexture(undefined, undefined, THREE.UnsignedIntType)
 		});
 		
-		//{
-		//	let geometry = new THREE.PlaneBufferGeometry( 1, 1, 32, 32);
-		//	let material = new THREE.MeshBasicMaterial( {side: THREE.DoubleSide, map: this.shadowMap.target.texture} );
-		//	let plane = new THREE.Mesh( geometry, material );
-		//	plane.scale.set(0.5, 0.5, 1.0);
-		//	plane.position.set(plane.scale.x / 2, plane.scale.y / 2, 0);
-		//	this.viewer.overlay.add(plane);
-		//}
+		{
+			//this.viewer.renderer.setClearColor(0xff0000, 0);
+			//this.viewer.renderer.clearTarget(this.shadowMap.target, true, true, true);
+
+			let geometry = new THREE.PlaneBufferGeometry( 1, 1, 32, 32);
+			//let material = new THREE.MeshNormalMaterial();
+			let material = new THREE.MeshBasicMaterial( {side: THREE.DoubleSide, map: this.shadowMap.target.texture} );
+			//let material = new THREE.MeshBasicMaterial( {side: THREE.DoubleSide, map: this.rtColor.texture} );
+			let plane = new THREE.Mesh( geometry, material );
+			plane.scale.set(0.5, 0.5, 1.0);
+			plane.position.set(plane.scale.x / 2, plane.scale.y / 2, 0);
+			this.viewer.overlay.add(plane);
+		}
 	};
 
 	resize () {
@@ -61,12 +66,12 @@ class EDLRenderer {
 		viewer.dispatchEvent({type: "render.pass.begin",viewer: viewer});
 
 		this.resize();
-		
+
 		let camera = viewer.scene.getActiveCamera();
 
 		let lights = [];
 		viewer.scene.scene.traverse(node => {
-			if(node instanceof THREE.PointLight){
+			if(node instanceof THREE.SpotLight){
 				lights.push(node);
 			}
 		});
@@ -104,11 +109,14 @@ class EDLRenderer {
 
 			let queryShadows = Potree.startQuery('EDL - shadows', viewer.renderer.getContext());
 
-			this.shadowMap.setLightPos(light.position);
+			this.shadowMap.setLight(light);
 
-			for(let octree of viewer.scene.pointclouds){
-				this.shadowMap.renderOctree(octree, octree.visibleNodes);
-			}
+			let originalMaterials = viewer.scene.pointclouds.map(pc => pc.material.pointColorType);
+			viewer.scene.pointclouds.map(pc => pc.material.pointColorType = Potree.PointColorType.DEPTH);
+
+			this.shadowMap.render(viewer.scene.scenePointCloud, camera);
+
+			viewer.scene.pointclouds.map( (pc, index) => pc.material.pointColorType = originalMaterials[index]);;
 
 			viewer.shadowTestCam.updateMatrixWorld();
 			viewer.shadowTestCam.matrixWorldInverse.getInverse(viewer.shadowTestCam.matrixWorld);
@@ -151,6 +159,10 @@ class EDLRenderer {
 		}else{
 			viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, this.rtColor, {});
 		}
+
+		//viewer.renderer.setClearColor(0x00ff00, 1);
+		//viewer.renderer.clearTarget( this.shadowMap.target, true, true, true );
+		//viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, this.shadowMap.target, {});
 		
 		viewer.renderer.render(viewer.scene.scene, camera, this.rtColor);
 

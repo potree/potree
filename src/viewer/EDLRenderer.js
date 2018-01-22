@@ -35,19 +35,14 @@ class EDLRenderer {
 			depthTexture: new THREE.DepthTexture(undefined, undefined, THREE.UnsignedIntType)
 		});
 		
-		{
-			//this.viewer.renderer.setClearColor(0xff0000, 0);
-			//this.viewer.renderer.clearTarget(this.shadowMap.target, true, true, true);
-
-			let geometry = new THREE.PlaneBufferGeometry( 1, 1, 32, 32);
-			//let material = new THREE.MeshNormalMaterial();
-			let material = new THREE.MeshBasicMaterial( {side: THREE.DoubleSide, map: this.shadowMap.target.texture} );
-			//let material = new THREE.MeshBasicMaterial( {side: THREE.DoubleSide, map: this.rtColor.texture} );
-			let plane = new THREE.Mesh( geometry, material );
-			plane.scale.set(0.5, 0.5, 1.0);
-			plane.position.set(plane.scale.x / 2, plane.scale.y / 2, 0);
-			this.viewer.overlay.add(plane);
-		}
+		//{
+		//	let geometry = new THREE.PlaneBufferGeometry( 1, 1, 32, 32);
+		//	let material = new THREE.MeshBasicMaterial( {side: THREE.DoubleSide, map: this.shadowMap.target.texture} );
+		//	let plane = new THREE.Mesh( geometry, material );
+		//	plane.scale.set(0.5, 0.5, 1.0);
+		//	plane.position.set(plane.scale.x / 2, plane.scale.y / 2, 0);
+		//	this.viewer.overlay.add(plane);
+		//}
 	};
 
 	resize () {

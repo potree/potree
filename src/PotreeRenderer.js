@@ -951,8 +951,14 @@ Potree.Renderer = class Renderer {
 			shader.setUniformMatrix4("uViewInv", viewInv);
 			shader.setUniformMatrix4("uProjInv", projInv);
 
-			shader.setUniform1f("uScreenHeight", material.screenHeight);
-			shader.setUniform1f("uScreenWidth", material.screenWidth);
+			//shader.setUniform1f("uScreenHeight", material.screenHeight);
+			//shader.setUniform1f("uScreenWidth", material.screenWidth);
+
+			let screenWidth = target ? target.width : material.screenWidth;
+			let screenHeight = target ? target.height : material.screenHeight;
+
+			shader.setUniform1f("uScreenWidth", screenWidth);
+			shader.setUniform1f("uScreenHeight", screenHeight);
 			shader.setUniform1f("fov", Math.PI * camera.fov / 180);
 			shader.setUniform1f("near", camera.near);
 			shader.setUniform1f("far", camera.far);

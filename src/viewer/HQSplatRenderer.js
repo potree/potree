@@ -21,6 +21,8 @@ class HQSplatRenderer {
 		this.depthMaterial = new Potree.PointCloudMaterial();
 		this.attributeMaterial = new Potree.PointCloudMaterial();
 
+		this.depthMaterial.setDefine("depth_pass", "#define hq_depth_pass");
+
 		this.normalizationMaterial = new Potree.NormalizationMaterial();
 		this.normalizationMaterial.depthTest = true;
 		this.normalizationMaterial.depthWrite = true;
@@ -39,17 +41,18 @@ class HQSplatRenderer {
 			magFilter: THREE.NearestFilter,
 			format: THREE.RGBAFormat,
 			type: THREE.FloatType,
-			depthTexture: new THREE.DepthTexture(undefined, undefined, THREE.UnsignedIntType)
+			depthTexture: this.rtDepth.depthTexture,
+			//depthTexture: new THREE.DepthTexture(undefined, undefined, THREE.UnsignedIntType)
 		});
 		
-		{
-			let geometry = new THREE.PlaneBufferGeometry( 1, 1, 32, 32);
-			let material = new THREE.MeshBasicMaterial( {side: THREE.DoubleSide, map: this.rtDepth.texture} );
-			let plane = new THREE.Mesh( geometry, material );
-			plane.scale.set(0.3, 0.3, 1.0);
-			plane.position.set(plane.scale.x / 2, plane.scale.y / 2, 0);
-			this.viewer.overlay.add(plane);
-		}
+		//{
+		//	let geometry = new THREE.PlaneBufferGeometry( 1, 1, 32, 32);
+		//	let material = new THREE.MeshBasicMaterial( {side: THREE.DoubleSide, map: this.rtDepth.texture} );
+		//	let plane = new THREE.Mesh( geometry, material );
+		//	plane.scale.set(0.3, 0.3, 1.0);
+		//	plane.position.set(plane.scale.x / 2, plane.scale.y / 2, 0);
+		//	this.viewer.overlay.add(plane);
+		//}
 	};
 
 	resize () {
@@ -80,6 +83,8 @@ class HQSplatRenderer {
 		let width = viewer.renderer.getSize().width;
 		let height = viewer.renderer.getSize().height;
 
+		let queryHQSplats = Potree.startQuery('HQSplats', viewer.renderer.getContext());
+
 		{ // DEPTH PASS
 			for (let pointcloud of viewer.scene.pointclouds) {
 				let octreeSize = pointcloud.pcoGeometry.boundingBox.getSize().x;
@@ -87,8 +92,8 @@ class HQSplatRenderer {
 				this.depthMaterial.pointSizeType = pointcloud.material.pointSizeType;
 				this.depthMaterial.visibleNodesTexture = pointcloud.material.visibleNodesTexture;
 				this.depthMaterial.weighted = false;
-				this.depthMaterial.useLogarithmicDepthBuffer = false;
 				this.depthMaterial.screenWidth = width;
+				this.depthMaterial.shape = Potree.PointShape.CIRCLE;
 				this.depthMaterial.screenHeight = height;
 				this.depthMaterial.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
 				this.depthMaterial.uniforms.octreeSize.value = octreeSize;
@@ -101,30 +106,54 @@ class HQSplatRenderer {
 		}
 
 		{ // ATTRIBUTE PASS
+
 			for (let pointcloud of viewer.scene.pointclouds) {
 				let octreeSize = pointcloud.pcoGeometry.boundingBox.getSize().x;
 
 				this.attributeMaterial.pointSizeType = pointcloud.material.pointSizeType;
 				this.attributeMaterial.visibleNodesTexture = pointcloud.material.visibleNodesTexture;
 				this.attributeMaterial.weighted = true;
-				this.attributeMaterial.useLogarithmicDepthBuffer = false;
 				this.attributeMaterial.screenWidth = width;
 				this.attributeMaterial.screenHeight = height;
+				this.attributeMaterial.shape = Potree.PointShape.CIRCLE;
 				this.attributeMaterial.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
 				this.attributeMaterial.uniforms.octreeSize.value = octreeSize;
 				this.attributeMaterial.spacing = pointcloud.pcoGeometry.spacing * Math.max(pointcloud.scale.x, pointcloud.scale.y, pointcloud.scale.z);
 			}
 			
 			let gl = this.gl;
-			//gl.enable(gl.BLEND);
-			//gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
 
+			viewer.renderer.setRenderTarget(null);
 			viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, this.rtAttribute, {
 				material: this.attributeMaterial,
-				blendFunc: [gl.SRC_ALPHA, gl.ONE]
+				blendFunc: [gl.SRC_ALPHA, gl.ONE],
+				//depthTest: false,
+				depthWrite: false
 			});
+		}
 
-			//gl.disable(gl.BLEND);
+		viewer.renderer.setRenderTarget(null);
+		if(viewer.background === "skybox"){
+			viewer.renderer.setClearColor(0x000000, 0);
+			viewer.renderer.clear();
+			viewer.skybox.camera.rotation.copy(viewer.scene.cameraP.rotation);
+			viewer.skybox.camera.fov = viewer.scene.cameraP.fov;
+			viewer.skybox.camera.aspect = viewer.scene.cameraP.aspect;
+			viewer.skybox.camera.updateProjectionMatrix();
+			viewer.renderer.render(viewer.skybox.scene, viewer.skybox.camera);
+		} else if (viewer.background === 'gradient') {
+			viewer.renderer.setClearColor(0x000000, 0);
+			viewer.renderer.clear();
+			viewer.renderer.render(viewer.scene.sceneBG, viewer.scene.cameraBG);
+		} else if (viewer.background === 'black') {
+			viewer.renderer.setClearColor(0x000000, 1);
+			viewer.renderer.clear();
+		} else if (viewer.background === 'white') {
+			viewer.renderer.setClearColor(0xFFFFFF, 1);
+			viewer.renderer.clear();
+		} else {
+			viewer.renderer.setClearColor(0xFF0000, 0);
+			viewer.renderer.clear();
 		}
 
 		{ // NORMALIZATION PASS
@@ -133,6 +162,8 @@ class HQSplatRenderer {
 			
 			Potree.utils.screenPass.render(viewer.renderer, this.normalizationMaterial);
 		}
+
+		Potree.endQuery(queryHQSplats, viewer.renderer.getContext());
 
 		viewer.renderer.clearDepth();
 

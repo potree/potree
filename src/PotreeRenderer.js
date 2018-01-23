@@ -839,9 +839,26 @@ Potree.Renderer = class Renderer {
 			gl.enable(gl.DEPTH_TEST);
 		}
 
-		if(params.blendFunc){
+		if(params.blendFunc !== undefined){
 			gl.enable(gl.BLEND);
 			gl.blendFunc(...params.blendFunc);
+		}
+
+		if(params.depthTest !== undefined){
+			if(params.depthTest === true){
+				gl.enable(gl.DEPTH_TEST);
+			}else{
+				gl.disable(gl.DEPTH_TEST);
+			}
+		}
+
+		if(params.depthWrite !== undefined){
+			 if(params.depthWrite === true){
+				 gl.depthMask(true);
+			 }else{
+				 gl.depthMask(false);
+			 }
+			 
 		}
 
 

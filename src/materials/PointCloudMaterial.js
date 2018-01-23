@@ -201,6 +201,7 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 		this._useEDL = false;
 		this._snapEnabled = false;
 		this._numSnapshots = 0;
+		this.defines = new Map();
 
 		this._defaultIntensityRangeChanged = false;
 		this._defaultElevationRangeChanged = false;
@@ -242,6 +243,7 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 			pcIndex:			{ type: "f", value: 0 },
 			gradient:			{ type: "t", value: this.gradientTexture },
 			classificationLUT:	{ type: "t", value: this.classificationTexture },
+			uHQDepthMap:		{ type: "t", value: null },
 			clipBoxes:			{ type: "Matrix4fv", value: [] },
 			clipPolygons:		{ type: "3fv", value: [] },
 			clipPolygonVCount:	{ type: "iv", value: [] },
@@ -284,6 +286,21 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 		this.vertexColors = THREE.VertexColors;
 	}
 
+	setDefine(key, value){
+		if(value !== undefined && value !== null){
+			if(this.defines.get(key) !== value){
+				this.defines.set(key, value);
+				this.updateShaderSource();
+			}
+		}else{
+			this.removeDefine(key);
+		}
+	}
+
+	removeDefine(key){
+		this.defines.delete(key);
+	}
+
 	updateShaderSource () {
 		this.vertexShader = this.getDefines() + Potree.Shaders['pointcloud.vs'];
 		this.fragmentShader = this.getDefines() + Potree.Shaders['pointcloud.fs'];
@@ -312,83 +329,87 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 	}
 
 	getDefines () {
-		let defines = '';
+		let defines = [];
 
 		if (this.pointSizeType === Potree.PointSizeType.FIXED) {
-			defines += '#define fixed_point_size\n';
+			defines.push('#define fixed_point_size');
 		} else if (this.pointSizeType === Potree.PointSizeType.ATTENUATED) {
-			defines += '#define attenuated_point_size\n';
+			defines.push('#define attenuated_point_size');
 		} else if (this.pointSizeType === Potree.PointSizeType.ADAPTIVE) {
-			defines += '#define adaptive_point_size\n';
+			defines.push('#define adaptive_point_size');
 		}
 
 		if (this.shape === Potree.PointShape.SQUARE) {
-			defines += '#define square_point_shape\n';
+			defines.push('#define square_point_shape');
 		} else if (this.shape === Potree.PointShape.CIRCLE) {
-			defines += '#define circle_point_shape\n';
+			defines.push('#define circle_point_shape');
 		} else if (this.shape === Potree.PointShape.PARABOLOID) {
-			defines += '#define paraboloid_point_shape\n';
+			defines.push('#define paraboloid_point_shape');
 		}
 
 		if (this._useEDL) {
-			defines += '#define use_edl\n';
+			defines.push('#define use_edl');
 		}
 
 		if (this._snapEnabled) {
-			defines += '#define snap_enabled\n';
+			defines.push('#define snap_enabled');
 		}
 
 		if (this._pointColorType === Potree.PointColorType.RGB) {
-			defines += '#define color_type_rgb\n';
+			defines.push('#define color_type_rgb');
 		} else if (this._pointColorType === Potree.PointColorType.COLOR) {
-			defines += '#define color_type_color\n';
+			defines.push('#define color_type_color');
 		} else if (this._pointColorType === Potree.PointColorType.DEPTH) {
-			defines += '#define color_type_depth\n';
+			defines.push('#define color_type_depth');
 		} else if (this._pointColorType === Potree.PointColorType.HEIGHT) {
-			defines += '#define color_type_height\n';
+			defines.push('#define color_type_height');
 		} else if (this._pointColorType === Potree.PointColorType.INTENSITY) {
-			defines += '#define color_type_intensity\n';
+			defines.push('#define color_type_intensity');
 		} else if (this._pointColorType === Potree.PointColorType.INTENSITY_GRADIENT) {
-			defines += '#define color_type_intensity_gradient\n';
+			defines.push('#define color_type_intensity_gradient');
 		} else if (this._pointColorType === Potree.PointColorType.LOD) {
-			defines += '#define color_type_lod\n';
+			defines.push('#define color_type_lod');
 		} else if (this._pointColorType === Potree.PointColorType.POINT_INDEX) {
-			defines += '#define color_type_point_index\n';
+			defines.push('#define color_type_point_index');
 		} else if (this._pointColorType === Potree.PointColorType.CLASSIFICATION) {
-			defines += '#define color_type_classification\n';
+			defines.push('#define color_type_classification');
 		} else if (this._pointColorType === Potree.PointColorType.RETURN_NUMBER) {
-			defines += '#define color_type_return_number\n';
+			defines.push('#define color_type_return_number');
 		} else if (this._pointColorType === Potree.PointColorType.SOURCE) {
-			defines += '#define color_type_source\n';
+			defines.push('#define color_type_source');
 		} else if (this._pointColorType === Potree.PointColorType.NORMAL) {
-			defines += '#define color_type_normal\n';
+			defines.push('#define color_type_normal');
 		} else if (this._pointColorType === Potree.PointColorType.PHONG) {
-			defines += '#define color_type_phong\n';
+			defines.push('#define color_type_phong');
 		} else if (this._pointColorType === Potree.PointColorType.RGB_HEIGHT) {
-			defines += '#define color_type_rgb_height\n';
+			defines.push('#define color_type_rgb_height');
 		} else if (this._pointColorType === Potree.PointColorType.COMPOSITE) {
-			defines += '#define color_type_composite\n';
+			defines.push('#define color_type_composite');
 		}
 		
 		if(this._treeType === Potree.TreeType.OCTREE){
-			defines += "#define tree_type_octree\n";
+			defines.push('#define tree_type_octree');
 		}else if(this._treeType === Potree.TreeType.KDTREE){
-			defines += "#define tree_type_kdtree\n";
+			defines.push('#define tree_type_kdtree');
 		}
 
 		if (this.weighted) {
-			defines += '#define weighted_splats\n';
+			defines.push('#define weighted_splats');
 		}
 
 		if (this.numClipBoxes > 0) {
-			defines += '#define use_clip_box\n';
+			defines.push('#define use_clip_box');
 		}
 
 		if(this.numClipPolygons > 0) {
-			defines += "#define use_clip_polygon\n";			
+			defines.push('#define use_clip_polygon');
 		}
 
-		return defines;
+		for(let [key, value] of this.defines){
+			defines.push(value);
+		}
+
+		return defines.join("\n");
 	}
 
 	setClipBoxes (clipBoxes) {

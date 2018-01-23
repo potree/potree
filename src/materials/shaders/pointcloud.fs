@@ -155,7 +155,12 @@ void main() {
 	#endif
 
 	#if defined(weighted_splats)
-		asdfafsd
+		float distance = 2.0 * length(gl_PointCoord.xy - 0.5);
+		float weight = max(0.0, 1.0 - distance);
+		weight = pow(weight, 2.0);
+
+		gl_FragColor.a = weight;
+		gl_FragColor.xyz = gl_FragColor.xyz * weight;
 	#endif
 	
 }

@@ -9,7 +9,7 @@ varying vec2 vUv;
 void main() {
 	float depth = texture2D(uDepthMap, vUv).g; 
 	
-	if(depth <= 0.0){
+	if(depth >= 1.0){
 		discard;
 	}
 	

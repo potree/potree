@@ -22,6 +22,7 @@ class HQSplatRenderer {
 		this.attributeMaterial = new Potree.PointCloudMaterial();
 
 		this.depthMaterial.setDefine("depth_pass", "#define hq_depth_pass");
+		this.depthMaterial.setDefine("use_edl", "#define use_edl");
 
 		this.normalizationMaterial = new Potree.NormalizationMaterial();
 		this.normalizationMaterial.depthTest = true;
@@ -111,6 +112,7 @@ class HQSplatRenderer {
 				let octreeSize = pointcloud.pcoGeometry.boundingBox.getSize().x;
 
 				this.attributeMaterial.pointSizeType = pointcloud.material.pointSizeType;
+				this.attributeMaterial.pointColorType = pointcloud.material.pointColorType;
 				this.attributeMaterial.visibleNodesTexture = pointcloud.material.visibleNodesTexture;
 				this.attributeMaterial.weighted = true;
 				this.attributeMaterial.screenWidth = width;
@@ -157,7 +159,12 @@ class HQSplatRenderer {
 		}
 
 		{ // NORMALIZATION PASS
+			this.normalizationMaterial.uniforms.edlStrength.value = viewer.edlStrength;
+			this.normalizationMaterial.uniforms.radius.value = viewer.edlRadius;
+			this.normalizationMaterial.uniforms.screenWidth.value = width;
+			this.normalizationMaterial.uniforms.screenHeight.value = height;
 			this.normalizationMaterial.uniforms.uWeightMap.value = this.rtAttribute.texture;
+			this.normalizationMaterial.uniforms.uEDLMap.value = this.rtDepth.texture;
 			this.normalizationMaterial.uniforms.uDepthMap.value = this.rtAttribute.depthTexture;
 			
 			Potree.utils.screenPass.render(viewer.renderer, this.normalizationMaterial);

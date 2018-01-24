@@ -481,33 +481,6 @@ vec3 getCompositeColor(){
 
 
 
-#if defined(num_clippolygons) && num_clippolygons > 0
-bool pointInClipPolygon(vec3 point, int polyIdx) {
-	vec4 screenClipPos = uClipPolygonVP[polyIdx] * modelMatrix * vec4(point, 1.0);
-	screenClipPos.xy = screenClipPos.xy / screenClipPos.w * 0.5 + 0.5;
-
-	int j = uClipPolygonVCount[polyIdx] - 1;
-	bool c = false;
-	for(int i = 0; i < 8; i++) {
-		if(i == uClipPolygonVCount[polyIdx]) {
-			break;
-		}
-
-		vec4 verti = uClipPolygonVP[polyIdx] * vec4(uClipPolygonVertices[polyIdx * 8 + i], 1);
-		vec4 vertj = uClipPolygonVP[polyIdx] * vec4(uClipPolygonVertices[polyIdx * 8 + j], 1);
-		verti.xy = verti.xy / verti.w * 0.5 + 0.5;
-		vertj.xy = vertj.xy / vertj.w * 0.5 + 0.5;
-		if( ((verti.y > screenClipPos.y) != (vertj.y > screenClipPos.y)) && 
-			(screenClipPos.x < (vertj.x-verti.x) * (screenClipPos.y-verti.y) / (vertj.y-verti.y) + verti.x) ) {
-			c = !c;
-		}
-		j = i;
-	}
-
-	return c;
-}
-#endif
-
 vec3 getColor(){
 	vec3 color;
 	
@@ -588,6 +561,33 @@ float getPointSize(){
 	return pointSize;
 }
 
+#if defined(num_clippolygons) && num_clippolygons > 0
+bool pointInClipPolygon(vec3 point, int polyIdx) {
+	vec4 screenClipPos = uClipPolygonVP[polyIdx] * modelMatrix * vec4(point, 1.0);
+	screenClipPos.xy = screenClipPos.xy / screenClipPos.w * 0.5 + 0.5;
+
+	int j = uClipPolygonVCount[polyIdx] - 1;
+	bool c = false;
+	for(int i = 0; i < 8; i++) {
+		if(i == uClipPolygonVCount[polyIdx]) {
+			break;
+		}
+
+		vec4 verti = uClipPolygonVP[polyIdx] * vec4(uClipPolygonVertices[polyIdx * 8 + i], 1);
+		vec4 vertj = uClipPolygonVP[polyIdx] * vec4(uClipPolygonVertices[polyIdx * 8 + j], 1);
+		verti.xy = verti.xy / verti.w * 0.5 + 0.5;
+		vertj.xy = vertj.xy / vertj.w * 0.5 + 0.5;
+		if( ((verti.y > screenClipPos.y) != (vertj.y > screenClipPos.y)) && 
+			(screenClipPos.x < (vertj.x-verti.x) * (screenClipPos.y-verti.y) / (vertj.y-verti.y) + verti.x) ) {
+			c = !c;
+		}
+		j = i;
+	}
+
+	return c;
+}
+#endif
+
 void doClipping(){
 
 	#if !defined color_type_composite
@@ -617,7 +617,7 @@ void doClipping(){
 		for(int i = 0; i < num_clippolygons; i++) {
 			bool inside = pointInClipPolygon(position, i);;
 			insideAny = insideAny || inside;
-			insideAll = insideAll // inside;
+			insideAll = insideAll && inside;
 		}
 	#endif
 

@@ -469,8 +469,9 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 		visible = visible && !(numVisiblePoints + node.getNumPoints() > Potree.pointBudget);
 		visible = visible && level < maxLevel;
 
-		if(pointcloud.material.numClipBoxes > 0){
+		if(pointcloud.material.numClipBoxes > 0 && !window.warned125){
 			console.log("TODO");
+			window.warned125 = true;
 		}
 
 		// visible = ["r", "r0", "r06", "r060"].includes(node.name);

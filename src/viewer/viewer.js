@@ -1284,28 +1284,49 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 
 		try{
 
-		if(this.useRep){
-			if (!this.repRenderer) {
-				this.repRenderer = new RepRenderer(this);
-			}
-			this.repRenderer.render(this.renderer);
-		} else if (this.useEDL && Potree.Features.SHADER_EDL.isSupported()) {
-			if (!this.edlRenderer) {
-				this.edlRenderer = new EDLRenderer(this);
-			}
-			this.edlRenderer.render(this.renderer);
-		} else if (this.useHQ) {
+
+		if(this.useHQ){
 			if (!this.hqRenderer) {
 				this.hqRenderer = new HQSplatRenderer(this);
 			}
+			this.hqRenderer.useEDL = this.useEDL;
 			this.hqRenderer.render(this.renderer);
-		} else {
-			if (!this.potreeRenderer) {
-				this.potreeRenderer = new PotreeRenderer(this);
+		}else{
+			if (this.useEDL && Potree.Features.SHADER_EDL.isSupported()) {
+				if (!this.edlRenderer) {
+					this.edlRenderer = new EDLRenderer(this);
+				}
+				this.edlRenderer.render(this.renderer);
+			} else {
+				if (!this.potreeRenderer) {
+					this.potreeRenderer = new PotreeRenderer(this);
+				}
+				this.potreeRenderer.render();
 			}
-
-			this.potreeRenderer.render();
 		}
+
+		//if(this.useRep){
+		//	if (!this.repRenderer) {
+		//		this.repRenderer = new RepRenderer(this);
+		//	}
+		//	this.repRenderer.render(this.renderer);
+		//} else if (this.useHQ && Potree.Features.SHADER_SPLATS.isSupported()) {
+		//	if (!this.hqRenderer) {
+		//		this.hqRenderer = new HQSplatRenderer(this);
+		//	}
+		//	this.hqRenderer.render(this.renderer);
+		//} else if (this.useEDL && Potree.Features.SHADER_EDL.isSupported()) {
+		//	if (!this.edlRenderer) {
+		//		this.edlRenderer = new EDLRenderer(this);
+		//	}
+		//	this.edlRenderer.render(this.renderer);
+		//} else {
+		//	if (!this.potreeRenderer) {
+		//		this.potreeRenderer = new PotreeRenderer(this);
+		//	}
+
+		//	this.potreeRenderer.render();
+		//}
 
 		this.renderer.render(this.overlay, this.overlayCamera);
 

@@ -433,7 +433,6 @@ initSidebar = (viewer) => {
 			let currentClipMode = Object.keys(Potree.ClipMode)
 				.filter(key => Potree.ClipMode[key] === viewer.clippingTool.clipMode);
 			elClipModes.find(`input[value=${currentClipMode}]`).trigger("click");
-
 		}
 
 		let clippingToolBar = $("#clipping_tools");
@@ -768,19 +767,38 @@ initSidebar = (viewer) => {
 
 
 	let initSettings = function () {
-		$('#sldMinNodeSize').slider({
-			value: viewer.getMinNodeSize(),
-			min: 0,
-			max: 1000,
-			step: 0.01,
-			slide: function (event, ui) { viewer.setMinNodeSize(ui.value); }
-		});
 
-		viewer.addEventListener('minnodesize_changed', function (event) {
+		{
+			$('#sldMinNodeSize').slider({
+				value: viewer.getMinNodeSize(),
+				min: 0,
+				max: 1000,
+				step: 0.01,
+				slide: function (event, ui) { viewer.setMinNodeSize(ui.value); }
+			});
+
+			viewer.addEventListener('minnodesize_changed', function (event) {
+				$('#lblMinNodeSize').html(parseInt(viewer.getMinNodeSize()));
+				$('#sldMinNodeSize').slider({value: viewer.getMinNodeSize()});
+			});
 			$('#lblMinNodeSize').html(parseInt(viewer.getMinNodeSize()));
-			$('#sldMinNodeSize').slider({value: viewer.getMinNodeSize()});
-		});
-		$('#lblMinNodeSize').html(parseInt(viewer.getMinNodeSize()));
+		}
+
+		{
+			let elSplatQuality = $("#splat_quality_options");
+			elSplatQuality.selectgroup({title: "Splat Quality"});
+
+			elSplatQuality.find("input").click( (e) => {
+				if(e.target.value === "standard"){
+					viewer.useHQ = false;
+				}else if(e.target.value === "hq"){
+					viewer.useHQ = true;
+				}
+			});
+
+			let currentQuality = viewer.useHQ ? "hq" : "standard";
+			elSplatQuality.find(`input[value=${currentQuality}]`).trigger("click");
+		}
 
 		$('#show_bounding_box').click(() => {
 			viewer.setShowBoundingBox($('#show_bounding_box').prop("checked"));

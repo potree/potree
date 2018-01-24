@@ -29,6 +29,11 @@ class HQSplatRenderer {
 		this.normalizationMaterial.depthWrite = true;
 		this.normalizationMaterial.transparent = true;
 
+		this.normalizationEDLMaterial = new Potree.NormalizationEDLMaterial();
+		this.normalizationEDLMaterial.depthTest = true;
+		this.normalizationEDLMaterial.depthWrite = true;
+		this.normalizationEDLMaterial.transparent = true;
+
 		this.rtDepth = new THREE.WebGLRenderTarget(1024, 1024, {
 			minFilter: THREE.NearestFilter,
 			magFilter: THREE.NearestFilter,
@@ -159,26 +164,40 @@ class HQSplatRenderer {
 		}
 
 		{ // NORMALIZATION PASS
-			this.normalizationMaterial.uniforms.edlStrength.value = viewer.edlStrength;
-			this.normalizationMaterial.uniforms.radius.value = viewer.edlRadius;
-			this.normalizationMaterial.uniforms.screenWidth.value = width;
-			this.normalizationMaterial.uniforms.screenHeight.value = height;
-			this.normalizationMaterial.uniforms.uWeightMap.value = this.rtAttribute.texture;
-			this.normalizationMaterial.uniforms.uEDLMap.value = this.rtDepth.texture;
-			this.normalizationMaterial.uniforms.uDepthMap.value = this.rtAttribute.depthTexture;
+
+			let normalizationMaterial = this.useEDL ? this.normalizationEDLMaterial : this.normalizationMaterial;
+
+			if(this.useEDL){
+				normalizationMaterial.uniforms.edlStrength.value = viewer.edlStrength;
+				normalizationMaterial.uniforms.radius.value = viewer.edlRadius;
+				normalizationMaterial.uniforms.screenWidth.value = width;
+				normalizationMaterial.uniforms.screenHeight.value = height;
+				normalizationMaterial.uniforms.uEDLMap.value = this.rtDepth.texture;
+			}
+
+			normalizationMaterial.uniforms.uWeightMap.value = this.rtAttribute.texture;
+			normalizationMaterial.uniforms.uDepthMap.value = this.rtAttribute.depthTexture;
 			
-			Potree.utils.screenPass.render(viewer.renderer, this.normalizationMaterial);
+			Potree.utils.screenPass.render(viewer.renderer, normalizationMaterial);
 		}
 
 		Potree.endQuery(queryHQSplats, viewer.renderer.getContext());
 
 		viewer.renderer.clearDepth();
 
+		viewer.transformationTool.update();
+
 		viewer.dispatchEvent({type: "render.pass.perspective_overlay",viewer: viewer});
 
 		viewer.renderer.render(viewer.controls.sceneControls, camera);
 		viewer.renderer.render(viewer.clippingTool.sceneVolume, camera);
 		viewer.renderer.render(viewer.transformationTool.scene, camera);
+
+		viewer.renderer.setViewport(width - viewer.navigationCube.width, 
+									height - viewer.navigationCube.width, 
+									viewer.navigationCube.width, viewer.navigationCube.width);
+		viewer.renderer.render(viewer.navigationCube, viewer.navigationCube.camera);		
+		viewer.renderer.setViewport(0, 0, width, height);
 		
 		viewer.dispatchEvent({type: "render.pass.end",viewer: viewer});
 

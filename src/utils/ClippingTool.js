@@ -1,12 +1,5 @@
 
 
-Potree.ClipMode = {
-	DISABLED: 0,
-	HIGHLIGHT: 1,
-	INSIDE: 2,
-	OUTSIDE: 3
-};
-
 Potree.ClippingTool = class ClippingTool extends THREE.EventDispatcher{
 
 	constructor(viewer){
@@ -14,7 +7,6 @@ Potree.ClippingTool = class ClippingTool extends THREE.EventDispatcher{
 
 		this.viewer = viewer;
 
-		this.clipMode = Potree.ClipMode.HIGHLIGHT;
 		this.maxPolygonVertices = 8; 
 		
 		this.addEventListener("start_inserting_clipping_volume", e => {
@@ -63,13 +55,6 @@ Potree.ClippingTool = class ClippingTool extends THREE.EventDispatcher{
 		this.scene.addEventListener("polygon_clip_volume_added", this.onAdd);
 		this.scene.addEventListener("polygon_clip_volume_removed", this.onRemove);
 	}
-
-	setClipMode(mode) {
-		if(this.clipMode == mode) return;
-
-		this.clipMode = mode;
-		viewer.dispatchEvent({"type": "clipper.clipMode_changed", "viewer": viewer, "mode": mode});		
-	}	
 
 	startInsertion(args = {}) {	
 		let type = args.type || null;

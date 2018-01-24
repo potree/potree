@@ -37,7 +37,6 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		this.server = null;
 
 		this.fov = 60;
-		//this.clipMode = Potree.ClipMode.HIGHLIGHT_INSIDE;
 		this.isFlipYZ = false;
 		this.useDEMCollisions = false;
 		this.generateDEM = false;
@@ -71,11 +70,8 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		this.showBoundingBox = false;
 		this.showAnnotations = true;
 		this.freeze = false;
-
-		this.stats = new Stats();
-		// this.stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
-		// document.body.appendChild( this.stats.dom );
-		// this.stats.dom.style.left = "100px";
+		this.clipTask = Potree.ClipTask.HIGHLIGHT;
+		this.clipMethod = Potree.ClipMethod.INSIDE_ANY;
 
 		this.potreeRenderer = null;
 		this.edlRenderer = null;
@@ -171,7 +167,8 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			this.setEDLEnabled(false);
 			this.setEDLRadius(1.4);
 			this.setEDLStrength(0.4);
-			this.clippingTool.setClipMode(Potree.ClipMode.HIGHLIGHT);
+			this.setClipTask(Potree.ClipTask.HIGHLIGHT);
+			this.setClipMethod(Potree.ClipMethod.INSIDE_ANY);
 			this.setPointBudget(1*1000*1000);
 			this.setShowBoundingBox(false);
 			this.setFreeze(false);
@@ -326,10 +323,6 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		$('#potree_description')[0].innerHTML = value;
 	};
 
-	setClipMode(clipMode){
-		this.clippingTool.setClipMode(clipMode);
-	}
-
 	setNavigationMode (value) {
 		this.scene.view.navigationMode = value;
 	};
@@ -374,6 +367,36 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 	getFreeze () {
 		return this.freeze;
 	};
+
+	getClipTask(){
+		return this.clipTask;
+	}
+
+	getClipMethod(){
+		return this.clipMethod;
+	}
+
+	setClipTask(value){
+		if(this.clipTask !== value){
+
+			this.clipTask = value;
+
+			viewer.dispatchEvent({
+				type: "cliptask_changed", 
+				viewer: viewer});		
+		}
+	}
+
+	setClipMethod(value){
+		if(this.clipMethod !== value){
+
+			this.clipMethod = value;
+			
+			viewer.dispatchEvent({
+				type: "clipmethod_changed", 
+				viewer: viewer});		
+		}
+	}
 
 	setPointBudget (value) {
 		if (Potree.pointBudget !== value) {
@@ -652,8 +675,8 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		// TODO flipyz
 		console.log('TODO');
 	}
-
-	switchCameraMode(mode) {
+	
+	setCameraMode(mode){
 		this.scene.cameraMode = mode;
 
 		for(let pointcloud of this.scene.pointclouds) {
@@ -1248,7 +1271,8 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			for(let pointcloud of this.scene.pointclouds){
 				pointcloud.material.setClipBoxes(clipBoxes);
 				pointcloud.material.setClipPolygons(clipPolygons, this.clippingTool.maxPolygonVertices);
-				pointcloud.material.clipMode = this.clippingTool.clipMode;
+				pointcloud.material.clipTask = this.clipTask;
+				pointcloud.material.clipMethod = this.clipMethod;
 			}
 		}
 
@@ -1471,8 +1495,6 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			performance.mark("loop-start");
 		}
 
-		this.stats.begin();
-
 		this.update(this.clock.getDelta(), timestamp);
 
 		this.render();
@@ -1483,8 +1505,6 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		}
 		
 		this.resolveTimings(timestamp);
-
-		this.stats.end();
 
 		Potree.framenumber++;
 	}

@@ -624,10 +624,10 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 			pickMaterial.classification = this.material.classification;
 			if(params.pickClipped){
 				pickMaterial.clipBoxes = this.material.clipBoxes;
-				if(this.material.clipMode === Potree.ClipMode.HIGHLIGHT){
-					pickMaterial.clipMode = Potree.ClipMode.DISABLED;
+				if(this.material.clipTask === Potree.ClipTask.HIGHLIGHT){
+					pickMaterial.clipTask = Potree.ClipTask.NONE;
 				}else{
-					pickMaterial.clipMode = this.material.clipMode;
+					pickMaterial.clipTask = this.material.clipTask;
 				}
 			}else{
 				pickMaterial.clipBoxes = [];

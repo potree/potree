@@ -265,7 +265,8 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 			wReturnNumber:		{ type: "f", value: 0 },
 			wSourceID:			{ type: "f", value: 0 },
 			useOrthographicCamera: { type: "b", value: false },
-			clipMode:			{ type: "i", value: 1 },
+			clipTask:			{ type: "i", value: 1 },
+			clipMethod:			{ type: "i", value: 1 },
 			uSnapshot:			{ type: "tv", value: [] },
 			uSnapshotDepth:		{ type: "tv", value: [] },
 			uSnapView:			{ type: "Matrix4fv", value: [] },
@@ -578,14 +579,21 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 		}
 	}
 
-	get clipMode() {
-		return this.uniforms.clipMode.value;
+	get clipTask(){
+		return this.uniforms.clipTask.value;
 	}
 
-	set clipMode(mode) {
-		this.uniforms.clipMode.value = mode;
+	set clipTask(mode){
+		this.uniforms.clipTask.value = mode;
 	}
 
+	get clipMethod(){
+		return this.uniforms.clipMethod.value;
+	}
+
+	set clipMethod(mode){
+		this.uniforms.clipMethod.value = mode;
+	}
 
 	get weighted(){
 		return this._weighted;

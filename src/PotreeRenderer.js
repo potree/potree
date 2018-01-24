@@ -889,7 +889,8 @@ Potree.Renderer = class Renderer {
 				shader.setUniform("uUseOrthographicCamera", false);
 			}
 
-			shader.setUniform1i("clipMode", material.clipMode);
+			shader.setUniform1i("clipTask", material.clipTask);
+			shader.setUniform1i("clipMethod", material.clipMethod);
 
 			if (material.clipBoxes && material.clipBoxes.length > 0) {
 				

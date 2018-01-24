@@ -418,21 +418,38 @@ initSidebar = (viewer) => {
 	function initClippingTool() {
 
 
-		viewer.addEventListener("clipper.clipMode_changed", function(event){
+		viewer.addEventListener("cliptask_changed", function(event){
+			console.log("TODO");
+		});
+
+		viewer.addEventListener("clipmethod_changed", function(event){
 			console.log("TODO");
 		});
 
 		{
-			let elClipModes = $("#optClipMode");
-			elClipModes.selectgroup({title: "Clip Mode"});
+			let elClipTask = $("#cliptask_options");
+			elClipTask.selectgroup({title: "Clip Task"});
 
-			elClipModes.find("input").click( (e) => {
-				viewer.clippingTool.setClipMode(Potree.ClipMode[e.target.value]);
+			elClipTask.find("input").click( (e) => {
+				viewer.setClipTask(Potree.ClipTask[e.target.value]);
 			});
 
-			let currentClipMode = Object.keys(Potree.ClipMode)
-				.filter(key => Potree.ClipMode[key] === viewer.clippingTool.clipMode);
-			elClipModes.find(`input[value=${currentClipMode}]`).trigger("click");
+			let currentClipTask = Object.keys(Potree.ClipTask)
+				.filter(key => Potree.ClipTask[key] === viewer.clipTask);
+			elClipTask.find(`input[value=${currentClipTask}]`).trigger("click");
+		}
+
+		{
+			let elClipMethod = $("#clipmethod_options");
+			elClipMethod.selectgroup({title: "Clip Method"});
+
+			elClipMethod.find("input").click( (e) => {
+				viewer.setClipMethod(Potree.ClipMethod[e.target.value]);
+			});
+
+			let currentClipMethod = Object.keys(Potree.ClipMethod)
+				.filter(key => Potree.ClipMethod[key] === viewer.clipMethod);
+			elClipMethod.find(`input[value=${currentClipMethod}]`).trigger("click");
 		}
 
 		let clippingToolBar = $("#clipping_tools");
@@ -733,7 +750,7 @@ initSidebar = (viewer) => {
 		elNavigation.append(elCameraProjection);
 		elCameraProjection.selectgroup({title: "Camera Projection"});
 		elCameraProjection.find("input").click( (e) => {
-			viewer.switchCameraMode(Potree.CameraMode[e.target.value]);
+			viewer.setCameraMode(Potree.CameraMode[e.target.value]);
 		});
 		let cameraMode = Object.keys(Potree.CameraMode)
 			.filter(key => Potree.CameraMode[key] === viewer.scene.cameraMode);

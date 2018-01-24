@@ -29,7 +29,17 @@ uniform bool uUseOrthographicCamera;
 uniform float uOrthoWidth;
 uniform float uOrthoHeight;
 
-uniform int clipMode;
+
+#define CLIPTASK_NONE 0
+#define CLIPTASK_HIGHLIGHT 1
+#define CLIPTASK_SHOW_INSIDE 2
+#define CLIPTASK_SHOW_OUTSIDE 3
+
+#define CLIPMETHOD_INSIDE_ANY 0
+#define CLIPMETHOD_INSIDE_ALL 1
+
+uniform int clipTask;
+uniform int clipMethod;
 #if defined(num_clipboxes) && num_clipboxes > 0
 	uniform mat4 clipBoxes[num_clipboxes];
 #endif
@@ -578,24 +588,6 @@ float getPointSize(){
 	return pointSize;
 }
 
-#define CLIP_DISABLED  0
-#define CLIP_HIGHLIGHT 1
-#define CLIP_INSIDE 2
-#define CLIP_OUTSIDE 3
-
-void testInsideClipVolume(bool insideAny, bool insideAll) {
-
-	if(clipMode == CLIP_INSIDE && !insideAll){
-		gl_Position = vec4(1000.0, 1000.0, 1000.0, 1.0);	
-	}
-
-	//if(insideAny && clipMode == 2 || !inside && clipMode == 3) {
-	//	gl_Position = vec4(1000.0, 1000.0, 1000.0, 1.0);
-	//} else if(clipMode == 1 && inside) {
-	//	vColor.r += 0.5;
-	//}
-}
-
 void doClipping(){
 
 	#if !defined color_type_composite
@@ -607,45 +599,47 @@ void doClipping(){
 		}
 	#endif
 
+	bool insideAny = false;
+	bool insideAll = true;
+
 	#if defined(num_clipboxes) && num_clipboxes > 0
-		if(clipMode != 0) {
-			bool insideAny = false;
-			bool insideAll = true;
-			for(int i = 0; i < num_clipboxes; i++){
-				vec4 clipPosition = clipBoxes[i] * modelMatrix * vec4( position, 1.0 );
-				bool inside = -0.5 <= clipPosition.x && clipPosition.x <= 0.5;
-				inside = inside && -0.5 <= clipPosition.y && clipPosition.y <= 0.5;
-				inside = inside && -0.5 <= clipPosition.z && clipPosition.z <= 0.5;
-				insideAny = insideAny || inside;
-				insideAll = insideAll && inside;
-			}	
-			testInsideClipVolume(insideAny, insideAll);
-		}
+		for(int i = 0; i < num_clipboxes; i++){
+			vec4 clipPosition = clipBoxes[i] * modelMatrix * vec4( position, 1.0 );
+			bool inside = -0.5 <= clipPosition.x && clipPosition.x <= 0.5;
+			inside = inside && -0.5 <= clipPosition.y && clipPosition.y <= 0.5;
+			inside = inside && -0.5 <= clipPosition.z && clipPosition.z <= 0.5;
+			insideAny = insideAny || inside;
+			insideAll = insideAll && inside;
+		}	
 	#endif
 
 	#if defined(num_clippolygons) && num_clippolygons > 0
-
-	
-		if(clipMode != 0) {
-			bool insideAny = false;
-			bool insideAll = false;
-			for(int i = 0; i < num_clippolygons; i++) {
-				bool inside = pointInClipPolygon(position, i);;
-				insideAny = insideAny || inside;
-				insideAll = insideAll // inside;
-			}
-			testInsideClipVolume(insideAny, insideAll);
+		for(int i = 0; i < num_clippolygons; i++) {
+			bool inside = pointInClipPolygon(position, i);;
+			insideAny = insideAny || inside;
+			insideAll = insideAll // inside;
 		}
-	#endif	
+	#endif
+
+	if(clipMethod == CLIPMETHOD_INSIDE_ANY){
+		if(insideAny && clipTask == CLIPTASK_HIGHLIGHT){
+			vColor.r += 0.5;
+		}else if(!insideAny && clipTask == CLIPTASK_SHOW_INSIDE){
+			gl_Position = vec4(100.0, 100.0, 100.0, 1.0);
+		}else if(insideAny && clipTask == CLIPTASK_SHOW_OUTSIDE){
+			gl_Position = vec4(100.0, 100.0, 100.0, 1.0);
+		}
+	}else if(clipMethod == CLIPMETHOD_INSIDE_ALL){
+		if(insideAll && clipTask == CLIPTASK_HIGHLIGHT){
+			vColor.r += 0.5;
+		}else if(!insideAll && clipTask == CLIPTASK_SHOW_INSIDE){
+			gl_Position = vec4(100.0, 100.0, 100.0, 1.0);
+		}else if(insideAll && clipTask == CLIPTASK_SHOW_OUTSIDE){
+			gl_Position = vec4(100.0, 100.0, 100.0, 1.0);
+		}
+	}
 }
 
-//float step(float edge, float v){
-//	return v < edge ? 0.0 : 1.0;
-//}
-
-float linearStep(float min, float max, float v){
-	return clamp((v - min) / (max - min), 0.0, 1.0);
-}
 
 
 // 
@@ -672,12 +666,10 @@ void main() {
 	vPointSize = pointSize;
 
 	// COLOR
-	vec3 color = getColor();
+	vColor = getColor();
 
 	// CLIPPING
 	doClipping();
-
-	
 	
 
 
@@ -741,15 +733,13 @@ void main() {
 			float visibility = visibleSamples / numSamples;
 
 			if(u < 0.0 || u > 1.0 || v < 0.0 || v > 1.0 || nc.x < -1.0 || nc.x > 1.0 || nc.y < -1.0 || nc.y > 1.0 || nc.z < -1.0 || nc.z > 1.0){
-				color = vec3(0.0, 0.0, 0.2);
+				vColor = vec3(0.0, 0.0, 0.2);
 			}else{
-				color = vec3(1.0, 1.0, 1.0) * visibility + vec3(1.0, 1.0, 1.0) * vec3(0.5, 0.0, 0.0) * (1.0 - visibility);
+				vColor = vec3(1.0, 1.0, 1.0) * visibility + vec3(1.0, 1.0, 1.0) * vec3(0.5, 0.0, 0.0) * (1.0 - visibility);
 			}
 		}
 
 	#endif
-
-	vColor = color;
 
 	#if defined hq_depth_pass
 		float originalDepth = gl_Position.w;

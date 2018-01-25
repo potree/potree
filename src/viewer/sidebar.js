@@ -277,8 +277,17 @@ initSidebar = (viewer) => {
 				object.moveHere(viewer.scene.getActiveCamera());
 			}else if(object instanceof Potree.PolygonClipVolume){
 				let dir = object.camera.getWorldDirection();
-				dir.multiplyScalar(viewer.scene.view.radius);
-				let target = new THREE.Vector3().addVectors(object.camera.position, dir);
+				let target;
+
+				if(object.camera instanceof THREE.OrthographicCamera){
+					dir.multiplyScalar(object.camera.right)
+					target = new THREE.Vector3().addVectors(object.camera.position, dir);
+					viewer.setCameraMode(Potree.CameraMode.ORTHOGRAPHIC);
+				}else if(object.camera instanceof THREE.PerspectiveCamera){
+					dir.multiplyScalar(viewer.scene.view.radius);
+					target = new THREE.Vector3().addVectors(object.camera.position, dir);
+					viewer.setCameraMode(Potree.CameraMode.PERSPECTIVE);
+				}
 				
 				viewer.scene.view.position.copy(object.camera.position);
 				viewer.scene.view.lookAt(target);

@@ -54,6 +54,12 @@ Potree.ClipMethod = {
 	INSIDE_ALL: 1
 };
 
+Potree.MOUSE = {
+	LEFT: 0b0001,
+	RIGHT: 0b0010,
+	MIDDLE: 0b0100
+};
+
 Potree.timerQueries = {};
 
 Potree.measureTimings = false;
@@ -123,12 +129,6 @@ Potree.resolveQueries = function (gl) {
 	}
 
 	return resolved;
-};
-
-Potree.MOUSE = {
-	LEFT: 0b0001,
-	RIGHT: 0b0010,
-	MIDDLE: 0b0100
 };
 
 Potree.toMaterialID = function(materialName){

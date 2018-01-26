@@ -1041,7 +1041,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		});
 	}
 
-	update (delta, timestamp) {
+	update(delta, timestamp){
 
 		if(Potree.measureTimings) performance.mark("update-start");
 
@@ -1212,16 +1212,12 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			this.controls.enabled = true;
 			this.inputHandler.addInputListener(this.controls);
 		}
-		//
+		
 		if (this.controls !== null) {
 			this.controls.setScene(scene);
 			this.controls.update(delta);
 
 			this.scene.cameraP.position.copy(scene.view.position);
-			//camera.rotation.x = scene.view.pitch;
-			//camera.rotation.y = scene.view.yaw;
-			
-			//camera.lookAt(scene.view.getPivot());
 			this.scene.cameraP.rotation.order = "ZXY";
 			this.scene.cameraP.rotation.x = Math.PI / 2 + this.scene.view.pitch;
 			this.scene.cameraP.rotation.z = this.scene.view.yaw;
@@ -1262,10 +1258,11 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			}));
 
 			// clip polygons
-			let clipPolygons = this.scene.polygonClipVolumes.filter(vol => vol.initialized).map(vol => {
-				let vp = vol.projMatrix.clone().multiply(vol.viewMatrix);
-				return {polygon: vol.markersPosWorld, count: vol.markersPosWorld.length, view: vp};
-			});
+			//let clipPolygons = this.scene.polygonClipVolumes.filter(vol => vol.initialized).map(vol => {
+			//	let vp = vol.projMatrix.clone().multiply(vol.viewMatrix);
+			//	return {polygon: vol.markersPosWorld, count: vol.markersPosWorld.length, view: vp};
+			//});
+			let clipPolygons = this.scene.polygonClipVolumes.filter(vol => vol.initialized);
 			
 			// set clip volumes in material
 			for(let pointcloud of this.scene.pointclouds){

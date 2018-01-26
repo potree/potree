@@ -47,7 +47,7 @@ uniform int clipMethod;
 #if defined(num_clippolygons) && num_clippolygons > 0
 	uniform int uClipPolygonVCount[num_clippolygons];
 	uniform vec3 uClipPolygonVertices[num_clippolygons * 8];
-	uniform mat4 uClipPolygonVP[num_clippolygons];
+	uniform mat4 uClipPolygonWVP[num_clippolygons];
 #endif
 
 uniform float size;
@@ -563,8 +563,13 @@ float getPointSize(){
 
 #if defined(num_clippolygons) && num_clippolygons > 0
 bool pointInClipPolygon(vec3 point, int polyIdx) {
-	vec4 screenClipPos = uClipPolygonVP[polyIdx] * modelMatrix * vec4(point, 1.0);
-	screenClipPos.xy = screenClipPos.xy / screenClipPos.w * 0.5 + 0.5;
+
+	mat4 wvp = uClipPolygonWVP[polyIdx];
+	//vec4 screenClipPos = uClipPolygonVP[polyIdx] * modelMatrix * vec4(point, 1.0);
+	//screenClipPos.xy = screenClipPos.xy / screenClipPos.w * 0.5 + 0.5;
+
+	vec4 pointNDC = wvp * vec4(point, 1.0);
+	pointNDC.xy = pointNDC.xy / pointNDC.w;
 
 	int j = uClipPolygonVCount[polyIdx] - 1;
 	bool c = false;
@@ -573,12 +578,20 @@ bool pointInClipPolygon(vec3 point, int polyIdx) {
 			break;
 		}
 
-		vec4 verti = uClipPolygonVP[polyIdx] * vec4(uClipPolygonVertices[polyIdx * 8 + i], 1);
-		vec4 vertj = uClipPolygonVP[polyIdx] * vec4(uClipPolygonVertices[polyIdx * 8 + j], 1);
-		verti.xy = verti.xy / verti.w * 0.5 + 0.5;
-		vertj.xy = vertj.xy / vertj.w * 0.5 + 0.5;
-		if( ((verti.y > screenClipPos.y) != (vertj.y > screenClipPos.y)) && 
-			(screenClipPos.x < (vertj.x-verti.x) * (screenClipPos.y-verti.y) / (vertj.y-verti.y) + verti.x) ) {
+		//vec4 verti = wvp * vec4(uClipPolygonVertices[polyIdx * 8 + i], 1);
+		//vec4 vertj = wvp * vec4(uClipPolygonVertices[polyIdx * 8 + j], 1);
+
+		//verti.xy = verti.xy / verti.w;
+		//vertj.xy = vertj.xy / vertj.w;
+
+		//verti.xy = verti.xy / verti.w * 0.5 + 0.5;
+		//vertj.xy = vertj.xy / vertj.w * 0.5 + 0.5;
+
+		vec3 verti = uClipPolygonVertices[polyIdx * 8 + i];
+		vec3 vertj = uClipPolygonVertices[polyIdx * 8 + j];
+
+		if( ((verti.y > pointNDC.y) != (vertj.y > pointNDC.y)) && 
+			(pointNDC.x < (vertj.x-verti.x) * (pointNDC.y-verti.y) / (vertj.y-verti.y) + verti.x) ) {
 			c = !c;
 		}
 		j = i;
@@ -599,8 +612,8 @@ void doClipping(){
 		}
 	#endif
 
-	bool insideAny = false;
-	bool insideAll = true;
+	int clipVolumesCount = 0;
+	int insideCount = 0;
 
 	#if defined(num_clipboxes) && num_clipboxes > 0
 		for(int i = 0; i < num_clipboxes; i++){
@@ -608,18 +621,23 @@ void doClipping(){
 			bool inside = -0.5 <= clipPosition.x && clipPosition.x <= 0.5;
 			inside = inside && -0.5 <= clipPosition.y && clipPosition.y <= 0.5;
 			inside = inside && -0.5 <= clipPosition.z && clipPosition.z <= 0.5;
-			insideAny = insideAny || inside;
-			insideAll = insideAll && inside;
+
+			insideCount = insideCount + (inside ? 1 : 0);
+			clipVolumesCount++;
 		}	
 	#endif
 
 	#if defined(num_clippolygons) && num_clippolygons > 0
 		for(int i = 0; i < num_clippolygons; i++) {
-			bool inside = pointInClipPolygon(position, i);;
-			insideAny = insideAny || inside;
-			insideAll = insideAll && inside;
+			bool inside = pointInClipPolygon(position, i);
+
+			insideCount = insideCount + (inside ? 1 : 0);
+			clipVolumesCount++;
 		}
 	#endif
+
+	bool insideAny = insideCount > 0;
+	bool insideAll = (clipVolumesCount > 0) && (clipVolumesCount == insideCount);
 
 	if(clipMethod == CLIPMETHOD_INSIDE_ANY){
 		if(insideAny && clipTask == CLIPTASK_HIGHLIGHT){
@@ -673,7 +691,7 @@ void main() {
 	
 
 
-	
+
 
 	#if defined(num_snapshots) && num_snapshots > 0
 

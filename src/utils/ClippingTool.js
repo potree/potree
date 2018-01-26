@@ -89,10 +89,6 @@ Potree.ClippingTool = class ClippingTool extends THREE.EventDispatcher{
 				marker-mid="url(#diamond)" 
 				marker-end="url(#diamond)" 
 				/>
-
-				
-
-			
 		</svg>`);
 		$(domElement.parentElement).append(svg);
 
@@ -109,12 +105,10 @@ Potree.ClippingTool = class ClippingTool extends THREE.EventDispatcher{
 
 		let insertionCallback = (e) => {
 			if(e.button === THREE.MOUSE.LEFT){
-				if(polyClipVol.markers.length > 1) {
-					polyClipVol.addEdge(polyClipVol.markers.length - 2, polyClipVol.markers.length - 1);
-				}
 				
 				polyClipVol.addMarker();
 
+				// SVC Screen Line
 				svg.find("polyline").each((index, target) => {
 					let newPoint = svg[0].createSVGPoint();
 					newPoint.x = e.offsetX;
@@ -136,28 +130,17 @@ Potree.ClippingTool = class ClippingTool extends THREE.EventDispatcher{
 		
 		cancel.callback = e => {
 
-			let first = svg.find("polyline")[0].points[0];
-			svg.find("polyline").each((index, target) => {
-				let newPoint = svg[0].createSVGPoint();
-				newPoint.x = first.x;
-				newPoint.y = first.y;
-				let polyline = target.points.appendItem(newPoint);
-			});
+			//let first = svg.find("polyline")[0].points[0];
+			//svg.find("polyline").each((index, target) => {
+			//	let newPoint = svg[0].createSVGPoint();
+			//	newPoint.x = first.x;
+			//	newPoint.y = first.y;
+			//	let polyline = target.points.appendItem(newPoint);
+			//});
+			svg.remove();
 
-			this.sceneMarker.remove(polyClipVol);
 			if(polyClipVol.markers.length > 3) {
 				polyClipVol.removeLastMarker();
-				for(let i = 0; i < polyClipVol.markers.length; i++) {
-					polyClipVol.markers[i].position.copy(polyClipVol.markersPosWorld[i]);
-					polyClipVol.markers[i].visible = false;
-					polyClipVol.remove(polyClipVol.edges[i]);
-				}				
-				polyClipVol.edges = [];
-				for(let i = 0; i < polyClipVol.markers.length - 1; i++) {
-					polyClipVol.addEdge(i, i+1);
-				}
-				polyClipVol.addEdge(polyClipVol.markers.length - 1, 0);
-				polyClipVol.addExtrudedEdges();
 				polyClipVol.initialized = true;	
 			} else {
 				this.viewer.scene.removePolygonClipVolume(polyClipVol);

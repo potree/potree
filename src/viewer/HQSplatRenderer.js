@@ -126,6 +126,10 @@ class HQSplatRenderer {
 				this.attributeMaterial.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
 				this.attributeMaterial.uniforms.octreeSize.value = octreeSize;
 				this.attributeMaterial.spacing = pointcloud.pcoGeometry.spacing * Math.max(pointcloud.scale.x, pointcloud.scale.y, pointcloud.scale.z);
+
+				this.attributeMaterial.clipTask = pointcloud.material.clipTask;
+				this.attributeMaterial.clipMethod = pointcloud.material.clipMethod;
+				this.attributeMaterial.setClipBoxes(pointcloud.material.clipBoxes);
 			}
 			
 			let gl = this.gl;

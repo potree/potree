@@ -192,6 +192,7 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 		this._pointColorType = Potree.PointColorType.RGB;
 		this._useClipBox = false;
 		this.numClipBoxes = 0;
+		this.clipPolygons = [];
 		this._weighted = false;
 		this._gradient = Potree.Gradients.SPECTRAL;
 		this.gradientTexture = Potree.PointCloudMaterial.generateGradientTexture(this._gradient);
@@ -402,7 +403,7 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 			defines.push('#define use_clip_box');
 		}
 
-		if(this.numClipPolygons > 0) {
+		if(this.clipPolygons.length > 0) {
 			defines.push('#define use_clip_polygon');
 		}
 
@@ -450,29 +451,10 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 
 		this.clipPolygons = clipPolygons;
 
-		let doUpdate = (this.numClipPolygons !== clipPolygons.length) && (clipPolygons.length === 0 || this.numClipPolygons === 0);
-
-		this.numClipPolygons = clipPolygons.length;
-		this.uniforms.clipPolygonCount.value = this.numClipPolygons;
+		let doUpdate = (this.clipPolygons.length !== clipPolygons.length);
 
 		if(doUpdate){
 			this.updateShaderSource();
-		}
-
-		this.uniforms.clipPolygons.value = new Float32Array(this.numClipPolygons * maxPolygonVertices * 3); 
-		this.uniforms.clipPolygonVP.value = new Float32Array(this.numClipPolygons * 16);
-		this.uniforms.clipPolygonVCount.value = new Int32Array(this.numClipPolygons);
-
-		for(let i = 0; i < this.numClipPolygons; i++){
-			let poly = clipPolygons[i];
-			
-			this.uniforms.clipPolygonVCount.value[i] = poly.count;
-			this.uniforms.clipPolygonVP.value.set(poly.view.elements, 16 * i);
-			for(let j = 0; j < poly.count; j++) {
-				this.uniforms.clipPolygons.value[i * 24 + (j * 3 + 0)] = poly.polygon[j].x;				
-				this.uniforms.clipPolygons.value[i * 24 + (j * 3 + 1)] = poly.polygon[j].y;
-				this.uniforms.clipPolygons.value[i * 24 + (j * 3 + 2)] = poly.polygon[j].z;
-			}
 		}
 	}
 	

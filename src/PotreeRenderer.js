@@ -638,6 +638,47 @@ Potree.Renderer = class Renderer {
 			}
 			gl.uniformMatrix4fv(lModelView, false, mat4holder);
 
+			{ // Clip Polygons
+				if(material.clipPolygons && material.clipPolygons.length > 0){
+
+					let clipPolygonVCount = [];
+					let worldViewProjMatrices = [];
+
+					for(let clipPolygon of material.clipPolygons){
+
+						let view = clipPolygon.viewMatrix;
+						let proj = clipPolygon.projMatrix;
+
+						let worldViewProj = proj.clone().multiply(view).multiply(world);
+
+						clipPolygonVCount.push(clipPolygon.markers.length);
+						worldViewProjMatrices.push(worldViewProj);
+					}
+
+					let flattenedMatrices = [].concat(...worldViewProjMatrices.map(m => m.elements));
+
+					let flattenedVertices = new Array(8 * 3 * material.clipPolygons.length);
+					for(let i = 0; i < material.clipPolygons.length; i++){
+						let clipPolygon = material.clipPolygons[i];
+						for(let j = 0; j < clipPolygon.markers.length; j++){
+							flattenedVertices[i * 24 + (j * 3 + 0)] = clipPolygon.markers[j].position.x;
+							flattenedVertices[i * 24 + (j * 3 + 1)] = clipPolygon.markers[j].position.y;
+							flattenedVertices[i * 24 + (j * 3 + 2)] = clipPolygon.markers[j].position.z;
+						}
+					}
+
+					const lClipPolygonVCount = shader.uniformLocations["uClipPolygonVCount[0]"];
+					gl.uniform1iv(lClipPolygonVCount, clipPolygonVCount);
+
+					const lClipPolygonVP = shader.uniformLocations["uClipPolygonWVP[0]"];
+					gl.uniformMatrix4fv(lClipPolygonVP, false, flattenedMatrices);
+
+					const lClipPolygons = shader.uniformLocations["uClipPolygonVertices[0]"];
+					gl.uniform3fv(lClipPolygons, flattenedVertices);
+
+				}
+			}
+
 
 			//shader.setUniformMatrix4("modelMatrix", world);
 			//shader.setUniformMatrix4("modelViewMatrix", worldView);
@@ -898,31 +939,6 @@ Potree.Renderer = class Renderer {
 
 				const lClipBoxes = shader.uniformLocations["clipBoxes[0]"];
 				gl.uniformMatrix4fv(lClipBoxes, false, flattenedMatrices);
-			}
-
-			if(material.clipPolygons && material.clipPolygons.length > 0){
-				let clipPolygonVCount = material.clipPolygons.map(p => p.polygon.length);
-				let flattenedMatrices = [].concat(...material.clipPolygons.map(c => c.view.elements));
-
-				let flattenedVertices = new Array(8 * 3 * material.clipPolygons.length);
-				for(let i = 0; i < material.clipPolygons.length; i++){
-					let polygon = material.clipPolygons[i];
-					for(let j = 0; j < polygon.polygon.length; j++){
-						flattenedVertices[i * 24 + (j * 3 + 0)] = polygon.polygon[j].x;
-						flattenedVertices[i * 24 + (j * 3 + 1)] = polygon.polygon[j].y;
-						flattenedVertices[i * 24 + (j * 3 + 2)] = polygon.polygon[j].z;
-					}
-				}
-
-				const lClipPolygonVCount = shader.uniformLocations["uClipPolygonVCount[0]"];
-				gl.uniform1iv(lClipPolygonVCount, clipPolygonVCount);
-
-				const lClipPolygonVP = shader.uniformLocations["uClipPolygonVP[0]"];
-				gl.uniformMatrix4fv(lClipPolygonVP, false, flattenedMatrices);
-
-				const lClipPolygons = shader.uniformLocations["uClipPolygonVertices[0]"];
-				gl.uniform3fv(lClipPolygons, flattenedVertices);
-
 			}
 
 			shader.setUniform1f("size", material.size);

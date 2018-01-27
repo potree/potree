@@ -930,7 +930,12 @@ Potree.Renderer = class Renderer {
 				shader.setUniform("uUseOrthographicCamera", false);
 			}
 
-			shader.setUniform1i("clipTask", material.clipTask);
+			if(material.clipBoxes.length + material.clipPolygons.length === 0){
+				shader.setUniform1i("clipTask", Potree.ClipTask.NONE);
+			}else{
+				shader.setUniform1i("clipTask", material.clipTask);
+			}
+
 			shader.setUniform1i("clipMethod", material.clipMethod);
 
 			if (material.clipBoxes && material.clipBoxes.length > 0) {
@@ -942,9 +947,8 @@ Potree.Renderer = class Renderer {
 			}
 
 			shader.setUniform1f("size", material.size);
-			shader.setUniform1f("maxSize", 50);
-			shader.setUniform1f("minSize", 2);
-
+			shader.setUniform1f("maxSize", material.uniforms.maxSize.value);
+			shader.setUniform1f("minSize", material.uniforms.minSize.value);
 
 			// uniform float uPCIndex
 			shader.setUniform1f("uOctreeSpacing", material.spacing);

@@ -1232,40 +1232,28 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		camera.updateMatrixWorld();
 		camera.matrixWorldInverse.getInverse(camera.matrixWorld);
 
-		{ // update clip boxes		
-			// ordinary clip boxes (clip planes)	
-			let boxes = this.scene.clipVolumes;			
+		{ // update clip boxes
+			let boxes = [];
+			
+			// volumes with clipping enabled
+			boxes.push(...this.scene.volumes.filter(v => v.clip));
+
+			// profile segments
+			for(let profile of this.scene.profiles){
+				boxes.push(...profile.boxes);
+			}
 			
 			let clipBoxes = boxes.map( box => {
-				box.updateMatrixWorld();			
-				let boxPosition = box.getWorldPosition();
-				let boxMatrixWorld = new THREE.Matrix4().compose(boxPosition, box.getWorldQuaternion(), box.children[0].scale);
-				let boxInverse = new THREE.Matrix4().getInverse(boxMatrixWorld);
-				return {inverse: boxInverse, position: boxPosition};
-			});
-
-			// extraordinary clip boxes (volume, profile)
-			boxes = this.scene.volumes.filter(v => v.clip);
-			for(let profile of this.scene.profiles){
-				boxes = boxes.concat(profile.boxes);
-			}			
-			
-			clipBoxes = clipBoxes.concat(boxes.map( box => {
 				box.updateMatrixWorld();
 				let boxInverse = new THREE.Matrix4().getInverse(box.matrixWorld);
 				let boxPosition = box.getWorldPosition();
 				return {inverse: boxInverse, position: boxPosition};
-			}));
+			});
 
-			// clip polygons
-			//let clipPolygons = this.scene.polygonClipVolumes.filter(vol => vol.initialized).map(vol => {
-			//	let vp = vol.projMatrix.clone().multiply(vol.viewMatrix);
-			//	return {polygon: vol.markersPosWorld, count: vol.markersPosWorld.length, view: vp};
-			//});
 			let clipPolygons = this.scene.polygonClipVolumes.filter(vol => vol.initialized);
 			
 			// set clip volumes in material
-			for(let pointcloud of this.scene.pointclouds){
+			for(let pointcloud of this.scene.pointclouds.filter(pc => pc.visible)){
 				pointcloud.material.setClipBoxes(clipBoxes);
 				pointcloud.material.setClipPolygons(clipPolygons, this.clippingTool.maxPolygonVertices);
 				pointcloud.material.clipTask = this.clipTask;

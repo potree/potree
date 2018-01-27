@@ -91,8 +91,15 @@ Potree.ScreenBoxSelectTool = class ScreenBoxSelectTool extends THREE.EventDispat
 			this.removeEventListener("drag", drag);
 			this.removeEventListener("drop", drop);
 
+			let allPointsNear = [];
+			let allPointsFar = [];
+
 			// TODO support more than one point cloud
 			for(let pointcloud of this.viewer.scene.pointclouds){
+
+				if(!pointcloud.visible){
+					continue;
+				}
 
 				let volCam = camera.clone();
 				volCam.left = -volume.scale.x / 2; 
@@ -131,24 +138,26 @@ Potree.ScreenBoxSelectTool = class ScreenBoxSelectTool extends THREE.EventDispat
 				volCam.matrixWorldInverse.getInverse(volCam.matrixWorld);
 				let pointsFar = pointcloud.pick(viewer, volCam, rayInverse, pickerSettings);
 
-				if(pointsNear.length > 0 && pointsFar.length > 0){
-					let viewLine = new THREE.Line3(ray.origin, new THREE.Vector3().addVectors(ray.origin, ray.direction));
-
-					let closestOnLine = pointsNear.map(p => viewLine.closestPointToPoint(p.position, false));
-					let closest = closestOnLine.sort( (a, b) => ray.origin.distanceTo(a) - ray.origin.distanceTo(b))[0];
-
-					let farthestOnLine = pointsFar.map(p => viewLine.closestPointToPoint(p.position, false));
-					let farthest = farthestOnLine.sort( (a, b) => ray.origin.distanceTo(b) - ray.origin.distanceTo(a))[0];
-
-					let distance = closest.distanceTo(farthest);
-					let centroid = new THREE.Vector3().addVectors(closest, farthest).multiplyScalar(0.5);
-					volume.scale.z = distance * 1.1;
-					volume.position.copy(centroid);
-					
-				}
-
-				volume.clip = true;
+				allPointsNear.push(...pointsNear);
+				allPointsFar.push(...pointsFar);
 			}
+
+			if(allPointsNear.length > 0 && allPointsFar.length > 0){
+				let viewLine = new THREE.Line3(ray.origin, new THREE.Vector3().addVectors(ray.origin, ray.direction));
+
+				let closestOnLine = allPointsNear.map(p => viewLine.closestPointToPoint(p.position, false));
+				let closest = closestOnLine.sort( (a, b) => ray.origin.distanceTo(a) - ray.origin.distanceTo(b))[0];
+
+				let farthestOnLine = allPointsFar.map(p => viewLine.closestPointToPoint(p.position, false));
+				let farthest = farthestOnLine.sort( (a, b) => ray.origin.distanceTo(b) - ray.origin.distanceTo(a))[0];
+
+				let distance = closest.distanceTo(farthest);
+				let centroid = new THREE.Vector3().addVectors(closest, farthest).multiplyScalar(0.5);
+				volume.scale.z = distance * 1.1;
+				volume.position.copy(centroid);
+			}
+
+			volume.clip = true;
 		};
 
 		this.addEventListener("drag", drag);

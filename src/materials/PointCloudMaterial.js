@@ -182,15 +182,24 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 		this.visibleNodesTexture.minFilter = THREE.NearestFilter;
 		this.visibleNodesTexture.magFilter = THREE.NearestFilter;
 
-		let pointSize = parameters.size || 1.0;
-		let minSize = parameters.minSize || 1.0;
-		let maxSize = parameters.maxSize || 50.0;
-		let treeType = parameters.treeType || Potree.TreeType.OCTREE;
+		let getValid = (a, b) => {
+			if(a !== undefined){
+				return a;
+			}else{
+				return b;
+			}
+		}
+
+		let pointSize = getValid(parameters.size, 1.0);
+		let minSize = getValid(parameters.minSize, 2.0);
+		let maxSize = getValid(parameters.maxSize, 50.0);
+		let treeType = getValid(parameters.treeType, Potree.TreeType.OCTREE);
 
 		this._pointSizeType = Potree.PointSizeType.FIXED;
 		this._shape = Potree.PointShape.SQUARE;
 		this._pointColorType = Potree.PointColorType.RGB;
 		this._useClipBox = false;
+		this.clipBoxes = [];
 		this.numClipBoxes = 0;
 		this.clipPolygons = [];
 		this._weighted = false;

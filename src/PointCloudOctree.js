@@ -96,6 +96,7 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 	constructor (geometry, material) {
 		super();
 
+		this.pointBudget = Infinity;
 		this.pcoGeometry = geometry;
 		this.boundingBox = this.pcoGeometry.boundingBox;
 		this.boundingSphere = this.boundingBox.getBoundingSphere();
@@ -574,7 +575,7 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 		
 		let getVal = (a, b) => a !== undefined ? a : b;
 
-		let pickWindowSize = getVal(params.pickWindowSize, 65);
+		let pickWindowSize = getVal(params.pickWindowSize, 17);
 		let pickOutsideClipRegion = getVal(params.pickOutsideClipRegion, false);
 
 		let size = renderer.getSize();

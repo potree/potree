@@ -426,6 +426,8 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 	let numVisibleNodes = 0;
 	let numVisiblePoints = 0;
 
+	let numVisiblePointsInPointclouds = new Map(pointclouds.map(pc => [pc, 0]));
+
 	let visibleNodes = [];
 	let visibleGeometry = [];
 	let unloadedGeometry = [];
@@ -467,9 +469,10 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 		let level = node.getLevel();
 		let visible = insideFrustum;
 		visible = visible && !(numVisiblePoints + node.getNumPoints() > Potree.pointBudget);
+		visible = visible && !(numVisiblePointsInPointclouds.get(pointcloud) + node.getNumPoints() > pointcloud.pointBudget);
 		visible = visible && level < maxLevel;
 
-		if(pointcloud.material.numClipBoxes > 0 && !window.warned125){
+		if(pointcloud.material.clipBoxes.length > 0 && !window.warned125){
 			console.log("TODO");
 			window.warned125 = true;
 		}
@@ -494,6 +497,8 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 		// TODO: not used, same as the declaration?
 		// numVisibleNodes++;
 		numVisiblePoints += node.getNumPoints();
+		let numVisiblePointsInPointcloud = numVisiblePointsInPointclouds.get(pointcloud);
+		numVisiblePointsInPointclouds.set(pointcloud, numVisiblePointsInPointcloud + node.getNumPoints());
 
 		pointcloud.numVisibleNodes++;
 		pointcloud.numVisiblePoints += node.getNumPoints();

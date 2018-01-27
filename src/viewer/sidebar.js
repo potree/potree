@@ -512,6 +512,28 @@ initSidebar = (viewer) => {
 			));
 		}
 
+		{ // REMOVE CLIPPING TOOLS
+			clippingToolBar.append(createToolIcon(
+				Potree.resourcePath + "/icons/remove.svg",
+				"[title]tt.remove_all_measurement",
+				function(){
+
+					viewer.scene.removeAllClipVolumes();
+
+					//if(!(viewer.scene.getActiveCamera() instanceof THREE.OrthographicCamera)){
+					//	return;
+					//}
+					//
+					//let item = boxSelectTool.startInsertion();
+
+					//let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
+					//let jsonNode = measurementsRoot.children.find(child => child.data.uuid === item.uuid);
+					//$.jstree.reference(jsonNode.id).deselect_all();
+					//$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
+				}
+			));
+		}
+
 	}
 
 	function initClassificationList () {

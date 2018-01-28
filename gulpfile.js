@@ -16,6 +16,7 @@ var server;
 
 var paths = {
 	potree : [
+		"src/KeyCodes.js",
 		"src/extensions/EventDispatcher.js",
 		"src/extensions/PerspectiveCamera.js",
 		"src/extensions/OrthographicCamera.js",

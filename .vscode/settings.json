@@ -11,4 +11,8 @@
 	"editor.renderWhitespace": "all",
 	"editor.insertSpaces": false,
 	"editor.minimap.enabled": false,
+	"editor.autoClosingBrackets": false,
+	"editor.formatOnType": false,
+	"editor.acceptSuggestionOnEnter": "off",
+	"editor.acceptSuggestionOnCommitCharacter": false,
 }

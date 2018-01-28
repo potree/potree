@@ -622,6 +622,12 @@ Potree.Renderer = class Renderer {
 
 			let level = node.getLevel();
 
+			if(node.debug){
+				shader.setUniform("uDebug", true);
+			}else{
+				shader.setUniform("uDebug", false);
+			}
+
 
 			// TODO consider passing matrices in an array to avoid uniformMatrix4fv overhead
 			const lModel = shader.uniformLocations["modelMatrix"];

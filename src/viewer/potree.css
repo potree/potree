@@ -86,7 +86,8 @@
 	top: 10px; 
 	left: 50%; 
 	transform: translateX(-50%); 
-	text-align: center
+	text-align: center;
+	z-index:	1000;
 }
 
 #potree_sidebar_container{
@@ -330,6 +331,11 @@ body{
 }
 
 .measurement_content{
+	padding: 5px 15px 5px 10px;
+	/*background-color: rgba(0, 0, 0, 0.4);*/
+}
+
+.propertypanel_content{
 	padding: 5px 15px 5px 10px;
 	/*background-color: rgba(0, 0, 0, 0.4);*/
 }

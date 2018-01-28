@@ -1232,6 +1232,31 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		camera.updateMatrixWorld();
 		camera.matrixWorldInverse.getInverse(camera.matrixWorld);
 
+		{
+			if(this._previousCamera === undefined){
+				this._previousCamera = this.scene.getActiveCamera().clone();
+				this._previousCamera.rotation.copy(this.scene.getActiveCamera());
+			}
+
+			if(!this._previousCamera.matrixWorld.equals(camera.matrixWorld)){
+				this.dispatchEvent({
+					type: "camera_changed",
+					previous: this._previousCamera,
+					camera: camera
+				});
+			}else if(!this._previousCamera.projectionMatrix.equals(camera.matrixWorld)){
+				this.dispatchEvent({
+					type: "camera_changed",
+					previous: this._previousCamera,
+					camera: camera
+				});
+			}
+
+			this._previousCamera = this.scene.getActiveCamera().clone();
+			this._previousCamera.rotation.copy(this.scene.getActiveCamera());
+
+		}
+
 		{ // update clip boxes
 			let boxes = [];
 			
@@ -1247,7 +1272,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 				box.updateMatrixWorld();
 				let boxInverse = new THREE.Matrix4().getInverse(box.matrixWorld);
 				let boxPosition = box.getWorldPosition();
-				return {inverse: boxInverse, position: boxPosition};
+				return {box: box, inverse: boxInverse, position: boxPosition};
 			});
 
 			let clipPolygons = this.scene.polygonClipVolumes.filter(vol => vol.initialized);

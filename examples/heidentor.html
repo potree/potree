@@ -99,6 +99,31 @@
 
 			//Potree.measureTimings = true;
 
+
+			//{
+			//	let volume = new Potree.Volume();
+			//	volume.clip = true;
+			//	volume.position.set(-2.628, -1.647, 5.946);
+			//	volume.scale.set(20, 20, 20);
+			//	viewer.scene.addVolume(volume);
+			//}
+
+			{
+				let volume = new Potree.Volume();
+				volume.clip = true;
+				volume.position.set(-2.628, -1.647, 5.946);
+				volume.scale.set(7.82, 1.32, 16.03);
+				viewer.scene.addVolume(volume);
+			}
+
+			{
+				let volume = new Potree.Volume();
+				volume.clip = true;
+				volume.position.set(-2.344, 3.199, 5.647);
+				volume.scale.set(9.04, 17.52, 1.11);
+				viewer.scene.addVolume(volume);
+			}
+
 		});
 		
 	</script>

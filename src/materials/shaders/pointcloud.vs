@@ -25,6 +25,8 @@ uniform float fov;
 uniform float near;
 uniform float far;
 
+uniform bool uDebug;
+
 uniform bool uUseOrthographicCamera;
 uniform float uOrthoWidth;
 uniform float uOrthoHeight;
@@ -767,5 +769,11 @@ void main() {
 		mvPosition.xyz = mvPosition.xyz * adjust;
 		gl_Position = projectionMatrix * mvPosition;
 	#endif
+
+	if(uDebug){
+		vColor.b = (vColor.r + vColor.g + vColor.b) / 3.0;
+		vColor.r = 1.0;
+		vColor.g = 1.0;
+	}
 
 }

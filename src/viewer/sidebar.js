@@ -219,18 +219,29 @@ initSidebar = (viewer) => {
 		tree.jstree("check_node", annotationsID);
 		tree.jstree("check_node", otherID);
 
-		tree.on('create_node.jstree', function(e, data) {
+		tree.on('create_node.jstree', function(e, data){
 			tree.jstree("open_all");
 		});
 
-		tree.on("select_node.jstree", function (e, data) { 
+		tree.on("select_node.jstree", function(e, data){
 			let object = data.node.data;
 			propertiesPanel.set(object);
 
+			viewer.inputHandler.deselectAll();
+
 			if(object instanceof Potree.Volume){
-				viewer.inputHandler.deselectAll();
 				viewer.inputHandler.toggleSelection(object);
 			}
+
+			$(viewer.renderer.domElement).focus();
+		});
+
+		tree.on("deselect_node.jstree", function(e, data){
+			propertiesPanel.set(null);
+		});
+
+		tree.on("delete_node.jstree", function(e, data){
+			propertiesPanel.set(null);
 		});
 
 		tree.on('dblclick','.jstree-anchor', function (e) {
@@ -371,10 +382,16 @@ initSidebar = (viewer) => {
 			tree.jstree("delete_node", jsonNode.id);
 		};
 
-
+		let onProfileRemoved = (e) => {
+			let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
+			let jsonNode = measurementsRoot.children.find(child => child.data.uuid === e.profile.uuid);
+			
+			tree.jstree("delete_node", jsonNode.id);
+		};
 
 		viewer.scene.addEventListener("measurement_removed", onMeasurementRemoved);
 		viewer.scene.addEventListener("volume_removed", onVolumeRemoved);
+		viewer.scene.addEventListener("profile_removed", onProfileRemoved);
 
 		{
 			let annotationIcon = `${Potree.resourcePath}/icons/target.svg`;
@@ -402,6 +419,10 @@ initSidebar = (viewer) => {
 
 		for(let profile of viewer.scene.profiles){
 			onProfileAdded({profile: profile});
+		}
+
+		{
+			createNode(otherID, "Camera", null, new THREE.Camera());
 		}
 
 		viewer.addEventListener("scene_changed", (e) => {

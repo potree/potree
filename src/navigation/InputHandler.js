@@ -170,8 +170,8 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher {
 	onKeyDown (e) {
 		if (this.logMessages) console.log(this.constructor.name + ': onKeyDown');
 
-		if (e.keyCode === 46 && this.selection.length > 0) {
-			// DELETE
+		// DELETE
+		if (e.keyCode === Potree.KeyCodes.DELETE && this.selection.length > 0) {
 			this.dispatchEvent({
 				type: 'delete',
 				selection: this.selection

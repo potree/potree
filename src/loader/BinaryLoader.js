@@ -89,6 +89,9 @@ Potree.BinaryLoader.prototype.parse = function (node, buffer) {
 				let bufferAttribute = new THREE.BufferAttribute(new Uint8Array(buffer), 4);
 				bufferAttribute.normalized = true;
 				geometry.addAttribute('indices', bufferAttribute);
+			} else if (parseInt(property) === Potree.PointAttributeNames.SPACING) {
+				let bufferAttribute = new THREE.BufferAttribute(new Float32Array(buffer), 1);
+				geometry.addAttribute('spacing', bufferAttribute);
 			}
 		}
 
@@ -117,6 +120,7 @@ Potree.BinaryLoader.prototype.parse = function (node, buffer) {
 		scale: this.scale,
 		spacing: node.spacing,
 		hasChildren: node.hasChildren,
+		name: node.name
 	};
 	worker.postMessage(message, [message.buffer]);
 };

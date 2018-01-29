@@ -31,7 +31,7 @@ class RepRenderer {
 		};
 
 		this.history = {
-			maxSnapshots: 5,
+			maxSnapshots: 10,
 			snapshots: [],
 			version: 0
 		};
@@ -142,10 +142,7 @@ class RepRenderer {
 			viewer.renderer.clear();
 		}
 
-		viewer.measuringTool.update();
-		viewer.profileTool.update();
 		viewer.transformationTool.update();
-		viewer.volumeTool.update();	
 		
 		viewer.renderer.render(viewer.scene.scene, camera);
 		
@@ -217,10 +214,13 @@ class RepRenderer {
 			viewer.renderer.clearTarget(snap.target, true, true, true);
 			viewer.renderer.setRenderTarget(snap.target);
 
+
 			for(const octree of viewer.scene.pointclouds){
 
 				octree.material.snapEnabled = false;
 				octree.material.needsUpdate = true;
+
+
 			
 				let from = this.history.version * (octree.visibleNodes.length / this.history.maxSnapshots);
 				let to = (this.history.version + 1) * (octree.visibleNodes.length / this.history.maxSnapshots);
@@ -273,7 +273,7 @@ class RepRenderer {
 					octree.material.needsUpdate = true;
 				}
 			
-				let nodes = octree.visibleNodes.slice(0, 5);
+				let nodes = octree.visibleNodes.slice(0, 50);
 				//let nodes = octree.visibleNodes;
 				viewer.pRenderer.renderOctree(octree, nodes, camera, this.rtColor, {vnTextureNodes: nodes});
 
@@ -319,11 +319,8 @@ class RepRenderer {
 		viewer.renderer.clearDepth();
 		viewer.renderer.render(viewer.controls.sceneControls, camera);
 		
-		viewer.renderer.render(viewer.measuringTool.sceneMeasurement, camera);		
-		viewer.renderer.render(viewer.volumeTool.sceneVolume, camera);
 		viewer.renderer.render(viewer.clippingTool.sceneVolume, camera);
-		viewer.renderer.render(viewer.profileTool.sceneProfile, camera);
-		viewer.renderer.render(viewer.transformationTool.sceneTransform, camera);
+		viewer.renderer.render(viewer.transformationTool.scene, camera);
 		
 		viewer.renderer.setViewport(viewer.renderer.domElement.clientWidth - viewer.navigationCube.width, 
 									viewer.renderer.domElement.clientHeight - viewer.navigationCube.width, 

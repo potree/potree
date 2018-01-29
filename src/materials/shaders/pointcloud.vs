@@ -13,6 +13,7 @@ attribute float returnNumber;
 attribute float numberOfReturns;
 attribute float pointSourceID;
 attribute vec4 indices;
+attribute float spacing;
 
 uniform mat4 modelMatrix;
 uniform mat4 modelViewMatrix;
@@ -63,6 +64,7 @@ uniform float uOctreeSize;
 uniform vec3 uBBSize;
 uniform float uLevel;
 uniform float uVNStart;
+uniform bool uIsLeafNode;
 
 uniform vec3 uColor;
 uniform float uOpacity;
@@ -101,16 +103,13 @@ uniform mat4 uSnapView[num_snapshots];
 uniform mat4 uSnapProj[num_snapshots];
 uniform mat4 uSnapScreenToCurrentView[num_snapshots];
 
-varying vec4 vSnapProjected[num_snapshots];
-varying float vSnapProjectedDistance[num_snapshots];
+varying float vSnapTextureID;
 #endif
 
 varying vec3	vColor;
-varying float	vLinearDepth;
 varying float	vLogDepth;
 varying vec3	vViewPosition;
 varying float 	vRadius;
-varying vec3	vWorldPosition;
 varying float 	vPointSize;
 
 
@@ -533,25 +532,33 @@ float getPointSize(){
 	float pointSize = 1.0;
 	
 	float slope = tan(fov / 2.0);
-	float projFactor =  -0.5 * uScreenHeight / (slope * vViewPosition.z);
+	float projFactor = -0.5 * uScreenHeight / (slope * vViewPosition.z);
 	
+	//float size = spacing * 0.01;
+
 	float r = uOctreeSpacing * 1.5;
 	vRadius = r;
 	#if defined fixed_point_size
 		pointSize = size;
 	#elif defined attenuated_point_size
 		if(uUseOrthographicCamera){
-			pointSize = size;			
+			pointSize = size;
 		}else{
-			pointSize = pointSize * projFactor;
+			pointSize = size * spacing * projFactor;
+			//pointSize = pointSize * projFactor;
 		}
 	#elif defined adaptive_point_size
 		if(uUseOrthographicCamera) {
 			float worldSpaceSize = 1.5 * size * r / getPointSizeAttenuation();
 			pointSize = (worldSpaceSize / uOrthoWidth) * uScreenWidth;
 		} else {
-			float worldSpaceSize = 1.5 * size * r / getPointSizeAttenuation();
-			pointSize = worldSpaceSize * projFactor;
+
+			if(uIsLeafNode && false){
+				pointSize = size * spacing * projFactor;
+			}else{
+				float worldSpaceSize = 1.5 * size * r / getPointSizeAttenuation();
+				pointSize = worldSpaceSize * projFactor;
+			}
 		}
 	#endif
 
@@ -676,7 +683,6 @@ void main() {
 	vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
 	vViewPosition = mvPosition.xyz;
 	gl_Position = projectionMatrix * mvPosition;
-	vLinearDepth = gl_Position.w;
 	vLogDepth = log2(-mvPosition.z);
 
 
@@ -695,14 +701,14 @@ void main() {
 
 
 
-	#if defined(num_snapshots) && num_snapshots > 0
+	//#if defined(num_snapshots) && num_snapshots > 0
 
-		for(int i = 0; i < num_snapshots; i++){
-			vSnapProjected[i] = uSnapProj[i] * uSnapView[i] * modelMatrix * vec4(position, 1.0);	
-			vSnapProjectedDistance[i] = -(uSnapView[i] * modelMatrix * vec4(position, 1.0)).z;
-		}
-		
-	#endif
+	//	for(int i = 0; i < num_snapshots; i++){
+	//		vSnapProjected[i] = uSnapProj[i] * uSnapView[i] * modelMatrix * vec4(position, 1.0);	
+	//		vSnapProjectedDistance[i] = -(uSnapView[i] * modelMatrix * vec4(position, 1.0)).z;
+	//	}
+	//	
+	//#endif
 
 	#if defined(num_shadowmaps) && num_shadowmaps > 0
 
@@ -774,6 +780,12 @@ void main() {
 		vColor.b = (vColor.r + vColor.g + vColor.b) / 3.0;
 		vColor.r = 1.0;
 		vColor.g = 1.0;
+	}
+
+	//vColor = vec3(1.0, 1.0, 1.0) * spacing / 0.05;
+
+	if(getLOD() != uLevel){
+		//gl_Position = vec4(100.0, 100.0, 100.0, 1.0);
 	}
 
 }

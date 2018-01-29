@@ -614,7 +614,7 @@ class CameraPanel{
 					<td align="center" id="camera_target_y" style="width: 25%"></td>
 					<td align="center" id="camera_target_z" style="width: 25%"></td>
 					<td align="right" id="copy_camera_target" style="width: 25%">
-						<img name="copyPosition" class="button-icon" src="${copyIconPath}" style="width: 16px; height: 16px"/>
+						<img name="copyTarget" class="button-icon" src="${copyIconPath}" style="width: 16px; height: 16px"/>
 					</td>
 				</tr>
 			</table>
@@ -624,6 +624,13 @@ class CameraPanel{
 		this.elCopyPosition = this.elContent.find("img[name=copyPosition]");
 		this.elCopyPosition.click( () => {
 			let pos = this.viewer.scene.getActiveCamera().position.toArray();
+			let msg = pos.map(c => c.toFixed(3)).join(", ");
+			Potree.utils.clipboardCopy(msg);
+		});
+
+		this.elCopyTarget = this.elContent.find("img[name=copyTarget]");
+		this.elCopyTarget.click( () => {
+			let pos = this.viewer.scene.view.getPivot().toArray();
 			let msg = pos.map(c => c.toFixed(3)).join(", ");
 			Potree.utils.clipboardCopy(msg);
 		});

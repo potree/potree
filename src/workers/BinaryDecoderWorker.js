@@ -46,6 +46,7 @@ onmessage = function (event) {
 	let scale = event.data.scale;
 	let spacing = event.data.spacing;
 	let hasChildren = event.data.hasChildren;
+	let name = event.data.name;
 	
 	let tightBoxMin = [ Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY ];
 	let tightBoxMax = [ Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY ];
@@ -207,72 +208,141 @@ onmessage = function (event) {
 		inOffset += pointAttribute.byteSize;
 	}
 
-	//let estimatedSpacing;
-	//if(hasChildren || true){ 
-	//	estimatedSpacing = spacing;
-	//}else{
-	//	performance.mark("spacing-start");
+	//let debugNodes = ["r026", "r0226","r02274"];
+	//if(debugNodes.includes(name)){
+	if(false){
+		console.log("estimate spacing!");
 
-	//	let knnCount = 5;
-	//	let n = 5;
-	//	let choice = [];
-	//	for(let i = 0; i < Math.min(n, numPoints); i++){
-	//		let index = parseInt(Math.random() * numPoints);
 
-	//		let x = iView.getFloat32(index * iStride + 0, true);
-	//		let y = iView.getFloat32(index * iStride + 4, true);
-	//		let z = iView.getFloat32(index * iStride + 8, true);
+		let sparseGrid = new Map();
+		let gridSize = 16;
 
-	//		choice.push({
-	//			knn: [],
-	//			position: [x, y, z]
-	//		});
-	//	}
+		let tightBoxSize = tightBoxMax.map( (a, i) => a - tightBoxMin[i]);
+		let cubeLength = Math.max(...tightBoxSize);
+		let cube = {
+			min: tightBoxMin,
+			max: tightBoxMin.map(v => v + cubeLength)
+		};
 
-	//	let squaredDistanceBetween = (v1, v2) => {
-	//		let dx = v1[0] - v2[0];
-	//		let dy = v1[1] - v2[1];
-	//		let dz = v1[2] - v2[2];
+		let positions = new Float32Array(attributeBuffers[Potree.PointAttribute.POSITION_CARTESIAN.name].buffer);
+		for(let i = 0; i < numPoints; i++){
+			let x = positions[3 * i + 0];
+			let y = positions[3 * i + 1];
+			let z = positions[3 * i + 2];
 
-	//		return dx * dx + dy * dy + dz * dz;
-	//	};
+			let ix = Math.max(0, Math.min(gridSize * (x - cube.min[0]) / cubeLength, gridSize - 1));
+			let iy = Math.max(0, Math.min(gridSize * (y - cube.min[1]) / cubeLength, gridSize - 1));
+			let iz = Math.max(0, Math.min(gridSize * (z - cube.min[2]) / cubeLength, gridSize - 1));
 
-	//	for(let i = 0; i < numPoints; i++){
-	//	
-	//		let pos = [
-	//			iView.getFloat32(i * iStride + 0, true),
-	//			iView.getFloat32(i * iStride + 4, true),
-	//			iView.getFloat32(i * iStride + 8, true),
-	//		];
+			ix = Math.floor(ix);
+			iy = Math.floor(iy);
+			iz = Math.floor(iz);
 
-	//		for(let point of choice){
+			let cellIndex = ix | (iy << 8) | (iz << 16);
+			
+			if(!sparseGrid.has(cellIndex)){
+				sparseGrid.set(cellIndex, []);
+			}
 
-	//			let distance = squaredDistanceBetween(pos, point.position);
+			sparseGrid.get(cellIndex).push(i);
+		}
 
-	//			if(distance > 0){
-	//				point.knn.push(distance);
-	//				point.knn.sort();
-	//				point.knn = point.knn.slice(0, knnCount);
-	//			}
-	//		}
-	//	}
+		let kNearest = (pointIndex, candidates, numNearest) => {
+			
+			let x = positions[3 * pointIndex + 0];
+			let y = positions[3 * pointIndex + 1];
+			let z = positions[3 * pointIndex + 2];
 
-	//	{
-	//		let knns = [];
-	//		for(let knn of choice.map(point => point.knn)){
-	//			knns.push(...knn);
-	//		}
-	//		knns = knns.map(value => Math.sqrt(value));
+			let candidateDistances = [];
 
-	//		knns.sort();
-	//		let medianPos = Math.floor(knns.length / 2);
-	//		let medianSpacing = knns[medianPos];
+			for(let candidateIndex of candidates){
+				if(candidateIndex === pointIndex){
+					continue;
+				}
 
-	//		estimatedSpacing = Math.min(medianSpacing, spacing);
-	//	}
+				let cx = positions[3 * candidateIndex + 0];
+				let cy = positions[3 * candidateIndex + 1];
+				let cz = positions[3 * candidateIndex + 2];
 
-	//	performance.mark("spacing-end");
-	//}
+				let squaredDistance = (cx - x) ** 2 + (cy - y) ** 2 + (cz - z) ** 2;
+
+				candidateDistances.push({candidateInde: candidateIndex, squaredDistance: squaredDistance});
+			}
+
+			candidateDistances.sort( (a, b) => a.squaredDistance - b.squaredDistance);
+			let nearest = candidateDistances.slice(0, numNearest);
+
+			return nearest;
+		};
+
+		let meansBuffer = new ArrayBuffer(numPoints * 4);
+		let means = new Float32Array(meansBuffer);
+
+		for(let [key, value] of sparseGrid){
+			
+			for(let pointIndex of value){
+
+				if(value.length === 1){
+					means[pointIndex] = 0;
+					continue;
+				}
+
+				let [ix, iy, iz] = [(key & 255), ((key >> 8) & 255), ((key >> 16) & 255)];
+				
+				//let candidates = value;
+				let candidates = [];
+				for(let i of [-1, 0, 1]){
+					for(let j of [-1, 0, 1]){
+						for(let k of [-1, 0, 1]){
+							let cellIndex = (ix + i) | ((iy + j) << 8) | ((iz + k) << 16);
+
+							if(sparseGrid.has(cellIndex)){
+								candidates.push(...sparseGrid.get(cellIndex));
+							}
+						}
+					}
+				}
+
+
+				let nearestNeighbors = kNearest(pointIndex, candidates, 10);
+
+				let sum = 0;
+				for(let neighbor of nearestNeighbors){
+					sum += Math.sqrt(neighbor.squaredDistance);
+				}
+
+				//let mean = sum / nearestNeighbors.length;
+				let mean = Math.sqrt(Math.max(...nearestNeighbors.map(n => n.squaredDistance)));
+
+				if(Number.isNaN(mean)){
+					debugger;
+				}
+
+
+				means[pointIndex] = mean;
+
+			}
+
+		}
+
+
+		let maxMean = Math.max(...means);
+		let minMean = Math.min(...means);
+
+		//let colors = new Uint8Array(attributeBuffers[Potree.PointAttribute.COLOR_PACKED.name].buffer);
+		//for(let i = 0; i < numPoints; i++){
+		//	let v = means[i] / 0.05;
+
+		//	colors[4 * i + 0] = 255 * v;
+		//	colors[4 * i + 1] = 255 * v;
+		//	colors[4 * i + 2] = 255 * v;
+		//}
+
+		attributeBuffers[Potree.PointAttribute.SPACING.name] = { buffer: meansBuffer, attribute: Potree.PointAttribute.SPACING };
+
+
+	}
+
 
 	{ // add indices
 		let buff = new ArrayBuffer(numPoints * 4);

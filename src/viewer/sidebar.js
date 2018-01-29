@@ -654,7 +654,7 @@ initSidebar = (viewer) => {
 		$('#sldPointBudget').slider({
 			value: viewer.getPointBudget(),
 			min: 100 * 1000,
-			max: 5 * 1000 * 1000,
+			max: 10 * 1000 * 1000,
 			step: 1000,
 			slide: function (event, ui) { viewer.setPointBudget(ui.value); }
 		});

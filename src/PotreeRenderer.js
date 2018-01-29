@@ -137,6 +137,7 @@ Potree.attributeLocations = {
 	"pointSourceID": 6,
 	"indices": 7,
 	"normal": 8,
+	"spacing": 9,
 };
 
 Potree.Shader = class Shader {
@@ -603,6 +604,12 @@ Potree.Renderer = class Renderer {
 		let i = 0;
 		for (let node of nodes) {
 
+			if(Potree.debug.allowedNodes !== undefined){
+				if(!Potree.debug.allowedNodes.includes(node.name)){
+					continue;
+				}
+			}
+
 			//if(![
 			//	"r42006420226",
 			//	]
@@ -626,6 +633,12 @@ Potree.Renderer = class Renderer {
 				shader.setUniform("uDebug", true);
 			}else{
 				shader.setUniform("uDebug", false);
+			}
+
+			if(Object.keys(node.children).length === 0){
+				shader.setUniform("uIsLeafNode", true);
+			}else{
+				shader.setUniform("uIsLeafNode", false);
 			}
 
 
@@ -926,7 +939,6 @@ Potree.Renderer = class Renderer {
 			shader.setUniform1f("fov", Math.PI * camera.fov / 180);
 			shader.setUniform1f("near", camera.near);
 			shader.setUniform1f("far", camera.far);
-
 			
 			if(camera instanceof THREE.OrthographicCamera){
 				shader.setUniform("uUseOrthographicCamera", true);

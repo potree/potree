@@ -1244,7 +1244,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 					previous: this._previousCamera,
 					camera: camera
 				});
-			}else if(!this._previousCamera.projectionMatrix.equals(camera.matrixWorld)){
+			}else if(!this._previousCamera.projectionMatrix.equals(camera.projectionMatrix)){
 				this.dispatchEvent({
 					type: "camera_changed",
 					previous: this._previousCamera,
@@ -1319,7 +1319,12 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		try{
 
 
-		if(this.useHQ){
+		if(this.useRep){
+			if (!this.repRenderer) {
+				this.repRenderer = new RepRenderer(this);
+			}
+			this.repRenderer.render(this.renderer);
+		}else if(this.useHQ){
 			if (!this.hqRenderer) {
 				this.hqRenderer = new HQSplatRenderer(this);
 			}

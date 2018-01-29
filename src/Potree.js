@@ -25,6 +25,8 @@ Potree.webgl = {
 	vbos: {}
 };
 
+Potree.debug = {};
+
 Potree.scriptPath = null;
 if (document.currentScript.src) {
 	Potree.scriptPath = new URL(document.currentScript.src + '/..').href;

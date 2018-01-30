@@ -428,7 +428,7 @@ body{
 }
 
 .ui-widget-content{
-	color: var(--font-color) !important;
+	//color: var(--font-color) !important;
 }
 
 .accordion > h3{
@@ -463,6 +463,23 @@ body{
 .canvas{
 	-webkit-transition: top .35s, left .35s, bottom .35s, right .35s, width .35s;
 	transition: top .35s, left .35s, bottom .35s, right .35s, width .35s;
+}
+
+#profile_window{
+	background-color:	var(--bg-color);
+}
+
+#profile_titlebar{
+	background-color:	var(--bg-color-2);
+	color: var(--font-color-2);
+	text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+	font-size: 1em;
+	font-weight: bold;
+}
+
+#profile_window_title{
+	position: absolute;
+	margin: 5px;
 }
 
 .profile-container-button{
@@ -614,6 +631,10 @@ body{
  * OVERRIDES
  */
 
+
+.ui-spinner-input{
+	color: black;
+}
 
 .jstree-themeicon-custom{
 	background-size: 16px !important;

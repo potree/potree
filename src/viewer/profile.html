@@ -7,10 +7,13 @@
 	display: none; box-sizing: border-box; z-index:10000">
 	
 	<div id="profile_titlebar" class="pv-titlebar" style="display: flex; position: absolute; height: 30px; width: 100%; box-sizing: border-box;">
-		<span style="padding-right: 10px"><span data-i18n="profile.title"></span></span>
+		<span style="padding-right: 10px">
+			<span id="profile_window_title" data-i18n="profile.title"></span>
+		</span>
 		<span id="profileInfo" style="flex-grow: 1; flex-direction: row"> </span>
 		<!-- <span id="profile_toggle_size_button" class="ui-icon ui-icon-newwin profile-button"> </span> -->
-		<span id="closeProfileContainer" class="ui-icon ui-icon-close profile-button"> </span>
+		<!--<span id="closeProfileContainer" class="ui-icon ui-icon-close profile-button"> </span>-->
+		<img id="closeProfileContainer" class="button-icon" style="width: 24px; height: 24px; margin: 4px"/>
 	</div>
 	
 	<div style="position: absolute; top: 30px; width: 100%; height: calc(100% - 30px); box-sizing: border-box;" class="pw_content">

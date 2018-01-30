@@ -642,14 +642,6 @@ initSidebar = (viewer) => {
 	}
 
 	function initAppearance () {
-		// $( "#optQuality" ).selectmenu();
-
-		// $("#optQuality").val(viewer.getQuality()).selectmenu("refresh")
-		// $("#optQuality").selectmenu({
-		//	change: function(event, ui){
-		//		viewer.setQuality(ui.item.value);
-		//	}
-		// });
 
 		$('#sldPointBudget').slider({
 			value: viewer.getPointBudget(),
@@ -692,16 +684,6 @@ initSidebar = (viewer) => {
 			$('#lblFOV')[0].innerHTML = parseInt(viewer.getFOV());
 			$('#sldFOV').slider({value: viewer.getFOV()});
 		});
-
-		// viewer.addEventListener("quality_changed", e => {
-		//
-		//	let name = viewer.quality;
-		//
-		//	$( "#optQuality" )
-		//		.selectmenu()
-		//		.val(name)
-		//		.selectmenu("refresh");
-		// });
 
 		viewer.addEventListener('edl_radius_changed', function (event) {
 			$('#lblEDLRadius')[0].innerHTML = viewer.getEDLRadius().toFixed(1);
@@ -853,21 +835,21 @@ initSidebar = (viewer) => {
 			$('#lblMinNodeSize').html(parseInt(viewer.getMinNodeSize()));
 		}
 
-		{
-			let elSplatQuality = $("#splat_quality_options");
-			elSplatQuality.selectgroup({title: "Splat Quality"});
+		//{
+		//	let elSplatQuality = $("#splat_quality_options");
+		//	elSplatQuality.selectgroup({title: "Splat Quality"});
 
-			elSplatQuality.find("input").click( (e) => {
-				if(e.target.value === "standard"){
-					viewer.useHQ = false;
-				}else if(e.target.value === "hq"){
-					viewer.useHQ = true;
-				}
-			});
+		//	elSplatQuality.find("input").click( (e) => {
+		//		if(e.target.value === "standard"){
+		//			viewer.useHQ = false;
+		//		}else if(e.target.value === "hq"){
+		//			viewer.useHQ = true;
+		//		}
+		//	});
 
-			let currentQuality = viewer.useHQ ? "hq" : "standard";
-			elSplatQuality.find(`input[value=${currentQuality}]`).trigger("click");
-		}
+		//	let currentQuality = viewer.useHQ ? "hq" : "standard";
+		//	elSplatQuality.find(`input[value=${currentQuality}]`).trigger("click");
+		//}
 
 		$('#show_bounding_box').click(() => {
 			viewer.setShowBoundingBox($('#show_bounding_box').prop("checked"));

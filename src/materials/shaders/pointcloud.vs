@@ -784,8 +784,8 @@ void main() {
 
 	//vColor = vec3(1.0, 1.0, 1.0) * spacing / 0.05;
 
-	if(getLOD() != uLevel){
+	//if(getLOD() != uLevel){
 		//gl_Position = vec4(100.0, 100.0, 100.0, 1.0);
-	}
+	//}
 
 }

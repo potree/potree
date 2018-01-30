@@ -206,6 +206,9 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 		let lasIcon = `${Potree.resourcePath}/icons/file_las_3d.svg`;
 		$('#potree_download_las_icon').attr('src', lasIcon);
 
+		let closeIcon = `${Potree.resourcePath}/icons/close.svg`;
+		$('#closeProfileContainer').attr("src", closeIcon);
+
 		this.initTHREE();
 		this.initSVG();
 		this.initListeners();

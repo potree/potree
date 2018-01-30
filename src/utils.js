@@ -524,6 +524,46 @@ Potree.utils = class {
 		}
 		window.history.replaceState({}, '', url);
 	}
+
+	// see https://stackoverflow.com/questions/400212/how-do-i-copy-to-the-clipboard-in-javascript
+	static clipboardCopy(text){
+		let textArea = document.createElement("textarea");
+
+		textArea.style.position = 'fixed';
+		textArea.style.top = 0;
+		textArea.style.left = 0;
+
+		textArea.style.width = '2em';
+		textArea.style.height = '2em';
+
+		textArea.style.padding = 0;
+
+		textArea.style.border = 'none';
+		textArea.style.outline = 'none';
+		textArea.style.boxShadow = 'none';
+
+		textArea.style.background = 'transparent';
+
+		textArea.value = text;
+
+		document.body.appendChild(textArea);
+
+		textArea.select();
+
+		 try {
+			let success = document.execCommand('copy');
+			if(success){
+				console.log("copied text to clipboard");
+			}else{
+				console.log("copy to clipboard failed");
+			}
+		} catch (err) {
+			console.log("error while trying to copy to clipboard");
+		}
+
+		document.body.removeChild(textArea);
+
+	}
 };
 
 Potree.utils.screenPass = new function () {

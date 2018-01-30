@@ -65,25 +65,40 @@ Potree.TransformationTool = class TransformationTool {
 		this.initializeRotationHandles();
 
 
+		let boxFrameGeometry = new THREE.Geometry();
+		{
+			// bottom
+			boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, -0.5, 0.5));
+			boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, -0.5, 0.5));
+			boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, -0.5, 0.5));
+			boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, -0.5, -0.5));
+			boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, -0.5, -0.5));
+			boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, -0.5, -0.5));
+			boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, -0.5, -0.5));
+			boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, -0.5, 0.5));
+			// top
+			boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, 0.5, 0.5));
+			boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, 0.5, 0.5));
+			boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, 0.5, 0.5));
+			boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, 0.5, -0.5));
+			boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, 0.5, -0.5));
+			boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, 0.5, -0.5));
+			boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, 0.5, -0.5));
+			boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, 0.5, 0.5));
+			// sides
+			boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, -0.5, 0.5));
+			boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, 0.5, 0.5));
+			boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, -0.5, 0.5));
+			boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, 0.5, 0.5));
+			boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, -0.5, -0.5));
+			boxFrameGeometry.vertices.push(new THREE.Vector3(0.5, 0.5, -0.5));
+			boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, -0.5, -0.5));
+			boxFrameGeometry.vertices.push(new THREE.Vector3(-0.5, 0.5, -0.5));
+		}
+		this.frame = new THREE.LineSegments(boxFrameGeometry, new THREE.LineBasicMaterial({color: 0xffff00}));
+		this.scene.add(this.frame);
 
-
-		//{
-		//	this.scene.add(new THREE.AmbientLight(0xdddddd));
-
-		//	let sg = new THREE.SphereGeometry(30, 32, 32);
-		//	let sm = new THREE.MeshToonMaterial({
-		//		color: 0x00ff00,
-		//		emmisive: 0x00ff00,
-		//		shininess: 50, 
-		//		specular: 0x333333, 
-		//		bumpScale: 1,
-		//	});
-		//	let s = new THREE.Mesh(sg, sm);
-		//	//s.scale.set(30, 30, 30);
-		//	this.scene.add(s);
-
-
-		//}
+		
 	}
 
 	initializeScaleHandles(){
@@ -864,6 +879,26 @@ Potree.TransformationTool = class TransformationTool {
 
 			this.scene.position.copy(selected.position);
 			this.scene.rotation.copy(selected.rotation);
+
+			{
+				let axisScale = (alignment) => {
+					//let handlePos = boxCenter.clone().add(boxSize.clone().multiplyScalar(0.5).multiply(alignment));
+					//handlePos.applyMatrix4(selected.matrixWorld);
+					let transformed = new THREE.Vector3(...alignment).applyMatrix4(selected.matrixWorld);
+					let distance = transformed.distanceTo(selected.getWorldPosition());
+
+					return distance;
+				};
+
+				let scale = new THREE.Vector3(
+					axisScale([1, 0, 0]),
+					axisScale([0, 1, 0]),
+					axisScale([0, 0, 1]),
+				);
+
+				this.frame.scale.copy(scale);	
+			}
+			//this.frame.scale.copy(box.getSize());
 
 		}else{
 			this.scene.visible = false;

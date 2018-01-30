@@ -76,13 +76,18 @@ class DistancePanel extends MeasurePanel{
 				<table id="distances_table" class="measurement_value_table"></table>
 
 				<!-- ACTIONS -->
-				<!--<div style="display: flex; margin-top: 12px">
+				<div style="display: flex; margin-top: 12px">
 					<span></span>
 					<span style="flex-grow: 1"></span>
-					<img class="measurement_action_remove" src="${removeIconPath}" style="width: 16px; height: 16px"/>
-				</div>-->
+					<img name="remove" class="button-icon" src="${removeIconPath}" style="width: 16px; height: 16px"/>
+				</div>
 			</div>
 		`);
+
+		this.elRemove = this.elContent.find("img[name=remove]");
+		this.elRemove.click( () => {
+			viewer.scene.removeMeasurement(measurement);
+		});
 
 		this.propertiesPanel.addVolatileListener(measurement, "marker_added", this._update);
 		this.propertiesPanel.addVolatileListener(measurement, "marker_removed", this._update);
@@ -139,13 +144,18 @@ class PointPanel extends MeasurePanel{
 				<span class="attributes_table_container"></span>
 
 				<!-- ACTIONS -->
-				<!--<div style="display: flex; margin-top: 12px">
+				<div style="display: flex; margin-top: 12px">
 					<span></span>
 					<span style="flex-grow: 1"></span>
-					<img class="measurement_action_remove" src="${removeIconPath}" style="width: 16px; height: 16px"/>
-				</div>-->
+					<img name="remove" class="button-icon" src="${removeIconPath}" style="width: 16px; height: 16px"/>
+				</div>
 			</div>
 		`);
+
+		this.elRemove = this.elContent.find("img[name=remove]");
+		this.elRemove.click( () => {
+			viewer.scene.removeMeasurement(measurement);
+		});
 
 		this.propertiesPanel.addVolatileListener(measurement, "marker_added", this._update);
 		this.propertiesPanel.addVolatileListener(measurement, "marker_removed", this._update);
@@ -179,13 +189,18 @@ class AreaPanel extends MeasurePanel{
 				<span id="measurement_area"></span>
 
 				<!-- ACTIONS -->
-				<!--<div style="display: flex; margin-top: 12px">
+				<div style="display: flex; margin-top: 12px">
 					<span></span>
 					<span style="flex-grow: 1"></span>
-					<img class="measurement_action_remove" src="${removeIconPath}" style="width: 16px; height: 16px"/>
-				</div>-->
+					<img name="remove" class="button-icon" src="${removeIconPath}" style="width: 16px; height: 16px"/>
+				</div>
 			</div>
 		`);
+
+		this.elRemove = this.elContent.find("img[name=remove]");
+		this.elRemove.click( () => {
+			viewer.scene.removeMeasurement(measurement);
+		});
 
 		this.propertiesPanel.addVolatileListener(measurement, "marker_added", this._update);
 		this.propertiesPanel.addVolatileListener(measurement, "marker_removed", this._update);
@@ -228,13 +243,18 @@ class AnglePanel extends MeasurePanel{
 				</table>
 
 				<!-- ACTIONS -->
-				<!--<div style="display: flex; margin-top: 12px">
+				<div style="display: flex; margin-top: 12px">
 					<span></span>
 					<span style="flex-grow: 1"></span>
-					<img class="measurement_action_remove" src="${removeIconPath}" style="width: 16px; height: 16px"/>
-				</div>-->
+					<img name="remove" class="button-icon" src="${removeIconPath}" style="width: 16px; height: 16px"/>
+				</div>
 			</div>
 		`);
+
+		this.elRemove = this.elContent.find("img[name=remove]");
+		this.elRemove.click( () => {
+			viewer.scene.removeMeasurement(measurement);
+		});
 
 		this.propertiesPanel.addVolatileListener(measurement, "marker_added", this._update);
 		this.propertiesPanel.addVolatileListener(measurement, "marker_removed", this._update);
@@ -277,13 +297,18 @@ class HeightPanel extends MeasurePanel{
 				<span id="height_label">Height: </span><br>
 
 				<!-- ACTIONS -->
-				<!--<div style="display: flex; margin-top: 12px">
+				<div style="display: flex; margin-top: 12px">
 					<span></span>
 					<span style="flex-grow: 1"></span>
-					<img class="measurement_action_remove" src="${removeIconPath}" style="width: 16px; height: 16px"/>
-				</div>-->
+					<img name="remove" class="button-icon" src="${removeIconPath}" style="width: 16px; height: 16px"/>
+				</div>
 			</div>
 		`);
+
+		this.elRemove = this.elContent.find("img[name=remove]");
+		this.elRemove.click( () => {
+			viewer.scene.removeMeasurement(measurement);
+		});
 
 		this.propertiesPanel.addVolatileListener(measurement, "marker_added", this._update);
 		this.propertiesPanel.addVolatileListener(measurement, "marker_removed", this._update);
@@ -353,26 +378,49 @@ class VolumePanel extends MeasurePanel{
 				<span style="font-weight: bold">Volume: </span>
 				<span id="measurement_volume"></span>
 
+				<!--
+				<li>
+					<label style="whitespace: nowrap">
+						<input id="volume_show" type="checkbox"/>
+						<span>show volume</span>
+					</label>
+				</li>-->
+
 				<li>
 					<label style="whitespace: nowrap">
 						<input id="volume_clip" type="checkbox"/>
-						<span>clip volume</span>
+						<span>make clip volume</span>
 					</label>
 				</li>
 
 
 				<!-- ACTIONS -->
-				<!--<div style="display: flex; margin-top: 12px">
+				<input id="volume_reset_orientation" type="button" value="reset orientation"/>
+				<div style="display: flex; margin-top: 12px">
 					<span></span>
 					<span style="flex-grow: 1"></span>
-					<img class="measurement_action_remove" src="${removeIconPath}" style="width: 16px; height: 16px"/>
-				</div>-->
+					<img name="remove" class="button-icon" src="${removeIconPath}" style="width: 16px; height: 16px"/>
+				</div>
 			</div>
 		`);
+
+		this.elRemove = this.elContent.find("img[name=remove]");
+		this.elRemove.click( () => {
+			viewer.scene.removeVolume(measurement);
+		});
+
+		this.elContent.find("#volume_reset_orientation").click(() => {
+			measurement.rotation.set(0, 0, 0);
+		});
 
 		this.elCheckClip = this.elContent.find('#volume_clip');
 		this.elCheckClip.click(event => {
 			this.measurement.clip = event.target.checked;
+		});
+
+		this.elCheckShow = this.elContent.find('#volume_show');
+		this.elCheckShow.click(event => {
+			this.measurement.visible = event.target.checked;
 		});
 
 		this.propertiesPanel.addVolatileListener(measurement, "position_changed", this._update);
@@ -423,6 +471,7 @@ class VolumePanel extends MeasurePanel{
 		}
 
 		this.elCheckClip.prop("checked", this.measurement.clip);
+		this.elCheckShow.prop("checked", this.measurement.visible);
 
 	}
 }
@@ -449,13 +498,18 @@ class ProfilePanel extends MeasurePanel{
 				<input type="button" id="show_2d_profile" value="show 2d profile" style="width: 100%"/>
 
 				<!-- ACTIONS -->
-				<!--<div style="display: flex; margin-top: 12px">
+				<div style="display: flex; margin-top: 12px">
 					<span></span>
 					<span style="flex-grow: 1"></span>
-					<img class="measurement_action_remove" src="${removeIconPath}" style="width: 16px; height: 16px"/>
-				</div>-->
+					<img name="remove" class="button-icon" src="${removeIconPath}" style="width: 16px; height: 16px"/>
+				</div>
 			</div>
 		`);
+
+		this.elRemove = this.elContent.find("img[name=remove]");
+		this.elRemove.click( () => {
+			viewer.scene.removeProfile(measurement);
+		});
 
 		{ // download
 			this.elDownloadButton = this.elContent.find(`#download_profile`);
@@ -528,6 +582,82 @@ class ProfilePanel extends MeasurePanel{
 	}
 }
 
+class CameraPanel{
+	constructor(viewer, propertiesPanel){
+		this.viewer = viewer;
+		this.propertiesPanel = propertiesPanel;
+
+		this._update = () => { this.update(); };
+
+		let copyIconPath = Potree.resourcePath + '/icons/copy.svg';
+		this.elContent = $(`
+		<div class="propertypanel_content">
+			<table>
+				<tr>
+					<th colspan="3">position</th>
+					<th></th>
+				</tr>
+				<tr>
+					<td align="center" id="camera_position_x" style="width: 25%"></td>
+					<td align="center" id="camera_position_y" style="width: 25%"></td>
+					<td align="center" id="camera_position_z" style="width: 25%"></td>
+					<td align="right" id="copy_camera_position" style="width: 25%">
+						<img name="copyPosition" class="button-icon" src="${copyIconPath}" style="width: 16px; height: 16px"/>
+					</td>
+				</tr>
+				<tr>
+					<th colspan="3">target</th>
+					<th></th>
+				</tr>
+				<tr>
+					<td align="center" id="camera_target_x" style="width: 25%"></td>
+					<td align="center" id="camera_target_y" style="width: 25%"></td>
+					<td align="center" id="camera_target_z" style="width: 25%"></td>
+					<td align="right" id="copy_camera_target" style="width: 25%">
+						<img name="copyTarget" class="button-icon" src="${copyIconPath}" style="width: 16px; height: 16px"/>
+					</td>
+				</tr>
+			</table>
+		</div>
+		`);
+
+		this.elCopyPosition = this.elContent.find("img[name=copyPosition]");
+		this.elCopyPosition.click( () => {
+			let pos = this.viewer.scene.getActiveCamera().position.toArray();
+			let msg = pos.map(c => c.toFixed(3)).join(", ");
+			Potree.utils.clipboardCopy(msg);
+		});
+
+		this.elCopyTarget = this.elContent.find("img[name=copyTarget]");
+		this.elCopyTarget.click( () => {
+			let pos = this.viewer.scene.view.getPivot().toArray();
+			let msg = pos.map(c => c.toFixed(3)).join(", ");
+			Potree.utils.clipboardCopy(msg);
+		});
+
+		this.propertiesPanel.addVolatileListener(viewer, "camera_changed", this._update);
+
+		this.update();
+	}
+
+	update(){
+		console.log("updating camera panel");
+
+		let camera = this.viewer.scene.getActiveCamera();
+		let view = this.viewer.scene.view;
+
+		let pos = camera.position.toArray().map(c => Potree.utils.addCommas(c.toFixed(3)));
+		this.elContent.find("#camera_position_x").html(pos[0]);
+		this.elContent.find("#camera_position_y").html(pos[1]);
+		this.elContent.find("#camera_position_z").html(pos[2]);
+
+		let target = view.getPivot().toArray().map(c => Potree.utils.addCommas(c.toFixed(3)));
+		this.elContent.find("#camera_target_x").html(target[0]);
+		this.elContent.find("#camera_target_y").html(target[1]);
+		this.elContent.find("#camera_target_z").html(target[2]);
+	}
+}
+
 
 Potree.PropertiesPanel = class PropertriesPanel{
 
@@ -547,6 +677,8 @@ Potree.PropertiesPanel = class PropertriesPanel{
 		if(this.object === object){
 			return;
 		}
+
+		this.object = object;
 		
 		for(let task of this.cleanupTasks){
 			task();
@@ -558,11 +690,9 @@ Potree.PropertiesPanel = class PropertriesPanel{
 			this.setPointCloud(object);
 		}else if(object instanceof Potree.Measure || object instanceof Potree.Profile || object instanceof Potree.Volume){
 			this.setMeasurement(object);
-		}else{
-
+		}else if(object instanceof THREE.Camera){
+			this.setCamera(object);
 		}
-
-
 		
 	}
 
@@ -602,7 +732,7 @@ Potree.PropertiesPanel = class PropertriesPanel{
 
 				<!-- SHAPE -->
 				<li>
-					<label for="optShape" class="pv-select-label" data-i18n="appearance.point_shape"></label>
+					<label for="optShape" class="pv-select-label" data-i18n="appearance.point_shape"></label><br>
 					<select id="optShape" name="optShape">
 						<option>SQUARE</option>
 						<option>CIRCLE</option>
@@ -1082,9 +1212,11 @@ Potree.PropertiesPanel = class PropertriesPanel{
 
 		let panel = new Panel(this.scene, object, this);
 		this.container.append(panel.elContent);
+	}
 
-
-
+	setCamera(camera){
+		let panel = new CameraPanel(this.viewer, this);
+		this.container.append(panel.elContent);
 	}
 
 }

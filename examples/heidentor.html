@@ -32,6 +32,7 @@
 	<script src="../libs/openlayers3/ol.js"></script>
 	<script src="../libs/i18next/i18next.js"></script>
 	<script src="../libs/jstree/jstree.js"></script>
+	<script src="../libs/MeshLine/src/THREE.MeshLine.js"></script>
 	
 	<script src="../build/potree/potree.js"></script>
 	<!--<script src="../src/viewer/sidebar.js"></script>-->
@@ -64,9 +65,8 @@
 		
 		viewer.setEDLEnabled(true);
 		viewer.setFOV(60);
-		viewer.setPointBudget(10*1000*1000);
+		viewer.setPointBudget(1*1000*1000);
 		viewer.setMinNodeSize(0);
-		viewer.useEDL = false;
 		viewer.loadSettingsFromURL();
 		
 		viewer.setDescription("");
@@ -87,13 +87,43 @@
 			material.size = 1;
 			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
 
-			viewer.switchCameraMode(Potree.CameraMode.ORTHOGRAPHIC);
+			//viewer.setCameraMode(Potree.CameraMode.ORTHOGRAPHIC);
 
 			viewer.scene.view.position.set(13.856734292740617, -9.125174923658731, 14.563928417406354);
 			viewer.scene.view.lookAt(-3.5482630104475366, 2.728596783815762, 6.1406044783018725);
+
+			//viewer.clippingTool.setClipMode(Potree.ClipMode.INSIDE);
 			//viewer.fitToScreen();
 
+			//viewer.useHQ = true;
+
 			//Potree.measureTimings = true;
+
+
+			//{
+			//	let volume = new Potree.Volume();
+			//	volume.clip = true;
+			//	volume.position.set(-2.628, -1.647, 5.946);
+			//	volume.scale.set(20, 20, 20);
+			//	viewer.scene.addVolume(volume);
+			//}
+
+			{
+				let volume = new Potree.Volume();
+				volume.clip = true;
+				volume.position.set(-2.628, -1.647, 5.946);
+				volume.scale.set(7.82, 1.32, 16.03);
+				viewer.scene.addVolume(volume);
+			}
+
+			{
+				let volume = new Potree.Volume();
+				volume.clip = true;
+				volume.position.set(-2.344, 3.199, 5.647);
+				volume.scale.set(9.04, 17.52, 1.11);
+				viewer.scene.addVolume(volume);
+			}
+
 		});
 		
 	</script>

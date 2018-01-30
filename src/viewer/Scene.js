@@ -20,7 +20,6 @@ Potree.Scene = class extends THREE.EventDispatcher{
 		this.measurements = [];
 		this.profiles = [];
 		this.volumes = [];
-		this.clipVolumes = [];
 		this.polygonClipVolumes = [];
 		
 		this.fpControls = null;
@@ -129,31 +128,11 @@ Potree.Scene = class extends THREE.EventDispatcher{
 		let index = this.volumes.indexOf(volume);
 		if (index > -1) {
 			this.volumes.splice(index, 1);
+
 			this.dispatchEvent({
 				'type': 'volume_removed',
 				'scene': this,
 				'volume': volume
-			});
-		}
-	};
-
-	addClipVolume(volume){
-		this.clipVolumes.push(volume);
-		this.dispatchEvent({
-			"type": "clip_volume_added",
-			"scene": this,
-			"volume": volume
-		});
-	};
-	
-	removeClipVolume(volume){
-		let index = this.clipVolumes.indexOf(volume);
-		if (index > -1) {
-			this.clipVolumes.splice(index, 1);
-			this.dispatchEvent({
-				"type": "clip_volume_removed",
-				"scene": this,
-				"volume": volume
 			});
 		}
 	};
@@ -237,8 +216,9 @@ Potree.Scene = class extends THREE.EventDispatcher{
 	}
 
 	removeAllClipVolumes(){
-		while(this.clipVolumes.length > 0){
-			this.removeClipVolume(this.clipVolumes[0]);
+		let clipVolumes = this.volumes.filter(volume => volume.clip === true);
+		for(let clipVolume of clipVolumes){
+			this.removeVolume(clipVolume);
 		}
 
 		while(this.polygonClipVolumes.length > 0){

@@ -44,7 +44,8 @@ Potree.View = class {
 
 	set direction (dir) {
 
-		if(dir.x === dir.y){
+		//if(dir.x === dir.y){
+		if(dir.x === 0 && dir.y === 0){
 			this.pitch = Math.PI / 2 * Math.sign(dir.z);
 		}else{
 			let yaw = Math.atan2(dir.y, dir.x) - Math.PI / 2;

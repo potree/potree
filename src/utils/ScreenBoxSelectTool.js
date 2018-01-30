@@ -20,12 +20,34 @@ Potree.ScreenBoxSelectTool = class ScreenBoxSelectTool extends THREE.EventDispat
 		let domElement = this.viewer.renderer.domElement;
 
 		let volume = new Potree.Volume();
-		volume.clip = true;
+		volume.position.set(12345, 12345, 12345);
+		volume.showVolumeLabel = false;
+		volume.visible = false;
+		volume.update();
 		this.viewer.scene.addVolume(volume);
 
 		this.importance = 10;
 
+		let selectionBox = $(`<div style="position: absolute; border: 2px solid white; pointer-events: none; border-style:dashed"></div>`);
+		$(domElement.parentElement).append(selectionBox);
+		selectionBox.css("right", "10px");
+		selectionBox.css("bottom", "10px");
+
 		let drag = e =>{
+
+			volume.visible = true;
+
+			let mStart = e.drag.start;
+			let mEnd = e.drag.end;
+
+			let box2D = new THREE.Box2();
+			box2D.expandByPoint(mStart);
+			box2D.expandByPoint(mEnd);
+
+			selectionBox.css("left", `${box2D.min.x}px`);
+			selectionBox.css("top", `${box2D.min.y}px`);
+			selectionBox.css("width", `${box2D.max.x - box2D.min.x}px`);
+			selectionBox.css("height", `${box2D.max.y - box2D.min.y}px`);
 
 			let camera = e.viewer.scene.getActiveCamera();
 			let size = new THREE.Vector2(
@@ -52,6 +74,8 @@ Potree.ScreenBoxSelectTool = class ScreenBoxSelectTool extends THREE.EventDispat
 		let drop = e => {
 			this.importance = 0;
 
+			$(selectionBox).remove();
+
 			this.viewer.inputHandler.deselectAll();
 			this.viewer.inputHandler.toggleSelection(volume);
 
@@ -67,8 +91,15 @@ Potree.ScreenBoxSelectTool = class ScreenBoxSelectTool extends THREE.EventDispat
 			this.removeEventListener("drag", drag);
 			this.removeEventListener("drop", drop);
 
+			let allPointsNear = [];
+			let allPointsFar = [];
+
 			// TODO support more than one point cloud
 			for(let pointcloud of this.viewer.scene.pointclouds){
+
+				if(!pointcloud.visible){
+					continue;
+				}
 
 				let volCam = camera.clone();
 				volCam.left = -volume.scale.x / 2; 
@@ -95,6 +126,7 @@ Potree.ScreenBoxSelectTool = class ScreenBoxSelectTool extends THREE.EventDispat
 					height: 8, 
 					pickWindowSize: 8, 
 					all: true,
+					pickClipped: true,
 					pointSizeType: Potree.PointSizeType.FIXED,
 					pointSize: 1};
 				let pointsNear = pointcloud.pick(viewer, volCam, ray, pickerSettings);
@@ -106,22 +138,26 @@ Potree.ScreenBoxSelectTool = class ScreenBoxSelectTool extends THREE.EventDispat
 				volCam.matrixWorldInverse.getInverse(volCam.matrixWorld);
 				let pointsFar = pointcloud.pick(viewer, volCam, rayInverse, pickerSettings);
 
-				if(pointsNear.length > 0 && pointsFar.length > 0){
-					let viewLine = new THREE.Line3(ray.origin, new THREE.Vector3().addVectors(ray.origin, ray.direction));
-
-					let closestOnLine = pointsNear.map(p => viewLine.closestPointToPoint(p.position, false));
-					let closest = closestOnLine.sort( (a, b) => ray.origin.distanceTo(a) - ray.origin.distanceTo(b))[0];
-
-					let farthestOnLine = pointsFar.map(p => viewLine.closestPointToPoint(p.position, false));
-					let farthest = farthestOnLine.sort( (a, b) => ray.origin.distanceTo(b) - ray.origin.distanceTo(a))[0];
-
-					let distance = closest.distanceTo(farthest);
-					let centroid = new THREE.Vector3().addVectors(closest, farthest).multiplyScalar(0.5);
-					volume.scale.z = distance * 1.1;
-					volume.position.copy(centroid);
-					
-				}
+				allPointsNear.push(...pointsNear);
+				allPointsFar.push(...pointsFar);
 			}
+
+			if(allPointsNear.length > 0 && allPointsFar.length > 0){
+				let viewLine = new THREE.Line3(ray.origin, new THREE.Vector3().addVectors(ray.origin, ray.direction));
+
+				let closestOnLine = allPointsNear.map(p => viewLine.closestPointToPoint(p.position, false));
+				let closest = closestOnLine.sort( (a, b) => ray.origin.distanceTo(a) - ray.origin.distanceTo(b))[0];
+
+				let farthestOnLine = allPointsFar.map(p => viewLine.closestPointToPoint(p.position, false));
+				let farthest = farthestOnLine.sort( (a, b) => ray.origin.distanceTo(b) - ray.origin.distanceTo(a))[0];
+
+				let distance = closest.distanceTo(farthest);
+				let centroid = new THREE.Vector3().addVectors(closest, farthest).multiplyScalar(0.5);
+				volume.scale.z = distance * 1.1;
+				volume.position.copy(centroid);
+			}
+
+			volume.clip = true;
 		};
 
 		this.addEventListener("drag", drag);

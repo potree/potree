@@ -10,27 +10,27 @@ class PotreeRenderer {
 
 		viewer.dispatchEvent({type: "render.pass.begin",viewer: viewer});
 
-		{// resize
-			let width = viewer.scaleFactor * viewer.renderArea.clientWidth;
-			let height = viewer.scaleFactor * viewer.renderArea.clientHeight;
-			let aspect = width / height;
+		//{// resize
+		//	let width = viewer.scaleFactor * viewer.renderArea.clientWidth;
+		//	let height = viewer.scaleFactor * viewer.renderArea.clientHeight;
+		//	let aspect = width / height;
 
-			viewer.scene.cameraP.aspect = aspect;
-			viewer.scene.cameraP.updateProjectionMatrix();
+		//	viewer.scene.cameraP.aspect = aspect;
+		//	viewer.scene.cameraP.updateProjectionMatrix();
 
-			let frustumScale = viewer.moveSpeed * 2.0;
-			viewer.scene.cameraO.left = -frustumScale;
-			viewer.scene.cameraO.right = frustumScale;		
-			viewer.scene.cameraO.top = frustumScale * 1/aspect;
-			viewer.scene.cameraO.bottom = -frustumScale * 1/aspect;		
-			viewer.scene.cameraO.updateProjectionMatrix();
+		//	let frustumScale = viewer.moveSpeed * 2.0;
+		//	viewer.scene.cameraO.left = -frustumScale;
+		//	viewer.scene.cameraO.right = frustumScale;		
+		//	viewer.scene.cameraO.top = frustumScale * 1/aspect;
+		//	viewer.scene.cameraO.bottom = -frustumScale * 1/aspect;		
+		//	viewer.scene.cameraO.updateProjectionMatrix();
 
-			viewer.scene.cameraScreenSpace.top = 1/aspect;
-			viewer.scene.cameraScreenSpace.bottom = -1/aspect;
-			viewer.scene.cameraScreenSpace.updateProjectionMatrix();
-			
-			viewer.renderer.setSize(width, height);
-		}
+		//	viewer.scene.cameraScreenSpace.top = 1/aspect;
+		//	viewer.scene.cameraScreenSpace.bottom = -1/aspect;
+		//	viewer.scene.cameraScreenSpace.updateProjectionMatrix();
+		//	
+		//	viewer.renderer.setSize(width, height);
+		//}
 
 		// render skybox
 		if(viewer.background === "skybox"){

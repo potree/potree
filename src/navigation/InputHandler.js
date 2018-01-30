@@ -170,8 +170,8 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher {
 	onKeyDown (e) {
 		if (this.logMessages) console.log(this.constructor.name + ': onKeyDown');
 
-		if (e.keyCode === 46 && this.selection.length > 0) {
-			// DELETE
+		// DELETE
+		if (e.keyCode === Potree.KeyCodes.DELETE && this.selection.length > 0) {
 			this.dispatchEvent({
 				type: 'delete',
 				selection: this.selection
@@ -559,6 +559,26 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher {
 			oldSelection: oldSelection,
 			selection: this.selection
 		});
+	}
+
+	deselect(object){
+
+		let oldSelection = this.selection;
+
+		let index = this.selection.indexOf(object);
+
+		if(index >= 0){
+			this.selection.splice(index, 1);
+			object.dispatchEvent({
+				type: 'deselect'
+			});
+
+			this.dispatchEvent({
+				type: 'selection_changed',
+				oldSelection: oldSelection,
+				selection: this.selection
+			});
+		}
 	}
 
 	deselectAll () {

@@ -153,42 +153,46 @@ Potree.LasLazBatcher = class LasLazBatcher {
 		let node = this.node;
 
 		worker.onmessage = (e) => {
+			let geometry = new THREE.BufferGeometry();
 			let numPoints = lasBuffer.pointsCount;
 
-			let attributes = [
-				Potree.PointAttribute.POSITION_CARTESIAN,
-				Potree.PointAttribute.RGBA_PACKED,
-				Potree.PointAttribute.INTENSITY,
-				Potree.PointAttribute.CLASSIFICATION,
-				Potree.PointAttribute.RETURN_NUMBER,
-				Potree.PointAttribute.NUMBER_OF_RETURNS,
-				Potree.PointAttribute.SOURCE_ID,
-			];
+			let positions = new Float32Array(e.data.position);
+			let colors = new Uint8Array(e.data.color);
+			let intensities = new Float32Array(e.data.intensity);
+			let classifications = new Uint8Array(e.data.classification);
+			let returnNumbers = new Uint8Array(e.data.returnNumber);
+			let numberOfReturns = new Uint8Array(e.data.numberOfReturns);
+			let pointSourceIDs = new Uint16Array(e.data.pointSourceID);
+			let indices = new Uint8Array(e.data.indices);
 
-			let data = e.data;
-			let iAttributes = attributes
-				.map(pa => Potree.toInterleavedBufferAttribute(pa))
-				.filter(ia => ia != null);
-			iAttributes.push(new Potree.InterleavedBufferAttribute("index", 4, 4, "UNSIGNED_BYTE", true));
-			let iBuffer = new Potree.InterleavedBuffer(data.data, iAttributes, numPoints);
+			geometry.addAttribute('position', new THREE.BufferAttribute(positions, 3));
+			geometry.addAttribute('color', new THREE.BufferAttribute(colors, 4, true));
+			//geometry.addAttribute('intensity', new THREE.BufferAttribute(intensities, 1));
+			//geometry.addAttribute('classification', new THREE.BufferAttribute(classifications, 1));
+			//geometry.addAttribute('returnNumber', new THREE.BufferAttribute(returnNumbers, 1));
+			//geometry.addAttribute('numberOfReturns', new THREE.BufferAttribute(numberOfReturns, 1));
+			//geometry.addAttribute('pointSourceID', new THREE.BufferAttribute(pointSourceIDs, 1));
+			//geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(numPoints * 3), 3));
+			geometry.addAttribute('indices', new THREE.BufferAttribute(indices, 4));
+			geometry.attributes.indices.normalized = true;
 
 			let tightBoundingBox = new THREE.Box3(
 				new THREE.Vector3().fromArray(e.data.tightBoundingBox.min),
 				new THREE.Vector3().fromArray(e.data.tightBoundingBox.max)
 			);
-			
+
+			geometry.boundingBox = this.node.boundingBox;
+			this.node.tightBoundingBox = tightBoundingBox;
+
+			this.node.geometry = geometry;
+			this.node.loaded = true;
+			this.node.loading = false;
+			this.node.pcoGeometry.numNodesLoading--;
+			this.node.mean = new THREE.Vector3(...e.data.mean);
+
+			//debugger;
+
 			Potree.workerPool.returnWorker(workerPath, worker);
-
-			node.estimatedSpacing = node.spacing;
-			node.numPoints = iBuffer.numElements;
-			node.buffer = iBuffer;
-			node.mean = new THREE.Vector3(...data.mean);
-			node.tightBoundingBox = tightBoundingBox;
-			node.loaded = true;
-			node.loading = false;
-			node.pcoGeometry.numNodesLoading--;
-
-			
 		};
 
 		let message = {

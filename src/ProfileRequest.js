@@ -171,14 +171,11 @@ Potree.ProfileRequest = class ProfileRequest {
 			}
 		}
 
-		//console.log("updateGenerator finished");
 		yield true;
 	};
 
-	* getAccepted(numPoints, buffer, posOffset, matrix, segment, segmentDir, points, totalMileage){
+	* getAccepted(numPoints, node, matrix, segment, segmentDir, points, totalMileage){
 		let checkpoint = performance.now();
-
-		let view = new DataView(buffer.data);
 
 		let accepted = new Uint32Array(numPoints);
 		let mileage = new Float64Array(numPoints);
@@ -188,12 +185,14 @@ Potree.ProfileRequest = class ProfileRequest {
 		let pos = new THREE.Vector3();
 		let svp = new THREE.Vector3();
 
+		let view = new Float32Array(node.geometry.attributes.position.array);
+
 		for (let i = 0; i < numPoints; i++) {
 
 			pos.set(
-				view.getFloat32(i * buffer.stride + posOffset + 0, true),
-				view.getFloat32(i * buffer.stride + posOffset + 4, true),
-				view.getFloat32(i * buffer.stride + posOffset + 8, true));
+				view[i * 3 + 0],
+				view[i * 3 + 1],
+				view[i * 3 + 2]);
 		
 			pos.applyMatrix4(matrix);
 			let distance = Math.abs(segment.cutPlane.distanceToPoint(pos));
@@ -246,8 +245,7 @@ Potree.ProfileRequest = class ProfileRequest {
 		for (let segment of target.segments) {
 			for (let node of nodes) {
 				let numPoints = node.numPoints;
-				let buffer = node.buffer;
-				let view = new DataView(buffer.data);
+				let geometry = node.geometry;
 
 				if(!numPoints){
 					continue;
@@ -288,13 +286,12 @@ Potree.ProfileRequest = class ProfileRequest {
 				let matrix = new THREE.Matrix4().multiplyMatrices(
 					this.pointcloud.matrixWorld, nodeMatrix);
 
-				let posOffset = buffer.offset("position");
 				pointsProcessed = pointsProcessed + numPoints;
 
 				let accepted = null;
 				let mileage = null;
 				let acceptedPositions = null;
-				for(let result of this.getAccepted(numPoints, buffer, posOffset, matrix, segment, segmentDir, points,totalMileage)){
+				for(let result of this.getAccepted(numPoints, node, matrix, segment, segmentDir, points,totalMileage)){
 					if(!result){
 						let duration = performance.now() - checkpoint;
 						//console.log(`getPointsInsideProfile yield after ${duration}ms`);
@@ -314,37 +311,30 @@ Potree.ProfileRequest = class ProfileRequest {
 
 				points.data.position = acceptedPositions;
 
-				let relevantAttributes = buffer.attributes.filter(a => !["position", "index"].includes(a.name));
-				for(let attribute of relevantAttributes){
+				let relevantAttributes = Object.keys(geometry.attributes).filter(a => !["position", "indices"].includes(a));
+				for(let attributeName of relevantAttributes){
 
-					let filteredBuffer = null;
-					if(attribute.type === "FLOAT"){
-						filteredBuffer = new Float32Array(attribute.numElements * accepted.length);
-					}else if(attribute.type === "UNSIGNED_BYTE"){
-						filteredBuffer = new Uint8Array(attribute.numElements * accepted.length);
-					}else if(attribute.type === "UNSIGNED_SHORT"){
-						filteredBuffer = new Uint16Array(attribute.numElements * accepted.length);
-					}else if(attribute.type === "UNSIGNED_INT"){
-						filteredBuffer = new Uint32Array(attribute.numElements * accepted.length);
-					}
+					let attribute = geometry.attributes[attributeName];
+					let numElements = attribute.array.length / numPoints;
+					let Type = attribute.array.constructor;
 
-					let source = new Uint8Array(buffer.data);
-					let target = new Uint8Array(filteredBuffer.buffer);
+					let filteredBuffer = new Type(numElements * accepted.length);
 
-					let offset = buffer.offset(attribute.name);
+					let source = attribute.array;
+					let target = filteredBuffer;
 
 					for(let i = 0; i < accepted.length; i++){
 
 						let index = accepted[i];
 						
-						let start = buffer.stride * index + offset;
-						let end = start + attribute.bytes;
+						let start = index * numElements;
+						let end = start + numElements;
 						let sub = source.subarray(start, end);
 
-						target.set(sub, i * attribute.bytes);
+						target.set(sub, i * numElements);
 					}
 
-					points.data[attribute.name] = filteredBuffer;
+					points.data[attributeName] = filteredBuffer;
 				}
 
 				points.data['mileage'] = mileage;

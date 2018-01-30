@@ -115,7 +115,7 @@ Potree.EarthControls = class EarthControls extends THREE.EventDispatcher {
 				this.scene.getActiveCamera(), 
 				this.viewer, 
 				this.scene.pointclouds, 
-				{pickClipped: true});
+				{pickClipped: false});
 
 			if (I) {
 				this.pivot = I.location;

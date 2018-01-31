@@ -165,6 +165,42 @@ initSidebar = (viewer) => {
 		let elScene = $("#menu_scene");
 		let elObjects = elScene.next().find("#scene_objects");
 		let elProperties = elScene.next().find("#scene_object_properties");
+		
+
+		{
+			let elExport = elScene.next().find("#scene_export");
+
+			let geoJSONIcon = `${Potree.resourcePath}/icons/file_geojson.svg`;
+			let dxfIcon = `${Potree.resourcePath}/icons/file_dxf.svg`;
+
+			elExport.append(`
+				Export: <br>
+				<a href="#" download="measure.json"><img name="geojson_export_button" src="${geoJSONIcon}" class="button-icon" style="height: 24px" /></a>
+				<a href="#" download="measure.dxf"><img name="dxf_export_button" src="${dxfIcon}" class="button-icon" style="height: 24px" /></a>
+			`);
+
+			let elDownloadJSON = elExport.find("img[name=geojson_export_button]").parent();
+			elDownloadJSON.click( () => {
+				let scene = viewer.scene;
+				let measurements = [...scene.measurements, ...scene.profiles, ...scene.volumes];
+
+				let geoJson = Potree.GeoJSONExporter.toString(measurements);
+
+				let url = window.URL.createObjectURL(new Blob([geoJson], {type: 'data:application/octet-stream'}));
+				elDownloadJSON.attr('href', url);
+			});
+
+			let elDownloadDXF = elExport.find("img[name=dxf_export_button]").parent();
+			elDownloadDXF.click( () => {
+				let scene = viewer.scene;
+				let measurements = [...scene.measurements, ...scene.profiles, ...scene.volumes];
+
+				let dxf = Potree.DXFExporter.toString(measurements);
+
+				let url = window.URL.createObjectURL(new Blob([dxf], {type: 'data:application/octet-stream'}));
+				elDownloadDXF.attr('href', url);
+			});
+		}
 
 		let propertiesPanel = new Potree.PropertiesPanel(elProperties, viewer);
 		propertiesPanel.setScene(viewer.scene);

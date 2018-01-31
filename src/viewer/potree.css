@@ -428,7 +428,7 @@ body{
 }
 
 .ui-widget-content{
-	//color: var(--font-color) !important;
+	/*color: var(--font-color) !important;*/
 }
 
 .accordion > h3{

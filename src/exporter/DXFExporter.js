@@ -101,7 +101,7 @@ SEQEND
 		}
 	}
 
-	static toString (measurements) {
+	static toString(measurements){
 		if (!(measurements instanceof Array)) {
 			measurements = [measurements];
 		}

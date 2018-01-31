@@ -310,9 +310,13 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		return this.background;
 	};
 
-	setBackground (bg) {
+	setBackground(bg){
 		if (this.background === bg) {
 			return;
+		}
+
+		if(bg === "skybox"){
+			this.skybox = Potree.utils.loadSkybox(new URL(Potree.resourcePath + '/textures/skybox2/').href);
 		}
 
 		this.background = bg;
@@ -938,8 +942,6 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		this.renderer.domElement.addEventListener('mousedown', function () {
 			this.renderer.domElement.focus();
 		}.bind(this));
-
-		this.skybox = Potree.utils.loadSkybox(new URL(Potree.resourcePath + '/textures/skybox2/').href);
 
 		// enable frag_depth extension for the interpolation shader, if available
 		let gl = this.renderer.context;

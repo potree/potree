@@ -41,7 +41,7 @@
 	<!-- INCLUDE SETTINGS HERE -->
 	
 	<script src="../libs/plasio/js/laslaz.js"></script>
-	<script src="../libs/plasio/vendor/bluebird.js"></script>
+	<!--<script src="../libs/plasio/vendor/bluebird.js"></script>-->
 	
 
 	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
@@ -80,51 +80,25 @@
 		});
 		
 		// Sigeom
-		Potree.loadPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/archpro/heidentor/cloud.js", "Heidentor", function(e){
-			viewer.scene.addPointCloud(e.pointcloud);
-			e.pointcloud.position.z = 0;
-			let material = e.pointcloud.material;
-			material.size = 1;
-			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+		//Potree.loadPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/archpro/heidentor/cloud.js", "Heidentor", function(e){
+		//	viewer.scene.addPointCloud(e.pointcloud);
+		//	e.pointcloud.position.z = 0;
+		//	let material = e.pointcloud.material;
+		//	material.size = 1;
+		//	material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
 
-			//viewer.setCameraMode(Potree.CameraMode.ORTHOGRAPHIC);
+		//	//viewer.setCameraMode(Potree.CameraMode.ORTHOGRAPHIC);
 
-			viewer.scene.view.position.set(13.856734292740617, -9.125174923658731, 14.563928417406354);
-			viewer.scene.view.lookAt(-3.5482630104475366, 2.728596783815762, 6.1406044783018725);
+		//	viewer.scene.view.position.set(13.856734292740617, -9.125174923658731, 14.563928417406354);
+		//	viewer.scene.view.lookAt(-3.5482630104475366, 2.728596783815762, 6.1406044783018725);
 
-			//viewer.clippingTool.setClipMode(Potree.ClipMode.INSIDE);
-			//viewer.fitToScreen();
+		//	//viewer.clippingTool.setClipMode(Potree.ClipMode.INSIDE);
+		//	//viewer.fitToScreen();
 
-			//viewer.useHQ = true;
+		//	//viewer.useHQ = true;
 
-			//Potree.measureTimings = true;
-
-
-			//{
-			//	let volume = new Potree.Volume();
-			//	volume.clip = true;
-			//	volume.position.set(-2.628, -1.647, 5.946);
-			//	volume.scale.set(20, 20, 20);
-			//	viewer.scene.addVolume(volume);
-			//}
-
-			{
-				let volume = new Potree.Volume();
-				volume.clip = true;
-				volume.position.set(-2.628, -1.647, 5.946);
-				volume.scale.set(7.82, 1.32, 16.03);
-				viewer.scene.addVolume(volume);
-			}
-
-			{
-				let volume = new Potree.Volume();
-				volume.clip = true;
-				volume.position.set(-2.344, 3.199, 5.647);
-				volume.scale.set(9.04, 17.52, 1.11);
-				viewer.scene.addVolume(volume);
-			}
-
-		});
+		//	//Potree.measureTimings = true;
+		//});
 		
 	</script>
 	

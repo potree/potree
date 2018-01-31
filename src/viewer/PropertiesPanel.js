@@ -16,9 +16,12 @@ class MeasurePanel{
 					<th>x</th>
 					<th>y</th>
 					<th>z</th>
+					<th></th>
 				</tr>
 			</table>
 		`);
+
+		let copyIconPath = Potree.resourcePath + '/icons/copy.svg';
 
 		for (let point of points) {
 			let x = Potree.utils.addCommas(point.x.toFixed(3));
@@ -30,8 +33,17 @@ class MeasurePanel{
 					<td><span>${x}</span></td>
 					<td><span>${y}</span></td>
 					<td><span>${z}</span></td>
+					<td align="right" style="width: 25%">
+						<img name="copy" title="copy" class="button-icon" src="${copyIconPath}" style="width: 16px; height: 16px"/>
+					</td>
 				</tr>
 			`);
+
+			this.elCopy = row.find("img[name=copy]");
+			this.elCopy.click( () => {
+				let msg = point.toArray().map(c => c.toFixed(3)).join(", ");
+				Potree.utils.clipboardCopy(msg);
+			});
 
 			table.append(row);
 		}
@@ -343,7 +355,9 @@ class VolumePanel extends MeasurePanel{
 	constructor(scene, measurement, propertiesPanel){
 		super(scene, measurement, propertiesPanel);
 
+		let copyIconPath = Potree.resourcePath + '/icons/copy.svg';
 		let removeIconPath = Potree.resourcePath + '/icons/remove.svg';
+
 		this.elContent = $(`
 			<div class="measurement_content selectable">
 				<span class="coordinates_table_container"></span>
@@ -353,11 +367,15 @@ class VolumePanel extends MeasurePanel{
 						<th>\u03b1</th>
 						<th>\u03b2</th>
 						<th>\u03b3</th>
+						<th></th>
 					</tr>
 					<tr>
 						<td align="center" id="angle_cell_alpha" style="width: 33%"></td>
 						<td align="center" id="angle_cell_betta" style="width: 33%"></td>
 						<td align="center" id="angle_cell_gamma" style="width: 33%"></td>
+						<td align="right" style="width: 25%">
+							<img name="copyRotation" title="copy" class="button-icon" src="${copyIconPath}" style="width: 16px; height: 16px"/>
+						</td>
 					</tr>
 				</table>
 
@@ -366,11 +384,15 @@ class VolumePanel extends MeasurePanel{
 						<th>length</th>
 						<th>width</th>
 						<th>height</th>
+						<th></th>
 					</tr>
 					<tr>
 						<td align="center" id="cell_length" style="width: 33%"></td>
 						<td align="center" id="cell_width" style="width: 33%"></td>
 						<td align="center" id="cell_height" style="width: 33%"></td>
+						<td align="right" style="width: 25%">
+							<img name="copyScale" title="copy" class="button-icon" src="${copyIconPath}" style="width: 16px; height: 16px"/>
+						</td>
 					</tr>
 				</table>
 
@@ -403,6 +425,20 @@ class VolumePanel extends MeasurePanel{
 				</div>
 			</div>
 		`);
+
+		this.elCopyRotation = this.elContent.find("img[name=copyRotation]");
+		this.elCopyRotation.click( () => {
+			let rotation = this.measurement.rotation.toArray().slice(0, 3);
+			let msg = rotation.map(c => c.toFixed(3)).join(", ");
+			Potree.utils.clipboardCopy(msg);
+		});
+
+		this.elCopyScale = this.elContent.find("img[name=copyScale]");
+		this.elCopyScale.click( () => {
+			let scale = this.measurement.scale.toArray();
+			let msg = scale.map(c => c.toFixed(3)).join(", ");
+			Potree.utils.clipboardCopy(msg);
+		});
 
 		this.elRemove = this.elContent.find("img[name=remove]");
 		this.elRemove.click( () => {
@@ -438,7 +474,8 @@ class VolumePanel extends MeasurePanel{
 
 		{
 			let angles = this.measurement.rotation.toVector3();
-			angles = [angles.z, angles.x, angles.y];
+			angles = angles.toArray();
+			//angles = [angles.z, angles.x, angles.y];
 			angles = angles.map(v => 180 * v / Math.PI);
 			angles = angles.map(a => a.toFixed(1) + '\u00B0');
 
@@ -602,7 +639,7 @@ class CameraPanel{
 					<td align="center" id="camera_position_y" style="width: 25%"></td>
 					<td align="center" id="camera_position_z" style="width: 25%"></td>
 					<td align="right" id="copy_camera_position" style="width: 25%">
-						<img name="copyPosition" class="button-icon" src="${copyIconPath}" style="width: 16px; height: 16px"/>
+						<img name="copyPosition" title="copy" class="button-icon" src="${copyIconPath}" style="width: 16px; height: 16px"/>
 					</td>
 				</tr>
 				<tr>
@@ -614,7 +651,7 @@ class CameraPanel{
 					<td align="center" id="camera_target_y" style="width: 25%"></td>
 					<td align="center" id="camera_target_z" style="width: 25%"></td>
 					<td align="right" id="copy_camera_target" style="width: 25%">
-						<img name="copyTarget" class="button-icon" src="${copyIconPath}" style="width: 16px; height: 16px"/>
+						<img name="copyTarget" title="copy" class="button-icon" src="${copyIconPath}" style="width: 16px; height: 16px"/>
 					</td>
 				</tr>
 			</table>

@@ -174,17 +174,6 @@ Potree.utils = class {
 			path + 'pz' + format, path + 'nz' + format
 		];
 
-		// var materialArray = [];
-		// for (var i = 0; i < 6; i++){
-		//	materialArray.push( new THREE.MeshBasicMaterial({
-		//		map: THREE.ImageUtils.loadTexture( urls[i] ),
-		//		side: THREE.BackSide,
-		//		depthTest: false,
-		//		depthWrite: false
-		//		})
-		//	);
-		// }
-
 		let materialArray = [];
 		{
 			for (let i = 0; i < 6; i++) {
@@ -192,7 +181,8 @@ Potree.utils = class {
 					map: null,
 					side: THREE.BackSide,
 					depthTest: false,
-					depthWrite: false
+					depthWrite: false,
+					color: 0x424556
 				});
 
 				materialArray.push(material);
@@ -202,6 +192,7 @@ Potree.utils = class {
 					function loaded (texture) {
 						material.map = texture;
 						material.needsUpdate = true;
+						material.color.setHex(0xffffff);
 					}, function progress (xhr) {
 						// console.log( (xhr.loaded / xhr.total * 100) + '% loaded' );
 					}, function error (xhr) {

@@ -939,9 +939,9 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		this.renderArea.appendChild(this.renderer.domElement);
 		this.renderer.domElement.tabIndex = '2222';
 		this.renderer.domElement.style.position = 'absolute';
-		this.renderer.domElement.addEventListener('mousedown', function () {
+		this.renderer.domElement.addEventListener('mousedown', () => {
 			this.renderer.domElement.focus();
-		}.bind(this));
+		});
 
 		// enable frag_depth extension for the interpolation shader, if available
 		let gl = this.renderer.context;
@@ -952,7 +952,6 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		gl.createVertexArray = extVAO.createVertexArrayOES.bind(extVAO);
 		gl.bindVertexArray = extVAO.bindVertexArrayOES.bind(extVAO);
 		//gl.bindVertexArray = extVAO.asdfbindVertexArrayOES.bind(extVAO);
-		
 		
 	}
 

@@ -5,7 +5,7 @@ function Potree () {
 Potree.version = {
 	major: 1,
 	minor: 6,
-	suffix: 'RC1'
+	suffix: 'PRE1'
 };
 
 console.log('Potree ' + Potree.version.major + '.' + Potree.version.minor + Potree.version.suffix);

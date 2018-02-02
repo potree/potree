@@ -415,6 +415,10 @@ class VolumePanel extends MeasurePanel{
 					</label>
 				</li>
 
+				<li>
+					<input name="download_volume" type="button" value="download" style="display:hidden" />
+				</li>
+
 
 				<!-- ACTIONS -->
 				<input id="volume_reset_orientation" type="button" value="reset orientation"/>
@@ -425,6 +429,14 @@ class VolumePanel extends MeasurePanel{
 				</div>
 			</div>
 		`);
+
+		this.elDownloadButton = this.elContent.find("input[name=download_volume]");
+		this.elDownloadButton.click( () => {
+			this.download();	
+		});
+		if(viewer.server !== undefined){
+			this.elDownloadButton.css("display", "initial");
+		}
 
 		this.elCopyRotation = this.elContent.find("img[name=copyRotation]");
 		this.elCopyRotation.click( () => {
@@ -442,7 +454,7 @@ class VolumePanel extends MeasurePanel{
 
 		this.elRemove = this.elContent.find("img[name=remove]");
 		this.elRemove.click( () => {
-			viewer.scene.removeVolume(measurement);
+			this.scene.removeVolume(measurement);
 		});
 
 		this.elContent.find("#volume_reset_orientation").click(() => {
@@ -465,6 +477,35 @@ class VolumePanel extends MeasurePanel{
 		this.propertiesPanel.addVolatileListener(measurement, "clip_changed", this._update);
 
 		this.update();
+	}
+
+	download(){
+		let boxes = [this.measurement.matrixWorld]
+			.map(m => m.elements.join(','))
+			.join(',');
+
+		let minLOD = 0;
+		let maxLOD = 100;
+
+		let pcs = [];
+		for (let pointcloud of this.scene.pointclouds) {
+			let urlIsAbsolute = new RegExp('^(?:[a-z]+:)?//', 'i').test(pointcloud.pcoGeometry.url);
+			let pc = '';
+			if (urlIsAbsolute) {
+				pc = pointcloud.pcoGeometry.url;
+			} else {
+				pc = `${window.location.href}/../${pointcloud.pcoGeometry.url}`;
+			}
+
+			pcs.push(pc);
+		}
+
+		let pc = pcs
+			.map(v => `pointcloud[]=${v}`)
+			.join('&');
+
+		let request = `${viewer.server}/start_extract_region_worker?minLOD=${minLOD}&maxLOD=${maxLOD}&box=${boxes}&${pc}`;
+		console.log(request);
 	}
 
 	update(){

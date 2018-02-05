@@ -677,11 +677,7 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 		let pixelCount = w * h;
 		let buffer = new Uint8Array(4 * pixelCount);
 		
-		//var start = performance.now();
 		gl.readPixels(x, y, pickWindowSize, pickWindowSize, gl.RGBA, gl.UNSIGNED_BYTE, buffer); 
-		//var end = performance.now();
-		//var duration = end - start;
-		//console.log(`duration: ${duration.toFixed(3)}ms`);
 		
 		renderer.setRenderTarget(null);
 		renderer.resetGLState();

@@ -12,3 +12,6 @@ examples/index.html
 pointclouds/retz
 pointclouds/NVIDIA_Ph01-20160403_tiles_converted
 libs/CesiumUnminified
+/pointclouds/D
+/pointclouds/wrneustadt
+/pointclouds/alszeile

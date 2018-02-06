@@ -36,15 +36,15 @@ float response(float depth){
 }
 
 void main() {
-	float depth = texture2D(uDepthMap, vUv).g; 
-	
-	if(depth >= 1.0){
-		discard;
-	}
+	float depth = texture2D(uDepthMap, vUv).r;
 
 	float edlDepth = texture2D(uEDLMap, vUv).a;
 	float res = response(edlDepth);
 	float shade = exp(-res * 300.0 * edlStrength);
+
+	if(depth >= 1.0 && res == 0.0){
+		discard;
+	}
 	
 	vec4 color = texture2D(uWeightMap, vUv); 
 	color = color / color.w;

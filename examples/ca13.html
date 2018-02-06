@@ -63,8 +63,8 @@
 			viewer.scene.addPointCloud(e.pointcloud);
 			e.pointcloud.position.z = 0;
 			let material = e.pointcloud.material;
-			material.size = 3;
-			//material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+			material.size = 1;
+			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
 			
 			//viewer.switchCameraMode(Potree.CameraMode.ORTHOGRAPHIC);
 			viewer.scene.view.position.set(695363.0922733713, 3917242.331591645, 4028.0733017667667);

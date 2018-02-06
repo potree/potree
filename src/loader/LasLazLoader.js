@@ -153,11 +153,11 @@ Potree.LasLazBatcher = class LasLazBatcher {
 
 			geometry.addAttribute('position', new THREE.BufferAttribute(positions, 3));
 			geometry.addAttribute('color', new THREE.BufferAttribute(colors, 4, true));
-			//geometry.addAttribute('intensity', new THREE.BufferAttribute(intensities, 1));
-			//geometry.addAttribute('classification', new THREE.BufferAttribute(classifications, 1));
-			//geometry.addAttribute('returnNumber', new THREE.BufferAttribute(returnNumbers, 1));
-			//geometry.addAttribute('numberOfReturns', new THREE.BufferAttribute(numberOfReturns, 1));
-			//geometry.addAttribute('pointSourceID', new THREE.BufferAttribute(pointSourceIDs, 1));
+			geometry.addAttribute('intensity', new THREE.BufferAttribute(intensities, 1));
+			geometry.addAttribute('classification', new THREE.BufferAttribute(classifications, 1));
+			geometry.addAttribute('returnNumber', new THREE.BufferAttribute(returnNumbers, 1));
+			geometry.addAttribute('numberOfReturns', new THREE.BufferAttribute(numberOfReturns, 1));
+			geometry.addAttribute('pointSourceID', new THREE.BufferAttribute(pointSourceIDs, 1));
 			//geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(numPoints * 3), 3));
 			geometry.addAttribute('indices', new THREE.BufferAttribute(indices, 4));
 			geometry.attributes.indices.normalized = true;

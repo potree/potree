@@ -685,7 +685,6 @@ void main() {
 	gl_Position = projectionMatrix * mvPosition;
 	vLogDepth = log2(-mvPosition.z);
 
-
 	// POINT SIZE
 	float pointSize = getPointSize();
 	gl_PointSize = pointSize;
@@ -693,6 +692,17 @@ void main() {
 
 	// COLOR
 	vColor = getColor();
+
+
+	#if defined hq_depth_pass
+		float originalDepth = gl_Position.w;
+		float adjustedDepth = originalDepth + 2.0 * vRadius;
+		float adjust = adjustedDepth / originalDepth;
+
+		mvPosition.xyz = mvPosition.xyz * adjust;
+		gl_Position = projectionMatrix * mvPosition;
+	#endif
+
 
 	// CLIPPING
 	doClipping();
@@ -767,25 +777,10 @@ void main() {
 
 	#endif
 
-	#if defined hq_depth_pass
-		float originalDepth = gl_Position.w;
-		float adjustedDepth = originalDepth + 2.0 * vRadius;
-		float adjust = adjustedDepth / originalDepth;
-
-		mvPosition.xyz = mvPosition.xyz * adjust;
-		gl_Position = projectionMatrix * mvPosition;
-	#endif
-
 	if(uDebug){
 		vColor.b = (vColor.r + vColor.g + vColor.b) / 3.0;
 		vColor.r = 1.0;
 		vColor.g = 1.0;
 	}
-
-	//vColor = vec3(1.0, 1.0, 1.0) * spacing / 0.05;
-
-	//if(getLOD() != uLevel){
-		//gl_Position = vec4(100.0, 100.0, 100.0, 1.0);
-	//}
 
 }

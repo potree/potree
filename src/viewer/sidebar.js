@@ -787,29 +787,56 @@ initSidebar = (viewer) => {
 			function () { viewer.fitToScreen(); }
 		));
 
-		elNavigation.append(createToolIcon(
-			Potree.resourcePath + '/icons/topview.svg',
-			'[title]tt.top_view_control',
-			function () { viewer.setTopView(); }
-		));
 
-		elNavigation.append(createToolIcon(
-			Potree.resourcePath + '/icons/frontview.svg',
-			'[title]tt.front_view_control',
-			function () { viewer.setFrontView(); }
-		));
-
-		elNavigation.append(createToolIcon(
-			Potree.resourcePath + '/icons/leftview.svg',
-			'[title]tt.left_view_control',
-			function () { viewer.setLeftView(); }
-		));
 		
 		elNavigation.append(createToolIcon(
 			Potree.resourcePath + "/icons/navigation_cube.svg",
 			"[title]tt.navigation_cube_control",
 			function(){viewer.toggleNavigationCube()}
 		));
+
+
+
+
+		elNavigation.append(createToolIcon(
+			Potree.resourcePath + "/icons/left.svg",
+			"[title]tt.left_view_control",
+			function(){viewer.setLeftView()}
+		));
+
+		elNavigation.append(createToolIcon(
+			Potree.resourcePath + "/icons/right.svg",
+			"[title]tt.right_view_control",
+			function(){viewer.setRightView()}
+		));
+
+		elNavigation.append(createToolIcon(
+			Potree.resourcePath + "/icons/front.svg",
+			"[title]tt.front_view_control",
+			function(){viewer.setFrontView()}
+		));
+
+		elNavigation.append(createToolIcon(
+			Potree.resourcePath + "/icons/back.svg",
+			"[title]tt.back_view_control",
+			function(){viewer.setBackView()}
+		));
+
+		elNavigation.append(createToolIcon(
+			Potree.resourcePath + "/icons/top.svg",
+			"[title]tt.top_view_control",
+			function(){viewer.setTopView()}
+		));
+
+		elNavigation.append(createToolIcon(
+			Potree.resourcePath + "/icons/bottom.svg",
+			"[title]tt.bottom_view_control",
+			function(){viewer.setBottomView()}
+		));
+
+
+
+
 
 		let elCameraProjection = $(`
 			<selectgroup id="camera_projection_options">
@@ -871,21 +898,21 @@ initSidebar = (viewer) => {
 			$('#lblMinNodeSize').html(parseInt(viewer.getMinNodeSize()));
 		}
 
-		//{
-		//	let elSplatQuality = $("#splat_quality_options");
-		//	elSplatQuality.selectgroup({title: "Splat Quality"});
+		{
+			let elSplatQuality = $("#splat_quality_options");
+			elSplatQuality.selectgroup({title: "Splat Quality"});
 
-		//	elSplatQuality.find("input").click( (e) => {
-		//		if(e.target.value === "standard"){
-		//			viewer.useHQ = false;
-		//		}else if(e.target.value === "hq"){
-		//			viewer.useHQ = true;
-		//		}
-		//	});
+			elSplatQuality.find("input").click( (e) => {
+				if(e.target.value === "standard"){
+					viewer.useHQ = false;
+				}else if(e.target.value === "hq"){
+					viewer.useHQ = true;
+				}
+			});
 
-		//	let currentQuality = viewer.useHQ ? "hq" : "standard";
-		//	elSplatQuality.find(`input[value=${currentQuality}]`).trigger("click");
-		//}
+			let currentQuality = viewer.useHQ ? "hq" : "standard";
+			elSplatQuality.find(`input[value=${currentQuality}]`).trigger("click");
+		}
 
 		$('#show_bounding_box').click(() => {
 			viewer.setShowBoundingBox($('#show_bounding_box').prop("checked"));

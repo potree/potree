@@ -200,7 +200,7 @@ gulp.task('watch', function() {
 	gulp.run("build");
 	gulp.run("webserver");
 	
-    gulp.watch(['src/**/*.js', 'src/**/*.css', 'src/**/*.html', 'src/**/*.vs', 'src/**/*.fs'], ["build"]);
+    gulp.watch(['src/**/*.js', 'src/**/*.css', 'src/**/*.html', 'src/**/*.vs', 'src/**/*.fs', 'resources/**/*'], ["build"]);
 });
 
 

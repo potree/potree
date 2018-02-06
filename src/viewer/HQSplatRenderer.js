@@ -80,8 +80,6 @@ class HQSplatRenderer {
 		this.resize();
 
 		let camera = viewer.scene.getActiveCamera();
-
-		viewer.renderer.render(viewer.scene.scene, camera);
 		
 		viewer.renderer.clearTarget( this.rtDepth, true, true, true );
 		viewer.renderer.clearTarget( this.rtAttribute, true, true, true );
@@ -95,15 +93,23 @@ class HQSplatRenderer {
 			for (let pointcloud of viewer.scene.pointclouds) {
 				let octreeSize = pointcloud.pcoGeometry.boundingBox.getSize().x;
 
-				this.depthMaterial.pointSizeType = pointcloud.material.pointSizeType;
-				this.depthMaterial.visibleNodesTexture = pointcloud.material.visibleNodesTexture;
+				let material = pointcloud.material;
+
+				this.depthMaterial.pointSizeType = material.pointSizeType;
+				this.depthMaterial.visibleNodesTexture = material.visibleNodesTexture;
 				this.depthMaterial.weighted = false;
 				this.depthMaterial.screenWidth = width;
 				this.depthMaterial.shape = Potree.PointShape.CIRCLE;
 				this.depthMaterial.screenHeight = height;
-				this.depthMaterial.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
+				this.depthMaterial.uniforms.visibleNodes.value = material.visibleNodesTexture;
 				this.depthMaterial.uniforms.octreeSize.value = octreeSize;
-				this.depthMaterial.spacing = pointcloud.pcoGeometry.spacing * Math.max(pointcloud.scale.x, pointcloud.scale.y, pointcloud.scale.z);
+				this.depthMaterial.spacing = pointcloud.pcoGeometry.spacing * Math.max(...pointcloud.scale.toArray());
+				this.depthMaterial.classification = material.classification;
+
+				this.depthMaterial.clipTask = material.clipTask;
+				this.depthMaterial.clipMethod = material.clipMethod;
+				this.depthMaterial.setClipBoxes(material.clipBoxes);
+				this.depthMaterial.setClipPolygons(material.clipPolygons);
 			}
 			
 			viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, this.rtDepth, {
@@ -116,20 +122,25 @@ class HQSplatRenderer {
 			for (let pointcloud of viewer.scene.pointclouds) {
 				let octreeSize = pointcloud.pcoGeometry.boundingBox.getSize().x;
 
-				this.attributeMaterial.pointSizeType = pointcloud.material.pointSizeType;
-				this.attributeMaterial.pointColorType = pointcloud.material.pointColorType;
-				this.attributeMaterial.visibleNodesTexture = pointcloud.material.visibleNodesTexture;
+				let material = pointcloud.material;
+
+				this.attributeMaterial.pointSizeType = material.pointSizeType;
+				this.attributeMaterial.pointColorType = material.pointColorType;
+				this.attributeMaterial.visibleNodesTexture = material.visibleNodesTexture;
 				this.attributeMaterial.weighted = true;
 				this.attributeMaterial.screenWidth = width;
 				this.attributeMaterial.screenHeight = height;
 				this.attributeMaterial.shape = Potree.PointShape.CIRCLE;
-				this.attributeMaterial.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
+				this.attributeMaterial.uniforms.visibleNodes.value = material.visibleNodesTexture;
 				this.attributeMaterial.uniforms.octreeSize.value = octreeSize;
-				this.attributeMaterial.spacing = pointcloud.pcoGeometry.spacing * Math.max(pointcloud.scale.x, pointcloud.scale.y, pointcloud.scale.z);
+				this.attributeMaterial.spacing = pointcloud.pcoGeometry.spacing * Math.max(...pointcloud.scale.toArray());
+				this.attributeMaterial.classification = material.classification;
 
-				this.attributeMaterial.clipTask = pointcloud.material.clipTask;
-				this.attributeMaterial.clipMethod = pointcloud.material.clipMethod;
-				this.attributeMaterial.setClipBoxes(pointcloud.material.clipBoxes);
+				this.attributeMaterial.clipTask = material.clipTask;
+				this.attributeMaterial.clipMethod = material.clipMethod;
+				this.attributeMaterial.setClipBoxes(material.clipBoxes);
+				this.attributeMaterial.setClipPolygons(material.clipPolygons);
+
 			}
 			
 			let gl = this.gl;
@@ -168,7 +179,6 @@ class HQSplatRenderer {
 		}
 
 		{ // NORMALIZATION PASS
-
 			let normalizationMaterial = this.useEDL ? this.normalizationEDLMaterial : this.normalizationMaterial;
 
 			if(this.useEDL){
@@ -184,6 +194,8 @@ class HQSplatRenderer {
 			
 			Potree.utils.screenPass.render(viewer.renderer, normalizationMaterial);
 		}
+
+		viewer.renderer.render(viewer.scene.scene, camera);
 
 		Potree.endQuery(queryHQSplats, viewer.renderer.getContext());
 

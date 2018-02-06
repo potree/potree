@@ -430,12 +430,14 @@ class VolumePanel extends MeasurePanel{
 			</div>
 		`);
 
-		this.elDownloadButton = this.elContent.find("input[name=download_volume]");
-		this.elDownloadButton.click( () => {
-			this.download();	
-		});
-		if(viewer.server !== undefined){
-			this.elDownloadButton.css("display", "initial");
+		{ // download
+			this.elDownloadButton = this.elContent.find("input[name=download_volume]");
+
+			if(this.propertiesPanel.viewer.server){
+				this.elDownloadButton.click(() => this.download());
+			} else {
+				this.elDownloadButton.hide();
+			}
 		}
 
 		this.elCopyRotation = this.elContent.find("img[name=copyRotation]");

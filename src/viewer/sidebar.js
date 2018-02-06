@@ -795,7 +795,7 @@ initSidebar = (viewer) => {
 			function(){viewer.toggleNavigationCube()}
 		));
 
-
+		elNavigation.append("<br>");
 
 
 		elNavigation.append(createToolIcon(

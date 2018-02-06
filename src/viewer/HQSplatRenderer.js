@@ -135,6 +135,10 @@ class HQSplatRenderer {
 				this.attributeMaterial.uniforms.octreeSize.value = octreeSize;
 				this.attributeMaterial.spacing = pointcloud.pcoGeometry.spacing * Math.max(...pointcloud.scale.toArray());
 				this.attributeMaterial.classification = material.classification;
+				this.attributeMaterial.elevationRange = material.elevationRange;
+				this.attributeMaterial.gradient = material.gradient;
+
+
 
 				this.attributeMaterial.clipTask = material.clipTask;
 				this.attributeMaterial.clipMethod = material.clipMethod;

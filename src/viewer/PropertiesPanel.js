@@ -871,6 +871,28 @@ Potree.PropertiesPanel = class PropertriesPanel{
 					</div>
 
 					<li><span data-i18n="appearance.elevation_range"></span>: <span id="lblHeightRange"></span> <div id="sldHeightRange"></div>	</li>
+					<li>
+						<span>Gradient Scheme:</span>
+						<div id="elevation_gradient_scheme_selection" style="display: flex">
+						<!--
+							<span style="flex-grow: 1;">
+								<img id="gradient_spectral" class="button-icon" style="max-width: 100%" src="${Potree.resourcePath}/icons/gradients_spectral.png" />
+							</span>
+							<span style="flex-grow: 1;">
+								<img id="gradient_yellow_green" class="button-icon" style="max-width: 100%" src="${Potree.resourcePath}/icons/gradients_yellow_green.png" />
+							</span>
+							<span style="flex-grow: 1;">
+								<img class="button-icon" style="max-width: 100%" src="${Potree.resourcePath}/icons/gradients_plasma.png" />
+							</span>
+							<span style="flex-grow: 1;">
+								<img class="button-icon" style="max-width: 100%" src="${Potree.resourcePath}/icons/gradients_grayscale.png" />
+							</span>
+							<span style="flex-grow: 1;">
+								<img class="button-icon" style="max-width: 100%" src="${Potree.resourcePath}/icons/gradients_rainbow.png" />
+							</span>
+							-->
+						</div>
+					</li>
 				</div>
 
 				<div id="materials.transition_container">
@@ -1057,6 +1079,40 @@ Potree.PropertiesPanel = class PropertriesPanel{
 
 			update();
 			updateMaterialPanel();
+		}
+
+		{
+			let schemes = [
+				{name: "SPECTRAL", icon: `${Potree.resourcePath}/icons/gradients_spectral.png`},
+				{name: "YELLOW_GREEN", icon: `${Potree.resourcePath}/icons/gradients_yellow_green.png`},
+				{name: "PLASMA", icon: `${Potree.resourcePath}/icons/gradients_plasma.png`},
+				{name: "GRAYSCALE", icon: `${Potree.resourcePath}/icons/gradients_grayscale.png`},
+				{name: "RAINBOW", icon: `${Potree.resourcePath}/icons/gradients_rainbow.png`},
+			];
+
+			let elSchemeContainer = panel.find("#elevation_gradient_scheme_selection");
+
+			for(let scheme of schemes){
+				let elScheme = $(`
+					<span style="flex-grow: 1;">
+						<img src="${scheme.icon}" class="button-icon" style="max-width: 100%" />
+					</span>
+				`);
+
+				elScheme.click( () => {
+					material.gradient = Potree.Gradients[scheme.name];
+				});
+
+				elSchemeContainer.append(elScheme);
+			}
+
+			//panel.find("#gradient_spectral").click( () => {
+			//	pointcloud.material.gradient = Potree.Gradients.SPECTRAL;
+			//});
+
+			//panel.find("#gradient_yellow_green").click( () => {
+			//	pointcloud.material.gradient = Potree.Gradients.YELLOW_GREEN;
+			//});
 		}
 
 		{

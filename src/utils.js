@@ -351,6 +351,59 @@ Potree.utils = class {
 		return img;
 	};
 
+	static pixelsArrayToDataUrl(pixels, width, height) {
+		let canvas = document.createElement('canvas');
+		canvas.width = width;
+		canvas.height = height;
+
+		let context = canvas.getContext('2d');
+
+		pixels = new pixels.constructor(pixels);
+
+		for (let i = 0; i < pixels.length; i++) {
+			pixels[i * 4 + 3] = 255;
+		}
+
+		let imageData = context.createImageData(width, height);
+		imageData.data.set(pixels);
+		context.putImageData(imageData, 0, 0);
+
+		let dataURL = canvas.toDataURL();
+
+		return dataURL;
+	};
+
+	static pixelsArrayToCanvas(pixels, width, height){
+		let canvas = document.createElement('canvas');
+		canvas.width = width;
+		canvas.height = height;
+
+		let context = canvas.getContext('2d');
+
+		pixels = new pixels.constructor(pixels);
+
+		//for (let i = 0; i < pixels.length; i++) {
+		//	pixels[i * 4 + 3] = 255;
+		//}
+
+		// flip vertically
+		let bytesPerLine = width * 4;
+		for(let i = 0; i < parseInt(height / 2); i++){
+			let j = height - i - 1;
+
+			let lineI = pixels.slice(i * bytesPerLine, i * bytesPerLine + bytesPerLine);
+			let lineJ = pixels.slice(j * bytesPerLine, j * bytesPerLine + bytesPerLine);
+			pixels.set(lineJ, i * bytesPerLine);
+			pixels.set(lineI, j * bytesPerLine);
+		}
+
+		let imageData = context.createImageData(width, height);
+		imageData.data.set(pixels);
+		context.putImageData(imageData, 0, 0);
+
+		return canvas;
+	};
+
 	static removeListeners(dispatcher, type){
 		if (dispatcher._listeners === undefined) {
 			return;

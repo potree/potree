@@ -14,9 +14,6 @@ Potree.pointBudget = 1 * 1000 * 1000;
 
 Potree.framenumber = 0;
 
-// contains WebWorkers with base64 encoded code
-// Potree.workers = {};
-
 Potree.Shaders = {};
 
 Potree.webgl = {
@@ -38,6 +35,49 @@ if (document.currentScript.src) {
 }
 
 Potree.resourcePath = Potree.scriptPath + '/resources';
+
+class EnumItem{
+	constructor(object){
+		for(let key of Object.keys(object)){
+			this[key] = object[key];
+		}
+	}
+
+	inspect(){
+		return `Enum(${this.name}: ${this.value})`;
+	}
+};
+
+class Enum{
+
+	constructor(object){
+		this.object = object;
+
+		for(let key of Object.keys(object)){
+			let value = object[key];
+
+			if(typeof value === "object"){
+				value.name = key;
+			}else{
+				value = {name: key, value: value};
+			}
+			
+			this[key] = new EnumItem(value);
+		}
+	}
+
+	fromValue(value){
+		for(let key of Object.keys(this.object)){
+			if(this[key].value === value){
+				return this[key];
+			}
+		}
+
+		throw new Error(`No enum for value: ${value}`);
+	}
+	
+};
+
 
 Potree.CameraMode = {
 	ORTHOGRAPHIC: 0,

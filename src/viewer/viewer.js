@@ -7,6 +7,13 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		this.renderArea = domElement;
 		this.guiLoaded = false;	
 		this.guiLoadTasks = [];
+
+		this.messages = [];
+		this.elMessages = $(`
+		<div id="message_listing" 
+			style="position: absolute; z-index: 1000; left: 10px; bottom: 10px">
+		</div>`);
+		$(domElement).append(this.elMessages);
 		
 		try{
 
@@ -1524,5 +1531,29 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		this.resolveTimings(timestamp);
 
 		Potree.framenumber++;
+	}
+
+	postMessage(content){
+		let message = new Potree.Message(content);
+
+		let animationDuration = 100;
+
+		message.element.css("display", "none");
+		message.elClose.click( () => {
+			message.element.slideToggle(animationDuration);
+
+			let index = this.messages.indexOf(message);
+			if(index >= 0){
+				this.messages.splice(index, 1);
+			}
+		});
+
+		this.elMessages.prepend(message.element);
+
+		message.element.slideToggle(animationDuration);
+
+		this.messages.push(message);
+
+		return message;
 	}
 };

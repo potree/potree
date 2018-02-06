@@ -1,7 +1,7 @@
 
 
-class EDLRenderer {
-	constructor (viewer) {
+class EDLRenderer{
+	constructor(viewer){
 		this.viewer = viewer;
 
 		this.edlMaterial = null;
@@ -17,7 +17,7 @@ class EDLRenderer {
 		this.shadowMap = new Potree.PointCloudSM(this.viewer.pRenderer);
 	}
 
-	initEDL () {
+	initEDL(){
 		if (this.edlMaterial != null) {
 			return;
 		}
@@ -45,22 +45,92 @@ class EDLRenderer {
 		//}
 	};
 
-	resize () {
+	resize(){
 		const viewer = this.viewer;
 
 		let pixelRatio = viewer.renderer.getPixelRatio();
-		let width = viewer.renderer.getSize().width;
-		let height = viewer.renderer.getSize().height;
+		let {width, height} = viewer.renderer.getSize();
+
+		if(this.screenshot){
+			width = this.screenshot.target.width;
+			height = this.screenshot.target.height;
+		}
+
 		this.rtColor.setSize(width * pixelRatio , height * pixelRatio);
 	}
 
-	render () {
+	makeScreenshot(camera, size, callback){
+
+		if(camera === undefined || camera === null){
+			camera = this.viewer.scene.getActiveCamera();
+		}
+
+		if(size === undefined || size === null){
+			size = this.viewer.renderer.getSize();
+		}
+
+		let {width, height} = size;
+
+		//let maxTextureSize = viewer.renderer.capabilities.maxTextureSize;
+		//if(width * 4 < 
+		width = 2 * width;
+		height = 2 * height;
+
+		let target = new THREE.WebGLRenderTarget(width, height, {
+			format: THREE.RGBAFormat,
+		});
+
+		this.screenshot = {
+			target: target
+		};
+
+		this.viewer.renderer.clearTarget(target, true, true, true);
+
+		this.render();
+
+		let pixelCount = width * height;
+		let buffer = new Uint8Array(4 * pixelCount);
+
+		this.viewer.renderer.readRenderTargetPixels(target, 0, 0, width, height, buffer);
+
+		// flip vertically
+		let bytesPerLine = width * 4;
+		for(let i = 0; i < parseInt(height / 2); i++){
+			let j = height - i - 1;
+
+			let lineI = buffer.slice(i * bytesPerLine, i * bytesPerLine + bytesPerLine);
+			let lineJ = buffer.slice(j * bytesPerLine, j * bytesPerLine + bytesPerLine);
+			buffer.set(lineJ, i * bytesPerLine);
+			buffer.set(lineI, j * bytesPerLine);
+		}
+
+		this.screenshot.target.dispose();
+		delete this.screenshot;
+
+		return {
+			width: width,
+			height: height,
+			buffer: buffer
+		};
+	}
+
+	render(){
 		this.initEDL();
 		const viewer = this.viewer;
 
 		viewer.dispatchEvent({type: "render.pass.begin",viewer: viewer});
 
 		this.resize();
+
+		if(this.screenshot){
+			let oldBudget = Potree.pointBudget;
+			Potree.pointBudget = Math.max(10 * 1000 * 1000, 2 * oldBudget);
+			let result = Potree.updatePointClouds(
+				viewer.scene.pointclouds, 
+				viewer.scene.getActiveCamera(), 
+				viewer.renderer);
+			Potree.pointBudget = oldBudget;
+		}
 
 		let camera = viewer.scene.getActiveCamera();
 
@@ -180,6 +250,10 @@ class EDLRenderer {
 			this.edlMaterial.uniforms.opacity.value = 1;
 			
 			Potree.utils.screenPass.render(viewer.renderer, this.edlMaterial);
+
+			if(this.screenshot){
+				Potree.utils.screenPass.render(viewer.renderer, this.edlMaterial, this.screenshot.target);
+			}
 
 			Potree.endQuery(queryEDL, viewer.renderer.getContext());
 		}

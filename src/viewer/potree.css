@@ -81,6 +81,19 @@
 				 -1px -1px 1px black;
 }
 
+.potree_message{
+	width: 300px;
+	background-color: var(--bg-color);
+	padding: 5px;
+	margin: 5px;
+	border-radius: 4px;
+	color: var(--font-color);
+	font-family: Arial;
+	opacity: 0.8;
+	border: 1px solid black;
+	display: flex;
+}
+
 #potree_description{
 	position: absolute; 
 	top: 10px; 

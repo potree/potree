@@ -68,6 +68,7 @@ var paths = {
 		"src/utils/PolygonClipVolume.js",
 		"src/utils/Box3Helper.js",
 		"src/utils/PointCloudSM.js",
+		"src/utils/Message.js",
 		"src/exporter/GeoJSONExporter.js",
 		"src/exporter/DXFExporter.js",
 		"src/exporter/CSVExporter.js",
@@ -90,6 +91,7 @@ var paths = {
 		"src/webgl/GLProgram.js",
 		"src/InterleavedBuffer.js",
 		"src/utils/toInterleavedBufferAttribute.js",
+		"src/utils/GeoTIFF.js",
 	],
 	laslaz: [
 		"build/workers/laslaz-worker.js",

@@ -55,7 +55,12 @@
 			viewer.toggleSidebar();
 		});
 		
-		viewer.setDescription("");
+		viewer.setDescription(`
+		This example shows various ways to use annotations.
+		They can be used to bookmark and describe locations, 
+		move the camera to a predefined point of view on click,
+		and to provide programmable buttons at specific locations.
+		`);
 		
 		let sceneSG = new Potree.Scene();
 		let sceneLion = new Potree.Scene();
@@ -106,7 +111,54 @@
 					title: elTitle
 				});
 				sceneSG.annotations.add(aActions);
+			}
 
+			{ // Annotation with action icons
+
+				// Create title element with jquery
+				let schemes = [
+					{name: "SPECTRAL", icon: `${Potree.resourcePath}/icons/gradients_spectral.png`},
+					{name: "YELLOW_GREEN", icon: `${Potree.resourcePath}/icons/gradients_yellow_green.png`},
+					{name: "PLASMA", icon: `${Potree.resourcePath}/icons/gradients_plasma.png`},
+					{name: "GRAYSCALE", icon: `${Potree.resourcePath}/icons/gradients_grayscale.png`},
+					{name: "RAINBOW", icon: `${Potree.resourcePath}/icons/gradients_rainbow.png`},
+				];
+
+				let elTitle = $(`
+					<span>
+						Gradient Schemes:
+						<!--<img name="action_elevation" src="${Potree.resourcePath}/icons/gradients_spectral.png" class="annotation-action-icon" style="width: 3em; height: 3em;"/>
+						<img name="action_rgb" src="${Potree.resourcePath}/icons/gradients_yellow_green.png" class="annotation-action-icon" style="width: 3em; height: 3em;"/>
+						<img name="action_rgb" src="${Potree.resourcePath}/icons/gradients_plasma.png" class="annotation-action-icon" style="width: 3em; height: 3em;"/>
+						<img name="action_rgb" src="${Potree.resourcePath}/icons/gradients_grayscale.png" class="annotation-action-icon" style="width: 3em; height: 3em;"/>
+						<img name="action_rgb" src="${Potree.resourcePath}/icons/gradients_rainbow.png" class="annotation-action-icon" style="width: 3em; height: 3em;"/>-->
+					</span>`);
+				for(let scheme of schemes){
+					let button = $(`<img src="${scheme.icon}" class="annotation-action-icon" style="width: 3em; height: 3em;"/>`);
+					button.click( () => {
+						e.pointcloud.material.pointColorType = Potree.PointColorType.ELEVATION;
+						e.pointcloud.material.gradient = Potree.Gradients[scheme.name];
+					});
+					elTitle.append(button);
+				}
+
+				
+				//elTitle.find("img[name=action_elevation]").click( () => {
+				//	viewer.scene.pointclouds.forEach( pc => pc.material.pointColorType = Potree.PointColorType.ELEVATION );
+				//});
+				//elTitle.find("img[name=action_rgb]").click( () => {
+				//	viewer.scene.pointclouds.forEach( pc => pc.material.pointColorType = Potree.PointColorType.RGB );
+				//});
+
+				// Give the annotation a meaningful string representation for the sidebar
+				elTitle.toString = () => "actions";
+
+				// Same as with other annotations, except title is a jquery object this time.
+				let aActions = new Potree.Annotation({
+					position: [589577.396, 231267.514, 807.655],
+					title: elTitle
+				});
+				sceneSG.annotations.add(aActions);
 			}
 			
 			

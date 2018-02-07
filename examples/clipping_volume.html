@@ -48,7 +48,12 @@
 		viewer.setPointBudget(2*1000*1000);
 		viewer.loadSettingsFromURL();
 
-		viewer.setDescription("Point cloud courtesy of <a target='_blank' href='https://www.sigeom.ch/'>sigeom sa</a>");
+		viewer.setDescription(`
+		This example contains two clipping volumes, one with visible bounding box and another one without. <br>
+		Inside the "Tools" panel, you can specify whether you want to show points inside or outside the clip box, 
+		or to highlight points that are inside.<br>
+		The two volume entries in the "Scene" panel can be used to inspect the properties of the volumes and to show or hide them.
+		Point cloud courtesy of <a target='_blank' href='https://www.sigeom.ch/'>sigeom sa</a>`);
 
 		viewer.loadGUI(() => {
 			viewer.setLanguage('en');

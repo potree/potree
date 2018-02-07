@@ -53,7 +53,8 @@
 		viewer.loadGUI(() => {
 			viewer.setLanguage('en');
 			$("#menu_appearance").next().show();
-			//viewer.toggleSidebar();
+			$("#menu_scene").next().show();
+			viewer.toggleSidebar();
 		});
 
 		var getQueryParam = function(name) {
@@ -120,6 +121,9 @@
 
 			Potree.loadPointCloud(server + resource + "/", "autzen", (e) => {
 				viewer.scene.addPointCloud(e.pointcloud);
+				e.pointcloud.material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+				e.pointcloud.material.size = 0.6;
+
 				viewer.fitToScreen(0.5);
 			});
 		}

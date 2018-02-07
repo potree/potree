@@ -817,6 +817,12 @@ Potree.ProfileWindowController = class ProfileWindowController {
 		this.requests = [];
 
 		this._recompute = () => { this.recompute(); };
+
+		this.viewer.addEventListener("scene_changed", e => {
+			e.oldScene.removeEventListener("pointcloud_added", this._recompute);
+			e.scene.addEventListener("pointcloud_added", this._recompute);
+		});
+		this.viewer.scene.addEventListener("pointcloud_added", this._recompute);
 	}
 
 	setProfile (profile) {

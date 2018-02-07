@@ -63,12 +63,7 @@ Potree.GreyhoundBinaryLoader = class{
 		worker.onmessage = function (e) {
 
 			let data = e.data;
-			let iAttributes = pointAttributes.attributes
-				.map(pa => Potree.toInterleavedBufferAttribute(pa))
-				.filter(ia => ia != null);
-			iAttributes.push(new Potree.InterleavedBufferAttribute("index", 4, 4, "UNSIGNED_BYTE", true));
-			let iBuffer = new Potree.InterleavedBuffer(data.data, iAttributes, numPoints);
-
+			let buffers = data.attributeBuffers;
 			let tightBoundingBox = new THREE.Box3(
 				new THREE.Vector3().fromArray(data.tightBoundingBox.min),
 				new THREE.Vector3().fromArray(data.tightBoundingBox.max)
@@ -76,11 +71,40 @@ Potree.GreyhoundBinaryLoader = class{
 
 			Potree.workerPool.returnWorker(workerPath, worker);
 
+			let geometry = new THREE.BufferGeometry();
+
+			for(let property in buffers){
+				let buffer = buffers[property].buffer;
+
+				if (parseInt(property) === Potree.PointAttributeNames.POSITION_CARTESIAN) {
+					geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(buffer), 3));
+				} else if (parseInt(property) === Potree.PointAttributeNames.COLOR_PACKED) {
+					geometry.addAttribute('color', new THREE.BufferAttribute(new Uint8Array(buffer), 4, true));
+				} else if (parseInt(property) === Potree.PointAttributeNames.INTENSITY) {
+					geometry.addAttribute('intensity', new THREE.BufferAttribute(new Float32Array(buffer), 1));
+				} else if (parseInt(property) === Potree.PointAttributeNames.CLASSIFICATION) {
+					geometry.addAttribute('classification', new THREE.BufferAttribute(new Uint8Array(buffer), 1));
+				} else if (parseInt(property) === Potree.PointAttributeNames.NORMAL_SPHEREMAPPED) {
+					geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
+				} else if (parseInt(property) === Potree.PointAttributeNames.NORMAL_OCT16) {
+					geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
+				} else if (parseInt(property) === Potree.PointAttributeNames.NORMAL) {
+					geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
+				} else if (parseInt(property) === Potree.PointAttributeNames.INDICES) {
+					let bufferAttribute = new THREE.BufferAttribute(new Uint8Array(buffer), 4);
+					bufferAttribute.normalized = true;
+					geometry.addAttribute('indices', bufferAttribute);
+				} else if (parseInt(property) === Potree.PointAttributeNames.SPACING) {
+					let bufferAttribute = new THREE.BufferAttribute(new Float32Array(buffer), 1);
+					geometry.addAttribute('spacing', bufferAttribute);
+				}
+			}
+
 			tightBoundingBox.max.sub(tightBoundingBox.min);
 			tightBoundingBox.min.set(0, 0, 0);
 
-			node.numPoints = iBuffer.numElements;
-			node.buffer = iBuffer;
+			node.numPoints = data.numPoints;
+			node.geometry = geometry;
 			node.mean = new THREE.Vector3(...data.mean);
 			node.tightBoundingBox = tightBoundingBox;
 			node.loaded = true;

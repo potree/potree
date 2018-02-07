@@ -73,19 +73,41 @@
 			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
 			
 
-			let aSorvilier = new Potree.Annotation({
-				position: [589847.17, 231436.78, 892.60],
-				cameraPosition: [590034.03, 231814.02, 961.68],
-				cameraTarget: [589847.17, 231436.78, 742.60],
-				title: "Sorvilier"
-			});
-			sceneSG.annotations.add(aSorvilier);
-
-			//let elTitle = $(`<span>abc</span>`);
-			//let aActions = new Potree.Annotation({
-			//	position: [590012.986, 231273.294, 787.162],
-			//	title: elTitle
+			//let aSorvilier = new Potree.Annotation({
+			//	position: [589847.17, 231436.78, 892.60],
+			//	cameraPosition: [590034.03, 231814.02, 961.68],
+			//	cameraTarget: [589847.17, 231436.78, 742.60],
+			//	title: "Sorvilier"
 			//});
+			//sceneSG.annotations.add(aSorvilier);
+
+
+			{ // Annotation with action icons
+
+				// Create title element with jquery
+				let elTitle = $(`
+					<span>
+						<img name="action_elevation" src="${Potree.resourcePath}/icons/profile.svg" class="annotation-action-icon"/>
+						<img name="action_rgb" src="${Potree.resourcePath}/icons/rgb.svg" class="annotation-action-icon"/>
+					</span>`);
+				elTitle.find("img[name=action_elevation]").click( () => {
+					viewer.scene.pointclouds.forEach( pc => pc.material.pointColorType = Potree.PointColorType.ELEVATION );
+				});
+				elTitle.find("img[name=action_rgb]").click( () => {
+					viewer.scene.pointclouds.forEach( pc => pc.material.pointColorType = Potree.PointColorType.RGB );
+				});
+
+				// Give the annotation a meaningful string representation for the sidebar
+				elTitle.toString = () => "actions";
+
+				// Same as with other annotations, except title is a jquery object this time.
+				let aActions = new Potree.Annotation({
+					position: [590012.986, 231273.294, 787.162],
+					title: elTitle
+				});
+				sceneSG.annotations.add(aActions);
+
+			}
 			
 			
 			let aTrees = new Potree.Annotation({
@@ -102,23 +124,49 @@
 			sceneSG.annotations.add(aTrees);
 			
 			
+			{
+				let elTitle = $(`
+					<span>
+						About Annotations
+						<img src="${Potree.resourcePath}/icons/goto.svg" 
+							name="action_set_scene"
+							class="annotation-action-icon" 
+							style="filter: invert(1);" />
+					</span>
+				`);
+				elTitle.find("img[name=action_set_scene]").click( (event) => {
+					event.stopPropagation();
+					viewer.setScene(sceneLion); 
+				});
+				elTitle.toString = () => "About Annotations";
 
-			let aGOTO = new Potree.Annotation({
-				position: [590043.63, 231490.79, 740.78],
-				title: "About Annotations",
-				cameraPosition: [590105.53, 231541.63, 782.05],
-				cameraTarget: [590043.63, 231488.79, 740.78],
-				description: `<ul><li>Click on the annotation label to move a predefined view.</li> 
-				<li>Click on the icon to execute the specified action.</li>
-				In this case, the action will bring you to another scene and point cloud.</ul>`,
-				actions: [{
-					"icon": Potree.resourcePath + "/icons/goto.svg",
-					"onclick": function(){
-						viewer.setScene(sceneLion);
-					}
-				}]
-			});
-			sceneSG.annotations.add(aGOTO);
+				let aAbout1 = new Potree.Annotation({
+					position: [590043.63, 231490.79, 740.78],
+					title: elTitle,
+					cameraPosition: [590105.53, 231541.63, 782.05],
+					cameraTarget: [590043.63, 231488.79, 740.78],
+					description: `<ul><li>Click on the annotation label to move a predefined view.</li> 
+					<li>Click on the icon to execute the specified action.</li>
+					In this case, the action will bring you to another scene and point cloud.</ul>`
+				});
+
+				//let aAbout1 = new Potree.Annotation({
+				//	position: [590043.63, 231490.79, 740.78],
+				//	title: "About Annotations",
+				//	cameraPosition: [590105.53, 231541.63, 782.05],
+				//	cameraTarget: [590043.63, 231488.79, 740.78],
+				//	description: `<ul><li>Click on the annotation label to move a predefined view.</li> 
+				//	<li>Click on the icon to execute the specified action.</li>
+				//	In this case, the action will bring you to another scene and point cloud.</ul>`,
+				//	actions: [{
+				//		"icon": Potree.resourcePath + "/icons/goto.svg",
+				//		"onclick": function(){
+				//			viewer.setScene(sceneLion);
+				//		}
+				//	}]
+				//});
+				sceneSG.annotations.add(aAbout1);
+			}
 
 
 			let aAbout2 = new Potree.Annotation({

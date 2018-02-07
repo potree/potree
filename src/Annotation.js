@@ -265,7 +265,6 @@ Potree.Annotation = class extends THREE.EventDispatcher {
 
 			if (this.description) {
 				this.descriptionVisible = true;
-				// this.elDescription.css("display", "block");
 				this.elDescription.fadeIn(200);
 				this.elDescription.css('position', 'relative');
 			}
@@ -275,7 +274,6 @@ Potree.Annotation = class extends THREE.EventDispatcher {
 			this.domElement.css('z-index', '100');
 			this.descriptionVisible = false;
 			this.elDescription.css('display', 'none');
-			// this.elDescription.fadeOut(200);
 		}
 
 		this.isHighlighted = highlighted;

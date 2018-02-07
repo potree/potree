@@ -1533,7 +1533,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		Potree.framenumber++;
 	}
 
-	postMessage(content){
+	postMessage(content, params = {}){
 		let message = new Potree.Message(content);
 
 		let animationDuration = 100;
@@ -1553,6 +1553,17 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		message.element.slideToggle(animationDuration);
 
 		this.messages.push(message);
+
+		if(params.duration !== undefined){
+			let fadeDuration = 500;
+			let slideOutDuration = 200;
+			setTimeout(() => {
+				message.element.animate({
+					opacity: 0	
+				}, fadeDuration);
+				message.element.slideToggle(slideOutDuration);
+			}, params.duration)
+		}
 
 		return message;
 	}

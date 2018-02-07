@@ -43,6 +43,10 @@ class MeasurePanel{
 			this.elCopy.click( () => {
 				let msg = point.toArray().map(c => c.toFixed(3)).join(", ");
 				Potree.utils.clipboardCopy(msg);
+
+				viewer.postMessage(
+					`Copied value to clipboard: <br>'${msg}'`,
+					{duration: 3000});
 			});
 
 			table.append(row);
@@ -445,6 +449,10 @@ class VolumePanel extends MeasurePanel{
 			let rotation = this.measurement.rotation.toArray().slice(0, 3);
 			let msg = rotation.map(c => c.toFixed(3)).join(", ");
 			Potree.utils.clipboardCopy(msg);
+
+			viewer.postMessage(
+					`Copied value to clipboard: <br>'${msg}'`,
+					{duration: 3000});
 		});
 
 		this.elCopyScale = this.elContent.find("img[name=copyScale]");
@@ -452,6 +460,10 @@ class VolumePanel extends MeasurePanel{
 			let scale = this.measurement.scale.toArray();
 			let msg = scale.map(c => c.toFixed(3)).join(", ");
 			Potree.utils.clipboardCopy(msg);
+
+			viewer.postMessage(
+					`Copied value to clipboard: <br>'${msg}'`,
+					{duration: 3000});
 		});
 
 		this.elRemove = this.elContent.find("img[name=remove]");
@@ -706,6 +718,10 @@ class CameraPanel{
 			let pos = this.viewer.scene.getActiveCamera().position.toArray();
 			let msg = pos.map(c => c.toFixed(3)).join(", ");
 			Potree.utils.clipboardCopy(msg);
+
+			viewer.postMessage(
+					`Copied value to clipboard: <br>'${msg}'`,
+					{duration: 3000});
 		});
 
 		this.elCopyTarget = this.elContent.find("img[name=copyTarget]");
@@ -713,6 +729,10 @@ class CameraPanel{
 			let pos = this.viewer.scene.view.getPivot().toArray();
 			let msg = pos.map(c => c.toFixed(3)).join(", ");
 			Potree.utils.clipboardCopy(msg);
+
+			viewer.postMessage(
+					`Copied value to clipboard: <br>'${msg}'`,
+					{duration: 3000});
 		});
 
 		this.propertiesPanel.addVolatileListener(viewer, "camera_changed", this._update);

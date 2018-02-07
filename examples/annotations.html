@@ -72,23 +72,43 @@
 			material.size = 1;
 			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
 			
-			sceneSG.addAnnotation([589847.17, 231436.78, 892.60], {
-				"cameraPosition": [590034.03, 231814.02, 961.68],
-				"cameraTarget": [589847.17, 231436.78, 742.60],
-				"title": "Sorvilier"
+
+			let aSorvilier = new Potree.Annotation({
+				position: [589847.17, 231436.78, 892.60],
+				cameraPosition: [590034.03, 231814.02, 961.68],
+				cameraTarget: [589847.17, 231436.78, 742.60],
+				title: "Sorvilier"
 			});
+			sceneSG.annotations.add(aSorvilier);
+
+			//let elTitle = $(`<span>abc</span>`);
+			//let aActions = new Potree.Annotation({
+			//	position: [590012.986, 231273.294, 787.162],
+			//	title: elTitle
+			//});
 			
-			sceneSG.addAnnotation([589850.15, 231300.10, 770.94], {
-				"title": "Trees",
-				"description": `Point cloud of a small section in Sorvilier, Switzerland. <br>
-				Courtesy of sigeom.sa`
+			
+			let aTrees = new Potree.Annotation({
+				position: [589850.15, 231300.10, 770.94],
+				title: "Trees",
+				description: `Point cloud of a small section in Sorvilier, Switzerland. <br>
+					Courtesy of sigeom.sa`,
 			});
+			aTrees.domElement.off("mouseenter");
+			aTrees.domElement.off("mouseleave");
+			aTrees.addEventListener("click", () => {
+				aTrees.setHighlighted(!aTrees.isHighlighted);
+			});
+			sceneSG.annotations.add(aTrees);
 			
-			sceneSG.addAnnotation([590043.63, 231490.79, 740.78], {
-				"title": "About Annotations",
-				"cameraPosition": [590105.53, 231541.63, 782.05],
-				"cameraTarget": [590043.63, 231488.79, 740.78],
-				"description": `<ul><li>Click on the annotation label to move a predefined view.</li> 
+			
+
+			let aGOTO = new Potree.Annotation({
+				position: [590043.63, 231490.79, 740.78],
+				title: "About Annotations",
+				cameraPosition: [590105.53, 231541.63, 782.05],
+				cameraTarget: [590043.63, 231488.79, 740.78],
+				description: `<ul><li>Click on the annotation label to move a predefined view.</li> 
 				<li>Click on the icon to execute the specified action.</li>
 				In this case, the action will bring you to another scene and point cloud.</ul>`,
 				actions: [{
@@ -98,8 +118,11 @@
 					}
 				}]
 			});
+			sceneSG.annotations.add(aGOTO);
 
-			sceneSG.addAnnotation([589621, 231437, 784], {
+
+			let aAbout2 = new Potree.Annotation({
+				position: [589621, 231437, 784],
 				"cameraPosition": [589585.81, 231463.63, 804.00],
 				"cameraTarget": [589625.86, 231439, 775.38],
 				"title": "About Annotations 2",
@@ -111,6 +134,7 @@
 				<code>viewer.scene.view.getPivot()</code><br>
 				`
 			});
+			sceneSG.annotations.add(aAbout2);
 			
 			
 		});

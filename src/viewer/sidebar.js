@@ -556,6 +556,8 @@ initSidebar = (viewer) => {
 				"[title]tt.screen_clip_box",
 				function(){
 					if(!(viewer.scene.getActiveCamera() instanceof THREE.OrthographicCamera)){
+						viewer.postMessage(`Switch to Orthographic Camera Mode before using the Screen-Box-Select tool.`, 
+							{duration: 2000});
 						return;
 					}
 					

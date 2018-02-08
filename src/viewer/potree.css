@@ -676,3 +676,9 @@ body{
 	background: #c6c9ca !important;
 	color: black !important;
 }
+
+.cesium-viewer .cesium-viewer-cesiumWidgetContainer{
+	position: absolute;
+	height: 100%;
+	width: 100%;
+}

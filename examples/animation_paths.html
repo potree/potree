@@ -57,7 +57,6 @@
 			viewer.toggleSidebar();
 		});
 		
-		// also attach a sphere to the light to display it's position in the scene.
 		let sphere = new THREE.Mesh(
 			new THREE.SphereGeometry(0.5, 32, 32),
 			new THREE.MeshNormalMaterial()
@@ -111,7 +110,7 @@
 				{ // Animate from beginning to end with a speed of 10 meters per second
 					let start = 0;
 					let end = Infinity;
-					let speed = 10; 
+					let speed = 30; 
 					let animation = animationPath.animate(start, end, speed, t => {
 						animation.repeat = true;
 

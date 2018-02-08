@@ -40,8 +40,12 @@ Potree.PathAnimation = class{
 				this.start();
 			}
 		});
-		this.tween.start();
+
+		setTimeout(() => {
+			this.tween.start();
+		}, 0);
 	}
+
 	stop(){
 		if(!this.tween){
 			return;
@@ -50,6 +54,7 @@ Potree.PathAnimation = class{
 		this.tween = null;
 		this.t = 0;
 	}
+
 	pause(){
 		if(!this.tween){
 			return;
@@ -59,9 +64,11 @@ Potree.PathAnimation = class{
 		TWEEN.remove(this.tween);
 		this.tween = null;
 	}
+
 	resume(){
 		this.start(true);
 	}
+
 	getPoint(t){
 		return this.path.spline.getPoint(t);
 	}

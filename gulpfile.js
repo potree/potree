@@ -69,6 +69,7 @@ var paths = {
 		"src/utils/Box3Helper.js",
 		"src/utils/PointCloudSM.js",
 		"src/utils/Message.js",
+		"src/utils/SpotLightHelper.js",
 		"src/exporter/GeoJSONExporter.js",
 		"src/exporter/DXFExporter.js",
 		"src/exporter/CSVExporter.js",

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="description" content="">
+	<meta name="author" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+	<title>Potree Viewer</title>
+
+	<link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
+	<link rel="stylesheet" type="text/css" href="../libs/jquery-ui/jquery-ui.min.css">
+	<link rel="stylesheet" type="text/css" href="../libs/perfect-scrollbar/css/perfect-scrollbar.css">
+	<link rel="stylesheet" type="text/css" href="../libs/openlayers3/ol.css">
+	<link rel="stylesheet" type="text/css" href="../libs/spectrum/spectrum.css">
+	<link rel="stylesheet" type="text/css" href="../libs/jstree/themes/mixed/style.css">
+</head>
+
+<body>
+	<script src="../libs/jquery/jquery-3.1.1.min.js"></script>
+	<script src="../libs/spectrum/spectrum.js"></script>
+	<script src="../libs/perfect-scrollbar/js/perfect-scrollbar.jquery.js"></script>
+	<script src="../libs/jquery-ui/jquery-ui.min.js"></script>
+	<script src="../libs/three.js/build/three.min.js"></script>
+	<script src="../libs/other/BinaryHeap.js"></script>
+	<script src="../libs/tween/tween.min.js"></script>
+	<script src="../libs/d3/d3.js"></script>
+	<script src="../libs/proj4/proj4.js"></script>
+	<script src="../libs/openlayers3/ol.js"></script>
+	<script src="../libs/i18next/i18next.js"></script>
+	<script src="../libs/jstree/jstree.js"></script>
+	<script src="../build/potree/potree.js"></script>
+	<script src="../libs/plasio/js/laslaz.js"></script>
+	
+	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
+	<!-- INCLUDE SETTINGS HERE -->
+	
+	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
+		<div id="potree_render_area"></div>
+		<div id="potree_sidebar_container"> </div>
+		<input id="tiffTest" type="button" value="tiff test" />
+	</div>
+
+	
+	
+	<script>
+	
+		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
+		
+		viewer.setEDLEnabled(true);
+		viewer.setFOV(60);
+		viewer.setPointBudget(2 * 1000 * 1000);
+		viewer.setMinNodeSize(0);
+		viewer.loadSettingsFromURL();
+		viewer.setServer("http://localhost:3000");
+		
+		viewer.setDescription("");
+		
+		viewer.loadGUI(() => {
+			viewer.setLanguage('en');
+			$("#menu_appearance").next().show();
+			$("#menu_tools").next().show();
+			$("#menu_scene").next().show();
+			viewer.toggleSidebar();
+		});
+
+		let light = new THREE.SpotLight();
+		light.distance = 40;
+		light.angle = (40 / 180) * Math.PI;
+		light.position.set(-22.124, 15.918, 3.518);
+		light.lookAt(new THREE.Vector3(-5.306, 5.288, 3.084));
+		viewer.scene.scene.add(light);
+
+		let sph = new Potree.SpotLightHelper(light);
+		viewer.scene.scene.add(sph);
+
+		//let sphere = new THREE.Mesh(
+		//	new THREE.SphereGeometry(0.5, 32, 32),
+		//	new THREE.MeshNormalMaterial()
+		//);
+		//light.add(sphere);
+		
+		// Sigeom
+		Potree.loadPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/archpro/heidentor/cloud.js", "Heidentor", function(e){
+			viewer.scene.addPointCloud(e.pointcloud);
+			e.pointcloud.position.z = 0;
+			let material = e.pointcloud.material;
+			material.size = 1;
+			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+			material.pointColorType = Potree.PointColorType.ELEVATION;
+			material.uniforms.uShadowColor.value = [0.6, 0.6, 0.6];
+
+			viewer.scene.view.position.set(41.557, -27.297, 26.594);
+			viewer.scene.view.lookAt(0.183, -0.257, 3.687);
+		});
+
+		
+		Potree.loadPointCloud("../pointclouds/lion_takanawa/cloud.js", "lion", function(e){
+			viewer.scene.addPointCloud(e.pointcloud);
+			
+			let material = e.pointcloud.material;
+			material.size = 1;
+			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+			material.uniforms.uShadowColor.value = [0.6, 0.6, 0.6];
+			
+			e.pointcloud.position.set(0, -2, 0);
+			
+		});
+
+
+
+		{
+			let path = [
+				[15.506560868146664, 19.85424459156799, 10.430903526784371],
+				[24.153037203881826, 8.630984861344729, 7.868461364682684],
+				[23.058229889155083, -9.364026455540067, 10.041731679632687],
+				[15.391447906397026, -17.97155939811601, 13.277761105290196],
+				[6.90802562298856, -17.486519615816228, 20.39621870363415],
+				[14.015309300286365, -3.716868043023982, 23.822233937781892],
+				[15.16757893483406, 14.923678231139498, 17.66449022142635],
+			].map(v => new THREE.Vector3(...v));
+			let target = new THREE.Vector3(-3.548, 2.729, 6.141);
+
+			let animationPath = new Potree.AnimationPath(path);
+			animationPath.closed = true;
+
+			{ // render the path
+				let geometry = animationPath.getGeometry();
+				let material = new THREE.LineBasicMaterial();
+				let line = new THREE.Line(geometry, material, {closed: animationPath.closed});
+				viewer.scene.scene.add(line);
+			}
+
+			{ // render the control points of the path
+				for(let pos of path){
+					let sg = new THREE.SphereGeometry(0.2, 32, 32);
+					let sm = new THREE.MeshBasicMaterial({color: 0xff0000});
+					let s = new THREE.Mesh(sg, sm); 
+					s.position.copy(pos);
+					viewer.scene.scene.add(s);
+				}
+			}
+
+			{ // Animate from beginning to end with a speed of 10 meters per second
+				let start = 0;
+				let end = Infinity;
+				let speed = 20; 
+				let animation = animationPath.animate(start, end, speed, t => {
+					animation.repeat = true;
+
+					// t is a value between 0 and 1.
+					// use getPoint(t) to map from t to the position on the animation path
+					let point = animation.getPoint(t);
+					light.position.copy(point);
+					light.lookAt(target);
+
+					sph.update();
+				});
+				window.animation = animation;
+			}
+
+		}
+		
+	</script>
+	
+  </body>
+</html>

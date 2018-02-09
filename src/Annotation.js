@@ -91,8 +91,6 @@ Potree.Annotation = class extends THREE.EventDispatcher {
 			a => a.showIn === undefined || a.showIn.includes('scene'));
 
 		for (let action of actions) {
-			//this.elTitle.css('padding', '1px 3px 0px 8px');
-
 			let elButton = $(`<img src="${action.icon}" class="annotation-action-icon">`);
 			this.elTitlebar.append(elButton);
 			elButton.click(() => action.onclick({annotation: this}));

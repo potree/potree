@@ -80,7 +80,7 @@ Potree.AnimationPath = class {
 	constructor (points = []) {
 		this.points = points;
 		this.spline = new THREE.CatmullRomCurve3(points);
-		// this.spline.reparametrizeByArcLength(1 / this.spline.getLength().total);
+		//this.spline.reparametrizeByArcLength(1 / this.spline.getLength().total);
 	}
 
 	get (t) {
@@ -100,8 +100,7 @@ Potree.AnimationPath = class {
 
 	pause () {
 		if (this.tween) {
-			//this.tween.stop();
-			//TWEEN.remove()
+			this.tween.stop();
 		}
 	}
 

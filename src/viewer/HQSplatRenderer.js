@@ -81,6 +81,7 @@ class HQSplatRenderer {
 
 		let camera = viewer.scene.getActiveCamera();
 		
+		viewer.renderer.setClearColor(0x000000, 0);
 		viewer.renderer.clearTarget( this.rtDepth, true, true, true );
 		viewer.renderer.clearTarget( this.rtAttribute, true, true, true );
 
@@ -94,6 +95,10 @@ class HQSplatRenderer {
 				let octreeSize = pointcloud.pcoGeometry.boundingBox.getSize().x;
 
 				let material = pointcloud.material;
+
+				this.depthMaterial.size = material.size;
+				this.depthMaterial.minSize = material.minSize;
+				this.depthMaterial.maxSize = material.maxSize;
 
 				this.depthMaterial.pointSizeType = material.pointSizeType;
 				this.depthMaterial.visibleNodesTexture = material.visibleNodesTexture;
@@ -118,11 +123,14 @@ class HQSplatRenderer {
 		}
 
 		{ // ATTRIBUTE PASS
-
 			for (let pointcloud of viewer.scene.pointclouds) {
 				let octreeSize = pointcloud.pcoGeometry.boundingBox.getSize().x;
 
 				let material = pointcloud.material;
+
+				this.attributeMaterial.size = material.size;
+				this.attributeMaterial.minSize = material.minSize;
+				this.attributeMaterial.maxSize = material.maxSize;
 
 				this.attributeMaterial.pointSizeType = material.pointSizeType;
 				this.attributeMaterial.pointColorType = material.pointColorType;
@@ -137,6 +145,25 @@ class HQSplatRenderer {
 				this.attributeMaterial.classification = material.classification;
 				this.attributeMaterial.elevationRange = material.elevationRange;
 				this.attributeMaterial.gradient = material.gradient;
+
+				this.attributeMaterial.intensityRange = material.intensityRange;
+				this.attributeMaterial.intensityGamma = material.intensityGamma;
+				this.attributeMaterial.intensityContrast = material.intensityContrast;
+				this.attributeMaterial.intensityBrightness = material.intensityBrightness;
+
+				this.attributeMaterial.rgbGamma = material.rgbGamma;
+				this.attributeMaterial.rgbContrast = material.rgbContrast;
+				this.attributeMaterial.rgbBrightness = material.rgbBrightness;
+
+				this.attributeMaterial.weightRGB = material.weightRGB;
+				this.attributeMaterial.weightIntensity = material.weightIntensity;
+				this.attributeMaterial.weightElevation = material.weightElevation;
+				this.attributeMaterial.weightRGB = material.weightRGB;
+				this.attributeMaterial.weightClassification = material.weightClassification;
+				this.attributeMaterial.weightReturnNumber = material.weightReturnNumber;
+				this.attributeMaterial.weightSourceID = material.weightSourceID;
+
+				this.attributeMaterial.color = material.color;
 
 
 

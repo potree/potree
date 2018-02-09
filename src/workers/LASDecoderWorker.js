@@ -126,11 +126,13 @@ function readUsingTempArrays(event) {
 		intensities[i] = intensity;
 
 		// RETURN NUMBER, stored in the first 3 bits - 00000111
-		let returnNumber = sourceUint8[i * sourcePointSize + 14] & 7;
+		let returnNumber = sourceUint8[i * sourcePointSize + 14] & 0b111;
 		returnNumbers[i] = returnNumber;
 
 		// NUMBER OF RETURNS, stored in 00111000
-		numberOfReturns[i] = (sourceUint8[i * pointSize + 14] & 56) / 8;
+		numberOfReturns[i] = (sourceUint8[i * pointSize + 14] & 0b111000) >> 3;
+
+		debugger;
 
 		// CLASSIFICATION
 		let classification = sourceUint8[i * sourcePointSize + 15];
@@ -291,9 +293,9 @@ function readUsingDataView(event) {
 		// number of returns stored in next 3 bits   - 00111000
 		let returnNumberAndNumberOfReturns = sourceView.getUint8(i * sourcePointSize + 14, true);
 		let returnNumber = returnNumberAndNumberOfReturns & 0b0111;
-		let numberOfReturns = (returnNumberAndNumberOfReturns & 0b00111000) >> 3;
+		let numberOfReturn = (returnNumberAndNumberOfReturns & 0b00111000) >> 3;
 		returnNumbers[i] = returnNumber;
-		numberOfReturns[i] = numberOfReturns;
+		numberOfReturns[i] = numberOfReturn;
 
 		// CLASSIFICATION
 		let classification = sourceView.getUint8(i * sourcePointSize + 15, true);

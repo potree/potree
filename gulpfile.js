@@ -2,6 +2,7 @@
 const path = require('path');
 const gulp = require('gulp');
 
+const fs = require("fs");
 const concat = require('gulp-concat');
 const size = require('gulp-size');
 const rename = require('gulp-rename');
@@ -12,9 +13,9 @@ const os = require('os');
 const File = gutil.File;
 const connect = require('gulp-connect');
 
-var server;
+let server;
 
-var paths = {
+let paths = {
 	potree : [
 		"src/KeyCodes.js",
 		"src/extensions/EventDispatcher.js",
@@ -108,7 +109,7 @@ var paths = {
 	]
 };
 
-var workers = {
+let workers = {
 	"LASLAZWorker": [
 		"libs/plasio/workers/laz-perf.js",
 		"libs/plasio/workers/laz-loader-worker.js"
@@ -133,7 +134,7 @@ var workers = {
 	]
 };
 
-var shaders = [
+let shaders = [
 	"src/materials/shaders/pointcloud.vs",
 	"src/materials/shaders/pointcloud.fs",
 	"src/materials/shaders/pointcloud_sm.vs",
@@ -168,7 +169,7 @@ gulp.task("shaders", function(){
 		.pipe(gulp.dest('build/shaders'));
 });
 
-gulp.task("scripts", ['workers','shaders'], function(){
+gulp.task("scripts", ['workers','shaders', "icons_viewer"], function(){
 	gulp.src(paths.potree)
 		.pipe(concat('potree.js'))
 		.pipe(size({showFiles: true}))
@@ -199,21 +200,83 @@ gulp.task('webserver', function() {
 	server = connect.server({port: 1234});
 });
 
+gulp.task('icons_viewer', function() {
+	let iconsPath = "resources/icons";
+
+	fs.readdir(iconsPath, function(err, items) {
+		
+		let svgs = items.filter(item => item.endsWith(".svg"));
+		let other = items.filter(item => !item.endsWith(".svg"));
+
+		items = [...svgs, ...other];
+	
+		let iconsCode = ``;
+		for(let item of items){
+			let extension = path.extname(item);
+			if(![".png", ".svg", ".jpg", ".jpeg"].includes(extension)){
+				continue;
+			}
+
+			let iconCode = `
+			<span class="icon_container" style="position: relative; float: left">
+				<center>
+				<img src="${item}" style="height: 32px;"/>
+				<div style="font-weight: bold">${item}</div>
+				</center>
+			</span>
+			`;
+
+			//iconsCode += `<img src="${item}" />\n`;
+			iconsCode += iconCode;
+		}
+
+		let page = `
+			<html>
+				<head>
+					<style>
+						.icon_container{
+							border: 1px solid black;
+							margin: 10px;
+							padding: 10px;
+						}
+					</style>
+				</head>
+				<body>
+					<div id="icons_container">
+						${iconsCode}
+					</div>
+				</body>
+			</html>
+		`;
+
+		fs.writeFile(`${iconsPath}/index.html`, page, (err) => {
+			if(err){
+				console.log(err);
+			}else{
+				console.log(`created ${iconsPath}/index.html`);
+			}
+			
+		});
+
+	});
+
+});
+
 gulp.task('watch', function() {
 	gulp.run("build");
 	gulp.run("webserver");
 	
-    gulp.watch(['src/**/*.js', 'src/**/*.css', 'src/**/*.html', 'src/**/*.vs', 'src/**/*.fs', 'resources/**/*'], ["build"]);
+	gulp.watch(['src/**/*.js', 'src/**/*.css', 'src/**/*.html', 'src/**/*.vs', 'src/**/*.fs', 'resources/**/*'], ["build"]);
 });
 
 
-var encodeWorker = function(fileName, opt){
+let encodeWorker = function(fileName, opt){
 	if (!fileName) throw new PluginError('gulp-concat',  'Missing fileName option for gulp-concat');
 	if (!opt) opt = {};
 	if (!opt.newLine) opt.newLine = gutil.linefeed;
 
-	var buffer = [];
-	var firstFile = null;
+	let buffer = [];
+	let firstFile = null;
 
 	function bufferContents(file){
 		if (file.isNull()) return; // ignore
@@ -221,19 +284,19 @@ var encodeWorker = function(fileName, opt){
 
 		if (!firstFile) firstFile = file;
 
-		var string = file.contents.toString('utf8');
+		let string = file.contents.toString('utf8');
 		buffer.push(string);
 	}
 
 	function endStream(){
 		if (buffer.length === 0) return this.emit('end');
 
-		var joinedContents = buffer.join("");
+		let joinedContents = buffer.join("");
 		let content = joinedContents;
 
-		var joinedPath = path.join(firstFile.base, fileName);
+		let joinedPath = path.join(firstFile.base, fileName);
 
-		var joinedFile = new File({
+		let joinedFile = new File({
 			cwd: firstFile.cwd,
 			base: firstFile.base,
 			path: joinedPath,
@@ -247,14 +310,14 @@ var encodeWorker = function(fileName, opt){
 	return through(bufferContents, endStream);
 };
 
-var encodeShader = function(fileName, varname, opt){
+let encodeShader = function(fileName, varname, opt){
 	if (!fileName) throw new PluginError('gulp-concat',  'Missing fileName option for gulp-concat');
 	if (!opt) opt = {};
 	if (!opt.newLine) opt.newLine = gutil.linefeed;
 
-	var buffer = [];
-	var files = [];
-	var firstFile = null;
+	let buffer = [];
+	let files = [];
+	let firstFile = null;
 
 	function bufferContents(file){
 		if (file.isNull()) return; // ignore
@@ -262,7 +325,7 @@ var encodeShader = function(fileName, varname, opt){
 
 		if (!firstFile) firstFile = file;
 
-		var string = file.contents.toString('utf8');
+		let string = file.contents.toString('utf8');
 		buffer.push(string);
 		files.push(file);
 	}
@@ -270,24 +333,24 @@ var encodeShader = function(fileName, varname, opt){
 	function endStream(){
 		if (buffer.length === 0) return this.emit('end');
 
-		var joinedContent = "";
-		for(var i = 0; i < buffer.length; i++){
-			var b = buffer[i];
-			var file = files[i];
+		let joinedContent = "";
+		for(let i = 0; i < buffer.length; i++){
+			let b = buffer[i];
+			let file = files[i];
 
-			var fname = file.path.replace(file.base, "");
+			let fname = file.path.replace(file.base, "");
 			console.log(fname);
 
-			var content = new Buffer(b).toString();
+			let content = new Buffer(b).toString();
 			
 			let prep = `\nPotree.Shaders["${fname}"] = \`${content}\`\n`;
 
 			joinedContent += prep;
 		}
 
-		var joinedPath = path.join(firstFile.base, fileName);
+		let joinedPath = path.join(firstFile.base, fileName);
 
-		var joinedFile = new File({
+		let joinedFile = new File({
 			cwd: firstFile.cwd,
 			base: firstFile.base,
 			path: joinedPath,

@@ -392,9 +392,9 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 
 			this.clipTask = value;
 
-			viewer.dispatchEvent({
+			this.dispatchEvent({
 				type: "cliptask_changed", 
-				viewer: viewer});		
+				viewer: this});		
 		}
 	}
 
@@ -403,9 +403,9 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 
 			this.clipMethod = value;
 			
-			viewer.dispatchEvent({
+			this.dispatchEvent({
 				type: "clipmethod_changed", 
-				viewer: viewer});		
+				viewer: this});		
 		}
 	}
 

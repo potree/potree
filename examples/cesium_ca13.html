@@ -99,7 +99,6 @@
 		potreeViewer.scene.view.lookAt(new THREE.Vector3(696072.86, 3916730.04, 82.04));
 
 		Potree.measureTimings = true;
-		
 
 		let pointcloudProjection = e.pointcloud.projection;
 		let mapProjection = proj4.defs("WGS84");
@@ -107,12 +106,12 @@
 		window.toMap = proj4(pointcloudProjection, mapProjection);
 		window.toScene = proj4(mapProjection, pointcloudProjection);
 		
-		{
-			let bb = potreeViewer.getBoundingBox();
+		//{
+		//	let bb = potreeViewer.getBoundingBox();
 
-			let minWGS84 = proj4(pointcloudProjection, mapProjection, bb.min.toArray());
-			let maxWGS84 = proj4(pointcloudProjection, mapProjection, bb.max.toArray());
-		}
+		//	let minWGS84 = proj4(pointcloudProjection, mapProjection, bb.min.toArray());
+		//	let maxWGS84 = proj4(pointcloudProjection, mapProjection, bb.max.toArray());
+		//}
 	});
 
 	function loop(timestamp){

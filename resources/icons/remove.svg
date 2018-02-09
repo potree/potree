@@ -9,12 +9,12 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   sodipodi:docname="reset_tools.svg"
-   inkscape:version="0.48.5 r10040"
+   sodipodi:docname="remove.svg"
+   inkscape:version="0.92.2 (5c3e80d, 2017-08-06)"
    version="1.1"
    id="svg2"
-   height="90"
-   width="100">
+   height="32"
+   width="32">
   <sodipodi:namedview
      id="base"
      pagecolor="#000000"
@@ -22,16 +22,16 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.85882353"
      inkscape:pageshadow="2"
-     inkscape:zoom="5.6"
-     inkscape:cx="55.345201"
-     inkscape:cy="46.279978"
+     inkscape:zoom="15.839192"
+     inkscape:cx="10.860423"
+     inkscape:cy="19.64194"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
-     inkscape:window-width="1920"
-     inkscape:window-height="1125"
-     inkscape:window-x="1911"
-     inkscape:window-y="-9"
+     inkscape:window-width="2560"
+     inkscape:window-height="1377"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
      inkscape:window-maximized="1"
      showguides="true"
      inkscape:guide-bbox="true">
@@ -42,8 +42,10 @@
        visible="true"
        enabled="true"
        snapvisiblegridlinesonly="false"
-       spacingx="0.1px"
-       spacingy="0.1px" />
+       spacingx="0.1"
+       spacingy="0.1"
+       originx="0"
+       originy="0" />
   </sodipodi:namedview>
   <defs
      id="defs4">
@@ -56,8 +58,8 @@
        inkscape:stockid="Arrow1Lstart">
       <path
          transform="matrix(0.8,0,0,0.8,10,0)"
-         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt"
-         d="M 0,0 5,-5 -12.5,0 5,5 0,0 z"
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1.00000003pt"
+         d="M 0,0 5,-5 -12.5,0 5,5 Z"
          id="path3819"
          inkscape:connector-curvature="0" />
     </marker>
@@ -84,8 +86,8 @@
        style="overflow:visible">
       <path
          id="path3822"
-         d="M 0,0 5,-5 -12.5,0 5,5 0,0 z"
-         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt"
+         d="M 0,0 5,-5 -12.5,0 5,5 Z"
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1.00000003pt"
          transform="matrix(-0.8,0,0,-0.8,-10,0)"
          inkscape:connector-curvature="0" />
     </marker>
@@ -161,7 +163,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -169,16 +171,17 @@
      inkscape:label="Calque 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(0,-962.36218)">
-    <path
-       style="fill:#c83737;stroke:#d60000;stroke-width:11.57923603;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
-       d="M 88,970.96218 12.3,1041.3622"
-       id="path13015"
-       inkscape:connector-curvature="0" />
-    <path
-       style="fill:#c83737;stroke:#d60000;stroke-width:11.26654816;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
-       d="m 16.2,969.96218 69.66453,72.84792"
-       id="path13015-2"
-       inkscape:connector-curvature="0" />
+     transform="translate(0,-1020.3622)">
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:48.04052734px;line-height:1.25;font-family:'Matura MT Script Capitals';-inkscape-font-specification:'Matura MT Script Capitals';letter-spacing:0px;word-spacing:0px;fill:#e73100;fill-opacity:1;stroke:none;stroke-width:1.20101309;"
+       x="5.8270259"
+       y="1045.7103"
+       id="text4605"><tspan
+         sodipodi:role="line"
+         id="tspan4603"
+         x="5.8270259"
+         y="1045.7103"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Matura MT Script Capitals';-inkscape-font-specification:'Matura MT Script Capitals';stroke-width:1.20101309;fill:#e73100;fill-opacity:1;">x</tspan></text>
   </g>
 </svg>

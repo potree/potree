@@ -24,17 +24,17 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="16"
-     inkscape:cx="-10.442507"
-     inkscape:cy="29.933015"
+     inkscape:zoom="5.6568543"
+     inkscape:cx="-26.28293"
+     inkscape:cy="28.589191"
      inkscape:current-layer="layer1"
      showgrid="true"
      inkscape:grid-bbox="true"
      inkscape:document-units="px"
-     inkscape:window-width="3840"
-     inkscape:window-height="2066"
-     inkscape:window-x="-11"
-     inkscape:window-y="-11"
+     inkscape:window-width="2560"
+     inkscape:window-height="1377"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
      inkscape:window-maximized="1">
     <inkscape:grid
        type="xygrid"
@@ -62,65 +62,5 @@
        id="path4523"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cccccccccccc" />
-    <path
-       sodipodi:nodetypes="ccssc"
-       inkscape:connector-curvature="0"
-       id="path4533"
-       d="m -91,28 c 0.714797,-0.05175 15,0 15,0 0,0 -1.068661,-11.780958 -6.068661,-11.780958 -5,0 -5.341794,0.927954 -7.341794,1.927954 C -96.396155,21.639846 -91,28 -91,28 Z"
-       style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
-    <circle
-       r="6"
-       cy="22.483433"
-       cx="-91.52536"
-       id="circle4535"
-       style="fill:#000000;fill-opacity:1" />
-    <circle
-       style="fill:#000000;fill-opacity:1"
-       id="circle4537"
-       cx="-75.350288"
-       cy="22.505529"
-       r="6" />
-    <circle
-       r="6.296875"
-       cy="15.234097"
-       cx="-87.282906"
-       id="circle4539"
-       style="fill:#000000;fill-opacity:1;stroke-width:1.04947913" />
-    <circle
-       style="fill:#000000;fill-opacity:1;stroke-width:0.85488832"
-       id="circle4541"
-       cx="-78.536713"
-       cy="15.770898"
-       r="5.1293302" />
-    <path
-       sodipodi:nodetypes="ccssc"
-       inkscape:connector-curvature="0"
-       id="path4543"
-       d="m -56,28 c 0.714797,-0.05175 15,0 15,0 0,0 -1.068661,-11.780958 -6.068661,-11.780958 -5,0 -5.341794,0.927954 -7.341794,1.927954 C -61.396155,21.639846 -56,28 -56,28 Z"
-       style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
-    <circle
-       r="6"
-       cy="22.483433"
-       cx="-56.525356"
-       id="circle4545"
-       style="fill:#000000;fill-opacity:1" />
-    <circle
-       style="fill:#000000;fill-opacity:1;stroke-width:0.84163755"
-       id="circle4547"
-       cx="-40.482872"
-       cy="23.455704"
-       r="5.0498252" />
-    <circle
-       r="6.296875"
-       cy="15.341711"
-       cx="-52.921234"
-       id="circle4549"
-       style="fill:#000000;fill-opacity:1;stroke-width:1.04947913" />
-    <circle
-       style="fill:#000000;fill-opacity:1;stroke-width:0.85488832"
-       id="circle4551"
-       cx="-43.890266"
-       cy="16.566393"
-       r="5.1293302" />
   </g>
 </svg>

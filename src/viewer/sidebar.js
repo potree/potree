@@ -338,6 +338,15 @@ initSidebar = (viewer) => {
 				
 				viewer.scene.view.position.copy(object.camera.position);
 				viewer.scene.view.lookAt(target);
+			}else if(object instanceof THREE.SpotLight){
+				let distance = (object.distance > 0) ? object.distance / 4 : 5 * 1000;
+				let position = object.position;
+				let target = new THREE.Vector3().addVectors(
+					position, 
+					object.getWorldDirection().multiplyScalar(distance));
+
+				viewer.scene.view.position.copy(object.position);
+				viewer.scene.view.lookAt(target);
 			}else if(object instanceof THREE.Object3D){
 				let box = new THREE.Box3().setFromObject(object);
 
@@ -430,7 +439,7 @@ initSidebar = (viewer) => {
 		viewer.scene.addEventListener("profile_removed", onProfileRemoved);
 
 		{
-			let annotationIcon = `${Potree.resourcePath}/icons/target.svg`;
+			let annotationIcon = `${Potree.resourcePath}/icons/annotation.svg`;
 			this.annotationMapping = new Map(); 
 			this.annotationMapping.set(viewer.scene.annotations, annotationsID);
 			viewer.scene.annotations.traverseDescendants(annotation => {

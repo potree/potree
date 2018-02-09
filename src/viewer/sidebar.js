@@ -241,6 +241,8 @@ initSidebar = (viewer) => {
 			}else{
 				tree.jstree('uncheck_node', nodeID);
 			}
+
+			console.log("create node");
 			
 			return nodeID;
 		}

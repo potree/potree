@@ -897,32 +897,38 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 
 			$(() => {
 				initSidebar(this);
-			});
-
-			let elProfile = $('<div>').load(new URL(Potree.scriptPath + '/profile.html').href, () => {
-				$(document.body).append(elProfile.children());
-				this.profileWindow = new Potree.ProfileWindow(this);
-				this.profileWindowController = new Potree.ProfileWindowController(this);
-
-				$('#profile_window').draggable({
-					handle: $('#profile_titlebar'),
-					containment: $(document.body)
-				});
-				$('#profile_window').resizable({
-					containment: $(document.body),
-					handles: 'n, e, s, w'
-				});
 
 				if (callback) {
 					$(callback);
 				}
 
-				this.guiLoaded = true;
+				let elProfile = $('<div>').load(new URL(Potree.scriptPath + '/profile.html').href, () => {
+					$(document.body).append(elProfile.children());
+					this.profileWindow = new Potree.ProfileWindow(this);
+					this.profileWindowController = new Potree.ProfileWindowController(this);
 
-				for(let task of this.guiLoadTasks){
-					task();
-				}
+					$('#profile_window').draggable({
+						handle: $('#profile_titlebar'),
+						containment: $(document.body)
+					});
+					$('#profile_window').resizable({
+						containment: $(document.body),
+						handles: 'n, e, s, w'
+					});
+				});
+
+				$(() => {
+					this.guiLoaded = true;
+					console.log("gui loaded");
+					for(let task of this.guiLoadTasks){
+						task();
+					}
+
+				});
+
 			});
+
+			
 		});
 	}
 

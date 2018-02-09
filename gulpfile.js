@@ -169,7 +169,7 @@ gulp.task("shaders", function(){
 		.pipe(gulp.dest('build/shaders'));
 });
 
-gulp.task("scripts", ['workers','shaders', "icons_viewer"], function(){
+gulp.task("scripts", ['workers','shaders', "icons_viewer", "examples_page"], function(){
 	gulp.src(paths.potree)
 		.pipe(concat('potree.js'))
 		.pipe(size({showFiles: true}))
@@ -198,6 +198,93 @@ gulp.task('build', ['scripts']);
 // from the command line to start the server (default port is 8080)
 gulp.task('webserver', function() {
 	server = connect.server({port: 1234});
+});
+
+gulp.task('examples_page', function() {
+
+	let settings = JSON.parse(fs.readFileSync("examples/examples.json", 'utf8'));
+	let files = fs.readdirSync("./examples");
+
+	let thumbCode = ``;
+
+	let urls = settings.examples.map(e => e.url);
+	let unhandled = [];
+	for(let file of files){
+		let isHandled = false;
+		for(let url of urls){
+			
+			if(file.indexOf(url) !== -1){
+				isHandled = true;
+			}
+		}
+
+		if(!isHandled){
+			unhandled.push(file);
+		}
+	}
+
+	for(let example of settings.examples){
+		thumbCode += `<a href="${example.url}" target="_blank">
+			<div class="thumb" style="background-image: url('${example.thumb}'); ">
+				<div class="thumb-label">${example.label}</div>
+			</div>
+		</a>
+		`;
+	}
+
+	let unhandledCode = ``;
+	for(let file of unhandled){
+		unhandledCode += `
+			<a href="${file}">${file}</a><br>
+		`;
+	}
+
+	let page = `
+		<html>
+			<head>
+			<style>
+			.thumb{
+				background-size: 128px 128px; 
+				width: 128px; 
+				height: 128px; 
+				border-radius: 5px; 
+				border: 2px solid black; 
+				box-shadow: 3px 3px 3px 0px #555; 
+				margin: 3px; 
+				float: left;
+			}
+
+			.thumb-label{
+				font-size: large; 
+				text-align: center; 
+				font-weight: bold; 
+				color: #FFF; 
+				text-shadow:black 0 0 5px, black 0 0 5px, black 0 0 5px, black 0 0 5px, black 0 0 5px, black 0 0 5px; 
+				height: 100%;
+			}
+			</style>
+			</head>
+			<body>
+				<div id="thumb_container" style="max-width: 1000px; margin: auto; margin-top: 50px;">
+					${thumbCode}
+				</div>
+				<div>
+					${unhandledCode}
+				</div>
+			</body>
+		</html>
+	`;
+
+	fs.writeFile(`examples/pagetest.html`, page, (err) => {
+		if(err){
+			console.log(err);
+		}else{
+			console.log(`examples/pagetest.html`);
+		}
+	});
+
+
+
 });
 
 gulp.task('icons_viewer', function() {
@@ -255,7 +342,6 @@ gulp.task('icons_viewer', function() {
 			}else{
 				console.log(`created ${iconsPath}/index.html`);
 			}
-			
 		});
 
 	});

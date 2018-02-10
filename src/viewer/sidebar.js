@@ -535,7 +535,7 @@ initSidebar = (viewer) => {
 		clippingToolBar.append(createToolIcon(
 			Potree.resourcePath + '/icons/clip_volume.svg',
 			'[title]tt.clip_volume',
-			function () { 
+			() => {
 				let item = volumeTool.startInsertion({clip: true}); 
 
 				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
@@ -549,7 +549,7 @@ initSidebar = (viewer) => {
 		clippingToolBar.append(createToolIcon(
 			Potree.resourcePath + "/icons/clip-polygon.svg",
 			"[title]tt.clip_polygon",
-			function(){
+			() => {
 				let item = viewer.clippingTool.startInsertion({type: "polygon"});
 
 				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
@@ -565,7 +565,7 @@ initSidebar = (viewer) => {
 			clippingToolBar.append(createToolIcon(
 				Potree.resourcePath + "/icons/clip-screen.svg",
 				"[title]tt.screen_clip_box",
-				function(){
+				() => {
 					if(!(viewer.scene.getActiveCamera() instanceof THREE.OrthographicCamera)){
 						viewer.postMessage(`Switch to Orthographic Camera Mode before using the Screen-Box-Select tool.`, 
 							{duration: 2000});
@@ -586,20 +586,9 @@ initSidebar = (viewer) => {
 			clippingToolBar.append(createToolIcon(
 				Potree.resourcePath + "/icons/remove.svg",
 				"[title]tt.remove_all_measurement",
-				function(){
+				() => {
 
 					viewer.scene.removeAllClipVolumes();
-
-					//if(!(viewer.scene.getActiveCamera() instanceof THREE.OrthographicCamera)){
-					//	return;
-					//}
-					//
-					//let item = boxSelectTool.startInsertion();
-
-					//let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
-					//let jsonNode = measurementsRoot.children.find(child => child.data.uuid === item.uuid);
-					//$.jstree.reference(jsonNode.id).deselect_all();
-					//$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
 				}
 			));
 		}

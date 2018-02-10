@@ -316,6 +316,11 @@ Potree.ProfileRequest = class ProfileRequest {
 
 					let attribute = geometry.attributes[attributeName];
 					let numElements = attribute.array.length / numPoints;
+
+					if(numElements !== parseInt(numElements)){
+						debugger;
+					}
+
 					let Type = attribute.array.constructor;
 
 					let filteredBuffer = new Type(numElements * accepted.length);

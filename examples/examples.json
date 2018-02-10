@@ -1,8 +1,8 @@
 {
 	"examples": [
-	{"thumb": "thumbnails/animation_paths.png", "label": "Animations", "url": "animation_paths.html"},
-	{"thumb": "thumbnails/annotation_hierarchy.png", "label": "Hierarchical Annotations", "url": "annotation_hierarchy.html"},
+	{"thumb": "thumbnails/animation_paths.png", "label": "Animation Path", "url": "animation_paths.html"},
 	{"thumb": "thumbnails/annotations.png", "label": "Annotations", "url": "annotations.html"},
+	{"thumb": "thumbnails/annotation_hierarchy.png", "label": "Hierarchical Annotations", "url": "annotation_hierarchy.html"},
 	{"thumb": "thumbnails/cesium_ca13.png", "label": "Cesium CA13", "url": "cesium_ca13.html"},
 	{"thumb": "thumbnails/cesium_sorvilier.png", "label": "Cesium Sorvilier", "url": "cesium_sorvilier.html"},
 	{"thumb": "thumbnails/clipping_volume.png", "label": "Clipping Volume", "url": "clipping_volume.html"},
@@ -16,9 +16,10 @@
 	{"thumb": "thumbnails/lines.png", "label": "Lines", "url": "lines.html"},
 	{"thumb": "thumbnails/lion.png", "label": "Lion", "url": "lion.html"},
 	{"thumb": "thumbnails/lion_las.png", "label": "Lion LAS", "url": "lion_las.html"},
-	{"thumb": "thumbnails/lion_las.png", "label": "Lion LAZ", "url": "lion_las.html"},
+	{"thumb": "thumbnails/lion_las.png", "label": "Lion LAZ", "url": "lion_laz.html"},
 	{"thumb": "thumbnails/measurements.png", "label": "Measurements", "url": "measurements.html"},
-	{"thumb": "thumbnails/multiple_point_clouds.png", "label": "Multiple Point Clouds", "url": "multiple_point_clouds.html"},
+	{"thumb": "thumbnails/meshes.png", "label": "Meshes", "url": "meshes.html"},
+	{"thumb": "thumbnails/multiple_point_clouds.png", "label": "Multiple Point Clouds", "url": "multiple_pointclouds.html"},
 	{"thumb": "thumbnails/shapefiles.png", "label": "Shapefiles", "url": "shapefiles.html"},
 	{"thumb": "thumbnails/viewer.png", "label": "Basic Viewer", "url": "viewer.html"}
 ]}

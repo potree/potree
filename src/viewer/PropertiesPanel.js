@@ -1,8 +1,8 @@
 
 
 class MeasurePanel{
-	constructor(scene, measurement, propertiesPanel){
-		this.scene = scene;
+	constructor(viewer, measurement, propertiesPanel){
+		this.viewer = viewer;
 		this.measurement = measurement;
 		this.propertiesPanel = propertiesPanel;
 
@@ -44,7 +44,7 @@ class MeasurePanel{
 				let msg = point.toArray().map(c => c.toFixed(3)).join(", ");
 				Potree.utils.clipboardCopy(msg);
 
-				viewer.postMessage(
+				this.viewer.postMessage(
 					`Copied value to clipboard: <br>'${msg}'`,
 					{duration: 3000});
 			});
@@ -81,8 +81,8 @@ class MeasurePanel{
 };
 
 class DistancePanel extends MeasurePanel{
-	constructor(scene, measurement, propertiesPanel){
-		super(scene, measurement, propertiesPanel);
+	constructor(viewer, measurement, propertiesPanel){
+		super(viewer, measurement, propertiesPanel);
 
 		let removeIconPath = Potree.resourcePath + '/icons/remove.svg';
 		this.elContent = $(`
@@ -102,7 +102,7 @@ class DistancePanel extends MeasurePanel{
 
 		this.elRemove = this.elContent.find("img[name=remove]");
 		this.elRemove.click( () => {
-			viewer.scene.removeMeasurement(measurement);
+			this.viewer.scene.removeMeasurement(measurement);
 		});
 
 		this.propertiesPanel.addVolatileListener(measurement, "marker_added", this._update);
@@ -149,8 +149,8 @@ class DistancePanel extends MeasurePanel{
 
 
 class PointPanel extends MeasurePanel{
-	constructor(scene, measurement, propertiesPanel){
-		super(scene, measurement, propertiesPanel);
+	constructor(viewer, measurement, propertiesPanel){
+		super(viewer, measurement, propertiesPanel);
 
 		let removeIconPath = Potree.resourcePath + '/icons/remove.svg';
 		this.elContent = $(`
@@ -170,7 +170,7 @@ class PointPanel extends MeasurePanel{
 
 		this.elRemove = this.elContent.find("img[name=remove]");
 		this.elRemove.click( () => {
-			viewer.scene.removeMeasurement(measurement);
+			this.viewer.scene.removeMeasurement(measurement);
 		});
 
 		this.propertiesPanel.addVolatileListener(measurement, "marker_added", this._update);
@@ -193,8 +193,8 @@ class PointPanel extends MeasurePanel{
 
 
 class AreaPanel extends MeasurePanel{
-	constructor(scene, measurement, propertiesPanel){
-		super(scene, measurement, propertiesPanel);
+	constructor(viewer, measurement, propertiesPanel){
+		super(viewer, measurement, propertiesPanel);
 
 		let removeIconPath = Potree.resourcePath + '/icons/remove.svg';
 		this.elContent = $(`
@@ -215,7 +215,7 @@ class AreaPanel extends MeasurePanel{
 
 		this.elRemove = this.elContent.find("img[name=remove]");
 		this.elRemove.click( () => {
-			viewer.scene.removeMeasurement(measurement);
+			this.viewer.scene.removeMeasurement(measurement);
 		});
 
 		this.propertiesPanel.addVolatileListener(measurement, "marker_added", this._update);
@@ -237,8 +237,8 @@ class AreaPanel extends MeasurePanel{
 
 
 class AnglePanel extends MeasurePanel{
-	constructor(scene, measurement, propertiesPanel){
-		super(scene, measurement, propertiesPanel);
+	constructor(viewer, measurement, propertiesPanel){
+		super(viewer, measurement, propertiesPanel);
 
 		let removeIconPath = Potree.resourcePath + '/icons/remove.svg';
 		this.elContent = $(`
@@ -269,7 +269,7 @@ class AnglePanel extends MeasurePanel{
 
 		this.elRemove = this.elContent.find("img[name=remove]");
 		this.elRemove.click( () => {
-			viewer.scene.removeMeasurement(measurement);
+			this.viewer.scene.removeMeasurement(measurement);
 		});
 
 		this.propertiesPanel.addVolatileListener(measurement, "marker_added", this._update);
@@ -302,8 +302,8 @@ class AnglePanel extends MeasurePanel{
 
 
 class HeightPanel extends MeasurePanel{
-	constructor(scene, measurement, propertiesPanel){
-		super(scene, measurement, propertiesPanel);
+	constructor(viewer, measurement, propertiesPanel){
+		super(viewer, measurement, propertiesPanel);
 
 		let removeIconPath = Potree.resourcePath + '/icons/remove.svg';
 		this.elContent = $(`
@@ -323,7 +323,7 @@ class HeightPanel extends MeasurePanel{
 
 		this.elRemove = this.elContent.find("img[name=remove]");
 		this.elRemove.click( () => {
-			viewer.scene.removeMeasurement(measurement);
+			this.viewer.scene.removeMeasurement(measurement);
 		});
 
 		this.propertiesPanel.addVolatileListener(measurement, "marker_added", this._update);
@@ -356,8 +356,8 @@ class HeightPanel extends MeasurePanel{
 }
 
 class VolumePanel extends MeasurePanel{
-	constructor(scene, measurement, propertiesPanel){
-		super(scene, measurement, propertiesPanel);
+	constructor(viewer, measurement, propertiesPanel){
+		super(viewer, measurement, propertiesPanel);
 
 		let copyIconPath = Potree.resourcePath + '/icons/copy.svg';
 		let removeIconPath = Potree.resourcePath + '/icons/remove.svg';
@@ -450,7 +450,7 @@ class VolumePanel extends MeasurePanel{
 			let msg = rotation.map(c => c.toFixed(3)).join(", ");
 			Potree.utils.clipboardCopy(msg);
 
-			viewer.postMessage(
+			this.viewer.postMessage(
 					`Copied value to clipboard: <br>'${msg}'`,
 					{duration: 3000});
 		});
@@ -461,14 +461,14 @@ class VolumePanel extends MeasurePanel{
 			let msg = scale.map(c => c.toFixed(3)).join(", ");
 			Potree.utils.clipboardCopy(msg);
 
-			viewer.postMessage(
+			this.viewer.postMessage(
 					`Copied value to clipboard: <br>'${msg}'`,
 					{duration: 3000});
 		});
 
 		this.elRemove = this.elContent.find("img[name=remove]");
 		this.elRemove.click( () => {
-			this.scene.removeVolume(measurement);
+			this.viewer.scene.removeVolume(measurement);
 		});
 
 		this.elContent.find("#volume_reset_orientation").click(() => {
@@ -502,7 +502,7 @@ class VolumePanel extends MeasurePanel{
 		let maxLOD = 100;
 
 		let pcs = [];
-		for (let pointcloud of this.scene.pointclouds) {
+		for (let pointcloud of this.viewer.scene.pointclouds) {
 			let urlIsAbsolute = new RegExp('^(?:[a-z]+:)?//', 'i').test(pointcloud.pcoGeometry.url);
 			let pc = '';
 			if (urlIsAbsolute) {
@@ -570,8 +570,8 @@ class VolumePanel extends MeasurePanel{
 
 
 class ProfilePanel extends MeasurePanel{
-	constructor(scene, measurement, propertiesPanel){
-		super(scene, measurement, propertiesPanel);
+	constructor(viewer, measurement, propertiesPanel){
+		super(viewer, measurement, propertiesPanel);
 
 		let removeIconPath = Potree.resourcePath + '/icons/remove.svg';
 		this.elContent = $(`
@@ -600,7 +600,7 @@ class ProfilePanel extends MeasurePanel{
 
 		this.elRemove = this.elContent.find("img[name=remove]");
 		this.elRemove.click( () => {
-			viewer.scene.removeProfile(measurement);
+			this.viewer.scene.removeProfile(measurement);
 		});
 
 		{ // download
@@ -719,7 +719,7 @@ class CameraPanel{
 			let msg = pos.map(c => c.toFixed(3)).join(", ");
 			Potree.utils.clipboardCopy(msg);
 
-			viewer.postMessage(
+			this.viewer.postMessage(
 					`Copied value to clipboard: <br>'${msg}'`,
 					{duration: 3000});
 		});
@@ -730,7 +730,7 @@ class CameraPanel{
 			let msg = pos.map(c => c.toFixed(3)).join(", ");
 			Potree.utils.clipboardCopy(msg);
 
-			viewer.postMessage(
+			this.viewer.postMessage(
 					`Copied value to clipboard: <br>'${msg}'`,
 					{duration: 3000});
 		});
@@ -1366,7 +1366,7 @@ Potree.PropertiesPanel = class PropertriesPanel{
 		let type = getType(object);
 		let Panel = type.panel;
 
-		let panel = new Panel(this.scene, object, this);
+		let panel = new Panel(this.viewer, object, this);
 		this.container.append(panel.elContent);
 	}
 

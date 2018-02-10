@@ -222,9 +222,12 @@ gulp.task('examples_page', function() {
 			unhandled.push(file);
 		}
 	}
+	unhandled = unhandled
+		.filter(file => file.indexOf(".html") > 0)
+		.filter(file => file !== "page.html");
 
 	for(let example of settings.examples){
-		thumbCode += `<a href="${example.url}" target="_blank">
+		thumbCode += `<a href="${example.url}" target="_blank" style="display: inline-block">
 			<div class="thumb" style="background-image: url('${example.thumb}'); ">
 				<div class="thumb-label">${example.label}</div>
 			</div>
@@ -235,7 +238,7 @@ gulp.task('examples_page', function() {
 	let unhandledCode = ``;
 	for(let file of unhandled){
 		unhandledCode += `
-			<a href="${file}">${file}</a><br>
+			<a href="${file}" class="unhandled">${file}</a>
 		`;
 	}
 
@@ -243,10 +246,15 @@ gulp.task('examples_page', function() {
 		<html>
 			<head>
 			<style>
+
+			body{
+				background: #ECE9E9;
+			}
+
 			.thumb{
-				background-size: 128px 128px; 
-				width: 128px; 
-				height: 128px; 
+				background-size: 160px 160px; 
+				width: 160px; 
+				height: 160px; 
 				border-radius: 5px; 
 				border: 2px solid black; 
 				box-shadow: 3px 3px 3px 0px #555; 
@@ -262,24 +270,54 @@ gulp.task('examples_page', function() {
 				text-shadow:black 0 0 5px, black 0 0 5px, black 0 0 5px, black 0 0 5px, black 0 0 5px, black 0 0 5px; 
 				height: 100%;
 			}
+
+			.unhandled_container{
+				max-width: 1200px; 
+				margin: auto; 
+				margin-top: 50px; 
+				
+			}
+
+			.unhandled{
+				width: 30%;
+				padding-top:8px;
+				padding-bottom:8px;
+				padding-left: 10px;
+				float:left;
+				font-family: "Helvetica Neue", "Lucida Grande", Arial;
+				font-size: 13px;
+				border: 1px solid rgba(0, 0, 0, 0);
+
+			}
+
+			.unhandled:hover{
+				border: 1px solid rgba(200, 200, 200, 1);
+				border-radius: 4px;
+				background: white;
+			}
+
+			a{
+				color: #555555;
+			}
+
 			</style>
 			</head>
 			<body>
-				<div id="thumb_container" style="max-width: 1000px; margin: auto; margin-top: 50px;">
+				<div id="thumb_container" style="max-width: 1200px; margin: auto; margin-top: 50px;">
 					${thumbCode}
 				</div>
-				<div>
+				<div class="unhandled_container">
 					${unhandledCode}
 				</div>
 			</body>
 		</html>
 	`;
 
-	fs.writeFile(`examples/pagetest.html`, page, (err) => {
+	fs.writeFile(`examples/page.html`, page, (err) => {
 		if(err){
 			console.log(err);
 		}else{
-			console.log(`examples/pagetest.html`);
+			console.log(`examples/page.html`);
 		}
 	});
 
@@ -352,7 +390,15 @@ gulp.task('watch', function() {
 	gulp.run("build");
 	gulp.run("webserver");
 	
-	gulp.watch(['src/**/*.js', 'src/**/*.css', 'src/**/*.html', 'src/**/*.vs', 'src/**/*.fs', 'resources/**/*'], ["build"]);
+	gulp.watch([
+		'src/**/*.js', 
+		'src/**/*.css', 
+		'src/**/*.html', 
+		'src/**/*.vs', 
+		'src/**/*.fs', 
+		'resources/**/*',
+		'examples//**/*.json',
+	], ["build"]);
 });
 
 

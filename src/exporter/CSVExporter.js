@@ -19,7 +19,7 @@ Potree.CSVExporter = class CSVExporter {
 			if (attribute === 'position') {
 				headerValues = headerValues.concat(['x', 'y', 'z']);
 			} else if (attribute === 'color') {
-				headerValues = headerValues.concat(['r', 'g', 'b']);
+				headerValues = headerValues.concat(['r', 'g', 'b', 'a']);
 			} else if (itemSize > 1) {
 				for (let i = 0; i < itemSize; i++) {
 					headerValues.push(`${attribute}_${i}`);

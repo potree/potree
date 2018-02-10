@@ -30,22 +30,17 @@ Potree.PointCloudSM = class PointCloudSM{
 	setLight(light){
 		this.light = light;
 
-		//let fov = (180 / Math.PI) * 2 * light.angle;
-		let fov = 90;
+		let fov = (180 * light.angle) / Math.PI;
 		let aspect = light.shadow.mapSize.width / light.shadow.mapSize.height;
 		let near = 0.1;
-		let far = 10000;
+		let far = light.distance === 0 ? 10000 : light.distance;
 		this.camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
 		this.camera.up.set(0, 0, 1);
-		//this.camera.position.copy(light.position);
-		//this.camera.position.set(10, 0, 15);
 		this.camera.position.copy(light.position);
-		//this.camera.lookAt(new THREE.Vector3(0, 0, 8));
 
 		let target = new THREE.Vector3().addVectors(light.position, light.getWorldDirection());
 		this.camera.lookAt(target);
 
-		//this.camera.rotation.copy(light.rotation);
 		this.camera.updateProjectionMatrix();
 		this.camera.updateMatrix();
 		this.camera.updateMatrixWorld();

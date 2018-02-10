@@ -769,9 +769,10 @@ void main() {
 			float visibility = visibleSamples / numSamples;
 
 			if(u < 0.0 || u > 1.0 || v < 0.0 || v > 1.0 || nc.x < -1.0 || nc.x > 1.0 || nc.y < -1.0 || nc.y > 1.0 || nc.z < -1.0 || nc.z > 1.0){
-				vColor = vec3(0.0, 0.0, 0.2);
+				//vColor = vec3(0.0, 0.0, 0.2);
 			}else{
-				vColor = vec3(1.0, 1.0, 1.0) * visibility + vec3(1.0, 1.0, 1.0) * vec3(0.5, 0.0, 0.0) * (1.0 - visibility);
+				//vColor = vec3(1.0, 1.0, 1.0) * visibility + vec3(1.0, 1.0, 1.0) * vec3(0.5, 0.0, 0.0) * (1.0 - visibility);
+				vColor = vColor * visibility + vColor * uShadowColor * (1.0 - visibility);
 			}
 		}
 

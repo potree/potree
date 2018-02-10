@@ -120,6 +120,6 @@ Potree.ProfileTool = class ProfileTool extends THREE.EventDispatcher {
 	}
 
 	render(){
-		this.viewer.renderer.render(this.scene, viewer.scene.getActiveCamera());
+		this.viewer.renderer.render(this.scene, this.viewer.scene.getActiveCamera());
 	}
 };

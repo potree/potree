@@ -171,6 +171,7 @@ Potree.LasLazBatcher = class LasLazBatcher {
 			this.node.tightBoundingBox = tightBoundingBox;
 
 			this.node.geometry = geometry;
+			this.node.numPoints = numPoints;
 			this.node.loaded = true;
 			this.node.loading = false;
 			this.node.pcoGeometry.numNodesLoading--;

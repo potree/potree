@@ -85,24 +85,16 @@ onmessage = function (event) {
 	let tightBoxMax = [ Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY ];
 	let mean = [0, 0, 0];
 
-	let iAttributes = pointAttributes.attributes
-		.map(pa => Potree.toInterleavedBufferAttribute(pa))
-		.filter(ia => ia != null);
-	iAttributes.push(new Potree.InterleavedBufferAttribute("index", 4, 4, "UNSIGNED_BYTE", true));
-	let iStride = iAttributes.reduce( (a, att) => a + att.bytes, 0);
-	iStride = Math.ceil(iStride / 4) * 4; // round to nearest multiple of 4
-	let iData = new ArrayBuffer(numPoints * iStride);
-	let iView = new DataView(iData);
-
+	
+	let attributeBuffers = {};
 	let inOffset = 0;
-	let outOffset = 0;
-	for (let i = 0; i < pointAttributes.attributes.length; i++) {
-		let pointAttribute = pointAttributes.attributes[i];
-		let iAttribute = Potree.toInterleavedBufferAttribute(pointAttribute);
+	for (let pointAttribute of pointAttributes.attributes) {
 
 		if (pointAttribute.name === Potree.PointAttribute.POSITION_CARTESIAN.name) {
+			let buff = new ArrayBuffer(numPoints * 4 * 3);
+			let positions = new Float32Array(buff);
 
-			for (let j = 0; j < numPoints; ++j) {
+			for (let j = 0; j < numPoints; j++) {
 				let ux = cv.getUint32(inOffset + j * pointAttributes.byteSize + 0);
 				let uy = cv.getUint32(inOffset + j * pointAttributes.byteSize + 4);
 				let uz = cv.getUint32(inOffset + j * pointAttributes.byteSize + 8);
@@ -111,10 +103,9 @@ onmessage = function (event) {
 				let y = (scale * uy) + nodeOffset[1];
 				let z = (scale * uz) + nodeOffset[2];
 
-				let firstByte = j * iStride + outOffset;
-				iView.setFloat32(firstByte + 0, x, true);
-				iView.setFloat32(firstByte + 4, y, true);
-				iView.setFloat32(firstByte + 8, z, true);
+				positions[3 * j + 0] = x;
+				positions[3 * j + 1] = y;
+				positions[3 * j + 2] = z;
 
 				mean[0] += x / numPoints;
 				mean[1] += y / numPoints;
@@ -129,7 +120,10 @@ onmessage = function (event) {
 				tightBoxMax[2] = Math.max(tightBoxMax[2], z);
 			}
 
+			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
 		} else if (pointAttribute.name === Potree.PointAttribute.COLOR_PACKED.name) {
+			let buff = new ArrayBuffer(numPoints * 4);
+			let colors = new Uint8Array(buff);
 			let div = event.data.normalize.color ? 256 : 1;
 
 			for (let j = 0; j < numPoints; j++) {
@@ -137,48 +131,60 @@ onmessage = function (event) {
 				let g = cv.getUint16(inOffset + j * pointAttributes.byteSize + 2) / div;
 				let b = cv.getUint16(inOffset + j * pointAttributes.byteSize + 4) / div;
 				
-				let firstByte = j * iStride + outOffset;
-				iView.setUint8(firstByte + 0, r, true);
-				iView.setUint8(firstByte + 1, g, true);
-				iView.setUint8(firstByte + 2, b, true);
+				colors[4 * j + 0] = r;
+				colors[4 * j + 1] = g;
+				colors[4 * j + 2] = b;
 			}
 
+			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
 		} else if (pointAttribute.name === Potree.PointAttribute.INTENSITY.name) {
+			let buff = new ArrayBuffer(numPoints * 4);
+			let intensities = new Float32Array(buff);
 
 			for (let j = 0; j < numPoints; j++) {
 				let intensity = cv.getUint16(inOffset + j * pointAttributes.byteSize, true);
-				let firstByte = j * iStride + outOffset;
-				iView.setFloat32(firstByte + 0, intensity, true);
+				intensities[j] = intensity;
 			}
 
+			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
 		} else if (pointAttribute.name === Potree.PointAttribute.CLASSIFICATION.name) {
+			let buff = new ArrayBuffer(numPoints);
+			let classifications = new Uint8Array(buff);
 
 			for (let j = 0; j < numPoints; j++) {
 				let classification = cv.getUint8(inOffset + j * pointAttributes.byteSize);
-				let firstByte = j * iStride + outOffset;
-				iView.setUint8(firstByte + 0, classification, true);
+				classifications[j] = classification;
 			}
 
+			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
 		} 
 
 		inOffset += pointAttribute.byteSize;
-		outOffset += Math.ceil(iAttribute.bytes / 4) * 4;
 	}
 
 	{ // add indices
+		let buff = new ArrayBuffer(numPoints * 4);
+		let indices = new Uint32Array(buff);
+
 		for (let i = 0; i < numPoints; i++) {
-			let firstByte = i * iStride + outOffset;
-			iView.setUint32(firstByte, i, true);
+			indices[i] = i;
 		}
+		
+		attributeBuffers[Potree.PointAttribute.INDICES.name] = { buffer: buff, attribute: Potree.PointAttribute.INDICES };
 	}
 
 	let message = {
+		numPoints: numPoints,
 		mean: mean,
-		data: iData,
+		attributeBuffers: attributeBuffers,
 		tightBoundingBox: { min: tightBoxMin, max: tightBoxMax },
 	};
 
-	let transferables = [message.data];
+	let transferables = [];
+	for (let property in message.attributeBuffers) {
+		transferables.push(message.attributeBuffers[property].buffer);
+	}
+	transferables.push(buffer);
 
 	postMessage(message, transferables);
 };

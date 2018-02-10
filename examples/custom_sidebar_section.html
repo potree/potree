@@ -55,12 +55,14 @@
 			`);
 			let content = section.last();
 			content.html(`
+			<div class="pv-menu-list">
 				A custom Section in the sidebar!<br>
 				<br>	
 				Uncomment "content.hide();" to hide content by default.<br>
 				<br>
 				Take a look at src/viewer/sidebar.html and sidebar.js to 
 				learn how the other sections were populated.
+			</div>
 			`);
 			section.first().click(() => content.slideToggle());
 			section.insertBefore($('#menu_about'));

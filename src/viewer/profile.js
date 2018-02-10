@@ -212,6 +212,8 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 		this.initTHREE();
 		this.initSVG();
 		this.initListeners();
+
+		this.elRoot.i18n();
 	}
 
 	initListeners () {
@@ -396,8 +398,11 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 
 			let string = Potree.CSVExporter.toString(points);
 
-			let uri = 'data:application/octet-stream;base64,' + btoa(string);
-			$('#potree_download_profile_ortho_link').attr('href', uri);
+			let blob = new Blob([string], {type: "text/string"});
+			$('#potree_download_profile_ortho_link').attr('href', URL.createObjectURL(blob));
+
+			//let uri = 'data:application/octet-stream;base64,' + btoa(string);
+			//$('#potree_download_profile_ortho_link').attr('href', uri);
 		});
 
 		$('#potree_download_las_icon').click(() => {
@@ -411,15 +416,18 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 			}
 
 			let buffer = Potree.LASExporter.toLAS(points);
-			let u8view = new Uint8Array(buffer);
 
-			let binString = '';
-			for (let i = 0; i < u8view.length; i++) {
-				binString += String.fromCharCode(u8view[i]);
-			}
+			let blob = new Blob([buffer], {type: "application/octet-binary"});
+			$('#potree_download_profile_link').attr('href', URL.createObjectURL(blob));
 
-			let uri = 'data:application/octet-stream;base64,' + btoa(binString);
-			$('#potree_download_profile_link').attr('href', uri);
+			//let u8view = new Uint8Array(buffer);
+			//let binString = '';
+			//for (let i = 0; i < u8view.length; i++) {
+			//	binString += String.fromCharCode(u8view[i]);
+			//}
+			//
+			//let uri = 'data:application/octet-stream;base64,' + btoa(binString);
+			//$('#potree_download_profile_link').attr('href', uri);
 		});
 	}
 
@@ -817,6 +825,12 @@ Potree.ProfileWindowController = class ProfileWindowController {
 		this.requests = [];
 
 		this._recompute = () => { this.recompute(); };
+
+		this.viewer.addEventListener("scene_changed", e => {
+			e.oldScene.removeEventListener("pointcloud_added", this._recompute);
+			e.scene.addEventListener("pointcloud_added", this._recompute);
+		});
+		this.viewer.scene.addEventListener("pointcloud_added", this._recompute);
 	}
 
 	setProfile (profile) {

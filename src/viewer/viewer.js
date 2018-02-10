@@ -392,9 +392,9 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 
 			this.clipTask = value;
 
-			viewer.dispatchEvent({
+			this.dispatchEvent({
 				type: "cliptask_changed", 
-				viewer: viewer});		
+				viewer: this});		
 		}
 	}
 
@@ -403,9 +403,9 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 
 			this.clipMethod = value;
 			
-			viewer.dispatchEvent({
+			this.dispatchEvent({
 				type: "clipmethod_changed", 
-				viewer: viewer});		
+				viewer: this});		
 		}
 	}
 
@@ -897,32 +897,38 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 
 			$(() => {
 				initSidebar(this);
-			});
-
-			let elProfile = $('<div>').load(new URL(Potree.scriptPath + '/profile.html').href, () => {
-				$(document.body).append(elProfile.children());
-				this.profileWindow = new Potree.ProfileWindow(this);
-				this.profileWindowController = new Potree.ProfileWindowController(this);
-
-				$('#profile_window').draggable({
-					handle: $('#profile_titlebar'),
-					containment: $(document.body)
-				});
-				$('#profile_window').resizable({
-					containment: $(document.body),
-					handles: 'n, e, s, w'
-				});
 
 				if (callback) {
 					$(callback);
 				}
 
-				this.guiLoaded = true;
+				let elProfile = $('<div>').load(new URL(Potree.scriptPath + '/profile.html').href, () => {
+					$(document.body).append(elProfile.children());
+					this.profileWindow = new Potree.ProfileWindow(this);
+					this.profileWindowController = new Potree.ProfileWindowController(this);
 
-				for(let task of this.guiLoadTasks){
-					task();
-				}
+					$('#profile_window').draggable({
+						handle: $('#profile_titlebar'),
+						containment: $(document.body)
+					});
+					$('#profile_window').resizable({
+						containment: $(document.body),
+						handles: 'n, e, s, w'
+					});
+				});
+
+				$(() => {
+					this.guiLoaded = true;
+					console.log("gui loaded");
+					for(let task of this.guiLoadTasks){
+						task();
+					}
+
+				});
+
 			});
+
+			
 		});
 	}
 
@@ -1324,6 +1330,30 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 	render(){
 		if(Potree.measureTimings) performance.mark("render-start");
 
+		{ // resize
+			let width = this.scaleFactor * this.renderArea.clientWidth;
+			let height = this.scaleFactor * this.renderArea.clientHeight;
+			let pixelRatio = this.renderer.getPixelRatio();
+			let aspect = width / height;
+
+			this.scene.cameraP.aspect = aspect;
+			this.scene.cameraP.updateProjectionMatrix();
+
+			//let frustumScale = viewer.moveSpeed * 2.0;
+			let frustumScale = this.scene.view.radius;
+			this.scene.cameraO.left = -frustumScale;
+			this.scene.cameraO.right = frustumScale;		
+			this.scene.cameraO.top = frustumScale * 1 / aspect;
+			this.scene.cameraO.bottom = -frustumScale * 1 / aspect;		
+			this.scene.cameraO.updateProjectionMatrix();
+
+			this.scene.cameraScreenSpace.top = 1/aspect;
+			this.scene.cameraScreenSpace.bottom = -1/aspect;
+			this.scene.cameraScreenSpace.updateProjectionMatrix();
+			
+			this.renderer.setSize(width, height);
+		}
+
 		try{
 
 
@@ -1490,30 +1520,6 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 	loop(timestamp){
 		requestAnimationFrame(this.loop.bind(this));
 
-		{ // resize
-			let width = this.scaleFactor * this.renderArea.clientWidth;
-			let height = this.scaleFactor * this.renderArea.clientHeight;
-			let pixelRatio = this.renderer.getPixelRatio();
-			let aspect = width / height;
-
-			this.scene.cameraP.aspect = aspect;
-			this.scene.cameraP.updateProjectionMatrix();
-
-			//let frustumScale = viewer.moveSpeed * 2.0;
-			let frustumScale = viewer.scene.view.radius;
-			this.scene.cameraO.left = -frustumScale;
-			this.scene.cameraO.right = frustumScale;		
-			this.scene.cameraO.top = frustumScale * 1 / aspect;
-			this.scene.cameraO.bottom = -frustumScale * 1 / aspect;		
-			this.scene.cameraO.updateProjectionMatrix();
-
-			this.scene.cameraScreenSpace.top = 1/aspect;
-			this.scene.cameraScreenSpace.bottom = -1/aspect;
-			this.scene.cameraScreenSpace.updateProjectionMatrix();
-			
-			this.renderer.setSize(width, height);
-		}
-
 		let queryAll;
 		if(Potree.measureTimings){
 			performance.mark("loop-start");
@@ -1533,7 +1539,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		Potree.framenumber++;
 	}
 
-	postMessage(content){
+	postMessage(content, params = {}){
 		let message = new Potree.Message(content);
 
 		let animationDuration = 100;
@@ -1553,6 +1559,17 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		message.element.slideToggle(animationDuration);
 
 		this.messages.push(message);
+
+		if(params.duration !== undefined){
+			let fadeDuration = 500;
+			let slideOutDuration = 200;
+			setTimeout(() => {
+				message.element.animate({
+					opacity: 0	
+				}, fadeDuration);
+				message.element.slideToggle(slideOutDuration);
+			}, params.duration)
+		}
 
 		return message;
 	}

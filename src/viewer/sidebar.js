@@ -241,6 +241,8 @@ initSidebar = (viewer) => {
 			}else{
 				tree.jstree('uncheck_node', nodeID);
 			}
+
+			console.log("create node");
 			
 			return nodeID;
 		}
@@ -338,6 +340,15 @@ initSidebar = (viewer) => {
 				
 				viewer.scene.view.position.copy(object.camera.position);
 				viewer.scene.view.lookAt(target);
+			}else if(object instanceof THREE.SpotLight){
+				let distance = (object.distance > 0) ? object.distance / 4 : 5 * 1000;
+				let position = object.position;
+				let target = new THREE.Vector3().addVectors(
+					position, 
+					object.getWorldDirection().multiplyScalar(distance));
+
+				viewer.scene.view.position.copy(object.position);
+				viewer.scene.view.lookAt(target);
 			}else if(object instanceof THREE.Object3D){
 				let box = new THREE.Box3().setFromObject(object);
 
@@ -430,7 +441,7 @@ initSidebar = (viewer) => {
 		viewer.scene.addEventListener("profile_removed", onProfileRemoved);
 
 		{
-			let annotationIcon = `${Potree.resourcePath}/icons/target.svg`;
+			let annotationIcon = `${Potree.resourcePath}/icons/annotation.svg`;
 			this.annotationMapping = new Map(); 
 			this.annotationMapping.set(viewer.scene.annotations, annotationsID);
 			viewer.scene.annotations.traverseDescendants(annotation => {
@@ -524,7 +535,7 @@ initSidebar = (viewer) => {
 		clippingToolBar.append(createToolIcon(
 			Potree.resourcePath + '/icons/clip_volume.svg',
 			'[title]tt.clip_volume',
-			function () { 
+			() => {
 				let item = volumeTool.startInsertion({clip: true}); 
 
 				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
@@ -538,7 +549,7 @@ initSidebar = (viewer) => {
 		clippingToolBar.append(createToolIcon(
 			Potree.resourcePath + "/icons/clip-polygon.svg",
 			"[title]tt.clip_polygon",
-			function(){
+			() => {
 				let item = viewer.clippingTool.startInsertion({type: "polygon"});
 
 				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
@@ -554,8 +565,10 @@ initSidebar = (viewer) => {
 			clippingToolBar.append(createToolIcon(
 				Potree.resourcePath + "/icons/clip-screen.svg",
 				"[title]tt.screen_clip_box",
-				function(){
+				() => {
 					if(!(viewer.scene.getActiveCamera() instanceof THREE.OrthographicCamera)){
+						viewer.postMessage(`Switch to Orthographic Camera Mode before using the Screen-Box-Select tool.`, 
+							{duration: 2000});
 						return;
 					}
 					
@@ -573,20 +586,9 @@ initSidebar = (viewer) => {
 			clippingToolBar.append(createToolIcon(
 				Potree.resourcePath + "/icons/remove.svg",
 				"[title]tt.remove_all_measurement",
-				function(){
+				() => {
 
 					viewer.scene.removeAllClipVolumes();
-
-					//if(!(viewer.scene.getActiveCamera() instanceof THREE.OrthographicCamera)){
-					//	return;
-					//}
-					//
-					//let item = boxSelectTool.startInsertion();
-
-					//let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
-					//let jsonNode = measurementsRoot.children.find(child => child.data.uuid === item.uuid);
-					//$.jstree.reference(jsonNode.id).deselect_all();
-					//$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
 				}
 			));
 		}

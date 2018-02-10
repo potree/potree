@@ -2,12 +2,19 @@ Potree.Annotation = class extends THREE.EventDispatcher {
 	constructor (args = {}) {
 		super();
 
+		let valueOrDefault = (a, b) => {
+			if(a === null || a === undefined){
+				return b;
+			}else{
+				return a;
+			}
+		};
+
 		this.scene = null;
 		this.title = args.title || 'No Title';
 		this.description = args.description || '';
 
 		if (!args.position) {
-			// this.position = new THREE.Vector3(0, 0, 0);
 			this.position = null;
 		} else if (args.position instanceof THREE.Vector3) {
 			this.position = args.position;
@@ -41,7 +48,7 @@ Potree.Annotation = class extends THREE.EventDispatcher {
 		this.domElement = $(`
 			<div class="annotation" oncontextmenu="return false;">
 				<div class="annotation-titlebar">
-					<span class="annotation-label">${this.title}</span>
+					<span class="annotation-label"></span>
 				</div>
 				<div class="annotation-description">
 					<span class="annotation-description-close">
@@ -54,6 +61,7 @@ Potree.Annotation = class extends THREE.EventDispatcher {
 
 		this.elTitlebar = this.domElement.find('.annotation-titlebar');
 		this.elTitle = this.elTitlebar.find('.annotation-label');
+		this.elTitle.append(this.title);;
 		this.elDescription = this.domElement.find('.annotation-description');
 		this.elDescriptionClose = this.elDescription.find('.annotation-description-close');
 		// this.elDescriptionContent = this.elDescription.find(".annotation-description-content");
@@ -83,8 +91,6 @@ Potree.Annotation = class extends THREE.EventDispatcher {
 			a => a.showIn === undefined || a.showIn.includes('scene'));
 
 		for (let action of actions) {
-			//this.elTitle.css('padding', '1px 3px 0px 8px');
-
 			let elButton = $(`<img src="${action.icon}" class="annotation-action-icon">`);
 			this.elTitlebar.append(elButton);
 			elButton.click(() => action.onclick({annotation: this}));
@@ -265,7 +271,6 @@ Potree.Annotation = class extends THREE.EventDispatcher {
 
 			if (this.description) {
 				this.descriptionVisible = true;
-				// this.elDescription.css("display", "block");
 				this.elDescription.fadeIn(200);
 				this.elDescription.css('position', 'relative');
 			}
@@ -275,7 +280,6 @@ Potree.Annotation = class extends THREE.EventDispatcher {
 			this.domElement.css('z-index', '100');
 			this.descriptionVisible = false;
 			this.elDescription.css('display', 'none');
-			// this.elDescription.fadeOut(200);
 		}
 
 		this.isHighlighted = highlighted;

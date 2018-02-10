@@ -57,10 +57,20 @@
 			viewer.toggleSidebar();
 			viewer.profileWindow.show();
 			viewer.profileWindowController.setProfile(viewer.scene.profiles[0]);
-			//viewer.setClipMode(Potree.ClipMode.CLIP_OUTSIDE);
 		});
+
+		{ // PROFILE
+			let profile = new Potree.Profile();
+			profile.name = "Elevation Profile";
+			profile.setWidth(6)
+			profile.addMarker(new THREE.Vector3(589997.02, 231327.75, 755.73));
+			profile.addMarker(new THREE.Vector3(589579.65, 231323.51, 775.78));
+			profile.addMarker(new THREE.Vector3(589500.87, 231356.23, 782.91));
+			
+			viewer.scene.addProfile(profile);
+		}
 		
-		// Sigeom
+		// POINTCLOUD
 		Potree.loadPointCloud("../pointclouds/vol_total/cloud.js", "sigeom.sa", function(e){
 			let scene = viewer.scene;
 			scene.addPointCloud(e.pointcloud);
@@ -68,20 +78,6 @@
 			let material = e.pointcloud.material;
 			material.size = 1;
 			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-			
-			{ // PROFILE
-				let profile = new Potree.Profile();
-				profile.setWidth(6)
-				profile.addMarker(new THREE.Vector3(589997.02, 231327.75, 755.73));
-				profile.addMarker(new THREE.Vector3(589579.65, 231323.51, 775.78));
-				profile.addMarker(new THREE.Vector3(589500.87, 231356.23, 782.91));
-				
-				scene.addProfile(profile);
-				
-				//if(viewer.profileWindow){
-				//	viewer.profileWindowController.setProfile(profile);
-				//}
-			}
 			
 			scene.view.position.set(589974.341, 231698.397, 986.146);
 			scene.view.lookAt(new THREE.Vector3(589851.587, 231428.213, 715.634));

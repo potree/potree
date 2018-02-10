@@ -37,7 +37,10 @@
 	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
 		<div id="potree_render_area"></div>
 		<div id="potree_sidebar_container"> </div>
+		<input id="tiffTest" type="button" value="tiff test" />
 	</div>
+
+	
 	
 	<script>
 	
@@ -45,29 +48,31 @@
 		
 		viewer.setEDLEnabled(true);
 		viewer.setFOV(60);
-		viewer.setPointBudget(1*1000*1000);
+		viewer.setPointBudget(2 * 1000 * 1000);
 		viewer.setMinNodeSize(0);
 		viewer.loadSettingsFromURL();
+		viewer.setServer("http://localhost:3000");
 		
 		viewer.setDescription("");
 		
 		viewer.loadGUI(() => {
 			viewer.setLanguage('en');
 			$("#menu_appearance").next().show();
+			$("#menu_tools").next().show();
+			$("#menu_scene").next().show();
 			viewer.toggleSidebar();
 		});
-		
-		// create light and add it to scene
-		let light = new THREE.PointLight();
+
+		let light = new THREE.SpotLight();
+		light.distance = 15;
+		light.angle = (60 / 180) * Math.PI;
+		light.position.set(8.489, 3.577, 5.796);
+		light.lookAt(new THREE.Vector3(1.219, -0.171, 2.776));
 		viewer.scene.scene.add(light);
 
-		// also attach a sphere to the light to display it's position in the scene.
-		let lightSphere = new THREE.Mesh(
-			new THREE.SphereGeometry(0.5, 32, 32),
-			new THREE.MeshNormalMaterial()
-		);
-		light.add(lightSphere);
-
+		let sph = new Potree.SpotLightHelper(light, new THREE.Color().setHex(0xff0000));
+		viewer.scene.scene.add(sph);
+		
 		// Sigeom
 		Potree.loadPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/archpro/heidentor/cloud.js", "Heidentor", function(e){
 			viewer.scene.addPointCloud(e.pointcloud);
@@ -75,76 +80,28 @@
 			let material = e.pointcloud.material;
 			material.size = 1;
 			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-			material.uniforms.uShadowColor.value = [0.0, 0, 0];
+			material.pointColorType = Potree.PointColorType.ELEVATION;
+			material.uniforms.uShadowColor.value = [0.6, 0.6, 0.6];
+
+			viewer.scene.view.position.set(19.474, -14.324, 12.829);
+			viewer.scene.view.lookAt(0.339, 0.145, 4.073);
+		});
+
+		
+		Potree.loadPointCloud("../pointclouds/lion_takanawa/cloud.js", "lion", function(e){
+			viewer.scene.addPointCloud(e.pointcloud);
 			
-			viewer.scene.view.position.set(-16.26, 11.27, 12.93);
-			viewer.scene.view.lookAt(new THREE.Vector3(-2.68, 5.59, 6.97));
-
-			{ // create Animation Path & make light follow it
-
-				let path = [
-					[-8.60, 13.67, 7.08],
-					[-12.21, 4.01, 7.45],
-					[-0.67, 4.55, 5.00],
-					[5.70, -4.38, 11.13],
-					[-7.75, -10.75, 14.78],
-					[-23.75, -4.88, 8.68],
-					[-21.78, 11.73, 11.22],
-				].map(v => new THREE.Vector3(...v));
-
-				let animationPath = new Potree.AnimationPath(path);
-				animationPath.closed = true;
-
-				{ // render the path
-					let geometry = animationPath.getGeometry();
-					let material = new THREE.LineBasicMaterial();
-					let line = new THREE.Line(geometry, material, {closed: animationPath.closed});
-					viewer.scene.scene.add(line);
-				}
-
-				{ // render the control points of the path
-					for(let pos of path){
-						let sg = new THREE.SphereGeometry(0.2, 32, 32);
-						let sm = new THREE.MeshBasicMaterial({color: 0xff0000});
-						let s = new THREE.Mesh(sg, sm); 
-						s.position.copy(pos);
-						viewer.scene.scene.add(s);
-					}
-				}
-
-				{ // Animate from beginning to end with a speed of 10 meters per second
-					let start = 0;
-					let end = Infinity;
-					let speed = 10; 
-					let animation = animationPath.animate(start, end, speed, t => {
-						animation.repeat = true;
-
-						// t is a value between 0 and 1.
-						// use getPoint(t) to map from t to the position on the animation path
-						let point = animation.getPoint(t);
-						light.position.copy(point);
-					});
-					window.animation = animation;
-				}
-
-				window.animationPath = animationPath;
-			}
-
+			let material = e.pointcloud.material;
+			material.size = 1;
+			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+			material.uniforms.uShadowColor.value = [0.6, 0.6, 0.6];
+			
+			e.pointcloud.position.set(0, -2, 0);
 			
 		});
 
-		function pause(){
-			animation.pause();
-			//light.disableShadowUpdates = true;
-		}
-
-		function resume(){
-			animation.resume();
-			//light.disableShadowUpdates = false;
-		}
 		
 	</script>
-	
 	
   </body>
 </html>

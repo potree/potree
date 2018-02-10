@@ -30,6 +30,8 @@
 	<script src="../libs/jstree/jstree.js"></script>
 	<script src="../build/potree/potree.js"></script>
 	<script src="../libs/plasio/js/laslaz.js"></script>
+	<script src="../libs/other/PLYLoader.js"></script>
+	<script src="../libs/other/OBJLoader.js"></script>
 	
 	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
 	<!-- INCLUDE SETTINGS HERE -->
@@ -125,7 +127,7 @@
 				let bunny1ID = tree.jstree('create_node', parentNode, { 
 						"text": "Bunny 1", 
 						"icon": `${Potree.resourcePath}/icons/triangle.svg`,
-						"object": mesh1
+						"data": mesh1
 					}, 
 					"last", false, false);
 				tree.jstree(mesh1.visible ? "check_node" : "uncheck_node", bunny1ID);
@@ -133,7 +135,7 @@
 				let bunny2ID = tree.jstree('create_node', parentNode, { 
 						"text": "Bunny 2", 
 						"icon": `${Potree.resourcePath}/icons/triangle.svg`,
-						"object": mesh2
+						"data": mesh2
 					}, 
 					"last", false, false);
 				tree.jstree(mesh2.visible ? "check_node" : "uncheck_node", bunny2ID);
@@ -141,7 +143,7 @@
 				let bunny3ID = tree.jstree('create_node', parentNode, { 
 						"text": "Bunny 3", 
 						"icon": `${Potree.resourcePath}/icons/triangle.svg`,
-						"object": mesh3
+						"data": mesh3
 					}, 
 					"last", false, false);
 				tree.jstree(mesh3.visible ? "check_node" : "uncheck_node", bunny3ID);

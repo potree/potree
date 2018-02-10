@@ -56,38 +56,35 @@
 			$("#menu_appearance").next().show();
 			viewer.toggleSidebar();
 		});
-
-		// create light and add it to scene
-		let light = new THREE.PointLight();
-		viewer.scene.scene.add(light);
-
-		// also attach a sphere to the light to display it's position in the scene.
-		let lightSphere = new THREE.Mesh(
-			new THREE.SphereGeometry(10, 32, 32),
+		
+		let sphere = new THREE.Mesh(
+			new THREE.SphereGeometry(0.5, 32, 32),
 			new THREE.MeshNormalMaterial()
 		);
-		light.add(lightSphere);
-		
+		viewer.scene.scene.add(sphere);
+
 		// Sigeom
-		Potree.loadPointCloud("../pointclouds/vol_total/cloud.js", "sigeom.sa", e => {
+		Potree.loadPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/archpro/heidentor/cloud.js", "Heidentor", function(e){
 			viewer.scene.addPointCloud(e.pointcloud);
 			e.pointcloud.position.z = 0;
 			let material = e.pointcloud.material;
 			material.size = 1;
 			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-			material.uniforms.uShadowColor.value = [0.5, 0, 0];
+			material.uniforms.uShadowColor.value = [0.0, 0, 0];
 			
-			viewer.scene.view.position.set(589380.85, 231755.34, 428.01);
-			viewer.scene.view.lookAt(new THREE.Vector3(589800.00, 231432.85, 33.74));
+			viewer.scene.view.position.set(-31.007, 18.245, 20.695);
+			viewer.scene.view.lookAt(-5.288, 2.126, 6.048);
 
 			{ // create Animation Path & make light follow it
 
 				let path = [
-					[590198.55, 231593.28, 86.04],
-					[589901.85, 231798.08, 242.42],
-					[589884.72, 231464.25, 62.79],
-					[589501.90, 231173.18, 209.85],
-					[590072.78, 231111.40, 131.61],
+					[-8.60, 13.67, 7.08],
+					[-12.21, 4.01, 7.45],
+					[-0.67, 4.55, 5.00],
+					[5.70, -4.38, 11.13],
+					[-7.75, -10.75, 14.78],
+					[-23.75, -4.88, 8.68],
+					[-21.78, 11.73, 11.22],
 				].map(v => new THREE.Vector3(...v));
 
 				let animationPath = new Potree.AnimationPath(path);
@@ -102,7 +99,7 @@
 
 				{ // render the control points of the path
 					for(let pos of path){
-						let sg = new THREE.SphereGeometry(4, 32, 32);
+						let sg = new THREE.SphereGeometry(0.2, 32, 32);
 						let sm = new THREE.MeshBasicMaterial({color: 0xff0000});
 						let s = new THREE.Mesh(sg, sm); 
 						s.position.copy(pos);
@@ -110,17 +107,17 @@
 					}
 				}
 
-				{ // Animate from beginning to end with a speed of 20 meters per second
+				{ // Animate from beginning to end with a speed of 10 meters per second
 					let start = 0;
 					let end = Infinity;
-					let speed = 200; 
+					let speed = 30; 
 					let animation = animationPath.animate(start, end, speed, t => {
 						animation.repeat = true;
 
 						// t is a value between 0 and 1.
 						// use getPoint(t) to map from t to the position on the animation path
 						let point = animation.getPoint(t);
-						light.position.copy(point);
+						sphere.position.copy(point);
 					});
 					window.animation = animation;
 				}

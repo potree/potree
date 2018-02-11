@@ -25,6 +25,7 @@ Potree.FirstPersonControls = class FirstPersonControls extends THREE.EventDispat
 
 		this.rotationSpeed = 200;
 		this.moveSpeed = 10;
+		this.lockElevation = false;
 
 		this.keys = {
 			FORWARD: ['W'.charCodeAt(0), 38],
@@ -196,12 +197,26 @@ Potree.FirstPersonControls = class FirstPersonControls extends THREE.EventDispat
 			let moveUp = this.keys.UP.some(e => ih.pressedKeys[e]);
 			let moveDown = this.keys.DOWN.some(e => ih.pressedKeys[e]);
 
-			if (moveForward && moveBackward) {
-				this.translationDelta.y = 0;
-			} else if (moveForward) {
-				this.translationDelta.y = this.viewer.getMoveSpeed();
-			} else if (moveBackward) {
-				this.translationDelta.y = -this.viewer.getMoveSpeed();
+			if(this.lockElevation){
+				let dir = view.direction;
+				dir.z = 0;
+				dir.normalize();
+
+				if (moveForward && moveBackward) {
+					this.translationWorldDelta.set(0, 0, 0);
+				} else if (moveForward) {
+					this.translationWorldDelta.copy(dir.multiplyScalar(this.viewer.getMoveSpeed()));
+				} else if (moveBackward) {
+					this.translationWorldDelta.copy(dir.multiplyScalar(-this.viewer.getMoveSpeed()));
+				}
+			}else{
+				if (moveForward && moveBackward) {
+					this.translationDelta.y = 0;
+				} else if (moveForward) {
+					this.translationDelta.y = this.viewer.getMoveSpeed();
+				} else if (moveBackward) {
+					this.translationDelta.y = -this.viewer.getMoveSpeed();
+				}
 			}
 
 			if (moveLeft && moveRight) {

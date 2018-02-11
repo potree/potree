@@ -774,7 +774,19 @@ initSidebar = (viewer) => {
 		elNavigation.append(createToolIcon(
 			Potree.resourcePath + '/icons/fps_controls.png',
 			'[title]tt.flight_control',
-			function () { viewer.setNavigationMode(Potree.FirstPersonControls); }
+			function () {
+				viewer.setNavigationMode(Potree.FirstPersonControls);
+				viewer.fpControls.lockElevation = false;
+			}
+		));
+
+		elNavigation.append(createToolIcon(
+			Potree.resourcePath + '/icons/helicopter_controls.svg',
+			'[title]tt.heli_control',
+			() => { 
+				viewer.setNavigationMode(Potree.FirstPersonControls);
+				viewer.fpControls.lockElevation = true;
+			}
 		));
 
 		elNavigation.append(createToolIcon(

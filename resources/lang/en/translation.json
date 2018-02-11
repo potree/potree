@@ -36,6 +36,7 @@
 		"focus_control": "Full extent",
 		"orbit_control": "Orbit control",
 		"flight_control": "Fly control",
+		"heli_control": "Helicopter control",
 		"earth_control": "Earth control",
 		"perspective_camera_control": "Perspective camera",
 		"orthographic_camera_control": "Orthographic camera",

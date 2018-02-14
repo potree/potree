@@ -242,8 +242,6 @@ initSidebar = (viewer) => {
 				tree.jstree('uncheck_node', nodeID);
 			}
 
-			console.log("create node");
-			
 			return nodeID;
 		}
 
@@ -409,11 +407,24 @@ initSidebar = (viewer) => {
 			createNode(measurementID, profile.name, icon, profile);
 		};
 
+		let onAnnotationAdded = (e) => {
+			let annotation = e.annotation;
+
+			let annotationIcon = `${Potree.resourcePath}/icons/annotation.svg`;
+			let parentID = this.annotationMapping.get(annotation.parent);
+			let annotationID = createNode(parentID, annotation.title, annotationIcon, annotation);
+			this.annotationMapping.set(annotation, annotationID);
+
+			//let node = createNode(annotationsID, annotation.name, icon, volume);
+			//oldScene.annotations.removeEventListener('annotation_added', this.onAnnotationAdded);
+		};
+
 		viewer.scene.addEventListener("pointcloud_added", onPointCloudAdded);
 		viewer.scene.addEventListener("measurement_added", onMeasurementAdded);
 		viewer.scene.addEventListener("profile_added", onProfileAdded);
 		viewer.scene.addEventListener("volume_added", onVolumeAdded);
 		viewer.scene.addEventListener("polygon_clip_volume_added", onVolumeAdded);
+		viewer.scene.annotations.addEventListener("annotation_added", onAnnotationAdded);
 
 		let onMeasurementRemoved = (e) => {
 			let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");

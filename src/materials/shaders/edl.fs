@@ -23,6 +23,7 @@ float response(float depth){
 		vec2 uvNeighbor = vUv + uvRadius * neighbours[i];
 		
 		float neighbourDepth = texture2D(colorMap, uvNeighbor).a;
+		neighbourDepth = (neighbourDepth == 1.0) ? 0.0 : neighbourDepth;
 
 		if(neighbourDepth != 0.0){
 			if(depth == 0.0){
@@ -40,6 +41,7 @@ void main(){
 	vec4 color = texture2D(colorMap, vUv);
 	
 	float depth = color.a;
+	depth = (depth == 1.0) ? 0.0 : depth;
 	float res = response(depth);
 	float shade = exp(-res * 300.0 * edlStrength);
 	
@@ -47,7 +49,6 @@ void main(){
 		discard;
 	}else{
 		gl_FragColor = vec4(color.rgb * shade, opacity);
-		//gl_FragColor = vec4(color.rgb * res, opacity);
 	}
 	
 }

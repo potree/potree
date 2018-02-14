@@ -126,7 +126,7 @@
 
 				let elTitle = $(`<span>Gradient Schemes:</span>`);
 				for(let scheme of schemes){
-					let button = $(`<img src="${scheme.icon}" class="annotation-action-icon" style="width: 3em; height: 3em;"/>`);
+					let button = $(`<img src="${scheme.icon}" class="annotation-action-icon" style="width: 3em; height: auto;"/>`);
 					button.click( () => {
 						e.pointcloud.material.pointColorType = Potree.PointColorType.ELEVATION;
 						e.pointcloud.material.gradient = Potree.Gradients[scheme.name];

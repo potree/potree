@@ -70,8 +70,8 @@
 			material.size = 1;
 			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
 			
-			scene.view.position.set(675036.45, 3850315.78, 65076.70);
-			scene.view.lookAt(692869.03, 3925774.14, 1581.51);
+			scene.view.position.set(690711.599, 3873671.422, 51647.850);
+			scene.view.lookAt(705119.301, 3920506.695, -564.566);
 
 			{ // ANNOTATIONS
 				let aRoot = viewer.scene.annotations;
@@ -171,14 +171,14 @@
 						"onclick": function(){
 							material.pointColorType = Potree.PointColorType.RETURN_NUMBER;
 							material.pointSizeType = Potree.PointSizeType.FIXED;
-							viewer.setClipMode(Potree.ClipMode.OUTSIDE);
+							viewer.setClipTask(Potree.ClipTask.SHOW_INSIDE);
 						}
 					},{
 						"icon": Potree.resourcePath + "/icons/rgb.png",
 						"onclick": function(){
 							material.pointColorType = Potree.PointColorType.RGB;
 							material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-							viewer.setClipMode(Potree.ClipMode.HIGHLIGHT);
+							viewer.setClipTask(Potree.ClipTask.HIGHLIGHT);
 						}
 					}]
 				});
@@ -213,39 +213,16 @@
 					measurement.name = "Parking Space";
 					viewer.scene.addMeasurement(measurement);
 				}
+
+				{
+					let measurement = new Potree.Measure();
+					measurement.addMarker([646037.800, 3971448.200, 819.990]);
+					measurement.addMarker([736909.820, 3891012.300, 296.000]);
+					viewer.scene.addMeasurement(measurement);
+				}
 			}
 		});
 
-
-		
-
-		function printView(){
-			"[" + [viewer.scene.view.position.toArray().map(v => v.toFixed(2)).join(", "),
-				viewer.scene.view.getPivot().toArray().map(v => v.toFixed(2)).join(", ")].join("], [") + "]"
-		}
-
-		function printMeasurements(){
-			for(let measure of viewer.scene.measurements){
-				let positions = measure.points.map(point => point.position);
-				positions = positions.map(pos => pos.toArray().map(a => a.toFixed(2)));
-				positions = positions.map(pos => pos.join(", "));
-				positions = `[${positions.join("], [")}]`;
-				console.log(positions)
-			}
-		}
-
-		function printVolumes(){
-			for(let volume of viewer.scene.volumes){
-				console.log(
-					{
-						scale: volume.scale.toArray().join(", "), 
-						position: volume.position.toArray().join(", "), 
-						rotation: volume.rotation.toArray().join(", ")
-					}
-				);
-			}
-		}
-		
 	</script>
 	
 	

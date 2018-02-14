@@ -10,7 +10,7 @@ Potree.BinaryLoader = function (version, boundingBox, scale) {
 	this.scale = scale;
 };
 
-Potree.BinaryLoader.prototype.load = function (node) {
+Potree.BinaryLoader.prototype.load = function(node){
 	if (node.loaded) {
 		return;
 	}
@@ -44,7 +44,7 @@ Potree.BinaryLoader.prototype.load = function (node) {
 	}
 };
 
-Potree.BinaryLoader.prototype.parse = function (node, buffer) {
+Potree.BinaryLoader.prototype.parse = function(node, buffer){
 	let pointAttributes = node.pcoGeometry.pointAttributes;
 	let numPoints = buffer.byteLength / node.pcoGeometry.pointAttributes.byteSize;
 

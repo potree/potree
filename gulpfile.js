@@ -202,45 +202,64 @@ gulp.task('webserver', function() {
 
 gulp.task('examples_page', function() {
 
-	let settings = JSON.parse(fs.readFileSync("examples/examples.json", 'utf8'));
+	let settings = JSON.parse(fs.readFileSync("examples/page.json", 'utf8'));
 	let files = fs.readdirSync("./examples");
 
-	let thumbCode = ``;
+	let unhandledCode = ``;
+	let exampleCode = ``;
+	let showcaseCode = ``;
 
-	let urls = settings.examples.map(e => e.url);
-	let unhandled = [];
-	for(let file of files){
-		let isHandled = false;
-		for(let url of urls){
-			
-			if(file.indexOf(url) !== -1){
-				isHandled = true;
+	{
+		let urls = settings.examples.map(e => e.url);
+		let unhandled = [];
+		for(let file of files){
+			let isHandled = false;
+			for(let url of urls){
+				
+				if(file.indexOf(url) !== -1){
+					isHandled = true;
+				}
+			}
+
+			if(!isHandled){
+				unhandled.push(file);
 			}
 		}
+		unhandled = unhandled
+			.filter(file => file.indexOf(".html") > 0)
+			.filter(file => file !== "page.html");
 
-		if(!isHandled){
-			unhandled.push(file);
+		
+		for(let file of unhandled){
+			unhandledCode += `
+				<a href="${file}" class="unhandled">${file}</a>
+			`;
 		}
 	}
-	unhandled = unhandled
-		.filter(file => file.indexOf(".html") > 0)
-		.filter(file => file !== "page.html");
 
-	for(let example of settings.examples){
-		thumbCode += `<a href="${example.url}" target="_blank" style="display: inline-block">
-			<div class="thumb" style="background-image: url('${example.thumb}'); ">
-				<div class="thumb-label">${example.label}</div>
-			</div>
-		</a>
-		`;
+	{
+		for(let example of settings.examples){
+			exampleCode += `<a href="${example.url}" target="_blank" style="display: inline-block">
+				<div class="thumb" style="background-image: url('${example.thumb}'); ">
+					<div class="thumb-label">${example.label}</div>
+				</div>
+			</a>
+			`;
+		}
 	}
 
-	let unhandledCode = ``;
-	for(let file of unhandled){
-		unhandledCode += `
-			<a href="${file}" class="unhandled">${file}</a>
-		`;
+	{
+		for(let showcaseItem of settings.showcase){
+			showcaseCode += `<a href="${showcaseItem.url}" target="_blank" style="display: inline-block">
+				<div class="thumb" style="background-image: url('${showcaseItem.thumb}'); ">
+					<div class="thumb-label">${showcaseItem.label}</div>
+				</div>
+			</a>
+			`;
+		}
 	}
+
+	
 
 	let page = `
 		<html>
@@ -300,15 +319,31 @@ gulp.task('examples_page', function() {
 				color: #555555;
 			}
 
+			h1{
+				font-weight: 500;
+				color: rgb(51, 51, 51);
+				font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+			}
+
 			</style>
 			</head>
 			<body>
+
 				<div id="thumb_container" style="max-width: 1200px; margin: auto; margin-top: 50px;">
-					${thumbCode}
+					<h1>Examples</h1>
+					${exampleCode}
 				</div>
+
+				<div id="showcase_container" style="max-width: 1200px; margin: auto; margin-top: 50px;">
+					<h1>Showcase</h1>
+					${showcaseCode}
+				</div>
+
 				<div class="unhandled_container">
+					<h1>Other</h1>
 					${unhandledCode}
 				</div>
+
 			</body>
 		</html>
 	`;

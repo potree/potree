@@ -566,7 +566,7 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 	 * TODO: only draw pixels that are actually read with readPixels().
 	 *
 	 */
-	pick (viewer, camera, ray, params = {}) {
+	pick(viewer, camera, ray, params = {}){
 
 		let renderer = viewer.renderer;
 		let pRenderer = viewer.pRenderer;
@@ -633,7 +633,6 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 			}else{
 				pickMaterial.clipBoxes = [];
 			}
-			
 			
 			this.updateMaterial(pickMaterial, nodes, camera, renderer);
 		}

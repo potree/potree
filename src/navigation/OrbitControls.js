@@ -89,7 +89,7 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 		};
 
 		let touchMove = e => {
-			if (e.touches.length === 2 && previousTouch.touches.length === 2) {
+			if (e.touches.length === 2 && previousTouch.touches.length === 2){
 				let prev = previousTouch;
 				let curr = e;
 
@@ -105,6 +105,25 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 				let resolvedRadius = this.scene.view.radius + this.radiusDelta;
 				let newRadius = resolvedRadius / delta;
 				this.radiusDelta = newRadius - resolvedRadius;
+
+				this.stopTweens();
+			}else if(e.touches.length === 3 && previousTouch.touches.length === 3){
+				let prev = previousTouch;
+				let curr = e;
+
+				let prevMeanX = (prev.touches[0].pageX + prev.touches[1].pageX + prev.touches[2].pageX) / 3;
+				let prevMeanY = (prev.touches[0].pageY + prev.touches[1].pageY + prev.touches[2].pageY) / 3;
+
+				let currMeanX = (curr.touches[0].pageX + curr.touches[1].pageX + curr.touches[2].pageX) / 3;
+				let currMeanY = (curr.touches[0].pageY + curr.touches[1].pageY + curr.touches[2].pageY) / 3;
+
+				let delta = {
+					x: (currMeanX - prevMeanX) / this.renderer.domElement.clientWidth,
+					y: (currMeanY - prevMeanY) / this.renderer.domElement.clientHeight
+				};
+
+				this.panDelta.x += delta.x;
+				this.panDelta.y += delta.y;
 
 				this.stopTweens();
 			}

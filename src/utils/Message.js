@@ -14,14 +14,23 @@ Potree.Message = class Message{
 
 		this.elClose = this.element.find("img[name=close]");
 
-		let elContainer = this.element.find("span[name=content_container]");
+		this.elContainer = this.element.find("span[name=content_container]");
 
 		if(typeof content === "string"){
-			elContainer.append($(`<span>${content}</span>`));
+			this.elContainer.append($(`<span>${content}</span>`));
 		}else{
-			elContainer.append(content);
+			this.elContainer.append(content);
 		}
 
+	}
+
+	setMessage(content){
+		this.elContainer.empty();
+		if(typeof content === "string"){
+			this.elContainer.append($(`<span>${content}</span>`));
+		}else{
+			this.elContainer.append(content);
+		}
 	}
 
 };

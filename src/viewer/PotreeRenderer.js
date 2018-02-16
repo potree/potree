@@ -10,28 +10,6 @@ class PotreeRenderer {
 
 		viewer.dispatchEvent({type: "render.pass.begin",viewer: viewer});
 
-		//{// resize
-		//	let width = viewer.scaleFactor * viewer.renderArea.clientWidth;
-		//	let height = viewer.scaleFactor * viewer.renderArea.clientHeight;
-		//	let aspect = width / height;
-
-		//	viewer.scene.cameraP.aspect = aspect;
-		//	viewer.scene.cameraP.updateProjectionMatrix();
-
-		//	let frustumScale = viewer.moveSpeed * 2.0;
-		//	viewer.scene.cameraO.left = -frustumScale;
-		//	viewer.scene.cameraO.right = frustumScale;		
-		//	viewer.scene.cameraO.top = frustumScale * 1/aspect;
-		//	viewer.scene.cameraO.bottom = -frustumScale * 1/aspect;		
-		//	viewer.scene.cameraO.updateProjectionMatrix();
-
-		//	viewer.scene.cameraScreenSpace.top = 1/aspect;
-		//	viewer.scene.cameraScreenSpace.bottom = -1/aspect;
-		//	viewer.scene.cameraScreenSpace.updateProjectionMatrix();
-		//	
-		//	viewer.renderer.setSize(width, height);
-		//}
-
 		// render skybox
 		if(viewer.background === "skybox"){
 			viewer.renderer.clear(true, true, false);
@@ -41,7 +19,7 @@ class PotreeRenderer {
 			viewer.skybox.camera.updateProjectionMatrix();
 			viewer.renderer.render(viewer.skybox.scene, viewer.skybox.camera);
 		}else if(viewer.background === "gradient"){
-			//viewer.renderer.clear(true, true, false);
+			viewer.renderer.clear(true, true, false);
 			viewer.renderer.render(viewer.scene.sceneBG, viewer.scene.cameraBG);
 		}else if(viewer.background === "black"){
 			viewer.renderer.setClearColor(0x000000, 1);

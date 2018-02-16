@@ -417,7 +417,13 @@ Potree.updateVisibilityStructures = function(pointclouds, camera, renderer) {
 		let frustum = new THREE.Frustum();
 		let viewI = camera.matrixWorldInverse;
 		let world = pointcloud.matrixWorld;
+		
+		// use close near plane for frustum intersection
+		let frustumCam = camera.clone();
+		frustumCam.near = Math.min(camera.near, 0.1);
+		frustumCam.updateProjectionMatrix();
 		let proj = camera.projectionMatrix;
+
 		let fm = new THREE.Matrix4().multiply(proj).multiply(viewI).multiply(world);
 		frustum.setFromMatrix(fm);
 		frustums.push(frustum);

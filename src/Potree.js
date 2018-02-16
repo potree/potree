@@ -523,12 +523,14 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 		visible = visible && !(numVisiblePointsInPointclouds.get(pointcloud) + node.getNumPoints() > pointcloud.pointBudget);
 		visible = visible && level < maxLevel;
 
+
+		if(!window.warned125){
+			console.log("TODO");
+			window.warned125 = true;
+		}
 		if(false && pointcloud.material.clipBoxes.length > 0){
 
-			if(!window.warned125){
-				console.log("TODO");
-				window.warned125 = true;
-			}
+			
 
 			//node.debug = false;
 
@@ -716,7 +718,7 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 		}
 	}
 
-	for (let i = 0; i < Math.min(5, unloadedGeometry.length); i++) {
+	for (let i = 0; i < Math.min(Potree.maxNodesLoading, unloadedGeometry.length); i++) {
 		unloadedGeometry[i].load();
 	}
 

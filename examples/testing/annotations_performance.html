@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="description" content="">
+	<meta name="author" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+	<title>Potree Viewer</title>
+
+	<link rel="stylesheet" type="text/css" href="../../build/potree/potree.css">
+	<link rel="stylesheet" type="text/css" href="../../libs/jquery-ui/jquery-ui.min.css">
+	<link rel="stylesheet" type="text/css" href="../../libs/perfect-scrollbar/css/perfect-scrollbar.css">
+	<link rel="stylesheet" type="text/css" href="../../libs/openlayers3/ol.css">
+	<link rel="stylesheet" type="text/css" href="../../libs/spectrum/spectrum.css">
+	<link rel="stylesheet" type="text/css" href="../../libs/jstree/themes/mixed/style.css">
+</head>
+
+<body>
+	<script src="../../libs/jquery/jquery-3.1.1.min.js"></script>
+	<script src="../../libs/spectrum/spectrum.js"></script>
+	<script src="../../libs/perfect-scrollbar/js/perfect-scrollbar.jquery.js"></script>
+	<script src="../../libs/jquery-ui/jquery-ui.min.js"></script>
+	<script src="../../libs/three.js/build/three.min.js"></script>
+	<script src="../../libs/other/BinaryHeap.js"></script>
+	<script src="../../libs/tween/tween.min.js"></script>
+	<script src="../../libs/d3/d3.js"></script>
+	<script src="../../libs/proj4/proj4.js"></script>
+	<script src="../../libs/openlayers3/ol.js"></script>
+	<script src="../../libs/i18next/i18next.js"></script>
+	<script src="../../libs/jstree/jstree.js"></script>
+	<script src="../../build/potree/potree.js"></script>
+	<script src="../../libs/plasio/js/laslaz.js"></script>
+	
+	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
+	<!-- INCLUDE SETTINGS HERE -->
+	
+	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
+		<div id="potree_render_area"></div>
+		<div id="potree_sidebar_container"> </div>
+	</div>
+	
+	<script>
+	
+		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
+		
+		viewer.setEDLEnabled(true);
+		viewer.setFOV(60);
+		viewer.setPointBudget(5 * 1000 * 1000);
+		viewer.setPointBudget(10 * 1000);
+		viewer.loadSettingsFromURL();
+		
+		viewer.setDescription("");
+		
+		viewer.loadGUI(() => {
+			viewer.setLanguage('en');
+			$("#menu_appearance").next().show();
+			$("#menu_tools").next().show();
+			$("#menu_scene").next().show();
+			viewer.toggleSidebar();
+		});
+		
+		Potree.loadPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/opentopography/CA13/cloud.js", "CA13", function(e){
+			viewer.scene.addPointCloud(e.pointcloud);
+			e.pointcloud.position.z = 0;
+			let material = e.pointcloud.material;
+			material.size = 1;
+			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+
+			//viewer.useHQ = true;
+			
+			viewer.scene.view.position.set(696157.527, 3893615.854, 20555.340);
+			viewer.scene.view.lookAt(684138.227, 3925253.922, 1557.003);
+		});
+
+		{ // ANNOTATIONS
+
+			//let n = 12;
+			let depth = 3;
+			let min = new THREE.Vector3(673062.820, 3915768.540, 10);
+			let max = new THREE.Vector3(693697.110, 3938754.740, 10);
+
+			let map = new Map();
+
+			for(let level = 0; level < depth; level++){
+				let n = 3 ** level;
+
+				for(let i = 0; i < n; i++){
+					for(let j = 0; j < n; j++){
+
+						let u = i / (n) + 0.5 / n;
+						let v = j / (n) + 0.5 / n;
+
+						let x = (1-u) * min.x + u * max.x;
+						let y = (1-v) * min.y + v * max.y;
+						let z = 10000 - level * 3000;
+
+						let annotation = new Potree.Annotation({
+							title: `${i} / ${j}`,
+							position: [x, y, z],
+							radius: min.distanceTo(max) / n,
+						});
+						//viewer.scene.annotations.add(annotation);
+
+						let id = `${level}_${i}_${j}`;
+						map.set(id, annotation);
+
+						if(level === 0){
+							viewer.scene.annotations.add(annotation);
+						}else{
+							let parentI = parseInt(i / 3);
+							let parentJ = parseInt(j / 3);
+							let parentID = `${level-1}_${parentI}_${parentJ}`;
+							let parent = map.get(parentID);
+
+							parent.add(annotation);
+						}
+
+					}
+				}
+			}
+
+			//for(let i = 0; i < n; i++){
+			//	for(let j = 0; j < n; j++){
+			//		let u = i / (n-1);
+			//		let v = j / (n-1);
+
+			//		let x = (1-u) * min.x + u * max.x;
+			//		let y = (1-v) * min.y + v * max.y;
+			//		let z = 10;
+
+			//		let annotation = new Potree.Annotation({
+			//			title: `${i} / ${j}`,
+			//			position: [x, y, z],
+			//			radius: 1000,
+			//		});
+			//		viewer.scene.annotations.add(annotation);
+			//	}
+			//}
+
+		}
+		
+	</script>
+	
+	
+  </body>
+</html>

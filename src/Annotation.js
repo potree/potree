@@ -111,6 +111,8 @@ Potree.Annotation = class extends THREE.EventDispatcher {
 		});
 
 		this.display = false;
+		//this.display = true;
+
 	}
 
 	get visible () {
@@ -124,9 +126,9 @@ Potree.Annotation = class extends THREE.EventDispatcher {
 
 		this._visible = value;
 
-		this.traverse(node => {
-			node.display = value;
-		});
+		//this.traverse(node => {
+		//	node.display = value;
+		//});
 
 		this.dispatchEvent({
 			type: 'visibility_changed',

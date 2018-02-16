@@ -33,6 +33,13 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 				let potreeDescription = $(`<div id="potree_description" class="potree_info_text"></div>`);
 				$(domElement).append(potreeDescription);
 			}
+
+			if ($(domElement).find('#potree_annotations').length === 0) {
+				let potreeAnnotationContainer = $(`
+					<div id="potree_annotation_container" 
+						style="position: absolute; z-index: 100000; width: 100%; height: 100%; pointer-events: none;"></div>`);
+				$(domElement).append(potreeAnnotationContainer);
+			}
 		}
 
 		this.pointCloudLoadedCallback = args.onPointCloudLoaded || function () {};
@@ -277,7 +284,9 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 				// console.log("annotation added: " + e.annotation.title);
 
 					e.annotation.traverse(node => {
-						this.renderArea.appendChild(node.domElement[0]);
+
+						$("#potree_annotation_container").append(node.domElement);
+						//this.renderArea.appendChild(node.domElement[0]);
 						node.scene = this.scene;
 					});
 				};
@@ -969,12 +978,9 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 	}
 
 	updateAnnotations () {
-		if (!this.getShowAnnotations()) {
-			this.scene.annotations.traverseDescendants(descendant => {
-				descendant.display = false;
-			});
 
-			return;
+		if(!this.visibleAnnotations){
+			this.visibleAnnotations = new Set();
 		}
 
 		this.scene.annotations.updateBounds();
@@ -987,9 +993,11 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		let renderAreaHeight = this.renderer.getSize().height;
 
 		let viewer = this;
+
+		let visibleNow = [];
 		this.scene.annotations.traverse(annotation => {
+
 			if (annotation === this.scene.annotations) {
-				annotation.display = false;
 				return true;
 			}
 
@@ -1007,13 +1015,11 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			}
 
 			let distance = viewer.scene.cameraP.position.distanceTo(position);
-
 			let radius = annotation.boundingBox.getBoundingSphere().radius;
 
 			let screenPos = new THREE.Vector3();
 			let screenSize = 0;
 
-			/* eslint-disable no-lone-blocks */
 			{
 				// SCREEN POS
 				screenPos.copy(position).project(this.scene.getActiveCamera());
@@ -1029,30 +1035,54 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 					screenSize = radius * projFactor;
 				} else {
 					screenSize = Potree.utils.projectedRadiusOrtho(radius, viewer.scene.cameraO.projectionMatrix, renderAreaWidth, renderAreaHeight);
-				}				
+				}
 			}
 
-			element[0].style.left = screenPos.x + "px";
-			element[0].style.top = screenPos.y + "px";
-			
+			element.css("left", screenPos.x + "px");
+			element.css("top", screenPos.y + "px");
+			//element.css("display", "block");
+
 			let zIndex = 10000000 - distance * (10000000 / this.scene.cameraP.far);
 			if(annotation.descriptionVisible){
 				zIndex += 10000000;
 			}
+			element.css("z-index", parseInt(zIndex));
 
 			if(annotation.children.length > 0){
 				let expand = screenSize > annotation.collapseThreshold || annotation.boundingBox.containsPoint(this.scene.getActiveCamera().position);
 				annotation.expand = expand;
 
 				if (!expand) {
-					annotation.display = (screenPos.z >= -1 && screenPos.z <= 1);
+					//annotation.display = (screenPos.z >= -1 && screenPos.z <= 1);
+					let inFrustum = (screenPos.z >= -1 && screenPos.z <= 1);
+					if(inFrustum){
+						visibleNow.push(annotation);
+					}
 				}
 
 				return expand;
 			} else {
-				annotation.display = (screenPos.z >= -1 && screenPos.z <= 1);
+				//annotation.display = (screenPos.z >= -1 && screenPos.z <= 1);
+				let inFrustum = (screenPos.z >= -1 && screenPos.z <= 1);
+				if(inFrustum){
+					visibleNow.push(annotation);
+				}
 			}
+			
 		});
+
+		let notVisibleAnymore = new Set(this.visibleAnnotations);
+		for(let annotation of visibleNow){
+			annotation.display = true;
+			
+			notVisibleAnymore.delete(annotation);
+		}
+		this.visibleAnnotations = visibleNow;
+
+		for(let annotation of notVisibleAnymore){
+			annotation.display = false;
+		}
+
 	}
 
 	update(delta, timestamp){

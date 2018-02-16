@@ -55,7 +55,7 @@ Potree.NormalizationEDLMaterial = class NormalizationEDLMaterial extends THREE.S
 		if (this._neighbourCount !== value) {
 			this._neighbourCount = value;
 			this.neighbours = new Float32Array(this._neighbourCount * 2);
-			for (var c = 0; c < this._neighbourCount; c++) {
+			for (let c = 0; c < this._neighbourCount; c++) {
 				this.neighbours[2 * c + 0] = Math.cos(2 * c * Math.PI / this._neighbourCount);
 				this.neighbours[2 * c + 1] = Math.sin(2 * c * Math.PI / this._neighbourCount);
 			}

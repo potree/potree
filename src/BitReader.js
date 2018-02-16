@@ -19,11 +19,11 @@
  *
  */
 BitReader = function (buf) {
-	var buffer = new Uint32Array(buf);
-	var bitOffset = 0;
+	let buffer = new Uint32Array(buf);
+	let bitOffset = 0;
 
 	this.read = function (bits) {
-		var result;
+		let result;
 
 		// TODO val & leftGap seem to be duplicate code? Move out of if-block
 		if ((bitOffset % 32) + bits <= 32) {

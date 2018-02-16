@@ -48,7 +48,7 @@ LRU.prototype.touch = function (node) {
 		return;
 	}
 
-	var item;
+	let item;
 	if (this.items[node.id] == null) {
 		// add to list
 		item = new LRUItem(node);
@@ -92,35 +92,8 @@ LRU.prototype.touch = function (node) {
 	}
 };
 
-/// **
-// * removes the least recently used item from the list and returns it.
-// * if the list was empty, null will be returned.
-// */
-// LRU.prototype.remove = function remove(){
-//	if(this.first === null){
-//		return null;
-//	}
-//	var lru = this.first;
-//
-//	// if the lru list contains at least 2 items, the item after the least recently used elemnt will be the new lru item.
-//	if(lru.next !== null){
-//		this.first = lru.next;
-//		this.first.previous = null;
-//	}else{
-//		this.first = null;
-//		this.last = null;
-//	}
-//
-//	delete this.items[lru.node.id];
-//	this.elements--;
-//	this.numPoints -= lru.node.numPoints;
-//
-/// /	Logger.info("removed node: " + lru.node.id);
-//	return lru.node;
-// };
-
 LRU.prototype.remove = function remove (node) {
-	var lruItem = this.items[node.id];
+	let lruItem = this.items[node.id];
 	if (lruItem) {
 		if (this.elements === 1) {
 			this.first = null;
@@ -150,14 +123,14 @@ LRU.prototype.getLRUItem = function () {
 	if (this.first === null) {
 		return null;
 	}
-	var lru = this.first;
+	let lru = this.first;
 
 	return lru.node;
 };
 
 LRU.prototype.toString = function () {
-	var string = '{ ';
-	var curr = this.first;
+	let string = '{ ';
+	let curr = this.first;
 	while (curr !== null) {
 		string += curr.node.id;
 		if (curr.next !== null) {
@@ -176,26 +149,26 @@ LRU.prototype.freeMemory = function () {
 	}
 
 	while (this.numPoints > Potree.pointLoadLimit) {
-		var element = this.first;
-		var node = element.node;
+		let element = this.first;
+		let node = element.node;
 		this.disposeDescendants(node);
 	}
 };
 
 LRU.prototype.disposeDescendants = function (node) {
-	var stack = [];
+	let stack = [];
 	stack.push(node);
 	while (stack.length > 0) {
-		var current = stack.pop();
+		let current = stack.pop();
 
 		// console.log(current);
 
 		current.dispose();
 		this.remove(current);
 
-		for (var key in current.children) {
+		for (let key in current.children) {
 			if (current.children.hasOwnProperty(key)) {
-				var child = current.children[key];
+				let child = current.children[key];
 				if (child.loaded) {
 					stack.push(current.children[key]);
 				}

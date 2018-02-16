@@ -68,8 +68,8 @@ Potree.GeoJSONExporter = class GeoJSONExporter {
 		}
 
 		if (measurement.showArea) {
-			var point = measurement.areaLabel.position;
-			var labelArea = {
+			let point = measurement.areaLabel.position;
+			let labelArea = {
 				type: 'Feature',
 				geometry: {
 					type: 'Point',

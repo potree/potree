@@ -239,7 +239,8 @@ gulp.task('examples_page', function() {
 
 	{
 		for(let example of settings.examples){
-			exampleCode += `<a href="${example.url}" target="_blank" style="display: inline-block">
+			exampleCode += `
+			<a href="${example.url}" target="_blank" style="display: inline-block">
 				<div class="thumb" style="background-image: url('${example.thumb}'); ">
 					<div class="thumb-label">${example.label}</div>
 				</div>
@@ -268,6 +269,7 @@ gulp.task('examples_page', function() {
 
 			body{
 				background: #ECE9E9;
+				padding: 30px;
 			}
 
 			.thumb{

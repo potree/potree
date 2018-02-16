@@ -202,8 +202,8 @@ Potree.utils = class {
 			}
 		}
 
-		var skyGeometry = new THREE.CubeGeometry(5000, 5000, 5000);
-		var skybox = new THREE.Mesh(skyGeometry, materialArray);
+		let skyGeometry = new THREE.CubeGeometry(5000, 5000, 5000);
+		let skybox = new THREE.Mesh(skyGeometry, materialArray);
 
 		scene.add(skybox);
 

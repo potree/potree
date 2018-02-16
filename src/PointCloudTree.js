@@ -336,7 +336,7 @@ Potree.DEM = class DEM {
 			//
 			// { // create scene objects for debugging
 			//	//for(let demNode of targetNodes){
-			//		var bb = new Potree.Box3Helper(box);
+			//		let bb = new Potree.Box3Helper(box);
 			//		viewer.scene.scene.add(bb);
 			//
 			//		createDEMMesh(this, target);

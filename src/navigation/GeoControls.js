@@ -21,93 +21,113 @@
  *
  */
 
-Potree.GeoControls = function (object, domElement) {
-	this.object = object;
-	this.domElement = (domElement !== undefined) ? domElement : document;
+Potree.GeoControls = class GeoControls extends THREE.EventDispatcher{
 
-	// Set to false to disable this control
-	this.enabled = true;
+	constructor(object, domElement){
+		super();
 
-	// Set this to a THREE.SplineCurve3 instance
-	this.track = null;
-	// position on track in intervall [0,1]
-	this.trackPos = 0;
+		console.log("deprecated?");
 
-	this.rotateSpeed = 1.0;
-	this.moveSpeed = 10.0;
+		this.object = object;
+		this.domElement = (domElement !== undefined) ? domElement : document;
 
-	this.keys = {
-		LEFT: 37,
-		UP: 38,
-		RIGHT: 39,
-		BOTTOM: 40,
-		A: 'A'.charCodeAt(0),
-		S: 'S'.charCodeAt(0),
-		D: 'D'.charCodeAt(0),
-		W: 'W'.charCodeAt(0),
-		Q: 'Q'.charCodeAt(0),
-		E: 'E'.charCodeAt(0),
-		R: 'R'.charCodeAt(0),
-		F: 'F'.charCodeAt(0)
-	};
+		// Set to false to disable this control
+		this.enabled = true;
 
-	var scope = this;
+		// Set this to a THREE.SplineCurve3 instance
+		this.track = null;
+		// position on track in intervall [0,1]
+		this.trackPos = 0;
 
-	var rotateStart = new THREE.Vector2();
-	var rotateEnd = new THREE.Vector2();
-	var rotateDelta = new THREE.Vector2();
+		this.rotateSpeed = 1.0;
+		this.moveSpeed = 10.0;
 
-	var panStart = new THREE.Vector2();
-	var panEnd = new THREE.Vector2();
-	var panDelta = new THREE.Vector2();
-	var panOffset = new THREE.Vector3();
+		this.keys = {
+			LEFT: 37,
+			UP: 38,
+			RIGHT: 39,
+			BOTTOM: 40,
+			A: 'A'.charCodeAt(0),
+			S: 'S'.charCodeAt(0),
+			D: 'D'.charCodeAt(0),
+			W: 'W'.charCodeAt(0),
+			Q: 'Q'.charCodeAt(0),
+			E: 'E'.charCodeAt(0),
+			R: 'R'.charCodeAt(0),
+			F: 'F'.charCodeAt(0)
+		};
 
-	// TODO Unused: var offset = new THREE.Vector3();
+		let rotateStart = new THREE.Vector2();
+		let rotateEnd = new THREE.Vector2();
+		let rotateDelta = new THREE.Vector2();
 
-	var phiDelta = 0;
-	var thetaDelta = 0;
-	var pan = new THREE.Vector3();
+		let panStart = new THREE.Vector2();
+		let panEnd = new THREE.Vector2();
+		let panDelta = new THREE.Vector2();
+		let panOffset = new THREE.Vector3();
 
-	this.shiftDown = false;
+		// TODO Unused: let offset = new THREE.Vector3();
 
-	var lastPosition = new THREE.Vector3();
+		let phiDelta = 0;
+		let thetaDelta = 0;
+		let pan = new THREE.Vector3();
 
-	var STATE = { NONE: -1, ROTATE: 0, SPEEDCHANGE: 1, PAN: 2 };
+		this.shiftDown = false;
 
-	var state = STATE.NONE;
+		let lastPosition = new THREE.Vector3();
 
-	// for reset
-	this.position0 = this.object.position.clone();
+		let STATE = { NONE: -1, ROTATE: 0, SPEEDCHANGE: 1, PAN: 2 };
 
-	// events
+		let state = STATE.NONE;
 
-	var changeEvent = { type: 'change' };
-	var startEvent = { type: 'start' };
-	var endEvent = { type: 'end' };
+		// for reset
+		this.position0 = this.object.position.clone();
 
-	this.setTrack = function (track) {
+		// events
+
+		let changeEvent = { type: 'change' };
+		let startEvent = { type: 'start' };
+		let endEvent = { type: 'end' };
+
+		this.domElement.addEventListener('contextmenu', (event) => { event.preventDefault(); }, false);
+		this.domElement.addEventListener('mousedown', this.onMouseDown.bind(this), false);
+		this.domElement.addEventListener('mousewheel', this.onMouseWheel.bind(this), false);
+		this.domElement.addEventListener('DOMMouseScroll', this.onMouseWheel.bind(this), false); // firefox
+
+		this.domElement.addEventListener('mousemove', this.onMouseMove.bind(this), false);
+		this.domElement.addEventListener('mouseup', this.onMouseUp.bind(this), false);
+
+		if (this.domElement.tabIndex === -1) {
+			this.domElement.tabIndex = 2222;
+		}
+		this.domElement.addEventListener('keydown', this.onKeyDown.bind(this), false);
+		this.domElement.addEventListener('keyup', this.onKeyUp.bind(this), false);
+
+	}
+
+	setTrack(track) {
 		if (this.track !== track) {
 			this.track = track;
 			this.trackPos = null;
 		}
 	};
 
-	this.setTrackPos = function (trackPos, _preserveRelativeRotation) {
-		// TODO Unused: var preserveRelativeRotation = _preserveRelativeRotation || false;
+	setTrackPos(trackPos, _preserveRelativeRotation){
+		// TODO Unused: let preserveRelativeRotation = _preserveRelativeRotation || false;
 
-		var newTrackPos = Math.max(0, Math.min(1, trackPos));
-		var oldTrackPos = this.trackPos || newTrackPos;
+		let newTrackPos = Math.max(0, Math.min(1, trackPos));
+		let oldTrackPos = this.trackPos || newTrackPos;
 
-		var newTangent = this.track.getTangentAt(newTrackPos);
-		var oldTangent = this.track.getTangentAt(oldTrackPos);
+		let newTangent = this.track.getTangentAt(newTrackPos);
+		let oldTangent = this.track.getTangentAt(oldTrackPos);
 
 		if (newTangent.equals(oldTangent)) {
 			// no change in direction
 		} else {
-			var tangentDiffNormal = new THREE.Vector3().crossVectors(oldTangent, newTangent).normalize();
-			var angle = oldTangent.angleTo(newTangent);
-			var rot = new THREE.Matrix4().makeRotationAxis(tangentDiffNormal, angle);
-			var dir = this.object.getWorldDirection().clone();
+			let tangentDiffNormal = new THREE.Vector3().crossVectors(oldTangent, newTangent).normalize();
+			let angle = oldTangent.angleTo(newTangent);
+			let rot = new THREE.Matrix4().makeRotationAxis(tangentDiffNormal, angle);
+			let dir = this.object.getWorldDirection().clone();
 			dir = dir.applyMatrix4(rot);
 			let target = new THREE.Vector3().addVectors(this.object.position, dir);
 			this.object.lookAt(target);
@@ -117,7 +137,7 @@ Potree.GeoControls = function (object, domElement) {
 				type: 'path_relative_rotation',
 				angle: angle,
 				axis: tangentDiffNormal,
-				controls: scope
+				controls: this
 			};
 			this.dispatchEvent(event);
 		}
@@ -129,9 +149,9 @@ Potree.GeoControls = function (object, domElement) {
 
 		this.trackPos = newTrackPos;
 
-		// var pStart = this.track.getPointAt(oldTrackPos);
-		// var pEnd = this.track.getPointAt(newTrackPos);
-		// var pDiff = pEnd.sub(pStart);
+		// let pStart = this.track.getPointAt(oldTrackPos);
+		// let pEnd = this.track.getPointAt(newTrackPos);
+		// let pDiff = pEnd.sub(pStart);
 
 		if (newTrackPos !== oldTrackPos) {
 			let event = {
@@ -140,52 +160,52 @@ Potree.GeoControls = function (object, domElement) {
 			};
 			this.dispatchEvent(event);
 		}
-	};
+	}
 
-	this.stop = function(){
+	stop(){
 		
 	}
 
-	this.getTrackPos = function () {
+	getTrackPos(){
 		return this.trackPos;
-	};
+	}
 
-	this.rotateLeft = function (angle) {
+	rotateLeft(angle){
 		thetaDelta -= angle;
-	};
+	}
 
-	this.rotateUp = function (angle) {
+	rotateUp(angle){
 		phiDelta -= angle;
-	};
+	}
 
 	// pass in distance in world space to move left
-	this.panLeft = function (distance) {
-		var te = this.object.matrix.elements;
+	panLeft(distance){
+		let te = this.object.matrix.elements;
 
 		// get X column of matrix
 		panOffset.set(te[ 0 ], te[ 1 ], te[ 2 ]);
 		panOffset.multiplyScalar(-distance);
 
 		pan.add(panOffset);
-	};
+	}
 
 	// pass in distance in world space to move up
-	this.panUp = function (distance) {
-		var te = this.object.matrix.elements;
+	panUp(distance){
+		let te = this.object.matrix.elements;
 
 		// get Y column of matrix
 		panOffset.set(te[ 4 ], te[ 5 ], te[ 6 ]);
 		panOffset.multiplyScalar(distance);
 
 		pan.add(panOffset);
-	};
+	}
 
 	// pass in distance in world space to move forward
-	this.panForward = function (distance) {
+	panForward(distance){
 		if (this.track) {
 			this.setTrackPos(this.getTrackPos() - distance / this.track.getLength());
 		} else {
-			var te = this.object.matrix.elements;
+			let te = this.object.matrix.elements;
 
 			// get Y column of matrix
 			panOffset.set(te[ 8 ], te[ 9 ], te[ 10 ]);
@@ -194,37 +214,37 @@ Potree.GeoControls = function (object, domElement) {
 
 			pan.add(panOffset);
 		}
-	};
+	}
 
-	this.pan = function (deltaX, deltaY) {
-		var element = scope.domElement === document ? scope.domElement.body : scope.domElement;
+	pan(deltaX, deltaY){
+		let element = this.domElement === document ? this.domElement.body : this.domElement;
 
-		if (scope.object.fov !== undefined) {
+		if (this.object.fov !== undefined) {
 			// perspective
-			var position = scope.object.position;
-			var offset = position.clone();
-			var targetDistance = offset.length();
+			let position = this.object.position;
+			let offset = position.clone();
+			let targetDistance = offset.length();
 
 			// half of the fov is center to top of screen
-			targetDistance *= Math.tan((scope.object.fov / 2) * Math.PI / 180.0);
+			targetDistance *= Math.tan((this.object.fov / 2) * Math.PI / 180.0);
 
 			// we actually don't use screenWidth, since perspective camera is fixed to screen height
-			scope.panLeft(2 * deltaX * targetDistance / element.clientHeight);
-			scope.panUp(2 * deltaY * targetDistance / element.clientHeight);
-		} else if (scope.object.top !== undefined) {
+			this.panLeft(2 * deltaX * targetDistance / element.clientHeight);
+			this.panUp(2 * deltaY * targetDistance / element.clientHeight);
+		} else if (this.object.top !== undefined) {
 			// orthographic
-			scope.panLeft(deltaX * (scope.object.right - scope.object.left) / element.clientWidth);
-			scope.panUp(deltaY * (scope.object.top - scope.object.bottom) / element.clientHeight);
+			this.panLeft(deltaX * (this.object.right - this.object.left) / element.clientWidth);
+			this.panUp(deltaY * (this.object.top - this.object.bottom) / element.clientHeight);
 		} else {
 			// camera neither orthographic or perspective
 			console.warn('WARNING: GeoControls.js encountered an unknown camera type - pan disabled.');
 		}
-	};
+	}
 
-	this.update = function (delta) {
+	update(delta){
 		this.object.rotation.order = 'ZYX';
 
-		var object = this.object;
+		let object = this.object;
 
 		this.object = new THREE.Object3D();
 		this.object.position.copy(object.position);
@@ -232,10 +252,10 @@ Potree.GeoControls = function (object, domElement) {
 		this.object.updateMatrix();
 		this.object.updateMatrixWorld();
 
-		var position = this.object.position;
+		let position = this.object.position;
 
 		if (delta !== undefined) {
-			var multiplier = scope.shiftDown ? 4 : 1;
+			let multiplier = this.shiftDown ? 4 : 1;
 			if (this.moveRight) {
 				this.panLeft(-delta * this.moveSpeed * multiplier);
 			}
@@ -249,18 +269,18 @@ Potree.GeoControls = function (object, domElement) {
 				this.panForward(delta * this.moveSpeed * multiplier);
 			}
 			if (this.rotLeft) {
-				scope.rotateLeft(-0.5 * Math.PI * delta / scope.rotateSpeed);
+				this.rotateLeft(-0.5 * Math.PI * delta / this.rotateSpeed);
 			}
 			if (this.rotRight) {
-				scope.rotateLeft(0.5 * Math.PI * delta / scope.rotateSpeed);
+				this.rotateLeft(0.5 * Math.PI * delta / this.rotateSpeed);
 			}
 			if (this.raiseCamera) {
-				// scope.rotateUp( -0.5 * Math.PI * delta / scope.rotateSpeed );
-				scope.panUp(delta * this.moveSpeed * multiplier);
+				// this.rotateUp( -0.5 * Math.PI * delta / this.rotateSpeed );
+				this.panUp(delta * this.moveSpeed * multiplier);
 			}
 			if (this.lowerCamera) {
-				// scope.rotateUp( 0.5 * Math.PI * delta / scope.rotateSpeed );
-				scope.panUp(-delta * this.moveSpeed * multiplier);
+				// this.rotateUp( 0.5 * Math.PI * delta / this.rotateSpeed );
+				this.panUp(-delta * this.moveSpeed * multiplier);
 			}
 		}
 
@@ -284,15 +304,15 @@ Potree.GeoControls = function (object, domElement) {
 		}
 
 		this.object.updateMatrix();
-		var rot = new THREE.Matrix4().makeRotationY(thetaDelta);
-		var res = new THREE.Matrix4().multiplyMatrices(rot, this.object.matrix);
+		let rot = new THREE.Matrix4().makeRotationY(thetaDelta);
+		let res = new THREE.Matrix4().multiplyMatrices(rot, this.object.matrix);
 		this.object.quaternion.setFromRotationMatrix(res);
 
 		this.object.rotation.x += phiDelta;
 		this.object.updateMatrixWorld();
 
 		// send transformation proposal to listeners
-		var proposeTransformEvent = {
+		let proposeTransformEvent = {
 			type: 'proposeTransform',
 			oldPosition: object.position,
 			newPosition: this.object.position,
@@ -304,7 +324,7 @@ Potree.GeoControls = function (object, domElement) {
 		// check some counter proposals if transformation wasn't accepted
 		if (proposeTransformEvent.objections > 0) {
 			if (proposeTransformEvent.counterProposals.length > 0) {
-				var cp = proposeTransformEvent.counterProposals;
+				let cp = proposeTransformEvent.counterProposals;
 				this.object.position.copy(cp[0]);
 
 				proposeTransformEvent.objections = 0;
@@ -334,19 +354,19 @@ Potree.GeoControls = function (object, domElement) {
 		}
 
 		if (this.track) {
-			var pos = this.track.getPointAt(this.trackPos);
+			let pos = this.track.getPointAt(this.trackPos);
 			object.position.copy(pos);
 		}
-	};
+	}
 
-	this.reset = function () {
+	reset(){
 		state = STATE.NONE;
 
 		this.object.position.copy(this.position0);
-	};
+	}
 
-	function onMouseDown (event) {
-		if (scope.enabled === false) return;
+	onMouseDown(){
+		if (this.enabled === false) return;
 		event.preventDefault();
 
 		if (event.button === 0) {
@@ -360,137 +380,122 @@ Potree.GeoControls = function (object, domElement) {
 		} else if (event.button === 2) {
 			// state = STATE.PAN;
 			// panStart.set( event.clientX, event.clientY );
-			scope.moveForwardMouse = true;
+			this.moveForwardMouse = true;
 		}
 
-		// scope.domElement.addEventListener( 'mousemove', onMouseMove, false );
-		// scope.domElement.addEventListener( 'mouseup', onMouseUp, false );
-		scope.dispatchEvent(startEvent);
+		// this.domElement.addEventListener( 'mousemove', onMouseMove, false );
+		// this.domElement.addEventListener( 'mouseup', onMouseUp, false );
+		this.dispatchEvent(startEvent);
 	}
 
-	function onMouseMove (event) {
-		if (scope.enabled === false) return;
+	onMouseMove(event){
+		if (this.enabled === false) return;
 
 		event.preventDefault();
 
-		var element = scope.domElement === document ? scope.domElement.body : scope.domElement;
+		let element = this.domElement === document ? this.domElement.body : this.domElement;
 
 		if (state === STATE.ROTATE) {
 			rotateEnd.set(event.clientX, event.clientY);
 			rotateDelta.subVectors(rotateEnd, rotateStart);
 
 			// rotating across whole screen goes 360 degrees around
-			scope.rotateLeft(2 * Math.PI * rotateDelta.x / element.clientWidth * scope.rotateSpeed);
+			this.rotateLeft(2 * Math.PI * rotateDelta.x / element.clientWidth * this.rotateSpeed);
 
 			// rotating up and down along whole screen attempts to go 360, but limited to 180
-			scope.rotateUp(2 * Math.PI * rotateDelta.y / element.clientHeight * scope.rotateSpeed);
+			this.rotateUp(2 * Math.PI * rotateDelta.y / element.clientHeight * this.rotateSpeed);
 
 			rotateStart.copy(rotateEnd);
 		} else if (state === STATE.PAN) {
 			panEnd.set(event.clientX, event.clientY);
 			panDelta.subVectors(panEnd, panStart);
 			// panDelta.multiplyScalar(this.moveSpeed).multiplyScalar(0.0001);
-			panDelta.multiplyScalar(0.002).multiplyScalar(scope.moveSpeed);
+			panDelta.multiplyScalar(0.002).multiplyScalar(this.moveSpeed);
 
-			scope.pan(panDelta.x, panDelta.y);
+			this.pan(panDelta.x, panDelta.y);
 
 			panStart.copy(panEnd);
 		}
 	}
 
-	function onMouseUp (event) {
-		if (scope.enabled === false) return;
+	onMouseUp(event){
+		if (this.enabled === false) return;
 
 		// console.log(event.which);
 
 		if (event.button === 2) {
-			scope.moveForwardMouse = false;
+			this.moveForwardMouse = false;
 		} else {
-			// scope.domElement.removeEventListener( 'mousemove', onMouseMove, false );
-			// scope.domElement.removeEventListener( 'mouseup', onMouseUp, false );
-			scope.dispatchEvent(endEvent);
+			// this.domElement.removeEventListener( 'mousemove', onMouseMove, false );
+			// this.domElement.removeEventListener( 'mouseup', onMouseUp, false );
+			this.dispatchEvent(endEvent);
 			state = STATE.NONE;
 		}
 	}
 
-	function onMouseWheel (event) {
-		if (scope.enabled === false || scope.noZoom === true) return;
+	onMouseWheel(event){
+		if (this.enabled === false || this.noZoom === true) return;
 
 		event.preventDefault();
 
-		var direction = (event.detail < 0 || event.wheelDelta > 0) ? 1 : -1;
-		var moveSpeed = scope.moveSpeed + scope.moveSpeed * 0.1 * direction;
+		let direction = (event.detail < 0 || event.wheelDelta > 0) ? 1 : -1;
+		let moveSpeed = this.moveSpeed + this.moveSpeed * 0.1 * direction;
 		moveSpeed = Math.max(0.1, moveSpeed);
 
-		scope.setMoveSpeed(moveSpeed);
+		this.setMoveSpeed(moveSpeed);
 
-		scope.dispatchEvent(startEvent);
-		scope.dispatchEvent(endEvent);
+		this.dispatchEvent(startEvent);
+		this.dispatchEvent(endEvent);
 	}
 
-	this.setMoveSpeed = function (value) {
-		if (scope.moveSpeed !== value) {
-			scope.moveSpeed = value;
-			scope.dispatchEvent({
+	setMoveSpeed(value){
+		if (this.moveSpeed !== value) {
+			this.moveSpeed = value;
+			this.dispatchEvent({
 				type: 'move_speed_changed',
-				controls: scope
+				controls: this
 			});
 		}
-	};
+	}
 
-	function onKeyDown (event) {
-		if (scope.enabled === false) return;
+	onKeyDown(event){
+		if (this.enabled === false) return;
 
-		scope.shiftDown = event.shiftKey;
+		this.shiftDown = event.shiftKey;
 
 		switch (event.keyCode) {
-			case scope.keys.UP: scope.moveForward = true; break;
-			case scope.keys.BOTTOM: scope.moveBackward = true; break;
-			case scope.keys.LEFT: scope.moveLeft = true; break;
-			case scope.keys.RIGHT: scope.moveRight = true; break;
-			case scope.keys.W: scope.moveForward = true; break;
-			case scope.keys.S: scope.moveBackward = true; break;
-			case scope.keys.A: scope.moveLeft = true; break;
-			case scope.keys.D: scope.moveRight = true; break;
-			case scope.keys.Q: scope.rotLeft = true; break;
-			case scope.keys.E: scope.rotRight = true; break;
-			case scope.keys.R: scope.raiseCamera = true; break;
-			case scope.keys.F: scope.lowerCamera = true; break;
+			case this.keys.UP: this.moveForward = true; break;
+			case this.keys.BOTTOM: this.moveBackward = true; break;
+			case this.keys.LEFT: this.moveLeft = true; break;
+			case this.keys.RIGHT: this.moveRight = true; break;
+			case this.keys.W: this.moveForward = true; break;
+			case this.keys.S: this.moveBackward = true; break;
+			case this.keys.A: this.moveLeft = true; break;
+			case this.keys.D: this.moveRight = true; break;
+			case this.keys.Q: this.rotLeft = true; break;
+			case this.keys.E: this.rotRight = true; break;
+			case this.keys.R: this.raiseCamera = true; break;
+			case this.keys.F: this.lowerCamera = true; break;
 		}
 	}
 
-	function onKeyUp (event) {
-		scope.shiftDown = event.shiftKey;
+	onKeyUp(event){
+		this.shiftDown = event.shiftKey;
 
 		switch (event.keyCode) {
-			case scope.keys.W: scope.moveForward = false; break;
-			case scope.keys.S: scope.moveBackward = false; break;
-			case scope.keys.A: scope.moveLeft = false; break;
-			case scope.keys.D: scope.moveRight = false; break;
-			case scope.keys.UP: scope.moveForward = false; break;
-			case scope.keys.BOTTOM: scope.moveBackward = false; break;
-			case scope.keys.LEFT: scope.moveLeft = false; break;
-			case scope.keys.RIGHT: scope.moveRight = false; break;
-			case scope.keys.Q: scope.rotLeft = false; break;
-			case scope.keys.E: scope.rotRight = false; break;
-			case scope.keys.R: scope.raiseCamera = false; break;
-			case scope.keys.F: scope.lowerCamera = false; break;
+			case this.keys.W: this.moveForward = false; break;
+			case this.keys.S: this.moveBackward = false; break;
+			case this.keys.A: this.moveLeft = false; break;
+			case this.keys.D: this.moveRight = false; break;
+			case this.keys.UP: this.moveForward = false; break;
+			case this.keys.BOTTOM: this.moveBackward = false; break;
+			case this.keys.LEFT: this.moveLeft = false; break;
+			case this.keys.RIGHT: this.moveRight = false; break;
+			case this.keys.Q: this.rotLeft = false; break;
+			case this.keys.E: this.rotRight = false; break;
+			case this.keys.R: this.raiseCamera = false; break;
+			case this.keys.F: this.lowerCamera = false; break;
 		}
 	}
+}
 
-	this.domElement.addEventListener('contextmenu', function (event) { event.preventDefault(); }, false);
-	this.domElement.addEventListener('mousedown', onMouseDown, false);
-	this.domElement.addEventListener('mousewheel', onMouseWheel, false);
-	this.domElement.addEventListener('DOMMouseScroll', onMouseWheel, false); // firefox
-
-	scope.domElement.addEventListener('mousemove', onMouseMove, false);
-	scope.domElement.addEventListener('mouseup', onMouseUp, false);
-
-	if (this.domElement.tabIndex === -1) {
-		this.domElement.tabIndex = 2222;
-	}
-	scope.domElement.addEventListener('keydown', onKeyDown, false);
-	scope.domElement.addEventListener('keyup', onKeyUp, false);
-};
-
-Potree.GeoControls.prototype = Object.create(THREE.EventDispatcher.prototype);

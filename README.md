@@ -1,4 +1,3 @@
-[![Build Status](https://travis-ci.org/potree/potree.svg?branch=master)](https://travis-ci.org/potree/potree) [![js-happiness-style](https://img.shields.io/badge/code%20style-happiness-brightgreen.svg)](https://github.com/JedWatson/happiness) [![Gitter potree/Lobby](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/potree/Lobby)
 
 # README
 
@@ -31,13 +30,14 @@ Take a look at the [potree showcase](http://potree.org/wp/demo/) for some live e
 
 ## Compatibility
 
-| Browser              | OS      | Result        |
-| -------------------- |:-------:|:-------------:|
-| Chrome 56            | Win7    | works         |
-| Firefox 51           | Win7    | works         |
-| Internet Explorer 11 | Win7    | not supported |
-| Chrome               | Android | works         |
-| Opera                | Android | not supported |
+| Browser              | OS      | Result        |   |
+| -------------------- |:-------:|:-------------:|:-:|
+| Chrome 64            | Win10   | works         |   |
+| Firefox 58           | Win10   | works         |   |
+| Edge                 | Win10   | not supported |   |
+| Internet Explorer 11 | Win7    | not supported |   |
+| Chrome               | Android | works         | Reduced functionality due to unsupported WebGL extensions |
+| Opera                | Android | works         | Reduced functionality due to unsupported WebGL extensions |
 
 ## Credits
 

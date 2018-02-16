@@ -65,9 +65,9 @@ Potree.GLProgram = class GLProgram {
 			let n = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
 
 			for (let i = 0; i < n; i++) {
-				var uniform = gl.getActiveUniform(program, i);
-				var name = uniform.name;
-				var loc = gl.getUniformLocation(program, name);
+				let uniform = gl.getActiveUniform(program, i);
+				let name = uniform.name;
+				let loc = gl.getUniformLocation(program, name);
 
 				uniforms[name] = loc;
 			}

@@ -356,7 +356,7 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 		let _ray = ray.clone();
 		for (let i = 0; i < nodes.length; i++) {
 			let node = nodes[i];
-			// var inverseWorld = new THREE.Matrix4().getInverse(node.matrixWorld);
+			// let inverseWorld = new THREE.Matrix4().getInverse(node.matrixWorld);
 			// let sphere = node.getBoundingSphere().clone().applyMatrix4(node.sceneNode.matrixWorld);
 			let sphere = node.getBoundingSphere().clone().applyMatrix4(this.matrixWorld);
 
@@ -440,7 +440,7 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 	 *
 	 *
 	 * The return value is an array with all segments of the profile path
-	 *  var segment = {
+	 *  let segment = {
 	 * 		start: 	THREE.Vector3,
 	 * 		end: 	THREE.Vector3,
 	 * 		points: {}

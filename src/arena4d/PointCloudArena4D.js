@@ -38,7 +38,7 @@ Potree.PointCloudArena4DNode = class PointCloudArena4DNode extends Potree.PointC
 	}
 
 	toTreeNode (child) {
-		var geometryNode = null;
+		let geometryNode = null;
 
 		if (this.left === child) {
 			geometryNode = this.left;
@@ -50,8 +50,8 @@ Potree.PointCloudArena4DNode = class PointCloudArena4DNode extends Potree.PointC
 			return;
 		}
 
-		var node = new Potree.PointCloudArena4DNode();
-		var sceneNode = THREE.PointCloud(geometryNode.geometry, this.kdtree.material);
+		let node = new Potree.PointCloudArena4DNode();
+		let sceneNode = THREE.PointCloud(geometryNode.geometry, this.kdtree.material);
 		sceneNode.visible = false;
 
 		node.kdtree = this.kdtree;
@@ -63,7 +63,7 @@ Potree.PointCloudArena4DNode = class PointCloudArena4DNode extends Potree.PointC
 	}
 
 	getChildren () {
-		var children = [];
+		let children = [];
 
 		if (this.left) {
 			children.push(this.left);
@@ -77,9 +77,7 @@ Potree.PointCloudArena4DNode = class PointCloudArena4DNode extends Potree.PointC
 	}
 };
 
-Potree.PointCloudOctreeNode.prototype = Object.create(Potree.PointCloudTreeNode.prototype);
-
-Potree.PointCloudArena4D = class PointCloudArena4D extends Potree.PointCloudTree {
+Potree.PointCloudArena4D = class PointCloudArena4D extends Potree.PointCloudTree{
 	constructor (geometry) {
 		super();
 
@@ -140,8 +138,8 @@ Potree.PointCloudArena4D = class PointCloudArena4D extends Potree.PointCloudTree
 	}
 
 	toTreeNode (geometryNode, parent) {
-		var node = new Potree.PointCloudArena4DNode();
-		var sceneNode = new THREE.Points(geometryNode.geometry, this.material);
+		let node = new Potree.PointCloudArena4DNode();
+		let sceneNode = new THREE.Points(geometryNode.geometry, this.material);
 
 		sceneNode.frustumCulled = false;
 		sceneNode.onBeforeRender = (_this, scene, camera, geometry, material, group) => {
@@ -187,7 +185,7 @@ Potree.PointCloudArena4D = class PointCloudArena4D extends Potree.PointCloudTree
 			}
 		}
 
-		var disposeListener = function () {
+		let disposeListener = function () {
 			parent.sceneNode.remove(node.sceneNode);
 
 			if (parent.left === node) {
@@ -215,7 +213,7 @@ Potree.PointCloudArena4D = class PointCloudArena4D extends Potree.PointCloudTree
 		}
 
 		// material.uniforms.octreeSize.value = this.boundingBox.size().x;
-		var bbSize = this.boundingBox.getSize();
+		let bbSize = this.boundingBox.getSize();
 		material.bbSize = [bbSize.x, bbSize.y, bbSize.z];
 	}
 
@@ -224,7 +222,7 @@ Potree.PointCloudArena4D = class PointCloudArena4D extends Potree.PointCloudTree
 	}
 
 	hideDescendants (object) {
-		var stack = [];
+		let stack = [];
 		for (let i = 0; i < object.children.length; i++) {
 			let child = object.children[i];
 			if (child.visible) {
@@ -268,13 +266,13 @@ Potree.PointCloudArena4D = class PointCloudArena4D extends Potree.PointCloudTree
 	}
 
 	nodesOnRay (nodes, ray) {
-		var nodesOnRay = [];
+		let nodesOnRay = [];
 
-		var _ray = ray.clone();
-		for (var i = 0; i < nodes.length; i++) {
-			var node = nodes[i];
-			var sphere = node.getBoundingSphere().clone().applyMatrix4(node.sceneNode.matrixWorld);
-			// TODO Unused: var box = node.getBoundingBox().clone().applyMatrix4(node.sceneNode.matrixWorld);
+		let _ray = ray.clone();
+		for (let i = 0; i < nodes.length; i++) {
+			let node = nodes[i];
+			let sphere = node.getBoundingSphere().clone().applyMatrix4(node.sceneNode.matrixWorld);
+			// TODO Unused: let box = node.getBoundingBox().clone().applyMatrix4(node.sceneNode.matrixWorld);
 
 			if (_ray.intersectsSphere(sphere)) {
 				nodesOnRay.push(node);
@@ -515,10 +513,10 @@ Potree.PointCloudArena4D = class PointCloudArena4D extends Potree.PointCloudTree
 
 		// sort by level and number
 		let sort = function (a, b) {
-			var la = a.geometryNode.level;
-			var lb = b.geometryNode.level;
-			var na = a.geometryNode.number;
-			var nb = b.geometryNode.number;
+			let la = a.geometryNode.level;
+			let lb = b.geometryNode.level;
+			let na = a.geometryNode.number;
+			let nb = b.geometryNode.number;
 			if (la !== lb) return la - lb;
 			if (na < nb) return -1;
 			if (na > nb) return 1;

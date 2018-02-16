@@ -148,7 +148,7 @@ Potree.MapView = class {
 					}
 				} else {
 					let content = '';
-					for (var i = 0; i < features.length; i++) {
+					for (let i = 0; i < features.length; i++) {
 						let feature = features[i];
 
 						if (feature.source) {
@@ -600,7 +600,7 @@ Potree.MapView = class {
 		$.getJSON(url, (data) => {
 			let sources = data.sources;
 
-			for (var i = 0; i < sources.length; i++) {
+			for (let i = 0; i < sources.length; i++) {
 				let source = sources[i];
 				let name = source.name;
 				let bounds = source.bounds;
@@ -619,7 +619,7 @@ Potree.MapView = class {
 				let p3 = this.toMap.forward([bounds.max[0], bounds.max[1]]);
 				let p4 = this.toMap.forward([bounds.min[0], bounds.max[1]]);
 
-				// var feature = new ol.Feature({
+				// let feature = new ol.Feature({
 				//	'geometry': new ol.geom.LineString([p1, p2, p3, p4, p1])
 				// });
 				let feature = new ol.Feature({
@@ -668,17 +668,17 @@ Potree.MapView = class {
 		}
 		
 		// 
-		var camera = this.viewer.scene.getActiveCamera();
+		let camera = this.viewer.scene.getActiveCamera();
 
-		var scale = this.map.getView().getResolution();
-		var campos = camera.position;
-		var camdir = camera.getWorldDirection();
-		var sceneLookAt = camdir.clone().multiplyScalar(30 * scale).add(campos);
-		var geoPos = camera.position;
-		var geoLookAt = sceneLookAt;
-		var mapPos = new THREE.Vector2().fromArray(this.toMap.forward([geoPos.x, geoPos.y]));
-		var mapLookAt = new THREE.Vector2().fromArray(this.toMap.forward([geoLookAt.x, geoLookAt.y]));
-		var mapDir = new THREE.Vector2().subVectors(mapLookAt, mapPos).normalize();
+		let scale = this.map.getView().getResolution();
+		let campos = camera.position;
+		let camdir = camera.getWorldDirection();
+		let sceneLookAt = camdir.clone().multiplyScalar(30 * scale).add(campos);
+		let geoPos = camera.position;
+		let geoLookAt = sceneLookAt;
+		let mapPos = new THREE.Vector2().fromArray(this.toMap.forward([geoPos.x, geoPos.y]));
+		let mapLookAt = new THREE.Vector2().fromArray(this.toMap.forward([geoLookAt.x, geoLookAt.y]));
+		let mapDir = new THREE.Vector2().subVectors(mapLookAt, mapPos).normalize();
 
 		mapLookAt = mapPos.clone().add(mapDir.clone().multiplyScalar(30 * scale));
 		let mapLength = mapPos.distanceTo(mapLookAt);

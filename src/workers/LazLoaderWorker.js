@@ -5,17 +5,17 @@
 
 // importScripts('laz-perf.js');
 
-var instance = null; // laz-perf instance
+let instance = null; // laz-perf instance
 
 function readAs (buf, Type, offset, count) {
 	count = (count === undefined || count === 0 ? 1 : count);
-	var sub = buf.slice(offset, offset + Type.BYTES_PER_ELEMENT * count);
+	let sub = buf.slice(offset, offset + Type.BYTES_PER_ELEMENT * count);
 
-	var r = new Type(sub);
+	let r = new Type(sub);
 	if (count === undefined || count === 1)		{ return r[0]; }
 
-	var ret = [];
-	for (var i = 0; i < count; i++) {
+	let ret = [];
+	for (let i = 0; i < count; i++) {
 		ret.push(r[i]);
 	}
 
@@ -23,18 +23,18 @@ function readAs (buf, Type, offset, count) {
 }
 
 function parseLASHeader (arraybuffer) {
-	var o = {};
+	let o = {};
 
 	o.pointsOffset = readAs(arraybuffer, Uint32Array, 32 * 3);
 	o.pointsFormatId = readAs(arraybuffer, Uint8Array, 32 * 3 + 8);
 	o.pointsStructSize = readAs(arraybuffer, Uint16Array, 32 * 3 + 8 + 1);
 	o.pointsCount = readAs(arraybuffer, Uint32Array, 32 * 3 + 11);
 
-	var start = 32 * 3 + 35;
+	let start = 32 * 3 + 35;
 	o.scale = readAs(arraybuffer, Float64Array, start, 3); start += 24; // 8*3
 	o.offset = readAs(arraybuffer, Float64Array, start, 3); start += 24;
 
-	var bounds = readAs(arraybuffer, Float64Array, start, 6); start += 48; // 8*6;
+	let bounds = readAs(arraybuffer, Float64Array, start, 6); start += 48; // 8*6;
 	o.maxs = [bounds[0], bounds[2], bounds[4]];
 	o.mins = [bounds[1], bounds[3], bounds[5]];
 
@@ -46,8 +46,8 @@ function handleEvent (msg) {
 		case 'open':
 			try {
 				instance = new Module.LASZip();
-				var abInt = new Uint8Array(msg.arraybuffer);
-				var buf = Module._malloc(msg.arraybuffer.byteLength);
+				let abInt = new Uint8Array(msg.arraybuffer);
+				let buf = Module._malloc(msg.arraybuffer.byteLength);
 
 				instance.arraybuffer = msg.arraybuffer;
 				instance.buf = buf;
@@ -65,7 +65,7 @@ function handleEvent (msg) {
 		case 'header':
 			if (!instance) { throw new Error('You need to open the file before trying to read header'); }
 
-			var header = parseLASHeader(instance.arraybuffer);
+			let header = parseLASHeader(instance.arraybuffer);
 			header.pointsFormatId &= 0x3f;
 			instance.header = header;
 			postMessage({ type: 'header', status: 1, header: header });
@@ -75,23 +75,23 @@ function handleEvent (msg) {
 			if (!instance) { throw new Error('You need to open the file before trying to read stuff'); }
 
 			// msg.start
-			var count = msg.count;
-			var skip = msg.skip;
-			var o = instance;
+			let count = msg.count;
+			let skip = msg.skip;
+			let o = instance;
 
 			if (!o.header) { throw new Error('You need to query header before reading, I maintain state that way, sorry :('); }
 
-			var pointsToRead = Math.min(count * skip, o.header.pointsCount - o.readOffset);
-			var bufferSize = Math.ceil(pointsToRead / skip);
-			var pointsRead = 0;
+			let pointsToRead = Math.min(count * skip, o.header.pointsCount - o.readOffset);
+			let bufferSize = Math.ceil(pointsToRead / skip);
+			let pointsRead = 0;
 
-			var thisBuf = new Uint8Array(bufferSize * o.header.pointsStructSize);
-			var bufRead = Module._malloc(o.header.pointsStructSize);
-			for (var i = 0; i < pointsToRead; i++) {
+			let thisBuf = new Uint8Array(bufferSize * o.header.pointsStructSize);
+			let bufRead = Module._malloc(o.header.pointsStructSize);
+			for (let i = 0; i < pointsToRead; i++) {
 				o.getPoint(bufRead);
 
 				if (i % skip === 0) {
-					var a = new Uint8Array(Module.HEAPU8.buffer, bufRead, o.header.pointsStructSize);
+					let a = new Uint8Array(Module.HEAPU8.buffer, bufRead, o.header.pointsStructSize);
 					thisBuf.set(a, pointsRead * o.header.pointsStructSize, o.header.pointsStructSize);
 					pointsRead++;
 				}

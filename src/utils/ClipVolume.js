@@ -278,7 +278,7 @@ Potree.ClipVolume = class extends THREE.Object3D{
 		this.box.raycast(raycaster, is);
 	
 		if(is.length > 0){
-			var I = is[0];
+			let I = is[0];
 			intersects.push({
 				distance: I.distance,
 				object: this,

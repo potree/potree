@@ -11,7 +11,7 @@
 // to get a ready to use gradient array from a chroma.js gradient:
 // http://gka.github.io/chroma.js/
 //
-// var stops = [];
+// let stops = [];
 // for(let i = 0; i <= 10; i++){
 //	let range = chroma.scale(['yellow', 'navy']).mode('lch').domain([10,0])(i)._rgb
 //		.slice(0, 3)

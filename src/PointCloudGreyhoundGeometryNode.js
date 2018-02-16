@@ -68,9 +68,9 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.getLevel = function () {
 };
 
 Potree.PointCloudGreyhoundGeometryNode.prototype.getChildren = function () {
-	var children = [];
+	let children = [];
 
-	for (var i = 0; i < 8; ++i) {
+	for (let i = 0; i < 8; ++i) {
 		if (this.children[i]) {
 			children.push(this.children[i]);
 		}
@@ -80,14 +80,14 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.getChildren = function () {
 };
 
 Potree.PointCloudGreyhoundGeometryNode.prototype.getURL = function () {
-	var schema = this.pcoGeometry.schema;
+	let schema = this.pcoGeometry.schema;
 	let bounds = this.greyhoundBounds;
 
-	var boundsString =
+	let boundsString =
 				bounds.min.x + ',' + bounds.min.y + ',' + bounds.min.z + ',' +
 				bounds.max.x + ',' + bounds.max.y + ',' + bounds.max.z;
 
-	var url = '' + this.pcoGeometry.serverURL +
+	let url = '' + this.pcoGeometry.serverURL +
 				'read?depthBegin=' +
 				(this.baseLoaded ? (this.level + this.pcoGeometry.baseDepth) : 0) +
 				'&depthEnd=' + (this.level + this.pcoGeometry.baseDepth + 1) +
@@ -140,10 +140,10 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.loadPoints = function () {
 
 Potree.PointCloudGreyhoundGeometryNode.prototype.loadHierarchyThenPoints = function () {
 	// From Greyhound (Cartesian) ordering for the octree to Potree-default
-	var transform = [0, 2, 1, 3, 4, 6, 5, 7];
+	let transform = [0, 2, 1, 3, 4, 6, 5, 7];
 
-	var makeBitMask = function (node) {
-		var mask = 0;
+	let makeBitMask = function (node) {
+		let mask = 0;
 		Object.keys(node).forEach(function (key) {
 			if (key === 'swd') mask += 1 << transform[0];
 			else if (key === 'nwd') mask += 1 << transform[1];
@@ -157,10 +157,10 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.loadHierarchyThenPoints = funct
 		return mask;
 	};
 
-	var parseChildrenCounts = function (base, parentName, stack) {
-		var keys = Object.keys(base);
-		var child;
-		var childName;
+	let parseChildrenCounts = function (base, parentName, stack) {
+		let keys = Object.keys(base);
+		let child;
+		let childName;
 
 		keys.forEach(function (key) {
 			if (key === 'n') return;
@@ -204,26 +204,26 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.loadHierarchyThenPoints = funct
 	};
 
 	// Load hierarchy.
-	var callback = function (node, greyhoundHierarchy) {
-		var decoded = [];
+	let callback = function (node, greyhoundHierarchy) {
+		let decoded = [];
 		node.numPoints = greyhoundHierarchy.n;
 		parseChildrenCounts(greyhoundHierarchy, node.name, decoded);
 
-		var nodes = {};
+		let nodes = {};
 		nodes[node.name] = node;
-		var pgg = node.pcoGeometry;
+		let pgg = node.pcoGeometry;
 
-		for (var i = 0; i < decoded.length; i++) {
-			var name = decoded[i].name;
-			var numPoints = decoded[i].numPoints;
-			var index = parseInt(name.charAt(name.length - 1));
-			var parentName = name.substring(0, name.length - 1);
-			var parentNode = nodes[parentName];
-			var level = name.length - 1;
-			var boundingBox = Potree.GreyhoundLoader.createChildAABB(
+		for (let i = 0; i < decoded.length; i++) {
+			let name = decoded[i].name;
+			let numPoints = decoded[i].numPoints;
+			let index = parseInt(name.charAt(name.length - 1));
+			let parentName = name.substring(0, name.length - 1);
+			let parentNode = nodes[parentName];
+			let level = name.length - 1;
+			let boundingBox = Potree.GreyhoundLoader.createChildAABB(
 				parentNode.boundingBox, index);
 
-			var currentNode = new Potree.PointCloudGreyhoundGeometryNode(
+			let currentNode = new Potree.PointCloudGreyhoundGeometryNode(
 				name, pgg, boundingBox, node.scale, node.offset);
 
 			currentNode.level = level;
@@ -238,16 +238,16 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.loadHierarchyThenPoints = funct
 	};
 
 	if (this.level % this.pcoGeometry.hierarchyStepSize === 0) {
-		var depthBegin = this.level + this.pcoGeometry.baseDepth;
-		var depthEnd = depthBegin + this.pcoGeometry.hierarchyStepSize + 2;
+		let depthBegin = this.level + this.pcoGeometry.baseDepth;
+		let depthEnd = depthBegin + this.pcoGeometry.hierarchyStepSize + 2;
 
 		let bounds = this.greyhoundBounds;
 
-		var boundsString =
+		let boundsString =
 			bounds.min.x + ',' + bounds.min.y + ',' + bounds.min.z + ',' +
 			bounds.max.x + ',' + bounds.max.y + ',' + bounds.max.z;
 
-		var hurl = '' + this.pcoGeometry.serverURL +
+		let hurl = '' + this.pcoGeometry.serverURL +
 			'hierarchy?bounds=[' + boundsString + ']' +
 			'&depthBegin=' + depthBegin +
 			'&depthEnd=' + depthEnd;
@@ -261,14 +261,14 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.loadHierarchyThenPoints = funct
 			hurl += '&offset=[' + offset.x + ',' + offset.y + ',' + offset.z + ']';
 		}
 
-		var xhr = Potree.XHRFactory.createXMLHttpRequest();
+		let xhr = Potree.XHRFactory.createXMLHttpRequest();
 		xhr.open('GET', hurl, true);
 
-		var that = this;
+		let that = this;
 		xhr.onreadystatechange = function () {
 			if (xhr.readyState === 4) {
 				if (xhr.status === 200 || xhr.status === 0) {
-					var greyhoundHierarchy = JSON.parse(xhr.responseText) || { };
+					let greyhoundHierarchy = JSON.parse(xhr.responseText) || { };
 					callback(that, greyhoundHierarchy);
 				} else {
 					console.log(
@@ -298,8 +298,8 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.dispose = function () {
 		this.loaded = false;
 
 		// this.dispatchEvent( { type: 'dispose' } );
-		for (var i = 0; i < this.oneTimeDisposeHandlers.length; i++) {
-			var handler = this.oneTimeDisposeHandlers[i];
+		for (let i = 0; i < this.oneTimeDisposeHandlers.length; i++) {
+			let handler = this.oneTimeDisposeHandlers[i];
 			handler();
 		}
 		this.oneTimeDisposeHandlers = [];

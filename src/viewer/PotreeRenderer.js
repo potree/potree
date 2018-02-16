@@ -36,7 +36,7 @@ class PotreeRenderer {
 			pointcloud.material.useEDL = false;
 		}
 		
-		//var queryPC = Potree.startQuery("PointCloud", viewer.renderer.getContext());
+		//let queryPC = Potree.startQuery("PointCloud", viewer.renderer.getContext());
 		let activeCam = viewer.scene.getActiveCamera();
 		//viewer.renderer.render(viewer.scene.scenePointCloud, activeCam);
 		

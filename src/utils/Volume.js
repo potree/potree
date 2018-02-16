@@ -72,14 +72,14 @@ Potree.Volume = class extends THREE.Object3D {
 		this.add(this.label);
 
 		this.label.updateMatrixWorld = () => {
-			var volumeWorldPos = new THREE.Vector3();
+			let volumeWorldPos = new THREE.Vector3();
 			volumeWorldPos.setFromMatrixPosition(this.matrixWorld);
 			this.label.position.copy(volumeWorldPos);
 			this.label.updateMatrix();
 			this.label.matrixWorld.copy(this.label.matrix);
 			this.label.matrixWorldNeedsUpdate = false;
 
-			for (var i = 0, l = this.label.children.length; i < l; i++) {
+			for (let i = 0, l = this.label.children.length; i < l; i++) {
 				this.label.children[ i ].updateMatrixWorld(true);
 			}
 		};
@@ -126,7 +126,7 @@ Potree.Volume = class extends THREE.Object3D {
 		this.box.raycast(raycaster, is);
 
 		if (is.length > 0) {
-			var I = is[0];
+			let I = is[0];
 			intersects.push({
 				distance: I.distance,
 				object: this,

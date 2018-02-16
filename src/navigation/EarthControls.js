@@ -191,8 +191,8 @@ Potree.EarthControls = class EarthControls extends THREE.EventDispatcher {
 		let cameraTargetPosition = new THREE.Vector3().addVectors(I.location, d.multiplyScalar(targetRadius));
 		// TODO Unused: let controlsTargetPosition = I.location;
 
-		var animationDuration = 600;
-		var easing = TWEEN.Easing.Quartic.Out;
+		let animationDuration = 600;
+		let easing = TWEEN.Easing.Quartic.Out;
 
 		{ // animate
 			let value = {x: 0};

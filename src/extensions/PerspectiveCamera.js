@@ -10,7 +10,7 @@ THREE.PerspectiveCamera.prototype.zoomTo = function (node, factor) {
 
 	node.updateMatrixWorld();
 
-	var bs;
+	let bs;
 
 	if (node.boundingSphere) {
 		bs = node.boundingSphere;
@@ -20,18 +20,18 @@ THREE.PerspectiveCamera.prototype.zoomTo = function (node, factor) {
 		bs = node.boundingBox.getBoundingSphere();
 	}
 
-	var _factor = factor || 1;
+	let _factor = factor || 1;
 
 	bs = bs.clone().applyMatrix4(node.matrixWorld);
-	var radius = bs.radius;
-	var fovr = this.fov * Math.PI / 180;
+	let radius = bs.radius;
+	let fovr = this.fov * Math.PI / 180;
 
 	if (this.aspect < 1) {
 		fovr = fovr * this.aspect;
 	}
 
-	var distanceFactor = Math.abs(radius / Math.sin(fovr / 2)) * _factor;
+	let distanceFactor = Math.abs(radius / Math.sin(fovr / 2)) * _factor;
 
-	var offset = this.getWorldDirection().multiplyScalar(-distanceFactor);
+	let offset = this.getWorldDirection().multiplyScalar(-distanceFactor);
 	this.position.copy(bs.center.clone().add(offset));
 };

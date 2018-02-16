@@ -43,7 +43,7 @@ class RepRenderer {
 			return;
 		}
 
-		// var depthTextureExt = gl.getExtension("WEBGL_depth_texture");
+		// let depthTextureExt = gl.getExtension("WEBGL_depth_texture");
 
 		this.edlMaterial = new Potree.EyeDomeLightingMaterial();
 

@@ -80,25 +80,25 @@ Potree.Profile = class extends THREE.Object3D {
 
 		// edges & boxes
 		if (this.points.length > 1) {
-			var lineGeometry = new THREE.Geometry();
+			let lineGeometry = new THREE.Geometry();
 			lineGeometry.vertices.push(new THREE.Vector3(), new THREE.Vector3());
 			lineGeometry.colors.push(this.lineColor, this.lineColor, this.lineColor);
-			var lineMaterial = new THREE.LineBasicMaterial({
+			let lineMaterial = new THREE.LineBasicMaterial({
 				vertexColors: THREE.VertexColors,
 				linewidth: 2,
 				transparent: true,
 				opacity: 0.4
 			});
 			lineMaterial.depthTest = false;
-			var edge = new THREE.Line(lineGeometry, lineMaterial);
+			let edge = new THREE.Line(lineGeometry, lineMaterial);
 			edge.visible = false;
 
 			this.add(edge);
 			this.edges.push(edge);
 
-			var boxGeometry = new THREE.BoxGeometry(1, 1, 1);
-			var boxMaterial = new THREE.MeshBasicMaterial({color: 0xff0000, transparent: true, opacity: 0.2});
-			var box = new THREE.Mesh(boxGeometry, boxMaterial);
+			let boxGeometry = new THREE.BoxGeometry(1, 1, 1);
+			let boxMaterial = new THREE.MeshBasicMaterial({color: 0xff0000, transparent: true, opacity: 0.2});
+			let box = new THREE.Mesh(boxGeometry, boxMaterial);
 			box.visible = false;
 
 			this.add(box);
@@ -161,7 +161,7 @@ Potree.Profile = class extends THREE.Object3D {
 
 		this.remove(this.spheres[index]);
 
-		var edgeIndex = (index === 0) ? 0 : (index - 1);
+		let edgeIndex = (index === 0) ? 0 : (index - 1);
 		this.remove(this.edges[edgeIndex]);
 		this.edges.splice(edgeIndex, 1);
 		this.remove(this.boxes[edgeIndex]);
@@ -261,15 +261,15 @@ Potree.Profile = class extends THREE.Object3D {
 			}
 
 			if (leftBox) {
-				var start = leftVertex;
-				var end = point;
-				var length = start.clone().setZ(0).distanceTo(end.clone().setZ(0));
+				let start = leftVertex;
+				let end = point;
+				let length = start.clone().setZ(0).distanceTo(end.clone().setZ(0));
 				leftBox.scale.set(length, 1000000, this.width);
 				leftBox.up.set(0, 0, 1);
 
-				var center = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
-				var diff = new THREE.Vector3().subVectors(end, start);
-				var target = new THREE.Vector3(diff.y, -diff.x, 0);
+				let center = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
+				let diff = new THREE.Vector3().subVectors(end, start);
+				let target = new THREE.Vector3(diff.y, -diff.x, 0);
 
 				leftBox.position.set(0, 0, 0);
 				leftBox.lookAt(target);
@@ -283,7 +283,7 @@ Potree.Profile = class extends THREE.Object3D {
 		centroid.multiplyScalar(1 / this.points.length);
 
 		for (let i = 0; i < this.boxes.length; i++) {
-			var box = this.boxes[i];
+			let box = this.boxes[i];
 
 			box.position.z = min.z + (max.z - min.z) / 2;
 		}

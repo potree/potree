@@ -304,8 +304,8 @@ Potree.Annotation = class extends THREE.EventDispatcher {
 		}
 
 		let view = this.scene.view;
-		var animationDuration = 500;
-		var easing = TWEEN.Easing.Quartic.Out;
+		let animationDuration = 500;
+		let easing = TWEEN.Easing.Quartic.Out;
 
 		let endTarget;
 		if (this.cameraTarget) {
@@ -328,12 +328,12 @@ Potree.Annotation = class extends THREE.EventDispatcher {
 			//}
 
 			//{ // animate camera target
-			//	var camTargetDistance = camera.position.distanceTo(endTarget);
-			//	var target = new THREE.Vector3().addVectors(
+			//	let camTargetDistance = camera.position.distanceTo(endTarget);
+			//	let target = new THREE.Vector3().addVectors(
 			//		camera.position,
 			//		camera.getWorldDirection().clone().multiplyScalar(camTargetDistance)
 			//	);
-			//	var tween = new TWEEN.Tween(target).to(endTarget, animationDuration);
+			//	let tween = new TWEEN.Tween(target).to(endTarget, animationDuration);
 			//	tween.easing(easing);
 			//	tween.onUpdate(() => {
 			//		view.lookAt(target);

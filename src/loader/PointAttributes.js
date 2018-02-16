@@ -36,8 +36,8 @@ Potree.PointAttributeTypes = {
 	DATA_TYPE_UINT64: {ordinal: 9, size: 8}
 };
 
-var i = 0;
-for (var obj in Potree.PointAttributeTypes) {
+let i = 0;
+for (let obj in Potree.PointAttributeTypes) {
 	Potree.PointAttributeTypes[i] = Potree.PointAttributeTypes[obj];
 	i++;
 }
@@ -132,9 +132,9 @@ Potree.PointAttributes = function (pointAttributes) {
 	this.size = 0;
 
 	if (pointAttributes != null) {
-		for (var i = 0; i < pointAttributes.length; i++) {
-			var pointAttributeName = pointAttributes[i];
-			var pointAttribute = Potree.PointAttribute[pointAttributeName];
+		for (let i = 0; i < pointAttributes.length; i++) {
+			let pointAttributeName = pointAttributes[i];
+			let pointAttribute = Potree.PointAttribute[pointAttributeName];
 			this.attributes.push(pointAttribute);
 			this.byteSize += pointAttribute.byteSize;
 			this.size++;
@@ -149,8 +149,8 @@ Potree.PointAttributes.prototype.add = function (pointAttribute) {
 };
 
 Potree.PointAttributes.prototype.hasColors = function () {
-	for (var name in this.attributes) {
-		var pointAttribute = this.attributes[name];
+	for (let name in this.attributes) {
+		let pointAttribute = this.attributes[name];
 		if (pointAttribute.name === Potree.PointAttributeNames.COLOR_PACKED) {
 			return true;
 		}
@@ -160,8 +160,8 @@ Potree.PointAttributes.prototype.hasColors = function () {
 };
 
 Potree.PointAttributes.prototype.hasNormals = function () {
-	for (var name in this.attributes) {
-		var pointAttribute = this.attributes[name];
+	for (let name in this.attributes) {
+		let pointAttribute = this.attributes[name];
 		if (
 			pointAttribute === Potree.PointAttribute.NORMAL_SPHEREMAPPED ||
 			pointAttribute === Potree.PointAttribute.NORMAL_FLOATS ||

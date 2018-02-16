@@ -3,7 +3,7 @@
 // Copied from three.js: WebGLRenderer.js
 Potree.paramThreeToGL = function paramThreeToGL(_gl, p) {
 
-	var extension;
+	let extension;
 
 	if (p === THREE.RepeatWrapping) return _gl.REPEAT;
 	if (p === THREE.ClampToEdgeWrapping) return _gl.CLAMP_TO_EDGE;

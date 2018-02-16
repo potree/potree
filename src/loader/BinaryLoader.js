@@ -108,7 +108,7 @@ Potree.BinaryLoader.prototype.parse = function(node, buffer){
 		node.loaded = true;
 		node.loading = false;
 		node.estimatedSpacing = data.estimatedSpacing;
-		node.pcoGeometry.numNodesLoading--;
+		Potree.numNodesLoading--;
 	};
 
 	let message = {

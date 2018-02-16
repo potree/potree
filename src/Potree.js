@@ -14,6 +14,9 @@ Potree.pointBudget = 1 * 1000 * 1000;
 
 Potree.framenumber = 0;
 
+Potree.numNodesLoading = 0;
+Potree.maxNodesLoading = 4;
+
 Potree.Shaders = {};
 
 Potree.webgl = {

@@ -61,13 +61,13 @@ Potree.PointCloudArena4DGeometryNode = class PointCloudArena4DGeometryNode{
 			return;
 		}
 
-		if (Potree.PointCloudArena4DGeometryNode.nodesLoading >= 5) {
+		if (Potree.numNodesLoading >= Potree.maxNodesLoading) {
 			return;
 		}
 
 		this.loading = true;
 
-		Potree.PointCloudArena4DGeometryNode.nodesLoading++;
+		Potree.numNodesLoading++;
 
 		let url = this.pcoGeometry.url + '?node=' + this.number;
 		let xhr = Potree.XHRFactory.createXMLHttpRequest();
@@ -152,7 +152,7 @@ Potree.PointCloudArena4DGeometryNode = class PointCloudArena4DGeometryNode{
 			node.numPoints = numPoints;
 			node.loaded = true;
 			node.loading = false;
-			Potree.PointCloudArena4DGeometryNode.nodesLoading--;
+			Potree.numNodesLoading--;
 		};
 
 		xhr.send(null);
@@ -177,8 +177,6 @@ Potree.PointCloudArena4DGeometryNode = class PointCloudArena4DGeometryNode{
 		return this.numPoints;
 	}
 };
-
-Potree.PointCloudArena4DGeometryNode.nodesLoading = 0;
 
 
 

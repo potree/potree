@@ -5,7 +5,6 @@ Potree.PointCloudOctreeGeometry = function () {
 	this.spacing = 0;
 	this.boundingBox = null;
 	this.root = null;
-	this.numNodesLoading = 0;
 	this.nodes = null;
 	this.pointAttributes = null;
 	this.hierarchyStepSize = -1;
@@ -109,13 +108,13 @@ Potree.PointCloudOctreeGeometryNode.prototype.addChild = function (child) {
 };
 
 Potree.PointCloudOctreeGeometryNode.prototype.load = function () {
-	if (this.loading === true || this.loaded === true || this.pcoGeometry.numNodesLoading > 3) {
+	if (this.loading === true || this.loaded === true || Potree.numNodesLoading >= Potree.maxNodesLoading) {
 		return;
 	}
 
 	this.loading = true;
 
-	this.pcoGeometry.numNodesLoading++;
+	Potree.numNodesLoading++;
 
 	if (this.pcoGeometry.loader.version.equalOrHigher('1.5')) {
 		if ((this.level % this.pcoGeometry.hierarchyStepSize) === 0 && this.hasChildren) {

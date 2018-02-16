@@ -575,7 +575,7 @@ Potree.PointCloudArena4D = class PointCloudArena4D extends Potree.PointCloudTree
 
 	get progress () {
 		if (this.pcoGeometry.root) {
-			return Potree.PointCloudArena4DGeometryNode.nodesLoading > 0 ? 0 : 1;
+			return Potree.numNodesLoading > 0 ? 0 : 1;
 		} else {
 			return 0;
 		}

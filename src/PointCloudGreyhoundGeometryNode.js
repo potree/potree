@@ -118,12 +118,12 @@ Potree.PointCloudGreyhoundGeometryNode.prototype.load = function () {
 	if (
 		this.loading === true ||
 		this.loaded === true ||
-		this.pcoGeometry.numNodesLoading > 3) {
+		Potree.numNodesLoading >= Potree.maxNodesLoading) {
 		return;
 	}
 
 	this.loading = true;
-	this.pcoGeometry.numNodesLoading++;
+	Potree.numNodesLoading++;
 
 	if (
 		this.level % this.pcoGeometry.hierarchyStepSize === 0 &&

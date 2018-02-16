@@ -174,7 +174,7 @@ Potree.LasLazBatcher = class LasLazBatcher {
 			this.node.numPoints = numPoints;
 			this.node.loaded = true;
 			this.node.loading = false;
-			this.node.pcoGeometry.numNodesLoading--;
+			Potree.numNodesLoading--;
 			this.node.mean = new THREE.Vector3(...e.data.mean);
 
 			//debugger;

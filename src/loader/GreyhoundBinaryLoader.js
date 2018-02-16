@@ -109,7 +109,7 @@ Potree.GreyhoundBinaryLoader = class{
 			node.tightBoundingBox = tightBoundingBox;
 			node.loaded = true;
 			node.loading = false;
-			node.pcoGeometry.numNodesLoading--;
+			Potree.numNodesLoading--;
 		};
 
 		let bb = node.boundingBox;

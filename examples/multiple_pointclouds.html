@@ -118,6 +118,18 @@
 			// viewer.fitToScreen();
 		});
 
+		Potree.loadPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/archpro/heidentor/cloud.js", "Heidentor", function(e){
+			viewer.scene.addPointCloud(e.pointcloud);
+			
+			e.pointcloud.position.set(589817.920, 231358.010, 744.865);
+			e.pointcloud.scale.set(6, 6, 6);
+			e.pointcloud.rotation.z = -1.9;
+
+			let material = e.pointcloud.material;
+			material.size = 1;
+			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+		});
+
 	</script>
 	
 	

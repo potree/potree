@@ -260,7 +260,7 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 		material.uniforms.octreeSize.value = this.pcoGeometry.boundingBox.getSize().x;
 	}
 
-	computeVisibilityTextureData (nodes) {
+	computeVisibilityTextureData(nodes, camera){
 		
 		if(Potree.measureTimings) performance.mark("computeVisibilityTextureData-start");
 
@@ -281,6 +281,33 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 		};
 		nodes.sort(sort);
 
+		// code sample taken from three.js src/math/Ray.js
+		let v1 = new THREE.Vector3();
+		let intersectSphereBack = (ray, sphere) => {
+			v1.subVectors( sphere.center, ray.origin );
+			let tca = v1.dot( ray.direction );
+			let d2 = v1.dot( v1 ) - tca * tca;
+			let radius2 = sphere.radius * sphere.radius;
+
+			if(d2 > radius2){
+				return null;
+			}
+
+			let thc = Math.sqrt( radius2 - d2 );
+
+			// t1 = second intersect point - exit point on back of sphere
+			let t1 = tca + thc;
+
+			if(t1 < 0 ){
+				return null;
+			}
+
+			return t1;
+		};
+
+		let lodRanges = new Map();
+		let leafNodeLodRanges = new Map();
+
 		for (let i = 0; i < nodes.length; i++) {
 			let node = nodes[i];
 
@@ -296,13 +323,12 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 			}
 
 			let spacing = node.geometryNode.estimatedSpacing;
-			let parentSpacing = node.geometryNode.parent ? node.geometryNode.parent.estimatedSpacing : spacing;
-			let spacingFactor = parentSpacing / spacing;
+			let isLeafNode;
 
 			data[i * 4 + 0] = 0;
 			data[i * 4 + 1] = 0;
 			data[i * 4 + 2] = 0;
-			data[i * 4 + 3] = Math.max(0, Math.min(255, Math.round(spacingFactor)));
+			data[i * 4 + 3] = node.getLevel();
 			for (let j = 0; j < children.length; j++) {
 				let child = children[j];
 				let index = parseInt(child.geometryNode.name.substr(-1));
@@ -310,12 +336,81 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 
 				if (j === 0) {
 					let vArrayIndex = nodes.indexOf(child, i);
-					//let vArrayIndex = child._index;
+					
 					data[i * 4 + 1] = (vArrayIndex - i) >> 8;
 					data[i * 4 + 2] = (vArrayIndex - i) % 256;
 				}
 			}
+
+			{
+				let bBox = node.getBoundingBox().clone();
+				bBox.applyMatrix4(camera.matrixWorldInverse);
+
+				let bSphere = bBox.getBoundingSphere();
+
+				//let distance = center.distanceTo(camera.position);
+				let ray = new THREE.Ray(camera.position, camera.getWorldDirection());
+				let distance = intersectSphereBack(ray, bSphere);
+				let distance2 = bSphere.center.distanceTo(camera.position) + bSphere.radius;
+				if(distance === null){
+					distance = distance2;
+				}
+				distance = Math.max(distance, distance2);
+
+				if(!lodRanges.has(node.getLevel())){
+					lodRanges.set(node.getLevel(), distance);
+				}else{
+					let prevDistance = lodRanges.get(node.getLevel());
+					let newDistance = Math.max(prevDistance, distance);
+					lodRanges.set(node.getLevel(), newDistance);
+				}
+
+				if(!node.geometryNode.hasChildren){
+					let value = {
+						distance: distance,
+						i: i
+					};
+					leafNodeLodRanges.set(node, value);
+				}
+				
+			}
 		}
+
+		for(let [node, value] of leafNodeLodRanges){
+			let level = node.getLevel();
+			let distance = value.distance;
+			let i = value.i;
+			
+
+			//if(node.name === "r6646"){
+			//	var a = 10;
+			//	a = 10 * 10;
+			//}
+
+
+			for(let [lod, range] of lodRanges){
+				if(distance < range * 1.2){
+					data[i * 4 + 3] = lod;
+				}
+			}
+	
+		}
+
+		//{
+		//	if(!window.debugSizes){
+		//		let msg = viewer.postMessage("abc");
+		//		window.debugSizes = { msg: msg};
+		//	}
+
+		//	let msg = window.debugSizes.msg;
+
+		//	let txt = ``;
+		//	for(let entry of lodRanges){
+		//		txt += `${entry[0]}: ${entry[1]}<br>`;
+		//	}
+
+		//	msg.setMessage(txt);
+		//}
 		
 		if(Potree.measureTimings){
 			performance.mark("computeVisibilityTextureData-end");

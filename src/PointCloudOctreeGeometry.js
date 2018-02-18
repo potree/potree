@@ -216,6 +216,7 @@ Potree.PointCloudOctreeGeometryNode = class PointCloudOctreeGeometryNode extends
 						callback(node, hbuffer);
 					} else {
 						console.log('Failed to load file! HTTP status: ' + xhr.status + ', file: ' + hurl);
+						Potree.numNodesLoading--;
 					}
 				}
 			};

@@ -802,13 +802,28 @@ Potree.Renderer = class Renderer {
 		//	}
 
 		//nodes = nodes.filter(node => {
-		//	//return ["r", 
-		//	//	"r3", "r1", "r0", "r2", 
-		//	//	"r30", "r21", "r03", "r02", "r01", "r12", "r20", "r15", "r05", "r14", "r00", "r10", "r04"].includes(node.name)
+		//	return ["r", "r6", "r66", "r664", "r6646", "r6644", "r64", "r646", "r4", "r66446", "r6642", "r660", "r62", "r2", "r6640"].includes(node.name)});
 
-		//	return ["r", 
-		//		"r06", "r07"].includes(node.name)
-		//});
+		//nodes = nodes.filter(node => {
+		//	return [
+		//		//"r", 
+		//		"r6", 
+		//		"r2", 
+		//		"r4", 
+		//		"r64", 
+		//		"r66", 
+		//		"r62", 
+		//		"r664", 
+		//		"r646", 
+		//		"r660", 
+		//		"r6646", 
+		//		//"r6644", 
+		//		//"r6642", 
+		//		//"r6640",
+		//		//"r66446", 
+		//		].includes(node.name)});
+
+	
 
 
 		if (material.pointSizeType >= 0) {
@@ -816,7 +831,7 @@ Potree.Renderer = class Renderer {
 				material.pointColorType === Potree.PointColorType.LOD) {
 
 				let vnNodes = (params.vnTextureNodes != null) ? params.vnTextureNodes : nodes;
-				visibilityTextureData = octree.computeVisibilityTextureData(vnNodes);
+				visibilityTextureData = octree.computeVisibilityTextureData(vnNodes, camera);
 
 				const vnt = material.visibleNodesTexture;
 				const data = vnt.image.data;
@@ -825,6 +840,27 @@ Potree.Renderer = class Renderer {
 
 			}
 		}
+
+		//nodes = nodes.filter(node => {
+		//	return [
+		//		"r", 
+		//		"r6", 
+		//		"r2", 
+		//		"r4", 
+		//		"r64", 
+		//		"r66", 
+		//		"r62", 
+		//		"r664", 
+		//		"r646", 
+		//		"r660", 
+
+		//		"r6646", 
+
+		//		"r6644", 
+		//		"r6642", 
+		//		"r6640",
+		//		"r66446", 
+		//		].includes(node.name)});
 
 		{ // UPDATE SHADER AND TEXTURES
 			if (!this.shaders.has(material)) {

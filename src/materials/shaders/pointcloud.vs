@@ -223,7 +223,8 @@ float getLOD(){
 			depth++;
 		}else{
 			// no more visible child nodes at this position
-			return depth;
+			return value.a * 255.0;
+			//return depth;
 		}
 		
 		offset = offset + (vec3(1.0, 1.0, 1.0) * nodeSizeAtLevel * 0.5) * index3d;

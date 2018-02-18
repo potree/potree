@@ -667,7 +667,7 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 			let child = children[i];
 
 			let weight = 0; 
-			if(camera.isPerspectiveCamera) {			
+			if(camera.isPerspectiveCamera){
 				let sphere = child.getBoundingSphere();
 				let center = sphere.center;
 				//let distance = sphere.center.distanceTo(camObjPos);

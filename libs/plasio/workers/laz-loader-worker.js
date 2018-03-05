@@ -3,7 +3,7 @@
 
 //importScripts('laz-perf.js');
 
-var instance = null; // laz-perf instance
+let instance = null; // laz-perf instance
 
 function readAs(buf, Type, offset, count) {
 	count = (count === undefined || count === 0 ? 1 : count);
@@ -57,8 +57,8 @@ function handleEvent(msg) {
 				instance.readOffset = 0;
 
 				postMessage({ type: "open", status: 1});
-			}
-			catch(e) {
+			}catch(e) {
+				debugger;
 				postMessage({ type: "open", status: 0, details: e });
 			}
 			break;
@@ -89,7 +89,8 @@ function handleEvent(msg) {
 			var bufferSize = Math.ceil(pointsToRead / skip);
 			var pointsRead = 0;
 
-			var this_buf = new Uint8Array(bufferSize * o.header.pointsStructSize);
+			let buffer = new ArrayBuffer(bufferSize * o.header.pointsStructSize);
+			let this_buf = new Uint8Array(buffer);
 			var buf_read = Module._malloc(o.header.pointsStructSize);
 			for (var i = 0 ; i < pointsToRead ; i ++) {
 				o.getPoint(buf_read);
@@ -102,23 +103,30 @@ function handleEvent(msg) {
 
 				o.readOffset ++;
 			}
+			Module._free(buf_read);
+
+			let transferables = [buffer];
 
 			postMessage({
 				type: 'header',
 				status: 1,
-				buffer: this_buf.buffer,
+				buffer: buffer,
 				count: pointsRead,
 				hasMoreData: o.readOffset < o.header.pointsCount
-			});
+			}, transferables);
 
 			break;
 
 
 		case "close":
 			if (instance !== null) {
+				Module._free(instance.buf);
 				instance.delete();
 				instance = null;
+			}else{
+				debugger;
 			}
+			
 			postMessage({ type: "close", status: 1});
 			break;
 	}
@@ -128,6 +136,7 @@ onmessage = function(event) {
 	try {
 		handleEvent(event.data);
 	} catch(e) {
+		debugger;
 		postMessage({type: event.data.type, status: 0, details: e});
 	}
 };

@@ -1,15 +1,15 @@
 
-Potree.WorkerPool = class WorkerPool {
-	constructor () {
+Potree.WorkerPool = class WorkerPool{
+	constructor(){
 		this.workers = {};
 	}
 
-	getWorker (url) {
-		if (!this.workers[url]) {
+	getWorker(url){
+		if (!this.workers[url]){
 			this.workers[url] = [];
 		}
 
-		if (this.workers[url].length === 0) {
+		if (this.workers[url].length === 0){
 			let worker = new Worker(url);
 			this.workers[url].push(worker);
 		}
@@ -19,7 +19,7 @@ Potree.WorkerPool = class WorkerPool {
 		return worker;
 	}
 
-	returnWorker (url, worker) {
+	returnWorker(url, worker){
 		this.workers[url].push(worker);
 	}
 };

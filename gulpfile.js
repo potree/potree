@@ -12,6 +12,8 @@ const through = require('through');
 const os = require('os');
 const File = gutil.File;
 const connect = require('gulp-connect');
+const watch = require('glob-watcher');
+
 
 let server;
 
@@ -155,7 +157,6 @@ gulp.task("workers", function(){
 		
 		gulp.src(workers[workerName])
 			.pipe(concat(`${workerName}.js`))
-			.pipe(size({showFiles: true}))
 			.pipe(gulp.dest('build/potree/workers'));
 		
 	}
@@ -165,19 +166,16 @@ gulp.task("workers", function(){
 gulp.task("shaders", function(){
 	return gulp.src(shaders)
 		.pipe(encodeShader('shaders.js', "Potree.Shader"))
-		.pipe(size({showFiles: true}))
 		.pipe(gulp.dest('build/shaders'));
 });
 
 gulp.task("scripts", ['workers','shaders', "icons_viewer", "examples_page"], function(){
 	gulp.src(paths.potree)
 		.pipe(concat('potree.js'))
-		.pipe(size({showFiles: true}))
 		.pipe(gulp.dest('build/potree'));
 
 	gulp.src(paths.laslaz)
 		.pipe(concat('laslaz.js'))
-		.pipe(size({showFiles: true}))
 		.pipe(gulp.dest('build/potree'));
 
 	gulp.src(paths.html)
@@ -354,7 +352,7 @@ gulp.task('examples_page', function() {
 		if(err){
 			console.log(err);
 		}else{
-			console.log(`examples/page.html`);
+			console.log(`created examples/page.html`);
 		}
 	});
 
@@ -426,8 +424,8 @@ gulp.task('icons_viewer', function() {
 gulp.task('watch', function() {
 	gulp.run("build");
 	gulp.run("webserver");
-	
-	gulp.watch([
+
+	let watchlist = [
 		'src/**/*.js', 
 		'src/**/*.css', 
 		'src/**/*.html', 
@@ -435,7 +433,28 @@ gulp.task('watch', function() {
 		'src/**/*.fs', 
 		'resources/**/*',
 		'examples//**/*.json',
-	], ["build"]);
+	];
+
+	let blacklist = [
+		'resources/icons/index.html'
+	];
+	
+	let watcher = watch(watchlist, cb => {
+
+		{ // abort if blacklisted
+			let file = cb.path.replace(/\\/g, "/");
+			let isOnBlacklist = blacklist.some(blacklisted => file.indexOf(blacklisted) >= 0);
+			if(isOnBlacklist){
+				return;
+			}
+		}
+
+		console.log("===============================");
+		console.log("watch event:");
+		console.log(cb);
+		gulp.run("build");	
+	});
+
 });
 
 
@@ -508,7 +527,7 @@ let encodeShader = function(fileName, varname, opt){
 			let file = files[i];
 
 			let fname = file.path.replace(file.base, "");
-			console.log(fname);
+			//console.log(fname);
 
 			let content = new Buffer(b).toString();
 			

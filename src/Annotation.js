@@ -61,7 +61,7 @@ Potree.Annotation = class extends THREE.EventDispatcher {
 
 		this.elTitlebar = this.domElement.find('.annotation-titlebar');
 		this.elTitle = this.elTitlebar.find('.annotation-label');
-		this.elTitle.append(this._title);;
+		this.elTitle.append(this._title);
 		this.elDescription = this.domElement.find('.annotation-description');
 		this.elDescriptionClose = this.elDescription.find('.annotation-description-close');
 		// this.elDescriptionContent = this.elDescription.find(".annotation-description-content");
@@ -187,8 +187,8 @@ Potree.Annotation = class extends THREE.EventDispatcher {
 		}
 
 		this._title = title;
-		this.elTitlebar.find('.annotation-label');
-		this.elTitle.html(this._title);
+		this.elTitle.empty();
+		this.elTitle.append(this._title);
 	}
 
 	get description () {
@@ -203,7 +203,8 @@ Potree.Annotation = class extends THREE.EventDispatcher {
 		this._description = description;
 
 		const elDescriptionContent = this.elDescription.find(".annotation-description-content");
-		elDescriptionContent.html(this._description);
+		elDescriptionContent.empty();
+		elDescriptionContent.append(this._description);
 	}
 
 	add (annotation) {

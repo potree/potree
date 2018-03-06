@@ -11,8 +11,8 @@ Potree.Annotation = class extends THREE.EventDispatcher {
 		};
 
 		this.scene = null;
-		this.title = args.title || 'No Title';
-		this.description = args.description || '';
+		this._title = args.title || 'No Title';
+		this._description = args.description || '';
 
 		if (!args.position) {
 			this.position = null;
@@ -54,14 +54,14 @@ Potree.Annotation = class extends THREE.EventDispatcher {
 					<span class="annotation-description-close">
 						<img src="${iconClose}" width="16px">
 					</span>
-					<span class="annotation-description-content">${this.description}</span>
+					<span class="annotation-description-content">${this._description}</span>
 				</div>
 			</div>
 		`);
 
 		this.elTitlebar = this.domElement.find('.annotation-titlebar');
 		this.elTitle = this.elTitlebar.find('.annotation-label');
-		this.elTitle.append(this.title);;
+		this.elTitle.append(this._title);;
 		this.elDescription = this.domElement.find('.annotation-description');
 		this.elDescriptionClose = this.elDescription.find('.annotation-description-close');
 		// this.elDescriptionContent = this.elDescription.find(".annotation-description-content");
@@ -101,7 +101,7 @@ Potree.Annotation = class extends THREE.EventDispatcher {
 			e => this.elDescriptionClose.css('opacity', '0.5')
 		);
 		this.elDescriptionClose.click(e => this.setHighlighted(false));
-		// this.elDescriptionContent.html(this.description);
+		// this.elDescriptionContent.html(this._description);
 
 		this.domElement.mouseenter(e => this.setHighlighted(true));
 		this.domElement.mouseleave(e => this.setHighlighted(false));
@@ -175,6 +175,35 @@ Potree.Annotation = class extends THREE.EventDispatcher {
 		}
 
 		this._expand = expand;
+	}
+
+	get title () {
+		return this._title;
+	}
+
+	set title (title) {
+		if (this._title === title) {
+			return;
+		}
+
+		this._title = title;
+		this.elTitlebar.find('.annotation-label');
+		this.elTitle.html(this._title);
+	}
+
+	get description () {
+		return this._description;
+	}
+
+	set description (description) {
+		if (this._description === description) {
+			return;
+		}
+
+		this._description = description;
+
+		const elDescriptionContent = this.elDescription.find(".annotation-description-content");
+		elDescriptionContent.html(this._description);
 	}
 
 	add (annotation) {
@@ -271,7 +300,7 @@ Potree.Annotation = class extends THREE.EventDispatcher {
 			this.elTitlebar.css('box-shadow', '0 0 5px #fff');
 			this.domElement.css('z-index', '1000');
 
-			if (this.description) {
+			if (this._description) {
 				this.descriptionVisible = true;
 				this.elDescription.fadeIn(200);
 				this.elDescription.css('position', 'relative');
@@ -379,6 +408,6 @@ Potree.Annotation = class extends THREE.EventDispatcher {
 	};
 
 	toString () {
-		return 'Annotation: ' + this.title;
+		return 'Annotation: ' + this._title;
 	}
 };

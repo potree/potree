@@ -589,6 +589,8 @@ Potree.TransformationTool = class TransformationTool {
 			let plane = new THREE.Plane().setFromNormalAndCoplanarPoint(normal, drag.intersectionStart);
 			drag.dragPlane = plane;
 			drag.pivot = drag.intersectionStart;
+
+			//Potree.utils.debugSphere(viewer.scene.scene, drag.pivot, 0.05);
 		}else{
 			handle = drag.handle;
 		}
@@ -636,6 +638,7 @@ Potree.TransformationTool = class TransformationTool {
 				}
 
 				drag.pivot.copy(iOnLine);
+				//Potree.utils.debugSphere(viewer.scene.scene, drag.pivot, 0.05);
 			}
 		}
 	}
@@ -739,8 +742,11 @@ Potree.TransformationTool = class TransformationTool {
 			let domElement = this.viewer.renderer.domElement;
 			let mouse = this.viewer.inputHandler.mouse;
 
+			let center = selected.boundingBox.getCenter().clone().applyMatrix4(selected.matrixWorld);
+
 			this.scene.scale.copy(selected.boundingBox.getSize().multiply(selected.scale));
-			this.scene.position.copy(selected.position);
+			this.scene.position.copy(center);
+			//this.scene.position.copy(selected.position);
 			this.scene.rotation.copy(selected.rotation);
 
 			{
@@ -866,7 +872,7 @@ Potree.TransformationTool = class TransformationTool {
 					axisScale([0, 0, 1]),
 				);
 
-				this.frame.scale.copy(scale);	
+				//this.frame.scale.copy(scale);	
 			}
 
 		}else{

@@ -109,6 +109,7 @@ Potree.TransformationTool = class TransformationTool {
 			let handle = this.scaleHandles[handleName];
 			let node = handle.node;
 			this.scene.add(node);
+			node.position.set(...handle.alignment).multiplyScalar(0.5);
 
 			let material = new THREE.MeshBasicMaterial({
 				color: handle.color,
@@ -175,32 +176,59 @@ Potree.TransformationTool = class TransformationTool {
 	}
 
 	initializeFocusHandles(){
-		let sgBox = new THREE.BoxGeometry(1, 1, 1);
+		//let sgBox = new THREE.BoxGeometry(1, 1, 1);
+		let sgPlane = new THREE.PlaneGeometry(4, 4, 1, 1);
 		let sgLowPolySphere = new THREE.SphereGeometry(1, 16, 16);
+
+		let texture = new THREE.TextureLoader().load(`${Potree.resourcePath}/icons/eye_2.png`);
 
 		for(let handleName of Object.keys(this.focusHandles)){
 			let handle = this.focusHandles[handleName];
 			let node = handle.node;
 			this.scene.add(node);
+			let align = handle.alignment;
+
+			//node.lookAt(new THREE.Vector3().addVectors(node.position, new THREE.Vector3(...align)));
+			node.lookAt(new THREE.Vector3(...align));
+
+			let off = 0.8;
+			if(align[0] === 1){
+				node.position.set(1, off, -off).multiplyScalar(0.5);
+				node.rotation.z = Math.PI / 2;
+			}else if(align[0] === -1){
+				node.position.set(-1, -off, -off).multiplyScalar(0.5);
+				node.rotation.z = Math.PI / 2;
+			}else if(align[1] === 1){
+				node.position.set(-off, 1, -off).multiplyScalar(0.5);
+				node.rotation.set(Math.PI / 2, Math.PI, 0.0);
+			}else if(align[1] === -1){
+				node.position.set(off, -1, -off).multiplyScalar(0.5);
+				node.rotation.set(Math.PI / 2, 0.0, 0.0);
+			}else if(align[2] === 1){
+				node.position.set(off, off, 1).multiplyScalar(0.5);
+			}else if(align[2] === -1){
+				node.position.set(-off, off, -1).multiplyScalar(0.5);
+			}
 
 			let material = new THREE.MeshBasicMaterial({
 				color: handle.color,
 				opacity: 0,
-				transparent: true
-				});
+				transparent: true,
+				map: texture
+			});
 
-			let outlineMaterial = new THREE.MeshBasicMaterial({
-				color: 0x000000, 
-				side: THREE.BackSide,
-				opacity: 0,
-				transparent: true});
+			//let outlineMaterial = new THREE.MeshBasicMaterial({
+			//	color: 0x000000, 
+			//	side: THREE.BackSide,
+			//	opacity: 0,
+			//	transparent: true});
 
 			let pickMaterial = new THREE.MeshNormalMaterial({
 				//opacity: 0,
 				transparent: true,
 				visible: this.showPickVolumes});
 
-			let box = new THREE.Mesh(sgBox, material);
+			let box = new THREE.Mesh(sgPlane, material);
 			box.name = `${handleName}.handle`;
 			box.scale.set(1.5, 1.5, 1.5);
 			box.position.set(0, 0, 0);
@@ -208,10 +236,10 @@ Potree.TransformationTool = class TransformationTool {
 			node.add(box);
 			//handle.focusNode = box;
 			
-			let outline = new THREE.Mesh(sgBox, outlineMaterial);
-			outline.scale.set(1.4, 1.4, 1.4);
-			outline.name = `${handleName}.outline`;
-			box.add(outline);
+			//let outline = new THREE.Mesh(sgPlane, outlineMaterial);
+			//outline.scale.set(1.4, 1.4, 1.4);
+			//outline.name = `${handleName}.outline`;
+			//box.add(outline);
 
 			let pickSphere = new THREE.Mesh(sgLowPolySphere, pickMaterial);
 			pickSphere.name = `${handleName}.pick_volume`;
@@ -227,7 +255,7 @@ Potree.TransformationTool = class TransformationTool {
 					pickSphere.visible = opacity.x > 0;
 					box.visible = opacity.x > 0;
 					material.opacity = opacity.x;
-					outlineMaterial.opacity = opacity.x;
+					//outlineMaterial.opacity = opacity.x;
 					pickSphere.material.opacity = opacity.x * 0.5;
 				});
 				t.start();
@@ -409,12 +437,16 @@ Potree.TransformationTool = class TransformationTool {
 		let handle = this.activeHandle;
 		let camera = this.viewer.scene.getActiveCamera();
 
+		if(!handle){
+			return
+		};
+
 		let localNormal = new THREE.Vector3(...handle.alignment);
 		let n = new THREE.Vector3();
 		n.copy(new THREE.Vector4(...localNormal.toArray(), 0).applyMatrix4(handle.node.matrixWorld));
 		n.normalize();
 
-		if (!drag.intersectionStart) {
+		if (!drag.intersectionStart){
 
 			//this.viewer.scene.scene.remove(this.debug);
 			//this.debug = new THREE.Object3D();
@@ -481,7 +513,7 @@ Potree.TransformationTool = class TransformationTool {
 		let handle = this.activeHandle;
 		let camera = this.viewer.scene.getActiveCamera();
 			
-		if(!drag.intersectionStart){
+		if(!drag.intersectionStart && handle){
 			drag.intersectionStart = drag.location;
 			drag.objectStart = drag.object.getWorldPosition();
 
@@ -589,6 +621,9 @@ Potree.TransformationTool = class TransformationTool {
 
 				for (let selection of this.selection) {
 					selection.scale.add(diffScale);
+					selection.scale.x = Math.max(0.1, selection.scale.x);
+					selection.scale.y = Math.max(0.1, selection.scale.y);
+					selection.scale.z = Math.max(0.1, selection.scale.z);
 					selection.position.add(diffPosition);
 					selection.dispatchEvent({
 						type: "position_changed",
@@ -603,29 +638,6 @@ Potree.TransformationTool = class TransformationTool {
 				drag.pivot.copy(iOnLine);
 			}
 		}
-	}
-
-	getSelectionBoundingBox () {
-		let selbox = new THREE.Box3();
-
-		for (let node of this.selection) {
-			let box = null;
-			if (node.boundingBox) {
-				box = node.boundingBox;
-			} else if (node.geometry && node.geometry.boundingBox) {
-				box = node.geometry.boundingBox;
-			}
-
-			if (box) {
-				let tbox = box.clone().applyMatrix4(node.matrixWorld);
-
-				selbox.union(tbox);
-			} else {
-				selbox.expandByPoint(wp);
-			}
-		}
-
-		return selbox;
 	}
 
 	setActiveHandle(handle){
@@ -652,7 +664,7 @@ Potree.TransformationTool = class TransformationTool {
 			if(this.activeHandle === handle){
 				handle.node.setOpacity(1.0);
 			}else{
-				handle.node.setOpacity(0.0)
+				handle.node.setOpacity(0.4)
 			}
 		}
 
@@ -723,29 +735,17 @@ Potree.TransformationTool = class TransformationTool {
 
 			let selected = this.selection[0];
 			let world = selected.matrixWorld;
+			let camera = this.viewer.scene.getActiveCamera();
+			let domElement = this.viewer.renderer.domElement;
+			let mouse = this.viewer.inputHandler.mouse;
 
-			let box = this.getSelectionBoundingBox();
-			let boxSize = selected.boundingBox.getSize();
-			let boxCenter = selected.boundingBox.getCenter();
-			let pos = selected.position;
-			this.pivot.copy(boxCenter.clone().applyMatrix4(world));
+			this.scene.scale.copy(selected.boundingBox.getSize().multiply(selected.scale));
+			this.scene.position.copy(selected.position);
+			this.scene.rotation.copy(selected.rotation);
 
 			{
-				let camera = this.viewer.scene.getActiveCamera();
-				let mouse = this.viewer.inputHandler.mouse;
-				let domElement = this.viewer.renderer.domElement;
 
-				for(let handleName of Object.keys(this.scaleHandles)){
-					let handle = this.handles[handleName];
-					let node = handle.node;
-
-					let alignment = new THREE.Vector3(...handle.alignment);
-					let handlePos = boxCenter.clone().add(boxSize.clone().multiplyScalar(0.5).multiply(alignment));
-					handlePos.applyMatrix4(selected.matrixWorld);
-					let handleDistance = handlePos.distanceTo(selected.getWorldPosition());
-					node.position.copy(alignment.multiplyScalar(handleDistance));
-				}
-
+				// adjust scale of components
 				for(let handleName of Object.keys(this.handles)){
 					let handle = this.handles[handleName];
 					let node = handle.node;
@@ -753,11 +753,24 @@ Potree.TransformationTool = class TransformationTool {
 					let handlePos = node.getWorldPosition();
 					let distance = handlePos.distanceTo(camera.position);
 					let pr = Potree.utils.projectedRadius(1, camera, distance, domElement.clientWidth, domElement.clientHeight);
-					let scale = 7 / pr;
-					node.scale.set(scale, scale, scale);
-					node.updateMatrixWorld();
+
+					let ws = node.parent.getWorldScale();
+
+					let s = (7 / pr);
+					let scale = new THREE.Vector3(s, s, s).divide(ws);
+
+					let rot = new THREE.Matrix4().makeRotationFromEuler(node.rotation);
+					let rotInv = new THREE.Matrix4().getInverse(rot);
+
+					scale.applyMatrix4(rotInv);
+					scale.x = Math.abs(scale.x);
+					scale.y = Math.abs(scale.y);
+					scale.z = Math.abs(scale.z);
+
+					node.scale.copy(scale);
 				}
 
+				// adjust rotation handles
 				if(!this.dragging){
 					let tWorld = this.scene.matrixWorld;
 					let tObject = new THREE.Matrix4().getInverse(tWorld)
@@ -813,37 +826,6 @@ Potree.TransformationTool = class TransformationTool {
 					}
 				}
 
-				for(let handleName of Object.keys(this.focusHandles)){
-					let focusHandle = this.focusHandles[handleName];
-					let scaleHandle = this.scaleHandles[handleName.replace("focus", "scale")];
-					let focusNode = focusHandle.node;
-					let scaleNode = scaleHandle.node;
-
-					let toWorld = scaleNode.matrixWorld.clone();
-					let toObject = new THREE.Matrix4().getInverse(toWorld);
-
-					let scalePosWorld = scaleNode.getWorldPosition();
-					let scalePosProj = scalePosWorld.clone().project(camera);
-
-					let pixelOffset = 60;
-					let focusPosProj = new THREE.Vector3(
-						scalePosProj.x + (2 * pixelOffset / domElement.clientWidth) * focusNode.scale.x,
-						scalePosProj.y,
-						scalePosProj.z
-					);
-					let focusPosWorld = focusPosProj.unproject(camera);
-					let camScaleHandleDistance = scalePosWorld.distanceTo(camera.position);
-					let camFocusHandleDistance = focusPosWorld.distanceTo(camera.position);
-
-					let camToFocusHandle = new THREE.Vector3().subVectors(focusPosWorld, camera.position);
-					camToFocusHandle.multiplyScalar(camScaleHandleDistance / camFocusHandleDistance);
-					focusPosWorld = new THREE.Vector3().addVectors(camera.position, camToFocusHandle);
-
-					let focusPosObject = focusPosWorld.clone().applyMatrix4(toObject);
-					focusNode.position.copy(scaleNode.position).add(focusPosObject);
-					focusNode.updateMatrixWorld();
-				}
-
 				{
 					let ray = Potree.utils.mouseToRay(mouse, camera, domElement.clientWidth, domElement.clientHeight);
 					let raycaster = new THREE.Raycaster(ray.origin, ray.direction);
@@ -858,32 +840,20 @@ Potree.TransformationTool = class TransformationTool {
 					}
 				}
 
-				for(let handleName of Object.keys(this.translationHandles)){
-					let translationHandle = this.translationHandles[handleName];
-					let node = translationHandle.node;
-					let boxNode = node.children[0];
+				// 
+				for(let handleName of Object.keys(this.scaleHandles)){
+					let handle = this.handles[handleName];
+					let node = handle.node;
+					let alignment = handle.alignment;
 
-					let p1 = boxNode.getWorldPosition();
-					let p2 = new THREE.Vector3().addVectors(p1, boxNode.getWorldDirection());
-					let line = new THREE.Line3(p1, p2);
-
-					let onLine = line.closestPointToPoint(camera.getWorldPosition(), false);
-					let distance = camera.getWorldPosition().distanceTo(onLine);
-
-					let scale = Math.min(distance, node.scale.x);
-					node.scale.set(scale, scale, scale);
-
+					
 
 				}
 			}
 
-			this.scene.position.copy(selected.position);
-			this.scene.rotation.copy(selected.rotation);
 
 			{
 				let axisScale = (alignment) => {
-					//let handlePos = boxCenter.clone().add(boxSize.clone().multiplyScalar(0.5).multiply(alignment));
-					//handlePos.applyMatrix4(selected.matrixWorld);
 					let transformed = new THREE.Vector3(...alignment).applyMatrix4(selected.matrixWorld);
 					let distance = transformed.distanceTo(selected.getWorldPosition());
 
@@ -898,7 +868,6 @@ Potree.TransformationTool = class TransformationTool {
 
 				this.frame.scale.copy(scale);	
 			}
-			//this.frame.scale.copy(box.getSize());
 
 		}else{
 			this.scene.visible = false;

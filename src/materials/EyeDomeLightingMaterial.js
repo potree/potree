@@ -20,7 +20,11 @@ Potree.EyeDomeLightingMaterial = class EyeDomeLightingMaterial extends THREE.Sha
 			radius: 		{ type: 'f', 	value: 1.0 },
 			neighbours:		{ type: '2fv', 	value: [] },
 			depthMap: 		{ type: 't', 	value: null },
-			colorMap: 		{ type: 't', 	value: null },
+			//colorMap: 		{ type: 't', 	value: null },
+			uRegularColor:	{ type: 't', 	value: null },
+			uRegularDepth:	{ type: 't', 	value: null },
+			uEDLColor:		{ type: 't', 	value: null },
+			uEDLDepth:		{ type: 't', 	value: null },
 			opacity:		{ type: 'f',	value: 1.0 }
 		};
 

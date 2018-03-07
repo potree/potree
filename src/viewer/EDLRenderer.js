@@ -6,14 +6,11 @@ class EDLRenderer{
 
 		this.edlMaterial = null;
 
-		this.rtColor = null;
+		this.rtRegular;
+		this.rtEDL;
+
 		this.gl = viewer.renderer.context;
 
-		// TODO obsolete?
-		//this.initEDL = this.initEDL.bind(this);
-		//this.resize = this.resize.bind(this);
-		//this.render = this.render.bind(this);
-		
 		this.shadowMap = new Potree.PointCloudSM(this.viewer.pRenderer);
 	}
 
@@ -27,11 +24,18 @@ class EDLRenderer{
 		this.edlMaterial.depthWrite = true;
 		this.edlMaterial.transparent = true;
 
-		this.rtColor = new THREE.WebGLRenderTarget(1024, 1024, {
+		this.rtEDL = new THREE.WebGLRenderTarget(1024, 1024, {
 			minFilter: THREE.NearestFilter,
 			magFilter: THREE.NearestFilter,
 			format: THREE.RGBAFormat,
 			type: THREE.FloatType,
+			depthTexture: new THREE.DepthTexture(undefined, undefined, THREE.UnsignedIntType)
+		});
+
+		this.rtRegular = new THREE.WebGLRenderTarget(1024, 1024, {
+			minFilter: THREE.NearestFilter,
+			magFilter: THREE.NearestFilter,
+			format: THREE.RGBAFormat,
 			depthTexture: new THREE.DepthTexture(undefined, undefined, THREE.UnsignedIntType)
 		});
 		
@@ -56,7 +60,8 @@ class EDLRenderer{
 			height = this.screenshot.target.height;
 		}
 
-		this.rtColor.setSize(width * pixelRatio , height * pixelRatio);
+		this.rtEDL.setSize(width * pixelRatio , height * pixelRatio);
+		this.rtRegular.setSize(width * pixelRatio , height * pixelRatio);
 	}
 
 	makeScreenshot(camera, size, callback){
@@ -202,7 +207,9 @@ class EDLRenderer{
 
 		viewer.renderer.render(viewer.scene.scene, camera);
 		
-		viewer.renderer.clearTarget( this.rtColor, true, true, true );
+		//viewer.renderer.clearTarget( this.rtColor, true, true, true );
+		viewer.renderer.clearTarget(this.rtEDL, true, true, true);
+		viewer.renderer.clearTarget(this.rtRegular, true, true, false);
 
 		let width = viewer.renderer.getSize().width;
 		let height = viewer.renderer.getSize().height;
@@ -225,17 +232,17 @@ class EDLRenderer{
 		
 		// TODO adapt to multiple lights
 		if(lights.length > 0){
-			viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, this.rtColor, {
+			viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, this.rtEDL, {
 				shadowMaps: [this.shadowMap]
 			});
 		}else{
-			viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, this.rtColor, {});
+			viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, this.rtEDL, {});
 		}
 
-		viewer.renderer.render(viewer.scene.scene, camera, this.rtColor);
+		viewer.renderer.render(viewer.scene.scene, camera, this.rtRegular);
 
-		viewer.renderer.setRenderTarget(this.rtColor);
-		viewer.dispatchEvent({type: "render.pass.scene", viewer: viewer, renderTarget: this.rtColor});
+		//viewer.renderer.setRenderTarget(this.rtColor);
+		viewer.dispatchEvent({type: "render.pass.scene", viewer: viewer, renderTarget: this.rtRegular});
 
 		Potree.endQuery(queryColors, viewer.renderer.getContext());
 		
@@ -244,7 +251,14 @@ class EDLRenderer{
 
 			this.edlMaterial.uniforms.screenWidth.value = width;
 			this.edlMaterial.uniforms.screenHeight.value = height;
-			this.edlMaterial.uniforms.colorMap.value = this.rtColor.texture;
+
+			//this.edlMaterial.uniforms.colorMap.value = this.rtColor.texture;
+
+			this.edlMaterial.uniforms.uRegularColor.value = this.rtRegular.texture;
+			this.edlMaterial.uniforms.uEDLColor.value = this.rtEDL.texture;
+			this.edlMaterial.uniforms.uRegularDepth.value = this.rtRegular.depthTexture;
+			this.edlMaterial.uniforms.uEDLDepth.value = this.rtEDL.depthTexture;
+
 			this.edlMaterial.uniforms.edlStrength.value = viewer.edlStrength;
 			this.edlMaterial.uniforms.radius.value = viewer.edlRadius;
 			this.edlMaterial.uniforms.opacity.value = 1;

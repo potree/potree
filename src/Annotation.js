@@ -206,9 +206,27 @@ Potree.Annotation = class extends THREE.EventDispatcher {
 		}
 	}
 
+	hasChild(annotation) {
+		return this.children.includes(annotation);
+	}
+
 	remove (annotation) {
-		this.children = this.children.filter(e => e !== annotation);
-		annotation.parent = null;
+		if (this.hasChild(annotation)) {
+			annotation.removeAllChildren();
+			annotation.dispose();
+			this.children = this.children.filter(e => e !== annotation);
+			annotation.parent = null;
+		}
+	}
+
+	removeAllChildren() {
+		this.children.forEach((child) => {
+			if (child.children.length > 0) {
+				child.removeAllChildren();
+			}
+
+			this.remove(child);
+		});
 	}
 
 	updateBounds () {

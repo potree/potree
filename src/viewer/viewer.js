@@ -1230,19 +1230,23 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		if (!this.freeze) {
 			let result = Potree.updatePointClouds(scene.pointclouds, camera, this.renderer);
 
-			let near = result.lowestSpacing * 10.0;
-			let far = -this.getBoundingBox().applyMatrix4(camera.matrixWorldInverse).min.z;
+			if(result.lowestSpacing !== Infinity){
+				let near = result.lowestSpacing * 10.0;
+				let far = -this.getBoundingBox().applyMatrix4(camera.matrixWorldInverse).min.z;
 
-			far = Math.max(far * 1.5, 1000);
-			near = Math.min(100.0, Math.max(0.01, near));
-			far = Math.max(far, near + 1000);
+				far = Math.max(far * 1.5, 1000);
+				near = Math.min(100.0, Math.max(0.01, near));
+				far = Math.max(far, near + 1000);
 
-			if(near === Infinity){
-				near = 0.1;
+				if(near === Infinity){
+					near = 0.1;
+				}
+				
+				camera.near = near;
+				camera.far = far;
+			}else{
+				// don't change near and far in this case
 			}
-			
-			camera.near = near;
-			camera.far = far;
 
 			if(this.scene.cameraMode == Potree.CameraMode.ORTHOGRAPHIC) {
 				camera.near = -camera.far;

@@ -51,6 +51,9 @@
 		viewer.setDescription("Point cloud courtesy of <a target='_blank' href='https://www.sigeom.ch/'>sigeom sa</a>");
 		
 		viewer.loadGUI(() => {
+
+			console.log("gui loaded task");
+
 			viewer.setLanguage('en');
 			$("#menu_tools").next().show();
 			$("#menu_scene").next().show();

@@ -870,6 +870,9 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 	}
 
 	loadGUI(callback){
+
+		this.onGUILoaded(callback);
+
 		let viewer = this;
 		let sidebarContainer = $('#potree_sidebar_container');
 		sidebarContainer.load(new URL(Potree.scriptPath + '/sidebar.html').href, () => {
@@ -907,9 +910,9 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			$(() => {
 				initSidebar(this);
 
-				if (callback) {
-					$(callback);
-				}
+				//if (callback) {
+				//	$(callback);
+				//}
 
 				let elProfile = $('<div>').load(new URL(Potree.scriptPath + '/profile.html').href, () => {
 					$(document.body).append(elProfile.children());
@@ -924,16 +927,19 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 						containment: $(document.body),
 						handles: 'n, e, s, w'
 					});
+
+					$(() => {
+						console.log(this.profileWindow);
+						this.guiLoaded = true;
+						console.log("gui loaded");
+						for(let task of this.guiLoadTasks){
+							task();
+						}
+
+					});
 				});
 
-				$(() => {
-					this.guiLoaded = true;
-					console.log("gui loaded");
-					for(let task of this.guiLoadTasks){
-						task();
-					}
-
-				});
+				
 
 			});
 

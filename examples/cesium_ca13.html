@@ -108,13 +108,6 @@
 		window.toMap = proj4(pointcloudProjection, mapProjection);
 		window.toScene = proj4(mapProjection, pointcloudProjection);
 		
-		
-		let profile = new Potree.Profile();
-		profile.addMarker(new THREE.Vector3(693717.159, 3916004.207, 143.910));
-		profile.addMarker(new THREE.Vector3(694603.051, 3916620.987, 6.110));
-		profile.addMarker(new THREE.Vector3(695380.231, 3915982.377, 28.620));
-		profile.width = 10;
-		potreeViewer.scene.addProfile(profile);
 	});
 
 	function loop(timestamp){

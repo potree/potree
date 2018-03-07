@@ -98,19 +98,11 @@
 
 			scene.addPointCloud(pointcloud);
 
-			potreeViewer.useHQ = true;
-			
-			material.pointColorType = Potree.PointColorType.INTENSITY;
-			material.pointColorType = Potree.PointColorType.RETURN_NUMBER;
-			//material.pointColorType = Potree.PointColorType.CLASSIFICATION;
-
 			material.size = 1;
 			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
 			
-			//scene.view.position.set(675036.45, 3850315.78, 65076.70);
-			//scene.view.lookAt(692869.03, 3925774.14, 1581.51);
-			scene.view.position.set(694071.452, 3913624.346, 2236.368);
-			scene.view.lookAt(694879.644, 3916726.680, 242.532);
+			scene.view.position.set(675036.45, 3850315.78, 65076.70);
+			scene.view.lookAt(692869.03, 3925774.14, 1581.51);
 
 			let pointcloudProjection = e.pointcloud.projection;
 			let mapProjection = proj4.defs("WGS84");

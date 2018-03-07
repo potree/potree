@@ -303,9 +303,15 @@ Potree.Scene = class extends THREE.EventDispatcher{
 		}
 		let annotation = new Potree.Annotation(args);
 		this.annotations.add(annotation);
+
+		return annotation;
 	}
 
 	getAnnotations () {
 		return this.annotations;
 	};
+
+	removeAnnotation(annotationToRemove) {
+		this.annotations.remove(annotationToRemove);
+	}
 };

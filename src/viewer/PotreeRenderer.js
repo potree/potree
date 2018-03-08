@@ -28,7 +28,7 @@ class PotreeRenderer {
 			viewer.renderer.setClearColor(0xFFFFFF, 1);
 			viewer.renderer.clear(true, true, false);
 		}else{
-			viewer.renderer.setClearColor(0xFF0000, 0);
+			viewer.renderer.setClearColor(0x000000, 0);
 			viewer.renderer.clear(true, true, false);
 		}
 		

@@ -929,9 +929,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 					});
 
 					$(() => {
-						console.log(this.profileWindow);
 						this.guiLoaded = true;
-						console.log("gui loaded");
 						for(let task of this.guiLoadTasks){
 							task();
 						}

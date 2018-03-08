@@ -306,13 +306,13 @@ Potree.TransformationTool = class TransformationTool {
 
 			let material = new THREE.MeshBasicMaterial({
 				color: handle.color,
-				opacity: 0,
+				opacity: 0.4,
 				transparent: true});
 
 			let outlineMaterial = new THREE.MeshBasicMaterial({
 				color: 0x000000, 
 				side: THREE.BackSide,
-				opacity: 0,
+				opacity: 0.4,
 				transparent: true});
 
 			let pickMaterial = new THREE.MeshNormalMaterial({
@@ -323,7 +323,7 @@ Potree.TransformationTool = class TransformationTool {
 
 			let box = new THREE.Mesh(boxGeometry, material);
 			box.name = `${handleName}.handle`;
-			box.scale.set(0.2, 0.2, 20);
+			box.scale.set(0.2, 0.2, 40);
 			box.lookAt(new THREE.Vector3(...handle.alignment));
 			box.renderOrder = 10;
 			node.add(box);
@@ -361,7 +361,7 @@ Potree.TransformationTool = class TransformationTool {
 	}
 
 	initializeRotationHandles(){
-		let adjust = 1;
+		let adjust = 0.5;
 		let torusGeometry = new THREE.TorusGeometry(1, adjust * 0.015, 8, 64, Math.PI / 2);
 		let outlineGeometry = new THREE.TorusGeometry(1, adjust * 0.04, 8, 64, Math.PI / 2);
 		let pickGeometry = new THREE.TorusGeometry(1, adjust * 0.1, 6, 4, Math.PI / 2);
@@ -373,13 +373,13 @@ Potree.TransformationTool = class TransformationTool {
 
 			let material = new THREE.MeshBasicMaterial({
 				color: handle.color,
-				opacity: 0,
+				opacity: 0.4,
 				transparent: true});
 
 			let outlineMaterial = new THREE.MeshBasicMaterial({
 				color: 0x000000, 
 				side: THREE.BackSide,
-				opacity: 0,
+				opacity: 0.4,
 				transparent: true});
 
 			let pickMaterial = new THREE.MeshNormalMaterial({
@@ -390,7 +390,7 @@ Potree.TransformationTool = class TransformationTool {
 
 			let box = new THREE.Mesh(torusGeometry, material);
 			box.name = `${handleName}.handle`;
-			box.scale.set(10, 10, 10);
+			box.scale.set(20, 20, 20);
 			box.lookAt(new THREE.Vector3(...handle.alignment));
 			node.add(box);
 			handle.translateNode = box;
@@ -470,7 +470,7 @@ Potree.TransformationTool = class TransformationTool {
 		this.dragging = true;
 
 		let mouse = drag.end;
-		let domElement = viewer.renderer.domElement;
+		let domElement = this.viewer.renderer.domElement;
 		let ray = Potree.utils.mouseToRay(mouse, camera, domElement.clientWidth, domElement.clientHeight);
 		
 		let I = ray.intersectPlane(drag.dragPlane);

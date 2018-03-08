@@ -1,5 +1,5 @@
 
-Potree.NormalizationMaterial = class NormalizationMaterial extends THREE.ShaderMaterial{
+Potree.NormalizationMaterial = class NormalizationMaterial extends THREE.RawShaderMaterial{
 
 	constructor(parameters = {}){
 		super();

@@ -23,7 +23,7 @@ Potree.PointCloudSM = class PointCloudSM{
 		//	depthTexture: new THREE.DepthTexture(undefined, undefined, THREE.UnsignedIntType)
 		//});
 
-		this.threeRenderer.setClearColor(0xff0000, 1);
+		this.threeRenderer.setClearColor(0x000000, 1);
 		this.threeRenderer.clearTarget(this.target, true, true, true);
 	}
 

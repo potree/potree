@@ -1,6 +1,9 @@
 
 #extension GL_EXT_frag_depth : enable
 
+precision mediump float;
+precision mediump int;
+
 uniform sampler2D uWeightMap;
 uniform sampler2D uEDLMap;
 uniform sampler2D uDepthMap;

@@ -380,6 +380,7 @@ body{
 	list-style-type:	none;
 	padding:			0;
 	margin:				15px 0px;
+	overflow:			hidden;
 }
 
 .pv-menu-list > *{
@@ -532,8 +533,8 @@ body{
 	font-weight:	bold;
 	font-size:		90%;
 	letter-spacing:	1px;
-	margin-left:	-20px;
-	margin-right:	-20px;
+	margin-left:	0px;
+	margin-right:	0px;
 	margin-top: 	1px;
 	margin-bottom: 	1px;
 	padding:		1px !important;

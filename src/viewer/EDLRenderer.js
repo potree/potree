@@ -167,7 +167,7 @@ class EDLRenderer{
 			viewer.renderer.setClearColor(0xFFFFFF, 1);
 			viewer.renderer.clear();
 		} else {
-			viewer.renderer.setClearColor(0xFF0000, 0);
+			viewer.renderer.setClearColor(0x000000, 0);
 			viewer.renderer.clear();
 		}
 

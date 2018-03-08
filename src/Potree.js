@@ -496,7 +496,36 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 	let domWidth = renderer.domElement.clientWidth;
 	let domHeight = renderer.domElement.clientHeight;
 
-	let pointcloudTransformChanged = new Map();
+	// check if pointcloud has been transformed
+	// some code will only be executed if changes have been detected
+	if(!Potree._pointcloudTransformVersion){
+		Potree._pointcloudTransformVersion = new Map();
+	}
+	let pointcloudTransformVersion = Potree._pointcloudTransformVersion;
+	for(let pointcloud of pointclouds){
+
+		if(!pointcloud.visible){
+			continue;
+		}
+
+		pointcloud.updateMatrixWorld();
+
+		if(!pointcloudTransformVersion.has(pointcloud)){
+			pointcloudTransformVersion.set(pointcloud, {number: 0, transform: pointcloud.matrixWorld.clone()});
+		}else{
+			let version = pointcloudTransformVersion.get(pointcloud);
+
+			if(!version.transform.equals(pointcloud.matrixWorld)){
+				version.number++;
+				version.transform.copy(pointcloud.matrixWorld);
+
+				pointcloud.dispatchEvent({
+					type: "transformation_changed",
+					target: pointcloud
+				});
+			}
+		}
+	}
 
 	while (priorityQueue.size() > 0) {
 		let element = priorityQueue.pop();
@@ -632,20 +661,15 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 			visibleNodes.push(node);
 			pointcloud.visibleNodes.push(node);
 
-			if(!pointcloudTransformChanged.has(pointcloud)){
-
-				let originalMatrixWorld = node.sceneNode.matrixWorld.clone();
-
+			if(node._transformVersion === undefined){
+				node._transformVersion = -1;
+			}
+			let transformVersion = pointcloudTransformVersion.get(pointcloud);
+			if(node._transformVersion !== transformVersion.number){
 				node.sceneNode.updateMatrix();
 				node.sceneNode.matrixWorld.multiplyMatrices(pointcloud.matrixWorld, node.sceneNode.matrix);	
-				
-				pointcloudTransformChanged.set(pointcloud, !originalMatrixWorld.equals(node.sceneNode.matrixWorld));
-			}else if(pointcloudTransformChanged.get(pointcloud) || node.needsTransformUpdate){
-				node.sceneNode.updateMatrix();
-				node.sceneNode.matrixWorld.multiplyMatrices(pointcloud.matrixWorld, node.sceneNode.matrix);
-				node.needsTransformUpdate = false;
+				node._transformVersion = transformVersion.number;
 			}
-			
 
 			if (pointcloud.showBoundingBox && !node.boundingBoxNode && node.getBoundingBox) {
 				let boxHelper = new Potree.Box3Helper(node.getBoundingBox());

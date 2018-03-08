@@ -1,10 +1,10 @@
 
-precision mediump float;
-precision mediump int;
-
 #if defined paraboloid_point_shape
 	#extension GL_EXT_frag_depth : enable
 #endif
+
+precision mediump float;
+precision mediump int;
 
 uniform mat4 viewMatrix;
 uniform mat4 uViewInv;

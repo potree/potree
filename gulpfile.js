@@ -336,6 +336,8 @@ gulp.task('examples_page', function() {
 				grid-gap: 10px;
 				grid-template-rows: auto auto;
 
+				max-width: 1300px;
+				margin: auto;
 			}
 
 
@@ -354,7 +356,7 @@ gulp.task('examples_page', function() {
 				grid-column-start: 2;
 				grid-column-end: 2;
 				grid-row-start: 1;
-				grid-row-end: 2;
+				grid-row-end: span 2;
 
 				margin-top: 20px
 			}

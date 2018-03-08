@@ -1,13 +1,12 @@
-Potree.PointCloudGreyhoundGeometry = function(){
+Potree.PointCloudGreyhoundGeometry = function () {
 	this.spacing = 0;
 	this.boundingBox = null;
 	this.root = null;
-	this.numNodesLoading = 0;
 	this.nodes = null;
 	this.pointAttributes = {};
 	this.hierarchyStepSize = -1;
 	this.loader = null;
-    this.schema = null;
+	this.schema = null;
 
 	this.baseDepth = null;
 	this.offset = null;
@@ -15,8 +14,8 @@ Potree.PointCloudGreyhoundGeometry = function(){
 
 	this.boundingSphere = null;
 
-	//the serverURL will contain the base URL of the greyhound server. f.e. http://dev.greyhound.io/resource/autzen/
+	// the serverURL will contain the base URL of the greyhound server. f.e. http://dev.greyhound.io/resource/autzen/
 	this.serverURL = null;
 
-    this.normalize = { color: false, intensity: false };
+	this.normalize = { color: false, intensity: false };
 };

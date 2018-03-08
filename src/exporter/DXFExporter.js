@@ -1,21 +1,19 @@
 /**
  *
  * @author sigeom sa / http://sigeom.ch
- * @author Ioda-Net Sàrl / https://www.ioda-net.ch/
- * @author Markus Schütz / http://potree.org
+ * @author Ioda-Net SÃ rl / https://www.ioda-net.ch/
+ * @author Markus Schuetz / http://potree.org
  *
  */
 
-Potree.DXFExporter = class DXFExporter{
-	
-	static measurementPointSection(measurement){
-		
+Potree.DXFExporter = class DXFExporter {
+	static measurementPointSection (measurement) {
 		let position = measurement.points[0].position;
-		
-		if(!position){
-			return "";
+
+		if (!position) {
+			return '';
 		}
-		
+
 		let dxfSection = `0
 CIRCLE
 8
@@ -32,15 +30,15 @@ ${position.z}
 
 		return dxfSection;
 	}
-	
-	static measurementPolylineSection(measurement){
-		// bit code for polygons/polylines: 
+
+	static measurementPolylineSection (measurement) {
+		// bit code for polygons/polylines:
 		// https://www.autodesk.com/techpubs/autocad/acad2000/dxf/polyline_dxf_06.htm
-		let geomCode = 8; 
-		if(measurement.closed){
+		let geomCode = 8;
+		if (measurement.closed) {
 			geomCode += 1;
 		}
-		
+
 		let dxfSection = `0
 POLYLINE
 8
@@ -62,12 +60,12 @@ ${geomCode}
 		let xMax = 0.0;
 		let yMax = 0.0;
 		let zMax = 0.0;
-		for(let point of measurement.points){
+		for (let point of measurement.points) {
 			point = point.position;
 			xMax = Math.max(xMax, point.x);
 			yMax = Math.max(yMax, point.y);
 			zMax = Math.max(zMax, point.z);
-			
+
 			dxfSection += `0
 VERTEX
 8
@@ -81,52 +79,46 @@ ${point.z}
 70
 32
 `;
-
 		}
-            dxfSection += `0
+		dxfSection += `0
 SEQEND
 `;
 
 		return dxfSection;
 	}
-	
-	static measurementSection(measurement){
-		
-		//if(measurement.points.length <= 1){
+
+	static measurementSection (measurement) {
+		// if(measurement.points.length <= 1){
 		//	return "";
-		//}
-		
-		if(measurement.points.length === 0){
-			return "";
-		}else if(measurement.points.length === 1){
+		// }
+
+		if (measurement.points.length === 0) {
+			return '';
+		} else if (measurement.points.length === 1) {
 			return Potree.DXFExporter.measurementPointSection(measurement);
-		}else if(measurement.points.length >= 2){
+		} else if (measurement.points.length >= 2) {
 			return Potree.DXFExporter.measurementPolylineSection(measurement);
 		}
 	}
-	
-	
+
 	static toString(measurements){
-		
-		if(!(measurements instanceof Array)){
+		if (!(measurements instanceof Array)) {
 			measurements = [measurements];
 		}
 		measurements = measurements.filter(m => m instanceof Potree.Measure);
-		
+
 		let points = measurements.filter(m => (m instanceof Potree.Measure))
 			.map(m => m.points)
 			.reduce((a, v) => a.concat(v))
 			.map(p => p.position);
-			
+
 		let min = new THREE.Vector3(Infinity, Infinity, Infinity);
 		let max = new THREE.Vector3(-Infinity, -Infinity, -Infinity);
-		for(let point of points){
+		for (let point of points) {
 			min.min(point);
 			max.max(point);
 		}
-		
-		
-		
+
 		let dxfHeader = `999
 DXF created from potree
 0
@@ -170,19 +162,17 @@ SECTION
 2
 ENTITIES
 `;
-		
-		for(let measurement of measurements){
+
+		for (let measurement of measurements) {
 			dxfBody += Potree.DXFExporter.measurementSection(measurement);
 		}
-		
+
 		dxfBody += `0
 ENDSEC
 `;
 
 		let dxf = dxfHeader + dxfBody + '0\nEOF';
-		
+
 		return dxf;
 	}
-
-	
-}
+};

@@ -1,49 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="description" content="">
-    <meta name="author" content="">
+<head>
+	<meta charset="utf-8">
+	<meta name="description" content="">
+	<meta name="author" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Potree Viewer</title>
+	<title>Potree Viewer</title>
 
 	<link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
 	<link rel="stylesheet" type="text/css" href="../libs/jquery-ui/jquery-ui.min.css">
 	<link rel="stylesheet" type="text/css" href="../libs/perfect-scrollbar/css/perfect-scrollbar.css">
-	<link rel="stylesheet" href="../libs/openlayers3/ol.css" type="text/css">
-	<link rel="stylesheet" href="../libs/spectrum/spectrum.css" type="text/css">
-  </head>
+	<link rel="stylesheet" type="text/css" href="../libs/openlayers3/ol.css">
+	<link rel="stylesheet" type="text/css" href="../libs/spectrum/spectrum.css">
+	<link rel="stylesheet" type="text/css" href="../libs/jstree/themes/mixed/style.css">
+</head>
 
-  <body>
-  
-	<script src="../libs/jquery/jquery-3.1.1.js"></script>
+<body>
+	<script src="../libs/jquery/jquery-3.1.1.min.js"></script>
 	<script src="../libs/spectrum/spectrum.js"></script>
-	
 	<script src="../libs/perfect-scrollbar/js/perfect-scrollbar.jquery.js"></script>
 	<script src="../libs/jquery-ui/jquery-ui.min.js"></script>
-	<script src="../libs/three.js/build/three.js"></script>
-	<script src="../libs/other/stats.min.js"></script>
+	<script src="../libs/three.js/build/three.min.js"></script>
 	<script src="../libs/other/BinaryHeap.js"></script>
-	<script src="../libs/shapefile/shapefile.js"></script>
 	<script src="../libs/tween/tween.min.js"></script>
 	<script src="../libs/d3/d3.js"></script>
 	<script src="../libs/proj4/proj4.js"></script>
 	<script src="../libs/openlayers3/ol.js"></script>
-    <script src="../libs/i18next/i18next.js"></script>
-	
+	<script src="../libs/i18next/i18next.js"></script>
+	<script src="../libs/jstree/jstree.js"></script>
 	<script src="../build/potree/potree.js"></script>
-	<!--<script src="../src/viewer/sidebar.js"></script>-->
+	<script src="../libs/plasio/js/laslaz.js"></script>
+	<script src="../libs/shapefile/shapefile.js"></script>
 	
 	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
 	<!-- INCLUDE SETTINGS HERE -->
 	
-	<script src="../libs/plasio/js/laslaz.js"></script>
-	<script src="../libs/plasio/vendor/bluebird.js"></script>
-
-    <div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
+	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
 		<div id="potree_render_area"></div>
 		<div id="potree_sidebar_container"> </div>
-    </div>
+	</div>
 	
 	<script>
 	
@@ -56,8 +51,6 @@
 		viewer.setPointBudget(3*1000*1000);
 		viewer.setMinNodeSize(1);
 		viewer.setBackground("gradient"); // ["skybox", "gradient", "black", "white"];
-		viewer.generateDEM = true;
-		<!-- INCLUDE SETTINGS HERE -->
 		//viewer.loadSettingsFromURL();
 		
 		viewer.setDescription('San Simeon, CA Central Coast point cloud taken from <a href="http://opentopo.sdsc.edu/gridsphere/gridsphere?cid=geonlidarframeportlet&gs_action=lidarDataset&opentopoID=OTLAS.032013.26910.2" target="_blank">Open Topography</a> (17.7b points)');
@@ -65,6 +58,7 @@
 		viewer.loadGUI(() => {
 			viewer.setLanguage('en');
 			$("#menu_tools").next().show();
+			$("#menu_scene").next().show();
 			viewer.toggleSidebar();
 		});
 		
@@ -81,9 +75,6 @@
 			
 			scene.addPointCloud(pointcloud);
 			
-			window.dem = new Potree.DEM(pointcloud);
-			window.dem.update(pointcloud.visibleNodes);
-
 			//scene.view.position.set(696507.51, 3915713.17, 1891.85);
 			scene.view.position.set(697757.85, 3913444.33, 2827.33);
 			scene.view.lookAt(new THREE.Vector3(695231.74, 3916988.94, 87.64));
@@ -186,33 +177,49 @@
 						console.log("unhandled feature: ", feature);
 					}
 				};
+
+				let shapeNode = new THREE.Object3D();
+				viewer.scene.scene.add(shapeNode);
 				
 				Potree.utils.loadShapefileFeatures("./morro_bay_shp/shape/points.shp", features => {
 					for(let feature of features){
 						let node = featureToSceneNode(feature, 0x00ff00);
-						viewer.scene.scene.add(node);
+						shapeNode.add(node);
 					}
 				});
 				
 				Potree.utils.loadShapefileFeatures("./morro_bay_shp/shape/natural.shp", features => {
 					for(let feature of features){
 						let node = featureToSceneNode(feature, 0x00ff00);
-						viewer.scene.scene.add(node);
+						shapeNode.add(node);
 					}
 				});
 				
 				Potree.utils.loadShapefileFeatures("./morro_bay_shp/shape/waterways.shp", features => {
 					for(let feature of features){
 						let node = featureToSceneNode(feature, 0x0000ff);
-						viewer.scene.scene.add(node);
+						shapeNode.add(node);
 					}
 				});
 				
 				Potree.utils.loadShapefileFeatures("./morro_bay_shp/shape/roads.shp", features => {
 					for(let feature of features){
 						let node = featureToSceneNode(feature, 0xffffff);
-						viewer.scene.scene.add(node);
+						shapeNode.add(node);
 					}
+				});
+
+				viewer.onGUILoaded(() => {
+					// Add entry to object list in sidebar
+					let tree = $(`#jstree_scene`);
+					let parentNode = "other";
+					let nodeID = tree.jstree('create_node', parentNode, { 
+							"text": "shapefile", 
+							"icon": `${Potree.resourcePath}/icons/triangle.svg`,
+							"object": shapeNode
+						}, 
+						"last", false, false);
+					tree.jstree(shapeNode.visible ? "check_node" : "uncheck_node", nodeID);
 				});
 				
 			}

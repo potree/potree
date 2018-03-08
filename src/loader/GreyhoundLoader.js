@@ -6,22 +6,21 @@
  * @author Connor Manning
  */
 
-class GreyhoundUtils{
-	
-	static getQueryParam(name) {
-		name = name.replace(/[\[\]]/g, "\\$&");
-		var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
-			results = regex.exec(window.location.href);
+class GreyhoundUtils {
+	static getQueryParam (name) {
+		name = name.replace(/[[\]]/g, '\\$&');
+		let regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)');
+		let results = regex.exec(window.location.href);
 		if (!results) return null;
 		if (!results[2]) return '';
-		return decodeURIComponent(results[2].replace(/\+/g, " "));
+		return decodeURIComponent(results[2].replace(/\+/g, ' '));
 	}
-	
-	static createSchema(attributes) {
-		var schema = [
-			{ "name": "X", "size": 4, "type": "signed" },
-			{ "name": "Y", "size": 4, "type": "signed" },
-			{ "name": "Z", "size": 4, "type": "signed" }
+
+	static createSchema (attributes) {
+		let schema = [
+			{ 'name': 'X', 'size': 4, 'type': 'signed' },
+			{ 'name': 'Y', 'size': 4, 'type': 'signed' },
+			{ 'name': 'Z', 'size': 4, 'type': 'signed' }
 		];
 
 		// Once we include options in the UI to load a dynamic list of available
@@ -31,31 +30,29 @@ class GreyhoundUtils{
 		// If we do that though, we also need to tell Potree to redraw the points
 		// that are already loaded (with different attributes).
 		// This is not default behaviour.
-		attributes.forEach(function(item) {
-			if(item === 'COLOR_PACKED') {
-				schema.push({ "name": "Red",      "size": 2, "type": "unsigned" });
-				schema.push({ "name": "Green",    "size": 2, "type": "unsigned" });
-				schema.push({ "name": "Blue",     "size": 2, "type": "unsigned" });
-			} else if(item === 'INTENSITY'){
-				schema.push({ "name": "Intensity", "size": 2, "type": "unsigned" });
-			} else if(item === 'CLASSIFICATION') {
-				schema.push(
-						{ "name": "Classification", "size": 1, "type": "unsigned" });
+		attributes.forEach(function (item) {
+			if (item === 'COLOR_PACKED') {
+				schema.push({ 'name': 'Red', 'size': 2, 'type': 'unsigned' });
+				schema.push({ 'name': 'Green', 'size': 2, 'type': 'unsigned' });
+				schema.push({ 'name': 'Blue', 'size': 2, 'type': 'unsigned' });
+			} else if (item === 'INTENSITY') {
+				schema.push({ 'name': 'Intensity', 'size': 2, 'type': 'unsigned' });
+			} else if (item === 'CLASSIFICATION') {
+				schema.push({ 'name': 'Classification', 'size': 1, 'type': 'unsigned' });
 			}
 		});
 
-	  return schema;
+		return schema;
 	}
-	
-	static fetch(url, cb) {
-		var xhr = new XMLHttpRequest();
+
+	static fetch (url, cb) {
+		let xhr = Potree.XHRFactory.createXMLHttpRequest();
 		xhr.open('GET', url, true);
-		xhr.onreadystatechange = function() {
+		xhr.onreadystatechange = function () {
 			if (xhr.readyState === 4) {
 				if (xhr.status === 200 || xhr.status === 0) {
 					cb(null, xhr.responseText);
-				}
-				else {
+				} else {
 					cb(xhr.responseText);
 				}
 			}
@@ -63,16 +60,15 @@ class GreyhoundUtils{
 		xhr.send(null);
 	};
 
-	static fetchBinary(url, cb) {
-		var xhr = new XMLHttpRequest();
+	static fetchBinary (url, cb) {
+		let xhr = Potree.XHRFactory.createXMLHttpRequest();
 		xhr.open('GET', url, true);
 		xhr.responseType = 'arraybuffer';
-		xhr.onreadystatechange = function() {
+		xhr.onreadystatechange = function () {
 			if (xhr.readyState === 4) {
 				if (xhr.status === 200 || xhr.status === 0) {
 					cb(null, xhr.response);
-				}
-				else {
+				}				else {
 					cb(xhr.responseText);
 				}
 			}
@@ -80,36 +76,36 @@ class GreyhoundUtils{
 		xhr.send(null);
 	};
 
-	static pointSizeFrom(schema) {
+	static pointSizeFrom (schema) {
 		return schema.reduce((p, c) => p + c.size, 0);
 	};
 
-	static getNormalization(serverURL, baseDepth, cb) {
-		var s = [
-			{ "name": "X",          "size": 4, "type": "floating" },
-			{ "name": "Y",          "size": 4, "type": "floating" },
-			{ "name": "Z",          "size": 4, "type": "floating" },
-			{ "name": "Red",        "size": 2, "type": "unsigned" },
-			{ "name": "Green",      "size": 2, "type": "unsigned" },
-			{ "name": "Blue",       "size": 2, "type": "unsigned" },
-			{ "name": "Intensity",  "size": 2, "type": "unsigned" }
+	static getNormalization (serverURL, baseDepth, cb) {
+		let s = [
+			{ 'name': 'X', 'size': 4, 'type': 'floating' },
+			{ 'name': 'Y', 'size': 4, 'type': 'floating' },
+			{ 'name': 'Z', 'size': 4, 'type': 'floating' },
+			{ 'name': 'Red', 'size': 2, 'type': 'unsigned' },
+			{ 'name': 'Green', 'size': 2, 'type': 'unsigned' },
+			{ 'name': 'Blue', 'size': 2, 'type': 'unsigned' },
+			{ 'name': 'Intensity', 'size': 2, 'type': 'unsigned' }
 		];
 
-		var url = serverURL + 'read?depth=' + baseDepth +
+		let url = serverURL + 'read?depth=' + baseDepth +
 			'&schema=' + JSON.stringify(s);
 
-		GreyhoundUtils.fetchBinary(url, function(err, buffer) {
+		GreyhoundUtils.fetchBinary(url, function (err, buffer) {
 			if (err) throw new Error(err);
 
-			var view = new DataView(buffer);
-			var numBytes = buffer.byteLength - 4;
-			var numPoints = view.getUint32(numBytes, true);
-			var pointSize = GreyhoundUtils.pointSizeFrom(s);
+			let view = new DataView(buffer);
+			let numBytes = buffer.byteLength - 4;
+			// TODO Unused: let numPoints = view.getUint32(numBytes, true);
+			let pointSize = GreyhoundUtils.pointSizeFrom(s);
 
-			var colorNorm = false, intensityNorm = false;
-			var v;
+			let colorNorm = false;
+			let intensityNorm = false;
 
-			for (var offset = 0; offset < numBytes; offset += pointSize) {
+			for (let offset = 0; offset < numBytes; offset += pointSize) {
 				if (view.getUint16(offset + 12, true) > 255 ||
 					view.getUint16(offset + 14, true) > 255 ||
 					view.getUint16(offset + 16, true) > 255) {
@@ -129,11 +125,10 @@ class GreyhoundUtils{
 			cb(null, { color: colorNorm, intensity: intensityNorm });
 		});
 	};
-	
 };
 
-Potree.GreyhoundLoader = function() { };
-Potree.GreyhoundLoader.loadInfoJSON = function load(url, callback) { }
+Potree.GreyhoundLoader = function () { };
+Potree.GreyhoundLoader.loadInfoJSON = function load (url, callback) { };
 
 /**
  * @return a point cloud octree with the root node data loaded.
@@ -143,159 +138,160 @@ Potree.GreyhoundLoader.loadInfoJSON = function load(url, callback) { }
  * @param loadingFinishedListener executed after loading the binary has been
  * finished
  */
-Potree.GreyhoundLoader.load = function load(url, callback) {
-	var HIERARCHY_STEP_SIZE = 5;
+Potree.GreyhoundLoader.load = function load (url, callback) {
+	let HIERARCHY_STEP_SIZE = 5;
 
 	try {
 		// We assume everything ater the string 'greyhound://' is the server url
-		var serverURL = url.split('greyhound://')[1];
-        if (serverURL.split('http://').length == 1) {
-            serverURL = 'http://' + serverURL;
-        }
+		let serverURL = url.split('greyhound://')[1];
+		if (serverURL.split('http://').length === 1) {
+			serverURL = 'http://' + serverURL;
+		}
 
-        GreyhoundUtils.fetch(serverURL + 'info', function(err, data) {
-            if (err) throw new Error(err);
+		GreyhoundUtils.fetch(serverURL + 'info', function (err, data) {
+			if (err) throw new Error(err);
 
-            /* We parse the result of the info query, which should be a JSON
-             * datastructure somewhat like:
-            {
-              "bounds": [635577, 848882, -1000, 639004, 853538, 2000],
-              "numPoints": 10653336,
-              "schema": [
-                  { "name": "X", "size": 8, "type": "floating" },
-                  { "name": "Y", "size": 8, "type": "floating" },
-                  { "name": "Z", "size": 8, "type": "floating" },
-                  { "name": "Intensity", "size": 2, "type": "unsigned" },
-                  { "name": "OriginId", "size": 4, "type": "unsigned" },
-                  { "name": "Red", "size": 2, "type": "unsigned" },
-                  { "name": "Green", "size": 2, "type": "unsigned" },
-                  { "name": "Blue", "size": 2, "type": "unsigned" }
-              ],
-              "srs": "<omitted for brevity>",
-              "type": "octree"
-            }
-            */
-            var greyhoundInfo = JSON.parse(data);
-            var version = new Potree.Version('1.4');
+			/* We parse the result of the info query, which should be a JSON
+			 * datastructure somewhat like:
+			{
+			  "bounds": [635577, 848882, -1000, 639004, 853538, 2000],
+			  "numPoints": 10653336,
+			  "schema": [
+			      { "name": "X", "size": 8, "type": "floating" },
+			      { "name": "Y", "size": 8, "type": "floating" },
+			      { "name": "Z", "size": 8, "type": "floating" },
+			      { "name": "Intensity", "size": 2, "type": "unsigned" },
+			      { "name": "OriginId", "size": 4, "type": "unsigned" },
+			      { "name": "Red", "size": 2, "type": "unsigned" },
+			      { "name": "Green", "size": 2, "type": "unsigned" },
+			      { "name": "Blue", "size": 2, "type": "unsigned" }
+			  ],
+			  "srs": "<omitted for brevity>",
+			  "type": "octree"
+			}
+			*/
+			let greyhoundInfo = JSON.parse(data);
+			let version = new Potree.Version('1.4');
 
-            var bounds = greyhoundInfo.bounds;
-            var boundsConforming = greyhoundInfo.boundsConforming;
+			let bounds = greyhoundInfo.bounds;
+			// TODO Unused: let boundsConforming = greyhoundInfo.boundsConforming;
 
-            var width = bounds[3] - bounds[0];
-            var depth = bounds[4] - bounds[1];
-            var height= bounds[5] - bounds[2];
-            var radius = width / 2;
+			// TODO Unused: let width = bounds[3] - bounds[0];
+			// TODO Unused: let depth = bounds[4] - bounds[1];
+			// TODO Unused: let height = bounds[5] - bounds[2];
+			// TODO Unused: let radius = width / 2;
+			let scale = greyhoundInfo.scale || 0.01;
+			if (Array.isArray(scale)) {
+				scale = Math.min(scale[0], scale[1], scale[2]);
+			}
 
-            var scale = greyhoundInfo.scale;
-            var scale = greyhoundInfo.scale || .01;
-            if (Array.isArray(scale)) {
-                scale = Math.min(scale[0], scale[1], scale[2]);
-            }
+			if (GreyhoundUtils.getQueryParam('scale')) {
+				scale = parseFloat(GreyhoundUtils.getQueryParam('scale'));
+			}
 
-            if (GreyhoundUtils.getQueryParam('scale')) {
-                scale = parseFloat(GreyhoundUtils.getQueryParam('scale'));
-            }
+			let baseDepth = Math.max(8, greyhoundInfo.baseDepth);
 
-            var baseDepth = Math.max(8, greyhoundInfo.baseDepth);
+			// Ideally we want to change this bit completely, since
+			// greyhound's options are wider than the default options for
+			// visualizing pointclouds. If someone ever has time to build a
+			// custom ui element for greyhound, the schema options from
+			// this info request should be given to the UI, so the user can
+			// choose between them. The selected option can then be
+			// directly requested from the server in the
+			// PointCloudGreyhoundGeometryNode without asking for
+			// attributes that we are not currently visualizing.  We assume
+			// XYZ are always available.
+			let attributes = ['POSITION_CARTESIAN'];
 
-            // Ideally we want to change this bit completely, since
-            // greyhound's options are wider than the default options for
-            // visualizing pointclouds. If someone ever has time to build a
-            // custom ui element for greyhound, the schema options from
-            // this info request should be given to the UI, so the user can
-            // choose between them. The selected option can then be
-            // directly requested from the server in the
-            // PointCloudGreyhoundGeometryNode without asking for
-            // attributes that we are not currently visualizing.  We assume
-            // XYZ are always available.
-            var attributes = ['POSITION_CARTESIAN'];
+			// To be careful, we only add COLOR_PACKED as an option if all
+			// colors are actually found.
+			let red = false;
+			let green = false;
+			let blue = false;
 
-            // To be careful, we only add COLOR_PACKED as an option if all
-            // colors are actually found.
-            var red = false, green = false, blue = false;
+			greyhoundInfo.schema.forEach(function (entry) {
+				// Intensity and Classification are optional.
+				if (entry.name === 'Intensity') {
+					attributes.push('INTENSITY');
+				}
+				if (entry.name === 'Classification') {
+					attributes.push('CLASSIFICATION');
+				}
 
-            greyhoundInfo.schema.forEach(function(entry) {
-                // Intensity and Classification are optional.
-                if (entry.name === 'Intensity') {
-                    attributes.push('INTENSITY');
-                }
-                if (entry.name === 'Classification') {
-                    attributes.push('CLASSIFICATION');
-                }
+				if (entry.name === 'Red') red = true;
+				else if (entry.name === 'Green') green = true;
+				else if (entry.name === 'Blue') blue = true;
+			});
 
-                if (entry.name === 'Red') red = true;
-                else if (entry.name === 'Green') green = true;
-                else if (entry.name === 'Blue') blue = true;
-            });
+			if (red && green && blue) attributes.push('COLOR_PACKED');
 
-            if (red && green && blue) attributes.push('COLOR_PACKED');
+			// Fill in geometry fields.
+			let pgg = new Potree.PointCloudGreyhoundGeometry();
+			pgg.serverURL = serverURL;
+			pgg.spacing = (bounds[3] - bounds[0]) / Math.pow(2, baseDepth);
+			pgg.baseDepth = baseDepth;
+			pgg.hierarchyStepSize = HIERARCHY_STEP_SIZE;
 
-            // Fill in geometry fields.
-            var pgg = new Potree.PointCloudGreyhoundGeometry();
-            pgg.serverURL = serverURL;
-            pgg.spacing = (bounds[3] - bounds[0]) / Math.pow(2, baseDepth);
-            pgg.baseDepth = baseDepth;
-            pgg.hierarchyStepSize = HIERARCHY_STEP_SIZE;
+			pgg.schema = GreyhoundUtils.createSchema(attributes);
+			let pointSize = GreyhoundUtils.pointSizeFrom(pgg.schema);
 
-            pgg.schema = GreyhoundUtils.createSchema(attributes);
-            var pointSize = GreyhoundUtils.pointSizeFrom(pgg.schema);
+			pgg.pointAttributes = new Potree.PointAttributes(attributes);
+			pgg.pointAttributes.byteSize = pointSize;
 
-            pgg.pointAttributes = new Potree.PointAttributes(attributes);
-            pgg.pointAttributes.byteSize = pointSize;
+			let boundingBox = new THREE.Box3(
+				new THREE.Vector3().fromArray(bounds, 0),
+				new THREE.Vector3().fromArray(bounds, 3)
+			);
 
-            var boundingBox = new THREE.Box3(
-                new THREE.Vector3().fromArray(bounds, 0),
-                new THREE.Vector3().fromArray(bounds, 3));
+			let offset = boundingBox.min.clone();
 
-            var offset = boundingBox.min.clone();
+			boundingBox.max.sub(boundingBox.min);
+			boundingBox.min.set(0, 0, 0);
 
-            boundingBox.max.sub(boundingBox.min);
-            boundingBox.min.set(0, 0, 0);
+			pgg.projection = greyhoundInfo.srs;
+			pgg.boundingBox = boundingBox;
+			pgg.boundingSphere = boundingBox.getBoundingSphere();
 
-            pgg.projection = greyhoundInfo.srs;
-            pgg.boundingBox = boundingBox;
-            pgg.boundingSphere = boundingBox.getBoundingSphere();
+			pgg.scale = scale;
+			pgg.offset = offset;
 
-            pgg.scale = scale;
-            pgg.offset = offset;
+			console.log('Scale:', scale);
+			console.log('Offset:', offset);
+			console.log('Bounds:', boundingBox);
 
-            console.log('Scale:', scale);
-            console.log('Offset:', offset);
-            console.log('Bounds:', boundingBox);
+			pgg.loader = new Potree.GreyhoundBinaryLoader(version, boundingBox, pgg.scale);
 
-            pgg.loader = new Potree.GreyhoundBinaryLoader(
-                    version, boundingBox, pgg.scale);
+			let nodes = {};
 
-            var nodes = {};
+			{ // load root
+				let name = 'r';
 
-            { // load root
-                var name = "r";
+				let root = new Potree.PointCloudGreyhoundGeometryNode(
+					name, pgg, boundingBox,
+					scale, offset
+				);
 
-                var root = new Potree.PointCloudGreyhoundGeometryNode(
-                        name, pgg, boundingBox,
-                        scale, offset);
+				root.level = 0;
+				root.hasChildren = true;
+				root.numPoints = greyhoundInfo.numPoints;
+				root.spacing = pgg.spacing;
+				pgg.root = root;
+				pgg.root.load();
+				nodes[name] = root;
+			}
 
-                root.level = 0;
-                root.hasChildren = true;
-                root.numPoints = greyhoundInfo.numPoints;
-                root.spacing = pgg.spacing;
-                pgg.root = root;
-                pgg.root.load();
-                nodes[name] = root;
-            }
+			pgg.nodes = nodes;
 
-            pgg.nodes = nodes;
+			GreyhoundUtils.getNormalization(serverURL, greyhoundInfo.baseDepth,
+				function (_, normalize) {
+					if (normalize.color) pgg.normalize.color = true;
+					if (normalize.intensity) pgg.normalize.intensity = true;
 
-            GreyhoundUtils.getNormalization(serverURL, greyhoundInfo.baseDepth,
-                    function(err, normalize) {
-                        if (normalize.color) pgg.normalize.color = true;
-                        if (normalize.intensity) pgg.normalize.intensity = true;
-
-                        callback(pgg);
-                    });
-        });
-	}
-    catch(e) {
+					callback(pgg);
+				}
+			);
+		});
+	} catch (e) {
 		console.log("loading failed: '" + url + "'");
 		console.log(e);
 
@@ -303,54 +299,51 @@ Potree.GreyhoundLoader.load = function load(url, callback) {
 	}
 };
 
-Potree.GreyhoundLoader.loadPointAttributes = function(mno){
-	var fpa = mno.pointAttributes;
-	var pa = new Potree.PointAttributes();
+Potree.GreyhoundLoader.loadPointAttributes = function (mno) {
+	let fpa = mno.pointAttributes;
+	let pa = new Potree.PointAttributes();
 
-	for(var i = 0; i < fpa.length; i++){
-		var pointAttribute = Potree.PointAttribute[fpa[i]];
+	for (let i = 0; i < fpa.length; i++) {
+		let pointAttribute = Potree.PointAttribute[fpa[i]];
 		pa.add(pointAttribute);
 	}
 
 	return pa;
 };
 
+Potree.GreyhoundLoader.createChildAABB = function (aabb, childIndex) {
+	let min = aabb.min;
+	let max = aabb.max;
+	let dHalfLength = new THREE.Vector3().copy(max).sub(min).multiplyScalar(0.5);
+	let xHalfLength = new THREE.Vector3(dHalfLength.x, 0, 0);
+	let yHalfLength = new THREE.Vector3(0, dHalfLength.y, 0);
+	let zHalfLength = new THREE.Vector3(0, 0, dHalfLength.z);
 
-Potree.GreyhoundLoader.createChildAABB = function(aabb, childIndex){
-	var V3 = THREE.Vector3;
-	var min = aabb.min;
-	var max = aabb.max;
-	var dHalfLength = new THREE.Vector3().copy(max).sub(min).multiplyScalar(0.5);
-	var xHalfLength = new THREE.Vector3(dHalfLength.x, 0, 0);
-	var yHalfLength = new THREE.Vector3(0, dHalfLength.y, 0);
-	var zHalfLength = new THREE.Vector3(0, 0, dHalfLength.z);
+	let cmin = min;
+	let cmax = new THREE.Vector3().add(min).add(dHalfLength);
 
-	var cmin = min;
-	var cmax = new THREE.Vector3().add(min).add(dHalfLength);
-
-	var min, max;
 	if (childIndex === 1) {
 		min = new THREE.Vector3().copy(cmin).add(zHalfLength);
 		max = new THREE.Vector3().copy(cmax).add(zHalfLength);
-	}else if (childIndex === 3) {
+	} else if (childIndex === 3) {
 		min = new THREE.Vector3().copy(cmin).add(zHalfLength).add(yHalfLength);
 		max = new THREE.Vector3().copy(cmax).add(zHalfLength).add(yHalfLength);
-	}else if (childIndex === 0) {
+	} else if (childIndex === 0) {
 		min = cmin;
 		max = cmax;
-	}else if (childIndex === 2) {
+	} else if (childIndex === 2) {
 		min = new THREE.Vector3().copy(cmin).add(yHalfLength);
 		max = new THREE.Vector3().copy(cmax).add(yHalfLength);
-	}else if (childIndex === 5) {
+	} else if (childIndex === 5) {
 		min = new THREE.Vector3().copy(cmin).add(zHalfLength).add(xHalfLength);
 		max = new THREE.Vector3().copy(cmax).add(zHalfLength).add(xHalfLength);
-	}else if (childIndex === 7) {
+	} else if (childIndex === 7) {
 		min = new THREE.Vector3().copy(cmin).add(dHalfLength);
 		max = new THREE.Vector3().copy(cmax).add(dHalfLength);
-	}else if (childIndex === 4) {
+	} else if (childIndex === 4) {
 		min = new THREE.Vector3().copy(cmin).add(xHalfLength);
 		max = new THREE.Vector3().copy(cmax).add(xHalfLength);
-	}else if (childIndex === 6) {
+	} else if (childIndex === 6) {
 		min = new THREE.Vector3().copy(cmin).add(xHalfLength).add(yHalfLength);
 		max = new THREE.Vector3().copy(cmax).add(xHalfLength).add(yHalfLength);
 	}

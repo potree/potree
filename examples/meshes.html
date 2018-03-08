@@ -1,49 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="description" content="">
-    <meta name="author" content="">
+<head>
+	<meta charset="utf-8">
+	<meta name="description" content="">
+	<meta name="author" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Potree Viewer</title>
+	<title>Potree Viewer</title>
 
 	<link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
 	<link rel="stylesheet" type="text/css" href="../libs/jquery-ui/jquery-ui.min.css">
 	<link rel="stylesheet" type="text/css" href="../libs/perfect-scrollbar/css/perfect-scrollbar.css">
-	<link rel="stylesheet" href="../libs/openlayers3/ol.css" type="text/css">
-	<link rel="stylesheet" href="../libs/spectrum/spectrum.css" type="text/css">
-  </head>
+	<link rel="stylesheet" type="text/css" href="../libs/openlayers3/ol.css">
+	<link rel="stylesheet" type="text/css" href="../libs/spectrum/spectrum.css">
+	<link rel="stylesheet" type="text/css" href="../libs/jstree/themes/mixed/style.css">
+</head>
 
-  <body>
-  
-	<script src="../libs/jquery/jquery-3.1.1.js"></script>
+<body>
+	<script src="../libs/jquery/jquery-3.1.1.min.js"></script>
 	<script src="../libs/spectrum/spectrum.js"></script>
-	
 	<script src="../libs/perfect-scrollbar/js/perfect-scrollbar.jquery.js"></script>
 	<script src="../libs/jquery-ui/jquery-ui.min.js"></script>
-	<script src="../libs/three.js/build/three.js"></script>
-	<script src="../libs/other/stats.min.js"></script>
+	<script src="../libs/three.js/build/three.min.js"></script>
 	<script src="../libs/other/BinaryHeap.js"></script>
-	<script src="../libs/other/PLYLoader.js"></script>
 	<script src="../libs/tween/tween.min.js"></script>
 	<script src="../libs/d3/d3.js"></script>
 	<script src="../libs/proj4/proj4.js"></script>
 	<script src="../libs/openlayers3/ol.js"></script>
-    <script src="../libs/i18next/i18next.js"></script>
-	
+	<script src="../libs/i18next/i18next.js"></script>
+	<script src="../libs/jstree/jstree.js"></script>
 	<script src="../build/potree/potree.js"></script>
-	<!--<script src="../src/viewer/sidebar.js"></script>-->
+	<script src="../libs/plasio/js/laslaz.js"></script>
+	<script src="../libs/other/PLYLoader.js"></script>
+	<script src="../libs/other/OBJLoader.js"></script>
 	
 	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
 	<!-- INCLUDE SETTINGS HERE -->
 	
-	<script src="../libs/plasio/js/laslaz.js"></script>
-	<script src="../libs/plasio/vendor/bluebird.js"></script>
-
-    <div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
+	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
 		<div id="potree_render_area"></div>
 		<div id="potree_sidebar_container"> </div>
-    </div>
+	</div>
 	
 	<script>
 	
@@ -59,6 +55,7 @@
 		viewer.loadGUI(() => {
 			viewer.setLanguage('en');
 			$("#menu_tools").next().show();
+			$("#menu_scene").next().show();
 			//viewer.toggleSidebar();
 		});
 		
@@ -82,27 +79,30 @@
 			
 			// place three instances of this bunny into the scene
 			
+			let mesh1;
 			{
 				let material = new THREE.MeshNormalMaterial();
-				let mesh = new THREE.Mesh( geometry, material );
-				mesh.position.set(589951.587, 231428.213, 710.634);
-				mesh.scale.multiplyScalar(500);
-				mesh.rotation.set(Math.PI / 2, Math.PI, 0)
-				viewer.scene.scene.add(mesh);
+				mesh1 = new THREE.Mesh( geometry, material );
+				mesh1.position.set(589951.587, 231428.213, 710.634);
+				mesh1.scale.multiplyScalar(500);
+				mesh1.rotation.set(Math.PI / 2, Math.PI, 0)
+				viewer.scene.scene.add(mesh1);
 			}
 			
+			let mesh2;
 			{
 				let material = new THREE.MeshStandardMaterial( { 
 					color: 0x0055ff, 
 					shading: THREE.FlatShading,
 					metalness: 0.2} );
-				let mesh = new THREE.Mesh( geometry, material );
-				mesh.position.set(589851.587, 231348.213, 720.634);
-				mesh.scale.multiplyScalar(500);
-				mesh.rotation.set(Math.PI / 2, Math.PI, 0)
-				viewer.scene.scene.add(mesh);
+				mesh2 = new THREE.Mesh( geometry, material );
+				mesh2.position.set(589851.587, 231348.213, 720.634);
+				mesh2.scale.multiplyScalar(500);
+				mesh2.rotation.set(Math.PI / 2, Math.PI, 0)
+				viewer.scene.scene.add(mesh2);
 			}
 			
+			let mesh3;
 			{
 				let material = new THREE.MeshPhysicalMaterial( {
 					color: 0x226666,
@@ -112,14 +112,95 @@
 					clearCoatRoughness: 1.0,
 					reflectivity: 1.0
 				} );
-				let mesh = new THREE.Mesh( geometry, material );
-				mesh.position.set(589751.587, 231428.213, 725.634);
-				mesh.scale.multiplyScalar(500);
-				mesh.rotation.set(Math.PI / 2, Math.PI, 0)
-				viewer.scene.scene.add(mesh);
+				mesh3 = new THREE.Mesh( geometry, material );
+				mesh3.position.set(589751.587, 231428.213, 725.634);
+				mesh3.scale.multiplyScalar(500);
+				mesh3.rotation.set(Math.PI / 2, Math.PI, 0)
+				viewer.scene.scene.add(mesh3);
 			}
+
+			viewer.onGUILoaded(() => {
+				// Add entries to object list in sidebar
+				let tree = $(`#jstree_scene`);
+				let parentNode = "other";
+
+				let bunny1ID = tree.jstree('create_node', parentNode, { 
+						"text": "Bunny 1", 
+						"icon": `${Potree.resourcePath}/icons/triangle.svg`,
+						"data": mesh1
+					}, 
+					"last", false, false);
+				tree.jstree(mesh1.visible ? "check_node" : "uncheck_node", bunny1ID);
+
+				let bunny2ID = tree.jstree('create_node', parentNode, { 
+						"text": "Bunny 2", 
+						"icon": `${Potree.resourcePath}/icons/triangle.svg`,
+						"data": mesh2
+					}, 
+					"last", false, false);
+				tree.jstree(mesh2.visible ? "check_node" : "uncheck_node", bunny2ID);
+
+				let bunny3ID = tree.jstree('create_node', parentNode, { 
+						"text": "Bunny 3", 
+						"icon": `${Potree.resourcePath}/icons/triangle.svg`,
+						"data": mesh3
+					}, 
+					"last", false, false);
+				tree.jstree(mesh3.visible ? "check_node" : "uncheck_node", bunny3ID);
+			});
 			
 		});
+
+
+		{
+			let manager = new THREE.LoadingManager();
+			manager.onProgress = function ( item, loaded, total ) {
+				console.log( item, loaded, total );
+			};
+			let textureLoader = new THREE.TextureLoader( manager );
+			let texture = textureLoader.load(`${Potree.resourcePath}/textures/brick_pavement.jpg`);
+			let onProgress = function ( xhr ) {
+				if ( xhr.lengthComputable ) {
+					let percentComplete = xhr.loaded / xhr.total * 100;
+					console.log( Math.round(percentComplete, 2) + '% downloaded' );
+				}
+			};
+			texture.wrapS = THREE.RepeatWrapping;
+			texture.wrapT = THREE.RepeatWrapping;
+
+			let onError = function ( xhr ) {};
+			let loader = new THREE.OBJLoader( manager );
+			loader.load(`${Potree.resourcePath}/models/stanford_bunny_reduced.obj`, function ( object ) {
+				object.traverse( function ( child ) {
+					if ( child instanceof THREE.Mesh ) {
+						child.material.map = texture;
+					}
+				} );
+
+				object.position.set(589871.587, 231528.213, 725.634);
+				object.scale.multiplyScalar(500);
+				object.rotation.set(Math.PI / 2, Math.PI, 0)
+
+				viewer.scene.scene.add( object );
+
+				viewer.onGUILoaded(() => {
+					// Add entries to object list in sidebar
+					let tree = $(`#jstree_scene`);
+					let parentNode = "other";
+
+					let bunnyID = tree.jstree('create_node', parentNode, { 
+							text: "Bunny Textured", 
+							icon: `${Potree.resourcePath}/icons/triangle.svg`,
+							data: object
+						}, 
+						"last", false, false);
+					tree.jstree(object.visible ? "check_node" : "uncheck_node", bunnyID);
+
+					//tree.jstree("open_node", parentNode);
+				});
+
+			}, onProgress, onError );
+		}
 
 	</script>
 	

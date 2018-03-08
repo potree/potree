@@ -1,4 +1,5 @@
-./build
+/build
+/test
 node_modules
 docs/.marking_your_own_pointcloud_loader.md.html
 docs/.file_format.md.html
@@ -8,3 +9,12 @@ docs/.materials_and_rendermodes.md.html
 docs/.how_to_create_your_own_pointcloud_loader.md.html
 examples/index.html
 .project
+pointclouds/retz
+pointclouds/NVIDIA_Ph01-20160403_tiles_converted
+libs/CesiumUnminified
+/pointclouds/D
+/pointclouds/wrneustadt
+/pointclouds/alszeile
+/examples/page.html
+/resources/icons/index.html
+/examples/page.html

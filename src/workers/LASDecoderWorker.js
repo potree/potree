@@ -1,6 +1,4 @@
-
-
-//var pointFormatReaders = {
+// let pointFormatReaders = {
 //	0: function(dv) {
 //		return {
 //			"position": [ dv.getInt32(0, true), dv.getInt32(4, true), dv.getInt32(8, true)],
@@ -31,164 +29,166 @@
 //			"color": [dv.getUint16(28, true), dv.getUint16(30, true), dv.getUint16(32, true)]
 //		};
 //	}
-//};
-//	
-//	
-// Decodes LAS records into points
+// };
 //
-//var LASDecoder = function(buffer, pointFormatID, pointSize, pointsCount, scale, offset) {
-//	this.arrayb = buffer;
-//	this.decoder = pointFormatReaders[pointFormatID];
-//	this.pointsCount = pointsCount;
-//	this.pointSize = pointSize;
-//	this.scale = scale;
-//	this.offset = offset;
-//};
 //
-//LASDecoder.prototype.getPoint = function(index) {
-//	if (index < 0 || index >= this.pointsCount)
-//		throw new Error("Point index out of range");
-//
-//	var dv = new DataView(this.arrayb, index * this.pointSize, this.pointSize);
-//	return this.decoder(dv);
-//};
 
-onmessage = function(event){
-	var buffer = event.data.buffer;
-	var numPoints = event.data.numPoints;
-	var pointSize = event.data.pointSize;
-	var pointFormatID = event.data.pointFormatID;
-	var scale = event.data.scale;
-	var offset = event.data.offset;
-	var mins = event.data.mins;
-	var maxs = event.data.maxs;
+
+function readUsingTempArrays(event) {
+
+	performance.mark("laslaz-start");
+
+	let buffer = event.data.buffer;
+	let numPoints = event.data.numPoints;
+	let sourcePointSize = event.data.pointSize;
+	let pointFormatID = event.data.pointFormatID;
+	let scale = event.data.scale;
+	let offset = event.data.offset;
+
+	let temp = new ArrayBuffer(4);
+	let tempUint8 = new Uint8Array(temp);
+	let tempUint16 = new Uint16Array(temp);
+	let tempInt32 = new Int32Array(temp);
+	let sourceUint8 = new Uint8Array(buffer);
+	let sourceView = new DataView(buffer);
 	
-	var temp = new ArrayBuffer(4);
-	var tempUint8 = new Uint8Array(temp);
-	var tempUint16 = new Uint16Array(temp);
-	var tempFloat32 = new Float32Array(temp);
-	var tempInt32 = new Int32Array(temp);
-	var bufferView = new Uint8Array(buffer);
-	
-	var pBuff = new ArrayBuffer(numPoints*3*4);
-	var cBuff = new ArrayBuffer(numPoints*3);
-	var iBuff = new ArrayBuffer(numPoints*4);
-	var clBuff = new ArrayBuffer(numPoints);
-	var rnBuff = new ArrayBuffer(numPoints);
-	var nrBuff = new ArrayBuffer(numPoints);
-	var psBuff = new ArrayBuffer(numPoints * 2);
-	
-	var positions = new Float32Array(pBuff);
-	var colors = new Uint8Array(cBuff);
-	var intensities = new Float32Array(iBuff);
-	var classifications = new Uint8Array(clBuff);
-	var returnNumbers = new Uint8Array(rnBuff);
-	var numberOfReturns = new Uint8Array(nrBuff);
-	var pointSourceIDs = new Uint16Array(psBuff);
-	var tightBoundingBox = {
-		min: [ Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY],
-		max: [ Number.NEGATIVE_INFINITY , Number.NEGATIVE_INFINITY , Number.NEGATIVE_INFINITY ]
+	let targetPointSize = 20;
+	let targetBuffer = new ArrayBuffer(numPoints * targetPointSize);
+	let targetView = new DataView(targetBuffer);
+
+	let tightBoundingBox = {
+		min: [ Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY ],
+		max: [ Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY ]
 	};
-	
+
 	let mean = [0, 0, 0];
+
+	let pBuff = new ArrayBuffer(numPoints * 3 * 4);
+	let cBuff = new ArrayBuffer(numPoints * 4);
+	let iBuff = new ArrayBuffer(numPoints * 4);
+	let clBuff = new ArrayBuffer(numPoints);
+	let rnBuff = new ArrayBuffer(numPoints);
+	let nrBuff = new ArrayBuffer(numPoints);
+	let psBuff = new ArrayBuffer(numPoints * 2);
+
+	let positions = new Float32Array(pBuff);
+	let colors = new Uint8Array(cBuff);
+	let intensities = new Float32Array(iBuff);
+	let classifications = new Uint8Array(clBuff);
+	let returnNumbers = new Uint8Array(rnBuff);
+	let numberOfReturns = new Uint8Array(nrBuff);
+	let pointSourceIDs = new Uint16Array(psBuff);
 	
-	
-	// temp arrays seem to be significantly faster than DataViews
-	// at the moment: http://jsperf.com/dataview-vs-temporary-float64array
-	for(var i = 0; i < numPoints; i++){
-	
+	for (let i = 0; i < numPoints; i++) {
 		// POSITION
-		tempUint8[0] = bufferView[i*pointSize+0];
-		tempUint8[1] = bufferView[i*pointSize+1];
-		tempUint8[2] = bufferView[i*pointSize+2];
-		tempUint8[3] = bufferView[i*pointSize+3];
-		var x = tempInt32[0];
+		tempUint8[0] = sourceUint8[i * sourcePointSize + 0];
+		tempUint8[1] = sourceUint8[i * sourcePointSize + 1];
+		tempUint8[2] = sourceUint8[i * sourcePointSize + 2];
+		tempUint8[3] = sourceUint8[i * sourcePointSize + 3];
+		let x = tempInt32[0];
 		
-		tempUint8[0] = bufferView[i*pointSize+4];
-		tempUint8[1] = bufferView[i*pointSize+5];
-		tempUint8[2] = bufferView[i*pointSize+6];
-		tempUint8[3] = bufferView[i*pointSize+7];
-		var y = tempInt32[0];
+		tempUint8[0] = sourceUint8[i * sourcePointSize + 4];
+		tempUint8[1] = sourceUint8[i * sourcePointSize + 5];
+		tempUint8[2] = sourceUint8[i * sourcePointSize + 6];
+		tempUint8[3] = sourceUint8[i * sourcePointSize + 7];
+		let y = tempInt32[0];
 		
-		tempUint8[0] = bufferView[i*pointSize+8];
-		tempUint8[1] = bufferView[i*pointSize+9];
-		tempUint8[2] = bufferView[i*pointSize+10];
-		tempUint8[3] = bufferView[i*pointSize+11];
-		var z = tempInt32[0];
+		tempUint8[0] = sourceUint8[i * sourcePointSize + 8];
+		tempUint8[1] = sourceUint8[i * sourcePointSize + 9];
+		tempUint8[2] = sourceUint8[i * sourcePointSize + 10];
+		tempUint8[3] = sourceUint8[i * sourcePointSize + 11];
+		let z = tempInt32[0];
 		
-		x = x * scale[0] + offset[0] - event.data.mins[0]; 
-		y = y * scale[1] + offset[1] - event.data.mins[1]; 
-		z = z * scale[2] + offset[2] - event.data.mins[2]; 
-		
-		positions[3*i+0] = x;
-		positions[3*i+1] = y;
-		positions[3*i+2] = z;
-		
+		x = x * scale[0] + offset[0] - event.data.mins[0];
+		y = y * scale[1] + offset[1] - event.data.mins[1];
+		z = z * scale[2] + offset[2] - event.data.mins[2];
+
+		positions[3 * i + 0] = x;
+		positions[3 * i + 1] = y;
+		positions[3 * i + 2] = z;
+
 		mean[0] += x / numPoints;
 		mean[1] += y / numPoints;
 		mean[2] += z / numPoints;
-		
-		tightBoundingBox.min[0] = Math.min(tightBoundingBox.min[0], positions[3*i+0]);
-		tightBoundingBox.min[1] = Math.min(tightBoundingBox.min[1], positions[3*i+1]);
-		tightBoundingBox.min[2] = Math.min(tightBoundingBox.min[2], positions[3*i+2]);
-		
-		tightBoundingBox.max[0] = Math.max(tightBoundingBox.max[0], positions[3*i+0]);
-		tightBoundingBox.max[1] = Math.max(tightBoundingBox.max[1], positions[3*i+1]);
-		tightBoundingBox.max[2] = Math.max(tightBoundingBox.max[2], positions[3*i+2]);
-		
+
+		tightBoundingBox.min[0] = Math.min(tightBoundingBox.min[0], x);
+		tightBoundingBox.min[1] = Math.min(tightBoundingBox.min[1], y);
+		tightBoundingBox.min[2] = Math.min(tightBoundingBox.min[2], z);
+
+		tightBoundingBox.max[0] = Math.max(tightBoundingBox.max[0], x);
+		tightBoundingBox.max[1] = Math.max(tightBoundingBox.max[1], y);
+		tightBoundingBox.max[2] = Math.max(tightBoundingBox.max[2], z);
+
 		// INTENSITY
-		tempUint8[0] = bufferView[i*pointSize+12];
-		tempUint8[1] = bufferView[i*pointSize+13];
-		var intensity = tempUint16[0];
+		tempUint8[0] = sourceUint8[i * sourcePointSize + 12];
+		tempUint8[1] = sourceUint8[i * sourcePointSize + 13];
+		let intensity = tempUint16[0];
 		intensities[i] = intensity;
-		
+
 		// RETURN NUMBER, stored in the first 3 bits - 00000111
-		var returnNumber = bufferView[i*pointSize+14] & 7;
+		let returnNumber = sourceUint8[i * sourcePointSize + 14] & 0b111;
 		returnNumbers[i] = returnNumber;
-		
+
 		// NUMBER OF RETURNS, stored in 00111000
-		numberOfReturns[i] = (bufferView[i*pointSize+14] & 56) / 8;
-		
+		numberOfReturns[i] = (sourceUint8[i * pointSize + 14] & 0b111000) >> 3;
+
+		debugger;
+
 		// CLASSIFICATION
-		var classification = bufferView[i*pointSize+15];
+		let classification = sourceUint8[i * sourcePointSize + 15];
 		classifications[i] = classification;
-		
+
 		// POINT SOURCE ID
-		tempUint8[0] = bufferView[i*pointSize+18];
-		tempUint8[1] = bufferView[i*pointSize+19];
-		var pointSourceID = tempUint16[0];
+		tempUint8[0] = sourceUint8[i * sourcePointSize + 18];
+		tempUint8[1] = sourceUint8[i * sourcePointSize + 19];
+		let pointSourceID = tempUint16[0];
 		pointSourceIDs[i] = pointSourceID;
-		
+
 		// COLOR, if available
-		if(pointFormatID === 2){
-			tempUint8[0] = bufferView[i*pointSize+20];
-			tempUint8[1] = bufferView[i*pointSize+21];
-			var r = tempUint16[0];
-			
-			tempUint8[0] = bufferView[i*pointSize+22];
-			tempUint8[1] = bufferView[i*pointSize+23];
-			var g = tempUint16[0];
-			
-			tempUint8[0] = bufferView[i*pointSize+24];
-			tempUint8[1] = bufferView[i*pointSize+25];
-			var b = tempUint16[0];
-			
-			colors[3*i+0] = r / 256;
-			colors[3*i+1] = g / 256;
-			colors[3*i+2] = b / 256;
+		if (pointFormatID === 2) {
+			tempUint8[0] = sourceUint8[i * sourcePointSize + 20];
+			tempUint8[1] = sourceUint8[i * sourcePointSize + 21];
+			let r = tempUint16[0];
+
+			tempUint8[0] = sourceUint8[i * sourcePointSize + 22];
+			tempUint8[1] = sourceUint8[i * sourcePointSize + 23];
+			let g = tempUint16[0];
+
+			tempUint8[0] = sourceUint8[i * sourcePointSize + 24];
+			tempUint8[1] = sourceUint8[i * sourcePointSize + 25];
+			let b = tempUint16[0];
+
+			r = r / 256;
+			g = g / 256;
+			b = b / 256;
+			colors[4 * i + 0] = r;
+			colors[4 * i + 1] = g;
+			colors[4 * i + 2] = b;
+
 		}
 	}
-	
-	var indices = new ArrayBuffer(numPoints*4);
-	var iIndices = new Uint32Array(indices);
-	for(var i = 0; i < numPoints; i++){
+
+	let indices = new ArrayBuffer(numPoints * 4);
+	let iIndices = new Uint32Array(indices);
+	for (let i = 0; i < numPoints; i++) {
 		iIndices[i] = i;
 	}
+
+	performance.mark("laslaz-end");
+	performance.measure("laslaz", "laslaz-start", "laslaz-end");
+
+	let measure = performance.getEntriesByType("measure")[0];
+	let dpp = 1000 * measure.duration / numPoints;
+	let debugMessage = `${measure.duration.toFixed(3)} ms, ${numPoints} points, ${dpp.toFixed(3)} micros / point`;
+	console.log(debugMessage);
+
+	performance.clearMarks();
+	performance.clearMeasures();
 	
-	var message = {
+	let message = {
 		mean: mean,
-		position: pBuff, 
-		color: cBuff, 
+		position: pBuff,
+		color: cBuff,
 		intensity: iBuff,
 		classification: clBuff,
 		returnNumber: rnBuff,
@@ -197,16 +197,172 @@ onmessage = function(event){
 		tightBoundingBox: tightBoundingBox,
 		indices: indices
 	};
-		
-	var transferables = [
+
+	let transferables = [
 		message.position,
-		message.color, 
+		message.color,
 		message.intensity,
 		message.classification,
 		message.returnNumber,
 		message.numberOfReturns,
 		message.pointSourceID,
 		message.indices];
-		
+
+	debugger;
+
 	postMessage(message, transferables);
 };
+
+
+function readUsingDataView(event) {
+
+	performance.mark("laslaz-start");
+
+	let buffer = event.data.buffer;
+	let numPoints = event.data.numPoints;
+	let sourcePointSize = event.data.pointSize;
+	let pointFormatID = event.data.pointFormatID;
+	let scale = event.data.scale;
+	let offset = event.data.offset;
+
+	let sourceUint8 = new Uint8Array(buffer);
+	let sourceView = new DataView(buffer);
+	
+	let targetPointSize = 40;
+	let targetBuffer = new ArrayBuffer(numPoints * targetPointSize);
+	let targetView = new DataView(targetBuffer);
+
+	let tightBoundingBox = {
+		min: [ Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY ],
+		max: [ Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY ]
+	};
+
+	let mean = [0, 0, 0];
+
+	let pBuff = new ArrayBuffer(numPoints * 3 * 4);
+	let cBuff = new ArrayBuffer(numPoints * 4);
+	let iBuff = new ArrayBuffer(numPoints * 4);
+	let clBuff = new ArrayBuffer(numPoints);
+	let rnBuff = new ArrayBuffer(numPoints);
+	let nrBuff = new ArrayBuffer(numPoints);
+	let psBuff = new ArrayBuffer(numPoints * 2);
+
+	let positions = new Float32Array(pBuff);
+	let colors = new Uint8Array(cBuff);
+	let intensities = new Float32Array(iBuff);
+	let classifications = new Uint8Array(clBuff);
+	let returnNumbers = new Uint8Array(rnBuff);
+	let numberOfReturns = new Uint8Array(nrBuff);
+	let pointSourceIDs = new Uint16Array(psBuff);
+	
+	for (let i = 0; i < numPoints; i++) {
+		// POSITION
+		let ux = sourceView.getInt32(i * sourcePointSize + 0, true);
+		let uy = sourceView.getInt32(i * sourcePointSize + 4, true);
+		let uz = sourceView.getInt32(i * sourcePointSize + 8, true);
+
+		x = ux * scale[0] + offset[0] - event.data.mins[0];
+		y = uy * scale[1] + offset[1] - event.data.mins[1];
+		z = uz * scale[2] + offset[2] - event.data.mins[2];
+
+		//x = ux * scale[0];
+		//y = uy * scale[1];
+		//z = uz * scale[2];
+
+		positions[3 * i + 0] = x;
+		positions[3 * i + 1] = y;
+		positions[3 * i + 2] = z;
+
+		mean[0] += x / numPoints;
+		mean[1] += y / numPoints;
+		mean[2] += z / numPoints;
+
+		tightBoundingBox.min[0] = Math.min(tightBoundingBox.min[0], x);
+		tightBoundingBox.min[1] = Math.min(tightBoundingBox.min[1], y);
+		tightBoundingBox.min[2] = Math.min(tightBoundingBox.min[2], z);
+
+		tightBoundingBox.max[0] = Math.max(tightBoundingBox.max[0], x);
+		tightBoundingBox.max[1] = Math.max(tightBoundingBox.max[1], y);
+		tightBoundingBox.max[2] = Math.max(tightBoundingBox.max[2], z);
+
+		// INTENSITY
+		let intensity = sourceView.getUint16(i * sourcePointSize + 12, true);
+		intensities[i] = intensity;
+
+		// RETURN NUMBER, stored in the first 3 bits - 00000111
+		// number of returns stored in next 3 bits   - 00111000
+		let returnNumberAndNumberOfReturns = sourceView.getUint8(i * sourcePointSize + 14, true);
+		let returnNumber = returnNumberAndNumberOfReturns & 0b0111;
+		let numberOfReturn = (returnNumberAndNumberOfReturns & 0b00111000) >> 3;
+		returnNumbers[i] = returnNumber;
+		numberOfReturns[i] = numberOfReturn;
+
+		// CLASSIFICATION
+		let classification = sourceView.getUint8(i * sourcePointSize + 15, true);
+		classifications[i] = classification;
+
+		// POINT SOURCE ID
+		let pointSourceID = sourceView.getUint16(i * sourcePointSize + 18, true);
+		pointSourceIDs[i] = pointSourceID;
+
+		// COLOR, if available
+		if (pointFormatID === 2) {			
+			let r = sourceView.getUint16(i * sourcePointSize + 20, true) / 256;
+			let g = sourceView.getUint16(i * sourcePointSize + 22, true) / 256;
+			let b = sourceView.getUint16(i * sourcePointSize + 24, true) / 256;
+
+			colors[4 * i + 0] = r;
+			colors[4 * i + 1] = g;
+			colors[4 * i + 2] = b;
+			colors[4 * i + 3] = 255;
+		}
+	}
+
+	let indices = new ArrayBuffer(numPoints * 4);
+	let iIndices = new Uint32Array(indices);
+	for (let i = 0; i < numPoints; i++) {
+		iIndices[i] = i;
+	}
+
+	performance.mark("laslaz-end");
+
+	//{ // print timings
+	//	performance.measure("laslaz", "laslaz-start", "laslaz-end");
+	//	let measure = performance.getEntriesByType("measure")[0];
+	//	let dpp = 1000 * measure.duration / numPoints;
+	//	let debugMessage = `${measure.duration.toFixed(3)} ms, ${numPoints} points, ${dpp.toFixed(3)} µs / point`;
+	//	console.log(debugMessage);
+	//}
+	performance.clearMarks();
+	performance.clearMeasures();
+
+	let message = {
+		mean: mean,
+		position: pBuff,
+		color: cBuff,
+		intensity: iBuff,
+		classification: clBuff,
+		returnNumber: rnBuff,
+		numberOfReturns: nrBuff,
+		pointSourceID: psBuff,
+		tightBoundingBox: tightBoundingBox,
+		indices: indices
+	};
+
+	let transferables = [
+		message.position,
+		message.color,
+		message.intensity,
+		message.classification,
+		message.returnNumber,
+		message.numberOfReturns,
+		message.pointSourceID,
+		message.indices];
+
+	postMessage(message, transferables);
+};
+
+
+
+onmessage = readUsingDataView;
+//onmessage = readUsingTempArrays;

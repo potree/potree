@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="description" content="">
+	<meta name="author" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+	<title>Potree Viewer</title>
+
+	<link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
+	<link rel="stylesheet" type="text/css" href="../libs/jquery-ui/jquery-ui.min.css">
+	<link rel="stylesheet" type="text/css" href="../libs/perfect-scrollbar/css/perfect-scrollbar.css">
+	<link rel="stylesheet" type="text/css" href="../libs/openlayers3/ol.css">
+	<link rel="stylesheet" type="text/css" href="../libs/spectrum/spectrum.css">
+	<link rel="stylesheet" type="text/css" href="../libs/jstree/themes/mixed/style.css">
+</head>
+
+<body>
+	<script src="../libs/jquery/jquery-3.1.1.min.js"></script>
+	<script src="../libs/spectrum/spectrum.js"></script>
+	<script src="../libs/perfect-scrollbar/js/perfect-scrollbar.jquery.js"></script>
+	<script src="../libs/jquery-ui/jquery-ui.min.js"></script>
+	<script src="../libs/three.js/build/three.min.js"></script>
+	<script src="../libs/other/BinaryHeap.js"></script>
+	<script src="../libs/tween/tween.min.js"></script>
+	<script src="../libs/d3/d3.js"></script>
+	<script src="../libs/proj4/proj4.js"></script>
+	<script src="../libs/openlayers3/ol.js"></script>
+	<script src="../libs/i18next/i18next.js"></script>
+	<script src="../libs/jstree/jstree.js"></script>
+	<script src="../build/potree/potree.js"></script>
+	<script src="../libs/plasio/js/laslaz.js"></script>
+	<script src="../libs/other/OBJLoader.js"></script>
+	<script src="../libs/other/PLYLoader.js"></script>
+	
+	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
+	<!-- INCLUDE SETTINGS HERE -->
+	
+	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
+		<div id="potree_render_area"></div>
+		<div id="potree_sidebar_container"> </div>
+	</div>
+	
+	<script>
+	
+		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
+		
+		viewer.setEDLEnabled(true);
+		viewer.setFOV(60);
+		viewer.setPointBudget(1*1000*1000);
+		viewer.loadSettingsFromURL();
+		
+		viewer.setDescription("Point cloud courtesy of <a target='_blank' href='https://www.sigeom.ch/'>sigeom sa</a>");
+		
+		viewer.loadGUI(() => {
+			viewer.setLanguage('en');
+			$("#menu_tools").next().show();
+			$("#menu_scene").next().show();
+			viewer.toggleSidebar();
+		});
+		
+		// Sigeom
+		Potree.loadPointCloud("../pointclouds/vol_total/cloud.js", "sigeom.sa", function(e){
+			let scene = viewer.scene;
+			scene.addPointCloud(e.pointcloud);
+			
+			let material = e.pointcloud.material;
+			material.size = 1;
+			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+
+			scene.view.position.set(589974.341, 231698.397, 986.146);
+			scene.view.lookAt(new THREE.Vector3(589851.587, 231428.213, 715.634));
+			// viewer.fitToScreen();
+		});
+
+		{ // MEASUREMENTS
+			let scene = viewer.scene;
+
+			{ // DISTANCE MEASURE
+				let measure = new Potree.Measure();
+				measure.closed = false;
+				measure.addMarker(new THREE.Vector3(589803.18, 231357.35, 745.38));
+				measure.addMarker(new THREE.Vector3(589795.74, 231323.42, 746.21));		
+				measure.addMarker(new THREE.Vector3(589822.50, 231315.90, 744.45));
+				
+				scene.addMeasurement(measure);
+			}
+			
+			{ // ANGLE MEASURE
+				let measure = new Potree.Measure();
+				measure.name = "Angle Sample";
+				measure.closed = true;
+				measure.showAngles = true;
+				measure.showDistances = false;
+				measure.addMarker(new THREE.Vector3(589866.11, 231372.25, 737.41));
+				measure.addMarker(new THREE.Vector3(589842.15, 231366.82, 743.61));		
+				measure.addMarker(new THREE.Vector3(589860.61, 231348.01, 740.33));
+				
+				scene.addMeasurement(measure);
+			}
+			
+			{ // SINGLE POINT MEASURE
+				let measure = new Potree.Measure();
+				measure.name = "Canopy";
+				measure.showDistances = false;
+				measure.showCoordinates = true;
+				measure.maxMarkers = 1;
+				measure.addMarker(new THREE.Vector3(589853.73, 231300.24, 775.48));
+				
+				scene.addMeasurement(measure);
+			}
+			
+			{ // HEIGHT MEASURE
+				let measure = new Potree.Measure();
+				measure.name = "Tree Height";
+				measure.closed = false;
+				measure.showDistances = false;
+				measure.showHeight = true;
+				measure.addMarker(new THREE.Vector3(589849.69, 231327.26, 766.32));
+				measure.addMarker(new THREE.Vector3(589840.96, 231329.53, 744.52));		
+				
+				scene.addMeasurement(measure);
+			}
+			
+			{ // AREA MEASURE
+				let measure = new Potree.Measure();
+				measure.name = "Area";
+				measure.closed = true;
+				measure.showArea = true;
+				measure.addMarker(new THREE.Vector3(589899.37, 231300.16, 750.25));
+				measure.addMarker(new THREE.Vector3(589874.60, 231326.06, 743.40));
+				measure.addMarker(new THREE.Vector3(589911.61, 231352.57, 743.58));
+				measure.addMarker(new THREE.Vector3(589943.50, 231300.08, 754.62));
+				
+				scene.addMeasurement(measure);
+			}
+
+			{ // PROFILE
+				let profile = new Potree.Profile();
+				profile.setWidth(6)
+				profile.addMarker(new THREE.Vector3(589641.6098756103, 231453.76974998094, 760.4950016784668)); 
+				profile.addMarker(new THREE.Vector3(589514.4799995422, 231309.46000003815, 775.6249989318848)); 
+				profile.addMarker(new THREE.Vector3(589512.4600000381, 231504.9597490845, 764.6350010681152));	
+				
+				scene.addProfile(profile);
+			}
+		}
+
+		{ // ANNOTATIONS
+			let scene = viewer.scene;
+
+			
+			scene.annotations.add(new Potree.Annotation({
+				position: [589847.17, 231436.78, 892.60],
+				cameraPosition: [590034.03, 231814.02, 961.68],
+				cameraTarget: [589847.17, 231436.78, 742.60],
+				title: "Sorvilier"
+			}));
+			
+			scene.annotations.add(new Potree.Annotation({
+				position: [589850.15, 231300.10, 770.94],
+				title: "Trees",
+				description: `Point cloud of a small section in Sorvilier, Switzerland. <br>
+				Courtesy of sigeom.sa`
+			}));
+			
+			scene.annotations.add(new Potree.Annotation({
+				position: [590043.63, 231490.79, 740.78],
+				title: "About Annotations",
+				cameraPosition: [590105.53, 231541.63, 782.05],
+				cameraTarget: [590043.63, 231488.79, 740.78],
+				description: `<ul><li>Click on the annotation label to move a predefined view.</li> 
+				<li>Click on the icon to execute the specified action.</li>
+				In this case, the action will bring you to another scene and point cloud.</ul>`,
+			}));
+
+			scene.annotations.add(new Potree.Annotation({
+				position: [589621, 231437, 784],
+				cameraPosition: [589585.81, 231463.63, 804.00],
+				cameraTarget: [589625.86, 231439, 775.38],
+				title: "About Annotations 2",
+				description: `
+				Suitable annotation positions and views can be obtained by 
+				looking up the current camera position and target in the "Scene" panel, 
+				or by evaluating following lines in your browser's developer console:<br><br>
+				<code>viewer.scene.view.position</code><br>
+				<code>viewer.scene.view.getPivot()</code><br>
+				`
+			}));
+
+			scene.annotations.add(new Potree.Annotation({
+				position: [589980, 231236.83, 783.89],
+				title: "About Annotations 1",
+				description: `
+				Annotations mark and describe locations. 
+				They can move users to a predefined location on click, 
+				and provide action buttons to offer easily accessible 
+				functionality at certain points of interest.
+				`
+			}));
+
+			scene.annotations.add(new Potree.Annotation({
+				position: [589880, 231236.83, 783.89],
+				title: "About Annotations 2",
+				description: `
+				Suitable annotation positions and views can be obtained by 
+				looking up the current camera position and target in the "Scene" panel, 
+				or by evaluating following lines in your browser's developer console:<br><br>
+				<code>viewer.scene.view.position</code><br>
+				<code>viewer.scene.view.getPivot()</code><br>
+				`
+			}));
+			
+			scene.annotations.add(new Potree.Annotation({
+				title: "Actions:&nbsp;",
+				position: [589769.27, 231236.83, 783.89],
+				description: `This annotation has actions that switch between elevation and color rendering modes.`,
+				actions: [{
+					"icon": Potree.resourcePath + "/icons/profile.svg",
+					"onclick": function(){
+						for(let pointcloud of viewer.scene.pointclouds){
+							pointcloud.material.pointColorType = Potree.PointColorType.ELEVATION;
+							pointcloud.material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+						}
+					}
+				},{
+					"icon": Potree.resourcePath + "/icons/rgb.png",
+					"onclick": function(){
+						for(let pointcloud of viewer.scene.pointclouds){
+							pointcloud.material.pointColorType = Potree.PointColorType.RGB;
+							pointcloud.material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+						}
+					}
+				}]
+			}));
+		}
+
+		{
+			let volume = new Potree.Volume();
+			volume.name = "Test Volume";
+			volume.scale.set(87.70990081104037, 65.01472874807978, 95.53770288101325);
+			volume.position.set(589688.5173246722, 231341.79786558595, 792.7726157084892);
+			volume.rotation.set(0, 0, 0.6338484063020134);
+			volume.clip = true;
+			viewer.scene.addVolume(volume);
+		}
+
+		{ // Load Textured bunny from obj
+			let manager = new THREE.LoadingManager();
+			manager.onProgress = function ( item, loaded, total ) {
+				console.log( item, loaded, total );
+			};
+			let textureLoader = new THREE.TextureLoader( manager );
+			let texture = textureLoader.load(`${Potree.resourcePath}/textures/brick_pavement.jpg`);
+			let onProgress = function ( xhr ) {
+				if ( xhr.lengthComputable ) {
+					let percentComplete = xhr.loaded / xhr.total * 100;
+					console.log( Math.round(percentComplete, 2) + '% downloaded' );
+				}
+			};
+			texture.wrapS = THREE.RepeatWrapping;
+			texture.wrapT = THREE.RepeatWrapping;
+
+			let onError = function ( xhr ) {};
+			let loader = new THREE.OBJLoader( manager );
+			loader.load(`${Potree.resourcePath}/models/stanford_bunny_reduced.obj`, function ( object ) {
+				object.traverse( function ( child ) {
+					if ( child instanceof THREE.Mesh ) {
+						child.material.map = texture;
+					}
+				} );
+
+				object.position.set(589871.587, 231528.213, 725.634);
+				object.scale.multiplyScalar(500);
+				object.rotation.set(Math.PI / 2, Math.PI, 0)
+
+				viewer.scene.scene.add( object );
+
+				viewer.onGUILoaded(() => {
+					// Add entries to object list in sidebar
+					let tree = $(`#jstree_scene`);
+					let parentNode = "other";
+
+					let bunnyID = tree.jstree('create_node', parentNode, { 
+							text: "Bunny Textured", 
+							icon: `${Potree.resourcePath}/icons/triangle.svg`,
+							data: object
+						}, 
+						"last", false, false);
+					tree.jstree(object.visible ? "check_node" : "uncheck_node", bunnyID);
+
+					//tree.jstree("open_node", parentNode);
+				});
+
+			}, onProgress, onError );
+		}
+		
+		// Load untextured bunny from ply
+		var loader = new THREE.PLYLoader();
+		loader.load( Potree.resourcePath + "/models/stanford_bunny_reduced.ply", (geometry) => {
+			geometry.computeVertexNormals();
+			
+			// place two instances of this bunny into the scene
+			
+			let mesh1;
+			{
+				let material = new THREE.MeshNormalMaterial();
+				mesh1 = new THREE.Mesh( geometry, material );
+				mesh1.position.set(589961.587, 231428.213, 710.634);
+				mesh1.scale.multiplyScalar(500);
+				mesh1.rotation.set(Math.PI / 2, Math.PI, 0)
+				viewer.scene.scene.add(mesh1);
+			}
+			
+			let mesh2;
+			{
+				let material = new THREE.MeshPhysicalMaterial( {
+					color: 0x226666,
+					metalness: 0,
+					roughness: 0.5,
+					clearCoat:  1.0,
+					clearCoatRoughness: 1.0,
+					reflectivity: 1.0
+				} );
+				mesh2 = new THREE.Mesh( geometry, material );
+				mesh2.position.set(589751.587, 231428.213, 725.634);
+				mesh2.scale.multiplyScalar(500);
+				mesh2.rotation.set(Math.PI / 2, Math.PI, 0)
+				viewer.scene.scene.add(mesh2);
+			}
+
+			viewer.onGUILoaded(() => {
+				// Add entries to object list in sidebar
+				let tree = $(`#jstree_scene`);
+				let parentNode = "other";
+
+				let bunny1ID = tree.jstree('create_node', parentNode, { 
+						text: "Bunny 1", 
+						icon: `${Potree.resourcePath}/icons/triangle.svg`,
+						data: mesh1
+					}, 
+					"last", false, false);
+				tree.jstree(mesh1.visible ? "check_node" : "uncheck_node", bunny1ID);
+
+				let bunny2ID = tree.jstree('create_node', parentNode, { 
+						text: "Bunny 2", 
+						icon: `${Potree.resourcePath}/icons/triangle.svg`,
+						data: mesh2
+					}, 
+					"last", false, false);
+				tree.jstree(mesh2.visible ? "check_node" : "uncheck_node", bunny2ID);
+			});
+			
+		});
+
+	</script>
+	
+	
+  </body>
+</html>

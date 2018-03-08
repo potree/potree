@@ -10,7 +10,11 @@ uniform float edlStrength;
 uniform float radius;
 uniform float opacity;
 
-uniform sampler2D colorMap;
+//uniform sampler2D colorMap;
+uniform sampler2D uRegularColor;
+uniform sampler2D uRegularDepth;
+uniform sampler2D uEDLColor;
+uniform sampler2D uEDLDepth;
 
 varying vec2 vUv;
 
@@ -22,7 +26,8 @@ float response(float depth){
 	for(int i = 0; i < NEIGHBOUR_COUNT; i++){
 		vec2 uvNeighbor = vUv + uvRadius * neighbours[i];
 		
-		float neighbourDepth = texture2D(colorMap, uvNeighbor).a;
+		float neighbourDepth = texture2D(uEDLColor, uvNeighbor).a;
+		neighbourDepth = (neighbourDepth == 1.0) ? 0.0 : neighbourDepth;
 
 		if(neighbourDepth != 0.0){
 			if(depth == 0.0){
@@ -37,16 +42,21 @@ float response(float depth){
 }
 
 void main(){
-	vec4 color = texture2D(colorMap, vUv);
+	vec4 cReg = texture2D(uRegularColor, vUv);
+	vec4 cEDL = texture2D(uEDLColor, vUv);
 	
-	float depth = color.a;
+	float depth = cEDL.a;
+	depth = (depth == 1.0) ? 0.0 : depth;
 	float res = response(depth);
 	float shade = exp(-res * 300.0 * edlStrength);
-	
-	if(color.a == 0.0 && res == 0.0){
-		discard;
+
+	float dReg = texture2D(uRegularDepth, vUv).r;
+	float dEDL = texture2D(uEDLDepth, vUv).r;
+
+	if(dEDL < dReg){
+		gl_FragColor = vec4(cEDL.rgb * shade, opacity);
 	}else{
-		gl_FragColor = vec4(color.rgb * shade, opacity);
+		gl_FragColor = vec4(cReg.rgb * shade, cReg.a);
 	}
-	
+
 }

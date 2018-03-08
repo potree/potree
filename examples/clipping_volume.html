@@ -1,103 +1,116 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="description" content="">
-    <meta name="author" content="">
+<head>
+	<meta charset="utf-8">
+	<meta name="description" content="">
+	<meta name="author" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Potree Viewer</title>
+	<title>Potree Viewer</title>
 
 	<link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
 	<link rel="stylesheet" type="text/css" href="../libs/jquery-ui/jquery-ui.min.css">
 	<link rel="stylesheet" type="text/css" href="../libs/perfect-scrollbar/css/perfect-scrollbar.css">
-	<link rel="stylesheet" href="../libs/openlayers3/ol.css" type="text/css">
-	<link rel="stylesheet" href="../libs/spectrum/spectrum.css" type="text/css">
-  </head>
+	<link rel="stylesheet" type="text/css" href="../libs/openlayers3/ol.css">
+	<link rel="stylesheet" type="text/css" href="../libs/spectrum/spectrum.css">
+	<link rel="stylesheet" type="text/css" href="../libs/jstree/themes/mixed/style.css">
+</head>
 
-  <body>
-  
-	<script src="../libs/jquery/jquery-3.1.1.js"></script>
+<body>
+	<script src="../libs/jquery/jquery-3.1.1.min.js"></script>
 	<script src="../libs/spectrum/spectrum.js"></script>
-	
 	<script src="../libs/perfect-scrollbar/js/perfect-scrollbar.jquery.js"></script>
 	<script src="../libs/jquery-ui/jquery-ui.min.js"></script>
-	<script src="../libs/three.js/build/three.js"></script>
-	<script src="../libs/other/stats.min.js"></script>
+	<script src="../libs/three.js/build/three.min.js"></script>
 	<script src="../libs/other/BinaryHeap.js"></script>
 	<script src="../libs/tween/tween.min.js"></script>
 	<script src="../libs/d3/d3.js"></script>
 	<script src="../libs/proj4/proj4.js"></script>
 	<script src="../libs/openlayers3/ol.js"></script>
-    <script src="../libs/i18next/i18next.js"></script>
-	
+	<script src="../libs/i18next/i18next.js"></script>
+	<script src="../libs/jstree/jstree.js"></script>
 	<script src="../build/potree/potree.js"></script>
-	<!--<script src="../src/viewer/sidebar.js"></script>-->
+	<script src="../libs/plasio/js/laslaz.js"></script>
 	
 	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
 	<!-- INCLUDE SETTINGS HERE -->
 	
-	<script src="../libs/plasio/js/laslaz.js"></script>
-	<script src="../libs/plasio/vendor/bluebird.js"></script>
-
-    <div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
+	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
 		<div id="potree_render_area"></div>
 		<div id="potree_sidebar_container"> </div>
-    </div>
-	
+	</div>
+
 	<script>
-	
+
 		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
-		
+
 		viewer.setEDLEnabled(true);
 		viewer.setFOV(60);
 		viewer.setPointBudget(2*1000*1000);
 		viewer.loadSettingsFromURL();
-		
-		viewer.setDescription("Point cloud courtesy of <a target='_blank' href='https://www.sigeom.ch/'>sigeom sa</a>");
-		
+
+		viewer.setDescription(`
+		This example contains two clipping volumes, one with visible bounding box and another one without. <br>
+		Inside the "Tools" panel, you can specify whether you want to show points inside or outside the clip box, 
+		or to highlight points that are inside.<br>
+		The two volume entries in the "Scene" panel can be used to inspect the properties of the volumes and to show or hide them.
+		Point cloud courtesy of <a target='_blank' href='https://www.sigeom.ch/'>sigeom sa</a>`);
+
 		viewer.loadGUI(() => {
 			viewer.setLanguage('en');
-			$("#menu_other_settings").next().show();
-			viewer.setClipMode(Potree.ClipMode.CLIP_OUTSIDE)
+			$("#menu_tools").next().show();
+			$("#menu_scene").next().show();
 			viewer.toggleSidebar();
 		});
-		
+
 		// Sigeom
 		Potree.loadPointCloud("../pointclouds/vol_total/cloud.js", "sigeom.sa", function(e){
 			let scene = viewer.scene;
 			scene.addPointCloud(e.pointcloud);
-			
+
 			let material = e.pointcloud.material;
 			material.size = 1;
 			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-			
+
 			{ // VOLUME visible
 				let volume  = new Potree.Volume();
 				volume.scale.set(178.04, 159.14, 70.00);
 				volume.position.set(589877.20, 231374.01, 749.62);
 				volume.clip = true;
 				volume.visible = false;
-				
+
 				scene.addVolume(volume);
 			}
-			
+
 			{ // VOLUME invisible
 				let volume  = new Potree.Volume();
 				volume.scale.set(178.04, 159.14, 70.00);
 				volume.position.set(589661.930, 231374.010, 749.620);
 				volume.clip = true;
-				
-				
+
+
 				scene.addVolume(volume);
 			}
-			
+
 			scene.view.position.set(590017.55, 231689.93, 1027.90);
 			scene.view.lookAt(new THREE.Vector3(589807.53, 231410.61, 765.30));
 			// viewer.fitToScreen();
+
+			viewer.setClipTask(Potree.ClipTask.SHOW_INSIDE)
 		});
-		
+
+		function test(){
+			let volume = viewer.scene.volumes[1];
+			let pointcloud = viewer.scene.pointclouds[0];
+
+			let fitted = pointcloud.root.getFittedBox(volume);
+			console.log(fitted);
+			volume.scale.copy(fitted.scale);
+			volume.position.copy(fitted.position);
+
+		}
+
 	</script>
-	
-	
+
+
   </body>
 </html>

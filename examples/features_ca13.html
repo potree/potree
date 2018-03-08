@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="description" content="">
+	<meta name="author" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+	<title>Potree Viewer</title>
+
+	<link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
+	<link rel="stylesheet" type="text/css" href="../libs/jquery-ui/jquery-ui.min.css">
+	<link rel="stylesheet" type="text/css" href="../libs/perfect-scrollbar/css/perfect-scrollbar.css">
+	<link rel="stylesheet" type="text/css" href="../libs/openlayers3/ol.css">
+	<link rel="stylesheet" type="text/css" href="../libs/spectrum/spectrum.css">
+	<link rel="stylesheet" type="text/css" href="../libs/jstree/themes/mixed/style.css">
+</head>
+
+<body>
+	<script src="../libs/jquery/jquery-3.1.1.min.js"></script>
+	<script src="../libs/spectrum/spectrum.js"></script>
+	<script src="../libs/perfect-scrollbar/js/perfect-scrollbar.jquery.js"></script>
+	<script src="../libs/jquery-ui/jquery-ui.min.js"></script>
+	<script src="../libs/three.js/build/three.min.js"></script>
+	<script src="../libs/other/BinaryHeap.js"></script>
+	<script src="../libs/tween/tween.min.js"></script>
+	<script src="../libs/d3/d3.js"></script>
+	<script src="../libs/proj4/proj4.js"></script>
+	<script src="../libs/openlayers3/ol.js"></script>
+	<script src="../libs/i18next/i18next.js"></script>
+	<script src="../libs/jstree/jstree.js"></script>
+	<script src="../build/potree/potree.js"></script>
+	<script src="../libs/plasio/js/laslaz.js"></script>
+	
+	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
+	<!-- INCLUDE SETTINGS HERE -->
+	
+	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
+		<div id="potree_render_area"></div>
+		<div id="potree_sidebar_container"> </div>
+	</div>
+	
+	<script>
+	
+		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
+		
+		viewer.setEDLEnabled(true);
+		viewer.setFOV(60);
+		viewer.setPointBudget(3*1000*1000);
+		viewer.loadSettingsFromURL();
+		
+		viewer.setDescription("");
+		
+		viewer.loadGUI(() => {
+			viewer.setLanguage('en');
+			$("#menu_appearance").next().show();
+			$("#menu_tools").next().show();
+			$("#menu_scene").next().show();
+			viewer.toggleSidebar();
+		});
+		
+		// CA13
+		Potree.loadPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/opentopography/CA13/cloud.js", "CA13", function(e){
+			let pointcloud = e.pointcloud;
+			let scene = viewer.scene;
+			let material = pointcloud.material;
+
+			scene.addPointCloud(pointcloud);
+			pointcloud.position.z = 0;
+			
+			material.size = 1;
+			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+			
+			scene.view.position.set(690711.599, 3873671.422, 51647.850);
+			scene.view.lookAt(705119.301, 3920506.695, -564.566);
+
+			{ // ANNOTATIONS
+				let aRoot = viewer.scene.annotations;
+
+				let aCA13 = new Potree.Annotation({
+					title: "CA13",
+					position: [675036.45, 3850315.78, 65076.70],
+					cameraPosition: [675036.45, 3850315.78, 65076.70],
+					cameraTarget: [692869.03, 3925774.14, 1581.51],
+				});
+				aRoot.add(aCA13);
+
+				let aSanSimeon = new Potree.Annotation({
+					title: "San Simeon",
+					position: [664147.50, 3946008.73, 16.30],
+					cameraPosition: [664941.80, 3943568.06, 1925.30],
+					cameraTarget: [664147.50, 3946008.73, 16.30],
+				});
+				aCA13.add(aSanSimeon);
+
+				let aHearstCastle = new Potree.Annotation({
+					title: "Hearst Castle",
+					position: [665744.56, 3950567.52, 500.48],
+					cameraPosition: [665692.66, 3950521.65, 542.02],
+					cameraTarget: [665744.56, 3950567.52, 500.48],
+				});
+				aCA13.add(aHearstCastle);
+
+				let aMorroBay = new Potree.Annotation({
+					title: "Morro Bay",
+					position: [695483.33, 3916430.09, 25.75],
+					cameraPosition: [694114.65, 3911176.26, 3402.33],
+					cameraTarget: [695483.33, 3916430.09, 25.75],
+				});
+				aCA13.add(aMorroBay);
+
+				let aMorroRock = new Potree.Annotation({
+					title: "Morro Rock",
+					position: [693729.66, 3916085.19, 90.35],
+					cameraPosition: [693512.77, 3915375.61, 342.33],
+					cameraTarget: [693729.66, 3916085.19, 90.35],
+				});
+				aMorroBay.add(aMorroRock);
+
+				let aMorroBayMutualWaterCo = new Potree.Annotation({
+					title: "Morro Bay Mutual Water Co",
+					position: [694699.45, 3916425.75, 39.78],
+					cameraPosition: [694377.64, 3916289.32, 218.40],
+					cameraTarget: [694699.45, 3916425.75, 39.78],
+				});
+				aMorroBay.add(aMorroBayMutualWaterCo);
+
+				let aLilaKeiserPark = new Potree.Annotation({
+					title: "Lila Keiser Park",
+					position: [694674.99, 3917070.49, 10.86],
+					cameraPosition: [694452.59, 3916845.14, 298.64],
+					cameraTarget: [694674.99, 3917070.49, 10.86],
+				});
+				aMorroBay.add(aLilaKeiserPark);
+
+				let aSanLuisObispo = new Potree.Annotation({
+					title: "San Luis Obispo",
+					position: [712573.39, 3907588.33, 146.44],
+					cameraPosition: [711158.29, 3907019.82, 1335.89],
+					cameraTarget: [712573.39, 3907588.33, 146.44],
+				});
+				aCA13.add(aSanLuisObispo);
+
+				let aLopezHill = new Potree.Annotation({
+					title: "Lopez Hill",
+					position: [728635.63, 3895761.56, 456.33],
+					cameraPosition: [728277.24, 3895282.29, 821.51],
+					cameraTarget: [728635.63, 3895761.56, 456.33],
+				});
+				aCA13.add(aLopezHill);
+
+				let aWhaleRockReservoir = new Potree.Annotation({
+					title: "Whale Rock Reservoir",
+					position: [692845.46, 3925528.53, 140.91],
+					cameraPosition: [693073.32, 3922354.02, 2154.17],
+					cameraTarget: [692845.46, 3925528.53, 140.91],
+				});
+				aCA13.add(aWhaleRockReservoir);
+
+			}
+
+			{ // TREE RETURNS POI - ANNOTATION & VOLUME
+				let aRoot = scene.annotations;
+
+				let aTreeReturns = new Potree.Annotation({
+					title: "Tree Returns",
+					position: [675756.75, 3937590.94, 80.21],
+					cameraPosition: [675715.78, 3937700.36, 115.95],
+					cameraTarget: [675756.75, 3937590.94, 80.21],
+					actions: [{
+						"icon": Potree.resourcePath + "/icons/return_number.svg",
+						"onclick": function(){
+							material.pointColorType = Potree.PointColorType.RETURN_NUMBER;
+							material.pointSizeType = Potree.PointSizeType.FIXED;
+							viewer.setClipTask(Potree.ClipTask.SHOW_INSIDE);
+						}
+					},{
+						"icon": Potree.resourcePath + "/icons/rgb.png",
+						"onclick": function(){
+							material.pointColorType = Potree.PointColorType.RGB;
+							material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+							viewer.setClipTask(Potree.ClipTask.HIGHLIGHT);
+						}
+					}]
+				});
+				aRoot.add(aTreeReturns);
+				aTreeReturns.domElement.find(".annotation-action-icon:first").css("filter", "invert(1)");
+
+				let volume = new Potree.Volume();
+				volume.position.set(675755.4039368022, 3937586.911614576, 85);
+				volume.scale.set(119.87189835418388, 68.3925257233834, 51.757483718373265);
+				volume.rotation.set(0, 0, 0.8819755090987993, "XYZ");
+				volume.clip = true;
+				volume.visible = false;
+				volume.name = "Trees";
+				scene.addVolume(volume);
+			}
+
+			{ // MEASUREMENTS
+				{
+					let measurement = new Potree.Measure();
+					measurement.addMarker([649883.34, 3964419.93, 815.99]);
+					measurement.addMarker([648709.04, 3963016.51, 2.36]);
+					measurement.showHeight = true;
+					measurement.showDistances = false;
+					measurement.name = "Mountain Height";
+					viewer.scene.addMeasurement(measurement);
+				}
+
+				{
+					let measurement = new Potree.Measure();
+					measurement.addMarker([655447.29, 3948399.92, 19.26]);
+					measurement.addMarker([655411.81, 3948369.64, 17.84]);
+					measurement.name = "Parking Space";
+					viewer.scene.addMeasurement(measurement);
+				}
+
+				{
+					let measurement = new Potree.Measure();
+					measurement.addMarker([646037.800, 3971448.200, 819.990]);
+					measurement.addMarker([736909.820, 3891012.300, 296.000]);
+					viewer.scene.addMeasurement(measurement);
+				}
+			}
+		});
+
+	</script>
+	
+	
+  </body>
+</html>

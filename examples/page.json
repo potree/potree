@@ -55,5 +55,24 @@
 		{"thumb": "thumbnails/vol_total.jpg", "label": "Sorvilier", "url": "showcase/sorvilier.html"},
 		{"thumb": "thumbnails/westend_palais.jpg", "label": "Westend Palais", "url": "showcase/westend_palais.html"},
 		{"thumb": "thumbnails/whitby.jpg", "label": "Whitby", "url": "showcase/whitby.html"}
+	],
+	"thirdparty": [
+		{"thumb": "third/sitn.jpg", "label": "SITN", "url": "https://sitn.ne.ch/lidar/"},
+		{"thumb": "third/entwine.jpg", "label": "Entwine", "url": "http://potree.entwine.io/"},
+		{"thumb": "third/laspublish.jpg", "label": "laspublish", "url": "https://rapidlasso.com/laspublish/"},
+		{"thumb": "third/icgc_barcelona.jpg", "label": "Barcelona", "url": "http://betaportal.icgc.cat/wordpress/sagrada_familia_eixample_3d/"},
+		{"thumb": "third/preikestolen.jpg", "label": "", "url": "https://www.linkedin.com/pulse/open-source-advent-21-partridge-potree-bj%C3%B8rn-ove-gr%C3%B8tan/?published=t"},
+		{"thumb": "third/oklahoma_state_university.jpg", "label": "", "url": "http://geog.okstate.edu/users/mathews/potree/osuLib_nad.html"},
+		{"thumb": "third/bermuda100.jpg", "label": "Bermuda 100", "url": "http://bermuda100.ucsd.edu/mary-celestia/index.php"},
+		{"thumb": "third/pointbox.jpg", "label": "Pointbox", "url": "https://www.pointbox.xyz/"},
+		{"thumb": "third/dublin.jpg", "label": "Dublin", "url": "https://digital.ucd.ie/view/ucdlib:30462"},
+		{"thumb": "third/AHN2.jpg", "label": "AHN2", "url": "http://ahn2.pointclouds.nl/"},
+		{"thumb": "third/phoenix_lidar.jpg", "label": "Phoenix Lidar", "url": "https://www.phoenixlidar.com/sampledata/"},
+		{"thumb": "third/tatsumi_dam.jpg", "label": "Tatsumi Dam", "url": "http://www.kkapc.co.jp/potree-1.5RC/examples/apc_tatumi.html"},
+		{"thumb": "third/ara.jpg", "label": "", "url": "http://www.airborneresearch.com.au/potree/ironbank1/examples/ironbank1.html"},
+		{"thumb": "third/goldmine.jpg", "label": "", "url": "https://digitalreality.ethz.ch/goldmine/"},
+		{"thumb": "third/ricketts_sanctuary.jpg", "label": "", "url": "http://files.digitisation.unimelb.edu.au/potree/pointclouds/ricketts-test2.html"},
+		{"thumb": "third/hakea_macrorrhyncha.jpg", "label": "", "url": "http://files.digitisation.unimelb.edu.au/potree/pointclouds/hakea_macrorrhyncha.html"},
+		{"thumb": "third/wesmapping_grand_canyon.jpg", "label": "Wesmapping", "url": "http://wesmapping.com/blog/3d-visualization-of-the-grand-canyon-with-potree/"}
 	]
 }

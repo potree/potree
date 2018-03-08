@@ -1,6 +1,6 @@
 
-precision mediump float;
-precision mediump int;
+precision highp float;
+precision highp int;
 
 #define max_clip_polygons 8
 #define PI 3.141592653589793
@@ -550,14 +550,14 @@ float getPointSize(){
 		}
 	#elif defined adaptive_point_size
 		if(uUseOrthographicCamera) {
-			float worldSpaceSize = 1.5 * size * r / getPointSizeAttenuation();
+			float worldSpaceSize = 1.0 * size * r / getPointSizeAttenuation();
 			pointSize = (worldSpaceSize / uOrthoWidth) * uScreenWidth;
 		} else {
 
 			if(uIsLeafNode && false){
 				pointSize = size * spacing * projFactor;
 			}else{
-				float worldSpaceSize = 1.5 * size * r / getPointSizeAttenuation();
+				float worldSpaceSize = 1.0 * size * r / getPointSizeAttenuation();
 				pointSize = worldSpaceSize * projFactor;
 			}
 		}

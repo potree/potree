@@ -206,6 +206,7 @@ gulp.task('examples_page', function() {
 	let unhandledCode = ``;
 	let exampleCode = ``;
 	let showcaseCode = ``;
+	let thirdpartyCode = ``;
 
 	{
 		let urls = settings.examples.map(e => e.url);
@@ -235,29 +236,33 @@ gulp.task('examples_page', function() {
 		}
 	}
 
-	{
-		for(let example of settings.examples){
-			exampleCode += `
-			<a href="${example.url}" target="_blank" style="display: inline-block">
-				<div class="thumb" style="background-image: url('${example.thumb}'); ">
-					<div class="thumb-label">${example.label}</div>
-				</div>
-			</a>
-			`;
-		}
+	for(let example of settings.examples){
+		exampleCode += `
+		<a href="${example.url}" target="_blank" style="display: inline-block">
+			<div class="thumb" style="background-image: url('${example.thumb}'); ">
+				<div class="thumb-label">${example.label}</div>
+			</div>
+		</a>
+		`;
 	}
 
-	{
-		for(let showcaseItem of settings.showcase){
-			showcaseCode += `<a href="${showcaseItem.url}" target="_blank" style="display: inline-block">
-				<div class="thumb" style="background-image: url('${showcaseItem.thumb}'); ">
-					<div class="thumb-label">${showcaseItem.label}</div>
-				</div>
-			</a>
-			`;
-		}
+	for(let showcaseItem of settings.showcase){
+		showcaseCode += `<a href="${showcaseItem.url}" target="_blank" style="display: inline-block">
+			<div class="thumb" style="background-image: url('${showcaseItem.thumb}'); ">
+				<div class="thumb-label">${showcaseItem.label}</div>
+			</div>
+		</a>
+		`;
 	}
 
+	for(let item of settings.thirdparty){
+		thirdpartyCode += `<a href="${item.url}" target="_blank" style="display: inline-block">
+			<div class="thumb" style="background-image: url('${item.thumb}'); ">
+				<div class="thumb-label">${item.label}</div>
+			</div>
+		</a>
+		`;
+	}
 	
 
 	let page = `
@@ -271,13 +276,13 @@ gulp.task('examples_page', function() {
 			}
 
 			.thumb{
-				background-size: 160px 160px; 
-				width: 160px; 
-				height: 160px; 
+				background-size: 140px 140px; 
+				width: 140px; 
+				height: 140px; 
 				border-radius: 5px; 
-				border: 2px solid black; 
+				border: 1px solid black; 
 				box-shadow: 3px 3px 3px 0px #555; 
-				margin: 3px; 
+				margin: 0px; 
 				float: left;
 			}
 
@@ -325,19 +330,70 @@ gulp.task('examples_page', function() {
 				font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 			}
 
+			#samples_container{
+				display: grid;
+				grid-template-columns: 70% 30%;
+				grid-gap: 10px;
+				grid-template-rows: auto auto;
+
+			}
+
+
+			#thumb_container{
+				grid-column-start: 1;
+				grid-column-end: 1;
+				grid-row-start: 1;
+				grid-row-end: 1;
+
+				max-width: 1200px; 
+				margin: auto; 
+				margin-top: 20px
+			}
+
+			#external_container{
+				grid-column-start: 2;
+				grid-column-end: 2;
+				grid-row-start: 1;
+				grid-row-end: 2;
+
+				margin-top: 20px
+			}
+
+			#showcase_container{
+				grid-column-start: 1;
+				grid-column-end: 1;
+				grid-row-start: 2;
+				grid-row-end: 2;
+
+				max-width: 1200px; 
+				margin: auto; 
+				margin-top: 20px;
+			}
+
 			</style>
 			</head>
 			<body>
 
-				<div id="thumb_container" style="max-width: 1200px; margin: auto; margin-top: 50px;">
-					<h1>Examples</h1>
-					${exampleCode}
+				<div id="samples_container">
+
+					<div id="thumb_container">
+						<h1>Examples</h1>
+						${exampleCode}
+					</div>
+
+					<div id="showcase_container">
+						<h1>Showcase</h1>
+						${showcaseCode}
+					</div>
+
+					<div id="external_container">
+						<h1>Third Party</h1>
+						${thirdpartyCode}
+					</div>
+
 				</div>
 
-				<div id="showcase_container" style="max-width: 1200px; margin: auto; margin-top: 50px;">
-					<h1>Showcase</h1>
-					${showcaseCode}
-				</div>
+				
 
 				<div class="unhandled_container">
 					<h1>Other</h1>

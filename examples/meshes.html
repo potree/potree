@@ -151,6 +151,57 @@
 			
 		});
 
+
+		{
+			let manager = new THREE.LoadingManager();
+			manager.onProgress = function ( item, loaded, total ) {
+				console.log( item, loaded, total );
+			};
+			let textureLoader = new THREE.TextureLoader( manager );
+			let texture = textureLoader.load(`${Potree.resourcePath}/textures/brick_pavement.jpg`);
+			let onProgress = function ( xhr ) {
+				if ( xhr.lengthComputable ) {
+					let percentComplete = xhr.loaded / xhr.total * 100;
+					console.log( Math.round(percentComplete, 2) + '% downloaded' );
+				}
+			};
+			texture.wrapS = THREE.RepeatWrapping;
+			texture.wrapT = THREE.RepeatWrapping;
+
+			let onError = function ( xhr ) {};
+			let loader = new THREE.OBJLoader( manager );
+			loader.load(`${Potree.resourcePath}/models/stanford_bunny_reduced.obj`, function ( object ) {
+				object.traverse( function ( child ) {
+					if ( child instanceof THREE.Mesh ) {
+						child.material.map = texture;
+					}
+				} );
+
+				object.position.set(589871.587, 231528.213, 725.634);
+				object.scale.multiplyScalar(500);
+				object.rotation.set(Math.PI / 2, Math.PI, 0)
+
+				viewer.scene.scene.add( object );
+
+				viewer.onGUILoaded(() => {
+					// Add entries to object list in sidebar
+					let tree = $(`#jstree_scene`);
+					let parentNode = "other";
+
+					let bunnyID = tree.jstree('create_node', parentNode, { 
+							text: "Bunny Textured", 
+							icon: `${Potree.resourcePath}/icons/triangle.svg`,
+							data: object
+						}, 
+						"last", false, false);
+					tree.jstree(object.visible ? "check_node" : "uncheck_node", bunnyID);
+
+					//tree.jstree("open_node", parentNode);
+				});
+
+			}, onProgress, onError );
+		}
+
 	</script>
 	
 	

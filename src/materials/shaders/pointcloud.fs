@@ -3,8 +3,8 @@
 	#extension GL_EXT_frag_depth : enable
 #endif
 
-precision mediump float;
-precision mediump int;
+precision highp float;
+precision highp int;
 
 uniform mat4 viewMatrix;
 uniform mat4 uViewInv;

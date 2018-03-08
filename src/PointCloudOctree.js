@@ -344,6 +344,7 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 
 			{
 				let bBox = node.getBoundingBox().clone();
+				bBox.applyMatrix4(node.sceneNode.matrixWorld);
 				bBox.applyMatrix4(camera.matrixWorldInverse);
 
 				let bSphere = bBox.getBoundingSphere();
@@ -380,6 +381,10 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 			let level = node.getLevel();
 			let distance = value.distance;
 			let i = value.i;
+
+			if(level < 4){
+				continue;
+			}
 			
 
 			//if(node.name === "r6646"){

@@ -736,6 +736,9 @@ Potree.TransformationTool = class TransformationTool {
 
 			this.scene.visible = true;
 
+			this.scene.updateMatrix();
+			this.scene.updateMatrixWorld();
+
 			let selected = this.selection[0];
 			let world = selected.matrixWorld;
 			let camera = this.viewer.scene.getActiveCamera();
@@ -746,11 +749,11 @@ Potree.TransformationTool = class TransformationTool {
 
 			this.scene.scale.copy(selected.boundingBox.getSize().multiply(selected.scale));
 			this.scene.position.copy(center);
-			//this.scene.position.copy(selected.position);
 			this.scene.rotation.copy(selected.rotation);
 
-			{
+			this.scene.updateMatrixWorld();
 
+			{
 				// adjust scale of components
 				for(let handleName of Object.keys(this.handles)){
 					let handle = this.handles[handleName];
@@ -872,7 +875,6 @@ Potree.TransformationTool = class TransformationTool {
 					axisScale([0, 0, 1]),
 				);
 
-				//this.frame.scale.copy(scale);	
 			}
 
 		}else{

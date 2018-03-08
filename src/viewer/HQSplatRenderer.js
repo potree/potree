@@ -228,6 +228,8 @@ class HQSplatRenderer {
 
 		viewer.renderer.render(viewer.scene.scene, camera);
 
+		viewer.dispatchEvent({type: "render.pass.scene", viewer: viewer});
+
 		Potree.endQuery(queryHQSplats, viewer.renderer.getContext());
 
 		viewer.renderer.clearDepth();

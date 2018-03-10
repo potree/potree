@@ -656,7 +656,7 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 	}
 
 	set opacity (value) {
-		if (this.uniforms && this.uniforms.opacity) {
+		if (this.uniforms && this.uniforms.uOpacity) {
 			if (this.uniforms.uOpacity.value !== value) {
 				this.uniforms.uOpacity.value = value;
 				this.updateShaderSource();

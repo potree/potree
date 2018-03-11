@@ -92,6 +92,11 @@
 	opacity: 0.8;
 	border: 1px solid black;
 	display: flex;
+	overflow: auto;
+}
+
+.potree_message_error{
+	background-color: red;
 }
 
 #potree_description{

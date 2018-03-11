@@ -327,7 +327,8 @@ Potree.loadPointCloud = function (path, name, callback) {
 		// We check if the path string starts with 'greyhound:', if so we assume it's a greyhound server URL.
 		Potree.GreyhoundLoader.load(path, function (geometry) {
 			if (!geometry) {
-				callback({type: 'loading_failed'});
+				//callback({type: 'loading_failed'});
+				console.error(new Error(`failed to load point cloud from URL: ${path}`));
 			} else {
 				let pointcloud = new Potree.PointCloudOctree(geometry);
 				loaded(pointcloud);
@@ -336,7 +337,8 @@ Potree.loadPointCloud = function (path, name, callback) {
 	} else if (path.indexOf('cloud.js') > 0) {
 		Potree.POCLoader.load(path, function (geometry) {
 			if (!geometry) {
-				callback({type: 'loading_failed'});
+				//callback({type: 'loading_failed'});
+				console.error(new Error(`failed to load point cloud from URL: ${path}`));
 			} else {
 				let pointcloud = new Potree.PointCloudOctree(geometry);
 				loaded(pointcloud);
@@ -345,14 +347,16 @@ Potree.loadPointCloud = function (path, name, callback) {
 	} else if (path.indexOf('.vpc') > 0) {
 		Potree.PointCloudArena4DGeometry.load(path, function (geometry) {
 			if (!geometry) {
-				callback({type: 'loading_failed'});
+				//callback({type: 'loading_failed'});
+				console.error(new Error(`failed to load point cloud from URL: ${path}`));
 			} else {
 				let pointcloud = new Potree.PointCloudArena4D(geometry);
 				loaded(pointcloud);
 			}
 		});
 	} else {
-		callback({'type': 'loading_failed'});
+		//callback({'type': 'loading_failed'});
+		console.error(new Error(`failed to load point cloud from URL: ${path}`));
 	}
 };
 /* eslint-enable standard/no-callback-literal */

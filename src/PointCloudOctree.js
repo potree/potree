@@ -343,13 +343,15 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 			}
 
 			{
+				// TODO performance optimization
+				// for some reason, this part can be extremely slow in chrome during a debugging session, but not during profiling
 				let bBox = node.getBoundingBox().clone();
-				bBox.applyMatrix4(node.sceneNode.matrixWorld);
-				bBox.applyMatrix4(camera.matrixWorldInverse);
-
+				//bBox.applyMatrix4(node.sceneNode.matrixWorld);
+				//bBox.applyMatrix4(camera.matrixWorldInverse);
 				let bSphere = bBox.getBoundingSphere();
+				bSphere.applyMatrix4(node.sceneNode.matrixWorld);
+				bSphere.applyMatrix4(camera.matrixWorldInverse);
 
-				//let distance = center.distanceTo(camera.position);
 				let ray = new THREE.Ray(camera.position, camera.getWorldDirection());
 				let distance = intersectSphereBack(ray, bSphere);
 				let distance2 = bSphere.center.distanceTo(camera.position) + bSphere.radius;
@@ -385,20 +387,17 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 			if(level < 4){
 				continue;
 			}
-			
 
 			//if(node.name === "r6646"){
 			//	var a = 10;
 			//	a = 10 * 10;
 			//}
 
-
 			for(let [lod, range] of lodRanges){
 				if(distance < range * 1.2){
 					data[i * 4 + 3] = lod;
 				}
 			}
-	
 		}
 
 		//{

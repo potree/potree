@@ -1,6 +1,5 @@
 {
 	"examples": [
-		{"thumb": "thumbnails/arena4d.png", "label": "Arena4D", "url": "arena4d.html"},
 		{"thumb": "thumbnails/animation_paths.png", "label": "Animation Path", "url": "animation_paths.html"},
 		{"thumb": "thumbnails/annotations.png", "label": "Annotations", "url": "annotations.html"},
 		{"thumb": "thumbnails/annotation_hierarchy.png", "label": "Hierarchical Annotations", "url": "annotation_hierarchy.html"},
@@ -11,7 +10,6 @@
 		{"thumb": "thumbnails/clipping_volume.png", "label": "Clipping Volume", "url": "clipping_volume.html"},
 		{"thumb": "thumbnails/custom_sidebar_section.png", "label": "Custom Sidebar Section", "url": "custom_sidebar_section.html"},
 		{"thumb": "thumbnails/elevation_profile.png", "label": "Elevation Profile", "url": "elevation_profile.html"},
-		{"thumb": "thumbnails/entwine_greyhound.png", "label": "Entwine / Greyhound", "url": "entwine_greyhound.html"},
 		{"thumb": "thumbnails/embedded_iframe.png", "label": "Embedded Iframe", "url": "embedded_iframe.html"},
 		{"thumb": "thumbnails/gradient_colors.png", "label": "Gradient Colors", "url": "gradient_colors.html"},
 		{"thumb": "thumbnails/heidentor.png", "label": "Heidentor", "url": "heidentor.html"},
@@ -27,7 +25,9 @@
 		{"thumb": "thumbnails/shapefiles.png", "label": "Shapefiles", "url": "shapefiles.html"},
 		{"thumb": "thumbnails/viewer.png", "label": "Basic Viewer", "url": "viewer.html"},
 		{"thumb": "thumbnails/features_sorvilier.png", "label": "Features (Sorvilier)", "url": "features_sorvilier.html"},
-		{"thumb": "thumbnails/features_ca13.png", "label": "Features (CA13)", "url": "features_ca13.html"}
+		{"thumb": "thumbnails/features_ca13.png", "label": "Features (CA13)", "url": "features_ca13.html"},
+		{"thumb": "thumbnails/arena4d.png", "label": "Arena4D", "url": "arena4d.html"},
+		{"thumb": "thumbnails/entwine_greyhound.png", "label": "Entwine / Greyhound", "url": "entwine_greyhound.html"}
 	],
 	"showcase": [
 		{"thumb": "thumbnails/chiller.jpg", "label": "Chiller", "url": "showcase/chiller.html"},

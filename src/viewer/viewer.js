@@ -1583,6 +1583,14 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		Potree.framenumber++;
 	}
 
+	postError(content, params = {}){
+		let message = this.postMessage(content, params);
+
+		message.element.addClass("potree_message_error");
+
+		return message;
+	}
+
 	postMessage(content, params = {}){
 		let message = new Potree.Message(content);
 

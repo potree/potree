@@ -82,7 +82,7 @@
 }
 
 .potree_message{
-	width: 300px;
+	width: 500px;
 	background-color: var(--bg-color);
 	padding: 5px;
 	margin: 5px;
@@ -92,6 +92,11 @@
 	opacity: 0.8;
 	border: 1px solid black;
 	display: flex;
+	overflow: auto;
+}
+
+.potree_message_error{
+	background-color: red;
 }
 
 #potree_description{

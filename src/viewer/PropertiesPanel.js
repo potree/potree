@@ -1013,7 +1013,9 @@ Potree.PropertiesPanel = class PropertriesPanel{
 				min: 0,
 				max: 1,
 				step: 0.001,
-				slide: function (event, ui) { material.opacity = ui.value; }
+				slide: function (event, ui) { 
+					material.opacity = ui.value;
+				}
 			});
 
 			let update = (e) => {

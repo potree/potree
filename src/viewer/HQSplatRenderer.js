@@ -4,25 +4,21 @@ class HQSplatRenderer {
 	constructor (viewer) {
 		this.viewer = viewer;
 
-		this.depthMaterial = null;
-		this.attributeMaterial = null;
+		this.depthMaterials = new Map();
+		this.attributeMaterials = new Map();
 		this.normalizationMaterial = null;
 
 		this.rtDepth = null;
 		this.rtAttribute = null;
 		this.gl = viewer.renderer.context;
+
+		this.initialized = false;
 	}
 
 	init(){
-		if (this.depthMaterial != null) {
+		if (this.initialized) {
 			return;
 		}
-
-		this.depthMaterial = new Potree.PointCloudMaterial();
-		this.attributeMaterial = new Potree.PointCloudMaterial();
-
-		this.depthMaterial.setDefine("depth_pass", "#define hq_depth_pass");
-		this.depthMaterial.setDefine("use_edl", "#define use_edl");
 
 		this.normalizationMaterial = new Potree.NormalizationMaterial();
 		this.normalizationMaterial.depthTest = true;
@@ -59,6 +55,8 @@ class HQSplatRenderer {
 		//	plane.position.set(plane.scale.x / 2, plane.scale.y / 2, 0);
 		//	this.viewer.overlay.add(plane);
 		//}
+
+		this.initialized = true;
 	};
 
 	resize () {
@@ -90,99 +88,127 @@ class HQSplatRenderer {
 
 		let queryHQSplats = Potree.startQuery('HQSplats', viewer.renderer.getContext());
 
+		let visiblePointClouds = viewer.scene.pointclouds.filter(pc => pc.visible);
+		let originalMaterials = new Map();
+
+		for(let pointcloud of visiblePointClouds){
+			originalMaterials.set(pointcloud, pointcloud.material);
+
+			if(!this.attributeMaterials.has(pointcloud)){
+				let attributeMaterial = new Potree.PointCloudMaterial();
+				this.attributeMaterials.set(pointcloud, attributeMaterial);
+			}
+
+			if(!this.depthMaterials.has(pointcloud)){
+				let depthMaterial = new Potree.PointCloudMaterial();
+
+				depthMaterial.setDefine("depth_pass", "#define hq_depth_pass");
+				depthMaterial.setDefine("use_edl", "#define use_edl");
+
+				this.depthMaterials.set(pointcloud, depthMaterial);
+			}
+		}
+
 		{ // DEPTH PASS
-			for (let pointcloud of viewer.scene.pointclouds) {
+			for (let pointcloud of visiblePointClouds) {
 				let octreeSize = pointcloud.pcoGeometry.boundingBox.getSize().x;
 
-				let material = pointcloud.material;
+				let material = originalMaterials.get(pointcloud);
+				let depthMaterial = this.depthMaterials.get(pointcloud);
 
-				this.depthMaterial.size = material.size;
-				this.depthMaterial.minSize = material.minSize;
-				this.depthMaterial.maxSize = material.maxSize;
+				depthMaterial.size = material.size;
+				depthMaterial.minSize = material.minSize;
+				depthMaterial.maxSize = material.maxSize;
 
-				this.depthMaterial.pointSizeType = material.pointSizeType;
-				this.depthMaterial.visibleNodesTexture = material.visibleNodesTexture;
-				this.depthMaterial.weighted = false;
-				this.depthMaterial.screenWidth = width;
-				this.depthMaterial.shape = Potree.PointShape.CIRCLE;
-				this.depthMaterial.screenHeight = height;
-				this.depthMaterial.uniforms.visibleNodes.value = material.visibleNodesTexture;
-				this.depthMaterial.uniforms.octreeSize.value = octreeSize;
-				this.depthMaterial.spacing = pointcloud.pcoGeometry.spacing * Math.max(...pointcloud.scale.toArray());
-				this.depthMaterial.classification = material.classification;
+				depthMaterial.pointSizeType = material.pointSizeType;
+				depthMaterial.visibleNodesTexture = material.visibleNodesTexture;
+				depthMaterial.weighted = false;
+				depthMaterial.screenWidth = width;
+				depthMaterial.shape = Potree.PointShape.CIRCLE;
+				depthMaterial.screenHeight = height;
+				depthMaterial.uniforms.visibleNodes.value = material.visibleNodesTexture;
+				depthMaterial.uniforms.octreeSize.value = octreeSize;
+				depthMaterial.spacing = pointcloud.pcoGeometry.spacing * Math.max(...pointcloud.scale.toArray());
+				depthMaterial.classification = material.classification;
 
-				this.depthMaterial.clipTask = material.clipTask;
-				this.depthMaterial.clipMethod = material.clipMethod;
-				this.depthMaterial.setClipBoxes(material.clipBoxes);
-				this.depthMaterial.setClipPolygons(material.clipPolygons);
+				depthMaterial.clipTask = material.clipTask;
+				depthMaterial.clipMethod = material.clipMethod;
+				depthMaterial.setClipBoxes(material.clipBoxes);
+				depthMaterial.setClipPolygons(material.clipPolygons);
+
+				pointcloud.material = depthMaterial;
 			}
 			
 			viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, this.rtDepth, {
-				material: this.depthMaterial
+				//material: this.depthMaterial
 			});
 		}
 
 		{ // ATTRIBUTE PASS
-			for (let pointcloud of viewer.scene.pointclouds) {
+			for (let pointcloud of visiblePointClouds) {
 				let octreeSize = pointcloud.pcoGeometry.boundingBox.getSize().x;
 
-				let material = pointcloud.material;
+				let material = originalMaterials.get(pointcloud);
+				let attributeMaterial = this.attributeMaterials.get(pointcloud);
 
-				this.attributeMaterial.size = material.size;
-				this.attributeMaterial.minSize = material.minSize;
-				this.attributeMaterial.maxSize = material.maxSize;
+				attributeMaterial.size = material.size;
+				attributeMaterial.minSize = material.minSize;
+				attributeMaterial.maxSize = material.maxSize;
 
-				this.attributeMaterial.pointSizeType = material.pointSizeType;
-				this.attributeMaterial.pointColorType = material.pointColorType;
-				this.attributeMaterial.visibleNodesTexture = material.visibleNodesTexture;
-				this.attributeMaterial.weighted = true;
-				this.attributeMaterial.screenWidth = width;
-				this.attributeMaterial.screenHeight = height;
-				this.attributeMaterial.shape = Potree.PointShape.CIRCLE;
-				this.attributeMaterial.uniforms.visibleNodes.value = material.visibleNodesTexture;
-				this.attributeMaterial.uniforms.octreeSize.value = octreeSize;
-				this.attributeMaterial.spacing = pointcloud.pcoGeometry.spacing * Math.max(...pointcloud.scale.toArray());
-				this.attributeMaterial.classification = material.classification;
-				this.attributeMaterial.elevationRange = material.elevationRange;
-				this.attributeMaterial.gradient = material.gradient;
+				attributeMaterial.pointSizeType = material.pointSizeType;
+				attributeMaterial.pointColorType = material.pointColorType;
+				attributeMaterial.visibleNodesTexture = material.visibleNodesTexture;
+				attributeMaterial.weighted = true;
+				attributeMaterial.screenWidth = width;
+				attributeMaterial.screenHeight = height;
+				attributeMaterial.shape = Potree.PointShape.CIRCLE;
+				attributeMaterial.uniforms.visibleNodes.value = material.visibleNodesTexture;
+				attributeMaterial.uniforms.octreeSize.value = octreeSize;
+				attributeMaterial.spacing = pointcloud.pcoGeometry.spacing * Math.max(...pointcloud.scale.toArray());
+				attributeMaterial.classification = material.classification;
+				attributeMaterial.elevationRange = material.elevationRange;
+				attributeMaterial.gradient = material.gradient;
 
-				this.attributeMaterial.intensityRange = material.intensityRange;
-				this.attributeMaterial.intensityGamma = material.intensityGamma;
-				this.attributeMaterial.intensityContrast = material.intensityContrast;
-				this.attributeMaterial.intensityBrightness = material.intensityBrightness;
+				attributeMaterial.intensityRange = material.intensityRange;
+				attributeMaterial.intensityGamma = material.intensityGamma;
+				attributeMaterial.intensityContrast = material.intensityContrast;
+				attributeMaterial.intensityBrightness = material.intensityBrightness;
 
-				this.attributeMaterial.rgbGamma = material.rgbGamma;
-				this.attributeMaterial.rgbContrast = material.rgbContrast;
-				this.attributeMaterial.rgbBrightness = material.rgbBrightness;
+				attributeMaterial.rgbGamma = material.rgbGamma;
+				attributeMaterial.rgbContrast = material.rgbContrast;
+				attributeMaterial.rgbBrightness = material.rgbBrightness;
 
-				this.attributeMaterial.weightRGB = material.weightRGB;
-				this.attributeMaterial.weightIntensity = material.weightIntensity;
-				this.attributeMaterial.weightElevation = material.weightElevation;
-				this.attributeMaterial.weightRGB = material.weightRGB;
-				this.attributeMaterial.weightClassification = material.weightClassification;
-				this.attributeMaterial.weightReturnNumber = material.weightReturnNumber;
-				this.attributeMaterial.weightSourceID = material.weightSourceID;
+				attributeMaterial.weightRGB = material.weightRGB;
+				attributeMaterial.weightIntensity = material.weightIntensity;
+				attributeMaterial.weightElevation = material.weightElevation;
+				attributeMaterial.weightRGB = material.weightRGB;
+				attributeMaterial.weightClassification = material.weightClassification;
+				attributeMaterial.weightReturnNumber = material.weightReturnNumber;
+				attributeMaterial.weightSourceID = material.weightSourceID;
 
-				this.attributeMaterial.color = material.color;
+				attributeMaterial.color = material.color;
 
+				attributeMaterial.clipTask = material.clipTask;
+				attributeMaterial.clipMethod = material.clipMethod;
+				attributeMaterial.setClipBoxes(material.clipBoxes);
+				attributeMaterial.setClipPolygons(material.clipPolygons);
 
-
-				this.attributeMaterial.clipTask = material.clipTask;
-				this.attributeMaterial.clipMethod = material.clipMethod;
-				this.attributeMaterial.setClipBoxes(material.clipBoxes);
-				this.attributeMaterial.setClipPolygons(material.clipPolygons);
-
+				pointcloud.material = attributeMaterial;
 			}
 			
 			let gl = this.gl;
 
 			viewer.renderer.setRenderTarget(null);
 			viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, this.rtAttribute, {
-				material: this.attributeMaterial,
+				//material: this.attributeMaterial,
 				blendFunc: [gl.SRC_ALPHA, gl.ONE],
 				//depthTest: false,
 				depthWrite: false
 			});
+		}
+
+		for(let [pointcloud, material] of originalMaterials){
+			pointcloud.material = material;
 		}
 
 		viewer.renderer.setRenderTarget(null);

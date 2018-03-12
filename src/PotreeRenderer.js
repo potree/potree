@@ -926,7 +926,14 @@ Potree.Renderer = class Renderer {
 
 		gl.useProgram(shader.program);
 
-		if (material.opacity < 1) {
+		let transparent = false;
+		if(params.transparent !== undefined){
+			transparent = params.transparent && material.opacity < 1;
+		}else{
+			transparent = material.opacity < 1;
+		}
+
+		if (transparent){
 			gl.enable(gl.BLEND);
 			gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
 			gl.depthMask(false);

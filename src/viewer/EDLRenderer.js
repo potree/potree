@@ -233,10 +233,13 @@ class EDLRenderer{
 		// TODO adapt to multiple lights
 		if(lights.length > 0){
 			viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, this.rtEDL, {
-				shadowMaps: [this.shadowMap]
+				shadowMaps: [this.shadowMap],
+				transparent: false,
 			});
 		}else{
-			viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, this.rtEDL, {});
+			viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, this.rtEDL, {
+				transparent: false,
+			});
 		}
 
 		viewer.renderer.render(viewer.scene.scene, camera, this.rtRegular);

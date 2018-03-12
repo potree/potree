@@ -209,6 +209,7 @@
 					event.stopPropagation();
 					material.pointColorType = Potree.PointColorType.RETURN_NUMBER;
 					material.pointSizeType = Potree.PointSizeType.FIXED;
+					material.size = 5;
 					potreeViewer.setClipTask(Potree.ClipTask.SHOW_INSIDE);
 				});
 				
@@ -216,6 +217,7 @@
 					event.stopPropagation();
 					material.pointColorType = Potree.PointColorType.RGB;
 					material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+					material.size = 1;
 					potreeViewer.setClipTask(Potree.ClipTask.HIGHLIGHT);
 				});
 

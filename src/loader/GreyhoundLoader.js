@@ -144,7 +144,7 @@ Potree.GreyhoundLoader.load = function load (url, callback) {
 	try {
 		// We assume everything ater the string 'greyhound://' is the server url
 		let serverURL = url.split('greyhound://')[1];
-		if (serverURL.split('http://').length === 1) {
+		if (serverURL.split('http://').length === 1 && serverURL.split('https://').length === 1) {
 			serverURL = 'http://' + serverURL;
 		}
 

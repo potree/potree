@@ -201,7 +201,7 @@ a:hover, a:visited, a:link, a:active{
 	margin:			auto;
 	display:		table;
 	padding:		1px 8px;
-	cursor: 	pointer;
+	cursor: 		pointer;
 }
 
 .annotation-expand{

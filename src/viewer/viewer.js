@@ -1013,7 +1013,8 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 
 			let element = annotation.domElement;
 
-			let position = annotation.position;
+			let position = annotation.position.clone();
+			position.add(annotation.offset);
 			if (!position) {
 				position = annotation.boundingBox.getCenter();
 			}

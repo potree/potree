@@ -13,6 +13,7 @@ Potree.Annotation = class extends THREE.EventDispatcher {
 		this.scene = null;
 		this._title = args.title || 'No Title';
 		this._description = args.description || '';
+		this.offset = new THREE.Vector3();
 
 		if (!args.position) {
 			this.position = null;

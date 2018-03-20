@@ -5,7 +5,7 @@ Potree.Scene = class extends THREE.EventDispatcher{
 		super();
 
 		this.annotations = new Potree.Annotation();
-		
+
 		this.scene = new THREE.Scene();
 		this.sceneBG = new THREE.Scene();
 		this.scenePointCloud = new THREE.Scene();
@@ -21,11 +21,12 @@ Potree.Scene = class extends THREE.EventDispatcher{
 		this.profiles = [];
 		this.volumes = [];
 		this.polygonClipVolumes = [];
-		
+
 		this.fpControls = null;
 		this.orbitControls = null;
 		this.earthControls = null;
 		this.geoControls = null;
+		this.deviceControls = null;
 		this.inputHandler = null;
 
 		this.view = new Potree.View();
@@ -87,7 +88,7 @@ Potree.Scene = class extends THREE.EventDispatcher{
 
 		return height;
 	}
-	
+
 	getBoundingBox(pointclouds = this.pointclouds){
 		let box = new THREE.Box3();
 
@@ -145,7 +146,7 @@ Potree.Scene = class extends THREE.EventDispatcher{
 			"volume": volume
 		});
 	};
-	
+
 	removePolygonClipVolume(volume){
 		let index = this.polygonClipVolumes.indexOf(volume);
 		if (index > -1) {
@@ -157,7 +158,7 @@ Potree.Scene = class extends THREE.EventDispatcher{
 			});
 		}
 	};
-	
+
 	addMeasurement(measurement){
 		measurement.lengthUnit = this.lengthUnit;
 		this.measurements.push(measurement);
@@ -227,11 +228,11 @@ Potree.Scene = class extends THREE.EventDispatcher{
 	}
 
 	getActiveCamera() {
-		return this.cameraMode == Potree.CameraMode.PERSPECTIVE ? this.cameraP : this.cameraO;		
+		return this.cameraMode == Potree.CameraMode.PERSPECTIVE ? this.cameraP : this.cameraO;
 	}
-	
+
 	initialize(){
-		
+
 		this.referenceFrame = new THREE.Object3D();
 		this.referenceFrame.matrixAutoUpdate = false;
 		this.scenePointCloud.add(this.referenceFrame);
@@ -243,15 +244,15 @@ Potree.Scene = class extends THREE.EventDispatcher{
 		//this.camera.rotation.y = -Math.PI / 4;
 		//this.camera.rotation.x = -Math.PI / 6;
 		this.cameraScreenSpace.lookAt(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, -1), new THREE.Vector3(0, 1, 0));
-		
+
 		this.directionalLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
 		this.directionalLight.position.set( 10, 10, 10 );
 		this.directionalLight.lookAt( new THREE.Vector3(0, 0, 0));
 		this.scenePointCloud.add( this.directionalLight );
-		
+
 		let light = new THREE.AmbientLight( 0x555555 ); // soft white light
 		this.scenePointCloud.add( light );
-		
+
 		//let grid = Potree.utils.createGrid(5, 5, 2);
 		//this.scene.add(grid);
 
@@ -294,8 +295,8 @@ Potree.Scene = class extends THREE.EventDispatcher{
 			}
 		}
 	}
-	
-	addAnnotation(position, args = {}){		
+
+	addAnnotation(position, args = {}){
 		if(position instanceof Array){
 			args.position = new THREE.Vector3().fromArray(position);
 		} else if (position instanceof THREE.Vector3) {

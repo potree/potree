@@ -52,9 +52,6 @@
 
 		viewer.loadGUI(() => {
 			viewer.setLanguage('en');
-			$("#menu_tools").next().show();
-			$("#menu_clipping").next().show();
-			viewer.toggleSidebar();
 		});
 
 		// Load and add point cloud to scene
@@ -69,14 +66,10 @@
 
 			scene.addPointCloud(pointcloud);
 
-			//scene.view.position.set(589974.341, 231698.397, 986.146);
-			//scene.view.lookAt(new THREE.Vector3(589851.587, 231428.213, 715.634));
 			viewer.setNavigationMode(Potree.DeviceOrientationControls);
-			viewer.fitToScreen();
+			viewer.scene.view.position.set(589976, 231432, 748);
 		});
 
 	</script>
-
-
   </body>
 </html>

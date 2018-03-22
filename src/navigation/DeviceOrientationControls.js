@@ -34,10 +34,10 @@ Potree.DeviceOrientationControls = class DeviceOrientationControls extends THREE
             this.screenOrientation = window.orientation || 0;
         };
 
-        if ('ondeviceorientationabsolute' in window) {
-            window.addEventListener('deviceorientationabsolute', deviceOrientationChange);
-        } else if ('ondeviceorientation' in window) {
-            // alert("WARNING: Absolute coordinates could not be guaranteed.");
+        // if ('ondeviceorientationabsolute' in window) {
+        //     window.addEventListener('deviceorientationabsolute', deviceOrientationChange);
+        // } else if ('ondeviceorientation' in window) {
+        if ('ondeviceorientation' in window) {
             window.addEventListener('deviceorientation', deviceOrientationChange);
         } else {
             console.warn("No device orientation found.");

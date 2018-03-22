@@ -50,20 +50,19 @@ Potree.DeviceOrientationControls = class DeviceOrientationControls extends THREE
     }
 
     update (delta) {
-        let computeQuaternion = function (quaternion, alpha, beta, gamma, orient) {
-            let newQuaternion = new THREE.Quaternion().copy(quaternion);
-
+        let computeQuaternion = function (alpha, beta, gamma, orient) {
+            let quaternion = new THREE.Quaternion();
             let zee = new THREE.Vector3(0, 0, 1);
             let euler = new THREE.Euler();
             let q0 = new THREE.Quaternion();
             let q1 = new THREE.Quaternion(-Math.sqrt(0.5), 0, 0, Math.sqrt(0.5));
 
             euler.set(beta, alpha, -gamma, 'YXZ');
-            newQuaternion.setFromEuler(euler);
-            newQuaternion.multiply(q1);
-            newQuaternion.multiply(q0.setFromAxisAngle(zee, -orient));
+            quaternion.setFromEuler(euler);
+            quaternion.multiply(q1);
+            quaternion.multiply(q0.setFromAxisAngle(zee, -orient));
 
-            return newQuaternion;
+            return quaternion;
         };
 
         if (typeof this.deviceOrientation !== 'undefined') {
@@ -72,8 +71,7 @@ Potree.DeviceOrientationControls = class DeviceOrientationControls extends THREE
             let gamma = this.deviceOrientation.gamma ? THREE.Math.degToRad(this.deviceOrientation.gamma) : 0;
             let orient = this.screenOrientation ? THREE.Math.degToRad(this.screenOrientation) : 0;
 
-            let quaternion = computeQuaternion(viewer.scene.cameraP.quaternion, alpha, beta, gamma, orient);
-
+            let quaternion = computeQuaternion(alpha, beta, gamma, orient);
             viewer.scene.cameraP.quaternion.set(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
         }
     }

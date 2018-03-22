@@ -34,14 +34,14 @@ Potree.DeviceOrientationControls = class DeviceOrientationControls extends THREE
             this.screenOrientation = window.orientation || 0;
         };
 
-        // if ('ondeviceorientationabsolute' in window) {
-        //     window.addEventListener('deviceorientationabsolute', deviceOrientationChange);
-        // } else if ('ondeviceorientation' in window) {
-        if ('ondeviceorientation' in window) {
+        if ('ondeviceorientationabsolute' in window) {
+            window.addEventListener('deviceorientationabsolute', deviceOrientationChange);
+        } else if ('ondeviceorientation' in window) {
             window.addEventListener('deviceorientation', deviceOrientationChange);
         } else {
             console.warn("No device orientation found.");
         }
+        // window.addEventListener('deviceorientation', deviceOrientationChange);
         window.addEventListener('orientationchange', screenOrientationChange);
     }
 
@@ -52,14 +52,13 @@ Potree.DeviceOrientationControls = class DeviceOrientationControls extends THREE
     update (delta) {
         let computeQuaternion = function (alpha, beta, gamma, orient) {
             let quaternion = new THREE.Quaternion();
+
             let zee = new THREE.Vector3(0, 0, 1);
             let euler = new THREE.Euler();
             let q0 = new THREE.Quaternion();
-            let q1 = new THREE.Quaternion(-Math.sqrt(0.5), 0, 0, Math.sqrt(0.5));
 
-            euler.set(beta, alpha, -gamma, 'YXZ');
+            euler.set(beta, gamma, alpha, 'ZXY');
             quaternion.setFromEuler(euler);
-            quaternion.multiply(q1);
             quaternion.multiply(q0.setFromAxisAngle(zee, -orient));
 
             return quaternion;

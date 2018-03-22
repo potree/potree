@@ -306,6 +306,8 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			return this.fpControls;
 		} else if (navigationMode === Potree.EarthControls) {
 			return this.earthControls;
+		} else if (navigationMode === Potree.DeviceOrientationControls) {
+			return this.deviceControls;
 		} else {
 			return null;
 		}
@@ -839,6 +841,13 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			this.earthControls.addEventListener('start', this.disableAnnotations.bind(this));
 			this.earthControls.addEventListener('end', this.enableAnnotations.bind(this));
 		}
+
+		{ // create DEVICE ORIENTATION CONTROLS
+			this.deviceControls = new Potree.DeviceOrientationControls(this);
+			this.deviceControls.enabled = false;
+			this.deviceControls.addEventListener('start', this.disableAnnotations.bind(this));
+			this.deviceControls.addEventListener('end', this.enableAnnotations.bind(this));
+		}
 	};
 
 	toggleSidebar () {
@@ -1272,7 +1281,13 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			this.inputHandler.addInputListener(this.controls);
 		}
 		
-		if (this.controls !== null) {
+		if (this.getControls(scene.view.navigationMode) === this.deviceControls) {
+			this.controls.setScene(scene);
+			this.controls.update(delta);
+
+			this.scene.cameraP.position.copy(scene.view.position);
+			this.scene.cameraO.position.copy(scene.view.position);
+		} else if (this.controls !== null) {
 			this.controls.setScene(scene);
 			this.controls.update(delta);
 

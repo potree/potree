@@ -26,6 +26,7 @@ Potree.Scene = class extends THREE.EventDispatcher{
 		this.orbitControls = null;
 		this.earthControls = null;
 		this.geoControls = null;
+		this.deviceControls = null;
 		this.inputHandler = null;
 
 		this.view = new Potree.View();

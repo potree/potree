@@ -1,20 +1,20 @@
 
 Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
-
+	
 	constructor(domElement, args = {}){
 		super();
 
 		this.renderArea = domElement;
-		this.guiLoaded = false;
+		this.guiLoaded = false;	
 		this.guiLoadTasks = [];
 
 		this.messages = [];
 		this.elMessages = $(`
-		<div id="message_listing"
+		<div id="message_listing" 
 			style="position: absolute; z-index: 1000; left: 10px; bottom: 10px">
 		</div>`);
 		$(domElement).append(this.elMessages);
-
+		
 		try{
 
 		{ // generate missing dom hierarchy
@@ -36,7 +36,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 
 			if ($(domElement).find('#potree_annotations').length === 0) {
 				let potreeAnnotationContainer = $(`
-					<div id="potree_annotation_container"
+					<div id="potree_annotation_container" 
 						style="position: absolute; z-index: 100000; width: 100%; height: 100%; pointer-events: none;"></div>`);
 				$(domElement).append(potreeAnnotationContainer);
 			}
@@ -101,7 +101,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		this.clippingTool =  null;
 		this.transformationTool = null;
 		this.navigationCube = null;
-
+		
 		this.skybox = null;
 		this.clock = new THREE.Clock();
 		this.background = null;
@@ -116,19 +116,19 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 				-1000, 1000
 			);
 		}
-
+		
 		this.pRenderer = new Potree.Renderer(this.renderer);
-
+		
 		{
 			let near = 2.5;
 			let far = 10.0;
 			let fov = 90;
-
+			
 			this.shadowTestCam = new THREE.PerspectiveCamera(90, 1, near, far);
 			this.shadowTestCam.position.set(3.50, -2.80, 8.561);
 			this.shadowTestCam.lookAt(new THREE.Vector3(0, 0, 4.87));
 		}
-
+		
 
 		let scene = new Potree.Scene(this.renderer);
 		this.setScene(scene);
@@ -141,11 +141,11 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			this.transformationTool = new Potree.TransformationTool(this);
 			this.navigationCube = new Potree.NavigationCube(this);
 			this.navigationCube.visible = false;
-
+			
 			this.createControls();
 
 			this.clippingTool.setScene(this.scene);
-
+			
 			let onPointcloudAdded = (e) => {
 				if (this.scene.pointclouds.length === 1) {
 					let speed = e.pointcloud.boundingBox.getSize().length();
@@ -161,7 +161,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			this.addEventListener('scene_changed', (e) => {
 				this.inputHandler.setScene(e.scene);
 				this.clippingTool.setScene(this.scene);
-
+				
 				if(!e.scene.hasEventListener("pointcloud_added", onPointcloudAdded)){
 					e.scene.addEventListener("pointcloud_added", onPointcloudAdded);
 				}
@@ -169,7 +169,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 				if(!e.scene.hasEventListener("volume_removed", onPointcloudAdded)){
 					e.scene.addEventListener("volume_removed", onVolumeRemoved);
 				}
-
+				
 			});
 
 			this.scene.addEventListener("volume_removed", onVolumeRemoved);
@@ -212,33 +212,33 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 
 		if ($(this.renderArea).find('#potree_failpage').length === 0) {
 			let elFailPage = $(`
-			<div id="#potree_failpage" class="potree_failpage">
-
+			<div id="#potree_failpage" class="potree_failpage"> 
+				
 				<h1>Potree Encountered An Error </h1>
 
 				<p>
 				This may happen if your browser or graphics card is not supported.
 				<br>
-				We recommend to use
+				We recommend to use 
 				<a href="https://www.google.com/chrome/browser" target="_blank" style="color:initial">Chrome</a>
-				or
+				or 
 				<a href="https://www.mozilla.org/" target="_blank">Firefox</a>.
 				</p>
 
 				<p>
-				Please also visit <a href="http://webglreport.com/" target="_blank">webglreport.com</a> and
+				Please also visit <a href="http://webglreport.com/" target="_blank">webglreport.com</a> and 
 				check whether your system supports WebGL.
 				</p>
 				<p>
-				If you are already using one of the recommended browsers and WebGL is enabled,
+				If you are already using one of the recommended browsers and WebGL is enabled, 
 				consider filing an issue report at <a href="https://github.com/potree/potree/issues" target="_blank">github</a>,<br>
-				including your operating system, graphics card, browser and browser version, as well as the
+				including your operating system, graphics card, browser and browser version, as well as the 
 				error message below.<br>
 				Please do not report errors on unsupported browsers.
 				</p>
 
 				<pre id="potree_error_console" style="width: 100%; height: 100%"></pre>
-
+				
 			</div>`);
 
 			let elErrorMessage = elFailPage.find('#potree_error_console');
@@ -404,8 +404,8 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			this.clipTask = value;
 
 			this.dispatchEvent({
-				type: "cliptask_changed",
-				viewer: this});
+				type: "cliptask_changed", 
+				viewer: this});		
 		}
 	}
 
@@ -413,10 +413,10 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		if(this.clipMethod !== value){
 
 			this.clipMethod = value;
-
+			
 			this.dispatchEvent({
-				type: "clipmethod_changed",
-				viewer: this});
+				type: "clipmethod_changed", 
+				viewer: this});		
 		}
 	}
 
@@ -441,7 +441,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 	getShowAnnotations () {
 		return this.showAnnotations;
 	}
-
+	
 	setDEMCollisionsEnabled(value){
 		if(this.useDEMCollisions !== value){
 			this.useDEMCollisions = value;
@@ -560,7 +560,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		} else {
 			bs = node.boundingBox.getBoundingSphere();
 		}
-		bs = bs.clone().applyMatrix4(node.matrixWorld);
+		bs = bs.clone().applyMatrix4(node.matrixWorld); 
 
 		let startPosition = view.position.clone();
 		let endPosition = camera.position.clone();
@@ -648,18 +648,18 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 				break;
 		}
 	}
-
+	
 	setTopView(){
 		this.scene.view.yaw = 0;
 		this.scene.view.pitch = -Math.PI / 2;
 
 		this.fitToScreen();
 	};
-
+	
 	setBottomView(){
 		this.scene.view.yaw = -Math.PI;
 		this.scene.view.pitch = Math.PI / 2;
-
+		
 		this.fitToScreen();
 	};
 
@@ -669,11 +669,11 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 
 		this.fitToScreen();
 	};
-
+	
 	setBackView(){
 		this.scene.view.yaw = Math.PI;
 		this.scene.view.pitch = 0;
-
+		
 		this.fitToScreen();
 	};
 
@@ -697,7 +697,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		// TODO flipyz
 		console.log('TODO');
 	}
-
+	
 	setCameraMode(mode){
 		this.scene.cameraMode = mode;
 
@@ -705,20 +705,20 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			pointcloud.material.useOrthographicCamera = mode == Potree.CameraMode.ORTHOGRAPHIC;
 		}
 	}
-
+	
 	loadSettingsFromURL(){
 		if(Potree.utils.getParameterByName("pointSize")){
 			this.setPointSize(parseFloat(Potree.utils.getParameterByName("pointSize")));
 		}
-
+		
 		if(Potree.utils.getParameterByName("FOV")){
 			this.setFOV(parseFloat(Potree.utils.getParameterByName("FOV")));
 		}
-
+		
 		if(Potree.utils.getParameterByName("opacity")){
 			this.setOpacity(parseFloat(Potree.utils.getParameterByName("opacity")));
 		}
-
+		
 		if(Potree.utils.getParameterByName("edlEnabled")){
 			let enabled = Potree.utils.getParameterByName("edlEnabled") === "true";
 			this.setEDLEnabled(enabled);
@@ -946,11 +946,11 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 					});
 				});
 
-
+				
 
 			});
 
-
+			
 		});
 	}
 
@@ -982,12 +982,12 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		let gl = this.renderer.context;
 		gl.getExtension('EXT_frag_depth');
 		gl.getExtension('WEBGL_depth_texture');
-
+		
 		let extVAO = gl.getExtension('OES_vertex_array_object');
 		gl.createVertexArray = extVAO.createVertexArrayOES.bind(extVAO);
 		gl.bindVertexArray = extVAO.bindVertexArrayOES.bind(extVAO);
 		//gl.bindVertexArray = extVAO.asdfbindVertexArrayOES.bind(extVAO);
-
+		
 	}
 
 	updateAnnotations () {
@@ -999,7 +999,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		this.scene.annotations.updateBounds();
 		this.scene.cameraP.updateMatrixWorld();
 		this.scene.cameraO.updateMatrixWorld();
-
+		
 		let distances = [];
 
 		let renderAreaWidth = this.renderer.getSize().width;
@@ -1081,13 +1081,13 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 					visibleNow.push(annotation);
 				}
 			}
-
+			
 		});
 
 		let notVisibleAnymore = new Set(this.visibleAnnotations);
 		for(let annotation of visibleNow){
 			annotation.display = true;
-
+			
 			notVisibleAnymore.delete(annotation);
 		}
 		this.visibleAnnotations = visibleNow;
@@ -1137,21 +1137,21 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		//
 		//	window.urlToggle += delta;
 		//}
-
+		
 		{
 			let u = Math.sin(0.0005 * timestamp) * 0.5 - 0.4;
-
+			
 			let x = Math.cos(u);
 			let y = Math.sin(u);
-
+			
 			this.shadowTestCam.position.set(7 * x, 7 * y, 8.561);
 			this.shadowTestCam.lookAt(new THREE.Vector3(0, 0, 0));
 		}
-
-
+		
+		
 		let scene = this.scene;
 		let camera = scene.getActiveCamera();
-
+		
 		Potree.pointLoadLimit = Potree.pointBudget * 2;
 
 		this.scene.directionalLight.position.copy(camera.position);
@@ -1186,7 +1186,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 					// pointcloud._intensityMaxEvaluated = true;
 				}
 			}
-
+			
 			pointcloud.showBoundingBox = this.showBoundingBox;
 			pointcloud.generateDEM = this.generateDEM;
 			pointcloud.minimumNodePixelSize = this.minNodeSize;
@@ -1254,7 +1254,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 				if(near === Infinity){
 					near = 0.1;
 				}
-
+				
 				camera.near = near;
 				camera.far = far;
 			}else{
@@ -1264,10 +1264,10 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			if(this.scene.cameraMode == Potree.CameraMode.ORTHOGRAPHIC) {
 				camera.near = -camera.far;
 			}
-		}
-
+		} 
+		
 		this.scene.cameraP.fov = this.fov;
-
+		
 		// Navigation mode changed?
 		if (this.getControls(scene.view.navigationMode) !== this.controls) {
 			if (this.controls) {
@@ -1279,8 +1279,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			this.controls.enabled = true;
 			this.inputHandler.addInputListener(this.controls);
 		}
-
-		// if (scene.view.navigationMode === Potree.DeviceOrientationControls) {
+		
 		if (this.getControls(scene.view.navigationMode) === this.deviceControls) {
 			this.controls.setScene(scene);
 			this.controls.update(delta);
@@ -1301,7 +1300,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			this.scene.cameraO.rotation.x = Math.PI / 2 + this.scene.view.pitch;
 			this.scene.cameraO.rotation.z = this.scene.view.yaw;
 		}
-
+		
 		camera.updateMatrix();
 		camera.updateMatrixWorld();
 		camera.matrixWorldInverse.getInverse(camera.matrixWorld);
@@ -1333,7 +1332,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 
 		{ // update clip boxes
 			let boxes = [];
-
+			
 			// volumes with clipping enabled
 			boxes.push(...this.scene.volumes.filter(v => v.clip));
 
@@ -1341,7 +1340,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			for(let profile of this.scene.profiles){
 				boxes.push(...profile.boxes);
 			}
-
+			
 			let clipBoxes = boxes.map( box => {
 				box.updateMatrixWorld();
 				let boxInverse = new THREE.Matrix4().getInverse(box.matrixWorld);
@@ -1350,7 +1349,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			});
 
 			let clipPolygons = this.scene.polygonClipVolumes.filter(vol => vol.initialized);
-
+			
 			// set clip volumes in material
 			for(let pointcloud of this.scene.pointclouds.filter(pc => pc.visible)){
 				pointcloud.material.setClipBoxes(clipBoxes);
@@ -1365,12 +1364,12 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		}
 
 		this.updateAnnotations();
-
+		
 		if(this.mapView){
 			this.mapView.update(delta);
 			if(this.mapView.sceneProjection){
 				$( "#potree_map_toggle" ).css("display", "block");
-
+				
 			}
 		}
 
@@ -1380,13 +1379,13 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			type: 'update',
 			delta: delta,
 			timestamp: timestamp});
-
+			
 		if(Potree.measureTimings) {
 			performance.mark("update-end");
 			performance.measure("update", "update-start", "update-end");
 		}
 	}
-
+	
 	render(){
 		if(Potree.measureTimings) performance.mark("render-start");
 
@@ -1402,15 +1401,15 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			//let frustumScale = viewer.moveSpeed * 2.0;
 			let frustumScale = this.scene.view.radius;
 			this.scene.cameraO.left = -frustumScale;
-			this.scene.cameraO.right = frustumScale;
+			this.scene.cameraO.right = frustumScale;		
 			this.scene.cameraO.top = frustumScale * 1 / aspect;
-			this.scene.cameraO.bottom = -frustumScale * 1 / aspect;
+			this.scene.cameraO.bottom = -frustumScale * 1 / aspect;		
 			this.scene.cameraO.updateProjectionMatrix();
 
 			this.scene.cameraScreenSpace.top = 1/aspect;
 			this.scene.cameraScreenSpace.bottom = -1/aspect;
 			this.scene.cameraScreenSpace.updateProjectionMatrix();
-
+			
 			this.renderer.setSize(width, height);
 		}
 
@@ -1470,7 +1469,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		}catch(e){
 			this.onCrash(e);
 		}
-
+		
 		if(Potree.measureTimings){
 			performance.mark("render-end");
 			performance.measure("render", "render-start", "render-end");
@@ -1484,14 +1483,14 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			}
 			let duration = timestamp - this.toggle;
 			if(duration > 1000.0){
-
+			
 				let measures = performance.getEntriesByType("measure");
-
+				
 				let names = new Set();
 				for(let measure of measures){
 					names.add(measure.name);
 				}
-
+				
 				let groups = new Map();
 				for(let name of names){
 					groups.set(name, {
@@ -1502,7 +1501,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 						max: -Infinity
 					});
 				}
-
+				
 				for(let measure of measures){
 					let group = groups.get(measure.name);
 					group.measures.push(measure);
@@ -1527,32 +1526,32 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 					groups.set(groupname, group);
 					names.add(groupname);
 				}
-
+				
 				for(let [name, group] of groups){
 					group.mean = group.sum / group.n;
 					group.measures.sort( (a, b) => a.duration - b.duration );
-
+					
 					if(group.n === 1){
 						group.median = group.measures[0].duration;
 					}else if(group.n > 1){
 						group.median = group.measures[parseInt(group.n / 2)].duration;
 					}
-
+					
 				}
-
+				
 				let cn = Array.from(names).reduce( (a, i) => Math.max(a, i.length), 0) + 5;
 				let cmin = 10;
 				let cmed = 10;
 				let cmax = 10;
 				let csam = 6;
-
-				let message = ` ${"NAME".padEnd(cn)} |`
+				
+				let message = ` ${"NAME".padEnd(cn)} |` 
 					+ ` ${"MIN".padStart(cmin)} |`
 					+ ` ${"MEDIAN".padStart(cmed)} |`
 					+ ` ${"MAX".padStart(cmax)} |`
 					+ ` ${"SAMPLES".padStart(csam)} \n`;
 				message += ` ${"-".repeat(message.length) }\n`;
-
+				
 				names = Array.from(names).sort();
 				for(let name of names){
 					let group = groups.get(name);
@@ -1560,7 +1559,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 					let median = group.median.toFixed(3);
 					let max = group.max.toFixed(3);
 					let n = group.n;
-
+					
 					message += ` ${name.padEnd(cn)} |`
 						+ ` ${min.padStart(cmin)} |`
 						+ ` ${median.padStart(cmed)} |`
@@ -1569,7 +1568,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 				}
 				message += `\n`;
 				console.log(message);
-
+				
 				performance.clearMarks();
 				performance.clearMeasures();
 				this.toggle = timestamp;
@@ -1593,7 +1592,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			performance.mark("loop-end");
 			performance.measure("loop", "loop-start", "loop-end");
 		}
-
+		
 		this.resolveTimings(timestamp);
 
 		Potree.framenumber++;
@@ -1633,7 +1632,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			let slideOutDuration = 200;
 			setTimeout(() => {
 				message.element.animate({
-					opacity: 0
+					opacity: 0	
 				}, fadeDuration);
 				message.element.slideToggle(slideOutDuration);
 			}, params.duration)

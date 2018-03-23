@@ -109,6 +109,18 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		this.initThree();
 
 		{
+			let canvas = this.renderer.domElement;
+			canvas.addEventListener("webglcontextlost", (e) => {
+				console.log(e);
+				this.postMessage("WebGL context lost. \u2639");
+
+				let gl = this.renderer.getContext();
+				let error = gl.getError();
+				console.log(error);
+			}, false);
+		}
+
+		{
 			this.overlay = new THREE.Scene();
 			this.overlayCamera = new THREE.OrthographicCamera(
 				0, 1,

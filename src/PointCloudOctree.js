@@ -1021,6 +1021,19 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 	get progress () {
 		return this.visibleNodes.length / this.visibleGeometry.length;
 	}
+
+	find(name){
+		let node = null;
+		for(let char of name){
+			if(char === "r"){
+				node = this.root;
+			}else{
+				node = node.children[char];
+			}
+		}
+
+		return node;
+	}
 };
 
 

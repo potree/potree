@@ -24,7 +24,7 @@ Potree.DeviceOrientationControls = class DeviceOrientationControls extends THREE
 		this.scene = null;
 		this.sceneControls = new THREE.Scene();
 
-		this.screenOrientation = 0;
+		this.screenOrientation = window.orientation || 0;
 
 		let deviceOrientationChange = e => {
 			this.deviceOrientation = e;

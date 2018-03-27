@@ -19,6 +19,7 @@ uniform mat4 modelMatrix;
 uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
 uniform mat4 viewMatrix;
+uniform mat4 uViewInv;
 
 uniform float uScreenWidth;
 uniform float uScreenHeight;
@@ -47,11 +48,16 @@ uniform int clipMethod;
 	uniform mat4 clipBoxes[num_clipboxes];
 #endif
 
+#if defined(num_clipspheres) && num_clipspheres > 0
+	uniform mat4 uClipSpheres[num_clipspheres];
+#endif
+
 #if defined(num_clippolygons) && num_clippolygons > 0
 	uniform int uClipPolygonVCount[num_clippolygons];
 	uniform vec3 uClipPolygonVertices[num_clippolygons * 8];
 	uniform mat4 uClipPolygonWVP[num_clippolygons];
 #endif
+
 
 uniform float size;
 uniform float minSize;
@@ -95,15 +101,6 @@ uniform sampler2D classificationLUT;
 uniform sampler2D uShadowMap[num_shadowmaps];
 uniform mat4 uShadowWorldView[num_shadowmaps];
 uniform mat4 uShadowProj[num_shadowmaps];
-#endif
-
-#if defined(num_snapshots) && num_snapshots > 0
-uniform sampler2D uSnapshot[num_snapshots];
-uniform mat4 uSnapView[num_snapshots];
-uniform mat4 uSnapProj[num_snapshots];
-uniform mat4 uSnapScreenToCurrentView[num_snapshots];
-
-varying float vSnapTextureID;
 #endif
 
 varying vec3	vColor;
@@ -707,17 +704,26 @@ void main() {
 	doClipping();
 	
 
+	//{
+	//	mat4 camWorld = mat4(
+	//		vec4(0.5629065068525811, 0.826520577204842, -5.551115123125783e-17, 0), 
+	//		vec4(-0.306963999107415, 0.209059565160989, 0.9284757409144739, 0), 
+	//		vec4(0.7674043053013242, -0.5226450360155286, 0.3713930512722591, 0), 
+	//		vec4(13.856734292740617, -9.125174923658731, 14.563928417406354, 1)
+	//	);
 
+	//	vec4 sphereLocal = sphereInverse * uViewInv * mvPosition;
 
+	//	float distance = length(sphereLocal.xyz );
 
-	//#if defined(num_snapshots) && num_snapshots > 0
-
-	//	for(int i = 0; i < num_snapshots; i++){
-	//		vSnapProjected[i] = uSnapProj[i] * uSnapView[i] * modelMatrix * vec4(position, 1.0);	
-	//		vSnapProjectedDistance[i] = -(uSnapView[i] * modelMatrix * vec4(position, 1.0)).z;
+	//	if(distance < 1.0){
+	//		float w = distance;
+	//		vec3 cElevation = texture2D(gradient, vec2(w, 1.0 - w)).rgb;
+	//		
+	//		vColor = cElevation * 0.7 + vColor * 0.3;
 	//	}
-	//	
-	//#endif
+
+	//}
 
 	#if defined(num_shadowmaps) && num_shadowmaps > 0
 

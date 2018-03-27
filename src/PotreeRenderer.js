@@ -796,36 +796,6 @@ Potree.Renderer = class Renderer {
 
 		let currentTextureBindingPoint = 0;
 
-		//if(!["r", "r2", "r0", "r26", "r22", "r06", "r24", "r20", "r04", "r00", "r02"].includes(node.name)){
-		//	if(!["r", "r2", "r0"].includes(node.name)){
-		//		continue;
-		//	}
-
-		//nodes = nodes.filter(node => {
-		//	return ["r", "r6", "r66", "r664", "r6646", "r6644", "r64", "r646", "r4", "r66446", "r6642", "r660", "r62", "r2", "r6640"].includes(node.name)});
-
-		//nodes = nodes.filter(node => {
-		//	return [
-		//		//"r", 
-		//		"r6", 
-		//		"r2", 
-		//		"r4", 
-		//		"r64", 
-		//		"r66", 
-		//		"r62", 
-		//		"r664", 
-		//		"r646", 
-		//		"r660", 
-		//		"r6646", 
-		//		//"r6644", 
-		//		//"r6642", 
-		//		//"r6640",
-		//		//"r66446", 
-		//		].includes(node.name)});
-
-	
-
-
 		if (material.pointSizeType >= 0) {
 			if (material.pointSizeType === Potree.PointSizeType.ADAPTIVE ||
 				material.pointColorType === Potree.PointColorType.LOD) {
@@ -840,27 +810,6 @@ Potree.Renderer = class Renderer {
 
 			}
 		}
-
-		//nodes = nodes.filter(node => {
-		//	return [
-		//		"r", 
-		//		"r6", 
-		//		"r2", 
-		//		"r4", 
-		//		"r64", 
-		//		"r66", 
-		//		"r62", 
-		//		"r664", 
-		//		"r646", 
-		//		"r660", 
-
-		//		"r6646", 
-
-		//		"r6644", 
-		//		"r6642", 
-		//		"r6640",
-		//		"r66446", 
-		//		].includes(node.name)});
 
 		{ // UPDATE SHADER AND TEXTURES
 			if (!this.shaders.has(material)) {

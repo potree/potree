@@ -19,7 +19,7 @@ Potree.ScreenBoxSelectTool = class ScreenBoxSelectTool extends THREE.EventDispat
 	startInsertion(){
 		let domElement = this.viewer.renderer.domElement;
 
-		let volume = new Potree.Volume();
+		let volume = new Potree.BoxVolume();
 		volume.position.set(12345, 12345, 12345);
 		volume.showVolumeLabel = false;
 		volume.visible = false;

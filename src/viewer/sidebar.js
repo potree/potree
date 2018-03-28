@@ -135,6 +135,20 @@ initSidebar = (viewer) => {
 			}
 		));
 
+		// SPHERE VOLUME
+		elToolbar.append(createToolIcon(
+			Potree.resourcePath + '/icons/sphere_distances.svg',
+			'[title]tt.volume_measurement',
+			function () { 
+				let volume = volumeTool.startInsertion({type: Potree.SphereVolume}); 
+
+				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
+				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === volume.uuid);
+				$.jstree.reference(jsonNode.id).deselect_all();
+				$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
+			}
+		));
+
 		// PROFILE
 		elToolbar.append(createToolIcon(
 			Potree.resourcePath + '/icons/profile.svg',

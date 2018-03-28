@@ -1347,7 +1347,8 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			let boxes = [];
 			
 			// volumes with clipping enabled
-			boxes.push(...this.scene.volumes.filter(v => v.clip));
+			//boxes.push(...this.scene.volumes.filter(v => (v.clip)));
+			boxes.push(...this.scene.volumes.filter(v => (v.clip && v instanceof Potree.BoxVolume)));
 
 			// profile segments
 			for(let profile of this.scene.profiles){
@@ -1371,7 +1372,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 				pointcloud.material.clipMethod = this.clipMethod;
 			}
 		}
-
+		
 		{ // update navigation cube
 			this.navigationCube.update(camera.rotation);
 		}

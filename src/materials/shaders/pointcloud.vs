@@ -702,28 +702,22 @@ void main() {
 
 	// CLIPPING
 	doClipping();
-	
 
-	//{
-	//	mat4 camWorld = mat4(
-	//		vec4(0.5629065068525811, 0.826520577204842, -5.551115123125783e-17, 0), 
-	//		vec4(-0.306963999107415, 0.209059565160989, 0.9284757409144739, 0), 
-	//		vec4(0.7674043053013242, -0.5226450360155286, 0.3713930512722591, 0), 
-	//		vec4(13.856734292740617, -9.125174923658731, 14.563928417406354, 1)
-	//	);
+	#if defined(num_clipspheres) && num_clipspheres > 0
+		for(int i = 0; i < num_clipspheres; i++){
+			vec4 sphereLocal = uClipSpheres[i] * mvPosition;
 
-	//	vec4 sphereLocal = sphereInverse * uViewInv * mvPosition;
+			float distance = length(sphereLocal.xyz);
 
-	//	float distance = length(sphereLocal.xyz );
-
-	//	if(distance < 1.0){
-	//		float w = distance;
-	//		vec3 cElevation = texture2D(gradient, vec2(w, 1.0 - w)).rgb;
-	//		
-	//		vColor = cElevation * 0.7 + vColor * 0.3;
-	//	}
-
-	//}
+			if(distance < 1.0){
+				float w = distance;
+				vec3 cGradient = texture2D(gradient, vec2(w, 1.0 - w)).rgb;
+				
+				vColor = cGradient;
+				//vColor = cGradient * 0.7 + vColor * 0.3;
+			}
+		}
+	#endif
 
 	#if defined(num_shadowmaps) && num_shadowmaps > 0
 
@@ -783,10 +777,12 @@ void main() {
 
 	#endif
 
-	if(uDebug){
-		vColor.b = (vColor.r + vColor.g + vColor.b) / 3.0;
-		vColor.r = 1.0;
-		vColor.g = 1.0;
-	}
+	//vColor = vec3(1.0, 0.0, 0.0);
+
+	//if(uDebug){
+	//	vColor.b = (vColor.r + vColor.g + vColor.b) / 3.0;
+	//	vColor.r = 1.0;
+	//	vColor.g = 1.0;
+	//}
 
 }

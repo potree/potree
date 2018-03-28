@@ -200,7 +200,7 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 		this._pointColorType = Potree.PointColorType.RGB;
 		this._useClipBox = false;
 		this.clipBoxes = [];
-		this.numClipBoxes = 0;
+		//this.clipSpheres = [];
 		this.clipPolygons = [];
 		this._weighted = false;
 		this._gradient = Potree.Gradients.SPECTRAL;
@@ -247,17 +247,21 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 			octreeSize:			{ type: "f", value: 0 },
 			bbSize:				{ type: "fv", value: [0, 0, 0] },
 			elevationRange:		{ type: "2fv", value: [0, 0] },
+
 			clipBoxCount:		{ type: "f", value: 0 },
+			//clipSphereCount:	{ type: "f", value: 0 },
 			clipPolygonCount:	{ type: "i", value: 0 },
+			clipBoxes:			{ type: "Matrix4fv", value: [] },
+			//clipSpheres:		{ type: "Matrix4fv", value: [] },
+			clipPolygons:		{ type: "3fv", value: [] },
+			clipPolygonVCount:	{ type: "iv", value: [] },
+			clipPolygonVP:		{ type: "Matrix4fv", value: [] },
+
 			visibleNodes:		{ type: "t", value: this.visibleNodesTexture },
 			pcIndex:			{ type: "f", value: 0 },
 			gradient:			{ type: "t", value: this.gradientTexture },
 			classificationLUT:	{ type: "t", value: this.classificationTexture },
 			uHQDepthMap:		{ type: "t", value: null },
-			clipBoxes:			{ type: "Matrix4fv", value: [] },
-			clipPolygons:		{ type: "3fv", value: [] },
-			clipPolygonVCount:	{ type: "iv", value: [] },
-			clipPolygonVP:		{ type: "Matrix4fv", value: [] },
 			toModel:			{ type: "Matrix4f", value: [] },
 			diffuse:			{ type: "fv", value: [1, 1, 1] },
 			transition:			{ type: "f", value: 0.5 },
@@ -409,14 +413,6 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 			defines.push('#define weighted_splats');
 		}
 
-		if (this.numClipBoxes > 0) {
-			defines.push('#define use_clip_box');
-		}
-
-		if(this.clipPolygons.length > 0) {
-			defines.push('#define use_clip_polygon');
-		}
-
 		for(let [key, value] of this.defines){
 			defines.push(value);
 		}
@@ -429,19 +425,18 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 			return;
 		}
 
-		this.clipBoxes = clipBoxes;
-		let doUpdate = (this.numClipBoxes !== clipBoxes.length) && (clipBoxes.length === 0 || this.numClipBoxes === 0);
+		let doUpdate = (this.clipBoxes.length !== clipBoxes.length) && (clipBoxes.length === 0 || this.clipBoxes.length === 0);
 
-		this.numClipBoxes = clipBoxes.length;
-		this.uniforms.clipBoxCount.value = this.numClipBoxes;
+		this.uniforms.clipBoxCount.value = this.clipBoxes.length;
+		this.clipBoxes = clipBoxes;
 
 		if (doUpdate) {
 			this.updateShaderSource();
 		}
 
-		this.uniforms.clipBoxes.value = new Float32Array(this.numClipBoxes * 16);
+		this.uniforms.clipBoxes.value = new Float32Array(this.clipBoxes.length * 16);
 
-		for (let i = 0; i < this.numClipBoxes; i++) {
+		for (let i = 0; i < this.clipBoxes.length; i++) {
 			let box = clipBoxes[i];
 
 			this.uniforms.clipBoxes.value.set(box.inverse.elements, 16 * i);
@@ -453,6 +448,35 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 			}
 		}
 	}
+
+	//setClipSpheres(clipSpheres){
+	//	if (!clipSpheres) {
+	//		return;
+	//	}
+
+	//	let doUpdate = (this.clipSpheres.length !== clipSpheres.length) && (clipSpheres.length === 0 || this.clipSpheres.length === 0);
+
+	//	this.uniforms.clipSphereCount.value = this.clipSpheres.length;
+	//	this.clipSpheres = clipSpheres;
+
+	//	if (doUpdate) {
+	//		this.updateShaderSource();
+	//	}
+
+	//	this.uniforms.clipSpheres.value = new Float32Array(this.clipSpheres.length * 16);
+
+	//	for (let i = 0; i < this.clipSpheres.length; i++) {
+	//		let sphere = clipSpheres[i];
+
+	//		this.uniforms.clipSpheres.value.set(sphere.matrixWorld.elements, 16 * i);
+	//	}
+
+	//	for (let i = 0; i < this.uniforms.clipSpheres.value.length; i++) {
+	//		if (Number.isNaN(this.uniforms.clipSpheres.value[i])) {
+	//			this.uniforms.clipSpheres.value[i] = Infinity;
+	//		}
+	//	}
+	//}
 
 	setClipPolygons(clipPolygons, maxPolygonVertices) {
 		if(!clipPolygons){

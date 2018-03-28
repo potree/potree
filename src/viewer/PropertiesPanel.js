@@ -362,6 +362,21 @@ class VolumePanel extends MeasurePanel{
 		let copyIconPath = Potree.resourcePath + '/icons/copy.svg';
 		let removeIconPath = Potree.resourcePath + '/icons/remove.svg';
 
+		let lblLengthText = new Map([
+			[Potree.BoxVolume, "length"],
+			[Potree.SphereVolume, "rx"],
+		]).get(measurement.constructor);
+
+		let lblWidthText = new Map([
+			[Potree.BoxVolume, "width"],
+			[Potree.SphereVolume, "ry"],
+		]).get(measurement.constructor);
+
+		let lblHeightText = new Map([
+			[Potree.BoxVolume, "height"],
+			[Potree.SphereVolume, "rz"],
+		]).get(measurement.constructor);
+
 		this.elContent = $(`
 			<div class="measurement_content selectable">
 				<span class="coordinates_table_container"></span>
@@ -385,9 +400,9 @@ class VolumePanel extends MeasurePanel{
 
 				<table class="measurement_value_table">
 					<tr>
-						<th>length</th>
-						<th>width</th>
-						<th>height</th>
+						<th>${lblLengthText}</th>
+						<th>${lblWidthText}</th>
+						<th>${lblHeightText}</th>
 						<th></th>
 					</tr>
 					<tr>
@@ -426,6 +441,7 @@ class VolumePanel extends MeasurePanel{
 
 				<!-- ACTIONS -->
 				<input id="volume_reset_orientation" type="button" value="reset orientation"/>
+				<input id="volume_make_uniform" type="button" value="make uniform"/>
 				<div style="display: flex; margin-top: 12px">
 					<span></span>
 					<span style="flex-grow: 1"></span>
@@ -473,6 +489,11 @@ class VolumePanel extends MeasurePanel{
 
 		this.elContent.find("#volume_reset_orientation").click(() => {
 			measurement.rotation.set(0, 0, 0);
+		});
+
+		this.elContent.find("#volume_make_uniform").click(() => {
+			let mean = (measurement.scale.x + measurement.scale.y + measurement.scale.z) / 3;
+			measurement.scale.set(mean, mean, mean);
 		});
 
 		this.elCheckClip = this.elContent.find('#volume_clip');

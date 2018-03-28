@@ -140,6 +140,7 @@ class HQSplatRenderer {
 			}
 			
 			viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, this.rtDepth, {
+				clipSpheres: viewer.scene.volumes.filter(v => (v instanceof Potree.SphereVolume)),
 				//material: this.depthMaterial
 			});
 		}
@@ -200,6 +201,7 @@ class HQSplatRenderer {
 
 			viewer.renderer.setRenderTarget(null);
 			viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, this.rtAttribute, {
+				clipSpheres: viewer.scene.volumes.filter(v => (v instanceof Potree.SphereVolume)),
 				//material: this.attributeMaterial,
 				blendFunc: [gl.SRC_ALPHA, gl.ONE],
 				//depthTest: false,

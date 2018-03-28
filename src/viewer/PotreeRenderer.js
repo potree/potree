@@ -40,7 +40,9 @@ class PotreeRenderer {
 		let activeCam = viewer.scene.getActiveCamera();
 		//viewer.renderer.render(viewer.scene.scenePointCloud, activeCam);
 		
-		viewer.pRenderer.render(viewer.scene.scenePointCloud, activeCam);
+		viewer.pRenderer.render(viewer.scene.scenePointCloud, activeCam, null, {
+			clipSpheres: viewer.scene.volumes.filter(v => (v instanceof Potree.SphereVolume)),
+		});
 		
 		
 		//Potree.endQuery(queryPC, viewer.renderer.getContext());

@@ -827,11 +827,14 @@ Potree.Renderer = class Renderer {
 
 				let numSnapshots = material.snapEnabled ? material.numSnapshots : 0;
 				let numClipBoxes = (material.clipBoxes && material.clipBoxes.length) ? material.clipBoxes.length : 0;
+				//let numClipSpheres = (material.clipSpheres && material.clipSpheres.length) ? material.clipSpheres.length : 0;
+				let numClipSpheres = (params.clipSpheres && params.clipSpheres.length) ? params.clipSpheres.length : 0;
 				let numClipPolygons = (material.clipPolygons && material.clipPolygons.length) ? material.clipPolygons.length : 0;
 				let defines = [
 					`#define num_shadowmaps ${shadowMaps.length}`,
 					`#define num_snapshots ${numSnapshots}`,
 					`#define num_clipboxes ${numClipBoxes}`,
+					`#define num_clipspheres ${numClipSpheres}`,
 					`#define num_clippolygons ${numClipPolygons}`,
 				];
 
@@ -948,11 +951,42 @@ Potree.Renderer = class Renderer {
 			shader.setUniform1i("clipMethod", material.clipMethod);
 
 			if (material.clipBoxes && material.clipBoxes.length > 0) {
-				
-				let flattenedMatrices = [].concat(...material.clipBoxes.map(c => c.inverse.elements));
+				//let flattenedMatrices = [].concat(...material.clipBoxes.map(c => c.inverse.elements));
+
+				//const lClipBoxes = shader.uniformLocations["clipBoxes[0]"];
+				//gl.uniformMatrix4fv(lClipBoxes, false, flattenedMatrices);
 
 				const lClipBoxes = shader.uniformLocations["clipBoxes[0]"];
-				gl.uniformMatrix4fv(lClipBoxes, false, flattenedMatrices);
+				gl.uniformMatrix4fv(lClipBoxes, false, material.uniforms.clipBoxes.value);
+			}
+
+			// TODO CLIPSPHERES
+			if(params.clipSpheres && params.clipSpheres.length > 0){
+
+				let clipSpheres = params.clipSpheres;
+
+				let matrices = [];
+				for(let clipSphere of clipSpheres){
+					//let mScale = new THREE.Matrix4().makeScale(...clipSphere.scale.toArray());
+					//let mTranslate = new THREE.Matrix4().makeTranslation(...clipSphere.position.toArray());
+
+					//let clipToWorld = new THREE.Matrix4().multiplyMatrices(mTranslate, mScale);
+					let clipToWorld = clipSphere.matrixWorld;
+					let viewToWorld = camera.matrixWorld
+					let worldToClip = new THREE.Matrix4().getInverse(clipToWorld);
+
+					let viewToClip = new THREE.Matrix4().multiplyMatrices(worldToClip, viewToWorld);
+
+					matrices.push(viewToClip);
+				}
+
+				let flattenedMatrices = [].concat(...matrices.map(matrix => matrix.elements));
+
+				const lClipSpheres = shader.uniformLocations["uClipSpheres[0]"];
+				gl.uniformMatrix4fv(lClipSpheres, false, flattenedMatrices);
+				
+				//const lClipSpheres = shader.uniformLocations["uClipSpheres[0]"];
+				//gl.uniformMatrix4fv(lClipSpheres, false, material.uniforms.clipSpheres.value);
 			}
 
 			shader.setUniform1f("size", material.size);
@@ -1077,7 +1111,7 @@ Potree.Renderer = class Renderer {
 		gl.activeTexture(gl.TEXTURE0);
 	}
 
-	render(scene, camera, target, params = {}) {
+	render(scene, camera, target = null, params = {}) {
 
 		const gl = this.gl;
 

@@ -233,11 +233,13 @@ class EDLRenderer{
 		// TODO adapt to multiple lights
 		if(lights.length > 0){
 			viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, this.rtEDL, {
+				clipSpheres: viewer.scene.volumes.filter(v => (v instanceof Potree.SphereVolume)),
 				shadowMaps: [this.shadowMap],
 				transparent: false,
 			});
 		}else{
 			viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, this.rtEDL, {
+				clipSpheres: viewer.scene.volumes.filter(v => (v instanceof Potree.SphereVolume)),
 				transparent: false,
 			});
 		}

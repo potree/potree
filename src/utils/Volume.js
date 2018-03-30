@@ -193,7 +193,7 @@ Potree.SphereVolume = class SphereVolume extends Potree.Volume{
 		this.constructor.counter = (this.constructor.counter === undefined) ? 0 : this.constructor.counter + 1;
 		this.name = 'sphere_' + this.constructor.counter;
 
-		let sphereGeometry = new THREE.SphereGeometry(1, 16, 16);
+		let sphereGeometry = new THREE.SphereGeometry(1, 32, 32);
 		sphereGeometry.computeBoundingBox();
 
 		this.material = new THREE.MeshBasicMaterial({
@@ -203,9 +203,12 @@ Potree.SphereVolume = class SphereVolume extends Potree.Volume{
 			depthTest: true,
 			depthWrite: false});
 		this.sphere = new THREE.Mesh(sphereGeometry, this.material);
+		this.sphere.visible = false;
 		this.sphere.geometry.computeBoundingBox();
 		this.boundingBox = this.sphere.geometry.boundingBox;
 		this.add(this.sphere);
+
+		this.label.visible = false;
 
 
 		let frameGeometry = new THREE.Geometry();
@@ -288,13 +291,13 @@ Potree.SphereVolume = class SphereVolume extends Potree.Volume{
 		this.boundingBox = this.sphere.geometry.boundingBox;
 		this.boundingSphere = this.boundingBox.getBoundingSphere();
 
-		if (this._clip) {
-			this.sphere.visible = false;
-			this.label.visible = false;
-		} else {
-			this.sphere.visible = true;
-			this.label.visible = this.showVolumeLabel;
-		}
+		//if (this._clip) {
+		//	this.sphere.visible = false;
+		//	this.label.visible = false;
+		//} else {
+		//	this.sphere.visible = true;
+		//	this.label.visible = this.showVolumeLabel;
+		//}
 	}
 
 	raycast (raycaster, intersects) {

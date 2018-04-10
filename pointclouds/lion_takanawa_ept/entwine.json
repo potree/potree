@@ -1,0 +1,115 @@
+{
+	"bounds" : 
+	[
+		-5.3439999999999994,
+		0.65600000000000014,
+		-4.3439999999999994,
+		1.3439999999999999,
+		7.3439999999999994,
+		2.3439999999999999
+	],
+	"boundsConforming" : 
+	[
+		-4.9853999999999994,
+		1.0366,
+		-3.4493999999999998,
+		0.70230000000000103,
+		6.7243000000000004,
+		2.2383000000000006
+	],
+	"dataStorage" : "laz",
+	"hierarchyStorage" : "json",
+	"offset" : 
+	[
+		-2.0,
+		4.0,
+		-1.0
+	],
+	"scale" : 0.001,
+	"schema" : 
+	[
+		{
+			"name" : "X",
+			"size" : 4,
+			"type" : "signed"
+		},
+		{
+			"name" : "Y",
+			"size" : 4,
+			"type" : "signed"
+		},
+		{
+			"name" : "Z",
+			"size" : 4,
+			"type" : "signed"
+		},
+		{
+			"name" : "Intensity",
+			"size" : 2,
+			"type" : "unsigned"
+		},
+		{
+			"name" : "ReturnNumber",
+			"size" : 1,
+			"type" : "unsigned"
+		},
+		{
+			"name" : "NumberOfReturns",
+			"size" : 1,
+			"type" : "unsigned"
+		},
+		{
+			"name" : "ScanDirectionFlag",
+			"size" : 1,
+			"type" : "unsigned"
+		},
+		{
+			"name" : "EdgeOfFlightLine",
+			"size" : 1,
+			"type" : "unsigned"
+		},
+		{
+			"name" : "Classification",
+			"size" : 1,
+			"type" : "unsigned"
+		},
+		{
+			"name" : "ScanAngleRank",
+			"size" : 4,
+			"type" : "floating"
+		},
+		{
+			"name" : "UserData",
+			"size" : 1,
+			"type" : "unsigned"
+		},
+		{
+			"name" : "PointSourceId",
+			"size" : 2,
+			"type" : "unsigned"
+		},
+		{
+			"name" : "Red",
+			"size" : 2,
+			"type" : "unsigned"
+		},
+		{
+			"name" : "Green",
+			"size" : 2,
+			"type" : "unsigned"
+		},
+		{
+			"name" : "Blue",
+			"size" : 2,
+			"type" : "unsigned"
+		}
+	],
+	"structure" : 
+	{
+		"body" : 8,
+		"head" : 8,
+		"tail" : 11
+	},
+	"trustHeaders" : true,
+	"version" : "1.1.0"
+}

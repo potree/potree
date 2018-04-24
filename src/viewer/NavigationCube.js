@@ -85,7 +85,7 @@ Potree.NavigationCube = class NavigationCube extends THREE.Object3D {
 
 			let raycaster = new THREE.Raycaster();
 			raycaster.setFromCamera(mouse, this.camera);
-			raycaster.ray.origin.sub(this.camera.getWorldDirection());
+			raycaster.ray.origin.sub(this.camera.getWorldDirection(new THREE.Vector3()));
 
 			let intersects = raycaster.intersectObjects(this.children);
 

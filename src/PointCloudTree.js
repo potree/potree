@@ -60,7 +60,7 @@ Potree.DEMNode = class DEMNode {
 	}
 
 	uv (position) {
-		let boxSize = this.box.getSize();
+		let boxSize = this.box.getSize(new THREE.Vector3());
 
 		let u = (position.x - this.box.min.x) / boxSize.x;
 		let v = (position.y - this.box.min.y) / boxSize.y;
@@ -158,7 +158,7 @@ Potree.DEM = class DEM {
 
 		while (stack.length > 0) {
 			let node = stack.pop();
-			let nodeBoxSize = node.box.getSize();
+			let nodeBoxSize = node.box.getSize(new THREE.Vector3());
 
 			// check which children intersect by transforming min/max to quadrants
 			let min = {
@@ -281,7 +281,7 @@ Potree.DEM = class DEM {
 
 		// update node
 		let projectedBox = node.getBoundingBox().clone().applyMatrix4(this.matrix);
-		let projectedBoxSize = projectedBox.getSize();
+		let projectedBoxSize = projectedBox.getSize(new THREE.Vector3());
 
 		let targetNodes = this.expandAndFindByBox(projectedBox, node.getLevel());
 		node.demVersion = this.version;
@@ -290,7 +290,7 @@ Potree.DEM = class DEM {
 			let data = new Float32Array(e.data.dem.data);
 
 			for (let demNode of targetNodes) {
-				let boxSize = demNode.box.getSize();
+				let boxSize = demNode.box.getSize(new THREE.Vector3());
 
 				for (let i = 0; i < this.tileSize; i++) {
 					for (let j = 0; j < this.tileSize; j++) {

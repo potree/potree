@@ -62,8 +62,8 @@ Potree.POCLoader.load = function load (url, callback) {
 				pco.projection = fMno.projection;
 				pco.boundingBox = boundingBox;
 				pco.tightBoundingBox = tightBoundingBox;
-				pco.boundingSphere = boundingBox.getBoundingSphere();
-				pco.tightBoundingSphere = tightBoundingBox.getBoundingSphere();
+				pco.boundingSphere = boundingBox.getBoundingSphere(new THREE.Sphere());
+				pco.tightBoundingSphere = tightBoundingBox.getBoundingSphere(new THREE.Sphere());
 				pco.offset = offset;
 				if (fMno.pointAttributes === 'LAS') {
 					pco.loader = new Potree.LasLazLoader(fMno.version);

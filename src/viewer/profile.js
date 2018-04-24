@@ -635,7 +635,7 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 			let width = this.renderArea[0].clientWidth;
 			let height = this.renderArea[0].clientHeight;
 
-			let size = this.projectedBox.getSize();
+			let size = this.projectedBox.getSize(new THREE.Vector3());
 
 			let sx = width / size.x;
 			let sy = height / size.z;

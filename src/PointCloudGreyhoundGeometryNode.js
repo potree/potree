@@ -7,7 +7,7 @@ Potree.PointCloudGreyhoundGeometryNode = function (
 	this.pcoGeometry = pcoGeometry;
 	this.geometry = null;
 	this.boundingBox = boundingBox;
-	this.boundingSphere = boundingBox.getBoundingSphere();
+	this.boundingSphere = boundingBox.getBoundingSphere(new THREE.Sphere());
 	this.scale = scale;
 	this.offset = offset;
 	this.children = {};
@@ -34,7 +34,7 @@ Potree.PointCloudGreyhoundGeometryNode = function (
 	// This represents the offset between the coordinate system described above
 	// and our pcoGeometry bounds.
 	this.greyhoundOffset = this.pcoGeometry.offset.clone().add(
-		this.pcoGeometry.boundingBox.getSize().multiplyScalar(0.5)
+		this.pcoGeometry.boundingBox.getSize(new THREE.Vector3()).multiplyScalar(0.5)
 	);
 };
 

@@ -124,7 +124,7 @@ Potree.MeasuringTool = class MeasuringTool extends THREE.EventDispatcher {
 
 			// spheres
 			for(let sphere of measure.spheres){			
-				let distance = camera.position.distanceTo(sphere.getWorldPosition());
+				let distance = camera.position.distanceTo(sphere.getWorldPosition(new THREE.Vector3()));
 				let pr = Potree.utils.projectedRadius(1, camera, distance, clientWidth, clientHeight);
 				let scale = (15 / pr);
 				sphere.scale.set(scale, scale, scale);
@@ -133,7 +133,7 @@ Potree.MeasuringTool = class MeasuringTool extends THREE.EventDispatcher {
 			// labels
 			let labels = measure.edgeLabels.concat(measure.angleLabels);
 			for(let label of labels){
-				let distance = camera.position.distanceTo(label.getWorldPosition());
+				let distance = camera.position.distanceTo(label.getWorldPosition(new THREE.Vector3()));
 				let pr = Potree.utils.projectedRadius(1, camera, distance, clientWidth, clientHeight);
 				let scale = (70 / pr);
 				label.scale.set(scale, scale, scale);
@@ -145,9 +145,9 @@ Potree.MeasuringTool = class MeasuringTool extends THREE.EventDispatcher {
 				let sphere = measure.spheres[j];
 				// measure.points[j]
 
-				let distance = camera.position.distanceTo(sphere.getWorldPosition());
+				let distance = camera.position.distanceTo(sphere.getWorldPosition(new THREE.Vector3()));
 
-				let screenPos = sphere.getWorldPosition().clone().project(camera);
+				let screenPos = sphere.getWorldPosition(new THREE.Vector3()).clone().project(camera);
 				screenPos.x = Math.round((screenPos.x + 1) * clientWidth / 2);
 				screenPos.y = Math.round((-screenPos.y + 1) * clientHeight / 2);
 				screenPos.z = 0;

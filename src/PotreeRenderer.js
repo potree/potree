@@ -1136,7 +1136,7 @@ Potree.Renderer = class Renderer {
 		gl.activeTexture(gl.TEXTURE1);
 		gl.bindTexture(gl.TEXTURE_2D, null)
 
-		this.threeRenderer.resetGLState();
+		this.threeRenderer.state.reset();
 	}
 
 

@@ -174,7 +174,7 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 
 			let nodes = I.pointcloud.nodesOnRay(I.pointcloud.visibleNodes, ray);
 			let lastNode = nodes[nodes.length - 1];
-			let radius = lastNode.getBoundingSphere().radius;
+			let radius = lastNode.getBoundingSphere(new THREE.Sphere()).radius;
 			targetRadius = Math.min(this.scene.view.radius, radius);
 			targetRadius = Math.max(minimumJumpDistance, targetRadius);
 		}

@@ -253,7 +253,7 @@ Potree.ProfileRequest = class ProfileRequest {
 
 				{ // skip if current node doesn't intersect current segment
 					let bbWorld = node.boundingBox.clone().applyMatrix4(this.pointcloud.matrixWorld);
-					let bsWorld = bbWorld.getBoundingSphere();
+					let bsWorld = bbWorld.getBoundingSphere(new THREE.Sphere());
 
 					let start = new THREE.Vector3(segment.start.x, segment.start.y, bsWorld.center.z);
 					let end = new THREE.Vector3(segment.end.x, segment.end.y, bsWorld.center.z);

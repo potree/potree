@@ -116,7 +116,7 @@ Potree.ScreenBoxSelectTool = class ScreenBoxSelectTool extends THREE.EventDispat
 				volCam.updateProjectionMatrix();
 				volCam.matrixWorldInverse.getInverse(volCam.matrixWorld);
 
-				let ray = new THREE.Ray(volCam.getWorldPosition(), volCam.getWorldDirection());
+				let ray = new THREE.Ray(volCam.getWorldPosition(new THREE.Vector3()), volCam.getWorldDirection(new THREE.Vector3()));
 				let rayInverse = new THREE.Ray(
 					ray.origin.clone().add(ray.direction.clone().multiplyScalar(volume.scale.z)),
 					ray.direction.clone().multiplyScalar(-1));

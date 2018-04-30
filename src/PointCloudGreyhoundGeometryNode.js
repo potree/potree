@@ -18,8 +18,8 @@ Potree.PointCloudGreyhoundGeometryNode = function (
 	this.baseLoaded = false;
 
 	let bounds = this.boundingBox.clone();
-	bounds.min.sub(this.pcoGeometry.boundingBox.getCenter());
-	bounds.max.sub(this.pcoGeometry.boundingBox.getCenter());
+	bounds.min.sub(this.pcoGeometry.boundingBox.getCenter(new THREE.Vector3()));
+	bounds.max.sub(this.pcoGeometry.boundingBox.getCenter(new THREE.Vector3()));
 
 	if (this.scale) {
 		bounds.min.multiplyScalar(1 / this.scale);

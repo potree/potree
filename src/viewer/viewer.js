@@ -1037,7 +1037,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			let position = annotation.position.clone();
 			position.add(annotation.offset);
 			if (!position) {
-				position = annotation.boundingBox.getCenter();
+				position = annotation.boundingBox.getCenter(new THREE.Vector3());
 			}
 
 			let distance = viewer.scene.cameraP.position.distanceTo(position);

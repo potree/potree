@@ -113,7 +113,7 @@ Potree.GreyhoundBinaryLoader = class{
 		};
 
 		let bb = node.boundingBox;
-		let nodeOffset = node.pcoGeometry.boundingBox.getCenter().sub(node.boundingBox.min);
+		let nodeOffset = node.pcoGeometry.boundingBox.getCenter(new THREE.Vector3()).sub(node.boundingBox.min);
 
 		let message = {
 			buffer: buffer,

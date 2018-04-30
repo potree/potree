@@ -438,7 +438,7 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 			let start = new THREE.Vector3(profile.points[i + 0].x, profile.points[i + 0].y, bsWorld.center.z);
 			let end = new THREE.Vector3(profile.points[i + 1].x, profile.points[i + 1].y, bsWorld.center.z);
 			
-			let closest = new THREE.Line3(start, end).closestPointToPoint(bsWorld.center, true);
+			let closest = new THREE.Line3(start, end).closestPointToPoint(bsWorld.center, true, new THREE.Vector3());
 			let distance = closest.distanceTo(bsWorld.center);
 
 			intersects = intersects || (distance < (bsWorld.radius + profile.width));
@@ -512,7 +512,7 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 		let box = this.boundingBox;
 		let transform = this.matrixWorld;
 		let tBox = Potree.utils.computeTransformedBoundingBox(box, transform);
-		this.position.set(0, 0, 0).sub(tBox.getCenter());
+		this.position.set(0, 0, 0).sub(tBox.getCenter(new THREE.Vector3()));
 	};
 
 	moveToGroundPlane () {
@@ -945,7 +945,7 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 			yield;
 		}
 
-		let fittedPosition = shrinkedLocalBounds.getCenter().applyMatrix4(boxNode.matrixWorld);
+		let fittedPosition = shrinkedLocalBounds.getCenter(new THREE.Vector3()).applyMatrix4(boxNode.matrixWorld);
 
 		let fitted = new THREE.Object3D();
 		fitted.position.copy(fittedPosition);
@@ -1002,7 +1002,7 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 			}
 		}
 
-		let fittedPosition = shrinkedLocalBounds.getCenter().applyMatrix4(boxNode.matrixWorld);
+		let fittedPosition = shrinkedLocalBounds.getCenter(new THREE.Vector3()).applyMatrix4(boxNode.matrixWorld);
 
 		let fitted = new THREE.Object3D();
 		fitted.position.copy(fittedPosition);

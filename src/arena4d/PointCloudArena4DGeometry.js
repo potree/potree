@@ -233,7 +233,7 @@ Potree.PointCloudArena4DGeometry = class PointCloudArena4DGeometry extends THREE
 					geometry.boundingBox.max.add(offset);
 					geometry.offset = offset;
 
-					let center = geometry.boundingBox.getCenter();
+					let center = geometry.boundingBox.getCenter(new THREE.Vector3());
 					let radius = geometry.boundingBox.getSize(new THREE.Vector3()).length() / 2;
 					geometry.boundingSphere = new THREE.Sphere(center, radius);
 
@@ -320,7 +320,7 @@ Potree.PointCloudArena4DGeometry = class PointCloudArena4DGeometry extends THREE
 							node.boundingBox.max.z = node.boundingBox.min.z + parentBBSize.z / 2;
 						}
 
-						let center = node.boundingBox.getCenter();
+						let center = node.boundingBox.getCenter(new THREE.Vector3());
 						let radius = node.boundingBox.getSize(new THREE.Vector3()).length() / 2;
 						node.boundingSphere = new THREE.Sphere(center, radius);
 					} else {
@@ -335,14 +335,14 @@ Potree.PointCloudArena4DGeometry = class PointCloudArena4DGeometry extends THREE
 							node.boundingBox.min.z = node.boundingBox.min.z + parentBBSize.z / 2;
 						}
 
-						let center = node.boundingBox.getCenter();
+						let center = node.boundingBox.getCenter(new THREE.Vector3());
 						let radius = node.boundingBox.getSize(new THREE.Vector3()).length() / 2;
 						node.boundingSphere = new THREE.Sphere(center, radius);
 					}
 				} else {
 					root = node;
 					root.boundingBox = this.boundingBox.clone();
-					let center = root.boundingBox.getCenter();
+					let center = root.boundingBox.getCenter(new THREE.Vector3());
 					let radius = root.boundingBox.getSize(new THREE.Vector3()).length() / 2;
 					root.boundingSphere = new THREE.Sphere(center, radius);
 				}

@@ -641,7 +641,7 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 			let sy = height / size.z;
 			let scale = Math.min(sx, sy);
 
-			let center = this.projectedBox.getCenter();
+			let center = this.projectedBox.getCenter(new THREE.Vector3());
 			this.scale.set(scale, scale, 1);
 			this.camera.position.copy(center);
 

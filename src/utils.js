@@ -94,7 +94,7 @@ Potree.utils = class {
 			[0, 2], [4, 6], [5, 7], [1, 3]
 		];
 
-		let center = box.getCenter();
+		let center = box.getCenter(new THREE.Vector3());
 
 		let centroids = [
 			{position: [box.min.x, center.y, center.z], color: 0xFF0000},
@@ -127,9 +127,9 @@ Potree.utils = class {
 		}
 	}
 
-	static debugPlane(parent, plane, color = 0x0000FF){
+	static debugPlane(parent, plane, size = 1, color = 0x0000FF){
 
-		let planehelper = new THREE.PlaneHelper(plane);
+		let planehelper = new THREE.PlaneHelper(plane, size, color);
 
 		parent.add(planehelper);
 

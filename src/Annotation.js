@@ -517,7 +517,7 @@ Potree.Annotation = class extends THREE.EventDispatcher {
 		} else if (this.position) {
 			endTarget = this.position;
 		} else {
-			endTarget = this.boundingBox.getCenter();
+			endTarget = this.boundingBox.getCenter(new THREE.Vector3());
 		}
 
 		if (this.cameraPosition) {

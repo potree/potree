@@ -1,5 +1,7 @@
 
-Potree.View = class {
+import {OrbitControls} from "../navigation/OrbitControls.js";
+
+export class View{
 	constructor () {
 		this.position = new THREE.Vector3(0, 0, 0);
 
@@ -10,11 +12,11 @@ Potree.View = class {
 		this.maxPitch = Math.PI / 2;
 		this.minPitch = -Math.PI / 2;
 
-		this.navigationMode = Potree.OrbitControls;
+		this.navigationMode = OrbitControls;
 	}
 
 	clone () {
-		let c = new Potree.View();
+		let c = new View();
 		c.yaw = this.yaw;
 		c._pitch = this.pitch;
 		c.radius = this.radius;

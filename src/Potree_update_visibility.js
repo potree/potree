@@ -24,7 +24,7 @@ export function updatePointClouds(pointclouds, camera, renderer){
 		pointcloud.updateVisibleBounds();
 	}
 
-	lru.freeMemory();
+	exports.lru.freeMemory();
 
 	return result;
 };

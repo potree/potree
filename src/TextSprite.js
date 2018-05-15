@@ -2,7 +2,7 @@
  * adapted from http://stemkoski.github.io/Three.js/Sprite-Text-Labels.html
  */
 
-Potree.TextSprite = class TextSprite extends THREE.Object3D{
+export class TextSprite extends THREE.Object3D{
 	
 	constructor(text){
 		super();

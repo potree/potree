@@ -5,9 +5,10 @@ export * from "./Enum.js";
 export * from "./PointCloudOctreeGeometry.js";
 export * from "./PointCloudOctree.js";
 export * from "./Potree_update_visibility.js";
+export * from "./defines.js";
 export * from "./loader/POCLoader.js";
 export * from "./loader/PointAttributes.js";
-//export * from "./viewer/viewer.js";
+export * from "./viewer/viewer.js";
 
 
 import {PointColorType} from "./materials/PointCloudMaterial.js";
@@ -49,29 +50,6 @@ if (document.currentScript.src) {
 let resourcePath = scriptPath + '/resources';
 
 export {scriptPath, resourcePath};
-
-export const CameraMode = new Enum({
-	ORTHOGRAPHIC: 0,
-	PERSPECTIVE: 1
-});
-
-export const ClipTask = new Enum({
-	NONE: 0,
-	HIGHLIGHT: 1,
-	SHOW_INSIDE: 2,
-	SHOW_OUTSIDE: 3
-});
-
-export const ClipMethod = new Enum({
-	INSIDE_ANY: 0,
-	INSIDE_ALL: 1
-});
-
-export const MOUSE = new Enum({
-	LEFT: 0b0001,
-	RIGHT: 0b0010,
-	MIDDLE: 0b0100
-});
 
 
 // TODO check if this can be removed or improved
@@ -304,64 +282,6 @@ Potree.getMeasurementIcon = function(measurement){
 	} else if (measurement instanceof Potree.PolygonClipVolume) {
 		return `${Potree.resourcePath}/icons/clip-polygon.svg`;
 	}
-};
-
-Potree.Points = class Points {
-	constructor () {
-		this.boundingBox = new THREE.Box3();
-		this.numPoints = 0;
-		this.data = {};
-	}
-
-	add (points) {
-		let currentSize = this.numPoints;
-		let additionalSize = points.numPoints;
-		let newSize = currentSize + additionalSize;
-
-		let thisAttributes = Object.keys(this.data);
-		let otherAttributes = Object.keys(points.data);
-		let attributes = new Set([...thisAttributes, ...otherAttributes]);
-
-		for (let attribute of attributes) {
-			if (thisAttributes.includes(attribute) && otherAttributes.includes(attribute)) {
-				// attribute in both, merge
-				let Type = this.data[attribute].constructor;
-				let merged = new Type(this.data[attribute].length + points.data[attribute].length);
-				merged.set(this.data[attribute], 0);
-				merged.set(points.data[attribute], this.data[attribute].length);
-				this.data[attribute] = merged;
-			} else if (thisAttributes.includes(attribute) && !otherAttributes.includes(attribute)) {
-				// attribute only in this; take over this and expand to new size
-				let elementsPerPoint = this.data[attribute].length / this.numPoints;
-				let Type = this.data[attribute].constructor;
-				let expanded = new Type(elementsPerPoint * newSize);
-				expanded.set(this.data[attribute], 0);
-				this.data[attribute] = expanded;
-			} else if (!thisAttributes.includes(attribute) && otherAttributes.includes(attribute)) {
-				// attribute only in points to be added; take over new points and expand to new size
-				let elementsPerPoint = points.data[attribute].length / points.numPoints;
-				let Type = points.data[attribute].constructor;
-				let expanded = new Type(elementsPerPoint * newSize);
-				expanded.set(points.data[attribute], elementsPerPoint * currentSize);
-				this.data[attribute] = expanded;
-			}
-		}
-
-		this.numPoints = newSize;
-
-		this.boundingBox.union(points.boundingBox);
-	}
-};
-
-
-
-Potree.getDEMWorkerInstance = function () {
-	if (!Potree.DEMWorkerInstance) {
-		let workerPath = Potree.scriptPath + '/workers/DEMWorker.js';
-		Potree.DEMWorkerInstance = Potree.workerPool.getWorker(workerPath);
-	}
-
-	return Potree.DEMWorkerInstance;
 };
 
 

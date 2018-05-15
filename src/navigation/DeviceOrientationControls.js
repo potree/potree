@@ -14,7 +14,7 @@
  *
  */
 
-Potree.DeviceOrientationControls = class DeviceOrientationControls extends THREE.EventDispatcher{
+export class DeviceOrientationControls extends THREE.EventDispatcher{
 	constructor(viewer){
 		super();
 

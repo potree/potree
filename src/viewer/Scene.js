@@ -1,10 +1,17 @@
 
-Potree.Scene = class extends THREE.EventDispatcher{
+
+import {Annotation} from "../Annotation.js";
+import {CameraMode} from "../defines.js";
+import {View} from "./View.js";
+import {Utils} from "../utils.js";
+
+
+export class Scene extends THREE.EventDispatcher{
 
 	constructor(){
 		super();
 
-		this.annotations = new Potree.Annotation();
+		this.annotations = new Annotation();
 		
 		this.scene = new THREE.Scene();
 		this.sceneBG = new THREE.Scene();
@@ -14,7 +21,7 @@ Potree.Scene = class extends THREE.EventDispatcher{
 		this.cameraO = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 1000*1000);
 		this.cameraBG = new THREE.Camera();
 		this.cameraScreenSpace = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 10);
-		this.cameraMode = Potree.CameraMode.PERSPECTIVE;
+		this.cameraMode = CameraMode.PERSPECTIVE;
 		this.pointclouds = [];
 
 		this.measurements = [];
@@ -29,7 +36,7 @@ Potree.Scene = class extends THREE.EventDispatcher{
 		this.deviceControls = null;
 		this.inputHandler = null;
 
-		this.view = new Potree.View();
+		this.view = new View();
 
 		this.directionalLight = null;
 
@@ -99,7 +106,7 @@ Potree.Scene = class extends THREE.EventDispatcher{
 			pointcloud.updateMatrixWorld(true);
 
 			let pointcloudBox = pointcloud.pcoGeometry.tightBoundingBox ? pointcloud.pcoGeometry.tightBoundingBox : pointcloud.boundingBox;
-			let boxWorld = Potree.utils.computeTransformedBoundingBox(pointcloudBox, pointcloud.matrixWorld);
+			let boxWorld = Utils.computeTransformedBoundingBox(pointcloudBox, pointcloud.matrixWorld);
 			box.union(boxWorld);
 		}
 
@@ -228,7 +235,7 @@ Potree.Scene = class extends THREE.EventDispatcher{
 	}
 
 	getActiveCamera() {
-		return this.cameraMode == Potree.CameraMode.PERSPECTIVE ? this.cameraP : this.cameraO;		
+		return this.cameraMode == CameraMode.PERSPECTIVE ? this.cameraP : this.cameraO;		
 	}
 	
 	initialize(){
@@ -252,12 +259,9 @@ Potree.Scene = class extends THREE.EventDispatcher{
 		
 		let light = new THREE.AmbientLight( 0x555555 ); // soft white light
 		this.scenePointCloud.add( light );
-		
-		//let grid = Potree.utils.createGrid(5, 5, 2);
-		//this.scene.add(grid);
 
 		{ // background
-			let texture = Potree.utils.createBackgroundTexture(512, 512);
+			let texture = Utils.createBackgroundTexture(512, 512);
 
 			texture.minFilter = texture.magFilter = THREE.NearestFilter;
 			texture.minFilter = texture.magFilter = THREE.LinearFilter;
@@ -302,7 +306,7 @@ Potree.Scene = class extends THREE.EventDispatcher{
 		} else if (position instanceof THREE.Vector3) {
 			args.position = position;
 		}
-		let annotation = new Potree.Annotation(args);
+		let annotation = new Annotation(args);
 		this.annotations.add(annotation);
 
 		return annotation;

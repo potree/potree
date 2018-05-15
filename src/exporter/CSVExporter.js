@@ -1,5 +1,5 @@
 
-Potree.CSVExporter = class CSVExporter {
+export class CSVExporter {
 	static toString (points) {
 		let string = '';
 

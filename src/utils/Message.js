@@ -1,10 +1,10 @@
 
-Potree.Message = class Message{
+export class Message{
 
 	constructor(content){
 		this.content = content;
 
-		let closeIcon = `${Potree.resourcePath}/icons/close.svg`;
+		let closeIcon = `${exports.resourcePath}/icons/close.svg`;
 
 		this.element = $(`
 			<div class="potree_message">
@@ -33,4 +33,4 @@ Potree.Message = class Message{
 		}
 	}
 
-};
+}

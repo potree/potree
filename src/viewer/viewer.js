@@ -1,25 +1,23 @@
 
 // TODO imports
-//ClipTask
-//ClipMethod
-//Renderer
-//Scene
-//InputHandler
-//ClippingTool
-//TransformationTool
-//NavigationCube
-//OrbitControls
-//FirstPersonControls
-//EarthControls
-//DeviceOrientationControls
-//Utils
-//CameraMode
-//MapView
-//ProfileWindow
-//ProfileWindowController
-//BoxVolume
-//Features
-//Message
+import {ClipTask, ClipMethod, CameraMode} from "../defines.js";
+import {Renderer} from "../PotreeRenderer.js";
+import {PotreeRenderer} from "./PotreeRenderer.js";
+import {Scene} from "./Scene.js";
+import {InputHandler} from "../navigation/InputHandler.js";
+import {ClippingTool} from "../utils/ClippingTool.js";
+import {TransformationTool} from "../utils/TransformationTool.js";
+import {NavigationCube} from "./NavigationCube.js";
+import {OrbitControls} from "../navigation/OrbitControls.js";
+import {FirstPersonControls} from "../navigation/FirstPersonControls.js";
+import {EarthControls} from "../navigation/EarthControls.js";
+import {DeviceOrientationControls} from "../navigation/DeviceOrientationControls.js";
+import {Utils} from "../utils.js";
+//import {MapView} from "./MapView.js";
+import {ProfileWindow, ProfileWindowController} from "./profile.js";
+import {BoxVolume} from "../utils/Volume.js";
+import {Features} from "../Features.js";
+import {Message} from "../utils/Message.js";
 
 
 export class Viewer extends THREE.EventDispatcher{

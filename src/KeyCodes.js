@@ -1,3 +1,5 @@
-Potree.KeyCodes = {
+
+
+export const KeyCodes = {
 	DELETE: 46
 };

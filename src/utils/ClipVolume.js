@@ -1,6 +1,6 @@
 
 
-Potree.ClipVolume = class extends THREE.Object3D{
+export class ClipVolume extends THREE.Object3D{
 	
 	constructor(args){
 		super();

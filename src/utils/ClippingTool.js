@@ -1,6 +1,8 @@
 
+import {ClipVolume} from "./ClipVolume.js";
+import {PolygonClipVolume} from "./PolygonClipVolume.js";
 
-Potree.ClippingTool = class ClippingTool extends THREE.EventDispatcher{
+export class ClippingTool extends THREE.EventDispatcher{
 
 	constructor(viewer){
 		super(); 
@@ -29,9 +31,9 @@ Potree.ClippingTool = class ClippingTool extends THREE.EventDispatcher{
 		};
 		
 		this.viewer.inputHandler.addEventListener("delete", e => {
-			let volumes = e.selection.filter(e => (e instanceof Potree.ClipVolume));
+			let volumes = e.selection.filter(e => (e instanceof ClipVolume));
 			volumes.forEach(e => this.viewer.scene.removeClipVolume(e));
-			let polyVolumes = e.selection.filter(e => (e instanceof Potree.PolygonClipVolume));
+			let polyVolumes = e.selection.filter(e => (e instanceof PolygonClipVolume));
 			polyVolumes.forEach(e => this.viewer.scene.removePolygonClipVolume(e));
 		});
 	}
@@ -92,7 +94,7 @@ Potree.ClippingTool = class ClippingTool extends THREE.EventDispatcher{
 		</svg>`);
 		$(domElement.parentElement).append(svg);
 
-		let polyClipVol = new Potree.PolygonClipVolume(this.viewer.scene.getActiveCamera().clone());
+		let polyClipVol = new PolygonClipVolume(this.viewer.scene.getActiveCamera().clone());
 
 		this.dispatchEvent({"type": "start_inserting_clipping_volume"});
 

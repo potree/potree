@@ -1,3 +1,12 @@
+
+
+import {Version} from "../Version.js";
+import {PointAttributes, PointAttribute} from "../loader/PointAttributes.js";
+import {InterleavedBuffer} from "../InterleavedBuffer.js";
+import {toInterleavedBufferAttribute} from "../utils/toInterleavedBufferAttribute.js";
+
+
+
 /* global onmessage:true postMessage:false */
 /* exported onmessage */
 // http://jsperf.com/uint8array-vs-dataview3/3
@@ -41,7 +50,7 @@ onmessage = function (event) {
 	let pointAttributes = event.data.pointAttributes;
 	let numPoints = buffer.byteLength / pointAttributes.byteSize;
 	let cv = new CustomView(buffer);
-	let version = new Potree.Version(event.data.version);
+	let version = new Version(event.data.version);
 	let nodeOffset = event.data.offset;
 	let scale = event.data.scale;
 	let spacing = event.data.spacing;
@@ -57,7 +66,7 @@ onmessage = function (event) {
 	let inOffset = 0;
 	for (let pointAttribute of pointAttributes.attributes) {
 		
-		if (pointAttribute.name === Potree.PointAttribute.POSITION_CARTESIAN.name) {
+		if (pointAttribute.name === PointAttribute.POSITION_CARTESIAN.name) {
 			let buff = new ArrayBuffer(numPoints * 4 * 3);
 			let positions = new Float32Array(buff);
 		
@@ -92,7 +101,7 @@ onmessage = function (event) {
 			}
 
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
-		} else if (pointAttribute.name === Potree.PointAttribute.COLOR_PACKED.name) {
+		} else if (pointAttribute.name === PointAttribute.COLOR_PACKED.name) {
 			let buff = new ArrayBuffer(numPoints * 4);
 			let colors = new Uint8Array(buff);
 
@@ -103,7 +112,7 @@ onmessage = function (event) {
 			}
 
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
-		} else if (pointAttribute.name === Potree.PointAttribute.INTENSITY.name) {
+		} else if (pointAttribute.name === PointAttribute.INTENSITY.name) {
 			let buff = new ArrayBuffer(numPoints * 4);
 			let intensities = new Float32Array(buff);
 
@@ -113,7 +122,7 @@ onmessage = function (event) {
 			}
 
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
-		} else if (pointAttribute.name === Potree.PointAttribute.CLASSIFICATION.name) {
+		} else if (pointAttribute.name === PointAttribute.CLASSIFICATION.name) {
 			let buff = new ArrayBuffer(numPoints);
 			let classifications = new Uint8Array(buff);
 
@@ -123,7 +132,7 @@ onmessage = function (event) {
 			}
 
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
-		} else if (pointAttribute.name === Potree.PointAttribute.NORMAL_SPHEREMAPPED.name) {
+		} else if (pointAttribute.name === PointAttribute.NORMAL_SPHEREMAPPED.name) {
 			let buff = new ArrayBuffer(numPoints * 4 * 3);
 			let normals = new Float32Array(buff);
 
@@ -154,7 +163,7 @@ onmessage = function (event) {
 			}
 
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
-		} else if (pointAttribute.name === Potree.PointAttribute.NORMAL_OCT16.name) {
+		} else if (pointAttribute.name === PointAttribute.NORMAL_OCT16.name) {
 			let buff = new ArrayBuffer(numPoints * 4 * 3);
 			let normals = new Float32Array(buff);
 
@@ -188,7 +197,7 @@ onmessage = function (event) {
 			}
 
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
-		} else if (pointAttribute.name === Potree.PointAttribute.NORMAL.name) {
+		} else if (pointAttribute.name === PointAttribute.NORMAL.name) {
 			let buff = new ArrayBuffer(numPoints * 4 * 3);
 			let normals = new Float32Array(buff);
 
@@ -224,7 +233,7 @@ onmessage = function (event) {
 			max: tightBoxMin.map(v => v + cubeLength)
 		};
 
-		let positions = new Float32Array(attributeBuffers[Potree.PointAttribute.POSITION_CARTESIAN.name].buffer);
+		let positions = new Float32Array(attributeBuffers[PointAttribute.POSITION_CARTESIAN.name].buffer);
 		for(let i = 0; i < numPoints; i++){
 			let x = positions[3 * i + 0];
 			let y = positions[3 * i + 1];
@@ -329,7 +338,7 @@ onmessage = function (event) {
 		let maxMean = Math.max(...means);
 		let minMean = Math.min(...means);
 
-		//let colors = new Uint8Array(attributeBuffers[Potree.PointAttribute.COLOR_PACKED.name].buffer);
+		//let colors = new Uint8Array(attributeBuffers[PointAttribute.COLOR_PACKED.name].buffer);
 		//for(let i = 0; i < numPoints; i++){
 		//	let v = means[i] / 0.05;
 
@@ -338,7 +347,7 @@ onmessage = function (event) {
 		//	colors[4 * i + 2] = 255 * v;
 		//}
 
-		attributeBuffers[Potree.PointAttribute.SPACING.name] = { buffer: meansBuffer, attribute: Potree.PointAttribute.SPACING };
+		attributeBuffers[PointAttribute.SPACING.name] = { buffer: meansBuffer, attribute: PointAttribute.SPACING };
 
 
 	}
@@ -352,7 +361,7 @@ onmessage = function (event) {
 			indices[i] = i;
 		}
 		
-		attributeBuffers[Potree.PointAttribute.INDICES.name] = { buffer: buff, attribute: Potree.PointAttribute.INDICES };
+		attributeBuffers[PointAttribute.INDICES.name] = { buffer: buff, attribute: PointAttribute.INDICES };
 	}
 
 	performance.mark("binary-decoder-end");

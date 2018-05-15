@@ -1,5 +1,8 @@
 
-Potree.utils = class {
+import {XHRFactory} from "./XHRFactory.js";
+
+
+export class Utils {
 	static loadShapefileFeatures (file, callback) {
 		let features = [];
 
@@ -42,7 +45,7 @@ Potree.utils = class {
 	};
 
 	static pathExists (url) {
-		let req = Potree.XHRFactory.createXMLHttpRequest();
+		let req = XHRFactory.createXMLHttpRequest();
 		req.open('GET', url, false);
 		req.send(null);
 		if (req.status !== 200) {
@@ -630,6 +633,32 @@ Potree.utils = class {
 		window.history.replaceState({}, '', url);
 	}
 
+	static createChildAABB(aabb, index){
+		let min = aabb.min.clone();
+		let max = aabb.max.clone();
+		let size = new THREE.Vector3().subVectors(max, min);
+
+		if ((index & 0b0001) > 0) {
+			min.z += size.z / 2;
+		} else {
+			max.z -= size.z / 2;
+		}
+
+		if ((index & 0b0010) > 0) {
+			min.y += size.y / 2;
+		} else {
+			max.y -= size.y / 2;
+		}
+
+		if ((index & 0b0100) > 0) {
+			min.x += size.x / 2;
+		} else {
+			max.x -= size.x / 2;
+		}
+
+		return new THREE.Box3(min, max);
+	}
+
 	// see https://stackoverflow.com/questions/400212/how-do-i-copy-to-the-clipboard-in-javascript
 	static clipboardCopy(text){
 		let textArea = document.createElement("textarea");
@@ -669,24 +698,28 @@ Potree.utils = class {
 		document.body.removeChild(textArea);
 
 	}
+
+	//static screenPas(){
+
+	//}
 };
 
-Potree.utils.screenPass = new function () {
-	this.screenScene = new THREE.Scene();
-	this.screenQuad = new THREE.Mesh(new THREE.PlaneBufferGeometry(2, 2, 0));
-	this.screenQuad.material.depthTest = true;
-	this.screenQuad.material.depthWrite = true;
-	this.screenQuad.material.transparent = true;
-	this.screenScene.add(this.screenQuad);
-	this.camera = new THREE.Camera();
-
-	this.render = function (renderer, material, target) {
-		this.screenQuad.material = material;
-
-		if (typeof target === 'undefined') {
-			renderer.render(this.screenScene, this.camera);
-		} else {
-			renderer.render(this.screenScene, this.camera, target);
-		}
-	};
-}();
+//Potree.utils.screenPass  new function () {
+//	this.screenScene = new THREE.Scene();
+//	this.screenQuad = new THREE.Mesh(new THREE.PlaneBufferGeometry(2, 2, 0));
+//	this.screenQuad.material.depthTest = true;
+//	this.screenQuad.material.depthWrite = true;
+//	this.screenQuad.material.transparent = true;
+//	this.screenScene.add(this.screenQuad);
+//	this.camera = new THREE.Camera();
+//
+//	this.render = function (renderer, material, target) {
+//		this.screenQuad.material = material;
+//
+//		if (typeof target === 'undefined') {
+//			renderer.render(this.screenScene, this.camera);
+//		} else {
+//			renderer.render(this.screenScene, this.camera, target);
+//		}
+//	};
+//}();

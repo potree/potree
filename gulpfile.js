@@ -1,6 +1,8 @@
 
 const path = require('path');
 const gulp = require('gulp');
+const exec = require('child_process').exec;
+
 
 const fs = require("fs");
 const concat = require('gulp-concat');
@@ -170,14 +172,14 @@ gulp.task("shaders", function(){
 		.pipe(gulp.dest('build/shaders'));
 });
 
-gulp.task("scripts", ['workers','shaders', "icons_viewer", "examples_page"], function(){
-	gulp.src(paths.potree)
-		.pipe(concat('potree.js'))
-		.pipe(gulp.dest('build/potree'));
+gulp.task("build", ['workers','shaders', "icons_viewer", "examples_page"], function(){
+	//gulp.src(paths.potree)
+	//	.pipe(concat('potree.js'))
+	//	.pipe(gulp.dest('build/potree'));
 
-	gulp.src(paths.laslaz)
-		.pipe(concat('laslaz.js'))
-		.pipe(gulp.dest('build/potree'));
+	//gulp.src(paths.laslaz)
+	//	.pipe(concat('laslaz.js'))
+	//	.pipe(gulp.dest('build/potree'));
 
 	gulp.src(paths.html)
 		.pipe(gulp.dest('build/potree'));
@@ -190,8 +192,6 @@ gulp.task("scripts", ['workers','shaders', "icons_viewer", "examples_page"], fun
 
 	return;
 });
-
-gulp.task('build', ['scripts']);
 
 // For development, it is now possible to use 'gulp webserver'
 // from the command line to start the server (default port is 8080)
@@ -484,6 +484,13 @@ gulp.task('watch', function() {
 	gulp.run("build");
 	gulp.run("webserver");
 
+	exec('rollup -c', function (err, stdout, stderr) {
+		console.log(stdout);
+		console.log(stderr);
+		//cb(err);
+	});
+
+
 	let watchlist = [
 		'src/**/*.js', 
 		'src/**/*.css', 
@@ -511,7 +518,13 @@ gulp.task('watch', function() {
 		console.log("===============================");
 		console.log("watch event:");
 		console.log(cb);
-		gulp.run("build");	
+		gulp.run("build");
+
+		exec('rollup -c', function (err, stdout, stderr) {
+			console.log(stdout);
+			console.log(stderr);
+			//cb(err);
+		});
 	});
 
 });
@@ -580,7 +593,7 @@ let encodeShader = function(fileName, varname, opt){
 	function endStream(){
 		if (buffer.length === 0) return this.emit('end');
 
-		let joinedContent = "";
+		let joinedContent = `let Shaders = {};\n\n`;
 		for(let i = 0; i < buffer.length; i++){
 			let b = buffer[i];
 			let file = files[i];
@@ -590,10 +603,12 @@ let encodeShader = function(fileName, varname, opt){
 
 			let content = new Buffer(b).toString();
 			
-			let prep = `\nPotree.Shaders["${fname}"] = \`${content}\`\n`;
+			let prep = `\Shaders["${fname}"] = \`${content}\`\n`;
 
 			joinedContent += prep;
 		}
+
+		joinedContent += "\nexport {Shaders};";
 
 		let joinedPath = path.join(firstFile.base, fileName);
 

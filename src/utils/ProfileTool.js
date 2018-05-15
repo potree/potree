@@ -111,7 +111,7 @@ Potree.ProfileTool = class ProfileTool extends THREE.EventDispatcher {
 		// make size independant of distance
 		for(let profile of profiles){
 			for(let sphere of profile.spheres){				
-				let distance = camera.position.distanceTo(sphere.getWorldPosition());
+				let distance = camera.position.distanceTo(sphere.getWorldPosition(new THREE.Vector3()));
 				let pr = Potree.utils.projectedRadius(1, camera, distance, clientWidth, clientHeight);
 				let scale = (15 / pr);
 				sphere.scale.set(scale, scale, scale);

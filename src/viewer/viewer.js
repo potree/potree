@@ -160,7 +160,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			
 			let onPointcloudAdded = (e) => {
 				if (this.scene.pointclouds.length === 1) {
-					let speed = e.pointcloud.boundingBox.getSize().length();
+					let speed = e.pointcloud.boundingBox.getSize(new THREE.Vector3()).length();
 					speed = speed / 5;
 					this.setMoveSpeed(speed);
 				}
@@ -570,7 +570,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		} else if (node.geometry && node.geometry.boundingSphere) {
 			bs = node.geometry.boundingSphere;
 		} else {
-			bs = node.boundingBox.getBoundingSphere();
+			bs = node.boundingBox.getBoundingSphere(new THREE.Sphere());
 		}
 		bs = bs.clone().applyMatrix4(node.matrixWorld); 
 
@@ -1037,11 +1037,11 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			let position = annotation.position.clone();
 			position.add(annotation.offset);
 			if (!position) {
-				position = annotation.boundingBox.getCenter();
+				position = annotation.boundingBox.getCenter(new THREE.Vector3());
 			}
 
 			let distance = viewer.scene.cameraP.position.distanceTo(position);
-			let radius = annotation.boundingBox.getBoundingSphere().radius;
+			let radius = annotation.boundingBox.getBoundingSphere(new THREE.Sphere()).radius;
 
 			let screenPos = new THREE.Vector3();
 			let screenSize = 0;
@@ -1168,7 +1168,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		Potree.pointLoadLimit = Potree.pointBudget * 2;
 
 		this.scene.directionalLight.position.copy(camera.position);
-		this.scene.directionalLight.lookAt(new THREE.Vector3().addVectors(camera.position, camera.getWorldDirection()));
+		this.scene.directionalLight.lookAt(new THREE.Vector3().addVectors(camera.position, camera.getWorldDirection(new THREE.Vector3())));
 
 		for (let pointcloud of this.scene.pointclouds) {
 			if (!pointcloud.material._defaultIntensityRangeChanged) {
@@ -1358,7 +1358,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			let clipBoxes = boxes.map( box => {
 				box.updateMatrixWorld();
 				let boxInverse = new THREE.Matrix4().getInverse(box.matrixWorld);
-				let boxPosition = box.getWorldPosition();
+				let boxPosition = box.getWorldPosition(new THREE.Vector3());
 				return {box: box, inverse: boxInverse, position: boxPosition};
 			});
 

@@ -672,7 +672,7 @@ Potree.MapView = class {
 
 		let scale = this.map.getView().getResolution();
 		let campos = camera.position;
-		let camdir = camera.getWorldDirection();
+		let camdir = camera.getWorldDirection(new THREE.Vector3());
 		let sceneLookAt = camdir.clone().multiplyScalar(30 * scale).add(campos);
 		let geoPos = camera.position;
 		let geoLookAt = sceneLookAt;

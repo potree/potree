@@ -555,32 +555,39 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 		visible = visible && !(numVisiblePoints + node.getNumPoints() > Potree.pointBudget);
 		visible = visible && !(numVisiblePointsInPointclouds.get(pointcloud) + node.getNumPoints() > pointcloud.pointBudget);
 		visible = visible && level < maxLevel;
+		//visible = visible && node.name !== "r613";
+
+		
 
 
 		if(!window.warned125){
 			console.log("TODO");
 			window.warned125 = true;
 		}
-		if(false && pointcloud.material.clipBoxes.length > 0){
 
-			
+		let clipBoxes = pointcloud.material.clipBoxes;
+		if(true && clipBoxes.length > 0){
 
 			//node.debug = false;
 
 			let numIntersecting = 0;
 			let numIntersectionVolumes = 0;
 
-			for(let clipBox of pointcloud.material.clipBoxes){
+			if(node.name === "r60"){
+				var a = 10;
+			}
+
+			for(let clipBox of clipBoxes){
 
 				let pcWorldInverse = new THREE.Matrix4().getInverse(pointcloud.matrixWorld);
 				let toPCObject = pcWorldInverse.multiply(clipBox.box.matrixWorld);
 
-				let px = new THREE.Vector3(+1, 0, 0).applyMatrix4(toPCObject);
-				let nx = new THREE.Vector3(-1, 0, 0).applyMatrix4(toPCObject);
-				let py = new THREE.Vector3(0, +1, 0).applyMatrix4(toPCObject);
-				let ny = new THREE.Vector3(0, -1, 0).applyMatrix4(toPCObject);
-				let pz = new THREE.Vector3(0, 0, +1).applyMatrix4(toPCObject);
-				let nz = new THREE.Vector3(0, 0, -1).applyMatrix4(toPCObject);
+				let px = new THREE.Vector3(+0.5, 0, 0).applyMatrix4(pcWorldInverse);
+				let nx = new THREE.Vector3(-0.5, 0, 0).applyMatrix4(pcWorldInverse);
+				let py = new THREE.Vector3(0, +0.5, 0).applyMatrix4(pcWorldInverse);
+				let ny = new THREE.Vector3(0, -0.5, 0).applyMatrix4(pcWorldInverse);
+				let pz = new THREE.Vector3(0, 0, +0.5).applyMatrix4(pcWorldInverse);
+				let nz = new THREE.Vector3(0, 0, -0.5).applyMatrix4(pcWorldInverse);
 
 				let pxN = new THREE.Vector3().subVectors(nx, px).normalize();
 				let nxN = pxN.clone().multiplyScalar(-1);
@@ -595,6 +602,22 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 				let nyPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(nyN, ny);
 				let pzPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(pzN, pz);
 				let nzPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(nzN, nz);
+
+				//if(window.debugdraw !== undefined && window.debugdraw === true && node.name === "r60"){
+
+				//	Potree.utils.debugPlane(viewer.scene.scene, pxPlane, 1, 0xFF0000);
+				//	Potree.utils.debugPlane(viewer.scene.scene, nxPlane, 1, 0x990000);
+				//	Potree.utils.debugPlane(viewer.scene.scene, pyPlane, 1, 0x00FF00);
+				//	Potree.utils.debugPlane(viewer.scene.scene, nyPlane, 1, 0x009900);
+				//	Potree.utils.debugPlane(viewer.scene.scene, pzPlane, 1, 0x0000FF);
+				//	Potree.utils.debugPlane(viewer.scene.scene, nzPlane, 1, 0x000099);
+
+				//	Potree.utils.debugBox(viewer.scene.scene, box, new THREE.Matrix4(), 0x00FF00);
+				//	Potree.utils.debugBox(viewer.scene.scene, box, pointcloud.matrixWorld, 0xFF0000);
+				//	Potree.utils.debugBox(viewer.scene.scene, clipBox.box.boundingBox, clipBox.box.matrixWorld, 0xFF0000);
+
+				//	window.debugdraw = false;
+				//}
 
 				let frustum = new THREE.Frustum(pxPlane, nxPlane, pyPlane, nyPlane, pzPlane, nzPlane);
 				let intersects = frustum.intersectsBox(box);
@@ -616,6 +639,8 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 				}else{
 					visible = false;
 				}
+			} else if(pointcloud.material.clipTask === Potree.ClipTask.SHOW_INSIDE){
+
 			}
 			
 

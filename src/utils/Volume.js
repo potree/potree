@@ -154,7 +154,7 @@ Potree.BoxVolume = class BoxVolume extends Potree.Volume{
 
 	update(){
 		this.boundingBox = this.box.geometry.boundingBox;
-		this.boundingSphere = this.boundingBox.getBoundingSphere();
+		this.boundingSphere = this.boundingBox.getBoundingSphere(new THREE.Sphere());
 
 		if (this._clip) {
 			this.box.visible = false;
@@ -289,7 +289,7 @@ Potree.SphereVolume = class SphereVolume extends Potree.Volume{
 
 	update(){
 		this.boundingBox = this.sphere.geometry.boundingBox;
-		this.boundingSphere = this.boundingBox.getBoundingSphere();
+		this.boundingSphere = this.boundingBox.getBoundingSphere(new THREE.Sphere());
 
 		//if (this._clip) {
 		//	this.sphere.visible = false;

@@ -127,7 +127,7 @@ Potree.GeoControls = class GeoControls extends THREE.EventDispatcher{
 			let tangentDiffNormal = new THREE.Vector3().crossVectors(oldTangent, newTangent).normalize();
 			let angle = oldTangent.angleTo(newTangent);
 			let rot = new THREE.Matrix4().makeRotationAxis(tangentDiffNormal, angle);
-			let dir = this.object.getWorldDirection().clone();
+			let dir = this.object.getWorldDirection(new THREE.Vector3()).clone();
 			dir = dir.applyMatrix4(rot);
 			let target = new THREE.Vector3().addVectors(this.object.position, dir);
 			this.object.lookAt(target);

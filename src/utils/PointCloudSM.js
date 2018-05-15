@@ -38,7 +38,7 @@ Potree.PointCloudSM = class PointCloudSM{
 		this.camera.up.set(0, 0, 1);
 		this.camera.position.copy(light.position);
 
-		let target = new THREE.Vector3().addVectors(light.position, light.getWorldDirection());
+		let target = new THREE.Vector3().addVectors(light.position, light.getWorldDirection(new THREE.Vector3()));
 		this.camera.lookAt(target);
 
 		this.camera.updateProjectionMatrix();

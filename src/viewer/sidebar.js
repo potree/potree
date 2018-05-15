@@ -312,7 +312,7 @@ initSidebar = (viewer) => {
 			}else if(object instanceof Potree.Measure){
 				let points = object.points.map(p => p.position);
 				let box = new THREE.Box3().setFromPoints(points);
-				if(box.getSize().length() > 0){
+				if(box.getSize(new THREE.Vector3()).length() > 0){
 					let node = new THREE.Object3D();
 					node.boundingBox = box;
 					viewer.zoomTo(node, 2, 500);
@@ -320,7 +320,7 @@ initSidebar = (viewer) => {
 			}else if(object instanceof Potree.Profile){
 				let points = object.points;
 				let box = new THREE.Box3().setFromPoints(points);
-				if(box.getSize().length() > 0){
+				if(box.getSize(new THREE.Vector3()).length() > 0){
 					let node = new THREE.Object3D();
 					node.boundingBox = box;
 					viewer.zoomTo(node, 1, 500);
@@ -329,7 +329,7 @@ initSidebar = (viewer) => {
 				
 				let box = object.boundingBox.clone().applyMatrix4(object.matrixWorld);
 
-				if(box.getSize().length() > 0){
+				if(box.getSize(new THREE.Vector3()).length() > 0){
 					let node = new THREE.Object3D();
 					node.boundingBox = box;
 					viewer.zoomTo(node, 1, 500);
@@ -337,7 +337,7 @@ initSidebar = (viewer) => {
 			}else if(object instanceof Potree.Annotation){
 				object.moveHere(viewer.scene.getActiveCamera());
 			}else if(object instanceof Potree.PolygonClipVolume){
-				let dir = object.camera.getWorldDirection();
+				let dir = object.camera.getWorldDirection(new THREE.Vector3());
 				let target;
 
 				if(object.camera instanceof THREE.OrthographicCamera){
@@ -357,14 +357,14 @@ initSidebar = (viewer) => {
 				let position = object.position;
 				let target = new THREE.Vector3().addVectors(
 					position, 
-					object.getWorldDirection().multiplyScalar(distance));
+					object.getWorldDirection(new THREE.Vector3()).multiplyScalar(distance));
 
 				viewer.scene.view.position.copy(object.position);
 				viewer.scene.view.lookAt(target);
 			}else if(object instanceof THREE.Object3D){
 				let box = new THREE.Box3().setFromObject(object);
 
-				if(box.getSize().length() > 0){
+				if(box.getSize(new THREE.Vector3()).length() > 0){
 					let node = new THREE.Object3D();
 					node.boundingBox = box;
 					viewer.zoomTo(node, 1, 500);

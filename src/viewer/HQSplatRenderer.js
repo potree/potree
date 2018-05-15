@@ -111,7 +111,7 @@ class HQSplatRenderer {
 
 		{ // DEPTH PASS
 			for (let pointcloud of visiblePointClouds) {
-				let octreeSize = pointcloud.pcoGeometry.boundingBox.getSize().x;
+				let octreeSize = pointcloud.pcoGeometry.boundingBox.getSize(new THREE.Vector3()).x;
 
 				let material = originalMaterials.get(pointcloud);
 				let depthMaterial = this.depthMaterials.get(pointcloud);
@@ -147,7 +147,7 @@ class HQSplatRenderer {
 
 		{ // ATTRIBUTE PASS
 			for (let pointcloud of visiblePointClouds) {
-				let octreeSize = pointcloud.pcoGeometry.boundingBox.getSize().x;
+				let octreeSize = pointcloud.pcoGeometry.boundingBox.getSize(new THREE.Vector3()).x;
 
 				let material = originalMaterials.get(pointcloud);
 				let attributeMaterial = this.attributeMaterials.get(pointcloud);

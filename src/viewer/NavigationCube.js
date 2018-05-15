@@ -15,7 +15,7 @@ Potree.NavigationCube = class NavigationCube extends THREE.Object3D {
 			new THREE.TextureLoader().load(
 				Potree.resourcePath + '/textures/navigation/' + img,
 				function(texture) {
-					texture.anisotropy = viewer.renderer.getMaxAnisotropy();
+					texture.anisotropy = viewer.renderer.capabilities.getMaxAnisotropy();
 					material.map = texture;
 					material.needsUpdate = true;
 				});
@@ -85,7 +85,7 @@ Potree.NavigationCube = class NavigationCube extends THREE.Object3D {
 
 			let raycaster = new THREE.Raycaster();
 			raycaster.setFromCamera(mouse, this.camera);
-			raycaster.ray.origin.sub(this.camera.getWorldDirection());
+			raycaster.ray.origin.sub(this.camera.getWorldDirection(new THREE.Vector3()));
 
 			let intersects = raycaster.intersectObjects(this.children);
 

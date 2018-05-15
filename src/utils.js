@@ -74,6 +74,67 @@ Potree.utils = class {
 		parent.add(tl);
 	}
 
+	static debugBox(parent, box, transform = new THREE.Matrix4(), color = 0xFFFF00){
+		
+		let vertices = [
+			[box.min.x, box.min.y, box.min.z],
+			[box.min.x, box.min.y, box.max.z],
+			[box.min.x, box.max.y, box.min.z],
+			[box.min.x, box.max.y, box.max.z],
+
+			[box.max.x, box.min.y, box.min.z],
+			[box.max.x, box.min.y, box.max.z],
+			[box.max.x, box.max.y, box.min.z],
+			[box.max.x, box.max.y, box.max.z],
+		].map(v => new THREE.Vector3(...v));
+
+		let edges = [
+			[0, 4], [4, 5], [5, 1], [1, 0],
+			[2, 6], [6, 7], [7, 3], [3, 2],
+			[0, 2], [4, 6], [5, 7], [1, 3]
+		];
+
+		let center = box.getCenter(new THREE.Vector3());
+
+		let centroids = [
+			{position: [box.min.x, center.y, center.z], color: 0xFF0000},
+			{position: [box.max.x, center.y, center.z], color: 0x880000},
+
+			{position: [center.x, box.min.y, center.z], color: 0x00FF00},
+			{position: [center.x, box.max.y, center.z], color: 0x008800},
+
+			{position: [center.x, center.y, box.min.z], color: 0x0000FF},
+			{position: [center.x, center.y, box.max.z], color: 0x000088},
+		];
+
+		for(let vertex of vertices){
+			let pos = vertex.clone().applyMatrix4(transform);
+
+			Potree.utils.debugSphere(parent, pos, 0.1, 0xFF0000);
+		}
+
+		for(let edge of edges){
+			let start = vertices[edge[0]].clone().applyMatrix4(transform);
+			let end = vertices[edge[1]].clone().applyMatrix4(transform);
+
+			Potree.utils.debugLine(parent, start, end, color);
+		}
+
+		for(let centroid of centroids){
+			let pos = new THREE.Vector3(...centroid.position).applyMatrix4(transform);
+
+			Potree.utils.debugSphere(parent, pos, 0.1, centroid.color);
+		}
+	}
+
+	static debugPlane(parent, plane, size = 1, color = 0x0000FF){
+
+		let planehelper = new THREE.PlaneHelper(plane, size, color);
+
+		parent.add(planehelper);
+
+	}
+
 	/**
 	 * adapted from mhluska at https://github.com/mrdoob/three.js/issues/1561
 	 */
@@ -147,7 +208,7 @@ Potree.utils = class {
 			let camTargetDistance = camera.position.distanceTo(endTarget);
 			let target = new THREE.Vector3().addVectors(
 				camera.position,
-				camera.getWorldDirection().clone().multiplyScalar(camTargetDistance)
+				camera.getWorldDirection(new THREE.Vector3()).clone().multiplyScalar(camTargetDistance)
 			);
 			let tween = new TWEEN.Tween(target).to(endTarget, animationDuration);
 			tween.easing(easing);

@@ -216,7 +216,7 @@ class EDLRenderer{
 
 		// COLOR & DEPTH PASS
 		for (let pointcloud of viewer.scene.pointclouds) {
-			let octreeSize = pointcloud.pcoGeometry.boundingBox.getSize().x;
+			let octreeSize = pointcloud.pcoGeometry.boundingBox.getSize(new THREE.Vector3()).x;
 
 			let material = pointcloud.material;
 			material.weighted = false;

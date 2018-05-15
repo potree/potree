@@ -87,7 +87,7 @@ Potree.VolumeTool = class VolumeTool extends THREE.EventDispatcher {
 			if (I) {
 				volume.position.copy(I.location);
 
-				let wp = volume.getWorldPosition().applyMatrix4(camera.matrixWorldInverse);
+				let wp = volume.getWorldPosition(new THREE.Vector3()).applyMatrix4(camera.matrixWorldInverse);
 				// let pp = new THREE.Vector4(wp.x, wp.y, wp.z).applyMatrix4(camera.projectionMatrix);
 				let w = Math.abs((wp.z / 5));
 				volume.scale.set(w, w, w);

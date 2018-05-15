@@ -250,7 +250,7 @@ Potree.GreyhoundLoader.load = function load (url, callback) {
 
 			pgg.projection = greyhoundInfo.srs;
 			pgg.boundingBox = boundingBox;
-			pgg.boundingSphere = boundingBox.getBoundingSphere();
+			pgg.boundingSphere = boundingBox.getBoundingSphere(new THREE.Sphere());
 
 			pgg.scale = scale;
 			pgg.offset = offset;

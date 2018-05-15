@@ -253,12 +253,12 @@ Potree.ProfileRequest = class ProfileRequest {
 
 				{ // skip if current node doesn't intersect current segment
 					let bbWorld = node.boundingBox.clone().applyMatrix4(this.pointcloud.matrixWorld);
-					let bsWorld = bbWorld.getBoundingSphere();
+					let bsWorld = bbWorld.getBoundingSphere(new THREE.Sphere());
 
 					let start = new THREE.Vector3(segment.start.x, segment.start.y, bsWorld.center.z);
 					let end = new THREE.Vector3(segment.end.x, segment.end.y, bsWorld.center.z);
 						
-					let closest = new THREE.Line3(start, end).closestPointToPoint(bsWorld.center, true);
+					let closest = new THREE.Line3(start, end).closestPointToPoint(bsWorld.center, true, new THREE.Vector3());
 					let distance = closest.distanceTo(bsWorld.center);
 
 					let intersects = (distance < (bsWorld.radius + target.profile.width));

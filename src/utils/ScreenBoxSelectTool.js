@@ -116,7 +116,7 @@ Potree.ScreenBoxSelectTool = class ScreenBoxSelectTool extends THREE.EventDispat
 				volCam.updateProjectionMatrix();
 				volCam.matrixWorldInverse.getInverse(volCam.matrixWorld);
 
-				let ray = new THREE.Ray(volCam.getWorldPosition(), volCam.getWorldDirection());
+				let ray = new THREE.Ray(volCam.getWorldPosition(new THREE.Vector3()), volCam.getWorldDirection(new THREE.Vector3()));
 				let rayInverse = new THREE.Ray(
 					ray.origin.clone().add(ray.direction.clone().multiplyScalar(volume.scale.z)),
 					ray.direction.clone().multiplyScalar(-1));
@@ -145,10 +145,10 @@ Potree.ScreenBoxSelectTool = class ScreenBoxSelectTool extends THREE.EventDispat
 			if(allPointsNear.length > 0 && allPointsFar.length > 0){
 				let viewLine = new THREE.Line3(ray.origin, new THREE.Vector3().addVectors(ray.origin, ray.direction));
 
-				let closestOnLine = allPointsNear.map(p => viewLine.closestPointToPoint(p.position, false));
+				let closestOnLine = allPointsNear.map(p => viewLine.closestPointToPoint(p.position, false, new THREE.Vector3()));
 				let closest = closestOnLine.sort( (a, b) => ray.origin.distanceTo(a) - ray.origin.distanceTo(b))[0];
 
-				let farthestOnLine = allPointsFar.map(p => viewLine.closestPointToPoint(p.position, false));
+				let farthestOnLine = allPointsFar.map(p => viewLine.closestPointToPoint(p.position, false, new THREE.Vector3()));
 				let farthest = farthestOnLine.sort( (a, b) => ray.origin.distanceTo(b) - ray.origin.distanceTo(a))[0];
 
 				let distance = closest.distanceTo(farthest);

@@ -1,4 +1,6 @@
 
+import {Shaders} from "../../build/shaders/shaders.js";
+
 //
 // Algorithm by Christian Boucheny
 // shader code taken and adapted from CloudCompare
@@ -8,7 +10,7 @@
 // http://www.kitware.com/source/home/post/9
 // https://tel.archives-ouvertes.fr/tel-00438464/document p. 115+ (french)
 
-Potree.EyeDomeLightingMaterial = class EyeDomeLightingMaterial extends THREE.ShaderMaterial{
+export class EyeDomeLightingMaterial extends THREE.ShaderMaterial{
 
 	constructor(parameters = {}){
 		super();
@@ -30,8 +32,8 @@ Potree.EyeDomeLightingMaterial = class EyeDomeLightingMaterial extends THREE.Sha
 
 		this.setValues({
 			uniforms: uniforms,
-			vertexShader: this.getDefines() + Potree.Shaders['edl.vs'],
-			fragmentShader: this.getDefines() + Potree.Shaders['edl.fs'],
+			vertexShader: this.getDefines() + Shaders['edl.vs'],
+			fragmentShader: this.getDefines() + Shaders['edl.fs'],
 			lights: false
 		});
 
@@ -48,8 +50,8 @@ Potree.EyeDomeLightingMaterial = class EyeDomeLightingMaterial extends THREE.Sha
 
 	updateShaderSource() {
 
-		let vs = this.getDefines() + Potree.Shaders['edl.vs'];
-		let fs = this.getDefines() + Potree.Shaders['edl.fs'];
+		let vs = this.getDefines() + Shaders['edl.vs'];
+		let fs = this.getDefines() + Shaders['edl.fs'];
 
 		this.setValues({
 			vertexShader: vs,
@@ -79,5 +81,5 @@ Potree.EyeDomeLightingMaterial = class EyeDomeLightingMaterial extends THREE.Sha
 	}
 
 	
-};
+}
 

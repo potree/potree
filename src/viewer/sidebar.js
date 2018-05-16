@@ -1,4 +1,30 @@
-initSidebar = (viewer) => {
+
+import {MeasuringTool} from "../utils/MeasuringTool.js";
+import {ProfileTool} from "../utils/ProfileTool.js";
+import {VolumeTool} from "../utils/VolumeTool.js";
+
+import {GeoJSONExporter} from "../exporter/GeoJSONExporter.js"
+import {DXFExporter} from "../exporter/DXFExporter.js"
+import {Volume, SphereVolume} from "../utils/Volume.js"
+import {PolygonClipVolume} from "../utils/PolygonClipVolume.js"
+import {PropertiesPanel} from "./PropertiesPanel.js"
+import {PointCloudTree} from "../PointCloudTree.js"
+import {Profile} from "../utils/Profile.js"
+import {Measure} from "../utils/Measure.js"
+import {Annotation} from "../Annotation.js"
+import {CameraMode, ClipTask, ClipMethod} from "../defines.js"
+import {ScreenBoxSelectTool} from "../utils/ScreenBoxSelectTool.js"
+import {Utils} from "../utils.js"
+
+import {EarthControls} from "../navigation/EarthControls.js"
+import {FirstPersonControls} from "../navigation/FirstPersonControls.js"
+import {OrbitControls} from "../navigation/OrbitControls.js"
+
+
+//import {Utils.getMeasurementIcon} from "./Utils.getMeasurementIcon.js"
+
+
+const initSidebar = (viewer) => {
 	let createToolIcon = function (icon, title, callback) {
 		let element = $(`
 			<img src="${icon}"
@@ -12,9 +38,9 @@ initSidebar = (viewer) => {
 		return element;
 	};
 
-	let measuringTool = new Potree.MeasuringTool(viewer);
-	let profileTool = new Potree.ProfileTool(viewer);
-	let volumeTool = new Potree.VolumeTool(viewer);
+	let measuringTool = new MeasuringTool(viewer);
+	let profileTool = new ProfileTool(viewer);
+	let volumeTool = new VolumeTool(viewer);
 
 	function initToolbar () {
 
@@ -140,7 +166,7 @@ initSidebar = (viewer) => {
 			Potree.resourcePath + '/icons/sphere_distances.svg',
 			'[title]tt.volume_measurement',
 			function () { 
-				let volume = volumeTool.startInsertion({type: Potree.SphereVolume}); 
+				let volume = volumeTool.startInsertion({type: SphereVolume}); 
 
 				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
 				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === volume.uuid);
@@ -198,7 +224,7 @@ initSidebar = (viewer) => {
 				let scene = viewer.scene;
 				let measurements = [...scene.measurements, ...scene.profiles, ...scene.volumes];
 
-				let geoJson = Potree.GeoJSONExporter.toString(measurements);
+				let geoJson = GeoJSONExporter.toString(measurements);
 
 				let url = window.URL.createObjectURL(new Blob([geoJson], {type: 'data:application/octet-stream'}));
 				elDownloadJSON.attr('href', url);
@@ -209,14 +235,14 @@ initSidebar = (viewer) => {
 				let scene = viewer.scene;
 				let measurements = [...scene.measurements, ...scene.profiles, ...scene.volumes];
 
-				let dxf = Potree.DXFExporter.toString(measurements);
+				let dxf = DXFExporter.toString(measurements);
 
 				let url = window.URL.createObjectURL(new Blob([dxf], {type: 'data:application/octet-stream'}));
 				elDownloadDXF.attr('href', url);
 			});
 		}
 
-		let propertiesPanel = new Potree.PropertiesPanel(elProperties, viewer);
+		let propertiesPanel = new PropertiesPanel(elProperties, viewer);
 		propertiesPanel.setScene(viewer.scene);
 		
 		localStorage.removeItem('jstree');
@@ -279,7 +305,7 @@ initSidebar = (viewer) => {
 
 			viewer.inputHandler.deselectAll();
 
-			if(object instanceof Potree.Volume){
+			if(object instanceof Volume){
 				viewer.inputHandler.toggleSelection(object);
 			}
 
@@ -304,12 +330,12 @@ initSidebar = (viewer) => {
 				return;
 			}
 
-			if(object instanceof Potree.PointCloudTree){
+			if(object instanceof PointCloudTree){
 				let box = viewer.getBoundingBox([object]);
 				let node = new THREE.Object3D();
 				node.boundingBox = box;
 				viewer.zoomTo(node, 1, 500);
-			}else if(object instanceof Potree.Measure){
+			}else if(object instanceof Measure){
 				let points = object.points.map(p => p.position);
 				let box = new THREE.Box3().setFromPoints(points);
 				if(box.getSize(new THREE.Vector3()).length() > 0){
@@ -317,7 +343,7 @@ initSidebar = (viewer) => {
 					node.boundingBox = box;
 					viewer.zoomTo(node, 2, 500);
 				}
-			}else if(object instanceof Potree.Profile){
+			}else if(object instanceof Profile){
 				let points = object.points;
 				let box = new THREE.Box3().setFromPoints(points);
 				if(box.getSize(new THREE.Vector3()).length() > 0){
@@ -325,7 +351,7 @@ initSidebar = (viewer) => {
 					node.boundingBox = box;
 					viewer.zoomTo(node, 1, 500);
 				}
-			}else if(object instanceof Potree.Volume){
+			}else if(object instanceof Volume){
 				
 				let box = object.boundingBox.clone().applyMatrix4(object.matrixWorld);
 
@@ -334,20 +360,20 @@ initSidebar = (viewer) => {
 					node.boundingBox = box;
 					viewer.zoomTo(node, 1, 500);
 				}
-			}else if(object instanceof Potree.Annotation){
+			}else if(object instanceof Annotation){
 				object.moveHere(viewer.scene.getActiveCamera());
-			}else if(object instanceof Potree.PolygonClipVolume){
+			}else if(object instanceof PolygonClipVolume){
 				let dir = object.camera.getWorldDirection(new THREE.Vector3());
 				let target;
 
 				if(object.camera instanceof THREE.OrthographicCamera){
 					dir.multiplyScalar(object.camera.right)
 					target = new THREE.Vector3().addVectors(object.camera.position, dir);
-					viewer.setCameraMode(Potree.CameraMode.ORTHOGRAPHIC);
+					viewer.setCameraMode(CameraMode.ORTHOGRAPHIC);
 				}else if(object.camera instanceof THREE.PerspectiveCamera){
 					dir.multiplyScalar(viewer.scene.view.radius);
 					target = new THREE.Vector3().addVectors(object.camera.position, dir);
-					viewer.setCameraMode(Potree.CameraMode.PERSPECTIVE);
+					viewer.setCameraMode(CameraMode.PERSPECTIVE);
 				}
 				
 				viewer.scene.view.position.copy(object.camera.position);
@@ -397,13 +423,13 @@ initSidebar = (viewer) => {
 
 		let onMeasurementAdded = (e) => {
 			let measurement = e.measurement;
-			let icon = Potree.getMeasurementIcon(measurement);
+			let icon = Utils.getMeasurementIcon(measurement);
 			createNode(measurementID, measurement.name, icon, measurement);
 		};
 
 		let onVolumeAdded = (e) => {
 			let volume = e.volume;
-			let icon = Potree.getMeasurementIcon(volume);
+			let icon = Utils.getMeasurementIcon(volume);
 			let node = createNode(measurementID, volume.name, icon, volume);
 
 			volume.addEventListener("visibility_changed", () => {
@@ -417,7 +443,7 @@ initSidebar = (viewer) => {
 
 		let onProfileAdded = (e) => {
 			let profile = e.profile;
-			let icon = Potree.getMeasurementIcon(profile);
+			let icon = Utils.getMeasurementIcon(profile);
 			createNode(measurementID, profile.name, icon, profile);
 		};
 
@@ -533,11 +559,11 @@ initSidebar = (viewer) => {
 			elClipTask.selectgroup({title: "Clip Task"});
 
 			elClipTask.find("input").click( (e) => {
-				viewer.setClipTask(Potree.ClipTask[e.target.value]);
+				viewer.setClipTask(ClipTask[e.target.value]);
 			});
 
-			let currentClipTask = Object.keys(Potree.ClipTask)
-				.filter(key => Potree.ClipTask[key] === viewer.clipTask);
+			let currentClipTask = Object.keys(ClipTask)
+				.filter(key => ClipTask[key] === viewer.clipTask);
 			elClipTask.find(`input[value=${currentClipTask}]`).trigger("click");
 		}
 
@@ -546,11 +572,11 @@ initSidebar = (viewer) => {
 			elClipMethod.selectgroup({title: "Clip Method"});
 
 			elClipMethod.find("input").click( (e) => {
-				viewer.setClipMethod(Potree.ClipMethod[e.target.value]);
+				viewer.setClipMethod(ClipMethod[e.target.value]);
 			});
 
-			let currentClipMethod = Object.keys(Potree.ClipMethod)
-				.filter(key => Potree.ClipMethod[key] === viewer.clipMethod);
+			let currentClipMethod = Object.keys(ClipMethod)
+				.filter(key => ClipMethod[key] === viewer.clipMethod);
 			elClipMethod.find(`input[value=${currentClipMethod}]`).trigger("click");
 		}
 
@@ -585,7 +611,7 @@ initSidebar = (viewer) => {
 		));
 
 		{// SCREEN BOX SELECT
-			let boxSelectTool = new Potree.ScreenBoxSelectTool(viewer);
+			let boxSelectTool = new ScreenBoxSelectTool(viewer);
 
 			clippingToolBar.append(createToolIcon(
 				Potree.resourcePath + "/icons/clip-screen.svg",
@@ -739,7 +765,7 @@ initSidebar = (viewer) => {
 		});
 
 		viewer.addEventListener('point_budget_changed', function (event) {
-			$('#lblPointBudget')[0].innerHTML = Potree.utils.addCommas(viewer.getPointBudget());
+			$('#lblPointBudget')[0].innerHTML = Utils.addCommas(viewer.getPointBudget());
 			$('#sldPointBudget').slider({value: viewer.getPointBudget()});
 		});
 
@@ -762,7 +788,7 @@ initSidebar = (viewer) => {
 			$("input[name=background][value='" + viewer.getBackground() + "']").prop('checked', true);
 		});
 
-		$('#lblPointBudget')[0].innerHTML = Potree.utils.addCommas(viewer.getPointBudget());
+		$('#lblPointBudget')[0].innerHTML = Utils.addCommas(viewer.getPointBudget());
 		$('#lblFOV')[0].innerHTML = parseInt(viewer.getFOV());
 		$('#lblEDLRadius')[0].innerHTML = viewer.getEDLRadius().toFixed(1);
 		$('#lblEDLStrength')[0].innerHTML = viewer.getEDLStrength().toFixed(1);
@@ -793,14 +819,14 @@ initSidebar = (viewer) => {
 		elNavigation.append(createToolIcon(
 			Potree.resourcePath + '/icons/earth_controls_1.png',
 			'[title]tt.earth_control',
-			function () { viewer.setNavigationMode(Potree.EarthControls); }
+			function () { viewer.setNavigationMode(EarthControls); }
 		));
 
 		elNavigation.append(createToolIcon(
 			Potree.resourcePath + '/icons/fps_controls.svg',
 			'[title]tt.flight_control',
 			function () {
-				viewer.setNavigationMode(Potree.FirstPersonControls);
+				viewer.setNavigationMode(FirstPersonControls);
 				viewer.fpControls.lockElevation = false;
 			}
 		));
@@ -809,7 +835,7 @@ initSidebar = (viewer) => {
 			Potree.resourcePath + '/icons/helicopter_controls.svg',
 			'[title]tt.heli_control',
 			() => { 
-				viewer.setNavigationMode(Potree.FirstPersonControls);
+				viewer.setNavigationMode(FirstPersonControls);
 				viewer.fpControls.lockElevation = true;
 			}
 		));
@@ -817,7 +843,7 @@ initSidebar = (viewer) => {
 		elNavigation.append(createToolIcon(
 			Potree.resourcePath + '/icons/orbit_controls.svg',
 			'[title]tt.orbit_control',
-			function () { viewer.setNavigationMode(Potree.OrbitControls); }
+			function () { viewer.setNavigationMode(OrbitControls); }
 		));
 
 		elNavigation.append(createToolIcon(
@@ -886,10 +912,10 @@ initSidebar = (viewer) => {
 		elNavigation.append(elCameraProjection);
 		elCameraProjection.selectgroup({title: "Camera Projection"});
 		elCameraProjection.find("input").click( (e) => {
-			viewer.setCameraMode(Potree.CameraMode[e.target.value]);
+			viewer.setCameraMode(CameraMode[e.target.value]);
 		});
-		let cameraMode = Object.keys(Potree.CameraMode)
-			.filter(key => Potree.CameraMode[key] === viewer.scene.cameraMode);
+		let cameraMode = Object.keys(CameraMode)
+			.filter(key => CameraMode[key] === viewer.scene.cameraMode);
 		elCameraProjection.find(`input[value=${cameraMode}]`).trigger("click");
 
 		let speedRange = new THREE.Vector2(1, 10 * 1000);
@@ -977,3 +1003,5 @@ initSidebar = (viewer) => {
 	$('#potree_version_number').html(Potree.version.major + "." + Potree.version.minor + Potree.version.suffix);
 	$('.perfect_scrollbar').perfectScrollbar();
 };
+
+export {initSidebar};

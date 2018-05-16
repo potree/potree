@@ -2,7 +2,8 @@
 // http://epsg.io/
 proj4.defs('UTM10N', '+proj=utm +zone=10 +ellps=GRS80 +datum=NAD83 +units=m +no_defs');
 
-Potree.MapView = class {
+export class MapView{
+	
 	constructor (viewer) {
 		this.viewer = viewer;
 
@@ -698,4 +699,5 @@ Potree.MapView = class {
 	set sourcesVisible (value) {
 		this.getSourcesLayer().setVisible(value);
 	}
-};
+
+}

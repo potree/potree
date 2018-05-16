@@ -52,78 +52,6 @@ let resourcePath = scriptPath + '/resources';
 export {scriptPath, resourcePath};
 
 
-// TODO check if this can be removed or improved
-export function toMaterialID(materialName){
-	if (materialName === 'RGB'){
-		return PointColorType.RGB;
-	} else if (materialName === 'Color') {
-		return PointColorType.COLOR;
-	} else if (materialName === 'Elevation') {
-		return PointColorType.HEIGHT;
-	} else if (materialName === 'Intensity') {
-		return PointColorType.INTENSITY;
-	} else if (materialName === 'Intensity Gradient') {
-		return PointColorType.INTENSITY_GRADIENT;
-	} else if (materialName === 'Classification') {
-		return PointColorType.CLASSIFICATION;
-	} else if (materialName === 'Return Number') {
-		return PointColorType.RETURN_NUMBER;
-	} else if (materialName === 'Source') {
-		return PointColorType.SOURCE;
-	} else if (materialName === 'Level of Detail') {
-		return PointColorType.LOD;
-	} else if (materialName === 'Point Index') {
-		return PointColorType.POINT_INDEX;
-	} else if (materialName === 'Normal') {
-		return PointColorType.NORMAL;
-	} else if (materialName === 'Phong') {
-		return PointColorType.PHONG;
-	} else if (materialName === 'Index') {
-		return PointColorType.POINT_INDEX;
-	} else if (materialName === 'RGB and Elevation') {
-		return PointColorType.RGB_HEIGHT;
-	} else if (materialName === 'Composite') {
-		return PointColorType.COMPOSITE;
-	}
-};
-
-
-// TODO check if this can be removed or improved
-export function toMaterialName(materialID) {
-	if (materialID === PointColorType.RGB) {
-		return 'RGB';
-	} else if (materialID === PointColorType.COLOR) {
-		return 'Color';
-	} else if (materialID === PointColorType.HEIGHT) {
-		return 'Elevation';
-	} else if (materialID === PointColorType.INTENSITY) {
-		return 'Intensity';
-	} else if (materialID === PointColorType.INTENSITY_GRADIENT) {
-		return 'Intensity Gradient';
-	} else if (materialID === PointColorType.CLASSIFICATION) {
-		return 'Classification';
-	} else if (materialID === PointColorType.RETURN_NUMBER) {
-		return 'Return Number';
-	} else if (materialID === PointColorType.SOURCE) {
-		return 'Source';
-	} else if (materialID === PointColorType.LOD) {
-		return 'Level of Detail';
-	} else if (materialID === PointColorType.NORMAL) {
-		return 'Normal';
-	} else if (materialID === PointColorType.PHONG) {
-		return 'Phong';
-	} else if (materialID === PointColorType.POINT_INDEX) {
-		return 'Index';
-	} else if (materialID === PointColorType.RGB_HEIGHT) {
-		return 'RGB and Elevation';
-	} else if (materialID === PointColorType.COMPOSITE) {
-		return 'Composite';
-	}
-};
-
-
-
-
 export function loadPointCloud(path, name, callback){
 	let loaded = function(pointcloud){
 		pointcloud.name = name;
@@ -172,80 +100,80 @@ export function loadPointCloud(path, name, callback){
 
 
 
-//(function($){
-//	$.fn.extend({
-//		selectgroup: function(args = {}){
-//
-//			let elGroup = $(this);
-//			let rootID = elGroup.prop("id");
-//			let groupID = `${rootID}`;
-//			let groupTitle = (args.title !== undefined) ? args.title : "";
-//
-//			let elButtons = [];
-//			elGroup.find("option").each((index, value) => {
-//				let buttonID = $(value).prop("id");
-//				let label = $(value).html();
-//				let optionValue = $(value).prop("value");
-//
-//				let elButton = $(`
-//					<span style="flex-grow: 1; display: inherit">
-//					<label for="${buttonID}" class="ui-button" style="width: 100%; padding: .4em .1em">${label}</label>
-//					<input type="radio" name="${groupID}" id="${buttonID}" value="${optionValue}" style="display: none"/>
-//					</span>
-//				`);
-//				let elLabel = elButton.find("label");
-//				let elInput = elButton.find("input");
-//
-//				elInput.change( () => {
-//					elGroup.find("label").removeClass("ui-state-active");
-//					elGroup.find("label").addClass("ui-state-default");
-//					if(elInput.is(":checked")){
-//						elLabel.addClass("ui-state-active");
-//					}else{
-//						//elLabel.addClass("ui-state-default");
-//					}
-//				});
-//
-//				elButtons.push(elButton);
-//			});
-//
-//			let elFieldset = $(`
-//				<fieldset style="border: none; margin: 0px; padding: 0px">
-//					<legend>${groupTitle}</legend>
-//					<span style="display: flex">
-//
-//					</span>
-//				</fieldset>
-//			`);
-//
-//			let elButtonContainer = elFieldset.find("span");
-//			for(let elButton of elButtons){
-//				elButtonContainer.append(elButton);
-//			}
-//
-//			elButtonContainer.find("label").each( (index, value) => {
-//				$(value).css("margin", "0px");
-//				$(value).css("border-radius", "0px");
-//				$(value).css("border", "1px solid black");
-//				$(value).css("border-left", "none");
-//			});
-//			elButtonContainer.find("label:first").each( (index, value) => {
-//				$(value).css("border-radius", "4px 0px 0px 4px");
-//				
-//			});
-//			elButtonContainer.find("label:last").each( (index, value) => {
-//				$(value).css("border-radius", "0px 4px 4px 0px");
-//				$(value).css("border-left", "none");
-//			});
-//
-//			elGroup.empty();
-//			elGroup.append(elFieldset);
-//
-//
-//
-//		}
-//	});
-//})(jQuery);
+(function($){
+	$.fn.extend({
+		selectgroup: function(args = {}){
+
+			let elGroup = $(this);
+			let rootID = elGroup.prop("id");
+			let groupID = `${rootID}`;
+			let groupTitle = (args.title !== undefined) ? args.title : "";
+
+			let elButtons = [];
+			elGroup.find("option").each((index, value) => {
+				let buttonID = $(value).prop("id");
+				let label = $(value).html();
+				let optionValue = $(value).prop("value");
+
+				let elButton = $(`
+					<span style="flex-grow: 1; display: inherit">
+					<label for="${buttonID}" class="ui-button" style="width: 100%; padding: .4em .1em">${label}</label>
+					<input type="radio" name="${groupID}" id="${buttonID}" value="${optionValue}" style="display: none"/>
+					</span>
+				`);
+				let elLabel = elButton.find("label");
+				let elInput = elButton.find("input");
+
+				elInput.change( () => {
+					elGroup.find("label").removeClass("ui-state-active");
+					elGroup.find("label").addClass("ui-state-default");
+					if(elInput.is(":checked")){
+						elLabel.addClass("ui-state-active");
+					}else{
+						//elLabel.addClass("ui-state-default");
+					}
+				});
+
+				elButtons.push(elButton);
+			});
+
+			let elFieldset = $(`
+				<fieldset style="border: none; margin: 0px; padding: 0px">
+					<legend>${groupTitle}</legend>
+					<span style="display: flex">
+
+					</span>
+				</fieldset>
+			`);
+
+			let elButtonContainer = elFieldset.find("span");
+			for(let elButton of elButtons){
+				elButtonContainer.append(elButton);
+			}
+
+			elButtonContainer.find("label").each( (index, value) => {
+				$(value).css("margin", "0px");
+				$(value).css("border-radius", "0px");
+				$(value).css("border", "1px solid black");
+				$(value).css("border-left", "none");
+			});
+			elButtonContainer.find("label:first").each( (index, value) => {
+				$(value).css("border-radius", "4px 0px 0px 4px");
+				
+			});
+			elButtonContainer.find("label:last").each( (index, value) => {
+				$(value).css("border-radius", "0px 4px 4px 0px");
+				$(value).css("border-left", "none");
+			});
+
+			elGroup.empty();
+			elGroup.append(elFieldset);
+
+
+
+		}
+	});
+})(jQuery);
 
 
 

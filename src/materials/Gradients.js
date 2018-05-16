@@ -24,11 +24,11 @@
 // cmap = plt.cm.viridis
 //
 // for i in range(0,11):
-//    u = i / 10
-//    rgb = cmap(norm(u))[0:3]
-//    rgb = ["{0:.3f}".format(v) for v in rgb]
-//    rgb = "[" + str(u) + ", new THREE.Color(" +  ", ".join(rgb) + ")],"
-//    print(rgb)
+//	u = i / 10
+//	rgb = cmap(norm(u))[0:3]
+//	rgb = ["{0:.3f}".format(v) for v in rgb]
+//	rgb = "[" + str(u) + ", new THREE.Color(" +  ", ".join(rgb) + ")],"
+//	print(rgb)
 
 let Gradients = {
 	RAINBOW: [

@@ -1,5 +1,10 @@
 
 import {XHRFactory} from "./XHRFactory.js";
+import {Volume} from "./utils/Volume.js";
+import {Profile} from "./utils/Profile.js";
+import {Measure} from "./utils/Measure.js";
+import {PolygonClipVolume} from "./utils/PolygonClipVolume.js";
+import {PointColorType} from "./defines.js";
 
 
 export class Utils {
@@ -113,20 +118,20 @@ export class Utils {
 		for(let vertex of vertices){
 			let pos = vertex.clone().applyMatrix4(transform);
 
-			Potree.utils.debugSphere(parent, pos, 0.1, 0xFF0000);
+			Utils.debugSphere(parent, pos, 0.1, 0xFF0000);
 		}
 
 		for(let edge of edges){
 			let start = vertices[edge[0]].clone().applyMatrix4(transform);
 			let end = vertices[edge[1]].clone().applyMatrix4(transform);
 
-			Potree.utils.debugLine(parent, start, end, color);
+			Utils.debugLine(parent, start, end, color);
 		}
 
 		for(let centroid of centroids){
 			let pos = new THREE.Vector3(...centroid.position).applyMatrix4(transform);
 
-			Potree.utils.debugSphere(parent, pos, 0.1, centroid.color);
+			Utils.debugSphere(parent, pos, 0.1, centroid.color);
 		}
 	}
 
@@ -296,7 +301,7 @@ export class Utils {
 		let line = new THREE.LineSegments(geometry, material, THREE.LinePieces);
 		line.receiveShadow = true;
 		return line;
-    };
+	}
 
 	static createBackgroundTexture (width, height) {
 		function gauss (x, y) {
@@ -333,7 +338,7 @@ export class Utils {
 		texture.needsUpdate = true;
 
 		return texture;
-	};
+	}
 
 	static getMousePointCloudIntersection (mouse, camera, viewer, pointclouds, params = {}) {
 		
@@ -389,7 +394,7 @@ export class Utils {
 		} else {
 			return null;
 		}
-	};
+	}
 
 	static pixelsArrayToImage (pixels, width, height) {
 		let canvas = document.createElement('canvas');
@@ -413,7 +418,7 @@ export class Utils {
 		// img.style.transform = "scaleY(-1)";
 
 		return img;
-	};
+	}
 
 	static pixelsArrayToDataUrl(pixels, width, height) {
 		let canvas = document.createElement('canvas');
@@ -435,7 +440,7 @@ export class Utils {
 		let dataURL = canvas.toDataURL();
 
 		return dataURL;
-	};
+	}
 
 	static pixelsArrayToCanvas(pixels, width, height){
 		let canvas = document.createElement('canvas');
@@ -466,7 +471,7 @@ export class Utils {
 		context.putImageData(imageData, 0, 0);
 
 		return canvas;
-	};
+	}
 
 	static removeListeners(dispatcher, type){
 		if (dispatcher._listeners === undefined) {
@@ -498,9 +503,9 @@ export class Utils {
 
 	static projectedRadius(radius, camera, distance, screenWidth, screenHeight){
 		if(camera instanceof THREE.OrthographicCamera){
-			return Potree.utils.projectedRadiusOrtho(radius, camera.projectionMatrix, screenWidth, screenHeight);
+			return Utils.projectedRadiusOrtho(radius, camera.projectionMatrix, screenWidth, screenHeight);
 		}else if(camera instanceof THREE.PerspectiveCamera){
-			return Potree.utils.projectedRadiusPerspective(radius, camera.fov * Math.PI / 180, distance, screenHeight);
+			return Utils.projectedRadiusPerspective(radius, camera.fov * Math.PI / 180, distance, screenHeight);
 		}else{
 			throw new Error("invalid parameters");
 		}
@@ -511,7 +516,7 @@ export class Utils {
 		projFactor = projFactor * screenHeight / 2;
 
 		return radius * projFactor;
-	};
+	}
 
 	static projectedRadiusOrtho(radius, proj, screenWidth, screenHeight) {
 		let p1 = new THREE.Vector4(0);
@@ -533,25 +538,25 @@ export class Utils {
 		camera.position.set(0, 1, 0);
 		camera.rotation.set(-Math.PI / 2, 0, 0);
 		camera.zoomTo(node, 1);
-	};
+	}
 
 	static frontView (camera, node) {
 		camera.position.set(0, 0, 1);
 		camera.rotation.set(0, 0, 0);
 		camera.zoomTo(node, 1);
-	};
+	}
 
 	static leftView (camera, node) {
 		camera.position.set(-1, 0, 0);
 		camera.rotation.set(0, -Math.PI / 2, 0);
 		camera.zoomTo(node, 1);
-	};
+	}
 
 	static rightView (camera, node) {
 		camera.position.set(1, 0, 0);
 		camera.rotation.set(0, Math.PI / 2, 0);
 		camera.zoomTo(node, 1);
-	};
+	}
 
 	/**
 	 *
@@ -577,7 +582,7 @@ export class Utils {
 		}
 
 		return (minDistance >= sphere.radius) ? 2 : 1;
-	};
+	}
 
 	// code taken from three.js
 	// ImageUtils - generateDataTexture()
@@ -600,7 +605,7 @@ export class Utils {
 		texture.magFilter = THREE.NearestFilter;
 
 		return texture;
-	};
+	}
 
 	// from http://stackoverflow.com/questions/901115/how-can-i-get-query-string-values-in-javascript
 	static getParameterByName (name) {
@@ -699,27 +704,115 @@ export class Utils {
 
 	}
 
-	//static screenPas(){
+	static getMeasurementIcon(measurement){
+		if (measurement instanceof Measure) {
+			if (measurement.showDistances && !measurement.showArea && !measurement.showAngles) {
+				return `${Potree.resourcePath}/icons/distance.svg`;
+			} else if (measurement.showDistances && measurement.showArea && !measurement.showAngles) {
+				return `${Potree.resourcePath}/icons/area.svg`;
+			} else if (measurement.maxMarkers === 1) {
+				return `${Potree.resourcePath}/icons/point.svg`;
+			} else if (!measurement.showDistances && !measurement.showArea && measurement.showAngles) {
+				return `${Potree.resourcePath}/icons/angle.png`;
+			} else if (measurement.showHeight) {
+				return `${Potree.resourcePath}/icons/height.svg`;
+			} else {
+				return `${Potree.resourcePath}/icons/distance.svg`;
+			}
+		} else if (measurement instanceof Profile) {
+			return `${Potree.resourcePath}/icons/profile.svg`;
+		} else if (measurement instanceof Volume) {
+			return `${Potree.resourcePath}/icons/volume.svg`;
+		} else if (measurement instanceof PolygonClipVolume) {
+			return `${Potree.resourcePath}/icons/clip-polygon.svg`;
+		}
+	}
 
-	//}
-};
+	static toMaterialID(materialName){
+		if (materialName === 'RGB'){
+			return PointColorType.RGB;
+		} else if (materialName === 'Color') {
+			return PointColorType.COLOR;
+		} else if (materialName === 'Elevation') {
+			return PointColorType.HEIGHT;
+		} else if (materialName === 'Intensity') {
+			return PointColorType.INTENSITY;
+		} else if (materialName === 'Intensity Gradient') {
+			return PointColorType.INTENSITY_GRADIENT;
+		} else if (materialName === 'Classification') {
+			return PointColorType.CLASSIFICATION;
+		} else if (materialName === 'Return Number') {
+			return PointColorType.RETURN_NUMBER;
+		} else if (materialName === 'Source') {
+			return PointColorType.SOURCE;
+		} else if (materialName === 'Level of Detail') {
+			return PointColorType.LOD;
+		} else if (materialName === 'Point Index') {
+			return PointColorType.POINT_INDEX;
+		} else if (materialName === 'Normal') {
+			return PointColorType.NORMAL;
+		} else if (materialName === 'Phong') {
+			return PointColorType.PHONG;
+		} else if (materialName === 'Index') {
+			return PointColorType.POINT_INDEX;
+		} else if (materialName === 'RGB and Elevation') {
+			return PointColorType.RGB_HEIGHT;
+		} else if (materialName === 'Composite') {
+			return PointColorType.COMPOSITE;
+		}
+	};
 
-//Potree.utils.screenPass  new function () {
-//	this.screenScene = new THREE.Scene();
-//	this.screenQuad = new THREE.Mesh(new THREE.PlaneBufferGeometry(2, 2, 0));
-//	this.screenQuad.material.depthTest = true;
-//	this.screenQuad.material.depthWrite = true;
-//	this.screenQuad.material.transparent = true;
-//	this.screenScene.add(this.screenQuad);
-//	this.camera = new THREE.Camera();
-//
-//	this.render = function (renderer, material, target) {
-//		this.screenQuad.material = material;
-//
-//		if (typeof target === 'undefined') {
-//			renderer.render(this.screenScene, this.camera);
-//		} else {
-//			renderer.render(this.screenScene, this.camera, target);
-//		}
-//	};
-//}();
+
+	static toMaterialName(materialID) {
+		if (materialID === PointColorType.RGB) {
+			return 'RGB';
+		} else if (materialID === PointColorType.COLOR) {
+			return 'Color';
+		} else if (materialID === PointColorType.HEIGHT) {
+			return 'Elevation';
+		} else if (materialID === PointColorType.INTENSITY) {
+			return 'Intensity';
+		} else if (materialID === PointColorType.INTENSITY_GRADIENT) {
+			return 'Intensity Gradient';
+		} else if (materialID === PointColorType.CLASSIFICATION) {
+			return 'Classification';
+		} else if (materialID === PointColorType.RETURN_NUMBER) {
+			return 'Return Number';
+		} else if (materialID === PointColorType.SOURCE) {
+			return 'Source';
+		} else if (materialID === PointColorType.LOD) {
+			return 'Level of Detail';
+		} else if (materialID === PointColorType.NORMAL) {
+			return 'Normal';
+		} else if (materialID === PointColorType.PHONG) {
+			return 'Phong';
+		} else if (materialID === PointColorType.POINT_INDEX) {
+			return 'Index';
+		} else if (materialID === PointColorType.RGB_HEIGHT) {
+			return 'RGB and Elevation';
+		} else if (materialID === PointColorType.COMPOSITE) {
+			return 'Composite';
+		}
+	};
+
+}
+
+Utils.screenPass = new function () {
+	this.screenScene = new THREE.Scene();
+	this.screenQuad = new THREE.Mesh(new THREE.PlaneBufferGeometry(2, 2, 0));
+	this.screenQuad.material.depthTest = true;
+	this.screenQuad.material.depthWrite = true;
+	this.screenQuad.material.transparent = true;
+	this.screenScene.add(this.screenQuad);
+	this.camera = new THREE.Camera();
+
+	this.render = function (renderer, material, target) {
+		this.screenQuad.material = material;
+
+		if (typeof target === 'undefined') {
+			renderer.render(this.screenScene, this.camera);
+		} else {
+			renderer.render(this.screenScene, this.camera, target);
+		}
+	};
+}();

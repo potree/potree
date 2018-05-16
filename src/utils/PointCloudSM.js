@@ -1,5 +1,5 @@
 
-Potree.PointCloudSM = class PointCloudSM{
+export class PointCloudSM{
 
 	constructor(potreeRenderer){
 
@@ -62,4 +62,4 @@ Potree.PointCloudSM = class PointCloudSM{
 	}
 
 
-};
+}

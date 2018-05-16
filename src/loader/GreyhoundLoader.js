@@ -154,20 +154,20 @@ Potree.GreyhoundLoader.load = function load (url, callback) {
 			/* We parse the result of the info query, which should be a JSON
 			 * datastructure somewhat like:
 			{
-			  "bounds": [635577, 848882, -1000, 639004, 853538, 2000],
-			  "numPoints": 10653336,
-			  "schema": [
-			      { "name": "X", "size": 8, "type": "floating" },
-			      { "name": "Y", "size": 8, "type": "floating" },
-			      { "name": "Z", "size": 8, "type": "floating" },
-			      { "name": "Intensity", "size": 2, "type": "unsigned" },
-			      { "name": "OriginId", "size": 4, "type": "unsigned" },
-			      { "name": "Red", "size": 2, "type": "unsigned" },
-			      { "name": "Green", "size": 2, "type": "unsigned" },
-			      { "name": "Blue", "size": 2, "type": "unsigned" }
-			  ],
-			  "srs": "<omitted for brevity>",
-			  "type": "octree"
+				"bounds": [635577, 848882, -1000, 639004, 853538, 2000],
+				"numPoints": 10653336,
+				"schema": [
+					{ "name": "X", "size": 8, "type": "floating" },
+					{ "name": "Y", "size": 8, "type": "floating" },
+					{ "name": "Z", "size": 8, "type": "floating" },
+					{ "name": "Intensity", "size": 2, "type": "unsigned" },
+					{ "name": "OriginId", "size": 4, "type": "unsigned" },
+					{ "name": "Red", "size": 2, "type": "unsigned" },
+					{ "name": "Green", "size": 2, "type": "unsigned" },
+					{ "name": "Blue", "size": 2, "type": "unsigned" }
+				],
+				"srs": "<omitted for brevity>",
+				"type": "octree"
 			}
 			*/
 			let greyhoundInfo = JSON.parse(data);

@@ -1,5 +1,10 @@
 
-Potree.ProfileTool = class ProfileTool extends THREE.EventDispatcher {
+
+import {Profile} from "./Profile.js";
+import {Utils} from "../utils.js";
+
+
+export class ProfileTool extends THREE.EventDispatcher {
 	constructor (viewer) {
 		super();
 
@@ -47,7 +52,7 @@ Potree.ProfileTool = class ProfileTool extends THREE.EventDispatcher {
 	startInsertion (args = {}) {
 		let domElement = this.viewer.renderer.domElement;
 
-		let profile = new Potree.Profile();
+		let profile = new Profile();
 		profile.name = args.name || 'Profile';
 
 		this.dispatchEvent({
@@ -67,7 +72,7 @@ Potree.ProfileTool = class ProfileTool extends THREE.EventDispatcher {
 					let camera = this.viewer.scene.getActiveCamera();
 					let distance = camera.position.distanceTo(profile.points[0]);
 					let clientSize = this.viewer.renderer.getSize();
-					let pr = Potree.utils.projectedRadius(1, camera, distance, clientSize.width, clientSize.height);
+					let pr = Utils.projectedRadius(1, camera, distance, clientSize.width, clientSize.height);
 					let width = (10 / pr);
 
 					profile.setWidth(width);
@@ -112,7 +117,7 @@ Potree.ProfileTool = class ProfileTool extends THREE.EventDispatcher {
 		for(let profile of profiles){
 			for(let sphere of profile.spheres){				
 				let distance = camera.position.distanceTo(sphere.getWorldPosition(new THREE.Vector3()));
-				let pr = Potree.utils.projectedRadius(1, camera, distance, clientWidth, clientHeight);
+				let pr = Utils.projectedRadius(1, camera, distance, clientWidth, clientHeight);
 				let scale = (15 / pr);
 				sphere.scale.set(scale, scale, scale);
 			}
@@ -122,4 +127,5 @@ Potree.ProfileTool = class ProfileTool extends THREE.EventDispatcher {
 	render(){
 		this.viewer.renderer.render(this.scene, this.viewer.scene.getActiveCamera());
 	}
-};
+
+}

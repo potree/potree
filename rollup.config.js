@@ -7,8 +7,7 @@ export default [
 			name: 'Potree',
 			sourcemap: true
 		}
-	},
-	{
+	},{
 		input: 'src/workers/BinaryDecoderWorker.js',
 		output: {
 			file: 'build/potree/workers/BinaryDecoderWorker.js',
@@ -16,5 +15,21 @@ export default [
 			name: 'Potree',
 			sourcemap: true
 		}
-	}
+	}/*,{
+		input: 'src/workers/LASDecoderWorker.js',
+		output: {
+			file: 'build/potree/workers/LASDecoderWorker.js',
+			format: 'es',
+			name: 'Potree',
+			sourcemap: true
+		}
+	},{
+		input: 'src/workers/LASLAZWorker.js',
+		output: {
+			file: 'build/potree/workers/LASLAZWorker.js',
+			format: 'es',
+			name: 'Potree',
+			sourcemap: true
+		}
+	}*/
 ]

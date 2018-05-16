@@ -2,9 +2,9 @@
 
 import {MOUSE} from "../defines.js";
 import {Utils} from "../utils.js";
+import {EventDispatcher} from "../EventDispatcher.js";
 
-
-export class EarthControls extends THREE.EventDispatcher {
+export class EarthControls extends EventDispatcher {
 	constructor (viewer) {
 		super(viewer);
 

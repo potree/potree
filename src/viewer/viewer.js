@@ -4,6 +4,7 @@ import {ClipTask, ClipMethod, CameraMode} from "../defines.js";
 import {Renderer} from "../PotreeRenderer.js";
 import {PotreeRenderer} from "./PotreeRenderer.js";
 import {EDLRenderer} from "./EDLRenderer.js";
+import {HQSplatRenderer} from "./HQSplatRenderer.js";
 import {Scene} from "./Scene.js";
 import {ClippingTool} from "../utils/ClippingTool.js";
 import {TransformationTool} from "../utils/TransformationTool.js";
@@ -13,7 +14,7 @@ import {ProfileWindow, ProfileWindowController} from "./profile.js";
 import {BoxVolume} from "../utils/Volume.js";
 import {Features} from "../Features.js";
 import {Message} from "../utils/Message.js";
-import {initSidebar} from "./sidebar.js";
+import {Sidebar} from "./sidebar.js";
 
 import {InputHandler} from "../navigation/InputHandler.js";
 import {NavigationCube} from "./NavigationCube.js";
@@ -21,10 +22,11 @@ import {OrbitControls} from "../navigation/OrbitControls.js";
 import {FirstPersonControls} from "../navigation/FirstPersonControls.js";
 import {EarthControls} from "../navigation/EarthControls.js";
 import {DeviceOrientationControls} from "../navigation/DeviceOrientationControls.js";
+import { EventDispatcher } from "../EventDispatcher.js";
 
 
 
-export class Viewer extends THREE.EventDispatcher{
+export class Viewer extends EventDispatcher{
 	
 	constructor(domElement, args = {}){
 		super();
@@ -954,7 +956,9 @@ export class Viewer extends THREE.EventDispatcher{
 			});
 
 			$(() => {
-				initSidebar(this);
+				//initSidebar(this);
+				let sidebar = new Sidebar(this);
+				sidebar.init();
 
 				//if (callback) {
 				//	$(callback);

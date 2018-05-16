@@ -1,8 +1,9 @@
 
 import {ClipVolume} from "./ClipVolume.js";
 import {PolygonClipVolume} from "./PolygonClipVolume.js";
+import { EventDispatcher } from "../EventDispatcher.js";
 
-export class ClippingTool extends THREE.EventDispatcher{
+export class ClippingTool extends EventDispatcher{
 
 	constructor(viewer){
 		super(); 

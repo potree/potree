@@ -16,9 +16,10 @@
 
 import {MOUSE} from "../defines.js";
 import {Utils} from "../utils.js";
+import {EventDispatcher} from "../EventDispatcher.js";
 
 
-export class FirstPersonControls extends THREE.EventDispatcher {
+export class FirstPersonControls extends EventDispatcher {
 	constructor (viewer) {
 		super();
 

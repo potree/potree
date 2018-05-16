@@ -2,8 +2,9 @@
 
 import {Action} from "./Actions.js";
 import {Utils} from "./utils.js";
+import {EventDispatcher} from "./EventDispatcher.js";
 
-export class Annotation extends THREE.EventDispatcher {
+export class Annotation extends EventDispatcher {
 	constructor (args = {}) {
 		super();
 

@@ -1,5 +1,8 @@
 
-export class Action extends THREE.EventDispatcher {
+
+import {EventDispatcher} from "./EventDispatcher.js";
+
+export class Action extends EventDispatcher {
 	constructor (args = {}) {
 		super();
 

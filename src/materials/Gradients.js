@@ -1,7 +1,8 @@
 
-//
+// -------------------------------------------
 // to get a ready to use gradient array from a chroma.js gradient:
 // http://gka.github.io/chroma.js/
+// -------------------------------------------
 //
 // let stops = [];
 // for(let i = 0; i <= 10; i++){
@@ -15,8 +16,12 @@
 //	stops.push(line);
 // }
 // stops.join("\n");
-
+//
+//
+//
+// -------------------------------------------
 // to get a ready to use gradient array from matplotlib:
+// -------------------------------------------
 // import matplotlib.pyplot as plt
 // import matplotlib.colors as colors
 //

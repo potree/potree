@@ -1,6 +1,6 @@
 
 
-Potree.PathAnimation = class{
+export class PathAnimation{
 	
 	constructor(path, start, end, speed, callback){
 			this.path = path;
@@ -73,10 +73,9 @@ Potree.PathAnimation = class{
 		return this.path.spline.getPoint(t);
 	}
 
+}
 
-};
-
-Potree.AnimationPath = class {
+export class AnimationPath{
 	constructor (points = []) {
 		this.points = points;
 		this.spline = new THREE.CatmullRomCurve3(points);
@@ -92,7 +91,7 @@ Potree.AnimationPath = class {
 	}
 
 	animate (start, end, speed, callback) {
-		let animation = new Potree.PathAnimation(this, start, end, speed, callback);
+		let animation = new PathAnimation(this, start, end, speed, callback);
 		animation.start();
 
 		return animation;
@@ -137,7 +136,8 @@ Potree.AnimationPath = class {
 	set closed(value){
 		this.spline.closed = value;
 	}
-};
+
+}
 	
 	/*
 	{

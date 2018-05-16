@@ -2,8 +2,9 @@
 import {Measure} from "./Measure.js";
 import {Utils} from "../utils.js";
 import {CameraMode} from "../defines.js";
+import { EventDispatcher } from "../EventDispatcher.js";
 
-export class MeasuringTool extends THREE.EventDispatcher {
+export class MeasuringTool extends EventDispatcher{
 	constructor (viewer) {
 		super();
 

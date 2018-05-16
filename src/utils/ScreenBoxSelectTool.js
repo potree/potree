@@ -3,9 +3,10 @@
 import {BoxVolume} from "./Volume.js";
 import {Utils} from "../utils.js";
 import {PointSizeType} from "../defines.js";
+import { EventDispatcher } from "../EventDispatcher.js";
 
 
-export class ScreenBoxSelectTool extends THREE.EventDispatcher{
+export class ScreenBoxSelectTool extends EventDispatcher{
 
 	constructor(viewer){
 		super();

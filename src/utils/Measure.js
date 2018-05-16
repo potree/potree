@@ -76,7 +76,7 @@ export class Measure extends THREE.Object3D {
 
 	createSphereMaterial () {
 		let sphereMaterial = new THREE.MeshLambertMaterial({
-			shading: THREE.SmoothShading,
+			//shading: THREE.SmoothShading,
 			color: this.color,
 			depthTest: false,
 			depthWrite: false}

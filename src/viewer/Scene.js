@@ -4,9 +4,10 @@ import {Annotation} from "../Annotation.js";
 import {CameraMode} from "../defines.js";
 import {View} from "./View.js";
 import {Utils} from "../utils.js";
+import {EventDispatcher} from "../EventDispatcher.js";
 
 
-export class Scene extends THREE.EventDispatcher{
+export class Scene extends EventDispatcher{
 
 	constructor(){
 		super();

@@ -17,7 +17,8 @@ export class PointCloudOctreeGeometry{
 		this.hierarchyStepSize = -1;
 		this.loader = null;
 	}
-};
+	
+}
 
 export class PointCloudOctreeGeometryNode extends PointCloudTreeNode{
 
@@ -255,5 +256,3 @@ export class PointCloudOctreeGeometryNode extends PointCloudTreeNode{
 }
 
 PointCloudOctreeGeometryNode.IDCount = 0;
-
-Object.assign(PointCloudOctreeGeometryNode.prototype, THREE.EventDispatcher.prototype);

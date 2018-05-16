@@ -143,4 +143,5 @@ export class LASExporter {
 
 		return buffer;
 	}
-};
+	
+}

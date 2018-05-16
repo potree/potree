@@ -6,6 +6,7 @@ import {Utils} from "../utils.js";
 import {Points} from "../Points.js";
 import {CSVExporter} from "../exporter/CSVExporter.js";
 import {LASExporter} from "../exporter/LASExporter.js";
+import { EventDispatcher } from "../EventDispatcher.js";
 
 class ProfilePointCloudEntry{
 
@@ -189,7 +190,7 @@ class ProfilePointCloudEntry{
 
 ProfilePointCloudEntry.materialPool = new Set();
 
-export class ProfileWindow extends THREE.EventDispatcher {
+export class ProfileWindow extends EventDispatcher {
 	constructor (viewer) {
 		super();
 

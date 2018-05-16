@@ -5,6 +5,7 @@ import {Version} from "../Version.js";
 import {XHRFactory} from "../XHRFactory.js";
 import {LasLazLoader} from "./LasLazLoader.js";
 import {BinaryLoader} from "./BinaryLoader.js";
+import {Utils} from "../utils.js";
 import {PointAttribute, PointAttributes} from "./PointAttributes.js";
 
 export class POCLoader {
@@ -95,7 +96,8 @@ export class POCLoader {
 							let parentName = name.substring(0, name.length - 1);
 							let parentNode = nodes[parentName];
 							let level = name.length - 1;
-							let boundingBox = POCLoader.createChildAABB(parentNode.boundingBox, index);
+							//let boundingBox = POCLoader.createChildAABB(parentNode.boundingBox, index);
+							let boundingBox = Utils.createChildAABB(parentNode.boundingBox, index);
 
 							let node = new PointCloudOctreeGeometryNode(name, pco, boundingBox);
 							node.level = level;

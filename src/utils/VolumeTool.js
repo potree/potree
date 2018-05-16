@@ -2,8 +2,9 @@
 
 import {Volume, BoxVolume} from "./Volume.js";
 import {Utils} from "../utils.js";
+import { EventDispatcher } from "../EventDispatcher.js";
 
-export class VolumeTool extends THREE.EventDispatcher{
+export class VolumeTool extends EventDispatcher{
 	constructor (viewer) {
 		super();
 

@@ -2,9 +2,10 @@
 
 import {Profile} from "./Profile.js";
 import {Utils} from "../utils.js";
+import { EventDispatcher } from "../EventDispatcher.js";
 
 
-export class ProfileTool extends THREE.EventDispatcher {
+export class ProfileTool extends EventDispatcher {
 	constructor (viewer) {
 		super();
 

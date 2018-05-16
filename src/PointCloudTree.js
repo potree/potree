@@ -1,8 +1,12 @@
 
 
-export class PointCloudTreeNode{
+import { EventDispatcher } from "./EventDispatcher";
+
+
+export class PointCloudTreeNode extends EventDispatcher{
 
 	constructor(){
+		super();
 		this.needsTransformUpdate = true;
 	}
 

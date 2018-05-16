@@ -7,8 +7,9 @@
 
 import {KeyCodes} from "../KeyCodes";
 import {Utils} from "../utils";
+import {EventDispatcher} from "../EventDispatcher.js";
 
-export class InputHandler extends THREE.EventDispatcher {
+export class InputHandler extends EventDispatcher {
 	constructor (viewer) {
 		super();
 

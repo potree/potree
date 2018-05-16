@@ -25,6 +25,7 @@ export * from "./Version.js";
 export * from "./WorkerPool.js";
 export * from "./XHRFactory.js";
 
+export * from "./materials/ClassificationScheme.js";
 export * from "./materials/EyeDomeLightingMaterial.js";
 export * from "./materials/Gradients.js";
 export * from "./materials/NormalizationEDLMaterial.js";
@@ -147,7 +148,7 @@ export function loadPointCloud(path, name, callback){
 };
 
 
-
+// add selectgroup
 (function($){
 	$.fn.extend({
 		selectgroup: function(args = {}){
@@ -222,43 +223,3 @@ export function loadPointCloud(path, name, callback){
 		}
 	});
 })(jQuery);
-
-
-
-/*
-
-Potree.Shaders = {};
-
-Potree.webgl = {
-	shaders: {},
-	vaos: {},
-	vbos: {}
-};
-
-
-Potree.getMeasurementIcon = function(measurement){
-	if (measurement instanceof Potree.Measure) {
-		if (measurement.showDistances && !measurement.showArea && !measurement.showAngles) {
-			return `${Potree.resourcePath}/icons/distance.svg`;
-		} else if (measurement.showDistances && measurement.showArea && !measurement.showAngles) {
-			return `${Potree.resourcePath}/icons/area.svg`;
-		} else if (measurement.maxMarkers === 1) {
-			return `${Potree.resourcePath}/icons/point.svg`;
-		} else if (!measurement.showDistances && !measurement.showArea && measurement.showAngles) {
-			return `${Potree.resourcePath}/icons/angle.png`;
-		} else if (measurement.showHeight) {
-			return `${Potree.resourcePath}/icons/height.svg`;
-		} else {
-			return `${Potree.resourcePath}/icons/distance.svg`;
-		}
-	} else if (measurement instanceof Potree.Profile) {
-		return `${Potree.resourcePath}/icons/profile.svg`;
-	} else if (measurement instanceof Potree.Volume) {
-		return `${Potree.resourcePath}/icons/volume.svg`;
-	} else if (measurement instanceof Potree.PolygonClipVolume) {
-		return `${Potree.resourcePath}/icons/clip-polygon.svg`;
-	}
-};
-
-
-*/

@@ -181,28 +181,28 @@
 				let shapeNode = new THREE.Object3D();
 				viewer.scene.scene.add(shapeNode);
 				
-				Potree.utils.loadShapefileFeatures("./morro_bay_shp/shape/points.shp", features => {
+				Potree.Utils.loadShapefileFeatures("./morro_bay_shp/shape/points.shp", features => {
 					for(let feature of features){
 						let node = featureToSceneNode(feature, 0x00ff00);
 						shapeNode.add(node);
 					}
 				});
 				
-				Potree.utils.loadShapefileFeatures("./morro_bay_shp/shape/natural.shp", features => {
+				Potree.Utils.loadShapefileFeatures("./morro_bay_shp/shape/natural.shp", features => {
 					for(let feature of features){
 						let node = featureToSceneNode(feature, 0x00ff00);
 						shapeNode.add(node);
 					}
 				});
 				
-				Potree.utils.loadShapefileFeatures("./morro_bay_shp/shape/waterways.shp", features => {
+				Potree.Utils.loadShapefileFeatures("./morro_bay_shp/shape/waterways.shp", features => {
 					for(let feature of features){
 						let node = featureToSceneNode(feature, 0x0000ff);
 						shapeNode.add(node);
 					}
 				});
 				
-				Potree.utils.loadShapefileFeatures("./morro_bay_shp/shape/roads.shp", features => {
+				Potree.Utils.loadShapefileFeatures("./morro_bay_shp/shape/roads.shp", features => {
 					for(let feature of features){
 						let node = featureToSceneNode(feature, 0xffffff);
 						shapeNode.add(node);

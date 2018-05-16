@@ -3,6 +3,7 @@
 import {Utils} from "../utils.js";
 import {Gradients} from "./Gradients.js";
 import {Shaders} from "../../build/shaders/shaders.js";
+import {ClassificationScheme} from "./ClassificationScheme.js";
 import {PointSizeType, PointColorType, PointShape, TreeType} from "../defines.js";
 
 //
@@ -13,23 +14,6 @@ import {PointSizeType, PointColorType, PointShape, TreeType} from "../defines.js
 // http://stackoverflow.com/questions/3717226/radius-of-projected-sphere
 //
 
-
-export const Classification = {
-	'DEFAULT': {
-		0: new THREE.Vector4(0.5, 0.5, 0.5, 1.0),
-		1: new THREE.Vector4(0.5, 0.5, 0.5, 1.0),
-		2: new THREE.Vector4(0.63, 0.32, 0.18, 1.0),
-		3: new THREE.Vector4(0.0, 1.0, 0.0, 1.0),
-		4: new THREE.Vector4(0.0, 0.8, 0.0, 1.0),
-		5: new THREE.Vector4(0.0, 0.6, 0.0, 1.0),
-		6: new THREE.Vector4(1.0, 0.66, 0.0, 1.0),
-		7:	new THREE.Vector4(1.0, 0, 1.0, 1.0),
-		8: new THREE.Vector4(1.0, 0, 0.0, 1.0),
-		9: new THREE.Vector4(0.0, 0.0, 1.0, 1.0),
-		12:	new THREE.Vector4(1.0, 1.0, 0.0, 1.0),
-		'DEFAULT': new THREE.Vector4(0.3, 0.6, 0.6, 0.5)
-	}
-};
 
 export class PointCloudMaterial extends THREE.RawShaderMaterial {
 	constructor (parameters = {}) {
@@ -147,7 +131,7 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 			uShadowColor:		{ type: "3fv", value: [0, 0, 0] }
 		};
 
-		this.classification = Classification.DEFAULT;
+		this.classification = ClassificationScheme.DEFAULT;
 
 		this.defaultAttributeValues.normal = [0, 0, 0];
 		this.defaultAttributeValues.classification = [0, 0, 0];

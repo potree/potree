@@ -13,7 +13,13 @@
  *
  */
 
-Potree.FirstPersonControls = class FirstPersonControls extends THREE.EventDispatcher {
+
+import {MOUSE} from "../defines.js";
+import {Utils} from "../utils.js";
+import {EventDispatcher} from "../EventDispatcher.js";
+
+
+export class FirstPersonControls extends EventDispatcher {
 	constructor (viewer) {
 		super();
 
@@ -62,10 +68,10 @@ Potree.FirstPersonControls = class FirstPersonControls extends THREE.EventDispat
 				y: e.drag.lastDrag.y / this.renderer.domElement.clientHeight
 			};
 
-			if (e.drag.mouse === Potree.MOUSE.LEFT) {
+			if (e.drag.mouse === MOUSE.LEFT) {
 				this.yawDelta += ndrag.x * this.rotationSpeed;
 				this.pitchDelta += ndrag.y * this.rotationSpeed;
-			} else if (e.drag.mouse === Potree.MOUSE.RIGHT) {
+			} else if (e.drag.mouse === MOUSE.RIGHT) {
 				this.translationDelta.x -= ndrag.x * moveSpeed * 100;
 				this.translationDelta.z += ndrag.y * moveSpeed * 100;
 			}
@@ -112,7 +118,7 @@ Potree.FirstPersonControls = class FirstPersonControls extends THREE.EventDispat
 	zoomToLocation(mouse){
 		let camera = this.scene.getActiveCamera();
 		
-		let I = Potree.utils.getMousePointCloudIntersection(
+		let I = Utils.getMousePointCloudIntersection(
 			mouse,
 			camera,
 			this.viewer,
@@ -127,7 +133,7 @@ Potree.FirstPersonControls = class FirstPersonControls extends THREE.EventDispat
 			let minimumJumpDistance = 0.2;
 
 			let domElement = this.renderer.domElement;
-			let ray = Potree.utils.mouseToRay(mouse, camera, domElement.clientWidth, domElement.clientHeight);
+			let ray = Utils.mouseToRay(mouse, camera, domElement.clientWidth, domElement.clientHeight);
 
 			let nodes = I.pointcloud.nodesOnRay(I.pointcloud.visibleNodes, ray);
 			let lastNode = nodes[nodes.length - 1];

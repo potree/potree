@@ -1,6 +1,8 @@
 
 const path = require('path');
 const gulp = require('gulp');
+const exec = require('child_process').exec;
+
 
 const fs = require("fs");
 const concat = require('gulp-concat');
@@ -18,86 +20,6 @@ const watch = require('glob-watcher');
 let server;
 
 let paths = {
-	potree : [
-		"src/KeyCodes.js",
-		"src/extensions/EventDispatcher.js",
-		"src/extensions/PerspectiveCamera.js",
-		"src/extensions/OrthographicCamera.js",
-		"src/extensions/Ray.js",
-		"src/Potree.js",
-		"src/PotreeRenderer.js",
-		"src/PointCloudTree.js",
-		"src/WorkerPool.js",
-		"build/shaders/shaders.js",
-		"src/loader/POCLoader.js",
-		"src/loader/PointAttributes.js",
-		"src/loader/BinaryLoader.js",
-		"src/loader/GreyhoundBinaryLoader.js",
-		"src/loader/GreyhoundLoader.js",
-		"src/loader/LasLazLoader.js",
-		"src/materials/PointCloudMaterial.js",
-		"src/materials/EyeDomeLightingMaterial.js",
-		"src/materials/BlurMaterial.js",
-		"src/materials/NormalizationMaterial.js",
-		"src/materials/NormalizationEDLMaterial.js",
-		"src/navigation/InputHandler.js",
-		"src/navigation/FirstPersonControls.js",
-		"src/navigation/GeoControls.js",
-		"src/navigation/OrbitControls.js",
-		"src/navigation/EarthControls.js",
-		"src/navigation/DeviceOrientationControls.js",
-		"src/LRU.js",
-		"src/Annotation.js",
-		"src/Actions.js",
-		"src/ProfileRequest.js",
-		"src/PointCloudOctree.js",
-		"src/PointCloudOctreeGeometry.js",
-		"src/PointCloudGreyhoundGeometry.js",
-		"src/PointCloudGreyhoundGeometryNode.js",
-		"src/utils.js",
-		"src/Features.js",
-		"src/TextSprite.js",
-		"src/AnimationPath.js",
-		"src/Version.js",
-		"src/utils/Measure.js",
-		"src/utils/MeasuringTool.js",
-		"src/utils/Profile.js",
-		"src/utils/ProfileTool.js",
-		"src/utils/TransformationTool.js",
-		"src/utils/Volume.js",
-		"src/utils/VolumeTool.js",
-		"src/utils/ClippingTool.js",
-		"src/utils/ScreenBoxSelectTool.js",
-		"src/utils/ClipVolume.js",
-		"src/utils/PolygonClipVolume.js",
-		"src/utils/Box3Helper.js",
-		"src/utils/PointCloudSM.js",
-		"src/utils/Message.js",
-		"src/utils/SpotLightHelper.js",
-		"src/exporter/GeoJSONExporter.js",
-		"src/exporter/DXFExporter.js",
-		"src/exporter/CSVExporter.js",
-		"src/exporter/LASExporter.js",
-		"src/arena4d/PointCloudArena4D.js",
-		"src/arena4d/PointCloudArena4DGeometry.js",
-		"src/viewer/PotreeRenderer.js",
-		"src/viewer/EDLRenderer.js",
-		"src/viewer/HQSplatRenderer.js",
-		"src/viewer/RepRenderer.js",
-		"src/viewer/View.js",
-		"src/viewer/Scene.js",
-		"src/viewer/viewer.js",
-		"src/viewer/profile.js",
-		"src/viewer/map.js",
-		"src/viewer/sidebar.js",
-		"src/viewer/PropertiesPanel.js",
-		"src/viewer/NavigationCube.js",
-		"src/stuff/HoverMenu.js",
-		"src/webgl/GLProgram.js",
-		"src/InterleavedBuffer.js",
-		"src/utils/toInterleavedBufferAttribute.js",
-		"src/utils/GeoTIFF.js",
-	],
 	laslaz: [
 		"build/workers/laslaz-worker.js",
 		"build/workers/lasdecoder-worker.js",
@@ -120,13 +42,13 @@ let workers = {
 	"LASDecoderWorker": [
 		"src/workers/LASDecoderWorker.js"
 	],
-	"BinaryDecoderWorker": [
-		"src/workers/BinaryDecoderWorker.js",
-		"src/Version.js",
-		"src/loader/PointAttributes.js",
-		"src/InterleavedBuffer.js",
-		"src/utils/toInterleavedBufferAttribute.js",
-	],
+	//"BinaryDecoderWorker": [
+	//	"src/workers/BinaryDecoderWorker.js",
+	//	"src/Version.js",
+	//	"src/loader/PointAttributes.js",
+	//	"src/InterleavedBuffer.js",
+	//	"src/utils/toInterleavedBufferAttribute.js",
+	//],
 	"GreyhoundBinaryDecoderWorker": [
 		"libs/plasio/workers/laz-perf.js",
 		"src/workers/GreyhoundBinaryDecoderWorker.js",
@@ -170,14 +92,14 @@ gulp.task("shaders", function(){
 		.pipe(gulp.dest('build/shaders'));
 });
 
-gulp.task("scripts", ['workers','shaders', "icons_viewer", "examples_page"], function(){
-	gulp.src(paths.potree)
-		.pipe(concat('potree.js'))
-		.pipe(gulp.dest('build/potree'));
+gulp.task("build", ['workers','shaders', "icons_viewer", "examples_page"], function(){
+	//gulp.src(paths.potree)
+	//	.pipe(concat('potree.js'))
+	//	.pipe(gulp.dest('build/potree'));
 
-	gulp.src(paths.laslaz)
-		.pipe(concat('laslaz.js'))
-		.pipe(gulp.dest('build/potree'));
+	//gulp.src(paths.laslaz)
+	//	.pipe(concat('laslaz.js'))
+	//	.pipe(gulp.dest('build/potree'));
 
 	gulp.src(paths.html)
 		.pipe(gulp.dest('build/potree'));
@@ -190,8 +112,6 @@ gulp.task("scripts", ['workers','shaders', "icons_viewer", "examples_page"], fun
 
 	return;
 });
-
-gulp.task('build', ['scripts']);
 
 // For development, it is now possible to use 'gulp webserver'
 // from the command line to start the server (default port is 8080)
@@ -484,6 +404,13 @@ gulp.task('watch', function() {
 	gulp.run("build");
 	gulp.run("webserver");
 
+	exec('rollup -c', function (err, stdout, stderr) {
+		console.log(stdout);
+		console.log(stderr);
+		//cb(err);
+	});
+
+
 	let watchlist = [
 		'src/**/*.js', 
 		'src/**/*.css', 
@@ -511,7 +438,13 @@ gulp.task('watch', function() {
 		console.log("===============================");
 		console.log("watch event:");
 		console.log(cb);
-		gulp.run("build");	
+		gulp.run("build");
+
+		exec('rollup -c', function (err, stdout, stderr) {
+			console.log(stdout);
+			console.log(stderr);
+			//cb(err);
+		});
 	});
 
 });
@@ -580,7 +513,7 @@ let encodeShader = function(fileName, varname, opt){
 	function endStream(){
 		if (buffer.length === 0) return this.emit('end');
 
-		let joinedContent = "";
+		let joinedContent = `let Shaders = {};\n\n`;
 		for(let i = 0; i < buffer.length; i++){
 			let b = buffer[i];
 			let file = files[i];
@@ -590,10 +523,12 @@ let encodeShader = function(fileName, varname, opt){
 
 			let content = new Buffer(b).toString();
 			
-			let prep = `\nPotree.Shaders["${fname}"] = \`${content}\`\n`;
+			let prep = `\Shaders["${fname}"] = \`${content}\`\n`;
 
 			joinedContent += prep;
 		}
+
+		joinedContent += "\nexport {Shaders};";
 
 		let joinedPath = path.join(firstFile.base, fileName);
 

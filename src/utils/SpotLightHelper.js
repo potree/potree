@@ -1,5 +1,5 @@
 
-Potree.SpotLightHelper = class SpotLightHelper extends THREE.Object3D{
+export class SpotLightHelper extends THREE.Object3D{
 
 	constructor(light, color){
 		super();
@@ -96,4 +96,4 @@ Potree.SpotLightHelper = class SpotLightHelper extends THREE.Object3D{
 
 	}
 
-};
+}

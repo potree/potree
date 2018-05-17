@@ -2,7 +2,7 @@
  * adapted from http://stemkoski.github.io/Three.js/Sprite-Text-Labels.html
  */
 
-Potree.TextSprite = class TextSprite extends THREE.Object3D{
+export class TextSprite extends THREE.Object3D{
 	
 	constructor(text){
 		super();
@@ -36,25 +36,25 @@ Potree.TextSprite = class TextSprite extends THREE.Object3D{
 
 			this.update();
 		}
-	};
+	}
 
 	setTextColor(color){
 		this.textColor = color;
 
 		this.update();
-	};
+	}
 
 	setBorderColor(color){
 		this.borderColor = color;
 
 		this.update();
-	};
+	}
 
 	setBackgroundColor(color){
 		this.backgroundColor = color;
 
 		this.update();
-	};
+	}
 
 	update(){
 		let canvas = document.createElement('canvas');
@@ -99,7 +99,7 @@ Potree.TextSprite = class TextSprite extends THREE.Object3D{
 		this.sprite.material.map = texture;
 
 		this.sprite.scale.set(spriteWidth * 0.01, spriteHeight * 0.01, 1.0);
-	};
+	}
 
 	roundRect(ctx, x, y, w, h, r){
 		ctx.beginPath();
@@ -115,8 +115,8 @@ Potree.TextSprite = class TextSprite extends THREE.Object3D{
 		ctx.closePath();
 		ctx.fill();
 		ctx.stroke();
-	};
+	}
 
-};
+}
 
 

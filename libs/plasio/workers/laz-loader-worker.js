@@ -1,7 +1,7 @@
 // laz-loader-worker.js
 //
 
-//importScripts('laz-perf.js');
+//import {Module} from "./laz-perf.js";
 
 let instance = null; // laz-perf instance
 

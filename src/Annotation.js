@@ -1,4 +1,10 @@
-Potree.Annotation = class extends THREE.EventDispatcher {
+
+
+import {Action} from "./Actions.js";
+import {Utils} from "./utils.js";
+import {EventDispatcher} from "./EventDispatcher.js";
+
+export class Annotation extends EventDispatcher {
 	constructor (args = {}) {
 		super();
 
@@ -44,7 +50,7 @@ Potree.Annotation = class extends THREE.EventDispatcher {
 		this.parent = null;
 		this.boundingBox = new THREE.Box3();
 
-		let iconClose = Potree.resourcePath + '/icons/close.svg';
+		let iconClose = exports.resourcePath + '/icons/close.svg';
 
 		this.domElement = $(`
 			<div class="annotation" oncontextmenu="return false;">
@@ -77,10 +83,10 @@ Potree.Annotation = class extends THREE.EventDispatcher {
 		this.elTitle.click(this.clickTitle);
 
 		this.actions = this.actions.map(a => {
-			if (a instanceof Potree.Action) {
+			if (a instanceof Action) {
 				return a;
 			} else {
-				return new Potree.Action(a);
+				return new Action(a);
 			}
 		});
 
@@ -523,7 +529,7 @@ Potree.Annotation = class extends THREE.EventDispatcher {
 		if (this.cameraPosition) {
 			let endPosition = this.cameraPosition;
 
-			Potree.utils.moveTo(this.scene, endPosition, endTarget);
+			Utils.moveTo(this.scene, endPosition, endTarget);
 
 			//{ // animate camera position
 			//	let tween = new TWEEN.Tween(view.position).to(endPosition, animationDuration);

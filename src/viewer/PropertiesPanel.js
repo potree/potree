@@ -1,6 +1,16 @@
 
 
-class MeasurePanel{
+import {Utils} from "../utils.js";
+import {PointCloudTree} from "../PointCloudTree.js";
+import {Measure} from "../utils/Measure.js";
+import {Profile} from "../utils/Profile.js";
+import {Volume, BoxVolume, SphereVolume} from "../utils/Volume.js";
+import {PointSizeType, PointShape} from "../defines.js";
+import {Gradients} from "../materials/Gradients.js";
+
+
+export class MeasurePanel{
+
 	constructor(viewer, measurement, propertiesPanel){
 		this.viewer = viewer;
 		this.measurement = measurement;
@@ -24,9 +34,9 @@ class MeasurePanel{
 		let copyIconPath = Potree.resourcePath + '/icons/copy.svg';
 
 		for (let point of points) {
-			let x = Potree.utils.addCommas(point.x.toFixed(3));
-			let y = Potree.utils.addCommas(point.y.toFixed(3));
-			let z = Potree.utils.addCommas(point.z.toFixed(3));
+			let x = Utils.addCommas(point.x.toFixed(3));
+			let y = Utils.addCommas(point.y.toFixed(3));
+			let z = Utils.addCommas(point.z.toFixed(3));
 
 			let row = $(`
 				<tr>
@@ -42,7 +52,7 @@ class MeasurePanel{
 			this.elCopy = row.find("img[name=copy]");
 			this.elCopy.click( () => {
 				let msg = point.toArray().map(c => c.toFixed(3)).join(", ");
-				Potree.utils.clipboardCopy(msg);
+				Utils.clipboardCopy(msg);
 
 				this.viewer.postMessage(
 					`Copied value to clipboard: <br>'${msg}'`,
@@ -80,7 +90,7 @@ class MeasurePanel{
 	}
 };
 
-class DistancePanel extends MeasurePanel{
+export class DistancePanel extends MeasurePanel{
 	constructor(viewer, measurement, propertiesPanel){
 		super(viewer, measurement, propertiesPanel);
 
@@ -148,7 +158,7 @@ class DistancePanel extends MeasurePanel{
 }
 
 
-class PointPanel extends MeasurePanel{
+export class PointPanel extends MeasurePanel{
 	constructor(viewer, measurement, propertiesPanel){
 		super(viewer, measurement, propertiesPanel);
 
@@ -192,7 +202,7 @@ class PointPanel extends MeasurePanel{
 }
 
 
-class AreaPanel extends MeasurePanel{
+export class AreaPanel extends MeasurePanel{
 	constructor(viewer, measurement, propertiesPanel){
 		super(viewer, measurement, propertiesPanel);
 
@@ -236,7 +246,7 @@ class AreaPanel extends MeasurePanel{
 }
 
 
-class AnglePanel extends MeasurePanel{
+export class AnglePanel extends MeasurePanel{
 	constructor(viewer, measurement, propertiesPanel){
 		super(viewer, measurement, propertiesPanel);
 
@@ -301,7 +311,7 @@ class AnglePanel extends MeasurePanel{
 }
 
 
-class HeightPanel extends MeasurePanel{
+export class HeightPanel extends MeasurePanel{
 	constructor(viewer, measurement, propertiesPanel){
 		super(viewer, measurement, propertiesPanel);
 
@@ -355,7 +365,7 @@ class HeightPanel extends MeasurePanel{
 	}
 }
 
-class VolumePanel extends MeasurePanel{
+export class VolumePanel extends MeasurePanel{
 	constructor(viewer, measurement, propertiesPanel){
 		super(viewer, measurement, propertiesPanel);
 
@@ -363,18 +373,18 @@ class VolumePanel extends MeasurePanel{
 		let removeIconPath = Potree.resourcePath + '/icons/remove.svg';
 
 		let lblLengthText = new Map([
-			[Potree.BoxVolume, "length"],
-			[Potree.SphereVolume, "rx"],
+			[BoxVolume, "length"],
+			[SphereVolume, "rx"],
 		]).get(measurement.constructor);
 
 		let lblWidthText = new Map([
-			[Potree.BoxVolume, "width"],
-			[Potree.SphereVolume, "ry"],
+			[BoxVolume, "width"],
+			[SphereVolume, "ry"],
 		]).get(measurement.constructor);
 
 		let lblHeightText = new Map([
-			[Potree.BoxVolume, "height"],
-			[Potree.SphereVolume, "rz"],
+			[BoxVolume, "height"],
+			[SphereVolume, "rz"],
 		]).get(measurement.constructor);
 
 		this.elContent = $(`
@@ -464,7 +474,7 @@ class VolumePanel extends MeasurePanel{
 		this.elCopyRotation.click( () => {
 			let rotation = this.measurement.rotation.toArray().slice(0, 3);
 			let msg = rotation.map(c => c.toFixed(3)).join(", ");
-			Potree.utils.clipboardCopy(msg);
+			Utils.clipboardCopy(msg);
 
 			this.viewer.postMessage(
 					`Copied value to clipboard: <br>'${msg}'`,
@@ -475,7 +485,7 @@ class VolumePanel extends MeasurePanel{
 		this.elCopyScale.click( () => {
 			let scale = this.measurement.scale.toArray();
 			let msg = scale.map(c => c.toFixed(3)).join(", ");
-			Potree.utils.clipboardCopy(msg);
+			Utils.clipboardCopy(msg);
 
 			this.viewer.postMessage(
 					`Copied value to clipboard: <br>'${msg}'`,
@@ -566,7 +576,7 @@ class VolumePanel extends MeasurePanel{
 
 		{
 			let dimensions = this.measurement.scale.toArray();
-			dimensions = dimensions.map(v => Potree.utils.addCommas(v.toFixed(2)));
+			dimensions = dimensions.map(v => Utils.addCommas(v.toFixed(2)));
 
 			let elLength = this.elContent.find(`#cell_length`);
 			let elWidth = this.elContent.find(`#cell_width`);
@@ -580,7 +590,7 @@ class VolumePanel extends MeasurePanel{
 		{
 			let elVolume = this.elContent.find(`#measurement_volume`);
 			let volume = this.measurement.getVolume();
-			elVolume.html(Potree.utils.addCommas(volume.toFixed(2)));
+			elVolume.html(Utils.addCommas(volume.toFixed(2)));
 		}
 
 		this.elCheckClip.prop("checked", this.measurement.clip);
@@ -590,7 +600,7 @@ class VolumePanel extends MeasurePanel{
 }
 
 
-class ProfilePanel extends MeasurePanel{
+export class ProfilePanel extends MeasurePanel{
 	constructor(viewer, measurement, propertiesPanel){
 		super(viewer, measurement, propertiesPanel);
 
@@ -695,7 +705,7 @@ class ProfilePanel extends MeasurePanel{
 	}
 }
 
-class CameraPanel{
+export class CameraPanel{
 	constructor(viewer, propertiesPanel){
 		this.viewer = viewer;
 		this.propertiesPanel = propertiesPanel;
@@ -738,7 +748,7 @@ class CameraPanel{
 		this.elCopyPosition.click( () => {
 			let pos = this.viewer.scene.getActiveCamera().position.toArray();
 			let msg = pos.map(c => c.toFixed(3)).join(", ");
-			Potree.utils.clipboardCopy(msg);
+			Utils.clipboardCopy(msg);
 
 			this.viewer.postMessage(
 					`Copied value to clipboard: <br>'${msg}'`,
@@ -749,7 +759,7 @@ class CameraPanel{
 		this.elCopyTarget.click( () => {
 			let pos = this.viewer.scene.view.getPivot().toArray();
 			let msg = pos.map(c => c.toFixed(3)).join(", ");
-			Potree.utils.clipboardCopy(msg);
+			Utils.clipboardCopy(msg);
 
 			this.viewer.postMessage(
 					`Copied value to clipboard: <br>'${msg}'`,
@@ -767,12 +777,12 @@ class CameraPanel{
 		let camera = this.viewer.scene.getActiveCamera();
 		let view = this.viewer.scene.view;
 
-		let pos = camera.position.toArray().map(c => Potree.utils.addCommas(c.toFixed(3)));
+		let pos = camera.position.toArray().map(c => Utils.addCommas(c.toFixed(3)));
 		this.elContent.find("#camera_position_x").html(pos[0]);
 		this.elContent.find("#camera_position_y").html(pos[1]);
 		this.elContent.find("#camera_position_z").html(pos[2]);
 
-		let target = view.getPivot().toArray().map(c => Potree.utils.addCommas(c.toFixed(3)));
+		let target = view.getPivot().toArray().map(c => Utils.addCommas(c.toFixed(3)));
 		this.elContent.find("#camera_target_x").html(target[0]);
 		this.elContent.find("#camera_target_y").html(target[1]);
 		this.elContent.find("#camera_target_z").html(target[2]);
@@ -780,7 +790,7 @@ class CameraPanel{
 }
 
 
-Potree.PropertiesPanel = class PropertriesPanel{
+export class PropertiesPanel{
 
 	constructor(container, viewer){
 		this.container = container;
@@ -807,9 +817,9 @@ Potree.PropertiesPanel = class PropertriesPanel{
 		this.cleanupTasks = [];
 		this.container.empty();
 
-		if(object instanceof Potree.PointCloudTree){
+		if(object instanceof PointCloudTree){
 			this.setPointCloud(object);
-		}else if(object instanceof Potree.Measure || object instanceof Potree.Profile || object instanceof Potree.Volume){
+		}else if(object instanceof Measure || object instanceof Profile || object instanceof Volume){
 			this.setMeasurement(object);
 		}else if(object instanceof THREE.Camera){
 			this.setCamera(object);
@@ -991,7 +1001,7 @@ Potree.PropertiesPanel = class PropertriesPanel{
 		}
 
 		{ // POINT SIZING
-			let strSizeType = Object.keys(Potree.PointSizeType)[material.pointSizeType];
+			let strSizeType = Object.keys(PointSizeType)[material.pointSizeType];
 
 			let opt = panel.find(`#optPointSizing`);
 			opt.selectmenu();
@@ -999,7 +1009,7 @@ Potree.PropertiesPanel = class PropertriesPanel{
 
 			opt.selectmenu({
 				change: (event, ui) => {
-					material.pointSizeType = Potree.PointSizeType[ui.item.value];
+					material.pointSizeType = PointSizeType[ui.item.value];
 				}
 			});
 		}
@@ -1011,12 +1021,12 @@ Potree.PropertiesPanel = class PropertriesPanel{
 				change: (event, ui) => {
 					let value = ui.item.value;
 
-					material.shape = Potree.PointShape[value];
+					material.shape = PointShape[value];
 				}
 			});
 
 			let update = () => {
-				let typename = Object.keys(Potree.PointShape)[material.shape];
+				let typename = Object.keys(PointShape)[material.shape];
 
 				opt.selectmenu().val(typename).selectmenu('refresh');
 			};
@@ -1072,7 +1082,7 @@ Potree.PropertiesPanel = class PropertriesPanel{
 
 			let updateMaterialPanel = (event, ui) => {
 				let selectedValue = attributeSelection.selectmenu().val();
-				material.pointColorType = Potree.toMaterialID(selectedValue);
+				material.pointColorType = Utils.toMaterialID(selectedValue);
 
 				let blockWeights = $('#materials\\.composite_weight_container');
 				let blockElevation = $('#materials\\.elevation_container');
@@ -1116,7 +1126,7 @@ Potree.PropertiesPanel = class PropertriesPanel{
 			attributeSelection.selectmenu({change: updateMaterialPanel});
 
 			let update = () => {
-				attributeSelection.val(Potree.toMaterialName(material.pointColorType)).selectmenu('refresh');
+				attributeSelection.val(Utils.toMaterialName(material.pointColorType)).selectmenu('refresh');
 			};
 			this.addVolatileListener(material, "point_color_type_changed", update);
 
@@ -1143,7 +1153,7 @@ Potree.PropertiesPanel = class PropertriesPanel{
 				`);
 
 				elScheme.click( () => {
-					material.gradient = Potree.Gradients[scheme.name];
+					material.gradient = Gradients[scheme.name];
 				});
 
 				elSchemeContainer.append(elScheme);
@@ -1281,7 +1291,7 @@ Potree.PropertiesPanel = class PropertriesPanel{
 					.find(v => v !== undefined);
 
 				pointcloud.updateMatrixWorld(true);
-				box = Potree.utils.computeTransformedBoundingBox(box, pointcloud.matrixWorld);
+				box = Utils.computeTransformedBoundingBox(box, pointcloud.matrixWorld);
 
 				let bWidth = box.max.z - box.min.z;
 				let bMin = box.min.z - 0.2 * bWidth;
@@ -1363,7 +1373,7 @@ Potree.PropertiesPanel = class PropertriesPanel{
 		};
 
 		let getType = (measurement) => {
-			if (measurement instanceof Potree.Measure) {
+			if (measurement instanceof Measure) {
 				if (measurement.showDistances && !measurement.showArea && !measurement.showAngles) {
 					return TYPE.DISTANCE;
 				} else if (measurement.showDistances && measurement.showArea && !measurement.showAngles) {
@@ -1377,9 +1387,9 @@ Potree.PropertiesPanel = class PropertriesPanel{
 				} else {
 					return TYPE.OTHER;
 				}
-			} else if (measurement instanceof Potree.Profile) {
+			} else if (measurement instanceof Profile) {
 				return TYPE.PROFILE;
-			} else if (measurement instanceof Potree.Volume) {
+			} else if (measurement instanceof Volume) {
 				return TYPE.VOLUME;
 			}
 		};

@@ -1,14 +1,24 @@
 
-Potree.Volume = class extends THREE.Object3D {
+import {TextSprite} from "../TextSprite.js";
+
+export class Volume extends THREE.Object3D {
 	constructor (args = {}) {
 		super();
+
+		if(this.constructor.name === "Volume"){
+			console.warn("Can't create object of class Volume directly. Use classes BoxVolume or SphereVolume instead.");
+		}
+
+		//console.log(this);
+		//console.log(this.constructor);
+		//console.log(this.constructor.name);
 
 		this._clip = args.clip || false;
 		this._visible = true;
 		this.showVolumeLabel = true;
 		this._modifiable = args.modifiable || true;
 
-		this.label = new Potree.TextSprite('0');
+		this.label = new TextSprite('0');
 		this.label.setBorderColor({r: 0, g: 255, b: 0, a: 0.0});
 		this.label.setBackgroundColor({r: 0, g: 255, b: 0, a: 0.0});
 		this.label.material.depthTest = false;
@@ -92,7 +102,7 @@ Potree.Volume = class extends THREE.Object3D {
 };
 
 
-Potree.BoxVolume = class BoxVolume extends Potree.Volume{
+export class BoxVolume extends Volume{
 
 	constructor(args = {}){
 		super(args);
@@ -185,7 +195,7 @@ Potree.BoxVolume = class BoxVolume extends Potree.Volume{
 
 };
 
-Potree.SphereVolume = class SphereVolume extends Potree.Volume{
+export class SphereVolume extends Volume{
 
 	constructor(args = {}){
 		super(args);

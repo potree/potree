@@ -41,6 +41,12 @@
 
 	<script>
 
+		let clipSpheres = [
+			{position: [0.032, -2.382, 4.279], scale: 3},
+			{position: [-1.787, 6.011, 1.711], scale: 1},
+			{position: [0.095, 7.636, 10.997], scale: 2},
+		];
+
 		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
 
 		viewer.setEDLEnabled(true);
@@ -72,21 +78,23 @@
 			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
 
 			{ // VOLUME visible
-				let volume  = new Potree.Volume();
+				let volume  = new Potree.BoxVolume();
+				volume.name = "Visible";
 				volume.scale.set(178.04, 159.14, 70.00);
 				volume.position.set(589877.20, 231374.01, 749.62);
 				volume.clip = true;
-				volume.visible = false;
+				//volume.visible = false;
 
 				scene.addVolume(volume);
 			}
 
 			{ // VOLUME invisible
-				let volume  = new Potree.Volume();
+				let volume  = new Potree.BoxVolume();
+				volume.name = "Invisible";
 				volume.scale.set(178.04, 159.14, 70.00);
 				volume.position.set(589661.930, 231374.010, 749.620);
 				volume.clip = true;
-
+				volume.visible = false;
 
 				scene.addVolume(volume);
 			}

@@ -1,5 +1,9 @@
 
-Potree.NormalizationEDLMaterial = class NormalizationEDLMaterial extends THREE.RawShaderMaterial{
+
+import {Shaders} from "../../build/shaders/shaders.js";
+
+
+export class NormalizationEDLMaterial extends THREE.RawShaderMaterial{
 
 	constructor(parameters = {}){
 		super();
@@ -17,8 +21,8 @@ Potree.NormalizationEDLMaterial = class NormalizationEDLMaterial extends THREE.R
 
 		this.setValues({
 			uniforms: uniforms,
-			vertexShader: this.getDefines() + Potree.Shaders['normalize.vs'],
-			fragmentShader: this.getDefines() + Potree.Shaders['normalize_and_edl.fs'],
+			vertexShader: this.getDefines() + Shaders['normalize.vs'],
+			fragmentShader: this.getDefines() + Shaders['normalize_and_edl.fs'],
 		});
 
 		this.neighbourCount = 8;
@@ -34,8 +38,8 @@ Potree.NormalizationEDLMaterial = class NormalizationEDLMaterial extends THREE.R
 
 	updateShaderSource() {
 
-		let vs = this.getDefines() + Potree.Shaders['normalize.vs'];
-		let fs = this.getDefines() + Potree.Shaders['normalize_and_edl.fs'];
+		let vs = this.getDefines() + Shaders['normalize.vs'];
+		let fs = this.getDefines() + Shaders['normalize_and_edl.fs'];
 
 		this.setValues({
 			vertexShader: vs,
@@ -64,5 +68,5 @@ Potree.NormalizationEDLMaterial = class NormalizationEDLMaterial extends THREE.R
 		}
 	}
 	
-};
+}
 

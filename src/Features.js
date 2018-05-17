@@ -1,5 +1,5 @@
 
-Potree.Features = (function () {
+const Features = (function () {
 	let ftCanvas = document.createElement('canvas');
 	let gl = ftCanvas.getContext('webgl') || ftCanvas.getContext('experimental-webgl');
 	if (gl === null)		{ return null; }
@@ -64,3 +64,6 @@ Potree.Features = (function () {
 		precision: precision
 	};
 }());
+
+
+export {Features};

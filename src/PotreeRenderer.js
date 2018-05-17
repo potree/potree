@@ -1,7 +1,11 @@
 
+import {PointCloudTree} from "./PointCloudTree.js";
+import {PointCloudOctreeNode} from "./PointCloudOctree.js";
+import {PointCloudArena4DNode} from "./arena4d/PointCloudArena4D.js";
+import {PointSizeType, PointColorType, ClipTask} from "./defines.js";
 
 // Copied from three.js: WebGLRenderer.js
-Potree.paramThreeToGL = function paramThreeToGL(_gl, p) {
+function paramThreeToGL(_gl, p) {
 
 	let extension;
 
@@ -127,7 +131,7 @@ Potree.paramThreeToGL = function paramThreeToGL(_gl, p) {
 
 };
 
-Potree.attributeLocations = {
+let attributeLocations = {
 	"position": 0,
 	"color": 1,
 	"intensity": 2,
@@ -140,7 +144,7 @@ Potree.attributeLocations = {
 	"spacing": 9,
 };
 
-Potree.Shader = class Shader {
+class Shader {
 
 	constructor(gl, name, vsSource, fsSource) {
 		this.gl = gl;
@@ -206,8 +210,8 @@ Potree.Shader = class Shader {
 			this.fs = gl.createShader(gl.FRAGMENT_SHADER);
 			this.program = gl.createProgram();
 
-			for(let name of Object.keys(Potree.attributeLocations)){
-				let location = Potree.attributeLocations[name];
+			for(let name of Object.keys(attributeLocations)){
+				let location = attributeLocations[name];
 				gl.bindAttribLocation(this.program, location, name);
 			}
 
@@ -345,7 +349,7 @@ Potree.Shader = class Shader {
 			this.setUniform1f(name, value);
 		} else if (typeof value === "boolean") {
 			this.setUniformBoolean(name, value);
-		} else if (value instanceof Potree.WebGLTexture) {
+		} else if (value instanceof WebGLTexture) {
 			this.setUniformTexture(name, value);
 		} else if (value instanceof Array) {
 
@@ -375,7 +379,7 @@ Potree.Shader = class Shader {
 
 };
 
-Potree.WebGLTexture = class WebGLTexture {
+class WebGLTexture {
 
 	constructor(gl, texture) {
 		this.gl = gl;
@@ -409,12 +413,12 @@ Potree.WebGLTexture = class WebGLTexture {
 		gl.bindTexture(this.target, this.id);
 
 		let level = 0;
-		let internalFormat = Potree.paramThreeToGL(gl, texture.format);
+		let internalFormat = paramThreeToGL(gl, texture.format);
 		let width = texture.image.width;
 		let height = texture.image.height;
 		let border = 0;
 		let srcFormat = internalFormat;
-		let srcType = Potree.paramThreeToGL(gl, texture.type);
+		let srcType = paramThreeToGL(gl, texture.type);
 		let data;
 
 		gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, texture.flipY);
@@ -427,8 +431,8 @@ Potree.WebGLTexture = class WebGLTexture {
 			gl.texParameteri(this.target, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 			gl.texParameteri(this.target, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-			gl.texParameteri(this.target, gl.TEXTURE_MAG_FILTER, Potree.paramThreeToGL(gl, texture.magFilter));
-			gl.texParameteri(this.target, gl.TEXTURE_MIN_FILTER, Potree.paramThreeToGL(gl, texture.minFilter));
+			gl.texParameteri(this.target, gl.TEXTURE_MAG_FILTER, paramThreeToGL(gl, texture.magFilter));
+			gl.texParameteri(this.target, gl.TEXTURE_MIN_FILTER, paramThreeToGL(gl, texture.minFilter));
 
 			gl.texImage2D(this.target, level, internalFormat,
 				width, height, border, srcFormat, srcType,
@@ -436,11 +440,11 @@ Potree.WebGLTexture = class WebGLTexture {
 		} else if (texture instanceof THREE.CanvasTexture) {
 			data = texture.image;
 
-			gl.texParameteri(this.target, gl.TEXTURE_WRAP_S, Potree.paramThreeToGL(gl, texture.wrapS));
-			gl.texParameteri(this.target, gl.TEXTURE_WRAP_T, Potree.paramThreeToGL(gl, texture.wrapT));
+			gl.texParameteri(this.target, gl.TEXTURE_WRAP_S, paramThreeToGL(gl, texture.wrapS));
+			gl.texParameteri(this.target, gl.TEXTURE_WRAP_T, paramThreeToGL(gl, texture.wrapT));
 
-			gl.texParameteri(this.target, gl.TEXTURE_MAG_FILTER, Potree.paramThreeToGL(gl, texture.magFilter));
-			gl.texParameteri(this.target, gl.TEXTURE_MIN_FILTER, Potree.paramThreeToGL(gl, texture.minFilter));
+			gl.texParameteri(this.target, gl.TEXTURE_MAG_FILTER, paramThreeToGL(gl, texture.magFilter));
+			gl.texParameteri(this.target, gl.TEXTURE_MIN_FILTER, paramThreeToGL(gl, texture.minFilter));
 
 			gl.texImage2D(this.target, level, internalFormat,
 				internalFormat, srcType, data);
@@ -453,7 +457,7 @@ Potree.WebGLTexture = class WebGLTexture {
 
 };
 
-Potree.WebGLBuffer = class WebGLBuffer {
+class WebGLBuffer {
 
 	constructor() {
 		this.numElements = 0;
@@ -463,7 +467,7 @@ Potree.WebGLBuffer = class WebGLBuffer {
 
 };
 
-Potree.Renderer = class Renderer {
+export class Renderer {
 
 	constructor(threeRenderer) {
 		this.threeRenderer = threeRenderer;
@@ -483,7 +487,7 @@ Potree.Renderer = class Renderer {
 
 	createBuffer(geometry){
 		let gl = this.gl;
-		let webglBuffer = new Potree.WebGLBuffer();
+		let webglBuffer = new WebGLBuffer();
 		webglBuffer.vao = gl.createVertexArray();
 		webglBuffer.numElements = geometry.attributes.position.count;
 
@@ -496,7 +500,7 @@ Potree.Renderer = class Renderer {
 			gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
 			gl.bufferData(gl.ARRAY_BUFFER, bufferAttribute.array, gl.STATIC_DRAW);
 
-			let attributeLocation = Potree.attributeLocations[attributeName];
+			let attributeLocation = attributeLocations[attributeName];
 			let normalized = bufferAttribute.normalized;
 			let type = this.glTypeMapping.get(bufferAttribute.array.constructor);
 
@@ -529,7 +533,7 @@ Potree.Renderer = class Renderer {
 		for(let attributeName in geometry.attributes){
 			let bufferAttribute = geometry.attributes[attributeName];
 
-			let attributeLocation = Potree.attributeLocations[attributeName];
+			let attributeLocation = attributeLocations[attributeName];
 			let normalized = bufferAttribute.normalized;
 			let type = this.glTypeMapping.get(bufferAttribute.array.constructor);
 
@@ -569,7 +573,7 @@ Potree.Renderer = class Renderer {
 
 			let node = stack.pop();
 
-			if (node instanceof Potree.PointCloudTree) {
+			if (node instanceof PointCloudTree) {
 				octrees.push(node);
 				continue;
 			}
@@ -590,7 +594,7 @@ Potree.Renderer = class Renderer {
 
 	renderNodes(octree, nodes, visibilityTextureData, camera, target, shader, params) {
 
-		if (Potree.measureTimings) performance.mark("renderNodes-start");
+		if (exports.measureTimings) performance.mark("renderNodes-start");
 
 		let gl = this.gl;
 
@@ -604,8 +608,8 @@ Potree.Renderer = class Renderer {
 		let i = 0;
 		for (let node of nodes) {
 
-			if(Potree.debug.allowedNodes !== undefined){
-				if(!Potree.debug.allowedNodes.includes(node.name)){
+			if(exports.debug.allowedNodes !== undefined){
+				if(!exports.debug.allowedNodes.includes(node.name)){
 					continue;
 				}
 			}
@@ -636,9 +640,9 @@ Potree.Renderer = class Renderer {
 			}
 
 			let isLeaf;
-			if(node instanceof Potree.PointCloudOctreeNode){
+			if(node instanceof PointCloudOctreeNode){
 				isLeaf = Object.keys(node.children).length === 0;
-			}else if(node instanceof Potree.PointCloudArena4DNode){
+			}else if(node instanceof PointCloudArena4DNode){
 				isLeaf = node.geometryNode.isLeaf;
 			}
 			shader.setUniform("uIsLeafNode", isLeaf);
@@ -773,7 +777,7 @@ Potree.Renderer = class Renderer {
 
 		gl.bindVertexArray(null);
 
-		if (Potree.measureTimings) {
+		if (exports.measureTimings) {
 			performance.mark("renderNodes-end");
 			performance.measure("render.renderNodes", "renderNodes-start", "renderNodes-end");
 		}
@@ -797,8 +801,8 @@ Potree.Renderer = class Renderer {
 		let currentTextureBindingPoint = 0;
 
 		if (material.pointSizeType >= 0) {
-			if (material.pointSizeType === Potree.PointSizeType.ADAPTIVE ||
-				material.pointColorType === Potree.PointColorType.LOD) {
+			if (material.pointSizeType === PointSizeType.ADAPTIVE ||
+				material.pointColorType === PointColorType.LOD) {
 
 				let vnNodes = (params.vnTextureNodes != null) ? params.vnTextureNodes : nodes;
 				visibilityTextureData = octree.computeVisibilityTextureData(vnNodes, camera);
@@ -814,7 +818,7 @@ Potree.Renderer = class Renderer {
 		{ // UPDATE SHADER AND TEXTURES
 			if (!this.shaders.has(material)) {
 				let [vs, fs] = [material.vertexShader, material.fragmentShader];
-				let shader = new Potree.Shader(gl, "pointcloud", vs, fs);
+				let shader = new Shader(gl, "pointcloud", vs, fs);
 
 				this.shaders.set(material, shader);
 			}
@@ -863,7 +867,7 @@ Potree.Renderer = class Renderer {
 					}
 
 					if (!this.textures.has(texture)) {
-						let webglTexture = new Potree.WebGLTexture(gl, texture);
+						let webglTexture = new WebGLTexture(gl, texture);
 
 						this.textures.set(texture, webglTexture);
 					}
@@ -943,7 +947,7 @@ Potree.Renderer = class Renderer {
 			}
 
 			if(material.clipBoxes.length + material.clipPolygons.length === 0){
-				shader.setUniform1i("clipTask", Potree.ClipTask.NONE);
+				shader.setUniform1i("clipTask", ClipTask.NONE);
 			}else{
 				shader.setUniform1i("clipTask", material.clipTask);
 			}

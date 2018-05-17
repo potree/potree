@@ -121,6 +121,7 @@ export class PointCloudOctree extends PointCloudTree {
 		this.generateDEM = false;
 		this.profileRequests = [];
 		this.name = '';
+		this._visible = true;
 
 		{
 			let box = [this.pcoGeometry.tightBoundingBox, this.getBoundingBoxWorld()]
@@ -1045,7 +1046,24 @@ export class PointCloudOctree extends PointCloudTree {
 
 		return node;
 	}
-};
+
+	get visible(){
+		return this._visible;
+	}
+
+	set visible(value){
+
+		if(value !== this._visible){
+			this._visible = value;
+
+			this.dispatchEvent({type: 'visibility_changed', pointcloud: this});
+		}
+
+	}
+
+}
+
+
 
 
 

@@ -1018,6 +1018,7 @@ export class Viewer extends EventDispatcher{
 		this.renderer.domElement.addEventListener('mousedown', () => {
 			this.renderer.domElement.focus();
 		});
+		//this.renderer.domElement.focus();
 
 		// enable frag_depth extension for the interpolation shader, if available
 		let gl = this.renderer.context;

@@ -437,7 +437,15 @@ export class Sidebar{
 		let onPointCloudAdded = (e) => {
 			let pointcloud = e.pointcloud;
 			let cloudIcon = `${Potree.resourcePath}/icons/cloud.svg`;
-			createNode(pcID, pointcloud.name, cloudIcon, pointcloud);
+			let node = createNode(pcID, pointcloud.name, cloudIcon, pointcloud);
+
+			pointcloud.addEventListener("visibility_changed", () => {
+				if(pointcloud.visible){
+					tree.jstree('check_node', node);
+				}else{
+					tree.jstree('uncheck_node', node);
+				}
+			});
 		};
 
 		let onMeasurementAdded = (e) => {

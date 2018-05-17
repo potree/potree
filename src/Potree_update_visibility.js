@@ -1,4 +1,6 @@
 
+import {ClipTask, ClipMethod} from "./defines";
+import {Box3Helper} from "./utils/Box3Helper";
 
 export function updatePointClouds(pointclouds, camera, renderer){
 
@@ -77,7 +79,7 @@ export function updateVisibilityStructures(pointclouds, camera, renderer) {
 		}
 
 		// hide all previously visible nodes
-		// if(pointcloud.root instanceof Potree.PointCloudOctreeNode){
+		// if(pointcloud.root instanceof PointCloudOctreeNode){
 		//	pointcloud.hideDescendants(pointcloud.root.sceneNode);
 		// }
 		if (pointcloud.root.isTreeNode()) {
@@ -194,9 +196,9 @@ export function updateVisibility(pointclouds, camera, renderer){
 			let numIntersecting = 0;
 			let numIntersectionVolumes = 0;
 
-			if(node.name === "r60"){
-				var a = 10;
-			}
+			//if(node.name === "r60"){
+			//	var a = 10;
+			//}
 
 			for(let clipBox of clipBoxes){
 
@@ -252,16 +254,24 @@ export function updateVisibility(pointclouds, camera, renderer){
 			let insideAny = numIntersecting > 0;
 			let insideAll = numIntersecting === numIntersectionVolumes;
 
-			if(pointcloud.material.clipTask === Potree.ClipTask.SHOW_INSIDE){
-				if(pointcloud.material.clipMethod === Potree.ClipMethod.INSIDE_ANY && insideAny){
+			if(pointcloud.material.clipTask === ClipTask.SHOW_INSIDE){
+				if(pointcloud.material.clipMethod === ClipMethod.INSIDE_ANY && insideAny){
 					//node.debug = true
-				}else if(pointcloud.material.clipMethod === Potree.ClipMethod.INSIDE_ALL && insideAll){
+				}else if(pointcloud.material.clipMethod === ClipMethod.INSIDE_ALL && insideAll){
 					//node.debug = true;
 				}else{
 					visible = false;
 				}
-			} else if(pointcloud.material.clipTask === Potree.ClipTask.SHOW_INSIDE){
-
+			} else if(pointcloud.material.clipTask === ClipTask.SHOW_OUTSIDE){
+				//if(pointcloud.material.clipMethod === ClipMethod.INSIDE_ANY && !insideAny){
+				//	//visible = true;
+				//	let a = 10;
+				//}else if(pointcloud.material.clipMethod === ClipMethod.INSIDE_ALL && !insideAll){
+				//	//visible = true;
+				//	let a = 20;
+				//}else{
+				//	visible = false;
+				//}
 			}
 			
 
@@ -322,7 +332,7 @@ export function updateVisibility(pointclouds, camera, renderer){
 			}
 
 			if (pointcloud.showBoundingBox && !node.boundingBoxNode && node.getBoundingBox) {
-				let boxHelper = new Potree.Box3Helper(node.getBoundingBox());
+				let boxHelper = new Box3Helper(node.getBoundingBox());
 				boxHelper.matrixAutoUpdate = false;
 				pointcloud.boundingBoxNodes.push(boxHelper);
 				node.boundingBoxNode = boxHelper;

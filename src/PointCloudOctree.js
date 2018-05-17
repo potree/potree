@@ -313,6 +313,10 @@ export class PointCloudOctree extends PointCloudTree {
 		let lodRanges = new Map();
 		let leafNodeLodRanges = new Map();
 
+		let bBox = new THREE.Box3();
+		let bSphere = new THREE.Sphere();
+		let worldDir = new THREE.Vector3();
+
 		for (let i = 0; i < nodes.length; i++) {
 			let node = nodes[i];
 
@@ -350,14 +354,16 @@ export class PointCloudOctree extends PointCloudTree {
 			{
 				// TODO performance optimization
 				// for some reason, this part can be extremely slow in chrome during a debugging session, but not during profiling
-				let bBox = node.getBoundingBox().clone();
+				//let bBox = node.getBoundingBox().clone();
+				bBox.copy(node.getBoundingBox());
 				//bBox.applyMatrix4(node.sceneNode.matrixWorld);
 				//bBox.applyMatrix4(camera.matrixWorldInverse);
-				let bSphere = bBox.getBoundingSphere(new THREE.Sphere());
+				//let bSphere = bBox.getBoundingSphere(new THREE.Sphere());
+				bBox.getBoundingSphere(bSphere);
 				bSphere.applyMatrix4(node.sceneNode.matrixWorld);
 				bSphere.applyMatrix4(camera.matrixWorldInverse);
 
-				let ray = new THREE.Ray(camera.position, camera.getWorldDirection(new THREE.Vector3()));
+				let ray = new THREE.Ray(camera.position, camera.getWorldDirection(worldDir));
 				let distance = intersectSphereBack(ray, bSphere);
 				let distance2 = bSphere.center.distanceTo(camera.position) + bSphere.radius;
 				if(distance === null){

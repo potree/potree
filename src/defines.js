@@ -2,22 +2,22 @@
 import {Enum} from "./Enum.js";
 
 
-export const CameraMode = new Enum({
+export const CameraMode = {
 	ORTHOGRAPHIC: 0,
 	PERSPECTIVE: 1
-});
+};
 
-export const ClipTask = new Enum({
+export const ClipTask = {
 	NONE: 0,
 	HIGHLIGHT: 1,
 	SHOW_INSIDE: 2,
 	SHOW_OUTSIDE: 3
-});
+};
 
-export const ClipMethod = new Enum({
+export const ClipMethod = {
 	INSIDE_ANY: 0,
 	INSIDE_ALL: 1
-});
+};
 
 export const MOUSE = {
 	LEFT: 0b0001,

@@ -79,6 +79,7 @@
 
 			{ // VOLUME visible
 				let volume  = new Potree.BoxVolume();
+				volume.name = "Visible";
 				volume.scale.set(178.04, 159.14, 70.00);
 				volume.position.set(589877.20, 231374.01, 749.62);
 				volume.clip = true;
@@ -89,9 +90,11 @@
 
 			{ // VOLUME invisible
 				let volume  = new Potree.BoxVolume();
+				volume.name = "Invisible";
 				volume.scale.set(178.04, 159.14, 70.00);
 				volume.position.set(589661.930, 231374.010, 749.620);
 				volume.clip = true;
+				volume.visible = false;
 
 				scene.addVolume(volume);
 			}

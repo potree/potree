@@ -68,5 +68,5 @@ export class NormalizationEDLMaterial extends THREE.RawShaderMaterial{
 		}
 	}
 	
-};
+}
 

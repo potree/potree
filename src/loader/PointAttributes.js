@@ -1,13 +1,10 @@
 
 
-import {Enum} from "../Enum.js";
-
-
 export const PointAttributeNames = {
 	POSITION_CARTESIAN: 0, // float x, y, z;
 	COLOR_PACKED: 1, // byte r, g, b, a; 	I: [0,1]
-	COLOR_FLOATS_1: 2, // float r, g, b; 		I: [0,1]
-	COLOR_FLOATS_255: 3, // float r, g, b; 		I: [0,255]
+	COLOR_FLOATS_1: 2, // float r, g, b; 	I: [0,1]
+	COLOR_FLOATS_255: 3, // float r, g, b; 	I: [0,255]
 	NORMAL_FLOATS: 4, // float x, y, z;
 	FILLER: 5,
 	INTENSITY: 6,

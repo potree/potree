@@ -1,5 +1,7 @@
 
-Potree.ProfileData = class ProfileData {
+import {Points} from "./Points";
+
+export class ProfileData {
 	constructor (profile) {
 		this.profile = profile;
 
@@ -28,7 +30,7 @@ Potree.ProfileData = class ProfileData {
 				cutPlane: cutPlane,
 				halfPlane: halfPlane,
 				length: length,
-				points: new Potree.Points()
+				points: new Points()
 			};
 
 			this.segments.push(segment);
@@ -45,13 +47,13 @@ Potree.ProfileData = class ProfileData {
 	}
 };
 
-Potree.ProfileRequest = class ProfileRequest {
+export class ProfileRequest {
 	constructor (pointcloud, profile, maxDepth, callback) {
 		this.pointcloud = pointcloud;
 		this.profile = profile;
 		this.maxDepth = maxDepth || Number.MAX_VALUE;
 		this.callback = callback;
-		this.temporaryResult = new Potree.ProfileData(this.profile);
+		this.temporaryResult = new ProfileData(this.profile);
 		this.pointsServed = 0;
 		this.highestLevelServed = 0;
 
@@ -150,7 +152,7 @@ Potree.ProfileRequest = class ProfileRequest {
 			if (this.temporaryResult.size() > 100) {
 				this.pointsServed += this.temporaryResult.size();
 				this.callback.onProgress({request: this, points: this.temporaryResult});
-				this.temporaryResult = new Potree.ProfileData(this.profile);
+				this.temporaryResult = new ProfileData(this.profile);
 			}
 		}
 
@@ -160,7 +162,7 @@ Potree.ProfileRequest = class ProfileRequest {
 			if (this.temporaryResult.size() > 0) {
 				this.pointsServed += this.temporaryResult.size();
 				this.callback.onProgress({request: this, points: this.temporaryResult});
-				this.temporaryResult = new Potree.ProfileData(this.profile);
+				this.temporaryResult = new ProfileData(this.profile);
 			}
 
 			this.callback.onFinish({request: this});
@@ -279,7 +281,7 @@ Potree.ProfileRequest = class ProfileRequest {
 				let sv = new THREE.Vector3().subVectors(segment.end, segment.start).setZ(0);
 				let segmentDir = sv.clone().normalize();
 
-				let points = new Potree.Points();
+				let points = new Points();
 
 				let nodeMatrix = new THREE.Matrix4().makeTranslation(...node.boundingBox.min.toArray());
 
@@ -380,4 +382,4 @@ Potree.ProfileRequest = class ProfileRequest {
 			this.pointcloud.profileRequests.splice(index, 1);
 		}
 	};
-};
+}

@@ -9,7 +9,6 @@ export * from "./EventDispatcher.js";
 export * from "./Features.js";
 export * from "./KeyCodes.js";
 export * from "./LRU.js";
-export * from "./PointCloud.js";
 export * from "./PointCloudGreyhoundGeometry.js";
 export * from "./PointCloudGreyhoundGeometryNode.js";
 export * from "./PointCloudOctree.js";
@@ -33,6 +32,8 @@ export * from "./materials/NormalizationMaterial.js";
 export * from "./materials/PointCloudMaterial.js";
 
 export * from "./loader/POCLoader.js";
+export * from "./loader/GreyhoundBinaryLoader.js";
+export * from "./loader/GreyhoundLoader.js";
 export * from "./loader/PointAttributes.js";
 
 export * from "./utils/Box3Helper.js";
@@ -60,12 +61,13 @@ import "./extensions/OrthographicCamera.js";
 import "./extensions/PerspectiveCamera.js";
 import "./extensions/Ray.js";
 
-import {PointColorType} from "./defines.js";
-import {Enum} from "./Enum.js";
-import {LRU} from "./LRU.js";
-import {POCLoader} from "./loader/POCLoader.js";
-import {PointCloudOctree} from "./PointCloudOctree.js";
-import {WorkerPool} from "./WorkerPool.js";
+import {PointColorType} from "./defines";
+import {Enum} from "./Enum";
+import {LRU} from "./LRU";
+import {POCLoader} from "./loader/POCLoader";
+import {GreyhoundLoader} from "./loader/GreyhoundLoader";
+import {PointCloudOctree} from "./PointCloudOctree";
+import {WorkerPool} from "./WorkerPool";
 
 export const workerPool = new WorkerPool();
 

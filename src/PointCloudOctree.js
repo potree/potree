@@ -317,55 +317,58 @@ export class PointCloudOctree extends PointCloudTree {
 		let bBox = new THREE.Box3();
 		let bSphere = new THREE.Sphere();
 		let worldDir = new THREE.Vector3();
+		let cameraRay = new THREE.Ray(camera.position, camera.getWorldDirection(worldDir));
 
 		for (let i = 0; i < nodes.length; i++) {
 			let node = nodes[i];
 
 			visibleNodeTextureOffsets.set(node, i);
 
-			let children = [];
-			for (let j = 0; j < 8; j++) {
-				let child = node.children[j];
-
-				if( child && child.constructor === PointCloudOctreeNode && nodes.includes(child, i)){
-					children.push(child);
-				}
-			}
-
-			let spacing = node.geometryNode.estimatedSpacing;
-			let isLeafNode;
-
 			data[i * 4 + 0] = 0;
 			data[i * 4 + 1] = 0;
 			data[i * 4 + 2] = 0;
 			data[i * 4 + 3] = node.getLevel();
-			for (let j = 0; j < children.length; j++) {
-				let child = children[j];
-				let index = parseInt(child.geometryNode.name.substr(-1));
-				data[i * 4 + 0] += Math.pow(2, index);
+			let children = [];
+			for (let j = 0, k = 0; j < 8; j++) {
+				let child = node.children[j];
 
-				if (j === 0) {
-					let vArrayIndex = nodes.indexOf(child, i);
-					
-					data[i * 4 + 1] = (vArrayIndex - i) >> 8;
-					data[i * 4 + 2] = (vArrayIndex - i) % 256;
+				if( child && child.constructor === PointCloudOctreeNode && nodes.includes(child, i)){
+					//children.push(child);
+
+					let index = parseInt(child.geometryNode.name.substr(-1));
+					data[i * 4 + 0] += Math.pow(2, index);
+
+					if (k === 0) {
+						let vArrayIndex = nodes.indexOf(child, i);
+						
+						data[i * 4 + 1] = (vArrayIndex - i) >> 8;
+						data[i * 4 + 2] = (vArrayIndex - i) % 256;
+					}
+
+					k++;
 				}
 			}
 
+			//for (let j = 0; j < children.length; j++) {
+			//	let child = children[j];
+			//	let index = parseInt(child.geometryNode.name.substr(-1));
+			//	data[i * 4 + 0] += Math.pow(2, index);
+
+			//	if (j === 0) {
+			//		let vArrayIndex = nodes.indexOf(child, i);
+			//		
+			//		data[i * 4 + 1] = (vArrayIndex - i) >> 8;
+			//		data[i * 4 + 2] = (vArrayIndex - i) % 256;
+			//	}
+			//}
+
 			{
-				// TODO performance optimization
-				// for some reason, this part can be extremely slow in chrome during a debugging session, but not during profiling
-				//let bBox = node.getBoundingBox().clone();
 				bBox.copy(node.getBoundingBox());
-				//bBox.applyMatrix4(node.sceneNode.matrixWorld);
-				//bBox.applyMatrix4(camera.matrixWorldInverse);
-				//let bSphere = bBox.getBoundingSphere(new THREE.Sphere());
 				bBox.getBoundingSphere(bSphere);
 				bSphere.applyMatrix4(node.sceneNode.matrixWorld);
 				bSphere.applyMatrix4(camera.matrixWorldInverse);
 
-				let ray = new THREE.Ray(camera.position, camera.getWorldDirection(worldDir));
-				let distance = intersectSphereBack(ray, bSphere);
+				let distance = intersectSphereBack(cameraRay, bSphere);
 				let distance2 = bSphere.center.distanceTo(camera.position) + bSphere.radius;
 				if(distance === null){
 					distance = distance2;

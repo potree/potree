@@ -1,5 +1,6 @@
 
 import {PointCloudTree, PointCloudTreeNode} from "./PointCloudTree.js";
+import {PointCloudOctreeGeometryNode} from "./PointCloudOctreeGeometry.js";
 import {Utils} from "./utils.js";
 import {PointCloudMaterial} from "./materials/PointCloudMaterial.js";
 
@@ -8,7 +9,8 @@ export class PointCloudOctreeNode extends PointCloudTreeNode {
 	constructor () {
 		super();
 
-		this.children = {};
+		//this.children = {};
+		this.children = [];
 		this.sceneNode = null;
 		this.octree = null;
 	}
@@ -202,9 +204,12 @@ export class PointCloudOctree extends PointCloudTree {
 		node.geometryNode = geometryNode;
 		node.sceneNode = sceneNode;
 		node.pointcloud = this;
-		node.children = {};
-		for (let key in geometryNode.children) {
-			node.children[key] = geometryNode.children[key];
+		node.children = [];
+		//for (let key in geometryNode.children) {
+		//	node.children[key] = geometryNode.children[key];
+		//}
+		for(let i = 0; i < 8; i++){
+			node.children[i] = geometryNode.children[i];
 		}
 
 		if (!parent) {
@@ -327,12 +332,14 @@ export class PointCloudOctree extends PointCloudTree {
 			data[i * 4 + 0] = 0;
 			data[i * 4 + 1] = 0;
 			data[i * 4 + 2] = 0;
+			//data[i * 4 + 3] = node.name.length - 1;
 			data[i * 4 + 3] = node.getLevel();
-			let children = [];
+
 			for (let j = 0, k = 0; j < 8; j++) {
+
 				let child = node.children[j];
 
-				if( child && child.constructor === PointCloudOctreeNode && nodes.includes(child, i)){
+				if( child && child.constructor === PointCloudOctreeNode && child.sceneNode.visible){
 					//children.push(child);
 
 					let index = parseInt(child.geometryNode.name.substr(-1));
@@ -349,71 +356,58 @@ export class PointCloudOctree extends PointCloudTree {
 				}
 			}
 
-			//for (let j = 0; j < children.length; j++) {
-			//	let child = children[j];
-			//	let index = parseInt(child.geometryNode.name.substr(-1));
-			//	data[i * 4 + 0] += Math.pow(2, index);
+			//{
+			//	bBox.copy(node.getBoundingBox());
+			//	bBox.getBoundingSphere(bSphere);
+			//	bSphere.applyMatrix4(node.sceneNode.matrixWorld);
+			//	bSphere.applyMatrix4(camera.matrixWorldInverse);
 
-			//	if (j === 0) {
-			//		let vArrayIndex = nodes.indexOf(child, i);
-			//		
-			//		data[i * 4 + 1] = (vArrayIndex - i) >> 8;
-			//		data[i * 4 + 2] = (vArrayIndex - i) % 256;
+			//	let distance = intersectSphereBack(cameraRay, bSphere);
+			//	let distance2 = bSphere.center.distanceTo(camera.position) + bSphere.radius;
+			//	if(distance === null){
+			//		distance = distance2;
 			//	}
+			//	distance = Math.max(distance, distance2);
+
+			//	if(!lodRanges.has(node.getLevel())){
+			//		lodRanges.set(node.getLevel(), distance);
+			//	}else{
+			//		let prevDistance = lodRanges.get(node.getLevel());
+			//		let newDistance = Math.max(prevDistance, distance);
+			//		lodRanges.set(node.getLevel(), newDistance);
+			//	}
+
+			//	if(!node.geometryNode.hasChildren){
+			//		let value = {
+			//			distance: distance,
+			//			i: i
+			//		};
+			//		leafNodeLodRanges.set(node, value);
+			//	}
+			//	
 			//}
-
-			{
-				bBox.copy(node.getBoundingBox());
-				bBox.getBoundingSphere(bSphere);
-				bSphere.applyMatrix4(node.sceneNode.matrixWorld);
-				bSphere.applyMatrix4(camera.matrixWorldInverse);
-
-				let distance = intersectSphereBack(cameraRay, bSphere);
-				let distance2 = bSphere.center.distanceTo(camera.position) + bSphere.radius;
-				if(distance === null){
-					distance = distance2;
-				}
-				distance = Math.max(distance, distance2);
-
-				if(!lodRanges.has(node.getLevel())){
-					lodRanges.set(node.getLevel(), distance);
-				}else{
-					let prevDistance = lodRanges.get(node.getLevel());
-					let newDistance = Math.max(prevDistance, distance);
-					lodRanges.set(node.getLevel(), newDistance);
-				}
-
-				if(!node.geometryNode.hasChildren){
-					let value = {
-						distance: distance,
-						i: i
-					};
-					leafNodeLodRanges.set(node, value);
-				}
-				
-			}
 		}
 
-		for(let [node, value] of leafNodeLodRanges){
-			let level = node.getLevel();
-			let distance = value.distance;
-			let i = value.i;
+		//for(let [node, value] of leafNodeLodRanges){
+		//	let level = node.getLevel();
+		//	let distance = value.distance;
+		//	let i = value.i;
 
-			if(level < 4){
-				continue;
-			}
+		//	if(level < 4){
+		//		continue;
+		//	}
 
-			//if(node.name === "r6646"){
-			//	var a = 10;
-			//	a = 10 * 10;
-			//}
+		//	//if(node.name === "r6646"){
+		//	//	var a = 10;
+		//	//	a = 10 * 10;
+		//	//}
 
-			for(let [lod, range] of lodRanges){
-				if(distance < range * 1.2){
-					data[i * 4 + 3] = lod;
-				}
-			}
-		}
+		//	for(let [lod, range] of lodRanges){
+		//		if(distance < range * 1.2){
+		//			data[i * 4 + 3] = lod;
+		//		}
+		//	}
+		//}
 
 		//{
 		//	if(!window.debugSizes){

@@ -27,6 +27,17 @@ function parseLASHeader(arraybuffer) {
 	o.pointsOffset = readAs(arraybuffer, Uint32Array, 32*3);
 	o.pointsFormatId = readAs(arraybuffer, Uint8Array, 32*3+8);
 	o.pointsStructSize = readAs(arraybuffer, Uint16Array, 32*3+8+1);
+
+    o.extraBytes = 0;
+    switch (o.pointsFormatId & 0x3f) {
+        case 0: o.extraBytes = o.pointsStructSize - 20;
+        case 1: o.extraBytes = o.pointsStructSize - 28;
+        case 2: o.extraBytes = o.pointsStructSize - 26;
+        case 3: o.extraBytes = o.pointsStructSize - 34;
+    }
+
+    o.pointsStructSize -= o.extraBytes;
+
 	o.pointsCount = readAs(arraybuffer, Uint32Array, 32*3 + 11);
 
 
@@ -91,12 +102,12 @@ function handleEvent(msg) {
 
 			let buffer = new ArrayBuffer(bufferSize * o.header.pointsStructSize);
 			let this_buf = new Uint8Array(buffer);
-			var buf_read = Module._malloc(o.header.pointsStructSize);
+			var buf_read = Module._malloc(o.header.pointsStructSize + o.header.extraBytes);
 			for (var i = 0 ; i < pointsToRead ; i ++) {
 				o.getPoint(buf_read);
 
 				if (i % skip === 0) {
-					var a = new Uint8Array(Module.HEAPU8.buffer, buf_read, o.header.pointsStructSize);
+					var a = new Uint8Array(Module.HEAPU8.buffer, buf_read, o.header.pointsStructSize + o.header.extraBytes);
 					this_buf.set(a, pointsRead * o.header.pointsStructSize, o.header.pointsStructSize);
 					pointsRead ++;
 				}
@@ -126,7 +137,7 @@ function handleEvent(msg) {
 			}else{
 				debugger;
 			}
-			
+
 			postMessage({ type: "close", status: 1});
 			break;
 	}

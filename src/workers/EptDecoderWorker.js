@@ -3,17 +3,20 @@ function readUsingDataView(event) {
 
 	let buffer = event.data.buffer;
 	let numPoints = event.data.numPoints;
-	let sourcePointSize = event.data.pointSize;
-	let pointFormatID = event.data.pointFormatID;
+	let pointSize = event.data.pointSize;
+	let pointFormat = 2;
+    switch (pointSize) {
+        case 20: pointFormat = 0; break;
+        case 28: pointFormat = 1; break;
+        case 26: pointFormat = 2; break;
+        case 34: pointFormat = 3; break;
+        default: console.log('Could not determine point format, using 2');
+    }
 	let scale = event.data.scale;
 	let offset = event.data.offset;
 
 	let sourceUint8 = new Uint8Array(buffer);
 	let sourceView = new DataView(buffer);
-
-	let targetPointSize = 40;
-	let targetBuffer = new ArrayBuffer(numPoints * targetPointSize);
-	let targetView = new DataView(targetBuffer);
 
 	let tightBoundingBox = {
 		min: [
@@ -46,22 +49,27 @@ function readUsingDataView(event) {
 	let numberOfReturns = new Uint8Array(nrBuff);
 	let pointSourceIDs = new Uint16Array(psBuff);
 
+    // Point format 3 contains an 8-byte GpsTime before RGB values, so make
+    // sure we have the correct color offset.
+    let hasColor = pointFormat == 2 || pointFormat == 3;
+    let co = pointFormat == 2 ? 20 : 28;
+
     // TODO This should be cached per-resource since this is an expensive check.
     var twoByteColor = false;
-    if (pointFormatID === 2) {
-        for (let i = 0; i < numPoints && !twoByteColor; i++) {
-			let r = sourceView.getUint16(i * sourcePointSize + 20, true)
-			let g = sourceView.getUint16(i * sourcePointSize + 22, true)
-			let b = sourceView.getUint16(i * sourcePointSize + 24, true)
+    if (hasColor === 2) {
+        for (let i = 0; i < numPoints && !twoByteColor; ++i) {
+			let r = sourceView.getUint16(i * pointSize + co, true)
+			let g = sourceView.getUint16(i * pointSize + co + 2, true)
+			let b = sourceView.getUint16(i * pointSize + co + 4, true)
             if (r > 255 || g > 255 || b > 255) twoByteColor = true;
         }
     }
 
 	for (let i = 0; i < numPoints; i++) {
 		// POSITION
-		let ux = sourceView.getInt32(i * sourcePointSize + 0, true);
-		let uy = sourceView.getInt32(i * sourcePointSize + 4, true);
-		let uz = sourceView.getInt32(i * sourcePointSize + 8, true);
+		let ux = sourceView.getInt32(i * pointSize + 0, true);
+		let uy = sourceView.getInt32(i * pointSize + 4, true);
+		let uz = sourceView.getInt32(i * pointSize + 8, true);
 
 		x = ux * scale[0] + offset[0] - event.data.mins[0];
 		y = uy * scale[1] + offset[1] - event.data.mins[1];
@@ -88,30 +96,35 @@ function readUsingDataView(event) {
 		tightBoundingBox.max[2] = Math.max(tightBoundingBox.max[2], z);
 
 		// INTENSITY
-		let intensity = sourceView.getUint16(i * sourcePointSize + 12, true);
+		let intensity = sourceView.getUint16(i * pointSize + 12, true);
 		intensities[i] = intensity;
+        if (intensity <= 5) {
+            positions[3 * i + 0] = 99999999;
+            positions[3 * i + 1] = 99999999;
+            positions[3 * i + 2] = 99999999;
+        }
 
 		// RETURN NUMBER, stored in the first 3 bits - 00000111
 		// number of returns stored in next 3 bits   - 00111000
-		let returnNumberAndNumberOfReturns = sourceView.getUint8(i * sourcePointSize + 14, true);
+		let returnNumberAndNumberOfReturns = sourceView.getUint8(i * pointSize + 14, true);
 		let returnNumber = returnNumberAndNumberOfReturns & 0b0111;
 		let numberOfReturn = (returnNumberAndNumberOfReturns & 0b00111000) >> 3;
 		returnNumbers[i] = returnNumber;
 		numberOfReturns[i] = numberOfReturn;
 
 		// CLASSIFICATION
-		let classification = sourceView.getUint8(i * sourcePointSize + 15, true);
+		let classification = sourceView.getUint8(i * pointSize + 15, true);
 		classifications[i] = classification;
 
 		// POINT SOURCE ID
-		let pointSourceID = sourceView.getUint16(i * sourcePointSize + 18, true);
+		let pointSourceID = sourceView.getUint16(i * pointSize + 18, true);
 		pointSourceIDs[i] = pointSourceID;
 
 		// COLOR, if available
-		if (pointFormatID === 2) {
-			let r = sourceView.getUint16(i * sourcePointSize + 20, true)
-			let g = sourceView.getUint16(i * sourcePointSize + 22, true)
-			let b = sourceView.getUint16(i * sourcePointSize + 24, true)
+		if (hasColor) {
+			let r = sourceView.getUint16(i * pointSize + co, true)
+			let g = sourceView.getUint16(i * pointSize + co + 2, true)
+			let b = sourceView.getUint16(i * pointSize + co + 4, true)
 
             if (twoByteColor) {
                 r /= 256;

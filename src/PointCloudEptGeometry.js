@@ -12,7 +12,6 @@ var toArray = function(b) {
 
 Potree.PointCloudEptGeometry = class {
 	constructor(url, info, hier) {
-        let structure = info.structure;
         let version = info.version;
         let schema = info.schema;
         let srs = info.srs;
@@ -43,9 +42,8 @@ Potree.PointCloudEptGeometry = class {
 
         this.url = url;
         this.info = info;
-        this.structure = info.structure;
 
-        this.info = info;
+        this.ticks = info.ticks;
         this.boundingBox = bounds;
         this.offset = offset;
         this.tightBoundingBox = boundsConforming;
@@ -57,7 +55,7 @@ Potree.PointCloudEptGeometry = class {
         this.pointAttributes = 'LAZ';
         this.spacing =
             (this.boundingBox.max.x - this.boundingBox.min.x) /
-            Math.pow(2, this.structure.body);
+            Math.pow(2, this.ticks);
 
         // TODO Fetch on demand.
         this.hierarchy = hier;
@@ -81,23 +79,10 @@ Potree.EptKey = class {
     }
 
     name() {
-        return (this.d < 10 ? '0' : '') + this.d + '-' +
-            this.x + '-' + this.y + '-' + this.z;
+        return this.d + '-' + this.x + '-' + this.y + '-' + this.z;
     }
 
     step(a, b, c) {
-        // If we're in the `tail` section, the only change is increased depth.
-        if (this.d >= this.ept.structure.tail) {
-            return new Potree.EptKey(
-                    this.ept,
-                    this.b.clone(),
-                    this.d + 1,
-                    this.x,
-                    this.y,
-                    this.z);
-        }
-
-        // Otherwise, bisect as normal.
         let min = this.b.min.clone();
         let max = this.b.max.clone();
         let dst = new THREE.Vector3().subVectors(max, min);
@@ -142,7 +127,7 @@ Potree.PointCloudEptGeometryNode = class extends Potree.PointCloudTreeNode {
         this.key = new Potree.EptKey(
                 this.ept,
                 b || this.ept.boundingBox,
-                d || this.ept.structure.body,
+                d || 0,
                 x,
                 y,
                 z);
@@ -151,8 +136,7 @@ Potree.PointCloudEptGeometryNode = class extends Potree.PointCloudTreeNode {
 		this.geometry = null;
 		this.boundingBox = this.key.b;
         this.tightBoundingBox = this.boundingBox;
-        this.spacing = this.ept.spacing /
-            Math.pow(2, this.key.d - this.ept.structure.body);
+        this.spacing = this.ept.spacing / Math.pow(2, this.key.d);
 		this.boundingSphere = this.boundingBox.getBoundingSphere();
 
         // TODO Look at hierarchy here and load if needed.
@@ -160,7 +144,7 @@ Potree.PointCloudEptGeometryNode = class extends Potree.PointCloudTreeNode {
 		this.children = { };
 		this.numPoints = 0;
 
-		this.level = this.key.d - this.ept.structure.body;
+		this.level = this.key.d;
 		this.loaded = false;
         this.loading = false;
 		this.oneTimeDisposeHandlers = [];
@@ -206,9 +190,7 @@ Potree.PointCloudEptGeometryNode = class extends Potree.PointCloudTreeNode {
 		++Potree.numNodesLoading;
 
         // TODO For now the hierarchy is entirely loaded at the start.
-        if (this.key.d == this.ept.structure.body) {
-            this.loadHierarchyThenPoints();
-        }
+        if (!this.key.d) this.loadHierarchyThenPoints();
         else this.loadPoints();
 	}
 
@@ -240,12 +222,8 @@ Potree.PointCloudEptGeometryNode = class extends Potree.PointCloudTreeNode {
             var b = y & 1;
             var c = z & 1;
 
-            var inTail = d > this.ept.structure.tail;
-            var shift = inTail ? 0 : 1;
-
             let parentName =
-                ((d - 1) < 10 ? '0' : '') + (d - 1) + '-' +
-                (x >> shift) + '-' + (y >> shift) + '-' + (z >> shift);
+                (d - 1) + '-' + (x >> 1) + '-' + (y >> 1) + '-' + (z >> 1);
 
             var parentNode = nodes[parentName];
             if (!parentNode) return;
@@ -261,7 +239,7 @@ Potree.PointCloudEptGeometryNode = class extends Potree.PointCloudTreeNode {
                     key.y,
                     key.z);
 
-            node.level = d - this.ept.structure.body;
+            node.level = d;
             node.numPoints = this.ept.hierarchy[v];
 
             // TODO Determine from hierarchy?  For now this is set once a child
@@ -281,10 +259,9 @@ Potree.PointCloudEptGeometryNode = class extends Potree.PointCloudTreeNode {
 
     toPotreeName(d, x, y, z) {
         var name = 'r';
-        var n = d - this.ept.structure.body;
 
-        for (var i = 0; i < n; ++i) {
-            var shift = n - i - 1;
+        for (var i = 0; i < d; ++i) {
+            var shift = d - i - 1;
             var mask = 1 << shift;
             var step = 0;
 

@@ -48,37 +48,23 @@
 		viewer.setPointBudget(1*1000*1000);
 		viewer.loadSettingsFromURL();
 
-		viewer.setDescription("Loading Entwine-generated EPT format");
-
 		viewer.loadGUI(() => {
 			viewer.setLanguage('en');
 			$("#menu_appearance").next().show();
 			//viewer.toggleSidebar();
 		});
 
-        var path = "../pointclouds/lion_takanawa_ept/entwine.json";
+        var path = "http://ept-data.s3-website-us-east-1.amazonaws.com/" +
+            "rc/entwine.json";
 
-		var getQueryParam = function(name) {
-			name = name.replace(/[\[\]]/g, "\\$&");
-			var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
-				results = regex.exec(window.location.href);
-			if (!results || !results[2]) return null;
-			return decodeURIComponent(results[2].replace(/\+/g, " "));
-		}
-
-        var r = getQueryParam('r');
-        if (r) {
-            var http = 'http';
-            if (r.substr(0, http.length) == http) path = r;
-            else path = "../pointclouds/" + r + "/entwine.json";
-        }
-
-		Potree.loadPointCloud(path, "lion", function(e){
+		Potree.loadPointCloud(path, "rc", function(e){
 			viewer.scene.addPointCloud(e.pointcloud);
 
 			let material = e.pointcloud.material;
 			material.size = 1;
-			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+			material.pointSizeType = Potree.PointSizeType.FIXED;
+            material.pointColorType = 5;
+            viewer.setPointBudget(5000000);
 
 			viewer.fitToScreen();
 		});

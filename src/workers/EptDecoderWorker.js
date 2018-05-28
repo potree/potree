@@ -56,7 +56,7 @@ function readUsingDataView(event) {
 
     // TODO This should be cached per-resource since this is an expensive check.
     var twoByteColor = false;
-    if (hasColor === 2) {
+    if (hasColor) {
         for (let i = 0; i < numPoints && !twoByteColor; ++i) {
 			let r = sourceView.getUint16(i * pointSize + co, true)
 			let g = sourceView.getUint16(i * pointSize + co + 2, true)

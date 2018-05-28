@@ -29,17 +29,11 @@ function parseLASHeader(arraybuffer) {
 	o.pointsStructSize = readAs(arraybuffer, Uint16Array, 32*3+8+1);
 
     o.extraBytes = 0;
-    switch (o.pointsFormatId & 0x3f) {
-        case 0: o.extraBytes = o.pointsStructSize - 20;
-        case 1: o.extraBytes = o.pointsStructSize - 28;
-        case 2: o.extraBytes = o.pointsStructSize - 26;
-        case 3: o.extraBytes = o.pointsStructSize - 34;
-    }
+
+    // TODO Determine if extra-bytes are present.
 
     o.pointsStructSize -= o.extraBytes;
-
 	o.pointsCount = readAs(arraybuffer, Uint32Array, 32*3 + 11);
-
 
 	var start = 32*3 + 35;
 	o.scale = readAs(arraybuffer, Float64Array, start, 3); start += 24; // 8*3

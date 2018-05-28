@@ -66,7 +66,6 @@
 			}
 		},
 		"numPoints" : 5202,
-		"origin" : 0,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r.laz",
 		"pointStats" : 
 		{
@@ -143,7 +142,6 @@
 			}
 		},
 		"numPoints" : 5020,
-		"origin" : 1,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r0.laz",
 		"pointStats" : 
 		{
@@ -220,7 +218,6 @@
 			}
 		},
 		"numPoints" : 446,
-		"origin" : 2,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r00.laz",
 		"pointStats" : 
 		{
@@ -297,7 +294,6 @@
 			}
 		},
 		"numPoints" : 86,
-		"origin" : 3,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r003.laz",
 		"pointStats" : 
 		{
@@ -374,7 +370,6 @@
 			}
 		},
 		"numPoints" : 1451,
-		"origin" : 4,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r006.laz",
 		"pointStats" : 
 		{
@@ -451,7 +446,6 @@
 			}
 		},
 		"numPoints" : 3,
-		"origin" : 5,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r007.laz",
 		"pointStats" : 
 		{
@@ -528,7 +522,6 @@
 			}
 		},
 		"numPoints" : 739,
-		"origin" : 6,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r01.laz",
 		"pointStats" : 
 		{
@@ -605,7 +598,6 @@
 			}
 		},
 		"numPoints" : 77,
-		"origin" : 7,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r010.laz",
 		"pointStats" : 
 		{
@@ -682,7 +674,6 @@
 			}
 		},
 		"numPoints" : 21,
-		"origin" : 8,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r011.laz",
 		"pointStats" : 
 		{
@@ -759,7 +750,6 @@
 			}
 		},
 		"numPoints" : 291,
-		"origin" : 9,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r012.laz",
 		"pointStats" : 
 		{
@@ -836,7 +826,6 @@
 			}
 		},
 		"numPoints" : 442,
-		"origin" : 10,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r013.laz",
 		"pointStats" : 
 		{
@@ -913,7 +902,6 @@
 			}
 		},
 		"numPoints" : 584,
-		"origin" : 11,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r014.laz",
 		"pointStats" : 
 		{
@@ -990,7 +978,6 @@
 			}
 		},
 		"numPoints" : 103,
-		"origin" : 12,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r015.laz",
 		"pointStats" : 
 		{
@@ -1067,7 +1054,6 @@
 			}
 		},
 		"numPoints" : 312,
-		"origin" : 13,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r016.laz",
 		"pointStats" : 
 		{
@@ -1144,7 +1130,6 @@
 			}
 		},
 		"numPoints" : 160,
-		"origin" : 14,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r017.laz",
 		"pointStats" : 
 		{
@@ -1221,7 +1206,6 @@
 			}
 		},
 		"numPoints" : 1588,
-		"origin" : 15,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r02.laz",
 		"pointStats" : 
 		{
@@ -1298,7 +1282,6 @@
 			}
 		},
 		"numPoints" : 5,
-		"origin" : 16,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r020.laz",
 		"pointStats" : 
 		{
@@ -1375,7 +1358,6 @@
 			}
 		},
 		"numPoints" : 447,
-		"origin" : 17,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r021.laz",
 		"pointStats" : 
 		{
@@ -1452,7 +1434,6 @@
 			}
 		},
 		"numPoints" : 31,
-		"origin" : 18,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r022.laz",
 		"pointStats" : 
 		{
@@ -1529,7 +1510,6 @@
 			}
 		},
 		"numPoints" : 178,
-		"origin" : 19,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r023.laz",
 		"pointStats" : 
 		{
@@ -1606,7 +1586,6 @@
 			}
 		},
 		"numPoints" : 2391,
-		"origin" : 20,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r024.laz",
 		"pointStats" : 
 		{
@@ -1683,7 +1662,6 @@
 			}
 		},
 		"numPoints" : 1256,
-		"origin" : 21,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r025.laz",
 		"pointStats" : 
 		{
@@ -1760,7 +1738,6 @@
 			}
 		},
 		"numPoints" : 851,
-		"origin" : 22,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r026.laz",
 		"pointStats" : 
 		{
@@ -1837,7 +1814,6 @@
 			}
 		},
 		"numPoints" : 20,
-		"origin" : 23,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r027.laz",
 		"pointStats" : 
 		{
@@ -1914,7 +1890,6 @@
 			}
 		},
 		"numPoints" : 2682,
-		"origin" : 24,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r03.laz",
 		"pointStats" : 
 		{
@@ -1991,7 +1966,6 @@
 			}
 		},
 		"numPoints" : 402,
-		"origin" : 25,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r030.laz",
 		"pointStats" : 
 		{
@@ -2068,7 +2042,6 @@
 			}
 		},
 		"numPoints" : 1020,
-		"origin" : 26,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r031.laz",
 		"pointStats" : 
 		{
@@ -2145,7 +2118,6 @@
 			}
 		},
 		"numPoints" : 390,
-		"origin" : 27,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r032.laz",
 		"pointStats" : 
 		{
@@ -2222,7 +2194,6 @@
 			}
 		},
 		"numPoints" : 1789,
-		"origin" : 28,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r033.laz",
 		"pointStats" : 
 		{
@@ -2299,7 +2270,6 @@
 			}
 		},
 		"numPoints" : 344,
-		"origin" : 29,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r034.laz",
 		"pointStats" : 
 		{
@@ -2376,7 +2346,6 @@
 			}
 		},
 		"numPoints" : 1039,
-		"origin" : 30,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r035.laz",
 		"pointStats" : 
 		{
@@ -2453,7 +2422,6 @@
 			}
 		},
 		"numPoints" : 880,
-		"origin" : 31,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r036.laz",
 		"pointStats" : 
 		{
@@ -2530,7 +2498,6 @@
 			}
 		},
 		"numPoints" : 1901,
-		"origin" : 32,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r037.laz",
 		"pointStats" : 
 		{
@@ -2607,7 +2574,6 @@
 			}
 		},
 		"numPoints" : 1337,
-		"origin" : 33,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r04.laz",
 		"pointStats" : 
 		{
@@ -2684,7 +2650,6 @@
 			}
 		},
 		"numPoints" : 2875,
-		"origin" : 34,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r042.laz",
 		"pointStats" : 
 		{
@@ -2761,7 +2726,6 @@
 			}
 		},
 		"numPoints" : 1820,
-		"origin" : 35,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r046.laz",
 		"pointStats" : 
 		{
@@ -2838,7 +2802,6 @@
 			}
 		},
 		"numPoints" : 3266,
-		"origin" : 36,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r06.laz",
 		"pointStats" : 
 		{
@@ -2915,7 +2878,6 @@
 			}
 		},
 		"numPoints" : 1882,
-		"origin" : 37,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r060.laz",
 		"pointStats" : 
 		{
@@ -2992,7 +2954,6 @@
 			}
 		},
 		"numPoints" : 4407,
-		"origin" : 38,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r061.laz",
 		"pointStats" : 
 		{
@@ -3069,7 +3030,6 @@
 			}
 		},
 		"numPoints" : 1812,
-		"origin" : 39,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r064.laz",
 		"pointStats" : 
 		{
@@ -3146,7 +3106,6 @@
 			}
 		},
 		"numPoints" : 4190,
-		"origin" : 40,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r065.laz",
 		"pointStats" : 
 		{
@@ -3223,7 +3182,6 @@
 			}
 		},
 		"numPoints" : 8102,
-		"origin" : 41,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r07.laz",
 		"pointStats" : 
 		{
@@ -3300,7 +3258,6 @@
 			}
 		},
 		"numPoints" : 2911,
-		"origin" : 42,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r070.laz",
 		"pointStats" : 
 		{
@@ -3377,7 +3334,6 @@
 			}
 		},
 		"numPoints" : 993,
-		"origin" : 43,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r071.laz",
 		"pointStats" : 
 		{
@@ -3454,7 +3410,6 @@
 			}
 		},
 		"numPoints" : 6246,
-		"origin" : 44,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r072.laz",
 		"pointStats" : 
 		{
@@ -3531,7 +3486,6 @@
 			}
 		},
 		"numPoints" : 3033,
-		"origin" : 45,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r073.laz",
 		"pointStats" : 
 		{
@@ -3608,7 +3562,6 @@
 			}
 		},
 		"numPoints" : 5646,
-		"origin" : 46,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r074.laz",
 		"pointStats" : 
 		{
@@ -3685,7 +3638,6 @@
 			}
 		},
 		"numPoints" : 1257,
-		"origin" : 47,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r075.laz",
 		"pointStats" : 
 		{
@@ -3762,7 +3714,6 @@
 			}
 		},
 		"numPoints" : 5927,
-		"origin" : 48,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r076.laz",
 		"pointStats" : 
 		{
@@ -3839,7 +3790,6 @@
 			}
 		},
 		"numPoints" : 4042,
-		"origin" : 49,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r077.laz",
 		"pointStats" : 
 		{
@@ -3916,7 +3866,6 @@
 			}
 		},
 		"numPoints" : 2822,
-		"origin" : 50,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r1.laz",
 		"pointStats" : 
 		{
@@ -3993,7 +3942,6 @@
 			}
 		},
 		"numPoints" : 10,
-		"origin" : 51,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r10.laz",
 		"pointStats" : 
 		{
@@ -4070,7 +4018,6 @@
 			}
 		},
 		"numPoints" : 18,
-		"origin" : 52,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r102.laz",
 		"pointStats" : 
 		{
@@ -4147,7 +4094,6 @@
 			}
 		},
 		"numPoints" : 1,
-		"origin" : 53,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r11.laz",
 		"pointStats" : 
 		{
@@ -4224,7 +4170,6 @@
 			}
 		},
 		"numPoints" : 1,
-		"origin" : 54,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r116.laz",
 		"pointStats" : 
 		{
@@ -4301,7 +4246,6 @@
 			}
 		},
 		"numPoints" : 647,
-		"origin" : 55,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r12.laz",
 		"pointStats" : 
 		{
@@ -4378,7 +4322,6 @@
 			}
 		},
 		"numPoints" : 136,
-		"origin" : 56,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r120.laz",
 		"pointStats" : 
 		{
@@ -4455,7 +4398,6 @@
 			}
 		},
 		"numPoints" : 631,
-		"origin" : 57,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r122.laz",
 		"pointStats" : 
 		{
@@ -4532,7 +4474,6 @@
 			}
 		},
 		"numPoints" : 927,
-		"origin" : 58,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r126.laz",
 		"pointStats" : 
 		{
@@ -4609,7 +4550,6 @@
 			}
 		},
 		"numPoints" : 224,
-		"origin" : 59,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r127.laz",
 		"pointStats" : 
 		{
@@ -4686,7 +4626,6 @@
 			}
 		},
 		"numPoints" : 16,
-		"origin" : 60,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r14.laz",
 		"pointStats" : 
 		{
@@ -4763,7 +4702,6 @@
 			}
 		},
 		"numPoints" : 35,
-		"origin" : 61,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r143.laz",
 		"pointStats" : 
 		{
@@ -4840,7 +4778,6 @@
 			}
 		},
 		"numPoints" : 12,
-		"origin" : 62,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r147.laz",
 		"pointStats" : 
 		{
@@ -4917,7 +4854,6 @@
 			}
 		},
 		"numPoints" : 8450,
-		"origin" : 63,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r16.laz",
 		"pointStats" : 
 		{
@@ -4994,7 +4930,6 @@
 			}
 		},
 		"numPoints" : 3583,
-		"origin" : 64,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r160.laz",
 		"pointStats" : 
 		{
@@ -5071,7 +5006,6 @@
 			}
 		},
 		"numPoints" : 5643,
-		"origin" : 65,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r161.laz",
 		"pointStats" : 
 		{
@@ -5148,7 +5082,6 @@
 			}
 		},
 		"numPoints" : 2921,
-		"origin" : 66,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r162.laz",
 		"pointStats" : 
 		{
@@ -5225,7 +5158,6 @@
 			}
 		},
 		"numPoints" : 2293,
-		"origin" : 67,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r163.laz",
 		"pointStats" : 
 		{
@@ -5302,7 +5234,6 @@
 			}
 		},
 		"numPoints" : 3411,
-		"origin" : 68,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r164.laz",
 		"pointStats" : 
 		{
@@ -5379,7 +5310,6 @@
 			}
 		},
 		"numPoints" : 5271,
-		"origin" : 69,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r165.laz",
 		"pointStats" : 
 		{
@@ -5456,7 +5386,6 @@
 			}
 		},
 		"numPoints" : 4055,
-		"origin" : 70,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r166.laz",
 		"pointStats" : 
 		{
@@ -5533,7 +5462,6 @@
 			}
 		},
 		"numPoints" : 4442,
-		"origin" : 71,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r167.laz",
 		"pointStats" : 
 		{
@@ -5610,7 +5538,6 @@
 			}
 		},
 		"numPoints" : 1436,
-		"origin" : 72,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r17.laz",
 		"pointStats" : 
 		{
@@ -5687,7 +5614,6 @@
 			}
 		},
 		"numPoints" : 1096,
-		"origin" : 73,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r170.laz",
 		"pointStats" : 
 		{
@@ -5764,7 +5690,6 @@
 			}
 		},
 		"numPoints" : 364,
-		"origin" : 74,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r172.laz",
 		"pointStats" : 
 		{
@@ -5841,7 +5766,6 @@
 			}
 		},
 		"numPoints" : 1482,
-		"origin" : 75,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r174.laz",
 		"pointStats" : 
 		{
@@ -5918,7 +5842,6 @@
 			}
 		},
 		"numPoints" : 2209,
-		"origin" : 76,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r176.laz",
 		"pointStats" : 
 		{
@@ -5995,7 +5918,6 @@
 			}
 		},
 		"numPoints" : 4040,
-		"origin" : 77,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r2.laz",
 		"pointStats" : 
 		{
@@ -6072,7 +5994,6 @@
 			}
 		},
 		"numPoints" : 339,
-		"origin" : 78,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r20.laz",
 		"pointStats" : 
 		{
@@ -6149,7 +6070,6 @@
 			}
 		},
 		"numPoints" : 123,
-		"origin" : 79,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r200.laz",
 		"pointStats" : 
 		{
@@ -6226,7 +6146,6 @@
 			}
 		},
 		"numPoints" : 468,
-		"origin" : 80,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r202.laz",
 		"pointStats" : 
 		{
@@ -6303,7 +6222,6 @@
 			}
 		},
 		"numPoints" : 280,
-		"origin" : 81,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r203.laz",
 		"pointStats" : 
 		{
@@ -6380,7 +6298,6 @@
 			}
 		},
 		"numPoints" : 875,
-		"origin" : 82,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r21.laz",
 		"pointStats" : 
 		{
@@ -6457,7 +6374,6 @@
 			}
 		},
 		"numPoints" : 37,
-		"origin" : 83,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r210.laz",
 		"pointStats" : 
 		{
@@ -6534,7 +6450,6 @@
 			}
 		},
 		"numPoints" : 230,
-		"origin" : 84,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r211.laz",
 		"pointStats" : 
 		{
@@ -6611,7 +6526,6 @@
 			}
 		},
 		"numPoints" : 436,
-		"origin" : 85,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r212.laz",
 		"pointStats" : 
 		{
@@ -6688,7 +6602,6 @@
 			}
 		},
 		"numPoints" : 22,
-		"origin" : 86,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r213.laz",
 		"pointStats" : 
 		{
@@ -6765,7 +6678,6 @@
 			}
 		},
 		"numPoints" : 863,
-		"origin" : 87,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r214.laz",
 		"pointStats" : 
 		{
@@ -6842,7 +6754,6 @@
 			}
 		},
 		"numPoints" : 1,
-		"origin" : 88,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r215.laz",
 		"pointStats" : 
 		{
@@ -6919,7 +6830,6 @@
 			}
 		},
 		"numPoints" : 446,
-		"origin" : 89,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r216.laz",
 		"pointStats" : 
 		{
@@ -6996,7 +6906,6 @@
 			}
 		},
 		"numPoints" : 630,
-		"origin" : 90,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r217.laz",
 		"pointStats" : 
 		{
@@ -7073,7 +6982,6 @@
 			}
 		},
 		"numPoints" : 575,
-		"origin" : 91,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r22.laz",
 		"pointStats" : 
 		{
@@ -7150,7 +7058,6 @@
 			}
 		},
 		"numPoints" : 1026,
-		"origin" : 92,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r220.laz",
 		"pointStats" : 
 		{
@@ -7227,7 +7134,6 @@
 			}
 		},
 		"numPoints" : 622,
-		"origin" : 93,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r222.laz",
 		"pointStats" : 
 		{
@@ -7304,7 +7210,6 @@
 			}
 		},
 		"numPoints" : 29,
-		"origin" : 94,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r224.laz",
 		"pointStats" : 
 		{
@@ -7381,7 +7286,6 @@
 			}
 		},
 		"numPoints" : 84,
-		"origin" : 95,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r225.laz",
 		"pointStats" : 
 		{
@@ -7458,7 +7362,6 @@
 			}
 		},
 		"numPoints" : 1164,
-		"origin" : 96,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r23.laz",
 		"pointStats" : 
 		{
@@ -7535,7 +7438,6 @@
 			}
 		},
 		"numPoints" : 159,
-		"origin" : 97,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r231.laz",
 		"pointStats" : 
 		{
@@ -7612,7 +7514,6 @@
 			}
 		},
 		"numPoints" : 950,
-		"origin" : 98,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r233.laz",
 		"pointStats" : 
 		{
@@ -7689,7 +7590,6 @@
 			}
 		},
 		"numPoints" : 42,
-		"origin" : 99,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r235.laz",
 		"pointStats" : 
 		{
@@ -7766,7 +7666,6 @@
 			}
 		},
 		"numPoints" : 1838,
-		"origin" : 100,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r237.laz",
 		"pointStats" : 
 		{
@@ -7843,7 +7742,6 @@
 			}
 		},
 		"numPoints" : 6333,
-		"origin" : 101,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r25.laz",
 		"pointStats" : 
 		{
@@ -7920,7 +7818,6 @@
 			}
 		},
 		"numPoints" : 4504,
-		"origin" : 102,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r250.laz",
 		"pointStats" : 
 		{
@@ -7997,7 +7894,6 @@
 			}
 		},
 		"numPoints" : 2,
-		"origin" : 103,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r251.laz",
 		"pointStats" : 
 		{
@@ -8074,7 +7970,6 @@
 			}
 		},
 		"numPoints" : 3107,
-		"origin" : 104,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r252.laz",
 		"pointStats" : 
 		{
@@ -8151,7 +8046,6 @@
 			}
 		},
 		"numPoints" : 174,
-		"origin" : 105,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r253.laz",
 		"pointStats" : 
 		{
@@ -8228,7 +8122,6 @@
 			}
 		},
 		"numPoints" : 5054,
-		"origin" : 106,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r254.laz",
 		"pointStats" : 
 		{
@@ -8305,7 +8198,6 @@
 			}
 		},
 		"numPoints" : 4173,
-		"origin" : 107,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r255.laz",
 		"pointStats" : 
 		{
@@ -8382,7 +8274,6 @@
 			}
 		},
 		"numPoints" : 3374,
-		"origin" : 108,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r256.laz",
 		"pointStats" : 
 		{
@@ -8459,7 +8350,6 @@
 			}
 		},
 		"numPoints" : 3301,
-		"origin" : 109,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r257.laz",
 		"pointStats" : 
 		{
@@ -8536,7 +8426,6 @@
 			}
 		},
 		"numPoints" : 1278,
-		"origin" : 110,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r26.laz",
 		"pointStats" : 
 		{
@@ -8613,7 +8502,6 @@
 			}
 		},
 		"numPoints" : 38,
-		"origin" : 111,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r260.laz",
 		"pointStats" : 
 		{
@@ -8690,7 +8578,6 @@
 			}
 		},
 		"numPoints" : 1030,
-		"origin" : 112,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r261.laz",
 		"pointStats" : 
 		{
@@ -8767,7 +8654,6 @@
 			}
 		},
 		"numPoints" : 4,
-		"origin" : 113,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r262.laz",
 		"pointStats" : 
 		{
@@ -8844,7 +8730,6 @@
 			}
 		},
 		"numPoints" : 4,
-		"origin" : 114,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r263.laz",
 		"pointStats" : 
 		{
@@ -8921,7 +8806,6 @@
 			}
 		},
 		"numPoints" : 2113,
-		"origin" : 115,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r265.laz",
 		"pointStats" : 
 		{
@@ -8998,7 +8882,6 @@
 			}
 		},
 		"numPoints" : 5,
-		"origin" : 116,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r266.laz",
 		"pointStats" : 
 		{
@@ -9075,7 +8958,6 @@
 			}
 		},
 		"numPoints" : 955,
-		"origin" : 117,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r267.laz",
 		"pointStats" : 
 		{
@@ -9152,7 +9034,6 @@
 			}
 		},
 		"numPoints" : 3520,
-		"origin" : 118,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r27.laz",
 		"pointStats" : 
 		{
@@ -9229,7 +9110,6 @@
 			}
 		},
 		"numPoints" : 15,
-		"origin" : 119,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r270.laz",
 		"pointStats" : 
 		{
@@ -9306,7 +9186,6 @@
 			}
 		},
 		"numPoints" : 192,
-		"origin" : 120,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r271.laz",
 		"pointStats" : 
 		{
@@ -9383,7 +9262,6 @@
 			}
 		},
 		"numPoints" : 11,
-		"origin" : 121,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r272.laz",
 		"pointStats" : 
 		{
@@ -9460,7 +9338,6 @@
 			}
 		},
 		"numPoints" : 2292,
-		"origin" : 122,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r273.laz",
 		"pointStats" : 
 		{
@@ -9537,7 +9414,6 @@
 			}
 		},
 		"numPoints" : 2567,
-		"origin" : 123,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r274.laz",
 		"pointStats" : 
 		{
@@ -9614,7 +9490,6 @@
 			}
 		},
 		"numPoints" : 3273,
-		"origin" : 124,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r275.laz",
 		"pointStats" : 
 		{
@@ -9691,7 +9566,6 @@
 			}
 		},
 		"numPoints" : 1538,
-		"origin" : 125,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r276.laz",
 		"pointStats" : 
 		{
@@ -9768,7 +9642,6 @@
 			}
 		},
 		"numPoints" : 1056,
-		"origin" : 126,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r277.laz",
 		"pointStats" : 
 		{
@@ -9845,7 +9718,6 @@
 			}
 		},
 		"numPoints" : 1350,
-		"origin" : 127,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r3.laz",
 		"pointStats" : 
 		{
@@ -9922,7 +9794,6 @@
 			}
 		},
 		"numPoints" : 14,
-		"origin" : 128,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r30.laz",
 		"pointStats" : 
 		{
@@ -9999,7 +9870,6 @@
 			}
 		},
 		"numPoints" : 9,
-		"origin" : 129,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r304.laz",
 		"pointStats" : 
 		{
@@ -10076,7 +9946,6 @@
 			}
 		},
 		"numPoints" : 15,
-		"origin" : 130,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r305.laz",
 		"pointStats" : 
 		{
@@ -10153,7 +10022,6 @@
 			}
 		},
 		"numPoints" : 538,
-		"origin" : 131,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r32.laz",
 		"pointStats" : 
 		{
@@ -10230,7 +10098,6 @@
 			}
 		},
 		"numPoints" : 659,
-		"origin" : 132,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r320.laz",
 		"pointStats" : 
 		{
@@ -10307,7 +10174,6 @@
 			}
 		},
 		"numPoints" : 765,
-		"origin" : 133,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r322.laz",
 		"pointStats" : 
 		{
@@ -10384,7 +10250,6 @@
 			}
 		},
 		"numPoints" : 15,
-		"origin" : 134,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r326.laz",
 		"pointStats" : 
 		{
@@ -10461,7 +10326,6 @@
 			}
 		},
 		"numPoints" : 3861,
-		"origin" : 135,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r34.laz",
 		"pointStats" : 
 		{
@@ -10538,7 +10402,6 @@
 			}
 		},
 		"numPoints" : 253,
-		"origin" : 136,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r340.laz",
 		"pointStats" : 
 		{
@@ -10615,7 +10478,6 @@
 			}
 		},
 		"numPoints" : 1201,
-		"origin" : 137,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r341.laz",
 		"pointStats" : 
 		{
@@ -10692,7 +10554,6 @@
 			}
 		},
 		"numPoints" : 256,
-		"origin" : 138,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r342.laz",
 		"pointStats" : 
 		{
@@ -10769,7 +10630,6 @@
 			}
 		},
 		"numPoints" : 4436,
-		"origin" : 139,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r344.laz",
 		"pointStats" : 
 		{
@@ -10846,7 +10706,6 @@
 			}
 		},
 		"numPoints" : 4585,
-		"origin" : 140,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r345.laz",
 		"pointStats" : 
 		{
@@ -10923,7 +10782,6 @@
 			}
 		},
 		"numPoints" : 3465,
-		"origin" : 141,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r346.laz",
 		"pointStats" : 
 		{
@@ -11000,7 +10858,6 @@
 			}
 		},
 		"numPoints" : 312,
-		"origin" : 142,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r35.laz",
 		"pointStats" : 
 		{
@@ -11077,7 +10934,6 @@
 			}
 		},
 		"numPoints" : 304,
-		"origin" : 143,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r350.laz",
 		"pointStats" : 
 		{
@@ -11154,7 +11010,6 @@
 			}
 		},
 		"numPoints" : 705,
-		"origin" : 144,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r354.laz",
 		"pointStats" : 
 		{
@@ -11231,7 +11086,6 @@
 			}
 		},
 		"numPoints" : 53,
-		"origin" : 145,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r36.laz",
 		"pointStats" : 
 		{
@@ -11308,7 +11162,6 @@
 			}
 		},
 		"numPoints" : 21,
-		"origin" : 146,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r360.laz",
 		"pointStats" : 
 		{
@@ -11385,7 +11238,6 @@
 			}
 		},
 		"numPoints" : 3,
-		"origin" : 147,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r361.laz",
 		"pointStats" : 
 		{
@@ -11462,7 +11314,6 @@
 			}
 		},
 		"numPoints" : 158,
-		"origin" : 148,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r364.laz",
 		"pointStats" : 
 		{
@@ -11539,7 +11390,6 @@
 			}
 		},
 		"numPoints" : 1,
-		"origin" : 149,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r37.laz",
 		"pointStats" : 
 		{
@@ -11616,7 +11466,6 @@
 			}
 		},
 		"numPoints" : 1,
-		"origin" : 150,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r370.laz",
 		"pointStats" : 
 		{
@@ -11693,7 +11542,6 @@
 			}
 		},
 		"numPoints" : 2169,
-		"origin" : 151,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r4.laz",
 		"pointStats" : 
 		{
@@ -11770,7 +11618,6 @@
 			}
 		},
 		"numPoints" : 484,
-		"origin" : 152,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r40.laz",
 		"pointStats" : 
 		{
@@ -11847,7 +11694,6 @@
 			}
 		},
 		"numPoints" : 279,
-		"origin" : 153,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r400.laz",
 		"pointStats" : 
 		{
@@ -11924,7 +11770,6 @@
 			}
 		},
 		"numPoints" : 1305,
-		"origin" : 154,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r402.laz",
 		"pointStats" : 
 		{
@@ -12001,7 +11846,6 @@
 			}
 		},
 		"numPoints" : 4803,
-		"origin" : 155,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r42.laz",
 		"pointStats" : 
 		{
@@ -12078,7 +11922,6 @@
 			}
 		},
 		"numPoints" : 4637,
-		"origin" : 156,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r420.laz",
 		"pointStats" : 
 		{
@@ -12155,7 +11998,6 @@
 			}
 		},
 		"numPoints" : 3235,
-		"origin" : 157,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r421.laz",
 		"pointStats" : 
 		{
@@ -12232,7 +12074,6 @@
 			}
 		},
 		"numPoints" : 4110,
-		"origin" : 158,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r422.laz",
 		"pointStats" : 
 		{
@@ -12309,7 +12150,6 @@
 			}
 		},
 		"numPoints" : 3724,
-		"origin" : 159,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r423.laz",
 		"pointStats" : 
 		{
@@ -12386,7 +12226,6 @@
 			}
 		},
 		"numPoints" : 488,
-		"origin" : 160,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r424.laz",
 		"pointStats" : 
 		{
@@ -12463,7 +12302,6 @@
 			}
 		},
 		"numPoints" : 1478,
-		"origin" : 161,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r426.laz",
 		"pointStats" : 
 		{
@@ -12540,7 +12378,6 @@
 			}
 		},
 		"numPoints" : 2884,
-		"origin" : 162,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r43.laz",
 		"pointStats" : 
 		{
@@ -12617,7 +12454,6 @@
 			}
 		},
 		"numPoints" : 3365,
-		"origin" : 163,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r430.laz",
 		"pointStats" : 
 		{
@@ -12694,7 +12530,6 @@
 			}
 		},
 		"numPoints" : 259,
-		"origin" : 164,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r431.laz",
 		"pointStats" : 
 		{
@@ -12771,7 +12606,6 @@
 			}
 		},
 		"numPoints" : 4349,
-		"origin" : 165,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r432.laz",
 		"pointStats" : 
 		{
@@ -12848,7 +12682,6 @@
 			}
 		},
 		"numPoints" : 2825,
-		"origin" : 166,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r433.laz",
 		"pointStats" : 
 		{
@@ -12925,7 +12758,6 @@
 			}
 		},
 		"numPoints" : 124,
-		"origin" : 167,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r5.laz",
 		"pointStats" : 
 		{
@@ -13002,7 +12834,6 @@
 			}
 		},
 		"numPoints" : 444,
-		"origin" : 168,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r52.laz",
 		"pointStats" : 
 		{
@@ -13079,7 +12910,6 @@
 			}
 		},
 		"numPoints" : 1682,
-		"origin" : 169,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r522.laz",
 		"pointStats" : 
 		{
@@ -13156,7 +12986,6 @@
 			}
 		},
 		"numPoints" : 3682,
-		"origin" : 170,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r6.laz",
 		"pointStats" : 
 		{
@@ -13233,7 +13062,6 @@
 			}
 		},
 		"numPoints" : 5605,
-		"origin" : 171,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r60.laz",
 		"pointStats" : 
 		{
@@ -13310,7 +13138,6 @@
 			}
 		},
 		"numPoints" : 4013,
-		"origin" : 172,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r600.laz",
 		"pointStats" : 
 		{
@@ -13387,7 +13214,6 @@
 			}
 		},
 		"numPoints" : 4349,
-		"origin" : 173,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r601.laz",
 		"pointStats" : 
 		{
@@ -13464,7 +13290,6 @@
 			}
 		},
 		"numPoints" : 2331,
-		"origin" : 174,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r602.laz",
 		"pointStats" : 
 		{
@@ -13541,7 +13366,6 @@
 			}
 		},
 		"numPoints" : 6069,
-		"origin" : 175,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r603.laz",
 		"pointStats" : 
 		{
@@ -13618,7 +13442,6 @@
 			}
 		},
 		"numPoints" : 1634,
-		"origin" : 176,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r604.laz",
 		"pointStats" : 
 		{
@@ -13695,7 +13518,6 @@
 			}
 		},
 		"numPoints" : 2681,
-		"origin" : 177,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r606.laz",
 		"pointStats" : 
 		{
@@ -13772,7 +13594,6 @@
 			}
 		},
 		"numPoints" : 2357,
-		"origin" : 178,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r61.laz",
 		"pointStats" : 
 		{
@@ -13849,7 +13670,6 @@
 			}
 		},
 		"numPoints" : 1750,
-		"origin" : 179,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r610.laz",
 		"pointStats" : 
 		{
@@ -13926,7 +13746,6 @@
 			}
 		},
 		"numPoints" : 328,
-		"origin" : 180,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r611.laz",
 		"pointStats" : 
 		{
@@ -14003,7 +13822,6 @@
 			}
 		},
 		"numPoints" : 4252,
-		"origin" : 181,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r612.laz",
 		"pointStats" : 
 		{
@@ -14080,7 +13898,6 @@
 			}
 		},
 		"numPoints" : 2495,
-		"origin" : 182,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r613.laz",
 		"pointStats" : 
 		{
@@ -14157,7 +13974,6 @@
 			}
 		},
 		"numPoints" : 3782,
-		"origin" : 183,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r62.laz",
 		"pointStats" : 
 		{
@@ -14234,7 +14050,6 @@
 			}
 		},
 		"numPoints" : 1082,
-		"origin" : 184,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r620.laz",
 		"pointStats" : 
 		{
@@ -14311,7 +14126,6 @@
 			}
 		},
 		"numPoints" : 5146,
-		"origin" : 185,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r621.laz",
 		"pointStats" : 
 		{
@@ -14388,7 +14202,6 @@
 			}
 		},
 		"numPoints" : 1531,
-		"origin" : 186,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r623.laz",
 		"pointStats" : 
 		{
@@ -14465,7 +14278,6 @@
 			}
 		},
 		"numPoints" : 2873,
-		"origin" : 187,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r624.laz",
 		"pointStats" : 
 		{
@@ -14542,7 +14354,6 @@
 			}
 		},
 		"numPoints" : 3,
-		"origin" : 188,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r625.laz",
 		"pointStats" : 
 		{
@@ -14619,7 +14430,6 @@
 			}
 		},
 		"numPoints" : 2086,
-		"origin" : 189,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r626.laz",
 		"pointStats" : 
 		{
@@ -14696,7 +14506,6 @@
 			}
 		},
 		"numPoints" : 341,
-		"origin" : 190,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r627.laz",
 		"pointStats" : 
 		{
@@ -14773,7 +14582,6 @@
 			}
 		},
 		"numPoints" : 1949,
-		"origin" : 191,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r63.laz",
 		"pointStats" : 
 		{
@@ -14850,7 +14658,6 @@
 			}
 		},
 		"numPoints" : 1768,
-		"origin" : 192,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r630.laz",
 		"pointStats" : 
 		{
@@ -14927,7 +14734,6 @@
 			}
 		},
 		"numPoints" : 160,
-		"origin" : 193,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r631.laz",
 		"pointStats" : 
 		{
@@ -15004,7 +14810,6 @@
 			}
 		},
 		"numPoints" : 3491,
-		"origin" : 194,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r632.laz",
 		"pointStats" : 
 		{
@@ -15081,7 +14886,6 @@
 			}
 		},
 		"numPoints" : 29,
-		"origin" : 195,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r633.laz",
 		"pointStats" : 
 		{
@@ -15158,7 +14962,6 @@
 			}
 		},
 		"numPoints" : 789,
-		"origin" : 196,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r636.laz",
 		"pointStats" : 
 		{
@@ -15235,7 +15038,6 @@
 			}
 		},
 		"numPoints" : 36,
-		"origin" : 197,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r7.laz",
 		"pointStats" : 
 		{
@@ -15312,7 +15114,6 @@
 			}
 		},
 		"numPoints" : 111,
-		"origin" : 198,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r70.laz",
 		"pointStats" : 
 		{
@@ -15389,7 +15190,6 @@
 			}
 		},
 		"numPoints" : 417,
-		"origin" : 199,
 		"path" : "/Users/connor/code/potree-1.6/pointclouds/lion_takanawa_laz/data/r700.laz",
 		"pointStats" : 
 		{

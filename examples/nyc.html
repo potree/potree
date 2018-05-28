@@ -45,10 +45,8 @@
 
 		viewer.setEDLEnabled(true);
 		viewer.setFOV(60);
-		viewer.setPointBudget(1*1000*1000);
+		viewer.setPointBudget(4*1000*1000);
 		viewer.loadSettingsFromURL();
-
-		viewer.setDescription("Loading Entwine-generated EPT format");
 
 		viewer.loadGUI(() => {
 			viewer.setLanguage('en');
@@ -56,31 +54,30 @@
 			//viewer.toggleSidebar();
 		});
 
-        var path = "../pointclouds/lion_takanawa_ept/entwine.json";
+        var path = "http://ept-data.s3-website-us-east-1.amazonaws.com/" +
+            "nyc-ret/entwine.json";
 
-		var getQueryParam = function(name) {
-			name = name.replace(/[\[\]]/g, "\\$&");
-			var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
-				results = regex.exec(window.location.href);
-			if (!results || !results[2]) return null;
-			return decodeURIComponent(results[2].replace(/\+/g, " "));
-		}
-
-        var r = getQueryParam('r');
-        if (r) {
-            var http = 'http';
-            if (r.substr(0, http.length) == http) path = r;
-            else path = "../pointclouds/" + r + "/entwine.json";
-        }
-
-		Potree.loadPointCloud(path, "lion", function(e){
+		Potree.loadPointCloud(path, "nyc", function(e){
 			viewer.scene.addPointCloud(e.pointcloud);
 
 			let material = e.pointcloud.material;
-			material.size = 1;
+			material.size = 1.5;
 			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+            material.pointColorType = 4;
+            material.shape = 1;
+            material.intensityBrightness = 0.2;
+            viewer.setPointBudget(4000000);
 
 			viewer.fitToScreen();
+
+            $('#menu_scene').click();
+            $("a:contains('nyc')").click();
+
+            var c = document.getElementById('chkClassification_7');
+            if (c) {
+                c.checked = false;
+                viewer.setClassificationVisibility(7, false);
+            }
 		});
 
 	</script>

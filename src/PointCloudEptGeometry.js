@@ -11,7 +11,7 @@ var toArray = function(b) {
 }
 
 Potree.PointCloudEptGeometry = class {
-	constructor(url, info) {
+    constructor(url, info) {
         let version = info.version;
         let schema = info.schema;
         let srs = info.srs;
@@ -60,7 +60,7 @@ Potree.PointCloudEptGeometry = class {
         // TODO Switch on storage type.
         this.loader = new Potree.EptLazLoader();
         this.hierarchyStep = info.hierarchyStep || 0;
-	}
+    }
 };
 
 Potree.EptKey = class {
@@ -115,10 +115,10 @@ Potree.EptKey = class {
 }
 
 Potree.PointCloudEptGeometryNode = class extends Potree.PointCloudTreeNode {
-	constructor(ept, b, d, x, y, z) {
-		super();
+    constructor(ept, b, d, x, y, z) {
+        super();
 
-		this.ept = ept;
+        this.ept = ept;
         this.key = new Potree.EptKey(
                 this.ept,
                 b || this.ept.boundingBox,
@@ -127,75 +127,75 @@ Potree.PointCloudEptGeometryNode = class extends Potree.PointCloudTreeNode {
                 y,
                 z);
 
-		this.id = Potree.PointCloudEptGeometryNode.NextId++;
-		this.geometry = null;
-		this.boundingBox = this.key.b;
+        this.id = Potree.PointCloudEptGeometryNode.NextId++;
+        this.geometry = null;
+        this.boundingBox = this.key.b;
         this.tightBoundingBox = this.boundingBox;
         this.spacing = this.ept.spacing / Math.pow(2, this.key.d);
-		this.boundingSphere = this.boundingBox.getBoundingSphere();
+        this.boundingSphere = this.boundingBox.getBoundingSphere();
 
         // These are set during hierarchy loading.
         this.hasChildren = false;
-		this.children = { };
-		this.numPoints = 0;
+        this.children = { };
+        this.numPoints = 0;
 
-		this.level = this.key.d;
-		this.loaded = false;
+        this.level = this.key.d;
+        this.loaded = false;
         this.loading = false;
-		this.oneTimeDisposeHandlers = [];
+        this.oneTimeDisposeHandlers = [];
 
         let k = this.key;
         this.name = this.toPotreeName(k.d, k.x, k.y, k.z);
         this.index = parseInt(this.name.charAt(this.name.length - 1));
-	}
+    }
 
-	isGeometryNode() { return true; }
-	getLevel() { return this.level; }
-	isTreeNode() { return false; }
-	isLoaded() { return this.loaded; }
-	getBoundingSphere() { return this.boundingSphere; }
-	getBoundingBox() { return this.boundingBox; }
-	url() { return this.ept.url + this.filename(); }
-	getNumPoints() { return this.numPoints; }
+    isGeometryNode() { return true; }
+    getLevel() { return this.level; }
+    isTreeNode() { return false; }
+    isLoaded() { return this.loaded; }
+    getBoundingSphere() { return this.boundingSphere; }
+    getBoundingBox() { return this.boundingBox; }
+    url() { return this.ept.url + this.filename(); }
+    getNumPoints() { return this.numPoints; }
 
     filename() { return this.key.name(); }
 
-	getChildren() {
-		let children = [];
+    getChildren() {
+        let children = [];
 
-		for (let i = 0; i < 8; i++) {
-			if (this.children[i]) {
-				children.push(this.children[i]);
-			}
-		}
+        for (let i = 0; i < 8; i++) {
+            if (this.children[i]) {
+                children.push(this.children[i]);
+            }
+        }
 
-		return children;
-	}
+        return children;
+    }
 
-	addChild(child) {
-		this.children[child.index] = child;
-		child.parent = this;
-	}
+    addChild(child) {
+        this.children[child.index] = child;
+        child.parent = this;
+    }
 
-	load() {
+    load() {
         if (this.loaded || this.loading) return;
         if (Potree.numNodesLoading >= Potree.maxNodesLoading) return;
 
-		this.loading = true;
-		++Potree.numNodesLoading;
+        this.loading = true;
+        ++Potree.numNodesLoading;
 
         let hs = this.ept.hierarchyStep;
         if (!this.key.d || (hs && (this.key.d % hs == 0) && this.hasChildren)) {
             this.loadHierarchy();
         }
         this.loadPoints();
-	}
+    }
 
-	loadPoints(){
-		this.ept.loader.load(this);
-	}
+    loadPoints(){
+        this.ept.loader.load(this);
+    }
 
-	loadHierarchy() {
+    loadHierarchy() {
         let nodes = { };
         nodes[this.filename()] = this;
         this.hasChildren = false;
@@ -244,7 +244,7 @@ Potree.PointCloudEptGeometryNode = class extends Potree.PointCloudTreeNode {
                 nodes[key.name()] = node;
             });
         });
-	}
+    }
 
     doneLoading(bufferGeometry, tightBoundingBox, np, mean) {
         bufferGeometry.boundingBox = this.boundingBox;
@@ -275,20 +275,20 @@ Potree.PointCloudEptGeometryNode = class extends Potree.PointCloudTreeNode {
         return name;
     }
 
-	dispose() {
-		if (this.geometry && this.parent != null) {
-			this.geometry.dispose();
-			this.geometry = null;
-			this.loaded = false;
+    dispose() {
+        if (this.geometry && this.parent != null) {
+            this.geometry.dispose();
+            this.geometry = null;
+            this.loaded = false;
 
-			// this.dispatchEvent( { type: 'dispose' } );
-			for (let i = 0; i < this.oneTimeDisposeHandlers.length; i++) {
-				let handler = this.oneTimeDisposeHandlers[i];
-				handler();
-			}
-			this.oneTimeDisposeHandlers = [];
-		}
-	}
+            // this.dispatchEvent( { type: 'dispose' } );
+            for (let i = 0; i < this.oneTimeDisposeHandlers.length; i++) {
+                let handler = this.oneTimeDisposeHandlers[i];
+                handler();
+            }
+            this.oneTimeDisposeHandlers = [];
+        }
+    }
 }
 
 Potree.PointCloudEptGeometryNode.NextId = 0;

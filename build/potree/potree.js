@@ -4902,29 +4902,19 @@ class EptUtils {
             xhr.send(null);
         });
     }
+
+    static getJson(url) {
+        return EptUtils.get(url).then((data) => JSON.parse(data));
+    }
 };
 
 Potree.EptLoader = class {
     static load(file, callback) {
-        var url, info, hier;
-
-        EptUtils.get(file)
-        .then((data) => JSON.parse(data))
-        .then((i) => {
-            info = i;
-            url = file.substr(0, file.indexOf('entwine.json'));
-
-            // TODO Hierarchy loading order.
-            return EptUtils.get(url + 'entwine-hierarchy.json');
-        })
-        .then((data) => JSON.parse(data))
-        .then((h) => {
-            hier = h;
-            let geometry = new Potree.PointCloudEptGeometry(url, info, hier);
-
+        EptUtils.getJson(file)
+        .then((info) => {
+            let url = file.substr(0, file.lastIndexOf('entwine.json'));
+            let geometry = new Potree.PointCloudEptGeometry(url, info);
             let root = new Potree.PointCloudEptGeometryNode(geometry);
-            root.hasChildren = true;
-            root.numPoints = 1; // TODO from hierarchy.
 
             geometry.root = root;
             geometry.root.load();
@@ -11447,7 +11437,7 @@ var toArray = function(b) {
 }
 
 Potree.PointCloudEptGeometry = class {
-	constructor(url, info, hier) {
+	constructor(url, info) {
         let version = info.version;
         let schema = info.schema;
         let srs = info.srs;
@@ -11493,14 +11483,9 @@ Potree.PointCloudEptGeometry = class {
             (this.boundingBox.max.x - this.boundingBox.min.x) /
             Math.pow(2, this.ticks);
 
-        // TODO Fetch on demand.
-        this.hierarchy = hier;
-
         // TODO Switch on storage type.
         this.loader = new Potree.EptLazLoader();
-
-        // TODO remove.
-        this.hierarchyStepSize = info.hierarchyStepSize || 1;
+        this.hierarchyStep = info.hierarchyStep || 0;
 	}
 };
 
@@ -11575,7 +11560,7 @@ Potree.PointCloudEptGeometryNode = class extends Potree.PointCloudTreeNode {
         this.spacing = this.ept.spacing / Math.pow(2, this.key.d);
 		this.boundingSphere = this.boundingBox.getBoundingSphere();
 
-        // TODO Look at hierarchy here and load if needed.
+        // These are set during hierarchy loading.
         this.hasChildren = false;
 		this.children = { };
 		this.numPoints = 0;
@@ -11625,9 +11610,66 @@ Potree.PointCloudEptGeometryNode = class extends Potree.PointCloudTreeNode {
 		this.loading = true;
 		++Potree.numNodesLoading;
 
-        // TODO For now the hierarchy is entirely loaded at the start.
-        if (!this.key.d) this.loadHierarchyThenPoints();
-        else this.loadPoints();
+        let hs = this.ept.hierarchyStep;
+        if (!this.key.d || (hs && (this.key.d % hs == 0) && this.hasChildren)) {
+            this.loadHierarchy();
+        }
+        this.loadPoints();
+	}
+
+	loadPoints(){
+		this.ept.loader.load(this);
+	}
+
+	loadHierarchy() {
+        let nodes = { };
+        nodes[this.filename()] = this;
+        this.hasChildren = false;
+
+        EptUtils.getJson(this.ept.url + 'h/' + this.filename() + '.json')
+        .then((hier) => {
+            // Since we want to traverse top-down, and 10 comes
+            // lexicographically before 9 (for example), do a deep sort.
+            var keys = Object.keys(hier).sort((a, b) => {
+                let [da, xa, ya, za] = a.split('-').map((n) => parseInt(n, 10));
+                let [db, xb, yb, zb] = b.split('-').map((n) => parseInt(n, 10));
+                if (da < db) return -1; if (da > db) return 1;
+                if (xa < xb) return -1; if (xa > xb) return 1;
+                if (ya < yb) return -1; if (ya > yb) return 1;
+                if (za < zb) return -1; if (za > zb) return 1;
+                return 0;
+            });
+
+            keys.forEach((v) => {
+                let [d, x, y, z] = v.split('-').map((n) => parseInt(n, 10));
+                let a = x & 1, b = y & 1, c = z & 1;
+                let parentName =
+                    (d - 1) + '-' + (x >> 1) + '-' + (y >> 1) + '-' + (z >> 1);
+
+                let parentNode = nodes[parentName];
+                if (!parentNode) return;
+                parentNode.hasChildren = true;
+
+                let key = parentNode.key.step(a, b, c);
+
+                let node = new Potree.PointCloudEptGeometryNode(
+                        this.ept,
+                        key.b,
+                        key.d,
+                        key.x,
+                        key.y,
+                        key.z);
+
+                node.level = d;
+                node.numPoints = hier[v];
+
+                let hs = this.ept.hierarchyStep;
+                if (hs && d % hs == 0) node.hasChildren = true;
+
+                parentNode.addChild(node);
+                nodes[key.name()] = node;
+            });
+        });
 	}
 
     doneLoading(bufferGeometry, tightBoundingBox, np, mean) {
@@ -11640,58 +11682,6 @@ Potree.PointCloudEptGeometryNode = class extends Potree.PointCloudTreeNode {
         this.loading = false;
         --Potree.numNodesLoading;
     }
-
-	loadPoints(){
-		this.ept.loader.load(this);
-	}
-
-	loadHierarchyThenPoints(){
-        let nodes = { };
-        nodes[this.filename()] = this;
-
-        var added = 0;
-
-        Object.keys(this.ept.hierarchy).sort().forEach((v) => {
-            let [d, x, y, z] = v.split('-').map((n) => parseInt(n, 10));
-
-            var a = x & 1;
-            var b = y & 1;
-            var c = z & 1;
-
-            let parentName =
-                (d - 1) + '-' + (x >> 1) + '-' + (y >> 1) + '-' + (z >> 1);
-
-            var parentNode = nodes[parentName];
-            if (!parentNode) return;
-            parentNode.hasChildren = true;
-
-            let key = parentNode.key.step(a, b, c);
-
-            let node = new Potree.PointCloudEptGeometryNode(
-                    this.ept,
-                    key.b,
-                    key.d,
-                    key.x,
-                    key.y,
-                    key.z);
-
-            node.level = d;
-            node.numPoints = this.ept.hierarchy[v];
-
-            // TODO Determine from hierarchy?  For now this is set once a child
-            // node is traversed.
-            // node.hasChildren =
-
-            var step = (a << 2) | (b << 1) | c;
-            var name = parentName + step;
-            var name = this.toPotreeName(d, x, y, z);
-
-            parentNode.addChild(node);
-            nodes[key.name()] = node;
-        });
-
-        this.loadPoints();
-	}
 
     toPotreeName(d, x, y, z) {
         var name = 'r';

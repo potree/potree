@@ -23,29 +23,19 @@ class EptUtils {
             xhr.send(null);
         });
     }
+
+    static getJson(url) {
+        return EptUtils.get(url).then((data) => JSON.parse(data));
+    }
 };
 
 Potree.EptLoader = class {
     static load(file, callback) {
-        var url, info, hier;
-
-        EptUtils.get(file)
-        .then((data) => JSON.parse(data))
-        .then((i) => {
-            info = i;
-            url = file.substr(0, file.indexOf('entwine.json'));
-
-            // TODO Hierarchy loading order.
-            return EptUtils.get(url + 'entwine-hierarchy.json');
-        })
-        .then((data) => JSON.parse(data))
-        .then((h) => {
-            hier = h;
-            let geometry = new Potree.PointCloudEptGeometry(url, info, hier);
-
+        EptUtils.getJson(file)
+        .then((info) => {
+            let url = file.substr(0, file.lastIndexOf('entwine.json'));
+            let geometry = new Potree.PointCloudEptGeometry(url, info);
             let root = new Potree.PointCloudEptGeometryNode(geometry);
-            root.hasChildren = true;
-            root.numPoints = 1; // TODO from hierarchy.
 
             geometry.root = root;
             geometry.root.load();

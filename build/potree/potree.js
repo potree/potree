@@ -5214,16 +5214,18 @@ Potree.EptLazLoader = class {
             let read = () => {
                 let p = lf.readData(1000000, 0, 1);
                 return p.then(function (data) {
-                    handler.push(
-                            new LASDecoder(
-                                data.buffer,
-                                header.pointsFormatId,
-                                header.pointsStructSize,
-                                data.count,
-                                header.scale,
-                                header.offset,
-                                mins,
-                                maxs));
+                    let d = new LASDecoder(
+                            data.buffer,
+                            header.pointsFormatId,
+                            header.pointsStructSize,
+                            data.count,
+                            header.scale,
+                            header.offset,
+                            mins,
+                            maxs);
+                    d.extraBytes = header.extraBytes;
+                    d.pointsFormatId = header.pointsFormatId;
+                    handler.push(d);
 
                     i += data.count;
 
@@ -5314,7 +5316,7 @@ Potree.EptLazBatcher = class {
             buffer: las.arrayb,
             numPoints: las.pointsCount,
             pointSize: las.pointSize,
-            pointFormatID: 2,
+            pointFormatID: las.pointsFormatId,
             scale: las.scale,
             offset: las.offset,
             mins: las.mins,

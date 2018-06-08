@@ -4,14 +4,7 @@ function readUsingDataView(event) {
     let buffer = event.data.buffer;
     let numPoints = event.data.numPoints;
     let pointSize = event.data.pointSize;
-    let pointFormat = 2;
-    switch (pointSize) {
-        case 20: pointFormat = 0; break;
-        case 28: pointFormat = 1; break;
-        case 26: pointFormat = 2; break;
-        case 34: pointFormat = 3; break;
-        default: console.log('Could not determine point format, using 2');
-    }
+    let pointFormat = event.data.pointFormatID;
     let scale = event.data.scale;
     let offset = event.data.offset;
 
@@ -178,7 +171,8 @@ function readUsingDataView(event) {
         message.returnNumber,
         message.numberOfReturns,
         message.pointSourceID,
-        message.indices];
+        message.indices
+    ];
 
     postMessage(message, transferables);
 };

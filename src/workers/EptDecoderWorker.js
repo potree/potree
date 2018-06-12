@@ -4,14 +4,7 @@ function readUsingDataView(event) {
     let buffer = event.data.buffer;
     let numPoints = event.data.numPoints;
     let pointSize = event.data.pointSize;
-    let pointFormat = 2;
-    switch (pointSize) {
-        case 20: pointFormat = 0; break;
-        case 28: pointFormat = 1; break;
-        case 26: pointFormat = 2; break;
-        case 34: pointFormat = 3; break;
-        default: console.log('Could not determine point format, using 2');
-    }
+    let pointFormat = event.data.pointFormatID;
     let scale = event.data.scale;
     let offset = event.data.offset;
 
@@ -55,7 +48,7 @@ function readUsingDataView(event) {
     let co = pointFormat == 2 ? 20 : 28;
 
     // TODO This should be cached per-resource since this is an expensive check.
-    var twoByteColor = false;
+    let twoByteColor = false;
     if (hasColor) {
         for (let i = 0; i < numPoints && !twoByteColor; ++i) {
             let r = sourceView.getUint16(i * pointSize + co, true)
@@ -74,10 +67,6 @@ function readUsingDataView(event) {
         x = ux * scale[0] + offset[0] - event.data.mins[0];
         y = uy * scale[1] + offset[1] - event.data.mins[1];
         z = uz * scale[2] + offset[2] - event.data.mins[2];
-
-        //x = ux * scale[0];
-        //y = uy * scale[1];
-        //z = uz * scale[2];
 
         positions[3 * i + 0] = x;
         positions[3 * i + 1] = y;
@@ -98,11 +87,6 @@ function readUsingDataView(event) {
         // INTENSITY
         let intensity = sourceView.getUint16(i * pointSize + 12, true);
         intensities[i] = intensity;
-        if (intensity <= 5) {
-            positions[3 * i + 0] = 99999999;
-            positions[3 * i + 1] = 99999999;
-            positions[3 * i + 2] = 99999999;
-        }
 
         // RETURN NUMBER, stored in the first 3 bits - 00000111
         // number of returns stored in next 3 bits   - 00111000
@@ -178,7 +162,8 @@ function readUsingDataView(event) {
         message.returnNumber,
         message.numberOfReturns,
         message.pointSourceID,
-        message.indices];
+        message.indices
+    ];
 
     postMessage(message, transferables);
 };

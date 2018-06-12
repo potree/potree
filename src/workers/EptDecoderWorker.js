@@ -48,7 +48,7 @@ function readUsingDataView(event) {
     let co = pointFormat == 2 ? 20 : 28;
 
     // TODO This should be cached per-resource since this is an expensive check.
-    var twoByteColor = false;
+    let twoByteColor = false;
     if (hasColor) {
         for (let i = 0; i < numPoints && !twoByteColor; ++i) {
             let r = sourceView.getUint16(i * pointSize + co, true)
@@ -67,10 +67,6 @@ function readUsingDataView(event) {
         x = ux * scale[0] + offset[0] - event.data.mins[0];
         y = uy * scale[1] + offset[1] - event.data.mins[1];
         z = uz * scale[2] + offset[2] - event.data.mins[2];
-
-        //x = ux * scale[0];
-        //y = uy * scale[1];
-        //z = uz * scale[2];
 
         positions[3 * i + 0] = x;
         positions[3 * i + 1] = y;
@@ -91,11 +87,6 @@ function readUsingDataView(event) {
         // INTENSITY
         let intensity = sourceView.getUint16(i * pointSize + 12, true);
         intensities[i] = intensity;
-        if (intensity <= 5) {
-            positions[3 * i + 0] = 99999999;
-            positions[3 * i + 1] = 99999999;
-            positions[3 * i + 2] = 99999999;
-        }
 
         // RETURN NUMBER, stored in the first 3 bits - 00000111
         // number of returns stored in next 3 bits   - 00111000

@@ -75,7 +75,7 @@
 			viewer.toggleSidebar();
 		});
 		
-		Potree.loadPointCloud("../pointclouds/heidentor/cloud.js", "Heidentor", function(e){
+		Potree.loadPointCloud("../pointclouds/C/dev/pointclouds/converted/CA13_morro_area/cloud.js", "CA13", function(e){
 		//Potree.loadPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/archpro/heidentor/cloud.js", "Heidentor", function(e){
 			viewer.scene.addPointCloud(e.pointcloud);
 			//e.pointcloud.position.z = 0;
@@ -83,8 +83,15 @@
 			material.size = 1;
 			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
 
-			viewer.scene.view.position.set(13.856734292740617, -9.125174923658731, 14.563928417406354);
-			viewer.scene.view.lookAt(-3.5482630104475366, 2.728596783815762, 6.1406044783018725);
+			let volume = new Potree.BoxVolume();
+			volume.position.set(694685.218, 3916380.495, 29.311);
+			volume.rotation.set(0.000, 0.000, -0.615);
+			volume.scale.set(234.619, 2.071, 282.701);
+			volume.clip = true;
+			viewer.scene.addVolume(volume);
+
+			viewer.scene.view.position.set(693330.382, 3915648.394, 481.054);
+			viewer.scene.view.lookAt(693780.380, 3916006.616, 258.594);
 		});
 		
 	</script>
@@ -169,14 +176,27 @@
 				}
 				let region = "[" + planeQueryParts.join(",") + "]";
 				regions.push(region);
-				//let url = `http://localhost:3000/clip?planes=${planeQueryArg}`;
-				//console.log(url);
-                //
-				//fetch(url);
 			}
 		
 			let regionsArg = regions.join(",");
-			let url = `http://localhost:3000/create_regions_filter?regions=[${regionsArg}]`;
+			
+			let pointcloudArgs = [];
+			for(let pointcloud of viewer.scene.pointclouds){
+				if(!pointcloud.visible){
+					continue;
+				}
+
+				let arg = {
+					path: "/examples/filter_WIP_2.html/../../pointclouds/C/dev/pointclouds/converted/CA13_morro_area/cloud.js",
+					transform: [1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]
+				};
+				let argString = JSON.stringify(arg);
+
+				pointcloudArgs.push(argString);
+			}
+			let pointcloudsArg = pointcloudArgs.join(",");
+
+			let url = `http://localhost:3000/create_regions_filter?pointclouds=[${pointcloudsArg}]&regions=[${regionsArg}]`;
 			
 			console.log(url);
 

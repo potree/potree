@@ -78,6 +78,9 @@
 		Potree.loadPointCloud("../pointclouds/C/dev/pointclouds/converted/CA13_morro_area/cloud.js", "CA13", function(e){
 		//Potree.loadPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/archpro/heidentor/cloud.js", "Heidentor", function(e){
 			viewer.scene.addPointCloud(e.pointcloud);
+
+			e.pointcloud.position.x += 20;
+
 			//e.pointcloud.position.z = 0;
 			let material = e.pointcloud.material;
 			material.size = 1;
@@ -86,12 +89,12 @@
 			let volume = new Potree.BoxVolume();
 			volume.position.set(694685.218, 3916380.495, 29.311);
 			volume.rotation.set(0.000, 0.000, -0.615);
-			volume.scale.set(234.619, 2.071, 282.701);
+			volume.scale.set(234.619, 30.071, 282.701);
 			volume.clip = true;
 			viewer.scene.addVolume(volume);
 
-			viewer.scene.view.position.set(693330.382, 3915648.394, 481.054);
-			viewer.scene.view.lookAt(693780.380, 3916006.616, 258.594);
+			viewer.scene.view.position.set(694670.776, 3915934.574, 275.802);
+			viewer.scene.view.lookAt(694722.300, 3916346.125, 41.386);
 		});
 		
 	</script>
@@ -186,9 +189,16 @@
 					continue;
 				}
 
+				let offset = pointcloud.pcoGeometry.offset;
+				let negateOffset = new THREE.Matrix4().makeTranslation(...offset.multiplyScalar(-1).toArray());
+				let matrixWorld = pointcloud.matrixWorld;
+
+				let transform = new THREE.Matrix4().multiplyMatrices(matrixWorld, negateOffset);
+
 				let arg = {
 					path: "/examples/filter_WIP_2.html/../../pointclouds/C/dev/pointclouds/converted/CA13_morro_area/cloud.js",
-					transform: [1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]
+					transform: transform.elements,
+					//transform: pointcloud.matrixWorld.elements
 				};
 				let argString = JSON.stringify(arg);
 

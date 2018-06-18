@@ -132,6 +132,36 @@ onmessage = function (event) {
 			}
 
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
+		} else if (pointAttribute.name === PointAttribute.RETURN_NUMBER.name) {
+			let buff = new ArrayBuffer(numPoints);
+			let returnNumbers = new Uint8Array(buff);
+
+			for (let j = 0; j < numPoints; j++) {
+				let returnNumber = cv.getUint8(inOffset + j * pointAttributes.byteSize);
+				returnNumbers[j] = returnNumber;
+			}
+
+			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
+		} else if (pointAttribute.name === PointAttribute.NUMBER_OF_RETURNS.name) {
+			let buff = new ArrayBuffer(numPoints);
+			let numberOfReturns = new Uint8Array(buff);
+
+			for (let j = 0; j < numPoints; j++) {
+				let numberOfReturn = cv.getUint8(inOffset + j * pointAttributes.byteSize);
+				numberOfReturns[j] = numberOfReturn;
+			}
+
+			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
+		} else if (pointAttribute.name === PointAttribute.SOURCE_ID.name) {
+			let buff = new ArrayBuffer(numPoints * 2);
+			let sourceIDs = new Uint16Array(buff);
+
+			for (let j = 0; j < numPoints; j++) {
+				let sourceID = cv.getUint16(inOffset + j * pointAttributes.byteSize);
+				sourceIDs[j] = sourceID;
+			}
+
+			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
 		} else if (pointAttribute.name === PointAttribute.NORMAL_SPHEREMAPPED.name) {
 			let buff = new ArrayBuffer(numPoints * 4 * 3);
 			let normals = new Float32Array(buff);

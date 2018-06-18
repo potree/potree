@@ -86,6 +86,12 @@ export class BinaryLoader{
 					geometry.addAttribute('intensity', new THREE.BufferAttribute(new Float32Array(buffer), 1));
 				} else if (parseInt(property) === PointAttributeNames.CLASSIFICATION) {
 					geometry.addAttribute('classification', new THREE.BufferAttribute(new Uint8Array(buffer), 1));
+				} else if (parseInt(property) === PointAttributeNames.RETURN_NUMBER) {
+					geometry.addAttribute('returnNumber', new THREE.BufferAttribute(new Uint8Array(buffer), 1));
+				} else if (parseInt(property) === PointAttributeNames.NUMBER_OF_RETURNS) {
+					geometry.addAttribute('numberOfReturns', new THREE.BufferAttribute(new Uint8Array(buffer), 1));
+				} else if (parseInt(property) === PointAttributeNames.SOURCE_ID) {
+					geometry.addAttribute('pointSourceID', new THREE.BufferAttribute(new Uint16Array(buffer), 1));
 				} else if (parseInt(property) === PointAttributeNames.NORMAL_SPHEREMAPPED) {
 					geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
 				} else if (parseInt(property) === PointAttributeNames.NORMAL_OCT16) {

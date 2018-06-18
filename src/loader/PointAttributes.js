@@ -17,6 +17,7 @@ export const PointAttributeNames = {
 	SOURCE_ID: 13,
 	INDICES: 14,
 	SPACING: 15,
+	GPS_TIME: 16,
 };
 
 
@@ -110,7 +111,7 @@ PointAttribute.NUMBER_OF_RETURNS = new PointAttribute(
 	
 PointAttribute.SOURCE_ID = new PointAttribute(
 	PointAttributeNames.SOURCE_ID,
-	PointAttributeTypes.DATA_TYPE_UINT8, 1);
+	PointAttributeTypes.DATA_TYPE_UINT16, 1);
 
 PointAttribute.INDICES = new PointAttribute(
 	PointAttributeNames.INDICES,
@@ -119,6 +120,10 @@ PointAttribute.INDICES = new PointAttribute(
 PointAttribute.SPACING = new PointAttribute(
 	PointAttributeNames.SPACING,
 	PointAttributeTypes.DATA_TYPE_FLOAT, 1);
+
+PointAttribute.GPS_TIME = new PointAttribute(
+	PointAttributeNames.GPS_TIME,
+	PointAttributeTypes.DATA_TYPE_DOUBLE, 1);
 
 export {PointAttribute};
 

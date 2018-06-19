@@ -1,5 +1,5 @@
 {
-	"overflowDepth" : 4,
+	"overflowDepth" : 0,
 	"overflowThreshold" : 32768,
 	"trustHeaders" : true,
 	"version" : "2.0.0"

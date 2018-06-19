@@ -59,6 +59,7 @@
 	
 		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
 		
+		viewer.setServer("http://localhost:3000");
 		viewer.setEDLEnabled(true);
 		viewer.setFOV(60);
 		viewer.setPointBudget(10*1000*1000);
@@ -189,7 +190,7 @@
 					continue;
 				}
 
-				let offset = pointcloud.pcoGeometry.offset;
+				let offset = pointcloud.pcoGeometry.offset.clone();
 				let negateOffset = new THREE.Matrix4().makeTranslation(...offset.multiplyScalar(-1).toArray());
 				let matrixWorld = pointcloud.matrixWorld;
 
@@ -201,6 +202,8 @@
 					//transform: pointcloud.matrixWorld.elements
 				};
 				let argString = JSON.stringify(arg);
+
+				console.log(transform);
 
 				pointcloudArgs.push(argString);
 			}

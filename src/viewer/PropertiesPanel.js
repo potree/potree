@@ -525,32 +525,106 @@ export class VolumePanel extends MeasurePanel{
 	}
 
 	download(){
-		let boxes = [this.measurement.matrixWorld]
-			.map(m => m.elements.join(','))
-			.join(',');
 
-		let minLOD = 0;
-		let maxLOD = 100;
+		let clipBox = this.measurement;
 
-		let pcs = [];
-		for (let pointcloud of this.viewer.scene.pointclouds) {
-			let urlIsAbsolute = new RegExp('^(?:[a-z]+:)?//', 'i').test(pointcloud.pcoGeometry.url);
-			let pc = '';
-			if (urlIsAbsolute) {
-				pc = pointcloud.pcoGeometry.url;
-			} else {
-				pc = `${window.location.href}/../${pointcloud.pcoGeometry.url}`;
+		let regions = [];
+		//for(let clipBox of boxes){
+		{
+			let toClip = clipBox.matrixWorld;
+
+			let px = new THREE.Vector3(+0.5, 0, 0).applyMatrix4(toClip);
+			let nx = new THREE.Vector3(-0.5, 0, 0).applyMatrix4(toClip);
+			let py = new THREE.Vector3(0, +0.5, 0).applyMatrix4(toClip);
+			let ny = new THREE.Vector3(0, -0.5, 0).applyMatrix4(toClip);
+			let pz = new THREE.Vector3(0, 0, +0.5).applyMatrix4(toClip);
+			let nz = new THREE.Vector3(0, 0, -0.5).applyMatrix4(toClip);
+
+			let pxN = new THREE.Vector3().subVectors(nx, px).normalize();
+			let nxN = pxN.clone().multiplyScalar(-1);
+			let pyN = new THREE.Vector3().subVectors(ny, py).normalize();
+			let nyN = pyN.clone().multiplyScalar(-1);
+			let pzN = new THREE.Vector3().subVectors(nz, pz).normalize();
+			let nzN = pzN.clone().multiplyScalar(-1);
+
+			let planes = [
+				new THREE.Plane().setFromNormalAndCoplanarPoint(pxN, px),
+				new THREE.Plane().setFromNormalAndCoplanarPoint(nxN, nx),
+				new THREE.Plane().setFromNormalAndCoplanarPoint(pyN, py),
+				new THREE.Plane().setFromNormalAndCoplanarPoint(nyN, ny),
+				new THREE.Plane().setFromNormalAndCoplanarPoint(pzN, pz),
+				new THREE.Plane().setFromNormalAndCoplanarPoint(nzN, nz),
+			];
+
+			let planeQueryParts = [];
+			for(let plane of planes){
+				let part = [plane.normal.toArray(), plane.constant].join(",");
+				part = `[${part}]`;
+				planeQueryParts.push(part);
 			}
-
-			pcs.push(pc);
+			let region = "[" + planeQueryParts.join(",") + "]";
+			regions.push(region);
 		}
 
-		let pc = pcs
-			.map(v => `pointcloud[]=${v}`)
-			.join('&');
+		let regionsArg = regions.join(",");
 
-		let request = `${viewer.server}/start_extract_region_worker?minLOD=${minLOD}&maxLOD=${maxLOD}&box=${boxes}&${pc}`;
-		console.log(request);
+		let pointcloudArgs = [];
+		for(let pointcloud of this.viewer.scene.pointclouds){
+			if(!pointcloud.visible){
+				continue;
+			}
+
+			let offset = pointcloud.pcoGeometry.offset.clone();
+			let negateOffset = new THREE.Matrix4().makeTranslation(...offset.multiplyScalar(-1).toArray());
+			let matrixWorld = pointcloud.matrixWorld;
+
+			let transform = new THREE.Matrix4().multiplyMatrices(matrixWorld, negateOffset);
+
+			let arg = {
+				path: "/examples/filter_WIP_2.html/../../pointclouds/C/dev/pointclouds/converted/CA13_morro_area/cloud.js",
+				transform: transform.elements,
+				//transform: pointcloud.matrixWorld.elements
+			};
+			let argString = JSON.stringify(arg);
+
+			console.log(transform);
+
+			pointcloudArgs.push(argString);
+		}
+		let pointcloudsArg = pointcloudArgs.join(",");
+
+		let url = `http://localhost:3000/create_regions_filter?pointclouds=[${pointcloudsArg}]&regions=[${regionsArg}]`;
+		
+		console.log(url);
+
+		fetch(url);
+
+		//let boxes = [this.measurement.matrixWorld]
+		//	.map(m => m.elements.join(','))
+		//	.join(',');
+
+		//let minLOD = 0;
+		//let maxLOD = 100;
+
+		//let pcs = [];
+		//for (let pointcloud of this.viewer.scene.pointclouds) {
+		//	let urlIsAbsolute = new RegExp('^(?:[a-z]+:)?//', 'i').test(pointcloud.pcoGeometry.url);
+		//	let pc = '';
+		//	if (urlIsAbsolute) {
+		//		pc = pointcloud.pcoGeometry.url;
+		//	} else {
+		//		pc = `${window.location.href}/../${pointcloud.pcoGeometry.url}`;
+		//	}
+
+		//	pcs.push(pc);
+		//}
+
+		//let pc = pcs
+		//	.map(v => `pointcloud[]=${v}`)
+		//	.join('&');
+
+		//let request = `${viewer.server}/start_extract_region_worker?minLOD=${minLOD}&maxLOD=${maxLOD}&box=${boxes}&${pc}`;
+		//console.log(request);
 	}
 
 	update(){

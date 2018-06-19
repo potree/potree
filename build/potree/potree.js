@@ -11481,8 +11481,7 @@ Potree.PointCloudEptGeometry = class {
         this.projection = info.projection;
         this.pointAttributes = 'LAZ';
         this.spacing =
-            (this.boundingBox.max.x - this.boundingBox.min.x) /
-            Math.pow(2, this.ticks);
+            (this.boundingBox.max.x - this.boundingBox.min.x) / this.ticks;
 
         // TODO Switch on storage type.
         this.loader = new Potree.EptLazLoader();

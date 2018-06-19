@@ -580,8 +580,12 @@ export class VolumePanel extends MeasurePanel{
 
 			let transform = new THREE.Matrix4().multiplyMatrices(matrixWorld, negateOffset);
 
+			//let path = "/examples/filter_WIP_2.html/../../pointclouds/C/dev/pointclouds/converted/CA13_morro_area/cloud.js";
+			//let path = pointcloud.pcoGeometry.url;
+			let path = `${window.location.pathname}/../${pointcloud.pcoGeometry.url}`;
+
 			let arg = {
-				path: "/examples/filter_WIP_2.html/../../pointclouds/C/dev/pointclouds/converted/CA13_morro_area/cloud.js",
+				path: path,
 				transform: transform.elements,
 				//transform: pointcloud.matrixWorld.elements
 			};

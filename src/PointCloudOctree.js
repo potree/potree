@@ -324,106 +324,34 @@ export class PointCloudOctree extends PointCloudTree {
 		let worldDir = new THREE.Vector3();
 		let cameraRay = new THREE.Ray(camera.position, camera.getWorldDirection(worldDir));
 
-		for (let i = 0; i < nodes.length; i++) {
+		let nodeMap = new Map();
+		let offsetsToChild = new Array(nodes.length).fill(Infinity);
+
+		for(let i = 0; i < nodes.length; i++){
 			let node = nodes[i];
 
+			nodeMap.set(node.name, node);
 			visibleNodeTextureOffsets.set(node, i);
 
-			data[i * 4 + 0] = 0;
-			data[i * 4 + 1] = 0;
-			data[i * 4 + 2] = 0;
-			//data[i * 4 + 3] = node.name.length - 1;
-			data[i * 4 + 3] = node.getLevel();
+			if(i > 0){
+				let index = parseInt(node.name.slice(-1));
+				let parentName = node.name.slice(0, -1);
+				let parent = nodeMap.get(parentName);
+				let parentOffset = visibleNodeTextureOffsets.get(parent);
 
-			for (let j = 0, k = 0; j < 8; j++) {
+				let parentOffsetToChild = (i - parentOffset);
 
-				let child = node.children[j];
+				offsetsToChild[parentOffset] = Math.min(offsetsToChild[parentOffset], parentOffsetToChild);
 
-				if( child && child.constructor === PointCloudOctreeNode && child.sceneNode.visible){
-					//children.push(child);
-
-					let index = parseInt(child.geometryNode.name.substr(-1));
-					data[i * 4 + 0] += Math.pow(2, index);
-
-					if (k === 0) {
-						let vArrayIndex = nodes.indexOf(child, i);
-						
-						data[i * 4 + 1] = (vArrayIndex - i) >> 8;
-						data[i * 4 + 2] = (vArrayIndex - i) % 256;
-					}
-
-					k++;
-				}
+				data[parentOffset * 4 + 0] = data[parentOffset * 4 + 0] | (1 << index);
+				data[parentOffset * 4 + 1] = (offsetsToChild[parentOffset] >> 8);
+				data[parentOffset * 4 + 2] = (offsetsToChild[parentOffset] % 256);
 			}
 
-			//{
-			//	bBox.copy(node.getBoundingBox());
-			//	bBox.getBoundingSphere(bSphere);
-			//	bSphere.applyMatrix4(node.sceneNode.matrixWorld);
-			//	bSphere.applyMatrix4(camera.matrixWorldInverse);
-
-			//	let distance = intersectSphereBack(cameraRay, bSphere);
-			//	let distance2 = bSphere.center.distanceTo(camera.position) + bSphere.radius;
-			//	if(distance === null){
-			//		distance = distance2;
-			//	}
-			//	distance = Math.max(distance, distance2);
-
-			//	if(!lodRanges.has(node.getLevel())){
-			//		lodRanges.set(node.getLevel(), distance);
-			//	}else{
-			//		let prevDistance = lodRanges.get(node.getLevel());
-			//		let newDistance = Math.max(prevDistance, distance);
-			//		lodRanges.set(node.getLevel(), newDistance);
-			//	}
-
-			//	if(!node.geometryNode.hasChildren){
-			//		let value = {
-			//			distance: distance,
-			//			i: i
-			//		};
-			//		leafNodeLodRanges.set(node, value);
-			//	}
-			//	
-			//}
+			data[i * 4 + 3] = node.name.length - 1;
 		}
 
-		//for(let [node, value] of leafNodeLodRanges){
-		//	let level = node.getLevel();
-		//	let distance = value.distance;
-		//	let i = value.i;
-
-		//	if(level < 4){
-		//		continue;
-		//	}
-
-		//	//if(node.name === "r6646"){
-		//	//	var a = 10;
-		//	//	a = 10 * 10;
-		//	//}
-
-		//	for(let [lod, range] of lodRanges){
-		//		if(distance < range * 1.2){
-		//			data[i * 4 + 3] = lod;
-		//		}
-		//	}
-		//}
-
-		//{
-		//	if(!window.debugSizes){
-		//		let msg = viewer.postMessage("abc");
-		//		window.debugSizes = { msg: msg};
-		//	}
-
-		//	let msg = window.debugSizes.msg;
-
-		//	let txt = ``;
-		//	for(let entry of lodRanges){
-		//		txt += `${entry[0]}: ${entry[1]}<br>`;
-		//	}
-
-		//	msg.setMessage(txt);
-		//}
+		var a = 10;
 		
 		if(Potree.measureTimings){
 			performance.mark("computeVisibilityTextureData-end");
@@ -686,6 +614,8 @@ export class PointCloudOctree extends PointCloudTree {
 		let pickWindowSize = getVal(params.pickWindowSize, 17);
 		let pickOutsideClipRegion = getVal(params.pickOutsideClipRegion, false);
 
+		pickWindowSize = 65;
+
 		let size = renderer.getSize();
 
 		let width = Math.ceil(getVal(params.width, size.width));
@@ -744,6 +674,8 @@ export class PointCloudOctree extends PointCloudTree {
 			
 			this.updateMaterial(pickMaterial, nodes, camera, renderer);
 		}
+
+		//pickMaterial.pointColorType = Potree.PointColorType.LOD;
 
 		pickState.renderTarget.setSize(width, height);
 
@@ -830,8 +762,8 @@ export class PointCloudOctree extends PointCloudTree {
 			}
 		}
 		
-		
-		//{ // open window with image
+		// DEBUG: show panel with pick image
+		//{ 
 		//	let img = Utils.pixelsArrayToImage(buffer, w, h);
 		//	let screenshot = img.src;
 		//

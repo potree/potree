@@ -1286,6 +1286,38 @@ export class Viewer extends EventDispatcher{
 		if (!this.freeze) {
 			let result = Potree.updatePointClouds(scene.pointclouds, camera, this.renderer);
 
+
+			// DEBUG - ONLY DISPLAY NODES THAT INTERSECT MOUSE
+			//if(false){ 
+
+			//	let renderer = viewer.renderer;
+			//	let mouse = viewer.inputHandler.mouse;
+
+			//	let nmouse = {
+			//		x: (mouse.x / renderer.domElement.clientWidth) * 2 - 1,
+			//		y: -(mouse.y / renderer.domElement.clientHeight) * 2 + 1
+			//	};
+
+			//	let pickParams = {};
+
+			//	//if(params.pickClipped){
+			//	//	pickParams.pickClipped = params.pickClipped;
+			//	//}
+
+			//	pickParams.x = mouse.x;
+			//	pickParams.y = renderer.domElement.clientHeight - mouse.y;
+
+			//	let raycaster = new THREE.Raycaster();
+			//	raycaster.setFromCamera(nmouse, camera);
+			//	let ray = raycaster.ray;
+
+			//	for(let pointcloud of scene.pointclouds){
+			//		let nodes = pointcloud.nodesOnRay(pointcloud.visibleNodes, ray);
+			//		pointcloud.visibleNodes = nodes;
+
+			//	}
+			//}
+
 			if(result.lowestSpacing !== Infinity){
 				let near = result.lowestSpacing * 10.0;
 				let far = -this.getBoundingBox().applyMatrix4(camera.matrixWorldInverse).min.z;

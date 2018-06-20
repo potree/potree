@@ -48,14 +48,6 @@
 	
 	
 	<script>
-
-
-		let clipSpheres = [
-			{position: [0.032, -2.382, 4.279], scale: 3},
-			{position: [-1.787, 6.011, 1.711], scale: 1},
-			{position: [0.095, 7.636, 10.997], scale: 2},
-		];
-
 	
 		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
 		
@@ -76,7 +68,8 @@
 			viewer.toggleSidebar();
 		});
 		
-		Potree.loadPointCloud("../pointclouds/C/dev/pointclouds/converted/CA13_morro_area/cloud.js", "CA13", function(e){
+		Potree.loadPointCloud("../pointclouds/C/dev/pointclouds/converted/CA13/cloud.js", "CA13", function(e){
+		//Potree.loadPointCloud("../pointclouds/C/dev/pointclouds/converted/CA13_morro_area/cloud.js", "CA13", function(e){
 		//Potree.loadPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/archpro/heidentor/cloud.js", "Heidentor", function(e){
 			viewer.scene.addPointCloud(e.pointcloud);
 
@@ -91,6 +84,7 @@
 			volume.position.set(694685.218, 3916380.495, 29.311);
 			volume.rotation.set(0.000, 0.000, -0.615);
 			volume.scale.set(234.619, 30.071, 282.701);
+			volume.scale.set(1000.619, 800.071, 282.701);
 			volume.clip = true;
 			viewer.scene.addVolume(volume);
 
@@ -100,197 +94,6 @@
 		
 	</script>
 
-	<script>
-		
-		let elFrustum = $("#filterFrustum");
-
-		elFrustum.css("position", "absolute");
-		elFrustum.css("left", "400px");
-		elFrustum.css("bottom", "50px");
-		elFrustum.css("z-index", 10000);
-
-		elFrustum.click( (e) => {
-
-			let camera = viewer.scene.getActiveCamera();
-			let frustum = new THREE.Frustum();
-			frustum.setFromMatrix( new THREE.Matrix4().multiplyMatrices( camera.projectionMatrix, camera.matrixWorldInverse ) );
-			let planeQueryParts = [];
-			for(let plane of frustum.planes){
-				let part = [plane.normal.toArray(), plane.constant].join(",");
-				part = `[${part}]`;
-				planeQueryParts.push(part);
-			}
-			let planeQueryArg = "[" + planeQueryParts.join(",") + "]";
-			let url = `http://localhost:3000/clip?planes=${planeQueryArg}`;
-			console.log(url);
-
-			fetch(url);
-
-		});
-
-	</script>
-
-	<script>
-		
-		let elBoxes = $("#filterBoxes");
-
-		elBoxes.css("position", "absolute");
-		elBoxes.css("left", "500px");
-		elBoxes.css("bottom", "50px");
-		elBoxes.css("z-index", 10000);
-
-		elBoxes.click( (e) => {
-
-			let boxes = viewer.scene.volumes
-				.filter(volume => (volume instanceof Potree.BoxVolume) && volume.clip);
-
-			let regions = [];
-			for(let clipBox of boxes){
-
-				let toClip = clipBox.matrixWorld;
-
-				let px = new THREE.Vector3(+0.5, 0, 0).applyMatrix4(toClip);
-				let nx = new THREE.Vector3(-0.5, 0, 0).applyMatrix4(toClip);
-				let py = new THREE.Vector3(0, +0.5, 0).applyMatrix4(toClip);
-				let ny = new THREE.Vector3(0, -0.5, 0).applyMatrix4(toClip);
-				let pz = new THREE.Vector3(0, 0, +0.5).applyMatrix4(toClip);
-				let nz = new THREE.Vector3(0, 0, -0.5).applyMatrix4(toClip);
-
-				let pxN = new THREE.Vector3().subVectors(nx, px).normalize();
-				let nxN = pxN.clone().multiplyScalar(-1);
-				let pyN = new THREE.Vector3().subVectors(ny, py).normalize();
-				let nyN = pyN.clone().multiplyScalar(-1);
-				let pzN = new THREE.Vector3().subVectors(nz, pz).normalize();
-				let nzN = pzN.clone().multiplyScalar(-1);
-
-				let planes = [
-					new THREE.Plane().setFromNormalAndCoplanarPoint(pxN, px),
-					new THREE.Plane().setFromNormalAndCoplanarPoint(nxN, nx),
-					new THREE.Plane().setFromNormalAndCoplanarPoint(pyN, py),
-					new THREE.Plane().setFromNormalAndCoplanarPoint(nyN, ny),
-					new THREE.Plane().setFromNormalAndCoplanarPoint(pzN, pz),
-					new THREE.Plane().setFromNormalAndCoplanarPoint(nzN, nz),
-				];
-
-				let planeQueryParts = [];
-				for(let plane of planes){
-					let part = [plane.normal.toArray(), plane.constant].join(",");
-					part = `[${part}]`;
-					planeQueryParts.push(part);
-				}
-				let region = "[" + planeQueryParts.join(",") + "]";
-				regions.push(region);
-			}
-		
-			let regionsArg = regions.join(",");
-			
-			let pointcloudArgs = [];
-			for(let pointcloud of viewer.scene.pointclouds){
-				if(!pointcloud.visible){
-					continue;
-				}
-
-				let offset = pointcloud.pcoGeometry.offset.clone();
-				let negateOffset = new THREE.Matrix4().makeTranslation(...offset.multiplyScalar(-1).toArray());
-				let matrixWorld = pointcloud.matrixWorld;
-
-				let transform = new THREE.Matrix4().multiplyMatrices(matrixWorld, negateOffset);
-
-				let arg = {
-					path: "/examples/filter_WIP_2.html/../../pointclouds/C/dev/pointclouds/converted/CA13_morro_area/cloud.js",
-					transform: transform.elements,
-					//transform: pointcloud.matrixWorld.elements
-				};
-				let argString = JSON.stringify(arg);
-
-				console.log(transform);
-
-				pointcloudArgs.push(argString);
-			}
-			let pointcloudsArg = pointcloudArgs.join(",");
-
-			let url = `http://localhost:3000/create_regions_filter?pointclouds=[${pointcloudsArg}]&regions=[${regionsArg}]`;
-			
-			console.log(url);
-
-			fetch(url);
-
-		});
-
-	</script>
-
-	<script>
-	
-		let elProfiles = $("#filterProfiles");
-
-		elProfiles.css("position", "absolute");
-		elProfiles.css("left", "600px");
-		elProfiles.css("bottom", "50px");
-		elProfiles.css("z-index", 10000);
-
-		elProfiles.click( (e) => {
-			let profiles = viewer.scene.profiles;
-	
-			let regions = [];
-			
-			for(let profile of profiles){
-				
-				let segments = profile.getSegments();
-				let width = profile.width;
-				
-				for(let segment of segments){
-					let start = segment.start.clone().multiply(new THREE.Vector3(1, 1, 0));
-					let end = segment.end.clone().multiply(new THREE.Vector3(1, 1, 0));
-					let center = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
-					
-					let startEndDir = new THREE.Vector3().subVectors(end, start).normalize();
-					let endStartDir = new THREE.Vector3().subVectors(start, end).normalize();
-					let upDir = new THREE.Vector3(0, 0, 1);
-					let rightDir = new THREE.Vector3().crossVectors(startEndDir, upDir);
-					let leftDir = new THREE.Vector3().crossVectors(endStartDir, upDir);
-					
-					console.log(leftDir);
-					
-					let right = rightDir.clone().multiplyScalar(width * 0.5).add(center);
-					let left = leftDir.clone().multiplyScalar(width * 0.5).add(center);
-					
-					let region = [
-						new THREE.Plane().setFromNormalAndCoplanarPoint(startEndDir, start),
-						new THREE.Plane().setFromNormalAndCoplanarPoint(endStartDir, end),
-						new THREE.Plane().setFromNormalAndCoplanarPoint(leftDir, right),
-						new THREE.Plane().setFromNormalAndCoplanarPoint(rightDir, left),
-					];
-					
-					regions.push(region);
-				}
-			}
-
-			console.log(regions);
-
-			let regionQueryParts = [];
-			for(let region of regions){
-				let planeQueryParts = [];
-
-				for(let plane of region){
-					let part = [plane.normal.toArray(), plane.constant].join(",");
-					part = `[${part}]`;
-					planeQueryParts.push(part);
-				}
-
-				let reqionQueryPart = "[" + planeQueryParts.join(",") + "]";
-				regionQueryParts.push(reqionQueryPart);
-			}
-
-			let regionsArg = regionQueryParts.join(",");
-			let url = `http://localhost:3000/clip?regions=[${regionsArg}]`;
-			
-			console.log(url);
-
-			fetch(url);
-
-		});
-	
-	</script>
 	
   </body>
 </html>

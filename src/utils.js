@@ -8,31 +8,28 @@ import {PointColorType} from "./defines.js";
 
 
 export class Utils {
-	static loadShapefileFeatures (file, callback) {
+	static async loadShapefileFeatures (file, callback) {
 		let features = [];
 
 		let handleFinish = () => {
 			callback(features);
 		};
 
-		shapefile.open(file)
-			.then(source => {
-				source.read()
-					.then(function log (result) {
-						if (result.done) {
-							handleFinish();
-							return;
-						}
+		let source = await shapefile.open(file);
 
-						// console.log(result.value);
+		while(true){
+			let result = await source.read();
 
-						if (result.value && result.value.type === 'Feature' && result.value.geometry !== undefined) {
-							features.push(result.value);
-						}
+			if (result.done) {
+				handleFinish();
+				break;
+			}
 
-						return source.read().then(log);
-					});
-			});
+			if (result.value && result.value.type === 'Feature' && result.value.geometry !== undefined) {
+				features.push(result.value);
+			}
+		}
+
 	}
 
 	static toString (value) {

@@ -5,7 +5,7 @@
 		"*.fs": "cpp"
 	},
 	"files.trimTrailingWhitespace": false,
-	"editor.fontSize": 16,
+	"editor.fontSize": 20,
 	"editor.autoIndent": false,
 	"editor.detectIndentation": false,
 	"editor.renderWhitespace": "all",

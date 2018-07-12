@@ -663,11 +663,13 @@ export class PointCloudOctree extends PointCloudTree {
 			pickMaterial.classification = this.material.classification;
 			if(params.pickClipped){
 				pickMaterial.clipBoxes = this.material.clipBoxes;
+				pickMaterial.uniforms.clipBoxes = this.material.uniforms.clipBoxes;
 				if(this.material.clipTask === Potree.ClipTask.HIGHLIGHT){
 					pickMaterial.clipTask = Potree.ClipTask.NONE;
 				}else{
 					pickMaterial.clipTask = this.material.clipTask;
 				}
+				pickMaterial.clipMethod = this.material.clipMethod;
 			}else{
 				pickMaterial.clipBoxes = [];
 			}

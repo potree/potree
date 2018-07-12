@@ -87,7 +87,8 @@ export class VolumeTool extends EventDispatcher{
 				e.drag.end, 
 				this.viewer.scene.getActiveCamera(), 
 				this.viewer, 
-				this.viewer.scene.pointclouds);
+				this.viewer.scene.pointclouds, 
+				{pickClipped: false});
 
 			if (I) {
 				volume.position.copy(I.location);

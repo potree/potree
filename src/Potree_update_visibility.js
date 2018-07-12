@@ -385,7 +385,9 @@ export function updateVisibility(pointclouds, camera, renderer){
 				let bb = child.getBoundingBox();				
 				let distance = child.getBoundingSphere().center.distanceTo(camObjPos);
 				let diagonal = bb.max.clone().sub(bb.min).length();
-				weight = diagonal / distance;
+				//weight = diagonal / distance;
+
+				weight = diagonal;
 			}
 
 			priorityQueue.push({pointcloud: element.pointcloud, node: child, parent: node, weight: weight});

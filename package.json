@@ -8,12 +8,12 @@
     "test": "npm run lint"
   },
   "dependencies": {
-    "eslint": "^4.18.2",
+    "eslint": "^4.19.1",
     "eslint-config-happiness": "^10.2.1",
-    "eslint-plugin-import": "^2.9.0",
+    "eslint-plugin-import": "^2.13.0",
     "eslint-plugin-node": "^5.2.1",
-    "eslint-plugin-promise": "^3.6.0",
-    "eslint-plugin-standard": "^3.0.1",
+    "eslint-plugin-promise": "^3.8.0",
+    "eslint-plugin-standard": "^3.1.0",
     "gulp": "~3.9.1",
     "gulp-concat": "~2.1.7",
     "gulp-connect": "^2.3.1",
@@ -23,7 +23,8 @@
     "gulp-uglify": "~0.2.1",
     "gulp-util": "~2.2.20",
     "jshint": "^2.9.5",
-    "through": "~2.3.4"
+    "through": "~2.3.4",
+    "natives": "1.1.3"
   },
   "author": "Markus Schütz",
   "license": "BSD-2-CLAUSE"

@@ -97,7 +97,7 @@ var slice_slice = function(length) {
   return (function read() {
     return that._source.read().then(function(result) {
 
-      // When done, it’s possible the request wasn’t fully fullfilled!
+      // When done, itâ€™s possible the request wasnâ€™t fully fullfilled!
       // If so, the pre-allocated array is too big and needs slicing.
       if (result.done) {
         that._array = empty;
@@ -305,6 +305,18 @@ var readPolyLine = function(record) {
       : {type: "MultiLineString", coordinates: parts.map(function(i, j) { return points.slice(i, parts[j + 1]); })};
 };
 
+var readPolyLineZ = function(record) {
+  var i = 44, j, n = record.getInt32(36, true), m = record.getInt32(40, true), parts = new Array(n), points = new Array(m);
+  for (j = 0; j < n; ++j, i += 4) parts[j] = record.getInt32(i, true);
+  for (j = 0; j < m; ++j, i += 16) points[j] = [record.getFloat64(i, true), record.getFloat64(i + 8, true)];
+  // Advance two doubles (z min, z max)
+  i += 16;
+  for (j = 0; j < m; ++j, i += 8) points[j].push(record.getFloat64(i, true));
+  return n === 1
+      ? {type: "LineStringZ", coordinates: points}
+      : {type: "MultiLineStringZ", coordinates: parts.map(function(i, j) { return points.slice(i, parts[j + 1]); })};
+};
+
 var shp_read = function() {
   var that = this;
   return that._source.slice(8).then(function(array) {
@@ -324,7 +336,7 @@ var types$1 = {
   5: readPolygon,
   8: readMultiPoint,
   11: readPoint,
-  13: readPolyLine,
+  13: readPolyLineZ,
   15: readPolygon,
   18: readMultiPoint
 };

@@ -105,6 +105,14 @@ export class BinaryLoader{
 				} else if (parseInt(property) === PointAttributeNames.SPACING) {
 					let bufferAttribute = new THREE.BufferAttribute(new Float32Array(buffer), 1);
 					geometry.addAttribute('spacing', bufferAttribute);
+				} else if (parseInt(property) === PointAttributeNames.GPS_TIME) {
+					let bufferAttribute = new THREE.BufferAttribute(new Float32Array(buffer), 1);
+					geometry.addAttribute('gpsTime', bufferAttribute);
+
+					node.gpsTime = {
+						offset: buffers[property].offset,
+						range: buffers[property].range,
+					};
 				}
 			}
 

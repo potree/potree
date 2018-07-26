@@ -142,6 +142,7 @@ let attributeLocations = {
 	"indices": 7,
 	"normal": 8,
 	"spacing": 9,
+	"gpsTime": 10,
 };
 
 class Shader {
@@ -605,6 +606,27 @@ export class Renderer {
 
 		let mat4holder = new Float32Array(16);
 
+		let gpsMin = Infinity;
+		let gpsMax = -Infinity
+		for (let node of nodes) {
+
+			if(node instanceof PointCloudOctreeNode){
+				let geometryNode = node.geometryNode;
+
+				if(geometryNode.gpsTime){
+					let {offset, range} = geometryNode.gpsTime;
+					let nodeMin = offset;
+					let nodeMax = offset + range;
+
+					gpsMin = Math.min(gpsMin, nodeMin);
+					gpsMax = Math.max(gpsMax, nodeMax);
+				}
+
+
+			}
+
+		}
+
 		let i = 0;
 		for (let node of nodes) {
 
@@ -751,6 +773,17 @@ export class Renderer {
 			}
 
 			let geometry = node.geometryNode.geometry;
+
+			if(node.geometryNode.gpsTime){
+				let nodeMin = node.geometryNode.gpsTime.offset;
+				let nodeMax = nodeMin + node.geometryNode.gpsTime.range;
+
+				let gpsOffset = (+nodeMin - gpsMin);
+				let gpsRange = (gpsMax - gpsMin);
+
+				shader.setUniform1f("uGPSOffset", gpsOffset);
+				shader.setUniform1f("uGPSRange", gpsRange);
+			}
 
 			let webglBuffer = null;
 			if(!this.buffers.has(geometry)){

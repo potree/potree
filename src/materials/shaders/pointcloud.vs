@@ -14,6 +14,7 @@ attribute float numberOfReturns;
 attribute float pointSourceID;
 attribute vec4 indices;
 attribute float spacing;
+attribute float gpsTime;
 
 uniform mat4 modelMatrix;
 uniform mat4 modelViewMatrix;
@@ -77,6 +78,9 @@ uniform float uOpacity;
 
 uniform vec2 elevationRange;
 uniform vec2 intensityRange;
+uniform vec2 uGPSTimeClipRange;
+uniform float uGPSOffset;
+uniform float uGPSRange;
 uniform float intensityGamma;
 uniform float intensityContrast;
 uniform float intensityBrightness;
@@ -393,9 +397,12 @@ float getIntensity(){
 	w = (w - 0.5) * getContrastFactor(intensityContrast) + 0.5;
 	w = clamp(w, 0.0, 1.0);
 
-	//w = w + color.x * 0.0001;
-	
-	//float w = color.x * 0.001 + intensity / 1.0;
+	return w;
+}
+
+float getGpsTime(){
+	float w = (gpsTime + uGPSOffset) / uGPSRange;
+	w = clamp(w, 0.0, 1.0);
 
 	return w;
 }
@@ -496,6 +503,9 @@ vec3 getColor(){
 		color = vec3(linearDepth, expDepth, 0.0);
 	#elif defined color_type_intensity
 		float w = getIntensity();
+		color = vec3(w, w, w);
+	#elif defined color_type_gpstime
+		float w = getGpsTime();
 		color = vec3(w, w, w);
 	#elif defined color_type_intensity_gradient
 		float w = getIntensity();

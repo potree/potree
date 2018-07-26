@@ -240,6 +240,8 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 			defines.push('#define color_type_phong');
 		} else if (this._pointColorType === PointColorType.RGB_HEIGHT) {
 			defines.push('#define color_type_rgb_height');
+		} else if (this._pointColorType === PointColorType.GPS_TIME) {
+			defines.push('#define color_type_gpstime');
 		} else if (this._pointColorType === PointColorType.COMPOSITE) {
 			defines.push('#define color_type_composite');
 		}

@@ -756,6 +756,8 @@ export class Utils {
 			return PointColorType.RGB_HEIGHT;
 		} else if (materialName === 'Composite') {
 			return PointColorType.COMPOSITE;
+		} else if (materialName === 'GPS Time') {
+			return PointColorType.GPS_TIME;
 		}
 	};
 
@@ -789,6 +791,8 @@ export class Utils {
 			return 'RGB and Elevation';
 		} else if (materialID === PointColorType.COMPOSITE) {
 			return 'Composite';
+		} else if (materialID === PointColorType.GPS_TIME) {
+			return 'GPS Time';
 		}
 	};
 

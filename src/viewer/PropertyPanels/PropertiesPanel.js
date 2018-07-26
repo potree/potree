@@ -192,6 +192,13 @@ export class PropertiesPanel{
 					<li>Brightness: <span id="lblIntensityBrightness"></span> <div id="sldIntensityBrightness"></div>	</li>
 					<li>Contrast: <span id="lblIntensityContrast"></span> <div id="sldIntensityContrast"></div>	</li>
 				</div>
+
+				<div id="materials.gpstime_container">
+					<div class="divider">
+						<span>GPS Time</span>
+					</div>
+
+				</div>
 				
 				<div id="materials.index_container">
 					<div class="divider">
@@ -297,6 +304,7 @@ export class PropertiesPanel{
 				'Classification',
 				'Return Number',
 				'Source',
+				'GPS Time',
 				'Index',
 				'Level of Detail',
 				'Composite'

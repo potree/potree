@@ -14,8 +14,9 @@ function CustomView (buffer) {
 	this.buffer = buffer;
 	this.u8 = new Uint8Array(buffer);
 
-	let tmp = new ArrayBuffer(4);
+	let tmp = new ArrayBuffer(8);
 	let tmpf = new Float32Array(tmp);
+	let tmpd = new Float64Array(tmp);
 	let tmpu8 = new Uint8Array(tmp);
 
 	this.getUint32 = function (i) {
@@ -33,6 +34,19 @@ function CustomView (buffer) {
 		tmpu8[3] = this.u8[i + 3];
 
 		return tmpf[0];
+	};
+
+	this.getFloat64 = function (i) {
+		tmpu8[0] = this.u8[i + 0];
+		tmpu8[1] = this.u8[i + 1];
+		tmpu8[2] = this.u8[i + 2];
+		tmpu8[3] = this.u8[i + 3];
+		tmpu8[4] = this.u8[i + 4];
+		tmpu8[5] = this.u8[i + 5];
+		tmpu8[6] = this.u8[i + 6];
+		tmpu8[7] = this.u8[i + 7];
+
+		return tmpd[0];
 	};
 
 	this.getUint8 = function (i) {
@@ -242,9 +256,46 @@ onmessage = function (event) {
 			}
 
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
+		} else if (pointAttribute.name === PointAttribute.GPS_TIME.name) {
+			let buff = new ArrayBuffer(numPoints * 8);
+			let gpstimes = new Float64Array(buff);
+
+			for(let j = 0; j < numPoints; j++){
+				let gpstime = cv.getFloat64(inOffset + j * pointAttributes.byteSize, true);
+				gpstimes[j] = gpstime;
+			}
+			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
 		}
 
 		inOffset += pointAttribute.byteSize;
+	}
+
+	// Convert GPS time from double (unsupported by WebGL) to origin-aligned floats
+	if(attributeBuffers[PointAttribute.GPS_TIME.name]){ 
+		let attribute = attributeBuffers[PointAttribute.GPS_TIME.name];
+		let sourceF64 = new Float64Array(attribute.buffer);
+		let target = new ArrayBuffer(numPoints * 4);
+		let targetF32 = new Float32Array(target);
+
+		let min = Infinity;
+		let max = -Infinity;
+		for(let i = 0; i < numPoints; i++){
+			let gpstime = sourceF64[i];
+
+			min = Math.min(min, gpstime);
+			max = Math.max(max, gpstime);
+		}
+
+		for(let i = 0; i < numPoints; i++){
+			let gpstime = sourceF64[i];
+			targetF32[i] = gpstime - min;
+		}
+
+		attributeBuffers[PointAttribute.GPS_TIME.name] = { 
+			buffer: target, 
+			attribute: PointAttribute.GPS_TIME,
+			offset: min,
+			range: max - min};
 	}
 
 	//let debugNodes = ["r026", "r0226","r02274"];

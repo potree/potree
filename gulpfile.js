@@ -6,18 +6,12 @@ const exec = require('child_process').exec;
 
 const fs = require("fs");
 const concat = require('gulp-concat');
-const size = require('gulp-size');
-const rename = require('gulp-rename');
-const uglify = require('gulp-uglify');
 const gutil = require('gulp-util');
 const through = require('through');
-const os = require('os');
 const File = gutil.File;
 const connect = require('gulp-connect');
 const watch = require('glob-watcher');
 
-
-let server;
 
 let paths = {
 	laslaz: [
@@ -42,13 +36,6 @@ let workers = {
 	"LASDecoderWorker": [
 		"src/workers/LASDecoderWorker.js"
 	],
-	//"BinaryDecoderWorker": [
-	//	"src/workers/BinaryDecoderWorker.js",
-	//	"src/Version.js",
-	//	"src/loader/PointAttributes.js",
-	//	"src/InterleavedBuffer.js",
-	//	"src/utils/toInterleavedBufferAttribute.js",
-	//],
 	"GreyhoundBinaryDecoderWorker": [
 		"libs/plasio/workers/laz-perf.js",
 		"src/workers/GreyhoundBinaryDecoderWorker.js",
@@ -93,13 +80,6 @@ gulp.task("shaders", function(){
 });
 
 gulp.task("build", ['workers','shaders', "icons_viewer", "examples_page"], function(){
-	//gulp.src(paths.potree)
-	//	.pipe(concat('potree.js'))
-	//	.pipe(gulp.dest('build/potree'));
-
-	//gulp.src(paths.laslaz)
-	//	.pipe(concat('laslaz.js'))
-	//	.pipe(gulp.dest('build/potree'));
 
 	gulp.src(paths.html)
 		.pipe(gulp.dest('build/potree'));

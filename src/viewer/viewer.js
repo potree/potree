@@ -114,6 +114,11 @@ export class Viewer extends EventDispatcher{
 		this.clipTask = ClipTask.HIGHLIGHT;
 		this.clipMethod = ClipMethod.INSIDE_ANY;
 
+		this.filterReturnNumberRange = [0, 7];
+		this.filterNumberOfReturnsRange = [0, 7];
+		this.filterGPSTimeRange = [0, Infinity];
+		this.filterGPSTimeExtent = [0, 1];
+
 		this.potreeRenderer = null;
 		this.edlRenderer = null;
 		this.renderer = null;
@@ -562,6 +567,26 @@ export class Viewer extends EventDispatcher{
 			this.dispatchEvent({'type': 'classification_visibility_changed', 'viewer': this});
 		}
 	};
+
+	setFilterReturnNumberRange(from, to){
+		this.filterReturnNumberRange = [from, to];
+		this.dispatchEvent({'type': 'filter_return_number_range_changed', 'viewer': this});
+	}
+
+	setFilterNumberOfReturnsRange(from, to){
+		this.filterNumberOfReturnsRange = [from, to];
+		this.dispatchEvent({'type': 'filter_number_of_returns_range_changed', 'viewer': this});
+	}
+
+	setFilterGPSTimeRange(from, to){
+		this.filterGPSTimeRange = [from, to];
+		this.dispatchEvent({'type': 'filter_gps_time_range_changed', 'viewer': this});
+	}
+
+	setFilterGPSTimeExtent(from, to){
+		this.filterGPSTimeExtent = [from, to];
+		this.dispatchEvent({'type': 'filter_gps_time_extent_changed', 'viewer': this});
+	}
 
 	setLengthUnit (value) {
 		switch (value) {
@@ -1259,6 +1284,18 @@ export class Viewer extends EventDispatcher{
 			if (somethingChanged) {
 				pointcloud.material.recomputeClassification();
 			}
+		}
+
+		for (let pointcloud of this.scene.pointclouds) {
+			if(!pointcloud.visible){
+				continue;
+			}
+
+			let material = pointcloud.material;
+
+			material.uniforms.uFilterReturnNumberRange.value = this.filterReturnNumberRange;
+			material.uniforms.uFilterNumberOfReturnsRange.value = this.filterNumberOfReturnsRange;
+			material.uniforms.uFilterGPSTimeClipRange.value = this.filterGPSTimeRange;
 		}
 
 		{

@@ -785,6 +785,16 @@ export class Renderer {
 				shader.setUniform1f("uGPSRange", gpsRange);
 			}
 
+			{
+				let uFilterReturnNumberRange = material.uniforms.uFilterReturnNumberRange.value;
+				let uFilterNumberOfReturnsRange = material.uniforms.uFilterNumberOfReturnsRange.value;
+				let uFilterGPSTimeClipRange = material.uniforms.uFilterGPSTimeClipRange.value;
+
+				shader.setUniform2f("uFilterReturnNumberRange", uFilterReturnNumberRange);
+				shader.setUniform2f("uFilterNumberOfReturnsRange", uFilterNumberOfReturnsRange);
+				shader.setUniform2f("uFilterGPSTimeClipRange", uFilterGPSTimeClipRange);
+			}
+
 			let webglBuffer = null;
 			if(!this.buffers.has(geometry)){
 				webglBuffer = this.createBuffer(geometry);

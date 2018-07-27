@@ -128,7 +128,11 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 			uSnapProj:			{ type: "Matrix4fv", value: [] },
 			uSnapProjInv:		{ type: "Matrix4fv", value: [] },
 			uSnapViewInv:		{ type: "Matrix4fv", value: [] },
-			uShadowColor:		{ type: "3fv", value: [0, 0, 0] }
+			uShadowColor:		{ type: "3fv", value: [0, 0, 0] },
+
+			uFilterReturnNumberRange:		{ type: "fv", value: [0, 7]},
+			uFilterNumberOfReturnsRange:	{ type: "fv", value: [0, 7]},
+			uFilterGPSTimeClipRange:		{ type: "fv", value: [0, 7]},
 		};
 
 		this.classification = ClassificationScheme.DEFAULT;

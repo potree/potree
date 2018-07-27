@@ -51,7 +51,7 @@ export class Sidebar{
 		this.initToolbar();
 		this.initScene();
 		this.initNavigation();
-		this.initClassificationList();
+		this.initFilters();
 		this.initClippingTool();
 		this.initSettings();
 		
@@ -671,6 +671,144 @@ export class Sidebar{
 			));
 		}
 
+	}
+
+	initFilters(){
+		this.initClassificationList();
+		this.initReturnFilters();
+		this.initGPSTimeFilters();
+
+	}
+
+	initReturnFilters(){
+		let elReturnFilterPanel = $('#return_filter_panel');
+
+		{ // RETURN NUMBER
+			let sldReturnNumber = elReturnFilterPanel.find('#sldReturnNumber');
+			let lblReturnNumber = elReturnFilterPanel.find('#lblReturnNumber');
+
+			sldReturnNumber.slider({
+				range: true,
+				min: 0, max: 7, step: 1,
+				values: [0, 7],
+				slide: (event, ui) => {
+					this.viewer.setFilterReturnNumberRange(ui.values[0], ui.values[1])
+				}
+			});
+
+			let onReturnNumberChanged = (event) => {
+				let [from, to] = this.viewer.filterReturnNumberRange;
+
+				lblReturnNumber[0].innerHTML = `${from} to ${to}`;
+				sldReturnNumber.slider({values: [from, to]});
+			};
+
+			this.viewer.addEventListener('filter_return_number_range_changed', onReturnNumberChanged);
+
+			onReturnNumberChanged();
+		}
+
+		{ // NUMBER OF RETURNS
+			let sldNumberOfReturns = elReturnFilterPanel.find('#sldNumberOfReturns');
+			let lblNumberOfReturns = elReturnFilterPanel.find('#lblNumberOfReturns');
+
+			sldNumberOfReturns.slider({
+				range: true,
+				min: 0, max: 7, step: 1,
+				values: [0, 7],
+				slide: (event, ui) => {
+					this.viewer.setFilterNumberOfReturnsRange(ui.values[0], ui.values[1])
+				}
+			});
+
+			let onNumberOfReturnsChanged = (event) => {
+				let [from, to] = this.viewer.filterNumberOfReturnsRange;
+
+				lblNumberOfReturns[0].innerHTML = `${from} to ${to}`;
+				sldNumberOfReturns.slider({values: [from, to]});
+			};
+
+			this.viewer.addEventListener('filter_number_of_returns_range_changed', onNumberOfReturnsChanged);
+
+			onNumberOfReturnsChanged();
+		}
+	}
+
+	initGPSTimeFilters(){
+		let elGPSTimeFilterPanel = $('#gpstime_filter_panel');
+
+		{
+			let elMin = elGPSTimeFilterPanel.find("#spnGPSMin");
+			let elMax = elGPSTimeFilterPanel.find("#spnGPSMax");
+
+			//elMin[0].onchange = (event) => {
+			//	console.log(elMin[0].value);
+			//};
+
+			//elMin.change((event) => {
+			//	console.log(elMin[0].value);
+			//});
+
+			let onChange = (event, ui) => {
+				this.viewer.setFilterGPSTimeExtent(elMin.spinner("value"), elMax.spinner("value"));
+			}
+
+			elMin.spinner({
+				min: 0, step: 0.01,
+				numberFormat: "n",
+				spin: onChange,
+				change: onChange,
+				blur: onChange,
+				keydown: onChange,
+			});
+
+			elMax.spinner({
+				min: 0, step: 0.01,	
+				numberFormat: "n",
+				spin: onChange,
+				change: onChange,
+				blur: onChange,
+				keydown: onChange,
+			});
+
+			elMin.keydown(onChange);
+			elMin.keypress(onChange);
+			elMin.keyup(onChange);
+
+			elMax.keydown(onChange);
+			elMax.keypress(onChange);
+			elMax.keyup(onChange);
+		}
+
+		{
+			let sldGPSTime = elGPSTimeFilterPanel.find('#sldGPSTime');
+			let lblGPSTime = elGPSTimeFilterPanel.find('#lblGPSTime');
+
+			sldGPSTime.slider({
+				range: true,
+				min: 0, max: 7, step: 0.01,
+				values: [0, 7],
+				slide: (event, ui) => {
+					this.viewer.setFilterGPSTimeRange(ui.values[0], ui.values[1])
+				}
+			});
+
+			let onGPSTimeChanged = (event) => {
+				let [from, to] = this.viewer.filterGPSTimeRange;
+				let extent = this.viewer.filterGPSTimeExtent;
+
+				lblGPSTime[0].innerHTML = `${from} to ${to}`;
+				sldGPSTime.slider({
+					min: extent[0], max: extent[1], step: 0.01,
+					values: [from, to]
+				});
+			};
+
+			this.viewer.addEventListener('filter_gps_time_range_changed', onGPSTimeChanged);
+			this.viewer.addEventListener('filter_gps_time_extent_changed', onGPSTimeChanged);
+
+			onGPSTimeChanged();
+		}
 	}
 
 	initClassificationList(){

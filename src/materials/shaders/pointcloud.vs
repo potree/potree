@@ -78,7 +78,11 @@ uniform float uOpacity;
 
 uniform vec2 elevationRange;
 uniform vec2 intensityRange;
-uniform vec2 uGPSTimeClipRange;
+
+uniform vec2 uFilterReturnNumberRange;
+uniform vec2 uFilterNumberOfReturnsRange;
+uniform vec2 uFilterGPSTimeClipRange;
+
 uniform float uGPSOffset;
 uniform float uGPSRange;
 uniform float intensityGamma;
@@ -626,6 +630,36 @@ void doClipping(){
 			return;
 		}
 	#endif
+
+	{ // return number filter
+		vec2 range = uFilterReturnNumberRange;
+		if(returnNumber < range.x || returnNumber > range.y){
+			gl_Position = vec4(100.0, 100.0, 100.0, 0.0);
+			
+			return;
+		}
+	}
+
+	{ // number of return filter
+		vec2 range = uFilterNumberOfReturnsRange;
+		if(numberOfReturns < range.x || numberOfReturns > range.y){
+			gl_Position = vec4(100.0, 100.0, 100.0, 0.0);
+			
+			return;
+		}
+	}
+
+	{ // GPS time filter
+		float time = gpsTime + uGPSOffset;
+		vec2 range = uFilterGPSTimeClipRange;
+
+		if(time < range.x || time > range.y){
+			gl_Position = vec4(100.0, 100.0, 100.0, 0.0);
+			
+			return;
+		}
+
+	}
 
 	int clipVolumesCount = 0;
 	int insideCount = 0;

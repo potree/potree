@@ -631,6 +631,7 @@ void doClipping(){
 		}
 	#endif
 
+	#if defined(clip_return_number_enabled)
 	{ // return number filter
 		vec2 range = uFilterReturnNumberRange;
 		if(returnNumber < range.x || returnNumber > range.y){
@@ -639,7 +640,9 @@ void doClipping(){
 			return;
 		}
 	}
+	#endif
 
+	#if defined(clip_number_of_returns_enabled)
 	{ // number of return filter
 		vec2 range = uFilterNumberOfReturnsRange;
 		if(numberOfReturns < range.x || numberOfReturns > range.y){
@@ -648,7 +651,9 @@ void doClipping(){
 			return;
 		}
 	}
+	#endif
 
+	#if defined(clip_gps_enabled)
 	{ // GPS time filter
 		float time = gpsTime + uGPSOffset;
 		vec2 range = uFilterGPSTimeClipRange;
@@ -658,8 +663,8 @@ void doClipping(){
 			
 			return;
 		}
-
 	}
+	#endif
 
 	int clipVolumesCount = 0;
 	int insideCount = 0;

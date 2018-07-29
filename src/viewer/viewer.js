@@ -1268,8 +1268,8 @@ export class Viewer extends EventDispatcher{
 						let border = (max - min) * 0.1;
 
 						this.setFilterGPSTimeExtent(min - border, max + border);
-						this.setFilterGPSTimeRange(0, 1000 * 1000 * 1000);
-						//this.setFilterGPSTimeRange(min, max);
+						//this.setFilterGPSTimeRange(0, 1000 * 1000 * 1000);
+						this.setFilterGPSTimeRange(min, max);
 
 						this.defaultGPSTimeChanged = true;
 					}

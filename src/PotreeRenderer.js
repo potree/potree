@@ -789,10 +789,13 @@ export class Renderer {
 				let uFilterReturnNumberRange = material.uniforms.uFilterReturnNumberRange.value;
 				let uFilterNumberOfReturnsRange = material.uniforms.uFilterNumberOfReturnsRange.value;
 				let uFilterGPSTimeClipRange = material.uniforms.uFilterGPSTimeClipRange.value;
-
+				
+				let gpsCliPRangeMin = uFilterGPSTimeClipRange[0] - gpsMin;
+				let gpsCliPRangeMax = uFilterGPSTimeClipRange[1] - gpsMin;
+				
 				shader.setUniform2f("uFilterReturnNumberRange", uFilterReturnNumberRange);
 				shader.setUniform2f("uFilterNumberOfReturnsRange", uFilterNumberOfReturnsRange);
-				shader.setUniform2f("uFilterGPSTimeClipRange", uFilterGPSTimeClipRange);
+				shader.setUniform2f("uFilterGPSTimeClipRange", [gpsCliPRangeMin, gpsCliPRangeMax]);
 			}
 
 			let webglBuffer = null;
@@ -874,9 +877,12 @@ export class Renderer {
 
 				let numSnapshots = material.snapEnabled ? material.numSnapshots : 0;
 				let numClipBoxes = (material.clipBoxes && material.clipBoxes.length) ? material.clipBoxes.length : 0;
-				//let numClipSpheres = (material.clipSpheres && material.clipSpheres.length) ? material.clipSpheres.length : 0;
 				let numClipSpheres = (params.clipSpheres && params.clipSpheres.length) ? params.clipSpheres.length : 0;
 				let numClipPolygons = (material.clipPolygons && material.clipPolygons.length) ? material.clipPolygons.length : 0;
+
+				//debugger;
+
+
 				let defines = [
 					`#define num_shadowmaps ${shadowMaps.length}`,
 					`#define num_snapshots ${numSnapshots}`,
@@ -884,6 +890,23 @@ export class Renderer {
 					`#define num_clipspheres ${numClipSpheres}`,
 					`#define num_clippolygons ${numClipPolygons}`,
 				];
+
+				if(octree.pcoGeometry.root.isLoaded()){
+					let attributes = octree.pcoGeometry.root.geometry.attributes;
+
+					if(attributes.gpsTime){
+						defines.push("#define clip_gps_enabled");
+					}
+
+					if(attributes.returnNumber){
+						defines.push("#define clip_return_number_enabled");
+					}
+
+					if(attributes.numberOfReturns){
+						defines.push("#define clip_number_of_returns_enabled");
+					}
+
+				}
 
 				//vs = `#define num_shadowmaps ${shadowMaps.length}\n` + vs;
 				//fs = `#define num_shadowmaps ${shadowMaps.length}\n` + fs;

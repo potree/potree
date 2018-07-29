@@ -759,7 +759,10 @@ export class Sidebar{
 		let onGPSTimeChanged = (event) => {
 			let range = this.viewer.filterGPSTimeRange;
 
-			lblGPSTime[0].innerHTML = `${range[0]} to ${range[1]}`;
+			let precision = 1;
+			let from = `${Utils.addCommas(range[0].toFixed(precision))}`;
+			let to = `${Utils.addCommas(range[1].toFixed(precision))}`;
+			lblGPSTime[0].innerHTML = `${from} to ${to}`;
 			
 			slider.setRange(range);
 		};
@@ -767,78 +770,6 @@ export class Sidebar{
 		this.viewer.addEventListener('filter_gps_time_range_changed', onGPSTimeChanged);
 		this.viewer.addEventListener('filter_gps_time_extent_changed', onGPSTimeExtentChanged);
 
-		//{
-		//	let elMin = elGPSTimeFilterPanel.find("#spnGPSMin");
-		//	let elMax = elGPSTimeFilterPanel.find("#spnGPSMax");
-
-		//	//elMin[0].onchange = (event) => {
-		//	//	console.log(elMin[0].value);
-		//	//};
-
-		//	//elMin.change((event) => {
-		//	//	console.log(elMin[0].value);
-		//	//});
-
-		//	let onChange = (event, ui) => {
-		//		this.viewer.setFilterGPSTimeExtent(elMin.spinner("value"), elMax.spinner("value"));
-		//	}
-
-		//	elMin.spinner({
-		//		min: 0, step: 0.01,
-		//		numberFormat: "n",
-		//		spin: onChange,
-		//		change: onChange,
-		//		blur: onChange,
-		//		keydown: onChange,
-		//	});
-
-		//	elMax.spinner({
-		//		min: 0, step: 0.01,	
-		//		numberFormat: "n",
-		//		spin: onChange,
-		//		change: onChange,
-		//		blur: onChange,
-		//		keydown: onChange,
-		//	});
-
-		//	elMin.keydown(onChange);
-		//	elMin.keypress(onChange);
-		//	elMin.keyup(onChange);
-
-		//	elMax.keydown(onChange);
-		//	elMax.keypress(onChange);
-		//	elMax.keyup(onChange);
-		//}
-
-		//{
-		//	let sldGPSTime = elGPSTimeFilterPanel.find('#sldGPSTime');
-		//	let lblGPSTime = elGPSTimeFilterPanel.find('#lblGPSTime');
-
-		//	sldGPSTime.slider({
-		//		range: true,
-		//		min: 0, max: 7, step: 0.01,
-		//		values: [0, 7],
-		//		slide: (event, ui) => {
-		//			this.viewer.setFilterGPSTimeRange(ui.values[0], ui.values[1])
-		//		}
-		//	});
-
-		//	let onGPSTimeChanged = (event) => {
-		//		let [from, to] = this.viewer.filterGPSTimeRange;
-		//		let extent = this.viewer.filterGPSTimeExtent;
-
-		//		lblGPSTime[0].innerHTML = `${from} to ${to}`;
-		//		sldGPSTime.slider({
-		//			min: extent[0], max: extent[1], step: 0.01,
-		//			values: [from, to]
-		//		});
-		//	};
-
-		//	this.viewer.addEventListener('filter_gps_time_range_changed', onGPSTimeChanged);
-		//	this.viewer.addEventListener('filter_gps_time_extent_changed', onGPSTimeChanged);
-
-		//	onGPSTimeChanged();
-		//}
 	}
 
 	initClassificationList(){

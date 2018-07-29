@@ -165,31 +165,46 @@ export class ZoomableSlider{
 	}
 
 	update(){
-		let {elLeft, elRight, visibleRange, chosenRange} = this;
+		let {elLeft, elRight, elInside, visibleRange, chosenRange} = this;
 
 		let pixelWidth = this.elCore.clientWidth;
 
 		let normalizedLeft = (chosenRange[0] - visibleRange[0]) / (visibleRange[1] - visibleRange[0]);
 		let normalizedRight = (chosenRange[1] - visibleRange[0]) / (visibleRange[1] - visibleRange[0]);
-		let pixelLeft = Math.round(normalizedLeft * pixelWidth) - elLeft.clientWidth;
-		let pixelRight = Math.round(normalizedRight * pixelWidth) - elRight.clientWidth;
+		let pixelLeft = Math.round(normalizedLeft * pixelWidth) - elLeft.clientWidth / 2;
+		let pixelRight = Math.round(normalizedRight * pixelWidth) - elRight.clientWidth / 2;
 		
 		elLeft.style.left = `${pixelLeft}px`;
 		elRight.style.left = `${pixelRight}px`;
 
+		elInside.style.left = `${pixelLeft}px`;
+		elInside.style.width = `${pixelRight - pixelLeft}px`;
+
+
 		let precision = Math.ceil(Math.log(1 / this.step) / Math.log(10));
 
+		// from: https://stackoverflow.com/questions/2901102/how-to-print-a-number-with-commas-as-thousands-separators-in-javascript
+		let addThousandsSeparatorsToString = (str) => {
+			let parts = str.split(".");
+			parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+			return parts.join(".");
+		}
+
 		this.elLabelVisibleLeft.style.left = "0px";
-		this.elLabelVisibleLeft.innerHTML = `${visibleRange[0].toFixed(precision)}`;
+		let visibleLeftString = addThousandsSeparatorsToString(visibleRange[0].toFixed(precision));
+		this.elLabelVisibleLeft.innerHTML = `${visibleLeftString}`;
 
 		this.elLabelVisibleRight.style.right = "0px";
-		this.elLabelVisibleRight.innerHTML = `${visibleRange[1].toFixed(precision)}`;
+		let visibleRightString = addThousandsSeparatorsToString(visibleRange[1].toFixed(precision));
+		this.elLabelVisibleRight.innerHTML = `${visibleRightString}`;
 
 		this.elLabelChosenLeft.style.left = `${pixelLeft}px`;
-		this.elLabelChosenLeft.innerHTML = `${chosenRange[0].toFixed(precision)}`;
+		let chosenLeftString = addThousandsSeparatorsToString(chosenRange[0].toFixed(precision));
+		this.elLabelChosenLeft.innerHTML = `${chosenLeftString}`;
 
 		this.elLabelChosenRight.style.left = `${pixelRight}px`;
-		this.elLabelChosenRight.innerHTML = `${chosenRange[1].toFixed(precision)}`;
+		let chosenRightString = addThousandsSeparatorsToString(chosenRange[1].toFixed(precision));
+		this.elLabelChosenRight.innerHTML = `${chosenRightString}`;
 	}
 
 	change(callback){

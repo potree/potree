@@ -114,8 +114,8 @@ export class Viewer extends EventDispatcher{
 		this.clipTask = ClipTask.HIGHLIGHT;
 		this.clipMethod = ClipMethod.INSIDE_ANY;
 
-		this.filterReturnNumberRange = [0, 7];
-		this.filterNumberOfReturnsRange = [0, 7];
+		this.filterReturnNumberRange = [1, 7];
+		this.filterNumberOfReturnsRange = [1, 7];
 		this.filterGPSTimeRange = [0, Infinity];
 		this.filterGPSTimeExtent = [0, 1];
 
@@ -137,6 +137,7 @@ export class Viewer extends EventDispatcher{
 		this.skybox = null;
 		this.clock = new THREE.Clock();
 		this.background = null;
+		this.defaultGPSTimeChanged = false;
 
 		this.initThree();
 
@@ -1253,6 +1254,27 @@ export class Viewer extends EventDispatcher{
 					}
 					// pointcloud._intensityMaxEvaluated = true;
 				}
+			}
+
+			if(this.defaultGPSTimeChanged === false){
+
+				let root = pointcloud.pcoGeometry.root;
+				if (root != null && root.loaded) {
+					if(root.gpsTime){
+
+						let gpsTime = root.gpsTime;
+						let min = gpsTime.offset;
+						let max = gpsTime.offset + gpsTime.range;
+						let border = (max - min) * 0.1;
+
+						this.setFilterGPSTimeExtent(min - border, max + border);
+						this.setFilterGPSTimeRange(0, 1000 * 1000 * 1000);
+						//this.setFilterGPSTimeRange(min, max);
+
+						this.defaultGPSTimeChanged = true;
+					}
+				}
+
 			}
 			
 			pointcloud.showBoundingBox = this.showBoundingBox;

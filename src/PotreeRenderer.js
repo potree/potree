@@ -621,9 +621,9 @@ export class Renderer {
 					gpsMin = Math.min(gpsMin, nodeMin);
 					gpsMax = Math.max(gpsMax, nodeMax);
 				}
-
-
 			}
+
+			break;
 
 		}
 

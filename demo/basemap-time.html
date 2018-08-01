@@ -74,8 +74,8 @@
 
 	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
 		<div class="slidecontainer">
-			<input type="range" min="1" max="100" value="50" class="slider" id="myRange">
-			<p> Value: <span id="demo"></span></p>
+			<input type="range" min="1" max="100" value=50 class="slider" id="myRange">
+			<p> Value: <span id="demo">0.0000</span> seconds</p>
 			<input type="button" value="Play" id="playbutton">
 			<input type="button" value="Pause" id="pausebutton">
 		</div>
@@ -105,19 +105,29 @@
 		});
 
 		Potree.loadPointCloud("../pointclouds/basemap-time/cloud.js", "basemap-time", e => {
+
 			let pointcloud = e.pointcloud;
 			let material = pointcloud.material;
+			console.log(pointcloud.pcoGeometry.nodes.r.gpsTime);
 			viewer.scene.addPointCloud(pointcloud);
 			material.pointColorType = Potree.PointColorType.RGB; // any Potree.PointColorType.XXXX
 			material.size = 1;
 			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
 			material.shape = Potree.PointShape.SQUARE;
 			viewer.fitToScreen();
+			console.log("SET TIMEVAL IN MATERIAL HERE");
+			console.log(material.uniforms.timeVal);
 
-			console.log(pointcloud.pcoGeometry.nodes['r']);
-			console.log("here2")
 		});
-		console.log("here");
+
+		// viewer.scene.addEventListener('pointcloud_added', ()=> {
+		// 	console.log('pointcloud added');
+		// 	console.log(viewer);
+		// 	console.log(viewer.scene.pointclouds[0].pcoGeometry.nodes.r);
+		// 	viewer.timeRange = viewer.scene.pointclouds[0].pcoGeometry.nodes['r'].gpsTime.range;
+		// 	console.log(viewer.timeRange);
+		// });
+
 		</script>
 
 		<script>
@@ -131,12 +141,16 @@
 		var sphereZpos = 260;
 		scene.add( sphere );
 
+
+
 		</script>
 
 
 		<script>
 		// ANIMATION:
 		{ // create Animation Path & make light follow it
+
+
 
 			let path = [
 				[300065, 4701218, 260],
@@ -165,8 +179,8 @@
 
 			{ // render the control points of the path
 				for(let pos of path){
-					let sg = new THREE.SphereGeometry(0.2, 32, 32);
-					let sm = new THREE.MeshBasicMaterial();
+					let sg = new THREE.SphereGeometry(2, 32, 32);
+					let sm = new THREE.MeshBasicMaterial({color: 0xFF0000});
 					let s = new THREE.Mesh(sg, sm);
 					pos['z'] = sphereZpos;
 					console.log(pos);
@@ -174,7 +188,6 @@
 					viewer.scene.scene.add(s);
 				}
 			}
-
 
 			{// ANIMATION + SLIDER LOGIC:
 				let slider = document.getElementById("myRange");
@@ -194,8 +207,11 @@
 					sphere.position.copy(point);
 
 					slider.value = 100*t;
-					output.innerHTML = slider.value/100;
-
+				 	var time = (viewer.scene.pointclouds[0].pcoGeometry.nodes.r.gpsTime.range*slider.value/100);
+					output.innerHTML = time.toFixed(4);
+					// console.log(viewer.scene.pointclouds[0].material.uniforms.timeVal.value);
+					viewer.scene.pointclouds[0].material.uniforms.timeVal.value = t;
+					// viewer.scene.pointclouds[0].material.uniforms.timeRange = viewer.scene.pointclouds[0].pcoGeometry.nodes.r.gpsTime.range;
 
 
 				});
@@ -211,24 +227,26 @@
 					$("#pausebutton").click();
 
 					var val = slider.value/100.0;
-					output.innerHTML = val;
+					var time = 0;
+					if (viewer.scene.pointclouds[0].pcoGeometry.nodes.r.gpsTime) {
+						time = (viewer.scene.pointclouds[0].pcoGeometry.nodes.r.gpsTime.range*slider.value/100);
+					} else {
+						time = -1;
+					}
+					output.innerHTML = time.toFixed(4);
 
 					animation.t = val;
 					let point = animation.getPoint(animation.t);
 					sphere.position.copy(point);
-
-					console.log(animation);
-					// debugger;
+					viewer.scene.pointclouds[0].material.uniforms.timeVal.value = val;
+					// viewer.scene.pointclouds[0].material.uniforms.timeRange = viewer.scene.pointclouds[0].pcoGeometry.nodes.r.gpsTime.range;
 
 				});
 			}
-
 			window.animationPath = animationPath;
 		}
 
 		</script>
-
-
 
   </body>
 </html>

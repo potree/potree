@@ -21,6 +21,7 @@ export class ZoomableSlider{
 					<span name="inside" class="zs_inside">&nbsp;</span>
 					<span name="left" class="zs_handle">&nbsp;</span>
 					<span name="right" class="zs_handle">&nbsp;</span>
+					<span name="stretch" class="zs_stretch" title="stretch visible range to selected range">&#8697;</span>
 					<span name="label_chosen_left" class="zs_chosen_range_label zs_chosen_range_label_left"></span>
 					<span name="label_chosen_right" class="zs_chosen_range_label zs_chosen_range_label_right"></span>
 				</div>
@@ -30,6 +31,7 @@ export class ZoomableSlider{
 		this.elCore = this.element.querySelector('[name=core]');
 		this.elLeft = this.element.querySelector('[name=left]');
 		this.elRight = this.element.querySelector('[name=right]');
+		this.elStretch = this.element.querySelector('[name=stretch]');
 		this.elInside = this.element.querySelector('[name=inside]');
 		this.elOutside = this.element.querySelector('[name=outside]');
 
@@ -140,6 +142,16 @@ export class ZoomableSlider{
 		};
 		this.elCore.onmousewheel = onWheel;
 
+		this.elStretch.onclick = () => {
+			let choosenRangeWidth = this.chosenRange[1] - this.chosenRange[0];
+			let visibleRange = [
+				this.chosenRange[0] - choosenRangeWidth * 0.1,
+				this.chosenRange[1] + choosenRangeWidth * 0.1,
+			];
+
+			this.setVisibleRange(visibleRange);
+		};
+
 		this.update();
 	}
 
@@ -165,7 +177,7 @@ export class ZoomableSlider{
 	}
 
 	update(){
-		let {elLeft, elRight, elInside, visibleRange, chosenRange} = this;
+		let {elLeft, elRight, elStretch, elInside, visibleRange, chosenRange} = this;
 
 		let pixelWidth = this.elCore.clientWidth;
 
@@ -176,6 +188,7 @@ export class ZoomableSlider{
 		
 		elLeft.style.left = `${pixelLeft}px`;
 		elRight.style.left = `${pixelRight}px`;
+		elStretch.style.left = `${(pixelRight + pixelLeft) / 2}px`;
 
 		elInside.style.left = `${pixelLeft}px`;
 		elInside.style.width = `${pixelRight - pixelLeft}px`;

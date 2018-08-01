@@ -716,6 +716,23 @@ body{
 	height: 1.2em;
 	top: calc(50% - 0.6em);
 }
+.zs_stretch{
+	position: absolute;
+	top: 0px;
+	bottom: 0px;
+	border: 1px solid black;
+	border-radius: 3px;
+	background-color: rgb(166, 169, 170);
+	width: 8px;
+	user-select: none;
+	width: 1.2em;
+	height: 1.2em;
+	top: calc(50% - 0.6em);
+	color: black;
+	font-weight: bold;
+	font-size: 1.2em;
+	font-family: arial;
+}
 .zs_handle:hover{
 	background-color: lightgreen;
 }

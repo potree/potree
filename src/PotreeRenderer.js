@@ -161,6 +161,8 @@ class Shader {
 
 		this.uniformLocations = {};
 		this.attributeLocations = {};
+		this.uniformBlockIndices = {};
+		this.uniformBlocks = {};
 
 		this.update(vsSource, fsSource);
 	}
@@ -256,6 +258,38 @@ class Shader {
 					let location = gl.getUniformLocation(program, uniform.name);
 
 					this.uniformLocations[uniform.name] = location;
+				}
+			}
+
+			// uniform blocks
+			if(gl instanceof WebGL2RenderingContext){ 
+				let numBlocks = gl.getProgramParameter(program, gl.ACTIVE_UNIFORM_BLOCKS);
+
+				for (let i = 0; i < numBlocks; i++) {
+					let blockName = gl.getActiveUniformBlockName(program, i);
+
+					let blockIndex = gl.getUniformBlockIndex(program, blockName);
+
+					this.uniformBlockIndices[blockName] = blockIndex;
+
+					gl.uniformBlockBinding(program, blockIndex, blockIndex);
+					let dataSize = gl.getActiveUniformBlockParameter(program, blockIndex, gl.UNIFORM_BLOCK_DATA_SIZE);
+
+					let uBuffer = gl.createBuffer();	
+					gl.bindBuffer(gl.UNIFORM_BUFFER, uBuffer);
+					gl.bufferData(gl.UNIFORM_BUFFER, dataSize, gl.DYNAMIC_READ);
+
+					gl.bindBufferBase(gl.UNIFORM_BUFFER, blockIndex, uBuffer);
+
+					gl.bindBuffer(gl.UNIFORM_BUFFER, null);
+
+					this.uniformBlocks[blockName] = {
+						name: blockName,
+						index: blockIndex,
+						dataSize: dataSize,
+						buffer: uBuffer
+					};
+
 				}
 			}
 
@@ -883,6 +917,7 @@ export class Renderer {
 				//debugger;
 
 
+
 				let defines = [
 					`#define num_shadowmaps ${shadowMaps.length}`,
 					`#define num_snapshots ${numSnapshots}`,
@@ -890,6 +925,7 @@ export class Renderer {
 					`#define num_clipspheres ${numClipSpheres}`,
 					`#define num_clippolygons ${numClipPolygons}`,
 				];
+
 
 				if(octree.pcoGeometry.root.isLoaded()){
 					let attributes = octree.pcoGeometry.root.geometry.attributes;
@@ -913,8 +949,21 @@ export class Renderer {
 
 				let definesString = defines.join("\n");
 
-				vs = `${definesString}\n${vs}`;
-				fs = `${definesString}\n${fs}`;
+				let vsVersionIndex = vs.indexOf("#version ");
+				let fsVersionIndex = fs.indexOf("#version ");
+
+				if(vsVersionIndex >= 0){
+					vs = vs.replace(/(#version .*)/, `$1\n${definesString}`)
+				}else{
+					vs = `${definesString}\n${vs}`;
+				}
+
+				if(fsVersionIndex >= 0){
+					fs = fs.replace(/(#version .*)/, `$1\n${definesString}`)
+				}else{
+					fs = `${definesString}\n${fs}`;
+				}
+
 
 				shader.update(vs, fs);
 
@@ -1059,9 +1108,29 @@ export class Renderer {
 				//gl.uniformMatrix4fv(lClipSpheres, false, material.uniforms.clipSpheres.value);
 			}
 
-			shader.setUniform1f("size", material.size);
-			shader.setUniform1f("maxSize", material.uniforms.maxSize.value);
-			shader.setUniform1f("minSize", material.uniforms.minSize.value);
+			if(Potree.Features.WEBGL2.isSupported()){
+				let buffer = new ArrayBuffer(12);
+				let bufferf32 = new Float32Array(buffer);
+				bufferf32[0] = material.size;
+				bufferf32[1] = material.uniforms.minSize.value;
+				bufferf32[2] = material.uniforms.maxSize.value;
+
+				let block = shader.uniformBlocks["ubo_point"];
+
+				gl.bindBufferBase(gl.UNIFORM_BUFFER, 0, block.buffer);
+
+				gl.bindBuffer(gl.UNIFORM_BUFFER, block.buffer);
+				gl.bufferSubData(gl.UNIFORM_BUFFER, 0, buffer);
+				gl.bindBuffer(gl.UNIFORM_BUFFER, null);
+				
+			}else{
+				shader.setUniform1f("size", material.size);
+				shader.setUniform1f("maxSize", material.uniforms.maxSize.value);
+				shader.setUniform1f("minSize", material.uniforms.minSize.value);
+			}
+
+
+
 
 			// uniform float uPCIndex
 			shader.setUniform1f("uOctreeSpacing", material.spacing);

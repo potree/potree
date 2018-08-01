@@ -1034,7 +1034,32 @@ export class Viewer extends EventDispatcher{
 		let width = this.renderArea.clientWidth;
 		let height = this.renderArea.clientHeight;
 
-		this.renderer = new THREE.WebGLRenderer({alpha: true, premultipliedAlpha: false});
+		let contextAttributes = {
+			alpha: true,
+			depth: true,
+			stencil: false,
+			antialias: false,
+			//premultipliedAlpha: _premultipliedAlpha,
+			preserveDrawingBuffer: true,
+			powerPreference: "high-performance",
+		};
+
+		let canvas = document.createElement("canvas");
+
+		//let context = canvas.getContext('webgl2', contextAttributes );
+		//if(!context){
+			let context = canvas.getContext('webgl', contextAttributes );
+			Potree.Features.WEBGL2.isSupported = () => {
+				return false;
+			};
+		//}
+
+
+		this.renderer = new THREE.WebGLRenderer({
+			alpha: true, 
+			premultipliedAlpha: false,
+			canvas: canvas,
+			context: context});
 		this.renderer.sortObjects = false;
 		this.renderer.setSize(width, height);
 		this.renderer.autoClear = false;
@@ -1051,10 +1076,18 @@ export class Viewer extends EventDispatcher{
 		gl.getExtension('EXT_frag_depth');
 		gl.getExtension('WEBGL_depth_texture');
 		
-		let extVAO = gl.getExtension('OES_vertex_array_object');
-		gl.createVertexArray = extVAO.createVertexArrayOES.bind(extVAO);
-		gl.bindVertexArray = extVAO.bindVertexArrayOES.bind(extVAO);
-		//gl.bindVertexArray = extVAO.asdfbindVertexArrayOES.bind(extVAO);
+		if(gl instanceof WebGLRenderingContext){
+			let extVAO = gl.getExtension('OES_vertex_array_object');
+
+			if(!extVAO){
+				throw new Error("OES_vertex_array_object extension not supported");
+			}
+
+			gl.createVertexArray = extVAO.createVertexArrayOES.bind(extVAO);
+			gl.bindVertexArray = extVAO.bindVertexArrayOES.bind(extVAO);
+		}else if(gl instanceof WebGL2RenderingContext){
+			gl.getExtension("EXT_color_buffer_float");
+		}
 		
 	}
 

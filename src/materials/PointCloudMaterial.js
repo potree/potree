@@ -141,8 +141,18 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 		this.defaultAttributeValues.classification = [0, 0, 0];
 		this.defaultAttributeValues.indices = [0, 0, 0, 0];
 
-		this.vertexShader = this.getDefines() + Shaders['pointcloud.vs'];
-		this.fragmentShader = this.getDefines() + Shaders['pointcloud.fs'];
+		//if(Potree.Features.WEBGL2.isSupported()){
+		//	this.vertexShader = this.getDefines() + Shaders['pointcloud.gl2.vs'];
+		//	this.fragmentShader = this.getDefines() + Shaders['pointcloud.fs'];
+		//}else{
+		//	this.vertexShader = this.getDefines() + Shaders['pointcloud.vs'];
+		//	this.fragmentShader = this.getDefines() + Shaders['pointcloud.fs'];
+		//}
+
+		this.vertexShader = Shaders['pointcloud.vs'];
+		this.fragmentShader = Shaders['pointcloud.fs'];
+
+		
 		this.vertexColors = THREE.VertexColors;
 	}
 
@@ -162,8 +172,30 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 	}
 
 	updateShaderSource () {
-		this.vertexShader = this.getDefines() + Shaders['pointcloud.vs'];
-		this.fragmentShader = this.getDefines() + Shaders['pointcloud.fs'];
+
+		let vs = Potree.Features.WEBGL2.isSupported() ?
+			Shaders['pointcloud.gl2.vs'] : Shaders['pointcloud.vs'];
+		let fs = Potree.Features.WEBGL2.isSupported() ?
+			Shaders['pointcloud.gl2.fs'] : Shaders['pointcloud.fs'];
+		let definesString = this.getDefines();
+
+		let vsVersionIndex = vs.indexOf("#version ");
+		let fsVersionIndex = fs.indexOf("#version ");
+
+		if(vsVersionIndex >= 0){
+			vs = vs.replace(/(#version .*)/, `$1\n${definesString}`)
+		}else{
+			vs = `${definesString}\n${vs}`;
+		}
+
+		if(fsVersionIndex >= 0){
+			fs = fs.replace(/(#version .*)/, `$1\n${definesString}`)
+		}else{
+			fs = `${definesString}\n${fs}`;
+		}
+
+		this.vertexShader = vs;
+		this.fragmentShader = fs;
 
 		if (this.opacity === 1.0) {
 			this.blending = THREE.NoBlending;

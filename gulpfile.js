@@ -57,7 +57,10 @@ let shaders = [
 	"src/materials/shaders/edl.vs",
 	"src/materials/shaders/edl.fs",
 	"src/materials/shaders/blur.vs",
-	"src/materials/shaders/blur.fs"
+	"src/materials/shaders/blur.fs",
+
+	"src/materials/shaders/pointcloud.gl2.vs",
+	"src/materials/shaders/pointcloud.gl2.fs",
 ];
 
 

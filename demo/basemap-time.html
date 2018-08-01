@@ -76,6 +76,8 @@
 		<div class="slidecontainer">
 			<input type="range" min="1" max="100" value="50" class="slider" id="myRange">
 			<p> Value: <span id="demo"></span></p>
+			<input type="button" value="Play" id="playbutton">
+			<input type="button" value="Pause" id="pausebutton">
 		</div>
 		<div id="potree_render_area"></div>
 		<div id="potree_sidebar_container"> </div>
@@ -116,18 +118,116 @@
 			console.log("here2")
 		});
 		console.log("here");
+		</script>
 
-		// SLIDER LOGIC:
-		var slider = document.getElementById("myRange");
-		var output = document.getElementById("demo");
-		output.innerHTML = slider.value;
+		<script>
 
-		slider.addEventListener("input", function() {
-			output.innerHTML = this.value;
-			console.log(this.value);
-		});
+		// CREATE OBJECTS:
+		let scene = viewer.scene.scene;
+		var geometry = new THREE.SphereGeometry( 5, 32, 32 );
+		var material = new THREE.MeshNormalMaterial();
+		var sphere = new THREE.Mesh( geometry, material );
+		sphere.position = new THREE.Vector3(300066.0, 4701217, sphereZpos);
+		var sphereZpos = 260;
+		scene.add( sphere );
 
-	</script>
+		</script>
+
+
+		<script>
+		// ANIMATION:
+		{ // create Animation Path & make light follow it
+
+			let path = [
+				[300065, 4701218, 260],
+				[300165, 4701253, 260],
+				[300136, 4701360, 260],
+
+
+				// [-8.60, 13.67, 7.08],
+				// [-12.21, 4.01, 7.45],
+				// [-0.67, 4.55, 5.00],
+				// [5.70, -4.38, 11.13],
+				// [-7.75, -10.75, 14.78],
+				// [-23.75, -4.88, 8.68],
+				// [-21.78, 11.73, 11.22],
+			].map(v => new THREE.Vector3(...v));
+
+			let animationPath = new Potree.AnimationPath(path);
+			animationPath.closed = true;
+
+			{ // render the path
+				let geometry = animationPath.getGeometry();
+				let material = new THREE.LineBasicMaterial();
+				let line = new THREE.Line(geometry, material, {closed: animationPath.closed});
+				viewer.scene.scene.add(line);
+			}
+
+			{ // render the control points of the path
+				for(let pos of path){
+					let sg = new THREE.SphereGeometry(0.2, 32, 32);
+					let sm = new THREE.MeshBasicMaterial();
+					let s = new THREE.Mesh(sg, sm);
+					pos['z'] = sphereZpos;
+					console.log(pos);
+					s.position.copy(pos);
+					viewer.scene.scene.add(s);
+				}
+			}
+
+
+			{// ANIMATION + SLIDER LOGIC:
+				let slider = document.getElementById("myRange");
+				let output = document.getElementById("demo");
+				output.innerHTML = slider.value;
+
+				// Animate from beginning to end with a speed of 10 meters per second
+				let start = 0;
+				let end = Infinity;
+				let speed = 30;
+				let animation = animationPath.animate(start, end, speed, t => {
+					animation.repeat = true;
+
+					// t is a value between 0 and 1.
+					// use getPoint(t) to map from t to the position on the animation path
+					let point = animation.getPoint(t);
+					sphere.position.copy(point);
+
+					slider.value = 100*t;
+					output.innerHTML = slider.value/100;
+
+
+
+				});
+				window.animation = animation;
+
+				// Play/Pause Button Functions:
+				let playbutton = document.getElementById("playbutton");
+				let pausebutton = document.getElementById("pausebutton");
+				pausebutton.addEventListener("click", () => {animation.pause();});
+				playbutton.addEventListener("click", () => {animation.resume();});
+				slider.addEventListener("input", () => {
+
+					$("#pausebutton").click();
+
+					var val = slider.value/100.0;
+					output.innerHTML = val;
+
+					animation.t = val;
+					let point = animation.getPoint(animation.t);
+					sphere.position.copy(point);
+
+					console.log(animation);
+					// debugger;
+
+				});
+			}
+
+			window.animationPath = animationPath;
+		}
+
+		</script>
+
 
 
   </body>

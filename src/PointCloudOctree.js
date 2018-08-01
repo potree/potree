@@ -817,7 +817,18 @@ export class PointCloudOctree extends PointCloudTree {
 					point[attributeName] = position;
 				} else if (attributeName === 'indices') {
 		
+				} else if (attributeName === 'gpsTime') {
+					let values = attribute.array.slice(attribute.itemSize * hit.pIndex, attribute.itemSize * (hit.pIndex + 1)) ;
+					
+					values[0] += node.geometryNode.gpsTime.offset;
+
+					point[attributeName] = values;
 				} else {
+
+					let values = attribute.array.slice(attribute.itemSize * hit.pIndex, attribute.itemSize * (hit.pIndex + 1)) ;
+					point[attributeName] = values;
+
+					//debugger;
 					//if (values.itemSize === 1) {
 					//	point[attribute.name] = values.array[hit.pIndex];
 					//} else {

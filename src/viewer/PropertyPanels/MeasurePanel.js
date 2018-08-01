@@ -62,17 +62,31 @@ export class MeasurePanel{
 		let elTable = $('<table class="measurement_value_table"></table>');
 
 		let point = this.measurement.points[0];
+		
+		for(let attributeName of Object.keys(point)){
+			if(attributeName === "position"){
+			
+			}else if(attributeName === "color"){
+				let color = point.color;
+				let text = color.join(', ');
 
-		if(point.color){
-			let color = point.color;
-			let text = color.join(', ');
+				elTable.append($(`
+					<tr>
+						<td>rgb</td>
+						<td>${text}</td>
+					</tr>
+				`));
+			}else{
+				let value = point[attributeName];
+				let text = value.join(', ');
 
-			elTable.append($(`
-				<tr>
-					<td>rgb</td>
-					<td>${text}</td>
-				</tr>
-			`));
+				elTable.append($(`
+					<tr>
+						<td>${attributeName}</td>
+						<td>${text}</td>
+					</tr>
+				`));
+			}
 		}
 
 		return elTable;

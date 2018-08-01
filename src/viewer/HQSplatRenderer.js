@@ -138,6 +138,13 @@ export class HQSplatRenderer{
 				depthMaterial.spacing = pointcloud.pcoGeometry.spacing * Math.max(...pointcloud.scale.toArray());
 				depthMaterial.classification = material.classification;
 
+				depthMaterial.uniforms.uFilterReturnNumberRange.value = material.uniforms.uFilterReturnNumberRange.value;
+				depthMaterial.uniforms.uFilterNumberOfReturnsRange.value = material.uniforms.uFilterNumberOfReturnsRange.value;
+				depthMaterial.uniforms.uFilterGPSTimeClipRange.value = material.uniforms.uFilterGPSTimeClipRange.value;
+
+				//depthMaterial.uniforms.uGPSOffset.value = material.uniforms.uGPSOffset.value;
+				//depthMaterial.uniforms.uGPSRange.value = material.uniforms.uGPSRange.value;
+
 				depthMaterial.clipTask = material.clipTask;
 				depthMaterial.clipMethod = material.clipMethod;
 				depthMaterial.setClipBoxes(material.clipBoxes);
@@ -174,6 +181,11 @@ export class HQSplatRenderer{
 				attributeMaterial.uniforms.octreeSize.value = octreeSize;
 				attributeMaterial.spacing = pointcloud.pcoGeometry.spacing * Math.max(...pointcloud.scale.toArray());
 				attributeMaterial.classification = material.classification;
+
+				attributeMaterial.uniforms.uFilterReturnNumberRange.value = material.uniforms.uFilterReturnNumberRange.value;
+				attributeMaterial.uniforms.uFilterNumberOfReturnsRange.value = material.uniforms.uFilterNumberOfReturnsRange.value;
+				attributeMaterial.uniforms.uFilterGPSTimeClipRange.value = material.uniforms.uFilterGPSTimeClipRange.value;
+
 				attributeMaterial.elevationRange = material.elevationRange;
 				attributeMaterial.gradient = material.gradient;
 

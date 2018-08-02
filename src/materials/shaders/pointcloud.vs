@@ -739,12 +739,6 @@ void main() {
 	// COLOR
 	vColor = getColor();
 
-  // COLOR BY GPS:
-	if (gpsTime > 1.0) {
-		vColor.r += .75;
-	}
-
-
 	#if defined hq_depth_pass
 		float originalDepth = gl_Position.w;
 		float adjustedDepth = originalDepth + 2.0 * vRadius;
@@ -838,6 +832,20 @@ void main() {
 	//	vColor.b = (vColor.r + vColor.g + vColor.b) / 3.0;
 	//	vColor.r = 1.0;
 	//	vColor.g = 1.0;
+	//}
+
+
+	// COLOR BY GPS:
+	//float t = uCurrentGPSTimeVal*13.0;
+	//float dt = 5.0;
+
+	if ( uCurrentGPSTimeVal > 10.0 ) {
+		vColor.g += .5;
+	}
+
+
+	//if (position.x < 10.0) {
+	//	vColor.b += .75;
 	//}
 
 }

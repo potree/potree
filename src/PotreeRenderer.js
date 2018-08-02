@@ -818,8 +818,8 @@ export class Renderer {
 				shader.setUniform1f("uGPSOffset", gpsOffset);
 				shader.setUniform1f("uGPSRange", gpsRange);
 
-				console.log('here');
-				console.log(node);
+				// console.log('here');
+				// console.log(node);
 				// debugger;
 
 			}
@@ -1045,8 +1045,9 @@ export class Renderer {
 
 		{ // UPDATE UNIFORMS
 			// console.log(material.uniforms.timeRange);
-			console.log(octree.pcoGeometry.nodes.r.gpsTime.range);
-			console.log(material.uniforms.timeVal);
+			// console.log(octree.pcoGeometry.nodes.r.gpsTime.range);
+			// console.log(material.uniforms);
+			// debugger; // Check if uGPSRange and uGPSOffset are set
 			shader.setUniform1f("uCurrentGPSTimeVal", material.uniforms.timeVal);
 			shader.setUniformMatrix4("projectionMatrix", proj);
 			shader.setUniformMatrix4("viewMatrix", view);

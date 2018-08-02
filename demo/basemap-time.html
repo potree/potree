@@ -125,9 +125,17 @@
     d3.csv("csv/radar_tracks_1000.csv", (data) => {
 
     // d3.csv("csv/radar_tracks.csv", (data) => {
-
+      var i = 0;
+      var startTime = 0.0;
+      var range = 0.0;
+      var timestamp = 0;
       for (let id in data) {
         var track = data[id];
+
+        timestamp = parseFloat(track.gps_epoch);
+        if (i == 0) {
+          startTime = timestamp;
+        }
 
         // Add Spheres:
         var radar_detect = new THREE.Mesh(
@@ -139,16 +147,21 @@
         var y = parseFloat(track.RTK_NORTHING_M) + parseFloat(track.RTK_Y_M);
         var z = parseFloat(track.RTK_ALT_M) + parseFloat(track.RTK_Z_M);
         radar_detect.position.copy(new THREE.Vector3(x, y, z));
+        radar_detect.name = "radar_detect_"+id;
+        radar_detect.timestamp = timestamp - startTime;
+        // debugger; // check where attribute, check gps_epoch, check add attribute
 
         // console.log(i);
         // console.log(radar_detect);
         // console.log(x, y, z);
         // debugger;
-        console.log(radar_detect.position);
+        // console.log(radar_detect.timestamp);
         viewer.scene.scene.add(radar_detect);
-
+        i += 1;
       }
 
+      var timeRange = timestamp - startTime;
+      console.log("timerange: " + timeRange);
     });
 
 		// viewer.scene.addEventListener('pointcloud_added', ()=> {
@@ -243,6 +256,18 @@
 					// console.log(viewer.scene.pointclouds[0].material.uniforms.timeVal.value);
 					viewer.scene.pointclouds[0].material.uniforms.timeVal.value = t;
 					// viewer.scene.pointclouds[0].material.uniforms.timeRange = viewer.scene.pointclouds[0].pcoGeometry.nodes.r.gpsTime.range;
+
+          for (let i = 0; i < 1000; i++) {
+            var radar_detect = viewer.scene.scene.getObjectByName("radar_detect_"+i);
+            if (radar_detect && radar_detect.timestamp/10 > t) {
+              radar_detect.material.opacity = 0.0;
+              radar_detect.material.transparent = true;
+            }
+            else if (radar_detect) {
+              radar_detect.material.opacity = 1;
+              radar_detect.material.transparent = false;
+            }
+          }
 
 
 				});

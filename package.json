@@ -8,6 +8,7 @@
     "gulp-concat": "^2.6.1",
     "gulp-connect": "^5.5.0",
     "gulp-util": "^3.0.8",
+    "papaparse": "^4.6.0",
     "through": "~2.3.4"
   },
   "author": "Markus Schütz",

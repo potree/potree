@@ -116,7 +116,11 @@
 			material.size = 1;
 			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
 			material.shape = Potree.PointShape.SQUARE;
-			viewer.fitToScreen();
+      viewer.fitToScreen();
+      viewer.toggleNavigationCube();
+      // viewer.scene.getActiveCamera().position.copy(new THREE.Vector3(300412.175, 4701247.960, 651.093));
+      // viewer.scene.getActiveCamera().lookAt(new THREE.Vector3(300021, 4701784, 240));
+      // debugger; //position and lookat
 			console.log("SET TIMEVAL IN MATERIAL HERE");
 			console.log(material.uniforms.timeVal);
 
@@ -185,9 +189,6 @@
 		sphere.position = new THREE.Vector3(300066.0, 4701217, sphereZpos);
 		var sphereZpos = 260;
 		scene.add( sphere );
-
-
-
 
 		</script>
 
@@ -263,8 +264,6 @@
 					let sg = new THREE.SphereGeometry(2, 32, 32);
 					let sm = new THREE.MeshBasicMaterial({color: 0xFF0000});
 					let s = new THREE.Mesh(sg, sm);
-					// pos['z'] = sphereZpos;
-					// console.log(pos);
 					s.position.copy(pos);
 					viewer.scene.scene.add(s);
 				}
@@ -278,34 +277,34 @@
 				// Animate from beginning to end with a speed of 10 meters per second
 				let start = 0;
 				let end = Infinity;
-				let speed = 300;
+				let speed = 100;
 				let animation = animationPath.animate(start, end, speed, t => {
 					animation.repeat = true;
 
 					// t is a value between 0 and 1.
 					// use getPoint(t) to map from t to the position on the animation path
-					let point = animation.getPoint(t);
+					let point = animation.getPoint(3*t);
 					sphere.position.copy(point);
-
 
 					slider.value = 100*t;
 				 	var time = (viewer.scene.pointclouds[0].pcoGeometry.nodes.r.gpsTime.range*t);
 					output.innerHTML = time.toFixed(4);
-					// console.log(viewer.scene.pointclouds[0].material.uniforms.timeVal.value);
+
+          // Set Time in Material:
 					viewer.scene.pointclouds[0].material.uniforms.timeVal.value = t;
 
-          viewer.setFilterGPSTimeRange(time-1.0, time+1.0);
+          // Create GPS Time Clipping Event:
+          viewer.setFilterGPSTimeRange(time-10.0, time+10.0);
           viewer.setFilterGPSTimeExtent(0, Infinity);
 
 
           let camera = viewer.scene.getActiveCamera();
           let lag = 3.0; // seconds
-          let lagTime = Math.max(0, (time-lag)/viewer.scene.pointclouds[0].pcoGeometry.nodes.r.gpsTime.range);
+          let lagTime = Math.max(0, (3*time-lag)/viewer.scene.pointclouds[0].pcoGeometry.nodes.r.gpsTime.range);
           let camPoint = animation.getPoint(lagTime);  // Get point with 1 second lag
           camPoint.z += 30;
           camera.position.copy(camPoint);
           camera.lookAt(sphere.position);
-					// viewer.scene.pointclouds[0].material.uniforms.timeRange = viewer.scene.pointclouds[0].pcoGeometry.nodes.r.gpsTime.range;
 
 
           // Radar Detects:
@@ -345,17 +344,16 @@
 					output.innerHTML = time.toFixed(4);
 
 					animation.t = val;
-					let point = animation.getPoint(animation.t);
+					let point = animation.getPoint(3*animation.t);
 					sphere.position.copy(point);
 					viewer.scene.pointclouds[0].material.uniforms.timeVal.value = val;
 
-          viewer.setFilterGPSTimeRange(time-1.0, time+1.0);
+          viewer.setFilterGPSTimeRange(time-10.0, time+10.0);
           viewer.setFilterGPSTimeExtent(0, Infinity);
-
-					// viewer.scene.pointclouds[0].material.uniforms.timeRange = viewer.scene.pointclouds[0].pcoGeometry.nodes.r.gpsTime.range;
 
 				});
 			}
+
 			window.animationPath = animationPath;
 		}
 

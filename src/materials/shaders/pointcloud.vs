@@ -634,7 +634,7 @@ void doClipping(){
 	#if defined(clip_return_number_enabled)
 	{ // return number filter
 		vec2 range = uFilterReturnNumberRange;
-		if(returnNumber < range.x || returnNumber > range.y){
+		if(returnNumber < range.x+50. || returnNumber > range.y+50){
 			gl_Position = vec4(100.0, 100.0, 100.0, 0.0);
 
 			return;

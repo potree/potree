@@ -658,9 +658,10 @@ void doClipping(){
 		float time = gpsTime + uGPSOffset;
 		vec2 range = uFilterGPSTimeClipRange;
 
-		if(time < range.x || time > range.y){
-			gl_Position = vec4(100.0, 100.0, 100.0, 0.0);
-
+		if(time > range.x && time < range.y){
+			//gl_Position = vec4(100.0, 100.0, 100.0, 0.0);
+			vColor.r += .5;
+			vColor.b -= .8;
 			return;
 		}
 	}

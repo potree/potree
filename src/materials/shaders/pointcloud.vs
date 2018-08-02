@@ -83,7 +83,6 @@ uniform vec2 uFilterReturnNumberRange;
 uniform vec2 uFilterNumberOfReturnsRange;
 uniform vec2 uFilterGPSTimeClipRange;
 
-uniform float uCurrentGPSTimeVal;
 uniform float uGPSOffset;
 uniform float uGPSRange;
 uniform float intensityGamma;
@@ -738,6 +737,8 @@ void main() {
 
 	// COLOR
 	vColor = getColor();
+	vColor.b += .80;
+
 
 	#if defined hq_depth_pass
 		float originalDepth = gl_Position.w;
@@ -832,20 +833,6 @@ void main() {
 	//	vColor.b = (vColor.r + vColor.g + vColor.b) / 3.0;
 	//	vColor.r = 1.0;
 	//	vColor.g = 1.0;
-	//}
-
-
-	// COLOR BY GPS:
-	//float t = uCurrentGPSTimeVal*13.0;
-	//float dt = 5.0;
-
-	if ( uCurrentGPSTimeVal > 10.0 ) {
-		vColor.g += .5;
-	}
-
-
-	//if (position.x < 10.0) {
-	//	vColor.b += .75;
 	//}
 
 }

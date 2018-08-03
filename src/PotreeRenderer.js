@@ -163,6 +163,7 @@ class Shader {
 		this.attributeLocations = {};
 		this.uniformBlockIndices = {};
 		this.uniformBlocks = {};
+		this.uniforms = {};
 
 		this.update(vsSource, fsSource);
 	}
@@ -195,6 +196,7 @@ class Shader {
 
 		this.uniformLocations = {};
 		this.attributeLocations = {};
+		this.uniforms = {};
 
 		gl.useProgram(null);
 
@@ -205,6 +207,8 @@ class Shader {
 			this.fs = cached.fs;
 			this.attributeLocations = cached.attributeLocations;
 			this.uniformLocations = cached.uniformLocations;
+			this.uniformBlocks = cached.uniformBlocks;
+			this.uniforms = cached.uniforms;
 
 			return;
 		} else {
@@ -258,6 +262,10 @@ class Shader {
 					let location = gl.getUniformLocation(program, uniform.name);
 
 					this.uniformLocations[uniform.name] = location;
+					this.uniforms[uniform.name] = {
+						location: location,
+						value: null,
+					};
 				}
 			}
 
@@ -298,7 +306,9 @@ class Shader {
 				vs: this.vs,
 				fs: this.fs,
 				attributeLocations: this.attributeLocations,
-				uniformLocations: this.uniformLocations
+				uniformLocations: this.uniformLocations,
+				uniforms: this.uniforms,
+				uniformBlocks: this.uniformBlocks,
 			};
 
 			this.cache.set(`${this.vsSource}, ${this.fsSource}`, cached);
@@ -323,24 +333,44 @@ class Shader {
 
 	setUniform1f(name, value) {
 		const gl = this.gl;
-		const location = this.uniformLocations[name];
+		const uniform = this.uniforms[name];
 
-		if (location == null) {
+		if (uniform === undefined) {
 			return;
 		}
 
-		gl.uniform1f(location, value);
+		if(uniform.value === value){
+			return;
+		}
+
+		uniform.value = value;
+
+		gl.uniform1f(uniform.location, value);
+
+		//const location = this.uniformLocations[name];
+
+		//if (location == null) {
+		//	return;
+		//}
+
+		//gl.uniform1f(location, value);
 	}
 
 	setUniformBoolean(name, value) {
 		const gl = this.gl;
-		const location = this.uniformLocations[name];
+		const uniform = this.uniforms[name];
 
-		if (location == null) {
+		if (uniform === undefined) {
 			return;
 		}
 
-		gl.uniform1i(location, value);
+		if(uniform.value === value){
+			return;
+		}
+
+		uniform.value = value;
+
+		gl.uniform1i(uniform.location, value);
 	}
 
 	setUniformTexture(name, value) {

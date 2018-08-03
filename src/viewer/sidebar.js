@@ -342,8 +342,9 @@ export class Sidebar{
 		});
 
 		tree.on('dblclick','.jstree-anchor', (e) => {
-			let instance = $.jstree.reference(this);
-			let node = instance.get_node(this);
+
+			let instance = $.jstree.reference(e.target);
+			let node = instance.get_node(e.target);
 			let object = node.data;
 
 			// ignore double click on checkbox

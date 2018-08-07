@@ -20,3 +20,5 @@ libs/CesiumUnminified
 /resources/icons/index.html
 /examples/page.html
 pointclouds/C
+demo/csv
+develop/clouds

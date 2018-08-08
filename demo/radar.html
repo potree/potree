@@ -102,8 +102,81 @@
 			$("#menu_tools").next().show();
 			$("#menu_scene").next().show();
 			viewer.toggleSidebar();
+      // viewer.scene.view.position.set(300198.109, 4701144.537, 349.871);
+      // viewer.scene.view.lookAt(new THREE.Vector3(299900.954, 4701576.919, 66.197));
 		});
 
+
+    let isNan = function(n) {
+      return n !== n;
+    }
+
+    {
+      let t0, t1;
+      let tstart = performance.now();
+
+      const xhr = new XMLHttpRequest();
+      xhr.open("GET", "csv/radar_tracks_demo.csv");
+      xhr.onprogress = function(event) {
+        t1 = performance.now();
+        console.log("Loaded ["+event.loaded+"] bytes in ["+(t1-t0)+"] ms")
+        t0 = t1;
+      }
+      xhr.onload = function(data) {
+        var t0_loop = performance.now();
+        var rows = data.target.response.split('\n');
+
+        var geometry = new THREE.BufferGeometry();
+        var positions = [];
+        var timestamps = [];
+        var colors = [];
+
+        let row, cols;
+        for (let ii = 0, len = rows.length; ii < len-1; ++ii) {
+          row = rows[ii];
+          cols = row.split(',');
+          if (cols.length > 0) {
+            t = parseFloat(cols[3]);
+            x = parseFloat(cols[27]);
+            y = parseFloat(cols[28]);
+            z = parseFloat(cols[29]);
+            dx = parseFloat(cols[24]);
+            dy = parseFloat(cols[25]);
+            dz = parseFloat(cols[26]);
+
+            if (isNan(t) || isNan(x) || isNan(y) || isNan(z)) {
+              // skip
+              continue;
+            }
+            timestamps.push(t);
+            positions.push(x+dx);
+            positions.push(y+dy);
+            positions.push(z+dz);
+            colors.push( Math.random() * 0xffffff );
+            colors.push( Math.random() * 0xffffff );
+            colors.push( Math.random() * 0xffffff );
+            // debugger;
+          }
+        }
+
+        if ( positions.length > 0 ) geometry.addAttribute( 'position', new THREE.Float32BufferAttribute( positions, 3 ) );
+        if (timestamps.length > 0) geometry.addAttribute('gpsTime', new THREE.Float32BufferAttribute(timestamps, 1));
+        if (colors.length > 0) geometry.addAttribute('color', new THREE.Uint8BufferAttribute(colors, 3));
+        var material = new THREE.PointsMaterial( {size:1.0} );
+        var mesh = new THREE.Points(geometry, material);
+
+        viewer.scene.scene.add(mesh);
+
+        console.log(timestamps);
+        console.log(positions);
+        console.log("Loop Runtime: "+(performance.now()-t0_loop)+"ms");
+        console.log("Full Runtime: "+(performance.now()-tstart)+"ms");
+
+      };
+
+      t0 = performance.now();
+      xhr.send();
+    }
 
 
 
@@ -119,7 +192,9 @@
 			material.size = 1;
 			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
 			material.shape = Potree.PointShape.SQUARE;
-      viewer.fitToScreen();
+
+      viewer.scene.view.position.set(300198.109, 4701144.537, 349.871);
+      viewer.scene.view.lookAt(new THREE.Vector3(299900.954, 4701576.919, 66.197));
       viewer.toggleNavigationCube();
       // viewer.scene.getActiveCamera().position.copy(new THREE.Vector3(300412.175, 4701247.960, 651.093));
       // viewer.scene.getActiveCamera().lookAt(new THREE.Vector3(300021, 4701784, 240));
@@ -129,56 +204,7 @@
 
 		});
 
-    // // Parse CSV File:
-    // d3.csv("csv/radar_tracks_demo_10000.csv", (data) => {
-    //
-    // // d3.csv("csv/radar_tracks.csv", (data) => {
-    //   var i = 0;
-    //   var startTime = 0.0;
-    //   var range = 0.0;
-    //   var timestamp = 0;
-    //   for (let id in data) {
-    //     var track = data[id];
-    //
-    //     timestamp = parseFloat(track.gps_epoch);
-    //     if (i == 0) {
-    //       startTime = timestamp;
-    //     }
-    //
-    //     // Add Spheres:
-    //     var radar_detect = new THREE.Mesh(
-    //       new THREE.SphereGeometry(1, 32, 32),
-    //       new THREE.MeshNormalMaterial()
-    //     );
-    //
-    //     var x = parseFloat(track.RTK_EASTING_M) + parseFloat(track.RTK_X_M);
-    //     var y = parseFloat(track.RTK_NORTHING_M) + parseFloat(track.RTK_Y_M);
-    //     var z = parseFloat(track.RTK_ALT_M) + parseFloat(track.RTK_Z_M);
-    //     radar_detect.position.copy(new THREE.Vector3(x, y, z));
-    //     radar_detect.name = "radar_detect_"+id;
-    //     radar_detect.timestamp = timestamp - startTime;
-    //     // debugger; // check where attribute, check gps_epoch, check add attribute
-    //
-    //     // console.log(i);
-    //     // console.log(radar_detect);
-    //     // console.log(x, y, z);
-    //     // debugger;
-    //     // console.log(radar_detect.timestamp);
-    //     viewer.scene.scene.add(radar_detect);
-    //     i += 1;
-    //   }
-    //
-    //   var timeRange = timestamp - startTime;
-    //   console.log("timerange: " + timeRange);
-    // });
 
-		// viewer.scene.addEventListener('pointcloud_added', ()=> {
-		// 	console.log('pointcloud added');
-		// 	console.log(viewer);
-		// 	console.log(viewer.scene.pointclouds[0].pcoGeometry.nodes.r);
-		// 	viewer.timeRange = viewer.scene.pointclouds[0].pcoGeometry.nodes['r'].gpsTime.range;
-		// 	console.log(viewer.timeRane);
-		// });
 
 		</script>
 

@@ -51,6 +51,8 @@
 	<link rel="stylesheet" type="text/css" href="../libs/openlayers3/ol.css">
 	<link rel="stylesheet" type="text/css" href="../libs/spectrum/spectrum.css">
 	<link rel="stylesheet" type="text/css" href="../libs/jstree/themes/mixed/style.css">
+  <script src="radarloader.js"></script>
+  <script src="rtkloader.js"></script>
 </head>
 
 <body>
@@ -68,6 +70,8 @@
 	<script src="../libs/jstree/jstree.js"></script>
 	<script src="../build/potree/potree.js"></script>
 	<script src="../libs/plasio/js/laslaz.js"></script>
+  <script src="../libs/other/OBJLoader.js"></script>
+
 
 	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
 	<!-- INCLUDE SETTINGS HERE -->
@@ -82,6 +86,59 @@
 		<div id="potree_render_area"></div>
 		<div id="potree_sidebar_container"> </div>
 	</div>
+
+
+  <script type="x-shader/x-vertex" id="vertexshader">
+
+      attribute float alpha;
+      attribute float gpsTime;
+
+      uniform float minGpsTime;
+      uniform float maxGpsTime;
+
+      varying float vAlpha;
+
+      void main() {
+
+        if (minGpsTime <= gpsTime && gpsTime <= maxGpsTime) {
+          vAlpha = 1.0;
+        } else {
+          vAlpha = 0.0;
+        }
+
+
+        // if (currentGpsTime > 10.0) {
+        // } else {
+        //   vAlpha = 1.0
+        // }
+
+          vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
+
+          gl_PointSize = 8.0;
+
+          gl_Position = projectionMatrix * mvPosition;
+
+      }
+
+  </script>
+
+  <script type="x-shader/x-fragment" id="fragmentshader">
+
+      uniform vec3 color;
+
+      varying float vAlpha;
+
+      void main() {
+
+          gl_FragColor = vec4( color, vAlpha );
+
+      }
+
+  </script>
+
+
+
+
 
 	<script>
 
@@ -107,76 +164,216 @@
 		});
 
 
-    let isNan = function(n) {
-      return n !== n;
-    }
+    // Load Radar:
+    loadRadar((geometry) => {
 
-    {
-      let t0, t1;
-      let tstart = performance.now();
+      // uniforms
+      uniforms = {
 
-      const xhr = new XMLHttpRequest();
-      xhr.open("GET", "csv/radar_tracks_demo.csv");
-      xhr.onprogress = function(event) {
-        t1 = performance.now();
-        console.log("Loaded ["+event.loaded+"] bytes in ["+(t1-t0)+"] ms")
-        t0 = t1;
-      }
-      xhr.onload = function(data) {
-        var t0_loop = performance.now();
-        var rows = data.target.response.split('\n');
+          color: { value: new THREE.Color( 0xff00ff ) },
+          minGpsTime: {value: 0.0 },
+          maxGpsTime: {value: 110.0 }
 
-        var geometry = new THREE.BufferGeometry();
-        var positions = [];
-        var timestamps = [];
-        var colors = [];
-
-        let row, cols;
-        for (let ii = 0, len = rows.length; ii < len-1; ++ii) {
-          row = rows[ii];
-          cols = row.split(',');
-          if (cols.length > 0) {
-            t = parseFloat(cols[3]);
-            x = parseFloat(cols[27]);
-            y = parseFloat(cols[28]);
-            z = parseFloat(cols[29]);
-            dx = parseFloat(cols[24]);
-            dy = parseFloat(cols[25]);
-            dz = parseFloat(cols[26]);
-
-            if (isNan(t) || isNan(x) || isNan(y) || isNan(z)) {
-              // skip
-              continue;
-            }
-            timestamps.push(t);
-            positions.push(x+dx);
-            positions.push(y+dy);
-            positions.push(z+dz);
-            colors.push( Math.random() * 0xffffff );
-            colors.push( Math.random() * 0xffffff );
-            colors.push( Math.random() * 0xffffff );
-            // debugger;
-          }
-        }
-
-        if ( positions.length > 0 ) geometry.addAttribute( 'position', new THREE.Float32BufferAttribute( positions, 3 ) );
-        if (timestamps.length > 0) geometry.addAttribute('gpsTime', new THREE.Float32BufferAttribute(timestamps, 1));
-        if (colors.length > 0) geometry.addAttribute('color', new THREE.Uint8BufferAttribute(colors, 3));
-        var material = new THREE.PointsMaterial( {size:1.0} );
-        var mesh = new THREE.Points(geometry, material);
-
-        viewer.scene.scene.add(mesh);
-
-        console.log(timestamps);
-        console.log(positions);
-        console.log("Loop Runtime: "+(performance.now()-t0_loop)+"ms");
-        console.log("Full Runtime: "+(performance.now()-tstart)+"ms");
 
       };
 
-      t0 = performance.now();
-      xhr.send();
-    }
+      // point cloud material
+      var shaderMaterial = new THREE.ShaderMaterial( {
+
+          uniforms:       uniforms,
+          vertexShader:   document.getElementById( 'vertexshader' ).textContent,
+          fragmentShader: document.getElementById( 'fragmentshader' ).textContent,
+          transparent:    true
+
+      });
+
+      var material = new THREE.PointsMaterial( {size:1.0} );
+      var mesh = new THREE.Points(geometry, shaderMaterial);
+      mesh.name = "radar";
+      // debugger; //radar tracks added?
+      viewer.scene.scene.add(mesh);
+
+
+    });
+
+    // Load RTK:
+    loadRtk((pos) => {
+      path = pos.map(v => new THREE.Vector3(...v));
+      console.log(path);
+
+      let animationPath = new Potree.AnimationPath(path);
+      animationPath.closed = false;
+
+      { // render the path
+        let geometry = animationPath.getGeometry();
+        let material = new THREE.LineBasicMaterial();
+        let line = new THREE.Line(geometry, material, {closed: animationPath.closed});
+        viewer.scene.scene.add(line);
+        console.log("Rendered Path");
+      }
+
+
+      // CREATE VEHICLE OBJECT:
+      let manager = new THREE.LoadingManager();
+      manager.onProgress = function ( item, loaded, total ) {
+        console.log( item, loaded, total );
+      };
+      let textureLoader = new THREE.TextureLoader( manager );
+      let texture = textureLoader.load(`${Potree.resourcePath}/models/bodybkgd.JPG`);
+      let onProgress = function ( xhr ) {
+        if ( xhr.lengthComputable ) {
+          let percentComplete = xhr.loaded / xhr.total * 100;
+          console.log( Math.round(percentComplete, 2) + '% downloaded' );
+        }
+      };
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+
+      var geometry = new THREE.SphereGeometry( 100, 32, 32 );
+      var material = new THREE.MeshNormalMaterial( {side: THREE.DoubleSide, map: texture, opacity: 0.4,transparent:true});
+      var sphere = new THREE.Mesh( geometry, material );
+      sphere.position = new THREE.Vector3(...pos[0]);
+      console.log(sphere);
+
+      // viewer.scene.scene.add( sphere );
+
+      console.log("Sphere added");
+
+
+      { // Load Textured bunny from obj
+
+
+        let onError = function ( xhr ) {};
+        let loader = new THREE.OBJLoader( manager );
+        loader.load(`${Potree.resourcePath}/models/1967-shelby-ford-mustang.obj`, function ( object ) {
+          object.traverse( function ( child ) {
+            if ( child instanceof THREE.Mesh ) {
+              child.material.map = texture;
+            }
+          } );
+
+          object.name = "bunny";
+          object.position.set(...pos[0]);
+          object.scale.multiplyScalar(.75);
+          // object.rotation.set(Math.PI / 2, 1*Math.PI/2., Math.PI/2.0)
+
+          viewer.scene.scene.add( object );
+
+        }, onProgress, onError );
+      }
+
+
+
+
+
+
+      // ANIMATION:
+      { // create Animation Path & make light follow it
+
+
+        {// ANIMATION + SLIDER LOGIC:
+          let slider = document.getElementById("myRange");
+          let output = document.getElementById("demo");
+          output.innerHTML = slider.value;
+
+          // Animate from beginning to end with a speed of 100 meters per second
+          let start = 0;
+          let end = Infinity;
+          let speed = 100;
+          let animation = animationPath.animate(start, end, speed, t => {
+            animation.repeat = true;
+
+            // t is a value between 0 and 1.
+            // use getPoint(t) to map from t to the position on the animation path
+            let point = animation.getPoint(t);
+            sphere.position.copy(point);
+            var bunny = viewer.scene.scene.getObjectByName("bunny");
+            bunny.position.copy(point);
+
+            var up = new THREE.Vector3(0, 0, -1);
+            var axis = new THREE.Vector3();
+            console.log(animation);
+            // debugger;
+            tangent = animation.path.spline.getTangentAt(t).normalize();
+            axis.crossVectors(up, tangent).normalize();
+            var radians = Math.acos(up.dot(tangent));
+            bunny.quaternion.setFromAxisAngle(axis, radians);
+
+
+            slider.value = 100*t;
+            var time = (viewer.scene.pointclouds[0].pcoGeometry.nodes.r.gpsTime.range*t);
+            output.innerHTML = time.toFixed(4);
+
+            // Set Time in Material:
+            viewer.scene.pointclouds[0].material.uniforms.timeVal.value = t; // TODO not used I think
+            // debugger; //update radar material here
+
+            // Create GPS Time Clipping Event:
+            var minGpsTime = time - 1.0;
+            var maxGpsTime = time + 0.0;
+            viewer.setFilterGPSTimeRange(minGpsTime, maxGpsTime);
+            viewer.setFilterGPSTimeExtent(minGpsTime-10, maxGpsTime+10);
+
+            var radar = viewer.scene.scene.getObjectByName("radar")
+            radar.material.uniforms.minGpsTime.value = minGpsTime;
+            radar.material.uniforms.maxGpsTime.value = maxGpsTime;
+            console.log(radar);
+
+
+            let camera = viewer.scene.getActiveCamera();
+            let lag = 2.0; // seconds
+            let lagTime = Math.max(0, (time-lag)/viewer.scene.pointclouds[0].pcoGeometry.nodes.r.gpsTime.range);
+            let camPoint = animation.getPoint(lagTime);  // Get point with 1 second lag
+            camPoint.z += 30;
+            camera.position.copy(camPoint);
+            camera.lookAt(sphere.position);
+
+
+          });
+          window.animation = animation;
+
+          // Play/Pause Button Functions:
+          let playbutton = document.getElementById("playbutton");
+          let pausebutton = document.getElementById("pausebutton");
+          pausebutton.addEventListener("click", () => {animation.pause();});
+          playbutton.addEventListener("click", () => {animation.resume();});
+          slider.addEventListener("input", () => {
+
+            $("#pausebutton").click();
+
+            var val = slider.value/100.0;
+            var time = 0;
+            if (viewer.scene.pointclouds[0].pcoGeometry.nodes.r.gpsTime) {
+              time = (viewer.scene.pointclouds[0].pcoGeometry.nodes.r.gpsTime.range*slider.value/100);
+            } else {
+              time = -1;
+            }
+            output.innerHTML = time.toFixed(4);
+
+            animation.t = val;
+            let point = animation.getPoint(animation.t);
+            sphere.position.copy(point);
+            viewer.scene.pointclouds[0].material.uniforms.timeVal.value = val;
+
+            // Create GPS Time Clipping Event:
+            var minGpsTime = time - 10.0;
+            var maxGpsTime = time + 0.0;
+            viewer.setFilterGPSTimeRange(minGpsTime, maxGpsTime);
+            viewer.setFilterGPSTimeExtent(minGpsTime-10, maxGpsTime+10);
+
+            var radar = viewer.scene.scene.getObjectByName("radar")
+            radar.material.uniforms.minGpsTime.value = minGpsTime;
+            radar.material.uniforms.maxGpsTime.value = maxGpsTime;
+            console.log(radar);
+
+          });
+        }
+
+        window.animationPath = animationPath;
+      }
+
+    });
+
 
 
 
@@ -196,9 +393,7 @@
       viewer.scene.view.position.set(300198.109, 4701144.537, 349.871);
       viewer.scene.view.lookAt(new THREE.Vector3(299900.954, 4701576.919, 66.197));
       viewer.toggleNavigationCube();
-      // viewer.scene.getActiveCamera().position.copy(new THREE.Vector3(300412.175, 4701247.960, 651.093));
-      // viewer.scene.getActiveCamera().lookAt(new THREE.Vector3(300021, 4701784, 240));
-      // debugger; //position and lookat
+
 			console.log("SET TIMEVAL IN MATERIAL HERE");
 			console.log(material.uniforms.timeVal);
 
@@ -206,187 +401,9 @@
 
 
 
-		</script>
-
-		<script>
-
-		// CREATE OBJECTS:
-		let scene = viewer.scene.scene;
-		var geometry = new THREE.SphereGeometry( 5, 32, 32 );
-		var material = new THREE.MeshNormalMaterial();
-		var sphere = new THREE.Mesh( geometry, material );
-		sphere.position = new THREE.Vector3(300066.0, 4701217, sphereZpos);
-		var sphereZpos = 260;
-		scene.add( sphere );
 
 		</script>
 
-
-		<script>
-		// ANIMATION:
-		{ // create Animation Path & make light follow it
-
-
-
-      var path = [
-      [300132.380, 4701366.907, 247.152],
-      [300166.364, 4701336.213, 248.966],
-      [300173.192, 4701265.761, 248.467],
-      [300091.771, 4701208.612, 250.051],
-      [300029.593, 4701246.070, 254.502],
-      [300001.961, 4701315.620, 255.151],
-      [299981.172, 4701442.720, 254.873],
-      [299982.007, 4701593.619, 259.118],
-      [300020.323, 4701814.647, 260.629],
-      [300060.175, 4702044.071, 263.650],
-      [300079.757, 4702240.881, 263.569],
-      [300088.159, 4702511.719, 264.701],
-      [300093.448, 4702891.088, 267.172],
-      [300103.547, 4703918.823, 266.952],
-      [300101.443, 4704210.990, 262.609],
-      [300110.969, 4704974.258, 273.406],
-      [300122.150, 4705107.742, 270.185],
-      [300161.722, 4705243.988, 269.557],
-      [300212.767, 4705346.816, 272.153],
-      [300374.668, 4705636.312, 277.310],
-      [300425.350, 4705787.125, 276.016],
-      [300400.461, 4706160.976, 275.178],
-      [300318.642, 4706319.462, 278.124],
-      [300146.629, 4706496.169, 281.115],
-      [300025.193, 4706562.817, 277.921],
-      [299846.214, 4706610.679, 277.073],
-      [299650.899, 4706610.084, 271.003],
-      [299558.369, 4706589.459, 271.121],
-      [299305.880, 4706517.434, 274.012],
-      [299164.833, 4706493.522, 279.043],
-      [298940.814, 4706490.370, 278.667],
-      [298715.597, 4706520.166, 276.818],
-      [297826.963, 4706641.991, 285.303],
-      [297250.064, 4706722.543, 285.676],
-      [296085.968, 4706890.563, 291.595],
-      [295514.649, 4706972.922, 295.208],
-      [295323.696, 4707011.470, 294.819],
-      [295189.195, 4707053.121, 292.970],
-      [294574.355, 4707248.292, 302.715],
-      [293700.585, 4707527.824, 304.219],
-      [292544.248, 4707898.612, 306.620],
-      [291155.434, 4708343.338, 302.791],
-      [290106.417, 4708679.929, 293.560],
-      [289890.307, 4708760.790, 291.646],
-      [287979.296, 4709541.442, 300.855],
-      [287803.172, 4709614.818, 298.734]
-    ].map(v => new THREE.Vector3(...v));
-
-			let animationPath = new Potree.AnimationPath(path);
-			animationPath.closed = false;
-
-			{ // render the path
-				let geometry = animationPath.getGeometry();
-				let material = new THREE.LineBasicMaterial();
-				let line = new THREE.Line(geometry, material, {closed: animationPath.closed});
-				viewer.scene.scene.add(line);
-        console.log("Rendered Path");
-			}
-
-			{ // render the control points of the path
-				for(let pos of path){
-					let sg = new THREE.SphereGeometry(2, 32, 32);
-					let sm = new THREE.MeshBasicMaterial({color: 0xFF0000});
-					let s = new THREE.Mesh(sg, sm);
-					s.position.copy(pos);
-					viewer.scene.scene.add(s);
-				}
-			}
-
-			{// ANIMATION + SLIDER LOGIC:
-				let slider = document.getElementById("myRange");
-				let output = document.getElementById("demo");
-				output.innerHTML = slider.value;
-
-				// Animate from beginning to end with a speed of 10 meters per second
-				let start = 0;
-				let end = Infinity;
-				let speed = 100;
-				let animation = animationPath.animate(start, end, speed, t => {
-					animation.repeat = true;
-
-					// t is a value between 0 and 1.
-					// use getPoint(t) to map from t to the position on the animation path
-					let point = animation.getPoint(3*t);
-					sphere.position.copy(point);
-
-					slider.value = 100*t;
-				 	var time = (viewer.scene.pointclouds[0].pcoGeometry.nodes.r.gpsTime.range*t);
-					output.innerHTML = time.toFixed(4);
-
-          // Set Time in Material:
-					viewer.scene.pointclouds[0].material.uniforms.timeVal.value = t;
-
-          // Create GPS Time Clipping Event:
-          viewer.setFilterGPSTimeRange(time-10.0, time+10.0);
-          viewer.setFilterGPSTimeExtent(0, Infinity);
-
-
-          let camera = viewer.scene.getActiveCamera();
-          let lag = 3.0; // seconds
-          let lagTime = Math.max(0, (3*time-lag)/viewer.scene.pointclouds[0].pcoGeometry.nodes.r.gpsTime.range);
-          let camPoint = animation.getPoint(lagTime);  // Get point with 1 second lag
-          camPoint.z += 30;
-          camera.position.copy(camPoint);
-          camera.lookAt(sphere.position);
-
-
-          // Radar Detects:
-          // for (let i = 0; i < 1000; i++) {
-          //   var radar_detect = viewer.scene.scene.getObjectByName("radar_detect_"+i);
-          //   if (radar_detect && radar_detect.timestamp/10 > t) {
-          //     radar_detect.material.opacity = 0.0;
-          //     radar_detect.material.transparent = true;
-          //   }
-          //   else if (radar_detect) {
-          //     radar_detect.material.opacity = 1;
-          //     radar_detect.material.transparent = false;
-          //   }
-          // }let camera = viewer.scene.getActiveCamera();
-
-
-
-				});
-				window.animation = animation;
-
-				// Play/Pause Button Functions:
-				let playbutton = document.getElementById("playbutton");
-				let pausebutton = document.getElementById("pausebutton");
-				pausebutton.addEventListener("click", () => {animation.pause();});
-				playbutton.addEventListener("click", () => {animation.resume();});
-				slider.addEventListener("input", () => {
-
-					$("#pausebutton").click();
-
-					var val = slider.value/100.0;
-					var time = 0;
-					if (viewer.scene.pointclouds[0].pcoGeometry.nodes.r.gpsTime) {
-						time = (viewer.scene.pointclouds[0].pcoGeometry.nodes.r.gpsTime.range*slider.value/100);
-					} else {
-						time = -1;
-					}
-					output.innerHTML = time.toFixed(4);
-
-					animation.t = val;
-					let point = animation.getPoint(3*animation.t);
-					sphere.position.copy(point);
-					viewer.scene.pointclouds[0].material.uniforms.timeVal.value = val;
-
-          viewer.setFilterGPSTimeRange(time-10.0, time+10.0);
-          viewer.setFilterGPSTimeExtent(0, Infinity);
-
-				});
-			}
-
-			window.animationPath = animationPath;
-		}
-
-		</script>
 
   </body>
 </html>

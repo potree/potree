@@ -6,6 +6,10 @@ function loadRtk(callback) {
   let xcol = 12;
   let ycol = 13;
   let zcol = 14;
+  let yawcol = 15;
+  let pitchcol = 16;
+  let rollcol = 17;
+
 
   let t0, t1;
   let tstart = performance.now();
@@ -28,6 +32,7 @@ function loadRtk(callback) {
     var positions = [];
     var timestamps = [];
     var colors = [];
+    var orientations = [];
 
     let row, cols;
     for (let ii = 0, len = rows.length; ii < len-1; ++ii) {
@@ -38,6 +43,9 @@ function loadRtk(callback) {
         x = parseFloat(cols[xcol]);
         y = parseFloat(cols[ycol]);
         z = parseFloat(cols[zcol]);
+        roll = parseFloat(rollcol);
+        pitch = parseFloat(pitchcol);
+        yaw = parseFloat(yawcol);
 
 
         if (isNan(t) || isNan(x) || isNan(y) || isNan(z)) {
@@ -47,11 +55,15 @@ function loadRtk(callback) {
         timestamps.push(t);
         positions.push(x);
         positions.push(y);
-        positions.push(z);
+        positions.push(z-2.0);
         colors.push( Math.random() * 0xffffff );
         colors.push( Math.random() * 0xffffff );
         colors.push( Math.random() * 0xffffff );
         mpos.push([x,y,z]);
+        orientations.push([roll, pitch, yaw]);
+        // orientations.push(pitch);
+        // orientations.push(yaw);
+
       }
     }
 
@@ -66,7 +78,7 @@ function loadRtk(callback) {
     console.log("Loop Runtime: "+(performance.now()-t0_loop)+"ms");
     console.log("Full Runtime: "+(performance.now()-tstart)+"ms");
 
-    callback(mpos);
+    callback(mpos, orientations);
   };
 
   t0 = performance.now();

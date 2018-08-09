@@ -197,9 +197,9 @@
     });
 
     // Load RTK:
-    loadRtk((pos) => {
+    loadRtk((pos, rot) => {
       path = pos.map(v => new THREE.Vector3(...v));
-      console.log(path);
+      orientations = rot.map(v => new THREE.Vector3(...v));
 
       let animationPath = new Potree.AnimationPath(path);
       animationPath.closed = false;
@@ -229,20 +229,17 @@
       texture.wrapS = THREE.RepeatWrapping;
       texture.wrapT = THREE.RepeatWrapping;
 
-      var geometry = new THREE.SphereGeometry( 100, 32, 32 );
-      var material = new THREE.MeshNormalMaterial( {side: THREE.DoubleSide, map: texture, opacity: 0.4,transparent:true});
+      var geometry = new THREE.SphereGeometry( 20, 32, 32 );
+      var material = new THREE.MeshNormalMaterial( {side: THREE.DoubleSide, opacity: 0.2,transparent:true});
       var sphere = new THREE.Mesh( geometry, material );
       sphere.position = new THREE.Vector3(...pos[0]);
       console.log(sphere);
 
-      // viewer.scene.scene.add( sphere );
-
+      viewer.scene.scene.add( sphere );
       console.log("Sphere added");
 
 
       { // Load Textured bunny from obj
-
-
         let onError = function ( xhr ) {};
         let loader = new THREE.OBJLoader( manager );
         loader.load(`${Potree.resourcePath}/models/1967-shelby-ford-mustang.obj`, function ( object ) {
@@ -255,12 +252,23 @@
           object.name = "bunny";
           object.position.set(...pos[0]);
           object.scale.multiplyScalar(.75);
-          // object.rotation.set(Math.PI / 2, 1*Math.PI/2., Math.PI/2.0)
+          object.orientations = orientations;
+          object.rotation.set(Math.PI / 2, 0*Math.PI/2., 0*Math.PI/2.0)
 
           viewer.scene.scene.add( object );
 
         }, onProgress, onError );
       }
+
+      // // Create sprite:
+      // let hudTexture = textureLoader.load(`${Potree.resourcePath}/images/4076.jpg`);
+      // var spriteMaterial = new THREE.SpriteMaterial({map:hudTexture});
+      // var sprite = new THREE.Sprite(spriteMaterial);
+      // sprite.position.set(...pos[0]);
+      // sprite.position.add(new THREE.Vector3(10,10,10));
+      // sprite.scale.set(5,5,1);
+      // sprite.name = "sprite";
+      // viewer.scene.scene.add(sprite);
 
 
 
@@ -289,15 +297,17 @@
             sphere.position.copy(point);
             var bunny = viewer.scene.scene.getObjectByName("bunny");
             bunny.position.copy(point);
+            // sprite.position.copy(point.add(new THREE.Vector3(10,10,10)));
 
-            var up = new THREE.Vector3(0, 0, -1);
-            var axis = new THREE.Vector3();
-            console.log(animation);
-            // debugger;
-            tangent = animation.path.spline.getTangentAt(t).normalize();
-            axis.crossVectors(up, tangent).normalize();
-            var radians = Math.acos(up.dot(tangent));
-            bunny.quaternion.setFromAxisAngle(axis, radians);
+
+            // var up = new THREE.Vector3(1, 0, 0);
+            // var axis = new THREE.Vector3();
+            // console.log(animation);
+            // // debugger;
+            // tangent = animation.path.spline.getTangentAt(t).normalize();
+            // axis.crossVectors(up, tangent).normalize();
+            // var radians = Math.acos(up.dot(tangent));
+            // bunny.quaternion.setFromAxisAngle(axis, radians);
 
 
             slider.value = 100*t;
@@ -309,7 +319,7 @@
             // debugger; //update radar material here
 
             // Create GPS Time Clipping Event:
-            var minGpsTime = time - 1.0;
+            var minGpsTime = time - 10.0;
             var maxGpsTime = time + 0.0;
             viewer.setFilterGPSTimeRange(minGpsTime, maxGpsTime);
             viewer.setFilterGPSTimeExtent(minGpsTime-10, maxGpsTime+10);
@@ -353,6 +363,8 @@
             animation.t = val;
             let point = animation.getPoint(animation.t);
             sphere.position.copy(point);
+            var bunny = viewer.scene.scene.getObjectByName("bunny");
+            bunny.position.copy(point);
             viewer.scene.pointclouds[0].material.uniforms.timeVal.value = val;
 
             // Create GPS Time Clipping Event:

@@ -385,11 +385,11 @@ vec3 getRGB(){
 	rgb = pow(rgb, vec3(rgbGamma));
 	rgb = rgb + rgbBrightness;
 	//rgb = (rgb - 0.5) * getContrastFactor(rgbContrast) + 0.5;
+	rgb = vec3(0.0, 0.0, .80); // VINAY - set blue
 	rgb = clamp(rgb, 0.0, 1.0);
 
 		//rgb = indices.rgb;
 	//rgb.b = pcIndex / 255.0;
-
 
 	return rgb;
 }
@@ -626,6 +626,7 @@ void doClipping(){
 		vec4 cl = getClassification();
 		if(cl.a == 0.0){
 			gl_Position = vec4(100.0, 100.0, 100.0, 0.0);
+			vColor.r += 0.85;
 
 			return;
 		}
@@ -634,7 +635,7 @@ void doClipping(){
 	#if defined(clip_return_number_enabled)
 	{ // return number filter
 		vec2 range = uFilterReturnNumberRange;
-		if(returnNumber < range.x+50. || returnNumber > range.y+50){
+		if(returnNumber < range.x || returnNumber > range.y){
 			gl_Position = vec4(100.0, 100.0, 100.0, 0.0);
 
 			return;
@@ -658,12 +659,20 @@ void doClipping(){
 		float time = gpsTime + uGPSOffset;
 		vec2 range = uFilterGPSTimeClipRange;
 
-		if(time > range.x && time < range.y){
+		// Inclusive:
+		//if(time < range.x || time > range.y){
+		//	gl_Position = vec4(100.0, 100.0, 100.0, 0.0);
+		//	return;
+		//}
+
+		if(time > range.x && time < range.y) {
 			//gl_Position = vec4(100.0, 100.0, 100.0, 0.0);
-			vColor.r += .5;
-			vColor.b -= .8;
+			vColor.r += .8;
+			vColor.b = 0.0;
+			vColor.g = 0.0;
 			return;
 		}
+
 	}
 	#endif
 
@@ -738,7 +747,6 @@ void main() {
 
 	// COLOR
 	vColor = getColor();
-	vColor.b += .80;
 
 
 	#if defined hq_depth_pass

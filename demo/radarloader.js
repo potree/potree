@@ -39,6 +39,7 @@ function loadRadar(callback) {
     for (let ii = 0, len = rows.length; ii < len-1; ++ii) {
       row = rows[ii];
       cols = row.split(',');
+
       if (cols.length > 0) {
         t = parseFloat(cols[tcol]);
         x = parseFloat(cols[xcol]);
@@ -57,6 +58,7 @@ function loadRadar(callback) {
           firstTimestamp = false;
         }
 
+        // timestamps.push(t);
         timestamps.push(t-t_init);
         positions.push(x);
         positions.push(y);
@@ -65,9 +67,10 @@ function loadRadar(callback) {
         colors.push( Math.random() * 0xffffff );
         colors.push( Math.random() * 0xffffff );
         alphas.push( 1.0 );
-        // debugger;
       }
     }
+    // debugger; // timestamp
+
 
     if ( positions.length > 0 ) geometry.addAttribute( 'position', new THREE.Float32BufferAttribute( positions, 3 ) );
     if (timestamps.length > 0) geometry.addAttribute('gpsTime', new THREE.Float32BufferAttribute(timestamps, 1));
@@ -80,7 +83,7 @@ function loadRadar(callback) {
     console.log("Loop Runtime: "+(performance.now()-t0_loop)+"ms");
     console.log("Full Runtime: "+(performance.now()-tstart)+"ms");
 
-    callback(geometry);
+    callback(geometry, t_init);
   };
 
   t0 = performance.now();

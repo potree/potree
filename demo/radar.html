@@ -159,22 +159,23 @@
 			$("#menu_tools").next().show();
 			$("#menu_scene").next().show();
 			viewer.toggleSidebar();
+      // viewer.setNavigationMode(EarthControls); // TODO Hack: changed default in viewer.js line 234
+      // $('#show_bounding_box').trigger("click");
+      $("#splat_quality_options_hq").trigger("click");
       // viewer.scene.view.position.set(300198.109, 4701144.537, 349.871);
       // viewer.scene.view.lookAt(new THREE.Vector3(299900.954, 4701576.919, 66.197));
 		});
 
 
     // Load Radar:
-    loadRadar((geometry) => {
+    loadRadar((geometry, t_init) => {
 
       // uniforms
       uniforms = {
-
-          color: { value: new THREE.Color( 0xff00ff ) },
+          color: { value: new THREE.Color( 0xffff00 ) },
           minGpsTime: {value: 0.0 },
-          maxGpsTime: {value: 110.0 }
-
-
+          maxGpsTime: {value: 110.0 },
+          initialTime: {value: t_init}
       };
 
       // point cloud material
@@ -192,12 +193,10 @@
       mesh.name = "radar";
       // debugger; //radar tracks added?
       viewer.scene.scene.add(mesh);
-
-
     });
 
     // Load RTK:
-    loadRtk((pos, rot) => {
+    loadRtk((pos, rot, t_init) => {
       path = pos.map(v => new THREE.Vector3(...v));
       orientations = rot.map(v => new THREE.Vector3(...v));
 
@@ -207,7 +206,9 @@
       { // render the path
         let geometry = animationPath.getGeometry();
         let material = new THREE.LineBasicMaterial();
+        material.uniforms = {initialTime:{value:t_init}};
         let line = new THREE.Line(geometry, material, {closed: animationPath.closed});
+        line.name = "rtk";
         viewer.scene.scene.add(line);
         console.log("Rendered Path");
       }
@@ -229,13 +230,13 @@
       texture.wrapS = THREE.RepeatWrapping;
       texture.wrapT = THREE.RepeatWrapping;
 
-      var geometry = new THREE.SphereGeometry( 20, 32, 32 );
-      var material = new THREE.MeshNormalMaterial( {side: THREE.DoubleSide, opacity: 0.2,transparent:true});
+      var geometry = new THREE.SphereGeometry( 2, 32, 32 );
+      var material = new THREE.MeshNormalMaterial( {side: THREE.DoubleSide, opacity: 0.92,transparent:true});
       var sphere = new THREE.Mesh( geometry, material );
       sphere.position = new THREE.Vector3(...pos[0]);
       console.log(sphere);
 
-      viewer.scene.scene.add( sphere );
+      // viewer.scene.scene.add( sphere );
       console.log("Sphere added");
 
 
@@ -287,53 +288,69 @@
           // Animate from beginning to end with a speed of 100 meters per second
           let start = 0;
           let end = Infinity;
-          let speed = 100;
+          let speed = 10;
           let animation = animationPath.animate(start, end, speed, t => {
             animation.repeat = true;
 
-            // t is a value between 0 and 1.
+            // TODO cache this to improve speed?
+            lidarOffset = 1495189467.550001;  // TODO Hardcoded b/c PotreeConverter is throwing away initial offset
+            rtkOffset = viewer.scene.scene.getObjectByName("rtk").material.uniforms.initialTime.value;
+            radarOffset = viewer.scene.scene.getObjectByName("radar").material.uniforms.initialTime.value;
+            timeMin = Math.min(lidarOffset, rtkOffset, radarOffset);
+            lidarRange = viewer.scene.pointclouds[0].pcoGeometry.nodes.r.gpsTime.range;
+            radarRange = 583.649169921875;  // TODO Hardcoded
+            rtkRange = 600.5599999427795;   // TODO Hardcoded
+            timeMax = Math.max((lidarRange+lidarOffset), (radarRange+radarOffset), (rtkRange+rtkOffset));
+            timeOffset = timeMin;
+            timeRange = timeMax - timeMin;
+
+
+
+            // t is a value between 0 and 1 in rtkTime frame
+            var gpsTime = (rtkRange*t) + rtkOffset;  // Convert from rtkTime to gpsTime
+
+            // TODO define slider time frame
+            slider.value = 100*t; // NOTE this is currently only using the rtkTime as the time frame
+            output.innerHTML = (gpsTime-rtkOffset).toFixed(4); // Centered to zero
+
             // use getPoint(t) to map from t to the position on the animation path
-            let point = animation.getPoint(t);
-            sphere.position.copy(point);
+            let rtkPoint = animation.getPoint(t); // NOTE t is in rtkTime
+            sphere.position.copy(rtkPoint);
             var bunny = viewer.scene.scene.getObjectByName("bunny");
-            bunny.position.copy(point);
+            bunny.position.copy(rtkPoint);
             // sprite.position.copy(point.add(new THREE.Vector3(10,10,10)));
 
-
-            // var up = new THREE.Vector3(1, 0, 0);
-            // var axis = new THREE.Vector3();
-            // console.log(animation);
-            // // debugger;
-            // tangent = animation.path.spline.getTangentAt(t).normalize();
-            // axis.crossVectors(up, tangent).normalize();
-            // var radians = Math.acos(up.dot(tangent));
-            // bunny.quaternion.setFromAxisAngle(axis, radians);
-
-
-            slider.value = 100*t;
-            var time = (viewer.scene.pointclouds[0].pcoGeometry.nodes.r.gpsTime.range*t);
-            output.innerHTML = time.toFixed(4);
 
             // Set Time in Material:
             viewer.scene.pointclouds[0].material.uniforms.timeVal.value = t; // TODO not used I think
             // debugger; //update radar material here
 
             // Create GPS Time Clipping Event:
-            var minGpsTime = time - 10.0;
-            var maxGpsTime = time + 0.0;
-            viewer.setFilterGPSTimeRange(minGpsTime, maxGpsTime);
+            var minGpsTime = gpsTime - 0.05;  // TODO make window size a setting somewhere
+            var maxGpsTime = gpsTime + 0.05;  // TODO make window size a setting somewhere
+
+            // Animate Point Cloud:
+            minLidarTime = minGpsTime - lidarOffset;
+            maxLidarTime = maxGpsTime - lidarOffset;
+            viewer.setFilterGPSTimeRange(minLidarTime, maxLidarTime);
             viewer.setFilterGPSTimeExtent(minGpsTime-10, maxGpsTime+10);
 
+            // Animate Radar:
+            minRadarTime = minGpsTime - radarOffset;
+            maxRadarTime = maxGpsTime - radarOffset;
             var radar = viewer.scene.scene.getObjectByName("radar")
-            radar.material.uniforms.minGpsTime.value = minGpsTime;
-            radar.material.uniforms.maxGpsTime.value = maxGpsTime;
+            radar.material.uniforms.minGpsTime.value = minRadarTime;
+            radar.material.uniforms.maxGpsTime.value = maxRadarTime;
             console.log(radar);
 
+            // debugger; // check the rtkTime, slider time, radar time, lidar time
 
             let camera = viewer.scene.getActiveCamera();
-            let lag = 2.0; // seconds
-            let lagTime = Math.max(0, (time-lag)/viewer.scene.pointclouds[0].pcoGeometry.nodes.r.gpsTime.range);
-            let camPoint = animation.getPoint(lagTime);  // Get point with 1 second lag
+            let lag = 0.01; // seconds
+            lagTime = Math.max(0, (gpsTime - lag - rtkOffset)/rtkRange);
+
+            // let lagTime = Math.max(0, (gpsTime-lag)/viewer.scene.pointclouds[0].pcoGeometry.nodes.r.gpsTime.range);
+            let camPoint = animation.getPoint(lagTime);  // Get point with 2 second lag
             camPoint.z += 30;
             camera.position.copy(camPoint);
             camera.lookAt(sphere.position);
@@ -342,6 +359,7 @@
           });
           window.animation = animation;
 
+          // TODO FIX TIME SYNCING BELOW
           // Play/Pause Button Functions:
           let playbutton = document.getElementById("playbutton");
           let pausebutton = document.getElementById("pausebutton");
@@ -368,14 +386,14 @@
             viewer.scene.pointclouds[0].material.uniforms.timeVal.value = val;
 
             // Create GPS Time Clipping Event:
-            var minGpsTime = time - 10.0;
-            var maxGpsTime = time + 0.0;
-            viewer.setFilterGPSTimeRange(minGpsTime, maxGpsTime);
-            viewer.setFilterGPSTimeExtent(minGpsTime-10, maxGpsTime+10);
+            var minGpsTime = time - 0.05;
+            var maxGpsTime = time + 0.05;
+            viewer.setFilterGPSTimeRange((minGpsTime-lidarOffset)/583.649169921875, (maxGpsTime-lidarOffset)/583.649169921875); //lidar
+            viewer.setFilterGPSTimeExtent((minGpsTime-lidarOffset)/583.649169921875, (maxGpsTime-lidarOffset)/583.649169921875);
 
             var radar = viewer.scene.scene.getObjectByName("radar")
-            radar.material.uniforms.minGpsTime.value = minGpsTime;
-            radar.material.uniforms.maxGpsTime.value = maxGpsTime;
+            radar.material.uniforms.minGpsTime.value = (minGpsTime-lidarOffset)/583.649169921875;
+            radar.material.uniforms.maxGpsTime.value = (maxGpsTime-lidarOffset)/583.649169921875;
             console.log(radar);
 
           });
@@ -391,7 +409,8 @@
 
 		// Potree.loadPointCloud("../pointclouds/fullpointcloud-time-mini/cloud.js", "fullpointcloud-time-mini", e => {
 		// Potree.loadPointCloud("../pointclouds/basemap-time/cloud.js", "basemap-time", e => {
-		Potree.loadPointCloud("../pointclouds/basemap-demo/cloud.js", "basemap-demo", e => {
+		// Potree.loadPointCloud("../pointclouds/basemap-demo/cloud.js", "basemap-demo", e => {
+		Potree.loadPointCloud("../pointclouds/veritas/full-pointcloud/cloud.js", "basemap-demo", e => {
 
 			let pointcloud = e.pointcloud;
 			let material = pointcloud.material;
@@ -410,7 +429,6 @@
 			console.log(material.uniforms.timeVal);
 
 		});
-
 
 
 

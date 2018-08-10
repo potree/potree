@@ -2,13 +2,14 @@
 function loadRtk(callback) {
 
   let filename = "csv/rtkdata.csv";
-  let tcol = 1;
-  let xcol = 12;
-  let ycol = 13;
-  let zcol = 14;
-  let yawcol = 15;
-  let pitchcol = 16;
-  let rollcol = 17;
+  let tcol = 1;       // GPS_TIME
+  // let tcol = 3;       // SYSTEM_TIME
+  let xcol = 12;      // RTK_EASTING_M
+  let ycol = 13;      // RTK_NORTHING_M
+  let zcol = 14;      // RTK_ALT_M
+  let yawcol = 15;    // ADJUSTED_HEADING_RAD
+  let pitchcol = 16;  // PITCH_RAD
+  let rollcol = 17;   // ROLL_RAD
 
 
   let t0, t1;
@@ -35,6 +36,8 @@ function loadRtk(callback) {
     var orientations = [];
 
     let row, cols;
+    let t_init = 0;
+    let firstTimestamp = true;
     for (let ii = 0, len = rows.length; ii < len-1; ++ii) {
       row = rows[ii];
       cols = row.split(' ');
@@ -52,7 +55,14 @@ function loadRtk(callback) {
           // skip
           continue;
         }
-        timestamps.push(t);
+
+        if (firstTimestamp) {
+          t_init = t;
+          firstTimestamp = false;
+        }
+
+        // timestamps.push(t);
+        timestamps.push(t-t_init);
         positions.push(x);
         positions.push(y);
         positions.push(z-2.0);
@@ -78,7 +88,7 @@ function loadRtk(callback) {
     console.log("Loop Runtime: "+(performance.now()-t0_loop)+"ms");
     console.log("Full Runtime: "+(performance.now()-tstart)+"ms");
 
-    callback(mpos, orientations);
+    callback(mpos, orientations, t_init);
   };
 
   t0 = performance.now();

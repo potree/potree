@@ -65,7 +65,7 @@ function loadRtk(callback) {
         timestamps.push(t-t_init);
         positions.push(x);
         positions.push(y);
-        positions.push(z-2.0);
+        positions.push(z);
         colors.push( Math.random() * 0xffffff );
         colors.push( Math.random() * 0xffffff );
         colors.push( Math.random() * 0xffffff );

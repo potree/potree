@@ -2,15 +2,33 @@
 <html lang="en">
 
 <style>
+
+.potree_container .overlay {
+    height: 75px;
+    width: 100%;
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+    z-index: 4;
+    background: #19282C;
+    opacity: 0.5;
+    transition: .2s;
+}
+
+.potree_container .overlay:hover {
+  opacity: .75;
+  background: #19282C;
+}
+
 .slidecontainer {
-    width: 15%;
+    width: 100%;
 }
 
 .slider {
     -webkit-appearance: none;
     width: 100%;
     height: 25px;
-    background: #d3d3d3;
+    background: #19282c;
     outline: none;
     opacity: 0.7;
     -webkit-transition: .2s;
@@ -23,19 +41,80 @@
 
 .slider::-webkit-slider-thumb {
     -webkit-appearance: none;
-    appearance: none;
-    width: 25px;
-    height: 25px;
-    background: #4CAF50;
+    width: 10px;
+    height: 10px;
+    background: #FF0000;
     cursor: pointer;
+    transition: .2s;
+}
+.slider::-webkit-slider-thumb:hover {
+  width: 15px;
+  height: 15px;
+}
+.slider::-webkit-slider-runnable-track {
+  -webkit-appearance: none;
+  background: #FFFFFF;
+  /* width: 100%; */
+  /* height: 5px;  */
 }
 
 .slider::-moz-range-thumb {
-    width: 25px;
-    height: 25px;
-    background: #4CAF50;
+    width: 10px;
+    height: 10px;
+    border: 0;
+    background: #FF0000;
     cursor: pointer;
+    transition: .2s;
 }
+.slider::-moz-range-thumb:hover {
+  width: 15px;
+  height: 15px;
+}
+.slider::-moz-range-progress {
+  background-color: #FF0000;
+}
+.slider::-moz-range-track {
+  background-color: #FFFFFF;
+}
+
+#value {
+  color: #FFFFFF;
+  top: 0px;
+  /* padding-top: 10px; */
+  /* padding-bottom: 5px; */
+  font-family: 'Open Sans', sans-serif;
+  font-size: 125%
+}
+
+.inline {
+   display:inline-flex;
+   /* margin-right:5px; */
+   vertical-align: bottom;
+}
+
+.button {
+  color: #FFFFFF;
+  outline: 0;
+  background: none;
+  border: 0px;
+  height: 25px;
+}
+/* .button:hover {
+  color: #FF0000;
+  opacity: .85;
+} */
+.button:active {
+  color: #FF0000;
+  opacity: 1.0;
+  outline: 0;
+}
+.button::-mos-focus-inner {
+  border: 0px;
+}
+.play {
+  background:
+}
+
 </style>
 
 <head>
@@ -51,6 +130,8 @@
 	<link rel="stylesheet" type="text/css" href="../libs/openlayers3/ol.css">
 	<link rel="stylesheet" type="text/css" href="../libs/spectrum/spectrum.css">
 	<link rel="stylesheet" type="text/css" href="../libs/jstree/themes/mixed/style.css">
+  <!-- <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet"> -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <script src="radarloader.js"></script>
   <script src="rtkloader.js"></script>
 </head>
@@ -77,13 +158,23 @@
 	<!-- INCLUDE SETTINGS HERE -->
 
 	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
-		<div class="slidecontainer">
-			<input type="range" min="1" max="100" value=50 step="0.01" class="slider" id="myRange">
-			<p> Value: <span id="demo">0.0000</span> seconds</p>
-			<input type="button" value="Play" id="playbutton">
-			<input type="button" value="Pause" id="pausebutton">
-		</div>
-		<div id="potree_render_area"></div>
+
+	  <div id="potree_render_area">
+
+      <div class="overlay">
+        <div class="slidecontainer">
+          <input type="range" min="0" max="100" value=50 step="0.01" class="slider" id="myRange">
+          <div id="spacer">
+
+            <div id="value" class="inline">
+              <button class="button" class="play" id="playbutton" class="inline"><i class="material-icons">play_arrow</i></button>
+              <button class="button" class="pause" id="pausebutton"><i class="material-icons">pause</i></button>
+              Time: <span id="demo">0.0000</span> seconds
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 		<div id="potree_sidebar_container"> </div>
 	</div>
 
@@ -158,9 +249,9 @@
 			$("#menu_appearance").next().show();
 			$("#menu_tools").next().show();
 			$("#menu_scene").next().show();
-			viewer.toggleSidebar();
+			// viewer.toggleSidebar();
       // viewer.setNavigationMode(EarthControls); // TODO Hack: changed default in viewer.js line 234
-      $('#show_bounding_box').trigger("click");
+      // $('#show_bounding_box').trigger("click");
       $("#splat_quality_options_hq").trigger("click");
       // viewer.scene.view.position.set(300198.109, 4701144.537, 349.871);
       // viewer.scene.view.lookAt(new THREE.Vector3(299900.954, 4701576.919, 66.197));
@@ -288,7 +379,7 @@
           // Animate from beginning to end with a speed of 100 meters per second
           let start = 0;
           let end = Infinity;
-          let speed = 100;
+          let speed = 1.50;
           let animation = animationPath.animate(start, end, speed, t => {
             animation.repeat = true;
 
@@ -315,6 +406,7 @@
 
             // use getPoint(t) to map from t to the position on the animation path
             let rtkPoint = animation.getPoint(t); // NOTE t is in rtkTime
+            rtkPoint.z -= 2.0;
             sphere.position.copy(rtkPoint);
             var bunny = viewer.scene.scene.getObjectByName("bunny");
             bunny.position.copy(rtkPoint);
@@ -326,8 +418,8 @@
             // debugger; //update radar material here
 
             // Create GPS Time Clipping Event:
-            var minGpsTime = gpsTime - 0.05;  // TODO make window size a setting somewhere
-            var maxGpsTime = gpsTime + 0.05;  // TODO make window size a setting somewhere
+            var minGpsTime = gpsTime - 0.002;  // TODO make window size a setting somewhere
+            var maxGpsTime = gpsTime + 0.002;  // TODO make window size a setting somewhere
 
             // Animate Point Cloud:
             minLidarTime = minGpsTime - lidarOffset;
@@ -346,14 +438,14 @@
             // debugger; // check the rtkTime, slider time, radar time, lidar time
 
             let camera = viewer.scene.getActiveCamera();
-            let lag = 2.0; // seconds
+            let lag = 1.0; // seconds
             lagTime = Math.max(0, (gpsTime - lag - rtkOffset)/rtkRange);
 
             // let lagTime = Math.max(0, (gpsTime-lag)/viewer.scene.pointclouds[0].pcoGeometry.nodes.r.gpsTime.range);
             let camPoint = animation.getPoint(lagTime);  // Get point with 2 second lag
             camPoint.z += 30;
-            camera.position.copy(camPoint);
-            camera.lookAt(sphere.position);
+            viewer.scene.view.position.copy(camPoint); // changed from camera
+            viewer.scene.view.lookAt(sphere.position);
 
 
           });
@@ -363,8 +455,16 @@
           // Play/Pause Button Functions:
           let playbutton = document.getElementById("playbutton");
           let pausebutton = document.getElementById("pausebutton");
-          pausebutton.addEventListener("click", () => {animation.pause();});
-          playbutton.addEventListener("click", () => {animation.resume();});
+          pausebutton.addEventListener("click", () => {
+            animation.pause();
+            pausebutton.style.color='#FF0000';
+            playbutton.style.color='#FFFFFF';
+          });
+          playbutton.addEventListener("click", () => {
+            animation.resume();
+            playbutton.style.color='#FF0000';
+            pausebutton.style.color='#FFFFFF';
+          });
           slider.addEventListener("input", () => {
 
             $("#pausebutton").click();
@@ -397,6 +497,7 @@
             console.log(radar);
 
           });
+          $("#pausebutton").click();
         }
 
         window.animationPath = animationPath;
@@ -418,12 +519,13 @@
 			viewer.scene.addPointCloud(pointcloud);
 			material.pointColorType = Potree.PointColorType.RGB; // any Potree.PointColorType.XXXX
 			material.size = 1;
-			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+			material.pointSizeType = Potree.PointSizeType.FIXED;
 			material.shape = Potree.PointShape.SQUARE;
 
       viewer.scene.view.position.set(300198.109, 4701144.537, 349.871);
       viewer.scene.view.lookAt(new THREE.Vector3(299900.954, 4701576.919, 66.197));
-      viewer.toggleNavigationCube();
+      // viewer.toggleNavigationCube();
+      $("#playbutton").click();
 
 			console.log("SET TIMEVAL IN MATERIAL HERE");
 			console.log(material.uniforms.timeVal);

@@ -1,122 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<style>
-
-.potree_container .overlay {
-    height: 75px;
-    width: 100%;
-    position: absolute;
-    bottom: 0px;
-    left: 0px;
-    z-index: 4;
-    background: #19282C;
-    opacity: 0.5;
-    transition: .2s;
-}
-
-.potree_container .overlay:hover {
-  opacity: .75;
-  background: #19282C;
-}
-
-.slidecontainer {
-    width: 100%;
-}
-
-.slider {
-    -webkit-appearance: none;
-    width: 100%;
-    height: 25px;
-    background: #19282c;
-    outline: none;
-    opacity: 0.7;
-    -webkit-transition: .2s;
-    transition: opacity .2s;
-}
-
-.slider:hover {
-    opacity: 1;
-}
-
-.slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 10px;
-    height: 10px;
-    background: #FF0000;
-    cursor: pointer;
-    transition: .2s;
-}
-.slider::-webkit-slider-thumb:hover {
-  width: 15px;
-  height: 15px;
-}
-.slider::-webkit-slider-runnable-track {
-  -webkit-appearance: none;
-  background: #FFFFFF;
-  /* width: 100%; */
-  /* height: 5px;  */
-}
-
-.slider::-moz-range-thumb {
-    width: 10px;
-    height: 10px;
-    border: 0;
-    background: #FF0000;
-    cursor: pointer;
-    transition: .2s;
-}
-.slider::-moz-range-thumb:hover {
-  width: 15px;
-  height: 15px;
-}
-.slider::-moz-range-progress {
-  background-color: #FF0000;
-}
-.slider::-moz-range-track {
-  background-color: #FFFFFF;
-}
-
-#value {
-  color: #FFFFFF;
-  top: 0px;
-  /* padding-top: 10px; */
-  /* padding-bottom: 5px; */
-  font-family: 'Open Sans', sans-serif;
-  font-size: 125%
-}
-
-.inline {
-   display:inline-flex;
-   /* margin-right:5px; */
-   vertical-align: bottom;
-}
-
-.button {
-  color: #FFFFFF;
-  outline: 0;
-  background: none;
-  border: 0px;
-  height: 25px;
-}
-/* .button:hover {
-  color: #FF0000;
-  opacity: .85;
-} */
-.button:active {
-  color: #FF0000;
-  opacity: 1.0;
-  outline: 0;
-}
-.button::-mos-focus-inner {
-  border: 0px;
-}
-.play {
-  background:
-}
-
-</style>
-
 <head>
 	<meta charset="utf-8">
 	<meta name="description" content="">
@@ -134,6 +18,7 @@
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <script src="radarloader.js"></script>
   <script src="rtkloader.js"></script>
+  <link rel="stylesheet" type="text/css" href="playbar.css">
 </head>
 
 <body>
@@ -345,7 +230,7 @@
 
           object.name = "bunny";
           object.position.set(...pos[0]);
-          object.scale.multiplyScalar(.75);
+          object.scale.multiplyScalar(.5);
           object.orientations = orientations;
           object.rotation.set(Math.PI / 2, 0*Math.PI/2., 0*Math.PI/2.0)
 
@@ -397,6 +282,9 @@
             timeOffset = timeMin;
             timeRange = timeMax - timeMin;
 
+            console.log("Radar Initial Time: ", radarOffset);
+            console.log("RTK Initial Time: ", rtkOffset);
+            // debugger;
 
 
             // t is a value between 0 and 1 in rtkTime frame

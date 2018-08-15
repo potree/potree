@@ -34,11 +34,34 @@
 	<script src="../libs/jstree/jstree.js"></script>
 	<script src="../build/potree/potree.js"></script>
 	<script src="../libs/plasio/js/laslaz.js"></script>
+	<script src="inputform.js"></script>
+
 
 	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
 	<!-- INCLUDE SETTINGS HERE -->
 
 	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
+
+		<div id="dialog-form" title="Label Bounding Box">
+			<!-- <p class="validateTips">All form fields are required.</p> -->
+
+			<form>
+				<fieldset>
+					<label for="metadata">Metadata</label>
+					<input type="text" name="metadata" placeholder="metadata" class="text ui-widget-content ui-corner-all">
+					<!-- <label for="name">Name</label>
+					<input type="text" name="name" id="name" value="Jane Smith" class="text ui-widget-content ui-corner-all">
+					<label for="email">Email</label>
+					<input type="text" name="email" id="email" value="jane@smith.com" class="text ui-widget-content ui-corner-all">
+					<label for="password">Password</label>
+					<input type="password" name="password" id="password" value="xxxxxxx" class="text ui-widget-content ui-corner-all"> -->
+
+					<!-- Allow form submission with keyboard without duplicating the dialog button -->
+					<input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
+				</fieldset>
+			</form>
+		</div>
+
 		<div id="potree_render_area"></div>
 		<div id="potree_sidebar_container"> </div>
 	</div>

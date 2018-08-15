@@ -140,9 +140,12 @@ export class VolumePanel extends MeasurePanel{
 			return stringNum;
 		}
 
-		function label(value) {
+		function label(value, viewer) {
 
-			console.log("CLICK!");
+			console.log("ENABLE DIALOG FORM HERE");
+			console.log(viewer);
+			debugger;
+			// var dialog = $( "#dialog-form" ).dialog("open");
 
 			var x;
 			var metadata=prompt("Please enter metadata", "");
@@ -162,6 +165,8 @@ export class VolumePanel extends MeasurePanel{
 			var timestamp = pad(year,4)+"-"+pad(month)+"-"+pad(day)+"_"+pad(hour)+"-"+pad(min)+"-"+pad(sec);
 
 			var output = {
+				t_valid_min: viewer.scene.pointclouds[0].material.uniforms.uFilterGPSTimeClipRange.value[0],
+				t_valid_max: viewer.scene.pointclouds[0].material.uniforms.uFilterGPSTimeClipRange.value[1],
 				timestamp: date.getTime(),
 				position: measurement.position,
 				rotation: measurement.rotation,
@@ -183,7 +188,9 @@ export class VolumePanel extends MeasurePanel{
 				newline: "\r\n"
 			};
 			var outputCsvString = Papa.unparse([{
-				"timestamp": output.timestamp,
+				"t_valid_min": output.t_valid_min,
+				"t_valid_max": output.t_valid_max,
+				"labeling_timestamp": output.timestamp,
 				"position_x": output.position.x,
 				"position_y": output.position.y,
 				"position_z": output.position.z,
@@ -204,10 +211,12 @@ export class VolumePanel extends MeasurePanel{
 		{ // label and download
 
 			// Assign Onclick Functions to drop down items:
+			debugger;
+			var viewer = this.viewer;
 			this.elContent.find("a.dropvalue").click(function() {
 				// console.log($(this).data("value"));
 				var val = $(this).data("value");
-				label(val);
+				label(val, viewer);
 			});
 
 			// var dropdownvalues = this.elContent.find("a.dropvalue");

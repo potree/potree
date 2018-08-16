@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="description" content="">
+	<meta name="author" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+	<title>Potree Viewer</title>
+
+	<link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
+	<link rel="stylesheet" type="text/css" href="../libs/jquery-ui/jquery-ui.min.css">
+	<link rel="stylesheet" type="text/css" href="../libs/perfect-scrollbar/css/perfect-scrollbar.css">
+	<link rel="stylesheet" type="text/css" href="../libs/openlayers3/ol.css">
+	<link rel="stylesheet" type="text/css" href="../libs/spectrum/spectrum.css">
+	<link rel="stylesheet" type="text/css" href="../libs/jstree/themes/mixed/style.css">
+  <!-- <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet"> -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <script src="radarloader.js"></script>
+  <script src="rtkloader.js"></script>
+  <link rel="stylesheet" type="text/css" href="playbar.css">
+</head>
+
+<body>
+	<script src="../libs/jquery/jquery-3.1.1.min.js"></script>
+	<script src="../libs/spectrum/spectrum.js"></script>
+	<script src="../libs/perfect-scrollbar/js/perfect-scrollbar.jquery.js"></script>
+	<script src="../libs/jquery-ui/jquery-ui.min.js"></script>
+	<script src="../libs/three.js/build/three.min.js"></script>
+	<script src="../libs/other/BinaryHeap.js"></script>
+	<script src="../libs/tween/tween.min.js"></script>
+	<script src="../libs/d3/d3.js"></script>
+	<script src="../libs/proj4/proj4.js"></script>
+	<script src="../libs/openlayers3/ol.js"></script>
+	<script src="../libs/i18next/i18next.js"></script>
+	<script src="../libs/jstree/jstree.js"></script>
+	<script src="../build/potree/potree.js"></script>
+	<script src="../libs/plasio/js/laslaz.js"></script>
+  <script src="../libs/other/OBJLoader.js"></script>
+
+
+	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
+	<!-- INCLUDE SETTINGS HERE -->
+
+	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
+
+	  <div id="potree_render_area">
+
+      <div class="overlay">
+        <div class="slidecontainer">
+          <input type="range" min="0" max="100" value=50 step="0.01" class="slider" id="myRange">
+          <div id="spacer">
+
+            <div id="value" class="inline">
+              <button class="button" class="play" id="playbutton" class="inline"><i class="material-icons">play_arrow</i></button>
+              <button class="button" class="pause" id="pausebutton"><i class="material-icons">pause</i></button>
+              Time: <span id="demo">0.0000</span> seconds
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+		<div id="potree_sidebar_container"> </div>
+	</div>
+
+
+  <script type="x-shader/x-vertex" id="vertexshader">
+
+      attribute float alpha;
+      attribute float gpsTime;
+
+      uniform float minGpsTime;
+      uniform float maxGpsTime;
+
+      varying float vAlpha;
+
+      void main() {
+
+        if (minGpsTime <= gpsTime && gpsTime <= maxGpsTime) {
+          vAlpha = 1.0;
+        } else {
+          vAlpha = 0.0;
+        }
+
+
+        // if (currentGpsTime > 10.0) {
+        // } else {
+        //   vAlpha = 1.0
+        // }
+
+          vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
+
+          gl_PointSize = 8.0;
+
+          gl_Position = projectionMatrix * mvPosition;
+
+      }
+
+  </script>
+
+  <script type="x-shader/x-fragment" id="fragmentshader">
+
+      uniform vec3 color;
+
+      varying float vAlpha;
+
+      void main() {
+
+          gl_FragColor = vec4( color, vAlpha );
+
+      }
+
+  </script>
+
+
+
+
+
+	<script>
+
+		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
+
+		viewer.setEDLEnabled(true);
+		viewer.setFOV(60);
+		viewer.setPointBudget(1*1000*1000);
+		document.title = "";
+		viewer.setEDLEnabled(false);
+		viewer.setBackground("gradient"); // ["skybox", "gradient", "black", "white"];
+		viewer.setDescription(``);
+		viewer.loadSettingsFromURL();
+
+		viewer.loadGUI(() => {
+			viewer.setLanguage('en');
+			$("#menu_appearance").next().show();
+			$("#menu_tools").next().show();
+			$("#menu_scene").next().show();
+			// viewer.toggleSidebar();
+      // viewer.setNavigationMode(EarthControls); // TODO Hack: changed default in viewer.js line 234
+      // $('#show_bounding_box').trigger("click");
+      $("#splat_quality_options_hq").trigger("click");
+      // viewer.scene.view.position.set(300198.109, 4701144.537, 349.871);
+      // viewer.scene.view.lookAt(new THREE.Vector3(299900.954, 4701576.919, 66.197));
+		});
+
+
+    // Load Radar:
+    loadRadar((geometry, t_init) => {
+
+      // uniforms
+      uniforms = {
+          color: { value: new THREE.Color( 0xffff00 ) },
+          minGpsTime: {value: 0.0 },
+          maxGpsTime: {value: 110.0 },
+          initialTime: {value: t_init}
+      };
+
+      // point cloud material
+      var shaderMaterial = new THREE.ShaderMaterial( {
+
+          uniforms:       uniforms,
+          vertexShader:   document.getElementById( 'vertexshader' ).textContent,
+          fragmentShader: document.getElementById( 'fragmentshader' ).textContent,
+          transparent:    true
+
+      });
+
+      var material = new THREE.PointsMaterial( {size:1.0} );
+      var mesh = new THREE.Points(geometry, shaderMaterial);
+      mesh.name = "radar";
+      // debugger; //radar tracks added?
+      viewer.scene.scene.add(mesh);
+    });
+
+    // Load RTK:
+    loadRtk((pos, rot, t_init) => {
+      path = pos.map(v => new THREE.Vector3(...v));
+      orientations = rot.map(v => new THREE.Vector3(...v));
+
+      let animationPath = new Potree.AnimationPath(path);
+      animationPath.closed = false;
+
+      { // render the path
+        let geometry = animationPath.getGeometry();
+        let material = new THREE.LineBasicMaterial();
+        material.uniforms = {initialTime:{value:t_init}};
+        let line = new THREE.Line(geometry, material, {closed: animationPath.closed});
+        line.name = "rtk";
+        viewer.scene.scene.add(line);
+        console.log("Rendered Path");
+      }
+
+
+      // CREATE VEHICLE OBJECT:
+      // NOTE for Mustang: {texture: models/bodybkgd.JPG, mesh: models/1967-shelby-ford-mustang.obj}
+      // NOTE for Volt: {texture: models/Chevy_Volt_Segmented/Chevrolet_Volt_v1_exterior.png, mesh: resources/models/Chevy_Volt_Segmented/Chevy_Volt_2016.obj}
+      let manager = new THREE.LoadingManager();
+      manager.onProgress = function ( item, loaded, total ) {
+        console.log( item, loaded, total );
+      };
+      let textureLoader = new THREE.TextureLoader( manager );
+      let texture = textureLoader.load(`${Potree.resourcePath}/models/bodybkgd.JPG`);
+      let onProgress = function ( xhr ) {
+        if ( xhr.lengthComputable ) {
+          let percentComplete = xhr.loaded / xhr.total * 100;
+          console.log( Math.round(percentComplete, 2) + '% downloaded' );
+        }
+      };
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+
+      var geometry = new THREE.SphereGeometry( 2, 32, 32 );
+      var material = new THREE.MeshNormalMaterial( {side: THREE.DoubleSide, opacity: 0.92,transparent:true});
+      var sphere = new THREE.Mesh( geometry, material );
+      sphere.position = new THREE.Vector3(...pos[0]);
+      console.log(sphere);
+
+      // viewer.scene.scene.add( sphere );
+      console.log("Sphere added");
+
+
+      { // Load Textured bunny from obj
+        let onError = function ( xhr ) {};
+        let loader = new THREE.OBJLoader( manager );
+        loader.load(`${Potree.resourcePath}/models/1967-shelby-ford-mustang.obj`, function ( object ) {
+          object.traverse( function ( child ) {
+            if ( child instanceof THREE.Mesh ) {
+              child.material.map = texture;
+            }
+          } );
+
+          object.name = "bunny";
+          object.position.set(...pos[0]);
+          object.scale.multiplyScalar(.5);
+          object.orientations = orientations;
+          object.rotation.set(Math.PI / 2, 0*Math.PI/2., 0*Math.PI/2.0)
+
+          viewer.scene.scene.add( object );
+
+        }, onProgress, onError );
+      }
+
+      // // Create sprite:
+      // let hudTexture = textureLoader.load(`${Potree.resourcePath}/images/4076.jpg`);
+      // var spriteMaterial = new THREE.SpriteMaterial({map:hudTexture});
+      // var sprite = new THREE.Sprite(spriteMaterial);
+      // sprite.position.set(...pos[0]);
+      // sprite.position.add(new THREE.Vector3(10,10,10));
+      // sprite.scale.set(5,5,1);
+      // sprite.name = "sprite";
+      // viewer.scene.scene.add(sprite);
+
+
+
+
+
+
+      // ANIMATION:
+      { // create Animation Path & make light follow it
+
+
+        {// ANIMATION + SLIDER LOGIC:
+          let slider = document.getElementById("myRange");
+          let output = document.getElementById("demo");
+          output.innerHTML = slider.value;
+
+          // Animate from beginning to end with a speed of 100 meters per second
+          let start = 0;
+          let end = Infinity;
+          let speed = 1.50;
+          let animation = animationPath.animate(start, end, speed, t => {
+            animation.repeat = true;
+
+            // TODO cache this to improve speed?
+            lidarOffset = 1495189467.550001;  // TODO Hardcoded b/c PotreeConverter is throwing away initial offset
+            rtkOffset = viewer.scene.scene.getObjectByName("rtk").material.uniforms.initialTime.value;
+            radarOffset = viewer.scene.scene.getObjectByName("radar").material.uniforms.initialTime.value;
+            timeMin = Math.min(lidarOffset, rtkOffset, radarOffset);
+            lidarRange = viewer.scene.pointclouds[0].pcoGeometry.nodes.r.gpsTime.range;
+            radarRange = 583.649169921875;  // TODO Hardcoded
+            rtkRange = 600.5599999427795;   // TODO Hardcoded
+            timeMax = Math.max((lidarRange+lidarOffset), (radarRange+radarOffset), (rtkRange+rtkOffset));
+            timeOffset = timeMin;
+            timeRange = timeMax - timeMin;
+
+            console.log("Radar Initial Time: ", radarOffset);
+            console.log("RTK Initial Time: ", rtkOffset);
+            // debugger;
+
+
+            // t is a value between 0 and 1 in rtkTime frame
+            var gpsTime = (rtkRange*t) + rtkOffset;  // Convert from rtkTime to gpsTime
+
+            // TODO define slider time frame
+            slider.value = 100*t; // NOTE this is currently only using the rtkTime as the time frame
+            output.innerHTML = (gpsTime-rtkOffset).toFixed(4); // Centered to zero
+
+            // use getPoint(t) to map from t to the position on the animation path
+            let rtkPoint = animation.getPoint(t); // NOTE t is in rtkTime
+            rtkPoint.z -= 2.0;
+            sphere.position.copy(rtkPoint);
+            var bunny = viewer.scene.scene.getObjectByName("bunny");
+            bunny.position.copy(rtkPoint);
+            // sprite.position.copy(point.add(new THREE.Vector3(10,10,10)));
+
+
+            // Set Time in Material:
+            viewer.scene.pointclouds[0].material.uniforms.timeVal.value = t; // TODO not used I think
+            // debugger; //update radar material here
+
+            // Create GPS Time Clipping Event:
+            var minGpsTime = gpsTime - 0.05;  // TODO make window size a setting somewhere
+            var maxGpsTime = gpsTime + 0.05;  // TODO make window size a setting somewhere
+
+            // Animate Point Cloud:
+            minLidarTime = minGpsTime - lidarOffset;
+            maxLidarTime = maxGpsTime - lidarOffset;
+            viewer.setFilterGPSTimeRange(minLidarTime, maxLidarTime);
+            viewer.setFilterGPSTimeExtent(minGpsTime-10, maxGpsTime+10);
+
+            // Animate Radar:
+            minRadarTime = minGpsTime - radarOffset;
+            maxRadarTime = maxGpsTime - radarOffset;
+            var radar = viewer.scene.scene.getObjectByName("radar")
+            radar.material.uniforms.minGpsTime.value = minRadarTime;
+            radar.material.uniforms.maxGpsTime.value = maxRadarTime;
+            console.log(radar);
+
+            // debugger; // check the rtkTime, slider time, radar time, lidar time
+
+            let camera = viewer.scene.getActiveCamera();
+            let lag = .01; // seconds
+            lagTime = Math.max(0, (gpsTime - lag - rtkOffset)/rtkRange);
+
+            // let lagTime = Math.max(0, (gpsTime-lag)/viewer.scene.pointclouds[0].pcoGeometry.nodes.r.gpsTime.range);
+            let camPoint = animation.getPoint(lagTime);  // Get point with 2 second lag
+            camPoint.z += 30;
+            viewer.scene.view.position.copy(camPoint); // changed from camera
+            viewer.scene.view.lookAt(sphere.position);
+
+
+          });
+          window.animation = animation;
+
+          // TODO FIX TIME SYNCING BELOW
+          // Play/Pause Button Functions:
+          let playbutton = document.getElementById("playbutton");
+          let pausebutton = document.getElementById("pausebutton");
+          pausebutton.addEventListener("click", () => {
+            animation.pause();
+            pausebutton.style.color='#FF0000';
+            playbutton.style.color='#FFFFFF';
+          });
+          playbutton.addEventListener("click", () => {
+            animation.resume();
+            playbutton.style.color='#FF0000';
+            pausebutton.style.color='#FFFFFF';
+          });
+          slider.addEventListener("input", () => {
+
+            $("#pausebutton").click();
+
+            var val = slider.value/100.0;
+            var time = 0;
+            if (viewer.scene.pointclouds[0].pcoGeometry.nodes.r.gpsTime) {
+              time = (viewer.scene.pointclouds[0].pcoGeometry.nodes.r.gpsTime.range*slider.value/100);
+            } else {
+              time = -1;
+            }
+            output.innerHTML = time.toFixed(4);
+
+            animation.t = val;
+            let point = animation.getPoint(animation.t);
+            sphere.position.copy(point);
+            var bunny = viewer.scene.scene.getObjectByName("bunny");
+            bunny.position.copy(point);
+            viewer.scene.pointclouds[0].material.uniforms.timeVal.value = val;
+
+            // Create GPS Time Clipping Event:
+            var minGpsTime = time - 0.05;
+            var maxGpsTime = time + 0.05;
+            viewer.setFilterGPSTimeRange((minGpsTime-lidarOffset)/583.649169921875, (maxGpsTime-lidarOffset)/583.649169921875); //lidar
+            viewer.setFilterGPSTimeExtent((minGpsTime-lidarOffset)/583.649169921875, (maxGpsTime-lidarOffset)/583.649169921875);
+
+            var radar = viewer.scene.scene.getObjectByName("radar")
+            radar.material.uniforms.minGpsTime.value = (minGpsTime-lidarOffset)/583.649169921875;
+            radar.material.uniforms.maxGpsTime.value = (maxGpsTime-lidarOffset)/583.649169921875;
+            console.log(radar);
+
+          });
+          $("#pausebutton").click();
+        }
+
+        window.animationPath = animationPath;
+      }
+
+    });
+
+
+
+
+		// Potree.loadPointCloud("../pointclouds/fullpointcloud-time-mini/cloud.js", "fullpointcloud-time-mini", e => {
+		// Potree.loadPointCloud("../pointclouds/basemap-time/cloud.js", "basemap-time", e => {
+		// Potree.loadPointCloud("../pointclouds/basemap-demo/cloud.js", "basemap-demo", e => {
+		Potree.loadPointCloud("../pointclouds/veritas/full-pointcloud/cloud.js", "basemap-demo", e => {
+
+			let pointcloud = e.pointcloud;
+			let material = pointcloud.material;
+			console.log(pointcloud.pcoGeometry.nodes.r.gpsTime);
+			viewer.scene.addPointCloud(pointcloud);
+			material.pointColorType = Potree.PointColorType.RGB; // any Potree.PointColorType.XXXX
+			material.size = 1;
+			material.pointSizeType = Potree.PointSizeType.FIXED;
+			material.shape = Potree.PointShape.SQUARE;
+
+      viewer.scene.view.position.set(300198.109, 4701144.537, 349.871);
+      viewer.scene.view.lookAt(new THREE.Vector3(299900.954, 4701576.919, 66.197));
+      // viewer.toggleNavigationCube();
+      $("#playbutton").click();
+
+			console.log("SET TIMEVAL IN MATERIAL HERE");
+			console.log(material.uniforms.timeVal);
+
+		});
+
+
+
+		</script>
+
+
+  </body>
+</html>

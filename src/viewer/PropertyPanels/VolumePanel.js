@@ -145,7 +145,7 @@ export class VolumePanel extends MeasurePanel{
 			console.log("ENABLE DIALOG FORM HERE");
 			console.log(viewer);
 			// debugger;
-			// var dialog = $( "#dialog-form" ).dialog("open");
+			var dialog = $( "#dialog-form" ).dialog("open");
 
 			var x;
 			var metadata=prompt("Please enter metadata", "");

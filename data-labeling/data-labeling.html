@@ -17,6 +17,7 @@
 	<script src="dropdown.js"></script>
 	<script src="download.js"></script>
 	<script src="../node_modules/papaparse/papaparse.min.js"></script>
+
 </head>
 
 <body>
@@ -35,7 +36,10 @@
 	<script src="../build/potree/potree.js"></script>
 	<script src="../libs/plasio/js/laslaz.js"></script>
 	<script src="inputform.js"></script>
-
+	<script src="../common/playbar.js"></script>
+	<link rel="stylesheet" type="text/css" href="../common/playbar.css">
+	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+	
 
 	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
 	<!-- INCLUDE SETTINGS HERE -->
@@ -95,7 +99,7 @@
 			let material = e.pointcloud.material;
 			material.size = 1;
 			material.pointColorType = Potree.PointColorType.HEIGHT;
-			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+			material.pointSizeType = Potree.PointSizeType.FIXED;
 
 			viewer.fitToScreen();
 		});

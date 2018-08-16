@@ -39,7 +39,8 @@
 	<script src="../common/playbar.js"></script>
 	<link rel="stylesheet" type="text/css" href="../common/playbar.css">
 	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-	
+	<script src="data-labeling.js"></script>
+
 
 	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
 	<!-- INCLUDE SETTINGS HERE -->
@@ -101,8 +102,19 @@
 			material.pointColorType = Potree.PointColorType.HEIGHT;
 			material.pointSizeType = Potree.PointSizeType.FIXED;
 
+			// console.log(e.pointcloud.pcoGeometry.nodes.gpsTime);
+			// console.log(e.pointcloud.nodes.r.gpsTime);
+
 			viewer.fitToScreen();
 		});
+
+		window.addEventListener("message", (event) => {
+			// console.log(viewer.scene.pointclouds[0]);
+			// debugger;
+			// initLabeler(window.viewer);
+		});
+
+
 
 	</script>
 

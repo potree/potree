@@ -144,7 +144,7 @@ export class VolumePanel extends MeasurePanel{
 
 			console.log("ENABLE DIALOG FORM HERE");
 			console.log(viewer);
-			debugger;
+			// debugger;
 			// var dialog = $( "#dialog-form" ).dialog("open");
 
 			var x;
@@ -211,7 +211,7 @@ export class VolumePanel extends MeasurePanel{
 		{ // label and download
 
 			// Assign Onclick Functions to drop down items:
-			debugger;
+			// debugger;
 			var viewer = this.viewer;
 			this.elContent.find("a.dropvalue").click(function() {
 				// console.log($(this).data("value"));

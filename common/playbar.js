@@ -12,8 +12,8 @@ $(document).ready(function () {
             <button class="button" class="pause" id="pausebutton"><i class="material-icons">pause</i></button>
             Time: <span id="demo">0.0000</span> seconds
             <span id="playbar_timewindows">
-              <input type="number" id="playbar_tmin" value=-0.05 max=0 step="any">
-              <input type="number" id="playbar_tmax" value=0.05 min=0 step="any">
+              <input type="number" id="playbar_tmin" value=-0.05 max=0 step="0.01">
+              <input type="number" id="playbar_tmax" value=0.05 min=0 step="0.01">
             </span>
             <label class="switch">
               <input type="checkbox" id="playbar_toggle">
@@ -73,6 +73,9 @@ $(document).ready(function () {
     playbarhtml.find("#myRange").on('input', function() {
       console.log("SLIDER");
       update();
+    });
+    playbarhtml.find("#myRange").on("scroll", function(e) {
+      console.log(e);
     });
 
     playbarhtml.find("#playbar_toggle").click(function() {

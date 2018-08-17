@@ -269,7 +269,7 @@
           // Animate from beginning to end with a speed of 100 meters per second
           let start = 0;
           let end = Infinity;
-          let speed = 10;
+          let speed = 40;
           let animation = animationPath.animate(start, end, speed, t => {
             animation.repeat = true;
 
@@ -404,13 +404,13 @@
 		// Potree.loadPointCloud("../pointclouds/fullpointcloud-time-mini/cloud.js", "fullpointcloud-time-mini", e => {
 		// Potree.loadPointCloud("../pointclouds/basemap-time/cloud.js", "basemap-time", e => {
 		// Potree.loadPointCloud("../pointclouds/basemap-demo/cloud.js", "basemap-demo", e => {
-		Potree.loadPointCloud("../pointclouds/veritas/full-pointcloud/cloud.js", "basemap-demo", e => {
+		Potree.loadPointCloud("../pointclouds/veritas/full-pointcloud/cloud.js", "fullcloud", e => {
 
 			let pointcloud = e.pointcloud;
 			let material = pointcloud.material;
 			console.log(pointcloud.pcoGeometry.nodes.r.gpsTime);
 			viewer.scene.addPointCloud(pointcloud);
-			material.pointColorType = Potree.PointColorType.RGB; // any Potree.PointColorType.XXXX
+			material.pointColorType = Potree.PointColorType.HEIGHT; // any Potree.PointColorType.XXXX
 			material.size = 1;
 			material.pointSizeType = Potree.PointSizeType.FIXED;
 			material.shape = Potree.PointShape.SQUARE;
@@ -426,6 +426,29 @@
 		});
 
 
+				// Potree.loadPointCloud("../pointclouds/fullpointcloud-time-mini/cloud.js", "fullpointcloud-time-mini", e => {
+				// Potree.loadPointCloud("../pointclouds/basemap-time/cloud.js", "basemap-time", e => {
+				Potree.loadPointCloud("../pointclouds/basemap-demo/cloud.js", "basemap", e => {
+				// Potree.loadPointCloud("../pointclouds/veritas/full-pointcloud/cloud.js", "basemap-demo", e => {
+
+					let pointcloud = e.pointcloud;
+					let material = pointcloud.material;
+					console.log(pointcloud.pcoGeometry.nodes.r.gpsTime);
+					viewer.scene.addPointCloud(pointcloud);
+					material.pointColorType = Potree.PointColorType.RGB; // any Potree.PointColorType.XXXX
+					material.size = 1;
+					material.pointSizeType = Potree.PointSizeType.FIXED;
+					material.shape = Potree.PointShape.SQUARE;
+
+		      viewer.scene.view.position.set(300198.109, 4701144.537, 349.871);
+		      viewer.scene.view.lookAt(new THREE.Vector3(299900.954, 4701576.919, 66.197));
+		      // viewer.toggleNavigationCube();
+		      $("#playbutton").click();
+
+					console.log("SET TIMEVAL IN MATERIAL HERE");
+					console.log(material.uniforms.timeVal);
+
+				});
 
 		</script>
 

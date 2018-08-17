@@ -198,7 +198,8 @@
         console.log( item, loaded, total );
       };
       let textureLoader = new THREE.TextureLoader( manager );
-      let texture = textureLoader.load(`${Potree.resourcePath}/models/bodybkgd.JPG`);
+      let texture = textureLoader.load(`${Potree.resourcePath}/models/Chevy_Volt_Segmented/reflection_1.png`);
+      // let texture = textureLoader.load(`${Potree.resourcePath}/models/bodybkgd.JPG`);
       let onProgress = function ( xhr ) {
         if ( xhr.lengthComputable ) {
           let percentComplete = xhr.loaded / xhr.total * 100;
@@ -221,7 +222,8 @@
       { // Load Textured bunny from obj
         let onError = function ( xhr ) {};
         let loader = new THREE.OBJLoader( manager );
-        loader.load(`${Potree.resourcePath}/models/1967-shelby-ford-mustang.obj`, function ( object ) {
+        loader.load(`${Potree.resourcePath}/models/Chevy_Volt_Segmented/Chevy_Volt_2016.obj`, function ( object ) {
+        // loader.load(`${Potree.resourcePath}/models/1967-shelby-ford-mustang.obj`, function ( object ) {
           object.traverse( function ( child ) {
             if ( child instanceof THREE.Mesh ) {
               child.material.map = texture;
@@ -230,9 +232,10 @@
 
           object.name = "bunny";
           object.position.set(...pos[0]);
-          object.scale.multiplyScalar(.5);
+          object.scale.multiplyScalar(.011);
           object.orientations = orientations;
-          object.rotation.set(Math.PI / 2, 0*Math.PI/2., 0*Math.PI/2.0)
+          object.rotation.set(0*Math.PI / 2, 0*Math.PI/2., 2*Math.PI/2.0);
+          // object.rotation.set(Math.PI / 2, 0*Math.PI/2., 0*Math.PI/2.0); // Shelby Mustang
 
           viewer.scene.scene.add( object );
 
@@ -266,7 +269,7 @@
           // Animate from beginning to end with a speed of 100 meters per second
           let start = 0;
           let end = Infinity;
-          let speed = 1.50;
+          let speed = 10;
           let animation = animationPath.animate(start, end, speed, t => {
             animation.repeat = true;
 
@@ -328,7 +331,7 @@
             // debugger; // check the rtkTime, slider time, radar time, lidar time
 
             let camera = viewer.scene.getActiveCamera();
-            let lag = .01; // seconds
+            let lag = 1.01; // seconds
             lagTime = Math.max(0, (gpsTime - lag - rtkOffset)/rtkRange);
 
             // let lagTime = Math.max(0, (gpsTime-lag)/viewer.scene.pointclouds[0].pcoGeometry.nodes.r.gpsTime.range);

@@ -94,21 +94,28 @@
   background: none;
   border: 0px;
   height: 25px;
+  opacity: 0.7;
 }
-/* .button:hover {
-  color: #FF0000;
-  opacity: .85;
-} */
 .button:active {
   color: #FF0000;
+  opacity: 1.0;
+  outline: 0;
+}
+.button:hover {
+  color: #FFFFFF;
   opacity: 1.0;
   outline: 0;
 }
 .button::-mos-focus-inner {
   border: 0px;
 }
-.play {
-  background:
+
+#toggleplay {
+  display: none;
+}
+
+#pausebutton {
+  display: none;
 }
 
 input[type="number"] {

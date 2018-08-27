@@ -241,25 +241,35 @@ export class Sidebar{
 			`);
 
 			let elDownloadJSON = elExport.find("img[name=geojson_export_button]").parent();
-			elDownloadJSON.click( () => {
+			elDownloadJSON.click( (event) => {
 				let scene = this.viewer.scene;
 				let measurements = [...scene.measurements, ...scene.profiles, ...scene.volumes];
 
-				let geoJson = GeoJSONExporter.toString(measurements);
+				if(measurements.length > 0){
+					let geoJson = GeoJSONExporter.toString(measurements);
 
-				let url = window.URL.createObjectURL(new Blob([geoJson], {type: 'data:application/octet-stream'}));
-				elDownloadJSON.attr('href', url);
+					let url = window.URL.createObjectURL(new Blob([geoJson], {type: 'data:application/octet-stream'}));
+					elDownloadJSON.attr('href', url);
+				}else{
+					this.viewer.postError("no measurements to export");
+					event.preventDefault();
+				}
 			});
 
 			let elDownloadDXF = elExport.find("img[name=dxf_export_button]").parent();
-			elDownloadDXF.click( () => {
+			elDownloadDXF.click( (event) => {
 				let scene = this.viewer.scene;
 				let measurements = [...scene.measurements, ...scene.profiles, ...scene.volumes];
 
-				let dxf = DXFExporter.toString(measurements);
+				if(measurements.length > 0){
+					let dxf = DXFExporter.toString(measurements);
 
-				let url = window.URL.createObjectURL(new Blob([dxf], {type: 'data:application/octet-stream'}));
-				elDownloadDXF.attr('href', url);
+					let url = window.URL.createObjectURL(new Blob([dxf], {type: 'data:application/octet-stream'}));
+					elDownloadDXF.attr('href', url);
+				}else{
+					this.viewer.postError("no measurements to export");
+					event.preventDefault();
+				}
 			});
 		}
 

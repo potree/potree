@@ -18,7 +18,7 @@
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <script src="radarloader.js"></script>
   <script src="rtkloader.js"></script>
-  <link rel="stylesheet" type="text/css" href="playbar.css">
+  <!-- <link rel="stylesheet" type="text/css" href="playbar.css"> -->
 </head>
 
 <body>
@@ -37,6 +37,8 @@
 	<script src="../build/potree/potree.js"></script>
 	<script src="../libs/plasio/js/laslaz.js"></script>
   <script src="../libs/other/OBJLoader.js"></script>
+	<script src="../common/playbar.js"></script>
+	<script src="../common/playbar.css"></script>
 
 
 	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
@@ -46,7 +48,7 @@
 
 	  <div id="potree_render_area">
 
-      <div class="overlay">
+      <!-- <div class="overlay">
         <div class="slidecontainer">
           <input type="range" min="0" max="100" value=50 step="0.01" class="slider" id="myRange">
           <div id="spacer">
@@ -58,7 +60,7 @@
             </div>
           </div>
         </div>
-      </div>
+      </div> -->
     </div>
 		<div id="potree_sidebar_container"> </div>
 	</div>
@@ -401,7 +403,7 @@
 		// Potree.loadPointCloud("../pointclouds/fullpointcloud-time-mini/cloud.js", "fullpointcloud-time-mini", e => {
 		// Potree.loadPointCloud("../pointclouds/basemap-time/cloud.js", "basemap-time", e => {
 		// Potree.loadPointCloud("../pointclouds/basemap-demo/cloud.js", "basemap-demo", e => {
-		Potree.loadPointCloud("../pointclouds/veritas/full-pointcloud/cloud.js", "basemap-demo", e => {
+		Potree.loadPointCloud("../pointclouds/veritas/full-pointcloud/cloud.js", "full-cloud", e => {
 
 			let pointcloud = e.pointcloud;
 			let material = pointcloud.material;

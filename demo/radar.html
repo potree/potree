@@ -48,7 +48,7 @@
 
       <div class="overlay">
         <div class="slidecontainer">
-          <input type="range" min="0" max="100" value=50 step="0.01" class="slider" id="myRange">
+          <input type="range" min="0" max="100" value=0 step="0.01" class="slider" id="myRange">
           <div id="spacer">
 
             <div id="value" class="inline">
@@ -306,7 +306,7 @@
             sphere.position.copy(rtkPoint);
             var bunny = viewer.scene.scene.getObjectByName("bunny");
             bunny.position.copy(rtkPoint);
-						bunny.visible = false;
+						bunny.visible = true;
             // sprite.position.copy(point.add(new THREE.Vector3(10,10,10)));
 
 
@@ -335,12 +335,12 @@
             // debugger; // check the rtkTime, slider time, radar time, lidar time
 
             let camera = viewer.scene.getActiveCamera();
-            let lag = .01; // seconds
+            let lag = 1.01; // seconds
             lagTime = Math.max(0, (gpsTime - lag - rtkOffset)/rtkRange);
 
             // let lagTime = Math.max(0, (gpsTime-lag)/viewer.scene.pointclouds[0].pcoGeometry.nodes.r.gpsTime.range);
             let camPoint = animation.getPoint(lagTime);  // Get point with 2 second lag
-            camPoint.z += 0;
+            camPoint.z += 10;
             viewer.scene.view.position.copy(camPoint); // changed from camera
 						var targetPosition = new THREE.Vector3(sphere.position.x, sphere.position.y, sphere.position.z+2);
             viewer.scene.view.lookAt(targetPosition);
@@ -441,8 +441,8 @@
 					console.log(pointcloud.pcoGeometry.nodes.r.gpsTime);
 					viewer.scene.addPointCloud(pointcloud);
 					material.pointColorType = Potree.PointColorType.HEIGHT; // any Potree.PointColorType.XXXX
-					material.size = 1;
-					material.pointSizeType = Potree.PointSizeType.FIXED;
+					material.size = 0.09;
+					material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
 					material.shape = Potree.PointShape.SQUARE;
 
 		      viewer.scene.view.position.set(300198.109, 4701144.537, 349.871);

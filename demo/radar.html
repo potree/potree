@@ -178,6 +178,7 @@
 
       let animationPath = new Potree.AnimationPath(path);
       animationPath.closed = false;
+			var orientationPath = new THREE.CatmullRomCurve3(orientations, animationPath.closed); // NOTE: orientations are represented as a parametric curve in 3d space, this breaks at pi to negative pi transition
 
       { // render the path
         let geometry = animationPath.getGeometry();
@@ -235,11 +236,14 @@
           object.name = "bunny";
           object.position.set(...pos[0]);
           object.scale.multiplyScalar(.011);
-          object.orientations = orientations;
-          object.rotation.set(0*Math.PI / 2, 0*Math.PI/2., 2*Math.PI/2.0);
+					object.orientationPath = orientationPath;
+          object.rotation.set(0*Math.PI / 2, 0*Math.PI/2., 1*Math.PI/2.0); // Chevy Volt
+					object.initialRotation = object.rotation.clone(); // NOTE is this used?
+
           // object.rotation.set(Math.PI / 2, 0*Math.PI/2., 0*Math.PI/2.0); // Shelby Mustang
 
           viewer.scene.scene.add( object );
+					// debugger; // orientationPath
 
         }, onProgress, onError );
       }
@@ -301,11 +305,13 @@
             output.innerHTML = (gpsTime-rtkOffset).toFixed(4); // Centered to zero
 
             // use getPoint(t) to map from t to the position on the animation path
+						var bunny = viewer.scene.scene.getObjectByName("bunny");
             let rtkPoint = animation.getPoint(t); // NOTE t is in rtkTime
+						let vehicleOrientation = bunny.orientationPath.getPoint(t);
             rtkPoint.z -= 2.0;
             sphere.position.copy(rtkPoint);
-            var bunny = viewer.scene.scene.getObjectByName("bunny");
             bunny.position.copy(rtkPoint);
+						applyRotation(bunny, vehicleOrientation.x, vehicleOrientation.y, vehicleOrientation.z);
 						bunny.visible = true;
             // sprite.position.copy(point.add(new THREE.Vector3(10,10,10)));
 

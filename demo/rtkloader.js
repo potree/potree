@@ -1,4 +1,14 @@
 
+function minAngle(theta) {
+  if (theta < - Math.PI) {
+    theta += 2*Math.PI;
+  }
+  if (theta > Math.PI) {
+    theta -= 2*Math.PI;
+  }
+  return theta;
+}
+
 function loadRtk(callback) {
 
   let filename = "csv/rtkdata.csv";
@@ -38,6 +48,7 @@ function loadRtk(callback) {
     let row, cols;
     let t_init = 0;
     let firstTimestamp = true;
+    let lastRoll, lastPitch, lastYaw;
     for (let ii = 0, len = rows.length; ii < len-1; ++ii) {
       row = rows[ii];
       cols = row.split(' ');
@@ -46,9 +57,9 @@ function loadRtk(callback) {
         x = parseFloat(cols[xcol]);
         y = parseFloat(cols[ycol]);
         z = parseFloat(cols[zcol]);
-        roll = parseFloat(rollcol);
-        pitch = parseFloat(pitchcol);
-        yaw = parseFloat(yawcol);
+        roll = parseFloat(cols[rollcol]);
+        pitch = parseFloat(cols[pitchcol]);
+        yaw = parseFloat(cols[yawcol]);
 
 
         if (isNan(t) || isNan(x) || isNan(y) || isNan(z)) {
@@ -59,6 +70,14 @@ function loadRtk(callback) {
         if (firstTimestamp) {
           t_init = t;
           firstTimestamp = false;
+          lastRoll = 0;
+          lastPitch = 0;
+          lastYaw = 0;
+        } else {
+          lastOrientation = orientations[orientations.length - 1];
+          lastRoll = lastOrientation[0];
+          lastPitch = lastOrientation[1];
+          lastYaw = lastOrientation[2];
         }
 
         // timestamps.push(t);
@@ -70,9 +89,12 @@ function loadRtk(callback) {
         colors.push( Math.random() * 0xffffff );
         colors.push( Math.random() * 0xffffff );
         mpos.push([x,y,z]);
+
+        roll = lastRoll + minAngle(roll-lastRoll);
+        pitch = lastPitch + minAngle(pitch-lastPitch);
+        yaw = lastYaw + minAngle(yaw-lastYaw);
+
         orientations.push([roll, pitch, yaw]);
-        // orientations.push(pitch);
-        // orientations.push(yaw);
 
       }
     }
@@ -93,7 +115,16 @@ function loadRtk(callback) {
 
   t0 = performance.now();
   xhr.send();
+}
 
 
+function applyRotation(obj, roll, pitch, yaw) {
+  if ( typeof(obj.initialRotation) != "undefined") {
+    console.log(obj.ini)
+    roll += obj.initialRotation.x;
+    pitch += obj.initialRotation.y;
+    yaw += obj.initialRotation.z;
+  }
 
+  obj.rotation.set(roll, pitch, yaw);
 }

@@ -446,7 +446,8 @@
 					let material = pointcloud.material;
 					console.log(pointcloud.pcoGeometry.nodes.r.gpsTime);
 					viewer.scene.addPointCloud(pointcloud);
-					material.pointColorType = Potree.PointColorType.HEIGHT; // any Potree.PointColorType.XXXX
+					material.pointColorType = Potree.PointColorType.COLOR; // any Potree.PointColorType.XXXX
+					material.color = new THREE.Color().setRGB(0.99, 0.99, 0.99);
 					material.size = 0.09;
 					material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
 					material.shape = Potree.PointShape.SQUARE;

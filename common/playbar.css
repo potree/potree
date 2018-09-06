@@ -1,0 +1,192 @@
+.potree_container .overlay {
+    height: 75px;
+    width: 100%;
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+    z-index: 4;
+    background: #19282C;
+    opacity: 0.5;
+    transition: .2s;
+}
+
+.potree_container .overlay:hover {
+  opacity: .75;
+  background: #19282C;
+}
+
+.slidecontainer {
+    width: 100%;
+}
+
+.slider {
+    -webkit-appearance: none;
+    width: 99%;
+    padding-right: 10px;
+    height: 25px;
+    background: #19282c;
+    outline: none;
+    opacity: 0.7;
+    -webkit-transition: .2s;
+    transition: opacity .2s;
+}
+
+.slider:hover {
+    opacity: 1;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 10px;
+    height: 10px;
+    background: #FF0000;
+    cursor: pointer;
+    transition: .2s;
+}
+.slider::-webkit-slider-thumb:hover {
+  width: 15px;
+  height: 15px;
+}
+.slider::-webkit-slider-runnable-track {
+  -webkit-appearance: none;
+  background: #FFFFFF;
+  /* width: 100%; */
+  /* height: 5px;  */
+}
+
+.slider::-moz-range-thumb {
+    width: 10px;
+    height: 10px;
+    border: 0;
+    background: #FF0000;
+    cursor: pointer;
+    transition: .2s;
+}
+.slider::-moz-range-thumb:hover {
+  width: 15px;
+  height: 15px;
+}
+.slider::-moz-range-progress {
+  background-color: #FF0000;
+}
+.slider::-moz-range-track {
+  background-color: #FFFFFF;
+}
+
+#value {
+  color: #FFFFFF;
+  top: 0px;
+  /* padding-top: 10px; */
+  /* padding-bottom: 5px; */
+  font-family: 'Open Sans', sans-serif;
+  font-size: 125%
+}
+
+.inline {
+   display:inline-flex;
+   /* margin-right:5px; */
+   vertical-align: bottom;
+}
+
+.button {
+  color: #FFFFFF;
+  outline: 0;
+  background: none;
+  border: 0px;
+  height: 25px;
+  opacity: 0.7;
+}
+.button:active {
+  color: #FF0000;
+  opacity: 1.0;
+  outline: 0;
+}
+.button:hover {
+  color: #FFFFFF;
+  opacity: 1.0;
+  outline: 0;
+}
+.button::-mos-focus-inner {
+  border: 0px;
+}
+
+#toggleplay {
+  display: none;
+}
+
+#pausebutton {
+  display: none;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+}
+
+#playbar_tmin {
+
+}
+
+/* TOGGLE SWITCH */
+/* The switch - the box around the slider */
+.switch {
+ position: relative;
+ display: inline-block;
+ width: 60px;
+ height: 34px;
+}
+
+/* Hide default HTML checkbox */
+.switch input {display:none;}
+
+/* The slider */
+.toggleslider {
+ position: absolute;
+ cursor: pointer;
+ top: 0;
+ left: 0;
+ right: 0;
+ bottom: 0;
+ background-color: #ccc;
+ -webkit-transition: .4s;
+ transition: .4s;
+}
+
+.toggleslider:before {
+ position: absolute;
+ content: "";
+ height: 26px;
+ width: 26px;
+ left: 4px;
+ bottom: 4px;
+ background-color: white;
+ -webkit-transition: .4s;
+ transition: .4s;
+}
+
+input:checked + .toggleslider {
+ background-color: #2196F3;
+}
+
+input:focus + .toggleslider {
+ box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .toggleslider:before {
+ -webkit-transform: translateX(26px);
+ -ms-transform: translateX(26px);
+ transform: translateX(26px);
+}
+
+/* Rounded sliders */
+.toggleslider.round {
+ border-radius: 34px;
+}
+
+.toggleslider.round:before {
+ border-radius: 50%;
+}

@@ -18,7 +18,7 @@
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <script src="radarloader.js"></script>
   <script src="rtkloader.js"></script>
-  <link rel="stylesheet" type="text/css" href="playbar.css">
+  <link rel="stylesheet" type="text/css" href="../common/playbar.css">
 </head>
 
 <body>
@@ -37,30 +37,16 @@
 	<script src="../build/potree/potree.js"></script>
 	<script src="../libs/plasio/js/laslaz.js"></script>
   <script src="../libs/other/OBJLoader.js"></script>
+	<script src="../common/playbar.js"></script>
+	<!-- <script src="../common/playbar.css"></script> -->
 
 
 	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
 	<!-- INCLUDE SETTINGS HERE -->
 
 	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
-
-	  <div id="potree_render_area">
-
-      <!-- <div class="overlay">
-        <div class="slidecontainer">
-          <input type="range" min="0" max="100" value=0 step="0.01" class="slider" id="myRange">
-          <div id="spacer">
-
-            <div id="value" class="inline">
-              <button class="button" class="play" id="playbutton" class="inline"><i class="material-icons">play_arrow</i></button>
-              <button class="button" class="pause" id="pausebutton"><i class="material-icons">pause</i></button>
-              Time: <span id="demo">0.0000</span> seconds
-            </div>
-          </div>
-        </div>
-      </div> -->
-    </div>
-		<div id="potree_sidebar_container"> </div>
+	  <div id="potree_render_area"></div>
+		<div id="potree_sidebar_container"></div>
 	</div>
 
 
@@ -270,13 +256,18 @@
         {// ANIMATION + SLIDER LOGIC:
           let slider = document.getElementById("myRange");
           let output = document.getElementById("demo");
+					let tmin = document.getElementById("playbar_tmin");
+					let tmax = document.getElementById("playbar_tmax");
+					let toggleplay = document.getElementById("toggleplay");
           output.innerHTML = slider.value;
 
-          // Animate from beginning to end with a speed of 100 meters per second
+          // Animate from beginning to end
           let start = 0;
           let end = Infinity;
-          let speed = 33;
-          let animation = animationPath.animate(start, end, speed, t => {
+          let speed = 33;	// empirically set as "close to realtime"
+          let animation = animationPath.animate(start, end, speed, animate);
+
+					function animate(t, updateCamera=true) {
             animation.repeat = true;
 
 
@@ -321,9 +312,11 @@
             // debugger; //update radar material here
 
             // Create GPS Time Clipping Event:
-            var minGpsTime = gpsTime - 0.05;  // TODO make window size a setting somewhere
-            var maxGpsTime = gpsTime + 0.05;  // TODO make window size a setting somewhere
 
+            var minGpsTime = gpsTime + parseFloat(tmin.value);
+            var maxGpsTime = gpsTime + parseFloat(tmax.value);
+
+						// debugger; // maxGpsTime
             // Animate Point Cloud:
             minLidarTime = minGpsTime - lidarOffset;
             maxLidarTime = maxGpsTime - lidarOffset;
@@ -340,71 +333,62 @@
 
             // debugger; // check the rtkTime, slider time, radar time, lidar time
 
-            let camera = viewer.scene.getActiveCamera();
-            let lag = 1.01; // seconds
-            lagTime = Math.max(0, (gpsTime - lag - rtkOffset)/rtkRange);
+						if (updateCamera) {
+							let camera = viewer.scene.getActiveCamera();
+							let lag = 1.01; // seconds
+							lagTime = Math.max(0, (gpsTime - lag - rtkOffset)/rtkRange);
 
-            // let lagTime = Math.max(0, (gpsTime-lag)/viewer.scene.pointclouds[0].pcoGeometry.nodes.r.gpsTime.range);
-            let camPoint = animation.getPoint(lagTime);  // Get point with 2 second lag
-            camPoint.z += 10;
-            viewer.scene.view.position.copy(camPoint); // changed from camera
-						var targetPosition = new THREE.Vector3(sphere.position.x, sphere.position.y, sphere.position.z+2);
-            viewer.scene.view.lookAt(targetPosition);
-
-
-          });
+							// let lagTime = Math.max(0, (gpsTime-lag)/viewer.scene.pointclouds[0].pcoGeometry.nodes.r.gpsTime.range);
+							let camPoint = animation.getPoint(lagTime);  // Get point with 2 second lag
+							camPoint.z += 10;
+							viewer.scene.view.position.copy(camPoint); // changed from camera
+							var targetPosition = new THREE.Vector3(sphere.position.x, sphere.position.y, sphere.position.z+2);
+							viewer.scene.view.lookAt(targetPosition);
+						}
+          }
           window.animation = animation;
 
-          // TODO FIX TIME SYNCING BELOW
-          // Play/Pause Button Functions:
+
+          // Playbar Button Functions:
           let playbutton = document.getElementById("playbutton");
           let pausebutton = document.getElementById("pausebutton");
-          pausebutton.addEventListener("click", () => {
+          pausebutton.addEventListener("mousedown", () => {
             animation.pause();
-            pausebutton.style.color='#FF0000';
-            playbutton.style.color='#FFFFFF';
           });
-          playbutton.addEventListener("click", () => {
+          playbutton.addEventListener("mousedown", () => {
             animation.resume();
-            playbutton.style.color='#FF0000';
-            pausebutton.style.color='#FFFFFF';
           });
-          slider.addEventListener("input", () => {
 
-            $("#pausebutton").click();
+					slider.addEventListener("input", () => {
+						animation.pause();
+						$("playbar_toggle").click();
+						var val = slider.value/100.0;
+						animation.t = val;
+						animate(val);
+					});
 
-            var val = slider.value/100.0;
-            var time = 0;
-            if (viewer.scene.pointclouds[0].pcoGeometry.nodes.r.gpsTime) {
-              time = (viewer.scene.pointclouds[0].pcoGeometry.nodes.r.gpsTime.range*slider.value/100);
-            } else {
-              time = -1;
-            }
-            output.innerHTML = time.toFixed(4);
+					slider.addEventListener("wheel", () => {
+						animation.pause();
+						var val = slider.value/100.0;
+						animation.t = val;
+						animate(val, updateCamera=false);
+					});
 
-            animation.t = val;
-            let point = animation.getPoint(animation.t);
-            sphere.position.copy(point);
-            var bunny = viewer.scene.scene.getObjectByName("bunny");
-            bunny.position.copy(point);
-            viewer.scene.pointclouds[0].material.uniforms.timeVal.value = val;
+					window.addEventListener("keypress", (e) => {
+						if (e.charCode == 32) {
+			          if (toggleplay.checked) {
+			            animation.resume();
+			          } else {
+			            animation.pause();
+			          }
+			        }
+						});
 
-            // Create GPS Time Clipping Event:
-            var minGpsTime = time - 0.05;
-            var maxGpsTime = time + 0.05;
-            viewer.setFilterGPSTimeRange((minGpsTime-lidarOffset)/583.649169921875, (maxGpsTime-lidarOffset)/583.649169921875); //lidar
-            viewer.setFilterGPSTimeExtent((minGpsTime-lidarOffset)/583.649169921875, (maxGpsTime-lidarOffset)/583.649169921875);
-
-            var radar = viewer.scene.scene.getObjectByName("radar")
-            radar.material.uniforms.minGpsTime.value = (minGpsTime-lidarOffset)/583.649169921875;
-            radar.material.uniforms.maxGpsTime.value = (maxGpsTime-lidarOffset)/583.649169921875;
-            console.log(radar);
-
-          });
-          $("#pausebutton").click();
+          $("#pausebutton").trigger("mousedown");
         }
 
         window.animationPath = animationPath;
+				window.animation.pause();
       }
 
     });

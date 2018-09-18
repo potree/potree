@@ -8,13 +8,10 @@
  */
 
 Potree.EptLazLoader = class {
-    constructor() { }
-    static progressCB () { }
-
     load(node) {
         if (node.loaded) return;
 
-        let url = node.url() + '.laz';   // TODO Get from info.dataStorage.
+        let url = node.url() + '.laz';
 
         let xhr = Potree.XHRFactory.createXMLHttpRequest();
         xhr.open('GET', url, true);

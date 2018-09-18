@@ -17,35 +17,22 @@ Potree.PointCloudEptGeometry = class {
 		let bounds = info.bounds;
 		let boundsConforming = info.boundsConforming;
 
-		// TODO This is unused.
+		let scale = info.scale || [1, 1, 1];
+		if (!Array.isArray(scale)) scale = [scale, scale, scale];
 		let offset = info.offset || [0, 0, 0];
-		let scale = info.scale || 0.01;
-		if (Array.isArray(scale)) {
-			scale = Math.min(scale[0], scale[1], scale[2]);
-		}
 
-		let dataStorage = info.dataStorage || 'laz';
-		let hierarchyStorage = info.hierarchyStorage || 'json';
-
-		// Now convert to three.js types.
-		bounds = toBox3(bounds);
-		boundsConforming = toBox3(boundsConforming);
-		offset = toVector3(offset);	 // TODO
-		offset = bounds.min.clone();
-		offset = toVector3([0, 0, 0]);  // TODO
-
-		bounds.min.sub(offset);
-		bounds.max.sub(offset);
-		boundsConforming.min.sub(offset);
-		boundsConforming.max.sub(offset);
+		this.eptScale = toVector3(scale);
+		this.eptOffset = toVector3(offset);
 
 		this.url = url;
 		this.info = info;
+		this.type = 'ept';
 
+		this.schema = schema;
 		this.ticks = info.ticks;
-		this.boundingBox = bounds;
-		this.offset = offset;
-		this.tightBoundingBox = boundsConforming;
+		this.boundingBox = toBox3(bounds);
+		this.tightBoundingBox = toBox3(boundsConforming);
+		this.offset = toVector3([0, 0, 0]);
 		this.boundingSphere = this.boundingBox.getBoundingSphere();
 		this.tightBoundingSphere = this.tightBoundingBox.getBoundingSphere();
 		this.version = new Potree.Version('1.6');
@@ -55,9 +42,13 @@ Potree.PointCloudEptGeometry = class {
 		this.spacing =
 			(this.boundingBox.max.x - this.boundingBox.min.x) / this.ticks;
 
-		// TODO Switch on storage type.
-		this.loader = new Potree.EptLazLoader();
+		let hierarchyType = info.hierarchyType || 'json';
 		this.hierarchyStep = info.hierarchyStep || 0;
+
+		let dataType = info.dataType || 'laszip';
+		this.loader = dataType == 'binary'
+			? new Potree.EptBinaryLoader()
+			: new Potree.EptLazLoader();
 	}
 };
 
@@ -243,7 +234,6 @@ Potree.PointCloudEptGeometryNode = class extends Potree.PointCloudTreeNode {
 			parentNode.addChild(node);
 			nodes[key.name()] = node;
 		});
-		
 	}
 
 	doneLoading(bufferGeometry, tightBoundingBox, np, mean) {

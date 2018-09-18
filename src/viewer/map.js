@@ -596,6 +596,7 @@ Potree.MapView = class {
 			constrainResolution: false
 		});
 
+		if (pointcloud.pcoGeometry.type == 'ept') return;
 		let url = pointcloud.pcoGeometry.url + '/../sources.json';
 		$.getJSON(url, (data) => {
 			let sources = data.sources;
@@ -666,8 +667,8 @@ Potree.MapView = class {
 		if (resized) {
 			this.map.updateSize();
 		}
-		
-		// 
+
+		//
 		let camera = this.viewer.scene.getActiveCamera();
 
 		let scale = this.map.getView().getResolution();

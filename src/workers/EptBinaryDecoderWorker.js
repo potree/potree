@@ -58,6 +58,7 @@ onmessage = function(event) {
         pointSourceId;
     let xyzExtractor, rgbExtractor, intensityExtractor, classificationExtractor,
         returnNumberExtractor, numberOfReturnsExtractor, pointSourceIdExtractor;
+    let twoByteColor = false;
 
     if (dimensions['X'] && dimensions['Y'] && dimensions['Z']) {
         xyzBuffer = new ArrayBuffer(numPoints * 4 * 3);
@@ -77,6 +78,15 @@ onmessage = function(event) {
             getExtractor('Green'),
             getExtractor('Blue')
         ];
+
+        let r, g, b, pos;
+        for (let i = 0; i < numPoints && !twoByteColor; ++i) {
+            pos = i * pointSize;
+            r = rgbExtractor[0](pos);
+            g = rgbExtractor[1](pos);
+            b = rgbExtractor[2](pos);
+            if (r > 255 || g > 255 || b > 255) twoByteColor = true;
+        }
     }
 
     if (dimensions['Intensity']) {
@@ -115,7 +125,7 @@ onmessage = function(event) {
         max: [-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE],
     };
 
-    let x, y, z;
+    let x, y, z, r, g, b;
     for (let i = 0; i < numPoints; ++i) {
         let pos = i * pointSize;
         if (xyz) {
@@ -141,9 +151,19 @@ onmessage = function(event) {
         }
 
         if (rgb) {
-            rgb[4 * i + 0] = rgbExtractor[0](pos);
-            rgb[4 * i + 1] = rgbExtractor[1](pos);
-            rgb[4 * i + 2] = rgbExtractor[2](pos);
+            r = rgbExtractor[0](pos);
+            g = rgbExtractor[1](pos);
+            b = rgbExtractor[2](pos);
+
+            if (twoByteColor) {
+                r /= 256;
+                g /= 256;
+                b /= 256;
+            }
+
+            rgb[4 * i + 0] = r;
+            rgb[4 * i + 1] = g;
+            rgb[4 * i + 2] = b;
         }
 
         if (intensity) intensity[i] = intensityExtractor(pos);

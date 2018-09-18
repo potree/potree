@@ -7,7 +7,7 @@
  *
  */
 
-Potree.EptLazLoader = class {
+Potree.EptLaszipLoader = class {
     load(node) {
         if (node.loaded) return;
 
@@ -99,7 +99,8 @@ Potree.EptLazBatcher = class {
     constructor(node) { this.node = node; }
 
     push(las) {
-        let workerPath = Potree.scriptPath + '/workers/EptDecoderWorker.js';
+        let workerPath = Potree.scriptPath +
+			'/workers/EptLaszipDecoderWorker.js';
         let worker = Potree.workerPool.getWorker(workerPath);
 
         worker.onmessage = (e) => {

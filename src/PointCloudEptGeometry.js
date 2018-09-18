@@ -48,7 +48,7 @@ Potree.PointCloudEptGeometry = class {
 		let dataType = info.dataType || 'laszip';
 		this.loader = dataType == 'binary'
 			? new Potree.EptBinaryLoader()
-			: new Potree.EptLazLoader();
+			: new Potree.EptLaszipLoader();
 	}
 };
 

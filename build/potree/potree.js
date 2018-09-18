@@ -5134,6 +5134,111 @@ Potree.LasLazBatcher = class LasLazBatcher {
 	};
 };
 
+Potree.EptBinaryLoader = class {
+    load(node) {
+        if (node.loaded) return;
+
+        let url = node.url() + '.bin';
+
+        let xhr = Potree.XHRFactory.createXMLHttpRequest();
+        xhr.open('GET', url, true);
+        xhr.responseType = 'arraybuffer';
+        xhr.overrideMimeType('text/plain; charset=x-user-defined');
+        xhr.onreadystatechange = () => {
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200) {
+                    let buffer = xhr.response;
+                    this.parse(node, buffer);
+                } else {
+                    console.log('Failed ' + url + ': ' + xhr.status);
+                }
+            }
+        };
+
+        try {
+            xhr.send(null);
+        }
+        catch (e) {
+            console.log('Failed request: ' + e);
+        }
+    }
+
+    parse(node, buffer) {
+        let workerPath = Potree.scriptPath +
+            '/workers/EptBinaryDecoderWorker.js';
+        let worker = Potree.workerPool.getWorker(workerPath);
+
+        worker.onmessage = function(e) {
+            let g = new THREE.BufferGeometry();
+            let numPoints = e.data.numPoints;
+
+            let position = new Float32Array(e.data.position);
+            g.addAttribute('position', new THREE.BufferAttribute(position, 3));
+
+            let indices = new Uint8Array(e.data.indices);
+            g.addAttribute('indices', new THREE.BufferAttribute(indices, 4));
+
+            if (e.data.color) {
+                let color = new Uint8Array(e.data.color);
+                g.addAttribute('color',
+                        new THREE.BufferAttribute(color, 4, true));
+            }
+            if (e.data.intensity) {
+                let intensity = new Float32Array(e.data.intensity);
+                g.addAttribute('intensity',
+                        new THREE.BufferAttribute(intensity, 1));
+            }
+            if (e.data.classification) {
+                let classification = new Uint8Array(e.data.classification);
+                g.addAttribute('classification',
+                        new THREE.BufferAttribute(classification, 1));
+            }
+            if (e.data.returnNumber) {
+                let returnNumber = new Uint8Array(e.data.returnNumber);
+                g.addAttribute('returnNumber',
+                        new THREE.BufferAttribute(returnNumber, 1));
+            }
+            if (e.data.numberOfReturns) {
+                let numberOfReturns = new Uint8Array(e.data.numberOfReturns);
+                g.addAttribute('numberOfReturns',
+                        new THREE.BufferAttribute(numberOfReturns, 1));
+            }
+            if (e.data.pointSourceId) {
+                let pointSourceId = new Uint16Array(e.data.pointSourceId);
+                g.addAttribute('pointSourceID',
+                        new THREE.BufferAttribute(pointSourceId, 1));
+            }
+
+            g.attributes.indices.normalized = true;
+
+            let tightBoundingBox = new THREE.Box3(
+                new THREE.Vector3().fromArray(e.data.tightBoundingBox.min),
+                new THREE.Vector3().fromArray(e.data.tightBoundingBox.max)
+            );
+
+            node.doneLoading(
+                    g,
+                    tightBoundingBox,
+                    numPoints,
+                    new THREE.Vector3(...e.data.mean));
+
+            Potree.workerPool.returnWorker(workerPath, worker);
+        };
+
+        let toArray = (v) => [v.x, v.y, v.z];
+        let message = {
+            buffer: buffer,
+            schema: node.ept.schema,
+            scale: node.ept.eptScale,
+            offset: node.ept.eptOffset,
+            mins: toArray(node.key.b.min)
+        };
+
+        worker.postMessage(message, [message.buffer]);
+    }
+};
+
+
 /**
  * laslaz code taken and adapted from plas.io js-laslaz
  *    http://plas.io/
@@ -5143,14 +5248,11 @@ Potree.LasLazBatcher = class LasLazBatcher {
  *
  */
 
-Potree.EptLazLoader = class {
-    constructor() { }
-    static progressCB () { }
-
+Potree.EptLaszipLoader = class {
     load(node) {
         if (node.loaded) return;
 
-        let url = node.url() + '.laz';   // TODO Get from info.dataStorage.
+        let url = node.url() + '.laz';
 
         let xhr = Potree.XHRFactory.createXMLHttpRequest();
         xhr.open('GET', url, true);
@@ -5238,7 +5340,8 @@ Potree.EptLazBatcher = class {
     constructor(node) { this.node = node; }
 
     push(las) {
-        let workerPath = Potree.scriptPath + '/workers/EptDecoderWorker.js';
+        let workerPath = Potree.scriptPath +
+			'/workers/EptLaszipDecoderWorker.js';
         let worker = Potree.workerPool.getWorker(workerPath);
 
         worker.onmessage = (e) => {
@@ -11420,35 +11523,22 @@ Potree.PointCloudEptGeometry = class {
 		let bounds = info.bounds;
 		let boundsConforming = info.boundsConforming;
 
-		// TODO This is unused.
+		let scale = info.scale || [1, 1, 1];
+		if (!Array.isArray(scale)) scale = [scale, scale, scale];
 		let offset = info.offset || [0, 0, 0];
-		let scale = info.scale || 0.01;
-		if (Array.isArray(scale)) {
-			scale = Math.min(scale[0], scale[1], scale[2]);
-		}
 
-		let dataStorage = info.dataStorage || 'laz';
-		let hierarchyStorage = info.hierarchyStorage || 'json';
-
-		// Now convert to three.js types.
-		bounds = toBox3(bounds);
-		boundsConforming = toBox3(boundsConforming);
-		offset = toVector3(offset);	 // TODO
-		offset = bounds.min.clone();
-		offset = toVector3([0, 0, 0]);  // TODO
-
-		bounds.min.sub(offset);
-		bounds.max.sub(offset);
-		boundsConforming.min.sub(offset);
-		boundsConforming.max.sub(offset);
+		this.eptScale = toVector3(scale);
+		this.eptOffset = toVector3(offset);
 
 		this.url = url;
 		this.info = info;
+		this.type = 'ept';
 
+		this.schema = schema;
 		this.ticks = info.ticks;
-		this.boundingBox = bounds;
-		this.offset = offset;
-		this.tightBoundingBox = boundsConforming;
+		this.boundingBox = toBox3(bounds);
+		this.tightBoundingBox = toBox3(boundsConforming);
+		this.offset = toVector3([0, 0, 0]);
 		this.boundingSphere = this.boundingBox.getBoundingSphere();
 		this.tightBoundingSphere = this.tightBoundingBox.getBoundingSphere();
 		this.version = new Potree.Version('1.6');
@@ -11458,9 +11548,13 @@ Potree.PointCloudEptGeometry = class {
 		this.spacing =
 			(this.boundingBox.max.x - this.boundingBox.min.x) / this.ticks;
 
-		// TODO Switch on storage type.
-		this.loader = new Potree.EptLazLoader();
+		let hierarchyType = info.hierarchyType || 'json';
 		this.hierarchyStep = info.hierarchyStep || 0;
+
+		let dataType = info.dataType || 'laszip';
+		this.loader = dataType == 'binary'
+			? new Potree.EptBinaryLoader()
+			: new Potree.EptLaszipLoader();
 	}
 };
 
@@ -11646,7 +11740,6 @@ Potree.PointCloudEptGeometryNode = class extends Potree.PointCloudTreeNode {
 			parentNode.addChild(node);
 			nodes[key.name()] = node;
 		});
-		
 	}
 
 	doneLoading(bufferGeometry, tightBoundingBox, np, mean) {
@@ -22132,6 +22225,7 @@ Potree.MapView = class {
 			constrainResolution: false
 		});
 
+		if (pointcloud.pcoGeometry.type == 'ept') return;
 		let url = pointcloud.pcoGeometry.url + '/../sources.json';
 		$.getJSON(url, (data) => {
 			let sources = data.sources;
@@ -22202,8 +22296,8 @@ Potree.MapView = class {
 		if (resized) {
 			this.map.updateSize();
 		}
-		
-		// 
+
+		//
 		let camera = this.viewer.scene.getActiveCamera();
 
 		let scale = this.map.getView().getResolution();

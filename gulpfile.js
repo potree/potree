@@ -37,7 +37,7 @@ let paths = {
 		"src/loader/EptLoader.js",
 		"src/loader/LasLazLoader.js",
 		"src/loader/ept/BinaryLoader.js",
-		"src/loader/ept/LazLoader.js",
+		"src/loader/ept/LaszipLoader.js",
 		"src/materials/PointCloudMaterial.js",
 		"src/materials/EyeDomeLightingMaterial.js",
 		"src/materials/BlurMaterial.js",
@@ -122,8 +122,8 @@ let workers = {
 	"LASDecoderWorker": [
 		"src/workers/LASDecoderWorker.js"
 	],
-	"EptDecoderWorker": [
-		"src/workers/EptDecoderWorker.js"
+	"EptLaszipDecoderWorker": [
+		"src/workers/EptLaszipDecoderWorker.js"
 	],
 	"EptBinaryDecoderWorker": [
 		"src/workers/EptBinaryDecoderWorker.js"

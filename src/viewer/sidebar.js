@@ -293,7 +293,6 @@ export class Sidebar{
 			},
 			"checkbox" : {
 				"keep_selected_style": true,
-				"three_state": false,
 				"whole_node": false,
 				"tie_selection": false,
 			},
@@ -436,6 +435,13 @@ export class Sidebar{
 			if(object){
 				object.visible = false;
 			}
+			
+			for (let i = 0; i < data.node.children.length; i += 1) {
+				const node = tree.jstree('get_node', data.node.children[i])
+				if (node.data) {
+					node.data.visible = false;
+				}
+			}
 		});
 
 		tree.on("check_node.jstree", (e, data) => {
@@ -443,6 +449,13 @@ export class Sidebar{
 
 			if(object){
 				object.visible = true;
+			}
+			
+			for (let i = 0; i < data.node.children.length; i += 1) {
+				const node = tree.jstree('get_node', data.node.children[i])
+				if (node.data) {
+					node.data.visible = true;
+				}
 			}
 		});
 

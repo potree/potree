@@ -144,31 +144,36 @@ $(document).ready(function () {
       console.log("PLAY");
       playbarhtml.find("#playbutton").hide();
       playbarhtml.find("#pausebutton").show();
-
+      playbarhtml.find("#toggleplay").prop('checked', true);
+      window.animation.resume();
     });
 
     playbarhtml.find("#pausebutton").mousedown(function() {
       console.log("PAUSE");
       playbarhtml.find("#playbutton").show();
       playbarhtml.find("#pausebutton").hide();
-
+      playbarhtml.find("#toggleplay").prop('checked', false);
+      window.animation.pause();
     });
 
     window.addEventListener("keypress", (e) => {
-      console.log("keypress");
-      console.log(e);
-      if (e.charCode == 32) {
+      if (e.key === " ") {
         console.log("SPACEBAR");
-        var toggleplay = playbarhtml.find("#toggleplay");
-        toggleplay.trigger('click');
-          if (toggleplay.is(":checked")) {
-            playbarhtml.find("#playbutton").trigger('mousedown');
-          } else {
-            playbarhtml.find("#pausebutton").trigger('mousedown');
-          }
+        if (playbarhtml.find("#toggleplay").prop('checked')) {
+          playbarhtml.find("#pausebutton").trigger('mousedown');
+        } else {
+          playbarhtml.find("#playbutton").trigger('mousedown');
         }
+      }
     });
 
+    window.addEventListener("message", e => {
+      if (e.data === 'pause') {
+        if (playbarhtml.find("#toggleplay").prop('checked')) {
+          playbarhtml.find("#pausebutton").trigger('mousedown');
+        }
+      }
+    });
 
 
 });

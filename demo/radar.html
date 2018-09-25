@@ -258,7 +258,7 @@
           let output = document.getElementById("demo");
 					let tmin = document.getElementById("playbar_tmin");
 					let tmax = document.getElementById("playbar_tmax");
-					let toggleplay = document.getElementById("toggleplay");
+      // let toggleplay = document.getElementById("toggleplay");
           output.innerHTML = slider.value;
 
           // Animate from beginning to end
@@ -348,17 +348,6 @@
           }
           window.animation = animation;
 
-
-          // Playbar Button Functions:
-          let playbutton = document.getElementById("playbutton");
-          let pausebutton = document.getElementById("pausebutton");
-          pausebutton.addEventListener("mousedown", () => {
-            animation.pause();
-          });
-          playbutton.addEventListener("mousedown", () => {
-            animation.resume();
-          });
-
 					slider.addEventListener("input", () => {
 						animation.pause();
 						$("playbar_toggle").click();
@@ -373,16 +362,6 @@
 						animation.t = val;
 						animate(val, updateCamera=false);
 					});
-
-					window.addEventListener("keypress", (e) => {
-						if (e.charCode == 32) {
-			          if (toggleplay.checked) {
-			            animation.resume();
-			          } else {
-			            animation.pause();
-			          }
-			        }
-						});
 
           $("#pausebutton").trigger("mousedown");
         }

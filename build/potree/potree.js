@@ -413,7 +413,7 @@ Potree.loadPointCloud = function (path, name, callback) {
 	// load pointcloud
 	if (!path) {
 		// TODO: callback? comment? Hello? Bueller? Anyone?
-	} else if (path.indexOf('entwine.json') > 0) {
+	} else if (path.indexOf('ept.json') > 0) {
         Potree.EptLoader.load(path, function(geometry) {
             if (!geometry) {
                 failed();
@@ -4888,7 +4888,7 @@ Potree.EptLoader = class {
 		let response = await fetch(file);
 		let json = await response.json();
 
-		let url = file.substr(0, file.lastIndexOf('entwine.json'));
+		let url = file.substr(0, file.lastIndexOf('ept.json'));
 		let geometry = new Potree.PointCloudEptGeometry(url, json);
 		let root = new Potree.PointCloudEptGeometryNode(geometry);
 
@@ -11516,6 +11516,11 @@ var toArray = function(b) {
 	return [b.min.x, b.min.y, b.min.z, b.max.x, b.max.y, b.max.z];
 }
 
+var findDim = function(schema, name) {
+    var dim = schema.find((dim) => dim.name == name);
+    if (!dim) throw new Error('Failed to find ' + name + ' in schema');
+}
+
 Potree.PointCloudEptGeometry = class {
 	constructor(url, info) {
 		let version = info.version;
@@ -11523,9 +11528,9 @@ Potree.PointCloudEptGeometry = class {
 		let bounds = info.bounds;
 		let boundsConforming = info.boundsConforming;
 
-		let scale = info.scale || [1, 1, 1];
-		if (!Array.isArray(scale)) scale = [scale, scale, scale];
-		let offset = info.offset || [0, 0, 0];
+        let xyz = [find(schema, 'X'), find(schema, 'Y'), find(schema, 'Z')];
+        let scale = xyz.map((d) => d.scale || 1);
+        let offset = xyz.map((d) => d.offset || 0);
 
 		this.eptScale = toVector3(scale);
 		this.eptOffset = toVector3(offset);
@@ -11543,7 +11548,9 @@ Potree.PointCloudEptGeometry = class {
 		this.tightBoundingSphere = this.tightBoundingBox.getBoundingSphere();
 		this.version = new Potree.Version('1.6');
 
-		this.projection = info.srs;
+        if (info.srs && info.srs.horizontal) {
+            this.projection = info.srs.authority + ':' + info.srs.horizontal;
+        }
 		this.pointAttributes = 'LAZ';
 		this.spacing =
 			(this.boundingBox.max.x - this.boundingBox.min.x) / this.ticks;
@@ -11695,7 +11702,9 @@ Potree.PointCloudEptGeometryNode = class extends Potree.PointCloudTreeNode {
 		nodes[this.filename()] = this;
 		this.hasChildren = false;
 
-		let eptHierarchyFile = `${this.ept.url}h/${this.filename()}.json`;
+		let eptHierarchyFile =
+            `${this.ept.url}ept-hierarchy/${this.filename()}.json`;
+
 		let response = await fetch(eptHierarchyFile);
 		let hier = await response.json();
 

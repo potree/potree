@@ -35,16 +35,16 @@ onmessage = function(event) {
     let getExtractor = (name) => {
         let offset = dimOffset(name);
         switch (dimensions[name].type) {
-            case 'int8'  : return (pos) => view.getInt8(pos + offset);
-            case 'int16' : return (pos) => view.getInt16(pos + offset, true);
-            case 'int32' : return (pos) => view.getInt32(pos + offset, true);
-            case 'int64' : return (pos) => view.getInt64(pos + offset, true);
-            case 'uint8' : return (pos) => view.getUint8(pos + offset);
-            case 'uint16': return (pos) => view.getUint16(pos + offset, true);
-            case 'uint32': return (pos) => view.getUint32(pos + offset, true);
-            case 'uint64': return (pos) => view.getUint64(pos + offset, true);
-            case 'float' : return (pos) => view.getFloat32(pos + offset, true);
-            case 'double': return (pos) => view.getFloat64(pos + offset, true);
+            case 'int8'  : return (p) => view.getInt8(p + offset);
+            case 'int16' : return (p) => view.getInt16(p + offset, true);
+            case 'int32' : return (p) => view.getInt32(p + offset, true);
+            case 'int64' : return (p) => view.getInt64(p + offset, true);
+            case 'uint8' : return (p) => view.getUint8(p + offset);
+            case 'uint16': return (p) => view.getUint16(p + offset, true);
+            case 'uint32': return (p) => view.getUint32(p + offset, true);
+            case 'uint64': return (p) => view.getUint64(p + offset, true);
+            case 'float' : return (p) => view.getFloat32(p + offset, true);
+            case 'double': return (p) => view.getFloat64(p + offset, true);
             default: throw new Error('Invalid dimension type: ' + type);
         };
     };

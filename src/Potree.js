@@ -328,7 +328,7 @@ Potree.loadPointCloud = function (path, name, callback) {
 	// load pointcloud
 	if (!path) {
 		// TODO: callback? comment? Hello? Bueller? Anyone?
-	} else if (path.indexOf('entwine.json') > 0) {
+	} else if (path.indexOf('ept.json') > 0) {
         Potree.EptLoader.load(path, function(geometry) {
             if (!geometry) {
                 failed();

@@ -102,11 +102,12 @@ export class Viewer extends EventDispatcher{
 		this.moveSpeed = 10;
 
 		this.LENGTH_UNITS = {
-			METER: {code: 'm'},
-			FEET: {code: 'ft'},
-			INCH: {code: '\u2033'}
+			METER: {code: 'm', unitspermeter: 1.0},
+			FEET: {code: 'ft', unitspermeter: 3.28084},
+			INCH: {code: '\u2033', unitspermeter: 39.3701}
 		};
 		this.lengthUnit = this.LENGTH_UNITS.METER;
+		this.lengthUnitDisplay = this.LENGTH_UNITS.METER;
 
 		this.showBoundingBox = false;
 		this.showAnnotations = true;
@@ -593,6 +594,25 @@ export class Viewer extends EventDispatcher{
 		switch (value) {
 			case 'm':
 				this.lengthUnit = this.LENGTH_UNITS.METER;
+				this.lengthUnitDisplay = this.LENGTH_UNITS.METER;
+				break;
+			case 'ft':
+				this.lengthUnit = this.LENGTH_UNITS.FEET;
+				this.lengthUnitDisplay = this.LENGTH_UNITS.FEET;
+				break;
+			case 'in':
+				this.lengthUnit = this.LENGTH_UNITS.INCH;
+				this.lengthUnitDisplay = this.LENGTH_UNITS.INCH;
+				break;
+		}
+
+		this.dispatchEvent({ 'type': 'length_unit_changed', 'viewer': this, value: value});
+	};
+
+	setLengthUnitAndDisplayUnit(lengthUnitValue, lengthUnitDisplayValue) {
+		switch (lengthUnitValue) {
+			case 'm':
+				this.lengthUnit = this.LENGTH_UNITS.METER;
 				break;
 			case 'ft':
 				this.lengthUnit = this.LENGTH_UNITS.FEET;
@@ -602,8 +622,20 @@ export class Viewer extends EventDispatcher{
 				break;
 		}
 
-		this.dispatchEvent({'type': 'length_unit_changed', 'viewer': this, value: value});
-	}
+		switch (lengthUnitDisplayValue) {
+			case 'm':
+				this.lengthUnitDisplay = this.LENGTH_UNITS.METER;
+				break;
+			case 'ft':
+				this.lengthUnitDisplay = this.LENGTH_UNITS.FEET;
+				break;
+			case 'in':
+				this.lengthUnitDisplay = this.LENGTH_UNITS.INCH;
+				break;
+		}
+
+		this.dispatchEvent({ 'type': 'length_unit_changed', 'viewer': this, value: lengthUnitValue });
+	};
 
 	zoomTo(node, factor, animationDuration = 0){
 		let view = this.scene.view;

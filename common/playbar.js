@@ -33,7 +33,7 @@ $(document).ready(function () {
     function updateClip(disable=false) {
 
       const pointcloud = window.viewer.scene.pointclouds[0];
-      const gpsTime = pointcloud && pcoGeometry.nodes.r.gpsTime;
+      const gpsTime = pointcloud && pointcloud.pcoGeometry.nodes.r.gpsTime;
 
       if (gpsTime) {
         console.log(window.viewer.scene); // gpstime

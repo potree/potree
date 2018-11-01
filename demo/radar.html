@@ -119,6 +119,7 @@
                             accessKeyId,
                             secretAccessKey
                            });
+          if (!s3) { window.history.back() };
           // We really want this, but it doesn't work in the browser. Only on a server.
           // const stream = s3.getObject({Bucket: bucket,
           //                              Key: name}).createReadStream();

@@ -179,6 +179,7 @@
       viewer.scene.scene.add(mesh);
     });
 
+
     // Load RTK:
       loadRtk(s3, bucket, name, (pos, rot, t_init) => {
       const path = pos.map(v => new THREE.Vector3(...v));
@@ -235,7 +236,6 @@
         let loader = new THREE.OBJLoader( manager );
         loader.load(`${Potree.resourcePath}/models/Chevy_Volt_Segmented/Chevy_Volt_2016.obj`,
                     function ( object ) {
-        // loader.load(`${Potree.resourcePath}/models/1967-shelby-ford-mustang.obj`, function ( object ) {
           object.traverse( function ( child ) {
             if ( child instanceof THREE.Mesh ) {
               child.material.map = texture;
@@ -290,7 +290,7 @@
           let speed = 33;	// empirically set as "close to realtime"
           let animation = animationPath.animate(start, end, speed, animate);
 
-					function animate(t, updateCamera=true) {
+	  function animate(t, updateCamera=true) {
             animation.repeat = true;
 
 
@@ -396,27 +396,67 @@
     });
 
 
-          potreeArg = s3 ? {s3, bucket, name} : "../pointclouds/basemap-demo/cloud.js";
-          				Potree.loadPointCloud(potreeArg, "basemap", e => {
-					let pointcloud = e.pointcloud;
-					let material = pointcloud.material;
-					console.log(pointcloud.pcoGeometry.nodes.r.gpsTime);
-					viewer.scene.addPointCloud(pointcloud);
-					material.pointColorType = Potree.PointColorType.COLOR; // any Potree.PointColorType.XXXX
-					material.color = new THREE.Color().setRGB(0.99, 0.99, 0.99);
-					material.size = 0.09;
-					material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-					material.shape = Potree.PointShape.SQUARE;
+          if (name === 'Data/basemap-demo') {
+            Potree.loadPointCloud({s3, bucket, name}, "basemap", e => {
+	      const pointcloud = e.pointcloud;
+	      const material = pointcloud.material;
+	      console.log(pointcloud.pcoGeometry.nodes.r.gpsTime);
+	      viewer.scene.addPointCloud(pointcloud);
+	      material.pointColorType = Potree.PointColorType.COLOR; // any Potree.PointColorType.XXXX
+	      material.color = new THREE.Color().setRGB(0.99, 0.99, 0.99);
+	      material.size = 0.09;
+	      material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+	      material.shape = Potree.PointShape.SQUARE;
 
-		      viewer.scene.view.position.set(300198.109, 4701144.537, 349.871);
-		      viewer.scene.view.lookAt(new THREE.Vector3(299900.954, 4701576.919, 66.197));
-		      // viewer.toggleNavigationCube();
-		      $("#playbutton").click();
+	      viewer.scene.view.position.set(300198.109, 4701144.537, 349.871);
+	      viewer.scene.view.lookAt(new THREE.Vector3(299900.954, 4701576.919, 66.197));
+	      // viewer.toggleNavigationCube();
+	      $("#playbutton").click();
+	    });
+          } else if (name === 'Data/fullcloud-demo') {
+            Potree.loadPointCloud({s3, bucket, name}, "fullcloud", e => {
+	      const pointcloud = e.pointcloud;
+	      const material = pointcloud.material;
+	      console.log(pointcloud.pcoGeometry.nodes.r.gpsTime);
+	      viewer.scene.addPointCloud(pointcloud);
+	      material.pointColorType = Potree.PointColorType.HEIGHT; // any Potree.PointColorType.XXXX
+	      material.size = 0.09;
+	      material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+	      material.shape = Potree.PointShape.SQUARE;
 
-					console.log("SET TIMEVAL IN MATERIAL HERE");
-					console.log(material.uniforms.timeVal);
+	      viewer.scene.view.position.set(300198.109, 4701144.537, 349.871);
+	      viewer.scene.view.lookAt(new THREE.Vector3(299900.954, 4701576.919, 66.197));
+	      // viewer.toggleNavigationCube();
+	      $("#playbutton").click();
+	    });
+            Potree.loadPointCloud({s3, bucket, name: 'Data/basemap-demo'}, "basemap", e => {
+	      const pointcloud = e.pointcloud;
+	      const material = pointcloud.material;
+	      console.log(pointcloud.pcoGeometry.nodes.r.gpsTime);
+	      viewer.scene.addPointCloud(pointcloud);
+	      material.pointColorType = Potree.PointColorType.COLOR; // any Potree.PointColorType.XXXX
+	      material.color = new THREE.Color().setRGB(0.99, 0.99, 0.99);
+	      material.size = 0.09;
+	      material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+	      material.shape = Potree.PointShape.SQUARE;
+	    });
+          } else {
+            Potree.loadPointCloud({s3, bucket, name}, name.substring(5), e => {
+	      const pointcloud = e.pointcloud;
+	      const material = pointcloud.material;
+	      console.log(pointcloud.pcoGeometry.nodes.r.gpsTime);
+	      viewer.scene.addPointCloud(pointcloud);
+	      material.pointColorType = Potree.PointColorType.HEIGHT; // any Potree.PointColorType.XXXX
+	      material.size = 0.09;
+	      material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+	      material.shape = Potree.PointShape.SQUARE;
 
-				});
+	      viewer.scene.view.position.set(300198.109, 4701144.537, 349.871);
+	      viewer.scene.view.lookAt(new THREE.Vector3(299900.954, 4701576.919, 66.197));
+	      // viewer.toggleNavigationCube();
+	      $("#playbutton").click();
+	    });
+          }
 
 		</script>
 

@@ -46,6 +46,8 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 		this._weighted = false;
 		this._gradient = Gradients.SPECTRAL;
 		this.gradientTexture = PointCloudMaterial.generateGradientTexture(this._gradient);
+        this._matcap = "matcap.jpg";
+		this.matcapTexture = Potree.PointCloudMaterial.generateMatcapTexture(this._matcap);
 		this.lights = false;
 		this.fog = false;
 		this._treeType = treeType;
@@ -133,6 +135,8 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 			uFilterReturnNumberRange:		{ type: "fv", value: [0, 7]},
 			uFilterNumberOfReturnsRange:	{ type: "fv", value: [0, 7]},
 			uFilterGPSTimeClipRange:		{ type: "fv", value: [0, 7]},
+
+            matcapTextureUniform: 	{ type: "t", value: this.matcapTexture },
 		};
 
 		this.classification = ClassificationScheme.DEFAULT;
@@ -280,6 +284,8 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 			defines.push('#define color_type_gpstime');
 		} else if (this._pointColorType === PointColorType.COMPOSITE) {
 			defines.push('#define color_type_composite');
+		} else if (this._pointColorType === PointColorType.MATCAP) {
+			defines.push('#define color_type_matcap');
 		}
 		
 		if(this._treeType === TreeType.OCTREE){
@@ -382,7 +388,19 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 			this.uniforms.gradient.value = this.gradientTexture;
 		}
 	}
-	
+
+	get matcap(){
+		return this._matcap;
+	}
+
+	set matcap (value) {
+		if (this._matcap !== value) {
+			this._matcap = value;
+			this.matcapTexture = Potree.PointCloudMaterial.generateMatcapTexture(this._matcap);
+			this.uniforms.matcapTextureUniform.value = this.matcapTexture;
+		}
+	}
+
 	get useOrthographicCamera() {
 		return this.uniforms.useOrthographicCamera.value;
 	}
@@ -965,6 +983,17 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 		// textureImage = texture.image;
 
 		return texture;
+	}
+
+	static generateMatcapTexture (matcap) {
+        var url = new URL(Potree.resourcePath + "/textures/matcap/" + matcap).href;
+        let texture = new THREE.TextureLoader().load( url );
+		texture.magFilter = texture.minFilter = THREE.LinearFilter; 
+		texture.needsUpdate = true;
+		// PotreeConverter_1.6_2018_07_29_windows_x64\PotreeConverter.exe autzen_xyzrgbXYZ_ascii.xyz -f xyzrgbXYZ -a RGB NORMAL -o autzen_xyzrgbXYZ_ascii_a -p index --overwrite
+		// Switch matcap texture on the fly : viewer.scene.pointclouds[0].material.matcap = 'matcap1.jpg'; 
+		// For non power of 2, use LinearFilter and dont generate mipmaps, For power of 2, use NearestFilter and generate mipmaps : matcap2.jpg 1 2 8 11 12 13
+		return texture; 
 	}
 
 	static generateClassificationTexture (classification) {

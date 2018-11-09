@@ -502,7 +502,7 @@ class WebGLTexture {
 			gl.texImage2D(this.target, level, internalFormat,
 				width, height, border, srcFormat, srcType,
 				data);
-		} else if (texture instanceof THREE.CanvasTexture) {
+		} else if ((texture instanceof THREE.CanvasTexture) || (texture instanceof THREE.Texture)) {
 			data = texture.image;
 
 			gl.texParameteri(this.target, gl.TEXTURE_WRAP_S, paramThreeToGL(gl, texture.wrapS));
@@ -513,6 +513,8 @@ class WebGLTexture {
 
 			gl.texImage2D(this.target, level, internalFormat,
 				internalFormat, srcType, data);
+
+			if (texture instanceof THREE.Texture) {gl.generateMipmap(gl.TEXTURE_2D);}
 		}
 
 		gl.bindTexture(this.target, null);
@@ -1208,6 +1210,12 @@ export class Renderer {
 			shader.setUniform1i("classificationLUT", currentTextureBindingPoint);
 			gl.activeTexture(gl.TEXTURE0 + currentTextureBindingPoint);
 			gl.bindTexture(classificationTexture.target, classificationTexture.id);
+			currentTextureBindingPoint++;
+
+			let matcapTexture = this.textures.get(material.matcapTexture);
+			shader.setUniform1i("matcapTextureUniform", currentTextureBindingPoint);
+			gl.activeTexture(gl.TEXTURE0 + currentTextureBindingPoint);
+			gl.bindTexture(matcapTexture.target, matcapTexture.id);
 			currentTextureBindingPoint++;
 
 

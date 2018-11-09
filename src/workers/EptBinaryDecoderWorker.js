@@ -13,43 +13,42 @@ onmessage = function(event) {
         return p;
     }, { });
 
-    let dimSize = (type) => {
-        switch (type) {
-            case 'int8': case 'uint8': return 1;
-            case 'int16': case 'uint16': return 2;
-            case 'int32': case 'uint32': case 'float': return 4;
-            case 'int64': case 'uint64': case 'double': return 8;
-            default: throw new Error('Invalid dimension type: ' + type);
-        }
-    };
-
     let dimOffset = (name) => {
         let offset = 0;
         for (var i = 0; i < schema.length; ++i) {
             if (schema[i].name == name) return offset;
-            offset += dimSize(schema[i].type);
+            offset += schema[i].size;
         }
         return undefined;
     };
 
     let getExtractor = (name) => {
         let offset = dimOffset(name);
-        switch (dimensions[name].type) {
-            case 'int8'  : return (p) => view.getInt8(p + offset);
-            case 'int16' : return (p) => view.getInt16(p + offset, true);
-            case 'int32' : return (p) => view.getInt32(p + offset, true);
-            case 'int64' : return (p) => view.getInt64(p + offset, true);
-            case 'uint8' : return (p) => view.getUint8(p + offset);
-            case 'uint16': return (p) => view.getUint16(p + offset, true);
-            case 'uint32': return (p) => view.getUint32(p + offset, true);
-            case 'uint64': return (p) => view.getUint64(p + offset, true);
-            case 'float' : return (p) => view.getFloat32(p + offset, true);
-            case 'double': return (p) => view.getFloat64(p + offset, true);
-            default: throw new Error('Invalid dimension type: ' + type);
-        };
+        let type = dimensions[name].type;
+        let size = dimensions[name].size;
+
+        if (type == 'signed') switch (size) {
+            case 1: return (p) => view.getInt8(p + offset);
+            case 2: return (p) => view.getInt16(p + offset, true);
+            case 4: return (p) => view.getInt32(p + offset, true);
+            case 8: return (p) => view.getInt64(p + offset, true);
+        }
+        if (type == 'unsigned') switch (size) {
+            case 1: return (p) => view.getUint8(p + offset);
+            case 2: return (p) => view.getUint16(p + offset, true);
+            case 4: return (p) => view.getUint32(p + offset, true);
+            case 8: return (p) => view.getUint64(p + offset, true);
+        }
+        if (type == 'floating') switch (size) {
+            case 4: return (p) => view.getFloat32(p + offset, true);
+            case 8: return (p) => view.getFloat64(p + offset, true);
+        }
+
+        let str = JSON.stringify(dimensions[name]);
+        throw new Error(`Invalid dimension specification for ${name}: ${str}`);
     };
 
-    let pointSize = schema.reduce((p, c) => p + dimSize(c.type), 0);
+    let pointSize = schema.reduce((p, c) => p + c.size, 0);
     let numPoints = buffer.byteLength / pointSize;
 
     let xyzBuffer, rgbBuffer, intensityBuffer, classificationBuffer,

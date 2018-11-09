@@ -13,6 +13,7 @@ var toArray = function(b) {
 var findDim = function(schema, name) {
     var dim = schema.find((dim) => dim.name == name);
     if (!dim) throw new Error('Failed to find ' + name + ' in schema');
+    return dim;
 }
 
 Potree.PointCloudEptGeometry = class {
@@ -22,10 +23,13 @@ Potree.PointCloudEptGeometry = class {
 		let bounds = info.bounds;
 		let boundsConforming = info.boundsConforming;
 
-        let xyz = [find(schema, 'X'), find(schema, 'Y'), find(schema, 'Z')];
+        let xyz = [
+            findDim(schema, 'X'),
+            findDim(schema, 'Y'),
+            findDim(schema, 'Z')
+        ];
         let scale = xyz.map((d) => d.scale || 1);
         let offset = xyz.map((d) => d.offset || 0);
-
 		this.eptScale = toVector3(scale);
 		this.eptOffset = toVector3(offset);
 

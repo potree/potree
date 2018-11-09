@@ -20,7 +20,8 @@
 	<script src="../schemas/GroundTruth_generated.js"></script>
   <script src="radarloader.js"></script>
   <script src="rtkloader.js"></script>
-  <script src="truthLoader.js"></script>
+  <script src="laneLoader.js"></script>
+  <script src="trackLoader.js"></script>
   <link rel="stylesheet" type="text/css" href="../common/playbar.css">
 </head>
 
@@ -133,13 +134,55 @@
 
 		// Load Truth Data:
 		loadLanes((laneGeometries) => {
-			for (let ii=0, len=laneGeometries.left.length; ii<len; ii++) {
+			// TODO merging into single geometry doesn't work yet -- so leave as false
+			let mergeLanesIntoSingleGeometry = false; // NOTE creating a single geometry object is more performant than adding all lanes individually
 
-				viewer.scene.scene.add(laneGeometries.left[ii]);
-				viewer.scene.scene.add(laneGeometries.spine[ii]);
-				viewer.scene.scene.add(laneGeometries.right[ii]);
+			if (mergeLanesIntoSingleGeometry) {
+				let allLanesGeometry = new THREE.Geometry();
+				for (let ii=0, len=laneGeometries.left.length; ii<len; ii++){
+					allLanesGeometry.mergeMesh(laneGeometries.left[ii]);
+					allLanesGeometry.mergeMesh(laneGeometries.spine[ii]);
+					allLanesGeometry.mergeMesh(laneGeometries.right[ii]);
+				}
+				allLanesGeometry = new THREE.BufferGeometry().fromGeometry( allLanesGeometry );
+				viewer.scene.scene.add(allLanesGeometry);
+
+			} else {
+				for (let ii=0, len=laneGeometries.left.length; ii<len; ii++) {
+					viewer.scene.scene.add(laneGeometries.left[ii]);
+					viewer.scene.scene.add(laneGeometries.spine[ii]);
+					viewer.scene.scene.add(laneGeometries.right[ii]);
+				}
 			}
 		});
+
+		// Load Track Data:
+
+		// {
+		// 	let position = new THREE.Vector3(300139.728, 4701364.107, 241.147);
+		// 	let geom = new THREE.BoxGeometry(100, 100, 100);
+		// 	let materialNormal = new THREE.MeshNormalMaterial();
+		//
+		// 	var geo = new THREE.WireframeGeometry( geom );
+		// 	// var geo = new THREE.EdgesGeometry( geom );
+		// 	var material = new THREE.LineBasicMaterial( { color: 0xffffff, linewidth: 2 } );
+		// 	var wireframe = new THREE.LineSegments( geom, material );
+		// 	wireframe.position.copy(position);
+		//
+		// 	var mesh = new THREE.Mesh(geom, materialNormal);
+		// 	mesh.position.copy(position);
+		// 	viewer.scene.scene.add(wireframe	);
+		// }
+
+		loadTracks((trackGeometries) => {
+
+			debugger;
+			for (let ii=0, len=trackGeometries.bbox.length; ii<len; ii++) {
+				viewer.scene.scene.add(trackGeometries.bbox[ii]);
+			}
+			
+		});
+		debugger;
 
     // Load Radar:
     loadRadar((geometry, t_init) => {

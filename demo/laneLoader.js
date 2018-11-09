@@ -11,6 +11,10 @@ function loadLanes(callback) {
     console.log("LANES -- Loaded ["+event.loaded+"] bytes")
   }
 
+  xhr.onerror = function(e) {
+    console.error("LANES -- Error loading lanes: ", e);
+  }
+
   xhr.onload = function(data) {
 
     response = data.target.response;
@@ -30,30 +34,35 @@ function loadLanes(callback) {
       // Read SegmentSize:
       viewSize = new DataView(bytesArray.buffer, segOffset, 4);
       segSize = viewSize.getUint32(0, true); // True: little-endian | False: big-endian
-      // debugger; // Segment Size
 
+      // Get Flatbuffer Lane Object:
       segOffset += 4;
       let buf = new Uint8Array(bytesArray.buffer.slice(segOffset, segOffset+segSize));
       let fbuffer = new flatbuffers.ByteBuffer(buf);
       let lane = Flatbuffer.GroundTruth.Lane.getRootAsLane(fbuffer);
 
-      // debugger;
       lanes.push(lane);
       segOffset += segSize;
     }
 
     laneGeometries = createLaneGeometries(lanes);
     callback(laneGeometries);
-
   }
 
   xhr.send();
 }
 
-
 function createLaneGeometries(lanes) {
 
-  material = new THREE.LineBasicMaterial({
+  materialLeft = new THREE.LineBasicMaterial({
+    color: 0xff0000
+  });
+
+  materialSpine = new THREE.LineBasicMaterial({
+    color: 0x00ff00
+  });
+
+  materialRight = new THREE.LineBasicMaterial({
     color: 0x0000ff
   });
 
@@ -79,9 +88,9 @@ function createLaneGeometries(lanes) {
       geometryRight.vertices.push( new THREE.Vector3(right.x(), right.y(), right.z()));
     }
 
-    lefts.push(new THREE.Line(geometryLeft, material) );
-    spines.push(new THREE.Line(geometrySpine, material) );
-    rights.push(new THREE.Line(geometryRight, material) );
+    lefts.push(new THREE.Line(geometryLeft, materialLeft) );
+    spines.push(new THREE.Line(geometrySpine, materialSpine) );
+    rights.push(new THREE.Line(geometryRight, materialRight) );
   }
 
   output = {
@@ -90,6 +99,4 @@ function createLaneGeometries(lanes) {
     right: rights
   }
   return output;
-
-
 }

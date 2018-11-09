@@ -39,7 +39,7 @@ onmessage = function(event) {
             case 4: return (p) => view.getUint32(p + offset, true);
             case 8: return (p) => view.getUint64(p + offset, true);
         }
-        if (type == 'floating') switch (size) {
+        if (type == 'float') switch (size) {
             case 4: return (p) => view.getFloat32(p + offset, true);
             case 8: return (p) => view.getFloat64(p + offset, true);
         }

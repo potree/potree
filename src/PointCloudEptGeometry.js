@@ -50,7 +50,6 @@ Potree.PointCloudEptGeometry = class {
 			(this.boundingBox.max.x - this.boundingBox.min.x) / this.ticks;
 
 		let hierarchyType = info.hierarchyType || 'json';
-		this.hierarchyStep = info.hierarchyStep || 0;
 
 		let dataType = info.dataType || 'laszip';
 		this.loader = dataType == 'binary'
@@ -133,7 +132,7 @@ Potree.PointCloudEptGeometryNode = class extends Potree.PointCloudTreeNode {
 		// These are set during hierarchy loading.
 		this.hasChildren = false;
 		this.children = { };
-		this.numPoints = 0;
+		this.numPoints = -1;
 
 		this.level = this.key.d;
 		this.loaded = false;
@@ -151,7 +150,7 @@ Potree.PointCloudEptGeometryNode = class extends Potree.PointCloudTreeNode {
 	isLoaded() { return this.loaded; }
 	getBoundingSphere() { return this.boundingSphere; }
 	getBoundingBox() { return this.boundingBox; }
-	url() { return this.ept.url + this.filename(); }
+	url() { return this.ept.url + 'ept-data/' + this.filename(); }
 	getNumPoints() { return this.numPoints; }
 
 	filename() { return this.key.name(); }
@@ -180,10 +179,7 @@ Potree.PointCloudEptGeometryNode = class extends Potree.PointCloudTreeNode {
 		this.loading = true;
 		++Potree.numNodesLoading;
 
-		let hs = this.ept.hierarchyStep;
-		if (!this.key.d || (hs && (this.key.d % hs == 0) && this.hasChildren)) {
-			this.loadHierarchy();
-		}
+		if (this.numPoints == -1) this.loadHierarchy();
 		this.loadPoints();
 	}
 
@@ -236,9 +232,6 @@ Potree.PointCloudEptGeometryNode = class extends Potree.PointCloudTreeNode {
 
 			node.level = d;
 			node.numPoints = hier[v];
-
-			let hs = this.ept.hierarchyStep;
-			if (hs && d % hs == 0) node.hasChildren = true;
 
 			parentNode.addChild(node);
 			nodes[key.name()] = node;

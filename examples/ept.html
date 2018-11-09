@@ -54,7 +54,7 @@
 			$("#menu_appearance").next().show();
 		});
 
-        var path = "../pointclouds/lion_takanawa_ept_laz/entwine.json";
+        var path = "../pointclouds/lion_takanawa_ept_laz/ept.json";
 		var name = "lion";
 
 		var getQueryParam = function(name) {
@@ -70,7 +70,7 @@
 			name = r;
             var http = 'http';
             if (r.substr(0, http.length) == http) path = name;
-            else path = "../pointclouds/" + name + "/entwine.json";
+            else path = "../pointclouds/" + name + "/ept.json";
         }
 
 		Potree.loadPointCloud(path, name, function(e){

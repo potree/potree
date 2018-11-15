@@ -6,7 +6,7 @@ isNan = function(n) {
 
 function loadRadar(s3, bucket, name, callback) {
   if (s3 && bucket && name) {
-    const objectName = `${name}/V001/0_Preprocessed/radardata.csv`;
+    const objectName = `${name}/0_Preprocessed/radardata.csv`;
     s3.getObject({Bucket: bucket,
                   Key: objectName},
                  (err, data) => {

@@ -10,6 +10,7 @@
     "gulp-connect": "^5.5.0",
     "gulp-util": "^3.0.8",
     "material-design-icons": "^3.0.1",
+    "natives": "^1.1.6",
     "papaparse": "^4.6.0",
     "through": "~2.3.4"
   },

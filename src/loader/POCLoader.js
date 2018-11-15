@@ -166,7 +166,7 @@ export class POCLoader {
                      }});
     };
 
-    const s3Directory = `${name}/V001/1_Viz`;
+    const s3Directory = `${name}/1_Viz`;
     const objectName = `${s3Directory}/cloud.json`;
     s3.getObject({Bucket: bucket,
                   Key: objectName},

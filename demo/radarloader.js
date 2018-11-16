@@ -27,6 +27,9 @@ function loadRadar(callback) {
     var t0_loop = performance.now();
     var rows = data.target.response.split('\n');
 
+    var boxGeometries = new THREE.Geometry(); // TODO REMOVE
+    var boxPositions = []; // TODO REMOVE
+
     var geometry = new THREE.BufferGeometry();
     var positions = [];
     var timestamps = [];
@@ -67,6 +70,12 @@ function loadRadar(callback) {
         colors.push( Math.random() * 0xffffff );
         colors.push( Math.random() * 0xffffff );
         alphas.push( 1.0 );
+
+        let boxSize = 0.15; // TODO REMOVE
+        let boxGeometry = new THREE.BoxGeometry(boxSize, boxSize, boxSize); // TODO REMOVE
+        boxGeometry.translate(x, y, z); // TODO REMOVE
+        boxGeometries.merge(boxGeometry); // TODO REMOVE
+        boxPositions.push( new THREE.Vector3(x, y, z) );  // TODO REMOVE
       }
     }
     // debugger; // timestamp
@@ -83,7 +92,9 @@ function loadRadar(callback) {
     console.log("Loop Runtime: "+(performance.now()-t0_loop)+"ms");
     console.log("Full Runtime: "+(performance.now()-tstart)+"ms");
 
-    callback(geometry, t_init);
+    // callback(geometry, t_init);
+    let boxBufferGeometries = new THREE.BufferGeometry().fromGeometry(boxGeometries);
+    callback(geometry, t_init, boxBufferGeometries); // TODO REMOVE
   };
 
   t0 = performance.now();

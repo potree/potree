@@ -1,5 +1,7 @@
 
-Potree.NormalizationMaterial = class NormalizationMaterial extends THREE.RawShaderMaterial{
+import {Shaders} from "../../build/shaders/shaders.js";
+
+export class NormalizationMaterial extends THREE.RawShaderMaterial{
 
 	constructor(parameters = {}){
 		super();
@@ -11,8 +13,8 @@ Potree.NormalizationMaterial = class NormalizationMaterial extends THREE.RawShad
 
 		this.setValues({
 			uniforms: uniforms,
-			vertexShader: this.getDefines() + Potree.Shaders['normalize.vs'],
-			fragmentShader: this.getDefines() + Potree.Shaders['normalize.fs'],
+			vertexShader: this.getDefines() + Shaders['normalize.vs'],
+			fragmentShader: this.getDefines() + Shaders['normalize.fs'],
 		});
 	}
 
@@ -24,8 +26,8 @@ Potree.NormalizationMaterial = class NormalizationMaterial extends THREE.RawShad
 
 	updateShaderSource() {
 
-		let vs = this.getDefines() + Potree.Shaders['normalize.vs'];
-		let fs = this.getDefines() + Potree.Shaders['normalize.fs'];
+		let vs = this.getDefines() + Shaders['normalize.vs'];
+		let fs = this.getDefines() + Shaders['normalize.fs'];
 
 		this.setValues({
 			vertexShader: vs,
@@ -34,5 +36,6 @@ Potree.NormalizationMaterial = class NormalizationMaterial extends THREE.RawShad
 
 		this.needsUpdate = true;
 	}
-};
+
+}
 

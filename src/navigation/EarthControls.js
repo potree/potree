@@ -1,5 +1,10 @@
 
-Potree.EarthControls = class EarthControls extends THREE.EventDispatcher {
+
+import {MOUSE} from "../defines.js";
+import {Utils} from "../utils.js";
+import {EventDispatcher} from "../EventDispatcher.js";
+
+export class EarthControls extends EventDispatcher {
 	constructor (viewer) {
 		super(viewer);
 
@@ -48,9 +53,9 @@ Potree.EarthControls = class EarthControls extends THREE.EventDispatcher {
 			let mouse = e.drag.end;
 			let domElement = this.viewer.renderer.domElement;
 
-			if (e.drag.mouse === Potree.MOUSE.LEFT) {
+			if (e.drag.mouse === MOUSE.LEFT) {
 
-				let ray = Potree.utils.mouseToRay(mouse, camStart, domElement.clientWidth, domElement.clientHeight);
+				let ray = Utils.mouseToRay(mouse, camStart, domElement.clientWidth, domElement.clientHeight);
 				let plane = new THREE.Plane().setFromNormalAndCoplanarPoint(
 					new THREE.Vector3(0, 0, 1),
 					this.pivot);
@@ -76,7 +81,7 @@ Potree.EarthControls = class EarthControls extends THREE.EventDispatcher {
 						this.viewer.setMoveSpeed(speed);
 					}
 				}
-			} else if (e.drag.mouse === Potree.MOUSE.RIGHT) {
+			} else if (e.drag.mouse === MOUSE.RIGHT) {
 				let ndrag = {
 					x: e.drag.lastDrag.x / this.renderer.domElement.clientWidth,
 					y: e.drag.lastDrag.y / this.renderer.domElement.clientHeight
@@ -110,7 +115,7 @@ Potree.EarthControls = class EarthControls extends THREE.EventDispatcher {
 		};
 
 		let onMouseDown = e => {
-			let I = Potree.utils.getMousePointCloudIntersection(
+			let I = Utils.getMousePointCloudIntersection(
 				e.mouse, 
 				this.scene.getActiveCamera(), 
 				this.viewer, 
@@ -163,7 +168,7 @@ Potree.EarthControls = class EarthControls extends THREE.EventDispatcher {
 	zoomToLocation(mouse){
 		let camera = this.scene.getActiveCamera();
 		
-		let I = Potree.utils.getMousePointCloudIntersection(
+		let I = Utils.getMousePointCloudIntersection(
 			mouse,
 			camera,
 			this.viewer,
@@ -178,11 +183,11 @@ Potree.EarthControls = class EarthControls extends THREE.EventDispatcher {
 			let minimumJumpDistance = 0.2;
 
 			let domElement = this.renderer.domElement;
-			let ray = Potree.utils.mouseToRay(mouse, camera, domElement.clientWidth, domElement.clientHeight);
+			let ray = Utils.mouseToRay(mouse, camera, domElement.clientWidth, domElement.clientHeight);
 
 			let nodes = I.pointcloud.nodesOnRay(I.pointcloud.visibleNodes, ray);
 			let lastNode = nodes[nodes.length - 1];
-			let radius = lastNode.getBoundingSphere().radius;
+			let radius = lastNode.getBoundingSphere(new THREE.Sphere()).radius;
 			targetRadius = Math.min(this.scene.view.radius, radius);
 			targetRadius = Math.max(minimumJumpDistance, targetRadius);
 		}
@@ -231,7 +236,7 @@ Potree.EarthControls = class EarthControls extends THREE.EventDispatcher {
 		
 		// compute zoom
 		if (this.wheelDelta !== 0) {
-			let I = Potree.utils.getMousePointCloudIntersection(
+			let I = Utils.getMousePointCloudIntersection(
 				this.viewer.inputHandler.mouse, 
 				this.scene.getActiveCamera(), 
 				this.viewer, 
@@ -268,7 +273,7 @@ Potree.EarthControls = class EarthControls extends THREE.EventDispatcher {
 			let distance = this.pivotIndicator.position.distanceTo(view.position);
 			let pixelwidth = this.renderer.domElement.clientwidth;
 			let pixelHeight = this.renderer.domElement.clientHeight;
-			let pr = Potree.utils.projectedRadius(1, camera, distance, pixelwidth, pixelHeight);
+			let pr = Utils.projectedRadius(1, camera, distance, pixelwidth, pixelHeight);
 			let scale = (10 / pr);
 			this.pivotIndicator.scale.set(scale, scale, scale);
 		}

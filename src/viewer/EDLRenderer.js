@@ -1,6 +1,11 @@
 
+import {PointCloudSM} from "../utils/PointCloudSM.js";
+import {EyeDomeLightingMaterial} from "../materials/EyeDomeLightingMaterial.js";
+import {PointColorType} from "../defines.js";
+import {SphereVolume} from "../utils/Volume.js";
+import {Utils} from "../utils.js";
 
-class EDLRenderer{
+export class EDLRenderer{
 	constructor(viewer){
 		this.viewer = viewer;
 
@@ -11,7 +16,7 @@ class EDLRenderer{
 
 		this.gl = viewer.renderer.context;
 
-		this.shadowMap = new Potree.PointCloudSM(this.viewer.pRenderer);
+		this.shadowMap = new PointCloudSM(this.viewer.pRenderer);
 	}
 
 	initEDL(){
@@ -19,7 +24,7 @@ class EDLRenderer{
 			return;
 		}
 
-		this.edlMaterial = new Potree.EyeDomeLightingMaterial();
+		this.edlMaterial = new EyeDomeLightingMaterial();
 		this.edlMaterial.depthTest = true;
 		this.edlMaterial.depthWrite = true;
 		this.edlMaterial.transparent = true;
@@ -146,8 +151,6 @@ class EDLRenderer{
 			}
 		});
 
-		let querySkybox = Potree.startQuery('EDL - Skybox', viewer.renderer.getContext());
-		
 		if(viewer.background === "skybox"){
 			viewer.renderer.setClearColor(0x000000, 0);
 			viewer.renderer.clear();
@@ -171,13 +174,9 @@ class EDLRenderer{
 			viewer.renderer.clear();
 		}
 
-		Potree.endQuery(querySkybox, viewer.renderer.getContext());
-
 		// TODO adapt to multiple lights
 		if(lights.length > 0 && !(lights[0].disableShadowUpdates)){
 			let light = lights[0];
-
-			let queryShadows = Potree.startQuery('EDL - shadows', viewer.renderer.getContext());
 
 			this.shadowMap.setLight(light);
 
@@ -185,7 +184,7 @@ class EDLRenderer{
 			for(let pointcloud of viewer.scene.pointclouds){
 				originalAttributes.set(pointcloud, pointcloud.material.pointColorType);
 				pointcloud.material.disableEvents();
-				pointcloud.material.pointColorType = Potree.PointColorType.DEPTH;
+				pointcloud.material.pointColorType = PointColorType.DEPTH;
 			}
 
 			this.shadowMap.render(viewer.scene.scenePointCloud, camera);
@@ -200,10 +199,7 @@ class EDLRenderer{
 			viewer.shadowTestCam.matrixWorldInverse.getInverse(viewer.shadowTestCam.matrixWorld);
 			viewer.shadowTestCam.updateProjectionMatrix();
 
-			Potree.endQuery(queryShadows, viewer.renderer.getContext());
 		}
-
-		let queryColors = Potree.startQuery('EDL - colorpass', viewer.renderer.getContext());
 
 		viewer.renderer.render(viewer.scene.scene, camera);
 		
@@ -216,7 +212,7 @@ class EDLRenderer{
 
 		// COLOR & DEPTH PASS
 		for (let pointcloud of viewer.scene.pointclouds) {
-			let octreeSize = pointcloud.pcoGeometry.boundingBox.getSize().x;
+			let octreeSize = pointcloud.pcoGeometry.boundingBox.getSize(new THREE.Vector3()).x;
 
 			let material = pointcloud.material;
 			material.weighted = false;
@@ -233,11 +229,13 @@ class EDLRenderer{
 		// TODO adapt to multiple lights
 		if(lights.length > 0){
 			viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, this.rtEDL, {
+				clipSpheres: viewer.scene.volumes.filter(v => (v instanceof SphereVolume)),
 				shadowMaps: [this.shadowMap],
 				transparent: false,
 			});
 		}else{
 			viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, this.rtEDL, {
+				clipSpheres: viewer.scene.volumes.filter(v => (v instanceof SphereVolume)),
 				transparent: false,
 			});
 		}
@@ -247,11 +245,7 @@ class EDLRenderer{
 		//viewer.renderer.setRenderTarget(this.rtColor);
 		viewer.dispatchEvent({type: "render.pass.scene", viewer: viewer, renderTarget: this.rtRegular});
 
-		Potree.endQuery(queryColors, viewer.renderer.getContext());
-		
 		{ // EDL OCCLUSION PASS
-			let queryEDL = Potree.startQuery('EDL - resolve', viewer.renderer.getContext());
-
 			this.edlMaterial.uniforms.screenWidth.value = width;
 			this.edlMaterial.uniforms.screenHeight.value = height;
 
@@ -266,16 +260,13 @@ class EDLRenderer{
 			this.edlMaterial.uniforms.radius.value = viewer.edlRadius;
 			this.edlMaterial.uniforms.opacity.value = 1;
 			
-			Potree.utils.screenPass.render(viewer.renderer, this.edlMaterial);
+			Utils.screenPass.render(viewer.renderer, this.edlMaterial);
 
 			if(this.screenshot){
-				Potree.utils.screenPass.render(viewer.renderer, this.edlMaterial, this.screenshot.target);
+				Utils.screenPass.render(viewer.renderer, this.edlMaterial, this.screenshot.target);
 			}
 
-			Potree.endQuery(queryEDL, viewer.renderer.getContext());
 		}
-
-		let queryRest = Potree.startQuery('EDL - rest', viewer.renderer.getContext());
 
 		viewer.renderer.clearDepth();
 
@@ -295,8 +286,6 @@ class EDLRenderer{
 
 		viewer.dispatchEvent({type: "render.pass.end",viewer: viewer});
 
-		Potree.endQuery(queryRest, viewer.renderer.getContext());
-		
 	}
-};
+}
 

@@ -1,7 +1,7 @@
 
-Potree.Features = (function () {
+const Features = (function () {
 	let ftCanvas = document.createElement('canvas');
-	let gl = ftCanvas.getContext('webgl') || ftCanvas.getContext('experimental-webgl');
+	let gl = ftCanvas.getContext('webgl2') || ftCanvas.getContext('webgl') || ftCanvas.getContext('experimental-webgl');
 	if (gl === null)		{ return null; }
 
 	// -- code taken from THREE.WebGLRenderer --
@@ -57,10 +57,20 @@ Potree.Features = (function () {
 				supported = supported && gl.getExtension('OES_texture_float');
 				supported = supported && gl.getParameter(gl.MAX_VARYING_VECTORS) >= 8;
 
+				supported = supported || (gl instanceof WebGL2RenderingContext);
+
 				return supported;
 			}
 
 		},
+		WEBGL2: {
+			isSupported: function(){
+				return gl instanceof WebGL2RenderingContext;
+			}
+		},
 		precision: precision
 	};
 }());
+
+
+export {Features};

@@ -2,8 +2,7 @@
  * @author Connor Manning
  */
 
-Potree.EptLoader = class {
-
+export class EptLoader {
 	static async load(file, callback) {
 
 		let response = await fetch(file);
@@ -18,6 +17,5 @@ Potree.EptLoader = class {
 
 		callback(geometry);
 	}
-
 };
 

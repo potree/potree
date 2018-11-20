@@ -1,22 +1,26 @@
-var toVector3 = function(v, offset) {
-	return new THREE.Vector3().fromArray(v, offset || 0);
-}
+import {PointCloudTreeNode} from "./PointCloudTree.js";
 
-var toBox3 = function(b) {
-	return new THREE.Box3(this.toVector3(b), this.toVector3(b, 3));
+class U {
+    static toVector3(v, offset) {
+        return new THREE.Vector3().fromArray(v, offset || 0);
+    }
+
+    static toBox3(b) {
+        return new THREE.Box3(U.toVector3(b), U.toVector3(b, 3));
+    };
+
+    static findDim(schema, name) {
+        var dim = schema.find((dim) => dim.name == name);
+        if (!dim) throw new Error('Failed to find ' + name + ' in schema');
+        return dim;
+    }
+
+    static sphereFrom(b) {
+        return b.getBoundingSphere(new THREE.Sphere());
+    }
 };
 
-var toArray = function(b) {
-	return [b.min.x, b.min.y, b.min.z, b.max.x, b.max.y, b.max.z];
-}
-
-var findDim = function(schema, name) {
-    var dim = schema.find((dim) => dim.name == name);
-    if (!dim) throw new Error('Failed to find ' + name + ' in schema');
-    return dim;
-}
-
-Potree.PointCloudEptGeometry = class {
+export class PointCloudEptGeometry {
 	constructor(url, info) {
 		let version = info.version;
 		let schema = info.schema;
@@ -24,14 +28,14 @@ Potree.PointCloudEptGeometry = class {
 		let boundsConforming = info.boundsConforming;
 
         let xyz = [
-            findDim(schema, 'X'),
-            findDim(schema, 'Y'),
-            findDim(schema, 'Z')
+            U.findDim(schema, 'X'),
+            U.findDim(schema, 'Y'),
+            U.findDim(schema, 'Z')
         ];
         let scale = xyz.map((d) => d.scale || 1);
         let offset = xyz.map((d) => d.offset || 0);
-		this.eptScale = toVector3(scale);
-		this.eptOffset = toVector3(offset);
+		this.eptScale = U.toVector3(scale);
+		this.eptOffset = U.toVector3(offset);
 
 		this.url = url;
 		this.info = info;
@@ -39,16 +43,25 @@ Potree.PointCloudEptGeometry = class {
 
 		this.schema = schema;
 		this.ticks = info.ticks;
-		this.boundingBox = toBox3(bounds);
-		this.tightBoundingBox = toBox3(boundsConforming);
-		this.offset = toVector3([0, 0, 0]);
-		this.boundingSphere = this.boundingBox.getBoundingSphere();
-		this.tightBoundingSphere = this.tightBoundingBox.getBoundingSphere();
+		this.boundingBox = U.toBox3(bounds);
+		this.tightBoundingBox = U.toBox3(boundsConforming);
+		this.offset = U.toVector3([0, 0, 0]);
+		this.boundingSphere = U.sphereFrom(this.boundingBox);
+		this.tightBoundingSphere = U.sphereFrom(this.tightBoundingBox);
 		this.version = new Potree.Version('1.6');
+
+        this.projection = null;
+        this.fallbackProjection = null;
 
         if (info.srs && info.srs.horizontal) {
             this.projection = info.srs.authority + ':' + info.srs.horizontal;
         }
+
+        if (info.srs.wkt) {
+            if (!this.projection) this.projection = info.srs.wkt;
+            else this.fallbackProjection = info.srs.wkt;
+        }
+
 		this.pointAttributes = 'LAZ';
 		this.spacing =
 			(this.boundingBox.max.x - this.boundingBox.min.x) / this.ticks;
@@ -62,7 +75,7 @@ Potree.PointCloudEptGeometry = class {
 	}
 };
 
-Potree.EptKey = class {
+export class EptKey {
 	constructor(ept, b, d, x, y, z) {
 		this.ept = ept;
 		this.b = b;
@@ -113,7 +126,7 @@ Potree.EptKey = class {
 	}
 }
 
-Potree.PointCloudEptGeometryNode = class extends Potree.PointCloudTreeNode {
+export class PointCloudEptGeometryNode extends PointCloudTreeNode {
 	constructor(ept, b, d, x, y, z) {
 		super();
 
@@ -126,12 +139,12 @@ Potree.PointCloudEptGeometryNode = class extends Potree.PointCloudTreeNode {
 				y,
 				z);
 
-		this.id = Potree.PointCloudEptGeometryNode.NextId++;
+		this.id = PointCloudEptGeometryNode.IDCount++;
 		this.geometry = null;
 		this.boundingBox = this.key.b;
 		this.tightBoundingBox = this.boundingBox;
 		this.spacing = this.ept.spacing / Math.pow(2, this.key.d);
-		this.boundingSphere = this.boundingBox.getBoundingSphere();
+		this.boundingSphere = U.sphereFrom(this.boundingBox);
 
 		// These are set during hierarchy loading.
 		this.hasChildren = false;
@@ -287,9 +300,5 @@ Potree.PointCloudEptGeometryNode = class extends Potree.PointCloudTreeNode {
 	}
 }
 
-Potree.PointCloudEptGeometryNode.NextId = 0;
-
-Object.assign(
-		Potree.PointCloudEptGeometryNode.prototype,
-		THREE.EventDispatcher.prototype);
+PointCloudEptGeometryNode.IDCount = 0;
 

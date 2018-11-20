@@ -109,9 +109,51 @@
 		</div>
 
 		<!-- Classification -->
-		<h3 id="menu_classification"><span data-i18n="tb.classification_filter_opt"></span></h3>
+		<h3 id="menu_filters"><span data-i18n="tb.filters_opt"></span></h3>
 		<div>
+
+			<div class="divider" style="padding: 10px 0px 15px 0px"><span>Classification</span></div>
+
 			<ul id="classificationList" class="pv-menu-list"></ul>
+
+			<div class="divider" style="padding: 10px 0px 15px 0px"><span>Returns</span></div>
+
+			<div id="return_filter_panel">
+				<ul class="pv-menu-list">
+					
+					<li><span data-i18n="filters.return_number"></span>: <span id="lblReturnNumber"></span> <div id="sldReturnNumber"></div></li>
+					<li><span data-i18n="filters.number_of_returns"></span>: <span id="lblNumberOfReturns"></span> <div id="sldNumberOfReturns"></div></li>
+
+				</ul>
+			</div>
+
+			<div class="divider" style="padding: 10px 0px 15px 0px"><span>GPS Time</span></div>
+
+			<div id="gpstime_filter_panel">
+
+				<ul class="pv-menu-list">
+					
+					<!-- <li>
+						<span style="display: flex">
+							<span style="flex: 0.5; padding: 2px;">
+								<label for="spnGPSMin">Min:</label>
+								<input id="spnGPSMin" type="" step="0.01" value="0" min="0" style="width: 90%">
+							</span>
+							<span style="flex: 0.5; padding: 2px;">
+								<label for="spnGPSMax">Max:</label>
+								<input id="spnGPSMax" type="" step="0.01" value="1" min="0" style="width: 90%">
+							</span>
+						</span>
+					</li> -->
+					<!-- <li><span data-i18n="filters.gps_time"></span>: <span id="lblGPSTime"></span> <div id="sldGPSTime"></div></li> -->
+					<li>
+						<span data-i18n="filters.gps_time"></span>: <span id="lblGPSTime"></span>
+						<span id="spnGPSTime"></span>
+					</li>
+
+				</ul>
+
+			</div>
 		</div>
 		
 		<!-- ABOUT -->

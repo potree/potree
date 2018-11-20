@@ -1,5 +1,39 @@
-initSidebar = (viewer) => {
-	let createToolIcon = function (icon, title, callback) {
+
+import {MeasuringTool} from "../utils/MeasuringTool.js";
+import {ProfileTool} from "../utils/ProfileTool.js";
+import {VolumeTool} from "../utils/VolumeTool.js";
+
+import {GeoJSONExporter} from "../exporter/GeoJSONExporter.js"
+import {DXFExporter} from "../exporter/DXFExporter.js"
+import {Volume, SphereVolume} from "../utils/Volume.js"
+import {PolygonClipVolume} from "../utils/PolygonClipVolume.js"
+import {PropertiesPanel} from "./PropertyPanels/PropertiesPanel.js"
+import {PointCloudTree} from "../PointCloudTree.js"
+import {Profile} from "../utils/Profile.js"
+import {Measure} from "../utils/Measure.js"
+import {Annotation} from "../Annotation.js"
+import {CameraMode, ClipTask, ClipMethod} from "../defines.js"
+import {ScreenBoxSelectTool} from "../utils/ScreenBoxSelectTool.js"
+import {Utils} from "../utils.js"
+
+import {EarthControls} from "../navigation/EarthControls.js"
+import {FirstPersonControls} from "../navigation/FirstPersonControls.js"
+import {OrbitControls} from "../navigation/OrbitControls.js"
+
+import {ZoomableSlider} from "./ZoomableSlider.js"
+
+export class Sidebar{
+
+	constructor(viewer){
+		this.viewer = viewer;
+
+		this.measuringTool = new MeasuringTool(this.viewer);
+		this.profileTool = new ProfileTool(this.viewer);
+		this.volumeTool = new VolumeTool(this.viewer);
+
+	}
+
+	createToolIcon(icon, title, callback){
 		let element = $(`
 			<img src="${icon}"
 				style="width: 32px; height: 32px"
@@ -10,22 +44,35 @@ initSidebar = (viewer) => {
 		element.click(callback);
 
 		return element;
-	};
+	}
 
-	let measuringTool = new Potree.MeasuringTool(viewer);
-	let profileTool = new Potree.ProfileTool(viewer);
-	let volumeTool = new Potree.VolumeTool(viewer);
+	init(){
 
-	function initToolbar () {
+		this.initAccordion();
+		this.initAppearance();
+		this.initToolbar();
+		this.initScene();
+		this.initNavigation();
+		this.initFilters();
+		this.initClippingTool();
+		this.initSettings();
+		
+		$('#potree_version_number').html(Potree.version.major + "." + Potree.version.minor + Potree.version.suffix);
+		$('.perfect_scrollbar').perfectScrollbar();
+	}
+
+		
+
+	initToolbar(){
 
 		// ANGLE
 		let elToolbar = $('#tools');
-		elToolbar.append(createToolIcon(
+		elToolbar.append(this.createToolIcon(
 			Potree.resourcePath + '/icons/angle.png',
 			'[title]tt.angle_measurement',
-			function () {
+			() => {
 				$('#menu_measurements').next().slideDown();
-				let measurement = measuringTool.startInsertion({
+				let measurement = this.measuringTool.startInsertion({
 					showDistances: false,
 					showAngles: true,
 					showArea: false,
@@ -41,12 +88,12 @@ initSidebar = (viewer) => {
 		));
 
 		// POINT
-		elToolbar.append(createToolIcon(
+		elToolbar.append(this.createToolIcon(
 			Potree.resourcePath + '/icons/point.svg',
 			'[title]tt.point_measurement',
-			function () {
+			() => {
 				$('#menu_measurements').next().slideDown();
-				let measurement = measuringTool.startInsertion({
+				let measurement = this.measuringTool.startInsertion({
 					showDistances: false,
 					showAngles: false,
 					showCoordinates: true,
@@ -63,12 +110,12 @@ initSidebar = (viewer) => {
 		));
 
 		// DISTANCE
-		elToolbar.append(createToolIcon(
+		elToolbar.append(this.createToolIcon(
 			Potree.resourcePath + '/icons/distance.svg',
 			'[title]tt.distance_measurement',
-			function () {
+			() => {
 				$('#menu_measurements').next().slideDown();
-				let measurement = measuringTool.startInsertion({
+				let measurement = this.measuringTool.startInsertion({
 					showDistances: true,
 					showArea: false,
 					closed: false,
@@ -82,12 +129,12 @@ initSidebar = (viewer) => {
 		));
 
 		// HEIGHT
-		elToolbar.append(createToolIcon(
+		elToolbar.append(this.createToolIcon(
 			Potree.resourcePath + '/icons/height.svg',
 			'[title]tt.height_measurement',
-			function () {
+			() => {
 				$('#menu_measurements').next().slideDown();
-				let measurement = measuringTool.startInsertion({
+				let measurement = this.measuringTool.startInsertion({
 					showDistances: false,
 					showHeight: true,
 					showArea: false,
@@ -103,12 +150,12 @@ initSidebar = (viewer) => {
 		));
 
 		// AREA
-		elToolbar.append(createToolIcon(
+		elToolbar.append(this.createToolIcon(
 			Potree.resourcePath + '/icons/area.svg',
 			'[title]tt.area_measurement',
-			function () {
+			() => {
 				$('#menu_measurements').next().slideDown();
-				let measurement = measuringTool.startInsertion({
+				let measurement = this.measuringTool.startInsertion({
 					showDistances: true,
 					showArea: true,
 					closed: true,
@@ -122,11 +169,25 @@ initSidebar = (viewer) => {
 		));
 
 		// VOLUME
-		elToolbar.append(createToolIcon(
+		elToolbar.append(this.createToolIcon(
 			Potree.resourcePath + '/icons/volume.svg',
 			'[title]tt.volume_measurement',
-			function () { 
-				let volume = volumeTool.startInsertion(); 
+			() => {
+				let volume = this.volumeTool.startInsertion(); 
+
+				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
+				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === volume.uuid);
+				$.jstree.reference(jsonNode.id).deselect_all();
+				$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
+			}
+		));
+
+		// SPHERE VOLUME
+		elToolbar.append(this.createToolIcon(
+			Potree.resourcePath + '/icons/sphere_distances.svg',
+			'[title]tt.volume_measurement',
+			() => { 
+				let volume = this.volumeTool.startInsertion({type: SphereVolume}); 
 
 				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
 				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === volume.uuid);
@@ -136,12 +197,12 @@ initSidebar = (viewer) => {
 		));
 
 		// PROFILE
-		elToolbar.append(createToolIcon(
+		elToolbar.append(this.createToolIcon(
 			Potree.resourcePath + '/icons/profile.svg',
 			'[title]tt.height_profile',
-			function () {
+			() => {
 				$('#menu_measurements').next().slideDown(); ;
-				let profile = profileTool.startInsertion();
+				let profile = this.profileTool.startInsertion();
 
 				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
 				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === profile.uuid);
@@ -151,16 +212,16 @@ initSidebar = (viewer) => {
 		));
 
 		// REMOVE ALL
-		elToolbar.append(createToolIcon(
+		elToolbar.append(this.createToolIcon(
 			Potree.resourcePath + '/icons/reset_tools.svg',
 			'[title]tt.remove_all_measurement',
-			function () {
-				viewer.scene.removeAllMeasurements();
+			() => {
+				this.viewer.scene.removeAllMeasurements();
 			}
 		));
 	}
 
-	function initScene(){
+	initScene(){
 
 		let elScene = $("#menu_scene");
 		let elObjects = elScene.next().find("#scene_objects");
@@ -180,30 +241,40 @@ initSidebar = (viewer) => {
 			`);
 
 			let elDownloadJSON = elExport.find("img[name=geojson_export_button]").parent();
-			elDownloadJSON.click( () => {
-				let scene = viewer.scene;
+			elDownloadJSON.click( (event) => {
+				let scene = this.viewer.scene;
 				let measurements = [...scene.measurements, ...scene.profiles, ...scene.volumes];
 
-				let geoJson = Potree.GeoJSONExporter.toString(measurements);
+				if(measurements.length > 0){
+					let geoJson = GeoJSONExporter.toString(measurements);
 
-				let url = window.URL.createObjectURL(new Blob([geoJson], {type: 'data:application/octet-stream'}));
-				elDownloadJSON.attr('href', url);
+					let url = window.URL.createObjectURL(new Blob([geoJson], {type: 'data:application/octet-stream'}));
+					elDownloadJSON.attr('href', url);
+				}else{
+					this.viewer.postError("no measurements to export");
+					event.preventDefault();
+				}
 			});
 
 			let elDownloadDXF = elExport.find("img[name=dxf_export_button]").parent();
-			elDownloadDXF.click( () => {
-				let scene = viewer.scene;
+			elDownloadDXF.click( (event) => {
+				let scene = this.viewer.scene;
 				let measurements = [...scene.measurements, ...scene.profiles, ...scene.volumes];
 
-				let dxf = Potree.DXFExporter.toString(measurements);
+				if(measurements.length > 0){
+					let dxf = DXFExporter.toString(measurements);
 
-				let url = window.URL.createObjectURL(new Blob([dxf], {type: 'data:application/octet-stream'}));
-				elDownloadDXF.attr('href', url);
+					let url = window.URL.createObjectURL(new Blob([dxf], {type: 'data:application/octet-stream'}));
+					elDownloadDXF.attr('href', url);
+				}else{
+					this.viewer.postError("no measurements to export");
+					event.preventDefault();
+				}
 			});
 		}
 
-		let propertiesPanel = new Potree.PropertiesPanel(elProperties, viewer);
-		propertiesPanel.setScene(viewer.scene);
+		let propertiesPanel = new PropertiesPanel(elProperties, this.viewer);
+		propertiesPanel.setScene(this.viewer.scene);
 		
 		localStorage.removeItem('jstree');
 
@@ -255,34 +326,35 @@ initSidebar = (viewer) => {
 		tree.jstree("check_node", annotationsID);
 		tree.jstree("check_node", otherID);
 
-		tree.on('create_node.jstree', function(e, data){
+		tree.on('create_node.jstree', (e, data) => {
 			tree.jstree("open_all");
 		});
 
-		tree.on("select_node.jstree", function(e, data){
+		tree.on("select_node.jstree", (e, data) => {
 			let object = data.node.data;
 			propertiesPanel.set(object);
 
-			viewer.inputHandler.deselectAll();
+			this.viewer.inputHandler.deselectAll();
 
-			if(object instanceof Potree.Volume){
-				viewer.inputHandler.toggleSelection(object);
+			if(object instanceof Volume){
+				this.viewer.inputHandler.toggleSelection(object);
 			}
 
-			$(viewer.renderer.domElement).focus();
+			$(this.viewer.renderer.domElement).focus();
 		});
 
-		tree.on("deselect_node.jstree", function(e, data){
+		tree.on("deselect_node.jstree", (e, data) => {
 			propertiesPanel.set(null);
 		});
 
-		tree.on("delete_node.jstree", function(e, data){
+		tree.on("delete_node.jstree", (e, data) => {
 			propertiesPanel.set(null);
 		});
 
-		tree.on('dblclick','.jstree-anchor', function (e) {
-			let instance = $.jstree.reference(this);
-			let node = instance.get_node(this);
+		tree.on('dblclick','.jstree-anchor', (e) => {
+
+			let instance = $.jstree.reference(e.target);
+			let node = instance.get_node(e.target);
 			let object = node.data;
 
 			// ignore double click on checkbox
@@ -290,75 +362,75 @@ initSidebar = (viewer) => {
 				return;
 			}
 
-			if(object instanceof Potree.PointCloudTree){
-				let box = viewer.getBoundingBox([object]);
+			if(object instanceof PointCloudTree){
+				let box = this.viewer.getBoundingBox([object]);
 				let node = new THREE.Object3D();
 				node.boundingBox = box;
-				viewer.zoomTo(node, 1, 500);
-			}else if(object instanceof Potree.Measure){
+				this.viewer.zoomTo(node, 1, 500);
+			}else if(object instanceof Measure){
 				let points = object.points.map(p => p.position);
 				let box = new THREE.Box3().setFromPoints(points);
-				if(box.getSize().length() > 0){
+				if(box.getSize(new THREE.Vector3()).length() > 0){
 					let node = new THREE.Object3D();
 					node.boundingBox = box;
-					viewer.zoomTo(node, 2, 500);
+					this.viewer.zoomTo(node, 2, 500);
 				}
-			}else if(object instanceof Potree.Profile){
+			}else if(object instanceof Profile){
 				let points = object.points;
 				let box = new THREE.Box3().setFromPoints(points);
-				if(box.getSize().length() > 0){
+				if(box.getSize(new THREE.Vector3()).length() > 0){
 					let node = new THREE.Object3D();
 					node.boundingBox = box;
-					viewer.zoomTo(node, 1, 500);
+					this.viewer.zoomTo(node, 1, 500);
 				}
-			}else if(object instanceof Potree.Volume){
+			}else if(object instanceof Volume){
 				
 				let box = object.boundingBox.clone().applyMatrix4(object.matrixWorld);
 
-				if(box.getSize().length() > 0){
+				if(box.getSize(new THREE.Vector3()).length() > 0){
 					let node = new THREE.Object3D();
 					node.boundingBox = box;
-					viewer.zoomTo(node, 1, 500);
+					this.viewer.zoomTo(node, 1, 500);
 				}
-			}else if(object instanceof Potree.Annotation){
-				object.moveHere(viewer.scene.getActiveCamera());
-			}else if(object instanceof Potree.PolygonClipVolume){
-				let dir = object.camera.getWorldDirection();
+			}else if(object instanceof Annotation){
+				object.moveHere(this.viewer.scene.getActiveCamera());
+			}else if(object instanceof PolygonClipVolume){
+				let dir = object.camera.getWorldDirection(new THREE.Vector3());
 				let target;
 
 				if(object.camera instanceof THREE.OrthographicCamera){
 					dir.multiplyScalar(object.camera.right)
 					target = new THREE.Vector3().addVectors(object.camera.position, dir);
-					viewer.setCameraMode(Potree.CameraMode.ORTHOGRAPHIC);
+					this.viewer.setCameraMode(CameraMode.ORTHOGRAPHIC);
 				}else if(object.camera instanceof THREE.PerspectiveCamera){
-					dir.multiplyScalar(viewer.scene.view.radius);
+					dir.multiplyScalar(this.viewer.scene.view.radius);
 					target = new THREE.Vector3().addVectors(object.camera.position, dir);
-					viewer.setCameraMode(Potree.CameraMode.PERSPECTIVE);
+					this.viewer.setCameraMode(CameraMode.PERSPECTIVE);
 				}
 				
-				viewer.scene.view.position.copy(object.camera.position);
-				viewer.scene.view.lookAt(target);
+				this.viewer.scene.view.position.copy(object.camera.position);
+				this.viewer.scene.view.lookAt(target);
 			}else if(object instanceof THREE.SpotLight){
 				let distance = (object.distance > 0) ? object.distance / 4 : 5 * 1000;
 				let position = object.position;
 				let target = new THREE.Vector3().addVectors(
 					position, 
-					object.getWorldDirection().multiplyScalar(distance));
+					object.getWorldDirection(new THREE.Vector3()).multiplyScalar(distance));
 
-				viewer.scene.view.position.copy(object.position);
-				viewer.scene.view.lookAt(target);
+				this.viewer.scene.view.position.copy(object.position);
+				this.viewer.scene.view.lookAt(target);
 			}else if(object instanceof THREE.Object3D){
 				let box = new THREE.Box3().setFromObject(object);
 
-				if(box.getSize().length() > 0){
+				if(box.getSize(new THREE.Vector3()).length() > 0){
 					let node = new THREE.Object3D();
 					node.boundingBox = box;
-					viewer.zoomTo(node, 1, 500);
+					this.viewer.zoomTo(node, 1, 500);
 				}
 			}
 		});
 
-		tree.on("uncheck_node.jstree", function(e, data){
+		tree.on("uncheck_node.jstree", (e, data) => {
 			let object = data.node.data;
 
 			if(object){
@@ -366,7 +438,7 @@ initSidebar = (viewer) => {
 			}
 		});
 
-		tree.on("check_node.jstree", function(e, data){
+		tree.on("check_node.jstree", (e, data) => {
 			let object = data.node.data;
 
 			if(object){
@@ -378,18 +450,26 @@ initSidebar = (viewer) => {
 		let onPointCloudAdded = (e) => {
 			let pointcloud = e.pointcloud;
 			let cloudIcon = `${Potree.resourcePath}/icons/cloud.svg`;
-			createNode(pcID, pointcloud.name, cloudIcon, pointcloud);
+			let node = createNode(pcID, pointcloud.name, cloudIcon, pointcloud);
+
+			pointcloud.addEventListener("visibility_changed", () => {
+				if(pointcloud.visible){
+					tree.jstree('check_node', node);
+				}else{
+					tree.jstree('uncheck_node', node);
+				}
+			});
 		};
 
 		let onMeasurementAdded = (e) => {
 			let measurement = e.measurement;
-			let icon = Potree.getMeasurementIcon(measurement);
+			let icon = Utils.getMeasurementIcon(measurement);
 			createNode(measurementID, measurement.name, icon, measurement);
 		};
 
 		let onVolumeAdded = (e) => {
 			let volume = e.volume;
-			let icon = Potree.getMeasurementIcon(volume);
+			let icon = Utils.getMeasurementIcon(volume);
 			let node = createNode(measurementID, volume.name, icon, volume);
 
 			volume.addEventListener("visibility_changed", () => {
@@ -403,7 +483,7 @@ initSidebar = (viewer) => {
 
 		let onProfileAdded = (e) => {
 			let profile = e.profile;
-			let icon = Potree.getMeasurementIcon(profile);
+			let icon = Utils.getMeasurementIcon(profile);
 			createNode(measurementID, profile.name, icon, profile);
 		};
 
@@ -419,12 +499,12 @@ initSidebar = (viewer) => {
 			//oldScene.annotations.removeEventListener('annotation_added', this.onAnnotationAdded);
 		};
 
-		viewer.scene.addEventListener("pointcloud_added", onPointCloudAdded);
-		viewer.scene.addEventListener("measurement_added", onMeasurementAdded);
-		viewer.scene.addEventListener("profile_added", onProfileAdded);
-		viewer.scene.addEventListener("volume_added", onVolumeAdded);
-		viewer.scene.addEventListener("polygon_clip_volume_added", onVolumeAdded);
-		viewer.scene.annotations.addEventListener("annotation_added", onAnnotationAdded);
+		this.viewer.scene.addEventListener("pointcloud_added", onPointCloudAdded);
+		this.viewer.scene.addEventListener("measurement_added", onMeasurementAdded);
+		this.viewer.scene.addEventListener("profile_added", onProfileAdded);
+		this.viewer.scene.addEventListener("volume_added", onVolumeAdded);
+		this.viewer.scene.addEventListener("polygon_clip_volume_added", onVolumeAdded);
+		this.viewer.scene.annotations.addEventListener("annotation_added", onAnnotationAdded);
 
 		let onMeasurementRemoved = (e) => {
 			let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
@@ -447,35 +527,35 @@ initSidebar = (viewer) => {
 			tree.jstree("delete_node", jsonNode.id);
 		};
 
-		viewer.scene.addEventListener("measurement_removed", onMeasurementRemoved);
-		viewer.scene.addEventListener("volume_removed", onVolumeRemoved);
-		viewer.scene.addEventListener("profile_removed", onProfileRemoved);
+		this.viewer.scene.addEventListener("measurement_removed", onMeasurementRemoved);
+		this.viewer.scene.addEventListener("volume_removed", onVolumeRemoved);
+		this.viewer.scene.addEventListener("profile_removed", onProfileRemoved);
 
 		{
 			let annotationIcon = `${Potree.resourcePath}/icons/annotation.svg`;
 			this.annotationMapping = new Map(); 
-			this.annotationMapping.set(viewer.scene.annotations, annotationsID);
-			viewer.scene.annotations.traverseDescendants(annotation => {
+			this.annotationMapping.set(this.viewer.scene.annotations, annotationsID);
+			this.viewer.scene.annotations.traverseDescendants(annotation => {
 				let parentID = this.annotationMapping.get(annotation.parent);
 				let annotationID = createNode(parentID, annotation.title, annotationIcon, annotation);
 				this.annotationMapping.set(annotation, annotationID);
 			});
 		}
 
-		for(let pointcloud of viewer.scene.pointclouds){
+		for(let pointcloud of this.viewer.scene.pointclouds){
 			onPointCloudAdded({pointcloud: pointcloud});
 		}
 
-		for(let measurement of viewer.scene.measurements){
+		for(let measurement of this.viewer.scene.measurements){
 			onMeasurementAdded({measurement: measurement});
 		}
 
-		for(let volume of [...viewer.scene.volumes, ...viewer.scene.polygonClipVolumes]){
+		for(let volume of [...this.viewer.scene.volumes, ...this.viewer.scene.polygonClipVolumes]){
 			onVolumeAdded({volume: volume});
 		}
 
 
-		for(let profile of viewer.scene.profiles){
+		for(let profile of this.viewer.scene.profiles){
 			onProfileAdded({profile: profile});
 		}
 
@@ -483,7 +563,7 @@ initSidebar = (viewer) => {
 			createNode(otherID, "Camera", null, new THREE.Camera());
 		}
 
-		viewer.addEventListener("scene_changed", (e) => {
+		this.viewer.addEventListener("scene_changed", (e) => {
 			propertiesPanel.setScene(e.scene);
 
 			e.oldScene.removeEventListener("pointcloud_added", onPointCloudAdded);
@@ -503,14 +583,14 @@ initSidebar = (viewer) => {
 
 	}
 
-	function initClippingTool() {
+	initClippingTool(){
 
 
-		viewer.addEventListener("cliptask_changed", function(event){
+		this.viewer.addEventListener("cliptask_changed", (event) => {
 			console.log("TODO");
 		});
 
-		viewer.addEventListener("clipmethod_changed", function(event){
+		this.viewer.addEventListener("clipmethod_changed", (event) => {
 			console.log("TODO");
 		});
 
@@ -519,11 +599,11 @@ initSidebar = (viewer) => {
 			elClipTask.selectgroup({title: "Clip Task"});
 
 			elClipTask.find("input").click( (e) => {
-				viewer.setClipTask(Potree.ClipTask[e.target.value]);
+				this.viewer.setClipTask(ClipTask[e.target.value]);
 			});
 
-			let currentClipTask = Object.keys(Potree.ClipTask)
-				.filter(key => Potree.ClipTask[key] === viewer.clipTask);
+			let currentClipTask = Object.keys(ClipTask)
+				.filter(key => ClipTask[key] === this.viewer.clipTask);
 			elClipTask.find(`input[value=${currentClipTask}]`).trigger("click");
 		}
 
@@ -532,22 +612,22 @@ initSidebar = (viewer) => {
 			elClipMethod.selectgroup({title: "Clip Method"});
 
 			elClipMethod.find("input").click( (e) => {
-				viewer.setClipMethod(Potree.ClipMethod[e.target.value]);
+				this.viewer.setClipMethod(ClipMethod[e.target.value]);
 			});
 
-			let currentClipMethod = Object.keys(Potree.ClipMethod)
-				.filter(key => Potree.ClipMethod[key] === viewer.clipMethod);
+			let currentClipMethod = Object.keys(ClipMethod)
+				.filter(key => ClipMethod[key] === this.viewer.clipMethod);
 			elClipMethod.find(`input[value=${currentClipMethod}]`).trigger("click");
 		}
 
 		let clippingToolBar = $("#clipping_tools");
 
 		// CLIP VOLUME
-		clippingToolBar.append(createToolIcon(
+		clippingToolBar.append(this.createToolIcon(
 			Potree.resourcePath + '/icons/clip_volume.svg',
 			'[title]tt.clip_volume',
 			() => {
-				let item = volumeTool.startInsertion({clip: true}); 
+				let item = this.volumeTool.startInsertion({clip: true}); 
 
 				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
 				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === item.uuid);
@@ -557,11 +637,11 @@ initSidebar = (viewer) => {
 		));
 
 		// CLIP POLYGON
-		clippingToolBar.append(createToolIcon(
+		clippingToolBar.append(this.createToolIcon(
 			Potree.resourcePath + "/icons/clip-polygon.svg",
 			"[title]tt.clip_polygon",
 			() => {
-				let item = viewer.clippingTool.startInsertion({type: "polygon"});
+				let item = this.viewer.clippingTool.startInsertion({type: "polygon"});
 
 				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
 				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === item.uuid);
@@ -571,14 +651,14 @@ initSidebar = (viewer) => {
 		));
 
 		{// SCREEN BOX SELECT
-			let boxSelectTool = new Potree.ScreenBoxSelectTool(viewer);
+			let boxSelectTool = new ScreenBoxSelectTool(this.viewer);
 
-			clippingToolBar.append(createToolIcon(
+			clippingToolBar.append(this.createToolIcon(
 				Potree.resourcePath + "/icons/clip-screen.svg",
 				"[title]tt.screen_clip_box",
 				() => {
-					if(!(viewer.scene.getActiveCamera() instanceof THREE.OrthographicCamera)){
-						viewer.postMessage(`Switch to Orthographic Camera Mode before using the Screen-Box-Select tool.`, 
+					if(!(this.viewer.scene.getActiveCamera() instanceof THREE.OrthographicCamera)){
+						this.viewer.postMessage(`Switch to Orthographic Camera Mode before using the Screen-Box-Select tool.`, 
 							{duration: 2000});
 						return;
 					}
@@ -594,22 +674,119 @@ initSidebar = (viewer) => {
 		}
 
 		{ // REMOVE CLIPPING TOOLS
-			clippingToolBar.append(createToolIcon(
+			clippingToolBar.append(this.createToolIcon(
 				Potree.resourcePath + "/icons/remove.svg",
 				"[title]tt.remove_all_measurement",
 				() => {
 
-					viewer.scene.removeAllClipVolumes();
+					this.viewer.scene.removeAllClipVolumes();
 				}
 			));
 		}
 
 	}
 
-	function initClassificationList () {
+	initFilters(){
+		this.initClassificationList();
+		this.initReturnFilters();
+		this.initGPSTimeFilters();
+
+	}
+
+	initReturnFilters(){
+		let elReturnFilterPanel = $('#return_filter_panel');
+
+		{ // RETURN NUMBER
+			let sldReturnNumber = elReturnFilterPanel.find('#sldReturnNumber');
+			let lblReturnNumber = elReturnFilterPanel.find('#lblReturnNumber');
+
+			sldReturnNumber.slider({
+				range: true,
+				min: 1, max: 7, step: 1,
+				values: [0, 7],
+				slide: (event, ui) => {
+					this.viewer.setFilterReturnNumberRange(ui.values[0], ui.values[1])
+				}
+			});
+
+			let onReturnNumberChanged = (event) => {
+				let [from, to] = this.viewer.filterReturnNumberRange;
+
+				lblReturnNumber[0].innerHTML = `${from} to ${to}`;
+				sldReturnNumber.slider({values: [from, to]});
+			};
+
+			this.viewer.addEventListener('filter_return_number_range_changed', onReturnNumberChanged);
+
+			onReturnNumberChanged();
+		}
+
+		{ // NUMBER OF RETURNS
+			let sldNumberOfReturns = elReturnFilterPanel.find('#sldNumberOfReturns');
+			let lblNumberOfReturns = elReturnFilterPanel.find('#lblNumberOfReturns');
+
+			sldNumberOfReturns.slider({
+				range: true,
+				min: 1, max: 7, step: 1,
+				values: [0, 7],
+				slide: (event, ui) => {
+					this.viewer.setFilterNumberOfReturnsRange(ui.values[0], ui.values[1])
+				}
+			});
+
+			let onNumberOfReturnsChanged = (event) => {
+				let [from, to] = this.viewer.filterNumberOfReturnsRange;
+
+				lblNumberOfReturns[0].innerHTML = `${from} to ${to}`;
+				sldNumberOfReturns.slider({values: [from, to]});
+			};
+
+			this.viewer.addEventListener('filter_number_of_returns_range_changed', onNumberOfReturnsChanged);
+
+			onNumberOfReturnsChanged();
+		}
+	}
+
+	initGPSTimeFilters(){
+		let elGPSTimeFilterPanel = $('#gpstime_filter_panel');
+
+		let lblGPSTime = elGPSTimeFilterPanel.find("#lblGPSTime");
+		let elGPS = elGPSTimeFilterPanel.find("#spnGPSTime");
+
+		let slider = new ZoomableSlider();
+		elGPS[0].appendChild(slider.element);
+		slider.update();
+
+		slider.change( () => {
+			let range = slider.chosenRange;
+			this.viewer.setFilterGPSTimeRange(range[0], range[1]);
+		});
+
+		let onGPSTimeExtentChanged = (event) => {
+			let range = this.viewer.filterGPSTimeExtent;
+			slider.setVisibleRange(range);
+		};
+
+		let onGPSTimeChanged = (event) => {
+			let range = this.viewer.filterGPSTimeRange;
+
+			let precision = 1;
+			let from = `${Utils.addCommas(range[0].toFixed(precision))}`;
+			let to = `${Utils.addCommas(range[1].toFixed(precision))}`;
+			lblGPSTime[0].innerHTML = `${from} to ${to}`;
+			
+			slider.setRange(range);
+		};
+
+		this.viewer.addEventListener('filter_gps_time_range_changed', onGPSTimeChanged);
+		this.viewer.addEventListener('filter_gps_time_extent_changed', onGPSTimeExtentChanged);
+
+	}
+
+	initClassificationList(){
 		let elClassificationList = $('#classificationList');
 
-		let addClassificationItem = function (code, name) {
+		let addClassificationItem = (code, name) => {
 			let inputID = 'chkClassification_' + code;
 
 			let element = $(`
@@ -624,7 +801,7 @@ initSidebar = (viewer) => {
 			let elInput = element.find('input');
 
 			elInput.click(event => {
-				viewer.setClassificationVisibility(code, event.target.checked);
+				this.viewer.setClassificationVisibility(code, event.target.checked);
 			});
 
 			elClassificationList.append(element);
@@ -643,8 +820,8 @@ initSidebar = (viewer) => {
 		addClassificationItem(12, 'overlap');
 	}
 
-	function initAccordion () {
-		$('.accordion > h3').each(function () {
+	initAccordion(){
+		$('.accordion > h3').each(function(){
 			let header = $(this);
 			let content = $(this).next();
 
@@ -653,7 +830,7 @@ initSidebar = (viewer) => {
 
 			content.hide();
 
-			header.click(function () {
+			header.click(() => {
 				content.slideToggle();
 			});
 		});
@@ -669,7 +846,7 @@ initSidebar = (viewer) => {
 		for(let i = 0; i < languages.length; i++){
 			let [key, value] = languages[i];
 			let element = $(`<a>${key}</a>`);
-			element.click(() => viewer.setLanguage(value));
+			element.click(() => this.viewer.setLanguage(value));
 
 			if(i === 0){
 				element.css("margin-left", "30px");
@@ -690,173 +867,173 @@ initSidebar = (viewer) => {
 		// $("#menu_tools").next().show()
 	}
 
-	function initAppearance () {
+	initAppearance(){
 
 		$('#sldPointBudget').slider({
-			value: viewer.getPointBudget(),
+			value: this.viewer.getPointBudget(),
 			min: 100 * 1000,
 			max: 10 * 1000 * 1000,
 			step: 1000,
-			slide: function (event, ui) { viewer.setPointBudget(ui.value); }
+			slide: (event, ui) => { this.viewer.setPointBudget(ui.value); }
 		});
 
 		$('#sldFOV').slider({
-			value: viewer.getFOV(),
+			value: this.viewer.getFOV(),
 			min: 20,
 			max: 100,
 			step: 1,
-			slide: function (event, ui) { viewer.setFOV(ui.value); }
+			slide: (event, ui) => { this.viewer.setFOV(ui.value); }
 		});
 
 		$('#sldEDLRadius').slider({
-			value: viewer.getEDLRadius(),
+			value: this.viewer.getEDLRadius(),
 			min: 1,
 			max: 4,
 			step: 0.01,
-			slide: function (event, ui) { viewer.setEDLRadius(ui.value); }
+			slide: (event, ui) => { this.viewer.setEDLRadius(ui.value); }
 		});
 
 		$('#sldEDLStrength').slider({
-			value: viewer.getEDLStrength(),
+			value: this.viewer.getEDLStrength(),
 			min: 0,
 			max: 5,
 			step: 0.01,
-			slide: function (event, ui) { viewer.setEDLStrength(ui.value); }
+			slide: (event, ui) => { this.viewer.setEDLStrength(ui.value); }
 		});
 
-		viewer.addEventListener('point_budget_changed', function (event) {
-			$('#lblPointBudget')[0].innerHTML = Potree.utils.addCommas(viewer.getPointBudget());
-			$('#sldPointBudget').slider({value: viewer.getPointBudget()});
+		this.viewer.addEventListener('point_budget_changed', (event) => {
+			$('#lblPointBudget')[0].innerHTML = Utils.addCommas(this.viewer.getPointBudget());
+			$('#sldPointBudget').slider({value: this.viewer.getPointBudget()});
 		});
 
-		viewer.addEventListener('fov_changed', function (event) {
-			$('#lblFOV')[0].innerHTML = parseInt(viewer.getFOV());
-			$('#sldFOV').slider({value: viewer.getFOV()});
+		this.viewer.addEventListener('fov_changed', (event) => {
+			$('#lblFOV')[0].innerHTML = parseInt(this.viewer.getFOV());
+			$('#sldFOV').slider({value: this.viewer.getFOV()});
 		});
 
-		viewer.addEventListener('edl_radius_changed', function (event) {
-			$('#lblEDLRadius')[0].innerHTML = viewer.getEDLRadius().toFixed(1);
-			$('#sldEDLRadius').slider({value: viewer.getEDLRadius()});
+		this.viewer.addEventListener('edl_radius_changed', (event) => {
+			$('#lblEDLRadius')[0].innerHTML = this.viewer.getEDLRadius().toFixed(1);
+			$('#sldEDLRadius').slider({value: this.viewer.getEDLRadius()});
 		});
 
-		viewer.addEventListener('edl_strength_changed', function (event) {
-			$('#lblEDLStrength')[0].innerHTML = viewer.getEDLStrength().toFixed(1);
-			$('#sldEDLStrength').slider({value: viewer.getEDLStrength()});
+		this.viewer.addEventListener('edl_strength_changed', (event) => {
+			$('#lblEDLStrength')[0].innerHTML = this.viewer.getEDLStrength().toFixed(1);
+			$('#sldEDLStrength').slider({value: this.viewer.getEDLStrength()});
 		});
 
-		viewer.addEventListener('background_changed', function (event) {
-			$("input[name=background][value='" + viewer.getBackground() + "']").prop('checked', true);
+		this.viewer.addEventListener('background_changed', (event) => {
+			$("input[name=background][value='" + this.viewer.getBackground() + "']").prop('checked', true);
 		});
 
-		$('#lblPointBudget')[0].innerHTML = Potree.utils.addCommas(viewer.getPointBudget());
-		$('#lblFOV')[0].innerHTML = parseInt(viewer.getFOV());
-		$('#lblEDLRadius')[0].innerHTML = viewer.getEDLRadius().toFixed(1);
-		$('#lblEDLStrength')[0].innerHTML = viewer.getEDLStrength().toFixed(1);
-		$('#chkEDLEnabled')[0].checked = viewer.getEDLEnabled();
+		$('#lblPointBudget')[0].innerHTML = Utils.addCommas(this.viewer.getPointBudget());
+		$('#lblFOV')[0].innerHTML = parseInt(this.viewer.getFOV());
+		$('#lblEDLRadius')[0].innerHTML = this.viewer.getEDLRadius().toFixed(1);
+		$('#lblEDLStrength')[0].innerHTML = this.viewer.getEDLStrength().toFixed(1);
+		$('#chkEDLEnabled')[0].checked = this.viewer.getEDLEnabled();
 		
 		{
 			let elBackground = $(`#background_options`);
 			elBackground.selectgroup();
 
 			elBackground.find("input").click( (e) => {
-				viewer.setBackground(e.target.value);
+				this.viewer.setBackground(e.target.value);
 			});
 
-			let currentBackground = viewer.getBackground();
+			let currentBackground = this.viewer.getBackground();
 			$(`input[name=background_options][value=${currentBackground}]`).trigger("click");
 		}
 
 		$('#chkEDLEnabled').click( () => {
-			viewer.setEDLEnabled($('#chkEDLEnabled').prop("checked"));
+			this.viewer.setEDLEnabled($('#chkEDLEnabled').prop("checked"));
 		});
 	}
 
-	function initNavigation () {
+	initNavigation(){
 		let elNavigation = $('#navigation');
 		let sldMoveSpeed = $('#sldMoveSpeed');
 		let lblMoveSpeed = $('#lblMoveSpeed');
 
-		elNavigation.append(createToolIcon(
+		elNavigation.append(this.createToolIcon(
 			Potree.resourcePath + '/icons/earth_controls_1.png',
 			'[title]tt.earth_control',
-			function () { viewer.setNavigationMode(Potree.EarthControls); }
+			() => { this.viewer.setNavigationMode(EarthControls); }
 		));
 
-		elNavigation.append(createToolIcon(
+		elNavigation.append(this.createToolIcon(
 			Potree.resourcePath + '/icons/fps_controls.svg',
 			'[title]tt.flight_control',
-			function () {
-				viewer.setNavigationMode(Potree.FirstPersonControls);
-				viewer.fpControls.lockElevation = false;
+			() => {
+				this.viewer.setNavigationMode(FirstPersonControls);
+				this.viewer.fpControls.lockElevation = false;
 			}
 		));
 
-		elNavigation.append(createToolIcon(
+		elNavigation.append(this.createToolIcon(
 			Potree.resourcePath + '/icons/helicopter_controls.svg',
 			'[title]tt.heli_control',
 			() => { 
-				viewer.setNavigationMode(Potree.FirstPersonControls);
-				viewer.fpControls.lockElevation = true;
+				this.viewer.setNavigationMode(FirstPersonControls);
+				this.viewer.fpControls.lockElevation = true;
 			}
 		));
 
-		elNavigation.append(createToolIcon(
+		elNavigation.append(this.createToolIcon(
 			Potree.resourcePath + '/icons/orbit_controls.svg',
 			'[title]tt.orbit_control',
-			function () { viewer.setNavigationMode(Potree.OrbitControls); }
+			() => { this.viewer.setNavigationMode(OrbitControls); }
 		));
 
-		elNavigation.append(createToolIcon(
+		elNavigation.append(this.createToolIcon(
 			Potree.resourcePath + '/icons/focus.svg',
 			'[title]tt.focus_control',
-			function () { viewer.fitToScreen(); }
+			() => { this.viewer.fitToScreen(); }
 		));
 
 
 		
-		elNavigation.append(createToolIcon(
+		elNavigation.append(this.createToolIcon(
 			Potree.resourcePath + "/icons/navigation_cube.svg",
 			"[title]tt.navigation_cube_control",
-			function(){viewer.toggleNavigationCube()}
+			() => {this.viewer.toggleNavigationCube()}
 		));
 
 		elNavigation.append("<br>");
 
 
-		elNavigation.append(createToolIcon(
+		elNavigation.append(this.createToolIcon(
 			Potree.resourcePath + "/icons/left.svg",
 			"[title]tt.left_view_control",
-			function(){viewer.setLeftView()}
+			() => {this.viewer.setLeftView()}
 		));
 
-		elNavigation.append(createToolIcon(
+		elNavigation.append(this.createToolIcon(
 			Potree.resourcePath + "/icons/right.svg",
 			"[title]tt.right_view_control",
-			function(){viewer.setRightView()}
+			() => {this.viewer.setRightView()}
 		));
 
-		elNavigation.append(createToolIcon(
+		elNavigation.append(this.createToolIcon(
 			Potree.resourcePath + "/icons/front.svg",
 			"[title]tt.front_view_control",
-			function(){viewer.setFrontView()}
+			() => {this.viewer.setFrontView()}
 		));
 
-		elNavigation.append(createToolIcon(
+		elNavigation.append(this.createToolIcon(
 			Potree.resourcePath + "/icons/back.svg",
 			"[title]tt.back_view_control",
-			function(){viewer.setBackView()}
+			() => {this.viewer.setBackView()}
 		));
 
-		elNavigation.append(createToolIcon(
+		elNavigation.append(this.createToolIcon(
 			Potree.resourcePath + "/icons/top.svg",
 			"[title]tt.top_view_control",
-			function(){viewer.setTopView()}
+			() => {this.viewer.setTopView()}
 		));
 
-		elNavigation.append(createToolIcon(
+		elNavigation.append(this.createToolIcon(
 			Potree.resourcePath + "/icons/bottom.svg",
 			"[title]tt.bottom_view_control",
-			function(){viewer.setBottomView()}
+			() => {this.viewer.setBottomView()}
 		));
 
 
@@ -872,55 +1049,55 @@ initSidebar = (viewer) => {
 		elNavigation.append(elCameraProjection);
 		elCameraProjection.selectgroup({title: "Camera Projection"});
 		elCameraProjection.find("input").click( (e) => {
-			viewer.setCameraMode(Potree.CameraMode[e.target.value]);
+			this.viewer.setCameraMode(CameraMode[e.target.value]);
 		});
-		let cameraMode = Object.keys(Potree.CameraMode)
-			.filter(key => Potree.CameraMode[key] === viewer.scene.cameraMode);
+		let cameraMode = Object.keys(CameraMode)
+			.filter(key => CameraMode[key] === this.viewer.scene.cameraMode);
 		elCameraProjection.find(`input[value=${cameraMode}]`).trigger("click");
 
 		let speedRange = new THREE.Vector2(1, 10 * 1000);
 
-		let toLinearSpeed = function (value) {
+		let toLinearSpeed = (value) => {
 			return Math.pow(value, 4) * speedRange.y + speedRange.x;
 		};
 
-		let toExpSpeed = function (value) {
+		let toExpSpeed = (value) => {
 			return Math.pow((value - speedRange.x) / speedRange.y, 1 / 4);
 		};
 
 		sldMoveSpeed.slider({
-			value: toExpSpeed(viewer.getMoveSpeed()),
+			value: toExpSpeed(this.viewer.getMoveSpeed()),
 			min: 0,
 			max: 1,
 			step: 0.01,
-			slide: function (event, ui) { viewer.setMoveSpeed(toLinearSpeed(ui.value)); }
+			slide: (event, ui) => { this.viewer.setMoveSpeed(toLinearSpeed(ui.value)); }
 		});
 
-		viewer.addEventListener('move_speed_changed', function (event) {
-			lblMoveSpeed.html(viewer.getMoveSpeed().toFixed(1));
-			sldMoveSpeed.slider({value: toExpSpeed(viewer.getMoveSpeed())});
+		this.viewer.addEventListener('move_speed_changed', (event) => {
+			lblMoveSpeed.html(this.viewer.getMoveSpeed().toFixed(1));
+			sldMoveSpeed.slider({value: toExpSpeed(this.viewer.getMoveSpeed())});
 		});
 
-		lblMoveSpeed.html(viewer.getMoveSpeed().toFixed(1));
+		lblMoveSpeed.html(this.viewer.getMoveSpeed().toFixed(1));
 	}
 
 
-	let initSettings = function () {
+	initSettings(){
 
 		{
 			$('#sldMinNodeSize').slider({
-				value: viewer.getMinNodeSize(),
+				value: this.viewer.getMinNodeSize(),
 				min: 0,
 				max: 1000,
 				step: 0.01,
-				slide: function (event, ui) { viewer.setMinNodeSize(ui.value); }
+				slide: (event, ui) => { this.viewer.setMinNodeSize(ui.value); }
 			});
 
-			viewer.addEventListener('minnodesize_changed', function (event) {
-				$('#lblMinNodeSize').html(parseInt(viewer.getMinNodeSize()));
-				$('#sldMinNodeSize').slider({value: viewer.getMinNodeSize()});
+			this.viewer.addEventListener('minnodesize_changed', (event) => {
+				$('#lblMinNodeSize').html(parseInt(this.viewer.getMinNodeSize()));
+				$('#sldMinNodeSize').slider({value: this.viewer.getMinNodeSize()});
 			});
-			$('#lblMinNodeSize').html(parseInt(viewer.getMinNodeSize()));
+			$('#lblMinNodeSize').html(parseInt(this.viewer.getMinNodeSize()));
 		}
 
 		{
@@ -929,37 +1106,23 @@ initSidebar = (viewer) => {
 
 			elSplatQuality.find("input").click( (e) => {
 				if(e.target.value === "standard"){
-					viewer.useHQ = false;
+					this.viewer.useHQ = false;
 				}else if(e.target.value === "hq"){
-					viewer.useHQ = true;
+					this.viewer.useHQ = true;
 				}
 			});
 
-			let currentQuality = viewer.useHQ ? "hq" : "standard";
+			let currentQuality = this.viewer.useHQ ? "hq" : "standard";
 			elSplatQuality.find(`input[value=${currentQuality}]`).trigger("click");
 		}
 
 		$('#show_bounding_box').click(() => {
-			viewer.setShowBoundingBox($('#show_bounding_box').prop("checked"));
+			this.viewer.setShowBoundingBox($('#show_bounding_box').prop("checked"));
 		});
 
-		$('#set_freeze').click(function(){
-			viewer.setFreeze($('#set_freeze').prop("checked"));
+		$('#set_freeze').click(() => {
+			this.viewer.setFreeze($('#set_freeze').prop("checked"));
 		});
-		
+	}
 
-		
-	};
-
-	initAccordion();
-	initAppearance();
-	initToolbar();
-	initScene();
-	initNavigation();
-	initClassificationList();
-	initClippingTool();
-	initSettings();
-	
-	$('#potree_version_number').html(Potree.version.major + "." + Potree.version.minor + Potree.version.suffix);
-	$('.perfect_scrollbar').perfectScrollbar();
-};
+}

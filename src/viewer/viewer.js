@@ -1,5 +1,32 @@
 
-Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
+
+import {ClipTask, ClipMethod, CameraMode} from "../defines.js";
+import {Renderer} from "../PotreeRenderer.js";
+import {PotreeRenderer} from "./PotreeRenderer.js";
+import {EDLRenderer} from "./EDLRenderer.js";
+import {HQSplatRenderer} from "./HQSplatRenderer.js";
+import {Scene} from "./Scene.js";
+import {ClippingTool} from "../utils/ClippingTool.js";
+import {TransformationTool} from "../utils/TransformationTool.js";
+import {Utils} from "../utils.js";
+import {MapView} from "./map.js";
+import {ProfileWindow, ProfileWindowController} from "./profile.js";
+import {BoxVolume} from "../utils/Volume.js";
+import {Features} from "../Features.js";
+import {Message} from "../utils/Message.js";
+import {Sidebar} from "./sidebar.js";
+
+import {InputHandler} from "../navigation/InputHandler.js";
+import {NavigationCube} from "./NavigationCube.js";
+import {OrbitControls} from "../navigation/OrbitControls.js";
+import {FirstPersonControls} from "../navigation/FirstPersonControls.js";
+import {EarthControls} from "../navigation/EarthControls.js";
+import {DeviceOrientationControls} from "../navigation/DeviceOrientationControls.js";
+import { EventDispatcher } from "../EventDispatcher.js";
+
+
+
+export class Viewer extends EventDispatcher{
 	
 	constructor(domElement, args = {}){
 		super();
@@ -84,8 +111,13 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		this.showBoundingBox = false;
 		this.showAnnotations = true;
 		this.freeze = false;
-		this.clipTask = Potree.ClipTask.HIGHLIGHT;
-		this.clipMethod = Potree.ClipMethod.INSIDE_ANY;
+		this.clipTask = ClipTask.HIGHLIGHT;
+		this.clipMethod = ClipMethod.INSIDE_ANY;
+
+		this.filterReturnNumberRange = [1, 7];
+		this.filterNumberOfReturnsRange = [1, 7];
+		this.filterGPSTimeRange = [0, Infinity];
+		this.filterGPSTimeExtent = [0, 1];
 
 		this.potreeRenderer = null;
 		this.edlRenderer = null;
@@ -105,8 +137,21 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		this.skybox = null;
 		this.clock = new THREE.Clock();
 		this.background = null;
+		this.defaultGPSTimeChanged = false;
 
 		this.initThree();
+
+		{
+			let canvas = this.renderer.domElement;
+			canvas.addEventListener("webglcontextlost", (e) => {
+				console.log(e);
+				this.postMessage("WebGL context lost. \u2639");
+
+				let gl = this.renderer.getContext();
+				let error = gl.getError();
+				console.log(error);
+			}, false);
+		}
 
 		{
 			this.overlay = new THREE.Scene();
@@ -117,7 +162,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			);
 		}
 		
-		this.pRenderer = new Potree.Renderer(this.renderer);
+		this.pRenderer = new Renderer(this.renderer);
 		
 		{
 			let near = 2.5;
@@ -130,16 +175,16 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		}
 		
 
-		let scene = new Potree.Scene(this.renderer);
+		let scene = new Scene(this.renderer);
 		this.setScene(scene);
 
 		{
-			this.inputHandler = new Potree.InputHandler(this);
+			this.inputHandler = new InputHandler(this);
 			this.inputHandler.setScene(this.scene);
 
-			this.clippingTool = new Potree.ClippingTool(this);
-			this.transformationTool = new Potree.TransformationTool(this);
-			this.navigationCube = new Potree.NavigationCube(this);
+			this.clippingTool = new ClippingTool(this);
+			this.transformationTool = new TransformationTool(this);
+			this.navigationCube = new NavigationCube(this);
 			this.navigationCube.visible = false;
 			
 			this.createControls();
@@ -148,7 +193,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			
 			let onPointcloudAdded = (e) => {
 				if (this.scene.pointclouds.length === 1) {
-					let speed = e.pointcloud.boundingBox.getSize().length();
+					let speed = e.pointcloud.boundingBox.getSize(new THREE.Vector3()).length();
 					speed = speed / 5;
 					this.setMoveSpeed(speed);
 				}
@@ -181,12 +226,12 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			this.setEDLEnabled(false);
 			this.setEDLRadius(1.4);
 			this.setEDLStrength(0.4);
-			this.setClipTask(Potree.ClipTask.HIGHLIGHT);
-			this.setClipMethod(Potree.ClipMethod.INSIDE_ANY);
+			this.setClipTask(ClipTask.HIGHLIGHT);
+			this.setClipMethod(ClipMethod.INSIDE_ANY);
 			this.setPointBudget(1*1000*1000);
 			this.setShowBoundingBox(false);
 			this.setFreeze(false);
-			this.setNavigationMode(Potree.OrbitControls);
+			this.setNavigationMode(OrbitControls);
 			this.setBackground('gradient');
 
 			this.scaleFactor = 1;
@@ -300,12 +345,14 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 	};
 
 	getControls (navigationMode) {
-		if (navigationMode === Potree.OrbitControls) {
+		if (navigationMode === OrbitControls) {
 			return this.orbitControls;
-		} else if (navigationMode === Potree.FirstPersonControls) {
+		} else if (navigationMode === FirstPersonControls) {
 			return this.fpControls;
-		} else if (navigationMode === Potree.EarthControls) {
+		} else if (navigationMode === EarthControls) {
 			return this.earthControls;
+		} else if (navigationMode === DeviceOrientationControls) {
+			return this.deviceControls;
 		} else {
 			return null;
 		}
@@ -332,7 +379,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		}
 
 		if(bg === "skybox"){
-			this.skybox = Potree.utils.loadSkybox(new URL(Potree.resourcePath + '/textures/skybox2/').href);
+			this.skybox = Utils.loadSkybox(new URL(Potree.resourcePath + '/textures/skybox2/').href);
 		}
 
 		this.background = bg;
@@ -522,6 +569,26 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		}
 	};
 
+	setFilterReturnNumberRange(from, to){
+		this.filterReturnNumberRange = [from, to];
+		this.dispatchEvent({'type': 'filter_return_number_range_changed', 'viewer': this});
+	}
+
+	setFilterNumberOfReturnsRange(from, to){
+		this.filterNumberOfReturnsRange = [from, to];
+		this.dispatchEvent({'type': 'filter_number_of_returns_range_changed', 'viewer': this});
+	}
+
+	setFilterGPSTimeRange(from, to){
+		this.filterGPSTimeRange = [from, to];
+		this.dispatchEvent({'type': 'filter_gps_time_range_changed', 'viewer': this});
+	}
+
+	setFilterGPSTimeExtent(from, to){
+		this.filterGPSTimeExtent = [from, to];
+		this.dispatchEvent({'type': 'filter_gps_time_extent_changed', 'viewer': this});
+	}
+
 	setLengthUnit (value) {
 		switch (value) {
 			case 'm':
@@ -556,7 +623,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		} else if (node.geometry && node.geometry.boundingSphere) {
 			bs = node.geometry.boundingSphere;
 		} else {
-			bs = node.boundingBox.getBoundingSphere();
+			bs = node.boundingBox.getBoundingSphere(new THREE.Sphere());
 		}
 		bs = bs.clone().applyMatrix4(node.matrixWorld); 
 
@@ -700,42 +767,42 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		this.scene.cameraMode = mode;
 
 		for(let pointcloud of this.scene.pointclouds) {
-			pointcloud.material.useOrthographicCamera = mode == Potree.CameraMode.ORTHOGRAPHIC;
+			pointcloud.material.useOrthographicCamera = mode == CameraMode.ORTHOGRAPHIC;
 		}
 	}
 	
 	loadSettingsFromURL(){
-		if(Potree.utils.getParameterByName("pointSize")){
-			this.setPointSize(parseFloat(Potree.utils.getParameterByName("pointSize")));
+		if(Utils.getParameterByName("pointSize")){
+			this.setPointSize(parseFloat(Utils.getParameterByName("pointSize")));
 		}
 		
-		if(Potree.utils.getParameterByName("FOV")){
-			this.setFOV(parseFloat(Potree.utils.getParameterByName("FOV")));
+		if(Utils.getParameterByName("FOV")){
+			this.setFOV(parseFloat(Utils.getParameterByName("FOV")));
 		}
 		
-		if(Potree.utils.getParameterByName("opacity")){
-			this.setOpacity(parseFloat(Potree.utils.getParameterByName("opacity")));
+		if(Utils.getParameterByName("opacity")){
+			this.setOpacity(parseFloat(Utils.getParameterByName("opacity")));
 		}
 		
-		if(Potree.utils.getParameterByName("edlEnabled")){
-			let enabled = Potree.utils.getParameterByName("edlEnabled") === "true";
+		if(Utils.getParameterByName("edlEnabled")){
+			let enabled = Utils.getParameterByName("edlEnabled") === "true";
 			this.setEDLEnabled(enabled);
 		}
 
-		if (Potree.utils.getParameterByName('edlRadius')) {
-			this.setEDLRadius(parseFloat(Potree.utils.getParameterByName('edlRadius')));
+		if (Utils.getParameterByName('edlRadius')) {
+			this.setEDLRadius(parseFloat(Utils.getParameterByName('edlRadius')));
 		}
 
-		if (Potree.utils.getParameterByName('edlStrength')) {
-			this.setEDLStrength(parseFloat(Potree.utils.getParameterByName('edlStrength')));
+		if (Utils.getParameterByName('edlStrength')) {
+			this.setEDLStrength(parseFloat(Utils.getParameterByName('edlStrength')));
 		}
 
-		if (Potree.utils.getParameterByName('pointBudget')) {
-			this.setPointBudget(parseFloat(Potree.utils.getParameterByName('pointBudget')));
+		if (Utils.getParameterByName('pointBudget')) {
+			this.setPointBudget(parseFloat(Utils.getParameterByName('pointBudget')));
 		}
 
-		if (Potree.utils.getParameterByName('showBoundingBox')) {
-			let enabled = Potree.utils.getParameterByName('showBoundingBox') === 'true';
+		if (Utils.getParameterByName('showBoundingBox')) {
+			let enabled = Utils.getParameterByName('showBoundingBox') === 'true';
 			if (enabled) {
 				this.setShowBoundingBox(true);
 			} else {
@@ -743,23 +810,23 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			}
 		}
 
-		if (Potree.utils.getParameterByName('material')) {
-			let material = Potree.utils.getParameterByName('material');
+		if (Utils.getParameterByName('material')) {
+			let material = Utils.getParameterByName('material');
 			this.setMaterial(material);
 		}
 
-		if (Potree.utils.getParameterByName('pointSizing')) {
-			let sizing = Potree.utils.getParameterByName('pointSizing');
+		if (Utils.getParameterByName('pointSizing')) {
+			let sizing = Utils.getParameterByName('pointSizing');
 			this.setPointSizing(sizing);
 		}
 
-		if (Potree.utils.getParameterByName('quality')) {
-			let quality = Potree.utils.getParameterByName('quality');
+		if (Utils.getParameterByName('quality')) {
+			let quality = Utils.getParameterByName('quality');
 			this.setQuality(quality);
 		}
 
-		if (Potree.utils.getParameterByName('position')) {
-			let value = Potree.utils.getParameterByName('position');
+		if (Utils.getParameterByName('position')) {
+			let value = Utils.getParameterByName('position');
 			value = value.replace('[', '').replace(']', '');
 			let tokens = value.split(';');
 			let x = parseFloat(tokens[0]);
@@ -769,8 +836,8 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			this.scene.view.position.set(x, y, z);
 		}
 
-		if (Potree.utils.getParameterByName('target')) {
-			let value = Potree.utils.getParameterByName('target');
+		if (Utils.getParameterByName('target')) {
+			let value = Utils.getParameterByName('target');
 			value = value.replace('[', '').replace(']', '');
 			let tokens = value.split(';');
 			let x = parseFloat(tokens[0]);
@@ -780,13 +847,13 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			this.scene.view.lookAt(new THREE.Vector3(x, y, z));
 		}
 
-		if (Potree.utils.getParameterByName('background')) {
-			let value = Potree.utils.getParameterByName('background');
+		if (Utils.getParameterByName('background')) {
+			let value = Utils.getParameterByName('background');
 			this.setBackground(value);
 		}
 
-		// if(Potree.utils.getParameterByName("elevationRange")){
-		//	let value = Potree.utils.getParameterByName("elevationRange");
+		// if(Utils.getParameterByName("elevationRange")){
+		//	let value = Utils.getParameterByName("elevationRange");
 		//	value = value.replace("[", "").replace("]", "");
 		//	let tokens = value.split(";");
 		//	let x = parseFloat(tokens[0]);
@@ -803,7 +870,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 
 	createControls () {
 		{ // create FIRST PERSON CONTROLS
-			this.fpControls = new Potree.FirstPersonControls(this);
+			this.fpControls = new FirstPersonControls(this);
 			this.fpControls.enabled = false;
 			this.fpControls.addEventListener('start', this.disableAnnotations.bind(this));
 			this.fpControls.addEventListener('end', this.enableAnnotations.bind(this));
@@ -817,7 +884,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		}
 
 		// { // create GEO CONTROLS
-		//	this.geoControls = new Potree.GeoControls(this.scene.camera, this.renderer.domElement);
+		//	this.geoControls = new GeoControls(this.scene.camera, this.renderer.domElement);
 		//	this.geoControls.enabled = false;
 		//	this.geoControls.addEventListener("start", this.disableAnnotations.bind(this));
 		//	this.geoControls.addEventListener("end", this.enableAnnotations.bind(this));
@@ -827,17 +894,24 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		// }
 
 		{ // create ORBIT CONTROLS
-			this.orbitControls = new Potree.OrbitControls(this);
+			this.orbitControls = new OrbitControls(this);
 			this.orbitControls.enabled = false;
 			this.orbitControls.addEventListener('start', this.disableAnnotations.bind(this));
 			this.orbitControls.addEventListener('end', this.enableAnnotations.bind(this));
 		}
 
 		{ // create EARTH CONTROLS
-			this.earthControls = new Potree.EarthControls(this);
+			this.earthControls = new EarthControls(this);
 			this.earthControls.enabled = false;
 			this.earthControls.addEventListener('start', this.disableAnnotations.bind(this));
 			this.earthControls.addEventListener('end', this.enableAnnotations.bind(this));
+		}
+
+		{ // create DEVICE ORIENTATION CONTROLS
+			this.deviceControls = new DeviceOrientationControls(this);
+			this.deviceControls.enabled = false;
+			this.deviceControls.addEventListener('start', this.disableAnnotations.bind(this));
+			this.deviceControls.addEventListener('end', this.enableAnnotations.bind(this));
 		}
 	};
 
@@ -893,7 +967,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			viewer.renderArea.insertBefore(imgMapToggle, viewer.renderArea.children[0]);
 			viewer.renderArea.insertBefore(imgMenuToggle, viewer.renderArea.children[0]);
 
-			this.mapView = new Potree.MapView(this);
+			this.mapView = new MapView(this);
 			this.mapView.init();
 
 			i18n.init({
@@ -908,7 +982,9 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			});
 
 			$(() => {
-				initSidebar(this);
+				//initSidebar(this);
+				let sidebar = new Sidebar(this);
+				sidebar.init();
 
 				//if (callback) {
 				//	$(callback);
@@ -916,8 +992,8 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 
 				let elProfile = $('<div>').load(new URL(Potree.scriptPath + '/profile.html').href, () => {
 					$(document.body).append(elProfile.children());
-					this.profileWindow = new Potree.ProfileWindow(this);
-					this.profileWindowController = new Potree.ProfileWindowController(this);
+					this.profileWindow = new ProfileWindow(this);
+					this.profileWindowController = new ProfileWindowController(this);
 
 					$('#profile_window').draggable({
 						handle: $('#profile_titlebar'),
@@ -958,7 +1034,32 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		let width = this.renderArea.clientWidth;
 		let height = this.renderArea.clientHeight;
 
-		this.renderer = new THREE.WebGLRenderer({alpha: true, premultipliedAlpha: false});
+		let contextAttributes = {
+			alpha: true,
+			depth: true,
+			stencil: false,
+			antialias: false,
+			//premultipliedAlpha: _premultipliedAlpha,
+			preserveDrawingBuffer: true,
+			powerPreference: "high-performance",
+		};
+
+		let canvas = document.createElement("canvas");
+
+		//let context = canvas.getContext('webgl2', contextAttributes );
+		//if(!context){
+			let context = canvas.getContext('webgl', contextAttributes );
+			Potree.Features.WEBGL2.isSupported = () => {
+				return false;
+			};
+		//}
+
+
+		this.renderer = new THREE.WebGLRenderer({
+			alpha: true, 
+			premultipliedAlpha: false,
+			canvas: canvas,
+			context: context});
 		this.renderer.sortObjects = false;
 		this.renderer.setSize(width, height);
 		this.renderer.autoClear = false;
@@ -968,16 +1069,25 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		this.renderer.domElement.addEventListener('mousedown', () => {
 			this.renderer.domElement.focus();
 		});
+		//this.renderer.domElement.focus();
 
 		// enable frag_depth extension for the interpolation shader, if available
 		let gl = this.renderer.context;
 		gl.getExtension('EXT_frag_depth');
 		gl.getExtension('WEBGL_depth_texture');
 		
-		let extVAO = gl.getExtension('OES_vertex_array_object');
-		gl.createVertexArray = extVAO.createVertexArrayOES.bind(extVAO);
-		gl.bindVertexArray = extVAO.bindVertexArrayOES.bind(extVAO);
-		//gl.bindVertexArray = extVAO.asdfbindVertexArrayOES.bind(extVAO);
+		if(gl instanceof WebGLRenderingContext){
+			let extVAO = gl.getExtension('OES_vertex_array_object');
+
+			if(!extVAO){
+				throw new Error("OES_vertex_array_object extension not supported");
+			}
+
+			gl.createVertexArray = extVAO.createVertexArrayOES.bind(extVAO);
+			gl.bindVertexArray = extVAO.bindVertexArrayOES.bind(extVAO);
+		}else if(gl instanceof WebGL2RenderingContext){
+			gl.getExtension("EXT_color_buffer_float");
+		}
 		
 	}
 
@@ -1013,13 +1123,14 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 
 			let element = annotation.domElement;
 
-			let position = annotation.position;
+			let position = annotation.position.clone();
+			position.add(annotation.offset);
 			if (!position) {
-				position = annotation.boundingBox.getCenter();
+				position = annotation.boundingBox.getCenter(new THREE.Vector3());
 			}
 
 			let distance = viewer.scene.cameraP.position.distanceTo(position);
-			let radius = annotation.boundingBox.getBoundingSphere().radius;
+			let radius = annotation.boundingBox.getBoundingSphere(new THREE.Sphere()).radius;
 
 			let screenPos = new THREE.Vector3();
 			let screenSize = 0;
@@ -1032,13 +1143,13 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 
 
 				// SCREEN SIZE
-				if(viewer.scene.cameraMode == Potree.CameraMode.PERSPECTIVE) {
+				if(viewer.scene.cameraMode == CameraMode.PERSPECTIVE) {
 					let fov = Math.PI * viewer.scene.cameraP.fov / 180;
 					let slope = Math.tan(fov / 2.0);
 					let projFactor =  0.5 * renderAreaHeight / (slope * distance);
 					screenSize = radius * projFactor;
 				} else {
-					screenSize = Potree.utils.projectedRadiusOrtho(radius, viewer.scene.cameraO.projectionMatrix, renderAreaWidth, renderAreaHeight);
+					screenSize = Utils.projectedRadiusOrtho(radius, viewer.scene.cameraO.projectionMatrix, renderAreaWidth, renderAreaHeight);
 				}
 			}
 
@@ -1100,26 +1211,26 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		//	if(window.urlToggle > 1){
 		//		{
 		//
-		//			let currentValue = Potree.utils.getParameterByName("position");
+		//			let currentValue = Utils.getParameterByName("position");
 		//			let strPosition = "["
 		//				+ this.scene.view.position.x.toFixed(3) + ";"
 		//				+ this.scene.view.position.y.toFixed(3) + ";"
 		//				+ this.scene.view.position.z.toFixed(3) + "]";
 		//			if(currentValue !== strPosition){
-		//				Potree.utils.setParameter("position", strPosition);
+		//				Utils.setParameter("position", strPosition);
 		//			}
 		//
 		//		}
 		//
 		//		{
-		//			let currentValue = Potree.utils.getParameterByName("target");
+		//			let currentValue = Utils.getParameterByName("target");
 		//			let pivot = this.scene.view.getPivot();
 		//			let strTarget = "["
 		//				+ pivot.x.toFixed(3) + ";"
 		//				+ pivot.y.toFixed(3) + ";"
 		//				+ pivot.z.toFixed(3) + "]";
 		//			if(currentValue !== strTarget){
-		//				Potree.utils.setParameter("target", strTarget);
+		//				Utils.setParameter("target", strTarget);
 		//			}
 		//		}
 		//
@@ -1146,7 +1257,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		Potree.pointLoadLimit = Potree.pointBudget * 2;
 
 		this.scene.directionalLight.position.copy(camera.position);
-		this.scene.directionalLight.lookAt(new THREE.Vector3().addVectors(camera.position, camera.getWorldDirection()));
+		this.scene.directionalLight.lookAt(new THREE.Vector3().addVectors(camera.position, camera.getWorldDirection(new THREE.Vector3())));
 
 		for (let pointcloud of this.scene.pointclouds) {
 			if (!pointcloud.material._defaultIntensityRangeChanged) {
@@ -1176,6 +1287,27 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 					}
 					// pointcloud._intensityMaxEvaluated = true;
 				}
+			}
+
+			if(this.defaultGPSTimeChanged === false){
+
+				let root = pointcloud.pcoGeometry.root;
+				if (root != null && root.loaded) {
+					if(root.gpsTime){
+
+						let gpsTime = root.gpsTime;
+						let min = gpsTime.offset;
+						let max = gpsTime.offset + gpsTime.range;
+						let border = (max - min) * 0.1;
+
+						this.setFilterGPSTimeExtent(min - border, max + border);
+						//this.setFilterGPSTimeRange(0, 1000 * 1000 * 1000);
+						this.setFilterGPSTimeRange(min, max);
+
+						this.defaultGPSTimeChanged = true;
+					}
+				}
+
 			}
 			
 			pointcloud.showBoundingBox = this.showBoundingBox;
@@ -1209,6 +1341,18 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			}
 		}
 
+		for (let pointcloud of this.scene.pointclouds) {
+			if(!pointcloud.visible){
+				continue;
+			}
+
+			let material = pointcloud.material;
+
+			material.uniforms.uFilterReturnNumberRange.value = this.filterReturnNumberRange;
+			material.uniforms.uFilterNumberOfReturnsRange.value = this.filterNumberOfReturnsRange;
+			material.uniforms.uFilterGPSTimeClipRange.value = this.filterGPSTimeRange;
+		}
+
 		{
 			if(this.showBoundingBox){
 				let bbRoot = this.scene.scene.getObjectByName("potree_bounding_box_root");
@@ -1234,6 +1378,38 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		if (!this.freeze) {
 			let result = Potree.updatePointClouds(scene.pointclouds, camera, this.renderer);
 
+
+			// DEBUG - ONLY DISPLAY NODES THAT INTERSECT MOUSE
+			//if(false){ 
+
+			//	let renderer = viewer.renderer;
+			//	let mouse = viewer.inputHandler.mouse;
+
+			//	let nmouse = {
+			//		x: (mouse.x / renderer.domElement.clientWidth) * 2 - 1,
+			//		y: -(mouse.y / renderer.domElement.clientHeight) * 2 + 1
+			//	};
+
+			//	let pickParams = {};
+
+			//	//if(params.pickClipped){
+			//	//	pickParams.pickClipped = params.pickClipped;
+			//	//}
+
+			//	pickParams.x = mouse.x;
+			//	pickParams.y = renderer.domElement.clientHeight - mouse.y;
+
+			//	let raycaster = new THREE.Raycaster();
+			//	raycaster.setFromCamera(nmouse, camera);
+			//	let ray = raycaster.ray;
+
+			//	for(let pointcloud of scene.pointclouds){
+			//		let nodes = pointcloud.nodesOnRay(pointcloud.visibleNodes, ray);
+			//		pointcloud.visibleNodes = nodes;
+
+			//	}
+			//}
+
 			if(result.lowestSpacing !== Infinity){
 				let near = result.lowestSpacing * 10.0;
 				let far = -this.getBoundingBox().applyMatrix4(camera.matrixWorldInverse).min.z;
@@ -1252,7 +1428,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 				// don't change near and far in this case
 			}
 
-			if(this.scene.cameraMode == Potree.CameraMode.ORTHOGRAPHIC) {
+			if(this.scene.cameraMode == CameraMode.ORTHOGRAPHIC) {
 				camera.near = -camera.far;
 			}
 		} 
@@ -1271,7 +1447,13 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			this.inputHandler.addInputListener(this.controls);
 		}
 		
-		if (this.controls !== null) {
+		if (this.getControls(scene.view.navigationMode) === this.deviceControls) {
+			this.controls.setScene(scene);
+			this.controls.update(delta);
+
+			this.scene.cameraP.position.copy(scene.view.position);
+			this.scene.cameraO.position.copy(scene.view.position);
+		} else if (this.controls !== null) {
 			this.controls.setScene(scene);
 			this.controls.update(delta);
 
@@ -1319,7 +1501,8 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			let boxes = [];
 			
 			// volumes with clipping enabled
-			boxes.push(...this.scene.volumes.filter(v => v.clip));
+			//boxes.push(...this.scene.volumes.filter(v => (v.clip)));
+			boxes.push(...this.scene.volumes.filter(v => (v.clip && v instanceof BoxVolume)));
 
 			// profile segments
 			for(let profile of this.scene.profiles){
@@ -1329,7 +1512,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			let clipBoxes = boxes.map( box => {
 				box.updateMatrixWorld();
 				let boxInverse = new THREE.Matrix4().getInverse(box.matrixWorld);
-				let boxPosition = box.getWorldPosition();
+				let boxPosition = box.getWorldPosition(new THREE.Vector3());
 				return {box: box, inverse: boxInverse, position: boxPosition};
 			});
 
@@ -1343,7 +1526,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 				pointcloud.material.clipMethod = this.clipMethod;
 			}
 		}
-
+		
 		{ // update navigation cube
 			this.navigationCube.update(camera.rotation);
 		}
@@ -1413,7 +1596,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			this.hqRenderer.useEDL = this.useEDL;
 			this.hqRenderer.render(this.renderer);
 		}else{
-			if (this.useEDL && Potree.Features.SHADER_EDL.isSupported()) {
+			if (this.useEDL && Features.SHADER_EDL.isSupported()) {
 				if (!this.edlRenderer) {
 					this.edlRenderer = new EDLRenderer(this);
 				}
@@ -1431,12 +1614,12 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		//		this.repRenderer = new RepRenderer(this);
 		//	}
 		//	this.repRenderer.render(this.renderer);
-		//} else if (this.useHQ && Potree.Features.SHADER_SPLATS.isSupported()) {
+		//} else if (this.useHQ && Features.SHADER_SPLATS.isSupported()) {
 		//	if (!this.hqRenderer) {
 		//		this.hqRenderer = new HQSplatRenderer(this);
 		//	}
 		//	this.hqRenderer.render(this.renderer);
-		//} else if (this.useEDL && Potree.Features.SHADER_EDL.isSupported()) {
+		//} else if (this.useEDL && Features.SHADER_EDL.isSupported()) {
 		//	if (!this.edlRenderer) {
 		//		this.edlRenderer = new EDLRenderer(this);
 		//	}
@@ -1592,7 +1775,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 	}
 
 	postMessage(content, params = {}){
-		let message = new Potree.Message(content);
+		let message = new Message(content);
 
 		let animationDuration = 100;
 

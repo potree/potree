@@ -1,3 +1,5 @@
+import {XHRFactory} from "../../XHRFactory.js";
+
 /**
  * laslaz code taken and adapted from plas.io js-laslaz
  *    http://plas.io/
@@ -7,13 +9,13 @@
  *
  */
 
-Potree.EptLaszipLoader = class {
+export class EptLaszipLoader {
     load(node) {
         if (node.loaded) return;
 
         let url = node.url() + '.laz';
 
-        let xhr = Potree.XHRFactory.createXMLHttpRequest();
+        let xhr = XHRFactory.createXMLHttpRequest();
         xhr.open('GET', url, true);
         xhr.responseType = 'arraybuffer';
         xhr.overrideMimeType('text/plain; charset=x-user-defined');
@@ -33,7 +35,7 @@ Potree.EptLaszipLoader = class {
 
     parse(node, buffer){
         let lf = new LASFile(buffer);
-        let handler = new Potree.EptLazBatcher(node);
+        let handler = new EptLazBatcher(node);
 
         lf.open()
         .then(() => {
@@ -95,7 +97,7 @@ Potree.EptLaszipLoader = class {
     }
 };
 
-Potree.EptLazBatcher = class {
+export class EptLazBatcher {
     constructor(node) { this.node = node; }
 
     push(las) {

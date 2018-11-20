@@ -1,6 +1,6 @@
 
 
-Potree.ClipVolume = class extends THREE.Object3D{
+export class ClipVolume extends THREE.Object3D{
 	
 	constructor(args){
 		super();
@@ -257,7 +257,7 @@ Potree.ClipVolume = class extends THREE.Object3D{
 
 	update(){
 		this.boundingBox = this.box.geometry.boundingBox;
-		this.boundingSphere = this.boundingBox.getBoundingSphere();
+		this.boundingSphere = this.boundingBox.getBoundingSphere(new THREE.Sphere());
 		
 		this.box.visible = false;
 

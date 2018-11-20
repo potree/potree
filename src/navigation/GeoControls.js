@@ -21,7 +21,10 @@
  *
  */
 
-Potree.GeoControls = class GeoControls extends THREE.EventDispatcher{
+import {EventDispatcher} from "../EventDispatcher.js";
+import {KeyCodes} from "../KeyCodes.js";
+
+export class GeoControls extends EventDispatcher{
 
 	constructor(object, domElement){
 		super();
@@ -41,21 +44,6 @@ Potree.GeoControls = class GeoControls extends THREE.EventDispatcher{
 
 		this.rotateSpeed = 1.0;
 		this.moveSpeed = 10.0;
-
-		this.keys = {
-			LEFT: 37,
-			UP: 38,
-			RIGHT: 39,
-			BOTTOM: 40,
-			A: 'A'.charCodeAt(0),
-			S: 'S'.charCodeAt(0),
-			D: 'D'.charCodeAt(0),
-			W: 'W'.charCodeAt(0),
-			Q: 'Q'.charCodeAt(0),
-			E: 'E'.charCodeAt(0),
-			R: 'R'.charCodeAt(0),
-			F: 'F'.charCodeAt(0)
-		};
 
 		let rotateStart = new THREE.Vector2();
 		let rotateEnd = new THREE.Vector2();
@@ -127,7 +115,7 @@ Potree.GeoControls = class GeoControls extends THREE.EventDispatcher{
 			let tangentDiffNormal = new THREE.Vector3().crossVectors(oldTangent, newTangent).normalize();
 			let angle = oldTangent.angleTo(newTangent);
 			let rot = new THREE.Matrix4().makeRotationAxis(tangentDiffNormal, angle);
-			let dir = this.object.getWorldDirection().clone();
+			let dir = this.object.getWorldDirection(new THREE.Vector3()).clone();
 			dir = dir.applyMatrix4(rot);
 			let target = new THREE.Vector3().addVectors(this.object.position, dir);
 			this.object.lookAt(target);
@@ -464,18 +452,18 @@ Potree.GeoControls = class GeoControls extends THREE.EventDispatcher{
 		this.shiftDown = event.shiftKey;
 
 		switch (event.keyCode) {
-			case this.keys.UP: this.moveForward = true; break;
-			case this.keys.BOTTOM: this.moveBackward = true; break;
-			case this.keys.LEFT: this.moveLeft = true; break;
-			case this.keys.RIGHT: this.moveRight = true; break;
-			case this.keys.W: this.moveForward = true; break;
-			case this.keys.S: this.moveBackward = true; break;
-			case this.keys.A: this.moveLeft = true; break;
-			case this.keys.D: this.moveRight = true; break;
-			case this.keys.Q: this.rotLeft = true; break;
-			case this.keys.E: this.rotRight = true; break;
-			case this.keys.R: this.raiseCamera = true; break;
-			case this.keys.F: this.lowerCamera = true; break;
+			case KeyCodes.UP: this.moveForward = true; break;
+			case KeyCodes.BOTTOM: this.moveBackward = true; break;
+			case KeyCodes.LEFT: this.moveLeft = true; break;
+			case KeyCodes.RIGHT: this.moveRight = true; break;
+			case KeyCodes.W: this.moveForward = true; break;
+			case KeyCodes.S: this.moveBackward = true; break;
+			case KeyCodes.A: this.moveLeft = true; break;
+			case KeyCodes.D: this.moveRight = true; break;
+			case KeyCodes.Q: this.rotLeft = true; break;
+			case KeyCodes.E: this.rotRight = true; break;
+			case KeyCodes.R: this.raiseCamera = true; break;
+			case KeyCodes.F: this.lowerCamera = true; break;
 		}
 	}
 
@@ -483,18 +471,18 @@ Potree.GeoControls = class GeoControls extends THREE.EventDispatcher{
 		this.shiftDown = event.shiftKey;
 
 		switch (event.keyCode) {
-			case this.keys.W: this.moveForward = false; break;
-			case this.keys.S: this.moveBackward = false; break;
-			case this.keys.A: this.moveLeft = false; break;
-			case this.keys.D: this.moveRight = false; break;
-			case this.keys.UP: this.moveForward = false; break;
-			case this.keys.BOTTOM: this.moveBackward = false; break;
-			case this.keys.LEFT: this.moveLeft = false; break;
-			case this.keys.RIGHT: this.moveRight = false; break;
-			case this.keys.Q: this.rotLeft = false; break;
-			case this.keys.E: this.rotRight = false; break;
-			case this.keys.R: this.raiseCamera = false; break;
-			case this.keys.F: this.lowerCamera = false; break;
+			case KeyCodes.W: this.moveForward = false; break;
+			case KeyCodes.S: this.moveBackward = false; break;
+			case KeyCodes.A: this.moveLeft = false; break;
+			case KeyCodes.D: this.moveRight = false; break;
+			case KeyCodes.UP: this.moveForward = false; break;
+			case KeyCodes.BOTTOM: this.moveBackward = false; break;
+			case KeyCodes.LEFT: this.moveLeft = false; break;
+			case KeyCodes.RIGHT: this.moveRight = false; break;
+			case KeyCodes.Q: this.rotLeft = false; break;
+			case KeyCodes.E: this.rotRight = false; break;
+			case KeyCodes.R: this.raiseCamera = false; break;
+			case KeyCodes.F: this.lowerCamera = false; break;
 		}
 	}
 }

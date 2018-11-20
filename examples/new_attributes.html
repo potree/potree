@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="description" content="">
+	<meta name="author" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+	<title>Potree Viewer</title>
+
+	<link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
+	<link rel="stylesheet" type="text/css" href="../libs/jquery-ui/jquery-ui.min.css">
+	<link rel="stylesheet" type="text/css" href="../libs/perfect-scrollbar/css/perfect-scrollbar.css">
+	<link rel="stylesheet" type="text/css" href="../libs/openlayers3/ol.css">
+	<link rel="stylesheet" type="text/css" href="../libs/spectrum/spectrum.css">
+	<link rel="stylesheet" type="text/css" href="../libs/jstree/themes/mixed/style.css">
+</head>
+
+<body>
+	<script src="../libs/jquery/jquery-3.1.1.min.js"></script>
+	<script src="../libs/spectrum/spectrum.js"></script>
+	<script src="../libs/perfect-scrollbar/js/perfect-scrollbar.jquery.js"></script>
+	<script src="../libs/jquery-ui/jquery-ui.min.js"></script>
+	<script src="../libs/three.js/build/three.min.js"></script>
+	<script src="../libs/other/BinaryHeap.js"></script>
+	<script src="../libs/tween/tween.min.js"></script>
+	<script src="../libs/d3/d3.js"></script>
+	<script src="../libs/proj4/proj4.js"></script>
+	<script src="../libs/openlayers3/ol.js"></script>
+	<script src="../libs/i18next/i18next.js"></script>
+	<script src="../libs/jstree/jstree.js"></script>
+	<script src="../build/potree/potree.js"></script>
+	<script src="../libs/plasio/js/laslaz.js"></script>
+	
+	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
+	<!-- INCLUDE SETTINGS HERE -->
+	
+	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
+		<div id="potree_render_area">
+			<input id="btnGPSTime" type="button" value="GPS" style="position: absolute; z-index: 100; bottom: 10px; left: 100px">
+			<input id="btnSource" type="button" value="Source" style="position: absolute; z-index: 100; bottom: 10px; left: 150px">
+		</div>
+		<div id="potree_sidebar_container"></div>
+	</div>
+	
+	<script>
+
+		$("#btnGPSTime").click( () => {
+			viewer.scene.pointclouds[0].material.pointColorType = Potree.PointColorType.GPS_TIME;	
+		});
+
+		$("#btnSource").click( () => {
+			viewer.scene.pointclouds[0].material.pointColorType = Potree.PointColorType.SOURCE;	
+			viewer.scene.pointclouds[0].material.pointColorType = Potree.PointColorType.SOURCE;	
+		});
+	
+		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
+		
+		viewer.setEDLEnabled(true);
+		viewer.setFOV(60);
+		viewer.setPointBudget(10*1000*1000);
+		viewer.loadSettingsFromURL();
+		
+		viewer.setDescription("");
+		
+		viewer.loadGUI(() => {
+			viewer.setLanguage('en');
+			//$("#menu_tools").next().show();
+			//$("#menu_clipping").next().show();
+			$("#menu_filters").next().show();
+			viewer.toggleSidebar();
+		});
+		
+		// Load and add point cloud to scene
+		//Potree.loadPointCloud("../pointclouds/C/dev/pointclouds/morro_rock/cloud.js", "sigeom.sa", e => {
+		Potree.loadPointCloud("../pointclouds/C/dev/pointclouds/ot_35120C7102A_1/cloud.js", "CA13", e => {
+		//Potree.loadPointCloud("../pointclouds/C/dev/pointclouds/test/cloud.js", "sigeom.sa", e => {
+			let scene = viewer.scene;
+			let pointcloud = e.pointcloud;
+			
+			let material = pointcloud.material;
+			material.size = 3;
+			material.pointSizeType = Potree.PointSizeType.FIXED;
+			material.pointColorType = Potree.PointColorType.SOURCE;
+			material.shape = Potree.PointShape.SQUARE;
+			
+			scene.addPointCloud(pointcloud);
+			
+			scene.view.position.set(693195.575, 3915628.878, 472.872);
+			scene.view.lookAt(693747.110, 3916033.332, 33.996);
+
+			//scene.view.position.set(693420.749, 3916019.515, 113.550);
+			//scene.view.lookAt(693507.440, 3916061.250, 11.240);
+
+			//scene.view.position.set(693486.579, 3916007.192, 10.892);
+			//scene.view.lookAt(693494.065, 3916022.711, -0.637);
+			//viewer.fitToScreen();
+		});
+		
+	</script>
+	
+	
+  </body>
+</html>

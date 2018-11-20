@@ -1,10 +1,12 @@
-Potree.EptBinaryLoader = class {
+import {XHRFactory} from "../../XHRFactory.js";
+
+export class EptBinaryLoader {
     load(node) {
         if (node.loaded) return;
 
         let url = node.url() + '.bin';
 
-        let xhr = Potree.XHRFactory.createXMLHttpRequest();
+        let xhr = XHRFactory.createXMLHttpRequest();
         xhr.open('GET', url, true);
         xhr.responseType = 'arraybuffer';
         xhr.overrideMimeType('text/plain; charset=x-user-defined');

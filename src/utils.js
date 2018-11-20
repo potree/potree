@@ -1,30 +1,35 @@
 
-Potree.utils = class {
-	static loadShapefileFeatures (file, callback) {
+import {XHRFactory} from "./XHRFactory.js";
+import {Volume} from "./utils/Volume.js";
+import {Profile} from "./utils/Profile.js";
+import {Measure} from "./utils/Measure.js";
+import {PolygonClipVolume} from "./utils/PolygonClipVolume.js";
+import {PointColorType} from "./defines.js";
+
+
+export class Utils {
+	static async loadShapefileFeatures (file, callback) {
 		let features = [];
 
 		let handleFinish = () => {
 			callback(features);
 		};
 
-		shapefile.open(file)
-			.then(source => {
-				source.read()
-					.then(function log (result) {
-						if (result.done) {
-							handleFinish();
-							return;
-						}
+		let source = await shapefile.open(file);
 
-						// console.log(result.value);
+		while(true){
+			let result = await source.read();
 
-						if (result.value && result.value.type === 'Feature' && result.value.geometry !== undefined) {
-							features.push(result.value);
-						}
+			if (result.done) {
+				handleFinish();
+				break;
+			}
 
-						return source.read().then(log);
-					});
-			});
+			if (result.value && result.value.type === 'Feature' && result.value.geometry !== undefined) {
+				features.push(result.value);
+			}
+		}
+
 	}
 
 	static toString (value) {
@@ -42,7 +47,7 @@ Potree.utils = class {
 	};
 
 	static pathExists (url) {
-		let req = Potree.XHRFactory.createXMLHttpRequest();
+		let req = XHRFactory.createXMLHttpRequest();
 		req.open('GET', url, false);
 		req.send(null);
 		if (req.status !== 200) {
@@ -72,6 +77,67 @@ Potree.utils = class {
 		geometry.vertices.push( start, end); 
 		let tl = new THREE.Line( geometry, material ); 
 		parent.add(tl);
+	}
+
+	static debugBox(parent, box, transform = new THREE.Matrix4(), color = 0xFFFF00){
+		
+		let vertices = [
+			[box.min.x, box.min.y, box.min.z],
+			[box.min.x, box.min.y, box.max.z],
+			[box.min.x, box.max.y, box.min.z],
+			[box.min.x, box.max.y, box.max.z],
+
+			[box.max.x, box.min.y, box.min.z],
+			[box.max.x, box.min.y, box.max.z],
+			[box.max.x, box.max.y, box.min.z],
+			[box.max.x, box.max.y, box.max.z],
+		].map(v => new THREE.Vector3(...v));
+
+		let edges = [
+			[0, 4], [4, 5], [5, 1], [1, 0],
+			[2, 6], [6, 7], [7, 3], [3, 2],
+			[0, 2], [4, 6], [5, 7], [1, 3]
+		];
+
+		let center = box.getCenter(new THREE.Vector3());
+
+		let centroids = [
+			{position: [box.min.x, center.y, center.z], color: 0xFF0000},
+			{position: [box.max.x, center.y, center.z], color: 0x880000},
+
+			{position: [center.x, box.min.y, center.z], color: 0x00FF00},
+			{position: [center.x, box.max.y, center.z], color: 0x008800},
+
+			{position: [center.x, center.y, box.min.z], color: 0x0000FF},
+			{position: [center.x, center.y, box.max.z], color: 0x000088},
+		];
+
+		for(let vertex of vertices){
+			let pos = vertex.clone().applyMatrix4(transform);
+
+			Utils.debugSphere(parent, pos, 0.1, 0xFF0000);
+		}
+
+		for(let edge of edges){
+			let start = vertices[edge[0]].clone().applyMatrix4(transform);
+			let end = vertices[edge[1]].clone().applyMatrix4(transform);
+
+			Utils.debugLine(parent, start, end, color);
+		}
+
+		for(let centroid of centroids){
+			let pos = new THREE.Vector3(...centroid.position).applyMatrix4(transform);
+
+			Utils.debugSphere(parent, pos, 0.1, centroid.color);
+		}
+	}
+
+	static debugPlane(parent, plane, size = 1, color = 0x0000FF){
+
+		let planehelper = new THREE.PlaneHelper(plane, size, color);
+
+		parent.add(planehelper);
+
 	}
 
 	/**
@@ -147,7 +213,7 @@ Potree.utils = class {
 			let camTargetDistance = camera.position.distanceTo(endTarget);
 			let target = new THREE.Vector3().addVectors(
 				camera.position,
-				camera.getWorldDirection().clone().multiplyScalar(camTargetDistance)
+				camera.getWorldDirection(new THREE.Vector3()).clone().multiplyScalar(camTargetDistance)
 			);
 			let tween = new TWEEN.Tween(target).to(endTarget, animationDuration);
 			tween.easing(easing);
@@ -232,7 +298,7 @@ Potree.utils = class {
 		let line = new THREE.LineSegments(geometry, material, THREE.LinePieces);
 		line.receiveShadow = true;
 		return line;
-    };
+	}
 
 	static createBackgroundTexture (width, height) {
 		function gauss (x, y) {
@@ -269,7 +335,7 @@ Potree.utils = class {
 		texture.needsUpdate = true;
 
 		return texture;
-	};
+	}
 
 	static getMousePointCloudIntersection (mouse, camera, viewer, pointclouds, params = {}) {
 		
@@ -325,7 +391,7 @@ Potree.utils = class {
 		} else {
 			return null;
 		}
-	};
+	}
 
 	static pixelsArrayToImage (pixels, width, height) {
 		let canvas = document.createElement('canvas');
@@ -349,7 +415,7 @@ Potree.utils = class {
 		// img.style.transform = "scaleY(-1)";
 
 		return img;
-	};
+	}
 
 	static pixelsArrayToDataUrl(pixels, width, height) {
 		let canvas = document.createElement('canvas');
@@ -371,7 +437,7 @@ Potree.utils = class {
 		let dataURL = canvas.toDataURL();
 
 		return dataURL;
-	};
+	}
 
 	static pixelsArrayToCanvas(pixels, width, height){
 		let canvas = document.createElement('canvas');
@@ -402,7 +468,7 @@ Potree.utils = class {
 		context.putImageData(imageData, 0, 0);
 
 		return canvas;
-	};
+	}
 
 	static removeListeners(dispatcher, type){
 		if (dispatcher._listeners === undefined) {
@@ -434,9 +500,9 @@ Potree.utils = class {
 
 	static projectedRadius(radius, camera, distance, screenWidth, screenHeight){
 		if(camera instanceof THREE.OrthographicCamera){
-			return Potree.utils.projectedRadiusOrtho(radius, camera.projectionMatrix, screenWidth, screenHeight);
+			return Utils.projectedRadiusOrtho(radius, camera.projectionMatrix, screenWidth, screenHeight);
 		}else if(camera instanceof THREE.PerspectiveCamera){
-			return Potree.utils.projectedRadiusPerspective(radius, camera.fov * Math.PI / 180, distance, screenHeight);
+			return Utils.projectedRadiusPerspective(radius, camera.fov * Math.PI / 180, distance, screenHeight);
 		}else{
 			throw new Error("invalid parameters");
 		}
@@ -447,7 +513,7 @@ Potree.utils = class {
 		projFactor = projFactor * screenHeight / 2;
 
 		return radius * projFactor;
-	};
+	}
 
 	static projectedRadiusOrtho(radius, proj, screenWidth, screenHeight) {
 		let p1 = new THREE.Vector4(0);
@@ -469,25 +535,25 @@ Potree.utils = class {
 		camera.position.set(0, 1, 0);
 		camera.rotation.set(-Math.PI / 2, 0, 0);
 		camera.zoomTo(node, 1);
-	};
+	}
 
 	static frontView (camera, node) {
 		camera.position.set(0, 0, 1);
 		camera.rotation.set(0, 0, 0);
 		camera.zoomTo(node, 1);
-	};
+	}
 
 	static leftView (camera, node) {
 		camera.position.set(-1, 0, 0);
 		camera.rotation.set(0, -Math.PI / 2, 0);
 		camera.zoomTo(node, 1);
-	};
+	}
 
 	static rightView (camera, node) {
 		camera.position.set(1, 0, 0);
 		camera.rotation.set(0, Math.PI / 2, 0);
 		camera.zoomTo(node, 1);
-	};
+	}
 
 	/**
 	 *
@@ -513,7 +579,7 @@ Potree.utils = class {
 		}
 
 		return (minDistance >= sphere.radius) ? 2 : 1;
-	};
+	}
 
 	// code taken from three.js
 	// ImageUtils - generateDataTexture()
@@ -536,7 +602,7 @@ Potree.utils = class {
 		texture.magFilter = THREE.NearestFilter;
 
 		return texture;
-	};
+	}
 
 	// from http://stackoverflow.com/questions/901115/how-can-i-get-query-string-values-in-javascript
 	static getParameterByName (name) {
@@ -567,6 +633,32 @@ Potree.utils = class {
 			url = url.replace(results[2], newValue);
 		}
 		window.history.replaceState({}, '', url);
+	}
+
+	static createChildAABB(aabb, index){
+		let min = aabb.min.clone();
+		let max = aabb.max.clone();
+		let size = new THREE.Vector3().subVectors(max, min);
+
+		if ((index & 0b0001) > 0) {
+			min.z += size.z / 2;
+		} else {
+			max.z -= size.z / 2;
+		}
+
+		if ((index & 0b0010) > 0) {
+			min.y += size.y / 2;
+		} else {
+			max.y -= size.y / 2;
+		}
+
+		if ((index & 0b0100) > 0) {
+			min.x += size.x / 2;
+		} else {
+			max.x -= size.x / 2;
+		}
+
+		return new THREE.Box3(min, max);
 	}
 
 	// see https://stackoverflow.com/questions/400212/how-do-i-copy-to-the-clipboard-in-javascript
@@ -608,9 +700,105 @@ Potree.utils = class {
 		document.body.removeChild(textArea);
 
 	}
-};
 
-Potree.utils.screenPass = new function () {
+	static getMeasurementIcon(measurement){
+		if (measurement instanceof Measure) {
+			if (measurement.showDistances && !measurement.showArea && !measurement.showAngles) {
+				return `${Potree.resourcePath}/icons/distance.svg`;
+			} else if (measurement.showDistances && measurement.showArea && !measurement.showAngles) {
+				return `${Potree.resourcePath}/icons/area.svg`;
+			} else if (measurement.maxMarkers === 1) {
+				return `${Potree.resourcePath}/icons/point.svg`;
+			} else if (!measurement.showDistances && !measurement.showArea && measurement.showAngles) {
+				return `${Potree.resourcePath}/icons/angle.png`;
+			} else if (measurement.showHeight) {
+				return `${Potree.resourcePath}/icons/height.svg`;
+			} else {
+				return `${Potree.resourcePath}/icons/distance.svg`;
+			}
+		} else if (measurement instanceof Profile) {
+			return `${Potree.resourcePath}/icons/profile.svg`;
+		} else if (measurement instanceof Volume) {
+			return `${Potree.resourcePath}/icons/volume.svg`;
+		} else if (measurement instanceof PolygonClipVolume) {
+			return `${Potree.resourcePath}/icons/clip-polygon.svg`;
+		}
+	}
+
+	static toMaterialID(materialName){
+		if (materialName === 'RGB'){
+			return PointColorType.RGB;
+		} else if (materialName === 'Color') {
+			return PointColorType.COLOR;
+		} else if (materialName === 'Elevation') {
+			return PointColorType.HEIGHT;
+		} else if (materialName === 'Intensity') {
+			return PointColorType.INTENSITY;
+		} else if (materialName === 'Intensity Gradient') {
+			return PointColorType.INTENSITY_GRADIENT;
+		} else if (materialName === 'Classification') {
+			return PointColorType.CLASSIFICATION;
+		} else if (materialName === 'Return Number') {
+			return PointColorType.RETURN_NUMBER;
+		} else if (materialName === 'Source') {
+			return PointColorType.SOURCE;
+		} else if (materialName === 'Level of Detail') {
+			return PointColorType.LOD;
+		} else if (materialName === 'Point Index') {
+			return PointColorType.POINT_INDEX;
+		} else if (materialName === 'Normal') {
+			return PointColorType.NORMAL;
+		} else if (materialName === 'Phong') {
+			return PointColorType.PHONG;
+		} else if (materialName === 'Index') {
+			return PointColorType.POINT_INDEX;
+		} else if (materialName === 'RGB and Elevation') {
+			return PointColorType.RGB_HEIGHT;
+		} else if (materialName === 'Composite') {
+			return PointColorType.COMPOSITE;
+		} else if (materialName === 'GPS Time') {
+			return PointColorType.GPS_TIME;
+		}
+	};
+
+
+	static toMaterialName(materialID) {
+		if (materialID === PointColorType.RGB) {
+			return 'RGB';
+		} else if (materialID === PointColorType.COLOR) {
+			return 'Color';
+		} else if (materialID === PointColorType.HEIGHT) {
+			return 'Elevation';
+		} else if (materialID === PointColorType.INTENSITY) {
+			return 'Intensity';
+		} else if (materialID === PointColorType.INTENSITY_GRADIENT) {
+			return 'Intensity Gradient';
+		} else if (materialID === PointColorType.CLASSIFICATION) {
+			return 'Classification';
+		} else if (materialID === PointColorType.RETURN_NUMBER) {
+			return 'Return Number';
+		} else if (materialID === PointColorType.SOURCE) {
+			return 'Source';
+		} else if (materialID === PointColorType.LOD) {
+			return 'Level of Detail';
+		} else if (materialID === PointColorType.NORMAL) {
+			return 'Normal';
+		} else if (materialID === PointColorType.PHONG) {
+			return 'Phong';
+		} else if (materialID === PointColorType.POINT_INDEX) {
+			return 'Index';
+		} else if (materialID === PointColorType.RGB_HEIGHT) {
+			return 'RGB and Elevation';
+		} else if (materialID === PointColorType.COMPOSITE) {
+			return 'Composite';
+		} else if (materialID === PointColorType.GPS_TIME) {
+			return 'GPS Time';
+		}
+	};
+
+}
+
+Utils.screenPass = new function () {
 	this.screenScene = new THREE.Scene();
 	this.screenQuad = new THREE.Mesh(new THREE.PlaneBufferGeometry(2, 2, 0));
 	this.screenQuad.material.depthTest = true;

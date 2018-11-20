@@ -20,7 +20,7 @@
 	<script src="../libs/spectrum/spectrum.js"></script>
 	<script src="../libs/perfect-scrollbar/js/perfect-scrollbar.jquery.js"></script>
 	<script src="../libs/jquery-ui/jquery-ui.min.js"></script>
-	<script src="../libs/three.js/build/three.min.js"></script>
+	<script src="../libs/three.js/build/three.js"></script>
 	<script src="../libs/other/BinaryHeap.js"></script>
 	<script src="../libs/tween/tween.min.js"></script>
 	<script src="../libs/d3/d3.js"></script>
@@ -43,12 +43,20 @@
 	
 	
 	<script>
+
+
+		let clipSpheres = [
+			{position: [0.032, -2.382, 4.279], scale: 3},
+			{position: [-1.787, 6.011, 1.711], scale: 1},
+			{position: [0.095, 7.636, 10.997], scale: 2},
+		];
+
 	
 		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
 		
 		viewer.setEDLEnabled(true);
 		viewer.setFOV(60);
-		viewer.setPointBudget(1*1000*1000);
+		viewer.setPointBudget(5*1000*1000);
 		viewer.setMinNodeSize(0);
 		viewer.loadSettingsFromURL();
 		

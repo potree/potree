@@ -1,23 +1,23 @@
 import {PointCloudTreeNode} from "./PointCloudTree.js";
 
 class U {
-    static toVector3(v, offset) {
-        return new THREE.Vector3().fromArray(v, offset || 0);
-    }
+	static toVector3(v, offset) {
+		return new THREE.Vector3().fromArray(v, offset || 0);
+	}
 
-    static toBox3(b) {
-        return new THREE.Box3(U.toVector3(b), U.toVector3(b, 3));
-    };
+	static toBox3(b) {
+		return new THREE.Box3(U.toVector3(b), U.toVector3(b, 3));
+	};
 
-    static findDim(schema, name) {
-        var dim = schema.find((dim) => dim.name == name);
-        if (!dim) throw new Error('Failed to find ' + name + ' in schema');
-        return dim;
-    }
+	static findDim(schema, name) {
+		var dim = schema.find((dim) => dim.name == name);
+		if (!dim) throw new Error('Failed to find ' + name + ' in schema');
+		return dim;
+	}
 
-    static sphereFrom(b) {
-        return b.getBoundingSphere(new THREE.Sphere());
-    }
+	static sphereFrom(b) {
+		return b.getBoundingSphere(new THREE.Sphere());
+	}
 };
 
 export class PointCloudEptGeometry {
@@ -27,13 +27,13 @@ export class PointCloudEptGeometry {
 		let bounds = info.bounds;
 		let boundsConforming = info.boundsConforming;
 
-        let xyz = [
-            U.findDim(schema, 'X'),
-            U.findDim(schema, 'Y'),
-            U.findDim(schema, 'Z')
-        ];
-        let scale = xyz.map((d) => d.scale || 1);
-        let offset = xyz.map((d) => d.offset || 0);
+		let xyz = [
+			U.findDim(schema, 'X'),
+			U.findDim(schema, 'Y'),
+			U.findDim(schema, 'Z')
+		];
+		let scale = xyz.map((d) => d.scale || 1);
+		let offset = xyz.map((d) => d.offset || 0);
 		this.eptScale = U.toVector3(scale);
 		this.eptOffset = U.toVector3(offset);
 
@@ -50,17 +50,17 @@ export class PointCloudEptGeometry {
 		this.tightBoundingSphere = U.sphereFrom(this.tightBoundingBox);
 		this.version = new Potree.Version('1.6');
 
-        this.projection = null;
-        this.fallbackProjection = null;
+		this.projection = null;
+		this.fallbackProjection = null;
 
-        if (info.srs && info.srs.horizontal) {
-            this.projection = info.srs.authority + ':' + info.srs.horizontal;
-        }
+		if (info.srs && info.srs.horizontal) {
+			this.projection = info.srs.authority + ':' + info.srs.horizontal;
+		}
 
-        if (info.srs.wkt) {
-            if (!this.projection) this.projection = info.srs.wkt;
-            else this.fallbackProjection = info.srs.wkt;
-        }
+		if (info.srs.wkt) {
+			if (!this.projection) this.projection = info.srs.wkt;
+			else this.fallbackProjection = info.srs.wkt;
+		}
 
 		this.pointAttributes = 'LAZ';
 		this.spacing =
@@ -94,13 +94,13 @@ export class EptKey {
 		let max = this.b.max.clone();
 		let dst = new THREE.Vector3().subVectors(max, min);
 
-		if (a)  min.x += dst.x / 2;
+		if (a)	min.x += dst.x / 2;
 		else	max.x -= dst.x / 2;
 
-		if (b)  min.y += dst.y / 2;
+		if (b)	min.y += dst.y / 2;
 		else	max.y -= dst.y / 2;
 
-		if (c)  min.z += dst.z / 2;
+		if (c)	min.z += dst.z / 2;
 		else	max.z -= dst.z / 2;
 
 		return new Potree.EptKey(
@@ -210,7 +210,7 @@ export class PointCloudEptGeometryNode extends PointCloudTreeNode {
 		this.hasChildren = false;
 
 		let eptHierarchyFile =
-            `${this.ept.url}ept-hierarchy/${this.filename()}.json`;
+			`${this.ept.url}ept-hierarchy/${this.filename()}.json`;
 
 		let response = await fetch(eptHierarchyFile);
 		let hier = await response.json();

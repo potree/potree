@@ -116,15 +116,15 @@ export function loadPointCloud(path, name, callback){
 	if (!path){
 		// TODO: callback? comment? Hello? Bueller? Anyone?
 	} else if (path.indexOf('ept.json') > 0) {
-        Potree.EptLoader.load(path, function(geometry) {
-            if (!geometry) {
+		Potree.EptLoader.load(path, function(geometry) {
+			if (!geometry) {
 				console.error(new Error(`failed to load point cloud from URL: ${path}`));
-            }
-            else {
-                let pointcloud = new PointCloudOctree(geometry);
-                loaded(pointcloud);
-            }
-        });
+			}
+			else {
+				let pointcloud = new PointCloudOctree(geometry);
+				loaded(pointcloud);
+			}
+		});
 	} else if (path.indexOf('greyhound://') === 0){
 		// We check if the path string starts with 'greyhound:', if so we assume it's a greyhound server URL.
 		GreyhoundLoader.load(path, function (geometry) {

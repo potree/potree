@@ -42,7 +42,7 @@ export class PathAnimation{
 		});
 
 		setTimeout(() => {
-			this.tween.start();
+			this.tween && this.tween.start();
 		}, 0);
 	}
 

@@ -55,6 +55,8 @@
 
 
 	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
+        <script src="https://sdk.amazonaws.com/js/aws-sdk-2.339.0.min.js"></script>
+
 	<!-- INCLUDE SETTINGS HERE -->
 
 	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
@@ -123,7 +125,26 @@
 
 	<script>
 
-		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
+          const params = new URLSearchParams(location.search);
+          const bucket = params.get("bucket");
+          const region = params.get("region");
+          const name = params.get("name");
+          const accessKeyId = params.get("key1");
+          const secretAccessKey = params.get("key2");
+
+          const s3 = bucket && region && name && accessKeyId && secretAccessKey &&
+                new AWS.S3({apiVersion: '2006-03-01',
+                            region,
+                            accessKeyId,
+                            secretAccessKey
+                           });
+          if (!s3) { window.history.back() };
+          // We really want this, but it doesn't work in the browser. Only on a server.
+          // const stream = s3.getObject({Bucket: bucket,
+          //                              Key: name}).createReadStream();
+          // console.log(stream);
+
+                window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
 
 		viewer.setEDLEnabled(true);
 		viewer.setFOV(60);
@@ -441,7 +462,7 @@
 
 // // TODO FROM HERE
 		// // Load Radar:
-		// loadRadar((geometry,t_init, boxBufferGeometries) => {
+		// loadRadar(s3, bucket, name, (geometry,t_init, boxBufferGeometries) => {
 		//
 		// 	let boxMesh = new THREE.Mesh(boxBufferGeometries, new THREE.MeshBasicMaterial({color: 0xffff00}) );
 		// 	boxMesh.name = "radar_boxes";
@@ -488,14 +509,43 @@
 		// });
 // TODO TILL HERE
 
-    // Load RTK:
-    loadRtk((pos, rot, t_init) => {
-      path = pos.map(v => new THREE.Vector3(...v));
-      orientations = rot.map(v => new THREE.Vector3(...v));
+    // Load Radar:
+    loadRadar(s3, bucket, name, (geometry, t_init) => {
 
-      let animationPath = new Potree.AnimationPath(path);
+      // uniforms
+      uniforms = {
+          color: { value: new THREE.Color( 0xffff00 ) },
+          minGpsTime: {value: 0.0 },
+          maxGpsTime: {value: 110.0 },
+          initialTime: {value: t_init}
+      };
+
+      // point cloud material
+      var shaderMaterial = new THREE.ShaderMaterial( {
+
+          uniforms:       uniforms,
+          vertexShader:   document.getElementById( 'vertexshader' ).textContent,
+          fragmentShader: document.getElementById( 'fragmentshader' ).textContent,
+          transparent:    true
+
+      });
+
+      var material = new THREE.PointsMaterial( {size:1.0} );
+      var mesh = new THREE.Points(geometry, shaderMaterial);
+      mesh.name = "radar";
+      // debugger; //radar tracks added?
+      viewer.scene.scene.add(mesh);
+    });
+
+
+    // Load RTK:
+      loadRtk(s3, bucket, name, (pos, rot, t_init) => {
+      const path = pos.map(v => new THREE.Vector3(...v));
+      const orientations = rot.map(v => new THREE.Vector3(...v));
+
+      const animationPath = new Potree.AnimationPath(path);
       animationPath.closed = false;
-			var orientationPath = new THREE.CatmullRomCurve3(orientations, animationPath.closed); // NOTE: orientations are represented as a parametric curve in 3d space, this breaks at pi to negative pi transition
+	const orientationPath = new THREE.CatmullRomCurve3(orientations, animationPath.closed); // NOTE: orientations are represented as a parametric curve in 3d space, this breaks at pi to negative pi transition
 
       { // render the path
         let geometry = animationPath.getGeometry();
@@ -589,8 +639,7 @@
           let output = document.getElementById("demo");
 					let tmin = document.getElementById("playbar_tmin");
 					let tmax = document.getElementById("playbar_tmax");
-					let toggleplay = document.getElementById("toggleplay");
-					// TODO add playbackSpeed
+      // let toggleplay = document.getElementById("toggleplay");
           output.innerHTML = slider.value;
 
           // Animate from beginning to end
@@ -731,82 +780,67 @@
     });
 
 
+          if (name === 'Data/basemap-demo') {
+            Potree.loadPointCloud({s3, bucket, name}, "basemap", e => {
+	      const pointcloud = e.pointcloud;
+	      const material = pointcloud.material;
+	      console.log(pointcloud.pcoGeometry.nodes.r.gpsTime);
+	      viewer.scene.addPointCloud(pointcloud);
+	      material.pointColorType = Potree.PointColorType.COLOR; // any Potree.PointColorType.XXXX
+	      material.color = new THREE.Color().setRGB(0.99, 0.99, 0.99);
+	      material.size = 0.09;
+	      material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+	      material.shape = Potree.PointShape.SQUARE;
 
+	      viewer.scene.view.position.set(300198.109, 4701144.537, 349.871);
+	      viewer.scene.view.lookAt(new THREE.Vector3(299900.954, 4701576.919, 66.197));
+	      // viewer.toggleNavigationCube();
+	      $("#playbutton").click();
+	    });
+          } else if (name === 'Data/fullcloud-demo') {
+            Potree.loadPointCloud({s3, bucket, name}, "fullcloud", e => {
+	      const pointcloud = e.pointcloud;
+	      const material = pointcloud.material;
+	      console.log(pointcloud.pcoGeometry.nodes.r.gpsTime);
+	      viewer.scene.addPointCloud(pointcloud);
+	      material.pointColorType = Potree.PointColorType.HEIGHT; // any Potree.PointColorType.XXXX
+	      material.size = 0.09;
+	      material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+	      material.shape = Potree.PointShape.SQUARE;
 
-		// Potree.loadPointCloud("../pointclouds/fullpointcloud-time-mini/cloud.js", "fullpointcloud-time-mini", e => {
-		// Potree.loadPointCloud("../pointclouds/basemap-time/cloud.js", "basemap-time", e => {
-		// Potree.loadPointCloud("../pointclouds/basemap-demo/cloud.js", "basemap-demo", e => {
-		Potree.loadPointCloud("../pointclouds/veritas/full-pointcloud/cloud.js", "fullcloud", e => {
+	      viewer.scene.view.position.set(300198.109, 4701144.537, 349.871);
+	      viewer.scene.view.lookAt(new THREE.Vector3(299900.954, 4701576.919, 66.197));
+	      // viewer.toggleNavigationCube();
+	      $("#playbutton").click();
+	    });
+            Potree.loadPointCloud({s3, bucket, name: 'Data/basemap-demo'}, "basemap", e => {
+	      const pointcloud = e.pointcloud;
+	      const material = pointcloud.material;
+	      console.log(pointcloud.pcoGeometry.nodes.r.gpsTime);
+	      viewer.scene.addPointCloud(pointcloud);
+	      material.pointColorType = Potree.PointColorType.COLOR; // any Potree.PointColorType.XXXX
+	      material.color = new THREE.Color().setRGB(0.99, 0.99, 0.99);
+	      material.size = 0.09;
+	      material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+	      material.shape = Potree.PointShape.SQUARE;
+	    });
+          } else {
+            Potree.loadPointCloud({s3, bucket, name}, name.substring(5), e => {
+	      const pointcloud = e.pointcloud;
+	      const material = pointcloud.material;
+	      console.log(pointcloud.pcoGeometry.nodes.r.gpsTime);
+	      viewer.scene.addPointCloud(pointcloud);
+	      material.pointColorType = Potree.PointColorType.HEIGHT; // any Potree.PointColorType.XXXX
+	      material.size = 0.09;
+	      material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+	      material.shape = Potree.PointShape.SQUARE;
 
-			let pointcloud = e.pointcloud;
-			let material = pointcloud.material;
-			console.log(pointcloud.pcoGeometry.nodes.r.gpsTime);
-			viewer.scene.addPointCloud(pointcloud);
-			// material.pointColorType = Potree.PointColorType.RGB; // any Potree.PointColorType.XXXX
-			material.pointColorType = Potree.PointColorType.COLOR; // any Potree.PointColorType.XXXX
-			material.color = new THREE.Color().setRGB(0, 61/255, 1.0); // rgb(0, 61, 255)
-			material.size = 1;
-			material.pointSizeType = Potree.PointSizeType.FIXED;
-			material.shape = Potree.PointShape.SQUARE;
-
-			pointcloud.visible = true;
-
-      viewer.scene.view.position.set(300198.109, 4701144.537, 349.871);
-      viewer.scene.view.lookAt(new THREE.Vector3(299900.954, 4701576.919, 66.197));
-      // viewer.toggleNavigationCube();
-      $("#playbutton").click();
-
-			console.log("SET TIMEVAL IN MATERIAL HERE");
-			console.log(material.uniforms.timeVal);
-
-		});
-
-
-		// Potree.loadPointCloud("../pointclouds/fullpointcloud-time-mini/cloud.js", "fullpointcloud-time-mini", e => {
-		// Potree.loadPointCloud("../pointclouds/basemap-time/cloud.js", "basemap-time", e => {
-		Potree.loadPointCloud("../pointclouds/basemap-demo/cloud.js", "basemap", e => {
-		// Potree.loadPointCloud("../pointclouds/veritas/full-pointcloud/cloud.js", "basemap-demo", e => {
-
-			let pointcloud = e.pointcloud;
-			let material = pointcloud.material;
-			console.log(pointcloud.pcoGeometry.nodes.r.gpsTime);
-			viewer.scene.addPointCloud(pointcloud);
-			material.pointColorType = Potree.PointColorType.COLOR; // any Potree.PointColorType.XXXX
-			material.color = new THREE.Color().setRGB(0.99, 0.99, 0.99);
-			material.size = 0.09;
-			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-			material.shape = Potree.PointShape.SQUARE;
-
-			pointcloud.visible = false;
-		});
-
-		Potree.loadPointCloud("../pointclouds/tracks.lidar_converted/cloud.js", "tracks", e => {
-			let pointcloud = e.pointcloud;
-			let material = pointcloud.material;
-			console.log(pointcloud.pcoGeometry.nodes.r.gpsTime);
-			viewer.scene.addPointCloud(pointcloud);
-			material.pointColorType = Potree.PointColorType.COLOR; // any Potree.PointColorType.XXXX
-			material.color = new THREE.Color().setRGB(0.0, 1.0, 0.0);
-			material.size = 0.01;
-			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-			material.shape = Potree.PointShape.SQUARE;
-			pointcloud.visible = false;
-
-		});
-
-		Potree.loadPointCloud("../pointclouds/unrotated_tracks.lidar_converted/cloud.js", "tracks-unrotated", e => {
-			let pointcloud = e.pointcloud;
-			let material = pointcloud.material;
-			console.log(pointcloud.pcoGeometry.nodes.r.gpsTime);
-			viewer.scene.addPointCloud(pointcloud);
-			material.pointColorType = Potree.PointColorType.COLOR; // any Potree.PointColorType.XXXX
-			material.color = new THREE.Color().setRGB(1.0, 0.0, 0.0);
-			material.size = 0.01;
-			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-			material.shape = Potree.PointShape.SQUARE;
-			pointcloud.visible = false;
-
-		});
+	      viewer.scene.view.position.set(300198.109, 4701144.537, 349.871);
+	      viewer.scene.view.lookAt(new THREE.Vector3(299900.954, 4701576.919, 66.197));
+	      // viewer.toggleNavigationCube();
+	      $("#playbutton").click();
+	    });
+          }
 
 		</script>
 

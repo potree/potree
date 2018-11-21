@@ -9,6 +9,7 @@
 		"materials_opt": "Materials",
 		"scene_opt": "Scene",
 		"classification_filter_opt": "Classification filter",
+		"filters_opt": "Filters",
 		"parameters_opt": "Other settings",
 		"about_opt": "About"
 	},
@@ -83,6 +84,13 @@
 	"scene": {
 		"camera_position": "Camera Position",
 		"camera_target": "Camera Target"
+	},
+	"filters": {
+		"return_number": "Return Number",
+		"number_of_returns": "Number of Returns",
+		"gps_min": "min",
+		"gps_max": "max",
+		"gps_time": "GPS Time"
 	},
 	"settings": {
 		"language": "Language"

@@ -1,13 +1,13 @@
+import {Version} from "../Version";
+import {XHRFactory} from "../XHRFactory";
+import {PointAttributeNames} from "./PointAttributes";
 
 
-
-
-
-Potree.GreyhoundBinaryLoader = class{
+export class GreyhoundBinaryLoader{
 
 	constructor(version, boundingBox, scale){
 		if (typeof (version) === 'string') {
-			this.version = new Potree.Version(version);
+			this.version = new Version(version);
 		} else {
 			this.version = version;
 		}
@@ -22,7 +22,7 @@ Potree.GreyhoundBinaryLoader = class{
 		let scope = this;
 		let url = node.getURL();
 
-		let xhr = Potree.XHRFactory.createXMLHttpRequest();
+		let xhr = XHRFactory.createXMLHttpRequest();
 		xhr.open('GET', url, true);
 		xhr.responseType = 'arraybuffer';
 		xhr.overrideMimeType('text/plain; charset=x-user-defined');
@@ -76,25 +76,25 @@ Potree.GreyhoundBinaryLoader = class{
 			for(let property in buffers){
 				let buffer = buffers[property].buffer;
 
-				if (parseInt(property) === Potree.PointAttributeNames.POSITION_CARTESIAN) {
+				if (parseInt(property) === PointAttributeNames.POSITION_CARTESIAN) {
 					geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(buffer), 3));
-				} else if (parseInt(property) === Potree.PointAttributeNames.COLOR_PACKED) {
+				} else if (parseInt(property) === PointAttributeNames.COLOR_PACKED) {
 					geometry.addAttribute('color', new THREE.BufferAttribute(new Uint8Array(buffer), 4, true));
-				} else if (parseInt(property) === Potree.PointAttributeNames.INTENSITY) {
+				} else if (parseInt(property) === PointAttributeNames.INTENSITY) {
 					geometry.addAttribute('intensity', new THREE.BufferAttribute(new Float32Array(buffer), 1));
-				} else if (parseInt(property) === Potree.PointAttributeNames.CLASSIFICATION) {
+				} else if (parseInt(property) === PointAttributeNames.CLASSIFICATION) {
 					geometry.addAttribute('classification', new THREE.BufferAttribute(new Uint8Array(buffer), 1));
-				} else if (parseInt(property) === Potree.PointAttributeNames.NORMAL_SPHEREMAPPED) {
+				} else if (parseInt(property) === PointAttributeNames.NORMAL_SPHEREMAPPED) {
 					geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
-				} else if (parseInt(property) === Potree.PointAttributeNames.NORMAL_OCT16) {
+				} else if (parseInt(property) === PointAttributeNames.NORMAL_OCT16) {
 					geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
-				} else if (parseInt(property) === Potree.PointAttributeNames.NORMAL) {
+				} else if (parseInt(property) === PointAttributeNames.NORMAL) {
 					geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
-				} else if (parseInt(property) === Potree.PointAttributeNames.INDICES) {
+				} else if (parseInt(property) === PointAttributeNames.INDICES) {
 					let bufferAttribute = new THREE.BufferAttribute(new Uint8Array(buffer), 4);
 					bufferAttribute.normalized = true;
 					geometry.addAttribute('indices', bufferAttribute);
-				} else if (parseInt(property) === Potree.PointAttributeNames.SPACING) {
+				} else if (parseInt(property) === PointAttributeNames.SPACING) {
 					let bufferAttribute = new THREE.BufferAttribute(new Float32Array(buffer), 1);
 					geometry.addAttribute('spacing', bufferAttribute);
 				}
@@ -113,7 +113,7 @@ Potree.GreyhoundBinaryLoader = class{
 		};
 
 		let bb = node.boundingBox;
-		let nodeOffset = node.pcoGeometry.boundingBox.getCenter().sub(node.boundingBox.min);
+		let nodeOffset = node.pcoGeometry.boundingBox.getCenter(new THREE.Vector3()).sub(node.boundingBox.min);
 
 		let message = {
 			buffer: buffer,
@@ -129,4 +129,5 @@ Potree.GreyhoundBinaryLoader = class{
 
 		worker.postMessage(message, [message.buffer]);
 	}
+
 }

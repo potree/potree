@@ -1,7 +1,11 @@
 
+import {PointCloudTree} from "./PointCloudTree.js";
+import {PointCloudOctreeNode} from "./PointCloudOctree.js";
+import {PointCloudArena4DNode} from "./arena4d/PointCloudArena4D.js";
+import {PointSizeType, PointColorType, ClipTask} from "./defines.js";
 
 // Copied from three.js: WebGLRenderer.js
-Potree.paramThreeToGL = function paramThreeToGL(_gl, p) {
+function paramThreeToGL(_gl, p) {
 
 	let extension;
 
@@ -127,7 +131,7 @@ Potree.paramThreeToGL = function paramThreeToGL(_gl, p) {
 
 };
 
-Potree.attributeLocations = {
+let attributeLocations = {
 	"position": 0,
 	"color": 1,
 	"intensity": 2,
@@ -138,9 +142,10 @@ Potree.attributeLocations = {
 	"indices": 7,
 	"normal": 8,
 	"spacing": 9,
+	"gpsTime": 10,
 };
 
-Potree.Shader = class Shader {
+class Shader {
 
 	constructor(gl, name, vsSource, fsSource) {
 		this.gl = gl;
@@ -156,6 +161,9 @@ Potree.Shader = class Shader {
 
 		this.uniformLocations = {};
 		this.attributeLocations = {};
+		this.uniformBlockIndices = {};
+		this.uniformBlocks = {};
+		this.uniforms = {};
 
 		this.update(vsSource, fsSource);
 	}
@@ -188,6 +196,7 @@ Potree.Shader = class Shader {
 
 		this.uniformLocations = {};
 		this.attributeLocations = {};
+		this.uniforms = {};
 
 		gl.useProgram(null);
 
@@ -198,6 +207,8 @@ Potree.Shader = class Shader {
 			this.fs = cached.fs;
 			this.attributeLocations = cached.attributeLocations;
 			this.uniformLocations = cached.uniformLocations;
+			this.uniformBlocks = cached.uniformBlocks;
+			this.uniforms = cached.uniforms;
 
 			return;
 		} else {
@@ -206,8 +217,8 @@ Potree.Shader = class Shader {
 			this.fs = gl.createShader(gl.FRAGMENT_SHADER);
 			this.program = gl.createProgram();
 
-			for(let name of Object.keys(Potree.attributeLocations)){
-				let location = Potree.attributeLocations[name];
+			for(let name of Object.keys(attributeLocations)){
+				let location = attributeLocations[name];
 				gl.bindAttribLocation(this.program, location, name);
 			}
 
@@ -251,6 +262,42 @@ Potree.Shader = class Shader {
 					let location = gl.getUniformLocation(program, uniform.name);
 
 					this.uniformLocations[uniform.name] = location;
+					this.uniforms[uniform.name] = {
+						location: location,
+						value: null,
+					};
+				}
+			}
+
+			// uniform blocks
+			if(gl instanceof WebGL2RenderingContext){ 
+				let numBlocks = gl.getProgramParameter(program, gl.ACTIVE_UNIFORM_BLOCKS);
+
+				for (let i = 0; i < numBlocks; i++) {
+					let blockName = gl.getActiveUniformBlockName(program, i);
+
+					let blockIndex = gl.getUniformBlockIndex(program, blockName);
+
+					this.uniformBlockIndices[blockName] = blockIndex;
+
+					gl.uniformBlockBinding(program, blockIndex, blockIndex);
+					let dataSize = gl.getActiveUniformBlockParameter(program, blockIndex, gl.UNIFORM_BLOCK_DATA_SIZE);
+
+					let uBuffer = gl.createBuffer();	
+					gl.bindBuffer(gl.UNIFORM_BUFFER, uBuffer);
+					gl.bufferData(gl.UNIFORM_BUFFER, dataSize, gl.DYNAMIC_READ);
+
+					gl.bindBufferBase(gl.UNIFORM_BUFFER, blockIndex, uBuffer);
+
+					gl.bindBuffer(gl.UNIFORM_BUFFER, null);
+
+					this.uniformBlocks[blockName] = {
+						name: blockName,
+						index: blockIndex,
+						dataSize: dataSize,
+						buffer: uBuffer
+					};
+
 				}
 			}
 
@@ -259,7 +306,9 @@ Potree.Shader = class Shader {
 				vs: this.vs,
 				fs: this.fs,
 				attributeLocations: this.attributeLocations,
-				uniformLocations: this.uniformLocations
+				uniformLocations: this.uniformLocations,
+				uniforms: this.uniforms,
+				uniformBlocks: this.uniformBlocks,
 			};
 
 			this.cache.set(`${this.vsSource}, ${this.fsSource}`, cached);
@@ -284,24 +333,44 @@ Potree.Shader = class Shader {
 
 	setUniform1f(name, value) {
 		const gl = this.gl;
-		const location = this.uniformLocations[name];
+		const uniform = this.uniforms[name];
 
-		if (location == null) {
+		if (uniform === undefined) {
 			return;
 		}
 
-		gl.uniform1f(location, value);
+		if(uniform.value === value){
+			return;
+		}
+
+		uniform.value = value;
+
+		gl.uniform1f(uniform.location, value);
+
+		//const location = this.uniformLocations[name];
+
+		//if (location == null) {
+		//	return;
+		//}
+
+		//gl.uniform1f(location, value);
 	}
 
 	setUniformBoolean(name, value) {
 		const gl = this.gl;
-		const location = this.uniformLocations[name];
+		const uniform = this.uniforms[name];
 
-		if (location == null) {
+		if (uniform === undefined) {
 			return;
 		}
 
-		gl.uniform1i(location, value);
+		if(uniform.value === value){
+			return;
+		}
+
+		uniform.value = value;
+
+		gl.uniform1i(uniform.location, value);
 	}
 
 	setUniformTexture(name, value) {
@@ -345,7 +414,7 @@ Potree.Shader = class Shader {
 			this.setUniform1f(name, value);
 		} else if (typeof value === "boolean") {
 			this.setUniformBoolean(name, value);
-		} else if (value instanceof Potree.WebGLTexture) {
+		} else if (value instanceof WebGLTexture) {
 			this.setUniformTexture(name, value);
 		} else if (value instanceof Array) {
 
@@ -375,7 +444,7 @@ Potree.Shader = class Shader {
 
 };
 
-Potree.WebGLTexture = class WebGLTexture {
+class WebGLTexture {
 
 	constructor(gl, texture) {
 		this.gl = gl;
@@ -409,12 +478,12 @@ Potree.WebGLTexture = class WebGLTexture {
 		gl.bindTexture(this.target, this.id);
 
 		let level = 0;
-		let internalFormat = Potree.paramThreeToGL(gl, texture.format);
+		let internalFormat = paramThreeToGL(gl, texture.format);
 		let width = texture.image.width;
 		let height = texture.image.height;
 		let border = 0;
 		let srcFormat = internalFormat;
-		let srcType = Potree.paramThreeToGL(gl, texture.type);
+		let srcType = paramThreeToGL(gl, texture.type);
 		let data;
 
 		gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, texture.flipY);
@@ -427,8 +496,8 @@ Potree.WebGLTexture = class WebGLTexture {
 			gl.texParameteri(this.target, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 			gl.texParameteri(this.target, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-			gl.texParameteri(this.target, gl.TEXTURE_MAG_FILTER, Potree.paramThreeToGL(gl, texture.magFilter));
-			gl.texParameteri(this.target, gl.TEXTURE_MIN_FILTER, Potree.paramThreeToGL(gl, texture.minFilter));
+			gl.texParameteri(this.target, gl.TEXTURE_MAG_FILTER, paramThreeToGL(gl, texture.magFilter));
+			gl.texParameteri(this.target, gl.TEXTURE_MIN_FILTER, paramThreeToGL(gl, texture.minFilter));
 
 			gl.texImage2D(this.target, level, internalFormat,
 				width, height, border, srcFormat, srcType,
@@ -436,11 +505,11 @@ Potree.WebGLTexture = class WebGLTexture {
 		} else if (texture instanceof THREE.CanvasTexture) {
 			data = texture.image;
 
-			gl.texParameteri(this.target, gl.TEXTURE_WRAP_S, Potree.paramThreeToGL(gl, texture.wrapS));
-			gl.texParameteri(this.target, gl.TEXTURE_WRAP_T, Potree.paramThreeToGL(gl, texture.wrapT));
+			gl.texParameteri(this.target, gl.TEXTURE_WRAP_S, paramThreeToGL(gl, texture.wrapS));
+			gl.texParameteri(this.target, gl.TEXTURE_WRAP_T, paramThreeToGL(gl, texture.wrapT));
 
-			gl.texParameteri(this.target, gl.TEXTURE_MAG_FILTER, Potree.paramThreeToGL(gl, texture.magFilter));
-			gl.texParameteri(this.target, gl.TEXTURE_MIN_FILTER, Potree.paramThreeToGL(gl, texture.minFilter));
+			gl.texParameteri(this.target, gl.TEXTURE_MAG_FILTER, paramThreeToGL(gl, texture.magFilter));
+			gl.texParameteri(this.target, gl.TEXTURE_MIN_FILTER, paramThreeToGL(gl, texture.minFilter));
 
 			gl.texImage2D(this.target, level, internalFormat,
 				internalFormat, srcType, data);
@@ -453,7 +522,7 @@ Potree.WebGLTexture = class WebGLTexture {
 
 };
 
-Potree.WebGLBuffer = class WebGLBuffer {
+class WebGLBuffer {
 
 	constructor() {
 		this.numElements = 0;
@@ -463,7 +532,7 @@ Potree.WebGLBuffer = class WebGLBuffer {
 
 };
 
-Potree.Renderer = class Renderer {
+export class Renderer {
 
 	constructor(threeRenderer) {
 		this.threeRenderer = threeRenderer;
@@ -483,7 +552,7 @@ Potree.Renderer = class Renderer {
 
 	createBuffer(geometry){
 		let gl = this.gl;
-		let webglBuffer = new Potree.WebGLBuffer();
+		let webglBuffer = new WebGLBuffer();
 		webglBuffer.vao = gl.createVertexArray();
 		webglBuffer.numElements = geometry.attributes.position.count;
 
@@ -496,7 +565,7 @@ Potree.Renderer = class Renderer {
 			gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
 			gl.bufferData(gl.ARRAY_BUFFER, bufferAttribute.array, gl.STATIC_DRAW);
 
-			let attributeLocation = Potree.attributeLocations[attributeName];
+			let attributeLocation = attributeLocations[attributeName];
 			let normalized = bufferAttribute.normalized;
 			let type = this.glTypeMapping.get(bufferAttribute.array.constructor);
 
@@ -529,7 +598,7 @@ Potree.Renderer = class Renderer {
 		for(let attributeName in geometry.attributes){
 			let bufferAttribute = geometry.attributes[attributeName];
 
-			let attributeLocation = Potree.attributeLocations[attributeName];
+			let attributeLocation = attributeLocations[attributeName];
 			let normalized = bufferAttribute.normalized;
 			let type = this.glTypeMapping.get(bufferAttribute.array.constructor);
 
@@ -569,7 +638,7 @@ Potree.Renderer = class Renderer {
 
 			let node = stack.pop();
 
-			if (node instanceof Potree.PointCloudTree) {
+			if (node instanceof PointCloudTree) {
 				octrees.push(node);
 				continue;
 			}
@@ -590,7 +659,7 @@ Potree.Renderer = class Renderer {
 
 	renderNodes(octree, nodes, visibilityTextureData, camera, target, shader, params) {
 
-		if (Potree.measureTimings) performance.mark("renderNodes-start");
+		if (exports.measureTimings) performance.mark("renderNodes-start");
 
 		let gl = this.gl;
 
@@ -601,11 +670,32 @@ Potree.Renderer = class Renderer {
 
 		let mat4holder = new Float32Array(16);
 
+		let gpsMin = Infinity;
+		let gpsMax = -Infinity
+		for (let node of nodes) {
+
+			if(node instanceof PointCloudOctreeNode){
+				let geometryNode = node.geometryNode;
+
+				if(geometryNode.gpsTime){
+					let {offset, range} = geometryNode.gpsTime;
+					let nodeMin = offset;
+					let nodeMax = offset + range;
+
+					gpsMin = Math.min(gpsMin, nodeMin);
+					gpsMax = Math.max(gpsMax, nodeMax);
+				}
+			}
+
+			break;
+
+		}
+
 		let i = 0;
 		for (let node of nodes) {
 
-			if(Potree.debug.allowedNodes !== undefined){
-				if(!Potree.debug.allowedNodes.includes(node.name)){
+			if(exports.debug.allowedNodes !== undefined){
+				if(!exports.debug.allowedNodes.includes(node.name)){
 					continue;
 				}
 			}
@@ -636,9 +726,9 @@ Potree.Renderer = class Renderer {
 			}
 
 			let isLeaf;
-			if(node instanceof Potree.PointCloudOctreeNode){
+			if(node instanceof PointCloudOctreeNode){
 				isLeaf = Object.keys(node.children).length === 0;
-			}else if(node instanceof Potree.PointCloudArena4DNode){
+			}else if(node instanceof PointCloudArena4DNode){
 				isLeaf = node.geometryNode.isLeaf;
 			}
 			shader.setUniform("uIsLeafNode", isLeaf);
@@ -748,6 +838,30 @@ Potree.Renderer = class Renderer {
 
 			let geometry = node.geometryNode.geometry;
 
+			if(node.geometryNode.gpsTime){
+				let nodeMin = node.geometryNode.gpsTime.offset;
+				let nodeMax = nodeMin + node.geometryNode.gpsTime.range;
+
+				let gpsOffset = (+nodeMin - gpsMin);
+				let gpsRange = (gpsMax - gpsMin);
+
+				shader.setUniform1f("uGPSOffset", gpsOffset);
+				shader.setUniform1f("uGPSRange", gpsRange);
+			}
+
+			{
+				let uFilterReturnNumberRange = material.uniforms.uFilterReturnNumberRange.value;
+				let uFilterNumberOfReturnsRange = material.uniforms.uFilterNumberOfReturnsRange.value;
+				let uFilterGPSTimeClipRange = material.uniforms.uFilterGPSTimeClipRange.value;
+				
+				let gpsCliPRangeMin = uFilterGPSTimeClipRange[0] - gpsMin;
+				let gpsCliPRangeMax = uFilterGPSTimeClipRange[1] - gpsMin;
+				
+				shader.setUniform2f("uFilterReturnNumberRange", uFilterReturnNumberRange);
+				shader.setUniform2f("uFilterNumberOfReturnsRange", uFilterNumberOfReturnsRange);
+				shader.setUniform2f("uFilterGPSTimeClipRange", [gpsCliPRangeMin, gpsCliPRangeMax]);
+			}
+
 			let webglBuffer = null;
 			if(!this.buffers.has(geometry)){
 				webglBuffer = this.createBuffer(geometry);
@@ -773,7 +887,7 @@ Potree.Renderer = class Renderer {
 
 		gl.bindVertexArray(null);
 
-		if (Potree.measureTimings) {
+		if (exports.measureTimings) {
 			performance.mark("renderNodes-end");
 			performance.measure("render.renderNodes", "renderNodes-start", "renderNodes-end");
 		}
@@ -796,39 +910,9 @@ Potree.Renderer = class Renderer {
 
 		let currentTextureBindingPoint = 0;
 
-		//if(!["r", "r2", "r0", "r26", "r22", "r06", "r24", "r20", "r04", "r00", "r02"].includes(node.name)){
-		//	if(!["r", "r2", "r0"].includes(node.name)){
-		//		continue;
-		//	}
-
-		//nodes = nodes.filter(node => {
-		//	return ["r", "r6", "r66", "r664", "r6646", "r6644", "r64", "r646", "r4", "r66446", "r6642", "r660", "r62", "r2", "r6640"].includes(node.name)});
-
-		//nodes = nodes.filter(node => {
-		//	return [
-		//		//"r", 
-		//		"r6", 
-		//		"r2", 
-		//		"r4", 
-		//		"r64", 
-		//		"r66", 
-		//		"r62", 
-		//		"r664", 
-		//		"r646", 
-		//		"r660", 
-		//		"r6646", 
-		//		//"r6644", 
-		//		//"r6642", 
-		//		//"r6640",
-		//		//"r66446", 
-		//		].includes(node.name)});
-
-	
-
-
 		if (material.pointSizeType >= 0) {
-			if (material.pointSizeType === Potree.PointSizeType.ADAPTIVE ||
-				material.pointColorType === Potree.PointColorType.LOD) {
+			if (material.pointSizeType === PointSizeType.ADAPTIVE ||
+				material.pointColorType === PointColorType.LOD) {
 
 				let vnNodes = (params.vnTextureNodes != null) ? params.vnTextureNodes : nodes;
 				visibilityTextureData = octree.computeVisibilityTextureData(vnNodes, camera);
@@ -841,31 +925,10 @@ Potree.Renderer = class Renderer {
 			}
 		}
 
-		//nodes = nodes.filter(node => {
-		//	return [
-		//		"r", 
-		//		"r6", 
-		//		"r2", 
-		//		"r4", 
-		//		"r64", 
-		//		"r66", 
-		//		"r62", 
-		//		"r664", 
-		//		"r646", 
-		//		"r660", 
-
-		//		"r6646", 
-
-		//		"r6644", 
-		//		"r6642", 
-		//		"r6640",
-		//		"r66446", 
-		//		].includes(node.name)});
-
 		{ // UPDATE SHADER AND TEXTURES
 			if (!this.shaders.has(material)) {
 				let [vs, fs] = [material.vertexShader, material.fragmentShader];
-				let shader = new Potree.Shader(gl, "pointcloud", vs, fs);
+				let shader = new Shader(gl, "pointcloud", vs, fs);
 
 				this.shaders.set(material, shader);
 			}
@@ -878,21 +941,59 @@ Potree.Renderer = class Renderer {
 
 				let numSnapshots = material.snapEnabled ? material.numSnapshots : 0;
 				let numClipBoxes = (material.clipBoxes && material.clipBoxes.length) ? material.clipBoxes.length : 0;
+				let numClipSpheres = (params.clipSpheres && params.clipSpheres.length) ? params.clipSpheres.length : 0;
 				let numClipPolygons = (material.clipPolygons && material.clipPolygons.length) ? material.clipPolygons.length : 0;
+
+				//debugger;
+
+
+
 				let defines = [
 					`#define num_shadowmaps ${shadowMaps.length}`,
 					`#define num_snapshots ${numSnapshots}`,
 					`#define num_clipboxes ${numClipBoxes}`,
+					`#define num_clipspheres ${numClipSpheres}`,
 					`#define num_clippolygons ${numClipPolygons}`,
 				];
+
+
+				if(octree.pcoGeometry.root.isLoaded()){
+					let attributes = octree.pcoGeometry.root.geometry.attributes;
+
+					if(attributes.gpsTime){
+						defines.push("#define clip_gps_enabled");
+					}
+
+					if(attributes.returnNumber){
+						defines.push("#define clip_return_number_enabled");
+					}
+
+					if(attributes.numberOfReturns){
+						defines.push("#define clip_number_of_returns_enabled");
+					}
+
+				}
 
 				//vs = `#define num_shadowmaps ${shadowMaps.length}\n` + vs;
 				//fs = `#define num_shadowmaps ${shadowMaps.length}\n` + fs;
 
 				let definesString = defines.join("\n");
 
-				vs = `${definesString}\n${vs}`;
-				fs = `${definesString}\n${fs}`;
+				let vsVersionIndex = vs.indexOf("#version ");
+				let fsVersionIndex = fs.indexOf("#version ");
+
+				if(vsVersionIndex >= 0){
+					vs = vs.replace(/(#version .*)/, `$1\n${definesString}`)
+				}else{
+					vs = `${definesString}\n${vs}`;
+				}
+
+				if(fsVersionIndex >= 0){
+					fs = fs.replace(/(#version .*)/, `$1\n${definesString}`)
+				}else{
+					fs = `${definesString}\n${fs}`;
+				}
+
 
 				shader.update(vs, fs);
 
@@ -911,7 +1012,7 @@ Potree.Renderer = class Renderer {
 					}
 
 					if (!this.textures.has(texture)) {
-						let webglTexture = new Potree.WebGLTexture(gl, texture);
+						let webglTexture = new WebGLTexture(gl, texture);
 
 						this.textures.set(texture, webglTexture);
 					}
@@ -991,7 +1092,7 @@ Potree.Renderer = class Renderer {
 			}
 
 			if(material.clipBoxes.length + material.clipPolygons.length === 0){
-				shader.setUniform1i("clipTask", Potree.ClipTask.NONE);
+				shader.setUniform1i("clipTask", ClipTask.NONE);
 			}else{
 				shader.setUniform1i("clipTask", material.clipTask);
 			}
@@ -999,16 +1100,67 @@ Potree.Renderer = class Renderer {
 			shader.setUniform1i("clipMethod", material.clipMethod);
 
 			if (material.clipBoxes && material.clipBoxes.length > 0) {
-				
-				let flattenedMatrices = [].concat(...material.clipBoxes.map(c => c.inverse.elements));
+				//let flattenedMatrices = [].concat(...material.clipBoxes.map(c => c.inverse.elements));
+
+				//const lClipBoxes = shader.uniformLocations["clipBoxes[0]"];
+				//gl.uniformMatrix4fv(lClipBoxes, false, flattenedMatrices);
 
 				const lClipBoxes = shader.uniformLocations["clipBoxes[0]"];
-				gl.uniformMatrix4fv(lClipBoxes, false, flattenedMatrices);
+				gl.uniformMatrix4fv(lClipBoxes, false, material.uniforms.clipBoxes.value);
 			}
 
-			shader.setUniform1f("size", material.size);
-			shader.setUniform1f("maxSize", material.uniforms.maxSize.value);
-			shader.setUniform1f("minSize", material.uniforms.minSize.value);
+			// TODO CLIPSPHERES
+			if(params.clipSpheres && params.clipSpheres.length > 0){
+
+				let clipSpheres = params.clipSpheres;
+
+				let matrices = [];
+				for(let clipSphere of clipSpheres){
+					//let mScale = new THREE.Matrix4().makeScale(...clipSphere.scale.toArray());
+					//let mTranslate = new THREE.Matrix4().makeTranslation(...clipSphere.position.toArray());
+
+					//let clipToWorld = new THREE.Matrix4().multiplyMatrices(mTranslate, mScale);
+					let clipToWorld = clipSphere.matrixWorld;
+					let viewToWorld = camera.matrixWorld
+					let worldToClip = new THREE.Matrix4().getInverse(clipToWorld);
+
+					let viewToClip = new THREE.Matrix4().multiplyMatrices(worldToClip, viewToWorld);
+
+					matrices.push(viewToClip);
+				}
+
+				let flattenedMatrices = [].concat(...matrices.map(matrix => matrix.elements));
+
+				const lClipSpheres = shader.uniformLocations["uClipSpheres[0]"];
+				gl.uniformMatrix4fv(lClipSpheres, false, flattenedMatrices);
+				
+				//const lClipSpheres = shader.uniformLocations["uClipSpheres[0]"];
+				//gl.uniformMatrix4fv(lClipSpheres, false, material.uniforms.clipSpheres.value);
+			}
+
+			if(Potree.Features.WEBGL2.isSupported()){
+				let buffer = new ArrayBuffer(12);
+				let bufferf32 = new Float32Array(buffer);
+				bufferf32[0] = material.size;
+				bufferf32[1] = material.uniforms.minSize.value;
+				bufferf32[2] = material.uniforms.maxSize.value;
+
+				let block = shader.uniformBlocks["ubo_point"];
+
+				gl.bindBufferBase(gl.UNIFORM_BUFFER, 0, block.buffer);
+
+				gl.bindBuffer(gl.UNIFORM_BUFFER, block.buffer);
+				gl.bufferSubData(gl.UNIFORM_BUFFER, 0, buffer);
+				gl.bindBuffer(gl.UNIFORM_BUFFER, null);
+				
+			}else{
+				shader.setUniform1f("size", material.size);
+				shader.setUniform1f("maxSize", material.uniforms.maxSize.value);
+				shader.setUniform1f("minSize", material.uniforms.minSize.value);
+			}
+
+
+
 
 			// uniform float uPCIndex
 			shader.setUniform1f("uOctreeSpacing", material.spacing);
@@ -1128,7 +1280,7 @@ Potree.Renderer = class Renderer {
 		gl.activeTexture(gl.TEXTURE0);
 	}
 
-	render(scene, camera, target, params = {}) {
+	render(scene, camera, target = null, params = {}) {
 
 		const gl = this.gl;
 
@@ -1153,7 +1305,7 @@ Potree.Renderer = class Renderer {
 		gl.activeTexture(gl.TEXTURE1);
 		gl.bindTexture(gl.TEXTURE_2D, null)
 
-		this.threeRenderer.resetGLState();
+		this.threeRenderer.state.reset();
 	}
 
 

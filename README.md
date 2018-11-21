@@ -26,8 +26,9 @@ Install all dependencies, as specified in package.json,
 then, install the gulp build tool:
 
     cd <potree_directory>
-    npm install 
+    npm install --save
     npm install -g gulp
+    npm install -g rollup
 
 Use the ```gulp watch``` command to 
 

@@ -1,5 +1,10 @@
 
-Potree.PointCloudOctreeGeometry = class PointCloudOctreeGeometry{
+
+import {PointCloudTreeNode} from "./PointCloudTree.js";
+import {XHRFactory} from "./XHRFactory.js";
+import {Utils} from "./utils.js";
+
+export class PointCloudOctreeGeometry{
 
 	constructor(){
 		this.url = null;
@@ -12,20 +17,21 @@ Potree.PointCloudOctreeGeometry = class PointCloudOctreeGeometry{
 		this.hierarchyStepSize = -1;
 		this.loader = null;
 	}
-};
+	
+}
 
-Potree.PointCloudOctreeGeometryNode = class PointCloudOctreeGeometryNode extends Potree.PointCloudTreeNode{
+export class PointCloudOctreeGeometryNode extends PointCloudTreeNode{
 
 	constructor(name, pcoGeometry, boundingBox){
 		super();
 
-		this.id = Potree.PointCloudOctreeGeometryNode.IDCount++;
+		this.id = PointCloudOctreeGeometryNode.IDCount++;
 		this.name = name;
 		this.index = parseInt(name.charAt(name.length - 1));
 		this.pcoGeometry = pcoGeometry;
 		this.geometry = null;
 		this.boundingBox = boundingBox;
-		this.boundingSphere = boundingBox.getBoundingSphere();
+		this.boundingSphere = boundingBox.getBoundingSphere(new THREE.Sphere());
 		this.children = {};
 		this.numPoints = 0;
 		this.level = null;
@@ -188,9 +194,9 @@ Potree.PointCloudOctreeGeometryNode = class PointCloudOctreeGeometryNode extends
 				let parentName = name.substring(0, name.length - 1);
 				let parentNode = nodes[parentName];
 				let level = name.length - 1;
-				let boundingBox = Potree.POCLoader.createChildAABB(parentNode.boundingBox, index);
+				let boundingBox = Utils.createChildAABB(parentNode.boundingBox, index);
 
-				let currentNode = new Potree.PointCloudOctreeGeometryNode(name, pco, boundingBox);
+				let currentNode = new PointCloudOctreeGeometryNode(name, pco, boundingBox);
 				currentNode.level = level;
 				currentNode.numPoints = decodedNumPoints;
 				currentNode.hasChildren = decoded[i].children > 0;
@@ -205,7 +211,7 @@ Potree.PointCloudOctreeGeometryNode = class PointCloudOctreeGeometryNode extends
 			// let hurl = node.pcoGeometry.octreeDir + "/../hierarchy/" + node.name + ".hrc";
 			let hurl = node.pcoGeometry.octreeDir + '/' + node.getHierarchyPath() + '/' + node.name + '.hrc';
 
-			let xhr = Potree.XHRFactory.createXMLHttpRequest();
+			let xhr = XHRFactory.createXMLHttpRequest();
 			xhr.open('GET', hurl, true);
 			xhr.responseType = 'arraybuffer';
 			xhr.overrideMimeType('text/plain; charset=x-user-defined');
@@ -249,6 +255,4 @@ Potree.PointCloudOctreeGeometryNode = class PointCloudOctreeGeometryNode extends
 	
 }
 
-Potree.PointCloudOctreeGeometryNode.IDCount = 0;
-
-Object.assign(Potree.PointCloudOctreeGeometryNode.prototype, THREE.EventDispatcher.prototype);
+PointCloudOctreeGeometryNode.IDCount = 0;

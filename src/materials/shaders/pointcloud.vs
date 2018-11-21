@@ -14,11 +14,13 @@ attribute float numberOfReturns;
 attribute float pointSourceID;
 attribute vec4 indices;
 attribute float spacing;
+attribute float gpsTime;
 
 uniform mat4 modelMatrix;
 uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
 uniform mat4 viewMatrix;
+uniform mat4 uViewInv;
 
 uniform float uScreenWidth;
 uniform float uScreenHeight;
@@ -47,11 +49,16 @@ uniform int clipMethod;
 	uniform mat4 clipBoxes[num_clipboxes];
 #endif
 
+#if defined(num_clipspheres) && num_clipspheres > 0
+	uniform mat4 uClipSpheres[num_clipspheres];
+#endif
+
 #if defined(num_clippolygons) && num_clippolygons > 0
 	uniform int uClipPolygonVCount[num_clippolygons];
 	uniform vec3 uClipPolygonVertices[num_clippolygons * 8];
 	uniform mat4 uClipPolygonWVP[num_clippolygons];
 #endif
+
 
 uniform float size;
 uniform float minSize;
@@ -71,6 +78,13 @@ uniform float uOpacity;
 
 uniform vec2 elevationRange;
 uniform vec2 intensityRange;
+
+uniform vec2 uFilterReturnNumberRange;
+uniform vec2 uFilterNumberOfReturnsRange;
+uniform vec2 uFilterGPSTimeClipRange;
+
+uniform float uGPSOffset;
+uniform float uGPSRange;
 uniform float intensityGamma;
 uniform float intensityContrast;
 uniform float intensityBrightness;
@@ -95,15 +109,6 @@ uniform sampler2D classificationLUT;
 uniform sampler2D uShadowMap[num_shadowmaps];
 uniform mat4 uShadowWorldView[num_shadowmaps];
 uniform mat4 uShadowProj[num_shadowmaps];
-#endif
-
-#if defined(num_snapshots) && num_snapshots > 0
-uniform sampler2D uSnapshot[num_snapshots];
-uniform mat4 uSnapView[num_snapshots];
-uniform mat4 uSnapProj[num_snapshots];
-uniform mat4 uSnapScreenToCurrentView[num_snapshots];
-
-varying float vSnapTextureID;
 #endif
 
 varying vec3	vColor;
@@ -396,9 +401,12 @@ float getIntensity(){
 	w = (w - 0.5) * getContrastFactor(intensityContrast) + 0.5;
 	w = clamp(w, 0.0, 1.0);
 
-	//w = w + color.x * 0.0001;
-	
-	//float w = color.x * 0.001 + intensity / 1.0;
+	return w;
+}
+
+float getGpsTime(){
+	float w = (gpsTime + uGPSOffset) / uGPSRange;
+	w = clamp(w, 0.0, 1.0);
 
 	return w;
 }
@@ -499,6 +507,9 @@ vec3 getColor(){
 		color = vec3(linearDepth, expDepth, 0.0);
 	#elif defined color_type_intensity
 		float w = getIntensity();
+		color = vec3(w, w, w);
+	#elif defined color_type_gpstime
+		float w = getGpsTime();
 		color = vec3(w, w, w);
 	#elif defined color_type_intensity_gradient
 		float w = getIntensity();
@@ -620,6 +631,41 @@ void doClipping(){
 		}
 	#endif
 
+	#if defined(clip_return_number_enabled)
+	{ // return number filter
+		vec2 range = uFilterReturnNumberRange;
+		if(returnNumber < range.x || returnNumber > range.y){
+			gl_Position = vec4(100.0, 100.0, 100.0, 0.0);
+			
+			return;
+		}
+	}
+	#endif
+
+	#if defined(clip_number_of_returns_enabled)
+	{ // number of return filter
+		vec2 range = uFilterNumberOfReturnsRange;
+		if(numberOfReturns < range.x || numberOfReturns > range.y){
+			gl_Position = vec4(100.0, 100.0, 100.0, 0.0);
+			
+			return;
+		}
+	}
+	#endif
+
+	#if defined(clip_gps_enabled)
+	{ // GPS time filter
+		float time = gpsTime + uGPSOffset;
+		vec2 range = uFilterGPSTimeClipRange;
+
+		if(time < range.x || time > range.y){
+			gl_Position = vec4(100.0, 100.0, 100.0, 0.0);
+			
+			return;
+		}
+	}
+	#endif
+
 	int clipVolumesCount = 0;
 	int insideCount = 0;
 
@@ -705,19 +751,22 @@ void main() {
 
 	// CLIPPING
 	doClipping();
-	
 
+	#if defined(num_clipspheres) && num_clipspheres > 0
+		for(int i = 0; i < num_clipspheres; i++){
+			vec4 sphereLocal = uClipSpheres[i] * mvPosition;
 
+			float distance = length(sphereLocal.xyz);
 
-
-	//#if defined(num_snapshots) && num_snapshots > 0
-
-	//	for(int i = 0; i < num_snapshots; i++){
-	//		vSnapProjected[i] = uSnapProj[i] * uSnapView[i] * modelMatrix * vec4(position, 1.0);	
-	//		vSnapProjectedDistance[i] = -(uSnapView[i] * modelMatrix * vec4(position, 1.0)).z;
-	//	}
-	//	
-	//#endif
+			if(distance < 1.0){
+				float w = distance;
+				vec3 cGradient = texture2D(gradient, vec2(w, 1.0 - w)).rgb;
+				
+				vColor = cGradient;
+				//vColor = cGradient * 0.7 + vColor * 0.3;
+			}
+		}
+	#endif
 
 	#if defined(num_shadowmaps) && num_shadowmaps > 0
 
@@ -777,10 +826,12 @@ void main() {
 
 	#endif
 
-	if(uDebug){
-		vColor.b = (vColor.r + vColor.g + vColor.b) / 3.0;
-		vColor.r = 1.0;
-		vColor.g = 1.0;
-	}
+	//vColor = vec3(1.0, 0.0, 0.0);
+
+	//if(uDebug){
+	//	vColor.b = (vColor.r + vColor.g + vColor.b) / 3.0;
+	//	vColor.r = 1.0;
+	//	vColor.g = 1.0;
+	//}
 
 }

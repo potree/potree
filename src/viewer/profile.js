@@ -1,5 +1,13 @@
 
 
+import {PointColorType} from "../defines.js";
+import {PointCloudMaterial} from "../materials/PointCloudMaterial.js";
+import {Utils} from "../utils.js";
+import {Points} from "../Points.js";
+import {CSVExporter} from "../exporter/CSVExporter.js";
+import {LASExporter} from "../exporter/LASExporter.js";
+import { EventDispatcher } from "../EventDispatcher.js";
+
 class ProfilePointCloudEntry{
 
 	constructor(){
@@ -10,7 +18,7 @@ class ProfilePointCloudEntry{
 		let material = ProfilePointCloudEntry.getMaterialInstance();
 		material.uniforms.minSize.value = 2;
 		material.uniforms.maxSize.value = 2;
-		material.pointColorType = Potree.PointColorType.RGB;
+		material.pointColorType = PointColorType.RGB;
 		material.opacity = 1.0;
 
 		this.material = material;
@@ -27,7 +35,7 @@ class ProfilePointCloudEntry{
 
 		let instance = ProfilePointCloudEntry.materialPool.values().next().value;
 		if(!instance){
-			instance = new Potree.PointCloudMaterial();
+			instance = new PointCloudMaterial();
 		}else{
 			ProfilePointCloudEntry.materialPool.delete(instance);
 		}
@@ -182,7 +190,7 @@ class ProfilePointCloudEntry{
 
 ProfilePointCloudEntry.materialPool = new Set();
 
-Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
+export class ProfileWindow extends EventDispatcher {
 	constructor (viewer) {
 		super();
 
@@ -200,13 +208,13 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 		this.mouse = new THREE.Vector2(0, 0);
 		this.scale = new THREE.Vector3(1, 1, 1);
 
-		let csvIcon = `${Potree.resourcePath}/icons/file_csv_2d.svg`;
+		let csvIcon = `${exports.resourcePath}/icons/file_csv_2d.svg`;
 		$('#potree_download_csv_icon').attr('src', csvIcon);
 
-		let lasIcon = `${Potree.resourcePath}/icons/file_las_3d.svg`;
+		let lasIcon = `${exports.resourcePath}/icons/file_las_3d.svg`;
 		$('#potree_download_las_icon').attr('src', lasIcon);
 
-		let closeIcon = `${Potree.resourcePath}/icons/close.svg`;
+		let closeIcon = `${exports.resourcePath}/icons/close.svg`;
 		$('#closeProfileContainer').attr("src", closeIcon);
 
 		this.initTHREE();
@@ -233,7 +241,7 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 			let camera = this.viewer.scene.getActiveCamera();
 			let domElement = this.viewer.renderer.domElement;
 			let distance = this.viewerPickSphere.position.distanceTo(camera.position);
-			let pr = Potree.utils.projectedRadius(1, camera, distance, domElement.clientWidth, domElement.clientHeight);
+			let pr = Utils.projectedRadius(1, camera, distance, domElement.clientWidth, domElement.clientHeight);
 			let scale = (10 / pr);
 			this.viewerPickSphere.scale.set(scale, scale, scale);
 		};
@@ -290,7 +298,7 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 					for (let attribute of Object.keys(point)) {
 						let value = point[attribute];
 						if (attribute === 'position') {
-							let values = [...value].map(v => Potree.utils.addCommas(v.toFixed(3)));
+							let values = [...value].map(v => Utils.addCommas(v.toFixed(3)));
 							html += `
 								<tr>
 									<td>x</td>
@@ -388,7 +396,7 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 		});
 
 		$('#potree_download_csv_icon').click(() => {
-			let points = new Potree.Points();
+			let points = new Points();
 			
 			for(let [pointcloud, entry] of this.pointclouds){
 				for(let pointSet of entry.points){
@@ -396,7 +404,7 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 				}
 			}
 
-			let string = Potree.CSVExporter.toString(points);
+			let string = CSVExporter.toString(points);
 
 			let blob = new Blob([string], {type: "text/string"});
 			$('#potree_download_profile_ortho_link').attr('href', URL.createObjectURL(blob));
@@ -407,7 +415,7 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 
 		$('#potree_download_las_icon').click(() => {
 
-			let points = new Potree.Points();
+			let points = new Points();
 
 			for(let [pointcloud, entry] of this.pointclouds){
 				for(let pointSet of entry.points){
@@ -415,7 +423,7 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 				}
 			}
 
-			let buffer = Potree.LASExporter.toLAS(points);
+			let buffer = LASExporter.toLAS(points);
 
 			let blob = new Blob([buffer], {type: "application/octet-binary"});
 			$('#potree_download_profile_link').attr('href', URL.createObjectURL(blob));
@@ -454,7 +462,7 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 		//	new THREE.Vector3(...pointBox.min.toArray(), -1),
 		//	new THREE.Vector3(...pointBox.max.toArray(), +1)
 		//);
-		//debugNode.add(new Potree.Box3Helper(debugPointBox, 0xff0000));
+		//debugNode.add(new Box3Helper(debugPointBox, 0xff0000));
 
 		let numTested = 0;
 		let numSkipped = 0;
@@ -481,7 +489,7 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 				//	new THREE.Vector3(...collisionBox.min.toArray(), -1),
 				//	new THREE.Vector3(...collisionBox.max.toArray(), +1)
 				//);
-				//debugNode.add(new Potree.Box3Helper(debugCollisionBox));
+				//debugNode.add(new Box3Helper(debugCollisionBox));
 
 				numTested++;
 				numTestedPoints += points.numPoints
@@ -635,13 +643,13 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 			let width = this.renderArea[0].clientWidth;
 			let height = this.renderArea[0].clientHeight;
 
-			let size = this.projectedBox.getSize();
+			let size = this.projectedBox.getSize(new THREE.Vector3());
 
 			let sx = width / size.x;
 			let sy = height / size.z;
 			let scale = Math.min(sx, sy);
 
-			let center = this.projectedBox.getCenter();
+			let center = this.projectedBox.getCenter(new THREE.Vector3());
 			this.scale.set(scale, scale, 1);
 			this.camera.position.copy(center);
 
@@ -656,7 +664,7 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 		for (let [key, value] of this.pointclouds.entries()) {
 			numPoints += value.points.reduce( (a, i) => a + i.numPoints, 0);
 		}
-		$(`#profile_num_points`).html(Potree.utils.addCommas(numPoints));
+		$(`#profile_num_points`).html(Utils.addCommas(numPoints));
 
 	}
 
@@ -811,7 +819,7 @@ Potree.ProfileWindow = class ProfileWindow extends THREE.EventDispatcher {
 	}
 };
 
-Potree.ProfileWindowController = class ProfileWindowController {
+export class ProfileWindowController {
 	constructor (viewer) {
 		this.viewer = viewer;
 		this.profileWindow = viewer.profileWindow;

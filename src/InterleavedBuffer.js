@@ -1,5 +1,7 @@
 
-Potree.InterleavedBufferAttribute = class InterleavedBufferAttribute{
+
+
+export class InterleavedBufferAttribute{
 	
 	constructor(name, bytes, numElements, type, normalized){
 		this.name = name;
@@ -11,7 +13,7 @@ Potree.InterleavedBufferAttribute = class InterleavedBufferAttribute{
 	
 };
 
-Potree.InterleavedBuffer = class InterleavedBuffer{
+export class InterleavedBuffer{
 
 	constructor(data, attributes, numElements){
 		this.data = data;

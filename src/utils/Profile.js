@@ -1,5 +1,8 @@
 
-Potree.Profile = class extends THREE.Object3D {
+import {Utils} from "../utils.js";
+
+export class Profile extends THREE.Object3D{
+
 	constructor () {
 		super();
 
@@ -21,7 +24,7 @@ Potree.Profile = class extends THREE.Object3D {
 
 	createSphereMaterial () {
 		let sphereMaterial = new THREE.MeshLambertMaterial({
-			shading: THREE.SmoothShading,
+			//shading: THREE.SmoothShading,
 			color: 0xff0000,
 			depthTest: false,
 			depthWrite: false}
@@ -107,7 +110,7 @@ Potree.Profile = class extends THREE.Object3D {
 
 		{ // event listeners
 			let drag = (e) => {
-				let I = Potree.utils.getMousePointCloudIntersection(
+				let I = Utils.getMousePointCloudIntersection(
 					e.drag.end, 
 					e.viewer.scene.getActiveCamera(), 
 					e.viewer, 
@@ -315,4 +318,5 @@ Potree.Profile = class extends THREE.Object3D {
 		this._modifiable = value;
 		this.update();
 	}
-};
+
+}

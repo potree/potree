@@ -201,7 +201,7 @@ a:hover, a:visited, a:link, a:active{
 	margin:			auto;
 	display:		table;
 	padding:		1px 8px;
-	cursor: 	pointer;
+	cursor: 		pointer;
 }
 
 .annotation-expand{
@@ -689,3 +689,83 @@ body{
 	height: 100%;
 	width: 100%;
 }
+
+
+
+
+.zs_widget{
+	padding: 2px;
+	height: 4em;
+	user-select: none;
+}
+.zs_core{
+	overflow: hidden;
+	position: relative;
+	height: 100%;
+}
+.zs_handle{
+	position: absolute;
+	top: 0px;
+	bottom: 0px;
+	border: 1px solid black;
+	border-radius: 3px;
+	background-color: rgb(166, 169, 170);
+	width: 8px;
+	user-select: none;
+	width: 1.2em;
+	height: 1.2em;
+	top: calc(50% - 0.6em);
+}
+.zs_stretch{
+	position: absolute;
+	top: 0px;
+	bottom: 0px;
+	border: 1px solid black;
+	border-radius: 3px;
+	background-color: rgb(166, 169, 170);
+	width: 8px;
+	user-select: none;
+	width: 1.2em;
+	height: 1.2em;
+	top: calc(50% - 0.6em);
+	color: black;
+	font-weight: bold;
+	font-size: 1.2em;
+	font-family: arial;
+}
+.zs_handle:hover{
+	background-color: lightgreen;
+}
+.zs_inside{
+	position: absolute !important;
+	width: 100%;
+	border: 1px solid black;
+	background-color: white;
+	top: calc(50% - 0.326em);
+	height: 0.652em;
+	cursor: zoom-in;
+}
+.zs_outside{
+	position: absolute !important;
+	width: 100%;
+	background-color: var(--color-1) !important;
+	top: calc(50% - 0.326em);
+	height: 0.652em;
+	cursor: zoom-in;
+}
+.zs_visible_range_label{
+	position: absolute;
+	bottom: 0px;
+	pointer-events:none;
+}
+.zs_visible_range_label_left{
+	left: 0px;
+}
+.zs_visible_range_label_right{
+	right: 0px;
+}
+.zs_chosen_range_label{
+	position: absolute;
+	pointer-events:none;
+}
+

@@ -222,7 +222,7 @@ initSidebar = (viewer) => {
 			},
 			"checkbox" : {
 				"keep_selected_style": true,
-				"three_state": false,
+				"three_state": true,
 				"whole_node": false,
 				"tie_selection": false,
 			},
@@ -359,19 +359,29 @@ initSidebar = (viewer) => {
 		});
 
 		tree.on("uncheck_node.jstree", function(e, data){
-			let object = data.node.data;
-
-			if(object){
-				object.visible = false;
+			let instance = data.instance;
+			let len =data.node.children.length;
+			if(len>0){
+	                    for(let ii=0;ii<len;ii++){
+				let object = instance.get_node(data.node.children[ii]).data;                    
+				if(object){
+			            object.visible = false;
+				}
+			    }
 			}
 		});
 
 		tree.on("check_node.jstree", function(e, data){
-			let object = data.node.data;
-
-			if(object){
+		    let instance = data.instance;
+		    let len = data.node.children.length;
+		    if(len>0){
+			for(let ii=0;ii<len;ii++){
+			    let object = instance.get_node(data.node.children[ii]).data;			    
+			    if(object){
 				object.visible = true;
+			    }
 			}
+		    }
 		});
 
 

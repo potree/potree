@@ -463,7 +463,7 @@ export class Sidebar{
 		    }else{
 			 let object = data.node.data;
 			 if(object){
-			       object.visible = false;
+			       object.visible = true;
 			 }	
 		    }
 		});

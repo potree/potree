@@ -441,6 +441,11 @@ export class Sidebar{
 			            object.visible = false;
 				}
 			    }
+			}else{
+			    let object = data.node.data;
+			    if(object){
+			            object.visible = false;
+			    }	
 			}
 		});
 
@@ -455,6 +460,11 @@ export class Sidebar{
 				object.visible = true;
 			    }
 			}
+		    }else{
+			 let object = data.node.data;
+			 if(object){
+			       object.visible = false;
+			 }	
 		    }
 		});
 

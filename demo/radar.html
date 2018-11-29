@@ -84,11 +84,11 @@
         }
 
 
-        // if (currentGpsTime > 10.0) {
+        // if (gpsTime > 30.0) {
+				// 	vAlpha = 0.0;
         // } else {
-        //   vAlpha = 1.0
+        //   vAlpha = 1.0;
         // }
-
 
 					// vec4 offset = vec4( 0.0, 0.0, 0.0, 0.0);
 					// vec4 offset = vec4( 300016.625, 4701260, 247.1885223388672, 0.0);
@@ -207,12 +207,18 @@
 			animationEngine.tweenTargets.push((gpsTime) => {
 				try{
 					let t = (gpsTime - animationEngine.tstart) / (animationEngine.timeRange);
-					let bunny = viewer.scene.scene.getObjectByName("bunny");
+					let bunny = viewer.scene.scene.getObjectByName("vehicle");
+					// debugger; //bunny
 					let rtkPoint = animation.getPoint(t); // TODO rename animation --> just use CatmullRomCurve3 directly
 					let vehicleOrientation = bunny.orientationPath.getPoint(t); // TODO same as above, also double check interpolation is legit
 					rtkPoint.z -= 2.0; // TODO remove hardcoded value
 					bunny.position.copy(rtkPoint);
 					applyRotation(bunny, vehicleOrientation.x, vehicleOrientation.y, vehicleOrientation.z);
+					// let cam = bunny.getObjectByName("Camera");
+
+					// debugger; //cam
+					// let targetPosition = new THREE.Vector3(bunny.position.x, bunny.position.y, bunny.position.z+2);
+					// bunny.children[189].lookAt(targetPosition);
 				} catch (e) {
 					console.error("Caught error: ",e);
 				}
@@ -242,39 +248,39 @@
 		// TODO Just for testing:
 		tweenInitAll();
 
-// // TODO FROM HERE
-// 		// Load Lanes Truth Data:
-// 		loadLanes((laneGeometries) => {
-//
-// 			// // TODO TESTING -- REMOVE
-// 			// debugger;
-// 			// for (let ii=0, len=laneGeometries.all.length; ii<len; ii++) {
-// 			// 	viewer.scene.scene.add(laneGeometries.all[ii]);
-// 			// }
-// 			// return;
-//
-//
-// 			// TODO merging into single geometry doesn't work yet -- so leave as false
-// 			let mergeLanesIntoSingleGeometry = false; // NOTE creating a single geometry object is more performant than adding all lanes individually
-// 			if (mergeLanesIntoSingleGeometry) {
-// 				let allLanesGeometry = new THREE.Geometry();
-// 				for (let ii=0, len=laneGeometries.left.length; ii<len; ii++){
-// 					allLanesGeometry.merge(laneGeometries.left[ii].geometry);
-// 					allLanesGeometry.merge(laneGeometries.spine[ii].geometry);
-// 					allLanesGeometry.merge(laneGeometries.right[ii].geometry);
-// 				}
-// 				allLanesGeometry = new THREE.BufferGeometry().fromGeometry( allLanesGeometry );
-// 				viewer.scene.scene.add(allLanesGeometry);
-//
-// 			} else {
-// 				for (let ii=0, len=laneGeometries.left.length; ii<len; ii++) {
-// 					viewer.scene.scene.add(laneGeometries.left[ii]);
-// 					viewer.scene.scene.add(laneGeometries.spine[ii]);
-// 					viewer.scene.scene.add(laneGeometries.right[ii]);
-// 				}
-// 			}
-// 		});
-// // TODO TILL HERE
+// TODO FROM HERE
+		// Load Lanes Truth Data:
+		loadLanes((laneGeometries) => {
+
+			// TODO TESTING -- REMOVE
+			// debugger;
+			for (let ii=0, len=laneGeometries.all.length; ii<len; ii++) {
+				viewer.scene.scene.add(laneGeometries.all[ii]);
+			}
+			// return;
+
+
+			// // TODO merging into single geometry doesn't work yet -- so leave as false
+			// let mergeLanesIntoSingleGeometry = false; // NOTE creating a single geometry object is more performant than adding all lanes individually
+			// if (mergeLanesIntoSingleGeometry) {
+			// 	let allLanesGeometry = new THREE.Geometry();
+			// 	for (let ii=0, len=laneGeometries.left.length; ii<len; ii++){
+			// 		allLanesGeometry.merge(laneGeometries.left[ii].geometry);
+			// 		allLanesGeometry.merge(laneGeometries.spine[ii].geometry);
+			// 		allLanesGeometry.merge(laneGeometries.right[ii].geometry);
+			// 	}
+			// 	allLanesGeometry = new THREE.BufferGeometry().fromGeometry( allLanesGeometry );
+			// 	viewer.scene.scene.add(allLanesGeometry);
+			//
+			// } else {
+			// 	for (let ii=0, len=laneGeometries.left.length; ii<len; ii++) {
+			// 		viewer.scene.scene.add(laneGeometries.left[ii]);
+			// 		viewer.scene.scene.add(laneGeometries.spine[ii]);
+			// 		viewer.scene.scene.add(laneGeometries.right[ii]);
+			// 	}
+			// }
+		});
+// TODO TILL HERE
 
 
 
@@ -361,21 +367,25 @@
 				// let name = "bbox-track_"+ii;
 				// trackGeometries.bbox[ii].name = name;
 				//
-				// animationEngine.tweenTargets.push((gpsTime) => {
-				// 	debugger;
-				// 	let bbox = viewer.scene.scene.getObjectByName(name);
-				// 	let t = bbox.geometry.attributes.gpsTime.array[0];
-				// 	currentTime = gpsTime - animationEngine.tstart;
-				// 	let minGpsTime = currentTime - 1.05;
-				// 	let maxGpsTime = currentTime + 1.05;
-				// 	if (minGpsTime <= t && t <= maxGpsTime) {
-				// 		// material.opacity = 1.0;
-				// 		bbox.material.visible = true;
-				// 	} else {
-				// 		// material.opacity = 0.0;
-				// 		bbox.material.visible = false;
-				// 	}
-				// });
+				animationEngine.tweenTargets.push((gpsTime) => {
+					let currentTime = gpsTime - animationEngine.tstart;
+					shaderMaterial.uniforms.minGpsTime.value = currentTime - 0.05;
+					shaderMaterial.uniforms.maxGpsTime.value = currentTime + 0.05;
+
+					// // debugger;
+					// let bbox = viewer.scene.scene.getObjectByName(name);
+					// let t = bbox.geometry.attributes.gpsTime.array[0];
+					// currentTime = gpsTime - animationEngine.tstart;
+					// let minGpsTime = currentTime - 1.05;
+					// let maxGpsTime = currentTime + 1.05;
+					// if (minGpsTime <= t && t <= maxGpsTime) {
+					// 	// material.opacity = 1.0;
+					// 	bbox.material.visible = true;
+					// } else {
+					// 	// material.opacity = 0.0;
+					// 	bbox.material.visible = false;
+					// }
+				});
 
 				// // TODO Very Inefficient (but works):
 				// trackGeometries.bbox[ii].onBeforeRender = function( renderer, scene, camera, geometry, material, group ) {
@@ -550,7 +560,7 @@
             }
           } );
 
-          object.name = "bunny";
+          object.name = "vehicle";
           object.position.set(...pos[0]);
           object.scale.multiplyScalar(.011);
 					object.orientationPath = orientationPath;
@@ -559,7 +569,28 @@
 
           // object.rotation.set(Math.PI / 2, 0*Math.PI/2., 0*Math.PI/2.0); // Shelby Mustang
 
+					// let vehicleCamGroup = new THREE.Group();
+					// vehicleCamGroup.name = "vehicle";
+					// vehicleCamGroup.add(object);
+					// let cam = viewer.scene.getActiveCamera();
+					// vehicleCamGroup.add(cam);
+					// debugger; // vehicleCamGroup
+
+
+					let cam =  viewer.scene.getActiveCamera();
+					cam.name = "Camera";
+					let camPosition = new THREE.Vector3(-186.330, 714.505, 666.085);
+		      // viewer.scene.view.lookAt( 0 );
+					cam.position.copy(camPosition);
+					// cam.lookAt(camPosition.clone());
+					// debugger;
+					object.add( cam );
+					// let objCam = object.getObjectByName("Camera");
+					// debugger
+					// objCam.position.copy(camPosition);
+
           viewer.scene.scene.add( object );
+					// viewer.scene.scene.add()
 					// debugger; // orientationPath
 
         }, onProgress, onError );
@@ -751,8 +782,11 @@
 
 			pointcloud.visible = true;
 
-      viewer.scene.view.position.set(300198.109, 4701144.537, 349.871);
-      viewer.scene.view.lookAt(new THREE.Vector3(299900.954, 4701576.919, 66.197));
+      // viewer.scene.view.position.set(300198.109, 4701144.537, 349.871);
+      // viewer.scene.view.lookAt(new THREE.Vector3(299900.954, 4701576.919, 66.197));
+
+      // viewer.scene.view.position.set(299983.172, 4701368.878, 248.440);
+      // viewer.scene.view.lookAt(new THREE.Vector3(299983.723, 4701369.451, 248.137));
       // viewer.toggleNavigationCube();
       $("#playbutton").click();
 
@@ -777,7 +811,7 @@
 			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
 			material.shape = Potree.PointShape.SQUARE;
 
-			pointcloud.visible = false;
+			pointcloud.visible = true;
 		});
 
 		Potree.loadPointCloud("../pointclouds/tracks.lidar_converted/cloud.js", "tracks", e => {
@@ -805,6 +839,19 @@
 			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
 			material.shape = Potree.PointShape.SQUARE;
 			pointcloud.visible = false;
+		});
+
+		Potree.loadPointCloud("../pointclouds/lane-snap-points/cloud.js", "lanes", e => {
+			let pointcloud = e.pointcloud;
+			let material = pointcloud.material;
+			console.log(pointcloud.pcoGeometry.nodes.r.gpsTime);
+			viewer.scene.addPointCloud(pointcloud);
+			material.pointColorType = Potree.PointColorType.COLOR; // any Potree.PointColorType.XXXX
+			material.color = new THREE.Color().setRGB(1.0, 0.0, 0.0);
+			material.size = 0.1;
+			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+			material.shape = Potree.PointShape.SQUARE;
+			pointcloud.visible = true;
 
 		});
 

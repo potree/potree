@@ -150,7 +150,7 @@ $(document).ready(function () {
       playbarhtml.find("#playbutton").hide();
       playbarhtml.find("#pausebutton").show();
       playbarhtml.find("#toggleplay").prop('checked', true);
-      window.animation.resume();
+      window.animation && window.animation.resume();
     });
 
     playbarhtml.find("#pausebutton").mousedown(function() {
@@ -158,7 +158,7 @@ $(document).ready(function () {
       playbarhtml.find("#playbutton").show();
       playbarhtml.find("#pausebutton").hide();
       playbarhtml.find("#toggleplay").prop('checked', false);
-      window.animation.pause();
+      window.animation && window.animation.pause();
     });
 
     window.addEventListener("keypress", (e) => {

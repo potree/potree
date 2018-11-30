@@ -32,34 +32,39 @@ $(document).ready(function () {
     // Define function to update clip range:
     function updateClip(disable=false) {
 
-      console.log(window.viewer.scene); // gpstime
-      var lidarOffset = window.viewer.scene.pointclouds[0].pcoGeometry.nodes.r.gpsTime.offset;
+      const pointcloud = window.viewer.scene.pointclouds[0];
+      const gpsTime = pointcloud && pointcloud.pcoGeometry.nodes.r.gpsTime;
 
-      // lidarOffset = 1495189467.550001;  // TODO Hardcoded b/c PotreeConverter is throwing away initial offset
-      var lidarRange = window.viewer.scene.pointclouds[0].pcoGeometry.nodes.r.gpsTime.range;
+      if (gpsTime) {
+        console.log(window.viewer.scene); // gpstime
+        const {offset, range} = gpsTime;
 
-      if (disable) {
-        // NOTE: is there a better way of disabling the gps clip range filter?
-        window.viewer.setFilterGPSTimeRange(lidarOffset-1, lidarOffset+lidarRange+1);
+        if (disable) {
+          // NOTE: is there a better way of disabling the gps clip range filter?
+          window.viewer.setFilterGPSTimeRange(offset-1, offset+range+1);
+          $( "#playbar_tmin" ).prop( "disabled", true ); //Disable
+          $( "#playbar_tmax" ).prop( "disabled", true ); //Disable
+
+        } else {
+          $( "#playbar_tmin" ).prop( "disabled", false ); //Enable
+          $( "#playbar_tmax" ).prop( "disabled", false ); //Enable
+
+          var sliderVal = $("#myRange").val() / 100.;
+          var t = sliderVal * range + offset;
+          $("#demo").html((t-offset).toFixed(4));
+          console.log(document.getElementById("demo").innerHTML);
+
+          var dtMin = Number($("#playbar_tmin").val());
+          var dtMax = Number($("#playbar_tmax").val());
+
+          tmin = t + dtMin;
+          tmax = t + dtMax;
+
+          window.viewer.setFilterGPSTimeRange(tmin, tmax);
+        }
+      } else {
         $( "#playbar_tmin" ).prop( "disabled", true ); //Disable
         $( "#playbar_tmax" ).prop( "disabled", true ); //Disable
-
-      } else {
-        $( "#playbar_tmin" ).prop( "disabled", false ); //Enable
-        $( "#playbar_tmax" ).prop( "disabled", false ); //Enable
-
-        var sliderVal = $("#myRange").val() / 100.;
-        var t = sliderVal * lidarRange + lidarOffset;
-        $("#demo").html((t-lidarOffset).toFixed(4));
-        console.log(document.getElementById("demo").innerHTML);
-
-        var dtMin = Number($("#playbar_tmin").val());
-        var dtMax = Number($("#playbar_tmax").val());
-
-        tmin = t + dtMin;
-        tmax = t + dtMax;
-
-        window.viewer.setFilterGPSTimeRange(tmin, tmax);
       }
     }
 
@@ -144,31 +149,36 @@ $(document).ready(function () {
       console.log("PLAY");
       playbarhtml.find("#playbutton").hide();
       playbarhtml.find("#pausebutton").show();
-
+      playbarhtml.find("#toggleplay").prop('checked', true);
+      window.animation.resume();
     });
 
     playbarhtml.find("#pausebutton").mousedown(function() {
       console.log("PAUSE");
       playbarhtml.find("#playbutton").show();
       playbarhtml.find("#pausebutton").hide();
-
+      playbarhtml.find("#toggleplay").prop('checked', false);
+      window.animation.pause();
     });
 
     window.addEventListener("keypress", (e) => {
-      console.log("keypress");
-      console.log(e);
-      if (e.charCode == 32) {
+      if (e.key === " ") {
         console.log("SPACEBAR");
-        var toggleplay = playbarhtml.find("#toggleplay");
-        toggleplay.trigger('click');
-          if (toggleplay.is(":checked")) {
-            playbarhtml.find("#playbutton").trigger('mousedown');
-          } else {
-            playbarhtml.find("#pausebutton").trigger('mousedown');
-          }
+        if (playbarhtml.find("#toggleplay").prop('checked')) {
+          playbarhtml.find("#pausebutton").trigger('mousedown');
+        } else {
+          playbarhtml.find("#playbutton").trigger('mousedown');
         }
+      }
     });
 
+    window.addEventListener("message", e => {
+      if (e.data === 'pause') {
+        if (playbarhtml.find("#toggleplay").prop('checked')) {
+          playbarhtml.find("#pausebutton").trigger('mousedown');
+        }
+      }
+    });
 
 
 });

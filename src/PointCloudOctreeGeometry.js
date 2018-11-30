@@ -1,7 +1,6 @@
 
 
 import {PointCloudTreeNode} from "./PointCloudTree.js";
-import {XHRFactory} from "./XHRFactory.js";
 import {Utils} from "./utils.js";
 
 export class PointCloudOctreeGeometry{
@@ -211,26 +210,9 @@ export class PointCloudOctreeGeometryNode extends PointCloudTreeNode{
 			// let hurl = node.pcoGeometry.octreeDir + "/../hierarchy/" + node.name + ".hrc";
 			let hurl = node.pcoGeometry.octreeDir + '/' + node.getHierarchyPath() + '/' + node.name + '.hrc';
 
-			let xhr = XHRFactory.createXMLHttpRequest();
-			xhr.open('GET', hurl, true);
-			xhr.responseType = 'arraybuffer';
-			xhr.overrideMimeType('text/plain; charset=x-user-defined');
-			xhr.onreadystatechange = () => {
-				if (xhr.readyState === 4) {
-					if (xhr.status === 200 || xhr.status === 0) {
-						let hbuffer = xhr.response;
-						callback(node, hbuffer);
-					} else {
-						console.log('Failed to load file! HTTP status: ' + xhr.status + ', file: ' + hurl);
-						Potree.numNodesLoading--;
-					}
-				}
-			};
-			try {
-				xhr.send(null);
-			} catch (e) {
-				console.log('fehler beim laden der punktwolke: ' + e);
-			}
+                  node.pcoGeometry.octreeLoader(hurl,
+                                                (hbuffer) => callback(node, hbuffer),
+                                                () => Potree.numNodesLoading--);
 		}
 	}
 
@@ -252,7 +234,7 @@ export class PointCloudOctreeGeometryNode extends PointCloudTreeNode{
 			this.oneTimeDisposeHandlers = [];
 		}
 	}
-	
+
 }
 
 PointCloudOctreeGeometryNode.IDCount = 0;

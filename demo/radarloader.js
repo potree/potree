@@ -4,37 +4,46 @@ isNan = function(n) {
   return n !== n;
 }
 
-function loadRadar(callback) {
-
-  let filename = "csv/radar_tracks_demo.csv";
-  let tcol = 3;
-  let xcol = 27;
-  let ycol = 28;
-  let zcol = 29;
-
-
-  let t0, t1;
-  let tstart = performance.now();
-
-  const xhr = new XMLHttpRequest();
-  xhr.open("GET", filename);
-  xhr.onprogress = function(event) {
-    t1 = performance.now();
-    console.log("Loaded ["+event.loaded+"] bytes in ["+(t1-t0)+"] ms")
-    t0 = t1;
+function loadRadar(s3, bucket, name, callback) {
+  if (s3 && bucket && name) {
+    const objectName = `${name}/V001/0_Preprocessed/radardata.csv`;
+    s3.getObject({Bucket: bucket,
+                  Key: objectName},
+                 (err, data) => {
+                   if (err) {
+                     console.log(err, err.stack);
+                   } else {
+                     const string = new TextDecoder().decode(data.Body);
+                     const {geometry, t_init} = parseRadar(string);
+                     callback(geometry, t_init);
+                   }});
+  } else {
+    const filename = "csv/radar_tracks_demo.csv";
+    const xhr = new XMLHttpRequest();
+    xhr.open("GET", filename);
+    xhr.onload = function(data) {
+      const {geometry, t_init} = parseRadar(data.target.response);
+      callback(geometry, t_init);
+    };
+    xhr.send();
   }
-  xhr.onload = function(data) {
-    var t0_loop = performance.now();
-    var rows = data.target.response.split('\n');
+function parseRadar(radarString) {
+	const t0_loop = performance.now();
+    const rows = radarString.('\n');
+
+  	const tcol = 3;
+  	const xcol = 27;
+  	const ycol = 28;
+  	const zcol = 29;
 
     var boxGeometries = new THREE.Geometry(); // TODO REMOVE
     var boxPositions = []; // TODO REMOVE
 
     var geometry = new THREE.BufferGeometry();
-    var positions = [];
-    var timestamps = [];
-    var colors = [];
-    var alphas = [];
+    let positions = [];
+    let timestamps = [];
+    let colors = [];
+    let alphas = [];
 
     let row, cols;
     let t_init = 0;
@@ -44,10 +53,10 @@ function loadRadar(callback) {
       cols = row.split(',');
 
       if (cols.length > 0) {
-        t = parseFloat(cols[tcol]);
-        x = parseFloat(cols[xcol]);
-        y = parseFloat(cols[ycol]);
-        z = parseFloat(cols[zcol]);
+        const t = parseFloat(cols[tcol]);
+        const x = parseFloat(cols[xcol]);
+        const y = parseFloat(cols[ycol]);
+        const z = parseFloat(cols[zcol]);
 
 
         if (isNan(t) || isNan(x) || isNan(y) || isNan(z)) {
@@ -94,9 +103,6 @@ function loadRadar(callback) {
 
     // callback(geometry, t_init);
     let boxBufferGeometries = new THREE.BufferGeometry().fromGeometry(boxGeometries);
-    callback(geometry, t_init, boxBufferGeometries); // TODO REMOVE
+    return {geometry, t_init, boxBufferGeometries}; // TODO REMOVE
   };
-
-  t0 = performance.now();
-  xhr.send();
 }

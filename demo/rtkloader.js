@@ -11,7 +11,7 @@ function minAngle(theta) {
 
 function loadRtk(s3, bucket, name, callback) {
   if (s3 && bucket && name) {
-    const objectName = `${name}/V001/0_Preprocessed/rtkdata.csv`;
+    const objectName = `${name}/0_Preprocessed/rtkdata.csv`;
     s3.getObject({Bucket: bucket,
                   Key: objectName},
                  (err, data) => {

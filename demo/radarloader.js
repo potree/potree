@@ -29,7 +29,7 @@ function loadRadar(s3, bucket, name, callback) {
   }
 function parseRadar(radarString) {
 	const t0_loop = performance.now();
-    const rows = radarString('\n');
+    const rows = radarString.split('\n');
 
   	const tcol = 3;
   	const xcol = 27;

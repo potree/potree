@@ -1,57 +1,105 @@
 
-function loadTracks(shaderMaterial, callback) {
-  console.log("Hello World! -- Loading Tracking Truth Data");
 
-  filename = "../data/tracks.bin";
+function loadTracks(s3, bucket, name, callback) {
+  if (s3 && bucket && name) {
+    const objectName = `${name}/2_Truth/tracks.fb`;
+    s3.getObject({Bucket: bucket,
+                  Key: objectName},
+                 (err, data) => {
+                   if (err) {
+                     console.log(err, err.stack);
+                   } else {
+                     debugger; // get as binary data
+                     const trackGeometries = parseTracks(data.target.response, shaderMaterial);
+                     console.log("Full Runtime: "+(performance.now()-tstart)+"ms");
+                     callback(trackGeometries, );
+                   }});
+  } else {
+    const filename = "../data/tracks.bin";
+    let t0, t1;
+    const tstart = performance.now();
 
-  const xhr = new XMLHttpRequest();
-  xhr.open("GET", filename);
-  xhr.responseType = "arraybuffer";
-  xhr.onprogress = function(event) {
-    console.log("TRACKS -- Loaded ["+event.loaded+"] bytes")
-  }
+    const xhr = new XMLHttpRequest();
+    xhr.open("GET", filename);
 
-  xhr.onerror = function(e) {
-    console.error("TRACKS -- Error loading tracks: ", e);
-  }
-
-  xhr.onload = function(data) {
-
-    response = data.target.response;
-    if (!response) {
-      console.error("Could not create buffer from tracks data");
-      return;
+    xhr.onprogress = function(event) {
+      t1 = performance.now();
+      console.log("Loaded ["+event.loaded+"] bytes in ["+(t1-t0)+"] ms")
+      t0 = t1;
     }
 
-    let bytesArray = new Uint8Array(response);
-    let numBytes = bytesArray.length;
-    let tracks = [];
+    xhr.onload = function(data) {
+      const trackGeometries = parseTracks(data.target.response, shaderMaterial);
+      console.log("Full Runtime: "+(performance.now()-tstart)+"ms");
+      callback(trackGeometries, );
+    };
 
-    let segOffset = 0;
-    let segSize, viewSize, viewData;
-    while (segOffset < numBytes) {
-
-      // Read SegmentSize:
-      viewSize = new DataView(bytesArray.buffer, segOffset, 4);
-      segSize = viewSize.getUint32(0, true); // True: little-endian | False: big-endian
-
-      // Get Flatbuffer Track Object:
-      segOffset += 4;
-      let buf = new Uint8Array(bytesArray.buffer.slice(segOffset, segOffset+segSize));
-      let fbuffer = new flatbuffers.ByteBuffer(buf);
-      let track = Flatbuffer.GroundTruth.Track.getRootAsTrack(fbuffer);
-      // debugger;
-
-      tracks.push(track);
-      segOffset += segSize;
-    }
-
-    trackGeometries = createTrackGeometries(shaderMaterial, tracks);
-    callback(trackGeometries, );
+    t0 = performance.now();
+    xhr.send();
   }
-
-  xhr.send();
 }
+
+
+//
+// function loadTracks(shaderMaterial, callback) {
+//   console.log("Hello World! -- Loading Tracking Truth Data");
+//
+//   filename = "../data/tracks.bin";
+//
+//   const xhr = new XMLHttpRequest();
+//   xhr.open("GET", filename);
+//   xhr.responseType = "arraybuffer";
+//   xhr.onprogress = function(event) {
+//     console.log("TRACKS -- Loaded ["+event.loaded+"] bytes")
+//   }
+//
+//   xhr.onerror = function(e) {
+//     console.error("TRACKS -- Error loading tracks: ", e);
+//   }
+//
+//   xhr.onload = function() {
+//     const trackGeometries = parseTracks(data.target.response, shaderMaterial);
+//     console.log("Full Runtime: "+(performance.now()-tstart)+"ms");
+//     callback(trackGeometries, );
+//   }
+//   xhr.send();
+// }
+
+function parseTracks(data, shaderMaterial) {
+
+  response = data.target.response;
+  if (!response) {
+    console.error("Could not create buffer from tracks data");
+    return;
+  }
+
+  let bytesArray = new Uint8Array(response);
+  let numBytes = bytesArray.length;
+  let tracks = [];
+
+  let segOffset = 0;
+  let segSize, viewSize, viewData;
+  while (segOffset < numBytes) {
+
+    // Read SegmentSize:
+    viewSize = new DataView(bytesArray.buffer, segOffset, 4);
+    segSize = viewSize.getUint32(0, true); // True: little-endian | False: big-endian
+
+    // Get Flatbuffer Track Object:
+    segOffset += 4;
+    let buf = new Uint8Array(bytesArray.buffer.slice(segOffset, segOffset+segSize));
+    let fbuffer = new flatbuffers.ByteBuffer(buf);
+    let track = Flatbuffer.GroundTruth.Track.getRootAsTrack(fbuffer);
+    // debugger;
+
+    tracks.push(track);
+    segOffset += segSize;
+  }
+
+  return createTrackGeometries(shaderMaterial, tracks);
+  // callback(trackGeometries, );
+}
+
 
 function createTrackGeometries(shaderMaterial, tracks) {
 

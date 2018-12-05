@@ -807,17 +807,9 @@ export class Sidebar{
 			elClassificationList.append(element);
 		};
 
-		addClassificationItem(0, 'never classified');
-		addClassificationItem(1, 'unclassified');
-		addClassificationItem(2, 'ground');
-		addClassificationItem(3, 'low vegetation');
-		addClassificationItem(4, 'medium vegetation');
-		addClassificationItem(5, 'high vegetation');
-		addClassificationItem(6, 'building');
-		addClassificationItem(7, 'low point(noise)');
-		addClassificationItem(8, 'key-point');
-		addClassificationItem(9, 'water');
-		addClassificationItem(12, 'overlap');
+		for (var classID in viewer.classifications) {
+			addClassificationItem(classID, viewer.classifications[classID].name);
+		}
 	}
 
 	initAccordion(){

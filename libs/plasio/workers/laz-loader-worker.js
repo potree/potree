@@ -25,7 +25,7 @@ function parseLASHeader(arraybuffer) {
 	var o = { };
 
 	o.pointsOffset = readAs(arraybuffer, Uint32Array, 32*3);
-	o.pointsFormatId = readAs(arraybuffer, Uint8Array, 32*3+8) & 0x3f;
+	o.pointsFormatId = readAs(arraybuffer, Uint8Array, 32*3+8) & 0b111111;
 	o.pointsStructSize = readAs(arraybuffer, Uint16Array, 32*3+8+1);
 
 	o.extraBytes = 0;

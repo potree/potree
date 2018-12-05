@@ -153,7 +153,7 @@ export class GreyhoundLoader{
 	 * @param loadingFinishedListener executed after loading the binary has been
 	 * finished
 	 */
-	load(url, callback){
+	static load(url, callback){
 		let HIERARCHY_STEP_SIZE = 5;
 
 		try {

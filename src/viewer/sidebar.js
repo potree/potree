@@ -702,7 +702,7 @@ export class Sidebar{
 
 			sldReturnNumber.slider({
 				range: true,
-				min: 1, max: 7, step: 1,
+				min: 0, max: 7, step: 1,
 				values: [0, 7],
 				slide: (event, ui) => {
 					this.viewer.setFilterReturnNumberRange(ui.values[0], ui.values[1])
@@ -727,7 +727,7 @@ export class Sidebar{
 
 			sldNumberOfReturns.slider({
 				range: true,
-				min: 1, max: 7, step: 1,
+				min: 0, max: 7, step: 1,
 				values: [0, 7],
 				slide: (event, ui) => {
 					this.viewer.setFilterNumberOfReturnsRange(ui.values[0], ui.values[1])

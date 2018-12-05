@@ -114,8 +114,8 @@ export class Viewer extends EventDispatcher{
 		this.clipTask = ClipTask.HIGHLIGHT;
 		this.clipMethod = ClipMethod.INSIDE_ANY;
 
-		this.filterReturnNumberRange = [1, 7];
-		this.filterNumberOfReturnsRange = [1, 7];
+		this.filterReturnNumberRange = [0, 7];
+		this.filterNumberOfReturnsRange = [0, 7];
 		this.filterGPSTimeRange = [0, Infinity];
 		this.filterGPSTimeExtent = [0, 1];
 

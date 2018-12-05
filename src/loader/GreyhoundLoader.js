@@ -4,7 +4,6 @@ import {Version} from "../Version";
 import {XHRFactory} from "../XHRFactory";
 import {PointAttributes, PointAttribute} from "./PointAttributes";
 import {PointCloudGreyhoundGeometry} from "../PointCloudGreyhoundGeometry";
-import {PointCloudGreyhoundGeometryNode} from "../PointCloudGreyhoundGeometryNode";
 import {GreyhoundBinaryLoader} from "./GreyhoundBinaryLoader";
 
 /**
@@ -143,7 +142,7 @@ export class GreyhoundLoader{
 
 	}
 
-	//loadInfoJSON(url, callback) { 
+	//loadInfoJSON(url, callback) {
 	//}
 
 	/**

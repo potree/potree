@@ -140,6 +140,7 @@ export class PointCloudOctree extends PointCloudTree {
 
 		// TODO read projection from file instead
 		this.projection = geometry.projection;
+		this.fallbackProjection = geometry.fallbackProjection;
 
 		this.root = this.pcoGeometry.root;
 	}
@@ -272,7 +273,7 @@ export class PointCloudOctree extends PointCloudTree {
 	}
 
 	computeVisibilityTextureData(nodes, camera){
-		
+
 		if(Potree.measureTimings) performance.mark("computeVisibilityTextureData-start");
 
 		let data = new Uint8Array(nodes.length * 4);
@@ -352,11 +353,11 @@ export class PointCloudOctree extends PointCloudTree {
 		}
 
 		var a = 10;
-		
+
 		if(Potree.measureTimings){
 			performance.mark("computeVisibilityTextureData-end");
 			performance.measure("render.computeVisibilityTextureData", "computeVisibilityTextureData-start", "computeVisibilityTextureData-end");
-		} 
+		}
 
 		return {
 			data: data,
@@ -374,7 +375,7 @@ export class PointCloudOctree extends PointCloudTree {
 
 			let start = new THREE.Vector3(profile.points[i + 0].x, profile.points[i + 0].y, bsWorld.center.z);
 			let end = new THREE.Vector3(profile.points[i + 1].x, profile.points[i + 1].y, bsWorld.center.z);
-			
+
 			let closest = new THREE.Line3(start, end).closestPointToPoint(bsWorld.center, true, new THREE.Vector3());
 			let distance = closest.distanceTo(bsWorld.center);
 
@@ -476,12 +477,12 @@ export class PointCloudOctree extends PointCloudTree {
 	 *
 	 *
 	 * The return value is an array with all segments of the profile path
-	 *  let segment = {
-	 * 		start: 	THREE.Vector3,
-	 * 		end: 	THREE.Vector3,
-	 * 		points: {}
-	 * 		project: function()
-	 *  };
+	 *	let segment = {
+	 *		start:	THREE.Vector3,
+	 *		end:	THREE.Vector3,
+	 *		points: {}
+	 *		project: function()
+	 *	};
 	 *
 	 * The project() function inside each segment can be used to transform
 	 * that segments point coordinates to line up along the x-axis.
@@ -596,7 +597,7 @@ export class PointCloudOctree extends PointCloudTree {
 	 *
 	 *
 	 * params.pickWindowSize:	Look for points inside a pixel window of this size.
-	 * 							Use odd values: 1, 3, 5, ...
+	 *							Use odd values: 1, 3, 5, ...
 	 *
 	 *
 	 * TODO: only draw pixels that are actually read with readPixels().
@@ -606,9 +607,9 @@ export class PointCloudOctree extends PointCloudTree {
 
 		let renderer = viewer.renderer;
 		let pRenderer = viewer.pRenderer;
-		
+
 		performance.mark("pick-start");
-		
+
 		let getVal = (a, b) => a !== undefined ? a : b;
 
 		let pickWindowSize = getVal(params.pickWindowSize, 17);
@@ -629,7 +630,7 @@ export class PointCloudOctree extends PointCloudTree {
 		if (nodes.length === 0) {
 			return null;
 		}
-		
+
 		if (!this.pickState) {
 			let scene = new THREE.Scene();
 
@@ -649,7 +650,7 @@ export class PointCloudOctree extends PointCloudTree {
 				scene: scene
 			};
 		};
-		
+
 		let pickState = this.pickState;
 		let pickMaterial = pickState.material;
 
@@ -677,7 +678,7 @@ export class PointCloudOctree extends PointCloudTree {
 			}else{
 				pickMaterial.clipBoxes = [];
 			}
-			
+
 			this.updateMaterial(pickMaterial, nodes, camera, renderer);
 		}
 
@@ -686,7 +687,7 @@ export class PointCloudOctree extends PointCloudTree {
 		pickState.renderTarget.setSize(width, height);
 
 		let pixelPos = new THREE.Vector2(params.x, params.y);
-		
+
 		let gl = renderer.getContext();
 		gl.enable(gl.SCISSOR_TEST);
 		gl.scissor(
@@ -694,24 +695,24 @@ export class PointCloudOctree extends PointCloudTree {
 			parseInt(pixelPos.y - (pickWindowSize - 1) / 2),
 			parseInt(pickWindowSize), parseInt(pickWindowSize));
 
-		
+
 		renderer.state.buffers.depth.setTest(pickMaterial.depthTest);
 		renderer.state.buffers.depth.setMask(pickMaterial.depthWrite);
 		renderer.state.setBlending(THREE.NoBlending);
-		
+
 		{ // RENDER
 			renderer.setRenderTarget(pickState.renderTarget);
 			gl.clearColor(0, 0, 0, 0);
 			renderer.clearTarget( pickState.renderTarget, true, true, true );
-			
+
 			let tmp = this.material;
 			this.material = pickMaterial;
-			
+
 			pRenderer.renderOctree(this, nodes, camera, pickState.renderTarget);
-			
+
 			this.material = tmp;
 		}
-		
+
 		let clamp = (number, min, max) => Math.min(Math.max(min, number), max);
 
 		let x = parseInt(clamp(pixelPos.x - (pickWindowSize - 1) / 2, 0, width));
@@ -721,14 +722,14 @@ export class PointCloudOctree extends PointCloudTree {
 
 		let pixelCount = w * h;
 		let buffer = new Uint8Array(4 * pixelCount);
-		
-		gl.readPixels(x, y, pickWindowSize, pickWindowSize, gl.RGBA, gl.UNSIGNED_BYTE, buffer); 
-		
+
+		gl.readPixels(x, y, pickWindowSize, pickWindowSize, gl.RGBA, gl.UNSIGNED_BYTE, buffer);
+
 		renderer.setRenderTarget(null);
 		renderer.state.reset();
 		renderer.setScissorTest(false);
 		gl.disable(gl.SCISSOR_TEST);
-		
+
 		let pixels = buffer;
 		let ibuffer = new Uint32Array(buffer.buffer);
 
@@ -763,13 +764,13 @@ export class PointCloudOctree extends PointCloudTree {
 						}
 					}
 
-					
+
 				}
 			}
 		}
-		
+
 		// DEBUG: show panel with pick image
-		//{ 
+		//{
 		//	let img = Utils.pixelsArrayToImage(buffer, w, h);
 		//	let screenshot = img.src;
 		//
@@ -790,36 +791,36 @@ export class PointCloudOctree extends PointCloudTree {
 		//	//$(this.debugWindow.document).append($(`<img src="${screenshot}"/>`));
 		//	//this.debugWindow.document.write('<img src="'+screenshot+'"/>');
 		//}
-		
+
 
 		for(let hit of hits){
 			let point = {};
-		
+
 			if (!nodes[hit.pcIndex]) {
 				return null;
 			}
-		
+
 			let node = nodes[hit.pcIndex];
 			let pc = node.sceneNode;
 			let geometry = node.geometryNode.geometry;
-			
+
 			for(let attributeName in geometry.attributes){
 				let attribute = geometry.attributes[attributeName];
-		
+
 				if (attributeName === 'position') {
 					let x = attribute.array[3 * hit.pIndex + 0];
 					let y = attribute.array[3 * hit.pIndex + 1];
 					let z = attribute.array[3 * hit.pIndex + 2];
-					
+
 					let position = new THREE.Vector3(x, y, z);
 					position.applyMatrix4(pc.matrixWorld);
-		
+
 					point[attributeName] = position;
 				} else if (attributeName === 'indices') {
-		
+
 				} else if (attributeName === 'gpsTime') {
 					let values = attribute.array.slice(attribute.itemSize * hit.pIndex, attribute.itemSize * (hit.pIndex + 1)) ;
-					
+
 					values[0] += node.geometryNode.gpsTime.offset;
 
 					point[attributeName] = values;
@@ -839,7 +840,7 @@ export class PointCloudOctree extends PointCloudTree {
 					//	point[attribute.name] = value;
 					//}
 				}
-				
+
 			}
 
 			hit.point = point;
@@ -860,7 +861,7 @@ export class PointCloudOctree extends PointCloudTree {
 				//return sorted[0].point;
 			}
 		}
-		
+
 	};
 
 	* getFittedBoxGen(boxNode){
@@ -879,7 +880,7 @@ export class PointCloudOctree extends PointCloudTree {
 			let posOffset = buffer.offset("position");
 			let stride = buffer.stride;
 			let view = new DataView(buffer.data);
-			
+
 			let objectToBox = new THREE.Matrix4().multiplyMatrices(worldToBox, node.sceneNode.matrixWorld);
 
 			let pos = new THREE.Vector4();
@@ -938,7 +939,7 @@ export class PointCloudOctree extends PointCloudTree {
 			let posOffset = buffer.offset("position");
 			let stride = buffer.stride;
 			let view = new DataView(buffer.data);
-			
+
 			let objectToBox = new THREE.Matrix4().multiplyMatrices(worldToBox, node.sceneNode.matrixWorld);
 
 			let pos = new THREE.Vector4();

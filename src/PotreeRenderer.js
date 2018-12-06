@@ -865,7 +865,23 @@ export class Renderer {
 			let webglBuffer = null;
 			if(!this.buffers.has(geometry)){
 				webglBuffer = this.createBuffer(geometry);
+				let tmp_buffers = this.buffers;
+				if(tmp_buffers.size>1000){
+					try{
+					    tmp_buffers.forEach(function(value, key) {
+						if(key.bufferWeight<2){
+							tmp_buffers.delete(key);
+							throw(new Error("StopIteration"));
+						  }
+					    });
+					}catch (e) {
+						if(e.message != "StopIteration"){
+							console.error(e);
+						}
+					}
+				}
 				this.buffers.set(geometry, webglBuffer);
+                		tmp_buffers = null;
 			}else{
 				webglBuffer = this.buffers.get(geometry);
 				for(let attributeName in geometry.attributes){

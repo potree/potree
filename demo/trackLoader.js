@@ -1,6 +1,6 @@
 
 
-function loadTracks(s3, bucket, name, callback) {
+function loadTracks(s3, bucket, name, shaderMaterial, callback) {
   if (s3 && bucket && name) {
     const objectName = `${name}/2_Truth/tracks.fb`;
     s3.getObject({Bucket: bucket,
@@ -10,7 +10,7 @@ function loadTracks(s3, bucket, name, callback) {
                      console.log(err, err.stack);
                    } else {
                      debugger; // get as binary data
-                     const trackGeometries = parseTracks(data.target.response, shaderMaterial);
+                     const trackGeometries = parseTracks(data.Body, shaderMaterial);
                      console.log("Full Runtime: "+(performance.now()-tstart)+"ms");
                      callback(trackGeometries, );
                    }});
@@ -29,7 +29,14 @@ function loadTracks(s3, bucket, name, callback) {
     }
 
     xhr.onload = function(data) {
-      const trackGeometries = parseTracks(data.target.response, shaderMaterial);
+      response = data.target.response;
+      if (!response) {
+        console.error("Could not create buffer from tracks data");
+        return;
+      }
+
+      let bytesArray = new Uint8Array(response);
+      const trackGeometries = parseTracks(bytesArray, shaderMaterial);
       console.log("Full Runtime: "+(performance.now()-tstart)+"ms");
       callback(trackGeometries, );
     };
@@ -65,15 +72,9 @@ function loadTracks(s3, bucket, name, callback) {
 //   xhr.send();
 // }
 
-function parseTracks(data, shaderMaterial) {
+function parseTracks(bytesArray, shaderMaterial) {
 
-  response = data.target.response;
-  if (!response) {
-    console.error("Could not create buffer from tracks data");
-    return;
-  }
 
-  let bytesArray = new Uint8Array(response);
   let numBytes = bytesArray.length;
   let tracks = [];
 

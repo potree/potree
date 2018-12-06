@@ -892,7 +892,7 @@ export class Renderer {
 						this.updateBuffer(geometry);
 					}
 				}
-				geometry.bufferWeight = geometry.bufferWeight>1000?1000:geometry.bufferWeight+=1;
+				geometry.bufferWeight = geometry.bufferWeight>1000?1000:geometry.bufferWeight+1;
 			}
 
 			gl.bindVertexArray(webglBuffer.vao);

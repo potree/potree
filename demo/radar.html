@@ -527,7 +527,7 @@
 
 // TODO FROM HERE
 		// Load Radar:
-		loadRadar((geometry,t_init, boxBufferGeometries) => {
+		loadRadar(s3, bucket, name, (geometry,t_init, boxBufferGeometries) => {
 
 			let boxMesh = new THREE.Mesh(boxBufferGeometries, new THREE.MeshBasicMaterial({color: 0xffff00}) );
 			boxMesh.name = "radar_boxes";

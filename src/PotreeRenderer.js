@@ -555,9 +555,9 @@ export class Renderer {
 		let webglBuffer = new WebGLBuffer();
 		webglBuffer.vao = gl.createVertexArray();
 		webglBuffer.numElements = geometry.attributes.position.count;
-
+		
 		gl.bindVertexArray(webglBuffer.vao);
-
+		
 		for(let attributeName in geometry.attributes){
 			let bufferAttribute = geometry.attributes[attributeName];
 
@@ -864,7 +864,7 @@ export class Renderer {
 
 			let webglBuffer = null;
 			if(!this.buffers.has(geometry)){
-				webglBuffer = this.createBuffer(geometry);
+				webglBuffer = this.createBuffer(geometry);				
 				let tmp_buffers = this.buffers;
 				if(tmp_buffers.size>1000){
 					try{
@@ -880,6 +880,7 @@ export class Renderer {
 						}
 					}
 				}
+				geometry.bufferWeight=1;
 				this.buffers.set(geometry, webglBuffer);
                 		tmp_buffers = null;
 			}else{
@@ -891,6 +892,7 @@ export class Renderer {
 						this.updateBuffer(geometry);
 					}
 				}
+				geometry.bufferWeight = geometry.bufferWeight>1000?1000:geometry.bufferWeight+=1;
 			}
 
 			gl.bindVertexArray(webglBuffer.vao);

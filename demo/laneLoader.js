@@ -1,78 +1,91 @@
-function loadLanes(callback) {
-  console.log("Hello World! -- Loading Lane Representation Truth Data");
 
-  filename = "../data/lanes.bin";
+export function loadLanes(s3, bucket, name, callback) {
+  const tstart = performance.now();
+  if (s3 && bucket && name) {
+    (async () => {
+      const objectName = `${name}/2_Truth/lanes.fb`;
+      const schemaFile = `${name}/7_Schemas/GroundTruth_generated.js`;
 
-  const xhr = new XMLHttpRequest();
-  xhr.open("GET", filename);
-  xhr.responseType = "arraybuffer";
-  xhr.onprogress = function(event) {
-    console.log("LANES -- Loaded ["+event.loaded+"] bytes")
-  }
+      const schemaUrl = s3.getSignedUrl('getObject', {
+        Bucket: bucket,
+        Key: schemaFile
+      });
 
-  xhr.onerror = function(e) {
-    console.error("LANES -- Error loading lanes: ", e);
-  }
+      s3.getObject({Bucket: bucket,
+                    Key: objectName},
+                   async (err, data) => {
+                     if (err) {
+                       console.log(err, err.stack);
+                     } else {
+                       const FlatbufferModule = await import(schemaUrl);
+                       const laneGeometries = parseLanes(data.Body, FlatbufferModule);
+                       console.log("Full Runtime: "+(performance.now()-tstart)+"ms");
+                       callback( laneGeometries );
+                     }});
+    })();
 
-  xhr.onload = function(data) {
+  } else {
+    const filename = "../data/lanes.bin";
+    const schemaFile = "../schemas/GroundTruth_generated.js";
+    let t0, t1;
 
-    response = data.target.response;
-    if (!response) {
-      console.error("Could not create buffer from lanes data");
-      return;
+    const xhr = new XMLHttpRequest();
+    xhr.open("GET", filename);
+
+    xhr.onprogress = function(event) {
+      t1 = performance.now();
+      console.log("Loaded ["+event.loaded+"] bytes in ["+(t1-t0)+"] ms")
+      t0 = t1;
     }
 
-    let bytesArray = new Uint8Array(response);
-    let numBytes = bytesArray.length;
-    let lanes = [];
+    xhr.onload = async function(data) {
 
-    let segOffset = 0;
-    let segSize, viewSize, viewData;
-    while (segOffset < numBytes) {
+      const FlatbufferModule = await import(schemaFile);
 
-      // Read SegmentSize:
-      viewSize = new DataView(bytesArray.buffer, segOffset, 4);
-      segSize = viewSize.getUint32(0, true); // True: little-endian | False: big-endian
+      const response = data.target.response;
+      if (!response) {
+        console.error("Could not create buffer from lane data");
+        return;
+      }
 
-      // Get Flatbuffer Lane Object:
-      segOffset += 4;
-      let buf = new Uint8Array(bytesArray.buffer.slice(segOffset, segOffset+segSize));
-      let fbuffer = new flatbuffers.ByteBuffer(buf);
-      let lane = Flatbuffer.GroundTruth.Lane.getRootAsLane(fbuffer);
+      let bytesArray = new Uint8Array(response);
+      const laneGeometries = parseLanes(bytesArray, FlatbufferModule);
+      console.log("Full Runtime: "+(performance.now()-tstart)+"ms");
+      callback( laneGeometries );
+    };
 
-      lanes.push(lane);
-      segOffset += segSize;
-    }
-
-    // let vertices = splitLaneVertices(lanes);
-    // leftMaterial = new THREE.MeshBasicMaterial({color: 0xffffff});
-    // rightMaterial = new THREE.MeshBasicMaterial({color: 0xffffff});
-    // spineMaterial = new THREE.MeshBasicMaterial({color: 0x0000ff});
-    //
-    // let leftGeometries = createLaneGeometries(vertices.leftGroups, leftMaterial);
-    // let rightGeometries = createLaneGeometries(vertices.rightGroups, rightMaterial);
-    // let spineGeometries = createLaneGeometries(vertices.spineGroups, spineMaterial);
-    // let allGeometries = [];
-    // allGeometries = allGeometries.concat(leftGeometries);
-    // allGeometries = allGeometries.concat(rightGeometries);
-    // allGeometries = allGeometries.concat(spineGeometries);
-    //
-    // debugger; // allGeometries
-    //
-    // let laneGeometries = {
-    //   left: leftGeometries,
-    //   right: rightGeometries,
-    //   spine: spineGeometries,
-    //   all: allGeometries
-    // }
-
-    let laneGeometries = createLaneGeometriesOld(lanes);
-
-    callback(laneGeometries);
+    t0 = performance.now();
+    xhr.send();
   }
-
-  xhr.send();
 }
+
+
+
+function parseLanes(bytesArray, FlatbufferModule) {
+
+  let numBytes = bytesArray.length;
+  let lanes = [];
+
+  let segOffset = 0;
+  let segSize, viewSize, viewData;
+  while (segOffset < numBytes) {
+
+    // Read SegmentSize:
+    viewSize = new DataView(bytesArray.buffer, segOffset, 4);
+    segSize = viewSize.getUint32(0, true); // True: little-endian | False: big-endian
+
+    // Get Flatbuffer Lane Object:
+    segOffset += 4;
+    let buf = new Uint8Array(bytesArray.buffer.slice(segOffset, segOffset+segSize));
+    let fbuffer = new flatbuffers.ByteBuffer(buf);
+    let lane = FlatbufferModule.Flatbuffer.GroundTruth.Lane.getRootAsLane(fbuffer);
+
+    lanes.push(lane);
+    segOffset += segSize;
+  }
+  return createLaneGeometriesOld(lanes);
+}
+
 
 function splitLaneVertices(lanes) {
 
@@ -184,15 +197,15 @@ function createLaneGeometries(vertexGroups, material) {
 
 function createLaneGeometriesOld(lanes) {
 
-  materialLeft = new THREE.LineBasicMaterial({
+  let materialLeft = new THREE.LineBasicMaterial({
     color: 0xff0000
   });
 
-  materialSpine = new THREE.LineBasicMaterial({
+  let materialSpine = new THREE.LineBasicMaterial({
     color: 0x00ff00
   });
 
-  materialRight = new THREE.LineBasicMaterial({
+  let materialRight = new THREE.LineBasicMaterial({
     color: 0x0000ff
   });
 
@@ -331,7 +344,7 @@ function createLaneGeometriesOld(lanes) {
     // rights.push(new THREE.Line(geometryRight, materialRight) );
   }
 
-  output = {
+  let output = {
     left: lefts,
     spine: spines,
     right: rights,

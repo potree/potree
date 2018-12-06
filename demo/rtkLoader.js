@@ -1,3 +1,6 @@
+function isNan(n) {
+  return n !== n;
+}
 
 function minAngle(theta) {
   if (theta < - Math.PI) {
@@ -9,7 +12,7 @@ function minAngle(theta) {
   return theta;
 }
 
-function loadRtk(s3, bucket, name, callback) {
+export function loadRtk(s3, bucket, name, callback) {
   if (s3 && bucket && name) {
     const objectName = `${name}/0_Preprocessed/rtkdata.csv`;
     s3.getObject({Bucket: bucket,
@@ -66,7 +69,7 @@ function parseRTK(RTKstring) {
 
   let t_init = 0;
   let firstTimestamp = true;
-  let lastRoll, lastPitch, lastYaw;
+  let lastRoll, lastPitch, lastYaw, lastOrientation;
   for (let ii = 0, len = rows.length; ii < len-1; ++ii) {
     const row = rows[ii];
     const cols = row.split(' ');
@@ -116,7 +119,7 @@ function parseRTK(RTKstring) {
 }
 
 
-function applyRotation(obj, roll, pitch, yaw) {
+export function applyRotation(obj, roll, pitch, yaw) {
   if ( typeof(obj.initialRotation) != "undefined") {
     console.log(obj.ini)
     roll += obj.initialRotation.x;

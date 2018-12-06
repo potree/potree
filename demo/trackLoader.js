@@ -1,23 +1,37 @@
+// import { Flatbuffer } from "../schemas/GroundTruth_generated.js";
+// import { Flatbuffer } from "http://localhost:1234/schemas/GroundTruth_generated.js";
 
 
-function loadTracks(s3, bucket, name, shaderMaterial, callback) {
+
+export function loadTracks(s3, bucket, name, shaderMaterial, callback) {
+  const tstart = performance.now();
   if (s3 && bucket && name) {
-    const objectName = `${name}/2_Truth/tracks.fb`;
-    s3.getObject({Bucket: bucket,
-                  Key: objectName},
-                 (err, data) => {
-                   if (err) {
-                     console.log(err, err.stack);
-                   } else {
-                     debugger; // get as binary data
-                     const trackGeometries = parseTracks(data.Body, shaderMaterial);
-                     console.log("Full Runtime: "+(performance.now()-tstart)+"ms");
-                     callback(trackGeometries, );
-                   }});
+    (async () => {
+      const objectName = `${name}/2_Truth/tracks.fb`;
+      const schemaFile = `${name}/7_Schemas/GroundTruth_generated.js`;
+
+      const schemaUrl = s3.getSignedUrl('getObject', {
+        Bucket: bucket,
+        Key: schemaFile
+      });
+
+      s3.getObject({Bucket: bucket,
+                    Key: objectName},
+                   async (err, data) => {
+                     if (err) {
+                       console.log(err, err.stack);
+                     } else {
+                       const FlatbufferModule = await import(schemaUrl);
+                       const trackGeometries = parseTracks(data.Body, shaderMaterial, FlatbufferModule);
+                       console.log("Full Runtime: "+(performance.now()-tstart)+"ms");
+                       callback(trackGeometries, );
+                     }});
+    })();
+
   } else {
     const filename = "../data/tracks.bin";
+    const schemaFile = "../schemas/GroundTruth_generated.js";
     let t0, t1;
-    const tstart = performance.now();
 
     const xhr = new XMLHttpRequest();
     xhr.open("GET", filename);
@@ -28,15 +42,18 @@ function loadTracks(s3, bucket, name, shaderMaterial, callback) {
       t0 = t1;
     }
 
-    xhr.onload = function(data) {
-      response = data.target.response;
+    xhr.onload = async function(data) {
+
+      const FlatbufferModule = await import(schemaFile);
+
+      const response = data.target.response;
       if (!response) {
         console.error("Could not create buffer from tracks data");
         return;
       }
 
       let bytesArray = new Uint8Array(response);
-      const trackGeometries = parseTracks(bytesArray, shaderMaterial);
+      const trackGeometries = parseTracks(bytesArray, shaderMaterial, FlatbufferModule);
       console.log("Full Runtime: "+(performance.now()-tstart)+"ms");
       callback(trackGeometries, );
     };
@@ -45,7 +62,6 @@ function loadTracks(s3, bucket, name, shaderMaterial, callback) {
     xhr.send();
   }
 }
-
 
 //
 // function loadTracks(shaderMaterial, callback) {
@@ -72,8 +88,7 @@ function loadTracks(s3, bucket, name, shaderMaterial, callback) {
 //   xhr.send();
 // }
 
-function parseTracks(bytesArray, shaderMaterial) {
-
+function parseTracks(bytesArray, shaderMaterial, FlatbufferModule) {
 
   let numBytes = bytesArray.length;
   let tracks = [];
@@ -90,7 +105,7 @@ function parseTracks(bytesArray, shaderMaterial) {
     segOffset += 4;
     let buf = new Uint8Array(bytesArray.buffer.slice(segOffset, segOffset+segSize));
     let fbuffer = new flatbuffers.ByteBuffer(buf);
-    let track = Flatbuffer.GroundTruth.Track.getRootAsTrack(fbuffer);
+    let track = FlatbufferModule.Flatbuffer.GroundTruth.Track.getRootAsTrack(fbuffer);
     // debugger;
 
     tracks.push(track);
@@ -101,15 +116,14 @@ function parseTracks(bytesArray, shaderMaterial) {
   // callback(trackGeometries, );
 }
 
-
 function createTrackGeometries(shaderMaterial, tracks) {
 
-  lineMaterial = new THREE.LineBasicMaterial({
+  let lineMaterial = new THREE.LineBasicMaterial({
     color: 0x00ff00,
     transparent: true
   });
 
-  boxMaterial = new THREE.MeshNormalMaterial();
+  let boxMaterial = new THREE.MeshNormalMaterial();
 
   let material = shaderMaterial;
 
@@ -179,7 +193,7 @@ function createTrackGeometries(shaderMaterial, tracks) {
 
         var edges = new THREE.EdgesGeometry( boxGeometry ); // or WireframeGeometry( geometry )
         var wireframe = new THREE.LineSegments( edges, material.clone() ); // TODO don't clone material to assign to multiple meshes
-        boxMesh = wireframe;
+        var boxMesh = wireframe;
 
         boxMesh.position.copy(centroidLocation);
 
@@ -239,7 +253,7 @@ function createTrackGeometries(shaderMaterial, tracks) {
         }
 
 
-        output = {
+        const output = {
           t0: t0,
           boxMesh: boxMesh,
           boxGeometry: boxGeometry2
@@ -271,7 +285,7 @@ function createTrackGeometries(shaderMaterial, tracks) {
 
 
 
-  output = {
+  const output = {
     bbox: bboxs,
     t0: t0,
     x0: x0,

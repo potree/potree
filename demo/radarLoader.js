@@ -1,10 +1,10 @@
 
-
-isNan = function(n) {
+function isNan(n) {
   return n !== n;
 }
 
-function loadRadar(s3, bucket, name, callback) {
+export function loadRadar(s3, bucket, name, callback) {
+  const tstart = performance.now();
   if (s3 && bucket && name) {
     const objectName = `${name}/0_Preprocessed/radardata.csv`;
     s3.getObject({Bucket: bucket,
@@ -23,10 +23,12 @@ function loadRadar(s3, bucket, name, callback) {
     xhr.open("GET", filename);
     xhr.onload = function(data) {
       const {geometry, t_init} = parseRadar(data.target.response);
+      console.log("Full Runtime: "+(performance.now()-tstart)+"ms");
       callback(geometry, t_init);
     };
     xhr.send();
   }
+}
 function parseRadar(radarString) {
 	const t0_loop = performance.now();
     const rows = radarString.split('\n');
@@ -99,10 +101,8 @@ function parseRadar(radarString) {
     console.log(timestamps);
     console.log(positions);
     console.log("Loop Runtime: "+(performance.now()-t0_loop)+"ms");
-    console.log("Full Runtime: "+(performance.now()-tstart)+"ms");
 
     // callback(geometry, t_init);
     let boxBufferGeometries = new THREE.BufferGeometry().fromGeometry(boxGeometries);
     return {geometry, t_init, boxBufferGeometries}; // TODO REMOVE
   };
-}

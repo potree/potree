@@ -1,5 +1,5 @@
-import { Vec3 } from "../schemas/BasicTypes_generated.js";
-import { Flatbuffer } from "../schemas/VisualizationPrimitives_generated.js";
+//import { Vec3 } from "../schemas/BasicTypes_generated.js";
+//import { Flatbuffer } from "../schemas/VisualizationPrimitives_generated.js";
 
 export function loadGaps(callback) {
   console.log("Hello World! -- Loading Gaps from VisualizationPrimitives");

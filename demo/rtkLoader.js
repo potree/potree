@@ -121,7 +121,7 @@ function parseRTK(RTKstring) {
 
 export function applyRotation(obj, roll, pitch, yaw) {
   if ( typeof(obj.initialRotation) != "undefined") {
-    console.log(obj.ini)
+    // console.log(obj.ini)
     roll += obj.initialRotation.x;
     pitch += obj.initialRotation.y;
     yaw += obj.initialRotation.z;

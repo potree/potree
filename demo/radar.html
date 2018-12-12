@@ -213,12 +213,32 @@
 			animationEngine.preStartCallback = function () {
 				if (!animationEngine.isPlaying) {
 					$("#playbutton").trigger("mousedown");
+
+					// Track Camera Transform Information:
+					debugger; // world frame matrix
+					if (!window.camControlInitialized) {
+						window.camDeltaTransform.camStart = viewer.scene.getActiveCamera().matrixWorld.clone();
+						window.camDeltaTransform.vehicleStart = viewer.scene.scene.getObjectByName("vehicle").position.clone();
+						window.camControlInitialized = true;
+					}
+					window.camDeltaTransform.camEnd = viewer.scene.getActiveCamera().matrixWorld.clone();
+					window.camDeltaTransform.vehicleEnd = viewer.scene.scene.getObjectByName("vehicle").position.clone();
+
+					window.camPointLocalFrame.position.setFromMatrixPosition(window.camDeltaTransform.camEnd).sub(camDeltaTransform.vehicleEnd);
+
+					let camDirection = viewer.scene.getActiveCamera().getWorldDirection().clone();
+					let camPosition = viewer.scene.getActiveCamera().position.clone();
+					let target = new THREE.Vector3().addVectors(camPosition, camDirection);
+					window.camTargetLocalFrame.position.copy(target.sub(camDeltaTransform.vehicleEnd));
 				}
 			}
 
 			animationEngine.preStopCallback = function() {
 				if (animationEngine.isPlaying) {
 					$("#pausebutton").trigger("mousedown");
+
+					// Track Camera Transform Information:
+					window.camDeltaTransform.vehicle = viewer.scene.scene.getObjectByName("vehicle").position.clone();
 				}
 			}
 
@@ -263,18 +283,13 @@
 					bunny.position.copy(rtkPoint);
 					applyRotation(bunny, vehicleOrientation.x, vehicleOrientation.y, vehicleOrientation.z);
 
-					// let cam = bunny.getObjectByName("Camera");
 
-					// debugger; //cam
-					// let targetPosition = new THREE.Vector3(bunny.position.x, bunny.position.y, bunny.position.z+2);
-					// bunny.children[189].lookAt(targetPosition);
-					debugger;
 					let elevationDeltaMin = -0;
 					let elevationDeltaMax = 2;
 					let clouds = viewer.scene.pointclouds;
 					for (let ii=0, numClouds = clouds.length; ii<numClouds; ii++) {
 							viewer.scene.pointclouds[ii].material.elevationRange = [rtkPoint.z+elevationDeltaMin, rtkPoint.z+elevationDeltaMax];
-							debugger; //pointclouds
+							// debugger; //pointclouds
 					}
 
 				} catch (e) {
@@ -283,20 +298,60 @@
 			});
 
 			// Camera:
-			let updateCamera = false;
+			let updateCamera = true;
 			let lag = 1.01; // seconds
 			let camPointZOffset = 10; // meters
-			animationEngine.tweenTargets.push((gpsTime) => {
-				if (updateCamera) {
-					let camera = viewer.scene.getActiveCamera();
-					let lagTime = Math.max(0, (gpsTime - lag - animationEngine.tstart)/ animationEngine.timeRange);
-					let bunny = viewer.scene.scene.getObjectByName("bunny");
-					let targetPosition = new THREE.Vector3(bunny.position.x, bunny.position.y, bunny.position.z+2);
-					let camPoint = animation.getPoint(lagTime);  // Get point with 2 second lag
+			window.camControlInitialized = false;
+			window.camPointNeedsToBeComputed = true;
+			window.camControlInUse = false;
+			window.camDeltaTransform = {camStart: new THREE.Matrix4(), vehicleStart: new THREE.Vector3(), camEnd: new THREE.Matrix4(), vehicleEnd: new THREE.Vector3()};
+			window.camPointLocalFrame = {position: new THREE.Vector3(-10,0,10)};
+			window.camTargetLocalFrame = {position: new THREE.Vector3(0, 0, 0)};
 
-					camPoint.z += camPointZOffset;
-					viewer.scene.view.position.copy(camPoint); // changed from camera
-					viewer.scene.view.lookAt(targetPosition);
+			function pauseAndGetVehiclePosition(event) {
+				if (event.shiftKey) {
+					animationEngine.stop();
+					window.camControlInUse = true;
+				}
+			}
+			function resumeAndGetCameraPosition(event) {
+				if (window.camControlInUse) {
+					animationEngine.start();
+					window.camControlInUse = false;
+				}
+			}
+			viewer.renderArea.addEventListener("mousedown", (e) => {
+				// Update Camera Local Frame:
+				window.camPointLocalFrame.position = viewer.scene.getActiveCamera().position.clone().sub(viewer.scene.scene.getObjectByName("vehicle").position.clone());
+
+				// Update Target Local Frame:
+				let camDirection = viewer.scene.getActiveCamera().getWorldDirection().clone();
+				let camPosition = viewer.scene.getActiveCamera().position.clone();
+				let target = new THREE.Vector3().addVectors(camPosition, camDirection);
+				window.camTargetLocalFrame.position.copy(target.sub(viewer.scene.scene.getObjectByName("vehicle").position.clone()));
+
+			});
+			// viewer.renderArea.addEventListener("mouseup", resumeAndGetCameraPosition);
+			viewer.renderArea.addEventListener("keypress", (e) => {
+				if (e.key == "r") {
+					window.camPointLocalFrame.position.set(-10, 0, 10);
+					window.camTargetLocalFrame.position.set(0,0,0);
+					window.scene.view.lookAt(camTargetLocalFrame.add(viewer.scene.scene.getObjectByName("vehicle").position.clone()));
+				}
+			});
+			animationEngine.tweenTargets.push((gpsTime) => {
+				if (updateCamera && !window.camControlInUse) {
+
+					let vehicle = viewer.scene.scene.getObjectByName("vehicle");
+
+					let targetVehicleFrame = window.camTargetLocalFrame.position.clone();
+					let targetWorldFrame = targetVehicleFrame.add(vehicle.position.clone());
+
+					let camPointVehicleFrame = window.camPointLocalFrame.position.clone();
+					let camPointWorldFrame = camPointVehicleFrame.add(vehicle.position.clone());
+
+					viewer.scene.view.position.copy(camPointWorldFrame);
+					// viewer.scene.view.lookAt(targetWorldFrame);
 				}
 			});
 
@@ -609,7 +664,7 @@
 
       const animationPath = new Potree.AnimationPath(path);
       animationPath.closed = false;
-	  const orientationPath = new THREE.CatmullRomCurve3(orientations, animationPath.closed); // NOTE: orientations are represented as a parametric curve in 3d space, this breaks at pi to negative pi transition
+	  	const orientationPath = new THREE.CatmullRomCurve3(orientations, animationPath.closed); // NOTE: orientations are represented as a parametric curve in 3d space, this breaks at pi to negative pi transition
 
       { // render the path
         let geometry = animationPath.getGeometry();
@@ -666,10 +721,10 @@
 
 
 					// Add Polar Grid Helper:
-					const gridHelper = new THREE.GridHelper( 400, 40, 0x0000ff, 0x808080 );
+					const gridHelper = new THREE.GridHelper( 1000, 10, 0x0000ff, 0x808080 );
 					gridHelper.name = "Grid";
-
-					const polarGridHelper = new THREE.PolarGridHelper( 500, 16, 20, 64, 0x0000ff, 0x808080 );
+					gridHelper.rotateOnAxis(new THREE.Vector3(1,0,0), Math.PI/2);
+					const polarGridHelper = new THREE.PolarGridHelper( 500, 16, 10, 64, 0x0000ff, 0x808080 );
 					polarGridHelper.name = "PolarGrid";
 					polarGridHelper.rotateOnAxis(new THREE.Vector3(1,0,0), Math.PI/2);
 					const axesHelper = new THREE.AxesHelper(1000);
@@ -683,37 +738,19 @@
 
           object.name = "vehicle";
           object.position.set(...pos[0]);
-          object.scale.multiplyScalar(.011);
+          object.scale.multiplyScalar(.01);
 					object.orientationPath = orientationPath;
           object.rotation.set(0*Math.PI / 2, 0*Math.PI/2., 1*Math.PI/2.0); // Chevy Volt
 					object.initialRotation = object.rotation.clone(); // NOTE is this used?
 
-          // object.rotation.set(Math.PI / 2, 0*Math.PI/2., 0*Math.PI/2.0); // Shelby Mustang
+					// TODO New Camera Initialization:
+					let box = new THREE.Box3().setFromObject(object);
+					let node = new THREE.Object3D();
+					node.boundingBox = box;
+					viewer.zoomTo(node, 1, 500);
 
-					// let vehicleCamGroup = new THREE.Group();
-					// vehicleCamGroup.name = "vehicle";
-					// vehicleCamGroup.add(object);
-					// let cam = viewer.scene.getActiveCamera();
-					// vehicleCamGroup.add(cam);
-					// debugger; // vehicleCamGroup
-
-
-					let cam =  viewer.scene.getActiveCamera();
-					cam.name = "Camera";
-					// let camPosition = new THREE.Vector3(-186.330, 714.505, 666.085);
-		      // viewer.scene.view.lookAt( 0 );
-					cam.position.set(0,0,10);
-					cam.position.z += 10;
-					// cam.lookAt(camPosition.clone());
-					// debugger;
-					object.add( cam );
-					// let objCam = object.getObjectByName("Camera");
-					// debugger
-					// objCam.position.copy(camPosition);
 
           viewer.scene.scene.add( object );
-					// viewer.scene.scene.add()
-					// debugger; // orientationPath
 
         }, onProgress, onError );
       }

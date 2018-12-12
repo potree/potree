@@ -1,3 +1,5 @@
+import { getLoadingBar } from "../common/overlay.js";
+
 function isNan(n) {
   return n !== n;
 }
@@ -13,9 +15,10 @@ function minAngle(theta) {
 }
 
 export function loadRtk(s3, bucket, name, callback) {
+  let totalLoaded = 0;
   if (s3 && bucket && name) {
     const objectName = `${name}/0_Preprocessed/rtkdata.csv`;
-    s3.getObject({Bucket: bucket,
+    const request = s3.getObject({Bucket: bucket,
                   Key: objectName},
                  (err, data) => {
                    if (err) {
@@ -25,6 +28,11 @@ export function loadRtk(s3, bucket, name, callback) {
                      const {mpos, orientations, t_init} = parseRTK(string);
                      callback(mpos, orientations, t_init);
                    }});
+    request.on("httpDownloadProgress", (e) => {
+      let loadingBar = getLoadingBar();
+      loadingBar.set(100*(e.loaded/e.total));
+    });
+
   } else {
     const filename = "csv/rtkdata.csv";
     let t0, t1;

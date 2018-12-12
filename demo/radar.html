@@ -14,6 +14,8 @@
 	<link rel="stylesheet" type="text/css" href="../libs/openlayers3/ol.css">
 	<link rel="stylesheet" type="text/css" href="../libs/spectrum/spectrum.css">
 	<link rel="stylesheet" type="text/css" href="../libs/jstree/themes/mixed/style.css">
+	<link rel="stylesheet" href="../common/overlay.css" type="text/css">
+	<link rel="stylesheet" href="../common/loading-bar.css" type="text/css">
   <!-- <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet"> -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 	<script src="../node_modules/flatbuffers/js/flatbuffers.js"></script>
@@ -44,6 +46,8 @@
 	<script src="../libs/plasio/js/laslaz.js"></script>
   <script src="../libs/other/OBJLoader.js"></script>
 	<script src="../common/playbar.js"></script>
+	<script src="../common/loading-bar.js"></script>
+	<script type="module" src="../common/overlay.js"></script>
 	<script src="../node_modules/three.meshline/src/THREE.MeshLine.js"></script>
 	<script src="animationEngine.js"></script>
 
@@ -57,7 +61,7 @@
 
 
 	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
-        <script src="https://sdk.amazonaws.com/js/aws-sdk-2.339.0.min.js"></script>
+  <script src="https://sdk.amazonaws.com/js/aws-sdk-2.339.0.min.js"></script>
 
 	<!-- INCLUDE SETTINGS HERE -->
 
@@ -131,43 +135,47 @@
 		import { loadRtk, applyRotation } from "../demo/rtkLoader.js";
 		import { loadRadar } from "../demo/radarLoader.js";
 		import { loadGaps } from "../demo/gapsLoader.js";
+		// import {  } from "../common/overlay.js";
+		import { setLoadingScreen, removeLoadingScreen } from "../common/overlay.js";
 
-          const params = new URLSearchParams(location.search);
-          const bucket = params.get("bucket");
-          const region = params.get("region");
-          const name = params.get("name");
-          const accessKeyId = params.get("key1");
-          const secretAccessKey = params.get("key2");
-          const fonts =  JSON.parse(params.get("fonts"));
-          const theme = JSON.parse(params.get("theme")); // material-ui theme
+		// setLoadingScreen();
 
-          const head = document.head;
-          fonts.forEach(font => {
-            const link = document.createElement('link');
-            link.rel = 'stylesheet';
-            link.href = font;
-            head.appendChild(link);
-          });
+    const params = new URLSearchParams(location.search);
+    const bucket = params.get("bucket");
+    const region = params.get("region");
+    const name = params.get("name");
+    const accessKeyId = params.get("key1");
+    const secretAccessKey = params.get("key2");
+    const fonts =  JSON.parse(params.get("fonts"));
+    const theme = JSON.parse(params.get("theme")); // material-ui theme
 
-          // Override fonts specified.
-          const {typography} = theme;
-          const style = document.createElement('style');
-          style.innerHTML = `#value {font-family: ${typography.fontFamily} !important;} #sidebar_root {font-family: ${typography.fontFamily} !important;} #potree_languages {font-family: ${typography.fontFamily} !important;}`;
-          head.appendChild(style);
+    const head = document.head;
+    fonts.forEach(font => {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = font;
+      head.appendChild(link);
+    });
 
-          const s3 = bucket && region && name && accessKeyId && secretAccessKey &&
-                new AWS.S3({apiVersion: '2006-03-01',
-                            region,
-                            accessKeyId,
-                            secretAccessKey
-                           });
-          if (!s3) { window.history.back() };
-          // We really want this, but it doesn't work in the browser. Only on a server.
-          // const stream = s3.getObject({Bucket: bucket,
-          //                              Key: name}).createReadStream();
-          // console.log(stream);
+    // Override fonts specified.
+    const {typography} = theme;
+    const style = document.createElement('style');
+    style.innerHTML = `#value {font-family: ${typography.fontFamily} !important;} #sidebar_root {font-family: ${typography.fontFamily} !important;} #potree_languages {font-family: ${typography.fontFamily} !important;}`;
+    head.appendChild(style);
 
-                window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
+    const s3 = bucket && region && name && accessKeyId && secretAccessKey &&
+          new AWS.S3({apiVersion: '2006-03-01',
+                      region,
+                      accessKeyId,
+                      secretAccessKey
+                     });
+    if (!s3) { window.history.back() };
+    // We really want this, but it doesn't work in the browser. Only on a server.
+    // const stream = s3.getObject({Bucket: bucket,
+    //                              Key: name}).createReadStream();
+    // console.log(stream);
+
+    window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
 
 		viewer.setEDLEnabled(true);
 		viewer.setFOV(60);
@@ -751,6 +759,8 @@
 
 
           viewer.scene.scene.add( object );
+
+					removeLoadingScreen();
 
         }, onProgress, onError );
       }

@@ -28,6 +28,6 @@ export function removeLoadingScreen() {
 
 export function getLoadingBar() {
   // NOTE: using https://loadingbar.io/progress
-  const loadingBar = new ldBar("#loading-bar"); // TODO not used -- how to export loadingBar variable?
+  const loadingBar = new ldBar("#loading-bar"); 
   return loadingBar;
 }

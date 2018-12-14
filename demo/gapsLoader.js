@@ -4,7 +4,7 @@
 export function loadGaps(callback) {
   console.log("Hello World! -- Loading Gaps from VisualizationPrimitives");
 
-  let filename = "../data/gaps.bin";
+  let filename = "../data/gaps.fb";
 
   const xhr = new XMLHttpRequest();
   xhr.open("GET", filename);

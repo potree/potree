@@ -3,12 +3,12 @@
 
 
 
-export function loadTracks(s3, bucket, name, shaderMaterial, callback) {
+export function loadTracks(s3, bucket, name, shaderMaterial, animationEngine, callback) {
   const tstart = performance.now();
   if (s3 && bucket && name) {
     (async () => {
       const objectName = `${name}/2_Truth/tracks.fb`;
-      const schemaFile = `${name}/7_Schemas/GroundTruth_generated.js`;
+      const schemaFile = `${name}/5_Schemas/GroundTruth_generated.js`;
 
       const schemaUrl = s3.getSignedUrl('getObject', {
         Bucket: bucket,
@@ -22,19 +22,20 @@ export function loadTracks(s3, bucket, name, shaderMaterial, callback) {
                        console.log(err, err.stack);
                      } else {
                        const FlatbufferModule = await import(schemaUrl);
-                       const trackGeometries = parseTracks(data.Body, shaderMaterial, FlatbufferModule);
+                       const trackGeometries = parseTracks(data.Body, shaderMaterial, FlatbufferModule, animationEngine);
                        console.log("Full Runtime: "+(performance.now()-tstart)+"ms");
                        callback(trackGeometries, );
                      }});
     })();
 
   } else {
-    const filename = "../data/tracks.bin";
+    const filename = "../data/tracks.fb";
     const schemaFile = "../schemas/GroundTruth_generated.js";
     let t0, t1;
 
     const xhr = new XMLHttpRequest();
     xhr.open("GET", filename);
+    xhr.responseType = "arraybuffer";
 
     xhr.onprogress = function(event) {
       t1 = performance.now();
@@ -53,7 +54,7 @@ export function loadTracks(s3, bucket, name, shaderMaterial, callback) {
       }
 
       let bytesArray = new Uint8Array(response);
-      const trackGeometries = parseTracks(bytesArray, shaderMaterial, FlatbufferModule);
+      const trackGeometries = parseTracks(bytesArray, shaderMaterial, FlatbufferModule, animationEngine);
       console.log("Full Runtime: "+(performance.now()-tstart)+"ms");
       callback(trackGeometries, );
     };
@@ -88,7 +89,7 @@ export function loadTracks(s3, bucket, name, shaderMaterial, callback) {
 //   xhr.send();
 // }
 
-function parseTracks(bytesArray, shaderMaterial, FlatbufferModule) {
+function parseTracks(bytesArray, shaderMaterial, FlatbufferModule, animationEngine) {
 
   let numBytes = bytesArray.length;
   let tracks = [];
@@ -112,11 +113,11 @@ function parseTracks(bytesArray, shaderMaterial, FlatbufferModule) {
     segOffset += segSize;
   }
 
-  return createTrackGeometries(shaderMaterial, tracks);
+  return createTrackGeometries(shaderMaterial, tracks, animationEngine);
   // callback(trackGeometries, );
 }
 
-function createTrackGeometries(shaderMaterial, tracks) {
+function createTrackGeometries(shaderMaterial, tracks, animationEngine) {
 
   let lineMaterial = new THREE.LineBasicMaterial({
     color: 0x00ff00,
@@ -217,7 +218,7 @@ function createTrackGeometries(shaderMaterial, tracks) {
         // }
         // boxMesh.geometry.addAttribute('gpsTime', new THREE.Float32BufferAttribute(timestamps, 1));
 
-        stateTimes.push(state.timestamps()-t0+16.8); // HACK -- 16.8 is a hack to get the tracked box timestamps to lineup with the rest of the animation
+        stateTimes.push(state.timestamps()-animationEngine.tstart); // HACK -- 16.8 is a hack to get the tracked box timestamps to lineup with the rest of the animation
 
 
         let se3 = new THREE.Matrix4();

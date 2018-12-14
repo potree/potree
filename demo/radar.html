@@ -132,6 +132,7 @@
 	<script type="module">
 		import { loadLanes } from "../demo/laneLoader.js";
 		import { loadTracks } from "../demo/trackLoader.js";
+		import { loadDetections } from "../demo/detectionLoader.js";
 		import { loadRtk, applyRotation } from "../demo/rtkLoader.js";
 		import { loadRadar } from "../demo/radarLoader.js";
 		import { loadGaps } from "../demo/gapsLoader.js";
@@ -140,28 +141,33 @@
 
 		// setLoadingScreen();
 
-    const params = new URLSearchParams(location.search);
-    const bucket = params.get("bucket");
-    const region = params.get("region");
-    const name = params.get("name");
-    const accessKeyId = params.get("key1");
-    const secretAccessKey = params.get("key2");
-    const fonts =  JSON.parse(params.get("fonts"));
-    const theme = JSON.parse(params.get("theme")); // material-ui theme
+		const runForLocalDevelopment = location.search === "" && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
 
-    const head = document.head;
-    fonts.forEach(font => {
-      const link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = font;
-      head.appendChild(link);
-    });
+		const params = new URLSearchParams(location.search);
+		console.log(location);
+		const bucket = params.get("bucket");
+		const region = params.get("region");
+		const name = params.get("name");
+		const accessKeyId = params.get("key1");
+		const secretAccessKey = params.get("key2");
+		const fonts =  JSON.parse(params.get("fonts"));
+		const theme = JSON.parse(params.get("theme")); // material-ui theme
 
-    // Override fonts specified.
-    const {typography} = theme;
-    const style = document.createElement('style');
-    style.innerHTML = `#value {font-family: ${typography.fontFamily} !important;} #sidebar_root {font-family: ${typography.fontFamily} !important;} #potree_languages {font-family: ${typography.fontFamily} !important;}`;
-    head.appendChild(style);
+		if (fonts) {
+			const head = document.head;
+			fonts.forEach(font => {
+				const link = document.createElement('link');
+				link.rel = 'stylesheet';
+				link.href = font;
+				head.appendChild(link);
+			});
+
+			// Override fonts specified.
+			const {typography} = theme;
+			const style = document.createElement('style');
+			style.innerHTML = `#value {font-family: ${typography.fontFamily} !important;} #sidebar_root {font-family: ${typography.fontFamily} !important;} #potree_languages {font-family: ${typography.fontFamily} !important;}`;
+			head.appendChild(style);
+		}
 
     const s3 = bucket && region && name && accessKeyId && secretAccessKey &&
           new AWS.S3({apiVersion: '2006-03-01',
@@ -169,7 +175,8 @@
                       accessKeyId,
                       secretAccessKey
                      });
-    if (!s3) { window.history.back() };
+
+	 if (!(s3 || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) { window.history.back() };
     // We really want this, but it doesn't work in the browser. Only on a server.
     // const stream = s3.getObject({Bucket: bucket,
     //                              Key: name}).createReadStream();
@@ -223,7 +230,7 @@
 					$("#playbutton").trigger("mousedown");
 
 					// Track Camera Transform Information:
-					debugger; // world frame matrix
+					// debugger; // world frame matrix
 					if (!window.camControlInitialized) {
 						window.camDeltaTransform.camStart = viewer.scene.getActiveCamera().matrixWorld.clone();
 						window.camDeltaTransform.vehicleStart = viewer.scene.scene.getObjectByName("vehicle").position.clone();
@@ -258,10 +265,11 @@
 
 			// PointCloud:
 			animationEngine.tweenTargets.push((gpsTime) => {
-				let minLidarTime = gpsTime-1495189467.63-0.05;
-				let maxLidarTime = gpsTime-1495189467.63+0.05;
-				viewer.setFilterGPSTimeRange(minLidarTime, maxLidarTime);
-				viewer.setFilterGPSTimeExtent(minLidarTime-10, maxLidarTime+10);
+				// debugger; // account for pointcloud offset
+				let minGpsTime = gpsTime-0.05;
+				let maxGpsTime = gpsTime+0.05;
+				viewer.setFilterGPSTimeRange(minGpsTime, maxGpsTime);
+				viewer.setFilterGPSTimeExtent(minGpsTime-10, maxGpsTime+10);
 			});
 
 			// Playbar:
@@ -284,14 +292,25 @@
 				try{
 					let t = (gpsTime - animationEngine.tstart) / (animationEngine.timeRange);
 					let bunny = viewer.scene.scene.getObjectByName("vehicle");
+					let lastRtkPoint = bunny.position.clone();
+					let lastRtkOrientation = bunny.rotation.clone();
+					let lastTransform = bunny.matrixWorld.clone();
 					// debugger; //bunny
 					let rtkPoint = animation.getPoint(t); // TODO rename animation --> just use CatmullRomCurve3 directly
 					let vehicleOrientation = bunny.orientationPath.getPoint(t); // TODO same as above, also double check interpolation is legit
 					rtkPoint.z -= 2.0; // TODO remove hardcoded value
 					bunny.position.copy(rtkPoint);
 					applyRotation(bunny, vehicleOrientation.x, vehicleOrientation.y, vehicleOrientation.z);
+					bunny.updateMatrixWorld();
 
+					// Apply Camera Transformation:
+					let newTransform = bunny.matrixWorld.clone();
+					let lastTransformInverse = lastTransform.getInverse(lastTransform);
+					let deltaTransform = lastTransformInverse.premultiply(newTransform);
+					// let camera = viewer.scene.getActiveCamera();
+					viewer.scene.view.position.applyMatrix4(deltaTransform);
 
+					// Set Elevation:
 					let elevationDeltaMin = -0;
 					let elevationDeltaMax = 2;
 					let clouds = viewer.scene.pointclouds;
@@ -306,7 +325,7 @@
 			});
 
 			// Camera:
-			let updateCamera = true;
+			let updateCamera = false;
 			let lag = 1.01; // seconds
 			let camPointZOffset = 10; // meters
 			window.camControlInitialized = false;
@@ -402,75 +421,75 @@
 			// }
 		});
 // TODO TILL HERE
-
-
-
-		// Load Test Box:
-		{
-			let position = new THREE.Vector3(300139.728, 4701364.107, 241.147);
-			let geom = new THREE.BoxBufferGeometry(100, 100, 100);
-			let materialNormal = new THREE.MeshNormalMaterial();
-
-			let geo = new THREE.WireframeGeometry( geom );
-			let timestamps = [];
-			for (let ii=0; ii<60; ii++){
-					timestamps.push(0.5);
-			};
-			geo.addAttribute('gpsTime', new THREE.Float32BufferAttribute(timestamps, 1));
-			// var geo = new THREE.EdgesGeometry( geom );
-			let material = new THREE.LineBasicMaterial( { color: 0xffffff, linewidth: 2 } );
-
-			// uniforms
-	    let uniforms = {
-	          color: { value: new THREE.Color( 0x00ff00 ) },
-	          minGpsTime: {value: 0.0 },
-	          maxGpsTime: {value: 0.5 },
-	          initialTime: {value: 0} // TODO not used
-	      };
-			let shaderMaterial = new THREE.ShaderMaterial( {
-
-		       uniforms:       uniforms,
-		       vertexShader:   document.getElementById( 'vertexshader' ).textContent,
-		       fragmentShader: document.getElementById( 'fragmentshader' ).textContent,
-		       transparent:    true
-
-		   });
-
-
-			var wireframe = new THREE.LineSegments( geo, shaderMaterial );
-
-			wireframe.position.copy(position);
-			wireframe.name = "testbox";
-
-			var mesh = new THREE.Mesh(geom, materialNormal);
-			mesh.position.copy(position);
-
-			wireframe.onBeforeRender = function(renderer, scene, camera, geometry, material, group) {
-				let testBox = viewer.scene.scene.getObjectByName("testbox");
-				let t = animationEngine.timeline.t - animationEngine.tstart;
-				testBox.material.uniforms.minGpsTime.value = t - 1;
-				testBox.material.uniforms.maxGpsTime.value = t + 1;
-			}
-
-			viewer.scene.scene.add(wireframe);
-
-		}
-
-
-
-
-// TODO FROM HERE
-	loadGaps((gapGeometries) => {
-
-		// TODO TESTING -- REMOVE
-		// debugger;
-		for (let ii=0, len=gapGeometries.left.length; ii<len; ii++) {
-			if (ii < 1000) {
-				viewer.scene.scene.add(gapGeometries.left[ii]);
-			}
-		}
-	});
-// TODO TILL HERE
+//
+//
+//
+// 		// Load Test Box:
+// 		{
+// 			let position = new THREE.Vector3(300139.728, 4701364.107, 241.147);
+// 			let geom = new THREE.BoxBufferGeometry(100, 100, 100);
+// 			let materialNormal = new THREE.MeshNormalMaterial();
+//
+// 			let geo = new THREE.WireframeGeometry( geom );
+// 			let timestamps = [];
+// 			for (let ii=0; ii<60; ii++){
+// 					timestamps.push(0.5);
+// 			};
+// 			geo.addAttribute('gpsTime', new THREE.Float32BufferAttribute(timestamps, 1));
+// 			// var geo = new THREE.EdgesGeometry( geom );
+// 			let material = new THREE.LineBasicMaterial( { color: 0xffffff, linewidth: 2 } );
+//
+// 			// uniforms
+// 	    let uniforms = {
+// 	          color: { value: new THREE.Color( 0x00ff00 ) },
+// 	          minGpsTime: {value: 0.0 },
+// 	          maxGpsTime: {value: 0.5 },
+// 	          initialTime: {value: 0} // TODO not used
+// 	      };
+// 			let shaderMaterial = new THREE.ShaderMaterial( {
+//
+// 		       uniforms:       uniforms,
+// 		       vertexShader:   document.getElementById( 'vertexshader' ).textContent,
+// 		       fragmentShader: document.getElementById( 'fragmentshader' ).textContent,
+// 		       transparent:    true
+//
+// 		   });
+//
+//
+// 			var wireframe = new THREE.LineSegments( geo, shaderMaterial );
+//
+// 			wireframe.position.copy(position);
+// 			wireframe.name = "testbox";
+//
+// 			var mesh = new THREE.Mesh(geom, materialNormal);
+// 			mesh.position.copy(position);
+//
+// 			wireframe.onBeforeRender = function(renderer, scene, camera, geometry, material, group) {
+// 				let testBox = viewer.scene.scene.getObjectByName("testbox");
+// 				let t = animationEngine.timeline.t - animationEngine.tstart;
+// 				testBox.material.uniforms.minGpsTime.value = t - 1;
+// 				testBox.material.uniforms.maxGpsTime.value = t + 1;
+// 			}
+//
+// 			viewer.scene.scene.add(wireframe);
+//
+// 		}
+//
+//
+//
+//
+// // TODO FROM HERE
+// 	loadGaps((gapGeometries) => {
+//
+// 		// TODO TESTING -- REMOVE
+// 		// debugger;
+// 		for (let ii=0, len=gapGeometries.left.length; ii<len; ii++) {
+// 			if (ii < 1000) {
+// 				viewer.scene.scene.add(gapGeometries.left[ii]);
+// 			}
+// 		}
+// 	});
+// // TODO TILL HERE
 
 
 
@@ -492,71 +511,31 @@
 				 transparent:    true
 
 		 });
-		loadTracks(s3, bucket, name, shaderMaterial, (trackGeometries) => {
-			// let singleGeometry = new THREE.Geometry();
-
-			// let bboxGroup = new THREE.Group();
+		let trackShaderMaterial = shaderMaterial.clone();
+		loadTracks(s3, bucket, name, trackShaderMaterial, animationEngine, (trackGeometries) => {
 			for (let ii=0, len=trackGeometries.bbox.length; ii<len; ii++) {
-				// let mesh = THREE.Mesh(trackGeometries.bbox[ii]);
-				// singleGeometry.merge(trackGeometries.bbox[ii].geometry);
-
-
-
-
-				// let name = "bbox-track_"+ii;
-				// trackGeometries.bbox[ii].name = name;
-				//
-				animationEngine.tweenTargets.push((gpsTime) => {
-					let currentTime = gpsTime - animationEngine.tstart;
-					shaderMaterial.uniforms.minGpsTime.value = currentTime - 0.05;
-					shaderMaterial.uniforms.maxGpsTime.value = currentTime + 0.05;
-
-					// // debugger;
-					// let bbox = viewer.scene.scene.getObjectByName(name);
-					// let t = bbox.geometry.attributes.gpsTime.array[0];
-					// currentTime = gpsTime - animationEngine.tstart;
-					// let minGpsTime = currentTime - 1.05;
-					// let maxGpsTime = currentTime + 1.05;
-					// if (minGpsTime <= t && t <= maxGpsTime) {
-					// 	// material.opacity = 1.0;
-					// 	bbox.material.visible = true;
-					// } else {
-					// 	// material.opacity = 0.0;
-					// 	bbox.material.visible = false;
-					// }
-				});
-
-				// // TODO Very Inefficient (but works):
-				// trackGeometries.bbox[ii].onBeforeRender = function( renderer, scene, camera, geometry, material, group ) {
-				// 		// debugger;
-				// 		console.log(geometry.UUID);
-				// 		let t = geometry.attributes.gpsTime.array[0];
-				// 		currentTime = animationEngine.timeline.t - animationEngine.tstart;
-				// 		let minGpsTime = currentTime - 0.05;
-				// 		let maxGpsTime = currentTime + 0.05;
-				// 		if (minGpsTime <= t && t <= maxGpsTime) {
-				// 			material.opacity = 1.0;
-				// 			// material.visible = true;
-				// 		} else {
-				// 			material.opacity = 0.0;
-				// 			// material.visible = false;
-				// 		}
-				// };
-
 				viewer.scene.scene.add(trackGeometries.bbox[ii]); // Original
-				// bboxGroup.add( trackGeometries.bbox[ii] );
-
-
-				// let bbox = new THREE.Mesh(trackGeometries.bbox[ii], shaderMaterial);
-				// bbox.material.uniforms.offset.value = new THREE.Vector3(trackGeometries.x0[ii], trackGeometries.y0[ii], trackGeometries.z0[ii]);
-				// viewer.scene.scene.add(bbox);
-				//
-				// let bbox2 = new THREE.Mesh(trackGeometries.bbox[ii],  new THREE.MeshBasicMaterial());
-				// viewer.scene.scene.add(bbox2);
-
 			}
-			// viewer.scene.scene.add(singleGeometry);
+			animationEngine.tweenTargets.push((gpsTime) => {
+				let currentTime = gpsTime - animationEngine.tstart;
+				trackShaderMaterial.uniforms.minGpsTime.value = currentTime - 0.05;
+				trackShaderMaterial.uniforms.maxGpsTime.value = currentTime + 0.05;
+			});
+		});
 
+		let detectionShaderMaterial = shaderMaterial.clone();
+		detectionShaderMaterial.uniforms.color.value = new THREE.Color(0xFFA500);
+		loadDetections(s3, bucket, name, detectionShaderMaterial, animationEngine, (detectionGeometries) => {
+			debugger; // detectionGeometries;
+			for (let ii=0, len=detectionGeometries.bbox.length; ii<len; ii++) {
+				viewer.scene.scene.add(detectionGeometries.bbox[ii]); // Original
+			}
+
+			animationEngine.tweenTargets.push((gpsTime) => {
+				let currentTime = gpsTime - animationEngine.tstart;
+				detectionShaderMaterial.uniforms.minGpsTime.value = currentTime - 0.05;
+				detectionShaderMaterial.uniforms.maxGpsTime.value = currentTime + 0.05;
+			});
 		});
 // TODO TILL HERE
 
@@ -624,6 +603,7 @@
 			// Create tween:
 			{
 				animationEngine.tweenTargets.push( (t) => {
+					// debugger;
 					let minGpsTime = t - .05;
 					let maxGpsTime = t + .05;
 					let radarOffset = t_init;
@@ -756,6 +736,7 @@
 					let node = new THREE.Object3D();
 					node.boundingBox = box;
 					viewer.zoomTo(node, 1, 500);
+					viewer.scene.view.lookAt(object.position);
 
 
           viewer.scene.scene.add( object );
@@ -929,69 +910,83 @@
 
     });
 
+			if (runForLocalDevelopment) {
+				Potree.loadPointCloud("../pointclouds/external/full-cloud/cloud.js", "full-cloud", e => {
+					const pointcloud = e.pointcloud;
+		      const material = pointcloud.material;
+		      console.log(pointcloud.pcoGeometry.nodes.r.gpsTime);
+		      viewer.scene.addPointCloud(pointcloud);
+		      material.pointColorType = Potree.PointColorType.HEIGHT; // any Potree.PointColorType.XXXX
+					material.gradient = Potree.Gradients.GRAYSCALE; // Can define custom gradient or look up in Potree.Gradients
+		      material.size = 0.09;
+		      material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+		      material.shape = Potree.PointShape.SQUARE;
 
-          if (name === 'Data/basemap-demo') {
-            Potree.loadPointCloud({s3, bucket, name}, "basemap", e => {
-	      const pointcloud = e.pointcloud;
-	      const material = pointcloud.material;
-	      console.log(pointcloud.pcoGeometry.nodes.r.gpsTime);
-	      viewer.scene.addPointCloud(pointcloud);
-	      material.pointColorType = Potree.PointColorType.COLOR; // any Potree.PointColorType.XXXX
-	      material.color = new THREE.Color().setRGB(0.99, 0.99, 0.99);
-	      material.size = 0.09;
-	      material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-	      material.shape = Potree.PointShape.SQUARE;
+		      viewer.scene.view.position.set(300198.109, 4701144.537, 349.871);
+		      viewer.scene.view.lookAt(new THREE.Vector3(299900.954, 4701576.919, 66.197));
+				});
+			} else if (name === 'Data/basemap-demo') {
+        Potree.loadPointCloud({s3, bucket, name}, "basemap", e => {
+		      const pointcloud = e.pointcloud;
+		      const material = pointcloud.material;
+		      console.log(pointcloud.pcoGeometry.nodes.r.gpsTime);
+		      viewer.scene.addPointCloud(pointcloud);
+		      material.pointColorType = Potree.PointColorType.COLOR; // any Potree.PointColorType.XXXX
+		      material.color = new THREE.Color().setRGB(0.99, 0.99, 0.99);
+		      material.size = 0.09;
+		      material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+		      material.shape = Potree.PointShape.SQUARE;
 
-	      viewer.scene.view.position.set(300198.109, 4701144.537, 349.871);
-	      viewer.scene.view.lookAt(new THREE.Vector3(299900.954, 4701576.919, 66.197));
-	      // viewer.toggleNavigationCube();
-	      $("#playbutton").click();
-	    });
-          } else if (name === 'Data/fullcloud-demo') {
-            Potree.loadPointCloud({s3, bucket, name}, "fullcloud", e => {
-	      const pointcloud = e.pointcloud;
-	      const material = pointcloud.material;
-	      console.log(pointcloud.pcoGeometry.nodes.r.gpsTime);
-	      viewer.scene.addPointCloud(pointcloud);
-	      material.pointColorType = Potree.PointColorType.HEIGHT; // any Potree.PointColorType.XXXX
-	      material.size = 0.09;
-	      material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-	      material.shape = Potree.PointShape.SQUARE;
+		      viewer.scene.view.position.set(300198.109, 4701144.537, 349.871);
+		      viewer.scene.view.lookAt(new THREE.Vector3(299900.954, 4701576.919, 66.197));
+		      // viewer.toggleNavigationCube();
+		      $("#playbutton").click();
+		    });
+      } else if (name === 'Data/fullcloud-demo') {
+        Potree.loadPointCloud({s3, bucket, name}, "fullcloud", e => {
+		      const pointcloud = e.pointcloud;
+		      const material = pointcloud.material;
+		      console.log(pointcloud.pcoGeometry.nodes.r.gpsTime);
+		      viewer.scene.addPointCloud(pointcloud);
+		      material.pointColorType = Potree.PointColorType.HEIGHT; // any Potree.PointColorType.XXXX
+		      material.size = 0.09;
+		      material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+		      material.shape = Potree.PointShape.SQUARE;
 
-	      viewer.scene.view.position.set(300198.109, 4701144.537, 349.871);
-	      viewer.scene.view.lookAt(new THREE.Vector3(299900.954, 4701576.919, 66.197));
-	      // viewer.toggleNavigationCube();
-	      $("#playbutton").click();
-	    });
-            Potree.loadPointCloud({s3, bucket, name: 'Data/basemap-demo'}, "basemap", e => {
-	      const pointcloud = e.pointcloud;
-	      const material = pointcloud.material;
-	      console.log(pointcloud.pcoGeometry.nodes.r.gpsTime);
-	      viewer.scene.addPointCloud(pointcloud);
-	      material.pointColorType = Potree.PointColorType.COLOR; // any Potree.PointColorType.XXXX
-	      material.color = new THREE.Color().setRGB(0.99, 0.99, 0.99);
-	      material.size = 0.09;
-	      material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-	      material.shape = Potree.PointShape.SQUARE;
-	    });
-          } else {
-            Potree.loadPointCloud({s3, bucket, name}, name.substring(5), e => {
-	      const pointcloud = e.pointcloud;
-	      const material = pointcloud.material;
-	      console.log(pointcloud.pcoGeometry.nodes.r.gpsTime);
-	      viewer.scene.addPointCloud(pointcloud);
-	      material.pointColorType = Potree.PointColorType.HEIGHT; // any Potree.PointColorType.XXXX
-				material.gradient = Potree.Gradients.YELLOW_GREEN;
-	      material.size = 0.09;
-	      material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-	      material.shape = Potree.PointShape.SQUARE;
+		      viewer.scene.view.position.set(300198.109, 4701144.537, 349.871);
+		      viewer.scene.view.lookAt(new THREE.Vector3(299900.954, 4701576.919, 66.197));
+		      // viewer.toggleNavigationCube();
+		      $("#playbutton").click();
+		    });
+        Potree.loadPointCloud({s3, bucket, name: 'Data/basemap-demo'}, "basemap", e => {
+		      const pointcloud = e.pointcloud;
+		      const material = pointcloud.material;
+		      console.log(pointcloud.pcoGeometry.nodes.r.gpsTime);
+		      viewer.scene.addPointCloud(pointcloud);
+		      material.pointColorType = Potree.PointColorType.COLOR; // any Potree.PointColorType.XXXX
+		      material.color = new THREE.Color().setRGB(0.99, 0.99, 0.99);
+		      material.size = 0.09;
+		      material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+		      material.shape = Potree.PointShape.SQUARE;
+		    });
+      } else {
+        Potree.loadPointCloud({s3, bucket, name}, name.substring(5), e => {
+		      const pointcloud = e.pointcloud;
+		      const material = pointcloud.material;
+		      console.log(pointcloud.pcoGeometry.nodes.r.gpsTime);
+		      viewer.scene.addPointCloud(pointcloud);
+		      material.pointColorType = Potree.PointColorType.HEIGHT; // any Potree.PointColorType.XXXX
+					material.gradient = Potree.Gradients.YELLOW_GREEN;
+		      material.size = 0.09;
+		      material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+		      material.shape = Potree.PointShape.SQUARE;
 
-	      // viewer.scene.view.position.set(300198.109, 4701144.537, 349.871);
-	      // viewer.scene.view.lookAt(new THREE.Vector3(299900.954, 4701576.919, 66.197));
-	      // viewer.toggleNavigationCube();
-	      $("#playbutton").click();
-	    });
-          }
+		      // viewer.scene.view.position.set(300198.109, 4701144.537, 349.871);
+		      // viewer.scene.view.lookAt(new THREE.Vector3(299900.954, 4701576.919, 66.197));
+		      // viewer.toggleNavigationCube();
+		      $("#playbutton").click();
+		    });
+      }
 
 		</script>
 

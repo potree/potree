@@ -15,7 +15,7 @@ function minAngle(theta) {
 }
 
 export function loadRtk(s3, bucket, name, callback) {
-  let totalLoaded = 0;
+  let lastLoaded = 0;
   if (s3 && bucket && name) {
     const objectName = `${name}/0_Preprocessed/rtkdata.csv`;
     const request = s3.getObject({Bucket: bucket,
@@ -30,7 +30,13 @@ export function loadRtk(s3, bucket, name, callback) {
                    }});
     request.on("httpDownloadProgress", (e) => {
       let loadingBar = getLoadingBar();
-      loadingBar.set(100*(e.loaded/e.total));
+      let val = 100*(e.loaded/e.total);
+      val = Math.max(lastLoaded, val);
+      loadingBar.set(val);
+      lastLoaded = val;
+      if (val < 1) {
+        debugger; // shouldn't get here after past
+      }
     });
 
   } else {

@@ -19,7 +19,7 @@ function loadPCO(fMnoString, url, binaryLoader, callback) {
   // assume octreeDir is absolute if it starts with http
   if (fMno.octreeDir.indexOf('http') === 0) {
     pco.octreeDir = fMno.octreeDir;
-  } else if (fMno.octreeDir.indexOf('.') > 0) {
+  } else if (url.indexOf("cloud.js") > 0) {
     pco.octreeDir = url + '/../' + fMno.octreeDir;
   } else {
     pco.octreeDir = url + '/' + fMno.octreeDir;
@@ -118,7 +118,7 @@ function HttpBinaryLoad(url, successCallback, failCallback) {
       if (xhr.status === 200 || xhr.status === 0) {
 	successCallback(xhr.response);
       } else {
-	console.log('Failed to load file! HTTP status: ' + xhr.status + ', file: ' + hurl);
+	console.log('Failed to load file! HTTP status: ' + xhr.status + ', file: ' + url);
         failCallback();
       }
     }
@@ -218,4 +218,3 @@ export class POCLoader {
 		return new THREE.Box3(min, max);
 	}
 }
-

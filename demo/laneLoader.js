@@ -4,7 +4,7 @@ export function loadLanes(s3, bucket, name, callback) {
   if (s3 && bucket && name) {
     (async () => {
       const objectName = `${name}/2_Truth/lanes.fb`;
-      const schemaFile = `${name}/7_Schemas/GroundTruth_generated.js`;
+      const schemaFile = `${name}/5_Schemas/GroundTruth_generated.js`;
 
       const schemaUrl = s3.getSignedUrl('getObject', {
         Bucket: bucket,
@@ -25,12 +25,13 @@ export function loadLanes(s3, bucket, name, callback) {
     })();
 
   } else {
-    const filename = "../data/lanes.bin";
+    const filename = "../data/lanes.fb";
     const schemaFile = "../schemas/GroundTruth_generated.js";
     let t0, t1;
 
     const xhr = new XMLHttpRequest();
     xhr.open("GET", filename);
+    xhr.responseType = "arraybuffer";
 
     xhr.onprogress = function(event) {
       t1 = performance.now();

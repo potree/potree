@@ -136,6 +136,7 @@
 		import { loadRtk, applyRotation } from "../demo/rtkLoader.js";
 		import { loadRadar } from "../demo/radarLoader.js";
 		import { loadGaps } from "../demo/gapsLoader.js";
+		import { updateSidebar } from "../common/custom-sidebar.js";
 		// import {  } from "../common/overlay.js";
 		import { setLoadingScreen, removeLoadingScreen } from "../common/overlay.js";
 
@@ -193,7 +194,11 @@
 		viewer.setDescription(``);
 		viewer.loadSettingsFromURL();
 
+
 		viewer.loadGUI(() => {
+			// Override Sidebar Potree Branding Panel:
+			document.getElementById("potree_branding").style.display="none";
+
 			viewer.setLanguage('en');
 			$("#menu_appearance").next().show();
 			$("#menu_tools").next().show();
@@ -204,6 +209,7 @@
       $("#splat_quality_options_hq").trigger("click");
       // viewer.scene.view.position.set(300198.109, 4701144.537, 349.871);
       // viewer.scene.view.lookAt(new THREE.Vector3(299900.954, 4701576.919, 66.197));
+			updateSidebar();
 		});
 
 		// Create Axes Helper:
@@ -233,11 +239,11 @@
 					// debugger; // world frame matrix
 					if (!window.camControlInitialized) {
 						window.camDeltaTransform.camStart = viewer.scene.getActiveCamera().matrixWorld.clone();
-						window.camDeltaTransform.vehicleStart = viewer.scene.scene.getObjectByName("vehicle").position.clone();
+						window.camDeltaTransform.vehicleStart = viewer.scene.scene.getObjectByName("Vehicle Mesh").position.clone();
 						window.camControlInitialized = true;
 					}
 					window.camDeltaTransform.camEnd = viewer.scene.getActiveCamera().matrixWorld.clone();
-					window.camDeltaTransform.vehicleEnd = viewer.scene.scene.getObjectByName("vehicle").position.clone();
+					window.camDeltaTransform.vehicleEnd = viewer.scene.scene.getObjectByName("Vehicle Mesh").position.clone();
 
 					window.camPointLocalFrame.position.setFromMatrixPosition(window.camDeltaTransform.camEnd).sub(camDeltaTransform.vehicleEnd);
 
@@ -253,7 +259,7 @@
 					$("#pausebutton").trigger("mousedown");
 
 					// Track Camera Transform Information:
-					window.camDeltaTransform.vehicle = viewer.scene.scene.getObjectByName("vehicle").position.clone();
+					window.camDeltaTransform.vehicle = viewer.scene.scene.getObjectByName("Vehicle Mesh").position.clone();
 				}
 			}
 
@@ -291,7 +297,7 @@
 			animationEngine.tweenTargets.push((gpsTime) => {
 				try{
 					let t = (gpsTime - animationEngine.tstart) / (animationEngine.timeRange);
-					let bunny = viewer.scene.scene.getObjectByName("vehicle");
+					let bunny = viewer.scene.scene.getObjectByName("Vehicle Mesh");
 					let lastRtkPoint = bunny.position.clone();
 					let lastRtkOrientation = bunny.rotation.clone();
 					let lastTransform = bunny.matrixWorld.clone();
@@ -349,13 +355,13 @@
 			}
 			viewer.renderArea.addEventListener("mousedown", (e) => {
 				// Update Camera Local Frame:
-				window.camPointLocalFrame.position = viewer.scene.getActiveCamera().position.clone().sub(viewer.scene.scene.getObjectByName("vehicle").position.clone());
+				window.camPointLocalFrame.position = viewer.scene.getActiveCamera().position.clone().sub(viewer.scene.scene.getObjectByName("Vehicle Mesh").position.clone());
 
 				// Update Target Local Frame:
 				let camDirection = viewer.scene.getActiveCamera().getWorldDirection().clone();
 				let camPosition = viewer.scene.getActiveCamera().position.clone();
 				let target = new THREE.Vector3().addVectors(camPosition, camDirection);
-				window.camTargetLocalFrame.position.copy(target.sub(viewer.scene.scene.getObjectByName("vehicle").position.clone()));
+				window.camTargetLocalFrame.position.copy(target.sub(viewer.scene.scene.getObjectByName("Vehicle Mesh").position.clone()));
 
 			});
 			// viewer.renderArea.addEventListener("mouseup", resumeAndGetCameraPosition);
@@ -363,13 +369,13 @@
 				if (e.key == "r") {
 					window.camPointLocalFrame.position.set(-10, 0, 10);
 					window.camTargetLocalFrame.position.set(0,0,0);
-					window.scene.view.lookAt(camTargetLocalFrame.add(viewer.scene.scene.getObjectByName("vehicle").position.clone()));
+					window.scene.view.lookAt(camTargetLocalFrame.add(viewer.scene.scene.getObjectByName("Vehicle Mesh").position.clone()));
 				}
 			});
 			animationEngine.tweenTargets.push((gpsTime) => {
 				if (updateCamera && !window.camControlInUse) {
 
-					let vehicle = viewer.scene.scene.getObjectByName("vehicle");
+					let vehicle = viewer.scene.scene.getObjectByName("Vehicle Mesh");
 
 					let targetVehicleFrame = window.camTargetLocalFrame.position.clone();
 					let targetWorldFrame = targetVehicleFrame.add(vehicle.position.clone());
@@ -386,44 +392,27 @@
 
 
 		// TODO Just for testing:
-		tweenInitAll();
+		// tweenInitAll();
 
 // TODO FROM HERE
 		// Load Lanes Truth Data:
 		loadLanes(s3, bucket, name, (laneGeometries) => {
 
-			// TODO TESTING -- REMOVE
-			// debugger;
+			let lanesLayer = new THREE.Group();
+			lanesLayer.name = "Lanes";
 			for (let ii=0, len=laneGeometries.all.length; ii<len; ii++) {
-				viewer.scene.scene.add(laneGeometries.all[ii]);
+				lanesLayer.add(laneGeometries.all[ii]);
 			}
-			// return;
-
-
-			// // TODO merging into single geometry doesn't work yet -- so leave as false
-			// let mergeLanesIntoSingleGeometry = false; // NOTE creating a single geometry object is more performant than adding all lanes individually
-			// if (mergeLanesIntoSingleGeometry) {
-			// 	let allLanesGeometry = new THREE.Geometry();
-			// 	for (let ii=0, len=laneGeometries.left.length; ii<len; ii++){
-			// 		allLanesGeometry.merge(laneGeometries.left[ii].geometry);
-			// 		allLanesGeometry.merge(laneGeometries.spine[ii].geometry);
-			// 		allLanesGeometry.merge(laneGeometries.right[ii].geometry);
-			// 	}
-			// 	allLanesGeometry = new THREE.BufferGeometry().fromGeometry( allLanesGeometry );
-			// 	viewer.scene.scene.add(allLanesGeometry);
-			//
-			// } else {
-			// 	for (let ii=0, len=laneGeometries.left.length; ii<len; ii++) {
-			// 		viewer.scene.scene.add(laneGeometries.left[ii]);
-			// 		viewer.scene.scene.add(laneGeometries.spine[ii]);
-			// 		viewer.scene.scene.add(laneGeometries.right[ii]);
-			// 	}
-			// }
+			viewer.scene.scene.add(lanesLayer);
+			viewer.scene.dispatchEvent({
+				"type": "truth_layer_added",
+				"truthLayer": lanesLayer
+			});
 		});
 // TODO TILL HERE
-//
-//
-//
+
+
+
 // 		// Load Test Box:
 // 		{
 // 			let position = new THREE.Vector3(300139.728, 4701364.107, 241.147);
@@ -513,9 +502,19 @@
 		 });
 		let trackShaderMaterial = shaderMaterial.clone();
 		loadTracks(s3, bucket, name, trackShaderMaterial, animationEngine, (trackGeometries) => {
+			let trackLayer = new THREE.Group();
+			trackLayer.name = "Tracked Objects";
 			for (let ii=0, len=trackGeometries.bbox.length; ii<len; ii++) {
-				viewer.scene.scene.add(trackGeometries.bbox[ii]); // Original
+				trackLayer.add(trackGeometries.bbox[ii]);
+				// viewer.scene.scene.add(trackGeometries.bbox[ii]); // Original
 			}
+			viewer.scene.scene.add(trackLayer);
+			let e = new CustomEvent("truth_layer_added", {detail: trackLayer, writable: true});
+			viewer.scene.dispatchEvent({
+				"type": "truth_layer_added",
+				"truthLayer": trackLayer
+			});
+			// TODO check if group works as expected, then trigger "truth_layer_added" event
 			animationEngine.tweenTargets.push((gpsTime) => {
 				let currentTime = gpsTime - animationEngine.tstart;
 				trackShaderMaterial.uniforms.minGpsTime.value = currentTime - 0.05;
@@ -526,11 +525,16 @@
 		let detectionShaderMaterial = shaderMaterial.clone();
 		detectionShaderMaterial.uniforms.color.value = new THREE.Color(0xFFA500);
 		loadDetections(s3, bucket, name, detectionShaderMaterial, animationEngine, (detectionGeometries) => {
-			debugger; // detectionGeometries;
+			let detectionLayer = new THREE.Group();
+			detectionLayer.name = "Object Detections";
 			for (let ii=0, len=detectionGeometries.bbox.length; ii<len; ii++) {
-				viewer.scene.scene.add(detectionGeometries.bbox[ii]); // Original
+				detectionLayer.add(detectionGeometries.bbox[ii]);
 			}
-
+			viewer.scene.scene.add(detectionLayer);
+			viewer.scene.dispatchEvent({
+				"type": "truth_layer_added",
+				"truthLayer": detectionLayer
+			});
 			animationEngine.tweenTargets.push((gpsTime) => {
 				let currentTime = gpsTime - animationEngine.tstart;
 				detectionShaderMaterial.uniforms.minGpsTime.value = currentTime - 0.05;
@@ -577,7 +581,7 @@
 
 
 			// uniforms
-			uniforms = {
+			let uniforms = {
 					color: { value: new THREE.Color( 0xffff00 ) },
 					minGpsTime: {value: 0.0 },
 					maxGpsTime: {value: 110.0 },
@@ -599,6 +603,8 @@
 			mesh.name = "radar";
 			// debugger; //radar tracks added?
 			viewer.scene.scene.add(mesh);
+			viewer.scene.dispatchEvent({"type": "sensor_layer_added", "sensorLayer": mesh });
+
 
 			// Create tween:
 			{
@@ -707,24 +713,29 @@
             }
           } );
 
+					const vehicleGroup = new THREE.Group();
+					vehicleGroup.name = "Vehicle";
 
 					// Add Polar Grid Helper:
 					const gridHelper = new THREE.GridHelper( 1000, 10, 0x0000ff, 0x808080 );
-					gridHelper.name = "Grid";
+					gridHelper.name = "Cartesian Grid";
 					gridHelper.rotateOnAxis(new THREE.Vector3(1,0,0), Math.PI/2);
+					viewer.scene.dispatchEvent({"type": "vehicle_layer_added", "vehicleLayer": gridHelper });
 					const polarGridHelper = new THREE.PolarGridHelper( 500, 16, 10, 64, 0x0000ff, 0x808080 );
-					polarGridHelper.name = "PolarGrid";
+					polarGridHelper.name = "Polar Grid";
 					polarGridHelper.rotateOnAxis(new THREE.Vector3(1,0,0), Math.PI/2);
+					viewer.scene.dispatchEvent({"type": "vehicle_layer_added", "vehicleLayer": polarGridHelper });
 					const axesHelper = new THREE.AxesHelper(1000);
-					axesHelper.name = "Axes";
+					axesHelper.name = "3D Axes";
 					axesHelper.rotateOnAxis(new THREE.Vector3(0,0,1), -Math.PI/2);
+					viewer.scene.dispatchEvent({"type": "vehicle_layer_added", "vehicleLayer": axesHelper });
 
 
 					object.add( gridHelper );
 					object.add( polarGridHelper );
 					object.add( axesHelper );
 
-          object.name = "vehicle";
+          object.name = "Vehicle Mesh";
           object.position.set(...pos[0]);
           object.scale.multiplyScalar(.01);
 					object.orientationPath = orientationPath;
@@ -738,8 +749,9 @@
 					viewer.zoomTo(node, 1, 500);
 					viewer.scene.view.lookAt(object.position);
 
-
+					// vehicleGroup.add( object );
           viewer.scene.scene.add( object );
+					viewer.scene.dispatchEvent({"type": "vehicle_layer_added", "vehicleLayer": object });
 
 					removeLoadingScreen();
 
@@ -871,11 +883,11 @@
           let playbutton = document.getElementById("playbutton");
           let pausebutton = document.getElementById("pausebutton");
           pausebutton.addEventListener("mousedown", () => {
-						tween.stop();
+						// tween.stop();
 						animationEngine.stop();
           });
           playbutton.addEventListener("mousedown", () => {
-						tween.start();
+						// tween.start();
 						animationEngine.start();
           });
 

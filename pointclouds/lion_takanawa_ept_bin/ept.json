@@ -1,5 +1,5 @@
 {
-	"bounds" : 
+	"bounds" :
 	[
 		-7,
 		-1,
@@ -8,7 +8,7 @@
 		9,
 		4
 	],
-	"boundsConforming" : 
+	"boundsConforming" :
 	[
 		-5,
 		1,
@@ -20,7 +20,7 @@
 	"dataType" : "binary",
 	"hierarchyType" : "json",
 	"points" : 341989,
-	"schema" : 
+	"schema" :
 	[
 		{
 			"name" : "X",
@@ -109,9 +109,9 @@
 			"type" : "unsigned"
 		}
 	],
-	"srs" : 
+	"span" : 256,
+	"srs" :
 	{
 	},
-	"ticks" : 256,
 	"version" : "0.0.0"
 }

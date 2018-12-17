@@ -23,6 +23,7 @@ $(document).ready(function () {
             <input type="range" name="playback_speed" id="playback_speed" min="1" max="8" value="4" step="any">
             <button name="toggle_calibration_panels" id="toggle_calibration_panels">Toggle Calibration Panels</button>
             <button name="load_detections_button" id="load_detections_button">Load Detections</button>
+            <button name="load_gaps_button" id="load_gaps_button">Load Gaps</button>
           </div>
         </div>
       </div>
@@ -202,4 +203,5 @@ $(document).ready(function () {
     document.getElementById("toggleslider").style.display = "none";
     document.getElementById("toggle_calibration_panels").style.display = "none";
     document.getElementById("load_detections_button").style.display = "none";
+    document.getElementById("load_gaps_button").style.display = "none";
 });

@@ -358,6 +358,24 @@
 		// TODO Just for testing:
 		// tweenInitAll();
 
+	// uniforms
+	let uniforms = {
+				color: { value: new THREE.Color( 0x00ff00 ) },
+				minGpsTime: {value: 0.0 },
+				maxGpsTime: {value: 0.5 },
+				initialTime: {value: 0}, // TODO not used
+				// offset: {value: new THREE.Vector3(0,0,0)}
+		};
+	let shaderMaterial = new THREE.ShaderMaterial( {
+
+			 uniforms:       uniforms,
+			 vertexShader:   document.getElementById( 'vertexshader' ).textContent,
+			 fragmentShader: document.getElementById( 'fragmentshader' ).textContent,
+			 transparent:    true
+
+	 });
+
+
 // TODO FROM HERE
 		// Load Lanes Truth Data:
 		loadLanes(s3, bucket, name, (laneGeometries) => {
@@ -431,39 +449,69 @@
 //
 //
 //
-// // TODO FROM HERE
-// 	loadGaps((gapGeometries) => {
-//
-// 		// TODO TESTING -- REMOVE
-// 		// debugger;
-// 		for (let ii=0, len=gapGeometries.left.length; ii<len; ii++) {
-// 			if (ii < 1000) {
-// 				viewer.scene.scene.add(gapGeometries.left[ii]);
-// 			}
-// 		}
-// 	});
-// // TODO TILL HERE
+// TODO FROM HERE
+window.gapsLoaded = false;
+$(document).ready(() => {
+	// Configure Playbar
+	$("#load_gaps_button")[0].style.display="block"
+	let loadGapsButton = $("#load_gaps_button")[0];
+	loadGapsButton.addEventListener("mousedown", () => {
+
+		if (!window.gapsLoaded) {
+			$("#loading-bar")[0].style.display = "none";
+			setLoadingScreen();
+
+			let gapShaderMaterial = shaderMaterial.clone();
+			gapShaderMaterial.uniforms.color.value = new THREE.Color(0x0000ff);
+			loadGaps(s3, bucket, name, gapShaderMaterial, animationEngine, (gapGeometries) => {
+				let gapsLayer = new THREE.Group();
+				gapsLayer.name = "Vehicle Gaps";
+				for (let ii=0, len=gapGeometries.left.length; ii<len; ii++) {
+					// if (ii < 1000) {
+						gapsLayer.add(gapGeometries.left[ii]);
+					// }
+				}
+				viewer.scene.scene.add(gapsLayer);
+				viewer.scene.dispatchEvent({
+					"type": "assessments_layer_added",
+					"assessmentsLayer": gapsLayer
+				});
+				animationEngine.tweenTargets.push((gpsTime) => {
+					let currentTime = gpsTime - animationEngine.tstart;
+					gapShaderMaterial.uniforms.minGpsTime.value = currentTime - 0.05;
+					gapShaderMaterial.uniforms.maxGpsTime.value = currentTime + 0.05;
+				});
+				window.gapsLoaded = true;
+				loadGapsButton.disabled = true;
+				removeLoadingScreen();
+			});
+		}
+	});
+});
+
+	// let gapShaderMaterial = shaderMaterial.clone();
+	// gapShaderMaterial.uniforms.color.value = new THREE.Color(0x0000ff);
+	// loadGaps(s3, bucket, name, gapShaderMaterial, animationEngine, (gapGeometries) => {
+	//
+	// 	// TODO TESTING -- REMOVE
+	// 	// debugger;
+	// 	for (let ii=0, len=gapGeometries.left.length; ii<len; ii++) {
+	// 		// if (ii < 1000) {
+	// 			viewer.scene.scene.add(gapGeometries.left[ii]);
+	// 		// }
+	// 		animationEngine.tweenTargets.push((gpsTime) => {
+	// 			let currentTime = gpsTime - animationEngine.tstart;
+	// 			gapShaderMaterial.uniforms.minGpsTime.value = currentTime - 0.05;
+	// 			gapShaderMaterial.uniforms.maxGpsTime.value = currentTime + 0.05;
+	// 		});
+	// 	}
+	// });
+// TODO TILL HERE
 
 
 
 // TODO FROM HERE
 		// TODO Move this somewhere else
-		// uniforms
-		let uniforms = {
-					color: { value: new THREE.Color( 0x00ff00 ) },
-					minGpsTime: {value: 0.0 },
-					maxGpsTime: {value: 0.5 },
-					initialTime: {value: 0}, // TODO not used
-					// offset: {value: new THREE.Vector3(0,0,0)}
-			};
-		let shaderMaterial = new THREE.ShaderMaterial( {
-
-				 uniforms:       uniforms,
-				 vertexShader:   document.getElementById( 'vertexshader' ).textContent,
-				 fragmentShader: document.getElementById( 'fragmentshader' ).textContent,
-				 transparent:    true
-
-		 });
 		let trackShaderMaterial = shaderMaterial.clone();
 		loadTracks(s3, bucket, name, trackShaderMaterial, animationEngine, (trackGeometries) => {
 			let trackLayer = new THREE.Group();
@@ -515,7 +563,7 @@
 							detectionShaderMaterial.uniforms.maxGpsTime.value = currentTime + 0.05;
 						});
 						window.detectionsLoaded = true;
-						loadDetections.disabled = true;
+						loadDetectionsButton.disabled = true;
 						removeLoadingScreen();
 					});
 				}

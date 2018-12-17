@@ -1,61 +1,93 @@
 //import { Vec3 } from "../schemas/BasicTypes_generated.js";
 //import { Flatbuffer } from "../schemas/VisualizationPrimitives_generated.js";
 
-export function loadGaps(callback) {
-  console.log("Hello World! -- Loading Gaps from VisualizationPrimitives");
 
-  let filename = "../data/gaps.fb";
+export function loadGaps(s3, bucket, name, shaderMaterial, animationEngine, callback) {
+  const tstart = performance.now();
+  if (s3 && bucket && name) {
+    (async () => {
+      const objectName = `${name}/2_Truth/gaps.fb`;
+      const schemaFile = `${name}/5_Schemas/VisualizationPrimitives_generated.js`;
 
-  const xhr = new XMLHttpRequest();
-  xhr.open("GET", filename);
-  xhr.responseType = "arraybuffer";
-  xhr.onprogress = function(event) {
-    console.log("GAPS -- Loaded ["+event.loaded+"] bytes")
-  }
+      const schemaUrl = s3.getSignedUrl('getObject', {
+        Bucket: bucket,
+        Key: schemaFile
+      });
 
+      s3.getObject({Bucket: bucket,
+                    Key: objectName},
+                   async (err, data) => {
+                     if (err) {
+                       console.log(err, err.stack);
+                     } else {
+                       const FlatbufferModule = await import(schemaUrl);
+                       const gapGeometries = parseGaps(data.Body, shaderMaterial, FlatbufferModule, animationEngine);
+                       console.log("Full Runtime: "+(performance.now()-tstart)+"ms");
+                       callback( gapGeometries );
+                     }});
+    })();
 
-  xhr.onerror = function(e) {
-    console.error("GAPS -- Error loading gaps: ", e);
-  }
+  } else {
+    const filename = "../data/gaps.fb";
+    const schemaFile = "../schemas/VisualizationPrimitives_generated.js";
+    let t0, t1;
 
-  xhr.onload = function(data) {
+    const xhr = new XMLHttpRequest();
+    xhr.open("GET", filename);
+    xhr.responseType = "arraybuffer";
 
-    const response = data.target.response;
-    if (!response) {
-      console.error("Could not create buffer from gaps data");
-      return;
+    xhr.onprogress = function(event) {
+      t1 = performance.now();
+      console.log("Loaded ["+event.loaded+"] bytes in ["+(t1-t0)+"] ms")
+      t0 = t1;
     }
 
-    let bytesArray = new Uint8Array(response);
-    let numBytes = bytesArray.length;
-    let gaps = [];
+    xhr.onload = async function(data) {
 
-    let segOffset = 0;
-    let segSize, viewSize, viewData;
-    while (segOffset < numBytes) {
+      const FlatbufferModule = await import(schemaFile);
 
-      // Read SegmentSize:
-      viewSize = new DataView(bytesArray.buffer, segOffset, 4);
-      segSize = viewSize.getUint32(0, true); // True: little-endian | False: big-endian
+      const response = data.target.response;
+      if (!response) {
+        console.error("Could not create buffer from gap data");
+        return;
+      }
 
-      // Get Flatbuffer gao Object:
-      segOffset += 4;
-      let buf = new Uint8Array(bytesArray.buffer.slice(segOffset, segOffset+segSize));
+      let bytesArray = new Uint8Array(response);
+      const gapGeometries = parseGaps(bytesArray, shaderMaterial, FlatbufferModule, animationEngine);
+      console.log("Full Runtime: "+(performance.now()-tstart)+"ms");
+      callback( gapGeometries );
+    };
 
-      let fbuffer = new flatbuffers.ByteBuffer(buf);
-      let gap = Flatbuffer.Primitives.PolyLine3D.getRootAsPolyLine3D(fbuffer);
-      gaps.push(gap);
-      segOffset += segSize;
-    }
-
-    let gapGeometries = createGapGeometriesOld(gaps);
-
-    callback(gapGeometries);
+    t0 = performance.now();
+    xhr.send();
   }
-
-  xhr.send();
 }
 
+
+function parseGaps(bytesArray, shaderMaterial, FlatbufferModule, animationEngine) {
+
+  let numBytes = bytesArray.length;
+  let gaps = [];
+
+  let segOffset = 0;
+  let segSize, viewSize, viewData;
+  while (segOffset < numBytes) {
+
+    // Read SegmentSize:
+    viewSize = new DataView(bytesArray.buffer, segOffset, 4);
+    segSize = viewSize.getUint32(0, true); // True: little-endian | False: big-endian
+
+    // Get Flatbuffer Gap Object:
+    segOffset += 4;
+    let buf = new Uint8Array(bytesArray.buffer.slice(segOffset, segOffset+segSize));
+    let fbuffer = new flatbuffers.ByteBuffer(buf);
+    let gap = FlatbufferModule.Flatbuffer.Primitives.PolyLine3D.getRootAsPolyLine3D(fbuffer);
+
+    gaps.push(gap);
+    segOffset += segSize;
+  }
+  return createGapGeometriesOld(gaps, shaderMaterial, FlatbufferModule, animationEngine);
+}
 
 function splitGapVertices(gaps) {
   debugger;
@@ -87,7 +119,6 @@ function createGapGeometries(vertexGroups, material) {
   let gapGeometries = [];
   let allBoxes = new THREE.Geometry();
 
-  let allLanes = [];
   let vertexGroup;
   let v1, v2;
   let length, width, height;
@@ -148,18 +179,14 @@ function createGapGeometries(vertexGroups, material) {
 }
 
 
-function createGapGeometriesOld(gaps) {
-  const materialLeft = new THREE.LineBasicMaterial({
-    color: 0xff0000
-  });
-
-
+function createGapGeometriesOld(gaps, shaderMaterial, FlatbufferModule, animationEngine) {
 
   let gap;
   let lefts = [];
 
   let all = [];
   let allBoxes = new THREE.Geometry();
+  let gapTimes = [];
   for(let ii=0, len=gaps.length; ii<len; ii++) {
     gap = gaps[ii];
 
@@ -168,13 +195,8 @@ function createGapGeometriesOld(gaps) {
     let left;
     for(let jj=0, numVertices=gap.verticesLength(); jj<numVertices; jj++) {
       left = gap.vertices(jj);
-
-
       geometryLeft.vertices.push( new THREE.Vector3(left.x(), left.y(), left.z()));
-
     }
-
-
 
 
     // NOTE TRYING BOXES:
@@ -183,7 +205,7 @@ function createGapGeometriesOld(gaps) {
     let vertices = geometryLeft.vertices;
     let offset = new THREE.Vector3(300043.226, 4701247.907, 245.427); // TODO FIX THIS HARDCODED OFFSET (it's just a large number to bring the vertices below close to 0)
 
-    createBoxes(geometryLeft.vertices, new THREE.MeshBasicMaterial({color:0xff0000}));
+    createBoxes(geometryLeft.vertices, shaderMaterial);
 
     function createBoxes(vertices, material) {
       for (let ii=1, len=vertices.length; ii<len; ii++) {
@@ -193,11 +215,8 @@ function createGapGeometriesOld(gaps) {
         p1 = new THREE.Vector3(tmp1.x, tmp1.y, tmp1.z);
         p2 = new THREE.Vector3(tmp2.x, tmp2.y, tmp2.z);
 
-
-
-
         let length = p1.distanceTo(p2);
-        let width = 0.1;
+        let width = gap.widthForVisualization();
         let height = 0.01;
 
         let vector = p2.sub(p1);
@@ -229,8 +248,9 @@ function createGapGeometriesOld(gaps) {
         allBoxes.merge(boxGeometry);
 
 
-        let boxMaterial = new THREE.MeshBasicMaterial({color: 0xff0000});
-        let boxMesh = new THREE.Mesh(geometry, boxMaterial);
+        let boxMaterial = new THREE.MeshBasicMaterial({color: 0x0000ff});
+
+        let boxMesh = new THREE.Mesh(new THREE.BufferGeometry().fromGeometry(geometry), boxMaterial);
 
 
         boxMesh.quaternion.setFromUnitVectors(axis, vector.clone().normalize());
@@ -239,24 +259,36 @@ function createGapGeometriesOld(gaps) {
         boxMesh.position.copy(center.clone());
 
         lefts.push(boxMesh);
-
-
+        gapTimes.push(
+          gap.viz(new FlatbufferModule.Flatbuffer.Primitives.HideAndShowAnimation())
+             .timestamp(new FlatbufferModule.Flatbuffer.Primitives.ObjectTimestamp())
+             .value() - animationEngine.tstart
+        );
 
         if ((ii%100000)==0 || ii==(len-1)) {
           // let mesh = new THREE.Mesh(allBoxes, new THREE.MeshBasicMaterial({color:0x00ff00}));
           let mesh = new THREE.Mesh(new THREE.BufferGeometry().fromGeometry(allBoxes), material); // Buffergeometry
           mesh.name = "Gaps";
           mesh.position.copy(firstCenter);
+          let timestamps = [];
+          for (let tt=0, numTimes=gapTimes.length; tt<numTimes; tt++) {
+            for (let kk=0, numVerticesPerBox=36; kk<numVerticesPerBox; kk++) {  // NOTE: 24 vertices per edgesBox
+              timestamps.push(gapTimes[tt]);
+            }
+          }
+          mesh.geometry.addAttribute('gpsTime', new THREE.Float32BufferAttribute(timestamps, 1));
+
           all.push(mesh);
           allBoxes = new THREE.Geometry();
           firstCenter = center.clone();
+          gapTimes = [];
         }
       }
     }
   }
 
   const output = {
-    left: lefts
+    left: all
   }
   return output;
 }

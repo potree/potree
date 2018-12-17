@@ -18,10 +18,11 @@ $(document).ready(function () {
             </span>
             <label class="switch">
               <input type="checkbox" id="playbar_toggle">
-              <span class="toggleslider"></span>
+              <span class="toggleslider" id="toggleslider"></span>
             </label>
             <input type="range" name="playback_speed" id="playback_speed" min="1" max="8" value="4" step="any">
             <button name="toggle_calibration_panels" id="toggle_calibration_panels">Toggle Calibration Panels</button>
+            <button name="load_detections_button" id="load_detections_button">Load Detections</button>
           </div>
         </div>
       </div>
@@ -159,16 +160,16 @@ $(document).ready(function () {
     window.addEventListener("keypress", (e) => {
       console.log("keypress");
       console.log(e);
-      if (e.charCode == 32) {
-        console.log("SPACEBAR");
-        var toggleplay = playbarhtml.find("#toggleplay");
-        toggleplay.trigger('click');
-          if (toggleplay.is(":checked")) {
-            playbarhtml.find("#playbutton").trigger('mousedown');
-          } else {
-            playbarhtml.find("#pausebutton").trigger('mousedown');
-          }
-        }
+      // if (e.charCode == 32) {
+      //   console.log("SPACEBAR");
+      //   var toggleplay = playbarhtml.find("#toggleplay");
+      //   toggleplay.trigger('click');
+      //     if (toggleplay.is(":checked")) {
+      //       playbarhtml.find("#playbutton").trigger('mousedown');
+      //     } else {
+      //       playbarhtml.find("#pausebutton").trigger('mousedown');
+      //     }
+      //   }
     });
 
     playbarhtml.find("#toggle_calibration_panels").mouseup(function() {
@@ -193,4 +194,12 @@ $(document).ready(function () {
     });
 
     $(document).tooltip();
+
+    // Configure Playbar Appearance:
+    document.getElementById("playbar_tmin").style.display = "none";
+    document.getElementById("playbar_tmax").style.display = "none";
+    document.getElementById("playback_speed").style.display = "none";
+    document.getElementById("toggleslider").style.display = "none";
+    document.getElementById("toggle_calibration_panels").style.display = "none";
+    document.getElementById("load_detections_button").style.display = "none";
 });

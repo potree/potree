@@ -1,9 +1,9 @@
-// import { Flatbuffer } from "../schemas/GroundTruth_generated.js";
-// import { Flatbuffer } from "http://localhost:1234/schemas/GroundTruth_generated.js";
+import { getLoadingBar } from "../common/overlay.js";
 
 
 
 export function loadDetections(s3, bucket, name, shaderMaterial, animationEngine, callback) {
+  let lastLoaded = 0;
   const tstart = performance.now();
   if (s3 && bucket && name) {
     (async () => {
@@ -15,7 +15,7 @@ export function loadDetections(s3, bucket, name, shaderMaterial, animationEngine
         Key: schemaFile
       });
 
-      s3.getObject({Bucket: bucket,
+      const request = s3.getObject({Bucket: bucket,
                     Key: objectName},
                    async (err, data) => {
                      if (err) {
@@ -91,6 +91,9 @@ function parseDetections(bytesArray, shaderMaterial, FlatbufferModule, animation
 }
 
 function createDetectionGeometries(shaderMaterial, detections, animationEngine) {
+
+  let loadingBar = getLoadingBar();
+  loadingBar.set(0);
 
   let lineMaterial = new THREE.LineBasicMaterial({
     color: 0x00ff00,

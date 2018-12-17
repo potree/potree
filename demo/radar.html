@@ -137,6 +137,7 @@
 		import { loadRadar } from "../demo/radarLoader.js";
 		import { loadGaps } from "../demo/gapsLoader.js";
 		import { updateSidebar } from "../common/custom-sidebar.js";
+		import { getLoadingBar } from "../common/overlay.js";
 		// import {  } from "../common/overlay.js";
 		import { setLoadingScreen, removeLoadingScreen } from "../common/overlay.js";
 
@@ -194,7 +195,6 @@
 		viewer.setDescription(``);
 		viewer.loadSettingsFromURL();
 
-
 		viewer.loadGUI(() => {
 			// Override Sidebar Potree Branding Panel:
 			document.getElementById("potree_branding").style.display="none";
@@ -212,9 +212,7 @@
 			updateSidebar();
 		});
 
-		// Create Axes Helper:
-		const axesHelper = new THREE.AxesHelper(20);
-		viewer.scene.scene.add(axesHelper);
+
 
 		window.animationEngine = new AnimationEngine();
 
@@ -309,12 +307,16 @@
 					applyRotation(bunny, vehicleOrientation.x, vehicleOrientation.y, vehicleOrientation.z);
 					bunny.updateMatrixWorld();
 
-					// Apply Camera Transformation:
+					// Apply Transformation to Camera and Target:
 					let newTransform = bunny.matrixWorld.clone();
 					let lastTransformInverse = lastTransform.getInverse(lastTransform);
 					let deltaTransform = lastTransformInverse.premultiply(newTransform);
-					// let camera = viewer.scene.getActiveCamera();
+					let target = viewer.scene.view.position.clone();
+					let direction = viewer.scene.view.direction.  clone();
+					let radius = viewer.scene.view.radius;
+					target.add(direction.multiplyScalar(radius));
 					viewer.scene.view.position.applyMatrix4(deltaTransform);
+					viewer.scene.view.lookAt(target.applyMatrix4(deltaTransform));
 
 					// Set Elevation:
 					let elevationDeltaMin = -0;
@@ -341,53 +343,15 @@
 			window.camPointLocalFrame = {position: new THREE.Vector3(-10,0,10)};
 			window.camTargetLocalFrame = {position: new THREE.Vector3(0, 0, 0)};
 
-			function pauseAndGetVehiclePosition(event) {
-				if (event.shiftKey) {
-					animationEngine.stop();
-					window.camControlInUse = true;
-				}
-			}
-			function resumeAndGetCameraPosition(event) {
-				if (window.camControlInUse) {
-					animationEngine.start();
-					window.camControlInUse = false;
-				}
-			}
-			viewer.renderArea.addEventListener("mousedown", (e) => {
-				// Update Camera Local Frame:
-				window.camPointLocalFrame.position = viewer.scene.getActiveCamera().position.clone().sub(viewer.scene.scene.getObjectByName("Vehicle Mesh").position.clone());
-
-				// Update Target Local Frame:
-				let camDirection = viewer.scene.getActiveCamera().getWorldDirection().clone();
-				let camPosition = viewer.scene.getActiveCamera().position.clone();
-				let target = new THREE.Vector3().addVectors(camPosition, camDirection);
-				window.camTargetLocalFrame.position.copy(target.sub(viewer.scene.scene.getObjectByName("Vehicle Mesh").position.clone()));
-
-			});
 			// viewer.renderArea.addEventListener("mouseup", resumeAndGetCameraPosition);
 			viewer.renderArea.addEventListener("keypress", (e) => {
 				if (e.key == "r") {
-					window.camPointLocalFrame.position.set(-10, 0, 10);
-					window.camTargetLocalFrame.position.set(0,0,0);
-					window.scene.view.lookAt(camTargetLocalFrame.add(viewer.scene.scene.getObjectByName("Vehicle Mesh").position.clone()));
+					let box = new THREE.Box3().setFromObject(viewer.scene.scene.getObjectByName("Vehicle Mesh"));
+					let node = new THREE.Object3D();
+					node.boundingBox = box;
+					viewer.zoomTo(node, 1, 500);
 				}
 			});
-			animationEngine.tweenTargets.push((gpsTime) => {
-				if (updateCamera && !window.camControlInUse) {
-
-					let vehicle = viewer.scene.scene.getObjectByName("Vehicle Mesh");
-
-					let targetVehicleFrame = window.camTargetLocalFrame.position.clone();
-					let targetWorldFrame = targetVehicleFrame.add(vehicle.position.clone());
-
-					let camPointVehicleFrame = window.camPointLocalFrame.position.clone();
-					let camPointWorldFrame = camPointVehicleFrame.add(vehicle.position.clone());
-
-					viewer.scene.view.position.copy(camPointWorldFrame);
-					// viewer.scene.view.lookAt(targetWorldFrame);
-				}
-			});
-
 		}
 
 
@@ -522,25 +486,43 @@
 			});
 		});
 
-		let detectionShaderMaterial = shaderMaterial.clone();
-		detectionShaderMaterial.uniforms.color.value = new THREE.Color(0xFFA500);
-		loadDetections(s3, bucket, name, detectionShaderMaterial, animationEngine, (detectionGeometries) => {
-			let detectionLayer = new THREE.Group();
-			detectionLayer.name = "Object Detections";
-			for (let ii=0, len=detectionGeometries.bbox.length; ii<len; ii++) {
-				detectionLayer.add(detectionGeometries.bbox[ii]);
-			}
-			viewer.scene.scene.add(detectionLayer);
-			viewer.scene.dispatchEvent({
-				"type": "truth_layer_added",
-				"truthLayer": detectionLayer
-			});
-			animationEngine.tweenTargets.push((gpsTime) => {
-				let currentTime = gpsTime - animationEngine.tstart;
-				detectionShaderMaterial.uniforms.minGpsTime.value = currentTime - 0.05;
-				detectionShaderMaterial.uniforms.maxGpsTime.value = currentTime + 0.05;
+
+		window.detectionsLoaded = false;
+		$(document).ready(() => {
+			// Configure Playbar
+			$("#load_detections_button")[0].style.display="block"
+			let loadDetectionsButton = $("#load_detections_button")[0];
+			loadDetectionsButton.addEventListener("mousedown", () => {
+				if (!window.detectionsLoaded) {
+					$("#loading-bar")[0].style.display = "none";
+					setLoadingScreen();
+					let detectionShaderMaterial = shaderMaterial.clone();
+					detectionShaderMaterial.uniforms.color.value = new THREE.Color(0xFFA500);
+					loadDetections(s3, bucket, name, detectionShaderMaterial, animationEngine, (detectionGeometries) => {
+						let detectionLayer = new THREE.Group();
+						detectionLayer.name = "Object Detections";
+						for (let ii=0, len=detectionGeometries.bbox.length; ii<len; ii++) {
+							detectionLayer.add(detectionGeometries.bbox[ii]);
+						}
+						viewer.scene.scene.add(detectionLayer);
+						viewer.scene.dispatchEvent({
+							"type": "truth_layer_added",
+							"truthLayer": detectionLayer
+						});
+						animationEngine.tweenTargets.push((gpsTime) => {
+							let currentTime = gpsTime - animationEngine.tstart;
+							detectionShaderMaterial.uniforms.minGpsTime.value = currentTime - 0.05;
+							detectionShaderMaterial.uniforms.maxGpsTime.value = currentTime + 0.05;
+						});
+						window.detectionsLoaded = true;
+						loadDetections.disabled = true;
+						removeLoadingScreen();
+					});
+				}
 			});
 		});
+
+
 // TODO TILL HERE
 
     // // Load Radar Cubes:
@@ -883,11 +865,9 @@
           let playbutton = document.getElementById("playbutton");
           let pausebutton = document.getElementById("pausebutton");
           pausebutton.addEventListener("mousedown", () => {
-						// tween.stop();
 						animationEngine.stop();
           });
           playbutton.addEventListener("mousedown", () => {
-						// tween.start();
 						animationEngine.start();
           });
 
@@ -906,13 +886,13 @@
 					});
 
 					window.addEventListener("keypress", (e) => {
-						if (e.charCode == 32) {
-			          if (toggleplay.checked) {
-			            animationEngine.start();
-			          } else {
-			            animationEngine.stop();
-			          }
-			        }
+						// if (e.charCode == 32) {
+			      //     if (toggleplay.checked) {
+			      //       animationEngine.start();
+			      //     } else {
+			      //       animationEngine.stop();
+			      //     }
+			      //   }
 						});
         }
 
@@ -928,7 +908,7 @@
 		      const material = pointcloud.material;
 		      console.log(pointcloud.pcoGeometry.nodes.r.gpsTime);
 		      viewer.scene.addPointCloud(pointcloud);
-		      material.pointColorType = Potree.PointColorType.HEIGHT; // any Potree.PointColorType.XXXX
+		      material.pointColorType = Potree.PointColorType.INTENSITY; // any Potree.PointColorType.XXXX
 					material.gradient = Potree.Gradients.GRAYSCALE; // Can define custom gradient or look up in Potree.Gradients
 		      material.size = 0.09;
 		      material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
@@ -987,7 +967,7 @@
 		      const material = pointcloud.material;
 		      console.log(pointcloud.pcoGeometry.nodes.r.gpsTime);
 		      viewer.scene.addPointCloud(pointcloud);
-		      material.pointColorType = Potree.PointColorType.HEIGHT; // any Potree.PointColorType.XXXX
+		      material.pointColorType = Potree.PointColorType.INTENSITY; // any Potree.PointColorType.XXXX
 					material.gradient = Potree.Gradients.YELLOW_GREEN;
 		      material.size = 0.09;
 		      material.pointSizeType = Potree.PointSizeType.ADAPTIVE;

@@ -233,22 +233,22 @@
 				if (!animationEngine.isPlaying) {
 					$("#playbutton").trigger("mousedown");
 
-					// Track Camera Transform Information:
-					// debugger; // world frame matrix
-					if (!window.camControlInitialized) {
-						window.camDeltaTransform.camStart = viewer.scene.getActiveCamera().matrixWorld.clone();
-						window.camDeltaTransform.vehicleStart = viewer.scene.scene.getObjectByName("Vehicle Mesh").position.clone();
-						window.camControlInitialized = true;
-					}
-					window.camDeltaTransform.camEnd = viewer.scene.getActiveCamera().matrixWorld.clone();
-					window.camDeltaTransform.vehicleEnd = viewer.scene.scene.getObjectByName("Vehicle Mesh").position.clone();
-
-					window.camPointLocalFrame.position.setFromMatrixPosition(window.camDeltaTransform.camEnd).sub(camDeltaTransform.vehicleEnd);
-
-					let camDirection = viewer.scene.getActiveCamera().getWorldDirection().clone();
-					let camPosition = viewer.scene.getActiveCamera().position.clone();
-					let target = new THREE.Vector3().addVectors(camPosition, camDirection);
-					window.camTargetLocalFrame.position.copy(target.sub(camDeltaTransform.vehicleEnd));
+					// // Track Camera Transform Information:
+					// // debugger; // world frame matrix
+					// if (!window.camControlInitialized) {
+					// 	window.camDeltaTransform.camStart = viewer.scene.getActiveCamera().matrixWorld.clone();
+					// 	window.camDeltaTransform.vehicleStart = viewer.scene.scene.getObjectByName("Vehicle Mesh").position.clone();
+					// 	window.camControlInitialized = true;
+					// }
+					// window.camDeltaTransform.camEnd = viewer.scene.getActiveCamera().matrixWorld.clone();
+					// window.camDeltaTransform.vehicleEnd = viewer.scene.scene.getObjectByName("Vehicle Mesh").position.clone();
+					//
+					// window.camPointLocalFrame.position.setFromMatrixPosition(window.camDeltaTransform.camEnd).sub(camDeltaTransform.vehicleEnd);
+					//
+					// let camDirection = viewer.scene.getActiveCamera().getWorldDirection().clone();
+					// let camPosition = viewer.scene.getActiveCamera().position.clone();
+					// let target = new THREE.Vector3().addVectors(camPosition, camDirection);
+					// window.camTargetLocalFrame.position.copy(target.sub(camDeltaTransform.vehicleEnd));
 				}
 			}
 
@@ -256,8 +256,8 @@
 				if (animationEngine.isPlaying) {
 					$("#pausebutton").trigger("mousedown");
 
-					// Track Camera Transform Information:
-					window.camDeltaTransform.vehicle = viewer.scene.scene.getObjectByName("Vehicle Mesh").position.clone();
+					// // Track Camera Transform Information:
+					// window.camDeltaTransform.vehicle = viewer.scene.scene.getObjectByName("Vehicle Mesh").position.clone();
 				}
 			}
 
@@ -295,7 +295,7 @@
 			animationEngine.tweenTargets.push((gpsTime) => {
 				try{
 					let t = (gpsTime - animationEngine.tstart) / (animationEngine.timeRange);
-					let bunny = viewer.scene.scene.getObjectByName("Vehicle Mesh");
+					let bunny = viewer.scene.scene.getObjectByName("Vehicle");
 					let lastRtkPoint = bunny.position.clone();
 					let lastRtkOrientation = bunny.rotation.clone();
 					let lastTransform = bunny.matrixWorld.clone();
@@ -346,10 +346,10 @@
 			// viewer.renderArea.addEventListener("mouseup", resumeAndGetCameraPosition);
 			viewer.renderArea.addEventListener("keypress", (e) => {
 				if (e.key == "r") {
-					let box = new THREE.Box3().setFromObject(viewer.scene.scene.getObjectByName("Vehicle Mesh"));
+					let box = new THREE.Box3().setFromObject(viewer.scene.scene.getObjectByName("Vehicle").getObjectByName("Vehicle Mesh"));
 					let node = new THREE.Object3D();
 					node.boundingBox = box;
-					viewer.zoomTo(node, 1, 500);
+					viewer.zoomTo(node, 5, 500);
 				}
 			});
 		}
@@ -747,40 +747,47 @@ $(document).ready(() => {
 					vehicleGroup.name = "Vehicle";
 
 					// Add Polar Grid Helper:
-					const gridHelper = new THREE.GridHelper( 1000, 10, 0x0000ff, 0x808080 );
+					const gridRadius = 100; // meters
+					const gridSpacing = 5; // meters
+					const scaleFactor = 1; // HACK for now because attached to vehicle mesh which is 1/100th scale
+					const gridHelper = new THREE.GridHelper( scaleFactor*2*gridRadius, 2*gridRadius/gridSpacing, 0x0000ff, 0x808080 );
 					gridHelper.name = "Cartesian Grid";
 					gridHelper.rotateOnAxis(new THREE.Vector3(1,0,0), Math.PI/2);
+					gridHelper.visible = false;
 					viewer.scene.dispatchEvent({"type": "vehicle_layer_added", "vehicleLayer": gridHelper });
-					const polarGridHelper = new THREE.PolarGridHelper( 500, 16, 10, 64, 0x0000ff, 0x808080 );
+					const polarGridHelper = new THREE.PolarGridHelper( scaleFactor*gridRadius, 16, gridRadius/gridSpacing, 64, 0x0000ff, 0x808080 );
 					polarGridHelper.name = "Polar Grid";
 					polarGridHelper.rotateOnAxis(new THREE.Vector3(1,0,0), Math.PI/2);
+					polarGridHelper.visible = false;
 					viewer.scene.dispatchEvent({"type": "vehicle_layer_added", "vehicleLayer": polarGridHelper });
-					const axesHelper = new THREE.AxesHelper(1000);
+					const axesHelper = new THREE.AxesHelper(scaleFactor*gridSpacing);
 					axesHelper.name = "3D Axes";
-					axesHelper.rotateOnAxis(new THREE.Vector3(0,0,1), -Math.PI/2);
+					// axesHelper.rotateOnAxis(new THREE.Vector3(0,0,1), -Math.PI/2);
+					axesHelper.visible = false;
 					viewer.scene.dispatchEvent({"type": "vehicle_layer_added", "vehicleLayer": axesHelper });
 
 
-					object.add( gridHelper );
-					object.add( polarGridHelper );
-					object.add( axesHelper );
+					vehicleGroup.add( gridHelper );
+					vehicleGroup.add( polarGridHelper );
+					vehicleGroup.add( axesHelper );
 
           object.name = "Vehicle Mesh";
-          object.position.set(...pos[0]);
           object.scale.multiplyScalar(.01);
-					object.orientationPath = orientationPath;
-          object.rotation.set(0*Math.PI / 2, 0*Math.PI/2., 1*Math.PI/2.0); // Chevy Volt
-					object.initialRotation = object.rotation.clone(); // NOTE is this used?
+					object.rotation.set(0*Math.PI / 2, 0*Math.PI/2., 1*Math.PI/2.0); // Chevy Volt
+
+					vehicleGroup.position.set(...pos[0]);
+					vehicleGroup.orientationPath = orientationPath;
+					vehicleGroup.add( object );
 
 					// TODO New Camera Initialization:
-					let box = new THREE.Box3().setFromObject(object);
+					let box = new THREE.Box3().setFromObject(vehicleGroup);
 					let node = new THREE.Object3D();
 					node.boundingBox = box;
-					viewer.zoomTo(node, 1, 500);
-					viewer.scene.view.lookAt(object.position);
+					viewer.zoomTo(node, 0.1, 500);
+					// viewer.scene.view.lookAt(object.position);
 
-					// vehicleGroup.add( object );
-          viewer.scene.scene.add( object );
+          // viewer.scene.scene.add( object );
+          viewer.scene.scene.add( vehicleGroup );
 					viewer.scene.dispatchEvent({"type": "vehicle_layer_added", "vehicleLayer": object });
 
 					removeLoadingScreen();
@@ -1016,7 +1023,7 @@ $(document).ready(() => {
 		      console.log(pointcloud.pcoGeometry.nodes.r.gpsTime);
 		      viewer.scene.addPointCloud(pointcloud);
 		      material.pointColorType = Potree.PointColorType.INTENSITY; // any Potree.PointColorType.XXXX
-					material.gradient = Potree.Gradients.YELLOW_GREEN;
+					material.gradient = Potree.Gradients.GRAYSCALE;
 		      material.size = 0.09;
 		      material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
 		      material.shape = Potree.PointShape.SQUARE;

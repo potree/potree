@@ -6,7 +6,7 @@ export function loadGaps(s3, bucket, name, shaderMaterial, animationEngine, call
   const tstart = performance.now();
   if (s3 && bucket && name) {
     (async () => {
-      const objectName = `${name}/2_Truth/gaps.fb`;
+      const objectName = `${name}/3_Assessments/gaps.fb`;
       const schemaFile = `${name}/5_Schemas/VisualizationPrimitives_generated.js`;
 
       const schemaUrl = s3.getSignedUrl('getObject', {

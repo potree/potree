@@ -209,6 +209,12 @@ $(document).ready(function () {
 
     });
 
+    window.addEventListener("message", e => {
+     if (e.data === 'pause') {
+       animationEngine.stop()
+     }
+   });
+
     $(document).tooltip();
 
     // Configure Playbar Appearance:

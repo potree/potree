@@ -270,10 +270,10 @@
 			// PointCloud:
 			animationEngine.tweenTargets.push((gpsTime) => {
 				// debugger; // account for pointcloud offset
-				let minGpsTime = gpsTime-0.05;
-				let maxGpsTime = gpsTime+0.05;
+				let minGpsTime = gpsTime-animationEngine.activeWindow.backward;
+				let maxGpsTime = gpsTime+animationEngine.activeWindow.forward;
 				viewer.setFilterGPSTimeRange(minGpsTime, maxGpsTime);
-				viewer.setFilterGPSTimeExtent(minGpsTime-10, maxGpsTime+10);
+				viewer.setFilterGPSTimeExtent(minGpsTime-1.5*animationEngine.activeWindow.backward, maxGpsTime+1.5*animationEngine.activeWindow.forward);
 			});
 
 			// Playbar:
@@ -478,8 +478,8 @@ $(document).ready(() => {
 				});
 				animationEngine.tweenTargets.push((gpsTime) => {
 					let currentTime = gpsTime - animationEngine.tstart;
-					gapShaderMaterial.uniforms.minGpsTime.value = currentTime - 0.05;
-					gapShaderMaterial.uniforms.maxGpsTime.value = currentTime + 0.05;
+					gapShaderMaterial.uniforms.minGpsTime.value = currentTime - animationEngine.activeWindow.backward;
+					gapShaderMaterial.uniforms.maxGpsTime.value = currentTime + animationEngine.activeWindow.forward;
 				});
 				window.gapsLoaded = true;
 				loadGapsButton.disabled = true;
@@ -529,8 +529,8 @@ $(document).ready(() => {
 			// TODO check if group works as expected, then trigger "truth_layer_added" event
 			animationEngine.tweenTargets.push((gpsTime) => {
 				let currentTime = gpsTime - animationEngine.tstart;
-				trackShaderMaterial.uniforms.minGpsTime.value = currentTime - 0.05;
-				trackShaderMaterial.uniforms.maxGpsTime.value = currentTime + 0.05;
+				trackShaderMaterial.uniforms.minGpsTime.value = currentTime - animationEngine.activeWindow.backward;
+				trackShaderMaterial.uniforms.maxGpsTime.value = currentTime + animationEngine.activeWindow.forward;
 			});
 		});
 
@@ -559,8 +559,8 @@ $(document).ready(() => {
 						});
 						animationEngine.tweenTargets.push((gpsTime) => {
 							let currentTime = gpsTime - animationEngine.tstart;
-							detectionShaderMaterial.uniforms.minGpsTime.value = currentTime - 0.05;
-							detectionShaderMaterial.uniforms.maxGpsTime.value = currentTime + 0.05;
+							detectionShaderMaterial.uniforms.minGpsTime.value = currentTime - animationEngine.activeWindow.backward;
+							detectionShaderMaterial.uniforms.maxGpsTime.value = currentTime + animationEngine.activeWindow.forward;
 						});
 						window.detectionsLoaded = true;
 						loadDetectionsButton.disabled = true;
@@ -640,8 +640,8 @@ $(document).ready(() => {
 			{
 				animationEngine.tweenTargets.push( (t) => {
 					// debugger;
-					let minGpsTime = t - .05;
-					let maxGpsTime = t + .05;
+					let minGpsTime = t - animationEngine.activeWindow.backward;
+					let maxGpsTime = t + animationEngine.activeWindow.forward;
 					let radarOffset = t_init;
 					let minRadarTime = minGpsTime - radarOffset;
 					let maxRadarTime = maxGpsTime - radarOffset;

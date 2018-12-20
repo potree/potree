@@ -42,7 +42,7 @@ export class PointCloudEptGeometry {
 		this.type = 'ept';
 
 		this.schema = schema;
-		this.ticks = info.ticks;
+		this.span = info.span || info.ticks;
 		this.boundingBox = U.toBox3(bounds);
 		this.tightBoundingBox = U.toBox3(boundsConforming);
 		this.offset = U.toVector3([0, 0, 0]);
@@ -64,7 +64,7 @@ export class PointCloudEptGeometry {
 
 		this.pointAttributes = 'LAZ';
 		this.spacing =
-			(this.boundingBox.max.x - this.boundingBox.min.x) / this.ticks;
+			(this.boundingBox.max.x - this.boundingBox.min.x) / this.span;
 
 		let hierarchyType = info.hierarchyType || 'json';
 

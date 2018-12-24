@@ -2,7 +2,7 @@
 //import { Flatbuffer } from "../schemas/VisualizationPrimitives_generated.js";
 
 
-export function loadGaps(s3, bucket, name, shaderMaterial, animationEngine, callback) {
+export async function loadGaps(s3, bucket, name, shaderMaterial, animationEngine, callback) {
   const tstart = performance.now();
   if (s3 && bucket && name) {
     (async () => {

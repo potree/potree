@@ -212,22 +212,313 @@
 			updateSidebar();
 		});
 
+		// Create AnimationEngine:
+		window.animationEngine = new AnimationEngine();
+
+		// TODO put these material definitions somewhere better
+		// uniforms
+		let uniforms = {
+					color: { value: new THREE.Color( 0x00ff00 ) },
+					minGpsTime: {value: 0.0 },
+					maxGpsTime: {value: 0.5 },
+					initialTime: {value: 0}, // TODO not used
+					// offset: {value: new THREE.Vector3(0,0,0)}
+			};
+		let shaderMaterial = new THREE.ShaderMaterial( {
+
+				 uniforms:       uniforms,
+				 vertexShader:   document.getElementById( 'vertexshader' ).textContent,
+				 fragmentShader: document.getElementById( 'fragmentshader' ).textContent,
+				 transparent:    true
+
+		 });
+
 		// Playbar Configuration:
 		$(document).ready(() => {
 			document.getElementById("playbar_tmax").disabled = false;
 			document.getElementById("playbar_tmin").disabled = false;
+
+
+			// Load Data Sources:
+			(async () => {
+
+				// Load RTK:
+				await loadRtkCallback(s3, bucket, name);
+
+				// Load Lanes:
+				try {
+					await loadLanesCallback(s3, bucket, name);
+				} catch (e) {
+					console.error("Could not load Lanes: ", e);
+				}
+
+				// Load Tracks:
+				try {
+					// TODO shaderMaterial
+					let trackShaderMaterial = shaderMaterial.clone();
+					await loadTracksCallback(s3, bucket, name, trackShaderMaterial, animationEngine);
+				} catch (e) {
+					console.error("Could not load Tracks: ", e);
+				}
+
+				// Load Radar:
+				try {
+					await loadRadarCallback(s3, bucket, name);
+				} catch (e) {
+					console.error("Could not load Radar Detections: ", e);
+				}
+
+				// Load Detections:
+				// TODO
+
+				// Load Gaps:
+				// TODO
+
+				// Configure AnimationEngine:
+				// TODO Fix these hardcoded values
+				// let tstart = 1495189467.63; // hardcoded for first ODC dataset
+				// let tend = 1495189467.63+600.5599999427795; // hardcoded for first ODC dataset
+				// let tstart = window.timeframe.tstart;	// Set in loadRtkCallback
+				// let tend = window.timeframe.tend;			// Set in loadRtkCallback
+				// let playbackRate = 1.0;
+				// animationEngine.configure(tstart, tend, playbackRate);
+				// animationEngine.launch();
+			})();
+
 		});
 
 
-		window.animationEngine = new AnimationEngine();
 
-		// TODO Fix these hardcoded values
-		// TODO change this to pubsubjs 
-		let tstart = 1495189467.63;
-		let tend = 1495189467.63+600.5599999427795;
-		let playbackRate = 1.0;
-		animationEngine.configure(tstart, tend, playbackRate);
-		animationEngine.launch();
+
+		// Load RTK: TODO REFACTOR THIS (a lot of stuff happenning here, break it up if possible)
+		async function loadRtkCallback(s3, bucket, name) {
+			await loadRtk(s3, bucket, name, (pos, rot, t_init, t_range) => {
+				window.timeframe = {"tstart": t_init, "tend": t_init+t_range};
+
+				// TODO Move this into main loader function:
+				let tstart = window.timeframe.tstart;	// Set in loadRtkCallback
+				let tend = window.timeframe.tend;			// Set in loadRtkCallback
+				let playbackRate = 1.0;
+				animationEngine.configure(tstart, tend, playbackRate);
+				animationEngine.launch();
+
+	      const path = pos.map(v => new THREE.Vector3(...v));
+	      const orientations = rot.map(v => new THREE.Vector3(...v));
+
+	      const animationPath = new Potree.AnimationPath(path);
+	      animationPath.closed = false;
+		  	const orientationPath = new THREE.CatmullRomCurve3(orientations, animationPath.closed); // NOTE: orientations are represented as a parametric curve in 3d space, this breaks at pi to negative pi transition
+
+	      { // render the path
+	        let geometry = animationPath.getGeometry();
+	        let material = new THREE.LineBasicMaterial();
+	        material.uniforms = {initialTime:{value:t_init}};
+					material.opacity = 0.0;
+					material.transparent = true;
+	        let line = new THREE.Line(geometry, material, {closed: animationPath.closed});
+	        line.name = "rtk";
+	        viewer.scene.scene.add(line);
+	        console.log("Rendered Path");
+	      }
+
+	      // CREATE VEHICLE OBJECT:
+	      // NOTE for Mustang: {texture: models/bodybkgd.JPG, mesh: models/1967-shelby-ford-mustang.obj}
+	      // NOTE for Volt: {texture: models/Chevy_Volt_Segmented/Chevrolet_Volt_v1_exterior.png, mesh: resources/models/Chevy_Volt_Segmented/Chevy_Volt_2016.obj}
+	      let manager = new THREE.LoadingManager();
+	      manager.onProgress = function ( item, loaded, total ) {
+	        console.log( item, loaded, total );
+	      };
+	      let textureLoader = new THREE.TextureLoader( manager );
+	      let texture = textureLoader.load(`${Potree.resourcePath}/models/Chevy_Volt_Segmented/reflection_1.png`);
+	      // let texture = textureLoader.load(`${Potree.resourcePath}/models/bodybkgd.JPG`);
+	      let onProgress = function ( xhr ) {
+	        if ( xhr.lengthComputable ) {
+	          let percentComplete = xhr.loaded / xhr.total * 100;
+	          console.log( Math.round(percentComplete, 2) + '% downloaded' );
+	        }
+	      };
+	      texture.wrapS = THREE.RepeatWrapping;
+	      texture.wrapT = THREE.RepeatWrapping;
+
+	      let geometry = new THREE.SphereGeometry( 2, 32, 32 );
+	      let material = new THREE.MeshNormalMaterial( {side: THREE.DoubleSide, opacity: 0.92,transparent:true});
+	      let sphere = new THREE.Mesh( geometry, material );
+	      sphere.position.copy(new THREE.Vector3(...pos[0]));
+	      console.log(sphere);
+
+	      // viewer.scene.scene.add( sphere );
+	      console.log("Sphere added");
+
+
+	      { // Load Textured bunny from obj
+	        let onError = function ( xhr ) {};
+	        let loader = new THREE.OBJLoader( manager );
+	        loader.load(`${Potree.resourcePath}/models/Chevy_Volt_Segmented/Chevy_Volt_2016.obj`,
+	                    function ( object ) {
+	          object.traverse( function ( child ) {
+	            if ( child instanceof THREE.Mesh ) {
+	              child.material.map = texture;
+	            }
+	          } );
+
+						const vehicleGroup = new THREE.Group();
+						vehicleGroup.name = "Vehicle";
+
+						// Add Polar Grid Helper:
+						const gridRadius = 100; // meters
+						const gridSpacing = 5; // meters
+						const scaleFactor = 1; // HACK for now because attached to vehicle mesh which is 1/100th scale
+						const gridHelper = new THREE.GridHelper( scaleFactor*2*gridRadius, 2*gridRadius/gridSpacing, 0x0000ff, 0x808080 );
+						gridHelper.name = "Cartesian Grid";
+						gridHelper.rotateOnAxis(new THREE.Vector3(1,0,0), Math.PI/2);
+						gridHelper.visible = false;
+						viewer.scene.dispatchEvent({"type": "vehicle_layer_added", "vehicleLayer": gridHelper });
+						const polarGridHelper = new THREE.PolarGridHelper( scaleFactor*gridRadius, 16, gridRadius/gridSpacing, 64, 0x0000ff, 0x808080 );
+						polarGridHelper.name = "Polar Grid";
+						polarGridHelper.rotateOnAxis(new THREE.Vector3(1,0,0), Math.PI/2);
+						polarGridHelper.visible = false;
+						viewer.scene.dispatchEvent({"type": "vehicle_layer_added", "vehicleLayer": polarGridHelper });
+						const axesHelper = new THREE.AxesHelper(scaleFactor*gridSpacing);
+						axesHelper.name = "3D Axes";
+						// axesHelper.rotateOnAxis(new THREE.Vector3(0,0,1), -Math.PI/2);
+						axesHelper.visible = false;
+						viewer.scene.dispatchEvent({"type": "vehicle_layer_added", "vehicleLayer": axesHelper });
+
+
+						vehicleGroup.add( gridHelper );
+						vehicleGroup.add( polarGridHelper );
+						vehicleGroup.add( axesHelper );
+
+	          object.name = "Vehicle Mesh";
+	          object.scale.multiplyScalar(.01);
+						object.rotation.set(0*Math.PI / 2, 0*Math.PI/2., 1*Math.PI/2.0); // Chevy Volt
+
+						vehicleGroup.position.set(...pos[0]);
+						vehicleGroup.orientationPath = orientationPath;
+						vehicleGroup.add( object );
+
+						// TODO New Camera Initialization:
+						let box = new THREE.Box3().setFromObject(vehicleGroup);
+						let node = new THREE.Object3D();
+						node.boundingBox = box;
+						viewer.zoomTo(node, 0.1, 500);
+						// viewer.scene.view.lookAt(object.position);
+
+	          // viewer.scene.scene.add( object );
+	          viewer.scene.scene.add( vehicleGroup );
+						viewer.scene.dispatchEvent({"type": "vehicle_layer_added", "vehicleLayer": object });
+
+						removeLoadingScreen();
+
+	        }, onProgress, onError );
+	      }
+
+	      // ANIMATION:
+	      { // create Animation Path & make light follow it
+	        {// ANIMATION + SLIDER LOGIC:
+	          let slider = document.getElementById("myRange");
+	          let output = document.getElementById("demo");
+						let tmin = document.getElementById("playbar_tmin");
+						let tmax = document.getElementById("playbar_tmax");
+	          output.innerHTML = slider.value;
+
+	          // Animate from beginning to end
+	          let start = 0;
+	          let end = Infinity;
+	          let speed = 33;	// empirically set as "close to realtime"
+	          let animation = animationPath.animate(start, end, speed, animate);
+						function animate() {
+							// DO NOTHING -- Placeholder will be removed
+						}
+	          window.animation = animation;
+
+
+	          // Playbar Button Functions:
+	          let playbutton = document.getElementById("playbutton");
+	          let pausebutton = document.getElementById("pausebutton");
+	          pausebutton.addEventListener("mousedown", () => {
+							animationEngine.stop();
+	          });
+	          playbutton.addEventListener("mousedown", () => {
+							animationEngine.start();
+	          });
+
+						slider.addEventListener("input", () => {
+							animationEngine.stop();
+							var val = slider.value/100.0;
+							animationEngine.timeline.t = val*animationEngine.timeRange + animationEngine.tstart;
+							animationEngine.updateTimeForAll();
+						});
+
+						slider.addEventListener("wheel", () => {
+							animationEngine.stop();
+							var val = slider.value/100.0;
+							animationEngine.timeline.t = val*animationEngine.timeRange + animationEngine.tstart;
+							animationEngine.updateTimeForAll();
+						});
+
+						window.addEventListener("keypress", (e) => {
+							// if (e.charCode == 32) {
+				      //     if (toggleplay.checked) {
+				      //       animationEngine.start();
+				      //     } else {
+				      //       animationEngine.stop();
+				      //     }
+				      //   }
+							});
+	        }
+
+	        window.animationPath = animationPath;
+					window.animation.pause();
+	      }
+	    });
+
+
+			// RTK TweenTarget Callback:
+			window.pitchThreshold = 1.00;
+			animationEngine.tweenTargets.push((gpsTime) => {
+				try{
+					let t = (gpsTime - animationEngine.tstart) / (animationEngine.timeRange);
+					let bunny = viewer.scene.scene.getObjectByName("Vehicle");
+					let lastRtkPoint = bunny.position.clone();
+					let lastRtkOrientation = bunny.rotation.clone();
+					let lastTransform = bunny.matrixWorld.clone();
+					// debugger; //bunny
+					let rtkPoint = animation.getPoint(t); // TODO rename animation --> just use CatmullRomCurve3 directly
+					let vehicleOrientation = bunny.orientationPath.getPoint(t); // TODO same as above, also double check interpolation is legit
+					rtkPoint.z -= 2.0; // TODO remove hardcoded value
+					bunny.position.copy(rtkPoint);
+					applyRotation(bunny, vehicleOrientation.x, vehicleOrientation.y, vehicleOrientation.z);
+					bunny.updateMatrixWorld();
+
+					// Apply Transformation to Camera and Target:
+					let newTransform = bunny.matrixWorld.clone();
+					let lastTransformInverse = lastTransform.getInverse(lastTransform);
+					let deltaTransform = lastTransformInverse.premultiply(newTransform);
+					let target = viewer.scene.view.position.clone();
+					let direction = viewer.scene.view.direction.clone();
+					let radius = viewer.scene.view.radius;
+					target.add(direction.multiplyScalar(radius));
+					viewer.scene.view.position.applyMatrix4(deltaTransform);
+					if (Math.abs(viewer.scene.view.pitch) < window.pitchThreshold) {
+						viewer.scene.view.lookAt(target.applyMatrix4(deltaTransform));
+					}
+					console.log("View Yaw: ", viewer.scene.view.yaw);
+					console.log("View Pitch: ", viewer.scene.view.pitch);
+
+					// Set Elevation:
+					let elevationDeltaMin = -0;
+					let elevationDeltaMax = 2;
+					let clouds = viewer.scene.pointclouds;
+					for (let ii=0, numClouds = clouds.length; ii<numClouds; ii++) {
+							viewer.scene.pointclouds[ii].material.elevationRange = [rtkPoint.z+elevationDeltaMin, rtkPoint.z+elevationDeltaMax];
+					}
+				} catch (e) {
+					console.error("Caught error: ",e);
+				}
+			});
+		}
+
 
 		// Animation Start/Stop Callbacks:
 		// TODO Put these somewhere better
@@ -277,64 +568,20 @@
 				output.innerHTML = (gpsTime - animationEngine.tstart).toFixed(4); // Centered to zero
 			});
 
-			// RTK:
-			window.pitchThreshold = 1.00;
-			animationEngine.tweenTargets.push((gpsTime) => {
-				try{
-					let t = (gpsTime - animationEngine.tstart) / (animationEngine.timeRange);
-					let bunny = viewer.scene.scene.getObjectByName("Vehicle");
-					let lastRtkPoint = bunny.position.clone();
-					let lastRtkOrientation = bunny.rotation.clone();
-					let lastTransform = bunny.matrixWorld.clone();
-					// debugger; //bunny
-					let rtkPoint = animation.getPoint(t); // TODO rename animation --> just use CatmullRomCurve3 directly
-					let vehicleOrientation = bunny.orientationPath.getPoint(t); // TODO same as above, also double check interpolation is legit
-					rtkPoint.z -= 2.0; // TODO remove hardcoded value
-					bunny.position.copy(rtkPoint);
-					applyRotation(bunny, vehicleOrientation.x, vehicleOrientation.y, vehicleOrientation.z);
-					bunny.updateMatrixWorld();
 
-					// Apply Transformation to Camera and Target:
-					let newTransform = bunny.matrixWorld.clone();
-					let lastTransformInverse = lastTransform.getInverse(lastTransform);
-					let deltaTransform = lastTransformInverse.premultiply(newTransform);
-					let target = viewer.scene.view.position.clone();
-					let direction = viewer.scene.view.direction.clone();
-					let radius = viewer.scene.view.radius;
-					target.add(direction.multiplyScalar(radius));
-					viewer.scene.view.position.applyMatrix4(deltaTransform);
-					if (Math.abs(viewer.scene.view.pitch) < window.pitchThreshold) {
-						viewer.scene.view.lookAt(target.applyMatrix4(deltaTransform));
-					}
-					console.log("View Yaw: ", viewer.scene.view.yaw);
-					console.log("View Pitch: ", viewer.scene.view.pitch);
 
-					// Set Elevation:
-					let elevationDeltaMin = -0;
-					let elevationDeltaMax = 2;
-					let clouds = viewer.scene.pointclouds;
-					for (let ii=0, numClouds = clouds.length; ii<numClouds; ii++) {
-							viewer.scene.pointclouds[ii].material.elevationRange = [rtkPoint.z+elevationDeltaMin, rtkPoint.z+elevationDeltaMax];
-							// debugger; //pointclouds
-					}
+			// // Camera:
+			// let updateCamera = false;
+			// let lag = 1.01; // seconds
+			// let camPointZOffset = 10; // meters
+			// window.camControlInitialized = false;
+			// window.camPointNeedsToBeComputed = true;
+			// window.camControlInUse = false;
+			// window.camDeltaTransform = {camStart: new THREE.Matrix4(), vehicleStart: new THREE.Vector3(), camEnd: new THREE.Matrix4(), vehicleEnd: new THREE.Vector3()};
+			// window.camPointLocalFrame = {position: new THREE.Vector3(-10,0,10)};
+			// window.camTargetLocalFrame = {position: new THREE.Vector3(0, 0, 0)};
 
-				} catch (e) {
-					console.error("Caught error: ",e);
-				}
-			});
 
-			// Camera:
-			let updateCamera = false;
-			let lag = 1.01; // seconds
-			let camPointZOffset = 10; // meters
-			window.camControlInitialized = false;
-			window.camPointNeedsToBeComputed = true;
-			window.camControlInUse = false;
-			window.camDeltaTransform = {camStart: new THREE.Matrix4(), vehicleStart: new THREE.Vector3(), camEnd: new THREE.Matrix4(), vehicleEnd: new THREE.Vector3()};
-			window.camPointLocalFrame = {position: new THREE.Vector3(-10,0,10)};
-			window.camTargetLocalFrame = {position: new THREE.Vector3(0, 0, 0)};
-
-			// viewer.renderArea.addEventListener("mouseup", resumeAndGetCameraPosition);
 			viewer.renderArea.addEventListener("keypress", (e) => {
 				if (e.key == "r") {
 					let box = new THREE.Box3().setFromObject(viewer.scene.scene.getObjectByName("Vehicle").getObjectByName("Vehicle Mesh"));
@@ -349,97 +596,28 @@
 		// TODO Just for testing:
 		// tweenInitAll();
 
-	// uniforms
-	let uniforms = {
-				color: { value: new THREE.Color( 0x00ff00 ) },
-				minGpsTime: {value: 0.0 },
-				maxGpsTime: {value: 0.5 },
-				initialTime: {value: 0}, // TODO not used
-				// offset: {value: new THREE.Vector3(0,0,0)}
-		};
-	let shaderMaterial = new THREE.ShaderMaterial( {
-
-			 uniforms:       uniforms,
-			 vertexShader:   document.getElementById( 'vertexshader' ).textContent,
-			 fragmentShader: document.getElementById( 'fragmentshader' ).textContent,
-			 transparent:    true
-
-	 });
 
 
 // TODO FROM HERE
 		// Load Lanes Truth Data:
-		loadLanes(s3, bucket, name, (laneGeometries) => {
+		async function loadLanesCallback(s3, bucket, name) {
+			await loadLanes(s3, bucket, name, (laneGeometries) => {
 
-			let lanesLayer = new THREE.Group();
-			lanesLayer.name = "Lanes";
-			for (let ii=0, len=laneGeometries.all.length; ii<len; ii++) {
-				lanesLayer.add(laneGeometries.all[ii]);
-			}
-			viewer.scene.scene.add(lanesLayer);
-			viewer.scene.dispatchEvent({
-				"type": "truth_layer_added",
-				"truthLayer": lanesLayer
+				let lanesLayer = new THREE.Group();
+				lanesLayer.name = "Lanes";
+				for (let ii=0, len=laneGeometries.all.length; ii<len; ii++) {
+					lanesLayer.add(laneGeometries.all[ii]);
+				}
+				viewer.scene.scene.add(lanesLayer);
+				viewer.scene.dispatchEvent({
+					"type": "truth_layer_added",
+					"truthLayer": lanesLayer
+				});
 			});
-		});
+		}
 // TODO TILL HERE
 
 
-
-// 		// Load Test Box:
-// 		{
-// 			let position = new THREE.Vector3(300139.728, 4701364.107, 241.147);
-// 			let geom = new THREE.BoxBufferGeometry(100, 100, 100);
-// 			let materialNormal = new THREE.MeshNormalMaterial();
-//
-// 			let geo = new THREE.WireframeGeometry( geom );
-// 			let timestamps = [];
-// 			for (let ii=0; ii<60; ii++){
-// 					timestamps.push(0.5);
-// 			};
-// 			geo.addAttribute('gpsTime', new THREE.Float32BufferAttribute(timestamps, 1));
-// 			// var geo = new THREE.EdgesGeometry( geom );
-// 			let material = new THREE.LineBasicMaterial( { color: 0xffffff, linewidth: 2 } );
-//
-// 			// uniforms
-// 	    let uniforms = {
-// 	          color: { value: new THREE.Color( 0x00ff00 ) },
-// 	          minGpsTime: {value: 0.0 },
-// 	          maxGpsTime: {value: 0.5 },
-// 	          initialTime: {value: 0} // TODO not used
-// 	      };
-// 			let shaderMaterial = new THREE.ShaderMaterial( {
-//
-// 		       uniforms:       uniforms,
-// 		       vertexShader:   document.getElementById( 'vertexshader' ).textContent,
-// 		       fragmentShader: document.getElementById( 'fragmentshader' ).textContent,
-// 		       transparent:    true
-//
-// 		   });
-//
-//
-// 			var wireframe = new THREE.LineSegments( geo, shaderMaterial );
-//
-// 			wireframe.position.copy(position);
-// 			wireframe.name = "testbox";
-//
-// 			var mesh = new THREE.Mesh(geom, materialNormal);
-// 			mesh.position.copy(position);
-//
-// 			wireframe.onBeforeRender = function(renderer, scene, camera, geometry, material, group) {
-// 				let testBox = viewer.scene.scene.getObjectByName("testbox");
-// 				let t = animationEngine.timeline.t - animationEngine.tstart;
-// 				testBox.material.uniforms.minGpsTime.value = t - 1;
-// 				testBox.material.uniforms.maxGpsTime.value = t + 1;
-// 			}
-//
-// 			viewer.scene.scene.add(wireframe);
-//
-// 		}
-//
-//
-//
-//
 // TODO FROM HERE
 window.gapsLoaded = false;
 $(document).ready(() => {
@@ -504,26 +682,33 @@ $(document).ready(() => {
 // TODO FROM HERE
 		// TODO Move this somewhere else
 		let trackShaderMaterial = shaderMaterial.clone();
-		loadTracks(s3, bucket, name, trackShaderMaterial, animationEngine, (trackGeometries) => {
-			let trackLayer = new THREE.Group();
-			trackLayer.name = "Tracked Objects";
-			for (let ii=0, len=trackGeometries.bbox.length; ii<len; ii++) {
-				trackLayer.add(trackGeometries.bbox[ii]);
-				// viewer.scene.scene.add(trackGeometries.bbox[ii]); // Original
-			}
-			viewer.scene.scene.add(trackLayer);
-			let e = new CustomEvent("truth_layer_added", {detail: trackLayer, writable: true});
-			viewer.scene.dispatchEvent({
-				"type": "truth_layer_added",
-				"truthLayer": trackLayer
+
+		async function loadTracksCallback(s3, bucket, name, trackShaderMaterial, animationEngine) {
+
+			await loadTracks(s3, bucket, name, trackShaderMaterial, animationEngine, (trackGeometries) => {
+				let trackLayer = new THREE.Group();
+				trackLayer.name = "Tracked Objects";
+				for (let ii=0, len=trackGeometries.bbox.length; ii<len; ii++) {
+					trackLayer.add(trackGeometries.bbox[ii]);
+					// viewer.scene.scene.add(trackGeometries.bbox[ii]); // Original
+				}
+
+				viewer.scene.scene.add(trackLayer);
+				let e = new CustomEvent("truth_layer_added", {detail: trackLayer, writable: true});
+				viewer.scene.dispatchEvent({
+					"type": "truth_layer_added",
+					"truthLayer": trackLayer
+				});
+
+				// TODO check if group works as expected, then trigger "truth_layer_added" event
+				animationEngine.tweenTargets.push((gpsTime) => {
+					let currentTime = gpsTime - animationEngine.tstart;
+					trackShaderMaterial.uniforms.minGpsTime.value = currentTime - animationEngine.activeWindow.backward;
+					trackShaderMaterial.uniforms.maxGpsTime.value = currentTime + animationEngine.activeWindow.forward;
+				});
 			});
-			// TODO check if group works as expected, then trigger "truth_layer_added" event
-			animationEngine.tweenTargets.push((gpsTime) => {
-				let currentTime = gpsTime - animationEngine.tstart;
-				trackShaderMaterial.uniforms.minGpsTime.value = currentTime - animationEngine.activeWindow.backward;
-				trackShaderMaterial.uniforms.maxGpsTime.value = currentTime + animationEngine.activeWindow.forward;
-			});
-		});
+		}
+
 
 
 		window.detectionsLoaded = false;
@@ -594,54 +779,57 @@ $(document).ready(() => {
 
 // TODO FROM HERE
 		// Load Radar:
-		loadRadar(s3, bucket, name, (geometry,t_init, boxBufferGeometries) => {
+		async function loadRadarCallback(s3, bucket, name) {
+			await loadRadar(s3, bucket, name, (geometry,t_init, boxBufferGeometries) => {
 
-			let boxMesh = new THREE.Mesh(boxBufferGeometries, new THREE.MeshBasicMaterial({color: 0xffff00}) );
-			boxMesh.name = "radar_boxes";
-			// viewer.scene.scene.add(boxMesh);
-
-
-			// uniforms
-			let uniforms = {
-					color: { value: new THREE.Color( 0xffff00 ) },
-					minGpsTime: {value: 0.0 },
-					maxGpsTime: {value: 110.0 },
-					initialTime: {value: t_init}
-			};
-
-			// point cloud material
-			var shaderMaterial = new THREE.ShaderMaterial( {
-
-					uniforms:       uniforms,
-					vertexShader:   document.getElementById( 'vertexshader' ).textContent,
-					fragmentShader: document.getElementById( 'fragmentshader' ).textContent,
-					transparent:    true
-
-			});
-
-			var material = new THREE.PointsMaterial( {size:1.0} );
-			var mesh = new THREE.Points(geometry, shaderMaterial);
-			mesh.name = "radar";
-			// debugger; //radar tracks added?
-			viewer.scene.scene.add(mesh);
-			viewer.scene.dispatchEvent({"type": "sensor_layer_added", "sensorLayer": mesh });
+				let boxMesh = new THREE.Mesh(boxBufferGeometries, new THREE.MeshBasicMaterial({color: 0xffff00}) );
+				boxMesh.name = "radar_boxes";
+				// viewer.scene.scene.add(boxMesh);
 
 
-			// Create tween:
-			{
-				animationEngine.tweenTargets.push( (t) => {
-					// debugger;
-					let minGpsTime = t - animationEngine.activeWindow.backward;
-					let maxGpsTime = t + animationEngine.activeWindow.forward;
-					let radarOffset = t_init;
-					let minRadarTime = minGpsTime - radarOffset;
-					let maxRadarTime = maxGpsTime - radarOffset;
-					let radar = viewer.scene.scene.getObjectByName("radar")
-					radar.material.uniforms.minGpsTime.value = minRadarTime;
-					radar.material.uniforms.maxGpsTime.value = maxRadarTime;
+				// uniforms
+				let uniforms = {
+						color: { value: new THREE.Color( 0xffff00 ) },
+						minGpsTime: {value: 0.0 },
+						maxGpsTime: {value: 110.0 },
+						initialTime: {value: t_init}
+				};
+
+				// point cloud material
+				var shaderMaterial = new THREE.ShaderMaterial( {
+
+						uniforms:       uniforms,
+						vertexShader:   document.getElementById( 'vertexshader' ).textContent,
+						fragmentShader: document.getElementById( 'fragmentshader' ).textContent,
+						transparent:    true
+
 				});
-			}
-		});
+
+				var material = new THREE.PointsMaterial( {size:1.0} );
+				var mesh = new THREE.Points(geometry, shaderMaterial);
+				mesh.name = "radar";
+				// debugger; //radar tracks added?
+				viewer.scene.scene.add(mesh);
+				viewer.scene.dispatchEvent({"type": "sensor_layer_added", "sensorLayer": mesh });
+
+
+				// Create tween:
+				{
+					animationEngine.tweenTargets.push( (t) => {
+						// debugger;
+						let minGpsTime = t - animationEngine.activeWindow.backward;
+						let maxGpsTime = t + animationEngine.activeWindow.forward;
+						let radarOffset = t_init;
+						let minRadarTime = minGpsTime - radarOffset;
+						let maxRadarTime = maxGpsTime - radarOffset;
+						let radar = viewer.scene.scene.getObjectByName("radar")
+						radar.material.uniforms.minGpsTime.value = minRadarTime;
+						radar.material.uniforms.maxGpsTime.value = maxRadarTime;
+					});
+				}
+			});
+		}
+
 // TODO TILL HERE
 
     // // Load Radar:
@@ -671,201 +859,6 @@ $(document).ready(() => {
     //   // debugger; //radar tracks added?
     //   viewer.scene.scene.add(mesh);
     // });
-
-    // Load RTK:
-      loadRtk(s3, bucket, name, (pos, rot, t_init) => {
-      const path = pos.map(v => new THREE.Vector3(...v));
-      const orientations = rot.map(v => new THREE.Vector3(...v));
-
-      const animationPath = new Potree.AnimationPath(path);
-      animationPath.closed = false;
-	  	const orientationPath = new THREE.CatmullRomCurve3(orientations, animationPath.closed); // NOTE: orientations are represented as a parametric curve in 3d space, this breaks at pi to negative pi transition
-
-      { // render the path
-        let geometry = animationPath.getGeometry();
-        let material = new THREE.LineBasicMaterial();
-        material.uniforms = {initialTime:{value:t_init}};
-				material.opacity = 0.0;
-				material.transparent = true;
-        let line = new THREE.Line(geometry, material, {closed: animationPath.closed});
-        line.name = "rtk";
-        viewer.scene.scene.add(line);
-        console.log("Rendered Path");
-      }
-
-
-      // CREATE VEHICLE OBJECT:
-      // NOTE for Mustang: {texture: models/bodybkgd.JPG, mesh: models/1967-shelby-ford-mustang.obj}
-      // NOTE for Volt: {texture: models/Chevy_Volt_Segmented/Chevrolet_Volt_v1_exterior.png, mesh: resources/models/Chevy_Volt_Segmented/Chevy_Volt_2016.obj}
-      let manager = new THREE.LoadingManager();
-      manager.onProgress = function ( item, loaded, total ) {
-        console.log( item, loaded, total );
-      };
-      let textureLoader = new THREE.TextureLoader( manager );
-      let texture = textureLoader.load(`${Potree.resourcePath}/models/Chevy_Volt_Segmented/reflection_1.png`);
-      // let texture = textureLoader.load(`${Potree.resourcePath}/models/bodybkgd.JPG`);
-      let onProgress = function ( xhr ) {
-        if ( xhr.lengthComputable ) {
-          let percentComplete = xhr.loaded / xhr.total * 100;
-          console.log( Math.round(percentComplete, 2) + '% downloaded' );
-        }
-      };
-      texture.wrapS = THREE.RepeatWrapping;
-      texture.wrapT = THREE.RepeatWrapping;
-
-      let geometry = new THREE.SphereGeometry( 2, 32, 32 );
-      let material = new THREE.MeshNormalMaterial( {side: THREE.DoubleSide, opacity: 0.92,transparent:true});
-      let sphere = new THREE.Mesh( geometry, material );
-      sphere.position.copy(new THREE.Vector3(...pos[0]));
-      console.log(sphere);
-
-      // viewer.scene.scene.add( sphere );
-      console.log("Sphere added");
-
-
-      { // Load Textured bunny from obj
-        let onError = function ( xhr ) {};
-        let loader = new THREE.OBJLoader( manager );
-        loader.load(`${Potree.resourcePath}/models/Chevy_Volt_Segmented/Chevy_Volt_2016.obj`,
-                    function ( object ) {
-          object.traverse( function ( child ) {
-            if ( child instanceof THREE.Mesh ) {
-              child.material.map = texture;
-            }
-          } );
-
-					const vehicleGroup = new THREE.Group();
-					vehicleGroup.name = "Vehicle";
-
-					// Add Polar Grid Helper:
-					const gridRadius = 100; // meters
-					const gridSpacing = 5; // meters
-					const scaleFactor = 1; // HACK for now because attached to vehicle mesh which is 1/100th scale
-					const gridHelper = new THREE.GridHelper( scaleFactor*2*gridRadius, 2*gridRadius/gridSpacing, 0x0000ff, 0x808080 );
-					gridHelper.name = "Cartesian Grid";
-					gridHelper.rotateOnAxis(new THREE.Vector3(1,0,0), Math.PI/2);
-					gridHelper.visible = false;
-					viewer.scene.dispatchEvent({"type": "vehicle_layer_added", "vehicleLayer": gridHelper });
-					const polarGridHelper = new THREE.PolarGridHelper( scaleFactor*gridRadius, 16, gridRadius/gridSpacing, 64, 0x0000ff, 0x808080 );
-					polarGridHelper.name = "Polar Grid";
-					polarGridHelper.rotateOnAxis(new THREE.Vector3(1,0,0), Math.PI/2);
-					polarGridHelper.visible = false;
-					viewer.scene.dispatchEvent({"type": "vehicle_layer_added", "vehicleLayer": polarGridHelper });
-					const axesHelper = new THREE.AxesHelper(scaleFactor*gridSpacing);
-					axesHelper.name = "3D Axes";
-					// axesHelper.rotateOnAxis(new THREE.Vector3(0,0,1), -Math.PI/2);
-					axesHelper.visible = false;
-					viewer.scene.dispatchEvent({"type": "vehicle_layer_added", "vehicleLayer": axesHelper });
-
-
-					vehicleGroup.add( gridHelper );
-					vehicleGroup.add( polarGridHelper );
-					vehicleGroup.add( axesHelper );
-
-          object.name = "Vehicle Mesh";
-          object.scale.multiplyScalar(.01);
-					object.rotation.set(0*Math.PI / 2, 0*Math.PI/2., 1*Math.PI/2.0); // Chevy Volt
-
-					vehicleGroup.position.set(...pos[0]);
-					vehicleGroup.orientationPath = orientationPath;
-					vehicleGroup.add( object );
-
-					// TODO New Camera Initialization:
-					let box = new THREE.Box3().setFromObject(vehicleGroup);
-					let node = new THREE.Object3D();
-					node.boundingBox = box;
-					viewer.zoomTo(node, 0.1, 500);
-					// viewer.scene.view.lookAt(object.position);
-
-          // viewer.scene.scene.add( object );
-          viewer.scene.scene.add( vehicleGroup );
-					viewer.scene.dispatchEvent({"type": "vehicle_layer_added", "vehicleLayer": object });
-
-					removeLoadingScreen();
-
-        }, onProgress, onError );
-      }
-
-      // // Create sprite:
-      // let hudTexture = textureLoader.load(`${Potree.resourcePath}/images/4076.jpg`);
-      // var spriteMaterial = new THREE.SpriteMaterial({map:hudTexture});
-      // var sprite = new THREE.Sprite(spriteMaterial);
-      // sprite.position.set(...pos[0]);
-      // sprite.position.add(new THREE.Vector3(10,10,10));
-      // sprite.scale.set(5,5,1);
-      // sprite.name = "sprite";
-      // viewer.scene.scene.add(sprite);
-
-
-
-
-
-
-      // ANIMATION:
-      { // create Animation Path & make light follow it
-
-
-        {// ANIMATION + SLIDER LOGIC:
-          let slider = document.getElementById("myRange");
-          let output = document.getElementById("demo");
-					let tmin = document.getElementById("playbar_tmin");
-					let tmax = document.getElementById("playbar_tmax");
-      // let toggleplay = document.getElementById("toggleplay");
-          output.innerHTML = slider.value;
-
-          // Animate from beginning to end
-          let start = 0;
-          let end = Infinity;
-          let speed = 33;	// empirically set as "close to realtime"
-          let animation = animationPath.animate(start, end, speed, animate);
-
-					function animate() {
-						// DO NOTHING -- Placeholder will be removed
-					}
-          window.animation = animation;
-
-
-          // Playbar Button Functions:
-          let playbutton = document.getElementById("playbutton");
-          let pausebutton = document.getElementById("pausebutton");
-          pausebutton.addEventListener("mousedown", () => {
-						animationEngine.stop();
-          });
-          playbutton.addEventListener("mousedown", () => {
-						animationEngine.start();
-          });
-
-					slider.addEventListener("input", () => {
-						animationEngine.stop();
-						var val = slider.value/100.0;
-						animationEngine.timeline.t = val*animationEngine.timeRange + animationEngine.tstart;
-						animationEngine.updateTimeForAll();
-					});
-
-					slider.addEventListener("wheel", () => {
-						animationEngine.stop();
-						var val = slider.value/100.0;
-						animationEngine.timeline.t = val*animationEngine.timeRange + animationEngine.tstart;
-						animationEngine.updateTimeForAll();
-					});
-
-					window.addEventListener("keypress", (e) => {
-						// if (e.charCode == 32) {
-			      //     if (toggleplay.checked) {
-			      //       animationEngine.start();
-			      //     } else {
-			      //       animationEngine.stop();
-			      //     }
-			      //   }
-						});
-        }
-
-        window.animationPath = animationPath;
-				window.animation.pause();
-      }
-
-    });
-
 
 			if (runForLocalDevelopment) {
 				Potree.loadPointCloud("../pointclouds/external/full-cloud/cloud.js", "full-cloud", e => {

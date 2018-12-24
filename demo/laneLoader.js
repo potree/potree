@@ -1,5 +1,5 @@
 
-export function loadLanes(s3, bucket, name, callback) {
+export async function loadLanes(s3, bucket, name, callback) {
   const tstart = performance.now();
   if (s3 && bucket && name) {
     (async () => {

@@ -2,7 +2,7 @@ import { getLoadingBar } from "../common/overlay.js";
 
 
 
-export function loadDetections(s3, bucket, name, shaderMaterial, animationEngine, callback) {
+export async function loadDetections(s3, bucket, name, shaderMaterial, animationEngine, callback) {
   let lastLoaded = 0;
   const tstart = performance.now();
   if (s3 && bucket && name) {

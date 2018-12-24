@@ -14,7 +14,7 @@ function minAngle(theta) {
   return theta;
 }
 
-export function loadRtk(s3, bucket, name, callback) {
+export async function loadRtk(s3, bucket, name, callback) {
   let lastLoaded = 0;
   if (s3 && bucket && name) {
     const objectName = `${name}/0_Preprocessed/rtk.csv`;
@@ -25,8 +25,8 @@ export function loadRtk(s3, bucket, name, callback) {
                      console.log(err, err.stack);
                    } else {
                      const string = new TextDecoder().decode(data.Body);
-                     const {mpos, orientations, t_init} = parseRTK(string);
-                     callback(mpos, orientations, t_init);
+                     const {mpos, orientations, t_init, t_range} = parseRTK(string);
+                     callback(mpos, orientations, t_init, t_range);
                    }});
     request.on("httpDownloadProgress", (e) => {
       let loadingBar = getLoadingBar();
@@ -54,9 +54,9 @@ export function loadRtk(s3, bucket, name, callback) {
     }
 
     xhr.onload = function(data) {
-      const {mpos, orientations, t_init} = parseRTK(data.target.response);
+      const {mpos, orientations, t_init, t_range} = parseRTK(data.target.response);
       console.log("Full Runtime: "+(performance.now()-tstart)+"ms");
-      callback(mpos, orientations, t_init);
+      callback(mpos, orientations, t_init, t_range);
     };
 
     t0 = performance.now();
@@ -82,6 +82,7 @@ function parseRTK(RTKstring) {
   let orientations = [];
 
   let t_init = 0;
+  let t_range = 0;
   let firstTimestamp = true;
   let lastRoll, lastPitch, lastYaw, lastOrientation;
   for (let ii = 0, len = rows.length; ii < len-1; ++ii) {
@@ -112,6 +113,7 @@ function parseRTK(RTKstring) {
         lastRoll = lastOrientation[0];
         lastPitch = lastOrientation[1];
         lastYaw = lastOrientation[2];
+        t_range = t - t_init;
       }
 
       colors.push( Math.random() * 0xffffff );
@@ -128,8 +130,7 @@ function parseRTK(RTKstring) {
   }
 
   console.log("Loop Runtime: "+(performance.now()-t0_loop)+"ms");
-
-  return {mpos, orientations, t_init};
+  return {mpos, orientations, t_init, t_range};
 }
 
 

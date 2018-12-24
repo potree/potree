@@ -3,7 +3,7 @@ function isNan(n) {
   return n !== n;
 }
 
-export function loadRadar(s3, bucket, name, callback) {
+export async function loadRadar(s3, bucket, name, callback) {
   const tstart = performance.now();
   if (s3 && bucket && name) {
     const objectName = `${name}/0_Preprocessed/radardata.csv`;

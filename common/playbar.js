@@ -37,11 +37,7 @@ $(document).ready(function () {
     function updateClip(disable=false) {
 
       console.log(window.viewer.scene); // gpstime
-      // var lidarOffset = window.viewer.scene.pointclouds[0].pcoGeometry.nodes.r.gpsTime.offset;
       const lidarOffset = window.animationEngine.tstart;
-
-      // lidarOffset = 1495189467.550001;  // TODO Hardcoded b/c PotreeConverter is throwing away initial offset
-      // var lidarRange = window.viewer.scene.pointclouds[0].pcoGeometry.nodes.r.gpsTime.range;
       const lidarRange = window.animationEngine.timeRange;
 
       if (disable) {

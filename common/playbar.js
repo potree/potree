@@ -65,7 +65,7 @@ $(document).ready(function () {
         const dtMin = window.animationEngine.activeWindow.backward;
         const dtMax = window.animationEngine.activeWindow.forward;
 
-        tmin = t + dtMin;
+        tmin = t - dtMin;
         tmax = t + dtMax;
 
         window.viewer.setFilterGPSTimeRange(tmin, tmax);
@@ -218,8 +218,8 @@ $(document).ready(function () {
     $(document).tooltip();
 
     // Configure Playbar Appearance:
-    document.getElementById("playbar_tmin").style.display = "none";
-    document.getElementById("playbar_tmax").style.display = "none";
+    // document.getElementById("playbar_tmin").style.display = "none";
+    // document.getElementById("playbar_tmax").style.display = "none";
     document.getElementById("playback_speed").style.display = "none";
     document.getElementById("toggleslider").style.display = "none";
     document.getElementById("toggle_calibration_panels").style.display = "none";

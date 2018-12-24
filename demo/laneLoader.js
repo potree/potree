@@ -260,7 +260,6 @@ function createLaneGeometriesOld(lanes) {
     let tmp1, tmp2, p1, p2, v1, v2;
     let firstCenter, center, lastCenter;
     let vertices = geometryLeft.vertices;
-    let offset = new THREE.Vector3(300043.226, 4701247.907, 245.427); // TODO FIX THIS HARDCODED OFFSET (it's just a large number to bring the vertices below close to 0)
 
     createBoxes(geometryLeft.vertices, new THREE.MeshBasicMaterial({color:0xffffff}));
     createBoxes(geometryRight.vertices, new THREE.MeshBasicMaterial({color:0xffffff}));
@@ -284,7 +283,6 @@ function createLaneGeometriesOld(lanes) {
         let vector = p2.sub(p1);
         let axis = new THREE.Vector3(1, 0, 0);
         center = p1.addScaledVector(vector, 0.5);
-        let centerNoOffset = new THREE.Vector3(center.x, center.y, center.z).sub(offset);
         if (lastCenter == undefined) {
           lastCenter = center.clone();
           firstCenter = center.clone();
@@ -315,8 +313,6 @@ function createLaneGeometriesOld(lanes) {
 
 
         boxMesh.quaternion.setFromUnitVectors(axis, vector.clone().normalize());
-        // boxMesh.geometry.translate(centerNoOffset.x, centerNoOffset.y, centerNoOffset.z);
-        // boxMesh.position.copy(offset.clone());
         boxMesh.position.copy(center.clone());
 
         lefts.push(boxMesh);

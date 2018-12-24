@@ -1,6 +1,4 @@
 
-// Global Variables -- TODO FIND BETTER WAY OF DOING THIS
-
 class AnimationEngine {
 
   constructor() {
@@ -11,7 +9,7 @@ class AnimationEngine {
     this.tstart = undefined;  // Starting time for animation (reference time, aka GPS Time)
     this.tend = undefined;  // Ending time for animation (reference time, aka GPS Time)
     this.timeline = undefined;
-    this.activeWindow = {forward: 0.05, backward: 0.05}; // Defines the size of the window around the current time step 
+    this.activeWindow = {forward: 0.05, backward: 0.05}; // Defines the size of the window around the current time step
     this.timeRange = undefined;
     this.preStartCallback = undefined; // Callback run before start() executes
     this.preStopCallback = undefined; // Callback run before stop() executes

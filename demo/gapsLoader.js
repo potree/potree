@@ -188,6 +188,10 @@ function createGapGeometriesOld(gaps, shaderMaterial, FlatbufferModule, animatio
   let allBoxes = new THREE.Geometry();
   let gapTimes = [];
   for(let ii=0, len=gaps.length; ii<len; ii++) {
+    if (ii > 1000) {
+      continue;
+    }
+
     gap = gaps[ii];
 
     var geometryLeft = new THREE.Geometry();  // TODO this is just a temporary variable to get an array of vertices later, do this in a better way
@@ -203,7 +207,6 @@ function createGapGeometriesOld(gaps, shaderMaterial, FlatbufferModule, animatio
     let tmp1, tmp2, p1, p2, v1, v2;
     let firstCenter, center, lastCenter;
     let vertices = geometryLeft.vertices;
-    let offset = new THREE.Vector3(300043.226, 4701247.907, 245.427); // TODO FIX THIS HARDCODED OFFSET (it's just a large number to bring the vertices below close to 0)
 
     createBoxes(geometryLeft.vertices, shaderMaterial);
 
@@ -217,19 +220,15 @@ function createGapGeometriesOld(gaps, shaderMaterial, FlatbufferModule, animatio
 
         let length = p1.distanceTo(p2);
         let width = gap.widthForVisualization();
-        let height = 0.01;
+        let height = 0.1;
 
         let vector = p2.sub(p1);
         let axis = new THREE.Vector3(1, 0, 0);
         center = p1.addScaledVector(vector, 0.5);
-        let centerNoOffset = new THREE.Vector3(center.x, center.y, center.z).sub(offset);
         if (lastCenter == undefined) {
           lastCenter = center.clone();
           firstCenter = center.clone();
         }
-        // debugger; // lastCenter.sub(center) or center.sub(lastCenter);
-        // let delta = lastCenter.clone().sub(center);
-        // let delta = center.clone().sub(lastCenter);
         let delta = center.clone().sub(firstCenter);
         lastCenter = center.clone();
         // debugger; // delta
@@ -254,8 +253,6 @@ function createGapGeometriesOld(gaps, shaderMaterial, FlatbufferModule, animatio
 
 
         boxMesh.quaternion.setFromUnitVectors(axis, vector.clone().normalize());
-        // boxMesh.geometry.translate(centerNoOffset.x, centerNoOffset.y, centerNoOffset.z);
-        // boxMesh.position.copy(offset.clone());
         boxMesh.position.copy(center.clone());
 
         lefts.push(boxMesh);

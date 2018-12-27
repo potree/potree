@@ -98,8 +98,8 @@
 						
 						let [long, lat] = geometry.coordinates;
 						let pos = toScene.forward([long, lat]);
-						
-						s.position.set(...pos, 20);
+						let alt = geometry.coordinates[2]?geometry.coordinates[2]:20;
+						s.position.set(...pos, alt);
 						
 						s.scale.set(10, 10, 10);
 						
@@ -111,14 +111,14 @@
 						for(let i = 0; i < geometry.coordinates.length; i++){
 							let [long, lat] = geometry.coordinates[i];
 							let pos = toScene.forward([long, lat]);
-							
+							let alt = geometry.coordinates[i][2]?geometry.coordinates[i][2]:20;
 							min.x = Math.min(min.x, pos[0]);
 							min.y = Math.min(min.y, pos[1]);
-							min.z = Math.min(min.z, 20);
+							min.z = Math.min(min.z, alt);
 							
-							coordinates.push(...pos, 20);
+							coordinates.push(...pos, alt);
 							if(i > 0 && i < geometry.coordinates.length - 1){
-								coordinates.push(...pos, 20);
+								coordinates.push(...pos, alt);
 							}
 						}
 						
@@ -146,14 +146,14 @@
 							for(let i = 0; i < pc.length; i++){
 								let [long, lat] = pc[i];
 								let pos = toScene.forward([long, lat]);
-								
+								let alt = pc[i][2]?pc[i][2]:20;
 								min.x = Math.min(min.x, pos[0]);
 								min.y = Math.min(min.y, pos[1]);
-								min.z = Math.min(min.z, 20);
+								min.z = Math.min(min.z, alt);
 								
-								coordinates.push(...pos, 20);
+								coordinates.push(...pos, alt);
 								if(i > 0 && i < pc.length - 1){
-									coordinates.push(...pos, 20);
+									coordinates.push(...pos, alt);
 								}
 							}
 							

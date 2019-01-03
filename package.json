@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "description": "WebGL point cloud viewer",
   "dependencies": {
-    "@material/slider": "^0.41.0",
+    "@material/slider": "^0.42.1",
     "flatbuffers": "^1.10.2",
     "glob-watcher": "^5.0.1",
     "gulp": "^3.9.1",

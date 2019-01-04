@@ -797,12 +797,12 @@ export class Sidebar{
 			elClassificationList.append(element);
 		};
 
-		addClassificationItem(0, 'Road');
-		addClassificationItem(1, 'Lane Markings');
-		addClassificationItem(2, 'Vehicles');
-		addClassificationItem(3, 'Road Signs');
-		addClassificationItem(4, 'Road Edge');
-		addClassificationItem(5, 'Other');
+		addClassificationItem(0, 'Unknown');
+		addClassificationItem(1, 'Road');
+		addClassificationItem(2, 'Lane Markings');
+		addClassificationItem(3, 'NonRoad');
+		// addClassificationItem(4, '');
+		// addClassificationItem(5, 'Other');
 		// addClassificationItem(6, 'building');
 		// addClassificationItem(7, 'low point(noise)');
 		// addClassificationItem(8, 'key-point');

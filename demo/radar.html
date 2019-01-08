@@ -140,6 +140,7 @@
 		import { getLoadingBar } from "../common/overlay.js";
 		// import {  } from "../common/overlay.js";
 		import { setLoadingScreen, removeLoadingScreen } from "../common/overlay.js";
+		import { PointAttributeNames } from "../src/loader/PointAttributes.js";
 
 		// setLoadingScreen();
 
@@ -210,6 +211,16 @@
       // viewer.scene.view.position.set(300198.109, 4701144.537, 349.871);
       // viewer.scene.view.lookAt(new THREE.Vector3(299900.954, 4701576.919, 66.197));
 			updateSidebar();
+
+			// Check if Classification Attribute is exists in PointCloud:
+			const attributes = viewer.scene.pointclouds[0].pcoGeometry.pointAttributes.attributes;
+			let classificationAttributeExists = false;
+			for (let k = 0; k < attributes.length; k++) {
+				 if (attributes[k].name == PointAttributeNames.CLASSIFICATION) {
+					 $("#chkClassification_0").trigger('click');
+					 break;
+				 }
+			}
 		});
 
 		// Create AnimationEngine:

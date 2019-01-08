@@ -368,15 +368,18 @@
 						const gridHelper = new THREE.GridHelper( scaleFactor*2*gridRadius, 2*gridRadius/gridSpacing, 0x0000ff, 0x808080 );
 						gridHelper.name = "Cartesian Grid";
 						gridHelper.rotateOnAxis(new THREE.Vector3(1,0,0), Math.PI/2);
+						gridHelper.position.z -= 2;
 						gridHelper.visible = false;
 						viewer.scene.dispatchEvent({"type": "vehicle_layer_added", "vehicleLayer": gridHelper });
 						const polarGridHelper = new THREE.PolarGridHelper( scaleFactor*gridRadius, 16, gridRadius/gridSpacing, 64, 0x0000ff, 0x808080 );
 						polarGridHelper.name = "Polar Grid";
 						polarGridHelper.rotateOnAxis(new THREE.Vector3(1,0,0), Math.PI/2);
+						polarGridHelper.position.z -= 2;
 						polarGridHelper.visible = false;
 						viewer.scene.dispatchEvent({"type": "vehicle_layer_added", "vehicleLayer": polarGridHelper });
 						const axesHelper = new THREE.AxesHelper(scaleFactor*gridSpacing);
 						axesHelper.name = "3D Axes";
+						axesHelper.position.z -= 2;
 						// axesHelper.rotateOnAxis(new THREE.Vector3(0,0,1), -Math.PI/2);
 						axesHelper.visible = false;
 						viewer.scene.dispatchEvent({"type": "vehicle_layer_added", "vehicleLayer": axesHelper });
@@ -386,11 +389,16 @@
 						vehicleGroup.add( polarGridHelper );
 						vehicleGroup.add( axesHelper );
 
+						// Apply RTK to Vehicle Mesh Extrinsics:
 	          object.name = "Vehicle Mesh";
 	          object.scale.multiplyScalar(.01);
 						object.rotation.set(0*Math.PI / 2, 0*Math.PI/2., 1*Math.PI/2.0); // Chevy Volt
+						object.position.sub(new THREE.Vector3(0, 0, 2)); // Chevy Volt
 
+						// Initialize Vehicle Group:
 						vehicleGroup.position.set(...pos[0]);
+						applyRotation(vehicleGroup, rot[0][0], rot[0][1], rot[0][2]);
+						vehicleGroup.rotation.set(...rot[0]);
 						vehicleGroup.orientationPath = orientationPath;
 						vehicleGroup.add( object );
 
@@ -405,7 +413,9 @@
 	          viewer.scene.scene.add( vehicleGroup );
 						viewer.scene.dispatchEvent({"type": "vehicle_layer_added", "vehicleLayer": object });
 
+						viewer.setFilterGPSTimeRange(0, 0); // Size 0 Time Window at start of timeline
 						removeLoadingScreen();
+
 
 	        }, onProgress, onError );
 	      }
@@ -483,7 +493,7 @@
 					// debugger; //bunny
 					let rtkPoint = animation.getPoint(t); // TODO rename animation --> just use CatmullRomCurve3 directly
 					let vehicleOrientation = bunny.orientationPath.getPoint(t); // TODO same as above, also double check interpolation is legit
-					rtkPoint.z -= 2.0; // TODO remove hardcoded value
+					// rtkPoint.z -= 2.0; // TODO remove hardcoded value
 					bunny.position.copy(rtkPoint);
 					applyRotation(bunny, vehicleOrientation.x, vehicleOrientation.y, vehicleOrientation.z);
 					bunny.updateMatrixWorld();
@@ -858,7 +868,7 @@ $(document).ready(() => {
     // });
 
 			if (runForLocalDevelopment) {
-				Potree.loadPointCloud("../pointclouds/external/full-cloud/cloud.js", "full-cloud", e => {
+				Potree.loadPointCloud("../pointclouds/test/cloud.js", "full-cloud", e => {
 					const pointcloud = e.pointcloud;
 		      const material = pointcloud.material;
 		      console.log(pointcloud.pcoGeometry.nodes.r.gpsTime);

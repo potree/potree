@@ -142,5 +142,24 @@ export function applyRotation(obj, roll, pitch, yaw) {
     yaw += obj.initialRotation.z;
   }
 
-  obj.rotation.set(roll, pitch, yaw);
+
+  const sr = Math.sin(roll);
+  const sp = Math.sin(pitch);
+  const sy = Math.sin(yaw);
+
+  const cr = Math.cos(roll);
+  const cp = Math.cos(pitch);
+  const cy = Math.cos(yaw);
+
+  const rotMat = new THREE.Matrix4().set(
+    cy*cp,  cy*sp*sr - sy*cr,   cy*sp*cr + sy*sr, 0,
+    sy*cp,  sy*sp*sr + cy*cr,   sy*sp*cr - cy*sr, 0,
+    -sp,    cp*sr,              cp*cr,            0,
+    0,      0,                  0,                1,
+  )
+
+  // obj.rotation.set(roll, pitch, yaw);
+  obj.rotation.setFromRotationMatrix(rotMat);
+
+
 }

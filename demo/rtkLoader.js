@@ -34,9 +34,7 @@ export async function loadRtk(s3, bucket, name, callback) {
       val = Math.max(lastLoaded, val);
       loadingBar.set(val);
       lastLoaded = val;
-      if (val < 1) {
-        debugger; // shouldn't get here after past
-      }
+
     });
 
   } else {

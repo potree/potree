@@ -243,6 +243,7 @@ function createGapGeometriesOld(gaps, shaderMaterial, FlatbufferModule, animatio
         se3.setPosition(delta); // Translation
 
         boxGeometry.applyMatrix( se3 );
+        debugger; // apply roll to boxGeometry, make buffer --> how many vertices?
         // TODO rotate boxGeometry.quaternion.setFromUnitVectors(axis, vector.clone().normalize());
         allBoxes.merge(boxGeometry);
 

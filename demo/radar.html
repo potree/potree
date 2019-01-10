@@ -360,7 +360,8 @@
 	      { // Load Textured bunny from obj
 	        let onError = function ( xhr ) {};
 	        let loader = new THREE.OBJLoader( manager );
-	        loader.load(`${Potree.resourcePath}/models/Chevy_Volt_Segmented/Chevy_Volt_2016.obj`,
+	        loader.load(`${Potree.resourcePath}/models/Chevy_Volt_Segmented/volt_reduce.obj`,
+	        // loader.load(`${Potree.resourcePath}/models/Chevy_Volt_Segmented/Chevy_Volt_2016.obj`,
 	                    function ( object ) {
 	          object.traverse( function ( child ) {
 	            if ( child instanceof THREE.Mesh ) {

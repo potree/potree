@@ -136,11 +136,10 @@
 		import { loadRtk, applyRotation } from "../demo/rtkLoader.js";
 		import { loadRadar } from "../demo/radarLoader.js";
 		import { loadGaps } from "../demo/gapsLoader.js";
-		import { updateSidebar } from "../common/custom-sidebar.js";
+		import { updateSidebar, togglePointClass } from "../common/custom-sidebar.js";
 		import { getLoadingBar } from "../common/overlay.js";
 		// import {  } from "../common/overlay.js";
 		import { setLoadingScreen, removeLoadingScreen } from "../common/overlay.js";
-		import { PointAttributeNames } from "../src/loader/PointAttributes.js";
 
 		// setLoadingScreen();
 
@@ -212,14 +211,13 @@
       // viewer.scene.view.lookAt(new THREE.Vector3(299900.954, 4701576.919, 66.197));
 			updateSidebar();
 
+
 			// Check if Classification Attribute is exists in PointCloud:
-			const attributes = viewer.scene.pointclouds[0].pcoGeometry.pointAttributes.attributes;
-			let classificationAttributeExists = false;
-			for (let k = 0; k < attributes.length; k++) {
-				 if (attributes[k].name == PointAttributeNames.CLASSIFICATION) {
-					 $("#chkClassification_0").trigger('click');
-					 break;
-				 }
+			try {
+				let pointcloud = viewer.scene.pointclouds[0];
+				togglePointClass(pointcloud);
+			} catch (e) {
+				console.log("Sidebar initialized pointcloud loaded: ",e);
 			}
 		});
 
@@ -651,6 +649,7 @@ $(document).ready(() => {
 
 			let gapShaderMaterial = shaderMaterial.clone();
 			gapShaderMaterial.uniforms.color.value = new THREE.Color(0x0000ff);
+			gapShaderMaterial.depthWrite = false;
 			loadGaps(s3, bucket, name, gapShaderMaterial, animationEngine, (gapGeometries) => {
 				let gapsLayer = new THREE.Group();
 				gapsLayer.name = "Vehicle Gaps";
@@ -968,6 +967,12 @@ $(document).ready(() => {
 		      // viewer.scene.view.lookAt(new THREE.Vector3(299900.954, 4701576.919, 66.197));
 		      // viewer.toggleNavigationCube();
 		      $("#playbutton").click();
+
+					try {
+						togglePointClass(pointcloud);
+					} catch (e) {
+						console.log("Pointcloud loaded before sidebar initialized: ", e);
+					}
 		    });
       }
 

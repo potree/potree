@@ -1,3 +1,6 @@
+import { PointAttributeNames } from "../src/loader/PointAttributes.js";
+
+
 export function updateSidebar() {
 
   // NOTE Call this function only after the sidebar has been initialized
@@ -93,4 +96,18 @@ export function updateSidebar() {
   window.viewer.scene.addEventListener("assessments_layer_added", onAssessmentsLayerAdded);
 
 
+}
+
+
+export function togglePointClass(pointcloud) {
+    const attributes = pointcloud.pcoGeometry.pointAttributes.attributes;
+    let classificationAttributeExists = false;
+    for (let k = 0; k < attributes.length; k++) {
+       if (attributes[k].name == PointAttributeNames.CLASSIFICATION && !window.pointClassInitialToggle) {
+         $("#chkClassification_0").trigger('click');
+         console.log("Unknown Points Toggled Off");
+         window.pointClassInitialToggle = true;
+         break;
+       }
+    }
 }

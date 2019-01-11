@@ -14,14 +14,14 @@ export async function loadRtkFlatbuffer(s3, bucket, name, callback) {
 
     const request = s3.getObject({Bucket: bucket,
                   Key: objectName},
-                 (err, data) => {
+                 async (err, data) => {
                    if (err) {
                      console.log(err, err.stack);
                    } else {
                      // const string = new TextDecoder().decode(data.Body);
                      // const {mpos, orientations, t_init, t_range} = parseRTK(string);
                      const FlatbufferModule = await import(schemaUrl);
-                     const gapGeometries = parseGaps(data.Body, FlatbufferModule);
+                     const {mpos, orientations, t_init, t_range} = parseRTK(data.Body, FlatbufferModule);
                      callback(mpos, orientations, t_init, t_range);
                    }});
     request.on("httpDownloadProgress", (e) => {
@@ -30,9 +30,6 @@ export async function loadRtkFlatbuffer(s3, bucket, name, callback) {
       val = Math.max(lastLoaded, val);
       loadingBar.set(val);
       lastLoaded = val;
-      if (val < 1) {
-        debugger; // shouldn't get here after past
-      }
     });
 
   } else {
@@ -63,6 +60,45 @@ export async function loadRtkFlatbuffer(s3, bucket, name, callback) {
 function parseRTK(flatbufferData) {
   const t0_loop = performance.now();
 
+  let numBytes = bytesArray.length;
+  let rtkPoses = [];
+  let mpos = [];
+  let orientations = [];
+  let t_init, t_range;
+  let count = 0;
+
+  let segOffset = 0;
+  let segSize, viewSize, viewData;
+  while (segOffset < numBytes) {
+
+    // Read SegmentSize:
+    viewSize = new DataView(bytesArray.buffer, segOffset, 4);
+    segSize = viewSize.getUint32(0, true); // True: little-endian | False: big-endian
+
+    // Get Flatbuffer RTK Pose Object:
+    segOffset += 4;
+    let buf = new Uint8Array(bytesArray.buffer.slice(segOffset, segOffset+segSize));
+    let fbuffer = new flatbuffers.ByteBuffer(buf);
+    let rtkPosesFB = FlatbufferModule.Flatbuffer.RTK.Poses.getRootAsPoses(fbuffer);
+
+    // Extract RTK Pose Information:
+    for (let ii = 0, let numPoses = rtkPoses.posesLength(); ii < numPoses; ii++) {
+      let pose = rtkPosesFB.pose(ii);
+
+      if (count == 0)  {
+        t_init = pose.timestamp();
+      }
+      t_range = pose.timestamp() - t_init;
+
+      mpos.push( [pose.pos.x(), pose.pos.y(), pose.pos.z()] );
+      orientations.push( [pose.orientation.x(), pose.orientation.y(), pose.orientation.z()] );
+
+      count += 1;
+    }
+
+    rtkPoses.push(gap);
+    segOffset += segSize;
+  }
 
   console.log("Loop Runtime: "+(performance.now()-t0_loop)+"ms");
   return {mpos, orientations, t_init, t_range};

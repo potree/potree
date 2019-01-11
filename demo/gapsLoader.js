@@ -188,9 +188,9 @@ function createGapGeometriesOld(gaps, shaderMaterial, FlatbufferModule, animatio
   let allBoxes = new THREE.Geometry();
   let gapTimes = [];
   for(let ii=0, len=gaps.length; ii<len; ii++) {
-    if (ii > 1000) {
-      continue;
-    }
+    // if (ii > 1000) {
+    //   continue;
+    // }
 
     gap = gaps[ii];
 

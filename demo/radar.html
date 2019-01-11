@@ -23,6 +23,7 @@
 	<script type="module" src="../schemas/GroundTruth_generated_tmp.js"></script> -->
   <script type="module" src="radarLoader.js"></script>
   <script type="module" src="rtkLoader.js"></script>
+  <!-- <script type="module" src="rtkLoaderFlatbuffer.js"></script> -->
   <script type="module" src="laneLoader.js"></script>
   <script type="module" src="trackLoader.js"></script>
   <script type="module" src="gapsLoader.js"></script>
@@ -134,6 +135,7 @@
 		import { loadTracks } from "../demo/trackLoader.js";
 		import { loadDetections } from "../demo/detectionLoader.js";
 		import { loadRtk, applyRotation } from "../demo/rtkLoader.js";
+		import { loadRtkFlatbuffer } from "../demo/rtkLoaderFlatbuffer.js";
 		import { loadRadar } from "../demo/radarLoader.js";
 		import { loadGaps } from "../demo/gapsLoader.js";
 		import { updateSidebar, togglePointClass } from "../common/custom-sidebar.js";
@@ -300,6 +302,7 @@
 		// Load RTK: TODO REFACTOR THIS (a lot of stuff happenning here, break it up if possible)
 		async function loadRtkCallback(s3, bucket, name) {
 			await loadRtk(s3, bucket, name, (pos, rot, t_init, t_range) => {
+			// await loadRtkFlatbuffer(s3, bucket, name, (pos, rot, t_init, t_range) => {
 				window.timeframe = {"tstart": t_init, "tend": t_init+t_range};
 
 				// TODO Move this into main loader function:

@@ -57,7 +57,7 @@ export async function loadRtkFlatbuffer(s3, bucket, name, callback) {
   }
 }
 
-function parseRTK(flatbufferData) {
+function parseRTK(bytesArray, FlatbufferModule) {
   const t0_loop = performance.now();
 
   let numBytes = bytesArray.length;
@@ -82,16 +82,17 @@ function parseRTK(flatbufferData) {
     let rtkPosesFB = FlatbufferModule.Flatbuffer.RTK.Poses.getRootAsPoses(fbuffer);
 
     // Extract RTK Pose Information:
-    for (let ii = 0, let numPoses = rtkPoses.posesLength(); ii < numPoses; ii++) {
-      let pose = rtkPosesFB.pose(ii);
+    debugger; // poses.pose below
+    for (let ii = 0, numPoses = rtkPosesFB.posesLength(); ii < numPoses; ii++) {
+      let pose = rtkPosesFB.poses(ii);
 
       if (count == 0)  {
         t_init = pose.timestamp();
       }
       t_range = pose.timestamp() - t_init;
 
-      mpos.push( [pose.pos.x(), pose.pos.y(), pose.pos.z()] );
-      orientations.push( [pose.orientation.x(), pose.orientation.y(), pose.orientation.z()] );
+      mpos.push( [pose.pos().x(), pose.pos().y(), pose.pos().z()] );
+      orientations.push( [pose.orientation().x(), pose.orientation().y(), pose.orientation().z()] );
 
       count += 1;
     }

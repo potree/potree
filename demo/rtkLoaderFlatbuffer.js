@@ -33,12 +33,13 @@ export async function loadRtkFlatbuffer(s3, bucket, name, callback) {
     });
 
   } else {
-    const filename = "csv/rtk.fb";
+    const filename = "../data/rtk.fb";
     let t0, t1;
     const tstart = performance.now();
 
     const xhr = new XMLHttpRequest();
     xhr.open("GET", filename);
+    xhr.responsetype = "arraybuffer";
 
     xhr.onprogress = function(event) {
       t1 = performance.now();
@@ -47,7 +48,7 @@ export async function loadRtkFlatbuffer(s3, bucket, name, callback) {
     }
 
     xhr.onload = function(data) {
-      const {mpos, orientations, t_init, t_range} = parseRTK(data.target.response);
+      const {mpos, orientations, t_init, t_range} = parseRTK(new Uint8Array(data.target.response));
       console.log("Full Runtime: "+(performance.now()-tstart)+"ms");
       callback(mpos, orientations, t_init, t_range);
     };
@@ -97,7 +98,7 @@ function parseRTK(bytesArray, FlatbufferModule) {
       count += 1;
     }
 
-    rtkPoses.push(gap);
+    // rtkPoses.push(pose);
     segOffset += segSize;
   }
 

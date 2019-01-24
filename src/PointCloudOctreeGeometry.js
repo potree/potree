@@ -69,10 +69,6 @@ Potree.PointCloudOctreeGeometryNode = class PointCloudOctreeGeometryNode extends
 		return children;
 	}
 
-	getBoundingBox(){
-		return this.boundingBox;
-	}
-
 	getURL(){
 		let url = '';
 
@@ -202,8 +198,9 @@ Potree.PointCloudOctreeGeometryNode = class PointCloudOctreeGeometryNode extends
 			node.loadPoints();
 		};
 		if ((node.level % node.pcoGeometry.hierarchyStepSize) === 0) {
-			// let hurl = node.pcoGeometry.octreeDir + "/../hierarchy/" + node.name + ".hrc";
-			let hurl = node.pcoGeometry.octreeDir + '/' + node.getHierarchyPath() + '/' + node.name + '.hrc';
+			const nodePath = node.getHierarchyPath() + '/' + node.name + '.hrc';
+
+			let hurl = node.pcoGeometry.octreeDir + '/' + nodePath + Potree.getSignatureKeyForPath(nodePath);
 
 			let xhr = Potree.XHRFactory.createXMLHttpRequest();
 			xhr.open('GET', hurl, true);
@@ -247,7 +244,7 @@ Potree.PointCloudOctreeGeometryNode = class PointCloudOctreeGeometryNode extends
 		}
 	}
 	
-}
+};
 
 Potree.PointCloudOctreeGeometryNode.IDCount = 0;
 

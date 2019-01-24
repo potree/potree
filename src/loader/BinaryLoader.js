@@ -18,10 +18,14 @@ Potree.BinaryLoader = class BinaryLoader{
 		}
 
 		let url = node.getURL();
+		let path = node.getHierarchyPath() + '/' + node.name;
 
 		if (this.version.equalOrHigher('1.4')) {
 			url += '.bin';
+			path += '.bin';
 		}
+
+		url += Potree.getSignatureKeyForPath(path);
 
 		let xhr = Potree.XHRFactory.createXMLHttpRequest();
 		xhr.open('GET', url, true);
@@ -29,7 +33,7 @@ Potree.BinaryLoader = class BinaryLoader{
 		xhr.overrideMimeType('text/plain; charset=x-user-defined');
 		xhr.onreadystatechange = () => {
 			if (xhr.readyState === 4) {
-				if((xhr.status === 200 || xhr.status === 0) &&  xhr.response !== null){
+				if((xhr.status === 200 || xhr.status === 0) && xhr.response !== null){
 					let buffer = xhr.response;
 					this.parse(node, buffer);
 				} else {

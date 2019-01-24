@@ -32,6 +32,8 @@ Potree.POCLoader.load = function load (url, callback) {
 				// assume octreeDir is absolute if it starts with http
 				if (fMno.octreeDir.indexOf('http') === 0) {
 					pco.octreeDir = fMno.octreeDir;
+				} else if(url.indexOf('cloud.js') >= 0 && Potree.signedUrls) {
+					pco.octreeDir = `${url.split('/').slice(0, -1).join('/')}/${fMno.octreeDir}`;
 				} else {
 					pco.octreeDir = url + '/../' + fMno.octreeDir;
 				}

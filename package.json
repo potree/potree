@@ -1,14 +1,12 @@
 {
   "name": "potree",
-  "private": true,
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "WebGL point cloud viewer",
   "scripts": {
     "prepublishOnly": "npm run build",
     "build": "gulp build",
     "watch": "gulp watch"
   },
-  "main": "build/potree/potree.js",
   "dependencies": {
     "eslint": "^4.18.2",
     "eslint-config-happiness": "^10.2.1",
@@ -22,11 +20,16 @@
     "gulp-jshint": "^2.1.0",
     "gulp-rename": "~1.0.0",
     "gulp-size": "^2.1.0",
-    "gulp-uglify": "~0.2.1",
+    "gulp-uglify": "^3.0.1",
     "gulp-util": "~2.2.20",
     "jshint": "^2.9.5",
-    "through": "~2.3.4"
+    "through": "~2.3.4",
+    "uglify-es": "^3.3.9"
   },
+  "main": "build/potree/potree.js",
+  "files": [
+    "build/*"
+  ],
   "publishConfig": {
     "registry": "https://repo.helix.re/repository/helix-npm-host/"
   },

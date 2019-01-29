@@ -38,6 +38,7 @@ let paths = {
 		"src/materials/NormalizationMaterial.js",
 		"src/materials/NormalizationEDLMaterial.js",
 		"src/navigation/InputHandler.js",
+		"src/navigation/RotationControls.js",
 		"src/navigation/FirstPersonControls.js",
 		"src/navigation/GeoControls.js",
 		"src/navigation/OrbitControls.js",

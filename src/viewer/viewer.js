@@ -304,6 +304,8 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			return this.orbitControls;
 		} else if (navigationMode === Potree.FirstPersonControls) {
 			return this.fpControls;
+		} else if (navigationMode === Potree.RotationControls) {
+			return this.rotationControls;
 		} else if (navigationMode === Potree.EarthControls) {
 			return this.earthControls;
 		} else {
@@ -802,6 +804,13 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 	// ------------------------------------------------------------------------------------
 
 	createControls () {
+		{
+			this.rotationControls = new Potree.RotationControls(this);
+			this.rotationControls.enabled = false;
+			this.rotationControls.addEventListener('start', this.disableAnnotations.bind(this));
+			this.rotationControls.addEventListener('end', this.enableAnnotations.bind(this));
+		}
+
 		{ // create FIRST PERSON CONTROLS
 			this.fpControls = new Potree.FirstPersonControls(this);
 			this.fpControls.enabled = false;

@@ -92,7 +92,7 @@ function parseRTK(bytesArray, FlatbufferModule) {
       }
       t_range = pose.timestamp() - t_init;
 
-      mpos.push( [pose.pos().x(), pose.pos().y(), pose.pos().z()] );
+      mpos.push( [pose.locXY().x(), pose.locXY().y(), pose.pos().z()] );
       orientations.push( [pose.orientation().x(), pose.orientation().y(), pose.orientation().z()] );
 
       count += 1;

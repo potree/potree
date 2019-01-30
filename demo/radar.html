@@ -497,10 +497,12 @@
 
 			// RTK TweenTarget Callback:
 			window.pitchThreshold = 1.00;
+			window.elevationWindow = [2, 2];
 			animationEngine.tweenTargets.push((gpsTime) => {
 				try{
 					let t = (gpsTime - animationEngine.tstart) / (animationEngine.timeRange);
 					let bunny = viewer.scene.scene.getObjectByName("Vehicle");
+					let mesh = bunny.getObjectByName("Vehicle Mesh");
 					let lastRtkPoint = bunny.position.clone();
 					let lastRtkOrientation = bunny.rotation.clone();
 					let lastTransform = bunny.matrixWorld.clone();
@@ -528,11 +530,13 @@
 					console.log("View Pitch: ", viewer.scene.view.pitch);
 
 					// Set Elevation:
-					let elevationDeltaMin = -0;
-					let elevationDeltaMax = 2;
+					// let elevationDeltaMin = -0;
+					// let elevationDeltaMax = 2;
 					let clouds = viewer.scene.pointclouds;
 					for (let ii=0, numClouds = clouds.length; ii<numClouds; ii++) {
-							viewer.scene.pointclouds[ii].material.elevationRange = [rtkPoint.z+elevationDeltaMin, rtkPoint.z+elevationDeltaMax];
+							let zheight = mesh.matrixWorld.getPosition().z;
+							viewer.scene.pointclouds[ii].material.elevationRange = [zheight - window.elevationWindow[0], zheight + window.elevationWindow[1]];
+							// TODO set elevation slider range extent
 					}
 				} catch (e) {
 					console.error("Caught error: ",e);

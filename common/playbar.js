@@ -16,6 +16,10 @@ $(document).ready(function () {
               <input type="number" id="playbar_tmin" value=-0.05 max=0 step="0.01">
               <input type="number" id="playbar_tmax" value=0.05 min=0 step="0.01">
             </span>
+            <span id="elevation_windows">
+              <input type="number" id="elevation_min" value=-0.5 max=0 step="0.01">
+              <input type="number" id="elevation_max" value=0.5 min=0 step="0.01">
+            </span>
             <label class="switch">
               <input type="checkbox" id="playbar_toggle">
               <span class="toggleslider" id="toggleslider"></span>
@@ -94,6 +98,18 @@ $(document).ready(function () {
       const tmax = playbarhtml.find("#playbar_tmax");
       window.animationEngine.activeWindow.forward = Math.abs(Number(tmax.val()));
       updateClip();
+    });
+
+    playbarhtml.find("#elevation_max").on('input', function() {
+      console.log("Elevation_MAX");
+      const elevationMax = playbarhtml.find("#elevation_max");
+      window.elevationWindow[1] = Math.abs(Number(elevationMax.val()));
+    });
+
+    playbarhtml.find("#elevation_min").on('input', function() {
+      console.log("Elevation_MIN");
+      const elevationMin = playbarhtml.find("#elevation_min");
+      window.elevationWindow[0] = Math.abs(Number(elevationMin.val()));
     });
 
     playbarhtml.find("#myRange").on('input', function() {
@@ -217,6 +233,8 @@ $(document).ready(function () {
     // Configure Playbar Appearance:
     // document.getElementById("playbar_tmin").style.display = "none";
     // document.getElementById("playbar_tmax").style.display = "none";
+    // document.getElementById("elevation_max").style.display = "none";
+    // document.getElementById("elevation_min").style.display = "none";
     document.getElementById("playback_speed").style.display = "none";
     document.getElementById("toggleslider").style.display = "none";
     document.getElementById("toggle_calibration_panels").style.display = "none";

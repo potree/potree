@@ -128,7 +128,23 @@ input::-webkit-inner-spin-button {
 }
 
 #playbar_tmin {
+  display: block;
+  width: 50px;
+}
 
+#playbar_tmax {
+  display: block;
+  width: 50px;
+}
+
+#elevation_min {
+  display: block;
+  width: 50px;
+}
+
+#elevation_max {
+  display: block;
+  width: 50px;
 }
 
 /* TOGGLE SWITCH */

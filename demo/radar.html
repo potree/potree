@@ -249,6 +249,8 @@
 		$(document).ready(() => {
 			document.getElementById("playbar_tmax").disabled = false;
 			document.getElementById("playbar_tmin").disabled = false;
+			document.getElementById("elevation_max").display = false;
+			document.getElementById("elevation_min").disabled = false;
 
 
 			// Load Data Sources:
@@ -441,6 +443,8 @@
 	          let output = document.getElementById("demo");
 						let tmin = document.getElementById("playbar_tmin");
 						let tmax = document.getElementById("playbar_tmax");
+						let zmin = document.getElementById("elevation_min");
+						let zmax = document.getElementById("elevation_max");
 	          output.innerHTML = slider.value;
 
 	          // Animate from beginning to end
@@ -487,6 +491,18 @@
 				      //     }
 				      //   }
 							});
+
+							zmin.addEventListener("input", () => {
+								window.elevationWindow.min = Math.abs(Number(zmin.value));
+								window.elevationWindow.max = Math.abs(Number(zmax.value));
+								animationEngine.updateTimeForAll();
+							});
+
+							zmax.addEventListener("input", ()=> {
+								window.elevationWindow.min = Math.abs(Number(zmin.value));
+								window.elevationWindow.max = Math.abs(Number(zmax.value));
+								animationEngine.updateTimeForAll();
+							});
 	        }
 
 	        window.animationPath = animationPath;
@@ -497,7 +513,7 @@
 
 			// RTK TweenTarget Callback:
 			window.pitchThreshold = 1.00;
-			window.elevationWindow = [2, 2];
+			window.elevationWindow = {min: 1, max: 1, z: 0};
 			animationEngine.tweenTargets.push((gpsTime) => {
 				try{
 					let t = (gpsTime - animationEngine.tstart) / (animationEngine.timeRange);
@@ -535,7 +551,8 @@
 					let clouds = viewer.scene.pointclouds;
 					for (let ii=0, numClouds = clouds.length; ii<numClouds; ii++) {
 							let zheight = mesh.matrixWorld.getPosition().z;
-							viewer.scene.pointclouds[ii].material.elevationRange = [zheight - window.elevationWindow[0], zheight + window.elevationWindow[1]];
+							window.elevationWindow.z = zheight;
+							viewer.scene.pointclouds[ii].material.elevationRange = [window.elevationWindow.z - window.elevationWindow.min, window.elevationWindow.z + window.elevationWindow.max];
 							// TODO set elevation slider range extent
 					}
 				} catch (e) {

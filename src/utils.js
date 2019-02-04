@@ -271,6 +271,31 @@ Potree.utils = class {
 		return texture;
 	};
 
+	static get3dPointFrom2dCoords (coords, camera, viewer) {
+		const renderer = viewer.renderer;
+		
+		const fixedCoords = {
+			x: (coords.x / renderer.domElement.clientWidth) * 2 - 1,
+			y: -(coords.y / renderer.domElement.clientHeight) * 2 + 1
+		};
+
+		const raycaster = new THREE.Raycaster();
+		raycaster.setFromCamera(fixedCoords, camera);
+		return raycaster.ray.origin;
+	}
+
+	static get2dCoordsFrom3dPoint (vector, camera, viewer) {
+		let renderer = viewer.renderer;
+
+		vector.project(camera);
+
+		vector.x = Math.round((vector.x + 1) * renderer.domElement.clientWidth / 2);
+		vector.y = Math.round((-vector.y + 1) * renderer.domElement.clientHeight / 2);
+		vector.z = 0;
+
+		return { x: vector.x, y: vector.y };
+	}
+
 	static getMousePointCloudIntersection (mouse, camera, viewer, pointclouds, params = {}) {
 		
 		let renderer = viewer.renderer;
@@ -594,7 +619,7 @@ Potree.utils = class {
 
 		textArea.select();
 
-		 try {
+		try {
 			let success = document.execCommand('copy');
 			if(success){
 				console.log("copied text to clipboard");

@@ -30,6 +30,8 @@ Potree.RotationControls = class RotationControls extends THREE.EventDispatcher{
 		this.yawDelta = 0;
 		this.radiusDelta = 0;
 
+		this.enabled = true;
+
 		this.tweens = [];
 
 		let drag = (e) => {
@@ -139,6 +141,10 @@ Potree.RotationControls = class RotationControls extends THREE.EventDispatcher{
 
 	update (delta) {
 		let view = this.scene.view;
+
+		if (!this.viewer.rotationControls.enabled) {
+			return false;
+		}
 
 		{ // apply rotation
 			let progression = Math.min(1, this.fadeFactor * delta);

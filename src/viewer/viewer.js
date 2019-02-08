@@ -540,7 +540,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		this.dispatchEvent({'type': 'length_unit_changed', 'viewer': this, value: value});
 	}
 
-	zoomTo(node, factor, animationDuration = 0){
+	zoomTo(node, factor, animationDuration = 0, callback){
 		let view = this.scene.view;
 
 		let camera = this.scene.cameraP.clone();
@@ -593,6 +593,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			tween.onComplete(() => {
 				view.lookAt(target);
 				this.dispatchEvent({type: 'focusing_finished', target: this});
+				callback();
 			});
 
 			this.dispatchEvent({type: 'focusing_started', target: this});
@@ -610,13 +611,13 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		return this.scene.getBoundingBox(pointclouds);
 	};
 
-	fitToScreen (factor = 1, animationDuration = 0) {
+	fitToScreen (factor = 1, animationDuration = 0, callback = () => {}) {
 		let box = this.getBoundingBox(this.scene.pointclouds);
 
 		let node = new THREE.Object3D();
 		node.boundingBox = box;
 
-		this.zoomTo(node, factor, animationDuration);
+		this.zoomTo(node, factor, animationDuration, callback);
 		this.controls.stop();
 	};
 

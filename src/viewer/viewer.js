@@ -593,7 +593,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			tween.onComplete(() => {
 				view.lookAt(target);
 				this.dispatchEvent({type: 'focusing_finished', target: this});
-				callback();
+				setTimeout(callback);
 			});
 
 			this.dispatchEvent({type: 'focusing_started', target: this});
@@ -1268,7 +1268,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		} 
 		
 		this.scene.cameraP.fov = this.fov;
-		
+
 		// Navigation mode changed?
 		if (this.getControls(scene.view.navigationMode) !== this.controls) {
 			if (this.controls) {

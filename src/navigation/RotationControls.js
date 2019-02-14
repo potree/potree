@@ -30,6 +30,9 @@ Potree.RotationControls = class RotationControls extends THREE.EventDispatcher{
 		this.yawDelta = 0;
 		this.radiusDelta = 0;
 
+		this.minRadius = 20;
+		this.maxRadius = 600;
+
 		this.enabled = true;
 
 		this.tweens = [];
@@ -167,6 +170,10 @@ Potree.RotationControls = class RotationControls extends THREE.EventDispatcher{
 
 			// let radius = view.radius + progression * this.radiusDelta * view.radius * 0.1;
 			let radius = view.radius + progression * this.radiusDelta;
+
+			// Limit zoom in / out
+			radius = radius < this.minRadius ? this.minRadius : radius;
+			radius = radius > this.maxRadius ? this.maxRadius : radius;
 
 			let V = view.direction.multiplyScalar(-radius);
 			let position = new THREE.Vector3().addVectors(view.getPivot(), V);

@@ -29,6 +29,8 @@ let paths = {
 		"src/loader/POCLoader.js",
 		"src/loader/PointAttributes.js",
 		"src/loader/BinaryLoader.js",
+		"src/loader/EptLaszipLoader.js",
+		"src/loader/EptLoader.js",
 		"src/loader/GreyhoundBinaryLoader.js",
 		"src/loader/GreyhoundLoader.js",
 		"src/loader/LasLazLoader.js",

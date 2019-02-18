@@ -227,7 +227,7 @@ Potree.PointCloudEptGeometryNode = class PointCloudEptGeometryNode extends Potre
     let eptHierarchyFile =
       `${this.ept.url}ept-hierarchy/${this.filename()}.json`;
 
-    const sign = Potree.getSignatureKeyForPath(`${this.filename()}.json`);
+    const sign = Potree.getSignatureKeyForPath(`ept-hierarchy/${this.filename()}.json`);
 
     eptHierarchyFile += sign;
 

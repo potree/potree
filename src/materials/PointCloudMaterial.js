@@ -166,7 +166,8 @@ Potree.PointColorType = {
 	NORMAL: 11,
 	PHONG: 12,
 	RGB_HEIGHT: 13,
-	COMPOSITE: 50
+	RGB_HIGHLIGHT: 14,
+	COMPOSITE: 50,
 };
 
 Potree.TreeType = {
@@ -397,6 +398,8 @@ Potree.PointCloudMaterial = class PointCloudMaterial extends THREE.RawShaderMate
 			defines.push('#define color_type_rgb_height');
 		} else if (this._pointColorType === Potree.PointColorType.COMPOSITE) {
 			defines.push('#define color_type_composite');
+		} else if (this._pointColorType === Potree.PointColorType.RGB_HIGHLIGHT) {
+			defines.push('#define color_type_rgb_highlight');
 		}
 		
 		if(this._treeType === Potree.TreeType.OCTREE){

@@ -157,6 +157,14 @@ Potree.RotationControls = class RotationControls extends THREE.EventDispatcher{
 
 			yaw -= progression * this.yawDelta;
 
+
+			if (yaw < -Math.PI && this.yawDelta > 0) {
+				yaw = Math.PI;
+			}
+			if (yaw > Math.PI && this.yawDelta < 0) {
+				yaw = -Math.PI;
+			}
+
 			view.yaw = yaw;
 
 			let V = this.scene.view.direction.multiplyScalar(-view.radius);

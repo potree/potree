@@ -490,6 +490,8 @@ vec3 getColor(){
 		color = getRGB();
 	#elif defined color_type_height
 		color = getElevation();
+	#elif defined color_type_rgb_highlight
+		color = vec3(124.0 / 255.0, 215.0 / 255.0, 244.0 / 255.0);
 	#elif defined color_type_rgb_height
 		vec3 cHeight = getElevation();
 		color = (1.0 - uTransition) * getRGB() + uTransition * cHeight;

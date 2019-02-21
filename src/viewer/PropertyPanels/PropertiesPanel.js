@@ -536,7 +536,7 @@ export class PropertiesPanel{
 				let range = material.elevationRange;
 
 				panel.find('#lblHeightRange').html(`${range[0].toFixed(2)} to ${range[1].toFixed(2)}`);
-				panel.find('#sldHeightRang').slider({min: bMin, max: bMax, values: range});
+				panel.find('#sldHeightRange').slider({min: bMin, max: bMax, values: range});
 			};
 
 			let updateIntensityRange = function () {

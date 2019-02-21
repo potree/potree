@@ -55,6 +55,7 @@ Potree.RotationControls = class RotationControls extends THREE.EventDispatcher{
 
 			if (e.drag.mouse === Potree.MOUSE.LEFT) {
 				this.yawDelta += ndrag.x * this.rotationSpeed;
+				this.radiusDelta = 0;
 
 				this.navigationCallback();
 
@@ -70,6 +71,7 @@ Potree.RotationControls = class RotationControls extends THREE.EventDispatcher{
 			let resolvedRadius = this.scene.view.radius + this.radiusDelta;
 
 			this.radiusDelta += -e.delta * resolvedRadius * 0.1;
+			this.yawDelta = 0;
 
 			this.navigationCallback();
 
@@ -149,6 +151,15 @@ Potree.RotationControls = class RotationControls extends THREE.EventDispatcher{
 			return false;
 		}
 
+		const fixedRadiusDelta = Math.floor(this.radiusDelta * 1000) / 1000;
+		const fixedYawDelta = Math.floor(this.yawDelta * 1000) / 1000;
+		if (fixedRadiusDelta !== 0) {
+			this.yawDelta = 0;
+		} else
+		if (fixedYawDelta !== 0) {
+			this.radiusDelta = 0;
+		}
+
 		{ // apply rotation
 			let progression = Math.min(1, this.fadeFactor * delta);
 
@@ -156,7 +167,6 @@ Potree.RotationControls = class RotationControls extends THREE.EventDispatcher{
 			let pivot = view.getPivot();
 
 			yaw -= progression * this.yawDelta;
-
 
 			if (yaw < -Math.PI && this.yawDelta > 0) {
 				yaw = Math.PI;

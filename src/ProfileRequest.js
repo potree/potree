@@ -130,8 +130,12 @@ export class ProfileRequest {
 				exports.lru.touch(node);
 				this.highestLevelServed = Math.max(node.getLevel(), this.highestLevelServed);
 
-				let doTraverse = (node.level % node.pcoGeometry.hierarchyStepSize) === 0 && node.hasChildren;
-				doTraverse = doTraverse || node.getLevel() === 0;
+				var geom = node.pcoGeometry;
+				var hierarchyStepSize = geom ? geom.hierarchyStepSize : 1;
+
+				var doTraverse = node.getLevel() === 0 ||
+					(node.level % hierarchyStepSize === 0 && node.hasChildren);
+
 				if (doTraverse) {
 					this.traverse(node);
 				}
@@ -195,7 +199,7 @@ export class ProfileRequest {
 				view[i * 3 + 0],
 				view[i * 3 + 1],
 				view[i * 3 + 2]);
-		
+
 			pos.applyMatrix4(matrix);
 			let distance = Math.abs(segment.cutPlane.distanceToPoint(pos));
 			let centerDistance = Math.abs(segment.halfPlane.distanceToPoint(pos));
@@ -259,7 +263,7 @@ export class ProfileRequest {
 
 					let start = new THREE.Vector3(segment.start.x, segment.start.y, bsWorld.center.z);
 					let end = new THREE.Vector3(segment.end.x, segment.end.y, bsWorld.center.z);
-						
+
 					let closest = new THREE.Line3(start, end).closestPointToPoint(bsWorld.center, true, new THREE.Vector3());
 					let distance = closest.distanceTo(bsWorld.center);
 
@@ -333,7 +337,7 @@ export class ProfileRequest {
 					for(let i = 0; i < accepted.length; i++){
 
 						let index = accepted[i];
-						
+
 						let start = index * numElements;
 						let end = start + numElements;
 						let sub = source.subarray(start, end);

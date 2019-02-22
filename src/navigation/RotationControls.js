@@ -151,8 +151,8 @@ Potree.RotationControls = class RotationControls extends THREE.EventDispatcher{
 			return false;
 		}
 
-		const fixedRadiusDelta = Math.floor(this.radiusDelta * 1000) / 1000;
-		const fixedYawDelta = Math.floor(this.yawDelta * 1000) / 1000;
+		const fixedRadiusDelta = +(this.radiusDelta).toFixed(3);
+		const fixedYawDelta = +(this.yawDelta).toFixed(3);
 		if (fixedRadiusDelta !== 0) {
 			this.yawDelta = 0;
 		} else

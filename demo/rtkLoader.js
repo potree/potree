@@ -1,5 +1,7 @@
 import { getLoadingBar } from "../common/overlay.js";
 
+const isODC = false;
+
 function isNan(n) {
   return n !== n;
 }
@@ -38,7 +40,7 @@ export async function loadRtk(s3, bucket, name, callback) {
     });
 
   } else {
-    const filename = "csv/rtkdata.csv";
+    const filename = "../data/rtk.csv";
     let t0, t1;
     const tstart = performance.now();
 
@@ -66,14 +68,29 @@ function parseRTK(RTKstring) {
   const t0_loop = performance.now();
   const rows = RTKstring.split('\n');
 
-  const tcol = 1;       // GPS_TIME
-  // const tcol = 3;       // SYSTEM_TIME
-  const xcol = 12;      // RTK_EASTING_M
-  const ycol = 13;      // RTK_NORTHING_M
-  const zcol = 14;      // RTK_ALT_M
-  const yawcol = 15;    // ADJUSTED_HEADING_RAD
-  const pitchcol = 16;  // PITCH_RAD
-  const rollcol = 17;   // ROLL_RAD
+  let tcol, xcol, ycol, zcol, yawcol, pitchcol, rollcol, validCol;
+
+  if (isODC) {
+    tcol = 1;       // GPS_TIME
+    // tcol = 3;       // SYSTEM_TIME
+    xcol = 12;      // RTK_EASTING_M
+    ycol = 13;      // RTK_NORTHING_M
+    zcol = 14;      // RTK_ALT_M
+    yawcol = 15;    // ADJUSTED_HEADING_RAD
+    pitchcol = 16;  // PITCH_RAD
+    rollcol = 17;   // ROLL_RAD
+    validCol = tcol; // not in ODC data
+  } else {
+    tcol = 0;       // timestamp
+    xcol = 3;       // easting
+    ycol = 4;       // northing
+    zcol = 5;       // altitude
+    yawcol = 14;    // heading
+    pitchcol = 15;  // pitch
+    rollcol = 16;   // roll
+    validCol = 20;  // isValid
+  }
+
 
   let mpos = [];
   let colors = [];

@@ -84,8 +84,13 @@ function parseRTK(bytesArray, FlatbufferModule) {
 
     // Extract RTK Pose Information:
     debugger; // poses.pose below
+    const epsilonSec = 0.01;
     for (let ii = 0, numPoses = rtkPosesFB.posesLength(); ii < numPoses; ii++) {
       let pose = rtkPosesFB.poses(ii);
+
+      if (pose.timestamp() < epsilonSec) { // (!pose.isValid()) {
+        continue;
+      }
 
       if (count == 0)  {
         t_init = pose.timestamp();

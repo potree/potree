@@ -578,8 +578,7 @@ export class MapView{
 		if (!this.sceneProjection) {
 			try {
 				this.setSceneProjection(pointcloud.projection);
-			}
-			catch (e) {
+			}catch (e) {
 				console.log('Failed projection:', e);
 
 				if (pointcloud.fallbackProjection) {
@@ -587,12 +586,13 @@ export class MapView{
 						console.log('Trying fallback projection...');
 						this.setSceneProjection(pointcloud.fallbackProjection);
 						console.log('Set projection from fallback');
-					}
-					catch (e) {
+					}catch (e) {
 						console.log('Failed fallback projection:', e);
+						return;
 					}
-				}
-				else return;
+				}else{
+					return;
+				};
 			}
 		}
 

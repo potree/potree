@@ -21,8 +21,8 @@ export async function loadRtkFlatbuffer(s3, bucket, name, callback) {
                      // const string = new TextDecoder().decode(data.Body);
                      // const {mpos, orientations, t_init, t_range} = parseRTK(string);
                      const FlatbufferModule = await import(schemaUrl);
-                     const {mpos, orientations, t_init, t_range} = parseRTK(data.Body, FlatbufferModule);
-                     callback(mpos, orientations, t_init, t_range);
+                     const {mpos, orientations, timestamps, t_init, t_range} = parseRTK(data.Body, FlatbufferModule);
+                     callback(mpos, orientations, timestamps, t_init, t_range);
                    }});
     request.on("httpDownloadProgress", (e) => {
       let loadingBar = getLoadingBar();
@@ -48,9 +48,9 @@ export async function loadRtkFlatbuffer(s3, bucket, name, callback) {
     }
 
     xhr.onload = function(data) {
-      const {mpos, orientations, t_init, t_range} = parseRTK(new Uint8Array(data.target.response));
+      const {mpos, orientations, timestamps, t_init, t_range} = parseRTK(new Uint8Array(data.target.response));
       console.log("Full Runtime: "+(performance.now()-tstart)+"ms");
-      callback(mpos, orientations, t_init, t_range);
+      callback(mpos, orientations, timestamps, t_init, t_range);
     };
 
     t0 = performance.now();
@@ -64,6 +64,7 @@ function parseRTK(bytesArray, FlatbufferModule) {
   let numBytes = bytesArray.length;
   let rtkPoses = [];
   let mpos = [];
+  let timestamps = [];
   let orientations = [];
   let t_init, t_range;
   let count = 0;
@@ -99,6 +100,7 @@ function parseRTK(bytesArray, FlatbufferModule) {
 
       mpos.push( [pose.locXY().x(), pose.locXY().y(), pose.pos().z()] );
       orientations.push( [pose.orientation().x(), pose.orientation().y(), pose.orientation().z()] );
+      timestamps.push(pose.timestamp());
 
       count += 1;
     }
@@ -108,5 +110,5 @@ function parseRTK(bytesArray, FlatbufferModule) {
   }
 
   console.log("Loop Runtime: "+(performance.now()-t0_loop)+"ms");
-  return {mpos, orientations, t_init, t_range};
+  return {mpos, orientations, timestamps, t_init, t_range};
 }

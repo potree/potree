@@ -51,6 +51,7 @@
 	<script type="module" src="../common/overlay.js"></script>
 	<script src="../node_modules/three.meshline/src/THREE.MeshLine.js"></script>
 	<script src="animationEngine.js"></script>
+	<script type="module" src="RtkTrajectory.js"></script>
 
 
 	<!-- TODO REMOVE BELOW -->
@@ -136,6 +137,7 @@
 		import { loadDetections } from "../demo/detectionLoader.js";
 		import { loadRtk, applyRotation } from "../demo/rtkLoader.js";
 		import { loadRtkFlatbuffer } from "../demo/rtkLoaderFlatbuffer.js";
+		import { RtkTrajectory } from "../demo/RtkTrajectory.js";
 		import { loadRadar } from "../demo/radarLoader.js";
 		import { loadGaps } from "../demo/gapsLoader.js";
 		import { updateSidebar, togglePointClass } from "../common/custom-sidebar.js";
@@ -303,8 +305,8 @@
 
 		// Load RTK: TODO REFACTOR THIS (a lot of stuff happenning here, break it up if possible)
 		async function loadRtkCallback(s3, bucket, name) {
-			// await loadRtk(s3, bucket, name, (pos, rot, t_init, t_range) => {
-			await loadRtkFlatbuffer(s3, bucket, name, (pos, rot, t_init, t_range) => {
+			await loadRtk(s3, bucket, name, (pos, rot, timestamps, t_init, t_range) => {
+			// await loadRtkFlatbuffer(s3, bucket, name, (pos, rot, timestamps, t_init, t_range) => {
 				window.timeframe = {"tstart": t_init, "tend": t_init+t_range};
 
 				// TODO Move this into main loader function:
@@ -316,18 +318,21 @@
 
 	      const path = pos.map(v => new THREE.Vector3(...v));
 	      const orientations = rot.map(v => new THREE.Vector3(...v));
+				const samplingFreq = 100; // Hertz TODO hardcoded
+				const rtkTrajectory = new RtkTrajectory(path, orientations, timestamps, samplingFreq);
+				const closedPath = false;
 
-	      const animationPath = new Potree.AnimationPath(path);
-	      animationPath.closed = false;
-		  	const orientationPath = new THREE.CatmullRomCurve3(orientations, animationPath.closed); // NOTE: orientations are represented as a parametric curve in 3d space, this breaks at pi to negative pi transition
 
 	      { // render the path
-	        let geometry = animationPath.getGeometry();
+					let geometry = new THREE.Geometry();
+					for (let ii = 0; ii < rtkTrajectory.numStates; ii++) {
+						geometry.vertices[ii] = rtkTrajectory.states[ii].pose.clone();
+					}
 	        let material = new THREE.LineBasicMaterial();
 	        material.uniforms = {initialTime:{value:t_init}};
 					material.opacity = 0.0;
 					material.transparent = true;
-	        let line = new THREE.Line(geometry, material, {closed: animationPath.closed});
+	        let line = new THREE.Line(geometry, material, {closed: closedPath});
 	        line.name = "rtk";
 	        viewer.scene.scene.add(line);
 	        console.log("Rendered Path");
@@ -362,7 +367,7 @@
 	      console.log("Sphere added");
 
 
-	      { // Load Textured bunny from obj
+	      { // Load Textured vehicle from obj
 	        let onError = function ( xhr ) {};
 	        let loader = new THREE.OBJLoader( manager );
 	        loader.load(`${Potree.resourcePath}/models/Chevy_Volt_Segmented/volt_reduce.obj`,
@@ -415,7 +420,7 @@
 						vehicleGroup.position.set(...pos[0]);
 						applyRotation(vehicleGroup, rot[0][0], rot[0][1], rot[0][2]);
 						vehicleGroup.rotation.set(...rot[0]);
-						vehicleGroup.orientationPath = orientationPath;
+						vehicleGroup.rtkTrajectory = rtkTrajectory;
 						vehicleGroup.add( object );
 
 						// TODO New Camera Initialization:
@@ -446,17 +451,6 @@
 						let zmin = document.getElementById("elevation_min");
 						let zmax = document.getElementById("elevation_max");
 	          output.innerHTML = slider.value;
-
-	          // Animate from beginning to end
-	          let start = 0;
-	          let end = Infinity;
-	          let speed = 33;	// empirically set as "close to realtime"
-	          let animation = animationPath.animate(start, end, speed, animate);
-						function animate() {
-							// DO NOTHING -- Placeholder will be removed
-						}
-	          window.animation = animation;
-
 
 	          // Playbar Button Functions:
 	          let playbutton = document.getElementById("playbutton");
@@ -505,8 +499,6 @@
 							});
 	        }
 
-	        window.animationPath = animationPath;
-					window.animation.pause();
 	      }
 	    });
 
@@ -517,21 +509,21 @@
 			animationEngine.tweenTargets.push((gpsTime) => {
 				try{
 					let t = (gpsTime - animationEngine.tstart) / (animationEngine.timeRange);
-					let bunny = viewer.scene.scene.getObjectByName("Vehicle");
-					let mesh = bunny.getObjectByName("Vehicle Mesh");
-					let lastRtkPoint = bunny.position.clone();
-					let lastRtkOrientation = bunny.rotation.clone();
-					let lastTransform = bunny.matrixWorld.clone();
-					// debugger; //bunny
-					let rtkPoint = animation.getPoint(t); // TODO rename animation --> just use CatmullRomCurve3 directly
-					let vehicleOrientation = bunny.orientationPath.getPoint(t); // TODO same as above, also double check interpolation is legit
-					// rtkPoint.z -= 2.0; // TODO remove hardcoded value
-					bunny.position.copy(rtkPoint);
-					applyRotation(bunny, vehicleOrientation.x, vehicleOrientation.y, vehicleOrientation.z);
-					bunny.updateMatrixWorld();
+					let vehicle = viewer.scene.scene.getObjectByName("Vehicle");
+					let mesh = vehicle.getObjectByName("Vehicle Mesh");
+					let lastRtkPoint = vehicle.position.clone();
+					let lastRtkOrientation = vehicle.rotation.clone();
+					let lastTransform = vehicle.matrixWorld.clone();
+					// debugger; //vehicle
+					let state = vehicle.rtkTrajectory.getState(gpsTime);
+					let rtkPoint = state.pose.clone();
+					let vehicleOrientation = state.orient.clone();
+					vehicle.position.copy(rtkPoint);
+					applyRotation(vehicle, vehicleOrientation.x, vehicleOrientation.y, vehicleOrientation.z);
+					vehicle.updateMatrixWorld();
 
 					// Apply Transformation to Camera and Target:
-					let newTransform = bunny.matrixWorld.clone();
+					let newTransform = vehicle.matrixWorld.clone();
 					let lastTransformInverse = lastTransform.getInverse(lastTransform);
 					let deltaTransform = lastTransformInverse.premultiply(newTransform);
 					let target = viewer.scene.view.position.clone();

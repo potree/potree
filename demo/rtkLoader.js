@@ -27,8 +27,8 @@ export async function loadRtk(s3, bucket, name, callback) {
                      console.log(err, err.stack);
                    } else {
                      const string = new TextDecoder().decode(data.Body);
-                     const {mpos, orientations, t_init, t_range} = parseRTK(string);
-                     callback(mpos, orientations, t_init, t_range);
+                     const {mpos, orientations, timestamps, t_init, t_range} = parseRTK(string);
+                     callback(mpos, orientations, timestamps, t_init, t_range);
                    }});
     request.on("httpDownloadProgress", (e) => {
       let loadingBar = getLoadingBar();
@@ -54,9 +54,9 @@ export async function loadRtk(s3, bucket, name, callback) {
     }
 
     xhr.onload = function(data) {
-      const {mpos, orientations, t_init, t_range} = parseRTK(data.target.response);
+      const {mpos, orientations, timestamps, t_init, t_range} = parseRTK(data.target.response);
       console.log("Full Runtime: "+(performance.now()-tstart)+"ms");
-      callback(mpos, orientations, t_init, t_range);
+      callback(mpos, orientations, timestamps, t_init, t_range);
     };
 
     t0 = performance.now();
@@ -93,6 +93,7 @@ function parseRTK(RTKstring) {
 
 
   let mpos = [];
+  let timestamps = [];
   let colors = [];
   let orientations = [];
 
@@ -112,7 +113,7 @@ function parseRTK(RTKstring) {
       const pitch = parseFloat(cols[pitchcol]);
       const yaw = parseFloat(cols[yawcol]);
 
-      if (isNan(t) || isNan(x) || isNan(y) || isNan(z)) {
+      if (isNan(t) || isNan(x) || isNan(y) || isNan(z) || t < 0.01) {
         // skip
         continue;
       }
@@ -135,6 +136,7 @@ function parseRTK(RTKstring) {
       colors.push( Math.random() * 0xffffff );
       colors.push( Math.random() * 0xffffff );
       mpos.push([x,y,z]);
+      timestamps.push(t);
 
       orientations.push([
         lastRoll + minAngle(roll-lastRoll),
@@ -145,7 +147,7 @@ function parseRTK(RTKstring) {
   }
 
   console.log("Loop Runtime: "+(performance.now()-t0_loop)+"ms");
-  return {mpos, orientations, t_init, t_range};
+  return {mpos, orientations, timestamps, t_init, t_range};
 }
 
 

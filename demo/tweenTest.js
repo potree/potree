@@ -10,7 +10,7 @@ function tweenInitAll() {
 
 function createTarget() {
 
-  let position = new THREE.Vector3(300017.837, 4701275.200, 259.077);
+  let position = new THREE.Vector3(742070.075, 4588896.284, 211.505);
   let geom = new THREE.BoxGeometry(10, 10, 10);
   let materialNormal = new THREE.MeshNormalMaterial();
 
@@ -24,8 +24,8 @@ function createTarget() {
 function tweeninit() {
 
 
-  let x = 300017.837;
-  let y = 4701275.200;
+  let x = 742070;
+  let y = 4588896;
   let z = 259.077;
 
 

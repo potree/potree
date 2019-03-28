@@ -1,9 +1,15 @@
 
-export async function loadLanes(s3, bucket, name, callback) {
+
+
+export async function loadLanes(s3, bucket, name, fname, supplierNum, callback) {
   const tstart = performance.now();
+
+  const resolvedFilename = fname || 'lanes.fb';
+  const resolvedSupplierNum = supplierNum || -1;
+
   if (s3 && bucket && name) {
     (async () => {
-      const objectName = `${name}/2_Truth/lanes.fb`;
+      const objectName = `${name}/2_Truth/${resolvedFilename}`;
       const schemaFile = `${name}/5_Schemas/GroundTruth_generated.js`;
 
       const schemaUrl = s3.getSignedUrl('getObject', {
@@ -18,14 +24,14 @@ export async function loadLanes(s3, bucket, name, callback) {
                        console.log(err, err.stack);
                      } else {
                        const FlatbufferModule = await import(schemaUrl);
-                       const laneGeometries = parseLanes(data.Body, FlatbufferModule);
+                       const laneGeometries = parseLanes(data.Body, FlatbufferModule, resolvedSupplierNum);
                        console.log("Full Runtime: "+(performance.now()-tstart)+"ms");
                        callback( laneGeometries );
                      }});
     })();
 
   } else {
-    const filename = "../data/lanes.fb";
+    const filename = `../data/${resolvedFilename}`;
     const schemaFile = "../schemas/GroundTruth_generated.js";
     let t0, t1;
 
@@ -50,7 +56,7 @@ export async function loadLanes(s3, bucket, name, callback) {
       }
 
       let bytesArray = new Uint8Array(response);
-      const laneGeometries = parseLanes(bytesArray, FlatbufferModule);
+      const laneGeometries = parseLanes(bytesArray, FlatbufferModule, resolvedSupplierNum);
       console.log("Full Runtime: "+(performance.now()-tstart)+"ms");
       callback( laneGeometries );
     };
@@ -62,7 +68,7 @@ export async function loadLanes(s3, bucket, name, callback) {
 
 
 
-function parseLanes(bytesArray, FlatbufferModule) {
+function parseLanes(bytesArray, FlatbufferModule, supplierNum) {
 
   let numBytes = bytesArray.length;
   let lanes = [];
@@ -84,7 +90,7 @@ function parseLanes(bytesArray, FlatbufferModule) {
     lanes.push(lane);
     segOffset += segSize;
   }
-  return createLaneGeometriesOld(lanes);
+  return createLaneGeometriesOld(lanes, supplierNum);
 }
 
 
@@ -196,19 +202,33 @@ function createLaneGeometries(vertexGroups, material) {
 }
 
 
-function createLaneGeometriesOld(lanes) {
+function createLaneGeometriesOld(lanes, supplierNum) {
 
-  let materialLeft = new THREE.LineBasicMaterial({
-    color: 0xff0000
-  });
+  let materialLeft, materialSpine, materialRight;
+  switch (supplierNum) {
+    case 1:
+      materialLeft = new THREE.MeshBasicMaterial({color: 0x3aaeb7});
+      materialSpine = new THREE.MeshBasicMaterial({color: 0x3aaeb7});
+      materialRight = new THREE.MeshBasicMaterial({color: 0x3aaeb7});
+      break;
 
-  let materialSpine = new THREE.LineBasicMaterial({
-    color: 0x00ff00
-  });
+    case 2:
+      materialLeft = new THREE.MeshBasicMaterial({color: 0x3e3ab7});
+      materialSpine = new THREE.MeshBasicMaterial({color: 0x3e3ab7});
+      materialRight = new THREE.MeshBasicMaterial({color: 0x3e3ab7});
+      break;
 
-  let materialRight = new THREE.LineBasicMaterial({
-    color: 0x0000ff
-  });
+    case 3:
+      materialLeft = new THREE.MeshBasicMaterial({color: 0xa63ab7});
+      materialSpine = new THREE.MeshBasicMaterial({color: 0xa63ab7});
+      materialRight = new THREE.MeshBasicMaterial({color: 0xa63ab7});
+      break;
+
+    default:
+      materialLeft = new THREE.MeshBasicMaterial({color: 0xffffff});
+      materialSpine = new THREE.MeshBasicMaterial({color: 0x00ff00});
+      materialRight = new THREE.MeshBasicMaterial({color: 0xffffff});
+  }
 
   let lane;
   let lefts = [];
@@ -261,9 +281,9 @@ function createLaneGeometriesOld(lanes) {
     let firstCenter, center, lastCenter;
     let vertices = geometryLeft.vertices;
 
-    createBoxes(geometryLeft.vertices, new THREE.MeshBasicMaterial({color:0xffffff}));
-    createBoxes(geometryRight.vertices, new THREE.MeshBasicMaterial({color:0xffffff}));
-    createBoxes(geometrySpine.vertices, new THREE.MeshBasicMaterial({color:0x00ff00}));
+    createBoxes(geometryLeft.vertices, materialLeft);
+    createBoxes(geometrySpine.vertices, materialSpine);
+    createBoxes(geometryRight.vertices, materialRight);
 
     function createBoxes(vertices, material) {
       for (let ii=1, len=vertices.length; ii<len; ii++) {

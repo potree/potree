@@ -10,10 +10,12 @@ export function updateSidebar() {
   const truthVizTree = tree.jstree('create_node', "#", { "text": "<b>Truth Visualizations</b>", "id": "truthViz"}, "last", false, false);
   const sensorTree = tree.jstree('create_node', "#", { "text": "<b>Sensor Readings</b>", "id": "sensorViz"}, "last", false, false);
   const assessmentsTree = tree.jstree('create_node', "#", { "text": "<b>Assessment Visualizations</b>", "id": "assessmentsViz"}, "last", false, false);
+  const HdMapProvidersTree = tree.jstree('create_node', "#", { "text": "<b>HD Map Providers</b>", "id": "HdMapProvidersViz"}, "last", false, false);
   tree.jstree("check_node", vehicleTree);
   tree.jstree("check_node", truthVizTree);
   tree.jstree("check_node", sensorTree);
   tree.jstree("check_node", assessmentsTree);
+  tree.jstree("check_node", HdMapProvidersTree);
 
 
   let createNode = (parent, text, icon, object) => {
@@ -90,10 +92,25 @@ export function updateSidebar() {
     });
   };
 
+  let onMapProviderLayerAdded = (e) => {
+    let mapProviderLayer = e.mapLayer;
+    let mapIcon = `${Potree.resourcePath}/icons/focus.svg`; // TODO Fix this
+    let node = createNode(HdMapProvidersTree, mapProviderLayer.name, '', mapProviderLayer);
+
+    mapProviderLayer.addEventListener("visibility_changed", () => {
+      if (mapProviderLayer.visible) {
+        tree.jstree('check_node', node);
+      } else {
+        tree.jstree('uncheck_node', node);
+      }
+    });
+  };
+
   window.viewer.scene.addEventListener("vehicle_layer_added", onVehicleLayerAdded);
   window.viewer.scene.addEventListener("truth_layer_added", onTruthLayerAdded);
   window.viewer.scene.addEventListener("sensor_layer_added", onSensorLayerAdded);
   window.viewer.scene.addEventListener("assessments_layer_added", onAssessmentsLayerAdded);
+  window.viewer.scene.addEventListener("map_provider_layer_added", onMapProviderLayerAdded);
 
 
 }

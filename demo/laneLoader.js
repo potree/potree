@@ -206,6 +206,13 @@ function createLaneGeometriesOld(lanes, supplierNum) {
 
   let materialLeft, materialSpine, materialRight;
   switch (supplierNum) {
+
+    case 4:
+      materialLeft = new THREE.MeshBasicMaterial({color: 0x11870a});
+      materialSpine = new THREE.MeshBasicMaterial({color: 0x11870a});
+      materialRight = new THREE.MeshBasicMaterial({color: 0x11870a});
+      break;
+
     case 1:
       materialLeft = new THREE.MeshBasicMaterial({color: 0x3aaeb7});
       materialSpine = new THREE.MeshBasicMaterial({color: 0x3aaeb7});

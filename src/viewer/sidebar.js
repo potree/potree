@@ -56,12 +56,12 @@ export class Sidebar{
 		this.initFilters();
 		this.initClippingTool();
 		this.initSettings();
-		
+
 		$('#potree_version_number').html(Potree.version.major + "." + Potree.version.minor + Potree.version.suffix);
 		$('.perfect_scrollbar').perfectScrollbar();
 	}
 
-		
+
 
 	initToolbar(){
 
@@ -173,7 +173,7 @@ export class Sidebar{
 			Potree.resourcePath + '/icons/volume.svg',
 			'[title]tt.volume_measurement',
 			() => {
-				let volume = this.volumeTool.startInsertion(); 
+				let volume = this.volumeTool.startInsertion();
 
 				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
 				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === volume.uuid);
@@ -186,8 +186,8 @@ export class Sidebar{
 		elToolbar.append(this.createToolIcon(
 			Potree.resourcePath + '/icons/sphere_distances.svg',
 			'[title]tt.volume_measurement',
-			() => { 
-				let volume = this.volumeTool.startInsertion({type: SphereVolume}); 
+			() => {
+				let volume = this.volumeTool.startInsertion({type: SphereVolume});
 
 				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
 				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === volume.uuid);
@@ -226,7 +226,7 @@ export class Sidebar{
 		let elScene = $("#menu_scene");
 		let elObjects = elScene.next().find("#scene_objects");
 		let elProperties = elScene.next().find("#scene_object_properties");
-		
+
 
 		{
 			let elExport = elScene.next().find("#scene_export");
@@ -265,7 +265,7 @@ export class Sidebar{
 
 		let propertiesPanel = new PropertiesPanel(elProperties, this.viewer);
 		propertiesPanel.setScene(this.viewer.scene);
-		
+
 		localStorage.removeItem('jstree');
 
 		let tree = $(`<div id="jstree_scene"></div>`);
@@ -290,13 +290,13 @@ export class Sidebar{
 		});
 
 		let createNode = (parent, text, icon, object) => {
-			let nodeID = tree.jstree('create_node', parent, { 
-					"text": text, 
+			let nodeID = tree.jstree('create_node', parent, {
+					"text": text,
 					"icon": icon,
 					"data": object
-				}, 
+				},
 				"last", false, false);
-			
+
 			if(object.visible){
 				tree.jstree('check_node', nodeID);
 			}else{
@@ -374,7 +374,7 @@ export class Sidebar{
 					this.viewer.zoomTo(node, 1, 500);
 				}
 			}else if(object instanceof Volume){
-				
+
 				let box = object.boundingBox.clone().applyMatrix4(object.matrixWorld);
 
 				if(box.getSize(new THREE.Vector3()).length() > 0){
@@ -397,14 +397,14 @@ export class Sidebar{
 					target = new THREE.Vector3().addVectors(object.camera.position, dir);
 					this.viewer.setCameraMode(CameraMode.PERSPECTIVE);
 				}
-				
+
 				this.viewer.scene.view.position.copy(object.camera.position);
 				this.viewer.scene.view.lookAt(target);
 			}else if(object instanceof THREE.SpotLight){
 				let distance = (object.distance > 0) ? object.distance / 4 : 5 * 1000;
 				let position = object.position;
 				let target = new THREE.Vector3().addVectors(
-					position, 
+					position,
 					object.getWorldDirection(new THREE.Vector3()).multiplyScalar(distance));
 
 				this.viewer.scene.view.position.copy(object.position);
@@ -499,21 +499,21 @@ export class Sidebar{
 		let onMeasurementRemoved = (e) => {
 			let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
 			let jsonNode = measurementsRoot.children.find(child => child.data.uuid === e.measurement.uuid);
-			
+
 			tree.jstree("delete_node", jsonNode.id);
 		};
 
 		let onVolumeRemoved = (e) => {
 			let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
 			let jsonNode = measurementsRoot.children.find(child => child.data.uuid === e.volume.uuid);
-			
+
 			tree.jstree("delete_node", jsonNode.id);
 		};
 
 		let onProfileRemoved = (e) => {
 			let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
 			let jsonNode = measurementsRoot.children.find(child => child.data.uuid === e.profile.uuid);
-			
+
 			tree.jstree("delete_node", jsonNode.id);
 		};
 
@@ -523,7 +523,7 @@ export class Sidebar{
 
 		{
 			let annotationIcon = `${Potree.resourcePath}/icons/annotation.svg`;
-			this.annotationMapping = new Map(); 
+			this.annotationMapping = new Map();
 			this.annotationMapping.set(this.viewer.scene.annotations, annotationsID);
 			this.viewer.scene.annotations.traverseDescendants(annotation => {
 				let parentID = this.annotationMapping.get(annotation.parent);
@@ -617,7 +617,7 @@ export class Sidebar{
 			Potree.resourcePath + '/icons/clip_volume.svg',
 			'[title]tt.clip_volume',
 			() => {
-				let item = this.volumeTool.startInsertion({clip: true}); 
+				let item = this.volumeTool.startInsertion({clip: true});
 
 				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
 				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === item.uuid);
@@ -648,11 +648,11 @@ export class Sidebar{
 				"[title]tt.screen_clip_box",
 				() => {
 					if(!(this.viewer.scene.getActiveCamera() instanceof THREE.OrthographicCamera)){
-						this.viewer.postMessage(`Switch to Orthographic Camera Mode before using the Screen-Box-Select tool.`, 
+						this.viewer.postMessage(`Switch to Orthographic Camera Mode before using the Screen-Box-Select tool.`,
 							{duration: 2000});
 						return;
 					}
-					
+
 					let item = boxSelectTool.startInsertion();
 
 					let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
@@ -764,7 +764,7 @@ export class Sidebar{
 			let from = `${Utils.addCommas(range[0].toFixed(precision))}`;
 			let to = `${Utils.addCommas(range[1].toFixed(precision))}`;
 			lblGPSTime[0].innerHTML = `${from} to ${to}`;
-			
+
 			slider.setRange(range);
 		};
 
@@ -797,17 +797,17 @@ export class Sidebar{
 			elClassificationList.append(element);
 		};
 
-		addClassificationItem(0, 'never classified');
-		addClassificationItem(1, 'unclassified');
-		addClassificationItem(2, 'ground');
-		addClassificationItem(3, 'low vegetation');
-		addClassificationItem(4, 'medium vegetation');
-		addClassificationItem(5, 'high vegetation');
-		addClassificationItem(6, 'building');
-		addClassificationItem(7, 'low point(noise)');
-		addClassificationItem(8, 'key-point');
-		addClassificationItem(9, 'water');
-		addClassificationItem(12, 'overlap');
+		addClassificationItem(0, 'Unknown');
+		addClassificationItem(1, 'Road');
+		addClassificationItem(2, 'Lane Markings');
+		addClassificationItem(3, 'NonRoad');
+		// addClassificationItem(4, '');
+		// addClassificationItem(5, 'Other');
+		// addClassificationItem(6, 'building');
+		// addClassificationItem(7, 'low point(noise)');
+		// addClassificationItem(8, 'key-point');
+		// addClassificationItem(9, 'water');
+		// addClassificationItem(12, 'overlap');
 	}
 
 	initAccordion(){
@@ -841,11 +841,11 @@ export class Sidebar{
 			if(i === 0){
 				element.css("margin-left", "30px");
 			}
-			
+
 			elLanguages.append(element);
 
 			if(i < languages.length - 1){
-				elLanguages.append($(document.createTextNode(' - ')));	
+				elLanguages.append($(document.createTextNode(' - ')));
 			}
 		}
 
@@ -920,7 +920,7 @@ export class Sidebar{
 		$('#lblEDLRadius')[0].innerHTML = this.viewer.getEDLRadius().toFixed(1);
 		$('#lblEDLStrength')[0].innerHTML = this.viewer.getEDLStrength().toFixed(1);
 		$('#chkEDLEnabled')[0].checked = this.viewer.getEDLEnabled();
-		
+
 		{
 			let elBackground = $(`#background_options`);
 			elBackground.selectgroup();
@@ -961,7 +961,7 @@ export class Sidebar{
 		elNavigation.append(this.createToolIcon(
 			Potree.resourcePath + '/icons/helicopter_controls.svg',
 			'[title]tt.heli_control',
-			() => { 
+			() => {
 				this.viewer.setNavigationMode(FirstPersonControls);
 				this.viewer.fpControls.lockElevation = true;
 			}
@@ -980,7 +980,7 @@ export class Sidebar{
 		));
 
 
-		
+
 		elNavigation.append(this.createToolIcon(
 			Potree.resourcePath + "/icons/navigation_cube.svg",
 			"[title]tt.navigation_cube_control",

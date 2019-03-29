@@ -135,7 +135,7 @@ let attributeLocations = {
 	"position": 0,
 	"color": 1,
 	"intensity": 2,
-	"classification": 3, 
+	"classification": 3,
 	"returnNumber": 4,
 	"numberOfReturns": 5,
 	"pointSourceID": 6,
@@ -270,7 +270,7 @@ class Shader {
 			}
 
 			// uniform blocks
-			if(gl instanceof WebGL2RenderingContext){ 
+			if(gl instanceof WebGL2RenderingContext){
 				let numBlocks = gl.getProgramParameter(program, gl.ACTIVE_UNIFORM_BLOCKS);
 
 				for (let i = 0; i < numBlocks; i++) {
@@ -283,7 +283,7 @@ class Shader {
 					gl.uniformBlockBinding(program, blockIndex, blockIndex);
 					let dataSize = gl.getActiveUniformBlockParameter(program, blockIndex, gl.UNIFORM_BLOCK_DATA_SIZE);
 
-					let uBuffer = gl.createBuffer();	
+					let uBuffer = gl.createBuffer();
 					gl.bindBuffer(gl.UNIFORM_BUFFER, uBuffer);
 					gl.bufferData(gl.UNIFORM_BUFFER, dataSize, gl.DYNAMIC_READ);
 
@@ -847,16 +847,21 @@ export class Renderer {
 
 				shader.setUniform1f("uGPSOffset", gpsOffset);
 				shader.setUniform1f("uGPSRange", gpsRange);
+
+				// console.log('here');
+				// console.log(node);
+				// debugger;
+
 			}
 
 			{
 				let uFilterReturnNumberRange = material.uniforms.uFilterReturnNumberRange.value;
 				let uFilterNumberOfReturnsRange = material.uniforms.uFilterNumberOfReturnsRange.value;
 				let uFilterGPSTimeClipRange = material.uniforms.uFilterGPSTimeClipRange.value;
-				
+
 				let gpsCliPRangeMin = uFilterGPSTimeClipRange[0] - gpsMin;
 				let gpsCliPRangeMax = uFilterGPSTimeClipRange[1] - gpsMin;
-				
+
 				shader.setUniform2f("uFilterReturnNumberRange", uFilterReturnNumberRange);
 				shader.setUniform2f("uFilterNumberOfReturnsRange", uFilterNumberOfReturnsRange);
 				shader.setUniform2f("uFilterGPSTimeClipRange", [gpsCliPRangeMin, gpsCliPRangeMax]);
@@ -1064,11 +1069,16 @@ export class Renderer {
 			 }else{
 				 gl.depthMask(false);
 			 }
-			 
+
 		}
 
 
 		{ // UPDATE UNIFORMS
+			// console.log(material.uniforms.timeRange);
+			// console.log(octree.pcoGeometry.nodes.r.gpsTime.range);
+			// console.log(material.uniforms);
+			// debugger; // Check if uGPSRange and uGPSOffset are set
+			shader.setUniform1f("uCurrentGPSTimeVal", material.uniforms.timeVal);
 			shader.setUniformMatrix4("projectionMatrix", proj);
 			shader.setUniformMatrix4("viewMatrix", view);
 			shader.setUniformMatrix4("uViewInv", viewInv);
@@ -1082,10 +1092,10 @@ export class Renderer {
 			shader.setUniform1f("fov", Math.PI * camera.fov / 180);
 			shader.setUniform1f("near", camera.near);
 			shader.setUniform1f("far", camera.far);
-			
+
 			if(camera instanceof THREE.OrthographicCamera){
 				shader.setUniform("uUseOrthographicCamera", true);
-				shader.setUniform("uOrthoWidth", camera.right - camera.left); 
+				shader.setUniform("uOrthoWidth", camera.right - camera.left);
 				shader.setUniform("uOrthoHeight", camera.top - camera.bottom);
 			}else{
 				shader.setUniform("uUseOrthographicCamera", false);
@@ -1133,7 +1143,7 @@ export class Renderer {
 
 				const lClipSpheres = shader.uniformLocations["uClipSpheres[0]"];
 				gl.uniformMatrix4fv(lClipSpheres, false, flattenedMatrices);
-				
+
 				//const lClipSpheres = shader.uniformLocations["uClipSpheres[0]"];
 				//gl.uniformMatrix4fv(lClipSpheres, false, material.uniforms.clipSpheres.value);
 			}
@@ -1152,7 +1162,7 @@ export class Renderer {
 				gl.bindBuffer(gl.UNIFORM_BUFFER, block.buffer);
 				gl.bufferSubData(gl.UNIFORM_BUFFER, 0, buffer);
 				gl.bindBuffer(gl.UNIFORM_BUFFER, null);
-				
+
 			}else{
 				shader.setUniform1f("size", material.size);
 				shader.setUniform1f("maxSize", material.uniforms.maxSize.value);
@@ -1284,7 +1294,7 @@ export class Renderer {
 
 		const gl = this.gl;
 
-		// PREPARE 
+		// PREPARE
 		if (target != null) {
 			this.threeRenderer.setRenderTarget(target);
 		}
@@ -1311,11 +1321,3 @@ export class Renderer {
 
 
 };
-
-
-
-
-
-
-
-

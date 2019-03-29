@@ -2,7 +2,6 @@
 
 import {PointAttributeNames} from "./PointAttributes.js";
 import {Version} from "../Version.js";
-import {XHRFactory} from "../XHRFactory.js";
 
 
 export class BinaryLoader{
@@ -24,31 +23,13 @@ export class BinaryLoader{
 		}
 
 		let url = node.getURL();
-
 		if (this.version.equalOrHigher('1.4')) {
 			url += '.bin';
 		}
 
-		let xhr = XHRFactory.createXMLHttpRequest();
-		xhr.open('GET', url, true);
-		xhr.responseType = 'arraybuffer';
-		xhr.overrideMimeType('text/plain; charset=x-user-defined');
-		xhr.onreadystatechange = () => {
-			if (xhr.readyState === 4) {
-				if((xhr.status === 200 || xhr.status === 0) &&  xhr.response !== null){
-					let buffer = xhr.response;
-					this.parse(node, buffer);
-				} else {
-					throw new Error(`Failed to load file! HTTP status: ${xhr.status}, file: ${url}`);
-				}
-			}
-		};
-		
-		try {
-			xhr.send(null);
-		} catch (e) {
-			console.log('fehler beim laden der punktwolke: ' + e);
-		}
+                node.pcoGeometry.octreeLoader(url,
+                                              (buffer) => this.parse(node, buffer),
+                                              () => { throw new Error(`Failed to load file! file: ${url}`); });
 	};
 
 	parse(node, buffer){
@@ -121,7 +102,7 @@ export class BinaryLoader{
 			tightBoundingBox.min.set(0, 0, 0);
 
 			let numPoints = e.data.buffer.byteLength / pointAttributes.byteSize;
-			
+
 			node.numPoints = numPoints;
 			node.geometry = geometry;
 			node.mean = new THREE.Vector3(...data.mean);
@@ -146,6 +127,5 @@ export class BinaryLoader{
 		worker.postMessage(message, [message.buffer]);
 	};
 
-	
-}
 
+}

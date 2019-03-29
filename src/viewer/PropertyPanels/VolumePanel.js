@@ -27,6 +27,18 @@ export class VolumePanel extends MeasurePanel{
 		]).get(measurement.constructor);
 
 		this.elContent = $(`
+
+			<div class="dropdown">
+			 <button class="dropbtn" name="label_data">Label and Download</button>
+			 <div id="myDropdown" class="dropdown-content">
+				 <a href="#" class="dropvalue" data-value="road">Road</a>
+				 <a href="#" class="dropvalue" data-value="non_road">Non-Road</a>
+				 <a href="#" class="dropvalue" data-value="road_edge">Road Edge</a>
+				 <a href="#" class="dropvalue" data-value="lane_marking">Lane Marking</a>
+				 <a href="#" class="dropvalue" data-value="vehicle">Vehicle</a>
+				 <a href="#" class="dropvalue" data-value="obstacle">Obstacle</a>
+			 </div>
+			</div>
 			<div class="measurement_content selectable">
 				<span class="coordinates_table_container"></span>
 
@@ -88,7 +100,6 @@ export class VolumePanel extends MeasurePanel{
 					<div name="download_message"></div>
 				</li>
 
-
 				<!-- ACTIONS -->
 				<li style="display: grid; grid-template-columns: auto auto; grid-column-gap: 5px; margin-top: 10px">
 					<input id="volume_reset_orientation" type="button" value="reset orientation"/>
@@ -100,17 +111,149 @@ export class VolumePanel extends MeasurePanel{
 					<img name="remove" class="button-icon" src="${removeIconPath}" style="width: 16px; height: 16px"/>
 				</div>
 			</div>
+
 		`);
 
 		{ // download
 			this.elDownloadButton = this.elContent.find("input[name=download_volume]");
+			console.log(this.elDownloadButton);
 
 			if(this.propertiesPanel.viewer.server){
 				this.elDownloadButton.click(() => this.download());
 			} else {
 				this.elDownloadButton.hide();
 			}
+			// this.elDownloadButton.click(() => {
+			// 	console.log("CLICK!");
+			// };
 		}
+
+
+		function pad(number, len=2, char='0') {
+			if (number < 0) {
+				throw "negative numbers not supported yet - Vinay";
+			}
+			var stringNum = String(number);
+			while (stringNum.length <  len) {
+				stringNum = char + stringNum;
+			}
+			return stringNum;
+		}
+
+		function label(value, viewer) {
+
+			console.log("ENABLE DIALOG FORM HERE");
+			console.log(viewer);
+			// debugger;
+			var dialog = $( "#dialog-form" ).dialog("open");
+
+			var x;
+			var metadata=prompt("Please enter metadata", "");
+			// if (metadata!=null){
+			// 	 x="Hello " + name + "! How are you today?";
+			// 	alert(x);
+			// }
+
+			var date = new Date();
+			// var obj = (date.getTime());
+			var year = date.getFullYear();
+			var month = date.getMonth();
+			var day =  date.getDay();
+			var hour =  date.getHours();
+			var min = date.getMinutes();
+			var sec = date.getSeconds();
+			var timestamp = pad(year,4)+"-"+pad(month)+"-"+pad(day)+"_"+pad(hour)+"-"+pad(min)+"-"+pad(sec);
+
+			var output = {
+				t_valid_min: viewer.scene.pointclouds[0].material.uniforms.uFilterGPSTimeClipRange.value[0],
+				t_valid_max: viewer.scene.pointclouds[0].material.uniforms.uFilterGPSTimeClipRange.value[1],
+				timestamp: date.getTime(),
+				position: measurement.position,
+				rotation: measurement.rotation,
+				size: measurement.scale,
+				label: value,
+				metadata: metadata
+			};
+
+			console.log(output);
+			console.log(JSON.stringify(output));
+			var outputJsonString = JSON.stringify(output, null, 2);
+
+			var config = {
+				quotes: false,
+				quoteChar: '"',
+				escapeChar: '"',
+				delimiter: ",",
+				header: true,
+				newline: "\r\n"
+			};
+			var outputCsvString = Papa.unparse([{
+				"t_valid_min": output.t_valid_min,
+				"t_valid_max": output.t_valid_max,
+				"labeling_timestamp": output.timestamp,
+				"position_x": output.position.x,
+				"position_y": output.position.y,
+				"position_z": output.position.z,
+				"rotation_x": output.rotation._x,
+				"rotation_y": output.rotation._y,
+				"rotation_z": output.rotation._z,
+				"rotation_order": output.rotation._order,
+				"label": output.label,
+				"metadata": output.metadata
+			}], config);
+
+			var filename = value+"_"+timestamp+".csv";
+			console.log(filename);
+			download(outputCsvString, filename, "text/plain");
+
+		}
+
+		{ // label and download
+
+			// Assign Onclick Functions to drop down items:
+			// debugger;
+			var viewer = this.viewer;
+			this.elContent.find("a.dropvalue").click(function() {
+				// console.log($(this).data("value"));
+				var val = $(this).data("value");
+				label(val, viewer);
+			});
+
+			// var dropdownvalues = this.elContent.find("a.dropvalue");
+			// for (let a of dropdownvalues) {
+			// 	debugger;
+			// 	console.log(a);
+			// 	// var a = dropdownvalues[k];
+			//
+			// 	a.onclick = function() {
+			// 		label(a.value);
+			// 	};
+			// }
+
+			var dropbtn = this.elContent.find("button[name=label_data]");
+			console.log(dropbtn);
+			dropbtn.click(() => {
+				document.getElementById("myDropdown").classList.toggle("show");
+
+				//
+				// var output = {
+				// 	position: measurement.position,
+				// 	rotation: measurement.rotation,
+				// 	size: measurement.scale
+				// };
+				//
+				// console.log(output);
+				// console.log(JSON.stringify(output));
+
+
+			});
+			//
+			// debugger;
+			// console.log(this.elContent);
+
+
+		}
+
 
 		this.elCopyRotation = this.elContent.find("img[name=copyRotation]");
 		this.elCopyRotation.click( () => {
@@ -247,7 +390,7 @@ export class VolumePanel extends MeasurePanel{
 		let handle = null;
 		{ // START FILTER
 			let url = `${viewer.server}/create_regions_filter?pointclouds=[${pointcloudsArg}]&regions=[${regionsArg}]`;
-			
+
 			//console.log(url);
 
 			info("estimating results ...");

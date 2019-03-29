@@ -38,7 +38,7 @@ export class PropertiesPanel{
 		}
 
 		this.object = object;
-		
+
 		for(let task of this.cleanupTasks){
 			task();
 		}
@@ -52,7 +52,7 @@ export class PropertiesPanel{
 		}else if(object instanceof THREE.Camera){
 			this.setCamera(object);
 		}
-		
+
 	}
 
 	//
@@ -199,7 +199,7 @@ export class PropertiesPanel{
 					</div>
 
 				</div>
-				
+
 				<div id="materials.index_container">
 					<div class="divider">
 						<span>Indices</span>
@@ -231,7 +231,7 @@ export class PropertiesPanel{
 				sldPointSize.slider({value: material.size});
 			};
 			this.addVolatileListener(material, "point_size_changed", update);
-			
+
 			update();
 		}
 
@@ -279,7 +279,7 @@ export class PropertiesPanel{
 				min: 0,
 				max: 1,
 				step: 0.001,
-				slide: function (event, ui) { 
+				slide: function (event, ui) {
 					material.opacity = ui.value;
 				}
 			});
@@ -536,7 +536,7 @@ export class PropertiesPanel{
 				let range = material.elevationRange;
 
 				panel.find('#lblHeightRange').html(`${range[0].toFixed(2)} to ${range[1].toFixed(2)}`);
-				panel.find('#sldHeightRang').slider({min: bMin, max: bMax, values: range});
+				panel.find('#sldHeightRange').slider({min: bMin, max: bMax, values: range});
 			};
 
 			let updateIntensityRange = function () {
@@ -594,7 +594,7 @@ export class PropertiesPanel{
 
 	}
 
-	
+
 
 	setMeasurement(object){
 

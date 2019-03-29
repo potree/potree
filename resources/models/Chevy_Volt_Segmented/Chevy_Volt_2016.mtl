@@ -1,0 +1,749 @@
+# 
+# Wavefront material file
+# Converted by the DEEP Exploration  Deep Exploration 6.5 x64 6.5.0.9182
+# Right Hemisphere, LTD
+# http://www.righthemisphere.com/
+# 
+
+newmtl plastic_1
+Ka 0.0156863 0.0156863 0.0156863
+Kd 0.0156863 0.0156863 0.0156863
+Ks 0.9 0.9 0.9
+illum 2
+Ns 11.3137
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl bottom_shadow
+Ka 0.00392157 0.00392157 0.00392157
+Kd 0.00392157 0.00392157 0.00392157
+Ks 1 1 1
+illum 2
+Ns 64
+map_Kd 
+map_bump reflection_1.png
+bump reflection_1.png
+map_opacity 
+map_d 
+refl 
+map_kS reflection_1.png
+map_kA 
+map_Ns 
+
+newmtl bottom_metal
+Ka 0.0862745 0.0862745 0.0862745
+Kd 0.0862745 0.0862745 0.0862745
+Ks 1 1 1
+illum 2
+Ns 1176.27
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS reflection_1.png
+map_kA 
+map_Ns 
+
+newmtl bottom_reflection
+Ka 0.0470588 0.0470588 0.0470588
+Kd 0.0470588 0.0470588 0.0470588
+Ks 1 1 1
+illum 2
+Ns 30.91
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS reflection_1.png
+map_kA 
+map_Ns reflection_1.png
+
+newmtl rubber
+Ka 0.0509804 0.0509804 0.0509804
+Kd 0.0509804 0.0509804 0.0509804
+Ks 0.9 0.9 0.9
+illum 2
+Ns 16
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl bottom_aluminum
+Ka 0.588235 0.588235 0.588235
+Kd 0.588235 0.588235 0.588235
+Ks 1 1 1
+illum 2
+Ns 11.3137
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS reflection_1.png
+map_kA 
+map_Ns 
+
+newmtl orange_glass
+Ka 0.588235 0.0823529 0
+Kd 0.588235 0.0823529 0
+Ks 0.9 0.9 0.9
+illum 2
+Ns 64
+d 0.5
+map_Kd 
+map_bump Chevrolet_Volt_v1_exterior.png
+bump Chevrolet_Volt_v1_exterior.png
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl glass_1
+Ka 0.00392157 0.00392157 0.00392157
+Kd 0.00392157 0.00392157 0.00392157
+Ks 0.9 0.9 0.9
+illum 2
+Ns 64
+d 0.1
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl reflection_2
+Ka 0.0470588 0.0470588 0.0470588
+Kd 0.0470588 0.0470588 0.0470588
+Ks 0.9 0.9 0.9
+illum 2
+Ns 59.7141
+map_Kd 
+map_bump Chevrolet_Volt_v1_exterior.png
+bump Chevrolet_Volt_v1_exterior.png
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl glass_2
+Ka 0.380392 0.470588 0.439216
+Kd 0.380392 0.470588 0.439216
+Ks 0.9 0.9 0.9
+illum 2
+Ns 64
+d 0.17
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl aluminum
+Ka 0.588235 0.588235 0.588235
+Kd 0.588235 0.588235 0.588235
+Ks 0.9 0.9 0.9
+illum 2
+Ns 32
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl plastic_gloss
+Ka 0.0117647 0.0117647 0.0117647
+Kd 0.0117647 0.0117647 0.0117647
+Ks 0.9 0.9 0.9
+illum 2
+Ns 15.455
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl shadow
+Ka 0.00392157 0.00392157 0.00392157
+Kd 0.00392157 0.00392157 0.00392157
+Ks 0.9 0.9 0.9
+illum 2
+Ns 64
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl reflection_1
+Ka 0.0470588 0.0470588 0.0470588
+Kd 0.0470588 0.0470588 0.0470588
+Ks 0.9 0.9 0.9
+illum 2
+Ns 59.7141
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl glass_3
+Ka 0.00392157 0.00392157 0.00392157
+Kd 0.00392157 0.00392157 0.00392157
+Ks 0.9 0.9 0.9
+illum 2
+Ns 64
+d 0.1
+map_Kd 
+map_bump Chevrolet_Volt_v1_exterior.png
+bump Chevrolet_Volt_v1_exterior.png
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl logo_paint
+Ka 1 0.529412 0.0666667
+Kd 1 0.529412 0.0666667
+Ks 0.9 0.9 0.9
+illum 2
+Ns 64
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl body
+Ka 0.431373 0.431373 0.431373
+Kd 0.431373 0.431373 0.431373
+Ks 0.9 0.9 0.9
+illum 2
+Ns 8
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl window_1
+Ka 0.00392157 0.00392157 0.00392157
+Kd 0.00392157 0.00392157 0.00392157
+Ks 0.9 0.9 0.9
+illum 2
+Ns 2048
+map_Kd 
+map_bump 
+bump 
+map_opacity Chevrolet_Volt_v1_exterior_opacity.png
+map_d Chevrolet_Volt_v1_exterior_opacity.png
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl interior_plastic_1
+Ka 0.054902 0.054902 0.054902
+Kd 0.054902 0.054902 0.054902
+Ks 0.9 0.9 0.9
+illum 2
+Ns 3.24901
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl plastic_3
+Ka 0.0862745 0.0862745 0.0862745
+Kd 0.0862745 0.0862745 0.0862745
+Ks 0.9 0.9 0.9
+illum 2
+Ns 11.3137
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl taillight_plastic
+Ka 0.556863 0.588235 0.584314
+Kd 0.556863 0.588235 0.584314
+Ks 0.9 0.9 0.9
+illum 2
+Ns 15.455
+d 0.29
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl red_glass
+Ka 0.588235 0.0156863 0.0156863
+Kd 0.588235 0.0156863 0.0156863
+Ks 0.9 0.9 0.9
+illum 2
+Ns 64
+d 0.5
+map_Kd 
+map_bump Chevrolet_Volt_v1_exterior.png
+bump Chevrolet_Volt_v1_exterior.png
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl green_plastic
+Ka 0 1 0.329412
+Kd 0 1 0.329412
+Ks 0.9 0.9 0.9
+illum 2
+Ns 11.3137
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl number
+Ka 0.0862745 0.0862745 0.0862745
+Kd 1 1 1
+Ks 0.9 0.9 0.9
+illum 2
+Ns 11.3137
+map_Kd Chevrolet_Volt_v1_exterior.png
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl window_2
+Ka 0.00392157 0.00392157 0.00392157
+Kd 0.00392157 0.00392157 0.00392157
+Ks 0.9 0.9 0.9
+illum 2
+Ns 2048
+map_Kd 
+map_bump 
+bump 
+map_opacity Chevrolet_Volt_v1_exterior_opacity.png
+map_d Chevrolet_Volt_v1_exterior_opacity.png
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl metal_1
+Ka 0.0352941 0.0352941 0.0352941
+Kd 0.0352941 0.0352941 0.0352941
+Ks 0.9 0.9 0.9
+illum 2
+Ns 36.7583
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl interior_plastic
+Ka 0.156863 0.156863 0.156863
+Kd 0.156863 0.156863 0.156863
+Ks 0.9 0.9 0.9
+illum 2
+Ns 11.3137
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl buttons
+Ka 0.0862745 0.0862745 0.0862745
+Kd 1 1 1
+Ks 0.9 0.9 0.9
+illum 2
+Ns 10.5561
+map_Kd Chevrolet_Volt_v1_interior_1.png
+map_bump Chevrolet_Volt_v1_interior_2.png
+bump Chevrolet_Volt_v1_interior_2.png
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl grille
+Ka 0.152941 0.152941 0.152941
+Kd 1 1 1
+Ks 1 1 1
+illum 2
+Ns 64
+map_Kd Chevrolet_Volt_v1_interior_1.png
+map_bump Chevrolet_Volt_v1_interior_1.png
+bump Chevrolet_Volt_v1_interior_1.png
+map_opacity 
+map_d 
+refl 
+map_kS Chevrolet_Volt_v1_interior_1.png
+map_kA 
+map_Ns 
+
+newmtl blue_plastic
+Ka 0.0156863 0.176471 1
+Kd 0.0156863 0.176471 1
+Ks 0.9 0.9 0.9
+illum 2
+Ns 11.3137
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl interior_plastic_2
+Ka 0.92549 0.92549 0.92549
+Kd 0.92549 0.92549 0.92549
+Ks 0.9 0.9 0.9
+illum 2
+Ns 4
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl belt
+Ka 0.0784314 0.0784314 0.0784314
+Kd 0.0784314 0.0784314 0.0784314
+Ks 0.9 0.9 0.9
+illum 2
+Ns 29.8571
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl floor
+Ka 0.0470588 0.0470588 0.0470588
+Kd 0.0470588 0.0470588 0.0470588
+Ks 0.9 0.9 0.9
+illum 2
+Ns 3.24901
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl cloth
+Ka 0.113725 0.113725 0.113725
+Kd 0.113725 0.113725 0.113725
+Ks 0.9 0.9 0.9
+illum 2
+Ns 3.24901
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl red_plastic
+Ka 0.760784 0.0235294 0.0235294
+Kd 0.760784 0.0235294 0.0235294
+Ks 0.9 0.9 0.9
+illum 2
+Ns 137.187
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl interior_plastic_3
+Ka 0.113725 0.113725 0.113725
+Kd 0.113725 0.113725 0.113725
+Ks 0.9 0.9 0.9
+illum 2
+Ns 3.24901
+map_Kd 
+map_bump Chevrolet_Volt_v1_interior_1.png
+bump Chevrolet_Volt_v1_interior_1.png
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl plastic_2
+Ka 0.847059 0.847059 0.847059
+Kd 1 1 1
+Ks 0.9 0.9 0.9
+illum 2
+Ns 3.24901
+map_Kd Chevrolet_Volt_v1_interior_1.png
+map_bump Chevrolet_Volt_v1_interior_2.png
+bump Chevrolet_Volt_v1_interior_2.png
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl display
+Ka 0.588 0.588 0.588
+Kd 1 1 1
+Ks 0.9 0.9 0.9
+illum 2
+Ns 4
+map_Kd Chevrolet_Volt_v1_interior_1.png
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl skin
+Ka 0.0705882 0.0745098 0.0784314
+Kd 0.0705882 0.0745098 0.0784314
+Ks 0.9 0.9 0.9
+illum 2
+Ns 34.2967
+map_Kd 
+map_bump Chevrolet_Volt_v1_interior_1.png
+bump Chevrolet_Volt_v1_interior_1.png
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl pedals
+Ka 0.129412 0.129412 0.129412
+Kd 0.129412 0.129412 0.129412
+Ks 0.9 0.9 0.9
+illum 2
+Ns 11.3137
+map_Kd 
+map_bump Chevrolet_Volt_v1_interior_2.png
+bump Chevrolet_Volt_v1_interior_2.png
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl glass_4
+Ka 0.00392157 0.00392157 0.00392157
+Kd 0.00392157 0.00392157 0.00392157
+Ks 0.9 0.9 0.9
+illum 2
+Ns 64
+d 0.1
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl wheel_rubber
+Ka 0.0156863 0.0156863 0.0156863
+Kd 0.0156863 0.0156863 0.0156863
+Ks 0.9 0.9 0.9
+illum 2
+Ns 27.8576
+map_Kd 
+map_bump Chevrolet_Volt_v1_exterior.png
+bump Chevrolet_Volt_v1_exterior.png
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns reflection_1.png
+
+newmtl disk
+Ka 0.588235 0.588235 0.588235
+Kd 0.588235 0.588235 0.588235
+Ks 0.9 0.9 0.9
+illum 2
+Ns 42.2243
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl brake_disk
+Ka 0.243137 0.243137 0.243137
+Kd 1 1 1
+Ks 0.9 0.9 0.9
+illum 2
+Ns 238.856
+map_Kd Chevrolet_Volt_v1_exterior.png
+map_bump Chevrolet_Volt_v1_exterior.png
+bump Chevrolet_Volt_v1_exterior.png
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl metal_2
+Ka 0.47451 0.47451 0.47451
+Kd 0.47451 0.47451 0.47451
+Ks 0.9 0.9 0.9
+illum 2
+Ns 776.047
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl brake
+Ka 0.113725 0.113725 0.113725
+Kd 0.113725 0.113725 0.113725
+Ks 0.9 0.9 0.9
+illum 2
+Ns 97.0059
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 

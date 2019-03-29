@@ -99,7 +99,7 @@ gulp.task("build", ['workers','shaders', "icons_viewer", "examples_page"], funct
 // For development, it is now possible to use 'gulp webserver'
 // from the command line to start the server (default port is 8080)
 gulp.task('webserver', function() {
-	server = connect.server({port: 1234});
+	server = connect.server({host: '0.0.0.0', port: 1234});
 });
 
 gulp.task('examples_page', function() {

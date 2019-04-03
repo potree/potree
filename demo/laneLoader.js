@@ -1,3 +1,4 @@
+import { Measure } from "../src/utils/Measure.js";
 
 export async function loadLanes(s3, bucket, name, callback) {
   const tstart = performance.now();
@@ -210,6 +211,11 @@ function createLaneGeometriesOld(lanes) {
     color: 0x0000ff
   });
 
+  let laneLeft, laneRight, laneSpine;
+  laneLeft = new Measure(); laneLeft.name = "Lane Left"; //laneLeft.closed = false;
+  laneSpine = new Measure(); laneSpine.name = "Lane Spine"; //laneRight.closed = false;
+  laneRight = new Measure(); laneRight.name = "Lane Right"; //laneRight.closed = false;
+
   let lane;
   let lefts = [];
   let rights = [];
@@ -232,7 +238,12 @@ function createLaneGeometriesOld(lanes) {
       geometryLeft.vertices.push( new THREE.Vector3(left.x(), left.y(), left.z()));
       geometrySpine.vertices.push( new THREE.Vector3(spine.x(), spine.y(), spine.z()));
       geometryRight.vertices.push( new THREE.Vector3(right.x(), right.y(), right.z()));
+
+      laneLeft.addMarker(new THREE.Vector3(left.x(), left.y(), left.z()));
+      laneSpine.addMarker(new THREE.Vector3(spine.x(), spine.y(), spine.z()));
+      laneRight.addMarker(new THREE.Vector3(right.x(), right.y(), right.z()));
     }
+    continue;
 
     // // NOTE TRYING MESHLINE:
     // var leftLine = new MeshLine();
@@ -340,6 +351,14 @@ function createLaneGeometriesOld(lanes) {
     // spines.push(new THREE.Line(geometrySpine, materialSpine) );
     // rights.push(new THREE.Line(geometryRight, materialRight) );
   }
+
+  laneLeft.closed = false;
+  window.viewer.scene.scene.add(laneLeft);
+  laneSpine.closed = false;
+  window.viewer.scene.scene.add(laneSpine);
+  laneRight.closed = false;
+  window.viewer.scene.scene.add(laneRight);
+
 
   let output = {
     left: lefts,

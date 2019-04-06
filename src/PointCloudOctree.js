@@ -224,35 +224,53 @@ export class PointCloudOctree extends PointCloudTree {
 
 		let disposeListener = function () {
 			let childIndex = parseInt(geometryNode.name[geometryNode.name.length - 1]);
-			//check if sceneNode Deleted maybe can be removed for permformance gain it shouldn't be null
-			if(sceneNode!==null){
-				//check if has geometry it could be removed also...
-				if(sceneNode.geometry){
-					//delete attributes solve a big memory leak...
-					for(let key in sceneNode.geometry.attributes){
-							delete sceneNode.geometry.attributes[key];
-					}
-					//dispose geometry
-					sceneNode.geometry.dispose();
-					sceneNode.geometry=undefined;
-				}
-				//check if has material, can be removed...
-				if(sceneNode.material){
-					//check if has material map, can be removed...
-					if(sceneNode.material.map){
-						sceneNode.material.map.dispose();
-						sceneNode.material.map=undefined;
+			//remove node from scene
+			parent.sceneNode.remove(sceneNode);
+
+			//check if has geometry it could be removed also...
+			if(sceneNode.geometry){
+				//delete attributes solve a big memory leak...
+				let attributes=sceneNode.geometry.attributes
+				for(let key in attributes){
+						if(key=="position"){
+							delete attributes[key].array;
 						}
-					//dispose material
-					sceneNode.material.dispose();
-					sceneNode.material=undefined;
+						delete attributes[key];
 				}
-				//remove node from scene
-				parent.sceneNode.remove(sceneNode);
-				//set node explicitly undefined.
-				sceneNode=undefined;
-				parent.children[childIndex] = geometryNode;
+				//dispose geometry
+				sceneNode.geometry.dispose();
+				sceneNode.geometry=undefined;
 			}
+
+			//check if has material, can be removed...
+			if(sceneNode.material){
+				//check if has material map, can be removed...
+				if(sceneNode.material.map){
+					sceneNode.material.map.dispose();
+					sceneNode.material.map=undefined;
+					}
+				//dispose material
+				sceneNode.material.dispose();
+				sceneNode.material=undefined;
+			}
+
+			//delete matrix
+			delete sceneNode.matrix;
+			//delete matrixWorld
+			delete sceneNode.matrixWorld;
+			//delete position
+			delete sceneNode.position.array;
+			//delete qa
+			delete sceneNode.quaternion.array;
+			//delete rotation
+			delete sceneNode.rotation.array;
+			//delete scale
+			delete sceneNode.scale.array;
+			//delete up
+			delete sceneNode.up.array;
+			//delete sceneNode
+			sceneNode=undefined;
+			parent.children[childIndex] = geometryNode;
 		};
 		geometryNode.oneTimeDisposeHandlers.push(disposeListener);
 

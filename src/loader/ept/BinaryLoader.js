@@ -1,10 +1,18 @@
 import {XHRFactory} from "../../XHRFactory.js";
 
 export class EptBinaryLoader {
+	extension() {
+		return '.bin';
+	}
+
+	workerPath() {
+		return Potree.scriptPath + '/workers/EptBinaryDecoderWorker.js';
+	}
+
 	load(node) {
 		if (node.loaded) return;
 
-		let url = node.url() + '.bin';
+		let url = node.url() + this.extension();
 
 		let xhr = XHRFactory.createXMLHttpRequest();
 		xhr.open('GET', url, true);
@@ -30,8 +38,7 @@ export class EptBinaryLoader {
 	}
 
 	parse(node, buffer) {
-		let workerPath = Potree.scriptPath +
-			'/workers/EptBinaryDecoderWorker.js';
+		let workerPath = this.workerPath();
 		let worker = Potree.workerPool.getWorker(workerPath);
 
 		worker.onmessage = function(e) {

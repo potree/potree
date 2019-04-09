@@ -34,6 +34,7 @@ export * from "./loader/POCLoader.js";
 export * from "./loader/EptLoader.js";
 export * from "./loader/ept/BinaryLoader.js";
 export * from "./loader/ept/LaszipLoader.js";
+export * from "./loader/ept/ZstandardLoader.js";
 export * from "./loader/GreyhoundBinaryLoader.js";
 export * from "./loader/GreyhoundLoader.js";
 export * from "./loader/PointAttributes.js";

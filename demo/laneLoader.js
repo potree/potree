@@ -334,19 +334,6 @@ function createLaneGeometriesOld(lanes, supplierNum) {
         // TODO rotate boxGeometry.quaternion.setFromUnitVectors(axis, vector.clone().normalize());
         allBoxes.merge(boxGeometry);
 
-
-        let boxMaterial = new THREE.MeshBasicMaterial({color: 0xffffff});
-        let boxMesh = new THREE.Mesh(geometry, boxMaterial);
-
-
-        boxMesh.quaternion.setFromUnitVectors(axis, vector.clone().normalize());
-        boxMesh.position.copy(center.clone());
-
-        lefts.push(boxMesh);
-        spines.push(boxMesh);
-        rights.push(boxMesh);
-
-
         if ((ii%100000)==0 || ii==(len-1)) {
           // let mesh = new THREE.Mesh(allBoxes, new THREE.MeshBasicMaterial({color:0x00ff00}));
           let mesh = new THREE.Mesh(new THREE.BufferGeometry().fromGeometry(allBoxes), material); // Buffergeometry
@@ -369,9 +356,6 @@ function createLaneGeometriesOld(lanes, supplierNum) {
   }
 
   let output = {
-    left: lefts,
-    spine: spines,
-    right: rights,
     all: all
   }
   return output;

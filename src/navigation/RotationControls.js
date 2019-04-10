@@ -29,9 +29,10 @@ Potree.RotationControls = class RotationControls extends THREE.EventDispatcher{
 		this.fadeFactor = 10;
 		this.yawDelta = 0;
 		this.radiusDelta = 0;
+		this.panDelta = new THREE.Vector2(0, 0);
 
-		this.minRadius = 20;
-		this.maxRadius = 600;
+		this.minRadius = 5;
+		this.maxRadius = 300;
 
 		this.enabled = true;
 
@@ -60,6 +61,13 @@ Potree.RotationControls = class RotationControls extends THREE.EventDispatcher{
 				this.navigationCallback();
 
 				this.stopTweens();
+			} else if (e.drag.mouse === Potree.MOUSE.RIGHT) {
+				this.panDelta.x += ndrag.x;
+				this.panDelta.y += ndrag.y;
+				
+				this.navigationCallback();
+
+				this.stopTweens();
 			}
 		};
 
@@ -72,6 +80,7 @@ Potree.RotationControls = class RotationControls extends THREE.EventDispatcher{
 
 			this.radiusDelta += -e.delta * resolvedRadius * 0.1;
 			this.yawDelta = 0;
+			this.panDelta.set(0, 0);
 
 			this.navigationCallback();
 
@@ -128,6 +137,7 @@ Potree.RotationControls = class RotationControls extends THREE.EventDispatcher{
 	stop(){
 		this.yawDelta = 0;
 		this.radiusDelta = 0;
+		this.panDelta.set(0, 0);
 	}
 
 	stopTweens () {
@@ -136,12 +146,38 @@ Potree.RotationControls = class RotationControls extends THREE.EventDispatcher{
 	}
 
 	navigationCallback() {
-		if (this.viewer.navigationCallback && (this.yawDelta !== 0 || this.radiusDelta !== 0)) {
-			const { yawDelta, radiusDelta } = this;
+		if (this.viewer.navigationCallback && (this.yawDelta !== 0 || this.radiusDelta !== 0 || this.panDelta.x !== 0)) {
+			const { radiusDelta, yawDelta } = this;
 			this.viewer.navigationCallback({
-				yawDelta, radiusDelta,
+				radiusDelta,
+				yawDelta,
 			});
 		}
+	}
+
+	updateYaw (yaw) {
+		const { view } = this.scene;
+		const yawMove = view.yaw - yaw;
+		this.pivot = this.scene.pointclouds[0].boundingBox.getCenter();
+
+		if (yaw < -Math.PI) {
+			yaw += 2 * Math.PI;
+		} else
+		if (yaw > Math.PI) {
+			yaw -= 2 * Math.PI;
+		}
+		
+		view.yaw = yaw;
+
+		let pivotToCam = new THREE.Vector3().subVectors(view.position, this.pivot);
+		let pivotToCamTarget = new THREE.Vector3().subVectors(view.getPivot(), this.pivot);
+
+		pivotToCam.applyAxisAngle(new THREE.Vector3(0, 0, 1), -yawMove);
+		pivotToCamTarget.applyAxisAngle(new THREE.Vector3(0, 0, 1), -yawMove);
+
+		let newCam = new THREE.Vector3().addVectors(this.pivot, pivotToCam);
+
+		view.position.copy(newCam);
 	}
 
 	update (delta) {
@@ -151,36 +187,46 @@ Potree.RotationControls = class RotationControls extends THREE.EventDispatcher{
 			return false;
 		}
 
-		const fixedRadiusDelta = +(this.radiusDelta).toFixed(3);
-		const fixedYawDelta = +(this.yawDelta).toFixed(3);
+		const toFixed = value => +value.toFixed(3);
+
+		const fixedRadiusDelta = toFixed(this.radiusDelta);
+		const fixedYawDelta = toFixed(this.yawDelta);
+		const fixedPanDelta = new THREE.Vector3(toFixed(this.panDelta.x), toFixed(this.panDelta.y));
 		if (fixedRadiusDelta !== 0) {
+			this.panDelta.set(0, 0);
 			this.yawDelta = 0;
 		} else
 		if (fixedYawDelta !== 0) {
+			this.panDelta.set(0, 0);
 			this.radiusDelta = 0;
+		} else
+		if (fixedPanDelta.x !== 0 || fixedPanDelta.y !== 0) {
+			this.radiusDelta = 0;
+			this.yawDelta = 0;
 		}
 
 		{ // apply rotation
-			let progression = Math.min(1, this.fadeFactor * delta);
+			if (fixedYawDelta) {
+				let progression = Math.min(1, this.fadeFactor * delta);
 
-			let yaw = view.yaw;
-			let pivot = view.getPivot();
-
-			yaw -= progression * this.yawDelta;
-
-			if (yaw < -Math.PI && this.yawDelta > 0) {
-				yaw = Math.PI;
+				this.updateYaw(view.yaw - (progression * fixedYawDelta));
 			}
-			if (yaw > Math.PI && this.yawDelta < 0) {
-				yaw = -Math.PI;
+		}
+
+		{ // apply pan
+			if (fixedPanDelta.x || fixedPanDelta.y) {
+				let progression = Math.min(1, this.fadeFactor * delta);
+				let panDistance = progression * view.radius * 2;
+
+				let px = -fixedPanDelta.x * panDistance;
+				let py = fixedPanDelta.y * (panDistance * 0.2);
+
+				view.pan(px, py);
+
+				if (this.viewerToSync) {
+					this.viewerToSync.scene.view.pan(px, 0);
+				}
 			}
-
-			view.yaw = yaw;
-
-			let V = this.scene.view.direction.multiplyScalar(-view.radius);
-			let position = new THREE.Vector3().addVectors(pivot, V);
-
-			view.position.copy(position);
 		}
 
 		{ // apply zoom
@@ -193,11 +239,7 @@ Potree.RotationControls = class RotationControls extends THREE.EventDispatcher{
 			radius = radius < this.minRadius ? this.minRadius : radius;
 			radius = radius > this.maxRadius ? this.maxRadius : radius;
 
-			let V = view.direction.multiplyScalar(-radius);
-			let position = new THREE.Vector3().addVectors(view.getPivot(), V);
 			view.radius = radius;
-
-			view.position.copy(position);
 		}
 
 		{
@@ -208,6 +250,7 @@ Potree.RotationControls = class RotationControls extends THREE.EventDispatcher{
 		{ // decelerate over time
 			let progression = Math.min(1, this.fadeFactor * delta);
 			let attenuation = Math.max(0, 1 - this.fadeFactor * delta);
+			this.panDelta.multiplyScalar(attenuation);
 
 			this.yawDelta *= attenuation;
 			this.radiusDelta -= progression * this.radiusDelta;

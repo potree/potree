@@ -19,7 +19,7 @@ export class Measure extends THREE.Object3D {
 		this._showHeight = false;
 		this.maxMarkers = Number.MAX_SAFE_INTEGER;
 
-		this.sphereGeometry = new THREE.SphereGeometry(0.4, 10, 10);
+		this.sphereGeometry = new THREE.SphereGeometry(0.2, 10, 10);
 		this.color = new THREE.Color(0xff0000);
 
 		this.lengthUnit = {code: 'm'};
@@ -64,14 +64,14 @@ export class Measure extends THREE.Object3D {
 			}
 		}
 
-		this.areaLabel = new TextSprite('');
-		this.areaLabel.setBorderColor({r: 0, g: 0, b: 0, a: 0.8});
-		this.areaLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 0.3});
-		this.areaLabel.setTextColor({r: 180, g: 220, b: 180, a: 1.0});
-		this.areaLabel.material.depthTest = false;
-		this.areaLabel.material.opacity = 1;
-		this.areaLabel.visible = false; ;
-		this.add(this.areaLabel);
+		//this.areaLabel = new TextSprite('');
+		//this.areaLabel.setBorderColor({r: 0, g: 0, b: 0, a: 0.8});
+		//this.areaLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 0.3});
+		//this.areaLabel.setTextColor({r: 180, g: 220, b: 180, a: 1.0});
+		//this.areaLabel.material.depthTest = false;
+		//this.areaLabel.material.opacity = 1;
+		//this.areaLabel.visible = false; ;
+		//this.add(this.areaLabel);
 	}
 
 	createSphereMaterial () {
@@ -437,10 +437,10 @@ export class Measure extends THREE.Object3D {
 		}
 
 		{ // update area label
-			this.areaLabel.position.copy(centroid);
-			this.areaLabel.visible = this.showArea && this.points.length >= 3;
-			let msg = Utils.addCommas(this.getArea().toFixed(1)) + ' ' + this.lengthUnit.code + '\u00B2';
-			this.areaLabel.setText(msg);
+			//this.areaLabel.position.copy(centroid);
+			//this.areaLabel.visible = this.showArea && this.points.length >= 3;
+			//let msg = Utils.addCommas(this.getArea().toFixed(1)) + ' ' + this.lengthUnit.code + '\u00B2';
+			//this.areaLabel.setText(msg);
 		}
 	};
 

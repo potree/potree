@@ -353,10 +353,15 @@ function createLaneGeometriesOld(lanes) {
   }
 
   laneLeft.closed = false;
+  laneLeft.showDistances = false;
   window.viewer.scene.scene.add(laneLeft);
+
   laneSpine.closed = false;
+  laneSpine.showDistances = false;
   window.viewer.scene.scene.add(laneSpine);
+  
   laneRight.closed = false;
+  laneRight.showDistances = false;
   window.viewer.scene.scene.add(laneRight);
 
 

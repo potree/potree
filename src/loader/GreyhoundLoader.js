@@ -164,7 +164,10 @@ export class GreyhoundLoader{
 			}
 
 			GreyhoundUtils.fetch(serverURL + 'info', function (err, data) {
-				if (err) throw new Error(err);
+				if (err) {
+					callback(new Error(err));
+					return;
+				}
 
 				/* We parse the result of the info query, which should be a JSON
 				* datastructure somewhat like:
@@ -307,10 +310,7 @@ export class GreyhoundLoader{
 				);
 			});
 		} catch (e) {
-			console.log("loading failed: '" + url + "'");
-			console.log(e);
-
-			callback();
+			callback(e);
 		}
 	}
 

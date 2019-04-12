@@ -175,6 +175,9 @@
 			head.appendChild(style);
 		}
 
+		const vizConfiguration = "aptiv-map-supplier-assessment";
+		// let vizConfiguration = "";
+
     const s3 = bucket && region && name && accessKeyId && secretAccessKey &&
           new AWS.S3({apiVersion: '2006-03-01',
                       region,
@@ -213,8 +216,20 @@
       // $("#splat_quality_options_hq").trigger("click"); // NOTE: HQ Splat breaks OrthographicCamera
       // viewer.scene.view.position.set(300198.109, 4701144.537, 349.871);
       // viewer.scene.view.lookAt(new THREE.Vector3(299900.954, 4701576.919, 66.197));
-			updateSidebar();
+			updateSidebar(vizConfiguration);
 
+
+			if (vizConfiguration == "aptiv-map-supplier-assessment") {
+				viewer.setCameraMode(Potree.CameraMode.ORTHOGRAPHIC);
+				viewer.scene.view.maxPitch = -Math.PI/2;
+
+				document.getElementById("playback_speed").style.display = "none";
+				document.getElementById("toggleslider").style.display = "none";
+				document.getElementById("toggle_calibration_panels").style.display = "none";
+				document.getElementById("load_detections_button").style.display = "none";
+				document.getElementById("load_radar_button").style.display = "none";
+				document.getElementById("load_gaps_button").style.display = "none";
+			}
 
 			// Check if Classification Attribute is exists in PointCloud:
 			try {
@@ -415,6 +430,7 @@
 	          object.scale.multiplyScalar(.01);
 						object.rotation.set(0*Math.PI / 2, 0*Math.PI/2., 1*Math.PI/2.0); // Chevy Volt
 						object.position.sub(new THREE.Vector3(0, 0, 2)); // Chevy Volt
+						// object.position.add(new THREE.Vector3(0,0,1000))
 
 						// Initialize Vehicle Group:
 						vehicleGroup.position.set(...pos[0]);
@@ -519,6 +535,9 @@
 					let rtkPoint = state.pose.clone();
 					let vehicleOrientation = state.orient.clone();
 					vehicle.position.copy(rtkPoint);
+					if (vizConfiguration == "aptiv-map-supplier-assessment") {
+						vehicle.position.add(new THREE.Vector3(0, 0, 1000));
+					}
 					applyRotation(vehicle, vehicleOrientation.x, vehicleOrientation.y, vehicleOrientation.z);
 					vehicle.updateMatrixWorld();
 
@@ -652,6 +671,58 @@
 				});
 			});
 
+			if (vizConfiguration == "aptiv-map-supplier-assessment") {
+
+				supplierNum = 1;
+				filename = 'Supplier1_EB.fb';
+				await loadLanes(s3, bucket, name, filename, 1, (laneGeometries) => {
+
+					let lanesLayer = new THREE.Group();
+					lanesLayer.name = "Supplier1";
+					for (let ii=0, len=laneGeometries.all.length; ii<len; ii++) {
+						lanesLayer.add(laneGeometries.all[ii]);
+					}
+					viewer.scene.scene.add(lanesLayer);
+					viewer.scene.dispatchEvent({
+						"type": "map_provider_layer_added",
+						"mapLayer": lanesLayer
+					});
+				});
+
+				supplierNum = 2;
+				filename = "Supplier2_EB.fb";
+				await loadLanes(s3, bucket, name, filename, supplierNum, (laneGeometries) => {
+
+					let lanesLayer = new THREE.Group();
+					lanesLayer.name = "Supplier2";
+					for (let ii=0, len=laneGeometries.all.length; ii<len; ii++) {
+						lanesLayer.add(laneGeometries.all[ii]);
+					}
+					viewer.scene.scene.add(lanesLayer);
+					viewer.scene.dispatchEvent({
+						"type": "map_provider_layer_added",
+						"mapLayer": lanesLayer
+					});
+				});
+
+				supplierNum = 3;
+				filename = "Supplier3_EB.fb";
+				await loadLanes(s3, bucket, name, filename, supplierNum, (laneGeometries) => {
+
+					let lanesLayer = new THREE.Group();
+					lanesLayer.name = "Supplier3";
+					for (let ii=0, len=laneGeometries.all.length; ii<len; ii++) {
+						lanesLayer.add(laneGeometries.all[ii]);
+					}
+					viewer.scene.scene.add(lanesLayer);
+					viewer.scene.dispatchEvent({
+						"type": "map_provider_layer_added",
+						"mapLayer": lanesLayer
+					});
+				});
+
+			}
+
 			filename = 'lanes2.fb';
 			supplierNum = 4;
 			await loadLanes(s3, bucket, name, filename, supplierNum, (laneGeometries) => {
@@ -665,54 +736,6 @@
 				viewer.scene.dispatchEvent({
 					"type": "truth_layer_added",
 					"truthLayer": lanesLayer
-				});
-			});
-
-			supplierNum = 1;
-			filename = 'Supplier1_EB.fb';
-			await loadLanes(s3, bucket, name, filename, 1, (laneGeometries) => {
-
-				let lanesLayer = new THREE.Group();
-				lanesLayer.name = "Supplier1";
-				for (let ii=0, len=laneGeometries.all.length; ii<len; ii++) {
-					lanesLayer.add(laneGeometries.all[ii]);
-				}
-				viewer.scene.scene.add(lanesLayer);
-				viewer.scene.dispatchEvent({
-					"type": "map_provider_layer_added",
-					"mapLayer": lanesLayer
-				});
-			});
-
-			supplierNum = 2;
-			filename = "Supplier2_EB.fb";
-			await loadLanes(s3, bucket, name, filename, supplierNum, (laneGeometries) => {
-
-				let lanesLayer = new THREE.Group();
-				lanesLayer.name = "Supplier2";
-				for (let ii=0, len=laneGeometries.all.length; ii<len; ii++) {
-					lanesLayer.add(laneGeometries.all[ii]);
-				}
-				viewer.scene.scene.add(lanesLayer);
-				viewer.scene.dispatchEvent({
-					"type": "map_provider_layer_added",
-					"mapLayer": lanesLayer
-				});
-			});
-
-			supplierNum = 3;
-			filename = "Supplier3_EB.fb";
-			await loadLanes(s3, bucket, name, filename, supplierNum, (laneGeometries) => {
-
-				let lanesLayer = new THREE.Group();
-				lanesLayer.name = "Supplier3";
-				for (let ii=0, len=laneGeometries.all.length; ii<len; ii++) {
-					lanesLayer.add(laneGeometries.all[ii]);
-				}
-				viewer.scene.scene.add(lanesLayer);
-				viewer.scene.dispatchEvent({
-					"type": "map_provider_layer_added",
-					"mapLayer": lanesLayer
 				});
 			});
 
@@ -983,7 +1006,6 @@ $(document).ready(() => {
 		      const material = pointcloud.material;
 		      console.log(pointcloud.pcoGeometry.nodes.r.gpsTime);
 		      viewer.scene.addPointCloud(pointcloud);
-					viewer.switchCameraMode(Potree.CameraMode.ORTHOGRAPHIC);
 		      material.pointColorType = Potree.PointColorType.INTENSITY; // any Potree.PointColorType.XXXX
 					material.gradient = Potree.Gradients.GRAYSCALE; // Can define custom gradient or look up in Potree.Gradients
 		      material.size = 0.09;

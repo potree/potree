@@ -2,7 +2,7 @@
 import os
 import sys
 sys.path.append(os.path.join(sys.path[0], '..', '..', 'build', 'DataSchemas', 'include', 'DataSchemas'))
-
+import parser
 import argparse
 import json
 import numpy as np
@@ -68,6 +68,7 @@ def getLinesFromJson(inputFileLeft, inputFileRight):
     # Get Left/Right Line Vertices
     for i in range(len(leftData)):
         laneLefts.append(  getXYZ(leftData[i]) )
+    for i in range(len(rightData)):
         laneRights.append( getXYZ(rightData[i]) )
 
     # Compute Spine Vertices (using left lane as reference):
@@ -80,10 +81,10 @@ def getLinesFromJson(inputFileLeft, inputFileRight):
         laneSpines.append([spinePt.x, spinePt.y, spinePt.z])
 
     # Convert to Numpy arrays:
-    numVertices = len(laneLefts)
-    laneSpines = np.array(laneSpines[:numVertices])
-    laneLefts = np.array(laneLefts[:numVertices])
-    laneRights = np.array(laneRights[:numVertices])
+
+    laneSpines = np.array(laneSpines[:len(laneSpines)])
+    laneLefts = np.array(laneLefts[:len(laneLefts)])
+    laneRights = np.array(laneRights[:len(laneRights)])
 
     laneSegments.append({
         "left": laneLefts,
@@ -157,8 +158,15 @@ def outputFlatbuffer(laneSegments, outputFile):
 
 if __name__ == "__main__":
 
-    inputDir = 'input'
-    outputDir = 'output'
+    parser = argparse.ArgumentParser(description='Perform assessment on data serialized by the Veritas LidarPerception module.')
+
+    parser.add_argument('--inputDir', type=str, help='Directory containing serialized data')
+    parser.add_argument('--outputDir', type=str, help='Directory containing serialized data')
+
+    args = parser.parse_args()
+
+    inputDir = args.inputDir
+    outputDir = args.outputDir
 
     inputFileLeft = os.path.join(inputDir, "lane-left.json")
     inputFileRight = os.path.join(inputDir, "lane-right.json")

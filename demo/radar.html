@@ -214,6 +214,7 @@
       // viewer.scene.view.position.set(300198.109, 4701144.537, 349.871);
       // viewer.scene.view.lookAt(new THREE.Vector3(299900.954, 4701576.919, 66.197));
 			updateSidebar();
+			removeLoadingScreen();
 
 
 			// Check if Classification Attribute is exists in PointCloud:
@@ -227,6 +228,8 @@
 
 		// Create AnimationEngine:
 		window.animationEngine = new AnimationEngine();
+		animationEngine.configure(0,1);
+		animationEngine.launch();
 
 		// TODO put these material definitions somewhere better
 		// uniforms

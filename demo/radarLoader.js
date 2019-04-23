@@ -23,7 +23,6 @@ export async function loadRadar(s3, bucket, name, callback) {
     xhr.open("GET", filename);
     xhr.onload = function(data) {
       const {geometry, t_init} = parseRadar(data.target.response);
-      console.log("Full Runtime: "+(performance.now()-tstart)+"ms");
       callback(geometry, t_init);
     };
     xhr.send();
@@ -96,11 +95,6 @@ function parseRadar(radarString) {
     if (timestamps.length > 0) geometry.addAttribute('gpsTime', new THREE.Float32BufferAttribute(timestamps, 1));
     if (colors.length > 0) geometry.addAttribute('color', new THREE.Uint8BufferAttribute(colors, 3));
     if (alphas.length > 0) geometry.addAttribute('alpha', new THREE.Float32BufferAttribute(alphas, 1));
-
-    console.log("timestamps");
-    console.log(timestamps);
-    console.log(positions);
-    console.log("Loop Runtime: "+(performance.now()-t0_loop)+"ms");
 
     // callback(geometry, t_init);
     let boxBufferGeometries = new THREE.BufferGeometry().fromGeometry(boxGeometries);

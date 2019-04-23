@@ -150,7 +150,6 @@
 		const runForLocalDevelopment = location.search === "" && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
 
 		const params = new URLSearchParams(location.search);
-		console.log(location);
 		const bucket = params.get("bucket");
 		const region = params.get("region");
 		const name = params.get("name");
@@ -187,7 +186,6 @@
     // We really want this, but it doesn't work in the browser. Only on a server.
     // const stream = s3.getObject({Bucket: bucket,
     //                              Key: name}).createReadStream();
-    // console.log(stream);
 
     window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
 
@@ -231,7 +229,6 @@
 		window.animationEngine = new AnimationEngine();
 
 		// TODO put these material definitions somewhere better
-		// uniforms
 		let uniforms = {
 					color: { value: new THREE.Color( 0x00ff00 ) },
 					minGpsTime: {value: 0.0 },
@@ -337,7 +334,6 @@
 	        let line = new THREE.Line(geometry, material, {closed: closedPath});
 	        line.name = "rtk";
 	        viewer.scene.scene.add(line);
-	        console.log("Rendered Path");
 	      }
 
 	      // CREATE VEHICLE OBJECT:
@@ -353,7 +349,6 @@
 	      let onProgress = function ( xhr ) {
 	        if ( xhr.lengthComputable ) {
 	          let percentComplete = xhr.loaded / xhr.total * 100;
-	          console.log( Math.round(percentComplete, 2) + '% downloaded' );
 	        }
 	      };
 	      texture.wrapS = THREE.RepeatWrapping;
@@ -363,10 +358,7 @@
 	      let material = new THREE.MeshNormalMaterial( {side: THREE.DoubleSide, opacity: 0.92,transparent:true});
 	      let sphere = new THREE.Mesh( geometry, material );
 	      sphere.position.copy(new THREE.Vector3(...pos[0]));
-	      console.log(sphere);
-
 	      // viewer.scene.scene.add( sphere );
-	      console.log("Sphere added");
 
 
 	      { // Load Textured vehicle from obj
@@ -438,8 +430,6 @@
 
 						viewer.setFilterGPSTimeRange(0, 0); // Size 0 Time Window at start of timeline
 						removeLoadingScreen();
-
-
 	        }, onProgress, onError );
 	      }
 
@@ -477,16 +467,6 @@
 							animationEngine.timeline.t = val*animationEngine.timeRange + animationEngine.tstart;
 							animationEngine.updateTimeForAll();
 						});
-
-						window.addEventListener("keypress", (e) => {
-							// if (e.charCode == 32) {
-				      //     if (toggleplay.checked) {
-				      //       animationEngine.start();
-				      //     } else {
-				      //       animationEngine.stop();
-				      //     }
-				      //   }
-							});
 
 							zmin.addEventListener("input", () => {
 								window.elevationWindow.min = Math.abs(Number(zmin.value));
@@ -536,8 +516,6 @@
 					if (Math.abs(viewer.scene.view.pitch) < window.pitchThreshold) {
 						viewer.scene.view.lookAt(target.applyMatrix4(deltaTransform));
 					}
-					console.log("View Yaw: ", viewer.scene.view.yaw);
-					console.log("View Pitch: ", viewer.scene.view.pitch);
 
 					// Set Elevation:
 					// let elevationDeltaMin = -0;
@@ -579,7 +557,6 @@
 		// List of all Tween Target Update Functions:
 		// TODO Organize these (move them to the right place)
 		{
-
 			// PointCloud:
 			animationEngine.tweenTargets.push((gpsTime) => {
 				// debugger; // account for pointcloud offset
@@ -629,10 +606,8 @@
 		}
 
 
-		// TODO Just for testing:
-		// tweenInitAll();
-
-
+// TODO Just for testing:
+// tweenInitAll();
 
 // TODO FROM HERE
 		// Load Lanes Truth Data:
@@ -694,27 +669,6 @@ $(document).ready(() => {
 		}
 	});
 });
-
-	// let gapShaderMaterial = shaderMaterial.clone();
-	// gapShaderMaterial.uniforms.color.value = new THREE.Color(0x0000ff);
-	// loadGaps(s3, bucket, name, gapShaderMaterial, animationEngine, (gapGeometries) => {
-	//
-	// 	// TODO TESTING -- REMOVE
-	// 	// debugger;
-	// 	for (let ii=0, len=gapGeometries.left.length; ii<len; ii++) {
-	// 		// if (ii < 1000) {
-	// 			viewer.scene.scene.add(gapGeometries.left[ii]);
-	// 		// }
-	// 		animationEngine.tweenTargets.push((gpsTime) => {
-	// 			let currentTime = gpsTime - animationEngine.tstart;
-	// 			gapShaderMaterial.uniforms.minGpsTime.value = currentTime - 0.05;
-	// 			gapShaderMaterial.uniforms.maxGpsTime.value = currentTime + 0.05;
-	// 		});
-	// 	}
-	// });
-// TODO TILL HERE
-
-
 
 // TODO FROM HERE
 		// TODO Move this somewhere else
@@ -915,7 +869,6 @@ $(document).ready(() => {
 				Potree.loadPointCloud("../pointclouds/test/cloud.js", "full-cloud", e => {
 					const pointcloud = e.pointcloud;
 		      const material = pointcloud.material;
-		      console.log(pointcloud.pcoGeometry.nodes.r.gpsTime);
 		      viewer.scene.addPointCloud(pointcloud);
 		      material.pointColorType = Potree.PointColorType.INTENSITY; // any Potree.PointColorType.XXXX
 					material.gradient = Potree.Gradients.GRAYSCALE; // Can define custom gradient or look up in Potree.Gradients
@@ -930,7 +883,6 @@ $(document).ready(() => {
         Potree.loadPointCloud({s3, bucket, name}, "basemap", e => {
 		      const pointcloud = e.pointcloud;
 		      const material = pointcloud.material;
-		      console.log(pointcloud.pcoGeometry.nodes.r.gpsTime);
 		      viewer.scene.addPointCloud(pointcloud);
 		      material.pointColorType = Potree.PointColorType.COLOR; // any Potree.PointColorType.XXXX
 		      material.color = new THREE.Color().setRGB(0.99, 0.99, 0.99);
@@ -947,7 +899,6 @@ $(document).ready(() => {
         Potree.loadPointCloud({s3, bucket, name}, "fullcloud", e => {
 		      const pointcloud = e.pointcloud;
 		      const material = pointcloud.material;
-		      console.log(pointcloud.pcoGeometry.nodes.r.gpsTime);
 		      viewer.scene.addPointCloud(pointcloud);
 		      material.pointColorType = Potree.PointColorType.HEIGHT; // any Potree.PointColorType.XXXX
 		      material.size = 0.09;
@@ -962,7 +913,6 @@ $(document).ready(() => {
         Potree.loadPointCloud({s3, bucket, name: 'Data/basemap-demo'}, "basemap", e => {
 		      const pointcloud = e.pointcloud;
 		      const material = pointcloud.material;
-		      console.log(pointcloud.pcoGeometry.nodes.r.gpsTime);
 		      viewer.scene.addPointCloud(pointcloud);
 		      material.pointColorType = Potree.PointColorType.COLOR; // any Potree.PointColorType.XXXX
 		      material.color = new THREE.Color().setRGB(0.99, 0.99, 0.99);
@@ -974,7 +924,6 @@ $(document).ready(() => {
         Potree.loadPointCloud({s3, bucket, name}, name.substring(5), e => {
 		      const pointcloud = e.pointcloud;
 		      const material = pointcloud.material;
-		      console.log(pointcloud.pcoGeometry.nodes.r.gpsTime);
 		      viewer.scene.addPointCloud(pointcloud);
 		      material.pointColorType = Potree.PointColorType.INTENSITY; // any Potree.PointColorType.XXXX
 					material.gradient = Potree.Gradients.GRAYSCALE;
@@ -994,9 +943,6 @@ $(document).ready(() => {
 					}
 		    });
       }
-
 		</script>
-
-
   </body>
 </html>

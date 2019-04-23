@@ -115,7 +115,6 @@
 			let pointcloud = viewer.scene.pointclouds[0];
 
 			let fitted = pointcloud.root.getFittedBox(volume);
-			console.log(fitted);
 			volume.scale.copy(fitted.scale);
 			volume.position.copy(fitted.position);
 

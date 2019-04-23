@@ -41,7 +41,6 @@ $(document).ready(function () {
     // Define function to update clip range:
     function updateClip(disable=false) {
 
-      console.log(window.viewer.scene); // gpstime
       const lidarOffset = window.animationEngine.tstart;
       const lidarRange = window.animationEngine.timeRange;
 
@@ -58,7 +57,6 @@ $(document).ready(function () {
         var sliderVal = $("#myRange").val() / 100.;
         var t = sliderVal * lidarRange + lidarOffset;
         $("#demo").html((t-lidarOffset).toFixed(4));
-        console.log(document.getElementById("demo").innerHTML);
 
         // var dtMin = Number($("#playbar_tmin").val());
         // var dtMax = Number($("#playbar_tmax").val());
@@ -79,7 +77,6 @@ $(document).ready(function () {
       if (slideval) {
         var slider = playbarhtml.find("#myRange");
         slider.val(slideval);
-        console.log("New Value: ", slider.val());
       }
 
       updateClip();
@@ -87,40 +84,32 @@ $(document).ready(function () {
     }
 
     playbarhtml.find("#playbar_tmin").on('input', function() {
-      console.log("TMIN");
       const tmin = playbarhtml.find("#playbar_tmin");
       window.animationEngine.activeWindow.backward = Math.abs(Number(tmin.val()));
       updateClip();
     });
 
     playbarhtml.find("#playbar_tmax").on('input', function() {
-      console.log("TMAX");
       const tmax = playbarhtml.find("#playbar_tmax");
       window.animationEngine.activeWindow.forward = Math.abs(Number(tmax.val()));
       updateClip();
     });
 
     playbarhtml.find("#elevation_max").on('input', function() {
-      console.log("Elevation_MAX");
       const elevationMax = playbarhtml.find("#elevation_max");
       window.elevationWindow[1] = Math.abs(Number(elevationMax.val()));
     });
 
     playbarhtml.find("#elevation_min").on('input', function() {
-      console.log("Elevation_MIN");
       const elevationMin = playbarhtml.find("#elevation_min");
       window.elevationWindow[0] = Math.abs(Number(elevationMin.val()));
     });
 
     playbarhtml.find("#myRange").on('input', function() {
-      console.log("SLIDER");
-
       updateSlider();
     });
 
     playbarhtml.find("#myRange").on('wheel', function(e) {
-      console.log("SCROLL");
-      console.log(e.originalEvent.deltaY);
       var slider = playbarhtml.find("#myRange");
       // var tmin = playbarhtml.find("#playbar_tmin");
       // var tmax = playbarhtml.find("#playbar_tmax");
@@ -131,7 +120,6 @@ $(document).ready(function () {
       const tmax = window.animationEngine.activeWindow.forward;
 
       var scalefactor = 1;
-      console.log(e.originalEvent.shiftKey);
       if (e.originalEvent.shiftKey) {
         scalefactor = .01;
         if (e.originalEvent.ctrlKey) { // shift and ctrl keys
@@ -144,7 +132,6 @@ $(document).ready(function () {
        // lidarRange = window.viewer.scene.pointclouds[0].pcoGeometry.nodes.r.gpsTime.range;
        lidarRange = window.animationEngine.timeRange;
      } catch (e) {
-       console.log(e);
      }
       var stepY = 0;
       if (dy < 0) {
@@ -167,38 +154,20 @@ $(document).ready(function () {
     });
 
     playbarhtml.find("#playbar_toggle").click(function() {
-      console.log("Temp Button");
       updateClip(disable=this.checked);
     });
     playbarhtml.find("#playbar_toggle").trigger('click');
 
     playbarhtml.find("#playbutton").mousedown(function() {
-      console.log("PLAY");
       playbarhtml.find("#playbutton").hide();
       playbarhtml.find("#pausebutton").show();
 
     });
 
     playbarhtml.find("#pausebutton").mousedown(function() {
-      console.log("PAUSE");
       playbarhtml.find("#playbutton").show();
       playbarhtml.find("#pausebutton").hide();
 
-    });
-
-    window.addEventListener("keypress", (e) => {
-      console.log("keypress");
-      console.log(e);
-      // if (e.charCode == 32) {
-      //   console.log("SPACEBAR");
-      //   var toggleplay = playbarhtml.find("#toggleplay");
-      //   toggleplay.trigger('click');
-      //     if (toggleplay.is(":checked")) {
-      //       playbarhtml.find("#playbutton").trigger('mousedown');
-      //     } else {
-      //       playbarhtml.find("#pausebutton").trigger('mousedown');
-      //     }
-      //   }
     });
 
     playbarhtml.find("#toggle_calibration_panels").mouseup(function() {

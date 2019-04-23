@@ -22,7 +22,6 @@ export async function loadGaps(s3, bucket, name, shaderMaterial, animationEngine
                      } else {
                        const FlatbufferModule = await import(schemaUrl);
                        const gapGeometries = parseGaps(data.Body, shaderMaterial, FlatbufferModule, animationEngine);
-                       console.log("Full Runtime: "+(performance.now()-tstart)+"ms");
                        callback( gapGeometries );
                      }});
     })();
@@ -38,7 +37,6 @@ export async function loadGaps(s3, bucket, name, shaderMaterial, animationEngine
 
     xhr.onprogress = function(event) {
       t1 = performance.now();
-      console.log("Loaded ["+event.loaded+"] bytes in ["+(t1-t0)+"] ms")
       t0 = t1;
     }
 
@@ -54,7 +52,6 @@ export async function loadGaps(s3, bucket, name, shaderMaterial, animationEngine
 
       let bytesArray = new Uint8Array(response);
       const gapGeometries = parseGaps(bytesArray, shaderMaterial, FlatbufferModule, animationEngine);
-      console.log("Full Runtime: "+(performance.now()-tstart)+"ms");
       callback( gapGeometries );
     };
 

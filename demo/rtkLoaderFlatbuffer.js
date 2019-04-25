@@ -43,13 +43,11 @@ export async function loadRtkFlatbuffer(s3, bucket, name, callback) {
 
     xhr.onprogress = function(event) {
       t1 = performance.now();
-      console.log("Loaded ["+event.loaded+"] bytes in ["+(t1-t0)+"] ms")
       t0 = t1;
     }
 
     xhr.onload = function(data) {
       const {mpos, orientations, timestamps, t_init, t_range} = parseRTK(new Uint8Array(data.target.response));
-      console.log("Full Runtime: "+(performance.now()-tstart)+"ms");
       callback(mpos, orientations, timestamps, t_init, t_range);
     };
 
@@ -108,7 +106,5 @@ function parseRTK(bytesArray, FlatbufferModule) {
     // rtkPoses.push(pose);
     segOffset += segSize;
   }
-
-  console.log("Loop Runtime: "+(performance.now()-t0_loop)+"ms");
   return {mpos, orientations, timestamps, t_init, t_range};
 }

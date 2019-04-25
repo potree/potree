@@ -19,7 +19,6 @@ export async function loadLanes(s3, bucket, name, callback) {
                      } else {
                        const FlatbufferModule = await import(schemaUrl);
                        const laneGeometries = parseLanes(data.Body, FlatbufferModule);
-                       console.log("Full Runtime: "+(performance.now()-tstart)+"ms");
                        callback( laneGeometries );
                      }});
     })();
@@ -35,7 +34,6 @@ export async function loadLanes(s3, bucket, name, callback) {
 
     xhr.onprogress = function(event) {
       t1 = performance.now();
-      console.log("Loaded ["+event.loaded+"] bytes in ["+(t1-t0)+"] ms")
       t0 = t1;
     }
 
@@ -51,7 +49,6 @@ export async function loadLanes(s3, bucket, name, callback) {
 
       let bytesArray = new Uint8Array(response);
       const laneGeometries = parseLanes(bytesArray, FlatbufferModule);
-      console.log("Full Runtime: "+(performance.now()-tstart)+"ms");
       callback( laneGeometries );
     };
 

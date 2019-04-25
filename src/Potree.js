@@ -113,7 +113,6 @@ export function loadPointCloud(path, name, callback){
 		// TODO: callback? comment? Hello? Bueller? Anyone?
         } else if (typeof path === "object") {
           const {s3, bucket, name} = path;
-          console.log("loadPointCloud S3");
                 POCLoader.loadS3(s3, bucket, name, function (geometry) {
 			if (!geometry) {
 				//callback({type: 'loading_failed'});
@@ -221,7 +220,7 @@ export function loadPointCloud(path, name, callback){
 			});
 			elButtonContainer.find("label:first").each( (index, value) => {
 				$(value).css("border-radius", "4px 0px 0px 4px");
-				
+
 			});
 			elButtonContainer.find("label:last").each( (index, value) => {
 				$(value).css("border-radius", "0px 4px 4px 0px");

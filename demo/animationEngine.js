@@ -2,7 +2,6 @@
 class AnimationEngine {
 
   constructor() {
-    console.log("Animation Engine Created");
 
     // TODO Use TWEEN.Group()....doesn't work though...why? It's in the documentation
     // this.tweenGroup = TWEEN.Group(); // Tween Group containing all animated objects
@@ -21,7 +20,6 @@ class AnimationEngine {
   }
 
   configure(tstart, tend, playbackRate, tweenTargets, repeat) {
-    console.log("Animation Engine Configured");
     this.tstart = tstart;
     this.tend = tend;
     this.timeline = {t: tstart};
@@ -34,7 +32,6 @@ class AnimationEngine {
   }
 
   launch() {
-    console.log("Launching Animation Engine");
     let durationMillis = this.timeRange*1000*this.playbackRate;
     this.tweenEngine = new TWEEN.Tween(this.timeline).to({t:this.tend}, durationMillis);
     this.tweenEngine.easing(TWEEN.Easing.Linear.None);
@@ -72,24 +69,10 @@ class AnimationEngine {
   }
 
   updateTimeForAll(t) {
-    console.log("Animation Engine Time: ", this.timeline.t);
-    console.log("Animation Tween Time: ", t);
 
     // Update all targets with current time
     for(let ii=0, len=this.tweenTargets.length; ii<len; ii++) {
       this.tweenTargets[ii](this.timeline.t);
     }
   }
-}
-
-function test1(t) {
-  console.log("test function 1: ", t);
-}
-
-function test2(t) {
-  console.log("test function 2: ", t);
-}
-
-function test3(t) {
-  console.log("test function 3: ", t);
 }

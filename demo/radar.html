@@ -228,6 +228,9 @@
 				document.getElementById("load_detections_button").style.display = "none";
 				document.getElementById("load_radar_button").style.display = "none";
 				document.getElementById("load_gaps_button").style.display = "none";
+				document.getElementById("camera_projection_options").children[0].children[1].children[0].style.display = "none"; // Hide projective camera option
+				document.getElementById("playbar_tmax").value = 0;
+				document.getElementById("playbar_tmin").value = 0;
 			}
 
 			// Check if Classification Attribute is exists in PointCloud:

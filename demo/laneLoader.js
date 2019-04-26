@@ -4,12 +4,21 @@
 export async function loadLanes(s3, bucket, name, fname, supplierNum, callback) {
   const tstart = performance.now();
 
+  // Logic for dealing with Map Supplier Data:
   const resolvedFilename = fname || 'lanes.fb';
   const resolvedSupplierNum = supplierNum || -1;
+  let folderName = "2_Truth";
+  let sep = "/";
+  let datasetName = name;
+  if (supplierNum > 0) {
+    folderName = "";
+    sep = "";
+    datasetName = name.split("¶")[0];
+  }
 
   if (s3 && bucket && name) {
     (async () => {
-      const objectName = `${name}/2_Truth/${resolvedFilename}`;
+      const objectName = `${datasetName}/${folderName}${sep}${resolvedFilename}`;
       const schemaFile = `${name}/5_Schemas/GroundTruth_generated.js`;
 
       const schemaUrl = s3.getSignedUrl('getObject', {
@@ -40,7 +49,6 @@ export async function loadLanes(s3, bucket, name, fname, supplierNum, callback) 
 
     xhr.onprogress = function(event) {
       t1 = performance.now();
-      console.log("Loaded ["+event.loaded+"] bytes in ["+(t1-t0)+"] ms")
       t0 = t1;
     }
 
@@ -56,7 +64,6 @@ export async function loadLanes(s3, bucket, name, fname, supplierNum, callback) 
 
       let bytesArray = new Uint8Array(response);
       const laneGeometries = parseLanes(bytesArray, FlatbufferModule, resolvedSupplierNum);
-      console.log("Full Runtime: "+(performance.now()-tstart)+"ms");
       callback( laneGeometries );
     };
 
@@ -206,7 +213,7 @@ function createLaneGeometriesOld(lanes, supplierNum) {
   let materialLeft, materialSpine, materialRight;
   switch (supplierNum) {
 
-    case 4:
+    case -2:
       materialLeft = new THREE.MeshBasicMaterial({color: 0x11870a});
       materialSpine = new THREE.MeshBasicMaterial({color: 0x11870a});
       materialRight = new THREE.MeshBasicMaterial({color: 0x11870a});

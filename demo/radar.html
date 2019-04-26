@@ -147,8 +147,7 @@
 
 		// setLoadingScreen();
 
-		// const runForLocalDevelopment = location.search === "" && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-		let runForLocalDevelopment = false;
+		const runForLocalDevelopment = location.search === "" && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
 
 		const params = new URLSearchParams(location.search);
 		const bucket = params.get("bucket");
@@ -161,13 +160,7 @@
 		const sessionToken = params.get("key3");
 		const fonts =  JSON.parse(params.get("fonts"));
 		const theme = JSON.parse(params.get("theme")); // material-ui theme
-
 		const comparisonDatasets = names.filter(element => element !== name);
-		console.log("Clicked: ", name);
-		console.log("Others: ", comparisonDatasets);
-		console.log("All: ", names);
-		console.log("accessKeyId: ", accessKeyId);
-		console.log("secretAccessKey: ", secretAccessKey);
 
 		if (fonts) {
 			const head = document.head;
@@ -193,8 +186,6 @@
 							});
 
     if (!(s3 || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) { window.history.back() };
-		console.log(s3);
-		debugger;
     // We really want this, but it doesn't work in the browser. Only on a server.
     // const stream = s3.getObject({Bucket: bucket,
     //                              Key: name}).createReadStream();
@@ -226,7 +217,6 @@
       // viewer.scene.view.position.set(300198.109, 4701144.537, 349.871);
       // viewer.scene.view.lookAt(new THREE.Vector3(299900.954, 4701576.919, 66.197));
 			updateSidebar(visualizationMode);
-
 
 			if (visualizationMode == "aptivLanes") {
 				viewer.setCameraMode(Potree.CameraMode.ORTHOGRAPHIC);
@@ -433,7 +423,6 @@
 	          object.scale.multiplyScalar(.01);
 						object.rotation.set(0*Math.PI / 2, 0*Math.PI/2., 1*Math.PI/2.0); // Chevy Volt
 						object.position.sub(new THREE.Vector3(0, 0, 2)); // Chevy Volt
-						// object.position.add(new THREE.Vector3(0,0,1000))
 
 						// Initialize Vehicle Group:
 						vehicleGroup.position.set(...pos[0]);
@@ -634,15 +623,15 @@
 		}
 
 
-// TODO Just for testing:
-// tweenInitAll();
+		// TODO Just for testing:
+		// tweenInitAll();
 
 // TODO FROM HERE
 		// Load Lanes Truth Data:
 		async function loadLanesCallback(s3, bucket, name) {
 
 			let filename, tmpSupplierNum;
-			tmpSupplierNum = 0;
+			tmpSupplierNum = -1;
 			await loadLanes(s3, bucket, name, filename, tmpSupplierNum, (laneGeometries) => {
 
 				let lanesLayer = new THREE.Group();
@@ -662,18 +651,17 @@
 				const laneNum = [1,2,3];
 				const laneDirection = ["EB", "WB"];
 				const supplierNum = [1,2,3];
-				let filename, layerName, datasetName;
-				datasetName = name..split("¶")[0];
+				let filename, datasetName;
 
 				for (let s of supplierNum) {
 					for (let d of laneDirection) {
 						for (let n of laneNum) {
 							try {
-								layerName = `Supplier${s}_${d}_Lane${n}`;
+
+								let layerName = `Supplier${s}_${d}_Lane${n}`;
 								filename = `Supplier${s}_${d}_Lane${n}.fb`;
 
-								await loadLanes(s3, bucket, datasetName, filename, 1, (laneGeometries) => {
-
+								await loadLanes(s3, bucket, name, filename, s, (laneGeometries) => {
 									let lanesLayer = new THREE.Group();
 									lanesLayer.name = layerName;
 									for (let ii=0, len=laneGeometries.all.length; ii<len; ii++) {
@@ -685,72 +673,23 @@
 										"mapLayer": lanesLayer
 									});
 								});
-
 							} catch (e) {
 								console.log(`Couldn't load ${filename}: ${e}`);
 							}
 						}
 					}
 				}
-
-				// supplierNum = 1;
-				// filename = 'Supplier1_EB.fb';
-				// await loadLanes(s3, bucket, name, filename, 1, (laneGeometries) => {
-				//
-				// 	let lanesLayer = new THREE.Group();
-				// 	lanesLayer.name = "Supplier1";
-				// 	for (let ii=0, len=laneGeometries.all.length; ii<len; ii++) {
-				// 		lanesLayer.add(laneGeometries.all[ii]);
-				// 	}
-				// 	viewer.scene.scene.add(lanesLayer);
-				// 	viewer.scene.dispatchEvent({
-				// 		"type": "map_provider_layer_added",
-				// 		"mapLayer": lanesLayer
-				// 	});
-				// });
-				//
-				// supplierNum = 2;
-				// filename = "Supplier2_EB.fb";
-				// await loadLanes(s3, bucket, name, filename, supplierNum, (laneGeometries) => {
-				//
-				// 	let lanesLayer = new THREE.Group();
-				// 	lanesLayer.name = "Supplier2";
-				// 	for (let ii=0, len=laneGeometries.all.length; ii<len; ii++) {
-				// 		lanesLayer.add(laneGeometries.all[ii]);
-				// 	}
-				// 	viewer.scene.scene.add(lanesLayer);
-				// 	viewer.scene.dispatchEvent({
-				// 		"type": "map_provider_layer_added",
-				// 		"mapLayer": lanesLayer
-				// 	});
-				// });
-				//
-				// supplierNum = 3;
-				// filename = "Supplier3_EB.fb";
-				// await loadLanes(s3, bucket, name, filename, supplierNum, (laneGeometries) => {
-				//
-				// 	let lanesLayer = new THREE.Group();
-				// 	lanesLayer.name = "Supplier3";
-				// 	for (let ii=0, len=laneGeometries.all.length; ii<len; ii++) {
-				// 		lanesLayer.add(laneGeometries.all[ii]);
-				// 	}
-				// 	viewer.scene.scene.add(lanesLayer);
-				// 	viewer.scene.dispatchEvent({
-				// 		"type": "map_provider_layer_added",
-				// 		"mapLayer": lanesLayer
-				// 	});
-				// });
-
 			}
 
 			// Load Comparison Dataset (hardcoded to one for now)
+			debugger;
 			if (comparisonDatasets.length > 0) {
 				filename = 'lanes.fb';
-				supplierNum = 4;
-				await loadLanes(s3, bucket, comparisonDatasets[0], filename, supplierNum, (laneGeometries) => {
+				tmpSupplierNum = -2;
+				await loadLanes(s3, bucket, comparisonDatasets[0], filename, tmpSupplierNum, (laneGeometries) => {
 
 					let lanesLayer = new THREE.Group();
-					lanesLayer.name = "Lanes-Comparison";
+					lanesLayer.name = `Lanes-${comparisonDatasets[0].split("Data/")[1]}`;
 					for (let ii=0, len=laneGeometries.all.length; ii<len; ii++) {
 						lanesLayer.add(laneGeometries.all[ii]);
 					}

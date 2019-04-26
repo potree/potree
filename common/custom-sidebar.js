@@ -93,7 +93,7 @@ export function updateSidebar(vizConfiguration) {
   window.viewer.scene.addEventListener("assessments_layer_added", onAssessmentsLayerAdded);
 
 
-  if (vizConfiguration == "aptiv-map-supplier-assessment") {
+  if (vizConfiguration == "aptivLanes") {
     const HdMapProvidersTree = tree.jstree('create_node', "#", { "text": "<b>HD Map Providers</b>", "id": "HdMapProvidersViz"}, "last", false, false);
     tree.jstree("check_node", HdMapProvidersTree);
     let onMapProviderLayerAdded = (e) => {

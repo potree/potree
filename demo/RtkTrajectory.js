@@ -59,7 +59,6 @@ class RtkState {
 class RtkTrajectory {
 
   constructor(posesVec3, orientationsVec3, timestamps, samplingFreq) {
-    console.log("Initializing RTK Trajectory");
     // NOTE: Assumptions are:
     //        -- timestamps are sorted
     //        -- and dt between timestamps is 1/samplingFreq (within some epsilon):

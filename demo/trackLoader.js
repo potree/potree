@@ -23,7 +23,6 @@ export function loadTracks(s3, bucket, name, shaderMaterial, animationEngine, ca
                      } else {
                        const FlatbufferModule = await import(schemaUrl);
                        const trackGeometries = parseTracks(data.Body, shaderMaterial, FlatbufferModule, animationEngine);
-                       console.log("Full Runtime: "+(performance.now()-tstart)+"ms");
                        callback(trackGeometries, );
                      }});
     })();
@@ -39,7 +38,6 @@ export function loadTracks(s3, bucket, name, shaderMaterial, animationEngine, ca
 
     xhr.onprogress = function(event) {
       t1 = performance.now();
-      console.log("Loaded ["+event.loaded+"] bytes in ["+(t1-t0)+"] ms")
       t0 = t1;
     }
 
@@ -55,7 +53,6 @@ export function loadTracks(s3, bucket, name, shaderMaterial, animationEngine, ca
 
       let bytesArray = new Uint8Array(response);
       const trackGeometries = parseTracks(bytesArray, shaderMaterial, FlatbufferModule, animationEngine);
-      console.log("Full Runtime: "+(performance.now()-tstart)+"ms");
       callback(trackGeometries, );
     };
 
@@ -66,7 +63,6 @@ export function loadTracks(s3, bucket, name, shaderMaterial, animationEngine, ca
 
 //
 // function loadTracks(shaderMaterial, callback) {
-//   console.log("Hello World! -- Loading Tracking Truth Data");
 //
 //   filename = "../data/tracks.bin";
 //
@@ -83,7 +79,6 @@ export function loadTracks(s3, bucket, name, shaderMaterial, animationEngine, ca
 //
 //   xhr.onload = function() {
 //     const trackGeometries = parseTracks(data.target.response, shaderMaterial);
-//     console.log("Full Runtime: "+(performance.now()-tstart)+"ms");
 //     callback(trackGeometries, );
 //   }
 //   xhr.send();
@@ -188,7 +183,6 @@ function createTrackGeometries(shaderMaterial, tracks, animationEngine) {
         // let width = state.bbox(1) - state.bbox(0); // Width is the distance from the driver-side door to the passenger-side door of a car
         // let height = state.bbox(4) - state.bbox(0); // Height is the distance from the bottom of the tire to the roof of a car
 
-        // let boxGeometry = new THREE.BoxGeometry(10, 10, 100);
         let boxGeometry = new THREE.BoxGeometry(length, width, height);
         let boxGeometry2 = boxGeometry.clone();
 

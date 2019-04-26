@@ -121,7 +121,6 @@ export function togglePointClass(pointcloud) {
     for (let k = 0; k < attributes.length; k++) {
        if (attributes[k].name == PointAttributeNames.CLASSIFICATION && !window.pointClassInitialToggle) {
          $("#chkClassification_0").trigger('click');
-         console.log("Unknown Points Toggled Off");
          window.pointClassInitialToggle = true;
          break;
        }

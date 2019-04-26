@@ -31,146 +31,146 @@
 	<script src="../build/potree/potree.js"></script>
 	<script src="../libs/plasio/js/laslaz.js"></script>
 	<script src="../libs/shapefile/shapefile.js"></script>
-	
+
 	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
 	<!-- INCLUDE SETTINGS HERE -->
-	
+
 	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
 		<div id="potree_render_area"></div>
 		<div id="potree_sidebar_container"> </div>
 	</div>
-	
+
 	<script>
-	
+
 		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
-		
+
 		viewer.setServer("http://localhost:3000");
-		
+
 		viewer.setEDLEnabled(false);
 		viewer.setFOV(60);
 		viewer.setPointBudget(3*1000*1000);
 		viewer.setMinNodeSize(1);
 		viewer.setBackground("gradient"); // ["skybox", "gradient", "black", "white"];
 		//viewer.loadSettingsFromURL();
-		
+
 		viewer.setDescription('San Simeon, CA Central Coast point cloud taken from <a href="http://opentopo.sdsc.edu/gridsphere/gridsphere?cid=geonlidarframeportlet&gs_action=lidarDataset&opentopoID=OTLAS.032013.26910.2" target="_blank">Open Topography</a> (17.7b points)');
-		
+
 		viewer.loadGUI(() => {
 			viewer.setLanguage('en');
 			$("#menu_tools").next().show();
 			$("#menu_scene").next().show();
 			viewer.toggleSidebar();
 		});
-		
+
 		// Load and add point cloud to scene
 		Potree.loadPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/opentopography/CA13_1.4/cloud.js", "CA13", e => {
 			let scene = viewer.scene;
 			let pointcloud = e.pointcloud;
 			let material = pointcloud.material;
-			
+
 			material.size = 1;
 			material.pointSizeType = Potree.PointSizeType.FIXED;
 			material.shape = Potree.PointShape.SQUARE;
 			material.intensityRange = [0, 1000];
-			
+
 			scene.addPointCloud(pointcloud);
-			
+
 			//scene.view.position.set(696507.51, 3915713.17, 1891.85);
 			scene.view.position.set(697757.85, 3913444.33, 2827.33);
 			scene.view.lookAt(new THREE.Vector3(695231.74, 3916988.94, 87.64));
-			
+
 			{
-		
+
 				proj4.defs("pointcloud", pointcloud.projection);
 				proj4.defs("WGS84", "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs");
 				let toScene = proj4("WGS84", "pointcloud");
-				
+
 				let featureToSceneNode = (feature, color) => {
 					let geometry = feature.geometry;
-					
+
 					var color = color ? color : new THREE.Color(1, 1, 1);
-					
+
 					if(feature.geometry.type === "Point"){
 						let sg = new THREE.SphereGeometry(1, 18, 18);
 						let sm = new THREE.MeshNormalMaterial();
 						let s = new THREE.Mesh(sg, sm);
-						
+
 						let [long, lat] = geometry.coordinates;
 						let pos = toScene.forward([long, lat]);
-						
+
 						s.position.set(...pos, 20);
-						
+
 						s.scale.set(10, 10, 10);
-						
+
 						return s;
 					}else if(geometry.type === "LineString"){
 						let coordinates = [];
-						
+
 						let min = new THREE.Vector3(Infinity, Infinity, Infinity);
 						for(let i = 0; i < geometry.coordinates.length; i++){
 							let [long, lat] = geometry.coordinates[i];
 							let pos = toScene.forward([long, lat]);
-							
+
 							min.x = Math.min(min.x, pos[0]);
 							min.y = Math.min(min.y, pos[1]);
 							min.z = Math.min(min.z, 20);
-							
+
 							coordinates.push(...pos, 20);
 							if(i > 0 && i < geometry.coordinates.length - 1){
 								coordinates.push(...pos, 20);
 							}
 						}
-						
+
 						for(let i = 0; i < coordinates.length; i += 3){
 							coordinates[i+0] -= min.x;
 							coordinates[i+1] -= min.y;
 							coordinates[i+2] -= min.z;
 						}
-						
+
 						let positions = new Float32Array(coordinates);
-						
+
 						let lineGeometry = new THREE.BufferGeometry();
 						lineGeometry.addAttribute("position", new THREE.BufferAttribute(positions, 3));
-						
+
 						let material = new THREE.LineBasicMaterial( { color: color} );
 						let line = new THREE.LineSegments(lineGeometry, material);
 						line.position.copy(min);
-						
+
 						return line;
 					}else if(geometry.type === "Polygon"){
 						for(let pc of geometry.coordinates){
 							let coordinates = [];
-							
+
 							let min = new THREE.Vector3(Infinity, Infinity, Infinity);
 							for(let i = 0; i < pc.length; i++){
 								let [long, lat] = pc[i];
 								let pos = toScene.forward([long, lat]);
-								
+
 								min.x = Math.min(min.x, pos[0]);
 								min.y = Math.min(min.y, pos[1]);
 								min.z = Math.min(min.z, 20);
-								
+
 								coordinates.push(...pos, 20);
 								if(i > 0 && i < pc.length - 1){
 									coordinates.push(...pos, 20);
 								}
 							}
-							
+
 							for(let i = 0; i < coordinates.length; i += 3){
 								coordinates[i+0] -= min.x;
 								coordinates[i+1] -= min.y;
 								coordinates[i+2] -= min.z;
 							}
-							
+
 							let positions = new Float32Array(coordinates);
-							
+
 							let lineGeometry = new THREE.BufferGeometry();
 							lineGeometry.addAttribute("position", new THREE.BufferAttribute(positions, 3));
-							
+
 							let material = new THREE.LineBasicMaterial( { color: color} );
 							let line = new THREE.LineSegments(lineGeometry, material);
 							line.position.copy(min);
-							
+
 							return line;
 						}
 					}else{
@@ -180,28 +180,28 @@
 
 				let shapeNode = new THREE.Object3D();
 				viewer.scene.scene.add(shapeNode);
-				
+
 				Potree.Utils.loadShapefileFeatures("./morro_bay_shp/shape/points.shp", features => {
 					for(let feature of features){
 						let node = featureToSceneNode(feature, 0x00ff00);
 						shapeNode.add(node);
 					}
 				});
-				
+
 				Potree.Utils.loadShapefileFeatures("./morro_bay_shp/shape/natural.shp", features => {
 					for(let feature of features){
 						let node = featureToSceneNode(feature, 0x00ff00);
 						shapeNode.add(node);
 					}
 				});
-				
+
 				Potree.Utils.loadShapefileFeatures("./morro_bay_shp/shape/waterways.shp", features => {
 					for(let feature of features){
 						let node = featureToSceneNode(feature, 0x0000ff);
 						shapeNode.add(node);
 					}
 				});
-				
+
 				Potree.Utils.loadShapefileFeatures("./morro_bay_shp/shape/roads.shp", features => {
 					for(let feature of features){
 						let node = featureToSceneNode(feature, 0xffffff);
@@ -213,23 +213,18 @@
 					// Add entry to object list in sidebar
 					let tree = $(`#jstree_scene`);
 					let parentNode = "other";
-					let nodeID = tree.jstree('create_node', parentNode, { 
-							"text": "shapefile", 
+					let nodeID = tree.jstree('create_node', parentNode, {
+							"text": "shapefile",
 							"icon": `${Potree.resourcePath}/icons/triangle.svg`,
 							"object": shapeNode
-						}, 
+						},
 						"last", false, false);
 					tree.jstree(shapeNode.visible ? "check_node" : "uncheck_node", nodeID);
 				});
-				
+
 			}
 		});
-		
-		
-		
-		
 	</script>
-	
-	
+
   </body>
 </html>

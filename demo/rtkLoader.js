@@ -49,13 +49,11 @@ export async function loadRtk(s3, bucket, name, callback) {
 
     xhr.onprogress = function(event) {
       t1 = performance.now();
-      console.log("Loaded ["+event.loaded+"] bytes in ["+(t1-t0)+"] ms")
       t0 = t1;
     }
 
     xhr.onload = function(data) {
       const {mpos, orientations, timestamps, t_init, t_range} = parseRTK(data.target.response);
-      console.log("Full Runtime: "+(performance.now()-tstart)+"ms");
       callback(mpos, orientations, timestamps, t_init, t_range);
     };
 
@@ -145,15 +143,12 @@ function parseRTK(RTKstring) {
       ]);
     }
   }
-
-  console.log("Loop Runtime: "+(performance.now()-t0_loop)+"ms");
   return {mpos, orientations, timestamps, t_init, t_range};
 }
 
 
 export function applyRotation(obj, roll, pitch, yaw) {
   if ( typeof(obj.initialRotation) != "undefined") {
-    // console.log(obj.ini)
     roll += obj.initialRotation.x;
     pitch += obj.initialRotation.y;
     yaw += obj.initialRotation.z;

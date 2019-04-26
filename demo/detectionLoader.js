@@ -23,7 +23,6 @@ export async function loadDetections(s3, bucket, name, shaderMaterial, animation
                      } else {
                        const FlatbufferModule = await import(schemaUrl);
                        const detectionGeometries = parseDetections(data.Body, shaderMaterial, FlatbufferModule, animationEngine);
-                       console.log("Full Runtime: "+(performance.now()-tstart)+"ms");
                        callback(detectionGeometries, );
                      }});
     })();
@@ -39,7 +38,6 @@ export async function loadDetections(s3, bucket, name, shaderMaterial, animation
 
     xhr.onprogress = function(event) {
       t1 = performance.now();
-      console.log("Loaded ["+event.loaded+"] bytes in ["+(t1-t0)+"] ms")
       t0 = t1;
     }
 
@@ -55,7 +53,6 @@ export async function loadDetections(s3, bucket, name, shaderMaterial, animation
 
       let bytesArray = new Uint8Array(response);
       const detectionGeometries = parseDetections(bytesArray, shaderMaterial, FlatbufferModule, animationEngine);
-      console.log("Full Runtime: "+(performance.now()-tstart)+"ms");
       callback(detectionGeometries, );
     };
 
@@ -189,8 +186,6 @@ function createDetectionGeometries(shaderMaterial, detections, animationEngine) 
       }
     }
   }
-
-
 
   const output = {
     bbox: bboxs,

@@ -133,7 +133,6 @@ $(document).ready(function () {
   function dragElement(elmnt) {
     var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
     if (document.getElementById(elmnt.id + "-header")) { // TODO make jquery
-      console.log(elmnt.id+"-header Exists!");
       // if present, the header is where you move the DIV from:
       document.getElementById(elmnt.id + "-header").onmousedown = dragMouseDown;
     } else {
@@ -189,15 +188,12 @@ $(document).ready(function () {
       let reset = span.querySelector(".calibration-reset");
 
       slider.oninput = function() {
-        console.log('TESTING SLIDER VALUE', slider.value+17);
-        console.log('TESTING:', value);
         sliderVal = parseFloat(slider.value);
         setpointVal = parseFloat(setpoint.value);
         stepsizeVal = parseFloat(stepsize.value);
         val = setpointVal+stepsizeVal*sliderVal;
 
         value.textContent = val.toFixed(4);
-        console.log("TESTING RESULT: ", val);
         // debugger; //id
 
         let idComponents = value.id.split('-');
@@ -209,7 +205,6 @@ $(document).ready(function () {
       }
 
       reset.onmouseup = function() {
-        console.log("Reset Calibration Value");
         setpoint.value = 0;
         stepsize.value = 1;
         slider.value = 0;

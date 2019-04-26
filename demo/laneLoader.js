@@ -25,7 +25,6 @@ export async function loadLanes(s3, bucket, name, fname, supplierNum, callback) 
                      } else {
                        const FlatbufferModule = await import(schemaUrl);
                        const laneGeometries = parseLanes(data.Body, FlatbufferModule, resolvedSupplierNum);
-                       console.log("Full Runtime: "+(performance.now()-tstart)+"ms");
                        callback( laneGeometries );
                      }});
     })();

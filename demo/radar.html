@@ -625,11 +625,7 @@
 			});
 		}
 
-
-		// TODO Just for testing:
-		// tweenInitAll();
-
-// TODO FROM HERE
+// Load Lanes Code (start)
 		// Load Lanes Truth Data:
 		async function loadLanesCallback(s3, bucket, name) {
 
@@ -706,10 +702,10 @@
 
 
 		}
-// TODO TILL HERE
+// Load Lanes Code (end)
 
 
-// TODO FROM HERE
+// Load Gaps Code (Start)
 window.gapsLoaded = false;
 $(document).ready(() => {
 	// Configure Playbar
@@ -749,8 +745,9 @@ $(document).ready(() => {
 		}
 	});
 });
+// Load Gaps Code (end)
 
-// TODO FROM HERE
+// Load Tracks Code (Start)
 		// TODO Move this somewhere else
 		let trackShaderMaterial = shaderMaterial.clone();
 
@@ -818,7 +815,7 @@ $(document).ready(() => {
 		});
 
 
-// TODO TILL HERE
+// Load Tracks Code (End)
 
     // // Load Radar Cubes:
     // loadRadar((geometry, t_init) => {
@@ -848,8 +845,7 @@ $(document).ready(() => {
     //   viewer.scene.scene.add(mesh);
     // });
 
-// TODO FROM HERE
-		// Load Radar:
+// Load Radar Code (Start)
 		window.radarLoaded = false;
 		$(document).ready(() => {
 			// Configure Playbar
@@ -915,7 +911,7 @@ $(document).ready(() => {
 			});
 		});
 
-// TODO TILL HERE
+//Load Radar code (end)
 
     // // Load Radar:
     // loadRadar(s3, bucket, name, (geometry, t_init) => {

@@ -98,7 +98,7 @@ export function updateSidebar(vizConfiguration) {
     tree.jstree("check_node", HdMapProvidersTree);
     let onMapProviderLayerAdded = (e) => {
       let mapProviderLayer = e.mapLayer;
-      let mapIcon = `${Potree.resourcePath}/icons/focus.svg`; // TODO Fix this
+      let mapIcon = `${Potree.resourcePath}/icons/focus.svg`; // TODO Find a more appropriate svg icon
       let node = createNode(HdMapProvidersTree, mapProviderLayer.name, '', mapProviderLayer);
 
       mapProviderLayer.addEventListener("visibility_changed", () => {

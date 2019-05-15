@@ -8,8 +8,8 @@ export * from "./EventDispatcher.js";
 export * from "./Features.js";
 export * from "./KeyCodes.js";
 export * from "./LRU.js";
+export * from "./PointCloudEptGeometry.js";
 export * from "./PointCloudGreyhoundGeometry.js";
-export * from "./PointCloudGreyhoundGeometryNode.js";
 export * from "./PointCloudOctree.js";
 export * from "./PointCloudOctreeGeometry.js";
 export * from "./PointCloudTree.js";
@@ -31,6 +31,9 @@ export * from "./materials/NormalizationMaterial.js";
 export * from "./materials/PointCloudMaterial.js";
 
 export * from "./loader/POCLoader.js";
+export * from "./loader/EptLoader.js";
+export * from "./loader/ept/BinaryLoader.js";
+export * from "./loader/ept/LaszipLoader.js";
 export * from "./loader/GreyhoundBinaryLoader.js";
 export * from "./loader/GreyhoundLoader.js";
 export * from "./loader/PointAttributes.js";
@@ -65,6 +68,7 @@ import {Enum} from "./Enum";
 import {LRU} from "./LRU";
 import {POCLoader} from "./loader/POCLoader";
 import {GreyhoundLoader} from "./loader/GreyhoundLoader";
+import {EptLoader} from "./loader/EptLoader";
 import {PointCloudOctree} from "./PointCloudOctree";
 import {WorkerPool} from "./WorkerPool";
 

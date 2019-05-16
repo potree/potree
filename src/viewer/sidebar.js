@@ -241,25 +241,35 @@ export class Sidebar{
 			`);
 
 			let elDownloadJSON = elExport.find("img[name=geojson_export_button]").parent();
-			elDownloadJSON.click( () => {
+			elDownloadJSON.click( (event) => {
 				let scene = this.viewer.scene;
 				let measurements = [...scene.measurements, ...scene.profiles, ...scene.volumes];
 
-				let geoJson = GeoJSONExporter.toString(measurements);
+				if(measurements.length > 0){
+					let geoJson = GeoJSONExporter.toString(measurements);
 
-				let url = window.URL.createObjectURL(new Blob([geoJson], {type: 'data:application/octet-stream'}));
-				elDownloadJSON.attr('href', url);
+					let url = window.URL.createObjectURL(new Blob([geoJson], {type: 'data:application/octet-stream'}));
+					elDownloadJSON.attr('href', url);
+				}else{
+					this.viewer.postError("no measurements to export");
+					event.preventDefault();
+				}
 			});
 
 			let elDownloadDXF = elExport.find("img[name=dxf_export_button]").parent();
-			elDownloadDXF.click( () => {
+			elDownloadDXF.click( (event) => {
 				let scene = this.viewer.scene;
 				let measurements = [...scene.measurements, ...scene.profiles, ...scene.volumes];
 
-				let dxf = DXFExporter.toString(measurements);
+				if(measurements.length > 0){
+					let dxf = DXFExporter.toString(measurements);
 
-				let url = window.URL.createObjectURL(new Blob([dxf], {type: 'data:application/octet-stream'}));
-				elDownloadDXF.attr('href', url);
+					let url = window.URL.createObjectURL(new Blob([dxf], {type: 'data:application/octet-stream'}));
+					elDownloadDXF.attr('href', url);
+				}else{
+					this.viewer.postError("no measurements to export");
+					event.preventDefault();
+				}
 			});
 		}
 
@@ -692,7 +702,7 @@ export class Sidebar{
 
 			sldReturnNumber.slider({
 				range: true,
-				min: 1, max: 7, step: 1,
+				min: 0, max: 7, step: 1,
 				values: [0, 7],
 				slide: (event, ui) => {
 					this.viewer.setFilterReturnNumberRange(ui.values[0], ui.values[1])
@@ -717,7 +727,7 @@ export class Sidebar{
 
 			sldNumberOfReturns.slider({
 				range: true,
-				min: 1, max: 7, step: 1,
+				min: 0, max: 7, step: 1,
 				values: [0, 7],
 				slide: (event, ui) => {
 					this.viewer.setFilterNumberOfReturnsRange(ui.values[0], ui.values[1])
@@ -797,12 +807,12 @@ export class Sidebar{
 			elClassificationList.append(element);
 		};
 
-		addClassificationItem(0, 'Road');
-		addClassificationItem(1, 'Lane Markings');
-		addClassificationItem(2, 'Vehicles');
-		addClassificationItem(3, 'Road Signs');
-		addClassificationItem(4, 'Road Edge');
-		addClassificationItem(5, 'Other');
+		addClassificationItem(0, 'Unknown');
+		addClassificationItem(1, 'Road');
+		addClassificationItem(2, 'Lane Markings');
+		addClassificationItem(3, 'NonRoad');
+		// addClassificationItem(4, '');
+		// addClassificationItem(5, 'Other');
 		// addClassificationItem(6, 'building');
 		// addClassificationItem(7, 'low point(noise)');
 		// addClassificationItem(8, 'key-point');

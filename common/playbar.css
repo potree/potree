@@ -128,19 +128,30 @@ input::-webkit-inner-spin-button {
 }
 
 #playbar_tmin {
-  display: none;
+  display: block;
+  width: 50px;
 }
 
 #playbar_tmax {
-  display: none;
+  display: block;
+  width: 50px;
+}
+
+#elevation_min {
+  display: block;
+  width: 50px;
+}
+
+#elevation_max {
+  display: block;
+  width: 50px;
 }
 
 /* TOGGLE SWITCH */
 /* The switch - the box around the slider */
 .switch {
  position: relative;
- display: none;
- /* display: inline-block; */
+ display: inline-block;
  width: 60px;
  height: 34px;
 }

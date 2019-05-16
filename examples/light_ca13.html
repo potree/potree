@@ -30,20 +30,20 @@
 	<script src="../libs/jstree/jstree.js"></script>
 	<script src="../build/potree/potree.js"></script>
 	<script src="../libs/plasio/js/laslaz.js"></script>
-	
+
 	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
 	<!-- INCLUDE SETTINGS HERE -->
-	
+
 	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
 		<div id="potree_render_area">
-			<input type="button" id="animation_toggle" value="pause" 
+			<input type="button" id="animation_toggle" value="pause"
 				style="position: absolute; bottom: 20px; left: 45%; width: 20%; height: 30px; z-index: 10000"/>
 		</div>
 		<div id="potree_sidebar_container"> </div>
 	</div>
 
-	
-	
+
+
 	<script>
 
 		$("#animation_toggle").click( () => {
@@ -55,18 +55,18 @@
 				animation.pause();
 			}
 		});
-	
+
 		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
-		
+
 		viewer.setEDLEnabled(true);
 		viewer.setFOV(60);
 		viewer.setPointBudget(3 * 1000 * 1000);
 		viewer.setMinNodeSize(0);
 		viewer.loadSettingsFromURL();
 		viewer.setServer("http://localhost:3000");
-		
+
 		viewer.setDescription("");
-		
+
 		viewer.loadGUI(() => {
 			viewer.setLanguage('en');
 			$("#menu_appearance").next().show();
@@ -83,7 +83,7 @@
 
 		let sph = new Potree.SpotLightHelper(light, new THREE.Color().setHex(0xff0000));
 		viewer.scene.scene.add(sph);
-		
+
 		Potree.loadPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/opentopography/CA13_1.4/cloud.js", "CA13", function(e){
 			viewer.scene.addPointCloud(e.pointcloud);
 
@@ -96,7 +96,7 @@
 			viewer.scene.view.lookAt(695234.024, 3916032.892, 178.648);
 		});
 
-	
+
 		{
 			let path = [
 				[694677.10, 3916294.33, 10.53],
@@ -126,7 +126,7 @@
 				for(let pos of path){
 					let sg = new THREE.SphereGeometry(5.0, 32, 32);
 					let sm = new THREE.MeshBasicMaterial({color: 0x0000ff});
-					let s = new THREE.Mesh(sg, sm); 
+					let s = new THREE.Mesh(sg, sm);
 					s.position.copy(pos);
 					viewer.scene.scene.add(s);
 				}
@@ -135,7 +135,7 @@
 			{ // Animate from beginning to end with a speed of 10 meters per second
 				let start = 0;
 				let end = Infinity;
-				let speed = 200; 
+				let speed = 200;
 				let animation = animationPath.animate(start, end, speed, t => {
 					animation.repeat = true;
 
@@ -153,17 +153,15 @@
 			{
 				viewer.onGUILoaded(() => {
 
-					console.log("adding to gui");
-
 					// Add entries to object list in sidebar
 					let tree = $(`#jstree_scene`);
 					let parentNode = "other";
 
-					let node = tree.jstree('create_node', parentNode, { 
-							"text": "Light", 
+					let node = tree.jstree('create_node', parentNode, {
+							"text": "Light",
 							"icon": `${Potree.resourcePath}/icons/triangle.svg`,
 							"data": light
-						}, 
+						},
 						"last", false, false);
 					tree.jstree("check_node", node);
 
@@ -178,8 +176,8 @@
 		function resume(){
 			animation.resume();
 		}
-		
+
 	</script>
-	
+
   </body>
 </html>

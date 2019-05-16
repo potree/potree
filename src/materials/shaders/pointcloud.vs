@@ -388,6 +388,7 @@ vec3 getRGB(){
 	rgb.b += 0.8; // VINAY - set blue
 	rgb = clamp(rgb, 0.0, 1.0);
 
+
 		//rgb = indices.rgb;
 	//rgb.b = pcIndex / 255.0;
 
@@ -673,6 +674,10 @@ void doClipping(){
 			vColor.b = 0.0;
 			vColor.g = 0.0;
 			return;
+		} else {
+			if (classification == 3.0) {	// Corresponds to NonRoad point class currently (should eventually be any dynamic object class)
+				gl_Position = vec4(100.0, 100.0, 100.0, 0.0);
+			}
 		}
 
 	}

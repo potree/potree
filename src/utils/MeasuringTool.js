@@ -125,6 +125,7 @@ export class MeasuringTool extends EventDispatcher{
 		// make size independant of distance
 		for (let measure of measurements) {
 			measure.lengthUnit = this.viewer.lengthUnit;
+			measure.lengthUnitDisplay = this.viewer.lengthUnitDisplay;
 			measure.update();
 
 			// spheres

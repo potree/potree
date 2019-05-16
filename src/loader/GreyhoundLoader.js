@@ -4,7 +4,6 @@ import {Version} from "../Version";
 import {XHRFactory} from "../XHRFactory";
 import {PointAttributes, PointAttribute} from "./PointAttributes";
 import {PointCloudGreyhoundGeometry} from "../PointCloudGreyhoundGeometry";
-import {PointCloudGreyhoundGeometryNode} from "../PointCloudGreyhoundGeometryNode";
 import {GreyhoundBinaryLoader} from "./GreyhoundBinaryLoader";
 
 /**
@@ -143,7 +142,7 @@ export class GreyhoundLoader{
 
 	}
 
-	//loadInfoJSON(url, callback) { 
+	//loadInfoJSON(url, callback) {
 	//}
 
 	/**
@@ -154,7 +153,7 @@ export class GreyhoundLoader{
 	 * @param loadingFinishedListener executed after loading the binary has been
 	 * finished
 	 */
-	load(url, callback){
+	static load(url, callback){
 		let HIERARCHY_STEP_SIZE = 5;
 
 		try {

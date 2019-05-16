@@ -14,10 +14,19 @@
 	<link rel="stylesheet" type="text/css" href="../libs/openlayers3/ol.css">
 	<link rel="stylesheet" type="text/css" href="../libs/spectrum/spectrum.css">
 	<link rel="stylesheet" type="text/css" href="../libs/jstree/themes/mixed/style.css">
+	<link rel="stylesheet" href="../common/overlay.css" type="text/css">
+	<link rel="stylesheet" href="../common/loading-bar.css" type="text/css">
   <!-- <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet"> -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <script src="radarloader.js"></script>
-  <script src="rtkloader.js"></script>
+	<script src="../node_modules/flatbuffers/js/flatbuffers.js"></script>
+	<!-- <script type="module" src="../readers/polyline3D.js"></script>
+	<script type="module" src="../schemas/GroundTruth_generated_tmp.js"></script> -->
+  <script type="module" src="radarLoader.js"></script>
+  <script type="module" src="rtkLoader.js"></script>
+  <script type="module" src="rtkLoaderFlatbuffer.js"></script>
+  <script type="module" src="laneLoader.js"></script>
+  <script type="module" src="trackLoader.js"></script>
+  <script type="module" src="gapsLoader.js"></script>
   <link rel="stylesheet" type="text/css" href="../common/playbar.css">
 </head>
 
@@ -38,10 +47,24 @@
 	<script src="../libs/plasio/js/laslaz.js"></script>
   <script src="../libs/other/OBJLoader.js"></script>
 	<script src="../common/playbar.js"></script>
+	<script src="../common/loading-bar.js"></script>
+	<script type="module" src="../common/overlay.js"></script>
+	<script src="../node_modules/three.meshline/src/THREE.MeshLine.js"></script>
+	<script src="animationEngine.js"></script>
+	<script type="module" src="RtkTrajectory.js"></script>
+
+
+	<!-- TODO REMOVE BELOW -->
+	<script src="tweenTest.js"></script>
+
+
+
 	<!-- <script src="../common/playbar.css"></script> -->
 
 
 	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
+  <script src="https://sdk.amazonaws.com/js/aws-sdk-2.339.0.min.js"></script>
+
 	<!-- INCLUDE SETTINGS HERE -->
 
 	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
@@ -58,6 +81,8 @@
       uniform float minGpsTime;
       uniform float maxGpsTime;
 
+	  uniform vec3 offset;
+
       varying float vAlpha;
 
       void main() {
@@ -69,16 +94,20 @@
         }
 
 
-        // if (currentGpsTime > 10.0) {
+        // if (gpsTime > 30.0) {
+				// 	vAlpha = 0.0;
         // } else {
-        //   vAlpha = 1.0
+        //   vAlpha = 1.0;
         // }
 
-          vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
+					// vec4 offset = vec4( 0.0, 0.0, 0.0, 0.0);
+					// vec4 offset = vec4( 300016.625, 4701260, 247.1885223388672, 0.0);
+
+          vec4 mvPosition = modelViewMatrix * vec4( position+offset.xyz, 1.0 );
+					gl_Position = projectionMatrix * mvPosition;
 
           gl_PointSize = 8.0;
 
-          gl_Position = projectionMatrix * mvPosition;
 
       }
 
@@ -102,9 +131,66 @@
 
 
 
-	<script>
+	<script type="module">
+		import { loadLanes } from "../demo/laneLoader.js";
+		import { loadTracks } from "../demo/trackLoader.js";
+		import { loadDetections } from "../demo/detectionLoader.js";
+		import { loadRtk, applyRotation } from "../demo/rtkLoader.js";
+		import { loadRtkFlatbuffer } from "../demo/rtkLoaderFlatbuffer.js";
+		import { RtkTrajectory } from "../demo/RtkTrajectory.js";
+		import { loadRadar } from "../demo/radarLoader.js";
+		import { loadGaps } from "../demo/gapsLoader.js";
+		import { updateSidebar, togglePointClass } from "../common/custom-sidebar.js";
+		import { getLoadingBar } from "../common/overlay.js";
+		// import {  } from "../common/overlay.js";
+		import { setLoadingScreen, removeLoadingScreen } from "../common/overlay.js";
 
-		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
+		// setLoadingScreen();
+
+		const runForLocalDevelopment = location.search === "" && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
+		const params = new URLSearchParams(location.search);
+		const bucket = params.get("bucket");
+		const region = params.get("region");
+		const names = JSON.parse(params.get("names"));
+		const name = params.get("clicked");
+		const visualizationMode = params.get("mode");
+		const accessKeyId = params.get("key1");
+		const secretAccessKey = params.get("key2");
+		const sessionToken = params.get("key3");
+		const fonts =  JSON.parse(params.get("fonts"));
+		const theme = JSON.parse(params.get("theme")); // material-ui theme
+		const comparisonDatasets = names.filter(element => element !== name);
+
+		if (fonts) {
+			const head = document.head;
+			fonts.forEach(font => {
+				const link = document.createElement('link');
+				link.rel = 'stylesheet';
+				link.href = font;
+				head.appendChild(link);
+			});
+
+			// Override fonts specified.
+			const {typography} = theme;
+			const style = document.createElement('style');
+			style.innerHTML = `#value {font-family: ${typography.fontFamily} !important;} #sidebar_root {font-family: ${typography.fontFamily} !important;} #potree_languages {font-family: ${typography.fontFamily} !important;}`;
+			head.appendChild(style);
+		}
+
+    const s3 = bucket && region && name && accessKeyId && secretAccessKey &&
+				new AWS.S3({region: region,
+							 accessKeyId: accessKeyId,
+							 secretAccessKey: secretAccessKey,
+							 sessionToken: sessionToken,
+							});
+
+    if (!(s3 || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) { window.history.back() };
+    // We really want this, but it doesn't work in the browser. Only on a server.
+    // const stream = s3.getObject({Bucket: bucket,
+    //                              Key: name}).createReadStream();
+
+    window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
 
 		viewer.setEDLEnabled(true);
 		viewer.setFOV(60);
@@ -116,6 +202,10 @@
 		viewer.loadSettingsFromURL();
 
 		viewer.loadGUI(() => {
+			// Override Sidebar Potree Branding Panel:
+			document.getElementById("potree_branding").style.display="none";
+			document.getElementById("menu_about").style.display="none";
+
 			viewer.setLanguage('en');
 			$("#menu_appearance").next().show();
 			$("#menu_tools").next().show();
@@ -123,333 +213,811 @@
 			// viewer.toggleSidebar();
       // viewer.setNavigationMode(EarthControls); // TODO Hack: changed default in viewer.js line 234
       // $('#show_bounding_box').trigger("click");
-      $("#splat_quality_options_hq").trigger("click");
+      // $("#splat_quality_options_hq").trigger("click"); // NOTE: HQ Splat breaks OrthographicCamera
       // viewer.scene.view.position.set(300198.109, 4701144.537, 349.871);
       // viewer.scene.view.lookAt(new THREE.Vector3(299900.954, 4701576.919, 66.197));
+			updateSidebar(visualizationMode);
+
+			if (visualizationMode == "aptivLanes") {
+				viewer.setCameraMode(Potree.CameraMode.ORTHOGRAPHIC);
+				viewer.scene.view.maxPitch = -Math.PI/2;
+
+				document.getElementById("playback_speed").style.display = "none";
+				document.getElementById("toggleslider").style.display = "none";
+				document.getElementById("toggle_calibration_panels").style.display = "none";
+				document.getElementById("load_detections_button").style.display = "none";
+				document.getElementById("load_radar_button").style.display = "none";
+				document.getElementById("load_gaps_button").style.display = "none";
+				document.getElementById("camera_projection_options").children[0].children[1].children[0].style.display = "none"; // Hide projective camera option
+				document.getElementById("playbar_tmax").value = 0;
+				document.getElementById("playbar_tmin").value = 0;
+			}
+
+			// Check if Classification Attribute is exists in PointCloud:
+			try {
+				let pointcloud = viewer.scene.pointclouds[0];
+				togglePointClass(pointcloud);
+			} catch (e) {
+				console.log("Sidebar initialized pointcloud loaded: ",e);
+			}
+		});
+
+		// Create AnimationEngine:
+		window.animationEngine = new AnimationEngine();
+
+		// TODO put these material definitions somewhere better
+		let uniforms = {
+					color: { value: new THREE.Color( 0x00ff00 ) },
+					minGpsTime: {value: 0.0 },
+					maxGpsTime: {value: 0.5 },
+					initialTime: {value: 0}, // TODO not used
+					// offset: {value: new THREE.Vector3(0,0,0)}
+			};
+		let shaderMaterial = new THREE.ShaderMaterial( {
+
+				 uniforms:       uniforms,
+				 vertexShader:   document.getElementById( 'vertexshader' ).textContent,
+				 fragmentShader: document.getElementById( 'fragmentshader' ).textContent,
+				 transparent:    true,
+				 depthWrite: 		 false
+
+		 });
+
+		// Playbar Configuration:
+		$(document).ready(() => {
+			document.getElementById("playbar_tmax").disabled = false;
+			document.getElementById("playbar_tmin").disabled = false;
+			document.getElementById("elevation_max").display = false;
+			document.getElementById("elevation_min").disabled = false;
+
+
+			// Load Data Sources:
+			(async () => {
+
+				// Load RTK:
+				await loadRtkCallback(s3, bucket, name);
+
+				// Load Lanes:
+				try {
+					await loadLanesCallback(s3, bucket, name);
+				} catch (e) {
+					console.error("Could not load Lanes: ", e);
+				}
+
+				// Load Tracks:
+				try {
+					// TODO shaderMaterial
+					let trackShaderMaterial = shaderMaterial.clone();
+					await loadTracksCallback(s3, bucket, name, trackShaderMaterial, animationEngine);
+				} catch (e) {
+					console.error("Could not load Tracks: ", e);
+				}
+
+				// Load Radar:
+				try {
+					// await loadRadarCallback(s3, bucket, name);
+				} catch (e) {
+					console.error("Could not load Radar Detections: ", e);
+				}
+
+				// Load Detections:
+				// TODO
+
+				// Load Gaps:
+				// TODO
+
+				// Configure AnimationEngine:
+				// let tstart = window.timeframe.tstart;	// Set in loadRtkCallback
+				// let tend = window.timeframe.tend;			// Set in loadRtkCallback
+				// let playbackRate = 1.0;
+				// animationEngine.configure(tstart, tend, playbackRate);
+				// animationEngine.launch();
+			})();
+
 		});
 
 
-    // Load Radar:
-    loadRadar((geometry, t_init) => {
-
-      // uniforms
-      uniforms = {
-          color: { value: new THREE.Color( 0xffff00 ) },
-          minGpsTime: {value: 0.0 },
-          maxGpsTime: {value: 110.0 },
-          initialTime: {value: t_init}
-      };
-
-      // point cloud material
-      var shaderMaterial = new THREE.ShaderMaterial( {
-
-          uniforms:       uniforms,
-          vertexShader:   document.getElementById( 'vertexshader' ).textContent,
-          fragmentShader: document.getElementById( 'fragmentshader' ).textContent,
-          transparent:    true
-
-      });
-
-      var material = new THREE.PointsMaterial( {size:1.0} );
-      var mesh = new THREE.Points(geometry, shaderMaterial);
-      mesh.name = "radar";
-      // debugger; //radar tracks added?
-      viewer.scene.scene.add(mesh);
-    });
-
-    // Load RTK:
-    loadRtk((pos, rot, t_init) => {
-      path = pos.map(v => new THREE.Vector3(...v));
-      orientations = rot.map(v => new THREE.Vector3(...v));
-
-      let animationPath = new Potree.AnimationPath(path);
-      animationPath.closed = false;
-			var orientationPath = new THREE.CatmullRomCurve3(orientations, animationPath.closed); // NOTE: orientations are represented as a parametric curve in 3d space, this breaks at pi to negative pi transition
-
-      { // render the path
-        let geometry = animationPath.getGeometry();
-        let material = new THREE.LineBasicMaterial();
-        material.uniforms = {initialTime:{value:t_init}};
-				material.opacity = 0.0;
-				material.transparent = true;
-        let line = new THREE.Line(geometry, material, {closed: animationPath.closed});
-        line.name = "rtk";
-        viewer.scene.scene.add(line);
-        console.log("Rendered Path");
-      }
 
 
-      // CREATE VEHICLE OBJECT:
-      // NOTE for Mustang: {texture: models/bodybkgd.JPG, mesh: models/1967-shelby-ford-mustang.obj}
-      // NOTE for Volt: {texture: models/Chevy_Volt_Segmented/Chevrolet_Volt_v1_exterior.png, mesh: resources/models/Chevy_Volt_Segmented/Chevy_Volt_2016.obj}
-      let manager = new THREE.LoadingManager();
-      manager.onProgress = function ( item, loaded, total ) {
-        console.log( item, loaded, total );
-      };
-      let textureLoader = new THREE.TextureLoader( manager );
-      let texture = textureLoader.load(`${Potree.resourcePath}/models/Chevy_Volt_Segmented/reflection_1.png`);
-      // let texture = textureLoader.load(`${Potree.resourcePath}/models/bodybkgd.JPG`);
-      let onProgress = function ( xhr ) {
-        if ( xhr.lengthComputable ) {
-          let percentComplete = xhr.loaded / xhr.total * 100;
-          console.log( Math.round(percentComplete, 2) + '% downloaded' );
-        }
-      };
-      texture.wrapS = THREE.RepeatWrapping;
-      texture.wrapT = THREE.RepeatWrapping;
+		// Load RTK: TODO REFACTOR THIS (a lot of stuff happenning here, break it up if possible)
+		async function loadRtkCallback(s3, bucket, name) {
+			await loadRtk(s3, bucket, name, (pos, rot, timestamps, t_init, t_range) => {
+			// await loadRtkFlatbuffer(s3, bucket, name, (pos, rot, timestamps, t_init, t_range) => {
+				window.timeframe = {"tstart": t_init, "tend": t_init+t_range};
 
-      var geometry = new THREE.SphereGeometry( 2, 32, 32 );
-      var material = new THREE.MeshNormalMaterial( {side: THREE.DoubleSide, opacity: 0.92,transparent:true});
-      var sphere = new THREE.Mesh( geometry, material );
-      sphere.position = new THREE.Vector3(...pos[0]);
-      console.log(sphere);
+				// TODO Move this into main loader function:
+				let tstart = window.timeframe.tstart;	// Set in loadRtkCallback
+				let tend = window.timeframe.tend;			// Set in loadRtkCallback
+				let playbackRate = 1.0;
+				animationEngine.configure(tstart, tend, playbackRate);
+				animationEngine.launch();
 
-      // viewer.scene.scene.add( sphere );
-      console.log("Sphere added");
+	      const path = pos.map(v => new THREE.Vector3(...v));
+	      const orientations = rot.map(v => new THREE.Vector3(...v));
+				const samplingFreq = 100; // Hertz TODO hardcoded
+				const rtkTrajectory = new RtkTrajectory(path, orientations, timestamps, samplingFreq);
+				const closedPath = false;
 
 
-      { // Load Textured bunny from obj
-        let onError = function ( xhr ) {};
-        let loader = new THREE.OBJLoader( manager );
-        loader.load(`${Potree.resourcePath}/models/Chevy_Volt_Segmented/Chevy_Volt_2016.obj`, function ( object ) {
-        // loader.load(`${Potree.resourcePath}/models/1967-shelby-ford-mustang.obj`, function ( object ) {
-          object.traverse( function ( child ) {
-            if ( child instanceof THREE.Mesh ) {
-              child.material.map = texture;
-            }
-          } );
+	      { // render the path
+					let geometry = new THREE.Geometry();
+					for (let ii = 0; ii < rtkTrajectory.numStates; ii++) {
+						geometry.vertices[ii] = rtkTrajectory.states[ii].pose.clone();
+					}
+	        let material = new THREE.LineBasicMaterial();
+	        material.uniforms = {initialTime:{value:t_init}};
+					material.opacity = 0.0;
+					material.transparent = true;
+	        let line = new THREE.Line(geometry, material, {closed: closedPath});
+	        line.name = "rtk";
+	        viewer.scene.scene.add(line);
+	      }
 
-          object.name = "bunny";
-          object.position.set(...pos[0]);
-          object.scale.multiplyScalar(.011);
-					object.orientationPath = orientationPath;
-          object.rotation.set(0*Math.PI / 2, 0*Math.PI/2., 1*Math.PI/2.0); // Chevy Volt
-					object.initialRotation = object.rotation.clone(); // NOTE is this used?
+	      // CREATE VEHICLE OBJECT:
+	      // NOTE for Mustang: {texture: models/bodybkgd.JPG, mesh: models/1967-shelby-ford-mustang.obj}
+	      // NOTE for Volt: {texture: models/Chevy_Volt_Segmented/Chevrolet_Volt_v1_exterior.png, mesh: resources/models/Chevy_Volt_Segmented/Chevy_Volt_2016.obj}
+	      let manager = new THREE.LoadingManager();
+	      manager.onProgress = function ( item, loaded, total ) {
+	        console.log( item, loaded, total );
+	      };
+	      let textureLoader = new THREE.TextureLoader( manager );
+	      let texture = textureLoader.load(`${Potree.resourcePath}/models/Chevy_Volt_Segmented/reflection_1.png`);
+	      // let texture = textureLoader.load(`${Potree.resourcePath}/models/bodybkgd.JPG`);
+	      let onProgress = function ( xhr ) {
+	        if ( xhr.lengthComputable ) {
+	          let percentComplete = xhr.loaded / xhr.total * 100;
+	        }
+	      };
+	      texture.wrapS = THREE.RepeatWrapping;
+	      texture.wrapT = THREE.RepeatWrapping;
 
-          // object.rotation.set(Math.PI / 2, 0*Math.PI/2., 0*Math.PI/2.0); // Shelby Mustang
-
-          viewer.scene.scene.add( object );
-					// debugger; // orientationPath
-
-        }, onProgress, onError );
-      }
-
-      // // Create sprite:
-      // let hudTexture = textureLoader.load(`${Potree.resourcePath}/images/4076.jpg`);
-      // var spriteMaterial = new THREE.SpriteMaterial({map:hudTexture});
-      // var sprite = new THREE.Sprite(spriteMaterial);
-      // sprite.position.set(...pos[0]);
-      // sprite.position.add(new THREE.Vector3(10,10,10));
-      // sprite.scale.set(5,5,1);
-      // sprite.name = "sprite";
-      // viewer.scene.scene.add(sprite);
-
-
-
-
+	      let geometry = new THREE.SphereGeometry( 2, 32, 32 );
+	      let material = new THREE.MeshNormalMaterial( {side: THREE.DoubleSide, opacity: 0.92,transparent:true});
+	      let sphere = new THREE.Mesh( geometry, material );
+	      sphere.position.copy(new THREE.Vector3(...pos[0]));
+	      // viewer.scene.scene.add( sphere );
 
 
-      // ANIMATION:
-      { // create Animation Path & make light follow it
+	      { // Load Textured vehicle from obj
+	        let onError = function ( xhr ) {};
+	        let loader = new THREE.OBJLoader( manager );
+	        loader.load(`${Potree.resourcePath}/models/Chevy_Volt_Segmented/volt_reduce.obj`,
+	        // loader.load(`${Potree.resourcePath}/models/Chevy_Volt_Segmented/Chevy_Volt_2016.obj`,
+	                    function ( object ) {
+	          object.traverse( function ( child ) {
+	            if ( child instanceof THREE.Mesh ) {
+	              child.material.map = texture;
+	            }
+	          } );
+
+						const vehicleGroup = new THREE.Group();
+						vehicleGroup.name = "Vehicle";
+
+						// Add Polar Grid Helper:
+						const gridRadius = 100; // meters
+						const gridSpacing = 5; // meters
+						const scaleFactor = 1; // HACK for now because attached to vehicle mesh which is 1/100th scale
+						const gridHelper = new THREE.GridHelper( scaleFactor*2*gridRadius, 2*gridRadius/gridSpacing, 0x0000ff, 0x808080 );
+						gridHelper.name = "Cartesian Grid";
+						gridHelper.rotateOnAxis(new THREE.Vector3(1,0,0), Math.PI/2);
+						gridHelper.position.z -= 2;
+						gridHelper.visible = false;
+						viewer.scene.dispatchEvent({"type": "vehicle_layer_added", "vehicleLayer": gridHelper });
+						const polarGridHelper = new THREE.PolarGridHelper( scaleFactor*gridRadius, 16, gridRadius/gridSpacing, 64, 0x0000ff, 0x808080 );
+						polarGridHelper.name = "Polar Grid";
+						polarGridHelper.rotateOnAxis(new THREE.Vector3(1,0,0), Math.PI/2);
+						polarGridHelper.position.z -= 2;
+						polarGridHelper.visible = false;
+						viewer.scene.dispatchEvent({"type": "vehicle_layer_added", "vehicleLayer": polarGridHelper });
+						const axesHelper = new THREE.AxesHelper(scaleFactor*gridSpacing);
+						axesHelper.name = "3D Axes";
+						axesHelper.position.z -= 2;
+						// axesHelper.rotateOnAxis(new THREE.Vector3(0,0,1), -Math.PI/2);
+						axesHelper.visible = false;
+						viewer.scene.dispatchEvent({"type": "vehicle_layer_added", "vehicleLayer": axesHelper });
 
 
-        {// ANIMATION + SLIDER LOGIC:
-          let slider = document.getElementById("myRange");
-          let output = document.getElementById("demo");
-					let tmin = document.getElementById("playbar_tmin");
-					let tmax = document.getElementById("playbar_tmax");
-					let toggleplay = document.getElementById("toggleplay");
-          output.innerHTML = slider.value;
+						vehicleGroup.add( gridHelper );
+						vehicleGroup.add( polarGridHelper );
+						vehicleGroup.add( axesHelper );
 
-          // Animate from beginning to end
-          let start = 0;
-          let end = Infinity;
-          let speed = 33;	// empirically set as "close to realtime"
-          let animation = animationPath.animate(start, end, speed, animate);
+						// Apply RTK to Vehicle Mesh Extrinsics:
+	          object.name = "Vehicle Mesh";
+	          object.scale.multiplyScalar(.01);
+						object.rotation.set(0*Math.PI / 2, 0*Math.PI/2., 1*Math.PI/2.0); // Chevy Volt
+						object.position.sub(new THREE.Vector3(0, 0, 2)); // Chevy Volt
 
-					function animate(t, updateCamera=true) {
-            animation.repeat = true;
+						// Initialize Vehicle Group:
+						vehicleGroup.position.set(...pos[0]);
+						applyRotation(vehicleGroup, rot[0][0], rot[0][1], rot[0][2]);
+						vehicleGroup.rotation.set(...rot[0]);
+						vehicleGroup.rtkTrajectory = rtkTrajectory;
+						vehicleGroup.add( object );
 
+						// TODO New Camera Initialization:
+						let box = new THREE.Box3().setFromObject(vehicleGroup);
+						let node = new THREE.Object3D();
+						node.boundingBox = box;
+						viewer.zoomTo(node, 0.1, 500);
+						// viewer.scene.view.lookAt(object.position);
 
-						// TODO cache this to improve speed?
-            lidarOffset = 1495189467.550001;  // TODO Hardcoded b/c PotreeConverter is throwing away initial offset
-            rtkOffset = viewer.scene.scene.getObjectByName("rtk").material.uniforms.initialTime.value;
-            radarOffset = viewer.scene.scene.getObjectByName("radar").material.uniforms.initialTime.value;
-            timeMin = Math.min(lidarOffset, rtkOffset, radarOffset);
-            lidarRange = viewer.scene.pointclouds[0].pcoGeometry.nodes.r.gpsTime.range;
-            radarRange = 583.649169921875;  // TODO Hardcoded
-            rtkRange = 600.5599999427795;   // TODO Hardcoded
-            timeMax = Math.max((lidarRange+lidarOffset), (radarRange+radarOffset), (rtkRange+rtkOffset));
-            timeOffset = timeMin;
-            timeRange = timeMax - timeMin;
+	          // viewer.scene.scene.add( object );
+	          viewer.scene.scene.add( vehicleGroup );
+						viewer.scene.dispatchEvent({"type": "vehicle_layer_added", "vehicleLayer": object });
 
-            // console.log("Radar Initial Time: ", radarOffset);
-            // console.log("RTK Initial Time: ", rtkOffset);
-            // debugger;
+						viewer.setFilterGPSTimeRange(0, 0); // Size 0 Time Window at start of timeline
+						removeLoadingScreen();
+	        }, onProgress, onError );
+	      }
 
+	      // ANIMATION:
+	      { // create Animation Path & make light follow it
+	        {// ANIMATION + SLIDER LOGIC:
+	          let slider = document.getElementById("myRange");
+	          let output = document.getElementById("demo");
+						let tmin = document.getElementById("playbar_tmin");
+						let tmax = document.getElementById("playbar_tmax");
+						let zmin = document.getElementById("elevation_min");
+						let zmax = document.getElementById("elevation_max");
+	          output.innerHTML = slider.value;
 
-            // t is a value between 0 and 1 in rtkTime frame
-            var gpsTime = (rtkRange*t) + rtkOffset;  // Convert from rtkTime to gpsTime
+	          // Playbar Button Functions:
+	          let playbutton = document.getElementById("playbutton");
+	          let pausebutton = document.getElementById("pausebutton");
+	          pausebutton.addEventListener("mousedown", () => {
+							animationEngine.stop();
+	          });
+	          playbutton.addEventListener("mousedown", () => {
+							animationEngine.start();
+	          });
 
-            // TODO define slider time frame
-            slider.value = 100*t; // NOTE this is currently only using the rtkTime as the time frame
-            output.innerHTML = (gpsTime-rtkOffset).toFixed(4); // Centered to zero
-
-            // use getPoint(t) to map from t to the position on the animation path
-						var bunny = viewer.scene.scene.getObjectByName("bunny");
-            let rtkPoint = animation.getPoint(t); // NOTE t is in rtkTime
-						let vehicleOrientation = bunny.orientationPath.getPoint(t);
-            rtkPoint.z -= 2.0;
-            sphere.position.copy(rtkPoint);
-            bunny.position.copy(rtkPoint);
-						applyRotation(bunny, vehicleOrientation.x, vehicleOrientation.y, vehicleOrientation.z);
-						bunny.visible = true;
-            // sprite.position.copy(point.add(new THREE.Vector3(10,10,10)));
-
-
-            // Set Time in Material:
-            viewer.scene.pointclouds[0].material.uniforms.timeVal.value = t; // TODO not used I think
-            // debugger; //update radar material here
-
-            // Create GPS Time Clipping Event:
-
-            var minGpsTime = gpsTime + parseFloat(tmin.value);
-            var maxGpsTime = gpsTime + parseFloat(tmax.value);
-
-						// debugger; // maxGpsTime
-            // Animate Point Cloud:
-            minLidarTime = minGpsTime - lidarOffset;
-            maxLidarTime = maxGpsTime - lidarOffset;
-            viewer.setFilterGPSTimeRange(minLidarTime, maxLidarTime);
-            viewer.setFilterGPSTimeExtent(minGpsTime-10, maxGpsTime+10);
-
-            // Animate Radar:
-            minRadarTime = minGpsTime - radarOffset;
-            maxRadarTime = maxGpsTime - radarOffset;
-            var radar = viewer.scene.scene.getObjectByName("radar")
-            radar.material.uniforms.minGpsTime.value = minRadarTime;
-            radar.material.uniforms.maxGpsTime.value = maxRadarTime;
-            // console.log(radar);
-
-            // debugger; // check the rtkTime, slider time, radar time, lidar time
-
-						if (updateCamera) {
-							let camera = viewer.scene.getActiveCamera();
-							let lag = 1.01; // seconds
-							lagTime = Math.max(0, (gpsTime - lag - rtkOffset)/rtkRange);
-
-							// let lagTime = Math.max(0, (gpsTime-lag)/viewer.scene.pointclouds[0].pcoGeometry.nodes.r.gpsTime.range);
-							let camPoint = animation.getPoint(lagTime);  // Get point with 2 second lag
-							camPoint.z += 10;
-							viewer.scene.view.position.copy(camPoint); // changed from camera
-							var targetPosition = new THREE.Vector3(sphere.position.x, sphere.position.y, sphere.position.z+2);
-							viewer.scene.view.lookAt(targetPosition);
-						}
-          }
-          window.animation = animation;
-
-
-          // Playbar Button Functions:
-          let playbutton = document.getElementById("playbutton");
-          let pausebutton = document.getElementById("pausebutton");
-          pausebutton.addEventListener("mousedown", () => {
-            animation.pause();
-          });
-          playbutton.addEventListener("mousedown", () => {
-            animation.resume();
-          });
-
-					slider.addEventListener("input", () => {
-						animation.pause();
-						$("playbar_toggle").click();
-						var val = slider.value/100.0;
-						animation.t = val;
-						animate(val);
-					});
-
-					slider.addEventListener("wheel", () => {
-						animation.pause();
-						var val = slider.value/100.0;
-						animation.t = val;
-						animate(val, updateCamera=false);
-					});
-
-					window.addEventListener("keypress", (e) => {
-						if (e.charCode == 32) {
-			          if (toggleplay.checked) {
-			            animation.resume();
-			          } else {
-			            animation.pause();
-			          }
-			        }
+						slider.addEventListener("input", () => {
+							animationEngine.stop();
+							var val = slider.value/100.0;
+							animationEngine.timeline.t = val*animationEngine.timeRange + animationEngine.tstart;
+							animationEngine.updateTimeForAll();
 						});
 
-          $("#pausebutton").trigger("mousedown");
-        }
+						slider.addEventListener("wheel", () => {
+							animationEngine.stop();
+							var val = slider.value/100.0;
+							animationEngine.timeline.t = val*animationEngine.timeRange + animationEngine.tstart;
+							animationEngine.updateTimeForAll();
+						});
 
-        window.animationPath = animationPath;
-				window.animation.pause();
-      }
+							zmin.addEventListener("input", () => {
+								window.elevationWindow.min = Math.abs(Number(zmin.value));
+								window.elevationWindow.max = Math.abs(Number(zmax.value));
+								animationEngine.updateTimeForAll();
+							});
 
-    });
+							zmax.addEventListener("input", ()=> {
+								window.elevationWindow.min = Math.abs(Number(zmin.value));
+								window.elevationWindow.max = Math.abs(Number(zmax.value));
+								animationEngine.updateTimeForAll();
+							});
+	        }
+
+	      }
+	    });
+
+
+			// RTK TweenTarget Callback:
+			window.pitchThreshold = 1.00;
+			window.elevationWindow = {min: 1, max: 1, z: 0};
+			animationEngine.tweenTargets.push((gpsTime) => {
+				try{
+					let t = (gpsTime - animationEngine.tstart) / (animationEngine.timeRange);
+					let vehicle = viewer.scene.scene.getObjectByName("Vehicle");
+					let mesh = vehicle.getObjectByName("Vehicle Mesh");
+					let lastRtkPoint = vehicle.position.clone();
+					let lastRtkOrientation = vehicle.rotation.clone();
+					let lastTransform = vehicle.matrixWorld.clone();
+					// debugger; //vehicle
+					let state = vehicle.rtkTrajectory.getState(gpsTime);
+					let rtkPoint = state.pose.clone();
+					let vehicleOrientation = state.orient.clone();
+					vehicle.position.copy(rtkPoint);
+					if (visualizationMode == "aptivLanes") {
+						vehicle.position.add(new THREE.Vector3(0, 0, 1000));
+					}
+					applyRotation(vehicle, vehicleOrientation.x, vehicleOrientation.y, vehicleOrientation.z);
+					vehicle.updateMatrixWorld();
+
+					// Apply Transformation to Camera and Target:
+					let newTransform = vehicle.matrixWorld.clone();
+					let lastTransformInverse = lastTransform.getInverse(lastTransform);
+					let deltaTransform = lastTransformInverse.premultiply(newTransform);
+					let target = viewer.scene.view.position.clone();
+					let direction = viewer.scene.view.direction.clone();
+					let radius = viewer.scene.view.radius;
+					target.add(direction.multiplyScalar(radius));
+					viewer.scene.view.position.applyMatrix4(deltaTransform);
+					if (Math.abs(viewer.scene.view.pitch) < window.pitchThreshold) {
+						viewer.scene.view.lookAt(target.applyMatrix4(deltaTransform));
+					}
+
+					// Set Elevation:
+					// let elevationDeltaMin = -0;
+					// let elevationDeltaMax = 2;
+					let clouds = viewer.scene.pointclouds;
+					for (let ii=0, numClouds = clouds.length; ii<numClouds; ii++) {
+							let zheight = mesh.matrixWorld.getPosition().z;
+							window.elevationWindow.z = zheight;
+							viewer.scene.pointclouds[ii].material.elevationRange = [window.elevationWindow.z - window.elevationWindow.min, window.elevationWindow.z + window.elevationWindow.max];
+							// TODO set elevation slider range extent
+					}
+				} catch (e) {
+					console.error("Caught error: ",e);
+				}
+			});
+		}
+
+
+		// Animation Start/Stop Callbacks:
+		// TODO Put these somewhere better
+		{
+			let playbutton = document.getElementById("playbutton");
+			let pausebutton = document.getElementById("pausebutton");
+
+			animationEngine.preStartCallback = function () {
+				if (!animationEngine.isPlaying) {
+					$("#playbutton").trigger("mousedown");
+				}
+			}
+
+			animationEngine.preStopCallback = function() {
+				if (animationEngine.isPlaying) {
+					$("#pausebutton").trigger("mousedown");
+				}
+			}
+
+		}
+
+		// List of all Tween Target Update Functions:
+		// TODO Organize these (move them to the right place)
+		{
+			// PointCloud:
+			animationEngine.tweenTargets.push((gpsTime) => {
+				// debugger; // account for pointcloud offset
+				let minGpsTime = gpsTime-animationEngine.activeWindow.backward;
+				let maxGpsTime = gpsTime+animationEngine.activeWindow.forward;
+				viewer.setFilterGPSTimeRange(minGpsTime, maxGpsTime);
+				viewer.setFilterGPSTimeExtent(minGpsTime-1.5*animationEngine.activeWindow.backward, maxGpsTime+1.5*animationEngine.activeWindow.forward);
+			});
+
+			// Playbar:
+			animationEngine.tweenTargets.push((gpsTime) => {
+				let slider = document.getElementById("myRange");
+				let output = document.getElementById("demo");
+				let tmin = document.getElementById("playbar_tmin");
+				let tmax = document.getElementById("playbar_tmax");
+				let toggleplay = document.getElementById("toggleplay");
+				// TODO add playbackSpeed
+				output.innerHTML = slider.value;
+
+				let t = (gpsTime - animationEngine.tstart) / (animationEngine.timeRange);
+				slider.value = 100*t;
+				output.innerHTML = (gpsTime - animationEngine.tstart).toFixed(4); // Centered to zero
+			});
 
 
 
+			// // Camera:
+			// let updateCamera = false;
+			// let lag = 1.01; // seconds
+			// let camPointZOffset = 10; // meters
+			// window.camControlInitialized = false;
+			// window.camPointNeedsToBeComputed = true;
+			// window.camControlInUse = false;
+			// window.camDeltaTransform = {camStart: new THREE.Matrix4(), vehicleStart: new THREE.Vector3(), camEnd: new THREE.Matrix4(), vehicleEnd: new THREE.Vector3()};
+			// window.camPointLocalFrame = {position: new THREE.Vector3(-10,0,10)};
+			// window.camTargetLocalFrame = {position: new THREE.Vector3(0, 0, 0)};
 
-		// Potree.loadPointCloud("../pointclouds/fullpointcloud-time-mini/cloud.js", "fullpointcloud-time-mini", e => {
-		// Potree.loadPointCloud("../pointclouds/basemap-time/cloud.js", "basemap-time", e => {
-		// Potree.loadPointCloud("../pointclouds/basemap-demo/cloud.js", "basemap-demo", e => {
-		Potree.loadPointCloud("../pointclouds/veritas/full-pointcloud/cloud.js", "fullcloud", e => {
 
-			let pointcloud = e.pointcloud;
-			let material = pointcloud.material;
-			console.log(pointcloud.pcoGeometry.nodes.r.gpsTime);
-			viewer.scene.addPointCloud(pointcloud);
-			// material.pointColorType = Potree.PointColorType.RGB; // any Potree.PointColorType.XXXX
-			material.pointColorType = Potree.PointColorType.COLOR; // any Potree.PointColorType.XXXX
-			material.color = new THREE.Color().setRGB(0, 61/255, 1.0); // rgb(0, 61, 255)
-			material.size = 1;
-			material.pointSizeType = Potree.PointSizeType.FIXED;
-			material.shape = Potree.PointShape.SQUARE;
+			viewer.renderArea.addEventListener("keypress", (e) => {
+				if (e.key == "r") {
+					let box = new THREE.Box3().setFromObject(viewer.scene.scene.getObjectByName("Vehicle").getObjectByName("Vehicle Mesh"));
+					let node = new THREE.Object3D();
+					node.boundingBox = box;
+					viewer.zoomTo(node, 5, 500);
+				}
+			});
+		}
 
-      viewer.scene.view.position.set(300198.109, 4701144.537, 349.871);
-      viewer.scene.view.lookAt(new THREE.Vector3(299900.954, 4701576.919, 66.197));
-      // viewer.toggleNavigationCube();
-      $("#playbutton").click();
+// Load Lanes Code (start)
+		// Load Lanes Truth Data:
+		async function loadLanesCallback(s3, bucket, name) {
 
-			console.log("SET TIMEVAL IN MATERIAL HERE");
-			console.log(material.uniforms.timeVal);
+			let filename, tmpSupplierNum;
+			tmpSupplierNum = -1;
+			await loadLanes(s3, bucket, name, filename, tmpSupplierNum, (laneGeometries) => {
 
+				let lanesLayer = new THREE.Group();
+				lanesLayer.name = "Lanes";
+				for (let ii=0, len=laneGeometries.all.length; ii<len; ii++) {
+					lanesLayer.add(laneGeometries.all[ii]);
+				}
+				viewer.scene.scene.add(lanesLayer);
+				viewer.scene.dispatchEvent({
+					"type": "truth_layer_added",
+					"truthLayer": lanesLayer
+				});
+			});
+
+			if (visualizationMode == "aptivLanes") {
+
+				const laneNum = [1,2,3];
+				const laneDirection = ["EB", "WB"];
+				const supplierNum = [1,2,3];
+				let filename, datasetName;
+
+				for (let s of supplierNum) {
+					for (let d of laneDirection) {
+						for (let n of laneNum) {
+							try {
+
+								let layerName = `Supplier${s}_${d}_Lane${n}`;
+								filename = `Supplier${s}_${d}_Lane${n}.fb`;
+
+								await loadLanes(s3, bucket, name, filename, s, (laneGeometries) => {
+									let lanesLayer = new THREE.Group();
+									lanesLayer.name = layerName;
+									for (let ii=0, len=laneGeometries.all.length; ii<len; ii++) {
+										lanesLayer.add(laneGeometries.all[ii]);
+									}
+									viewer.scene.scene.add(lanesLayer);
+									viewer.scene.dispatchEvent({
+										"type": "map_provider_layer_added",
+										"mapLayer": lanesLayer
+									});
+								});
+							} catch (e) {
+								console.log(`Couldn't load ${filename}: ${e}`);
+							}
+						}
+					}
+				}
+			}
+
+			// Load Comparison Dataset (hardcoded to one for now)
+			if (comparisonDatasets.length > 0) {
+				filename = 'lanes.fb';
+				tmpSupplierNum = -2;
+				await loadLanes(s3, bucket, comparisonDatasets[0], filename, tmpSupplierNum, (laneGeometries) => {
+
+					let lanesLayer = new THREE.Group();
+					lanesLayer.name = `Lanes-${comparisonDatasets[0].split("Data/")[1]}`;
+					for (let ii=0, len=laneGeometries.all.length; ii<len; ii++) {
+						lanesLayer.add(laneGeometries.all[ii]);
+					}
+					viewer.scene.scene.add(lanesLayer);
+					viewer.scene.dispatchEvent({
+						"type": "truth_layer_added",
+						"truthLayer": lanesLayer
+					});
+				});
+			}
+
+
+		}
+// Load Lanes Code (end)
+
+
+// Load Gaps Code (Start)
+window.gapsLoaded = false;
+$(document).ready(() => {
+	// Configure Playbar
+	$("#load_gaps_button")[0].style.display="block"
+	let loadGapsButton = $("#load_gaps_button")[0];
+	loadGapsButton.addEventListener("mousedown", () => {
+
+		if (!window.gapsLoaded) {
+			$("#loading-bar")[0].style.display = "none";
+			setLoadingScreen();
+
+			let gapShaderMaterial = shaderMaterial.clone();
+			gapShaderMaterial.uniforms.color.value = new THREE.Color(0x0000ff);
+			gapShaderMaterial.depthWrite = false;
+			loadGaps(s3, bucket, name, gapShaderMaterial, animationEngine, (gapGeometries) => {
+				let gapsLayer = new THREE.Group();
+				gapsLayer.name = "Vehicle Gaps";
+				for (let ii=0, len=gapGeometries.left.length; ii<len; ii++) {
+					// if (ii < 1000) {
+						gapsLayer.add(gapGeometries.left[ii]);
+					// }
+				}
+				viewer.scene.scene.add(gapsLayer);
+				viewer.scene.dispatchEvent({
+					"type": "assessments_layer_added",
+					"assessmentsLayer": gapsLayer
+				});
+				animationEngine.tweenTargets.push((gpsTime) => {
+					let currentTime = gpsTime - animationEngine.tstart;
+					gapShaderMaterial.uniforms.minGpsTime.value = currentTime - animationEngine.activeWindow.backward;
+					gapShaderMaterial.uniforms.maxGpsTime.value = currentTime + animationEngine.activeWindow.forward;
+				});
+				window.gapsLoaded = true;
+				loadGapsButton.disabled = true;
+				removeLoadingScreen();
+			});
+		}
+	});
+});
+// Load Gaps Code (end)
+
+// Load Tracks Code (Start)
+		// TODO Move this somewhere else
+		let trackShaderMaterial = shaderMaterial.clone();
+
+		async function loadTracksCallback(s3, bucket, name, trackShaderMaterial, animationEngine) {
+
+			await loadTracks(s3, bucket, name, trackShaderMaterial, animationEngine, (trackGeometries) => {
+				let trackLayer = new THREE.Group();
+				trackLayer.name = "Tracked Objects";
+				for (let ii=0, len=trackGeometries.bbox.length; ii<len; ii++) {
+					trackLayer.add(trackGeometries.bbox[ii]);
+					// viewer.scene.scene.add(trackGeometries.bbox[ii]); // Original
+				}
+
+				viewer.scene.scene.add(trackLayer);
+				let e = new CustomEvent("truth_layer_added", {detail: trackLayer, writable: true});
+				viewer.scene.dispatchEvent({
+					"type": "truth_layer_added",
+					"truthLayer": trackLayer
+				});
+
+				// TODO check if group works as expected, then trigger "truth_layer_added" event
+				animationEngine.tweenTargets.push((gpsTime) => {
+					let currentTime = gpsTime - animationEngine.tstart;
+					trackShaderMaterial.uniforms.minGpsTime.value = currentTime - animationEngine.activeWindow.backward;
+					trackShaderMaterial.uniforms.maxGpsTime.value = currentTime + animationEngine.activeWindow.forward;
+				});
+			});
+		}
+
+
+
+		window.detectionsLoaded = false;
+		$(document).ready(() => {
+			// Configure Playbar
+			$("#load_detections_button")[0].style.display="block"
+			let loadDetectionsButton = $("#load_detections_button")[0];
+			loadDetectionsButton.addEventListener("mousedown", () => {
+				if (!window.detectionsLoaded) {
+					$("#loading-bar")[0].style.display = "none";
+					setLoadingScreen();
+					let detectionShaderMaterial = shaderMaterial.clone();
+					detectionShaderMaterial.uniforms.color.value = new THREE.Color(0xFFA500);
+					loadDetections(s3, bucket, name, detectionShaderMaterial, animationEngine, (detectionGeometries) => {
+						let detectionLayer = new THREE.Group();
+						detectionLayer.name = "Object Detections";
+						for (let ii=0, len=detectionGeometries.bbox.length; ii<len; ii++) {
+							detectionLayer.add(detectionGeometries.bbox[ii]);
+						}
+						viewer.scene.scene.add(detectionLayer);
+						viewer.scene.dispatchEvent({
+							"type": "truth_layer_added",
+							"truthLayer": detectionLayer
+						});
+						animationEngine.tweenTargets.push((gpsTime) => {
+							let currentTime = gpsTime - animationEngine.tstart;
+							detectionShaderMaterial.uniforms.minGpsTime.value = currentTime - animationEngine.activeWindow.backward;
+							detectionShaderMaterial.uniforms.maxGpsTime.value = currentTime + animationEngine.activeWindow.forward;
+						});
+						window.detectionsLoaded = true;
+						loadDetectionsButton.disabled = true;
+						removeLoadingScreen();
+					});
+				}
+			});
 		});
 
 
-				// Potree.loadPointCloud("../pointclouds/fullpointcloud-time-mini/cloud.js", "fullpointcloud-time-mini", e => {
-				// Potree.loadPointCloud("../pointclouds/basemap-time/cloud.js", "basemap-time", e => {
-				Potree.loadPointCloud("../pointclouds/basemap-demo/cloud.js", "basemap", e => {
-				// Potree.loadPointCloud("../pointclouds/veritas/full-pointcloud/cloud.js", "basemap-demo", e => {
+// Load Tracks Code (End)
 
-					let pointcloud = e.pointcloud;
-					let material = pointcloud.material;
-					console.log(pointcloud.pcoGeometry.nodes.r.gpsTime);
-					viewer.scene.addPointCloud(pointcloud);
-					material.pointColorType = Potree.PointColorType.COLOR; // any Potree.PointColorType.XXXX
-					material.color = new THREE.Color().setRGB(0.99, 0.99, 0.99);
-					material.size = 0.09;
-					material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-					material.shape = Potree.PointShape.SQUARE;
+    // // Load Radar Cubes:
+    // loadRadar((geometry, t_init) => {
+		//
+    //   // uniforms
+    //   uniforms = {
+    //       color: { value: new THREE.Color( 0xffff00 ) },
+    //       minGpsTime: {value: 0.0 },
+    //       maxGpsTime: {value: 110.0 },
+    //       initialTime: {value: t_init}
+    //   };
+		//
+    //   // point cloud material
+    //   var shaderMaterial = new THREE.ShaderMaterial( {
+		//
+    //       uniforms:       uniforms,
+    //       vertexShader:   document.getElementById( 'vertexshader' ).textContent,
+    //       fragmentShader: document.getElementById( 'fragmentshader' ).textContent,
+    //       transparent:    true
+		//
+    //   });
+		//
+    //   var material = new THREE.PointsMaterial( {size:1.0} );
+    //   var mesh = new THREE.Points(geometry, shaderMaterial);
+    //   mesh.name = "radar";
+    //   // debugger; //radar tracks added?
+    //   viewer.scene.scene.add(mesh);
+    // });
+
+// Load Radar Code (Start)
+		window.radarLoaded = false;
+		$(document).ready(() => {
+			// Configure Playbar
+			$("#load_radar_button")[0].style.display="block"
+			let loadRadarButton = $("#load_radar_button")[0];
+			loadRadarButton.addEventListener("mousedown", () => {
+				if (!window.radarLoaded) {
+					$("#loading-bar")[0].style.display = "none";
+					setLoadingScreen();
+
+					loadRadar(s3, bucket, name, (geometry,t_init, boxBufferGeometries) => {
+
+						let boxMesh = new THREE.Mesh(boxBufferGeometries, new THREE.MeshBasicMaterial({color: 0xffff00}) );
+						boxMesh.name = "radar_boxes";
+						// viewer.scene.scene.add(boxMesh);
+
+
+						// uniforms
+						let uniforms = {
+								color: { value: new THREE.Color( 0xffff00 ) },
+								minGpsTime: {value: 0.0 },
+								maxGpsTime: {value: 110.0 },
+								initialTime: {value: t_init}
+						};
+
+						// point cloud material
+						var shaderMaterial = new THREE.ShaderMaterial( {
+
+								uniforms:       uniforms,
+								vertexShader:   document.getElementById( 'vertexshader' ).textContent,
+								fragmentShader: document.getElementById( 'fragmentshader' ).textContent,
+								transparent:    true
+
+						});
+
+						var material = new THREE.PointsMaterial( {size:1.0} );
+						var mesh = new THREE.Points(geometry, shaderMaterial);
+						mesh.name = "radar";
+						// debugger; //radar tracks added?
+						viewer.scene.scene.add(mesh);
+						viewer.scene.dispatchEvent({"type": "sensor_layer_added", "sensorLayer": mesh });
+
+
+						// Create tween:
+						{
+							animationEngine.tweenTargets.push( (t) => {
+								// debugger;
+								let minGpsTime = t - animationEngine.activeWindow.backward;
+								let maxGpsTime = t + animationEngine.activeWindow.forward;
+								let radarOffset = t_init;
+								let minRadarTime = minGpsTime - radarOffset;
+								let maxRadarTime = maxGpsTime - radarOffset;
+								let radar = viewer.scene.scene.getObjectByName("radar")
+								radar.material.uniforms.minGpsTime.value = minRadarTime;
+								radar.material.uniforms.maxGpsTime.value = maxRadarTime;
+							});
+						}
+						window.radarLoaded = true;
+						loadRadarButton.disabled = true;
+						removeLoadingScreen();
+					});
+				}
+			});
+		});
+
+//Load Radar code (end)
+
+    // // Load Radar:
+    // loadRadar(s3, bucket, name, (geometry, t_init) => {
+		//
+    //   // uniforms
+    //   uniforms = {
+    //       color: { value: new THREE.Color( 0xffff00 ) },
+    //       minGpsTime: {value: 0.0 },
+    //       maxGpsTime: {value: 110.0 },
+    //       initialTime: {value: t_init}
+    //   };
+		//
+    //   // point cloud material
+    //   var shaderMaterial = new THREE.ShaderMaterial( {
+		//
+    //       uniforms:       uniforms,
+    //       vertexShader:   document.getElementById( 'vertexshader' ).textContent,
+    //       fragmentShader: document.getElementById( 'fragmentshader' ).textContent,
+    //       transparent:    true
+		//
+    //   });
+		//
+    //   const material = new THREE.PointsMaterial( {size:1.0} );
+    //   const mesh = new THREE.Points(geometry, shaderMaterial);
+    //   mesh.name = "radar";
+    //   // debugger; //radar tracks added?
+    //   viewer.scene.scene.add(mesh);
+    // });
+
+			if (runForLocalDevelopment) {
+				Potree.loadPointCloud("../pointclouds/test/cloud.js", "full-cloud", e => {
+					const pointcloud = e.pointcloud;
+		      const material = pointcloud.material;
+		      viewer.scene.addPointCloud(pointcloud);
+		      material.pointColorType = Potree.PointColorType.INTENSITY; // any Potree.PointColorType.XXXX
+					material.gradient = Potree.Gradients.GRAYSCALE; // Can define custom gradient or look up in Potree.Gradients
+		      material.size = 0.09;
+		      material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+		      material.shape = Potree.PointShape.SQUARE;
+
+		      viewer.scene.view.position.set(300198.109, 4701144.537, 349.871);
+		      viewer.scene.view.lookAt(new THREE.Vector3(299900.954, 4701576.919, 66.197));
+				});
+			} else if (name === 'Data/basemap-demo') {
+        Potree.loadPointCloud({s3, bucket, name}, "basemap", e => {
+		      const pointcloud = e.pointcloud;
+		      const material = pointcloud.material;
+		      viewer.scene.addPointCloud(pointcloud);
+		      material.pointColorType = Potree.PointColorType.COLOR; // any Potree.PointColorType.XXXX
+		      material.color = new THREE.Color().setRGB(0.99, 0.99, 0.99);
+		      material.size = 0.09;
+		      material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+		      material.shape = Potree.PointShape.SQUARE;
 
 		      viewer.scene.view.position.set(300198.109, 4701144.537, 349.871);
 		      viewer.scene.view.lookAt(new THREE.Vector3(299900.954, 4701576.919, 66.197));
 		      // viewer.toggleNavigationCube();
 		      $("#playbutton").click();
+		    });
+      } else if (name === 'Data/fullcloud-demo') {
+        Potree.loadPointCloud({s3, bucket, name}, "fullcloud", e => {
+		      const pointcloud = e.pointcloud;
+		      const material = pointcloud.material;
+		      viewer.scene.addPointCloud(pointcloud);
+		      material.pointColorType = Potree.PointColorType.HEIGHT; // any Potree.PointColorType.XXXX
+		      material.size = 0.09;
+		      material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+		      material.shape = Potree.PointShape.SQUARE;
 
-					console.log("SET TIMEVAL IN MATERIAL HERE");
-					console.log(material.uniforms.timeVal);
+		      viewer.scene.view.position.set(300198.109, 4701144.537, 349.871);
+		      viewer.scene.view.lookAt(new THREE.Vector3(299900.954, 4701576.919, 66.197));
+		      // viewer.toggleNavigationCube();
+		      $("#playbutton").click();
+		    });
+        Potree.loadPointCloud({s3, bucket, name: 'Data/basemap-demo'}, "basemap", e => {
+		      const pointcloud = e.pointcloud;
+		      const material = pointcloud.material;
+		      viewer.scene.addPointCloud(pointcloud);
+		      material.pointColorType = Potree.PointColorType.COLOR; // any Potree.PointColorType.XXXX
+		      material.color = new THREE.Color().setRGB(0.99, 0.99, 0.99);
+		      material.size = 0.09;
+		      material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+		      material.shape = Potree.PointShape.SQUARE;
+		    });
+      } else {
+        Potree.loadPointCloud({s3, bucket, name}, name.substring(5), e => {
+		      const pointcloud = e.pointcloud;
+		      const material = pointcloud.material;
+		      viewer.scene.addPointCloud(pointcloud);
+		      material.pointColorType = Potree.PointColorType.INTENSITY; // any Potree.PointColorType.XXXX
+					material.gradient = Potree.Gradients.GRAYSCALE;
+		      material.size = 0.09;
+		      material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+		      material.shape = Potree.PointShape.SQUARE;
 
-				});
+		      // viewer.scene.view.position.set(300198.109, 4701144.537, 349.871);
+		      // viewer.scene.view.lookAt(new THREE.Vector3(299900.954, 4701576.919, 66.197));
+		      // viewer.toggleNavigationCube();
+		      $("#playbutton").click();
 
+					try {
+						togglePointClass(pointcloud);
+					} catch (e) {
+						console.log("Pointcloud loaded before sidebar initialized: ", e);
+					}
+		    });
+      }
 		</script>
-
-
   </body>
 </html>

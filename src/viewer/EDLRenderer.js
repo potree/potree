@@ -201,7 +201,7 @@ export class EDLRenderer{
 
 		}
 
-		viewer.renderer.render(viewer.scene.scene, camera);
+		//viewer.renderer.render(viewer.scene.scene, camera);
 		
 		//viewer.renderer.clearTarget( this.rtColor, true, true, true );
 		viewer.renderer.clearTarget(this.rtEDL, true, true, true);
@@ -240,10 +240,11 @@ export class EDLRenderer{
 			});
 		}
 
-		viewer.renderer.render(viewer.scene.scene, camera, this.rtRegular);
+		//viewer.renderer.render(viewer.scene.scene, camera, this.rtRegular);
+		viewer.renderer.render(viewer.scene.scene, camera);
 
 		//viewer.renderer.setRenderTarget(this.rtColor);
-		viewer.dispatchEvent({type: "render.pass.scene", viewer: viewer, renderTarget: this.rtRegular});
+		//viewer.dispatchEvent({type: "render.pass.scene", viewer: viewer, renderTarget: this.rtRegular});
 
 		{ // EDL OCCLUSION PASS
 			this.edlMaterial.uniforms.screenWidth.value = width;
@@ -251,10 +252,17 @@ export class EDLRenderer{
 
 			//this.edlMaterial.uniforms.colorMap.value = this.rtColor.texture;
 
-			this.edlMaterial.uniforms.uRegularColor.value = this.rtRegular.texture;
+			let proj = camera.projectionMatrix;
+			let projArray = new Float32Array(16);
+			projArray.set(proj.elements);
+
+			this.edlMaterial.uniforms.uNear.value = camera.near;
+			this.edlMaterial.uniforms.uFar.value = camera.far;
+			//this.edlMaterial.uniforms.uRegularColor.value = this.rtRegular.texture;
 			this.edlMaterial.uniforms.uEDLColor.value = this.rtEDL.texture;
-			this.edlMaterial.uniforms.uRegularDepth.value = this.rtRegular.depthTexture;
+			//this.edlMaterial.uniforms.uRegularDepth.value = this.rtRegular.depthTexture;
 			this.edlMaterial.uniforms.uEDLDepth.value = this.rtEDL.depthTexture;
+			this.edlMaterial.uniforms.uProj.value = projArray;
 
 			this.edlMaterial.uniforms.edlStrength.value = viewer.edlStrength;
 			this.edlMaterial.uniforms.radius.value = viewer.edlRadius;

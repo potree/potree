@@ -30,10 +30,10 @@
 	<script src="../libs/jstree/jstree.js"></script>
 	<script src="../build/potree/potree.js"></script>
 	<script src="../libs/plasio/js/laslaz.js"></script>
-	
+
 	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
 	<!-- INCLUDE SETTINGS HERE -->
-	
+
 	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
 		<div id="potree_render_area"></div>
 		<div id="potree_sidebar_container"> </div>
@@ -56,7 +56,7 @@
 
 		viewer.setDescription(`
 		This example contains two clipping volumes, one with visible bounding box and another one without. <br>
-		Inside the "Tools" panel, you can specify whether you want to show points inside or outside the clip box, 
+		Inside the "Tools" panel, you can specify whether you want to show points inside or outside the clip box,
 		or to highlight points that are inside.<br>
 		The two volume entries in the "Scene" panel can be used to inspect the properties of the volumes and to show or hide them.
 		Point cloud courtesy of <a target='_blank' href='https://www.sigeom.ch/'>sigeom sa</a>`);
@@ -111,7 +111,6 @@
 			let pointcloud = viewer.scene.pointclouds[0];
 
 			let fitted = pointcloud.root.getFittedBox(volume);
-			console.log(fitted);
 			volume.scale.copy(fitted.scale);
 			volume.position.copy(fitted.position);
 

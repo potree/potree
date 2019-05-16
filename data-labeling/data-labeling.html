@@ -84,7 +84,6 @@
 
 		viewer.loadGUI(() => {
 			viewer.setLanguage('en');
-			// $("#menu_appearance").next().show();
 			$("#menu_tools").next().show();
 			$("#menu_scene").next().show();
 			viewer.toggleSidebar();
@@ -103,20 +102,8 @@
 			material.pointColorType = Potree.PointColorType.HEIGHT;
 			material.pointSizeType = Potree.PointSizeType.FIXED;
 
-			// console.log(e.pointcloud.pcoGeometry.nodes.gpsTime);
-			// console.log(e.pointcloud.nodes.r.gpsTime);
-
 			viewer.fitToScreen();
 		});
-
-		window.addEventListener("message", (event) => {
-			// console.log(viewer.scene.pointclouds[0]);
-			// debugger;
-			// initLabeler(window.viewer);
-		});
-
-
-
 	</script>
 
 

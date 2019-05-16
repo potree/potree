@@ -40,6 +40,40 @@ Use the ```gulp watch``` command to
 gulp watch
 ```
 
+## Deploy
+
+Deploy potree to the EC2 instances serving the Veritas sites:
+
+Active EC2 instances (as of 2019-05-16):
+
+| Name                        | IPv4 Public IP | Keypair            | Potree Location                                  | Description |
+| --------------------------- | -------------- | ------------------ | ------------------------------------------------ | ----------- |
+| PotreeServer                | 34.207.247.239 | `NextDroidDev.pem` | `/usr/share/nginx/html/potree`                   | "Production" server - however this is running a very old version of potree currently (2019-05-16) |
+| Veritas Dev (Potree Server) | 18.208.171.218 | `NextDroidDev.pem` | `~/git/GroundTruthVisualization/external/potree` | "Development" server - this is the primary server that we have ended up using and is currently client facing (2019-05-16) |
+
+Steps for deploying (primarily for Veritas Dev server): 
+1. ssh into the desired EC2 instance with the appropriate keypair
+2. Activate ssh-agent by running `eval $(ssh-agent -s)` and adding your github ssh-key using `ssh-add /path/to/ssh-key/id_pub`
+  - if you have not setup an ssh-key on this instance see here: [Adding a new SSH key to your GitHub account](https://help.github.com/en/enterprise/2.15/user/articles/adding-a-new-ssh-key-to-your-github-account)
+3. Checkout the appropriate branch in potree (see table above for potree location on ec2 instance)
+4. Compile the code using `gulp watch`. Note this both compiles the code and launches a gulp server, however, we use an Nginx server for serving on TCP ports, so you can kill the process after compiling (which takes about 1-2 seconds).
+5. Check the visualization in a private browser on [dev.vts.nextdroid.com](https://dev.vts.nextdroid.com) - if you do not use a private browser then you will likely not see the updated visualization due to browser caching.
+
+
+Sample Walkthrough for deploying to Development Server:
+```
+ssh -i /path/to/NextDroidDev.pem ubuntu@18.208.171.218
+
+## Inside EC2 instance:
+eval $(ssh-agent -s)		# activate ssh-agent
+ssh-add /path/to/id_rsa		# add your ssh private key 
+cd git/GroundTruthVisualization/external/potree/
+git fetch
+git checkout <branch> 
+gulp watch 					# let it compile then you can kill the process with ctrl-C
+```
+
+
 ## Downloads
 
 [PotreeConverter source and Win64 binaries](https://github.com/potree/PotreeConverter/releases)

@@ -1,0 +1,3202 @@
+[
+  {
+    "bounds": [
+      -4.985399999999999,
+      1.0366,
+      -3.4494,
+      0.702300000000001,
+      6.7243,
+      2.2383000000000006
+    ],
+    "id": "r.laz",
+    "inserts": 5202,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r.laz",
+    "points": 5202,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.985399999999999,
+      1.0366,
+      -3.4494,
+      -2.141549999999999,
+      3.88045,
+      -0.6055499999999996
+    ],
+    "id": "r0.laz",
+    "inserts": 5020,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r0.laz",
+    "points": 5020,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.985399999999999,
+      1.0366,
+      -3.4494,
+      -3.5634749999999995,
+      2.458525,
+      -2.027475
+    ],
+    "id": "r00.laz",
+    "inserts": 446,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r00.laz",
+    "points": 446,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.985399999999999,
+      1.7475625,
+      -2.7384375,
+      -4.2744374999999994,
+      2.458525,
+      -2.027475
+    ],
+    "id": "r003.laz",
+    "inserts": 86,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r003.laz",
+    "points": 86,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.2744374999999994,
+      1.7475625,
+      -3.4494,
+      -3.5634749999999995,
+      2.458525,
+      -2.7384375
+    ],
+    "id": "r006.laz",
+    "inserts": 1451,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r006.laz",
+    "points": 1451,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.2744374999999994,
+      1.7475625,
+      -2.7384375,
+      -3.5634749999999995,
+      2.458525,
+      -2.027475
+    ],
+    "id": "r007.laz",
+    "inserts": 3,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r007.laz",
+    "points": 3,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.985399999999999,
+      1.0366,
+      -2.027475,
+      -3.5634749999999995,
+      2.458525,
+      -0.6055499999999998
+    ],
+    "id": "r01.laz",
+    "inserts": 739,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r01.laz",
+    "points": 739,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.985399999999999,
+      1.0366,
+      -2.027475,
+      -4.2744374999999994,
+      1.7475625,
+      -1.3165125
+    ],
+    "id": "r010.laz",
+    "inserts": 77,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r010.laz",
+    "points": 77,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.985399999999999,
+      1.0366,
+      -1.3165125,
+      -4.2744374999999994,
+      1.7475625,
+      -0.6055499999999999
+    ],
+    "id": "r011.laz",
+    "inserts": 21,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r011.laz",
+    "points": 21,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.985399999999999,
+      1.7475625,
+      -2.027475,
+      -4.2744374999999994,
+      2.458525,
+      -1.3165125
+    ],
+    "id": "r012.laz",
+    "inserts": 291,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r012.laz",
+    "points": 291,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.985399999999999,
+      1.7475625,
+      -1.3165125,
+      -4.2744374999999994,
+      2.458525,
+      -0.6055499999999998
+    ],
+    "id": "r013.laz",
+    "inserts": 442,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r013.laz",
+    "points": 442,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.2744374999999994,
+      1.0366,
+      -2.027475,
+      -3.5634749999999995,
+      1.7475625,
+      -1.3165125
+    ],
+    "id": "r014.laz",
+    "inserts": 584,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r014.laz",
+    "points": 584,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.2744374999999994,
+      1.0366,
+      -1.3165125,
+      -3.5634749999999995,
+      1.7475625,
+      -0.6055499999999998
+    ],
+    "id": "r015.laz",
+    "inserts": 103,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r015.laz",
+    "points": 103,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.2744374999999994,
+      1.7475625,
+      -2.027475,
+      -3.5634749999999995,
+      2.458525,
+      -1.3165125
+    ],
+    "id": "r016.laz",
+    "inserts": 312,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r016.laz",
+    "points": 312,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.2744374999999994,
+      1.7475625,
+      -1.3165125,
+      -3.5634749999999995,
+      2.458525,
+      -0.6055499999999998
+    ],
+    "id": "r017.laz",
+    "inserts": 160,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r017.laz",
+    "points": 160,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.985399999999999,
+      2.458525,
+      -3.4494,
+      -3.5634749999999995,
+      3.88045,
+      -2.027475
+    ],
+    "id": "r02.laz",
+    "inserts": 1588,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r02.laz",
+    "points": 1588,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.985399999999999,
+      2.458525,
+      -3.4494,
+      -4.2744374999999994,
+      3.1694875,
+      -2.7384375
+    ],
+    "id": "r020.laz",
+    "inserts": 5,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r020.laz",
+    "points": 5,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.985399999999999,
+      2.458525,
+      -2.7384375,
+      -4.2744374999999994,
+      3.1694875,
+      -2.027475
+    ],
+    "id": "r021.laz",
+    "inserts": 447,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r021.laz",
+    "points": 447,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.985399999999999,
+      3.1694875,
+      -3.4494,
+      -4.2744374999999994,
+      3.88045,
+      -2.7384375
+    ],
+    "id": "r022.laz",
+    "inserts": 31,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r022.laz",
+    "points": 31,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.985399999999999,
+      3.1694875,
+      -2.7384375,
+      -4.2744374999999994,
+      3.88045,
+      -2.027475
+    ],
+    "id": "r023.laz",
+    "inserts": 178,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r023.laz",
+    "points": 178,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.2744374999999994,
+      2.458525,
+      -3.4494,
+      -3.5634749999999995,
+      3.1694875,
+      -2.7384375
+    ],
+    "id": "r024.laz",
+    "inserts": 2391,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r024.laz",
+    "points": 2391,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.2744374999999994,
+      2.458525,
+      -2.7384375,
+      -3.5634749999999995,
+      3.1694875,
+      -2.027475
+    ],
+    "id": "r025.laz",
+    "inserts": 1256,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r025.laz",
+    "points": 1256,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.2744374999999994,
+      3.1694875,
+      -3.4494,
+      -3.5634749999999995,
+      3.88045,
+      -2.7384375
+    ],
+    "id": "r026.laz",
+    "inserts": 851,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r026.laz",
+    "points": 851,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.2744374999999994,
+      3.1694875,
+      -2.7384375,
+      -3.5634749999999995,
+      3.88045,
+      -2.027475
+    ],
+    "id": "r027.laz",
+    "inserts": 20,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r027.laz",
+    "points": 20,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.985399999999999,
+      2.458525,
+      -2.027475,
+      -3.5634749999999995,
+      3.88045,
+      -0.6055499999999996
+    ],
+    "id": "r03.laz",
+    "inserts": 2682,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r03.laz",
+    "points": 2682,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.985399999999999,
+      2.458525,
+      -2.027475,
+      -4.2744374999999994,
+      3.1694875,
+      -1.3165124999999998
+    ],
+    "id": "r030.laz",
+    "inserts": 402,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r030.laz",
+    "points": 402,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.985399999999999,
+      2.458525,
+      -1.3165124999999998,
+      -4.2744374999999994,
+      3.1694875,
+      -0.6055499999999996
+    ],
+    "id": "r031.laz",
+    "inserts": 1020,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r031.laz",
+    "points": 1020,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.985399999999999,
+      3.1694875,
+      -2.027475,
+      -4.2744374999999994,
+      3.88045,
+      -1.3165124999999998
+    ],
+    "id": "r032.laz",
+    "inserts": 390,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r032.laz",
+    "points": 390,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.985399999999999,
+      3.1694875,
+      -1.3165124999999998,
+      -4.2744374999999994,
+      3.88045,
+      -0.6055499999999996
+    ],
+    "id": "r033.laz",
+    "inserts": 1789,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r033.laz",
+    "points": 1789,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.2744374999999994,
+      2.458525,
+      -2.027475,
+      -3.5634749999999995,
+      3.1694875,
+      -1.3165124999999998
+    ],
+    "id": "r034.laz",
+    "inserts": 344,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r034.laz",
+    "points": 344,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.2744374999999994,
+      2.458525,
+      -1.3165124999999998,
+      -3.5634749999999995,
+      3.1694875,
+      -0.6055499999999996
+    ],
+    "id": "r035.laz",
+    "inserts": 1039,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r035.laz",
+    "points": 1039,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.2744374999999994,
+      3.1694875,
+      -2.027475,
+      -3.5634749999999995,
+      3.88045,
+      -1.3165124999999998
+    ],
+    "id": "r036.laz",
+    "inserts": 880,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r036.laz",
+    "points": 880,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.2744374999999994,
+      3.1694875,
+      -1.3165124999999998,
+      -3.5634749999999995,
+      3.88045,
+      -0.6055499999999996
+    ],
+    "id": "r037.laz",
+    "inserts": 1901,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r037.laz",
+    "points": 1901,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -3.5634749999999995,
+      1.0366,
+      -3.4494,
+      -2.1415499999999996,
+      2.458525,
+      -2.027475
+    ],
+    "id": "r04.laz",
+    "inserts": 1337,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r04.laz",
+    "points": 1337,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -3.5634749999999995,
+      1.7475625,
+      -3.4494,
+      -2.8525124999999996,
+      2.458525,
+      -2.7384375
+    ],
+    "id": "r042.laz",
+    "inserts": 2875,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r042.laz",
+    "points": 2875,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -2.8525124999999996,
+      1.7475625,
+      -3.4494,
+      -2.1415499999999996,
+      2.458525,
+      -2.7384375
+    ],
+    "id": "r046.laz",
+    "inserts": 1820,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r046.laz",
+    "points": 1820,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -3.5634749999999995,
+      2.458525,
+      -3.4494,
+      -2.141549999999999,
+      3.88045,
+      -2.027475
+    ],
+    "id": "r06.laz",
+    "inserts": 3266,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r06.laz",
+    "points": 3266,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -3.5634749999999995,
+      2.458525,
+      -3.4494,
+      -2.8525124999999996,
+      3.1694875,
+      -2.7384375
+    ],
+    "id": "r060.laz",
+    "inserts": 1882,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r060.laz",
+    "points": 1882,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -3.5634749999999995,
+      2.458525,
+      -2.7384375,
+      -2.8525124999999996,
+      3.1694875,
+      -2.027475
+    ],
+    "id": "r061.laz",
+    "inserts": 4407,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r061.laz",
+    "points": 4407,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -2.8525124999999996,
+      2.458525,
+      -3.4494,
+      -2.1415499999999996,
+      3.1694875,
+      -2.7384375
+    ],
+    "id": "r064.laz",
+    "inserts": 1812,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r064.laz",
+    "points": 1812,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -2.8525124999999996,
+      2.458525,
+      -2.7384375,
+      -2.141549999999999,
+      3.1694875,
+      -2.027475
+    ],
+    "id": "r065.laz",
+    "inserts": 4190,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r065.laz",
+    "points": 4190,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -3.5634749999999995,
+      2.458525,
+      -2.027475,
+      -2.141549999999999,
+      3.88045,
+      -0.6055499999999996
+    ],
+    "id": "r07.laz",
+    "inserts": 8102,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r07.laz",
+    "points": 8102,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -3.5634749999999995,
+      2.458525,
+      -2.027475,
+      -2.8525124999999996,
+      3.1694875,
+      -1.3165124999999998
+    ],
+    "id": "r070.laz",
+    "inserts": 2911,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r070.laz",
+    "points": 2911,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -3.5634749999999995,
+      2.458525,
+      -1.3165124999999998,
+      -2.8525124999999996,
+      3.1694875,
+      -0.6055499999999996
+    ],
+    "id": "r071.laz",
+    "inserts": 993,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r071.laz",
+    "points": 993,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -3.5634749999999995,
+      3.1694875,
+      -2.027475,
+      -2.8525124999999996,
+      3.88045,
+      -1.3165124999999998
+    ],
+    "id": "r072.laz",
+    "inserts": 6246,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r072.laz",
+    "points": 6246,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -3.5634749999999995,
+      3.1694875,
+      -1.3165124999999998,
+      -2.8525124999999996,
+      3.88045,
+      -0.6055499999999996
+    ],
+    "id": "r073.laz",
+    "inserts": 3033,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r073.laz",
+    "points": 3033,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -2.8525124999999996,
+      2.458525,
+      -2.027475,
+      -2.1415499999999996,
+      3.1694875,
+      -1.3165124999999998
+    ],
+    "id": "r074.laz",
+    "inserts": 5646,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r074.laz",
+    "points": 5646,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -2.8525124999999996,
+      2.458525,
+      -1.3165124999999998,
+      -2.141549999999999,
+      3.1694875,
+      -0.6055499999999996
+    ],
+    "id": "r075.laz",
+    "inserts": 1257,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r075.laz",
+    "points": 1257,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -2.8525124999999996,
+      3.1694875,
+      -2.027475,
+      -2.141549999999999,
+      3.88045,
+      -1.3165124999999998
+    ],
+    "id": "r076.laz",
+    "inserts": 5927,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r076.laz",
+    "points": 5927,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -2.8525124999999996,
+      3.1694875,
+      -1.3165124999999998,
+      -2.141549999999999,
+      3.88045,
+      -0.6055499999999996
+    ],
+    "id": "r077.laz",
+    "inserts": 4042,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r077.laz",
+    "points": 4042,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.985399999999999,
+      1.0366,
+      -0.6055499999999996,
+      -2.141549999999999,
+      3.88045,
+      2.2383000000000006
+    ],
+    "id": "r1.laz",
+    "inserts": 2822,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r1.laz",
+    "points": 2822,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.985399999999999,
+      1.0366,
+      -0.6055499999999996,
+      -3.5634749999999995,
+      2.458525,
+      0.8163750000000005
+    ],
+    "id": "r10.laz",
+    "inserts": 10,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r10.laz",
+    "points": 10,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.985399999999999,
+      1.7475625,
+      -0.6055499999999996,
+      -4.2744374999999994,
+      2.458525,
+      0.10541250000000046
+    ],
+    "id": "r102.laz",
+    "inserts": 18,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r102.laz",
+    "points": 18,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.985399999999999,
+      1.0366,
+      0.8163750000000005,
+      -3.5634749999999995,
+      2.458525,
+      2.2383000000000006
+    ],
+    "id": "r11.laz",
+    "inserts": 1,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r11.laz",
+    "points": 1,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.2744374999999994,
+      1.7475625,
+      0.8163750000000005,
+      -3.5634749999999995,
+      2.458525,
+      1.5273375000000007
+    ],
+    "id": "r116.laz",
+    "inserts": 1,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r116.laz",
+    "points": 1,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.985399999999999,
+      2.458525,
+      -0.6055499999999996,
+      -3.5634749999999995,
+      3.88045,
+      0.8163750000000005
+    ],
+    "id": "r12.laz",
+    "inserts": 647,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r12.laz",
+    "points": 647,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.985399999999999,
+      2.458525,
+      -0.6055499999999996,
+      -4.2744374999999994,
+      3.1694875,
+      0.10541250000000046
+    ],
+    "id": "r120.laz",
+    "inserts": 136,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r120.laz",
+    "points": 136,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.985399999999999,
+      3.1694875,
+      -0.6055499999999996,
+      -4.2744374999999994,
+      3.88045,
+      0.10541250000000046
+    ],
+    "id": "r122.laz",
+    "inserts": 631,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r122.laz",
+    "points": 631,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.2744374999999994,
+      3.1694875,
+      -0.6055499999999996,
+      -3.5634749999999995,
+      3.88045,
+      0.10541250000000046
+    ],
+    "id": "r126.laz",
+    "inserts": 927,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r126.laz",
+    "points": 927,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.2744374999999994,
+      3.1694875,
+      0.10541250000000046,
+      -3.5634749999999995,
+      3.88045,
+      0.8163750000000005
+    ],
+    "id": "r127.laz",
+    "inserts": 224,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r127.laz",
+    "points": 224,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -3.5634749999999995,
+      1.0366,
+      -0.6055499999999996,
+      -2.1415499999999996,
+      2.458525,
+      0.8163750000000005
+    ],
+    "id": "r14.laz",
+    "inserts": 16,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r14.laz",
+    "points": 16,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -3.5634749999999995,
+      1.7475625,
+      0.10541250000000046,
+      -2.8525124999999996,
+      2.458525,
+      0.8163750000000005
+    ],
+    "id": "r143.laz",
+    "inserts": 35,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r143.laz",
+    "points": 35,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -2.8525124999999996,
+      1.7475625,
+      0.10541250000000046,
+      -2.1415499999999996,
+      2.458525,
+      0.8163750000000005
+    ],
+    "id": "r147.laz",
+    "inserts": 12,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r147.laz",
+    "points": 12,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -3.5634749999999995,
+      2.458525,
+      -0.6055499999999996,
+      -2.141549999999999,
+      3.88045,
+      0.8163750000000005
+    ],
+    "id": "r16.laz",
+    "inserts": 8450,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r16.laz",
+    "points": 8450,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -3.5634749999999995,
+      2.458525,
+      -0.6055499999999996,
+      -2.8525124999999996,
+      3.1694875,
+      0.10541250000000046
+    ],
+    "id": "r160.laz",
+    "inserts": 3583,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r160.laz",
+    "points": 3583,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -3.5634749999999995,
+      2.458525,
+      0.10541250000000046,
+      -2.8525124999999996,
+      3.1694875,
+      0.8163750000000005
+    ],
+    "id": "r161.laz",
+    "inserts": 5643,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r161.laz",
+    "points": 5643,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -3.5634749999999995,
+      3.1694875,
+      -0.6055499999999996,
+      -2.8525124999999996,
+      3.88045,
+      0.10541250000000046
+    ],
+    "id": "r162.laz",
+    "inserts": 2921,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r162.laz",
+    "points": 2921,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -3.5634749999999995,
+      3.1694875,
+      0.10541250000000046,
+      -2.8525124999999996,
+      3.88045,
+      0.8163750000000005
+    ],
+    "id": "r163.laz",
+    "inserts": 2293,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r163.laz",
+    "points": 2293,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -2.8525124999999996,
+      2.458525,
+      -0.6055499999999996,
+      -2.1415499999999996,
+      3.1694875,
+      0.10541250000000046
+    ],
+    "id": "r164.laz",
+    "inserts": 3411,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r164.laz",
+    "points": 3411,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -2.8525124999999996,
+      2.458525,
+      0.10541250000000046,
+      -2.141549999999999,
+      3.1694875,
+      0.8163750000000005
+    ],
+    "id": "r165.laz",
+    "inserts": 5271,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r165.laz",
+    "points": 5271,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -2.8525124999999996,
+      3.1694875,
+      -0.6055499999999996,
+      -2.141549999999999,
+      3.88045,
+      0.10541250000000046
+    ],
+    "id": "r166.laz",
+    "inserts": 4055,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r166.laz",
+    "points": 4055,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -2.8525124999999996,
+      3.1694875,
+      0.10541250000000046,
+      -2.141549999999999,
+      3.88045,
+      0.8163750000000005
+    ],
+    "id": "r167.laz",
+    "inserts": 4442,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r167.laz",
+    "points": 4442,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -3.5634749999999995,
+      2.458525,
+      0.8163750000000005,
+      -2.141549999999999,
+      3.88045,
+      2.2383000000000006
+    ],
+    "id": "r17.laz",
+    "inserts": 1436,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r17.laz",
+    "points": 1436,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -3.5634749999999995,
+      2.458525,
+      0.8163750000000005,
+      -2.8525124999999996,
+      3.1694875,
+      1.5273375000000007
+    ],
+    "id": "r170.laz",
+    "inserts": 1096,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r170.laz",
+    "points": 1096,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -3.5634749999999995,
+      3.1694875,
+      0.8163750000000005,
+      -2.8525124999999996,
+      3.88045,
+      1.5273375000000007
+    ],
+    "id": "r172.laz",
+    "inserts": 364,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r172.laz",
+    "points": 364,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -2.8525124999999996,
+      2.458525,
+      0.8163750000000005,
+      -2.1415499999999996,
+      3.1694875,
+      1.5273375000000007
+    ],
+    "id": "r174.laz",
+    "inserts": 1482,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r174.laz",
+    "points": 1482,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -2.8525124999999996,
+      3.1694875,
+      0.8163750000000005,
+      -2.141549999999999,
+      3.88045,
+      1.5273375000000007
+    ],
+    "id": "r176.laz",
+    "inserts": 2209,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r176.laz",
+    "points": 2209,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.985399999999999,
+      3.88045,
+      -3.4494,
+      -2.141549999999999,
+      6.7243,
+      -0.6055499999999996
+    ],
+    "id": "r2.laz",
+    "inserts": 4040,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r2.laz",
+    "points": 4040,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.985399999999999,
+      3.88045,
+      -3.4494,
+      -3.5634749999999995,
+      5.3023750000000005,
+      -2.027475
+    ],
+    "id": "r20.laz",
+    "inserts": 339,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r20.laz",
+    "points": 339,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.985399999999999,
+      3.88045,
+      -3.4494,
+      -4.2744374999999994,
+      4.591412500000001,
+      -2.7384375
+    ],
+    "id": "r200.laz",
+    "inserts": 123,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r200.laz",
+    "points": 123,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.985399999999999,
+      4.591412500000001,
+      -3.4494,
+      -4.2744374999999994,
+      5.3023750000000005,
+      -2.7384375
+    ],
+    "id": "r202.laz",
+    "inserts": 468,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r202.laz",
+    "points": 468,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.985399999999999,
+      4.591412500000001,
+      -2.7384375,
+      -4.2744374999999994,
+      5.3023750000000005,
+      -2.027475
+    ],
+    "id": "r203.laz",
+    "inserts": 280,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r203.laz",
+    "points": 280,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.985399999999999,
+      3.88045,
+      -2.027475,
+      -3.5634749999999995,
+      5.3023750000000005,
+      -0.6055499999999998
+    ],
+    "id": "r21.laz",
+    "inserts": 875,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r21.laz",
+    "points": 875,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.985399999999999,
+      3.88045,
+      -2.027475,
+      -4.2744374999999994,
+      4.591412500000001,
+      -1.3165125
+    ],
+    "id": "r210.laz",
+    "inserts": 37,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r210.laz",
+    "points": 37,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.985399999999999,
+      3.88045,
+      -1.3165125,
+      -4.2744374999999994,
+      4.591412500000001,
+      -0.6055499999999999
+    ],
+    "id": "r211.laz",
+    "inserts": 230,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r211.laz",
+    "points": 230,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.985399999999999,
+      4.591412500000001,
+      -2.027475,
+      -4.2744374999999994,
+      5.3023750000000005,
+      -1.3165125
+    ],
+    "id": "r212.laz",
+    "inserts": 436,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r212.laz",
+    "points": 436,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.985399999999999,
+      4.591412500000001,
+      -1.3165125,
+      -4.2744374999999994,
+      5.3023750000000005,
+      -0.6055499999999998
+    ],
+    "id": "r213.laz",
+    "inserts": 22,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r213.laz",
+    "points": 22,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.2744374999999994,
+      3.88045,
+      -2.027475,
+      -3.5634749999999995,
+      4.591412500000001,
+      -1.3165125
+    ],
+    "id": "r214.laz",
+    "inserts": 863,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r214.laz",
+    "points": 863,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.2744374999999994,
+      3.88045,
+      -1.3165125,
+      -3.5634749999999995,
+      4.591412500000001,
+      -0.6055499999999998
+    ],
+    "id": "r215.laz",
+    "inserts": 1,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r215.laz",
+    "points": 1,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.2744374999999994,
+      4.591412500000001,
+      -2.027475,
+      -3.5634749999999995,
+      5.3023750000000005,
+      -1.3165125
+    ],
+    "id": "r216.laz",
+    "inserts": 446,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r216.laz",
+    "points": 446,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.2744374999999994,
+      4.591412500000001,
+      -1.3165125,
+      -3.5634749999999995,
+      5.3023750000000005,
+      -0.6055499999999998
+    ],
+    "id": "r217.laz",
+    "inserts": 630,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r217.laz",
+    "points": 630,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.985399999999999,
+      5.3023750000000005,
+      -3.4494,
+      -3.5634749999999995,
+      6.7243,
+      -2.027475
+    ],
+    "id": "r22.laz",
+    "inserts": 575,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r22.laz",
+    "points": 575,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.985399999999999,
+      5.3023750000000005,
+      -3.4494,
+      -4.2744374999999994,
+      6.0133375000000004,
+      -2.7384375
+    ],
+    "id": "r220.laz",
+    "inserts": 1026,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r220.laz",
+    "points": 1026,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.985399999999999,
+      6.0133375000000004,
+      -3.4494,
+      -4.2744374999999994,
+      6.7243,
+      -2.7384375
+    ],
+    "id": "r222.laz",
+    "inserts": 622,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r222.laz",
+    "points": 622,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.2744374999999994,
+      5.3023750000000005,
+      -3.4494,
+      -3.5634749999999995,
+      6.0133375000000004,
+      -2.7384375
+    ],
+    "id": "r224.laz",
+    "inserts": 29,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r224.laz",
+    "points": 29,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.2744374999999994,
+      5.3023750000000005,
+      -2.7384375,
+      -3.5634749999999995,
+      6.0133375000000004,
+      -2.027475
+    ],
+    "id": "r225.laz",
+    "inserts": 84,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r225.laz",
+    "points": 84,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.985399999999999,
+      5.3023750000000005,
+      -2.027475,
+      -3.5634749999999995,
+      6.7243,
+      -0.6055499999999996
+    ],
+    "id": "r23.laz",
+    "inserts": 1164,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r23.laz",
+    "points": 1164,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.985399999999999,
+      5.3023750000000005,
+      -1.3165124999999998,
+      -4.2744374999999994,
+      6.0133375000000004,
+      -0.6055499999999996
+    ],
+    "id": "r231.laz",
+    "inserts": 159,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r231.laz",
+    "points": 159,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.985399999999999,
+      6.0133375000000004,
+      -1.3165124999999998,
+      -4.2744374999999994,
+      6.7243,
+      -0.6055499999999996
+    ],
+    "id": "r233.laz",
+    "inserts": 950,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r233.laz",
+    "points": 950,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.2744374999999994,
+      5.3023750000000005,
+      -1.3165124999999998,
+      -3.5634749999999995,
+      6.0133375000000004,
+      -0.6055499999999996
+    ],
+    "id": "r235.laz",
+    "inserts": 42,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r235.laz",
+    "points": 42,
+    "status": "inserted",
+    "url": "0.json"
+  },
+  {
+    "bounds": [
+      -4.2744374999999994,
+      6.0133375000000004,
+      -1.3165124999999998,
+      -3.5634749999999995,
+      6.7243,
+      -0.6055499999999996
+    ],
+    "id": "r237.laz",
+    "inserts": 1838,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r237.laz",
+    "points": 1838,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -3.5634749999999995,
+      3.88045,
+      -2.027475,
+      -2.141549999999999,
+      5.3023750000000005,
+      -0.6055499999999996
+    ],
+    "id": "r25.laz",
+    "inserts": 6333,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r25.laz",
+    "points": 6333,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -3.5634749999999995,
+      3.88045,
+      -2.027475,
+      -2.8525124999999996,
+      4.591412500000001,
+      -1.3165124999999998
+    ],
+    "id": "r250.laz",
+    "inserts": 4504,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r250.laz",
+    "points": 4504,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -3.5634749999999995,
+      3.88045,
+      -1.3165124999999998,
+      -2.8525124999999996,
+      4.591412500000001,
+      -0.6055499999999996
+    ],
+    "id": "r251.laz",
+    "inserts": 2,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r251.laz",
+    "points": 2,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -3.5634749999999995,
+      4.591412500000001,
+      -2.027475,
+      -2.8525124999999996,
+      5.3023750000000005,
+      -1.3165124999999998
+    ],
+    "id": "r252.laz",
+    "inserts": 3107,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r252.laz",
+    "points": 3107,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -3.5634749999999995,
+      4.591412500000001,
+      -1.3165124999999998,
+      -2.8525124999999996,
+      5.3023750000000005,
+      -0.6055499999999996
+    ],
+    "id": "r253.laz",
+    "inserts": 174,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r253.laz",
+    "points": 174,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.8525124999999996,
+      3.88045,
+      -2.027475,
+      -2.1415499999999996,
+      4.591412500000001,
+      -1.3165124999999998
+    ],
+    "id": "r254.laz",
+    "inserts": 5054,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r254.laz",
+    "points": 5054,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.8525124999999996,
+      3.88045,
+      -1.3165124999999998,
+      -2.141549999999999,
+      4.591412500000001,
+      -0.6055499999999996
+    ],
+    "id": "r255.laz",
+    "inserts": 4173,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r255.laz",
+    "points": 4173,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.8525124999999996,
+      4.591412500000001,
+      -2.027475,
+      -2.141549999999999,
+      5.3023750000000005,
+      -1.3165124999999998
+    ],
+    "id": "r256.laz",
+    "inserts": 3374,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r256.laz",
+    "points": 3374,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.8525124999999996,
+      4.591412500000001,
+      -1.3165124999999998,
+      -2.141549999999999,
+      5.3023750000000005,
+      -0.6055499999999996
+    ],
+    "id": "r257.laz",
+    "inserts": 3301,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r257.laz",
+    "points": 3301,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -3.5634749999999995,
+      5.3023750000000005,
+      -3.4494,
+      -2.141549999999999,
+      6.7243,
+      -2.027475
+    ],
+    "id": "r26.laz",
+    "inserts": 1278,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r26.laz",
+    "points": 1278,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -3.5634749999999995,
+      5.3023750000000005,
+      -3.4494,
+      -2.8525124999999996,
+      6.0133375000000004,
+      -2.7384375
+    ],
+    "id": "r260.laz",
+    "inserts": 38,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r260.laz",
+    "points": 38,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -3.5634749999999995,
+      5.3023750000000005,
+      -2.7384375,
+      -2.8525124999999996,
+      6.0133375000000004,
+      -2.027475
+    ],
+    "id": "r261.laz",
+    "inserts": 1030,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r261.laz",
+    "points": 1030,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -3.5634749999999995,
+      6.0133375000000004,
+      -3.4494,
+      -2.8525124999999996,
+      6.7243,
+      -2.7384375
+    ],
+    "id": "r262.laz",
+    "inserts": 4,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r262.laz",
+    "points": 4,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -3.5634749999999995,
+      6.0133375000000004,
+      -2.7384375,
+      -2.8525124999999996,
+      6.7243,
+      -2.027475
+    ],
+    "id": "r263.laz",
+    "inserts": 4,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r263.laz",
+    "points": 4,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.8525124999999996,
+      5.3023750000000005,
+      -2.7384375,
+      -2.141549999999999,
+      6.0133375000000004,
+      -2.027475
+    ],
+    "id": "r265.laz",
+    "inserts": 2113,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r265.laz",
+    "points": 2113,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.8525124999999996,
+      6.0133375000000004,
+      -3.4494,
+      -2.141549999999999,
+      6.7243,
+      -2.7384375
+    ],
+    "id": "r266.laz",
+    "inserts": 5,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r266.laz",
+    "points": 5,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.8525124999999996,
+      6.0133375000000004,
+      -2.7384375,
+      -2.141549999999999,
+      6.7243,
+      -2.027475
+    ],
+    "id": "r267.laz",
+    "inserts": 955,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r267.laz",
+    "points": 955,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -3.5634749999999995,
+      5.3023750000000005,
+      -2.027475,
+      -2.141549999999999,
+      6.7243,
+      -0.6055499999999996
+    ],
+    "id": "r27.laz",
+    "inserts": 3520,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r27.laz",
+    "points": 3520,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -3.5634749999999995,
+      5.3023750000000005,
+      -2.027475,
+      -2.8525124999999996,
+      6.0133375000000004,
+      -1.3165124999999998
+    ],
+    "id": "r270.laz",
+    "inserts": 15,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r270.laz",
+    "points": 15,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -3.5634749999999995,
+      5.3023750000000005,
+      -1.3165124999999998,
+      -2.8525124999999996,
+      6.0133375000000004,
+      -0.6055499999999996
+    ],
+    "id": "r271.laz",
+    "inserts": 192,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r271.laz",
+    "points": 192,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -3.5634749999999995,
+      6.0133375000000004,
+      -2.027475,
+      -2.8525124999999996,
+      6.7243,
+      -1.3165124999999998
+    ],
+    "id": "r272.laz",
+    "inserts": 11,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r272.laz",
+    "points": 11,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -3.5634749999999995,
+      6.0133375000000004,
+      -1.3165124999999998,
+      -2.8525124999999996,
+      6.7243,
+      -0.6055499999999996
+    ],
+    "id": "r273.laz",
+    "inserts": 2292,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r273.laz",
+    "points": 2292,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.8525124999999996,
+      5.3023750000000005,
+      -2.027475,
+      -2.1415499999999996,
+      6.0133375000000004,
+      -1.3165124999999998
+    ],
+    "id": "r274.laz",
+    "inserts": 2567,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r274.laz",
+    "points": 2567,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.8525124999999996,
+      5.3023750000000005,
+      -1.3165124999999998,
+      -2.141549999999999,
+      6.0133375000000004,
+      -0.6055499999999996
+    ],
+    "id": "r275.laz",
+    "inserts": 3273,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r275.laz",
+    "points": 3273,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.8525124999999996,
+      6.0133375000000004,
+      -2.027475,
+      -2.141549999999999,
+      6.7243,
+      -1.3165124999999998
+    ],
+    "id": "r276.laz",
+    "inserts": 1538,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r276.laz",
+    "points": 1538,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.8525124999999996,
+      6.0133375000000004,
+      -1.3165124999999998,
+      -2.141549999999999,
+      6.7243,
+      -0.6055499999999996
+    ],
+    "id": "r277.laz",
+    "inserts": 1056,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r277.laz",
+    "points": 1056,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -4.985399999999999,
+      3.88045,
+      -0.6055499999999996,
+      -2.141549999999999,
+      6.7243,
+      2.2383000000000006
+    ],
+    "id": "r3.laz",
+    "inserts": 1350,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r3.laz",
+    "points": 1350,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -4.985399999999999,
+      3.88045,
+      -0.6055499999999996,
+      -3.5634749999999995,
+      5.3023750000000005,
+      0.8163750000000005
+    ],
+    "id": "r30.laz",
+    "inserts": 14,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r30.laz",
+    "points": 14,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -4.2744374999999994,
+      3.88045,
+      -0.6055499999999996,
+      -3.5634749999999995,
+      4.591412500000001,
+      0.10541250000000046
+    ],
+    "id": "r304.laz",
+    "inserts": 9,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r304.laz",
+    "points": 9,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -4.2744374999999994,
+      3.88045,
+      0.10541250000000046,
+      -3.5634749999999995,
+      4.591412500000001,
+      0.8163750000000005
+    ],
+    "id": "r305.laz",
+    "inserts": 15,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r305.laz",
+    "points": 15,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -4.985399999999999,
+      5.3023750000000005,
+      -0.6055499999999996,
+      -3.5634749999999995,
+      6.7243,
+      0.8163750000000005
+    ],
+    "id": "r32.laz",
+    "inserts": 538,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r32.laz",
+    "points": 538,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -4.985399999999999,
+      5.3023750000000005,
+      -0.6055499999999996,
+      -4.2744374999999994,
+      6.0133375000000004,
+      0.10541250000000046
+    ],
+    "id": "r320.laz",
+    "inserts": 659,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r320.laz",
+    "points": 659,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -4.985399999999999,
+      6.0133375000000004,
+      -0.6055499999999996,
+      -4.2744374999999994,
+      6.7243,
+      0.10541250000000046
+    ],
+    "id": "r322.laz",
+    "inserts": 765,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r322.laz",
+    "points": 765,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -4.2744374999999994,
+      6.0133375000000004,
+      -0.6055499999999996,
+      -3.5634749999999995,
+      6.7243,
+      0.10541250000000046
+    ],
+    "id": "r326.laz",
+    "inserts": 15,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r326.laz",
+    "points": 15,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -3.5634749999999995,
+      3.88045,
+      -0.6055499999999996,
+      -2.1415499999999996,
+      5.3023750000000005,
+      0.8163750000000005
+    ],
+    "id": "r34.laz",
+    "inserts": 3861,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r34.laz",
+    "points": 3861,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -3.5634749999999995,
+      3.88045,
+      -0.6055499999999996,
+      -2.8525124999999996,
+      4.591412500000001,
+      0.10541250000000046
+    ],
+    "id": "r340.laz",
+    "inserts": 253,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r340.laz",
+    "points": 253,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -3.5634749999999995,
+      3.88045,
+      0.10541250000000046,
+      -2.8525124999999996,
+      4.591412500000001,
+      0.8163750000000005
+    ],
+    "id": "r341.laz",
+    "inserts": 1201,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r341.laz",
+    "points": 1201,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -3.5634749999999995,
+      4.591412500000001,
+      -0.6055499999999996,
+      -2.8525124999999996,
+      5.3023750000000005,
+      0.10541250000000046
+    ],
+    "id": "r342.laz",
+    "inserts": 256,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r342.laz",
+    "points": 256,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.8525124999999996,
+      3.88045,
+      -0.6055499999999996,
+      -2.1415499999999996,
+      4.591412500000001,
+      0.10541250000000046
+    ],
+    "id": "r344.laz",
+    "inserts": 4436,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r344.laz",
+    "points": 4436,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.8525124999999996,
+      3.88045,
+      0.10541250000000046,
+      -2.1415499999999996,
+      4.591412500000001,
+      0.8163750000000005
+    ],
+    "id": "r345.laz",
+    "inserts": 4585,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r345.laz",
+    "points": 4585,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.8525124999999996,
+      4.591412500000001,
+      -0.6055499999999996,
+      -2.1415499999999996,
+      5.3023750000000005,
+      0.10541250000000046
+    ],
+    "id": "r346.laz",
+    "inserts": 3465,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r346.laz",
+    "points": 3465,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -3.5634749999999995,
+      3.88045,
+      0.8163750000000005,
+      -2.141549999999999,
+      5.3023750000000005,
+      2.2383000000000006
+    ],
+    "id": "r35.laz",
+    "inserts": 312,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r35.laz",
+    "points": 312,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -3.5634749999999995,
+      3.88045,
+      0.8163750000000005,
+      -2.8525124999999996,
+      4.591412500000001,
+      1.5273375000000007
+    ],
+    "id": "r350.laz",
+    "inserts": 304,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r350.laz",
+    "points": 304,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.8525124999999996,
+      3.88045,
+      0.8163750000000005,
+      -2.1415499999999996,
+      4.591412500000001,
+      1.5273375000000007
+    ],
+    "id": "r354.laz",
+    "inserts": 705,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r354.laz",
+    "points": 705,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -3.5634749999999995,
+      5.3023750000000005,
+      -0.6055499999999996,
+      -2.141549999999999,
+      6.7243,
+      0.8163750000000005
+    ],
+    "id": "r36.laz",
+    "inserts": 53,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r36.laz",
+    "points": 53,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -3.5634749999999995,
+      5.3023750000000005,
+      -0.6055499999999996,
+      -2.8525124999999996,
+      6.0133375000000004,
+      0.10541250000000046
+    ],
+    "id": "r360.laz",
+    "inserts": 21,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r360.laz",
+    "points": 21,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -3.5634749999999995,
+      5.3023750000000005,
+      0.10541250000000046,
+      -2.8525124999999996,
+      6.0133375000000004,
+      0.8163750000000005
+    ],
+    "id": "r361.laz",
+    "inserts": 3,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r361.laz",
+    "points": 3,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.8525124999999996,
+      5.3023750000000005,
+      -0.6055499999999996,
+      -2.1415499999999996,
+      6.0133375000000004,
+      0.10541250000000046
+    ],
+    "id": "r364.laz",
+    "inserts": 158,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r364.laz",
+    "points": 158,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -3.5634749999999995,
+      5.3023750000000005,
+      0.8163750000000005,
+      -2.141549999999999,
+      6.7243,
+      2.2383000000000006
+    ],
+    "id": "r37.laz",
+    "inserts": 1,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r37.laz",
+    "points": 1,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -3.5634749999999995,
+      5.3023750000000005,
+      0.8163750000000005,
+      -2.8525124999999996,
+      6.0133375000000004,
+      1.5273375000000007
+    ],
+    "id": "r370.laz",
+    "inserts": 1,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r370.laz",
+    "points": 1,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.141549999999999,
+      1.0366,
+      -3.4494,
+      0.702300000000001,
+      3.88045,
+      -0.6055499999999996
+    ],
+    "id": "r4.laz",
+    "inserts": 2169,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r4.laz",
+    "points": 2169,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.141549999999999,
+      1.0366,
+      -3.4494,
+      -0.7196249999999991,
+      2.458525,
+      -2.027475
+    ],
+    "id": "r40.laz",
+    "inserts": 484,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r40.laz",
+    "points": 484,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.141549999999999,
+      1.0366,
+      -3.4494,
+      -1.4305874999999992,
+      1.7475625,
+      -2.7384375
+    ],
+    "id": "r400.laz",
+    "inserts": 279,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r400.laz",
+    "points": 279,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.141549999999999,
+      1.7475625,
+      -3.4494,
+      -1.4305874999999992,
+      2.458525,
+      -2.7384375
+    ],
+    "id": "r402.laz",
+    "inserts": 1305,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r402.laz",
+    "points": 1305,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.141549999999999,
+      2.458525,
+      -3.4494,
+      -0.7196249999999991,
+      3.88045,
+      -2.027475
+    ],
+    "id": "r42.laz",
+    "inserts": 4803,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r42.laz",
+    "points": 4803,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.141549999999999,
+      2.458525,
+      -3.4494,
+      -1.4305874999999992,
+      3.1694875,
+      -2.7384375
+    ],
+    "id": "r420.laz",
+    "inserts": 4637,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r420.laz",
+    "points": 4637,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.141549999999999,
+      2.458525,
+      -2.7384375,
+      -1.4305874999999992,
+      3.1694875,
+      -2.027475
+    ],
+    "id": "r421.laz",
+    "inserts": 3235,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r421.laz",
+    "points": 3235,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.141549999999999,
+      3.1694875,
+      -3.4494,
+      -1.4305874999999992,
+      3.88045,
+      -2.7384375
+    ],
+    "id": "r422.laz",
+    "inserts": 4110,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r422.laz",
+    "points": 4110,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.141549999999999,
+      3.1694875,
+      -2.7384375,
+      -1.4305874999999992,
+      3.88045,
+      -2.027475
+    ],
+    "id": "r423.laz",
+    "inserts": 3724,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r423.laz",
+    "points": 3724,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -1.4305874999999992,
+      2.458525,
+      -3.4494,
+      -0.7196249999999992,
+      3.1694875,
+      -2.7384375
+    ],
+    "id": "r424.laz",
+    "inserts": 488,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r424.laz",
+    "points": 488,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -1.4305874999999992,
+      3.1694875,
+      -3.4494,
+      -0.7196249999999991,
+      3.88045,
+      -2.7384375
+    ],
+    "id": "r426.laz",
+    "inserts": 1478,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r426.laz",
+    "points": 1478,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.141549999999999,
+      2.458525,
+      -2.027475,
+      -0.7196249999999991,
+      3.88045,
+      -0.6055499999999996
+    ],
+    "id": "r43.laz",
+    "inserts": 2884,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r43.laz",
+    "points": 2884,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.141549999999999,
+      2.458525,
+      -2.027475,
+      -1.4305874999999992,
+      3.1694875,
+      -1.3165124999999998
+    ],
+    "id": "r430.laz",
+    "inserts": 3365,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r430.laz",
+    "points": 3365,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.141549999999999,
+      2.458525,
+      -1.3165124999999998,
+      -1.4305874999999992,
+      3.1694875,
+      -0.6055499999999996
+    ],
+    "id": "r431.laz",
+    "inserts": 259,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r431.laz",
+    "points": 259,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.141549999999999,
+      3.1694875,
+      -2.027475,
+      -1.4305874999999992,
+      3.88045,
+      -1.3165124999999998
+    ],
+    "id": "r432.laz",
+    "inserts": 4349,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r432.laz",
+    "points": 4349,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.141549999999999,
+      3.1694875,
+      -1.3165124999999998,
+      -1.4305874999999992,
+      3.88045,
+      -0.6055499999999996
+    ],
+    "id": "r433.laz",
+    "inserts": 2825,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r433.laz",
+    "points": 2825,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.141549999999999,
+      1.0366,
+      -0.6055499999999996,
+      0.702300000000001,
+      3.88045,
+      2.2383000000000006
+    ],
+    "id": "r5.laz",
+    "inserts": 124,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r5.laz",
+    "points": 124,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.141549999999999,
+      2.458525,
+      -0.6055499999999996,
+      -0.7196249999999991,
+      3.88045,
+      0.8163750000000005
+    ],
+    "id": "r52.laz",
+    "inserts": 444,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r52.laz",
+    "points": 444,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.141549999999999,
+      3.1694875,
+      -0.6055499999999996,
+      -1.4305874999999992,
+      3.88045,
+      0.10541250000000046
+    ],
+    "id": "r522.laz",
+    "inserts": 1682,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r522.laz",
+    "points": 1682,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.141549999999999,
+      3.88045,
+      -3.4494,
+      0.702300000000001,
+      6.7243,
+      -0.6055499999999996
+    ],
+    "id": "r6.laz",
+    "inserts": 3682,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r6.laz",
+    "points": 3682,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.141549999999999,
+      3.88045,
+      -3.4494,
+      -0.7196249999999991,
+      5.3023750000000005,
+      -2.027475
+    ],
+    "id": "r60.laz",
+    "inserts": 5605,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r60.laz",
+    "points": 5605,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.141549999999999,
+      3.88045,
+      -3.4494,
+      -1.4305874999999992,
+      4.591412500000001,
+      -2.7384375
+    ],
+    "id": "r600.laz",
+    "inserts": 4013,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r600.laz",
+    "points": 4013,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.141549999999999,
+      3.88045,
+      -2.7384375,
+      -1.4305874999999992,
+      4.591412500000001,
+      -2.027475
+    ],
+    "id": "r601.laz",
+    "inserts": 4349,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r601.laz",
+    "points": 4349,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.141549999999999,
+      4.591412500000001,
+      -3.4494,
+      -1.4305874999999992,
+      5.3023750000000005,
+      -2.7384375
+    ],
+    "id": "r602.laz",
+    "inserts": 2331,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r602.laz",
+    "points": 2331,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.141549999999999,
+      4.591412500000001,
+      -2.7384375,
+      -1.4305874999999992,
+      5.3023750000000005,
+      -2.027475
+    ],
+    "id": "r603.laz",
+    "inserts": 6069,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r603.laz",
+    "points": 6069,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -1.4305874999999992,
+      3.88045,
+      -3.4494,
+      -0.7196249999999992,
+      4.591412500000001,
+      -2.7384375
+    ],
+    "id": "r604.laz",
+    "inserts": 1634,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r604.laz",
+    "points": 1634,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -1.4305874999999992,
+      4.591412500000001,
+      -3.4494,
+      -0.7196249999999991,
+      5.3023750000000005,
+      -2.7384375
+    ],
+    "id": "r606.laz",
+    "inserts": 2681,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r606.laz",
+    "points": 2681,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.141549999999999,
+      3.88045,
+      -2.027475,
+      -0.7196249999999991,
+      5.3023750000000005,
+      -0.6055499999999998
+    ],
+    "id": "r61.laz",
+    "inserts": 2357,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r61.laz",
+    "points": 2357,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.141549999999999,
+      3.88045,
+      -2.027475,
+      -1.4305874999999992,
+      4.591412500000001,
+      -1.3165125
+    ],
+    "id": "r610.laz",
+    "inserts": 1750,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r610.laz",
+    "points": 1750,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.141549999999999,
+      3.88045,
+      -1.3165125,
+      -1.4305874999999992,
+      4.591412500000001,
+      -0.6055499999999999
+    ],
+    "id": "r611.laz",
+    "inserts": 328,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r611.laz",
+    "points": 328,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.141549999999999,
+      4.591412500000001,
+      -2.027475,
+      -1.4305874999999992,
+      5.3023750000000005,
+      -1.3165125
+    ],
+    "id": "r612.laz",
+    "inserts": 4252,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r612.laz",
+    "points": 4252,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.141549999999999,
+      4.591412500000001,
+      -1.3165125,
+      -1.4305874999999992,
+      5.3023750000000005,
+      -0.6055499999999998
+    ],
+    "id": "r613.laz",
+    "inserts": 2495,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r613.laz",
+    "points": 2495,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.141549999999999,
+      5.3023750000000005,
+      -3.4494,
+      -0.7196249999999991,
+      6.7243,
+      -2.027475
+    ],
+    "id": "r62.laz",
+    "inserts": 3782,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r62.laz",
+    "points": 3782,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.141549999999999,
+      5.3023750000000005,
+      -3.4494,
+      -1.4305874999999992,
+      6.0133375000000004,
+      -2.7384375
+    ],
+    "id": "r620.laz",
+    "inserts": 1082,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r620.laz",
+    "points": 1082,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.141549999999999,
+      5.3023750000000005,
+      -2.7384375,
+      -1.4305874999999992,
+      6.0133375000000004,
+      -2.027475
+    ],
+    "id": "r621.laz",
+    "inserts": 5146,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r621.laz",
+    "points": 5146,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.141549999999999,
+      6.0133375000000004,
+      -2.7384375,
+      -1.4305874999999992,
+      6.7243,
+      -2.027475
+    ],
+    "id": "r623.laz",
+    "inserts": 1531,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r623.laz",
+    "points": 1531,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -1.4305874999999992,
+      5.3023750000000005,
+      -3.4494,
+      -0.7196249999999992,
+      6.0133375000000004,
+      -2.7384375
+    ],
+    "id": "r624.laz",
+    "inserts": 2873,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r624.laz",
+    "points": 2873,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -1.4305874999999992,
+      5.3023750000000005,
+      -2.7384375,
+      -0.7196249999999991,
+      6.0133375000000004,
+      -2.027475
+    ],
+    "id": "r625.laz",
+    "inserts": 3,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r625.laz",
+    "points": 3,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -1.4305874999999992,
+      6.0133375000000004,
+      -3.4494,
+      -0.7196249999999991,
+      6.7243,
+      -2.7384375
+    ],
+    "id": "r626.laz",
+    "inserts": 2086,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r626.laz",
+    "points": 2086,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -1.4305874999999992,
+      6.0133375000000004,
+      -2.7384375,
+      -0.7196249999999991,
+      6.7243,
+      -2.027475
+    ],
+    "id": "r627.laz",
+    "inserts": 341,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r627.laz",
+    "points": 341,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.141549999999999,
+      5.3023750000000005,
+      -2.027475,
+      -0.7196249999999991,
+      6.7243,
+      -0.6055499999999996
+    ],
+    "id": "r63.laz",
+    "inserts": 1949,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r63.laz",
+    "points": 1949,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.141549999999999,
+      5.3023750000000005,
+      -2.027475,
+      -1.4305874999999992,
+      6.0133375000000004,
+      -1.3165124999999998
+    ],
+    "id": "r630.laz",
+    "inserts": 1768,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r630.laz",
+    "points": 1768,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.141549999999999,
+      5.3023750000000005,
+      -1.3165124999999998,
+      -1.4305874999999992,
+      6.0133375000000004,
+      -0.6055499999999996
+    ],
+    "id": "r631.laz",
+    "inserts": 160,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r631.laz",
+    "points": 160,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.141549999999999,
+      6.0133375000000004,
+      -2.027475,
+      -1.4305874999999992,
+      6.7243,
+      -1.3165124999999998
+    ],
+    "id": "r632.laz",
+    "inserts": 3491,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r632.laz",
+    "points": 3491,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.141549999999999,
+      6.0133375000000004,
+      -1.3165124999999998,
+      -1.4305874999999992,
+      6.7243,
+      -0.6055499999999996
+    ],
+    "id": "r633.laz",
+    "inserts": 29,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r633.laz",
+    "points": 29,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -1.4305874999999992,
+      6.0133375000000004,
+      -2.027475,
+      -0.7196249999999991,
+      6.7243,
+      -1.3165124999999998
+    ],
+    "id": "r636.laz",
+    "inserts": 789,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r636.laz",
+    "points": 789,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.141549999999999,
+      3.88045,
+      -0.6055499999999996,
+      0.702300000000001,
+      6.7243,
+      2.2383000000000006
+    ],
+    "id": "r7.laz",
+    "inserts": 36,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r7.laz",
+    "points": 36,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.141549999999999,
+      3.88045,
+      -0.6055499999999996,
+      -0.7196249999999991,
+      5.3023750000000005,
+      0.8163750000000005
+    ],
+    "id": "r70.laz",
+    "inserts": 111,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r70.laz",
+    "points": 111,
+    "status": "inserted",
+    "url": "100.json"
+  },
+  {
+    "bounds": [
+      -2.141549999999999,
+      3.88045,
+      -0.6055499999999996,
+      -1.4305874999999992,
+      4.591412500000001,
+      0.10541250000000046
+    ],
+    "id": "r700.laz",
+    "inserts": 417,
+    "path": "/Users/connor/code/potree/pointclouds/lion_takanawa_laz/data/r700.laz",
+    "points": 417,
+    "status": "inserted",
+    "url": "100.json"
+  }
+]

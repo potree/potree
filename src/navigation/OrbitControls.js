@@ -226,9 +226,14 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 		{ // apply rotation
 			let progression = Math.min(1, this.fadeFactor * delta);
 
+			// Find a volume that has clip setting
+			const cropVolume = this.scene.volumes.find(volume => volume.clip);
+			// Set the pivot point in the center of the point cloud or cropping volume
+			let pivot = cropVolume
+				? cropVolume.position.clone()
+				: view.getPivot();
 			let yaw = view.yaw;
 			let pitch = view.pitch;
-			let pivot = view.getPivot();
 
 			yaw -= progression * this.yawDelta;
 			pitch -= progression * this.pitchDelta;

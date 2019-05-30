@@ -231,7 +231,7 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 			// Find a volume that has clip setting
 			const cropVolume = this.scene.volumes.find(volume => volume.clip);
 			// Set the pivot point in the center of the point cloud or cropping volume
-			let pivot = cropVolume
+			const pivot = cropVolume
 				? cropVolume.position.clone()
 				: this.scene.pointclouds[0].boundingBox.getCenter();
 			

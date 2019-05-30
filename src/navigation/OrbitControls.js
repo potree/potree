@@ -231,7 +231,7 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 			// Find a volume that has clip setting
 			const cropVolume = this.scene.volumes.find(volume => volume.clip);
 			// Set the pivot point in the center of the point cloud or cropping volume
-			this.pivot = cropVolume
+			let pivot = cropVolume
 				? cropVolume.position.clone()
 				: this.scene.pointclouds[0].boundingBox.getCenter();
 			
@@ -240,13 +240,13 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 			tmpView.pitch = tmpView.pitch + this.pitchDelta;
 			this.pitchDelta = tmpView.pitch - originalPitch;
 
-			let pivotToCam = new THREE.Vector3().subVectors(view.position, this.pivot);
+			let pivotToCam = new THREE.Vector3().subVectors(view.position, pivot);
 			let side = view.getSide();
 
 			pivotToCam.applyAxisAngle(side, this.pitchDelta);
 			pivotToCam.applyAxisAngle(new THREE.Vector3(0, 0, 1), this.yawDelta);
 
-			let newCam = new THREE.Vector3().addVectors(this.pivot, pivotToCam);
+			let newCam = new THREE.Vector3().addVectors(pivot, pivotToCam);
 
 			view.position.copy(newCam);
 			view.yaw += this.yawDelta;

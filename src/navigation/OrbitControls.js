@@ -24,7 +24,8 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 		this.scene = null;
 		this.sceneControls = new THREE.Scene();
 
-		this.rotationSpeed = 5;
+		this.rotationSpeed = 2;
+		this.panSpeed = 0.3;
 
 		this.fadeFactor = 10;
 		this.yawDelta = 0;
@@ -51,13 +52,13 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 			};
 
 			if (e.drag.mouse === Potree.MOUSE.LEFT) {
-				this.yawDelta += ndrag.x * this.rotationSpeed;
-				this.pitchDelta += ndrag.y * this.rotationSpeed;
+				this.yawDelta -= ndrag.x * this.rotationSpeed;
+				this.pitchDelta -= ndrag.y * this.rotationSpeed;
 
 				this.stopTweens();
 			} else if (e.drag.mouse === Potree.MOUSE.RIGHT) {
-				this.panDelta.x += ndrag.x;
-				this.panDelta.y += ndrag.y;
+				this.panDelta.x += ndrag.x * this.panSpeed;
+				this.panDelta.y += ndrag.y * this.panSpeed;
 
 				this.stopTweens();
 			}
@@ -224,27 +225,32 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 		let view = this.scene.view;
 
 		{ // apply rotation
-			let progression = Math.min(1, this.fadeFactor * delta);
+			// Do not update yaw or pitch values if there is no point cloud loaded
+			if (!this.scene.pointclouds.length) return;
 
 			// Find a volume that has clip setting
 			const cropVolume = this.scene.volumes.find(volume => volume.clip);
 			// Set the pivot point in the center of the point cloud or cropping volume
-			let pivot = cropVolume
+			this.pivot = cropVolume
 				? cropVolume.position.clone()
-				: view.getPivot();
-			let yaw = view.yaw;
-			let pitch = view.pitch;
+				: this.scene.pointclouds[0].boundingBox.getCenter();
+			
+			let originalPitch = view.pitch;
+			let tmpView = view.clone();
+			tmpView.pitch = tmpView.pitch + this.pitchDelta;
+			this.pitchDelta = tmpView.pitch - originalPitch;
 
-			yaw -= progression * this.yawDelta;
-			pitch -= progression * this.pitchDelta;
+			let pivotToCam = new THREE.Vector3().subVectors(view.position, this.pivot);
+			let side = view.getSide();
 
-			view.yaw = yaw;
-			view.pitch = pitch;
+			pivotToCam.applyAxisAngle(side, this.pitchDelta);
+			pivotToCam.applyAxisAngle(new THREE.Vector3(0, 0, 1), this.yawDelta);
 
-			let V = this.scene.view.direction.multiplyScalar(-view.radius);
-			let position = new THREE.Vector3().addVectors(pivot, V);
+			let newCam = new THREE.Vector3().addVectors(this.pivot, pivotToCam);
 
-			view.position.copy(position);
+			view.position.copy(newCam);
+			view.yaw += this.yawDelta;
+			view.pitch += this.pitchDelta;
 		}
 
 		{ // apply pan

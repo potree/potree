@@ -566,17 +566,13 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 			// TODO
 			window.warned125 = true;
 		}
-		if(false && pointcloud.material.clipBoxes.length > 0){
 
-			
-
-			//node.debug = false;
-
+		if(pointcloud.material.clipBoxes.length > 0) {
 			let numIntersecting = 0;
 			let numIntersectionVolumes = 0;
 
+			// Loop through clip boxes and look for intersections with current node
 			for(let clipBox of pointcloud.material.clipBoxes){
-
 				let pcWorldInverse = new THREE.Matrix4().getInverse(pointcloud.matrixWorld);
 				let toPCObject = pcWorldInverse.multiply(clipBox.box.matrixWorld);
 
@@ -613,21 +609,17 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 			let insideAny = numIntersecting > 0;
 			let insideAll = numIntersecting === numIntersectionVolumes;
 
-			if(pointcloud.material.clipTask === Potree.ClipTask.SHOW_INSIDE){
-				if(pointcloud.material.clipMethod === Potree.ClipMethod.INSIDE_ANY && insideAny){
-					//node.debug = true
-				}else if(pointcloud.material.clipMethod === Potree.ClipMethod.INSIDE_ALL && insideAll){
-					//node.debug = true;
-				}else{
+			// There are other clip tasks but we are not using them (highlight and show_outside).
+			if(pointcloud.material.clipTask === Potree.ClipTask.SHOW_INSIDE) {
+				if (
+					// Check if the node is outside the crop plane and turn off visibility for them
+					!(pointcloud.material.clipMethod === Potree.ClipMethod.INSIDE_ANY && insideAny) &&
+					!(pointcloud.material.clipMethod === Potree.ClipMethod.INSIDE_ALL && insideAll)
+				) {
 					visible = false;
 				}
 			}
-			
-
 		}
-
-		// visible = ["r", "r0", "r06", "r060"].includes(node.name);
-		// visible = ["r"].includes(node.name);
 
 		if (node.spacing) {
 			lowestSpacing = Math.min(lowestSpacing, node.spacing);

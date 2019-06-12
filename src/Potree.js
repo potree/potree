@@ -609,8 +609,10 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 			let insideAny = numIntersecting > 0;
 			let insideAll = numIntersecting === numIntersectionVolumes;
 
+			// There are other clip tasks but we are not using them (highlight and show_outside).
 			if(pointcloud.material.clipTask === Potree.ClipTask.SHOW_INSIDE) {
 				if (
+					// Check if the node is outside the crop plane and turn off visibility for them
 					!(pointcloud.material.clipMethod === Potree.ClipMethod.INSIDE_ANY && insideAny) &&
 					!(pointcloud.material.clipMethod === Potree.ClipMethod.INSIDE_ALL && insideAll)
 				) {

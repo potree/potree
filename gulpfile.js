@@ -34,6 +34,7 @@ let paths = {
 		"src/loader/GreyhoundBinaryLoader.js",
 		"src/loader/GreyhoundLoader.js",
 		"src/loader/LasLazLoader.js",
+		"src/loader/ZstandardLoader.js",
 		"src/materials/PointCloudMaterial.js",
 		"src/materials/EyeDomeLightingMaterial.js",
 		"src/materials/BlurMaterial.js",
@@ -125,7 +126,10 @@ let workers = {
 		"src/loader/PointAttributes.js",
 		"src/InterleavedBuffer.js",
 		"src/utils/toInterleavedBufferAttribute.js",
-	]
+	],
+	"EptZstandardDecoderWorker": [
+		"src/workers/EptZstandardDecoderWorker.js"
+	],
 };
 
 let shaders = [
@@ -149,6 +153,7 @@ gulp.task("workers", function(){
 		
 		gulp.src(workers[workerName])
 			.pipe(concat(`${workerName}.js`))
+			.pipe(uglify())
 			.pipe(gulp.dest('build/potree/workers'));
 		
 	}

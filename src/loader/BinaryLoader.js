@@ -1,6 +1,4 @@
-
 Potree.BinaryLoader = class BinaryLoader{
-
 	constructor(version, boundingBox, scale){
 		if (typeof (version) === 'string') {
 			this.version = new Potree.Version(version);
@@ -12,6 +10,14 @@ Potree.BinaryLoader = class BinaryLoader{
 		this.scale = scale;
 	}
 
+	extension() {
+		return '.bin';
+	}
+
+ 	workerPath() {
+		return Potree.scriptPath + '/workers/BinaryDecoderWorker.js';
+	}
+
 	load(node){
 		if (node.loaded) {
 			return;
@@ -21,8 +27,8 @@ Potree.BinaryLoader = class BinaryLoader{
 		let path = node.getHierarchyPath() + '/' + node.name;
 
 		if (this.version.equalOrHigher('1.4')) {
-			url += '.bin';
-			path += '.bin';
+			url += this.extension();
+			path += this.extension();
 		}
 
 		url += Potree.getSignatureKeyForPath(path);
@@ -57,7 +63,7 @@ Potree.BinaryLoader = class BinaryLoader{
 			node.numPoints = numPoints;
 		}
 
-		let workerPath = Potree.scriptPath + '/workers/BinaryDecoderWorker.js';
+		let workerPath = this.workerPath();
 		let worker = Potree.workerPool.getWorker(workerPath);
 
 		worker.onmessage = function (e) {

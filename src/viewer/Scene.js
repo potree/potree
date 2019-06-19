@@ -1,7 +1,7 @@
 
 Potree.Scene = class extends THREE.EventDispatcher{
 
-	constructor(){
+	constructor(renderers){
 		super();
 
 		this.annotations = new Potree.Annotation();
@@ -10,8 +10,12 @@ Potree.Scene = class extends THREE.EventDispatcher{
 		this.sceneBG = new THREE.Scene();
 		this.scenePointCloud = new THREE.Scene();
 
-		this.cameraP = new THREE.PerspectiveCamera(this.fov, 1, 0.1, 1000*1000);
-		this.cameraO = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 1000*1000);
+		this.cameraP = new THREE.PerspectiveCamera(this.fov, 1, 0.1, 1000 * 1000);
+		this.cameraO = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 1000 * 1000);
+		this.cameras = [{
+			perspective: this.cameraO,
+			orthographic: this.cameraP,
+		}];
 		this.cameraBG = new THREE.Camera();
 		this.cameraScreenSpace = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 10);
 		this.cameraMode = Potree.CameraMode.PERSPECTIVE;
@@ -32,6 +36,13 @@ Potree.Scene = class extends THREE.EventDispatcher{
 		this.view = new Potree.View();
 
 		this.directionalLight = null;
+
+		if (renderers.length > 1) {
+			this.cameras.push({
+				perspective: new THREE.PerspectiveCamera(this.fov, 1, 0.1, 1000 * 1000),
+				orthographic: new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 1000 * 1000),
+			})
+		}
 
 		this.initialize();
 	}
@@ -227,8 +238,9 @@ Potree.Scene = class extends THREE.EventDispatcher{
 		}
 	}
 
-	getActiveCamera() {
-		return this.cameraMode == Potree.CameraMode.PERSPECTIVE ? this.cameraP : this.cameraO;		
+	getActiveCamera(index = 0) {
+		const cameraMode = Potree.CameraMode.PERSPECTIVE ? 'perspective' : 'orthographic';
+		return this.cameras[index][cameraMode];
 	}
 	
 	initialize(){
@@ -237,10 +249,13 @@ Potree.Scene = class extends THREE.EventDispatcher{
 		this.referenceFrame.matrixAutoUpdate = false;
 		this.scenePointCloud.add(this.referenceFrame);
 
-		this.cameraP.up.set(0, 0, 1);
-		this.cameraP.position.set(1000, 1000, 1000);
-		this.cameraO.up.set(0, 0, 1);
-		this.cameraO.position.set(1000, 1000, 1000);
+		this.cameras.forEach((c) => {
+			c.perspective.up.set(0, 0, 1);
+			c.perspective.position.set(1000, 1000, 1000);
+			c.orthographic.up.set(0, 0, 1);
+			c.orthographic.position.set(1000, 1000, 1000);
+		});
+
 		//this.camera.rotation.y = -Math.PI / 4;
 		//this.camera.rotation.x = -Math.PI / 6;
 		this.cameraScreenSpace.lookAt(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, -1), new THREE.Vector3(0, 1, 0));

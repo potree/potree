@@ -38,15 +38,6 @@ class EDLRenderer{
 			format: THREE.RGBAFormat,
 			depthTexture: new THREE.DepthTexture(undefined, undefined, THREE.UnsignedIntType)
 		});
-		
-		//{
-		//	let geometry = new THREE.PlaneBufferGeometry( 1, 1, 32, 32);
-		//	let material = new THREE.MeshBasicMaterial( {side: THREE.DoubleSide, map: this.shadowMap.target.texture} );
-		//	let plane = new THREE.Mesh( geometry, material );
-		//	plane.scale.set(0.5, 0.5, 1.0);
-		//	plane.position.set(plane.scale.x / 2, plane.scale.y / 2, 0);
-		//	this.viewer.overlay.add(plane);
-		//}
 	};
 
 	resize(){
@@ -146,37 +137,11 @@ class EDLRenderer{
 			}
 		});
 
-		let querySkybox = Potree.startQuery('EDL - Skybox', viewer.renderer.getContext());
-		
-		if(viewer.background === "skybox"){
-			viewer.renderer.setClearColor(0x000000, 0);
-			viewer.renderer.clear();
-			viewer.skybox.camera.rotation.copy(viewer.scene.cameraP.rotation);
-			viewer.skybox.camera.fov = viewer.scene.cameraP.fov;
-			viewer.skybox.camera.aspect = viewer.scene.cameraP.aspect;
-			viewer.skybox.camera.updateProjectionMatrix();
-			viewer.renderer.render(viewer.skybox.scene, viewer.skybox.camera);
-		} else if (viewer.background === 'gradient') {
-			viewer.renderer.setClearColor(0x000000, 0);
-			viewer.renderer.clear();
-			viewer.renderer.render(viewer.scene.sceneBG, viewer.scene.cameraBG);
-		} else if (viewer.background === 'black') {
-			viewer.renderer.setClearColor(0x000000, 1);
-			viewer.renderer.clear();
-		} else if (viewer.background === 'white') {
-			viewer.renderer.setClearColor(0xFFFFFF, 1);
-			viewer.renderer.clear();
-		} else {
-			viewer.renderer.setClearColor(0x000000, 0);
-			viewer.renderer.clear();
-		}
-
-		Potree.endQuery(querySkybox, viewer.renderer.getContext());
-
 		// TODO adapt to multiple lights
 		if(lights.length > 0 && !(lights[0].disableShadowUpdates)){
 			let light = lights[0];
 
+			// TODO:
 			let queryShadows = Potree.startQuery('EDL - shadows', viewer.renderer.getContext());
 
 			this.shadowMap.setLight(light);
@@ -203,14 +168,7 @@ class EDLRenderer{
 			Potree.endQuery(queryShadows, viewer.renderer.getContext());
 		}
 
-		let queryColors = Potree.startQuery('EDL - colorpass', viewer.renderer.getContext());
-
-		viewer.renderer.render(viewer.scene.scene, camera);
-		
-		//viewer.renderer.clearTarget( this.rtColor, true, true, true );
-		viewer.renderer.clearTarget(this.rtEDL, true, true, true);
-		viewer.renderer.clearTarget(this.rtRegular, true, true, false);
-
+		// TODO:
 		let width = viewer.renderer.getSize().width;
 		let height = viewer.renderer.getSize().height;
 
@@ -230,73 +188,118 @@ class EDLRenderer{
 			material.spacing = pointcloud.pcoGeometry.spacing * Math.max(pointcloud.scale.x, pointcloud.scale.y, pointcloud.scale.z);
 		}
 		
-		// TODO adapt to multiple lights
-		if(lights.length > 0){
-			viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, this.rtEDL, {
-				shadowMaps: [this.shadowMap],
-				transparent: false,
-			});
-		}else{
-			viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, this.rtEDL, {
-				transparent: false,
-			});
-		}
+		// Loop through all renderers
+		viewer.renderers.forEach((renderer, index) => {
+			// Render background
+			let querySkybox = Potree.startQuery('EDL - Skybox', renderer.getContext());
 
-		viewer.renderer.render(viewer.scene.scene, camera, this.rtRegular);
-
-		//viewer.renderer.setRenderTarget(this.rtColor);
-		viewer.dispatchEvent({type: "render.pass.scene", viewer: viewer, renderTarget: this.rtRegular});
-
-		Potree.endQuery(queryColors, viewer.renderer.getContext());
-		
-		{ // EDL OCCLUSION PASS
-			let queryEDL = Potree.startQuery('EDL - resolve', viewer.renderer.getContext());
-
-			this.edlMaterial.uniforms.screenWidth.value = width;
-			this.edlMaterial.uniforms.screenHeight.value = height;
-
-			//this.edlMaterial.uniforms.colorMap.value = this.rtColor.texture;
-
-			this.edlMaterial.uniforms.uRegularColor.value = this.rtRegular.texture;
-			this.edlMaterial.uniforms.uEDLColor.value = this.rtEDL.texture;
-			this.edlMaterial.uniforms.uRegularDepth.value = this.rtRegular.depthTexture;
-			this.edlMaterial.uniforms.uEDLDepth.value = this.rtEDL.depthTexture;
-
-			this.edlMaterial.uniforms.edlStrength.value = viewer.edlStrength;
-			this.edlMaterial.uniforms.radius.value = viewer.edlRadius;
-			this.edlMaterial.uniforms.opacity.value = 1;
-			
-			Potree.utils.screenPass.render(viewer.renderer, this.edlMaterial);
-
-			if(this.screenshot){
-				Potree.utils.screenPass.render(viewer.renderer, this.edlMaterial, this.screenshot.target);
+			if(viewer.background === "skybox"){
+				renderer.setClearColor(0x000000, 0);
+				renderer.clear();
+				viewer.skybox.camera.rotation.copy(viewer.scene.cameraP.rotation);
+				viewer.skybox.camera.fov = viewer.scene.cameraP.fov;
+				viewer.skybox.camera.aspect = viewer.scene.cameraP.aspect;
+				viewer.skybox.camera.updateProjectionMatrix();
+				renderer.render(viewer.skybox.scene, viewer.skybox.camera);
+			} else if (viewer.background === 'gradient') {
+				renderer.setClearColor(0x000000, 0);
+				renderer.clear();
+				renderer.render(viewer.scene.sceneBG, viewer.scene.cameraBG);
+			} else if (viewer.background === 'black') {
+				renderer.setClearColor(0x000000, 1);
+				renderer.clear();
+			} else if (viewer.background === 'white') {
+				renderer.setClearColor(0xFFFFFF, 1);
+				renderer.clear();
+			} else {
+				renderer.setClearColor(0x000000, 0);
+				renderer.clear();
 			}
 
-			Potree.endQuery(queryEDL, viewer.renderer.getContext());
-		}
+			Potree.endQuery(querySkybox, renderer.getContext());
 
-		let queryRest = Potree.startQuery('EDL - rest', viewer.renderer.getContext());
+			let queryColors = Potree.startQuery('EDL - colorpass', renderer.getContext());
+			
+			renderer.render(viewer.scene.scene, camera);
 
-		viewer.renderer.clearDepth();
+			// Clear point clouds before next render
+			renderer.clearTarget(this.rtEDL, true, true, true);
+			renderer.clearTarget(this.rtRegular, true, true, false);
 
-		viewer.transformationTool.update();
+			let cameraInstance = camera;
+			if (index === 1) {
+				// TODO: Multiple camera support
+				// cameraInstance = viewer.scene.cameraP2;
+			}
 
-		viewer.dispatchEvent({type: "render.pass.perspective_overlay",viewer: viewer});
+			// TODO adapt to multiple lights
+			if(lights.length > 0) {
+				viewer.pRenderers[index].render(viewer.scene.scenePointCloud, cameraInstance, this.rtEDL, {
+					shadowMaps: [this.shadowMap],
+					transparent: false,
+				});
+			} else {
+				viewer.pRenderers[index].render(viewer.scene.scenePointCloud, cameraInstance, this.rtEDL, {
+					transparent: false,
+				});
+			}
 
-		viewer.renderer.render(viewer.controls.sceneControls, camera);
-		viewer.renderer.render(viewer.clippingTool.sceneVolume, camera);
-		viewer.renderer.render(viewer.transformationTool.scene, camera);
-		
-		viewer.renderer.setViewport(width - viewer.navigationCube.width, 
-									height - viewer.navigationCube.width, 
-									viewer.navigationCube.width, viewer.navigationCube.width);
-		viewer.renderer.render(viewer.navigationCube, viewer.navigationCube.camera);		
-		viewer.renderer.setViewport(0, 0, width, height);
+			// Dispatch event only once
+			if (index === 0) {
+				viewer.dispatchEvent({type: "render.pass.scene", viewer, renderTarget: this.rtRegular});
+			}
 
-		viewer.dispatchEvent({type: "render.pass.end",viewer: viewer});
+			Potree.endQuery(queryColors, renderer.getContext());
 
-		Potree.endQuery(queryRest, viewer.renderer.getContext());
-		
+			// TODO: Optimize - use different materials
+			{ // EDL OCCLUSION PASS
+				let queryEDL = Potree.startQuery('EDL - resolve', renderer.getContext());
+	
+				this.edlMaterial.uniforms.screenWidth.value = width;
+				this.edlMaterial.uniforms.screenHeight.value = height;
+	
+				//this.edlMaterial.uniforms.colorMap.value = this.rtColor.texture;
+	
+				this.edlMaterial.uniforms.uRegularColor.value = this.rtRegular.texture;
+				this.edlMaterial.uniforms.uEDLColor.value = this.rtEDL.texture;
+				this.edlMaterial.uniforms.uRegularDepth.value = this.rtRegular.depthTexture;
+				this.edlMaterial.uniforms.uEDLDepth.value = this.rtEDL.depthTexture;
+	
+				this.edlMaterial.uniforms.edlStrength.value = viewer.edlStrength;
+				this.edlMaterial.uniforms.radius.value = viewer.edlRadius;
+				this.edlMaterial.uniforms.opacity.value = 1;
+				
+				Potree.utils.screenPass.render(renderer, this.edlMaterial);
+	
+				if(this.screenshot){
+					Potree.utils.screenPass.render(renderer, this.edlMaterial, this.screenshot.target);
+				}
+	
+				Potree.endQuery(queryEDL, renderer.getContext());
+			}
+
+			let queryRest = Potree.startQuery('EDL - rest', renderer.getContext());
+
+			renderer.clearDepth();
+
+			viewer.transformationTool.update();
+
+			viewer.dispatchEvent({type: "render.pass.perspective_overlay", viewer });
+
+			renderer.render(viewer.controls.sceneControls, camera);
+			renderer.render(viewer.clippingTool.sceneVolume, camera);
+			renderer.render(viewer.transformationTool.scene, camera);
+			
+			renderer.setViewport(width - viewer.navigationCube.width, 
+										height - viewer.navigationCube.width, 
+										viewer.navigationCube.width, viewer.navigationCube.width);
+			renderer.render(viewer.navigationCube, viewer.navigationCube.camera);		
+			renderer.setViewport(0, 0, width, height);
+
+			viewer.dispatchEvent({ type: "render.pass.end", viewer });
+
+			Potree.endQuery(queryRest, renderer.getContext());
+		});
 	}
 };
 

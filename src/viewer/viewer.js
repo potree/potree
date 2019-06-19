@@ -5,6 +5,13 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		super();
 
 		this.renderArea = domElement;
+
+		this.renderAreas = [domElement];
+		if (Array.isArray(domElement) && domElement.length) {
+			this.renderArea = domElement[0];
+			this.renderAreas = domElement;
+		}
+
 		this.guiLoaded = false;	
 		this.guiLoadTasks = [];
 
@@ -13,12 +20,12 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		<div id="message_listing" 
 			style="position: absolute; z-index: 1000; left: 10px; bottom: 10px">
 		</div>`);
-		$(domElement).append(this.elMessages);
+		$(this.renderArea).append(this.elMessages);
 		
 		try{
 
 		{ // generate missing dom hierarchy
-			if ($(domElement).find('#potree_map').length === 0) {
+			if ($(this.renderArea).find('#potree_map').length === 0) {
 				let potreeMap = $(`
 					<div id="potree_map" class="mapBox" style="position: absolute; left: 50px; top: 50px; width: 400px; height: 400px; display: none">
 						<div id="potree_map_header" style="position: absolute; width: 100%; height: 25px; top: 0px; background-color: rgba(0,0,0,0.5); z-index: 1000; border-top-left-radius: 3px; border-top-right-radius: 3px;">
@@ -26,19 +33,19 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 						<div id="potree_map_content" class="map" style="position: absolute; z-index: 100; top: 25px; width: 100%; height: calc(100% - 25px); border: 2px solid rgba(0,0,0,0.5); box-sizing: border-box;"></div>
 					</div>
 				`);
-				$(domElement).append(potreeMap);
+				$(this.renderArea).append(potreeMap);
 			}
 
-			if ($(domElement).find('#potree_description').length === 0) {
+			if ($(this.renderArea).find('#potree_description').length === 0) {
 				let potreeDescription = $(`<div id="potree_description" class="potree_info_text"></div>`);
-				$(domElement).append(potreeDescription);
+				$(this.renderArea).append(potreeDescription);
 			}
 
-			if ($(domElement).find('#potree_annotations').length === 0) {
+			if ($(this.renderArea).find('#potree_annotations').length === 0) {
 				let potreeAnnotationContainer = $(`
 					<div id="potree_annotation_container" 
 						style="position: absolute; z-index: 100000; width: 100%; height: 100%; pointer-events: none;"></div>`);
-				$(domElement).append(potreeAnnotationContainer);
+				$(this.renderArea).append(potreeAnnotationContainer);
 			}
 		}
 
@@ -91,6 +98,8 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		this.edlRenderer = null;
 		this.renderer = null;
 		this.pRenderer = null;
+		this.pRenderer2 = null;
+		this.pRenderers = [];
 
 		this.scene = null;
 		this.overlay = null;
@@ -118,6 +127,8 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		}
 		
 		this.pRenderer = new Potree.Renderer(this.renderer);
+		this.pRenderer2 = new Potree.Renderer(this.renderers[1]);
+		this.pRenderers = [this.pRenderer, this.pRenderer2];
 		
 		{
 			let near = 2.5;
@@ -130,7 +141,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		}
 		
 
-		let scene = new Potree.Scene(this.renderer);
+		let scene = new Potree.Scene(this.renderers);
 		this.setScene(scene);
 
 		{
@@ -970,15 +981,15 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		this.server = server;
 	}
 
-	initThree () {
-		let width = this.renderArea.clientWidth;
-		let height = this.renderArea.clientHeight;
+	createRenderer(domElement, index) {
+		let width = domElement.clientWidth;
+		let height = domElement.clientHeight;
 
 		this.renderer = new THREE.WebGLRenderer({alpha: true, premultipliedAlpha: false});
 		this.renderer.sortObjects = false;
 		this.renderer.setSize(width, height);
 		this.renderer.autoClear = false;
-		this.renderArea.appendChild(this.renderer.domElement);
+		domElement.appendChild(this.renderer.domElement);
 		this.renderer.domElement.tabIndex = '2222';
 		this.renderer.domElement.style.position = 'absolute';
 		this.renderer.domElement.addEventListener('mousedown', () => {
@@ -993,8 +1004,17 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		let extVAO = gl.getExtension('OES_vertex_array_object');
 		gl.createVertexArray = extVAO.createVertexArrayOES.bind(extVAO);
 		gl.bindVertexArray = extVAO.bindVertexArrayOES.bind(extVAO);
-		//gl.bindVertexArray = extVAO.asdfbindVertexArrayOES.bind(extVAO);
-		
+
+		this.renderers[index] = this.renderer;
+	}
+
+	initThree () {
+		// TODO:
+		this.renderers = [];
+		this.createRenderer(this.renderArea, 0);
+		// TODO:
+		this.createRenderer(this.renderAreas[1], 1);
+		this.renderer = this.renderers[0];
 	}
 
 	updateAnnotations () {
@@ -1412,6 +1432,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			this.scene.cameraScreenSpace.updateProjectionMatrix();
 			
 			this.renderer.setSize(width, height);
+			this.renderers[1].setSize(width, height);
 		}
 
 		try{

@@ -1,6 +1,6 @@
 {
   "name": "potree",
-  "version": "0.0.17",
+  "version": "0.0.18",
   "description": "WebGL point cloud viewer",
   "scripts": {
     "prepublishOnly": "npm run build",

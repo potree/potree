@@ -233,7 +233,7 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 			// Set the pivot point in the center of the point cloud or cropping volume
 			const pivot = cropVolume
 				? cropVolume.position.clone()
-				: this.scene.pointclouds[0].boundingBox.getCenter();
+				: view.getPivot();
 			
 			let originalPitch = view.pitch;
 			let tmpView = view.clone();

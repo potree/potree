@@ -1,8 +1,8 @@
 
-# README
+# README * [中文版](./readme_zh.md)
 
 * [Getting Started](./docs/getting_started.md)
-
+* [入门](./docs/getting_started_zh.md)
 ## About
 
 Potree is a free open-source WebGL based point cloud renderer for large point clouds.

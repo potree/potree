@@ -1,0 +1,98 @@
+{
+	"tb": {
+		"navigation_opt": "Navigering",
+		"rendering_opt": "Utseende",
+		"tools_opt": "Verktyg",
+		"measurments_opt": "Mätning",
+		"clipping_opt": "Urklipp",
+		"annotations_opt": "Annoteringar",
+		"materials_opt": "Material",
+		"scene_opt": "Scen",
+		"classification_filter_opt": "Klassificeringsfilter",
+		"filters_opt": "Filter",
+		"parameters_opt": "Andra inställningar",
+		"about_opt": "Om"
+	},
+	"tt": {
+		"angle_measurement": "Vinkelmätning",
+		"point_measurement": "Punktmätning",
+		"distance_measurement": "Distansmätning",
+		"height_measurement": "Höjdmätning",
+		"area_measurement": "Areamätning",
+		"volume_measurement": "Volymmätning",
+		"height_profile": "Höjdprofil",
+		"clip_volume": "Volymklippning",
+		"clip_polygon": "Polygonklippning",
+		"screen_clip_box": "Rita en yta för selektering. Ortogonalt kameraläge krävs!",
+		"clip_plane_x": "Klippyta på x axel",
+		"clip_plane_y": "Klippyta på y axel",
+		"clip_plane_z": "Klippyta på z axel",
+		"remove_all_measurement": "Ta bort alla mätningar",
+		"left_view_control": "Vy vänster",
+		"right_view_control": "Vy höger",
+		"front_view_control": "Vy fram",
+		"back_view_control": "Vy bak",
+		"top_view_control": "Vy ovan",
+		"bottom_view_control": "Vy under",
+		"focus_control": "Full utsträckning",
+		"orbit_control": "Kretsa kontroll",
+		"flight_control": "Flyga kontroll",
+		"heli_control": "Helikopter kontroll",
+		"earth_control": "Earth control",
+		"perspective_camera_control": "Kamera perspektiv",
+		"orthographic_camera_control": "Kamera ortogonal",
+		"navigation_cube_control": "Navigeringskub",
+		"remove_all_clipping_volumes": "Ta bort alla klippytor"
+	},
+	"appearance": {
+		"nb_max_pts": "Punktbudget",
+		"point_size": "Punktstorlek",
+		"point_opacity": "Transparens",
+		"field_view": "Synfält",
+		"point_size_type": "Punkttyp",
+		"point_material": "Material",
+		"elevation_range": "Höjdintervall",
+		"point_quality": "Kvalitet",
+		"point_shape": "Form",
+		"edl_radius": "Radie",
+		"edl_strength": "Styrka",
+		"edl_enable": "Aktiverad",
+		"min_node_size": "Min nodstorlek",
+		"clip_mode": "Klippläge",
+		"move_speed": "Hastighet",
+		"skybox": "Skybox",
+		"bottom_lock": "Lås över marknivå",
+		"box": "Box",
+		"length_unit": "Enhet för längd",
+		"freeze": "Lås vy",
+		"language": "Språk"
+	},
+	"measurements": {
+		"clip": "klipp",
+		"show": "visa volym"
+	},
+	"annotations": {
+		"show3D": "visa i 3D",
+		"showMap": "visa på karta"
+	},
+	"profile": {
+		"nb_points": "Antal Punkter",
+		"title": "Höjdprofil",
+		"save_las": "Spara LAS(3D)",
+		"save_ortho": "Spara CSV(2D)"
+	},
+	"scene": {
+		"camera_position": "Kamera Position",
+		"camera_target": "Kamera Mål"
+	},
+	"filters": {
+		"return_number": "Returnera Antal",
+		"number_of_returns": "Antal Returneringar",
+		"gps_min": "min",
+		"gps_max": "max",
+		"gps_time": "GPS Tid"
+	},
+	"settings": {
+		"language": "Språk"
+	}
+}

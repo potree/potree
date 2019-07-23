@@ -4,7 +4,8 @@ import {Enum} from "./Enum.js";
 
 export const CameraMode = {
 	ORTHOGRAPHIC: 0,
-	PERSPECTIVE: 1
+	PERSPECTIVE: 1,
+	VR: 1,
 };
 
 export const ClipTask = {

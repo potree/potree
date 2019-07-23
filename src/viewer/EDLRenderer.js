@@ -189,6 +189,17 @@ export class EDLRenderer{
 			}
 		});
 
+		// if(viewer.background === "skybox"){
+		// 	viewer.skybox.camera.rotation.copy(viewer.scene.cameraP.rotation);
+		// 	viewer.skybox.camera.fov = viewer.scene.cameraP.fov;
+		// 	viewer.skybox.camera.aspect = viewer.scene.cameraP.aspect;
+		// 	viewer.skybox.camera.updateProjectionMatrix();
+		// 	viewer.renderer.render(viewer.skybox.scene, viewer.skybox.camera);
+		// } else if (viewer.background === 'gradient') {
+		// 	viewer.renderer.render(viewer.scene.sceneBG, viewer.scene.cameraBG);
+		// } 
+
+		//this.clear();
 		if(viewer.background === "skybox"){
 			viewer.skybox.camera.rotation.copy(viewer.scene.cameraP.rotation);
 			viewer.skybox.camera.fov = viewer.scene.cameraP.fov;
@@ -241,6 +252,8 @@ export class EDLRenderer{
 			material.uniforms.octreeSize.value = octreeSize;
 			material.spacing = pointcloud.pcoGeometry.spacing * Math.max(pointcloud.scale.x, pointcloud.scale.y, pointcloud.scale.z);
 		}
+
+		
 		
 		// TODO adapt to multiple lights
 		if(lights.length > 0){

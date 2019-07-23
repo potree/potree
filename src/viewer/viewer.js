@@ -1,5 +1,4 @@
 
-
 import {ClipTask, ClipMethod, CameraMode} from "../defines.js";
 import {Renderer} from "../PotreeRenderer.js";
 import {PotreeRenderer} from "./PotreeRenderer.js";
@@ -34,6 +33,8 @@ export class Viewer extends EventDispatcher{
 		this.renderArea = domElement;
 		this.guiLoaded = false;	
 		this.guiLoadTasks = [];
+
+		this.vr = null;
 
 		this.messages = [];
 		this.elMessages = $(`
@@ -141,6 +142,9 @@ export class Viewer extends EventDispatcher{
 		this.defaultGPSTimeChanged = false;
 
 		this.initThree();
+		this.prepareVR();
+
+		this.prepareVR();
 
 		{
 			let canvas = this.renderer.domElement;
@@ -1066,14 +1070,19 @@ export class Viewer extends EventDispatcher{
 		let width = this.renderArea.clientWidth;
 		let height = this.renderArea.clientHeight;
 
+		// let contextAttributes = {
+		// 	alpha: true,
+		// 	depth: true,
+		// 	stencil: false,
+		// 	antialias: false,
+		// 	//premultipliedAlpha: _premultipliedAlpha,
+		// 	preserveDrawingBuffer: true,
+		// 	powerPreference: "high-performance",
+		// };
+
 		let contextAttributes = {
-			alpha: true,
-			depth: true,
-			stencil: false,
-			antialias: false,
-			//premultipliedAlpha: _premultipliedAlpha,
+			alpha: false,
 			preserveDrawingBuffer: true,
-			powerPreference: "high-performance",
 		};
 
 		let canvas = document.createElement("canvas");
@@ -1120,6 +1129,39 @@ export class Viewer extends EventDispatcher{
 		}else if(gl instanceof WebGL2RenderingContext){
 			gl.getExtension("EXT_color_buffer_float");
 		}
+		
+	}
+
+	async prepareVR(){
+
+		if(!navigator.getVRDisplays){
+			console.info("browser does not support WebVR");
+
+			return false;
+		}
+
+		let frameData = new VRFrameData();
+		let displays = await navigator.getVRDisplays();
+
+		if(displays.length == 0){
+			console.info("no VR display found");
+			return false;
+		}
+
+		let display = displays[displays.length - 1];
+		display.depthNear = 0.1;
+		display.depthFar = 10000.0;
+
+		if(!display.capabilities.canPresent){
+			// Not sure why canPresent would ever be false?
+			console.error("VR display canPresent === false");
+			return false;
+		}
+
+		this.vr = {
+			frameData: frameData,
+			display: display,
+		};
 		
 	}
 
@@ -1590,81 +1632,160 @@ export class Viewer extends EventDispatcher{
 		if(Potree.measureTimings) performance.mark("render-start");
 
 		{ // resize
-			let width = this.scaleFactor * this.renderArea.clientWidth;
-			let height = this.scaleFactor * this.renderArea.clientHeight;
-			let pixelRatio = this.renderer.getPixelRatio();
-			let aspect = width / height;
+			const width = this.scaleFactor * this.renderArea.clientWidth;
+			const height = this.scaleFactor * this.renderArea.clientHeight;
+			const pixelRatio = this.renderer.getPixelRatio();
+			const aspect = width / height;
 
-			this.scene.cameraP.aspect = aspect;
-			this.scene.cameraP.updateProjectionMatrix();
+			const scene = this.scene;
+
+			scene.cameraP.aspect = aspect;
+			scene.cameraP.updateProjectionMatrix();
 
 			//let frustumScale = viewer.moveSpeed * 2.0;
 			let frustumScale = this.scene.view.radius;
-			this.scene.cameraO.left = -frustumScale;
-			this.scene.cameraO.right = frustumScale;		
-			this.scene.cameraO.top = frustumScale * 1 / aspect;
-			this.scene.cameraO.bottom = -frustumScale * 1 / aspect;		
-			this.scene.cameraO.updateProjectionMatrix();
+			scene.cameraO.left = -frustumScale;
+			scene.cameraO.right = frustumScale;
+			scene.cameraO.top = frustumScale * 1 / aspect;
+			scene.cameraO.bottom = -frustumScale * 1 / aspect;
+			scene.cameraO.updateProjectionMatrix();
 
-			this.scene.cameraScreenSpace.top = 1/aspect;
-			this.scene.cameraScreenSpace.bottom = -1/aspect;
-			this.scene.cameraScreenSpace.updateProjectionMatrix();
-			
-			this.renderer.setSize(width, height);
+			scene.cameraScreenSpace.top = 1/aspect;
+			scene.cameraScreenSpace.bottom = -1/aspect;
+			scene.cameraScreenSpace.updateProjectionMatrix();
 		}
 
 		try{
 
+			let pRenderer = null;
 
-		if(this.useRep){
-			if (!this.repRenderer) {
-				this.repRenderer = new RepRenderer(this);
-			}
-			this.repRenderer.render(this.renderer);
-		}else if(this.useHQ){
-			if (!this.hqRenderer) {
-				this.hqRenderer = new HQSplatRenderer(this);
-			}
-			this.hqRenderer.useEDL = this.useEDL;
-			this.hqRenderer.render(this.renderer);
-		}else{
-			if (this.useEDL && Features.SHADER_EDL.isSupported()) {
-				if (!this.edlRenderer) {
-					this.edlRenderer = new EDLRenderer(this);
+			if(this.useHQ){
+				if (!this.hqRenderer) {
+					this.hqRenderer = new HQSplatRenderer(this);
 				}
-				this.edlRenderer.render(this.renderer);
-			} else {
-				if (!this.potreeRenderer) {
-					this.potreeRenderer = new PotreeRenderer(this);
+				this.hqRenderer.useEDL = this.useEDL;
+				//this.hqRenderer.render(this.renderer);
+
+				pRenderer = this.hqRenderer;
+			}else{
+				if (this.useEDL && Features.SHADER_EDL.isSupported()) {
+					if (!this.edlRenderer) {
+						this.edlRenderer = new EDLRenderer(this);
+					}
+					//this.edlRenderer.render(this.renderer);
+					pRenderer = this.edlRenderer;
+				} else {
+					if (!this.potreeRenderer) {
+						this.potreeRenderer = new PotreeRenderer(this);
+					}
+					//this.potreeRenderer.render();
+					pRenderer = this.potreeRenderer;
 				}
-				this.potreeRenderer.render();
 			}
-		}
+			
+			const vr = this.vr;
+			const vrActive = (vr && vr.display.isPresenting);
 
-		//if(this.useRep){
-		//	if (!this.repRenderer) {
-		//		this.repRenderer = new RepRenderer(this);
-		//	}
-		//	this.repRenderer.render(this.renderer);
-		//} else if (this.useHQ && Features.SHADER_SPLATS.isSupported()) {
-		//	if (!this.hqRenderer) {
-		//		this.hqRenderer = new HQSplatRenderer(this);
-		//	}
-		//	this.hqRenderer.render(this.renderer);
-		//} else if (this.useEDL && Features.SHADER_EDL.isSupported()) {
-		//	if (!this.edlRenderer) {
-		//		this.edlRenderer = new EDLRenderer(this);
-		//	}
-		//	this.edlRenderer.render(this.renderer);
-		//} else {
-		//	if (!this.potreeRenderer) {
-		//		this.potreeRenderer = new PotreeRenderer(this);
-		//	}
+			if(vrActive){
 
-		//	this.potreeRenderer.render();
-		//}
+				const {display, frameData} = vr;
 
-		this.renderer.render(this.overlay, this.overlayCamera);
+				const leftEye = display.getEyeParameters("left");
+				const rightEye = display.getEyeParameters("right");
+
+				const width = Math.max(leftEye.renderWidth, rightEye.renderWidth) * 2;
+				const height = Math.max(leftEye.renderHeight, rightEye.renderHeight);
+
+				this.renderer.setSize(width, height);
+
+				pRenderer.clear();
+
+				//const camera = new THREE.Camera();
+				viewer.scene.cameraMode = CameraMode.VR;
+				const camera = viewer.scene.getActiveCamera();
+				{
+					camera.near = display.depthNear;
+					camera.far = display.depthFar;
+					camera.projectionMatrix = new THREE.Matrix4();
+					camera.matrixWorldInverse = new THREE.Matrix4();
+					camera.matrixWorld = new THREE.Matrix4();
+					camera.updateProjectionMatrix =  () => {};
+					camera.updateMatrixWorld = () => {};
+					camera.fov = 60;
+				};
+
+				const flipWorld = new THREE.Matrix4().fromArray([
+					1, 0, 0, 0, 
+					0, 0, 1, 0, 
+					0, 1, 0, 0,
+					0, 0, 0, 1
+				]);
+				const flipView = new THREE.Matrix4().getInverse(flipWorld);
+
+				{// LEFT
+					camera.projectionMatrix.fromArray(frameData.leftProjectionMatrix);
+
+					const leftView = new THREE.Matrix4().fromArray(frameData.leftViewMatrix);
+					const leftWorld = new THREE.Matrix4().getInverse(leftView);
+
+					camera.matrixWorldInverse.multiplyMatrices(leftView, flipView);
+					camera.matrixWorld.multiplyMatrices(leftWorld, flipWorld);
+
+					const viewport = [0, 0, width / 2, height];
+
+					this.renderer.setViewport(...viewport);
+					pRenderer.render({camera: camera, viewport: viewport});
+					//this.renderer.render(this.overlay, this.overlayCamera);
+				}
+
+				{// RIGHT
+				
+					camera.projectionMatrix.fromArray(frameData.rightProjectionMatrix);
+					//camera.matrixWorldInverse.fromArray(frameData.rightViewMatrix);
+					//camera.matrixWorld.getInverse(camera.matrixWorldInverse);
+
+					const rightView = new THREE.Matrix4().fromArray(frameData.rightViewMatrix);
+					const rightWorld = new THREE.Matrix4().getInverse(rightView);
+
+					camera.matrixWorldInverse.multiplyMatrices(rightView, flipView);
+					camera.matrixWorld.multiplyMatrices(rightWorld, flipWorld);
+
+					const viewport = [width / 2, 0, width / 2, height];
+
+					this.renderer.setViewport(...viewport);
+					pRenderer.clearTargets();
+					pRenderer.render({camera: camera, viewport: viewport, debug: 2});
+					//this.renderer.render(this.overlay, this.overlayCamera);
+				}
+
+				{ // CENTER
+
+					{ // central view matrix
+						// TODO this can't be right...can it?
+
+						const left = frameData.leftViewMatrix;
+						const right = frameData.rightViewMatrix
+
+						const centerView = new THREE.Matrix4();
+
+						for(let i = 0; i < centerView.elements.length; i++){
+							centerView.elements[i] = (left[i] + right[i]) / 2;
+						}
+
+						camera.matrixWorldInverse.multiplyMatrices(centerView, flipView);
+						camera.matrixWorld.getInverse(camera.matrixWorldInverse);
+					}
+
+
+					camera.fov = leftEye.fieldOfView.upDegrees;
+				}
+
+			}else{
+				pRenderer.clear();
+
+				pRenderer.render(this.renderer);
+				this.renderer.render(this.overlay, this.overlayCamera);
+			}
 
 		}catch(e){
 			this.onCrash(e);
@@ -1776,17 +1897,73 @@ export class Viewer extends EventDispatcher{
 		}
 	}
 
+	async toggleVR(){
+		const vrActive = (this.vr && this.vr.display.isPresenting);
+
+		if(vrActive){
+			this.stopVR();
+		}else{
+			this.startVR();
+		}
+	}
+
+	async startVR(){
+
+		if(this.vr === null){
+			return;
+		}
+
+		let canvas = this.renderer.domElement;
+		let display = this.vr.display;
+
+		try{
+			await display.requestPresent([{ source: canvas }]);
+		}catch(e){
+			console.error(e);
+			this.postError("requestPresent failed");
+			return;
+		}
+
+		//window.addEventListener('vrdisplaypresentchange', onVRPresentChange, false);
+		//window.addEventListener('vrdisplayactivate', onVRRequestPresent, false);
+		//window.addEventListener('vrdisplaydeactivate', onVRExitPresent, false);
+
+	}
+
+	async stopVR(){
+		// TODO shutdown VR
+	}
+
 	loop(timestamp){
-		requestAnimationFrame(this.loop.bind(this));
 
 		let queryAll;
 		if(Potree.measureTimings){
 			performance.mark("loop-start");
 		}
 
-		this.update(this.clock.getDelta(), timestamp);
 
-		this.render();
+		const vrActive = (this.vr && this.vr.display.isPresenting);
+
+		if(vrActive){
+			const {display, frameData} = this.vr;
+
+			display.requestAnimationFrame(this.loop.bind(this));
+
+			display.getFrameData(frameData);
+
+			this.update(this.clock.getDelta(), timestamp);
+
+			this.render();
+
+			this.vr.display.submitFrame();
+		}else{
+			requestAnimationFrame(this.loop.bind(this));
+
+			this.update(this.clock.getDelta(), timestamp);
+
+			this.render();
+		}
+
 
 		if(Potree.measureTimings){
 			performance.mark("loop-end");

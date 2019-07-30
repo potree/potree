@@ -105,7 +105,10 @@ uniform vec3 uShadowColor;
 uniform sampler2D visibleNodes;
 uniform sampler2D gradient;
 uniform sampler2D classificationLUT;
+
+#if defined(color_type_matcap)
 uniform sampler2D matcapTextureUniform;
+#endif
 
 #if defined(num_shadowmaps) && num_shadowmaps > 0
 uniform sampler2D uShadowMap[num_shadowmaps];
@@ -496,6 +499,8 @@ vec3 getMatcap(){
 }
 
 
+
+#if defined(color_type_matcap)
 // Matcap Material
 vec3 getNormal(){
     //vec3 n_hsv = vec3( modelMatrix * vec4( normal, 0.0 )) * 0.5 + 0.5; // (n_world.xyz + vec3(1.,1.,1.)) / 2.;
@@ -510,6 +515,7 @@ vec3 getMatcap(){
     vec2 vN = r_en.xy / m + .5;
  	return texture2D(matcapTextureUniform, vN).rgb; 
 }
+#endif
 
 // 
 //  ######  ##       #### ########  ########  #### ##    ##  ######   

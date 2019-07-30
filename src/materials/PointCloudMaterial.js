@@ -133,6 +133,7 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 			uFilterReturnNumberRange:		{ type: "fv", value: [0, 7]},
 			uFilterNumberOfReturnsRange:	{ type: "fv", value: [0, 7]},
 			uFilterGPSTimeClipRange:		{ type: "fv", value: [0, 7]},
+			uFilterPointSourceIDRange:		{ type: "fv", value: [0, 65535]},
 		};
 
 		this.classification = ClassificationScheme.DEFAULT;

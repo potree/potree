@@ -90,6 +90,7 @@
 		"number_of_returns": "Number of Returns",
 		"gps_min": "min",
 		"gps_max": "max",
+		"point_source_id": "Point Source ID",
 		"gps_time": "GPS Time"
 	},
 	"settings": {

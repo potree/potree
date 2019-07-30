@@ -853,6 +853,7 @@ export class Renderer {
 				let uFilterReturnNumberRange = material.uniforms.uFilterReturnNumberRange.value;
 				let uFilterNumberOfReturnsRange = material.uniforms.uFilterNumberOfReturnsRange.value;
 				let uFilterGPSTimeClipRange = material.uniforms.uFilterGPSTimeClipRange.value;
+				let uFilterPointSourceIDRange = material.uniforms.uFilterPointSourceIDRange.value;
 				
 				let gpsCliPRangeMin = uFilterGPSTimeClipRange[0] - gpsMin;
 				let gpsCliPRangeMax = uFilterGPSTimeClipRange[1] - gpsMin;
@@ -860,6 +861,7 @@ export class Renderer {
 				shader.setUniform2f("uFilterReturnNumberRange", uFilterReturnNumberRange);
 				shader.setUniform2f("uFilterNumberOfReturnsRange", uFilterNumberOfReturnsRange);
 				shader.setUniform2f("uFilterGPSTimeClipRange", [gpsCliPRangeMin, gpsCliPRangeMax]);
+				shader.setUniform2f("uFilterPointSourceIDRange", uFilterPointSourceIDRange)
 			}
 
 			let webglBuffer = null;
@@ -970,6 +972,10 @@ export class Renderer {
 
 					if(attributes.numberOfReturns){
 						defines.push("#define clip_number_of_returns_enabled");
+					}
+
+					if(attributes.pointSourceID){
+						defines.push("#define clip_point_source_id_enabled");
 					}
 
 				}

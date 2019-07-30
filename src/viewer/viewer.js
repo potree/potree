@@ -119,6 +119,8 @@ export class Viewer extends EventDispatcher{
 		this.filterNumberOfReturnsRange = [0, 7];
 		this.filterGPSTimeRange = [0, Infinity];
 		this.filterGPSTimeExtent = [0, 1];
+		this.filterPointSourceIDRange = [0, 65535];
+		this.filterPointSourceIDExtent = [0, 65535];
 
 		this.potreeRenderer = null;
 		this.edlRenderer = null;
@@ -573,6 +575,16 @@ export class Viewer extends EventDispatcher{
 	setFilterReturnNumberRange(from, to){
 		this.filterReturnNumberRange = [from, to];
 		this.dispatchEvent({'type': 'filter_return_number_range_changed', 'viewer': this});
+	}
+
+	setFilterPointSourceIDRange(from, to){
+		this.filterPointSourceIDRange = [from, to];
+		this.dispatchEvent({'type': 'filter_point_source_id_range_changed', 'viewer': this});
+	}
+
+	setFilterPointSourceIDExtent(from, to){
+		this.filterPointSourceIDExtent = [from, to];
+		this.dispatchEvent({'type': 'filter_point_source_id_extent_changed', 'viewer': this});
 	}
 
 	setFilterNumberOfReturnsRange(from, to){
@@ -1335,6 +1347,8 @@ export class Viewer extends EventDispatcher{
 						this.setFilterGPSTimeExtent(min - border, max + border);
 						//this.setFilterGPSTimeRange(0, 1000 * 1000 * 1000);
 						this.setFilterGPSTimeRange(min, max);
+                        this.setFilterPointSourceIDRange(0, 65535);
+                        this.setFilterPointSourceIDExtent(0, 65535);
 
 						this.defaultGPSTimeChanged = true;
 					}
@@ -1383,6 +1397,7 @@ export class Viewer extends EventDispatcher{
 			material.uniforms.uFilterReturnNumberRange.value = this.filterReturnNumberRange;
 			material.uniforms.uFilterNumberOfReturnsRange.value = this.filterNumberOfReturnsRange;
 			material.uniforms.uFilterGPSTimeClipRange.value = this.filterGPSTimeRange;
+			material.uniforms.uFilterPointSourceIDRange.value = this.filterPointSourceIDRange;
 		}
 
 		{

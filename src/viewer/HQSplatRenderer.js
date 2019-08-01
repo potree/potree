@@ -188,6 +188,7 @@ export class HQSplatRenderer{
 
 				attributeMaterial.elevationRange = material.elevationRange;
 				attributeMaterial.gradient = material.gradient;
+				attributeMaterial.matcap = material.matcap;
 
 				attributeMaterial.intensityRange = material.intensityRange;
 				attributeMaterial.intensityGamma = material.intensityGamma;

@@ -15,6 +15,7 @@ attribute float pointSourceID;
 attribute vec4 indices;
 attribute float spacing;
 attribute float gpsTime;
+attribute vec3 normal;
 
 uniform mat4 modelMatrix;
 uniform mat4 modelViewMatrix;
@@ -104,6 +105,10 @@ uniform vec3 uShadowColor;
 uniform sampler2D visibleNodes;
 uniform sampler2D gradient;
 uniform sampler2D classificationLUT;
+
+#if defined(color_type_matcap)
+uniform sampler2D matcapTextureUniform;
+#endif
 
 #if defined(num_shadowmaps) && num_shadowmaps > 0
 uniform sampler2D uShadowMap[num_shadowmaps];
@@ -465,7 +470,7 @@ vec3 getCompositeColor(){
 	w += wSourceID;
 	
 	vec4 cl = wClassification * getClassification();
-    c += cl.a * cl.rgb;
+	c += cl.a * cl.rgb;
 	w += wClassification * cl.a;
 
 	c = c / w;
@@ -478,6 +483,23 @@ vec3 getCompositeColor(){
 	return c;
 }
 
+
+#if defined(color_type_matcap)
+// Matcap Material
+vec3 getNormal(){
+	//vec3 n_hsv = vec3( modelMatrix * vec4( normal, 0.0 )) * 0.5 + 0.5; // (n_world.xyz + vec3(1.,1.,1.)) / 2.;
+	vec3 n_view = normalize( vec3( modelViewMatrix * vec4( normal, 0.0 ) ) );
+	return n_view;
+}
+
+vec3 getMatcap(){ 
+	vec3 eye = normalize( vec3( modelViewMatrix * vec4( position, 1. ) ) ); 
+	vec3 r_en = reflect( eye, getNormal() ); // or r_en = e - 2. * dot( n, e ) * n;
+	float m = 2. * sqrt(pow( r_en.x, 2. ) + pow( r_en.y, 2. ) + pow( r_en.z + 1., 2. ));
+	vec2 vN = r_en.xy / m + .5;
+ 	return texture2D(matcapTextureUniform, vN).rgb; 
+}
+#endif
 
 // 
 //  ######  ##       #### ########  ########  #### ##    ##  ######   
@@ -535,6 +557,8 @@ vec3 getColor(){
 		color = color;
 	#elif defined color_type_composite
 		color = getCompositeColor();
+	#elif defined color_type_matcap
+		color = getMatcap();
 	#endif
 	
 	return color;

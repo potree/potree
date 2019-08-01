@@ -78,6 +78,10 @@ export class HQSplatRenderer{
 		this.rtAttribute.setSize(width * pixelRatio , height * pixelRatio);
 	}
 
+	clear(){
+
+	}
+
 	render () {
 		this.init();
 		const viewer = this.viewer;

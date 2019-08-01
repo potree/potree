@@ -144,17 +144,8 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 		this.defaultAttributeValues.classification = [0, 0, 0];
 		this.defaultAttributeValues.indices = [0, 0, 0, 0];
 
-		//if(Potree.Features.WEBGL2.isSupported()){
-		//	this.vertexShader = this.getDefines() + Shaders['pointcloud.gl2.vs'];
-		//	this.fragmentShader = this.getDefines() + Shaders['pointcloud.fs'];
-		//}else{
-		//	this.vertexShader = this.getDefines() + Shaders['pointcloud.vs'];
-		//	this.fragmentShader = this.getDefines() + Shaders['pointcloud.fs'];
-		//}
-
 		this.vertexShader = Shaders['pointcloud.vs'];
 		this.fragmentShader = Shaders['pointcloud.fs'];
-
 		
 		this.vertexColors = THREE.VertexColors;
 	}
@@ -176,10 +167,8 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 
 	updateShaderSource () {
 
-		let vs = Potree.Features.WEBGL2.isSupported() ?
-			Shaders['pointcloud.gl2.vs'] : Shaders['pointcloud.vs'];
-		let fs = Potree.Features.WEBGL2.isSupported() ?
-			Shaders['pointcloud.gl2.fs'] : Shaders['pointcloud.fs'];
+		let vs = Shaders['pointcloud.vs'];
+		let fs = Shaders['pointcloud.fs'];
 		let definesString = this.getDefines();
 
 		let vsVersionIndex = vs.indexOf("#version ");

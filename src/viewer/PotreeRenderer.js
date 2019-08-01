@@ -4,23 +4,21 @@ export class PotreeRenderer {
 	constructor (viewer) {
 		this.viewer = viewer;
 	}
- 
-	render(){
-		const viewer = this.viewer;
 
-		viewer.dispatchEvent({type: "render.pass.begin",viewer: viewer});
+	clear(){
+		const viewer = this.viewer;
 
 		// render skybox
 		if(viewer.background === "skybox"){
 			viewer.renderer.clear(true, true, false);
-			viewer.skybox.camera.rotation.copy(viewer.scene.cameraP.rotation);
-			viewer.skybox.camera.fov = viewer.scene.cameraP.fov;
-			viewer.skybox.camera.aspect = viewer.scene.cameraP.aspect;
-			viewer.skybox.camera.updateProjectionMatrix();
-			viewer.renderer.render(viewer.skybox.scene, viewer.skybox.camera);
+			//viewer.skybox.camera.rotation.copy(viewer.scene.cameraP.rotation);
+			//viewer.skybox.camera.fov = viewer.scene.cameraP.fov;
+			//viewer.skybox.camera.aspect = viewer.scene.cameraP.aspect;
+			//viewer.skybox.camera.updateProjectionMatrix();
+			//viewer.renderer.render(viewer.skybox.scene, viewer.skybox.camera);
 		}else if(viewer.background === "gradient"){
 			viewer.renderer.clear(true, true, false);
-			viewer.renderer.render(viewer.scene.sceneBG, viewer.scene.cameraBG);
+			//viewer.renderer.render(viewer.scene.sceneBG, viewer.scene.cameraBG);
 		}else if(viewer.background === "black"){
 			viewer.renderer.setClearColor(0x000000, 1);
 			viewer.renderer.clear(true, true, false);
@@ -30,6 +28,23 @@ export class PotreeRenderer {
 		}else{
 			viewer.renderer.setClearColor(0x000000, 0);
 			viewer.renderer.clear(true, true, false);
+		}
+	}
+ 
+	render(){
+		const viewer = this.viewer;
+
+		viewer.dispatchEvent({type: "render.pass.begin",viewer: viewer});
+
+		// render skybox
+		if(viewer.background === "skybox"){
+			viewer.skybox.camera.rotation.copy(viewer.scene.cameraP.rotation);
+			viewer.skybox.camera.fov = viewer.scene.cameraP.fov;
+			viewer.skybox.camera.aspect = viewer.scene.cameraP.aspect;
+			viewer.skybox.camera.updateProjectionMatrix();
+			viewer.renderer.render(viewer.skybox.scene, viewer.skybox.camera);
+		}else if(viewer.background === "gradient"){
+			viewer.renderer.render(viewer.scene.sceneBG, viewer.scene.cameraBG);
 		}
 		
 		for(let pointcloud of this.viewer.scene.pointclouds){

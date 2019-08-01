@@ -22,7 +22,7 @@ export class Measure extends THREE.Object3D {
 		this.sphereGeometry = new THREE.SphereGeometry(0.4, 10, 10);
 		this.color = new THREE.Color(0xff0000);
 
-		this.lengthUnit = {code: 'm'};
+		//this.lengthUnit = {code: 'm'};
 
 		this.spheres = [];
 		this.edges = [];

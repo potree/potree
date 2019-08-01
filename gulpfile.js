@@ -5,10 +5,11 @@ const exec = require('child_process').exec;
 
 
 const fs = require("fs");
+const fsp = fs.promises;
 const concat = require('gulp-concat');
-const gutil = require('gulp-util');
-const through = require('through');
-const File = gutil.File;
+//const gutil = require('gulp-util');
+//const through = require('through');
+//const File = gutil.File;
 const connect = require('gulp-connect');
 //const watch = require('glob-watcher');
 const {watch} = gulp;
@@ -68,9 +69,6 @@ let shaders = [
 	"src/materials/shaders/edl.fs",
 	"src/materials/shaders/blur.vs",
 	"src/materials/shaders/blur.fs",
-
-	"src/materials/shaders/pointcloud.gl2.vs",
-	"src/materials/shaders/pointcloud.gl2.fs",
 ];
 
 // For development, it is now possible to use 'gulp webserver'
@@ -362,103 +360,6 @@ gulp.task('icons_viewer', async function(done) {
 
 });
 
-// let encodeWorker = function(fileName, opt){
-// 	if (!fileName) throw new PluginError('gulp-concat',  'Missing fileName option for gulp-concat');
-// 	if (!opt) opt = {};
-// 	if (!opt.newLine) opt.newLine = gutil.linefeed;
-
-// 	let buffer = [];
-// 	let firstFile = null;
-
-// 	function bufferContents(file){
-// 		if (file.isNull()) return; // ignore
-// 		if (file.isStream()) return this.emit('error', new PluginError('gulp-concat',  'Streaming not supported'));
-
-// 		if (!firstFile) firstFile = file;
-
-// 		let string = file.contents.toString('utf8');
-// 		buffer.push(string);
-// 	}
-
-// 	function endStream(){
-// 		if (buffer.length === 0) return this.emit('end');
-
-// 		let joinedContents = buffer.join("");
-// 		let content = joinedContents;
-
-// 		let joinedPath = path.join(firstFile.base, fileName);
-
-// 		let joinedFile = new File({
-// 			cwd: firstFile.cwd,
-// 			base: firstFile.base,
-// 			path: joinedPath,
-// 			contents: new Buffer(content)
-// 		});
-
-// 		this.emit('data', joinedFile);
-// 		this.emit('end');
-// 	}
-
-// 	return through(bufferContents, endStream);
-// };
-
-let encodeShader = function(fileName, varname, opt){
-	if (!fileName) throw new PluginError('gulp-concat',  'Missing fileName option for gulp-concat');
-	if (!opt) opt = {};
-	if (!opt.newLine) opt.newLine = gutil.linefeed;
-
-	let buffer = [];
-	let files = [];
-	let firstFile = null;
-
-	function bufferContents(file){
-		if (file.isNull()) return; // ignore
-		if (file.isStream()) return this.emit('error', new PluginError('gulp-concat',  'Streaming not supported'));
-
-		if (!firstFile) firstFile = file;
-
-		let string = file.contents.toString('utf8');
-		buffer.push(string);
-		files.push(file);
-	}
-
-	function endStream(){
-		if (buffer.length === 0) return this.emit('end');
-
-		let joinedContent = `let Shaders = {};\n\n`;
-		for(let i = 0; i < buffer.length; i++){
-			let b = buffer[i];
-			let file = files[i];
-
-			let fname = file.path.replace(file.base, "");
-			//console.log(fname);
-
-			let content = new Buffer.from(b).toString();
-
-			let prep = `\Shaders["${fname}"] = \`${content}\`\n`;
-
-			joinedContent += prep;
-		}
-
-		joinedContent += "\nexport {Shaders};";
-
-		let joinedPath = path.join(firstFile.base, fileName);
-
-		let joinedFile = new File({
-			cwd: firstFile.cwd,
-			base: firstFile.base,
-			path: joinedPath,
-			contents: Buffer.from(joinedContent)
-		});
-
-		this.emit('data', joinedFile);
-		this.emit('end');
-	}
-
-	return through(bufferContents, endStream);
-};
-
-
 gulp.task('test', async function() {
 
 	console.log("asdfiae8ofh");
@@ -478,9 +379,28 @@ gulp.task("workers", async function(done){
 });
 
 gulp.task("shaders", async function(){
-	return gulp.src(shaders)
-		.pipe(encodeShader('shaders.js', "Potree.Shader"))
-		.pipe(gulp.dest('build/shaders'));
+
+	const components = [
+		"let Shaders = {};"
+	];
+
+	for(let file of shaders){
+		const filename = path.basename(file);
+
+		const content = await fsp.readFile(file);
+
+		const prep = `Shaders["${filename}"] = \`${content}\``;
+
+		components.push(prep);
+	}
+
+	components.push("export {Shaders};");
+
+	const content = components.join("\n\n");
+
+	const targetPath = `./build/shaders/shaders.js`;
+
+	fs.writeFileSync(targetPath, content);
 });
 
 gulp.task('build', 

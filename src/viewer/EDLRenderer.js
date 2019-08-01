@@ -141,15 +141,9 @@ export class EDLRenderer{
 		if(background === "skybox"){
 			renderer.setClearColor(0x000000, 0);
 			renderer.clear();
-			skybox.camera.rotation.copy(scene.cameraP.rotation);
-			skybox.camera.fov = scene.cameraP.fov;
-			skybox.camera.aspect = scene.cameraP.aspect;
-			skybox.camera.updateProjectionMatrix();
-			renderer.render(skybox.scene, skybox.camera);
 		} else if (background === 'gradient') {
 			renderer.setClearColor(0x000000, 0);
 			renderer.clear();
-			renderer.render(scene.sceneBG, scene.cameraBG);
 		} else if (background === 'black') {
 			renderer.setClearColor(0x000000, 1);
 			renderer.clear();
@@ -195,17 +189,6 @@ export class EDLRenderer{
 			}
 		});
 
-		// if(viewer.background === "skybox"){
-		// 	viewer.skybox.camera.rotation.copy(viewer.scene.cameraP.rotation);
-		// 	viewer.skybox.camera.fov = viewer.scene.cameraP.fov;
-		// 	viewer.skybox.camera.aspect = viewer.scene.cameraP.aspect;
-		// 	viewer.skybox.camera.updateProjectionMatrix();
-		// 	viewer.renderer.render(viewer.skybox.scene, viewer.skybox.camera);
-		// } else if (viewer.background === 'gradient') {
-		// 	viewer.renderer.render(viewer.scene.sceneBG, viewer.scene.cameraBG);
-		// } 
-
-		//this.clear();
 		if(viewer.background === "skybox"){
 			viewer.skybox.camera.rotation.copy(viewer.scene.cameraP.rotation);
 			viewer.skybox.camera.fov = viewer.scene.cameraP.fov;
@@ -215,28 +198,6 @@ export class EDLRenderer{
 		} else if (viewer.background === 'gradient') {
 			viewer.renderer.render(viewer.scene.sceneBG, viewer.scene.cameraBG);
 		} 
-		// if(viewer.background === "skybox"){
-		// 	viewer.renderer.setClearColor(0x000000, 0);
-		// 	viewer.renderer.clear();
-		// 	viewer.skybox.camera.rotation.copy(viewer.scene.cameraP.rotation);
-		// 	viewer.skybox.camera.fov = viewer.scene.cameraP.fov;
-		// 	viewer.skybox.camera.aspect = viewer.scene.cameraP.aspect;
-		// 	viewer.skybox.camera.updateProjectionMatrix();
-		// 	viewer.renderer.render(viewer.skybox.scene, viewer.skybox.camera);
-		// } else if (viewer.background === 'gradient') {
-		// 	viewer.renderer.setClearColor(0x000000, 0);
-		// 	viewer.renderer.clear();
-		// 	viewer.renderer.render(viewer.scene.sceneBG, viewer.scene.cameraBG);
-		// } else if (viewer.background === 'black') {
-		// 	viewer.renderer.setClearColor(0x000000, 1);
-		// 	viewer.renderer.clear();
-		// } else if (viewer.background === 'white') {
-		// 	viewer.renderer.setClearColor(0xFFFFFF, 1);
-		// 	viewer.renderer.clear();
-		// } else {
-		// 	viewer.renderer.setClearColor(0x000000, 0);
-		// 	viewer.renderer.clear();
-		// }
 
 		// TODO adapt to multiple lights
 		if(lights.length > 0 && !(lights[0].disableShadowUpdates)){
@@ -265,17 +226,6 @@ export class EDLRenderer{
 
 		}
 
-		
-
-		//viewer.renderer.render(viewer.scene.scene, camera);
-		
-		//viewer.renderer.clearTarget( this.rtColor, true, true, true );
-		//viewer.renderer.clearTarget(this.rtEDL, true, true, true);
-		//viewer.renderer.clearTarget(this.rtRegular, true, true, false);
-
-		//let width = viewer.renderer.getSize().width;
-		//let height = viewer.renderer.getSize().height;
-
 		// COLOR & DEPTH PASS
 		for (let pointcloud of viewer.scene.pointclouds) {
 			let octreeSize = pointcloud.pcoGeometry.boundingBox.getSize(new THREE.Vector3()).x;
@@ -291,8 +241,6 @@ export class EDLRenderer{
 			material.uniforms.octreeSize.value = octreeSize;
 			material.spacing = pointcloud.pcoGeometry.spacing * Math.max(pointcloud.scale.x, pointcloud.scale.y, pointcloud.scale.z);
 		}
-
-		
 		
 		// TODO adapt to multiple lights
 		if(lights.length > 0){

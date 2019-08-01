@@ -1070,31 +1070,24 @@ export class Viewer extends EventDispatcher{
 		let width = this.renderArea.clientWidth;
 		let height = this.renderArea.clientHeight;
 
-		// let contextAttributes = {
-		// 	alpha: true,
-		// 	depth: true,
-		// 	stencil: false,
-		// 	antialias: false,
-		// 	//premultipliedAlpha: _premultipliedAlpha,
-		// 	preserveDrawingBuffer: true,
-		// 	powerPreference: "high-performance",
-		// };
-
 		let contextAttributes = {
-			alpha: false,
+			alpha: true,
+			depth: true,
+			stencil: false,
+			antialias: false,
+			//premultipliedAlpha: _premultipliedAlpha,
 			preserveDrawingBuffer: true,
+			powerPreference: "high-performance",
 		};
+
+		// let contextAttributes = {
+		// 	alpha: false,
+		// 	preserveDrawingBuffer: true,
+		// };
 
 		let canvas = document.createElement("canvas");
 
-		//let context = canvas.getContext('webgl2', contextAttributes );
-		//if(!context){
-			let context = canvas.getContext('webgl', contextAttributes );
-			Potree.Features.WEBGL2.isSupported = () => {
-				return false;
-			};
-		//}
-
+		let context = canvas.getContext('webgl', contextAttributes );
 
 		this.renderer = new THREE.WebGLRenderer({
 			alpha: true, 
@@ -1117,7 +1110,7 @@ export class Viewer extends EventDispatcher{
 		gl.getExtension('EXT_frag_depth');
 		gl.getExtension('WEBGL_depth_texture');
 		
-		if(gl instanceof WebGLRenderingContext){
+		//if(gl instanceof WebGLRenderingContext){
 			let extVAO = gl.getExtension('OES_vertex_array_object');
 
 			if(!extVAO){
@@ -1126,9 +1119,9 @@ export class Viewer extends EventDispatcher{
 
 			gl.createVertexArray = extVAO.createVertexArrayOES.bind(extVAO);
 			gl.bindVertexArray = extVAO.bindVertexArrayOES.bind(extVAO);
-		}else if(gl instanceof WebGL2RenderingContext){
-			gl.getExtension("EXT_color_buffer_float");
-		}
+		//}else if(gl instanceof WebGL2RenderingContext){
+		//	gl.getExtension("EXT_color_buffer_float");
+		//}
 		
 	}
 
@@ -1631,30 +1624,6 @@ export class Viewer extends EventDispatcher{
 	render(){
 		if(Potree.measureTimings) performance.mark("render-start");
 
-		{ // resize
-			const width = this.scaleFactor * this.renderArea.clientWidth;
-			const height = this.scaleFactor * this.renderArea.clientHeight;
-			const pixelRatio = this.renderer.getPixelRatio();
-			const aspect = width / height;
-
-			const scene = this.scene;
-
-			scene.cameraP.aspect = aspect;
-			scene.cameraP.updateProjectionMatrix();
-
-			//let frustumScale = viewer.moveSpeed * 2.0;
-			let frustumScale = this.scene.view.radius;
-			scene.cameraO.left = -frustumScale;
-			scene.cameraO.right = frustumScale;
-			scene.cameraO.top = frustumScale * 1 / aspect;
-			scene.cameraO.bottom = -frustumScale * 1 / aspect;
-			scene.cameraO.updateProjectionMatrix();
-
-			scene.cameraScreenSpace.top = 1/aspect;
-			scene.cameraScreenSpace.bottom = -1/aspect;
-			scene.cameraScreenSpace.updateProjectionMatrix();
-		}
-
 		try{
 
 			let pRenderer = null;
@@ -1781,6 +1750,32 @@ export class Viewer extends EventDispatcher{
 				}
 
 			}else{
+
+				{ // resize
+					const width = this.scaleFactor * this.renderArea.clientWidth;
+					const height = this.scaleFactor * this.renderArea.clientHeight;
+
+					this.renderer.setSize(width, height);
+					const pixelRatio = this.renderer.getPixelRatio();
+					const aspect = width / height;
+
+					const scene = this.scene;
+
+					scene.cameraP.aspect = aspect;
+					scene.cameraP.updateProjectionMatrix();
+
+					let frustumScale = this.scene.view.radius;
+					scene.cameraO.left = -frustumScale;
+					scene.cameraO.right = frustumScale;
+					scene.cameraO.top = frustumScale * 1 / aspect;
+					scene.cameraO.bottom = -frustumScale * 1 / aspect;
+					scene.cameraO.updateProjectionMatrix();
+
+					scene.cameraScreenSpace.top = 1/aspect;
+					scene.cameraScreenSpace.bottom = -1/aspect;
+					scene.cameraScreenSpace.updateProjectionMatrix();
+				}
+
 				pRenderer.clear();
 
 				pRenderer.render(this.renderer);

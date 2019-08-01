@@ -20,7 +20,7 @@ export class Scene extends EventDispatcher{
 
 		this.cameraP = new THREE.PerspectiveCamera(this.fov, 1, 0.1, 1000*1000);
 		this.cameraO = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 1000*1000);
-		this.cameraVR = new THREE.Camera();
+		this.cameraVR = new THREE.PerspectiveCamera();
 		this.cameraBG = new THREE.Camera();
 		this.cameraScreenSpace = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 10);
 		this.cameraMode = CameraMode.PERSPECTIVE;

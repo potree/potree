@@ -470,7 +470,7 @@ vec3 getCompositeColor(){
 	w += wSourceID;
 	
 	vec4 cl = wClassification * getClassification();
-    c += cl.a * cl.rgb;
+	c += cl.a * cl.rgb;
 	w += wClassification * cl.a;
 
 	c = c / w;
@@ -487,16 +487,16 @@ vec3 getCompositeColor(){
 #if defined(color_type_matcap)
 // Matcap Material
 vec3 getNormal(){
-    //vec3 n_hsv = vec3( modelMatrix * vec4( normal, 0.0 )) * 0.5 + 0.5; // (n_world.xyz + vec3(1.,1.,1.)) / 2.;
+	//vec3 n_hsv = vec3( modelMatrix * vec4( normal, 0.0 )) * 0.5 + 0.5; // (n_world.xyz + vec3(1.,1.,1.)) / 2.;
 	vec3 n_view = normalize( vec3( modelViewMatrix * vec4( normal, 0.0 ) ) );
 	return n_view;
 }
 
 vec3 getMatcap(){ 
-    vec3 eye = normalize( vec3( modelViewMatrix * vec4( position, 1. ) ) ); 
-    vec3 r_en = reflect( eye, getNormal() ); // or r_en = e - 2. * dot( n, e ) * n;
-    float m = 2. * sqrt(pow( r_en.x, 2. ) + pow( r_en.y, 2. ) + pow( r_en.z + 1., 2. ));
-    vec2 vN = r_en.xy / m + .5;
+	vec3 eye = normalize( vec3( modelViewMatrix * vec4( position, 1. ) ) ); 
+	vec3 r_en = reflect( eye, getNormal() ); // or r_en = e - 2. * dot( n, e ) * n;
+	float m = 2. * sqrt(pow( r_en.x, 2. ) + pow( r_en.y, 2. ) + pow( r_en.z + 1., 2. ));
+	vec2 vN = r_en.xy / m + .5;
  	return texture2D(matcapTextureUniform, vN).rgb; 
 }
 #endif

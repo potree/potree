@@ -46,7 +46,7 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 		this._weighted = false;
 		this._gradient = Gradients.SPECTRAL;
 		this.gradientTexture = PointCloudMaterial.generateGradientTexture(this._gradient);
-        this._matcap = "matcap.jpg";
+		this._matcap = "matcap.jpg";
 		this.matcapTexture = Potree.PointCloudMaterial.generateMatcapTexture(this._matcap);
 		this.lights = false;
 		this.fog = false;
@@ -135,7 +135,7 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 			uFilterReturnNumberRange:		{ type: "fv", value: [0, 7]},
 			uFilterNumberOfReturnsRange:	{ type: "fv", value: [0, 7]},
 			uFilterGPSTimeClipRange:		{ type: "fv", value: [0, 7]},
-      matcapTextureUniform: 	{ type: "t", value: this.matcapTexture },
+	matcapTextureUniform: 	{ type: "t", value: this.matcapTexture },
 		};
 
 		this.classification = ClassificationScheme.DEFAULT;
@@ -984,8 +984,8 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 	}
 	
 	static generateMatcapTexture (matcap) {
-        var url = new URL(Potree.resourcePath + "/textures/matcap/" + matcap).href;
-        let texture = new THREE.TextureLoader().load( url );
+	var url = new URL(Potree.resourcePath + "/textures/matcap/" + matcap).href;
+	let texture = new THREE.TextureLoader().load( url );
 		texture.magFilter = texture.minFilter = THREE.LinearFilter; 
 		texture.needsUpdate = true;
 		// PotreeConverter_1.6_2018_07_29_windows_x64\PotreeConverter.exe autzen_xyzrgbXYZ_ascii.xyz -f xyzrgbXYZ -a RGB NORMAL -o autzen_xyzrgbXYZ_ascii_a -p index --overwrite
@@ -995,8 +995,8 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 	}
 
 	static generateMatcapTexture (matcap) {
-        var url = new URL(Potree.resourcePath + "/textures/matcap/" + matcap).href;
-        let texture = new THREE.TextureLoader().load( url );
+	var url = new URL(Potree.resourcePath + "/textures/matcap/" + matcap).href;
+	let texture = new THREE.TextureLoader().load( url );
 		texture.magFilter = texture.minFilter = THREE.LinearFilter; 
 		texture.needsUpdate = true;
 		// PotreeConverter_1.6_2018_07_29_windows_x64\PotreeConverter.exe autzen_xyzrgbXYZ_ascii.xyz -f xyzrgbXYZ -a RGB NORMAL -o autzen_xyzrgbXYZ_ascii_a -p index --overwrite

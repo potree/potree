@@ -1070,14 +1070,19 @@ export class Viewer extends EventDispatcher{
 		let width = this.renderArea.clientWidth;
 		let height = this.renderArea.clientHeight;
 
+		// let contextAttributes = {
+		// 	alpha: true,
+		// 	depth: true,
+		// 	stencil: false,
+		// 	antialias: false,
+		// 	//premultipliedAlpha: _premultipliedAlpha,
+		// 	preserveDrawingBuffer: true,
+		// 	powerPreference: "high-performance",
+		// };
+
 		let contextAttributes = {
-			alpha: true,
-			depth: true,
-			stencil: false,
-			antialias: false,
-			//premultipliedAlpha: _premultipliedAlpha,
+			alpha: false,
 			preserveDrawingBuffer: true,
-			powerPreference: "high-performance",
 		};
 
 		// let contextAttributes = {
@@ -1122,6 +1127,39 @@ export class Viewer extends EventDispatcher{
 		//}else if(gl instanceof WebGL2RenderingContext){
 		//	gl.getExtension("EXT_color_buffer_float");
 		//}
+		
+	}
+
+	async prepareVR(){
+
+		if(!navigator.getVRDisplays){
+			console.info("browser does not support WebVR");
+
+			return false;
+		}
+
+		let frameData = new VRFrameData();
+		let displays = await navigator.getVRDisplays();
+
+		if(displays.length == 0){
+			console.info("no VR display found");
+			return false;
+		}
+
+		let display = displays[displays.length - 1];
+		display.depthNear = 0.1;
+		display.depthFar = 10000.0;
+
+		if(!display.capabilities.canPresent){
+			// Not sure why canPresent would ever be false?
+			console.error("VR display canPresent === false");
+			return false;
+		}
+
+		this.vr = {
+			frameData: frameData,
+			display: display,
+		};
 		
 	}
 

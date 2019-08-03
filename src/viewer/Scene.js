@@ -20,6 +20,7 @@ export class Scene extends EventDispatcher{
 
 		this.cameraP = new THREE.PerspectiveCamera(this.fov, 1, 0.1, 1000*1000);
 		this.cameraO = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 1000*1000);
+		this.cameraVR = new THREE.PerspectiveCamera();
 		this.cameraBG = new THREE.Camera();
 		this.cameraScreenSpace = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 10);
 		this.cameraMode = CameraMode.PERSPECTIVE;
@@ -169,6 +170,7 @@ export class Scene extends EventDispatcher{
 	
 	addMeasurement(measurement){
 		measurement.lengthUnit = this.lengthUnit;
+		measurement.lengthUnitDisplay = this.lengthUnitDisplay;
 		this.measurements.push(measurement);
 		this.dispatchEvent({
 			'type': 'measurement_added',
@@ -236,7 +238,16 @@ export class Scene extends EventDispatcher{
 	}
 
 	getActiveCamera() {
-		return this.cameraMode == CameraMode.PERSPECTIVE ? this.cameraP : this.cameraO;		
+
+		if(this.cameraMode === CameraMode.PERSPECTIVE){
+			return this.cameraP;
+		}else if(this.cameraMode === CameraMode.ORTHOGRAPHIC){
+			return this.cameraO;
+		}else if(this.cameraMode === CameraMode.VR){
+			return this.cameraVR;
+		}
+
+		return null;
 	}
 	
 	initialize(){
@@ -277,28 +288,28 @@ export class Scene extends EventDispatcher{
 			this.sceneBG.add(bg);
 		}
 
-		{ // lights
-			{
-				let light = new THREE.DirectionalLight(0xffffff);
-				light.position.set(10, 10, 1);
-				light.target.position.set(0, 0, 0);
-				this.scene.add(light);
-			}
+		//{ // lights
+		//	{
+		//		let light = new THREE.DirectionalLight(0xffffff);
+		//		light.position.set(10, 10, 1);
+		//		light.target.position.set(0, 0, 0);
+		//		this.scene.add(light);
+		//	}
 
-			{
-				let light = new THREE.DirectionalLight(0xffffff);
-				light.position.set(-10, 10, 1);
-				light.target.position.set(0, 0, 0);
-				this.scene.add(light);
-			}
+		//	{
+		//		let light = new THREE.DirectionalLight(0xffffff);
+		//		light.position.set(-10, 10, 1);
+		//		light.target.position.set(0, 0, 0);
+		//		this.scene.add(light);
+		//	}
 
-			{
-				let light = new THREE.DirectionalLight(0xffffff);
-				light.position.set(0, -10, 20);
-				light.target.position.set(0, 0, 0);
-				this.scene.add(light);
-			}
-		}
+		//	{
+		//		let light = new THREE.DirectionalLight(0xffffff);
+		//		light.position.set(0, -10, 20);
+		//		light.target.position.set(0, 0, 0);
+		//		this.scene.add(light);
+		//	}
+		//}
 	}
 	
 	addAnnotation(position, args = {}){		

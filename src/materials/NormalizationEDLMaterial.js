@@ -9,14 +9,14 @@ export class NormalizationEDLMaterial extends THREE.RawShaderMaterial{
 		super();
 
 		let uniforms = {
-			screenWidth: 	{ type: 'f', 	value: 0 },
-			screenHeight: 	{ type: 'f', 	value: 0 },
-			edlStrength: 	{ type: 'f', 	value: 1.0 },
-			radius: 		{ type: 'f', 	value: 1.0 },
-			neighbours:		{ type: '2fv', 	value: [] },
-			uEDLMap:		{ type: 't', value: null },
-			uDepthMap:		{ type: 't', value: null },
-			uWeightMap:		{ type: 't', value: null },
+			screenWidth:    { type: 'f',   value: 0 },
+			screenHeight:   { type: 'f',   value: 0 },
+			edlStrength:    { type: 'f',   value: 1.0 },
+			radius:         { type: 'f',   value: 1.0 },
+			neighbours:     { type: '2fv', value: [] },
+			uEDLMap:        { type: 't',   value: null },
+			uDepthMap:      { type: 't',   value: null },
+			uWeightMap:     { type: 't',   value: null },
 		};
 
 		this.setValues({

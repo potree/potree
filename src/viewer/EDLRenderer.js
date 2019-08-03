@@ -252,8 +252,6 @@ export class EDLRenderer{
 			material.uniforms.octreeSize.value = octreeSize;
 			material.spacing = pointcloud.pcoGeometry.spacing * Math.max(pointcloud.scale.x, pointcloud.scale.y, pointcloud.scale.z);
 		}
-
-		
 		
 		// TODO adapt to multiple lights
 		if(lights.length > 0){
@@ -269,15 +267,13 @@ export class EDLRenderer{
 			});
 		}
 
-		
-
 		//viewer.renderer.render(viewer.scene.scene, camera, this.rtRegular);
 		viewer.renderer.render(viewer.scene.scene, camera);
 
 		//viewer.renderer.setRenderTarget(this.rtColor);
-		//viewer.dispatchEvent({type: "render.pass.scene", viewer: viewer, renderTarget: this.rtRegular});
+		viewer.dispatchEvent({type: "render.pass.scene", viewer: viewer, renderTarget: this.rtRegular});
 
-		{ // EDL OCCLUSION PASS
+		{ // EDL PASS
 			this.edlMaterial.uniforms.screenWidth.value = width;
 			this.edlMaterial.uniforms.screenHeight.value = height;
 
@@ -307,7 +303,8 @@ export class EDLRenderer{
 
 		}
 
-		
+		//viewer.renderer.render(viewer.scene.scene, camera);
+		viewer.dispatchEvent({type: "render.pass.scene", viewer: viewer});
 
 		viewer.renderer.clearDepth();
 

@@ -60,6 +60,11 @@ export * from "./utils/VolumeTool.js";
 export * from "./viewer/viewer.js";
 export * from "./viewer/Scene.js";
 
+export {OrbitControls} from "./navigation/OrbitControls.js";
+export {FirstPersonControls} from "./navigation/FirstPersonControls.js";
+export {EarthControls} from "./navigation/EarthControls.js";
+export {DeviceOrientationControls} from "./navigation/DeviceOrientationControls.js";
+
 import "./extensions/OrthographicCamera.js";
 import "./extensions/PerspectiveCamera.js";
 import "./extensions/Ray.js";

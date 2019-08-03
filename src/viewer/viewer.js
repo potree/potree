@@ -1,5 +1,5 @@
 
-import {ClipTask, ClipMethod, CameraMode} from "../defines.js";
+import {ClipTask, ClipMethod, CameraMode, LengthUnits} from "../defines.js";
 import {Renderer} from "../PotreeRenderer.js";
 import {PotreeRenderer} from "./PotreeRenderer.js";
 import {EDLRenderer} from "./EDLRenderer.js";
@@ -102,13 +102,8 @@ export class Viewer extends EventDispatcher{
 
 		this.moveSpeed = 10;
 
-		this.LENGTH_UNITS = {
-			METER: {code: 'm', unitspermeter: 1.0},
-			FEET: {code: 'ft', unitspermeter: 3.28084},
-			INCH: {code: '\u2033', unitspermeter: 39.3701}
-		};
-		this.lengthUnit = this.LENGTH_UNITS.METER;
-		this.lengthUnitDisplay = this.LENGTH_UNITS.METER;
+		this.lengthUnit = LengthUnits.METER;
+		this.lengthUnitDisplay = LengthUnits.METER;
 
 		this.showBoundingBox = false;
 		this.showAnnotations = true;
@@ -597,16 +592,16 @@ export class Viewer extends EventDispatcher{
 	setLengthUnit (value) {
 		switch (value) {
 			case 'm':
-				this.lengthUnit = this.LENGTH_UNITS.METER;
-				this.lengthUnitDisplay = this.LENGTH_UNITS.METER;
+				this.lengthUnit = LengthUnits.METER;
+				this.lengthUnitDisplay = LengthUnits.METER;
 				break;
 			case 'ft':
-				this.lengthUnit = this.LENGTH_UNITS.FEET;
-				this.lengthUnitDisplay = this.LENGTH_UNITS.FEET;
+				this.lengthUnit = LengthUnits.FEET;
+				this.lengthUnitDisplay = LengthUnits.FEET;
 				break;
 			case 'in':
-				this.lengthUnit = this.LENGTH_UNITS.INCH;
-				this.lengthUnitDisplay = this.LENGTH_UNITS.INCH;
+				this.lengthUnit = LengthUnits.INCH;
+				this.lengthUnitDisplay = LengthUnits.INCH;
 				break;
 		}
 
@@ -616,25 +611,25 @@ export class Viewer extends EventDispatcher{
 	setLengthUnitAndDisplayUnit(lengthUnitValue, lengthUnitDisplayValue) {
 		switch (lengthUnitValue) {
 			case 'm':
-				this.lengthUnit = this.LENGTH_UNITS.METER;
+				this.lengthUnit = LengthUnits.METER;
 				break;
 			case 'ft':
-				this.lengthUnit = this.LENGTH_UNITS.FEET;
+				this.lengthUnit = LengthUnits.FEET;
 				break;
 			case 'in':
-				this.lengthUnit = this.LENGTH_UNITS.INCH;
+				this.lengthUnit = LengthUnits.INCH;
 				break;
 		}
 
 		switch (lengthUnitDisplayValue) {
 			case 'm':
-				this.lengthUnitDisplay = this.LENGTH_UNITS.METER;
+				this.lengthUnitDisplay = LengthUnits.METER;
 				break;
 			case 'ft':
-				this.lengthUnitDisplay = this.LENGTH_UNITS.FEET;
+				this.lengthUnitDisplay = LengthUnits.FEET;
 				break;
 			case 'in':
-				this.lengthUnitDisplay = this.LENGTH_UNITS.INCH;
+				this.lengthUnitDisplay = LengthUnits.INCH;
 				break;
 		}
 

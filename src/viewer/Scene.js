@@ -170,6 +170,7 @@ export class Scene extends EventDispatcher{
 	
 	addMeasurement(measurement){
 		measurement.lengthUnit = this.lengthUnit;
+		measurement.lengthUnitDisplay = this.lengthUnitDisplay;
 		this.measurements.push(measurement);
 		this.dispatchEvent({
 			'type': 'measurement_added',

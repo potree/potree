@@ -189,17 +189,7 @@ export class EDLRenderer{
 			}
 		});
 
-		// if(viewer.background === "skybox"){
-		// 	viewer.skybox.camera.rotation.copy(viewer.scene.cameraP.rotation);
-		// 	viewer.skybox.camera.fov = viewer.scene.cameraP.fov;
-		// 	viewer.skybox.camera.aspect = viewer.scene.cameraP.aspect;
-		// 	viewer.skybox.camera.updateProjectionMatrix();
-		// 	viewer.renderer.render(viewer.skybox.scene, viewer.skybox.camera);
-		// } else if (viewer.background === 'gradient') {
-		// 	viewer.renderer.render(viewer.scene.sceneBG, viewer.scene.cameraBG);
-		// } 
 
-		//this.clear();
 		if(viewer.background === "skybox"){
 			viewer.skybox.camera.rotation.copy(viewer.scene.cameraP.rotation);
 			viewer.skybox.camera.fov = viewer.scene.cameraP.fov;

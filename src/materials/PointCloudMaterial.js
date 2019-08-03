@@ -135,7 +135,7 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 			uFilterReturnNumberRange:		{ type: "fv", value: [0, 7]},
 			uFilterNumberOfReturnsRange:	{ type: "fv", value: [0, 7]},
 			uFilterGPSTimeClipRange:		{ type: "fv", value: [0, 7]},
-	matcapTextureUniform: 	{ type: "t", value: this.matcapTexture },
+			matcapTextureUniform: 	{ type: "t", value: this.matcapTexture },
 		};
 
 		this.classification = ClassificationScheme.DEFAULT;
@@ -148,6 +148,8 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 		this.fragmentShader = Shaders['pointcloud.fs'];
 		
 		this.vertexColors = THREE.VertexColors;
+
+		this.updateShaderSource();
 	}
 
 	setDefine(key, value){

@@ -65,7 +65,8 @@
 		"box": "Box",
 		"length_unit": "Length unit",
 		"freeze": "Lock view",
-		"language": "Language"
+		"language": "Language",
+		"backface_culling": "Backface Culling"
 	},
 	"measurements": {
 		"clip": "clip",

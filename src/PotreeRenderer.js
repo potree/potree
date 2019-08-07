@@ -1194,6 +1194,8 @@ export class Renderer {
 			shader.setUniform1f("wReturnNumber", material.weightReturnNumber);
 			shader.setUniform1f("wSourceID", material.weightSourceID);
 
+			shader.setUniform("backfaceCulling", material.uniforms.backfaceCulling.value);
+
 			let vnWebGLTexture = this.textures.get(material.visibleNodesTexture);
 			shader.setUniform1i("visibleNodesTexture", currentTextureBindingPoint);
 			gl.activeTexture(gl.TEXTURE0 + currentTextureBindingPoint);

@@ -99,6 +99,10 @@ export class PropertiesPanel{
 					</select>
 				</li>
 
+				<li id="materials_backface_container">
+				<label><input id="set_backface_culling" type="checkbox" /><span data-i18n="appearance.backface_culling"></span></label>
+				</li>
+				
 				<!-- OPACITY -->
 				<li><span data-i18n="appearance.point_opacity"></span>:<span id="lblOpacity"></span><div id="sldOpacity"></div></li>
 
@@ -278,6 +282,36 @@ export class PropertiesPanel{
 			this.addVolatileListener(material, "point_shape_changed", update);
 
 			update();
+		}
+
+		{ // BACKFACE CULLING
+			
+			let opt = panel.find(`#set_backface_culling`);
+			opt.click(() => {
+				material.backfaceCulling = opt.prop("checked");
+			});
+			let update = () => {
+				let value = material.backfaceCulling;
+				opt.prop("checked", value);
+			};
+			this.addVolatileListener(material, "backface_changed", update);
+			update();
+
+			let blockBackface = $('#materials_backface_container');
+			blockBackface.css('display', 'none');
+			if (pointcloud.pcoGeometry.pointAttributes.hasNormals()) {
+				blockBackface.css('display', 'block');
+			}
+			/*
+			opt.checkboxradio({
+				clicked: (event, ui) => {
+					// let value = ui.item.value;
+					let value = ui.item.checked;
+					console.log(value);
+					material.backfaceCulling = value; // $('#set_freeze').prop("checked");
+				}
+			});
+			*/
 		}
 
 		{ // OPACITY

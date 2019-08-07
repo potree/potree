@@ -213,7 +213,7 @@ float getLOD(){
 	int iOffset = int(uVNStart);
 	float depth = uLevel;
 	for(float i = 0.0; i <= 30.0; i++){
-		float nodeSizeAtLevel = uOctreeSize  / pow(2.0, i + uLevel + 0.0);
+		float nodeSizeAtLevel = uOctreeSize / pow(2.0, i + uLevel + 0.0);
 		
 		vec3 index3d = (position-offset) / nodeSizeAtLevel;
 		index3d = floor(index3d + 0.5);
@@ -250,7 +250,7 @@ float getSpacing(){
 	float depth = uLevel;
 	float spacing = uNodeSpacing;
 	for(float i = 0.0; i <= 30.0; i++){
-		float nodeSizeAtLevel = uOctreeSize  / pow(2.0, i + uLevel + 0.0);
+		float nodeSizeAtLevel = uOctreeSize / pow(2.0, i + uLevel + 0.0);
 		
 		vec3 index3d = (position-offset) / nodeSizeAtLevel;
 		index3d = floor(index3d + 0.5);
@@ -491,9 +491,9 @@ vec3 getNormal(){
 	return n_view;
 }
 bool applyBackfaceCulling() {
-    // Black not facing vertices / Backface culling
+	// Black not facing vertices / Backface culling
 	vec3 e = normalize(vec3(modelViewMatrix * vec4( position, 1. )));
-    vec3 n = getNormal();  // normalize( vec3(modelViewMatrix * vec4( normal, 0.0 )) );
+	vec3 n = getNormal(); // normalize( vec3(modelViewMatrix * vec4( normal, 0.0 )) );
 
 	if((uUseOrthographicCamera && n.z <= 0.) || (!uUseOrthographicCamera && dot( n, e ) >= 0.)) { 
 		return true;
@@ -512,7 +512,7 @@ vec3 getMatcap(){
 	vec3 r_en = reflect( eye, getNormal() ); // or r_en = e - 2. * dot( n, e ) * n;
 	float m = 2. * sqrt(pow( r_en.x, 2. ) + pow( r_en.y, 2. ) + pow( r_en.z + 1., 2. ));
 	vec2 vN = r_en.xy / m + .5;
- 	return texture2D(matcapTextureUniform, vN).rgb; 
+	return texture2D(matcapTextureUniform, vN).rgb; 
 }
 #endif
 
@@ -576,10 +576,10 @@ vec3 getColor(){
 		color = getMatcap();
 	#endif
 	
-    if (backfaceCulling && applyBackfaceCulling()) {
+	if (backfaceCulling && applyBackfaceCulling()) {
 		color = vec3(0.);
 	}
-    
+
 	return color;
 }
 

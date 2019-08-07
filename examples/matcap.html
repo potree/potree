@@ -42,7 +42,7 @@
 	<script>
 		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
 		
-		viewer.setEDLEnabled(true);
+		viewer.setEDLEnabled(false);
 		viewer.setFOV(60);
 		viewer.setPointBudget(1*1000*1000);
 		viewer.loadSettingsFromURL();
@@ -64,10 +64,11 @@
 			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
 			material.shape = Potree.PointShape.CIRCLE;
 
-		// Edit matcap properties
-		material.pointColorType = Potree.PointColorType.MATCAP; 
-		material.matcap = 'matcap.jpg'
-			
+			// Edit matcap properties
+			material.pointColorType = Potree.PointColorType.MATCAP; 
+			material.matcap = 'matcap.jpg'
+			viewer.scene.cameraMode = Potree.CameraMode.ORTHOGRAPHIC;
+
 			viewer.fitToScreen();
 		});
 		

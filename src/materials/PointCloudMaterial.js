@@ -135,7 +135,8 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 			uFilterReturnNumberRange:		{ type: "fv", value: [0, 7]},
 			uFilterNumberOfReturnsRange:	{ type: "fv", value: [0, 7]},
 			uFilterGPSTimeClipRange:		{ type: "fv", value: [0, 7]},
-	matcapTextureUniform: 	{ type: "t", value: this.matcapTexture },
+			matcapTextureUniform: 	{ type: "t", value: this.matcapTexture },
+			backfaceCulling: { type: "b", value: false },
 		};
 
 		this.classification = ClassificationScheme.DEFAULT;
@@ -408,6 +409,18 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 			this.uniforms.useOrthographicCamera.value = value;
 		}
 	}
+	get backfaceCulling() {
+		return this.uniforms.backfaceCulling.value;
+	}
+
+	set backfaceCulling(value) {
+		if(this.uniforms.backfaceCulling.value !== value){
+			this.uniforms.backfaceCulling.value = value;
+			this.dispatchEvent({type: 'backface_changed', target: this});
+		}
+	}
+
+	
 
 
 	get classification () {

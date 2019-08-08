@@ -160,7 +160,10 @@
 		const sessionToken = params.get("key3");
 		const fonts =  JSON.parse(params.get("fonts"));
 		const theme = JSON.parse(params.get("theme")); // material-ui theme
-		const comparisonDatasets = names.filter(element => element !== name);
+		let comparisonDatasets = [];
+		if (names) {
+			comparisonDatasets = names.filter(element => element !== name);
+		}
 
 		if (fonts) {
 			const head = document.head;

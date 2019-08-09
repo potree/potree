@@ -1,4 +1,12 @@
 
+precision mediump float;
+precision mediump int;
+
+attribute vec3 position;
+attribute vec2 uv;
+
+uniform mat4 projectionMatrix;
+uniform mat4 modelViewMatrix;
 
 varying vec2 vUv;
 

@@ -49,9 +49,7 @@
 		viewer.setEDLEnabled(false);
 		viewer.setFOV(60);
 		viewer.setPointBudget(3*1000*1000);
-		viewer.setMinNodeSize(1);
-		viewer.setBackground("gradient"); // ["skybox", "gradient", "black", "white"];
-		//viewer.loadSettingsFromURL();
+		viewer.loadSettingsFromURL();
 		
 		viewer.setDescription('San Simeon, CA Central Coast point cloud taken from <a href="http://opentopo.sdsc.edu/gridsphere/gridsphere?cid=geonlidarframeportlet&gs_action=lidarDataset&opentopoID=OTLAS.032013.26910.2" target="_blank">Open Topography</a> (17.7b points)');
 		
@@ -64,16 +62,17 @@
 		
 		// Load and add point cloud to scene
 		Potree.loadPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/opentopography/CA13_1.4/cloud.js", "CA13", e => {
+
 			let scene = viewer.scene;
 			let pointcloud = e.pointcloud;
 			let material = pointcloud.material;
+			scene.addPointCloud(pointcloud);
 			
 			material.size = 1;
 			material.pointSizeType = Potree.PointSizeType.FIXED;
-			material.shape = Potree.PointShape.SQUARE;
-			material.intensityRange = [0, 1000];
+			//material.shape = Potree.PointShape.SQUARE;
+			//material.intensityRange = [0, 1000];
 			
-			scene.addPointCloud(pointcloud);
 			
 			//scene.view.position.set(696507.51, 3915713.17, 1891.85);
 			scene.view.position.set(697757.85, 3913444.33, 2827.33);

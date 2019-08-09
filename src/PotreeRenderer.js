@@ -661,6 +661,8 @@ export class Renderer {
 
 	renderNodes(octree, nodes, visibilityTextureData, camera, target, shader, params) {
 
+		//console.log(`renderNodes: ${nodes.length}`);
+
 		if (exports.measureTimings) performance.mark("renderNodes-start");
 
 		let gl = this.gl;
@@ -1140,26 +1142,26 @@ export class Renderer {
 				//gl.uniformMatrix4fv(lClipSpheres, false, material.uniforms.clipSpheres.value);
 			}
 
-			if(Potree.Features.WEBGL2.isSupported()){
-				let buffer = new ArrayBuffer(12);
-				let bufferf32 = new Float32Array(buffer);
-				bufferf32[0] = material.size;
-				bufferf32[1] = material.uniforms.minSize.value;
-				bufferf32[2] = material.uniforms.maxSize.value;
+			//if(Potree.Features.WEBGL2.isSupported()){
+			//	let buffer = new ArrayBuffer(12);
+			//	let bufferf32 = new Float32Array(buffer);
+			//	bufferf32[0] = material.size;
+			//	bufferf32[1] = material.uniforms.minSize.value;
+			//	bufferf32[2] = material.uniforms.maxSize.value;
 
-				let block = shader.uniformBlocks["ubo_point"];
+			//	let block = shader.uniformBlocks["ubo_point"];
 
-				gl.bindBufferBase(gl.UNIFORM_BUFFER, 0, block.buffer);
+			//	gl.bindBufferBase(gl.UNIFORM_BUFFER, 0, block.buffer);
 
-				gl.bindBuffer(gl.UNIFORM_BUFFER, block.buffer);
-				gl.bufferSubData(gl.UNIFORM_BUFFER, 0, buffer);
-				gl.bindBuffer(gl.UNIFORM_BUFFER, null);
-				
-			}else{
+			//	gl.bindBuffer(gl.UNIFORM_BUFFER, block.buffer);
+			//	gl.bufferSubData(gl.UNIFORM_BUFFER, 0, buffer);
+			//	gl.bindBuffer(gl.UNIFORM_BUFFER, null);
+			//	
+			//}else{
 				shader.setUniform1f("size", material.size);
 				shader.setUniform1f("maxSize", material.uniforms.maxSize.value);
 				shader.setUniform1f("minSize", material.uniforms.minSize.value);
-			}
+			//}
 
 
 

@@ -4,7 +4,8 @@ import {Enum} from "./Enum.js";
 
 export const CameraMode = {
 	ORTHOGRAPHIC: 0,
-	PERSPECTIVE: 1
+	PERSPECTIVE: 1,
+	VR: 2,
 };
 
 export const ClipTask = {
@@ -62,4 +63,10 @@ export const PointColorType = {
 export const TreeType = {
 	OCTREE:	0,
 	KDTREE:	1
+};
+
+export const LengthUnits = {
+	METER: {code: 'm', unitspermeter: 1.0},
+	FEET: {code: 'ft', unitspermeter: 3.28084},
+	INCH: {code: '\u2033', unitspermeter: 39.3701}
 };

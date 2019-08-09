@@ -807,8 +807,8 @@ export class Sidebar{
 			elClassificationList.append(element);
 		};
 
-		for (var classID in viewer.classifications) {
-			addClassificationItem(classID, viewer.classifications[classID].name);
+		for (var classID in this.viewer.classifications) {
+			addClassificationItem(classID, this.viewer.classifications[classID].name);
 		}
 	}
 
@@ -831,7 +831,8 @@ export class Sidebar{
 			["EN", "en"],
 			["FR", "fr"],
 			["DE", "de"],
-			["JP", "jp"]
+                        ["JP", "jp"],
+                        ["SE", "se"]
 		];
 
 		let elLanguages = $('#potree_languages');

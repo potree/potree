@@ -273,16 +273,12 @@
 			document.getElementById("elevation_max").display = false;
 			document.getElementById("elevation_min").disabled = false;
 
-
-			// Load Data Sources:
-			(async () => {
-
-				// Load RTK:
-				await loadRtkCallback(s3, bucket, name);
+			// Load Data Sources in loadRtkCallback:
+			loadRtkCallback(s3, bucket, name, () => {
 
 				// Load Lanes:
 				try {
-					await loadLanesCallback(s3, bucket, name);
+					loadLanesCallback(s3, bucket, name);
 				} catch (e) {
 					console.error("Could not load Lanes: ", e);
 				}
@@ -291,7 +287,7 @@
 				try {
 					// TODO shaderMaterial
 					let trackShaderMaterial = shaderMaterial.clone();
-					await loadTracksCallback(s3, bucket, name, trackShaderMaterial, animationEngine);
+					loadTracksCallback(s3, bucket, name, trackShaderMaterial, animationEngine);
 				} catch (e) {
 					console.error("Could not load Tracks: ", e);
 				}
@@ -315,16 +311,16 @@
 				// let playbackRate = 1.0;
 				// animationEngine.configure(tstart, tend, playbackRate);
 				// animationEngine.launch();
-			})();
+			}); // END loadRtkCallback()
 
-		});
+		}); // END $(document).ready()
 
 
 
 
 		// Load RTK: TODO REFACTOR THIS (a lot of stuff happenning here, break it up if possible)
-		async function loadRtkCallback(s3, bucket, name) {
-			await loadRtk(s3, bucket, name, (pos, rot, timestamps, t_init, t_range) => {
+		function loadRtkCallback(s3, bucket, name, callback) {
+			loadRtk(s3, bucket, name, (pos, rot, timestamps, t_init, t_range) => {
 			// await loadRtkFlatbuffer(s3, bucket, name, (pos, rot, timestamps, t_init, t_range) => {
 				window.timeframe = {"tstart": t_init, "tend": t_init+t_range};
 
@@ -334,6 +330,10 @@
 				let playbackRate = 1.0;
 				animationEngine.configure(tstart, tend, playbackRate);
 				animationEngine.launch();
+
+				if (callback) {
+					callback();
+				}
 
 	      const path = pos.map(v => new THREE.Vector3(...v));
 	      const orientations = rot.map(v => new THREE.Vector3(...v));

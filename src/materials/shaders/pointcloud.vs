@@ -109,6 +109,7 @@ uniform sampler2D classificationLUT;
 #if defined(color_type_matcap)
 uniform sampler2D matcapTextureUniform;
 #endif
+uniform bool backfaceCulling;
 
 #if defined(num_shadowmaps) && num_shadowmaps > 0
 uniform sampler2D uShadowMap[num_shadowmaps];
@@ -212,7 +213,7 @@ float getLOD(){
 	int iOffset = int(uVNStart);
 	float depth = uLevel;
 	for(float i = 0.0; i <= 30.0; i++){
-		float nodeSizeAtLevel = uOctreeSize  / pow(2.0, i + uLevel + 0.0);
+		float nodeSizeAtLevel = uOctreeSize / pow(2.0, i + uLevel + 0.0);
 		
 		vec3 index3d = (position-offset) / nodeSizeAtLevel;
 		index3d = floor(index3d + 0.5);
@@ -249,7 +250,7 @@ float getSpacing(){
 	float depth = uLevel;
 	float spacing = uNodeSpacing;
 	for(float i = 0.0; i <= 30.0; i++){
-		float nodeSizeAtLevel = uOctreeSize  / pow(2.0, i + uLevel + 0.0);
+		float nodeSizeAtLevel = uOctreeSize / pow(2.0, i + uLevel + 0.0);
 		
 		vec3 index3d = (position-offset) / nodeSizeAtLevel;
 		index3d = floor(index3d + 0.5);
@@ -484,20 +485,34 @@ vec3 getCompositeColor(){
 }
 
 
-#if defined(color_type_matcap)
-// Matcap Material
 vec3 getNormal(){
 	//vec3 n_hsv = vec3( modelMatrix * vec4( normal, 0.0 )) * 0.5 + 0.5; // (n_world.xyz + vec3(1.,1.,1.)) / 2.;
-	vec3 n_view = normalize( vec3( modelViewMatrix * vec4( normal, 0.0 ) ) );
+	vec3 n_view = normalize( vec3(modelViewMatrix * vec4( normal, 0.0 )) );
 	return n_view;
 }
+bool applyBackfaceCulling() {
+	// Black not facing vertices / Backface culling
+	vec3 e = normalize(vec3(modelViewMatrix * vec4( position, 1. )));
+	vec3 n = getNormal(); // normalize( vec3(modelViewMatrix * vec4( normal, 0.0 )) );
 
+	if((uUseOrthographicCamera && n.z <= 0.) || (!uUseOrthographicCamera && dot( n, e ) >= 0.)) { 
+		return true;
+	} else {
+		return false;
+	}
+}
+
+#if defined(color_type_matcap)
+// Matcap Material
 vec3 getMatcap(){ 
 	vec3 eye = normalize( vec3( modelViewMatrix * vec4( position, 1. ) ) ); 
+	if(uUseOrthographicCamera) { 
+		eye = vec3(0., 0., -1.);
+	}
 	vec3 r_en = reflect( eye, getNormal() ); // or r_en = e - 2. * dot( n, e ) * n;
 	float m = 2. * sqrt(pow( r_en.x, 2. ) + pow( r_en.y, 2. ) + pow( r_en.z + 1., 2. ));
 	vec2 vN = r_en.xy / m + .5;
- 	return texture2D(matcapTextureUniform, vN).rgb; 
+	return texture2D(matcapTextureUniform, vN).rgb; 
 }
 #endif
 
@@ -561,6 +576,10 @@ vec3 getColor(){
 		color = getMatcap();
 	#endif
 	
+	if (backfaceCulling && applyBackfaceCulling()) {
+		color = vec3(0.);
+	}
+
 	return color;
 }
 

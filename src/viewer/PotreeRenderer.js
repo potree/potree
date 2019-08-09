@@ -5,6 +5,10 @@ export class PotreeRenderer {
 		this.viewer = viewer;
 	}
 
+	clearTargets(){
+
+	}
+
 	clear(){
 		const viewer = this.viewer;
 		const {renderer, skybox, background, scene} = viewer;

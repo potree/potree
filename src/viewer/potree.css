@@ -115,7 +115,6 @@
 	height:		100%;
 	overflow-y:	auto;
 	font-size:	85%;
-	overflow: 	hidden;
 	border-right:	1px solid black;
 }
 
@@ -125,6 +124,8 @@
 	font-size:		100%;
 	font-weight:	bold;
 	position:		relative;
+	display:		flex; 
+	flex-direction:	row;
 }
 
 #potree_sidebar_container a{
@@ -511,20 +512,10 @@ body{
 }
 
 .unselectable{
-	-webkit-touch-callout: 	none;
-	-webkit-user-select: 	none;
-	-khtml-user-select: 	none;
-	-moz-user-select: 		none;
-	-ms-user-select: 		none;
 	user-select: 			none;
 }
 
 .selectable{
-	-webkit-touch-callout: 	text;
-	-webkit-user-select: 	text;
-	-khtml-user-select: 	text;
-	-moz-user-select: 		text;
-	-ms-user-select: 		text;
 	user-select: 			text;
 }
 
@@ -769,3 +760,22 @@ body{
 	pointer-events:none;
 }
 
+#potree_sidebar_container{
+	scrollbar-color: var(--color-1) var(--bg-color);
+	scrollbar-width: thin;
+}
+
+
+
+::-webkit-scrollbar {
+    width: 6px;
+	background-color: var(--bg-color);
+}
+
+::-webkit-scrollbar-track {
+
+}
+
+::-webkit-scrollbar-thumb {
+	background-color: var(--color-1);
+}

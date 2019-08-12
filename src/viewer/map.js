@@ -84,6 +84,11 @@ export class MapView{
 	}
 
 	init () {
+
+		if(typeof ol === "undefined"){
+			return;
+		}
+
 		this.elMap = $('#potree_map');
 		this.elMap.draggable({ handle: $('#potree_map_header') });
 		this.elMap.resizable();

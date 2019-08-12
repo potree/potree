@@ -1,9 +1,7 @@
 
-<div id="sidebar_root" 
-	class="perfect_scrollbar navmenu navmenu-default navmenu-fixed-left unselectable" 
-	style="position: absolute; min-height: 100%; height: 100%; width: calc(100% - 1px); border-right: 1px solid black !important; overflow: hidden">
+<div id="sidebar_root" class="">
 	<div id="sidebar_header">
-		<span id="potree_branding" class="potree_sidebar_brand" style="display: flex; flex-direction: row">
+		<span id="potree_branding" class="potree_sidebar_brand">
 			<a href="http://potree.org" target="_blank">potree.org</a> 
 			<span style="margin: 0px 3px; color: #9AA1A4"> - </span> 
 			<a href="https://github.com/potree/potree" target="_blank">github</a>
@@ -14,9 +12,11 @@
 		</span>
 		<div id="potree_languages" style="font-family:arial;"></div>
 	</div>
-	<div>
+	<div> 
+
 	<div id="potree_menu" class="accordion">
-	
+
+		
 		<!-- APPEARANCE -->
 		<h3 id="menu_appearance"><span data-i18n="tb.rendering_opt"></span></h3>
 		<div>
@@ -62,11 +62,11 @@
 		<h3 id="menu_tools"><span data-i18n="tb.tools_opt"></span></h3>
 		<div class="pv-menu-list">
 
-			<div class="divider" style="padding: 10px 0px 15px 0px"><span>Measurement</span></div>
+			<div class="divider"><span>Measurement</span></div>
 
 			<li id="tools"></li>
 
-			<div class="divider" style="padding: 10px 0px 15px 0px"><span>Clipping</span></div>
+			<div class="divider"><span>Clipping</span></div>
 
 			<li id="clipping_tools"></li>
 
@@ -86,7 +86,7 @@
 				</selectgroup>
 			</li>
 			
-			<div class="divider" style="padding: 10px 0px 15px 0px"><span>Navigation</span></div>
+			<div class="divider"><span>Navigation</span></div>
 
 			<li id="navigation"></li>
 
@@ -99,11 +99,11 @@
 
 			<div id="scene_export"></div>
 
-			<div class="divider" style="padding: 10px 0px 15px 0px"><span>Objects</span></div>
+			<div class="divider"><span>Objects</span></div>
 
 			<div id="scene_objects"></div>
 
-			<div class="divider" style="padding: 10px 0px 15px 0px"><span>Properties</span></div>
+			<div class="divider"><span>Properties</span></div>
 
 			<div id="scene_object_properties"></div>
 		</div>
@@ -112,11 +112,11 @@
 		<h3 id="menu_filters"><span data-i18n="tb.filters_opt"></span></h3>
 		<div>
 
-			<div class="divider" style="padding: 10px 0px 15px 0px"><span>Classification</span></div>
+			<div class="divider"><span>Classification</span></div>
 
 			<ul id="classificationList" class="pv-menu-list"></ul>
 
-			<div class="divider" style="padding: 10px 0px 15px 0px"><span>Returns</span></div>
+			<div class="divider"><span>Returns</span></div>
 
 			<div id="return_filter_panel">
 				<ul class="pv-menu-list">
@@ -127,25 +127,11 @@
 				</ul>
 			</div>
 
-			<div class="divider" style="padding: 10px 0px 15px 0px"><span>GPS Time</span></div>
+			<div class="divider"><span>GPS Time</span></div>
 
 			<div id="gpstime_filter_panel">
 
 				<ul class="pv-menu-list">
-					
-					<!-- <li>
-						<span style="display: flex">
-							<span style="flex: 0.5; padding: 2px;">
-								<label for="spnGPSMin">Min:</label>
-								<input id="spnGPSMin" type="" step="0.01" value="0" min="0" style="width: 90%">
-							</span>
-							<span style="flex: 0.5; padding: 2px;">
-								<label for="spnGPSMax">Max:</label>
-								<input id="spnGPSMax" type="" step="0.01" value="1" min="0" style="width: 90%">
-							</span>
-						</span>
-					</li> -->
-					<!-- <li><span data-i18n="filters.gps_time"></span>: <span id="lblGPSTime"></span> <div id="sldGPSTime"></div></li> -->
 					<li>
 						<span data-i18n="filters.gps_time"></span>: <span id="lblGPSTime"></span>
 						<span id="spnGPSTime"></span>
@@ -203,6 +189,7 @@
 			
 			</ul>
 		</div>
+
 	</div>
 
 	<div>

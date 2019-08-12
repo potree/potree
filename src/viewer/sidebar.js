@@ -58,7 +58,6 @@ export class Sidebar{
 		this.initSettings();
 		
 		$('#potree_version_number').html(Potree.version.major + "." + Potree.version.minor + Potree.version.suffix);
-		$('.perfect_scrollbar').perfectScrollbar();
 	}
 
 		

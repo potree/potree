@@ -1695,8 +1695,11 @@ export class Viewer extends EventDispatcher{
 				const leftEye = display.getEyeParameters("left");
 				const rightEye = display.getEyeParameters("right");
 
-				const width = Math.max(leftEye.renderWidth, rightEye.renderWidth) * 2;
-				const height = Math.max(leftEye.renderHeight, rightEye.renderHeight);
+				let width = Math.max(leftEye.renderWidth, rightEye.renderWidth) * 2;
+				let height = Math.max(leftEye.renderHeight, rightEye.renderHeight);
+
+				// width *= 0.5;
+				// height *= 0.5;
 
 				this.renderer.setSize(width, height);
 

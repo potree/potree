@@ -85,7 +85,7 @@ export class Measure extends THREE.Object3D {
 		return sphereMaterial;
 	};
 
-	addMarker (point) {
+	addMarker (point, callback) {
 		if (point instanceof THREE.Vector3) {
 			point = {position: point};
 		}else if(point instanceof Array){
@@ -149,9 +149,9 @@ export class Measure extends THREE.Object3D {
 		{ // Event Listeners
 			let drag = (e) => {
 				let I = Utils.getMousePointCloudIntersection(
-					e.drag.end, 
-					e.viewer.scene.getActiveCamera(), 
-					e.viewer, 
+					e.drag.end,
+					e.viewer.scene.getActiveCamera(),
+					e.viewer,
 					e.viewer.scene.pointclouds,
 					{pickClipped: true});
 
@@ -186,6 +186,33 @@ export class Measure extends THREE.Object3D {
 			sphere.addEventListener('drop', drop);
 			sphere.addEventListener('mouseover', mouseover);
 			sphere.addEventListener('mouseleave', mouseleave);
+			sphere.addEventListener('mouseleave', (e) => {console.log(e);});
+			sphere.addEventListener('mousedown', (e) => {
+				console.log("MOUSEDOWN", e);
+
+				if (window.truthAnnotationMode == 1) {
+					debugger;
+					let i = this.spheres.indexOf(e.target);
+					if (i != -1) {
+						this.removeMarker(i);
+					} else {
+						console.error("Clicked sphere not in list of spheres: ", e);
+					}
+				} else if (window.truthAnnotationMode == 2) {
+					debugger;
+					let i = this.spheres.indexOf(e.target);
+					let lastPoint = this.spheres[this.spheres.length-1].position.clone();
+					this.addMarker(lastPoint, () => {
+						for (let ii = this.spheres.length-2; ii > i; ii--) {
+							let prevSphere = this.spheres[ii-1];
+							let prevPoint = {position: prevSphere.position.clone()};
+							this.setMarker(ii, prevPoint);
+						}
+					});
+				}
+
+
+			});
 		}
 
 		let event = {
@@ -196,6 +223,9 @@ export class Measure extends THREE.Object3D {
 		this.dispatchEvent(event);
 
 		this.setMarker(this.points.length - 1, point);
+		if (callback) {
+			callback();
+		}
 	};
 
 	removeMarker (index) {

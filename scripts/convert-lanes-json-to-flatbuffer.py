@@ -113,7 +113,7 @@ def plotLines(laneSegments):
     plt.plot(laneRights[:,0], laneRights[:,1])
     plt.plot(laneSpines[:,0], laneSpines[:,1])
     plt.axis('equal')
-    # plt.show()
+    plt.show()
     plt.savefig('lanes.pdf')
 
 
@@ -162,6 +162,7 @@ if __name__ == "__main__":
 
     parser.add_argument('--inputDir', type=str, help='Directory containing serialized data')
     parser.add_argument('--outputDir', type=str, help='Directory containing serialized data')
+    parser.add_argument('--plotLanes', help='Flag to plot lane segments', action='store_true')
 
     args = parser.parse_args()
 
@@ -174,3 +175,6 @@ if __name__ == "__main__":
 
     laneSegments = getLinesFromJson(inputFileLeft, inputFileRight)
     outputFlatbuffer(laneSegments, outputFile)
+
+    if (args.plotLanes):
+        plotLines(laneSegments)

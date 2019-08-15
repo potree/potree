@@ -153,11 +153,18 @@
 		console.log(location);
 		const bucket = params.get("bucket");
 		const region = params.get("region");
-		const name = params.get("name");
+		const names = JSON.parse(params.get("names"));
+		const name = params.get("clicked");
+		const visualizationMode = params.get("mode");
 		const accessKeyId = params.get("key1");
 		const secretAccessKey = params.get("key2");
+		const sessionToken = params.get("key3");
 		const fonts =  JSON.parse(params.get("fonts"));
 		const theme = JSON.parse(params.get("theme")); // material-ui theme
+		let comparisonDatasets = [];
+		if (names) {
+			comparisonDatasets = names.filter(element => element !== name);
+		}
 
 		if (fonts) {
 			const head = document.head;
@@ -176,11 +183,12 @@
 		}
 
     const s3 = bucket && region && name && accessKeyId && secretAccessKey &&
-          new AWS.S3({apiVersion: '2006-03-01',
-                      region,
-                      accessKeyId,
-                      secretAccessKey
-                     });
+				new AWS.S3({region: region,
+							 accessKeyId: accessKeyId,
+							 secretAccessKey: secretAccessKey,
+							 sessionToken: sessionToken,
+							});
+
     if (!(s3 || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) { window.history.back() };
     // We really want this, but it doesn't work in the browser. Only on a server.
     // const stream = s3.getObject({Bucket: bucket,
@@ -213,9 +221,23 @@
       // $("#splat_quality_options_hq").trigger("click"); // NOTE: HQ Splat breaks OrthographicCamera
       // viewer.scene.view.position.set(300198.109, 4701144.537, 349.871);
       // viewer.scene.view.lookAt(new THREE.Vector3(299900.954, 4701576.919, 66.197));
-			updateSidebar();
+			updateSidebar(visualizationMode);
 			removeLoadingScreen();
 
+			if (visualizationMode == "aptivLanes") {
+				viewer.setCameraMode(Potree.CameraMode.ORTHOGRAPHIC);
+				viewer.scene.view.maxPitch = -Math.PI/2;
+
+				document.getElementById("playback_speed").style.display = "none";
+				document.getElementById("toggleslider").style.display = "none";
+				document.getElementById("toggle_calibration_panels").style.display = "none";
+				document.getElementById("load_detections_button").style.display = "none";
+				document.getElementById("load_radar_button").style.display = "none";
+				document.getElementById("load_gaps_button").style.display = "none";
+				document.getElementById("camera_projection_options").children[0].children[1].children[0].style.display = "none"; // Hide projective camera option
+				document.getElementById("playbar_tmax").value = 0;
+				document.getElementById("playbar_tmin").value = 0;
+			}
 
 			// Check if Classification Attribute is exists in PointCloud:
 			try {
@@ -373,10 +395,10 @@
 					for (let ii = 0; ii < rtkTrajectory.numStates; ii++) {
 						geometry.vertices[ii] = rtkTrajectory.states[ii].pose.clone();
 					}
-	        let material = new THREE.LineBasicMaterial();
+	        let material = new THREE.LineBasicMaterial({color: new THREE.Color(0x00ff00)});
 	        material.uniforms = {initialTime:{value:t_init}};
-					material.opacity = 0.0;
-					material.transparent = true;
+					// material.opacity = 0.0;
+					// material.transparent = true;
 	        let line = new THREE.Line(geometry, material, {closed: closedPath});
 	        line.name = "rtk";
 	        viewer.scene.scene.add(line);
@@ -680,7 +702,9 @@
 // TODO FROM HERE
 		// Load Lanes Truth Data:
 		async function loadLanesCallback(s3, bucket, name) {
-			await loadLanes(s3, bucket, name, (laneGeometries) => {
+			// let s3Obj = s3;		// Visualize remote lanes (from S3)
+			let s3Obj = null;	// Visualize local lanes (from data folder)
+			await loadLanes(s3Obj, bucket, name, (laneGeometries) => {
 
 				let lanesLayer = new THREE.Group();
 				lanesLayer.name = "Lanes";
@@ -1014,7 +1038,8 @@ $(document).ready(() => {
 		      material.shape = Potree.PointShape.SQUARE;
 		    });
       } else {
-        Potree.loadPointCloud({s3, bucket, name}, name.substring(5), e => {
+				debugger;
+        Potree.loadPointCloud({s3, bucket, name}, "REM-Lane1-Run1", e => {
 		      const pointcloud = e.pointcloud;
 		      const material = pointcloud.material;
 		      console.log(pointcloud.pcoGeometry.nodes.r.gpsTime);

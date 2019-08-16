@@ -65,6 +65,9 @@ def getLinesFromJson(inputFileLeft, inputFileRight):
     leftData = json.loads(open(inputFileLeft, 'r').read())
     rightData = json.loads(open(inputFileRight, 'r').read())
 
+    print("Left length", len(leftData))
+    print("Right length", len(rightData))
+
     # Get Left/Right Line Vertices
     for i in range(len(leftData)):
         laneLefts.append(  getXYZ(leftData[i]) )

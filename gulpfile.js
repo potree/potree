@@ -400,7 +400,8 @@ gulp.task("shaders", async function(){
 
 	const targetPath = `./build/shaders/shaders.js`;
 
-	fs.writeFileSync(targetPath, content);
+	fs.mkdirSync("build/shaders");
+	fs.writeFileSync(targetPath, content, {flag: "w"});
 });
 
 gulp.task('build', 

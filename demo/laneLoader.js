@@ -232,17 +232,28 @@ function createLaneGeometriesOld(lanes) {
     let left, right, spine;
     for(let jj=0, numVertices=lane.leftLength(); jj<numVertices; jj++) {
       left = lane.left(jj);
-      spine = lane.spine(jj);
-      right = lane.right(jj);
 
       geometryLeft.vertices.push( new THREE.Vector3(left.x(), left.y(), left.z()));
-      geometrySpine.vertices.push( new THREE.Vector3(spine.x(), spine.y(), spine.z()));
-      geometryRight.vertices.push( new THREE.Vector3(right.x(), right.y(), right.z()));
 
       laneLeft.addMarker(new THREE.Vector3(left.x(), left.y(), left.z()));
-      laneSpine.addMarker(new THREE.Vector3(spine.x(), spine.y(), spine.z()));
+    }
+
+    for(let jj=0, numVertices=lane.rightLength(); jj<numVertices; jj++) {
+      right = lane.right(jj);
+
+      geometryRight.vertices.push( new THREE.Vector3(right.x(), right.y(), right.z()));
+
       laneRight.addMarker(new THREE.Vector3(right.x(), right.y(), right.z()));
     }
+
+    for(let jj=0, numVertices=lane.spineLength(); jj<numVertices; jj++) {
+      spine = lane.spine(jj);
+
+      geometrySpine.vertices.push( new THREE.Vector3(spine.x(), spine.y(), spine.z()));
+
+      laneSpine.addMarker(new THREE.Vector3(spine.x(), spine.y(), spine.z()));
+    }
+
     continue;
 
     // // NOTE TRYING MESHLINE:

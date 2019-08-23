@@ -9,7 +9,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import flatbuffers
 from Flatbuffer.GroundTruth import Lanes, Lane, Vec3
-from shapely.geometry import LineString, Point
+from shapely.geometry import LineString, Point, MultiPoint, box
+from shapely.ops import nearest_points
 
 
 def to_bytes(n, length, endianess='big'):
@@ -56,7 +57,7 @@ def getXYZ(data):
     return [x, y, z]
 
 
-def getLinesFromJson(inputFileLeft, inputFileRight):
+def getLinesFromJson(inputFileLeft, inputFileRight, shouldUpsample):
     laneSegments = []
     laneLefts = []
     laneSpines = []
@@ -65,14 +66,15 @@ def getLinesFromJson(inputFileLeft, inputFileRight):
     leftData = json.loads(open(inputFileLeft, 'r').read())
     rightData = json.loads(open(inputFileRight, 'r').read())
 
-    print("Left length", len(leftData))
-    print("Right length", len(rightData))
-
     # Get Left/Right Line Vertices
     for i in range(len(leftData)):
         laneLefts.append(  getXYZ(leftData[i]) )
     for i in range(len(rightData)):
         laneRights.append( getXYZ(rightData[i]) )
+
+    # Upsample the points
+    if (shouldUpsample):
+        upsample(laneLefts, laneRights, 0.5)
 
     # Compute Spine Vertices (using left lane as reference):
     rightLine = LineString(laneRights) # Create shapely linestring for right line
@@ -139,7 +141,7 @@ def outputFlatbuffer(laneSegments, outputFile):
         Lane.LaneStart(builder)
 
         # Set ID:
-        Lane.LaneAddId(builder, 1337)
+        Lane.LaneAddId(builder, 0)
 
         # Add Lefts:
         Lane.LaneAddLeft(builder, lefts)
@@ -157,7 +159,41 @@ def outputFlatbuffer(laneSegments, outputFile):
         write_buffer(builder, outputFile, createNew)
         createNew = False
 
+def multipoint_index(multipoint, point):
+    for i in range(len(multipoint)):
+        if (point.x == multipoint[i].x and point.y == multipoint[i].y):
+            return i
 
+    return None
+
+def upsample_single(lane1, lane2, threshold):
+    # Create a shapely line string for lane2
+    lane2Line = LineString(lane2)
+
+    # Loop through points in lane1
+    for i in range(len(lane1)):
+        # Get the closest point on lane2
+        projection = lane2Line.interpolate(lane2Line.project(Point(lane1[i])))
+
+        # Create bounds in which to check for a neighbor
+        bounds = projection.buffer(threshold)
+
+        # Check if the nearest neighbor to the projection point is within the bounds
+        points = MultiPoint(lane2)
+        nearestPoint = nearest_points(projection, points)[1]
+        if (not bounds.contains(nearestPoint)):
+            # Insert the new neighbor at the correct index
+            index = multipoint_index(points, nearestPoint)
+            if (lane2Line.project(nearestPoint, normalized=True) < lane2Line.project(projection, normalized=True)):
+                index = index + 1
+
+            lane2.insert(index, [projection.x, projection.y, projection.z])
+
+
+def upsample(leftPoints, rightPoints, threshold):
+    upsample_single(leftPoints, rightPoints, threshold)
+    upsample_single(rightPoints, leftPoints, threshold)
+    assert len(leftPoints) == len(rightPoints), "Lane sizes unequal after upsample. Try decreasing threshold"
 
 if __name__ == "__main__":
 
@@ -166,17 +202,18 @@ if __name__ == "__main__":
     parser.add_argument('--inputDir', type=str, help='Directory containing serialized data')
     parser.add_argument('--outputDir', type=str, help='Directory containing serialized data')
     parser.add_argument('--plotLanes', help='Flag to plot lane segments', action='store_true')
+    parser.add_argument('--upsample', help='Flag to upsample the lanes if one lane has more points than the other', action='store_true')
 
     args = parser.parse_args()
 
     inputDir = args.inputDir
-    outputDir = args.outputDir
+    outputDir = args.outputDir if args.outputDir else args.inputDir
 
     inputFileLeft = os.path.join(inputDir, "lane-left.json")
     inputFileRight = os.path.join(inputDir, "lane-right.json")
     outputFile = os.path.join(outputDir, "lanes.fb")
 
-    laneSegments = getLinesFromJson(inputFileLeft, inputFileRight)
+    laneSegments = getLinesFromJson(inputFileLeft, inputFileRight, args.upsample)
     outputFlatbuffer(laneSegments, outputFile)
 
     if (args.plotLanes):

@@ -73,31 +73,33 @@ export class NavigationCube extends THREE.Object3D {
 		this.camera.rotation.order = "ZXY";
 
 		let onMouseDown = (event) => {
-			this.pickedFace = null;
-			let mouse = new THREE.Vector2();
-			mouse.x = event.clientX - (window.innerWidth - this.width);
-			mouse.y = event.clientY;
+			if (this.visible) {
+				this.pickedFace = null;
+				let mouse = new THREE.Vector2();
+				mouse.x = event.clientX - (window.innerWidth - this.width);
+				mouse.y = event.clientY;
 
-			if(mouse.x < 0 || mouse.y > this.width) return;
+				if(mouse.x < 0 || mouse.y > this.width) return;
 
-			mouse.x = (mouse.x / this.width) * 2 - 1;
-			mouse.y = -(mouse.y / this.width) * 2 + 1;
+				mouse.x = (mouse.x / this.width) * 2 - 1;
+				mouse.y = -(mouse.y / this.width) * 2 + 1;
 
-			let raycaster = new THREE.Raycaster();
-			raycaster.setFromCamera(mouse, this.camera);
-			raycaster.ray.origin.sub(this.camera.getWorldDirection(new THREE.Vector3()));
+				let raycaster = new THREE.Raycaster();
+				raycaster.setFromCamera(mouse, this.camera);
+				raycaster.ray.origin.sub(this.camera.getWorldDirection(new THREE.Vector3()));
 
-			let intersects = raycaster.intersectObjects(this.children);
+				let intersects = raycaster.intersectObjects(this.children);
 
-			let minDistance = 1000;
-			for (let i = 0; i < intersects.length; i++) {
-				if(intersects[i].distance < minDistance) {
-					this.pickedFace = intersects[i].object.name;
-					minDistance = intersects[i].distance;
+				let minDistance = 1000;
+				for (let i = 0; i < intersects.length; i++) {
+					if(intersects[i].distance < minDistance) {
+						this.pickedFace = intersects[i].object.name;
+						minDistance = intersects[i].distance;
+					}
 				}
-			}
-			if(this.pickedFace) {
-				this.viewer.setView(this.pickedFace);
+				if(this.pickedFace) {
+					this.viewer.setView(this.pickedFace);
+				}
 			}
 		};
 

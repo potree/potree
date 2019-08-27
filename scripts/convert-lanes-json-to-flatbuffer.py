@@ -57,7 +57,7 @@ def getXYZ(data):
     return [x, y, z]
 
 
-def getLinesFromJson(inputFileLeft, inputFileRight, shouldUpsample):
+def getLinesFromJson(inputFileLeft, inputFileRight, upsampleValue):
     laneSegments = []
     laneLefts = []
     laneSpines = []
@@ -73,8 +73,8 @@ def getLinesFromJson(inputFileLeft, inputFileRight, shouldUpsample):
         laneRights.append( getXYZ(rightData[i]) )
 
     # Upsample the points
-    if (shouldUpsample):
-        upsample(laneLefts, laneRights, 0.5)
+    if (upsampleValue):
+        upsample(laneLefts, laneRights, upsampleValue)
 
     # Compute Spine Vertices (using left lane as reference):
     rightLine = LineString(laneRights) # Create shapely linestring for right line
@@ -193,7 +193,9 @@ def upsample_single(lane1, lane2, threshold):
 def upsample(leftPoints, rightPoints, threshold):
     upsample_single(leftPoints, rightPoints, threshold)
     upsample_single(rightPoints, leftPoints, threshold)
-    assert len(leftPoints) == len(rightPoints), "Lane sizes unequal after upsample. Try decreasing threshold"
+    print("Left size after upsample:", len(leftPoints))
+    print("Right size after upsample:", len(rightPoints))
+    #assert len(leftPoints) == len(rightPoints)
 
 if __name__ == "__main__":
 
@@ -202,7 +204,7 @@ if __name__ == "__main__":
     parser.add_argument('--inputDir', type=str, help='Directory containing serialized data')
     parser.add_argument('--outputDir', type=str, help='Directory containing serialized data')
     parser.add_argument('--plotLanes', help='Flag to plot lane segments', action='store_true')
-    parser.add_argument('--upsample', help='Flag to upsample the lanes if one lane has more points than the other', action='store_true')
+    parser.add_argument('--upsample', help='The upsamle threshold. If this flag is not set, no upsample will be performed', required=False, type=float)
 
     args = parser.parse_args()
 

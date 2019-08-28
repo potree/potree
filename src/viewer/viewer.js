@@ -139,7 +139,7 @@ export class Viewer extends EventDispatcher{
 		this.initThree();
 		this.prepareVR();
 
-		this.prepareVR();
+		//this.prepareVR();
 
 		{
 			let canvas = this.renderer.domElement;

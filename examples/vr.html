@@ -122,29 +122,60 @@
 			viewer.scene.scene.add( plane );
 		}
 
-		let controller = null;
-		{ // VR controller
+		// let controller = null;
+		// { // VR controller
 
-			const geometry = new THREE.SphereGeometry(1, 32);
+		// 	const geometry = new THREE.SphereGeometry(1, 32, 32);
+		// 	const material = new THREE.MeshLambertMaterial( { color: 0xff0000, side: THREE.DoubleSide, flatShading: true } );
+		// 	const node = new THREE.Mesh(geometry, material);
+
+		// 	node.position.set(0, 0, 0.5);
+		// 	node.scale.set(0.02, 0.02, 0.02);
+
+		// 	viewer.scene.scene.add(node);
+
+		// 	controller = {
+		// 		node: node,
+		// 	};
+		// 	viewer.scene.scene.add(node);
+		// }
+
+		let snLeft = null;
+		{
+			const geometry = new THREE.SphereGeometry(1, 32, 32);
 			const material = new THREE.MeshLambertMaterial( { color: 0xff0000, side: THREE.DoubleSide, flatShading: true } );
 			const node = new THREE.Mesh(geometry, material);
 
 			node.position.set(0, 0, 0.5);
-			node.scale.set(0.05, 0.05, 0.05);
+			node.scale.set(0.02, 0.02, 0.02);
 
 			viewer.scene.scene.add(node);
 
-			controller = {
+			snLeft = {
 				node: node,
 			};
 			viewer.scene.scene.add(node);
 		}
 
-		viewer.addEventListener("update", e => {
+		let snRight = null;
+		{
+			const geometry = new THREE.SphereGeometry(1, 32, 32);
+			const material = new THREE.MeshLambertMaterial( { color: 0xff0000, side: THREE.DoubleSide, flatShading: true } );
+			const node = new THREE.Mesh(geometry, material);
 
-			const {node, debug} = controller;
+			node.position.set(0, 0, 0.5);
+			node.scale.set(0.02, 0.02, 0.02);
 
-			const pointclouds = viewer.scene.pointclouds;
+			viewer.scene.scene.add(node);
+
+			snRight = {
+				node: node,
+			};
+			viewer.scene.scene.add(node);
+		}
+
+		function getPointcloudsAt(pointclouds, position){
+			//const {node, debug} = controller;
 
 			const I = [];
 			for(const pointcloud of pointclouds){
@@ -152,8 +183,9 @@
 				const world = pointcloud.matrixWorld;
 				const worldToObject = new THREE.Matrix4().getInverse(world);
 
-				const center = node.position.clone();
-				const radius = node.scale.x;
+				const center = position.clone();
+				const radius = 0.01;
+				//const radius = node.scale.x;
 				const sphere = new THREE.Sphere(center, radius);
 				sphere.applyMatrix4(worldToObject);
 
@@ -165,77 +197,312 @@
 				}
 			}
 
-			const material = node.material;
-			if(I.length > 0){
-				material.color.setHex(0xff0000);
-			}else{
-				material.color.setHex(0x00ff00);
-			}
+			return I;
+		}
+
+		// viewer.addEventListener("update", e => {
+
+		// 	const {node, debug} = controller;
+
+		// 	const pointclouds = viewer.scene.pointclouds;
+		// 	const I = getPointcloudsAt(pointclouds, node.position);
+
+		// 	// const I = [];
+		// 	// for(const pointcloud of pointclouds){
+
+		// 	// 	const world = pointcloud.matrixWorld;
+		// 	// 	const worldToObject = new THREE.Matrix4().getInverse(world);
+
+		// 	// 	const center = node.position.clone();
+		// 	// 	const radius = node.scale.x;
+		// 	// 	const sphere = new THREE.Sphere(center, radius);
+		// 	// 	sphere.applyMatrix4(worldToObject);
+
+		// 	// 	const box = pointcloud.boundingBox;
+		// 	// 	const intersects = box.intersectsSphere(sphere);
+
+		// 	// 	if(intersects){
+		// 	// 		I.push(pointcloud);
+		// 	// 	}
+		// 	// }
+
+		// 	const material = node.material;
+		// 	if(I.length > 0){
+		// 		material.color.setHex(0xff0000);
+		// 	}else{
+		// 		material.color.setHex(0x00ff00);
+		// 	}
 
 
-			{
-				const gamepads = navigator.getGamepads();
+		// 	{
+		// 		const gamepads = navigator.getGamepads();
 
-				let controller = null;
-				for(let gamepad of gamepads){
-					if(gamepad && gamepad.hand && gamepad.hand === "right"){
-						controller = gamepad;
-					}
+		// 		let controller = null;
+		// 		for(let gamepad of gamepads){
+		// 			if(gamepad && gamepad.hand && gamepad.hand === "right"){
+		// 				controller = gamepad;
+		// 			}
+		// 		}
+
+		// 		if(controller){
+
+		// 			if(typeof controllerState === "undefined"){
+		// 				controllerState = {
+		// 					controller: controller,
+		// 					buttons: controller.buttons.map(c => c.pressed),
+		// 					position: new THREE.Vector3(...controller.pose.position),
+		// 				};
+		// 			}
+
+		// 			if(controller.buttons[1].pressed){
+
+		// 				const prev = controllerState.position;
+		// 				const curr = new THREE.Vector3(...controller.pose.position);
+
+		// 				const diff = new THREE.Vector3().subVectors(curr, prev);
+		// 				[diff.y, diff.z] = [diff.z, diff.y];
+
+		// 				for(const pc of I){
+		// 					pc.position.add(diff);
+		// 				}
+
+		// 			}
+
+		// 			const position = new THREE.Vector3(...controller.pose.position);
+		// 			[position.y, position.z] = [position.z, position.y];
+
+
+		// 			//for(let i = 0; i < controller.buttons.length; i++){
+		// 			//	let curr = controller.buttons[i].pressed;
+		// 			//	let prev = controllerState.buttons[i];
+
+		// 			//	if(curr && !prev){
+		// 			//		console.log(`down: ${i}`);
+		// 			//	}
+
+		// 			//	if(prev && !curr){
+		// 			//		console.log(`up: ${i}`);
+		// 			//	}
+		// 			//}
+
+
+
+		// 			node.position.copy(position);
+
+		// 			controllerState.buttons = controller.buttons.map(c => c.pressed);
+		// 			controllerState.position.set(...controller.pose.position);
+
+		// 		}
+		// 	}
+
+
+		// });
+
+
+
+		if(true){
+			const selection = [];
+
+			class VRControls{
+
+				constructor(){
+					this.handlers = [];
+					this.pressedButtons = [];
+					this.controllers = [];
+
+					this.triggerDownEvents = [];
+					this.triggerUpEvents = [];
+					
+					this.TRIGGER_DOWN = () => {
+
+						return function(){
+							return {
+								passes: this.triggerDownEvents.length > 0,
+								sources: this.triggerDownEvents.map(e => e.source),
+							};
+						}.bind(this);
+					};
+
+					this.TRIGGER_UP = () => {
+
+						return function(){
+							return {
+								passes: this.triggerUpEvents.length > 0,
+								sources: this.triggerUpEvents.map(e => e.source),
+							};
+						}.bind(this);
+					};
+
+					//this.TRIGGER_IS_DOWN = new Symbol();
+
+					//this.TRIGGER_UP = new Symbol();
+
+					this.PRESSED_BUTTONS = (number) => {
+
+						var n = number;
+
+						return function(){
+							return n === this.pressedButtons.length;
+						}.bind(this);
+					};
 				}
 
-				if(controller){
+				addHandler(events, conditions, callback){
+					this.handlers.push({
+						events: events,
+						conditions: conditions,
+						callback: callback,
+					});
+				}
 
-					if(typeof controllerState === "undefined"){
-						controllerState = {
-							controller: controller,
-							buttons: controller.buttons.map(c => c.pressed),
-							position: new THREE.Vector3(...controller.pose.position),
-						};
+				copyPad(pad){
+
+					const buttons = pad.buttons.map(b => {return {pressed: b.pressed}});
+
+					const pose = {
+						position: new Float32Array(pad.pose.position),
+					};
+
+					const copy = {
+						buttons: buttons,
+						pose: pose, 
+						hand: pad.hand,
+						index: pad.index,
+					};
+
+					return copy;
+				}
+
+				previous(gamepad){
+					return this.controllers.find(c => c.index === gamepad.index);
+				}
+
+				update(){
+					const gamepads = navigator.getGamepads();
+
+					if(this.controllers.length !== gamepads.length){
+						this.controllers = gamepads.map(this.copyPad);
 					}
 
-					if(controller.buttons[1].pressed){
+					const left = navigator.getGamepads().find(gp => gp.hand && gp.hand === "left");
+					const right = navigator.getGamepads().find(gp => gp.hand && gp.hand === "right");
 
-						const prev = controllerState.position;
-						const curr = new THREE.Vector3(...controller.pose.position);
+					const triggered = gamepads.filter(gamepad => {
+						return gamepad.buttons[1].pressed;
+					});
 
-						const diff = new THREE.Vector3().subVectors(curr, prev);
-						[diff.y, diff.z] = [diff.z, diff.y];
+					const justTriggered = triggered.filter(gamepad => {
+						const prev = this.previous(gamepad);
 
-						for(const pc of I){
+						const previouslyTriggered = prev.buttons[1].pressed;
+						const currentlyTriggered = gamepad.buttons[1].pressed;
+
+						return !previouslyTriggered && currentlyTriggered;
+					});
+
+					const justUntriggered = gamepads.filter(gamepad => {
+						const prev = this.previous(gamepad);
+
+						const previouslyTriggered = prev.buttons[1].pressed;
+						const currentlyTriggered = gamepad.buttons[1].pressed;
+
+						return previouslyTriggered && !currentlyTriggered;
+					});
+
+					const toScene = (position) => {
+						return new THREE.Vector3(position.x, position.z, position.y);
+					};
+
+					if(justTriggered.length > 0){
+						console.log("down");
+					}
+
+					if(justUntriggered.length > 0){
+						console.log("up");
+					}
+
+
+					if(triggered.length === 0){
+						selection.length = 0;
+					}
+
+					if(justTriggered.length === 1 && triggered.length === 1){
+						// one controller was triggered this frame
+
+						const pad = justTriggered[0];
+						const pointclouds = viewer.scene.pointclouds;
+						const position = toScene(new THREE.Vector3(...pad.pose.position));
+						const I = getPointcloudsAt(pointclouds, position);
+						
+						if(I.length > 0){
+							selection.length = 0;
+							selection.push(I[0]);
+						}
+					}
+
+
+					
+
+					if(triggered.length === 2){
+						// SCALE
+
+						console.log("scale");
+
+					}else if(triggered.length === 1){
+						// TRANSLATE POINT CLOUD
+
+						const pad = triggered[0];
+						const prev = this.previous(pad);
+
+						const diff = toScene(new THREE.Vector3(
+							pad.pose.position[0] - prev.pose.position[0],
+							pad.pose.position[1] - prev.pose.position[1],
+							pad.pose.position[2] - prev.pose.position[2],
+						));
+
+						for(const pc of selection){
 							pc.position.add(diff);
 						}
 
+
+					}else{
+						// do nothing
 					}
 
-					const position = new THREE.Vector3(...controller.pose.position);
-					[position.y, position.z] = [position.z, position.y];
+					{ // MOVE CONTROLLER SCENE NODE
+						if(right){
+							const {node, debug} = snLeft;
+
+							const position = new THREE.Vector3(...right.pose.position);
+							[position.y, position.z] = [position.z, position.y];
+
+							node.position.copy(position);
+						}
+						
+						if(left){
+							const {node, debug} = snRight;
+							
+							const position = new THREE.Vector3(...left.pose.position);
+							[position.y, position.z] = [position.z, position.y];
+
+							node.position.copy(position);
+						}
+					}
 
 
-					//for(let i = 0; i < controller.buttons.length; i++){
-					//	let curr = controller.buttons[i].pressed;
-					//	let prev = controllerState.buttons[i];
-
-					//	if(curr && !prev){
-					//		console.log(`down: ${i}`);
-					//	}
-
-					//	if(prev && !curr){
-					//		console.log(`up: ${i}`);
-					//	}
-					//}
-
-
-
-					node.position.copy(position);
-
-					controllerState.buttons = controller.buttons.map(c => c.pressed);
-					controllerState.position.set(...controller.pose.position);
+					this.controllers = gamepads.map(this.copyPad);
 
 				}
-			}
+
+			};
 
 
-		});
+			const controlls = new VRControls();
+			viewer.addEventListener("update", e => {
+				controlls.update();
+			});
+
+		}
 
 
 
@@ -244,13 +511,35 @@
 	</script>
 
 
+	<script>
 	
-	<div style="position: absolute; z-index: 10000; right: 10px; bottom: 10px;" 
-		onclick="viewer.toggleVR()">
+	// create VR button if VR display is available
+	async function createVRButton(){
 
-		<img src="../resources/icons/vr_button.svg" />
+		if(typeof navigator.getVRDisplays === "undefined"){
+			return;
+		}
 
-	</div>
+		const displays = await navigator.getVRDisplays();;
+		console.log(displays);
+
+		if(displays.length > 0){
+		
+			const elVR = document.createElement("div");
+			elVR.innerHTML = `
+				<div style="position: absolute; z-index: 10000; right: 10px; bottom: 10px;" 
+					onclick="viewer.toggleVR()">
+					<img src="../resources/icons/vr_button.svg" />
+				</div>
+			`;
+
+			document.body.appendChild(elVR);
+		}
+	}
+	createVRButton();
+	
+	</script>
+	
 	
   </body>
 </html>

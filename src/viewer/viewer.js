@@ -1722,7 +1722,7 @@ export class Viewer extends EventDispatcher{
 				const flipWorld = new THREE.Matrix4().fromArray([
 					1, 0, 0, 0, 
 					0, 0, 1, 0, 
-					0, 1, 0, 0,
+					0, -1, 0, 0,
 					0, 0, 0, 1
 				]);
 				const flipView = new THREE.Matrix4().getInverse(flipWorld);
@@ -1737,6 +1737,13 @@ export class Viewer extends EventDispatcher{
 					camera.matrixWorld.multiplyMatrices(leftWorld, flipWorld);
 
 					const viewport = [0, 0, width / 2, height];
+
+
+					// { // DEBUG
+					// 	camera.projectionMatrix.copy(viewer.scene.cameraP.projectionMatrix);
+					// 	camera.matrixWorld.copy(viewer.scene.cameraP.matrixWorld);
+					// 	camera.matrixWorldInverse.copy(viewer.scene.cameraP.matrixWorldInverse);
+					// }
 
 					this.renderer.setViewport(...viewport);
 					pRenderer.render({camera: camera, viewport: viewport});

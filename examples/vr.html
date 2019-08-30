@@ -96,8 +96,8 @@
 			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
 		});
 
-		viewer.scene.view.position.set(-3.135, -3.550, 3.142);
-		viewer.scene.view.lookAt(-0.183, 0.901, -0.082);
+		viewer.scene.view.position.set(-1.035, -0.450, 0.686);
+		viewer.scene.view.lookAt(0.339, 0.107, 0.011);
 
 		{ // floor
 
@@ -122,135 +122,46 @@
 			viewer.scene.scene.add( plane );
 		}
 
-		let controller = null;
-		{ // VR controller
+		if(true){
+			const selection = [];
 
-			const geometry = new THREE.SphereGeometry(1, 32);
-			const material = new THREE.MeshLambertMaterial( { color: 0xff0000, side: THREE.DoubleSide, flatShading: true } );
-			const node = new THREE.Mesh(geometry, material);
+			const controlls = new Potree.VRControlls(viewer);
 
-			node.position.set(0, 0, 0.5);
-			node.scale.set(0.05, 0.05, 0.05);
-
-			viewer.scene.scene.add(node);
-
-			controller = {
-				node: node,
-			};
-			viewer.scene.scene.add(node);
+			viewer.addEventListener("update", (e) => controlls.update());
 		}
-
-		viewer.addEventListener("update", e => {
-
-			const {node, debug} = controller;
-
-			const pointclouds = viewer.scene.pointclouds;
-
-			const I = [];
-			for(const pointcloud of pointclouds){
-
-				const world = pointcloud.matrixWorld;
-				const worldToObject = new THREE.Matrix4().getInverse(world);
-
-				const center = node.position.clone();
-				const radius = node.scale.x;
-				const sphere = new THREE.Sphere(center, radius);
-				sphere.applyMatrix4(worldToObject);
-
-				const box = pointcloud.boundingBox;
-				const intersects = box.intersectsSphere(sphere);
-
-				if(intersects){
-					I.push(pointcloud);
-				}
-			}
-
-			const material = node.material;
-			if(I.length > 0){
-				material.color.setHex(0xff0000);
-			}else{
-				material.color.setHex(0x00ff00);
-			}
-
-
-			{
-				const gamepads = navigator.getGamepads();
-
-				let controller = null;
-				for(let gamepad of gamepads){
-					if(gamepad && gamepad.hand && gamepad.hand === "right"){
-						controller = gamepad;
-					}
-				}
-
-				if(controller){
-
-					if(typeof controllerState === "undefined"){
-						controllerState = {
-							controller: controller,
-							buttons: controller.buttons.map(c => c.pressed),
-							position: new THREE.Vector3(...controller.pose.position),
-						};
-					}
-
-					if(controller.buttons[1].pressed){
-
-						const prev = controllerState.position;
-						const curr = new THREE.Vector3(...controller.pose.position);
-
-						const diff = new THREE.Vector3().subVectors(curr, prev);
-						[diff.y, diff.z] = [diff.z, diff.y];
-
-						for(const pc of I){
-							pc.position.add(diff);
-						}
-
-					}
-
-					const position = new THREE.Vector3(...controller.pose.position);
-					[position.y, position.z] = [position.z, position.y];
-
-
-					//for(let i = 0; i < controller.buttons.length; i++){
-					//	let curr = controller.buttons[i].pressed;
-					//	let prev = controllerState.buttons[i];
-
-					//	if(curr && !prev){
-					//		console.log(`down: ${i}`);
-					//	}
-
-					//	if(prev && !curr){
-					//		console.log(`up: ${i}`);
-					//	}
-					//}
-
-
-
-					node.position.copy(position);
-
-					controllerState.buttons = controller.buttons.map(c => c.pressed);
-					controllerState.position.set(...controller.pose.position);
-
-				}
-			}
-
-
-		});
-
-
-
-
 
 	</script>
 
 
+	<script>
 	
-	<div style="position: absolute; z-index: 10000; right: 10px; bottom: 10px;" 
-		onclick="viewer.toggleVR()">
+	// create VR button if VR display is available
+	async function createVRButton(){
 
-		<img src="../resources/icons/vr_button.svg" />
+		if(typeof navigator.getVRDisplays === "undefined"){
+			return;
+		}
 
-	</div>
+		const displays = await navigator.getVRDisplays();;
+		console.log(displays);
+
+		if(displays.length > 0){
+		
+			const elVR = document.createElement("div");
+			elVR.innerHTML = `
+				<div style="position: absolute; z-index: 10000; right: 10px; bottom: 10px;" 
+					onclick="viewer.toggleVR()">
+					<img src="../build/potree/resources/icons/vr_button.svg" />
+				</div>
+			`;
+
+			document.body.appendChild(elVR);
+		}
+	}
+	createVRButton();
+	
+	</script>
+	
 	
   </body>
 </html>

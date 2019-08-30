@@ -11,6 +11,62 @@ export class VRControlls{
 		this.triggerStarts = [];
 
 		this.scaleState = null;
+
+		this.selectionBox = this.createBox();
+		this.viewer.scene.scene.add(this.selectionBox);
+
+		this.snLeft = this.createControllerModel();
+		this.snRight = this.createControllerModel();
+		
+		this.viewer.scene.scene.add(this.snLeft.node);
+		this.viewer.scene.scene.add(this.snRight.node);
+
+	}
+
+	createControllerModel(){
+		const geometry = new THREE.SphereGeometry(1, 32, 32);
+		const material = new THREE.MeshLambertMaterial( { color: 0xff0000, side: THREE.DoubleSide, flatShading: true } );
+		const node = new THREE.Mesh(geometry, material);
+
+		node.position.set(0, 0, 0.5);
+		node.scale.set(0.02, 0.02, 0.02);
+		node.visible = false;
+
+		viewer.scene.scene.add(node);
+
+		const controller = {
+			node: node,
+		};
+		//viewer.scene.scene.add(node);
+
+		return controller;
+	}
+
+	createBox(){
+		const color = 0xffff00;
+
+		const indices = new Uint16Array( [ 0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7 ] );
+		const positions = [ 
+			1, 1, 1,
+			0, 1, 1,
+			0, 0, 1,
+			1, 0, 1,
+			1, 1, 0,
+			0, 1, 0,
+			0, 0, 0,
+			1, 0, 0
+		];
+		const geometry = new THREE.BufferGeometry();
+
+		geometry.setIndex( new THREE.BufferAttribute( indices, 1 ) );
+		geometry.addAttribute( 'position', new THREE.Float32BufferAttribute( positions, 3 ) );
+
+		geometry.computeBoundingSphere();
+
+		const mesh = new THREE.LineSegments(geometry, new THREE.LineBasicMaterial( { color: color } ) );
+		mesh.visible = false;
+
+		return mesh;
 	}
 
 	debugLine(start, end, index, color){
@@ -72,6 +128,31 @@ export class VRControlls{
 
 	}
 
+	getPointcloudsAt(pointclouds, position){
+
+		const I = [];
+		for(const pointcloud of pointclouds){
+
+			const world = pointcloud.matrixWorld;
+			const worldToObject = new THREE.Matrix4().getInverse(world);
+
+			const center = position.clone();
+			const radius = 0.01;
+			//const radius = node.scale.x;
+			const sphere = new THREE.Sphere(center, radius);
+			sphere.applyMatrix4(worldToObject);
+
+			const box = pointcloud.boundingBox;
+			const intersects = box.intersectsSphere(sphere);
+
+			if(intersects){
+				I.push(pointcloud);
+			}
+		}
+
+		return I;
+	}
+
 	copyPad(pad){
 		const buttons = pad.buttons.map(b => {return {pressed: b.pressed}});
 
@@ -95,17 +176,22 @@ export class VRControlls{
 
 	update(){
 
-		const {selection, viewer} = this;
+		const {selection, viewer, snLeft, snRight} = this;
 		const vr = viewer.vr;
 
 		const vrActive = vr && vr.display.isPresenting;
+
+		snLeft.node.visible = vrActive;
+		snRight.node.visible = vrActive;
+
 		if(!vrActive){
+
 			return;
 		}
 
 		const pointclouds = viewer.scene.pointclouds;
 
-		const gamepads = Array.from(navigator.getGamepads()).map(this.copyPad);		
+		const gamepads = Array.from(navigator.getGamepads()).filter(p => p !== null).map(this.copyPad);
 
 		const getPad = (list, pattern) => list.find(pad => pad.index === pattern.index);
 		
@@ -140,11 +226,41 @@ export class VRControlls{
 			return new THREE.Vector3(position.x, -position.z, position.y);
 		};
 
+		if(triggered.length === 0){
+			const positions = gamepads.map(pad => toScene(new THREE.Vector3(...pad.pose.position)));
+
+			const hovered = new Set();
+			for(const position of positions){
+				const I = this.getPointcloudsAt(pointclouds, position);
+				for(let pc of I){
+					hovered.add(pc);
+				}
+			}
+
+			if(hovered.size > 0){
+				const pointcloud = Array.from(hovered)[0];
+				this.selectionBox.visible = true;
+				this.selectionBox.scale.copy(pointcloud.boundingBox.max).multiply(pointcloud.scale);
+				this.selectionBox.position.copy(pointcloud.position);
+				this.selectionBox.rotation.copy(pointcloud.rotation);
+				//this.selectionBox.scale.copy(pointcloud.scale);
+			}else{
+				this.selectionBox.visible = false;
+			}
+		}else{
+			if(selection.length > 0){
+				const pointcloud = selection[0];
+				this.selectionBox.scale.copy(pointcloud.boundingBox.max).multiply(pointcloud.scale);
+				this.selectionBox.position.copy(pointcloud.position);
+				this.selectionBox.rotation.copy(pointcloud.rotation);
+			}
+		}
+
 		if(justTriggered.length > 0){
 
 			const pad = justTriggered[0];
 			const position = toScene(new THREE.Vector3(...pad.pose.position));
-			const I = getPointcloudsAt(pointclouds, position);
+			const I = this.getPointcloudsAt(pointclouds, position);
 
 			const pcs = I.map(p => {
 				return {
@@ -179,7 +295,17 @@ export class VRControlls{
 			// one controller was triggered this frame
 			const pad = justTriggered[0];
 			const position = toScene(new THREE.Vector3(...pad.pose.position));
-			const I = getPointcloudsAt(pointclouds, position);
+			const I = this.getPointcloudsAt(pointclouds, position);
+			
+			if(I.length > 0){
+				selection.length = 0;
+				selection.push(I[0]);
+			}
+		}else if(justTriggered.length === 2 && triggered.length === 2){
+			// two controllers were triggered this frame
+			const pad = justTriggered[0];
+			const position = toScene(new THREE.Vector3(...pad.pose.position));
+			const I = this.getPointcloudsAt(pointclouds, position);
 			
 			if(I.length > 0){
 				selection.length = 0;
@@ -246,7 +372,7 @@ export class VRControlls{
 				p1ToP.applyAxisAngle(new THREE.Vector3(0, 0, 1), angle);
 				const newPosition = p1End.clone().add(p1ToP);
 				
-				this.debugLine(pointcloud.position, newPosition, 0, 0xFF0000);
+				//this.debugLine(pointcloud.position, newPosition, 0, 0xFF0000);
 
 				//console.log(newScale, p1ToP, angle);
 
@@ -256,10 +382,6 @@ export class VRControlls{
 
 				pointcloud.node.updateMatrix();
 				pointcloud.node.updateMatrixWorld();
-
-
-
-				//pointcloud.node.position.copy(newPos);
 
 
 

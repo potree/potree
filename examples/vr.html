@@ -59,18 +59,6 @@
 			$("#menu_filters").next().show();
 			viewer.toggleSidebar();
 		});
-
-		// Potree.loadPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/archpro/heidentor/cloud.js", "Heidentor", function(e){
-		// 	viewer.scene.addPointCloud(e.pointcloud);
-
-		// 	e.pointcloud.position.set(0.1, -0.4, -0.2);
-		// 	e.pointcloud.scale.set(0.05, 0.05, 0.05);
-			
-		// 	const material = e.pointcloud.material;
-
-		// 	material.size = 0.4;
-		// 	material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-		// });
 		
 		Potree.loadPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/archpro/heidentor/cloud.js", "Heidentor", function(e){
 			viewer.scene.addPointCloud(e.pointcloud);
@@ -134,103 +122,13 @@
 			viewer.scene.scene.add( plane );
 		}
 
-		// let controller = null;
-		// { // VR controller
-
-		// 	const geometry = new THREE.SphereGeometry(1, 32, 32);
-		// 	const material = new THREE.MeshLambertMaterial( { color: 0xff0000, side: THREE.DoubleSide, flatShading: true } );
-		// 	const node = new THREE.Mesh(geometry, material);
-
-		// 	node.position.set(0, 0, 0.5);
-		// 	node.scale.set(0.02, 0.02, 0.02);
-
-		// 	viewer.scene.scene.add(node);
-
-		// 	controller = {
-		// 		node: node,
-		// 	};
-		// 	viewer.scene.scene.add(node);
-		// }
-
-		let snLeft = null;
-		{
-			const geometry = new THREE.SphereGeometry(1, 32, 32);
-			const material = new THREE.MeshLambertMaterial( { color: 0xff0000, side: THREE.DoubleSide, flatShading: true } );
-			const node = new THREE.Mesh(geometry, material);
-
-			node.position.set(0, 0, 0.5);
-			node.scale.set(0.02, 0.02, 0.02);
-
-			viewer.scene.scene.add(node);
-
-			snLeft = {
-				node: node,
-			};
-			viewer.scene.scene.add(node);
-		}
-
-		let snRight = null;
-		{
-			const geometry = new THREE.SphereGeometry(1, 32, 32);
-			const material = new THREE.MeshLambertMaterial( { color: 0xff0000, side: THREE.DoubleSide, flatShading: true } );
-			const node = new THREE.Mesh(geometry, material);
-
-			node.position.set(0, 0, 0.5);
-			node.scale.set(0.02, 0.02, 0.02);
-
-			viewer.scene.scene.add(node);
-
-			snRight = {
-				node: node,
-			};
-			viewer.scene.scene.add(node);
-		}
-
-		function getPointcloudsAt(pointclouds, position){
-			//const {node, debug} = controller;
-
-			const I = [];
-			for(const pointcloud of pointclouds){
-
-				const world = pointcloud.matrixWorld;
-				const worldToObject = new THREE.Matrix4().getInverse(world);
-
-				const center = position.clone();
-				const radius = 0.01;
-				//const radius = node.scale.x;
-				const sphere = new THREE.Sphere(center, radius);
-				sphere.applyMatrix4(worldToObject);
-
-				const box = pointcloud.boundingBox;
-				const intersects = box.intersectsSphere(sphere);
-
-				if(intersects){
-					I.push(pointcloud);
-				}
-			}
-
-			return I;
-		}
-
-
-
 		if(true){
 			const selection = [];
 
-			
-
-
 			const controlls = new Potree.VRControlls(viewer);
 
-			viewer.addEventListener("update", e => {
-				controlls.update();
-			});
-
+			viewer.addEventListener("update", (e) => controlls.update());
 		}
-
-
-
-
 
 	</script>
 
@@ -253,7 +151,7 @@
 			elVR.innerHTML = `
 				<div style="position: absolute; z-index: 10000; right: 10px; bottom: 10px;" 
 					onclick="viewer.toggleVR()">
-					<img src="../resources/icons/vr_button.svg" />
+					<img src="../build/potree/resources/icons/vr_button.svg" />
 				</div>
 			`;
 

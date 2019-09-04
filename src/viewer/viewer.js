@@ -97,8 +97,6 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		this.potreeRenderer = null;
 		this.edlRenderer = null;
 		this.renderer = null;
-		this.pRenderer = null;
-		this.pRenderer2 = null;
 		this.pRenderers = [];
 
 		this.scene = null;
@@ -107,7 +105,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 
 		this.inputHandler = null;
 
-		this.clippingTool =  null;
+		this.clippingTool = null;
 		this.transformationTool = null;
 		this.navigationCube = null;
 		
@@ -126,9 +124,8 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			);
 		}
 		
-		this.pRenderer = new Potree.Renderer(this.renderer);
-		this.pRenderer2 = new Potree.Renderer(this.renderers[1]);
-		this.pRenderers = [this.pRenderer, this.pRenderer2];
+		this.pRenderers = this.renderers.map(renderer => new Potree.Renderer(renderer));
+		// Backwards compatibility
 		
 		{
 			let near = 2.5;
@@ -1462,7 +1459,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 				cam.perspective.updateProjectionMatrix();
 
 				//let frustumScale = viewer.moveSpeed * 2.0;
-				let frustumScale = this.scene.view.radius;
+				let frustumScale = this.scene.views[i].radius;
 				cam.orthographic.left = -frustumScale;
 				cam.orthographic.right = frustumScale;		
 				cam.orthographic.top = frustumScale * 1 / aspect;

@@ -668,7 +668,6 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 	pick(viewer, camera, ray, params = {}){
 
 		let renderer = viewer.renderer;
-		let pRenderer = viewer.pRenderer;
 		
 		performance.mark("pick-start");
 		
@@ -761,7 +760,9 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 			let tmp = this.material;
 			this.material = pickMaterial;
 			
-			pRenderer.renderOctree(this, nodes, camera, pickState.renderTarget);
+			viewer.pRenderers.forEach((pRenderer) => {
+				pRenderer.renderOctree(this, nodes, camera, pickState.renderTarget);
+			});
 			
 			this.material = tmp;
 		}

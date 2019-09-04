@@ -246,7 +246,7 @@ Potree.Scene = class extends THREE.EventDispatcher{
 	}
 
 	getActiveCamera(index = 0) {
-		const cameraMode = Potree.CameraMode.PERSPECTIVE ? 'perspective' : 'orthographic';
+		const cameraMode = this.cameraMode === Potree.CameraMode.PERSPECTIVE ? 'perspective' : 'orthographic';
 		return this.cameras[index][cameraMode];
 	}
 	

@@ -1,4 +1,3 @@
-
 function Potree () {
 
 }
@@ -406,7 +405,7 @@ Potree.getLRU = function () {
 	return Potree.lru;
 };
 
-Potree.updateVisibilityStructures = function(pointclouds, camera, renderer) {
+Potree.updateVisibilityStructures = function(pointclouds, cameras, renderers) {
 	let frustums = [];
 	let camObjPositions = [];
 	let priorityQueue = new BinaryHeap(function (x) { return 1 / x.weight; });
@@ -424,28 +423,30 @@ Potree.updateVisibilityStructures = function(pointclouds, camera, renderer) {
 		pointcloud.visibleNodes = [];
 		pointcloud.visibleGeometry = [];
 
-		// frustum in object space
-		camera.updateMatrixWorld();
-		let frustum = new THREE.Frustum();
-		let viewI = camera.matrixWorldInverse;
-		let world = pointcloud.matrixWorld;
-		
-		// use close near plane for frustum intersection
-		let frustumCam = camera.clone();
-		frustumCam.near = Math.min(camera.near, 0.1);
-		frustumCam.updateProjectionMatrix();
-		let proj = camera.projectionMatrix;
+		cameras.forEach((camera) => {
+			// frustum in object space
+			camera.updateMatrixWorld();
+			let frustum = new THREE.Frustum();
+			let viewI = camera.matrixWorldInverse;
+			let world = pointcloud.matrixWorld;
+			
+			// use close near plane for frustum intersection
+			let frustumCam = camera.clone();
+			frustumCam.near = Math.min(camera.near, 0.1);
+			frustumCam.updateProjectionMatrix();
+			let proj = camera.projectionMatrix;
 
-		let fm = new THREE.Matrix4().multiply(proj).multiply(viewI).multiply(world);
-		frustum.setFromMatrix(fm);
-		frustums.push(frustum);
+			let fm = new THREE.Matrix4().multiply(proj).multiply(viewI).multiply(world);
+			frustum.setFromMatrix(fm);
+			frustums.push(frustum);
 
-		// camera position in object space
-		let view = camera.matrixWorld;
-		let worldI = new THREE.Matrix4().getInverse(world);
-		let camMatrixObject = new THREE.Matrix4().multiply(worldI).multiply(view);
-		let camObjPos = new THREE.Vector3().setFromMatrixPosition(camMatrixObject);
-		camObjPositions.push(camObjPos);
+			// camera position in object space
+			let view = camera.matrixWorld;
+			let worldI = new THREE.Matrix4().getInverse(world);
+			let camMatrixObject = new THREE.Matrix4().multiply(worldI).multiply(view);
+			let camObjPos = new THREE.Vector3().setFromMatrixPosition(camMatrixObject);
+			camObjPositions.push(camObjPos);
+		});
 
 		if (pointcloud.visible && pointcloud.root !== null) {
 			priorityQueue.push({pointcloud: i, node: pointcloud.root, weight: Number.MAX_VALUE});
@@ -481,29 +482,9 @@ Potree.getDEMWorkerInstance = function () {
 };
 
 
-Potree.updateVisibility = function(pointclouds, camera, renderer){
-
-	let numVisibleNodes = 0;
-	let numVisiblePoints = 0;
-
-	let numVisiblePointsInPointclouds = new Map(pointclouds.map(pc => [pc, 0]));
-
-	let visibleNodes = [];
-	let visibleGeometry = [];
-	let unloadedGeometry = [];
-
-	let lowestSpacing = Infinity;
-
-	// calculate object space frustum and cam pos and setup priority queue
-	let s = Potree.updateVisibilityStructures(pointclouds, camera, renderer);
-	let frustums = s.frustums;
-	let camObjPositions = s.camObjPositions;
-	let priorityQueue = s.priorityQueue;
-
-	let loadedToGPUThisFrame = 0;
-	
-	let domWidth = renderer.domElement.clientWidth;
-	let domHeight = renderer.domElement.clientHeight;
+Potree.updateVisibility = function(pointclouds, cameras, renderers){
+	const [camera] = cameras;
+	const [renderer] = renderers;
 
 	// check if pointcloud has been transformed
 	// some code will only be executed if changes have been detected
@@ -536,6 +517,27 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 		}
 	}
 
+	let numVisibleNodes = 0;
+	let numVisiblePoints = 0;
+
+	let numVisiblePointsInPointclouds = new Map(pointclouds.map(pc => [pc, 0]));
+
+	let visibleNodes = [];
+	let visibleGeometry = [];
+	let unloadedGeometry = [];
+
+	let lowestSpacing = Infinity;	
+	
+	let s = Potree.updateVisibilityStructures(pointclouds, cameras, renderers);
+	let frustums = s.frustums;
+	let camObjPositions = s.camObjPositions;
+	let priorityQueue = s.priorityQueue;
+
+	let loadedToGPUThisFrame = 0;
+	
+	let domWidth = renderer.domElement.clientWidth;
+	let domHeight = renderer.domElement.clientHeight;
+
 	while (priorityQueue.size() > 0) {
 		let element = priorityQueue.pop();
 		let node = element.node;
@@ -550,10 +552,10 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 		// }
 
 		let box = node.getBoundingBox();
-		let frustum = frustums[element.pointcloud];
+		// TODO:
 		let camObjPos = camObjPositions[element.pointcloud];
 
-		let insideFrustum = frustum.intersectsBox(box);
+		let insideFrustum = frustums.some(x => x.intersectsBox(box));
 		let maxLevel = pointcloud.maxLevel || Infinity;
 		let level = node.getLevel();
 		let visible = insideFrustum;
@@ -728,15 +730,16 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 				}
 			} else {
 				// TODO ortho visibility
-				let bb = child.getBoundingBox();				
-				let distance = child.getBoundingSphere().center.distanceTo(camObjPos);
+				let bb = child.getBoundingBox();
+				const distances = camObjPositions.map(pos => child.getBoundingSphere().center.distanceTo(pos))
 				let diagonal = bb.max.clone().sub(bb.min).length();
-				weight = diagonal / distance;
+				weight = diagonal / Math.max(distances);
 			}
 
 			priorityQueue.push({pointcloud: element.pointcloud, node: child, parent: node, weight: weight});
 		}
 	}// end priority queue loop
+	// END REMOVE TODO:
 
 	{ // update DEM
 		let maxDEMLevel = 4;

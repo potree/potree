@@ -251,6 +251,8 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 	}
 
 	updateMaterial (material, visibleNodes, camera, renderer) {
+		if (!renderer.domElement) return;
+
 		material.fov = camera.fov * (Math.PI / 180);
 		material.screenWidth = renderer.domElement.clientWidth;
 		material.screenHeight = renderer.domElement.clientHeight;

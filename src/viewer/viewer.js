@@ -1000,11 +1000,12 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 	}
 
 	initThree () {
-		// TODO:
+		// TODO: Refactor
 		this.renderers = [];
 		this.createRenderer(this.renderArea, 0);
-		// TODO:
-		this.createRenderer(this.renderAreas[1], 1);
+		if (this.renderAreas.length > 1) {
+			this.renderAreas.slice(1).forEach((area, index) => this.createRenderer(area, index + 1));
+		}
 		this.renderer = this.renderers[0];
 	}
 
@@ -1259,32 +1260,33 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		}
 
 		if (!this.freeze) {
-			scene.cameras.forEach((_, i) => {
-				const cam = scene.getActiveCamera(i);
-				let result = Potree.updatePointClouds(scene.pointclouds, cam, this.renderers[i]);
+			// TODO: Support for just 1 or more 2 cameras
+			const cam = scene.getActiveCamera(0);
+			const cam1 = scene.getActiveCamera(1);
+			let result = Potree.updatePointClouds(scene.pointclouds, [cam, cam1], this.renderers);
 
-				if(result.lowestSpacing !== Infinity){
-					let near = result.lowestSpacing * 10.0;
-					let far = -this.getBoundingBox().applyMatrix4(cam.matrixWorldInverse).min.z;
+			if(result.lowestSpacing !== Infinity){
+				let near = result.lowestSpacing * 10.0;
+				let far = -this.getBoundingBox().applyMatrix4(cam.matrixWorldInverse).min.z;
 
-					far = Math.max(far * 1.5, 1000);
-					near = Math.min(100.0, Math.max(0.01, near));
-					far = Math.max(far, near + 1000);
+				far = Math.max(far * 1.5, 1000);
+				near = Math.min(100.0, Math.max(0.01, near));
+				far = Math.max(far, near + 1000);
 
-					if(near === Infinity){
-						near = 0.1;
-					}
-					
-					cam.near = near;
-					cam.far = far;
-				}else{
-					// don't change near and far in this case
+				if(near === Infinity){
+					near = 0.1;
 				}
 
-				if(this.scene.cameraMode == Potree.CameraMode.ORTHOGRAPHIC) {
-					cam.near = -cam.far;
-				}
-			});
+				cam.near = near;
+				cam.far = far;
+				cam1.near = near;
+				cam1.far = far;
+			}
+
+			if(this.scene.cameraMode === Potree.CameraMode.ORTHOGRAPHIC) {
+				cam.near = -cam.far;
+				cam1.near = -cam1.far;
+			}
 		} 
 		
 		this.scene.cameraP.fov = this.fov;

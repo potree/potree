@@ -15,11 +15,12 @@
  
 Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 	
-	constructor(viewer){
+	constructor(viewer, index){
 		super();
 		
 		this.viewer = viewer;
-		this.renderer = viewer.renderer;
+		this.index = index;
+		this.renderer = viewer.renderers[index];
 
 		this.scene = null;
 		this.sceneControls = new THREE.Scene();
@@ -69,7 +70,7 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 		};
 
 		let scroll = (e) => {
-			let resolvedRadius = this.scene.view.radius + this.radiusDelta;
+			let resolvedRadius = this.scene.views[index].radius + this.radiusDelta;
 
 			this.radiusDelta += -e.delta * resolvedRadius * 0.1;
 
@@ -103,7 +104,7 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 				let currDist = Math.sqrt(currDX * currDX + currDY * currDY);
 
 				let delta = currDist / prevDist;
-				let resolvedRadius = this.scene.view.radius + this.radiusDelta;
+				let resolvedRadius = this.scene.views[index].radius + this.radiusDelta;
 				let newRadius = resolvedRadius / delta;
 				this.radiusDelta = newRadius - resolvedRadius;
 
@@ -176,11 +177,11 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 			let nodes = I.pointcloud.nodesOnRay(I.pointcloud.visibleNodes, ray);
 			let lastNode = nodes[nodes.length - 1];
 			let radius = lastNode.getBoundingSphere().radius;
-			targetRadius = Math.min(this.scene.view.radius, radius);
+			targetRadius = Math.min(this.scene.views[this.index].radius, radius);
 			targetRadius = Math.max(minimumJumpDistance, targetRadius);
 		}
 
-		let d = this.scene.view.direction.multiplyScalar(-1);
+		let d = this.scene.views[this.index].direction.multiplyScalar(-1);
 		let cameraTargetPosition = new THREE.Vector3().addVectors(I.location, d.multiplyScalar(targetRadius));
 		// TODO Unused: let controlsTargetPosition = I.location;
 
@@ -193,19 +194,19 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 			tween.easing(easing);
 			this.tweens.push(tween);
 
-			let startPos = this.scene.view.position.clone();
+			let startPos = this.scene.views[this.index].position.clone();
 			let targetPos = cameraTargetPosition.clone();
-			let startRadius = this.scene.view.radius;
+			let startRadius = this.scene.views[this.index].radius;
 			let targetRadius = cameraTargetPosition.distanceTo(I.location);
 
 			tween.onUpdate(() => {
 				let t = value.x;
-				this.scene.view.position.x = (1 - t) * startPos.x + t * targetPos.x;
-				this.scene.view.position.y = (1 - t) * startPos.y + t * targetPos.y;
-				this.scene.view.position.z = (1 - t) * startPos.z + t * targetPos.z;
+				this.scene.views[this.index].position.x = (1 - t) * startPos.x + t * targetPos.x;
+				this.scene.views[this.index].position.y = (1 - t) * startPos.y + t * targetPos.y;
+				this.scene.views[this.index].position.z = (1 - t) * startPos.z + t * targetPos.z;
 
-				this.scene.view.radius = (1 - t) * startRadius + t * targetRadius;
-				this.viewer.setMoveSpeed(this.scene.view.radius / 2.5);
+				this.scene.views[this.index].radius = (1 - t) * startRadius + t * targetRadius;
+				this.viewer.setMoveSpeed(this.scene.views[this.index].radius / 2.5);
 			});
 
 			tween.onComplete(() => {
@@ -222,7 +223,7 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 	}
 
 	update (delta) {
-		let view = this.scene.view;
+		let view = this.scene.views[this.index];
 
 		{ // apply rotation
 			// Do not update yaw or pitch values if there is no point cloud loaded

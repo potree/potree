@@ -183,7 +183,7 @@ Potree.RotationControls = class RotationControls extends THREE.EventDispatcher{
 	update (delta) {
 		let view = this.scene.view;
 
-		if (!this.viewer.rotationControls.enabled) {
+		if (!this.enabled) {
 			return false;
 		}
 

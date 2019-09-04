@@ -6,12 +6,15 @@ class EDLRenderer{
 
 		this.edlMaterial = null;
 
-		this.rtRegular;
-		this.rtEDL;
+		this.rtRegular = [];
+		this.rtEDL = [];
 
 		this.gl = viewer.renderer.context;
 
-		this.shadowMap = new Potree.PointCloudSM(this.viewer.pRenderer);
+		this.shadowMaps = [];
+		this.viewer.pRenderers.forEach((pRenderer) => {
+			this.shadowMaps.push(new Potree.PointCloudSM(pRenderer));
+		});
 	}
 
 	initEDL(){
@@ -24,35 +27,39 @@ class EDLRenderer{
 		this.edlMaterial.depthWrite = true;
 		this.edlMaterial.transparent = true;
 
-		this.rtEDL = new THREE.WebGLRenderTarget(1024, 1024, {
-			minFilter: THREE.NearestFilter,
-			magFilter: THREE.NearestFilter,
-			format: THREE.RGBAFormat,
-			type: THREE.FloatType,
-			depthTexture: new THREE.DepthTexture(undefined, undefined, THREE.UnsignedIntType)
-		});
+		this.viewer.renderers.forEach((_, i) => {
+			this.rtEDL[i] = new THREE.WebGLRenderTarget(1024, 1024, {
+				minFilter: THREE.NearestFilter,
+				magFilter: THREE.NearestFilter,
+				format: THREE.RGBAFormat,
+				type: THREE.FloatType,
+				depthTexture: new THREE.DepthTexture(undefined, undefined, THREE.UnsignedIntType)
+			});
 
-		this.rtRegular = new THREE.WebGLRenderTarget(1024, 1024, {
-			minFilter: THREE.NearestFilter,
-			magFilter: THREE.NearestFilter,
-			format: THREE.RGBAFormat,
-			depthTexture: new THREE.DepthTexture(undefined, undefined, THREE.UnsignedIntType)
+			this.rtRegular[i] = new THREE.WebGLRenderTarget(1024, 1024, {
+				minFilter: THREE.NearestFilter,
+				magFilter: THREE.NearestFilter,
+				format: THREE.RGBAFormat,
+				depthTexture: new THREE.DepthTexture(undefined, undefined, THREE.UnsignedIntType)
+			});
 		});
 	};
 
 	resize(){
 		const viewer = this.viewer;
 
-		let pixelRatio = viewer.renderer.getPixelRatio();
-		let {width, height} = viewer.renderer.getSize();
+		viewer.renderers.forEach((renderer, index) => {
+			let pixelRatio = renderer.getPixelRatio();
+			let {width, height} = renderer.getSize();
 
-		if(this.screenshot){
-			width = this.screenshot.target.width;
-			height = this.screenshot.target.height;
-		}
+			if(this.screenshot){
+				width = this.screenshot.target.width;
+				height = this.screenshot.target.height;
+			}
 
-		this.rtEDL.setSize(width * pixelRatio , height * pixelRatio);
-		this.rtRegular.setSize(width * pixelRatio , height * pixelRatio);
+			this.rtEDL[index].setSize(width * pixelRatio , height * pixelRatio);
+			this.rtRegular[index].setSize(width * pixelRatio , height * pixelRatio);
+		});
 	}
 
 	makeScreenshot(camera, size, callback){
@@ -67,8 +74,6 @@ class EDLRenderer{
 
 		let {width, height} = size;
 
-		//let maxTextureSize = viewer.renderer.capabilities.maxTextureSize;
-		//if(width * 4 < 
 		width = 2 * width;
 		height = 2 * height;
 
@@ -144,7 +149,7 @@ class EDLRenderer{
 			// TODO:
 			let queryShadows = Potree.startQuery('EDL - shadows', viewer.renderer.getContext());
 
-			this.shadowMap.setLight(light);
+			this.shadowMaps[index].setLight(light);
 
 			let originalAttributes = new Map();
 			for(let pointcloud of viewer.scene.pointclouds){
@@ -153,7 +158,7 @@ class EDLRenderer{
 				pointcloud.material.pointColorType = Potree.PointColorType.DEPTH;
 			}
 
-			this.shadowMap.render(viewer.scene.scenePointCloud, camera);
+			this.shadowMaps[index].render(viewer.scene.scenePointCloud, camera);
 
 			for(let pointcloud of viewer.scene.pointclouds){
 				let originalAttribute = originalAttributes.get(pointcloud);
@@ -219,35 +224,28 @@ class EDLRenderer{
 			Potree.endQuery(querySkybox, renderer.getContext());
 
 			let queryColors = Potree.startQuery('EDL - colorpass', renderer.getContext());
+
+			let cameraInstance = viewer.scene.getActiveCamera(index);
 			
-			renderer.render(viewer.scene.scene, camera);
+			renderer.render(viewer.scene.scene, cameraInstance);
 
 			// Clear point clouds before next render
-			renderer.clearTarget(this.rtEDL, true, true, true);
-			renderer.clearTarget(this.rtRegular, true, true, false);
-
-			let cameraInstance = camera;
-			if (index === 1) {
-				// TODO: Multiple camera support
-				// cameraInstance = viewer.scene.cameraP2;
-			}
+			renderer.clearTarget(this.rtEDL[index], true, true, true);
+			renderer.clearTarget(this.rtRegular[index], true, true, false);
 
 			// TODO adapt to multiple lights
 			if(lights.length > 0) {
-				viewer.pRenderers[index].render(viewer.scene.scenePointCloud, cameraInstance, this.rtEDL, {
-					shadowMaps: [this.shadowMap],
+				viewer.pRenderers[index].render(viewer.scene.scenePointCloud, cameraInstance, this.rtEDL[index], {
+					shadowMaps: [this.shadowMaps[index]],
 					transparent: false,
 				});
 			} else {
-				viewer.pRenderers[index].render(viewer.scene.scenePointCloud, cameraInstance, this.rtEDL, {
+				viewer.pRenderers[index].render(viewer.scene.scenePointCloud, cameraInstance, this.rtEDL[index], {
 					transparent: false,
 				});
 			}
 
-			// Dispatch event only once
-			if (index === 0) {
-				viewer.dispatchEvent({type: "render.pass.scene", viewer, renderTarget: this.rtRegular});
-			}
+			viewer.dispatchEvent({type: "render.pass.scene", viewer, renderTarget: this.rtRegular[index]});
 
 			Potree.endQuery(queryColors, renderer.getContext());
 
@@ -257,13 +255,11 @@ class EDLRenderer{
 	
 				this.edlMaterial.uniforms.screenWidth.value = width;
 				this.edlMaterial.uniforms.screenHeight.value = height;
-	
-				//this.edlMaterial.uniforms.colorMap.value = this.rtColor.texture;
-	
-				this.edlMaterial.uniforms.uRegularColor.value = this.rtRegular.texture;
-				this.edlMaterial.uniforms.uEDLColor.value = this.rtEDL.texture;
-				this.edlMaterial.uniforms.uRegularDepth.value = this.rtRegular.depthTexture;
-				this.edlMaterial.uniforms.uEDLDepth.value = this.rtEDL.depthTexture;
+
+				this.edlMaterial.uniforms.uRegularColor.value = this.rtRegular[index].texture;
+				this.edlMaterial.uniforms.uEDLColor.value = this.rtEDL[index].texture;
+				this.edlMaterial.uniforms.uRegularDepth.value = this.rtRegular[index].depthTexture;
+				this.edlMaterial.uniforms.uEDLDepth.value = this.rtEDL[index].depthTexture;
 	
 				this.edlMaterial.uniforms.edlStrength.value = viewer.edlStrength;
 				this.edlMaterial.uniforms.radius.value = viewer.edlRadius;
@@ -286,7 +282,6 @@ class EDLRenderer{
 
 			viewer.dispatchEvent({type: "render.pass.perspective_overlay", viewer });
 
-			renderer.render(viewer.controls.sceneControls, camera);
 			renderer.render(viewer.clippingTool.sceneVolume, camera);
 			renderer.render(viewer.transformationTool.scene, camera);
 			
@@ -302,4 +297,3 @@ class EDLRenderer{
 		});
 	}
 };
-

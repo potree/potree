@@ -4,12 +4,11 @@
  *
  */
 Potree.InputHandler = class InputHandler extends THREE.EventDispatcher {
-	constructor (viewer) {
+	constructor (viewer, renderer) {
 		super();
 
 		this.viewer = viewer;
-		this.renderer = viewer.renderer;
-		this.domElement = this.renderer.domElement;
+		this.domElement = renderer.domElement;
 		this.enabled = true;
 		
 		this.scene = null;
@@ -52,11 +51,19 @@ Potree.InputHandler = class InputHandler extends THREE.EventDispatcher {
 	}
 
 	addInputListener (listener) {
-		this.inputListeners.push(listener);
+		if (!Array.isArray(listener)) {
+			this.inputListeners.push(listener);
+			return;
+		}
+		this.inputListeners.push(...listener);
 	}
 
 	removeInputListener (listener) {
-		this.inputListeners = this.inputListeners.filter(e => e !== listener);
+		if (!Array.isArray(listener)) {
+			this.inputListeners = this.inputListeners.filter(e => e !== listener);
+			return;
+		}
+		this.inputListeners = this.inputListeners.filter(e => !listener.includes(e));
 	}
 
 	getSortedListeners(){

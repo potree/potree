@@ -145,8 +145,14 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		this.setScene(scene);
 
 		{
-			this.inputHandler = new Potree.InputHandler(this);
-			this.inputHandler.setScene(this.scene);
+			this.inputHandlers = [];
+			this.renderers.forEach((renderer, index) => {
+				const handler = new Potree.InputHandler(this, renderer);
+				handler.setScene(this.scene);
+
+				this.inputHandlers[index] = handler;
+			});
+			this.inputHandler = this.inputHandlers[0];
 
 			this.clippingTool = new Potree.ClippingTool(this);
 			this.transformationTool = new Potree.TransformationTool(this);
@@ -166,11 +172,11 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			};
 
 			let onVolumeRemoved = (e) => {
-				this.inputHandler.deselect(e.volume);
+				this.inputHandlers.forEach(h => h.deselect(e.volume));
 			};
 
 			this.addEventListener('scene_changed', (e) => {
-				this.inputHandler.setScene(e.scene);
+				this.inputHandlers.forEach(h => h.setScene(e.scene));
 				this.clippingTool.setScene(this.scene);
 				
 				if(!e.scene.hasEventListener("pointcloud_added", onPointcloudAdded)){
@@ -310,18 +316,19 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		}
 	};
 
-	getControls (navigationMode) {
+	getControls (navigationMode, index) {
+		let controlsType = null;
 		if (navigationMode === Potree.OrbitControls) {
-			return this.orbitControls;
+			controlsType = 'orbitControls';
 		} else if (navigationMode === Potree.FirstPersonControls) {
-			return this.fpControls;
+			controlsType = 'fpControls';
 		} else if (navigationMode === Potree.RotationControls) {
-			return this.rotationControls;
+			controlsType = 'rotationControls';
 		} else if (navigationMode === Potree.EarthControls) {
-			return this.earthControls;
-		} else {
-			return null;
+			controlsType = 'earthControls';
 		}
+
+		return this.controlInstances.map(x => x[controlsType]);
 	}
 
 	getMinNodeSize () {
@@ -551,9 +558,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		this.dispatchEvent({'type': 'length_unit_changed', 'viewer': this, value: value});
 	}
 
-	zoomTo(node, factor, animationDuration = 0, callback){
-		let view = this.scene.view;
-
+	zoomTo(view, node, factor, animationDuration = 0, callback){
 		let camera = this.scene.cameraP.clone();
 		camera.rotation.copy(this.scene.cameraP.rotation);
 		camera.rotation.order = "ZXY";
@@ -624,18 +629,22 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 
 	fitToScreen (factor = 1, animationDuration = 0, callback = () => {}) {
 		// When browser tab is in the background, controls are not set before first fitToScreen call.
-		if (!this.controls) {
+		if (this.activeControls.some(c => !c)) {
 			setTimeout(() => this.fitToScreen(factor, animationDuration, callback), 200);
 			return;
 		}
 
-		let box = this.getBoundingBox(this.scene.pointclouds);
+		this.activeControls.forEach((controls, index) => {
+			let box = this.getBoundingBox(this.scene.pointclouds);
 
-		let node = new THREE.Object3D();
-		node.boundingBox = box;
+			let node = new THREE.Object3D();
+			node.boundingBox = box;
 
-		this.zoomTo(node, factor, animationDuration, callback);
-		this.controls.stop();
+			
+			this.zoomTo(this.scene.views[index], node, factor, animationDuration, callback)
+			controls.stop();
+
+		});
 	};
 
 	toggleNavigationCube() {
@@ -822,50 +831,34 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 	// ------------------------------------------------------------------------------------
 
 	createControls () {
-		{
-			this.rotationControls = new Potree.RotationControls(this);
-			this.rotationControls.enabled = false;
-			this.rotationControls.addEventListener('start', this.disableAnnotations.bind(this));
-			this.rotationControls.addEventListener('end', this.enableAnnotations.bind(this));
-		}
+		this.controlInstances = [];
+		this.renderers.forEach((_, index) => {
+			const controls = {};
+			controls.rotationControls = new Potree.RotationControls(this);
+			controls.rotationControls.enabled = false;
+			controls.rotationControls.addEventListener('start', this.disableAnnotations.bind(this));
+			controls.rotationControls.addEventListener('end', this.enableAnnotations.bind(this));
 
-		{ // create FIRST PERSON CONTROLS
-			this.fpControls = new Potree.FirstPersonControls(this);
-			this.fpControls.enabled = false;
-			this.fpControls.addEventListener('start', this.disableAnnotations.bind(this));
-			this.fpControls.addEventListener('end', this.enableAnnotations.bind(this));
-			// this.fpControls.addEventListener("double_click_move", (event) => {
-			//	let distance = event.targetLocation.distanceTo(event.position);
-			//	this.setMoveSpeed(Math.pow(distance, 0.4));
-			// });
-			// this.fpControls.addEventListener("move_speed_changed", (event) => {
-			//	this.setMoveSpeed(this.fpControls.moveSpeed);
-			// });
-		}
+			// create FIRST PERSON CONTROLS
+			controls.fpControls = new Potree.FirstPersonControls(this);
+			controls.fpControls.enabled = false;
+			controls.fpControls.addEventListener('start', this.disableAnnotations.bind(this));
+			controls.fpControls.addEventListener('end', this.enableAnnotations.bind(this));
 
-		// { // create GEO CONTROLS
-		//	this.geoControls = new Potree.GeoControls(this.scene.camera, this.renderer.domElement);
-		//	this.geoControls.enabled = false;
-		//	this.geoControls.addEventListener("start", this.disableAnnotations.bind(this));
-		//	this.geoControls.addEventListener("end", this.enableAnnotations.bind(this));
-		//	this.geoControls.addEventListener("move_speed_changed", (event) => {
-		//		this.setMoveSpeed(this.geoControls.moveSpeed);
-		//	});
-		// }
+			// create ORBIT CONTROLS
+			controls.orbitControls = new Potree.OrbitControls(this, index);
+			controls.orbitControls.enabled = false;
+			controls.orbitControls.addEventListener('start', this.disableAnnotations.bind(this));
+			controls.orbitControls.addEventListener('end', this.enableAnnotations.bind(this));
 
-		{ // create ORBIT CONTROLS
-			this.orbitControls = new Potree.OrbitControls(this);
-			this.orbitControls.enabled = false;
-			this.orbitControls.addEventListener('start', this.disableAnnotations.bind(this));
-			this.orbitControls.addEventListener('end', this.enableAnnotations.bind(this));
-		}
+			// create EARTH CONTROLS
+			controls.earthControls = new Potree.EarthControls(this);
+			controls.earthControls.enabled = false;
+			controls.earthControls.addEventListener('start', this.disableAnnotations.bind(this));
+			controls.earthControls.addEventListener('end', this.enableAnnotations.bind(this));
 
-		{ // create EARTH CONTROLS
-			this.earthControls = new Potree.EarthControls(this);
-			this.earthControls.enabled = false;
-			this.earthControls.addEventListener('start', this.disableAnnotations.bind(this));
-			this.earthControls.addEventListener('end', this.enableAnnotations.bind(this));
-		}
+			this.controlInstances.push(controls);
+		});
 	};
 
 	toggleSidebar () {
@@ -985,19 +978,20 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		let width = domElement.clientWidth;
 		let height = domElement.clientHeight;
 
-		this.renderer = new THREE.WebGLRenderer({alpha: true, premultipliedAlpha: false});
-		this.renderer.sortObjects = false;
-		this.renderer.setSize(width, height);
-		this.renderer.autoClear = false;
-		domElement.appendChild(this.renderer.domElement);
-		this.renderer.domElement.tabIndex = '2222';
-		this.renderer.domElement.style.position = 'absolute';
-		this.renderer.domElement.addEventListener('mousedown', () => {
-			this.renderer.domElement.focus();
+		this.renderers[index] = new THREE.WebGLRenderer({alpha: true, premultipliedAlpha: false});
+		// this.renderer = new THREE.WebGLRenderer({alpha: true, premultipliedAlpha: false});
+		this.renderers[index].sortObjects = false;
+		this.renderers[index].setSize(width, height);
+		this.renderers[index].autoClear = false;
+		domElement.appendChild(this.renderers[index].domElement);
+		this.renderers[index].domElement.tabIndex = '2222';
+		this.renderers[index].domElement.style.position = 'absolute';
+		this.renderers[index].domElement.addEventListener('mousedown', () => {
+			this.renderers[index].domElement.focus();
 		});
 
 		// enable frag_depth extension for the interpolation shader, if available
-		let gl = this.renderer.context;
+		let gl = this.renderers[index].context;
 		gl.getExtension('EXT_frag_depth');
 		gl.getExtension('WEBGL_depth_texture');
 		
@@ -1005,7 +999,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		gl.createVertexArray = extVAO.createVertexArrayOES.bind(extVAO);
 		gl.bindVertexArray = extVAO.bindVertexArrayOES.bind(extVAO);
 
-		this.renderers[index] = this.renderer;
+		// this.renderers[index] = this.renderer;
 	}
 
 	initThree () {
@@ -1268,63 +1262,110 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		}
 
 		if (!this.freeze) {
-			let result = Potree.updatePointClouds(scene.pointclouds, camera, this.renderer);
+			scene.cameras.forEach((_, i) => {
+				const cam = scene.getActiveCamera(i);
+				let result = Potree.updatePointClouds(scene.pointclouds, cam, this.renderers[i]);
 
-			if(result.lowestSpacing !== Infinity){
-				let near = result.lowestSpacing * 10.0;
-				let far = -this.getBoundingBox().applyMatrix4(camera.matrixWorldInverse).min.z;
+				if(result.lowestSpacing !== Infinity){
+					let near = result.lowestSpacing * 10.0;
+					let far = -this.getBoundingBox().applyMatrix4(cam.matrixWorldInverse).min.z;
 
-				far = Math.max(far * 1.5, 1000);
-				near = Math.min(100.0, Math.max(0.01, near));
-				far = Math.max(far, near + 1000);
+					far = Math.max(far * 1.5, 1000);
+					near = Math.min(100.0, Math.max(0.01, near));
+					far = Math.max(far, near + 1000);
 
-				if(near === Infinity){
-					near = 0.1;
+					if(near === Infinity){
+						near = 0.1;
+					}
+					
+					cam.near = near;
+					cam.far = far;
+				}else{
+					// don't change near and far in this case
 				}
-				
-				camera.near = near;
-				camera.far = far;
-			}else{
-				// don't change near and far in this case
-			}
 
-			if(this.scene.cameraMode == Potree.CameraMode.ORTHOGRAPHIC) {
-				camera.near = -camera.far;
-			}
+				if(this.scene.cameraMode == Potree.CameraMode.ORTHOGRAPHIC) {
+					cam.near = -cam.far;
+				}
+			});
 		} 
 		
 		this.scene.cameraP.fov = this.fov;
+		this.scene.cameras[1].perspective.fov = this.fov;
 
-		// Navigation mode changed?
-		if (this.getControls(scene.view.navigationMode) !== this.controls) {
-			if (this.controls) {
-				this.controls.enabled = false;
-				this.inputHandler.removeInputListener(this.controls);
+		this.scene.cameras.forEach(({ orthographic, perspective }, index) => {
+			perspective.position.copy(scene.views[index].position);
+			perspective.rotation.order = "ZXY";
+			perspective.rotation.x = Math.PI / 2 + this.scene.views[index].pitch;
+			perspective.rotation.z = this.scene.views[index].yaw;
+
+			orthographic.position.copy(scene.views[index].position);
+			orthographic.rotation.order = "ZXY";
+			orthographic.rotation.x = Math.PI / 2 + this.scene.views[index].pitch;
+			orthographic.rotation.z = this.scene.views[index].yaw;
+		});
+
+		if (!this.activeControls) this.activeControls = [];
+
+		const ctrls = this.getControls(scene.view.navigationMode);
+		ctrls.forEach((controls, index) => {
+			// Navigation mode changed?
+			if (ctrls[index] !== controls) {
+				if (controls) {
+					controls.enabled = false;
+					this.inputHandlers[index].removeInputListener(this.getControls(scene.view.navigationMode));
+				}
+	
+				controls = this.getControls(scene.view.navigationMode, index);
+				this.sceneControls = this.getControls();
+				controls.enabled = true;
+				this.inputHandlers[index].addInputListener(this.getControls(scene.view.navigationMode));
+
+				this.controlInstances[index] = controls;
+			}
+			
+			if (controls !== null) {
+				controls.setScene(scene);
+				controls.update(delta);
 			}
 
-			this.controls = this.getControls(scene.view.navigationMode);
-			this.controls.enabled = true;
-			this.inputHandler.addInputListener(this.controls);
-		}
-		
-		if (this.controls !== null) {
-			this.controls.setScene(scene);
-			this.controls.update(delta);
+			// Navigation mode changed?
+			if (controls !== this.activeControls[index]) {
+				if (this.activeControls[index]) {
+					this.activeControls[index].enabled = false;
+					this.inputHandlers[index].removeInputListener(this.activeControls[index]);
+				}
 
-			this.scene.cameraP.position.copy(scene.view.position);
-			this.scene.cameraP.rotation.order = "ZXY";
-			this.scene.cameraP.rotation.x = Math.PI / 2 + this.scene.view.pitch;
-			this.scene.cameraP.rotation.z = this.scene.view.yaw;
+				this.activeControls[index] = controls;
+				controls.enabled = true;
+				this.inputHandlers[index].addInputListener(controls);
+			}
+			
+			if (this.activeControls[index] !== null) {
+				controls.setScene(scene);
+				controls.update(delta);
 
-			this.scene.cameraO.position.copy(scene.view.position);
-			this.scene.cameraO.rotation.order = "ZXY";
-			this.scene.cameraO.rotation.x = Math.PI / 2 + this.scene.view.pitch;
-			this.scene.cameraO.rotation.z = this.scene.view.yaw;
-		}
+				const { orthographic, perspective } = this.scene.cameras[index];
+
+				perspective.position.copy(scene.views[index].position);
+				perspective.rotation.order = "ZXY";
+				perspective.rotation.x = Math.PI / 2 + this.scene.views[index].pitch;
+				perspective.rotation.z = this.scene.views[index].yaw;
+	
+				orthographic.position.copy(scene.views[index].position);
+				orthographic.rotation.order = "ZXY";
+				orthographic.rotation.x = Math.PI / 2 + this.scene.views[index].pitch;
+				orthographic.rotation.z = this.scene.views[index].yaw;
+			}
+		});
+
+		this.scene.cameras.forEach((_, i) => {
+			const cam = scene.getActiveCamera(i);
+			cam.updateMatrix();
+			cam.updateMatrixWorld();
+			cam.matrixWorldInverse.getInverse(cam.matrixWorld);
+		});
 		
-		camera.updateMatrix();
-		camera.updateMatrixWorld();
-		camera.matrixWorldInverse.getInverse(camera.matrixWorld);
 
 		{
 			if(this._previousCamera === undefined){
@@ -1411,28 +1452,29 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		if(Potree.measureTimings) performance.mark("render-start");
 
 		{ // resize
-			let width = this.scaleFactor * this.renderArea.clientWidth;
-			let height = this.scaleFactor * this.renderArea.clientHeight;
-			let pixelRatio = this.renderer.getPixelRatio();
-			let aspect = width / height;
+			this.scene.cameras.forEach((cam, i) => {
+				const width = this.renderers[i].domElement.clientWidth;
+				const height = this.renderers[i].domElement.clientHeight;
+				let pixelRatio = this.renderer.getPixelRatio();
+				let aspect = width / height;
 
-			this.scene.cameraP.aspect = aspect;
-			this.scene.cameraP.updateProjectionMatrix();
+				cam.perspective.aspect = aspect;
+				cam.perspective.updateProjectionMatrix();
 
-			//let frustumScale = viewer.moveSpeed * 2.0;
-			let frustumScale = this.scene.view.radius;
-			this.scene.cameraO.left = -frustumScale;
-			this.scene.cameraO.right = frustumScale;		
-			this.scene.cameraO.top = frustumScale * 1 / aspect;
-			this.scene.cameraO.bottom = -frustumScale * 1 / aspect;		
-			this.scene.cameraO.updateProjectionMatrix();
+				//let frustumScale = viewer.moveSpeed * 2.0;
+				let frustumScale = this.scene.view.radius;
+				cam.orthographic.left = -frustumScale;
+				cam.orthographic.right = frustumScale;		
+				cam.orthographic.top = frustumScale * 1 / aspect;
+				cam.orthographic.bottom = -frustumScale * 1 / aspect;		
+				cam.orthographic.updateProjectionMatrix();
 
-			this.scene.cameraScreenSpace.top = 1/aspect;
-			this.scene.cameraScreenSpace.bottom = -1/aspect;
-			this.scene.cameraScreenSpace.updateProjectionMatrix();
-			
-			this.renderer.setSize(width, height);
-			this.renderers[1].setSize(width, height);
+				this.scene.cameraScreenSpace.top = 1/aspect;
+				this.scene.cameraScreenSpace.bottom = -1/aspect;
+				this.scene.cameraScreenSpace.updateProjectionMatrix();
+				
+				this.renderers[i].setSize(width, height);
+			});
 		}
 
 		try{

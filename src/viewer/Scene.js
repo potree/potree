@@ -13,8 +13,8 @@ Potree.Scene = class extends THREE.EventDispatcher{
 		this.cameraP = new THREE.PerspectiveCamera(this.fov, 1, 0.1, 1000 * 1000);
 		this.cameraO = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 1000 * 1000);
 		this.cameras = [{
-			perspective: this.cameraO,
-			orthographic: this.cameraP,
+			perspective: this.cameraP,
+			orthographic: this.cameraO,
 		}];
 		this.cameraBG = new THREE.Camera();
 		this.cameraScreenSpace = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 10);
@@ -32,7 +32,9 @@ Potree.Scene = class extends THREE.EventDispatcher{
 		this.earthControls = null;
 		this.geoControls = null;
 		this.inputHandler = null;
+		this.inputHandlers = [];
 
+		// TODO: Can be removed in the future
 		this.view = new Potree.View();
 
 		this.directionalLight = null;
@@ -41,8 +43,13 @@ Potree.Scene = class extends THREE.EventDispatcher{
 			this.cameras.push({
 				perspective: new THREE.PerspectiveCamera(this.fov, 1, 0.1, 1000 * 1000),
 				orthographic: new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 1000 * 1000),
-			})
+			});
 		}
+
+		this.views = [];
+		renderers.forEach((renderer) => {
+			this.views.push(new Potree.View());
+		});
 
 		this.initialize();
 	}
@@ -244,7 +251,6 @@ Potree.Scene = class extends THREE.EventDispatcher{
 	}
 	
 	initialize(){
-		
 		this.referenceFrame = new THREE.Object3D();
 		this.referenceFrame.matrixAutoUpdate = false;
 		this.scenePointCloud.add(this.referenceFrame);

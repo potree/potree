@@ -34,7 +34,7 @@ if (document.currentScript.src) {
 } else {
 	console.error('Potree was unable to find its script path using document.currentScript. Is Potree included with a script tag? Does your browser support this function?');
 }
-Potree.scriptPath = '/pointcloud-viewer/libs/potree/';
+// Potree.scriptPath = '/pointcloud-viewer/libs/potree/';
 
 Potree.resourcePath = Potree.scriptPath + '/resources';
 
@@ -803,4 +803,4 @@ Potree.getSignatureKeyForPath = (path) => {
 	return `?Expires=${Potree.signedUrls.expires}&KeyName=${Potree.signedUrls.keyname}&Signature=${key}`;
 };
 
-export default Potree;
+// export default Potree;

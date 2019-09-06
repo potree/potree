@@ -48,8 +48,8 @@ Active EC2 instances (as of 2019-05-16):
 
 | Name                        | IPv4 Public IP | Keypair            | Potree Location                                  | Description |
 | --------------------------- | -------------- | ------------------ | ------------------------------------------------ | ----------- |
-| PotreeServer                | 34.207.247.239 | `NextDroidDev.pem` | `/usr/share/nginx/html/potree`                   | "Production" server - however this is running a very old version of potree currently (2019-05-16) |
-| Veritas Dev (Potree Server) | 18.208.171.218 | `NextDroidDev.pem` | `~/git/GroundTruthVisualization/external/potree` | "Development" server - this is the primary server that we have ended up using and is currently client facing (2019-05-16) |
+| (prod) PotreeServer                | 34.207.247.239 | `NextDroidDev.pem` | `/usr/share/nginx/html/potree`                   | "Production" server - intended to run on prod and demo sites but not running anywhere right now |
+| (dev) PotreeServer) | 18.208.171.218 | `NextDroidDev.pem` | `~/git/GroundTruthVisualization/external/potree` | "Development" server - runs on dev and test (really runs everywhere right now) (2019-08-12) |
 
 Steps for deploying (primarily for Veritas Dev server): 
 1. ssh into the desired EC2 instance with the appropriate keypair

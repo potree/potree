@@ -1,4 +1,4 @@
-// export const 
+export const 
 initSidebar = (viewer) => {
 	let createToolIcon = function (icon, title, callback) {
 		let element = $(`

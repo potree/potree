@@ -33,7 +33,7 @@ if (document.currentScript.src) {
 } else {
 	console.error('Potree was unable to find its script path using document.currentScript. Is Potree included with a script tag? Does your browser support this function?');
 }
-// Potree.scriptPath = '/pointcloud-viewer/libs/potree/';
+Potree.scriptPath = '/pointcloud-viewer/libs/potree/';
 
 Potree.resourcePath = Potree.scriptPath + '/resources';
 
@@ -552,8 +552,6 @@ Potree.updateVisibility = function(pointclouds, cameras, renderers){
 		// }
 
 		let box = node.getBoundingBox();
-		// TODO:
-		let camObjPos = camObjPositions[element.pointcloud];
 
 		let insideFrustum = frustums.some(x => x.intersectsBox(box));
 		let maxLevel = pointcloud.maxLevel || Infinity;
@@ -700,17 +698,24 @@ Potree.updateVisibility = function(pointclouds, cameras, renderers){
 
 			let weight = 0; 
 			if(camera.isPerspectiveCamera){
+				// TODO: Fix point management
 				let sphere = child.getBoundingSphere();
 				let center = sphere.center;
-				//let distance = sphere.center.distanceTo(camObjPos);
+				// let distance = sphere.center.distanceTo(camObjPos);
 				
-				let dx = camObjPos.x - center.x;
-				let dy = camObjPos.y - center.y;
-				let dz = camObjPos.z - center.z;
+				const distances = camObjPositions.map((pos, i) => {
+					let dist = Infinity;
+					let dx = pos.x - center.x;
+					let dy = pos.y - center.y;
+					let dz = pos.z - center.z;
+					
+					let dd = dx * dx + dy * dy + dz * dz;
+					dist = Math.sqrt(dd);
+
+					return dist;
+				});
 				
-				let dd = dx * dx + dy * dy + dz * dz;
-				let distance = Math.sqrt(dd);
-				
+				const distance = Math.min(...distances);
 				
 				let radius = sphere.radius;
 				
@@ -731,7 +736,7 @@ Potree.updateVisibility = function(pointclouds, cameras, renderers){
 			} else {
 				// TODO ortho visibility
 				let bb = child.getBoundingBox();
-				const distances = camObjPositions.map(pos => child.getBoundingSphere().center.distanceTo(pos))
+				const distances = camObjPositions.map(pos => child.getBoundingSphere().center.distanceTo(pos));
 				let diagonal = bb.max.clone().sub(bb.min).length();
 				weight = diagonal / Math.max(distances);
 			}
@@ -755,6 +760,7 @@ Potree.updateVisibility = function(pointclouds, cameras, renderers){
 		unloadedGeometry[i].load();
 	}
 
+	// log('visibility', visibleNodes.length, numVisiblePoints);
 	return {
 		visibleNodes: visibleNodes,
 		numVisiblePoints: numVisiblePoints,
@@ -806,4 +812,4 @@ Potree.getSignatureKeyForPath = (path) => {
 	return `?Expires=${Potree.signedUrls.expires}&KeyName=${Potree.signedUrls.keyname}&Signature=${key}`;
 };
 
-// export default Potree;
+export default Potree;

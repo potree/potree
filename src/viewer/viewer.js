@@ -1261,38 +1261,38 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 
 		if (!this.freeze) {
 			// TODO: Support for just 1 or more 2 cameras
-			const cam = scene.getActiveCamera(0);
-			const cam1 = scene.getActiveCamera(1);
-			let result = Potree.updatePointClouds(scene.pointclouds, [cam, cam1], this.renderers);
+			const activeCameras = scene.cameras.map((camera, index) => scene.getActiveCamera(index));
+			let result = Potree.updatePointClouds(scene.pointclouds, activeCameras, this.renderers);
 
 			if(result.lowestSpacing !== Infinity){
 				let near = result.lowestSpacing * 10.0;
-				let far = -this.getBoundingBox().applyMatrix4(cam.matrixWorldInverse).min.z;
 
-				far = Math.max(far * 1.5, 1000);
-				near = Math.min(100.0, Math.max(0.01, near));
-				far = Math.max(far, near + 1000);
+				activeCameras.forEach((camera) => {
+					let far = -this.getBoundingBox().applyMatrix4(camera.matrixWorldInverse).min.z;
 
-				if(near === Infinity){
-					near = 0.1;
-				}
+					far = Math.max(far * 1.5, 1000);
+					near = Math.min(100.0, Math.max(0.01, near));
+					far = Math.max(far, near + 1000);
 
-				cam.near = near;
-				cam.far = far;
-				cam1.near = near;
-				cam1.far = far;
+					if(near === Infinity){
+						near = 0.1;
+					}
+
+					camera.near = near;
+					camera.far = far;
+				});
 			}
 
 			if(this.scene.cameraMode === Potree.CameraMode.ORTHOGRAPHIC) {
-				cam.near = -cam.far;
-				cam1.near = -cam1.far;
+				activeCameras.forEach((camera) => {
+					camera.near = -camera.far;
+				});
 			}
 		} 
-		
-		this.scene.cameraP.fov = this.fov;
-		this.scene.cameras[1].perspective.fov = this.fov;
 
 		this.scene.cameras.forEach(({ orthographic, perspective }, index) => {
+			perspective.fov = this.fov;
+
 			perspective.position.copy(scene.views[index].position);
 			perspective.rotation.order = "ZXY";
 			perspective.rotation.x = Math.PI / 2 + this.scene.views[index].pitch;

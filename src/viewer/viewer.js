@@ -317,6 +317,8 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		let controlsType = null;
 		if (navigationMode === Potree.OrbitControls) {
 			controlsType = 'orbitControls';
+		} else if (navigationMode === Potree.ExtractorControls) {
+			controlsType = 'extractorControls';
 		} else if (navigationMode === Potree.FirstPersonControls) {
 			controlsType = 'fpControls';
 		} else if (navigationMode === Potree.RotationControls) {
@@ -841,6 +843,12 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			controls.fpControls.enabled = false;
 			controls.fpControls.addEventListener('start', this.disableAnnotations.bind(this));
 			controls.fpControls.addEventListener('end', this.enableAnnotations.bind(this));
+
+			// create EXTRACTOR CONTROLS
+			controls.extractorControls = new Potree.ExtractorControls(this, index);
+			controls.extractorControls.enabled = false;
+			controls.extractorControls.addEventListener('start', this.disableAnnotations.bind(this));
+			controls.extractorControls.addEventListener('end', this.enableAnnotations.bind(this));
 
 			// create ORBIT CONTROLS
 			controls.orbitControls = new Potree.OrbitControls(this, index);
@@ -1452,8 +1460,8 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 
 		{ // resize
 			this.scene.cameras.forEach((cam, i) => {
-				const width = this.renderers[i].domElement.clientWidth;
-				const height = this.renderers[i].domElement.clientHeight;
+				const width = this.renderers[i].domElement.parentNode.clientWidth;
+				const height = this.renderers[i].domElement.parentNode.clientHeight;
 				let pixelRatio = this.renderer.getPixelRatio();
 				let aspect = width / height;
 
@@ -1468,8 +1476,8 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 				cam.orthographic.bottom = -frustumScale * 1 / aspect;		
 				cam.orthographic.updateProjectionMatrix();
 
-				this.scene.cameraScreenSpace.top = 1/aspect;
-				this.scene.cameraScreenSpace.bottom = -1/aspect;
+				this.scene.cameraScreenSpace.top = 1 / aspect;
+				this.scene.cameraScreenSpace.bottom = -1 / aspect;
 				this.scene.cameraScreenSpace.updateProjectionMatrix();
 				
 				this.renderers[i].setSize(width, height);

@@ -76,7 +76,7 @@ Potree.RotationControls = class RotationControls extends THREE.EventDispatcher{
 		};
 
 		let scroll = (e) => {
-			let resolvedRadius = this.scene.view.radius + this.radiusDelta;
+			let resolvedRadius = this.scene.views[0].radius + this.radiusDelta;
 
 			this.radiusDelta += -e.delta * resolvedRadius * 0.1;
 			this.yawDelta = 0;
@@ -110,7 +110,7 @@ Potree.RotationControls = class RotationControls extends THREE.EventDispatcher{
 				let currDist = Math.sqrt(currDX * currDX + currDY * currDY);
 
 				let delta = currDist / prevDist;
-				let resolvedRadius = this.scene.view.radius + this.radiusDelta;
+				let resolvedRadius = this.scene.views[0].radius + this.radiusDelta;
 				let newRadius = resolvedRadius / delta;
 				this.radiusDelta = newRadius - resolvedRadius;
 
@@ -156,7 +156,7 @@ Potree.RotationControls = class RotationControls extends THREE.EventDispatcher{
 	}
 
 	updateYaw (yaw) {
-		const { view } = this.scene;
+		const view = this.scene.views[0];
 		const yawMove = view.yaw - yaw;
 		this.pivot = this.scene.pointclouds[0].boundingBox.getCenter();
 
@@ -181,7 +181,7 @@ Potree.RotationControls = class RotationControls extends THREE.EventDispatcher{
 	}
 
 	update (delta) {
-		let view = this.scene.view;
+		let view = this.scene.views[0];
 
 		if (!this.enabled) {
 			return false;

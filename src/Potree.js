@@ -453,9 +453,6 @@ Potree.updateVisibilityStructures = function(pointclouds, cameras, renderers) {
 		}
 
 		// hide all previously visible nodes
-		// if(pointcloud.root instanceof Potree.PointCloudOctreeNode){
-		//	pointcloud.hideDescendants(pointcloud.root.sceneNode);
-		// }
 		if (pointcloud.root.isTreeNode()) {
 			pointcloud.hideDescendants(pointcloud.root.sceneNode);
 		}
@@ -704,19 +701,18 @@ Potree.updateVisibility = function(pointclouds, cameras, renderers){
 				// let distance = sphere.center.distanceTo(camObjPos);
 				
 				const distances = camObjPositions.map((pos, i) => {
-					let dist = Infinity;
 					let dx = pos.x - center.x;
 					let dy = pos.y - center.y;
 					let dz = pos.z - center.z;
 					
 					let dd = dx * dx + dy * dy + dz * dz;
-					dist = Math.sqrt(dd);
+					const dist = Math.sqrt(dd);
 
 					return dist;
 				});
 				
 				const distance = Math.min(...distances);
-				
+
 				let radius = sphere.radius;
 				
 				let fov = (camera.fov * Math.PI) / 180;
@@ -738,7 +734,8 @@ Potree.updateVisibility = function(pointclouds, cameras, renderers){
 				let bb = child.getBoundingBox();
 				const distances = camObjPositions.map(pos => child.getBoundingSphere().center.distanceTo(pos));
 				let diagonal = bb.max.clone().sub(bb.min).length();
-				weight = diagonal / Math.max(distances);
+				const distance = Math.min(...distances);
+				weight = diagonal / distance;
 			}
 
 			priorityQueue.push({pointcloud: element.pointcloud, node: child, parent: node, weight: weight});

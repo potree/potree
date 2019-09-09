@@ -26,6 +26,7 @@ Potree.Scene = class extends THREE.EventDispatcher{
 		this.volumes = [];
 		this.polygonClipVolumes = [];
 	
+		this.extractorControls = null;
 		this.rotationControls = null;
 		this.fpControls = null;
 		this.orbitControls = null;

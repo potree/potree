@@ -571,6 +571,7 @@
 
 
 			// RTK TweenTarget Callback:
+			window.updateCamera = true;
 			window.pitchThreshold = 1.00;
 			window.elevationWindow = {min: 1, max: 1, z: 0};
 			animationEngine.tweenTargets.push((gpsTime) => {
@@ -590,19 +591,21 @@
 					vehicle.updateMatrixWorld();
 
 					// Apply Transformation to Camera and Target:
-					let newTransform = vehicle.matrixWorld.clone();
-					let lastTransformInverse = lastTransform.getInverse(lastTransform);
-					let deltaTransform = lastTransformInverse.premultiply(newTransform);
-					let target = viewer.scene.view.position.clone();
-					let direction = viewer.scene.view.direction.clone();
-					let radius = viewer.scene.view.radius;
-					target.add(direction.multiplyScalar(radius));
-					viewer.scene.view.position.applyMatrix4(deltaTransform);
-					if (Math.abs(viewer.scene.view.pitch) < window.pitchThreshold) {
-						viewer.scene.view.lookAt(target.applyMatrix4(deltaTransform));
+					if (window.updateCamera) {
+						let newTransform = vehicle.matrixWorld.clone();
+						let lastTransformInverse = lastTransform.getInverse(lastTransform);
+						let deltaTransform = lastTransformInverse.premultiply(newTransform);
+						let target = viewer.scene.view.position.clone();
+						let direction = viewer.scene.view.direction.clone();
+						let radius = viewer.scene.view.radius;
+						target.add(direction.multiplyScalar(radius));
+						viewer.scene.view.position.applyMatrix4(deltaTransform);
+						if (Math.abs(viewer.scene.view.pitch) < window.pitchThreshold) {
+							viewer.scene.view.lookAt(target.applyMatrix4(deltaTransform));
+						}
+						console.log("View Yaw: ", viewer.scene.view.yaw);
+						console.log("View Pitch: ", viewer.scene.view.pitch);
 					}
-					console.log("View Yaw: ", viewer.scene.view.yaw);
-					console.log("View Pitch: ", viewer.scene.view.pitch);
 
 					// Set Elevation:
 					// let elevationDeltaMin = -0;

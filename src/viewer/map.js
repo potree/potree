@@ -112,7 +112,7 @@ export class MapView{
 		let _this = this;
 		let DownloadSelectionControl = function (optOptions) {
 			let options = optOptions || {};
-
+	
 			// TOGGLE TILES
 			let btToggleTiles = document.createElement('button');
 			btToggleTiles.innerHTML = 'T';
@@ -121,7 +121,7 @@ export class MapView{
 				_this.showSources(!visible);
 			}, false);
 			btToggleTiles.style.float = 'left';
-			btToggleTiles.title = 'show / hide tiles';
+			btToggleTiles.setAttribute("data-i18n", "[title]map.tiles_visibility");
 
 			// DOWNLOAD SELECTED TILES
 			let link = document.createElement('a');
@@ -139,7 +139,9 @@ export class MapView{
 				let url = [document.location.protocol, '//', document.location.host, document.location.pathname].join('');
 
 				if (features.length === 0) {
-					alert('No tiles were selected. Select area with ctrl + left mouse button!');
+					viewer.postMessage(`<span data-i18n=\"map.no_tiles">`+i18n.t("map.no_tiles")+`</span>`, {duration: 2000});
+						
+					//alert('<span data-i18n="map.no_tiles"></span>');
 					e.preventDefault();
 					e.stopImmediatePropagation();
 					return false;
@@ -179,7 +181,7 @@ export class MapView{
 			element.appendChild(btToggleTiles);
 			element.style.bottom = '0.5em';
 			element.style.left = '0.5em';
-			element.title = 'Download file or list of selected tiles. Select tile with left mouse button or area using ctrl + left mouse.';
+			element.setAttribute("data-i18n", "[title]map.download");
 
 			ol.control.Control.call(this, {
 				element: element,

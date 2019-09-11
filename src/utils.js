@@ -225,7 +225,6 @@ export class Utils {
 			});
 			tween.start();
 		}
-
 	}
 
 	static loadSkybox (path) {
@@ -726,80 +725,76 @@ export class Utils {
 	}
 
 	static toMaterialID(materialName){
-		if (materialName === 'RGB'){
+		if (materialName === 'rgb_attribute'){
 			return PointColorType.RGB;
-		} else if (materialName === 'Color') {
+		} else if (materialName === 'color_attribute') {
 			return PointColorType.COLOR;
-		} else if (materialName === 'Elevation') {
+		} else if (materialName === 'elevation_attribute') {
 			return PointColorType.HEIGHT;
-		} else if (materialName === 'Intensity') {
+		} else if (materialName === 'intensity_attribute') {
 			return PointColorType.INTENSITY;
-		} else if (materialName === 'Intensity Gradient') {
+		} else if (materialName === 'intensitygrad_attribute') {
 			return PointColorType.INTENSITY_GRADIENT;
-		} else if (materialName === 'Classification') {
+		} else if (materialName === 'classification_attribute') {
 			return PointColorType.CLASSIFICATION;
-		} else if (materialName === 'Return Number') {
+		} else if (materialName === 'returnnumber_attribute') {
 			return PointColorType.RETURN_NUMBER;
-		} else if (materialName === 'Source') {
+		} else if (materialName === 'source_attribute') {
 			return PointColorType.SOURCE;
-		} else if (materialName === 'Level of Detail') {
+		} else if (materialName === 'levelofdetail_attribute') {
 			return PointColorType.LOD;
-		} else if (materialName === 'Point Index') {
-			return PointColorType.POINT_INDEX;
-		} else if (materialName === 'Normal') {
+		} else if (materialName === 'normal_attribute') {
 			return PointColorType.NORMAL;
 		} else if (materialName === 'Phong') {
 			return PointColorType.PHONG;
-		} else if (materialName === 'Index') {
+		} else if (materialName === 'index_attribute') {
 			return PointColorType.POINT_INDEX;
-		} else if (materialName === 'RGB and Elevation') {
+		} else if (materialName === 'rgbandelev_attribute') {
 			return PointColorType.RGB_HEIGHT;
-		} else if (materialName === 'Composite') {
+		} else if (materialName === 'composite_attribute') {
 			return PointColorType.COMPOSITE;
-		} else if (materialName === 'GPS Time') {
+		} else if (materialName === 'gpstime_attribute') {
 			return PointColorType.GPS_TIME;
-		} else if (materialName === 'Matcap') {
+		} else if (materialName === 'matcap_attribute') {
 			return PointColorType.MATCAP;
 		}
 	};
 
-
 	static toMaterialName(materialID) {
 		if (materialID === PointColorType.RGB) {
-			return 'RGB';
+			return 'rgb_attribute';
 		} else if (materialID === PointColorType.COLOR) {
-			return 'Color';
+			return 'color_attribute';
 		} else if (materialID === PointColorType.HEIGHT) {
-			return 'Elevation';
+			return 'elevation_attribute';
 		} else if (materialID === PointColorType.INTENSITY) {
-			return 'Intensity';
+			return 'intensity_attribute';
 		} else if (materialID === PointColorType.INTENSITY_GRADIENT) {
-			return 'Intensity Gradient';
+			return 'intensitygrad_attribute';
 		} else if (materialID === PointColorType.CLASSIFICATION) {
-			return 'Classification';
+			return 'classification_attribute';
 		} else if (materialID === PointColorType.RETURN_NUMBER) {
-			return 'Return Number';
+			return 'returnnumber_attribute';
 		} else if (materialID === PointColorType.SOURCE) {
-			return 'Source';
+			return 'source_attribute';
 		} else if (materialID === PointColorType.LOD) {
-			return 'Level of Detail';
+			return 'levelofDetail_attribute';
 		} else if (materialID === PointColorType.NORMAL) {
-			return 'Normal';
+			return 'normal_attribute';
 		} else if (materialID === PointColorType.PHONG) {
 			return 'Phong';
 		} else if (materialID === PointColorType.POINT_INDEX) {
-			return 'Index';
+			return 'index_attribute';
 		} else if (materialID === PointColorType.RGB_HEIGHT) {
-			return 'RGB and Elevation';
+			return 'rgbandelev_attribute';
 		} else if (materialID === PointColorType.COMPOSITE) {
-			return 'Composite';
+			return 'composite_attribute';
 		} else if (materialID === PointColorType.GPS_TIME) {
-			return 'GPS Time';
+			return 'gpstime_attribute';
 		} else if (materialID === PointColorType.MATCAP) {
-			return 'Matcap';
+			return 'matcap_attribute';
 		}
 	};
-
 }
 
 Utils.screenPass = new function () {

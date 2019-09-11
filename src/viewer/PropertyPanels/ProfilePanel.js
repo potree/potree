@@ -12,7 +12,7 @@ export class ProfilePanel extends MeasurePanel{
 				<span class="coordinates_table_container"></span>
 				<br>
 				<span style="display:flex">
-					<span style="display:flex; align-items: center; padding-right: 10px">Width: </span>
+					<span style="display:flex; align-items: center; padding-right: 10px"><span data-i18n="scene.measure_width">`+i18n.t("scene.measure_width")+`</span>: </span>
 					<input id="sldProfileWidth" name="sldProfileWidth" value="5.06" style="flex-grow: 1; width:100%">
 				</span>
 				<br>
@@ -24,7 +24,7 @@ export class ProfilePanel extends MeasurePanel{
 
 				<br>
 
-				<input type="button" id="show_2d_profile" value="show 2d profile" style="width: 100%"/>
+				<center><button id="show_2d_profile" data-i18n="scene.measure_profil_2D">` + i18n.t("scene.measure_profil_2D") +`</button></center
 
 				<!-- ACTIONS -->
 				<div style="display: flex; margin-top: 12px">

@@ -54,7 +54,7 @@ export class ProfileTool extends EventDispatcher {
 		let domElement = this.viewer.renderer.domElement;
 
 		let profile = new Profile();
-		profile.name = args.name || 'Profile';
+		profile.name = args.name || `<span data-i18n="scene.object_profile">`+i18n.t("scene.object_profile")+`</span>`;
 
 		this.dispatchEvent({
 			type: 'start_inserting_profile',

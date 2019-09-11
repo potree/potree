@@ -13,8 +13,7 @@ export class CameraPanel{
 		<div class="propertypanel_content">
 			<table>
 				<tr>
-					<th colspan="3">position</th>
-					<th></th>
+					<th colspan="4" data-i18n="scene.camera_position">`+i18n.t("scene.camera_position")+`</th>
 				</tr>
 				<tr>
 					<td align="center" id="camera_position_x" style="width: 25%"></td>
@@ -25,8 +24,7 @@ export class CameraPanel{
 					</td>
 				</tr>
 				<tr>
-					<th colspan="3">target</th>
-					<th></th>
+					<th colspan="4" data-i18n="scene.camera_target">`+i18n.t("scene.camera_target")+`</th>
 				</tr>
 				<tr>
 					<td align="center" id="camera_target_x" style="width: 25%"></td>
@@ -47,7 +45,7 @@ export class CameraPanel{
 			Utils.clipboardCopy(msg);
 
 			this.viewer.postMessage(
-					`Copied value to clipboard: <br>'${msg}'`,
+					`<span data-i18n=\"scene.camera_copy">`+i18n.t("scene.camera_copy")+`</span>: <br>'${msg}'`,
 					{duration: 3000});
 		});
 
@@ -58,7 +56,7 @@ export class CameraPanel{
 			Utils.clipboardCopy(msg);
 
 			this.viewer.postMessage(
-					`Copied value to clipboard: <br>'${msg}'`,
+					`<span data-i18n=\"scene.camera_copy">`+i18n.t("scene.camera_copy")+`</span>: <br>'${msg}'`,
 					{duration: 3000});
 		});
 
@@ -68,8 +66,6 @@ export class CameraPanel{
 	}
 
 	update(){
-		console.log("updating camera panel");
-
 		let camera = this.viewer.scene.getActiveCamera();
 		let view = this.viewer.scene.view;
 

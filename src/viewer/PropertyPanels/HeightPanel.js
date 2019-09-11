@@ -11,7 +11,10 @@ export class HeightPanel extends MeasurePanel{
 			<div class="measurement_content selectable">
 				<span class="coordinates_table_container"></span>
 				<br>
-				<span id="height_label">Height: </span><br>
+				<span style="font-weight: bold"><span data-i18n="scene.measure_height">`+i18n.t("scene.measure_height")+`</span>: </span>
+				<span id="measurement_height"></span>
+				
+				<span id="height_label"><span data-i18n="scene.measure_height">`+i18n.t("scene.measure_height")+`</span>: </span><br>
 
 				<!-- ACTIONS -->
 				<div style="display: flex; margin-top: 12px">
@@ -50,8 +53,8 @@ export class HeightPanel extends MeasurePanel{
 			let height = max - min;
 			height = height.toFixed(3);
 
-			this.elHeightLabel = this.elContent.find(`#height_label`);
-			this.elHeightLabel.html(`<b>Height:</b> ${height}`);
+			let elHeight = this.elContent.find(`#height_label`);
+			elHeight.html(height);
 		}
 	}
 };

@@ -87,15 +87,15 @@ export class Viewer extends EventDispatcher{
 		this.edlRadius = 1.4;
 		this.useEDL = false;
 		this.classifications = {
-			0: { visible: true, name: 'never classified' },
+			0: { visible: true, name: 'never_classified' },
 			1: { visible: true, name: 'unclassified' },
 			2: { visible: true, name: 'ground' },
-			3: { visible: true, name: 'low vegetation' },
-			4: { visible: true, name: 'medium vegetation' },
-			5: { visible: true, name: 'high vegetation' },
+			3: { visible: true, name: 'low_vegetation' },
+			4: { visible: true, name: 'medium_vegetation' },
+			5: { visible: true, name: 'high_vegetation' },
 			6: { visible: true, name: 'building' },
-			7: { visible: true, name: 'low point(noise)' },
-			8: { visible: true, name: 'key-point' },
+			7: { visible: true, name: 'noise' },
+			8: { visible: true, name: 'key_point' },
 			9: { visible: true, name: 'water' },
 			12: { visible: true, name: 'overlap' }
 		};
@@ -713,7 +713,7 @@ export class Viewer extends EventDispatcher{
 		node.boundingBox = box;
 
 		this.zoomTo(node, factor, animationDuration);
-		this.controls.stop();
+		//this.controls.stop();
 	};
 
 	toggleNavigationCube() {
@@ -1055,6 +1055,8 @@ export class Viewer extends EventDispatcher{
 	setLanguage (lang) {
 		i18n.setLng(lang);
 		$('body').i18n();
+
+		this.dispatchEvent({'type': 'language_changed', 'viewer': this});		
 	}
 
 	setServer (server) {
@@ -1122,39 +1124,6 @@ export class Viewer extends EventDispatcher{
 		//}else if(gl instanceof WebGL2RenderingContext){
 		//	gl.getExtension("EXT_color_buffer_float");
 		//}
-		
-	}
-
-	async prepareVR(){
-
-		if(!navigator.getVRDisplays){
-			console.info("browser does not support WebVR");
-
-			return false;
-		}
-
-		let frameData = new VRFrameData();
-		let displays = await navigator.getVRDisplays();
-
-		if(displays.length == 0){
-			console.info("no VR display found");
-			return false;
-		}
-
-		let display = displays[displays.length - 1];
-		display.depthNear = 0.1;
-		display.depthFar = 10000.0;
-
-		if(!display.capabilities.canPresent){
-			// Not sure why canPresent would ever be false?
-			console.error("VR display canPresent === false");
-			return false;
-		}
-
-		this.vr = {
-			frameData: frameData,
-			display: display,
-		};
 		
 	}
 

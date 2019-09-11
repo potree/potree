@@ -1,19 +1,42 @@
 {
 	"tb": {
-		"navigation_opt": "Navigation",
-		"rendering_opt": "Appearance",
+		"rendering_opt": "Appearance",		
 		"tools_opt": "Tools",
-		"measurments_opt": "Measurements",
-		"clipping_opt": "Clipping",
 		"annotations_opt": "Annotations",
-		"materials_opt": "Materials",
 		"scene_opt": "Scene",
-		"classification_filter_opt": "Classification filter",
 		"filters_opt": "Filters",
 		"parameters_opt": "Other settings",
 		"about_opt": "About"
 	},
+	"appearance": {
+		"nb_max_pts": "Point budget", 
+		"field_view": "Field of view",
+		"splat_quality": "Splat quality",
+		"splat_quality_standard": "Standard",
+		"splat_quality_hq": "High quality",
+		
+		"eye_dome_lighting": "Eye Dome Lighting (EDL)",
+		"edl_enable": "Enable",
+		"edl_radius": "Radius",
+		"edl_strength": "Strength",
+		
+		"background": "Background",
+		"background_skybox": "Skybox",
+		"background_gradient": "Gradient",
+		"background_black": "Black",
+		"background_white": "White",
+		"background_none": "None",
+		
+		"octree": "Octree",
+		"min_node_size": "Min node size",
+		"octree_box": "Box",
+		"octree_freeze": "Lock view",		
+		
+		"bottom_lock": "Keep above ground",
+		"length_unit": "Length unit"
+	},
 	"tt": {
+		"measurement": "Measurement",					   
 		"angle_measurement": "Angle measurement",
 		"point_measurement": "Point measurement",
 		"distance_measurement": "Distance measurement",
@@ -21,15 +44,26 @@
 		"area_measurement": "Area measurement",
 		"volume_measurement": "Volume measurement",
 		"height_profile": "Height profile",
+		"remove_all_measurement": "Remove all measurements",
+		
+		"clipping": "Clipping",
+		"cliptask": "Clip Task",
+		"cliptask_none": "None",
+		"cliptask_highlight": "Highlight",
+		"cliptask_outside": "Outside",
+		"cliptask_inside": "Inside",
+		"clipmethod": "Clip Mode",
+		"clipmethod_any": "Any",
+		"clipmethod_all": "All",
 		"clip_volume": "Volume clip",
 		"clip_polygon": "Polygon clip",
 		"screen_clip_box": "Draw a selection box. Requires you to be in orthographic camera mode!",
-		"clip_plane_x": "Clip plane on x axis",
-		"clip_plane_y": "Clip plane on y axis",
-		"clip_plane_z": "Clip plane on z axis",
-		"remove_all_measurement": "Remove all measurements",
+		"remove_all_clipping_volumes": "Remove all clipping volumes",
+		"screen_clip_msg": "Requires you to be in orthographic camera mode.",
+
+		"navigation": "Navigation",													   
 		"left_view_control": "Left view",
-		"right_view_control": "Righ view",
+		"right_view_control": "Right view",
 		"front_view_control": "Front view",
 		"back_view_control": "Back view",
 		"top_view_control": "Top view",
@@ -39,59 +73,136 @@
 		"flight_control": "Fly control",
 		"heli_control": "Helicopter control",
 		"earth_control": "Earth control",
-		"perspective_camera_control": "Perspective camera",
-		"orthographic_camera_control": "Orthographic camera",
 		"navigation_cube_control": "Navigation cube",
-		"remove_all_clipping_volumes": "Remove all clipping volumes"
-	},
-	"appearance": {
-		"nb_max_pts": "Point budget", 
-		"point_size": "Point size",
-		"point_opacity": "Opacity",
-		"field_view": "Field of view",
-		"point_size_type": "Point sizing",
-		"point_material": "Materials",
-		"elevation_range": "Elevation range",
-		"point_quality": "Quality",
-		"point_shape": "Shape",
-		"edl_radius": "Radius",
-		"edl_strength": "Strength",
-		"edl_enable": "Enable",
-		"min_node_size": "Min node size",
-		"clip_mode": "Clip mode",
+		
+		"camera_projection_options": "Camera projection",
+		"perspective_camera_control": "Perspective",
+		"orthographic_camera_control": "Orthographic",
+		
+		
 		"move_speed": "Speed",
-		"skybox": "Sky",
-		"bottom_lock": "Keep above ground",
-		"box": "Box",
-		"length_unit": "Length unit",
-		"freeze": "Lock view",
-		"language": "Language",
-		"backface_culling": "Backface Culling"
-	},
-	"measurements": {
-		"clip": "clip",
-		"show": "show volume"
+		
+		"clip_plane_x": "Clip plane on x axis",
+		"clip_plane_y": "Clip plane on y axis",
+		"clip_plane_z": "Clip plane on z axis"		
 	},
 	"annotations": {
-		"show3D": "show in 3D",
-		"showMap": "show on map"
 	}, 
+	"scene": {
+		"objects": "Objects",
+		"properties": "Properties",
+		"pointclouds": "Pointclouds",
+		"measurements": "Measurements",
+		"annotations": "Annotations",
+		"other": "Other",
+		
+		"object_angle": "Angle",
+		"object_point": "Point",
+		"object_distance": "Distance",
+		"object_height": "Height",
+		"object_area": "Area",
+		"object_profile": "Profile",
+		"object_measurement": "Measurement",
+		"object_volume": "Volume",
+		"object_polygon_clip": "Polygon clip volume",
+		"object_box_clip": "Box clip volume",
+		"object_sphere_clip": "Sphere clip volume",
+		"object_camera": "Camera",
+
+		"export": "Export",
+		"export_error": "No measurements to export",
+		
+		"camera_position": "Camera Position",
+		"camera_target": "Camera Target",
+		"camera_copy": "Copied value to clipboard",
+		
+		"point_size": "Point size",
+		"point_size_type": "Point sizing",
+		"point_shape": "Shape",
+		"point_opacity": "Opacity",
+		
+		"point_fixed": "FIXED",				  
+		"point_attenuated": "ATTENUATED",
+		"point_adaptative": "ADAPTIVE",
+		"point_square": "SQUARE",
+		"point_circle": "CIRCLE",
+		"point_paraboloid": "PARABOLOID",
+		
+		"backface_culling": "Backface Culling",
+		
+		"attribute": "Attribute",
+		"attribute_rgb": "RGB",
+		"attribute_rgbandelev": "RGB and elevation",
+		"attribute_elevation": "Elevation",
+		"attribute_levelofdetail": "Level of Detail",
+		"attribute_color": "Color",
+		"attribute_matcap": "Matcap",
+		"attribute_intensity": "Intensity",
+		"attribute_intensitygrad": "Intensity gradient",
+		"attribute_classification": "Classification",
+		"attribute_returnnumber": "Return number",
+		"attribute_source": "Source ID",
+		"attribute_gpstime": "GPS Time",
+		"attribute_index": "Point Index",
+		"attribute_composite": "Composite",
+		"attribute_weights": "Attribute weights",
+		
+		"gamma": "Gamma",
+		"brightness": "Brightness",
+		"contrast": "Contrast",		
+		"elevation_range": "Elevation range",
+		"gradient_scheme": "Gradient scheme",		
+		"intensity_range": "Range",		
+		"color_apply": "Apply",
+		
+		"measure_distance": "Distance(s)",
+		"measure_total": "Total",
+		"measure_area": "Area",
+		"measure_height": "Height",
+		"measure_length": "Length",
+		"measure_width": "Width",
+		"measure_volume": "Volume",
+		"measure_volume_reset_orientation": "Reset volume orientation",
+		"measure_volume_reset_size": "Make uniform",
+		"measure_make_clip_volume": "Make clip volume",
+		"measure_profil_2D": "Show 2D profil"
+	},
 	"profile": {
 		"nb_points": "Number of Points",
 		"title": "Height profile",
+		"save": "Save",
 		"save_las": "Save LAS(3D)",
-		"save_ortho": "Save CSV(2D)"
-	},
-	"scene": {
-		"camera_position": "Camera Position",
-		"camera_target": "Camera Target"
-	},
+		"save_ortho": "Save CSV(2D)",
+		"attribute_color": "RGBA",
+		"attribute_mileage": "mileage"
+	},	
 	"filters": {
 		"return_number": "Return Number",
 		"number_of_returns": "Number of Returns",
 		"gps_min": "min",
 		"gps_max": "max",
-		"gps_time": "GPS Time"
+		"gps_time": "GPS Time",
+		
+		"never_classified": "Never classified",
+		"unclassified": "Unclassified",
+		"ground": "Ground",
+		"low_vegetation": "Low vegetation",
+		"medium_vegetation": "Medium vegetation",
+		"high_vegetation": "High vegetation",
+		"building": "Building",
+		"noise": "Low point (noise)",
+		"key_point": "Key-point",
+		"water": "Water",
+		"overlap": "Overlap",
+		
+		"classification_opt": "Classification",
+		"returns_opt": "Returns",
+		"gpstime_opt": "GPS Time"
+	},
+	"map": {
+		"tiles_visibility": "Show / hide tiles",
+		"no_tiles": "No tiles were selected. Select area with ctrl + left mouse button!",
+		"download": "Download file or list of selected tiles. Select tile with left mouse button or area using ctrl + left mouse."
 	},
 	"settings": {
 		"language": "Language"

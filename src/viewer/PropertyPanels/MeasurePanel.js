@@ -48,7 +48,7 @@ export class MeasurePanel{
 				Utils.clipboardCopy(msg);
 
 				this.viewer.postMessage(
-					`Copied value to clipboard: <br>'${msg}'`,
+					`<span data-i18n=\"scene.camera_copy">`+i18n.t("scene.camera_copy")+`</span>: <br>'${msg}'`,
 					{duration: 3000});
 			});
 

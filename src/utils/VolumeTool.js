@@ -66,7 +66,7 @@ export class VolumeTool extends EventDispatcher{
 		}
 		
 		volume.clip = args.clip || false;
-		volume.name = args.name || 'Volume';
+		volume.name = args.name || `<span data-i18n="scene.object_volume">`+i18n.t("scene.object_volume")+`</span>`;
 
 		this.dispatchEvent({
 			type: 'start_inserting_volume',

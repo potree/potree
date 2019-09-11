@@ -12,17 +12,17 @@ export class VolumePanel extends MeasurePanel{
 		let removeIconPath = Potree.resourcePath + '/icons/remove.svg';
 
 		let lblLengthText = new Map([
-			[BoxVolume, "length"],
+			[BoxVolume, `<span data-i18n="scene.measure_length">`+i18n.t("scene.measure_length")+`</span>`],
 			[SphereVolume, "rx"],
 		]).get(measurement.constructor);
 
 		let lblWidthText = new Map([
-			[BoxVolume, "width"],
+			[BoxVolume, `<span data-i18n="scene.measure_width">`+i18n.t("scene.measure_width")+`</span>`],
 			[SphereVolume, "ry"],
 		]).get(measurement.constructor);
 
 		let lblHeightText = new Map([
-			[BoxVolume, "height"],
+			[BoxVolume, `<span data-i18n="scene.measure_height">`+i18n.t("scene.measure_height")+`</span>`],
 			[SphereVolume, "rz"],
 		]).get(measurement.constructor);
 
@@ -65,7 +65,7 @@ export class VolumePanel extends MeasurePanel{
 				</table>
 
 				<br>
-				<span style="font-weight: bold">Volume: </span>
+				<span style="font-weight: bold"><span data-i18n="scene.measure_volume">`+i18n.t("scene.measure_volume")+`</span>: </span>
 				<span id="measurement_volume"></span>
 
 				<!--
@@ -79,7 +79,7 @@ export class VolumePanel extends MeasurePanel{
 				<li>
 					<label style="whitespace: nowrap">
 						<input id="volume_clip" type="checkbox"/>
-						<span>make clip volume</span>
+						<span data-i18n="scene.measure_make_clip_volume">` + i18n.t("scene.measure_make_clip_volume") +`</span>
 					</label>
 				</li>
 
@@ -90,10 +90,11 @@ export class VolumePanel extends MeasurePanel{
 
 
 				<!-- ACTIONS -->
-				<li style="display: grid; grid-template-columns: auto auto; grid-column-gap: 5px; margin-top: 10px">
-					<input id="volume_reset_orientation" type="button" value="reset orientation"/>
-					<input id="volume_make_uniform" type="button" value="make uniform"/>
-				</li>
+				<center>
+				<button id="volume_reset_orientation" data-i18n="scene.measure_volume_reset_orientation">` + i18n.t("scene.measure_volume_reset_orientation") +`</button>
+				<button id="volume_make_uniform" data-i18n="scene.measure_volume_reset_size">` + i18n.t("scene.measure_volume_reset_size") +`</button>
+				</center>				
+				
 				<div style="display: flex; margin-top: 12px">
 					<span></span>
 					<span style="flex-grow: 1"></span>
@@ -119,7 +120,7 @@ export class VolumePanel extends MeasurePanel{
 			Utils.clipboardCopy(msg);
 
 			this.viewer.postMessage(
-					`Copied value to clipboard: <br>'${msg}'`,
+					`<span data-i18n=\"scene.camera_copy">`+i18n.t("scene.camera_copy")+`</span>: <br>'${msg}'`,
 					{duration: 3000});
 		});
 
@@ -130,7 +131,7 @@ export class VolumePanel extends MeasurePanel{
 			Utils.clipboardCopy(msg);
 
 			this.viewer.postMessage(
-					`Copied value to clipboard: <br>'${msg}'`,
+					`<span data-i18n=\"scene.camera_copy">`+i18n.t("scene.camera_copy")+`</span>: <br>'${msg}'`,
 					{duration: 3000});
 		});
 

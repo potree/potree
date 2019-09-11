@@ -51,7 +51,7 @@ export class DistancePanel extends MeasurePanel{
 		elDistanceTable.empty();
 
 		for (let i = 0; i < distances.length; i++) {
-			let label = (i === 0) ? 'Distances: ' : '';
+			let label = (i === 0) ? '<span data-i18n=\"scene.measure_distance">'+i18n.t("scene.measure_distance")+'</span>: ' : '';
 			let distance = distances[i];
 			let elDistance = $(`
 				<tr>
@@ -63,7 +63,7 @@ export class DistancePanel extends MeasurePanel{
 
 		let elTotal = $(`
 			<tr>
-				<th>Total: </td><td style="width: 100%; padding-left: 10px">${totalDistance}</th>
+				<th><span data-i18n=\"scene.measure_total">`+i18n.t("scene.measure_total")+`</span>: </td><td style="width: 100%; padding-left: 10px">${totalDistance}</th>
 			</tr>`);
 		elDistanceTable.append(elTotal);
 	}

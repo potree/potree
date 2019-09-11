@@ -66,7 +66,7 @@ export class MeasuringTool extends EventDispatcher{
 		measure.showHeight = args.showHeight || false;
 		measure.closed = args.closed || false;
 		measure.maxMarkers = args.maxMarkers || Infinity;
-		measure.name = args.name || 'Measurement';
+		measure.name = args.name || `<span data-i18n="scene.object_measurement">`+i18n.t("scene.object_measurement")+`</span>`;
 
 		this.scene.add(measure);
 

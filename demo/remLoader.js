@@ -68,17 +68,22 @@ function createControlMeshes(controlPoints, remShaderMaterial, FlatbufferModule,
     point = controlPoints[ii];
 
     var vertex = {x: point.pos().x(), y: point.pos().y(), z: point.pos().z()};
-    var radius = 50;//point.radius();;
+    var radius = 0.25;//point.radius();
     var timestamp = point.viz(new FlatbufferModule.Flatbuffer.Primitives.HideAndShowAnimation())
        .timestamp(new FlatbufferModule.Flatbuffer.Primitives.ObjectTimestamp())
        .value() - animationEngine.tstart;
 
-    var sphereGeo = new THREE.SphereBufferGeometry(radius, 30, 30);
-    remShaderMaterial.color = new THREE.Color("blue");
-    var sphereMaterial = new THREE.MeshBasicMaterial({color: new THREE.Color("blue")})
+
+    var timestampArray = [];
+    for (let ii = 0; ii < 63; ii++) {
+      timestampArray.push(timestamp)
+    }
+
+    var sphereGeo = new THREE.SphereBufferGeometry(radius);
+    remShaderMaterial.uniforms.color.value = new THREE.Color("blue");
     var sphereMesh = new THREE.Mesh(sphereGeo, remShaderMaterial);
     sphereMesh.position.set(vertex.x, vertex.y, vertex.z);
-    sphereMesh.geometry.addAttribute('gpsTime', new THREE.Float32BufferAttribute(timestamp, 1));
+    sphereMesh.geometry.addAttribute('gpsTime', new THREE.Float32BufferAttribute(timestampArray, 1));
     allSpheres.push(sphereMesh);
   }
 

@@ -58,6 +58,7 @@ export function updateSidebar(vizConfiguration) {
 	};
   window.viewer.scene.addEventListener("truth_layer_added", onTruthLayerAdded);
 
+
   const sensorTree = tree.jstree('create_node', "#", { "text": "<b>Sensor Readings</b>", "id": "sensorViz"}, "last", false, false);
   tree.jstree("check_node", sensorTree);
   let onSensorLayerAdded = (e) => {

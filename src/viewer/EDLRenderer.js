@@ -173,7 +173,6 @@ class EDLRenderer{
 			Potree.endQuery(queryShadows, viewer.renderer.getContext());
 		}
 
-		// TODO:
 		let width = viewer.renderer.getSize().width;
 		let height = viewer.renderer.getSize().height;
 
@@ -240,7 +239,8 @@ class EDLRenderer{
 					transparent: false,
 				});
 			} else {
-				viewer.pRenderers[index].render(viewer.scene.scenePointCloud, cameraInstance, this.rtEDL[index], {
+				// Render only point clouds for the current view
+				viewer.pRenderers[index].render(viewer.scene.scenePointClouds[index], cameraInstance, this.rtEDL[index], {
 					transparent: false,
 				});
 			}

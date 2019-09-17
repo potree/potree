@@ -8,7 +8,8 @@ Potree.Scene = class extends THREE.EventDispatcher{
 		
 		this.scene = new THREE.Scene();
 		this.sceneBG = new THREE.Scene();
-		this.scenePointCloud = new THREE.Scene();
+		// Create separate scene for each view
+		this.scenePointClouds = renderers.map(x => new THREE.Scene());
 
 		this.cameraP = new THREE.PerspectiveCamera(this.fov, 1, 0.1, 1000 * 1000);
 		this.cameraO = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 1000 * 1000);
@@ -111,7 +112,7 @@ Potree.Scene = class extends THREE.EventDispatcher{
 	getBoundingBox(pointclouds = this.pointclouds){
 		let box = new THREE.Box3();
 
-		this.scenePointCloud.updateMatrixWorld(true);
+		this.scenePointClouds.forEach(spc => spc.updateMatrixWorld(true));
 		this.referenceFrame.updateMatrixWorld(true);
 
 		for (let pointcloud of pointclouds) {
@@ -126,8 +127,12 @@ Potree.Scene = class extends THREE.EventDispatcher{
 	}
 
 	addPointCloud (pointcloud) {
+		// Allow to have only one point cloud per scene if there are multiple views.
+		// This allows us to have different crop views in Extractor.
+		const scenePointCloud = this.scenePointClouds[this.pointclouds.length] || this.scenePointClouds[0];
+		scenePointCloud.add(pointcloud);
+
 		this.pointclouds.push(pointcloud);
-		this.scenePointCloud.add(pointcloud);
 
 		this.dispatchEvent({
 			type: 'pointcloud_added',
@@ -254,7 +259,7 @@ Potree.Scene = class extends THREE.EventDispatcher{
 	initialize(){
 		this.referenceFrame = new THREE.Object3D();
 		this.referenceFrame.matrixAutoUpdate = false;
-		this.scenePointCloud.add(this.referenceFrame);
+		this.scenePointClouds.forEach(spc => spc.add(this.referenceFrame));
 
 		this.cameras.forEach((c) => {
 			c.perspective.up.set(0, 0, 1);
@@ -270,10 +275,10 @@ Potree.Scene = class extends THREE.EventDispatcher{
 		this.directionalLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
 		this.directionalLight.position.set( 10, 10, 10 );
 		this.directionalLight.lookAt( new THREE.Vector3(0, 0, 0));
-		this.scenePointCloud.add( this.directionalLight );
+		this.scenePointClouds.forEach(spc => spc.add(this.directionalLight));
 		
 		let light = new THREE.AmbientLight( 0x555555 ); // soft white light
-		this.scenePointCloud.add( light );
+		this.scenePointClouds.forEach(spc => spc.add(light));
 		
 		//let grid = Potree.utils.createGrid(5, 5, 2);
 		//this.scene.add(grid);

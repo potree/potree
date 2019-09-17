@@ -64,7 +64,6 @@ Potree.ExtractorControls = class ExtractorControls extends THREE.EventDispatcher
 
 			if (e.drag.mouse === Potree.MOUSE.LEFT) {
 				this.yawDelta += ndrag.x * this.rotationSpeed;
-				// this.pitchDelta -= ndrag.y * this.rotationSpeed;
 
 				this.viewer.activeControls[this.oppositeIndex].yawDelta = this.yawDelta;
 

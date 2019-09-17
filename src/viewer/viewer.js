@@ -1268,7 +1268,6 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 		}
 
 		if (!this.freeze) {
-			// TODO: Support for just 1 or more 2 cameras
 			const activeCameras = scene.cameras.map((camera, index) => scene.getActiveCamera(index));
 			let result = Potree.updatePointClouds(scene.pointclouds, activeCameras, this.renderers);
 
@@ -1410,22 +1409,36 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 				boxes.push(...profile.boxes);
 			}
 			
-			let clipBoxes = boxes.map( box => {
+			let clipBoxes = boxes.reduce((acc, box) => {
+				box.viewIndex = box.viewIndex || 0;
+
+				if (!acc[box.viewIndex]) {
+					acc[box.viewIndex] = [];
+				}
+
 				box.updateMatrixWorld();
 				let boxInverse = new THREE.Matrix4().getInverse(box.matrixWorld);
 				let boxPosition = box.getWorldPosition();
-				return {box: box, inverse: boxInverse, position: boxPosition};
-			});
+
+				acc[box.viewIndex].push({
+					box,
+					inverse: boxInverse,
+					position: boxPosition,
+					viewIndex: box.viewIndex,
+				});
+
+				return acc;
+			}, []);
 
 			let clipPolygons = this.scene.polygonClipVolumes.filter(vol => vol.initialized);
 			
 			// set clip volumes in material
-			for(let pointcloud of this.scene.pointclouds.filter(pc => pc.visible)){
-				pointcloud.material.setClipBoxes(clipBoxes);
+			this.scene.pointclouds.filter((pc, i) => pc.visible).forEach((pointcloud, i) => {
+				pointcloud.material.setClipBoxes(clipBoxes[i]);
 				pointcloud.material.setClipPolygons(clipPolygons, this.clippingTool.maxPolygonVertices);
 				pointcloud.material.clipTask = this.clipTask;
 				pointcloud.material.clipMethod = this.clipMethod;
-			}
+			});
 		}
 
 		{ // update navigation cube

@@ -27,6 +27,7 @@
   <script type="module" src="laneLoader.js"></script>
   <script type="module" src="trackLoader.js"></script>
   <script type="module" src="gapsLoader.js"></script>
+	<script type="module" src="remLoader.js"></script>
   <link rel="stylesheet" type="text/css" href="../common/playbar.css">
 </head>
 
@@ -140,6 +141,7 @@
 		import { RtkTrajectory } from "../demo/RtkTrajectory.js";
 		import { loadRadar } from "../demo/radarLoader.js";
 		import { loadGaps } from "../demo/gapsLoader.js";
+		import { loadRem } from "../demo/remLoader.js";
 		import { updateSidebar, togglePointClass } from "../common/custom-sidebar.js";
 		import { getLoadingBar } from "../common/overlay.js";
 		// import {  } from "../common/overlay.js";
@@ -290,6 +292,12 @@
 					loadTracksCallback(s3, bucket, name, trackShaderMaterial, animationEngine);
 				} catch (e) {
 					console.error("Could not load Tracks: ", e);
+				}
+
+				try{
+					loadRemCallback(s3, bucket, name, animationEngine);
+				} catch (e) {
+					console.error("No rem points: ", e);
 				}
 
 				// Load Radar:
@@ -751,6 +759,38 @@ $(document).ready(() => {
 	});
 });
 // Load Gaps Code (end)
+
+//load REM control points
+// TODO Move this somewhere else
+
+async function loadRemCallback(s3, bucket, name, animationEngine) {
+	let remShaderMaterial = shaderMaterial.clone();
+
+	await loadRem(s3, bucket, name, remShaderMaterial, animationEngine, (sphereMeshes) => {
+		let remLayer = new THREE.Group();
+		remLayer.name = "REM Control Points";
+		for (let ii=0, len=sphereMeshes.length; ii<len; ii++) {
+			remLayer.add(sphereMeshes[ii]);
+		}
+
+		viewer.scene.scene.add(remLayer);
+		let e = new CustomEvent("truth_layer_added", {detail: remLayer, writable: true});
+		viewer.scene.dispatchEvent({
+			"type": "sensor_layer_added",
+			"sensorLayer": remLayer
+		});
+
+		// TODO check if group works as expected, then trigger "truth_layer_added" event
+		animationEngine.tweenTargets.push((gpsTime) => {
+			let currentTime = gpsTime - animationEngine.tstart;
+			remShaderMaterial.uniforms.minGpsTime.value = currentTime - animationEngine.activeWindow.backward;
+			remShaderMaterial.uniforms.maxGpsTime.value = currentTime + animationEngine.activeWindow.forward;
+		});
+	});
+}
+
+
+
 
 // Load Tracks Code (Start)
 		// TODO Move this somewhere else

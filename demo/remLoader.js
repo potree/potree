@@ -63,7 +63,7 @@ function createControlMeshes(controlPoints, remShaderMaterial, FlatbufferModule,
 
   let allSpheres = [];
   let controlTimes = [];
-  for(let ii=0, len=controlPoints.length; ii<1000; ii++) {
+  for(let ii=0, len=controlPoints.length; ii<len; ii++) {
 
     point = controlPoints[ii];
 

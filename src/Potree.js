@@ -311,12 +311,22 @@ Potree.Points = class Points {
 	}
 };
 
+const loadPointCloudDefaultOptions = {
+	// Name of point cloud
+	name: 'Point Cloud',
+	// Number of point clouds to clone. This is used in Extractor to display the same point clouds in different views
+	numberOfClones: 1,
+};
+
 /* eslint-disable standard/no-callback-literal */
-Potree.loadPointCloud = function (path, name, callback) {
-	let loaded = function (pointcloud) {
-		pointcloud.name = name;
-		callback({type: 'pointcloud_loaded', pointcloud: pointcloud});
+Potree.loadPointCloud = function (path, options = loadPointCloudDefaultOptions, callback) {
+	let loaded = function (pointclouds) {
+		pointclouds[0].name = options.name;
+		callback({ type: 'pointcloud_loaded', pointclouds });
 	};
+
+	// Empty array used in map function to create clones
+	const arrayToMap = new Array((options.numberOfClones || 0) + 1).fill();
 
 	// load pointcloud
 	if (!path) {
@@ -326,8 +336,8 @@ Potree.loadPointCloud = function (path, name, callback) {
 			if (!geometry) {
 				console.error(new Error(`failed to load point cloud from URL: ${path}`));
 			} else {
-				let pointcloud = new Potree.PointCloudOctree(geometry);
-				loaded(pointcloud);
+				const pointClouds = arrayToMap.map(() => new Potree.PointCloudOctree(geometry));
+				loaded(pointClouds);
 			}
 		});
 	} else if (path.indexOf('greyhound://') === 0) {
@@ -336,8 +346,8 @@ Potree.loadPointCloud = function (path, name, callback) {
 			if (!geometry) {
 				callback({type: 'loading_failed'});
 			} else {
-				let pointcloud = new Potree.PointCloudOctree(geometry);
-				loaded(pointcloud);
+				const pointClouds = arrayToMap.map(() => new Potree.PointCloudOctree(geometry));
+				loaded(pointClouds);
 			}
 		});
 	} else if (path.indexOf('cloud.js') > 0) {
@@ -345,8 +355,8 @@ Potree.loadPointCloud = function (path, name, callback) {
 			if (!geometry) {
 				callback({type: 'loading_failed'});
 			} else {
-				let pointcloud = new Potree.PointCloudOctree(geometry);
-				loaded(pointcloud);
+				const pointClouds = arrayToMap.map(() => new Potree.PointCloudOctree(geometry));
+				loaded(pointClouds);
 			}
 		});
 	} else if (path.indexOf('.vpc') > 0) {
@@ -354,8 +364,8 @@ Potree.loadPointCloud = function (path, name, callback) {
 			if (!geometry) {
 				callback({type: 'loading_failed'});
 			} else {
-				let pointcloud = new Potree.PointCloudArena4D(geometry);
-				loaded(pointcloud);
+				const pointClouds = arrayToMap.map(() => new Potree.PointCloudOctree(geometry));
+				loaded(pointClouds);
 			}
 		});
 	} else {

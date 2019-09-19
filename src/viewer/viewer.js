@@ -1267,7 +1267,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			}
 		}
 
-		if (!this.freeze) {
+		if (!this.freeze && scene.pointclouds.length) {
 			const activeCameras = scene.cameras.map((camera, index) => scene.getActiveCamera(index));
 			let result = Potree.updatePointClouds(scene.pointclouds, activeCameras, this.renderers);
 
@@ -1433,8 +1433,8 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			let clipPolygons = this.scene.polygonClipVolumes.filter(vol => vol.initialized);
 			
 			// set clip volumes in material
-			this.scene.pointclouds.filter((pc, i) => pc.visible).forEach((pointcloud, i) => {
-				pointcloud.material.setClipBoxes(clipBoxes[i]);
+			this.scene.pointclouds.filter((pc) => pc.visible).forEach((pointcloud, i) => {
+				pointcloud.material.setClipBoxes(clipBoxes[i] || []);
 				pointcloud.material.setClipPolygons(clipPolygons, this.clippingTool.maxPolygonVertices);
 				pointcloud.material.clipTask = this.clipTask;
 				pointcloud.material.clipMethod = this.clipMethod;

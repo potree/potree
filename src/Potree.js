@@ -421,7 +421,8 @@ Potree.updateVisibilityStructures = function(pointclouds, cameras, renderers) {
 	let priorityQueue = new BinaryHeap(function (x) { return 1 / x.weight; });
 
 	for (let i = 0; i < pointclouds.length; i++) {
-		let pointcloud = pointclouds[i];
+		const pointcloud = pointclouds[i];
+		const camera = cameras[i];
 
 		if (!pointcloud.initialized()) {
 			continue;
@@ -433,30 +434,28 @@ Potree.updateVisibilityStructures = function(pointclouds, cameras, renderers) {
 		pointcloud.visibleNodes = [];
 		pointcloud.visibleGeometry = [];
 
-		cameras.forEach((camera) => {
-			// frustum in object space
-			camera.updateMatrixWorld();
-			let frustum = new THREE.Frustum();
-			let viewI = camera.matrixWorldInverse;
-			let world = pointcloud.matrixWorld;
-			
-			// use close near plane for frustum intersection
-			let frustumCam = camera.clone();
-			frustumCam.near = Math.min(camera.near, 0.1);
-			frustumCam.updateProjectionMatrix();
-			let proj = camera.projectionMatrix;
+		// frustum in object space
+		camera.updateMatrixWorld();
+		let frustum = new THREE.Frustum();
+		let viewI = camera.matrixWorldInverse;
+		let world = pointcloud.matrixWorld;
+		
+		// use close near plane for frustum intersection
+		let frustumCam = camera.clone();
+		frustumCam.near = Math.min(camera.near, 0.1);
+		frustumCam.updateProjectionMatrix();
+		let proj = camera.projectionMatrix;
 
-			let fm = new THREE.Matrix4().multiply(proj).multiply(viewI).multiply(world);
-			frustum.setFromMatrix(fm);
-			frustums.push(frustum);
+		let fm = new THREE.Matrix4().multiply(proj).multiply(viewI).multiply(world);
+		frustum.setFromMatrix(fm);
+		frustums.push(frustum);
 
-			// camera position in object space
-			let view = camera.matrixWorld;
-			let worldI = new THREE.Matrix4().getInverse(world);
-			let camMatrixObject = new THREE.Matrix4().multiply(worldI).multiply(view);
-			let camObjPos = new THREE.Vector3().setFromMatrixPosition(camMatrixObject);
-			camObjPositions.push(camObjPos);
-		});
+		// camera position in object space
+		let view = camera.matrixWorld;
+		let worldI = new THREE.Matrix4().getInverse(world);
+		let camMatrixObject = new THREE.Matrix4().multiply(worldI).multiply(view);
+		let camObjPos = new THREE.Vector3().setFromMatrixPosition(camMatrixObject);
+		camObjPositions.push(camObjPos);
 
 		if (pointcloud.visible && pointcloud.root !== null) {
 			priorityQueue.push({pointcloud: i, node: pointcloud.root, weight: Number.MAX_VALUE});

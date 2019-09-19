@@ -26,7 +26,7 @@ Potree.ExtractorControls = class ExtractorControls extends THREE.EventDispatcher
 		this.rotationSpeed = 5;
 		this.panSpeed = 0.3;
 
-		this.minRadius = 3;
+		this.minRadius = 0.3;
 		this.maxRadius = 300;
 
 		this.fadeFactor = 10;
@@ -39,6 +39,9 @@ Potree.ExtractorControls = class ExtractorControls extends THREE.EventDispatcher
 		this.oppositeIndex = index === 1 ? 0 : 1;
 		this.oppositeView = viewer.scene.views[this.oppositeIndex];
 
+		this.callback = () => {};
+		this.onYawChange = () => {};
+		this.threshold = 0.001 * 0.001;
 		
 		this.view.pitch = index === 0
       ? -Math.PI / 2
@@ -181,6 +184,8 @@ Potree.ExtractorControls = class ExtractorControls extends THREE.EventDispatcher
 			return;
 		}
 
+		const view = this.view;
+
 		let targetRadius = 0;
 		{
 			let minimumJumpDistance = 0.2;
@@ -191,11 +196,11 @@ Potree.ExtractorControls = class ExtractorControls extends THREE.EventDispatcher
 			let nodes = I.pointcloud.nodesOnRay(I.pointcloud.visibleNodes, ray);
 			let lastNode = nodes[nodes.length - 1];
 			let radius = lastNode.getBoundingSphere().radius;
-			targetRadius = Math.min(this.scene.views[this.index].radius, radius);
+			targetRadius = Math.min(view.radius, radius);
 			targetRadius = Math.max(minimumJumpDistance, targetRadius);
 		}
 
-		let d = this.scene.views[this.index].direction.multiplyScalar(-1);
+		let d = view.direction.multiplyScalar(-1);
 		let cameraTargetPosition = new THREE.Vector3().addVectors(I.location, d.multiplyScalar(targetRadius));
 		// TODO Unused: let controlsTargetPosition = I.location;
 
@@ -208,19 +213,19 @@ Potree.ExtractorControls = class ExtractorControls extends THREE.EventDispatcher
 			tween.easing(easing);
 			this.tweens.push(tween);
 
-			let startPos = this.scene.views[this.index].position.clone();
+			let startPos = view.position.clone();
 			let targetPos = cameraTargetPosition.clone();
-			let startRadius = this.scene.views[this.index].radius;
+			let startRadius = view.radius;
 			let targetRadius = cameraTargetPosition.distanceTo(I.location);
 
 			tween.onUpdate(() => {
 				let t = value.x;
-				this.scene.views[this.index].position.x = (1 - t) * startPos.x + t * targetPos.x;
-				this.scene.views[this.index].position.y = (1 - t) * startPos.y + t * targetPos.y;
-				this.scene.views[this.index].position.z = (1 - t) * startPos.z + t * targetPos.z;
+				view.position.x = (1 - t) * startPos.x + t * targetPos.x;
+				view.position.y = (1 - t) * startPos.y + t * targetPos.y;
+				view.position.z = (1 - t) * startPos.z + t * targetPos.z;
 
-				this.scene.views[this.index].radius = (1 - t) * startRadius + t * targetRadius;
-				this.viewer.setMoveSpeed(this.scene.views[this.index].radius / 2.5);
+				view.radius = (1 - t) * startRadius + t * targetRadius;
+				this.viewer.setMoveSpeed(view.radius / 2.5);
 			});
 
 			tween.onComplete(() => {
@@ -236,7 +241,8 @@ Potree.ExtractorControls = class ExtractorControls extends THREE.EventDispatcher
 		this.tweens = [];
 	}
 
-	updateYaw (view, yaw, oppositeView) {
+	updateYaw (yaw) {
+		const view = this.view;
 		const yawMove = view.yaw - yaw;
 		this.pivot = this.scene.pointclouds[0].boundingBox.getCenter();
 
@@ -260,17 +266,22 @@ Potree.ExtractorControls = class ExtractorControls extends THREE.EventDispatcher
 		view.position.copy(newCam);
 	}
 
-	update (delta) {
-		let view = this.scene.views[this.index];
+	isViewMoving() {
+		return Math.abs(this.yawDelta) > this.threshold ||
+			Math.abs(this.radiusDelta) > this.threshold ||
+			Math.abs(this.panDelta.x) > this.threshold ||
+			Math.abs(this.panDelta.y) > this.threshold;
+	}
 
-		const oppositeView = this.scene.views[this.index === 0 ? 1 : 0];
+	update (delta) {
+		let view = this.view;
 
 		{ // apply rotation
 			if (!this.scene.pointclouds.length) return;
 
 			let progression = Math.min(1, this.fadeFactor * delta);
 
-			this.updateYaw(view, view.yaw - (progression * this.yawDelta), oppositeView);
+			this.updateYaw(view.yaw - (progression * this.yawDelta));
 		}
 
 		{ // apply pan
@@ -298,6 +309,14 @@ Potree.ExtractorControls = class ExtractorControls extends THREE.EventDispatcher
 		{
 			let speed = view.radius / 2.5;
 			this.viewer.setMoveSpeed(speed);
+		}
+
+		if (this.isViewMoving()) {
+			this.callback();
+		}
+
+		if (Math.abs(this.yawDelta) > this.threshold) {
+			this.onYawChange();
 		}
 
 		{ // decelerate over time

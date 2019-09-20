@@ -1,3 +1,4 @@
+import { Measure } from "../src/utils/Measure.js";
 
 
 
@@ -243,6 +244,11 @@ function createLaneGeometriesOld(lanes, supplierNum) {
       materialRight = new THREE.MeshBasicMaterial({color: 0xffffff});
   }
 
+  let laneLeft, laneRight, laneSpine;
+  laneLeft = new Measure(); laneLeft.name = "Lane Left"; //laneLeft.closed = false;
+  laneSpine = new Measure(); laneSpine.name = "Lane Spine"; //laneRight.closed = false;
+  laneRight = new Measure(); laneRight.name = "Lane Right"; //laneRight.closed = false;
+
   let lane;
   let lefts = [];
   let rights = [];
@@ -261,19 +267,27 @@ function createLaneGeometriesOld(lanes, supplierNum) {
       left = lane.left(jj);
 
       geometryLeft.vertices.push( new THREE.Vector3(left.x(), left.y(), left.z()));
+
+      laneLeft.addMarker(new THREE.Vector3(left.x(), left.y(), left.z()));
     }
 
     for(let jj=0, numVertices=lane.rightLength(); jj<numVertices; jj++) {
       right = lane.right(jj);
 
       geometryRight.vertices.push( new THREE.Vector3(right.x(), right.y(), right.z()));
+
+      laneRight.addMarker(new THREE.Vector3(right.x(), right.y(), right.z()));
     }
 
     for(let jj=0, numVertices=lane.spineLength(); jj<numVertices; jj++) {
       spine = lane.spine(jj);
 
       geometrySpine.vertices.push( new THREE.Vector3(spine.x(), spine.y(), spine.z()));
+
+      laneSpine.addMarker(new THREE.Vector3(spine.x(), spine.y(), spine.z()));
     }
+
+    continue;
 
     // // NOTE TRYING MESHLINE:
     // var leftLine = new MeshLine();

@@ -245,9 +245,10 @@ function createLaneGeometriesOld(lanes, supplierNum) {
   }
 
   let laneLeft, laneRight, laneSpine;
-  laneLeft = new Measure(); laneLeft.name = "Lane Left"; //laneLeft.closed = false;
-  laneSpine = new Measure(); laneSpine.name = "Lane Spine"; //laneRight.closed = false;
-  laneRight = new Measure(); laneRight.name = "Lane Right"; //laneRight.closed = false;
+  laneLeft = new Measure(); laneLeft.name = "Lane Left"; laneLeft.closed = false; laneLeft.showCoordinates = true; laneLeft.showAngles = true;
+  debugger;
+  // laneSpine = new Measure(); laneSpine.name = "Lane Spine"; //laneRight.closed = false;
+  laneRight = new Measure(); laneRight.name = "Lane Right"; laneRight.closed = false; laneRight.showCoordinates = true; laneRight.showAngles = true;
 
   let lane;
   let lefts = [];
@@ -266,7 +267,7 @@ function createLaneGeometriesOld(lanes, supplierNum) {
     for(let jj=0, numVertices=lane.leftLength(); jj<numVertices; jj++) {
       left = lane.left(jj);
 
-      geometryLeft.vertices.push( new THREE.Vector3(left.x(), left.y(), left.z()));
+      // geometryLeft.vertices.push( new THREE.Vector3(left.x(), left.y(), left.z()));
 
       laneLeft.addMarker(new THREE.Vector3(left.x(), left.y(), left.z()));
     }
@@ -274,7 +275,7 @@ function createLaneGeometriesOld(lanes, supplierNum) {
     for(let jj=0, numVertices=lane.rightLength(); jj<numVertices; jj++) {
       right = lane.right(jj);
 
-      geometryRight.vertices.push( new THREE.Vector3(right.x(), right.y(), right.z()));
+      // geometryRight.vertices.push( new THREE.Vector3(right.x(), right.y(), right.z()));
 
       laneRight.addMarker(new THREE.Vector3(right.x(), right.y(), right.z()));
     }
@@ -282,9 +283,9 @@ function createLaneGeometriesOld(lanes, supplierNum) {
     for(let jj=0, numVertices=lane.spineLength(); jj<numVertices; jj++) {
       spine = lane.spine(jj);
 
-      geometrySpine.vertices.push( new THREE.Vector3(spine.x(), spine.y(), spine.z()));
+      // geometrySpine.vertices.push( new THREE.Vector3(spine.x(), spine.y(), spine.z()));
 
-      laneSpine.addMarker(new THREE.Vector3(spine.x(), spine.y(), spine.z()));
+      // laneSpine.addMarker(new THREE.Vector3(spine.x(), spine.y(), spine.z()));
     }
 
     continue;
@@ -382,6 +383,10 @@ function createLaneGeometriesOld(lanes, supplierNum) {
     // spines.push(new THREE.Line(geometrySpine, materialSpine) );
     // rights.push(new THREE.Line(geometryRight, materialRight) );
   }
+
+  all.push(laneLeft);
+  // all.push(laneSpine);
+  all.push(laneRight);
 
   let output = {
     all: all

@@ -692,7 +692,7 @@
 			let filename, tmpSupplierNum;
 			tmpSupplierNum = -1;
 			let s3Obj = s3;   // Visualize remote lanes (from s3)
-			s3Obj = null; // Visualize local lanes (from data folder)
+			// s3Obj = null; // Visualize local lanes (from data folder)
 			await loadLanes(s3Obj, bucket, name, filename, tmpSupplierNum, (laneGeometries) => {
 
 				let lanesLayer = new THREE.Group();

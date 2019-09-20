@@ -685,15 +685,89 @@
 			});
 		}
 
+
+// Reload Lanes Button Code (Start)
+window.annotateLanesMode = false;
+$(document).ready(() => {
+	// Configure Playbar
+	$("#reload_lanes_button")[0].style.display="block"
+	let reloadLanesButton = $("#reload_lanes_button")[0];
+	reloadLanesButton.addEventListener("mousedown", () => {
+
+		// REMOVE LANES
+		let removeLanes = viewer.scene.scene.getChildByName("Lanes");
+		while(removeLanes) {
+			viewer.scene.scene.remove(removeLanes);
+			removeLanes = viewer.scene.scene.getChildByName("Lanes");
+		}
+
+		// TOGGLE window.annotateLanesMode
+		window.annotateLanesMode = !window.annotateLanesMode;
+
+		// Disable Button:
+
+		debugger; // check s3, bucket, name
+		reloadLanesButton.disabled = true;
+
+
+
+
+		// if (!window.gapsLoaded)
+		{
+			$("#loading-bar")[0].style.display = "none";
+			setLoadingScreen();
+
+			// let gapShaderMaterial = shaderMaterial.clone();
+			// gapShaderMaterial.uniforms.color.value = new THREE.Color(0x0000ff);
+			// gapShaderMaterial.depthWrite = false;
+			loadLanesCallback(s3, bucket, name, () => {
+				removeLoadingScreen();
+
+				// TOGGLE BUTTON TEXT
+				if (window.annotateLanesMode) {
+					reload_lanes_button.innerText = "View Truth Lanes";
+				} else {
+					reload_lanes_button.innerText = "Annotate Truth Lanes";
+				}
+
+				reloadLanesButton.disabled = false
+
+			});//, gapShaderMaterial, animationEngine, (gapGeometries) => {
+			// 	let gapsLayer = new THREE.Group();
+			// 	gapsLayer.name = "Vehicle Gaps";
+			// 	for (let ii=0, len=gapGeometries.left.length; ii<len; ii++) {
+			// 		// if (ii < 1000) {
+			// 			gapsLayer.add(gapGeometries.left[ii]);
+			// 		// }
+			// 	}
+			// 	viewer.scene.scene.add(gapsLayer);
+			// 	viewer.scene.dispatchEvent({
+			// 		"type": "assessments_layer_added",
+			// 		"assessmentsLayer": gapsLayer
+			// 	});
+			// 	animationEngine.tweenTargets.push((gpsTime) => {
+			// 		let currentTime = gpsTime - animationEngine.tstart;
+			// 		gapShaderMaterial.uniforms.minGpsTime.value = currentTime - animationEngine.activeWindow.backward;
+			// 		gapShaderMaterial.uniforms.maxGpsTime.value = currentTime + animationEngine.activeWindow.forward;
+			// 	});
+			// 	window.gapsLoaded = true;
+			// 	loadGapsButton.disabled = true;
+			// });
+		}
+	});
+});
+// Reload Lanes Button Code (end)
+
+
 // Load Lanes Code (start)
 		// Load Lanes Truth Data:
-		async function loadLanesCallback(s3, bucket, name) {
+		async function loadLanesCallback(s3, bucket, name, callback) {
 
 			let filename, tmpSupplierNum;
 			tmpSupplierNum = -1;
 			let s3Obj = s3;   // Visualize remote lanes (from s3)
 			// s3Obj = null; // Visualize local lanes (from data folder)
-			await loadLanes(s3Obj, bucket, name, filename, tmpSupplierNum, (laneGeometries) => {
+			await loadLanes(s3Obj, bucket, name, filename, tmpSupplierNum, window.annotateLanesMode, (laneGeometries) => {
 
 				let lanesLayer = new THREE.Group();
 				lanesLayer.name = "Lanes";
@@ -705,6 +779,9 @@
 					"type": "truth_layer_added",
 					"truthLayer": lanesLayer
 				});
+				if (callback) {
+					callback();
+				}
 			});
 
 			if (visualizationMode == "aptivLanes") {
@@ -764,7 +841,6 @@
 
 		}
 // Load Lanes Code (end)
-
 
 // Load Gaps Code (Start)
 window.gapsLoaded = false;

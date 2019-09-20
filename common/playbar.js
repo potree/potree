@@ -30,6 +30,7 @@ $(document).ready(function () {
             <button name="load_gaps_button" id="load_gaps_button">Load Gaps</button>
             <button name="load_radar_button" id="load_radar_button">Load Radar</button>
             <button name="download_lanes_button" id="download_lanes_button">Download Lanes</button>
+            <button name="reload_lanes_button" id="reload_lanes_button">Annotate Lanes</button>
           </div>
         </div>
       </div>

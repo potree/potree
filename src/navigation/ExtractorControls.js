@@ -41,11 +41,8 @@ Potree.ExtractorControls = class ExtractorControls extends THREE.EventDispatcher
 
 		this.callback = () => {};
 		this.onYawChange = () => {};
+		this.onRadiusChange = () => {};
 		this.threshold = 0.001 * 0.001;
-		
-		this.view.pitch = index === 0
-      ? -Math.PI / 2
-      : 0;
 
 		this.tweens = [];
 
@@ -276,6 +273,24 @@ Potree.ExtractorControls = class ExtractorControls extends THREE.EventDispatcher
 	update (delta) {
 		let view = this.view;
 
+		const toFixed = value => +value.toFixed(3);
+
+		const fixedRadiusDelta = toFixed(this.radiusDelta);
+		const fixedYawDelta = toFixed(this.yawDelta);
+		const fixedPanDelta = new THREE.Vector3(toFixed(this.panDelta.x), toFixed(this.panDelta.y));
+		if (fixedRadiusDelta !== 0) {
+			this.panDelta.set(0, 0);
+			this.yawDelta = 0;
+		} else
+		if (fixedYawDelta !== 0) {
+			this.panDelta.set(0, 0);
+			this.radiusDelta = 0;
+		} else
+		if (fixedPanDelta.x !== 0 || fixedPanDelta.y !== 0) {
+			this.radiusDelta = 0;
+			this.yawDelta = 0;
+		}
+
 		{ // apply rotation
 			if (!this.scene.pointclouds.length) return;
 
@@ -311,6 +326,9 @@ Potree.ExtractorControls = class ExtractorControls extends THREE.EventDispatcher
 			this.viewer.setMoveSpeed(speed);
 		}
 
+		if (Math.abs(this.radiusDelta) > this.threshold) {
+			this.onRadiusChange();
+		}// else
 		if (this.isViewMoving()) {
 			this.callback();
 		}
@@ -318,6 +336,10 @@ Potree.ExtractorControls = class ExtractorControls extends THREE.EventDispatcher
 		if (Math.abs(this.yawDelta) > this.threshold) {
 			this.onYawChange();
 		}
+
+		// if (Math.abs(this.radiusDelta) > this.threshold) {
+		// 	this.onRadiusChange();
+		// }
 
 		{ // decelerate over time
 			let progression = Math.min(1, this.fadeFactor * delta);

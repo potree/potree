@@ -628,7 +628,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 
 	fitToScreen (factor = 1, animationDuration = 0, callback = () => {}) {
 		// When browser tab is in the background, controls are not set before first fitToScreen call.
-		if (this.activeControls.some(c => !c)) {
+		if (!this.activeControls || this.activeControls.some(c => !c)) {
 			setTimeout(() => this.fitToScreen(factor, animationDuration, callback), 200);
 			return;
 		}
@@ -642,7 +642,6 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			
 			this.zoomTo(this.scene.views[index], node, factor, animationDuration, callback)
 			controls.stop();
-
 		});
 	};
 

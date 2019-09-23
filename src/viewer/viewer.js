@@ -640,7 +640,7 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 			node.boundingBox = box;
 
 			
-			this.zoomTo(this.scene.views[index], node, factor, animationDuration, callback)
+			this.zoomTo(this.scene.views[index], node, factor, animationDuration, callback);
 			controls.stop();
 		});
 	};
@@ -1007,7 +1007,6 @@ Potree.Viewer = class PotreeViewer extends THREE.EventDispatcher{
 	}
 
 	initThree () {
-		// TODO: Refactor
 		this.renderers = [];
 		this.createRenderer(this.renderArea, 0);
 		if (this.renderAreas.length > 1) {

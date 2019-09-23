@@ -752,7 +752,6 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 		renderer.state.buffers.depth.setTest(pickMaterial.depthTest);
 		renderer.state.buffers.depth.setMask(pickMaterial.depthWrite);
 		renderer.state.setBlending(THREE.NoBlending);
-		
 
 		{ // RENDER
 			renderer.setRenderTarget(pickState.renderTarget);

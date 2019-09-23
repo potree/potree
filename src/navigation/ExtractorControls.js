@@ -41,8 +41,6 @@ Potree.ExtractorControls = class ExtractorControls extends THREE.EventDispatcher
 
 		this.callback = () => {};
 		this.onYawChange = () => {};
-		this.onRadiusChange = () => {};
-		this.threshold = 0.001 * 0.001;
 
 		this.tweens = [];
 
@@ -264,10 +262,10 @@ Potree.ExtractorControls = class ExtractorControls extends THREE.EventDispatcher
 	}
 
 	isViewMoving() {
-		return Math.abs(this.yawDelta) > this.threshold ||
-			Math.abs(this.radiusDelta) > this.threshold ||
-			Math.abs(this.panDelta.x) > this.threshold ||
-			Math.abs(this.panDelta.y) > this.threshold;
+		return this.yawDelta ||
+			this.radiusDelta ||
+			this.panDelta.x ||
+			this.panDelta.y;
 	}
 
 	update (delta) {
@@ -326,20 +324,13 @@ Potree.ExtractorControls = class ExtractorControls extends THREE.EventDispatcher
 			this.viewer.setMoveSpeed(speed);
 		}
 
-		if (Math.abs(this.radiusDelta) > this.threshold) {
-			this.onRadiusChange();
-		}// else
 		if (this.isViewMoving()) {
 			this.callback();
 		}
 
-		if (Math.abs(this.yawDelta) > this.threshold) {
+		if (this.yawDelta) {
 			this.onYawChange();
 		}
-
-		// if (Math.abs(this.radiusDelta) > this.threshold) {
-		// 	this.onRadiusChange();
-		// }
 
 		{ // decelerate over time
 			let progression = Math.min(1, this.fadeFactor * delta);

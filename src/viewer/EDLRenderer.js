@@ -146,7 +146,6 @@ class EDLRenderer{
 		if(lights.length > 0 && !(lights[0].disableShadowUpdates)){
 			let light = lights[0];
 
-			// TODO:
 			let queryShadows = Potree.startQuery('EDL - shadows', viewer.renderer.getContext());
 
 			this.shadowMaps[index].setLight(light);
@@ -249,7 +248,6 @@ class EDLRenderer{
 
 			Potree.endQuery(queryColors, renderer.getContext());
 
-			// TODO: Optimize - use different materials
 			{ // EDL OCCLUSION PASS
 				let queryEDL = Potree.startQuery('EDL - resolve', renderer.getContext());
 	

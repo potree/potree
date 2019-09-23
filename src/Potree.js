@@ -704,10 +704,8 @@ Potree.updateVisibility = function(pointclouds, cameras, renderers){
 
 			let weight = 0; 
 			if(camera.isPerspectiveCamera){
-				// TODO: Fix point management
 				let sphere = child.getBoundingSphere();
 				let center = sphere.center;
-				// let distance = sphere.center.distanceTo(camObjPos);
 				
 				const distances = camObjPositions.map((pos, i) => {
 					let dx = pos.x - center.x;
@@ -750,7 +748,6 @@ Potree.updateVisibility = function(pointclouds, cameras, renderers){
 			priorityQueue.push({pointcloud: element.pointcloud, node: child, parent: node, weight: weight});
 		}
 	}// end priority queue loop
-	// END REMOVE TODO:
 
 	{ // update DEM
 		let maxDEMLevel = 4;
@@ -766,7 +763,6 @@ Potree.updateVisibility = function(pointclouds, cameras, renderers){
 		unloadedGeometry[i].load();
 	}
 
-	// log('visibility', visibleNodes.length, numVisiblePoints);
 	return {
 		visibleNodes: visibleNodes,
 		numVisiblePoints: numVisiblePoints,

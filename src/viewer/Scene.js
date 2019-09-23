@@ -36,7 +36,6 @@ Potree.Scene = class extends THREE.EventDispatcher{
 		this.inputHandler = null;
 		this.inputHandlers = [];
 
-		// TODO: Can be removed in the future
 		this.view = new Potree.View();
 
 		this.directionalLight = null;

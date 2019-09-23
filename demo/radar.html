@@ -394,22 +394,6 @@
 				const rtkTrajectory = new RtkTrajectory(path, orientations, timestamps, samplingFreq);
 				const closedPath = false;
 
-
-	      { // render the path
-					let geometry = new THREE.Geometry();
-					for (let ii = 0; ii < rtkTrajectory.numStates; ii++) {
-						geometry.vertices[ii] = rtkTrajectory.states[ii].pose.clone();
-					}
-	        let material = new THREE.LineBasicMaterial({color: new THREE.Color(0x00ff00)});
-	        material.uniforms = {initialTime:{value:t_init}};
-					// material.opacity = 0.0;
-					// material.transparent = true;
-	        let line = new THREE.Line(geometry, material, {closed: closedPath});
-	        line.name = "rtk";
-	        viewer.scene.scene.add(line);
-	        console.log("Rendered Path");
-	      }
-
 	      // CREATE VEHICLE OBJECT:
 	      // NOTE for Mustang: {texture: models/bodybkgd.JPG, mesh: models/1967-shelby-ford-mustang.obj}
 	      // NOTE for Volt: {texture: models/Chevy_Volt_Segmented/Chevrolet_Volt_v1_exterior.png, mesh: resources/models/Chevy_Volt_Segmented/Chevy_Volt_2016.obj}
@@ -449,6 +433,22 @@
 
 						const vehicleGroup = new THREE.Group();
 						vehicleGroup.name = "Vehicle";
+
+			      { // render the path
+							let geometry = new THREE.Geometry();
+							for (let ii = 0; ii < rtkTrajectory.numStates; ii++) {
+								geometry.vertices[ii] = rtkTrajectory.states[ii].pose.clone();
+							}
+			        let material = new THREE.LineBasicMaterial({color: new THREE.Color(0x00ff00)});
+			        material.uniforms = {initialTime:{value:t_init}};
+							// material.opacity = 0.0;
+							// material.transparent = true;
+			        let line = new THREE.Line(geometry, material, {closed: closedPath});
+			        line.name = "RTK Trajectory";
+							line.visible = false;
+							viewer.scene.scene.add( line );
+							viewer.scene.dispatchEvent({"type": "vehicle_layer_added", "vehicleLayer": line });
+			      }
 
 						// Add Polar Grid Helper:
 						const gridRadius = 100; // meters
@@ -765,9 +765,7 @@ $(document).ready(() => {
 
 			let filename, tmpSupplierNum;
 			tmpSupplierNum = -1;
-			let s3Obj = s3;   // Visualize remote lanes (from s3)
-			// s3Obj = null; // Visualize local lanes (from data folder)
-			await loadLanes(s3Obj, bucket, name, filename, tmpSupplierNum, window.annotateLanesMode, (laneGeometries) => {
+			await loadLanes(s3, bucket, name, filename, tmpSupplierNum, window.annotateLanesMode, (laneGeometries) => {
 
 				let lanesLayer = new THREE.Group();
 				lanesLayer.name = "Lanes";

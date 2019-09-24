@@ -45,6 +45,7 @@ let paths = {
 		"src/navigation/FirstPersonControls.js",
 		"src/navigation/GeoControls.js",
 		"src/navigation/OrbitControls.js",
+		"src/navigation/ExtractorControls.js",
 		"src/navigation/EarthControls.js",
 		"src/LRU.js",
 		"src/Annotation.js",

@@ -191,7 +191,6 @@ export class Measure extends THREE.Object3D {
 				console.log("MOUSEDOWN", e);
 
 				if (window.truthAnnotationMode == 1) {
-					debugger;
 					let i = this.spheres.indexOf(e.target);
 					if (i != -1) {
 						this.removeMarker(i);
@@ -199,7 +198,6 @@ export class Measure extends THREE.Object3D {
 						console.error("Clicked sphere not in list of spheres: ", e);
 					}
 				} else if (window.truthAnnotationMode == 2) {
-					debugger;
 					let i = this.spheres.indexOf(e.target);
 					let lastPoint = this.spheres[this.spheres.length-1].position.clone();
 					this.addMarker(lastPoint, () => {

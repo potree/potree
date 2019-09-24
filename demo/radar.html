@@ -705,21 +705,11 @@ $(document).ready(() => {
 		window.annotateLanesMode = !window.annotateLanesMode;
 
 		// Disable Button:
-
-		debugger; // check s3, bucket, name
 		reloadLanesButton.disabled = true;
 
-
-
-
-		// if (!window.gapsLoaded)
 		{
 			$("#loading-bar")[0].style.display = "none";
 			setLoadingScreen();
-
-			// let gapShaderMaterial = shaderMaterial.clone();
-			// gapShaderMaterial.uniforms.color.value = new THREE.Color(0x0000ff);
-			// gapShaderMaterial.depthWrite = false;
 			loadLanesCallback(s3, bucket, name, () => {
 				removeLoadingScreen();
 
@@ -732,27 +722,7 @@ $(document).ready(() => {
 
 				reloadLanesButton.disabled = false
 
-			});//, gapShaderMaterial, animationEngine, (gapGeometries) => {
-			// 	let gapsLayer = new THREE.Group();
-			// 	gapsLayer.name = "Vehicle Gaps";
-			// 	for (let ii=0, len=gapGeometries.left.length; ii<len; ii++) {
-			// 		// if (ii < 1000) {
-			// 			gapsLayer.add(gapGeometries.left[ii]);
-			// 		// }
-			// 	}
-			// 	viewer.scene.scene.add(gapsLayer);
-			// 	viewer.scene.dispatchEvent({
-			// 		"type": "assessments_layer_added",
-			// 		"assessmentsLayer": gapsLayer
-			// 	});
-			// 	animationEngine.tweenTargets.push((gpsTime) => {
-			// 		let currentTime = gpsTime - animationEngine.tstart;
-			// 		gapShaderMaterial.uniforms.minGpsTime.value = currentTime - animationEngine.activeWindow.backward;
-			// 		gapShaderMaterial.uniforms.maxGpsTime.value = currentTime + animationEngine.activeWindow.forward;
-			// 	});
-			// 	window.gapsLoaded = true;
-			// 	loadGapsButton.disabled = true;
-			// });
+			});
 		}
 	});
 });

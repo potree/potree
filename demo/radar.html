@@ -275,6 +275,51 @@
 			document.getElementById("elevation_max").display = false;
 			document.getElementById("elevation_min").disabled = false;
 
+			window.truthAnnotationMode = 0;	// 0: None, 1: Delete, 2: Add
+			let annotationScreen = $(`<div id="annotationScreen"><p id="annotation-label">ANNOTATION MODE: <b id="annotation-mode-text"></b></p></div>`);
+			$('body').prepend(annotationScreen);
+			let div = document.getElementById("annotationScreen");
+			div.style.opacity=0;
+
+
+			window.addEventListener('keydown', (e) => {
+				if (e.code == "KeyA") {
+					window.truthAnnotationMode = 2;
+				} else if (e.code == "KeyS") {
+					window.truthAnnotationMode = 1;
+				} else if (e.shiftKey) {
+					window.truthAnnotationMode = (window.truthAnnotationMode + 1) % 3;
+				}
+
+				let div = document.getElementById("annotationScreen");
+				let label = document.getElementById("annotation-mode-text");
+				if (window.truthAnnotationMode == 0) {
+					div.style.background = "black";
+					div.style.opacity=0;
+					label.innerHTML = "NONE";
+				}
+				else if (window.truthAnnotationMode == 1) {
+					div.style.background = "red";
+					div.style.opacity=0.25;
+					label.innerHTML = "DELETE POINTS";
+				} else if (window.truthAnnotationMode == 2) {
+					div.style.background = "green";
+					div.style.opacity=0.25;
+					label.innerHTML = "ADD POINTS";
+				}
+			});
+
+			window.addEventListener("keyup", (e) => {
+				window.truthAnnotationMode = 0;
+				let div = document.getElementById("annotationScreen");
+				let label = document.getElementById("annotation-mode-text");
+				div.style.background = "black";
+				div.style.opacity=0;
+				label.innerHTML = "NONE";
+			});
+
+
+
 			// Load Data Sources in loadRtkCallback:
 			loadRtkCallback(s3, bucket, name, () => {
 
@@ -349,21 +394,6 @@
 				const rtkTrajectory = new RtkTrajectory(path, orientations, timestamps, samplingFreq);
 				const closedPath = false;
 
-
-	      { // render the path
-					let geometry = new THREE.Geometry();
-					for (let ii = 0; ii < rtkTrajectory.numStates; ii++) {
-						geometry.vertices[ii] = rtkTrajectory.states[ii].pose.clone();
-					}
-	        let material = new THREE.LineBasicMaterial();
-	        material.uniforms = {initialTime:{value:t_init}};
-					material.opacity = 0.0;
-					material.transparent = true;
-	        let line = new THREE.Line(geometry, material, {closed: closedPath});
-	        line.name = "rtk";
-	        viewer.scene.scene.add(line);
-	      }
-
 	      // CREATE VEHICLE OBJECT:
 	      // NOTE for Mustang: {texture: models/bodybkgd.JPG, mesh: models/1967-shelby-ford-mustang.obj}
 	      // NOTE for Volt: {texture: models/Chevy_Volt_Segmented/Chevrolet_Volt_v1_exterior.png, mesh: resources/models/Chevy_Volt_Segmented/Chevy_Volt_2016.obj}
@@ -403,6 +433,22 @@
 
 						const vehicleGroup = new THREE.Group();
 						vehicleGroup.name = "Vehicle";
+
+			      { // render the path
+							let geometry = new THREE.Geometry();
+							for (let ii = 0; ii < rtkTrajectory.numStates; ii++) {
+								geometry.vertices[ii] = rtkTrajectory.states[ii].pose.clone();
+							}
+			        let material = new THREE.LineBasicMaterial({color: new THREE.Color(0x00ff00)});
+			        material.uniforms = {initialTime:{value:t_init}};
+							// material.opacity = 0.0;
+							// material.transparent = true;
+			        let line = new THREE.Line(geometry, material, {closed: closedPath});
+			        line.name = "RTK Trajectory";
+							line.visible = false;
+							viewer.scene.scene.add( line );
+							viewer.scene.dispatchEvent({"type": "vehicle_layer_added", "vehicleLayer": line });
+			      }
 
 						// Add Polar Grid Helper:
 						const gridRadius = 100; // meters
@@ -639,13 +685,57 @@
 			});
 		}
 
+
+// Reload Lanes Button Code (Start)
+window.annotateLanesMode = false;
+$(document).ready(() => {
+	// Configure Playbar
+	$("#reload_lanes_button")[0].style.display="block"
+	let reloadLanesButton = $("#reload_lanes_button")[0];
+	reloadLanesButton.addEventListener("mousedown", () => {
+
+		// REMOVE LANES
+		let removeLanes = viewer.scene.scene.getChildByName("Lanes");
+		while(removeLanes) {
+			viewer.scene.scene.remove(removeLanes);
+			removeLanes = viewer.scene.scene.getChildByName("Lanes");
+		}
+
+		// TOGGLE window.annotateLanesMode
+		window.annotateLanesMode = !window.annotateLanesMode;
+
+		// Disable Button:
+		reloadLanesButton.disabled = true;
+
+		{
+			$("#loading-bar")[0].style.display = "none";
+			setLoadingScreen();
+			loadLanesCallback(s3, bucket, name, () => {
+				removeLoadingScreen();
+
+				// TOGGLE BUTTON TEXT
+				if (window.annotateLanesMode) {
+					reload_lanes_button.innerText = "View Truth Lanes";
+				} else {
+					reload_lanes_button.innerText = "Annotate Truth Lanes";
+				}
+
+				reloadLanesButton.disabled = false
+
+			});
+		}
+	});
+});
+// Reload Lanes Button Code (end)
+
+
 // Load Lanes Code (start)
 		// Load Lanes Truth Data:
-		async function loadLanesCallback(s3, bucket, name) {
+		async function loadLanesCallback(s3, bucket, name, callback) {
 
 			let filename, tmpSupplierNum;
 			tmpSupplierNum = -1;
-			await loadLanes(s3, bucket, name, filename, tmpSupplierNum, (laneGeometries) => {
+			await loadLanes(s3, bucket, name, filename, tmpSupplierNum, window.annotateLanesMode, (laneGeometries) => {
 
 				let lanesLayer = new THREE.Group();
 				lanesLayer.name = "Lanes";
@@ -657,6 +747,9 @@
 					"type": "truth_layer_added",
 					"truthLayer": lanesLayer
 				});
+				if (callback) {
+					callback();
+				}
 			});
 
 			if (visualizationMode == "aptivLanes") {
@@ -716,7 +809,6 @@
 
 		}
 // Load Lanes Code (end)
-
 
 // Load Gaps Code (Start)
 window.gapsLoaded = false;

@@ -22,3 +22,8 @@ libs/CesiumUnminified
 pointclouds/
 develop/clouds
 pointclouds/veritas
+
+
+# Unwanted Data Filetypes
+*.fb
+*.csv

@@ -1,4 +1,4 @@
-#loading_overlay {
+#loading_overlay, #annotationScreen {
     position: fixed; /* Sit on top of the page content */
     display: table; /* Hidden by default */
     width: 100%; /* Full width (cover the whole page) */
@@ -33,4 +33,16 @@
   text-shadow: none;
   display: table-cell;
   vertical-align: middle;
+}
+
+#annotation-label {
+ margin: auto;
+ width: 50%;
+ height: 50%;
+ font-family: 'Open Sans', sans-serif;
+ color: #FFFFFF;
+ text-shadow: none;
+ display: table-cell;
+ vertical-align: middle;
+ text-align: center;
 }

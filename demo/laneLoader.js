@@ -1,7 +1,8 @@
+import { Measure } from "../src/utils/Measure.js";
 
 
 
-export async function loadLanes(s3, bucket, name, fname, supplierNum, callback) {
+export async function loadLanes(s3, bucket, name, fname, supplierNum, annotationMode, callback) {
   const tstart = performance.now();
 
   // Logic for dealing with Map Supplier Data:
@@ -33,7 +34,7 @@ export async function loadLanes(s3, bucket, name, fname, supplierNum, callback) 
                        console.log(err, err.stack);
                      } else {
                        const FlatbufferModule = await import(schemaUrl);
-                       const laneGeometries = parseLanes(data.Body, FlatbufferModule, resolvedSupplierNum);
+                       const laneGeometries = parseLanes(data.Body, FlatbufferModule, resolvedSupplierNum, annotationMode);
                        callback( laneGeometries );
                      }});
     })();
@@ -63,7 +64,7 @@ export async function loadLanes(s3, bucket, name, fname, supplierNum, callback) 
       }
 
       let bytesArray = new Uint8Array(response);
-      const laneGeometries = parseLanes(bytesArray, FlatbufferModule, resolvedSupplierNum);
+      const laneGeometries = parseLanes(bytesArray, FlatbufferModule, resolvedSupplierNum, annotationMode);
       callback( laneGeometries );
     };
 
@@ -74,7 +75,7 @@ export async function loadLanes(s3, bucket, name, fname, supplierNum, callback) 
 
 
 
-function parseLanes(bytesArray, FlatbufferModule, supplierNum) {
+function parseLanes(bytesArray, FlatbufferModule, supplierNum, annotationMode) {
 
   let numBytes = bytesArray.length;
   let lanes = [];
@@ -96,7 +97,7 @@ function parseLanes(bytesArray, FlatbufferModule, supplierNum) {
     lanes.push(lane);
     segOffset += segSize;
   }
-  return createLaneGeometriesOld(lanes, supplierNum);
+  return createLaneGeometriesOld(lanes, supplierNum, annotationMode);
 }
 
 
@@ -208,7 +209,7 @@ function createLaneGeometries(vertexGroups, material) {
 }
 
 
-function createLaneGeometriesOld(lanes, supplierNum) {
+function createLaneGeometriesOld(lanes, supplierNum, annotationMode) {
 
   let materialLeft, materialSpine, materialRight;
   switch (supplierNum) {
@@ -243,6 +244,12 @@ function createLaneGeometriesOld(lanes, supplierNum) {
       materialRight = new THREE.MeshBasicMaterial({color: 0xffffff});
   }
 
+  let laneLeft, laneRight, laneSpine;
+  laneLeft = new Measure(); laneLeft.name = "Lane Left"; laneLeft.closed = false; laneLeft.showCoordinates = true; laneLeft.showAngles = true;
+  // laneSpine = new Measure(); laneSpine.name = "Lane Spine"; //laneRight.closed = false;
+  laneRight = new Measure(); laneRight.name = "Lane Right"; laneRight.closed = false; laneRight.showCoordinates = true; laneRight.showAngles = true;
+
+
   let lane;
   let lefts = [];
   let rights = [];
@@ -260,19 +267,35 @@ function createLaneGeometriesOld(lanes, supplierNum) {
     for(let jj=0, numVertices=lane.leftLength(); jj<numVertices; jj++) {
       left = lane.left(jj);
 
-      geometryLeft.vertices.push( new THREE.Vector3(left.x(), left.y(), left.z()));
+      if (annotationMode) {
+        laneLeft.addMarker(new THREE.Vector3(left.x(), left.y(), left.z()));
+      } else {
+        geometryLeft.vertices.push( new THREE.Vector3(left.x(), left.y(), left.z()));
+      }
     }
 
     for(let jj=0, numVertices=lane.rightLength(); jj<numVertices; jj++) {
       right = lane.right(jj);
 
-      geometryRight.vertices.push( new THREE.Vector3(right.x(), right.y(), right.z()));
+      if (annotationMode) {
+        laneRight.addMarker(new THREE.Vector3(right.x(), right.y(), right.z()));
+      } else {
+        geometryRight.vertices.push( new THREE.Vector3(right.x(), right.y(), right.z()));
+      }
     }
 
     for(let jj=0, numVertices=lane.spineLength(); jj<numVertices; jj++) {
       spine = lane.spine(jj);
 
-      geometrySpine.vertices.push( new THREE.Vector3(spine.x(), spine.y(), spine.z()));
+      if (annotationMode) {
+        // laneSpine.addMarker(new THREE.Vector3(spine.x(), spine.y(), spine.z()));
+      } else {
+        geometrySpine.vertices.push( new THREE.Vector3(spine.x(), spine.y(), spine.z()));
+      }
+    }
+
+    if (annotationMode) {
+      continue;
     }
 
     // // NOTE TRYING MESHLINE:
@@ -367,6 +390,12 @@ function createLaneGeometriesOld(lanes, supplierNum) {
     // lefts.push(new THREE.Line(geometryLeft, materialLeft) );
     // spines.push(new THREE.Line(geometrySpine, materialSpine) );
     // rights.push(new THREE.Line(geometryRight, materialRight) );
+  }
+
+  if (annotationMode) {
+    all.push(laneLeft);
+    // all.push(laneSpine);
+    all.push(laneRight);
   }
 
   let output = {

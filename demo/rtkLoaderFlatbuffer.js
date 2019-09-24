@@ -64,6 +64,8 @@ function parseRTK(bytesArray, FlatbufferModule) {
   let mpos = [];
   let timestamps = [];
   let orientations = [];
+  let adjustedOrientations = [];
+  let allAdjustedOrientationsAreZero = true;
   let t_init, t_range;
   let count = 0;
 
@@ -100,11 +102,22 @@ function parseRTK(bytesArray, FlatbufferModule) {
       orientations.push( [pose.orientation().x(), pose.orientation().y(), pose.orientation().z()] );
       timestamps.push(pose.timestamp());
 
+      if(typeof pose.adjustedUTMOrientation === 'function') {
+        adjustedOrientations.push( [pose.adjustedUTMOrientation.x(), pose.orientation.y(), pose.orientation.z()] );
+        // adjustedOrientations.push( [pose.adjustedUTMOrientation.x(), pose.adjustedUTMOrientation.y(), pose.adjustedUTMOrientation.z()] );
+        allAdjustedOrientationsAreZero = allAdjustedOrientationsAreZero && adjustedUTMOrientations[ii][0]; // == 0 && adjustedUTMOrientation[ii][1] == 0 && adjustedUTMOrientations[ii][2] == 0;
+      }
+
       count += 1;
     }
 
     // rtkPoses.push(pose);
     segOffset += segSize;
   }
+
+  if (!allAdjustedOrientationsAreZero) {
+    orientations = adjustedOrientations;
+  }
+
   return {mpos, orientations, timestamps, t_init, t_range};
 }

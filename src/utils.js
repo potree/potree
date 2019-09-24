@@ -271,9 +271,7 @@ Potree.utils = class {
 		return texture;
 	};
 
-	static get3dPointFrom2dCoords (coords, camera, viewer) {
-		const renderer = viewer.renderer;
-		
+	static get3dPointFrom2dCoords (coords, camera, renderer) {
 		const fixedCoords = {
 			x: (coords.x / renderer.domElement.clientWidth) * 2 - 1,
 			y: -(coords.y / renderer.domElement.clientHeight) * 2 + 1
@@ -284,9 +282,7 @@ Potree.utils = class {
 		return raycaster.ray.origin;
 	}
 
-	static get2dCoordsFrom3dPoint (vector, camera, viewer) {
-		let renderer = viewer.renderer;
-
+	static get2dCoordsFrom3dPoint (vector, camera, renderer) {
 		vector.project(camera);
 
 		vector.x = Math.round((vector.x + 1) * renderer.domElement.clientWidth / 2);

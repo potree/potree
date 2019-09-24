@@ -251,6 +251,8 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 	}
 
 	updateMaterial (material, visibleNodes, camera, renderer) {
+		if (!renderer.domElement) return;
+
 		material.fov = camera.fov * (Math.PI / 180);
 		material.screenWidth = renderer.domElement.clientWidth;
 		material.screenHeight = renderer.domElement.clientHeight;
@@ -668,7 +670,6 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 	pick(viewer, camera, ray, params = {}){
 
 		let renderer = viewer.renderer;
-		let pRenderer = viewer.pRenderer;
 		
 		performance.mark("pick-start");
 		
@@ -751,7 +752,7 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 		renderer.state.buffers.depth.setTest(pickMaterial.depthTest);
 		renderer.state.buffers.depth.setMask(pickMaterial.depthWrite);
 		renderer.state.setBlending(THREE.NoBlending);
-		
+
 		{ // RENDER
 			renderer.setRenderTarget(pickState.renderTarget);
 			gl.clearColor(0, 0, 0, 0);
@@ -760,7 +761,9 @@ Potree.PointCloudOctree = class extends Potree.PointCloudTree {
 			let tmp = this.material;
 			this.material = pickMaterial;
 			
-			pRenderer.renderOctree(this, nodes, camera, pickState.renderTarget);
+			viewer.pRenderers.forEach((pRenderer) => {
+				pRenderer.renderOctree(this, nodes, camera, pickState.renderTarget);
+			});
 			
 			this.material = tmp;
 		}

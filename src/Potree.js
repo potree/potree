@@ -1,4 +1,3 @@
-
 function Potree () {
 
 }
@@ -312,12 +311,22 @@ Potree.Points = class Points {
 	}
 };
 
+const loadPointCloudDefaultOptions = {
+	// Name of point cloud
+	name: 'Point Cloud',
+	// Number of point clouds to clone. This is used in Extractor to display the same point clouds in different views
+	numberOfClones: 1,
+};
+
 /* eslint-disable standard/no-callback-literal */
-Potree.loadPointCloud = function (path, name, callback) {
-	let loaded = function (pointcloud) {
-		pointcloud.name = name;
-		callback({type: 'pointcloud_loaded', pointcloud: pointcloud});
+Potree.loadPointCloud = function (path, options = loadPointCloudDefaultOptions, callback) {
+	let loaded = function (pointclouds) {
+		pointclouds[0].name = options.name;
+		callback({ type: 'pointcloud_loaded', pointclouds });
 	};
+
+	// Empty array used in map function to create clones
+	const arrayToMap = new Array((options.numberOfClones || 0) + 1).fill();
 
 	// load pointcloud
 	if (!path) {
@@ -327,8 +336,8 @@ Potree.loadPointCloud = function (path, name, callback) {
 			if (!geometry) {
 				console.error(new Error(`failed to load point cloud from URL: ${path}`));
 			} else {
-				let pointcloud = new Potree.PointCloudOctree(geometry);
-				loaded(pointcloud);
+				const pointClouds = arrayToMap.map(() => new Potree.PointCloudOctree(geometry));
+				loaded(pointClouds);
 			}
 		});
 	} else if (path.indexOf('greyhound://') === 0) {
@@ -337,8 +346,8 @@ Potree.loadPointCloud = function (path, name, callback) {
 			if (!geometry) {
 				callback({type: 'loading_failed'});
 			} else {
-				let pointcloud = new Potree.PointCloudOctree(geometry);
-				loaded(pointcloud);
+				const pointClouds = arrayToMap.map(() => new Potree.PointCloudOctree(geometry));
+				loaded(pointClouds);
 			}
 		});
 	} else if (path.indexOf('cloud.js') > 0) {
@@ -346,8 +355,8 @@ Potree.loadPointCloud = function (path, name, callback) {
 			if (!geometry) {
 				callback({type: 'loading_failed'});
 			} else {
-				let pointcloud = new Potree.PointCloudOctree(geometry);
-				loaded(pointcloud);
+				const pointClouds = arrayToMap.map(() => new Potree.PointCloudOctree(geometry));
+				loaded(pointClouds);
 			}
 		});
 	} else if (path.indexOf('.vpc') > 0) {
@@ -355,8 +364,8 @@ Potree.loadPointCloud = function (path, name, callback) {
 			if (!geometry) {
 				callback({type: 'loading_failed'});
 			} else {
-				let pointcloud = new Potree.PointCloudArena4D(geometry);
-				loaded(pointcloud);
+				const pointClouds = arrayToMap.map(() => new Potree.PointCloudOctree(geometry));
+				loaded(pointClouds);
 			}
 		});
 	} else {
@@ -406,13 +415,14 @@ Potree.getLRU = function () {
 	return Potree.lru;
 };
 
-Potree.updateVisibilityStructures = function(pointclouds, camera, renderer) {
+Potree.updateVisibilityStructures = function(pointclouds, cameras, renderers) {
 	let frustums = [];
 	let camObjPositions = [];
 	let priorityQueue = new BinaryHeap(function (x) { return 1 / x.weight; });
 
 	for (let i = 0; i < pointclouds.length; i++) {
-		let pointcloud = pointclouds[i];
+		const pointcloud = pointclouds[i];
+		const camera = cameras[i];
 
 		if (!pointcloud.initialized()) {
 			continue;
@@ -452,9 +462,6 @@ Potree.updateVisibilityStructures = function(pointclouds, camera, renderer) {
 		}
 
 		// hide all previously visible nodes
-		// if(pointcloud.root instanceof Potree.PointCloudOctreeNode){
-		//	pointcloud.hideDescendants(pointcloud.root.sceneNode);
-		// }
 		if (pointcloud.root.isTreeNode()) {
 			pointcloud.hideDescendants(pointcloud.root.sceneNode);
 		}
@@ -481,29 +488,9 @@ Potree.getDEMWorkerInstance = function () {
 };
 
 
-Potree.updateVisibility = function(pointclouds, camera, renderer){
-
-	let numVisibleNodes = 0;
-	let numVisiblePoints = 0;
-
-	let numVisiblePointsInPointclouds = new Map(pointclouds.map(pc => [pc, 0]));
-
-	let visibleNodes = [];
-	let visibleGeometry = [];
-	let unloadedGeometry = [];
-
-	let lowestSpacing = Infinity;
-
-	// calculate object space frustum and cam pos and setup priority queue
-	let s = Potree.updateVisibilityStructures(pointclouds, camera, renderer);
-	let frustums = s.frustums;
-	let camObjPositions = s.camObjPositions;
-	let priorityQueue = s.priorityQueue;
-
-	let loadedToGPUThisFrame = 0;
-	
-	let domWidth = renderer.domElement.clientWidth;
-	let domHeight = renderer.domElement.clientHeight;
+Potree.updateVisibility = function(pointclouds, cameras, renderers){
+	const [camera] = cameras;
+	const [renderer] = renderers;
 
 	// check if pointcloud has been transformed
 	// some code will only be executed if changes have been detected
@@ -536,6 +523,27 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 		}
 	}
 
+	let numVisibleNodes = 0;
+	let numVisiblePoints = 0;
+
+	let numVisiblePointsInPointclouds = new Map(pointclouds.map(pc => [pc, 0]));
+
+	let visibleNodes = [];
+	let visibleGeometry = [];
+	let unloadedGeometry = [];
+
+	let lowestSpacing = Infinity;	
+	
+	let s = Potree.updateVisibilityStructures(pointclouds, cameras, renderers);
+	let frustums = s.frustums;
+	let camObjPositions = s.camObjPositions;
+	let priorityQueue = s.priorityQueue;
+
+	let loadedToGPUThisFrame = 0;
+	
+	let domWidth = renderer.domElement.clientWidth;
+	let domHeight = renderer.domElement.clientHeight;
+
 	while (priorityQueue.size() > 0) {
 		let element = priorityQueue.pop();
 		let node = element.node;
@@ -550,10 +558,8 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 		// }
 
 		let box = node.getBoundingBox();
-		let frustum = frustums[element.pointcloud];
-		let camObjPos = camObjPositions[element.pointcloud];
 
-		let insideFrustum = frustum.intersectsBox(box);
+		let insideFrustum = frustums.some(x => x.intersectsBox(box));
 		let maxLevel = pointcloud.maxLevel || Infinity;
 		let level = node.getLevel();
 		let visible = insideFrustum;
@@ -700,16 +706,20 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 			if(camera.isPerspectiveCamera){
 				let sphere = child.getBoundingSphere();
 				let center = sphere.center;
-				//let distance = sphere.center.distanceTo(camObjPos);
 				
-				let dx = camObjPos.x - center.x;
-				let dy = camObjPos.y - center.y;
-				let dz = camObjPos.z - center.z;
+				const distances = camObjPositions.map((pos, i) => {
+					let dx = pos.x - center.x;
+					let dy = pos.y - center.y;
+					let dz = pos.z - center.z;
+					
+					let dd = dx * dx + dy * dy + dz * dz;
+					const dist = Math.sqrt(dd);
+
+					return dist;
+				});
 				
-				let dd = dx * dx + dy * dy + dz * dz;
-				let distance = Math.sqrt(dd);
-				
-				
+				const distance = Math.min(...distances);
+
 				let radius = sphere.radius;
 				
 				let fov = (camera.fov * Math.PI) / 180;
@@ -728,9 +738,10 @@ Potree.updateVisibility = function(pointclouds, camera, renderer){
 				}
 			} else {
 				// TODO ortho visibility
-				let bb = child.getBoundingBox();				
-				let distance = child.getBoundingSphere().center.distanceTo(camObjPos);
+				let bb = child.getBoundingBox();
+				const distances = camObjPositions.map(pos => child.getBoundingSphere().center.distanceTo(pos));
 				let diagonal = bb.max.clone().sub(bb.min).length();
+				const distance = Math.min(...distances);
 				weight = diagonal / distance;
 			}
 

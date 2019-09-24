@@ -1,17 +1,22 @@
 
 Potree.Scene = class extends THREE.EventDispatcher{
 
-	constructor(){
+	constructor(renderers){
 		super();
 
 		this.annotations = new Potree.Annotation();
 		
 		this.scene = new THREE.Scene();
 		this.sceneBG = new THREE.Scene();
-		this.scenePointCloud = new THREE.Scene();
+		// Create separate scene for each view
+		this.scenePointClouds = renderers.map(x => new THREE.Scene());
 
-		this.cameraP = new THREE.PerspectiveCamera(this.fov, 1, 0.1, 1000*1000);
-		this.cameraO = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 1000*1000);
+		this.cameraP = new THREE.PerspectiveCamera(this.fov, 1, 0.1, 1000 * 1000);
+		this.cameraO = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 1000 * 1000);
+		this.cameras = [{
+			perspective: this.cameraP,
+			orthographic: this.cameraO,
+		}];
 		this.cameraBG = new THREE.Camera();
 		this.cameraScreenSpace = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 10);
 		this.cameraMode = Potree.CameraMode.PERSPECTIVE;
@@ -22,16 +27,30 @@ Potree.Scene = class extends THREE.EventDispatcher{
 		this.volumes = [];
 		this.polygonClipVolumes = [];
 	
+		this.extractorControls = null;
 		this.rotationControls = null;
 		this.fpControls = null;
 		this.orbitControls = null;
 		this.earthControls = null;
 		this.geoControls = null;
 		this.inputHandler = null;
+		this.inputHandlers = [];
 
 		this.view = new Potree.View();
 
 		this.directionalLight = null;
+
+		if (renderers.length > 1) {
+			this.cameras.push({
+				perspective: new THREE.PerspectiveCamera(this.fov, 1, 0.1, 1000 * 1000),
+				orthographic: new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 1000 * 1000),
+			});
+		}
+
+		this.views = [];
+		renderers.forEach((renderer) => {
+			this.views.push(new Potree.View());
+		});
 
 		this.initialize();
 	}
@@ -92,7 +111,7 @@ Potree.Scene = class extends THREE.EventDispatcher{
 	getBoundingBox(pointclouds = this.pointclouds){
 		let box = new THREE.Box3();
 
-		this.scenePointCloud.updateMatrixWorld(true);
+		this.scenePointClouds.forEach(spc => spc.updateMatrixWorld(true));
 		this.referenceFrame.updateMatrixWorld(true);
 
 		for (let pointcloud of pointclouds) {
@@ -107,8 +126,12 @@ Potree.Scene = class extends THREE.EventDispatcher{
 	}
 
 	addPointCloud (pointcloud) {
+		// Allow to have only one point cloud per scene if there are multiple views.
+		// This allows us to have different crop views in Extractor.
+		const scenePointCloud = this.scenePointClouds[this.pointclouds.length] || this.scenePointClouds[0];
+		scenePointCloud.add(pointcloud);
+
 		this.pointclouds.push(pointcloud);
-		this.scenePointCloud.add(pointcloud);
 
 		this.dispatchEvent({
 			type: 'pointcloud_added',
@@ -227,20 +250,23 @@ Potree.Scene = class extends THREE.EventDispatcher{
 		}
 	}
 
-	getActiveCamera() {
-		return this.cameraMode == Potree.CameraMode.PERSPECTIVE ? this.cameraP : this.cameraO;		
+	getActiveCamera(index = 0) {
+		const cameraMode = this.cameraMode === Potree.CameraMode.PERSPECTIVE ? 'perspective' : 'orthographic';
+		return this.cameras[index][cameraMode];
 	}
 	
 	initialize(){
-		
 		this.referenceFrame = new THREE.Object3D();
 		this.referenceFrame.matrixAutoUpdate = false;
-		this.scenePointCloud.add(this.referenceFrame);
+		this.scenePointClouds.forEach(spc => spc.add(this.referenceFrame));
 
-		this.cameraP.up.set(0, 0, 1);
-		this.cameraP.position.set(1000, 1000, 1000);
-		this.cameraO.up.set(0, 0, 1);
-		this.cameraO.position.set(1000, 1000, 1000);
+		this.cameras.forEach((c) => {
+			c.perspective.up.set(0, 0, 1);
+			c.perspective.position.set(1000, 1000, 1000);
+			c.orthographic.up.set(0, 0, 1);
+			c.orthographic.position.set(1000, 1000, 1000);
+		});
+
 		//this.camera.rotation.y = -Math.PI / 4;
 		//this.camera.rotation.x = -Math.PI / 6;
 		this.cameraScreenSpace.lookAt(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, -1), new THREE.Vector3(0, 1, 0));
@@ -248,10 +274,10 @@ Potree.Scene = class extends THREE.EventDispatcher{
 		this.directionalLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
 		this.directionalLight.position.set( 10, 10, 10 );
 		this.directionalLight.lookAt( new THREE.Vector3(0, 0, 0));
-		this.scenePointCloud.add( this.directionalLight );
+		this.scenePointClouds.forEach(spc => spc.add(this.directionalLight));
 		
 		let light = new THREE.AmbientLight( 0x555555 ); // soft white light
-		this.scenePointCloud.add( light );
+		this.scenePointClouds.forEach(spc => spc.add(light));
 		
 		//let grid = Potree.utils.createGrid(5, 5, 2);
 		//this.scene.add(grid);

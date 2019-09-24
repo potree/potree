@@ -1,6 +1,4 @@
 /**
- * @author mschuetz / http://mschuetz.at
- *
  * adapted from THREE.OrbitControls by
  *
  * @author qiao / https://github.com/qiao
@@ -12,8 +10,8 @@
  *
  *
  */
- 
-Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
+
+Potree.ExtractorControls = class ExtractorControls extends THREE.EventDispatcher{
 	
 	constructor(viewer, index){
 		super();
@@ -25,14 +23,24 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 		this.scene = null;
 		this.sceneControls = new THREE.Scene();
 
-		this.rotationSpeed = 2;
+		this.rotationSpeed = 5;
 		this.panSpeed = 0.3;
+
+		this.minRadius = 0.3;
+		this.maxRadius = 300;
 
 		this.fadeFactor = 10;
 		this.yawDelta = 0;
 		this.pitchDelta = 0;
 		this.panDelta = new THREE.Vector2(0, 0);
 		this.radiusDelta = 0;
+		this.view = viewer.scene.views[this.index];
+
+		this.oppositeIndex = index === 1 ? 0 : 1;
+		this.oppositeView = viewer.scene.views[this.oppositeIndex];
+
+		this.callback = () => {};
+		this.onYawChange = () => {};
 
 		this.tweens = [];
 
@@ -53,13 +61,16 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 			};
 
 			if (e.drag.mouse === Potree.MOUSE.LEFT) {
-				this.yawDelta -= ndrag.x * this.rotationSpeed;
-				this.pitchDelta -= ndrag.y * this.rotationSpeed;
+				this.yawDelta += ndrag.x * this.rotationSpeed;
+
+				this.viewer.activeControls[this.oppositeIndex].yawDelta = this.yawDelta;
 
 				this.stopTweens();
 			} else if (e.drag.mouse === Potree.MOUSE.RIGHT) {
 				this.panDelta.x += ndrag.x * this.panSpeed;
 				this.panDelta.y += ndrag.y * this.panSpeed;
+
+				this.viewer.activeControls[this.oppositeIndex].panDelta.x = this.panDelta.x;
 
 				this.stopTweens();
 			}
@@ -73,6 +84,7 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 			let resolvedRadius = this.scene.views[index].radius + this.radiusDelta;
 
 			this.radiusDelta += -e.delta * resolvedRadius * 0.1;
+			this.viewer.activeControls[this.oppositeIndex].radiusDelta = this.radiusDelta;
 
 			this.stopTweens();
 		};
@@ -167,6 +179,8 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 			return;
 		}
 
+		const view = this.view;
+
 		let targetRadius = 0;
 		{
 			let minimumJumpDistance = 0.2;
@@ -177,11 +191,11 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 			let nodes = I.pointcloud.nodesOnRay(I.pointcloud.visibleNodes, ray);
 			let lastNode = nodes[nodes.length - 1];
 			let radius = lastNode.getBoundingSphere().radius;
-			targetRadius = Math.min(this.scene.views[this.index].radius, radius);
+			targetRadius = Math.min(view.radius, radius);
 			targetRadius = Math.max(minimumJumpDistance, targetRadius);
 		}
 
-		let d = this.scene.views[this.index].direction.multiplyScalar(-1);
+		let d = view.direction.multiplyScalar(-1);
 		let cameraTargetPosition = new THREE.Vector3().addVectors(I.location, d.multiplyScalar(targetRadius));
 		// TODO Unused: let controlsTargetPosition = I.location;
 
@@ -194,19 +208,19 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 			tween.easing(easing);
 			this.tweens.push(tween);
 
-			let startPos = this.scene.views[this.index].position.clone();
+			let startPos = view.position.clone();
 			let targetPos = cameraTargetPosition.clone();
-			let startRadius = this.scene.views[this.index].radius;
+			let startRadius = view.radius;
 			let targetRadius = cameraTargetPosition.distanceTo(I.location);
 
 			tween.onUpdate(() => {
 				let t = value.x;
-				this.scene.views[this.index].position.x = (1 - t) * startPos.x + t * targetPos.x;
-				this.scene.views[this.index].position.y = (1 - t) * startPos.y + t * targetPos.y;
-				this.scene.views[this.index].position.z = (1 - t) * startPos.z + t * targetPos.z;
+				view.position.x = (1 - t) * startPos.x + t * targetPos.x;
+				view.position.y = (1 - t) * startPos.y + t * targetPos.y;
+				view.position.z = (1 - t) * startPos.z + t * targetPos.z;
 
-				this.scene.views[this.index].radius = (1 - t) * startRadius + t * targetRadius;
-				this.viewer.setMoveSpeed(this.scene.views[this.index].radius / 2.5);
+				view.radius = (1 - t) * startRadius + t * targetRadius;
+				this.viewer.setMoveSpeed(view.radius / 2.5);
 			});
 
 			tween.onComplete(() => {
@@ -222,36 +236,65 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 		this.tweens = [];
 	}
 
+	updateYaw (yaw) {
+		const view = this.view;
+		const yawMove = view.yaw - yaw;
+		this.pivot = this.scene.pointclouds[0].boundingBox.getCenter();
+
+		if (yaw < -Math.PI) {
+			yaw += 2 * Math.PI;
+		} else
+		if (yaw > Math.PI) {
+			yaw -= 2 * Math.PI;
+		}
+		
+		view.yaw = yaw;
+
+		let pivotToCam = new THREE.Vector3().subVectors(view.position, this.pivot);
+		let pivotToCamTarget = new THREE.Vector3().subVectors(view.getPivot(), this.pivot);
+
+		pivotToCam.applyAxisAngle(new THREE.Vector3(0, 0, 1), -yawMove);
+		pivotToCamTarget.applyAxisAngle(new THREE.Vector3(0, 0, 1), -yawMove);
+
+		let newCam = new THREE.Vector3().addVectors(this.pivot, pivotToCam);
+
+		view.position.copy(newCam);
+	}
+
+	isViewMoving() {
+		return this.yawDelta ||
+			this.radiusDelta ||
+			this.panDelta.x ||
+			this.panDelta.y;
+	}
+
 	update (delta) {
-		let view = this.scene.views[this.index];
+		let view = this.view;
+
+		const toFixed = value => +value.toFixed(3);
+
+		const fixedRadiusDelta = toFixed(this.radiusDelta);
+		const fixedYawDelta = toFixed(this.yawDelta);
+		const fixedPanDelta = new THREE.Vector3(toFixed(this.panDelta.x), toFixed(this.panDelta.y));
+		if (fixedRadiusDelta !== 0) {
+			this.panDelta.set(0, 0);
+			this.yawDelta = 0;
+		} else
+		if (fixedYawDelta !== 0) {
+			this.panDelta.set(0, 0);
+			this.radiusDelta = 0;
+		} else
+		if (fixedPanDelta.x !== 0 || fixedPanDelta.y !== 0) {
+			this.radiusDelta = 0;
+			this.yawDelta = 0;
+		}
 
 		{ // apply rotation
-			// Do not update yaw or pitch values if there is no point cloud loaded
 			if (!this.scene.pointclouds.length) return;
 
-			// Find a volume that has clip setting
-			const cropVolume = this.scene.volumes.find(volume => volume.clip);
-			// Set the pivot point in the center of the point cloud or cropping volume
-			this.pivot = cropVolume
-				? cropVolume.position.clone()
-				: view.getPivot();
-			
-			let originalPitch = view.pitch;
-			let tmpView = view.clone();
-			tmpView.pitch = tmpView.pitch + this.pitchDelta;
-			this.pitchDelta = tmpView.pitch - originalPitch;
+			let progression = Math.min(1, this.fadeFactor * delta);
 
-			let pivotToCam = new THREE.Vector3().subVectors(view.position, this.pivot);
-			let side = view.getSide();
-
-			pivotToCam.applyAxisAngle(side, this.pitchDelta);
-			pivotToCam.applyAxisAngle(new THREE.Vector3(0, 0, 1), this.yawDelta);
-
-			let newCam = new THREE.Vector3().addVectors(this.pivot, pivotToCam);
-
-			view.position.copy(newCam);
-			view.yaw += this.yawDelta;
-			view.pitch += this.pitchDelta;
+			this.updateYaw(view.yaw - (progression * this.yawDelta));
 		}
 
 		{ // apply pan
@@ -267,19 +310,26 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 		{ // apply zoom
 			let progression = Math.min(1, this.fadeFactor * delta);
 
-			// let radius = view.radius + progression * this.radiusDelta * view.radius * 0.1;
 			let radius = view.radius + progression * this.radiusDelta;
 
-			let V = view.direction.multiplyScalar(-radius);
-			let position = new THREE.Vector3().addVectors(view.getPivot(), V);
-			view.radius = radius;
+			// Limit zoom in / out
+			radius = radius < this.minRadius ? this.minRadius : radius;
+			radius = radius > this.maxRadius ? this.maxRadius : radius;
 
-			view.position.copy(position);
+			view.radius = radius;
 		}
 
 		{
 			let speed = view.radius / 2.5;
 			this.viewer.setMoveSpeed(speed);
+		}
+
+		if (this.isViewMoving()) {
+			this.callback();
+		}
+
+		if (this.yawDelta) {
+			this.onYawChange();
 		}
 
 		{ // decelerate over time
@@ -289,7 +339,6 @@ Potree.OrbitControls = class OrbitControls extends THREE.EventDispatcher{
 			this.yawDelta *= attenuation;
 			this.pitchDelta *= attenuation;
 			this.panDelta.multiplyScalar(attenuation);
-			// this.radiusDelta *= attenuation;
 			this.radiusDelta -= progression * this.radiusDelta;
 		}
 	}

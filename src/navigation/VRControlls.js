@@ -154,6 +154,7 @@ export class VRControlls{
 	}
 
 	copyPad(pad){
+		const axes = pad.axes.map(a => a);
 		const buttons = pad.buttons.map(b => {return {pressed: b.pressed}});
 
 		const pose = {
@@ -161,6 +162,7 @@ export class VRControlls{
 		};
 
 		const copy = {
+			axes: axes,
 			buttons: buttons,
 			pose: pose, 
 			hand: pad.hand,
@@ -174,7 +176,7 @@ export class VRControlls{
 		return this.previousPads.find(c => c.index === gamepad.index);
 	}
 
-	update(){
+	update(delta){
 
 		const {selection, viewer, snLeft, snRight} = this;
 		const vr = viewer.vr;
@@ -223,7 +225,14 @@ export class VRControlls{
 		});
 
 		const toScene = (position) => {
-			return new THREE.Vector3(position.x, -position.z, position.y);
+
+			vr.node.updateMatrixWorld();
+			const world = vr.node.matrixWorld;
+
+			const scenePos = new THREE.Vector3(position.x, -position.z, position.y);
+			scenePos.applyMatrix4(world);
+
+			return scenePos;
 		};
 
 		if(triggered.length === 0){
@@ -390,19 +399,79 @@ export class VRControlls{
 		}
 		
 		if(triggered.length === 1){
-			// TRANSLATE 
+			// TRANSLATE POINT CLOUDS
 			const pad = triggered[0];
 			const prev = this.previousPad(pad);
 
-			const diff = toScene(new THREE.Vector3(
-				pad.pose.position[0] - prev.pose.position[0],
-				pad.pose.position[1] - prev.pose.position[1],
-				pad.pose.position[2] - prev.pose.position[2],
-			));
+			const flipWorld = new THREE.Matrix4().fromArray([
+					1, 0, 0, 0, 
+					0, 0, 1, 0, 
+					0, -1, 0, 0,
+					0, 0, 0, 1
+				]);
+			const flipView = new THREE.Matrix4().getInverse(flipWorld);
+
+			const p1 = new THREE.Vector3(...pad.pose.position).applyMatrix4(flipWorld);
+			const p2 = new THREE.Vector3(...prev.pose.position).applyMatrix4(flipWorld);
+
+			p1.applyMatrix4(vr.node.matrixWorld);
+			p2.applyMatrix4(vr.node.matrixWorld);
+
+			const diff = new THREE.Vector3().subVectors(p1, p2);
+
+			//const diff = toScene(new THREE.Vector3(
+			//	pad.pose.position[0] - prev.pose.position[0],
+			//	pad.pose.position[1] - prev.pose.position[1],
+			//	pad.pose.position[2] - prev.pose.position[2],
+			//));
 
 			for(const pc of selection){
 				pc.position.add(diff);
 			}
+		}
+	
+		{ // MOVE WITH JOYSTICK
+
+			let pad = [right, left].find(pad => pad !== undefined);
+
+			if(pad){
+
+				const flipWorld = new THREE.Matrix4().fromArray([
+					1, 0, 0, 0, 
+					0, 0, 1, 0, 
+					0, -1, 0, 0,
+					0, 0, 0, 1
+				]);
+				const flipView = new THREE.Matrix4().getInverse(flipWorld);
+
+				const axes = pad.axes;
+
+				const {frameData} = vr;
+
+				const leftView = new THREE.Matrix4().fromArray(frameData.leftViewMatrix);
+				const view = new THREE.Matrix4().multiplyMatrices(leftView, flipView);
+				const world = new THREE.Matrix4().getInverse(view);
+
+				const pos = new THREE.Vector3(0, 0, 0).applyMatrix4(world);
+				const pForward = new THREE.Vector3(0, 0, -1).applyMatrix4(world);
+				const pRight = new THREE.Vector3(1, 0, 0).applyMatrix4(world);
+				const pUp = new THREE.Vector3(0, 1, 0).applyMatrix4(world);
+				//const dir = new THREE.Vector3().subVectors(target, pos).normalize();
+
+				const dForward = new THREE.Vector3().subVectors(pForward, pos).normalize();
+				const dRight = new THREE.Vector3().subVectors(pRight, pos).normalize();
+				const dUp = new THREE.Vector3().subVectors(pUp, pos).normalize();
+
+				const dir = new THREE.Vector3().addVectors(
+					dRight.clone().multiplyScalar(axes[0]),
+					dForward.clone().multiplyScalar(axes[1])
+				);
+
+				const d = dir.clone().multiplyScalar(delta);
+				vr.node.position.add(d);
+
+			}
+
 		}
 
 		{ // MOVE CONTROLLER SCENE NODE

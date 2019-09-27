@@ -122,13 +122,9 @@
 			viewer.scene.scene.add( plane );
 		}
 
-		if(true){
-			const selection = [];
 
-			const controlls = new Potree.VRControlls(viewer);
-
-			viewer.addEventListener("update", (e) => controlls.update());
-		}
+		const controls = new Potree.VRControlls(viewer);
+		viewer.addEventListener("update", (e) => controls.update(e.delta));
 
 	</script>
 

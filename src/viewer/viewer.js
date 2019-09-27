@@ -1125,38 +1125,39 @@ export class Viewer extends EventDispatcher{
 		
 	}
 
-	async prepareVR(){
+	// async prepareVR(){
 
-		if(!navigator.getVRDisplays){
-			console.info("browser does not support WebVR");
+	// 	if(!navigator.getVRDisplays){
+	// 		console.info("browser does not support WebVR");
 
-			return false;
-		}
+	// 		return false;
+	// 	}
 
-		let frameData = new VRFrameData();
-		let displays = await navigator.getVRDisplays();
+	// 	let frameData = new VRFrameData();
+	// 	let displays = await navigator.getVRDisplays();
 
-		if(displays.length == 0){
-			console.info("no VR display found");
-			return false;
-		}
+	// 	if(displays.length == 0){
+	// 		console.info("no VR display found");
+	// 		return false;
+	// 	}
 
-		let display = displays[displays.length - 1];
-		display.depthNear = 0.1;
-		display.depthFar = 10000.0;
+	// 	let display = displays[displays.length - 1];
+	// 	display.depthNear = 0.1;
+	// 	display.depthFar = 10000.0;
 
-		if(!display.capabilities.canPresent){
-			// Not sure why canPresent would ever be false?
-			console.error("VR display canPresent === false");
-			return false;
-		}
+	// 	if(!display.capabilities.canPresent){
+	// 		// Not sure why canPresent would ever be false?
+	// 		console.error("VR display canPresent === false");
+	// 		return false;
+	// 	}
 
-		this.vr = {
-			frameData: frameData,
-			display: display,
-		};
+	// 	this.vr = {
+	// 		frameData: frameData,
+	// 		display: display,
+	// 		node: new THREE.Object3D(),
+	// 	};
 		
-	}
+	// }
 
 	async prepareVR(){
 
@@ -1187,6 +1188,7 @@ export class Viewer extends EventDispatcher{
 		this.vr = {
 			frameData: frameData,
 			display: display,
+			node: new THREE.Object3D(),
 		};
 		
 	}
@@ -1727,23 +1729,25 @@ export class Viewer extends EventDispatcher{
 				]);
 				const flipView = new THREE.Matrix4().getInverse(flipWorld);
 
+				vr.node.updateMatrixWorld();
+
 				{// LEFT
 					camera.projectionMatrix.fromArray(frameData.leftProjectionMatrix);
 
 					const leftView = new THREE.Matrix4().fromArray(frameData.leftViewMatrix);
-					const leftWorld = new THREE.Matrix4().getInverse(leftView);
+					const view = new THREE.Matrix4().multiplyMatrices(leftView, flipView);
+					const world = new THREE.Matrix4().getInverse(view);
 
-					camera.matrixWorldInverse.multiplyMatrices(leftView, flipView);
-					camera.matrixWorld.multiplyMatrices(leftWorld, flipWorld);
+					{
+						const tmp = new THREE.Matrix4().multiplyMatrices(vr.node.matrixWorld, world);
+						world.copy(tmp);
+						view.getInverse(world);
+					}
+
+					camera.matrixWorldInverse.copy(view);
+					camera.matrixWorld.copy(world);
 
 					const viewport = [0, 0, width / 2, height];
-
-
-					// { // DEBUG
-					// 	camera.projectionMatrix.copy(viewer.scene.cameraP.projectionMatrix);
-					// 	camera.matrixWorld.copy(viewer.scene.cameraP.matrixWorld);
-					// 	camera.matrixWorldInverse.copy(viewer.scene.cameraP.matrixWorldInverse);
-					// }
 
 					this.renderer.setViewport(...viewport);
 					pRenderer.render({camera: camera, viewport: viewport});
@@ -1753,14 +1757,19 @@ export class Viewer extends EventDispatcher{
 				{// RIGHT
 				
 					camera.projectionMatrix.fromArray(frameData.rightProjectionMatrix);
-					//camera.matrixWorldInverse.fromArray(frameData.rightViewMatrix);
-					//camera.matrixWorld.getInverse(camera.matrixWorldInverse);
 
 					const rightView = new THREE.Matrix4().fromArray(frameData.rightViewMatrix);
-					const rightWorld = new THREE.Matrix4().getInverse(rightView);
+					const view = new THREE.Matrix4().multiplyMatrices(rightView, flipView);
+					const world = new THREE.Matrix4().getInverse(view);
 
-					camera.matrixWorldInverse.multiplyMatrices(rightView, flipView);
-					camera.matrixWorld.multiplyMatrices(rightWorld, flipWorld);
+					{
+						const tmp = new THREE.Matrix4().multiplyMatrices(vr.node.matrixWorld, world);
+						world.copy(tmp);
+						view.getInverse(world);
+					}
+
+					camera.matrixWorldInverse.copy(view);
+					camera.matrixWorld.copy(world);
 
 					const viewport = [width / 2, 0, width / 2, height];
 
@@ -1784,8 +1793,17 @@ export class Viewer extends EventDispatcher{
 							centerView.elements[i] = (left[i] + right[i]) / 2;
 						}
 
-						camera.matrixWorldInverse.multiplyMatrices(centerView, flipView);
-						camera.matrixWorld.getInverse(camera.matrixWorldInverse);
+						const view = new THREE.Matrix4().multiplyMatrices(centerView, flipView);
+						const world = new THREE.Matrix4().getInverse(view);
+
+						{
+							const tmp = new THREE.Matrix4().multiplyMatrices(vr.node.matrixWorld, world);
+							world.copy(tmp);
+							view.getInverse(world);
+						}
+
+						camera.matrixWorldInverse.copy(view);
+						camera.matrixWorld.copy(world);
 					}
 
 

@@ -21,7 +21,7 @@ $(document).ready(function () {
               <input type="number" id="elevation_max" value=0.5 min=0 step="0.01">
             </span>
             <label class="switch">
-              <input type="checkbox" id="playbar_toggle">
+              <input type="checkbox" >
               <span class="toggleslider" id="toggleslider"></span>
             </label>
             <input type="range" name="playback_speed" id="playback_speed" min="1" max="8" value="4" step="any">

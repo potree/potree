@@ -711,6 +711,9 @@ $(document).ready(() => {
 				removeLanes = viewer.scene.scene.getChildByName("Lanes");
 			}
 
+			// Pause animation:
+			animationEngine.stop();
+
 			// TOGGLE window.annotateLanesModeActive
 			window.annotateLanesModeActive = !window.annotateLanesModeActive;
 
@@ -726,8 +729,10 @@ $(document).ready(() => {
 					// TOGGLE BUTTON TEXT
 					if (window.annotateLanesModeActive) {
 						reload_lanes_button.innerText = "View Truth Lanes";
+						document.getElementById("download_lanes_button").style.display = "block";
 					} else {
 						reload_lanes_button.innerText = "Annotate Truth Lanes";
+						document.getElementById("download_lanes_button").style.display = "none";
 					}
 
 					reloadLanesButton.disabled = false

@@ -193,7 +193,7 @@ $(document).ready(function () {
 
     });
 
-    playbarhtml.find("#download_lanes_button").mouseup(function() {
+    playbarhtml.find("#download_lanes_button").click(function() {
 
       function download(text, filename) {
         var element = document.createElement('a');
@@ -255,4 +255,5 @@ $(document).ready(function () {
     document.getElementById("toggle_calibration_panels").style.display = "none";
     document.getElementById("load_detections_button").style.display = "none";
     document.getElementById("load_gaps_button").style.display = "none";
+    document.getElementById("download_lanes_button").style.display = "none";
 });

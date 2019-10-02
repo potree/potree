@@ -340,7 +340,7 @@ function createLaneGeometriesOld(lanes, supplierNum, annotationMode) {
 
 
 
-        let length = p1.distanceTo(p2);
+        let length = Math.max(p1.distanceTo(p2), 0.001); // Clamp distance to min value of 1mm 
         let height = 0.01;
         let width = 0.1;
 

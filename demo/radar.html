@@ -283,39 +283,43 @@
 
 
 			window.addEventListener('keydown', (e) => {
-				if (e.code == "KeyA") {
-					window.truthAnnotationMode = 2;
-				} else if (e.code == "KeyS") {
-					window.truthAnnotationMode = 1;
-				} else if (e.shiftKey) {
-					window.truthAnnotationMode = (window.truthAnnotationMode + 1) % 3;
-				}
+				if (window.annotateLanesModeActive) {
+					if (e.code == "KeyA") {
+						window.truthAnnotationMode = 2;
+					} else if (e.code == "KeyS") {
+						window.truthAnnotationMode = 1;
+					} else if (e.shiftKey) {
+						window.truthAnnotationMode = (window.truthAnnotationMode + 1) % 3;
+					}
 
-				let div = document.getElementById("annotationScreen");
-				let label = document.getElementById("annotation-mode-text");
-				if (window.truthAnnotationMode == 0) {
-					div.style.background = "black";
-					div.style.opacity=0;
-					label.innerHTML = "NONE";
-				}
-				else if (window.truthAnnotationMode == 1) {
-					div.style.background = "red";
-					div.style.opacity=0.25;
-					label.innerHTML = "DELETE POINTS";
-				} else if (window.truthAnnotationMode == 2) {
-					div.style.background = "green";
-					div.style.opacity=0.25;
-					label.innerHTML = "ADD POINTS";
+					let div = document.getElementById("annotationScreen");
+					let label = document.getElementById("annotation-mode-text");
+					if (window.truthAnnotationMode == 0) {
+						div.style.background = "black";
+						div.style.opacity=0;
+						label.innerHTML = "NONE";
+					}
+					else if (window.truthAnnotationMode == 1) {
+						div.style.background = "red";
+						div.style.opacity=0.25;
+						label.innerHTML = "DELETE POINTS";
+					} else if (window.truthAnnotationMode == 2) {
+						div.style.background = "green";
+						div.style.opacity=0.25;
+						label.innerHTML = "ADD POINTS";
+					}
 				}
 			});
 
 			window.addEventListener("keyup", (e) => {
-				window.truthAnnotationMode = 0;
-				let div = document.getElementById("annotationScreen");
-				let label = document.getElementById("annotation-mode-text");
-				div.style.background = "black";
-				div.style.opacity=0;
-				label.innerHTML = "NONE";
+				if (window.annotateLanesModeActive) {
+					window.truthAnnotationMode = 0;
+					let div = document.getElementById("annotationScreen");
+					let label = document.getElementById("annotation-mode-text");
+					div.style.background = "black";
+					div.style.opacity=0;
+					label.innerHTML = "NONE";
+				}
 			});
 
 
@@ -687,42 +691,54 @@
 
 
 // Reload Lanes Button Code (Start)
-window.annotateLanesMode = false;
+window.annotateLanesModeActive = false;
 $(document).ready(() => {
 	// Configure Playbar
 	$("#reload_lanes_button")[0].style.display="block"
 	let reloadLanesButton = $("#reload_lanes_button")[0];
 	reloadLanesButton.addEventListener("mousedown", () => {
 
-		// REMOVE LANES
-		let removeLanes = viewer.scene.scene.getChildByName("Lanes");
-		while(removeLanes) {
-			viewer.scene.scene.remove(removeLanes);
-			removeLanes = viewer.scene.scene.getChildByName("Lanes");
+		let proceed = true;
+		if (window.annotateLanesModeActive) {
+			proceed = confirm("Proceed? Lanes will be reloaded, so ensure that annotations have been saved if you want to keep them.");
 		}
 
-		// TOGGLE window.annotateLanesMode
-		window.annotateLanesMode = !window.annotateLanesMode;
+		if (proceed) {
+			// REMOVE LANES
+			let removeLanes = viewer.scene.scene.getChildByName("Lanes");
+			while(removeLanes) {
+				viewer.scene.scene.remove(removeLanes);
+				removeLanes = viewer.scene.scene.getChildByName("Lanes");
+			}
 
-		// Disable Button:
-		reloadLanesButton.disabled = true;
+			// Pause animation:
+			animationEngine.stop();
 
-		{
-			$("#loading-bar")[0].style.display = "none";
-			setLoadingScreen();
-			loadLanesCallback(s3, bucket, name, () => {
-				removeLoadingScreen();
+			// TOGGLE window.annotateLanesModeActive
+			window.annotateLanesModeActive = !window.annotateLanesModeActive;
 
-				// TOGGLE BUTTON TEXT
-				if (window.annotateLanesMode) {
-					reload_lanes_button.innerText = "View Truth Lanes";
-				} else {
-					reload_lanes_button.innerText = "Annotate Truth Lanes";
-				}
+			// Disable Button:
+			reloadLanesButton.disabled = true;
 
-				reloadLanesButton.disabled = false
+			{
+				$("#loading-bar")[0].style.display = "none";
+				setLoadingScreen();
+				loadLanesCallback(s3, bucket, name, () => {
+					removeLoadingScreen();
 
-			});
+					// TOGGLE BUTTON TEXT
+					if (window.annotateLanesModeActive) {
+						reload_lanes_button.innerText = "View Truth Lanes";
+						document.getElementById("download_lanes_button").style.display = "block";
+					} else {
+						reload_lanes_button.innerText = "Annotate Truth Lanes";
+						document.getElementById("download_lanes_button").style.display = "none";
+					}
+
+					reloadLanesButton.disabled = false
+
+				});
+			}
 		}
 	});
 });
@@ -735,7 +751,7 @@ $(document).ready(() => {
 
 			let filename, tmpSupplierNum;
 			tmpSupplierNum = -1;
-			await loadLanes(s3, bucket, name, filename, tmpSupplierNum, window.annotateLanesMode, (laneGeometries) => {
+			await loadLanes(s3, bucket, name, filename, tmpSupplierNum, window.annotateLanesModeActive, (laneGeometries) => {
 
 				let lanesLayer = new THREE.Group();
 				lanesLayer.name = "Lanes";

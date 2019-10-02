@@ -20,6 +20,8 @@ export class VRControlls{
 		
 		this.viewer.scene.scene.add(this.snLeft.node);
 		this.viewer.scene.scene.add(this.snRight.node);
+		//this.viewer.scene.scene.add(this.snLeft.debug);
+		//this.viewer.scene.scene.add(this.snRight.debug);
 
 	}
 
@@ -34,8 +36,15 @@ export class VRControlls{
 
 		viewer.scene.scene.add(node);
 
+		const debug = new THREE.Mesh(geometry, new THREE.MeshNormalMaterial());
+		debug.position.set(0, 0, 0.5);
+		debug.scale.set(0.01, 0.01, 0.01);
+		debug.visible = false;
+
+
 		const controller = {
 			node: node,
+			debug: debug,
 		};
 		//viewer.scene.scene.add(node);
 
@@ -159,6 +168,7 @@ export class VRControlls{
 
 		const pose = {
 			position: new Float32Array(pad.pose.position),
+			orientation: new Float32Array(pad.pose.orientation),
 		};
 
 		const copy = {
@@ -176,9 +186,23 @@ export class VRControlls{
 		return this.previousPads.find(c => c.index === gamepad.index);
 	}
 
+	toScene(position){
+
+		const vr = viewer.vr;
+
+		vr.node.updateMatrixWorld();
+		const world = vr.node.matrixWorld;
+
+		const scenePos = new THREE.Vector3(position.x, -position.z, position.y);
+		scenePos.applyMatrix4(world);
+
+		return scenePos;
+	}
+
 	update(delta){
 
 		const {selection, viewer, snLeft, snRight} = this;
+		const toScene = this.toScene.bind(this);
 		const vr = viewer.vr;
 
 		const vrActive = vr && vr.display.isPresenting;
@@ -223,17 +247,6 @@ export class VRControlls{
 
 			return previouslyTriggered && !currentlyTriggered;
 		});
-
-		const toScene = (position) => {
-
-			vr.node.updateMatrixWorld();
-			const world = vr.node.matrixWorld;
-
-			const scenePos = new THREE.Vector3(position.x, -position.z, position.y);
-			scenePos.applyMatrix4(world);
-
-			return scenePos;
-		};
 
 		if(triggered.length === 0){
 			const positions = gamepads.map(pad => toScene(new THREE.Vector3(...pad.pose.position)));
@@ -452,23 +465,42 @@ export class VRControlls{
 				const view = new THREE.Matrix4().multiplyMatrices(leftView, flipView);
 				const world = new THREE.Matrix4().getInverse(view);
 
-				const pos = new THREE.Vector3(0, 0, 0).applyMatrix4(world);
-				const pForward = new THREE.Vector3(0, 0, -1).applyMatrix4(world);
-				const pRight = new THREE.Vector3(1, 0, 0).applyMatrix4(world);
-				const pUp = new THREE.Vector3(0, 1, 0).applyMatrix4(world);
-				//const dir = new THREE.Vector3().subVectors(target, pos).normalize();
+				{ // move to where the controller points
+					const opos = new THREE.Vector3(...right.pose.position);
+					const rotation = new THREE.Quaternion(...pad.pose.orientation);
+					const d = new THREE.Vector3(0, 0, -1);
+					d.applyQuaternion(rotation);
+					
+					const worldPos = toScene(opos);
+					const worldTarget = toScene(new THREE.Vector3().addVectors(opos, d));
+					const dir = new THREE.Vector3().subVectors(worldTarget, worldPos).normalize();
 
-				const dForward = new THREE.Vector3().subVectors(pForward, pos).normalize();
-				const dRight = new THREE.Vector3().subVectors(pRight, pos).normalize();
-				const dUp = new THREE.Vector3().subVectors(pUp, pos).normalize();
+					const amount = axes[1];
 
-				const dir = new THREE.Vector3().addVectors(
-					dRight.clone().multiplyScalar(axes[0]),
-					dForward.clone().multiplyScalar(axes[1])
-				);
+					const move = dir.clone().multiplyScalar(delta * amount);
 
-				const d = dir.clone().multiplyScalar(delta);
-				vr.node.position.add(d);
+					//const d = dir.clone().multiplyScalar(delta);
+					vr.node.position.add(move);
+				}
+
+				{ // move to trigger direction
+					// const pos = new THREE.Vector3(0, 0, 0).applyMatrix4(world);
+					// const pForward = new THREE.Vector3(0, 0, -1).applyMatrix4(world);
+					// const pRight = new THREE.Vector3(1, 0, 0).applyMatrix4(world);
+					// const pUp = new THREE.Vector3(0, 1, 0).applyMatrix4(world);
+
+					// const dForward = new THREE.Vector3().subVectors(pForward, pos).normalize();
+					// const dRight = new THREE.Vector3().subVectors(pRight, pos).normalize();
+					// const dUp = new THREE.Vector3().subVectors(pUp, pos).normalize();
+
+					// const dir = new THREE.Vector3().addVectors(
+					// 	dRight.clone().multiplyScalar(axes[0]),
+					// 	dForward.clone().multiplyScalar(axes[1])
+					// );
+
+					// const d = dir.clone().multiplyScalar(delta);
+					// vr.node.position.add(d);
+				}
 
 			}
 
@@ -477,7 +509,17 @@ export class VRControlls{
 		{ // MOVE CONTROLLER SCENE NODE
 			if(right){
 				const {node, debug} = snLeft;
-				const position = toScene(new THREE.Vector3(...right.pose.position));
+				const opos = new THREE.Vector3(...right.pose.position);
+				const position = toScene(opos);
+				
+				const rotation = new THREE.Quaternion(...right.pose.orientation);
+				const d = new THREE.Vector3(0, 0, -1);
+				d.applyQuaternion(rotation);
+				const target = toScene(new THREE.Vector3().addVectors(opos, d));
+
+				//snLeft.debug.position.copy(target);
+				//snLeft.debug.visible = true;
+
 				node.position.copy(position);
 			}
 			

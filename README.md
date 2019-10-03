@@ -22,7 +22,7 @@ Reference: [Potree: Rendering Large Point Clouds in Web Browsers](https://www.cg
 
 Make sure you have [node.js](http://nodejs.org/) installed
 
-Install all dependencies, as specified in package.json, 
+Install all dependencies, as specified in package.json,
 then, install the gulp build tool:
 
     cd <potree_directory>
@@ -30,9 +30,9 @@ then, install the gulp build tool:
     npm install -g gulp
     npm install -g rollup
 
-Use the ```gulp watch``` command to 
+Use the ```gulp watch``` command to
 
-* create ./build/potree 
+* create ./build/potree
 * watch for changes to the source code and automatically create a new build on change
 * start a web server at localhost:1234. Go to http://localhost:1234/examples/ to test the examples.
 
@@ -46,10 +46,10 @@ Deploy potree to the EC2 instances serving the Veritas sites:
 
 Active EC2 instances (as of 2019-05-16):
 
-| Name                        | IPv4 Public IP | Keypair            | Potree Location                                  | Description |
-| --------------------------- | -------------- | ------------------ | ------------------------------------------------ | ----------- |
-| (prod) PotreeServer                | 34.207.247.239 | `NextDroidDev.pem` | `/usr/share/nginx/html/potree`                   | "Production" server - intended to run on prod and demo sites but not running anywhere right now (does have latest master as of Sept. 11, 2019) |
-| (dev) PotreeServer) | 18.208.171.218 | `NextDroidDev.pem` | `~/git/GroundTruthVisualization/external/potree` | "Development" server - runs on dev and test (really runs everywhere right now) (2019-08-12) |
+| Name                        | IPv4 Public IP | DNS Address              | Keypair            | Potree Location                                  | Description |
+| --------------------------- | -------------- | ------------------------ | ------------------ | ------------------------------------------------ | ----------- |
+| (prod) PotreeServer)         | 18.208.171.218 | `prod.viz.nextdroid.com` | `NextDroidDev.pem` | `~/git/GroundTruthVisualization/external/potree` | "Production" server - runs  runs everywhere right now (but should be just for prod and maybe demo) (2019-10-03) |
+| (dev) PotreeServer         | 34.207.247.239 |  `dev.viz.nextdroid.com` | `NextDroidDev.pem` | `/usr/share/nginx/html/potree`                   | "Development" server - intended to run on dev and test sites but not running anywhere right now (does have latest develop as of Oct. 03, 2019) |
 
 Steps for deploying (primarily for Veritas Dev server):   
 1. ssh into the desired EC2 instance with the appropriate keypair  
@@ -74,10 +74,10 @@ ssh -i /path/to/NextDroidDev.pem ubuntu@18.208.171.218
 
 ## Inside EC2 instance:
 eval $(ssh-agent -s)		# activate ssh-agent
-ssh-add /path/to/id_rsa		# add your ssh private key 
+ssh-add /path/to/id_rsa		# add your ssh private key
 cd git/GroundTruthVisualization/external/potree/
 git fetch
-git checkout <branch> 
+git checkout <branch>
 gulp watch 					# let it compile then you can kill the process with ctrl-C
 ```
 

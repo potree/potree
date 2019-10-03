@@ -81,7 +81,6 @@ $(document).ready(function () {
         tmax = t + dtMax;
 
         window.viewer.setFilterGPSTimeRange(tmin, tmax);
-        window.animationEngine.updateTimeForAll(t);
       }
     }
 
@@ -101,12 +100,14 @@ $(document).ready(function () {
       const tmin = playbarhtml.find("#playbar_tmin");
       window.animationEngine.activeWindow.backward = Math.abs(Number(tmin.val()));
       updateClip();
+      window.animationEngine.updateTimeForAll();
     });
 
     playbarhtml.find("#playbar_tmax").on('input', function() {
       const tmax = playbarhtml.find("#playbar_tmax");
       window.animationEngine.activeWindow.forward = Math.abs(Number(tmax.val()));
       updateClip();
+      window.animationEngine.updateTimeForAll();
     });
 
     playbarhtml.find("#elevation_max").on('input', function() {
@@ -135,10 +136,7 @@ $(document).ready(function () {
 
       var scalefactor = 1;
       if (e.originalEvent.shiftKey) {
-        scalefactor = .01;
-        if (e.originalEvent.ctrlKey) { // shift and ctrl keys
-          scalefactor = 100;
-        }
+        scalefactor = 100;
       }
 
       var lidarRange = 1;

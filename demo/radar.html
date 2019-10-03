@@ -157,8 +157,8 @@
 		const names = JSON.parse(params.get("names"));
 		const name = params.get("clicked");
 		const visualizationMode = params.get("mode");
-		const annotateLanesAvailable = false; // TODO Read this field from post parameters passed by VeritasApp
-		const downloadLanesAvailable = false; // TODO Read this field from post parameters passed by VeritasApp
+		const annotateLanesAvailable = params.get('annotate') == 'Annotate';
+		const downloadLanesAvailable = annotateLanesAvailable;
 		const accessKeyId = params.get("key1");
 		const secretAccessKey = params.get("key2");
 		const sessionToken = params.get("key3");

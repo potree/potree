@@ -81,6 +81,7 @@ $(document).ready(function () {
         tmax = t + dtMax;
 
         window.viewer.setFilterGPSTimeRange(tmin, tmax);
+        window.animationEngine.updateTimeForAll(t);
       }
     }
 

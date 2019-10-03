@@ -1,5 +1,5 @@
 .potree_container .overlay {
-    height: 75px;
+    height: 85px;
     width: 100%;
     position: absolute;
     bottom: 0px;
@@ -127,7 +127,11 @@ input::-webkit-inner-spin-button {
   -webkit-appearance: none;
 }
 
-#time_display {
+#play_pause_table {
+  padding-top: 5px;
+}
+
+#time_display, #playbar_tmin, #playbar_tmax, #elevation_min, #elevation_max {
   background: none;
   border: none;
   color: white;
@@ -135,24 +139,37 @@ input::-webkit-inner-spin-button {
   font-size: 100%;
 }
 
+#time_display {
+  width: 125px;
+}
+
+#windows {
+  font-size: 75%;
+  text-align: center;
+}
+
 #playbar_tmin {
-  display: block;
+  display: inline;
   width: 50px;
+  text-align: center;
 }
 
 #playbar_tmax {
-  display: block;
+  display: inline;
   width: 50px;
+  text-align: center;
 }
 
 #elevation_min {
-  display: block;
+  display: inline;
   width: 50px;
+  text-align: center;
 }
 
 #elevation_max {
-  display: block;
+  display: inline;
   width: 50px;
+  text-align: center;
 }
 
 /* TOGGLE SWITCH */

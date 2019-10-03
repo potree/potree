@@ -80,7 +80,7 @@ function createControlMeshes(controlPoints, remShaderMaterial, FlatbufferModule,
     }
 
     var sphereGeo = new THREE.SphereBufferGeometry(radius);
-    remShaderMaterial.uniforms.color.value = new THREE.Color("blue");
+    remShaderMaterial.uniforms.color.value = new THREE.Color(0x00ffff);
     var sphereMesh = new THREE.Mesh(sphereGeo, remShaderMaterial);
     sphereMesh.position.set(vertex.x, vertex.y, vertex.z);
     sphereMesh.geometry.addAttribute('gpsTime', new THREE.Float32BufferAttribute(timestampArray, 1));

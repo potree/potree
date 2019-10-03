@@ -157,6 +157,8 @@
 		const names = JSON.parse(params.get("names"));
 		const name = params.get("clicked");
 		const visualizationMode = params.get("mode");
+		const annotateLanesAvailable = false; // TODO Read this field from post parameters passed by VeritasApp
+		const downloadLanesAvailable = false; // TODO Read this field from post parameters passed by VeritasApp
 		const accessKeyId = params.get("key1");
 		const secretAccessKey = params.get("key2");
 		const sessionToken = params.get("key3");
@@ -234,8 +236,17 @@
 				document.getElementById("load_radar_button").style.display = "none";
 				document.getElementById("load_gaps_button").style.display = "none";
 				document.getElementById("camera_projection_options").children[0].children[1].children[0].style.display = "none"; // Hide projective camera option
-				document.getElementById("playbar_tmax").value = 0;
-				document.getElementById("playbar_tmin").value = 0;
+			}
+
+			// Disable download lanes
+			if (!downloadLanesAvailable || !annotateLanesAvailable) {
+				let downloadLanesButton = document.getElementById("download_lanes_button");
+				downloadLanesButton.parentNode.removeChild(downloadLanesButton);
+
+				if (!annotateLanesAvailable) {
+					let reloadLanesButton = document.getElementById("reload_lanes_button");
+					reloadLanesButton.parentNode.removeChild(reloadLanesButton);
+				}
 			}
 
 			// Check if Classification Attribute is exists in PointCloud:
@@ -539,7 +550,7 @@
 									animationEngine.stop();
 									let val = parseFloat(time_display.value);
 									val = Math.max(0, val);
-									val = Math.min(animationEngine.timeRange, val);
+									val = Math.min(animationEngine.timeRange-.001, val);
 									animationEngine.timeline.t = val + animationEngine.tstart;
 									animationEngine.updateTimeForAll();
 					    }

@@ -388,8 +388,8 @@
 
 		// Load RTK: TODO REFACTOR THIS (a lot of stuff happenning here, break it up if possible)
 		function loadRtkCallback(s3, bucket, name, callback) {
-			loadRtk(s3, bucket, name, (pos, rot, timestamps, t_init, t_range) => {
-			// await loadRtkFlatbuffer(s3, bucket, name, (pos, rot, timestamps, t_init, t_range) => {
+			// loadRtk(s3, bucket, name, (pos, rot, timestamps, t_init, t_range) => {
+			loadRtkFlatbuffer(s3, bucket, name, (pos, rot, timestamps, t_init, t_range) => {
 				window.timeframe = {"tstart": t_init, "tend": t_init+t_range};
 
 				// TODO Move this into main loader function:

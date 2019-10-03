@@ -89,7 +89,7 @@ function parseRTK(RTKstring) {
     validCol = 20;  // isValid
   }
 
-  if (rows[0].includes["adjustedHeading"]) {
+  if (rows[0].includes("adjustedHeading")) {
     yawcol = 17;
   }
 

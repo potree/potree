@@ -99,13 +99,12 @@ function parseRTK(bytesArray, FlatbufferModule) {
       t_range = pose.timestamp() - t_init;
 
       mpos.push( [pose.locXY().x(), pose.locXY().y(), pose.pos().z()] );
-      orientations.push( [pose.orientation().x(), pose.orientation().y(), pose.orientation().z()] );
+      orientations.push( [pose.orientation().z(), pose.orientation().y(), pose.orientation().x()] );
       timestamps.push(pose.timestamp());
 
-      if(typeof pose.adjustedUTMOrientation === 'function') {
-        adjustedOrientations.push( [pose.adjustedUTMOrientation.x(), pose.orientation.y(), pose.orientation.z()] );
-        // adjustedOrientations.push( [pose.adjustedUTMOrientation.x(), pose.adjustedUTMOrientation.y(), pose.adjustedUTMOrientation.z()] );
-        allAdjustedOrientationsAreZero = allAdjustedOrientationsAreZero && adjustedUTMOrientations[ii][0]; // == 0 && adjustedUTMOrientation[ii][1] == 0 && adjustedUTMOrientations[ii][2] == 0;
+      if(typeof pose.adjustedOrientation === 'function') {
+        adjustedOrientations.push( [pose.orientation().z(), pose.orientation().y(), pose.adjustedOrientation().x()] ); // TODO use adjustedRoll and adjusted
+        allAdjustedOrientationsAreZero = allAdjustedOrientationsAreZero && (adjustedOrientations[adjustedOrientations.length-1][2] == 0); // == 0 && adjustedUTMOrientation[ii][1] == 0 && adjustedUTMOrientations[ii][2] == 0;
       }
 
       count += 1;

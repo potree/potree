@@ -1,5 +1,5 @@
 .potree_container .overlay {
-    height: 90px;
+    height: 85px;
     width: 100%;
     position: absolute;
     bottom: 0px;
@@ -125,6 +125,10 @@ input[type="number"] {
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
   -webkit-appearance: none;
+}
+
+#play_pause_table {
+  padding-top: 5px;
 }
 
 #time_display, #playbar_tmin, #playbar_tmax, #elevation_min, #elevation_max {

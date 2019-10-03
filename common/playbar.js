@@ -8,10 +8,15 @@ $(document).ready(function () {
         <div id="spacer">
 
           <div id="value" class="inline">
-            <input type="checkbox" id="toggleplay">
-            <button class="button" class="play" id="playbutton" class="inline"><i class="material-icons">play_arrow</i></button>
-            <button class="button" class="pause" id="pausebutton"><i class="material-icons">pause</i></button>
-            <span id='time_display_span'> Time (seconds): <input type="number" id="time_display" min=0 value=0 step="0.0001"> </span>
+
+            <table id='play_pause_table'>
+              <tr>
+                <td><input type="checkbox" id="toggleplay">
+                <button class="button" class="play" id="playbutton" class="inline"><i class="material-icons">play_arrow</i></button>
+                <button class="button" class="pause" id="pausebutton"><i class="material-icons">pause</i></button></td>
+                <td><span id='time_display_span'> Time (seconds): <input type="number" id="time_display" min=0 value=0 step="0.0001"> </span></td>
+              </tr>
+            </table>
 
             <table id="windows">
               <tr>
@@ -25,6 +30,7 @@ $(document).ready(function () {
                 <td>(m)</td>
               </tr>
             </table>
+
             <label class="switch">
               <input type="checkbox" >
               <span class="toggleslider" id="toggleslider"></span>

@@ -64,6 +64,8 @@ function parseRTK(bytesArray, FlatbufferModule) {
   let mpos = [];
   let timestamps = [];
   let orientations = [];
+  let adjustedOrientations = [];
+  let allAdjustedOrientationsAreZero = true;
   let t_init, t_range;
   let count = 0;
 
@@ -97,8 +99,13 @@ function parseRTK(bytesArray, FlatbufferModule) {
       t_range = pose.timestamp() - t_init;
 
       mpos.push( [pose.locXY().x(), pose.locXY().y(), pose.pos().z()] );
-      orientations.push( [pose.orientation().x(), pose.orientation().y(), pose.orientation().z()] );
+      orientations.push( [pose.orientation().z(), pose.orientation().y(), pose.orientation().x()] );
       timestamps.push(pose.timestamp());
+
+      if(typeof pose.adjustedOrientation === 'function') {
+        adjustedOrientations.push( [pose.orientation().z(), pose.orientation().y(), pose.adjustedOrientation().x()] ); // TODO use adjustedRoll and adjusted
+        allAdjustedOrientationsAreZero = allAdjustedOrientationsAreZero && (adjustedOrientations[adjustedOrientations.length-1][2] == 0); // == 0 && adjustedUTMOrientation[ii][1] == 0 && adjustedUTMOrientations[ii][2] == 0;
+      }
 
       count += 1;
     }
@@ -106,5 +113,10 @@ function parseRTK(bytesArray, FlatbufferModule) {
     // rtkPoses.push(pose);
     segOffset += segSize;
   }
+
+  if (!allAdjustedOrientationsAreZero) {
+    orientations = adjustedOrientations;
+  }
+
   return {mpos, orientations, timestamps, t_init, t_range};
 }

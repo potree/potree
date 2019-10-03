@@ -127,6 +127,14 @@ input::-webkit-inner-spin-button {
   -webkit-appearance: none;
 }
 
+#time_display {
+  background: none;
+  border: none;
+  color: white;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 100%;
+}
+
 #playbar_tmin {
   display: block;
   width: 50px;

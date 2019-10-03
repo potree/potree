@@ -11,7 +11,7 @@ $(document).ready(function () {
             <input type="checkbox" id="toggleplay">
             <button class="button" class="play" id="playbutton" class="inline"><i class="material-icons">play_arrow</i></button>
             <button class="button" class="pause" id="pausebutton"><i class="material-icons">pause</i></button>
-            Time: <span id="demo">0.0000</span> seconds
+            <span id='time_display_span'> Time (seconds): <input type="number" id="time_display" min=0 value=0 step="0.0001"> </span>
             <span id="playbar_timewindows">
               <input type="number" id="playbar_tmin" value=-0.05 max=0 step="0.01">
               <input type="number" id="playbar_tmax" value=0.05 min=0 step="0.01">

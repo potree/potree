@@ -786,21 +786,48 @@ export class Sidebar{
 		let elClassificationList = $('#classificationList');
 
 		let addClassificationItem = (code, name) => {
-			let inputID = 'chkClassification_' + code;
+			const classification = this.viewer.classifications[code];
+			const inputID = 'chkClassification_' + code;
+			const colorPickerID = 'colorPickerClassification_' + code;
 
 			let element = $(`
 				<li>
-					<label style="whitespace: nowrap">
+					<label style="whitespace: nowrap; display: flex">
 						<input id="${inputID}" type="checkbox" checked/>
-						<span>${name}</span>
+						<span style="flex-grow: 1">${name}</span>
+						<input id="${colorPickerID}" style="zoom: 0.5" />
 					</label>
 				</li>
 			`);
 
-			let elInput = element.find('input');
+			const elInput = element.find('input');
+			const elColorPicker = element.find(`#${colorPickerID}`);
 
 			elInput.click(event => {
 				this.viewer.setClassificationVisibility(code, event.target.checked);
+			});
+
+			let defaultColor = classification.color.map(c => c *  255).join(", ");
+			defaultColor = `rgb(${defaultColor})`;
+
+
+			elColorPicker.spectrum({
+				// flat: true,
+				color: defaultColor,
+				showInput: true,
+				preferredFormat: 'rgb',
+				cancelText: '',
+				chooseText: 'Apply',
+				move: color => {
+					let rgb = color.toRgb();
+					const c = [rgb.r / 255, rgb.g / 255, rgb.b / 255];
+					classification.color = c;
+				},
+				change: color => {
+					let rgb = color.toRgb();
+					const c = [rgb.r / 255, rgb.g / 255, rgb.b / 255];
+					classification.color = c;
+				}
 			});
 
 			elClassificationList.append(element);

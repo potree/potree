@@ -86,18 +86,19 @@ export class Viewer extends EventDispatcher{
 		this.edlStrength = 1.0;
 		this.edlRadius = 1.4;
 		this.useEDL = false;
+
 		this.classifications = {
-			0: { visible: true, name: 'never classified' },
-			1: { visible: true, name: 'unclassified' },
-			2: { visible: true, name: 'ground' },
-			3: { visible: true, name: 'low vegetation' },
-			4: { visible: true, name: 'medium vegetation' },
-			5: { visible: true, name: 'high vegetation' },
-			6: { visible: true, name: 'building' },
-			7: { visible: true, name: 'low point(noise)' },
-			8: { visible: true, name: 'key-point' },
-			9: { visible: true, name: 'water' },
-			12: { visible: true, name: 'overlap' }
+			0:  { visible: true, name: 'never classified'  , color: [0.5,  0.5,  0.5,  1.0] },
+			1:  { visible: true, name: 'unclassified'      , color: [0.5,  0.5,  0.5,  1.0] },
+			2:  { visible: true, name: 'ground'            , color: [0.63, 0.32, 0.18, 1.0] },
+			3:  { visible: true, name: 'low vegetation'    , color: [0.0,  1.0,  0.0,  1.0] },
+			4:  { visible: true, name: 'medium vegetation' , color: [0.0,  0.8,  0.0,  1.0] },
+			5:  { visible: true, name: 'high vegetation'   , color: [0.0,  0.6,  0.0,  1.0] },
+			6:  { visible: true, name: 'building'          , color: [1.0,  0.66, 0.0,  1.0] },
+			7:  { visible: true, name: 'low point(noise)'  , color: [1.0,  0.0,  1.0,  1.0] },
+			8:  { visible: true, name: 'key-point'         , color: [1.0,  0.0,  0.0,  1.0] },
+			9:  { visible: true, name: 'water'             , color: [0.0,  0.0,  1.0,  1.0] },
+			12: { visible: true, name: 'overlap'           , color: [1.0,  1.0,  0.0,  1.0] },
 		};
 
 		this.moveSpeed = 10;
@@ -1447,23 +1448,32 @@ export class Viewer extends EventDispatcher{
 			pointcloud.minimumNodePixelSize = this.minNodeSize;
 		}
 
-		// update classification visibility
-		for (let pointcloud of this.scene.pointclouds) {
-			let classification = pointcloud.material.classification;
+		// update classification 
+		for (const pointcloud of this.scene.pointclouds) {
+			const pcClassifications = pointcloud.material.classification;
 			let somethingChanged = false;
-			for (let key of Object.keys(this.classifications)) {
-				let w = this.classifications[key].visible ? 1 : 0;
 
-				if (classification[key]) {
-					if (classification[key].w !== w) {
-						classification[key].w = w;
-						somethingChanged = true;
-					}
+			for (let classID of Object.keys(this.classifications)) {
+				const pcClass = pcClassifications[classID];
+	
+				let w = this.classifications[classID].visible ? 1 : 0;
+				let [r, g, b, a] = this.classifications[classID].color;
+
+				if(pcClass){
+					somethingChanged |= pcClass.x !== r;
+					somethingChanged |= pcClass.y !== g;
+					somethingChanged |= pcClass.z !== b;
+					somethingChanged |= pcClass.w !== w;
+
+					pcClass.x = r;
+					pcClass.y = g;
+					pcClass.z = b;
+					pcClass.w = w;
 				} else if (classification.DEFAULT) {
-					classification[key] = classification.DEFAULT;
+					pcClass = classification.DEFAULT;
 					somethingChanged = true;
 				} else {
-					classification[key] = new THREE.Vector4(0.3, 0.6, 0.6, 0.5);
+					pcClass = new THREE.Vector4(0.3, 0.6, 0.6, 0.5);
 					somethingChanged = true;
 				}
 			}

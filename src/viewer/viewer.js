@@ -557,7 +557,7 @@ export class Viewer extends EventDispatcher{
 
 			// return annotation.visible;
 		});
-	};
+	}
 
 	setClassificationVisibility (key, value) {
 		if (!this.classifications[key]) {
@@ -567,7 +567,37 @@ export class Viewer extends EventDispatcher{
 			this.classifications[key].visible = value;
 			this.dispatchEvent({'type': 'classification_visibility_changed', 'viewer': this});
 		}
-	};
+	}
+
+	toggleAllClassificationsVisibility(){
+
+		let numVisible = 0;
+		let numItems = 0;
+		for(const key of Object.keys(this.classifications)){
+			if(this.classifications[key].visible){
+				numVisible++;
+			}
+			numItems++;
+		}
+
+		let visible = true;
+		if(numVisible === numItems){
+			visible = false;
+		}
+
+		let somethingChanged = false;
+
+		for(const key of Object.keys(this.classifications)){
+			if(this.classifications[key].visible !== visible){
+				this.classifications[key].visible = visible;
+				somethingChanged = true;
+			}
+		}
+
+		if(somethingChanged){
+			this.dispatchEvent({'type': 'classification_visibility_changed', 'viewer': this});
+		}
+	}
 
 	setFilterReturnNumberRange(from, to){
 		this.filterReturnNumberRange = [from, to];

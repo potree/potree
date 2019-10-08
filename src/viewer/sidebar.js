@@ -806,9 +806,55 @@ export class Sidebar{
 			elClassificationList.append(element);
 		};
 
-		for (var classID in this.viewer.classifications) {
+		{ // toggle all button
+			const element = $(`
+				<li>
+					<label style="whitespace: nowrap">
+						<input id="toggleClassificationFilters" type="checkbox" checked/>
+						<span>show/hide all</span>
+					</label>
+				</li>
+			`);
+
+			let elInput = element.find('input');
+
+			elInput.click(event => {
+				this.viewer.toggleAllClassificationsVisibility();
+			});
+
+			elClassificationList.append(element);
+		}
+
+		for (let classID in this.viewer.classifications) {
 			addClassificationItem(classID, this.viewer.classifications[classID].name);
 		}
+
+		this.viewer.addEventListener("classification_visibility_changed", () => {
+
+			{ // set checked state of classification buttons
+				for(const classID of Object.keys(this.viewer.classifications)){
+					const classValue = this.viewer.classifications[classID];
+
+					let elItem = elClassificationList.find(`#chkClassification_${classID}`);
+					elItem.prop("checked", classValue.visible);
+				}
+			}
+
+			{ // set checked state of toggle button based on state of all other buttons
+				let numVisible = 0;
+				let numItems = 0;
+				for(const key of Object.keys(this.viewer.classifications)){
+					if(this.viewer.classifications[key].visible){
+						numVisible++;
+					}
+					numItems++;
+				}
+				const allVisible = numVisible === numItems;
+
+				let elToggle = elClassificationList.find("#toggleClassificationFilters");
+				elToggle.prop("checked", allVisible);
+			}
+		});
 	}
 
 	initAccordion(){
@@ -830,8 +876,8 @@ export class Sidebar{
 			["EN", "en"],
 			["FR", "fr"],
 			["DE", "de"],
-                        ["JP", "jp"],
-                        ["SE", "se"]
+			["JP", "jp"],
+			["SE", "se"]
 		];
 
 		let elLanguages = $('#potree_languages');

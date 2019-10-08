@@ -451,19 +451,6 @@ export class ProfileWindow extends EventDispatcher {
 			new THREE.Vector2(mileage - radius, elevation - radius),
 			new THREE.Vector2(mileage + radius, elevation + radius));
 
-		//let debugNode = this.scene.getObjectByName("select_debug_node");
-		//if(!debugNode){
-		//	debugNode = new THREE.Object3D();
-		//	debugNode.name = "select_debug_node";
-		//	this.scene.add(debugNode);
-		//}
-		//debugNode.children = [];
-		//let debugPointBox = new THREE.Box3(
-		//	new THREE.Vector3(...pointBox.min.toArray(), -1),
-		//	new THREE.Vector3(...pointBox.max.toArray(), +1)
-		//);
-		//debugNode.add(new Box3Helper(debugPointBox, 0xff0000));
-
 		let numTested = 0;
 		let numSkipped = 0;
 		let numTestedPoints = 0;
@@ -485,12 +472,6 @@ export class ProfileWindow extends EventDispatcher {
 					continue;
 				}
 
-				//let debugCollisionBox = new THREE.Box3(
-				//	new THREE.Vector3(...collisionBox.min.toArray(), -1),
-				//	new THREE.Vector3(...collisionBox.max.toArray(), +1)
-				//);
-				//debugNode.add(new Box3Helper(debugCollisionBox));
-
 				numTested++;
 				numTestedPoints += points.numPoints
 
@@ -498,10 +479,23 @@ export class ProfileWindow extends EventDispatcher {
 
 					let m = points.data.mileage[i] - mileage;
 					let e = points.data.position[3 * i + 2] - elevation;
-
 					let r = Math.sqrt(m * m + e * e);
 
-					if (r < radius && r < closest.distance) {
+					const withinDistance = r < radius && r < closest.distance;
+					let unfilteredClass = true;
+
+					if(points.data.classification){
+						const classification = pointcloud.material.classification;
+
+						const pointClassID = points.data.classification[i];
+						const pointClassValue = classification[pointClassID];
+
+						if(pointClassValue && pointClassValue.w === 0){
+							unfilteredClass = false;
+						}
+					}
+
+					if (withinDistance && unfilteredClass) {
 						closest = {
 							distance: r,
 							pointcloud: pointcloud,
@@ -626,7 +620,17 @@ export class ProfileWindow extends EventDispatcher {
 			entry = new ProfilePointCloudEntry();
 			this.pointclouds.set(pointcloud, entry);
 
-			let materialChanged = () => this.render();
+			let materialChanged = () => {
+				const mSource = pointcloud.material;
+				const mTarget = entry.material;
+
+				mTarget.classification = mSource.classification;
+
+				this.render();
+			};
+
+			materialChanged();
+
 			pointcloud.material.addEventListener('material_property_changed', materialChanged);
 			this.addEventListener("on_reset_once", () => {
 				pointcloud.material.removeEventListener('material_property_changed', materialChanged);

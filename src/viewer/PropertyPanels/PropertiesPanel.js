@@ -299,7 +299,10 @@ export class PropertiesPanel{
 
 			let blockBackface = $('#materials_backface_container');
 			blockBackface.css('display', 'none');
-			if (pointcloud.pcoGeometry.pointAttributes.hasNormals()) {
+
+			const pointAttributes = pointcloud.pcoGeometry.pointAttributes;
+			const hasNormals = pointAttributes.hasNormals ? pointAttributes.hasNormals() : false;
+			if(hasNormals) {
 				blockBackface.css('display', 'block');
 			}
 			/*

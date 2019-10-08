@@ -665,14 +665,14 @@ bool pointInClipPolygon(vec3 point, int polyIdx) {
 
 void doClipping(){
 
-	#if !defined color_type_composite
+	{
 		vec4 cl = getClassification(); 
 		if(cl.a == 0.0){
 			gl_Position = vec4(100.0, 100.0, 100.0, 0.0);
 			
 			return;
 		}
-	#endif
+	}
 
 	#if defined(clip_return_number_enabled)
 	{ // return number filter

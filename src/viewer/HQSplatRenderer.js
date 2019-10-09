@@ -189,6 +189,7 @@ export class HQSplatRenderer{
 				attributeMaterial.uniforms.uFilterNumberOfReturnsRange.value = material.uniforms.uFilterNumberOfReturnsRange.value;
 				attributeMaterial.uniforms.uFilterGPSTimeClipRange.value = material.uniforms.uFilterGPSTimeClipRange.value;
 
+				attributeMaterial.elevationGradientRepeat = material.elevationGradientRepeat;
 				attributeMaterial.elevationRange = material.elevationRange;
 				attributeMaterial.gradient = material.gradient;
 				attributeMaterial.matcap = material.matcap;

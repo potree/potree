@@ -2,7 +2,7 @@
 import {PointCloudTree} from "./PointCloudTree.js";
 import {PointCloudOctreeNode} from "./PointCloudOctree.js";
 import {PointCloudArena4DNode} from "./arena4d/PointCloudArena4D.js";
-import {PointSizeType, PointColorType, ClipTask} from "./defines.js";
+import {PointSizeType, PointColorType, ClipTask, ElevationGradientRepeat} from "./defines.js";
 
 // Copied from three.js: WebGLRenderer.js
 function paramThreeToGL(_gl, p) {
@@ -1208,6 +1208,18 @@ export class Renderer {
 			shader.setUniform1i("gradient", currentTextureBindingPoint);
 			gl.activeTexture(gl.TEXTURE0 + currentTextureBindingPoint);
 			gl.bindTexture(gradientTexture.target, gradientTexture.id);
+
+			const repeat = material.elevationGradientRepeat;
+			if(repeat === ElevationGradientRepeat.REPEAT){
+				gl.texParameteri(gradientTexture.target, gl.TEXTURE_WRAP_S, gl.REPEAT);
+				gl.texParameteri(gradientTexture.target, gl.TEXTURE_WRAP_T, gl.REPEAT);
+			}else if(repeat === ElevationGradientRepeat.MIRRORED_REPEAT){
+				gl.texParameteri(gradientTexture.target, gl.TEXTURE_WRAP_S, gl.MIRRORED_REPEAT);
+				gl.texParameteri(gradientTexture.target, gl.TEXTURE_WRAP_T, gl.MIRRORED_REPEAT);
+			}else{
+				gl.texParameteri(gradientTexture.target, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+				gl.texParameteri(gradientTexture.target, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+			}
 			currentTextureBindingPoint++;
 
 			let classificationTexture = this.textures.get(material.classificationTexture);

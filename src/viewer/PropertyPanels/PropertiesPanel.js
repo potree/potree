@@ -5,7 +5,7 @@ import {PointCloudTree} from "../../PointCloudTree.js";
 import {Measure} from "../../utils/Measure.js";
 import {Profile} from "../../utils/Profile.js";
 import {Volume, BoxVolume, SphereVolume} from "../../utils/Volume.js";
-import {PointSizeType, PointShape} from "../../defines.js";
+import {PointSizeType, PointShape, ElevationGradientRepeat} from "../../defines.js";
 import {Gradients} from "../../materials/Gradients.js";
 
 import {MeasurePanel} from "./MeasurePanel.js";
@@ -164,26 +164,18 @@ export class PropertiesPanel{
 					</div>
 
 					<li><span data-i18n="appearance.elevation_range"></span>: <span id="lblHeightRange"></span> <div id="sldHeightRange"></div>	</li>
+
+					<li>
+						<selectgroup id="gradient_repeat_option">
+							<option id="gradient_repeat_clamp" value="CLAMP">Clamp</option>
+							<option id="gradient_repeat_repeat" value="REPEAT">Repeat</option>
+							<option id="gradient_repeat_mirrored_repeat" value="MIRRORED_REPEAT">Mirrored Repeat</option>
+						</selectgroup>
+					</li>
+
 					<li>
 						<span>Gradient Scheme:</span>
 						<div id="elevation_gradient_scheme_selection" style="display: flex">
-						<!--
-							<span style="flex-grow: 1;">
-								<img id="gradient_spectral" class="button-icon" style="max-width: 100%" src="${Potree.resourcePath}/icons/gradients_spectral.png" />
-							</span>
-							<span style="flex-grow: 1;">
-								<img id="gradient_yellow_green" class="button-icon" style="max-width: 100%" src="${Potree.resourcePath}/icons/gradients_yellow_green.png" />
-							</span>
-							<span style="flex-grow: 1;">
-								<img class="button-icon" style="max-width: 100%" src="${Potree.resourcePath}/icons/gradients_plasma.png" />
-							</span>
-							<span style="flex-grow: 1;">
-								<img class="button-icon" style="max-width: 100%" src="${Potree.resourcePath}/icons/gradients_grayscale.png" />
-							</span>
-							<span style="flex-grow: 1;">
-								<img class="button-icon" style="max-width: 100%" src="${Potree.resourcePath}/icons/gradients_rainbow.png" />
-							</span>
-							-->
 						</div>
 					</li>
 				</div>
@@ -650,6 +642,19 @@ export class PropertiesPanel{
 				updateHeightRange();
 				panel.find(`#sldHeightRange`).slider('option', 'min');
 				panel.find(`#sldHeightRange`).slider('option', 'max');
+			}
+
+			{
+				let elGradientRepeat = panel.find("#gradient_repeat_option");
+				elGradientRepeat.selectgroup({title: "Gradient"});
+
+				elGradientRepeat.find("input").click( (e) => {
+					this.viewer.setElevationGradientRepeat(ElevationGradientRepeat[e.target.value]);
+				});
+
+				let current = Object.keys(ElevationGradientRepeat)
+					.filter(key => ElevationGradientRepeat[key] === this.viewer.elevationGradientRepeat);
+				elGradientRepeat.find(`input[value=${current}]`).trigger("click");
 			}
 
 			let onIntensityChange = () => {

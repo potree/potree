@@ -1,5 +1,5 @@
 
-import {ClipTask, ClipMethod, CameraMode, LengthUnits} from "../defines.js";
+import {ClipTask, ClipMethod, CameraMode, LengthUnits, ElevationGradientRepeat} from "../defines.js";
 import {Renderer} from "../PotreeRenderer.js";
 import {PotreeRenderer} from "./PotreeRenderer.js";
 import {EDLRenderer} from "./EDLRenderer.js";
@@ -111,6 +111,8 @@ export class Viewer extends EventDispatcher{
 		this.freeze = false;
 		this.clipTask = ClipTask.HIGHLIGHT;
 		this.clipMethod = ClipMethod.INSIDE_ANY;
+
+		this.elevationGradientRepeat = ElevationGradientRepeat.CLAMP;
 
 		this.filterReturnNumberRange = [0, 7];
 		this.filterNumberOfReturnsRange = [0, 7];
@@ -461,8 +463,19 @@ export class Viewer extends EventDispatcher{
 			this.clipMethod = value;
 			
 			this.dispatchEvent({
-				type: "clipmethod_changed", 
-				viewer: this});		
+				type: "clipmethod_changed",
+				viewer: this});
+		}
+	}
+
+	setElevationGradientRepeat(value){
+		if(this.elevationGradientRepeat !== value){
+
+			this.elevationGradientRepeat = value;
+
+			this.dispatchEvent({
+				type: "elevation_gradient_repeat_changed", 
+				viewer: this});
 		}
 	}
 
@@ -1336,56 +1349,21 @@ export class Viewer extends EventDispatcher{
 	update(delta, timestamp){
 
 		if(Potree.measureTimings) performance.mark("update-start");
-
-		// if(window.urlToggle === undefined){
-		//	window.urlToggle = 0;
-		// }else{
-		//
-		//	if(window.urlToggle > 1){
-		//		{
-		//
-		//			let currentValue = Utils.getParameterByName("position");
-		//			let strPosition = "["
-		//				+ this.scene.view.position.x.toFixed(3) + ";"
-		//				+ this.scene.view.position.y.toFixed(3) + ";"
-		//				+ this.scene.view.position.z.toFixed(3) + "]";
-		//			if(currentValue !== strPosition){
-		//				Utils.setParameter("position", strPosition);
-		//			}
-		//
-		//		}
-		//
-		//		{
-		//			let currentValue = Utils.getParameterByName("target");
-		//			let pivot = this.scene.view.getPivot();
-		//			let strTarget = "["
-		//				+ pivot.x.toFixed(3) + ";"
-		//				+ pivot.y.toFixed(3) + ";"
-		//				+ pivot.z.toFixed(3) + "]";
-		//			if(currentValue !== strTarget){
-		//				Utils.setParameter("target", strTarget);
-		//			}
-		//		}
-		//
-		//		window.urlToggle = 0;
-		//	}
-		//
-		//	window.urlToggle += delta;
-		//}
 		
-		{
-			let u = Math.sin(0.0005 * timestamp) * 0.5 - 0.4;
+		// {
+		// 	let u = Math.sin(0.0005 * timestamp) * 0.5 - 0.4;
 			
-			let x = Math.cos(u);
-			let y = Math.sin(u);
+		// 	let x = Math.cos(u);
+		// 	let y = Math.sin(u);
 			
-			this.shadowTestCam.position.set(7 * x, 7 * y, 8.561);
-			this.shadowTestCam.lookAt(new THREE.Vector3(0, 0, 0));
-		}
+		// 	this.shadowTestCam.position.set(7 * x, 7 * y, 8.561);
+		// 	this.shadowTestCam.lookAt(new THREE.Vector3(0, 0, 0));
+		// }
 		
 		
-		let scene = this.scene;
-		let camera = scene.getActiveCamera();
+		const scene = this.scene;
+		const camera = scene.getActiveCamera();
+		const visiblePointClouds = this.scene.pointclouds.filter(pc => pc.visible)
 		
 		Potree.pointLoadLimit = Potree.pointBudget * 2;
 
@@ -1449,7 +1427,7 @@ export class Viewer extends EventDispatcher{
 		}
 
 		// update classification 
-		for (const pointcloud of this.scene.pointclouds) {
+		for (const pointcloud of visiblePointClouds) {
 			const pcClassifications = pointcloud.material.classification;
 			let somethingChanged = false;
 
@@ -1483,11 +1461,7 @@ export class Viewer extends EventDispatcher{
 			}
 		}
 
-		for (let pointcloud of this.scene.pointclouds) {
-			if(!pointcloud.visible){
-				continue;
-			}
-
+		for (let pointcloud of visiblePointClouds) {
 			let material = pointcloud.material;
 
 			material.uniforms.uFilterReturnNumberRange.value = this.filterReturnNumberRange;
@@ -1661,11 +1635,17 @@ export class Viewer extends EventDispatcher{
 			let clipPolygons = this.scene.polygonClipVolumes.filter(vol => vol.initialized);
 			
 			// set clip volumes in material
-			for(let pointcloud of this.scene.pointclouds.filter(pc => pc.visible)){
+			for(let pointcloud of visiblePointClouds){
 				pointcloud.material.setClipBoxes(clipBoxes);
 				pointcloud.material.setClipPolygons(clipPolygons, this.clippingTool.maxPolygonVertices);
 				pointcloud.material.clipTask = this.clipTask;
 				pointcloud.material.clipMethod = this.clipMethod;
+			}
+		}
+
+		{
+			for(let pointcloud of visiblePointClouds){
+				pointcloud.material.elevationGradientRepeat = this.elevationGradientRepeat;
 			}
 		}
 		

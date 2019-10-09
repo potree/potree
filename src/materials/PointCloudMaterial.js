@@ -1,13 +1,10 @@
 
-
 import {Utils} from "../utils.js";
 import {Gradients} from "./Gradients.js";
 import {Shaders} from "../../build/shaders/shaders.js";
 import {ClassificationScheme} from "./ClassificationScheme.js";
-import {PointSizeType, PointColorType, PointShape, TreeType} from "../defines.js";
+import {PointSizeType, PointColorType, PointShape, TreeType, ElevationGradientRepeat} from "../defines.js";
 
-//
-//
 //
 // how to calculate the radius of a projected sphere in screen space
 // http://stackoverflow.com/questions/21648630/radius-of-projected-sphere-in-screen-space
@@ -122,6 +119,7 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 			wReturnNumber:		{ type: "f", value: 0 },
 			wSourceID:			{ type: "f", value: 0 },
 			useOrthographicCamera: { type: "b", value: false },
+			elevationGradientRepat: { type: "i", value: ElevationGradientRepeat.CLAMP },
 			clipTask:			{ type: "i", value: 1 },
 			clipMethod:			{ type: "i", value: 1 },
 			uSnapshot:			{ type: "tv", value: [] },
@@ -500,6 +498,14 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 
 	set clipTask(mode){
 		this.uniforms.clipTask.value = mode;
+	}
+
+	get elevationGradientRepat(){
+		return this.uniforms.elevationGradientRepat.value;
+	}
+
+	set elevationGradientRepat(mode){
+		this.uniforms.elevationGradientRepat.value = mode;
 	}
 
 	get clipMethod(){
@@ -982,6 +988,8 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 		texture.needsUpdate = true;
 		
 		texture.minFilter = THREE.LinearFilter;
+		texture.wrap = THREE.RepeatWrapping;
+		texture.repeat = 2;
 		// textureImage = texture.image;
 
 		return texture;

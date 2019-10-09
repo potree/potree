@@ -20,6 +20,12 @@ export const ClipMethod = {
 	INSIDE_ALL: 1
 };
 
+export const ElevationGradientRepeat = {
+	CLAMP: 0,
+	REPEAT: 1,
+	MIRRORED_REPEAT: 2,
+};
+
 export const MOUSE = {
 	LEFT: 0b0001,
 	RIGHT: 0b0010,

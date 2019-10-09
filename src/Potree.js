@@ -22,6 +22,8 @@ export * from "./utils.js";
 export * from "./Version.js";
 export * from "./WorkerPool.js";
 export * from "./XHRFactory.js";
+export * from "./viewer/SaveProject.js";
+export * from "./viewer/LoadProject.js";
 
 export * from "./materials/ClassificationScheme.js";
 export * from "./materials/EyeDomeLightingMaterial.js";

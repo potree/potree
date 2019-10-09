@@ -125,4 +125,55 @@ export class View{
 		this.position.y += y;
 		this.position.z += z;
 	}
+
+	setView(position, target, duration = 0){
+		
+		const startPosition = this.position.clone();
+		const startTarget = this.getPivot();
+
+		const endPosition = position.clone();
+		const endTarget = target.clone();
+
+		let easing = TWEEN.Easing.Quartic.Out;
+
+		if(duration === 0){
+			this.position.copy(endPosition);
+			this.lookAt(endTarget);
+		}else{
+			let value = {x: 0};
+			let tween = new TWEEN.Tween(value).to({x: 1}, duration);
+			tween.easing(easing);
+			//this.tweens.push(tween);
+
+			tween.onUpdate(() => {
+				let t = value.x;
+
+				//console.log(t);
+
+				const pos = new THREE.Vector3(
+					(1 - t) * startPosition.x + t * endPosition.x,
+					(1 - t) * startPosition.y + t * endPosition.y,
+					(1 - t) * startPosition.z + t * endPosition.z,
+				);
+
+				const target = new THREE.Vector3(
+					(1 - t) * startTarget.x + t * endTarget.x,
+					(1 - t) * startTarget.y + t * endTarget.y,
+					(1 - t) * startTarget.z + t * endTarget.z,
+				);
+
+				this.position.copy(pos);
+				this.lookAt(target);
+
+			});
+
+			tween.start();
+
+			//tween.onComplete(() => {
+			//	this.tweens = this.tweens.filter(e => e !== tween);
+			//});
+		}
+
+	}
+
 };

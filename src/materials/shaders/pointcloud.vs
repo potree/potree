@@ -35,7 +35,6 @@ uniform bool uUseOrthographicCamera;
 uniform float uOrthoWidth;
 uniform float uOrthoHeight;
 
-
 #define CLIPTASK_NONE 0
 #define CLIPTASK_HIGHLIGHT 1
 #define CLIPTASK_SHOW_INSIDE 2

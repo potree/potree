@@ -27,7 +27,7 @@ Potree.ExtractorControls = class ExtractorControls extends THREE.EventDispatcher
 		this.panSpeed = 0.3;
 
 		this.minRadius = 0.3;
-		this.maxRadius = 300;
+		this.maxRadius = 1000;
 
 		this.fadeFactor = 10;
 		this.yawDelta = 0;

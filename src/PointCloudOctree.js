@@ -114,6 +114,14 @@ export class PointCloudOctree extends PointCloudTree {
 		this.position.copy(geometry.offset);
 		this.updateMatrix();
 
+		{
+			let attributeName = "color";
+			if(this.pcoGeometry.pointAttributes.attributes.length > 1){
+				attributeName = this.pcoGeometry.pointAttributes.attributes[1].name;
+			}
+			this.material.activeAttributeName = attributeName;
+		}
+
 		this.showBoundingBox = false;
 		this.boundingBoxNodes = [];
 		this.loadQueue = [];
@@ -635,7 +643,7 @@ export class PointCloudOctree extends PointCloudTree {
 			let scene = new THREE.Scene();
 
 			let material = new Potree.PointCloudMaterial();
-			material.pointColorType = Potree.PointColorType.POINT_INDEX;
+			material.activeAttributeName = "index";
 
 			let renderTarget = new THREE.WebGLRenderTarget(
 				1, 1,
@@ -662,6 +670,8 @@ export class PointCloudOctree extends PointCloudTree {
 			pickMaterial.uniforms.uFilterNumberOfReturnsRange.value = this.material.uniforms.uFilterNumberOfReturnsRange.value;
 			pickMaterial.uniforms.uFilterGPSTimeClipRange.value = this.material.uniforms.uFilterGPSTimeClipRange.value;
 
+			pickMaterial.activeAttributeName = "index";
+
 			pickMaterial.size = pointSize;
 			pickMaterial.uniforms.minSize.value = this.material.uniforms.minSize.value;
 			pickMaterial.uniforms.maxSize.value = this.material.uniforms.maxSize.value;
@@ -681,8 +691,6 @@ export class PointCloudOctree extends PointCloudTree {
 
 			this.updateMaterial(pickMaterial, nodes, camera, renderer);
 		}
-
-		//pickMaterial.pointColorType = Potree.PointColorType.LOD;
 
 		pickState.renderTarget.setSize(width, height);
 

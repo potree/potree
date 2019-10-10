@@ -13,6 +13,7 @@ pointclouds/retz
 pointclouds/NVIDIA_Ph01-20160403_tiles_converted
 libs/CesiumUnminified
 /pointclouds/D
+/pointclouds/C
 /pointclouds/wrneustadt
 /pointclouds/alszeile
 /pointclouds/heidentor
@@ -20,7 +21,4 @@ libs/CesiumUnminified
 /examples/page.html
 /resources/icons/index.html
 /examples/page.html
-pointclouds/C
-pointclouds
-pointclouds/gane/data/r/r.bin
-pointclouds/gane/data/r/r.hrc
+/pointclouds/test

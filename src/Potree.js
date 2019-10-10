@@ -72,7 +72,6 @@ import "./extensions/OrthographicCamera.js";
 import "./extensions/PerspectiveCamera.js";
 import "./extensions/Ray.js";
 
-import {PointColorType} from "./defines";
 import {Enum} from "./Enum";
 import {LRU} from "./LRU";
 import {POCLoader} from "./loader/POCLoader";

@@ -73,32 +73,33 @@ export class GreyhoundBinaryLoader{
 
 			let geometry = new THREE.BufferGeometry();
 
-			for(let property in buffers){
-				let buffer = buffers[property].buffer;
+			// TODO IMPORTANT!!!
+			// for(let property in buffers){
+			// 	let buffer = buffers[property].buffer;
 
-				if (parseInt(property) === PointAttributeNames.POSITION_CARTESIAN) {
-					geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(buffer), 3));
-				} else if (parseInt(property) === PointAttributeNames.COLOR_PACKED) {
-					geometry.addAttribute('color', new THREE.BufferAttribute(new Uint8Array(buffer), 4, true));
-				} else if (parseInt(property) === PointAttributeNames.INTENSITY) {
-					geometry.addAttribute('intensity', new THREE.BufferAttribute(new Float32Array(buffer), 1));
-				} else if (parseInt(property) === PointAttributeNames.CLASSIFICATION) {
-					geometry.addAttribute('classification', new THREE.BufferAttribute(new Uint8Array(buffer), 1));
-				} else if (parseInt(property) === PointAttributeNames.NORMAL_SPHEREMAPPED) {
-					geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
-				} else if (parseInt(property) === PointAttributeNames.NORMAL_OCT16) {
-					geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
-				} else if (parseInt(property) === PointAttributeNames.NORMAL) {
-					geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
-				} else if (parseInt(property) === PointAttributeNames.INDICES) {
-					let bufferAttribute = new THREE.BufferAttribute(new Uint8Array(buffer), 4);
-					bufferAttribute.normalized = true;
-					geometry.addAttribute('indices', bufferAttribute);
-				} else if (parseInt(property) === PointAttributeNames.SPACING) {
-					let bufferAttribute = new THREE.BufferAttribute(new Float32Array(buffer), 1);
-					geometry.addAttribute('spacing', bufferAttribute);
-				}
-			}
+			// 	if (parseInt(property) === PointAttributeNames.POSITION_CARTESIAN) {
+			// 		geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(buffer), 3));
+			// 	} else if (parseInt(property) === PointAttributeNames.COLOR_PACKED) {
+			// 		geometry.addAttribute('color', new THREE.BufferAttribute(new Uint8Array(buffer), 4, true));
+			// 	} else if (parseInt(property) === PointAttributeNames.INTENSITY) {
+			// 		geometry.addAttribute('intensity', new THREE.BufferAttribute(new Float32Array(buffer), 1));
+			// 	} else if (parseInt(property) === PointAttributeNames.CLASSIFICATION) {
+			// 		geometry.addAttribute('classification', new THREE.BufferAttribute(new Uint8Array(buffer), 1));
+			// 	} else if (parseInt(property) === PointAttributeNames.NORMAL_SPHEREMAPPED) {
+			// 		geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
+			// 	} else if (parseInt(property) === PointAttributeNames.NORMAL_OCT16) {
+			// 		geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
+			// 	} else if (parseInt(property) === PointAttributeNames.NORMAL) {
+			// 		geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
+			// 	} else if (parseInt(property) === PointAttributeNames.INDICES) {
+			// 		let bufferAttribute = new THREE.BufferAttribute(new Uint8Array(buffer), 4);
+			// 		bufferAttribute.normalized = true;
+			// 		geometry.addAttribute('indices', bufferAttribute);
+			// 	} else if (parseInt(property) === PointAttributeNames.SPACING) {
+			// 		let bufferAttribute = new THREE.BufferAttribute(new Float32Array(buffer), 1);
+			// 		geometry.addAttribute('spacing', bufferAttribute);
+			// 	}
+			// }
 
 			tightBoundingBox.max.sub(tightBoundingBox.min);
 			tightBoundingBox.min.set(0, 0, 0);

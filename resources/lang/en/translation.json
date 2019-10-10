@@ -52,6 +52,7 @@
 		"point_size_type": "Point sizing",
 		"point_material": "Materials",
 		"elevation_range": "Elevation range",
+		"extra_range": "Scalar range",
 		"point_quality": "Quality",
 		"point_shape": "Shape",
 		"edl_radius": "Radius",

@@ -4,7 +4,6 @@ import {Volume} from "./utils/Volume.js";
 import {Profile} from "./utils/Profile.js";
 import {Measure} from "./utils/Measure.js";
 import {PolygonClipVolume} from "./utils/PolygonClipVolume.js";
-import {PointColorType} from "./defines.js";
 
 
 export class Utils {
@@ -724,81 +723,6 @@ export class Utils {
 			return `${Potree.resourcePath}/icons/clip-polygon.svg`;
 		}
 	}
-
-	static toMaterialID(materialName){
-		if (materialName === 'RGB'){
-			return PointColorType.RGB;
-		} else if (materialName === 'Color') {
-			return PointColorType.COLOR;
-		} else if (materialName === 'Elevation') {
-			return PointColorType.HEIGHT;
-		} else if (materialName === 'Intensity') {
-			return PointColorType.INTENSITY;
-		} else if (materialName === 'Intensity Gradient') {
-			return PointColorType.INTENSITY_GRADIENT;
-		} else if (materialName === 'Classification') {
-			return PointColorType.CLASSIFICATION;
-		} else if (materialName === 'Return Number') {
-			return PointColorType.RETURN_NUMBER;
-		} else if (materialName === 'Source') {
-			return PointColorType.SOURCE;
-		} else if (materialName === 'Level of Detail') {
-			return PointColorType.LOD;
-		} else if (materialName === 'Point Index') {
-			return PointColorType.POINT_INDEX;
-		} else if (materialName === 'Normal') {
-			return PointColorType.NORMAL;
-		} else if (materialName === 'Phong') {
-			return PointColorType.PHONG;
-		} else if (materialName === 'Index') {
-			return PointColorType.POINT_INDEX;
-		} else if (materialName === 'RGB and Elevation') {
-			return PointColorType.RGB_HEIGHT;
-		} else if (materialName === 'Composite') {
-			return PointColorType.COMPOSITE;
-		} else if (materialName === 'GPS Time') {
-			return PointColorType.GPS_TIME;
-		} else if (materialName === 'Matcap') {
-			return PointColorType.MATCAP;
-		}
-	};
-
-
-	static toMaterialName(materialID) {
-		if (materialID === PointColorType.RGB) {
-			return 'RGB';
-		} else if (materialID === PointColorType.COLOR) {
-			return 'Color';
-		} else if (materialID === PointColorType.HEIGHT) {
-			return 'Elevation';
-		} else if (materialID === PointColorType.INTENSITY) {
-			return 'Intensity';
-		} else if (materialID === PointColorType.INTENSITY_GRADIENT) {
-			return 'Intensity Gradient';
-		} else if (materialID === PointColorType.CLASSIFICATION) {
-			return 'Classification';
-		} else if (materialID === PointColorType.RETURN_NUMBER) {
-			return 'Return Number';
-		} else if (materialID === PointColorType.SOURCE) {
-			return 'Source';
-		} else if (materialID === PointColorType.LOD) {
-			return 'Level of Detail';
-		} else if (materialID === PointColorType.NORMAL) {
-			return 'Normal';
-		} else if (materialID === PointColorType.PHONG) {
-			return 'Phong';
-		} else if (materialID === PointColorType.POINT_INDEX) {
-			return 'Index';
-		} else if (materialID === PointColorType.RGB_HEIGHT) {
-			return 'RGB and Elevation';
-		} else if (materialID === PointColorType.COMPOSITE) {
-			return 'Composite';
-		} else if (materialID === PointColorType.GPS_TIME) {
-			return 'GPS Time';
-		} else if (materialID === PointColorType.MATCAP) {
-			return 'Matcap';
-		}
-	};
 
 }
 

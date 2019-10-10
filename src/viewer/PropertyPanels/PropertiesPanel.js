@@ -111,9 +111,7 @@ export class PropertiesPanel{
 				</div>
 
 				<li>
-					<!--<label for="optMaterial" class="pv-select-label">Attributes:</label><br>-->
-					<select id="optMaterial" name="optMaterial">
-					</select>
+					<select id="optMaterial" name="optMaterial"></select>
 				</li>
 
 				<div id="materials.composite_weight_container">
@@ -137,6 +135,18 @@ export class PropertiesPanel{
 					<li>Gamma: <span id="lblRGBGamma"></span> <div id="sldRGBGamma"></div>	</li>
 					<li>Brightness: <span id="lblRGBBrightness"></span> <div id="sldRGBBrightness"></div>	</li>
 					<li>Contrast: <span id="lblRGBContrast"></span> <div id="sldRGBContrast"></div>	</li>
+				</div>
+
+				<div id="materials.extra_container">
+					<div class="divider">
+						<span>Extra Attribute</span>
+					</div>
+
+					<li><span data-i18n="appearance.extra_range"></span>: <span id="lblExtraRange"></span> <div id="sldExtraRange"></div></li>
+
+					<li>Gamma: <span id="lblExtraGamma"></span> <div id="sldExtraGamma"></div></li>
+					<li>Brightness: <span id="lblExtraBrightness"></span> <div id="sldExtraBrightness"></div></li>
+					<li>Contrast: <span id="lblExtraContrast"></span> <div id="sldExtraContrast"></div></li>
 				</div>
 				
 				<div id="materials.matcap_container">
@@ -333,22 +343,26 @@ export class PropertiesPanel{
 		}
 
 		{
-			let options = [
-				'RGB',
-				'RGB and Elevation',
-				'Color',
-				'Matcap',
-				'Elevation',
-				'Intensity',
-				'Intensity Gradient',
-				'Classification',
-				'Return Number',
-				'Source',
-				'GPS Time',
-				'Index',
-				'Level of Detail',
-				'Composite'
+
+			const attributes = pointcloud.pcoGeometry.pointAttributes.attributes;
+
+			let options = [];
+
+			options.push(...attributes.map(a => a.name));
+
+			options.push(
+				"color",
+				'matcap',
+				'index',
+				'level of detail',
+				'composite'
+			);
+
+			const blacklist = [
+				"POSITION_CARTESIAN",
 			];
+
+			options = options.filter(o => !blacklist.includes(o));
 
 			let attributeSelection = panel.find('#optMaterial');
 			for(let option of options){
@@ -358,11 +372,31 @@ export class PropertiesPanel{
 
 			let updateMaterialPanel = (event, ui) => {
 				let selectedValue = attributeSelection.selectmenu().val();
-				material.pointColorType = Utils.toMaterialID(selectedValue);
+				material.activeAttributeName = selectedValue;
+
+				const attribute = pointcloud.pcoGeometry.pointAttributes.attributes.find(a => a.name === selectedValue);
+
+				if(attribute){
+					const [min, max] = attribute.range;
+
+					panel.find('#sldExtraRange').slider({
+						range: true,
+						min: min, max: max, step: 0.01,
+						values: [min, max],
+						slide: (event, ui) => {
+							let min = ui.values[0];
+							let max = ui.values[1];
+							material.extraRange = [min, max];
+						}
+					});
+
+					material.extraRange = [min, max];
+				}
 
 				let blockWeights = $('#materials\\.composite_weight_container');
 				let blockElevation = $('#materials\\.elevation_container');
 				let blockRGB = $('#materials\\.rgb_container');
+				let blockExtra = $('#materials\\.extra_container');
 				let blockColor = $('#materials\\.color_container');
 				let blockIntensity = $('#materials\\.intensity_container');
 				let blockIndex = $('#materials\\.index_container');
@@ -374,43 +408,48 @@ export class PropertiesPanel{
 				blockIntensity.css('display', 'none');
 				blockElevation.css('display', 'none');
 				blockRGB.css('display', 'none');
+				blockExtra.css('display', 'none');
 				blockColor.css('display', 'none');
 				blockWeights.css('display', 'none');
 				blockTransition.css('display', 'none');
 				blockMatcap.css('display', 'none');
 				blockGps.css('display', 'none');
 
-				if (selectedValue === 'Composite') {
+				if (selectedValue === 'composite') {
 					blockWeights.css('display', 'block');
 					blockElevation.css('display', 'block');
 					blockRGB.css('display', 'block');
 					blockIntensity.css('display', 'block');
-				} else if (selectedValue === 'Elevation') {
+				} else if (selectedValue === 'elevation') {
 					blockElevation.css('display', 'block');
 				} else if (selectedValue === 'RGB and Elevation') {
 					blockRGB.css('display', 'block');
 					blockElevation.css('display', 'block');
-				} else if (selectedValue === 'RGB') {
+				} else if (selectedValue === 'RGBA') {
 					blockRGB.css('display', 'block');
 				} else if (selectedValue === 'Color') {
 					blockColor.css('display', 'block');
-				} else if (selectedValue === 'Intensity') {
+				} else if (selectedValue === 'intensity') {
 					blockIntensity.css('display', 'block');
 				} else if (selectedValue === 'Intensity Gradient') {
 					blockIntensity.css('display', 'block');
-				} else if (selectedValue === "Index" ){
+				} else if (selectedValue === "index" ){
 					blockIndex.css('display', 'block');
-				} else if (selectedValue === "Matcap" ){
+				} else if (selectedValue === "matcap" ){
 					blockMatcap.css('display', 'block');
+				}else{
+					blockExtra.css('display', 'block');
 				}
 			};
 
 			attributeSelection.selectmenu({change: updateMaterialPanel});
 
-			let update = () => {
-				attributeSelection.val(Utils.toMaterialName(material.pointColorType)).selectmenu('refresh');
-			};
+			// let update = () => {
+			// 	//attributeSelection.val(Utils.toMaterialName(material.pointColorType)).selectmenu('refresh');
+			// 	attributeSelection.val(Utils.toMaterialName(material.pointColorType)).selectmenu('refresh');
+			// };
 			this.addVolatileListener(material, "point_color_type_changed", update);
+			this.addVolatileListener(material, "active_attribute_changed", update);
 
 			update();
 			updateMaterialPanel();
@@ -440,14 +479,6 @@ export class PropertiesPanel{
 
 				elSchemeContainer.append(elScheme);
 			}
-
-			//panel.find("#gradient_spectral").click( () => {
-			//	pointcloud.material.gradient = Potree.Gradients.SPECTRAL;
-			//});
-
-			//panel.find("#gradient_yellow_green").click( () => {
-			//	pointcloud.material.gradient = Potree.Gradients.YELLOW_GREEN;
-			//});
 		}
 
 		{
@@ -512,6 +543,35 @@ export class PropertiesPanel{
 				value: material.rgbBrightness,
 				min: -1, max: 1, step: 0.01,
 				slide: (event, ui) => {material.rgbBrightness = ui.value}
+			});
+
+			panel.find('#sldExtraGamma').slider({
+				value: material.extraGamma,
+				min: 0, max: 4, step: 0.01,
+				slide: (event, ui) => {material.extraGamma = ui.value}
+			});
+
+			panel.find('#sldExtraBrightness').slider({
+				value: material.extraBrightness,
+				min: -1, max: 1, step: 0.01,
+				slide: (event, ui) => {material.extraBrightness = ui.value}
+			});
+
+			panel.find('#sldExtraContrast').slider({
+				value: material.extraContrast,
+				min: -1, max: 1, step: 0.01,
+				slide: (event, ui) => {material.extraContrast = ui.value}
+			});
+
+			panel.find('#sldExtraRange').slider({
+				range: true,
+				min: 0, max: 1000, step: 0.01,
+				values: [0, 1000],
+				slide: (event, ui) => {
+					let min = ui.values[0];
+					let max = ui.values[1];
+					material.extraRange = [min, max];
+				}
 			});
 
 			panel.find('#sldHeightRange').slider({
@@ -630,6 +690,13 @@ export class PropertiesPanel{
 				panel.find('#sldHeightRange').slider({min: bMin, max: bMax, values: range});
 			};
 
+			let updateExtraRange = function () {
+				let range = material.extraRange;
+
+				panel.find('#lblExtraRange').html(`${range[0].toFixed(2)} to ${range[1].toFixed(2)}`);
+				//panel.find('#sldHeightRange').slider({min: bMin, max: bMax, values: range});
+			};
+
 			let updateIntensityRange = function () {
 				let range = material.intensityRange;
 				let [min, max] = range.map(v => Math.log2(v) / 16);
@@ -687,10 +754,12 @@ export class PropertiesPanel{
 				panel.find('#sldRGBBrightness').slider({value: brightness});
 			};
 
+			this.addVolatileListener(material, "material_property_changed", updateExtraRange);
 			this.addVolatileListener(material, "material_property_changed", updateHeightRange);
 			this.addVolatileListener(material, "material_property_changed", onIntensityChange);
 			this.addVolatileListener(material, "material_property_changed", onRGBChange);
 
+			updateExtraRange();
 			updateHeightRange();
 			onIntensityChange();
 			onRGBChange();

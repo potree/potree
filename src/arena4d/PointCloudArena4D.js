@@ -2,7 +2,7 @@
 
 import {PointCloudTree, PointCloudTreeNode} from "../PointCloudTree.js";
 import {PointCloudMaterial} from "../materials/PointCloudMaterial.js";
-import {PointSizeType, PointColorType, ClipTask, TreeType} from "../defines.js";
+import {PointSizeType, ClipTask, TreeType} from "../defines.js";
 import {Utils} from "../utils.js";
 
 
@@ -323,7 +323,7 @@ export class PointCloudArena4D extends PointCloudTree{
 			let scene = new THREE.Scene();
 
 			let material = new PointCloudMaterial();
-			material.pointColorType = PointColorType.POINT_INDEX;
+			material.activeAttributeName = "index";
 
 			let renderTarget = new THREE.WebGLRenderTarget(
 				1, 1,

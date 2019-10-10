@@ -3,7 +3,7 @@ import {Utils} from "../utils.js";
 import {Gradients} from "./Gradients.js";
 import {Shaders} from "../../build/shaders/shaders.js";
 import {ClassificationScheme} from "./ClassificationScheme.js";
-import {PointSizeType, PointColorType, PointShape, TreeType, ElevationGradientRepeat} from "../defines.js";
+import {PointSizeType, PointShape, TreeType, ElevationGradientRepeat} from "../defines.js";
 
 //
 // how to calculate the radius of a projected sphere in screen space
@@ -35,7 +35,6 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 
 		this._pointSizeType = PointSizeType.FIXED;
 		this._shape = PointShape.SQUARE;
-		this._pointColorType = PointColorType.RGB;
 		this._useClipBox = false;
 		this.clipBoxes = [];
 		//this.clipSpheres = [];
@@ -52,6 +51,8 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 		this._snapEnabled = false;
 		this._numSnapshots = 0;
 		this.defines = new Map();
+
+		this._activeAttributeName = null;
 
 		this._defaultIntensityRangeChanged = false;
 		this._defaultElevationRangeChanged = false;
@@ -129,6 +130,9 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 			uSnapProjInv:		{ type: "Matrix4fv", value: [] },
 			uSnapViewInv:		{ type: "Matrix4fv", value: [] },
 			uShadowColor:		{ type: "3fv", value: [0, 0, 0] },
+
+			uExtraRange:		{ type: "2fv", value: [0, 1] },
+			uExtraGammaBrightContr:	{ type: "3fv", value: [1, 0, 0] },
 
 			uFilterReturnNumberRange:		{ type: "fv", value: [0, 7]},
 			uFilterNumberOfReturnsRange:	{ type: "fv", value: [0, 7]},
@@ -241,40 +245,11 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 			defines.push('#define snap_enabled');
 		}
 
-		if (this._pointColorType === PointColorType.RGB) {
-			defines.push('#define color_type_rgb');
-		} else if (this._pointColorType === PointColorType.COLOR) {
-			defines.push('#define color_type_color');
-		} else if (this._pointColorType === PointColorType.DEPTH) {
-			defines.push('#define color_type_depth');
-		} else if (this._pointColorType === PointColorType.HEIGHT) {
-			defines.push('#define color_type_height');
-		} else if (this._pointColorType === PointColorType.INTENSITY) {
-			defines.push('#define color_type_intensity');
-		} else if (this._pointColorType === PointColorType.INTENSITY_GRADIENT) {
-			defines.push('#define color_type_intensity_gradient');
-		} else if (this._pointColorType === PointColorType.LOD) {
-			defines.push('#define color_type_lod');
-		} else if (this._pointColorType === PointColorType.POINT_INDEX) {
-			defines.push('#define color_type_point_index');
-		} else if (this._pointColorType === PointColorType.CLASSIFICATION) {
-			defines.push('#define color_type_classification');
-		} else if (this._pointColorType === PointColorType.RETURN_NUMBER) {
-			defines.push('#define color_type_return_number');
-		} else if (this._pointColorType === PointColorType.SOURCE) {
-			defines.push('#define color_type_source');
-		} else if (this._pointColorType === PointColorType.NORMAL) {
-			defines.push('#define color_type_normal');
-		} else if (this._pointColorType === PointColorType.PHONG) {
-			defines.push('#define color_type_phong');
-		} else if (this._pointColorType === PointColorType.RGB_HEIGHT) {
-			defines.push('#define color_type_rgb_height');
-		} else if (this._pointColorType === PointColorType.GPS_TIME) {
-			defines.push('#define color_type_gpstime');
-		} else if (this._pointColorType === PointColorType.COMPOSITE) {
-			defines.push('#define color_type_composite');
-		} else if (this._pointColorType === PointColorType.MATCAP) {
-			defines.push('#define color_type_matcap');
+		if(this.activeAttributeName){
+			let attributeName = this.activeAttributeName.replace(/[^a-zA-Z0-9]/g, '_');
+
+			defines.push(`#define color_type_${attributeName}`);
+			console.log(`#define color_type_${attributeName}`);
 		}
 		
 		if(this._treeType === TreeType.OCTREE){
@@ -601,18 +576,20 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 		}
 	}
 
-	get pointColorType () {
-		return this._pointColorType;
+	get activeAttributeName(){
+		return this._activeAttributeName;
 	}
 
-	set pointColorType (value) {
-		if (this._pointColorType !== value) {
-			this._pointColorType = value;
+	set activeAttributeName(value){
+		if (this._activeAttributeName !== value) {
+			this._activeAttributeName = value;
+
 			this.updateShaderSource();
 			this.dispatchEvent({
-				type: 'point_color_type_changed',
+				type: 'active_attribute_changed',
 				target: this
 			});
+
 			this.dispatchEvent({
 				type: 'material_property_changed',
 				target: this
@@ -873,6 +850,73 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 				target: this
 			});
 		}
+	}
+
+	
+	get extraGamma () {
+		return this.uniforms.uExtraGammaBrightContr.value[0];
+	}
+
+	set extraGamma (value) {
+		if (this.uniforms.uExtraGammaBrightContr.value[0] !== value) {
+			this.uniforms.uExtraGammaBrightContr.value[0] = value;
+			this.dispatchEvent({
+				type: 'material_property_changed',
+				target: this
+			});
+		}
+	}
+
+	get extraBrightness () {
+		return this.uniforms.uExtraGammaBrightContr.value[1];
+	}
+
+	set extraBrightness (value) {
+		if (this.uniforms.uExtraGammaBrightContr.value[1] !== value) {
+			this.uniforms.uExtraGammaBrightContr.value[1] = value;
+			this.dispatchEvent({
+				type: 'material_property_changed',
+				target: this
+			});
+		}
+	}
+
+	get extraContrast () {
+		return this.uniforms.uExtraGammaBrightContr.value[2];
+	}
+
+	set extraContrast (value) {
+		if (this.uniforms.uExtraGammaBrightContr.value[2] !== value) {
+			this.uniforms.uExtraGammaBrightContr.value[2] = value;
+			this.dispatchEvent({
+				type: 'material_property_changed',
+				target: this
+			});
+		}
+	}
+
+	get extraRange () {
+		return this.uniforms.uExtraRange.value;
+	}
+
+	set extraRange (value) {
+		if (!(value instanceof Array && value.length === 2)) {
+			return;
+		}
+
+		if (value[0] === this.uniforms.uExtraRange.value[0] &&
+			value[1] === this.uniforms.uExtraRange.value[1]) {
+			return;
+		}
+
+		this.uniforms.uExtraRange.value = value;
+
+		this._defaultExtraRangeChanged = true;
+
+		this.dispatchEvent({
+			type: 'material_property_changed',
+			target: this
+		});
 	}
 
 	get weightRGB () {

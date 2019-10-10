@@ -6,7 +6,78 @@ import {XHRFactory} from "../XHRFactory.js";
 import {LasLazLoader} from "./LasLazLoader.js";
 import {BinaryLoader} from "./BinaryLoader.js";
 import {Utils} from "../utils.js";
-import {PointAttribute, PointAttributes} from "./PointAttributes.js";
+import {PointAttribute, PointAttributes, PointAttributeTypes} from "./PointAttributes.js";
+
+function parseAttributes(cloudjs){
+
+	let version = new Version(cloudjs.version);
+
+	const replacements = {
+		"COLOR_PACKED": "RGBA",
+	};
+
+	const replaceOldNames = (old) => {
+		if(replacements[old]){
+			return replacements[old];
+		}else{
+			return old;
+		}
+	};
+
+	const pointAttributes = [];
+	if(version.upTo('1.7')){
+		
+		for(let attributeName of cloudjs.pointAttributes){
+			const oldAttribute = PointAttribute[attributeName];
+
+			const attribute = {
+				name: oldAttribute.name,
+				size: oldAttribute.byteSize,
+				elements: oldAttribute.numElements,
+				elementSize: oldAttribute.byteSize / oldAttribute.numElements,
+				type: oldAttribute.type.name,
+				description: "",
+			};
+
+			pointAttributes.push(attribute);
+		}
+
+	}else{
+		pointAttributes = cloudjs.pointAttributes;
+	}
+
+
+	{
+		const attributes = new PointAttributes();
+
+		const typeConversion = {
+			int8:   PointAttributeTypes.DATA_TYPE_INT8,
+			int16:  PointAttributeTypes.DATA_TYPE_INT16,
+			int32:  PointAttributeTypes.DATA_TYPE_INT32,
+			int64:  PointAttributeTypes.DATA_TYPE_INT64,
+			uint8:  PointAttributeTypes.DATA_TYPE_UINT8,
+			uint16: PointAttributeTypes.DATA_TYPE_UINT16,
+			uint32: PointAttributeTypes.DATA_TYPE_UINT32,
+			uint64: PointAttributeTypes.DATA_TYPE_UINT64,
+			double: PointAttributeTypes.DATA_TYPE_DOUBLE,
+			float:  PointAttributeTypes.DATA_TYPE_FLOAT,
+		};
+
+		for(const jsAttribute of pointAttributes){
+			const name = replaceOldNames(jsAttribute.name);
+			const type = typeConversion[jsAttribute.type];
+			const numElements = jsAttribute.elements;
+			const description = jsAttribute.description;
+
+			const attribute = new PointAttribute(name, type, numElements);
+
+			attributes.add(attribute);
+		}
+
+		return attributes;
+	}
+
+}
 
 export class POCLoader {
 
@@ -65,7 +136,8 @@ export class POCLoader {
 						pco.loader = new LasLazLoader(fMno.version);
 					} else {
 						pco.loader = new BinaryLoader(fMno.version, boundingBox, fMno.scale);
-						pco.pointAttributes = new PointAttributes(pco.pointAttributes);
+						//pco.pointAttributes = new PointAttributes(pco.pointAttributes);
+						pco.pointAttributes = parseAttributes(fMno);
 					}
 
 					let nodes = {};

@@ -174,7 +174,7 @@ export class HQSplatRenderer{
 				attributeMaterial.maxSize = material.maxSize;
 
 				attributeMaterial.pointSizeType = material.pointSizeType;
-				attributeMaterial.pointColorType = material.pointColorType;
+				attributeMaterial.activeAttributeName = material.activeAttributeName;
 				attributeMaterial.visibleNodesTexture = material.visibleNodesTexture;
 				attributeMaterial.weighted = true;
 				attributeMaterial.screenWidth = width;

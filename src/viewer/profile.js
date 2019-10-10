@@ -1,6 +1,4 @@
 
-
-import {PointColorType} from "../defines.js";
 import {PointCloudMaterial} from "../materials/PointCloudMaterial.js";
 import {Utils} from "../utils.js";
 import {Points} from "../Points.js";
@@ -18,7 +16,7 @@ class ProfilePointCloudEntry{
 		let material = ProfilePointCloudEntry.getMaterialInstance();
 		material.uniforms.minSize.value = 2;
 		material.uniforms.maxSize.value = 2;
-		material.pointColorType = PointColorType.RGB;
+		material.activeAttributeName = "RGBA";
 		material.opacity = 1.0;
 
 		this.material = material;
@@ -789,7 +787,7 @@ export class ProfileWindow extends EventDispatcher {
 			for (let [pointcloud, entry] of this.pointclouds) {
 				let material = entry.material;
 			
-				material.pointColorType = pointcloud.material.pointColorType;
+				material.activeAttributeName = pointcloud.material.activeAttributeName;
 				material.uniforms.uColor = pointcloud.material.uniforms.uColor;
 				material.uniforms.intensityRange.value = pointcloud.material.uniforms.intensityRange.value;
 				material.elevationRange = pointcloud.material.elevationRange;

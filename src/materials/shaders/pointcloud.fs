@@ -52,7 +52,7 @@ void main() {
 		}
 	#endif
 		
-	#if defined color_type_point_index
+	#if defined color_type_index
 		gl_FragColor = vec4(color, uPCIndex / 255.0);
 	#else
 		gl_FragColor = vec4(color, uOpacity);

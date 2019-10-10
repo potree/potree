@@ -2,7 +2,7 @@
 import {PointCloudTree} from "./PointCloudTree.js";
 import {PointCloudOctreeNode} from "./PointCloudOctree.js";
 import {PointCloudArena4DNode} from "./arena4d/PointCloudArena4D.js";
-import {PointSizeType, PointColorType, ClipTask, ElevationGradientRepeat} from "./defines.js";
+import {PointSizeType, ClipTask, ElevationGradientRepeat} from "./defines.js";
 
 // Copied from three.js: WebGLRenderer.js
 function paramThreeToGL(_gl, p) {
@@ -143,6 +143,7 @@ let attributeLocations = {
 	"normal": 8,
 	"spacing": 9,
 	"gpsTime": 10,
+	"aExtra": 11,
 };
 
 class Shader {
@@ -567,12 +568,17 @@ export class Renderer {
 			gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
 			gl.bufferData(gl.ARRAY_BUFFER, bufferAttribute.array, gl.STATIC_DRAW);
 
-			let attributeLocation = attributeLocations[attributeName];
 			let normalized = bufferAttribute.normalized;
 			let type = this.glTypeMapping.get(bufferAttribute.array.constructor);
 
-			gl.vertexAttribPointer(attributeLocation, bufferAttribute.itemSize, type, normalized, 0, 0);
-			gl.enableVertexAttribArray(attributeLocation);
+			let attributeLocation = attributeLocations[attributeName];
+			if(attributeLocation === undefined){
+				//attributeLocation = attributeLocations["aExtra"];
+			}else{
+				gl.vertexAttribPointer(attributeLocation, bufferAttribute.itemSize, type, normalized, 0, 0);
+				gl.enableVertexAttribArray(attributeLocation);
+			}
+
 
 			webglBuffer.vbos.set(attributeName, {
 				handle: vbo,
@@ -883,6 +889,40 @@ export class Renderer {
 
 			gl.bindVertexArray(webglBuffer.vao);
 
+			let isExtraAttribute = false;
+			{
+				isExtraAttribute |= attributeLocations[material.activeAttributeName] === undefined;
+				const attributeNames = octree.pcoGeometry.pointAttributes.attributes.map(pa => pa.name);
+				isExtraAttribute |= attributeNames.includes(material.activeAttributeName);
+			}
+
+			if(isExtraAttribute){
+
+				const attributeLocation = attributeLocations["aExtra"];
+
+				for(const attributeName in geometry.attributes){
+					const bufferAttribute = geometry.attributes[attributeName];
+					const vbo = webglBuffer.vbos.get(attributeName);
+					
+					gl.bindBuffer(gl.ARRAY_BUFFER, vbo.handle);
+					//gl.vertexAttribPointer(attributeLocation, bufferAttribute.itemSize, type, normalized, 0, 0);
+					gl.disableVertexAttribArray(attributeLocation);
+				}
+
+				const attName = material.activeAttributeName;
+				const bufferAttribute = geometry.attributes[attName];
+				const vbo = webglBuffer.vbos.get(attName);
+
+				if(bufferAttribute !== undefined && vbo !== undefined){
+					let type = this.glTypeMapping.get(bufferAttribute.array.constructor);
+					let normalized = bufferAttribute.normalized;
+
+					gl.bindBuffer(gl.ARRAY_BUFFER, vbo.handle);
+					gl.vertexAttribPointer(attributeLocation, bufferAttribute.itemSize, type, normalized, 0, 0);
+					gl.enableVertexAttribArray(attributeLocation);
+				}
+			}
+
 			let numPoints = webglBuffer.numElements;
 			gl.drawArrays(gl.POINTS, 0, numPoints);
 
@@ -916,7 +956,7 @@ export class Renderer {
 
 		if (material.pointSizeType >= 0) {
 			if (material.pointSizeType === PointSizeType.ADAPTIVE ||
-				material.pointColorType === PointColorType.LOD) {
+				material.activeAttributeName === "level of detail") {
 
 				let vnNodes = (params.vnTextureNodes != null) ? params.vnTextureNodes : nodes;
 				visibilityTextureData = octree.computeVisibilityTextureData(vnNodes, camera);
@@ -1184,6 +1224,9 @@ export class Renderer {
 			shader.setUniform1f("intensityGamma", material.intensityGamma);
 			shader.setUniform1f("intensityContrast", material.intensityContrast);
 			shader.setUniform1f("intensityBrightness", material.intensityBrightness);
+
+			shader.setUniform3f("uExtraGammaBrightContr", [material.extraGamma, material.extraBrightness, material.extraContrast]);
+			shader.setUniform2f("uExtraRange", material.extraRange);
 
 			shader.setUniform1f("rgbGamma", material.rgbGamma);
 			shader.setUniform1f("rgbContrast", material.rgbContrast);

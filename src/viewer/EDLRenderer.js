@@ -1,7 +1,6 @@
 
 import {PointCloudSM} from "../utils/PointCloudSM.js";
 import {EyeDomeLightingMaterial} from "../materials/EyeDomeLightingMaterial.js";
-import {PointColorType} from "../defines.js";
 import {SphereVolume} from "../utils/Volume.js";
 import {Utils} from "../utils.js";
 
@@ -208,16 +207,18 @@ export class EDLRenderer{
 
 			let originalAttributes = new Map();
 			for(let pointcloud of viewer.scene.pointclouds){
-				originalAttributes.set(pointcloud, pointcloud.material.pointColorType);
-				pointcloud.material.disableEvents();
-				pointcloud.material.pointColorType = PointColorType.DEPTH;
+				// TODO IMPORTANT !!! check
+				//originalAttributes.set(pointcloud, pointcloud.material.pointColorType);
+				//pointcloud.material.disableEvents();
+				//pointcloud.material.pointColorType = PointColorType.DEPTH;
 			}
 
 			this.shadowMap.render(viewer.scene.scenePointCloud, camera);
 
 			for(let pointcloud of viewer.scene.pointclouds){
 				let originalAttribute = originalAttributes.get(pointcloud);
-				pointcloud.material.pointColorType = originalAttribute;
+				// TODO IMPORTANT !!! check
+				//pointcloud.material.pointColorType = originalAttribute;
 				pointcloud.material.enableEvents();
 			}
 

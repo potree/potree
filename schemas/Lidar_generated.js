@@ -149,16 +149,41 @@ Flatbuffer.LIDAR.Point.prototype.mutate_timestamp = function(value) {
 };
 
 /**
+ * @returns {number}
+ */
+Flatbuffer.LIDAR.Point.prototype.beamID = function() {
+  return this.bb.readUint8(this.bb_pos + 40);
+};
+
+/**
+ * @param {number} value
+ * @returns {boolean}
+ */
+Flatbuffer.LIDAR.Point.prototype.mutate_beamID = function(value) {
+  var offset = this.bb.__offset(this.bb_pos, 40);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb.writeUint8(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
  * @param {flatbuffers.Builder} builder
  * @param {number} x
  * @param {number} y
  * @param {number} z
  * @param {number} intensity
  * @param {number} timestamp
+ * @param {number} beamID
  * @returns {flatbuffers.Offset}
  */
-Flatbuffer.LIDAR.Point.createPoint = function(builder, x, y, z, intensity, timestamp) {
-  builder.prep(8, 40);
+Flatbuffer.LIDAR.Point.createPoint = function(builder, x, y, z, intensity, timestamp, beamID) {
+  builder.prep(8, 48);
+  builder.pad(7);
+  builder.writeInt8(beamID);
   builder.writeFloat64(timestamp);
   builder.pad(7);
   builder.writeInt8(intensity);
@@ -210,7 +235,7 @@ Flatbuffer.LIDAR.PointCloud.getRootAsPointCloud = function(bb, obj) {
  */
 Flatbuffer.LIDAR.PointCloud.prototype.points = function(index, obj) {
   var offset = this.bb.__offset(this.bb_pos, 4);
-  return offset ? (obj || new Flatbuffer.LIDAR.Point).__init(this.bb.__vector(this.bb_pos + offset) + index * 40, this.bb) : null;
+  return offset ? (obj || new Flatbuffer.LIDAR.Point).__init(this.bb.__vector(this.bb_pos + offset) + index * 48, this.bb) : null;
 };
 
 /**
@@ -241,7 +266,7 @@ Flatbuffer.LIDAR.PointCloud.addPoints = function(builder, pointsOffset) {
  * @param {number} numElems
  */
 Flatbuffer.LIDAR.PointCloud.startPointsVector = function(builder, numElems) {
-  builder.startVector(40, numElems, 8);
+  builder.startVector(48, numElems, 8);
 };
 
 /**
@@ -260,6 +285,17 @@ Flatbuffer.LIDAR.PointCloud.endPointCloud = function(builder) {
 Flatbuffer.LIDAR.PointCloud.finishPointCloudBuffer = function(builder, offset) {
   builder.finish(offset);
 };
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {flatbuffers.Offset} pointsOffset
+ * @returns {flatbuffers.Offset}
+ */
+Flatbuffer.LIDAR.PointCloud.createPointCloud = function(builder, pointsOffset) {
+  Flatbuffer.LIDAR.PointCloud.startPointCloud(builder);
+  Flatbuffer.LIDAR.PointCloud.addPoints(builder, pointsOffset);
+  return Flatbuffer.LIDAR.PointCloud.endPointCloud(builder);
+}
 
 // Exports for ECMAScript6 Modules
 export {Flatbuffer};

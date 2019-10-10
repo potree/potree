@@ -203,8 +203,17 @@ Flatbuffer.RTK.Pose.prototype.orientation = function(obj) {
  * @param {Flatbuffer.RTK.Vec3=} obj
  * @returns {Flatbuffer.RTK.Vec3|null}
  */
-Flatbuffer.RTK.Pose.prototype.angularRate = function(obj) {
+Flatbuffer.RTK.Pose.prototype.adjustedOrientation = function(obj) {
   var offset = this.bb.__offset(this.bb_pos, 14);
+  return offset ? (obj || new Flatbuffer.RTK.Vec3).__init(this.bb_pos + offset, this.bb) : null;
+};
+
+/**
+ * @param {Flatbuffer.RTK.Vec3=} obj
+ * @returns {Flatbuffer.RTK.Vec3|null}
+ */
+Flatbuffer.RTK.Pose.prototype.angularRate = function(obj) {
+  var offset = this.bb.__offset(this.bb_pos, 16);
   return offset ? (obj || new Flatbuffer.RTK.Vec3).__init(this.bb_pos + offset, this.bb) : null;
 };
 
@@ -212,7 +221,7 @@ Flatbuffer.RTK.Pose.prototype.angularRate = function(obj) {
  * @returns {boolean}
  */
 Flatbuffer.RTK.Pose.prototype.northPointing = function() {
-  var offset = this.bb.__offset(this.bb_pos, 16);
+  var offset = this.bb.__offset(this.bb_pos, 18);
   return offset ? !!this.bb.readInt8(this.bb_pos + offset) : false;
 };
 
@@ -221,7 +230,7 @@ Flatbuffer.RTK.Pose.prototype.northPointing = function() {
  * @returns {boolean}
  */
 Flatbuffer.RTK.Pose.prototype.mutate_northPointing = function(value) {
-  var offset = this.bb.__offset(this.bb_pos, 16);
+  var offset = this.bb.__offset(this.bb_pos, 18);
 
   if (offset === 0) {
     return false;
@@ -235,7 +244,7 @@ Flatbuffer.RTK.Pose.prototype.mutate_northPointing = function(value) {
  * @returns {number}
  */
 Flatbuffer.RTK.Pose.prototype.timestamp = function() {
-  var offset = this.bb.__offset(this.bb_pos, 18);
+  var offset = this.bb.__offset(this.bb_pos, 20);
   return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
 };
 
@@ -244,7 +253,7 @@ Flatbuffer.RTK.Pose.prototype.timestamp = function() {
  * @returns {boolean}
  */
 Flatbuffer.RTK.Pose.prototype.mutate_timestamp = function(value) {
-  var offset = this.bb.__offset(this.bb_pos, 18);
+  var offset = this.bb.__offset(this.bb_pos, 20);
 
   if (offset === 0) {
     return false;
@@ -258,7 +267,7 @@ Flatbuffer.RTK.Pose.prototype.mutate_timestamp = function(value) {
  * @returns {number}
  */
 Flatbuffer.RTK.Pose.prototype.timezone = function() {
-  var offset = this.bb.__offset(this.bb_pos, 20);
+  var offset = this.bb.__offset(this.bb_pos, 22);
   return offset ? this.bb.readInt32(this.bb_pos + offset) : 0;
 };
 
@@ -267,7 +276,7 @@ Flatbuffer.RTK.Pose.prototype.timezone = function() {
  * @returns {boolean}
  */
 Flatbuffer.RTK.Pose.prototype.mutate_timezone = function(value) {
-  var offset = this.bb.__offset(this.bb_pos, 20);
+  var offset = this.bb.__offset(this.bb_pos, 22);
 
   if (offset === 0) {
     return false;
@@ -278,10 +287,33 @@ Flatbuffer.RTK.Pose.prototype.mutate_timezone = function(value) {
 };
 
 /**
+ * @returns {boolean}
+ */
+Flatbuffer.RTK.Pose.prototype.isValid = function() {
+  var offset = this.bb.__offset(this.bb_pos, 24);
+  return offset ? !!this.bb.readInt8(this.bb_pos + offset) : false;
+};
+
+/**
+ * @param {boolean} value
+ * @returns {boolean}
+ */
+Flatbuffer.RTK.Pose.prototype.mutate_isValid = function(value) {
+  var offset = this.bb.__offset(this.bb_pos, 24);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb.writeInt8(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
  * @param {flatbuffers.Builder} builder
  */
 Flatbuffer.RTK.Pose.startPose = function(builder) {
-  builder.startObject(9);
+  builder.startObject(11);
 };
 
 /**
@@ -326,10 +358,18 @@ Flatbuffer.RTK.Pose.addOrientation = function(builder, orientationOffset) {
 
 /**
  * @param {flatbuffers.Builder} builder
+ * @param {flatbuffers.Offset} adjustedOrientationOffset
+ */
+Flatbuffer.RTK.Pose.addAdjustedOrientation = function(builder, adjustedOrientationOffset) {
+  builder.addFieldStruct(5, adjustedOrientationOffset, 0);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
  * @param {flatbuffers.Offset} angularRateOffset
  */
 Flatbuffer.RTK.Pose.addAngularRate = function(builder, angularRateOffset) {
-  builder.addFieldStruct(5, angularRateOffset, 0);
+  builder.addFieldStruct(6, angularRateOffset, 0);
 };
 
 /**
@@ -337,7 +377,7 @@ Flatbuffer.RTK.Pose.addAngularRate = function(builder, angularRateOffset) {
  * @param {boolean} northPointing
  */
 Flatbuffer.RTK.Pose.addNorthPointing = function(builder, northPointing) {
-  builder.addFieldInt8(6, +northPointing, +false);
+  builder.addFieldInt8(7, +northPointing, +false);
 };
 
 /**
@@ -345,7 +385,7 @@ Flatbuffer.RTK.Pose.addNorthPointing = function(builder, northPointing) {
  * @param {number} timestamp
  */
 Flatbuffer.RTK.Pose.addTimestamp = function(builder, timestamp) {
-  builder.addFieldFloat64(7, timestamp, 0.0);
+  builder.addFieldFloat64(8, timestamp, 0.0);
 };
 
 /**
@@ -353,7 +393,15 @@ Flatbuffer.RTK.Pose.addTimestamp = function(builder, timestamp) {
  * @param {number} timezone
  */
 Flatbuffer.RTK.Pose.addTimezone = function(builder, timezone) {
-  builder.addFieldInt32(8, timezone, 0);
+  builder.addFieldInt32(9, timezone, 0);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {boolean} isValid
+ */
+Flatbuffer.RTK.Pose.addIsValid = function(builder, isValid) {
+  builder.addFieldInt8(10, +isValid, +false);
 };
 
 /**
@@ -364,6 +412,37 @@ Flatbuffer.RTK.Pose.endPose = function(builder) {
   var offset = builder.endObject();
   return offset;
 };
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {flatbuffers.Offset} posOffset
+ * @param {flatbuffers.Offset} locXYOffset
+ * @param {flatbuffers.Offset} velOffset
+ * @param {flatbuffers.Offset} accOffset
+ * @param {flatbuffers.Offset} orientationOffset
+ * @param {flatbuffers.Offset} adjustedOrientationOffset
+ * @param {flatbuffers.Offset} angularRateOffset
+ * @param {boolean} northPointing
+ * @param {number} timestamp
+ * @param {number} timezone
+ * @param {boolean} isValid
+ * @returns {flatbuffers.Offset}
+ */
+Flatbuffer.RTK.Pose.createPose = function(builder, posOffset, locXYOffset, velOffset, accOffset, orientationOffset, adjustedOrientationOffset, angularRateOffset, northPointing, timestamp, timezone, isValid) {
+  Flatbuffer.RTK.Pose.startPose(builder);
+  Flatbuffer.RTK.Pose.addPos(builder, posOffset);
+  Flatbuffer.RTK.Pose.addLocXY(builder, locXYOffset);
+  Flatbuffer.RTK.Pose.addVel(builder, velOffset);
+  Flatbuffer.RTK.Pose.addAcc(builder, accOffset);
+  Flatbuffer.RTK.Pose.addOrientation(builder, orientationOffset);
+  Flatbuffer.RTK.Pose.addAdjustedOrientation(builder, adjustedOrientationOffset);
+  Flatbuffer.RTK.Pose.addAngularRate(builder, angularRateOffset);
+  Flatbuffer.RTK.Pose.addNorthPointing(builder, northPointing);
+  Flatbuffer.RTK.Pose.addTimestamp(builder, timestamp);
+  Flatbuffer.RTK.Pose.addTimezone(builder, timezone);
+  Flatbuffer.RTK.Pose.addIsValid(builder, isValid);
+  return Flatbuffer.RTK.Pose.endPose(builder);
+}
 
 /**
  * @constructor
@@ -470,6 +549,17 @@ Flatbuffer.RTK.Poses.endPoses = function(builder) {
 Flatbuffer.RTK.Poses.finishPosesBuffer = function(builder, offset) {
   builder.finish(offset);
 };
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {flatbuffers.Offset} posesOffset
+ * @returns {flatbuffers.Offset}
+ */
+Flatbuffer.RTK.Poses.createPoses = function(builder, posesOffset) {
+  Flatbuffer.RTK.Poses.startPoses(builder);
+  Flatbuffer.RTK.Poses.addPoses(builder, posesOffset);
+  return Flatbuffer.RTK.Poses.endPoses(builder);
+}
 
 // Exports for ECMAScript6 Modules
 export {Flatbuffer};

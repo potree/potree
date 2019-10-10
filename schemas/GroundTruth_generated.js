@@ -13,7 +13,7 @@ var Flatbuffer = Flatbuffer || {};
 Flatbuffer.GroundTruth = Flatbuffer.GroundTruth || {};
 
 /**
- * @enum
+ * @enum {number}
  */
 Flatbuffer.GroundTruth.AssociationType = {
   ASSOCIATE: 0,
@@ -23,7 +23,17 @@ Flatbuffer.GroundTruth.AssociationType = {
 };
 
 /**
- * @enum
+ * @enum {string}
+ */
+Flatbuffer.GroundTruth.AssociationTypeName = {
+  0: 'ASSOCIATE',
+  1: 'PROPAGATE',
+  2: 'CREATE',
+  3: 'INVALID'
+};
+
+/**
+ * @enum {number}
  */
 Flatbuffer.GroundTruth.TrackType = {
   INITIALIZING: 0,
@@ -32,13 +42,52 @@ Flatbuffer.GroundTruth.TrackType = {
 };
 
 /**
- * @enum
+ * @enum {string}
+ */
+Flatbuffer.GroundTruth.TrackTypeName = {
+  0: 'INITIALIZING',
+  1: 'TRACKING',
+  2: 'DRIFTING'
+};
+
+/**
+ * @enum {number}
  */
 Flatbuffer.GroundTruth.LaneType = {
   SOLID: 0,
   DASHED: 1,
   DOTTED: 2,
   UNKNOWN: 3
+};
+
+/**
+ * @enum {string}
+ */
+Flatbuffer.GroundTruth.LaneTypeName = {
+  0: 'SOLID',
+  1: 'DASHED',
+  2: 'DOTTED',
+  3: 'UNKNOWN'
+};
+
+/**
+ * @enum {number}
+ */
+Flatbuffer.GroundTruth.PointType = {
+  UNKNOWN: 0,
+  ROAD: 1,
+  LANE: 2,
+  NONROAD: 3
+};
+
+/**
+ * @enum {string}
+ */
+Flatbuffer.GroundTruth.PointTypeName = {
+  0: 'UNKNOWN',
+  1: 'ROAD',
+  2: 'LANE',
+  3: 'NONROAD'
 };
 
 /**
@@ -382,6 +431,25 @@ Flatbuffer.GroundTruth.Pose.endPose = function(builder) {
 };
 
 /**
+ * @param {flatbuffers.Builder} builder
+ * @param {flatbuffers.Offset} posOffset
+ * @param {flatbuffers.Offset} velOffset
+ * @param {flatbuffers.Offset} accOffset
+ * @param {flatbuffers.Offset} orientationOffset
+ * @param {number} timestamp
+ * @returns {flatbuffers.Offset}
+ */
+Flatbuffer.GroundTruth.Pose.createPose = function(builder, posOffset, velOffset, accOffset, orientationOffset, timestamp) {
+  Flatbuffer.GroundTruth.Pose.startPose(builder);
+  Flatbuffer.GroundTruth.Pose.addPos(builder, posOffset);
+  Flatbuffer.GroundTruth.Pose.addVel(builder, velOffset);
+  Flatbuffer.GroundTruth.Pose.addAcc(builder, accOffset);
+  Flatbuffer.GroundTruth.Pose.addOrientation(builder, orientationOffset);
+  Flatbuffer.GroundTruth.Pose.addTimestamp(builder, timestamp);
+  return Flatbuffer.GroundTruth.Pose.endPose(builder);
+}
+
+/**
  * @constructor
  */
 Flatbuffer.GroundTruth.Poses = function() {
@@ -478,6 +546,17 @@ Flatbuffer.GroundTruth.Poses.endPoses = function(builder) {
   var offset = builder.endObject();
   return offset;
 };
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {flatbuffers.Offset} posesOffset
+ * @returns {flatbuffers.Offset}
+ */
+Flatbuffer.GroundTruth.Poses.createPoses = function(builder, posesOffset) {
+  Flatbuffer.GroundTruth.Poses.startPoses(builder);
+  Flatbuffer.GroundTruth.Poses.addPoses(builder, posesOffset);
+  return Flatbuffer.GroundTruth.Poses.endPoses(builder);
+}
 
 /**
  * @constructor
@@ -839,6 +918,35 @@ Flatbuffer.GroundTruth.TrackingError.endTrackingError = function(builder) {
   var offset = builder.endObject();
   return offset;
 };
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {number} XX
+ * @param {number} YY
+ * @param {number} speedSpeed
+ * @param {number} yawYaw
+ * @param {number} XY
+ * @param {number} XSpeed
+ * @param {number} XYaw
+ * @param {number} YSpeed
+ * @param {number} YYaw
+ * @param {number} speedYaw
+ * @returns {flatbuffers.Offset}
+ */
+Flatbuffer.GroundTruth.TrackingError.createTrackingError = function(builder, XX, YY, speedSpeed, yawYaw, XY, XSpeed, XYaw, YSpeed, YYaw, speedYaw) {
+  Flatbuffer.GroundTruth.TrackingError.startTrackingError(builder);
+  Flatbuffer.GroundTruth.TrackingError.addXX(builder, XX);
+  Flatbuffer.GroundTruth.TrackingError.addYY(builder, YY);
+  Flatbuffer.GroundTruth.TrackingError.addSpeedSpeed(builder, speedSpeed);
+  Flatbuffer.GroundTruth.TrackingError.addYawYaw(builder, yawYaw);
+  Flatbuffer.GroundTruth.TrackingError.addXY(builder, XY);
+  Flatbuffer.GroundTruth.TrackingError.addXSpeed(builder, XSpeed);
+  Flatbuffer.GroundTruth.TrackingError.addXYaw(builder, XYaw);
+  Flatbuffer.GroundTruth.TrackingError.addYSpeed(builder, YSpeed);
+  Flatbuffer.GroundTruth.TrackingError.addYYaw(builder, YYaw);
+  Flatbuffer.GroundTruth.TrackingError.addSpeedYaw(builder, speedYaw);
+  return Flatbuffer.GroundTruth.TrackingError.endTrackingError(builder);
+}
 
 /**
  * @constructor
@@ -1251,6 +1359,41 @@ Flatbuffer.GroundTruth.State.endState = function(builder) {
 };
 
 /**
+ * @param {flatbuffers.Builder} builder
+ * @param {flatbuffers.Offset} posOffset
+ * @param {number} timestamps
+ * @param {number} speed
+ * @param {number} yaw
+ * @param {flatbuffers.Offset} bboxOffset
+ * @param {number} height
+ * @param {flatbuffers.Offset} errorOffset
+ * @param {flatbuffers.Offset} detectionIdsOffset
+ * @param {Flatbuffer.GroundTruth.AssociationType} associationType
+ * @param {Flatbuffer.GroundTruth.TrackType} trackType
+ * @param {flatbuffers.Offset} egoPositionOffset
+ * @param {flatbuffers.Offset} egoVelocityOffset
+ * @param {flatbuffers.Offset} egoOrientationOffset
+ * @returns {flatbuffers.Offset}
+ */
+Flatbuffer.GroundTruth.State.createState = function(builder, posOffset, timestamps, speed, yaw, bboxOffset, height, errorOffset, detectionIdsOffset, associationType, trackType, egoPositionOffset, egoVelocityOffset, egoOrientationOffset) {
+  Flatbuffer.GroundTruth.State.startState(builder);
+  Flatbuffer.GroundTruth.State.addPos(builder, posOffset);
+  Flatbuffer.GroundTruth.State.addTimestamps(builder, timestamps);
+  Flatbuffer.GroundTruth.State.addSpeed(builder, speed);
+  Flatbuffer.GroundTruth.State.addYaw(builder, yaw);
+  Flatbuffer.GroundTruth.State.addBbox(builder, bboxOffset);
+  Flatbuffer.GroundTruth.State.addHeight(builder, height);
+  Flatbuffer.GroundTruth.State.addError(builder, errorOffset);
+  Flatbuffer.GroundTruth.State.addDetectionIds(builder, detectionIdsOffset);
+  Flatbuffer.GroundTruth.State.addAssociationType(builder, associationType);
+  Flatbuffer.GroundTruth.State.addTrackType(builder, trackType);
+  Flatbuffer.GroundTruth.State.addEgoPosition(builder, egoPositionOffset);
+  Flatbuffer.GroundTruth.State.addEgoVelocity(builder, egoVelocityOffset);
+  Flatbuffer.GroundTruth.State.addEgoOrientation(builder, egoOrientationOffset);
+  return Flatbuffer.GroundTruth.State.endState(builder);
+}
+
+/**
  * @constructor
  */
 Flatbuffer.GroundTruth.Track = function() {
@@ -1380,6 +1523,19 @@ Flatbuffer.GroundTruth.Track.endTrack = function(builder) {
 };
 
 /**
+ * @param {flatbuffers.Builder} builder
+ * @param {flatbuffers.Offset} statesOffset
+ * @param {number} id
+ * @returns {flatbuffers.Offset}
+ */
+Flatbuffer.GroundTruth.Track.createTrack = function(builder, statesOffset, id) {
+  Flatbuffer.GroundTruth.Track.startTrack(builder);
+  Flatbuffer.GroundTruth.Track.addStates(builder, statesOffset);
+  Flatbuffer.GroundTruth.Track.addId(builder, id);
+  return Flatbuffer.GroundTruth.Track.endTrack(builder);
+}
+
+/**
  * @constructor
  */
 Flatbuffer.GroundTruth.Tracks = function() {
@@ -1476,6 +1632,17 @@ Flatbuffer.GroundTruth.Tracks.endTracks = function(builder) {
   var offset = builder.endObject();
   return offset;
 };
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {flatbuffers.Offset} tracksOffset
+ * @returns {flatbuffers.Offset}
+ */
+Flatbuffer.GroundTruth.Tracks.createTracks = function(builder, tracksOffset) {
+  Flatbuffer.GroundTruth.Tracks.startTracks(builder);
+  Flatbuffer.GroundTruth.Tracks.addTracks(builder, tracksOffset);
+  return Flatbuffer.GroundTruth.Tracks.endTracks(builder);
+}
 
 /**
  * @constructor
@@ -1732,6 +1899,29 @@ Flatbuffer.GroundTruth.Detection.endDetection = function(builder) {
 };
 
 /**
+ * @param {flatbuffers.Builder} builder
+ * @param {number} timestamp
+ * @param {flatbuffers.Offset} centroidOffset
+ * @param {number} heading
+ * @param {number} majorAxis
+ * @param {number} minorAxis
+ * @param {number} height
+ * @param {number} id
+ * @returns {flatbuffers.Offset}
+ */
+Flatbuffer.GroundTruth.Detection.createDetection = function(builder, timestamp, centroidOffset, heading, majorAxis, minorAxis, height, id) {
+  Flatbuffer.GroundTruth.Detection.startDetection(builder);
+  Flatbuffer.GroundTruth.Detection.addTimestamp(builder, timestamp);
+  Flatbuffer.GroundTruth.Detection.addCentroid(builder, centroidOffset);
+  Flatbuffer.GroundTruth.Detection.addHeading(builder, heading);
+  Flatbuffer.GroundTruth.Detection.addMajorAxis(builder, majorAxis);
+  Flatbuffer.GroundTruth.Detection.addMinorAxis(builder, minorAxis);
+  Flatbuffer.GroundTruth.Detection.addHeight(builder, height);
+  Flatbuffer.GroundTruth.Detection.addId(builder, id);
+  return Flatbuffer.GroundTruth.Detection.endDetection(builder);
+}
+
+/**
  * @constructor
  */
 Flatbuffer.GroundTruth.Detections = function() {
@@ -1828,6 +2018,17 @@ Flatbuffer.GroundTruth.Detections.endDetections = function(builder) {
   var offset = builder.endObject();
   return offset;
 };
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {flatbuffers.Offset} detectionsOffset
+ * @returns {flatbuffers.Offset}
+ */
+Flatbuffer.GroundTruth.Detections.createDetections = function(builder, detectionsOffset) {
+  Flatbuffer.GroundTruth.Detections.startDetections(builder);
+  Flatbuffer.GroundTruth.Detections.addDetections(builder, detectionsOffset);
+  return Flatbuffer.GroundTruth.Detections.endDetections(builder);
+}
 
 /**
  * @constructor
@@ -2176,6 +2377,37 @@ Flatbuffer.GroundTruth.Lane.endLane = function(builder) {
 };
 
 /**
+ * @param {flatbuffers.Builder} builder
+ * @param {flatbuffers.Offset} offset
+ */
+Flatbuffer.GroundTruth.Lane.finishLaneBuffer = function(builder, offset) {
+  builder.finish(offset);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {number} id
+ * @param {flatbuffers.Offset} timestampOffset
+ * @param {flatbuffers.Offset} leftOffset
+ * @param {flatbuffers.Offset} rightOffset
+ * @param {flatbuffers.Offset} spineOffset
+ * @param {flatbuffers.Offset} laneTypeLeftOffset
+ * @param {flatbuffers.Offset} laneTypeRightOffset
+ * @returns {flatbuffers.Offset}
+ */
+Flatbuffer.GroundTruth.Lane.createLane = function(builder, id, timestampOffset, leftOffset, rightOffset, spineOffset, laneTypeLeftOffset, laneTypeRightOffset) {
+  Flatbuffer.GroundTruth.Lane.startLane(builder);
+  Flatbuffer.GroundTruth.Lane.addId(builder, id);
+  Flatbuffer.GroundTruth.Lane.addTimestamp(builder, timestampOffset);
+  Flatbuffer.GroundTruth.Lane.addLeft(builder, leftOffset);
+  Flatbuffer.GroundTruth.Lane.addRight(builder, rightOffset);
+  Flatbuffer.GroundTruth.Lane.addSpine(builder, spineOffset);
+  Flatbuffer.GroundTruth.Lane.addLaneTypeLeft(builder, laneTypeLeftOffset);
+  Flatbuffer.GroundTruth.Lane.addLaneTypeRight(builder, laneTypeRightOffset);
+  return Flatbuffer.GroundTruth.Lane.endLane(builder);
+}
+
+/**
  * @constructor
  */
 Flatbuffer.GroundTruth.Lanes = function() {
@@ -2272,6 +2504,17 @@ Flatbuffer.GroundTruth.Lanes.endLanes = function(builder) {
   var offset = builder.endObject();
   return offset;
 };
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {flatbuffers.Offset} lanesOffset
+ * @returns {flatbuffers.Offset}
+ */
+Flatbuffer.GroundTruth.Lanes.createLanes = function(builder, lanesOffset) {
+  Flatbuffer.GroundTruth.Lanes.startLanes(builder);
+  Flatbuffer.GroundTruth.Lanes.addLanes(builder, lanesOffset);
+  return Flatbuffer.GroundTruth.Lanes.endLanes(builder);
+}
 
 /**
  * @constructor
@@ -2410,6 +2653,19 @@ Flatbuffer.GroundTruth.LaneOrder.endLaneOrder = function(builder) {
 };
 
 /**
+ * @param {flatbuffers.Builder} builder
+ * @param {flatbuffers.Offset} laneIdOffset
+ * @param {number} timestamp
+ * @returns {flatbuffers.Offset}
+ */
+Flatbuffer.GroundTruth.LaneOrder.createLaneOrder = function(builder, laneIdOffset, timestamp) {
+  Flatbuffer.GroundTruth.LaneOrder.startLaneOrder(builder);
+  Flatbuffer.GroundTruth.LaneOrder.addLaneId(builder, laneIdOffset);
+  Flatbuffer.GroundTruth.LaneOrder.addTimestamp(builder, timestamp);
+  return Flatbuffer.GroundTruth.LaneOrder.endLaneOrder(builder);
+}
+
+/**
  * @constructor
  */
 Flatbuffer.GroundTruth.LaneOrders = function() {
@@ -2506,6 +2762,413 @@ Flatbuffer.GroundTruth.LaneOrders.endLaneOrders = function(builder) {
   var offset = builder.endObject();
   return offset;
 };
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {flatbuffers.Offset} orderingOffset
+ * @returns {flatbuffers.Offset}
+ */
+Flatbuffer.GroundTruth.LaneOrders.createLaneOrders = function(builder, orderingOffset) {
+  Flatbuffer.GroundTruth.LaneOrders.startLaneOrders(builder);
+  Flatbuffer.GroundTruth.LaneOrders.addOrdering(builder, orderingOffset);
+  return Flatbuffer.GroundTruth.LaneOrders.endLaneOrders(builder);
+}
+
+/**
+ * @constructor
+ */
+Flatbuffer.GroundTruth.Points = function() {
+  /**
+   * @type {flatbuffers.ByteBuffer}
+   */
+  this.bb = null;
+
+  /**
+   * @type {number}
+   */
+  this.bb_pos = 0;
+};
+
+/**
+ * @param {number} i
+ * @param {flatbuffers.ByteBuffer} bb
+ * @returns {Flatbuffer.GroundTruth.Points}
+ */
+Flatbuffer.GroundTruth.Points.prototype.__init = function(i, bb) {
+  this.bb_pos = i;
+  this.bb = bb;
+  return this;
+};
+
+/**
+ * @param {flatbuffers.ByteBuffer} bb
+ * @param {Flatbuffer.GroundTruth.Points=} obj
+ * @returns {Flatbuffer.GroundTruth.Points}
+ */
+Flatbuffer.GroundTruth.Points.getRootAsPoints = function(bb, obj) {
+  return (obj || new Flatbuffer.GroundTruth.Points).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
+ * @param {number} index
+ * @returns {number}
+ */
+Flatbuffer.GroundTruth.Points.prototype.x = function(index) {
+  var offset = this.bb.__offset(this.bb_pos, 4);
+  return offset ? this.bb.readFloat64(this.bb.__vector(this.bb_pos + offset) + index * 8) : 0;
+};
+
+/**
+ * @returns {number}
+ */
+Flatbuffer.GroundTruth.Points.prototype.xLength = function() {
+  var offset = this.bb.__offset(this.bb_pos, 4);
+  return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+};
+
+/**
+ * @returns {Float64Array}
+ */
+Flatbuffer.GroundTruth.Points.prototype.xArray = function() {
+  var offset = this.bb.__offset(this.bb_pos, 4);
+  return offset ? new Float64Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+};
+
+/**
+ * @param {number} index
+ * @returns {number}
+ */
+Flatbuffer.GroundTruth.Points.prototype.y = function(index) {
+  var offset = this.bb.__offset(this.bb_pos, 6);
+  return offset ? this.bb.readFloat64(this.bb.__vector(this.bb_pos + offset) + index * 8) : 0;
+};
+
+/**
+ * @returns {number}
+ */
+Flatbuffer.GroundTruth.Points.prototype.yLength = function() {
+  var offset = this.bb.__offset(this.bb_pos, 6);
+  return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+};
+
+/**
+ * @returns {Float64Array}
+ */
+Flatbuffer.GroundTruth.Points.prototype.yArray = function() {
+  var offset = this.bb.__offset(this.bb_pos, 6);
+  return offset ? new Float64Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+};
+
+/**
+ * @param {number} index
+ * @returns {number}
+ */
+Flatbuffer.GroundTruth.Points.prototype.z = function(index) {
+  var offset = this.bb.__offset(this.bb_pos, 8);
+  return offset ? this.bb.readFloat64(this.bb.__vector(this.bb_pos + offset) + index * 8) : 0;
+};
+
+/**
+ * @returns {number}
+ */
+Flatbuffer.GroundTruth.Points.prototype.zLength = function() {
+  var offset = this.bb.__offset(this.bb_pos, 8);
+  return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+};
+
+/**
+ * @returns {Float64Array}
+ */
+Flatbuffer.GroundTruth.Points.prototype.zArray = function() {
+  var offset = this.bb.__offset(this.bb_pos, 8);
+  return offset ? new Float64Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+};
+
+/**
+ * @param {number} index
+ * @returns {number}
+ */
+Flatbuffer.GroundTruth.Points.prototype.intensity = function(index) {
+  var offset = this.bb.__offset(this.bb_pos, 10);
+  return offset ? this.bb.readFloat64(this.bb.__vector(this.bb_pos + offset) + index * 8) : 0;
+};
+
+/**
+ * @returns {number}
+ */
+Flatbuffer.GroundTruth.Points.prototype.intensityLength = function() {
+  var offset = this.bb.__offset(this.bb_pos, 10);
+  return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+};
+
+/**
+ * @returns {Float64Array}
+ */
+Flatbuffer.GroundTruth.Points.prototype.intensityArray = function() {
+  var offset = this.bb.__offset(this.bb_pos, 10);
+  return offset ? new Float64Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+};
+
+/**
+ * @param {number} index
+ * @returns {number}
+ */
+Flatbuffer.GroundTruth.Points.prototype.timestamp = function(index) {
+  var offset = this.bb.__offset(this.bb_pos, 12);
+  return offset ? this.bb.readFloat64(this.bb.__vector(this.bb_pos + offset) + index * 8) : 0;
+};
+
+/**
+ * @returns {number}
+ */
+Flatbuffer.GroundTruth.Points.prototype.timestampLength = function() {
+  var offset = this.bb.__offset(this.bb_pos, 12);
+  return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+};
+
+/**
+ * @returns {Float64Array}
+ */
+Flatbuffer.GroundTruth.Points.prototype.timestampArray = function() {
+  var offset = this.bb.__offset(this.bb_pos, 12);
+  return offset ? new Float64Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+};
+
+/**
+ * @param {number} index
+ * @returns {Flatbuffer.GroundTruth.PointType}
+ */
+Flatbuffer.GroundTruth.Points.prototype.ptType = function(index) {
+  var offset = this.bb.__offset(this.bb_pos, 14);
+  return offset ? /** @type {Flatbuffer.GroundTruth.PointType} */ (this.bb.readInt8(this.bb.__vector(this.bb_pos + offset) + index)) : /** @type {Flatbuffer.GroundTruth.PointType} */ (0);
+};
+
+/**
+ * @returns {number}
+ */
+Flatbuffer.GroundTruth.Points.prototype.ptTypeLength = function() {
+  var offset = this.bb.__offset(this.bb_pos, 14);
+  return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+};
+
+/**
+ * @returns {Int8Array}
+ */
+Flatbuffer.GroundTruth.Points.prototype.ptTypeArray = function() {
+  var offset = this.bb.__offset(this.bb_pos, 14);
+  return offset ? new Int8Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ */
+Flatbuffer.GroundTruth.Points.startPoints = function(builder) {
+  builder.startObject(6);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {flatbuffers.Offset} xOffset
+ */
+Flatbuffer.GroundTruth.Points.addX = function(builder, xOffset) {
+  builder.addFieldOffset(0, xOffset, 0);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {Array.<number>} data
+ * @returns {flatbuffers.Offset}
+ */
+Flatbuffer.GroundTruth.Points.createXVector = function(builder, data) {
+  builder.startVector(8, data.length, 8);
+  for (var i = data.length - 1; i >= 0; i--) {
+    builder.addFloat64(data[i]);
+  }
+  return builder.endVector();
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {number} numElems
+ */
+Flatbuffer.GroundTruth.Points.startXVector = function(builder, numElems) {
+  builder.startVector(8, numElems, 8);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {flatbuffers.Offset} yOffset
+ */
+Flatbuffer.GroundTruth.Points.addY = function(builder, yOffset) {
+  builder.addFieldOffset(1, yOffset, 0);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {Array.<number>} data
+ * @returns {flatbuffers.Offset}
+ */
+Flatbuffer.GroundTruth.Points.createYVector = function(builder, data) {
+  builder.startVector(8, data.length, 8);
+  for (var i = data.length - 1; i >= 0; i--) {
+    builder.addFloat64(data[i]);
+  }
+  return builder.endVector();
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {number} numElems
+ */
+Flatbuffer.GroundTruth.Points.startYVector = function(builder, numElems) {
+  builder.startVector(8, numElems, 8);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {flatbuffers.Offset} zOffset
+ */
+Flatbuffer.GroundTruth.Points.addZ = function(builder, zOffset) {
+  builder.addFieldOffset(2, zOffset, 0);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {Array.<number>} data
+ * @returns {flatbuffers.Offset}
+ */
+Flatbuffer.GroundTruth.Points.createZVector = function(builder, data) {
+  builder.startVector(8, data.length, 8);
+  for (var i = data.length - 1; i >= 0; i--) {
+    builder.addFloat64(data[i]);
+  }
+  return builder.endVector();
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {number} numElems
+ */
+Flatbuffer.GroundTruth.Points.startZVector = function(builder, numElems) {
+  builder.startVector(8, numElems, 8);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {flatbuffers.Offset} intensityOffset
+ */
+Flatbuffer.GroundTruth.Points.addIntensity = function(builder, intensityOffset) {
+  builder.addFieldOffset(3, intensityOffset, 0);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {Array.<number>} data
+ * @returns {flatbuffers.Offset}
+ */
+Flatbuffer.GroundTruth.Points.createIntensityVector = function(builder, data) {
+  builder.startVector(8, data.length, 8);
+  for (var i = data.length - 1; i >= 0; i--) {
+    builder.addFloat64(data[i]);
+  }
+  return builder.endVector();
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {number} numElems
+ */
+Flatbuffer.GroundTruth.Points.startIntensityVector = function(builder, numElems) {
+  builder.startVector(8, numElems, 8);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {flatbuffers.Offset} timestampOffset
+ */
+Flatbuffer.GroundTruth.Points.addTimestamp = function(builder, timestampOffset) {
+  builder.addFieldOffset(4, timestampOffset, 0);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {Array.<number>} data
+ * @returns {flatbuffers.Offset}
+ */
+Flatbuffer.GroundTruth.Points.createTimestampVector = function(builder, data) {
+  builder.startVector(8, data.length, 8);
+  for (var i = data.length - 1; i >= 0; i--) {
+    builder.addFloat64(data[i]);
+  }
+  return builder.endVector();
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {number} numElems
+ */
+Flatbuffer.GroundTruth.Points.startTimestampVector = function(builder, numElems) {
+  builder.startVector(8, numElems, 8);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {flatbuffers.Offset} ptTypeOffset
+ */
+Flatbuffer.GroundTruth.Points.addPtType = function(builder, ptTypeOffset) {
+  builder.addFieldOffset(5, ptTypeOffset, 0);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {Array.<Flatbuffer.GroundTruth.PointType>} data
+ * @returns {flatbuffers.Offset}
+ */
+Flatbuffer.GroundTruth.Points.createPtTypeVector = function(builder, data) {
+  builder.startVector(1, data.length, 1);
+  for (var i = data.length - 1; i >= 0; i--) {
+    builder.addInt8(data[i]);
+  }
+  return builder.endVector();
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {number} numElems
+ */
+Flatbuffer.GroundTruth.Points.startPtTypeVector = function(builder, numElems) {
+  builder.startVector(1, numElems, 1);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @returns {flatbuffers.Offset}
+ */
+Flatbuffer.GroundTruth.Points.endPoints = function(builder) {
+  var offset = builder.endObject();
+  return offset;
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {flatbuffers.Offset} xOffset
+ * @param {flatbuffers.Offset} yOffset
+ * @param {flatbuffers.Offset} zOffset
+ * @param {flatbuffers.Offset} intensityOffset
+ * @param {flatbuffers.Offset} timestampOffset
+ * @param {flatbuffers.Offset} ptTypeOffset
+ * @returns {flatbuffers.Offset}
+ */
+Flatbuffer.GroundTruth.Points.createPoints = function(builder, xOffset, yOffset, zOffset, intensityOffset, timestampOffset, ptTypeOffset) {
+  Flatbuffer.GroundTruth.Points.startPoints(builder);
+  Flatbuffer.GroundTruth.Points.addX(builder, xOffset);
+  Flatbuffer.GroundTruth.Points.addY(builder, yOffset);
+  Flatbuffer.GroundTruth.Points.addZ(builder, zOffset);
+  Flatbuffer.GroundTruth.Points.addIntensity(builder, intensityOffset);
+  Flatbuffer.GroundTruth.Points.addTimestamp(builder, timestampOffset);
+  Flatbuffer.GroundTruth.Points.addPtType(builder, ptTypeOffset);
+  return Flatbuffer.GroundTruth.Points.endPoints(builder);
+}
 
 // Exports for ECMAScript6 Modules
 export {Flatbuffer};

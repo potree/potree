@@ -15,7 +15,7 @@ Flatbuffer.Primitives = Flatbuffer.Primitives || {};
 /**
  * A TimestampType is either a single timestamp for an entire object or a vector of timestamps for each vertex
  *
- * @enum
+ * @enum {number}
  */
 Flatbuffer.Primitives.TimestampType = {
   NONE: 0,
@@ -24,9 +24,20 @@ Flatbuffer.Primitives.TimestampType = {
 };
 
 /**
+ * A TimestampType is either a single timestamp for an entire object or a vector of timestamps for each vertex
+ *
+ * @enum {string}
+ */
+Flatbuffer.Primitives.TimestampTypeName = {
+  0: 'NONE',
+  1: 'ObjectTimestamp',
+  2: 'VertexTimestamps'
+};
+
+/**
  * A ColorType is either a single color for the entire object or a vector of colors for each vertex
  *
- * @enum
+ * @enum {number}
  */
 Flatbuffer.Primitives.ColorType = {
   NONE: 0,
@@ -35,7 +46,18 @@ Flatbuffer.Primitives.ColorType = {
 };
 
 /**
- * @enum
+ * A ColorType is either a single color for the entire object or a vector of colors for each vertex
+ *
+ * @enum {string}
+ */
+Flatbuffer.Primitives.ColorTypeName = {
+  0: 'NONE',
+  1: 'ObjectColor',
+  2: 'VertexColors'
+};
+
+/**
+ * @enum {number}
  */
 Flatbuffer.Primitives.VisualizationType = {
   NONE: 0,
@@ -43,6 +65,17 @@ Flatbuffer.Primitives.VisualizationType = {
   StaticVisualization: 2,
   HideAndShowAnimation: 3,
   HighlightAnimation: 4
+};
+
+/**
+ * @enum {string}
+ */
+Flatbuffer.Primitives.VisualizationTypeName = {
+  0: 'NONE',
+  1: 'NoVisualization',
+  2: 'StaticVisualization',
+  3: 'HideAndShowAnimation',
+  4: 'HighlightAnimation'
 };
 
 /**
@@ -590,6 +623,17 @@ Flatbuffer.Primitives.ObjectTimestamp.endObjectTimestamp = function(builder) {
 };
 
 /**
+ * @param {flatbuffers.Builder} builder
+ * @param {number} value
+ * @returns {flatbuffers.Offset}
+ */
+Flatbuffer.Primitives.ObjectTimestamp.createObjectTimestamp = function(builder, value) {
+  Flatbuffer.Primitives.ObjectTimestamp.startObjectTimestamp(builder);
+  Flatbuffer.Primitives.ObjectTimestamp.addValue(builder, value);
+  return Flatbuffer.Primitives.ObjectTimestamp.endObjectTimestamp(builder);
+}
+
+/**
  * Used for a vector of timestamps (must have exactly 1 timestamp for each vertex)
  *
  * @constructor
@@ -697,6 +741,17 @@ Flatbuffer.Primitives.VertexTimestamps.endVertexTimestamps = function(builder) {
 };
 
 /**
+ * @param {flatbuffers.Builder} builder
+ * @param {flatbuffers.Offset} valuesOffset
+ * @returns {flatbuffers.Offset}
+ */
+Flatbuffer.Primitives.VertexTimestamps.createVertexTimestamps = function(builder, valuesOffset) {
+  Flatbuffer.Primitives.VertexTimestamps.startVertexTimestamps(builder);
+  Flatbuffer.Primitives.VertexTimestamps.addValues(builder, valuesOffset);
+  return Flatbuffer.Primitives.VertexTimestamps.endVertexTimestamps(builder);
+}
+
+/**
  * Used for a single color applied to an entire object
  *
  * @constructor
@@ -765,6 +820,17 @@ Flatbuffer.Primitives.ObjectColor.endObjectColor = function(builder) {
   var offset = builder.endObject();
   return offset;
 };
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {flatbuffers.Offset} valueOffset
+ * @returns {flatbuffers.Offset}
+ */
+Flatbuffer.Primitives.ObjectColor.createObjectColor = function(builder, valueOffset) {
+  Flatbuffer.Primitives.ObjectColor.startObjectColor(builder);
+  Flatbuffer.Primitives.ObjectColor.addValue(builder, valueOffset);
+  return Flatbuffer.Primitives.ObjectColor.endObjectColor(builder);
+}
 
 /**
  * Used for a vector of colors (must have exactly 1 timestamp for each vertex)
@@ -854,6 +920,17 @@ Flatbuffer.Primitives.VertexColors.endVertexColors = function(builder) {
 };
 
 /**
+ * @param {flatbuffers.Builder} builder
+ * @param {flatbuffers.Offset} valuesOffset
+ * @returns {flatbuffers.Offset}
+ */
+Flatbuffer.Primitives.VertexColors.createVertexColors = function(builder, valuesOffset) {
+  Flatbuffer.Primitives.VertexColors.startVertexColors(builder);
+  Flatbuffer.Primitives.VertexColors.addValues(builder, valuesOffset);
+  return Flatbuffer.Primitives.VertexColors.endVertexColors(builder);
+}
+
+/**
  * Use this for objects that are not visualized
  *
  * @constructor
@@ -905,6 +982,15 @@ Flatbuffer.Primitives.NoVisualization.endNoVisualization = function(builder) {
   var offset = builder.endObject();
   return offset;
 };
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @returns {flatbuffers.Offset}
+ */
+Flatbuffer.Primitives.NoVisualization.createNoVisualization = function(builder) {
+  Flatbuffer.Primitives.NoVisualization.startNoVisualization(builder);
+  return Flatbuffer.Primitives.NoVisualization.endNoVisualization(builder);
+}
 
 /**
  * Use this for Visualizing Static Objects that will not be animated but just visible for all time
@@ -1006,6 +1092,19 @@ Flatbuffer.Primitives.StaticVisualization.endStaticVisualization = function(buil
   var offset = builder.endObject();
   return offset;
 };
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {Flatbuffer.Primitives.ColorType} colorType
+ * @param {flatbuffers.Offset} colorOffset
+ * @returns {flatbuffers.Offset}
+ */
+Flatbuffer.Primitives.StaticVisualization.createStaticVisualization = function(builder, colorType, colorOffset) {
+  Flatbuffer.Primitives.StaticVisualization.startStaticVisualization(builder);
+  Flatbuffer.Primitives.StaticVisualization.addColorType(builder, colorType);
+  Flatbuffer.Primitives.StaticVisualization.addColor(builder, colorOffset);
+  return Flatbuffer.Primitives.StaticVisualization.endStaticVisualization(builder);
+}
 
 /**
  * Use this for Visualizing Dynamic Objects that will be animated by toggling visibility based on timestamp
@@ -1188,6 +1287,25 @@ Flatbuffer.Primitives.HideAndShowAnimation.endHideAndShowAnimation = function(bu
 };
 
 /**
+ * @param {flatbuffers.Builder} builder
+ * @param {Flatbuffer.Primitives.TimestampType} timestampType
+ * @param {flatbuffers.Offset} timestampOffset
+ * @param {boolean} visibleWhenActive
+ * @param {Flatbuffer.Primitives.ColorType} colorType
+ * @param {flatbuffers.Offset} colorOffset
+ * @returns {flatbuffers.Offset}
+ */
+Flatbuffer.Primitives.HideAndShowAnimation.createHideAndShowAnimation = function(builder, timestampType, timestampOffset, visibleWhenActive, colorType, colorOffset) {
+  Flatbuffer.Primitives.HideAndShowAnimation.startHideAndShowAnimation(builder);
+  Flatbuffer.Primitives.HideAndShowAnimation.addTimestampType(builder, timestampType);
+  Flatbuffer.Primitives.HideAndShowAnimation.addTimestamp(builder, timestampOffset);
+  Flatbuffer.Primitives.HideAndShowAnimation.addVisibleWhenActive(builder, visibleWhenActive);
+  Flatbuffer.Primitives.HideAndShowAnimation.addColorType(builder, colorType);
+  Flatbuffer.Primitives.HideAndShowAnimation.addColor(builder, colorOffset);
+  return Flatbuffer.Primitives.HideAndShowAnimation.endHideAndShowAnimation(builder);
+}
+
+/**
  * Use this for Visualizing Dynamic Objects that will be animated by highlighting based on timestamp
  *
  * @constructor
@@ -1323,6 +1441,23 @@ Flatbuffer.Primitives.HighlightAnimation.endHighlightAnimation = function(builde
 };
 
 /**
+ * @param {flatbuffers.Builder} builder
+ * @param {Flatbuffer.Primitives.TimestampType} timestampType
+ * @param {flatbuffers.Offset} timestampOffset
+ * @param {flatbuffers.Offset} colorOffset
+ * @param {flatbuffers.Offset} highlightColorOffset
+ * @returns {flatbuffers.Offset}
+ */
+Flatbuffer.Primitives.HighlightAnimation.createHighlightAnimation = function(builder, timestampType, timestampOffset, colorOffset, highlightColorOffset) {
+  Flatbuffer.Primitives.HighlightAnimation.startHighlightAnimation(builder);
+  Flatbuffer.Primitives.HighlightAnimation.addTimestampType(builder, timestampType);
+  Flatbuffer.Primitives.HighlightAnimation.addTimestamp(builder, timestampOffset);
+  Flatbuffer.Primitives.HighlightAnimation.addColor(builder, colorOffset);
+  Flatbuffer.Primitives.HighlightAnimation.addHighlightColor(builder, highlightColorOffset);
+  return Flatbuffer.Primitives.HighlightAnimation.endHighlightAnimation(builder);
+}
+
+/**
  * 3D Point
  *
  * @constructor
@@ -1441,6 +1576,21 @@ Flatbuffer.Primitives.Point3D.endPoint3D = function(builder) {
 };
 
 /**
+ * @param {flatbuffers.Builder} builder
+ * @param {flatbuffers.Offset} posOffset
+ * @param {Flatbuffer.Primitives.VisualizationType} vizType
+ * @param {flatbuffers.Offset} vizOffset
+ * @returns {flatbuffers.Offset}
+ */
+Flatbuffer.Primitives.Point3D.createPoint3D = function(builder, posOffset, vizType, vizOffset) {
+  Flatbuffer.Primitives.Point3D.startPoint3D(builder);
+  Flatbuffer.Primitives.Point3D.addPos(builder, posOffset);
+  Flatbuffer.Primitives.Point3D.addVizType(builder, vizType);
+  Flatbuffer.Primitives.Point3D.addViz(builder, vizOffset);
+  return Flatbuffer.Primitives.Point3D.endPoint3D(builder);
+}
+
+/**
  * @constructor
  */
 Flatbuffer.Primitives.Points3D = function() {
@@ -1537,6 +1687,292 @@ Flatbuffer.Primitives.Points3D.endPoints3D = function(builder) {
   var offset = builder.endObject();
   return offset;
 };
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {flatbuffers.Offset} pointsOffset
+ * @returns {flatbuffers.Offset}
+ */
+Flatbuffer.Primitives.Points3D.createPoints3D = function(builder, pointsOffset) {
+  Flatbuffer.Primitives.Points3D.startPoints3D(builder);
+  Flatbuffer.Primitives.Points3D.addPoints(builder, pointsOffset);
+  return Flatbuffer.Primitives.Points3D.endPoints3D(builder);
+}
+
+/**
+ * 3D Sphere
+ *
+ * @constructor
+ */
+Flatbuffer.Primitives.Sphere3D = function() {
+  /**
+   * @type {flatbuffers.ByteBuffer}
+   */
+  this.bb = null;
+
+  /**
+   * @type {number}
+   */
+  this.bb_pos = 0;
+};
+
+/**
+ * @param {number} i
+ * @param {flatbuffers.ByteBuffer} bb
+ * @returns {Flatbuffer.Primitives.Sphere3D}
+ */
+Flatbuffer.Primitives.Sphere3D.prototype.__init = function(i, bb) {
+  this.bb_pos = i;
+  this.bb = bb;
+  return this;
+};
+
+/**
+ * @param {flatbuffers.ByteBuffer} bb
+ * @param {Flatbuffer.Primitives.Sphere3D=} obj
+ * @returns {Flatbuffer.Primitives.Sphere3D}
+ */
+Flatbuffer.Primitives.Sphere3D.getRootAsSphere3D = function(bb, obj) {
+  return (obj || new Flatbuffer.Primitives.Sphere3D).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
+ * @param {Vec3=} obj
+ * @returns {Vec3|null}
+ */
+Flatbuffer.Primitives.Sphere3D.prototype.pos = function(obj) {
+  var offset = this.bb.__offset(this.bb_pos, 4);
+  return offset ? (obj || new Vec3).__init(this.bb_pos + offset, this.bb) : null;
+};
+
+/**
+ * @returns {number}
+ */
+Flatbuffer.Primitives.Sphere3D.prototype.radius = function() {
+  var offset = this.bb.__offset(this.bb_pos, 6);
+  return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
+};
+
+/**
+ * @param {number} value
+ * @returns {boolean}
+ */
+Flatbuffer.Primitives.Sphere3D.prototype.mutate_radius = function(value) {
+  var offset = this.bb.__offset(this.bb_pos, 6);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb.writeFloat64(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
+ * @returns {Flatbuffer.Primitives.VisualizationType}
+ */
+Flatbuffer.Primitives.Sphere3D.prototype.vizType = function() {
+  var offset = this.bb.__offset(this.bb_pos, 8);
+  return offset ? /** @type {Flatbuffer.Primitives.VisualizationType} */ (this.bb.readUint8(this.bb_pos + offset)) : Flatbuffer.Primitives.VisualizationType.NONE;
+};
+
+/**
+ * @param {Flatbuffer.Primitives.VisualizationType} value
+ * @returns {boolean}
+ */
+Flatbuffer.Primitives.Sphere3D.prototype.mutate_viz_type = function(value) {
+  var offset = this.bb.__offset(this.bb_pos, 8);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb.writeUint8(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
+ * @param {flatbuffers.Table} obj
+ * @returns {?flatbuffers.Table}
+ */
+Flatbuffer.Primitives.Sphere3D.prototype.viz = function(obj) {
+  var offset = this.bb.__offset(this.bb_pos, 10);
+  return offset ? this.bb.__union(obj, this.bb_pos + offset) : null;
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ */
+Flatbuffer.Primitives.Sphere3D.startSphere3D = function(builder) {
+  builder.startObject(4);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {flatbuffers.Offset} posOffset
+ */
+Flatbuffer.Primitives.Sphere3D.addPos = function(builder, posOffset) {
+  builder.addFieldStruct(0, posOffset, 0);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {number} radius
+ */
+Flatbuffer.Primitives.Sphere3D.addRadius = function(builder, radius) {
+  builder.addFieldFloat64(1, radius, 0.0);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {Flatbuffer.Primitives.VisualizationType} vizType
+ */
+Flatbuffer.Primitives.Sphere3D.addVizType = function(builder, vizType) {
+  builder.addFieldInt8(2, vizType, Flatbuffer.Primitives.VisualizationType.NONE);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {flatbuffers.Offset} vizOffset
+ */
+Flatbuffer.Primitives.Sphere3D.addViz = function(builder, vizOffset) {
+  builder.addFieldOffset(3, vizOffset, 0);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @returns {flatbuffers.Offset}
+ */
+Flatbuffer.Primitives.Sphere3D.endSphere3D = function(builder) {
+  var offset = builder.endObject();
+  return offset;
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {flatbuffers.Offset} posOffset
+ * @param {number} radius
+ * @param {Flatbuffer.Primitives.VisualizationType} vizType
+ * @param {flatbuffers.Offset} vizOffset
+ * @returns {flatbuffers.Offset}
+ */
+Flatbuffer.Primitives.Sphere3D.createSphere3D = function(builder, posOffset, radius, vizType, vizOffset) {
+  Flatbuffer.Primitives.Sphere3D.startSphere3D(builder);
+  Flatbuffer.Primitives.Sphere3D.addPos(builder, posOffset);
+  Flatbuffer.Primitives.Sphere3D.addRadius(builder, radius);
+  Flatbuffer.Primitives.Sphere3D.addVizType(builder, vizType);
+  Flatbuffer.Primitives.Sphere3D.addViz(builder, vizOffset);
+  return Flatbuffer.Primitives.Sphere3D.endSphere3D(builder);
+}
+
+/**
+ * @constructor
+ */
+Flatbuffer.Primitives.Spheres3D = function() {
+  /**
+   * @type {flatbuffers.ByteBuffer}
+   */
+  this.bb = null;
+
+  /**
+   * @type {number}
+   */
+  this.bb_pos = 0;
+};
+
+/**
+ * @param {number} i
+ * @param {flatbuffers.ByteBuffer} bb
+ * @returns {Flatbuffer.Primitives.Spheres3D}
+ */
+Flatbuffer.Primitives.Spheres3D.prototype.__init = function(i, bb) {
+  this.bb_pos = i;
+  this.bb = bb;
+  return this;
+};
+
+/**
+ * @param {flatbuffers.ByteBuffer} bb
+ * @param {Flatbuffer.Primitives.Spheres3D=} obj
+ * @returns {Flatbuffer.Primitives.Spheres3D}
+ */
+Flatbuffer.Primitives.Spheres3D.getRootAsSpheres3D = function(bb, obj) {
+  return (obj || new Flatbuffer.Primitives.Spheres3D).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
+ * @param {number} index
+ * @param {Flatbuffer.Primitives.Sphere3D=} obj
+ * @returns {Flatbuffer.Primitives.Sphere3D}
+ */
+Flatbuffer.Primitives.Spheres3D.prototype.points = function(index, obj) {
+  var offset = this.bb.__offset(this.bb_pos, 4);
+  return offset ? (obj || new Flatbuffer.Primitives.Sphere3D).__init(this.bb.__indirect(this.bb.__vector(this.bb_pos + offset) + index * 4), this.bb) : null;
+};
+
+/**
+ * @returns {number}
+ */
+Flatbuffer.Primitives.Spheres3D.prototype.pointsLength = function() {
+  var offset = this.bb.__offset(this.bb_pos, 4);
+  return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ */
+Flatbuffer.Primitives.Spheres3D.startSpheres3D = function(builder) {
+  builder.startObject(1);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {flatbuffers.Offset} pointsOffset
+ */
+Flatbuffer.Primitives.Spheres3D.addPoints = function(builder, pointsOffset) {
+  builder.addFieldOffset(0, pointsOffset, 0);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {Array.<flatbuffers.Offset>} data
+ * @returns {flatbuffers.Offset}
+ */
+Flatbuffer.Primitives.Spheres3D.createPointsVector = function(builder, data) {
+  builder.startVector(4, data.length, 4);
+  for (var i = data.length - 1; i >= 0; i--) {
+    builder.addOffset(data[i]);
+  }
+  return builder.endVector();
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {number} numElems
+ */
+Flatbuffer.Primitives.Spheres3D.startPointsVector = function(builder, numElems) {
+  builder.startVector(4, numElems, 4);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @returns {flatbuffers.Offset}
+ */
+Flatbuffer.Primitives.Spheres3D.endSpheres3D = function(builder) {
+  var offset = builder.endObject();
+  return offset;
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {flatbuffers.Offset} pointsOffset
+ * @returns {flatbuffers.Offset}
+ */
+Flatbuffer.Primitives.Spheres3D.createSpheres3D = function(builder, pointsOffset) {
+  Flatbuffer.Primitives.Spheres3D.startSpheres3D(builder);
+  Flatbuffer.Primitives.Spheres3D.addPoints(builder, pointsOffset);
+  return Flatbuffer.Primitives.Spheres3D.endSpheres3D(builder);
+}
 
 /**
  * 3D PolyLine
@@ -1705,6 +2141,23 @@ Flatbuffer.Primitives.PolyLine3D.endPolyLine3D = function(builder) {
 };
 
 /**
+ * @param {flatbuffers.Builder} builder
+ * @param {flatbuffers.Offset} verticesOffset
+ * @param {Flatbuffer.Primitives.VisualizationType} vizType
+ * @param {flatbuffers.Offset} vizOffset
+ * @param {number} widthForVisualization
+ * @returns {flatbuffers.Offset}
+ */
+Flatbuffer.Primitives.PolyLine3D.createPolyLine3D = function(builder, verticesOffset, vizType, vizOffset, widthForVisualization) {
+  Flatbuffer.Primitives.PolyLine3D.startPolyLine3D(builder);
+  Flatbuffer.Primitives.PolyLine3D.addVertices(builder, verticesOffset);
+  Flatbuffer.Primitives.PolyLine3D.addVizType(builder, vizType);
+  Flatbuffer.Primitives.PolyLine3D.addViz(builder, vizOffset);
+  Flatbuffer.Primitives.PolyLine3D.addWidthForVisualization(builder, widthForVisualization);
+  return Flatbuffer.Primitives.PolyLine3D.endPolyLine3D(builder);
+}
+
+/**
  * @constructor
  */
 Flatbuffer.Primitives.PolyLines3D = function() {
@@ -1801,6 +2254,17 @@ Flatbuffer.Primitives.PolyLines3D.endPolyLines3D = function(builder) {
   var offset = builder.endObject();
   return offset;
 };
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {flatbuffers.Offset} linesOffset
+ * @returns {flatbuffers.Offset}
+ */
+Flatbuffer.Primitives.PolyLines3D.createPolyLines3D = function(builder, linesOffset) {
+  Flatbuffer.Primitives.PolyLines3D.startPolyLines3D(builder);
+  Flatbuffer.Primitives.PolyLines3D.addLines(builder, linesOffset);
+  return Flatbuffer.Primitives.PolyLines3D.endPolyLines3D(builder);
+}
 
 /**
  * 3D Box
@@ -2040,6 +2504,35 @@ Flatbuffer.Primitives.Box3D.endBox3D = function(builder) {
 };
 
 /**
+ * @param {flatbuffers.Builder} builder
+ * @param {flatbuffers.Offset} p0Offset
+ * @param {flatbuffers.Offset} p1Offset
+ * @param {flatbuffers.Offset} p2Offset
+ * @param {flatbuffers.Offset} p3Offset
+ * @param {flatbuffers.Offset} p4Offset
+ * @param {flatbuffers.Offset} p5Offset
+ * @param {flatbuffers.Offset} p6Offset
+ * @param {flatbuffers.Offset} p7Offset
+ * @param {Flatbuffer.Primitives.VisualizationType} vizType
+ * @param {flatbuffers.Offset} vizOffset
+ * @returns {flatbuffers.Offset}
+ */
+Flatbuffer.Primitives.Box3D.createBox3D = function(builder, p0Offset, p1Offset, p2Offset, p3Offset, p4Offset, p5Offset, p6Offset, p7Offset, vizType, vizOffset) {
+  Flatbuffer.Primitives.Box3D.startBox3D(builder);
+  Flatbuffer.Primitives.Box3D.addP0(builder, p0Offset);
+  Flatbuffer.Primitives.Box3D.addP1(builder, p1Offset);
+  Flatbuffer.Primitives.Box3D.addP2(builder, p2Offset);
+  Flatbuffer.Primitives.Box3D.addP3(builder, p3Offset);
+  Flatbuffer.Primitives.Box3D.addP4(builder, p4Offset);
+  Flatbuffer.Primitives.Box3D.addP5(builder, p5Offset);
+  Flatbuffer.Primitives.Box3D.addP6(builder, p6Offset);
+  Flatbuffer.Primitives.Box3D.addP7(builder, p7Offset);
+  Flatbuffer.Primitives.Box3D.addVizType(builder, vizType);
+  Flatbuffer.Primitives.Box3D.addViz(builder, vizOffset);
+  return Flatbuffer.Primitives.Box3D.endBox3D(builder);
+}
+
+/**
  * @constructor
  */
 Flatbuffer.Primitives.Boxes3D = function() {
@@ -2136,6 +2629,17 @@ Flatbuffer.Primitives.Boxes3D.endBoxes3D = function(builder) {
   var offset = builder.endObject();
   return offset;
 };
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {flatbuffers.Offset} boxesOffset
+ * @returns {flatbuffers.Offset}
+ */
+Flatbuffer.Primitives.Boxes3D.createBoxes3D = function(builder, boxesOffset) {
+  Flatbuffer.Primitives.Boxes3D.startBoxes3D(builder);
+  Flatbuffer.Primitives.Boxes3D.addBoxes(builder, boxesOffset);
+  return Flatbuffer.Primitives.Boxes3D.endBoxes3D(builder);
+}
 
 // Exports for ECMAScript6 Modules
 export {Vec2};

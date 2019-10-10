@@ -33,21 +33,46 @@ export async function loadRtkFlatbuffer(s3, bucket, name, callback) {
     });
 
   } else {
+
+    var iso_8859_15_table = { 338: 188, 339: 189, 352: 166, 353: 168, 376: 190, 381: 180, 382: 184, 8364: 164 }
+
+    function iso_8859_15_to_uint8array(iso_8859_15_str) {
+        let buf = new ArrayBuffer(iso_8859_15_str.length);
+        let bufView = new Uint8Array(buf);
+        for (let i = 0, strLen = iso_8859_15_str.length; i < strLen; i++) {
+            let octet = iso_8859_15_str.charCodeAt(i);
+            if (iso_8859_15_table.hasOwnProperty(octet))
+                octet = iso_8859_15_table[octet]
+            bufView[i] = octet;
+            if(octet < 0 || 255 < octet)
+                console.error(`invalid data error`)
+        }
+        return bufView
+    }
+
+
     const filename = "../data/rtk.fb";
+    const schemaFile = "../schemas/RTK_generated.js";
     let t0, t1;
     const tstart = performance.now();
 
     const xhr = new XMLHttpRequest();
+    xhr.overrideMimeType('text/plain; charset=ISO-8859-15');
     xhr.open("GET", filename);
-    xhr.responsetype = "arraybuffer";
+    // xhr.responsetype = "blob";
 
     xhr.onprogress = function(event) {
       t1 = performance.now();
       t0 = t1;
     }
 
-    xhr.onload = function(data) {
-      const {mpos, orientations, timestamps, t_init, t_range} = parseRTK(new Uint8Array(data.target.response));
+    xhr.onload = async function(data) {
+      
+      const FlatbufferModule = await import(schemaFile);
+
+      let uint8Array = iso_8859_15_to_uint8array(data.target.responseText);
+
+      const {mpos, orientations, timestamps, t_init, t_range} = parseRTK(uint8Array, FlatbufferModule);
       callback(mpos, orientations, timestamps, t_init, t_range);
     };
 

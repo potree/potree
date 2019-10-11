@@ -84,8 +84,7 @@ uniform vec2 uFilterReturnNumberRange;
 uniform vec2 uFilterNumberOfReturnsRange;
 uniform vec2 uFilterGPSTimeClipRange;
 
-uniform float uGPSOffset;
-uniform float uGPSRange;
+uniform vec2 uNormalizedGpsBufferRange;
 uniform float intensityGamma;
 uniform float intensityContrast;
 uniform float intensityBrightness;
@@ -100,6 +99,7 @@ uniform float wClassification;
 uniform float wReturnNumber;
 uniform float wSourceID;
 
+uniform vec2 uExtraNormalizedRange;
 uniform vec2 uExtraRange;
 uniform vec3 uExtraGammaBrightContr;
 
@@ -409,11 +409,16 @@ float getIntensity(){
 	return w;
 }
 
-float getGpsTime(){
-	float w = (gpsTime + uGPSOffset) / uGPSRange;
+vec3 getGpsTime(){
+	vec2 r = uNormalizedGpsBufferRange;
+
+	float w = gpsTime * (r.y - r.x) + r.x;
+
 	w = clamp(w, 0.0, 1.0);
 
-	return w;
+	vec3 c = texture2D(gradient, vec2(w,1.0-w)).rgb;
+	
+	return c;
 }
 
 vec3 getElevation(){
@@ -516,47 +521,40 @@ vec3 getMatcap(){
 #endif
 
 vec3 getExtra(){
-	//float w = aExtra / 90.0;
-	float w = (aExtra - uExtraRange.x) / (uExtraRange.y - uExtraRange.x);
+	vec2 r = uExtraNormalizedRange;
 
-	float gamma = uExtraGammaBrightContr[0];
-	float brightness = uExtraGammaBrightContr[1];
-	float contrast = uExtraGammaBrightContr[2];
+	float w = aExtra * (r.y - r.x) + r.x;
 
-	w = pow(w, gamma);
-	w = w + brightness;
-	w = (w - 0.5) * getContrastFactor(contrast) + 0.5;
+	w = (w - uExtraRange.x) / (uExtraRange.y - uExtraRange.x);
+
 	w = clamp(w, 0.0, 1.0);
 
-	vec3 color = texture2D(gradient, vec2(w, 1.0 - w)).rgb;
+	vec3 color = texture2D(gradient, vec2(w,1.0-w)).rgb;
+
+	// float w = (aExtra - uExtraRange.x) / (uExtraRange.y - uExtraRange.x);
+
+	// float gamma = uExtraGammaBrightContr[0];
+	// float brightness = uExtraGammaBrightContr[1];
+	// float contrast = uExtraGammaBrightContr[2];
+
+	// w = pow(w, gamma);
+	// w = w + brightness;
+	// w = (w - 0.5) * getContrastFactor(contrast) + 0.5;
+	// w = clamp(w, 0.0, 1.0);
+
+	// vec3 color = texture2D(gradient, vec2(w, 1.0 - w)).rgb;
 
 	return color;
 
 	//return vec3(1.0, 0.0, 0.0);
 }
 
-// vec3 getCustomColor(float u){
-// 	vec2 range = (10.0, 99.0);
-// 	float gamma = 1.2;
-// 	float brightness = 0.2;
-
-// 	float v = (u - range.x) / (range.y - range.x);
-// 	v = pow(v, vec3(gamma));
-// 	v = v + brightness;
-
-// 	v = clamp(v, 0.0, 1.0);
-
-// 	vec3 color = vec3(v, v, v);
-// 	return color;
-// }
-
-
 vec3 getColor(){
 	vec3 color;
 	
 	#ifdef color_type_RGBA
 		color = getRGB();
-	#elif defined color_type_height
+	#elif defined color_type_height || defined color_type_elevation
 		color = getElevation();
 	#elif defined color_type_rgb_height
 		vec3 cHeight = getElevation();
@@ -569,8 +567,7 @@ vec3 getColor(){
 		float w = getIntensity();
 		color = vec3(w, w, w);
 	#elif defined color_type_gps_time
-		float w = getGpsTime();
-		color = vec3(w, w, w);
+		color = getGpsTime();
 	#elif defined color_type_intensity_gradient
 		float w = getIntensity();
 		color = texture2D(gradient, vec2(w,1.0-w)).rgb;
@@ -580,7 +577,7 @@ vec3 getColor(){
 		float depth = getLOD();
 		float w = depth / 10.0;
 		color = texture2D(gradient, vec2(w,1.0-w)).rgb;
-	#elif defined color_type_index
+	#elif defined color_type_indices
 		color = indices.rgb;
 	#elif defined color_type_classification
 		vec4 cl = getClassification(); 

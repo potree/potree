@@ -108,16 +108,24 @@ export class BinaryLoader{
 				} else if (property === "SPACING") {
 					let bufferAttribute = new THREE.BufferAttribute(new Float32Array(buffer), 1);
 					geometry.addAttribute('spacing', bufferAttribute);
-				} else if (property === "GPS_TIME") {
-					let bufferAttribute = new THREE.BufferAttribute(new Float32Array(buffer), 1);
-					geometry.addAttribute('gpsTime', bufferAttribute);
+				} 
+				// else if (property === "GPS_TIME") {
+				// 	let bufferAttribute = new THREE.BufferAttribute(new Float32Array(buffer), 1);
+				// 	geometry.addAttribute('gpsTime', bufferAttribute);
 
-					node.gpsTime = {
+				// 	node.gpsTime = {
+				// 		offset: buffers[property].offset,
+				// 		range: buffers[property].range,
+				// 	};
+				// }
+				else{
+					const bufferAttribute = new THREE.BufferAttribute(new Float32Array(buffer), 1);
+					bufferAttribute.potree = {
 						offset: buffers[property].offset,
-						range: buffers[property].range,
+						scale: buffers[property].scale,
+						range: batchAttribute.range,
 					};
-				}else{
-					let bufferAttribute = new THREE.BufferAttribute(new Float32Array(buffer), 1);
+
 					geometry.addAttribute(property, bufferAttribute);
 
 					const attribute = pointAttributes.attributes.find(a => a.name === batchAttribute.name);

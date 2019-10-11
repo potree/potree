@@ -127,17 +127,8 @@ onmessage = function (event) {
 			}
 
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
-		} else if (pointAttribute.name === "INTENSITY") {
-			let buff = new ArrayBuffer(numPoints * 4);
-			let intensities = new Float32Array(buff);
-
-			for (let j = 0; j < numPoints; j++) {
-				let intensity = cv.getUint16(inOffset + j * pointAttributes.byteSize, true);
-				intensities[j] = intensity;
-			}
-
-			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
-		} else if (pointAttribute.name === "CLASSIFICATION") {
+		}
+		else if (pointAttribute.name === "CLASSIFICATION") {
 			let buff = new ArrayBuffer(numPoints);
 			let classifications = new Uint8Array(buff);
 
@@ -257,22 +248,24 @@ onmessage = function (event) {
 			}
 
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
-		} else if (pointAttribute.name === "GPS_TIME") {
-			let buff = new ArrayBuffer(numPoints * 8);
-			let gpstimes = new Float64Array(buff);
+		} 
+		// else if (pointAttribute.name === "GPS_TIME") {
+		// 	let buff = new ArrayBuffer(numPoints * 8);
+		// 	let gpstimes = new Float64Array(buff);
 
-			for(let j = 0; j < numPoints; j++){
-				let gpstime = cv.getFloat64(inOffset + j * pointAttributes.byteSize, true);
-				gpstimes[j] = gpstime;
-			}
+		// 	for(let j = 0; j < numPoints; j++){
+		// 		let gpstime = cv.getFloat64(inOffset + j * pointAttributes.byteSize, true);
+		// 		gpstimes[j] = gpstime;
+		// 	}
 
-			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
-		}else{
+		// 	attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
+		// }
+		else{
 			let buff = new ArrayBuffer(numPoints * 4);
 			let f32 = new Float32Array(buff);
 
-			let min = Infinity;
-			let max = -Infinity;
+			let [min, max] = [Infinity, -Infinity];
+			let [offset, scale] = [0, 1];
 
 			const getterMap = {
 				"int8":   cv.getInt8,
@@ -288,6 +281,21 @@ onmessage = function (event) {
 			};
 			const getter = getterMap[pointAttribute.type.name].bind(cv);
 
+			// compute offset and scale to pack larger types into 32 bit floats
+			if(pointAttribute.type.size > 4){
+				for(let j = 0; j < numPoints; j++){
+					let value = getter(inOffset + j * pointAttributes.byteSize);
+
+					if(!Number.isNaN(value)){
+						min = Math.min(min, value);
+						max = Math.max(max, value);
+					}
+				}
+
+				offset = min;
+				scale = 1 / (max - min);
+			}
+
 			for(let j = 0; j < numPoints; j++){
 				let value = getter(inOffset + j * pointAttributes.byteSize);
 
@@ -296,7 +304,7 @@ onmessage = function (event) {
 					max = Math.max(max, value);
 				}
 
-				f32[j] = value;
+				f32[j] = (value - offset) * scale;
 			}
 
 			pointAttribute.range = [min, max];
@@ -304,6 +312,8 @@ onmessage = function (event) {
 			attributeBuffers[pointAttribute.name] = { 
 				buffer: buff, 
 				attribute: pointAttribute,
+				offset: offset,
+				scale: scale,
 			};
 		}
 
@@ -311,32 +321,32 @@ onmessage = function (event) {
 	}
 
 	// Convert GPS time from double (unsupported by WebGL) to origin-aligned floats
-	if(attributeBuffers["GPS_TIME"]){ 
-		let attribute = attributeBuffers["GPS_TIME"];
-		let sourceF64 = new Float64Array(attribute.buffer);
-		let target = new ArrayBuffer(numPoints * 4);
-		let targetF32 = new Float32Array(target);
+	// if(attributeBuffers["GPS_TIME"]){ 
+	// 	let attribute = attributeBuffers["GPS_TIME"];
+	// 	let sourceF64 = new Float64Array(attribute.buffer);
+	// 	let target = new ArrayBuffer(numPoints * 4);
+	// 	let targetF32 = new Float32Array(target);
 
-		let min = Infinity;
-		let max = -Infinity;
-		for(let i = 0; i < numPoints; i++){
-			let gpstime = sourceF64[i];
+	// 	let min = Infinity;
+	// 	let max = -Infinity;
+	// 	for(let i = 0; i < numPoints; i++){
+	// 		let gpstime = sourceF64[i];
 
-			min = Math.min(min, gpstime);
-			max = Math.max(max, gpstime);
-		}
+	// 		min = Math.min(min, gpstime);
+	// 		max = Math.max(max, gpstime);
+	// 	}
 
-		for(let i = 0; i < numPoints; i++){
-			let gpstime = sourceF64[i];
-			targetF32[i] = gpstime - min;
-		}
+	// 	for(let i = 0; i < numPoints; i++){
+	// 		let gpstime = sourceF64[i];
+	// 		targetF32[i] = gpstime - min;
+	// 	}
 
-		attributeBuffers["GPS_TIME"] = { 
-			buffer: target, 
-			attribute: PointAttribute.GPS_TIME,
-			offset: min,
-			range: max - min};
-	}
+	// 	attributeBuffers["GPS_TIME"] = { 
+	// 		buffer: target, 
+	// 		attribute: PointAttribute.GPS_TIME,
+	// 		offset: min,
+	// 		range: max - min};
+	// }
 
 
 	{ // add indices
@@ -352,14 +362,15 @@ onmessage = function (event) {
 
 	performance.mark("binary-decoder-end");
 
-	//{ // print timings
-	//	//performance.measure("spacing", "spacing-start", "spacing-end");
-	//	performance.measure("binary-decoder", "binary-decoder-start", "binary-decoder-end");
-	//	let measure = performance.getEntriesByType("measure")[0];
-	//	let dpp = 1000 * measure.duration / numPoints;
-	//	let debugMessage = `${measure.duration.toFixed(3)} ms, ${numPoints} points, ${dpp.toFixed(3)} µs / point`;
-	//	console.log(debugMessage);
-	//}
+	{ // print timings
+		//performance.measure("spacing", "spacing-start", "spacing-end");
+		performance.measure("binary-decoder", "binary-decoder-start", "binary-decoder-end");
+		let measure = performance.getEntriesByType("measure")[0];
+		let dpp = 1000 * measure.duration / numPoints;
+		let pps = parseInt(numPoints / (measure.duration / 1000));
+		let debugMessage = `${measure.duration.toFixed(3)} ms, ${numPoints} points, ${pps.toLocaleString()} points/sec`;
+		console.log(debugMessage);
+	}
 
 	performance.clearMarks();
 	performance.clearMeasures();

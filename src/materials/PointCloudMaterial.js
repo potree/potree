@@ -106,7 +106,7 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 			toModel:			{ type: "Matrix4f", value: [] },
 			diffuse:			{ type: "fv", value: [1, 1, 1] },
 			transition:			{ type: "f", value: 0.5 },
-			intensityRange:		{ type: "fv", value: [0, 65000] },
+			intensityRange:		{ type: "fv", value: [Infinity, -Infinity] },
 			intensityGamma:		{ type: "f", value: 1 },
 			intensityContrast:	{ type: "f", value: 0 },
 			intensityBrightness:{ type: "f", value: 0 },

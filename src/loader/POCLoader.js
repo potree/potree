@@ -43,7 +43,7 @@ function parseAttributes(cloudjs){
 		}
 
 	}else{
-		pointAttributes = cloudjs.pointAttributes;
+		pointAttributes.push(...cloudjs.pointAttributes);
 	}
 
 

@@ -1371,55 +1371,55 @@ export class Viewer extends EventDispatcher{
 		this.scene.directionalLight.lookAt(new THREE.Vector3().addVectors(camera.position, camera.getWorldDirection(new THREE.Vector3())));
 
 		for (let pointcloud of this.scene.pointclouds) {
-			if (!pointcloud.material._defaultIntensityRangeChanged) {
-				let root = pointcloud.pcoGeometry.root;
-				if (root != null && root.loaded) {
-					let attributes = pointcloud.pcoGeometry.root.geometry.attributes;
-					if (attributes.intensity) {
-						let array = attributes.intensity.array;
+			// if (!pointcloud.material._defaultIntensityRangeChanged) {
+			// 	let root = pointcloud.pcoGeometry.root;
+			// 	if (root != null && root.loaded) {
+			// 		let attributes = pointcloud.pcoGeometry.root.geometry.attributes;
+			// 		if (attributes.intensity) {
+			// 			let array = attributes.intensity.array;
 
-						// chose max value from the 0.75 percentile
-						let ordered = [];
-						for (let j = 0; j < array.length; j++) {
-							ordered.push(array[j]);
-						}
-						ordered.sort();
-						let capIndex = parseInt((ordered.length - 1) * 0.75);
-						let cap = ordered[capIndex];
+			// 			// chose max value from the 0.75 percentile
+			// 			let ordered = [];
+			// 			for (let j = 0; j < array.length; j++) {
+			// 				ordered.push(array[j]);
+			// 			}
+			// 			ordered.sort();
+			// 			let capIndex = parseInt((ordered.length - 1) * 0.75);
+			// 			let cap = ordered[capIndex];
 
-						if (cap <= 1) {
-							pointcloud.material.intensityRange = [0, 1];
-						} else if (cap <= 256) {
-							pointcloud.material.intensityRange = [0, 255];
-						} else {
-							pointcloud.material.intensityRange = [0, cap];
-						}
+			// 			if (cap <= 1) {
+			// 				pointcloud.material.intensityRange = [0, 1];
+			// 			} else if (cap <= 256) {
+			// 				pointcloud.material.intensityRange = [0, 255];
+			// 			} else {
+			// 				pointcloud.material.intensityRange = [0, cap];
+			// 			}
 
-					}
-					// pointcloud._intensityMaxEvaluated = true;
-				}
-			}
+			// 		}
+			// 		// pointcloud._intensityMaxEvaluated = true;
+			// 	}
+			// }
 
-			if(this.defaultGPSTimeChanged === false){
+			// if(this.defaultGPSTimeChanged === false){
 
-				let root = pointcloud.pcoGeometry.root;
-				if (root != null && root.loaded) {
-					if(root.gpsTime){
+			// 	let root = pointcloud.pcoGeometry.root;
+			// 	if (root != null && root.loaded) {
+			// 		if(root.gpsTime){
 
-						let gpsTime = root.gpsTime;
-						let min = gpsTime.offset;
-						let max = gpsTime.offset + gpsTime.range;
-						let border = (max - min) * 0.1;
+			// 			let gpsTime = root.gpsTime;
+			// 			let min = gpsTime.offset;
+			// 			let max = gpsTime.offset + gpsTime.range;
+			// 			let border = (max - min) * 0.1;
 
-						this.setFilterGPSTimeExtent(min - border, max + border);
-						//this.setFilterGPSTimeRange(0, 1000 * 1000 * 1000);
-						this.setFilterGPSTimeRange(min, max);
+			// 			this.setFilterGPSTimeExtent(min - border, max + border);
+			// 			//this.setFilterGPSTimeRange(0, 1000 * 1000 * 1000);
+			// 			this.setFilterGPSTimeRange(min, max);
 
-						this.defaultGPSTimeChanged = true;
-					}
-				}
+			// 			this.defaultGPSTimeChanged = true;
+			// 		}
+			// 	}
 
-			}
+			// }
 			
 			pointcloud.showBoundingBox = this.showBoundingBox;
 			pointcloud.generateDEM = this.generateDEM;

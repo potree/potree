@@ -132,18 +132,19 @@ function paramThreeToGL(_gl, p) {
 };
 
 let attributeLocations = {
-	"position": 0,
-	"color": 1,
-	"intensity": 2,
-	"classification": 3, 
-	"returnNumber": 4,
-	"numberOfReturns": 5,
-	"pointSourceID": 6,
-	"indices": 7,
-	"normal": 8,
-	"spacing": 9,
-	"gpsTime": 10,
-	"aExtra": 11,
+	"position": {name: "position", location: 0},
+	"color": {name: "color", location: 1},
+	"RGBA": {name: "color", location: 1},
+	"intensity": {name: "intensity", location: 2},
+	"classification": {name: "classification", location: 3},
+	"returnNumber": {name: "returnNumber", location: 4},
+	"numberOfReturns": {name: "numberOfReturns", location: 5},
+	"pointSourceID": {name: "pointSourceID", location: 6},
+	"indices": {name: "indices", location: 7},
+	"normal": {name: "normal", location: 8},
+	"spacing": {name: "spacing", location: 9},
+	"gps-time":  {name: "gpsTime", location: 10},
+	"aExtra":  {name: "aExtra", location: 11},
 };
 
 class Shader {
@@ -219,8 +220,9 @@ class Shader {
 			this.program = gl.createProgram();
 
 			for(let name of Object.keys(attributeLocations)){
-				let location = attributeLocations[name];
-				gl.bindAttribLocation(this.program, location, name);
+				let location = attributeLocations[name].location;
+				let glslName = attributeLocations[name].name;
+				gl.bindAttribLocation(this.program, location, glslName);
 			}
 
 			this.compileShader(this.vs, this.vsSource);
@@ -571,10 +573,11 @@ export class Renderer {
 			let normalized = bufferAttribute.normalized;
 			let type = this.glTypeMapping.get(bufferAttribute.array.constructor);
 
-			let attributeLocation = attributeLocations[attributeName];
-			if(attributeLocation === undefined){
+			if(attributeLocations[attributeName] === undefined){
 				//attributeLocation = attributeLocations["aExtra"];
 			}else{
+				let attributeLocation = attributeLocations[attributeName].location;
+
 				gl.vertexAttribPointer(attributeLocation, bufferAttribute.itemSize, type, normalized, 0, 0);
 				gl.enableVertexAttribArray(attributeLocation);
 			}
@@ -606,7 +609,7 @@ export class Renderer {
 		for(let attributeName in geometry.attributes){
 			let bufferAttribute = geometry.attributes[attributeName];
 
-			let attributeLocation = attributeLocations[attributeName];
+			let attributeLocation = attributeLocations[attributeName].location;
 			let normalized = bufferAttribute.normalized;
 			let type = this.glTypeMapping.get(bufferAttribute.array.constructor);
 
@@ -667,8 +670,6 @@ export class Renderer {
 
 	renderNodes(octree, nodes, visibilityTextureData, camera, target, shader, params) {
 
-		//console.log(`renderNodes: ${nodes.length}`);
-
 		if (exports.measureTimings) performance.mark("renderNodes-start");
 
 		let gl = this.gl;
@@ -680,27 +681,6 @@ export class Renderer {
 
 		let mat4holder = new Float32Array(16);
 
-		let gpsMin = Infinity;
-		let gpsMax = -Infinity
-		for (let node of nodes) {
-
-			if(node instanceof PointCloudOctreeNode){
-				let geometryNode = node.geometryNode;
-
-				if(geometryNode.gpsTime){
-					let {offset, range} = geometryNode.gpsTime;
-					let nodeMin = offset;
-					let nodeMax = offset + range;
-
-					gpsMin = Math.min(gpsMin, nodeMin);
-					gpsMax = Math.max(gpsMax, nodeMax);
-				}
-			}
-
-			break;
-
-		}
-
 		let i = 0;
 		for (let node of nodes) {
 
@@ -710,16 +690,9 @@ export class Renderer {
 				}
 			}
 
-			//if(![
-			//	"r42006420226",
-			//	]
-			//	.includes(node.name)){
-			//	continue;
-			//}
 
 			let world = node.sceneNode.matrixWorld;
 			worldView.multiplyMatrices(view, world);
-			//this.multiplyViewWithScaleTrans(view, world, worldView);
 
 			if (visibilityTextureData) {
 				let vnStart = visibilityTextureData.offsets.get(node);
@@ -846,17 +819,26 @@ export class Renderer {
 				}
 			}
 
-			let geometry = node.geometryNode.geometry;
+			const geometry = node.geometryNode.geometry;
 
-			if(node.geometryNode.gpsTime){
-				let nodeMin = node.geometryNode.gpsTime.offset;
-				let nodeMax = nodeMin + node.geometryNode.gpsTime.range;
+			if(geometry.attributes["gps-time"]){
+				const bufferAttribute = geometry.attributes["gps-time"];
+				const attGPS = octree.pcoGeometry.pointAttributes.attributes.find(a => a.name === "gps-time");
 
-				let gpsOffset = (+nodeMin - gpsMin);
-				let gpsRange = (gpsMax - gpsMin);
+				// ranges in full gps coordinate system
+				const globalRange = attGPS.range;
+				const bufferRange = bufferAttribute.potree.range;
 
-				shader.setUniform1f("uGPSOffset", gpsOffset);
-				shader.setUniform1f("uGPSRange", gpsRange);
+				// ranges in [0, 1]
+				// normalizedGlobalRange = [0, 1]
+				// normalizedBufferRange: norm buffer within norm global range e.g. [0.2, 0.8]
+				const globalWidth = globalRange[1] - globalRange[0];
+				const normalizedBufferRange = [
+					(bufferRange[0] - globalRange[0]) / globalWidth,
+					(bufferRange[1] - globalRange[0]) / globalWidth,
+				];
+
+				shader.setUniform2f("uNormalizedGpsBufferRange", normalizedBufferRange);
 			}
 
 			{
@@ -864,12 +846,12 @@ export class Renderer {
 				let uFilterNumberOfReturnsRange = material.uniforms.uFilterNumberOfReturnsRange.value;
 				let uFilterGPSTimeClipRange = material.uniforms.uFilterGPSTimeClipRange.value;
 				
-				let gpsCliPRangeMin = uFilterGPSTimeClipRange[0] - gpsMin;
-				let gpsCliPRangeMax = uFilterGPSTimeClipRange[1] - gpsMin;
+				//let gpsCliPRangeMin = uFilterGPSTimeClipRange[0] - gpsMin;
+				//let gpsCliPRangeMax = uFilterGPSTimeClipRange[1] - gpsMin;
 				
 				shader.setUniform2f("uFilterReturnNumberRange", uFilterReturnNumberRange);
 				shader.setUniform2f("uFilterNumberOfReturnsRange", uFilterNumberOfReturnsRange);
-				shader.setUniform2f("uFilterGPSTimeClipRange", [gpsCliPRangeMin, gpsCliPRangeMax]);
+				//shader.setUniform2f("uFilterGPSTimeClipRange", [gpsCliPRangeMin, gpsCliPRangeMax]);
 			}
 
 			let webglBuffer = null;
@@ -889,23 +871,19 @@ export class Renderer {
 
 			gl.bindVertexArray(webglBuffer.vao);
 
-			let isExtraAttribute = false;
-			{
-				isExtraAttribute |= attributeLocations[material.activeAttributeName] === undefined;
-				const attributeNames = octree.pcoGeometry.pointAttributes.attributes.map(pa => pa.name);
-				isExtraAttribute |= attributeNames.includes(material.activeAttributeName);
-			}
+			let isExtraAttribute =
+				attributeLocations[material.activeAttributeName] === undefined
+				&& Object.keys(geometry.attributes).includes(material.activeAttributeName);
 
 			if(isExtraAttribute){
 
-				const attributeLocation = attributeLocations["aExtra"];
+				const attributeLocation = attributeLocations["aExtra"].location;
 
 				for(const attributeName in geometry.attributes){
 					const bufferAttribute = geometry.attributes[attributeName];
 					const vbo = webglBuffer.vbos.get(attributeName);
 					
 					gl.bindBuffer(gl.ARRAY_BUFFER, vbo.handle);
-					//gl.vertexAttribPointer(attributeLocation, bufferAttribute.itemSize, type, normalized, 0, 0);
 					gl.disableVertexAttribArray(attributeLocation);
 				}
 
@@ -920,6 +898,69 @@ export class Renderer {
 					gl.bindBuffer(gl.ARRAY_BUFFER, vbo.handle);
 					gl.vertexAttribPointer(attributeLocation, bufferAttribute.itemSize, type, normalized, 0, 0);
 					gl.enableVertexAttribArray(attributeLocation);
+				}
+
+
+
+
+				{
+
+					const attExtra = octree.pcoGeometry.pointAttributes.attributes
+						.find(a => a.name === attName);
+
+					const offset = bufferAttribute.potree.offset;
+					const scale = bufferAttribute.potree.scale;
+
+					// ranges in full gps coordinate system
+					const globalRange = attExtra.range;
+					const bufferRange = bufferAttribute.potree.range;
+
+					const globalWidth = globalRange[1] - globalRange[0];
+					const normalizedBufferRange = [
+						(bufferRange[0] - globalRange[0]) / globalWidth,
+						(bufferRange[1] - globalRange[0]) / globalWidth,
+					];
+
+					shader.setUniform2f("uExtraNormalizedRange", normalizedBufferRange);
+					
+					if(offset === 0 && scale === 1){
+						shader.setUniform2f("uExtraRange", material.extraRange);
+					}else{
+						const extraRange = [
+							(material.extraRange[0] - globalRange[0]) / globalWidth,
+							(material.extraRange[1] - globalRange[0]) / globalWidth,
+						];
+						shader.setUniform2f("uExtraRange", extraRange);
+					}
+
+					
+				}
+
+
+
+
+
+
+
+
+			}else{
+
+				for(const attributeName in geometry.attributes){
+					const bufferAttribute = geometry.attributes[attributeName];
+					const vbo = webglBuffer.vbos.get(attributeName);
+
+
+					if(attributeLocations[attributeName] !== undefined){
+						const attributeLocation = attributeLocations[attributeName].location;
+
+						let type = this.glTypeMapping.get(bufferAttribute.array.constructor);
+						let normalized = bufferAttribute.normalized;
+						
+						gl.bindBuffer(gl.ARRAY_BUFFER, vbo.handle);
+						gl.vertexAttribPointer(attributeLocation, bufferAttribute.itemSize, type, normalized, 0, 0);
+						gl.enableVertexAttribArray(attributeLocation);
+						
+					}
 				}
 			}
 
@@ -1224,9 +1265,6 @@ export class Renderer {
 			shader.setUniform1f("intensityGamma", material.intensityGamma);
 			shader.setUniform1f("intensityContrast", material.intensityContrast);
 			shader.setUniform1f("intensityBrightness", material.intensityBrightness);
-
-			shader.setUniform3f("uExtraGammaBrightContr", [material.extraGamma, material.extraBrightness, material.extraContrast]);
-			shader.setUniform2f("uExtraRange", material.extraRange);
 
 			shader.setUniform1f("rgbGamma", material.rgbGamma);
 			shader.setUniform1f("rgbContrast", material.rgbContrast);

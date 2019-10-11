@@ -554,6 +554,64 @@ export class Utils {
 		camera.zoomTo(node, 1);
 	}
 
+	
+	static findClosestGpsTime(target, viewer){
+		const start = performance.now();
+
+		const nodes = [];
+		for(const pc of viewer.scene.pointclouds){
+			nodes.push(pc.root);
+
+			for(const child of pc.root.children){
+				if(child){
+					nodes.push(child);
+				}
+			}
+		}
+
+		let closestNode = null;
+		let closestIndex = Infinity;
+		let closestDistance = Infinity;
+		let closestValue = 0;
+
+		for(const node of nodes){
+			let geometry = node.geometryNode.geometry;
+			let gpsTime = geometry.attributes["gps-time"];
+			let range = gpsTime.potree.range;
+
+			for(let i = 0; i < gpsTime.array.length; i++){
+				let value = gpsTime.array[i];
+				value = value * (range[1] - range[0]) + range[0];
+				const distance = Math.abs(target - value);
+
+				if(distance < closestDistance){
+					closestIndex = i;
+					closestDistance = distance;
+					closestValue = value;
+					closestNode = node;
+					//console.log("found a closer one: " + value);
+				}
+			}
+		}
+
+		const geometry = closestNode.geometryNode.geometry;
+		const position = new THREE.Vector3(
+			geometry.attributes.position.array[3 * closestIndex + 0],
+			geometry.attributes.position.array[3 * closestIndex + 1],
+			geometry.attributes.position.array[3 * closestIndex + 2],
+		);
+
+		const end = performance.now();
+		const duration = (end - start);
+		console.log(`duration: ${duration.toFixed(3)}ms`);
+
+		return {
+			node: closestNode,
+			index: closestIndex,
+			position: position,
+		};
+	}
+
 	/**
 	 *
 	 * 0: no intersection

@@ -205,7 +205,7 @@
 
 				elTitle.find("img[name=action_return_number]").click( () => {
 					event.stopPropagation();
-					material.pointColorType = Potree.PointColorType.RETURN_NUMBER;
+					material.activeAttributeName = "return_number";
 					material.pointSizeType = Potree.PointSizeType.FIXED;
 					material.size = 5;
 					potreeViewer.setClipTask(Potree.ClipTask.SHOW_INSIDE);
@@ -213,7 +213,7 @@
 				
 				elTitle.find("img[name=action_rgb]").click( () => {
 					event.stopPropagation();
-					material.pointColorType = Potree.PointColorType.RGB;
+					material.activeAttributeName = "RGBA";
 					material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
 					material.size = 1;
 					potreeViewer.setClipTask(Potree.ClipTask.HIGHLIGHT);

@@ -323,7 +323,7 @@ export class PointCloudArena4D extends PointCloudTree{
 			let scene = new THREE.Scene();
 
 			let material = new PointCloudMaterial();
-			material.activeAttributeName = "index";
+			material.activeAttributeName = "indices";
 
 			let renderTarget = new THREE.WebGLRenderTarget(
 				1, 1,

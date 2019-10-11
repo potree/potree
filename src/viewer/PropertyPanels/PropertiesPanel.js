@@ -351,9 +351,10 @@ export class PropertiesPanel{
 			options.push(...attributes.map(a => a.name));
 
 			options.push(
+				"elevation",
 				"color",
 				'matcap',
-				'index',
+				'indices',
 				'level of detail',
 				'composite'
 			);
@@ -376,7 +377,24 @@ export class PropertiesPanel{
 
 				const attribute = pointcloud.pcoGeometry.pointAttributes.attributes.find(a => a.name === selectedValue);
 
-				if(attribute){
+				if(attribute !== undefined && attribute.name === "intensity"){
+					if(pointcloud.material.intensityRange[0] === Infinity){
+						pointcloud.material.intensityRange = attribute.range;
+					}
+
+					const [min, max] = attribute.range;
+
+					panel.find('#sldIntensityRange').slider({
+						range: true,
+						min: min, max: max, step: 0.01,
+						values: [min, max],
+						slide: (event, ui) => {
+							let min = ui.values[0];
+							let max = ui.values[1];
+							material.intensityRange = [min, max];
+						}
+					});
+				} else if(attribute){
 					const [min, max] = attribute.range;
 
 					panel.find('#sldExtraRange').slider({
@@ -433,21 +451,24 @@ export class PropertiesPanel{
 					blockIntensity.css('display', 'block');
 				} else if (selectedValue === 'Intensity Gradient') {
 					blockIntensity.css('display', 'block');
-				} else if (selectedValue === "index" ){
+				} else if (selectedValue === "indices" ){
 					blockIndex.css('display', 'block');
 				} else if (selectedValue === "matcap" ){
 					blockMatcap.css('display', 'block');
-				}else{
+				} else if (selectedValue === "classification" ){
+					// add classification color selctor?
+				} else if (selectedValue === "gps-time" ){
+					blockGps.css('display', 'block');
+				} else{
 					blockExtra.css('display', 'block');
 				}
 			};
 
 			attributeSelection.selectmenu({change: updateMaterialPanel});
 
-			// let update = () => {
-			// 	//attributeSelection.val(Utils.toMaterialName(material.pointColorType)).selectmenu('refresh');
-			// 	attributeSelection.val(Utils.toMaterialName(material.pointColorType)).selectmenu('refresh');
-			// };
+			let update = () => {
+				attributeSelection.val(material.activeAttributeName).selectmenu('refresh');
+			};
 			this.addVolatileListener(material, "point_color_type_changed", update);
 			this.addVolatileListener(material, "active_attribute_changed", update);
 
@@ -584,16 +605,16 @@ export class PropertiesPanel{
 				}
 			});
 
-			panel.find('#sldIntensityRange').slider({
-				range: true,
-				min: 0, max: 1, step: 0.01,
-				values: [0, 1],
-				slide: (event, ui) => {
-					let min = (Number(ui.values[0]) === 0) ? 0 : parseInt(Math.pow(2, 16 * ui.values[0]));
-					let max = parseInt(Math.pow(2, 16 * ui.values[1]));
-					material.intensityRange = [min, max];
-				}
-			});
+			// panel.find('#sldIntensityRange').slider({
+			// 	range: true,
+			// 	//min: 0, max: 1, step: 0.01,
+			// 	values: [0, 1],
+			// 	slide: (event, ui) => {
+			// 		let min = (Number(ui.values[0]) === 0) ? 0 : parseInt(Math.pow(2, 16 * ui.values[0]));
+			// 		let max = parseInt(Math.pow(2, 16 * ui.values[1]));
+			// 		material.intensityRange = [min, max];
+			// 	}
+			// });
 
 			panel.find('#sldIntensityGamma').slider({
 				value: material.intensityGamma,
@@ -702,7 +723,7 @@ export class PropertiesPanel{
 				let [min, max] = range.map(v => Math.log2(v) / 16);
 
 				panel.find('#lblIntensityRange').html(`${parseInt(range[0])} to ${parseInt(range[1])}`);
-				panel.find('#sldIntensityRange').slider({values: [min, max]});
+				//panel.find('#sldIntensityRange').slider({values: [min, max]});
 			};
 
 			{

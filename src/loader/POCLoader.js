@@ -111,15 +111,15 @@ export class POCLoader {
 					pco.nodes = nodes;
 
 					callback(pco);
+				} else if (xhr.readyState === 4) {
+					const error = new Error('Loading failed. Status: ' + xhr.status + ', ' + xhr.statusText);
+					callback(error);
 				}
 			};
 
 			xhr.send(null);
 		} catch (e) {
-			console.log("loading failed: '" + url + "'");
-			console.log(e);
-
-			callback();
+			callback(e);
 		}
 	}
 

@@ -244,11 +244,11 @@ Potree.PointCloudArena4DGeometry = class PointCloudArena4DGeometry extends Event
 
 					callback(geometry);
 				} else if (xhr.readyState === 4) {
-					callback(null);
+					const error = new Error('Loading failed. Status: ' + xhr.status + ', ' + xhr.statusText);
+					callback(error);
 				}
 			} catch (e) {
-				console.error(e.message);
-				callback(null);
+				callback(e);
 			}
 		};
 

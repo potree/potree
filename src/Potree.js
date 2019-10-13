@@ -114,58 +114,54 @@ export {scriptPath, resourcePath};
 
 
 export function loadPointCloud(path, name, callback){
-	let loaded = function(pointcloud){
+	let loaded = function (pointcloud) {
 		pointcloud.name = name;
 		callback({type: 'pointcloud_loaded', pointcloud: pointcloud});
 	};
+	// Callback when there is an error loading point cloud data.
+	let loadFailed = function (err) {
+		const error = err ? err : new Error(`Failed to load point cloud from URL: ${path}`);
+		callback({type: 'loading_failed', error: error});
+		console.error(error);
+	};
 
 	// load pointcloud
-	if (!path){
-		// TODO: callback? comment? Hello? Bueller? Anyone?
-	} else if (path.indexOf('ept.json') > 0) {
-		Potree.EptLoader.load(path, function(geometry) {
-			if (!geometry) {
-				console.error(new Error(`failed to load point cloud from URL: ${path}`));
-			}
-			else {
-				let pointcloud = new PointCloudOctree(geometry);
-				loaded(pointcloud);
-			}
-		});
-	} else if (path.indexOf('greyhound://') === 0){
+	if (!path) {
+		loadFailed(new Error('A path is required to load a point cloud.'))
+	} else if (path.indexOf('greyhound://') === 0) {
 		// We check if the path string starts with 'greyhound:', if so we assume it's a greyhound server URL.
-		GreyhoundLoader.load(path, function (geometry) {
-			if (!geometry) {
+		Potree.GreyhoundLoader.load(path, function (geometry) {
+			if (geometry instanceof Error || !geometry) {
 				//callback({type: 'loading_failed'});
-				console.error(new Error(`failed to load point cloud from URL: ${path}`));
+				loadFailed(geometry);
 			} else {
-				let pointcloud = new PointCloudOctree(geometry);
+				let pointcloud = new Potree.PointCloudOctree(geometry);
 				loaded(pointcloud);
 			}
 		});
 	} else if (path.indexOf('cloud.js') > 0) {
-		POCLoader.load(path, function (geometry) {
-			if (!geometry) {
+		Potree.POCLoader.load(path, function (geometry) {
+			if (geometry instanceof Error || !geometry) {
 				//callback({type: 'loading_failed'});
-				console.error(new Error(`failed to load point cloud from URL: ${path}`));
+				loadFailed(geometry);
 			} else {
-				let pointcloud = new PointCloudOctree(geometry);
+				let pointcloud = new Potree.PointCloudOctree(geometry);
 				loaded(pointcloud);
 			}
 		});
 	} else if (path.indexOf('.vpc') > 0) {
-		PointCloudArena4DGeometry.load(path, function (geometry) {
-			if (!geometry) {
+		Potree.PointCloudArena4DGeometry.load(path, function (geometry) {
+			if (geometry instanceof Error || !geometry) {
 				//callback({type: 'loading_failed'});
-				console.error(new Error(`failed to load point cloud from URL: ${path}`));
+				loadFailed(geometry);
 			} else {
-				let pointcloud = new PointCloudArena4D(geometry);
+				let pointcloud = new Potree.PointCloudArena4D(geometry);
 				loaded(pointcloud);
 			}
 		});
 	} else {
 		//callback({'type': 'loading_failed'});
-		console.error(new Error(`failed to load point cloud from URL: ${path}`));
+		loadFailed();
 	}
 };
 

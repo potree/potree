@@ -39,6 +39,7 @@ export class BinaryLoader{
 					let buffer = xhr.response;
 					this.parse(node, buffer);
 				} else {
+					//console.error(`Failed to load file! HTTP status: ${xhr.status}, file: ${url}`);
 					throw new Error(`Failed to load file! HTTP status: ${xhr.status}, file: ${url}`);
 				}
 			}

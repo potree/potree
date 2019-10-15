@@ -1573,10 +1573,12 @@ export class Viewer extends EventDispatcher{
 			this.controls.setScene(scene);
 			this.controls.update(delta);
 
-			this.scene.cameraP.position.copy(scene.view.position);
-			this.scene.cameraP.rotation.order = "ZXY";
-			this.scene.cameraP.rotation.x = Math.PI / 2 + this.scene.view.pitch;
-			this.scene.cameraP.rotation.z = this.scene.view.yaw;
+			if(typeof debugDisabled === "undefined" ){
+				this.scene.cameraP.position.copy(scene.view.position);
+				this.scene.cameraP.rotation.order = "ZXY";
+				this.scene.cameraP.rotation.x = Math.PI / 2 + this.scene.view.pitch;
+				this.scene.cameraP.rotation.z = this.scene.view.yaw;
+			}
 
 			this.scene.cameraO.position.copy(scene.view.position);
 			this.scene.cameraO.rotation.order = "ZXY";

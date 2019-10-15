@@ -9,6 +9,7 @@ export class PolygonClipVolume extends THREE.Object3D{
 
 		this.camera = camera.clone();
 		this.camera.rotation.set(...camera.rotation.toArray()); // [r85] workaround because camera.clone() doesn't work on rotation
+		this.camera.rotation.order = camera.rotation.order;
 		this.camera.updateMatrixWorld();
 		this.camera.updateProjectionMatrix();
 		this.camera.matrixWorldInverse.getInverse(this.camera.matrixWorld);

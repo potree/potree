@@ -136,6 +136,12 @@ let Gradients = {
 		[0.93, new THREE.Color(0.81608, 0.18462, 0.01809)],
 		[1.00, new THREE.Color(0.66449, 0.08436, 0.00424)],
 	],
+	CONTOUR: [
+		[0.00, new THREE.Color(0, 0, 0)],
+		[0.03, new THREE.Color(0, 0, 0)],
+		[0.04, new THREE.Color(1, 1, 1)],
+		[1.00, new THREE.Color(1, 1, 1)]
+	],
 };
 
 

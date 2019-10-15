@@ -362,15 +362,15 @@ onmessage = function (event) {
 
 	performance.mark("binary-decoder-end");
 
-	{ // print timings
-		//performance.measure("spacing", "spacing-start", "spacing-end");
-		performance.measure("binary-decoder", "binary-decoder-start", "binary-decoder-end");
-		let measure = performance.getEntriesByType("measure")[0];
-		let dpp = 1000 * measure.duration / numPoints;
-		let pps = parseInt(numPoints / (measure.duration / 1000));
-		let debugMessage = `${measure.duration.toFixed(3)} ms, ${numPoints} points, ${pps.toLocaleString()} points/sec`;
-		console.log(debugMessage);
-	}
+	// { // print timings
+	// 	//performance.measure("spacing", "spacing-start", "spacing-end");
+	// 	performance.measure("binary-decoder", "binary-decoder-start", "binary-decoder-end");
+	// 	let measure = performance.getEntriesByType("measure")[0];
+	// 	let dpp = 1000 * measure.duration / numPoints;
+	// 	let pps = parseInt(numPoints / (measure.duration / 1000));
+	// 	let debugMessage = `${measure.duration.toFixed(3)} ms, ${numPoints} points, ${pps.toLocaleString()} points/sec`;
+	// 	console.log(debugMessage);
+	// }
 
 	performance.clearMarks();
 	performance.clearMeasures();

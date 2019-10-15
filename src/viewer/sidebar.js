@@ -519,6 +519,13 @@ export class Sidebar{
 			tree.jstree("delete_node", jsonNode.id);
 		};
 
+		let onPolygonClipVolumeRemoved = (e) => {
+			let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
+			let jsonNode = measurementsRoot.children.find(child => child.data.uuid === e.volume.uuid);
+			
+			tree.jstree("delete_node", jsonNode.id);
+		};
+
 		let onProfileRemoved = (e) => {
 			let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
 			let jsonNode = measurementsRoot.children.find(child => child.data.uuid === e.profile.uuid);
@@ -528,6 +535,7 @@ export class Sidebar{
 
 		this.viewer.scene.addEventListener("measurement_removed", onMeasurementRemoved);
 		this.viewer.scene.addEventListener("volume_removed", onVolumeRemoved);
+		this.viewer.scene.addEventListener("polygon_clip_volume_removed", onPolygonClipVolumeRemoved);
 		this.viewer.scene.addEventListener("profile_removed", onProfileRemoved);
 
 		{

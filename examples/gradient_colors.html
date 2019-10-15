@@ -68,16 +68,22 @@
 			let u = 2 * Math.PI * i / gradientNames.length;
 			
 			let x = 0; //Math.cos(u) * radius + 2.5;
-			let y = 300 * u - 900; //Math.sin(u) * radius + 0.8;
+			let y = 400 * u - 900; //Math.sin(u) * radius + 0.8;
 			
 			Potree.loadPointCloud("../pointclouds/vol_total/cloud.js", gradientName, e => {
 				viewer.scene.addPointCloud(e.pointcloud);
 				
 				let material = e.pointcloud.material;
 				material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-				material.pointColorType = Potree.PointColorType.ELEVATION;
+				material.activeAttributeName = "elevation";
 				material.gradient = gradient;
-				material.elevationRange = [720, 800];
+
+				if(gradientName === "CONTOUR"){
+					material.elevationRange = [750, 760];
+					viewer.setElevationGradientRepeat(Potree.ElevationGradientRepeat.REPEAT);
+				}else{
+					material.elevationRange = [720, 800];
+				}
 				
 				e.pointcloud.position.set(x, y, e.pointcloud.position.z);
 				
@@ -102,7 +108,7 @@
 			
 			let material = e.pointcloud.material;
 			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-			material.pointColorType = Potree.PointColorType.ELEVATION;
+			material.activeAttributeName = "elevation";
 			material.gradient = [
 				[0.0, new THREE.Color(0.090, 0.545, 0.400)],
 				[0.1, new THREE.Color(0.180, 0.590, 0.400)],

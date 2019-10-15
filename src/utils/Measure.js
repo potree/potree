@@ -59,7 +59,7 @@ export class Measure extends THREE.Object3D {
 				this.heightLabel.setTextColor({r: 180, g: 220, b: 180, a: 1.0});
 				this.heightLabel.material.depthTest = false;
 				this.heightLabel.material.opacity = 1;
-				this.heightLabel.visible = false; ;
+				this.heightLabel.visible = false;
 				this.add(this.heightLabel);
 			}
 		}

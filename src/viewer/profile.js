@@ -206,11 +206,14 @@ export class ProfileWindow extends EventDispatcher {
 		this.mouse = new THREE.Vector2(0, 0);
 		this.scale = new THREE.Vector3(1, 1, 1);
 
+		this.autoFitEnabled = true; // completely disable/enable
+		this.autoFit = false; // internal
+
 		
-		let forwardIcon = `${exports.resourcePath}/icons/file_csv_2d.svg`;
+		let forwardIcon = `${exports.resourcePath}/icons/arrow_up.svg`;
 		$('#potree_profile_move_forward').attr('src', forwardIcon);
 
-		let backwardIcon = `${exports.resourcePath}/icons/file_csv_2d.svg`;
+		let backwardIcon = `${exports.resourcePath}/icons/arrow_down.svg`;
 		$('#potree_profile_move_backward').attr('src', backwardIcon);
 
 		let csvIcon = `${exports.resourcePath}/icons/file_csv_2d.svg`;
@@ -365,6 +368,7 @@ export class ProfileWindow extends EventDispatcher {
 
 		let onWheel = e => {
 			this.autoFit = false;
+
 			let delta = 0;
 			if (e.wheelDelta !== undefined) { // WebKit / Opera / Explorer 9
 				delta = e.wheelDelta;
@@ -648,7 +652,7 @@ export class ProfileWindow extends EventDispatcher {
 		//console.log(this.projectedBox.min.toArray().map(v => v.toFixed(2)).join(", "));
 		//console.log(this.projectedBox.getSize().toArray().map(v => v.toFixed(2)).join(", "));
 
-		if (this.autoFit) { 
+		if (this.autoFit && this.autoFitEnabled) { 
 			let width = this.renderArea[0].clientWidth;
 			let height = this.renderArea[0].clientHeight;
 
@@ -693,7 +697,10 @@ export class ProfileWindow extends EventDispatcher {
 		this.pointclouds.clear();
 		this.mouseIsDown = false;
 		this.mouse.set(0, 0);
-		this.scale.set(1, 1, 1);
+
+		if(this.autoFitEnabled){
+			this.scale.set(1, 1, 1);
+		}
 		this.pickSphere.visible = false;
 
 		this.pointCloudRoot.children = [];
@@ -714,6 +721,7 @@ export class ProfileWindow extends EventDispatcher {
 	}
 
 	updateScales () {
+
 		let width = this.renderArea[0].clientWidth;
 		let height = this.renderArea[0].clientHeight;
 
@@ -850,35 +858,39 @@ export class ProfileWindowController {
 		this.viewer.scene.addEventListener("pointcloud_added", this._recompute);
 
 		$("#potree_profile_move_forward").click( () => {
-			const profile = this.profile
-			const start = profile.points[0];
-			const end = profile.points[1];
+			const profile = this.profile;
+			const points = profile.points;
+			const start = points[0];
+			const end = points[points.length - 1];
 
 			const dir = end.clone().sub(start).normalize();
 			const up = new THREE.Vector3(0, 0, 1);
-
 			const forward = up.cross(dir);
-
 			const move = forward.clone().multiplyScalar(profile.width / 2);
 
-			profile.setPosition(0, start.clone().add(move));
-			profile.setPosition(1, end.clone().add(move));
+			this.profileWindow.autoFitEnabled = false;
+
+			for(let i = 0; i < points.length; i++){
+				profile.setPosition(i, points[i].clone().add(move));
+			}
 		});
 
 		$("#potree_profile_move_backward").click( () => {
-			const profile = this.profile
-			const start = profile.points[0];
-			const end = profile.points[1];
+			const profile = this.profile;
+			const points = profile.points;
+			const start = points[0];
+			const end = points[points.length - 1];
 
 			const dir = end.clone().sub(start).normalize();
 			const up = new THREE.Vector3(0, 0, 1);
+			const forward = up.cross(dir);
+			const move = forward.clone().multiplyScalar(-profile.width / 2);
 
-			const backward = up.cross(dir).multiplyScalar(-1);
+			this.profileWindow.autoFitEnabled = false;
 
-			const move = backward.clone().multiplyScalar(profile.width / 2);
-
-			profile.setPosition(0, start.clone().add(move));
-			profile.setPosition(1, end.clone().add(move));
+			for(let i = 0; i < points.length; i++){
+				profile.setPosition(i, points[i].clone().add(move));
+			}
 		});
 	}
 

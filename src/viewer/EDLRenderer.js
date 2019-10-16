@@ -13,7 +13,7 @@ export class EDLRenderer{
 		this.rtRegular;
 		this.rtEDL;
 
-		this.gl = viewer.renderer.context;
+		this.gl = viewer.renderer.getContext();
 
 		this.shadowMap = new PointCloudSM(this.viewer.pRenderer);
 	}
@@ -56,9 +56,6 @@ export class EDLRenderer{
 	resize(width, height){
 		const viewer = this.viewer;
 
-		//let pixelRatio = viewer.renderer.getPixelRatio();
-		//let {width, height} = viewer.renderer.getSize();
-
 		if(this.screenshot){
 			width = this.screenshot.target.width;
 			height = this.screenshot.target.height;
@@ -75,7 +72,7 @@ export class EDLRenderer{
 		}
 
 		if(size === undefined || size === null){
-			size = this.viewer.renderer.getSize();
+			size = this.viewer.renderer.getSize(new THREE.Vector2());
 		}
 
 		let {width, height} = size;
@@ -93,7 +90,8 @@ export class EDLRenderer{
 			target: target
 		};
 
-		this.viewer.renderer.clearTarget(target, true, true, true);
+		// HACK? removed because of error, was this important?
+		//this.viewer.renderer.clearTarget(target, true, true, true);
 
 		this.render();
 
@@ -127,8 +125,14 @@ export class EDLRenderer{
 		const viewer = this.viewer;
 		const {renderer} = viewer;
 
-		renderer.clearTarget(this.rtEDL, true, true, true);
-		renderer.clearTarget(this.rtRegular, true, true, false);
+		renderer.setRenderTarget( this.rtEDL );
+		renderer.clear( true, true, true );
+
+		renderer.setRenderTarget( this.rtRegular );
+		renderer.clear( true, true, false );
+
+		// renderer.clearTarget(this.rtEDL, true, true, true);
+		// renderer.clearTarget(this.rtRegular, true, true, false);
 	}
 
 	clear(){
@@ -165,9 +169,9 @@ export class EDLRenderer{
 
 		viewer.dispatchEvent({type: "render.pass.begin",viewer: viewer});
 
-		//let {width, height} = viewer.renderer.getSize();
-		const width = params.viewport ? params.viewport[2] : viewer.renderer.getSize().width;
-		const height = params.viewport ? params.viewport[3] : viewer.renderer.getSize().height;
+		let renderAreaSize = this.viewer.renderer.getSize(new THREE.Vector2());
+		const width = params.viewport ? params.viewport[2] : renderAreaSize.width;
+		const height = params.viewport ? params.viewport[3] : renderAreaSize.height;
 		
 		this.resize(width, height);
 

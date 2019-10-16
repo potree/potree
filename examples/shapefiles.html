@@ -18,7 +18,7 @@
 	<script src="../libs/jquery/jquery-3.1.1.min.js"></script>
 	<script src="../libs/spectrum/spectrum.js"></script>
 	<script src="../libs/jquery-ui/jquery-ui.min.js"></script>
-	<script src="../libs/three.js/build/three.min.js"></script>
+	<script src="../libs/three.js/build/three.js"></script>
 	<script src="../libs/other/BinaryHeap.js"></script>
 	<script src="../libs/tween/tween.min.js"></script>
 	<script src="../libs/d3/d3.js"></script>
@@ -29,6 +29,15 @@
 	<script src="../build/potree/potree.js"></script>
 	<script src="../libs/plasio/js/laslaz.js"></script>
 	<script src="../libs/shapefile/shapefile.js"></script>
+
+
+	<script src="../libs/three.js/extra/lines/LineSegmentsGeometry.js"></script>
+	<script src="../libs/three.js/extra/lines/LineGeometry.js"></script>
+	<script src="../libs/three.js/extra/lines/LineMaterial.js"></script>
+	<script src="../libs/three.js/extra/lines/LineSegments2.js"></script>
+	<script src="../libs/three.js/extra/lines/Line2.js"></script>
+
+
 	
 	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
 	<!-- INCLUDE SETTINGS HERE -->
@@ -105,6 +114,7 @@
 				// load waterways.shp and change colors to blue
 				const shpWaterways = await loader.load("./morro_bay_shp/shape/waterways.shp");
 				shapeNode.add(shpWaterways.node);
+				window.shpWaterways = shpWaterways;
 
 				shpWaterways.node.traverse(node => {
 					if(node.material){
@@ -121,6 +131,16 @@
 					if(node.material){
 						node.material.color.setRGB(1, 1, 0)
 					}
+				});
+
+				// this is necessary so that fat lines are correctly sized
+				viewer.addEventListener("update", () => {
+					const size = viewer.renderer.getSize(new THREE.Vector2());
+
+					shpRoads.setResolution(size.width, size.height);
+					shpWaterways.setResolution(size.width, size.height);
+					shpNatural.setResolution(size.width, size.height);
+					shpPoints.setResolution(size.width, size.height);
 				});
 
 
@@ -175,6 +195,39 @@
 		});
 		
 		
+
+		// {
+		// 	let positions = [
+		// 		693738.442, 3916080.340, 175.970,
+		// 		694121.015, 3915885.120, 2.500,
+		// 		694627.471, 3916099.287, 1.500,
+		// 		693961.765, 3916738.056, 1.460,
+		// 	];
+
+		// 	let colors = [
+		// 		1, 0, 0,
+		// 		1, 0, 0,
+		// 		1, 0, 0,
+		// 		1, 0, 0,
+		// 	];
+
+		// 	const geometry = new THREE.LineGeometry();
+		// 	geometry.setPositions( positions );
+		// 	geometry.setColors( colors );
+
+		// 	matLine = new THREE.LineMaterial( {
+		// 		color: 0xff0000,
+		// 		linewidth: 5, // in pixels
+		// 		resolution: new THREE.Vector2(2000, 2000),
+		// 		dashed: false
+		// 	} );
+
+		// 	line = new THREE.Line2( geometry, matLine );
+		// 	line.computeLineDistances();
+		// 	line.scale.set( 1, 1, 1 );
+		// 	viewer.scene.scene.add( line );
+
+		// }
 		
 		
 	</script>

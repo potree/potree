@@ -657,7 +657,7 @@ export class PointCloudOctree extends PointCloudTree {
 
 		pickWindowSize = 65;
 
-		let size = renderer.getSize();
+		let size = renderer.getSize(new THREE.Vector2());
 
 		let width = Math.ceil(getVal(params.width, size.width));
 		let height = Math.ceil(getVal(params.height, size.height));
@@ -743,7 +743,7 @@ export class PointCloudOctree extends PointCloudTree {
 		{ // RENDER
 			renderer.setRenderTarget(pickState.renderTarget);
 			gl.clearColor(0, 0, 0, 0);
-			renderer.clearTarget( pickState.renderTarget, true, true, true );
+			renderer.clear(true, true, true);
 
 			let tmp = this.material;
 			this.material = pickMaterial;

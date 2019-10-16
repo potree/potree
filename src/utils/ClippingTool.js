@@ -65,7 +65,7 @@ export class ClippingTool extends EventDispatcher{
 		if(!type) return null;
 
 		let domElement = this.viewer.renderer.domElement;
-		let canvasSize = this.viewer.renderer.getSize();
+		let canvasSize = this.viewer.renderer.getSize(new THREE.Vector2());
 
 		let svg = $(`
 		<svg height="${canvasSize.height}" width="${canvasSize.width}" style="position:absolute; pointer-events: none">

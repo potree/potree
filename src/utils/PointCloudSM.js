@@ -24,7 +24,8 @@ export class PointCloudSM{
 		//});
 
 		this.threeRenderer.setClearColor(0x000000, 1);
-		this.threeRenderer.clearTarget(this.target, true, true, true);
+		//HACK? removed while moving to three.js 109
+		//this.threeRenderer.clearTarget(this.target, true, true, true); 
 	}
 
 	setLight(light){

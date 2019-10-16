@@ -550,7 +550,7 @@ export class ProfileWindow extends EventDispatcher {
 		this.renderer.autoClear = true;
 		this.renderArea.append($(this.renderer.domElement));
 		this.renderer.domElement.tabIndex = '2222';
-		this.renderer.context.getExtension('EXT_frag_depth');
+		this.renderer.getContext().getExtension('EXT_frag_depth');
 		$(this.renderer.domElement).css('width', '100%');
 		$(this.renderer.domElement).css('height', '100%');
 

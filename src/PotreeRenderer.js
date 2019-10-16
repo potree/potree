@@ -541,7 +541,7 @@ export class Renderer {
 
 	constructor(threeRenderer) {
 		this.threeRenderer = threeRenderer;
-		this.gl = this.threeRenderer.context;
+		this.gl = this.threeRenderer.getContext();
 
 		this.buffers = new Map();
 		this.shaders = new Map();

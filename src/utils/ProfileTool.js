@@ -72,7 +72,7 @@ export class ProfileTool extends EventDispatcher {
 				if(profile.points.length <= 1){
 					let camera = this.viewer.scene.getActiveCamera();
 					let distance = camera.position.distanceTo(profile.points[0]);
-					let clientSize = this.viewer.renderer.getSize();
+					let clientSize = this.viewer.renderer.getSize(new THREE.Vector2());
 					let pr = Utils.projectedRadius(1, camera, distance, clientSize.width, clientSize.height);
 					let width = (10 / pr);
 
@@ -109,8 +109,9 @@ export class ProfileTool extends EventDispatcher {
 	update(){
 		let camera = this.viewer.scene.getActiveCamera();
 		let profiles = this.viewer.scene.profiles;
-		let clientWidth = this.renderer.getSize().width;
-		let clientHeight = this.renderer.getSize().height;
+		let renderAreaSize = this.viewer.renderer.getSize(new THREE.Vector2());
+		let clientWidth = renderAreaSize.width;
+		let clientHeight = renderAreaSize.height;
 
 		this.light.position.copy(camera.position);
 

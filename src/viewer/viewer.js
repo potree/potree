@@ -1119,6 +1119,9 @@ export class Viewer extends EventDispatcher{
 	}
 
 	initThree () {
+
+		console.log(`initializing three.js ${THREE.REVISION}`);
+
 		let width = this.renderArea.clientWidth;
 		let height = this.renderArea.clientHeight;
 
@@ -1163,7 +1166,7 @@ export class Viewer extends EventDispatcher{
 		//this.renderer.domElement.focus();
 
 		// enable frag_depth extension for the interpolation shader, if available
-		let gl = this.renderer.context;
+		let gl = this.renderer.getContext();
 		gl.getExtension('EXT_frag_depth');
 		gl.getExtension('WEBGL_depth_texture');
 		
@@ -1262,8 +1265,7 @@ export class Viewer extends EventDispatcher{
 		
 		let distances = [];
 
-		let renderAreaWidth = this.renderer.getSize().width;
-		let renderAreaHeight = this.renderer.getSize().height;
+		let renderAreaSize = this.renderer.getSize(new THREE.Vector2());
 
 		let viewer = this;
 
@@ -1297,18 +1299,18 @@ export class Viewer extends EventDispatcher{
 			{
 				// SCREEN POS
 				screenPos.copy(position).project(this.scene.getActiveCamera());
-				screenPos.x = renderAreaWidth * (screenPos.x + 1) / 2;
-				screenPos.y = renderAreaHeight * (1 - (screenPos.y + 1) / 2);
+				screenPos.x = renderAreaSize.x * (screenPos.x + 1) / 2;
+				screenPos.y = renderAreaSize.z * (1 - (screenPos.y + 1) / 2);
 
 
 				// SCREEN SIZE
 				if(viewer.scene.cameraMode == CameraMode.PERSPECTIVE) {
 					let fov = Math.PI * viewer.scene.cameraP.fov / 180;
 					let slope = Math.tan(fov / 2.0);
-					let projFactor =  0.5 * renderAreaHeight / (slope * distance);
+					let projFactor =  0.5 * renderAreaSize.y / (slope * distance);
 					screenSize = radius * projFactor;
 				} else {
-					screenSize = Utils.projectedRadiusOrtho(radius, viewer.scene.cameraO.projectionMatrix, renderAreaWidth, renderAreaHeight);
+					screenSize = Utils.projectedRadiusOrtho(radius, viewer.scene.cameraO.projectionMatrix, renderAreaSize.x, renderAreaSize.y);
 				}
 			}
 

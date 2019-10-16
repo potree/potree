@@ -117,8 +117,9 @@ export class MeasuringTool extends EventDispatcher{
 		let domElement = this.renderer.domElement;
 		let measurements = this.viewer.scene.measurements;
 
-		let clientWidth = this.renderer.getSize().width;
-		let clientHeight = this.renderer.getSize().height;
+		const renderAreaSize = this.renderer.getSize(new THREE.Vector2());
+		let clientWidth = renderAreaSize.width;
+		let clientHeight = renderAreaSize.height;
 
 		this.light.position.copy(camera.position);
 

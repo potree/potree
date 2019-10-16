@@ -192,8 +192,8 @@ export class Annotation extends EventDispatcher {
 				$(this.domElement).find(".annotation-titlebar").css("pointer-events", "");
 			},
 			drag: (event, ui ) => {
-				let renderAreaWidth = viewer.renderer.getSize().width;
-				let renderAreaHeight = viewer.renderer.getSize().height;
+				let renderAreaWidth = viewer.renderer.getSize(new THREE.Vector2()).width;
+				//let renderAreaHeight = viewer.renderer.getSize().height;
 
 				let diff = {
 					x: ui.originalPosition.left - ui.position.left, 
@@ -226,8 +226,9 @@ export class Annotation extends EventDispatcher {
 			let position = this.position;
 			let scene = viewer.scene;
 
-			let renderAreaWidth = viewer.renderer.getSize().width;
-			let renderAreaHeight = viewer.renderer.getSize().height;
+			const renderAreaSize = viewer.renderer.getSize(new THREE.Vector2());
+			let renderAreaWidth = renderAreaSize.width;
+			let renderAreaHeight = renderAreaSize.height;
 
 			let start = this.position.clone();
 			let end = new THREE.Vector3().addVectors(this.position, this.offset);

@@ -29,7 +29,7 @@ export class PolygonClipVolume extends THREE.Object3D{
 		let cancel;
 
 		let drag = e => {
-			let size = e.viewer.renderer.getSize();
+			let size = e.viewer.renderer.getSize(new THREE.Vector2());
 			let projectedPos = new THREE.Vector3(
 				2.0 * (e.drag.end.x / size.width) - 1.0,
 				-2.0 * (e.drag.end.y / size.height) + 1.0,

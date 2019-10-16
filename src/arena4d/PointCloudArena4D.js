@@ -305,7 +305,7 @@ export class PointCloudArena4D extends PointCloudTree{
 		let pickWindowSize = getVal(params.pickWindowSize, 17);
 		let pickOutsideClipRegion = getVal(params.pickOutsideClipRegion, false);
 
-		let size = renderer.getSize();
+		let size = renderer.getSize(new THREE.Vector2());
 
 		let width = Math.ceil(getVal(params.width, size.width));
 		let height = Math.ceil(getVal(params.height, size.height));

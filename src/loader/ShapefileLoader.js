@@ -7,23 +7,36 @@ export class ShapefileLoader{
 	}
 
 	async load(path){
+
+		const matLine = new THREE.LineMaterial( {
+			color: 0xff0000,
+			linewidth: 3, // in pixels
+			resolution:  new THREE.Vector2(1000, 1000),
+			dashed: false
+		} );
+
 		const features = await this.loadShapefileFeatures(path);
 		const node = new THREE.Object3D();
 		
 		for(const feature of features){
-			const fnode = this.featureToSceneNode(feature);
+			const fnode = this.featureToSceneNode(feature, matLine);
 			node.add(fnode);
 		}
+
+		let setResolution = (x, y) => {
+			matLine.resolution.set(x, y);
+		};
 
 		const result = {
 			features: features,
 			node: node,
+			setResolution: setResolution,
 		};
 
 		return result;
 	}
 
-	featureToSceneNode(feature){
+	featureToSceneNode(feature, matLine){
 		let geometry = feature.geometry;
 		
 		let color = new THREE.Color(1, 1, 1);
@@ -70,13 +83,12 @@ export class ShapefileLoader{
 				coordinates[i+2] -= min.z;
 			}
 			
-			let positions = new Float32Array(coordinates);
-			
-			let lineGeometry = new THREE.BufferGeometry();
-			lineGeometry.addAttribute("position", new THREE.BufferAttribute(positions, 3));
-			
-			let material = new THREE.LineBasicMaterial( { color: color} );
-			let line = new THREE.LineSegments(lineGeometry, material);
+			const lineGeometry = new THREE.LineGeometry();
+			lineGeometry.setPositions( coordinates );
+
+			const line = new THREE.Line2( lineGeometry, matLine );
+			line.computeLineDistances();
+			line.scale.set( 1, 1, 1 );
 			line.position.copy(min);
 			
 			return line;
@@ -104,14 +116,13 @@ export class ShapefileLoader{
 					coordinates[i+1] -= min.y;
 					coordinates[i+2] -= min.z;
 				}
-				
-				let positions = new Float32Array(coordinates);
-				
-				let lineGeometry = new THREE.BufferGeometry();
-				lineGeometry.addAttribute("position", new THREE.BufferAttribute(positions, 3));
-				
-				let material = new THREE.LineBasicMaterial( { color: color} );
-				let line = new THREE.LineSegments(lineGeometry, material);
+
+				const lineGeometry = new THREE.LineGeometry();
+				lineGeometry.setPositions( coordinates );
+
+				const line = new THREE.Line2( lineGeometry, matLine );
+				line.computeLineDistances();
+				line.scale.set( 1, 1, 1 );
 				line.position.copy(min);
 				
 				return line;

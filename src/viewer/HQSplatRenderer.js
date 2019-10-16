@@ -19,7 +19,7 @@ export class HQSplatRenderer{
 
 		this.rtDepth = null;
 		this.rtAttribute = null;
-		this.gl = viewer.renderer.context;
+		this.gl = viewer.renderer.getContext();
 
 		this.initialized = false;
 	}
@@ -72,8 +72,9 @@ export class HQSplatRenderer{
 		const viewer = this.viewer;
 
 		let pixelRatio = viewer.renderer.getPixelRatio();
-		let width = viewer.renderer.getSize().width;
-		let height = viewer.renderer.getSize().height;
+		let {width, height} = this.viewer.renderer.getSize(new THREE.Vector2());
+		// let width = viewer.renderer.getSize().width;
+		// let height = viewer.renderer.getSize().height;
 		this.rtDepth.setSize(width * pixelRatio , height * pixelRatio);
 		this.rtAttribute.setSize(width * pixelRatio , height * pixelRatio);
 	}

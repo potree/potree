@@ -57,6 +57,7 @@
 		"point_shape": "Shape",
 		"edl_radius": "Radius",
 		"edl_strength": "Strength",
+		"edl_opacity": "Opacity",
 		"edl_enable": "Enable",
 		"min_node_size": "Min node size",
 		"clip_mode": "Clip mode",

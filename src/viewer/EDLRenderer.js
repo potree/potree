@@ -276,15 +276,15 @@ export class EDLRenderer{
 
 			this.edlMaterial.uniforms.uNear.value = camera.near;
 			this.edlMaterial.uniforms.uFar.value = camera.far;
-			//this.edlMaterial.uniforms.uRegularColor.value = this.rtRegular.texture;
 			this.edlMaterial.uniforms.uEDLColor.value = this.rtEDL.texture;
-			//this.edlMaterial.uniforms.uRegularDepth.value = this.rtRegular.depthTexture;
 			this.edlMaterial.uniforms.uEDLDepth.value = this.rtEDL.depthTexture;
 			this.edlMaterial.uniforms.uProj.value = projArray;
 
 			this.edlMaterial.uniforms.edlStrength.value = viewer.edlStrength;
 			this.edlMaterial.uniforms.radius.value = viewer.edlRadius;
-			this.edlMaterial.uniforms.opacity.value = 1;
+			this.edlMaterial.uniforms.opacity.value = viewer.edlOpacity; // HACK
+
+			
 			
 			Utils.screenPass.render(viewer.renderer, this.edlMaterial);
 

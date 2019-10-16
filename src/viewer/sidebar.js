@@ -974,6 +974,14 @@ export class Sidebar{
 			slide: (event, ui) => { this.viewer.setEDLStrength(ui.value); }
 		});
 
+		$('#sldEDLOpacity').slider({
+			value: this.viewer.getEDLOpacity(),
+			min: 0,
+			max: 1,
+			step: 0.01,
+			slide: (event, ui) => { this.viewer.setEDLOpacity(ui.value); }
+		});
+
 		this.viewer.addEventListener('point_budget_changed', (event) => {
 			$('#lblPointBudget')[0].innerHTML = Utils.addCommas(this.viewer.getPointBudget());
 			$('#sldPointBudget').slider({value: this.viewer.getPointBudget()});

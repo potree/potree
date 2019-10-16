@@ -85,6 +85,7 @@ export class Viewer extends EventDispatcher{
 		this.minNodeSize = 30;
 		this.edlStrength = 1.0;
 		this.edlRadius = 1.4;
+		this.edlOpacity = 1.0;
 		this.useEDL = false;
 
 		this.classifications = {
@@ -229,6 +230,7 @@ export class Viewer extends EventDispatcher{
 			this.setEDLEnabled(false);
 			this.setEDLRadius(1.4);
 			this.setEDLStrength(0.4);
+			this.setEDLOpacity(1.0);
 			this.setClipTask(ClipTask.HIGHLIGHT);
 			this.setClipMethod(ClipMethod.INSIDE_ANY);
 			this.setPointBudget(1*1000*1000);
@@ -544,6 +546,17 @@ export class Viewer extends EventDispatcher{
 
 	getEDLStrength () {
 		return this.edlStrength;
+	};
+
+	setEDLOpacity (value) {
+		if (this.edlOpacity !== value) {
+			this.edlOpacity = value;
+			this.dispatchEvent({'type': 'edl_opacity_changed', 'viewer': this});
+		}
+	};
+
+	getEDLOpacity () {
+		return this.edlOpacity;
 	};
 
 	setFOV (value) {
@@ -1109,20 +1122,20 @@ export class Viewer extends EventDispatcher{
 		let width = this.renderArea.clientWidth;
 		let height = this.renderArea.clientHeight;
 
-		// let contextAttributes = {
-		// 	alpha: true,
-		// 	depth: true,
-		// 	stencil: false,
-		// 	antialias: false,
-		// 	//premultipliedAlpha: _premultipliedAlpha,
-		// 	preserveDrawingBuffer: true,
-		// 	powerPreference: "high-performance",
-		// };
-
 		let contextAttributes = {
-			alpha: false,
+			alpha: true,
+			depth: true,
+			stencil: false,
+			antialias: false,
+			//premultipliedAlpha: _premultipliedAlpha,
 			preserveDrawingBuffer: true,
+			powerPreference: "high-performance",
 		};
+
+		// let contextAttributes = {
+		// 	alpha: false,
+		// 	preserveDrawingBuffer: true,
+		// };
 
 		// let contextAttributes = {
 		// 	alpha: false,

@@ -14,12 +14,14 @@ import {XHRFactory} from "../XHRFactory.js";
 
 export class LasLazLoader {
 
-	constructor (version) {
+	constructor (version, extension) {
 		if (typeof (version) === 'string') {
 			this.version = new Version(version);
 		} else {
 			this.version = version;
 		}
+
+		this.extension = extension;
 	}
 
 	static progressCB () {
@@ -31,12 +33,10 @@ export class LasLazLoader {
 			return;
 		}
 
-		let pointAttributes = node.pcoGeometry.pointAttributes;
-
 		let url = node.getURL();
 
 		if (this.version.equalOrHigher('1.4')) {
-			url += '.' + pointAttributes.toLowerCase();
+			url += `.${this.extension}`;
 		}
 
 		let xhr = XHRFactory.createXMLHttpRequest();
@@ -57,111 +57,59 @@ export class LasLazLoader {
 		xhr.send(null);
 	}
 
-	parse(node, buffer){
+	async parse(node, buffer){
 		let lf = new LASFile(buffer);
 		let handler = new LasLazBatcher(node);
 
+		try{
+			 await lf.open();
+			 lf.isOpen = true;
+		}catch(e){
+			console.log("failed to open file. :(");
 
-		//
-		// DEBUG
-		//
-		// invoke the laz decompress worker thousands of times to check for memory leaks
-		// until 2018/03/05, it tended to run out of memory at ~6230 invocations
-		// 
-		//
-		//lf.open()
-		//.then( msg => {
-		//	lf.isOpen = true;
-		//	return lf;
-		//}).catch( msg => {
-		//	console.log("failed to open file. :(");	
-		//}).then( lf => {
-		//	return lf.getHeader().then(function (h) {
-		//		return [lf, h];
-		//	});
-		//}).then( v => {
-		//	let lf = v[0];
-		//	let header = v[1];
+			return;
+		}
 
-		//	lf.readData(1000000, 0, 1)
-		//	.then( v => {
-		//		console.log("read");
+		let header = await lf.getHeader();
 
-		//		this.parse(node, buffer);
-		//	}).then (v => {
-		//		lf.close();	
-		//	});
+		let skip = 1;
+		let totalRead = 0;
+		let totalToRead = (skip <= 1 ? header.pointsCount : header.pointsCount / skip);
 
-		//})
+		let hasMoreData = true;
 
+		while(hasMoreData){
+			let data = await lf.readData(1000 * 1000, 0, skip);
 
+			handler.push(new LASDecoder(data.buffer,
+				header.pointsFormatId,
+				header.pointsStructSize,
+				data.count,
+				header.scale,
+				header.offset,
+				header.mins, header.maxs));
 
-		lf.open()
-		.then( msg => {
-			lf.isOpen = true;
-			return lf;
-		}).catch( msg => {
-			console.log("failed to open file. :(");	
-		}).then( lf => {
-			return lf.getHeader().then(function (h) {
-				return [lf, h];
-			});
-		}).then( v => {
-			let lf = v[0];
-			let header = v[1];
+			totalRead += data.count;
+			LasLazLoader.progressCB(totalRead / totalToRead);
 
-			let skip = 1;
-			let totalRead = 0;
-			let totalToRead = (skip <= 1 ? header.pointsCount : header.pointsCount / skip);
-			let reader = function () {
-				let p = lf.readData(1000000, 0, skip);
-				return p.then(function (data) {
-					handler.push(new LASDecoder(data.buffer,
-						header.pointsFormatId,
-						header.pointsStructSize,
-						data.count,
-						header.scale,
-						header.offset,
-						header.mins, header.maxs));
+			hasMoreData = data.hasMoreData;
+		}
 
-					totalRead += data.count;
-					LasLazLoader.progressCB(totalRead / totalToRead);
+		header.totalRead = totalRead;
+		header.versionAsString = lf.versionAsString;
+		header.isCompressed = lf.isCompressed;
 
-					if (data.hasMoreData) {
-						return reader();
-					} else {
-						header.totalRead = totalRead;
-						header.versionAsString = lf.versionAsString;
-						header.isCompressed = lf.isCompressed;
-						return [lf, header, handler];
-					}
-				});
-			};
+		LasLazLoader.progressCB(1);
 
-			return reader();
-		}).then( v => {
-			let lf = v[0];
-			// we're done loading this file
-			//
-			LasLazLoader.progressCB(1);
+		try{
+			await lf.close();
 
-			// Close it
-			return lf.close().then(function () {
-				lf.isOpen = false;
-
-				return v.slice(1);
-			}).catch(e => {
-				// If there was a cancellation, make sure the file is closed, if the file is open
-				// close and then fail
-				if (lf.isOpen) {
-					return lf.close().then(function () {
-						lf.isOpen = false;
-						throw e;
-					});
-				}
-				throw e;	
-			});	
-		});
+			lf.isOpen = false;
+		}catch(e){
+			console.error("failed to close las/laz file!!!");
+			
+			throw e;
+		}
 	}
 
 	handle (node, url) {
@@ -200,7 +148,6 @@ export class LasLazBatcher{
 			geometry.addAttribute('returnNumber', new THREE.BufferAttribute(returnNumbers, 1));
 			geometry.addAttribute('numberOfReturns', new THREE.BufferAttribute(numberOfReturns, 1));
 			geometry.addAttribute('pointSourceID', new THREE.BufferAttribute(pointSourceIDs, 1));
-			//geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(numPoints * 3), 3));
 			geometry.addAttribute('indices', new THREE.BufferAttribute(indices, 4));
 			geometry.attributes.indices.normalized = true;
 
@@ -218,8 +165,6 @@ export class LasLazBatcher{
 			this.node.loading = false;
 			Potree.numNodesLoading--;
 			this.node.mean = new THREE.Vector3(...e.data.mean);
-
-			//debugger;
 
 			Potree.workerPool.returnWorker(workerPath, worker);
 		};

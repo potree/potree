@@ -2,10 +2,6 @@
 
 import {Version} from "../Version.js";
 import {PointAttributes, PointAttribute} from "../loader/PointAttributes.js";
-import {InterleavedBuffer} from "../InterleavedBuffer.js";
-import {toInterleavedBufferAttribute} from "../utils/toInterleavedBufferAttribute.js";
-
-
 
 /* global onmessage:true postMessage:false */
 /* exported onmessage */
@@ -127,47 +123,6 @@ onmessage = function (event) {
 			}
 
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
-		}
-		else if (pointAttribute.name === "CLASSIFICATION") {
-			let buff = new ArrayBuffer(numPoints);
-			let classifications = new Uint8Array(buff);
-
-			for (let j = 0; j < numPoints; j++) {
-				let classification = cv.getUint8(inOffset + j * pointAttributes.byteSize);
-				classifications[j] = classification;
-			}
-
-			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
-		} else if (pointAttribute.name === "RETURN_NUMBER") {
-			let buff = new ArrayBuffer(numPoints);
-			let returnNumbers = new Uint8Array(buff);
-
-			for (let j = 0; j < numPoints; j++) {
-				let returnNumber = cv.getUint8(inOffset + j * pointAttributes.byteSize);
-				returnNumbers[j] = returnNumber;
-			}
-
-			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
-		} else if (pointAttribute.name === "NUMBER_OF_RETURNS") {
-			let buff = new ArrayBuffer(numPoints);
-			let numberOfReturns = new Uint8Array(buff);
-
-			for (let j = 0; j < numPoints; j++) {
-				let numberOfReturn = cv.getUint8(inOffset + j * pointAttributes.byteSize);
-				numberOfReturns[j] = numberOfReturn;
-			}
-
-			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
-		} else if (pointAttribute.name === "SOURCE_ID") {
-			let buff = new ArrayBuffer(numPoints * 2);
-			let sourceIDs = new Uint16Array(buff);
-
-			for (let j = 0; j < numPoints; j++) {
-				let sourceID = cv.getUint16(inOffset + j * pointAttributes.byteSize);
-				sourceIDs[j] = sourceID;
-			}
-
-			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
 		} else if (pointAttribute.name === "NORMAL_SPHEREMAPPED") {
 			let buff = new ArrayBuffer(numPoints * 4 * 3);
 			let normals = new Float32Array(buff);
@@ -248,19 +203,7 @@ onmessage = function (event) {
 			}
 
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
-		} 
-		// else if (pointAttribute.name === "GPS_TIME") {
-		// 	let buff = new ArrayBuffer(numPoints * 8);
-		// 	let gpstimes = new Float64Array(buff);
-
-		// 	for(let j = 0; j < numPoints; j++){
-		// 		let gpstime = cv.getFloat64(inOffset + j * pointAttributes.byteSize, true);
-		// 		gpstimes[j] = gpstime;
-		// 	}
-
-		// 	attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
-		// }
-		else{
+		} else {
 			let buff = new ArrayBuffer(numPoints * 4);
 			let f32 = new Float32Array(buff);
 
@@ -319,35 +262,6 @@ onmessage = function (event) {
 
 		inOffset += pointAttribute.byteSize;
 	}
-
-	// Convert GPS time from double (unsupported by WebGL) to origin-aligned floats
-	// if(attributeBuffers["GPS_TIME"]){ 
-	// 	let attribute = attributeBuffers["GPS_TIME"];
-	// 	let sourceF64 = new Float64Array(attribute.buffer);
-	// 	let target = new ArrayBuffer(numPoints * 4);
-	// 	let targetF32 = new Float32Array(target);
-
-	// 	let min = Infinity;
-	// 	let max = -Infinity;
-	// 	for(let i = 0; i < numPoints; i++){
-	// 		let gpstime = sourceF64[i];
-
-	// 		min = Math.min(min, gpstime);
-	// 		max = Math.max(max, gpstime);
-	// 	}
-
-	// 	for(let i = 0; i < numPoints; i++){
-	// 		let gpstime = sourceF64[i];
-	// 		targetF32[i] = gpstime - min;
-	// 	}
-
-	// 	attributeBuffers["GPS_TIME"] = { 
-	// 		buffer: target, 
-	// 		attribute: PointAttribute.GPS_TIME,
-	// 		offset: min,
-	// 		range: max - min};
-	// }
-
 
 	{ // add indices
 		let buff = new ArrayBuffer(numPoints * 4);

@@ -86,16 +86,6 @@ export class BinaryLoader{
 					geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(buffer), 3));
 				} else if (property === "RGBA") {
 					geometry.addAttribute('color', new THREE.BufferAttribute(new Uint8Array(buffer), 4, true));
-				} else if (property === "INTENSITY") {
-					geometry.addAttribute('intensity', new THREE.BufferAttribute(new Float32Array(buffer), 1));
-				} else if (property === "CLASSIFICATION") {
-					geometry.addAttribute('classification', new THREE.BufferAttribute(new Uint8Array(buffer), 1));
-				} else if (property === "RETURN_NUMBER") {
-					geometry.addAttribute('returnNumber', new THREE.BufferAttribute(new Uint8Array(buffer), 1));
-				} else if (property === "NUMBER_OF_RETURNS") {
-					geometry.addAttribute('numberOfReturns', new THREE.BufferAttribute(new Uint8Array(buffer), 1));
-				} else if (property === "SOURCE_ID") {
-					geometry.addAttribute('pointSourceID', new THREE.BufferAttribute(new Uint16Array(buffer), 1));
 				} else if (property === "NORMAL_SPHEREMAPPED") {
 					geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
 				} else if (property === "NORMAL_OCT16") {
@@ -109,17 +99,7 @@ export class BinaryLoader{
 				} else if (property === "SPACING") {
 					let bufferAttribute = new THREE.BufferAttribute(new Float32Array(buffer), 1);
 					geometry.addAttribute('spacing', bufferAttribute);
-				} 
-				// else if (property === "GPS_TIME") {
-				// 	let bufferAttribute = new THREE.BufferAttribute(new Float32Array(buffer), 1);
-				// 	geometry.addAttribute('gpsTime', bufferAttribute);
-
-				// 	node.gpsTime = {
-				// 		offset: buffers[property].offset,
-				// 		range: buffers[property].range,
-				// 	};
-				// }
-				else{
+				} else {
 					const bufferAttribute = new THREE.BufferAttribute(new Float32Array(buffer), 1);
 					bufferAttribute.potree = {
 						offset: buffers[property].offset,
@@ -134,7 +114,6 @@ export class BinaryLoader{
 					attribute.range[1] = Math.max(attribute.range[1], batchAttribute.range[1]);
 				}
 			}
-
 
 			tightBoundingBox.max.sub(tightBoundingBox.min);
 			tightBoundingBox.min.set(0, 0, 0);

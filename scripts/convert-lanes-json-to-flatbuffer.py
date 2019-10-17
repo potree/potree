@@ -152,6 +152,7 @@ def getLinesFromJson(inputFileLeft, inputFileRight, upsampleValue, verbose):
 
                 if len(idxs_nn) < 3:
                     print("Not Enough Neighbors for pt: [idx: {}, pos: {}]".format(ii, p))
+                    continue
 
                 # Find closest lane change point in right line:
                 rightPts = np.array(laneRights)[idxs_nn]

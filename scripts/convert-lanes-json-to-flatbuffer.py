@@ -62,18 +62,18 @@ def get_heading(pt1, pt2):
     p2 = np.array(pt2).transpose()
     delta = p2-p1
     heading = np.arctan2(delta[1], delta[0])
-    return heading 
+    return heading
 
 def min_angle(theta, bounds=[-np.pi, np.pi]):
     while theta < bounds[0]:
         theta += 2*np.pi
     while theta > bounds[1]:
         theta -= 2*np.pi
-    return theta 
+    return theta
 
 def min_angle_diff(theta1, theta2, bounds=[-np.pi, np.pi]):
     delta = theta2 - theta1
-    return min_angle(delta) 
+    return min_angle(delta)
 
 def normalize_vector(vector):
     vector = np.array(vector)
@@ -113,7 +113,7 @@ def getLinesFromJson(inputFileLeft, inputFileRight, upsampleValue, verbose):
 
     # Compute Spine Vertices (using left lane as reference):
     rightLine = LineString(laneRights) # Create shapely linestring for right line
-    kdtree = cKDTree(laneRights) # Create KD-Tree for right lane points as well 
+    kdtree = cKDTree(laneRights) # Create KD-Tree for right lane points as well
     lastIdx = len(laneLefts)-1
     for ii in range(lastIdx+1):
         p = laneLefts[ii]
@@ -150,8 +150,9 @@ def getLinesFromJson(inputFileLeft, inputFileRight, upsampleValue, verbose):
 
                 idxs_nn = np.arange(idxs_nn_min, idxs_nn_max) # Closed set of points approximately within laneChangeNNRange of pt
 
-                if len(idxs_nn) < 3: 
+                if len(idxs_nn) < 3:
                     print("Not Enough Neighbors for pt: [idx: {}, pos: {}]".format(ii, p))
+                    continue
 
                 # Find closest lane change point in right line:
                 rightPts = np.array(laneRights)[idxs_nn]
@@ -162,6 +163,7 @@ def getLinesFromJson(inputFileLeft, inputFileRight, upsampleValue, verbose):
 
                 if rightHeadingDeltas.shape[0] == 0:
                     print("No RightHeadingDeltas for pt: [idx: {}, pos: {}]".format(ii, p))
+                    continue
 
                 leftRightHeadingDeltaSimilarity = np.abs(rightHeadingDeltas-leftHeadingDelta)
                 bestRightHeadingIdx = leftRightHeadingDeltaSimilarity.argmin() + 1
@@ -174,7 +176,7 @@ def getLinesFromJson(inputFileLeft, inputFileRight, upsampleValue, verbose):
                     print("\tBest Right Heading Idx: {}".format(bestRightHeadingIdx))
                     print("\trightPtIdx: {}".format(rightPtIdx))
 
-                # Simple Solution (Just Compute Spine Point using the Right Lane Change Point and append): 
+                # Simple Solution (Just Compute Spine Point using the Right Lane Change Point and append):
                 rightPt = Point(laneRights[rightPtIdx])
                 minLine = LineString([pt, rightPt])
                 spinePt2 = minLine.interpolate(minLine.length/2)
@@ -186,10 +188,10 @@ def getLinesFromJson(inputFileLeft, inputFileRight, upsampleValue, verbose):
                     laneSpines.append([spinePt2.x, spinePt2.y, spinePt2.z])
 
 
-        # Don't append lane spine if duplicate (within 10cm of last) or if going backwards:        
+        # Don't append lane spine if duplicate (within 10cm of last) or if going backwards:
         def should_append(spinePt):
 
-            if ii < 1:
+            if len(laneSpines) < 1:
                 return True
 
             p1 = np.array(laneSpines[-1])[:2]
@@ -197,9 +199,9 @@ def getLinesFromJson(inputFileLeft, inputFileRight, upsampleValue, verbose):
 
             if np.linalg.norm(p2-p1) < prevPointSuppressionRadius:
                 print("Skipping lane spine point-- too close to existing spine point")
-                return False 
+                return False
             else:
-                if ii >=2:
+                if len(laneSpines) >=2:
                     p0 = np.array(laneSpines[-2])[:2]
 
                     v1 = (p1-p0)[:2]
@@ -207,8 +209,8 @@ def getLinesFromJson(inputFileLeft, inputFileRight, upsampleValue, verbose):
 
                     magV1 = np.linalg.norm(v1)
                     magV2 = np.linalg.norm(v2)
-                    
-                    cosHeading = np.dot(v1, v2)/(magV1 * magV2)            
+
+                    cosHeading = np.dot(v1, v2)/(magV1 * magV2)
 
                     if np.abs(cosHeading - (-1)) < .1:
                         print("Skipping lane spine point -- going backwards")
@@ -216,7 +218,7 @@ def getLinesFromJson(inputFileLeft, inputFileRight, upsampleValue, verbose):
                     else:
                         return True
                 else:
-                    return True 
+                    return True
 
 
         if should_append(spinePt):
@@ -255,9 +257,9 @@ def plotLines(laneSegments, verbose):
     spinePtDeltas = np.diff(spinePts, axis=0)
     spineHeadings = np.arctan2(spinePtDeltas[:,1], spinePtDeltas[:,0])
     spineHeadingDeltas = np.diff(spineHeadings)
-    
+
     laneChangeIdxs = np.abs(spineHeadingDeltas) > np.pi/4
-    laneChangeIdxs = np.hstack([[False], laneChangeIdxs, [False]]) 
+    laneChangeIdxs = np.hstack([[False], laneChangeIdxs, [False]])
 
     print(laneSpines.shape)
     fig = plt.figure(figsize=[10,10])
@@ -427,6 +429,6 @@ if __name__ == "__main__":
 
     if (args.checkSpine):
         check_lane_spine(laneSegments)
-    
+
     if (args.plotLanes):
         plotLines(laneSegments, args.verbose)

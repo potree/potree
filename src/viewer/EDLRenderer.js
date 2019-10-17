@@ -42,15 +42,6 @@ export class EDLRenderer{
 			format: THREE.RGBAFormat,
 			depthTexture: new THREE.DepthTexture(undefined, undefined, THREE.UnsignedIntType)
 		});
-		
-		//{
-		//	let geometry = new THREE.PlaneBufferGeometry( 1, 1, 32, 32);
-		//	let material = new THREE.MeshBasicMaterial( {side: THREE.DoubleSide, map: this.shadowMap.target.texture} );
-		//	let plane = new THREE.Mesh( geometry, material );
-		//	plane.scale.set(0.5, 0.5, 1.0);
-		//	plane.position.set(plane.scale.x / 2, plane.scale.y / 2, 0);
-		//	this.viewer.overlay.add(plane);
-		//}
 	};
 
 	resize(width, height){
@@ -125,11 +116,15 @@ export class EDLRenderer{
 		const viewer = this.viewer;
 		const {renderer} = viewer;
 
+		const oldTarget = renderer.getRenderTarget();
+
 		renderer.setRenderTarget( this.rtEDL );
 		renderer.clear( true, true, true );
 
 		renderer.setRenderTarget( this.rtRegular );
 		renderer.clear( true, true, false );
+
+		renderer.setRenderTarget(oldTarget);
 
 		// renderer.clearTarget(this.rtEDL, true, true, true);
 		// renderer.clearTarget(this.rtRegular, true, true, false);
@@ -139,39 +134,34 @@ export class EDLRenderer{
 		this.initEDL();
 		const viewer = this.viewer;
 
-		const {renderer, skybox, background, scene} = viewer;
+		const {renderer, background} = viewer;
 
 		if(background === "skybox"){
 			renderer.setClearColor(0x000000, 0);
-			renderer.clear();
 		} else if (background === 'gradient') {
 			renderer.setClearColor(0x000000, 0);
-			renderer.clear();
 		} else if (background === 'black') {
 			renderer.setClearColor(0x000000, 1);
-			renderer.clear();
 		} else if (background === 'white') {
 			renderer.setClearColor(0xFFFFFF, 1);
-			renderer.clear();
 		} else {
 			renderer.setClearColor(0x000000, 0);
-			renderer.clear();
 		}
+		
+		renderer.clear();
 
 		this.clearTargets();
 	}
 
 	render(params){
 		this.initEDL();
-		const viewer = this.viewer;
 
+
+		const viewer = this.viewer;
 		const camera = params.camera ? params.camera : viewer.scene.getActiveCamera();
+		const {width, height} = this.viewer.renderer.getSize(new THREE.Vector2());
 
 		viewer.dispatchEvent({type: "render.pass.begin",viewer: viewer});
-
-		let renderAreaSize = this.viewer.renderer.getSize(new THREE.Vector2());
-		const width = params.viewport ? params.viewport[2] : renderAreaSize.width;
-		const height = params.viewport ? params.viewport[3] : renderAreaSize.height;
 		
 		this.resize(width, height);
 
@@ -203,7 +193,7 @@ export class EDLRenderer{
 			viewer.renderer.render(viewer.scene.sceneBG, viewer.scene.cameraBG);
 		} 
 
-		// TODO adapt to multiple lights
+		//TODO adapt to multiple lights
 		if(lights.length > 0 && !(lights[0].disableShadowUpdates)){
 			let light = lights[0];
 
@@ -229,66 +219,67 @@ export class EDLRenderer{
 			viewer.shadowTestCam.updateMatrixWorld();
 			viewer.shadowTestCam.matrixWorldInverse.getInverse(viewer.shadowTestCam.matrixWorld);
 			viewer.shadowTestCam.updateProjectionMatrix();
-
 		}
 
-		// COLOR & DEPTH PASS
-		for (let pointcloud of viewer.scene.pointclouds) {
-			let octreeSize = pointcloud.pcoGeometry.boundingBox.getSize(new THREE.Vector3()).x;
+		{ // COLOR & DEPTH PASS
+			for (let pointcloud of viewer.scene.pointclouds) {
+				let octreeSize = pointcloud.pcoGeometry.boundingBox.getSize(new THREE.Vector3()).x;
 
-			let material = pointcloud.material;
-			material.weighted = false;
-			material.useLogarithmicDepthBuffer = false;
-			material.useEDL = true;
+				let material = pointcloud.material;
+				material.weighted = false;
+				material.useLogarithmicDepthBuffer = false;
+				material.useEDL = true;
 
-			material.screenWidth = width;
-			material.screenHeight = height;
-			material.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
-			material.uniforms.octreeSize.value = octreeSize;
-			material.spacing = pointcloud.pcoGeometry.spacing * Math.max(pointcloud.scale.x, pointcloud.scale.y, pointcloud.scale.z);
+				material.screenWidth = width;
+				material.screenHeight = height;
+				material.uniforms.visibleNodes.value = pointcloud.material.visibleNodesTexture;
+				material.uniforms.octreeSize.value = octreeSize;
+				material.spacing = pointcloud.pcoGeometry.spacing * Math.max(pointcloud.scale.x, pointcloud.scale.y, pointcloud.scale.z);
+			}
+			
+			// TODO adapt to multiple lights
+			viewer.renderer.setRenderTarget(this.rtEDL);
+			
+			if(lights.length > 0){
+				viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, this.rtEDL, {
+					clipSpheres: viewer.scene.volumes.filter(v => (v instanceof SphereVolume)),
+					shadowMaps: [this.shadowMap],
+					transparent: false,
+				});
+			}else{
+				viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, this.rtEDL, {
+					clipSpheres: viewer.scene.volumes.filter(v => (v instanceof SphereVolume)),
+					transparent: false,
+				});
+			}
+
+			
 		}
-		
-		// TODO adapt to multiple lights
-		if(lights.length > 0){
-			viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, this.rtEDL, {
-				clipSpheres: viewer.scene.volumes.filter(v => (v instanceof SphereVolume)),
-				shadowMaps: [this.shadowMap],
-				transparent: false,
-			});
-		}else{
-			viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, this.rtEDL, {
-				clipSpheres: viewer.scene.volumes.filter(v => (v instanceof SphereVolume)),
-				transparent: false,
-			});
-		}
 
-		//viewer.renderer.render(viewer.scene.scene, camera, this.rtRegular);
+		viewer.dispatchEvent({type: "render.pass.scene", viewer: viewer, renderTarget: this.rtRegular});
+		viewer.renderer.setRenderTarget(null);
 		viewer.renderer.render(viewer.scene.scene, camera);
 
-		//viewer.renderer.setRenderTarget(this.rtColor);
-		viewer.dispatchEvent({type: "render.pass.scene", viewer: viewer, renderTarget: this.rtRegular});
-
 		{ // EDL PASS
-			this.edlMaterial.uniforms.screenWidth.value = width;
-			this.edlMaterial.uniforms.screenHeight.value = height;
 
-			//this.edlMaterial.uniforms.colorMap.value = this.rtColor.texture;
+			const uniforms = this.edlMaterial.uniforms;
+
+			uniforms.screenWidth.value = width;
+			uniforms.screenHeight.value = height;
 
 			let proj = camera.projectionMatrix;
 			let projArray = new Float32Array(16);
 			projArray.set(proj.elements);
 
-			this.edlMaterial.uniforms.uNear.value = camera.near;
-			this.edlMaterial.uniforms.uFar.value = camera.far;
-			this.edlMaterial.uniforms.uEDLColor.value = this.rtEDL.texture;
-			this.edlMaterial.uniforms.uEDLDepth.value = this.rtEDL.depthTexture;
-			this.edlMaterial.uniforms.uProj.value = projArray;
+			uniforms.uNear.value = camera.near;
+			uniforms.uFar.value = camera.far;
+			uniforms.uEDLColor.value = this.rtEDL.texture;
+			uniforms.uEDLDepth.value = this.rtEDL.depthTexture;
+			uniforms.uProj.value = projArray;
 
-			this.edlMaterial.uniforms.edlStrength.value = viewer.edlStrength;
-			this.edlMaterial.uniforms.radius.value = viewer.edlRadius;
-			this.edlMaterial.uniforms.opacity.value = viewer.edlOpacity; // HACK
-
-			
+			uniforms.edlStrength.value = viewer.edlStrength;
+			uniforms.radius.value = viewer.edlRadius;
+			uniforms.opacity.value = viewer.edlOpacity; // HACK
 			
 			Utils.screenPass.render(viewer.renderer, this.edlMaterial);
 
@@ -298,7 +289,6 @@ export class EDLRenderer{
 
 		}
 
-		//viewer.renderer.render(viewer.scene.scene, camera);
 		viewer.dispatchEvent({type: "render.pass.scene", viewer: viewer});
 
 		viewer.renderer.clearDepth();
@@ -311,12 +301,6 @@ export class EDLRenderer{
 		viewer.renderer.render(viewer.clippingTool.sceneVolume, camera);
 		viewer.renderer.render(viewer.transformationTool.scene, camera);
 		
-		//viewer.renderer.setViewport(width - viewer.navigationCube.width, 
-		//							height - viewer.navigationCube.width, 
-		//							viewer.navigationCube.width, viewer.navigationCube.width);
-		//viewer.renderer.render(viewer.navigationCube, viewer.navigationCube.camera);		
-		//viewer.renderer.setViewport(0, 0, width, height);
-
 		viewer.dispatchEvent({type: "render.pass.end",viewer: viewer});
 
 	}

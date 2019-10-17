@@ -2175,7 +2175,9 @@
 
 			var denominator = Math.sqrt( this.lengthSq() * v.lengthSq() );
 
-			if ( denominator === 0 ) { console.error( 'THREE.Vector3: angleTo() can\'t handle zero length vectors.' ); }
+			if ( denominator === 0 ) { 
+				console.error( 'THREE.Vector3: angleTo() can\'t handle zero length vectors.' ); 
+			}
 
 			var theta = this.dot( v ) / denominator;
 

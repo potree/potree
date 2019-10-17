@@ -232,11 +232,13 @@ export class Sidebar{
 
 			let geoJSONIcon = `${Potree.resourcePath}/icons/file_geojson.svg`;
 			let dxfIcon = `${Potree.resourcePath}/icons/file_dxf.svg`;
+			let potreeIcon = `${Potree.resourcePath}/icons/file_potree.svg`;
 
 			elExport.append(`
 				Export: <br>
 				<a href="#" download="measure.json"><img name="geojson_export_button" src="${geoJSONIcon}" class="button-icon" style="height: 24px" /></a>
 				<a href="#" download="measure.dxf"><img name="dxf_export_button" src="${dxfIcon}" class="button-icon" style="height: 24px" /></a>
+				<a href="#" download="potree.json"><img name="potree_export_button" src="${potreeIcon}" class="button-icon" style="height: 24px" /></a>
 			`);
 
 			let elDownloadJSON = elExport.find("img[name=geojson_export_button]").parent();
@@ -269,6 +271,16 @@ export class Sidebar{
 					this.viewer.postError("no measurements to export");
 					event.preventDefault();
 				}
+			});
+
+			let elDownloadPotree = elExport.find("img[name=potree_export_button]").parent();
+			elDownloadPotree.click( (event) => {
+
+				let data = Potree.createSaveData(this.viewer);
+				let dataString = JSON.stringify(data, null, "\t")
+
+				let url = window.URL.createObjectURL(new Blob([dataString], {type: 'data:application/octet-stream'}));
+				elDownloadPotree.attr('href', url);
 			});
 		}
 

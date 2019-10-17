@@ -142,6 +142,7 @@ export class Viewer extends EventDispatcher{
 
 		this.initThree();
 		this.prepareVR();
+		this.initDragAndDrop();
 
 		//this.prepareVR();
 
@@ -1116,6 +1117,44 @@ export class Viewer extends EventDispatcher{
 
 	setServer (server) {
 		this.server = server;
+	}
+
+	initDragAndDrop(){
+		function allowDrag(e) {
+			e.dataTransfer.dropEffect = 'copy';
+			e.preventDefault();
+		}
+
+		async function dropHandler(event){
+			console.log(event);
+			event.preventDefault();
+
+			for(const item of event.dataTransfer.items){
+				console.log(item);
+
+				if(item.kind !== "file"){
+					continue;
+				}
+
+				const file = item.getAsFile();
+				const text = await file.text();
+
+				try{
+					const json = JSON.parse(text);
+
+					Potree.loadSaveData(viewer, json);
+
+				}catch(e){
+					console.error("failed to parse the dropped file as JSON");
+					console.error(e);
+				}
+				
+			}
+			
+		}
+		$("body")[0].addEventListener("dragenter", allowDrag);
+		$("body")[0].addEventListener("dragover", allowDrag);
+		$("body")[0].addEventListener("drop", dropHandler);
 	}
 
 	initThree () {

@@ -290,7 +290,14 @@ export class Measure extends THREE.Object3D {
 	getAngleBetweenLines (cornerPoint, point1, point2) {
 		let v1 = new THREE.Vector3().subVectors(point1.position, cornerPoint.position);
 		let v2 = new THREE.Vector3().subVectors(point2.position, cornerPoint.position);
-		return v1.angleTo(v2);
+
+		// avoid the error printed by threejs if denominator is 0
+		const denominator = Math.sqrt( v1.lengthSq() * v2.lengthSq() );
+		if(denominator === 0){
+			return 0;
+		}else{
+			return v1.angleTo(v2);
+		}
 	};
 
 	getAngle (index) {

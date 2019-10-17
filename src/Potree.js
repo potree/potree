@@ -41,6 +41,7 @@ export * from "./loader/GreyhoundBinaryLoader.js";
 export * from "./loader/GreyhoundLoader.js";
 export * from "./loader/PointAttributes.js";
 export * from "./loader/ShapefileLoader.js";
+export * from "./loader/GeoPackageLoader.js";
 
 export * from "./utils/Box3Helper.js";
 export * from "./utils/ClippingTool.js";

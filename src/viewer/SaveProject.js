@@ -40,15 +40,46 @@ function createSettingsData(viewer){
 	};
 }
 
+function createSceneContentData(viewer){
+
+	const data = [];
+
+	const potreeObjects = [];
+
+	viewer.scene.scene.traverse(node => {
+		if(node.potree){
+			potreeObjects.push(node);
+		}
+	});
+
+	for(const object of potreeObjects){
+		
+		if(object.potree.file){
+			const saveObject = {
+				file: object.potree.file,
+			};
+
+			data.push(saveObject);
+		}
+
+
+	}
+
+
+	return data;
+}
+
 export function createSaveData(viewer) {
 
 	const scene = viewer.scene;
 
 	const data = {
 		type: "Potree",
+		version: 1.7,
 		settings: createSettingsData(viewer),
 		pointclouds: scene.pointclouds.map(createPointcloudData),
 		measurements: scene.measurements.map(createMeasurementData),
+		objects: createSceneContentData(viewer),
 	};
 
 	return data;

@@ -30,6 +30,8 @@ export class Measure extends THREE.Object3D {
 		this.edgeLabels = [];
 		this.angleLabels = [];
 		this.coordinateLabels = [];
+		this.areaLabel = null;
+		this.heightLabel = null;
 
 		// this.heightEdge;
 		// this.heightLabel;
@@ -54,9 +56,10 @@ export class Measure extends THREE.Object3D {
 
 			{ // height label
 				this.heightLabel = new TextSprite('');
-				this.heightLabel.setBorderColor({r: 0, g: 0, b: 0, a: 0.8});
-				this.heightLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 0.3});
-				this.heightLabel.setTextColor({r: 180, g: 220, b: 180, a: 1.0});
+				this.heightLabel.setTextColor({r: 140, g: 250, b: 140, a: 1.0});
+				this.heightLabel.setBorderColor({r: 0, g: 0, b: 0, a: 1.0});
+				this.heightLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 1.0});
+				this.heightLabel.fontsize = 16;
 				this.heightLabel.material.depthTest = false;
 				this.heightLabel.material.opacity = 1;
 				this.heightLabel.visible = false;
@@ -65,9 +68,10 @@ export class Measure extends THREE.Object3D {
 		}
 
 		this.areaLabel = new TextSprite('');
-		this.areaLabel.setBorderColor({r: 0, g: 0, b: 0, a: 0.8});
-		this.areaLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 0.3});
-		this.areaLabel.setTextColor({r: 180, g: 220, b: 180, a: 1.0});
+		this.areaLabel.setTextColor({r: 140, g: 250, b: 140, a: 1.0});
+		this.areaLabel.setBorderColor({r: 0, g: 0, b: 0, a: 1.0});
+		this.areaLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 1.0});
+		this.areaLabel.fontsize = 16;
 		this.areaLabel.material.depthTest = false;
 		this.areaLabel.material.opacity = 1;
 		this.areaLabel.visible = false; ;
@@ -116,18 +120,20 @@ export class Measure extends THREE.Object3D {
 
 		{ // edge labels
 			let edgeLabel = new TextSprite();
-			edgeLabel.setBorderColor({r: 0, g: 0, b: 0, a: 0.8});
-			edgeLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 0.3});
+			edgeLabel.setBorderColor({r: 0, g: 0, b: 0, a: 1.0});
+			edgeLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 1.0});
 			edgeLabel.material.depthTest = false;
 			edgeLabel.visible = false;
+			edgeLabel.fontsize = 16;
 			this.edgeLabels.push(edgeLabel);
 			this.add(edgeLabel);
 		}
 
 		{ // angle labels
 			let angleLabel = new TextSprite();
-			angleLabel.setBorderColor({r: 0, g: 0, b: 0, a: 0.8});
-			angleLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 0.3});
+			angleLabel.setBorderColor({r: 0, g: 0, b: 0, a: 1.0});
+			angleLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 1.0});
+			angleLabel.fontsize = 16;
 			angleLabel.material.depthTest = false;
 			angleLabel.material.opacity = 1;
 			angleLabel.visible = false;
@@ -137,8 +143,9 @@ export class Measure extends THREE.Object3D {
 
 		{ // coordinate labels
 			let coordinateLabel = new TextSprite();
-			coordinateLabel.setBorderColor({r: 0, g: 0, b: 0, a: 0.8});
-			coordinateLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 0.3});
+			coordinateLabel.setBorderColor({r: 0, g: 0, b: 0, a: 1.0});
+			coordinateLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 1.0});
+			coordinateLabel.fontsize = 16;
 			coordinateLabel.material.depthTest = false;
 			coordinateLabel.material.opacity = 1;
 			coordinateLabel.visible = false;

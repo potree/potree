@@ -16,8 +16,7 @@ export class OrientedImages{
 		const content = await response.text();
 		const lines = content.split(/\r?\n/);
 		const imageParams = [];
-		//const validIDs = [31023, 31024, 31025, 31026, 31027, 31028, 31029, 31030, 31031, 31032, 31033, 31034, 31035, 31036, 31037, 31038, 31039, 31040, 31041, 31042, 31043, 31044, 31045, 31046, 31047, 31048, 31049, 31050, 31296, 31297, 31298, 31299, 31300, 31301, 31302, 31303, 31304, 31305, 31306, 31307, 31308, 31309, 31310, 31311, 31312, 31313, 31314, 31315, 31316, 31317, 31318, 31319, 31320, 31321, 31322, 31323, 31412, 31413, 31414, 31415, 31416, 31417, 31418, 31419, 31420, 31421, 31422, 31423, 31424, 31425, 31426, 31427, 31428, 31429, 31430, 31431, 31432, 31433, 31434, 31679, 31680, 31681, 31682, 31683, 31684, 31685, 31686, 31687, 31688, 31689, 31690, 31691, 31692, 31693, 31694, 31695, 31696, 31697, 31698, 31699, 31700, 31701, 31702, 31703, 31803, 31804, 31805, 31806, 31807, 31808, 31809, 31810, 31811, 31812, 31813, 31814, 31815, 31816, 31817, 31818, 31819, 31820, 31821, 31822, 31823, 31824, 31825, 31826, 31827, 31828, 31829, 32088, 32089, 32090, 32091, 32092, 32093, 32094, 32095, 32096, 32097, 32098, 32099, 32100, 32101, 32102, 32103, 32104, 32105, 32106, 32107, 32108, 32109, 32110, 32111, 32112, 32113, 32277, 32278, 32279, 32280, 32281, 32282, 32283, 32284, 32285, 32286, 32287, 32288, 32289, 32290, 32291, 32292, 32293, 32294, 32295, 32296, 32297, 32298, 32299, 32300, 32594, 32595, 32596, 32597, 32598, 32599, 32600, 32601, 32602, 32603, 32604, 32605, 32606, 32607, 32608, 32609, 32610, 32611, 32612, 32613, 32614, 32615, 32616].map(v => v + "");
-		//const validIDs = ["32604"];
+
 		for(let i = 1; i < lines.length; i++){
 			const line = lines[i];
 			const tokens = line.split(/\s+/);
@@ -45,12 +44,19 @@ export class OrientedImages{
 		const sp = new THREE.PlaneGeometry(1, 1);
 		const sg = new THREE.SphereGeometry(1, 32, 32);
 		const lg = new THREE.Geometry();
+
 		lg.vertices.push(new THREE.Vector3(-0.5, -0.5, 0) );
 		lg.vertices.push(new THREE.Vector3( 0.5, -0.5, 0) );
 		lg.vertices.push(new THREE.Vector3( 0.5,  0.5, 0) );
 		lg.vertices.push(new THREE.Vector3(-0.5,  0.5, 0) );
 		lg.vertices.push(new THREE.Vector3(-0.5, -0.5, 0) );
+
+		const sceneNode = new THREE.Object3D();
+		sceneNode.name = "oriented_images";
+		viewer.scene.scene.add(sceneNode);
+
 		const orientedImages = [];
+
 		for(const params of imageParams){
 			const material = new THREE.MeshBasicMaterial({
 				side: THREE.DoubleSide,
@@ -83,7 +89,7 @@ export class OrientedImages{
 			line.position.copy(mesh.position);
 			line.scale.copy(mesh.scale);
 			line.rotation.copy(mesh.rotation);
-			viewer.scene.scene.add(line);
+			sceneNode.add(line);
 			const orientedImage = {
 				mesh: mesh,
 				texture: null,
@@ -95,8 +101,10 @@ export class OrientedImages{
 			
 			orientedImages.push(orientedImage);
 		}
+
 		let hoveredElement = null;
 		let clipVolume = null;
+
 		const onMouseMove = (evt) => {
 			const tStart = performance.now();
 			if(hoveredElement){
@@ -178,6 +186,7 @@ export class OrientedImages{
 			const tEnd = performance.now();
 			//console.log(tEnd - tStart);
 		};
+
 		const onMouseClick = (evt) => {
 			if(hoveredElement){
 				console.log("move to " + hoveredElement.params.id);
@@ -225,7 +234,32 @@ export class OrientedImages{
 		};
 		viewer.renderer.domElement.addEventListener( 'mousemove', onMouseMove, false );
 		viewer.renderer.domElement.addEventListener( 'mousedown', onMouseClick, false );
-		window.orientedImages = orientedImages;
+
+		viewer.addEventListener("update", () => {
+
+			for(const image of orientedImages){
+				const world = image.mesh.matrixWorld;
+				const {dimension} = image;
+				const aspect = dimension[0] / dimension[1];
+
+				const imgPos = image.mesh.getWorldPosition(new THREE.Vector3());
+				const camPos = viewer.scene.getActiveCamera().position;
+				const d = camPos.distanceTo(imgPos);
+
+				const minSize = 1; // in degrees of fov
+				const a = THREE.Math.degToRad(minSize);
+				let r = d * Math.tan(a);
+				r = Math.max(r, 1);
+
+
+				image.mesh.scale.set(r * aspect, r, 1);
+				image.line.scale.set(r * aspect, r, 1);
+
+			}
+
+		});
+
+		//window.orientedImages = orientedImages;
 	};
 
 }

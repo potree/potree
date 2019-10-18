@@ -17,6 +17,7 @@ export class MeasuringTool extends EventDispatcher{
 			});
 		});
 
+		this.showLabels = true;
 		this.scene = new THREE.Scene();
 		this.scene.name = 'scene_measurement';
 		this.light = new THREE.PointLight(0xffffff, 1.0);
@@ -143,6 +144,11 @@ export class MeasuringTool extends EventDispatcher{
 				let distance = camera.position.distanceTo(label.getWorldPosition(new THREE.Vector3()));
 				let pr = Utils.projectedRadius(1, camera, distance, clientWidth, clientHeight);
 				let scale = (70 / pr);
+
+				if(Potree.debug.scale){
+					scale = (Potree.debug.scale / pr);
+				}
+
 				label.scale.set(scale, scale, scale);
 			}
 
@@ -229,6 +235,22 @@ export class MeasuringTool extends EventDispatcher{
 
 				let scale = (70 / pr);
 				label.scale.set(scale, scale, scale);
+			}
+
+			if(!this.showLabels){
+
+				const labels = [
+					...measure.sphereLabels, 
+					...measure.edgeLabels, 
+					...measure.angleLabels, 
+					...measure.coordinateLabels,
+					measure.heightLabel,
+					measure.areaLabel,
+				];
+
+				for(const label of labels){
+					label.visible = false;
+				}
 			}
 		}
 	}

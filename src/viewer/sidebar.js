@@ -218,6 +218,20 @@ export class Sidebar{
 				this.viewer.scene.removeAllMeasurements();
 			}
 		));
+
+
+		{ // SHOW / HIDE Measurements
+			let elShow = $("#measurement_options_show");
+			elShow.selectgroup({title: "Show/Hide labels"});
+
+			elShow.find("input").click( (e) => {
+				const show = e.target.value === "SHOW";
+				this.measuringTool.showLabels = show;
+			});
+
+			let currentShow = this.measuringTool.showLabels ? "SHOW" : "HIDE";
+			elShow.find(`input[value=${currentShow}]`).trigger("click");
+		}
 	}
 
 	initScene(){

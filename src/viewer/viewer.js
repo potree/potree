@@ -1075,6 +1075,8 @@ export class Viewer extends EventDispatcher{
 				let sidebar = new Sidebar(this);
 				sidebar.init();
 
+				this.sidebar = sidebar;
+
 				//if (callback) {
 				//	$(callback);
 				//}
@@ -1137,6 +1139,7 @@ export class Viewer extends EventDispatcher{
 				}
 
 				const file = item.getAsFile();
+
 				const text = await file.text();
 
 				try{

@@ -22,6 +22,7 @@ export function updatePointClouds(pointclouds, camera, renderer){
 	let result = updateVisibility(pointclouds, camera, renderer);
 
 	for (let pointcloud of pointclouds) {
+		console.log("Num Visible Nodes:", pointcloud.visibleNodes.length);
 		pointcloud.updateMaterial(pointcloud.material, pointcloud.visibleNodes/*never used*/, camera, renderer);
 		pointcloud.updateVisibleBounds();
 	}

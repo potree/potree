@@ -42,7 +42,7 @@
 	<script>
 
 		
-		const oldPoTree = true;
+		const oldPoTree = false;
 		if (oldPoTree) {
 			window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
 			
@@ -90,7 +90,6 @@
 				enableTextures:false
 			});
 			const potreePass = new Potree.GLPotreePass();
-			potreePass.setEDLEnabled(true);
 			potreePass.setPointBudget(1*1000*1000);
 			// potreePass.loadSettingsFromURL(); // Parse URL ags for settings
 			renderer.addPass(potreePass, ZeaEngine.PassType.OPAQUE);
@@ -98,14 +97,15 @@
 			renderer.resumeDrawing();
 
 			const potreeAsset = new Potree.PotreeAsset();
-			potreeAsset.getCamera(renderer.getViewport().getCamera());
+			potreeAsset.setViewport(renderer.getViewport());
+			scene.getRoot().addChild(potreeAsset);
 			
 			// Load and add point cloud to scene
 			potreeAsset.loadPointCloud("../pointclouds/vol_total/cloud.js", "sigeom.sa").then(e => {
-				let material = e.pointcloud.material;
-				material.size = 1;
-				material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-				material.shape = Potree.PointShape.SQUARE;
+				// let material = e.pointcloud.material;
+				// material.size = 1;
+				// material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+				// material.shape = Potree.PointShape.SQUARE;
 				
 				
 				//scene.view.position.set(589974.341, 231698.397, 986.146);

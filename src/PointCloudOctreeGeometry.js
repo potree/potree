@@ -195,6 +195,8 @@ export class PointCloudOctreeGeometryNode extends PointCloudTreeNode{
 		tightBoundingBox.max.sub(tightBoundingBox.min);
 		tightBoundingBox.min.set(0, 0, 0);
 
+		
+		let pointAttributes = this.pcoGeometry.pointAttributes;
 		const numPoints = data.buffer.byteLength / pointAttributes.byteSize;
 		
 		this.numPoints = numPoints;

@@ -1,5 +1,4 @@
-
-import {PointCloudMaterial} from "../materials/PointCloudMaterial.js";
+import {POCLoader} from "../loader/POCLoader";
 
 // Note: replaces PointCloudOctree.
 // 
@@ -8,8 +7,13 @@ export class PotreeAsset extends ZeaEngine.AssetItem {
   constructor(){
     super();
     
+    this.loaded.setToggled(false)
+    
     // this.pointcloud;
     this.material = new ZeaEngine.Material("PoTreeMaterial", "Potree_PointCloudShader");
+    this.material.size = 1;
+    this.material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+    this.material.shape = Potree.PointShape.SQUARE;
     
     this.visiblePointsTarget = 2 * 1000 * 1000;
     this.minimumNodePixelSize = 150;
@@ -21,6 +25,9 @@ export class PotreeAsset extends ZeaEngine.AssetItem {
     // this.visibleBounds = new THREE.Box3();
     this.visibleNodes = [];
     this.visibleGeometry = [];
+
+    this.__loaded = false;
+    this.visibleNodesChanged = new ZeaEngine.Signal();
 
     // this.initialize();
   }
@@ -44,7 +51,11 @@ export class PotreeAsset extends ZeaEngine.AssetItem {
   _cleanBoundingBox(bbox) {
     bbox = super._cleanBoundingBox(bbox)
     const mat4 = this.getGlobalMat4();
-    bbox.addBox3(this.pcoGeometry.tightBoundingBox, mat4)
+    const geomBox = new ZeaEngine.Box3();
+    const { min, max } = this.pcoGeometry.tightBoundingBox
+    geomBox.min.set(min.x, min.y, min.z);
+    geomBox.max.set(max.x, max.y, max.z);
+    bbox.addBox3(geomBox, mat4)
     return bbox;
   }
 
@@ -53,19 +64,21 @@ export class PotreeAsset extends ZeaEngine.AssetItem {
     const xfo = this.getGlobalXfo();
     xfo.tr.set(this.pcoGeometry.offset.x, this.pcoGeometry.offset.y, this.pcoGeometry.offset.z);
     this.setGlobalXfo(xfo, ZeaEngine.ValueSetMode.DATA_LOAD);
-
-    let bMin = box.min.z;
-    let bMax = box.max.z;
+    
+    this._setBoundingBoxDirty()
+    const box = this.getBoundingBox()
+    const bMin = box.p0.z;
+    const bMax = box.p1.z;
     this.material.heightMin = bMin;
     this.material.heightMax = bMax;
     
-		// TODO read projection from file instead
-		this.projection = geometry.projection;
-		this.fallbackProjection = geometry.fallbackProjection;
+    // TODO read projection from file instead
+    this.projection = pcoGeometry.projection;
+    this.fallbackProjection = pcoGeometry.fallbackProjection;
 
-		// this.root = this.pcoGeometry.root;
+    // this.root = this.pcoGeometry.root;
 
-    if (this.camera)
+    if (this.viewport)
       this.update();
     this.loaded.emit();
   }
@@ -77,18 +90,8 @@ export class PotreeAsset extends ZeaEngine.AssetItem {
   
   // // Load and add point cloud to scene
   loadPointCloud(path, name) {
-      // return new Promise((resolve, reject) => {
-      //     Potree.loadPointCloud(path, name, e => {
-  // 	    this.pointcloud = e.pointcloud;
-  // 		if (this.camera)
-  // 			this.update();
-      // 		this.loaded.emit();
-      //         resolve(e);
-      //     });
-      // });
-  
     return new Promise((resolve, reject) => {
-      POCLoader.load(path, function (geometry) {
+      POCLoader.load(path, geometry => {
         if (!geometry) {
           //callback({type: 'loading_failed'});
           console.error(new Error(`failed to load point cloud from URL: ${path}`));
@@ -100,23 +103,26 @@ export class PotreeAsset extends ZeaEngine.AssetItem {
     });
   }
   
-	updateMaterial () {
+  updateMaterial () {
     const camera = this.viewport.getCamera();
-		material.fov = camera.getFov() * (Math.PI / 180);
-		material.screenWidth = this.viewport.getWidth();
-		material.screenHeight = this.viewport.getHeight();
-		material.near = camera.getNear();
-		material.far = camera.getFar();
-		material.spacing = this.pcoGeometry.spacing * Math.max(this.scale.x, this.scale.y, this.scale.z);
-		material.uniforms.octreeSize.value = this.pcoGeometry.boundingBox.getSize(new THREE.Vector3()).x;
-	}
+    this.material.fov = camera.getFov() * (Math.PI / 180);
+    this.material.screenWidth = this.viewport.getWidth();
+    this.material.screenHeight = this.viewport.getHeight();
+    this.material.near = camera.getNear();
+    this.material.far = camera.getFar();
+    const sc = this.getGlobalXfo().sc
+    this.material.spacing = this.pcoGeometry.spacing * Math.max(sc.x, sc.y, sc.z);
+
+    // ??
+    // this.material.uniforms.octreeSize.value = this.pcoGeometry.boundingBox.getSize(new THREE.Vector3()).x;
+  }
 
   updateVisibilityStructures() {
     
     const camera = this.viewport.getCamera();
     const view = camera.getGlobalXfo().toMat4();
-    const viewI = this.viewwport.getViewMatrix();
-    const proj = this.viewwport.getProjectionMatrix();
+    const viewI = this.viewport.getViewMatrix();
+    const proj = this.viewport.getProjectionMatrix();
 
     const priorityQueue = new BinaryHeap(function (x) { return 1 / x.weight; });
 
@@ -135,16 +141,16 @@ export class PotreeAsset extends ZeaEngine.AssetItem {
       this.visibleGeometry = [];
       
       const world = this.getGlobalMat4()
-			const fm = proj.multiply(viewI).multiply(world);
-			const frustum = new ZeaEngine.Frustum();
-			frustum.setFromMatrix(fm);
+      const fm = proj.multiply(viewI).multiply(world);
+      const frustum = new ZeaEngine.Frustum();
+      frustum.setFromMatrix(fm);
 
       // camera  position in object space
       const worldI = world.inverse();
       const camMatrixObject = worldI.multiply(view);
       const camObjPos = camMatrixObject.translation
 
-      if (this.visible && this.pcoGeometry !== null) {
+      if (this.getVisible() && this.pcoGeometry !== null) {
         priorityQueue.push({node: this.pcoGeometry.root, weight: Number.MAX_VALUE});
       }
 
@@ -170,16 +176,17 @@ export class PotreeAsset extends ZeaEngine.AssetItem {
 
 
   updateVisibility(){
+    const camera = this.viewport.getCamera();
 
-    // const numVisibleNodes = 0
-    const numVisiblePoints = 0;
+    // let numVisibleNodes = 0
+    let numVisiblePoints = 0;
 
     // const numVisiblePointsInPointclouds = [pc, 0];
 
     // const visibleNodes = [];
     const unloadedGeometry = [];
 
-    const lowestSpacing = Infinity;
+    let lowestSpacing = Infinity;
 
     // calculate object space frustum and cam pos and setup priority queue
     const s = this.updateVisibilityStructures();
@@ -187,7 +194,7 @@ export class PotreeAsset extends ZeaEngine.AssetItem {
     const camObjPos = s.camObjPos;
     const priorityQueue = s.priorityQueue;
 
-    // const loadedToGPUThisFrame = 0;
+    // let loadedToGPUThisFrame = 0;
     
     // const domWidth;
     const domHeight = this.viewport.getHeight();
@@ -227,126 +234,17 @@ export class PotreeAsset extends ZeaEngine.AssetItem {
       const element = priorityQueue.pop();
       const node = element.node;
       const parent = element.parent;
-      // let pointcloud = pointclouds[element.pointcloud];
-
-      // { // restrict to certain nodes for debugging
-      //	let allowedNodes = ["r", "r0", "r4"];
-      //	if(!allowedNodes.includes(node.name)){
-      //		continue;
-      //	}
-      // }
-
       const box = node.getBoundingBox();
-      // const frustum = frustums[element.pointcloud];
-      // const camObjPos = camObjPositions[element.pointcloud];
 
       const insideFrustum = frustum.intersectsBox(box);
       const maxLevel = this.maxLevel || Infinity;
       const level = node.getLevel();
-      const visible = insideFrustum;
+      let visible = insideFrustum;
       visible = visible && !(numVisiblePoints + node.getNumPoints() > Potree.pointBudget);
       // visible = visible && !(numVisiblePointsInPointclouds.get(pointcloud) + node.getNumPoints() > pointcloud.pointBudget);
       visible = visible && level < maxLevel;
-      //visible = visible && node.name !== "r613";
-/*
-      let clipBoxes = this.material.clipBoxes;
-      if(true && clipBoxes.length > 0){
 
-        //node.debug = false;
-
-        let numIntersecting = 0;
-        let numIntersectionVolumes = 0;
-
-        //if(node.name === "r60"){
-        //	var a = 10;
-        //}
-
-        for(let clipBox of clipBoxes){
-
-          let pcWorldInverse = new THREE.Matrix4().getInverse(pointcloud.matrixWorld);
-          let toPCObject = pcWorldInverse.multiply(clipBox.box.matrixWorld);
-
-          let px = new THREE.Vector3(+0.5, 0, 0).applyMatrix4(pcWorldInverse);
-          let nx = new THREE.Vector3(-0.5, 0, 0).applyMatrix4(pcWorldInverse);
-          let py = new THREE.Vector3(0, +0.5, 0).applyMatrix4(pcWorldInverse);
-          let ny = new THREE.Vector3(0, -0.5, 0).applyMatrix4(pcWorldInverse);
-          let pz = new THREE.Vector3(0, 0, +0.5).applyMatrix4(pcWorldInverse);
-          let nz = new THREE.Vector3(0, 0, -0.5).applyMatrix4(pcWorldInverse);
-
-          let pxN = new THREE.Vector3().subVectors(nx, px).normalize();
-          let nxN = pxN.clone().multiplyScalar(-1);
-          let pyN = new THREE.Vector3().subVectors(ny, py).normalize();
-          let nyN = pyN.clone().multiplyScalar(-1);
-          let pzN = new THREE.Vector3().subVectors(nz, pz).normalize();
-          let nzN = pzN.clone().multiplyScalar(-1);
-
-          let pxPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(pxN, px);
-          let nxPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(nxN, nx);
-          let pyPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(pyN, py);
-          let nyPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(nyN, ny);
-          let pzPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(pzN, pz);
-          let nzPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(nzN, nz);
-
-          //if(window.debugdraw !== undefined && window.debugdraw === true && node.name === "r60"){
-
-          //	Potree.utils.debugPlane(viewer.scene.scene, pxPlane, 1, 0xFF0000);
-          //	Potree.utils.debugPlane(viewer.scene.scene, nxPlane, 1, 0x990000);
-          //	Potree.utils.debugPlane(viewer.scene.scene, pyPlane, 1, 0x00FF00);
-          //	Potree.utils.debugPlane(viewer.scene.scene, nyPlane, 1, 0x009900);
-          //	Potree.utils.debugPlane(viewer.scene.scene, pzPlane, 1, 0x0000FF);
-          //	Potree.utils.debugPlane(viewer.scene.scene, nzPlane, 1, 0x000099);
-
-          //	Potree.utils.debugBox(viewer.scene.scene, box, new THREE.Matrix4(), 0x00FF00);
-          //	Potree.utils.debugBox(viewer.scene.scene, box, pointcloud.matrixWorld, 0xFF0000);
-          //	Potree.utils.debugBox(viewer.scene.scene, clipBox.box.boundingBox, clipBox.box.matrixWorld, 0xFF0000);
-
-          //	window.debugdraw = false;
-          //}
-
-          let frustum = new THREE.Frustum(pxPlane, nxPlane, pyPlane, nyPlane, pzPlane, nzPlane);
-          let intersects = frustum.intersectsBox(box);
-
-          if(intersects){
-            numIntersecting++;
-          }
-          numIntersectionVolumes++;
-        }
-
-        let insideAny = numIntersecting > 0;
-        let insideAll = numIntersecting === numIntersectionVolumes;
-
-        if(pointcloud.material.clipTask === ClipTask.SHOW_INSIDE){
-          if(pointcloud.material.clipMethod === ClipMethod.INSIDE_ANY && insideAny){
-            //node.debug = true
-          }else if(pointcloud.material.clipMethod === ClipMethod.INSIDE_ALL && insideAll){
-            //node.debug = true;
-          }else{
-            visible = false;
-          }
-        } else if(pointcloud.material.clipTask === ClipTask.SHOW_OUTSIDE){
-          //if(pointcloud.material.clipMethod === ClipMethod.INSIDE_ANY && !insideAny){
-          //	//visible = true;
-          //	let a = 10;
-          //}else if(pointcloud.material.clipMethod === ClipMethod.INSIDE_ALL && !insideAll){
-          //	//visible = true;
-          //	let a = 20;
-          //}else{
-          //	visible = false;
-          //}
-        }
-        
-
-      }
-*/
-
-      // visible = ["r", "r0", "r06", "r060"].includes(node.name);
-      // visible = ["r"].includes(node.name);
-
-      if (node.spacing) {
-        lowestSpacing = Math.min(lowestSpacing, node.spacing);
-      } else if (node.geometryNode && node.geometryNode.spacing) {
-        lowestSpacing = Math.min(lowestSpacing, node.geometryNode.spacing);
-      }
+      lowestSpacing = Math.min(lowestSpacing, node.spacing);
 
       if (numVisiblePoints + node.getNumPoints() > Potree.pointBudget) {
         break;
@@ -367,48 +265,13 @@ export class PotreeAsset extends ZeaEngine.AssetItem {
 
       if (node.isGeometryNode() && (!parent || parent.isTreeNode())) {
       //   // Only load a maximum of 2 nodes per update.
-        if (node.isLoaded()/* && loadedToGPUThisFrame < 2*/) {
-      //     // This seems to convert the Potree oct node to a 
-      //     // ThreeJS scene node, which shouldn't be necessary.
-      //     // I guess it triggers uploading to the GPU.
-      //     node = pointcloud.toTreeNode(node, parent);
-      //     // loadedToGPUThisFrame++;
+        if (node.isLoaded()) {
+          exports.lru.touch(node);
+          this.visibleNodes.push(node);
         } else {
           unloadedGeometry.push(node);
         }
       }
-
-      // if (node.isTreeNode()) {
-        exports.lru.touch(node);
-        // node.sceneNode.visible = true;
-        // node.sceneNode.material = pointcloud.material;
-
-        // visibleNodes.push(node);// 
-        this.visibleNodes.push(node);
-
-        // if(node._transformVersion === undefined){
-        //   node._transformVersion = -1;
-        // }
-        // let transformVersion = pointcloudTransformVersion.get(pointcloud);
-        // if(node._transformVersion !== transformVersion.number){
-        //   node.sceneNode.updateMatrix();
-        //   node.sceneNode.matrixWorld.multiplyMatrices(pointcloud.matrixWorld, node.sceneNode.matrix);	
-        //   node._transformVersion = transformVersion.number;
-        // }
-
-        // if (pointcloud.showBoundingBox && !node.boundingBoxNode && node.getBoundingBox) {
-        //   let boxHelper = new Box3Helper(node.getBoundingBox());
-        //   boxHelper.matrixAutoUpdate = false;
-        //   pointcloud.boundingBoxNodes.push(boxHelper);
-        //   node.boundingBoxNode = boxHelper;
-        //   node.boundingBoxNode.matrix.copy(pointcloud.matrixWorld);
-        // } else if (pointcloud.showBoundingBox) {
-        //   node.boundingBoxNode.visible = true;
-        //   node.boundingBoxNode.matrix.copy(pointcloud.matrixWorld);
-        // } else if (!pointcloud.showBoundingBox && node.boundingBoxNode) {
-        //   node.boundingBoxNode.visible = false;
-        // }
-      // }
 
       // add child nodes to priorityQueue
       const children = node.getChildren();
@@ -421,7 +284,7 @@ export class PotreeAsset extends ZeaEngine.AssetItem {
           const distance = sphere.center.distanceTo(camObjPos);
           const radius = sphere.radius;
           
-          const fov = (camera.fov * Math.PI) / 180;
+          const fov = (camera.getFov() * Math.PI) / 180;
           const slope = Math.tan(fov / 2);
 
           const projFactor = 0.5 / (slope * distance);
@@ -473,14 +336,13 @@ export class PotreeAsset extends ZeaEngine.AssetItem {
 
     // From viewer.js
   update() {
-        // const camera = this.camera;
     
     Potree.pointLoadLimit = Potree.pointBudget * 2;
     this.updateVisibility()
 
-		this.updateMaterial();
+    this.updateMaterial();
 
-	  exports.lru.freeMemory();
+    exports.lru.freeMemory();
   }
   
 };

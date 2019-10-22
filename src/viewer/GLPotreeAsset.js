@@ -1,27 +1,27 @@
 class GLOctTreeNode  {
-  constructor(gl, pcoGeometry) {
-    super(gl, pcoGeometry)
+  constructor(gl, pointCloudOctreeGeometryNode) {
 
-    this.pcoGeometry = pcoGeometry;
+    this.pointCloudOctreeGeometryNode = pointCloudOctreeGeometryNode;
     this.__glattrbuffers = {}
     this.__shaderBindings = {}
     this.destructing = new Signal()
     this.updated = new Signal()
+
+  this.genBuffers()
   }
 
   genBuffers() {
-    super.genBuffers()
 
     const gl = this.__gl
 
-    const attributeBuffers = this.pcoGeometry.attributeBuffers
+    const attributeBuffers = this.pointCloudOctreeGeometryNode.attributeBuffers
     let numVerts = 0;
     for(let key in attributeBuffers){
       const buffer = buffers[key].buffer;
       const property = parseInt(key)
 
-      const attrBuffer = gl.createBuffer()
-      gl.bindBuffer(gl.ARRAY_BUFFER, attrBuffer)
+      const glBuffer = gl.createBuffer()
+      gl.bindBuffer(gl.ARRAY_BUFFER, glBuffer)
       gl.bufferData(gl.ARRAY_BUFFER, buffer, gl.STATIC_DRAW)
 
       let attrName;
@@ -92,34 +92,35 @@ class GLOctTreeNode  {
       
 
       this.__glattrbuffers[attrName] = {
-        buffer: attrBuffer,
-        dimension: attrData.dimension,
+        buffer: glBuffer,
+        dimension,
       }
     }
 
     this.__numVerts = numVerts;
     this.__vboState = 2
-  });
+  }
 }
 
-export class GLOctree extends ZeaEngine.GLPass {
-  constructor(gl, octree){
+export class GLPotreeAsset extends ZeaEngine.GLPass {
+  constructor(gl, potreeAsset, glshader){
 
     super();
 
     this.gl = gl;
-    this.octree = octree;
-    const material = octree.material;
-    glmaterial = new ZeaEngine.GLMaterial(gl, material, glshader)
-    glmaterial.updated.connect(() => {
-      this.updated.emit();
-    })
+    this.potreeAsset = potreeAsset;
 
-    this.glpoints = [];
+    this.gloctreenodes = [];
+    if(potreeAsset.pcoGeometry.root.loaded){
+      this.gloctreenodes.push(new GLOctTreeNode(potreeAsset.pcoGeometry));
+    } else {
+      potreeAsset.pcoGeometry.root.addEventListener('loaded', e=>{
+        this.gloctreenodes.push(new GLOctTreeNode(potreeAsset.pcoGeometry.root));
+      });
+    }
 
-
-    this.octree.updated.connect(() => {
-      const visibilityTextureData = octree.computeVisibilityTextureData(octree.visibleNodes);
+    potreeAsset.visibleNodesChanged.connect(() => {
+      const visibilityTextureData = octree.computeVisibilityTextureData(potreeAsset.visibleNodes);
       
       const vnt = material.visibleNodesTexture;
       const data = vnt.image.data;
@@ -127,6 +128,12 @@ export class GLOctree extends ZeaEngine.GLPass {
       // Find the 'visibleNodes' uniform and set the texture data.
       // vnt.needsUpdate = true;
 
+      this.updated.emit();
+    })
+  
+    const material = potreeAsset.material;
+    this.glmaterial = new ZeaEngine.GLMaterial(gl, material, glshader)
+    this.glmaterial.updated.connect(() => {
       this.updated.emit();
     })
 

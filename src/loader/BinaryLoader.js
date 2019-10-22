@@ -55,7 +55,7 @@ export class BinaryLoader{
 		let pointAttributes = node.pcoGeometry.pointAttributes;
 
 		// if (this.version.upTo('1.5')) {
-		// 	let numPoints = buffer.byteLength / node.pcoGeometry.pointAttributes.byteSize;
+		// 	let numPoints = buffer.byteLength / pointAttributes.byteSize;
 		// 	node.numPoints = numPoints;
 		// }
 

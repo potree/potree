@@ -3,6 +3,63 @@ import {TextSprite} from "../../TextSprite.js";
 
 export class OrientedImages{
 
+	static createMaterial(){
+
+		let vertexShader = `
+
+		uniform float uNear;
+
+		varying vec2 vUV;
+		varying vec4 vDebug;
+		
+		void main(){
+			vDebug = vec4(0.0, 1.0, 0.0, 1.0);
+
+			vec4 modelViewPosition = modelViewMatrix * vec4(position, 1.0);
+
+			// make sure that this mesh is at least in front of the near plane
+			modelViewPosition.xyz += normalize(modelViewPosition.xyz) * uNear;
+
+			gl_Position = projectionMatrix * modelViewPosition;
+
+			vUV = uv;
+		}
+
+		`;
+
+		let fragmentShader = `
+
+		uniform sampler2D tColor;
+		uniform float uOpacity;
+
+		varying vec2 vUV;
+		varying vec4 vDebug;
+
+		void main(){
+			vec4 color = texture2D(tColor, vUV);
+			gl_FragColor = color;
+			gl_FragColor.a = uOpacity;
+		}
+
+		`;
+
+		const material = new THREE.ShaderMaterial( {
+			uniforms: {
+				// time: { value: 1.0 },
+				// resolution: { value: new THREE.Vector2() }
+				tColor: {value: new THREE.Texture() },
+				uNear: {value: 0.0},
+				uOpacity: {value: 1.0},
+			},
+			vertexShader: vertexShader,
+			fragmentShader: fragmentShader,
+			side: THREE.DoubleSide,
+		} );
+		material.side = THREE.DoubleSide;
+
+		return material;
+	}
+
 	static async loadCameraParams(path){
 		const res = await fetch(path);
 		const text = await res.text();
@@ -84,9 +141,10 @@ export class OrientedImages{
 		const orientedImages = [];
 
 		for(const params of imageParams){
-			const material = new THREE.MeshBasicMaterial({
-				side: THREE.DoubleSide,
-			});
+			// const material = new THREE.MeshBasicMaterial({
+			// 	side: THREE.DoubleSide,
+			// });
+			const material = OrientedImages.createMaterial();
 			const lm = new THREE.LineBasicMaterial( { color: 0x00ff00 } );
 			const mesh = new THREE.Mesh(sp, material);
 			mesh.position.set(params.x, params.y, params.z);
@@ -106,16 +164,14 @@ export class OrientedImages{
 				mesh.position.add(move);
 			}
 			viewer.scene.scene.add(mesh);
-			//const imagePath = `${imageParamsPath}/../pot/${params.id}_CD.jpg`;
-			//const texture = new THREE.TextureLoader().load(imagePath);
-			//material.map = texture;
-			material.opacity = 0.7;
-			material.transparent = true;
+			material.uniforms.uOpacity.value = 1.0;
+
 			const line = new THREE.Line(lg, lm);
 			line.position.copy(mesh.position);
 			line.scale.copy(mesh.scale);
 			line.rotation.copy(mesh.rotation);
 			sceneNode.add(line);
+
 			const orientedImage = {
 				mesh: mesh,
 				texture: null,
@@ -247,7 +303,8 @@ export class OrientedImages{
 					const texture = new THREE.TextureLoader().load(imagePath,
 						(texture) => {
 							loadingElement.texture = texture;
-							loadingElement.mesh.material.map = texture;
+							//loadingElement.mesh.material.map = texture;
+							loadingElement.mesh.material.uniforms.tColor.value = texture;
 							mesh.material.needsUpdate = true;
 						}
 					);
@@ -268,8 +325,10 @@ export class OrientedImages{
 				const {dimension} = image;
 				const aspect = dimension[0] / dimension[1];
 
+				const camera = viewer.scene.getActiveCamera();
+
 				const imgPos = image.mesh.getWorldPosition(new THREE.Vector3());
-				const camPos = viewer.scene.getActiveCamera().position;
+				const camPos = camera.position;
 				const d = camPos.distanceTo(imgPos);
 
 				const minSize = 1; // in degrees of fov
@@ -280,6 +339,8 @@ export class OrientedImages{
 
 				image.mesh.scale.set(r * aspect, r, 1);
 				image.line.scale.set(r * aspect, r, 1);
+
+				image.mesh.material.uniforms.uNear.value = camera.near;
 
 			}
 

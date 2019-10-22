@@ -15,6 +15,8 @@
 </head>
 
 <body>
+	<script src="../node_modules/@zeainc/zea-engine/dist/zea-engine.js"></script>
+
 	<script src="../libs/jquery/jquery-3.1.1.min.js"></script>
 	<script src="../libs/spectrum/spectrum.js"></script>
 	<script src="../libs/jquery-ui/jquery-ui.min.js"></script>
@@ -38,40 +40,82 @@
 	</div>
 	
 	<script>
-	
-		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
+
 		
-		viewer.setEDLEnabled(true);
-		viewer.setFOV(60);
-		viewer.setPointBudget(1*1000*1000);
-		viewer.loadSettingsFromURL();
-		
-		viewer.setDescription("Point cloud courtesy of <a target='_blank' href='https://www.sigeom.ch/'>sigeom sa</a>");
-		
-		viewer.loadGUI(() => {
-			viewer.setLanguage('en');
-			$("#menu_tools").next().show();
-			$("#menu_clipping").next().show();
-			viewer.toggleSidebar();
-		});
-		
-		// Load and add point cloud to scene
-		Potree.loadPointCloud("../pointclouds/vol_total/cloud.js", "sigeom.sa", e => {
-			let scene = viewer.scene;
-			let pointcloud = e.pointcloud;
+		const oldPoTree = true;
+		if (oldPoTree) {
+			window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
 			
-			let material = pointcloud.material;
-			material.size = 1;
-			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-			material.shape = Potree.PointShape.SQUARE;
 			
-			scene.addPointCloud(pointcloud);
+			viewer.setEDLEnabled(false);
+			viewer.setEDLRadius(2.4);
+			// viewer.useHQ = true
+
+			viewer.setFOV(60);
+			viewer.setPointBudget(1*1000*1000);
+			// viewer.setPointBudget(1*100*100);
+			// viewer.loadSettingsFromURL();
 			
-			//scene.view.position.set(589974.341, 231698.397, 986.146);
-			//scene.view.lookAt(new THREE.Vector3(589851.587, 231428.213, 715.634));
-			 viewer.fitToScreen();
-		});
+			viewer.setDescription("Point cloud courtesy of <a target='_blank' href='https://www.sigeom.ch/'>sigeom sa</a>");
+			
+			// viewer.loadGUI(() => {
+			// 	viewer.setLanguage('en');
+			// 	$("#menu_tools").next().show();
+			// 	$("#menu_clipping").next().show();
+			// 	viewer.toggleSidebar();
+			// });
+			
+			// Load and add point cloud to scene
+			Potree.loadPointCloud("../pointclouds/vol_total/cloud.js", "sigeom.sa", e => {
+				let scene = viewer.scene;
+				let pointcloud = e.pointcloud;
+				
+				let material = pointcloud.material;
+				material.size = 1;
+				material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+				material.shape = Potree.PointShape.SQUARE;
+				
+				scene.addPointCloud(pointcloud);
+				
+				//scene.view.position.set(589974.341, 231698.397, 986.146);
+				//scene.view.lookAt(new THREE.Vector3(589851.587, 231428.213, 715.634));
+				viewer.fitToScreen();
+			});
+		} else {
 		
+			const scene = new ZeaEngine.Scene();
+			scene.setupGrid(2500, 50);
+
+			const renderer = new ZeaEngine.GLRenderer(document.getElementById("potree_render_area"), {
+				enableTextures:false
+			});
+			const potreePass = new Potree.GLPotreePass();
+			potreePass.setEDLEnabled(true);
+			potreePass.setPointBudget(1*1000*1000);
+			// potreePass.loadSettingsFromURL(); // Parse URL ags for settings
+			renderer.addPass(potreePass, ZeaEngine.PassType.OPAQUE);
+			renderer.setScene(scene);
+			renderer.resumeDrawing();
+
+			const potreeAsset = new Potree.PotreeAsset();
+			potreeAsset.getCamera(renderer.getViewport().getCamera());
+			
+			// Load and add point cloud to scene
+			potreeAsset.loadPointCloud("../pointclouds/vol_total/cloud.js", "sigeom.sa").then(e => {
+				let material = e.pointcloud.material;
+				material.size = 1;
+				material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+				material.shape = Potree.PointShape.SQUARE;
+				
+				
+				//scene.view.position.set(589974.341, 231698.397, 986.146);
+				//scene.view.lookAt(new THREE.Vector3(589851.587, 231428.213, 715.634));
+				renderer.frameAll();
+			});
+		}
+		
+
+
 	</script>
 	
 	

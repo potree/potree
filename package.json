@@ -4,6 +4,7 @@
   "version": "0.0.1",
   "description": "WebGL point cloud viewer",
   "dependencies": {
+    "@zeainc/zea-engine": "^0.0.86",
     "gulp": "^4.0.2",
     "gulp-concat": "^2.6.1",
     "gulp-connect": "^5.7.0",

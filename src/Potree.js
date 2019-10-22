@@ -59,6 +59,8 @@ export * from "./utils/VolumeTool.js";
 
 export * from "./viewer/viewer.js";
 export * from "./viewer/Scene.js";
+export * from "./viewer/GLPotreePass.js";
+export * from "./viewer/PotreeAsset.js";
 
 export {OrbitControls} from "./navigation/OrbitControls.js";
 export {FirstPersonControls} from "./navigation/FirstPersonControls.js";

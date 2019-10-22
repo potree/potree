@@ -167,6 +167,7 @@ export class PointCloudOctree extends PointCloudTree {
 		sceneNode.position.copy(geometryNode.boundingBox.min);
 		sceneNode.frustumCulled = false;
 		sceneNode.onBeforeRender = (_this, scene, camera, geometry, material, group) => {
+			// Note: I never see this code being called.
 			if (material.program) {
 				_this.getContext().useProgram(material.program.program);
 
@@ -214,17 +215,23 @@ export class PointCloudOctree extends PointCloudTree {
 		}
 
 		if (!parent) {
+			// Whaat!!? The Root is a PointCloudOctreeGeometryNode and now is 
+			// reassigned as a PointCloudOctreeNode. This code is extremely difficult 
+			// to follow.
 			this.root = node;
 			this.add(sceneNode);
 		} else {
-			let childIndex = parseInt(geometryNode.name[geometryNode.name.length - 1]);
 			parent.sceneNode.add(sceneNode);
+			let childIndex = parseInt(geometryNode.name[geometryNode.name.length - 1]);
+			
+			// Whaat!!? The children of the parent are reassigned as well.
+			// This means that the tree is converted to PointCloudOctreeNodes
 			parent.children[childIndex] = node;
 		}
 
 		let disposeListener = function () {
-			let childIndex = parseInt(geometryNode.name[geometryNode.name.length - 1]);
 			parent.sceneNode.remove(node.sceneNode);
+			let childIndex = parseInt(geometryNode.name[geometryNode.name.length - 1]);
 			parent.children[childIndex] = geometryNode;
 		};
 		geometryNode.oneTimeDisposeHandlers.push(disposeListener);

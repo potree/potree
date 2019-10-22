@@ -22,7 +22,7 @@ export function updatePointClouds(pointclouds, camera, renderer){
 	let result = updateVisibility(pointclouds, camera, renderer);
 
 	for (let pointcloud of pointclouds) {
-		pointcloud.updateMaterial(pointcloud.material, pointcloud.visibleNodes, camera, renderer);
+		pointcloud.updateMaterial(pointcloud.material, pointcloud.visibleNodes/*never used*/, camera, renderer);
 		pointcloud.updateVisibleBounds();
 	}
 
@@ -106,8 +106,8 @@ export function updateVisibility(pointclouds, camera, renderer){
 
 	let numVisiblePointsInPointclouds = new Map(pointclouds.map(pc => [pc, 0]));
 
-	let visibleNodes = [];
-	let visibleGeometry = [];
+	let visibleNodes = []; // Never used in consuming code
+	// let visibleGeometry = [];// Populated but never used.
 	let unloadedGeometry = [];
 
 	let lowestSpacing = Infinity;
@@ -301,7 +301,7 @@ export function updateVisibility(pointclouds, camera, renderer){
 				loadedToGPUThisFrame++;
 			} else {
 				unloadedGeometry.push(node);
-				visibleGeometry.push(node);
+				// visibleGeometry.push(node);// Populated but never used.
 			}
 		}
 

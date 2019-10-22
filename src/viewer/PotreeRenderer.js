@@ -1,4 +1,5 @@
 
+// The standard basic renderer. (no edges or splats.)
 export class PotreeRenderer {
 
 	constructor (viewer) {
@@ -36,7 +37,7 @@ export class PotreeRenderer {
 		const viewer = this.viewer;
 		const camera = params.camera ? params.camera : viewer.scene.getActiveCamera();
 		const {renderer} = viewer;
-
+/*
 		viewer.dispatchEvent({type: "render.pass.begin",viewer: viewer});
 
 		//let {width, height} = renderer.getSize();
@@ -59,11 +60,12 @@ export class PotreeRenderer {
 			material.useEDL = false;
 			//material.updateShaderSource();
 		}
-		
+		*/
 		viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, null, {
 			clipSpheres: viewer.scene.volumes.filter(v => (v instanceof Potree.SphereVolume)),
 		});
 		
+		/*
 		// render scene
 		renderer.render(viewer.scene.scene, camera);
 
@@ -100,6 +102,7 @@ export class PotreeRenderer {
 		// renderer.setViewport(0, 0, renderer.domElement.clientWidth, renderer.domElement.clientHeight);
 
 		viewer.dispatchEvent({type: "render.pass.end",viewer: viewer});
+		*/
 	}
 
 }

@@ -1,5 +1,6 @@
 
 import {TextSprite} from "../../TextSprite.js";
+import {OrientedImageControls} from "./OrientedImageControls.js";
 
 export class OrientedImages{
 
@@ -49,7 +50,7 @@ export class OrientedImages{
 				// resolution: { value: new THREE.Vector2() }
 				tColor: {value: new THREE.Texture() },
 				uNear: {value: 0.0},
-				uOpacity: {value: 1.0},
+				uOpacity: {value: 0.5},
 			},
 			vertexShader: vertexShader,
 			fragmentShader: fragmentShader,
@@ -95,6 +96,7 @@ export class OrientedImages{
 		const content = await response.text();
 		const lines = content.split(/\r?\n/);
 		const imageParams = [];
+		const orientedImageControls = new OrientedImageControls(viewer);
 
 		for(let i = 1; i < lines.length; i++){
 			const line = lines[i];
@@ -193,6 +195,7 @@ export class OrientedImages{
 				hoveredElement.line.material.color.setRGB(0, 1, 0);
 			}
 			evt.preventDefault();
+
 			//var array = getMousePosition( container, evt.clientX, evt.clientY );
 			const rect = viewer.renderer.domElement.getBoundingClientRect();
 			const [x, y] = [evt.clientX, evt.clientY];
@@ -210,6 +213,7 @@ export class OrientedImages{
 			raycaster.setFromCamera( mouse, camera );
 			const intersects = raycaster.intersectObjects( objects );
 			let selectionChanged = false;
+
 			if ( intersects.length > 0){
 				//console.log(intersects);
 				const intersection = intersects[0];
@@ -220,8 +224,10 @@ export class OrientedImages{
 			}else{
 				hoveredElement = null;
 			}
+
 			let shouldRemoveClipVolume = clipVolume !== null && hoveredElement === null;
 			let shouldAddClipVolume = clipVolume === null && hoveredElement !== null;
+
 			if(clipVolume !== null && (hoveredElement === null || selectionChanged)){
 				// remove existing
 				viewer.scene.removePolygonClipVolume(clipVolume);
@@ -271,7 +277,9 @@ export class OrientedImages{
 
 		const onMouseClick = (evt) => {
 			if(hoveredElement){
-				console.log("move to " + hoveredElement.params.id);
+				console.log("move to image " + hoveredElement.params.id);
+
+				viewer.setControls(orientedImageControls);
 
 				const mesh = hoveredElement.mesh;
 				const newCamPos = new THREE.Vector3( 
@@ -281,7 +289,9 @@ export class OrientedImages{
 				);
 				const newCamTarget = mesh.position.clone();
 
-				viewer.scene.view.setView(newCamPos, newCamTarget, 500);
+				viewer.scene.view.setView(newCamPos, newCamTarget, 500, () => {
+					orientedImageControls.hijackCamera();
+				});
 
 				if(hoveredElement.texture === null){
 

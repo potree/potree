@@ -1058,14 +1058,14 @@ export class Sidebar{
 		elNavigation.append(this.createToolIcon(
 			Potree.resourcePath + '/icons/earth_controls_1.png',
 			'[title]tt.earth_control',
-			() => { this.viewer.setNavigationMode(EarthControls); }
+			() => { this.viewer.setControls(this.viewer.earthControls); }
 		));
 
 		elNavigation.append(this.createToolIcon(
 			Potree.resourcePath + '/icons/fps_controls.svg',
 			'[title]tt.flight_control',
 			() => {
-				this.viewer.setNavigationMode(FirstPersonControls);
+				this.viewer.setControls(this.viewer.firstPersonControls);
 				this.viewer.fpControls.lockElevation = false;
 			}
 		));
@@ -1074,7 +1074,7 @@ export class Sidebar{
 			Potree.resourcePath + '/icons/helicopter_controls.svg',
 			'[title]tt.heli_control',
 			() => { 
-				this.viewer.setNavigationMode(FirstPersonControls);
+				this.viewer.setControls(this.viewer.firstPersonControls);
 				this.viewer.fpControls.lockElevation = true;
 			}
 		));
@@ -1082,7 +1082,7 @@ export class Sidebar{
 		elNavigation.append(this.createToolIcon(
 			Potree.resourcePath + '/icons/orbit_controls.svg',
 			'[title]tt.orbit_control',
-			() => { this.viewer.setNavigationMode(OrbitControls); }
+			() => { this.viewer.setControls(this.viewer.orbitControls); }
 		));
 
 		elNavigation.append(this.createToolIcon(

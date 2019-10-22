@@ -1,6 +1,4 @@
 
-import {OrbitControls} from "../navigation/OrbitControls.js";
-
 export class View{
 	constructor () {
 		this.position = new THREE.Vector3(0, 0, 0);
@@ -11,8 +9,6 @@ export class View{
 
 		this.maxPitch = Math.PI / 2;
 		this.minPitch = -Math.PI / 2;
-
-		this.navigationMode = OrbitControls;
 	}
 
 	clone () {
@@ -22,7 +18,6 @@ export class View{
 		c.radius = this.radius;
 		c.maxPitch = this.maxPitch;
 		c.minPitch = this.minPitch;
-		c.navigationMode = this.navigationMode;
 
 		return c;
 	}
@@ -126,7 +121,7 @@ export class View{
 		this.position.z += z;
 	}
 
-	setView(position, target, duration = 0){
+	setView(position, target, duration = 0, callback = null){
 		
 		const startPosition = this.position.clone();
 		const startTarget = this.getPivot();
@@ -169,9 +164,9 @@ export class View{
 
 			tween.start();
 
-			//tween.onComplete(() => {
-			//	this.tweens = this.tweens.filter(e => e !== tween);
-			//});
+			tween.onComplete(() => {
+				callback();
+			});
 		}
 
 	}

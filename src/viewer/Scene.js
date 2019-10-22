@@ -24,6 +24,7 @@ export class Scene extends EventDispatcher{
 		this.cameraBG = new THREE.Camera();
 		this.cameraScreenSpace = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 10);
 		this.cameraMode = CameraMode.PERSPECTIVE;
+		this.overrideCamera = null;
 		this.pointclouds = [];
 
 		this.measurements = [];
@@ -238,6 +239,10 @@ export class Scene extends EventDispatcher{
 	}
 
 	getActiveCamera() {
+
+		if(this.overrideCamera){
+			return this.overrideCamera;
+		}
 
 		if(this.cameraMode === CameraMode.PERSPECTIVE){
 			return this.cameraP;

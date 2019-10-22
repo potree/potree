@@ -134,6 +134,7 @@ export class Viewer extends EventDispatcher{
 		this.overlayCamera = null;
 
 		this.inputHandler = null;
+		this.controls = null;
 
 		this.clippingTool =  null;
 		this.transformationTool = null;
@@ -245,7 +246,7 @@ export class Viewer extends EventDispatcher{
 			this.setPointBudget(1*1000*1000);
 			this.setShowBoundingBox(false);
 			this.setFreeze(false);
-			this.setNavigationMode(OrbitControls);
+			this.setControls(this.orbitControls);
 			this.setBackground('gradient');
 
 			this.scaleFactor = 1;
@@ -362,18 +363,21 @@ export class Viewer extends EventDispatcher{
 		}
 	};
 
-	getControls (navigationMode) {
-		if (navigationMode === OrbitControls) {
-			return this.orbitControls;
-		} else if (navigationMode === FirstPersonControls) {
-			return this.fpControls;
-		} else if (navigationMode === EarthControls) {
-			return this.earthControls;
-		} else if (navigationMode === DeviceOrientationControls) {
-			return this.deviceControls;
-		} else {
-			return null;
+	setControls(controls){
+		if (controls !== this.controls) {
+			if (this.controls) {
+				this.controls.enabled = false;
+				this.inputHandler.removeInputListener(this.controls);
+			}
+
+			this.controls = controls;
+			this.controls.enabled = true;
+			this.inputHandler.addInputListener(this.controls);
 		}
+	}
+
+	getControls () {
+		return this.controls;
 	}
 
 	getMinNodeSize () {
@@ -406,10 +410,6 @@ export class Viewer extends EventDispatcher{
 
 	setDescription (value) {
 		$('#potree_description')[0].innerHTML = value;
-	};
-
-	setNavigationMode (value) {
-		this.scene.view.navigationMode = value;
 	};
 
 	setShowBoundingBox (value) {
@@ -1644,19 +1644,7 @@ export class Viewer extends EventDispatcher{
 		
 		this.scene.cameraP.fov = this.fov;
 		
-		// Navigation mode changed?
-		if (this.getControls(scene.view.navigationMode) !== this.controls) {
-			if (this.controls) {
-				this.controls.enabled = false;
-				this.inputHandler.removeInputListener(this.controls);
-			}
-
-			this.controls = this.getControls(scene.view.navigationMode);
-			this.controls.enabled = true;
-			this.inputHandler.addInputListener(this.controls);
-		}
-		
-		if (this.getControls(scene.view.navigationMode) === this.deviceControls) {
+		if (this.getControls() === this.deviceControls) {
 			this.controls.setScene(scene);
 			this.controls.update(delta);
 

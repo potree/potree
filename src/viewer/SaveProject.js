@@ -10,6 +10,31 @@ function createPointcloudData(pointcloud) {
 	return pcdata;
 }
 
+function createProfileData(profile){
+	const data = {
+		name: profile.name,
+		points: profile.points.map(p => p.toArray()),
+		height: profile.height,
+		width: profile.width,
+	};
+
+	return data;
+}
+
+function createVolumeData(volume){
+	const data = {
+		type: volume.constructor.name,
+		name: volume.name,
+		position: volume.position.toArray(),
+		rotation: volume.rotation.toArray(),
+		scale: volume.scale.toArray(),
+		visible: volume.visible,
+		clip: volume.clip,
+	};
+
+	return data;
+}
+
 function createMeasurementData(measurement){
 	const data = {
 		name: measurement.name,
@@ -21,7 +46,6 @@ function createMeasurementData(measurement){
 		showAngles: measurement.showAngles,
 		showHeight: measurement.showHeight,
 		color: measurement.color.toArray(),
-
 	};
 
 	return data;
@@ -79,6 +103,8 @@ export function createSaveData(viewer) {
 		settings: createSettingsData(viewer),
 		pointclouds: scene.pointclouds.map(createPointcloudData),
 		measurements: scene.measurements.map(createMeasurementData),
+		volumes: scene.volumes.map(createVolumeData),
+		profiles: scene.profiles.map(createProfileData),
 		objects: createSceneContentData(viewer),
 	};
 

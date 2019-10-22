@@ -26,61 +26,69 @@ export class GeoPackageLoader{
 
 	}
 
-	static async load(file, params){
+	static async loadUrl(url, params){
+		const result = await fetch(url);
+		const buffer = await result.arrayBuffer();
 
-		const resolver = (resolve) => {
+		params = params || {};
 
-			params = params || {};
+		params.source = url;
+
+		return loadBuffer(buffer, params);
+	}
+
+	static async loadBuffer(buffer, params){
+
+		params = params || {};
+
+		const resolver = async (resolve) => {
 			
 			let transform = params.transform;
 			if(!transform){
 				transform = {forward: () => {}};
 			}
 
-			initSqlJs({ locateFile: filename => "../libs/sql.js/sql-wasm.wasm" }).then(async (SQL) => {
+			const SQL = await initSqlJs({ locateFile: filename => "../libs/sql.js/sql-wasm.wasm" });
 
-				const result = await fetch(file);
-				const array = await result.arrayBuffer();
-				const u8 = new Uint8Array(array);
+			const u8 = new Uint8Array(buffer);
 
-				const data = await geopackage.open(u8);
-				window.data = data;
+			const data = await geopackage.open(u8);
+			window.data = data;
 
-				const geopackageNode = new THREE.Object3D();
-				geopackageNode.name = file;
-				geopackageNode.potree = {
-					file: file,
-				};
+			const geopackageNode = new THREE.Object3D();
+			geopackageNode.name = params.source;
+			geopackageNode.potree = {
+				source: params.source,
+			};
 
-				const geo = {
-					node: geopackageNode,
-				};
+			const geo = {
+				node: geopackageNode,
+			};
 
-				const tables = data.getTables();
+			const tables = data.getTables();
 
-				for(const table of tables.features){
-					const dao = data.getFeatureDao(table);
-					const geoJson = data.queryForGeoJSONFeaturesInTable(table, dao.getBoundingBox());
+			for(const table of tables.features){
+				const dao = data.getFeatureDao(table);
+				const geoJson = data.queryForGeoJSONFeaturesInTable(table, dao.getBoundingBox());
 
-					const matLine = new THREE.LineMaterial( {
-						color: new THREE.Color().setRGB(...getColor(table)),
-						linewidth: 2, 
-						resolution:  new THREE.Vector2(1000, 1000),
-						dashed: false
-					} );
+				const matLine = new THREE.LineMaterial( {
+					color: new THREE.Color().setRGB(...getColor(table)),
+					linewidth: 2, 
+					resolution:  new THREE.Vector2(1000, 1000),
+					dashed: false
+				} );
 
-					const node = new THREE.Object3D();
-					node.name = table;
-					geo.node.add(node);
+				const node = new THREE.Object3D();
+				node.name = table;
+				geo.node.add(node);
 
-					for(const [index, feature] of Object.entries(geoJson)){
-						const featureNode = GeoPackageLoader.featureToSceneNode(feature, matLine, transform);
-						node.add(featureNode);
-					}
+				for(const [index, feature] of Object.entries(geoJson)){
+					const featureNode = GeoPackageLoader.featureToSceneNode(feature, matLine, transform);
+					node.add(featureNode);
 				}
+			}
 
-				resolve(geo);
-			});
+			resolve(geo);
 		}
 
 		return new Promise(resolver);

@@ -3,9 +3,31 @@ import {TextSprite} from "../../TextSprite.js";
 
 export class OrientedImages{
 
+	static async loadCameraParams(path){
+		const res = await fetch(path);
+		const text = await res.text();
+
+		const parser = new DOMParser();
+		const doc = parser.parseFromString(text, "application/xml");
+
+		const width = parseInt(doc.getElementsByTagName("width")[0].textContent);
+		const height = parseInt(doc.getElementsByTagName("height")[0].textContent);
+		const f = parseFloat(doc.getElementsByTagName("f")[0].textContent);
+
+		const params = {
+			width: width,
+			height: height,
+			f: f,
+		};
+
+		return params;
+	}
+
 	static async load(cameraParamsPath, imageParamsPath, viewer){
 
 		const tStart = performance.now();
+
+		const cameraParams = await OrientedImages.loadCameraParams(cameraParamsPath);
 
 		const response = await fetch(imageParamsPath);
 		if(!response.ok){
@@ -20,8 +42,14 @@ export class OrientedImages{
 		for(let i = 1; i < lines.length; i++){
 			const line = lines[i];
 			const tokens = line.split(/\s+/);
-			let a = (11659 / 2)  / 9523.37466178442;
+
+			if(tokens.length < 6){
+				continue;
+			}
+
+			let a = (cameraParams.height / 2)  / cameraParams.f;
 			let fov = 2 * THREE.Math.radToDeg(Math.atan(a))
+
 			const params = {
 				id: tokens[0],
 				x: Number.parseFloat(tokens[1]),
@@ -32,9 +60,7 @@ export class OrientedImages{
 				kappa: Number.parseFloat(tokens[6]),
 				fov: fov,
 			};
-			// if(!validIDs.includes(params.id)){
-			// 	continue;
-			// }
+
 			imageParams.push(params);
 		}
 
@@ -95,7 +121,7 @@ export class OrientedImages{
 				texture: null,
 				line: line,
 				params: params,
-				dimension:  [8746, 11659],
+				dimension:  [cameraParams.width, cameraParams.height],
 			};
 			mesh.orientedImage = orientedImage;
 			
@@ -149,7 +175,7 @@ export class OrientedImages{
 			if(shouldAddClipVolume || selectionChanged){
 				const img = hoveredElement;
 				const fov = img.params.fov;
-				const aspect  = 3 / 4;
+				const aspect  = cameraParams.width / cameraParams.height;
 				const near = 1.0;
 				const far = 1000 * 1000;
 				const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);

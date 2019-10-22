@@ -28,6 +28,20 @@ function loadMeasurement(viewer, data){
 
 }
 
+function loadVolume(viewer, data){
+	let volume = new Potree[data.type];
+
+	volume.name = data.name;
+	volume.position.set(...data.position);
+	volume.rotation.set(...data.rotation);
+	volume.scale.set(...data.scale);
+	volume.visible = data.visible;
+	volume.clip = data.clip;
+
+	viewer.scene.addVolume(volume);
+}
+
+
 function loadSettings(viewer, data){
 
 	viewer.setPointBudget(data.pointBudget);
@@ -53,6 +67,14 @@ export function loadSaveData(viewer, data){
 
 	for(const measure of data.measurements){
 		loadMeasurement(viewer, measure);
+	}
+
+	for(const volume of data.volumes){
+		loadVolume(viewer, volume);
+	}
+
+	for(const profile of data.profiles){
+		loadProfile(viewer, profile);
 	}
 
 }

@@ -1,8 +1,4 @@
 
-import {MeasuringTool} from "../utils/MeasuringTool.js";
-import {ProfileTool} from "../utils/ProfileTool.js";
-import {VolumeTool} from "../utils/VolumeTool.js";
-
 import {GeoJSONExporter} from "../exporter/GeoJSONExporter.js"
 import {DXFExporter} from "../exporter/DXFExporter.js"
 import {Volume, SphereVolume} from "../utils/Volume.js"
@@ -27,10 +23,9 @@ export class Sidebar{
 	constructor(viewer){
 		this.viewer = viewer;
 
-		this.measuringTool = new MeasuringTool(this.viewer);
-		this.profileTool = new ProfileTool(this.viewer);
-		this.volumeTool = new VolumeTool(this.viewer);
-
+		this.measuringTool = viewer.measuringTool;
+		this.profileTool = viewer.profileTool;
+		this.volumeTool = viewer.volumeTool;
 	}
 
 	createToolIcon(icon, title, callback){

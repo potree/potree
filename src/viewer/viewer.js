@@ -15,6 +15,10 @@ import {Features} from "../Features.js";
 import {Message} from "../utils/Message.js";
 import {Sidebar} from "./sidebar.js";
 
+import {MeasuringTool} from "../utils/MeasuringTool.js";
+import {ProfileTool} from "../utils/ProfileTool.js";
+import {VolumeTool} from "../utils/VolumeTool.js";
+
 import {InputHandler} from "../navigation/InputHandler.js";
 import {NavigationCube} from "./NavigationCube.js";
 import {OrbitControls} from "../navigation/OrbitControls.js";
@@ -144,7 +148,11 @@ export class Viewer extends EventDispatcher{
 		this.prepareVR();
 		this.initDragAndDrop();
 
-		//this.prepareVR();
+		if(typeof Stats !== "undefined"){
+			this.stats = new Stats();
+			this.stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
+			document.body.appendChild( this.stats.dom );
+		}
 
 		{
 			let canvas = this.renderer.domElement;
@@ -251,6 +259,10 @@ export class Viewer extends EventDispatcher{
 		}
 
 		this.loadGUI = this.loadGUI.bind(this);
+
+		this.measuringTool = new MeasuringTool(this);
+		this.profileTool = new ProfileTool(this);
+		this.volumeTool = new VolumeTool(this);
 
 		}catch(e){
 			this.onCrash(e);
@@ -1140,16 +1152,48 @@ export class Viewer extends EventDispatcher{
 
 				const file = item.getAsFile();
 
-				const text = await file.text();
+				const isJson = file.name.toLowerCase().endsWith(".json");
+				const isGeoPackage = file.name.toLowerCase().endsWith(".gpkg");
 
-				try{
-					const json = JSON.parse(text);
+				if(isJson){
+					try{
 
-					Potree.loadSaveData(viewer, json);
+						const text = await file.text();
+						const json = JSON.parse(text);
 
-				}catch(e){
-					console.error("failed to parse the dropped file as JSON");
-					console.error(e);
+						if(json.type === "Potree"){
+							Potree.loadSaveData(viewer, json);
+						}
+					}catch(e){
+						console.error("failed to parse the dropped file as JSON");
+						console.error(e);
+					}
+				}else if(isGeoPackage){
+					const hasPointcloud = viewer.scene.pointclouds.length > 0;
+
+					if(!hasPointcloud){
+						let msg = "At least one point cloud is needed that specifies the ";
+						msg += "coordinate reference system before loading vector data.";
+						console.error(msg);
+					}else{
+						const pointcloud = viewer.scene.pointclouds[0];
+
+						proj4.defs("WGS84", "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs");
+						proj4.defs("pointcloud", pointcloud.projection);
+						let transform = proj4("WGS84", "pointcloud");
+
+						//const file = `../examples/morro_bay_shp/gpkg/geopackage.gpkg`;
+
+						const buffer = await file.arrayBuffer();
+
+						const params = {
+							transform: transform,
+							source: file.name,
+						};
+						
+						const geo = await Potree.GeoPackageLoader.loadBuffer(buffer, params);
+						viewer.scene.scene.add(geo.node);
+					}
 				}
 				
 			}
@@ -1226,40 +1270,6 @@ export class Viewer extends EventDispatcher{
 		//}
 		
 	}
-
-	// async prepareVR(){
-
-	// 	if(!navigator.getVRDisplays){
-	// 		console.info("browser does not support WebVR");
-
-	// 		return false;
-	// 	}
-
-	// 	let frameData = new VRFrameData();
-	// 	let displays = await navigator.getVRDisplays();
-
-	// 	if(displays.length == 0){
-	// 		console.info("no VR display found");
-	// 		return false;
-	// 	}
-
-	// 	let display = displays[displays.length - 1];
-	// 	display.depthNear = 0.1;
-	// 	display.depthFar = 10000.0;
-
-	// 	if(!display.capabilities.canPresent){
-	// 		// Not sure why canPresent would ever be false?
-	// 		console.error("VR display canPresent === false");
-	// 		return false;
-	// 	}
-
-	// 	this.vr = {
-	// 		frameData: frameData,
-	// 		display: display,
-	// 		node: new THREE.Object3D(),
-	// 	};
-		
-	// }
 
 	async prepareVR(){
 
@@ -1583,13 +1593,39 @@ export class Viewer extends EventDispatcher{
 			//	}
 			//}
 
+			// const tStart = performance.now();
+			// const worldPos = new THREE.Vector3();
+			// const camPos = viewer.scene.getActiveCamera().getWorldPosition(new THREE.Vector3());
+			// let lowestDistance = Infinity;
+			// let numNodes = 0;
+
+			// viewer.scene.scene.traverse(node => {
+			// 	node.getWorldPosition(worldPos);
+
+			// 	const distance = worldPos.distanceTo(camPos);
+
+			// 	lowestDistance = Math.min(lowestDistance, distance);
+
+			// 	numNodes++;
+
+			// 	if(Number.isNaN(distance)){
+			// 		console.error(":(");
+			// 	}
+			// });
+			// const duration = (performance.now() - tStart).toFixed(2);
+
+			// Potree.debug.computeNearDuration = duration;
+			// Potree.debug.numNodes = numNodes;
+
+			//console.log(lowestDistance.toString(2), duration);
+
 			if(result.lowestSpacing !== Infinity){
 				let near = result.lowestSpacing * 10.0;
 				let far = -this.getBoundingBox().applyMatrix4(camera.matrixWorldInverse).min.z;
 
-				far = Math.max(far * 1.5, 1000);
+				far = Math.max(far * 1.5, 10000);
 				near = Math.min(100.0, Math.max(0.01, near));
-				far = Math.max(far, near + 1000);
+				far = Math.max(far, near + 10000);
 
 				if(near === Infinity){
 					near = 0.1;
@@ -2071,6 +2107,10 @@ export class Viewer extends EventDispatcher{
 
 	loop(timestamp){
 
+		if(this.stats){
+			this.stats.begin();
+		}
+
 		let queryAll;
 		if(Potree.measureTimings){
 			performance.mark("loop-start");
@@ -2108,6 +2148,10 @@ export class Viewer extends EventDispatcher{
 		this.resolveTimings(timestamp);
 
 		Potree.framenumber++;
+
+		if(this.stats){
+			this.stats.end();
+		}
 	}
 
 	postError(content, params = {}){

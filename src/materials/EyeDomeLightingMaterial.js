@@ -10,24 +10,24 @@ import {Shaders} from "../../build/shaders/shaders.js";
 // http://www.kitware.com/source/home/post/9
 // https://tel.archives-ouvertes.fr/tel-00438464/document p. 115+ (french)
 
-export class EyeDomeLightingMaterial extends THREE.ShaderMaterial{
+export class EyeDomeLightingMaterial extends THREE.RawShaderMaterial{
 
 	constructor(parameters = {}){
 		super();
 
 		let uniforms = {
-			screenWidth: 	{ type: 'f', 	value: 0 },
-			screenHeight: 	{ type: 'f', 	value: 0 },
-			edlStrength: 	{ type: 'f', 	value: 1.0 },
-			radius: 		{ type: 'f', 	value: 1.0 },
-			neighbours:		{ type: '2fv', 	value: [] },
-			depthMap: 		{ type: 't', 	value: null },
-			//colorMap: 		{ type: 't', 	value: null },
-			uRegularColor:	{ type: 't', 	value: null },
-			uRegularDepth:	{ type: 't', 	value: null },
-			uEDLColor:		{ type: 't', 	value: null },
-			uEDLDepth:		{ type: 't', 	value: null },
-			opacity:		{ type: 'f',	value: 1.0 }
+			screenWidth:    { type: 'f', 	value: 0 },
+			screenHeight:   { type: 'f', 	value: 0 },
+			edlStrength:    { type: 'f', 	value: 1.0 },
+			uNear:          { type: 'f', 	value: 1.0 },
+			uFar:           { type: 'f', 	value: 1.0 },
+			radius:         { type: 'f', 	value: 1.0 },
+			neighbours:     { type: '2fv', 	value: [] },
+			depthMap:       { type: 't', 	value: null },
+			uEDLColor:      { type: 't', 	value: null },
+			uEDLDepth:      { type: 't', 	value: null },
+			opacity:        { type: 'f',	value: 1.0 },
+			uProj:          { type: "Matrix4fv", value: [] },
 		};
 
 		this.setValues({

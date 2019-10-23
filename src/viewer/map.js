@@ -3,7 +3,7 @@
 proj4.defs('UTM10N', '+proj=utm +zone=10 +ellps=GRS80 +datum=NAD83 +units=m +no_defs');
 
 export class MapView{
-	
+
 	constructor (viewer) {
 		this.viewer = viewer;
 
@@ -84,6 +84,11 @@ export class MapView{
 	}
 
 	init () {
+
+		if(typeof ol === "undefined"){
+			return;
+		}
+
 		this.elMap = $('#potree_map');
 		this.elMap.draggable({ handle: $('#potree_map_header') });
 		this.elMap.resizable();
@@ -576,7 +581,24 @@ export class MapView{
 		}
 
 		if (!this.sceneProjection) {
-			this.setSceneProjection(pointcloud.projection);
+			try {
+				this.setSceneProjection(pointcloud.projection);
+			}catch (e) {
+				console.log('Failed projection:', e);
+
+				if (pointcloud.fallbackProjection) {
+					try {
+						console.log('Trying fallback projection...');
+						this.setSceneProjection(pointcloud.fallbackProjection);
+						console.log('Set projection from fallback');
+					}catch (e) {
+						console.log('Failed fallback projection:', e);
+						return;
+					}
+				}else{
+					return;
+				};
+			}
 		}
 
 		let mapExtent = this.getMapExtent();
@@ -597,6 +619,7 @@ export class MapView{
 			constrainResolution: false
 		});
 
+		if (pointcloud.pcoGeometry.type == 'ept') return;
 		let url = pointcloud.pcoGeometry.url + '/../sources.json';
 		$.getJSON(url, (data) => {
 			let sources = data.sources;
@@ -667,8 +690,8 @@ export class MapView{
 		if (resized) {
 			this.map.updateSize();
 		}
-		
-		// 
+
+		//
 		let camera = this.viewer.scene.getActiveCamera();
 
 		let scale = this.map.getView().getResolution();

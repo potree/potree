@@ -54,19 +54,19 @@ export class EDLRenderer{
 		//}
 	};
 
-	resize(){
+	resize(width, height){
 		const viewer = this.viewer;
 
-		let pixelRatio = viewer.renderer.getPixelRatio();
-		let {width, height} = viewer.renderer.getSize();
+		//let pixelRatio = viewer.renderer.getPixelRatio();
+		//let {width, height} = viewer.renderer.getSize();
 
 		if(this.screenshot){
 			width = this.screenshot.target.width;
 			height = this.screenshot.target.height;
 		}
 
-		this.rtEDL.setSize(width * pixelRatio , height * pixelRatio);
-		this.rtRegular.setSize(width * pixelRatio , height * pixelRatio);
+		this.rtEDL.setSize(width , height);
+		this.rtRegular.setSize(width , height);
 	}
 
 	makeScreenshot(camera, size, callback){
@@ -124,25 +124,63 @@ export class EDLRenderer{
 		};
 	}
 
-	render(){
+	clearTargets(){
+		const viewer = this.viewer;
+		const {renderer} = viewer;
+
+		renderer.clearTarget(this.rtEDL, true, true, true);
+		renderer.clearTarget(this.rtRegular, true, true, false);
+	}
+
+	clear(){
 		this.initEDL();
 		const viewer = this.viewer;
 
+		const {renderer, skybox, background, scene} = viewer;
+
+		if(background === "skybox"){
+			renderer.setClearColor(0x000000, 0);
+			renderer.clear();
+		} else if (background === 'gradient') {
+			renderer.setClearColor(0x000000, 0);
+			renderer.clear();
+		} else if (background === 'black') {
+			renderer.setClearColor(0x000000, 1);
+			renderer.clear();
+		} else if (background === 'white') {
+			renderer.setClearColor(0xFFFFFF, 1);
+			renderer.clear();
+		} else {
+			renderer.setClearColor(0x000000, 0);
+			renderer.clear();
+		}
+
+		this.clearTargets();
+	}
+
+	render(params){
+		this.initEDL();
+		const viewer = this.viewer;
+
+		const camera = params.camera ? params.camera : viewer.scene.getActiveCamera();
+
 		viewer.dispatchEvent({type: "render.pass.begin",viewer: viewer});
 
-		this.resize();
+		//let {width, height} = viewer.renderer.getSize();
+		const width = params.viewport ? params.viewport[2] : viewer.renderer.getSize().width;
+		const height = params.viewport ? params.viewport[3] : viewer.renderer.getSize().height;
+		
+		this.resize(width, height);
 
 		if(this.screenshot){
 			let oldBudget = Potree.pointBudget;
 			Potree.pointBudget = Math.max(10 * 1000 * 1000, 2 * oldBudget);
 			let result = Potree.updatePointClouds(
 				viewer.scene.pointclouds, 
-				viewer.scene.getActiveCamera(), 
+				camera, 
 				viewer.renderer);
 			Potree.pointBudget = oldBudget;
 		}
-
-		let camera = viewer.scene.getActiveCamera();
 
 		let lights = [];
 		viewer.scene.scene.traverse(node => {
@@ -151,28 +189,16 @@ export class EDLRenderer{
 			}
 		});
 
+
 		if(viewer.background === "skybox"){
-			viewer.renderer.setClearColor(0x000000, 0);
-			viewer.renderer.clear();
 			viewer.skybox.camera.rotation.copy(viewer.scene.cameraP.rotation);
 			viewer.skybox.camera.fov = viewer.scene.cameraP.fov;
 			viewer.skybox.camera.aspect = viewer.scene.cameraP.aspect;
 			viewer.skybox.camera.updateProjectionMatrix();
 			viewer.renderer.render(viewer.skybox.scene, viewer.skybox.camera);
 		} else if (viewer.background === 'gradient') {
-			viewer.renderer.setClearColor(0x000000, 0);
-			viewer.renderer.clear();
 			viewer.renderer.render(viewer.scene.sceneBG, viewer.scene.cameraBG);
-		} else if (viewer.background === 'black') {
-			viewer.renderer.setClearColor(0x000000, 1);
-			viewer.renderer.clear();
-		} else if (viewer.background === 'white') {
-			viewer.renderer.setClearColor(0xFFFFFF, 1);
-			viewer.renderer.clear();
-		} else {
-			viewer.renderer.setClearColor(0x000000, 0);
-			viewer.renderer.clear();
-		}
+		} 
 
 		// TODO adapt to multiple lights
 		if(lights.length > 0 && !(lights[0].disableShadowUpdates)){
@@ -200,15 +226,6 @@ export class EDLRenderer{
 			viewer.shadowTestCam.updateProjectionMatrix();
 
 		}
-
-		viewer.renderer.render(viewer.scene.scene, camera);
-		
-		//viewer.renderer.clearTarget( this.rtColor, true, true, true );
-		viewer.renderer.clearTarget(this.rtEDL, true, true, true);
-		viewer.renderer.clearTarget(this.rtRegular, true, true, false);
-
-		let width = viewer.renderer.getSize().width;
-		let height = viewer.renderer.getSize().height;
 
 		// COLOR & DEPTH PASS
 		for (let pointcloud of viewer.scene.pointclouds) {
@@ -240,21 +257,29 @@ export class EDLRenderer{
 			});
 		}
 
-		viewer.renderer.render(viewer.scene.scene, camera, this.rtRegular);
+		//viewer.renderer.render(viewer.scene.scene, camera, this.rtRegular);
+		viewer.renderer.render(viewer.scene.scene, camera);
 
 		//viewer.renderer.setRenderTarget(this.rtColor);
 		viewer.dispatchEvent({type: "render.pass.scene", viewer: viewer, renderTarget: this.rtRegular});
 
-		{ // EDL OCCLUSION PASS
+		{ // EDL PASS
 			this.edlMaterial.uniforms.screenWidth.value = width;
 			this.edlMaterial.uniforms.screenHeight.value = height;
 
 			//this.edlMaterial.uniforms.colorMap.value = this.rtColor.texture;
 
-			this.edlMaterial.uniforms.uRegularColor.value = this.rtRegular.texture;
+			let proj = camera.projectionMatrix;
+			let projArray = new Float32Array(16);
+			projArray.set(proj.elements);
+
+			this.edlMaterial.uniforms.uNear.value = camera.near;
+			this.edlMaterial.uniforms.uFar.value = camera.far;
+			//this.edlMaterial.uniforms.uRegularColor.value = this.rtRegular.texture;
 			this.edlMaterial.uniforms.uEDLColor.value = this.rtEDL.texture;
-			this.edlMaterial.uniforms.uRegularDepth.value = this.rtRegular.depthTexture;
+			//this.edlMaterial.uniforms.uRegularDepth.value = this.rtRegular.depthTexture;
 			this.edlMaterial.uniforms.uEDLDepth.value = this.rtEDL.depthTexture;
+			this.edlMaterial.uniforms.uProj.value = projArray;
 
 			this.edlMaterial.uniforms.edlStrength.value = viewer.edlStrength;
 			this.edlMaterial.uniforms.radius.value = viewer.edlRadius;
@@ -268,6 +293,9 @@ export class EDLRenderer{
 
 		}
 
+		//viewer.renderer.render(viewer.scene.scene, camera);
+		viewer.dispatchEvent({type: "render.pass.scene", viewer: viewer});
+
 		viewer.renderer.clearDepth();
 
 		viewer.transformationTool.update();
@@ -278,11 +306,11 @@ export class EDLRenderer{
 		viewer.renderer.render(viewer.clippingTool.sceneVolume, camera);
 		viewer.renderer.render(viewer.transformationTool.scene, camera);
 		
-		viewer.renderer.setViewport(width - viewer.navigationCube.width, 
-									height - viewer.navigationCube.width, 
-									viewer.navigationCube.width, viewer.navigationCube.width);
-		viewer.renderer.render(viewer.navigationCube, viewer.navigationCube.camera);		
-		viewer.renderer.setViewport(0, 0, width, height);
+		//viewer.renderer.setViewport(width - viewer.navigationCube.width, 
+		//							height - viewer.navigationCube.width, 
+		//							viewer.navigationCube.width, viewer.navigationCube.width);
+		//viewer.renderer.render(viewer.navigationCube, viewer.navigationCube.camera);		
+		//viewer.renderer.setViewport(0, 0, width, height);
 
 		viewer.dispatchEvent({type: "render.pass.end",viewer: viewer});
 

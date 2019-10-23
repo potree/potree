@@ -58,7 +58,6 @@ export class Sidebar{
 		this.initSettings();
 		
 		$('#potree_version_number').html(Potree.version.major + "." + Potree.version.minor + Potree.version.suffix);
-		$('.perfect_scrollbar').perfectScrollbar();
 	}
 
 		
@@ -724,7 +723,7 @@ export class Sidebar{
 
 			sldReturnNumber.slider({
 				range: true,
-				min: 1, max: 7, step: 1,
+				min: 0, max: 7, step: 1,
 				values: [0, 7],
 				slide: (event, ui) => {
 					this.viewer.setFilterReturnNumberRange(ui.values[0], ui.values[1])
@@ -749,7 +748,7 @@ export class Sidebar{
 
 			sldNumberOfReturns.slider({
 				range: true,
-				min: 1, max: 7, step: 1,
+				min: 0, max: 7, step: 1,
 				values: [0, 7],
 				slide: (event, ui) => {
 					this.viewer.setFilterNumberOfReturnsRange(ui.values[0], ui.values[1])
@@ -829,17 +828,55 @@ export class Sidebar{
 			elClassificationList.append(element);
 		};
 
-		addClassificationItem(0, 'never classified');
-		addClassificationItem(1, 'unclassified');
-		addClassificationItem(2, 'ground');
-		addClassificationItem(3, 'low vegetation');
-		addClassificationItem(4, 'medium vegetation');
-		addClassificationItem(5, 'high vegetation');
-		addClassificationItem(6, 'building');
-		addClassificationItem(7, 'low point(noise)');
-		addClassificationItem(8, 'key-point');
-		addClassificationItem(9, 'water');
-		addClassificationItem(12, 'overlap');
+		{ // toggle all button
+			const element = $(`
+				<li>
+					<label style="whitespace: nowrap">
+						<input id="toggleClassificationFilters" type="checkbox" checked/>
+						<span>show/hide all</span>
+					</label>
+				</li>
+			`);
+
+			let elInput = element.find('input');
+
+			elInput.click(event => {
+				this.viewer.toggleAllClassificationsVisibility();
+			});
+
+			elClassificationList.append(element);
+		}
+
+		for (let classID in this.viewer.classifications) {
+			addClassificationItem(classID, this.viewer.classifications[classID].name);
+		}
+
+		this.viewer.addEventListener("classification_visibility_changed", () => {
+
+			{ // set checked state of classification buttons
+				for(const classID of Object.keys(this.viewer.classifications)){
+					const classValue = this.viewer.classifications[classID];
+
+					let elItem = elClassificationList.find(`#chkClassification_${classID}`);
+					elItem.prop("checked", classValue.visible);
+				}
+			}
+
+			{ // set checked state of toggle button based on state of all other buttons
+				let numVisible = 0;
+				let numItems = 0;
+				for(const key of Object.keys(this.viewer.classifications)){
+					if(this.viewer.classifications[key].visible){
+						numVisible++;
+					}
+					numItems++;
+				}
+				const allVisible = numVisible === numItems;
+
+				let elToggle = elClassificationList.find("#toggleClassificationFilters");
+				elToggle.prop("checked", allVisible);
+			}
+		});
 	}
 
 	initAccordion(){
@@ -861,7 +898,8 @@ export class Sidebar{
 			["EN", "en"],
 			["FR", "fr"],
 			["DE", "de"],
-			["JP", "jp"]
+			["JP", "jp"],
+			["SE", "se"]
 		];
 
 		let elLanguages = $('#potree_languages');

@@ -99,6 +99,10 @@ export class PropertiesPanel{
 					</select>
 				</li>
 
+				<li id="materials_backface_container">
+				<label><input id="set_backface_culling" type="checkbox" /><span data-i18n="appearance.backface_culling"></span></label>
+				</li>
+				
 				<!-- OPACITY -->
 				<li><span data-i18n="appearance.point_opacity"></span>:<span id="lblOpacity"></span><div id="sldOpacity"></div></li>
 
@@ -133,6 +137,16 @@ export class PropertiesPanel{
 					<li>Gamma: <span id="lblRGBGamma"></span> <div id="sldRGBGamma"></div>	</li>
 					<li>Brightness: <span id="lblRGBBrightness"></span> <div id="sldRGBBrightness"></div>	</li>
 					<li>Contrast: <span id="lblRGBContrast"></span> <div id="sldRGBContrast"></div>	</li>
+				</div>
+				
+				<div id="materials.matcap_container">
+					<div class="divider">
+						<span>MATCAP</span>
+					</div>
+
+					<li>
+						<div id="matcap_scheme_selection" style="display: flex; flex-wrap: wrap;"> </div>
+					</li>
 				</div>
 
 				<div id="materials.color_container">
@@ -270,6 +284,39 @@ export class PropertiesPanel{
 			update();
 		}
 
+		{ // BACKFACE CULLING
+			
+			let opt = panel.find(`#set_backface_culling`);
+			opt.click(() => {
+				material.backfaceCulling = opt.prop("checked");
+			});
+			let update = () => {
+				let value = material.backfaceCulling;
+				opt.prop("checked", value);
+			};
+			this.addVolatileListener(material, "backface_changed", update);
+			update();
+
+			let blockBackface = $('#materials_backface_container');
+			blockBackface.css('display', 'none');
+
+			const pointAttributes = pointcloud.pcoGeometry.pointAttributes;
+			const hasNormals = pointAttributes.hasNormals ? pointAttributes.hasNormals() : false;
+			if(hasNormals) {
+				blockBackface.css('display', 'block');
+			}
+			/*
+			opt.checkboxradio({
+				clicked: (event, ui) => {
+					// let value = ui.item.value;
+					let value = ui.item.checked;
+					console.log(value);
+					material.backfaceCulling = value; // $('#set_freeze').prop("checked");
+				}
+			});
+			*/
+		}
+
 		{ // OPACITY
 			let sldOpacity = panel.find(`#sldOpacity`);
 			let lblOpacity = panel.find(`#lblOpacity`);
@@ -298,6 +345,7 @@ export class PropertiesPanel{
 				'RGB',
 				'RGB and Elevation',
 				'Color',
+				'Matcap',
 				'Elevation',
 				'Intensity',
 				'Intensity Gradient',
@@ -327,6 +375,8 @@ export class PropertiesPanel{
 				let blockIntensity = $('#materials\\.intensity_container');
 				let blockIndex = $('#materials\\.index_container');
 				let blockTransition = $('#materials\\.transition_container');
+				let blockGps = $('#materials\\.gpstime_container');
+				let blockMatcap = $('#materials\\.matcap_container');
 
 				blockIndex.css('display', 'none');
 				blockIntensity.css('display', 'none');
@@ -335,6 +385,8 @@ export class PropertiesPanel{
 				blockColor.css('display', 'none');
 				blockWeights.css('display', 'none');
 				blockTransition.css('display', 'none');
+				blockMatcap.css('display', 'none');
+				blockGps.css('display', 'none');
 
 				if (selectedValue === 'Composite') {
 					blockWeights.css('display', 'block');
@@ -356,6 +408,8 @@ export class PropertiesPanel{
 					blockIntensity.css('display', 'block');
 				} else if (selectedValue === "Index" ){
 					blockIndex.css('display', 'block');
+				} else if (selectedValue === "Matcap" ){
+					blockMatcap.css('display', 'block');
 				}
 			};
 
@@ -402,6 +456,51 @@ export class PropertiesPanel{
 			//panel.find("#gradient_yellow_green").click( () => {
 			//	pointcloud.material.gradient = Potree.Gradients.YELLOW_GREEN;
 			//});
+		}
+
+		{
+			let matcaps = [
+				{name: "Normals", icon: `${Potree.resourcePath}/icons/matcap/check_normal+y.jpg`}, 
+				{name: "Basic 1", icon: `${Potree.resourcePath}/icons/matcap/basic_1.jpg`}, 
+				{name: "Basic 2", icon: `${Potree.resourcePath}/icons/matcap/basic_2.jpg`}, 
+				{name: "Basic Dark", icon: `${Potree.resourcePath}/icons/matcap/basic_dark.jpg`}, 
+				{name: "Basic Side", icon: `${Potree.resourcePath}/icons/matcap/basic_side.jpg`}, 
+				{name: "Ceramic Dark", icon: `${Potree.resourcePath}/icons/matcap/ceramic_dark.jpg`}, 
+				{name: "Ceramic Lightbulb", icon: `${Potree.resourcePath}/icons/matcap/ceramic_lightbulb.jpg`}, 
+				{name: "Clay Brown", icon: `${Potree.resourcePath}/icons/matcap/clay_brown.jpg`}, 
+				{name: "Clay Muddy", icon: `${Potree.resourcePath}/icons/matcap/clay_muddy.jpg`}, 
+				{name: "Clay Studio", icon: `${Potree.resourcePath}/icons/matcap/clay_studio.jpg`}, 
+				{name: "Resin", icon: `${Potree.resourcePath}/icons/matcap/resin.jpg`}, 
+				{name: "Skin", icon: `${Potree.resourcePath}/icons/matcap/skin.jpg`}, 
+				{name: "Jade", icon: `${Potree.resourcePath}/icons/matcap/jade.jpg`}, 
+				{name: "Metal_ Anisotropic", icon: `${Potree.resourcePath}/icons/matcap/metal_anisotropic.jpg`}, 
+				{name: "Metal Carpaint", icon: `${Potree.resourcePath}/icons/matcap/metal_carpaint.jpg`}, 
+				{name: "Metal Lead", icon: `${Potree.resourcePath}/icons/matcap/metal_lead.jpg`}, 
+				{name: "Metal Shiny", icon: `${Potree.resourcePath}/icons/matcap/metal_shiny.jpg`}, 
+				{name: "Pearl", icon: `${Potree.resourcePath}/icons/matcap/pearl.jpg`}, 
+				{name: "Toon", icon: `${Potree.resourcePath}/icons/matcap/toon.jpg`},
+				{name: "Check Rim Light", icon: `${Potree.resourcePath}/icons/matcap/check_rim_light.jpg`}, 
+				{name: "Check Rim Dark", icon: `${Potree.resourcePath}/icons/matcap/check_rim_dark.jpg`}, 
+				{name: "Contours 1", icon: `${Potree.resourcePath}/icons/matcap/contours_1.jpg`}, 
+				{name: "Contours 2", icon: `${Potree.resourcePath}/icons/matcap/contours_2.jpg`}, 
+				{name: "Contours 3", icon: `${Potree.resourcePath}/icons/matcap/contours_3.jpg`}, 
+				{name: "Reflection Check Horizontal", icon: `${Potree.resourcePath}/icons/matcap/reflection_check_horizontal.jpg`}, 
+				{name: "Reflection Check Vertical", icon: `${Potree.resourcePath}/icons/matcap/reflection_check_vertical.jpg`}, 
+			];
+
+			let elMatcapContainer = panel.find("#matcap_scheme_selection");
+
+			for(let matcap of matcaps){
+				let elMatcap = $(`
+						<img src="${matcap.icon}" class="button-icon" style="width: 25%;" />
+				`);
+
+				elMatcap.click( () => {
+					material.matcap = matcap.icon.substring(matcap.icon.lastIndexOf('/'));
+				});
+
+				elMatcapContainer.append(elMatcap);
+			}
 		}
 
 		{
@@ -536,7 +635,7 @@ export class PropertiesPanel{
 				let range = material.elevationRange;
 
 				panel.find('#lblHeightRange').html(`${range[0].toFixed(2)} to ${range[1].toFixed(2)}`);
-				panel.find('#sldHeightRang').slider({min: bMin, max: bMax, values: range});
+				panel.find('#sldHeightRange').slider({min: bMin, max: bMax, values: range});
 			};
 
 			let updateIntensityRange = function () {

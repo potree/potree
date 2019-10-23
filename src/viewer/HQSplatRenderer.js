@@ -78,25 +78,29 @@ export class HQSplatRenderer{
 		this.rtAttribute.setSize(width * pixelRatio , height * pixelRatio);
 	}
 
+	clear(){
+
+	}
+
 	render () {
 		this.init();
 		const viewer = this.viewer;
+		const {renderer, scene} = viewer;
 
 		viewer.dispatchEvent({type: "render.pass.begin",viewer: viewer});
 
 		this.resize();
 
-		let camera = viewer.scene.getActiveCamera();
+		let camera = scene.getActiveCamera();
 		
-		viewer.renderer.setClearColor(0x000000, 0);
-		viewer.renderer.clearTarget( this.rtDepth, true, true, true );
-		viewer.renderer.clearTarget( this.rtAttribute, true, true, true );
+		renderer.setClearColor(0x000000, 0);
+		renderer.clearTarget( this.rtDepth, true, true, true );
+		renderer.clearTarget( this.rtAttribute, true, true, true );
 
-		let width = viewer.renderer.getSize().width;
-		let height = viewer.renderer.getSize().height;
+		const {width, height} = renderer.getSize();
 
-		let visiblePointClouds = viewer.scene.pointclouds.filter(pc => pc.visible);
-		let originalMaterials = new Map();
+		const visiblePointClouds = viewer.scene.pointclouds.filter(pc => pc.visible);
+		const originalMaterials = new Map();
 
 		for(let pointcloud of visiblePointClouds){
 			originalMaterials.set(pointcloud, pointcloud.material);
@@ -155,7 +159,6 @@ export class HQSplatRenderer{
 			
 			viewer.pRenderer.render(viewer.scene.scenePointCloud, camera, this.rtDepth, {
 				clipSpheres: viewer.scene.volumes.filter(v => (v instanceof SphereVolume)),
-				//material: this.depthMaterial
 			});
 		}
 
@@ -188,6 +191,7 @@ export class HQSplatRenderer{
 
 				attributeMaterial.elevationRange = material.elevationRange;
 				attributeMaterial.gradient = material.gradient;
+				attributeMaterial.matcap = material.matcap;
 
 				attributeMaterial.intensityRange = material.intensityRange;
 				attributeMaterial.intensityGamma = material.intensityGamma;

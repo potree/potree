@@ -15,6 +15,7 @@ attribute float pointSourceID;
 attribute vec4 indices;
 attribute float spacing;
 attribute float gpsTime;
+attribute vec3 normal;
 
 uniform mat4 modelMatrix;
 uniform mat4 modelViewMatrix;
@@ -104,6 +105,11 @@ uniform vec3 uShadowColor;
 uniform sampler2D visibleNodes;
 uniform sampler2D gradient;
 uniform sampler2D classificationLUT;
+
+#if defined(color_type_matcap)
+uniform sampler2D matcapTextureUniform;
+#endif
+uniform bool backfaceCulling;
 
 #if defined(num_shadowmaps) && num_shadowmaps > 0
 uniform sampler2D uShadowMap[num_shadowmaps];
@@ -207,7 +213,7 @@ float getLOD(){
 	int iOffset = int(uVNStart);
 	float depth = uLevel;
 	for(float i = 0.0; i <= 30.0; i++){
-		float nodeSizeAtLevel = uOctreeSize  / pow(2.0, i + uLevel + 0.0);
+		float nodeSizeAtLevel = uOctreeSize / pow(2.0, i + uLevel + 0.0);
 		
 		vec3 index3d = (position-offset) / nodeSizeAtLevel;
 		index3d = floor(index3d + 0.5);
@@ -244,7 +250,7 @@ float getSpacing(){
 	float depth = uLevel;
 	float spacing = uNodeSpacing;
 	for(float i = 0.0; i <= 30.0; i++){
-		float nodeSizeAtLevel = uOctreeSize  / pow(2.0, i + uLevel + 0.0);
+		float nodeSizeAtLevel = uOctreeSize / pow(2.0, i + uLevel + 0.0);
 		
 		vec3 index3d = (position-offset) / nodeSizeAtLevel;
 		index3d = floor(index3d + 0.5);
@@ -465,7 +471,7 @@ vec3 getCompositeColor(){
 	w += wSourceID;
 	
 	vec4 cl = wClassification * getClassification();
-    c += cl.a * cl.rgb;
+	c += cl.a * cl.rgb;
 	w += wClassification * cl.a;
 
 	c = c / w;
@@ -478,6 +484,37 @@ vec3 getCompositeColor(){
 	return c;
 }
 
+
+vec3 getNormal(){
+	//vec3 n_hsv = vec3( modelMatrix * vec4( normal, 0.0 )) * 0.5 + 0.5; // (n_world.xyz + vec3(1.,1.,1.)) / 2.;
+	vec3 n_view = normalize( vec3(modelViewMatrix * vec4( normal, 0.0 )) );
+	return n_view;
+}
+bool applyBackfaceCulling() {
+	// Black not facing vertices / Backface culling
+	vec3 e = normalize(vec3(modelViewMatrix * vec4( position, 1. )));
+	vec3 n = getNormal(); // normalize( vec3(modelViewMatrix * vec4( normal, 0.0 )) );
+
+	if((uUseOrthographicCamera && n.z <= 0.) || (!uUseOrthographicCamera && dot( n, e ) >= 0.)) { 
+		return true;
+	} else {
+		return false;
+	}
+}
+
+#if defined(color_type_matcap)
+// Matcap Material
+vec3 getMatcap(){ 
+	vec3 eye = normalize( vec3( modelViewMatrix * vec4( position, 1. ) ) ); 
+	if(uUseOrthographicCamera) { 
+		eye = vec3(0., 0., -1.);
+	}
+	vec3 r_en = reflect( eye, getNormal() ); // or r_en = e - 2. * dot( n, e ) * n;
+	float m = 2. * sqrt(pow( r_en.x, 2. ) + pow( r_en.y, 2. ) + pow( r_en.z + 1., 2. ));
+	vec2 vN = r_en.xy / m + .5;
+	return texture2D(matcapTextureUniform, vN).rgb; 
+}
+#endif
 
 // 
 //  ######  ##       #### ########  ########  #### ##    ##  ######   
@@ -535,8 +572,14 @@ vec3 getColor(){
 		color = color;
 	#elif defined color_type_composite
 		color = getCompositeColor();
+	#elif defined color_type_matcap
+		color = getMatcap();
 	#endif
 	
+	if (backfaceCulling && applyBackfaceCulling()) {
+		color = vec3(0.);
+	}
+
 	return color;
 }
 
@@ -622,14 +665,14 @@ bool pointInClipPolygon(vec3 point, int polyIdx) {
 
 void doClipping(){
 
-	#if !defined color_type_composite
+	{
 		vec4 cl = getClassification(); 
 		if(cl.a == 0.0){
 			gl_Position = vec4(100.0, 100.0, 100.0, 0.0);
 			
 			return;
 		}
-	#endif
+	}
 
 	#if defined(clip_return_number_enabled)
 	{ // return number filter

@@ -51,7 +51,7 @@ function readUsingTempArrays(event) {
 	let tempInt32 = new Int32Array(temp);
 	let sourceUint8 = new Uint8Array(buffer);
 	let sourceView = new DataView(buffer);
-	
+
 	let targetPointSize = 20;
 	let targetBuffer = new ArrayBuffer(numPoints * targetPointSize);
 	let targetView = new DataView(targetBuffer);
@@ -78,7 +78,7 @@ function readUsingTempArrays(event) {
 	let returnNumbers = new Uint8Array(rnBuff);
 	let numberOfReturns = new Uint8Array(nrBuff);
 	let pointSourceIDs = new Uint16Array(psBuff);
-	
+
 	for (let i = 0; i < numPoints; i++) {
 		// POSITION
 		tempUint8[0] = sourceUint8[i * sourcePointSize + 0];
@@ -86,19 +86,19 @@ function readUsingTempArrays(event) {
 		tempUint8[2] = sourceUint8[i * sourcePointSize + 2];
 		tempUint8[3] = sourceUint8[i * sourcePointSize + 3];
 		let x = tempInt32[0];
-		
+
 		tempUint8[0] = sourceUint8[i * sourcePointSize + 4];
 		tempUint8[1] = sourceUint8[i * sourcePointSize + 5];
 		tempUint8[2] = sourceUint8[i * sourcePointSize + 6];
 		tempUint8[3] = sourceUint8[i * sourcePointSize + 7];
 		let y = tempInt32[0];
-		
+
 		tempUint8[0] = sourceUint8[i * sourcePointSize + 8];
 		tempUint8[1] = sourceUint8[i * sourcePointSize + 9];
 		tempUint8[2] = sourceUint8[i * sourcePointSize + 10];
 		tempUint8[3] = sourceUint8[i * sourcePointSize + 11];
 		let z = tempInt32[0];
-		
+
 		x = x * scale[0] + offset[0] - event.data.mins[0];
 		y = y * scale[1] + offset[1] - event.data.mins[1];
 		z = z * scale[2] + offset[2] - event.data.mins[2];
@@ -184,7 +184,7 @@ function readUsingTempArrays(event) {
 
 	performance.clearMarks();
 	performance.clearMeasures();
-	
+
 	let message = {
 		mean: mean,
 		position: pBuff,
@@ -227,14 +227,14 @@ function readUsingDataView(event) {
 
 	let sourceUint8 = new Uint8Array(buffer);
 	let sourceView = new DataView(buffer);
-	
+
 	let targetPointSize = 40;
 	let targetBuffer = new ArrayBuffer(numPoints * targetPointSize);
 	let targetView = new DataView(targetBuffer);
 
 	let tightBoundingBox = {
-		min: [ Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY ],
-		max: [ Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY ]
+		min: [Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE],
+		max: [-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE]
 	};
 
 	let mean = [0, 0, 0];
@@ -254,7 +254,7 @@ function readUsingDataView(event) {
 	let returnNumbers = new Uint8Array(rnBuff);
 	let numberOfReturns = new Uint8Array(nrBuff);
 	let pointSourceIDs = new Uint16Array(psBuff);
-	
+
 	for (let i = 0; i < numPoints; i++) {
 		// POSITION
 		let ux = sourceView.getInt32(i * sourcePointSize + 0, true);
@@ -306,7 +306,7 @@ function readUsingDataView(event) {
 		pointSourceIDs[i] = pointSourceID;
 
 		// COLOR, if available
-		if (pointFormatID === 2) {			
+		if (pointFormatID === 2) {
 			let r = sourceView.getUint16(i * sourcePointSize + 20, true) / 256;
 			let g = sourceView.getUint16(i * sourcePointSize + 22, true) / 256;
 			let b = sourceView.getUint16(i * sourcePointSize + 24, true) / 256;

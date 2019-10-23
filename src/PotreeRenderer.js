@@ -502,7 +502,7 @@ class WebGLTexture {
 			gl.texImage2D(this.target, level, internalFormat,
 				width, height, border, srcFormat, srcType,
 				data);
-		} else if (texture instanceof THREE.CanvasTexture) {
+		} else if ((texture instanceof THREE.CanvasTexture) || (texture instanceof THREE.Texture)) {
 			data = texture.image;
 
 			gl.texParameteri(this.target, gl.TEXTURE_WRAP_S, paramThreeToGL(gl, texture.wrapS));
@@ -513,6 +513,8 @@ class WebGLTexture {
 
 			gl.texImage2D(this.target, level, internalFormat,
 				internalFormat, srcType, data);
+
+			if (texture instanceof THREE.Texture) {gl.generateMipmap(gl.TEXTURE_2D);}
 		}
 
 		gl.bindTexture(this.target, null);
@@ -658,6 +660,8 @@ export class Renderer {
 
 
 	renderNodes(octree, nodes, visibilityTextureData, camera, target, shader, params) {
+
+		//console.log(`renderNodes: ${nodes.length}`);
 
 		if (exports.measureTimings) performance.mark("renderNodes-start");
 
@@ -1156,26 +1160,26 @@ export class Renderer {
 				//gl.uniformMatrix4fv(lClipSpheres, false, material.uniforms.clipSpheres.value);
 			}
 
-			if(Potree.Features.WEBGL2.isSupported()){
-				let buffer = new ArrayBuffer(12);
-				let bufferf32 = new Float32Array(buffer);
-				bufferf32[0] = material.size;
-				bufferf32[1] = material.uniforms.minSize.value;
-				bufferf32[2] = material.uniforms.maxSize.value;
+			//if(Potree.Features.WEBGL2.isSupported()){
+			//	let buffer = new ArrayBuffer(12);
+			//	let bufferf32 = new Float32Array(buffer);
+			//	bufferf32[0] = material.size;
+			//	bufferf32[1] = material.uniforms.minSize.value;
+			//	bufferf32[2] = material.uniforms.maxSize.value;
 
-				let block = shader.uniformBlocks["ubo_point"];
+			//	let block = shader.uniformBlocks["ubo_point"];
 
-				gl.bindBufferBase(gl.UNIFORM_BUFFER, 0, block.buffer);
+			//	gl.bindBufferBase(gl.UNIFORM_BUFFER, 0, block.buffer);
 
-				gl.bindBuffer(gl.UNIFORM_BUFFER, block.buffer);
-				gl.bufferSubData(gl.UNIFORM_BUFFER, 0, buffer);
-				gl.bindBuffer(gl.UNIFORM_BUFFER, null);
-				
-			}else{
+			//	gl.bindBuffer(gl.UNIFORM_BUFFER, block.buffer);
+			//	gl.bufferSubData(gl.UNIFORM_BUFFER, 0, buffer);
+			//	gl.bindBuffer(gl.UNIFORM_BUFFER, null);
+			//	
+			//}else{
 				shader.setUniform1f("size", material.size);
 				shader.setUniform1f("maxSize", material.uniforms.maxSize.value);
 				shader.setUniform1f("minSize", material.uniforms.minSize.value);
-			}
+			//}
 
 
 
@@ -1210,6 +1214,8 @@ export class Renderer {
 			shader.setUniform1f("wReturnNumber", material.weightReturnNumber);
 			shader.setUniform1f("wSourceID", material.weightSourceID);
 
+			shader.setUniform("backfaceCulling", material.uniforms.backfaceCulling.value);
+
 			let vnWebGLTexture = this.textures.get(material.visibleNodesTexture);
 			shader.setUniform1i("visibleNodesTexture", currentTextureBindingPoint);
 			gl.activeTexture(gl.TEXTURE0 + currentTextureBindingPoint);
@@ -1226,6 +1232,12 @@ export class Renderer {
 			shader.setUniform1i("classificationLUT", currentTextureBindingPoint);
 			gl.activeTexture(gl.TEXTURE0 + currentTextureBindingPoint);
 			gl.bindTexture(classificationTexture.target, classificationTexture.id);
+			currentTextureBindingPoint++;
+
+			let matcapTexture = this.textures.get(material.matcapTexture);
+			shader.setUniform1i("matcapTextureUniform", currentTextureBindingPoint);
+			gl.activeTexture(gl.TEXTURE0 + currentTextureBindingPoint);
+			gl.bindTexture(matcapTexture.target, matcapTexture.id);
 			currentTextureBindingPoint++;
 
 

@@ -279,7 +279,7 @@ export class OrientedImages{
 			if(hoveredElement){
 				console.log("move to image " + hoveredElement.params.id);
 
-				viewer.setControls(orientedImageControls);
+				//viewer.setControls(orientedImageControls);
 
 				const mesh = hoveredElement.mesh;
 				const newCamPos = new THREE.Vector3( 
@@ -307,7 +307,7 @@ export class OrientedImages{
 					hoveredElement.mesh.material.map = tmp.texture;
 					mesh.material.needsUpdate = true;
 
-					const imagePath = `${imageParamsPath}/../pot/${hoveredElement.params.id}_CD.jpg`;
+					const imagePath = `${imageParamsPath}/../${hoveredElement.params.id}_CD.jpg`;
 
 					var loadingElement = hoveredElement;
 					const texture = new THREE.TextureLoader().load(imagePath,

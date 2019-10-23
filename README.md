@@ -2,6 +2,7 @@
 # README
 
 * [Getting Started](./docs/getting_started.md)
+* [入门](./docs/getting_started_zh.md)
 
 ## About
 

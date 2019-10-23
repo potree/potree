@@ -51,6 +51,77 @@ function createMeasurementData(measurement){
 	return data;
 }
 
+function createAnnotationData(annotation){
+	const data = {
+		title: annotation.title,
+		description: annotation.description,
+		position: annotation.position.toArray(),
+		offset: annotation.offset.toArray(),
+	};
+
+	if(annotation.cameraPosition){
+		data.cameraPosition = annotation.cameraPosition.toArray();
+	}
+
+	if(annotation.cameraTarget){
+		annotation.cameraTarget = annotation.cameraTarget.toArray();
+	}
+
+	if(typeof annotation.radius !== "undefined"){
+		annotation.radius = annotation.radius;
+	}
+
+	return data;
+}
+
+function createAnnotationsData(viewer){
+	
+	const annotations = [];
+	const annMap = new Map();
+
+	viewer.scene.annotations.traverseDescendants(a => {
+		annotations.push(a);
+
+		annMap.set(a, annMap.size);
+	});
+
+	const root = {};
+	const stack = [
+		{
+			from: viewer.scene.annotations,
+			to: root,
+		}
+	];
+
+	const hierarchy = {}
+	const mapping = new Map();
+	mapping.set(viewer.scene.annotations, hierarchy);
+
+	while(stack.length > 0){
+		const entry = stack.shift();
+
+		for (let child of entry.from.children) {
+			let id = annMap.get(child);
+			entry.to[id] = {
+				from: child,
+				to: {},
+			};
+
+			const node = {};
+			mapping.set(child, node);
+			mapping.get(entry.from)[id] = node;
+
+			stack.push(entry.to[id]);
+		}
+	}
+
+
+	return {
+		items: annotations.map(createAnnotationData),
+		hierarchy: hierarchy,
+	};
+}
+
 function createSettingsData(viewer){
 	return {
 		pointBudget: viewer.getPointBudget(),
@@ -105,6 +176,7 @@ export function createSaveData(viewer) {
 		measurements: scene.measurements.map(createMeasurementData),
 		volumes: scene.volumes.map(createVolumeData),
 		profiles: scene.profiles.map(createProfileData),
+		annotations: createAnnotationsData(viewer),
 		objects: createSceneContentData(viewer),
 	};
 

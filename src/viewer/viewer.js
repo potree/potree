@@ -15,6 +15,7 @@ import {Features} from "../Features.js";
 import {Message} from "../utils/Message.js";
 import {Sidebar} from "./sidebar.js";
 
+import {AnnotationTool} from "../utils/AnnotationTool.js";
 import {MeasuringTool} from "../utils/MeasuringTool.js";
 import {ProfileTool} from "../utils/ProfileTool.js";
 import {VolumeTool} from "../utils/VolumeTool.js";
@@ -261,6 +262,7 @@ export class Viewer extends EventDispatcher{
 
 		this.loadGUI = this.loadGUI.bind(this);
 
+		this.annotationTool = new AnnotationTool(this);
 		this.measuringTool = new MeasuringTool(this);
 		this.profileTool = new ProfileTool(this);
 		this.volumeTool = new VolumeTool(this);
@@ -1352,7 +1354,7 @@ export class Viewer extends EventDispatcher{
 				// SCREEN POS
 				screenPos.copy(position).project(this.scene.getActiveCamera());
 				screenPos.x = renderAreaSize.x * (screenPos.x + 1) / 2;
-				screenPos.y = renderAreaSize.z * (1 - (screenPos.y + 1) / 2);
+				screenPos.y = renderAreaSize.y * (1 - (screenPos.y + 1) / 2);
 
 
 				// SCREEN SIZE

@@ -41,7 +41,6 @@ function loadVolume(viewer, data){
 	viewer.scene.addVolume(volume);
 }
 
-
 function loadSettings(viewer, data){
 
 	viewer.setPointBudget(data.pointBudget);

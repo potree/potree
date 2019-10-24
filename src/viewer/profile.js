@@ -5,6 +5,7 @@ import {Points} from "../Points.js";
 import {CSVExporter} from "../exporter/CSVExporter.js";
 import {LASExporter} from "../exporter/LASExporter.js";
 import { EventDispatcher } from "../EventDispatcher.js";
+import { EILSEQ } from "constants";
 
 class ProfilePointCloudEntry{
 
@@ -209,6 +210,11 @@ export class ProfileWindow extends EventDispatcher {
 		this.autoFitEnabled = true; // completely disable/enable
 		this.autoFit = false; // internal
 
+		let cwIcon = `${exports.resourcePath}/icons/arrow_cw.svg`;
+		$('#potree_profile_rotate_cw').attr('src', cwIcon);
+
+		let ccwIcon = `${exports.resourcePath}/icons/arrow_ccw.svg`;
+		$('#potree_profile_rotate_ccw').attr('src', ccwIcon);
 		
 		let forwardIcon = `${exports.resourcePath}/icons/arrow_up.svg`;
 		$('#potree_profile_move_forward').attr('src', forwardIcon);
@@ -852,6 +858,8 @@ export class ProfileWindowController {
 		this.profile = null;
 		this.numPoints = 0;
 		this.threshold = 60 * 1000;
+		this.rotateAmount = 10;
+
 		this.scheduledRecomputeTime = null;
 
 		this.enabled = true;
@@ -865,6 +873,74 @@ export class ProfileWindowController {
 			e.scene.addEventListener("pointcloud_added", this._recompute);
 		});
 		this.viewer.scene.addEventListener("pointcloud_added", this._recompute);
+
+		$("#potree_profile_rotate_amount").val(parseInt(this.rotateAmount));
+		$("#potree_profile_rotate_amount").on("input", (e) => {
+			const str = $("#potree_profile_rotate_amount").val();
+
+			if(!isNaN(str)){
+				const value = parseFloat(str);
+				this.rotateAmount = value;
+				$("#potree_profile_rotate_amount").css("background-color", "")
+			}else{
+				$("#potree_profile_rotate_amount").css("background-color", "#ff9999")
+			}
+
+		});
+
+		const rotate = (radians) => {
+			const profile = this.profile;
+			const points = profile.points;
+			const start = points[0];
+			const end = points[points.length - 1];
+			const center = start.clone().add(end).multiplyScalar(0.5);
+
+			const mMoveOrigin = new THREE.Matrix4().makeTranslation(-center.x, -center.y, -center.z);
+			const mRotate = new THREE.Matrix4().makeRotationZ(radians);
+			const mMoveBack = new THREE.Matrix4().makeTranslation(center.x, center.y, center.z);
+			//const transform = mMoveOrigin.multiply(mRotate).multiply(mMoveBack);
+			const transform = mMoveBack.multiply(mRotate).multiply(mMoveOrigin);
+
+			const rotatedPoints = points.map( point => point.clone().applyMatrix4(transform) );
+
+			this.profileWindow.autoFitEnabled = false;
+
+			for(let i = 0; i < points.length; i++){
+				profile.setPosition(i, rotatedPoints[i]);
+			}
+		}
+
+		$("#potree_profile_rotate_cw").click( () => {
+			const radians = THREE.Math.degToRad(this.rotateAmount);
+			rotate(-radians);
+		});
+
+		$("#potree_profile_rotate_ccw").click( () => {
+			const radians = THREE.Math.degToRad(this.rotateAmount);
+			rotate(radians);
+
+			// const profile = this.profile;
+			// const points = profile.points;
+			// const start = points[0];
+			// const end = points[points.length - 1];
+			// const center = start.clone().add(end).multiplyScalar(0.5);
+
+			// const radians = THREE.Math.degToRad(this.rotateAmount);
+
+			// const mMoveOrigin = new THREE.Matrix4().makeTranslation(-center.x, -center.y, -center.z);
+			// const mRotate = new THREE.Matrix4().makeRotationZ(radians);
+			// const mMoveBack = new THREE.Matrix4().makeTranslation(center.x, center.y, center.z);
+			// //const transform = mMoveOrigin.multiply(mRotate).multiply(mMoveBack);
+			// const transform = mMoveBack.multiply(mRotate).multiply(mMoveOrigin);
+
+			// const rotatedPoints = points.map( point => point.clone().applyMatrix4(transform) );
+
+			// this.profileWindow.autoFitEnabled = false;
+
+			// for(let i = 0; i < points.length; i++){
+			// 	profile.setPosition(i, rotatedPoints[i]);
+			// }
+		});
 
 		$("#potree_profile_move_forward").click( () => {
 			const profile = this.profile;

@@ -21,6 +21,7 @@
 		"area_measurement": "Area measurement",
 		"volume_measurement": "Volume measurement",
 		"height_profile": "Height profile",
+		"annotation": "Annotation",
 		"clip_volume": "Volume clip",
 		"clip_polygon": "Polygon clip",
 		"screen_clip_box": "Draw a selection box. Requires you to be in orthographic camera mode!",

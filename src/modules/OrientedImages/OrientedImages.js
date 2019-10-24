@@ -276,10 +276,13 @@ export class OrientedImages{
 		};
 
 		const onMouseClick = (evt) => {
+
+			if(orientedImageControls.hasSomethingCaptured()){
+				return;
+			}
+
 			if(hoveredElement){
 				console.log("move to image " + hoveredElement.params.id);
-
-				//viewer.setControls(orientedImageControls);
 
 				const mesh = hoveredElement.mesh;
 				const newCamPos = new THREE.Vector3( 
@@ -290,7 +293,7 @@ export class OrientedImages{
 				const newCamTarget = mesh.position.clone();
 
 				viewer.scene.view.setView(newCamPos, newCamTarget, 500, () => {
-					orientedImageControls.hijackCamera();
+					orientedImageControls.capture(hoveredElement.params);
 				});
 
 				if(hoveredElement.texture === null){

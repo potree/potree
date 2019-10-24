@@ -12,10 +12,6 @@ import {CameraMode, ClipTask, ClipMethod} from "../defines.js"
 import {ScreenBoxSelectTool} from "../utils/ScreenBoxSelectTool.js"
 import {Utils} from "../utils.js"
 
-import {EarthControls} from "../navigation/EarthControls.js"
-import {FirstPersonControls} from "../navigation/FirstPersonControls.js"
-import {OrbitControls} from "../navigation/OrbitControls.js"
-
 import {ZoomableSlider} from "./ZoomableSlider.js"
 
 export class Sidebar{
@@ -200,6 +196,21 @@ export class Sidebar{
 
 				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
 				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === profile.uuid);
+				$.jstree.reference(jsonNode.id).deselect_all();
+				$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
+			}
+		));
+
+		// ANNOTATION
+		elToolbar.append(this.createToolIcon(
+			Potree.resourcePath + '/icons/annotation.svg',
+			'[title]tt.annotation',
+			() => {
+				$('#menu_measurements').next().slideDown(); ;
+				let annotation = this.viewer.annotationTool.startInsertion();
+
+				let annotationsRoot = $("#jstree_scene").jstree().get_json("annotations");
+				let jsonNode = annotationsRoot.children.find(child => child.data.uuid === annotation.uuid);
 				$.jstree.reference(jsonNode.id).deselect_all();
 				$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
 			}
@@ -515,8 +526,15 @@ export class Sidebar{
 			let annotationID = createNode(parentID, annotation.title, annotationIcon, annotation);
 			this.annotationMapping.set(annotation, annotationID);
 
-			//let node = createNode(annotationsID, annotation.name, icon, volume);
-			//oldScene.annotations.removeEventListener('annotation_added', this.onAnnotationAdded);
+			annotation.addEventListener("annotation_changed", (e) => {
+				let annotationsRoot = $("#jstree_scene").jstree().get_json("annotations");
+				let jsonNode = annotationsRoot.children.find(child => child.data.uuid === annotation.uuid);
+				
+				//let tree = $(`<div id="jstree_scene"></div>`);
+				//tree.jstree("rename_node", jsonNode.id, annotation.title);
+
+				$.jstree.reference(jsonNode.id).rename_node(jsonNode.id, annotation.title);
+			});
 		};
 
 		this.viewer.scene.addEventListener("pointcloud_added", onPointCloudAdded);

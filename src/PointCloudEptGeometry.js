@@ -68,19 +68,19 @@ export class PointCloudEptGeometry {
 
 		let hierarchyType = info.hierarchyType || 'json';
 
-        const dataType = info.dataType;
-        if (dataType == 'laszip') {
-            this.loader = new Potree.EptLaszipLoader();
-        }
-        else if (dataType == 'binary') {
+		const dataType = info.dataType;
+		if (dataType == 'laszip') {
+			this.loader = new Potree.EptLaszipLoader();
+		}
+		else if (dataType == 'binary') {
 			this.loader = new Potree.EptBinaryLoader();
-        }
-        else if (dataType == 'zstandard') {
-            this.loader = new Potree.EptZstandardLoader();
-        }
-        else {
-            throw new Error('Could not read data type: ' + dataType);
-        }
+		}
+		else if (dataType == 'zstandard') {
+			this.loader = new Potree.EptZstandardLoader();
+		}
+		else {
+			throw new Error('Could not read data type: ' + dataType);
+		}
 	}
 };
 

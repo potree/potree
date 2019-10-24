@@ -767,7 +767,7 @@ body{
 
 
 ::-webkit-scrollbar {
-    width: 6px;
+	width: 6px;
 	background-color: var(--bg-color);
 }
 
@@ -777,4 +777,10 @@ body{
 
 ::-webkit-scrollbar-thumb {
 	background-color: var(--color-1);
+}
+
+.propertypanel_content .heading{
+	font-weight: bold;
+	padding-top: 0.6em;
+	padding-bottom: 0.1em;
 }

@@ -5,6 +5,10 @@ function createPointcloudData(pointcloud) {
 	const pcdata = {
 		name: pointcloud.name,
 		url: pointcloud.pcoGeometry.url,
+		position: pointcloud.position.toArray(),
+		rotation: pointcloud.rotation.toArray(),
+		scale: pointcloud.scale.toArray(),
+		activeAttributeName: pointcloud.material.activeAttributeName,
 	};
 
 	return pcdata;

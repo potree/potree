@@ -1,14 +1,31 @@
 
 
-function loadPointCloud(viewer, data){
-	Potree.loadPointCloud(data.url, data.name, () => {
+import {Annotation} from "../Annotation.js";
+import {Measure} from "../utils/Measure.js";
 
+function loadPointCloud(viewer, data){
+
+	const names = viewer.scene.pointclouds.map(p => p.name);
+	const alreadyExists = names.includes(data.name);
+
+	if(alreadyExists){
+		return;
+	}
+
+	Potree.loadPointCloud(data.url, data.name, (e) => {
+		const {pointcloud} = e;
+
+		pointcloud.position.set(...data.position);
+		pointcloud.rotation.set(...data.rotation);
+		pointcloud.scale.set(...data.scale);
+
+		viewer.scene.addPointCloud(pointcloud);
 	});
 }
 
 function loadMeasurement(viewer, data){
 
-	const measure = new Potree.Measure();
+	const measure = new Measure();
 
 	measure.name = data.name;
 	measure.showDistances = data.showDistances;
@@ -54,6 +71,34 @@ function loadSettings(viewer, data){
 
 }
 
+function loadView(viewer, view){
+	viewer.scene.view.position.set(...view.position);
+	viewer.scene.view.lookAt(...view.target);
+}
+
+function loadAnnotationItem(item){
+	const annotation = new Annotation({
+		position: item.position,
+		title: item.title,
+	});
+
+	annotation.offset.set(...item.offset);
+
+	return annotation;
+}
+
+function loadAnnotations(viewer, data){
+
+	const {items, hierarchy} = data;
+
+	const annotations = items.map(loadAnnotationItem);
+
+	for(const annotation of annotations){
+		viewer.scene.annotations.add(annotation);
+	}
+
+}
+
 
 export function loadSaveData(viewer, data){
 
@@ -63,6 +108,12 @@ export function loadSaveData(viewer, data){
 	}
 
 	loadSettings(viewer, data.settings);
+
+	loadView(viewer, data.view);
+
+	for(const pointcloud of data.pointclouds){
+		loadPointCloud(viewer, pointcloud);
+	}
 
 	for(const measure of data.measurements){
 		loadMeasurement(viewer, measure);
@@ -75,5 +126,7 @@ export function loadSaveData(viewer, data){
 	for(const profile of data.profiles){
 		loadProfile(viewer, profile);
 	}
+
+	loadAnnotations(viewer, data.annotations);
 
 }

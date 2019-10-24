@@ -18,6 +18,8 @@ export class OrientedImageControls extends EventDispatcher{
 			return this.shearCam.projectionMatrix;
 		};
 
+		this.image = null;
+
 		this.fadeFactor = 20;
 		this.fovDelta = 0;
 
@@ -34,7 +36,7 @@ export class OrientedImageControls extends EventDispatcher{
 		this.elExit = $(`<input type="button" value="Back to 3D view" style="position: absolute; bottom: 10px; right: 10px; z-index: 1000" />`);
 
 		this.elExit.click( () => {
-			this.backTo3DView();
+			this.release();
 		});
 
 		this.elUp.click(() => {
@@ -72,20 +74,17 @@ export class OrientedImageControls extends EventDispatcher{
 		//this.addEventListener("mousemove", onMove);
 	}
 
-	backTo3DView(){
-		this.viewer.scene.overrideCamera = null;
-
-		this.elUp.remove();
-		this.elRight.remove();
-		this.elDown.remove();
-		this.elLeft.remove();
-		this.elExit.remove();
-
-		this.viewer.setFOV(this.originalFOV);
-		this.viewer.setControls(this.originalControls);
+	hasSomethingCaptured(){
+		return this.image !== null;
 	}
 
-	hijackCamera(){
+	capture(image){
+		if(this.hasSomethingCaptured()){
+			return;
+		}
+
+		this.image = image;
+
 		this.originalFOV = this.viewer.getFOV();
 		this.originalControls = this.viewer.getControls();
 
@@ -95,13 +94,29 @@ export class OrientedImageControls extends EventDispatcher{
 		const elCanvas = this.viewer.renderer.domElement;
 		const elRoot = $(elCanvas.parentElement);
 
+		this.shear = [0, 0];
+
+
 		elRoot.append(this.elUp);
 		elRoot.append(this.elRight);
 		elRoot.append(this.elDown);
 		elRoot.append(this.elLeft);
 		elRoot.append(this.elExit);
+	}
 
-		
+	release(){
+		this.image = null;
+
+		this.viewer.scene.overrideCamera = null;
+
+		this.elUp.detach();
+		this.elRight.detach();
+		this.elDown.detach();
+		this.elLeft.detach();
+		this.elExit.detach();
+
+		this.viewer.setFOV(this.originalFOV);
+		this.viewer.setControls(this.originalControls);
 	}
 
 	setScene (scene) {
@@ -187,13 +202,6 @@ export class OrientedImageControls extends EventDispatcher{
 		shearCam.projectionMatrixInverse.getInverse( proj );
 
 		let total = shearCam.projectionMatrix.elements.reduce( (a, i) => a + i, 0);
-
-		if(total !== prevTotal){
-			console.log(this.shearCam.projectionMatrix.elements);
-		}
-
-
-		//console.log(this.fovDelta);
 
 		this.fovDelta *= attenuation;
 	}

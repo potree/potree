@@ -8,18 +8,11 @@ export class Annotation extends EventDispatcher {
 	constructor (args = {}) {
 		super();
 
-		let valueOrDefault = (a, b) => {
-			if(a === null || a === undefined){
-				return b;
-			}else{
-				return a;
-			}
-		};
-
 		this.scene = null;
 		this._title = args.title || 'No Title';
 		this._description = args.description || '';
 		this.offset = new THREE.Vector3();
+		this.uuid = THREE.Math.generateUUID();
 
 		if (!args.position) {
 			this.position = null;
@@ -352,6 +345,11 @@ export class Annotation extends EventDispatcher {
 		this._title = title;
 		this.elTitle.empty();
 		this.elTitle.append(this._title);
+
+		this.dispatchEvent({
+			type: "annotation_changed",
+			annotation: this,
+		});
 	}
 
 	get description () {
@@ -368,6 +366,11 @@ export class Annotation extends EventDispatcher {
 		const elDescriptionContent = this.elDescription.find(".annotation-description-content");
 		elDescriptionContent.empty();
 		elDescriptionContent.append(this._description);
+
+		this.dispatchEvent({
+			type: "annotation_changed",
+			annotation: this,
+		});
 	}
 
 	add (annotation) {
@@ -531,32 +534,6 @@ export class Annotation extends EventDispatcher {
 			let endPosition = this.cameraPosition;
 
 			Utils.moveTo(this.scene, endPosition, endTarget);
-
-			//{ // animate camera position
-			//	let tween = new TWEEN.Tween(view.position).to(endPosition, animationDuration);
-			//	tween.easing(easing);
-			//	tween.start();
-			//}
-
-			//{ // animate camera target
-			//	let camTargetDistance = camera.position.distanceTo(endTarget);
-			//	let target = new THREE.Vector3().addVectors(
-			//		camera.position,
-			//		camera.getWorldDirection().clone().multiplyScalar(camTargetDistance)
-			//	);
-			//	let tween = new TWEEN.Tween(target).to(endTarget, animationDuration);
-			//	tween.easing(easing);
-			//	tween.onUpdate(() => {
-			//		view.lookAt(target);
-			//	});
-			//	tween.onComplete(() => {
-			//		view.lookAt(target);
-			//		this.dispatchEvent({type: 'focusing_finished', target: this});
-			//	});
-
-			//	this.dispatchEvent({type: 'focusing_started', target: this});
-			//	tween.start();
-			//}
 		} else if (this.radius) {
 			let direction = view.direction;
 			let endPosition = endTarget.clone().add(direction.multiplyScalar(-this.radius));

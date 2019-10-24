@@ -2,6 +2,7 @@
 
 import {Utils} from "../../utils.js";
 import {PointCloudTree} from "../../PointCloudTree.js";
+import {Annotation} from "../../Annotation.js";
 import {Measure} from "../../utils/Measure.js";
 import {Profile} from "../../utils/Profile.js";
 import {Volume, BoxVolume, SphereVolume} from "../../utils/Volume.js";
@@ -17,6 +18,7 @@ import {HeightPanel} from "./HeightPanel.js";
 import {VolumePanel} from "./VolumePanel.js";
 import {ProfilePanel} from "./ProfilePanel.js";
 import {CameraPanel} from "./CameraPanel.js";
+import {AnnotationPanel} from "./AnnotationPanel.js";
 
 export class PropertiesPanel{
 
@@ -51,6 +53,8 @@ export class PropertiesPanel{
 			this.setMeasurement(object);
 		}else if(object instanceof THREE.Camera){
 			this.setCamera(object);
+		}else if(object instanceof Annotation){
+			this.setAnnotation(object);
 		}
 		
 	}
@@ -835,6 +839,11 @@ export class PropertiesPanel{
 
 	setCamera(camera){
 		let panel = new CameraPanel(this.viewer, this);
+		this.container.append(panel.elContent);
+	}
+
+	setAnnotation(annotation){
+		let panel = new AnnotationPanel(this.viewer, this, annotation);
 		this.container.append(panel.elContent);
 	}
 

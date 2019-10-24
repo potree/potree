@@ -39,6 +39,7 @@ export class PointCloudTreeNode extends EventDispatcher{
 	}
 };
 
+/*
 export class PointCloudTree extends THREE.Object3D {
 	constructor () {
 		super();
@@ -48,3 +49,4 @@ export class PointCloudTree extends THREE.Object3D {
 		return this.root !== null;
 	}
 };
+*/

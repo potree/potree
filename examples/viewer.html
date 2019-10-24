@@ -17,19 +17,19 @@
 <body>
 	<script src="../node_modules/@zeainc/zea-engine/dist/zea-engine.js"></script>
 
-	<script src="../libs/jquery/jquery-3.1.1.min.js"></script>
-	<script src="../libs/spectrum/spectrum.js"></script>
-	<script src="../libs/jquery-ui/jquery-ui.min.js"></script>
-	<script src="../libs/three.js/build/three.min.js"></script>
-	<script src="../libs/other/BinaryHeap.js"></script>
-	<script src="../libs/tween/tween.min.js"></script>
-	<script src="../libs/d3/d3.js"></script>
-	<script src="../libs/proj4/proj4.js"></script>
-	<script src="../libs/openlayers3/ol.js"></script>
-	<script src="../libs/i18next/i18next.js"></script>
-	<script src="../libs/jstree/jstree.js"></script>
+	<!-- <script src="../libs/jquery/jquery-3.1.1.min.js"></script> -->
+	<!-- <script src="../libs/spectrum/spectrum.js"></script> -->
+	<!-- <script src="../libs/jquery-ui/jquery-ui.min.js"></script> -->
+	<!-- <script src="../libs/three.js/build/three.min.js"></script> -->
+	<!-- <script src="../libs/other/BinaryHeap.js"></script> -->
+	<!-- <script src="../libs/tween/tween.min.js"></script> -->
+	<!-- <script src="../libs/d3/d3.js"></script> -->
+	<!-- <script src="../libs/proj4/proj4.js"></script> -->
+	<!-- <script src="../libs/openlayers3/ol.js"></script> -->
+	<!-- <script src="../libs/i18next/i18next.js"></script> -->
+	<!-- <script src="../libs/jstree/jstree.js"></script> -->
 	<script src="../build/potree/potree.js"></script>
-	<script src="../libs/plasio/js/laslaz.js"></script>
+	<!-- <script src="../libs/plasio/js/laslaz.js"></script> -->
 	
 	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
 	<!-- INCLUDE SETTINGS HERE -->
@@ -125,7 +125,7 @@
 				//scene.view.lookAt(new THREE.Vector3(589851.587, 231428.213, 715.634));
 				renderer.frameAll();
 				
-				potreeAsset.setViewport(renderer.getViewport());
+				potreePass.setViewport(renderer.getViewport());
 
 				// setTimeout(()=>{
 				// 	potreeAsset.addHighlight('fppp', new ZeaEngine.Color(1,0.6,0.8, 0.1));

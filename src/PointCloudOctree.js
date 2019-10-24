@@ -99,6 +99,7 @@ export class PointCloudOctreeNode extends PointCloudTreeNode {
 	}
 };
 
+/*
 export class PointCloudOctree extends PointCloudTree {
 	constructor (geometry, material) {
 		super();
@@ -498,7 +499,7 @@ export class PointCloudOctree extends PointCloudTree {
 	 * that segments point coordinates to line up along the x-axis.
 	 *
 	 *
-	 */
+	 * /
 	getPointsInProfile (profile, maxDepth, callback) {
 		if (callback) {
 			let request = new Potree.ProfileRequest(this, profile, maxDepth, callback);
@@ -592,7 +593,7 @@ export class PointCloudOctree extends PointCloudTree {
 	 * callback:	if specified, points are loaded before searching
 	 *
 	 *
-	 */
+	 * /
 	getProfile (start, end, width, depth, callback) {
 		let request = new Potree.ProfileRequest(start, end, width, depth, callback);
 		this.profileRequests.push(request);
@@ -612,7 +613,7 @@ export class PointCloudOctree extends PointCloudTree {
 	 *
 	 * TODO: only draw pixels that are actually read with readPixels().
 	 *
-	 */
+	 * /
 	pick(viewer, camera, ray, params = {}){
 
 		let renderer = viewer.renderer;
@@ -1022,7 +1023,7 @@ export class PointCloudOctree extends PointCloudTree {
 
 
 
-
+*/
 
 
 

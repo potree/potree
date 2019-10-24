@@ -1,10 +1,8 @@
 
-import {ClipTask, ClipMethod, CameraMode, LengthUnits} from "../defines.js";
 import { PotreeAsset } from "./PotreeAsset.js";
 import { GLPotreeAsset } from "./GLPotreeAsset.js";
-
+import { BinaryHeap } from "../../libs/other/BinaryHeap.js";
 import { PotreePointsShader, PotreePointsGeomDataShader, PotreePointsHilighlightShader } from "./PotreePointsShader.js";
-import "./PotreePointsShader.js";
 
 export class GLPotreePass extends ZeaEngine.GLPass {
   constructor(){
@@ -24,9 +22,7 @@ export class GLPotreePass extends ZeaEngine.GLPass {
     const gl = renderer.gl;
     this.glpotreeAssets = [];
     this.hilghlightedAssets = [];
-    // this.glshader = new PotreePointsShader(gl);
-    this.glshader = ZeaEngine.sgFactory.constructClass('PotreePointsShader', gl);
-    
+    this.glshader = new PotreePointsShader(gl);
     this.glgeomdataShader = new PotreePointsGeomDataShader(gl);
     this.glhighlightShader = new PotreePointsHilighlightShader(gl);
 
@@ -87,6 +83,7 @@ export class GLPotreePass extends ZeaEngine.GLPass {
     this.viewport.resized.connect(()=>{
       this.updateVisibility();
     })
+    this.updateVisibility();
   }
   
   updateVisibilityStructures(priorityQueue) {
@@ -175,7 +172,7 @@ export class GLPotreePass extends ZeaEngine.GLPass {
         let weight = 0; 
         if(true || camera.isPerspectiveCamera){
           const sphere = child.getBoundingSphere();
-          const distance = sphere.center.distanceTo(camObjPos);
+          const distance = sphere.pos.distanceTo(camObjPos);
           const radius = sphere.radius;
           if(distance - radius < 0){
             weight = Number.MAX_VALUE;
@@ -195,7 +192,7 @@ export class GLPotreePass extends ZeaEngine.GLPass {
         } else {
           // TODO ortho visibility
           let bb = child.getBoundingBox();				
-          let distance = child.getBoundingSphere().center.distanceTo(camObjPos);
+          let distance = child.getBoundingSphere().pos.distanceTo(camObjPos);
           let diagonal = bb.max.clone().sub(bb.min).length();
           //weight = diagonal / distance;
 
@@ -229,6 +226,8 @@ export class GLPotreePass extends ZeaEngine.GLPass {
         });
       }
     }
+
+    this.updated.emit();
   }
 
   // ///////////////////////////////////

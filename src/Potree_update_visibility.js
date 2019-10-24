@@ -67,7 +67,7 @@ export function updateVisibilityStructures(pointclouds, camera, renderer) {
 
 		let fm = new THREE.Matrix4().multiply(proj).multiply(viewI).multiply(world);
 		frustum.setFromMatrix(fm);
-		console.log(fm, frustum);
+		// console.log(fm, frustum);
 		frustums.push(frustum);
 
 		// camera position in object space
@@ -435,7 +435,7 @@ export function updateVisibility(pointclouds, camera, renderer){
 
 	for (let i = 0; i < Math.min(Potree.maxNodesLoading, unloadedGeometry.length); i++) {
 		if (unloadedGeometry[i].shouldLoad()) {
-			console.log("load:", unloadedGeometry[i].name);
+			// console.log("load:", unloadedGeometry[i].name);
 			unloadedGeometry[i].load();
 		}
 	}

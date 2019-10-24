@@ -108,7 +108,7 @@ export class PointCloudArena4D extends PointCloudTree{
 		this.numVisiblePoints = 0;
 
 		this.boundingBoxNodes = [];
-		this.loadQueue = [];
+		// this.loadQueue = []; // Never used
 		this.visibleNodes = [];
 
 		this.pcoGeometry = geometry;

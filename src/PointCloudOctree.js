@@ -117,7 +117,7 @@ export class PointCloudOctree extends PointCloudTree {
 
 		this.showBoundingBox = false;
 		this.boundingBoxNodes = [];
-		this.loadQueue = [];
+		// this.loadQueue = []; // Never used
 		this.visibleBounds = new THREE.Box3();
 		this.visibleNodes = [];
 		this.visibleGeometry = [];
@@ -167,7 +167,7 @@ export class PointCloudOctree extends PointCloudTree {
 		let sceneNode = new THREE.Points(geometryNode.geometry, this.material);
 		sceneNode.name = geometryNode.name;
 		sceneNode.position.copy(geometryNode.boundingBox.min);
-		console.log(geometryNode.boundingBox.min);
+		// console.log(geometryNode.boundingBox.min);
 		sceneNode.frustumCulled = false;
 		sceneNode.onBeforeRender = (_this, scene, camera, geometry, material, group) => {
 			// Note: I never see this code being called.

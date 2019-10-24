@@ -8,23 +8,11 @@ export class PotreeAsset extends ZeaEngine.AssetItem {
     super();
     
     this.loaded.setToggled(false)
-    
-    this.material = new ZeaEngine.Material("PoTreeMaterial", "Potree_PointCloudShader");
-    this.material.size = 1;
-    this.material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-    this.material.shape = Potree.PointShape.SQUARE;
-    
-    this.visiblePointsTarget = 2 * 1000 * 1000;
-    this.minimumNodePixelSize = 150;
+
+    this.pointBudget = 5 * 1000 * 1000;
     this.minimumNodeVSize = 0.2; // Size, not in pixels, but a fraction of scnreen V height.
     this.level = 0;
-
-    this.boundingBoxNodes = [];
-    this.loadQueue = [];
-    // this.visibleBounds = new THREE.Box3();
     this.visibleNodes = [];
-    this.visibleGeometry = [];
-
 
     this.__loaded = false;
     this.visibleNodesChanged = new ZeaEngine.Signal();
@@ -33,12 +21,12 @@ export class PotreeAsset extends ZeaEngine.AssetItem {
   setViewport(viewport){
     this.viewport = viewport;
     if (this.pcoGeometry)
-      this.update();
+      this.updateVisibility();
     this.viewport.viewChanged.connect(()=>{
-      this.update();
+      this.updateVisibility();
     })
     this.viewport.resized.connect(()=>{
-      this.update();
+      this.updateVisibility();
     })
   }
 
@@ -66,34 +54,23 @@ export class PotreeAsset extends ZeaEngine.AssetItem {
     // this.setGlobalXfo(xfo, ZeaEngine.ValueSetMode.DATA_LOAD);
     
     this._setBoundingBoxDirty()
-    const box = this.getBoundingBox()
-    const bMin = box.p0.z;
-    const bMax = box.p1.z;
-    this.material.heightMin = bMin;
-    this.material.heightMax = bMax;
-    
-    // TODO read projection from file instead
-    this.projection = pcoGeometry.projection;
-    this.fallbackProjection = pcoGeometry.fallbackProjection;
 
     this.loaded.emit();
 
     if (this.viewport)
-      this.update();
+      this.updateVisibility();
   }
 
   getGeometry() {
       return this.pcoGeometry;
   };
-
   
   // // Load and add point cloud to scene
   loadPointCloud(path, name) {
     return new Promise((resolve, reject) => {
       POCLoader.load(path, geometry => {
         if (!geometry) {
-          //callback({type: 'loading_failed'});
-          console.error(new Error(`failed to load point cloud from URL: ${path}`));
+          reject(`failed to load point cloud from URL: ${path}`);
         } else {
           this.setGeometry(geometry)
           resolve(geometry);
@@ -102,20 +79,6 @@ export class PotreeAsset extends ZeaEngine.AssetItem {
     });
   }
   
-  updateMaterial () {
-    const camera = this.viewport.getCamera();
-    this.material.fov = camera.getFov();// * (Math.PI / 180);
-    this.material.screenWidth = this.viewport.getWidth();
-    this.material.screenHeight = this.viewport.getHeight();
-    this.material.near = camera.getNear();
-    this.material.far = camera.getFar();
-    const sc = this.getGlobalXfo().sc
-    this.material.spacing = this.pcoGeometry.spacing * Math.max(sc.x, sc.y, sc.z);
-
-    // ??
-    // this.material.uniforms.octreeSize.value = this.pcoGeometry.boundingBox.getSize(new THREE.Vector3()).x;
-  }
-
   updateVisibilityStructures() {
     
     const camera = this.viewport.getCamera();
@@ -125,38 +88,21 @@ export class PotreeAsset extends ZeaEngine.AssetItem {
 
     const priorityQueue = new BinaryHeap(function (x) { return 1 / x.weight; });
 
-    //   this.numVisibleNodes = 0; // Never used.
-      this.numVisiblePoints = 0;
-    //   this.deepestVisibleLevel = 0; // Never used.
-    //   this.visibleNodes = [];
-    //   this.visibleGeometry = [];
+    this.numVisiblePoints = 0;
       
-      const world = this.getGlobalMat4()
-      const fm = proj.multiply(viewI).multiply(world);
-      const frustum = new ZeaEngine.Frustum();
-      frustum.setFromMatrix(fm);
+    const world = this.getGlobalMat4()
+    const fm = proj.multiply(viewI).multiply(world);
+    const frustum = new ZeaEngine.Frustum();
+    frustum.setFromMatrix(fm);
 
-      // camera  position in object space
-      const worldI = world.inverse();
-      const camMatrixObject = worldI.multiply(view);
-      const camObjPos = camMatrixObject.translation
+    // camera  position in object space
+    const worldI = world.inverse();
+    const camMatrixObject = worldI.multiply(view);
+    const camObjPos = camMatrixObject.translation
 
-      if (this.getVisible() && this.pcoGeometry !== null) {
+    if (this.getVisible() && this.pcoGeometry !== null) {
         priorityQueue.push({node: this.pcoGeometry.root, weight: Number.MAX_VALUE});
-      }
-
-      // hide all previously visible nodes
-      // if(this.root instanceof PointCloudOctreeNode){
-      //	this.hideDescendants(this.root.sceneNode);
-      // }
-      // if (this.root.isTreeNode()) {
-      //   this.hideDescendants(this.root.sceneNode);
-      // }
-
-      // for (let j = 0; j < this.boundingBoxNodes.length; j++) {
-      //   this.boundingBoxNodes[j].visible = false;
-      // }
-    // }
+    }
 
     return {
       'frustum': frustum,
@@ -166,7 +112,7 @@ export class PotreeAsset extends ZeaEngine.AssetItem {
   };
 
 
-  updateVisibility(){
+  updateVisibility() {
     const camera = this.viewport.getCamera();
 
     let numVisiblePoints = 0;
@@ -182,7 +128,7 @@ export class PotreeAsset extends ZeaEngine.AssetItem {
     while (priorityQueue.size() > 0) {
       const element = priorityQueue.pop();
       const node = element.node;
-      if (numVisiblePoints + node.numPoints > Potree.pointBudget) {
+      if (numVisiblePoints + node.numPoints > this.pointBudget) {
         break;
       }
 
@@ -193,7 +139,7 @@ export class PotreeAsset extends ZeaEngine.AssetItem {
       numVisiblePoints += node.numPoints;
       this.numVisiblePoints += node.numPoints;
 
-		  const parent = element.parent;
+      const parent = element.parent;
       if (!parent || parent.isLoaded()) {
         if (node.isLoaded()) {
           visibleNodes.push(node);
@@ -256,7 +202,6 @@ export class PotreeAsset extends ZeaEngine.AssetItem {
       this.visibleNodesChanged.emit(visibleNodes)
     }
 
-
     if (unloadedGeometry.length > 0) {
       // Disabled temporarily
       // for (let i = 0; i < Math.min(Potree.maxNodesLoading, unloadedGeometry.length); i++) {
@@ -272,15 +217,9 @@ export class PotreeAsset extends ZeaEngine.AssetItem {
           // for (let i = 0; i < unloadedGeometry.length; i++) {
           //   console.log("loaded:", unloadedGeometry[i].name);
           // }
-          this.update();
+          this.updateVisibility();
         });
       }
     }
   }
-
-  update() {
-    this.updateVisibility()
-    this.updateMaterial();
-  }
-  
 };

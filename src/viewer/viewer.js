@@ -244,7 +244,7 @@ export class Viewer extends EventDispatcher {
 			requestAnimationFrame(this.loop.bind(this));
 		}
 
-		// this.loadGUI = this.loadGUI.bind(this);
+		this.loadGUI = this.loadGUI.bind(this);
 
 		}catch(e){
 			this.onCrash(e);
@@ -975,7 +975,7 @@ export class Viewer extends EventDispatcher {
 			this.deviceControls.addEventListener('end', this.enableAnnotations.bind(this));
 		}
 	};
-/*
+
 	toggleSidebar () {
 		let renderArea = $('#potree_render_area');
 		let isVisible = renderArea.css('left') !== '0px';
@@ -1086,7 +1086,7 @@ export class Viewer extends EventDispatcher {
 		i18n.setLng(lang);
 		$('body').i18n();
 	}
-*/
+
 	setServer (server) {
 		this.server = server;
 	}
@@ -1386,7 +1386,8 @@ export class Viewer extends EventDispatcher {
 		let scene = this.scene;
 		let camera = scene.getActiveCamera();
 		
-		Potree.pointLoadLimit = Potree.pointBudget * 2;
+		exports.lru.pointLoadLimit = Potree.pointBudget * 2;
+		
 
 		// this.scene.directionalLight.position.copy(camera.position);
 		// this.scene.directionalLight.lookAt(new THREE.Vector3().addVectors(camera.position, camera.getWorldDirection(new THREE.Vector3())));

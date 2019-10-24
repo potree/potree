@@ -38,7 +38,7 @@ export class PointCloudOctreeGeometryNode extends PointCloudTreeNode{
 		this.oneTimeDisposeHandlers = [];
 
 		this.offset = Object.assign({}, this.boundingBox.min);
-		console.log("PointCloudOctreeGeometryNode:", this.name, this.offset);
+		// console.log("PointCloudOctreeGeometryNode:", this.name, this.offset);
 	}
 
 	isGeometryNode(){
@@ -77,10 +77,6 @@ export class PointCloudOctreeGeometryNode extends PointCloudTreeNode{
 		return children;
 	}
 
-	getBoundingBox(){
-		return this.boundingBox;
-	}
-
 	getURL(){
 		let url = '';
 
@@ -117,16 +113,17 @@ export class PointCloudOctreeGeometryNode extends PointCloudTreeNode{
 		// console.log("PointCloudOctreeGeometryNode", this.name, ".addChild:", child.name);
 		this.children[child.index] = child;
 		child.parent = this;
-		
 	}
 
 	shouldLoad() {
-		return this.loading !== true && this.loaded !== true && Potree.numNodesLoading < Potree.maxNodesLoading;
+		return this.loading !== true && this.loaded !== true;
 	}
 
 	load(){
 		this.loading = true;
-		return new Promise((resolve, reject)=>{
+		if(this.loadPromise)
+			return this.loadPromise
+		this.loadPromise = new Promise((resolve, reject)=>{
 		// if (this.loading === true || this.loaded === true || Potree.numNodesLoading >= Potree.maxNodesLoading) {
 		// 	return;
 		// }
@@ -136,14 +133,15 @@ export class PointCloudOctreeGeometryNode extends PointCloudTreeNode{
 
 			if (this.pcoGeometry.loader.version.equalOrHigher('1.5')) {
 				if ((this.level % this.pcoGeometry.hierarchyStepSize) === 0 && this.hasChildren) {
-					this.loadHierachyThenPoints();
+					this.loadHierachyThenPoints().then(resolve);
 				} else {
-					this.loadPoints();
+					this.loadPoints().then(resolve);
 				}
 			} else {
-				this.loadPoints();
+				this.loadPoints().then(resolve);
 			}
 		});
+		return this.loadPromise;
 	}
 
 	loadPoints(){
@@ -381,6 +379,7 @@ export class PointCloudOctreeGeometryNode extends PointCloudTreeNode{
 			this.geometry.dispose();
 			this.geometry = null;
 			this.loaded = false;
+			this.loadPromise = null;
 
 			// this.dispatchEvent( { type: 'dispose' } );
 			for (let i = 0; i < this.oneTimeDisposeHandlers.length; i++) {

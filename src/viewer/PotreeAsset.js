@@ -9,7 +9,6 @@ export class PotreeAsset extends ZeaEngine.AssetItem {
     
     this.loaded.setToggled(false)
     
-    // this.pointcloud;
     this.material = new ZeaEngine.Material("PoTreeMaterial", "Potree_PointCloudShader");
     this.material.size = 1;
     this.material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
@@ -26,15 +25,14 @@ export class PotreeAsset extends ZeaEngine.AssetItem {
     this.visibleNodes = [];
     this.visibleGeometry = [];
 
+
     this.__loaded = false;
     this.visibleNodesChanged = new ZeaEngine.Signal();
-
-    // this.initialize();
   }
 
   setViewport(viewport){
     this.viewport = viewport;
-    if (this.pointcloud)
+    if (this.pcoGeometry)
       this.update();
     this.viewport.viewChanged.connect(()=>{
       this.update();
@@ -60,11 +58,12 @@ export class PotreeAsset extends ZeaEngine.AssetItem {
   }
 
   setGeometry(pcoGeometry) {
+
     this.pcoGeometry = pcoGeometry;
-    const xfo = this.getGlobalXfo();
+    // const xfo = this.getGlobalXfo();
     // xfo.tr = this.pcoGeometry.offset;// TODO: try me. should work
-    xfo.tr.set(this.pcoGeometry.offset.x, this.pcoGeometry.offset.y, this.pcoGeometry.offset.z);
-    this.setGlobalXfo(xfo, ZeaEngine.ValueSetMode.DATA_LOAD);
+    // xfo.tr.set(this.pcoGeometry.offset.x, this.pcoGeometry.offset.y, this.pcoGeometry.offset.z);
+    // this.setGlobalXfo(xfo, ZeaEngine.ValueSetMode.DATA_LOAD);
     
     this._setBoundingBoxDirty()
     const box = this.getBoundingBox()
@@ -126,14 +125,6 @@ export class PotreeAsset extends ZeaEngine.AssetItem {
 
     const priorityQueue = new BinaryHeap(function (x) { return 1 / x.weight; });
 
-    // for (let i = 0; i < pointclouds.length; i++) {
-    //   let pointcloud = pointclouds[i];
-
-      // if (!this.initialized()) {
-      //   // continue;
-      //   return;
-      // }
-
     //   this.numVisibleNodes = 0; // Never used.
       this.numVisiblePoints = 0;
     //   this.deepestVisibleLevel = 0; // Never used.
@@ -191,22 +182,24 @@ export class PotreeAsset extends ZeaEngine.AssetItem {
     while (priorityQueue.size() > 0) {
       const element = priorityQueue.pop();
       const node = element.node;
-      if (numVisiblePoints + node.getNumPoints() > Potree.pointBudget) {
+      if (numVisiblePoints + node.numPoints > Potree.pointBudget) {
         break;
       }
-      const box = node.getBoundingBox();
 
-      const insideFrustum = frustum.intersectsBox(box);
+      const insideFrustum = frustum.intersectsBox(node.boundingBox);
       if (!insideFrustum) {
         continue;
       }
-      numVisiblePoints += node.getNumPoints();
-      this.numVisiblePoints += node.getNumPoints();
+      numVisiblePoints += node.numPoints;
+      this.numVisiblePoints += node.numPoints;
 
-      if (node.isLoaded()) {
-        visibleNodes.push(node);
-      } else {
-        unloadedGeometry.push(node);
+		  const parent = element.parent;
+      if (!parent || parent.isLoaded()) {
+        if (node.isLoaded()) {
+          visibleNodes.push(node);
+        } else {
+          unloadedGeometry.push(node);
+        }
       }
 
       // add child nodes to priorityQueue
@@ -250,46 +243,44 @@ export class PotreeAsset extends ZeaEngine.AssetItem {
 
     let visChanged = this.visibleNodes.length != visibleNodes.length
     if(!visChanged) {
-        visChanged = visibleNodes.some((node, index) => {
-            return this.visibleNodes[index] != node;
-        })
+      visChanged = visibleNodes.some((node, index) => {
+        return this.visibleNodes[index] != node;
+      })
     }
     if(visChanged) {
-        const nodeNames = [];
-        visibleNodes.forEach(node => nodeNames.push(node.name))
-        console.log("visibleNodes:", nodeNames);
+      // const nodeNames = [];
+      // visibleNodes.forEach(node => nodeNames.push(node.name))
+      // console.log("visibleNodes:", nodeNames);
 
-        this.visibleNodes = visibleNodes;
-        this.visibleNodesChanged.emit(visibleNodes)
+      this.visibleNodes = visibleNodes;
+      this.visibleNodesChanged.emit(visibleNodes)
     }
 
 
-    // Disabled temporarily
-    // for (let i = 0; i < Math.min(Potree.maxNodesLoading, unloadedGeometry.length); i++) {
-    const promises = []
-    for (let i = 0; i < unloadedGeometry.length; i++) {
-        if (unloadedGeometry[i].shouldLoad()) {
-            console.log("load:", unloadedGeometry[i].name);
-            promises.push(unloadedGeometry[i].load());
-        }
+    if (unloadedGeometry.length > 0) {
+      // Disabled temporarily
+      // for (let i = 0; i < Math.min(Potree.maxNodesLoading, unloadedGeometry.length); i++) {
+      const promises = []
+      for (let i = 0; i < unloadedGeometry.length; i++) {
+          // console.log("load:", unloadedGeometry[i].name);
+          promises.push(unloadedGeometry[i].load());
+      }
+      if (promises.length > 0) {
+        // After all the loads have finished. 
+        // update again so we can recompute and visiblity.
+        Promise.all(promises).then(()=>{
+          // for (let i = 0; i < unloadedGeometry.length; i++) {
+          //   console.log("loaded:", unloadedGeometry[i].name);
+          // }
+          this.update();
+        });
+      }
     }
-    // After all the loads have finished. 
-    // update again so we can recompute and visiblity.
-    // Promise.all(promises).then(()=>{
-    //   this.update();
-    // });
-    
   }
 
-    // From viewer.js
   update() {
-    
-    Potree.pointLoadLimit = Potree.pointBudget * 2;
     this.updateVisibility()
-
     this.updateMaterial();
-
-    // exports.lru.freeMemory();
   }
   
 };

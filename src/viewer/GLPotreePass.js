@@ -138,12 +138,15 @@ export class GLPotreePass extends ZeaEngine.GLPass {
   }
 
   addPotreeasset(potreeAsset){
+    const __bindAsset = potreeAsset => {
+      const glpotreeAsset = new GLPotreeAsset(this.__gl, potreeAsset, this.glshader);
+      glpotreeAsset.updated.connect(() => this.updated.emit());
+      this.glpotreeAssets.push(glpotreeAsset);
+    }
     if (potreeAsset.isLoaded())
-      this.glpotreeAssets.push(new GLPotreeAsset(this.__gl, potreeAsset, this.glshader));
+      __bindAsset(potreeAsset);
     else {
-      potreeAsset.loaded.connect(() => {
-        this.glpotreeAssets.push(new GLPotreeAsset(this.__gl, potreeAsset, this.glshader));
-      });
+      potreeAsset.loaded.connect(() => __bindAsset(potreeAsset));
     }
   }
 

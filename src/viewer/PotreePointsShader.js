@@ -23,20 +23,15 @@ uniform mat4 modelMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 projectionMatrix;
 
-// <%include file="stack-gl/transpose.glsl"/>
-// <%include file="stack-gl/inverse.glsl"/>
-// <%include file="modelMatrix.glsl"/>
-
 /* VS Outputs */
 varying vec4 v_color;
 
 void main(void) {
-//   mat4 modelMatrix = getModelMatrix();
   mat4 modelViewProjectionMatrix = projectionMatrix * viewMatrix * modelMatrix;
   gl_Position = modelViewProjectionMatrix * vec4(positions + offset, 1.);
-  gl_PointSize = 2.0;
+  gl_PointSize = 3.0;
 
-  v_color = colors;
+  v_color = colors / 255.0; // Unsigned byte attributes need to be scaled down from 0-255 > 0..1
 }
 `
     )

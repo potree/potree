@@ -1,104 +1,24 @@
-class GLOctTreeNode  {
+
+import {LRU} from "../LRU.js";
+
+let globalCounter = 0;
+
+class GLOctTreeNode extends ZeaEngine.GLPoints {
   constructor(gl, pointCloudOctreeGeometryNode) {
-
+    super(gl, pointCloudOctreeGeometryNode.points)
     this.pointCloudOctreeGeometryNode = pointCloudOctreeGeometryNode;
-    this.__glattrbuffers = {}
-    this.__shaderBindings = {}
-    this.destructing = new Signal()
-    this.updated = new Signal()
 
-  this.genBuffers()
+    this.id = ++globalCounter;
+    this.loaded = true; // only for LRU. Safely remove after refactoring.
+    
   }
 
-  genBuffers() {
+  get numPoints(){
+    return this.pointCloudOctreeGeometryNode.numPoints;
+  }
 
-    const gl = this.__gl
-
-    const attributeBuffers = this.pointCloudOctreeGeometryNode.attributeBuffers
-    let numVerts = 0;
-    for(let key in attributeBuffers){
-      const buffer = buffers[key].buffer;
-      const property = parseInt(key)
-
-      const glBuffer = gl.createBuffer()
-      gl.bindBuffer(gl.ARRAY_BUFFER, glBuffer)
-      gl.bufferData(gl.ARRAY_BUFFER, buffer, gl.STATIC_DRAW)
-
-      let attrName;
-      let dimension;
-      if (property === PointAttributeNames.POSITION_CARTESIAN) {
-        attrName = 'position';
-        dimension = 3;
-        numVerts = (new Float32Array(buffer)).length() / 3;
-        // geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(buffer), 3));
-      } else if (property === PointAttributeNames.COLOR_PACKED) {
-        attrName = 'color';
-        dimension = 4;
-        // geometry.addAttribute('color', new THREE.BufferAttribute(new Uint8Array(buffer), 4, true));
-      } else if (property === PointAttributeNames.INTENSITY) {
-        attrName = 'intensity';
-        dimension = 1;
-        // geometry.addAttribute('intensity', new THREE.BufferAttribute(new Float32Array(buffer), 1));
-      } else if (property === PointAttributeNames.CLASSIFICATION) {
-        attrName = 'classification';
-        dimension = 1;
-        // geometry.addAttribute('classification', new THREE.BufferAttribute(new Uint8Array(buffer), 1));
-      } else if (property === PointAttributeNames.RETURN_NUMBER) {
-        attrName = 'returnNumber';
-        dimension = 1;
-        // geometry.addAttribute('returnNumber', new THREE.BufferAttribute(new Uint8Array(buffer), 1));
-      } else if (property === PointAttributeNames.NUMBER_OF_RETURNS) {
-        attrName = 'numberOfReturns';
-        dimension = 1;
-        // geometry.addAttribute('numberOfReturns', new THREE.BufferAttribute(new Uint8Array(buffer), 1));
-      } else if (property === PointAttributeNames.SOURCE_ID) {
-        attrName = 'pointSourceID';
-        dimension = 1;
-        // geometry.addAttribute('pointSourceID', new THREE.BufferAttribute(new Uint16Array(buffer), 1));
-      } else if (property === PointAttributeNames.NORMAL_SPHEREMAPPED) {
-        attrName = 'normal';
-        dimension = 3;
-        // geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
-      } else if (property === PointAttributeNames.NORMAL_OCT16) {
-        attrName = 'normal';
-        dimension = 3;
-        // geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
-      } else if (property === PointAttributeNames.NORMAL) {
-        attrName = 'normal';
-        dimension = 3;
-        // geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
-      } else if (property === PointAttributeNames.INDICES) {
-        attrName = 'indices';
-        dimension = 4;
-        // let bufferAttribute = new THREE.BufferAttribute(new Uint8Array(buffer), 4);
-        // bufferAttribute.normalized = true;
-        // geometry.addAttribute('indices', bufferAttribute);
-      } else if (property === PointAttributeNames.SPACING) {
-        attrName = 'spacing';
-        dimension = 1;
-        // let bufferAttribute = new THREE.BufferAttribute(new Float32Array(buffer), 1);
-        // geometry.addAttribute('spacing', bufferAttribute);
-      } else if (property === PointAttributeNames.GPS_TIME) {
-        attrName = 'gpsTime';
-        dimension = 1;
-        // let bufferAttribute = new THREE.BufferAttribute(new Float32Array(buffer), 1);
-        // geometry.addAttribute('gpsTime', bufferAttribute);
-
-        // node.gpsTime = {
-        //   offset: buffers[property].offset,
-        //   range: buffers[property].range,
-        // };
-      }
-      
-
-      this.__glattrbuffers[attrName] = {
-        buffer: glBuffer,
-        dimension,
-      }
-    }
-
-    this.__numVerts = numVerts;
-    this.__vboState = 2
+  dispose() {
+    this.destroy()
   }
 }
 
@@ -108,32 +28,46 @@ export class GLPotreeAsset extends ZeaEngine.GLPass {
     super();
 
     this.gl = gl;
+    this.lru = new LRU();
+    this.lru.pointLoadLimit = Potree.pointBudget * 2;
     this.potreeAsset = potreeAsset;
-
-    this.gloctreenodes = [];
-    this.visibleNodes = [];
     this.modelMatrixArray =  potreeAsset.getGlobalMat4().asArray()
-    // if(potreeAsset.pcoGeometry.root.loaded){
-    //   this.gloctreenodes.push(new GLOctTreeNode(potreeAsset.pcoGeometry));
-    // } else {
-    //   potreeAsset.pcoGeometry.root.addEventListener('loaded', e=>{
-    //     this.gloctreenodes.push(new GLOctTreeNode(potreeAsset.pcoGeometry.root));
-    //   });
-    // }
-    this.map = new Map();
+
+    const gloctreenodes = [];
+    const map = new Map();
+    const freeList = [];
+    this.visibleNodes = [];
 
     potreeAsset.visibleNodesChanged.connect((visibleNodes) => {
-        this.visibleNodes = []
-        visibleNodes.forEach(node => {
-            if (!this.map.has(node)) {
-		            console.log("GLPoints:", node.name, node.offset);
-                const glpoints = new ZeaEngine.GLPoints(gl, node.points);
-                glpoints.offset = [node.offset.x, node.offset.y, node.offset.z];
-                this.gloctreenodes.push(glpoints);
-                this.map.set(node, this.gloctreenodes.length-1);
-            }
-            this.visibleNodes.push(this.gloctreenodes[this.map.get(node)]);
-        });
+      this.visibleNodes = []
+      // let numVisblePoints = 0;
+      // Iterate backwards to lru touches the closests node last.
+      for(let i=visibleNodes.length-1; i>=0; i--) {
+        const node = visibleNodes[i];
+        if (!map.has(node)) {
+          // console.log("GLPoints:", node.name, node.offset);
+          const gloctreenode = new GLOctTreeNode(gl, node);
+          gloctreenode.offset = [node.offset.x, node.offset.y, node.offset.z];
+          const index = freeList.length > 0 ? freeList.pop() : gloctreenodes.length;
+          gloctreenodes[index] = gloctreenode;
+          map.set(node, index);
+
+          gloctreenode.destructing.connect(() => {
+            map.delete(node);
+            freeList.push(index);
+            const drawIndex = this.visibleNodes.indexOf(gloctreenode);
+            if (drawIndex >= 0)
+              this.visibleNodes.splice(drawIndex, 1);
+          });
+        }
+        const gloctreenode = gloctreenodes[map.get(node)];
+        this.lru.touch(gloctreenode);
+        this.visibleNodes.push(gloctreenode);
+
+        // numVisblePoints += node.numPoints
+      };
+      // console.log("numVisblePoints:", numVisblePoints, this.lru.numPoints);
+
     //   const visibilityTextureData = octree.computeVisibilityTextureData(potreeAsset.visibleNodes);
       
     //   const vnt = material.visibleNodesTexture;
@@ -141,6 +75,9 @@ export class GLPotreeAsset extends ZeaEngine.GLPass {
     //   // data.set(visibilityTextureData.data);
     //   // Find the 'visibleNodes' uniform and set the texture data.
     //   // vnt.needsUpdate = true;
+
+      // Causes unused nodes to be flushed.
+      this.lru.freeMemory();
 
       this.updated.emit();
     })
@@ -174,7 +111,7 @@ export class GLPotreeAsset extends ZeaEngine.GLPass {
     //       glmaterialGeomItemSet.getGLMaterial(),
     //       true
     //     )
-      gl.uniform3fv(offsetUnif.location, glpoints.offset)
+      this.gl.uniform3fv(offsetUnif.location, glpoints.offset)
       glpoints.bind(renderstate)
       renderstate.bindViewports(unifs, () => {
         glpoints.draw(renderstate)

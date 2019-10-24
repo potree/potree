@@ -84,7 +84,7 @@
 		} else {
 		
 			const scene = new ZeaEngine.Scene();
-			scene.setupGrid(2500, 50);
+			scene.setupGrid(600, 50);
 
 			const renderer = new ZeaEngine.GLRenderer(document.getElementById("potree_render_area"), {
 				enableTextures:false
@@ -97,7 +97,6 @@
 			renderer.resumeDrawing();
 
 			const potreeAsset = new Potree.PotreeAsset();
-			potreeAsset.setViewport(renderer.getViewport());
 			scene.getRoot().addChild(potreeAsset);
 			
 			// Load and add point cloud to scene
@@ -111,6 +110,8 @@
 				//scene.view.position.set(589974.341, 231698.397, 986.146);
 				//scene.view.lookAt(new THREE.Vector3(589851.587, 231428.213, 715.634));
 				renderer.frameAll();
+				
+				potreeAsset.setViewport(renderer.getViewport());
 			});
 		}
 		

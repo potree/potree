@@ -4,6 +4,7 @@ import { PotreeAsset } from "./PotreeAsset.js";
 import { GLPotreeAsset } from "./GLPotreeAsset.js";
 
 import { Potree_PointCloudShader } from "../materials/PointCloudShader.js";
+import "./PotreePointsShader.js";
 
 export class GLPotreePass extends ZeaEngine.GLPass {
   constructor(){
@@ -82,12 +83,12 @@ export class GLPotreePass extends ZeaEngine.GLPass {
 
   }
   
-	setPointBudget (value) {
-		if (Potree.pointBudget !== value) {
-			Potree.pointBudget = parseInt(value);
-			this.dispatchEvent({'type': 'point_budget_changed', 'viewer': this});
-		}
-	};
+    setPointBudget (value) {
+        if (Potree.pointBudget !== value) {
+            Potree.pointBudget = parseInt(value);
+            this.dispatchEvent({'type': 'point_budget_changed', 'viewer': this});
+        }
+    };
 
   /**
    * The init method.
@@ -101,7 +102,8 @@ export class GLPotreePass extends ZeaEngine.GLPass {
     const gl = renderer.gl;
     
     this.glpotreeAssets = [];
-    this.glshader = new Potree_PointCloudShader(gl);
+    // this.glshader = new Potree_PointCloudShader(gl);
+    this.glshader = ZeaEngine.sgFactory.constructClass('PotreePointsShader', gl);
     
     const shadowMaps = []
     const numSnapshots = 0;
@@ -150,9 +152,15 @@ export class GLPotreePass extends ZeaEngine.GLPass {
 
   }
 
+  // ///////////////////////////////////
+  // Rendering
 
+  /**
+   * The draw method.
+   * @param {any} renderstate - The renderstate param.
+   */
   // Reference: ../PotreeRenderer.renderOctree(){
-  render(renderstate) {
+  draw(renderstate) {
 
     const gl = this.__gl;
   
@@ -166,11 +174,30 @@ export class GLPotreePass extends ZeaEngine.GLPass {
     // });
 
     this.glshader.bind(renderstate);
+    if (renderstate.unifs.instancedDraw) {
+      gl.uniform1i(renderstate.unifs.instancedDraw.location, 0)
+    }
 
     // RENDER
-    for (const octree of this.octrees) {
-      this.render(renderstate);
-    }
+    this.glpotreeAssets.forEach( a => a.render(renderstate))
+
   }
 
+  /**
+   * The drawHighlightedGeoms method.
+   * @param {any} renderstate - The renderstate param.
+   */
+  drawHighlightedGeoms(renderstate) {}
+
+  /**
+   * The drawGeomData method.
+   * @param {any} renderstate - The renderstate param.
+   */
+  drawGeomData(renderstate) {}
+
+  /**
+   * The getGeomItemAndDist method.
+   * @param {any} geomData - The geomData param.
+   */
+  getGeomItemAndDist(geomData) {}
 }

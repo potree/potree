@@ -36,6 +36,9 @@ export class PointCloudOctreeGeometryNode extends PointCloudTreeNode{
 		this.level = null;
 		this.loaded = false;
 		this.oneTimeDisposeHandlers = [];
+
+		this.offset = Object.assign({}, this.boundingBox.min);
+		console.log("PointCloudOctreeGeometryNode:", this.name, this.offset);
 	}
 
 	isGeometryNode(){
@@ -111,32 +114,40 @@ export class PointCloudOctreeGeometryNode extends PointCloudTreeNode{
 	}
 
 	addChild(child) {
+		// console.log("PointCloudOctreeGeometryNode", this.name, ".addChild:", child.name);
 		this.children[child.index] = child;
 		child.parent = this;
+		
+	}
+
+	shouldLoad() {
+		return this.loading !== true && this.loaded !== true && Potree.numNodesLoading < Potree.maxNodesLoading;
 	}
 
 	load(){
-		if (this.loading === true || this.loaded === true || Potree.numNodesLoading >= Potree.maxNodesLoading) {
-			return;
-		}
-
 		this.loading = true;
+		return new Promise((resolve, reject)=>{
+		// if (this.loading === true || this.loaded === true || Potree.numNodesLoading >= Potree.maxNodesLoading) {
+		// 	return;
+		// }
 
-		Potree.numNodesLoading++;
 
-		if (this.pcoGeometry.loader.version.equalOrHigher('1.5')) {
-			if ((this.level % this.pcoGeometry.hierarchyStepSize) === 0 && this.hasChildren) {
-				this.loadHierachyThenPoints();
+			Potree.numNodesLoading++;
+
+			if (this.pcoGeometry.loader.version.equalOrHigher('1.5')) {
+				if ((this.level % this.pcoGeometry.hierarchyStepSize) === 0 && this.hasChildren) {
+					this.loadHierachyThenPoints();
+				} else {
+					this.loadPoints();
+				}
 			} else {
 				this.loadPoints();
 			}
-		} else {
-			this.loadPoints();
-		}
+		});
 	}
 
 	loadPoints(){
-		this.pcoGeometry.loader.load(this);
+		return this.pcoGeometry.loader.load(this);
 	}
 
 	parse(data, version) {
@@ -188,6 +199,54 @@ export class PointCloudOctreeGeometryNode extends PointCloudTreeNode{
 		}
 		this.geometry = geometry;
 
+
+		const points = new ZeaEngine.Points();
+		for(let property in buffers){
+			const buffer = buffers[property].buffer;
+
+			if (parseInt(property) === PointAttributeNames.POSITION_CARTESIAN) {
+				const attr = points.getVertexAttribute('positions');
+				attr.data = new Float32Array(buffer);
+			} else if (parseInt(property) === PointAttributeNames.COLOR_PACKED) {
+    			points.addVertexAttribute('colors', ZeaEngine.RGBA, new Uint8Array(buffer))
+			}/* else if (parseInt(property) === PointAttributeNames.INTENSITY) {
+				geometry.addAttribute('intensity', new THREE.BufferAttribute(new Float32Array(buffer), 1));
+			} else if (parseInt(property) === PointAttributeNames.CLASSIFICATION) {
+				geometry.addAttribute('classification', new THREE.BufferAttribute(new Uint8Array(buffer), 1));
+			} else if (parseInt(property) === PointAttributeNames.RETURN_NUMBER) {
+				geometry.addAttribute('returnNumber', new THREE.BufferAttribute(new Uint8Array(buffer), 1));
+			} else if (parseInt(property) === PointAttributeNames.NUMBER_OF_RETURNS) {
+				geometry.addAttribute('numberOfReturns', new THREE.BufferAttribute(new Uint8Array(buffer), 1));
+			} else if (parseInt(property) === PointAttributeNames.SOURCE_ID) {
+				geometry.addAttribute('pointSourceID', new THREE.BufferAttribute(new Uint16Array(buffer), 1));
+			} else if (parseInt(property) === PointAttributeNames.NORMAL_SPHEREMAPPED) {
+				geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
+			} else if (parseInt(property) === PointAttributeNames.NORMAL_OCT16) {
+				geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
+			} else if (parseInt(property) === PointAttributeNames.NORMAL) {
+				geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
+			} else if (parseInt(property) === PointAttributeNames.INDICES) {
+				const bufferAttribute = new THREE.BufferAttribute(new Uint8Array(buffer), 4);
+				bufferAttribute.normalized = true;
+				geometry.addAttribute('indices', bufferAttribute);
+			} else if (parseInt(property) === PointAttributeNames.SPACING) {
+				const bufferAttribute = new THREE.BufferAttribute(new Float32Array(buffer), 1);
+				geometry.addAttribute('spacing', bufferAttribute);
+			} else if (parseInt(property) === PointAttributeNames.GPS_TIME) {
+				const bufferAttribute = new THREE.BufferAttribute(new Float32Array(buffer), 1);
+				geometry.addAttribute('gpsTime', bufferAttribute);
+
+				this.gpsTime = {
+					offset: buffers[property].offset,
+					range: buffers[property].range,
+				};
+			}*/
+		}
+		this.points = points;
+		// const min = data.tightBoundingBox.min
+		// this.offset = new ZeaEngine.Vec3(min[0], min[1], min[2]);
+		// console.log(data.tightBoundingBox.min);
+
 		const tightBoundingBox = new THREE.Box3(
 			new THREE.Vector3().fromArray(data.tightBoundingBox.min),
 			new THREE.Vector3().fromArray(data.tightBoundingBox.max)
@@ -213,6 +272,7 @@ export class PointCloudOctreeGeometryNode extends PointCloudTreeNode{
 	}
 
 	loadHierachyThenPoints(){
+		return new Promise((resolve, reject)=>{
 		let node = this;
 
 		// load hierarchy
@@ -277,7 +337,9 @@ export class PointCloudOctreeGeometryNode extends PointCloudTreeNode{
 				nodes[name] = currentNode;
 			}
 
-			node.loadPoints();
+			node.loadPoints().then(()=>{
+				resolve();
+			});
 		};
 		if ((node.level % node.pcoGeometry.hierarchyStepSize) === 0) {
 			// let hurl = node.pcoGeometry.octreeDir + "/../hierarchy/" + node.name + ".hrc";
@@ -293,8 +355,10 @@ export class PointCloudOctreeGeometryNode extends PointCloudTreeNode{
 						let hbuffer = xhr.response;
 						callback(node, hbuffer);
 					} else {
-						console.log('Failed to load file! HTTP status: ' + xhr.status + ', file: ' + hurl);
+						const msg = 'Failed to load file! HTTP status: ' + xhr.status + ', file: ' + hurl;
+						console.log(msg);
 						Potree.numNodesLoading--;
+						reject(msg);
 					}
 				}
 			};
@@ -302,8 +366,10 @@ export class PointCloudOctreeGeometryNode extends PointCloudTreeNode{
 				xhr.send(null);
 			} catch (e) {
 				console.log('fehler beim laden der punktwolke: ' + e);
+				reject('fehler beim laden der punktwolke: ' + e);
 			}
 		}
+		});
 	}
 
 	getNumPoints(){

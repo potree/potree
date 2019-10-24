@@ -111,22 +111,36 @@ export class GLPotreeAsset extends ZeaEngine.GLPass {
     this.potreeAsset = potreeAsset;
 
     this.gloctreenodes = [];
-    if(potreeAsset.pcoGeometry.root.loaded){
-      this.gloctreenodes.push(new GLOctTreeNode(potreeAsset.pcoGeometry));
-    } else {
-      potreeAsset.pcoGeometry.root.addEventListener('loaded', e=>{
-        this.gloctreenodes.push(new GLOctTreeNode(potreeAsset.pcoGeometry.root));
-      });
-    }
+    this.visibleNodes = [];
+    this.modelMatrixArray =  potreeAsset.getGlobalMat4().asArray()
+    // if(potreeAsset.pcoGeometry.root.loaded){
+    //   this.gloctreenodes.push(new GLOctTreeNode(potreeAsset.pcoGeometry));
+    // } else {
+    //   potreeAsset.pcoGeometry.root.addEventListener('loaded', e=>{
+    //     this.gloctreenodes.push(new GLOctTreeNode(potreeAsset.pcoGeometry.root));
+    //   });
+    // }
+    this.map = new Map();
 
-    potreeAsset.visibleNodesChanged.connect(() => {
-      const visibilityTextureData = octree.computeVisibilityTextureData(potreeAsset.visibleNodes);
+    potreeAsset.visibleNodesChanged.connect((visibleNodes) => {
+        this.visibleNodes = []
+        visibleNodes.forEach(node => {
+            if (!this.map.has(node)) {
+		            console.log("GLPoints:", node.name, node.offset);
+                const glpoints = new ZeaEngine.GLPoints(gl, node.points);
+                glpoints.offset = [node.offset.x, node.offset.y, node.offset.z];
+                this.gloctreenodes.push(glpoints);
+                this.map.set(node, this.gloctreenodes.length-1);
+            }
+            this.visibleNodes.push(this.gloctreenodes[this.map.get(node)]);
+        });
+    //   const visibilityTextureData = octree.computeVisibilityTextureData(potreeAsset.visibleNodes);
       
-      const vnt = material.visibleNodesTexture;
-      const data = vnt.image.data;
-      // data.set(visibilityTextureData.data);
-      // Find the 'visibleNodes' uniform and set the texture data.
-      // vnt.needsUpdate = true;
+    //   const vnt = material.visibleNodesTexture;
+    //   const data = vnt.image.data;
+    //   // data.set(visibilityTextureData.data);
+    //   // Find the 'visibleNodes' uniform and set the texture data.
+    //   // vnt.needsUpdate = true;
 
       this.updated.emit();
     })
@@ -142,15 +156,37 @@ export class GLPotreeAsset extends ZeaEngine.GLPass {
 
   // Reference: ../PotreeRenderer.renderOctree(){
   render(renderstate) {
+    const gl = this.gl;
+    const { unifs } = renderstate;
+    const modelMatrixunif = unifs.modelMatrix
+    if (modelMatrixunif) {
+      gl.uniformMatrix4fv(
+        modelMatrixunif.location,
+        false,
+        this.modelMatrixArray
+      )
+    }
+    const offsetUnif = unifs.offset;
+    
+    this.visibleNodes.forEach(glpoints => {
+    // this.bindMaterial(
+    //       renderstate,
+    //       glmaterialGeomItemSet.getGLMaterial(),
+    //       true
+    //     )
+      gl.uniform3fv(offsetUnif.location, glpoints.offset)
+      glpoints.bind(renderstate)
+      renderstate.bindViewports(unifs, () => {
+        glpoints.draw(renderstate)
+      })
+    });
 
     // const camera = this.scene.getActiveCamera();
     // this.pRenderer.render(this.scene.scenePointCloud, camera, null, {
     // 	clipSpheres: this.scene.volumes.filter(v => (v instanceof Potree.SphereVolume)),
     // });
 
-    
-    let nodes = this.octree.visibleNodes;
-
+/*
     let gl = this.gl;
 
     let material = params.material ? params.material : octree.material;
@@ -159,7 +195,7 @@ export class GLPotreeAsset extends ZeaEngine.GLPass {
     let worldView = new THREE.Matrix4();
 
     // let mat4holder = new Float32Array(16);
-/*
+
     let gpsMin = Infinity;
     let gpsMax = -Infinity
     for (let node of nodes) {
@@ -179,7 +215,7 @@ export class GLPotreeAsset extends ZeaEngine.GLPass {
       break;
     }
 */
-
+/*
     let i = 0;
     for (let node of nodes) {
 
@@ -279,7 +315,7 @@ export class GLPotreeAsset extends ZeaEngine.GLPass {
 
         }
       }
-*/
+* /
 
       //shader.setUniformMatrix4("modelMatrix", world);
       //shader.setUniformMatrix4("modelViewMatrix", worldView);
@@ -325,7 +361,7 @@ export class GLPotreeAsset extends ZeaEngine.GLPass {
           gl.uniformMatrix4fv(lProj, false, flattenedMatrices);
         }
       }
-*/
+* /
 
       let geometry = node.geometryNode.geometry;
 /*
@@ -339,7 +375,7 @@ export class GLPotreeAsset extends ZeaEngine.GLPass {
         shader.setUniform1f("uGPSOffset", gpsOffset);
         shader.setUniform1f("uGPSRange", gpsRange);
       }
-*/
+* /
       {
         let uFilterReturnNumberRange = material.uniforms.uFilterReturnNumberRange.value;
         let uFilterNumberOfReturnsRange = material.uniforms.uFilterNumberOfReturnsRange.value;
@@ -382,7 +418,7 @@ export class GLPotreeAsset extends ZeaEngine.GLPass {
       performance.mark("renderNodes-end");
       performance.measure("render.renderNodes", "renderNodes-start", "renderNodes-end");
     }
-
+*/
   }
 
 }

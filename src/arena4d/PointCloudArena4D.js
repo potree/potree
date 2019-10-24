@@ -104,7 +104,7 @@ export class PointCloudArena4D extends PointCloudTree{
 		this.position.sub(geometry.offset);
 		this.updateMatrix();
 
-		this.numVisibleNodes = 0;
+		// this.numVisibleNodes = 0;// // Never used.
 		this.numVisiblePoints = 0;
 
 		this.boundingBoxNodes = [];

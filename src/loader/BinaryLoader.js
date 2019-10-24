@@ -19,6 +19,7 @@ export class BinaryLoader{
 	}
 
 	load(node){
+		return new Promise((resolve, reject)=>{
 		if (node.loaded) {
 			return;
 		}
@@ -37,7 +38,9 @@ export class BinaryLoader{
 			if (xhr.readyState === 4) {
 				if((xhr.status === 200 || xhr.status === 0) &&  xhr.response !== null){
 					let buffer = xhr.response;
-					this.parse(node, buffer);
+					this.parse(node, buffer).then(()=>{
+						resolve();
+					});
 				} else {
 					throw new Error(`Failed to load file! HTTP status: ${xhr.status}, file: ${url}`);
 				}
@@ -49,9 +52,11 @@ export class BinaryLoader{
 		} catch (e) {
 			console.log('fehler beim laden der punktwolke: ' + e);
 		}
+		});
 	};
 
 	parse(node, buffer){
+		return new Promise((resolve, reject)=>{
 		let pointAttributes = node.pcoGeometry.pointAttributes;
 
 		// if (this.version.upTo('1.5')) {
@@ -67,6 +72,7 @@ export class BinaryLoader{
 
 			let data = e.data;
 			node.parse(data, version)
+			resolve();
 			/*
 
 			let buffers = data.attributeBuffers;
@@ -147,6 +153,7 @@ export class BinaryLoader{
 			name: node.name
 		};
 		worker.postMessage(message, [message.buffer]);
+		});
 	};
 
 	

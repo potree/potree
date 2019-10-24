@@ -7,7 +7,7 @@ export class PointCloudTreeNode extends EventDispatcher{
 
 	constructor(){
 		super();
-		this.needsTransformUpdate = true;
+		// this.needsTransformUpdate = true;// Never used.
 	}
 
 	getChildren () {

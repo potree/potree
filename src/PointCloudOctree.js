@@ -110,6 +110,7 @@ export class PointCloudOctree extends PointCloudTree {
 		this.material = material || new PointCloudMaterial();
 		this.visiblePointsTarget = 2 * 1000 * 1000;
 		this.minimumNodePixelSize = 150;
+		this.minimumNodeVSize = 0.15;
 		this.level = 0;
 		this.position.copy(geometry.offset);
 		this.updateMatrix();
@@ -158,6 +159,7 @@ export class PointCloudOctree extends PointCloudTree {
 
 	toTreeNode (geometryNode, parent) {
 		let node = new PointCloudOctreeNode();
+		// console.log("toTreeNode:", geometryNode.name, geometryNode.boundingBox.min);
 
 		// if(geometryNode.name === "r40206"){
 		//	console.log("creating node for r40206");
@@ -165,6 +167,7 @@ export class PointCloudOctree extends PointCloudTree {
 		let sceneNode = new THREE.Points(geometryNode.geometry, this.material);
 		sceneNode.name = geometryNode.name;
 		sceneNode.position.copy(geometryNode.boundingBox.min);
+		console.log(geometryNode.boundingBox.min);
 		sceneNode.frustumCulled = false;
 		sceneNode.onBeforeRender = (_this, scene, camera, geometry, material, group) => {
 			// Note: I never see this code being called.

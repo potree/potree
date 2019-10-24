@@ -11,6 +11,8 @@ export class GLPotreePass extends ZeaEngine.GLPass {
     super();
     
     this.visiblePointsTarget = 2 * 1000 * 1000;
+    this.minimumNodeVSize = 0.2; // Size, not in pixels, but a fraction of scnreen V height.
+    this.visibleNodes = [];
   }
   /**
    * The init method.
@@ -23,7 +25,7 @@ export class GLPotreePass extends ZeaEngine.GLPass {
     this.glpotreeAssets = [];
     this.hilghlightedAssets = [];
     // this.glshader = new PotreePointsShader(gl);
-	this.glshader = ZeaEngine.sgFactory.constructClass('PotreePointsShader', gl);
+    this.glshader = ZeaEngine.sgFactory.constructClass('PotreePointsShader', gl);
     
     this.glgeomdataShader = new PotreePointsGeomDataShader(gl);
     this.glhighlightShader = new PotreePointsHilighlightShader(gl);
@@ -72,6 +74,161 @@ export class GLPotreePass extends ZeaEngine.GLPass {
   removePotreeasset(potreeAsset){
 
 
+  }
+
+  // ///////////////////////////////////
+  // Visiblity
+
+  setViewport(viewport){
+    this.viewport = viewport;
+    this.viewport.viewChanged.connect(()=>{
+      this.updateVisibility();
+    })
+    this.viewport.resized.connect(()=>{
+      this.updateVisibility();
+    })
+  }
+  
+  updateVisibilityStructures(priorityQueue) {
+    
+    const camera = this.viewport.getCamera();
+    const view = camera.getGlobalXfo().toMat4();
+    const viewI = this.viewport.getViewMatrix();
+    const proj = this.viewport.getProjectionMatrix();
+    const viewProj = proj.multiply(viewI)
+    const result = []
+    this.glpotreeAssets.forEach((glpotreeAsset, index)=> {
+        const potreeAsset = glpotreeAsset.getGeomItem()
+        const model = potreeAsset.getGlobalMat4()
+        const modelViewProj = viewProj.multiply(model);
+        const frustum = new ZeaEngine.Frustum();
+        frustum.setFromMatrix(modelViewProj);
+
+        // camera  position in object space
+        const modelInv = model.inverse();
+        const camMatrixObject = modelInv.multiply(view);
+        const camObjPos = camMatrixObject.translation
+
+        if (potreeAsset.getVisible() && potreeAsset.pcoGeometry !== null) {
+            priorityQueue.push({ index, node: potreeAsset.pcoGeometry.root, weight: Number.MAX_VALUE});
+        }
+
+        result.push({
+            glpotreeAsset,
+            frustum,
+            camObjPos,
+        });
+    });
+
+    return result
+  };
+
+
+  updateVisibility() {
+    const priorityQueue = new BinaryHeap(function (x) { return 1 / x.weight; });
+    const camera = this.viewport.getCamera();
+
+    this.numVisiblePoints = 0;
+    let numVisiblePoints = 0;
+    const visibleNodes = [];
+    const unloadedGeometry = [];
+
+    // calculate object space frustum and cam pos and setup priority queue
+    const result = this.updateVisibilityStructures(priorityQueue);
+
+    while (priorityQueue.size() > 0) {
+      const element = priorityQueue.pop();
+      const index = element.index;
+      const node = element.node;
+
+      if (!visibleNodes[index])
+          visibleNodes[index] = [];
+
+    //   const potreeAsset = this.glpotreeAssets[index].getGeomItem()
+      if (numVisiblePoints + node.numPoints > this.pointBudget) {
+        break;
+      }
+
+      const frustum = result[index].frustum;
+      const insideFrustum = frustum.intersectsBox(node.boundingBox);
+      if (!insideFrustum) {
+        continue;
+      }
+      numVisiblePoints += node.numPoints;
+      this.numVisiblePoints += node.numPoints;
+
+      const parent = element.parent;
+      if (!parent || parent.isLoaded()) {
+        if (node.isLoaded()) {
+          visibleNodes[index].push(node);
+        } else {
+          unloadedGeometry.push(node);
+        }
+      }
+
+      // add child nodes to priorityQueue
+      const camObjPos = result[index].camObjPos;
+      const children = node.getChildren();
+      for (let i = 0; i < children.length; i++) {
+        const child = children[i];
+
+        let weight = 0; 
+        if(true || camera.isPerspectiveCamera){
+          const sphere = child.getBoundingSphere();
+          const distance = sphere.center.distanceTo(camObjPos);
+          const radius = sphere.radius;
+          if(distance - radius < 0){
+            weight = Number.MAX_VALUE;
+          } else {
+            const fov = camera.getFov();
+            const slope = Math.tan(fov / 2);
+
+            const projFactor = 0.5 / (slope * distance);
+            const screenVRadius = radius * projFactor;
+            
+            if(screenVRadius < this.minimumNodeVSize){
+              continue;
+            }
+            weight = screenVRadius;
+          }
+
+        } else {
+          // TODO ortho visibility
+          let bb = child.getBoundingBox();				
+          let distance = child.getBoundingSphere().center.distanceTo(camObjPos);
+          let diagonal = bb.max.clone().sub(bb.min).length();
+          //weight = diagonal / distance;
+
+          weight = diagonal;
+        }
+
+        priorityQueue.push({ index, node: child, parent: node, weight: weight});
+      }
+    }// end priority queue loop
+
+    visibleNodes.forEach((assetVisibleNodes, index) => {
+      this.glpotreeAssets[index].setVisibleNodes(assetVisibleNodes);
+    });
+
+    if (unloadedGeometry.length > 0) {
+      // Disabled temporarily
+      // for (let i = 0; i < Math.min(Potree.maxNodesLoading, unloadedGeometry.length); i++) {
+      const promises = []
+      for (let i = 0; i < unloadedGeometry.length; i++) {
+          // console.log("load:", unloadedGeometry[i].name);
+          promises.push(unloadedGeometry[i].load());
+      }
+      if (promises.length > 0) {
+        // After all the loads have finished. 
+        // update again so we can recompute and visiblity.
+        Promise.all(promises).then(()=>{
+          // for (let i = 0; i < unloadedGeometry.length; i++) {
+          //   console.log("loaded:", unloadedGeometry[i].name);
+          // }
+          this.updateVisibility();
+        });
+      }
+    }
   }
 
   // ///////////////////////////////////

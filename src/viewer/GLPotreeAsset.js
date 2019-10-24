@@ -33,42 +33,54 @@ export class GLPotreeAsset extends ZeaEngine.GLPass {
     this.potreeAsset = potreeAsset;
     this.modelMatrixArray =  potreeAsset.getGlobalMat4().asArray()
 
-    const gloctreenodes = [];
-    const map = new Map();
-    const freeList = [];
     this.visibleNodes = [];
+    this.visibleGLNodes = [];
+    this.gloctreenodes = [];
+    this.map = new Map();
+    this.freeList = [];
 
-    potreeAsset.visibleNodesChanged.connect((visibleNodes) => {
-      this.visibleNodes = []
+    this.updated = new ZeaEngine.Signal();
+  }
+
+  setVisibleNodes(visibleNodes){
+    let visChanged = this.visibleNodes.length != visibleNodes.length
+    if(!visChanged) {
+      visChanged = visibleNodes.some((node, index) => {
+            return this.visibleNodes[index] != node;
+      })
+    }
+    if(visChanged) {
+      const gl = this.gl;
+
+      this.visibleGLNodes = []
       // Iterate backwards to lru touches the closests node last.
       for(let i=visibleNodes.length-1; i>=0; i--) {
         const node = visibleNodes[i];
-        if (!map.has(node)) {
+        if (!this.map.has(node)) {
           // console.log("GLPoints:", node.name, node.offset);
           const gloctreenode = new GLOctTreeNode(gl, node);
           gloctreenode.offset = [node.offset.x, node.offset.y, node.offset.z];
-          const index = freeList.length > 0 ? freeList.pop() : gloctreenodes.length;
-          gloctreenodes[index] = gloctreenode;
-          map.set(node, index);
+          const index = this.freeList.length > 0 ? this.freeList.pop() : this.gloctreenodes.length;
+          this.gloctreenodes[index] = gloctreenode;
+          this.map.set(node, index);
 
           gloctreenode.destructing.connect(() => {
-            map.delete(node);
-            freeList.push(index);
-            const drawIndex = this.visibleNodes.indexOf(gloctreenode);
+            this.map.delete(node);
+            this.freeList.push(index);
+            const drawIndex = this.visibleGLNodes.indexOf(gloctreenode);
             if (drawIndex >= 0)
-              this.visibleNodes.splice(drawIndex, 1);
+              this.visibleGLNodes.splice(drawIndex, 1);
           });
         }
-        const gloctreenode = gloctreenodes[map.get(node)];
+        const gloctreenode = this.gloctreenodes[this.map.get(node)];
         this.lru.touch(gloctreenode);
-        this.visibleNodes.push(gloctreenode);
+        this.visibleGLNodes.push(gloctreenode);
       };
       // Causes unused nodes to be flushed.
       this.lru.freeMemory();
 
       this.updated.emit();
-    })
-    this.updated = new ZeaEngine.Signal();
+    }
   }
 
   getGeomItem(){
@@ -97,8 +109,8 @@ export class GLPotreeAsset extends ZeaEngine.GLPass {
   }
 
   draw(renderstate) {
-    if (this.visibleNodes.length == 0) return;
-    this.__drawNodes(this.visibleNodes, renderstate)
+    if (this.visibleGLNodes.length == 0) return;
+    this.__drawNodes(this.visibleGLNodes, renderstate)
   }
 
   drawHighlightedGeoms(renderstate) {
@@ -107,12 +119,12 @@ export class GLPotreeAsset extends ZeaEngine.GLPass {
     if (highlightColor) {
         gl.uniform4fv(highlightColor.location, this.potreeAsset.getHighlight().asArray());
     }
-    this.__drawNodes(this.visibleNodes, renderstate)
+    this.__drawNodes(this.visibleGLNodes, renderstate)
   }
 
   drawGeomData(renderstate) {
-    if (this.visibleNodes.length == 0) return;
-    this.__drawNodes(this.visibleNodes, renderstate)
+    if (this.visibleGLNodes.length == 0) return;
+    this.__drawNodes(this.visibleGLNodes, renderstate)
   }
 
 }

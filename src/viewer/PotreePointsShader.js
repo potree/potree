@@ -22,11 +22,12 @@ varying vec4 v_color;
 varying vec3 v_viewPos;
 
 void main(void) {
+  vec4 pos = vec4(positions + offset, 1.);
   mat4 modelViewMatrix = viewMatrix * modelMatrix;
-  vec4 viewPos = modelViewMatrix * vec4(positions, 1.0);
+  vec4 viewPos = modelViewMatrix * pos;
 
   mat4 modelViewProjectionMatrix = projectionMatrix * modelViewMatrix;
-  gl_Position = modelViewProjectionMatrix * vec4(positions + offset, 1.);
+  gl_Position = modelViewProjectionMatrix * pos;
   gl_PointSize = 3.0;
 
   v_color = colors / 255.0; // Unsigned byte attributes need to be scaled down from 0-255 > 0..1
@@ -64,15 +65,6 @@ void main(void) {
 }
 `
     )
-  }
-
-  static getParamDeclarations() {
-    const paramDescs = super.getParamDeclarations()
-    paramDescs.push({
-      name: 'BaseColor',
-      defaultValue: new ZeaEngine.Color(1.0, 1.0, 0.5),
-    })
-    return paramDescs
   }
 
   static getGeomDataShaderName() {
@@ -127,15 +119,6 @@ void main(void) {
 `
     )
   }
-
-  static getParamDeclarations() {
-    const paramDescs = super.getParamDeclarations()
-    paramDescs.push({
-      name: 'BaseColor',
-      defaultValue: new ZeaEngine.Color(1.0, 1.0, 0.5),
-    })
-    return paramDescs
-  }
 }
 
 ZeaEngine.sgFactory.registerClass('PotreePointsGeomDataShader', PotreePointsGeomDataShader)
@@ -172,15 +155,6 @@ void main(void) {
 }
 `
     )
-  }
-
-  static getParamDeclarations() {
-    const paramDescs = super.getParamDeclarations()
-    paramDescs.push({
-      name: 'BaseColor',
-      defaultValue: new ZeaEngine.Color(1.0, 1.0, 0.5),
-    })
-    return paramDescs
   }
 }
 

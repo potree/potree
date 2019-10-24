@@ -110,11 +110,6 @@ export class GLPotreePass extends ZeaEngine.GLPass {
     gl.enable(gl.DEPTH_TEST);
 
     this.glhighlightShader.bind(renderstate);
-
-    // RENDER
-    this.glpotreeAssets.forEach((a, index)=> {
-      a.drawGeomData(renderstate)
-    })
     this.hilghlightedAssets.forEach( a => a.drawHighlightedGeoms(renderstate))
   }
 

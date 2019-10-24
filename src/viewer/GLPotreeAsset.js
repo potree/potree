@@ -37,7 +37,6 @@ export class GLPotreeAsset extends ZeaEngine.GLPass {
     const map = new Map();
     const freeList = [];
     this.visibleNodes = [];
-    this.hilightedNodes = [];
 
     potreeAsset.visibleNodesChanged.connect((visibleNodes) => {
       this.visibleNodes = []
@@ -103,13 +102,12 @@ export class GLPotreeAsset extends ZeaEngine.GLPass {
   }
 
   drawHighlightedGeoms(renderstate) {
-    if (this.hilightedNodes.length == 0) return;
-
+    const gl = this.gl;
     const { highlightColor } = renderstate.unifs;
     if (highlightColor) {
         gl.uniform4fv(highlightColor.location, this.potreeAsset.getHighlight().asArray());
     }
-    this.__drawNodes(this.hilightedNodes, renderstate)
+    this.__drawNodes(this.visibleNodes, renderstate)
   }
 
   drawGeomData(renderstate) {

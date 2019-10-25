@@ -8,27 +8,34 @@ class PotreePointsShader extends ZeaEngine.GLShader {
       `
 precision highp float;
 
-attribute vec3 positions;
-attribute vec4 colors;
+instancedattribute vec3 positions;
+instancedattribute vec4 colors;
 
 uniform vec3 offset;
 
 uniform mat4 modelMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 projectionMatrix;
+uniform float PointSize;
+
+<%include file="utils/quadVertexFromID.glsl"/>
 
 /* VS Outputs */
 varying vec4 v_color;
 varying vec3 v_viewPos;
 
 void main(void) {
+  vec2 quadPointPos = getQuadVertexPositionFromID();
+//   v_texCoord = quadPointPos + 0.5;
+
   vec4 pos = vec4(positions + offset, 1.);
   mat4 modelViewMatrix = viewMatrix * modelMatrix;
   vec4 viewPos = modelViewMatrix * pos;
 
-  mat4 modelViewProjectionMatrix = projectionMatrix * modelViewMatrix;
-  gl_Position = modelViewProjectionMatrix * pos;
-  gl_PointSize = 3.0;
+  viewPos += vec4(vec3(quadPointPos, 0.0) * PointSize, 0.);
+
+  gl_Position = projectionMatrix * viewPos;
+//   gl_PointSize = PointSize;
 
   v_color = colors / 255.0; // Unsigned byte attributes need to be scaled down from 0-255 > 0..1
   v_viewPos = -viewPos.xyz;

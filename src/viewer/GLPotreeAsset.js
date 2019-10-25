@@ -90,17 +90,13 @@ export class GLPotreeAsset extends ZeaEngine.GLPass {
   __drawNodes(nodes, renderstate){
     const gl = this.gl;
     const { unifs } = renderstate;
-    const modelMatrixunif = unifs.modelMatrix
-    if (modelMatrixunif) {
-      gl.uniformMatrix4fv(
-        modelMatrixunif.location,
-        false,
-        this.modelMatrixArray
-      )
-    }
+    const { modelMatrix, PointSize } = unifs
+    gl.uniformMatrix4fv(modelMatrix.location, false, this.modelMatrixArray)
     const offsetUnif = unifs.offset;
     nodes.forEach(glpoints => {
-      this.gl.uniform3fv(offsetUnif.location, glpoints.node.offset.asArray())
+      const node = glpoints.node
+      this.gl.uniform3fv(offsetUnif.location, node.offset.asArray())
+      gl.uniform1f(PointSize.location, 0.25);//node.spacing)
       glpoints.bind(renderstate)
       renderstate.bindViewports(unifs, () => {
         glpoints.draw(renderstate)

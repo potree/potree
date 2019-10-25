@@ -6,12 +6,6 @@
 	<meta name="author" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 	<title>Potree Viewer</title>
-<!-- 
-	<link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
-	<link rel="stylesheet" type="text/css" href="../libs/jquery-ui/jquery-ui.min.css">
-	<link rel="stylesheet" type="text/css" href="../libs/openlayers3/ol.css">
-	<link rel="stylesheet" type="text/css" href="../libs/spectrum/spectrum.css">
-	<link rel="stylesheet" type="text/css" href="../libs/jstree/themes/mixed/style.css"> -->
 </head>
 
 <body>
@@ -47,7 +41,8 @@
 		// url = "http://5.9.65.151/mschuetz/potree/resources/pointclouds/3dlasermapping/whitby/cloud.js"
 		// url = "http://5.9.65.151/mschuetz/potree/resources/pointclouds/faro/westend_palais/cloud.js"
 		// url = "http://localhost:3150/PotreeConverter/out/NEONDSSampleLiDARPointCloud/cloud.js"
-		url = "http://localhost:3150/PotreeConverter/out/NavVisHQ/cloud.js"
+		// url = "http://localhost:3150/PotreeConverter/out/NavVisHQ/cloud.js"
+		url = "http://betaserver.icgc.cat/potree12/resources/pointclouds/templesagradafamilia/cloud.js"
 		potreeAsset.loadPointCloud(url, "PointCloud").then(e => {
 	
 			// let material = e.pointcloud.material;

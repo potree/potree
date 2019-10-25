@@ -151,85 +151,38 @@ export class PointCloudOctreeGeometryNode extends PointCloudTreeNode{
 	parse(data, version) {
 
 		const buffers = data.attributeBuffers;
-		/*
-		const geometry = new THREE.BufferGeometry();
-		for(let property in buffers){
-			const buffer = buffers[property].buffer;
-
-			if (parseInt(property) === PointAttributeNames.POSITION_CARTESIAN) {
-				geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(buffer), 3));
-			} else if (parseInt(property) === PointAttributeNames.COLOR_PACKED) {
-				geometry.addAttribute('color', new THREE.BufferAttribute(new Uint8Array(buffer), 4, true));
-			} else if (parseInt(property) === PointAttributeNames.INTENSITY) {
-				geometry.addAttribute('intensity', new THREE.BufferAttribute(new Float32Array(buffer), 1));
-			} else if (parseInt(property) === PointAttributeNames.CLASSIFICATION) {
-				geometry.addAttribute('classification', new THREE.BufferAttribute(new Uint8Array(buffer), 1));
-			} else if (parseInt(property) === PointAttributeNames.RETURN_NUMBER) {
-				geometry.addAttribute('returnNumber', new THREE.BufferAttribute(new Uint8Array(buffer), 1));
-			} else if (parseInt(property) === PointAttributeNames.NUMBER_OF_RETURNS) {
-				geometry.addAttribute('numberOfReturns', new THREE.BufferAttribute(new Uint8Array(buffer), 1));
-			} else if (parseInt(property) === PointAttributeNames.SOURCE_ID) {
-				geometry.addAttribute('pointSourceID', new THREE.BufferAttribute(new Uint16Array(buffer), 1));
-			} else if (parseInt(property) === PointAttributeNames.NORMAL_SPHEREMAPPED) {
-				geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
-			} else if (parseInt(property) === PointAttributeNames.NORMAL_OCT16) {
-				geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
-			} else if (parseInt(property) === PointAttributeNames.NORMAL) {
-				geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
-			} else if (parseInt(property) === PointAttributeNames.INDICES) {
-				const bufferAttribute = new THREE.BufferAttribute(new Uint8Array(buffer), 4);
-				bufferAttribute.normalized = true;
-				geometry.addAttribute('indices', bufferAttribute);
-			} else if (parseInt(property) === PointAttributeNames.SPACING) {
-				const bufferAttribute = new THREE.BufferAttribute(new Float32Array(buffer), 1);
-				geometry.addAttribute('spacing', bufferAttribute);
-			} else if (parseInt(property) === PointAttributeNames.GPS_TIME) {
-				const bufferAttribute = new THREE.BufferAttribute(new Float32Array(buffer), 1);
-				geometry.addAttribute('gpsTime', bufferAttribute);
-
-				this.gpsTime = {
-					offset: buffers[property].offset,
-					range: buffers[property].range,
-				};
-			}
-		}
-		this.geometry = geometry;
-		*/
-
 
 		const points = new ZeaEngine.Points();
 		for(let property in buffers){
 			const buffer = buffers[property].buffer;
-
-			if (parseInt(property) === PointAttributeNames.POSITION_CARTESIAN) {
+			const propertyId = parseInt(property);
+			if (propertyId === PointAttributeNames.POSITION_CARTESIAN) {
 				const attr = points.getVertexAttribute('positions');
 				attr.data = new Float32Array(buffer);
-			} else if (parseInt(property) === PointAttributeNames.COLOR_PACKED) {
+			} else if (propertyId === PointAttributeNames.COLOR_PACKED) {
     			points.addVertexAttribute('colors', ZeaEngine.RGBA, new Uint8Array(buffer))
-			}/* else if (parseInt(property) === PointAttributeNames.INTENSITY) {
+			}/* else if (propertyId === PointAttributeNames.INTENSITY) {
 				geometry.addAttribute('intensity', new THREE.BufferAttribute(new Float32Array(buffer), 1));
-			} else if (parseInt(property) === PointAttributeNames.CLASSIFICATION) {
+			} else if (propertyId === PointAttributeNames.CLASSIFICATION) {
 				geometry.addAttribute('classification', new THREE.BufferAttribute(new Uint8Array(buffer), 1));
-			} else if (parseInt(property) === PointAttributeNames.RETURN_NUMBER) {
+			} else if (propertyId === PointAttributeNames.RETURN_NUMBER) {
 				geometry.addAttribute('returnNumber', new THREE.BufferAttribute(new Uint8Array(buffer), 1));
-			} else if (parseInt(property) === PointAttributeNames.NUMBER_OF_RETURNS) {
+			} else if (propertyId === PointAttributeNames.NUMBER_OF_RETURNS) {
 				geometry.addAttribute('numberOfReturns', new THREE.BufferAttribute(new Uint8Array(buffer), 1));
-			} else if (parseInt(property) === PointAttributeNames.SOURCE_ID) {
+			} else if (propertyId === PointAttributeNames.SOURCE_ID) {
 				geometry.addAttribute('pointSourceID', new THREE.BufferAttribute(new Uint16Array(buffer), 1));
-			} else if (parseInt(property) === PointAttributeNames.NORMAL_SPHEREMAPPED) {
+			} else if (propertyId === PointAttributeNames.NORMAL_SPHEREMAPPED) {
 				geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
-			} else if (parseInt(property) === PointAttributeNames.NORMAL_OCT16) {
+			} else if (propertyId === PointAttributeNames.NORMAL_OCT16) {
 				geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
-			} else if (parseInt(property) === PointAttributeNames.NORMAL) {
+			} else if (propertyId === PointAttributeNames.NORMAL) {
 				geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
-			} else if (parseInt(property) === PointAttributeNames.INDICES) {
-				const bufferAttribute = new THREE.BufferAttribute(new Uint8Array(buffer), 4);
-				bufferAttribute.normalized = true;
-				geometry.addAttribute('indices', bufferAttribute);
-			} else if (parseInt(property) === PointAttributeNames.SPACING) {
+			}*/ else if (propertyId === PointAttributeNames.INDICES) {
+    			points.addVertexAttribute('indices', ZeaEngine.RGBA, new Uint8Array(buffer))
+			}/* else if (propertyId === PointAttributeNames.SPACING) {
 				const bufferAttribute = new THREE.BufferAttribute(new Float32Array(buffer), 1);
 				geometry.addAttribute('spacing', bufferAttribute);
-			} else if (parseInt(property) === PointAttributeNames.GPS_TIME) {
+			} else if (propertyId === PointAttributeNames.GPS_TIME) {
 				const bufferAttribute = new THREE.BufferAttribute(new Float32Array(buffer), 1);
 				geometry.addAttribute('gpsTime', bufferAttribute);
 
@@ -238,6 +191,16 @@ export class PointCloudOctreeGeometryNode extends PointCloudTreeNode{
 					range: buffers[property].range,
 				};
 			}*/
+			else {
+				let name;
+				for (let key in PointAttributeNames) {
+					if (PointAttributeNames[key] == propertyId) {
+						name = key;
+						break;
+					}
+				}
+				console.warn("Unandled Point Attribute:", name); 
+			}
 		}
 		this.points = points;
 		// const min = data.tightBoundingBox.min

@@ -30,6 +30,7 @@ export class POCLoader {
 						pco.octreeDir = url + '/../' + fMno.octreeDir;
 					}
 
+					pco.numPoints = fMno.points;
 					pco.spacing = fMno.spacing;
 					pco.hierarchyStepSize = fMno.hierarchyStepSize;
 

@@ -16,6 +16,9 @@ export class PotreeAsset extends ZeaEngine.AssetItem {
 
     this.__loaded = false;
     this.visibleNodesChanged = new ZeaEngine.Signal();
+
+	this.addParameter(new ZeaEngine.NumberParameter('Version', 0))
+	this.addParameter(new ZeaEngine.NumberParameter('Num Points', 0))
   }
 
   getGlobalMat4() {
@@ -36,12 +39,17 @@ export class PotreeAsset extends ZeaEngine.AssetItem {
   setGeometry(pcoGeometry) {
 
     this.pcoGeometry = pcoGeometry;
-    const xfo = this.getGlobalXfo();
-    xfo.tr = this.pcoGeometry.offset;// TODO: try me. should work
-    xfo.tr.set(this.pcoGeometry.offset.x, this.pcoGeometry.offset.y, this.pcoGeometry.offset.z);
-    this.setGlobalXfo(xfo, ZeaEngine.ValueSetMode.DATA_LOAD);
+	const mode = ZeaEngine.ValueSetMode.DATA_LOAD;
+
+    // const xfo = this.getGlobalXfo();
+    // xfo.tr = this.pcoGeometry.offset;
+    // this.setGlobalXfo(xfo, mode);
+
+	this.getParameter('Version').setValue(parseFloat(pcoGeometry.version), mode);
+	if (pcoGeometry.numPoints)
+		this.getParameter('Num Points').setValue(pcoGeometry.numPoints, mode);
     
-    this._setBoundingBoxDirty()
+    // this._setBoundingBoxDirty()
 
     this.loaded.emit();
 

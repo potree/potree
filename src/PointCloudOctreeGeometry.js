@@ -30,28 +30,28 @@ export class PointCloudOctreeGeometryNode extends PointCloudTreeNode{
 		this.pcoGeometry = pcoGeometry;
 		this.geometry = null;
 		this.boundingBox = boundingBox;
-		this.boundingSphere = boundingBox.getBoundingSphere(new THREE.Sphere());
+		this.boundingSphere = boundingBox.getBoundingSphere();
 		this.children = {};
 		this.numPoints = 0;
 		this.level = null;
 		this.loaded = false;
 		this.oneTimeDisposeHandlers = [];
 
-		this.offset = Object.assign({}, this.boundingBox.min);
+		this.offset = this.boundingBox.min.clone();
 		// console.log("PointCloudOctreeGeometryNode:", this.name, this.offset);
 	}
 
-	isGeometryNode(){
-		return true;
-	}
+	// isGeometryNode(){
+	// 	return true;
+	// }
 
 	getLevel(){
 		return this.level;
 	}
 
-	isTreeNode(){
-		return false;
-	}
+	// isTreeNode(){
+	// 	return false;
+	// }
 
 	isLoaded(){
 		return this.loaded;
@@ -149,11 +149,9 @@ export class PointCloudOctreeGeometryNode extends PointCloudTreeNode{
 	}
 
 	parse(data, version) {
-		
-		// Needed by GLOctTreeNode as we load GPU data only in the renderer.
-		this.attributeBuffers = data.attributeBuffers;
 
 		const buffers = data.attributeBuffers;
+		/*
 		const geometry = new THREE.BufferGeometry();
 		for(let property in buffers){
 			const buffer = buffers[property].buffer;
@@ -196,6 +194,7 @@ export class PointCloudOctreeGeometryNode extends PointCloudTreeNode{
 			}
 		}
 		this.geometry = geometry;
+		*/
 
 
 		const points = new ZeaEngine.Points();
@@ -245,11 +244,11 @@ export class PointCloudOctreeGeometryNode extends PointCloudTreeNode{
 		// this.offset = new ZeaEngine.Vec3(min[0], min[1], min[2]);
 		// console.log(data.tightBoundingBox.min);
 
-		const tightBoundingBox = new THREE.Box3(
-			new THREE.Vector3().fromArray(data.tightBoundingBox.min),
-			new THREE.Vector3().fromArray(data.tightBoundingBox.max)
+		const tightBoundingBox = new ZeaEngine.Box3(
+			new ZeaEngine.Vec3(...data.tightBoundingBox.min),
+			new ZeaEngine.Vec3(...data.tightBoundingBox.max)
 		);
-		tightBoundingBox.max.sub(tightBoundingBox.min);
+		tightBoundingBox.max.subtract(tightBoundingBox.min);
 		tightBoundingBox.min.set(0, 0, 0);
 
 		
@@ -257,7 +256,7 @@ export class PointCloudOctreeGeometryNode extends PointCloudTreeNode{
 		const numPoints = data.buffer.byteLength / pointAttributes.byteSize;
 		
 		this.numPoints = numPoints;
-		this.mean = new THREE.Vector3(...data.mean);
+		this.mean = new ZeaEngine.Vec3(...data.mean);
 		this.tightBoundingBox = tightBoundingBox;
 		this.loaded = true;
 		this.loading = false;

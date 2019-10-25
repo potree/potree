@@ -4,17 +4,18 @@ import {LRU} from "../LRU.js";
 let globalCounter = 0;
 
 class GLOctTreeNode extends ZeaEngine.GLPoints {
-  constructor(gl, pointCloudOctreeGeometryNode) {
-    super(gl, pointCloudOctreeGeometryNode.points)
-    this.pointCloudOctreeGeometryNode = pointCloudOctreeGeometryNode;
+  constructor(gl, node) {
+    super(gl, node.points)
+    this.node = node;
 
+    // this.offset = node.offset;
     this.id = ++globalCounter;
     this.loaded = true; // only for LRU. Safely remove after refactoring.
     
   }
 
   get numPoints(){
-    return this.pointCloudOctreeGeometryNode.numPoints;
+    return this.node.numPoints;
   }
 
   dispose() {
@@ -59,7 +60,6 @@ export class GLPotreeAsset extends ZeaEngine.GLPass {
         if (!this.map.has(node)) {
           // console.log("GLPoints:", node.name, node.offset);
           const gloctreenode = new GLOctTreeNode(gl, node);
-          gloctreenode.offset = [node.offset.x, node.offset.y, node.offset.z];
           const index = this.freeList.length > 0 ? this.freeList.pop() : this.gloctreenodes.length;
           this.gloctreenodes[index] = gloctreenode;
           this.map.set(node, index);
@@ -100,7 +100,7 @@ export class GLPotreeAsset extends ZeaEngine.GLPass {
     }
     const offsetUnif = unifs.offset;
     nodes.forEach(glpoints => {
-      this.gl.uniform3fv(offsetUnif.location, glpoints.offset)
+      this.gl.uniform3fv(offsetUnif.location, glpoints.node.offset.asArray())
       glpoints.bind(renderstate)
       renderstate.bindViewports(unifs, () => {
         glpoints.draw(renderstate)

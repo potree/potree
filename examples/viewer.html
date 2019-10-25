@@ -6,132 +6,66 @@
 	<meta name="author" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 	<title>Potree Viewer</title>
-
+<!-- 
 	<link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
 	<link rel="stylesheet" type="text/css" href="../libs/jquery-ui/jquery-ui.min.css">
 	<link rel="stylesheet" type="text/css" href="../libs/openlayers3/ol.css">
 	<link rel="stylesheet" type="text/css" href="../libs/spectrum/spectrum.css">
-	<link rel="stylesheet" type="text/css" href="../libs/jstree/themes/mixed/style.css">
+	<link rel="stylesheet" type="text/css" href="../libs/jstree/themes/mixed/style.css"> -->
 </head>
 
 <body>
 	<script src="../node_modules/@zeainc/zea-engine/dist/zea-engine.js"></script>
-
-	<!-- <script src="../libs/jquery/jquery-3.1.1.min.js"></script> -->
-	<!-- <script src="../libs/spectrum/spectrum.js"></script> -->
-	<!-- <script src="../libs/jquery-ui/jquery-ui.min.js"></script> -->
-	<!-- <script src="../libs/three.js/build/three.min.js"></script> -->
-	<!-- <script src="../libs/other/BinaryHeap.js"></script> -->
-	<!-- <script src="../libs/tween/tween.min.js"></script> -->
-	<!-- <script src="../libs/d3/d3.js"></script> -->
-	<!-- <script src="../libs/proj4/proj4.js"></script> -->
-	<!-- <script src="../libs/openlayers3/ol.js"></script> -->
-	<!-- <script src="../libs/i18next/i18next.js"></script> -->
-	<!-- <script src="../libs/jstree/jstree.js"></script> -->
 	<script src="../build/potree/potree.js"></script>
-	<!-- <script src="../libs/plasio/js/laslaz.js"></script> -->
-	
-	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
-	<!-- INCLUDE SETTINGS HERE -->
-	
-	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
-		<div id="potree_render_area"></div>
-		<div id="potree_sidebar_container"> </div>
+	<div id="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
 	</div>
 	
 	<script>
+	
+		const scene = new ZeaEngine.Scene();
+		scene.setupGrid(600, 50);
 
+		const renderer = new ZeaEngine.GLRenderer(document.getElementById("potree_container"), {
+			enableTextures:false
+		});
+		const potreePass = new Potree.GLPotreePass();
+		// potreePass.setPointBudget(1*1000*1000);
+		renderer.addPass(potreePass, ZeaEngine.PassType.OPAQUE);
+		renderer.setScene(scene);
+		renderer.resumeDrawing();
+
+		const potreeAsset = new Potree.PotreeAsset();
+		scene.getRoot().addChild(potreeAsset);
 		
-		const oldPoTree = false;
-		if (oldPoTree) {
-			window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
+		// Load and add point cloud to scene
+		let url;
+		// url = "../pointclouds/vol_total/cloud.js"
+		// url = "http://localhost:3150/PotreeConverter/NavVisHQ/sources.json"
+		// url = "http://5.9.65.151/mschuetz/potree/resources/pointclouds/pix4d/eclepens/cloud.js"
+		// url = "http://www.kkapc.co.jp/potree-1.5RC/pointclouds/apc_tatumi/cloud.js" // No CORS
+		// url = "http://www.airborneresearch.com.au/potree/pointclouds/Ironbank/cloud.js" // No CORS
+		// url = "http://5.9.65.151/mschuetz/potree/resources/pointclouds/3dlasermapping/whitby/cloud.js"
+		// url = "http://5.9.65.151/mschuetz/potree/resources/pointclouds/faro/westend_palais/cloud.js"
+		// url = "http://localhost:3150/PotreeConverter/out/NEONDSSampleLiDARPointCloud/cloud.js"
+		url = "http://localhost:3150/PotreeConverter/out/NavVisHQ/cloud.js"
+		potreeAsset.loadPointCloud(url, "PointCloud").then(e => {
+	
+			// let material = e.pointcloud.material;
+			// material.size = 1;
+			// material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+			// material.shape = Potree.PointShape.SQUARE;
 			
 			
-			viewer.setEDLEnabled(false);
-			viewer.setEDLRadius(2.4);
-			// viewer.useHQ = true
+			//scene.view.position.set(589974.341, 231698.397, 986.146);
+			//scene.view.lookAt(new THREE.Vector3(589851.587, 231428.213, 715.634));
+			renderer.frameAll();
+			
+			potreePass.setViewport(renderer.getViewport());
 
-			viewer.setFOV(60);
-			viewer.setPointBudget(1*1000*1000);
-			// viewer.setPointBudget(1*100*100);
-			// viewer.loadSettingsFromURL();
-			
-			viewer.setDescription("Point cloud courtesy of <a target='_blank' href='https://www.sigeom.ch/'>sigeom sa</a>");
-			
-			// viewer.loadGUI(() => {
-			// 	viewer.setLanguage('en');
-			// 	$("#menu_tools").next().show();
-			// 	$("#menu_clipping").next().show();
-			// 	viewer.toggleSidebar();
-			// });
-			
-			// url = "../pointclouds/vol_total/cloud.js"
-			url = "http://localhost:3150/PotreeConverter/out/NEONDSSampleLiDARPointCloud/cloud.js"
-			// Load and add point cloud to scene
-			// Potree.loadPointCloud("../pointclouds/vol_total/cloud.js", "sigeom.sa", e => {
-			// Potree.loadPointCloud("http://localhost:3150/PotreeConverter/NavVisHQ/sources.json", "NavVisHQ", e => {
-			Potree.loadPointCloud(url, "Eclepens", function(e){
-				let scene = viewer.scene;
-				let pointcloud = e.pointcloud;
-				
-				let material = pointcloud.material;
-				material.size = 1;
-				material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-				material.shape = Potree.PointShape.SQUARE;
-				
-				scene.addPointCloud(pointcloud);
-				
-				//scene.view.position.set(589974.341, 231698.397, 986.146);
-				//scene.view.lookAt(new THREE.Vector3(589851.587, 231428.213, 715.634));
-				viewer.fitToScreen();
-			});
-		} else {
-		
-			const scene = new ZeaEngine.Scene();
-			scene.setupGrid(600, 50);
-
-			const renderer = new ZeaEngine.GLRenderer(document.getElementById("potree_render_area"), {
-				enableTextures:false
-			});
-			const potreePass = new Potree.GLPotreePass();
-			// potreePass.setPointBudget(1*1000*1000);
-			renderer.addPass(potreePass, ZeaEngine.PassType.OPAQUE);
-			renderer.setScene(scene);
-			renderer.resumeDrawing();
-
-			const potreeAsset = new Potree.PotreeAsset();
-			scene.getRoot().addChild(potreeAsset);
-			
-			// Load and add point cloud to scene
-			let url;
-			// url = "../pointclouds/vol_total/cloud.js"
-			// url = "http://localhost:3150/PotreeConverter/NavVisHQ/sources.json"
-			// url = "http://5.9.65.151/mschuetz/potree/resources/pointclouds/pix4d/eclepens/cloud.js"
-			// url = "http://www.kkapc.co.jp/potree-1.5RC/pointclouds/apc_tatumi/cloud.js" // No CORS
-			// url = "http://www.airborneresearch.com.au/potree/pointclouds/Ironbank/cloud.js" // No CORS
-			// url = "http://5.9.65.151/mschuetz/potree/resources/pointclouds/3dlasermapping/whitby/cloud.js"
-			// url = "http://5.9.65.151/mschuetz/potree/resources/pointclouds/faro/westend_palais/cloud.js"
-			// url = "http://localhost:3150/PotreeConverter/out/NEONDSSampleLiDARPointCloud/cloud.js"
-			url = "http://localhost:3150/PotreeConverter/out/NavVisHQ/cloud.js"
-			potreeAsset.loadPointCloud(url, "PointCloud").then(e => {
-		
-				// let material = e.pointcloud.material;
-				// material.size = 1;
-				// material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-				// material.shape = Potree.PointShape.SQUARE;
-				
-				
-				//scene.view.position.set(589974.341, 231698.397, 986.146);
-				//scene.view.lookAt(new THREE.Vector3(589851.587, 231428.213, 715.634));
-				renderer.frameAll();
-				
-				potreePass.setViewport(renderer.getViewport());
-
-				// setTimeout(()=>{
-				// 	potreeAsset.addHighlight('fppp', new ZeaEngine.Color(1,0.6,0.8, 0.1));
-				// }, 3000);
-			});
-		}
+			// setTimeout(()=>{
+			// 	potreeAsset.addHighlight('fppp', new ZeaEngine.Color(1,0.6,0.8, 0.1));
+			// }, 3000);
+		});
 		
 
 

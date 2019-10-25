@@ -36,10 +36,10 @@ export class PotreeAsset extends ZeaEngine.AssetItem {
   setGeometry(pcoGeometry) {
 
     this.pcoGeometry = pcoGeometry;
-    // const xfo = this.getGlobalXfo();
-    // xfo.tr = this.pcoGeometry.offset;// TODO: try me. should work
-    // xfo.tr.set(this.pcoGeometry.offset.x, this.pcoGeometry.offset.y, this.pcoGeometry.offset.z);
-    // this.setGlobalXfo(xfo, ZeaEngine.ValueSetMode.DATA_LOAD);
+    const xfo = this.getGlobalXfo();
+    xfo.tr = this.pcoGeometry.offset;// TODO: try me. should work
+    xfo.tr.set(this.pcoGeometry.offset.x, this.pcoGeometry.offset.y, this.pcoGeometry.offset.z);
+    this.setGlobalXfo(xfo, ZeaEngine.ValueSetMode.DATA_LOAD);
     
     this._setBoundingBoxDirty()
 

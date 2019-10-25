@@ -500,7 +500,7 @@ export class Utils {
 		return ray;
 	}
 	*/
-
+/*
 	static projectedRadius(radius, camera, distance, screenWidth, screenHeight){
 		if(camera instanceof THREE.OrthographicCamera){
 			return Utils.projectedRadiusOrtho(radius, camera.projectionMatrix, screenWidth, screenHeight);
@@ -563,7 +563,7 @@ export class Utils {
 	 * 0: no intersection
 	 * 1: intersection
 	 * 2: fully inside
-	 */
+	 * /
 	static frustumSphereIntersection (frustum, sphere) {
 		let planes = frustum.planes;
 		let center = sphere.center;
@@ -637,7 +637,7 @@ export class Utils {
 		}
 		window.history.replaceState({}, '', url);
 	}
-
+*/
 	static createChildAABB(aabb, index){
 		let min = aabb.min.clone();
 		let max = aabb.max.clone();
@@ -663,7 +663,7 @@ export class Utils {
 
 		return new ZeaEngine.Box3(min, max);
 	}
-
+/*
 	// see https://stackoverflow.com/questions/400212/how-do-i-copy-to-the-clipboard-in-javascript
 	static clipboardCopy(text){
 		let textArea = document.createElement("textarea");
@@ -802,7 +802,7 @@ export class Utils {
 			return 'Matcap';
 		}
 	};
-
+*/
 }
 
 // Utils.screenPass = new function () {

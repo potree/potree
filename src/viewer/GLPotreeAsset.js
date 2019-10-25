@@ -1,6 +1,4 @@
 
-import {LRU} from "../LRU.js";
-
 let globalCounter = 0;
 
 class GLOctTreeNode extends ZeaEngine.GLPoints {
@@ -29,8 +27,6 @@ export class GLPotreeAsset extends ZeaEngine.GLPass {
     super();
 
     this.gl = gl;
-    this.lru = new LRU();
-    this.lru.pointLoadLimit = Potree.pointBudget * 2;
     this.potreeAsset = potreeAsset;
     this.modelMatrixArray =  potreeAsset.getGlobalMat4().asArray()
 
@@ -43,11 +39,11 @@ export class GLPotreeAsset extends ZeaEngine.GLPass {
     this.updated = new ZeaEngine.Signal();
   }
 
-  setVisibleNodes(visibleNodes){
+  setVisibleNodes(visibleNodes, lru){
     let visChanged = this.visibleNodes.length != visibleNodes.length
     if(!visChanged) {
       visChanged = visibleNodes.some((node, index) => {
-            return this.visibleNodes[index] != node;
+        return this.visibleNodes[index] != node;
       })
     }
     if(visChanged) {
@@ -67,17 +63,23 @@ export class GLPotreeAsset extends ZeaEngine.GLPass {
           gloctreenode.destructing.connect(() => {
             this.map.delete(node);
             this.freeList.push(index);
+            this.gloctreenodes[index] = null;
+
             const drawIndex = this.visibleGLNodes.indexOf(gloctreenode);
             if (drawIndex >= 0)
               this.visibleGLNodes.splice(drawIndex, 1);
           });
         }
         const gloctreenode = this.gloctreenodes[this.map.get(node)];
-        this.lru.touch(gloctreenode);
         this.visibleGLNodes.push(gloctreenode);
+
+        lru.touch(gloctreenode);
+
+        this.visibleGLNodes.forEach((glpoints, index) => {
+          if (glpoints.__destroyed)
+           throw("Dstroyed node:", index);
+        });
       };
-      // Causes unused nodes to be flushed.
-      this.lru.freeMemory();
 
       this.updated.emit();
     }
@@ -94,6 +96,8 @@ export class GLPotreeAsset extends ZeaEngine.GLPass {
     gl.uniformMatrix4fv(modelMatrix.location, false, this.modelMatrixArray)
     const offsetUnif = unifs.offset;
     nodes.forEach(glpoints => {
+      if (glpoints.__destroyed)
+        throw("Dstroyed node:", index);
       const node = glpoints.node
       this.gl.uniform3fv(offsetUnif.location, node.offset.asArray())
       gl.uniform1f(PointSize.location, 0.25);//node.spacing)
@@ -110,17 +114,17 @@ export class GLPotreeAsset extends ZeaEngine.GLPass {
   }
 
   drawHighlightedGeoms(renderstate) {
-    const gl = this.gl;
-    const { highlightColor } = renderstate.unifs;
-    if (highlightColor) {
-        gl.uniform4fv(highlightColor.location, this.potreeAsset.getHighlight().asArray());
-    }
-    this.__drawNodes(this.visibleGLNodes, renderstate)
+    // const gl = this.gl;
+    // const { highlightColor } = renderstate.unifs;
+    // if (highlightColor) {
+    //     gl.uniform4fv(highlightColor.location, this.potreeAsset.getHighlight().asArray());
+    // }
+    // this.__drawNodes(this.visibleGLNodes, renderstate)
   }
 
   drawGeomData(renderstate) {
     if (this.visibleGLNodes.length == 0) return;
-    this.__drawNodes(this.visibleGLNodes, renderstate)
+    // this.__drawNodes(this.visibleGLNodes, renderstate)
   }
 
 }

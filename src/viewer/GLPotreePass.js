@@ -3,14 +3,21 @@ import { PotreeAsset } from "./PotreeAsset.js";
 import { GLPotreeAsset } from "./GLPotreeAsset.js";
 import { BinaryHeap } from "../../libs/other/BinaryHeap.js";
 import { PotreePointsShader, PotreePointsGeomDataShader, PotreePointsHilighlightShader } from "./PotreePointsShader.js";
+import {LRU} from "../LRU.js";
 
 export class GLPotreePass extends ZeaEngine.GLPass {
   constructor(){
     super();
     
-    this.visiblePointsTarget = 2 * 1000 * 1000;
+    this.visiblePointsTarget = 2 * 1000 * 100;
+    this.lru = new LRU();
+    this.lru.pointLoadLimit = this.visiblePointsTarget;//Potree.pointBudget * 2;
     this.minimumNodeVSize = 0.2; // Size, not in pixels, but a fraction of scnreen V height.
     this.visibleNodes = [];
+    this.glpotreeAssets = [];
+    this.hilghlightedAssets = [];
+
+    this.visibleNodesNeedUpdating = false;
   }
   /**
    * The init method.
@@ -20,8 +27,6 @@ export class GLPotreePass extends ZeaEngine.GLPass {
   init(renderer, passIndex) {
     super.init(renderer, passIndex)
     const gl = renderer.gl;
-    this.glpotreeAssets = [];
-    this.hilghlightedAssets = [];
     this.glshader = new PotreePointsShader(gl);
     this.glgeomdataShader = new PotreePointsGeomDataShader(gl);
     this.glhighlightShader = new PotreePointsHilighlightShader(gl);
@@ -78,12 +83,15 @@ export class GLPotreePass extends ZeaEngine.GLPass {
   setViewport(viewport){
     this.viewport = viewport;
     this.viewport.viewChanged.connect(()=>{
-      this.updateVisibility();
+      this.visibleNodesNeedUpdating = true;
+      // this.updateVisibility();
     })
     this.viewport.resized.connect(()=>{
-      this.updateVisibility();
+      this.visibleNodesNeedUpdating = true;
+      // this.updateVisibility();
     })
-    this.updateVisibility();
+    this.visibleNodesNeedUpdating = true;
+    // this.updateVisibility();
   }
   
   updateVisibilityStructures(priorityQueue) {
@@ -204,8 +212,10 @@ export class GLPotreePass extends ZeaEngine.GLPass {
     }// end priority queue loop
 
     visibleNodes.forEach((assetVisibleNodes, index) => {
-      this.glpotreeAssets[index].setVisibleNodes(assetVisibleNodes);
+      this.glpotreeAssets[index].setVisibleNodes(assetVisibleNodes, this.lru);
     });
+    // Causes unused nodes to be flushed.
+    this.lru.freeMemory();
 
     if (unloadedGeometry.length > 0) {
       // Disabled temporarily
@@ -222,13 +232,16 @@ export class GLPotreePass extends ZeaEngine.GLPass {
           // for (let i = 0; i < unloadedGeometry.length; i++) {
           //   console.log("loaded:", unloadedGeometry[i].name);
           // }
-          this.updateVisibility();
+          // this.updateVisibility();
+          this.visibleNodesNeedUpdating = true;
+          this.updated.emit();
         });
       }
     }
 
     this.updated.emit();
   }
+
 
   // ///////////////////////////////////
   // Rendering
@@ -239,6 +252,11 @@ export class GLPotreePass extends ZeaEngine.GLPass {
    */
   draw(renderstate) {
     if (this.glpotreeAssets.length == 0) return;
+
+    if (this.visibleNodesNeedUpdating){
+      this.updateVisibility();
+      this.visibleNodesNeedUpdating = false;
+    }
 
     const gl = this.__gl;
   

@@ -794,38 +794,173 @@ export class Sidebar{
 	}
 
 	initGPSTimeFilters(){
+
 		let elGPSTimeFilterPanel = $('#gpstime_filter_panel');
 
-		let lblGPSTime = elGPSTimeFilterPanel.find("#lblGPSTime");
-		let elGPS = elGPSTimeFilterPanel.find("#spnGPSTime");
+		{
+			const lblGpsL0 = elGPSTimeFilterPanel.find("#lblGpsTimeL0");
+			const lblGpsL1 = elGPSTimeFilterPanel.find("#lblGpsTimeL1");
+			const lblGpsL2 = elGPSTimeFilterPanel.find("#lblGpsTimeL2");
+			const lblGpsL3 = elGPSTimeFilterPanel.find("#lblGpsTimeL3");
 
-		let slider = new ZoomableSlider();
-		elGPS[0].appendChild(slider.element);
-		slider.update();
+			const sldGpsL0 = elGPSTimeFilterPanel.find("#sldGpsTimeL0");
+			const sldGpsL1 = elGPSTimeFilterPanel.find("#sldGpsTimeL1");
+			const sldGpsL2 = elGPSTimeFilterPanel.find("#sldGpsTimeL2");
+			const sldGpsL3 = elGPSTimeFilterPanel.find("#sldGpsTimeL3");
 
-		slider.change( () => {
-			let range = slider.chosenRange;
-			this.viewer.setFilterGPSTimeRange(range[0], range[1]);
-		});
+			const [min, max] = [Infinity, -Infinity];
 
-		let onGPSTimeExtentChanged = (event) => {
-			let range = this.viewer.filterGPSTimeExtent;
-			slider.setVisibleRange(range);
-		};
+			sldGpsL0.slider({
+				range: true,
+				min: min, max: max, step: 0.01,
+				values: [min, max],
+				slide: (event, ui) => {
+					this.viewer.setFilterGPSTimeRange(...ui.values);
 
-		let onGPSTimeChanged = (event) => {
-			let range = this.viewer.filterGPSTimeRange;
+					sldGpsL1.slider({
+						range: true,
+						min: ui.values[0],
+						max: ui.values[1],
+						values: ui.values,
+					});
 
-			let precision = 1;
-			let from = `${Utils.addCommas(range[0].toFixed(precision))}`;
-			let to = `${Utils.addCommas(range[1].toFixed(precision))}`;
-			lblGPSTime[0].innerHTML = `${from} to ${to}`;
+					sldGpsL2.slider({
+						range: true,
+						min: ui.values[0],
+						max: ui.values[1],
+						values: ui.values,
+					});
+
+					sldGpsL3.slider({
+						range: true,
+						min: ui.values[0],
+						max: ui.values[1],
+						values: ui.values,
+					});
+				}
+			});
+
+			sldGpsL1.slider({
+				range: true,
+				min: min, max: max, step: 0.01,
+				values: [min, max],
+				slide: (event, ui) => {
+					this.viewer.setFilterGPSTimeRange(...ui.values);
+					
+					sldGpsL2.slider({
+						range: true,
+						min: ui.values[0],
+						max: ui.values[1],
+						values: ui.values,
+					});
+
+					sldGpsL3.slider({
+						range: true,
+						min: ui.values[0],
+						max: ui.values[1],
+						values: ui.values,
+					});
+				}
+			});
+
+			sldGpsL2.slider({
+				range: true,
+				min: min, max: max, step: 0.01,
+				values: [min, max],
+				slide: (event, ui) => {
+					this.viewer.setFilterGPSTimeRange(...ui.values);
+
+					sldGpsL3.slider({
+						range: true,
+						min: ui.values[0],
+						max: ui.values[1],
+						values: ui.values,
+					});
+				}
+			});
+
+			sldGpsL3.slider({
+				range: true,
+				min: min, max: max, step: 0.01,
+				values: [min, max],
+				slide: (event, ui) => {
+					this.viewer.setFilterGPSTimeRange(...ui.values);
+				}
+			});
+
+			const initialize = (extent) => {
+				sldGpsL0.slider({
+					min: extent[0],
+					max: extent[1],
+					values: extent,
+				});
+
+				sldGpsL1.slider({
+					min: extent[0],
+					max: extent[1],
+					values: extent,
+				});
+
+				sldGpsL2.slider({
+					min: extent[0],
+					max: extent[1],
+					values: extent,
+				});
+
+				sldGpsL3.slider({
+					min: extent[0],
+					max: extent[1],
+					values: extent,
+				});
+			};
+
+			this.viewer.addEventListener("update", (e) => {
+				const extent = this.viewer.getGpsTimeExtent();
+
+				const rangeL0 = sldGpsL0.slider("option", "values");
+
+				const sliderInitialized = rangeL0[0] !== Infinity;
+				const gpsTimeAvailable = extent[0] !== Infinity;
+				
+				if(!sliderInitialized && gpsTimeAvailable){
+					initialize(extent);
+				}
+
+				sldGpsL0.slider({min: extent[0], max: extent[1]});
+			});
+		}
 			
-			slider.setRange(range);
-		};
 
-		this.viewer.addEventListener('filter_gps_time_range_changed', onGPSTimeChanged);
-		this.viewer.addEventListener('filter_gps_time_extent_changed', onGPSTimeExtentChanged);
+		{
+			
+			const txtGpsTime = elGPSTimeFilterPanel.find("#txtGpsTime");
+			const btnFindGpsTime = elGPSTimeFilterPanel.find("#btnFindGpsTime");
+
+			let targetTime = null;
+
+			txtGpsTime.on("input", (e) => {
+				const str = txtGpsTime.val();
+
+				if(!isNaN(str)){
+					const value = parseFloat(str);
+					targetTime = value;
+
+					txtGpsTime.css("background-color", "")
+				}else{
+					targetTime = null;
+
+					txtGpsTime.css("background-color", "#ff9999")
+				}
+
+			});
+
+			btnFindGpsTime.click( () => {
+				
+				if(targetTime !== null){
+					viewer.moveToGpsTimeVicinity(targetTime);
+				}
+			});
+		}
 
 	}
 

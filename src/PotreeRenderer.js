@@ -839,19 +839,24 @@ export class Renderer {
 				];
 
 				shader.setUniform2f("uNormalizedGpsBufferRange", normalizedBufferRange);
+
+				let uFilterGPSTimeClipRange = material.uniforms.uFilterGPSTimeClipRange.value;
+				let gpsCliPRangeMin = uFilterGPSTimeClipRange[0]
+				let gpsCliPRangeMax = uFilterGPSTimeClipRange[1]
+				shader.setUniform2f("uFilterGPSTimeClipRange", [gpsCliPRangeMin, gpsCliPRangeMax]);
+
+				shader.setUniform1f("uGpsScale", bufferAttribute.potree.scale);
+				shader.setUniform1f("uGpsOffset", bufferAttribute.potree.offset);
 			}
 
 			{
 				let uFilterReturnNumberRange = material.uniforms.uFilterReturnNumberRange.value;
 				let uFilterNumberOfReturnsRange = material.uniforms.uFilterNumberOfReturnsRange.value;
-				let uFilterGPSTimeClipRange = material.uniforms.uFilterGPSTimeClipRange.value;
 				
-				//let gpsCliPRangeMin = uFilterGPSTimeClipRange[0] - gpsMin;
-				//let gpsCliPRangeMax = uFilterGPSTimeClipRange[1] - gpsMin;
+				
 				
 				shader.setUniform2f("uFilterReturnNumberRange", uFilterReturnNumberRange);
 				shader.setUniform2f("uFilterNumberOfReturnsRange", uFilterNumberOfReturnsRange);
-				//shader.setUniform2f("uFilterGPSTimeClipRange", [gpsCliPRangeMin, gpsCliPRangeMax]);
 			}
 
 			let webglBuffer = null;
@@ -1045,7 +1050,7 @@ export class Renderer {
 				if(octree.pcoGeometry.root.isLoaded()){
 					let attributes = octree.pcoGeometry.root.geometry.attributes;
 
-					if(attributes.gpsTime){
+					if(attributes["gps-time"]){
 						defines.push("#define clip_gps_enabled");
 					}
 

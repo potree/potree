@@ -122,8 +122,7 @@ export class Viewer extends EventDispatcher{
 
 		this.filterReturnNumberRange = [0, 7];
 		this.filterNumberOfReturnsRange = [0, 7];
-		this.filterGPSTimeRange = [0, Infinity];
-		this.filterGPSTimeExtent = [0, 1];
+		this.filterGPSTimeRange = [-Infinity, Infinity];
 
 		this.potreeRenderer = null;
 		this.edlRenderer = null;
@@ -144,7 +143,6 @@ export class Viewer extends EventDispatcher{
 		this.skybox = null;
 		this.clock = new THREE.Clock();
 		this.background = null;
-		this.defaultGPSTimeChanged = false;
 
 		this.initThree();
 		this.prepareVR();
@@ -656,11 +654,6 @@ export class Viewer extends EventDispatcher{
 		this.dispatchEvent({'type': 'filter_gps_time_range_changed', 'viewer': this});
 	}
 
-	setFilterGPSTimeExtent(from, to){
-		this.filterGPSTimeExtent = [from, to];
-		this.dispatchEvent({'type': 'filter_gps_time_extent_changed', 'viewer': this});
-	}
-
 	setLengthUnit (value) {
 		switch (value) {
 			case 'm':
@@ -768,6 +761,20 @@ export class Viewer extends EventDispatcher{
 		}
 	};
 
+	moveToGpsTimeVicinity(time){
+		const result = Potree.Utils.findClosestGpsTime(time, viewer);
+
+		const box  = result.node.pointcloud.deepestNodeAt(result.position).getBoundingBox();
+		const diameter = box.min.distanceTo(box.max);
+
+		const camera = this.scene.getActiveCamera();
+		const offset = camera.getWorldDirection(new THREE.Vector3()).multiplyScalar(diameter);
+		const newCamPos = result.position.clone().sub(offset);
+
+		this.scene.view.position.copy(newCamPos);
+		this.scene.view.lookAt(result.position);
+	}
+
 	showAbout () {
 		$(function () {
 			$('#about-panel').dialog();
@@ -777,6 +784,22 @@ export class Viewer extends EventDispatcher{
 	getBoundingBox (pointclouds) {
 		return this.scene.getBoundingBox(pointclouds);
 	};
+
+	getGpsTimeExtent(){
+		const range = [Infinity, -Infinity];
+
+		for(const pointcloud of this.scene.pointclouds){
+			const attributes = pointcloud.pcoGeometry.pointAttributes.attributes;
+			const aGpsTime = attributes.find(a => a.name === "gps-time");
+
+			if(aGpsTime){
+				range[0] = Math.min(range[0], aGpsTime.range[0]);
+				range[1] = Math.max(range[1], aGpsTime.range[1]);
+			}
+		}
+
+		return range;
+	}
 
 	fitToScreen (factor = 1, animationDuration = 0) {
 		let box = this.getBoundingBox(this.scene.pointclouds);
@@ -1469,26 +1492,36 @@ export class Viewer extends EventDispatcher{
 			// 	}
 			// }
 
-			// if(this.defaultGPSTimeChanged === false){
+			//if(this.defaultGPSTimeChanged === false){
+			
+			// { // GPS TIME Range
 
-			// 	let root = pointcloud.pcoGeometry.root;
-			// 	if (root != null && root.loaded) {
-			// 		if(root.gpsTime){
+			// 	const range = [...this.filterGPSTimeRange];
 
-			// 			let gpsTime = root.gpsTime;
-			// 			let min = gpsTime.offset;
-			// 			let max = gpsTime.offset + gpsTime.range;
-			// 			let border = (max - min) * 0.1;
-
-			// 			this.setFilterGPSTimeExtent(min - border, max + border);
-			// 			//this.setFilterGPSTimeRange(0, 1000 * 1000 * 1000);
-			// 			this.setFilterGPSTimeRange(min, max);
-
-			// 			this.defaultGPSTimeChanged = true;
-			// 		}
-			// 	}
-
+			// 	const extent = this.getGpsTimeExtent();
+			
 			// }
+
+				// let root = pointcloud.pcoGeometry.root;
+				// if (root != null && root.loaded) {
+				// 	if(root.gpsTime){
+
+				// 		let gpsTime = root.gpsTime;
+				// 		let min = gpsTime.offset;
+				// 		let max = gpsTime.offset + gpsTime.range;
+				// 		let border = (max - min) * 0.1;
+
+				// 		this.setFilterGPSTimeExtent(min - border, max + border);
+				// 		//this.setFilterGPSTimeRange(0, 1000 * 1000 * 1000);
+				// 		this.setFilterGPSTimeRange(min, max);
+
+				// 		this.defaultGPSTimeChanged = true;
+				// 	}
+				// }
+
+			//}
+
+
 			
 			pointcloud.showBoundingBox = this.showBoundingBox;
 			pointcloud.generateDEM = this.generateDEM;

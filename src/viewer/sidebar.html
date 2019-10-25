@@ -141,8 +141,22 @@
 
 				<ul class="pv-menu-list">
 					<li>
-						<span data-i18n="filters.gps_time"></span>: <span id="lblGPSTime"></span>
-						<span id="spnGPSTime"></span>
+						<!-- <span data-i18n="filters.gps_time"></span>: <span id="lblGPSTime"></span>
+						<span id="spnGPSTime"></span> -->
+
+						<li>Range: <span id="lblGpsTimeL0"></span> <div id="sldGpsTimeL0"></div></li>
+						<li>Range: <span id="lblGpsTimeL1"></span> <div id="sldGpsTimeL1"></div></li>
+						<li>Range: <span id="lblGpsTimeL2"></span> <div id="sldGpsTimeL2"></div></li>
+						<li>Range: <span id="lblGpsTimeL3"></span> <div id="sldGpsTimeL3"></div></li>
+
+						<li>
+							<span style="display: flex">
+								<span>Time: </span>
+								<input id="txtGpsTime" type="text" style="margin: auto 10px"/>
+								<input id="btnFindGpsTime" type="button" value="find" />
+							</span>
+						</li>
+
 					</li>
 
 				</ul>

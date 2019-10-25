@@ -918,28 +918,6 @@ export class ProfileWindowController {
 		$("#potree_profile_rotate_ccw").click( () => {
 			const radians = THREE.Math.degToRad(this.rotateAmount);
 			rotate(radians);
-
-			// const profile = this.profile;
-			// const points = profile.points;
-			// const start = points[0];
-			// const end = points[points.length - 1];
-			// const center = start.clone().add(end).multiplyScalar(0.5);
-
-			// const radians = THREE.Math.degToRad(this.rotateAmount);
-
-			// const mMoveOrigin = new THREE.Matrix4().makeTranslation(-center.x, -center.y, -center.z);
-			// const mRotate = new THREE.Matrix4().makeRotationZ(radians);
-			// const mMoveBack = new THREE.Matrix4().makeTranslation(center.x, center.y, center.z);
-			// //const transform = mMoveOrigin.multiply(mRotate).multiply(mMoveBack);
-			// const transform = mMoveBack.multiply(mRotate).multiply(mMoveOrigin);
-
-			// const rotatedPoints = points.map( point => point.clone().applyMatrix4(transform) );
-
-			// this.profileWindow.autoFitEnabled = false;
-
-			// for(let i = 0; i < points.length; i++){
-			// 	profile.setPosition(i, rotatedPoints[i]);
-			// }
 		});
 
 		$("#potree_profile_move_forward").click( () => {

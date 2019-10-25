@@ -83,6 +83,8 @@ uniform vec2 intensityRange;
 uniform vec2 uFilterReturnNumberRange;
 uniform vec2 uFilterNumberOfReturnsRange;
 uniform vec2 uFilterGPSTimeClipRange;
+uniform float uGpsScale;
+uniform float uGpsOffset;
 
 uniform vec2 uNormalizedGpsBufferRange;
 uniform float intensityGamma;
@@ -720,7 +722,8 @@ void doClipping(){
 
 	#if defined(clip_gps_enabled)
 	{ // GPS time filter
-		float time = gpsTime + uGPSOffset;
+		//float time = gpsTime + uGPSOffset;
+		float time = gpsTime / uGpsScale + uGpsOffset;
 		vec2 range = uFilterGPSTimeClipRange;
 
 		if(time < range.x || time > range.y){

@@ -575,6 +575,15 @@ export class Utils {
 		let closestValue = 0;
 
 		for(const node of nodes){
+
+			const isOkay = node.geometryNode != null 
+				&& node.geometryNode.geometry != null
+				&& node.sceneNode != null;
+
+			if(!isOkay){
+				continue;
+			}
+
 			let geometry = node.geometryNode.geometry;
 			let gpsTime = geometry.attributes["gps-time"];
 			let range = gpsTime.potree.range;
@@ -600,6 +609,8 @@ export class Utils {
 			geometry.attributes.position.array[3 * closestIndex + 1],
 			geometry.attributes.position.array[3 * closestIndex + 2],
 		);
+
+		position.applyMatrix4(closestNode.sceneNode.matrixWorld);
 
 		const end = performance.now();
 		const duration = (end - start);

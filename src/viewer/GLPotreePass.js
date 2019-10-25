@@ -17,20 +17,20 @@ export class GLPotreePass extends ZeaEngine.GLPass {
 
     this.visibleNodesNeedUpdating = false;
 
-	// Size, not in pixels, but a fraction of scnreen V height.
-	const minimumNodeVSizeParam = this.addParameter(new ZeaEngine.NumberParameter('minimumNodeVSize',0.0))
-	minimumNodeVSizeParam.valueChanged.connect(mode => {
-    	this.minimumNodeVSize = minimumNodeVSizeParam.getValue();
-	});
+    // Size, not in pixels, but a fraction of scnreen V height.
+    const minimumNodeVSizeParam = this.addParameter(new ZeaEngine.NumberParameter('minimumNodeVSize',0.0))
+    minimumNodeVSizeParam.valueChanged.connect(mode => {
+        this.minimumNodeVSize = minimumNodeVSizeParam.getValue();
+    });
 
-	const visiblePointsTargetParam = this.addParameter(new ZeaEngine.NumberParameter('visiblePointsTarget', 0))
-	visiblePointsTargetParam.valueChanged.connect(() => {
-		this.pointBudget = visiblePointsTargetParam.getValue()
-    	this.lru.pointLoadLimit = this.pointBudget * 2
-	});
+    const visiblePointsTargetParam = this.addParameter(new ZeaEngine.NumberParameter('visiblePointsTarget', 0))
+    visiblePointsTargetParam.valueChanged.connect(() => {
+      this.pointBudget = visiblePointsTargetParam.getValue()
+        this.lru.pointLoadLimit = this.pointBudget * 2
+    });
 
-	minimumNodeVSizeParam.setValue(0.2)
-	visiblePointsTargetParam.setValue(2 * 1000 * 1000)
+    minimumNodeVSizeParam.setValue(0.2)
+    visiblePointsTargetParam.setValue(2 * 1000 * 1000)
   }
   /**
    * The init method.
@@ -43,6 +43,21 @@ export class GLPotreePass extends ZeaEngine.GLPass {
     this.glshader = new PotreePointsShader(gl);
     this.glgeomdataShader = new PotreePointsGeomDataShader(gl);
     this.glhighlightShader = new PotreePointsHilighlightShader(gl);
+
+    const size = 2048;
+		const data = new Uint8Array(size * 3);
+		for (let i = 0; i < size * 3; i++) data[i] = 255;
+
+    this.visibleNodesTexture = new ZeaEngine.GLTexture2D(gl, {
+      format: 'RGB',
+      type: 'UNSIGNED_BYTE',
+      width: size,
+      height: 1,
+      filter: 'NEAREST',
+      wrap: 'CLAMP_TO_EDGE',
+      mipMapped: false,
+      data
+    })
 
     this.__renderer.registerPass(
       treeItem => {
@@ -145,7 +160,8 @@ export class GLPotreePass extends ZeaEngine.GLPass {
 
     this.numVisiblePoints = 0;
     let numVisiblePoints = 0;
-    const visibleNodes = [];
+    const visibleNodesByAsset = [];
+    let visibleNodes = []
     const unloadedGeometry = [];
 
     // calculate object space frustum and cam pos and setup priority queue
@@ -155,9 +171,6 @@ export class GLPotreePass extends ZeaEngine.GLPass {
       const element = priorityQueue.pop();
       const index = element.index;
       const node = element.node;
-
-      if (!visibleNodes[index])
-          visibleNodes[index] = [];
 
       if (numVisiblePoints + node.numPoints > this.pointBudget) {
         break;
@@ -174,7 +187,11 @@ export class GLPotreePass extends ZeaEngine.GLPass {
       const parent = element.parent;
       if (!parent || parent.isLoaded()) {
         if (node.isLoaded()) {
-          visibleNodes[index].push(node);
+        if (!visibleNodesByAsset[index])
+            visibleNodesByAsset[index] = [];
+          visibleNodesByAsset[index].push(node);
+
+          visibleNodes.push(node);
         } else {
           unloadedGeometry.push(node);
         }
@@ -219,9 +236,15 @@ export class GLPotreePass extends ZeaEngine.GLPass {
         priorityQueue.push({ index, node: child, parent: node, weight: weight});
       }
     }// end priority queue loop
+    
+    this.computeVisibilityTextureData(visibleNodes);
 
-    visibleNodes.forEach((assetVisibleNodes, index) => {
-      this.glpotreeAssets[index].setVisibleNodes(assetVisibleNodes, this.lru);
+    visibleNodesByAsset.forEach((assetVisibleNodes, index) => {
+      this.glpotreeAssets[index].setVisibleNodes(
+        assetVisibleNodes, 
+        this.lru,
+        this.visibleNodeTextureOffsets
+      );
     });
 
     if (unloadedGeometry.length > 0) {
@@ -248,9 +271,57 @@ export class GLPotreePass extends ZeaEngine.GLPass {
     // Causes unused nodes to be flushed.
     this.lru.freeMemory();
 
-    this.updated.emit();
+    // this.updated.emit();
   }
 
+  computeVisibilityTextureData(nodes){
+
+    const data = new Uint8Array(nodes.length * 4);
+    this.visibleNodeTextureOffsets = new Map();
+
+    // copy array
+    nodes = nodes.slice();
+
+    // sort by level and index, e.g. r, r0, r3, r4, r01, r07, r30, ...
+    const sort = function (a, b) {
+      const na = a.name;
+      const nb = b.name;
+      if (na.length !== nb.length) return na.length - nb.length;
+      if (na < nb) return -1;
+      if (na > nb) return 1;
+      return 0;
+    };
+    nodes.sort(sort);
+
+    const nodeMap = new Map();
+    const offsetsToChild = new Array(nodes.length).fill(Infinity);
+
+    for(let i = 0; i < nodes.length; i++){
+      const node = nodes[i];
+      nodeMap.set(node.name, node);
+      this.visibleNodeTextureOffsets.set(node, i);
+
+      if(i > 0){
+        let index = node.index;//parseInt(node.name.slice(-1));
+        // console.log(node.name, node.index, node.name.slice(-1))
+        let parentName = node.name.slice(0, -1);
+        let parent = nodeMap.get(parentName);
+        let parentOffset = this.visibleNodeTextureOffsets.get(parent);
+
+        let parentOffsetToChild = (i - parentOffset);
+
+        offsetsToChild[parentOffset] = Math.min(offsetsToChild[parentOffset], parentOffsetToChild);
+
+        data[parentOffset * 4 + 0] = data[parentOffset * 4 + 0] | (1 << index);
+        data[parentOffset * 4 + 1] = (offsetsToChild[parentOffset] >> 8);
+        data[parentOffset * 4 + 2] = (offsetsToChild[parentOffset] % 256);
+      }
+
+      data[i * 4 + 3] = node.name.length - 1;
+    }
+
+    this.visibleNodesTexture.populate(data, nodes.length, 1);
+  }
 
   // ///////////////////////////////////
   // Rendering

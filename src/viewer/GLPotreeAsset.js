@@ -2,7 +2,7 @@
 let globalCounter = 0;
 
 class GLOctTreeNode extends ZeaEngine.GLPoints {
-  constructor(gl, node) {
+  constructor(gl, node, ) {
     super(gl, node.points)
     this.node = node;
 
@@ -11,6 +11,13 @@ class GLOctTreeNode extends ZeaEngine.GLPoints {
     this.loaded = true; // only for LRU. Safely remove after refactoring.
     
   }
+
+
+
+  // bind(renderstate){
+  //   super.bind(renderstate);
+
+  // }
 
   get numPoints(){
     return this.node.numPoints;
@@ -39,7 +46,7 @@ export class GLPotreeAsset extends ZeaEngine.GLPass {
     this.updated = new ZeaEngine.Signal();
   }
 
-  setVisibleNodes(visibleNodes, lru){
+  setVisibleNodes(visibleNodes, lru, offsets){
     let visChanged = this.visibleNodes.length != visibleNodes.length
     if(!visChanged) {
       visChanged = visibleNodes.some((node, index) => {
@@ -73,12 +80,10 @@ export class GLPotreeAsset extends ZeaEngine.GLPass {
         const gloctreenode = this.gloctreenodes[this.map.get(node)];
         this.visibleGLNodes.push(gloctreenode);
 
-        lru.touch(gloctreenode);
+        // At every visiblity change, the offset in the texture changes.
+        gloctreenode.vnStart = offsets.get(node);
 
-        this.visibleGLNodes.forEach((glpoints, index) => {
-          if (glpoints.__destroyed)
-           throw("Dstroyed node:", index);
-        });
+        lru.touch(gloctreenode);
       };
 
       this.updated.emit();
@@ -89,18 +94,22 @@ export class GLPotreeAsset extends ZeaEngine.GLPass {
     return this.potreeAsset;
   }
 
-  __drawNodes(nodes, renderstate){
+  __drawNodes(renderstate){
     const gl = this.gl;
     const { unifs } = renderstate;
-    const { modelMatrix, PointSize } = unifs
+    const { modelMatrix, PointSize, uVNStart } = unifs
     gl.uniformMatrix4fv(modelMatrix.location, false, this.modelMatrixArray)
     const offsetUnif = unifs.offset;
-    nodes.forEach(glpoints => {
+    this.visibleGLNodes.forEach(glpoints => {
       if (glpoints.__destroyed)
         throw("Dstroyed node:", index);
       const node = glpoints.node
       this.gl.uniform3fv(offsetUnif.location, node.offset.asArray())
       gl.uniform1f(PointSize.location, 0.25);//node.spacing)
+      
+      if (uVNStart)
+        gl.uniform1f(uVNStart.location, glpoints.vnStart)
+
       glpoints.bind(renderstate)
       renderstate.bindViewports(unifs, () => {
         glpoints.draw(renderstate)
@@ -110,21 +119,21 @@ export class GLPotreeAsset extends ZeaEngine.GLPass {
 
   draw(renderstate) {
     if (this.visibleGLNodes.length == 0) return;
-    this.__drawNodes(this.visibleGLNodes, renderstate)
+    this.__drawNodes(renderstate)
   }
 
   drawHighlightedGeoms(renderstate) {
-    // const gl = this.gl;
-    // const { highlightColor } = renderstate.unifs;
-    // if (highlightColor) {
-    //     gl.uniform4fv(highlightColor.location, this.potreeAsset.getHighlight().asArray());
-    // }
-    // this.__drawNodes(this.visibleGLNodes, renderstate)
+    const gl = this.gl;
+    const { highlightColor } = renderstate.unifs;
+    if (highlightColor) {
+        gl.uniform4fv(highlightColor.location, this.potreeAsset.getHighlight().asArray());
+    }
+    this.__drawNodes(renderstate)
   }
 
   drawGeomData(renderstate) {
     if (this.visibleGLNodes.length == 0) return;
-    // this.__drawNodes(this.visibleGLNodes, renderstate)
+    this.__drawNodes(renderstate)
   }
 
 }

@@ -150,6 +150,7 @@ export class Sidebar{
 					showHeight: false,
 					showArea: false,
 					showCircle: true,
+					showEdges: false,
 					closed: false,
 					maxMarkers: 3,
 					name: 'Circle'});

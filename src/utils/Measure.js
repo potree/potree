@@ -18,6 +18,7 @@ export class Measure extends THREE.Object3D {
 		this._showAngles = false;
 		this._showCircle = false;
 		this._showHeight = false;
+		this._showEdges = true;
 		this.maxMarkers = Number.MAX_SAFE_INTEGER;
 
 		this.sphereGeometry = new THREE.SphereGeometry(0.4, 10, 10);
@@ -41,18 +42,23 @@ export class Measure extends THREE.Object3D {
 
 		{ // height stuff
 			{ // height line
-				let lineGeometry = new THREE.Geometry();
-				lineGeometry.vertices.push(
-					new THREE.Vector3(),
-					new THREE.Vector3(),
-					new THREE.Vector3(),
-					new THREE.Vector3());
-				lineGeometry.colors.push(this.color, this.color, this.color);
-				let lineMaterial = new THREE.LineDashedMaterial(
-					{ color: 0xff0000, dashSize: 5, gapSize: 2 });
+				let lineGeometry = new THREE.LineGeometry();
+
+				lineGeometry.setPositions([
+					0, 0, 0,
+					0, 0, 0,
+				]);
+
+				let lineMaterial = new THREE.LineMaterial({ 
+					color: 0xff0000, 
+					dashSize: 5, 
+					gapSize: 2,
+					linewidth: 2, 
+					resolution:  new THREE.Vector2(1000, 1000),
+				});
 
 				lineMaterial.depthTest = false;
-				this.heightEdge = new THREE.Line(lineGeometry, lineMaterial);
+				this.heightEdge = new THREE.Line2(lineGeometry, lineMaterial);
 				this.heightEdge.visible = false;
 
 				this.add(this.heightEdge);
@@ -99,43 +105,32 @@ export class Measure extends THREE.Object3D {
 
 
 			{
-				const lineGeometry = new THREE.Geometry();
-				lineGeometry.vertices.push(
-					new THREE.Vector3(),
-					new THREE.Vector3(),
-					new THREE.Vector3(),
-					new THREE.Vector3());
-				lineGeometry.colors.push(this.color, this.color, this.color);
-				const lineMaterial = new THREE.LineDashedMaterial(
-					{ color: 0xff0000, dashSize: 5, gapSize: 2 });
+				const lineGeometry = new THREE.LineGeometry();
+
+				lineGeometry.setPositions([
+					0, 0, 0,
+					0, 0, 0,
+				]);
+
+				//lineGeometry.colors.push(this.color, this.color, this.color);
+				const lineMaterial = new THREE.LineMaterial({ 
+					color: 0xff0000, 
+					linewidth: 2, 
+					resolution:  new THREE.Vector2(1000, 1000),
+					gapSize: 1,
+					dashed: true,
+				});
 
 				lineMaterial.depthTest = false;
-				this.circleRadiusLine = new THREE.Line(lineGeometry, lineMaterial);
+
+				this.circleRadiusLine = new THREE.Line2(lineGeometry, lineMaterial);
 				this.circleRadiusLine.visible = false;
 
 				this.add(this.circleRadiusLine);
 			}
 
 			{
-				const lineGeometry = new THREE.Geometry();
-				lineGeometry.vertices.push(
-					new THREE.Vector3(),
-					new THREE.Vector3(),
-					new THREE.Vector3(),
-					new THREE.Vector3());
-				lineGeometry.colors.push(this.color, this.color, this.color);
-				const lineMaterial = new THREE.LineDashedMaterial(
-					{ color: 0xff0000, dashSize: 5, gapSize: 2 });
-
-				lineMaterial.depthTest = false;
-				this.circleRadiusLine = new THREE.Line(lineGeometry, lineMaterial);
-				this.circleRadiusLine.visible = false;
-
-				this.add(this.circleRadiusLine);
-			}
-
-			{
-				const geometry = new THREE.Geometry();
+				const coordinates = [];
 
 				let n = 32;
 				for(let i = 0; i <= n; i++){
@@ -154,15 +149,27 @@ export class Measure extends THREE.Object3D {
 						0
 					);
 
-					geometry.vertices.push(p0, p1); 
+					coordinates.push(
+						...p0.toArray(),
+						...p1.toArray(),
+					);
 				}
 
-				const lineMaterial = new THREE.LineDashedMaterial(
-					{ color: 0xff0000, dashSize: 5, gapSize: 2 });
+				const geometry = new THREE.LineGeometry();
+				geometry.setPositions(coordinates);
 
-				lineMaterial.depthTest = false;
-				this.circleLine = new THREE.Line(geometry, lineMaterial);
+				const material = new THREE.LineMaterial({ 
+					color: 0xff0000, 
+					dashSize: 5, 
+					gapSize: 2,
+					linewidth: 2, 
+					resolution:  new THREE.Vector2(1000, 1000),
+				});
+
+				material.depthTest = false;
+				this.circleLine = new THREE.Line2(geometry, material);
 				this.circleLine.visible = false;
+				this.circleLine.computeLineDistances();
 
 				this.add(this.circleLine);
 			}
@@ -205,14 +212,21 @@ export class Measure extends THREE.Object3D {
 		this.spheres.push(sphere);
 
 		{ // edges
-			let lineGeometry = new THREE.Geometry();
-			lineGeometry.vertices.push(new THREE.Vector3(), new THREE.Vector3());
-			lineGeometry.colors.push(this.color, this.color, this.color);
-			let lineMaterial = new THREE.LineBasicMaterial({
-				linewidth: 1
+			let lineGeometry = new THREE.LineGeometry();
+			lineGeometry.setPositions( [
+					0, 0, 0,
+					0, 0, 0,
+			]);
+
+			let lineMaterial = new THREE.LineMaterial({
+				color: 0xff0000, 
+				linewidth: 2, 
+				resolution:  new THREE.Vector2(1000, 1000),
 			});
+
 			lineMaterial.depthTest = false;
-			let edge = new THREE.Line(lineGeometry, lineMaterial);
+
+			let edge = new THREE.Line2(lineGeometry, lineMaterial);
 			edge.visible = true;
 
 			this.add(edge);
@@ -471,12 +485,19 @@ export class Measure extends THREE.Object3D {
 
 				edge.position.copy(point.position);
 
-				edge.geometry.vertices[0].set(0, 0, 0);
-				edge.geometry.vertices[1].copy(nextPoint.position).sub(point.position);
+				edge.geometry.setPositions([
+					0, 0, 0,
+					...nextPoint.position.clone().sub(point.position).toArray(),
+				]);
 
 				edge.geometry.verticesNeedUpdate = true;
 				edge.geometry.computeBoundingSphere();
+				edge.computeLineDistances();
 				edge.visible = index < lastIndex || this.closed;
+				
+				if(!this.showEdges){
+					edge.visible = false;
+				}
 			}
 
 			{ // edge labels
@@ -539,15 +560,18 @@ export class Measure extends THREE.Object3D {
 
 				heightEdge.position.copy(lowPoint);
 
-				heightEdge.geometry.vertices[0].set(0, 0, 0);
-				heightEdge.geometry.vertices[1].copy(start).sub(lowPoint);
-				heightEdge.geometry.vertices[2].copy(start).sub(lowPoint);
-				heightEdge.geometry.vertices[3].copy(end).sub(lowPoint);
+				heightEdge.geometry.setPositions([
+					0, 0, 0,
+					...start.clone().sub(lowPoint).toArray(),
+					...start.clone().sub(lowPoint).toArray(),
+					...end.clone().sub(lowPoint).toArray(),
+				]);
 
 				heightEdge.geometry.verticesNeedUpdate = true;
 				// heightEdge.geometry.computeLineDistances();
 				// heightEdge.geometry.lineDistancesNeedUpdate = true;
 				heightEdge.geometry.computeBoundingSphere();
+				heightEdge.computeLineDistances();
 
 				// heightEdge.material.dashSize = height / 40;
 				// heightEdge.material.gapSize = height / 40;
@@ -597,11 +621,18 @@ export class Measure extends THREE.Object3D {
 				circleCenter.position.copy(center);
 				circleCenter.scale.set(scale, scale, scale);
 
-				circleRadiusLine.geometry.vertices[0].set(0, 0, 0);
-				circleRadiusLine.geometry.vertices[1].copy(B.clone().sub(center));
+				//circleRadiusLine.geometry.vertices[0].set(0, 0, 0);
+				//circleRadiusLine.geometry.vertices[1].copy(B.clone().sub(center));
+
+				circleRadiusLine.geometry.setPositions( [
+					0, 0, 0,
+					...B.clone().sub(center).toArray()
+				] );
+
 				circleRadiusLine.geometry.verticesNeedUpdate = true;
 				circleRadiusLine.geometry.computeBoundingSphere();
 				circleRadiusLine.position.copy(center);
+				circleRadiusLine.computeLineDistances();
 
 				const target = center.clone().add(N);
 				circleLine.position.copy(center);
@@ -674,6 +705,15 @@ export class Measure extends THREE.Object3D {
 
 	set showCircle (value) {
 		this._showCircle = value;
+		this.update();
+	}
+
+	get showEdges () {
+		return this._showEdges;
+	}
+
+	set showEdges (value) {
+		this._showEdges = value;
 		this.update();
 	}
 

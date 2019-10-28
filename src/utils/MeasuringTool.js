@@ -60,14 +60,25 @@ export class MeasuringTool extends EventDispatcher{
 			measure: measure
 		});
 
+		const pick = (defaul, alternative) => {
+			if(defaul != null){
+				return defaul;
+			}else{
+				return alternative;
+			}
+		};
+
 		measure.showDistances = (args.showDistances === null) ? true : args.showDistances;
-		measure.showArea = args.showArea || false;
-		measure.showAngles = args.showAngles || false;
-		measure.showCoordinates = args.showCoordinates || false;
-		measure.showHeight = args.showHeight || false;
-		measure.showCircle = args.showCircle || false;
-		measure.closed = args.closed || false;
-		measure.maxMarkers = args.maxMarkers || Infinity;
+
+		measure.showArea = pick(args.showArea, false);
+		measure.showAngles = pick(args.showAngles, false);
+		measure.showCoordinates = pick(args.showCoordinates, false);
+		measure.showHeight = pick(args.showHeight, false);
+		measure.showCircle = pick(args.showCircle, false);
+		measure.showEdges = pick(args.showEdges, true);
+		measure.closed = pick(args.closed, false);
+		measure.maxMarkers = pick(args.maxMarkers, Infinity);
+
 		measure.name = args.name || 'Measurement';
 
 		this.scene.add(measure);
@@ -197,11 +208,21 @@ export class MeasuringTool extends EventDispatcher{
 
 				{ // height edge
 					let edge = measure.heightEdge;
-					let lowpoint = edge.geometry.vertices[0].clone().add(edge.position);
-					let start = edge.geometry.vertices[2].clone().add(edge.position);
-					let end = edge.geometry.vertices[3].clone().add(edge.position);
 
-					let lowScreen = lowpoint.clone().project(camera);
+					// let lowpoint = edge.geometry.vertices[0].clone().add(edge.position);
+					// let start = edge.geometry.vertices[2].clone().add(edge.position);
+					// let end = edge.geometry.vertices[3].clone().add(edge.position);
+
+					let sorted = measure.points.slice().sort((a, b) => a.position.z - b.position.z);
+					let lowPoint = sorted[0].position.clone();
+					let highPoint = sorted[sorted.length - 1].position.clone();
+					let min = lowPoint.z;
+					let max = highPoint.z;
+
+					let start = new THREE.Vector3(highPoint.x, highPoint.y, min);
+					let end = new THREE.Vector3(highPoint.x, highPoint.y, max);
+
+					let lowScreen = lowPoint.clone().project(camera);
 					let startScreen = start.clone().project(camera);
 					let endScreen = end.clone().project(camera);
 
@@ -245,6 +266,31 @@ export class MeasuringTool extends EventDispatcher{
 
 				let scale = (70 / pr);
 				label.scale.set(scale, scale, scale);
+			}
+
+			{ // edges
+				const materials = [
+					measure.circleRadiusLine.material,
+					...measure.edges.map( (e) => e.material),
+					measure.heightEdge.material,
+					measure.circleLine.material,
+				];
+
+				for(const material of materials){
+					material.resolution.set(clientWidth, clientHeight);
+				}
+
+				// material.dashed = true;
+
+				// if(true){
+				// 	material.defines.USE_DASH = ""; 
+				// }else{
+				// 	delete material.defines.USE_DASH;
+				// }
+				// material.dashScale = 20;
+				// material.dashSize = 1;
+				// material.gapSize = 1;
+				// material.needsUpdate = true;
 			}
 
 			if(!this.showLabels){

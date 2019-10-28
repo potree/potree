@@ -168,6 +168,17 @@ function createSceneContentData(viewer){
 	return data;
 }
 
+function createViewData(viewer){
+	const view = viewer.scene.view;
+
+	const data = {
+		position: view.position.toArray(),
+		target: view.getPivot().toArray(),
+	};
+
+	return data;
+}
+
 export function createSaveData(viewer) {
 
 	const scene = viewer.scene;
@@ -176,6 +187,7 @@ export function createSaveData(viewer) {
 		type: "Potree",
 		version: 1.7,
 		settings: createSettingsData(viewer),
+		view: createViewData(viewer),
 		pointclouds: scene.pointclouds.map(createPointcloudData),
 		measurements: scene.measurements.map(createMeasurementData),
 		volumes: scene.volumes.map(createVolumeData),

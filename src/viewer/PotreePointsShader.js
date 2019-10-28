@@ -15,7 +15,7 @@ uniform vec3 offset;
 uniform float uOctreeSize;
 uniform int uVNStart;
 uniform float uLevel;
-uniform float uNodeSpacing;
+uniform float uOctreeSpacing;
 uniform sampler2D visibleNodes;
 
 
@@ -25,6 +25,11 @@ uniform mat4 projectionMatrix;
 uniform float PointSize;
 
 <%include file="utils/quadVertexFromID.glsl"/>
+
+/* VS Outputs */
+varying vec4 v_color;
+varying vec2 v_texCoord;
+varying vec3 v_viewPos;
 
 // ---------------------
 // OCTREE
@@ -124,38 +129,52 @@ float getLOD(vec3 position){
             //return depth;
         }
         
-        offset = offset + (vec3(1.0, 1.0, 1.0) * nodeSizeAtLevel * 0.5) * index3d;
+        offset = offset + (nodeSizeAtLevel * 0.5) * index3d;
     }
+    
         
     return depth;
 }
 
 float getPointSizeAttenuation(vec3 position){
-    return pow(2.0, getLOD(position));
+  float lod = getLOD(position);
+  // v_color = vec4(0.0, 0.0, 0.0, 1.0);
+  // v_color.r = lod / 5.0;
+  return pow(2.0, lod);
 }
 
 
-/* VS Outputs */
-varying vec4 v_color;
-varying vec3 v_viewPos;
+float getPointSize(vec3 position){
+	
+	float r = uOctreeSpacing * PointSize;
+  
+  float pointSize = r / getPointSizeAttenuation(position);
+
+	// pointSize = clamp(pointSize, minSize, maxSize);
+	
+	return pointSize;
+}
+
 
 void main(void) {
+  v_color = colors / 255.0; // Unsigned byte attributes need to be scaled down from 0-255 > 0..1
+  
   vec2 quadPointPos = getQuadVertexPositionFromID();
-//   v_texCoord = quadPointPos + 0.5;
+  v_texCoord = quadPointPos + 0.5;
 
   vec4 pos = vec4(positions + offset, 1.);
   mat4 modelViewMatrix = viewMatrix * modelMatrix;
   vec4 viewPos = modelViewMatrix * pos;
 
-	float pointSize = PointSize;// / getPointSizeAttenuation(pos);
+	float pointSize = getPointSize(positions);
 
   viewPos += vec4(vec3(quadPointPos, 0.0) * pointSize, 0.);
+  v_viewPos = -viewPos.xyz;
 
   gl_Position = projectionMatrix * viewPos;
+
 //   gl_PointSize = PointSize;
 
-  v_color = colors / 255.0; // Unsigned byte attributes need to be scaled down from 0-255 > 0..1
-  v_viewPos = -viewPos.xyz;
 }
 `
     )
@@ -169,6 +188,7 @@ uniform color BaseColor;
 
 /* VS Outputs */
 varying vec4 v_color;
+varying vec2 v_texCoord;
 
 #ifdef ENABLE_ES3
 out vec4 fragColor;
@@ -179,6 +199,9 @@ void main(void) {
 #ifndef ENABLE_ES3
   vec4 fragColor;
 #endif
+
+  if(length(v_texCoord - 0.5) > 0.5)
+    discard;
 
   fragColor = v_color;
   fragColor.a = 1.0;
@@ -218,6 +241,7 @@ uniform int assetId;
 
 /* VS Outputs */
 varying vec4 v_color;
+varying vec2 v_texCoord;
 varying vec3 v_viewPos;
 
 #ifdef ENABLE_ES3
@@ -229,12 +253,16 @@ void main(void) {
 #ifndef ENABLE_ES3
   vec4 fragColor;
 #endif
-    float dist = length(v_viewPos);
 
-    fragColor.r = float(passId); 
-    fragColor.g = float(assetId);
-    fragColor.b = 0.0;// TODO: store poly-id or something.
-    fragColor.a = dist;
+  if(length(v_texCoord - 0.5) > 0.5)
+    discard;
+
+  float dist = length(v_viewPos);
+
+  fragColor.r = float(passId); 
+  fragColor.g = float(assetId);
+  fragColor.b = 0.0;// TODO: store poly-id or something.
+  fragColor.a = dist;
 
 #ifndef ENABLE_ES3
   gl_FragColor = fragColor;
@@ -260,6 +288,7 @@ uniform color highlightColor;
 
 /* VS Outputs */
 varying vec4 v_color;
+varying vec2 v_texCoord;
 varying vec3 v_viewPos;
 
 #ifdef ENABLE_ES3
@@ -271,7 +300,11 @@ void main(void) {
 #ifndef ENABLE_ES3
   vec4 fragColor;
 #endif
-    fragColor = highlightColor;
+
+  if(length(v_texCoord - 0.5) > 0.5)
+    discard;
+
+  fragColor = highlightColor;
 
 #ifndef ENABLE_ES3
   gl_FragColor = fragColor;

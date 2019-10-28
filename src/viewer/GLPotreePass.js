@@ -29,8 +29,14 @@ export class GLPotreePass extends ZeaEngine.GLPass {
         this.lru.pointLoadLimit = this.pointBudget * 2
     });
 
+    const pointSizeParam = this.addParameter(new ZeaEngine.NumberParameter('Points Size', 0))
+    pointSizeParam.valueChanged.connect(() => {
+      this.pointSize = pointSizeParam.getValue()
+    });
+
     minimumNodeVSizeParam.setValue(0.2)
     visiblePointsTargetParam.setValue(2 * 1000 * 1000)
+    pointSizeParam.setValue(1.7)
   }
   /**
    * The init method.
@@ -45,11 +51,11 @@ export class GLPotreePass extends ZeaEngine.GLPass {
     this.glhighlightShader = new PotreePointsHilighlightShader(gl);
 
     const size = 2048;
-		const data = new Uint8Array(size * 3);
-		for (let i = 0; i < size * 3; i++) data[i] = 255;
+    const data = new Uint8Array(size * 4);
+    for (let i = 0; i < size * 4; i++) data[i] = 255;
 
     this.visibleNodesTexture = new ZeaEngine.GLTexture2D(gl, {
-      format: 'RGB',
+      format: 'RGBA',
       type: 'UNSIGNED_BYTE',
       width: size,
       height: 1,
@@ -237,13 +243,13 @@ export class GLPotreePass extends ZeaEngine.GLPass {
       }
     }// end priority queue loop
     
-    this.computeVisibilityTextureData(visibleNodes);
+    const visibleNodeTextureOffsets = this.computeVisibilityTextureData(visibleNodes);
 
     visibleNodesByAsset.forEach((assetVisibleNodes, index) => {
       this.glpotreeAssets[index].setVisibleNodes(
         assetVisibleNodes, 
         this.lru,
-        this.visibleNodeTextureOffsets
+        visibleNodeTextureOffsets
       );
     });
 
@@ -277,7 +283,7 @@ export class GLPotreePass extends ZeaEngine.GLPass {
   computeVisibilityTextureData(nodes){
 
     const data = new Uint8Array(nodes.length * 4);
-    this.visibleNodeTextureOffsets = new Map();
+    const visibleNodeTextureOffsets = new Map();
 
     // copy array
     nodes = nodes.slice();
@@ -293,34 +299,39 @@ export class GLPotreePass extends ZeaEngine.GLPass {
     };
     nodes.sort(sort);
 
-    const nodeMap = new Map();
+    // const nodeMap = new Map();
     const offsetsToChild = new Array(nodes.length).fill(Infinity);
 
     for(let i = 0; i < nodes.length; i++){
       const node = nodes[i];
-      nodeMap.set(node.name, node);
-      this.visibleNodeTextureOffsets.set(node, i);
+      // nodeMap.set(node.name, node);
+      visibleNodeTextureOffsets.set(node, i);
 
       if(i > 0){
-        let index = node.index;//parseInt(node.name.slice(-1));
+        const index = node.index;//parseInt(node.name.slice(-1));
         // console.log(node.name, node.index, node.name.slice(-1))
-        let parentName = node.name.slice(0, -1);
-        let parent = nodeMap.get(parentName);
-        let parentOffset = this.visibleNodeTextureOffsets.get(parent);
+        // const parentName = node.name.slice(0, -1);
+        const parent = node.parent;//nodeMap.get(parentName);
+        // console.log(node.parent.name, parent.name, node.parent === parent)
+        
+        const parentIndex = visibleNodeTextureOffsets.get(parent);
 
-        let parentOffsetToChild = (i - parentOffset);
+        const parentOffsetToChild = (i - parentIndex);
 
-        offsetsToChild[parentOffset] = Math.min(offsetsToChild[parentOffset], parentOffsetToChild);
-
-        data[parentOffset * 4 + 0] = data[parentOffset * 4 + 0] | (1 << index);
-        data[parentOffset * 4 + 1] = (offsetsToChild[parentOffset] >> 8);
-        data[parentOffset * 4 + 2] = (offsetsToChild[parentOffset] % 256);
+        const childOffset = Math.min(offsetsToChild[parentIndex], parentOffsetToChild);
+        
+        // Add this bit to the parent's chils bit mask.
+        data[parentIndex * 4 + 0] = data[parentIndex * 4 + 0] | (1 << index);
+        data[parentIndex * 4 + 1] = (childOffset >> 8);
+        data[parentIndex * 4 + 2] = (childOffset % 256);
+        offsetsToChild[parentIndex] = childOffset;
       }
 
       data[i * 4 + 3] = node.name.length - 1;
     }
 
     this.visibleNodesTexture.populate(data, nodes.length, 1);
+    return visibleNodeTextureOffsets;
   }
 
   // ///////////////////////////////////
@@ -346,6 +357,12 @@ export class GLPotreePass extends ZeaEngine.GLPass {
 
     this.glshader.bind(renderstate);
 
+    const { visibleNodes, PointSize } = renderstate.unifs;
+    if (visibleNodes)
+      this.visibleNodesTexture.bindToUniform(renderstate, visibleNodes)
+
+    gl.uniform1f(PointSize.location, this.pointSize);
+    
     // RENDER
     this.glpotreeAssets.forEach( a => a.draw(renderstate))
 
@@ -364,6 +381,13 @@ export class GLPotreePass extends ZeaEngine.GLPass {
     gl.enable(gl.DEPTH_TEST);
 
     this.glhighlightShader.bind(renderstate);
+    
+    const { visibleNodes, PointSize } = renderstate.unifs;
+    if (visibleNodes)
+      this.visibleNodesTexture.bindToUniform(renderstate, visibleNodes)
+
+    gl.uniform1f(PointSize.location, this.pointSize);
+
     this.hilghlightedAssets.forEach( a => a.drawHighlightedGeoms(renderstate))
   }
 
@@ -380,6 +404,12 @@ export class GLPotreePass extends ZeaEngine.GLPass {
     gl.enable(gl.DEPTH_TEST);
 
     this.glgeomdataShader.bind(renderstate);
+    
+    const { visibleNodes, PointSize } = renderstate.unifs;
+    if (visibleNodes)
+      this.visibleNodesTexture.bindToUniform(renderstate, visibleNodes)
+
+    gl.uniform1f(PointSize.location, this.pointSize);
 
     // RENDER
     this.glpotreeAssets.forEach((a, index)=> {

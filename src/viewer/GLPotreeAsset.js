@@ -10,6 +10,8 @@ class GLOctTreeNode extends ZeaEngine.GLPoints {
     this.id = ++globalCounter;
     this.loaded = true; // only for LRU. Safely remove after refactoring.
     
+
+    this.children = []
   }
 
 
@@ -35,7 +37,17 @@ export class GLPotreeAsset extends ZeaEngine.GLPass {
 
     this.gl = gl;
     this.potreeAsset = potreeAsset;
-    this.modelMatrixArray =  potreeAsset.getGlobalMat4().asArray()
+
+    const xfoParam =  potreeAsset.getParameter('GlobalXfo')
+    const updateXfo = ()=>{
+      const xfo = potreeAsset.getGlobalXfo();
+      this.spacing = potreeAsset.pcoGeometry.spacing * Math.max(xfo.sc.x, xfo.sc.y, xfo.sc.z);
+      this.modelMatrixArray =  xfo.toMat4().asArray()
+    }
+    xfoParam.valueChanged.connect(updateXfo)
+    updateXfo();
+    
+    this.octreeSize = potreeAsset.pcoGeometry.boundingBox.size().x;
 
     this.visibleNodes = [];
     this.visibleGLNodes = [];
@@ -61,11 +73,19 @@ export class GLPotreeAsset extends ZeaEngine.GLPass {
       for(let i=visibleNodes.length-1; i>=0; i--) {
         const node = visibleNodes[i];
         if (!this.map.has(node)) {
+
           // console.log("GLPoints:", node.name, node.offset);
           const gloctreenode = new GLOctTreeNode(gl, node);
           const index = this.freeList.length > 0 ? this.freeList.pop() : this.gloctreenodes.length;
           this.gloctreenodes[index] = gloctreenode;
           this.map.set(node, index);
+          
+          // Build the tree of gl nodes so we can clean them up later.
+          // if (node.name.length > 1){
+          //   const parentName = node.name.slice(0, -1);
+          //   let parent = this.map.get(parentName);
+          //   parent.children.push(gloctreenode);
+          // }
 
           gloctreenode.destructing.connect(() => {
             this.map.delete(node);
@@ -97,18 +117,24 @@ export class GLPotreeAsset extends ZeaEngine.GLPass {
   __drawNodes(renderstate){
     const gl = this.gl;
     const { unifs } = renderstate;
-    const { modelMatrix, PointSize, uVNStart } = unifs
+    const { modelMatrix, offset, uOctreeSize, uOctreeSpacing, uVNStart, uLevel } = unifs
     gl.uniformMatrix4fv(modelMatrix.location, false, this.modelMatrixArray)
-    const offsetUnif = unifs.offset;
+    
+    if (uOctreeSize)
+      gl.uniform1f(uOctreeSize.location, this.octreeSize)
+
+    if (uOctreeSpacing)
+      gl.uniform1f(uOctreeSpacing.location, this.spacing)
+
     this.visibleGLNodes.forEach(glpoints => {
-      if (glpoints.__destroyed)
-        throw("Dstroyed node:", index);
       const node = glpoints.node
-      this.gl.uniform3fv(offsetUnif.location, node.offset.asArray())
-      gl.uniform1f(PointSize.location, 0.25);//node.spacing)
+
+      gl.uniform3fv(offset.location, node.offset.asArray())
       
       if (uVNStart)
-        gl.uniform1f(uVNStart.location, glpoints.vnStart)
+        gl.uniform1i(uVNStart.location, glpoints.vnStart)
+      if (uLevel)
+        gl.uniform1f(uLevel.location, node.level)
 
       glpoints.bind(renderstate)
       renderstate.bindViewports(unifs, () => {

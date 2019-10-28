@@ -5,24 +5,24 @@ class WorkerPool{
 		this.workers = {};
 	}
 
-	getWorker(url){
-		console.log(url);
-		if (!this.workers[url]){
-			this.workers[url] = [];
+	getWorker(workerCls){
+		
+		if (!this.workers[workerCls]){
+			this.workers[workerCls] = [];
 		}
 
-		if (this.workers[url].length === 0){
-			let worker = new Worker(url);
-			this.workers[url].push(worker);
+		if (this.workers[workerCls].length === 0){
+			let worker = new workerCls();
+			this.workers[workerCls].push(worker);
 		}
 
-		let worker = this.workers[url].pop();
+		let worker = this.workers[workerCls].pop();
 
 		return worker;
 	}
 
-	returnWorker(url, worker){
-		this.workers[url].push(worker);
+	returnWorker(workerCls, worker){
+		this.workers[workerCls].push(worker);
 	}
 };
 

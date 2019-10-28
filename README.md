@@ -28,13 +28,12 @@ Install all dependencies, as specified in package.json,
 then, install the gulp build tool:
 
     cd <potree_directory>
-    npm install
-    npm install -g gulp
-    npm install -g rollup
+    yarn install
+    yarn build:dev
 
-Use the ```gulp watch``` command to 
+Use the ```yarn build:dev``` command to 
 
-* create ./build/potree 
+* create ./dist 
 * watch for changes to the source code and automatically create a new build on change
 * start a web server at localhost:1234. 
 

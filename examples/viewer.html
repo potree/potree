@@ -10,7 +10,8 @@
 
 <body>
 	<script src="../node_modules/@zeainc/zea-engine/dist/zea-engine.js"></script>
-	<script src="../build/potree/potree.js"></script>
+	<!-- <script src="../build/potree/potree.js"></script> -->
+	<script src="../dist/zea-potree.js"></script>
 	<div id="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
 	</div>
 	
@@ -22,13 +23,13 @@
 		const renderer = new ZeaEngine.GLRenderer(document.getElementById("potree_container"), {
 			enableTextures:false
 		});
-		const potreePass = new Potree.GLPotreePass();
+		const potreePass = new ZeaPotree.GLPotreePass();
 		// potreePass.setPointBudget(1*1000*1000);
 		renderer.addPass(potreePass, ZeaEngine.PassType.OPAQUE);
 		renderer.setScene(scene);
 		renderer.resumeDrawing();
 
-		const potreeAsset = new Potree.PotreeAsset();
+		const potreeAsset = new ZeaPotree.PotreeAsset();
 		scene.getRoot().addChild(potreeAsset);
 		
 		// Load and add point cloud to scene

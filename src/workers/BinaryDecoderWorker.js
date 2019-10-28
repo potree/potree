@@ -54,8 +54,6 @@ function CustomView (buffer) {
 	};
 }
 
-Potree = {};
-
 onmessage = function (event) {
 
 	performance.mark("binary-decoder-start");

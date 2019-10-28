@@ -3,6 +3,10 @@ import {PointCloudTreeNode} from "./PointCloudTree.js";
 import {XHRFactory} from "./XHRFactory.js";
 import {Utils} from "./utils.js";
 
+
+// A global count of the number of nodes loading.
+let numNodesLoading = 0;
+
 export class PointCloudOctreeGeometry{
 
 	constructor(){
@@ -129,7 +133,7 @@ export class PointCloudOctreeGeometryNode extends PointCloudTreeNode{
 		// }
 
 
-			Potree.numNodesLoading++;
+			numNodesLoading++;
 
 			if (this.pcoGeometry.loader.version.equalOrHigher('1.5')) {
 				if ((this.level % this.pcoGeometry.hierarchyStepSize) === 0 && this.hasChildren) {
@@ -225,7 +229,7 @@ export class PointCloudOctreeGeometryNode extends PointCloudTreeNode{
 		this.loaded = true;
 		this.loading = false;
 		this.estimatedSpacing = data.estimatedSpacing;
-		Potree.numNodesLoading--;
+		numNodesLoading--;
 
 		this.dispatchEvent('loaded', {
 			numPoints

@@ -3,6 +3,7 @@ import {Version} from "../Version.js";
 import {XHRFactory} from "../XHRFactory.js";
 import {workerPool} from "../WorkerPool.js"
 
+const BinaryDecoderWorker = require('worker-loader?inline!../workers/BinaryDecoderWorker.js')
 
 export class BinaryLoader{
 
@@ -63,11 +64,11 @@ export class BinaryLoader{
 		// 	node.numPoints = numPoints;
 		// }
 
-		let workerPath = Potree.scriptPath + '/workers/BinaryDecoderWorker.js';
-		let worker = workerPool.getWorker(workerPath);
+		let workerCls = BinaryDecoderWorker;
+		let worker = workerPool.getWorker(workerCls);
 		const version  = this.version;
 		worker.onmessage = function (e) {
-			workerPool.returnWorker(workerPath, worker);
+			workerPool.returnWorker(workerCls, worker);
 
 			let data = e.data;
 			node.parse(data, version)

@@ -18,7 +18,7 @@
 	#potree_toolbar{
 		position: absolute; 
 		z-index: 10000; 
-		left: 10px; 
+		left: 100px; 
 		top: 0px;
 		background: black;
 		color: white;
@@ -77,12 +77,12 @@
 		viewer.loadSettingsFromURL();
 		viewer.setBackground("skybox");
 		
-		viewer.loadGUI(() => {
-			viewer.setLanguage('en');
-			//$("#menu_tools").next().show();
-			$("#menu_scene").next().show();
-			viewer.toggleSidebar();
-		});
+		// viewer.loadGUI(() => {
+		// 	viewer.setLanguage('en');
+		// 	//$("#menu_tools").next().show();
+		// 	$("#menu_scene").next().show();
+		// 	viewer.toggleSidebar();
+		// });
 
 		let elevationRange = [0, 38];
 		

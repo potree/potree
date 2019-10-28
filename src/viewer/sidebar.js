@@ -139,6 +139,28 @@ export class Sidebar{
 			}
 		));
 
+		// CIRCLE
+		elToolbar.append(this.createToolIcon(
+			Potree.resourcePath + '/icons/circle.svg',
+			'[title]tt.circle_measurement',
+			() => {
+				$('#menu_measurements').next().slideDown();
+				let measurement = this.measuringTool.startInsertion({
+					showDistances: false,
+					showHeight: false,
+					showArea: false,
+					showCircle: true,
+					closed: false,
+					maxMarkers: 3,
+					name: 'Circle'});
+
+				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
+				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === measurement.uuid);
+				$.jstree.reference(jsonNode.id).deselect_all();
+				$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
+			}
+		));
+
 		// AREA
 		elToolbar.append(this.createToolIcon(
 			Potree.resourcePath + '/icons/area.svg',
@@ -810,6 +832,22 @@ export class Sidebar{
 
 			const [min, max] = [Infinity, -Infinity];
 
+			const format = (value) => {
+				return Potree.Utils.addCommas(value.toFixed(3));
+			};
+
+			const updateLabels = () => {
+				const r0 = sldGpsL0.slider("option", "values");
+				const r1 = sldGpsL1.slider("option", "values");
+				const r2 = sldGpsL2.slider("option", "values");
+				const r3 = sldGpsL3.slider("option", "values");
+
+				lblGpsL0.html(`${format(r0[0])} to ${format(r0[1])}`);
+				lblGpsL1.html(`${format(r1[0])} to ${format(r1[1])}`);
+				lblGpsL2.html(`${format(r2[0])} to ${format(r2[1])}`);
+				lblGpsL3.html(`${format(r3[0])} to ${format(r3[1])}`);
+			};
+
 			sldGpsL0.slider({
 				range: true,
 				min: min, max: max, step: 0.01,
@@ -837,6 +875,8 @@ export class Sidebar{
 						max: ui.values[1],
 						values: ui.values,
 					});
+
+					updateLabels();
 				}
 			});
 
@@ -860,6 +900,8 @@ export class Sidebar{
 						max: ui.values[1],
 						values: ui.values,
 					});
+
+					updateLabels();
 				}
 			});
 
@@ -876,6 +918,8 @@ export class Sidebar{
 						max: ui.values[1],
 						values: ui.values,
 					});
+
+					updateLabels();
 				}
 			});
 
@@ -885,6 +929,8 @@ export class Sidebar{
 				values: [min, max],
 				slide: (event, ui) => {
 					this.viewer.setFilterGPSTimeRange(...ui.values);
+
+					updateLabels();
 				}
 			});
 
@@ -912,6 +958,8 @@ export class Sidebar{
 					max: extent[1],
 					values: extent,
 				});
+
+				updateLabels();
 			};
 
 			this.viewer.addEventListener("update", (e) => {
@@ -927,6 +975,8 @@ export class Sidebar{
 				}
 
 				sldGpsL0.slider({min: extent[0], max: extent[1]});
+
+				//updateLabels();
 			});
 		}
 			

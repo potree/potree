@@ -16,6 +16,7 @@ export class Measure extends THREE.Object3D {
 		this._showArea = false;
 		this._closed = true;
 		this._showAngles = false;
+		this._showCircle = false;
 		this._showHeight = false;
 		this.maxMarkers = Number.MAX_SAFE_INTEGER;
 
@@ -33,8 +34,11 @@ export class Measure extends THREE.Object3D {
 		this.areaLabel = null;
 		this.heightLabel = null;
 
-		// this.heightEdge;
-		// this.heightLabel;
+		this.circleRadiusLabel = null;
+		this.circleRadiusLine = null;
+		this.circleLine = null;
+		this.circleCenter = null;
+
 		{ // height stuff
 			{ // height line
 				let lineGeometry = new THREE.Geometry();
@@ -67,15 +71,112 @@ export class Measure extends THREE.Object3D {
 			}
 		}
 
-		this.areaLabel = new TextSprite('');
-		this.areaLabel.setTextColor({r: 140, g: 250, b: 140, a: 1.0});
-		this.areaLabel.setBorderColor({r: 0, g: 0, b: 0, a: 1.0});
-		this.areaLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 1.0});
-		this.areaLabel.fontsize = 16;
-		this.areaLabel.material.depthTest = false;
-		this.areaLabel.material.opacity = 1;
-		this.areaLabel.visible = false; ;
-		this.add(this.areaLabel);
+		{
+			this.areaLabel = new TextSprite('');
+			this.areaLabel.setTextColor({r: 140, g: 250, b: 140, a: 1.0});
+			this.areaLabel.setBorderColor({r: 0, g: 0, b: 0, a: 1.0});
+			this.areaLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 1.0});
+			this.areaLabel.fontsize = 16;
+			this.areaLabel.material.depthTest = false;
+			this.areaLabel.material.opacity = 1;
+			this.areaLabel.visible = false;
+			this.add(this.areaLabel);
+		}
+
+		{ // circle stuff
+
+			{
+				this.circleRadiusLabel = new TextSprite("");
+				this.circleRadiusLabel.setTextColor({r: 140, g: 250, b: 140, a: 1.0});
+				this.circleRadiusLabel.setBorderColor({r: 0, g: 0, b: 0, a: 1.0});
+				this.circleRadiusLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 1.0});
+				this.circleRadiusLabel.fontsize = 16;
+				this.circleRadiusLabel.material.depthTest = false;
+				this.circleRadiusLabel.material.opacity = 1;
+				this.circleRadiusLabel.visible = false;
+				this.add(this.circleRadiusLabel);
+			}
+
+
+			{
+				const lineGeometry = new THREE.Geometry();
+				lineGeometry.vertices.push(
+					new THREE.Vector3(),
+					new THREE.Vector3(),
+					new THREE.Vector3(),
+					new THREE.Vector3());
+				lineGeometry.colors.push(this.color, this.color, this.color);
+				const lineMaterial = new THREE.LineDashedMaterial(
+					{ color: 0xff0000, dashSize: 5, gapSize: 2 });
+
+				lineMaterial.depthTest = false;
+				this.circleRadiusLine = new THREE.Line(lineGeometry, lineMaterial);
+				this.circleRadiusLine.visible = false;
+
+				this.add(this.circleRadiusLine);
+			}
+
+			{
+				const lineGeometry = new THREE.Geometry();
+				lineGeometry.vertices.push(
+					new THREE.Vector3(),
+					new THREE.Vector3(),
+					new THREE.Vector3(),
+					new THREE.Vector3());
+				lineGeometry.colors.push(this.color, this.color, this.color);
+				const lineMaterial = new THREE.LineDashedMaterial(
+					{ color: 0xff0000, dashSize: 5, gapSize: 2 });
+
+				lineMaterial.depthTest = false;
+				this.circleRadiusLine = new THREE.Line(lineGeometry, lineMaterial);
+				this.circleRadiusLine.visible = false;
+
+				this.add(this.circleRadiusLine);
+			}
+
+			{
+				const geometry = new THREE.Geometry();
+
+				let n = 32;
+				for(let i = 0; i <= n; i++){
+					let u0 = 2 * Math.PI * (i / n);
+					let u1 = 2 * Math.PI * (i + 1) / n;
+
+					let p0 = new THREE.Vector3(
+						Math.cos(u0), 
+						Math.sin(u0), 
+						0
+					);
+
+					let p1 = new THREE.Vector3(
+						Math.cos(u1), 
+						Math.sin(u1), 
+						0
+					);
+
+					geometry.vertices.push(p0, p1); 
+				}
+
+				const lineMaterial = new THREE.LineDashedMaterial(
+					{ color: 0xff0000, dashSize: 5, gapSize: 2 });
+
+				lineMaterial.depthTest = false;
+				this.circleLine = new THREE.Line(geometry, lineMaterial);
+				this.circleLine.visible = false;
+
+				this.add(this.circleLine);
+			}
+
+			{
+				const sg = new THREE.SphereGeometry(1, 32, 32);
+				const sm = new THREE.MeshNormalMaterial();
+				
+				this.circleCenter = new THREE.Mesh(sg, sm);
+				this.circleCenter.visible = false;
+
+				this.add(this.circleCenter);
+			}
+		}
 	}
 
 	createSphereMaterial () {
@@ -466,6 +567,54 @@ export class Measure extends THREE.Object3D {
 			}
 		}
 
+		{ // update circle stuff
+			const circleRadiusLabel = this.circleRadiusLabel;
+			const circleRadiusLine = this.circleRadiusLine;
+			const circleLine = this.circleLine;
+			const circleCenter = this.circleCenter;
+
+			const circleOkay = this.points.length === 3;
+
+			circleRadiusLabel.visible = this.showCircle && circleOkay;
+			circleRadiusLine.visible = this.showCircle && circleOkay;
+			circleLine.visible = this.showCircle && circleOkay;
+			circleCenter.visible = this.showCircle && circleOkay;
+
+			if(this.showCircle && circleOkay){
+
+				const A = this.points[0].position;
+				const B = this.points[1].position;
+				const C = this.points[2].position;
+				const AB = B.clone().sub(A);
+				const AC = C.clone().sub(A);
+				const N = AC.clone().cross(AB).normalize();
+
+				const center = Potree.Utils.computeCircleCenter(A, B, C);
+				const radius = center.distanceTo(A);
+
+
+				const scale = radius / 20;
+				circleCenter.position.copy(center);
+				circleCenter.scale.set(scale, scale, scale);
+
+				circleRadiusLine.geometry.vertices[0].set(0, 0, 0);
+				circleRadiusLine.geometry.vertices[1].copy(B.clone().sub(center));
+				circleRadiusLine.geometry.verticesNeedUpdate = true;
+				circleRadiusLine.geometry.computeBoundingSphere();
+				circleRadiusLine.position.copy(center);
+
+				const target = center.clone().add(N);
+				circleLine.position.copy(center);
+				circleLine.scale.set(radius, radius, radius);
+				circleLine.lookAt(target);
+				
+				circleRadiusLabel.visible = true;
+				circleRadiusLabel.position.copy(center.clone().add(B).multiplyScalar(0.5));
+				circleRadiusLabel.setText(`${radius.toFixed(3)}`);
+
+			}
+		}
+
 		{ // update area label
 			this.areaLabel.position.copy(centroid);
 			this.areaLabel.visible = this.showArea && this.points.length >= 3;
@@ -516,6 +665,15 @@ export class Measure extends THREE.Object3D {
 
 	set showAngles (value) {
 		this._showAngles = value;
+		this.update();
+	}
+
+	get showCircle () {
+		return this._showCircle;
+	}
+
+	set showCircle (value) {
+		this._showCircle = value;
 		this.update();
 	}
 

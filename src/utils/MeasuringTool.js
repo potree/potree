@@ -65,6 +65,7 @@ export class MeasuringTool extends EventDispatcher{
 		measure.showAngles = args.showAngles || false;
 		measure.showCoordinates = args.showCoordinates || false;
 		measure.showHeight = args.showHeight || false;
+		measure.showCircle = args.showCircle || false;
 		measure.closed = args.closed || false;
 		measure.maxMarkers = args.maxMarkers || Infinity;
 		measure.name = args.name || 'Measurement';
@@ -237,6 +238,15 @@ export class MeasuringTool extends EventDispatcher{
 				label.scale.set(scale, scale, scale);
 			}
 
+			{ // radius label
+				let label = measure.circleRadiusLabel;
+				let distance = label.position.distanceTo(camera.position);
+				let pr = Utils.projectedRadius(1, camera, distance, clientWidth, clientHeight);
+
+				let scale = (70 / pr);
+				label.scale.set(scale, scale, scale);
+			}
+
 			if(!this.showLabels){
 
 				const labels = [
@@ -246,6 +256,7 @@ export class MeasuringTool extends EventDispatcher{
 					...measure.coordinateLabels,
 					measure.heightLabel,
 					measure.areaLabel,
+					measure.circleRadiusLabel,
 				];
 
 				for(const label of labels){

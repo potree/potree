@@ -71,10 +71,50 @@ export class Utils {
 	}
 
 	static debugLine(parent, start, end, color){
+
 		let material = new THREE.LineBasicMaterial({ color: color }); 
-		let geometry = new THREE.Geometry(); 
-		geometry.vertices.push( start, end); 
+		let geometry = new THREE.Geometry();
+
+		const p1 = new THREE.Vector3(0, 0, 0);
+		const p2 = end.clone().sub(start);
+
+		geometry.vertices.push(p1, p2);
+
+		let tl = new THREE.Line( geometry, material );
+		tl.position.copy(start);
+
+		parent.add(tl);
+	}
+
+	static debugCircle(parent, center, radius, normal, color){
+		let material = new THREE.LineBasicMaterial({ color: color });
+
+		let geometry = new THREE.Geometry();
+
+		let n = 32;
+		for(let i = 0; i <= n; i++){
+			let u0 = 2 * Math.PI * (i / n);
+			let u1 = 2 * Math.PI * (i + 1) / n;
+
+			let p0 = new THREE.Vector3(
+				Math.cos(u0), 
+				Math.sin(u0), 
+				0
+			);
+
+			let p1 = new THREE.Vector3(
+				Math.cos(u1), 
+				Math.sin(u1), 
+				0
+			);
+
+			geometry.vertices.push(p0, p1); 
+		}
+
 		let tl = new THREE.Line( geometry, material ); 
+		tl.position.copy(center);
+		tl.scale.set(radius, radius, radius);
+
 		parent.add(tl);
 	}
 
@@ -791,6 +831,72 @@ export class Utils {
 		} else if (measurement instanceof PolygonClipVolume) {
 			return `${Potree.resourcePath}/icons/clip-polygon.svg`;
 		}
+	}
+
+	static lineToLineIntersection(P0, P1, P2, P3){
+
+		const P = [P0, P1, P2, P3];
+
+		const d = (m, n, o, p) => {
+			let result =  
+				  (P[m].x - P[n].x) * (P[o].x - P[p].x)
+				+ (P[m].y - P[n].y) * (P[o].y - P[p].y)
+				+ (P[m].z - P[n].z) * (P[o].z - P[p].z);
+
+			return result;
+		};
+
+
+		const mua = (d(0, 2, 3, 2) * d(3, 2, 1, 0) - d(0, 2, 1, 0) * d(3, 2, 3, 2))
+		        /**-----------------------------------------------------------------**/ /
+		            (d(1, 0, 1, 0) * d(3, 2, 3, 2) - d(3, 2, 1, 0) * d(3, 2, 1, 0));
+
+
+		const mub = (d(0, 2, 3, 2) + mua * d(3, 2, 1, 0))
+		        /**--------------------------------------**/ /
+		                       d(3, 2, 3, 2);
+
+
+		const P01 = P1.clone().sub(P0);
+		const P23 = P3.clone().sub(P2);
+		
+		const Pa = P0.clone().add(P01.multiplyScalar(mua));
+		const Pb = P2.clone().add(P23.multiplyScalar(mub));
+
+		const center = Pa.clone().add(Pb).multiplyScalar(0.5);
+
+		return center;
+	}
+
+	static computeCircleCenter(A, B, C){
+		const AB = B.clone().sub(A);
+		const AC = C.clone().sub(A);
+
+		const N = AC.clone().cross(AB).normalize();
+
+		const ab_dir = AB.clone().cross(N).normalize();
+		const ac_dir = AC.clone().cross(N).normalize();
+
+		const ab_origin = A.clone().add(B).multiplyScalar(0.5);
+		const ac_origin = A.clone().add(C).multiplyScalar(0.5);
+
+		const P0 = ab_origin;
+		const P1 = ab_origin.clone().add(ab_dir);
+
+		const P2 = ac_origin;
+		const P3 = ac_origin.clone().add(ac_dir);
+
+		const center = Utils.lineToLineIntersection(P0, P1, P2, P3);
+
+		return center;
+
+		// Potree.Utils.debugLine(viewer.scene.scene, P0, P1, 0x00ff00);
+		// Potree.Utils.debugLine(viewer.scene.scene, P2, P3, 0x0000ff);
+
+		// Potree.Utils.debugSphere(viewer.scene.scene, center, 0.03, 0xff00ff);
+
+		// const radius = center.distanceTo(A);
+		// Potree.Utils.debugCircle(viewer.scene.scene, center, radius, new THREE.Vector3(0, 0, 1), 0xff00ff);
 	}
 
 }

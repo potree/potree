@@ -18,6 +18,7 @@
 		"point_measurement": "Point measurement",
 		"distance_measurement": "Distance measurement",
 		"height_measurement": "Height measurement",
+		"circle_measurement": "Circle measurement",
 		"area_measurement": "Area measurement",
 		"volume_measurement": "Volume measurement",
 		"height_profile": "Height profile",

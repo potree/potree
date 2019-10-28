@@ -8,7 +8,6 @@
 	"editor.fontSize": 28,
 	"editor.autoIndent": false,
 	"editor.detectIndentation": false,
-	"editor.renderWhitespace": "all",
 	"editor.insertSpaces": false,
 	"editor.minimap.enabled": false,
 	"editor.autoClosingBrackets": false,
@@ -16,4 +15,5 @@
 	"editor.acceptSuggestionOnEnter": "off",
 	"editor.acceptSuggestionOnCommitCharacter": false,
 	"editor.mouseWheelZoom": true,
+	"editor.renderWhitespace": "all",
 }

@@ -14,6 +14,7 @@ import {DistancePanel} from "./DistancePanel.js";
 import {PointPanel} from "./PointPanel.js";
 import {AreaPanel} from "./AreaPanel.js";
 import {AnglePanel} from "./AnglePanel.js";
+import {CirclePanel} from "./CirclePanel.js";
 import {HeightPanel} from "./HeightPanel.js";
 import {VolumePanel} from "./VolumePanel.js";
 import {ProfilePanel} from "./ProfilePanel.js";
@@ -803,7 +804,9 @@ export class PropertiesPanel{
 			ANGLE: {panel: AnglePanel},
 			HEIGHT: {panel: HeightPanel},
 			PROFILE: {panel: ProfilePanel},
-			VOLUME: {panel: VolumePanel}
+			VOLUME: {panel: VolumePanel},
+			CIRCLE: {panel: CirclePanel},
+			OTHER: {panel: PointPanel},
 		};
 
 		let getType = (measurement) => {
@@ -818,6 +821,8 @@ export class PropertiesPanel{
 					return TYPE.ANGLE;
 				} else if (measurement.showHeight) {
 					return TYPE.HEIGHT;
+				} else if (measurement.showCircle) {
+					return TYPE.CIRCLE;
 				} else {
 					return TYPE.OTHER;
 				}

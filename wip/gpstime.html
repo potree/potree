@@ -51,6 +51,8 @@
 			//$("#menu_scene").next().show();
 			$("#menu_filters").next().show();
 			viewer.toggleSidebar();
+
+			//testSvg();
 		});
 		
 		Potree.loadPointCloud("../pointclouds/gane/cloud.js", "gane", e => {
@@ -75,9 +77,33 @@
 
 	<script>
 
+		// function testSvg(){
+
+		// 	const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+
+		// 	const svgNS = svg.namespaceURI;
+		// 	const rect = document.createElementNS(svgNS,'rect');
+
+		// 	// rect.setAttribute('x',5);
+		// 	// rect.setAttribute('y',5);
+		// 	rect.setAttribute('width', "100%");
+		// 	rect.setAttribute('height', "100%");
+		// 	rect.setAttribute('fill','#95B3D7');
+
+
+		// 	svg.appendChild(rect);
+
+		// 	svg.style.zIndex = 10000;
+		// 	svg.style.position = "absolute";
+
+		// 	const elFilters = document.getElementById("gpstime_multilevel_range_container");
+
+		// 	elFilters.appendChild(svg);
+
+		// }
+
 
 	</script>
 	
-	
-  </body>
+</body>
 </html>

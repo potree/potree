@@ -67,7 +67,7 @@ export async function loadRtkFlatbuffer(s3, bucket, name, callback) {
     }
 
     xhr.onload = async function(data) {
-      
+
       const FlatbufferModule = await import(schemaFile);
 
       let uint8Array = iso_8859_15_to_uint8array(data.target.responseText);
@@ -122,24 +122,27 @@ function parseRTK(bytesArray, FlatbufferModule) {
       }
       t_range = pose.timestamp() - t_init;
 
-      mpos.push( [pose.locXY().x(), pose.locXY().y(), pose.pos().z()] );
-      orientations.push( [pose.orientation().z(), pose.orientation().y(), pose.orientation().x()] );
-      timestamps.push(pose.timestamp());
-
-      if(typeof pose.adjustedOrientation === 'function') {
-        adjustedOrientations.push( [pose.orientation().z(), pose.orientation().y(), pose.adjustedOrientation().x()] ); // TODO use adjustedRoll and adjusted
-        allAdjustedOrientationsAreZero = allAdjustedOrientationsAreZero && (adjustedOrientations[adjustedOrientations.length-1][2] == 0); // == 0 && adjustedUTMOrientation[ii][1] == 0 && adjustedUTMOrientations[ii][2] == 0;
+      // Get UTM Position Data:
+      if (pose.locXY) {
+        mpos.push( [pose.locXY().x(), pose.locXY().y(), pose.pos().z()] );
+      } else {
+        mpos.push( [pose.utm().x(), pose.utm().y(), pose.utm().z()] );
       }
+
+      // Get Orientation Data:
+      if (pose.orientation) {
+        orientations.push( [pose.orientation().z(), pose.orientation().y(), pose.orientation().x()] );
+      } else {
+        orientations.push( [pose.roll(), pose.pitch(), pose.utm().yaw()] ); // TODO USE UTM-ADJUSTED ROLL/PITCH EVENTUALLY
+      }
+
+      timestamps.push(pose.timestamp());
 
       count += 1;
     }
 
     // rtkPoses.push(pose);
     segOffset += segSize;
-  }
-
-  if (!allAdjustedOrientationsAreZero) {
-    orientations = adjustedOrientations;
   }
 
   return {mpos, orientations, timestamps, t_init, t_range};

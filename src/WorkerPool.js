@@ -1,10 +1,12 @@
 
-export class WorkerPool{
+
+class WorkerPool{
 	constructor(){
 		this.workers = {};
 	}
 
 	getWorker(url){
+		console.log(url);
 		if (!this.workers[url]){
 			this.workers[url] = [];
 		}
@@ -24,4 +26,6 @@ export class WorkerPool{
 	}
 };
 
+const workerPool = new WorkerPool();
+export { workerPool }
 //Potree.workerPool = new Potree.WorkerPool();

@@ -1,8 +1,7 @@
 
-
-import {PointAttributeNames} from "./PointAttributes.js";
 import {Version} from "../Version.js";
 import {XHRFactory} from "../XHRFactory.js";
+import {workerPool} from "../WorkerPool.js"
 
 
 export class BinaryLoader{
@@ -65,10 +64,10 @@ export class BinaryLoader{
 		// }
 
 		let workerPath = Potree.scriptPath + '/workers/BinaryDecoderWorker.js';
-		let worker = Potree.workerPool.getWorker(workerPath);
+		let worker = workerPool.getWorker(workerPath);
 		const version  = this.version;
 		worker.onmessage = function (e) {
-			Potree.workerPool.returnWorker(workerPath, worker);
+			workerPool.returnWorker(workerPath, worker);
 
 			let data = e.data;
 			node.parse(data, version)

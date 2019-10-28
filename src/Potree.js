@@ -59,8 +59,7 @@
 
 // export * from "./viewer/viewer.js";
 // export * from "./viewer/Scene.js";
-export * from "./viewer/GLPotreePass.js";
-export * from "./viewer/PotreeAsset.js";
+export * from "./zea/index.js";
 
 // export {OrbitControls} from "./navigation/OrbitControls.js";
 // export {FirstPersonControls} from "./navigation/FirstPersonControls.js";
@@ -74,14 +73,14 @@ export * from "./viewer/PotreeAsset.js";
 
 // import {PointColorType} from "./defines";
 // import {Enum} from "./Enum";
-import {LRU} from "./LRU";
+// import {LRU} from "./LRU";
 // import {POCLoader} from "./loader/POCLoader";
 // import {GreyhoundLoader} from "./loader/GreyhoundLoader";
 // import {EptLoader} from "./loader/EptLoader";
 // import {PointCloudOctree} from "./PointCloudOctree";
-import {WorkerPool} from "./WorkerPool";
+// import {WorkerPool} from "./WorkerPool";
 
-export const workerPool = new WorkerPool();
+// export const workerPool = new WorkerPool();
 
 export const version = {
 	major: 1,
@@ -89,16 +88,16 @@ export const version = {
 	suffix: ''
 };
 
-export let lru = new LRU();
+// export let lru = new LRU();
 
 console.log('Potree ' + version.major + '.' + version.minor + version.suffix);
 
-export let pointBudget = 1 * 1000 * 1000;
-export let framenumber = 0;
-export let numNodesLoading = 0;
-export let maxNodesLoading = 4;
+// export let pointBudget = 1 * 1000 * 1000;
+// export let framenumber = 0;
+// export let numNodesLoading = 0;
+// export let maxNodesLoading = 4;
 
-export const debug = {};
+// export const debug = {};
 
 let scriptPath = "";
 if (document.currentScript.src) {

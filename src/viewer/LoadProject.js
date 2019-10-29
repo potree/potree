@@ -99,6 +99,20 @@ function loadAnnotations(viewer, data){
 
 }
 
+function loadProfile(viewer, data){
+	
+	// const {name, points} = data;
+
+	// let profile = new Potree.Profile();
+	// profile.name = "Elevation Profile";
+	// profile.setWidth(6)
+	// profile.addMarker(new THREE.Vector3(2561699.409, 1205164.310, 478.648));
+	// profile.addMarker(new THREE.Vector3(2561659.311, 1205242.101, 491.235));
+	
+	// viewer.scene.addProfile(profile);
+
+}
+
 
 export function loadSaveData(viewer, data){
 

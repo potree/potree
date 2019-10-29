@@ -66,7 +66,7 @@
 		});
 		
 		// Sigeom
-		Potree.loadPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/opentopography/CA13_1.4/cloud.js", "CA13", function(e){
+		Potree.loadPointCloud("../pointclouds/morro_bay_converted/cloud.js", "CA13", function(e){
 			viewer.scene.addPointCloud(e.pointcloud);
 			e.pointcloud.position.z = 0;
 			let material = e.pointcloud.material;
@@ -75,7 +75,7 @@
 			material.activeAttributeName = "source id";
 			material.elevationRange = [10, 20];
 			
-			viewer.scene.view.position.set(694396.177, 3913823.504, 2085.157);
+			viewer.scene.view.position.set(694087.967, 3914832.946, 1488.340);
 			viewer.scene.view.lookAt(694878.410, 3916332.067, 14.497);
 
 			//viewer.fitToScreen();

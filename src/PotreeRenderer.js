@@ -140,6 +140,7 @@ let attributeLocations = {
 	"returnNumber": {name: "returnNumber", location: 4},
 	"numberOfReturns": {name: "numberOfReturns", location: 5},
 	"pointSourceID": {name: "pointSourceID", location: 6},
+	"source id": {name: "pointSourceID", location: 6},
 	"indices": {name: "indices", location: 7},
 	"normal": {name: "normal", location: 8},
 	"spacing": {name: "spacing", location: 9},

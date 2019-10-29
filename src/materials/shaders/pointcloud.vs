@@ -586,7 +586,7 @@ vec3 getColor(){
 		color = cl.rgb;
 	#elif defined color_type_return_number
 		color = getReturnNumber();
-	#elif defined color_type_source
+	#elif defined color_type_source_id
 		color = getSourceID();
 	#elif defined color_type_normal
 		color = (modelMatrix * vec4(normal, 0.0)).xyz;

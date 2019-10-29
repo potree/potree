@@ -374,11 +374,13 @@ export class Sidebar{
 		let measurementID = tree.jstree('create_node', "#", { "text": "<b>Measurements</b>", "id": "measurements" }, "last", false, false);
 		let annotationsID = tree.jstree('create_node', "#", { "text": "<b>Annotations</b>", "id": "annotations" }, "last", false, false);
 		let otherID = tree.jstree('create_node', "#", { "text": "<b>Other</b>", "id": "other" }, "last", false, false);
+		let vectorsID = tree.jstree('create_node', "#", { "text": "<b>Vectors</b>", "id": "vectors" }, "last", false, false);
 
 		tree.jstree("check_node", pcID);
 		tree.jstree("check_node", measurementID);
 		tree.jstree("check_node", annotationsID);
 		tree.jstree("check_node", otherID);
+		tree.jstree("check_node", vectorsID);
 
 		tree.on('create_node.jstree', (e, data) => {
 			tree.jstree("open_all");

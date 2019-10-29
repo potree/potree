@@ -1218,6 +1218,23 @@ export class Viewer extends EventDispatcher{
 						
 						const geo = await Potree.GeoPackageLoader.loadBuffer(buffer, params);
 						viewer.scene.scene.add(geo.node);
+
+						for(const layer of geo.node.children){
+
+							const name = layer.name;
+
+							let tree = $(`#jstree_scene`);
+							let parentNode = "vectors";
+
+							let shpPointsID = tree.jstree('create_node', parentNode, { 
+									"text": name, 
+									"icon": `${Potree.resourcePath}/icons/triangle.svg`,
+									"object": layer,
+									"data": layer,
+								}, 
+								"last", false, false);
+							tree.jstree(layer.visible ? "check_node" : "uncheck_node", shpPointsID);
+						}
 					}
 				}
 				

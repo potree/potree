@@ -6,7 +6,7 @@ export class LaneSegments extends THREE.Object3D {
 
 		this.offsets = [];
 		this.offsets.push(0)
-		this.measures = [];
+		this.segments = [];
 		this.outPoints = [];
 		this.outPoints.push([])
 	}
@@ -19,15 +19,15 @@ export class LaneSegments extends THREE.Object3D {
 		laneSegment.showCoordinates = true;
 		laneSegment.showAngles = true;
 
-		this.measures.push(laneSegment);
+		this.segments.push(laneSegment);
 		this.offsets.push(0);
 		this.outPoints.push([]);
 	};
 
 	finalizeSegment() {
 		// add geometry object to this class (each measure object)
-		this.add(this.measures[this.measures.length-1]);
-	}
+		this.add(this.segments[this.segments.length-1]);
+	};
 
 	incrementOffset(point) {
 		// increment latest offset and add point to latest outPoints
@@ -37,6 +37,19 @@ export class LaneSegments extends THREE.Object3D {
 
 	addSegmentMarker(point) {
 		// call addMarker for latest measure object
-		this.measures[this.measures.length-1].addMarker(point)
+		this.segments[this.segments.length-1].addMarker(point);
+	};
+
+	getFinalPoints() {
+		let finalPoints = [];
+
+		finalPoints.concat(outPoints[0]);
+
+		for (let si=0, sLen=this.segments.length; si<sLen; si++) {
+			finalPoints.concat(this.segments[si].points);
+			finalPoints.concat(outPoints[si+1]);
+		}
+
+		return finalPoints;
 	};
 };

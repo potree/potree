@@ -249,8 +249,8 @@ function createLaneGeometriesOld(lanes, supplierNum, annotationMode, volumes) {
   // laneSpine = new Measure(); laneSpine.name = "Lane Spine"; //laneRight.closed = false;
   laneRight = new Measure(); laneRight.name = "Lane Right"; laneRight.closed = false; laneRight.showCoordinates = true; laneRight.showAngles = true;
 
-  var leftLaneSegments = new LaneSegments();
-  var rightLaneSegments = new LaneSegments();
+  var leftLaneSegments = new LaneSegments(); leftLaneSegments.name = "Left Lane Segments";
+  var rightLaneSegments = new LaneSegments(); rightLaneSegments.name = "Right Lane Segments";
 
   var clonedBoxes = [];
   for (let vi=0, vlen=volumes.length; vi<vlen; vi++) {
@@ -281,7 +281,7 @@ function createLaneGeometriesOld(lanes, supplierNum, annotationMode, volumes) {
 
       if (annotationMode) {
 
-        isContains = updateSegments(leftLaneSegments, clonedBoxes, isContains, left)
+        isContains = updateSegments(leftLaneSegments, clonedBoxes, isContains, left, jj, numVertices)
         console.log(isContains, jj);
 
         laneLeft.addMarker(new THREE.Vector3(left.x(), left.y(), left.z()));
@@ -296,7 +296,7 @@ function createLaneGeometriesOld(lanes, supplierNum, annotationMode, volumes) {
 
       if (annotationMode) {
 
-        isContains = updateSegments(rightLaneSegments, clonedBoxes, isContains, right)
+        isContains = updateSegments(rightLaneSegments, clonedBoxes, isContains, right, jj, numVertices)
         console.log(isContains, jj);
 
         laneRight.addMarker(new THREE.Vector3(right.x(), right.y(), right.z()));
@@ -427,7 +427,7 @@ function createLaneGeometriesOld(lanes, supplierNum, annotationMode, volumes) {
   return output;
 }
 
-function updateSegments(laneSegments, clonedBoxes, prevIsContains, point) {
+function updateSegments(laneSegments, clonedBoxes, prevIsContains, point, index, lengthArray) {
 
   let newIsContains = false;
   for (let bbi=0, bbLen=clonedBoxes.length; bbi<bbLen; bbi++) {
@@ -447,6 +447,11 @@ function updateSegments(laneSegments, clonedBoxes, prevIsContains, point) {
     laneSegments.addSegmentMarker(new THREE.Vector3(point.x(), point.y(), point.z()));
   } else {
     laneSegments.incrementOffset(new THREE.Vector3(point.x(), point.y(), point.z()));
+  }
+
+  // edge case if a segment exists at the end
+  if (newIsContains && index == lengthArray-1) {
+    laneSegments.finalizeSegment();
   }
 
   return newIsContains

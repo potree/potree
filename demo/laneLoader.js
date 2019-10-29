@@ -1,5 +1,5 @@
 import { Measure } from "../src/utils/Measure.js";
-
+import { LaneSegments } from "./LaneSegments.js"
 
 
 export async function loadLanes(s3, bucket, name, fname, supplierNum, annotationMode, volumes, callback) {
@@ -249,11 +249,16 @@ function createLaneGeometriesOld(lanes, supplierNum, annotationMode, volumes) {
   // laneSpine = new Measure(); laneSpine.name = "Lane Spine"; //laneRight.closed = false;
   laneRight = new Measure(); laneRight.name = "Lane Right"; laneRight.closed = false; laneRight.showCoordinates = true; laneRight.showAngles = true;
 
+  let leftLaneSegments = new LaneSegments();
+  let rightLaneSegments = new LaneSegments();
+
   var clonedBoxes = [];
   for (let vi=0, vlen=volumes.length; vi<vlen; vi++) {
-    let clonedBbox = volumes[vi].boundingBox.clone();
-    clonedBbox.applyMatrix4(volumes[vi].matrixWorld);
-    clonedBoxes.push(clonedBbox);
+    if (volumes[vi].clip) {
+      let clonedBbox = volumes[vi].boundingBox.clone();
+      clonedBbox.applyMatrix4(volumes[vi].matrixWorld);
+      clonedBoxes.push(clonedBbox);
+    }
   }
 
   let lane;
@@ -270,16 +275,28 @@ function createLaneGeometriesOld(lanes, supplierNum, annotationMode, volumes) {
     var geometryRight = new THREE.Geometry();
 
     let left, right, spine;
+    let isContains = false;
     for(let jj=0, numVertices=lane.leftLength(); jj<numVertices; jj++) {
       left = lane.left(jj);
 
       if (annotationMode) {
 
-        let isContains = false;
+        let newIsContains = false;
         for (let bbi=0, bbLen=clonedBoxes.length; bbi<bbLen; bbi++) {
-          isContains = clonedBoxes[bbi].containsPoint(new THREE.Vector3(left.x(), left.y(), left.z()));
+          newIsContains = clonedBoxes[bbi].containsPoint(new THREE.Vector3(left.x(), left.y(), left.z()));
         }
-        console.log(isContains, jj);
+        if (newIsContains && !isContains) {
+          leftLaneSegments.initializeSegment("Left Lane Segment ");
+        }
+        isContains = newIsContains;
+
+        if (isContains) {
+          leftLaneSegments.addSegmentMarker(new THREE.Vector3(left.x(), left.y(), left.z()));
+        } else {
+          leftLaneSegments.incrementOffset(new THREE.Vector3(left.x(), left.y(), left.z()));
+        }
+
+        console.log(newIsContains, jj);
 
         laneLeft.addMarker(new THREE.Vector3(left.x(), left.y(), left.z()));
       } else {
@@ -287,6 +304,7 @@ function createLaneGeometriesOld(lanes, supplierNum, annotationMode, volumes) {
       }
     }
 
+    isContains = false;
     for(let jj=0, numVertices=lane.rightLength(); jj<numVertices; jj++) {
       right = lane.right(jj);
 

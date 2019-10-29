@@ -1,9 +1,11 @@
 import { Measure } from "../src/utils/Measure.js";
 
-export class LaneSegments {
+export class LaneSegments extends THREE.Object3D {
 	constructor() {
+		super()
+
 		this.offsets = [];
-		this.offsets(0)
+		this.offsets.push(0)
 		this.measures = [];
 		this.outPoints = [];
 		this.outPoints.push([])
@@ -11,7 +13,7 @@ export class LaneSegments {
 
 	initializeSegment(subName) { // have to be a callback?
 		// Right Lane Segment or Left Lane Segment
-		laneSegment = new Measure();
+		let laneSegment = new Measure();
 		laneSegment.name = subName + this.offsets.length.toString();
 		laneSegment.closed = false;
 		laneSegment.showCoordinates = true;
@@ -22,11 +24,19 @@ export class LaneSegments {
 		this.outPoints.push([]);
 	};
 
+	finalizeSegment() {
+		// add geometry object to this class (each measure object)
+		this.add(measures[measures.length-1]);
+	}
+
 	incrementOffset(point) {
 		// increment latest offset and add point to latest outPoints
+		this.offsets[this.offsets.length-1] = this.offsets[this.offsets.length-1]+1;
+		this.outPoints[this.outPoints.length-1].push({position: point});
 	};
 
 	addSegmentMarker(point) {
 		// call addMarker for latest measure object
+		this.measures[this.measures.length-1].addMarker(point)
 	};
 };

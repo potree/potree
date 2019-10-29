@@ -414,9 +414,11 @@ function createLaneGeometriesOld(lanes, supplierNum, annotationMode, volumes) {
   }
 
   if (annotationMode) {
-    all.push(laneLeft);
-    // all.push(laneSpine);
-    all.push(laneRight);
+    //all.push(laneLeft);
+    //// all.push(laneSpine);
+    //all.push(laneRight);
+    all.push(leftLaneSegments);
+    all.push(rightLaneSegments);
   }
 
   let output = {
@@ -429,7 +431,10 @@ function updateSegments(laneSegments, clonedBoxes, prevIsContains, point) {
 
   let newIsContains = false;
   for (let bbi=0, bbLen=clonedBoxes.length; bbi<bbLen; bbi++) {
-    newIsContains = clonedBoxes[bbi].containsPoint(new THREE.Vector3(point.x(), point.y(), point.z()));
+    let isContains = clonedBoxes[bbi].containsPoint(new THREE.Vector3(point.x(), point.y(), point.z()));
+    if (isContains) {
+      newIsContains = isContains;
+    }
   }
   if (newIsContains && !prevIsContains) {
     laneSegments.initializeSegment("Left Lane Segment ");

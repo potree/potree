@@ -26,7 +26,7 @@ export class LaneSegments extends THREE.Object3D {
 
 	finalizeSegment() {
 		// add geometry object to this class (each measure object)
-		this.add(measures[measures.length-1]);
+		this.add(this.measures[this.measures.length-1]);
 	}
 
 	incrementOffset(point) {

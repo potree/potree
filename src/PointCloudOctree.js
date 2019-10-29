@@ -709,6 +709,8 @@ export class PointCloudOctree extends PointCloudTree {
 			pickMaterial.uniforms.minSize.value = this.material.uniforms.minSize.value;
 			pickMaterial.uniforms.maxSize.value = this.material.uniforms.maxSize.value;
 			pickMaterial.classification = this.material.classification;
+			pickMaterial.recomputeClassification();
+
 			if(params.pickClipped){
 				pickMaterial.clipBoxes = this.material.clipBoxes;
 				pickMaterial.uniforms.clipBoxes = this.material.uniforms.clipBoxes;

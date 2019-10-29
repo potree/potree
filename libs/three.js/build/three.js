@@ -17661,6 +17661,8 @@
 
 	function WebGLProgram( renderer, extensions, code, material, shader, parameters ) {
 
+		const tStart = performance.now();
+
 		var gl = renderer.getContext();
 
 		var defines = material.defines;
@@ -18173,6 +18175,11 @@
 		this.vertexShader = glVertexShader;
 		this.fragmentShader = glFragmentShader;
 		this.numMultiviewViews = numMultiviewViews;
+
+		const tEnd = performance.now();
+		const duration = tEnd - tStart;
+
+		console.log("shader compile duration: " + duration);
 
 		return this;
 

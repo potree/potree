@@ -599,6 +599,12 @@ export class Viewer extends EventDispatcher{
 		});
 	}
 
+	setClassifications(classifications){
+		this.classifications = classifications;
+
+		this.dispatchEvent({'type': 'classifications_changed', 'viewer': this});
+	}
+
 	setClassificationVisibility (key, value) {
 		if (!this.classifications[key]) {
 			this.classifications[key] = {visible: value, name: 'no name'};
@@ -1458,17 +1464,7 @@ export class Viewer extends EventDispatcher{
 	update(delta, timestamp){
 
 		if(Potree.measureTimings) performance.mark("update-start");
-		
-		// {
-		// 	let u = Math.sin(0.0005 * timestamp) * 0.5 - 0.4;
-			
-		// 	let x = Math.cos(u);
-		// 	let y = Math.sin(u);
-			
-		// 	this.shadowTestCam.position.set(7 * x, 7 * y, 8.561);
-		// 	this.shadowTestCam.lookAt(new THREE.Vector3(0, 0, 0));
-		// }
-		
+
 		
 		const scene = this.scene;
 		const camera = scene.getActiveCamera();
@@ -1479,113 +1475,21 @@ export class Viewer extends EventDispatcher{
 		this.scene.directionalLight.position.copy(camera.position);
 		this.scene.directionalLight.lookAt(new THREE.Vector3().addVectors(camera.position, camera.getWorldDirection(new THREE.Vector3())));
 
-		for (let pointcloud of this.scene.pointclouds) {
-			// if (!pointcloud.material._defaultIntensityRangeChanged) {
-			// 	let root = pointcloud.pcoGeometry.root;
-			// 	if (root != null && root.loaded) {
-			// 		let attributes = pointcloud.pcoGeometry.root.geometry.attributes;
-			// 		if (attributes.intensity) {
-			// 			let array = attributes.intensity.array;
 
-			// 			// chose max value from the 0.75 percentile
-			// 			let ordered = [];
-			// 			for (let j = 0; j < array.length; j++) {
-			// 				ordered.push(array[j]);
-			// 			}
-			// 			ordered.sort();
-			// 			let capIndex = parseInt((ordered.length - 1) * 0.75);
-			// 			let cap = ordered[capIndex];
+		for (let pointcloud of visiblePointClouds) {
 
-			// 			if (cap <= 1) {
-			// 				pointcloud.material.intensityRange = [0, 1];
-			// 			} else if (cap <= 256) {
-			// 				pointcloud.material.intensityRange = [0, 255];
-			// 			} else {
-			// 				pointcloud.material.intensityRange = [0, cap];
-			// 			}
-
-			// 		}
-			// 		// pointcloud._intensityMaxEvaluated = true;
-			// 	}
-			// }
-
-			//if(this.defaultGPSTimeChanged === false){
-			
-			// { // GPS TIME Range
-
-			// 	const range = [...this.filterGPSTimeRange];
-
-			// 	const extent = this.getGpsTimeExtent();
-			
-			// }
-
-				// let root = pointcloud.pcoGeometry.root;
-				// if (root != null && root.loaded) {
-				// 	if(root.gpsTime){
-
-				// 		let gpsTime = root.gpsTime;
-				// 		let min = gpsTime.offset;
-				// 		let max = gpsTime.offset + gpsTime.range;
-				// 		let border = (max - min) * 0.1;
-
-				// 		this.setFilterGPSTimeExtent(min - border, max + border);
-				// 		//this.setFilterGPSTimeRange(0, 1000 * 1000 * 1000);
-				// 		this.setFilterGPSTimeRange(min, max);
-
-				// 		this.defaultGPSTimeChanged = true;
-				// 	}
-				// }
-
-			//}
-
-
-			
 			pointcloud.showBoundingBox = this.showBoundingBox;
 			pointcloud.generateDEM = this.generateDEM;
 			pointcloud.minimumNodePixelSize = this.minNodeSize;
-		}
 
-		// update classification 
-		for (const pointcloud of visiblePointClouds) {
-			const pcClassifications = pointcloud.material.classification;
-			let somethingChanged = false;
-
-			for (let classID of Object.keys(this.classifications)) {
-				const pcClass = pcClassifications[classID];
-	
-				let w = this.classifications[classID].visible ? 1 : 0;
-				let [r, g, b, a] = this.classifications[classID].color;
-
-				if(pcClass){
-					somethingChanged |= pcClass.x !== r;
-					somethingChanged |= pcClass.y !== g;
-					somethingChanged |= pcClass.z !== b;
-					somethingChanged |= pcClass.w !== w;
-
-					pcClass.x = r;
-					pcClass.y = g;
-					pcClass.z = b;
-					pcClass.w = w;
-				} else if (classification.DEFAULT) {
-					pcClass = classification.DEFAULT;
-					somethingChanged = true;
-				} else {
-					pcClass = new THREE.Vector4(0.3, 0.6, 0.6, 0.5);
-					somethingChanged = true;
-				}
-			}
-
-			if (somethingChanged) {
-				pointcloud.material.recomputeClassification();
-			}
-		}
-
-		for (let pointcloud of visiblePointClouds) {
 			let material = pointcloud.material;
 
 			material.uniforms.uFilterReturnNumberRange.value = this.filterReturnNumberRange;
 			material.uniforms.uFilterNumberOfReturnsRange.value = this.filterNumberOfReturnsRange;
 			material.uniforms.uFilterGPSTimeClipRange.value = this.filterGPSTimeRange;
+
+			material.classification = this.classifications;
+			material.recomputeClassification();
 		}
 
 		{

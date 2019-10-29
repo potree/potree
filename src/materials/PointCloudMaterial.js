@@ -37,7 +37,6 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 		this._shape = PointShape.SQUARE;
 		this._useClipBox = false;
 		this.clipBoxes = [];
-		//this.clipSpheres = [];
 		this.clipPolygons = [];
 		this._weighted = false;
 		this._gradient = Gradients.SPECTRAL;
@@ -48,14 +47,22 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 		this.fog = false;
 		this._treeType = treeType;
 		this._useEDL = false;
-		this._snapEnabled = false;
-		this._numSnapshots = 0;
 		this.defines = new Map();
 
 		this._activeAttributeName = null;
 
 		this._defaultIntensityRangeChanged = false;
 		this._defaultElevationRangeChanged = false;
+
+		{
+			const [width, height] = [256, 1];
+			let data = new Uint8Array(width * 4);
+			let texture = new THREE.DataTexture(data, width, height, THREE.RGBAFormat);
+			texture.magFilter = THREE.NearestFilter;
+			texture.needsUpdate = true;
+
+			this.classificationTexture = texture;
+		}
 
 		this.attributes = {
 			position: { type: 'fv', value: [] },
@@ -123,12 +130,6 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 			elevationGradientRepat: { type: "i", value: ElevationGradientRepeat.CLAMP },
 			clipTask:			{ type: "i", value: 1 },
 			clipMethod:			{ type: "i", value: 1 },
-			uSnapshot:			{ type: "tv", value: [] },
-			uSnapshotDepth:		{ type: "tv", value: [] },
-			uSnapView:			{ type: "Matrix4fv", value: [] },
-			uSnapProj:			{ type: "Matrix4fv", value: [] },
-			uSnapProjInv:		{ type: "Matrix4fv", value: [] },
-			uSnapViewInv:		{ type: "Matrix4fv", value: [] },
 			uShadowColor:		{ type: "3fv", value: [0, 0, 0] },
 
 			uExtraRange:		{ type: "2fv", value: [0, 1] },
@@ -241,10 +242,6 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 			defines.push('#define use_edl');
 		}
 
-		if (this._snapEnabled) {
-			defines.push('#define snap_enabled');
-		}
-
 		if(this.activeAttributeName){
 			let attributeName = this.activeAttributeName.replace(/[^a-zA-Z0-9]/g, '_');
 
@@ -296,35 +293,6 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 			}
 		}
 	}
-
-	//setClipSpheres(clipSpheres){
-	//	if (!clipSpheres) {
-	//		return;
-	//	}
-
-	//	let doUpdate = (this.clipSpheres.length !== clipSpheres.length) && (clipSpheres.length === 0 || this.clipSpheres.length === 0);
-
-	//	this.uniforms.clipSphereCount.value = this.clipSpheres.length;
-	//	this.clipSpheres = clipSpheres;
-
-	//	if (doUpdate) {
-	//		this.updateShaderSource();
-	//	}
-
-	//	this.uniforms.clipSpheres.value = new Float32Array(this.clipSpheres.length * 16);
-
-	//	for (let i = 0; i < this.clipSpheres.length; i++) {
-	//		let sphere = clipSpheres[i];
-
-	//		this.uniforms.clipSpheres.value.set(sphere.matrixWorld.elements, 16 * i);
-	//	}
-
-	//	for (let i = 0; i < this.uniforms.clipSpheres.value.length; i++) {
-	//		if (Number.isNaN(this.uniforms.clipSpheres.value[i])) {
-	//			this.uniforms.clipSpheres.value[i] = Infinity;
-	//		}
-	//	}
-	//}
 
 	setClipPolygons(clipPolygons, maxPolygonVertices) {
 		if(!clipPolygons){
@@ -383,65 +351,67 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 		}
 	}
 
-	
+	recomputeClassification () {
+		const classification = this.classification;
+		const data = this.classificationTexture.image.data;
+
+		let width = 256;
+		const black = [1, 1, 1, 1];
+
+		let valuesChanged = false;
+
+		for (let i = 0; i < width; i++) {
+
+			let color;
+			let visible = true;
+
+			if (classification[i]) {
+				color = classification[i].color;
+				visible = classification[i].visible;
+			} else if (classification[i % 32]) {
+				color = classification[i % 32].color;
+				visible = classification[i % 32].visible;
+			} else if(classification.DEFAULT) {
+				color = classification.DEFAULT.color;
+				visible = classification.DEFAULT.visible;
+			}else{
+				color = black;
+			}
+
+			const r = parseInt(255 * color[0]);
+			const g = parseInt(255 * color[1]);
+			const b = parseInt(255 * color[2]);
+			const a = parseInt(255 * color[3]) && visible;
 
 
-	get classification () {
-		return this._classification;
-	}
+			if(data[4 * i + 0] !== r){
+				data[4 * i + 0] = r;
+				valuesChanged = true;
+			}
 
-	set classification (value) {
+			if(data[4 * i + 1] !== g){
+				data[4 * i + 1] = g;
+				valuesChanged = true;
+			}
 
-		let copy = {};
-		for(let key of Object.keys(value)){
-			copy[key] = value[key].clone();
-		}
+			if(data[4 * i + 2] !== b){
+				data[4 * i + 2] = b;
+				valuesChanged = true;
+			}
 
-		let isEqual = false;
-		if(this._classification === undefined){
-			isEqual = false;
-		}else{
-			isEqual = Object.keys(copy).length === Object.keys(this._classification).length;
-
-			for(let key of Object.keys(copy)){
-				isEqual = isEqual && this._classification[key] !== undefined;
-				isEqual = isEqual && copy[key].equals(this._classification[key]);
+			if(data[4 * i + 3] !== a){
+				data[4 * i + 3] = a;
+				valuesChanged = true;
 			}
 		}
 
-		if (!isEqual) {
-			this._classification = copy;
-			this.recomputeClassification();
-		}
-	}
+		if(valuesChanged){
+			this.classificationTexture.needsUpdate = true;
 
-	recomputeClassification () {
-		this.classificationTexture = PointCloudMaterial.generateClassificationTexture(this._classification);
-		this.uniforms.classificationLUT.value = this.classificationTexture;
-
-		this.dispatchEvent({
-			type: 'material_property_changed',
-			target: this
-		});
-	}
-
-	get numSnapshots(){
-		return this._numSnapshots;
-	}
-
-	set numSnapshots(value){
-		this._numSnapshots = value;
-	}
-
-	get snapEnabled(){
-		return this._snapEnabled;
-	}
-
-	set snapEnabled(value){
-		if(this._snapEnabled !== value){
-			this._snapEnabled = value;
-			//this.uniforms.snapEnabled.value = value;
-			this.updateShaderSource();
+			this.dispatchEvent({
+				type: 'material_property_changed',
+				target: this
+			});
 		}
 	}
 
@@ -1058,40 +1028,6 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 		// Switch matcap texture on the fly : viewer.scene.pointclouds[0].material.matcap = 'matcap1.jpg'; 
 		// For non power of 2, use LinearFilter and dont generate mipmaps, For power of 2, use NearestFilter and generate mipmaps : matcap2.jpg 1 2 8 11 12 13
 		return texture; 
-	}
-
-	static generateClassificationTexture (classification) {
-		let width = 256;
-		let height = 256;
-		let size = width * height;
-
-		let data = new Uint8Array(4 * size);
-
-		for (let x = 0; x < width; x++) {
-			for (let y = 0; y < height; y++) {
-				let i = x + width * y;
-
-				let color;
-				if (classification[x]) {
-					color = classification[x];
-				} else if (classification[x % 32]) {
-					color = classification[x % 32];
-				} else {
-					color = classification.DEFAULT;
-				}
-
-				data[4 * i + 0] = 255 * color.x;
-				data[4 * i + 1] = 255 * color.y;
-				data[4 * i + 2] = 255 * color.z;
-				data[4 * i + 3] = 255 * color.w;
-			}
-		}
-
-		let texture = new THREE.DataTexture(data, width, height, THREE.RGBAFormat);
-		texture.magFilter = THREE.NearestFilter;
-		texture.needsUpdate = true;
-
-		return texture;
 	}
 
 	disableEvents(){

@@ -41,26 +41,35 @@
 	<!-- INCLUDE SETTINGS HERE -->
 	
 	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
-		<div id="potree_render_area"></div>
+		<div id="potree_render_area" style="background-image: url('../build/potree/resources/images/background.jpg');">
+
+			<span style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); z-index: 10000">
+
+				<input type="button" value="Default Scheme" onclick="setDefaultScheme()"/>
+				<input type="button" value="Tree Scheme" onclick="setTreeScheme()"/>
+				<input type="button" value="Random Scheme" onclick="setRandomScheme()"/>
+
+			</span>
+
+		</div>
 		<div id="potree_sidebar_container"> </div>
 	</div>
 	
 	<script>
 	
 		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
+
+		viewer.setDescription(`
+		Classification schemes can be changed at runtime via viewer.setClassifications(...). <br>
+		<br>
+		Point cloud courtesy of <a target='_blank' href='https://www.pge.com/'>PG&E</a>, 
+		hosted by <a target='_blank' href='http://opentopo.sdsc.edu/lidarDataset?opentopoID=OTLAS.032013.26910.2'>Open Topography</a>`);
 		
 		viewer.setEDLEnabled(true);
 		viewer.setFOV(60);
-		viewer.setPointBudget(5 * 1000 * 1000);
-		viewer.loadSettingsFromURL();
-		
-		viewer.setDescription("");
+		viewer.setPointBudget(2 * 1000 * 1000);
 		
 		viewer.loadGUI(() => {
-			viewer.setLanguage('en');
-			//$("#menu_appearance").next().show();
-			//$("#menu_tools").next().show();
-			$("#menu_scene").next().show();
 			$("#menu_filters").next().show();
 			viewer.toggleSidebar();
 		});
@@ -72,15 +81,42 @@
 			let material = e.pointcloud.material;
 			material.size = 3;
 			material.pointSizeType = Potree.PointSizeType.FIXED;
-			material.activeAttributeName = "source id";
-			material.elevationRange = [10, 20];
+			material.activeAttributeName = "classification";
 			
-			viewer.scene.view.position.set(694087.967, 3914832.946, 1488.340);
-			viewer.scene.view.lookAt(694878.410, 3916332.067, 14.497);
-
-			//viewer.fitToScreen();
+			viewer.scene.view.position.set(694274.518, 3916261.987, 348.732);
+			viewer.scene.view.lookAt(694683.097, 3916386.916, 30.879);
 		});
 		
+	</script>
+
+	<script>
+
+		function setDefaultScheme(){
+
+			viewer.setClassifications(Potree.ClassificationScheme.DEFAULT);
+
+		}
+
+		function setTreeScheme(){
+
+			viewer.setClassifications({
+				5:       { visible: true, name: 'trees'        , color: [0.0, 1.0, 0.0, 1.0] },
+				DEFAULT: { visible: false, name: 'unclassified' , color: [0.0, 0.0, 0.0, 1.0] },
+			});
+
+		}
+
+		function setRandomScheme(){
+
+			const scheme = {};
+
+			for(let i = 0; i < 32; i++){
+				scheme[i] = { visible: true, name: `random:_${i}`, color: [Math.random(), Math.random(), Math.random(), 1.0] };
+			}
+
+			viewer.setClassifications(scheme);
+		}
+
 	</script>
 	
 	

@@ -195,6 +195,8 @@ class Shader {
 
 	linkProgram() {
 
+		const tStart = performance.now();
+
 		let gl = this.gl;
 
 		this.uniformLocations = {};
@@ -318,7 +320,10 @@ class Shader {
 			this.cache.set(`${this.vsSource}, ${this.fsSource}`, cached);
 		}
 
+		const tEnd = performance.now();
+		const duration = tEnd - tStart;
 
+		console.log(`shader compile duration: ${duration.toFixed(3)}`);
 
 
 	}
@@ -350,14 +355,6 @@ class Shader {
 		uniform.value = value;
 
 		gl.uniform1f(uniform.location, value);
-
-		//const location = this.uniformLocations[name];
-
-		//if (location == null) {
-		//	return;
-		//}
-
-		//gl.uniform1f(location, value);
 	}
 
 	setUniformBoolean(name, value) {
@@ -1265,16 +1262,20 @@ export class Renderer {
 
 			shader.setUniform2f("elevationRange", material.elevationRange);
 			shader.setUniform2f("intensityRange", material.intensityRange);
-			//uniform float intensityGamma;
-			//uniform float intensityContrast;
-			//uniform float intensityBrightness;
-			shader.setUniform1f("intensityGamma", material.intensityGamma);
-			shader.setUniform1f("intensityContrast", material.intensityContrast);
-			shader.setUniform1f("intensityBrightness", material.intensityBrightness);
 
-			shader.setUniform1f("rgbGamma", material.rgbGamma);
-			shader.setUniform1f("rgbContrast", material.rgbContrast);
-			shader.setUniform1f("rgbBrightness", material.rgbBrightness);
+
+			shader.setUniform3f("uIntensity_gbc", [
+				material.intensityGamma, 
+				material.intensityBrightness, 
+				material.intensityContrast
+			]);
+
+			shader.setUniform3f("uRGB_gbc", [
+				material.rgbGamma, 
+				material.rgbBrightness, 
+				material.rgbContrast
+			]);
+
 			shader.setUniform1f("uTransition", material.transition);
 			shader.setUniform1f("wRGB", material.weightRGB);
 			shader.setUniform1f("wIntensity", material.weightIntensity);

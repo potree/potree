@@ -1025,10 +1025,12 @@ export class Sidebar{
 			const inputID = 'chkClassification_' + code;
 			const colorPickerID = 'colorPickerClassification_' + code;
 
+			const checked = classification.visible ? "checked" : "";
+
 			let element = $(`
 				<li>
 					<label style="whitespace: nowrap; display: flex">
-						<input id="${inputID}" type="checkbox" checked/>
+						<input id="${inputID}" type="checkbox" ${checked}/>
 						<span style="flex-grow: 1">${name}</span>
 						<input id="${colorPickerID}" style="zoom: 0.5" />
 					</label>
@@ -1055,12 +1057,12 @@ export class Sidebar{
 				chooseText: 'Apply',
 				move: color => {
 					let rgb = color.toRgb();
-					const c = [rgb.r / 255, rgb.g / 255, rgb.b / 255];
+					const c = [rgb.r / 255, rgb.g / 255, rgb.b / 255, 1];
 					classification.color = c;
 				},
 				change: color => {
 					let rgb = color.toRgb();
-					const c = [rgb.r / 255, rgb.g / 255, rgb.b / 255];
+					const c = [rgb.r / 255, rgb.g / 255, rgb.b / 255, 1];
 					classification.color = c;
 				}
 			});
@@ -1068,7 +1070,7 @@ export class Sidebar{
 			elClassificationList.append(element);
 		};
 
-		{ // toggle all button
+		const addToggleAllButton = () => { // toggle all button
 			const element = $(`
 				<li>
 					<label style="whitespace: nowrap">
@@ -1087,9 +1089,36 @@ export class Sidebar{
 			elClassificationList.append(element);
 		}
 
-		for (let classID in this.viewer.classifications) {
-			addClassificationItem(classID, this.viewer.classifications[classID].name);
-		}
+		const addInvertButton = () => { 
+			const element = $(`
+				<li>
+					<input type="button" value="invert" />
+				</li>
+			`);
+
+			let elInput = element.find('input');
+
+			elInput.click( () => {
+				// TODO
+			});
+
+			elClassificationList.append(element);
+		};
+
+		const populate = () => {
+			addToggleAllButton();
+			for (let classID in this.viewer.classifications) {
+				addClassificationItem(classID, this.viewer.classifications[classID].name);
+			}
+			addInvertButton();
+		};
+
+		populate();
+
+		this.viewer.addEventListener("classifications_changed", () => {
+			elClassificationList.empty();
+			populate();
+		});
 
 		this.viewer.addEventListener("classification_visibility_changed", () => {
 

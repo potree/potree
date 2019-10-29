@@ -87,12 +87,11 @@ uniform float uGpsScale;
 uniform float uGpsOffset;
 
 uniform vec2 uNormalizedGpsBufferRange;
-uniform float intensityGamma;
-uniform float intensityContrast;
-uniform float intensityBrightness;
-uniform float rgbGamma;
-uniform float rgbContrast;
-uniform float rgbBrightness;
+
+uniform vec3 uIntensity_gbc;
+uniform vec3 uRGB_gbc;
+uniform vec3 uExtra_gbc;
+
 uniform float uTransition;
 uniform float wRGB;
 uniform float wIntensity;
@@ -103,7 +102,6 @@ uniform float wSourceID;
 
 uniform vec2 uExtraNormalizedRange;
 uniform vec2 uExtraRange;
-uniform vec3 uExtraGammaBrightContr;
 
 uniform vec3 uShadowColor;
 
@@ -393,9 +391,9 @@ float getContrastFactor(float contrast){
 vec3 getRGB(){
 	vec3 rgb = color;
 	
-	rgb = pow(rgb, vec3(rgbGamma));
-	rgb = rgb + rgbBrightness;
-	rgb = (rgb - 0.5) * getContrastFactor(rgbContrast) + 0.5;
+	rgb = pow(rgb, vec3(uRGB_gbc.x));
+	rgb = rgb + uRGB_gbc.y;
+	rgb = (rgb - 0.5) * getContrastFactor(uRGB_gbc.z) + 0.5;
 	rgb = clamp(rgb, 0.0, 1.0);
 
 	return rgb;
@@ -403,9 +401,9 @@ vec3 getRGB(){
 
 float getIntensity(){
 	float w = (intensity - intensityRange.x) / (intensityRange.y - intensityRange.x);
-	w = pow(w, intensityGamma);
-	w = w + intensityBrightness;
-	w = (w - 0.5) * getContrastFactor(intensityContrast) + 0.5;
+	w = pow(w, uIntensity_gbc.x);
+	w = w + uIntensity_gbc.y;
+	w = (w - 0.5) * getContrastFactor(uIntensity_gbc.z) + 0.5;
 	w = clamp(w, 0.0, 1.0);
 
 	return w;
@@ -533,22 +531,7 @@ vec3 getExtra(){
 
 	vec3 color = texture2D(gradient, vec2(w,1.0-w)).rgb;
 
-	// float w = (aExtra - uExtraRange.x) / (uExtraRange.y - uExtraRange.x);
-
-	// float gamma = uExtraGammaBrightContr[0];
-	// float brightness = uExtraGammaBrightContr[1];
-	// float contrast = uExtraGammaBrightContr[2];
-
-	// w = pow(w, gamma);
-	// w = w + brightness;
-	// w = (w - 0.5) * getContrastFactor(contrast) + 0.5;
-	// w = clamp(w, 0.0, 1.0);
-
-	// vec3 color = texture2D(gradient, vec2(w, 1.0 - w)).rgb;
-
 	return color;
-
-	//return vec3(1.0, 0.0, 0.0);
 }
 
 vec3 getColor(){
@@ -893,21 +876,4 @@ void main() {
 		}
 
 	#endif
-
-	// {
-	// 	float f = aExtra;
-
-	// 	vColor = vec3(f, f, f) / 90.0;
-
-	// 	//vColor = vec3(f, f, f) * 0.001;
-	// }
-
-	//vColor = vec3(1.0, 0.0, 0.0);
-
-	//if(uDebug){
-	//	vColor.b = (vColor.r + vColor.g + vColor.b) / 3.0;
-	//	vColor.r = 1.0;
-	//	vColor.g = 1.0;
-	//}
-
 }

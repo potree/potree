@@ -2,7 +2,7 @@ import { Measure } from "../src/utils/Measure.js";
 
 
 
-export async function loadLanes(s3, bucket, name, fname, supplierNum, annotationMode, callback) {
+export async function loadLanes(s3, bucket, name, fname, supplierNum, annotationMode, volumes, callback) {
   const tstart = performance.now();
 
   // Logic for dealing with Map Supplier Data:
@@ -34,7 +34,7 @@ export async function loadLanes(s3, bucket, name, fname, supplierNum, annotation
                        console.log(err, err.stack);
                      } else {
                        const FlatbufferModule = await import(schemaUrl);
-                       const laneGeometries = parseLanes(data.Body, FlatbufferModule, resolvedSupplierNum, annotationMode);
+                       const laneGeometries = parseLanes(data.Body, FlatbufferModule, resolvedSupplierNum, annotationMode, volumes);
                        callback( laneGeometries );
                      }});
     })();
@@ -64,7 +64,7 @@ export async function loadLanes(s3, bucket, name, fname, supplierNum, annotation
       }
 
       let bytesArray = new Uint8Array(response);
-      const laneGeometries = parseLanes(bytesArray, FlatbufferModule, resolvedSupplierNum, annotationMode);
+      const laneGeometries = parseLanes(bytesArray, FlatbufferModule, resolvedSupplierNum, annotationMode, volumes);
       callback( laneGeometries );
     };
 
@@ -75,7 +75,7 @@ export async function loadLanes(s3, bucket, name, fname, supplierNum, annotation
 
 
 
-function parseLanes(bytesArray, FlatbufferModule, supplierNum, annotationMode) {
+function parseLanes(bytesArray, FlatbufferModule, supplierNum, annotationMode, volumes) {
 
   let numBytes = bytesArray.length;
   let lanes = [];
@@ -97,7 +97,7 @@ function parseLanes(bytesArray, FlatbufferModule, supplierNum, annotationMode) {
     lanes.push(lane);
     segOffset += segSize;
   }
-  return createLaneGeometriesOld(lanes, supplierNum, annotationMode);
+  return createLaneGeometriesOld(lanes, supplierNum, annotationMode, volumes);
 }
 
 
@@ -209,7 +209,7 @@ function createLaneGeometries(vertexGroups, material) {
 }
 
 
-function createLaneGeometriesOld(lanes, supplierNum, annotationMode) {
+function createLaneGeometriesOld(lanes, supplierNum, annotationMode, volumes) {
 
   let materialLeft, materialSpine, materialRight;
   switch (supplierNum) {

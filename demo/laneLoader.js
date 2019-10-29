@@ -249,6 +249,12 @@ function createLaneGeometriesOld(lanes, supplierNum, annotationMode, volumes) {
   // laneSpine = new Measure(); laneSpine.name = "Lane Spine"; //laneRight.closed = false;
   laneRight = new Measure(); laneRight.name = "Lane Right"; laneRight.closed = false; laneRight.showCoordinates = true; laneRight.showAngles = true;
 
+  var clonedBoxes = [];
+  for (let vi=0, vlen=volumes.length; vi<vlen; vi++) {
+    let clonedBbox = volumes[vi].boundingBox.clone();
+    clonedBbox.applyMatrix4(volumes[vi].matrixWorld);
+    clonedBoxes.push(clonedBbox);
+  }
 
   let lane;
   let lefts = [];
@@ -268,6 +274,13 @@ function createLaneGeometriesOld(lanes, supplierNum, annotationMode, volumes) {
       left = lane.left(jj);
 
       if (annotationMode) {
+
+        let isContains = false;
+        for (let bbi=0, bbLen=clonedBoxes.length; bbi<bbLen; bbi++) {
+          isContains = clonedBoxes[bbi].containsPoint(new THREE.Vector3(left.x(), left.y(), left.z()));
+        }
+        console.log(isContains, jj);
+
         laneLeft.addMarker(new THREE.Vector3(left.x(), left.y(), left.z()));
       } else {
         geometryLeft.vertices.push( new THREE.Vector3(left.x(), left.y(), left.z()));
@@ -278,6 +291,13 @@ function createLaneGeometriesOld(lanes, supplierNum, annotationMode, volumes) {
       right = lane.right(jj);
 
       if (annotationMode) {
+
+        let isContains = false;
+        for (let bbi=0, bbLen=clonedBoxes.length; bbi<bbLen; bbi++) {
+          isContains = clonedBoxes[bbi].containsPoint(new THREE.Vector3(right.x(), right.y(), right.z()));
+        }
+        console.log(isContains, jj);
+
         laneRight.addMarker(new THREE.Vector3(right.x(), right.y(), right.z()));
       } else {
         geometryRight.vertices.push( new THREE.Vector3(right.x(), right.y(), right.z()));

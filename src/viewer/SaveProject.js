@@ -179,6 +179,17 @@ function createViewData(viewer){
 	return data;
 }
 
+function createClassificationData(viewer){
+
+	//const data = {};
+
+	const classifications = viewer.classifications;
+
+	const data = classifications;
+
+	return data;
+}
+
 export function createSaveData(viewer) {
 
 	const scene = viewer.scene;
@@ -188,6 +199,7 @@ export function createSaveData(viewer) {
 		version: 1.7,
 		settings: createSettingsData(viewer),
 		view: createViewData(viewer),
+		classification: createClassificationData(viewer),
 		pointclouds: scene.pointclouds.map(createPointcloudData),
 		measurements: scene.measurements.map(createMeasurementData),
 		volumes: scene.volumes.map(createVolumeData),

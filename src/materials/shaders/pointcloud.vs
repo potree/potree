@@ -450,6 +450,16 @@ vec3 getReturnNumber(){
 	}
 }
 
+vec3 getNumberOfReturns(){
+	float value = numberOfReturns;
+
+	float w = value / 6.0;
+
+	vec3 color = texture2D(gradient, vec2(w, 1.0 - w)).rgb;
+
+	return color;
+}
+
 vec3 getSourceID(){
 	float w = mod(pointSourceID, 10.0) / 10.0;
 	return texture2D(gradient, vec2(w,1.0 - w)).rgb;
@@ -569,6 +579,8 @@ vec3 getColor(){
 		color = cl.rgb;
 	#elif defined color_type_return_number
 		color = getReturnNumber();
+	#elif defined color_type_number_of_returns
+		color = getNumberOfReturns();
 	#elif defined color_type_source_id
 		color = getSourceID();
 	#elif defined color_type_normal

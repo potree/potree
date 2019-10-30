@@ -113,6 +113,13 @@ function loadProfile(viewer, data){
 
 }
 
+function loadClassification(viewer, data){
+
+	const classifications = data;
+
+	viewer.setClassifications(classifications);
+}
+
 
 export function loadSaveData(viewer, data){
 
@@ -142,5 +149,7 @@ export function loadSaveData(viewer, data){
 	}
 
 	loadAnnotations(viewer, data.annotations);
+
+	loadClassification(viewer, data.classifications);
 
 }

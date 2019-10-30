@@ -775,8 +775,9 @@ $(document).ready(() => {
 
 			let filename, tmpSupplierNum;
 			tmpSupplierNum = -1;
-			await loadLanes(s3, bucket, name, filename, tmpSupplierNum, window.annotateLanesModeActive, (laneGeometries) => {
+			await loadLanes(s3, bucket, name, filename, tmpSupplierNum, window.annotateLanesModeActive, viewer.scene.volumes, (laneGeometries) => {
 
+				// need to have Annoted Lanes layer, so that can have original and edited lanes layers
 				let lanesLayer = new THREE.Group();
 				lanesLayer.name = "Lanes";
 				for (let ii=0, len=laneGeometries.all.length; ii<len; ii++) {
@@ -831,7 +832,7 @@ $(document).ready(() => {
 			if (comparisonDatasets.length > 0) {
 				filename = 'lanes.fb';
 				tmpSupplierNum = -2;
-				await loadLanes(s3, bucket, comparisonDatasets[0], filename, tmpSupplierNum, window.annotateLanesModeActive, (laneGeometries) => {
+				await loadLanes(s3, bucket, comparisonDatasets[0], filename, tmpSupplierNum, window.annotateLanesModeActive, viewer.scene.volumes, (laneGeometries) => {
 
 					let lanesLayer = new THREE.Group();
 					lanesLayer.name = `Lanes-${comparisonDatasets[0].split("Data/")[1]}`;

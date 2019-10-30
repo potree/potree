@@ -220,8 +220,8 @@ $(document).ready(function () {
 
       // Download Left Lane Vertices:
       try {
-        const laneLeft = window.viewer.scene.scene.getChildByName("Lane Left");
-        download(JSON.stringify(laneLeft.points, null, 2), "lane-left.json");
+        const laneLeft = window.viewer.scene.scene.getChildByName("Left Lane Segments");
+        download(JSON.stringify(laneLeft.getFinalPoints(), null, 2), "lane-left.json");
       } catch (e) {
         console.error("Couldn't download left lane vertices: ", e);
       }
@@ -236,8 +236,8 @@ $(document).ready(function () {
 
       // Download Right Lane Vertices:
       try {
-        const laneRight = window.viewer.scene.scene.getChildByName("Lane Right");
-        download(JSON.stringify(laneRight.points, null, 2), "lane-right.json", "text/plain");
+        const laneRight = window.viewer.scene.scene.getChildByName("Right Lane Segments");
+        download(JSON.stringify(laneRight.getFinalPoints(), null, 2), "lane-right.json", "text/plain");
       } catch (e) {
         console.error("Couldn't download left lane vertices: ", e);
       }

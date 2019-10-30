@@ -1,8 +1,8 @@
 import { Measure } from "../src/utils/Measure.js";
+import { LaneSegments } from "./LaneSegments.js"
 
 
-
-export async function loadLanes(s3, bucket, name, fname, supplierNum, annotationMode, callback) {
+export async function loadLanes(s3, bucket, name, fname, supplierNum, annotationMode, volumes, callback) {
   const tstart = performance.now();
 
   // Logic for dealing with Map Supplier Data:
@@ -34,7 +34,7 @@ export async function loadLanes(s3, bucket, name, fname, supplierNum, annotation
                        console.log(err, err.stack);
                      } else {
                        const FlatbufferModule = await import(schemaUrl);
-                       const laneGeometries = parseLanes(data.Body, FlatbufferModule, resolvedSupplierNum, annotationMode);
+                       const laneGeometries = parseLanes(data.Body, FlatbufferModule, resolvedSupplierNum, annotationMode, volumes);
                        callback( laneGeometries );
                      }});
     })();
@@ -64,7 +64,7 @@ export async function loadLanes(s3, bucket, name, fname, supplierNum, annotation
       }
 
       let bytesArray = new Uint8Array(response);
-      const laneGeometries = parseLanes(bytesArray, FlatbufferModule, resolvedSupplierNum, annotationMode);
+      const laneGeometries = parseLanes(bytesArray, FlatbufferModule, resolvedSupplierNum, annotationMode, volumes);
       callback( laneGeometries );
     };
 
@@ -75,7 +75,7 @@ export async function loadLanes(s3, bucket, name, fname, supplierNum, annotation
 
 
 
-function parseLanes(bytesArray, FlatbufferModule, supplierNum, annotationMode) {
+function parseLanes(bytesArray, FlatbufferModule, supplierNum, annotationMode, volumes) {
 
   let numBytes = bytesArray.length;
   let lanes = [];
@@ -97,7 +97,7 @@ function parseLanes(bytesArray, FlatbufferModule, supplierNum, annotationMode) {
     lanes.push(lane);
     segOffset += segSize;
   }
-  return createLaneGeometriesOld(lanes, supplierNum, annotationMode);
+  return createLaneGeometriesOld(lanes, supplierNum, annotationMode, volumes);
 }
 
 
@@ -209,7 +209,7 @@ function createLaneGeometries(vertexGroups, material) {
 }
 
 
-function createLaneGeometriesOld(lanes, supplierNum, annotationMode) {
+function createLaneGeometriesOld(lanes, supplierNum, annotationMode, volumes) {
 
   let materialLeft, materialSpine, materialRight;
   switch (supplierNum) {
@@ -249,6 +249,17 @@ function createLaneGeometriesOld(lanes, supplierNum, annotationMode) {
   // laneSpine = new Measure(); laneSpine.name = "Lane Spine"; //laneRight.closed = false;
   laneRight = new Measure(); laneRight.name = "Lane Right"; laneRight.closed = false; laneRight.showCoordinates = true; laneRight.showAngles = true;
 
+  let leftLaneSegments = new LaneSegments(); leftLaneSegments.name = "Left Lane Segments";
+  let rightLaneSegments = new LaneSegments(); rightLaneSegments.name = "Right Lane Segments";
+
+  let clonedBoxes = [];
+  for (let vi=0, vlen=volumes.length; vi<vlen; vi++) {
+    if (volumes[vi].clip) {
+      let clonedBbox = volumes[vi].boundingBox.clone();
+      clonedBbox.applyMatrix4(volumes[vi].matrixWorld);
+      clonedBoxes.push(clonedBbox);
+    }
+  }
 
   let lane;
   let lefts = [];
@@ -264,21 +275,34 @@ function createLaneGeometriesOld(lanes, supplierNum, annotationMode) {
     var geometryRight = new THREE.Geometry();
 
     let left, right, spine;
+    let isContains = false;
     for(let jj=0, numVertices=lane.leftLength(); jj<numVertices; jj++) {
       left = lane.left(jj);
 
       if (annotationMode) {
-        laneLeft.addMarker(new THREE.Vector3(left.x(), left.y(), left.z()));
+
+        if (volumes.length == 0) {
+          laneLeft.addMarker(new THREE.Vector3(left.x(), left.y(), left.z()));
+        } else {
+          isContains = updateSegments(leftLaneSegments, clonedBoxes, isContains, left, jj, numVertices);
+        }
       } else {
         geometryLeft.vertices.push( new THREE.Vector3(left.x(), left.y(), left.z()));
       }
     }
 
+    isContains = false;
     for(let jj=0, numVertices=lane.rightLength(); jj<numVertices; jj++) {
       right = lane.right(jj);
 
       if (annotationMode) {
-        laneRight.addMarker(new THREE.Vector3(right.x(), right.y(), right.z()));
+
+        if (volumes.length == 0) {
+          laneRight.addMarker(new THREE.Vector3(right.x(), right.y(), right.z()));
+        }
+        else {
+          isContains = updateSegments(rightLaneSegments, clonedBoxes, isContains, right, jj, numVertices);
+        }
       } else {
         geometryRight.vertices.push( new THREE.Vector3(right.x(), right.y(), right.z()));
       }
@@ -393,13 +417,48 @@ function createLaneGeometriesOld(lanes, supplierNum, annotationMode) {
   }
 
   if (annotationMode) {
-    all.push(laneLeft);
-    // all.push(laneSpine);
-    all.push(laneRight);
+    if (volumes.length > 0) {
+      all.push(leftLaneSegments);
+      all.push(rightLaneSegments);
+    } else {
+      all.push(laneLeft);
+      // all.push(laneSpine);
+      all.push(laneRight);
+    }
   }
 
   let output = {
     all: all
   }
   return output;
+}
+
+function updateSegments(laneSegments, clonedBoxes, prevIsContains, point, index, lengthArray) {
+
+  let newIsContains = false;
+  for (let bbi=0, bbLen=clonedBoxes.length; bbi<bbLen; bbi++) {
+    let isContains = clonedBoxes[bbi].containsPoint(new THREE.Vector3(point.x(), point.y(), point.z()));
+    if (isContains) {
+      newIsContains = isContains;
+    }
+  }
+  if (newIsContains && !prevIsContains) {
+    laneSegments.initializeSegment("Lane Segment "); // can pass as a parameter and differentiate between left and right, but not required for now
+  }
+  if (!newIsContains && prevIsContains) {
+    laneSegments.finalizeSegment();
+  }
+
+  if (newIsContains) {
+    laneSegments.addSegmentMarker(new THREE.Vector3(point.x(), point.y(), point.z()));
+  } else {
+    laneSegments.incrementOffset(new THREE.Vector3(point.x(), point.y(), point.z()));
+  }
+
+  // edge case if a segment exists at the end
+  if (newIsContains && index == lengthArray-1) {
+    laneSegments.finalizeSegment();
+  }
+
+  return newIsContains
 }

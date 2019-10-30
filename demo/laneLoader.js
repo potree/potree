@@ -249,10 +249,10 @@ function createLaneGeometriesOld(lanes, supplierNum, annotationMode, volumes) {
   // laneSpine = new Measure(); laneSpine.name = "Lane Spine"; //laneRight.closed = false;
   laneRight = new Measure(); laneRight.name = "Lane Right"; laneRight.closed = false; laneRight.showCoordinates = true; laneRight.showAngles = true;
 
-  var leftLaneSegments = new LaneSegments(); leftLaneSegments.name = "Left Lane Segments";
-  var rightLaneSegments = new LaneSegments(); rightLaneSegments.name = "Right Lane Segments";
+  let leftLaneSegments = new LaneSegments(); leftLaneSegments.name = "Left Lane Segments";
+  let rightLaneSegments = new LaneSegments(); rightLaneSegments.name = "Right Lane Segments";
 
-  var clonedBoxes = [];
+  let clonedBoxes = [];
   for (let vi=0, vlen=volumes.length; vi<vlen; vi++) {
     if (volumes[vi].clip) {
       let clonedBbox = volumes[vi].boundingBox.clone();
@@ -275,7 +275,7 @@ function createLaneGeometriesOld(lanes, supplierNum, annotationMode, volumes) {
     var geometryRight = new THREE.Geometry();
 
     let left, right, spine;
-    var isContains = false;
+    let isContains = false;
     for(let jj=0, numVertices=lane.leftLength(); jj<numVertices; jj++) {
       left = lane.left(jj);
 
@@ -443,7 +443,7 @@ function updateSegments(laneSegments, clonedBoxes, prevIsContains, point, index,
     }
   }
   if (newIsContains && !prevIsContains) {
-    laneSegments.initializeSegment("Left Lane Segment ");
+    laneSegments.initializeSegment("Lane Segment "); // can pass as a parameter and differentiate between left and right, but not required for now
   }
   if (!newIsContains && prevIsContains) {
     laneSegments.finalizeSegment();

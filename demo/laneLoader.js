@@ -412,11 +412,14 @@ function createLaneGeometriesOld(lanes, supplierNum, annotationMode, volumes) {
   }
 
   if (annotationMode) {
-    //all.push(laneLeft);
-    //// all.push(laneSpine);
-    //all.push(laneRight);
-    all.push(leftLaneSegments);
-    all.push(rightLaneSegments);
+    if (volumes.length > 0) {
+      all.push(leftLaneSegments);
+      all.push(rightLaneSegments);
+    } else {
+      all.push(laneLeft);
+      // all.push(laneSpine);
+      all.push(laneRight);
+    }
   }
 
   let output = {

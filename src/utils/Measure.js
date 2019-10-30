@@ -162,6 +162,7 @@ export class Measure extends THREE.Object3D {
 						for (let key of Object.keys(I.point).filter(e => e !== 'position')) {
 							point[key] = I.point[key];
 						}
+						// this is where attributes other than position is being added (ie. intensity and gpsTime)
 
 						this.setPosition(i, I.location);
 					}

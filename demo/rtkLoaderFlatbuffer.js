@@ -34,32 +34,14 @@ export async function loadRtkFlatbuffer(s3, bucket, name, callback) {
 
   } else {
 
-    var iso_8859_15_table = { 338: 188, 339: 189, 352: 166, 353: 168, 376: 190, 381: 180, 382: 184, 8364: 164 }
-
-    function iso_8859_15_to_uint8array(iso_8859_15_str) {
-        let buf = new ArrayBuffer(iso_8859_15_str.length);
-        let bufView = new Uint8Array(buf);
-        for (let i = 0, strLen = iso_8859_15_str.length; i < strLen; i++) {
-            let octet = iso_8859_15_str.charCodeAt(i);
-            if (iso_8859_15_table.hasOwnProperty(octet))
-                octet = iso_8859_15_table[octet]
-            bufView[i] = octet;
-            if(octet < 0 || 255 < octet)
-                console.error(`invalid data error`)
-        }
-        return bufView
-    }
-
-
     const filename = "../data/rtk.fb";
     const schemaFile = "../schemas/RTK_generated.js";
     let t0, t1;
     const tstart = performance.now();
 
     const xhr = new XMLHttpRequest();
-    xhr.overrideMimeType('text/plain; charset=ISO-8859-15');
     xhr.open("GET", filename);
-    // xhr.responsetype = "blob";
+    xhr.responseType = "arraybuffer";
 
     xhr.onprogress = function(event) {
       t1 = performance.now();
@@ -67,10 +49,10 @@ export async function loadRtkFlatbuffer(s3, bucket, name, callback) {
     }
 
     xhr.onload = async function(data) {
-      
+
       const FlatbufferModule = await import(schemaFile);
 
-      let uint8Array = iso_8859_15_to_uint8array(data.target.responseText);
+      let uint8Array = new Uint8Array(data.target.response);
 
       const {mpos, orientations, timestamps, t_init, t_range} = parseRTK(uint8Array, FlatbufferModule);
       callback(mpos, orientations, timestamps, t_init, t_range);
@@ -122,24 +104,27 @@ function parseRTK(bytesArray, FlatbufferModule) {
       }
       t_range = pose.timestamp() - t_init;
 
-      mpos.push( [pose.locXY().x(), pose.locXY().y(), pose.pos().z()] );
-      orientations.push( [pose.orientation().z(), pose.orientation().y(), pose.orientation().x()] );
-      timestamps.push(pose.timestamp());
-
-      if(typeof pose.adjustedOrientation === 'function') {
-        adjustedOrientations.push( [pose.orientation().z(), pose.orientation().y(), pose.adjustedOrientation().x()] ); // TODO use adjustedRoll and adjusted
-        allAdjustedOrientationsAreZero = allAdjustedOrientationsAreZero && (adjustedOrientations[adjustedOrientations.length-1][2] == 0); // == 0 && adjustedUTMOrientation[ii][1] == 0 && adjustedUTMOrientations[ii][2] == 0;
+      // Get UTM Position Data:
+      if (pose.locXY) {
+        mpos.push( [pose.locXY().x(), pose.locXY().y(), pose.pos().z()] );
+      } else {
+        mpos.push( [pose.utm().x(), pose.utm().y(), pose.utm().z()] );
       }
+
+      // Get Orientation Data:
+      if (pose.orientation) {
+        orientations.push( [pose.orientation().z(), pose.orientation().y(), pose.orientation().x()] );
+      } else {
+        orientations.push( [pose.roll(), pose.pitch(), pose.utm().yaw()] ); // TODO USE UTM-ADJUSTED ROLL/PITCH EVENTUALLY
+      }
+
+      timestamps.push(pose.timestamp());
 
       count += 1;
     }
 
     // rtkPoses.push(pose);
     segOffset += segSize;
-  }
-
-  if (!allAdjustedOrientationsAreZero) {
-    orientations = adjustedOrientations;
   }
 
   return {mpos, orientations, timestamps, t_init, t_range};

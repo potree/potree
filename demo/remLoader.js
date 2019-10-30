@@ -25,8 +25,37 @@ export async function loadRem(s3, bucket, name, remShaderMaterial, animationEngi
     })();
 
   } else {
-    // to run locally? Or without REM?
-    console.log("no rem data!");
+    const filename = `../data/control_point_3_rtk_relative.fb`;
+    const schemaFile = "../schemas/VisualizationPrimitives_generated.js";
+    let t0, t1;
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("GET", filename);
+    xhr.responseType = "arraybuffer";
+
+    xhr.onprogress = function(event) {
+      t1 = performance.now();
+      t0 = t1;
+    }
+
+    xhr.onload = async function(data) {
+
+      const FlatbufferModule = await import(schemaFile);
+
+      const response = data.target.response;
+      if (!response) {
+        console.error("Could not create buffer from lane data");
+        return;
+      }
+
+      let bytesArray = new Uint8Array(response);
+      debugger;
+      const remSphereMeshes = parseControlPoints(bytesArray, remShaderMaterial, FlatbufferModule, animationEngine);
+      callback( remSphereMeshes );
+    };
+
+    t0 = performance.now();
+    xhr.send();
   }
 }
 

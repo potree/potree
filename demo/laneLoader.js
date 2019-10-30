@@ -282,7 +282,6 @@ function createLaneGeometriesOld(lanes, supplierNum, annotationMode, volumes) {
       if (annotationMode) {
 
         isContains = updateSegments(leftLaneSegments, clonedBoxes, isContains, left, jj, numVertices)
-        console.log(isContains, jj);
 
         laneLeft.addMarker(new THREE.Vector3(left.x(), left.y(), left.z()));
       } else {
@@ -297,7 +296,6 @@ function createLaneGeometriesOld(lanes, supplierNum, annotationMode, volumes) {
       if (annotationMode) {
 
         isContains = updateSegments(rightLaneSegments, clonedBoxes, isContains, right, jj, numVertices)
-        console.log(isContains, jj);
 
         laneRight.addMarker(new THREE.Vector3(right.x(), right.y(), right.z()));
       } else {

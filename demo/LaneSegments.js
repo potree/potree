@@ -41,13 +41,13 @@ export class LaneSegments extends THREE.Object3D {
 	};
 
 	getFinalPoints() {
-		let finalPoints = [];
+		var finalPoints = [];
 
-		finalPoints.concat(outPoints[0]);
+		finalPoints = finalPoints.concat(this.outPoints[0]);
 
 		for (let si=0, sLen=this.segments.length; si<sLen; si++) {
-			finalPoints.concat(this.segments[si].points);
-			finalPoints.concat(outPoints[si+1]);
+			finalPoints = finalPoints.concat(this.segments[si].points);
+			finalPoints = finalPoints.concat(this.outPoints[si+1]);
 		}
 
 		return finalPoints;

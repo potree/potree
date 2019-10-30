@@ -89,7 +89,7 @@
 			let material = e.pointcloud.material;
 			material.size = 1;
 			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-			material.pointColorType = Potree.PointColorType.ELEVATION;
+			material.activeAttributeName = "elevation";
 			material.heightMin = 720;
 			material.heightMax = 780;
 			
@@ -106,7 +106,7 @@
 			let material = e.pointcloud.material;
 			material.size = 1;
 			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-			material.pointColorType = Potree.PointColorType.COLOR;
+			material.activeAttributeName = "RGBA";
 			material.color = new THREE.Color().setRGB(0.4, 0.6, 0.7);
 			
 			e.pointcloud.position.set(589927.44 -70, 231479.04, 726.87);

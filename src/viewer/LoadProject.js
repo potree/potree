@@ -59,6 +59,9 @@ function loadVolume(viewer, data){
 }
 
 function loadSettings(viewer, data){
+	if(!data){
+		return;
+	}
 
 	viewer.setPointBudget(data.pointBudget);
 	viewer.setFOV(data.fov);
@@ -89,6 +92,10 @@ function loadAnnotationItem(item){
 
 function loadAnnotations(viewer, data){
 
+	if(!data){
+		return;
+	}
+
 	const {items, hierarchy} = data;
 
 	const annotations = items.map(loadAnnotationItem);
@@ -114,10 +121,14 @@ function loadProfile(viewer, data){
 }
 
 function loadClassification(viewer, data){
+	if(!data){
+		return;
+	}
 
 	const classifications = data;
 
 	viewer.setClassifications(classifications);
+	
 }
 
 
@@ -150,6 +161,6 @@ export function loadSaveData(viewer, data){
 
 	loadAnnotations(viewer, data.annotations);
 
-	loadClassification(viewer, data.classifications);
+	loadClassification(viewer, data.classification);
 
 }

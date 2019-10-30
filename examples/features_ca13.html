@@ -167,14 +167,14 @@
 					actions: [{
 						"icon": Potree.resourcePath + "/icons/return_number.svg",
 						"onclick": function(){
-							material.pointColorType = Potree.PointColorType.RETURN_NUMBER;
+							material.activeAttributeName = "return number";
 							material.pointSizeType = Potree.PointSizeType.FIXED;
 							viewer.setClipTask(Potree.ClipTask.SHOW_INSIDE);
 						}
 					},{
 						"icon": Potree.resourcePath + "/icons/rgb.png",
 						"onclick": function(){
-							material.pointColorType = Potree.PointColorType.RGB;
+							material.activeAttributeName = "RGBA";
 							material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
 							viewer.setClipTask(Potree.ClipTask.HIGHLIGHT);
 						}

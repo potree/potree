@@ -53,52 +53,66 @@ export class HQSplatRenderer{
 			format: THREE.RGBAFormat,
 			type: THREE.FloatType,
 			depthTexture: this.rtDepth.depthTexture,
-			//depthTexture: new THREE.DepthTexture(undefined, undefined, THREE.UnsignedIntType)
 		});
-		
-		//{
-		//	let geometry = new THREE.PlaneBufferGeometry( 1, 1, 32, 32);
-		//	let material = new THREE.MeshBasicMaterial( {side: THREE.DoubleSide, map: this.rtDepth.texture} );
-		//	let plane = new THREE.Mesh( geometry, material );
-		//	plane.scale.set(0.3, 0.3, 1.0);
-		//	plane.position.set(plane.scale.x / 2, plane.scale.y / 2, 0);
-		//	this.viewer.overlay.add(plane);
-		//}
 
 		this.initialized = true;
 	};
 
-	resize () {
-		const viewer = this.viewer;
-
-		let pixelRatio = viewer.renderer.getPixelRatio();
-		let {width, height} = this.viewer.renderer.getSize(new THREE.Vector2());
-		// let width = viewer.renderer.getSize().width;
-		// let height = viewer.renderer.getSize().height;
-		this.rtDepth.setSize(width * pixelRatio , height * pixelRatio);
-		this.rtAttribute.setSize(width * pixelRatio , height * pixelRatio);
+	resize(width, height){
+		this.rtDepth.setSize(width, height);
+		this.rtAttribute.setSize(width, height);
 	}
+
+	clearTargets(){
+		const viewer = this.viewer;
+		const {renderer} = viewer;
+
+		const oldTarget = renderer.getRenderTarget();
+
+		renderer.setClearColor(0x000000, 0);
+
+		renderer.setRenderTarget( this.rtDepth );
+		renderer.clear( true, true, true );
+
+		renderer.setRenderTarget( this.rtAttribute );
+		renderer.clear( true, true, true );
+
+		renderer.setRenderTarget(oldTarget);
+	}
+
 
 	clear(){
+		this.init();
 
+		const {renderer, background} = this.viewer;
+
+		if(background === "skybox"){
+			renderer.setClearColor(0x000000, 0);
+		} else if (background === 'gradient') {
+			renderer.setClearColor(0x000000, 0);
+		} else if (background === 'black') {
+			renderer.setClearColor(0x000000, 1);
+		} else if (background === 'white') {
+			renderer.setClearColor(0xFFFFFF, 1);
+		} else {
+			renderer.setClearColor(0x000000, 0);
+		}
+
+		renderer.clear();
+
+		this.clearTargets();
 	}
 
-	render () {
+	render (params) {
 		this.init();
+
 		const viewer = this.viewer;
-		const {renderer, scene} = viewer;
+		const camera = params.camera ? params.camera : viewer.scene.getActiveCamera();
+		const {width, height} = this.viewer.renderer.getSize(new THREE.Vector2());
 
 		viewer.dispatchEvent({type: "render.pass.begin",viewer: viewer});
 
-		this.resize();
-
-		let camera = scene.getActiveCamera();
-		
-		renderer.setClearColor(0x000000, 0);
-		renderer.clearTarget( this.rtDepth, true, true, true );
-		renderer.clearTarget( this.rtAttribute, true, true, true );
-
-		const {width, height} = renderer.getSize();
+		this.resize(width, height);
 
 		const visiblePointClouds = viewer.scene.pointclouds.filter(pc => pc.visible);
 		const originalMaterials = new Map();
@@ -142,13 +156,11 @@ export class HQSplatRenderer{
 				depthMaterial.uniforms.octreeSize.value = octreeSize;
 				depthMaterial.spacing = pointcloud.pcoGeometry.spacing * Math.max(...pointcloud.scale.toArray());
 				depthMaterial.classification = material.classification;
+				depthMaterial.uniforms.classificationLUT.value.image.data = material.uniforms.classificationLUT.value.image.data;
 
 				depthMaterial.uniforms.uFilterReturnNumberRange.value = material.uniforms.uFilterReturnNumberRange.value;
 				depthMaterial.uniforms.uFilterNumberOfReturnsRange.value = material.uniforms.uFilterNumberOfReturnsRange.value;
 				depthMaterial.uniforms.uFilterGPSTimeClipRange.value = material.uniforms.uFilterGPSTimeClipRange.value;
-
-				//depthMaterial.uniforms.uGPSOffset.value = material.uniforms.uGPSOffset.value;
-				//depthMaterial.uniforms.uGPSRange.value = material.uniforms.uGPSRange.value;
 
 				depthMaterial.clipTask = material.clipTask;
 				depthMaterial.clipMethod = material.clipMethod;
@@ -185,6 +197,7 @@ export class HQSplatRenderer{
 				attributeMaterial.uniforms.octreeSize.value = octreeSize;
 				attributeMaterial.spacing = pointcloud.pcoGeometry.spacing * Math.max(...pointcloud.scale.toArray());
 				attributeMaterial.classification = material.classification;
+				attributeMaterial.uniforms.classificationLUT.value.image.data = material.uniforms.classificationLUT.value.image.data;
 
 				attributeMaterial.uniforms.uFilterReturnNumberRange.value = material.uniforms.uFilterReturnNumberRange.value;
 				attributeMaterial.uniforms.uFilterNumberOfReturnsRange.value = material.uniforms.uFilterNumberOfReturnsRange.value;

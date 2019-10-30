@@ -67,7 +67,7 @@
 			material.size = 0.6;
 			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
 			material.shape = Potree.PointShape.SQUARE;
-			material.pointColorType = Potree.PointColorType.ELEVATION;
+			material.activeAttributeName = "elevation";
 			material.elevationRange = [46, 72];
 			
 			scene.addPointCloud(pointcloud);

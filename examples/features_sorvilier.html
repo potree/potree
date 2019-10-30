@@ -217,7 +217,7 @@
 					"icon": Potree.resourcePath + "/icons/profile.svg",
 					"onclick": function(){
 						for(let pointcloud of viewer.scene.pointclouds){
-							pointcloud.material.pointColorType = Potree.PointColorType.ELEVATION;
+							pointcloud.material.activeAttributeName = "elevation";
 							pointcloud.material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
 						}
 					}
@@ -225,7 +225,7 @@
 					"icon": Potree.resourcePath + "/icons/rgb.png",
 					"onclick": function(){
 						for(let pointcloud of viewer.scene.pointclouds){
-							pointcloud.material.pointColorType = Potree.PointColorType.RGB;
+							pointcloud.material.activeAttributeName = "RGBA";
 							pointcloud.material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
 						}
 					}

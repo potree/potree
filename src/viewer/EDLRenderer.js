@@ -45,8 +45,6 @@ export class EDLRenderer{
 	};
 
 	resize(width, height){
-		const viewer = this.viewer;
-
 		if(this.screenshot){
 			width = this.screenshot.target.width;
 			height = this.screenshot.target.height;
@@ -125,9 +123,6 @@ export class EDLRenderer{
 		renderer.clear( true, true, false );
 
 		renderer.setRenderTarget(oldTarget);
-
-		// renderer.clearTarget(this.rtEDL, true, true, true);
-		// renderer.clearTarget(this.rtRegular, true, true, false);
 	}
 
 	clear(){
@@ -156,7 +151,6 @@ export class EDLRenderer{
 	render(params){
 		this.initEDL();
 
-
 		const viewer = this.viewer;
 		const camera = params.camera ? params.camera : viewer.scene.getActiveCamera();
 		const {width, height} = this.viewer.renderer.getSize(new THREE.Vector2());
@@ -164,6 +158,8 @@ export class EDLRenderer{
 		viewer.dispatchEvent({type: "render.pass.begin",viewer: viewer});
 		
 		this.resize(width, height);
+
+		const visiblePointClouds = viewer.scene.pointclouds.filter(pc => pc.visible);
 
 		if(this.screenshot){
 			let oldBudget = Potree.pointBudget;
@@ -209,7 +205,7 @@ export class EDLRenderer{
 
 			this.shadowMap.render(viewer.scene.scenePointCloud, camera);
 
-			for(let pointcloud of viewer.scene.pointclouds){
+			for(let pointcloud of visiblePointClouds){
 				let originalAttribute = originalAttributes.get(pointcloud);
 				// TODO IMPORTANT !!! check
 				//pointcloud.material.pointColorType = originalAttribute;
@@ -222,7 +218,7 @@ export class EDLRenderer{
 		}
 
 		{ // COLOR & DEPTH PASS
-			for (let pointcloud of viewer.scene.pointclouds) {
+			for (let pointcloud of visiblePointClouds) {
 				let octreeSize = pointcloud.pcoGeometry.boundingBox.getSize(new THREE.Vector3()).x;
 
 				let material = pointcloud.material;

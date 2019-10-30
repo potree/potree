@@ -64,7 +64,10 @@
 
 			scene.addPointCloud(pointcloud);
 
-			viewer.setNavigationMode(Potree.DeviceOrientationControls);
+			//viewer.setNavigationMode(Potree.DeviceOrientationControls);
+
+			const controls = new Potree.DeviceOrientationControls(viewer);
+			viewer.setControls(controls);
 			viewer.scene.view.position.set(589976, 231432, 748);
 		});
 

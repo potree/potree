@@ -64,7 +64,7 @@
 			let material = e.pointcloud.material;
 			material.size = 1;
 			material.pointSizeType = Potree.PointSizeType.FIXED;
-			material.pointColorType = Potree.PointColorType.CLASSIFICATION;
+			material.activeAttributeName = "classification";
 			
 			viewer.scene.view.position.set(694991.9150582966, 3916274.3733733483, 76.41774609890476);
 			viewer.scene.view.lookAt(694878.4097257275, 3916332.0674868184, 14.497470898558227);

@@ -274,7 +274,7 @@ function createLaneGeometriesOld(lanes, supplierNum, annotationMode, volumes) {
     var geometrySpine = new THREE.Geometry();
     var geometryRight = new THREE.Geometry();
 
-    var left, right, spine;
+    let left, right, spine;
     var isContains = false;
     for(let jj=0, numVertices=lane.leftLength(); jj<numVertices; jj++) {
       left = lane.left(jj);

@@ -132,7 +132,7 @@ export class Measure extends THREE.Object3D {
 			{
 				const coordinates = [];
 
-				let n = 32;
+				let n = 128;
 				for(let i = 0; i <= n; i++){
 					let u0 = 2 * Math.PI * (i / n);
 					let u1 = 2 * Math.PI * (i + 1) / n;

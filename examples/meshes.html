@@ -18,7 +18,8 @@
 	<script src="../libs/jquery/jquery-3.1.1.min.js"></script>
 	<script src="../libs/spectrum/spectrum.js"></script>
 	<script src="../libs/jquery-ui/jquery-ui.min.js"></script>
-	<script src="../libs/three.js/build/three.min.js"></script>
+	<script src="../libs/three.js/build/three.js"></script>
+	<script src="../libs/three.js/extra/lines.js"></script>
 	<script src="../libs/other/BinaryHeap.js"></script>
 	<script src="../libs/tween/tween.min.js"></script>
 	<script src="../libs/d3/d3.js"></script>
@@ -91,7 +92,7 @@
 			{
 				let material = new THREE.MeshStandardMaterial( { 
 					color: 0x0055ff, 
-					shading: THREE.FlatShading,
+					flatShading: true,
 					metalness: 0.2} );
 				mesh2 = new THREE.Mesh( geometry, material );
 				mesh2.position.set(589851.587, 231348.213, 720.634);
@@ -106,8 +107,6 @@
 					color: 0x226666,
 					metalness: 0,
 					roughness: 0.5,
-					clearCoat:  1.0,
-					clearCoatRoughness: 1.0,
 					reflectivity: 1.0
 				} );
 				mesh3 = new THREE.Mesh( geometry, material );
@@ -155,18 +154,20 @@
 			manager.onProgress = function ( item, loaded, total ) {
 				console.log( item, loaded, total );
 			};
-			let textureLoader = new THREE.TextureLoader( manager );
-			let texture = textureLoader.load(`${Potree.resourcePath}/textures/brick_pavement.jpg`);
+
 			let onProgress = function ( xhr ) {
 				if ( xhr.lengthComputable ) {
 					let percentComplete = xhr.loaded / xhr.total * 100;
 					console.log( Math.round(percentComplete, 2) + '% downloaded' );
 				}
 			};
+			let onError = function ( xhr ) {};
+
+			const texture = new THREE.TextureLoader().load(`${Potree.resourcePath}/textures/brick_pavement.jpg`);
+
 			texture.wrapS = THREE.RepeatWrapping;
 			texture.wrapT = THREE.RepeatWrapping;
 
-			let onError = function ( xhr ) {};
 			let loader = new THREE.OBJLoader( manager );
 			loader.load(`${Potree.resourcePath}/models/stanford_bunny_reduced.obj`, function ( object ) {
 				object.traverse( function ( child ) {
@@ -198,6 +199,20 @@
 				});
 
 			}, onProgress, onError );
+		}
+
+		{ // Lights
+			const light0 = new THREE.PointLight( 0xffffff, 0.8); 
+			light0.position.set(589871.587, 231528.213, 1000); 
+			viewer.scene.scene.add(light0);
+
+			const light1 = new THREE.PointLight( 0xffffff, 0.8); 
+			light1.position.set(589950, 231600, 1000); 
+			viewer.scene.scene.add(light1);
+
+			const light2 = new THREE.PointLight( 0xffffff, 0.8); 
+			light2.position.set(589650, 231300, 1000); 
+			viewer.scene.scene.add(light2);
 		}
 
 	</script>

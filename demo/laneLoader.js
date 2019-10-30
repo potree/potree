@@ -281,9 +281,11 @@ function createLaneGeometriesOld(lanes, supplierNum, annotationMode, volumes) {
 
       if (annotationMode) {
 
-        isContains = updateSegments(leftLaneSegments, clonedBoxes, isContains, left, jj, numVertices)
-
-        laneLeft.addMarker(new THREE.Vector3(left.x(), left.y(), left.z()));
+        if (volumes.length == 0) {
+          laneLeft.addMarker(new THREE.Vector3(left.x(), left.y(), left.z()));
+        } else {
+          isContains = updateSegments(leftLaneSegments, clonedBoxes, isContains, left, jj, numVertices);
+        }
       } else {
         geometryLeft.vertices.push( new THREE.Vector3(left.x(), left.y(), left.z()));
       }
@@ -295,9 +297,12 @@ function createLaneGeometriesOld(lanes, supplierNum, annotationMode, volumes) {
 
       if (annotationMode) {
 
-        isContains = updateSegments(rightLaneSegments, clonedBoxes, isContains, right, jj, numVertices)
-
-        laneRight.addMarker(new THREE.Vector3(right.x(), right.y(), right.z()));
+        if (volumes.length == 0) {
+          laneRight.addMarker(new THREE.Vector3(right.x(), right.y(), right.z()));
+        }
+        else {
+          isContains = updateSegments(rightLaneSegments, clonedBoxes, isContains, right, jj, numVertices);
+        }
       } else {
         geometryRight.vertices.push( new THREE.Vector3(right.x(), right.y(), right.z()));
       }

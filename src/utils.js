@@ -925,6 +925,29 @@ export class Utils {
 
 	}
 
+	static async loadScript(url){
+
+		return new Promise( resolve => {
+
+			const element = document.getElementById(url);
+
+			if(element){
+				resolve();
+			}else{
+				const script = document.createElement("script");
+
+				script.id = url;
+
+				script.onload = () => {
+					resolve();
+				};
+				script.src = url;
+
+				document.body.appendChild(script);
+			}
+		});
+	}
+
 }
 
 Utils.screenPass = new function () {

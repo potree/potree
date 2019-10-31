@@ -113,13 +113,17 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 			toModel:			{ type: "Matrix4f", value: [] },
 			diffuse:			{ type: "fv", value: [1, 1, 1] },
 			transition:			{ type: "f", value: 0.5 },
-			intensityRange:		{ type: "fv", value: [Infinity, -Infinity] },
-			intensityGamma:		{ type: "f", value: 1 },
-			intensityContrast:	{ type: "f", value: 0 },
-			intensityBrightness:{ type: "f", value: 0 },
-			rgbGamma:			{ type: "f", value: 1 },
-			rgbContrast:		{ type: "f", value: 0 },
-			rgbBrightness:		{ type: "f", value: 0 },
+
+			 intensityRange:		{ type: "fv", value: [Infinity, -Infinity] },
+
+			intensity_gbc: 		{ type: "fv", value: [1, 0, 0]},
+			rgb_gbc:	 		{ type: "fv", value: [1, 0, 0]},
+			// intensityGamma:		{ type: "f", value: 1 },
+			// intensityContrast:	{ type: "f", value: 0 },
+			// intensityBrightness:{ type: "f", value: 0 },
+			// rgbGamma:			{ type: "f", value: 1 },
+			// rgbContrast:		{ type: "f", value: 0 },
+			// rgbBrightness:		{ type: "f", value: 0 },
 			wRGB:				{ type: "f", value: 1 },
 			wIntensity:			{ type: "f", value: 0 },
 			wElevation:			{ type: "f", value: 0 },
@@ -381,7 +385,7 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 			const r = parseInt(255 * color[0]);
 			const g = parseInt(255 * color[1]);
 			const b = parseInt(255 * color[2]);
-			const a = parseInt(255 * color[3]) && visible;
+			const a = visible ? parseInt(255 * color[3]) : 0;
 
 
 			if(data[4 * i + 0] !== r){
@@ -738,12 +742,12 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 	}
 
 	get intensityGamma () {
-		return this.uniforms.intensityGamma.value;
+		return this.uniforms.intensity_gbc.value[0];
 	}
 
 	set intensityGamma (value) {
-		if (this.uniforms.intensityGamma.value !== value) {
-			this.uniforms.intensityGamma.value = value;
+		if (this.uniforms.intensity_gbc.value[0] !== value) {
+			this.uniforms.intensity_gbc.value[0] = value;
 			this.dispatchEvent({
 				type: 'material_property_changed',
 				target: this
@@ -752,12 +756,12 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 	}
 
 	get intensityContrast () {
-		return this.uniforms.intensityContrast.value;
+		return this.uniforms.intensity_gbc.value[2];
 	}
 
 	set intensityContrast (value) {
-		if (this.uniforms.intensityContrast.value !== value) {
-			this.uniforms.intensityContrast.value = value;
+		if (this.uniforms.intensity_gbc.value[2] !== value) {
+			this.uniforms.intensity_gbc.value[2] = value;
 			this.dispatchEvent({
 				type: 'material_property_changed',
 				target: this
@@ -766,12 +770,12 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 	}
 
 	get intensityBrightness () {
-		return this.uniforms.intensityBrightness.value;
+		return this.uniforms.intensity_gbc.value[1];
 	}
 
 	set intensityBrightness (value) {
-		if (this.uniforms.intensityBrightness.value !== value) {
-			this.uniforms.intensityBrightness.value = value;
+		if (this.uniforms.intensity_gbc.value[1] !== value) {
+			this.uniforms.intensity_gbc.value[1] = value;
 			this.dispatchEvent({
 				type: 'material_property_changed',
 				target: this
@@ -780,12 +784,12 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 	}
 
 	get rgbGamma () {
-		return this.uniforms.rgbGamma.value;
+		return this.uniforms.rgb_gbc.value[0];
 	}
 
 	set rgbGamma (value) {
-		if (this.uniforms.rgbGamma.value !== value) {
-			this.uniforms.rgbGamma.value = value;
+		if (this.uniforms.rgb_gbc.value[0] !== value) {
+			this.uniforms.rgb_gbc.value[0] = value;
 			this.dispatchEvent({
 				type: 'material_property_changed',
 				target: this
@@ -794,12 +798,12 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 	}
 
 	get rgbContrast () {
-		return this.uniforms.rgbContrast.value;
+		return this.uniforms.rgb_gbc.value[2];
 	}
 
 	set rgbContrast (value) {
-		if (this.uniforms.rgbContrast.value !== value) {
-			this.uniforms.rgbContrast.value = value;
+		if (this.uniforms.rgb_gbc.value[2] !== value) {
+			this.uniforms.rgb_gbc.value[2] = value;
 			this.dispatchEvent({
 				type: 'material_property_changed',
 				target: this
@@ -808,12 +812,12 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 	}
 
 	get rgbBrightness () {
-		return this.uniforms.rgbBrightness.value;
+		return this.uniforms.rgb_gbc.value[1];
 	}
 
 	set rgbBrightness (value) {
-		if (this.uniforms.rgbBrightness.value !== value) {
-			this.uniforms.rgbBrightness.value = value;
+		if (this.uniforms.rgb_gbc.value[1] !== value) {
+			this.uniforms.rgb_gbc.value[1] = value;
 			this.dispatchEvent({
 				type: 'material_property_changed',
 				target: this

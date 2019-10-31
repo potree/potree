@@ -124,9 +124,10 @@ export class LasLazBatcher{
 	}
 
 	push (lasBuffer) {
-		let workerPath = Potree.scriptPath + '/workers/LASDecoderWorker.js';
-		let worker = Potree.workerPool.getWorker(workerPath);
-		let node = this.node;
+		const workerPath = Potree.scriptPath + '/workers/LASDecoderWorker.js';
+		const worker = Potree.workerPool.getWorker(workerPath);
+		const node = this.node;
+		const pointAttributes = node.pcoGeometry.pointAttributes;
 
 		worker.onmessage = (e) => {
 			let geometry = new THREE.BufferGeometry();
@@ -150,6 +151,14 @@ export class LasLazBatcher{
 			geometry.addAttribute('source id', new THREE.BufferAttribute(pointSourceIDs, 1));
 			geometry.addAttribute('indices', new THREE.BufferAttribute(indices, 4));
 			geometry.attributes.indices.normalized = true;
+
+			for(const key in e.data.ranges){
+				const range = e.data.ranges[key];
+
+				const attribute = pointAttributes.attributes.find(a => a.name === key);
+				attribute.range[0] = Math.min(attribute.range[0], range[0]);
+				attribute.range[1] = Math.max(attribute.range[1], range[1]);
+			}
 
 			let tightBoundingBox = new THREE.Box3(
 				new THREE.Vector3().fromArray(e.data.tightBoundingBox.min),

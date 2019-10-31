@@ -838,6 +838,9 @@ export class ProfileWindow extends EventDispatcher {
 				material.uniforms.wReturnNumber.value = pointcloud.material.uniforms.wReturnNumber.value;
 				material.uniforms.wSourceID.value = pointcloud.material.uniforms.wSourceID.value;
 
+				material.classification = pointcloud.material.classification;
+				material.uniforms.classificationLUT.value.image.data = pointcloud.material.uniforms.classificationLUT.value.image.data;
+				material.classificationTexture.needsUpdate = true;
 			}
 
 			this.pickSphere.visible = true;

@@ -78,9 +78,7 @@ export class BinaryLoader{
 
 			for(let property in buffers){
 				let buffer = buffers[property].buffer;
-				let range = buffers[property].range;
 				let batchAttribute = buffers[property].attribute;
-
 
 				if (property === "POSITION_CARTESIAN") {
 					geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(buffer), 3));

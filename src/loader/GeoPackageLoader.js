@@ -1,4 +1,5 @@
 
+import {Utils} from "../utils.js";
 
 const defaultColors = {
 	"landuse":   [0.5, 0.5, 0.5],
@@ -27,6 +28,9 @@ export class GeoPackageLoader{
 	}
 
 	static async loadUrl(url, params){
+
+		// Utils.loadScript("../
+
 		const result = await fetch(url);
 		const buffer = await result.arrayBuffer();
 

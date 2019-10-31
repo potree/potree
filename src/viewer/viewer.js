@@ -27,6 +27,7 @@ import {FirstPersonControls} from "../navigation/FirstPersonControls.js";
 import {EarthControls} from "../navigation/EarthControls.js";
 import {DeviceOrientationControls} from "../navigation/DeviceOrientationControls.js";
 import { EventDispatcher } from "../EventDispatcher.js";
+import { ClassificationScheme } from "../materials/ClassificationScheme.js";
 
 
 
@@ -93,19 +94,20 @@ export class Viewer extends EventDispatcher{
 		this.edlOpacity = 1.0;
 		this.useEDL = false;
 
-		this.classifications = {
-			0:  { visible: true, name: 'never classified'  , color: [0.5,  0.5,  0.5,  1.0] },
-			1:  { visible: true, name: 'unclassified'      , color: [0.5,  0.5,  0.5,  1.0] },
-			2:  { visible: true, name: 'ground'            , color: [0.63, 0.32, 0.18, 1.0] },
-			3:  { visible: true, name: 'low vegetation'    , color: [0.0,  1.0,  0.0,  1.0] },
-			4:  { visible: true, name: 'medium vegetation' , color: [0.0,  0.8,  0.0,  1.0] },
-			5:  { visible: true, name: 'high vegetation'   , color: [0.0,  0.6,  0.0,  1.0] },
-			6:  { visible: true, name: 'building'          , color: [1.0,  0.66, 0.0,  1.0] },
-			7:  { visible: true, name: 'low point(noise)'  , color: [1.0,  0.0,  1.0,  1.0] },
-			8:  { visible: true, name: 'key-point'         , color: [1.0,  0.0,  0.0,  1.0] },
-			9:  { visible: true, name: 'water'             , color: [0.0,  0.0,  1.0,  1.0] },
-			12: { visible: true, name: 'overlap'           , color: [1.0,  1.0,  0.0,  1.0] },
-		};
+		// this.classifications = {
+		// 	0:  { visible: true, name: 'never classified'  , color: [0.5,  0.5,  0.5,  1.0] },
+		// 	1:  { visible: true, name: 'unclassified'      , color: [0.5,  0.5,  0.5,  1.0] },
+		// 	2:  { visible: true, name: 'ground'            , color: [0.63, 0.32, 0.18, 1.0] },
+		// 	3:  { visible: true, name: 'low vegetation'    , color: [0.0,  1.0,  0.0,  1.0] },
+		// 	4:  { visible: true, name: 'medium vegetation' , color: [0.0,  0.8,  0.0,  1.0] },
+		// 	5:  { visible: true, name: 'high vegetation'   , color: [0.0,  0.6,  0.0,  1.0] },
+		// 	6:  { visible: true, name: 'building'          , color: [1.0,  0.66, 0.0,  1.0] },
+		// 	7:  { visible: true, name: 'low point(noise)'  , color: [1.0,  0.0,  1.0,  1.0] },
+		// 	8:  { visible: true, name: 'key-point'         , color: [1.0,  0.0,  0.0,  1.0] },
+		// 	9:  { visible: true, name: 'water'             , color: [0.0,  0.0,  1.0,  1.0] },
+		// 	12: { visible: true, name: 'overlap'           , color: [1.0,  1.0,  0.0,  1.0] },
+		// };
+		this.classifications = ClassificationScheme.DEFAULT;
 
 		this.moveSpeed = 10;
 
@@ -1461,6 +1463,27 @@ export class Viewer extends EventDispatcher{
 
 	}
 
+	updateMaterialDefaults(pointcloud){
+		// PROBLEM STATEMENT:
+		// * [min, max] of intensity, source id, etc. are computed as point clouds are loaded
+		// * the point cloud material won't know the range it should use until some data is loaded
+		// * users can modify the range at runtime, but sensible default ranges should be 
+		//   applied even if no GUI is present
+		// * display ranges shouldn't suddenly change even if the actual range changes over time.
+		//   e.g. the root node has intensity range [1, 478]. One of the descendants increases range to 
+		//   [0, 2047]. We should not automatically change to the new range because that would result
+		//   in sudden and drastic changes of brightness. We should adjust the min/max of the sidebar slider.
+
+		const material = pointcloud.material;
+
+		const attIntensity = pointcloud.getAttribute("intensity");
+		if(attIntensity && material.intensityRange[0] === Infinity){
+			material.intensityRange = [...attIntensity.range];
+		}
+
+
+	}
+
 	update(delta, timestamp){
 
 		if(Potree.measureTimings) performance.mark("update-start");
@@ -1490,6 +1513,8 @@ export class Viewer extends EventDispatcher{
 
 			material.classification = this.classifications;
 			material.recomputeClassification();
+
+			this.updateMaterialDefaults(pointcloud);
 		}
 
 		{

@@ -380,9 +380,9 @@ export class PropertiesPanel{
 				let selectedValue = attributeSelection.selectmenu().val();
 				material.activeAttributeName = selectedValue;
 
-				const attribute = pointcloud.pcoGeometry.pointAttributes.attributes.find(a => a.name === selectedValue);
+				const attribute = pointcloud.getAttribute(selectedValue);
 
-				if(attribute !== undefined && attribute.name === "intensity"){
+				if(attribute !== null && attribute.name === "intensity"){
 					if(pointcloud.material.intensityRange[0] === Infinity){
 						pointcloud.material.intensityRange = attribute.range;
 					}
@@ -610,17 +610,6 @@ export class PropertiesPanel{
 				}
 			});
 
-			// panel.find('#sldIntensityRange').slider({
-			// 	range: true,
-			// 	//min: 0, max: 1, step: 0.01,
-			// 	values: [0, 1],
-			// 	slide: (event, ui) => {
-			// 		let min = (Number(ui.values[0]) === 0) ? 0 : parseInt(Math.pow(2, 16 * ui.values[0]));
-			// 		let max = parseInt(Math.pow(2, 16 * ui.values[1]));
-			// 		material.intensityRange = [min, max];
-			// 	}
-			// });
-
 			panel.find('#sldIntensityGamma').slider({
 				value: material.intensityGamma,
 				min: 0, max: 4, step: 0.01,
@@ -725,10 +714,8 @@ export class PropertiesPanel{
 
 			let updateIntensityRange = function () {
 				let range = material.intensityRange;
-				let [min, max] = range.map(v => Math.log2(v) / 16);
 
 				panel.find('#lblIntensityRange').html(`${parseInt(range[0])} to ${parseInt(range[1])}`);
-				//panel.find('#sldIntensityRange').slider({values: [min, max]});
 			};
 
 			{

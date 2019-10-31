@@ -823,7 +823,8 @@ export class Renderer {
 
 			if(geometry.attributes["gps-time"]){
 				const bufferAttribute = geometry.attributes["gps-time"];
-				const attGPS = octree.pcoGeometry.pointAttributes.attributes.find(a => a.name === "gps-time");
+				const attGPS = octree.getAttribute("gps-time");
+				//const attGPS = octree.pcoGeometry.pointAttributes.attributes.find(a => a.name === "gps-time");
 
 				// ranges in full gps coordinate system
 				const globalRange = attGPS.range;

@@ -3,15 +3,10 @@ const path = require('path');
 const gulp = require('gulp');
 const exec = require('child_process').exec;
 
-
 const fs = require("fs");
 const fsp = fs.promises;
 const concat = require('gulp-concat');
-//const gutil = require('gulp-util');
-//const through = require('through');
-//const File = gutil.File;
 const connect = require('gulp-connect');
-//const watch = require('glob-watcher');
 const {watch} = gulp;
 
 
@@ -46,7 +41,7 @@ let workers = {
 	],
 	"EptZstandardDecoderWorker": [
 		"src/workers/EptZstandardDecoderWorker.js"
-	],
+	]
 };
 
 let shaders = [

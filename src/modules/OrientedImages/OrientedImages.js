@@ -311,6 +311,7 @@ export class OrientedImages{
 					mesh.material.needsUpdate = true;
 
 					const imagePath = `${imageParamsPath}/../${hoveredElement.params.id}`;
+					//const imagePath = `${imageParamsPath}/../${hoveredElement.params.id}_CD.jpg`;
 
 					var loadingElement = hoveredElement;
 					const texture = new THREE.TextureLoader().load(imagePath,

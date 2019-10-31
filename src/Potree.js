@@ -9,7 +9,6 @@ export * from "./Features.js";
 export * from "./KeyCodes.js";
 export * from "./LRU.js";
 export * from "./PointCloudEptGeometry.js";
-export * from "./PointCloudGreyhoundGeometry.js";
 export * from "./PointCloudOctree.js";
 export * from "./PointCloudOctreeGeometry.js";
 export * from "./PointCloudTree.js";
@@ -37,8 +36,6 @@ export * from "./loader/EptLoader.js";
 export * from "./loader/ept/BinaryLoader.js";
 export * from "./loader/ept/LaszipLoader.js";
 export * from "./loader/ept/ZstandardLoader.js";
-export * from "./loader/GreyhoundBinaryLoader.js";
-export * from "./loader/GreyhoundLoader.js";
 export * from "./loader/PointAttributes.js";
 export * from "./loader/ShapefileLoader.js";
 export * from "./loader/GeoPackageLoader.js";
@@ -79,7 +76,6 @@ import "./extensions/Ray.js";
 import {Enum} from "./Enum";
 import {LRU} from "./LRU";
 import {POCLoader} from "./loader/POCLoader";
-import {GreyhoundLoader} from "./loader/GreyhoundLoader";
 import {EptLoader} from "./loader/EptLoader";
 import {PointCloudOctree} from "./PointCloudOctree";
 import {WorkerPool} from "./WorkerPool";
@@ -128,22 +124,11 @@ export function loadPointCloud(path, name, callback){
 	if (!path){
 		// TODO: callback? comment? Hello? Bueller? Anyone?
 	} else if (path.indexOf('ept.json') > 0) {
-		Potree.EptLoader.load(path, function(geometry) {
+		EptLoader.load(path, function(geometry) {
 			if (!geometry) {
 				console.error(new Error(`failed to load point cloud from URL: ${path}`));
 			}
 			else {
-				let pointcloud = new PointCloudOctree(geometry);
-				loaded(pointcloud);
-			}
-		});
-	} else if (path.indexOf('greyhound://') === 0){
-		// We check if the path string starts with 'greyhound:', if so we assume it's a greyhound server URL.
-		GreyhoundLoader.load(path, function (geometry) {
-			if (!geometry) {
-				//callback({type: 'loading_failed'});
-				console.error(new Error(`failed to load point cloud from URL: ${path}`));
-			} else {
 				let pointcloud = new PointCloudOctree(geometry);
 				loaded(pointcloud);
 			}

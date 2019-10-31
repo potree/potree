@@ -47,14 +47,6 @@ let workers = {
 	"EptZstandardDecoderWorker": [
 		"src/workers/EptZstandardDecoderWorker.js"
 	],
-	"GreyhoundBinaryDecoderWorker": [
-		"libs/plasio/workers/laz-perf.js",
-		"src/workers/GreyhoundBinaryDecoderWorker.js",
-		"src/Version.js",
-		"src/loader/PointAttributes.js",
-		"src/InterleavedBuffer.js",
-		"src/utils/toInterleavedBufferAttribute.js",
-	]
 };
 
 let shaders = [

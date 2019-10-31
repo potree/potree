@@ -28,6 +28,7 @@
 	<script src="../libs/jstree/jstree.js"></script>
 	<script src="../build/potree/potree.js"></script>
 	<script src="../libs/plasio/js/laslaz.js"></script>
+	<script src="../libs/other/stats.min.js"></script>
 
 	<script src='../libs/sql.js/sql-wasm.js'></script>
 	<script src='../libs/geopackage/geopackage.js'></script>
@@ -57,8 +58,7 @@
 		
 		viewer.loadGUI(() => {
 			viewer.setLanguage('en');
-			$("#menu_tools").next().show();
-			$("#menu_clipping").next().show();
+			// $("#menu_tools").next().show();
 			viewer.toggleSidebar();
 		});
 		
@@ -82,6 +82,8 @@
 
 
 	<script>
+
+	const curveType = "chordal";
 	
 	const records = [];
 
@@ -110,7 +112,7 @@
 
 		let normalizeCurve = (points) => {
 			let curve = new THREE.CatmullRomCurve3(points);
-			curve.curveType = "catmullrom";
+			curve.curveType = curveType;
 
 			let newPoints = [];
 			let t = 0;
@@ -151,11 +153,11 @@
 		
 		let animate = () => { // animate camera
 			let posCurve = new THREE.CatmullRomCurve3(normalizeCurve(positions));
-			posCurve.curveType = "catmullrom"; // "centripetal"
-			posCurve.tension = 0.5;
+			posCurve.curveType = curveType; // "centripetal"
+			//posCurve.tension = 0.5;
 			let targetCurve = new THREE.CatmullRomCurve3(normalizeCurve(targets));
-			targetCurve.curveType = "catmullrom";
-			targetCurve.tension = 0.5;
+			targetCurve.curveType = curveType;
+			//targetCurve.tension = 0.5;
 
 			let animationDuration = 5 * 1000;
 			//let easing = TWEEN.Easing.Quartic.Out;
@@ -196,7 +198,7 @@
 			// let n = length / 
 
 			let curve = new THREE.CatmullRomCurve3(positions);
-			curve.curveType = "chordal";
+			curve.curveType = curveType;
 
 			let newPositions = [];
 			let t = 0;
@@ -232,7 +234,7 @@
 			}
 
 			curve = new THREE.CatmullRomCurve3(newPositions);
-			curve.curveType = "chordal";
+			curve.curveType = curveType;
 
 
 			let points = [];
@@ -261,7 +263,7 @@
 			viewer.scene.scene.add(splineObject)
 		}
 
-		//debug();
+		debug();
 		animate();
 	}
 
@@ -274,6 +276,73 @@
 	document.getElementById("play").addEventListener("click", play);
 	document.getElementById("reset").addEventListener("click", play);
 	
+	</script>
+
+	<script>
+	
+		const animation = new Potree.CameraAnimation(viewer);
+
+
+		const positions = [
+			[2561604.110, 1205144.614, 506.316],
+			[2561636.659, 1205092.107, 531.116],
+			[2561794.931, 1205133.685, 526.014],
+			[2561766.287, 1205257.661, 504.061],
+		];
+
+		const targets = [
+			[2561661.3826, 1205205.354, 499.103],
+			[2561688.0231, 1205179.031, 495.643],
+			[2561731.4984, 1205200.228, 496.542],
+			[2561717.1368, 1205228.523, 499.399],
+		];
+
+		for(let i = 0; i < positions.length; i++){
+			const cp = animation.createControlPoint();
+
+			cp.position.set(...positions[i]);
+			cp.target.set(...targets[i]);
+		}
+
+		const frustum = animation.createFrustum();
+		
+		frustum.position.set(2561661.3826, 1205205.354, 499.103);
+		frustum.scale.set(20, 20, 20);
+		viewer.scene.scene.add(frustum);
+		
+	</script>
+
+	<script>
+	
+	viewer.onGUILoaded(() => {
+		
+		let section = $(`
+			<h3 id="menu_meta" class="accordion-header ui-widget"><span>Camera Animation</span></h3>
+			<div class="accordion-content ui-widget pv-menu-list"></div>
+		`);
+		let content = section.last();
+		content.html(`
+		<div class="pv-menu-list">
+			<span>Time: </span><span id="lblTime"></span> <div id="sldTime"></div>
+		</div>
+		`);
+
+		content.find('#sldTime').slider({
+			value: 0,
+			min: 0,
+			max: 1,
+			step: 0.001,
+			slide: (event, ui) => { 
+				console.log(ui.value);
+			}
+		});
+
+
+		section.first().click(() => content.slideToggle());
+		section.insertBefore($('#menu_about'));
+		
+	});
+
 	</script>
 	
 	

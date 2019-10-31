@@ -206,10 +206,16 @@ $(document).ready(function () {
     playbarhtml.find("#download_lanes_button").click(function() {
 
       function download(text, filename) {
-        //let blob = new Blob(text)
+
+        let blob = new Blob([text], {
+          type: "data:text/plain;charset=utf-8"
+        })
+
+        let fileUrl = URL.createObjectURL(blob)
 
         var element = document.createElement('a');
-        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+        //element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+        element.setAttribute('href', fileUrl)
         element.setAttribute('download', filename);
 
         element.style.display = 'none';

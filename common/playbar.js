@@ -214,7 +214,6 @@ $(document).ready(function () {
         let fileUrl = URL.createObjectURL(blob)
 
         var element = document.createElement('a');
-        //element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
         element.setAttribute('href', fileUrl)
         element.setAttribute('download', filename);
 

@@ -142,12 +142,12 @@ export class LasLazBatcher{
 			let indices = new Uint8Array(e.data.indices);
 
 			geometry.addAttribute('position', new THREE.BufferAttribute(positions, 3));
-			geometry.addAttribute('color', new THREE.BufferAttribute(colors, 4, true));
+			geometry.addAttribute('RGBA', new THREE.BufferAttribute(colors, 4, true));
 			geometry.addAttribute('intensity', new THREE.BufferAttribute(intensities, 1));
 			geometry.addAttribute('classification', new THREE.BufferAttribute(classifications, 1));
-			geometry.addAttribute('returnNumber', new THREE.BufferAttribute(returnNumbers, 1));
-			geometry.addAttribute('numberOfReturns', new THREE.BufferAttribute(numberOfReturns, 1));
-			geometry.addAttribute('pointSourceID', new THREE.BufferAttribute(pointSourceIDs, 1));
+			geometry.addAttribute('return number', new THREE.BufferAttribute(returnNumbers, 1));
+			geometry.addAttribute('number of returns', new THREE.BufferAttribute(numberOfReturns, 1));
+			geometry.addAttribute('source id', new THREE.BufferAttribute(pointSourceIDs, 1));
 			geometry.addAttribute('indices', new THREE.BufferAttribute(indices, 4));
 			geometry.attributes.indices.normalized = true;
 

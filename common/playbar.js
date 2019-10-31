@@ -206,6 +206,8 @@ $(document).ready(function () {
     playbarhtml.find("#download_lanes_button").click(function() {
 
       function download(text, filename) {
+        //let blob = new Blob(text)
+
         var element = document.createElement('a');
         element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
         element.setAttribute('download', filename);
@@ -220,8 +222,14 @@ $(document).ready(function () {
 
       // Download Left Lane Vertices:
       try {
-        const laneLeft = window.viewer.scene.scene.getChildByName("Left Lane Segments");
-        download(JSON.stringify(laneLeft.getFinalPoints(), null, 2), "lane-left.json");
+        const laneLeftSegments = window.viewer.scene.scene.getChildByName("Left Lane Segments");
+        if (laneLeftSegments == undefined) {
+          const laneLeft = window.viewer.scene.scene.getChildByName("Lane Left");
+          download(JSON.stringify(laneLeft.points, null, 2), "lane-left.json");
+        } else {
+          download(JSON.stringify(laneLeftSegments.getFinalPoints(), null, 2), "lane-left.json");
+        }
+        
       } catch (e) {
         console.error("Couldn't download left lane vertices: ", e);
       }
@@ -236,10 +244,15 @@ $(document).ready(function () {
 
       // Download Right Lane Vertices:
       try {
-        const laneRight = window.viewer.scene.scene.getChildByName("Right Lane Segments");
-        download(JSON.stringify(laneRight.getFinalPoints(), null, 2), "lane-right.json", "text/plain");
+        const laneRightSegments = window.viewer.scene.scene.getChildByName("Right Lane Segments");
+        if (laneRightSegments == undefined) {
+          const laneRight = window.viewer.scene.scene.getChildByName("Lane Right");
+          download(JSON.stringify(laneRight.points, null, 2), "lane-right.json", "text/plain");
+        } else {
+          download(JSON.stringify(laneRightSegments.getFinalPoints(), null, 2), "lane-right.json", "text/plain");
+        }
       } catch (e) {
-        console.error("Couldn't download left lane vertices: ", e);
+        console.error("Couldn't download right lane vertices: ", e);
       }
 
 

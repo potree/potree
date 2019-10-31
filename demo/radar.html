@@ -157,7 +157,7 @@
 		const names = JSON.parse(params.get("names"));
 		const name = params.get("clicked");
 		const visualizationMode = params.get("mode");
-		const annotateLanesAvailable = params.get('annotate') == 'Annotate';
+		const annotateLanesAvailable = true; //params.get('annotate') == 'Annotate';
 		const downloadLanesAvailable = annotateLanesAvailable;
 		const accessKeyId = params.get("key1");
 		const secretAccessKey = params.get("key2");

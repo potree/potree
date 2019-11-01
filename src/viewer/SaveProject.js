@@ -39,6 +39,37 @@ function createVolumeData(volume){
 	return data;
 }
 
+function createCameraAnimationData(animation){
+
+	// const controlPoints = [];
+
+	// for(const cp of animation.controlPoints){
+	// 	const cpdata = {};
+
+	// 	control
+	// }
+
+	const controlPoints = animation.controlPoints.map( cp => {
+		const cpdata = {
+			position: cp.position.toArray(),
+			target: cp.target.toArray(),
+		};
+
+		return cpdata;
+	});
+
+	const data = {
+		name: animation.name,
+		duration: animation.duration,
+		t: animation.t,
+		curveType: animation.curveType,
+		visible: animation.visible,
+		controlPoints: controlPoints,
+	};
+
+	return data;
+}
+
 function createMeasurementData(measurement){
 	const data = {
 		name: measurement.name,
@@ -203,6 +234,7 @@ export function createSaveData(viewer) {
 		pointclouds: scene.pointclouds.map(createPointcloudData),
 		measurements: scene.measurements.map(createMeasurementData),
 		volumes: scene.volumes.map(createVolumeData),
+		cameraAnimations: scene.cameraAnimations.map(createCameraAnimationData),
 		profiles: scene.profiles.map(createProfileData),
 		annotations: createAnnotationsData(viewer),
 		objects: createSceneContentData(viewer),

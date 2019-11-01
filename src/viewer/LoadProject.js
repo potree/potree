@@ -2,6 +2,7 @@
 
 import {Annotation} from "../Annotation.js";
 import {Measure} from "../utils/Measure.js";
+import {CameraAnimation} from "../modules/CameraAnimation/CameraAnimation.js";
 
 function loadPointCloud(viewer, data){
 
@@ -56,6 +57,27 @@ function loadVolume(viewer, data){
 	volume.clip = data.clip;
 
 	viewer.scene.addVolume(volume);
+}
+
+function loadCameraAnimation(viewer, data){
+
+	const animation = new CameraAnimation(viewer);
+
+	animation.name = data.name;
+	animation.duration = data.duration;
+	animation.t = data.t;
+	animation.curveType = data.curveType;
+	animation.visible = data.visible;
+	animation.controlPoints = [];
+
+	for(const cpdata of data.controlPoints){
+		const cp = animation.createControlPoint();
+
+		cp.position.set(...cpdata.position);
+		cp.target.set(...cpdata.target);
+	}
+
+	viewer.scene.addCameraAnimation(animation);
 }
 
 function loadSettings(viewer, data){
@@ -153,6 +175,10 @@ export function loadSaveData(viewer, data){
 
 	for(const volume of data.volumes){
 		loadVolume(viewer, volume);
+	}
+
+	for(const animation of data.cameraAnimations){
+		loadCameraAnimation(viewer, animation);
 	}
 
 	for(const profile of data.profiles){

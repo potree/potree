@@ -40,9 +40,6 @@
 
 	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
 		<div id="potree_render_area">
-			<input type="button" id="record" value="record" style="position: absolute; bottom: 10px; left: 10px; z-index: 1000">
-			<input type="button" id="play" value="play" style="position: absolute; bottom: 10px; left: 100px; z-index: 1000">
-			<input type="button" id="reset" value="reset" style="position: absolute; bottom: 10px; left: 200px; z-index: 1000">
 		</div>
 		<div id="potree_sidebar_container"> </div>
 	</div>
@@ -80,204 +77,6 @@
 		
 	</script>
 
-
-	<script>
-
-	const curveType = "chordal";
-	
-	const records = [];
-
-	function record(){
-
-		const camera = viewer.scene.getActiveCamera();
-		const record = camera.clone();
-
-		// [r85] workaround because camera.clone() doesn't work on rotation
-		record.rotation.set(...camera.rotation.toArray()); 
-		record.rotation.order = camera.rotation.order;
-
-		records.push(record);
-
-		console.log("current camera recorded");
-	}
-
-	function play(){
-		console.log("playing recorded");
-
-		let positions = records.map(r => r.position);
-		let directions = records.map(r => r.getWorldDirection());
-		let targets = positions.map( (pos, i) => {
-			return pos.clone().add(directions[i].clone().multiplyScalar(100));
-		});
-
-		let normalizeCurve = (points) => {
-			let curve = new THREE.CatmullRomCurve3(points);
-			curve.curveType = curveType;
-
-			let newPoints = [];
-			let t = 0;
-			let step = 0.01;
-			let targetDist = 1;
-			let failedTries = 0;
-			newPoints.push(curve.getPoint(0));
-			while(t < 1){
-				
-				let previous = newPoints[newPoints.length - 1];
-
-				let newT = t + step;
-				let newPoint = curve.getPoint(newT);
-				let newDist = newPoint.distanceTo(previous);
-				let percentageOff = newDist / targetDist;
- 
-				while(Math.abs(percentageOff - 1) > 0.1){
-					newPoint = curve.getPoint(newT);
-					newDist = newPoint.distanceTo(previous);
-					percentageOff = newDist / targetDist;
-
-					if(Math.abs(percentageOff - 1) < 0.1){
-						break;
-					}
-					
-					let u = 1 / (1 + (percentageOff - 1) / 4);
-					
-					newT = t + (newT - t) * u;
-				}
-
-				newPoints.push(newPoint);
-				t = newT;
-			}
-
-			return newPoints;
-		};
-
-		
-		let animate = () => { // animate camera
-			let posCurve = new THREE.CatmullRomCurve3(normalizeCurve(positions));
-			posCurve.curveType = curveType; // "centripetal"
-			//posCurve.tension = 0.5;
-			let targetCurve = new THREE.CatmullRomCurve3(normalizeCurve(targets));
-			targetCurve.curveType = curveType;
-			//targetCurve.tension = 0.5;
-
-			let animationDuration = 5 * 1000;
-			//let easing = TWEEN.Easing.Quartic.Out;
-			let easing = TWEEN.Easing.Linear.None;
-
-			let value = {x: 0};
-			let tween = new TWEEN.Tween(value).to({x: 1}, animationDuration);
-			tween.easing(easing);
-
-			tween.onUpdate(() => {
-				let t = value.x;
-				
-				let position = posCurve.getPoint(t);
-				let target = targetCurve.getPoint(t);
-				
-				viewer.scene.view.position.copy(position);
-				viewer.scene.view.lookAt(target);
-				
-			});
-
-			tween.start()
-		}
-
-		let debug = () => {
-			if(typeof splineObject !== "undefined"){
-				viewer.scene.scene.remove(splineObject);
-			}
-
-			let sg = new THREE.SphereGeometry();
-			var sm = new THREE.MeshNormalMaterial();
-
-			const tStart = performance.now();
-
-			let length = 0;
-			for(let i = 1; i < positions.length; i++){
-				length += positions[i].distanceTo(positions[i - 1]);
-			}
-			// let n = length / 
-
-			let curve = new THREE.CatmullRomCurve3(positions);
-			curve.curveType = curveType;
-
-			let newPositions = [];
-			let t = 0;
-			let step = 0.01;
-			let targetDist = 1;
-			let failedTries = 0;
-			newPositions.push(curve.getPoint(0));
-			while(t < 1){
-				
-				let previous = newPositions[newPositions.length - 1];
-
-				let newT = t + step;
-				let newPoint = curve.getPoint(newT);
-				let newDist = newPoint.distanceTo(previous);
-				let percentageOff = newDist / targetDist;
- 
-				while(Math.abs(percentageOff - 1) > 0.1){
-					newPoint = curve.getPoint(newT);
-					newDist = newPoint.distanceTo(previous);
-					percentageOff = newDist / targetDist;
-
-					if(Math.abs(percentageOff - 1) < 0.1){
-						break;
-					}
-					
-					let u = 1 / (1 + (percentageOff - 1) / 4);
-					
-					newT = t + (newT - t) * u;
-				}
-
-				newPositions.push(newPoint);
-				t = newT;
-			}
-
-			curve = new THREE.CatmullRomCurve3(newPositions);
-			curve.curveType = curveType;
-
-
-			let points = [];
-
-			for(let i = 0; i <= 50; i++){
-				let t = i / 50;
-				
-				let point = curve.getPoint(t);
-
-				var s = new THREE.Mesh(sg, sm);
-				s.position.copy(point);
-				viewer.scene.scene.add(s);
-				
-				points.push(point);	
-			}
-
-			const tEnd = performance.now();
-			const duration = (tEnd - tStart).toFixed(3);
-			console.log(duration);
-
-			var geometry = new THREE.BufferGeometry().setFromPoints( points );
-
-			var material = new THREE.LineBasicMaterial( { color : 0xff0000 } );
-			var splineObject = new THREE.Line( geometry, material );
-
-			viewer.scene.scene.add(splineObject)
-		}
-
-		debug();
-		animate();
-	}
-
-	function reset(){
-		records.length = 0;
-	}
-
-
-	document.getElementById("record").addEventListener("click", record);
-	document.getElementById("play").addEventListener("click", play);
-	document.getElementById("reset").addEventListener("click", play);
-	
-	</script>
-
 	<script>
 	
 		const animation = new Potree.CameraAnimation(viewer);
@@ -304,44 +103,140 @@
 			cp.target.set(...targets[i]);
 		}
 
-		const frustum = animation.createFrustum();
-		
-		frustum.position.set(2561661.3826, 1205205.354, 499.103);
-		frustum.scale.set(20, 20, 20);
-		viewer.scene.scene.add(frustum);
-		
+		viewer.scene.addCameraAnimation(animation);
+
+
 	</script>
 
 	<script>
 	
-	viewer.onGUILoaded(() => {
+	// viewer.onGUILoaded(() => {
 		
-		let section = $(`
-			<h3 id="menu_meta" class="accordion-header ui-widget"><span>Camera Animation</span></h3>
-			<div class="accordion-content ui-widget pv-menu-list"></div>
-		`);
-		let content = section.last();
-		content.html(`
-		<div class="pv-menu-list">
-			<span>Time: </span><span id="lblTime"></span> <div id="sldTime"></div>
-		</div>
-		`);
+	// 	let section = $(`
+	// 		<h3 id="menu_meta" class="accordion-header ui-widget"><span>Camera Animation</span></h3>
+	// 		<div class="accordion-content ui-widget pv-menu-list"></div>
+	// 	`);
+	// 	let content = section.last();
+	// 	content.html(`
+	// 	<div class="pv-menu-list">
 
-		content.find('#sldTime').slider({
-			value: 0,
-			min: 0,
-			max: 1,
-			step: 0.001,
-			slide: (event, ui) => { 
-				console.log(ui.value);
-			}
-		});
+	// 		<span id="animation_keyframes"></span>
+
+	// 		<span>
+	// 			<span>Time: </span><span id="lblTime"></span> <div id="sldTime"></div>
+
+	// 			<input name="play" type="button" value="play"/>
+	// 		</span>
+	// 	</div>
+	// 	`);
+
+	// 	const elPlay = content.find("input[name=play]");
+	// 	elPlay.click( () => {
+	// 		animation.play();
+	// 	});
+
+	// 	const elSlider = content.find('#sldTime');
+	// 	elSlider.slider({
+	// 		value: 0,
+	// 		min: 0,
+	// 		max: 1,
+	// 		step: 0.001,
+	// 		slide: (event, ui) => { 
+	// 			animation.set(ui.value);
+	// 		}
+	// 	});
+
+	// 	const elKeyframes = content.find("#animation_keyframes");
+
+	// 	const updateKeyframes = () => {
+	// 		elKeyframes.empty();
+
+	// 		let index = 0;
+
+	// 		const addNewKeyframeItem = (index) => {
+	// 			let elNewKeyframe = $(`
+	// 				<div style="display: flex; margin: 0.2em 0em">
+						
+	// 					<span style="flex-grow: 0;">
+	// 						<img name="add" src="${Potree.resourcePath}/icons/add.svg" style="width: 1.5em; height: 1.5em"/>
+	// 					</span>
+	// 					<span style="flex-grow: 1"></span>
+	// 				</div>
+	// 			`);
+
+	// 			const elAdd = elNewKeyframe.find("img[name=add]");
+	// 			elAdd.click( () => {
+	// 				animation.createControlPoint(index);
+	// 			});
+
+	// 			elKeyframes.append(elNewKeyframe);
+	// 		};
+
+	// 		const addKeyframeItem = (index) => {
+	// 			let elKeyframe = $(`
+	// 				<div style="display: flex; margin: 0.2em 0em">
+	// 					<span style="flex-grow: 0;">
+	// 						<img name="assign" src="${Potree.resourcePath}/icons/assign.svg" style="width: 1.5em; height: 1.5em"/>
+	// 					</span>
+	// 					<span style="flex-grow: 0;">
+	// 						<img name="move" src="${Potree.resourcePath}/icons/circled_dot.svg" style="width: 1.5em; height: 1.5em"/>
+	// 					</span>
+	// 					<span style="flex-grow: 0; width: 1.5em; height: 1.5em"></span>
+	// 					<span style="flex-grow: 0; font-size: 1.5em">keyframe</span>
+	// 					<span style="flex-grow: 1"></span>
+	// 					<span style="flex-grow: 0;">
+	// 						<img name="delete" src="${Potree.resourcePath}/icons/remove.svg" style="width: 1.5em; height: 1.5em"/>
+	// 					</span>
+	// 				</div>
+	// 			`);
+
+	// 			const elAssign = elKeyframe.find("img[name=assign]");
+	// 			const elMove = elKeyframe.find("img[name=move]");
+	// 			const elDelete = elKeyframe.find("img[name=delete]");
+
+	// 			elAssign.click( () => {
+	// 				const cp = animation.controlPoints[index];
+
+	// 				cp.position.copy(viewer.scene.view.position);
+	// 				cp.target.copy(viewer.scene.view.getPivot());
+	// 			});
+
+	// 			elMove.click( () => {
+	// 				const cp = animation.controlPoints[index];
+
+	// 				viewer.scene.view.position.copy(cp.position);
+	// 				viewer.scene.view.lookAt(cp.target);
+	// 			});
+
+	// 			elDelete.click( () => {
+	// 				const cp = animation.controlPoints[index];
+	// 				animation.removeControlPoint(cp);
+	// 			});
+
+	// 			elKeyframes.append(elKeyframe);
+	// 		};
+
+	// 		addNewKeyframeItem(index);
+
+	// 		for(const cp of animation.controlPoints){
+				
+	// 			addKeyframeItem(index);
+	// 			index++;
+	// 			addNewKeyframeItem(index);
+
+	// 		}
+	// 	};
+
+	// 	updateKeyframes();
+
+	// 	animation.addEventListener("controlpoint_added", updateKeyframes);
+	// 	animation.addEventListener("controlpoint_removed", updateKeyframes);
 
 
-		section.first().click(() => content.slideToggle());
-		section.insertBefore($('#menu_about'));
+	// 	section.first().click(() => content.slideToggle());
+	// 	section.insertBefore($('#menu_about'));
 		
-	});
+	// });
 
 	</script>
 	

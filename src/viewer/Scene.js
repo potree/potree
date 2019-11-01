@@ -31,6 +31,7 @@ export class Scene extends EventDispatcher{
 		this.profiles = [];
 		this.volumes = [];
 		this.polygonClipVolumes = [];
+		this.cameraAnimations = [];
 		
 		this.fpControls = null;
 		this.orbitControls = null;
@@ -144,6 +145,28 @@ export class Scene extends EventDispatcher{
 				'type': 'volume_removed',
 				'scene': this,
 				'volume': volume
+			});
+		}
+	};
+
+	addCameraAnimation(animation) {
+		this.cameraAnimations.push(animation);
+		this.dispatchEvent({
+			'type': 'camera_animation_added',
+			'scene': this,
+			'animation': animation
+		});
+	};
+
+	removeCameraAnimation(animation){
+		let index = this.cameraAnimations.indexOf(volume);
+		if (index > -1) {
+			this.cameraAnimations.splice(index, 1);
+
+			this.dispatchEvent({
+				'type': 'camera_animation_removed',
+				'scene': this,
+				'animation': animation
 			});
 		}
 	};

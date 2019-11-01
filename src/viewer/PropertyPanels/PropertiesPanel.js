@@ -6,6 +6,7 @@ import {Annotation} from "../../Annotation.js";
 import {Measure} from "../../utils/Measure.js";
 import {Profile} from "../../utils/Profile.js";
 import {Volume, BoxVolume, SphereVolume} from "../../utils/Volume.js";
+import {CameraAnimation} from "../../modules/CameraAnimation/CameraAnimation.js";
 import {PointSizeType, PointShape, ElevationGradientRepeat} from "../../defines.js";
 import {Gradients} from "../../materials/Gradients.js";
 
@@ -20,6 +21,7 @@ import {VolumePanel} from "./VolumePanel.js";
 import {ProfilePanel} from "./ProfilePanel.js";
 import {CameraPanel} from "./CameraPanel.js";
 import {AnnotationPanel} from "./AnnotationPanel.js";
+import { CameraAnimationPanel } from "./CameraAnimationPanel.js";
 
 export class PropertiesPanel{
 
@@ -56,6 +58,8 @@ export class PropertiesPanel{
 			this.setCamera(object);
 		}else if(object instanceof Annotation){
 			this.setAnnotation(object);
+		}else if(object instanceof CameraAnimation){
+			this.setCameraAnimation(object);
 		}
 		
 	}
@@ -836,6 +840,11 @@ export class PropertiesPanel{
 
 	setAnnotation(annotation){
 		let panel = new AnnotationPanel(this.viewer, this, annotation);
+		this.container.append(panel.elContent);
+	}
+
+	setCameraAnimation(animation){
+		let panel = new CameraAnimationPanel(this.viewer, this, animation)
 		this.container.append(panel.elContent);
 	}
 

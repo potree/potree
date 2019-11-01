@@ -555,17 +555,22 @@ export class Sidebar{
 				let annotationsRoot = $("#jstree_scene").jstree().get_json("annotations");
 				let jsonNode = annotationsRoot.children.find(child => child.data.uuid === annotation.uuid);
 				
-				//let tree = $(`<div id="jstree_scene"></div>`);
-				//tree.jstree("rename_node", jsonNode.id, annotation.title);
-
 				$.jstree.reference(jsonNode.id).rename_node(jsonNode.id, annotation.title);
 			});
+		};
+
+		let onCameraAnimationAdded = (e) => {
+			const animation = e.animation;
+
+			const animationIcon = `${Potree.resourcePath}/icons/annotation.svg`;
+			let annotationID = createNode(otherID, "animation", animationIcon, animation);
 		};
 
 		this.viewer.scene.addEventListener("pointcloud_added", onPointCloudAdded);
 		this.viewer.scene.addEventListener("measurement_added", onMeasurementAdded);
 		this.viewer.scene.addEventListener("profile_added", onProfileAdded);
 		this.viewer.scene.addEventListener("volume_added", onVolumeAdded);
+		this.viewer.scene.addEventListener("camera_animation_added", onCameraAnimationAdded);
 		this.viewer.scene.addEventListener("polygon_clip_volume_added", onVolumeAdded);
 		this.viewer.scene.annotations.addEventListener("annotation_added", onAnnotationAdded);
 
@@ -625,6 +630,9 @@ export class Sidebar{
 			onVolumeAdded({volume: volume});
 		}
 
+		for(let animation of this.viewer.scene.cameraAnimations){
+			onCameraAnimationAdded({animation: animation});
+		}
 
 		for(let profile of this.viewer.scene.profiles){
 			onProfileAdded({profile: profile});

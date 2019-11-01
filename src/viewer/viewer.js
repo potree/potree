@@ -37,7 +37,7 @@ export class Viewer extends EventDispatcher{
 		super();
 
 		this.renderArea = domElement;
-		this.guiLoaded = false;	
+		this.guiLoaded = false;
 		this.guiLoadTasks = [];
 
 		this.vr = null;

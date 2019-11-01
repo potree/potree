@@ -145,6 +145,10 @@ def getLinesFromJson(inputFileLeft, inputFileRight, upsampleValue, verbose):
                 filterer = dists_nn <= laneChangeNNRange
                 dists_nn = dists_nn[filterer]
                 idxs_nn = idxs_nn[filterer]
+                
+                if len(idxs_nn) == 0:
+                    continue
+
                 idxs_nn_min = max(idxs_nn.min()-1, 0)
                 idxs_nn_max = min(idxs_nn.max()+2, len(laneRights))
 

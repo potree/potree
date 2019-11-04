@@ -44,6 +44,14 @@ let workers = {
 	]
 };
 
+// these libs are lazily loaded
+// in order for the lazy loader to find them, independent of the path of the html file,
+// we package them together with potree
+let lazyLibs = {
+	"geopackage": "libs/geopackage",
+	"sql.js": "libs/sql.js"
+};
+
 let shaders = [
 	"src/materials/shaders/pointcloud.vs",
 	"src/materials/shaders/pointcloud.fs",
@@ -365,6 +373,19 @@ gulp.task("workers", async function(done){
 	done();
 });
 
+gulp.task("lazylibs", async function(done){
+
+	for(let libname of Object.keys(lazyLibs)){
+
+		const libpath = lazyLibs[libname];
+
+		gulp.src([`${libpath}/**/*`])
+			.pipe(gulp.dest(`build/potree/lazylibs/${libname}`));
+	}
+
+	done();
+});
+
 gulp.task("shaders", async function(){
 
 	const components = [
@@ -395,7 +416,7 @@ gulp.task("shaders", async function(){
 
 gulp.task('build', 
 	gulp.series(
-		gulp.parallel("workers", "shaders", "icons_viewer", "examples_page"),
+		gulp.parallel("workers", "lazylibs", "shaders", "icons_viewer", "examples_page"),
 		async function(done){
 			gulp.src(paths.html).pipe(gulp.dest('build/potree'));
 

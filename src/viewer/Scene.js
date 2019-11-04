@@ -316,28 +316,28 @@ export class Scene extends EventDispatcher{
 			this.sceneBG.add(bg);
 		}
 
-		//{ // lights
-		//	{
-		//		let light = new THREE.DirectionalLight(0xffffff);
-		//		light.position.set(10, 10, 1);
-		//		light.target.position.set(0, 0, 0);
-		//		this.scene.add(light);
-		//	}
+		// { // lights
+		// 	{
+		// 		let light = new THREE.DirectionalLight(0xffffff);
+		// 		light.position.set(10, 10, 1);
+		// 		light.target.position.set(0, 0, 0);
+		// 		this.scene.add(light);
+		// 	}
 
-		//	{
-		//		let light = new THREE.DirectionalLight(0xffffff);
-		//		light.position.set(-10, 10, 1);
-		//		light.target.position.set(0, 0, 0);
-		//		this.scene.add(light);
-		//	}
+		// 	{
+		// 		let light = new THREE.DirectionalLight(0xffffff);
+		// 		light.position.set(-10, 10, 1);
+		// 		light.target.position.set(0, 0, 0);
+		// 		this.scene.add(light);
+		// 	}
 
-		//	{
-		//		let light = new THREE.DirectionalLight(0xffffff);
-		//		light.position.set(0, -10, 20);
-		//		light.target.position.set(0, 0, 0);
-		//		this.scene.add(light);
-		//	}
-		//}
+		// 	{
+		// 		let light = new THREE.DirectionalLight(0xffffff);
+		// 		light.position.set(0, -10, 20);
+		// 		light.target.position.set(0, 0, 0);
+		// 		this.scene.add(light);
+		// 	}
+		// }
 	}
 	
 	addAnnotation(position, args = {}){		

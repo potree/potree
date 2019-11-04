@@ -148,6 +148,41 @@ export class EDLRenderer{
 		this.clearTargets();
 	}
 
+	renderShadowMap(visiblePointClouds, camera, lights){
+
+		const {viewer} = this;
+
+		const doShadows = lights.length > 0 && !(lights[0].disableShadowUpdates);
+		if(doShadows){
+			let light = lights[0];
+
+			this.shadowMap.setLight(light);
+
+			let originalAttributes = new Map();
+			for(let pointcloud of viewer.scene.pointclouds){
+				// TODO IMPORTANT !!! check
+				originalAttributes.set(pointcloud, pointcloud.material.activeAttributeName);
+				pointcloud.material.disableEvents();
+				pointcloud.material.activeAttributeName = "depth";
+				//pointcloud.material.pointColorType = PointColorType.DEPTH;
+			}
+
+			this.shadowMap.render(viewer.scene.scenePointCloud, camera);
+
+			for(let pointcloud of visiblePointClouds){
+				let originalAttribute = originalAttributes.get(pointcloud);
+				// TODO IMPORTANT !!! check
+				pointcloud.material.activeAttributeName = originalAttribute;
+				pointcloud.material.enableEvents();
+			}
+
+			viewer.shadowTestCam.updateMatrixWorld();
+			viewer.shadowTestCam.matrixWorldInverse.getInverse(viewer.shadowTestCam.matrixWorld);
+			viewer.shadowTestCam.updateProjectionMatrix();
+		}
+
+	}
+
 	render(params){
 		this.initEDL();
 
@@ -178,7 +213,6 @@ export class EDLRenderer{
 			}
 		});
 
-
 		if(viewer.background === "skybox"){
 			viewer.skybox.camera.rotation.copy(viewer.scene.cameraP.rotation);
 			viewer.skybox.camera.fov = viewer.scene.cameraP.fov;
@@ -190,32 +224,7 @@ export class EDLRenderer{
 		} 
 
 		//TODO adapt to multiple lights
-		if(lights.length > 0 && !(lights[0].disableShadowUpdates)){
-			let light = lights[0];
-
-			this.shadowMap.setLight(light);
-
-			let originalAttributes = new Map();
-			for(let pointcloud of viewer.scene.pointclouds){
-				// TODO IMPORTANT !!! check
-				//originalAttributes.set(pointcloud, pointcloud.material.pointColorType);
-				//pointcloud.material.disableEvents();
-				//pointcloud.material.pointColorType = PointColorType.DEPTH;
-			}
-
-			this.shadowMap.render(viewer.scene.scenePointCloud, camera);
-
-			for(let pointcloud of visiblePointClouds){
-				let originalAttribute = originalAttributes.get(pointcloud);
-				// TODO IMPORTANT !!! check
-				//pointcloud.material.pointColorType = originalAttribute;
-				pointcloud.material.enableEvents();
-			}
-
-			viewer.shadowTestCam.updateMatrixWorld();
-			viewer.shadowTestCam.matrixWorldInverse.getInverse(viewer.shadowTestCam.matrixWorld);
-			viewer.shadowTestCam.updateProjectionMatrix();
-		}
+		this.renderShadowMap(visiblePointClouds, camera, lights);
 
 		{ // COLOR & DEPTH PASS
 			for (let pointcloud of visiblePointClouds) {

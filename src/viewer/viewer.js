@@ -1329,21 +1329,27 @@ export class Viewer extends EventDispatcher{
 			return false;
 		}
 
-		let frameData = new VRFrameData();
-		let displays = await navigator.getVRDisplays();
+		try{
+			let frameData = new VRFrameData();
+			let displays = await navigator.getVRDisplays();
 
-		if(displays.length == 0){
-			console.info("no VR display found");
-			return false;
-		}
+			if(displays.length == 0){
+				console.info("no VR display found");
+				return false;
+			}
 
-		let display = displays[displays.length - 1];
-		display.depthNear = 0.1;
-		display.depthFar = 10000.0;
+			let display = displays[displays.length - 1];
+			display.depthNear = 0.1;
+			display.depthFar = 10000.0;
 
-		if(!display.capabilities.canPresent){
-			// Not sure why canPresent would ever be false?
-			console.error("VR display canPresent === false");
+			if(!display.capabilities.canPresent){
+				// Not sure why canPresent would ever be false?
+				console.error("VR display canPresent === false");
+				return false;
+			}
+		}catch(err){
+			console.error(err);
+
 			return false;
 		}
 
@@ -1495,8 +1501,9 @@ export class Viewer extends EventDispatcher{
 		
 		Potree.pointLoadLimit = Potree.pointBudget * 2;
 
+		const lTarget = camera.position.clone().add(camera.getWorldDirection(new THREE.Vector3()).multiplyScalar(1000));
 		this.scene.directionalLight.position.copy(camera.position);
-		this.scene.directionalLight.lookAt(new THREE.Vector3().addVectors(camera.position, camera.getWorldDirection(new THREE.Vector3())));
+		this.scene.directionalLight.lookAt(lTarget);
 
 
 		for (let pointcloud of visiblePointClouds) {

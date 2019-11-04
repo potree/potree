@@ -1035,10 +1035,6 @@ export class Renderer {
 				let numClipSpheres = (params.clipSpheres && params.clipSpheres.length) ? params.clipSpheres.length : 0;
 				let numClipPolygons = (material.clipPolygons && material.clipPolygons.length) ? material.clipPolygons.length : 0;
 
-				//debugger;
-
-
-
 				let defines = [
 					`#define num_shadowmaps ${shadowMaps.length}`,
 					`#define num_snapshots ${numSnapshots}`,
@@ -1064,9 +1060,6 @@ export class Renderer {
 					}
 
 				}
-
-				//vs = `#define num_shadowmaps ${shadowMaps.length}\n` + vs;
-				//fs = `#define num_shadowmaps ${shadowMaps.length}\n` + fs;
 
 				let definesString = defines.join("\n");
 

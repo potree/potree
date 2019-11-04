@@ -505,7 +505,7 @@ export class ProfileWindow extends EventDispatcher {
 						const pointClassID = points.data.classification[i];
 						const pointClassValue = classification[pointClassID];
 
-						if(pointClassValue && pointClassValue.w === 0){
+						if(pointClassValue && (!pointClassValue.visible || pointClassValue.color.w === 0)){
 							unfilteredClass = false;
 						}
 					}

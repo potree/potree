@@ -29,8 +29,6 @@
 	<script src="../build/potree/potree.js"></script>
 	<script src="../libs/plasio/js/laslaz.js"></script>
 
-	<script src='../libs/sql.js/sql-wasm.js'></script>
-	<script src='../libs/geopackage/geopackage.js'></script>
 	<script src="../libs/three.js/extra/lines.js"></script>
 	
 	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
@@ -64,6 +62,7 @@
 		viewer.setEDLEnabled(true);
 		viewer.setFOV(60);
 		viewer.setPointBudget(2 * 1000 * 1000);
+		viewer.setPointBudget(1000);
 		
 		viewer.loadGUI(() => {
 			$("#menu_filters").next().show();
@@ -71,7 +70,8 @@
 		});
 		
 		// Sigeom
-		Potree.loadPointCloud("../pointclouds/morro_bay_converted/cloud.js", "CA13", function(e){
+		//Potree.loadPointCloud("../pointclouds/morro_bay_converted/cloud.js", "CA13", function(e){
+		Potree.loadPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/opentopography/CA13_1.4/cloud.js", "CA13", function(e){
 			viewer.scene.addPointCloud(e.pointcloud);
 			e.pointcloud.position.z = 0;
 			let material = e.pointcloud.material;

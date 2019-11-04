@@ -29,8 +29,11 @@ export class GeoPackageLoader{
 
 	static async loadUrl(url, params){
 
-		// Utils.loadScript("../
-
+		await Promise.all([
+			Utils.loadScript(`${Potree.scriptPath}/lazylibs/geopackage/geopackage.js`),
+			Utils.loadScript(`${Potree.scriptPath}/lazylibs/sql.js/sql-wasm.js`),
+		]);
+		
 		const result = await fetch(url);
 		const buffer = await result.arrayBuffer();
 
@@ -43,6 +46,11 @@ export class GeoPackageLoader{
 
 	static async loadBuffer(buffer, params){
 
+		await Promise.all([
+			Utils.loadScript(`${Potree.scriptPath}/lazylibs/geopackage/geopackage.js`),
+			Utils.loadScript(`${Potree.scriptPath}/lazylibs/sql.js/sql-wasm.js`),
+		]);
+
 		params = params || {};
 
 		const resolver = async (resolve) => {
@@ -52,7 +60,8 @@ export class GeoPackageLoader{
 				transform = {forward: () => {}};
 			}
 
-			const SQL = await initSqlJs({ locateFile: filename => "../libs/sql.js/sql-wasm.wasm" });
+			const wasmPath = `${Potree.scriptPath}/lazylibs/sql.js/sql-wasm.wasm`;
+			const SQL = await initSqlJs({ locateFile: filename => wasmPath});
 
 			const u8 = new Uint8Array(buffer);
 

@@ -92,6 +92,8 @@ void main() {
 		gl_FragColor.a = weight;
 		gl_FragColor.xyz = gl_FragColor.xyz * weight;
 	#endif
+
+	//gl_FragColor = vec4(0.0, 0.7, 0.0, 1.0);
 	
 }
 

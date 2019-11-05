@@ -22,6 +22,7 @@ import {VolumeTool} from "../utils/VolumeTool.js";
 
 import {InputHandler} from "../navigation/InputHandler.js";
 import {NavigationCube} from "./NavigationCube.js";
+import {Compass} from "../utils/Compass.js";
 import {OrbitControls} from "../navigation/OrbitControls.js";
 import {FirstPersonControls} from "../navigation/FirstPersonControls.js";
 import {EarthControls} from "../navigation/EarthControls.js";
@@ -93,20 +94,8 @@ export class Viewer extends EventDispatcher{
 		this.edlRadius = 1.4;
 		this.edlOpacity = 1.0;
 		this.useEDL = false;
+		this.description = "";
 
-		// this.classifications = {
-		// 	0:  { visible: true, name: 'never classified'  , color: [0.5,  0.5,  0.5,  1.0] },
-		// 	1:  { visible: true, name: 'unclassified'      , color: [0.5,  0.5,  0.5,  1.0] },
-		// 	2:  { visible: true, name: 'ground'            , color: [0.63, 0.32, 0.18, 1.0] },
-		// 	3:  { visible: true, name: 'low vegetation'    , color: [0.0,  1.0,  0.0,  1.0] },
-		// 	4:  { visible: true, name: 'medium vegetation' , color: [0.0,  0.8,  0.0,  1.0] },
-		// 	5:  { visible: true, name: 'high vegetation'   , color: [0.0,  0.6,  0.0,  1.0] },
-		// 	6:  { visible: true, name: 'building'          , color: [1.0,  0.66, 0.0,  1.0] },
-		// 	7:  { visible: true, name: 'low point(noise)'  , color: [1.0,  0.0,  1.0,  1.0] },
-		// 	8:  { visible: true, name: 'key-point'         , color: [1.0,  0.0,  0.0,  1.0] },
-		// 	9:  { visible: true, name: 'water'             , color: [0.0,  0.0,  1.0,  1.0] },
-		// 	12: { visible: true, name: 'overlap'           , color: [1.0,  1.0,  0.0,  1.0] },
-		// };
 		this.classifications = ClassificationScheme.DEFAULT;
 
 		this.moveSpeed = 10;
@@ -141,6 +130,7 @@ export class Viewer extends EventDispatcher{
 		this.clippingTool =  null;
 		this.transformationTool = null;
 		this.navigationCube = null;
+		this.compass = null;
 		
 		this.skybox = null;
 		this.clock = new THREE.Clock();
@@ -201,6 +191,8 @@ export class Viewer extends EventDispatcher{
 			this.transformationTool = new TransformationTool(this);
 			this.navigationCube = new NavigationCube(this);
 			this.navigationCube.visible = false;
+
+			this.compass = new Compass(this);
 			
 			this.createControls();
 
@@ -395,7 +387,7 @@ export class Viewer extends EventDispatcher{
 
 	getBackground () {
 		return this.background;
-	};
+	}
 
 	setBackground(bg){
 		if (this.background === bg) {
@@ -411,8 +403,15 @@ export class Viewer extends EventDispatcher{
 	}
 
 	setDescription (value) {
-		$('#potree_description')[0].innerHTML = value;
-	};
+		this.description = value;
+		
+		$('#potree_description').html(value);
+		//$('#potree_description').text(value);
+	}
+
+	getDescription(){
+		return this.description;
+	}
 
 	setShowBoundingBox (value) {
 		if (this.showBoundingBox !== value) {
@@ -904,6 +903,34 @@ export class Viewer extends EventDispatcher{
 			pointcloud.material.useOrthographicCamera = mode == CameraMode.ORTHOGRAPHIC;
 		}
 	}
+
+	getProjection(){
+		const pointcloud = this.scene.pointclouds[0];
+
+		if(pointcloud){
+			return pointcloud.projection;
+		}else{
+			return null;
+		}
+	}
+
+	async loadProject(url){
+
+		const response = await fetch(url);
+	
+		const json = await response.json();
+		// const json = JSON.parse(text);
+
+		if(json.type === "Potree"){
+			Potree.loadProject(viewer, json);
+		}
+
+		Potree.loadProject(this, url);
+	}
+
+	saveProject(){
+		return Potree.saveProject(this);
+	}
 	
 	loadSettingsFromURL(){
 		if(Utils.getParameterByName("pointSize")){
@@ -1195,7 +1222,7 @@ export class Viewer extends EventDispatcher{
 						const json = JSON.parse(text);
 
 						if(json.type === "Potree"){
-							Potree.loadSaveData(viewer, json);
+							Potree.loadProject(viewer, json);
 						}
 					}catch(e){
 						console.error("failed to parse the dropped file as JSON");

@@ -16,6 +16,7 @@ function createPointcloudData(pointcloud) {
 
 function createProfileData(profile){
 	const data = {
+		uuid: profile.uuid,
 		name: profile.name,
 		points: profile.points.map(p => p.toArray()),
 		height: profile.height,
@@ -27,6 +28,7 @@ function createProfileData(profile){
 
 function createVolumeData(volume){
 	const data = {
+		uuid: volume.uuid,
 		type: volume.constructor.name,
 		name: volume.name,
 		position: volume.position.toArray(),
@@ -41,14 +43,6 @@ function createVolumeData(volume){
 
 function createCameraAnimationData(animation){
 
-	// const controlPoints = [];
-
-	// for(const cp of animation.controlPoints){
-	// 	const cpdata = {};
-
-	// 	control
-	// }
-
 	const controlPoints = animation.controlPoints.map( cp => {
 		const cpdata = {
 			position: cp.position.toArray(),
@@ -59,6 +53,7 @@ function createCameraAnimationData(animation){
 	});
 
 	const data = {
+		uuid: animation.uuid,
 		name: animation.name,
 		duration: animation.duration,
 		t: animation.t,
@@ -71,7 +66,9 @@ function createCameraAnimationData(animation){
 }
 
 function createMeasurementData(measurement){
+
 	const data = {
+		uuid: measurement.uuid,
 		name: measurement.name,
 		points: measurement.points.map(p => p.position.toArray()),
 		showDistances: measurement.showDistances,
@@ -87,7 +84,9 @@ function createMeasurementData(measurement){
 }
 
 function createAnnotationData(annotation){
+
 	const data = {
+		uuid: annotation.uuid,
 		title: annotation.title,
 		description: annotation.description,
 		position: annotation.position.toArray(),
@@ -211,9 +210,6 @@ function createViewData(viewer){
 }
 
 function createClassificationData(viewer){
-
-	//const data = {};
-
 	const classifications = viewer.classifications;
 
 	const data = classifications;
@@ -221,7 +217,7 @@ function createClassificationData(viewer){
 	return data;
 }
 
-export function createSaveData(viewer) {
+export function saveProject(viewer) {
 
 	const scene = viewer.scene;
 

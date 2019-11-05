@@ -319,7 +319,7 @@ export class Sidebar{
 			let elDownloadPotree = elExport.find("img[name=potree_export_button]").parent();
 			elDownloadPotree.click( (event) => {
 
-				let data = Potree.createSaveData(this.viewer);
+				let data = Potree.saveProject(this.viewer);
 				let dataString = JSON.stringify(data, null, "\t")
 
 				let url = window.URL.createObjectURL(new Blob([dataString], {type: 'data:application/octet-stream'}));
@@ -1334,13 +1334,21 @@ export class Sidebar{
 			() => { this.viewer.fitToScreen(); }
 		));
 
-
-		
 		elNavigation.append(this.createToolIcon(
 			Potree.resourcePath + "/icons/navigation_cube.svg",
 			"[title]tt.navigation_cube_control",
 			() => {this.viewer.toggleNavigationCube()}
 		));
+
+		elNavigation.append(this.createToolIcon(
+			Potree.resourcePath + "/images/compas.svg",
+			"Compass",
+			() => {
+				const visible = !this.viewer.compass.isVisible();
+				this.viewer.compass.setVisible(visible);
+			}
+		));
+
 
 		elNavigation.append("<br>");
 

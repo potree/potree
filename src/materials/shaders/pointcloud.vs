@@ -814,23 +814,23 @@ void main() {
 
 
 	// CLIPPING
-	// doClipping();
+	doClipping();
 
-	// #if defined(num_clipspheres) && num_clipspheres > 0
-	// 	for(int i = 0; i < num_clipspheres; i++){
-	// 		vec4 sphereLocal = uClipSpheres[i] * mvPosition;
+	#if defined(num_clipspheres) && num_clipspheres > 0
+		for(int i = 0; i < num_clipspheres; i++){
+			vec4 sphereLocal = uClipSpheres[i] * mvPosition;
 
-	// 		float distance = length(sphereLocal.xyz);
+			float distance = length(sphereLocal.xyz);
 
-	// 		if(distance < 1.0){
-	// 			float w = distance;
-	// 			vec3 cGradient = texture2D(gradient, vec2(w, 1.0 - w)).rgb;
+			if(distance < 1.0){
+				float w = distance;
+				vec3 cGradient = texture2D(gradient, vec2(w, 1.0 - w)).rgb;
 				
-	// 			vColor = cGradient;
-	// 			//vColor = cGradient * 0.7 + vColor * 0.3;
-	// 		}
-	// 	}
-	// #endif
+				vColor = cGradient;
+				//vColor = cGradient * 0.7 + vColor * 0.3;
+			}
+		}
+	#endif
 
 	#if defined(num_shadowmaps) && num_shadowmaps > 0
 

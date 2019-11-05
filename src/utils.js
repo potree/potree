@@ -911,7 +911,7 @@ export class Utils {
 			const llP1 = transform.forward(p1.toArray());
 			const llP2 = transform.forward(p2.toArray());
 			const dir = [llP2[0] - llP1[0], llP2[1] - llP1[1]];
-			const azimuth = -Math.atan2(dir[1], dir[0]) - Math.PI / 2;
+			const azimuth = Math.atan2(dir[1], dir[0]) - Math.PI / 2;
 
 			return azimuth;
 		}else{
@@ -946,6 +946,65 @@ export class Utils {
 				document.body.appendChild(script);
 			}
 		});
+	}
+
+	static createSvgGradient(scheme){
+
+		// this is what we are creating:
+		//
+		//<svg width="1em" height="3em"  xmlns="http://www.w3.org/2000/svg">
+		//	<defs>
+		//		<linearGradient id="gradientID" gradientTransform="rotate(90)">
+		//		<stop offset="0%"  stop-color="rgb(93, 78, 162)" />
+		//		...
+		//		<stop offset="100%"  stop-color="rgb(157, 0, 65)" />
+		//		</linearGradient>
+		//	</defs>
+		//	
+		//	<rect width="100%" height="100%" fill="url('#myGradient')" stroke="black" stroke-width="0.1em"/>
+		//</svg>
+
+
+		const gradientId = `${Math.random()}_${Date.now()}`;
+		
+		const svgn = "http://www.w3.org/2000/svg";
+		const svg = document.createElementNS(svgn, "svg");
+		svg.setAttributeNS(null, "width", "2em");
+		svg.setAttributeNS(null, "height", "3em");
+		
+		{ // <defs>
+			const defs = document.createElementNS(svgn, "defs");
+			
+			const linearGradient = document.createElementNS(svgn, "linearGradient");
+			linearGradient.setAttributeNS(null, "id", gradientId);
+			linearGradient.setAttributeNS(null, "gradientTransform", "rotate(90)");
+
+			for(let i = scheme.length - 1; i >= 0; i--){
+				const stopVal = scheme[i];
+				const percent = parseInt(100 - stopVal[0] * 100);
+				const [r, g, b] = stopVal[1].toArray().map(v => parseInt(v * 255));
+
+				const stop = document.createElementNS(svgn, "stop");
+				stop.setAttributeNS(null, "offset", `${percent}%`);
+				stop.setAttributeNS(null, "stop-color", `rgb(${r}, ${g}, ${b})`);
+
+				linearGradient.appendChild(stop);
+			}
+
+			defs.appendChild(linearGradient);
+			svg.appendChild(defs);
+		}
+
+		const rect = document.createElementNS(svgn, "rect");
+		rect.setAttributeNS(null, "width", `100%`);
+		rect.setAttributeNS(null, "height", `100%`);
+		rect.setAttributeNS(null, "fill", `url("#${gradientId}")`);
+		rect.setAttributeNS(null, "stroke", `black`);
+		rect.setAttributeNS(null, "stroke-width", `0.1em`);
+
+		svg.appendChild(rect);
+		
+		return svg;
 	}
 
 }

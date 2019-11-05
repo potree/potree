@@ -29,10 +29,7 @@
 	<script src="../libs/jstree/jstree.js"></script>
 	<script src="../build/potree/potree.js"></script>
 	<script src="../libs/plasio/js/laslaz.js"></script>
-	
-	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
-	<!-- INCLUDE SETTINGS HERE -->
-	
+
 	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
 		<div id="potree_render_area" style="background-image: url('../build/potree/resources/images/background.jpg');"></div>
 		<div id="potree_sidebar_container"> </div>
@@ -42,36 +39,16 @@
 	
 		window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
 		
-		viewer.setEDLEnabled(true);
-		viewer.setFOV(60);
-		viewer.setPointBudget(5 * 1000 * 1000);
-		viewer.loadSettingsFromURL();
-		
-		viewer.setDescription("");
+		viewer.setDescription("Potree projects that were exported (Scene → Export → Potree) can be loaded with viewer.loadProject(url). ");
 		
 		viewer.loadGUI(() => {
 			viewer.setLanguage('en');
-			//$("#menu_appearance").next().show();
-			//$("#menu_tools").next().show();
-			$("#menu_scene").next().show();
-			$("#menu_filters").next().show();
+			$("#menu_tools").next().show();
+			$("#menu_clipping").next().show();
 			viewer.toggleSidebar();
 		});
 		
-		// Sigeom
-		Potree.loadPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/opentopography/CA13_1.4/cloud.js", "CA13", function(e){
-			viewer.scene.addPointCloud(e.pointcloud);
-			e.pointcloud.position.z = 0;
-			let material = e.pointcloud.material;
-			material.size = 1;
-			material.pointSizeType = Potree.PointSizeType.FIXED;
-			material.activeAttributeName = "classification";
-			
-			viewer.scene.view.position.set(694991.9150582966, 3916274.3733733483, 76.41774609890476);
-			viewer.scene.view.lookAt(694878.4097257275, 3916332.0674868184, 14.497470898558227);
-
-			//viewer.fitToScreen();
-		});
+		viewer.loadProject("./resources/sorvilier.json");
 		
 	</script>
 	

@@ -36,15 +36,6 @@
 //	print(rgb)
 
 let Gradients = {
-	RAINBOW: [
-		[0, new THREE.Color(0.278, 0, 0.714)],
-		[1 / 6, new THREE.Color(0, 0, 1)],
-		[2 / 6, new THREE.Color(0, 1, 1)],
-		[3 / 6, new THREE.Color(0, 1, 0)],
-		[4 / 6, new THREE.Color(1, 1, 0)],
-		[5 / 6, new THREE.Color(1, 0.64, 0)],
-		[1, new THREE.Color(1, 0, 0)]
-	],
 	// From chroma spectral http://gka.github.io/chroma.js/
 	SPECTRAL: [
 		[0, new THREE.Color(0.3686, 0.3098, 0.6353)],
@@ -135,6 +126,15 @@ let Gradients = {
 		[0.87, new THREE.Color(0.92105, 0.31489, 0.05475)],
 		[0.93, new THREE.Color(0.81608, 0.18462, 0.01809)],
 		[1.00, new THREE.Color(0.66449, 0.08436, 0.00424)],
+	],
+	RAINBOW: [
+		[0, new THREE.Color(0.278, 0, 0.714)],
+		[1 / 6, new THREE.Color(0, 0, 1)],
+		[2 / 6, new THREE.Color(0, 1, 1)],
+		[3 / 6, new THREE.Color(0, 1, 0)],
+		[4 / 6, new THREE.Color(1, 1, 0)],
+		[5 / 6, new THREE.Color(1, 0.64, 0)],
+		[1, new THREE.Color(1, 0, 0)]
 	],
 	CONTOUR: [
 		[0.00, new THREE.Color(0, 0, 0)],

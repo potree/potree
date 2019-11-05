@@ -26,8 +26,14 @@ function loadPointCloud(viewer, data){
 
 function loadMeasurement(viewer, data){
 
+	const duplicate = viewer.scene.measurements.find(measure => measure.uuid === data.uuid);
+	if(duplicate){
+		return;
+	}
+
 	const measure = new Measure();
 
+	measure.uuid = data.uuid;
 	measure.name = data.name;
 	measure.showDistances = data.showDistances;
 	measure.showCoordinates = data.showCoordinates;
@@ -47,8 +53,15 @@ function loadMeasurement(viewer, data){
 }
 
 function loadVolume(viewer, data){
+
+	const duplicate = viewer.scene.volumes.find(volume => volume.uuid === data.uuid);
+	if(duplicate){
+		return;
+	}
+
 	let volume = new Potree[data.type];
 
+	volume.uuid = data.uuid;
 	volume.name = data.name;
 	volume.position.set(...data.position);
 	volume.rotation.set(...data.rotation);
@@ -61,8 +74,14 @@ function loadVolume(viewer, data){
 
 function loadCameraAnimation(viewer, data){
 
+	const duplicate = viewer.scene.cameraAnimations.find(a => a.uuid === data.uuid);
+	if(duplicate){
+		return;
+	}
+
 	const animation = new CameraAnimation(viewer);
 
+	animation.uuid = data.uuid;
 	animation.name = data.name;
 	animation.duration = data.duration;
 	animation.t = data.t;
@@ -93,7 +112,6 @@ function loadSettings(viewer, data){
 	viewer.setBackground(data.background);
 	viewer.setMinNodeSize(data.minNodeSize);
 	viewer.setShowBoundingBox(data.showBoundingBoxes);
-
 }
 
 function loadView(viewer, view){
@@ -102,11 +120,13 @@ function loadView(viewer, view){
 }
 
 function loadAnnotationItem(item){
+
 	const annotation = new Annotation({
 		position: item.position,
 		title: item.title,
 	});
 
+	annotation.uuid = item.uuid;
 	annotation.offset.set(...item.offset);
 
 	return annotation;
@@ -120,9 +140,19 @@ function loadAnnotations(viewer, data){
 
 	const {items, hierarchy} = data;
 
-	const annotations = items.map(loadAnnotationItem);
+	const existingAnnotations = [];
+	viewer.scene.annotations.traverseDescendants(annotation => {
+		existingAnnotations.push(annotation);
+	});
 
-	for(const annotation of annotations){
+	for(const item of items){
+
+		const duplicate = existingAnnotations.find(ann => ann.uuid === item.uuid);
+		if(duplicate){
+			continue;
+		}
+
+		const annotation = loadAnnotationItem(item);
 		viewer.scene.annotations.add(annotation);
 	}
 
@@ -130,16 +160,24 @@ function loadAnnotations(viewer, data){
 
 function loadProfile(viewer, data){
 	
-	// const {name, points} = data;
+	const {name, points} = data;
 
-	// let profile = new Potree.Profile();
-	// profile.name = "Elevation Profile";
-	// profile.setWidth(6)
-	// profile.addMarker(new THREE.Vector3(2561699.409, 1205164.310, 478.648));
-	// profile.addMarker(new THREE.Vector3(2561659.311, 1205242.101, 491.235));
+	const duplicate = viewer.scene.profiles.find(profile => profile.uuid === data.uuid);
+	if(duplicate){
+		return;
+	}
+
+	let profile = new Potree.Profile();
+	profile.name = name;
+	profile.uuid = data.uuid;
+
+	profile.setWidth(data.width);
+
+	for(const point of points){
+		profile.addMarker(new THREE.Vector3(...point));
+	}
 	
-	// viewer.scene.addProfile(profile);
-
+	viewer.scene.addProfile(profile);
 }
 
 function loadClassification(viewer, data){
@@ -153,8 +191,7 @@ function loadClassification(viewer, data){
 	
 }
 
-
-export function loadSaveData(viewer, data){
+export function loadProject(viewer, data){
 
 	if(data.type !== "Potree"){
 		console.error("not a valid Potree project");
@@ -188,5 +225,4 @@ export function loadSaveData(viewer, data){
 	loadAnnotations(viewer, data.annotations);
 
 	loadClassification(viewer, data.classification);
-
 }

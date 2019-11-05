@@ -194,7 +194,7 @@ export class PropertiesPanel{
 
 					<li>
 						<span>Gradient Scheme:</span>
-						<div id="elevation_gradient_scheme_selection" style="display: flex">
+						<div id="elevation_gradient_scheme_selection" style="display: flex; padding: 1em 0em">
 						</div>
 					</li>
 				</div>
@@ -359,6 +359,11 @@ export class PropertiesPanel{
 
 			options.push(...attributes.map(a => a.name));
 
+			const intensityIndex = options.indexOf("intensity");
+			if(intensityIndex >= 0){
+				options.splice(intensityIndex + 1, 0, "intensity gradient");
+			}
+
 			options.push(
 				"elevation",
 				"color",
@@ -386,7 +391,9 @@ export class PropertiesPanel{
 
 				const attribute = pointcloud.getAttribute(selectedValue);
 
-				if(attribute !== null && attribute.name === "intensity"){
+				const isIntensity = attribute !== null 
+					&& (attribute.name === "intensity" || attribute.name === "intensity gradient");
+				if(isIntensity){
 					if(pointcloud.material.intensityRange[0] === Infinity){
 						pointcloud.material.intensityRange = attribute.range;
 					}
@@ -458,7 +465,7 @@ export class PropertiesPanel{
 					blockColor.css('display', 'block');
 				} else if (selectedValue === 'intensity') {
 					blockIntensity.css('display', 'block');
-				} else if (selectedValue === 'Intensity Gradient') {
+				} else if (selectedValue === 'intensity gradient') {
 					blockIntensity.css('display', 'block');
 				} else if (selectedValue === "indices" ){
 					blockIndex.css('display', 'block');
@@ -486,22 +493,20 @@ export class PropertiesPanel{
 		}
 
 		{
-			let schemes = [
-				{name: "SPECTRAL", icon: `${Potree.resourcePath}/icons/gradients_spectral.png`},
-				{name: "YELLOW_GREEN", icon: `${Potree.resourcePath}/icons/gradients_yellow_green.png`},
-				{name: "PLASMA", icon: `${Potree.resourcePath}/icons/gradients_plasma.png`},
-				{name: "GRAYSCALE", icon: `${Potree.resourcePath}/icons/gradients_grayscale.png`},
-				{name: "RAINBOW", icon: `${Potree.resourcePath}/icons/gradients_rainbow.png`},
-			];
+			const schemes = Object.keys(Potree.Gradients).map(name => ({name: name, values: Gradients[name]}));
 
 			let elSchemeContainer = panel.find("#elevation_gradient_scheme_selection");
 
 			for(let scheme of schemes){
 				let elScheme = $(`
 					<span style="flex-grow: 1;">
-						<img src="${scheme.icon}" class="button-icon" style="max-width: 100%" />
 					</span>
 				`);
+
+				const svg = Potree.Utils.createSvgGradient(scheme.values);
+				svg.setAttributeNS(null, "class", `button-icon`);
+
+				elScheme.append($(svg));
 
 				elScheme.click( () => {
 					material.gradient = Gradients[scheme.name];

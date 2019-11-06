@@ -42,6 +42,7 @@ export class Viewer extends EventDispatcher{
 		this.guiLoadTasks = [];
 
 		this.vr = null;
+		this.onVrListeners = [];
 
 		this.messages = [];
 		this.elMessages = $(`
@@ -1348,6 +1349,16 @@ export class Viewer extends EventDispatcher{
 		
 	}
 
+	onVr(callback){
+
+		if(this.vr){
+			callback();
+		}else{
+			this.onVrListeners.push(callback);
+		}
+
+	}
+
 	async prepareVR(){
 
 		if(!navigator.getVRDisplays){
@@ -1374,17 +1385,21 @@ export class Viewer extends EventDispatcher{
 				console.error("VR display canPresent === false");
 				return false;
 			}
+
+			this.vr = {
+				frameData: frameData,
+				display: display,
+				node: new THREE.Object3D(),
+			};
+
+			for(const listener of this.onVrListeners){
+				listener();
+			}
 		}catch(err){
 			console.error(err);
 
 			return false;
 		}
-
-		this.vr = {
-			frameData: frameData,
-			display: display,
-			node: new THREE.Object3D(),
-		};
 		
 	}
 

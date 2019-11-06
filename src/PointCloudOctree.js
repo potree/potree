@@ -643,6 +643,81 @@ export class PointCloudOctree extends PointCloudTree {
 		return this.visibleBounds.applyMatrix4(this.matrixWorld);
 	};
 
+	intersectsPoint(position){
+
+		let rootAvailable = this.pcoGeometry.root && this.pcoGeometry.root.geometry;
+
+		if(!rootAvailable){
+			return false;
+		}
+
+		if(typeof this.signedDistanceField === "undefined"){
+
+			const resolution = 32;
+			const field = new Float32Array(resolution ** 3).fill(Infinity);
+
+			const positions = this.pcoGeometry.root.geometry.attributes.position;
+			const boundingBox = this.boundingBox;
+
+			const n = positions.count;
+
+			for(let i = 0; i < n; i = i + 3){
+				const x = positions.array[3 * i + 0];
+				const y = positions.array[3 * i + 1];
+				const z = positions.array[3 * i + 2];
+
+				const ix = parseInt(Math.min(resolution * (x / boundingBox.max.x), resolution - 1));
+				const iy = parseInt(Math.min(resolution * (y / boundingBox.max.y), resolution - 1));
+				const iz = parseInt(Math.min(resolution * (z / boundingBox.max.z), resolution - 1));
+
+				const index = ix + iy * resolution + iz * resolution * resolution;
+
+				field[index] = 0;
+			}
+
+			const sdf = {
+				resolution: resolution,
+				field: field,
+			};
+
+			this.signedDistanceField = sdf;
+		}
+
+
+		{
+			const sdf = this.signedDistanceField;
+			const boundingBox = this.boundingBox;
+
+			const toObjectSpace = new THREE.Matrix4().getInverse(this.matrixWorld);
+
+			const objPos = position.clone().applyMatrix4(toObjectSpace);
+
+			const resolution = sdf.resolution;
+			const ix = parseInt(resolution * (objPos.x / boundingBox.max.x));
+			const iy = parseInt(resolution * (objPos.y / boundingBox.max.y));
+			const iz = parseInt(resolution * (objPos.z / boundingBox.max.z));
+
+			if(ix < 0 || iy < 0 || iz < 0){
+				return false;
+			}
+			if(ix >= resolution || iy >= resolution || iz >= resolution){
+				return false;
+			}
+
+			const index = ix + iy * resolution + iz * resolution * resolution;
+
+			const value = sdf.field[index];
+
+			if(value === 0){
+				return true;
+			}
+
+		}
+
+		return false;
+
+	}
+
 	/**
 	 *
 	 *

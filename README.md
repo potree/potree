@@ -73,15 +73,15 @@ We would like to thank our sponsors for their financial contributions that keep 
 		<td>
 			<a href="http://rapidlasso.com">
 				<img src="./docs/sponsors/rapidlasso_square_256x2561.png" width="150" height="150"/>
-			</a>
+			</a> &nbsp;
 			<a href="http://www.synth3d.co">
 				<img src="docs/sponsors/synth.png" height="120"/>
-			</a>
+			</a> &nbsp;
 			<a href="http://www.geocue.com">
 				<img src="docs/sponsors/geocue.png" height="120px"/>
-			</a>
+			</a> &nbsp;
 			<a href="http://www.ne.ch/autorites/DDTE/SGRF/SITN/Pages/accueil.aspx">
-				<img src="docs/sponsors/sitn_logo.png" height="120px"/> &nbsp;
+				<img src="docs/sponsors/sitn_logo.png" height="80px"/> &nbsp;
 			</a>
 		</td>
 	</tr>

@@ -60,16 +60,76 @@ Copy the converted directory into &lt;potreeDirectory&gt;/pointclouds/data_conve
 
 Take a look at the [potree showcase](http://potree.org/wp/demo/) for some live examples.
 
-## Compatibility
+## Donations
 
-| Browser              | OS      | Result        |   |
-| -------------------- |:-------:|:-------------:|:-:|
-| Chrome 64            | Win10   | works         |   |
-| Firefox 58           | Win10   | works         |   |
-| Edge                 | Win10   | not supported |   |
-| Internet Explorer 11 | Win7    | not supported |   |
-| Chrome               | Android | works         | Reduced functionality due to unsupported WebGL extensions |
-| Opera                | Android | works         | Reduced functionality due to unsupported WebGL extensions |
+We would like to thank our sponsors for their financial contributions that keep this project up and running!
+
+<table>
+	<tr>
+		<th>
+			Diamond<br>
+			€ 15,000+
+		</th>
+		<td>
+			<a href="http://rapidlasso.com">
+				<img src="./docs/sponsors/rapidlasso_square_256x2561.png" width="150" height="150"/>
+			</a>
+			<a href="http://www.synth3d.co">
+				<img src="docs/sponsors/synth.png" height="120"/>
+			</a>
+			<a href="http://www.geocue.com">
+				<img src="docs/sponsors/geocue.png" height="120"/>
+			</a>
+		</td>
+	</tr>
+	<tr>
+		<th>
+			Gold<br>
+			€ 10,000+
+		</th>
+		<td>
+			<a href="https://www.bart.gov">
+				<img src="docs/sponsors/bart.png" height="100"/>
+			</a>
+		</td>
+	</tr>
+	<tr>
+		<th>
+			Silver<br>
+			€ 5,000+
+		</th>
+		<td>
+			<a href="http://georepublic.info">
+				<img src="docs/sponsors/georepublic.png" height="40"/>
+			</a>
+		</td>
+	</tr>
+	<tr>
+		<th>
+			Bronze<br>
+			€ 1,000+
+		</th>
+		<td>
+			<a href="http://www.kts.co.jp">
+				<img src="docs/sponsors/kts.png" height="40"/> &nbsp;
+			</a>
+			<a href="http://veesus.com">
+				<img src="docs/sponsors/veesus_small.png" height="40"/> &nbsp;
+			</a>
+			<a href="http://www.sigeom.ch">
+				<img src="docs/sponsors/logo_sigeom.png" height="40"/> &nbsp;
+			</a>
+			<a href="http://www.ne.ch/autorites/DDTE/SGRF/SITN/Pages/accueil.aspx">
+				<img src="docs/sponsors/sitn_logo.png" height="40"/> &nbsp;
+			</a>
+			<a href="http://archpro.lbg.ac.at">
+				<img src="docs/sponsors/archpro_EN_small.png" height="40"/> 
+			</a> &nbsp;
+		</td>
+	</tr>
+</table>
+
+
 
 ## Credits
 

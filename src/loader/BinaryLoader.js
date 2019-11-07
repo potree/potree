@@ -1,6 +1,5 @@
 
 
-import {PointAttributeNames} from "./PointAttributes.js";
 import {Version} from "../Version.js";
 import {XHRFactory} from "../XHRFactory.js";
 

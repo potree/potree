@@ -5,7 +5,6 @@ import {Points} from "../Points.js";
 import {CSVExporter} from "../exporter/CSVExporter.js";
 import {LASExporter} from "../exporter/LASExporter.js";
 import { EventDispatcher } from "../EventDispatcher.js";
-import { EILSEQ } from "constants";
 
 class ProfilePointCloudEntry{
 

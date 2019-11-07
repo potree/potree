@@ -1,5 +1,6 @@
 
 import { EventDispatcher } from "../../EventDispatcher.js";
+import { Utils } from "../../utils.js";
 
 class ControlPoint{
 
@@ -43,6 +44,56 @@ export class CameraAnimation extends EventDispatcher{
 
 		this.createUpdateHook();
 		this.createPath();
+	}
+
+	static defaultFromView(viewer){
+		const animation = new CameraAnimation(viewer);
+
+		const camera = viewer.scene.getActiveCamera();
+		const target = viewer.scene.view.getPivot();
+
+		const cpCenter = new THREE.Vector3(
+			0.3 * camera.position.x + 0.7 * target.x,
+			0.3 * camera.position.y + 0.7 * target.y,
+			0.3 * camera.position.z + 0.7 * target.z,
+		);
+
+		const targetCenter = new THREE.Vector3(
+			0.05 * camera.position.x + 0.95 * target.x,
+			0.05 * camera.position.y + 0.95 * target.y,
+			0.05 * camera.position.z + 0.95 * target.z,
+		);
+
+		const r = camera.position.distanceTo(target) * 0.3;
+
+		//const dir = target.clone().sub(camera.position).normalize();
+		const angle = Utils.computeAzimuth(camera.position, target);
+
+		const n = 5;
+		for(let i = 0; i < n; i++){
+			let u = 1.5 * Math.PI * (i / n) + angle;
+
+			const dx = r * Math.cos(u);
+			const dy = r * Math.sin(u);
+
+			const cpPos = [
+				cpCenter.x + dx,
+				cpCenter.y + dy,
+				cpCenter.z,
+			];
+
+			const targetPos = [
+				targetCenter.x + dx * 0.1,
+				targetCenter.y + dy * 0.1,
+				targetCenter.z,
+			];
+
+			const cp = animation.createControlPoint();
+			cp.position.set(...cpPos);
+			cp.target.set(...targetPos);
+		}
+
+		return animation;
 	}
 
 	createUpdateHook(){
@@ -119,8 +170,35 @@ export class CameraAnimation extends EventDispatcher{
 
 		const cp = new ControlPoint();
 
-		cp.position.copy(viewer.scene.view.position);
-		cp.target.copy(viewer.scene.view.getPivot());
+
+		if(this.controlPoints.length >= 2 && index === 0){
+			const cp1 = this.controlPoints[0];
+			const cp2 = this.controlPoints[1];
+
+			const dir = cp1.position.clone().sub(cp2.position).multiplyScalar(0.5);
+			cp.position.copy(cp1.position).add(dir);
+
+			const tDir = cp1.target.clone().sub(cp2.target).multiplyScalar(0.5);
+			cp.target.copy(cp1.target).add(tDir);
+		}else if(this.controlPoints.length >= 2 && index === this.controlPoints.length){
+			const cp1 = this.controlPoints[this.controlPoints.length - 2];
+			const cp2 = this.controlPoints[this.controlPoints.length - 1];
+
+			const dir = cp2.position.clone().sub(cp1.position).multiplyScalar(0.5);
+			cp.position.copy(cp1.position).add(dir);
+
+			const tDir = cp2.target.clone().sub(cp1.target).multiplyScalar(0.5);
+			cp.target.copy(cp2.target).add(tDir);
+		}else if(this.controlPoints.length >= 2){
+			const cp1 = this.controlPoints[index - 1];
+			const cp2 = this.controlPoints[index];
+
+			cp.position.copy(cp1.position.clone().add(cp2.position).multiplyScalar(0.5));
+			cp.target.copy(cp1.target.clone().add(cp2.target).multiplyScalar(0.5));
+		}
+
+		// cp.position.copy(viewer.scene.view.position);
+		// cp.target.copy(viewer.scene.view.getPivot());
 
 		cp.positionHandle = this.createHandle(cp.position);
 		cp.targetHandle = this.createHandle(cp.target);
@@ -292,8 +370,15 @@ export class CameraAnimation extends EventDispatcher{
 	}
 
 	at(t){
-		const camPos = this.cameraCurve.getPoint(t);
-		const target = this.targetCurve.getPoint(t);
+		
+		if(t > 1){
+			t = 1;
+		}else if(t < 0){
+			t = 0;
+		}
+
+		const camPos = this.cameraCurve.getPointAt(t);
+		const target = this.targetCurve.getPointAt(t);
 
 		const frame = {
 			position: camPos,

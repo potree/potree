@@ -11,6 +11,7 @@ import {Annotation} from "../Annotation.js"
 import {CameraMode, ClipTask, ClipMethod} from "../defines.js"
 import {ScreenBoxSelectTool} from "../utils/ScreenBoxSelectTool.js"
 import {Utils} from "../utils.js"
+import {CameraAnimation} from "../modules/CameraAnimation/CameraAnimation.js"
 
 import {ZoomableSlider} from "./ZoomableSlider.js"
 
@@ -562,7 +563,7 @@ export class Sidebar{
 		let onCameraAnimationAdded = (e) => {
 			const animation = e.animation;
 
-			const animationIcon = `${Potree.resourcePath}/icons/annotation.svg`;
+			const animationIcon = `${Potree.resourcePath}/icons/camera_animation.svg`;
 			let annotationID = createNode(otherID, "animation", animationIcon, animation);
 		};
 
@@ -1346,6 +1347,16 @@ export class Sidebar{
 			() => {
 				const visible = !this.viewer.compass.isVisible();
 				this.viewer.compass.setVisible(visible);
+			}
+		));
+
+		elNavigation.append(this.createToolIcon(
+			Potree.resourcePath + "/icons/camera_animation.svg",
+			"Camera Animation",
+			() => {
+				const animation = CameraAnimation.defaultFromView(this.viewer);
+
+				viewer.scene.addCameraAnimation(animation);
 			}
 		));
 

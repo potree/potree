@@ -122,12 +122,26 @@ export class View{
 	}
 
 	setView(position, target, duration = 0, callback = null){
+
+		let endPosition = null;
+		if(position instanceof Array){
+			endPosition = new THREE.Vector3(...position);
+		}else if(position instanceof THREE.Vector3){
+			endPosition = position.clone();
+		}
+
+		let endTarget = null;
+		if(target instanceof Array){
+			endTarget = new THREE.Vector3(...target);
+		}else if(target instanceof THREE.Vector3){
+			endTarget = target.clone();
+		}
 		
 		const startPosition = this.position.clone();
 		const startTarget = this.getPivot();
 
-		const endPosition = position.clone();
-		const endTarget = target.clone();
+		//const endPosition = position.clone();
+		//const endTarget = target.clone();
 
 		let easing = TWEEN.Easing.Quartic.Out;
 

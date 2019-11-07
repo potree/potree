@@ -76,20 +76,22 @@ export class CameraAnimationPanel{
 		const updateKeyframes = () => {
 			elKeyframes.empty();
 
-			let index = 0;
+			//let index = 0;
+
+			// <span style="flex-grow: 0;">
+			// 				<img name="add" src="${Potree.resourcePath}/icons/add.svg" style="width: 1.5em; height: 1.5em"/>
+			// 			</span>
 
 			const addNewKeyframeItem = (index) => {
 				let elNewKeyframe = $(`
 					<div style="display: flex; margin: 0.2em 0em">
-						
-						<span style="flex-grow: 0;">
-							<img name="add" src="${Potree.resourcePath}/icons/add.svg" style="width: 1.5em; height: 1.5em"/>
-						</span>
+						<span style="flex-grow: 1"></span>
+						<input type="button" name="add" value="create control point" />
 						<span style="flex-grow: 1"></span>
 					</div>
 				`);
 
-				const elAdd = elNewKeyframe.find("img[name=add]");
+				const elAdd = elNewKeyframe.find("input[name=add]");
 				elAdd.click( () => {
 					animation.createControlPoint(index);
 				});
@@ -140,6 +142,8 @@ export class CameraAnimationPanel{
 
 				elKeyframes.append(elKeyframe);
 			};
+
+			let index = 0;
 
 			addNewKeyframeItem(index);
 

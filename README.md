@@ -78,7 +78,10 @@ We would like to thank our sponsors for their financial contributions that keep 
 				<img src="docs/sponsors/synth.png" height="120"/>
 			</a>
 			<a href="http://www.geocue.com">
-				<img src="docs/sponsors/geocue.png" height="120"/>
+				<img src="docs/sponsors/geocue.png" height="120px"/>
+			</a>
+			<a href="http://www.ne.ch/autorites/DDTE/SGRF/SITN/Pages/accueil.aspx">
+				<img src="docs/sponsors/sitn_logo.png" height="120px"/> &nbsp;
 			</a>
 		</td>
 	</tr>
@@ -118,9 +121,6 @@ We would like to thank our sponsors for their financial contributions that keep 
 			</a>
 			<a href="http://www.sigeom.ch">
 				<img src="docs/sponsors/logo_sigeom.png" height="40"/> &nbsp;
-			</a>
-			<a href="http://www.ne.ch/autorites/DDTE/SGRF/SITN/Pages/accueil.aspx">
-				<img src="docs/sponsors/sitn_logo.png" height="40"/> &nbsp;
 			</a>
 			<a href="http://archpro.lbg.ac.at">
 				<img src="docs/sponsors/archpro_EN_small.png" height="40"/> 

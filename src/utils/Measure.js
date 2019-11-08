@@ -50,7 +50,7 @@ export class Measure extends THREE.Object3D {
 				]);
 
 				let lineMaterial = new THREE.LineMaterial({ 
-					color: 0xff0000, 
+					color: 0x00ff00, 
 					dashSize: 5, 
 					gapSize: 2,
 					linewidth: 2, 

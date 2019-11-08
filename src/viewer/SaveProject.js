@@ -83,6 +83,15 @@ function createMeasurementData(measurement){
 	return data;
 }
 
+function createOrientedImagesData(images){
+	const data = {
+		cameraParamsPath: images.cameraParamsPath,
+		imageParamsPath: images.imageParamsPath,
+	};
+
+	return data;
+}
+
 function createAnnotationData(annotation){
 
 	const data = {
@@ -233,7 +242,8 @@ export function saveProject(viewer) {
 		cameraAnimations: scene.cameraAnimations.map(createCameraAnimationData),
 		profiles: scene.profiles.map(createProfileData),
 		annotations: createAnnotationsData(viewer),
-		objects: createSceneContentData(viewer),
+		orientedImages: scene.orientedImages.map(createOrientedImagesData),
+		// objects: createSceneContentData(viewer),
 	};
 
 	return data;

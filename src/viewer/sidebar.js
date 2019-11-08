@@ -376,12 +376,14 @@ export class Sidebar{
 		let annotationsID = tree.jstree('create_node', "#", { "text": "<b>Annotations</b>", "id": "annotations" }, "last", false, false);
 		let otherID = tree.jstree('create_node', "#", { "text": "<b>Other</b>", "id": "other" }, "last", false, false);
 		let vectorsID = tree.jstree('create_node', "#", { "text": "<b>Vectors</b>", "id": "vectors" }, "last", false, false);
+		let imagesID = tree.jstree('create_node', "#", { "text": "<b> Images</b>", "id": "images" }, "last", false, false);
 
 		tree.jstree("check_node", pcID);
 		tree.jstree("check_node", measurementID);
 		tree.jstree("check_node", annotationsID);
 		tree.jstree("check_node", otherID);
 		tree.jstree("check_node", vectorsID);
+		tree.jstree("check_node", imagesID);
 
 		tree.on('create_node.jstree', (e, data) => {
 			tree.jstree("open_all");
@@ -484,6 +486,16 @@ export class Sidebar{
 					node.boundingBox = box;
 					this.viewer.zoomTo(node, 1, 500);
 				}
+			}else if(object instanceof OrientedImage){
+				// TODO zoom to images
+
+				// let box = new THREE.Box3().setFromObject(object);
+
+				// if(box.getSize(new THREE.Vector3()).length() > 0){
+				// 	let node = new THREE.Object3D();
+				// 	node.boundingBox = box;
+				// 	this.viewer.zoomTo(node, 1, 500);
+				// }
 			}
 		});
 
@@ -564,7 +576,22 @@ export class Sidebar{
 			const animation = e.animation;
 
 			const animationIcon = `${Potree.resourcePath}/icons/camera_animation.svg`;
-			let annotationID = createNode(otherID, "animation", animationIcon, animation);
+			createNode(otherID, "animation", animationIcon, animation);
+		};
+
+		let onOrientedImagesAdded = (e) => {
+			const images = e.images;
+
+			const imagesIcon = `${Potree.resourcePath}/icons/picture.svg`;
+			const node = createNode(imagesID, "images", imagesIcon, images);
+
+			images.addEventListener("visibility_changed", () => {
+				if(images.visible){
+					tree.jstree('check_node', node);
+				}else{
+					tree.jstree('uncheck_node', node);
+				}
+			});
 		};
 
 		this.viewer.scene.addEventListener("pointcloud_added", onPointCloudAdded);
@@ -572,6 +599,7 @@ export class Sidebar{
 		this.viewer.scene.addEventListener("profile_added", onProfileAdded);
 		this.viewer.scene.addEventListener("volume_added", onVolumeAdded);
 		this.viewer.scene.addEventListener("camera_animation_added", onCameraAnimationAdded);
+		this.viewer.scene.addEventListener("oriented_images_added", onOrientedImagesAdded);
 		this.viewer.scene.addEventListener("polygon_clip_volume_added", onVolumeAdded);
 		this.viewer.scene.annotations.addEventListener("annotation_added", onAnnotationAdded);
 
@@ -633,6 +661,10 @@ export class Sidebar{
 
 		for(let animation of this.viewer.scene.cameraAnimations){
 			onCameraAnimationAdded({animation: animation});
+		}
+
+		for(let images of this.viewer.scene.orientedImages){
+			onOrientedImagesAdded({images: images});
 		}
 
 		for(let profile of this.viewer.scene.profiles){

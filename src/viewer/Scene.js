@@ -32,6 +32,7 @@ export class Scene extends EventDispatcher{
 		this.volumes = [];
 		this.polygonClipVolumes = [];
 		this.cameraAnimations = [];
+		this.orientedImages = [];
 		
 		this.fpControls = null;
 		this.orbitControls = null;
@@ -125,7 +126,7 @@ export class Scene extends EventDispatcher{
 			type: 'pointcloud_added',
 			pointcloud: pointcloud
 		});
-	};
+	}
 
 	addVolume (volume) {
 		this.volumes.push(volume);
@@ -134,6 +135,28 @@ export class Scene extends EventDispatcher{
 			'scene': this,
 			'volume': volume
 		});
+	}
+
+	addOrientedImages(images){
+		this.orientedImages.push(images);
+		this.dispatchEvent({
+			'type': 'oriented_images_added',
+			'scene': this,
+			'images': images
+		});
+	};
+
+	removeOrientedImages(images){
+		let index = this.orientedImages.indexOf(images);
+		if (index > -1) {
+			this.orientedImages.splice(index, 1);
+
+			this.dispatchEvent({
+				'type': 'oriented_images_removed',
+				'scene': this,
+				'images': images
+			});
+		}
 	};
 
 	removeVolume (volume) {

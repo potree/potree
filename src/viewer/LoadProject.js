@@ -99,6 +99,21 @@ function loadCameraAnimation(viewer, data){
 	viewer.scene.addCameraAnimation(animation);
 }
 
+function loadOrientedImages(viewer, images){
+
+	const {cameraParamsPath, imageParamsPath} = images;
+
+	const duplicate = viewer.scene.orientedImages.find(i => i.imageParamsPath === imageParamsPath);
+	if(duplicate){
+		return;
+	}
+
+	Potree.OrientedImageLoader.load(cameraParamsPath, imageParamsPath, viewer).then( images => {
+		viewer.scene.addOrientedImages(images);
+	});
+
+}
+
 function loadSettings(viewer, data){
 	if(!data){
 		return;
@@ -188,7 +203,6 @@ function loadClassification(viewer, data){
 	const classifications = data;
 
 	viewer.setClassifications(classifications);
-	
 }
 
 export function loadProject(viewer, data){
@@ -220,6 +234,10 @@ export function loadProject(viewer, data){
 
 	for(const profile of data.profiles){
 		loadProfile(viewer, profile);
+	}
+
+	for(const images of data.orientedImages){
+		loadOrientedImages(viewer, images);
 	}
 
 	loadAnnotations(viewer, data.annotations);

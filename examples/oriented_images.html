@@ -61,7 +61,7 @@
 			viewer.toggleSidebar();
 		});
 		
-		Potree.loadPointCloud("../pointclouds/helimap_epalinges/cloud.js", "epalinges", e => {
+		Potree.loadPointCloud("../pointclouds/C/dev/epalinges/epalinges/als_converted/cloud.js", "epalinges", e => {
 			let scene = viewer.scene;
 			let pointcloud = e.pointcloud;
 			
@@ -81,27 +81,13 @@
 
 	<script>
 
-		const cameraParamsPath = "../pointclouds/helimap_epalinges/images/IXM35_190522_nodistortion.xml";
-		const imageParamsPath = "../pointclouds/helimap_epalinges/images/Calib190522_MN95_NF02_cam.txt";
+		const cameraParamsPath = "../pointclouds/C/dev/epalinges/epalinges/img/IXM35_190522_nodistortion.xml";
+		const imageParamsPath = "../pointclouds/C/dev/epalinges/epalinges/img/Calib190522_MN95_NF02_cam.txt";
 
-		Potree.OrientedImages.load(cameraParamsPath, imageParamsPath, viewer);
-	
-
-		let pfov = 0;
-		let pshx = 0;
-		viewer.addEventListener("update", () => {
-			if(pfov !== viewer.getFOV()){
-				console.log(viewer.getFOV());
-			}
-			pfov = viewer.getFOV();
-
-
-			if(viewer.controls.shear && pshx !== viewer.controls.shear[0]){
-				console.log(viewer.controls.shear);
-				pshx = viewer.controls.shear[0];
-			}
+		Potree.OrientedImageLoader.load(cameraParamsPath, imageParamsPath, viewer).then( images => {
+			viewer.scene.addOrientedImages(images);
 		});
-
+	
 	</script>
 	
 	

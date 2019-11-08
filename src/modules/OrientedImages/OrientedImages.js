@@ -1,65 +1,88 @@
 
 import {TextSprite} from "../../TextSprite.js";
 import {OrientedImageControls} from "./OrientedImageControls.js";
+import { EventDispatcher } from "../../EventDispatcher.js";
 
-export class OrientedImages{
+function createMaterial(){
 
-	static createMaterial(){
-
-		let vertexShader = `
-
-		uniform float uNear;
-
-		varying vec2 vUV;
-		varying vec4 vDebug;
-		
-		void main(){
-			vDebug = vec4(0.0, 1.0, 0.0, 1.0);
-
-			vec4 modelViewPosition = modelViewMatrix * vec4(position, 1.0);
-
-			// make sure that this mesh is at least in front of the near plane
-			modelViewPosition.xyz += normalize(modelViewPosition.xyz) * uNear;
-
-			gl_Position = projectionMatrix * modelViewPosition;
-
-			vUV = uv;
-		}
-
-		`;
-
-		let fragmentShader = `
-
-		uniform sampler2D tColor;
-		uniform float uOpacity;
-
-		varying vec2 vUV;
-		varying vec4 vDebug;
-
-		void main(){
-			vec4 color = texture2D(tColor, vUV);
-			gl_FragColor = color;
-			gl_FragColor.a = uOpacity;
-		}
-
-		`;
-
-		const material = new THREE.ShaderMaterial( {
-			uniforms: {
-				// time: { value: 1.0 },
-				// resolution: { value: new THREE.Vector2() }
-				tColor: {value: new THREE.Texture() },
-				uNear: {value: 0.0},
-				uOpacity: {value: 0.5},
-			},
-			vertexShader: vertexShader,
-			fragmentShader: fragmentShader,
-			side: THREE.DoubleSide,
-		} );
-		material.side = THREE.DoubleSide;
-
-		return material;
+	let vertexShader = `
+	uniform float uNear;
+	varying vec2 vUV;
+	varying vec4 vDebug;
+	
+	void main(){
+		vDebug = vec4(0.0, 1.0, 0.0, 1.0);
+		vec4 modelViewPosition = modelViewMatrix * vec4(position, 1.0);
+		// make sure that this mesh is at least in front of the near plane
+		modelViewPosition.xyz += normalize(modelViewPosition.xyz) * uNear;
+		gl_Position = projectionMatrix * modelViewPosition;
+		vUV = uv;
 	}
+	`;
+
+	let fragmentShader = `
+	uniform sampler2D tColor;
+	uniform float uOpacity;
+	varying vec2 vUV;
+	varying vec4 vDebug;
+	void main(){
+		vec4 color = texture2D(tColor, vUV);
+		gl_FragColor = color;
+		gl_FragColor.a = uOpacity;
+	}
+	`;
+	const material = new THREE.ShaderMaterial( {
+		uniforms: {
+			// time: { value: 1.0 },
+			// resolution: { value: new THREE.Vector2() }
+			tColor: {value: new THREE.Texture() },
+			uNear: {value: 0.0},
+			uOpacity: {value: 0.5},
+		},
+		vertexShader: vertexShader,
+		fragmentShader: fragmentShader,
+		side: THREE.DoubleSide,
+	} );
+	material.side = THREE.DoubleSide;
+	return material;
+}
+
+export class OrientedImages extends EventDispatcher{
+
+	constructor(){
+		super();
+
+		this.cameraParams = null;
+		this.imageParams = null;
+		this.images = null;
+		this._visible = true;
+	}
+
+	set visible(visible){
+		if(this._visible === visible){
+			return;
+		}
+
+		for(const image of this.images){
+			image.mesh.visible = visible;
+			image.line.visible = visible;
+		}
+
+		this._visible = visible;
+		this.dispatchEvent({
+			type: "visibility_changed",
+			images: this,
+		});
+	}
+
+	get visible(){
+		return this._visible;
+	}
+
+
+};
+
+export class OrientedImageLoader{
 
 	static async loadCameraParams(path){
 		const res = await fetch(path);
@@ -72,31 +95,31 @@ export class OrientedImages{
 		const height = parseInt(doc.getElementsByTagName("height")[0].textContent);
 		const f = parseFloat(doc.getElementsByTagName("f")[0].textContent);
 
+		let a = (height / 2)  / f;
+		let fov = 2 * THREE.Math.radToDeg(Math.atan(a))
+
 		const params = {
+			path: path,
 			width: width,
 			height: height,
 			f: f,
+			fov: fov,
 		};
 
 		return params;
 	}
 
-	static async load(cameraParamsPath, imageParamsPath, viewer){
+	static async loadImageParams(path){
 
-		const tStart = performance.now();
-
-		const cameraParams = await OrientedImages.loadCameraParams(cameraParamsPath);
-
-		const response = await fetch(imageParamsPath);
+		const response = await fetch(path);
 		if(!response.ok){
-			console.error(`failed to load ${imageParamsPath}`);
+			console.error(`failed to load ${path}`);
 			return;
 		}
-		const raycaster = new THREE.Raycaster();
+
 		const content = await response.text();
 		const lines = content.split(/\r?\n/);
 		const imageParams = [];
-		const orientedImageControls = new OrientedImageControls(viewer);
 
 		for(let i = 1; i < lines.length; i++){
 			const line = lines[i];
@@ -106,9 +129,6 @@ export class OrientedImages{
 				continue;
 			}
 
-			let a = (cameraParams.height / 2)  / cameraParams.f;
-			let fov = 2 * THREE.Math.radToDeg(Math.atan(a))
-
 			const params = {
 				id: tokens[0],
 				x: Number.parseFloat(tokens[1]),
@@ -117,11 +137,25 @@ export class OrientedImages{
 				omega: Number.parseFloat(tokens[4]),
 				phi: Number.parseFloat(tokens[5]),
 				kappa: Number.parseFloat(tokens[6]),
-				fov: fov,
 			};
 
 			imageParams.push(params);
 		}
+
+		return imageParams;
+	}
+
+	static async load(cameraParamsPath, imageParamsPath, viewer){
+
+		const tStart = performance.now();
+
+		const [cameraParams, imageParams] = await Promise.all([
+			OrientedImageLoader.loadCameraParams(cameraParamsPath),
+			OrientedImageLoader.loadImageParams(imageParamsPath),
+		]);
+
+		const orientedImageControls = new OrientedImageControls(viewer);
+		const raycaster = new THREE.Raycaster();
 
 		const tEnd = performance.now();
 		console.log(tEnd - tStart);
@@ -143,10 +177,8 @@ export class OrientedImages{
 		const orientedImages = [];
 
 		for(const params of imageParams){
-			// const material = new THREE.MeshBasicMaterial({
-			// 	side: THREE.DoubleSide,
-			// });
-			const material = OrientedImages.createMaterial();
+
+			const material = createMaterial();
 			const lm = new THREE.LineBasicMaterial( { color: 0x00ff00 } );
 			const mesh = new THREE.Mesh(sp, material);
 			mesh.position.set(params.x, params.y, params.z);
@@ -160,7 +192,7 @@ export class OrientedImages{
 				mesh.updateMatrixWorld();
 				const dir = mesh.getWorldDirection();
 				const pos = mesh.position;
-				const alpha = THREE.Math.degToRad(params.fov / 2);
+				const alpha = THREE.Math.degToRad(cameraParams.fov / 2);
 				const d = -0.5 / Math.tan(alpha);
 				const move = dir.clone().multiplyScalar(d);
 				mesh.position.add(move);
@@ -236,7 +268,7 @@ export class OrientedImages{
 			
 			if(shouldAddClipVolume || selectionChanged){
 				const img = hoveredElement;
-				const fov = img.params.fov;
+				const fov = cameraParams.fov;
 				const aspect  = cameraParams.width / cameraParams.height;
 				const near = 1.0;
 				const far = 1000 * 1000;
@@ -298,27 +330,24 @@ export class OrientedImages{
 
 				if(hoveredElement.texture === null){
 
-					const tmp = new TextSprite("loading");
+					const target = hoveredElement;
 
-					const aspect = hoveredElement.dimension[0] / hoveredElement.dimension[1];
-
-					tmp.texture.repeat.set(4, 8 / aspect);
-					tmp.texture.wrapS = THREE.RepeatWrapping;
-					tmp.texture.wrapT = THREE.RepeatWrapping;
-
-					hoveredElement.texture = tmp.texture;
-					hoveredElement.mesh.material.map = tmp.texture;
-					mesh.material.needsUpdate = true;
-
-					const imagePath = `${imageParamsPath}/../${hoveredElement.params.id}`;
-					//const imagePath = `${imageParamsPath}/../${hoveredElement.params.id}_CD.jpg`;
-
-					var loadingElement = hoveredElement;
-					const texture = new THREE.TextureLoader().load(imagePath,
+					const tmpImagePath = `${Potree.resourcePath}/images/loading.jpg`;
+					new THREE.TextureLoader().load(tmpImagePath,
 						(texture) => {
-							loadingElement.texture = texture;
-							//loadingElement.mesh.material.map = texture;
-							loadingElement.mesh.material.uniforms.tColor.value = texture;
+							if(target.texture === null){
+								target.texture = texture;
+								target.mesh.material.uniforms.tColor.value = texture;
+								mesh.material.needsUpdate = true;
+							}
+						}
+					);
+
+					const imagePath = `${imageParamsPath}/../${target.params.id}`;
+					new THREE.TextureLoader().load(imagePath,
+						(texture) => {
+							target.texture = texture;
+							target.mesh.material.uniforms.tColor.value = texture;
 							mesh.material.needsUpdate = true;
 						}
 					);
@@ -360,8 +389,14 @@ export class OrientedImages{
 
 		});
 
-		//window.orientedImages = orientedImages;
-	};
+		const images = new OrientedImages();
+		images.cameraParamsPath = cameraParamsPath;
+		images.imageParamsPath = imageParamsPath;
+		images.cameraParams = cameraParams;
+		images.imageParams = imageParams;
+		images.images = orientedImages;
 
+		return images;
+	}
 }
 

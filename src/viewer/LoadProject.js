@@ -41,6 +41,9 @@ function loadMeasurement(viewer, data){
 	measure.closed = data.closed;
 	measure.showAngles = data.showAngles;
 	measure.showHeight = data.showHeight;
+	measure.showCircle = data.showCircle;
+	measure.showAzimuth = data.showAzimuth;
+	measure.showEdges = data.showEdges;
 	// color
 
 	for(const point of data.points){

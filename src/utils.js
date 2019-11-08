@@ -899,7 +899,34 @@ export class Utils {
 		// Potree.Utils.debugCircle(viewer.scene.scene, center, radius, new THREE.Vector3(0, 0, 1), 0xff00ff);
 	}
 
+	static getNorthVec(p1, distance, projection){
+		if(projection){
+			// if there is a projection, transform coordinates to WGS84
+			// and compute angle to north there
+
+			proj4.defs("pointcloud", projection);
+			const transform = proj4("pointcloud", "WGS84");
+
+			const llP1 = transform.forward(p1.toArray());
+			let llP2 = transform.forward([p1.x, p1.y + distance]);
+			const polarRadius = Math.sqrt((llP2[0] - llP1[0]) ** 2 + (llP2[1] - llP1[1]) ** 2);
+			llP2 = [llP1[0], llP1[1] + polarRadius];
+
+			const northVec = transform.inverse(llP2);
+			
+			return new THREE.Vector3(...northVec, p1.z).sub(p1);
+		}else{
+			// if there is no projection, assume [0, 1, 0] as north direction
+
+			const vec = p1.clone.add(new THREE.Vector3(0, 1, 0).multiplyScalar(distance));
+			
+			return vec;
+		}
+	}
+
 	static computeAzimuth(p1, p2, projection){
+
+		let azimuth = 0;
 
 		if(projection){
 			// if there is a projection, transform coordinates to WGS84
@@ -910,19 +937,22 @@ export class Utils {
 
 			const llP1 = transform.forward(p1.toArray());
 			const llP2 = transform.forward(p2.toArray());
-			const dir = [llP2[0] - llP1[0], llP2[1] - llP1[1]];
-			const azimuth = Math.atan2(dir[1], dir[0]) - Math.PI / 2;
-
-			return azimuth;
+			const dir = [
+				llP2[0] - llP1[0],
+				llP2[1] - llP1[1],
+			];
+			azimuth = Math.atan2(dir[1], dir[0]) - Math.PI / 2;
 		}else{
 			// if there is no projection, assume [0, 1, 0] as north direction
 
 			const dir = [p2.x - p1.x, p2.y - p1.y];
-			const azimuth = Math.atan2(dir[1], dir[0]) - Math.PI / 2;
-
-			return azimuth;
+			azimuth = Math.atan2(dir[1], dir[0]) - Math.PI / 2;
 		}
 
+		// make clockwise
+		azimuth = -azimuth;
+
+		return azimuth;
 	}
 
 	static async loadScript(url){

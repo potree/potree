@@ -2,6 +2,279 @@
 import {TextSprite} from "../TextSprite.js";
 import {Utils} from "../utils.js";
 
+function createHeightLine(){
+	let lineGeometry = new THREE.LineGeometry();
+
+	lineGeometry.setPositions([
+		0, 0, 0,
+		0, 0, 0,
+	]);
+
+	let lineMaterial = new THREE.LineMaterial({ 
+		color: 0x00ff00, 
+		dashSize: 5, 
+		gapSize: 2,
+		linewidth: 2, 
+		resolution:  new THREE.Vector2(1000, 1000),
+	});
+
+	lineMaterial.depthTest = false;
+	const heightEdge = new THREE.Line2(lineGeometry, lineMaterial);
+	heightEdge.visible = false;
+
+	//this.add(this.heightEdge);
+	
+	return heightEdge;
+}
+
+function createHeightLabel(){
+	const heightLabel = new TextSprite('');
+
+	heightLabel.setTextColor({r: 140, g: 250, b: 140, a: 1.0});
+	heightLabel.setBorderColor({r: 0, g: 0, b: 0, a: 1.0});
+	heightLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 1.0});
+	heightLabel.fontsize = 16;
+	heightLabel.material.depthTest = false;
+	heightLabel.material.opacity = 1;
+	heightLabel.visible = false;
+
+	return heightLabel;
+}
+
+function createAreaLabel(){
+	const areaLabel = new TextSprite('');
+
+	areaLabel.setTextColor({r: 140, g: 250, b: 140, a: 1.0});
+	areaLabel.setBorderColor({r: 0, g: 0, b: 0, a: 1.0});
+	areaLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 1.0});
+	areaLabel.fontsize = 16;
+	areaLabel.material.depthTest = false;
+	areaLabel.material.opacity = 1;
+	areaLabel.visible = false;
+	
+	return areaLabel;
+}
+
+function createCircleRadiusLabel(){
+	const circleRadiusLabel = new TextSprite("");
+
+	circleRadiusLabel.setTextColor({r: 140, g: 250, b: 140, a: 1.0});
+	circleRadiusLabel.setBorderColor({r: 0, g: 0, b: 0, a: 1.0});
+	circleRadiusLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 1.0});
+	circleRadiusLabel.fontsize = 16;
+	circleRadiusLabel.material.depthTest = false;
+	circleRadiusLabel.material.opacity = 1;
+	circleRadiusLabel.visible = false;
+	
+	return circleRadiusLabel;
+}
+
+function createCircleRadiusLine(){
+	const lineGeometry = new THREE.LineGeometry();
+
+	lineGeometry.setPositions([
+		0, 0, 0,
+		0, 0, 0,
+	]);
+
+	const lineMaterial = new THREE.LineMaterial({ 
+		color: 0xff0000, 
+		linewidth: 2, 
+		resolution:  new THREE.Vector2(1000, 1000),
+		gapSize: 1,
+		dashed: true,
+	});
+
+	lineMaterial.depthTest = false;
+
+	const circleRadiusLine = new THREE.Line2(lineGeometry, lineMaterial);
+	circleRadiusLine.visible = false;
+
+	return circleRadiusLine;
+}
+
+function createCircleLine(){
+	const coordinates = [];
+
+	let n = 128;
+	for(let i = 0; i <= n; i++){
+		let u0 = 2 * Math.PI * (i / n);
+		let u1 = 2 * Math.PI * (i + 1) / n;
+
+		let p0 = new THREE.Vector3(
+			Math.cos(u0), 
+			Math.sin(u0), 
+			0
+		);
+
+		let p1 = new THREE.Vector3(
+			Math.cos(u1), 
+			Math.sin(u1), 
+			0
+		);
+
+		coordinates.push(
+			...p0.toArray(),
+			...p1.toArray(),
+		);
+	}
+
+	const geometry = new THREE.LineGeometry();
+	geometry.setPositions(coordinates);
+
+	const material = new THREE.LineMaterial({ 
+		color: 0xff0000, 
+		dashSize: 5, 
+		gapSize: 2,
+		linewidth: 2, 
+		resolution:  new THREE.Vector2(1000, 1000),
+	});
+
+	material.depthTest = false;
+
+	const circleLine = new THREE.Line2(geometry, material);
+	circleLine.visible = false;
+	circleLine.computeLineDistances();
+
+	return circleLine;
+}
+
+function createCircleCenter(){
+	const sg = new THREE.SphereGeometry(1, 32, 32);
+	const sm = new THREE.MeshNormalMaterial();
+	
+	const circleCenter = new THREE.Mesh(sg, sm);
+	circleCenter.visible = false;
+
+	return circleCenter;
+}
+
+function createLine(){
+	const geometry = new THREE.LineGeometry();
+
+	geometry.setPositions([
+		0, 0, 0,
+		0, 0, 0,
+	]);
+
+	const material = new THREE.LineMaterial({ 
+		color: 0xff0000, 
+		linewidth: 2, 
+		resolution:  new THREE.Vector2(1000, 1000),
+		gapSize: 1,
+		dashed: true,
+	});
+
+	material.depthTest = false;
+
+	const line = new THREE.Line2(geometry, material);
+
+	return line;
+}
+
+function createCircle(){
+
+	const coordinates = [];
+
+	let n = 128;
+	for(let i = 0; i <= n; i++){
+		let u0 = 2 * Math.PI * (i / n);
+		let u1 = 2 * Math.PI * (i + 1) / n;
+
+		let p0 = new THREE.Vector3(
+			Math.cos(u0), 
+			Math.sin(u0), 
+			0
+		);
+
+		let p1 = new THREE.Vector3(
+			Math.cos(u1), 
+			Math.sin(u1), 
+			0
+		);
+
+		coordinates.push(
+			...p0.toArray(),
+			...p1.toArray(),
+		);
+	}
+
+	const geometry = new THREE.LineGeometry();
+	geometry.setPositions(coordinates);
+
+	const material = new THREE.LineMaterial({ 
+		color: 0xff0000, 
+		dashSize: 5, 
+		gapSize: 2,
+		linewidth: 2, 
+		resolution:  new THREE.Vector2(1000, 1000),
+	});
+
+	material.depthTest = false;
+
+	const line = new THREE.Line2(geometry, material);
+	line.computeLineDistances();
+
+	return line;
+
+}
+
+function createAzimuth(){
+
+	const azimuth = {
+		label: null,
+		center: null,
+		target: null,
+		north: null,
+		centerToNorth: null,
+		centerToTarget: null,
+		centerToTargetground: null,
+		targetgroundToTarget: null,
+		circle: null,
+
+		node: null,
+	};
+
+	const sg = new THREE.SphereGeometry(1, 32, 32);
+	const sm = new THREE.MeshNormalMaterial();
+
+	{
+		const label = new TextSprite("");
+
+		label.setTextColor({r: 140, g: 250, b: 140, a: 1.0});
+		label.setBorderColor({r: 0, g: 0, b: 0, a: 1.0});
+		label.setBackgroundColor({r: 0, g: 0, b: 0, a: 1.0});
+		label.fontsize = 16;
+		label.material.depthTest = false;
+		label.material.opacity = 1;
+
+		azimuth.label = label;
+	}
+
+	azimuth.center = new THREE.Mesh(sg, sm);
+	azimuth.target = new THREE.Mesh(sg, sm);
+	azimuth.north = new THREE.Mesh(sg, sm);
+	azimuth.centerToNorth = createLine();
+	azimuth.centerToTarget = createLine();
+	azimuth.centerToTargetground = createLine();
+	azimuth.targetgroundToTarget = createLine();
+	azimuth.circle = createCircle();
+
+	azimuth.node = new THREE.Object3D();
+	azimuth.node.add(
+		azimuth.label,
+		azimuth.center,
+		azimuth.target,
+		azimuth.north,
+		azimuth.centerToNorth,
+		azimuth.centerToTarget,
+		azimuth.centerToTargetground,
+		azimuth.targetgroundToTarget,
+		azimuth.circle,
+	);
+
+	return azimuth;
+}
 
 export class Measure extends THREE.Object3D {
 	constructor () {
@@ -19,12 +292,11 @@ export class Measure extends THREE.Object3D {
 		this._showCircle = false;
 		this._showHeight = false;
 		this._showEdges = true;
+		this._showAzimuth = false;
 		this.maxMarkers = Number.MAX_SAFE_INTEGER;
 
 		this.sphereGeometry = new THREE.SphereGeometry(0.4, 10, 10);
 		this.color = new THREE.Color(0xff0000);
-
-		//this.lengthUnit = {code: 'm'};
 
 		this.spheres = [];
 		this.edges = [];
@@ -32,158 +304,27 @@ export class Measure extends THREE.Object3D {
 		this.edgeLabels = [];
 		this.angleLabels = [];
 		this.coordinateLabels = [];
-		this.areaLabel = null;
-		this.heightLabel = null;
 
-		this.circleRadiusLabel = null;
-		this.circleRadiusLine = null;
-		this.circleLine = null;
-		this.circleCenter = null;
+		this.heightEdge = createHeightLine();
+		this.heightLabel = createHeightLabel();
+		this.areaLabel = createAreaLabel();
+		this.circleRadiusLabel = createCircleRadiusLabel();
+		this.circleRadiusLine = createCircleRadiusLine();
+		this.circleLine = createCircleLine();
+		this.circleCenter = createCircleCenter();
 
-		{ // height stuff
-			{ // height line
-				let lineGeometry = new THREE.LineGeometry();
+		this.azimuth = createAzimuth();
 
-				lineGeometry.setPositions([
-					0, 0, 0,
-					0, 0, 0,
-				]);
+		this.add(this.heightEdge);
+		this.add(this.heightLabel);
+		this.add(this.areaLabel);
+		this.add(this.circleRadiusLabel);
+		this.add(this.circleRadiusLine);
+		this.add(this.circleLine);
+		this.add(this.circleCenter);
 
-				let lineMaterial = new THREE.LineMaterial({ 
-					color: 0x00ff00, 
-					dashSize: 5, 
-					gapSize: 2,
-					linewidth: 2, 
-					resolution:  new THREE.Vector2(1000, 1000),
-				});
+		this.add(this.azimuth.node);
 
-				lineMaterial.depthTest = false;
-				this.heightEdge = new THREE.Line2(lineGeometry, lineMaterial);
-				this.heightEdge.visible = false;
-
-				this.add(this.heightEdge);
-			}
-
-			{ // height label
-				this.heightLabel = new TextSprite('');
-				this.heightLabel.setTextColor({r: 140, g: 250, b: 140, a: 1.0});
-				this.heightLabel.setBorderColor({r: 0, g: 0, b: 0, a: 1.0});
-				this.heightLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 1.0});
-				this.heightLabel.fontsize = 16;
-				this.heightLabel.material.depthTest = false;
-				this.heightLabel.material.opacity = 1;
-				this.heightLabel.visible = false;
-				this.add(this.heightLabel);
-			}
-		}
-
-		{
-			this.areaLabel = new TextSprite('');
-			this.areaLabel.setTextColor({r: 140, g: 250, b: 140, a: 1.0});
-			this.areaLabel.setBorderColor({r: 0, g: 0, b: 0, a: 1.0});
-			this.areaLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 1.0});
-			this.areaLabel.fontsize = 16;
-			this.areaLabel.material.depthTest = false;
-			this.areaLabel.material.opacity = 1;
-			this.areaLabel.visible = false;
-			this.add(this.areaLabel);
-		}
-
-		{ // circle stuff
-
-			{
-				this.circleRadiusLabel = new TextSprite("");
-				this.circleRadiusLabel.setTextColor({r: 140, g: 250, b: 140, a: 1.0});
-				this.circleRadiusLabel.setBorderColor({r: 0, g: 0, b: 0, a: 1.0});
-				this.circleRadiusLabel.setBackgroundColor({r: 0, g: 0, b: 0, a: 1.0});
-				this.circleRadiusLabel.fontsize = 16;
-				this.circleRadiusLabel.material.depthTest = false;
-				this.circleRadiusLabel.material.opacity = 1;
-				this.circleRadiusLabel.visible = false;
-				this.add(this.circleRadiusLabel);
-			}
-
-
-			{
-				const lineGeometry = new THREE.LineGeometry();
-
-				lineGeometry.setPositions([
-					0, 0, 0,
-					0, 0, 0,
-				]);
-
-				//lineGeometry.colors.push(this.color, this.color, this.color);
-				const lineMaterial = new THREE.LineMaterial({ 
-					color: 0xff0000, 
-					linewidth: 2, 
-					resolution:  new THREE.Vector2(1000, 1000),
-					gapSize: 1,
-					dashed: true,
-				});
-
-				lineMaterial.depthTest = false;
-
-				this.circleRadiusLine = new THREE.Line2(lineGeometry, lineMaterial);
-				this.circleRadiusLine.visible = false;
-
-				this.add(this.circleRadiusLine);
-			}
-
-			{
-				const coordinates = [];
-
-				let n = 128;
-				for(let i = 0; i <= n; i++){
-					let u0 = 2 * Math.PI * (i / n);
-					let u1 = 2 * Math.PI * (i + 1) / n;
-
-					let p0 = new THREE.Vector3(
-						Math.cos(u0), 
-						Math.sin(u0), 
-						0
-					);
-
-					let p1 = new THREE.Vector3(
-						Math.cos(u1), 
-						Math.sin(u1), 
-						0
-					);
-
-					coordinates.push(
-						...p0.toArray(),
-						...p1.toArray(),
-					);
-				}
-
-				const geometry = new THREE.LineGeometry();
-				geometry.setPositions(coordinates);
-
-				const material = new THREE.LineMaterial({ 
-					color: 0xff0000, 
-					dashSize: 5, 
-					gapSize: 2,
-					linewidth: 2, 
-					resolution:  new THREE.Vector2(1000, 1000),
-				});
-
-				material.depthTest = false;
-				this.circleLine = new THREE.Line2(geometry, material);
-				this.circleLine.visible = false;
-				this.circleLine.computeLineDistances();
-
-				this.add(this.circleLine);
-			}
-
-			{
-				const sg = new THREE.SphereGeometry(1, 32, 32);
-				const sm = new THREE.MeshNormalMaterial();
-				
-				this.circleCenter = new THREE.Mesh(sg, sm);
-				this.circleCenter.visible = false;
-
-				this.add(this.circleCenter);
-			}
-		}
 	}
 
 	createSphereMaterial () {
@@ -432,7 +573,20 @@ export class Measure extends THREE.Object3D {
 		let next = this.points[(index + 1) % (this.points.length)];
 
 		return this.getAngleBetweenLines(point, previous, next);
-	};
+	}
+
+	// updateAzimuth(){
+	// 	// if(this.points.length !== 2){
+	// 	// 	return;
+	// 	// }
+
+	// 	// const azimuth = this.azimuth;
+
+	// 	// const [p0, p1] = this.points;
+
+	// 	// const r = p0.position.distanceTo(p1.position);
+		
+	// }
 
 	update () {
 		if (this.points.length === 0) {
@@ -661,6 +815,8 @@ export class Measure extends THREE.Object3D {
 			let msg =  `${txtArea} ${suffix}\u00B2`;
 			this.areaLabel.setText(msg);
 		}
+
+		// this.updateAzimuth();
 	};
 
 	raycast (raycaster, intersects) {
@@ -705,6 +861,15 @@ export class Measure extends THREE.Object3D {
 
 	set showCircle (value) {
 		this._showCircle = value;
+		this.update();
+	}
+
+	get showAzimuth(){
+		return this._showAzimuth;
+	}
+
+	set showAzimuth(value){
+		this._showAzimuth = value;
 		this.update();
 	}
 

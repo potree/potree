@@ -163,6 +163,30 @@ export class Sidebar{
 			}
 		));
 
+		// AZIMUTH
+		elToolbar.append(this.createToolIcon(
+			Potree.resourcePath + '/icons/azimuth.svg',
+			'Azimuth',
+			() => {
+				$('#menu_measurements').next().slideDown();
+				let measurement = this.measuringTool.startInsertion({
+					showDistances: false,
+					showHeight: false,
+					showArea: false,
+					showCircle: false,
+					showEdges: false,
+					showAzimuth: true,
+					closed: false,
+					maxMarkers: 2,
+					name: 'Azimuth'});
+
+				let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
+				let jsonNode = measurementsRoot.children.find(child => child.data.uuid === measurement.uuid);
+				$.jstree.reference(jsonNode.id).deselect_all();
+				$.jstree.reference(jsonNode.id).select_node(jsonNode.id);
+			}
+		));
+
 		// AREA
 		elToolbar.append(this.createToolIcon(
 			Potree.resourcePath + '/icons/area.svg',

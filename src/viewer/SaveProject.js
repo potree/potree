@@ -77,6 +77,9 @@ function createMeasurementData(measurement){
 		closed: measurement.closed,
 		showAngles: measurement.showAngles,
 		showHeight: measurement.showHeight,
+		showCircle: measurement.showCircle,
+		showAzimuth: measurement.showAzimuth,
+		showEdges: measurement.showEdges,
 		color: measurement.color.toArray(),
 	};
 

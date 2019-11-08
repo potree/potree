@@ -1,6 +1,4 @@
 
-
-import {PointColorType} from "../defines.js";
 import {PointCloudMaterial} from "../materials/PointCloudMaterial.js";
 import {Utils} from "../utils.js";
 import {Points} from "../Points.js";
@@ -18,7 +16,7 @@ class ProfilePointCloudEntry{
 		let material = ProfilePointCloudEntry.getMaterialInstance();
 		material.uniforms.minSize.value = 2;
 		material.uniforms.maxSize.value = 2;
-		material.pointColorType = PointColorType.RGB;
+		material.activeAttributeName = "RGBA";
 		material.opacity = 1.0;
 
 		this.material = material;
@@ -208,6 +206,21 @@ export class ProfileWindow extends EventDispatcher {
 		this.mouse = new THREE.Vector2(0, 0);
 		this.scale = new THREE.Vector3(1, 1, 1);
 
+		this.autoFitEnabled = true; // completely disable/enable
+		this.autoFit = false; // internal
+
+		let cwIcon = `${exports.resourcePath}/icons/arrow_cw.svg`;
+		$('#potree_profile_rotate_cw').attr('src', cwIcon);
+
+		let ccwIcon = `${exports.resourcePath}/icons/arrow_ccw.svg`;
+		$('#potree_profile_rotate_ccw').attr('src', ccwIcon);
+		
+		let forwardIcon = `${exports.resourcePath}/icons/arrow_up.svg`;
+		$('#potree_profile_move_forward').attr('src', forwardIcon);
+
+		let backwardIcon = `${exports.resourcePath}/icons/arrow_down.svg`;
+		$('#potree_profile_move_backward').attr('src', backwardIcon);
+
 		let csvIcon = `${exports.resourcePath}/icons/file_csv_2d.svg`;
 		$('#potree_download_csv_icon').attr('src', csvIcon);
 
@@ -360,6 +373,7 @@ export class ProfileWindow extends EventDispatcher {
 
 		let onWheel = e => {
 			this.autoFit = false;
+
 			let delta = 0;
 			if (e.wheelDelta !== undefined) { // WebKit / Opera / Explorer 9
 				delta = e.wheelDelta;
@@ -490,7 +504,7 @@ export class ProfileWindow extends EventDispatcher {
 						const pointClassID = points.data.classification[i];
 						const pointClassValue = classification[pointClassID];
 
-						if(pointClassValue && pointClassValue.w === 0){
+						if(pointClassValue && (!pointClassValue.visible || pointClassValue.color.w === 0)){
 							unfilteredClass = false;
 						}
 					}
@@ -541,7 +555,7 @@ export class ProfileWindow extends EventDispatcher {
 		this.renderer.autoClear = true;
 		this.renderArea.append($(this.renderer.domElement));
 		this.renderer.domElement.tabIndex = '2222';
-		this.renderer.context.getExtension('EXT_frag_depth');
+		this.renderer.getContext().getExtension('EXT_frag_depth');
 		$(this.renderer.domElement).css('width', '100%');
 		$(this.renderer.domElement).css('height', '100%');
 
@@ -557,8 +571,17 @@ export class ProfileWindow extends EventDispatcher {
 		let sg = new THREE.SphereGeometry(1, 16, 16);
 		let sm = new THREE.MeshNormalMaterial();
 		this.pickSphere = new THREE.Mesh(sg, sm);
-		//this.pickSphere.visible = false;
 		this.scene.add(this.pickSphere);
+
+		{
+			const sg = new THREE.SphereGeometry(2);
+			const sm = new THREE.MeshNormalMaterial();
+			const s = new THREE.Mesh(sg, sm);
+
+			s.position.set(589530.450, 231398.860, 769.735);
+
+			this.scene.add(s);
+		}
 
 		this.viewerPickSphere = new THREE.Mesh(sg, sm);
 
@@ -643,7 +666,7 @@ export class ProfileWindow extends EventDispatcher {
 		//console.log(this.projectedBox.min.toArray().map(v => v.toFixed(2)).join(", "));
 		//console.log(this.projectedBox.getSize().toArray().map(v => v.toFixed(2)).join(", "));
 
-		if (this.autoFit) { 
+		if (this.autoFit && this.autoFitEnabled) { 
 			let width = this.renderArea[0].clientWidth;
 			let height = this.renderArea[0].clientHeight;
 
@@ -688,7 +711,10 @@ export class ProfileWindow extends EventDispatcher {
 		this.pointclouds.clear();
 		this.mouseIsDown = false;
 		this.mouse.set(0, 0);
-		this.scale.set(1, 1, 1);
+
+		if(this.autoFitEnabled){
+			this.scale.set(1, 1, 1);
+		}
 		this.pickSphere.visible = false;
 
 		this.pointCloudRoot.children = [];
@@ -709,6 +735,7 @@ export class ProfileWindow extends EventDispatcher {
 	}
 
 	updateScales () {
+
 		let width = this.renderArea[0].clientWidth;
 		let height = this.renderArea[0].clientHeight;
 
@@ -789,7 +816,7 @@ export class ProfileWindow extends EventDispatcher {
 			for (let [pointcloud, entry] of this.pointclouds) {
 				let material = entry.material;
 			
-				material.pointColorType = pointcloud.material.pointColorType;
+				material.activeAttributeName = pointcloud.material.activeAttributeName;
 				material.uniforms.uColor = pointcloud.material.uniforms.uColor;
 				material.uniforms.intensityRange.value = pointcloud.material.uniforms.intensityRange.value;
 				material.elevationRange = pointcloud.material.elevationRange;
@@ -810,6 +837,9 @@ export class ProfileWindow extends EventDispatcher {
 				material.uniforms.wReturnNumber.value = pointcloud.material.uniforms.wReturnNumber.value;
 				material.uniforms.wSourceID.value = pointcloud.material.uniforms.wSourceID.value;
 
+				material.classification = pointcloud.material.classification;
+				material.uniforms.classificationLUT.value.image.data = pointcloud.material.uniforms.classificationLUT.value.image.data;
+				material.classificationTexture.needsUpdate = true;
 			}
 
 			this.pickSphere.visible = true;
@@ -830,6 +860,8 @@ export class ProfileWindowController {
 		this.profile = null;
 		this.numPoints = 0;
 		this.threshold = 60 * 1000;
+		this.rotateAmount = 10;
+
 		this.scheduledRecomputeTime = null;
 
 		this.enabled = true;
@@ -843,6 +875,88 @@ export class ProfileWindowController {
 			e.scene.addEventListener("pointcloud_added", this._recompute);
 		});
 		this.viewer.scene.addEventListener("pointcloud_added", this._recompute);
+
+		$("#potree_profile_rotate_amount").val(parseInt(this.rotateAmount));
+		$("#potree_profile_rotate_amount").on("input", (e) => {
+			const str = $("#potree_profile_rotate_amount").val();
+
+			if(!isNaN(str)){
+				const value = parseFloat(str);
+				this.rotateAmount = value;
+				$("#potree_profile_rotate_amount").css("background-color", "")
+			}else{
+				$("#potree_profile_rotate_amount").css("background-color", "#ff9999")
+			}
+
+		});
+
+		const rotate = (radians) => {
+			const profile = this.profile;
+			const points = profile.points;
+			const start = points[0];
+			const end = points[points.length - 1];
+			const center = start.clone().add(end).multiplyScalar(0.5);
+
+			const mMoveOrigin = new THREE.Matrix4().makeTranslation(-center.x, -center.y, -center.z);
+			const mRotate = new THREE.Matrix4().makeRotationZ(radians);
+			const mMoveBack = new THREE.Matrix4().makeTranslation(center.x, center.y, center.z);
+			//const transform = mMoveOrigin.multiply(mRotate).multiply(mMoveBack);
+			const transform = mMoveBack.multiply(mRotate).multiply(mMoveOrigin);
+
+			const rotatedPoints = points.map( point => point.clone().applyMatrix4(transform) );
+
+			this.profileWindow.autoFitEnabled = false;
+
+			for(let i = 0; i < points.length; i++){
+				profile.setPosition(i, rotatedPoints[i]);
+			}
+		}
+
+		$("#potree_profile_rotate_cw").click( () => {
+			const radians = THREE.Math.degToRad(this.rotateAmount);
+			rotate(-radians);
+		});
+
+		$("#potree_profile_rotate_ccw").click( () => {
+			const radians = THREE.Math.degToRad(this.rotateAmount);
+			rotate(radians);
+		});
+
+		$("#potree_profile_move_forward").click( () => {
+			const profile = this.profile;
+			const points = profile.points;
+			const start = points[0];
+			const end = points[points.length - 1];
+
+			const dir = end.clone().sub(start).normalize();
+			const up = new THREE.Vector3(0, 0, 1);
+			const forward = up.cross(dir);
+			const move = forward.clone().multiplyScalar(profile.width / 2);
+
+			this.profileWindow.autoFitEnabled = false;
+
+			for(let i = 0; i < points.length; i++){
+				profile.setPosition(i, points[i].clone().add(move));
+			}
+		});
+
+		$("#potree_profile_move_backward").click( () => {
+			const profile = this.profile;
+			const points = profile.points;
+			const start = points[0];
+			const end = points[points.length - 1];
+
+			const dir = end.clone().sub(start).normalize();
+			const up = new THREE.Vector3(0, 0, 1);
+			const forward = up.cross(dir);
+			const move = forward.clone().multiplyScalar(-profile.width / 2);
+
+			this.profileWindow.autoFitEnabled = false;
+
+			for(let i = 0; i < points.length; i++){
+				profile.setPosition(i, points[i].clone().add(move));
+			}
+		});
 	}
 
 	setProfile (profile) {

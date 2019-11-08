@@ -128,8 +128,9 @@ export class VolumeTool extends EventDispatcher{
 		}
 		
 		let camera = this.viewer.scene.getActiveCamera();
-		let clientWidth = this.viewer.renderer.getSize().width;
-		let clientHeight = this.viewer.renderer.getSize().height;
+		let renderAreaSize = this.viewer.renderer.getSize(new THREE.Vector2());
+		let clientWidth = renderAreaSize.width;
+		let clientHeight = renderAreaSize.height;
 
 		let volumes = this.viewer.scene.volumes;
 		for (let volume of volumes) {
@@ -152,7 +153,15 @@ export class VolumeTool extends EventDispatcher{
 	}
 
 	render(params){
-		this.viewer.renderer.render(this.scene, this.viewer.scene.getActiveCamera(), params.renderTarget);
+		const renderer = this.viewer.renderer;
+
+		const oldTarget = renderer.getRenderTarget();
+		
+		if(params.renderTarget){
+			renderer.setRenderTarget(params.renderTarget);
+		}
+		renderer.render(this.scene, this.viewer.scene.getActiveCamera());
+		renderer.setRenderTarget(oldTarget);
 	}
 
 }

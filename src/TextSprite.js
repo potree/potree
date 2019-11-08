@@ -15,6 +15,8 @@ export class TextSprite extends THREE.Object3D{
 			depthTest: false,
 			depthWrite: false});
 
+		this.texture = texture;
+
 		this.material = spriteMaterial;
 		this.sprite = new THREE.Sprite(spriteMaterial);
 		this.add(this.sprite);
@@ -97,6 +99,7 @@ export class TextSprite extends THREE.Object3D{
 		texture.needsUpdate = true;
 
 		this.sprite.material.map = texture;
+		this.texture = texture;
 
 		this.sprite.scale.set(spriteWidth * 0.01, spriteHeight * 0.01, 1.0);
 	}

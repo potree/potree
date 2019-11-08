@@ -33,67 +33,68 @@ export class EptLaszipLoader {
 		xhr.send(null);
 	}
 
-	parse(node, buffer){
+	async parse(node, buffer){
 		let lf = new LASFile(buffer);
 		let handler = new EptLazBatcher(node);
 
-		lf.open()
-		.then(() => {
+		try{
+			await lf.open();
+
 			lf.isOpen = true;
-			return lf.getHeader();
-		})
-		.then((header) => {
-			let i = 0;
-			let np = header.pointsCount;
 
-			let toArray = (v) => [v.x, v.y, v.z];
-			let mins = toArray(node.key.b.min);
-			let maxs = toArray(node.key.b.max);
+			const header = await lf.getHeader();
 
-			let read = () => {
-				let p = lf.readData(1000000, 0, 1);
-				return p.then(function (data) {
+			{
+				let i = 0;
+
+				let toArray = (v) => [v.x, v.y, v.z];
+				let mins = toArray(node.key.b.min);
+				let maxs = toArray(node.key.b.max);
+
+				let hasMoreData = true;
+
+				while(hasMoreData){
+					const data = await lf.readData(1000000, 0, 1);
+
 					let d = new LASDecoder(
-							data.buffer,
-							header.pointsFormatId,
-							header.pointsStructSize,
-							data.count,
-							header.scale,
-							header.offset,
-							mins,
-							maxs);
+						data.buffer,
+						header.pointsFormatId,
+						header.pointsStructSize,
+						data.count,
+						header.scale,
+						header.offset,
+						mins,
+						maxs);
+
 					d.extraBytes = header.extraBytes;
 					d.pointsFormatId = header.pointsFormatId;
 					handler.push(d);
 
 					i += data.count;
 
-					if (data.hasMoreData) {
-						return read();
-					}
-					else {
-						header.totalRead = i;
-						header.versionAsString = lf.versionAsString;
-						header.isCompressed = lf.isCompressed;
-						return null;
-					}
-				});
-			};
+					hasMoreData = data.hasMoreData;
+				}
 
-			return read();
-		})
-		.then(() => lf.close())
-		.then(() => lf.isOpen = false)
-		.catch((err) => {
-			console.log('Error reading LAZ:', err);
-			if (lf.isOpen) {
-				lf.close().then(() => {
-					lf.isOpen = false;
-					throw err;
-				});
+				header.totalRead = i;
+				header.versionAsString = lf.versionAsString;
+				header.isCompressed = lf.isCompressed;
+
+				await lf.close();
+
+				lf.isOpen = false;
 			}
-			else throw err;
-		});
+
+		}catch(err){
+			console.error('Error reading LAZ:', err);
+			
+			if (lf.isOpen) {
+				await lf.close();
+
+				lf.isOpen = false;
+			}
+			
+			throw err;
+		}
 	}
 };
 
@@ -121,17 +122,17 @@ export class EptLazBatcher {
 
 			g.addAttribute('position',
 					new THREE.BufferAttribute(positions, 3));
-			g.addAttribute('color',
+			g.addAttribute('RGBA',
 					new THREE.BufferAttribute(colors, 4, true));
 			g.addAttribute('intensity',
 					new THREE.BufferAttribute(intensities, 1));
 			g.addAttribute('classification',
 					new THREE.BufferAttribute(classifications, 1));
-			g.addAttribute('returnNumber',
+			g.addAttribute('return number',
 					new THREE.BufferAttribute(returnNumbers, 1));
-			g.addAttribute('numberOfReturns',
+			g.addAttribute('number of returns',
 					new THREE.BufferAttribute(numberOfReturns, 1));
-			g.addAttribute('pointSourceID',
+			g.addAttribute('source id',
 					new THREE.BufferAttribute(pointSourceIDs, 1));
 			g.addAttribute('indices',
 					new THREE.BufferAttribute(indices, 4));
@@ -144,10 +145,10 @@ export class EptLazBatcher {
 			);
 
 			this.node.doneLoading(
-					g,
-					tightBoundingBox,
-					numPoints,
-					new THREE.Vector3(...e.data.mean));
+				g,
+				tightBoundingBox,
+				numPoints,
+				new THREE.Vector3(...e.data.mean));
 
 			Potree.workerPool.returnWorker(workerPath, worker);
 		};

@@ -1,6 +1,4 @@
 
-import {OrbitControls} from "../navigation/OrbitControls.js";
-
 export class View{
 	constructor () {
 		this.position = new THREE.Vector3(0, 0, 0);
@@ -11,8 +9,6 @@ export class View{
 
 		this.maxPitch = Math.PI / 2;
 		this.minPitch = -Math.PI / 2;
-
-		this.navigationMode = OrbitControls;
 	}
 
 	clone () {
@@ -22,7 +18,6 @@ export class View{
 		c.radius = this.radius;
 		c.maxPitch = this.maxPitch;
 		c.minPitch = this.minPitch;
-		c.navigationMode = this.navigationMode;
 
 		return c;
 	}
@@ -125,4 +120,69 @@ export class View{
 		this.position.y += y;
 		this.position.z += z;
 	}
+
+	setView(position, target, duration = 0, callback = null){
+
+		let endPosition = null;
+		if(position instanceof Array){
+			endPosition = new THREE.Vector3(...position);
+		}else if(position instanceof THREE.Vector3){
+			endPosition = position.clone();
+		}
+
+		let endTarget = null;
+		if(target instanceof Array){
+			endTarget = new THREE.Vector3(...target);
+		}else if(target instanceof THREE.Vector3){
+			endTarget = target.clone();
+		}
+		
+		const startPosition = this.position.clone();
+		const startTarget = this.getPivot();
+
+		//const endPosition = position.clone();
+		//const endTarget = target.clone();
+
+		let easing = TWEEN.Easing.Quartic.Out;
+
+		if(duration === 0){
+			this.position.copy(endPosition);
+			this.lookAt(endTarget);
+		}else{
+			let value = {x: 0};
+			let tween = new TWEEN.Tween(value).to({x: 1}, duration);
+			tween.easing(easing);
+			//this.tweens.push(tween);
+
+			tween.onUpdate(() => {
+				let t = value.x;
+
+				//console.log(t);
+
+				const pos = new THREE.Vector3(
+					(1 - t) * startPosition.x + t * endPosition.x,
+					(1 - t) * startPosition.y + t * endPosition.y,
+					(1 - t) * startPosition.z + t * endPosition.z,
+				);
+
+				const target = new THREE.Vector3(
+					(1 - t) * startTarget.x + t * endTarget.x,
+					(1 - t) * startTarget.y + t * endTarget.y,
+					(1 - t) * startTarget.z + t * endTarget.z,
+				);
+
+				this.position.copy(pos);
+				this.lookAt(target);
+
+			});
+
+			tween.start();
+
+			tween.onComplete(() => {
+				callback();
+			});
+		}
+
+	}
+
 };

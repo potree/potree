@@ -24,12 +24,15 @@ export class Scene extends EventDispatcher{
 		this.cameraBG = new THREE.Camera();
 		this.cameraScreenSpace = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 10);
 		this.cameraMode = CameraMode.PERSPECTIVE;
+		this.overrideCamera = null;
 		this.pointclouds = [];
 
 		this.measurements = [];
 		this.profiles = [];
 		this.volumes = [];
 		this.polygonClipVolumes = [];
+		this.cameraAnimations = [];
+		this.orientedImages = [];
 		
 		this.fpControls = null;
 		this.orbitControls = null;
@@ -123,7 +126,7 @@ export class Scene extends EventDispatcher{
 			type: 'pointcloud_added',
 			pointcloud: pointcloud
 		});
-	};
+	}
 
 	addVolume (volume) {
 		this.volumes.push(volume);
@@ -132,6 +135,28 @@ export class Scene extends EventDispatcher{
 			'scene': this,
 			'volume': volume
 		});
+	}
+
+	addOrientedImages(images){
+		this.orientedImages.push(images);
+		this.dispatchEvent({
+			'type': 'oriented_images_added',
+			'scene': this,
+			'images': images
+		});
+	};
+
+	removeOrientedImages(images){
+		let index = this.orientedImages.indexOf(images);
+		if (index > -1) {
+			this.orientedImages.splice(index, 1);
+
+			this.dispatchEvent({
+				'type': 'oriented_images_removed',
+				'scene': this,
+				'images': images
+			});
+		}
 	};
 
 	removeVolume (volume) {
@@ -143,6 +168,28 @@ export class Scene extends EventDispatcher{
 				'type': 'volume_removed',
 				'scene': this,
 				'volume': volume
+			});
+		}
+	};
+
+	addCameraAnimation(animation) {
+		this.cameraAnimations.push(animation);
+		this.dispatchEvent({
+			'type': 'camera_animation_added',
+			'scene': this,
+			'animation': animation
+		});
+	};
+
+	removeCameraAnimation(animation){
+		let index = this.cameraAnimations.indexOf(volume);
+		if (index > -1) {
+			this.cameraAnimations.splice(index, 1);
+
+			this.dispatchEvent({
+				'type': 'camera_animation_removed',
+				'scene': this,
+				'animation': animation
 			});
 		}
 	};
@@ -239,6 +286,10 @@ export class Scene extends EventDispatcher{
 
 	getActiveCamera() {
 
+		if(this.overrideCamera){
+			return this.overrideCamera;
+		}
+
 		if(this.cameraMode === CameraMode.PERSPECTIVE){
 			return this.cameraP;
 		}else if(this.cameraMode === CameraMode.ORTHOGRAPHIC){
@@ -288,28 +339,28 @@ export class Scene extends EventDispatcher{
 			this.sceneBG.add(bg);
 		}
 
-		//{ // lights
-		//	{
-		//		let light = new THREE.DirectionalLight(0xffffff);
-		//		light.position.set(10, 10, 1);
-		//		light.target.position.set(0, 0, 0);
-		//		this.scene.add(light);
-		//	}
+		// { // lights
+		// 	{
+		// 		let light = new THREE.DirectionalLight(0xffffff);
+		// 		light.position.set(10, 10, 1);
+		// 		light.target.position.set(0, 0, 0);
+		// 		this.scene.add(light);
+		// 	}
 
-		//	{
-		//		let light = new THREE.DirectionalLight(0xffffff);
-		//		light.position.set(-10, 10, 1);
-		//		light.target.position.set(0, 0, 0);
-		//		this.scene.add(light);
-		//	}
+		// 	{
+		// 		let light = new THREE.DirectionalLight(0xffffff);
+		// 		light.position.set(-10, 10, 1);
+		// 		light.target.position.set(0, 0, 0);
+		// 		this.scene.add(light);
+		// 	}
 
-		//	{
-		//		let light = new THREE.DirectionalLight(0xffffff);
-		//		light.position.set(0, -10, 20);
-		//		light.target.position.set(0, 0, 0);
-		//		this.scene.add(light);
-		//	}
-		//}
+		// 	{
+		// 		let light = new THREE.DirectionalLight(0xffffff);
+		// 		light.position.set(0, -10, 20);
+		// 		light.target.position.set(0, 0, 0);
+		// 		this.scene.add(light);
+		// 	}
+		// }
 	}
 	
 	addAnnotation(position, args = {}){		

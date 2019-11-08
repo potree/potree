@@ -9,7 +9,6 @@ export * from "./Features.js";
 export * from "./KeyCodes.js";
 export * from "./LRU.js";
 export * from "./PointCloudEptGeometry.js";
-export * from "./PointCloudGreyhoundGeometry.js";
 export * from "./PointCloudOctree.js";
 export * from "./PointCloudOctreeGeometry.js";
 export * from "./PointCloudTree.js";
@@ -22,6 +21,8 @@ export * from "./utils.js";
 export * from "./Version.js";
 export * from "./WorkerPool.js";
 export * from "./XHRFactory.js";
+export * from "./viewer/SaveProject.js";
+export * from "./viewer/LoadProject.js";
 
 export * from "./materials/ClassificationScheme.js";
 export * from "./materials/EyeDomeLightingMaterial.js";
@@ -35,9 +36,9 @@ export * from "./loader/EptLoader.js";
 export * from "./loader/ept/BinaryLoader.js";
 export * from "./loader/ept/LaszipLoader.js";
 export * from "./loader/ept/ZstandardLoader.js";
-export * from "./loader/GreyhoundBinaryLoader.js";
-export * from "./loader/GreyhoundLoader.js";
 export * from "./loader/PointAttributes.js";
+export * from "./loader/ShapefileLoader.js";
+export * from "./loader/GeoPackageLoader.js";
 
 export * from "./utils/Box3Helper.js";
 export * from "./utils/ClippingTool.js";
@@ -52,13 +53,16 @@ export * from "./utils/Profile.js";
 export * from "./utils/ProfileTool.js";
 export * from "./utils/ScreenBoxSelectTool.js";
 export * from "./utils/SpotLightHelper.js";
-export * from "./utils/toInterleavedBufferAttribute.js";
 export * from "./utils/TransformationTool.js";
 export * from "./utils/Volume.js";
 export * from "./utils/VolumeTool.js";
+export * from "./utils/Compass.js";
 
 export * from "./viewer/viewer.js";
 export * from "./viewer/Scene.js";
+
+export * from "./modules/OrientedImages/OrientedImages.js";
+export * from "./modules/CameraAnimation/CameraAnimation.js";
 
 export {OrbitControls} from "./navigation/OrbitControls.js";
 export {FirstPersonControls} from "./navigation/FirstPersonControls.js";
@@ -70,11 +74,9 @@ import "./extensions/OrthographicCamera.js";
 import "./extensions/PerspectiveCamera.js";
 import "./extensions/Ray.js";
 
-import {PointColorType} from "./defines";
 import {Enum} from "./Enum";
 import {LRU} from "./LRU";
 import {POCLoader} from "./loader/POCLoader";
-import {GreyhoundLoader} from "./loader/GreyhoundLoader";
 import {EptLoader} from "./loader/EptLoader";
 import {PointCloudOctree} from "./PointCloudOctree";
 import {WorkerPool} from "./WorkerPool";
@@ -110,6 +112,8 @@ if (document.currentScript.src) {
 
 let resourcePath = scriptPath + '/resources';
 
+// scriptPath: build/potree
+// resourcePath:build/potree/resources
 export {scriptPath, resourcePath};
 
 
@@ -123,22 +127,11 @@ export function loadPointCloud(path, name, callback){
 	if (!path){
 		// TODO: callback? comment? Hello? Bueller? Anyone?
 	} else if (path.indexOf('ept.json') > 0) {
-		Potree.EptLoader.load(path, function(geometry) {
+		EptLoader.load(path, function(geometry) {
 			if (!geometry) {
 				console.error(new Error(`failed to load point cloud from URL: ${path}`));
 			}
 			else {
-				let pointcloud = new PointCloudOctree(geometry);
-				loaded(pointcloud);
-			}
-		});
-	} else if (path.indexOf('greyhound://') === 0){
-		// We check if the path string starts with 'greyhound:', if so we assume it's a greyhound server URL.
-		GreyhoundLoader.load(path, function (geometry) {
-			if (!geometry) {
-				//callback({type: 'loading_failed'});
-				console.error(new Error(`failed to load point cloud from URL: ${path}`));
-			} else {
 				let pointcloud = new PointCloudOctree(geometry);
 				loaded(pointcloud);
 			}

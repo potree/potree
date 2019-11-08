@@ -39,9 +39,10 @@ export class PotreeRenderer {
 
 		viewer.dispatchEvent({type: "render.pass.begin",viewer: viewer});
 
-		//let {width, height} = renderer.getSize();
-		const width = params.viewport ? params.viewport[2] : renderer.getSize().width;
-		const height = params.viewport ? params.viewport[3] : renderer.getSize().height;
+		const renderAreaSize = renderer.getSize(new THREE.Vector2());
+		const width = params.viewport ? params.viewport[2] : renderAreaSize.x;
+		const height = params.viewport ? params.viewport[3] : renderAreaSize.y;
+
 
 		// render skybox
 		if(viewer.background === "skybox"){

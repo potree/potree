@@ -53,8 +53,7 @@ export class EptBinaryLoader {
 
 			if (e.data.color) {
 				let color = new Uint8Array(e.data.color);
-				g.addAttribute('color',
-						new THREE.BufferAttribute(color, 4, true));
+				g.addAttribute('RGBA', new THREE.BufferAttribute(color, 4, true));
 			}
 			if (e.data.intensity) {
 				let intensity = new Float32Array(e.data.intensity);
@@ -68,17 +67,17 @@ export class EptBinaryLoader {
 			}
 			if (e.data.returnNumber) {
 				let returnNumber = new Uint8Array(e.data.returnNumber);
-				g.addAttribute('returnNumber',
+				g.addAttribute('return number',
 						new THREE.BufferAttribute(returnNumber, 1));
 			}
 			if (e.data.numberOfReturns) {
 				let numberOfReturns = new Uint8Array(e.data.numberOfReturns);
-				g.addAttribute('numberOfReturns',
+				g.addAttribute('number of returns',
 						new THREE.BufferAttribute(numberOfReturns, 1));
 			}
 			if (e.data.pointSourceId) {
 				let pointSourceId = new Uint16Array(e.data.pointSourceId);
-				g.addAttribute('pointSourceID',
+				g.addAttribute('source id',
 						new THREE.BufferAttribute(pointSourceId, 1));
 			}
 

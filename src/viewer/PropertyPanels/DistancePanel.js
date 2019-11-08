@@ -1,6 +1,7 @@
 
 
 import {MeasurePanel} from "./MeasurePanel.js";
+import {Profile} from "./../../utils/Profile.js";
 
 export class DistancePanel extends MeasurePanel{
 	constructor(viewer, measurement, propertiesPanel){
@@ -15,7 +16,9 @@ export class DistancePanel extends MeasurePanel{
 
 				<!-- ACTIONS -->
 				<div style="display: flex; margin-top: 12px">
-					<span></span>
+					<span>
+						<input type="button" name="make_profile" value="profile from measure" />
+					</span>
 					<span style="flex-grow: 1"></span>
 					<img name="remove" class="button-icon" src="${removeIconPath}" style="width: 16px; height: 16px"/>
 				</div>
@@ -25,6 +28,22 @@ export class DistancePanel extends MeasurePanel{
 		this.elRemove = this.elContent.find("img[name=remove]");
 		this.elRemove.click( () => {
 			this.viewer.scene.removeMeasurement(measurement);
+		});
+		
+		this.elMakeProfile = this.elContent.find("input[name=make_profile]");
+		this.elMakeProfile.click( () => {
+			//measurement.points;
+			const profile = new Profile();
+
+			profile.name = measurement.name;
+			profile.width = measurement.getTotalDistance() / 50;
+
+			for(const point of measurement.points){
+				profile.addMarker(point.position.clone());
+			}
+
+			this.viewer.scene.addProfile(profile);
+
 		});
 
 		this.propertiesPanel.addVolatileListener(measurement, "marker_added", this._update);

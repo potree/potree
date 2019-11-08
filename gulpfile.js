@@ -3,15 +3,10 @@ const path = require('path');
 const gulp = require('gulp');
 const exec = require('child_process').exec;
 
-
 const fs = require("fs");
 const fsp = fs.promises;
 const concat = require('gulp-concat');
-//const gutil = require('gulp-util');
-//const through = require('through');
-//const File = gutil.File;
 const connect = require('gulp-connect');
-//const watch = require('glob-watcher');
 const {watch} = gulp;
 
 
@@ -46,15 +41,15 @@ let workers = {
 	],
 	"EptZstandardDecoderWorker": [
 		"src/workers/EptZstandardDecoderWorker.js"
-	],
-	"GreyhoundBinaryDecoderWorker": [
-		"libs/plasio/workers/laz-perf.js",
-		"src/workers/GreyhoundBinaryDecoderWorker.js",
-		"src/Version.js",
-		"src/loader/PointAttributes.js",
-		"src/InterleavedBuffer.js",
-		"src/utils/toInterleavedBufferAttribute.js",
 	]
+};
+
+// these libs are lazily loaded
+// in order for the lazy loader to find them, independent of the path of the html file,
+// we package them together with potree
+let lazyLibs = {
+	"geopackage": "libs/geopackage",
+	"sql.js": "libs/sql.js"
 };
 
 let shaders = [
@@ -378,6 +373,19 @@ gulp.task("workers", async function(done){
 	done();
 });
 
+gulp.task("lazylibs", async function(done){
+
+	for(let libname of Object.keys(lazyLibs)){
+
+		const libpath = lazyLibs[libname];
+
+		gulp.src([`${libpath}/**/*`])
+			.pipe(gulp.dest(`build/potree/lazylibs/${libname}`));
+	}
+
+	done();
+});
+
 gulp.task("shaders", async function(){
 
 	const components = [
@@ -408,7 +416,7 @@ gulp.task("shaders", async function(){
 
 gulp.task('build', 
 	gulp.series(
-		gulp.parallel("workers", "shaders", "icons_viewer", "examples_page"),
+		gulp.parallel("workers", "lazylibs", "shaders", "icons_viewer", "examples_page"),
 		async function(done){
 			gulp.src(paths.html).pipe(gulp.dest('build/potree'));
 
@@ -432,6 +440,7 @@ gulp.task('watch', gulp.parallel("build", "pack", "webserver", async function() 
 
 	let watchlist = [
 		'src/**/*.js',
+		'src/**/**/*.js',
 		'src/**/*.css',
 		'src/**/*.html',
 		'src/**/*.vs',

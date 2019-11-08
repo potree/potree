@@ -1,9 +1,7 @@
 
-# README
-
 * [Getting Started](./docs/getting_started.md)
 
-## About
+# About
 
 Potree is a free open-source WebGL based point cloud renderer for large point clouds.
 It is based on the [TU Wien Scanopy project](https://www.cg.tuwien.ac.at/research/projects/Scanopy/)
@@ -18,7 +16,7 @@ Contact: Markus Schütz (mschuetz@potree.org)
 
 Reference: [Potree: Rendering Large Point Clouds in Web Browsers](https://www.cg.tuwien.ac.at/research/publications/2016/SCHUETZ-2016-POT/SCHUETZ-2016-POT-thesis.pdf)
 
-## Getting Started
+# Getting Started
 
 ### Build and Run
 
@@ -52,11 +50,11 @@ Download [PotreeConverter](https://github.com/potree/PotreeConverter) and run it
 
 Copy the converted directory into &lt;potreeDirectory&gt;/pointclouds/data_converted. Then, duplicate and rename one of the examples and modify the path in the html file to your own point cloud.
 
-## Downloads
+# Downloads
 
 [PotreeConverter source and Win64 binaries](https://github.com/potree/PotreeConverter/releases)
 
-## Examples
+# Examples
 
 Take a look at the [potree showcase](http://potree.org/wp/demo/) for more examples.
 
@@ -183,7 +181,7 @@ Take a look at the [potree showcase](http://potree.org/wp/demo/) for more exampl
 	</tr>
 </table>
 
-## Donations
+# Donations
 
 We would like to thank our sponsors for their financial contributions that keep this project up and running!
 
@@ -254,7 +252,7 @@ We would like to thank our sponsors for their financial contributions that keep 
 
 
 
-## Credits
+# Credits
 
 * The multi-res-octree algorithms used by this viewer were developed at the Vienna University of Technology by Michael Wimmer and Claus Scheiblauer as part of the [Scanopy Project](http://www.cg.tuwien.ac.at/research/projects/Scanopy/).
 * [Three.js](https://github.com/mrdoob/three.js), the WebGL 3D rendering library on which potree is built.

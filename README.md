@@ -56,9 +56,132 @@ Copy the converted directory into &lt;potreeDirectory&gt;/pointclouds/data_conve
 
 [PotreeConverter source and Win64 binaries](https://github.com/potree/PotreeConverter/releases)
 
-## Showcase
+## Examples
 
-Take a look at the [potree showcase](http://potree.org/wp/demo/) for some live examples.
+Take a look at the [potree showcase](http://potree.org/wp/demo/) for more examples.
+
+<table>
+	<tr>
+		<td>
+			<a href="http://www.potree.org/potree/examples/animation_paths.html">
+				<img src="http://potree.org/thumbnails/examples/animation_paths.png" width="100%">
+			</a>
+		</td>
+		<td>
+			<a href="http://www.potree.org/potree/examples/annotations.html">
+				<img src="http://potree.org/thumbnails/examples/annotations.png" width="100%">
+			</a>
+		</td>
+		<td>
+			<a href="http://www.potree.org/potree/examples/annotation_hierarchy.html">
+				<img src="http://potree.org/thumbnails/examples/annotation_hierarchy.png" width="100%">
+			</a>
+		</td>
+		<td>
+			<a href="http://www.potree.org/potree/examples/ca13.html">
+				<img src="http://potree.org/thumbnails/examples/ca13.png" width="100%">
+			</a>
+		</td>
+		<td>
+			<a href="http://www.potree.org/potree/examples/cesium_ca13.html">
+				<img src="http://potree.org/thumbnails/examples/cesium_ca13.png" width="100%">
+			</a>
+		</td>
+		<td>
+			<a href="http://www.potree.org/potree/examples/cesium_retz.html">
+				<img src="http://potree.org/thumbnails/examples/cesium_retz.png" width="100%">
+			</a>
+		</td>
+	</tr>
+	<tr>
+		<th>Animation Paths</th>
+		<th>Annotations</th>
+		<th>Hierarchical Annotations</th>
+		<th>CA13</th>
+		<th>Cesium CA13</th>
+		<th>Cesium Retz</th>
+	</tr>
+	<tr>
+		<td>
+			<a href="http://www.potree.org/potree/examples/cesium_sorvilier.html">
+				<img src="http://potree.org/thumbnails/examples/cesium_sorvilier.png" width="100%">
+			</a>
+		</td>
+		<td>
+			<a href="http://www.potree.org/potree/examples/clipping_volume.html">
+				<img src="http://potree.org/thumbnails/examples/clipping_volume.png" width="100%">
+			</a>
+		</td>
+		<td>
+			<a href="http://www.potree.org/potree/examples/custom_sidebar_section.html">
+				<img src="http://potree.org/thumbnails/examples/custom_sidebar_section.png" width="100%">
+			</a>
+		</td>
+		<td>
+			<a href="http://www.potree.org/potree/examples/elevation_profile.html">
+				<img src="http://potree.org/thumbnails/examples/elevation_profile.png" width="100%">
+			</a>
+		</td>
+		<td>
+			<a href="http://www.potree.org/potree/examples/embedded_iframe.html">
+				<img src="http://potree.org/thumbnails/examples/embedded_iframe.png" width="100%">
+			</a>
+		</td>
+		<td>
+			<a href="http://www.potree.org/potree/examples/cesium_retz.html">
+				<img src="http://potree.org/thumbnails/examples/gradient_colors.png" width="100%">
+			</a>
+		</td>
+	</tr>
+	<tr>
+		<th>Cesium Sorvilier</th>
+		<th>Clipping Volumes</th>
+		<th>Custom Sidebar Section</th>
+		<th>Elevation Profile</th>
+		<th>Embedded</th>
+		<th>Gradients</th>
+	</tr>
+	<tr>
+		<td>
+			<a href="http://www.potree.org/potree/examples/heidentor.html">
+				<img src="http://potree.org/thumbnails/examples/heidentor.png" width="100%">
+			</a>
+		</td>
+		<td>
+			<a href="http://www.potree.org/potree/examples/light_animated.html">
+				<img src="http://potree.org/thumbnails/examples/light_animated.png" width="100%">
+			</a>
+		</td>
+		<td>
+			<a href="http://www.potree.org/potree/examples/light_ca13.html">
+				<img src="http://potree.org/thumbnails/examples/light_ca13.png" width="100%">
+			</a>
+		</td>
+		<td>
+			<a href="http://www.potree.org/potree/examples/lines.html">
+				<img src="http://potree.org/thumbnails/examples/lines.png" width="100%">
+			</a>
+		</td>
+		<td>
+			<a href="http://www.potree.org/potree/examples/lion.html">
+				<img src="http://potree.org/thumbnails/examples/lion.png" width="100%">
+			</a>
+		</td>
+		<td>
+			<a href="http://www.potree.org/potree/examples/lion_las.html">
+				<img src="http://potree.org/thumbnails/examples/lion_las.png" width="100%">
+			</a>
+		</td>
+	</tr>
+	<tr>
+		<th>Heidentor</th>
+		<th>Animated Light</th>
+		<th>Light CA13</th>
+		<th>Lines</th>
+		<th>Lion</th>
+		<th>Lion LAS</th>
+	</tr>
+</table>
 
 ## Donations
 

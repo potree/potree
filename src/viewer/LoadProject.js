@@ -190,23 +190,60 @@ function loadAnnotations(viewer, data){
 		return;
 	}
 
-	const {items, hierarchy} = data;
+	const findDuplicate = (item) => {
 
-	const existingAnnotations = [];
-	viewer.scene.annotations.traverseDescendants(annotation => {
-		existingAnnotations.push(annotation);
-	});
+		let duplicate = null;
 
-	for(const item of items){
+		viewer.scene.annotations.traverse( a => {
+			if(a.uuid === item.uuid){
+				duplicate = a;
+			}
+		});
 
-		const duplicate = existingAnnotations.find(ann => ann.uuid === item.uuid);
+		return duplicate;
+	};
+
+	const traverse = (item, parent) => {
+
+		const duplicate = findDuplicate(item);
 		if(duplicate){
-			continue;
+			return;
 		}
 
 		const annotation = loadAnnotationItem(item);
-		viewer.scene.annotations.add(annotation);
+
+		for(const childItem of item.children){
+			traverse(childItem, annotation);
+		}
+
+		parent.add(annotation);
+
+	};
+
+	for(const item of data){
+		traverse(item, viewer.scene.annotations);
+		// viewer.scene.annotations.add(annotation);
 	}
+
+
+
+	// const {items, hierarchy} = data;
+
+	// const existingAnnotations = [];
+	// viewer.scene.annotations.traverseDescendants(annotation => {
+	// 	existingAnnotations.push(annotation);
+	// });
+
+	// for(const item of items){
+
+	// 	const duplicate = existingAnnotations.find(ann => ann.uuid === item.uuid);
+	// 	if(duplicate){
+	// 		continue;
+	// 	}
+
+	// 	const annotation = loadAnnotationItem(item);
+	// 	viewer.scene.annotations.add(annotation);
+	// }
 
 }
 

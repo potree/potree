@@ -107,10 +107,11 @@ function createAnnotationData(annotation){
 
 	const data = {
 		uuid: annotation.uuid,
-		title: annotation.title,
+		title: annotation.title.toString(),
 		description: annotation.description,
 		position: annotation.position.toArray(),
 		offset: annotation.offset.toArray(),
+		children: [],
 	};
 
 	if(annotation.cameraPosition){
@@ -130,50 +131,24 @@ function createAnnotationData(annotation){
 
 function createAnnotationsData(viewer){
 	
-	const annotations = [];
-	const annMap = new Map();
+	const map = new Map();
 
 	viewer.scene.annotations.traverseDescendants(a => {
-		annotations.push(a);
+		const aData = createAnnotationData(a);
 
-		annMap.set(a, annMap.size);
+		map.set(a, aData);
 	});
 
-	const root = {};
-	const stack = [
-		{
-			from: viewer.scene.annotations,
-			to: root,
-		}
-	];
-
-	const hierarchy = {}
-	const mapping = new Map();
-	mapping.set(viewer.scene.annotations, hierarchy);
-
-	while(stack.length > 0){
-		const entry = stack.shift();
-
-		for (let child of entry.from.children) {
-			let id = annMap.get(child);
-			entry.to[id] = {
-				from: child,
-				to: {},
-			};
-
-			const node = {};
-			mapping.set(child, node);
-			mapping.get(entry.from)[id] = node;
-
-			stack.push(entry.to[id]);
+	for(const [annotation, data] of map){
+		for(const child of annotation.children){
+			const childData = map.get(child);
+			data.children.push(childData);
 		}
 	}
 
+	const annotations = viewer.scene.annotations.children.map(a => map.get(a));
 
-	return {
-		items: annotations.map(createAnnotationData),
-		hierarchy: hierarchy,
-	};
+	return annotations;
 }
 
 function createSettingsData(viewer){

@@ -15,6 +15,9 @@ export class VRControlls{
 		this.selectionBox = this.createBox();
 		this.viewer.scene.scene.add(this.selectionBox);
 
+		this.speed = 1;
+		this.speedModificationFactor = 50;
+
 		this.snLeft = this.createControllerModel();
 		this.snRight = this.createControllerModel();
 		
@@ -454,7 +457,7 @@ export class VRControlls{
 				const worldTarget = toScene(new THREE.Vector3().addVectors(opos, d));
 				const dir = new THREE.Vector3().subVectors(worldTarget, worldPos).normalize();
 
-				const amount = axes[1];
+				const amount = axes[1] * this.speed;
 
 				const move = dir.clone().multiplyScalar(amount);
 
@@ -472,7 +475,7 @@ export class VRControlls{
 				move = computeMove(right);
 
 				const leftAdjustAxe = flip * left.axes[1];
-				const adjust = 10 ** leftAdjustAxe;
+				const adjust = this.speedModificationFactor ** leftAdjustAxe;
 
 				move = move.multiplyScalar(adjust);
 

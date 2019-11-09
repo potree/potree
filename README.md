@@ -56,126 +56,171 @@ Copy the converted directory into &lt;potreeDirectory&gt;/pointclouds/data_conve
 
 Take a look at the [potree showcase](http://potree.org/wp/demo/) for more examples.
 
+
+
 <table>
 	<tr>
 		<td>
-			<a href="http://www.potree.org/potree/examples/animation_paths.html">
-				<img src="http://potree.org/thumbnails/examples/animation_paths.png" width="100%">
+			<a href="vr.html" target="_blank">
+				<img src="examples/thumbnails/vr.jpg" width="100%" />
 			</a>
-		</td>
-		<td>
-			<a href="http://www.potree.org/potree/examples/annotations.html">
-				<img src="http://potree.org/thumbnails/examples/annotations.png" width="100%">
+		</td><td>
+			<a href="oriented_images.html" target="_blank">
+				<img src="examples/thumbnails/oriented_images.jpg" width="100%" />
 			</a>
-		</td>
-		<td>
-			<a href="http://www.potree.org/potree/examples/annotation_hierarchy.html">
-				<img src="http://potree.org/thumbnails/examples/annotation_hierarchy.png" width="100%">
+		</td><td>
+			<a href="geopackage.html" target="_blank">
+				<img src="examples/thumbnails/geopackage.jpg" width="100%" />
 			</a>
-		</td>
-		<td>
-			<a href="http://www.potree.org/potree/examples/ca13.html">
-				<img src="http://potree.org/thumbnails/examples/ca13.png" width="100%">
+		</td><td>
+			<a href="classifications.html" target="_blank">
+				<img src="examples/thumbnails/classifications.jpg" width="100%" />
 			</a>
-		</td>
-		<td>
-			<a href="http://www.potree.org/potree/examples/cesium_ca13.html">
-				<img src="http://potree.org/thumbnails/examples/cesium_ca13.png" width="100%">
+		</td><td>
+			<a href="camera_animation.html" target="_blank">
+				<img src="examples/thumbnails/camera_animation.jpg" width="100%" />
 			</a>
-		</td>
-		<td>
-			<a href="http://www.potree.org/potree/examples/cesium_retz.html">
-				<img src="http://potree.org/thumbnails/examples/cesium_retz.png" width="100%">
+		</td><td>
+			<a href="load_project.html" target="_blank">
+				<img src="examples/thumbnails/load_project.jpg" width="100%" />
 			</a>
 		</td>
 	</tr>
 	<tr>
-		<th>Animation Paths</th>
-		<th>Annotations</th>
-		<th>Hierarchical Annotations</th>
-		<th>CA13</th>
-		<th>Cesium CA13</th>
-		<th>Cesium Retz</th>
-	</tr>
-	<tr>
+		<th>Virtual Reality</th><th>Oriented Images</th><th>Geopackage</th><th>Classifications</th><th>Camera Animation</th><th>Load Project</th>
+	</tr><tr>
 		<td>
-			<a href="http://www.potree.org/potree/examples/cesium_sorvilier.html">
-				<img src="http://potree.org/thumbnails/examples/cesium_sorvilier.png" width="100%">
+			<a href="toolbar.html" target="_blank">
+				<img src="examples/thumbnails/toolbar.jpg" width="100%" />
 			</a>
-		</td>
-		<td>
-			<a href="http://www.potree.org/potree/examples/clipping_volume.html">
-				<img src="http://potree.org/thumbnails/examples/clipping_volume.png" width="100%">
+		</td><td>
+			<a href="viewer.html" target="_blank">
+				<img src="examples/thumbnails/viewer.png" width="100%" />
 			</a>
-		</td>
-		<td>
-			<a href="http://www.potree.org/potree/examples/custom_sidebar_section.html">
-				<img src="http://potree.org/thumbnails/examples/custom_sidebar_section.png" width="100%">
+		</td><td>
+			<a href="heidentor.html" target="_blank">
+				<img src="examples/thumbnails/heidentor.png" width="100%" />
 			</a>
-		</td>
-		<td>
-			<a href="http://www.potree.org/potree/examples/elevation_profile.html">
-				<img src="http://potree.org/thumbnails/examples/elevation_profile.png" width="100%">
+		</td><td>
+			<a href="lion.html" target="_blank">
+				<img src="examples/thumbnails/lion.png" width="100%" />
 			</a>
-		</td>
-		<td>
-			<a href="http://www.potree.org/potree/examples/embedded_iframe.html">
-				<img src="http://potree.org/thumbnails/examples/embedded_iframe.png" width="100%">
+		</td><td>
+			<a href="lion_las.html" target="_blank">
+				<img src="examples/thumbnails/lion_las.png" width="100%" />
 			</a>
-		</td>
-		<td>
-			<a href="http://www.potree.org/potree/examples/cesium_retz.html">
-				<img src="http://potree.org/thumbnails/examples/gradient_colors.png" width="100%">
+		</td><td>
+			<a href="lion_laz.html" target="_blank">
+				<img src="examples/thumbnails/lion_las.png" width="100%" />
 			</a>
 		</td>
 	</tr>
 	<tr>
-		<th>Cesium Sorvilier</th>
-		<th>Clipping Volumes</th>
-		<th>Custom Sidebar Section</th>
-		<th>Elevation Profile</th>
-		<th>Embedded</th>
-		<th>Gradients</th>
-	</tr>
-	<tr>
+		<th>Toolbar</th><th>Basic Viewer</th><th>Heidentor</th><th>Lion</th><th>Lion LAS</th><th>Lion LAZ</th>
+	</tr><tr>
 		<td>
-			<a href="http://www.potree.org/potree/examples/heidentor.html">
-				<img src="http://potree.org/thumbnails/examples/heidentor.png" width="100%">
+			<a href="ca13.html" target="_blank">
+				<img src="examples/thumbnails/ca13.png" width="100%" />
 			</a>
-		</td>
-		<td>
-			<a href="http://www.potree.org/potree/examples/light_animated.html">
-				<img src="http://potree.org/thumbnails/examples/light_animated.png" width="100%">
+		</td><td>
+			<a href="clipping_volume.html" target="_blank">
+				<img src="examples/thumbnails/clipping_volume.png" width="100%" />
 			</a>
-		</td>
-		<td>
-			<a href="http://www.potree.org/potree/examples/light_ca13.html">
-				<img src="http://potree.org/thumbnails/examples/light_ca13.png" width="100%">
+		</td><td>
+			<a href="elevation_profile.html" target="_blank">
+				<img src="examples/thumbnails/elevation_profile.png" width="100%" />
 			</a>
-		</td>
-		<td>
-			<a href="http://www.potree.org/potree/examples/lines.html">
-				<img src="http://potree.org/thumbnails/examples/lines.png" width="100%">
+		</td><td>
+			<a href="measurements.html" target="_blank">
+				<img src="examples/thumbnails/measurements.png" width="100%" />
 			</a>
-		</td>
-		<td>
-			<a href="http://www.potree.org/potree/examples/lion.html">
-				<img src="http://potree.org/thumbnails/examples/lion.png" width="100%">
+		</td><td>
+			<a href="meshes.html" target="_blank">
+				<img src="examples/thumbnails/meshes.png" width="100%" />
 			</a>
-		</td>
-		<td>
-			<a href="http://www.potree.org/potree/examples/lion_las.html">
-				<img src="http://potree.org/thumbnails/examples/lion_las.png" width="100%">
+		</td><td>
+			<a href="lines.html" target="_blank">
+				<img src="examples/thumbnails/lines.png" width="100%" />
 			</a>
 		</td>
 	</tr>
 	<tr>
-		<th>Heidentor</th>
-		<th>Animated Light</th>
-		<th>Light CA13</th>
-		<th>Lines</th>
-		<th>Lion</th>
-		<th>Lion LAS</th>
+		<th>CA13</th><th>Clipping Volume</th><th>Elevation Profile</th><th>Measurements</th><th>Meshes</th><th>Lines</th>
+	</tr><tr>
+		<td>
+			<a href="multiple_pointclouds.html" target="_blank">
+				<img src="examples/thumbnails/multiple_point_clouds.png" width="100%" />
+			</a>
+		</td><td>
+			<a href="features_sorvilier.html" target="_blank">
+				<img src="examples/thumbnails/features_sorvilier.png" width="100%" />
+			</a>
+		</td><td>
+			<a href="features_ca13.html" target="_blank">
+				<img src="examples/thumbnails/features_ca13.png" width="100%" />
+			</a>
+		</td><td>
+			<a href="annotations.html" target="_blank">
+				<img src="examples/thumbnails/annotations.png" width="100%" />
+			</a>
+		</td><td>
+			<a href="annotation_hierarchy.html" target="_blank">
+				<img src="examples/thumbnails/annotation_hierarchy.png" width="100%" />
+			</a>
+		</td><td>
+			<a href="animation_paths.html" target="_blank">
+				<img src="examples/thumbnails/animation_paths.png" width="100%" />
+			</a>
+		</td>
+	</tr>
+	<tr>
+		<th>Multiple Point Clouds</th><th>Features (Sorvilier)</th><th>Features (CA13)</th><th>Annotations</th><th>Hierarchical Annotations</th><th>Animation Path</th>
+	</tr><tr>
+		<td>
+			<a href="shapefiles.html" target="_blank">
+				<img src="examples/thumbnails/shapefiles.png" width="100%" />
+			</a>
+		</td><td>
+			<a href="cesium_ca13.html" target="_blank">
+				<img src="examples/thumbnails/cesium_ca13.png" width="100%" />
+			</a>
+		</td><td>
+			<a href="cesium_retz.html" target="_blank">
+				<img src="examples/thumbnails/cesium_retz.png" width="100%" />
+			</a>
+		</td><td>
+			<a href="cesium_sorvilier.html" target="_blank">
+				<img src="examples/thumbnails/cesium_sorvilier.png" width="100%" />
+			</a>
+		</td><td>
+			<a href="custom_sidebar_section.html" target="_blank">
+				<img src="examples/thumbnails/custom_sidebar_section.png" width="100%" />
+			</a>
+		</td><td>
+			<a href="embedded_iframe.html" target="_blank">
+				<img src="examples/thumbnails/embedded_iframe.png" width="100%" />
+			</a>
+		</td>
+	</tr>
+	<tr>
+		<th>Shapefiles</th><th>Cesium CA13</th><th>Cesium Retz</th><th>Cesium Sorvilier</th><th>Custom Sidebar Section</th><th>Embedded Iframe</th>
+	</tr><tr>
+		<td>
+			<a href="gradient_colors.html" target="_blank">
+				<img src="examples/thumbnails/gradient_colors.png" width="100%" />
+			</a>
+		</td><td>
+			<a href="light_animated.html" target="_blank">
+				<img src="examples/thumbnails/light_animated.png" width="100%" />
+			</a>
+		</td><td>
+			<a href="light_ca13.html" target="_blank">
+				<img src="examples/thumbnails/light_ca13.png" width="100%" />
+			</a>
+		</td>
+	</tr>
+	<tr>
+		<th>Gradient Colors</th><th>Animated Light</th><th>Light CA13</th>
 	</tr>
 </table>
 

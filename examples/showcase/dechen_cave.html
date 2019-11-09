@@ -59,6 +59,11 @@
 			$("#menu_tools").next().show();
 			$("#menu_scene").next().show();
 			viewer.toggleSidebar();
+
+			$('#sldPointBudget').slider({
+				max: 3 * 1000 * 1000,
+				step: 1000,
+			});
 		});
 		
 		// Load and add point cloud to scene

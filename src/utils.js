@@ -1037,6 +1037,20 @@ export class Utils {
 		return svg;
 	}
 
+	static async waitAny(promises){
+		
+		return new Promise( (resolve) => {
+
+			promises.map( promise => {
+				promise.then( () => {
+					resolve();
+				});
+			});
+
+		});
+
+	}
+
 }
 
 Utils.screenPass = new function () {

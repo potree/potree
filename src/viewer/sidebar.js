@@ -13,8 +13,6 @@ import {ScreenBoxSelectTool} from "../utils/ScreenBoxSelectTool.js"
 import {Utils} from "../utils.js"
 import {CameraAnimation} from "../modules/CameraAnimation/CameraAnimation.js"
 
-import {ZoomableSlider} from "./ZoomableSlider.js"
-
 export class Sidebar{
 
 	constructor(viewer){
@@ -520,6 +518,8 @@ export class Sidebar{
 				// 	node.boundingBox = box;
 				// 	this.viewer.zoomTo(node, 1, 500);
 				// }
+			}else if(object instanceof Geopackage){
+				// TODO
 			}
 		});
 
@@ -618,12 +618,35 @@ export class Sidebar{
 			});
 		};
 
+		const onGeopackageAdded = (e) => {
+			const geopackage = e.geopackage;
+
+			const geopackageIcon = `${Potree.resourcePath}/icons/triangle.svg`;
+			const tree = $(`#jstree_scene`);
+			const parentNode = "vectors";
+
+			for(const layer of geopackage.node.children){
+				const name = layer.name;
+
+				let shpPointsID = tree.jstree('create_node', parentNode, { 
+						"text": name, 
+						"icon": geopackageIcon,
+						"object": layer,
+						"data": layer,
+					}, 
+					"last", false, false);
+				tree.jstree(layer.visible ? "check_node" : "uncheck_node", shpPointsID);
+			}
+
+		};
+
 		this.viewer.scene.addEventListener("pointcloud_added", onPointCloudAdded);
 		this.viewer.scene.addEventListener("measurement_added", onMeasurementAdded);
 		this.viewer.scene.addEventListener("profile_added", onProfileAdded);
 		this.viewer.scene.addEventListener("volume_added", onVolumeAdded);
 		this.viewer.scene.addEventListener("camera_animation_added", onCameraAnimationAdded);
 		this.viewer.scene.addEventListener("oriented_images_added", onOrientedImagesAdded);
+		this.viewer.scene.addEventListener("geopackage_added", onGeopackageAdded);
 		this.viewer.scene.addEventListener("polygon_clip_volume_added", onVolumeAdded);
 		this.viewer.scene.annotations.addEventListener("annotation_added", onAnnotationAdded);
 
@@ -671,27 +694,32 @@ export class Sidebar{
 			});
 		}
 
-		for(let pointcloud of this.viewer.scene.pointclouds){
+		const scene = this.viewer.scene;
+		for(let pointcloud of scene.pointclouds){
 			onPointCloudAdded({pointcloud: pointcloud});
 		}
 
-		for(let measurement of this.viewer.scene.measurements){
+		for(let measurement of scene.measurements){
 			onMeasurementAdded({measurement: measurement});
 		}
 
-		for(let volume of [...this.viewer.scene.volumes, ...this.viewer.scene.polygonClipVolumes]){
+		for(let volume of [...scene.volumes, ...scene.polygonClipVolumes]){
 			onVolumeAdded({volume: volume});
 		}
 
-		for(let animation of this.viewer.scene.cameraAnimations){
+		for(let animation of scene.cameraAnimations){
 			onCameraAnimationAdded({animation: animation});
 		}
 
-		for(let images of this.viewer.scene.orientedImages){
+		for(let images of scene.orientedImages){
 			onOrientedImagesAdded({images: images});
 		}
 
-		for(let profile of this.viewer.scene.profiles){
+		for(const geopackage of scene.geopackages){
+			onGeopackageAdded({geopackage: geopackage});
+		}
+
+		for(let profile of scene.profiles){
 			onProfileAdded({profile: profile});
 		}
 

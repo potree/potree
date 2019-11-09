@@ -1,6 +1,4 @@
 
-* [Getting Started](./docs/getting_started.md)
-
 # About
 
 Potree is a free open-source WebGL based point cloud renderer for large point clouds.

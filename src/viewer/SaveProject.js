@@ -95,6 +95,14 @@ function createOrientedImagesData(images){
 	return data;
 }
 
+function createGeopackageData(geopackage){
+	const data = {
+		path: geopackage.path,
+	};
+
+	return data;
+}
+
 function createAnnotationData(annotation){
 
 	const data = {
@@ -246,6 +254,7 @@ export function saveProject(viewer) {
 		profiles: scene.profiles.map(createProfileData),
 		annotations: createAnnotationsData(viewer),
 		orientedImages: scene.orientedImages.map(createOrientedImagesData),
+		geopackages: scene.geopackages.map(createGeopackageData),
 		// objects: createSceneContentData(viewer),
 	};
 

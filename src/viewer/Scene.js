@@ -33,6 +33,7 @@ export class Scene extends EventDispatcher{
 		this.polygonClipVolumes = [];
 		this.cameraAnimations = [];
 		this.orientedImages = [];
+		this.geopackages = [];
 		
 		this.fpControls = null;
 		this.orbitControls = null;
@@ -139,6 +140,8 @@ export class Scene extends EventDispatcher{
 
 	addOrientedImages(images){
 		this.orientedImages.push(images);
+		this.scene.add(images.node);
+
 		this.dispatchEvent({
 			'type': 'oriented_images_added',
 			'scene': this,
@@ -155,6 +158,30 @@ export class Scene extends EventDispatcher{
 				'type': 'oriented_images_removed',
 				'scene': this,
 				'images': images
+			});
+		}
+	};
+
+	addGeopackage(geopackage){
+		this.geopackages.push(geopackage);
+		this.scene.add(geopackage.node);
+
+		this.dispatchEvent({
+			'type': 'geopackage_added',
+			'scene': this,
+			'geopackage': geopackage
+		});
+	};
+
+	removeGeopackage(geopackage){
+		let index = this.geopackages.indexOf(geopackage);
+		if (index > -1) {
+			this.geopackages.splice(index, 1);
+
+			this.dispatchEvent({
+				'type': 'geopackage_removed',
+				'scene': this,
+				'geopackage': geopackage
 			});
 		}
 	};

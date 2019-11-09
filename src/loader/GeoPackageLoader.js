@@ -21,6 +21,13 @@ function getColor(feature){
 	return color;
 }
 
+export class Geopackage{
+	constructor(){
+		this.path = null;
+		this.node = null;
+	}
+};
+
 export class GeoPackageLoader{
 
 	constructor(){
@@ -41,7 +48,7 @@ export class GeoPackageLoader{
 
 		params.source = url;
 
-		return loadBuffer(buffer, params);
+		return GeoPackageLoader.loadBuffer(buffer, params);
 	}
 
 	static async loadBuffer(buffer, params){
@@ -74,9 +81,9 @@ export class GeoPackageLoader{
 				source: params.source,
 			};
 
-			const geo = {
-				node: geopackageNode,
-			};
+			const geo = new Geopackage();
+			geo.path = params.source;
+			geo.node = geopackageNode;
 
 			const tables = data.getTables();
 

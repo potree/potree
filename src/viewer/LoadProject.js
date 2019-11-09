@@ -3,25 +3,34 @@
 import {Annotation} from "../Annotation.js";
 import {Measure} from "../utils/Measure.js";
 import {CameraAnimation} from "../modules/CameraAnimation/CameraAnimation.js";
+import {Utils} from "../utils.js";
 
 function loadPointCloud(viewer, data){
 
-	const names = viewer.scene.pointclouds.map(p => p.name);
-	const alreadyExists = names.includes(data.name);
+	const promise = new Promise((resolve) => {
 
-	if(alreadyExists){
-		return;
-	}
+		const names = viewer.scene.pointclouds.map(p => p.name);
+		const alreadyExists = names.includes(data.name);
 
-	Potree.loadPointCloud(data.url, data.name, (e) => {
-		const {pointcloud} = e;
+		if(alreadyExists){
+			resolve();
+			return;
+		}
 
-		pointcloud.position.set(...data.position);
-		pointcloud.rotation.set(...data.rotation);
-		pointcloud.scale.set(...data.scale);
+		Potree.loadPointCloud(data.url, data.name, (e) => {
+			const {pointcloud} = e;
 
-		viewer.scene.addPointCloud(pointcloud);
+			pointcloud.position.set(...data.position);
+			pointcloud.rotation.set(...data.rotation);
+			pointcloud.scale.set(...data.scale);
+
+			viewer.scene.addPointCloud(pointcloud);
+
+			resolve(pointcloud);
+		});
 	});
+
+	return promise;
 }
 
 function loadMeasurement(viewer, data){
@@ -114,6 +123,31 @@ function loadOrientedImages(viewer, images){
 	Potree.OrientedImageLoader.load(cameraParamsPath, imageParamsPath, viewer).then( images => {
 		viewer.scene.addOrientedImages(images);
 	});
+
+}
+
+function loadGeopackage(viewer, geopackage){
+
+	const path = geopackage.path;
+
+	const duplicate = viewer.scene.geopackages.find(i => i.path === path);
+	if(duplicate){
+		return;
+	}
+
+	const projection = viewer.getProjection();
+
+	proj4.defs("WGS84", "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs");
+	proj4.defs("pointcloud", projection);
+	const transform = proj4("WGS84", "pointcloud");
+	const params = {
+		transform: transform,
+	};
+
+	Potree.GeoPackageLoader.loadUrl(path, params).then(data => {
+		viewer.scene.addGeopackage(data);
+	});
+	
 
 }
 
@@ -219,8 +253,10 @@ export function loadProject(viewer, data){
 
 	loadView(viewer, data.view);
 
+	const pointcloudPromises = [];
 	for(const pointcloud of data.pointclouds){
-		loadPointCloud(viewer, pointcloud);
+		const promise = loadPointCloud(viewer, pointcloud);
+		pointcloudPromises.push(promise);
 	}
 
 	for(const measure of data.measurements){
@@ -246,4 +282,13 @@ export function loadProject(viewer, data){
 	loadAnnotations(viewer, data.annotations);
 
 	loadClassification(viewer, data.classification);
+
+	// need to load at least one point cloud that defines the scene projection,
+	// before we can load stuff in other projections such as geopackages
+	// await Promise.any(pointcloudPromises); // (not yet supported)
+	Utils.waitAny(pointcloudPromises).then( () => {
+		for(const geopackage of data.geopackages){
+			loadGeopackage(viewer, geopackage);
+		}
+	});
 }

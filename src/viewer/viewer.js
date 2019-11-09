@@ -1237,13 +1237,10 @@ export class Viewer extends EventDispatcher{
 						msg += "coordinate reference system before loading vector data.";
 						console.error(msg);
 					}else{
-						const pointcloud = viewer.scene.pointclouds[0];
 
 						proj4.defs("WGS84", "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs");
-						proj4.defs("pointcloud", pointcloud.projection);
+						proj4.defs("pointcloud", this.getProjection());
 						let transform = proj4("WGS84", "pointcloud");
-
-						//const file = `../examples/morro_bay_shp/gpkg/geopackage.gpkg`;
 
 						const buffer = await file.arrayBuffer();
 
@@ -1253,24 +1250,7 @@ export class Viewer extends EventDispatcher{
 						};
 						
 						const geo = await Potree.GeoPackageLoader.loadBuffer(buffer, params);
-						viewer.scene.scene.add(geo.node);
-
-						for(const layer of geo.node.children){
-
-							const name = layer.name;
-
-							let tree = $(`#jstree_scene`);
-							let parentNode = "vectors";
-
-							let shpPointsID = tree.jstree('create_node', parentNode, { 
-									"text": name, 
-									"icon": `${Potree.resourcePath}/icons/triangle.svg`,
-									"object": layer,
-									"data": layer,
-								}, 
-								"last", false, false);
-							tree.jstree(layer.visible ? "check_node" : "uncheck_node", shpPointsID);
-						}
+						viewer.scene.addGeopackage(geo);
 					}
 				}
 				
@@ -1649,12 +1629,25 @@ export class Viewer extends EventDispatcher{
 
 			//console.log(lowestDistance.toString(2), duration);
 
+			const tStart = performance.now();
+			const campos = camera.position;
+			let closestImage = Infinity;
+			for(const images of this.scene.orientedImages){
+				for(const image of images.images){
+					const distance = image.mesh.position.distanceTo(campos);
+
+					closestImage = Math.min(closestImage, distance);
+				}
+			}
+			const tEnd = performance.now();
+
 			if(result.lowestSpacing !== Infinity){
 				let near = result.lowestSpacing * 10.0;
 				let far = -this.getBoundingBox().applyMatrix4(camera.matrixWorldInverse).min.z;
 
 				far = Math.max(far * 1.5, 10000);
 				near = Math.min(100.0, Math.max(0.01, near));
+				near = Math.min(near, closestImage);
 				far = Math.max(far, near + 10000);
 
 				if(near === Infinity){

@@ -3,6 +3,9 @@ import {TextSprite} from "../../TextSprite.js";
 import {OrientedImageControls} from "./OrientedImageControls.js";
 import { EventDispatcher } from "../../EventDispatcher.js";
 
+// https://support.pix4d.com/hc/en-us/articles/205675256-How-are-yaw-pitch-roll-defined
+// https://support.pix4d.com/hc/en-us/articles/202558969-How-are-omega-phi-kappa-defined
+
 function createMaterial(){
 
 	let vertexShader = `
@@ -52,6 +55,7 @@ export class OrientedImages extends EventDispatcher{
 	constructor(){
 		super();
 
+		this.node = null;
 		this.cameraParams = null;
 		this.imageParams = null;
 		this.images = null;
@@ -123,6 +127,11 @@ export class OrientedImageLoader{
 
 		for(let i = 1; i < lines.length; i++){
 			const line = lines[i];
+
+			if(line.startsWith("#")){
+				continue;
+			}
+
 			const tokens = line.split(/\s+/);
 
 			if(tokens.length < 6){
@@ -139,6 +148,10 @@ export class OrientedImageLoader{
 				kappa: Number.parseFloat(tokens[6]),
 			};
 
+			// const whitelist = ["47518.jpg"];
+			// if(whitelist.includes(params.id)){
+			// 	imageParams.push(params);
+			// }
 			imageParams.push(params);
 		}
 
@@ -161,43 +174,43 @@ export class OrientedImageLoader{
 		console.log(tEnd - tStart);
 
 		const sp = new THREE.PlaneGeometry(1, 1);
-		const sg = new THREE.SphereGeometry(1, 32, 32);
 		const lg = new THREE.Geometry();
 
-		lg.vertices.push(new THREE.Vector3(-0.5, -0.5, 0) );
-		lg.vertices.push(new THREE.Vector3( 0.5, -0.5, 0) );
-		lg.vertices.push(new THREE.Vector3( 0.5,  0.5, 0) );
-		lg.vertices.push(new THREE.Vector3(-0.5,  0.5, 0) );
-		lg.vertices.push(new THREE.Vector3(-0.5, -0.5, 0) );
+		lg.vertices.push(
+			new THREE.Vector3(-0.5, -0.5, 0),
+			new THREE.Vector3( 0.5, -0.5, 0),
+			new THREE.Vector3( 0.5,  0.5, 0),
+			new THREE.Vector3(-0.5,  0.5, 0),
+			new THREE.Vector3(-0.5, -0.5, 0),
+		);
 
+		const {width, height} = cameraParams;
+		const orientedImages = [];
 		const sceneNode = new THREE.Object3D();
 		sceneNode.name = "oriented_images";
-		viewer.scene.scene.add(sceneNode);
-
-		const orientedImages = [];
 
 		for(const params of imageParams){
 
 			const material = createMaterial();
 			const lm = new THREE.LineBasicMaterial( { color: 0x00ff00 } );
 			const mesh = new THREE.Mesh(sp, material);
-			mesh.position.set(params.x, params.y, params.z);
-			mesh.scale.set(3 / 4, 4 / 4, 1);
+
+			const {x, y, z, omega, phi, kappa} = params;
+			const [rx, ry, rz] = [omega, phi, kappa]
+				.map(THREE.Math.degToRad);
 			
-			let rx = THREE.Math.degToRad(params.omega);
-			let ry = THREE.Math.degToRad(params.phi);
-			let rz = THREE.Math.degToRad(params.kappa);
+			mesh.position.set(x, y, z);
+			mesh.scale.set(width / height, 1, 1);
 			mesh.rotation.set(rx, ry, rz);
 			{
 				mesh.updateMatrixWorld();
 				const dir = mesh.getWorldDirection();
-				const pos = mesh.position;
 				const alpha = THREE.Math.degToRad(cameraParams.fov / 2);
 				const d = -0.5 / Math.tan(alpha);
 				const move = dir.clone().multiplyScalar(d);
 				mesh.position.add(move);
 			}
-			viewer.scene.scene.add(mesh);
+			sceneNode.add(mesh);
 			material.uniforms.uOpacity.value = 1.0;
 
 			const line = new THREE.Line(lg, lm);
@@ -390,6 +403,7 @@ export class OrientedImageLoader{
 		});
 
 		const images = new OrientedImages();
+		images.node = sceneNode;
 		images.cameraParamsPath = cameraParamsPath;
 		images.imageParamsPath = imageParamsPath;
 		images.cameraParams = cameraParams;

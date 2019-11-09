@@ -63,7 +63,7 @@ async function createGithubPage(){
 		for(let example of row){
 			
 			thumbnails += `<td>
-					<a href="${example.url}" target="_blank">
+					<a href="http://potree.org/potree/examples/${example.url}" target="_blank">
 						<img src="examples/${example.thumb}" width="100%" />
 					</a>
 				</td>`;

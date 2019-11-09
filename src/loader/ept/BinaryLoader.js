@@ -53,7 +53,7 @@ export class EptBinaryLoader {
 
 			if (e.data.color) {
 				let color = new Uint8Array(e.data.color);
-				g.addAttribute('RGBA', new THREE.BufferAttribute(color, 4, true));
+				g.addAttribute('color', new THREE.BufferAttribute(color, 4, true));
 			}
 			if (e.data.intensity) {
 				let intensity = new Float32Array(e.data.intensity);

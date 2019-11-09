@@ -63,14 +63,14 @@
 			viewer.scene.addPointCloud(e.pointcloud);
 			e.pointcloud.position.z = 0;
 			let material = e.pointcloud.material;
-			material.size = 1;
-			material.pointSizeType = Potree.PointSizeType.FIXED;
-			material.activeAttributeName = "classification";
+			material.size = 0.8;
+			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+			material.activeAttributeName = "RGBA";
 			
-			viewer.scene.view.position.set(694991.9150582966, 3916274.3733733483, 76.41774609890476);
-			viewer.scene.view.lookAt(694878.4097257275, 3916332.0674868184, 14.497470898558227);
-
-			//viewer.fitToScreen();
+			viewer.scene.view.setView(
+				[694517.403, 3899262.595, 10642.698],
+				[694878.410, 3916332.067, 14.497],
+			);
 		});
 		
 	</script>

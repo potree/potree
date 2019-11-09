@@ -143,7 +143,7 @@ export class LasLazBatcher{
 			let indices = new Uint8Array(e.data.indices);
 
 			geometry.addAttribute('position', new THREE.BufferAttribute(positions, 3));
-			geometry.addAttribute('RGBA', new THREE.BufferAttribute(colors, 4, true));
+			geometry.addAttribute('color', new THREE.BufferAttribute(colors, 4, true));
 			geometry.addAttribute('intensity', new THREE.BufferAttribute(intensities, 1));
 			geometry.addAttribute('classification', new THREE.BufferAttribute(classifications, 1));
 			geometry.addAttribute('return number', new THREE.BufferAttribute(returnNumbers, 1));

@@ -168,7 +168,6 @@ class ProfilePointCloudEntry{
 				this.currentBatch.geometry.drawRange.count++;
 			}
 
-			//for(let attribute of Object.values(this.currentBatch.geometry.attributes)){
 			for(let key of Object.keys(this.currentBatch.geometry.attributes)){
 				let attribute = this.currentBatch.geometry.attributes[key];
 				attribute.updateRange.offset = updateRange.start;

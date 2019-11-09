@@ -122,7 +122,7 @@ export class EptLazBatcher {
 
 			g.addAttribute('position',
 					new THREE.BufferAttribute(positions, 3));
-			g.addAttribute('RGBA',
+			g.addAttribute('color',
 					new THREE.BufferAttribute(colors, 4, true));
 			g.addAttribute('intensity',
 					new THREE.BufferAttribute(intensities, 1));

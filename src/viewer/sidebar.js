@@ -21,6 +21,8 @@ export class Sidebar{
 		this.measuringTool = viewer.measuringTool;
 		this.profileTool = viewer.profileTool;
 		this.volumeTool = viewer.volumeTool;
+
+		this.dom = $("#sidebar_root");
 	}
 
 	createToolIcon(icon, title, callback){
@@ -1291,7 +1293,9 @@ export class Sidebar{
 
 	initAppearance(){
 
-		$('#sldPointBudget').slider({
+		const sldPointBudget = this.dom.find('#sldPointBudget');
+
+		sldPointBudget.slider({
 			value: this.viewer.getPointBudget(),
 			min: 100 * 1000,
 			max: 10 * 1000 * 1000,
@@ -1299,7 +1303,7 @@ export class Sidebar{
 			slide: (event, ui) => { this.viewer.setPointBudget(ui.value); }
 		});
 
-		$('#sldFOV').slider({
+		this.dom.find('#sldFOV').slider({
 			value: this.viewer.getFOV(),
 			min: 20,
 			max: 100,
@@ -1333,7 +1337,7 @@ export class Sidebar{
 
 		this.viewer.addEventListener('point_budget_changed', (event) => {
 			$('#lblPointBudget')[0].innerHTML = Utils.addCommas(this.viewer.getPointBudget());
-			$('#sldPointBudget').slider({value: this.viewer.getPointBudget()});
+			sldPointBudget.slider({value: this.viewer.getPointBudget()});
 		});
 
 		this.viewer.addEventListener('fov_changed', (event) => {

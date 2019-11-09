@@ -59,15 +59,18 @@
 			scene.addPointCloud(pointcloud);
 			
 			let material = pointcloud.material;
-			material.size = 1;
-			material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+			material.size = 3;
+			material.pointSizeType = Potree.PointSizeType.FIXED;
 			material.shape = Potree.PointShape.CIRCLE;
 
 			// Edit matcap properties
 			material.activeAttributeName = "matcap"; 
-			material.matcap = 'matcap.jpg'
+			material.matcap = 'metal_shiny.jpg'
 
-			viewer.fitToScreen();
+			viewer.scene.view.setView(
+				[4.087, -2.473, 2.015],
+				[-2.887, 3.882, -1.160],
+			);
 		});
 		
 	</script>

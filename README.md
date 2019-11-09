@@ -58,6 +58,7 @@ Take a look at the [potree showcase](http://potree.org/wp/demo/) for more exampl
 
 
 
+
 <table>
 	<tr>
 		<td>
@@ -94,6 +95,10 @@ Take a look at the [potree showcase](http://potree.org/wp/demo/) for more exampl
 				<img src="examples/thumbnails/toolbar.jpg" width="100%" />
 			</a>
 		</td><td>
+			<a href="matcap.html" target="_blank">
+				<img src="examples/thumbnails/matcap.jpg" width="100%" />
+			</a>
+		</td><td>
 			<a href="viewer.html" target="_blank">
 				<img src="examples/thumbnails/viewer.png" width="100%" />
 			</a>
@@ -109,24 +114,41 @@ Take a look at the [potree showcase](http://potree.org/wp/demo/) for more exampl
 			<a href="lion_las.html" target="_blank">
 				<img src="examples/thumbnails/lion_las.png" width="100%" />
 			</a>
-		</td><td>
-			<a href="lion_laz.html" target="_blank">
-				<img src="examples/thumbnails/lion_las.png" width="100%" />
-			</a>
 		</td>
 	</tr>
 	<tr>
-		<th>Toolbar</th><th>Basic Viewer</th><th>Heidentor</th><th>Lion</th><th>Lion LAS</th><th>Lion LAZ</th>
+		<th>Toolbar</th><th>Matcap</th><th>Basic Viewer</th><th>Heidentor</th><th>Lion</th><th>Lion LAS</th>
 	</tr><tr>
 		<td>
-			<a href="ca13.html" target="_blank">
-				<img src="examples/thumbnails/ca13.png" width="100%" />
+			<a href="lion_laz.html" target="_blank">
+				<img src="examples/thumbnails/lion_las.png" width="100%" />
+			</a>
+		</td><td>
+			<a href="ept.html" target="_blank">
+				<img src="examples/thumbnails/lion.png" width="100%" />
+			</a>
+		</td><td>
+			<a href="ept_binary.html" target="_blank">
+				<img src="examples/thumbnails/lion_las.png" width="100%" />
+			</a>
+		</td><td>
+			<a href="ept_zstandard.html" target="_blank">
+				<img src="examples/thumbnails/lion_las.png" width="100%" />
 			</a>
 		</td><td>
 			<a href="clipping_volume.html" target="_blank">
 				<img src="examples/thumbnails/clipping_volume.png" width="100%" />
 			</a>
 		</td><td>
+			<a href="ca13.html" target="_blank">
+				<img src="examples/thumbnails/ca13.png" width="100%" />
+			</a>
+		</td>
+	</tr>
+	<tr>
+		<th>Lion LAZ</th><th>EPT</th><th>EPT Binary</th><th>EPT zstandard</th><th>Clipping Volume</th><th>CA13</th>
+	</tr><tr>
+		<td>
 			<a href="elevation_profile.html" target="_blank">
 				<img src="examples/thumbnails/elevation_profile.png" width="100%" />
 			</a>
@@ -139,15 +161,6 @@ Take a look at the [potree showcase](http://potree.org/wp/demo/) for more exampl
 				<img src="examples/thumbnails/meshes.png" width="100%" />
 			</a>
 		</td><td>
-			<a href="lines.html" target="_blank">
-				<img src="examples/thumbnails/lines.png" width="100%" />
-			</a>
-		</td>
-	</tr>
-	<tr>
-		<th>CA13</th><th>Clipping Volume</th><th>Elevation Profile</th><th>Measurements</th><th>Meshes</th><th>Lines</th>
-	</tr><tr>
-		<td>
 			<a href="multiple_pointclouds.html" target="_blank">
 				<img src="examples/thumbnails/multiple_point_clouds.png" width="100%" />
 			</a>
@@ -159,7 +172,12 @@ Take a look at the [potree showcase](http://potree.org/wp/demo/) for more exampl
 			<a href="features_ca13.html" target="_blank">
 				<img src="examples/thumbnails/features_ca13.png" width="100%" />
 			</a>
-		</td><td>
+		</td>
+	</tr>
+	<tr>
+		<th>Elevation Profile</th><th>Measurements</th><th>Meshes</th><th>Multiple Point Clouds</th><th>Features (Sorvilier)</th><th>Features (CA13)</th>
+	</tr><tr>
+		<td>
 			<a href="annotations.html" target="_blank">
 				<img src="examples/thumbnails/annotations.png" width="100%" />
 			</a>
@@ -171,12 +189,7 @@ Take a look at the [potree showcase](http://potree.org/wp/demo/) for more exampl
 			<a href="animation_paths.html" target="_blank">
 				<img src="examples/thumbnails/animation_paths.png" width="100%" />
 			</a>
-		</td>
-	</tr>
-	<tr>
-		<th>Multiple Point Clouds</th><th>Features (Sorvilier)</th><th>Features (CA13)</th><th>Annotations</th><th>Hierarchical Annotations</th><th>Animation Path</th>
-	</tr><tr>
-		<td>
+		</td><td>
 			<a href="shapefiles.html" target="_blank">
 				<img src="examples/thumbnails/shapefiles.png" width="100%" />
 			</a>
@@ -188,7 +201,12 @@ Take a look at the [potree showcase](http://potree.org/wp/demo/) for more exampl
 			<a href="cesium_retz.html" target="_blank">
 				<img src="examples/thumbnails/cesium_retz.png" width="100%" />
 			</a>
-		</td><td>
+		</td>
+	</tr>
+	<tr>
+		<th>Annotations</th><th>Hierarchical Annotations</th><th>Animation Path</th><th>Shapefiles</th><th>Cesium CA13</th><th>Cesium Retz</th>
+	</tr><tr>
+		<td>
 			<a href="cesium_sorvilier.html" target="_blank">
 				<img src="examples/thumbnails/cesium_sorvilier.png" width="100%" />
 			</a>
@@ -200,27 +218,14 @@ Take a look at the [potree showcase](http://potree.org/wp/demo/) for more exampl
 			<a href="embedded_iframe.html" target="_blank">
 				<img src="examples/thumbnails/embedded_iframe.png" width="100%" />
 			</a>
-		</td>
-	</tr>
-	<tr>
-		<th>Shapefiles</th><th>Cesium CA13</th><th>Cesium Retz</th><th>Cesium Sorvilier</th><th>Custom Sidebar Section</th><th>Embedded Iframe</th>
-	</tr><tr>
-		<td>
+		</td><td>
 			<a href="gradient_colors.html" target="_blank">
 				<img src="examples/thumbnails/gradient_colors.png" width="100%" />
 			</a>
-		</td><td>
-			<a href="light_animated.html" target="_blank">
-				<img src="examples/thumbnails/light_animated.png" width="100%" />
-			</a>
-		</td><td>
-			<a href="light_ca13.html" target="_blank">
-				<img src="examples/thumbnails/light_ca13.png" width="100%" />
-			</a>
 		</td>
 	</tr>
 	<tr>
-		<th>Gradient Colors</th><th>Animated Light</th><th>Light CA13</th>
+		<th>Cesium Sorvilier</th><th>Custom Sidebar Section</th><th>Embedded Iframe</th><th>Gradient Colors</th>
 	</tr>
 </table>
 

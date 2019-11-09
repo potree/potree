@@ -13,13 +13,7 @@ export class Compass{
 			const direction = viewer.scene.view.direction.clone();
 			direction.z = 0;
 			direction.normalize();
-			// const north = new THREE.Vector3(0, 1, 0);
 
-			// const angleNorth = Math.atan2(north.y, north.x);
-			// const angleDir = Math.atan2(direction.y, direction.x);
-			// const azimuth = angleDir - angleNorth;
-			
-			
 			const camera = viewer.scene.getActiveCamera();
 
 			const p1 = camera.getWorldPosition(new THREE.Vector3());
@@ -28,7 +22,7 @@ export class Compass{
 			const projection = viewer.getProjection();
 			const azimuth = Utils.computeAzimuth(p1, p2, projection);
 			
-			this.dom.css("transform", `rotateZ(${azimuth}rad)`);
+			this.dom.css("transform", `rotateZ(${-azimuth}rad)`);
 		});
 
 		this.dom.click( () => {

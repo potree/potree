@@ -291,7 +291,7 @@ We would like to thank our sponsors for their financial contributions that keep 
 				<img src="docs/sponsors/Logo-YLB.png" height="60"/> &nbsp;
 			</a>
 			<a href="http://archpro.lbg.ac.at">
-				<img src="docs/sponsors/archpro_EN_small.png" height="80"/> 
+				<img src="docs/sponsors/archpro_EN_small.png" height="60"/> 
 			</a> &nbsp;
 			<br>
 			<a href="http://www.kts.co.jp">

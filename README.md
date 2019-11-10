@@ -239,8 +239,8 @@ We would like to thank our sponsors for their financial contributions that keep 
 			€ 15,000+
 		</th>
 		<td>
-			<a href="http://rapidlasso.com">
-				<img src="./docs/sponsors/rapidlasso_square_256x2561.png" width="150" height="150"/>
+			<a href="http://www.ne.ch/autorites/DDTE/SGRF/SITN/Pages/accueil.aspx">
+				<img src="docs/sponsors/sitn_logo.png" height="80px"/> &nbsp;
 			</a> &nbsp;
 			<a href="http://www.synth3d.co">
 				<img src="docs/sponsors/synth.png" height="120"/>
@@ -248,9 +248,9 @@ We would like to thank our sponsors for their financial contributions that keep 
 			<a href="http://www.geocue.com">
 				<img src="docs/sponsors/geocue.png" height="120px"/>
 			</a> &nbsp;
-			<a href="http://www.ne.ch/autorites/DDTE/SGRF/SITN/Pages/accueil.aspx">
-				<img src="docs/sponsors/sitn_logo.png" height="80px"/> &nbsp;
-			</a>
+			<a href="http://rapidlasso.com">
+				<img src="./docs/sponsors/rapidlasso_square_256x2561.png" width="150" height="150"/>
+			</a> &nbsp;
 		</td>
 	</tr>
 	<tr>
@@ -271,7 +271,7 @@ We would like to thank our sponsors for their financial contributions that keep 
 		</th>
 		<td>
 			<a href="http://georepublic.info">
-				<img src="docs/sponsors/georepublic.png" height="40"/>
+				<img src="docs/sponsors/georepublic.png" height="45"/>
 			</a>
 		</td>
 	</tr>
@@ -281,8 +281,21 @@ We would like to thank our sponsors for their financial contributions that keep 
 			€ 1,000+
 		</th>
 		<td>
+			<a href="http://www.helimap.com/">
+				<img src="docs/sponsors/helimap.gif" height="50"/> &nbsp;
+			</a>
+			<a href="http://www.vevey.ch/">
+				<img src="docs/sponsors/vevey.png" height="70"/> &nbsp;
+			</a>
+			<a href="https://www.yverdon-les-bains.ch/">
+				<img src="docs/sponsors/Logo-YLB.png" height="60"/> &nbsp;
+			</a>
+			<a href="http://archpro.lbg.ac.at">
+				<img src="docs/sponsors/archpro_EN_small.png" height="80"/> 
+			</a> &nbsp;
+			<br>
 			<a href="http://www.kts.co.jp">
-				<img src="docs/sponsors/kts.png" height="40"/> &nbsp;
+				<img src="docs/sponsors/kts.png" height="32"/> &nbsp;
 			</a>
 			<a href="http://veesus.com">
 				<img src="docs/sponsors/veesus_small.png" height="40"/> &nbsp;
@@ -290,9 +303,6 @@ We would like to thank our sponsors for their financial contributions that keep 
 			<a href="http://www.sigeom.ch">
 				<img src="docs/sponsors/logo_sigeom.png" height="40"/> &nbsp;
 			</a>
-			<a href="http://archpro.lbg.ac.at">
-				<img src="docs/sponsors/archpro_EN_small.png" height="40"/> 
-			</a> &nbsp;
 		</td>
 	</tr>
 </table>

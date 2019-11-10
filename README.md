@@ -282,7 +282,7 @@ We would like to thank our sponsors for their financial contributions that keep 
 		</th>
 		<td>
 			<a href="http://www.helimap.com/">
-				<img src="docs/sponsors/helimap.gif" height="50"/> &nbsp;
+				<img src="docs/sponsors/helimap.gif" height="60"/> &nbsp;
 			</a>
 			<a href="http://www.vevey.ch/">
 				<img src="docs/sponsors/vevey.png" height="70"/> &nbsp;

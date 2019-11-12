@@ -49,7 +49,6 @@ export async function loadRem(s3, bucket, name, remShaderMaterial, animationEngi
       }
 
       let bytesArray = new Uint8Array(response);
-      debugger;
       const remSphereMeshes = parseControlPoints(bytesArray, remShaderMaterial, FlatbufferModule, animationEngine);
       callback( remSphereMeshes );
     };

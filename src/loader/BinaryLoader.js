@@ -56,6 +56,7 @@ export class BinaryLoader{
 
 			let geometry = new THREE.BufferGeometry();
 
+
 			for(let property in buffers){
 				let buffer = buffers[property].buffer;
 
@@ -94,6 +95,9 @@ export class BinaryLoader{
 						offset: buffers[property].offset,
 						range: buffers[property].range,
 					};
+				} else if (parseInt(property) === PointAttributeNames.RTK_POSE) {
+					debugger;
+					geometry.addAttribute('rtkPose', new THREE.BufferAttribute(new Float64Array(buffer), 6, false));
 				}
 			}
 

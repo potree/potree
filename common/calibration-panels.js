@@ -196,7 +196,6 @@ $(document).ready(function () {
         let val = setpointVal+stepsizeVal*sliderVal;
 
         value.textContent = val.toFixed(4);
-        // debugger; //id
 
         let idComponents = value.id.split('-');
         let id = idComponents[0];
@@ -207,10 +206,12 @@ $(document).ready(function () {
       }
 
       reset.onmouseup = function() {
-        setpoint.value = 0;
+        // setpoint.value = 0;
         stepsize.value = 1;
         slider.value = 0;
-        value.textContent = (0).toFixed(4);
+        let val = parseFloat(setpoint.value)+stepsize.value*slider.value;
+
+        value.textContent = val.toFixed(4);
 
         let idComponents = value.id.split('-');
         let id = idComponents[0];
@@ -284,4 +285,59 @@ function downloadCals() {
   let month = `${date.getMonth() + 1}`.padStart(2, '0')
   let day = `${date.getDate() + 0}`.padStart(2, '0')
   download(`EXTRINSICS_UNKNOWN_${year}${month}${day}_N001.txt`, text);
+}
+
+
+function storeRtk2Vehicle(rtk2vehicle) {
+  try {
+    $("#rtk2vehicle-setpoint-x").val(rtk2vehicle.x);
+    $("#rtk2vehicle-x").text(rtk2vehicle.x.toFixed(4));
+    $("#rtk2vehicle-x").trigger("input");
+    $("#rtk2vehicle-setpoint-y").val(rtk2vehicle.y);
+    $("#rtk2vehicle-y").text(rtk2vehicle.y.toFixed(4));
+    $("#rtk2vehicle-y").trigger("input");
+    $("#rtk2vehicle-setpoint-z").val(rtk2vehicle.z);
+    $("#rtk2vehicle-z").text(rtk2vehicle.z.toFixed(4));
+    $("#rtk2vehicle-z").trigger("input");
+    $("#rtk2vehicle-setpoint-roll").val(rtk2vehicle.roll);
+    $("#rtk2vehicle-roll").text(rtk2vehicle.roll.toFixed(4));
+    $("#rtk2vehicle-roll").trigger("input");
+    $("#rtk2vehicle-setpoint-pitch").val(rtk2vehicle.pitch);
+    $("#rtk2vehicle-pitch").text(rtk2vehicle.pitch.toFixed(4));
+    $("#rtk2vehicle-pitch").trigger("input");
+    $("#rtk2vehicle-setpoint-yaw").val(rtk2vehicle.yaw);
+    $("#rtk2vehicle-yaw").text(rtk2vehicle.yaw.toFixed(4));
+    $("#rtk2vehicle-yaw").trigger("input");
+    console.log("Stored Rtk to Vehicle Extrinsics");
+
+  } catch (e) {
+    console.error("Could not store RTK to Vehicle Calibration Extrinsics", e);
+  }
+}
+
+function storeVelo2Rtk(velo2rtk) {
+  try {
+    $("#velo2rtk-setpoint-x").val(velo2rtk.x);
+    $("#velo2rtk-x").text(velo2rtk.x.toFixed(4));
+    $("#velo2rtk-x").trigger('input');
+    $("#velo2rtk-setpoint-y").val(velo2rtk.y);
+    $("#velo2rtk-y").text(velo2rtk.y.toFixed(4));
+    $("#velo2rtk-y").trigger('input');
+    $("#velo2rtk-setpoint-z").val(velo2rtk.z);
+    $("#velo2rtk-z").text(velo2rtk.z.toFixed(4));
+    $("#velo2rtk-z").trigger('input');
+    $("#velo2rtk-setpoint-roll").val(velo2rtk.roll);
+    $("#velo2rtk-roll").text(velo2rtk.roll.toFixed(4));
+    $("#velo2rtk-roll").trigger('input');
+    $("#velo2rtk-setpoint-pitch").val(velo2rtk.pitch);
+    $("#velo2rtk-pitch").text(velo2rtk.pitch.toFixed(4));
+    $("#velo2rtk-pitch").trigger('input');
+    $("#velo2rtk-setpoint-yaw").val(velo2rtk.yaw);
+    $("#velo2rtk-yaw").text(velo2rtk.yaw.toFixed(4));
+    $("#velo2rtk-yaw").trigger('input');
+    console.log("Stored Rtk to Vehicle Extrinsics");
+
+  } catch (e) {
+    console.error("Could not store Velodyne to RTK Calibration Extrinsics", e);
+  }
 }

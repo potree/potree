@@ -23,6 +23,7 @@ pointclouds/
 develop/clouds
 pointclouds/veritas
 data/
+# cals/
 
 # Unwanted Data Filetypes
 *.fb

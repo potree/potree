@@ -15,7 +15,7 @@
 	<link rel="stylesheet" type="text/css" href="../libs/spectrum/spectrum.css">
 	<link rel="stylesheet" type="text/css" href="../libs/jstree/themes/mixed/style.css">
 	<link rel="stylesheet" href="../common/overlay.css" type="text/css">
-	<link rel="stylesheet" href="../common/draggable-overlay.css" type="text/css">
+	<link rel="stylesheet" href="../common/calibration-panels.css" type="text/css">
 	<link rel="stylesheet" href="../common/loading-bar.css" type="text/css">
   <!-- <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet"> -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -29,6 +29,7 @@
   <script type="module" src="trackLoader.js"></script>
   <script type="module" src="gapsLoader.js"></script>
 	<script type="module" src="remLoader.js"></script>
+	<script type="module" src="calibrationManager.js"></script>
   <link rel="stylesheet" type="text/css" href="../common/playbar.css">
 </head>
 
@@ -51,7 +52,7 @@
 	<script src="../common/playbar.js"></script>
 	<script src="../common/loading-bar.js"></script>
 	<script type="module" src="../common/overlay.js"></script>
-	<script src="../common/draggable-overlay.js"></script>
+	<script src="../common/calibration-panels.js"></script>
 	<script src="../node_modules/three.meshline/src/THREE.MeshLine.js"></script>
 	<script src="animationEngine.js"></script>
 	<script type="module" src="RtkTrajectory.js"></script>
@@ -144,6 +145,7 @@
 		import { loadRadar } from "../demo/radarLoader.js";
 		import { loadGaps } from "../demo/gapsLoader.js";
 		import { loadRem } from "../demo/remLoader.js";
+		import { loadCalibration, storeCalibration } from "../demo/calibrationManager.js";
 		import { updateSidebar, togglePointClass } from "../common/custom-sidebar.js";
 		import { getLoadingBar } from "../common/overlay.js";
 		// import {  } from "../common/overlay.js";
@@ -339,6 +341,17 @@
 
 			// Load Data Sources in loadRtkCallback:
 			loadRtkCallback(s3, bucket, name, () => {
+
+				// Load Extrinsics:
+				try {
+					loadCalibration(s3, bucket, name, (extrinsics) => {
+						console.log("Calibration Loaded!");
+						window.extrinsics = {old: extrinsics, new:extrinsics};
+						storeVelo2Rtk(window.extrinsics.new);
+					});
+				} catch (e) {
+					console.error("Could not load Calibrations: ", e);
+				}
 
 				// Load Lanes:
 				try {
@@ -720,7 +733,6 @@
 				}
 			});
 		}
-
 
 // Reload Lanes Button Code (Start)
 window.annotateLanesModeActive = false;

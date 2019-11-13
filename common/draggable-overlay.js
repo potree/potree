@@ -51,6 +51,7 @@ $(document).ready(function () {
             Range: <input class="calibration-step" type="number" value="1" step='any'/> rad
             <button type="button" class="calibration-reset">Reset</button>
         </span></p>
+        <button type="button" id="download_cals_button" class="download-cals" onclick="downloadCals();">Download</button>
       </div>
 
       <div class="draggable-overlay" id="calibration-overlay-rtk2vehicle">
@@ -129,6 +130,8 @@ $(document).ready(function () {
   // dragElement($(".draggable-overlay"));
   dragElement(document.getElementById("calibration-overlay-velo2rtk"));
   dragElement(document.getElementById("calibration-overlay-rtk2vehicle"));
+  $("#download_cals_button").click = function() {downloadCals();};
+
 
   function dragElement(elmnt) {
     var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
@@ -172,14 +175,13 @@ $(document).ready(function () {
   }
 
   // Set scale slider:
-  calibrationPanels = $(".draggable-overlay");
+  let calibrationPanels = $(".draggable-overlay");
   for (let ii = 0, len=calibrationPanels.length; ii < len; ii++) {
     var calibrationPanel = calibrationPanels[ii];
 
-    pElements = calibrationPanel.children;
-    for (let jj = 1, len2=pElements.length; jj < len2; jj++) {
+    let pElements = calibrationPanel.getElementsByTagName("p");
+    for (let jj = 0, len2=pElements.length; jj < len2; jj++) {
       let span = pElements[jj].children[0];
-      // let span = $(".draggable-overlay")[0].children[1].children[0];
 
       let value = span.querySelector(".calibration-value");
       let setpoint = span.querySelector(".calibration-setpoint");
@@ -188,10 +190,10 @@ $(document).ready(function () {
       let reset = span.querySelector(".calibration-reset");
 
       slider.oninput = function() {
-        sliderVal = parseFloat(slider.value);
-        setpointVal = parseFloat(setpoint.value);
-        stepsizeVal = parseFloat(stepsize.value);
-        val = setpointVal+stepsizeVal*sliderVal;
+        let sliderVal = parseFloat(slider.value);
+        let setpointVal = parseFloat(setpoint.value);
+        let stepsizeVal = parseFloat(stepsize.value);
+        let val = setpointVal+stepsizeVal*sliderVal;
 
         value.textContent = val.toFixed(4);
         // debugger; //id
@@ -247,4 +249,39 @@ function getVelo2Rtk() {
   }
   // debugger; // return
   return velo2rtk;
+}
+
+
+function download(filename, text) {
+  var element = document.createElement('a');
+  element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+  element.setAttribute('download', filename);
+  element.style.display = 'none';
+  document.body.appendChild(element);
+  element.click();
+  document.body.removeChild(element);
+}
+
+function downloadCals() {
+  const x =  $("#velo2rtk-x").text()
+  const y =  $("#velo2rtk-y").text()
+  const z =  $("#velo2rtk-z").text()
+  const roll =  $("#velo2rtk-roll").text()
+  const pitch =  $("#velo2rtk-pitch").text()
+  const yaw =  $("#velo2rtk-yaw").text()
+
+  let version;
+  if (window.usingAdjustedHeading) {
+    version = '2.0';
+  } else {
+    version = '1.0';
+  }
+
+  let text = `${x}, ${y}, ${z}\n${roll}, ${pitch}, ${yaw}\nversion: ${version}`;
+
+  let date = new Date();
+  let year = `${date.getYear() + 1900}`.padStart(4, '0')
+  let month = `${date.getMonth() + 1}`.padStart(2, '0')
+  let day = `${date.getDate() + 0}`.padStart(2, '0')
+  download(`EXTRINSICS_UNKNOWN_${year}${month}${day}_N001.txt`, text);
 }

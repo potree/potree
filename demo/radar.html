@@ -15,6 +15,7 @@
 	<link rel="stylesheet" type="text/css" href="../libs/spectrum/spectrum.css">
 	<link rel="stylesheet" type="text/css" href="../libs/jstree/themes/mixed/style.css">
 	<link rel="stylesheet" href="../common/overlay.css" type="text/css">
+	<link rel="stylesheet" href="../common/draggable-overlay.css" type="text/css">
 	<link rel="stylesheet" href="../common/loading-bar.css" type="text/css">
   <!-- <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet"> -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -50,6 +51,7 @@
 	<script src="../common/playbar.js"></script>
 	<script src="../common/loading-bar.js"></script>
 	<script type="module" src="../common/overlay.js"></script>
+	<script src="../common/draggable-overlay.js"></script>
 	<script src="../node_modules/three.meshline/src/THREE.MeshLine.js"></script>
 	<script src="animationEngine.js"></script>
 	<script type="module" src="RtkTrajectory.js"></script>
@@ -635,6 +637,14 @@
 							viewer.scene.pointclouds[ii].material.elevationRange = [window.elevationWindow.z - window.elevationWindow.min, window.elevationWindow.z + window.elevationWindow.max];
 							// TODO set elevation slider range extent
 					}
+
+					// Save Current RTK Pose in Uniforms:
+					for (let ii = 0, numClouds = clouds.length; ii < numClouds; ii++) {
+						let material = clouds[ii].material;
+						debugger;
+						material.uniforms.currentRtkPosition.value = state.pose.clone();
+						material.uniforms.currentRtkOrientation.value = state.orient.toVector3().clone();
+					}
 				} catch (e) {
 					console.error("Caught error: ",e);
 				}
@@ -688,8 +698,6 @@
 				slider.value = 100*t;
 				time_display.value = Math.round(10000*(gpsTime - animationEngine.tstart))/10000; // Centered to zero
 			});
-
-
 
 			// // Camera:
 			// let updateCamera = false;
@@ -1124,11 +1132,39 @@ async function loadRemCallback(s3, bucket, name, animationEngine) {
 					const pointcloud = e.pointcloud;
 		      const material = pointcloud.material;
 		      viewer.scene.addPointCloud(pointcloud);
-		      material.pointColorType = Potree.PointColorType.INTENSITY; // any Potree.PointColorType.XXXX
+		      material.pointColorType = Potree.PointColorType.RGB; // any Potree.PointColorType.XXXX
 					material.gradient = Potree.Gradients.GRAYSCALE; // Can define custom gradient or look up in Potree.Gradients
 		      material.size = 0.09;
 		      material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
 		      material.shape = Potree.PointShape.SQUARE;
+
+		      material.uniforms.uExtrinsicsMode = {type: "b", value: false};
+		      material.uniforms.currentRtkPosition = {type: "v3", value: new THREE.Vector3(0,0,0)};
+			  material.uniforms.currentRtkOrientation = {type: "v3", value: new THREE.Vector3(0,0,0)};
+		      material.uniforms.rtk2VehicleXYZ = {type: "v3", value: new THREE.Vector3(0,0,0)};
+			  material.uniforms.rtk2VehicleRPY = {type: "v3", value: new THREE.Vector3(0,0,0)};
+		      material.uniforms.velo2RtkXYZ = {type: "v3", value: new THREE.Vector3(0,0,0)};
+			  material.uniforms.velo2RtkRPY = {type: "v3", value: new THREE.Vector3(0,0,0)};
+
+			// Function to update these values as calibration extrinsics get updated
+			window.addEventListener("update-calibration-panel", (e) => {
+				console.log("calibration panel updated: ", e.detail);
+				const id = e.detail.id;
+				const dim = e.detail.dim;
+				const val = e.detail.value;
+
+				if (id == "rtk2vehicle") {
+					let rtk2vehicle = getRtk2Vehicle();
+					material.uniforms.rtk2VehicleXYZ = {type: "v3", value: new THREE.Vector3(rtk2vehicle.x, rtk2vehicle.y, rtk2vehicle.z)};
+					material.uniforms.rtk2VehicleRPY = {type: "v3", value: new THREE.Vector3(rtk2vehicle.roll, rtk2vehicle.pitch, rtk2vehicle.yaw)};
+				} else if (id == "velo2rtk") {
+					let velo2rtk = getVelo2Rtk();
+					material.uniforms.velo2RtkXYZ = {type: "v3", value: new THREE.Vector3(velo2rtk.x, velo2rtk.y, velo2rtk.z)};
+					material.uniforms.velo2RtkRPY = {type: "v3", value: new THREE.Vector3(velo2rtk.roll, velo2rtk.pitch, velo2rtk.yaw)};
+				} else {
+					console.error("Unknown Calibration Extrinsics Id:", id);
+				}
+			});
 
 		      viewer.scene.view.position.set(300198.109, 4701144.537, 349.871);
 		      viewer.scene.view.lookAt(new THREE.Vector3(299900.954, 4701576.919, 66.197));

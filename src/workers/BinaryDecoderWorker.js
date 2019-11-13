@@ -136,8 +136,8 @@ onmessage = function (event) {
 
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
 		} else if (pointAttribute.name === PointAttribute.RTK_POSE.name) {
-			let buff = new ArrayBuffer(numPoints * 8 * 3);
-			let rtk_poses = new Float64Array(buff);
+			let buff = new ArrayBuffer(numPoints * 4 * 3);
+			let rtk_poses = new Float32Array(buff);
 			let view = new DataView(buffer);
 
 			for (let j = 0; j < numPoints; j++) {
@@ -152,8 +152,8 @@ onmessage = function (event) {
 
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
 		} else if (pointAttribute.name === PointAttribute.RTK_ORIENT.name) {
-			let buff = new ArrayBuffer(numPoints * 8 * 3);
-			let rtk_orients = new Float64Array(buff);
+			let buff = new ArrayBuffer(numPoints * 4 * 3);
+			let rtk_orients = new Float32Array(buff);
 
 			for (let j = 0; j < numPoints; j++) {
 				x = cv.getFloat64(inOffset + j * pointAttributes.byteSize + 0, true);

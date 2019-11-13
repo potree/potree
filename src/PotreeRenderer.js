@@ -143,6 +143,12 @@ let attributeLocations = {
 	"normal": 8,
 	"spacing": 9,
 	"gpsTime": 10,
+	"originalRtkPosition": 11,
+	"originalRtkOrientation": 12,
+	// "rtk2vehicleXYZ": 13,
+	// "rtk2vehicleRPY": 14,
+	// "velo2rtkXYZ": 15,
+	// "velo2rtkRPY": 16
 };
 
 class Shader {
@@ -719,6 +725,8 @@ export class Renderer {
 
 			let level = node.getLevel();
 
+			shader.setUniform("uExtrinsicsMode", material.uniforms.uExtrinsicsMode.value);
+
 			if(node.debug){
 				shader.setUniform("uDebug", true);
 			}else{
@@ -1083,6 +1091,26 @@ export class Renderer {
 			shader.setUniformMatrix4("viewMatrix", view);
 			shader.setUniformMatrix4("uViewInv", viewInv);
 			shader.setUniformMatrix4("uProjInv", projInv);
+
+			try {
+				// debugger; // try below
+				let currentRtkPosition = octree.material.uniforms.currentRtkPosition.value.toArray();
+				let currentRtkOrientation = octree.material.uniforms.currentRtkOrientation.value.toArray();
+				let rtk2VehicleXYZ = octree.material.uniforms.rtk2VehicleXYZ.value.toArray();
+				let rtk2VehicleRPY = octree.material.uniforms.rtk2VehicleRPY.value.toArray();
+				let velo2RtkXYZ = octree.material.uniforms.velo2RtkXYZ.value.toArray();
+				let velo2RtkRPY = octree.material.uniforms.velo2RtkRPY.value.toArray();
+
+				shader.setUniform3f("currentRtkPosition", currentRtkPosition);
+				shader.setUniform3f("currentRtkOrientation", currentRtkOrientation);
+				shader.setUniform3f("rtk2VehicleXYZ", rtk2VehicleXYZ);
+				shader.setUniform3f("rtk2VehicleRPY", rtk2VehicleRPY);
+				shader.setUniform3f("velo2RtkXYZ", velo2RtkXYZ);
+				shader.setUniform3f("velo2RtkRPY", velo2RtkRPY);
+
+			} catch(e) {
+				// debugger; // currentRtkPosition/Orientation doesn't exist
+			}
 
 			let screenWidth = target ? target.width : material.screenWidth;
 			let screenHeight = target ? target.height : material.screenHeight;

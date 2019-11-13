@@ -234,7 +234,7 @@ $(document).ready(function () {
         } else {
           download(JSON.stringify(laneLeftSegments.getFinalPoints(), null, 2), "lane-left.json");
         }
-        
+
       } catch (e) {
         console.error("Couldn't download left lane vertices: ", e);
       }
@@ -280,7 +280,7 @@ $(document).ready(function () {
     // document.getElementById("elevation_min").style.display = "none";
     document.getElementById("playback_speed").style.display = "none";
     document.getElementById("toggleslider").style.display = "none";
-    document.getElementById("toggle_calibration_panels").style.display = "none";
+    // document.getElementById("toggle_calibration_panels").style.display = "none";
     document.getElementById("load_detections_button").style.display = "none";
     document.getElementById("load_gaps_button").style.display = "none";
     document.getElementById("download_lanes_button").style.display = "none";

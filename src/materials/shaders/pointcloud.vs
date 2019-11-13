@@ -15,6 +15,16 @@ attribute float pointSourceID;
 attribute vec4 indices;
 attribute float spacing;
 attribute float gpsTime;
+attribute vec3 originalRtkPosition;
+attribute vec3 originalRtkOrientation;
+
+
+uniform vec3 currentRtkPosition;
+uniform vec3 currentRtkOrientation;
+uniform vec3 rtk2VehicleXYZ;
+uniform vec3 rtk2VehicleRPY;
+uniform vec3 velo2RtkXYZ;
+uniform vec3 velo2RtkRPY;
 
 uniform mat4 modelMatrix;
 uniform mat4 modelViewMatrix;
@@ -29,6 +39,7 @@ uniform float near;
 uniform float far;
 
 uniform bool uDebug;
+uniform bool uExtrinsicsMode;
 
 uniform bool uUseOrthographicCamera;
 uniform float uOrthoWidth;
@@ -388,6 +399,12 @@ vec3 getRGB(){
 	rgb.b += 0.8; // VINAY - set blue
 	rgb = clamp(rgb, 0.0, 1.0);
 
+	// if (currentRtkPosition[0] > 290000.00000) {
+	if (rtk2VehicleXYZ[1] > 0.5) {
+		rgb = vec3(0.0,1.0,0.0);
+	} else {
+		rgb = vec3(0.0,0.0,1.0);
+	}
 
 		//rgb = indices.rgb;
 	//rgb.b = pcIndex / 255.0;

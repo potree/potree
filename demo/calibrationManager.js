@@ -3,7 +3,7 @@ export async function storeCalibration(s3, bucket, name, callback) {
 }
 
 
-export async function loadCalibration(s3, bucket, name, callback) {
+export async function loadVelo2Rtk(s3, bucket, name, callback) {
   const tstart = performance.now();
   //is name here the dataset name? We should be more careful about that....
   if (s3 && bucket && name) {
@@ -44,8 +44,8 @@ export async function loadCalibration(s3, bucket, name, callback) {
         return;
       }
 
-      const extrinsics = parseCalibrationFile(calibrationText);
-      callback( extrinsics );
+      const velo2Rtk = parseCalibrationFile(calibrationText);
+      callback( velo2Rtk );
     };
 
     t0 = performance.now();
@@ -55,7 +55,7 @@ export async function loadCalibration(s3, bucket, name, callback) {
 
 function parseCalibrationFile(calibrationText){
 
-  let extrinsics = {
+  let velo2Rtk = {
     x: 0, y:0, z:0, roll:0, pitch:0, yaw:0, version:1.0
   }
 
@@ -63,18 +63,25 @@ function parseCalibrationFile(calibrationText){
   let stringXYZ = lines[0].split(" ");
   let stringRPY = lines[1].split(" ");
 
-  extrinsics.x = parseFloat(stringXYZ[0]);
-  extrinsics.y = parseFloat(stringXYZ[1]);
-  extrinsics.z = parseFloat(stringXYZ[2]);
+  velo2Rtk.x = parseFloat(stringXYZ[0]);
+  velo2Rtk.y = parseFloat(stringXYZ[1]);
+  velo2Rtk.z = parseFloat(stringXYZ[2]);
 
-  extrinsics.roll  = parseFloat(stringRPY[0]);
-  extrinsics.pitch = parseFloat(stringRPY[1]);
-  extrinsics.yaw   = parseFloat(stringRPY[2]);
+  velo2Rtk.roll  = parseFloat(stringRPY[0]);
+  velo2Rtk.pitch = parseFloat(stringRPY[1]);
+  velo2Rtk.yaw   = parseFloat(stringRPY[2]);
+
+  let vals = Object.values(velo2Rtk);
+  let allValid = vals.reduce((acc, cur) => acc && !isNaN(cur), true)
+
+  if (!allValid){
+    console.error("Error parsing extrinsics file ", velo2Rtk);
+  }
 
   if (lines.length > 2) {
     let versionStr = lines[2].split("version: ")[1];
-    extrinsics.version = parseFloat(versionStr);
+    velo2Rtk.version = parseFloat(versionStr);
   }
 
-  return extrinsics;
+  return velo2Rtk;
 }

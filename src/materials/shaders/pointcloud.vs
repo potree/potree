@@ -18,13 +18,18 @@ attribute float gpsTime;
 attribute vec3 originalRtkPosition;
 attribute vec3 originalRtkOrientation;
 
-
 uniform vec3 currentRtkPosition;
 uniform vec3 currentRtkOrientation;
-uniform vec3 rtk2VehicleXYZ;
-uniform vec3 rtk2VehicleRPY;
-uniform vec3 velo2RtkXYZ;
-uniform vec3 velo2RtkRPY;
+
+uniform vec3 rtk2VehicleXYZOld;
+uniform vec3 rtk2VehicleRPYOld;
+uniform vec3 velo2RtkXYZOld;
+uniform vec3 velo2RtkRPYOld;
+
+uniform vec3 rtk2VehicleXYZNew;
+uniform vec3 rtk2VehicleRPYNew;
+uniform vec3 velo2RtkXYZNew;
+uniform vec3 velo2RtkRPYNew;
 
 uniform mat4 modelMatrix;
 uniform mat4 modelViewMatrix;
@@ -400,7 +405,7 @@ vec3 getRGB(){
 	rgb = clamp(rgb, 0.0, 1.0);
 
 	// if (currentRtkPosition[0] > 290000.00000) {
-	if (rtk2VehicleXYZ[1] > 0.5) {
+	if (rtk2VehicleXYZNew[1] > 0.5) {
 		rgb = vec3(0.0,1.0,0.0);
 	} else {
 		rgb = vec3(0.0,0.0,1.0);

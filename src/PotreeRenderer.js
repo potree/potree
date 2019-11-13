@@ -1094,22 +1094,32 @@ export class Renderer {
 
 			try {
 				// debugger; // try below
-				let currentRtkPosition = octree.material.uniforms.currentRtkPosition.value.toArray();
-				let currentRtkOrientation = octree.material.uniforms.currentRtkOrientation.value.toArray();
-				let rtk2VehicleXYZ = octree.material.uniforms.rtk2VehicleXYZ.value.toArray();
-				let rtk2VehicleRPY = octree.material.uniforms.rtk2VehicleRPY.value.toArray();
-				let velo2RtkXYZ = octree.material.uniforms.velo2RtkXYZ.value.toArray();
-				let velo2RtkRPY = octree.material.uniforms.velo2RtkRPY.value.toArray();
+				// let currentRtkPosition = octree.material.uniforms.currentRtkPosition.value.toArray();
+				// let currentRtkOrientation = octree.material.uniforms.currentRtkOrientation.value.toArray();
 
-				shader.setUniform3f("currentRtkPosition", currentRtkPosition);
-				shader.setUniform3f("currentRtkOrientation", currentRtkOrientation);
-				shader.setUniform3f("rtk2VehicleXYZ", rtk2VehicleXYZ);
-				shader.setUniform3f("rtk2VehicleRPY", rtk2VehicleRPY);
-				shader.setUniform3f("velo2RtkXYZ", velo2RtkXYZ);
-				shader.setUniform3f("velo2RtkRPY", velo2RtkRPY);
+				let rtk2VehicleXYZOld = octree.material.uniforms.rtk2VehicleXYZOld.value.toArray();
+				let rtk2VehicleRPYOld = octree.material.uniforms.rtk2VehicleRPYOld.value.toArray();
+				let velo2RtkXYZOld = octree.material.uniforms.velo2RtkXYZOld.value.toArray();
+				let velo2RtkRPYOld = octree.material.uniforms.velo2RtkRPYOld.value.toArray();
+
+				let rtk2VehicleXYZNew = octree.material.uniforms.rtk2VehicleXYZNew.value.toArray();
+				let rtk2VehicleRPYNew = octree.material.uniforms.rtk2VehicleRPYNew.value.toArray();
+				let velo2RtkXYZNew = octree.material.uniforms.velo2RtkXYZNew.value.toArray();
+				let velo2RtkRPYNew = octree.material.uniforms.velo2RtkRPYNew.value.toArray();
+
+				// shader.setUniform3f("currentRtkPosition", currentRtkPosition);
+				// shader.setUniform3f("currentRtkOrientation", currentRtkOrientation);
+				shader.setUniform3f("rtk2VehicleXYZOld", rtk2VehicleXYZOld);
+				shader.setUniform3f("rtk2VehicleRPYOld", rtk2VehicleRPYOld);
+				shader.setUniform3f("velo2RtkXYZOld", velo2RtkXYZOld);
+				shader.setUniform3f("velo2RtkRPYOld", velo2RtkRPYOld);
+				shader.setUniform3f("rtk2VehicleXYZNew", rtk2VehicleXYZNew);
+				shader.setUniform3f("rtk2VehicleRPYNew", rtk2VehicleRPYNew);
+				shader.setUniform3f("velo2RtkXYZNew", velo2RtkXYZNew);
+				shader.setUniform3f("velo2RtkRPYNew", velo2RtkRPYNew);
 
 			} catch(e) {
-				// debugger; // currentRtkPosition/Orientation doesn't exist
+				debugger; // currentRtkPosition/Orientation doesn't exist
 			}
 
 			let screenWidth = target ? target.width : material.screenWidth;

@@ -75,7 +75,6 @@ onmessage = function (event) {
 	let tightBoxMax = [ Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY ];
 	let mean = [0, 0, 0];
 
-
 	let attributeBuffers = {};
 	let inOffset = 0;
 	for (let pointAttribute of pointAttributes.attributes) {
@@ -137,18 +136,37 @@ onmessage = function (event) {
 
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
 		} else if (pointAttribute.name === PointAttribute.RTK_POSE.name) {
-			let buff = new ArrayBuffer(numPoints * 8 * 6);
+			let buff = new ArrayBuffer(numPoints * 8 * 3);
 			let rtk_poses = new Float64Array(buff);
+			let view = new DataView(buffer);
 
 			for (let j = 0; j < numPoints; j++) {
-				let rtk_pose = cv.getFloat64(inOffset + j * pointAttributes.byteSize, true);
-				rtk_poses[j] = rtk_pose;
+				x = view.getFloat64(inOffset + j * pointAttributes.byteSize + 0, true);
+				y = view.getFloat64(inOffset + j * pointAttributes.byteSize + 8, true);
+				z = view.getFloat64(inOffset + j * pointAttributes.byteSize + 16, true);
+
+				rtk_poses[3 * j + 0] = x;
+				rtk_poses[3 * j + 1] = y;
+				rtk_poses[3 * j + 2] = z;
 			}
 
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
+		} else if (pointAttribute.name === PointAttribute.RTK_ORIENT.name) {
+			let buff = new ArrayBuffer(numPoints * 8 * 3);
+			let rtk_orients = new Float64Array(buff);
 
+			for (let j = 0; j < numPoints; j++) {
+				x = cv.getFloat64(inOffset + j * pointAttributes.byteSize + 0, true);
+				y = cv.getFloat64(inOffset + j * pointAttributes.byteSize + 8, true);
+				z = cv.getFloat64(inOffset + j * pointAttributes.byteSize + 16, true);
 
-		} else if (pointAttribute.name === PointAttribute.CLASSIFICATION.name) {
+				rtk_orients[3 * j + 0] = x;
+				rtk_orients[3 * j + 1] = y;
+				rtk_orients[3 * j + 2] = z;
+			}
+
+			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
+		}  else if (pointAttribute.name === PointAttribute.CLASSIFICATION.name) {
 			let buff = new ArrayBuffer(numPoints);
 			let classifications = new Uint8Array(buff);
 

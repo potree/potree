@@ -19,6 +19,7 @@ export const PointAttributeNames = {
 	SPACING: 15,
 	GPS_TIME: 16,
 	RTK_POSE: 17,
+	RTK_ORIENT: 18,
 };
 
 
@@ -128,7 +129,11 @@ PointAttribute.GPS_TIME = new PointAttribute(
 
 PointAttribute.RTK_POSE = new PointAttribute(
 	PointAttributeNames.RTK_POSE,
-	PointAttributeTypes.DATA_TYPE_DOUBLE, 6);
+	PointAttributeTypes.DATA_TYPE_DOUBLE, 3);
+
+PointAttribute.RTK_ORIENT = new PointAttribute(
+	PointAttributeNames.RTK_ORIENT,
+	PointAttributeTypes.DATA_TYPE_DOUBLE, 3);
 
 export {PointAttribute};
 

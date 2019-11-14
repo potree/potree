@@ -20,7 +20,7 @@ export class CameraPanel{
 					<td align="center" id="camera_position_y" style="width: 25%"></td>
 					<td align="center" id="camera_position_z" style="width: 25%"></td>
 					<td align="right" id="copy_camera_position" style="width: 25%">
-						<img name="copyPosition" title="copy" class="button-icon" src="${copyIconPath}" style="width: 16px; height: 16px"/>
+						<img name="copyPosition" data-i18n="[title]scene.button_copy" class="button-icon" src="${copyIconPath}" style="width: 16px; height: 16px"/>
 					</td>
 				</tr>
 				<tr>
@@ -31,7 +31,7 @@ export class CameraPanel{
 					<td align="center" id="camera_target_y" style="width: 25%"></td>
 					<td align="center" id="camera_target_z" style="width: 25%"></td>
 					<td align="right" id="copy_camera_target" style="width: 25%">
-						<img name="copyTarget" title="copy" class="button-icon" src="${copyIconPath}" style="width: 16px; height: 16px"/>
+						<img name="copyTarget" data-i18n="[title]scene.button_copy" class="button-icon" src="${copyIconPath}" style="width: 16px; height: 16px"/>
 					</td>
 				</tr>
 			</table>

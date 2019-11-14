@@ -5,7 +5,7 @@ import {CameraMode} from "../defines.js";
 import {View} from "./View.js";
 import {Utils} from "../utils.js";
 import {EventDispatcher} from "../EventDispatcher.js";
-
+import {GeoJSONExporter} from "../exporter/GeoJSONExporter.js"
 
 export class Scene extends EventDispatcher{
 
@@ -24,8 +24,8 @@ export class Scene extends EventDispatcher{
 		this.cameraBG = new THREE.Camera();
 		this.cameraScreenSpace = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 10);
 		this.cameraMode = CameraMode.PERSPECTIVE;
+		
 		this.pointclouds = [];
-
 		this.measurements = [];
 		this.profiles = [];
 		this.volumes = [];
@@ -123,6 +123,72 @@ export class Scene extends EventDispatcher{
 			type: 'pointcloud_added',
 			pointcloud: pointcloud
 		});
+	};
+	
+	hideTreeData () {
+		for(let pointcloud of this.pointclouds){
+			this.dispatchEvent({
+				type: 'pointcloud_removed',
+				pointcloud: pointcloud
+			});
+		}		
+		for(let measure of this.measurements){
+			this.dispatchEvent({
+				type: 'measurement_removed',
+				measurement: measure
+			});
+		}
+		for(let profile of this.profiles){
+			this.dispatchEvent({
+				type: 'profile_removed',
+				profile: profile
+			});
+		}
+		for(let volume of this.volumes){
+			this.dispatchEvent({
+				type: 'volume_removed',
+				volume: volume
+			});
+		}
+		for(let volume of this.polygonClipVolumes){
+			this.dispatchEvent({
+				type: 'polygon_clip_volume_removed',
+				volume: volume
+			});
+		}
+	};
+	
+	showTreeData () {
+		for(let pointcloud of this.pointclouds){
+			this.dispatchEvent({
+				type: 'pointcloud_added',
+				pointcloud: pointcloud
+			});
+		}
+		for(let measure of this.measurements){
+			this.dispatchEvent({
+				type: 'measurement_added',
+				measurement: measure
+			});
+		}
+		for(let profile of this.profiles){
+			this.dispatchEvent({
+				type: 'profile_added',
+				profile: profile
+			});
+		}
+		for(let volume of this.volumes){
+			this.dispatchEvent({
+				type: 'volume_added',
+				volume: volume
+			});
+		}
+		for(let volume of this.polygonClipVolumes){
+			this.dispatchEvent({
+				type: 'polygon_clip_volume_added',
+				volume: volume
+			});
+		}
 	};
 
 	addVolume (volume) {
@@ -330,5 +396,35 @@ export class Scene extends EventDispatcher{
 
 	removeAnnotation(annotationToRemove) {
 		this.annotations.remove(annotationToRemove);
+	}
+	
+	editAnnotation(annotationToEdit) {
+		this.dispatchEvent({
+			'type': 'annotation_edited',
+			'annotation': annotationToEdit
+		});
+	}
+	
+	readDataJSON(scene, url) {
+		$.getJSON(url, function (imported_json) {
+			for(let feature of imported_json.Features) {
+				GeoJSONExporter.JSONToMeasurements(feature, scene);					
+			}
+			if(imported_json.Annotations !== undefined) {
+				for(let annotation of imported_json.Annotations) {
+					GeoJSONExporter.JSONToAnnotations(annotation, scene.annotations);					
+				}
+			}
+			if(imported_json.Volumes !== undefined) {
+				for(let volume of imported_json.Volumes) {
+					GeoJSONExporter.JSONToVolumes(volume, scene);					
+				}
+			}
+			if(imported_json.Profiles !== undefined) {
+				for(let profile of imported_json.Profiles) {
+					GeoJSONExporter.JSONToProfiles(profile, scene);
+				}
+			}
+		});
 	}
 };

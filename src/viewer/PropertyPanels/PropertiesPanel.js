@@ -2,6 +2,7 @@
 
 import {Utils} from "../../utils.js";
 import {PointCloudTree} from "../../PointCloudTree.js";
+import {Annotation} from "../../Annotation.js";
 import {Measure} from "../../utils/Measure.js";
 import {Profile} from "../../utils/Profile.js";
 import {Volume, BoxVolume, SphereVolume} from "../../utils/Volume.js";
@@ -17,6 +18,7 @@ import {HeightPanel} from "./HeightPanel.js";
 import {VolumePanel} from "./VolumePanel.js";
 import {ProfilePanel} from "./ProfilePanel.js";
 import {CameraPanel} from "./CameraPanel.js";
+import {AnnotationPanel} from "./AnnotationPanel.js";
 
 export class PropertiesPanel{
 
@@ -51,7 +53,9 @@ export class PropertiesPanel{
 			this.setMeasurement(object);
 		}else if(object instanceof THREE.Camera){
 			this.setCamera(object);
-		}
+		}else if (object instanceof Annotation) {
+            this.setAnnotation(object);
+        }
 	}
 	
 	refresh(){
@@ -68,12 +72,12 @@ export class PropertiesPanel{
 		if(this.object instanceof PointCloudTree){
 			this.setPointCloud(this.object);
 		}else if(this.object instanceof Measure || this.object instanceof Profile || this.object instanceof Volume){
-			console.log(this.object);
-			this.setMeasurement(this.object);
-			
+			this.setMeasurement(this.object);			
 		}else if(this.object instanceof THREE.Camera){
 			this.setCamera(this.object);
-		}
+		}else if(this.object instanceof Annotation) {
+            this.setAnnotation(this.object);
+        }
 	}
 
 	//
@@ -287,7 +291,8 @@ export class PropertiesPanel{
 
 			let blockBackface = $('#materials_backface_container');
 			blockBackface.css('display', 'none');
-			if (pointcloud.pcoGeometry.pointAttributes.hasNormals()) {
+			if (pointcloud.pcoGeometry.pointAttributes !== "LAZ" && pointcloud.pcoGeometry.pointAttributes.hasNormals()) {
+				console.log(pointcloud.pcoGeometry.pointAttributes.hasNormals());
 				blockBackface.css('display', 'block');
 			}
 		}
@@ -701,5 +706,9 @@ export class PropertiesPanel{
 		let panel = new CameraPanel(this.viewer, this);
 		this.container.append(panel.elContent);
 	}
-
+	
+	setAnnotation(object){
+        let panel = new AnnotationPanel(this.viewer, object, this);
+        this.container.append(panel.elContent);
+    }
 }

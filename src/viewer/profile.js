@@ -315,7 +315,7 @@ export class ProfileWindow extends EventDispatcher {
 						} else if (attribute === 'color') {
 							html += `
 								<tr>
-									<td><span data-i18n=\"profile.screen_clip_msg">`+i18n.t("profile.attribute_color")+`</span></td>
+									<td><span data-i18n=\"profile.attribute_color">`+i18n.t("profile.attribute_color")+`</span></td>
 									<td>${value.join(', ')}</td>
 								</tr>`;
 						} else if (attribute === 'normal') {
@@ -323,7 +323,7 @@ export class ProfileWindow extends EventDispatcher {
 						} else if (attribute === 'mileage') {
 							html += `
 								<tr>
-									<td><span data-i18n=\"profile.screen_clip_msg">`+i18n.t("profile.attribute_mileage")+`</span></td>
+									<td><span data-i18n=\"profile.attribute_mileage">`+i18n.t("profile.attribute_mileage")+`</span></td>
 									<td>${value.toFixed(3)}</td>
 								</tr>`;
 						} else {

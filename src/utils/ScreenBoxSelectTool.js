@@ -20,7 +20,7 @@ export class ScreenBoxSelectTool extends EventDispatcher{
 	}
 
 	onSceneChange(scene){
-		console.log("scene changed");
+		//console.log("ScreenBoxSelectTool: scene changed");
 	}
 
 	startInsertion(){
@@ -79,6 +79,7 @@ export class ScreenBoxSelectTool extends EventDispatcher{
 		};
 
 		let drop = e => {
+			console.log("drop_ScreenBoxSelectTool");
 			this.importance = 0;
 
 			$(selectionBox).remove();

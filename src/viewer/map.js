@@ -285,6 +285,14 @@ export class MapView{
 		});
 
 		this.viewer.addEventListener('scene_changed', e => {
+			this.sceneProjection = null;
+			
+			this.getAnnotationsLayer().getSource().clear();
+			
+			let mapCenter = this.getMapCenter();
+			let view = this.map.getView();
+			view.setCenter(mapCenter);
+		
 			this.setScene(e.scene);
 		});
 
@@ -310,7 +318,7 @@ export class MapView{
 				let coordinates = feature.getGeometry().getCoordinates();
 				let p = this.map.getPixelFromCoordinate(coordinates);
 
-				this.elTooltip.html(annotation.title);
+				this.elTooltip.html('<span>' + annotation.title + '</span>');
 				this.elTooltip.css('display', '');
 				this.elTooltip.css('left', `${p[0]}px`);
 				this.elTooltip.css('top', `${p[1]}px`);
@@ -579,6 +587,9 @@ export class MapView{
 		}
 
 		if (!pointcloud.projection) {
+			$( "#potree_map_toggle" ).css("display", "none");
+			this.elMap.css('display', 'none');
+			this.enabled = false;
 			return;
 		}
 

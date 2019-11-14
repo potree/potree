@@ -2,6 +2,7 @@
 import {MeasuringTool} from "../utils/MeasuringTool.js";
 import {ProfileTool} from "../utils/ProfileTool.js";
 import {VolumeTool} from "../utils/VolumeTool.js";
+import {AnnotationTool} from "../utils/AnnotationTool.js";
 
 import {GeoJSONExporter} from "../exporter/GeoJSONExporter.js"
 import {DXFExporter} from "../exporter/DXFExporter.js"
@@ -30,7 +31,7 @@ export class Sidebar{
 		this.measuringTool = new MeasuringTool(this.viewer);
 		this.profileTool = new ProfileTool(this.viewer);
 		this.volumeTool = new VolumeTool(this.viewer);
-
+		this.annotationTool = new AnnotationTool(this.viewer);
 	}
 
 	createToolIcon(icon, title, callback){
@@ -50,19 +51,18 @@ export class Sidebar{
 
 		this.initAccordion();
 		this.initAppearance();
-		this.initToolbar();
+		this.initTools();
 		this.initScene();
 		this.initNavigation();
 		this.initFilters();
 		this.initClippingTool();
 		this.initSettings();
+		this.initAnnotation();
 		
 		$('#potree_version_number').html(Potree.version.major + "." + Potree.version.minor + Potree.version.suffix);
 	}
 
-		
-
-	initToolbar(){
+	initTools(){
 
 		// ANGLE
 		let elToolbar = $('#tools');
@@ -234,23 +234,35 @@ export class Sidebar{
 
 			elExport.append(`
 				<div style="vertical-align:middle"><span data-i18n=\"scene.export"></span>: 
-				<a href="#" download="measure.json"><img name="geojson_export_button" src="${geoJSONIcon}" class="button-icon" style="height: 22px; vertical-align:middle" /></a>
-				<a href="#" download="measure.dxf"><img name="dxf_export_button" src="${dxfIcon}" class="button-icon" style="height: 22px; vertical-align:middle" /></a></div>
+				<a href="#" download="measure.json"><img data-i18n="[title]scene.export_json" name="geojson_export_button" src="${geoJSONIcon}" class="button-icon" style="height: 22px; vertical-align:-35%" /></a>
+				<a href="#" download="measure.dxf"><img data-i18n="[title]scene.export_dxf" name="dxf_export_button" src="${dxfIcon}" class="button-icon" style="height: 22px; vertical-align:-35%" /></a></div>
 			`);
 			
 			let elDownloadJSON = elExport.find("img[name=geojson_export_button]").parent();
 			elDownloadJSON.click( (event) => {
 				let scene = this.viewer.scene;
-				let measurements = [...scene.measurements, ...scene.profiles, ...scene.volumes];
-
-				if(measurements.length > 0){
-					let geoJson = GeoJSONExporter.toString(measurements);
-
-					let url = window.URL.createObjectURL(new Blob([geoJson], {type: 'data:application/octet-stream'}));
-					elDownloadJSON.attr('href', url);
-				}else{
+				let items;
+				if(this.viewer.restrictedAccess){
+					items = [...scene.measurements, ...scene.profiles, ...scene.volumes];
+				} else {
+					items = [...scene.measurements, ...scene.profiles, ...scene.volumes, ...scene.annotations.children];
+				}
+				
+				console.log(scene.profiles.length);
+				
+				if(scene.polygonClipVolumes.length > 0)
+					this.viewer.postError(`<span data-i18n=\"scene.export_limit">`+i18n.t("scene.export_limit")+`</span>`);
+				
+				if (items.length > 0) {
+					let blob = GeoJSONExporter.toString(items);
+                    let url = window.URL.createObjectURL(new Blob(([blob]), { type: 'data:application/octet-stream' }));
+                    elDownloadJSON.attr('href', url);
+				}
+				else{
 					this.viewer.postError(`<span data-i18n=\"scene.export_error">`+i18n.t("scene.export_error")+`</span>`);
 					event.preventDefault();
+					
+					
 				}
 			});
 
@@ -270,7 +282,58 @@ export class Sidebar{
 				}
 			});
 		}
+		
+		if(!this.viewer.restrictedAccess) {
+			let geoJSONIcon = `${Potree.resourcePath}/icons/file_geojson.svg`;
 
+			let elImport = elScene.next().find("#scene_import");
+
+			elImport.append(`
+				<div style="vertical-align:middle"><span data-i18n=\"scene.import"></span>: 
+				<img name="geojson_import_button" data-i18n="[title]scene.import_select" src="${geoJSONIcon}" 
+				class="button-icon" style="height: 22px; vertical-align:-35%" />
+				<input type="file" id="importFilesList" name="files[]" accept=".json" multiple style="display:none;"/></div>
+			`);
+			
+			let elUploadJSONList = $('#importFilesList')[0];
+			let onOpenJSONFile = (e) => {
+				let scene = this.viewer.scene;
+				let files = e.target.files;
+				
+				for(let file of files) {
+					let reader = new FileReader();
+					reader.onload = receivedText;
+					reader.readAsText(file);
+				}
+				function receivedText(e) {
+					let imported_json = JSON.parse(e.target.result);
+					
+					for(let feature of imported_json.Features) {
+						GeoJSONExporter.JSONToMeasurements(feature, scene);
+					}
+					if(imported_json.Annotations !== undefined) {
+						for(let annotation of imported_json.Annotations) {
+							GeoJSONExporter.JSONToAnnotations(annotation, scene.annotations);
+						}
+					}
+					if(imported_json.Volumes !== undefined) {
+						for(let volume of imported_json.Volumes) {
+							GeoJSONExporter.JSONToVolumes(volume, scene);
+						}
+					}
+					if(imported_json.Profiles !== undefined) {
+						for(let profile of imported_json.Profiles) {
+							GeoJSONExporter.JSONToProfiles(profile, scene);
+						}
+					}
+				}
+			};
+			elUploadJSONList.addEventListener('change', onOpenJSONFile, false);
+			
+			let elUploadJSON = elImport.find("img[name=geojson_import_button]").parent();
+			elUploadJSON.click( (event) => { elUploadJSONList.click(); });
+		}
+		
 		let propertiesPanel = new PropertiesPanel(elProperties, this.viewer);
 		propertiesPanel.setScene(this.viewer.scene);
 		
@@ -291,7 +354,6 @@ export class Sidebar{
 			},
 			"checkbox" : {
 				"keep_selected_style": true,
-				"three_state": false,
 				"whole_node": false,
 				"tie_selection": false,
 			},
@@ -435,6 +497,13 @@ export class Sidebar{
 			if(object){
 				object.visible = false;
 			}
+
+			for (let i = 0; i < data.node.children.length; i += 1) {
+				const node = tree.jstree('get_node', data.node.children[i])
+				if (node.data) {
+					node.data.visible = false;
+				}
+			}
 		});
 
 		tree.on("check_node.jstree", (e, data) => {
@@ -442,6 +511,13 @@ export class Sidebar{
 
 			if(object){
 				object.visible = true;
+			}
+			
+			for (let i = 0; i < data.node.children.length; i += 1) {
+				const node = tree.jstree('get_node', data.node.children[i])
+				if (node.data) {
+					node.data.visible = true;
+				}
 			}
 		});
 		
@@ -489,17 +565,16 @@ export class Sidebar{
 			tree.i18n();
 		};
 
-		let onAnnotationAdded = (e) => {
+		let onAnnotationAdded = (e) => {			
 			let annotation = e.annotation;
-
 			let annotationIcon = `${Potree.resourcePath}/icons/annotation.svg`;
 			let parentID = this.annotationMapping.get(annotation.parent);
+			if(parentID == undefined)
+				parentID = annotationsID;			
+			
 			let annotationID = createNode(parentID, annotation.title, annotationIcon, annotation);
 			this.annotationMapping.set(annotation, annotationID);
 			tree.i18n();
-
-			//let node = createNode(annotationsID, annotation.name, icon, volume);
-			//oldScene.annotations.removeEventListener('annotation_added', this.onAnnotationAdded);
 		};
 
 		this.viewer.scene.addEventListener("pointcloud_added", onPointCloudAdded);
@@ -509,6 +584,14 @@ export class Sidebar{
 		this.viewer.scene.addEventListener("polygon_clip_volume_added", onVolumeAdded);
 		this.viewer.scene.annotations.addEventListener("annotation_added", onAnnotationAdded);
 
+		let onPointCloudRemoved = (e) => {
+			let pointcloudsRoot = $("#jstree_scene").jstree().get_json("pointclouds");
+			let jsonNode = pointcloudsRoot.children.find(child => child.data.uuid === e.pointcloud.uuid);
+			
+			tree.jstree("delete_node", jsonNode.id);
+			tree.i18n();
+		};
+		
 		let onMeasurementRemoved = (e) => {
 			let measurementsRoot = $("#jstree_scene").jstree().get_json("measurements");
 			let jsonNode = measurementsRoot.children.find(child => child.data.uuid === e.measurement.uuid);
@@ -532,11 +615,19 @@ export class Sidebar{
 			tree.jstree("delete_node", jsonNode.id);
 			tree.i18n();
 		};
+		
+		let onAnnotationRemoved = (e) => {
+			tree.jstree("delete_node", this.annotationMapping.get(e.annotation));
+			this.annotationMapping.delete(e.annotation);
+			tree.i18n();
+		};
 
+		this.viewer.scene.addEventListener("pointcloud_removed", onPointCloudRemoved);
 		this.viewer.scene.addEventListener("measurement_removed", onMeasurementRemoved);
 		this.viewer.scene.addEventListener("volume_removed", onVolumeRemoved);
 		this.viewer.scene.addEventListener("profile_removed", onProfileRemoved);
 		this.viewer.scene.addEventListener("polygon_clip_volume_removed", onVolumeRemoved);
+		this.viewer.scene.annotations.addEventListener("annotation_removed", onAnnotationRemoved);
 
 		{
 			let annotationIcon = `${Potree.resourcePath}/icons/annotation.svg`;
@@ -561,7 +652,6 @@ export class Sidebar{
 			onVolumeAdded({volume: volume});
 		}
 
-
 		for(let profile of this.viewer.scene.profiles){
 			onProfileAdded({profile: profile});
 		}
@@ -574,18 +664,30 @@ export class Sidebar{
 			propertiesPanel.setScene(e.scene);
 
 			e.oldScene.removeEventListener("pointcloud_added", onPointCloudAdded);
+			e.oldScene.removeEventListener("pointcloud_removed", onPointCloudRemoved);
 			e.oldScene.removeEventListener("measurement_added", onMeasurementAdded);
-			e.oldScene.removeEventListener("profile_added", onProfileAdded);
-			e.oldScene.removeEventListener("volume_added", onVolumeAdded);
-			e.oldScene.removeEventListener("polygon_clip_volume_added", onVolumeAdded);
 			e.oldScene.removeEventListener("measurement_removed", onMeasurementRemoved);
+			e.oldScene.removeEventListener("profile_added", onProfileAdded);
+			e.oldScene.removeEventListener("profile_removed", onProfileRemoved);
+			e.oldScene.removeEventListener("volume_added", onVolumeAdded);
+			e.oldScene.removeEventListener("volume_removed", onVolumeRemoved);
+			e.oldScene.removeEventListener("polygon_clip_volume_added", onVolumeAdded);
+			e.oldScene.removeEventListener("polygon_clip_volume_removed", onVolumeRemoved);
+			e.oldScene.annotations.removeEventListener("annotation_removed", onAnnotationRemoved);
+			e.oldScene.annotations.removeEventListener("annotation_added", onAnnotationAdded);
 
 			e.scene.addEventListener("pointcloud_added", onPointCloudAdded);
+			e.scene.addEventListener("pointcloud_removed", onPointCloudRemoved);
 			e.scene.addEventListener("measurement_added", onMeasurementAdded);
-			e.scene.addEventListener("profile_added", onProfileAdded);
-			e.scene.addEventListener("volume_added", onVolumeAdded);
-			e.scene.addEventListener("polygon_clip_volume_added", onVolumeAdded);
 			e.scene.addEventListener("measurement_removed", onMeasurementRemoved);
+			e.scene.addEventListener("profile_added", onProfileAdded);
+			e.scene.addEventListener("profile_removed", onProfileRemoved);			
+			e.scene.addEventListener("volume_added", onVolumeAdded);
+			e.scene.addEventListener("volume_removed", onVolumeRemoved);
+			e.scene.addEventListener("polygon_clip_volume_added", onVolumeAdded);
+			e.scene.addEventListener("polygon_clip_volume_removed", onVolumeRemoved);
+			e.scene.annotations.addEventListener("annotation_removed", onAnnotationRemoved);
+			e.scene.annotations.addEventListener("annotation_added", onAnnotationAdded);
 		});
 
 		let onLanguageChanged = (e) => {
@@ -1072,7 +1174,6 @@ export class Sidebar{
 		lblMoveSpeed.html(this.viewer.getMoveSpeed().toFixed(1));
 	}
 
-
 	initSettings(){
 
 		{
@@ -1115,4 +1216,128 @@ export class Sidebar{
 		});
 	}
 
+	initAnnotation(){
+		if(this.viewer.restrictedAccess) {
+			$('#menu_annotations').css('display','none');
+			return;
+		}
+		
+		let elAnnotations = $("#menu_annotations");
+		let elObjects = elAnnotations.next().find("#annotation_objects");
+		
+		let placeIconPath = Potree.resourcePath + '/icons/annotation.svg';
+		let validIconPath = Potree.resourcePath + '/icons/valid.svg';
+		let removeIconPath = Potree.resourcePath + '/icons/remove.svg';
+		
+		let elContent = $(`
+			<label><span data-i18n="annotations.annotation_title"/></label>
+			<input type="text" id="annotation_title" size="17" style="width: 100%"/>
+			<br/>
+			
+			<table class="annotation_value_table">
+				<tr>
+					<th>x</th>
+					<th>y</th>
+					<th>z</th>
+					<th></th>
+				</tr>
+				<tr>
+					<td align="center" id="angle_cell_alpha" style="width: 30%"><input type="number" id="annotation_x" value="" step=any style="width: 90%"/> </td>
+					<td align="center" id="angle_cell_betta" style="width: 30%"><input type="number" id="annotation_y" value="" step=any style="width: 90%;"/></td>
+					<td align="center" id="angle_cell_gamma" style="width: 30%"><input type="number" id="annotation_z" value="" step=any style="width: 90%"/></td>
+					<td align="right" style="width: 10%">
+						<img name="place" data-i18n="[title]annotations.button_place" class="button-icon" src="${placeIconPath}" style="width: 16px; height: 16px"/>
+					</td>
+				</tr>
+			</table>			
+			<label><input type="checkbox" id="chkOrientationSave"/><span data-i18n="annotations.annotation_orientation_save"></span></label>
+			<br/><br/>
+			
+			<textarea id="annotation_description" rows="6" data-i18n="[placeholder]annotations.annotation_description" style="text-align: center; width: 100%"/>
+			<br/>
+			
+			<div style="display: flex; margin-top: 12px">
+				<span></span>
+				<span style="flex-grow: 1"></span>
+				<img name="valid" class="button-icon" data-i18n="[title]scene.button_valid" src="${validIconPath}" style="width: 16px; height: 16px"/>
+				<img name="remove" class="button-icon" data-i18n="[title]scene.button_remove" src="${removeIconPath}" style="width: 16px; height: 16px"/>
+			</div>
+		`);		
+		elObjects.append(elContent);
+		
+		this.elAnnotationPlace = elContent.find("img[name=place]");
+		this.elAnnotationPlace.click( () => {
+			var camPos = this.viewer.scene.getActiveCamera().position.toArray();
+			var camTar = this.viewer.scene.view.getPivot().toArray();
+			this.annotationTool.startInsertion({
+				closed: true,
+				maxMarkers: 1,
+				position: false,
+				cameraPosition: camPos,
+				cameraTarget: camTar,
+				create: false
+			})
+		});
+		
+		this.elAnnotationValid = elContent.find("img[name=valid]");
+		this.elAnnotationValid.click( () => {
+			this.annotationTool.validAnnotation();
+		});
+		this.elAnnotationValid.hide();
+		
+		this.elAnnotationRemove = elContent.find("img[name=remove]");
+		this.elAnnotationRemove.click( () => {
+			this.annotationTool.cancelAnnotation();
+		});
+		
+		this.elAnnotationTitle = $('#annotation_title')[0];
+		this.elAnnotationTitle.addEventListener('input', this.annotationTool.onTitleChanged.bind(this.annotationTool));
+		
+		this.elAnnotationDescription = $('#annotation_description')[0];
+		this.elAnnotationDescription.addEventListener('input', this.annotationTool.onDescriptionChanged.bind(this.annotationTool));
+		
+		this.elAnnotationPositionX = $('#annotation_x')[0];
+		this.elAnnotationPositionY = $('#annotation_y')[0];
+		this.elAnnotationPositionZ = $('#annotation_z')[0];
+		this.elAnnotationPositionX.addEventListener('change', this.annotationTool.onPositionXChanged.bind(this.annotationTool));
+		this.elAnnotationPositionY.addEventListener('change', this.annotationTool.onPositionYChanged.bind(this.annotationTool));
+		this.elAnnotationPositionZ.addEventListener('change', this.annotationTool.onPositionZChanged.bind(this.annotationTool));
+		
+		this.elAnnotationOrientation = $('#chkOrientationSave')[0];
+		this.elAnnotationOrientation.addEventListener('change', this.annotationTool.onOrientationSaveChanged.bind(this.annotationTool));
+		
+		let onUpdateAnnotationMarker = (e) => {
+			if(e.clear === 'clear_all') {
+				this.elAnnotationTitle.value = "";
+				this.elAnnotationPositionX.value = "";
+				this.elAnnotationPositionY.value = "";
+				this.elAnnotationPositionZ.value = "";
+				this.elAnnotationDescription.value = "";
+				this.elAnnotationValid.hide();
+			} else if(e.clear === 'clear_position') {
+				this.elAnnotationPositionX.value = "";
+				this.elAnnotationPositionY.value = "";
+				this.elAnnotationPositionZ.value = "";
+				this.elAnnotationValid.hide();
+			} else {
+				if(e.title)
+					this.elAnnotationTitle.value = e.title;
+				if(e.position) {
+					this.elAnnotationPositionX.value = e.position.x;
+					this.elAnnotationPositionY.value = e.position.y;
+					this.elAnnotationPositionZ.value = e.position.z;
+					this.elAnnotationValid.show();
+				}
+				if(e.description)
+					this.elAnnotationDescription.value = e.description;
+				if(e.orientation) {
+					if(e.orientation === 'checked')
+						this.elAnnotationOrientation.checked = true;
+					else
+						this.elAnnotationOrientation.checked = false;
+				}
+			}
+		};
+		this.annotationTool.addEventListener('annotation_marker_updated', onUpdateAnnotationMarker);
+	}
 }

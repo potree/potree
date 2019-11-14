@@ -1,0 +1,309 @@
+{
+	"Features": [
+		{
+			"type": "Point",
+			"coordinates": [
+				590073.1491265259,
+				231338.68000030518,
+				758.6350010681152
+			],
+			"name": "Point Alpha"
+		},
+		{
+			"type": "Point",
+			"coordinates": [
+				590048.3392463379,
+				231413,
+				745.9649990844727
+			],
+			"name": "<span data-i18n=\"scene.object_point\">Point</span>"
+		},
+		{
+			"type": "LineString",
+			"coordinates": [
+				[
+					590022.2792487793,
+					231447.92987530518,
+					739.8450001525879
+				],
+				[
+					589989.99925,
+					231520.3097475586,
+					727.1350001144409
+				],
+				[
+					589940.0993734741,
+					231428.79987423707,
+					731.5150002288818
+				],
+				[
+					589917.2593733215,
+					231528.7996249523,
+					726.334999923706
+				],
+				[
+					589850.4695012206,
+					231456.89975009538,
+					741.6150006103516
+				],
+				[
+					589837.2695004577,
+					231522.0897463379,
+					740.4649990844727
+				],
+				[
+					589789.519621643,
+					231459.47974954225,
+					749.6050003814697
+				]
+			],
+			"name": "<span data-i18n=\"scene.object_distance\">Distance</span>"
+		},
+		{
+			"type": "Distance label",
+			"coordinates": [
+				590006.1392493896,
+				231484.1198114319,
+				733.4900001335144
+			],
+			"distance": "80.26 m"
+		},
+		{
+			"type": "Distance label",
+			"coordinates": [
+				589965.0493117371,
+				231474.55481089785,
+				729.3250001716614
+			],
+			"distance": "104.32 m"
+		},
+		{
+			"type": "Distance label",
+			"coordinates": [
+				589928.6793733978,
+				231478.7997495947,
+				728.9250000762939
+			],
+			"distance": "102.71 m"
+		},
+		{
+			"type": "Distance label",
+			"coordinates": [
+				589883.8644372711,
+				231492.84968752385,
+				733.9750002670288
+			],
+			"distance": "99.32 m"
+		},
+		{
+			"type": "Distance label",
+			"coordinates": [
+				589843.8695008392,
+				231489.49474821665,
+				741.0399998474121
+			],
+			"distance": "66.52 m"
+		},
+		{
+			"type": "Distance label",
+			"coordinates": [
+				589813.3945610503,
+				231490.78474794008,
+				745.0349997329712
+			],
+			"distance": "79.27 m"
+		},
+		{
+			"type": "Distance label",
+			"coordinates": [
+				589905.8994352112,
+				231453.70481242373,
+				744.7250002670288
+			],
+			"distance": "233.25 m"
+		},
+		{
+			"type": "LineString",
+			"coordinates": [
+				[
+					589878.8257893635,
+					231313.36855148902,
+					806.7718458059936
+				],
+				[
+					589881.1014937959,
+					231314.48055506707,
+					751.8129999542236
+				]
+			],
+			"name": "<span data-i18n=\"scene.object_height\">Height</span>"
+		},
+		{
+			"type": "Polygon",
+			"coordinates": [
+				[
+					589703.7197512207,
+					231366.3099975586,
+					762.1350010681152
+				],
+				[
+					589738.2100067139,
+					231392.4100036621,
+					757.1249989318848
+				],
+				[
+					589749.1499938965,
+					231492.66999816895,
+					752.255
+				],
+				[
+					589675.7297495422,
+					231492.72974954225,
+					754.9950016784668
+				],
+				[
+					589647.5598725586,
+					231481.43975053407,
+					754.6550015258789
+				],
+				[
+					589668.7799987793,
+					231417.5899963379,
+					763.6150006103516
+				],
+				[
+					589602.9098748474,
+					231337.6899986267,
+					773.4249981689453
+				],
+				[
+					589703.7197512207,
+					231366.3099975586,
+					762.1350010681152
+				]
+			],
+			"name": "<span data-i18n=\"scene.object_area\">Area</span>"
+		},
+		{
+			"type": "Distance label",
+			"coordinates": [
+				589720.9648789673,
+				231379.36000061035,
+				759.63
+			],
+			"distance": "43.54 m"
+		},
+		{
+			"type": "Distance label",
+			"coordinates": [
+				589743.6800003052,
+				231442.54000091553,
+				754.6899994659424
+			],
+			"distance": "100.97 m"
+		},
+		{
+			"type": "Distance label",
+			"coordinates": [
+				589712.4398717193,
+				231492.6998738556,
+				753.6250008392334
+			],
+			"distance": "73.47 m"
+		},
+		{
+			"type": "Distance label",
+			"coordinates": [
+				589661.6448110504,
+				231487.08475003816,
+				754.8250016021728
+			],
+			"distance": "30.35 m"
+		},
+		{
+			"type": "Distance label",
+			"coordinates": [
+				589658.1699356689,
+				231449.51487343598,
+				759.1350010681152
+			],
+			"distance": "67.88 m"
+		},
+		{
+			"type": "Distance label",
+			"coordinates": [
+				589635.8449368133,
+				231377.6399974823,
+				768.5199993896484
+			],
+			"distance": "104.01 m"
+		},
+		{
+			"type": "Distance label",
+			"coordinates": [
+				589653.314813034,
+				231351.99999809265,
+				767.7799996185303
+			],
+			"distance": "105.40 m"
+		},
+		{
+			"type": "Area label",
+			"coordinates": [
+				589683.7227496511,
+				231425.83421349004,
+				759.7435717119489
+			],
+			"area": "11,821.0 m²"
+		}
+	],
+	"Annotations": [
+		{
+			"name": "About Annotations",
+			"description": "<ul><li>Click on the annotation label to move a predefined view.</li> \n\t\t\t\t\t<li>Click on the icon to execute the specified action.</li>\n\t\t\t\t\tIn this case, the action will bring you to another scene and point cloud.</ul>",
+			"position": [
+				590043.63,
+				231490.79,
+				740.78
+			],
+			"cameraPosition": [
+				590105.53,
+				231541.63,
+				782.05
+			],
+			"cameraTarget": [
+				590043.63,
+				231488.79,
+				740.78
+			]
+		},
+		{
+			"name": "About Annotations 2",
+			"description": "\n\t\t\t\t\t\tSuitable annotation positions and views can be obtained by \n\t\t\t\t\t\tlooking up the current camera position and target in the \"Scene\" panel, \n\t\t\t\t\t\tor by evaluating following lines in your browser's developer console:<br><br>\n\t\t\t\t\t\t<code>viewer.scene.view.position</code><br>\n\t\t\t\t\t\t<code>viewer.scene.view.getPivot()</code><br>\n\t\t\t\t\t\t",
+			"position": [
+				589621,
+				231437,
+				784
+			],
+			"cameraPosition": [
+				589585.81,
+				231463.63,
+				804
+			],
+			"cameraTarget": [
+				589625.86,
+				231439,
+				775.38
+			]
+		},
+		{
+			"name": "Elevation / RGB Actions",
+			"description": "",
+			"position": [
+				590012.986,
+				231273.294,
+				787.162
+			]
+		}
+	]
+}

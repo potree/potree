@@ -21,7 +21,7 @@ import {OrbitControls} from "../navigation/OrbitControls.js";
 import {FirstPersonControls} from "../navigation/FirstPersonControls.js";
 import {EarthControls} from "../navigation/EarthControls.js";
 import {DeviceOrientationControls} from "../navigation/DeviceOrientationControls.js";
-import { EventDispatcher } from "../EventDispatcher.js";
+import {EventDispatcher} from "../EventDispatcher.js";
 
 
 
@@ -33,6 +33,8 @@ export class Viewer extends EventDispatcher{
 		this.renderArea = domElement;
 		this.guiLoaded = false;	
 		this.guiLoadTasks = [];
+		
+		this.restrictedAccess = false;
 
 		this.vr = null;
 
@@ -183,13 +185,14 @@ export class Viewer extends EventDispatcher{
 			this.inputHandler.setScene(this.scene);
 
 			this.clippingTool = new ClippingTool(this);
+			this.clippingTool.setScene(this.scene);
+			
 			this.transformationTool = new TransformationTool(this);
 			this.navigationCube = new NavigationCube(this);
 			this.navigationCube.visible = false;
 			
 			this.createControls();
-
-			this.clippingTool.setScene(this.scene);
+			
 			
 			let onPointcloudAdded = (e) => {
 				if (this.scene.pointclouds.length === 1) {
@@ -205,7 +208,7 @@ export class Viewer extends EventDispatcher{
 
 			this.addEventListener('scene_changed', (e) => {
 				this.inputHandler.setScene(e.scene);
-				this.clippingTool.setScene(this.scene);
+				this.clippingTool.setScene(e.scene);
 				
 				if(!e.scene.hasEventListener("pointcloud_added", onPointcloudAdded)){
 					e.scene.addEventListener("pointcloud_added", onPointcloudAdded);
@@ -214,7 +217,9 @@ export class Viewer extends EventDispatcher{
 				if(!e.scene.hasEventListener("volume_removed", onPointcloudAdded)){
 					e.scene.addEventListener("volume_removed", onVolumeRemoved);
 				}
-				
+				if(this.profileWindow !== undefined){
+					this.profileWindow.hide();
+				}
 			});
 
 			this.scene.addEventListener("volume_removed", onVolumeRemoved);
@@ -302,45 +307,51 @@ export class Viewer extends EventDispatcher{
 	setScene (scene) {
 		if (scene === this.scene) {
 			return;
-		}
-
+		}	
+		
 		let oldScene = this.scene;
 		this.scene = scene;
-
+		
+		if(oldScene !== null) {
+			oldScene.hideTreeData();
+			
+			oldScene.annotations.traverse(node => {
+				oldScene.annotations.hide(node);
+			});
+		}		
+		
 		this.dispatchEvent({
 			type: 'scene_changed',
 			oldScene: oldScene,
 			scene: scene
-		});
-
-		{ // Annotations
-			$('.annotation').detach();
-
-			// for(let annotation of this.scene.annotations){
-			//	this.renderArea.appendChild(annotation.domElement[0]);
-			// }
-
+		});		
+		
+		{	
 			this.scene.annotations.traverse(annotation => {
 				this.renderArea.appendChild(annotation.domElement[0]);
 			});
 
 			if (!this.onAnnotationAdded) {
 				this.onAnnotationAdded = e => {
-				// console.log("annotation added: " + e.annotation.title);
-
 					e.annotation.traverse(node => {
-
 						$("#potree_annotation_container").append(node.domElement);
-						//this.renderArea.appendChild(node.domElement[0]);
 						node.scene = this.scene;
 					});
 				};
 			}
 
-			if (oldScene) {
+			if(oldScene) {
 				oldScene.annotations.removeEventListener('annotation_added', this.onAnnotationAdded);
 			}
 			this.scene.annotations.addEventListener('annotation_added', this.onAnnotationAdded);
+		}
+		
+		if(this.scene !== null) {
+			scene.showTreeData();
+			
+			scene.annotations.traverse(node => {
+				scene.annotations.show(node);
+			});
 		}
 	};
 
@@ -1040,15 +1051,9 @@ export class Viewer extends EventDispatcher{
 						for(let task of this.guiLoadTasks){
 							task();
 						}
-
 					});
 				});
-
-				
-
 			});
-
-			
 		});
 	}
 
@@ -1606,7 +1611,6 @@ export class Viewer extends EventDispatcher{
 			this.mapView.update(delta);
 			if(this.mapView.sceneProjection){
 				$( "#potree_map_toggle" ).css("display", "block");
-				
 			}
 		}
 

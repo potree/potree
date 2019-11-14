@@ -118,6 +118,8 @@ export class VolumeTool extends EventDispatcher{
 		this.viewer.addEventListener('cancel_insertions', cancel.callback);
 
 		this.viewer.inputHandler.startDragging(volume);
+		
+		console.log("END");
 
 		return volume;
 	}

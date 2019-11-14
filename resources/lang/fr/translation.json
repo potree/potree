@@ -81,6 +81,12 @@
 		"move_speed": "Vitesse"
     },
 	"annotations": {
+		"add_annotation": "Ajouter une annotation",
+		"annotation_title": "Titre",
+		"annotation_description": "Description",
+		"annotation_orientation_save": "Sauvegarde de l'orientation",
+		"annotation_edit_msg": "Une seule annotation peut être traitée simultanément.",
+		"button_place": "Placer"
 	},
 	"scene": {
 		"objects": "Objets",
@@ -105,10 +111,21 @@
 		
 		"export": "Exporter",
 		"export_error": "Aucune mesure à exporter",
+		"import": "Importer",
+		
+		"export": "Exporter",
+		"export_json": "Exporter au format JSON",
+		"export_dxf": "Exporter au format DXF",
+		"export_error": "Aucune mesure à exporter",
+		"export_limit": "Les sélections polygonales ne peuvent être exportées.",
+		"import": "Importer",
+		"import_select": "Selectionner les fichiers JSON à importer",
 		
 		"camera_position": "Position de la caméra",
 		"camera_target": "Position de la cible",
 		"camera_copy": "Valeur copiée dans le presse-papier",
+		
+		"annotation_position": "Position de l'annotation",
 		
 		"point_size": "Taille des points",
 		"point_size_type": "Type de taille",
@@ -159,7 +176,12 @@
 		"measure_volume_reset_orientation": "Réinitialiser l'orientation",
 		"measure_volume_reset_size": "Réinitialiser les dimensions",
 		"measure_make_clip_volume": "Transformer en volume de sélection",
-		"measure_profil_2D": "Afficher le profil 2D"
+		"measure_profil_2D": "Afficher le profil 2D",
+		
+		"button_copy": "Copier",
+		"button_edit": "Editer",
+		"button_valid": "Valider",
+		"button_remove": "Supprimer"
 	},
     "profile": {
         "nb_points": "Nombre de points",

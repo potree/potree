@@ -37,7 +37,7 @@ export class MeasurePanel{
 					<td><span>${y}</span></td>
 					<td><span>${z}</span></td>
 					<td align="right" style="width: 25%">
-						<img name="copy" title="copy" class="button-icon" src="${copyIconPath}" style="width: 16px; height: 16px"/>
+						<img name="copy" data-i18n="[title]scene.button_copy" class="button-icon" src="${copyIconPath}" style="width: 16px; height: 16px"/>
 					</td>
 				</tr>
 			`);

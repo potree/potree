@@ -87,6 +87,12 @@
 		"clip_plane_z": "Clip plane on z axis"		
 	},
 	"annotations": {
+		"add_annotation": "Add an annotation",
+		"annotation_title": "Title",
+		"annotation_description": "Description",
+		"annotation_orientation_save": "Save Camera Orientation",
+		"annotation_edit_msg": "Only one annotation can be processed simultaneously.",
+		"button_place": "Place"
 	}, 
 	"scene": {
 		"objects": "Objects",
@@ -110,11 +116,18 @@
 		"object_camera": "Camera",
 
 		"export": "Export",
+		"export_json": "EN_Export to JSON",
+		"export_dxf": "EN_Export to DXF",
 		"export_error": "No measurements to export",
+		"export_limit": "EN_Polygon clips can not be exported",
+		"import": "Import",
+		"import_select": "EN_Select JSON file(s) to import",
 		
 		"camera_position": "Camera Position",
 		"camera_target": "Camera Target",
 		"camera_copy": "Copied value to clipboard",
+		
+		"annotation_position": "Annotation Position",
 		
 		"point_size": "Point size",
 		"point_size_type": "Point sizing",
@@ -165,7 +178,12 @@
 		"measure_volume_reset_orientation": "Reset volume orientation",
 		"measure_volume_reset_size": "Make uniform",
 		"measure_make_clip_volume": "Make clip volume",
-		"measure_profil_2D": "Show 2D profil"
+		"measure_profil_2D": "Show 2D profil",
+		
+		"button_copy": "Copy",
+		"button_edit": "Edit",
+		"button_valid": "Valid",
+		"button_remove": "Remove"
 	},
 	"profile": {
 		"nb_points": "Number of Points",

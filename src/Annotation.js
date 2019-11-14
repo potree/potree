@@ -35,7 +35,7 @@ export class Annotation extends EventDispatcher {
 			? new THREE.Vector3().fromArray(args.cameraTarget) : args.cameraTarget;
 		this.radius = args.radius;
 		this.view = args.view || null;
-		this.keepOpen = false;
+		this.keepOpen = true;
 		this.descriptionVisible = false;
 		this.showDescription = true;
 		this.actions = args.actions || [];
@@ -117,7 +117,7 @@ export class Annotation extends EventDispatcher {
 			this.setHighlighted(!this.isHighlighted);
 		});
 
-		this.display = false;
+		this.display = true;
 		//this.display = true;
 
 	}
@@ -185,8 +185,6 @@ export class Annotation extends EventDispatcher {
 				annotationStartPos = this.position.clone();
 				annotationStartOffset = this.offset.clone();
 				$(this.domElement).find(".annotation-titlebar").css("pointer-events", "none");
-
-				console.log($(this.domElement).find(".annotation-titlebar"));
 			},
 			stop: () => {
 				$(this.domElement).find(".annotation-titlebar").css("pointer-events", "");
@@ -389,6 +387,14 @@ export class Annotation extends EventDispatcher {
 			}
 		}
 	}
+	
+	addOnly (annotation) {
+		//Necessary in annotation mode with multiple scenes
+		if (!this.children.includes(annotation)) {
+			this.children.push(annotation);
+			annotation.parent = this;
+		}
+	}
 
 	level () {
 		if (this.parent === null) {
@@ -399,24 +405,63 @@ export class Annotation extends EventDispatcher {
 	}
 
 	hasChild(annotation) {
-		return this.children.includes(annotation);
-	}
-
-	remove (annotation) {
-		if (this.hasChild(annotation)) {
-			annotation.removeAllChildren();
-			annotation.dispose();
-			this.children = this.children.filter(e => e !== annotation);
-			annotation.parent = null;
+		if(this.children.includes(annotation)){
+			return true;
+		} else if(this.children.length > 0) {			
+			for (let child of this.children) {
+				if(child.hasChild(annotation)) {
+					return true;
+				}
+			}
+			return false;
 		}
 	}
-
+	filterChild(annotation){
+		if(this.children.length > 0) {
+			this.children = this.children.filter(e => e !== annotation);
+			for (let child of this.children) {
+				if(child.filterChild(annotation)) {
+					return true;
+				}
+			}
+		}
+	}
+	
+	hide (annotation) {		
+		if(this.hasChild(annotation)) {
+			this.dispatchEvent({
+				'type': 'annotation_removed',
+				'annotation': annotation
+			});
+		}
+	}
+	show (annotation) {		
+		if(this.hasChild(annotation)) {
+			this.dispatchEvent({
+				'type': 'annotation_added',
+				'annotation': annotation
+			});
+		}
+	}
+	
+	remove (annotation) {		
+		if(this.hasChild(annotation)) {
+			annotation.removeAllChildren();
+			annotation.dispose();			
+			this.filterChild(annotation);
+			annotation.parent = null;
+			
+			this.dispatchEvent({
+				'type': 'annotation_removed',
+				'annotation': annotation
+			});
+		}
+	}
 	removeAllChildren() {
 		this.children.forEach((child) => {
 			if (child.children.length > 0) {
 				child.removeAllChildren();
 			}
-
 			this.remove(child);
 		});
 	}
@@ -528,9 +573,9 @@ export class Annotation extends EventDispatcher {
 
 		if (this.cameraPosition) {
 			let endPosition = this.cameraPosition;
-
+			
 			Utils.moveTo(this.scene, endPosition, endTarget);
-
+			
 			//{ // animate camera position
 			//	let tween = new TWEEN.Tween(view.position).to(endPosition, animationDuration);
 			//	tween.easing(easing);

@@ -42,7 +42,7 @@ export class VolumePanel extends MeasurePanel{
 						<td align="center" id="angle_cell_betta" style="width: 33%"></td>
 						<td align="center" id="angle_cell_gamma" style="width: 33%"></td>
 						<td align="right" style="width: 25%">
-							<img name="copyRotation" title="copy" class="button-icon" src="${copyIconPath}" style="width: 16px; height: 16px"/>
+							<img name="copyRotation" data-i18n="[title]scene.button_copy" class="button-icon" src="${copyIconPath}" style="width: 16px; height: 16px"/>
 						</td>
 					</tr>
 				</table>
@@ -59,7 +59,7 @@ export class VolumePanel extends MeasurePanel{
 						<td align="center" id="cell_width" style="width: 33%"></td>
 						<td align="center" id="cell_height" style="width: 33%"></td>
 						<td align="right" style="width: 25%">
-							<img name="copyScale" title="copy" class="button-icon" src="${copyIconPath}" style="width: 16px; height: 16px"/>
+							<img name="copyScale" data-i18n="[title]scene.button_copy" class="button-icon" src="${copyIconPath}" style="width: 16px; height: 16px"/>
 						</td>
 					</tr>
 				</table>
@@ -98,7 +98,7 @@ export class VolumePanel extends MeasurePanel{
 				<div style="display: flex; margin-top: 12px">
 					<span></span>
 					<span style="flex-grow: 1"></span>
-					<img name="remove" class="button-icon" src="${removeIconPath}" style="width: 16px; height: 16px"/>
+					<img name="remove" data-i18n="[title]scene.button_remove" class="button-icon" src="${removeIconPath}" style="width: 16px; height: 16px"/>
 				</div>
 			</div>
 		`);

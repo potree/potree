@@ -1239,7 +1239,7 @@ export class Viewer extends EventDispatcher{
 					}else{
 
 						proj4.defs("WGS84", "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs");
-						proj4.defs("pointcloud", this.getProjection());
+						proj4.defs("pointcloud", proj4.defs(this.getProjection()));
 						let transform = proj4("WGS84", "pointcloud");
 
 						const buffer = await file.arrayBuffer();

@@ -904,7 +904,7 @@ export class Utils {
 			// if there is a projection, transform coordinates to WGS84
 			// and compute angle to north there
 
-			proj4.defs("pointcloud", projection);
+			proj4.defs("pointcloud", proj4.defs(projection));
 			const transform = proj4("pointcloud", "WGS84");
 
 			const llP1 = transform.forward(p1.toArray());
@@ -932,7 +932,7 @@ export class Utils {
 			// if there is a projection, transform coordinates to WGS84
 			// and compute angle to north there
 
-			proj4.defs("pointcloud", projection);
+			proj4.defs("pointcloud", proj4.defs(projection));
 			const transform = proj4("pointcloud", "WGS84");
 
 			const llP1 = transform.forward(p1.toArray());

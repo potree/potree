@@ -145,7 +145,7 @@
 		import { loadRadar } from "../demo/radarLoader.js";
 		import { loadGaps } from "../demo/gapsLoader.js";
 		import { loadRem } from "../demo/remLoader.js";
-		import { loadVelo2Rtk, storeCalibration } from "../demo/calibrationManager.js";
+		import { loadVelo2Rtk, loadRtk2Vehicle, storeCalibration } from "../demo/calibrationManager.js";
 		import { updateSidebar, togglePointClass } from "../common/custom-sidebar.js";
 		import { getLoadingBar } from "../common/overlay.js";
 		// import {  } from "../common/overlay.js";
@@ -353,15 +353,18 @@
 
 							let velo2RtkOld = window.extrinsics.velo2Rtk.old;
 							let velo2RtkNew = window.extrinsics.velo2Rtk.new;
-							debugger;
 
-					      	cloud.material.uniforms.velo2RtkXYZOld = {type: "v3", value: new THREE.Vector3(velo2RtkOld.x, velo2RtkOld.y, velo2RtkOld.z)};
-						  	cloud.material.uniforms.velo2RtkRPYNew = {type: "v3", value: new THREE.Vector3(velo2RtkNew.roll, velo2RtkNew.pitch, velo2RtkNew.yaw)};
+					      	cloud.material.uniforms.velo2RtkXYZOld.value.set(velo2RtkOld.x, velo2RtkOld.y, velo2RtkOld.z);
+					      	cloud.material.uniforms.velo2RtkRPYOld.value.set(velo2RtkOld.roll, velo2RtkOld.pitch, velo2RtkOld.yaw);
+							cloud.material.uniforms.velo2RtkXYZNew.value.set(velo2RtkNew.x, velo2RtkNew.y, velo2RtkNew.z);
+							cloud.material.uniforms.velo2RtkRPYNew.value.set(velo2RtkNew.roll, velo2RtkNew.pitch, velo2RtkNew.yaw);
 						}
+					});
 
-
-
-
+					loadRtk2Vehicle(s3, bucket, name, (rtk2Vehicle) => {
+						console.log("Rtk2Vehicle Extrinsics Loaded!");
+						window.extrinsics.rtk2Vehicle  = {old: rtk2Vehicle, new:rtk2Vehicle};
+						storeRtk2Vehicle(window.extrinsics.rtk2Vehicle.new);
 					});
 				} catch (e) {
 					console.error("Could not load Calibrations: ", e);
@@ -668,7 +671,6 @@
 					// Save Current RTK Pose in Uniforms:
 					for (let ii = 0, numClouds = clouds.length; ii < numClouds; ii++) {
 						let material = clouds[ii].material;
-						debugger;
 						material.uniforms.currentRtkPosition.value = state.pose.clone();
 						material.uniforms.currentRtkOrientation.value = state.orient.toVector3().clone();
 					}
@@ -1123,153 +1125,72 @@ async function loadRemCallback(s3, bucket, name, animationEngine) {
 			});
 		});
 
-//Load Radar code (end)
+		// Listener to store pointcloud material as calibration extrinsics get updated
+		window.addEventListener("update-calibration-panel", (e) => {
+			console.log("calibration panel updated: ", e.detail);
+			const id = e.detail.id;
+			const dim = e.detail.dim;
+			const val = e.detail.value;
 
-    // // Load Radar:
-    // loadRadar(s3, bucket, name, (geometry, t_init) => {
-		//
-    //   // uniforms
-    //   uniforms = {
-    //       color: { value: new THREE.Color( 0xffff00 ) },
-    //       minGpsTime: {value: 0.0 },
-    //       maxGpsTime: {value: 110.0 },
-    //       initialTime: {value: t_init}
-    //   };
-		//
-    //   // point cloud material
-    //   var shaderMaterial = new THREE.ShaderMaterial( {
-		//
-    //       uniforms:       uniforms,
-    //       vertexShader:   document.getElementById( 'vertexshader' ).textContent,
-    //       fragmentShader: document.getElementById( 'fragmentshader' ).textContent,
-    //       transparent:    true
-		//
-    //   });
-		//
-    //   const material = new THREE.PointsMaterial( {size:1.0} );
-    //   const mesh = new THREE.Points(geometry, shaderMaterial);
-    //   mesh.name = "radar";
-    //   // debugger; //radar tracks added?
-    //   viewer.scene.scene.add(mesh);
-    // });
-
-			if (runForLocalDevelopment) {
-				Potree.loadPointCloud("../pointclouds/test/cloud.js", "full-cloud", e => {
-					const pointcloud = e.pointcloud;
-		      const material = pointcloud.material;
-		      viewer.scene.addPointCloud(pointcloud);
-		      material.pointColorType = Potree.PointColorType.RGB; // any Potree.PointColorType.XXXX
-					material.gradient = Potree.Gradients.GRAYSCALE; // Can define custom gradient or look up in Potree.Gradients
-		      material.size = 0.09;
-		      material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-		      material.shape = Potree.PointShape.SQUARE;
-
-		      material.uniforms.uExtrinsicsMode = {type: "b", value: false};
-		   //    material.uniforms.currentRtkPosition = {type: "v3", value: new THREE.Vector3(0,0,0)};
-			  // material.uniforms.currentRtkOrientation = {type: "v3", value: new THREE.Vector3(0,0,0)};
-
-			  let identityTransform = {x:0, y:0, z:0, roll:0, pitch:0, yaw:0};
-			  let rtk2VehicleOld = window.extrinsics && window.extrinsics.rtk2Vehicle ? window.extrinsics.rtk2Vehicle.old : identityTransform;
-			  let rtk2VehicleNew = window.extrinsics && window.extrinsics.rtk2Vehicle ? window.extrinsics.rtk2Vehicle.new : identityTransform;
-			  let velo2RtkOld = window.extrinsics && window.extrinsics.velo2Rtk ? window.extrinsics.velo2Rtk.old : identityTransform;
-			  let velo2RtkNew = window.extrinsics && window.extrinsics.velo2Rtk ? window.extrinsics.velo2Rtk.new : identityTransform;
-
-
-		      material.uniforms.rtk2VehicleXYZOld = {type: "v3", value: new THREE.Vector3(rtk2VehicleOld.x, rtk2VehicleOld.y, rtk2VehicleOld.z)};
-			  material.uniforms.rtk2VehicleRPYOld = {type: "v3", value: new THREE.Vector3(rtk2VehicleOld.roll, rtk2VehicleOld.pitch, rtk2VehicleOld.yaw)};
-		      material.uniforms.velo2RtkXYZOld = {type: "v3", value: new THREE.Vector3(velo2RtkOld.x, velo2RtkOld.y, velo2RtkOld.z)};
-			  material.uniforms.velo2RtkRPYOld = {type: "v3", value: new THREE.Vector3(velo2RtkOld.roll, velo2RtkOld.pitch, velo2RtkOld.yaw)};
-
-		      material.uniforms.rtk2VehicleXYZNew = {type: "v3", value: new THREE.Vector3(rtk2VehicleNew.x, rtk2VehicleNew.y, rtk2VehicleNew.z)};
-			  material.uniforms.rtk2VehicleRPYNew = {type: "v3", value: new THREE.Vector3(rtk2VehicleNew.roll, rtk2VehicleNew.pitch, rtk2VehicleNew.yaw)};
-		      material.uniforms.velo2RtkXYZNew = {type: "v3", value: new THREE.Vector3(velo2RtkNew.x, velo2RtkNew.y, velo2RtkNew.z)};
-			  material.uniforms.velo2RtkRPYNew = {type: "v3", value: new THREE.Vector3(velo2RtkNew.roll, velo2RtkNew.pitch, velo2RtkNew.yaw)};
-
-			// Function to update these values as calibration extrinsics get updated
-			window.addEventListener("update-calibration-panel", (e) => {
-				console.log("calibration panel updated: ", e.detail);
-				const id = e.detail.id;
-				const dim = e.detail.dim;
-				const val = e.detail.value;
+			for (let cloud of viewer.scene.pointclouds) {
+				let material = cloud.material;
 
 				if (id == "rtk2vehicle") {
 					let rtk2Vehicle = getRtk2Vehicle();
+					let vehicleMesh = viewer.scene.scene.getObjectByName("Vehicle").getObjectByName("Vehicle Mesh");
+
+					// Apply Transformations to Vehicle:
+					let translation = new THREE.Vector3(rtk2Vehicle.x, rtk2Vehicle.y, rtk2Vehicle.z);
+					vehicleMesh.position.copy(translation);
+					vehicleMesh.rotation.set(rtk2Vehicle.roll, rtk2Vehicle.pitch, rtk2Vehicle.yaw);
+
+					// Store updated values in mesh:
 					material.uniforms.rtk2VehicleXYZNew = {type: "v3", value: new THREE.Vector3(rtk2Vehicle.x, rtk2Vehicle.y, rtk2Vehicle.z)};
 					material.uniforms.rtk2VehicleRPYNew = {type: "v3", value: new THREE.Vector3(rtk2Vehicle.roll, rtk2Vehicle.pitch, rtk2Vehicle.yaw)};
+
 				} else if (id == "velo2rtk") {
+
 					let velo2Rtk = getVelo2Rtk();
 					material.uniforms.velo2RtkXYZNew = {type: "v3", value: new THREE.Vector3(velo2Rtk.x, velo2Rtk.y, velo2Rtk.z)};
 					material.uniforms.velo2RtkRPYNew = {type: "v3", value: new THREE.Vector3(velo2Rtk.roll, velo2Rtk.pitch, velo2Rtk.yaw)};
+
 				} else {
 					console.error("Unknown Calibration Extrinsics Id:", id);
 				}
+			}
+		});
+
+		// Load Pointclouds
+		if (runForLocalDevelopment) {
+			Potree.loadPointCloud("../pointclouds/test/cloud.js", "full-cloud", e => {
+				const pointcloud = e.pointcloud;
+				const material = pointcloud.material;
+	      		viewer.scene.addPointCloud(pointcloud);
+	      		material.pointColorType = Potree.PointColorType.INTENSITY; // any Potree.PointColorType.XXXX
+				material.gradient = Potree.Gradients.GRAYSCALE; // Can define custom gradient or look up in Potree.Gradients
+	      		material.size = 0.09;
+	      		material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+	      		material.shape = Potree.PointShape.SQUARE;
 			});
 
-		      viewer.scene.view.position.set(300198.109, 4701144.537, 349.871);
-		      viewer.scene.view.lookAt(new THREE.Vector3(299900.954, 4701576.919, 66.197));
-				});
-			} else if (name === 'Data/basemap-demo') {
-        Potree.loadPointCloud({s3, bucket, name}, "basemap", e => {
-		      const pointcloud = e.pointcloud;
-		      const material = pointcloud.material;
-		      viewer.scene.addPointCloud(pointcloud);
-		      material.pointColorType = Potree.PointColorType.COLOR; // any Potree.PointColorType.XXXX
-		      material.color = new THREE.Color().setRGB(0.99, 0.99, 0.99);
-		      material.size = 0.09;
-		      material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-		      material.shape = Potree.PointShape.SQUARE;
+	    } else {
+        	Potree.loadPointCloud({s3, bucket, name}, name.substring(5), e => {
+		    	const pointcloud = e.pointcloud;
+			    const material = pointcloud.material;
+			    viewer.scene.addPointCloud(pointcloud);
+			    material.pointColorType = Potree.PointColorType.INTENSITY; // any Potree.PointColorType.XXXX
+				material.gradient = Potree.Gradients.GRAYSCALE;
+			    material.size = 0.09;
+			    material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+			    material.shape = Potree.PointShape.SQUARE;
 
-		      viewer.scene.view.position.set(300198.109, 4701144.537, 349.871);
-		      viewer.scene.view.lookAt(new THREE.Vector3(299900.954, 4701576.919, 66.197));
-		      // viewer.toggleNavigationCube();
-		      $("#playbutton").click();
-		    });
-      } else if (name === 'Data/fullcloud-demo') {
-        Potree.loadPointCloud({s3, bucket, name}, "fullcloud", e => {
-		      const pointcloud = e.pointcloud;
-		      const material = pointcloud.material;
-		      viewer.scene.addPointCloud(pointcloud);
-		      material.pointColorType = Potree.PointColorType.HEIGHT; // any Potree.PointColorType.XXXX
-		      material.size = 0.09;
-		      material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-		      material.shape = Potree.PointShape.SQUARE;
+	      		$("#playbutton").click();
 
-		      viewer.scene.view.position.set(300198.109, 4701144.537, 349.871);
-		      viewer.scene.view.lookAt(new THREE.Vector3(299900.954, 4701576.919, 66.197));
-		      // viewer.toggleNavigationCube();
-		      $("#playbutton").click();
-		    });
-        Potree.loadPointCloud({s3, bucket, name: 'Data/basemap-demo'}, "basemap", e => {
-		      const pointcloud = e.pointcloud;
-		      const material = pointcloud.material;
-		      viewer.scene.addPointCloud(pointcloud);
-		      material.pointColorType = Potree.PointColorType.COLOR; // any Potree.PointColorType.XXXX
-		      material.color = new THREE.Color().setRGB(0.99, 0.99, 0.99);
-		      material.size = 0.09;
-		      material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-		      material.shape = Potree.PointShape.SQUARE;
-		    });
-      } else {
-        Potree.loadPointCloud({s3, bucket, name}, name.substring(5), e => {
-		      const pointcloud = e.pointcloud;
-		      const material = pointcloud.material;
-		      viewer.scene.addPointCloud(pointcloud);
-		      material.pointColorType = Potree.PointColorType.INTENSITY; // any Potree.PointColorType.XXXX
-					material.gradient = Potree.Gradients.GRAYSCALE;
-		      material.size = 0.09;
-		      material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-		      material.shape = Potree.PointShape.SQUARE;
-
-		      // viewer.scene.view.position.set(300198.109, 4701144.537, 349.871);
-		      // viewer.scene.view.lookAt(new THREE.Vector3(299900.954, 4701576.919, 66.197));
-		      // viewer.toggleNavigationCube();
-		      $("#playbutton").click();
-
-					try {
-						togglePointClass(pointcloud);
-					} catch (e) {
-						console.log("Pointcloud loaded before sidebar initialized: ", e);
-					}
+				try {
+					togglePointClass(pointcloud);
+				} catch (e) {
+					console.log("Pointcloud loaded before sidebar initialized: ", e);
+				}
 		    });
       }
 		</script>

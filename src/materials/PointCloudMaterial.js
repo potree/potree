@@ -70,8 +70,11 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 		};
 
 		this.uniforms = {
-			timeVal: {type: "fv", value: 0.0 },
-			timeRange: {type: "fv", value: 0.0 },
+
+			uDebug: 			{type: "b", value: false},
+			uExtrinsicsMode: 	{type: "b", value: false},
+			timeVal: 			{type: "fv", value: 0.0 },
+			timeRange: 			{type: "fv", value: 0.0 },
 			level:				{ type: "f", value: 0.0 },
 			vnStart:			{ type: "f", value: 0.0 },
 			spacing:			{ type: "f", value: 1.0 },
@@ -135,6 +138,19 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 			uFilterReturnNumberRange:		{ type: "fv", value: [0, 7]},
 			uFilterNumberOfReturnsRange:	{ type: "fv", value: [0, 7]},
 			uFilterGPSTimeClipRange:		{ type: "fv", value: [0, 7]},
+
+			currentRtkPosition: 			{type: "v3", value: new THREE.Vector3(0,0,0)},
+			currentRtkOrientation: 			{type: "v3", value: new THREE.Vector3(0,0,0)},
+
+			rtk2VehicleXYZOld: 				{type: "v3", value: new THREE.Vector3(0, 0, 0)},
+			rtk2VehicleRPYOld: 				{type: "v3", value: new THREE.Vector3(0, 0, 0)},
+		    velo2RtkXYZOld: 				{type: "v3", value: new THREE.Vector3(0, 0, 0)},
+			velo2RtkRPYOld: 				{type: "v3", value: new THREE.Vector3(0, 0, 0)},
+
+		    rtk2VehicleXYZNew: 				{type: "v3", value: new THREE.Vector3(0, 0, 0)},
+			rtk2VehicleRPYNew: 				{type: "v3", value: new THREE.Vector3(0, 0, 0)},
+		    velo2RtkXYZNew: 				{type: "v3", value: new THREE.Vector3(0, 0, 0)},
+			velo2RtkRPYNew: 				{type: "v3", value: new THREE.Vector3(0, 0, 0)},
 		};
 
 		this.classification = ClassificationScheme.DEFAULT;

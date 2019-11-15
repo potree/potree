@@ -725,13 +725,14 @@ export class Renderer {
 
 			let level = node.getLevel();
 
+			shader.setUniform("uDebug", material.uniforms.uDebug.value);
 			shader.setUniform("uExtrinsicsMode", material.uniforms.uExtrinsicsMode.value);
 
-			if(node.debug){
-				shader.setUniform("uDebug", true);
-			}else{
-				shader.setUniform("uDebug", false);
-			}
+			// if(node.debug){
+			// 	shader.setUniform("uDebug", true);
+			// }else{
+			// 	shader.setUniform("uDebug", false);
+			// }
 
 			let isLeaf;
 			if(node instanceof PointCloudOctreeNode){

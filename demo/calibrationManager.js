@@ -2,6 +2,20 @@ export async function storeCalibration(s3, bucket, name, callback) {
 
 }
 
+export async function loadRtk2Vehicle(s3, bucket, name, callback) {
+
+  // TODO Hardcoded defaults for now
+  let rtk2Vehicle = {
+    x:0, y:0, z:-2,
+    roll:0, pitch:0, yaw:Math.PI/2
+  }
+
+  callback(rtk2Vehicle);
+}
+
+
+
+
 
 export async function loadVelo2Rtk(s3, bucket, name, callback) {
   const tstart = performance.now();

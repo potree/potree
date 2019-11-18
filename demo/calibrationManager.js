@@ -1,5 +1,5 @@
 export async function storeCalibration(s3, bucket, name, callback) {
-
+  // TODO
 }
 
 export async function loadRtk2Vehicle(s3, bucket, name, callback) {
@@ -12,10 +12,6 @@ export async function loadRtk2Vehicle(s3, bucket, name, callback) {
 
   callback(rtk2Vehicle);
 }
-
-
-
-
 
 export async function loadVelo2Rtk(s3, bucket, name, callback) {
   const tstart = performance.now();

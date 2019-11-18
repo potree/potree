@@ -258,7 +258,7 @@ function disablePanels(reason) {
   $("#calibration-overlay-rtk2vehicle :input").attr("disabled", true);
 
   $('.disable-calibration-panel').each((i, obj) => obj.style.display = "block");
-  $('.disable-calibration-panel-reason').each((i, obj) => obj.innerHTML = reason);
+  $('.disable-calibration-panel-reason').each((i, obj) => obj.innerHTML = reason || "");
 }
 
 function enablePanels() {

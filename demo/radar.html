@@ -165,6 +165,7 @@
 		const visualizationMode = params.get("mode");
 		const annotateLanesAvailable = params.get('annotate') == 'Annotate';
 		const downloadLanesAvailable = annotateLanesAvailable;
+		const calibrationModeAvailable = params.get("calibrate") == "Calibrate" || runForLocalDevelopment;
 		const accessKeyId = params.get("key1");
 		const secretAccessKey = params.get("key2");
 		const sessionToken = params.get("key3");
@@ -230,6 +231,14 @@
       // viewer.scene.view.position.set(300198.109, 4701144.537, 349.871);
       // viewer.scene.view.lookAt(new THREE.Vector3(299900.954, 4701576.919, 66.197));
 			updateSidebar(visualizationMode);
+
+			window.calibrationModeAvailable = calibrationModeAvailable;
+			if (window.calibrationModeAvailable) {
+				document.getElementById("toggle_calibration_panels").style.display = "block";
+			} else {
+				document.getElementById("toggle_calibration_panels").style.display = "none";
+
+			}
 
 			if (visualizationMode == "aptivLanes") {
 				viewer.setCameraMode(Potree.CameraMode.ORTHOGRAPHIC);

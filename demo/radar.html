@@ -56,6 +56,7 @@
 	<script src="../node_modules/three.meshline/src/THREE.MeshLine.js"></script>
 	<script src="animationEngine.js"></script>
 	<script type="module" src="RtkTrajectory.js"></script>
+	<script type="module" src="../src/loader/PointAttributes.js"></script>
 
 
 	<!-- TODO REMOVE BELOW -->
@@ -150,6 +151,7 @@
 		import { getLoadingBar } from "../common/overlay.js";
 		// import {  } from "../common/overlay.js";
 		import { setLoadingScreen, removeLoadingScreen } from "../common/overlay.js";
+		import { PointAttributeNames } from "../src/loader/PointAttributes.js";
 
 		// setLoadingScreen();
 
@@ -1160,6 +1162,18 @@ async function loadRemCallback(s3, bucket, name, animationEngine) {
 			}
 		});
 
+		window.canEnableCalibrationPanels = true;
+		function canUseCalibrationPanels(attributes) {
+			let hasRtkPose = false;
+      		let hasRtkOrient = false;
+      		debugger;
+      		for (let attr of attributes) {
+      			hasRtkPose = hasRtkPose || (attr.name === PointAttributeNames.RTK_POSE);
+      			hasRtkOrient = hasRtkOrient || (attr.name === PointAttributeNames.RTK_ORIENT);
+      		}
+      		return hasRtkPose && hasRtkOrient
+		}
+
 		// Load Pointclouds
 		if (runForLocalDevelopment) {
 			Potree.loadPointCloud("../pointclouds/test/cloud.js", "full-cloud", e => {
@@ -1171,6 +1185,19 @@ async function loadRemCallback(s3, bucket, name, animationEngine) {
 	      		material.size = 0.09;
 	      		material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
 	      		material.shape = Potree.PointShape.SQUARE;
+
+	      		let cloudCanUseCalibrationPanels = canUseCalibrationPanels(pointcloud.pcoGeometry.pointAttributes.attributes);
+	      		window.canEnableCalibrationPanels = window.canEnableCalibrationPanels && cloudCanUseCalibrationPanels;
+
+	      		if (window.canEnableCalibrationPanels) {
+	      			$(document).ready(() => enablePanels() );
+
+	      		} else {
+	      			$(document).ready(() => {
+	      				disablePanels("Pointcloud was not serialized with the necessary point attributes");
+	      				console.error("Cannot use calibration panels");
+	      			});
+	      		}
 			});
 
 	    } else {
@@ -1183,6 +1210,19 @@ async function loadRemCallback(s3, bucket, name, animationEngine) {
 			    material.size = 0.09;
 			    material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
 			    material.shape = Potree.PointShape.SQUARE;
+
+	      		let cloudCanUseCalibrationPanels = canUseCalibrationPanels(pointcloud.pcoGeometry.pointAttributes.attributes);
+	      		window.canEnableCalibrationPanels = window.canEnableCalibrationPanels && cloudCanUseCalibrationPanels;
+
+	      		if (window.canEnableCalibrationPanels) {
+	      			$(document).ready(() => enablePanels() );
+
+	      		} else {
+	      			$(document).ready(() => {
+	      				disablePanels("Pointcloud was not serialized with the necessary point attributes");
+	      				console.error("Cannot use calibration panels");
+	      			});
+	      		}
 
 	      		$("#playbutton").click();
 

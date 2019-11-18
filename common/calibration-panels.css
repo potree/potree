@@ -14,3 +14,8 @@
     background-color: #2196F3;
     color: #fff;
 }
+
+.disable-calibration-panel {
+    background-color: #ff0000;
+    color: #ffffff;
+}

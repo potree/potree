@@ -3,8 +3,8 @@ $(document).ready(function () {
   // Insert HTML for Playbar:
   var draggableOverlays = $(`
     <div class="draggable-overlay" id="calibration-overlay-rtk2vehicle">
-        <div class="draggable-overlay-header" id="calibration-overlay-rtk2vehicle-header">RTK to Vehicle Mesh Extrinsics</div>
-
+      <div class="draggable-overlay-header" id="calibration-overlay-rtk2vehicle-header">RTK to Vehicle Mesh Extrinsics</div>
+        <span class='disable-calibration-panel'> CALIBRATION PANEL DISABLED: <br> <span class="disable-calibration-panel-reason"></span> </span>
         <p><span>
             X: <span class="calibration-value" id="rtk2vehicle-x">0.0000</span> m
             Setpoint: <input class="calibration-setpoint" id="rtk2vehicle-setpoint-x" type="number" placeholder="" step='any' value='0'/> m
@@ -58,6 +58,7 @@ $(document).ready(function () {
 
     <div class="draggable-overlay" id="calibration-overlay-velo2rtk">
       <div class="draggable-overlay-header" id="calibration-overlay-velo2rtk-header">Velodyne to RTK Extrinsics</div>
+        <span class='disable-calibration-panel'> CALIBRATION PANEL DISABLED: <br> <span class="disable-calibration-panel-reason"></span> </span>
         <p><span>
             X: <span class="calibration-value" id="velo2rtk-x">0.0000</span> m
             Setpoint: <input class="calibration-setpoint" id="velo2rtk-setpoint-x" type="number" placeholder="" step='any' value='0'/> m
@@ -250,6 +251,22 @@ function getVelo2Rtk() {
   }
   // debugger; // return
   return velo2rtk;
+}
+
+function disablePanels(reason) {
+  $("#calibration-overlay-velo2rtk :input").attr("disabled", true);
+  $("#calibration-overlay-rtk2vehicle :input").attr("disabled", true);
+
+  $('.disable-calibration-panel').each((i, obj) => obj.style.display = "block");
+  $('.disable-calibration-panel-reason').each((i, obj) => obj.innerHTML = reason);
+}
+
+function enablePanels() {
+  $("#calibration-overlay-velo2rtk :input").attr("disabled", false);
+  $("#calibration-overlay-rtk2vehicle :input").attr("disabled", false);
+
+  $('.disable-calibration-panel').each((i, obj) => obj.style.display = "none");
+  $('.disable-calibration-panel-reason').each((i, obj) => obj.innerHTML = "");
 }
 
 

@@ -93,6 +93,12 @@ function parseRTK(RTKstring) {
     yawcol = 17;
   }
 
+  window.usingAdjustedHeading = yawcol == 17;
+  if (!window.usingAdjustedHeading) {
+    console.error("NOT USING ADJUSTED HEADING FOR RTK POSES");
+  }
+
+
   let mpos = [];
   let timestamps = [];
   let colors = [];

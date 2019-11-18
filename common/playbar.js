@@ -37,7 +37,7 @@ $(document).ready(function () {
             </label>
             <input type="range" name="playback_speed" id="playback_speed" min="1" max="8" value="4" step="any">
             <button name="toggle_calibration_panels" id="toggle_calibration_panels">Toggle Calibration Panels</button>
-            <button name="toggle_hideshow" id="toggle_hideshow">Toggle Pointcloud Visualization Mode</button>
+            <button name="toggle_hideshow" id="toggle_hideshow">Toggle Pointcloud Highlight Mode</button>
             <button name="load_detections_button" id="load_detections_button">Load Detections</button>
             <button name="load_gaps_button" id="load_gaps_button">Load Gaps</button>
             <button name="load_radar_button" id="load_radar_button">Load Radar</button>
@@ -192,9 +192,7 @@ $(document).ready(function () {
         let panel = panels[ii];
 
         // Check is visible and toggle:
-        // panel.style.display = "none";
-        // debugger;
-        if (panel.style.display == "none") {
+        if (panel.style.display == "none" || panel.style.display == "") {
           panel.style.display = "block";
         } else {
           panel.style.display = "none"

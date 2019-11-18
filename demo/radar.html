@@ -1166,7 +1166,6 @@ async function loadRemCallback(s3, bucket, name, animationEngine) {
 		function canUseCalibrationPanels(attributes) {
 			let hasRtkPose = false;
       		let hasRtkOrient = false;
-      		debugger;
       		for (let attr of attributes) {
       			hasRtkPose = hasRtkPose || (attr.name === PointAttributeNames.RTK_POSE);
       			hasRtkOrient = hasRtkOrient || (attr.name === PointAttributeNames.RTK_ORIENT);
@@ -1194,8 +1193,9 @@ async function loadRemCallback(s3, bucket, name, animationEngine) {
 
 	      		} else {
 	      			$(document).ready(() => {
-	      				disablePanels("Pointcloud was not serialized with the necessary point attributes");
-	      				console.error("Cannot use calibration panels");
+	      				let reason = "Pointcloud was not serialized with the necessary point attributes"
+	      				disablePanels(reason);
+	      				console.error("Cannot use calibration panels: ", reason);
 	      			});
 	      		}
 			});

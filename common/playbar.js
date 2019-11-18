@@ -285,7 +285,6 @@ $(document).ready(function () {
     // document.getElementById("elevation_min").style.display = "none";
     document.getElementById("playback_speed").style.display = "none";
     document.getElementById("toggleslider").style.display = "none";
-    document.getElementById("toggle").style.display = "none";
     // document.getElementById("toggle_calibration_panels").style.display = "none";
     document.getElementById("load_detections_button").style.display = "none";
     document.getElementById("load_gaps_button").style.display = "none";

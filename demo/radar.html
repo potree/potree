@@ -1139,7 +1139,7 @@ async function loadRemCallback(s3, bucket, name, animationEngine) {
 			const dim = e.detail.dim;
 			const val = e.detail.value;
 
-			for (let cloud of viewer.scene.pointclouds) {
+			for (const cloud of viewer.scene.pointclouds) {
 				let material = cloud.material;
 
 				if (id == "rtk2vehicle") {

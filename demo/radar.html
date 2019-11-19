@@ -356,7 +356,7 @@
 						console.log("Velo2Rtk Extrinsics Loaded!");
 						window.extrinsics.velo2Rtk  = {old: velo2Rtk, new:velo2Rtk};
 						storeVelo2Rtk(window.extrinsics.velo2Rtk.new);
-						for (let cloud of viewer.scene.pointclouds) {
+						for (const cloud of viewer.scene.pointclouds) {
 
 							let velo2RtkOld = window.extrinsics.velo2Rtk.old;
 							let velo2RtkNew = window.extrinsics.velo2Rtk.new;

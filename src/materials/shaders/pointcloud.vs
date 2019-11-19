@@ -804,7 +804,7 @@ void doClipping(vec4 correctedPosition){
 		//}
 
 		if(!uExtrinsicsMode && (time > range.x && time < range.y)) {
-			//gl_Position = vec4(100.0, 100.0, 100.0, 0.0);
+			// Set color to red: (r,g,b) --> (1.0, 0.0, 0.0)
 			vColor.r = 1.0;
 			vColor.b = 0.0;
 			vColor.g = 0.0;

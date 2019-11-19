@@ -838,37 +838,58 @@ $(document).ready(() => {
 
 			if (visualizationMode == "aptivLanes") {
 
-				const laneNum = [1,2,3];
-				const laneDirection = ["EB", "WB"];
-				const supplierNum = [1,2,3];
-				let filename, datasetName;
+				// const laneNum = [1,2,3];
+				// const laneDirection = ["EB", "WB"];
+				// const supplierNum = [1,2,3];
+				// let filename, datasetName;
 
-				for (let s of supplierNum) {
-					for (let d of laneDirection) {
-						for (let n of laneNum) {
-							try {
+				// for (let s of supplierNum) {
+				// 	for (let d of laneDirection) {
+				// 		for (let n of laneNum) {
+				// 			try {
 
-								let layerName = `Supplier${s}_${d}_Lane${n}`;
-								filename = `Supplier${s}_${d}_Lane${n}.fb`;
+				// 				let layerName = `Supplier${s}_${d}_Lane${n}`;
+				// 				filename = `Supplier${s}_${d}_Lane${n}.fb`;
 
-								await loadLanes(s3, bucket, name, filename, s, window.annotateLanesModeActive, viewer.scene.volumes, (laneGeometries) => {
-									let lanesLayer = new THREE.Group();
-									lanesLayer.name = layerName;
-									for (let ii=0, len=laneGeometries.all.length; ii<len; ii++) {
-										lanesLayer.add(laneGeometries.all[ii]);
-									}
-									viewer.scene.scene.add(lanesLayer);
-									viewer.scene.dispatchEvent({
-										"type": "map_provider_layer_added",
-										"mapLayer": lanesLayer
-									});
-								});
-							} catch (e) {
-								console.log(`Couldn't load ${filename}: ${e}`);
-							}
+				// 				await loadLanes(s3, bucket, name, filename, s, window.annotateLanesModeActive, viewer.scene.volumes, (laneGeometries) => {
+				// 					let lanesLayer = new THREE.Group();
+				// 					lanesLayer.name = layerName;
+				// 					for (let ii=0, len=laneGeometries.all.length; ii<len; ii++) {
+				// 						lanesLayer.add(laneGeometries.all[ii]);
+				// 					}
+				// 					viewer.scene.scene.add(lanesLayer);
+				// 					viewer.scene.dispatchEvent({
+				// 						"type": "map_provider_layer_added",
+				// 						"mapLayer": lanesLayer
+				// 					});
+				// 				});
+				// 			} catch (e) {
+				// 				console.log(`Couldn't load ${filename}: ${e}`);
+				// 			}
+				// 		}
+				// 	}
+				// }
+
+				try {
+
+					let layerName = `I-75-North`;
+					filename = `I-75-North_potree.fb`;
+
+					await loadLanes(s3, bucket, name, filename, 1, window.annotateLanesModeActive, viewer.scene.volumes, (laneGeometries) => {
+						let lanesLayer = new THREE.Group();
+						lanesLayer.name = layerName;
+						for (let ii=0, len=laneGeometries.all.length; ii<len; ii++) {
+							lanesLayer.add(laneGeometries.all[ii]);
 						}
-					}
-				}
+						viewer.scene.scene.add(lanesLayer);
+						viewer.scene.dispatchEvent({
+							"type": "map_provider_layer_added",
+							"mapLayer": lanesLayer
+						});
+					});
+				} catch (e) {
+					console.log(`Couldn't load ${filename}: ${e}`);
+				}				
 			}
 
 			// Load Comparison Dataset (hardcoded to one for now)

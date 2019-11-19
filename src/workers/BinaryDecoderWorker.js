@@ -59,7 +59,7 @@ Potree = {};
 onmessage = function (event) {
 
 	performance.mark("binary-decoder-start");
-	
+
 	let buffer = event.data.buffer;
 	let pointAttributes = event.data.pointAttributes;
 	let numPoints = buffer.byteLength / pointAttributes.byteSize;
@@ -70,20 +70,19 @@ onmessage = function (event) {
 	let spacing = event.data.spacing;
 	let hasChildren = event.data.hasChildren;
 	let name = event.data.name;
-	
+
 	let tightBoxMin = [ Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY ];
 	let tightBoxMax = [ Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY ];
 	let mean = [0, 0, 0];
-	
 
 	let attributeBuffers = {};
 	let inOffset = 0;
 	for (let pointAttribute of pointAttributes.attributes) {
-		
+
 		if (pointAttribute.name === PointAttribute.POSITION_CARTESIAN.name) {
 			let buff = new ArrayBuffer(numPoints * 4 * 3);
 			let positions = new Float32Array(buff);
-		
+
 			for (let j = 0; j < numPoints; j++) {
 				let x, y, z;
 
@@ -136,7 +135,38 @@ onmessage = function (event) {
 			}
 
 			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
-		} else if (pointAttribute.name === PointAttribute.CLASSIFICATION.name) {
+		} else if (pointAttribute.name === PointAttribute.RTK_POSE.name) {
+			let buff = new ArrayBuffer(numPoints * 4 * 3);
+			let rtk_poses = new Float32Array(buff);
+			let view = new DataView(buffer);
+
+			for (let j = 0; j < numPoints; j++) {
+				x = view.getFloat64(inOffset + j * pointAttributes.byteSize + 0, true);
+				y = view.getFloat64(inOffset + j * pointAttributes.byteSize + 8, true);
+				z = view.getFloat64(inOffset + j * pointAttributes.byteSize + 16, true);
+
+				rtk_poses[3 * j + 0] = x;
+				rtk_poses[3 * j + 1] = y;
+				rtk_poses[3 * j + 2] = z;
+			}
+
+			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
+		} else if (pointAttribute.name === PointAttribute.RTK_ORIENT.name) {
+			let buff = new ArrayBuffer(numPoints * 4 * 3);
+			let rtk_orients = new Float32Array(buff);
+
+			for (let j = 0; j < numPoints; j++) {
+				x = cv.getFloat64(inOffset + j * pointAttributes.byteSize + 0, true);
+				y = cv.getFloat64(inOffset + j * pointAttributes.byteSize + 8, true);
+				z = cv.getFloat64(inOffset + j * pointAttributes.byteSize + 16, true);
+
+				rtk_orients[3 * j + 0] = x;
+				rtk_orients[3 * j + 1] = y;
+				rtk_orients[3 * j + 2] = z;
+			}
+
+			attributeBuffers[pointAttribute.name] = { buffer: buff, attribute: pointAttribute };
+		}  else if (pointAttribute.name === PointAttribute.CLASSIFICATION.name) {
 			let buff = new ArrayBuffer(numPoints);
 			let classifications = new Uint8Array(buff);
 
@@ -234,7 +264,7 @@ onmessage = function (event) {
 				x = x / length;
 				y = y / length;
 				z = z / length;
-				
+
 				normals[3 * j + 0] = x;
 				normals[3 * j + 1] = y;
 				normals[3 * j + 2] = z;
@@ -249,7 +279,7 @@ onmessage = function (event) {
 				let x = cv.getFloat32(inOffset + j * pointAttributes.byteSize + 0, true);
 				let y = cv.getFloat32(inOffset + j * pointAttributes.byteSize + 4, true);
 				let z = cv.getFloat32(inOffset + j * pointAttributes.byteSize + 8, true);
-				
+
 				normals[3 * j + 0] = x;
 				normals[3 * j + 1] = y;
 				normals[3 * j + 2] = z;
@@ -271,7 +301,7 @@ onmessage = function (event) {
 	}
 
 	// Convert GPS time from double (unsupported by WebGL) to origin-aligned floats
-	if(attributeBuffers[PointAttribute.GPS_TIME.name]){ 
+	if(attributeBuffers[PointAttribute.GPS_TIME.name]){
 		let attribute = attributeBuffers[PointAttribute.GPS_TIME.name];
 		let sourceF64 = new Float64Array(attribute.buffer);
 		let target = new ArrayBuffer(numPoints * 4);
@@ -291,8 +321,8 @@ onmessage = function (event) {
 			targetF32[i] = gpstime - min;
 		}
 
-		attributeBuffers[PointAttribute.GPS_TIME.name] = { 
-			buffer: target, 
+		attributeBuffers[PointAttribute.GPS_TIME.name] = {
+			buffer: target,
 			attribute: PointAttribute.GPS_TIME,
 			offset: min,
 			range: max - min};
@@ -329,7 +359,7 @@ onmessage = function (event) {
 			iz = Math.floor(iz);
 
 			let cellIndex = ix | (iy << 8) | (iz << 16);
-			
+
 			if(!sparseGrid.has(cellIndex)){
 				sparseGrid.set(cellIndex, []);
 			}
@@ -338,7 +368,7 @@ onmessage = function (event) {
 		}
 
 		let kNearest = (pointIndex, candidates, numNearest) => {
-			
+
 			let x = positions[3 * pointIndex + 0];
 			let y = positions[3 * pointIndex + 1];
 			let z = positions[3 * pointIndex + 2];
@@ -369,7 +399,7 @@ onmessage = function (event) {
 		let means = new Float32Array(meansBuffer);
 
 		for(let [key, value] of sparseGrid){
-			
+
 			for(let pointIndex of value){
 
 				if(value.length === 1){
@@ -378,7 +408,7 @@ onmessage = function (event) {
 				}
 
 				let [ix, iy, iz] = [(key & 255), ((key >> 8) & 255), ((key >> 16) & 255)];
-				
+
 				//let candidates = value;
 				let candidates = [];
 				for(let i of [-1, 0, 1]){
@@ -441,7 +471,7 @@ onmessage = function (event) {
 		for (let i = 0; i < numPoints; i++) {
 			indices[i] = i;
 		}
-		
+
 		attributeBuffers[PointAttribute.INDICES.name] = { buffer: buff, attribute: PointAttribute.INDICES };
 	}
 

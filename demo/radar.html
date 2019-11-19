@@ -15,6 +15,7 @@
 	<link rel="stylesheet" type="text/css" href="../libs/spectrum/spectrum.css">
 	<link rel="stylesheet" type="text/css" href="../libs/jstree/themes/mixed/style.css">
 	<link rel="stylesheet" href="../common/overlay.css" type="text/css">
+	<link rel="stylesheet" href="../common/calibration-panels.css" type="text/css">
 	<link rel="stylesheet" href="../common/loading-bar.css" type="text/css">
   <!-- <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet"> -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -28,6 +29,7 @@
   <script type="module" src="trackLoader.js"></script>
   <script type="module" src="gapsLoader.js"></script>
 	<script type="module" src="remLoader.js"></script>
+	<script type="module" src="calibrationManager.js"></script>
   <link rel="stylesheet" type="text/css" href="../common/playbar.css">
 </head>
 
@@ -50,9 +52,11 @@
 	<script src="../common/playbar.js"></script>
 	<script src="../common/loading-bar.js"></script>
 	<script type="module" src="../common/overlay.js"></script>
+	<script src="../common/calibration-panels.js"></script>
 	<script src="../node_modules/three.meshline/src/THREE.MeshLine.js"></script>
 	<script src="animationEngine.js"></script>
 	<script type="module" src="RtkTrajectory.js"></script>
+	<script type="module" src="../src/loader/PointAttributes.js"></script>
 
 
 	<!-- TODO REMOVE BELOW -->
@@ -133,6 +137,7 @@
 
 
 	<script type="module">
+		"use strict";
 		import { loadLanes } from "../demo/laneLoader.js";
 		import { loadTracks } from "../demo/trackLoader.js";
 		import { loadDetections } from "../demo/detectionLoader.js";
@@ -142,10 +147,12 @@
 		import { loadRadar } from "../demo/radarLoader.js";
 		import { loadGaps } from "../demo/gapsLoader.js";
 		import { loadRem } from "../demo/remLoader.js";
+		import { loadVelo2Rtk, loadRtk2Vehicle, storeCalibration } from "../demo/calibrationManager.js";
 		import { updateSidebar, togglePointClass } from "../common/custom-sidebar.js";
 		import { getLoadingBar } from "../common/overlay.js";
 		// import {  } from "../common/overlay.js";
 		import { setLoadingScreen, removeLoadingScreen } from "../common/overlay.js";
+		import { PointAttributeNames } from "../src/loader/PointAttributes.js";
 
 		// setLoadingScreen();
 
@@ -159,6 +166,7 @@
 		const visualizationMode = params.get("mode");
 		const annotateLanesAvailable = params.get('annotate') == 'Annotate';
 		const downloadLanesAvailable = annotateLanesAvailable;
+		const calibrationModeAvailable = params.get("calibrate") == "Calibrate" || runForLocalDevelopment;
 		const accessKeyId = params.get("key1");
 		const secretAccessKey = params.get("key2");
 		const sessionToken = params.get("key3");
@@ -224,6 +232,9 @@
       // viewer.scene.view.position.set(300198.109, 4701144.537, 349.871);
       // viewer.scene.view.lookAt(new THREE.Vector3(299900.954, 4701576.919, 66.197));
 			updateSidebar(visualizationMode);
+
+			window.calibrationModeAvailable = calibrationModeAvailable;
+			document.getElementById("toggle_calibration_panels").style.display = window.calibrationModeAvailable ? "block" : "none";
 
 			if (visualizationMode == "aptivLanes") {
 				viewer.setCameraMode(Potree.CameraMode.ORTHOGRAPHIC);
@@ -337,6 +348,34 @@
 
 			// Load Data Sources in loadRtkCallback:
 			loadRtkCallback(s3, bucket, name, () => {
+
+				// Load Extrinsics:
+				window.extrinsics = {rtk2Vehicle: null, velo2Rtk: {}};
+				try {
+					loadVelo2Rtk(s3, bucket, name, (velo2Rtk) => {
+						console.log("Velo2Rtk Extrinsics Loaded!");
+						window.extrinsics.velo2Rtk  = {old: velo2Rtk, new:velo2Rtk};
+						storeVelo2Rtk(window.extrinsics.velo2Rtk.new);
+						for (const cloud of viewer.scene.pointclouds) {
+
+							let velo2RtkOld = window.extrinsics.velo2Rtk.old;
+							let velo2RtkNew = window.extrinsics.velo2Rtk.new;
+
+					      	cloud.material.uniforms.velo2RtkXYZOld.value.set(velo2RtkOld.x, velo2RtkOld.y, velo2RtkOld.z);
+					      	cloud.material.uniforms.velo2RtkRPYOld.value.set(velo2RtkOld.roll, velo2RtkOld.pitch, velo2RtkOld.yaw);
+							cloud.material.uniforms.velo2RtkXYZNew.value.set(velo2RtkNew.x, velo2RtkNew.y, velo2RtkNew.z);
+							cloud.material.uniforms.velo2RtkRPYNew.value.set(velo2RtkNew.roll, velo2RtkNew.pitch, velo2RtkNew.yaw);
+						}
+					});
+
+					loadRtk2Vehicle(s3, bucket, name, (rtk2Vehicle) => {
+						console.log("Rtk2Vehicle Extrinsics Loaded!");
+						window.extrinsics.rtk2Vehicle  = {old: rtk2Vehicle, new:rtk2Vehicle};
+						storeRtk2Vehicle(window.extrinsics.rtk2Vehicle.new);
+					});
+				} catch (e) {
+					console.error("Could not load Calibrations: ", e);
+				}
 
 				// Load Lanes:
 				try {
@@ -635,6 +674,13 @@
 							viewer.scene.pointclouds[ii].material.elevationRange = [window.elevationWindow.z - window.elevationWindow.min, window.elevationWindow.z + window.elevationWindow.max];
 							// TODO set elevation slider range extent
 					}
+
+					// Save Current RTK Pose in Uniforms:
+					for (let ii = 0, numClouds = clouds.length; ii < numClouds; ii++) {
+						let material = clouds[ii].material;
+						material.uniforms.currentRtkPosition.value = state.pose.clone();
+						material.uniforms.currentRtkOrientation.value = state.orient.toVector3().clone();
+					}
 				} catch (e) {
 					console.error("Caught error: ",e);
 				}
@@ -689,8 +735,6 @@
 				time_display.value = Math.round(10000*(gpsTime - animationEngine.tstart))/10000; // Centered to zero
 			});
 
-
-
 			// // Camera:
 			// let updateCamera = false;
 			// let lag = 1.01; // seconds
@@ -712,7 +756,6 @@
 				}
 			});
 		}
-
 
 // Reload Lanes Button Code (Start)
 window.annotateLanesModeActive = false;
@@ -1089,112 +1132,110 @@ async function loadRemCallback(s3, bucket, name, animationEngine) {
 			});
 		});
 
-//Load Radar code (end)
+		// Listener to store pointcloud material as calibration extrinsics get updated
+		window.addEventListener("update-calibration-panel", (e) => {
+			console.log("calibration panel updated: ", e.detail);
+			const id = e.detail.id;
+			const dim = e.detail.dim;
+			const val = e.detail.value;
 
-    // // Load Radar:
-    // loadRadar(s3, bucket, name, (geometry, t_init) => {
-		//
-    //   // uniforms
-    //   uniforms = {
-    //       color: { value: new THREE.Color( 0xffff00 ) },
-    //       minGpsTime: {value: 0.0 },
-    //       maxGpsTime: {value: 110.0 },
-    //       initialTime: {value: t_init}
-    //   };
-		//
-    //   // point cloud material
-    //   var shaderMaterial = new THREE.ShaderMaterial( {
-		//
-    //       uniforms:       uniforms,
-    //       vertexShader:   document.getElementById( 'vertexshader' ).textContent,
-    //       fragmentShader: document.getElementById( 'fragmentshader' ).textContent,
-    //       transparent:    true
-		//
-    //   });
-		//
-    //   const material = new THREE.PointsMaterial( {size:1.0} );
-    //   const mesh = new THREE.Points(geometry, shaderMaterial);
-    //   mesh.name = "radar";
-    //   // debugger; //radar tracks added?
-    //   viewer.scene.scene.add(mesh);
-    // });
+			for (const cloud of viewer.scene.pointclouds) {
+				let material = cloud.material;
 
-			if (runForLocalDevelopment) {
-				Potree.loadPointCloud("../pointclouds/test/cloud.js", "full-cloud", e => {
-					const pointcloud = e.pointcloud;
-		      const material = pointcloud.material;
-		      viewer.scene.addPointCloud(pointcloud);
-		      material.pointColorType = Potree.PointColorType.INTENSITY; // any Potree.PointColorType.XXXX
-					material.gradient = Potree.Gradients.GRAYSCALE; // Can define custom gradient or look up in Potree.Gradients
-		      material.size = 0.09;
-		      material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-		      material.shape = Potree.PointShape.SQUARE;
+				if (id == "rtk2vehicle") {
+					let rtk2Vehicle = getRtk2Vehicle();
+					let vehicleMesh = viewer.scene.scene.getObjectByName("Vehicle").getObjectByName("Vehicle Mesh");
 
-		      viewer.scene.view.position.set(300198.109, 4701144.537, 349.871);
-		      viewer.scene.view.lookAt(new THREE.Vector3(299900.954, 4701576.919, 66.197));
-				});
-			} else if (name === 'Data/basemap-demo') {
-        Potree.loadPointCloud({s3, bucket, name}, "basemap", e => {
-		      const pointcloud = e.pointcloud;
-		      const material = pointcloud.material;
-		      viewer.scene.addPointCloud(pointcloud);
-		      material.pointColorType = Potree.PointColorType.COLOR; // any Potree.PointColorType.XXXX
-		      material.color = new THREE.Color().setRGB(0.99, 0.99, 0.99);
-		      material.size = 0.09;
-		      material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-		      material.shape = Potree.PointShape.SQUARE;
+					// Apply Transformations to Vehicle:
+					let translation = new THREE.Vector3(rtk2Vehicle.x, rtk2Vehicle.y, rtk2Vehicle.z);
+					vehicleMesh.position.copy(translation);
+					vehicleMesh.rotation.set(rtk2Vehicle.roll, rtk2Vehicle.pitch, rtk2Vehicle.yaw);
 
-		      viewer.scene.view.position.set(300198.109, 4701144.537, 349.871);
-		      viewer.scene.view.lookAt(new THREE.Vector3(299900.954, 4701576.919, 66.197));
-		      // viewer.toggleNavigationCube();
-		      $("#playbutton").click();
-		    });
-      } else if (name === 'Data/fullcloud-demo') {
-        Potree.loadPointCloud({s3, bucket, name}, "fullcloud", e => {
-		      const pointcloud = e.pointcloud;
-		      const material = pointcloud.material;
-		      viewer.scene.addPointCloud(pointcloud);
-		      material.pointColorType = Potree.PointColorType.HEIGHT; // any Potree.PointColorType.XXXX
-		      material.size = 0.09;
-		      material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-		      material.shape = Potree.PointShape.SQUARE;
+					// Store updated values in mesh:
+					material.uniforms.rtk2VehicleXYZNew = {type: "v3", value: new THREE.Vector3(rtk2Vehicle.x, rtk2Vehicle.y, rtk2Vehicle.z)};
+					material.uniforms.rtk2VehicleRPYNew = {type: "v3", value: new THREE.Vector3(rtk2Vehicle.roll, rtk2Vehicle.pitch, rtk2Vehicle.yaw)};
 
-		      viewer.scene.view.position.set(300198.109, 4701144.537, 349.871);
-		      viewer.scene.view.lookAt(new THREE.Vector3(299900.954, 4701576.919, 66.197));
-		      // viewer.toggleNavigationCube();
-		      $("#playbutton").click();
-		    });
-        Potree.loadPointCloud({s3, bucket, name: 'Data/basemap-demo'}, "basemap", e => {
-		      const pointcloud = e.pointcloud;
-		      const material = pointcloud.material;
-		      viewer.scene.addPointCloud(pointcloud);
-		      material.pointColorType = Potree.PointColorType.COLOR; // any Potree.PointColorType.XXXX
-		      material.color = new THREE.Color().setRGB(0.99, 0.99, 0.99);
-		      material.size = 0.09;
-		      material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-		      material.shape = Potree.PointShape.SQUARE;
-		    });
-      } else {
-        Potree.loadPointCloud({s3, bucket, name}, name.substring(5), e => {
-		      const pointcloud = e.pointcloud;
-		      const material = pointcloud.material;
-		      viewer.scene.addPointCloud(pointcloud);
-		      material.pointColorType = Potree.PointColorType.INTENSITY; // any Potree.PointColorType.XXXX
-					material.gradient = Potree.Gradients.GRAYSCALE;
-		      material.size = 0.09;
-		      material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-		      material.shape = Potree.PointShape.SQUARE;
+				} else if (id == "velo2rtk") {
 
-		      // viewer.scene.view.position.set(300198.109, 4701144.537, 349.871);
-		      // viewer.scene.view.lookAt(new THREE.Vector3(299900.954, 4701576.919, 66.197));
-		      // viewer.toggleNavigationCube();
-		      $("#playbutton").click();
+					let velo2Rtk = getVelo2Rtk();
+					material.uniforms.velo2RtkXYZNew = {type: "v3", value: new THREE.Vector3(velo2Rtk.x, velo2Rtk.y, velo2Rtk.z)};
+					material.uniforms.velo2RtkRPYNew = {type: "v3", value: new THREE.Vector3(velo2Rtk.roll, velo2Rtk.pitch, velo2Rtk.yaw)};
 
-					try {
-						togglePointClass(pointcloud);
-					} catch (e) {
-						console.log("Pointcloud loaded before sidebar initialized: ", e);
-					}
+				} else {
+					console.error("Unknown Calibration Extrinsics Id:", id);
+				}
+			}
+		});
+
+		window.canEnableCalibrationPanels = true;
+		function canUseCalibrationPanels(attributes) {
+			let hasRtkPose = false;
+      		let hasRtkOrient = false;
+      		for (let attr of attributes) {
+      			hasRtkPose = hasRtkPose || (attr.name === PointAttributeNames.RTK_POSE);
+      			hasRtkOrient = hasRtkOrient || (attr.name === PointAttributeNames.RTK_ORIENT);
+      		}
+      		return hasRtkPose && hasRtkOrient
+		}
+
+		// Load Pointclouds
+		if (runForLocalDevelopment) {
+			Potree.loadPointCloud("../pointclouds/test/cloud.js", "full-cloud", e => {
+				const pointcloud = e.pointcloud;
+				const material = pointcloud.material;
+	      		viewer.scene.addPointCloud(pointcloud);
+	      		material.pointColorType = Potree.PointColorType.INTENSITY; // any Potree.PointColorType.XXXX
+				material.gradient = Potree.Gradients.GRAYSCALE; // Can define custom gradient or look up in Potree.Gradients
+	      		material.size = 0.09;
+	      		material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+	      		material.shape = Potree.PointShape.SQUARE;
+
+	      		let cloudCanUseCalibrationPanels = canUseCalibrationPanels(pointcloud.pcoGeometry.pointAttributes.attributes);
+	      		window.canEnableCalibrationPanels = window.canEnableCalibrationPanels && cloudCanUseCalibrationPanels;
+
+	      		if (window.canEnableCalibrationPanels) {
+	      			$(document).ready(() => enablePanels() );
+
+	      		} else {
+	      			$(document).ready(() => {
+	      				let reason = "Pointcloud was not serialized with the necessary point attributes"
+	      				disablePanels(reason);
+	      				console.error("Cannot use calibration panels: ", reason);
+	      			});
+	      		}
+			});
+
+	    } else {
+        	Potree.loadPointCloud({s3, bucket, name}, name.substring(5), e => {
+		    	const pointcloud = e.pointcloud;
+			    const material = pointcloud.material;
+			    viewer.scene.addPointCloud(pointcloud);
+			    material.pointColorType = Potree.PointColorType.INTENSITY; // any Potree.PointColorType.XXXX
+				material.gradient = Potree.Gradients.GRAYSCALE;
+			    material.size = 0.09;
+			    material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+			    material.shape = Potree.PointShape.SQUARE;
+
+	      		let cloudCanUseCalibrationPanels = canUseCalibrationPanels(pointcloud.pcoGeometry.pointAttributes.attributes);
+	      		window.canEnableCalibrationPanels = window.canEnableCalibrationPanels && cloudCanUseCalibrationPanels;
+
+	      		if (window.canEnableCalibrationPanels) {
+	      			$(document).ready(() => enablePanels() );
+
+	      		} else {
+	      			$(document).ready(() => {
+	      				disablePanels("Pointcloud was not serialized with the necessary point attributes");
+	      				console.error("Cannot use calibration panels");
+	      			});
+	      		}
+
+	      		$("#playbutton").click();
+
+				try {
+					togglePointClass(pointcloud);
+				} catch (e) {
+					console.log("Pointcloud loaded before sidebar initialized: ", e);
+				}
 		    });
       }
 		</script>

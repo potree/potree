@@ -37,6 +37,7 @@ $(document).ready(function () {
             </label>
             <input type="range" name="playback_speed" id="playback_speed" min="1" max="8" value="4" step="any">
             <button name="toggle_calibration_panels" id="toggle_calibration_panels">Toggle Calibration Panels</button>
+            <button name="toggle_hideshow" id="toggle_hideshow">Toggle Pointcloud Highlight Mode</button>
             <button name="load_detections_button" id="load_detections_button">Load Detections</button>
             <button name="load_gaps_button" id="load_gaps_button">Load Gaps</button>
             <button name="load_radar_button" id="load_radar_button">Load Radar</button>
@@ -191,9 +192,7 @@ $(document).ready(function () {
         let panel = panels[ii];
 
         // Check is visible and toggle:
-        // panel.style.display = "none";
-        // debugger;
-        if (panel.style.display == "none") {
+        if (panel.style.display == "none" || panel.style.display == "") {
           panel.style.display = "block";
         } else {
           panel.style.display = "none"
@@ -234,7 +233,7 @@ $(document).ready(function () {
         } else {
           download(JSON.stringify(laneLeftSegments.getFinalPoints(), null, 2), "lane-left.json");
         }
-        
+
       } catch (e) {
         console.error("Couldn't download left lane vertices: ", e);
       }
@@ -269,7 +268,13 @@ $(document).ready(function () {
      if (e.data === 'pause') {
        animationEngine.stop()
      }
-   });
+    });
+
+    playbarhtml.find("#toggle_hideshow").click(function() {
+      for (let cloud of window.viewer.scene.pointclouds) {
+        cloud.material.uniforms.uExtrinsicsMode.value = !cloud.material.uniforms.uExtrinsicsMode.value;
+      }
+    });
 
     $(document).tooltip();
 
@@ -280,7 +285,7 @@ $(document).ready(function () {
     // document.getElementById("elevation_min").style.display = "none";
     document.getElementById("playback_speed").style.display = "none";
     document.getElementById("toggleslider").style.display = "none";
-    document.getElementById("toggle_calibration_panels").style.display = "none";
+    // document.getElementById("toggle_calibration_panels").style.display = "none";
     document.getElementById("load_detections_button").style.display = "none";
     document.getElementById("load_gaps_button").style.display = "none";
     document.getElementById("download_lanes_button").style.display = "none";

@@ -18,6 +18,8 @@ export const PointAttributeNames = {
 	INDICES: 14,
 	SPACING: 15,
 	GPS_TIME: 16,
+	RTK_POSE: 17,
+	RTK_ORIENT: 18,
 };
 
 
@@ -49,7 +51,7 @@ export {PointAttributeTypes};
 
 
 class PointAttribute{
-	
+
 	constructor(name, type, numElements){
 		this.name = name;
 		this.type = type;
@@ -100,15 +102,15 @@ PointAttribute.NORMAL_OCT16 = new PointAttribute(
 PointAttribute.NORMAL = new PointAttribute(
 	PointAttributeNames.NORMAL,
 	PointAttributeTypes.DATA_TYPE_FLOAT, 3);
-	
+
 PointAttribute.RETURN_NUMBER = new PointAttribute(
 	PointAttributeNames.RETURN_NUMBER,
 	PointAttributeTypes.DATA_TYPE_UINT8, 1);
-	
+
 PointAttribute.NUMBER_OF_RETURNS = new PointAttribute(
 	PointAttributeNames.NUMBER_OF_RETURNS,
 	PointAttributeTypes.DATA_TYPE_UINT8, 1);
-	
+
 PointAttribute.SOURCE_ID = new PointAttribute(
 	PointAttributeNames.SOURCE_ID,
 	PointAttributeTypes.DATA_TYPE_UINT16, 1);
@@ -124,6 +126,14 @@ PointAttribute.SPACING = new PointAttribute(
 PointAttribute.GPS_TIME = new PointAttribute(
 	PointAttributeNames.GPS_TIME,
 	PointAttributeTypes.DATA_TYPE_DOUBLE, 1);
+
+PointAttribute.RTK_POSE = new PointAttribute(
+	PointAttributeNames.RTK_POSE,
+	PointAttributeTypes.DATA_TYPE_DOUBLE, 3);
+
+PointAttribute.RTK_ORIENT = new PointAttribute(
+	PointAttributeNames.RTK_ORIENT,
+	PointAttributeTypes.DATA_TYPE_DOUBLE, 3);
 
 export {PointAttribute};
 

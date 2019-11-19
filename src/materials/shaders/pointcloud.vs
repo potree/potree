@@ -15,6 +15,21 @@ attribute float pointSourceID;
 attribute vec4 indices;
 attribute float spacing;
 attribute float gpsTime;
+attribute vec3 originalRtkPosition;
+attribute vec3 originalRtkOrientation;
+
+uniform vec3 currentRtkPosition;
+uniform vec3 currentRtkOrientation;
+
+uniform vec3 rtk2VehicleXYZOld;
+uniform vec3 rtk2VehicleRPYOld;
+uniform vec3 velo2RtkXYZOld;
+uniform vec3 velo2RtkRPYOld;
+
+uniform vec3 rtk2VehicleXYZNew;
+uniform vec3 rtk2VehicleRPYNew;
+uniform vec3 velo2RtkXYZNew;
+uniform vec3 velo2RtkRPYNew;
 
 uniform mat4 modelMatrix;
 uniform mat4 modelViewMatrix;
@@ -29,6 +44,7 @@ uniform float near;
 uniform float far;
 
 uniform bool uDebug;
+uniform bool uExtrinsicsMode;
 
 uniform bool uUseOrthographicCamera;
 uniform float uOrthoWidth;
@@ -120,6 +136,127 @@ varying float 	vPointSize;
 
 float round(float number){
 	return floor(number + 0.5);
+}
+
+
+mat3 makeRotationMatrix(vec3 dTheta) {
+
+	float cosRoll = cos(dTheta.x);		float c1 = cosRoll;
+	float cosPitch = cos(dTheta.y);		float c2 = cosPitch;
+	float cosYaw = cos(dTheta.z);			float c3 = cosYaw;
+	float sinRoll = sin(dTheta.x);		float s1 = sinRoll;
+	float sinPitch = sin(dTheta.y);		float s2 = sinPitch;
+	float sinYaw = sin(dTheta.z);			float s3 = sinYaw;
+
+	mat3 Rx = mat3(
+		1.0, 	0.0, 		 0.0,
+		0.0,	cosRoll, sinRoll,
+		0.0,	-sinRoll, cosRoll
+	);
+
+	mat3 Ry = mat3(
+		cosPitch,	 0.0,  -sinPitch,
+		0.0,			 1.0,	 0.0,
+		sinPitch, 0.0,	 cosPitch
+	);
+
+	mat3 Rz = mat3(
+		cosYaw, 	sinYaw, 0.0,
+		-sinYaw, 	cosYaw,  0.0,
+		0.0,			0.0,		 1.0
+	);
+
+	mat3 R = (Rz*Ry)*Rx;		// Rotation Matrix from Euler angles using XYZ convention
+
+	// mat3 R2 = mat3(				// Alternative to above matrix construction
+	// 	 c2*c3,  c1*s3 + c3*s1*s2, s1*s3 - c1*c3*s2,	// First Column
+	// 	-c2*s3,  c1*c3 - s1*s2*s3, c3*s1 + c1*s2*s3,  // Second Column
+	// 	 s2,		  -c2*s1,						 c1*c2						// Third Column
+	// );
+	//
+	// float maxVal = 0.0;
+	// for (int i = 0; i < 3; i++) {
+	// 	for (int j = 0; j < 3; j++) {
+	// 		maxVal = max(maxVal, abs(R[i][j]-R2[i][j]) );
+	// 	}
+	// }
+	//
+	// float n = 0.1;
+	// vColor.r = min(maxVal, n)/n;
+	// vColor.g = 0.0;
+	// vColor.b = 0.0;
+
+	return R;
+
+}
+
+mat3 transpose(mat3 M) {
+	mat3 MT = mat3(
+			vec3(M[0].x, M[1].x, M[2].x),
+			vec3(M[0].y, M[1].y, M[2].y),
+			vec3(M[0].z, M[1].z, M[2].z)
+	);
+
+	return MT;
+}
+
+mat4 getSE3(vec3 dX, vec3 dTheta) {
+
+	mat3 R = makeRotationMatrix(dTheta); // Rotation Matrix
+	vec4 T = vec4(dX, 1.0); // Translation Vector in Homogenous Coordinates
+
+	mat4 SE3 = mat4(R); // creates a 4x4 matrix with 1 on the diagonal and zeros on the rest of the new additions
+	SE3[3] = T; // Set the translation vector components
+
+	return SE3;
+}
+
+mat4 getSE3Inverse(vec3 dX, vec3 dTheta) {
+
+	mat3 Rtrans = transpose(makeRotationMatrix(dTheta)); // Rotation Matrix (transpose)
+	vec4 Ttrans = vec4(-Rtrans*dX, 1.0); // Translation Vector in Homogenous Coordinates (for inverse of SE3)
+
+	mat4 SE3 = mat4(Rtrans); // creates a 4x4 matrix with 1 on the diagonal and zeros on the rest of the new additions
+	SE3[3] = Ttrans; // Set the translation vector components
+
+	return SE3;
+}
+
+// Deprecated - Used for original vehicle-centric streaming player
+vec4 applyRtk2VehicleExtrinsics(vec4 X) {
+  mat4 Extrinsics = getSE3(rtk2VehicleXYZNew, rtk2VehicleRPYNew);
+  return Extrinsics*X;
+}
+
+// Deprecated - Used for original vehicle-centric streaming player
+vec4 applyRtk2RtkExtrinsicsOld(vec4 X) {
+	// Construct Rotation Matrix (roll pitch yaw):
+	vec3 dTheta = currentRtkOrientation - originalRtkOrientation;
+	vec3 dX = currentRtkPosition - originalRtkPosition;
+	dTheta *= -1.0; // TODO why do I need to transform from current to original?
+	dX *= -1.0; // TODO why do I need to translate from current to original?
+
+	mat4 Extrinsics = getSE3(dX, dTheta);
+	return Extrinsics*X;
+}
+
+// Deprecated - Used for original vehicle-centric streaming player
+vec4 applyRtk2RtkExtrinsics(vec4 X) {
+
+	// Get Transformation from originalRtk to origin (inverse SE3):
+	mat4 originalRtk2Origin = getSE3Inverse(originalRtkPosition, originalRtkOrientation);
+	mat4 origin2CurrentRtk = getSE3(currentRtkPosition, currentRtkOrientation);
+
+	// return origin2CurrentRtk*originalRtk2Origin*X; // Transform from original RTK to Origin to current RTK
+	vec4 tmp = origin2CurrentRtk*X;
+	return originalRtk2Origin*tmp; // Transform from original RTK to Origin to current RTK
+}
+
+// Deprecated - Used for original vehicle-centric streaming player
+vec4 applyVelo2RtkExtrinsics(vec4 X) {
+  // mat4 Extrinsics = getSE3(currentRtkPosition, currentRtkPosition);
+  mat4 Extrinsics = getSE3(velo2RtkXYZNew, velo2RtkRPYNew);
+  return Extrinsics*X;
 }
 
 //
@@ -385,9 +522,7 @@ vec3 getRGB(){
 	rgb = pow(rgb, vec3(rgbGamma));
 	rgb = rgb + rgbBrightness;
 	//rgb = (rgb - 0.5) * getContrastFactor(rgbContrast) + 0.5;
-	rgb.b += 0.8; // VINAY - set blue
 	rgb = clamp(rgb, 0.0, 1.0);
-
 
 		//rgb = indices.rgb;
 	//rgb.b = pcIndex / 255.0;
@@ -412,8 +547,8 @@ float getGpsTime(){
 	return w;
 }
 
-vec3 getElevation(){
-	vec4 world = modelMatrix * vec4( position, 1.0 );
+vec3 getElevation(vec4 correctedPosition){
+	vec4 world = modelMatrix * vec4( correctedPosition.xyz, 1.0 );
 	float w = (world.z - elevationRange.x) / (elevationRange.y - elevationRange.x);
 	vec3 cElevation = texture2D(gradient, vec2(w,1.0-w)).rgb;
 
@@ -446,7 +581,7 @@ vec3 getSourceID(){
 	return texture2D(gradient, vec2(w,1.0 - w)).rgb;
 }
 
-vec3 getCompositeColor(){
+vec3 getCompositeColor(vec4 correctedPosition){
 	vec3 c;
 	float w;
 
@@ -456,7 +591,7 @@ vec3 getCompositeColor(){
 	c += wIntensity * getIntensity() * vec3(1.0, 1.0, 1.0);
 	w += wIntensity;
 
-	c += wElevation * getElevation();
+	c += wElevation * getElevation(correctedPosition);
 	w += wElevation;
 
 	c += wReturnNumber * getReturnNumber();
@@ -492,15 +627,15 @@ vec3 getCompositeColor(){
 
 
 
-vec3 getColor(){
+vec3 getColor(vec4 correctedPosition){
 	vec3 color;
 
 	#ifdef color_type_rgb
 		color = getRGB();
 	#elif defined color_type_height
-		color = getElevation();
+		color = getElevation(correctedPosition);
 	#elif defined color_type_rgb_height
-		vec3 cHeight = getElevation();
+		vec3 cHeight = getElevation(correctedPosition);
 		color = (1.0 - uTransition) * getRGB() + uTransition * cHeight;
 	#elif defined color_type_depth
 		float linearDepth = gl_Position.w;
@@ -535,7 +670,7 @@ vec3 getColor(){
 	#elif defined color_type_phong
 		color = color;
 	#elif defined color_type_composite
-		color = getCompositeColor();
+		color = getCompositeColor(correctedPosition);
 	#endif
 
 	return color;
@@ -621,7 +756,7 @@ bool pointInClipPolygon(vec3 point, int polyIdx) {
 }
 #endif
 
-void doClipping(){
+void doClipping(vec4 correctedPosition){
 
 	#if !defined color_type_composite
 		vec4 cl = getClassification();
@@ -668,11 +803,13 @@ void doClipping(){
 			//return;
 		//}
 
-		if(time > range.x && time < range.y) {
-			//gl_Position = vec4(100.0, 100.0, 100.0, 0.0);
-			vColor.r += .8;
+		if(!uExtrinsicsMode && (time > range.x && time < range.y)) {
+			// Set color to red: (r,g,b) --> (1.0, 0.0, 0.0)
+			vColor.r = 1.0;
 			vColor.b = 0.0;
 			vColor.g = 0.0;
+		}	else if (uExtrinsicsMode && (!(time > range.x && time < range.y))) {	// NOTE added not to this condition
+			gl_Position = vec4(100.0, 100.0, 100.0, 0.0);
 			return;
 		} else {
 			if (classification == 3.0) {	// Corresponds to NonRoad point class currently (should eventually be any dynamic object class)
@@ -688,7 +825,7 @@ void doClipping(){
 
 	#if defined(num_clipboxes) && num_clipboxes > 0
 		for(int i = 0; i < num_clipboxes; i++){
-			vec4 clipPosition = clipBoxes[i] * modelMatrix * vec4( position, 1.0 );
+			vec4 clipPosition = clipBoxes[i] * modelMatrix * correctedPosition;
 			bool inside = -0.5 <= clipPosition.x && clipPosition.x <= 0.5;
 			inside = inside && -0.5 <= clipPosition.y && clipPosition.y <= 0.5;
 			inside = inside && -0.5 <= clipPosition.z && clipPosition.z <= 0.5;
@@ -743,7 +880,40 @@ void doClipping(){
 //
 
 void main() {
-	vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
+
+	vec4 mvPosition;
+	vec4 correctedPosition;
+
+	// Initialize Point Position:
+	vec3 p = position.xyz;
+	vec4 p_grid = vec4(p, 1.0); 	// Position of point in grid (octree node) frame
+	vec3 identityRotation = vec3(0.0, 0.0, 0.0);
+	vec4 origin = vec4(0.0, 0.0, 0.0, 1.0);
+
+	// Construct Transformation Matrices (Test):
+	mat4 T_grid_from_rtk = getSE3(originalRtkPosition, originalRtkOrientation);
+	mat4 T_rtk_from_velo = getSE3(velo2RtkXYZNew, velo2RtkRPYNew);
+	mat4 T_velo_from_rtk = getSE3Inverse(velo2RtkXYZOld, velo2RtkRPYOld);
+	mat4 T_rtk_from_grid = getSE3Inverse(originalRtkPosition, originalRtkOrientation);
+	mat4 T_full;
+	if (uDebug) {
+		T_full = getSE3(origin.xyz, identityRotation);
+	} else {
+		// T_full = T_rtk_from_grid;
+		T_full = T_grid_from_rtk * T_rtk_from_velo * T_velo_from_rtk * T_rtk_from_grid;
+	}
+
+
+	// Apply Transformation:
+	correctedPosition = T_full * p_grid; // Multiply the transformation matrix B by the origin to the get the position of the point in grid frame
+
+	// DEPRECATED
+	// correctedPosition = applyRtk2VehicleExtrinsics(correctedPosition); // Apply Rtk 2 Vehicle Mesh Extrinsics
+	// DEBUG
+	// correctedPosition = vec4(originalRtkPosition, 1.0);
+
+	// Camera Transforms:
+	mvPosition = modelViewMatrix * correctedPosition;
 	vViewPosition = mvPosition.xyz;
 	gl_Position = projectionMatrix * mvPosition;
 	vLogDepth = log2(-mvPosition.z);
@@ -754,7 +924,7 @@ void main() {
 	vPointSize = pointSize;
 
 	// COLOR
-	vColor = getColor();
+	vColor = getColor(correctedPosition);
 
 	#if defined hq_depth_pass
 		float originalDepth = gl_Position.w;
@@ -767,7 +937,7 @@ void main() {
 
 
 	// CLIPPING
-	doClipping();
+	doClipping(correctedPosition);
 
 	#if defined(num_clipspheres) && num_clipspheres > 0
 		for(int i = 0; i < num_clipspheres; i++){

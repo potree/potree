@@ -114,13 +114,19 @@ function parseRTK(bytesArray, FlatbufferModule) {
       // Get Orientation Data:
       if (pose.orientation) {
         orientations.push( [pose.orientation().z(), pose.orientation().y(), pose.orientation().x()] );
+        window.usingAdjustedHeading = false;
       } else {
         orientations.push( [pose.roll(), pose.pitch(), pose.utm().yaw()] ); // TODO USE UTM-ADJUSTED ROLL/PITCH EVENTUALLY
+        window.usingAdjustedHeading = true;
       }
 
       timestamps.push(pose.timestamp());
 
       count += 1;
+    }
+
+    if (!window.usingAdjustedHeading) {
+      console.error("NOT USING ADJUSTED HEADING FOR RTK POSES");
     }
 
     // rtkPoses.push(pose);

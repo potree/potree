@@ -143,6 +143,12 @@ let attributeLocations = {
 	"normal": 8,
 	"spacing": 9,
 	"gpsTime": 10,
+	"originalRtkPosition": 11,
+	"originalRtkOrientation": 12,
+	// "rtk2vehicleXYZ": 13,
+	// "rtk2vehicleRPY": 14,
+	// "velo2rtkXYZ": 15,
+	// "velo2rtkRPY": 16
 };
 
 class Shader {
@@ -719,11 +725,14 @@ export class Renderer {
 
 			let level = node.getLevel();
 
-			if(node.debug){
-				shader.setUniform("uDebug", true);
-			}else{
-				shader.setUniform("uDebug", false);
-			}
+			shader.setUniform("uDebug", material.uniforms.uDebug.value);
+			shader.setUniform("uExtrinsicsMode", material.uniforms.uExtrinsicsMode.value);
+
+			// if(node.debug){
+			// 	shader.setUniform("uDebug", true);
+			// }else{
+			// 	shader.setUniform("uDebug", false);
+			// }
 
 			let isLeaf;
 			if(node instanceof PointCloudOctreeNode){
@@ -1083,6 +1092,36 @@ export class Renderer {
 			shader.setUniformMatrix4("viewMatrix", view);
 			shader.setUniformMatrix4("uViewInv", viewInv);
 			shader.setUniformMatrix4("uProjInv", projInv);
+
+			try {
+				// debugger; // try below
+				// const currentRtkPosition = octree.material.uniforms.currentRtkPosition.value.toArray();
+				// const currentRtkOrientation = octree.material.uniforms.currentRtkOrientation.value.toArray();
+
+				const rtk2VehicleXYZOld = octree.material.uniforms.rtk2VehicleXYZOld.value.toArray();
+				const rtk2VehicleRPYOld = octree.material.uniforms.rtk2VehicleRPYOld.value.toArray();
+				const velo2RtkXYZOld = octree.material.uniforms.velo2RtkXYZOld.value.toArray();
+				const velo2RtkRPYOld = octree.material.uniforms.velo2RtkRPYOld.value.toArray();
+
+				const rtk2VehicleXYZNew = octree.material.uniforms.rtk2VehicleXYZNew.value.toArray();
+				const rtk2VehicleRPYNew = octree.material.uniforms.rtk2VehicleRPYNew.value.toArray();
+				const velo2RtkXYZNew = octree.material.uniforms.velo2RtkXYZNew.value.toArray();
+				const velo2RtkRPYNew = octree.material.uniforms.velo2RtkRPYNew.value.toArray();
+
+				// shader.setUniform3f("currentRtkPosition", currentRtkPosition);
+				// shader.setUniform3f("currentRtkOrientation", currentRtkOrientation);
+				shader.setUniform3f("rtk2VehicleXYZOld", rtk2VehicleXYZOld);
+				shader.setUniform3f("rtk2VehicleRPYOld", rtk2VehicleRPYOld);
+				shader.setUniform3f("velo2RtkXYZOld", velo2RtkXYZOld);
+				shader.setUniform3f("velo2RtkRPYOld", velo2RtkRPYOld);
+				shader.setUniform3f("rtk2VehicleXYZNew", rtk2VehicleXYZNew);
+				shader.setUniform3f("rtk2VehicleRPYNew", rtk2VehicleRPYNew);
+				shader.setUniform3f("velo2RtkXYZNew", velo2RtkXYZNew);
+				shader.setUniform3f("velo2RtkRPYNew", velo2RtkRPYNew);
+
+			} catch(e) {
+				debugger; // currentRtkPosition/Orientation doesn't exist
+			}
 
 			let screenWidth = target ? target.width : material.screenWidth;
 			let screenHeight = target ? target.height : material.screenHeight;

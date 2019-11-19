@@ -1095,18 +1095,18 @@ export class Renderer {
 
 			try {
 				// debugger; // try below
-				// let currentRtkPosition = octree.material.uniforms.currentRtkPosition.value.toArray();
-				// let currentRtkOrientation = octree.material.uniforms.currentRtkOrientation.value.toArray();
+				// const currentRtkPosition = octree.material.uniforms.currentRtkPosition.value.toArray();
+				// const currentRtkOrientation = octree.material.uniforms.currentRtkOrientation.value.toArray();
 
-				let rtk2VehicleXYZOld = octree.material.uniforms.rtk2VehicleXYZOld.value.toArray();
-				let rtk2VehicleRPYOld = octree.material.uniforms.rtk2VehicleRPYOld.value.toArray();
-				let velo2RtkXYZOld = octree.material.uniforms.velo2RtkXYZOld.value.toArray();
-				let velo2RtkRPYOld = octree.material.uniforms.velo2RtkRPYOld.value.toArray();
+				const rtk2VehicleXYZOld = octree.material.uniforms.rtk2VehicleXYZOld.value.toArray();
+				const rtk2VehicleRPYOld = octree.material.uniforms.rtk2VehicleRPYOld.value.toArray();
+				const velo2RtkXYZOld = octree.material.uniforms.velo2RtkXYZOld.value.toArray();
+				const velo2RtkRPYOld = octree.material.uniforms.velo2RtkRPYOld.value.toArray();
 
-				let rtk2VehicleXYZNew = octree.material.uniforms.rtk2VehicleXYZNew.value.toArray();
-				let rtk2VehicleRPYNew = octree.material.uniforms.rtk2VehicleRPYNew.value.toArray();
-				let velo2RtkXYZNew = octree.material.uniforms.velo2RtkXYZNew.value.toArray();
-				let velo2RtkRPYNew = octree.material.uniforms.velo2RtkRPYNew.value.toArray();
+				const rtk2VehicleXYZNew = octree.material.uniforms.rtk2VehicleXYZNew.value.toArray();
+				const rtk2VehicleRPYNew = octree.material.uniforms.rtk2VehicleRPYNew.value.toArray();
+				const velo2RtkXYZNew = octree.material.uniforms.velo2RtkXYZNew.value.toArray();
+				const velo2RtkRPYNew = octree.material.uniforms.velo2RtkRPYNew.value.toArray();
 
 				// shader.setUniform3f("currentRtkPosition", currentRtkPosition);
 				// shader.setUniform3f("currentRtkOrientation", currentRtkOrientation);

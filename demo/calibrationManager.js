@@ -18,18 +18,17 @@ export async function loadVelo2Rtk(s3, bucket, name, callback) {
   //is name here the dataset name? We should be more careful about that....
   if (s3 && bucket && name) {
     (async () => {
-      const objectName = `${name}/7_Cals/extrinsics.txt`//`${name}/3_Assessments/gaps.fb`;//fb schema from s3
+      const objectName = `${name}/7_Cals/extrinsics.txt`
 
-      s3.getObject({Bucket: bucket,
-                    Key: objectName},
-                   async (err, data) => {
-                     if (err) {
-                       console.log(err, err.stack);
-                     } else {
-                       let calibrationText = new TextDecoder("utf-8").decode(data.Body);
-                       const extrinsics = parseCalibrationFile(calibrationText);
-                       callback( extrinsics );
-                     }});
+      try {
+        const data = await s3.getObject({Bucket: bucket, Key: objectName}).promise();
+        const calibrationText = new TextDecoder("utf-8").decode(data.Body);
+        const extrinsics = parseCalibrationFile(calibrationText);
+        callback( extrinsics );
+      } catch (err) {
+        console.log(err, err.stack)
+      }
+
     })();
 
   } else {

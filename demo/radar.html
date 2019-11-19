@@ -137,6 +137,7 @@
 
 
 	<script type="module">
+		"use strict";
 		import { loadLanes } from "../demo/laneLoader.js";
 		import { loadTracks } from "../demo/trackLoader.js";
 		import { loadDetections } from "../demo/detectionLoader.js";
@@ -233,12 +234,7 @@
 			updateSidebar(visualizationMode);
 
 			window.calibrationModeAvailable = calibrationModeAvailable;
-			if (window.calibrationModeAvailable) {
-				document.getElementById("toggle_calibration_panels").style.display = "block";
-			} else {
-				document.getElementById("toggle_calibration_panels").style.display = "none";
-
-			}
+			document.getElementById("toggle_calibration_panels").style.display = window.calibrationModeAvailable ? "block" : "none";
 
 			if (visualizationMode == "aptivLanes") {
 				viewer.setCameraMode(Potree.CameraMode.ORTHOGRAPHIC);

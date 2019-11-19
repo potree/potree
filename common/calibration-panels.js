@@ -1,7 +1,8 @@
+"use strict";
 $(document).ready(function () {
 
   // Insert HTML for Playbar:
-  var draggableOverlays = $(`
+  const draggableOverlays = $(`
     <div class="draggable-overlay" id="calibration-overlay-rtk2vehicle">
       <div class="draggable-overlay-header" id="calibration-overlay-rtk2vehicle-header">RTK to Vehicle Mesh Extrinsics</div>
         <span class='disable-calibration-panel'> CALIBRATION PANEL DISABLED: <br> <span class="disable-calibration-panel-reason"></span> </span>
@@ -135,7 +136,7 @@ $(document).ready(function () {
 
 
   function dragElement(elmnt) {
-    var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+    let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
     if (document.getElementById(elmnt.id + "-header")) { // TODO make jquery
       // if present, the header is where you move the DIV from:
       document.getElementById(elmnt.id + "-header").onmousedown = dragMouseDown;
@@ -176,33 +177,34 @@ $(document).ready(function () {
   }
 
   // Set scale slider:
-  let calibrationPanels = $(".draggable-overlay");
+  const calibrationPanels = $(".draggable-overlay");
   for (let ii = 0, len=calibrationPanels.length; ii < len; ii++) {
-    var calibrationPanel = calibrationPanels[ii];
+    const calibrationPanel = calibrationPanels[ii];
 
-    let pElements = calibrationPanel.getElementsByTagName("p");
+    const pElements = calibrationPanel.getElementsByTagName("p");
     for (let jj = 0, len2=pElements.length; jj < len2; jj++) {
-      let span = pElements[jj].children[0];
+      const span = pElements[jj].children[0];
 
-      let value = span.querySelector(".calibration-value");
-      let setpoint = span.querySelector(".calibration-setpoint");
-      let stepsize = span.querySelector(".calibration-step");
-      let slider = span.querySelector(".calibration-slider");
-      let reset = span.querySelector(".calibration-reset");
+      const value = span.querySelector(".calibration-value");
+      const setpoint = span.querySelector(".calibration-setpoint");
+      const stepsize = span.querySelector(".calibration-step");
+      const slider = span.querySelector(".calibration-slider");
+      const reset = span.querySelector(".calibration-reset");
 
       slider.oninput = function() {
-        let sliderVal = parseFloat(slider.value);
-        let setpointVal = parseFloat(setpoint.value);
-        let stepsizeVal = parseFloat(stepsize.value);
-        let val = setpointVal+stepsizeVal*sliderVal;
+        // TODO Validate output of Number() below
+        const sliderVal = Number(slider.value);
+        const setpointVal = Number(setpoint.value);
+        const stepsizeVal = Number(stepsize.value);
+        const val = setpointVal+stepsizeVal*sliderVal;
 
         value.textContent = val.toFixed(4);
 
-        let idComponents = value.id.split('-');
-        let id = idComponents[0];
-        let dim = idComponents[idComponents.length-1];
+        const idComponents = value.id.split('-');
+        const id = idComponents[0];
+        const dim = idComponents[idComponents.length-1];
 
-        let event = new CustomEvent("update-calibration-panel", {detail:{id:id, dim:dim, val:val}});
+        const event = new CustomEvent("update-calibration-panel", {detail:{id:id, dim:dim, val:val}});
         window.dispatchEvent(event);
       }
 
@@ -210,15 +212,15 @@ $(document).ready(function () {
         // setpoint.value = 0;
         stepsize.value = 1;
         slider.value = 0;
-        let val = parseFloat(setpoint.value)+stepsize.value*slider.value;
+        const val = Number(setpoint.value)+stepsize.value*slider.value;
 
         value.textContent = val.toFixed(4);
 
-        let idComponents = value.id.split('-');
-        let id = idComponents[0];
-        let dim = idComponents[idComponents.length-1];
+        const idComponents = value.id.split('-');
+        const id = idComponents[0];
+        const dim = idComponents[idComponents.length-1];
 
-        let event = new CustomEvent("update-calibration-panel", {detail:{id:id, dim:dim, val:val}});
+        const event = new CustomEvent("update-calibration-panel", {detail:{id:id, dim:dim, val:val}});
         window.dispatchEvent(event);
       }
 
@@ -228,26 +230,26 @@ $(document).ready(function () {
 });
 
 function getRtk2Vehicle() {
-  let rtk2vehicle = {
-    x: parseFloat($("#rtk2vehicle-x").text()),
-    y: parseFloat($("#rtk2vehicle-y").text()),
-    z: parseFloat($("#rtk2vehicle-z").text()),
-    roll: parseFloat($("#rtk2vehicle-roll").text()),
-    pitch: parseFloat($("#rtk2vehicle-pitch").text()),
-    yaw: parseFloat($("#rtk2vehicle-yaw").text())
+  const rtk2vehicle = {
+    x: Number($("#rtk2vehicle-x").text()),
+    y: Number($("#rtk2vehicle-y").text()),
+    z: Number($("#rtk2vehicle-z").text()),
+    roll: Number($("#rtk2vehicle-roll").text()),
+    pitch: Number($("#rtk2vehicle-pitch").text()),
+    yaw: Number($("#rtk2vehicle-yaw").text())
   }
   // debugger; // return
   return rtk2vehicle;
 }
 
 function getVelo2Rtk() {
-  let velo2rtk = {
-    x: parseFloat($("#velo2rtk-x").text()),
-    y: parseFloat($("#velo2rtk-y").text()),
-    z: parseFloat($("#velo2rtk-z").text()),
-    roll: parseFloat($("#velo2rtk-roll").text()),
-    pitch: parseFloat($("#velo2rtk-pitch").text()),
-    yaw: parseFloat($("#velo2rtk-yaw").text())
+  const velo2rtk = {
+    x: Number($("#velo2rtk-x").text()),
+    y: Number($("#velo2rtk-y").text()),
+    z: Number($("#velo2rtk-z").text()),
+    roll: Number($("#velo2rtk-roll").text()),
+    pitch: Number($("#velo2rtk-pitch").text()),
+    yaw: Number($("#velo2rtk-yaw").text())
   }
   // debugger; // return
   return velo2rtk;
@@ -271,7 +273,7 @@ function enablePanels() {
 
 
 function download(filename, text) {
-  var element = document.createElement('a');
+  const element = document.createElement('a');
   element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
   element.setAttribute('download', filename);
   element.style.display = 'none';
@@ -288,19 +290,14 @@ function downloadCals() {
   const pitch =  $("#velo2rtk-pitch").text()
   const yaw =  $("#velo2rtk-yaw").text()
 
-  let version;
-  if (window.usingAdjustedHeading) {
-    version = '2.0';
-  } else {
-    version = '1.0';
-  }
+  const version = window.usingAdjustedHeading ? '2.0' : '1.0';
 
-  let text = `${x}, ${y}, ${z}\n${roll}, ${pitch}, ${yaw}\nversion: ${version}`;
+  const text = `${x}, ${y}, ${z}\n${roll}, ${pitch}, ${yaw}\nversion: ${version}`;
 
-  let date = new Date();
-  let year = `${date.getYear() + 1900}`.padStart(4, '0')
-  let month = `${date.getMonth() + 1}`.padStart(2, '0')
-  let day = `${date.getDate() + 0}`.padStart(2, '0')
+  const date = new Date();
+  const year = `${date.getYear() + 1900}`.padStart(4, '0')
+  const month = `${date.getMonth() + 1}`.padStart(2, '0')
+  const day = `${date.getDate() + 0}`.padStart(2, '0')
   download(`EXTRINSICS_UNKNOWN_${year}${month}${day}_N001.txt`, text);
 }
 

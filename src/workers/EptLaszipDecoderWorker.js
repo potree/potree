@@ -112,8 +112,12 @@ function readUsingDataView(event) {
 		pointSourceIDs[i] = pointSourceID;
 
 		// GPS TIME
-		let gpsTime = sourceView.getFloat64(i * pointSize + gpsOffset, true)
-		gpsTime64[i] = gpsTime
+		if(gpsOffset) {
+			let gpsTime = sourceView.getFloat64(i * pointSize + gpsOffset, true)
+			gpsTime64[i] = gpsTime
+		} else {
+			gpsTime64[i] = 0
+		}
 
 		// COLOR, if available
 		if (hasColor) {

@@ -353,6 +353,12 @@
 				window.extrinsics = {rtk2Vehicle: null, velo2Rtk: {}};
 				try {
 					loadVelo2Rtk(s3, bucket, name, (velo2Rtk) => {
+
+						if (!velo2Rtk) {
+							disablePanels("Unable to load extrinsics file");
+							return;
+						}
+
 						console.log("Velo2Rtk Extrinsics Loaded!");
 						window.extrinsics.velo2Rtk  = {old: velo2Rtk, new:velo2Rtk};
 						storeVelo2Rtk(window.extrinsics.velo2Rtk.new);
@@ -855,7 +861,7 @@ $(document).ready(() => {
 						});
 					} catch (e) {
 						console.log(`Couldn't load ${filename}: ${e}`);
-					}					
+					}
 				};
 
 				const laneNum = [1,2,3];
@@ -867,7 +873,7 @@ $(document).ready(() => {
 					for (let d of laneDirection) {
 						for (let n of laneNum) {
 							layerName = `Supplier${s}_${d}_Lane${n}`;
-							filename = `Supplier${s}_${d}_Lane${n}.fb`;	
+							filename = `Supplier${s}_${d}_Lane${n}.fb`;
 
 							loadLanesHelper(layerName, filename, s);
 						}
@@ -876,7 +882,7 @@ $(document).ready(() => {
 
 				layerName = `TomTom`;
 				filename = `I-75-North_potree.fb`;
-				loadLanesHelper(layerName, filename, 1);				
+				loadLanesHelper(layerName, filename, 1);
 			}
 
 			// Load Comparison Dataset (hardcoded to one for now)

@@ -26,7 +26,8 @@ export async function loadVelo2Rtk(s3, bucket, name, callback) {
         const extrinsics = parseCalibrationFile(calibrationText);
         callback( extrinsics );
       } catch (err) {
-        console.log(err, err.stack)
+        console.log(err, err.stack);
+        callback(null);
       }
 
     })();
@@ -46,7 +47,6 @@ export async function loadVelo2Rtk(s3, bucket, name, callback) {
 
     xhr.onload = function(data) {
 
-
       const calibrationText = data.target.responseText;
       if (!calibrationText) {
         console.error("Could not create load calbiration file");
@@ -56,6 +56,11 @@ export async function loadVelo2Rtk(s3, bucket, name, callback) {
       const velo2Rtk = parseCalibrationFile(calibrationText);
       callback( velo2Rtk );
     };
+
+    xhr.onerror = function(err) {
+      console.log(err, err.stack);
+      callback(null);
+    }
 
     t0 = performance.now();
     xhr.send();
@@ -86,6 +91,7 @@ function parseCalibrationFile(calibrationText){
 
   if (!allValid){
     console.error("Error parsing extrinsics file ", velo2Rtk);
+    return null;
   }
 
   if (lines.length > 2) {

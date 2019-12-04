@@ -1,0 +1,43 @@
+html {
+    height: 100%;
+}
+
+body {
+    height: 100%;   
+    overflow: hidden;  /*makes the body non-scrollable (we will add scrolling to the sidebar and main content containers)*/
+    margin: 0px;  /*removes default style*/
+    display: flex;  /*enables flex content for its children*/
+    box-sizing: border-box;
+}
+
+.PanelsWrapper {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.Viewport {
+  overflow: hidden;
+  background-color: #bbb;
+  min-width: 40px;
+  flex-grow: 1;
+}
+
+.PanelHandler {
+  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAeCAYAAADkftS9AAAAIklEQVQoU2M4c+bMfxAGAgYYmwGrIIiDjrELjpo5aiZeMwF+yNnOs5KSvgAAAABJRU5ErkJggg==');
+  background-color: #fff;
+  background-repeat: no-repeat;
+  background-position: 50%;
+  cursor: col-resize;
+  width: 20px;
+}
+
+.SidePanel {
+  overflow: auto;
+  width: 150px;
+  height: 100%;
+  flex-grow: 0;
+}

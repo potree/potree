@@ -1,0 +1,106 @@
+.TreeNodesList {
+  border-left: 1px dotted;
+  list-style-type: none;
+  padding: 0 0 0 15px;
+}
+
+.TreeNodesList--collapsed {
+  display: none;
+}
+
+.TreeNodesList--root {
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+
+.TreeNodesListItem__ToggleVisibility {
+  border: none;
+  color: #bdbdbd;
+  font-size: 5px;
+  height: 24px;
+  padding: 0;
+  width: 25px;
+  background-color: #0000;
+}
+
+.TreeNodesListItem__ToggleVisibility:focus {
+  outline: none;
+}
+
+.TreeNodesListItem__ToggleExpanded {
+  border: none;
+  height: 24px;
+  margin-left: -21px;
+  padding: 0;
+  width: 24px;
+  top: 6px;
+  position: relative;
+  background-color: #0000;
+}
+
+.TreeNodesListItem::before {
+  border-bottom: 1px dotted;
+  content: '';
+  display: inline-block;
+  left: -15px;
+  position: relative;
+  top: -5px;
+  width: 10px;
+}
+
+.TreeNodesListItem__Toggle:focus {
+  outline: none;
+}
+
+.TreeNodesListItem__Title {
+  cursor: default;
+  padding: 2px 4px;
+  border-radius: 5px;
+}
+
+.TreeNodesListItem__Title:hover {
+  background-color: #e1f5fe;
+}
+
+.TreeNodesListItem--isSelected > .TreeNodesListItem__Title {
+  background-color: #76d2bb;
+}
+
+.TreeNodesListItem--isHidden > .TreeNodesListItem__Title {
+  background-color: #eeeeee;
+  color: #9e9e9e;
+}
+
+/* Rules for sizing the icon. */
+.material-icons.md-15 {
+  font-size: 15px;
+}
+.material-icons.md-18 {
+  font-size: 18px;
+}
+.material-icons.md-24 {
+  font-size: 24px;
+}
+.material-icons.md-36 {
+  font-size: 36px;
+}
+.material-icons.md-48 {
+  font-size: 48px;
+}
+
+/* Rules for using icons as black on a light background. */
+.material-icons.md-dark {
+  color: rgba(0, 0, 0, 0.54);
+}
+.material-icons.md-dark.md-inactive {
+  color: rgba(0, 0, 0, 0.26);
+}
+
+/* Rules for using icons as white on a dark background. */
+.material-icons.md-light {
+  color: rgba(255, 255, 255, 1);
+}
+.material-icons.md-light.md-inactive {
+  color: rgba(255, 255, 255, 0.3);
+}

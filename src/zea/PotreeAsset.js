@@ -15,10 +15,14 @@ export class PotreeAsset extends ZeaEngine.AssetItem {
     this.visibleNodes = [];
 
     this.__loaded = false;
-    this.visibleNodesChanged = new ZeaEngine.Signal();
 
-	this.addParameter(new ZeaEngine.NumberParameter('Version', 0))
-	this.addParameter(new ZeaEngine.NumberParameter('Num Points', 0))
+    // this.fileParam = this.addParameter(new ZeaEngine.FilePathParameter('File'))
+    // this.fileParam.valueChanged.connect(mode => {
+    //   this.loaded.untoggle()
+  	//   this.loadPointCloud(path, name)
+    // })
+    this.addParameter(new ZeaEngine.NumberParameter('Version', 0))
+    this.addParameter(new ZeaEngine.NumberParameter('Num Points', 0))
   }
 
   getGlobalMat4() {

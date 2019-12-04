@@ -5,22 +5,54 @@
 	<meta name="description" content="">
 	<meta name="author" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-	<title>Potree Viewer</title>
+	<title>Zea Potree</title>
+	<link rel="shortcut icon" type="image/x-icon" href="img/favicon.ico"/>
 </head>
 
 <body>
 	<script src="../node_modules/@zeainc/zea-engine/dist/zea-engine.js"></script>
 	<!-- <script src="../build/potree/potree.js"></script> -->
 	<script src="../dist/zea-potree.js"></script>
-	<div id="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
-	</div>
+	
+	<link rel="stylesheet" href="./css/third-party/tachyons.min.css"/>
+	<link rel="stylesheet" href="./css/third-party/icon_family_Material_Icons.css">
+	<link rel="stylesheet" href="./css/third-party/pure-min.css">
+
+	<link rel="stylesheet" href="./css/editor.css">
+	<!-- <link rel="stylesheet" href="./css/side-panels.css"> -->
+	<link rel="stylesheet" href="./css/top-bar.css">
+	<link rel="stylesheet" href="./css/parameters.css">
+	<link rel="stylesheet" href="./css/tree-view.css">
+
+	
+	<div class="MainWrapper vh-100">
+		<div class="HeaderWrapper bg-white pa2 bb">
+		  <img alt="ZEA" class="Header__logo" src="./img/logo.png">
+		  <div id="TopMenuWrapper" class="pure-menu pure-menu-horizontal ml3"></div>
+		  <div id="UserProfileWrapper"></div>
+		</div>
+  
+		<div class="PanelsWrapper flex overflow-hidden">
+		  <div id="leftPanel" class="SidePanel SidePanel--left overflow-auto pa2"></div>
+		  <div class="PanelHandler bg-center bg-white"></div>
+  
+		  <div class="Viewport flex-grow-1 bg-moon-gray overflow-hidden" id="viewport"></div>
+  
+		  <div class="PanelHandler bg-center bg-white"></div>
+		  <div id="rightPanel" class="SidePanel SidePanel--right overflow-auto pa2"></div>
+		</div>
+  
+	   <div class="BottomPanelHandler bg-center bg-white z-1 bt"></div>
+		<div id="bottomPanel" class="BottomPanel overflow-auto pa2" style="height: 10px;">
+		</div> 
+	  </div> 
 	
 	<script>
 	
 		const scene = new ZeaEngine.Scene();
 		scene.setupGrid(600, 50);
 
-		const renderer = new ZeaEngine.GLRenderer(document.getElementById("potree_container"), {
+		const renderer = new ZeaEngine.GLRenderer(document.getElementById("viewport"), {
 			enableTextures:false
 		});
 		const potreePass = new ZeaPotree.GLPotreePass();
@@ -32,18 +64,37 @@
 		const potreeAsset = new ZeaPotree.PotreeAsset();
 		scene.getRoot().addChild(potreeAsset);
 		
+		const urlParams = new URLSearchParams(window.location.search);
+		const file = urlParams.get('file');
 		// Load and add point cloud to scene
 		let url;
+		switch (file) {
+		case 'templesagradafamilia':{
+			url = "http://betaserver.icgc.cat/potree12/resources/pointclouds/templesagradafamilia/cloud.js"
+			break;
+			}
+		case 'eclepens':{
+			url = "http://5.9.65.151/mschuetz/potree/resources/pointclouds/pix4d/eclepens/cloud.js"
+			break;
+			}
+		case 'whitby':{
+			url = "http://5.9.65.151/mschuetz/potree/resources/pointclouds/3dlasermapping/whitby/cloud.js"
+			break;
+			}
+		case 'NavVisHQ':{
+			url = "http://localhost:3150/PotreeConverter/out/NavVisHQ/cloud.js"
+			break;
+			}
+		case 'westend_palais':{
+			url = "http://5.9.65.151/mschuetz/potree/resources/pointclouds/faro/westend_palais/cloud.js"
+			break;
+			}
+		}
 		// url = "../pointclouds/vol_total/cloud.js"
-		// url = "http://localhost:3150/PotreeConverter/NavVisHQ/sources.json"
-		// url = "http://5.9.65.151/mschuetz/potree/resources/pointclouds/pix4d/eclepens/cloud.js"
 		// url = "http://www.kkapc.co.jp/potree-1.5RC/pointclouds/apc_tatumi/cloud.js" // No CORS
 		// url = "http://www.airborneresearch.com.au/potree/pointclouds/Ironbank/cloud.js" // No CORS
-		// url = "http://5.9.65.151/mschuetz/potree/resources/pointclouds/3dlasermapping/whitby/cloud.js"
-		// url = "http://5.9.65.151/mschuetz/potree/resources/pointclouds/faro/westend_palais/cloud.js"
-		// url = "http://localhost:3150/PotreeConverter/out/NEONDSSampleLiDARPointCloud/cloud.js"
-		// url = "http://localhost:3150/PotreeConverter/out/NavVisHQ/cloud.js"
-		url = "http://betaserver.icgc.cat/potree12/resources/pointclouds/templesagradafamilia/cloud.js"
+		// url = "http://localhost:3150/PotreeConverter/out/NEONDSSampleLiDARPointCloud/cloud.js" // black
+		
 		potreeAsset.loadPointCloud(url, "PointCloud").then(e => {
 	
 			// let material = e.pointcloud.material;

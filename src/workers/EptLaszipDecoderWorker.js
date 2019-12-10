@@ -38,6 +38,8 @@ function readUsingDataView(event) {
 	let rnBuff = new ArrayBuffer(numPoints);
 	let nrBuff = new ArrayBuffer(numPoints);
 	let psBuff = new ArrayBuffer(numPoints * 2);
+	let gpsBuff64 = new ArrayBuffer(numPoints * 8);
+	let gpsBuff32 = new ArrayBuffer(numPoints * 4);
 
 	let positions = new Float32Array(pBuff);
 	let colors = new Uint8Array(cBuff);
@@ -46,6 +48,8 @@ function readUsingDataView(event) {
 	let returnNumbers = new Uint8Array(rnBuff);
 	let numberOfReturns = new Uint8Array(nrBuff);
 	let pointSourceIDs = new Uint16Array(psBuff);
+	let gpsTime64 = new Float64Array(gpsBuff64)
+	let gpsTime32 = new Float32Array(gpsBuff32)
 
 	// Point format 3 contains an 8-byte GpsTime before RGB values, so make
 	// sure we have the correct color offset.
@@ -134,8 +138,8 @@ function readUsingDataView(event) {
 	let max = -Infinity
 
 	for (let i = 0; i < numPoints; i++) {
-		min = Math.min(min gpsTime64[i]s)
-		max = Math.max(max gpsTime64[i]s)
+		min = Math.min(min, gpsTime64[i])
+		max = Math.max(max, gpsTime64[i])
 	}
 
 	for (let i = 0; i < numPoints; i++) {

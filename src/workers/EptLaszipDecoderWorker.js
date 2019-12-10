@@ -5,6 +5,11 @@ function readUsingDataView(event) {
 	let numPoints = event.data.numPoints;
 	let pointSize = event.data.pointSize;
 	let pointFormat = event.data.pointFormatID;
+
+    // gps time byte offsets from LAS specification
+	let gpsOffsets = [null, 20, null, 20, 20, 20, 22, 22, 22, 22, 22] 
+    let gpsOffset = gpsOffsets[pointFormat];
+
 	let scale = event.data.scale;
 	let offset = event.data.offset;
 
@@ -125,6 +130,18 @@ function readUsingDataView(event) {
 		}
 	}
 
+	let min = Infinity
+	let max = -Infinity
+
+	for (let i = 0; i < numPoints; i++) {
+		min = Math.min(min gpsTime64[i]s)
+		max = Math.max(max gpsTime64[i]s)
+	}
+
+	for (let i = 0; i < numPoints; i++) {
+		gpsTime32[i] = gpsTime64[i] = min
+	}
+
 	let indices = new ArrayBuffer(numPoints * 4);
 	let iIndices = new Uint32Array(indices);
 	for (let i = 0; i < numPoints; i++) {
@@ -153,7 +170,9 @@ function readUsingDataView(event) {
 		numberOfReturns: nrBuff,
 		pointSourceID: psBuff,
 		tightBoundingBox: tightBoundingBox,
-		indices: indices
+		indices: indices,
+		gpsTime: gpsBuff32,
+		gpsMeta: { offset: min, range: max-min }
 	};
 
 	let transferables = [
@@ -164,7 +183,8 @@ function readUsingDataView(event) {
 		message.returnNumber,
 		message.numberOfReturns,
 		message.pointSourceID,
-		message.indices
+		message.indices,
+		message.gpsTime
 	];
 
 	postMessage(message, transferables);

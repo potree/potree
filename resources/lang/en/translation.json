@@ -49,6 +49,7 @@
 	"appearance": {
 		"nb_max_pts": "Point budget", 
 		"point_size": "Point size",
+		"min_point_size": "Minimum size",
 		"point_opacity": "Opacity",
 		"field_view": "Field of view",
 		"point_size_type": "Point sizing",

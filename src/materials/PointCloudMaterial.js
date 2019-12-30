@@ -673,6 +673,25 @@ export class PointCloudMaterial extends THREE.RawShaderMaterial {
 		}
 	}
 
+	get minSize(){
+		return this.uniforms.minSize.value;
+	}
+
+	set minSize(value){
+		if (this.uniforms.minSize.value !== value) {
+			this.uniforms.minSize.value = value;
+
+			this.dispatchEvent({
+				type: 'point_size_changed',
+				target: this
+			});
+			this.dispatchEvent({
+				type: 'material_property_changed',
+				target: this
+			});
+		}
+	}
+
 	get elevationRange () {
 		return this.uniforms.elevationRange.value;
 	}

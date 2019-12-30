@@ -285,7 +285,7 @@ We would like to thank our sponsors for their financial contributions that keep 
 				<img src="docs/sponsors/helimap.gif" height="60"/> &nbsp;
 			</a>
 			<a href="http://www.vevey.ch/">
-				<img src="docs/sponsors/vevey.png" height="70"/> &nbsp;
+				<img src="docs/sponsors/vevey.png" height="60"/> &nbsp;
 			</a>
 			<a href="https://www.yverdon-les-bains.ch/">
 				<img src="docs/sponsors/Logo-YLB.png" height="60"/> &nbsp;

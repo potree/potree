@@ -1194,7 +1194,12 @@ export class Sidebar{
 			let elInput = element.find('input');
 
 			elInput.click( () => {
-				// TODO
+				const classifications = this.viewer.classifications;
+	
+				for(let key of Object.keys(classifications)){
+					let value = classifications[key];
+					this.viewer.setClassificationVisibility(key, !value.visible);
+				}
 			});
 
 			elClassificationList.append(element);

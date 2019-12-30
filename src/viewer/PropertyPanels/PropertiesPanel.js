@@ -85,7 +85,10 @@ export class PropertiesPanel{
 				<ul class="pv-menu-list">
 
 				<li>
-				<span data-i18n="appearance.point_size"></span>:<span id="lblPointSize"></span> <div id="sldPointSize"></div>
+				<span data-i18n="appearance.point_size"></span>:&nbsp;<span id="lblPointSize"></span> <div id="sldPointSize"></div>
+				</li>
+				<li>
+				<span data-i18n="appearance.min_point_size"></span>:&nbsp;<span id="lblMinPointSize"></span> <div id="sldMinPointSize"></div>
 				</li>
 
 				<!-- SIZE TYPE -->
@@ -254,6 +257,27 @@ export class PropertiesPanel{
 			let update = (e) => {
 				lblPointSize.html(material.size.toFixed(2));
 				sldPointSize.slider({value: material.size});
+			};
+			this.addVolatileListener(material, "point_size_changed", update);
+			
+			update();
+		}
+
+		{ // MINIMUM POINT SIZE
+			let sldMinPointSize = panel.find(`#sldMinPointSize`);
+			let lblMinPointSize = panel.find(`#lblMinPointSize`);
+
+			sldMinPointSize.slider({
+				value: material.size,
+				min: 0,
+				max: 3,
+				step: 0.01,
+				slide: function (event, ui) { material.minSize = ui.value; }
+			});
+
+			let update = (e) => {
+				lblMinPointSize.html(material.minSize.toFixed(2));
+				sldMinPointSize.slider({value: material.minSize});
 			};
 			this.addVolatileListener(material, "point_size_changed", update);
 			
@@ -461,7 +485,7 @@ export class PropertiesPanel{
 					blockElevation.css('display', 'block');
 				} else if (selectedValue === 'RGBA') {
 					blockRGB.css('display', 'block');
-				} else if (selectedValue === 'Color') {
+				} else if (selectedValue === 'color') {
 					blockColor.css('display', 'block');
 				} else if (selectedValue === 'intensity') {
 					blockIntensity.css('display', 'block');

@@ -100,7 +100,7 @@ export class OrientedImageLoader{
 		const f = parseFloat(doc.getElementsByTagName("f")[0].textContent);
 
 		let a = (height / 2)  / f;
-		let fov = 2 * THREE.Math.radToDeg(Math.atan(a))
+		let fov = 2 * THREE.Math.radToDeg(Math.atan(a));
 
 		const params = {
 			path: path,
@@ -154,6 +154,9 @@ export class OrientedImageLoader{
 			// }
 			imageParams.push(params);
 		}
+
+		// debug
+		//return [imageParams[50]];
 
 		return imageParams;
 	}
@@ -320,6 +323,49 @@ export class OrientedImageLoader{
 			//console.log(tEnd - tStart);
 		};
 
+		const moveToImage = (image) => {
+			console.log("move to image " + image.params.id);
+
+			const mesh = image.mesh;
+			const newCamPos = new THREE.Vector3( 
+				image.params.x,
+				image.params.y,
+				image.params.z
+			);
+			const newCamTarget = mesh.position.clone();
+
+			viewer.scene.view.setView(newCamPos, newCamTarget, 500, () => {
+				orientedImageControls.capture(image.params);
+			});
+
+			if(image.texture === null){
+
+				const target = image;
+
+				const tmpImagePath = `${Potree.resourcePath}/images/loading.jpg`;
+				new THREE.TextureLoader().load(tmpImagePath,
+					(texture) => {
+						if(target.texture === null){
+							target.texture = texture;
+							target.mesh.material.uniforms.tColor.value = texture;
+							mesh.material.needsUpdate = true;
+						}
+					}
+				);
+
+				const imagePath = `${imageParamsPath}/../${target.params.id}`;
+				new THREE.TextureLoader().load(imagePath,
+					(texture) => {
+						target.texture = texture;
+						target.mesh.material.uniforms.tColor.value = texture;
+						mesh.material.needsUpdate = true;
+					}
+				);
+				
+
+			}
+		};
+
 		const onMouseClick = (evt) => {
 
 			if(orientedImageControls.hasSomethingCaptured()){
@@ -327,48 +373,7 @@ export class OrientedImageLoader{
 			}
 
 			if(hoveredElement){
-				console.log("move to image " + hoveredElement.params.id);
-
-				const mesh = hoveredElement.mesh;
-				const newCamPos = new THREE.Vector3( 
-					hoveredElement.params.x,
-					hoveredElement.params.y,
-					hoveredElement.params.z
-				);
-				const newCamTarget = mesh.position.clone();
-
-				viewer.scene.view.setView(newCamPos, newCamTarget, 500, () => {
-					orientedImageControls.capture(hoveredElement.params);
-				});
-
-				if(hoveredElement.texture === null){
-
-					const target = hoveredElement;
-
-					const tmpImagePath = `${Potree.resourcePath}/images/loading.jpg`;
-					new THREE.TextureLoader().load(tmpImagePath,
-						(texture) => {
-							if(target.texture === null){
-								target.texture = texture;
-								target.mesh.material.uniforms.tColor.value = texture;
-								mesh.material.needsUpdate = true;
-							}
-						}
-					);
-
-					const imagePath = `${imageParamsPath}/../${target.params.id}`;
-					new THREE.TextureLoader().load(imagePath,
-						(texture) => {
-							target.texture = texture;
-							target.mesh.material.uniforms.tColor.value = texture;
-							mesh.material.needsUpdate = true;
-						}
-					);
-					
-
-				}
-
-
+				moveToImage(hoveredElement);
 			}
 		};
 		viewer.renderer.domElement.addEventListener( 'mousemove', onMouseMove, false );
@@ -409,6 +414,8 @@ export class OrientedImageLoader{
 		images.cameraParams = cameraParams;
 		images.imageParams = imageParams;
 		images.images = orientedImages;
+
+		Potree.debug.moveToImage = moveToImage;
 
 		return images;
 	}

@@ -21,6 +21,7 @@ Reference: [Potree: Rendering Large Point Clouds in Web Browsers](https://www.cg
 Make sure you have [node.js](http://nodejs.org/) installed
 
 Install all dependencies, as specified in package.json: 
+
 ```bash
 npm install
 ```

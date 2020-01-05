@@ -64,6 +64,8 @@ export * from "./viewer/Scene.js";
 export * from "./modules/OrientedImages/OrientedImages.js";
 export * from "./modules/CameraAnimation/CameraAnimation.js";
 
+export * from "./modules/Loader_1.8/OctreeLoader_1_8.js";
+
 export {OrbitControls} from "./navigation/OrbitControls.js";
 export {FirstPersonControls} from "./navigation/FirstPersonControls.js";
 export {EarthControls} from "./navigation/EarthControls.js";

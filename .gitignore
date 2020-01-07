@@ -29,3 +29,5 @@ scripts/__pycache__/
 # Unwanted Data Filetypes
 *.fb
 *.csv
+
+.idea

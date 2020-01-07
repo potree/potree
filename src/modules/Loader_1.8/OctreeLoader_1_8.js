@@ -114,7 +114,7 @@ export class OctreeLoader_1_8{
 
 		let cloudJsPath = url;
 		let hierarchyPath = `${url}/../hierarchy.json`;
-		let dataPath = `${url}/../pointcloud.data`;
+		let dataPath = `${url}/../octree.data`;
 
 		let cloudJsResponse = fetch(cloudJsPath);
 		let hierarchyResponse = fetch(hierarchyPath);

@@ -87,6 +87,10 @@ export class OctreeGeometryNode{
 		return this.numPoints;
 	}
 
+	dispose(){
+		console.warn("TODO: implement");
+	}
+
 };
 
 OctreeGeometryNode.IDCount = 0;

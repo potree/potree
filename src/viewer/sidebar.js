@@ -1402,7 +1402,7 @@ export class Sidebar{
 			Potree.resourcePath + '/icons/fps_controls.svg',
 			'[title]tt.flight_control',
 			() => {
-				this.viewer.setControls(this.viewer.firstPersonControls);
+				this.viewer.setControls(this.viewer.fpControls);
 				this.viewer.fpControls.lockElevation = false;
 			}
 		));
@@ -1411,7 +1411,7 @@ export class Sidebar{
 			Potree.resourcePath + '/icons/helicopter_controls.svg',
 			'[title]tt.heli_control',
 			() => { 
-				this.viewer.setControls(this.viewer.firstPersonControls);
+				this.viewer.setControls(this.viewer.fpControls);
 				this.viewer.fpControls.lockElevation = true;
 			}
 		));

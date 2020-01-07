@@ -1036,13 +1036,6 @@ export class Viewer extends EventDispatcher{
 			this.fpControls.enabled = false;
 			this.fpControls.addEventListener('start', this.disableAnnotations.bind(this));
 			this.fpControls.addEventListener('end', this.enableAnnotations.bind(this));
-			// this.fpControls.addEventListener("double_click_move", (event) => {
-			//	let distance = event.targetLocation.distanceTo(event.position);
-			//	this.setMoveSpeed(Math.pow(distance, 0.4));
-			// });
-			// this.fpControls.addEventListener("move_speed_changed", (event) => {
-			//	this.setMoveSpeed(this.fpControls.moveSpeed);
-			// });
 		}
 
 		// { // create GEO CONTROLS

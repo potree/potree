@@ -137,60 +137,77 @@
 
 
 	<script type="module">
-		"use strict";
-		import { loadLanes } from "../demo/laneLoader.js";
-		import { loadTracks } from "../demo/trackLoader.js";
-		import { loadDetections } from "../demo/detectionLoader.js";
-		import { loadRtk, applyRotation } from "../demo/rtkLoader.js";
-		import { loadRtkFlatbuffer } from "../demo/rtkLoaderFlatbuffer.js";
-		import { RtkTrajectory } from "../demo/RtkTrajectory.js";
-		import { loadRadar } from "../demo/radarLoader.js";
-		import { loadGaps } from "../demo/gapsLoader.js";
-		import { loadRem } from "../demo/remLoader.js";
-		import { loadVelo2Rtk, loadRtk2Vehicle, storeCalibration } from "../demo/calibrationManager.js";
-		import { updateSidebar, togglePointClass } from "../common/custom-sidebar.js";
-		import { getLoadingBar } from "../common/overlay.js";
+		"use strict"
+		import {loadLanes} from "../demo/laneLoader.js"
+		import {loadTracks} from "../demo/trackLoader.js"
+		import {loadDetections} from "../demo/detectionLoader.js"
+		import {loadRtk, applyRotation} from "../demo/rtkLoader.js"
+		import {loadRtkFlatbuffer} from "../demo/rtkLoaderFlatbuffer.js"
+		import {RtkTrajectory} from "../demo/RtkTrajectory.js"
+		import {loadRadar} from "../demo/radarLoader.js"
+		import {loadGaps} from "../demo/gapsLoader.js"
+		import {loadRem} from "../demo/remLoader.js"
+		import {
+			loadVelo2Rtk, loadRtk2Vehicle, storeCalibration
+		} from "../demo/calibrationManager.js"
+		import {updateSidebar, togglePointClass} from "../common/custom-sidebar.js"
+		import {getLoadingBar} from "../common/overlay.js"
 		// import {  } from "../common/overlay.js";
-		import { setLoadingScreen, removeLoadingScreen } from "../common/overlay.js";
-		import { PointAttributeNames } from "../src/loader/PointAttributes.js";
+		import {setLoadingScreen, removeLoadingScreen} from "../common/overlay.js"
+		import {PointAttributeNames} from "../src/loader/PointAttributes.js"
+
+		function decanonicalizeTimeInterval({start, end}) {
+			if (start === "" && end === "") {
+				return null
+			} else {
+				return {start: Number(start), end: Number(end)}
+			}
+		}
 
 		// setLoadingScreen();
 
-		const runForLocalDevelopment = location.search === "" && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+		const runForLocalDevelopment = location.search === "" &&
+				(window.location.hostname === 'localhost' ||
+						window.location.hostname === '127.0.0.1')
 
-		const params = new URLSearchParams(location.search);
-		const bucket = params.get("bucket");
-		const region = params.get("region");
-		const names = JSON.parse(params.get("names"));
-		const name = params.get("clicked");
-		const visualizationMode = params.get("mode");
-		const annotateLanesAvailable = params.get('annotate') == 'Annotate';
-		const downloadLanesAvailable = annotateLanesAvailable;
-		const calibrationModeAvailable = params.get("calibrate") == "Calibrate" || runForLocalDevelopment;
-		const accessKeyId = params.get("key1");
-		const secretAccessKey = params.get("key2");
-		const sessionToken = params.get("key3");
-		const fonts =  JSON.parse(params.get("fonts"));
-		const theme = JSON.parse(params.get("theme")); // material-ui theme
-		let comparisonDatasets = [];
+		const params = new URLSearchParams(location.search)
+		const bucket = params.get("bucket")
+		const region = params.get("region")
+		const names = JSON.parse(params.get("names"))
+		const name = params.get("clicked")
+		const visualizationMode = params.get("mode")
+		const annotateLanesAvailable = params.get('annotate') == 'Annotate'
+		const downloadLanesAvailable = annotateLanesAvailable
+		const calibrationModeAvailable = params.get("calibrate") == "Calibrate" ||
+				runForLocalDevelopment
+		let customTimeInterval = decanonicalizeTimeInterval({
+			start: params.get("start"), end: params.get("end")
+		})
+		const accessKeyId = params.get("key1")
+		const secretAccessKey = params.get("key2")
+		const sessionToken = params.get("key3")
+		const fonts = JSON.parse(params.get("fonts"))
+		const theme = JSON.parse(params.get("theme")) // material-ui theme
+		let comparisonDatasets = []
 		if (names) {
-			comparisonDatasets = names.filter(element => element !== name);
+			comparisonDatasets = names.filter(element => element !== name)
 		}
 
 		if (fonts) {
-			const head = document.head;
+			const head = document.head
 			fonts.forEach(font => {
-				const link = document.createElement('link');
-				link.rel = 'stylesheet';
-				link.href = font;
-				head.appendChild(link);
-			});
+				const link = document.createElement('link')
+				link.rel = 'stylesheet'
+				link.href = font
+				head.appendChild(link)
+			})
 
 			// Override fonts specified.
-			const {typography} = theme;
-			const style = document.createElement('style');
-			style.innerHTML = `#value {font-family: ${typography.fontFamily} !important;} #sidebar_root {font-family: ${typography.fontFamily} !important;} #potree_languages {font-family: ${typography.fontFamily} !important;}`;
-			head.appendChild(style);
+			const {typography} = theme
+			const style = document.createElement('style')
+			style.innerHTML =
+					`#value {font-family: ${typography.fontFamily} !important;} #sidebar_root {font-family: ${typography.fontFamily} !important;} #potree_languages {font-family: ${typography.fontFamily} !important;}`
+			head.appendChild(style)
 		}
 
     const s3 = bucket && region && name && accessKeyId && secretAccessKey &&
@@ -344,8 +361,6 @@
 				}
 			});
 
-
-
 			// Load Data Sources in loadRtkCallback:
 			loadRtkCallback(s3, bucket, name, () => {
 
@@ -409,7 +424,7 @@
 				try {
 					// await loadRadarCallback(s3, bucket, name);
 				} catch (e) {
-					console.error("Could not load Radar Detections: ", e);
+					console.error("Could not load Radar Detections: ", e)
 				}
 
 				// Load Detections:
@@ -419,152 +434,190 @@
 				// TODO
 
 				// Configure AnimationEngine:
-				// let tstart = window.timeframe.tstart;	// Set in loadRtkCallback
-				// let tend = window.timeframe.tend;			// Set in loadRtkCallback
-				// let playbackRate = 1.0;
-				// animationEngine.configure(tstart, tend, playbackRate);
+				// reconfigureTimeInterval();
 				// animationEngine.launch();
 			}); // END loadRtkCallback()
 
 		}); // END $(document).ready()
 
+		window.addEventListener("message", ({data}) => {
+			if (data.type === "updateTimeInterval") {
+				const {start, end} = data
+				customTimeInterval = decanonicalizeTimeInterval({start, end})
+				relaunchAnimationWithNewInterval()
+			}
+		}, false)
 
+		function relaunchAnimationWithNewInterval() {
+			const tstart = customTimeInterval ?
+					(window.fullTimeInterval.start + customTimeInterval.start) :
+					window.fullTimeInterval.start
+			const tend = customTimeInterval ?
+					(window.fullTimeInterval.start + customTimeInterval.end) :
+					window.fullTimeInterval.end
+			const playbackRate = 1.0
+			animationEngine.configure(tstart, tend, playbackRate)
+			animationEngine.launch()
+		}
 
-
-		// Load RTK: TODO REFACTOR THIS (a lot of stuff happenning here, break it up if possible)
+		// Load RTK: TODO REFACTOR THIS (a lot of stuff happening here, break it up if possible)
 		function loadRtkCallback(s3, bucket, name, callback) {
 			// loadRtk(s3, bucket, name, (pos, rot, timestamps, t_init, t_range) => {
-			loadRtkFlatbuffer(s3, bucket, name, (pos, rot, timestamps, t_init, t_range) => {
-				window.timeframe = {"tstart": t_init, "tend": t_init+t_range};
+			loadRtkFlatbuffer(s3, bucket, name,
+					(pos, rot, timestamps, t_init, t_range) => {
+						window.fullTimeInterval = {
+							start: t_init, end: t_init + t_range
+						}
 
-				// TODO Move this into main loader function:
-				let tstart = window.timeframe.tstart;	// Set in loadRtkCallback
-				let tend = window.timeframe.tend;			// Set in loadRtkCallback
-				let playbackRate = 1.0;
-				animationEngine.configure(tstart, tend, playbackRate);
-				animationEngine.launch();
+						// TODO Move this into main loader function:
+						relaunchAnimationWithNewInterval()
 
-				if (callback) {
-					callback();
-				}
+						if (callback) {
+							callback()
+						}
 
-	      const path = pos.map(v => new THREE.Vector3(...v));
-	      const orientations = rot.map(v => new THREE.Vector3(...v));
-				const samplingFreq = 100; // Hertz TODO hardcoded
-				const rtkTrajectory = new RtkTrajectory(path, orientations, timestamps, samplingFreq);
-				const closedPath = false;
+						const path = pos.map(v => new THREE.Vector3(...v))
+						const orientations = rot.map(v => new THREE.Vector3(...v))
+						const samplingFreq = 100 // Hertz TODO hardcoded
+						const rtkTrajectory = new RtkTrajectory(path, orientations,
+								timestamps, samplingFreq)
+						const closedPath = false
 
-	      // CREATE VEHICLE OBJECT:
-	      // NOTE for Mustang: {texture: models/bodybkgd.JPG, mesh: models/1967-shelby-ford-mustang.obj}
-	      // NOTE for Volt: {texture: models/Chevy_Volt_Segmented/Chevrolet_Volt_v1_exterior.png, mesh: resources/models/Chevy_Volt_Segmented/Chevy_Volt_2016.obj}
-	      let manager = new THREE.LoadingManager();
-	      manager.onProgress = function ( item, loaded, total ) {
-	        console.log( item, loaded, total );
-	      };
-	      let textureLoader = new THREE.TextureLoader( manager );
-	      let texture = textureLoader.load(`${Potree.resourcePath}/models/Chevy_Volt_Segmented/reflection_1.png`);
-	      // let texture = textureLoader.load(`${Potree.resourcePath}/models/bodybkgd.JPG`);
-	      let onProgress = function ( xhr ) {
-	        if ( xhr.lengthComputable ) {
-	          let percentComplete = xhr.loaded / xhr.total * 100;
-	        }
-	      };
-	      texture.wrapS = THREE.RepeatWrapping;
-	      texture.wrapT = THREE.RepeatWrapping;
-
-	      let geometry = new THREE.SphereGeometry( 2, 32, 32 );
-	      let material = new THREE.MeshNormalMaterial( {side: THREE.DoubleSide, opacity: 0.92,transparent:true});
-	      let sphere = new THREE.Mesh( geometry, material );
-	      sphere.position.copy(new THREE.Vector3(...pos[0]));
-	      // viewer.scene.scene.add( sphere );
-
-
-	      { // Load Textured vehicle from obj
-	        let onError = function ( xhr ) {};
-	        let loader = new THREE.OBJLoader( manager );
-	        loader.load(`${Potree.resourcePath}/models/Chevy_Volt_Segmented/volt_reduce.obj`,
-	        // loader.load(`${Potree.resourcePath}/models/Chevy_Volt_Segmented/Chevy_Volt_2016.obj`,
-	                    function ( object ) {
-	          object.traverse( function ( child ) {
-	            if ( child instanceof THREE.Mesh ) {
-	              child.material.map = texture;
-	            }
-	          } );
-
-						const vehicleGroup = new THREE.Group();
-						vehicleGroup.name = "Vehicle";
-
-			      { // render the path
-							let geometry = new THREE.Geometry();
-							for (let ii = 0; ii < rtkTrajectory.numStates; ii++) {
-								geometry.vertices[ii] = rtkTrajectory.states[ii].pose.clone();
+						// CREATE VEHICLE OBJECT:
+						// NOTE for Mustang: {texture: models/bodybkgd.JPG, mesh: models/1967-shelby-ford-mustang.obj}
+						// NOTE for Volt: {texture: models/Chevy_Volt_Segmented/Chevrolet_Volt_v1_exterior.png, mesh: resources/models/Chevy_Volt_Segmented/Chevy_Volt_2016.obj}
+						let manager = new THREE.LoadingManager()
+						manager.onProgress = function (item, loaded, total) {
+							console.log(item, loaded, total)
+						}
+						let textureLoader = new THREE.TextureLoader(manager)
+						let texture = textureLoader.load(
+								`${Potree.resourcePath}/models/Chevy_Volt_Segmented/reflection_1.png`)
+						// let texture = textureLoader.load(`${Potree.resourcePath}/models/bodybkgd.JPG`);
+						let onProgress = function (xhr) {
+							if (xhr.lengthComputable) {
+								let percentComplete = xhr.loaded / xhr.total * 100
 							}
-			        let material = new THREE.LineBasicMaterial({color: new THREE.Color(0x00ff00)});
-			        material.uniforms = {initialTime:{value:t_init}};
-							// material.opacity = 0.0;
-							// material.transparent = true;
-			        let line = new THREE.Line(geometry, material, {closed: closedPath});
-			        line.name = "RTK Trajectory";
-							line.visible = false;
-							viewer.scene.scene.add( line );
-							viewer.scene.dispatchEvent({"type": "vehicle_layer_added", "vehicleLayer": line });
-			      }
+						}
+						texture.wrapS = THREE.RepeatWrapping
+						texture.wrapT = THREE.RepeatWrapping
 
-						// Add Polar Grid Helper:
-						const gridRadius = 100; // meters
-						const gridSpacing = 5; // meters
-						const scaleFactor = 1; // HACK for now because attached to vehicle mesh which is 1/100th scale
-						const gridHelper = new THREE.GridHelper( scaleFactor*2*gridRadius, 2*gridRadius/gridSpacing, 0x0000ff, 0x808080 );
-						gridHelper.name = "Cartesian Grid";
-						gridHelper.rotateOnAxis(new THREE.Vector3(1,0,0), Math.PI/2);
-						gridHelper.position.z -= 2;
-						gridHelper.visible = false;
-						viewer.scene.dispatchEvent({"type": "vehicle_layer_added", "vehicleLayer": gridHelper });
-						const polarGridHelper = new THREE.PolarGridHelper( scaleFactor*gridRadius, 16, gridRadius/gridSpacing, 64, 0x0000ff, 0x808080 );
-						polarGridHelper.name = "Polar Grid";
-						polarGridHelper.rotateOnAxis(new THREE.Vector3(1,0,0), Math.PI/2);
-						polarGridHelper.position.z -= 2;
-						polarGridHelper.visible = false;
-						viewer.scene.dispatchEvent({"type": "vehicle_layer_added", "vehicleLayer": polarGridHelper });
-						const axesHelper = new THREE.AxesHelper(scaleFactor*gridSpacing);
-						axesHelper.name = "3D Axes";
-						axesHelper.position.z -= 2;
-						// axesHelper.rotateOnAxis(new THREE.Vector3(0,0,1), -Math.PI/2);
-						axesHelper.visible = false;
-						viewer.scene.dispatchEvent({"type": "vehicle_layer_added", "vehicleLayer": axesHelper });
+						let geometry = new THREE.SphereGeometry(2, 32, 32)
+						let material = new THREE.MeshNormalMaterial(
+								{side: THREE.DoubleSide, opacity: 0.92, transparent: true})
+						let sphere = new THREE.Mesh(geometry, material)
+						sphere.position.copy(new THREE.Vector3(...pos[0]))
+						// viewer.scene.scene.add( sphere );
 
+						{ // Load Textured vehicle from obj
+							let onError = function (xhr) {
+							}
+							let loader = new THREE.OBJLoader(manager)
+							loader.load(
+									`${Potree.resourcePath}/models/Chevy_Volt_Segmented/volt_reduce.obj`,
+									// loader.load(`${Potree.resourcePath}/models/Chevy_Volt_Segmented/Chevy_Volt_2016.obj`,
+									function (object) {
+										object.traverse(function (child) {
+											if (child instanceof THREE.Mesh) {
+												child.material.map = texture
+											}
+										})
 
-						vehicleGroup.add( gridHelper );
-						vehicleGroup.add( polarGridHelper );
-						vehicleGroup.add( axesHelper );
+										const vehicleGroup = new THREE.Group()
+										vehicleGroup.name = "Vehicle"
 
-						// Apply RTK to Vehicle Mesh Extrinsics:
-	          object.name = "Vehicle Mesh";
-	          object.scale.multiplyScalar(.01);
-						object.rotation.set(0*Math.PI / 2, 0*Math.PI/2., 1*Math.PI/2.0); // Chevy Volt
-						object.position.sub(new THREE.Vector3(0, 0, 2)); // Chevy Volt
+										{ // render the path
+											let geometry = new THREE.Geometry()
+											for (let ii = 0; ii < rtkTrajectory.numStates; ii++) {
+												geometry.vertices[ii] =
+														rtkTrajectory.states[ii].pose.clone()
+											}
+											let material = new THREE.LineBasicMaterial(
+													{color: new THREE.Color(0x00ff00)})
+											material.uniforms = {initialTime: {value: t_init}}
+											// material.opacity = 0.0;
+											// material.transparent = true;
+											let line = new THREE.Line(geometry, material,
+													{closed: closedPath})
+											line.name = "RTK Trajectory"
+											line.visible = false
+											viewer.scene.scene.add(line)
+											viewer.scene.dispatchEvent({
+												"type": "vehicle_layer_added", "vehicleLayer": line
+											})
+										}
 
-						// Initialize Vehicle Group:
-						vehicleGroup.position.set(...pos[0]);
-						applyRotation(vehicleGroup, rot[0][0], rot[0][1], rot[0][2]);
-						vehicleGroup.rotation.set(...rot[0]);
-						vehicleGroup.rtkTrajectory = rtkTrajectory;
-						vehicleGroup.add( object );
+										// Add Polar Grid Helper:
+										const gridRadius = 100 // meters
+										const gridSpacing = 5 // meters
+										const scaleFactor = 1 // HACK for now because attached to vehicle mesh which is 1/100th scale
+										const gridHelper = new THREE.GridHelper(
+												scaleFactor * 2 * gridRadius,
+												2 * gridRadius / gridSpacing, 0x0000ff, 0x808080)
+										gridHelper.name = "Cartesian Grid"
+										gridHelper.rotateOnAxis(new THREE.Vector3(1, 0, 0),
+												Math.PI / 2)
+										gridHelper.position.z -= 2
+										gridHelper.visible = false
+										viewer.scene.dispatchEvent({
+											"type": "vehicle_layer_added", "vehicleLayer": gridHelper
+										})
+										const polarGridHelper = new THREE.PolarGridHelper(
+												scaleFactor * gridRadius, 16, gridRadius / gridSpacing,
+												64, 0x0000ff, 0x808080)
+										polarGridHelper.name = "Polar Grid"
+										polarGridHelper.rotateOnAxis(new THREE.Vector3(1, 0, 0),
+												Math.PI / 2)
+										polarGridHelper.position.z -= 2
+										polarGridHelper.visible = false
+										viewer.scene.dispatchEvent({
+											"type": "vehicle_layer_added",
+											"vehicleLayer": polarGridHelper
+										})
+										const axesHelper = new THREE.AxesHelper(
+												scaleFactor * gridSpacing)
+										axesHelper.name = "3D Axes"
+										axesHelper.position.z -= 2
+										// axesHelper.rotateOnAxis(new THREE.Vector3(0,0,1), -Math.PI/2);
+										axesHelper.visible = false
+										viewer.scene.dispatchEvent({
+											"type": "vehicle_layer_added", "vehicleLayer": axesHelper
+										})
 
-						// TODO New Camera Initialization:
-						let box = new THREE.Box3().setFromObject(vehicleGroup);
-						let node = new THREE.Object3D();
-						node.boundingBox = box;
-						viewer.zoomTo(node, 0.1, 500);
-						// viewer.scene.view.lookAt(object.position);
+										vehicleGroup.add(gridHelper)
+										vehicleGroup.add(polarGridHelper)
+										vehicleGroup.add(axesHelper)
 
-	          // viewer.scene.scene.add( object );
-	          viewer.scene.scene.add( vehicleGroup );
-						viewer.scene.dispatchEvent({"type": "vehicle_layer_added", "vehicleLayer": object });
+										// Apply RTK to Vehicle Mesh Extrinsics:
+										object.name = "Vehicle Mesh"
+										object.scale.multiplyScalar(.01)
+										object.rotation.set(0 * Math.PI / 2, 0 * Math.PI / 2.,
+												1 * Math.PI / 2.0) // Chevy Volt
+										object.position.sub(new THREE.Vector3(0, 0, 2)) // Chevy Volt
 
-						viewer.setFilterGPSTimeRange(0, 0); // Size 0 Time Window at start of timeline
-						removeLoadingScreen();
-	        }, onProgress, onError );
+										// Initialize Vehicle Group:
+										vehicleGroup.position.set(...pos[0])
+										applyRotation(vehicleGroup, rot[0][0], rot[0][1], rot[0][2])
+										vehicleGroup.rotation.set(...rot[0])
+										vehicleGroup.rtkTrajectory = rtkTrajectory
+										vehicleGroup.add(object)
+
+										// TODO New Camera Initialization:
+										let box = new THREE.Box3().setFromObject(vehicleGroup)
+										let node = new THREE.Object3D()
+										node.boundingBox = box
+										viewer.zoomTo(node, 0.1, 500)
+										// viewer.scene.view.lookAt(object.position);
+
+										// viewer.scene.scene.add( object );
+										viewer.scene.scene.add(vehicleGroup)
+										viewer.scene.dispatchEvent({
+											"type": "vehicle_layer_added", "vehicleLayer": object
+										})
+
+										viewer.setFilterGPSTimeRange(0, 0) // Size 0 Time Window at start of timeline
+										removeLoadingScreen()
+									}, onProgress, onError)
 	      }
 
 	      // ANIMATION:

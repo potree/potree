@@ -68,11 +68,10 @@ class AnimationEngine {
     this.tweenEngine.update(t);
   }
 
-  updateTimeForAll(t) {
-
+  updateTimeForAll() {
     // Update all targets with current time
-    for(let ii=0, len=this.tweenTargets.length; ii<len; ii++) {
-      this.tweenTargets[ii](this.timeline.t);
+    for (let ii = 0, len = this.tweenTargets.length; ii < len; ii++) {
+      this.tweenTargets[ii](this.timeline.t)
     }
   }
 }

@@ -441,7 +441,6 @@
 					callback();
 				}
 
-				// start loading second half of data
 				var loadingBar = getLoadingBar()
 	      		const path = pos.map(v => new THREE.Vector3(...v));
 	      		const orientations = rot.map(v => new THREE.Vector3(...v));
@@ -461,8 +460,8 @@
 	      // let texture = textureLoader.load(`${Potree.resourcePath}/models/bodybkgd.JPG`);
 	      let onProgress = function ( xhr ) {
 	        if ( xhr.lengthComputable ) {
-	          let percentComplete = xhr.loaded / xhr.total * 100;
-			  loadingBar.set(percentComplete + 50) // update progress (+50 bc 2nd half)
+				let percentComplete = xhr.loaded / xhr.total * 50 // 50% max because first 50% covered
+				loadingBar.set(percentComplete + 50) // update progress (+50 bc 1st half completed)
 	        }
 	      };
 	      texture.wrapS = THREE.RepeatWrapping;

@@ -437,11 +437,14 @@
 				animationEngine.launch();
 
 				if (callback) {
+					// first chunk of rtk data -see rtkLoaderFlatbuffer.js
 					callback();
 				}
 
-	      const path = pos.map(v => new THREE.Vector3(...v));
-	      const orientations = rot.map(v => new THREE.Vector3(...v));
+				// start loading second half of data
+				var loadingBar = getLoadingBar()
+	      		const path = pos.map(v => new THREE.Vector3(...v));
+	      		const orientations = rot.map(v => new THREE.Vector3(...v));
 				const samplingFreq = 100; // Hertz TODO hardcoded
 				const rtkTrajectory = new RtkTrajectory(path, orientations, timestamps, samplingFreq);
 				const closedPath = false;
@@ -459,6 +462,7 @@
 	      let onProgress = function ( xhr ) {
 	        if ( xhr.lengthComputable ) {
 	          let percentComplete = xhr.loaded / xhr.total * 100;
+			  loadingBar.set(percentComplete + 50) // update progress (+50 bc 2nd half)
 	        }
 	      };
 	      texture.wrapS = THREE.RepeatWrapping;
@@ -935,10 +939,14 @@ $(document).ready(() => {
 					gapShaderMaterial.uniforms.minGpsTime.value = currentTime - animationEngine.activeWindow.backward;
 					gapShaderMaterial.uniforms.maxGpsTime.value = currentTime + animationEngine.activeWindow.forward;
 				});
+<<<<<<< HEAD
 				window.gapsLoaded = true;
 				loadGapsButton.disabled = true;
 				removeLoadingScreen();
 			});
+=======
+			});		
+>>>>>>> 33349357... initial work- divides up first and second half of loading
 		}
 	});
 });

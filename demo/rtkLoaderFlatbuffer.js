@@ -26,7 +26,7 @@ export async function loadRtkFlatbuffer(s3, bucket, name, callback) {
                    }});
     request.on("httpDownloadProgress", (e) => {
       let loadingBar = getLoadingBar();
-      let val = 100*(e.loaded/e.total);
+      let val = 50*(e.loaded/e.total); // scale data to cap at 50% (chunk 1/2)
       val = Math.max(lastLoaded, val);
       loadingBar.set(val);
       lastLoaded = val;

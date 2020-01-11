@@ -24,49 +24,51 @@ export class NodeLoader{
 			},
 		});
 
+		let workerPath = Potree.scriptPath + '/workers/OctreeDecoderWorker.js';
+		let worker = Potree.workerPool.getWorker(workerPath);
 
-		let scale = node.octreeGeometry.scale;
+		worker.onmessage = function (e) {
+
+			let data = e.data;
+			let buffers = data.attributeBuffers;
+
+			Potree.workerPool.returnWorker(workerPath, worker);
+
+
+			let geometry = new THREE.BufferGeometry();
+			
+			for(let property in buffers){
+
+				let buffer = buffers[property].buffer;
+
+				if(property === "POSITION_CARTESIAN"){
+					geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(buffer), 3));
+				}else if(property === "RGBA"){
+					geometry.addAttribute('color', new THREE.BufferAttribute(new Uint8Array(buffer), 4, true));
+				}
+
+			}
+			// indices ??
+
+			node.geometry = geometry;
+			node.loaded = true;
+			node.loading = false;
+			Potree.numNodesLoading--;
+		};
+
 		let buffer = await response.arrayBuffer();
-		let view = new DataView(buffer);
 
-		let numPoints = node.numPoints;
-		let position = new Float32Array(3 * numPoints);
-		let rgba = new Uint8Array(4 * numPoints);
+		let pointAttributes = node.octreeGeometry.pointAttributes;
+		let scale = node.octreeGeometry.scale;
 
-		for(let i = 0; i < numPoints; i++){
+		let message = {
+			buffer: buffer,
+			pointAttributes: pointAttributes,
+			scale: scale,
+			min: node.boundingBox.min,
+		};
 
-			let byteOffset = i * 16;
-
-			let ix = view.getInt32(byteOffset + 0, true);
-			let iy = view.getInt32(byteOffset + 4, true);
-			let iz = view.getInt32(byteOffset + 8, true);
-
-			let x = ix * scale - node.boundingBox.min.x;
-			let y = iy * scale - node.boundingBox.min.y;
-			let z = iz * scale - node.boundingBox.min.z;
-
-			let r = view.getUint8(byteOffset + 12);
-			let g = view.getUint8(byteOffset + 13);
-			let b = view.getUint8(byteOffset + 14);
-
-			position[3 * i + 0] = x;
-			position[3 * i + 1] = y;
-			position[3 * i + 2] = z;
-
-			rgba[4 * i + 0] = r;
-			rgba[4 * i + 1] = g;
-			rgba[4 * i + 2] = b;
-		}
-
-		let geometry = new THREE.BufferGeometry();
-		geometry.addAttribute('position', new THREE.BufferAttribute(position, 3));
-		geometry.addAttribute('color', new THREE.BufferAttribute(rgba, 4, true));
-		// indices ??
-
-		node.geometry = geometry;
-		node.loaded = true;
-		node.loading = false;
-		Potree.numNodesLoading--;
+		worker.postMessage(message, [message.buffer]);
 
 	}
 
@@ -158,7 +160,7 @@ export class OctreeLoader_1_8{
 		let traverse = (node, nodeJson) => {
 			node.numPoints = nodeJson.numPoints;
 
-			node.spacing = node.spacing / 2;
+			// node.spacing = node.spacing / 2;
 			node.byteOffset = nodeJson.byteOffset;
 			node.byteSize = nodeJson.byteSize;
 			node.numPoints = nodeJson.numPoints;
@@ -169,6 +171,7 @@ export class OctreeLoader_1_8{
 
 				let childAABB = createChildAABB(node.boundingBox, index);
 				let child = new OctreeGeometryNode(childJson.name, octree, childAABB);
+				child.spacing = node.spacing / 2;
 				node.hasChildren = true;
 				
 				node.children[index] = child;

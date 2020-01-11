@@ -1,5 +1,5 @@
 
-import {TextSprite} from "../../TextSprite.js";
+
 import {OrientedImageControls} from "./OrientedImageControls.js";
 import { EventDispatcher } from "../../EventDispatcher.js";
 
@@ -40,15 +40,116 @@ function createMaterial(){
 			// resolution: { value: new THREE.Vector2() }
 			tColor: {value: new THREE.Texture() },
 			uNear: {value: 0.0},
-			uOpacity: {value: 0.5},
+			uOpacity: {value: 1.0},
 		},
 		vertexShader: vertexShader,
 		fragmentShader: fragmentShader,
 		side: THREE.DoubleSide,
 	} );
+
 	material.side = THREE.DoubleSide;
+
 	return material;
 }
+
+const planeGeometry = new THREE.PlaneGeometry(1, 1);
+const lineGeometry = new THREE.Geometry();
+
+lineGeometry.vertices.push(
+	new THREE.Vector3(-0.5, -0.5, 0),
+	new THREE.Vector3( 0.5, -0.5, 0),
+	new THREE.Vector3( 0.5,  0.5, 0),
+	new THREE.Vector3(-0.5,  0.5, 0),
+	new THREE.Vector3(-0.5, -0.5, 0),
+);
+
+export class OrientedImage{
+
+	constructor(id){
+
+		this.id = id;
+		this.fov = 1.0;
+		this.position = new THREE.Vector3();
+		this.rotation = new THREE.Vector3();
+		this.width = 0;
+		this.height = 0;
+		this.fov = 1.0;
+
+		const material = createMaterial();
+		const lineMaterial = new THREE.LineBasicMaterial( { color: 0x00ff00 } );
+		this.mesh = new THREE.Mesh(planeGeometry, material);
+		this.line = new THREE.Line(lineGeometry, lineMaterial);
+		this.texture = null;
+
+		this.mesh.orientedImage = this;
+	}
+
+	// setPosition(x, y, z){
+	// 	this.position.set(x, y, z);
+	// 	this.mesh.position.set(x, y, z);
+
+	// 	this.updateTransform();
+	// }
+
+	// setDimension(width, height){
+	// 	this.width = width;
+	// 	this.height = height;
+	// 	this.mesh.scale.set(width / height, 1, 1);
+
+	// 	this.updateTransform();
+	// }
+
+	// setRotation(omega, phi, kappa){
+
+	// 	const [rx, ry, rz] = [omega, phi, kappa]
+	// 		.map(THREE.Math.degToRad);
+
+	// 	this.rotation.set(rx, ry, rz);
+	// 	this.mesh.rotation.set(rx, ry, rz);
+
+	// 	this.updateTransform();
+	// }
+
+	// setFov(fov){
+	// 	this.fov = fov;
+
+	// 	this.updateTransform();
+	// }
+
+	set(position, rotation, dimension, fov){
+
+		let radians = rotation.map(THREE.Math.degToRad);
+
+		this.position.set(...position);
+		this.mesh.position.set(...position);
+
+		this.rotation.set(...radians);
+		this.mesh.rotation.set(...radians);
+
+		[this.width, this.height] = dimension;
+		this.mesh.scale.set(this.width / this.height, 1, 1);
+
+		this.fov = fov;
+
+		this.updateTransform();
+	}
+
+	updateTransform(){
+		let {mesh, line, fov} = this;
+
+		mesh.updateMatrixWorld();
+		const dir = mesh.getWorldDirection();
+		const alpha = THREE.Math.degToRad(fov / 2);
+		const d = -0.5 / Math.tan(alpha);
+		const move = dir.clone().multiplyScalar(d);
+		mesh.position.add(move);
+
+		line.position.copy(mesh.position);
+		line.scale.copy(mesh.scale);
+		line.rotation.copy(mesh.rotation);
+	}
+
+};
 
 export class OrientedImages extends EventDispatcher{
 
@@ -176,16 +277,16 @@ export class OrientedImageLoader{
 		const tEnd = performance.now();
 		console.log(tEnd - tStart);
 
-		const sp = new THREE.PlaneGeometry(1, 1);
-		const lg = new THREE.Geometry();
+		// const sp = new THREE.PlaneGeometry(1, 1);
+		// const lg = new THREE.Geometry();
 
-		lg.vertices.push(
-			new THREE.Vector3(-0.5, -0.5, 0),
-			new THREE.Vector3( 0.5, -0.5, 0),
-			new THREE.Vector3( 0.5,  0.5, 0),
-			new THREE.Vector3(-0.5,  0.5, 0),
-			new THREE.Vector3(-0.5, -0.5, 0),
-		);
+		// lg.vertices.push(
+		// 	new THREE.Vector3(-0.5, -0.5, 0),
+		// 	new THREE.Vector3( 0.5, -0.5, 0),
+		// 	new THREE.Vector3( 0.5,  0.5, 0),
+		// 	new THREE.Vector3(-0.5,  0.5, 0),
+		// 	new THREE.Vector3(-0.5, -0.5, 0),
+		// );
 
 		const {width, height} = cameraParams;
 		const orientedImages = [];
@@ -194,42 +295,44 @@ export class OrientedImageLoader{
 
 		for(const params of imageParams){
 
-			const material = createMaterial();
-			const lm = new THREE.LineBasicMaterial( { color: 0x00ff00 } );
-			const mesh = new THREE.Mesh(sp, material);
+			// const material = createMaterial();
+			// const lm = new THREE.LineBasicMaterial( { color: 0x00ff00 } );
+			// const mesh = new THREE.Mesh(sp, material);
 
 			const {x, y, z, omega, phi, kappa} = params;
-			const [rx, ry, rz] = [omega, phi, kappa]
-				.map(THREE.Math.degToRad);
+			// const [rx, ry, rz] = [omega, phi, kappa]
+			// 	.map(THREE.Math.degToRad);
 			
-			mesh.position.set(x, y, z);
-			mesh.scale.set(width / height, 1, 1);
-			mesh.rotation.set(rx, ry, rz);
-			{
-				mesh.updateMatrixWorld();
-				const dir = mesh.getWorldDirection();
-				const alpha = THREE.Math.degToRad(cameraParams.fov / 2);
-				const d = -0.5 / Math.tan(alpha);
-				const move = dir.clone().multiplyScalar(d);
-				mesh.position.add(move);
-			}
-			sceneNode.add(mesh);
-			material.uniforms.uOpacity.value = 1.0;
+			// mesh.position.set(x, y, z);
+			// mesh.scale.set(width / height, 1, 1);
+			// mesh.rotation.set(rx, ry, rz);
+			// {
+			// 	mesh.updateMatrixWorld();
+			// 	const dir = mesh.getWorldDirection();
+			// 	const alpha = THREE.Math.degToRad(cameraParams.fov / 2);
+			// 	const d = -0.5 / Math.tan(alpha);
+			// 	const move = dir.clone().multiplyScalar(d);
+			// 	mesh.position.add(move);
+			// }
+			// sceneNode.add(mesh);
 
-			const line = new THREE.Line(lg, lm);
-			line.position.copy(mesh.position);
-			line.scale.copy(mesh.scale);
-			line.rotation.copy(mesh.rotation);
-			sceneNode.add(line);
+			// const line = new THREE.Line(lg, lm);
+			// line.position.copy(mesh.position);
+			// line.scale.copy(mesh.scale);
+			// line.rotation.copy(mesh.rotation);
+			// sceneNode.add(line);
 
-			const orientedImage = {
-				mesh: mesh,
-				texture: null,
-				line: line,
-				params: params,
-				dimension:  [cameraParams.width, cameraParams.height],
-			};
-			mesh.orientedImage = orientedImage;
+			let orientedImage = new OrientedImage(params.id);
+			// orientedImage.setPosition(x, y, z);
+			// orientedImage.setRotation(omega, phi, kappa);
+			// orientedImage.setDimension(width, height);
+			let position = [x, y, z];
+			let rotation = [omega, phi, kappa];
+			let dimension = [width, height];
+			orientedImage.set(position, rotation, dimension, cameraParams.fov);
+
+			sceneNode.add(orientedImage.mesh);
+			sceneNode.add(orientedImage.line);
 			
 			orientedImages.push(orientedImage);
 		}
@@ -324,18 +427,14 @@ export class OrientedImageLoader{
 		};
 
 		const moveToImage = (image) => {
-			console.log("move to image " + image.params.id);
+			console.log("move to image " + image.id);
 
 			const mesh = image.mesh;
-			const newCamPos = new THREE.Vector3( 
-				image.params.x,
-				image.params.y,
-				image.params.z
-			);
+			const newCamPos = image.position.clone();
 			const newCamTarget = mesh.position.clone();
 
 			viewer.scene.view.setView(newCamPos, newCamTarget, 500, () => {
-				orientedImageControls.capture(image.params);
+				orientedImageControls.capture(image);
 			});
 
 			if(image.texture === null){
@@ -353,7 +452,7 @@ export class OrientedImageLoader{
 					}
 				);
 
-				const imagePath = `${imageParamsPath}/../${target.params.id}`;
+				const imagePath = `${imageParamsPath}/../${target.id}`;
 				new THREE.TextureLoader().load(imagePath,
 					(texture) => {
 						target.texture = texture;
@@ -383,8 +482,8 @@ export class OrientedImageLoader{
 
 			for(const image of orientedImages){
 				const world = image.mesh.matrixWorld;
-				const {dimension} = image;
-				const aspect = dimension[0] / dimension[1];
+				const {width, height} = image;
+				const aspect = width / height;
 
 				const camera = viewer.scene.getActiveCamera();
 

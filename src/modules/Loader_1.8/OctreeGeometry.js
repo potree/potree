@@ -88,7 +88,18 @@ export class OctreeGeometryNode{
 	}
 
 	dispose(){
-		console.warn("TODO: implement");
+		if (this.geometry && this.parent != null) {
+			this.geometry.dispose();
+			this.geometry = null;
+			this.loaded = false;
+
+			// this.dispatchEvent( { type: 'dispose' } );
+			for (let i = 0; i < this.oneTimeDisposeHandlers.length; i++) {
+				let handler = this.oneTimeDisposeHandlers[i];
+				handler();
+			}
+			this.oneTimeDisposeHandlers = [];
+		}
 	}
 
 };

@@ -175,6 +175,7 @@ export class OctreeLoader_1_8{
 				node.hasChildren = true;
 				
 				node.children[index] = child;
+				child.parent = node;
 
 				traverse(child, childJson);
 			}

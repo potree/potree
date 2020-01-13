@@ -36,7 +36,7 @@ export function loadTracks(s3, bucket, name, shaderMaterial, animationEngine, ca
       });
 
       request.on("complete", () => {
-        loadingBarTotal.set(Math.min(loadingBarTotal.value + (100/numberDownloads), 100));
+        loadingBarTotal.set(loadingBarTotal.value + (100/numberDownloads));
         loadingBar.set(0);
       });
     })();

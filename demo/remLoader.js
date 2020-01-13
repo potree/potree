@@ -1,4 +1,4 @@
-import { getLoadingBar, getLoadingBarTotal, numberDownloads } from "../common/overlay.js";
+import { getLoadingBar, getLoadingBarTotal, numberDownloads, removeLoadingScreen } from "../common/overlay.js";
 
 export async function loadRem(s3, bucket, name, remShaderMaterial, animationEngine, callback) {
   const tstart = performance.now();
@@ -37,6 +37,9 @@ export async function loadRem(s3, bucket, name, remShaderMaterial, animationEngi
       request.on("complete", () => {
         loadingBarTotal.set(loadingBarTotal.value + (100/numberDownloads));
         loadingBar.set(0);
+        if (loadingBarTotal.value >= 100) {
+          removeLoadingScreen();
+        }
       });
     })();
 

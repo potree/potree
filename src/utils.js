@@ -918,7 +918,7 @@ export class Utils {
 		}else{
 			// if there is no projection, assume [0, 1, 0] as north direction
 
-			const vec = p1.clone.add(new THREE.Vector3(0, 1, 0).multiplyScalar(distance));
+			const vec = p1.clone().add(new THREE.Vector3(0, 1, 0).multiplyScalar(distance));
 			
 			return vec;
 		}

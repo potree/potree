@@ -1193,7 +1193,7 @@ export class Viewer extends EventDispatcher{
 			e.preventDefault();
 		}
 
-		async function dropHandler(event){
+		let dropHandler = async (event) => {
 			console.log(event);
 			event.preventDefault();
 
@@ -1248,8 +1248,9 @@ export class Viewer extends EventDispatcher{
 				}
 				
 			}
-			
-		}
+		};
+
+
 		$("body")[0].addEventListener("dragenter", allowDrag);
 		$("body")[0].addEventListener("dragover", allowDrag);
 		$("body")[0].addEventListener("drop", dropHandler);

@@ -84,38 +84,6 @@ export class OrientedImage{
 		this.mesh.orientedImage = this;
 	}
 
-	// setPosition(x, y, z){
-	// 	this.position.set(x, y, z);
-	// 	this.mesh.position.set(x, y, z);
-
-	// 	this.updateTransform();
-	// }
-
-	// setDimension(width, height){
-	// 	this.width = width;
-	// 	this.height = height;
-	// 	this.mesh.scale.set(width / height, 1, 1);
-
-	// 	this.updateTransform();
-	// }
-
-	// setRotation(omega, phi, kappa){
-
-	// 	const [rx, ry, rz] = [omega, phi, kappa]
-	// 		.map(THREE.Math.degToRad);
-
-	// 	this.rotation.set(rx, ry, rz);
-	// 	this.mesh.rotation.set(rx, ry, rz);
-
-	// 	this.updateTransform();
-	// }
-
-	// setFov(fov){
-	// 	this.fov = fov;
-
-	// 	this.updateTransform();
-	// }
-
 	set(position, rotation, dimension, fov){
 
 		let radians = rotation.map(THREE.Math.degToRad);

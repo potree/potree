@@ -32,10 +32,9 @@ export async function loadRem(s3, bucket, name, remShaderMaterial, animationEngi
         val = Math.max(lastLoaded, val);
         loadingBar.set(val);
         lastLoaded = val;
-        console.log("Rem Loader: " + val);
       });
       
-      request.on("complete", (response) => {
+      request.on("complete", () => {
         loadingBarTotal.set(loadingBarTotal.value + (100/numberDownloads));
       });
     })();

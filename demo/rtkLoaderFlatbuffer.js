@@ -31,10 +31,9 @@ export async function loadRtkFlatbuffer(s3, bucket, name, callback) {
       val = Math.max(lastLoaded, val);
       loadingBar.set(val);
       lastLoaded = val;
-      console.log("Rtk Loader: " + val);
     });
 
-    request.on("complete", (response) => {
+    request.on("complete", () => {
       loadingBarTotal.set(loadingBarTotal.value + (100/numberDownloads));
     });
 

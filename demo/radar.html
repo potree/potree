@@ -290,6 +290,7 @@
 			document.getElementById("playbar_tmin").disabled = false;
 			document.getElementById("elevation_max").display = false;
 			document.getElementById("elevation_min").disabled = false;
+			let loadingBarTotal = getLoadingBarTotal
 
 			window.truthAnnotationMode = 0;	// 0: None, 1: Delete, 2: Add
 			let annotationScreen = $(`<div id="annotationScreen"><p id="annotation-label">ANNOTATION MODE: <b id="annotation-mode-text"></b></p></div>`);
@@ -343,6 +344,9 @@
 			// Load Data Sources in loadRtkCallback:
 			loadRtkCallback(s3, bucket, name, () => {
 
+                let loadingBar = getLoadingBar()
+                let loadingBarTotal = getLoadingBarTotal()
+
 				// Load Extrinsics:
 				window.extrinsics = {rtk2Vehicle: null, velo2Rtk: {}};
 				try {
@@ -379,7 +383,11 @@
 
 				// Load Lanes:
 				try {
-					loadLanesCallback(s3, bucket, name);
+					loadLanesCallback(s3, bucket, name, () => {
+                        if (loadingBarTotal.value >= 100) {
+                            removeLoadingScreen()
+                        }
+                    });
 				} catch (e) {
 					console.error("Could not load Lanes: ", e);
 				}
@@ -388,13 +396,21 @@
 				try {
 					// TODO shaderMaterial
 					let trackShaderMaterial = shaderMaterial.clone();
-					loadTracksCallback(s3, bucket, name, trackShaderMaterial, animationEngine);
+					loadTracksCallback(s3, bucket, name, trackShaderMaterial, animationEngine, () => {
+                        if (loadingBarTotal.value >= 100) {
+                            removeLoadingScreen()
+                        }
+                    });
 				} catch (e) {
 					console.error("Could not load Tracks: ", e);
 				}
 
-				try{
-					loadRemCallback(s3, bucket, name, animationEngine);
+				try {
+					loadRemCallback(s3, bucket, name, animationEngine, () => {
+                        if (loadingBarTotal.value >= 100) {
+                            removeLoadingScreen()
+                        }
+                    });
 				} catch (e) {
 					console.error("No rem points: ", e);
 				}
@@ -467,41 +483,50 @@
 					removeLoadingScreen()
 				}
 
-				let textureLoader = new THREE.TextureLoader(manager);
-				`${Potree.resourcePath}/models/Chevy_Volt_Segmented/reflection_1.png`, ()=>{
-					// onLoad
-					console.log("Done Loading Texture")
-				})
-				// let texture = textureLoader.load(`${Potree.resourcePath}/models/bodybkgd.JPG`);
-				let onProgress = function ( xhr ) {
-					if ( xhr.lengthComputable ) {
-						// update progress
-						// hack to get bar not to spasm while loading texture (first item)
-						let percentLoaded = xhr.loaded / xhr.total * (100 - currProgress); // scale max
-						percentLoaded += currProgress; // apply what was already done in first half
-						loadingBar.set(percentLoaded)
+					let loadingBar = getLoadingBar()
+					let loadingBarTotal = getLoadingBarTotal()
+
+					const path = pos.map(v => new THREE.Vector3(...v))
+					const orientations = rot.map(v => new THREE.Vector3(...v))
+					const samplingFreq = 100 // Hertz TODO hardcoded
+					const rtkTrajectory = new RtkTrajectory(path, orientations,
+						timestamps, samplingFreq)
+					const closedPath = false
+
+					// CREATE VEHICLE OBJECT:
+					// NOTE for Mustang: {texture: models/bodybkgd.JPG, mesh: models/1967-shelby-ford-mustang.obj}
+					// NOTE for Volt: {texture: models/Chevy_Volt_Segmented/Chevrolet_Volt_v1_exterior.png, mesh: resources/models/Chevy_Volt_Segmented/Chevy_Volt_2016.obj}
+					let manager = new THREE.LoadingManager()
+					manager.onProgress = function (item, loaded, total) {
+						console.log(item, loaded, total)
+						loadingBarTotal.set(loadingBarTotal.value + (100/numberDownloads));
+
+                        if (loadingBarTotal.value >= 100) {
+                            removeLoadingScreen()
+                        }
+					}
+					// when done loading everything
+					manager.onLoad = function () {
+					}
 
 					}
-				};
-				texture.wrapS = THREE.RepeatWrapping;
-				texture.wrapT = THREE.RepeatWrapping;
+					let textureLoader = new THREE.TextureLoader(manager)
+					let texture = textureLoader.load(
+						`${Potree.resourcePath}/models/Chevy_Volt_Segmented/reflection_1.png`, ()=>{
+							// onLoad
+						})
+					texture.wrapS = THREE.RepeatWrapping
+					texture.wrapT = THREE.RepeatWrapping
 
-				let geometry = new THREE.SphereGeometry( 2, 32, 32 );
-				let material = new THREE.MeshNormalMaterial( {side: THREE.DoubleSide, opacity: 0.92,transparent:true});
-				let sphere = new THREE.Mesh( geometry, material );
-				sphere.position.copy(new THREE.Vector3(...pos[0]));
-				// viewer.scene.scene.add( sphere );
+					let geometry = new THREE.SphereGeometry(2, 32, 32)
+					let material = new THREE.MeshNormalMaterial(
+						{ side: THREE.DoubleSide, opacity: 0.92, transparent: true })
+					let sphere = new THREE.Mesh(geometry, material)
+					sphere.position.copy(new THREE.Vector3(...pos[0]))
+					// viewer.scene.scene.add( sphere );
 
-
-				{ // Load Textured vehicle from obj
-					let onError = function ( xhr ) {};
-					let loader = new THREE.OBJLoader( manager );
-					loader.load(`${Potree.resourcePath}/models/Chevy_Volt_Segmented/volt_reduce.obj`,
-					// loader.load(`${Potree.resourcePath}/models/Chevy_Volt_Segmented/Chevy_Volt_2016.obj`,
-								function ( object ) {
-					object.traverse( function ( child ) {
-						if ( child instanceof THREE.Mesh ) {
-						child.material.map = texture;
+					{ // Load Textured vehicle from obj
+						let onError = function (xhr) {
 						}
 					} );
 
@@ -1001,7 +1026,7 @@ async function loadRemCallback(s3, bucket, name, animationEngine) {
 		// TODO Move this somewhere else
 		let trackShaderMaterial = shaderMaterial.clone();
 
-		async function loadTracksCallback(s3, bucket, name, trackShaderMaterial, animationEngine) {
+		async function loadTracksCallback(s3, bucket, name, trackShaderMaterial, animationEngine, callback) {
 			await loadTracks(s3, bucket, name, trackShaderMaterial, animationEngine, (trackGeometries) => {
 				let trackLayer = new THREE.Group();
 				trackLayer.name = "Tracked Objects";
@@ -1022,8 +1047,13 @@ async function loadRemCallback(s3, bucket, name, animationEngine) {
 					trackShaderMaterial.uniforms.minGpsTime.value = currentTime - animationEngine.activeWindow.backward;
 					trackShaderMaterial.uniforms.maxGpsTime.value = currentTime + animationEngine.activeWindow.forward;
 				});
-				removeLoadingScreen()	 // play button is ready to go at this point
+
+                if (callback)
+                {
+                    callback()
+                }
 			});
+
 		}
 
 

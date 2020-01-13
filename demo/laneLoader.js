@@ -1,6 +1,6 @@
 import { Measure } from "../src/utils/Measure.js";
 import { LaneSegments } from "./LaneSegments.js"
-import { getLoadingBar, getLoadingBarTotal, numberDownloads } from "../common/overlay.js";
+import { getLoadingBar, getLoadingBarTotal, numberDownloads, removeLoadingScreen } from "../common/overlay.js";
 
 
 export async function loadLanes(s3, bucket, name, fname, supplierNum, annotationMode, volumes, callback) {
@@ -46,10 +46,9 @@ export async function loadLanes(s3, bucket, name, fname, supplierNum, annotation
         val = Math.max(lastLoaded, val);
         loadingBar.set(val);
         lastLoaded = val;
-        console.log("Lane Loader: " + val);
       });
 
-      request.on("complete", (response) => {
+      request.on("complete", () => {
         loadingBarTotal.set(loadingBarTotal.value + (100/numberDownloads));
       });
     })();

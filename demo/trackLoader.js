@@ -33,12 +33,10 @@ export function loadTracks(s3, bucket, name, shaderMaterial, animationEngine, ca
         val = Math.max(lastLoaded, val);
         loadingBar.set(val);
         lastLoaded = val;
-        console.log("Track Loader: " + val);
       });
 
-      request.on("complete", (response) => {
-        loadingBarTotal.set(loadingBarTotal.value + (100/numberDownloads));
-        console.log("Total: " + loadingBarTotal.value);
+      request.on("complete", () => {
+        loadingBarTotal.set(Math.min(loadingBarTotal.value + (100/numberDownloads), 100));
       });
     })();
 

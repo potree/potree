@@ -1,4 +1,4 @@
-import { getLoadingBar, getLoadingBarTotal } from "../common/overlay.js";
+import { getLoadingBar, getLoadingBarTotal, numberDownloads } from "../common/overlay.js";
 
 export async function loadRem(s3, bucket, name, remShaderMaterial, animationEngine, callback) {
   const tstart = performance.now();
@@ -28,7 +28,6 @@ export async function loadRem(s3, bucket, name, remShaderMaterial, animationEngi
                        callback( remSphereMeshes );
                      }});
       request.on("httpDownloadProgress", (e) => {
-        // offset data (bar already started)
         let val = e.loaded/e.total * 100;  
         val = Math.max(lastLoaded, val);
         loadingBar.set(val);
@@ -36,9 +35,8 @@ export async function loadRem(s3, bucket, name, remShaderMaterial, animationEngi
         console.log("Rem Loader: " + val);
       });
       
-      request.on("success", (response) => {
-        // update total progress (6 total)
-        loadingBarTotal.set(loadingBarTotal.value + (100/6));
+      request.on("complete", (response) => {
+        loadingBarTotal.set(loadingBarTotal.value + (100/numberDownloads));
       });
     })();
 

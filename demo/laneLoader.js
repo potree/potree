@@ -1,6 +1,6 @@
 import { Measure } from "../src/utils/Measure.js";
 import { LaneSegments } from "./LaneSegments.js"
-import { getLoadingBar, getLoadingBarTotal } from "../common/overlay.js";
+import { getLoadingBar, getLoadingBarTotal, numberDownloads } from "../common/overlay.js";
 
 
 export async function loadLanes(s3, bucket, name, fname, supplierNum, annotationMode, volumes, callback) {
@@ -42,7 +42,6 @@ export async function loadLanes(s3, bucket, name, fname, supplierNum, annotation
                        callback( laneGeometries );
                      }});
       request.on("httpDownloadProgress", (e) => {
-        // offset data (bar already started)
         let val = e.loaded/e.total * 100;  
         val = Math.max(lastLoaded, val);
         loadingBar.set(val);
@@ -50,9 +49,8 @@ export async function loadLanes(s3, bucket, name, fname, supplierNum, annotation
         console.log("Lane Loader: " + val);
       });
 
-      request.on("success", (response) => {
-        // update total progress (6 total)
-        loadingBarTotal.set(loadingBarTotal.value + (100/6));
+      request.on("complete", (response) => {
+        loadingBarTotal.set(loadingBarTotal.value + (100/numberDownloads));
       });
     })();
 

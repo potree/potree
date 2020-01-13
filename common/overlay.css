@@ -36,6 +36,14 @@
   vertical-align: center;
 }
 
+#loading-bar::after {
+  content: "Individual Download";
+}
+
+#loading-bar-total::after {
+  content: "Total Progress";
+}
+
 #annotation-label {
  margin: auto;
  width: 50%;

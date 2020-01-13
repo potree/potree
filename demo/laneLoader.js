@@ -1,9 +1,13 @@
 import { Measure } from "../src/utils/Measure.js";
 import { LaneSegments } from "./LaneSegments.js"
+import { getLoadingBar, getLoadingBarTotal } from "../common/overlay.js";
 
 
 export async function loadLanes(s3, bucket, name, fname, supplierNum, annotationMode, volumes, callback) {
   const tstart = performance.now();
+  let loadingBar = getLoadingBar();
+  let loadingBarTotal = getLoadingBarTotal(); 
+  let lastLoaded = 0;
 
   // Logic for dealing with Map Supplier Data:
   const resolvedFilename = fname || 'lanes.fb';
@@ -27,7 +31,7 @@ export async function loadLanes(s3, bucket, name, fname, supplierNum, annotation
         Key: schemaFile
       });
 
-      s3.getObject({Bucket: bucket,
+      const request = s3.getObject({Bucket: bucket,
                     Key: objectName},
                    async (err, data) => {
                      if (err) {
@@ -37,6 +41,19 @@ export async function loadLanes(s3, bucket, name, fname, supplierNum, annotation
                        const laneGeometries = parseLanes(data.Body, FlatbufferModule, resolvedSupplierNum, annotationMode, volumes);
                        callback( laneGeometries );
                      }});
+      request.on("httpDownloadProgress", (e) => {
+        // offset data (bar already started)
+        let val = e.loaded/e.total * 100;  
+        val = Math.max(lastLoaded, val);
+        loadingBar.set(val);
+        lastLoaded = val;
+        console.log("Lane Loader: " + val);
+      });
+
+      request.on("success", (response) => {
+        // update total progress (6 total)
+        loadingBarTotal.set(loadingBarTotal.value + (100/6));
+      });
     })();
 
   } else {

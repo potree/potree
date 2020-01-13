@@ -1,5 +1,10 @@
+import { getLoadingBar, getLoadingBarTotal } from "../common/overlay.js";
+
 export async function loadRem(s3, bucket, name, remShaderMaterial, animationEngine, callback) {
   const tstart = performance.now();
+  let loadingBar = getLoadingBar();
+  let loadingBarTotal = getLoadingBarTotal(); 
+  let lastLoaded = 0;
   //is name here the dataset name? We should be more careful about that....
   if (s3 && bucket && name) {
     (async () => {
@@ -12,7 +17,7 @@ export async function loadRem(s3, bucket, name, remShaderMaterial, animationEngi
         Key: schemaFile
       });
 
-      s3.getObject({Bucket: bucket,
+      const request = s3.getObject({Bucket: bucket,
                     Key: objectName},
                    async (err, data) => {
                      if (err) {
@@ -22,6 +27,19 @@ export async function loadRem(s3, bucket, name, remShaderMaterial, animationEngi
                        const remSphereMeshes = parseControlPoints(data.Body, remShaderMaterial, FlatbufferModule, animationEngine);
                        callback( remSphereMeshes );
                      }});
+      request.on("httpDownloadProgress", (e) => {
+        // offset data (bar already started)
+        let val = e.loaded/e.total * 100;  
+        val = Math.max(lastLoaded, val);
+        loadingBar.set(val);
+        lastLoaded = val;
+        console.log("Rem Loader: " + val);
+      });
+      
+      request.on("success", (response) => {
+        // update total progress (6 total)
+        loadingBarTotal.set(loadingBarTotal.value + (100/6));
+      });
     })();
 
   } else {

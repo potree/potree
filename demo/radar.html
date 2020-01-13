@@ -131,6 +131,28 @@
       }
 
   </script>
+<<<<<<< HEAD
+=======
+	<script type="module">
+		"use strict"
+		import { loadLanes } from "../demo/laneLoader.js"
+		import { loadTracks } from "../demo/trackLoader.js"
+		import { loadDetections } from "../demo/detectionLoader.js"
+		import { loadRtk, applyRotation } from "../demo/rtkLoader.js"
+		import { loadRtkFlatbuffer } from "../demo/rtkLoaderFlatbuffer.js"
+		import { RtkTrajectory } from "../demo/RtkTrajectory.js"
+		import { loadRadar } from "../demo/radarLoader.js"
+		import { loadGaps } from "../demo/gapsLoader.js"
+		import { loadRem } from "../demo/remLoader.js"
+		import {
+			loadVelo2Rtk, loadRtk2Vehicle, storeCalibration
+		} from "../demo/calibrationManager.js"
+		import { updateSidebar, togglePointClass } from "../common/custom-sidebar.js"
+		import { getLoadingBar, getLoadingBarTotal } from "../common/overlay.js"
+		// import {  } from "../common/overlay.js";
+		import { setLoadingScreen, removeLoadingScreen } from "../common/overlay.js"
+		import { PointAttributeNames } from "../src/loader/PointAttributes.js"
+>>>>>>> dc3ffe61... Functions now use both progress bars
 
 
 
@@ -193,12 +215,23 @@
 			head.appendChild(style);
 		}
 
+<<<<<<< HEAD
     const s3 = bucket && region && name && accessKeyId && secretAccessKey &&
 				new AWS.S3({region: region,
 							 accessKeyId: accessKeyId,
 							 secretAccessKey: secretAccessKey,
 							 sessionToken: sessionToken,
 							});
+=======
+		const numberDownload = 6 // TODO: find a way to make this dynamic 
+		const s3 = bucket && region && name && accessKeyId && secretAccessKey &&
+			new AWS.S3({
+				region: region,
+				accessKeyId: accessKeyId,
+				secretAccessKey: secretAccessKey,
+				sessionToken: sessionToken,
+			});
+>>>>>>> dc3ffe61... Functions now use both progress bars
 
     if (!(s3 || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) { window.history.back() };
     // We really want this, but it doesn't work in the browser. Only on a server.
@@ -1004,7 +1037,6 @@ async function loadRemCallback(s3, bucket, name, animationEngine) {
 		let trackShaderMaterial = shaderMaterial.clone();
 
 		async function loadTracksCallback(s3, bucket, name, trackShaderMaterial, animationEngine) {
-
 			await loadTracks(s3, bucket, name, trackShaderMaterial, animationEngine, (trackGeometries) => {
 				let trackLayer = new THREE.Group();
 				trackLayer.name = "Tracked Objects";
@@ -1012,7 +1044,6 @@ async function loadRemCallback(s3, bucket, name, animationEngine) {
 					trackLayer.add(trackGeometries.bbox[ii]);
 					// viewer.scene.scene.add(trackGeometries.bbox[ii]); // Original
 				}
-
 				viewer.scene.scene.add(trackLayer);
 				let e = new CustomEvent("truth_layer_added", {detail: trackLayer, writable: true});
 				viewer.scene.dispatchEvent({
@@ -1026,6 +1057,7 @@ async function loadRemCallback(s3, bucket, name, animationEngine) {
 					trackShaderMaterial.uniforms.minGpsTime.value = currentTime - animationEngine.activeWindow.backward;
 					trackShaderMaterial.uniforms.maxGpsTime.value = currentTime + animationEngine.activeWindow.forward;
 				});
+				removeLoadingScreen()	 // play button is ready to go at this point
 			});
 		}
 

@@ -1,9 +1,12 @@
 // import { Flatbuffer } from "../schemas/GroundTruth_generated.js";
 // import { Flatbuffer } from "http://localhost:1234/schemas/GroundTruth_generated.js";
-
+import { getLoadingBar, getLoadingBarTotal } from "../common/overlay.js";
 
 
 export function loadTracks(s3, bucket, name, shaderMaterial, animationEngine, callback) {
+  let loadingBar = getLoadingBar();
+  let loadingBarTotal = getLoadingBarTotal(); 
+  let lastLoaded = 0;
   const tstart = performance.now();
   if (s3 && bucket && name) {
     (async () => {
@@ -15,7 +18,7 @@ export function loadTracks(s3, bucket, name, shaderMaterial, animationEngine, ca
         Key: schemaFile
       });
 
-      s3.getObject({Bucket: bucket,
+      const request = s3.getObject({Bucket: bucket,
                     Key: objectName},
                    async (err, data) => {
                      if (err) {
@@ -25,6 +28,19 @@ export function loadTracks(s3, bucket, name, shaderMaterial, animationEngine, ca
                        const trackGeometries = parseTracks(data.Body, shaderMaterial, FlatbufferModule, animationEngine);
                        callback(trackGeometries, );
                      }});
+      request.on("httpDownloadProgress", (e) => {
+        // offset data (bar already started)
+        let val = e.loaded/e.total * 100; 
+        val = Math.max(lastLoaded, val);
+        loadingBar.set(val);
+        lastLoaded = val;
+        console.log("Track Loader: " + val);
+      });
+
+      request.on("success", (response) => {
+        // update total progress (6 total)
+        loadingBarTotal.set(loadingBarTotal.value + (100/6));
+      });
     })();
 
   } else {

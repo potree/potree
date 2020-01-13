@@ -1,7 +1,9 @@
-import { getLoadingBar } from "../common/overlay.js";
+import { getLoadingBar, getLoadingBarTotal } from "../common/overlay.js";
 
 
 export async function loadRtkFlatbuffer(s3, bucket, name, callback) {
+  let loadingBar = getLoadingBar();
+  let loadingBarTotal = getLoadingBarTotal(); 
   let lastLoaded = 0;
   if (s3 && bucket && name) {
     const objectName = `${name}/0_Preprocessed/rtk.fb`;
@@ -25,11 +27,16 @@ export async function loadRtkFlatbuffer(s3, bucket, name, callback) {
                      callback(mpos, orientations, timestamps, t_init, t_range);
                    }});
     request.on("httpDownloadProgress", (e) => {
-      let loadingBar = getLoadingBar();
-      let val = 50*(e.loaded/e.total); // scale data to cap at 50% (chunk 1/2)
+      let val = (e.loaded/e.total); 
       val = Math.max(lastLoaded, val);
       loadingBar.set(val);
       lastLoaded = val;
+      console.log("Rtk Loader: " + val);
+    });
+
+    request.on("success", (response) => {
+      // update total progress (6 total)
+      loadingBarTotal.set(loadingBarTotal.value + (100/6));
     });
 
   } else {

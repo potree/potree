@@ -36,6 +36,7 @@ export async function loadRem(s3, bucket, name, remShaderMaterial, animationEngi
       
       request.on("complete", () => {
         loadingBarTotal.set(loadingBarTotal.value + (100/numberDownloads));
+        loadingBar.set(0);
       });
     })();
 

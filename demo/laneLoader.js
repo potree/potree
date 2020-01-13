@@ -50,7 +50,8 @@ export async function loadLanes(s3, bucket, name, fname, supplierNum, annotation
 
       request.on("complete", () => {
         loadingBarTotal.set(loadingBarTotal.value + (100/numberDownloads));
-      });
+        loadingBar.set(0);
+    });
     })();
 
   } else {

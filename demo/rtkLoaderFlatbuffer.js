@@ -35,6 +35,7 @@ export async function loadRtkFlatbuffer(s3, bucket, name, callback) {
 
     request.on("complete", () => {
       loadingBarTotal.set(loadingBarTotal.value + (100/numberDownloads));
+      loadingBar.set(0);
     });
 
   } else {

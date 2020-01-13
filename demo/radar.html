@@ -500,13 +500,14 @@
 					manager.onProgress = function (item, loaded, total) {
 						console.log(item, loaded, total)
 						loadingBarTotal.set(loadingBarTotal.value + (100/numberDownloads));
+                        loadingBar.set(0)
+					}
 
+					// when done loading everything
+					manager.onLoad = function () {
                         if (loadingBarTotal.value >= 100) {
                             removeLoadingScreen()
                         }
-					}
-					// when done loading everything
-					manager.onLoad = function () {
 					}
 
 					}

@@ -28,12 +28,33 @@ function updateAzimuth(viewer, measure){
 
 	azimuth.center.position.copy(p0.position);
 	azimuth.center.scale.set(2, 2, 2);
+	
+	azimuth.center.visible = false;
+	// azimuth.target.visible = false;
 
-	azimuth.target.position.copy(p1.position);
-	azimuth.target.scale.set(2, 2, 2);
 
-	azimuth.north.position.copy(northPos);
-	azimuth.north.scale.set(2, 2, 2);
+	{ // north
+		azimuth.north.position.copy(northPos);
+		azimuth.north.scale.set(2, 2, 2);
+
+		let distance = azimuth.north.position.distanceTo(camera.position);
+		let pr = Utils.projectedRadius(1, camera, distance, width, height);
+
+		let scale = (5 / pr);
+		azimuth.north.scale.set(scale, scale, scale);
+	}
+
+	{ // target
+		azimuth.target.position.copy(p1.position);
+		azimuth.target.position.z = azimuth.north.position.z;
+
+		let distance = azimuth.target.position.distanceTo(camera.position);
+		let pr = Utils.projectedRadius(1, camera, distance, width, height);
+
+		let scale = (5 / pr);
+		azimuth.target.scale.set(scale, scale, scale);
+	}
+
 
 	azimuth.circle.position.copy(p0.position);
 	azimuth.circle.scale.set(r, r, r);

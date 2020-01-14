@@ -262,15 +262,15 @@ function createAzimuth(){
 
 	azimuth.node = new THREE.Object3D();
 	azimuth.node.add(
-		azimuth.label,
-		azimuth.center,
-		azimuth.target,
-		azimuth.north,
 		azimuth.centerToNorth,
 		azimuth.centerToTarget,
 		azimuth.centerToTargetground,
 		azimuth.targetgroundToTarget,
 		azimuth.circle,
+		azimuth.label,
+		azimuth.center,
+		azimuth.target,
+		azimuth.north,
 	);
 
 	return azimuth;

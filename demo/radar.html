@@ -835,8 +835,6 @@ $(document).ready(() => {
 			reloadLanesButton.disabled = true;
 
 					{
-						$("#loading-bar")[0].style.display = "none";
-                        $("#loading-bar-total")[0].style.display = "none";
 						setLoadingScreen();
 						loadLanesCallback(s3, bucket, name, () => {
 							removeLoadingScreen();
@@ -1067,8 +1065,6 @@ async function loadRemCallback(s3, bucket, name, animationEngine) {
 			let loadDetectionsButton = $("#load_detections_button")[0];
 			loadDetectionsButton.addEventListener("mousedown", () => {
 				if (!window.detectionsLoaded) {
-					$("#loading-bar")[0].style.display = "none";
-                    $("#loading-bar-total")[0].style.display = "none";
 					setLoadingScreen();
 					let detectionShaderMaterial = shaderMaterial.clone();
 					detectionShaderMaterial.uniforms.color.value = new THREE.Color(0xFFA500);
@@ -1135,8 +1131,6 @@ async function loadRemCallback(s3, bucket, name, animationEngine) {
 			let loadRadarButton = $("#load_radar_button")[0];
 			loadRadarButton.addEventListener("mousedown", () => {
 				if (!window.radarLoaded) {
-					$("#loading-bar")[0].style.display = "none";
-                    $("#loading-bar-total")[0].style.display = "none";
 					setLoadingScreen();
 
 					loadRadar(s3, bucket, name, (geometry,t_init, boxBufferGeometries) => {

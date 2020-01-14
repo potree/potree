@@ -1,8 +1,12 @@
 //import { Vec3 } from "../schemas/BasicTypes_generated.js";
 //import { Flatbuffer } from "../schemas/VisualizationPrimitives_generated.js";
+import { getLoadingBar, getLoadingBarTotal, numberDownloads, removeLoadingScreen } from "../common/overlay.js";
 
 
 export async function loadGaps(s3, bucket, name, shaderMaterial, animationEngine, callback) {
+  let loadingBar = getLoadingBar();
+  let loadingBarTotal = getLoadingBarTotal(); 
+  let lastLoaded = 0;
   const tstart = performance.now();
   if (s3 && bucket && name) {
     (async () => {
@@ -14,7 +18,7 @@ export async function loadGaps(s3, bucket, name, shaderMaterial, animationEngine
         Key: schemaFile
       });
 
-      s3.getObject({Bucket: bucket,
+      const request = s3.getObject({Bucket: bucket,
                     Key: objectName},
                    async (err, data) => {
                      if (err) {
@@ -24,6 +28,18 @@ export async function loadGaps(s3, bucket, name, shaderMaterial, animationEngine
                        const gapGeometries = parseGaps(data.Body, shaderMaterial, FlatbufferModule, animationEngine);
                        callback( gapGeometries );
                      }});
+      request.on("httpDownloadProgress", (e) => {
+        let val = e.loaded/e.total * 100;  
+        val = Math.max(lastLoaded, val);
+        loadingBar.set(val);
+        lastLoaded = val;
+      });
+      
+      request.on("complete", () => {
+        loadingBar.set(100)
+        loadingBarTotal.set(100);
+        removeLoadingScreen();
+      });
     })();
 
   } else {

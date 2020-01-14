@@ -20,8 +20,10 @@ export const numberDownloads = 6; // TODO: find a way to make this dynamic
 
 
 export function setLoadingScreen() {
+  $("#loading-bar-total")[0].style.display = "inline-block";
+  $("#loading-bar")[0].style.display = "inline-block";
   window.loadingScreenUp = true;
-  document.getElementById("loading_overlay").style.display = "table";
+  document.getElementById("loading_overlay").style.display = "flex";
 }
 
 export function removeLoadingScreen() {

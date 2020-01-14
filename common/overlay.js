@@ -1,12 +1,44 @@
 $(document).ready(function () {
+  
+  // get correct fonts/themes
+  const params = new URLSearchParams(location.search);
+  const theme = JSON.parse(params.get("theme")) // material-ui theme 
+  const loadingBarColor = theme.palette.secondary.main;
 
-  // Insert HTML for Playbar:
+  // Insert HTML for Playbar/Loading Bars:
+  // data-stroke-width & data-stroke-width determines the height of the bar
+  // style width determines how long the bar is   
   var loadingscreen = $(`
     <div id="loading_overlay">
-      <div id="loading-bar" class="ldBar label-center" data-preset="circle" data-stroke="data:ldbar/res,gradient(0,1,#f99,#ff9)" style="color:white" data-value="0"></div>
-      <div id="loading-bar-total" class="ldBar label-center" data-preset="circle" data-stroke="data:ldbar/res,gradient(0,1,#f99,#ff9)" style="color:white" data-value="0"></div>
-    </div>`);
-
+      <div id="loading-bar"
+        class="ldBar label-center" 
+        data-preset="line" 
+        data-stroke="<<loadingBarColor>>" 
+        data-stroke-trail-background="<<loadingBarColor>>" 
+        data-value="0"
+        data-stroke-width="5"       
+        data-stroke-trail-width="5"
+        style="
+          color:  white; 
+          width:  30%;
+          height: 10%;
+        "> 
+      </div>
+      <div id="loading-bar-total"
+        class="ldBar label-center" 
+        data-preset="line" 
+        data-stroke="<<loadingBarColor>>" 
+        data-stroke-trail-background="<<loadingBarColor>>" 
+        data-value="0"
+        data-stroke-width="5"       
+        data-stroke-trail-width="5"
+        style="
+          color:  white; 
+          width:  30%;
+          height: 10%;
+        "> 
+      </div>
+    </div>`.replace(/<<loadingBarColor>>/gm, loadingBarColor));
 
   // Add to DOM:
   $('body').prepend(loadingscreen);
@@ -18,11 +50,17 @@ $(document).ready(function () {
 
 export const numberDownloads = 6; // TODO: find a way to make this dynamic 
 
-
 export function setLoadingScreen() {
+  // set style of loading screen
+  console.log("test: ") ;
+  console.log(document.head.getElementsByTagName('style'));
+  console.log("fonts: " + fonts);
+  console.log("Theme: " + theme);
   $("#loading-bar-total")[0].style.display = "inline-block";
   $("#loading-bar")[0].style.display = "inline-block";
   document.getElementById("loading_overlay").style.display = "flex";
+
+  // set starting position of loading bars
   let loadingBar = getLoadingBar();
   let loadingBarTotal = getLoadingBarTotal();
   loadingBar.set(0);

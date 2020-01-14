@@ -14,6 +14,7 @@
     justify-items: center;
     justify-content: center;
     align-items: center;
+    flex-direction: column; /* Stack bars */
 }
 
 .loading_text {
@@ -30,17 +31,16 @@
 
 #loading-bar #loading-bar-total {
   font-family: 'Open Sans', sans-serif;
-  color: #FFFFFF;
   text-shadow: none;
   display: inline-block;
   vertical-align: center;
 }
 
-#loading-bar::after {
+#loading-bar::before {
   content: "Individual Download";
 }
 
-#loading-bar-total::after {
+#loading-bar-total::before {
   content: "Total Progress";
 }
 

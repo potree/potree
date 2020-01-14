@@ -34,7 +34,7 @@ export async function loadRtkFlatbuffer(s3, bucket, name, callback) {
     });
 
     request.on("complete", () => {
-      loadingBarTotal.set(loadingBarTotal.value + (100/numberDownloads));
+      loadingBarTotal.set(Math.min(Math.ceil(loadingBarTotal.value + (100/numberDownloads))), 100);
       loadingBar.set(0);
       if (loadingBarTotal.value >= 100) {
         removeLoadingScreen();

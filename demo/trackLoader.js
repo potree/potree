@@ -22,7 +22,11 @@ export function loadTracks(s3, bucket, name, shaderMaterial, animationEngine, ca
                     Key: objectName},
                    async (err, data) => {
                      if (err) {
-                       console.log(err, err.stack);
+                        console.log(err, err.stack);
+                        // error, but everything else is loaded, then ok to proceed
+                        if (loadingBarTotal.value  >= 100 - (100/numberDownloads)) {
+                          removeLoadingScreen();
+                        }
                      } else {
                        const FlatbufferModule = await import(schemaUrl);
                        const trackGeometries = parseTracks(data.Body, shaderMaterial, FlatbufferModule, animationEngine);
@@ -36,8 +40,8 @@ export function loadTracks(s3, bucket, name, shaderMaterial, animationEngine, ca
       });
 
       request.on("complete", () => {
-        // Don't check for completion in this loader because screen is not ready to go at this point
-        loadingBarTotal.set(loadingBarTotal.value + (100/numberDownloads));
+        // Don't check for 100% when done loading tracks because callback still has work to do
+        loadingBarTotal.set(Math.min(Math.ceil(loadingBarTotal.value + (100/numberDownloads))), 100);
         loadingBar.set(0);
       });
     })();

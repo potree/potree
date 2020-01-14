@@ -49,9 +49,15 @@ export async function loadLanes(s3, bucket, name, fname, supplierNum, annotation
       });
 
       request.on("complete", () => {
-        loadingBarTotal.set(loadingBarTotal.value + (100/numberDownloads));
-        loadingBar.set(0);
-        if (loadingBarTotal.value >= 100) {
+        if (!annotationMode) {
+          loadingBarTotal.set(Math.min(Math.ceil(loadingBarTotal.value + (100/numberDownloads))), 100);
+          loadingBar.set(0);
+          if (loadingBarTotal.value >= 100) {
+            removeLoadingScreen();
+          }
+        }
+        else {
+          loadingBarTotal.set(100);
           removeLoadingScreen();
         }
     });
@@ -260,7 +266,7 @@ function createLaneGeometriesOld(lanes, supplierNum, annotationMode, volumes) {
       materialLeft = new THREE.MeshBasicMaterial({color: 0xffffff});
       materialSpine = new THREE.MeshBasicMaterial({color: 0x00ff00});
       materialRight = new THREE.MeshBasicMaterial({color: 0xffffff});
-  }
+    }
 
   let laneLeft, laneRight, laneSpine;
   laneLeft = new Measure(); laneLeft.name = "Lane Left"; laneLeft.closed = false; laneLeft.showCoordinates = true; laneLeft.showAngles = true;

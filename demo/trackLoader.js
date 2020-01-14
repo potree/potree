@@ -1,6 +1,6 @@
 // import { Flatbuffer } from "../schemas/GroundTruth_generated.js";
 // import { Flatbuffer } from "http://localhost:1234/schemas/GroundTruth_generated.js";
-import { getLoadingBar, getLoadingBarTotal, numberDownloads } from "../common/overlay.js";
+import { getLoadingBar, getLoadingBarTotal, numberDownloads, removeLoadingScreen } from "../common/overlay.js";
 
 
 export function loadTracks(s3, bucket, name, shaderMaterial, animationEngine, callback) {
@@ -36,6 +36,7 @@ export function loadTracks(s3, bucket, name, shaderMaterial, animationEngine, ca
       });
 
       request.on("complete", () => {
+        // Don't check for completion in this loader because screen is not ready to go at this point
         loadingBarTotal.set(loadingBarTotal.value + (100/numberDownloads));
         loadingBar.set(0);
       });

@@ -834,11 +834,12 @@ $(document).ready(() => {
 			// Disable Button:
 			reloadLanesButton.disabled = true;
 
-			{
-				$("#loading-bar")[0].style.display = "none";
-				setLoadingScreen();
-				loadLanesCallback(s3, bucket, name, () => {
-					removeLoadingScreen();
+					{
+						$("#loading-bar")[0].style.display = "none";
+                        $("#loading-bar-total")[0].style.display = "none";
+						setLoadingScreen();
+						loadLanesCallback(s3, bucket, name, () => {
+							removeLoadingScreen();
 
 					// TOGGLE BUTTON TEXT
 					if (window.annotateLanesModeActive) {
@@ -1067,6 +1068,7 @@ async function loadRemCallback(s3, bucket, name, animationEngine) {
 			loadDetectionsButton.addEventListener("mousedown", () => {
 				if (!window.detectionsLoaded) {
 					$("#loading-bar")[0].style.display = "none";
+                    $("#loading-bar-total")[0].style.display = "none";
 					setLoadingScreen();
 					let detectionShaderMaterial = shaderMaterial.clone();
 					detectionShaderMaterial.uniforms.color.value = new THREE.Color(0xFFA500);
@@ -1134,6 +1136,7 @@ async function loadRemCallback(s3, bucket, name, animationEngine) {
 			loadRadarButton.addEventListener("mousedown", () => {
 				if (!window.radarLoaded) {
 					$("#loading-bar")[0].style.display = "none";
+                    $("#loading-bar-total")[0].style.display = "none";
 					setLoadingScreen();
 
 					loadRadar(s3, bucket, name, (geometry,t_init, boxBufferGeometries) => {

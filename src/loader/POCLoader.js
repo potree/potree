@@ -74,6 +74,22 @@ function parseAttributes(cloudjs){
 			attributes.add(attribute);
 		}
 
+		{
+			// check if it has normals
+			let hasNormals = 
+				pointAttributes.find(a => a.name === "NormalX") !== undefined &&
+				pointAttributes.find(a => a.name === "NormalY") !== undefined &&
+				pointAttributes.find(a => a.name === "NormalZ") !== undefined;
+
+			if(hasNormals){
+				let vector = {
+					name: "NORMAL",
+					attributes: ["NormalX", "NormalY", "NormalZ"],
+				};
+				attributes.addVector(vector);
+			}
+		}
+
 		return attributes;
 	}
 

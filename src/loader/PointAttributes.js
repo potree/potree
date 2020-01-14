@@ -94,6 +94,7 @@ export class PointAttributes{
 		this.attributes = [];
 		this.byteSize = 0;
 		this.size = 0;
+		this.vectors = [];
 
 		if (pointAttributes != null) {
 			for (let i = 0; i < pointAttributes.length; i++) {
@@ -112,6 +113,10 @@ export class PointAttributes{
 		this.byteSize += pointAttribute.byteSize;
 		this.size++;
 	};
+
+	addVector(vector){
+		this.vectors.push(vector);
+	}
 
 	hasColors(){
 		for (let name in this.attributes) {

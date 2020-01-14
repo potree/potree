@@ -1,7 +1,7 @@
 
 
 import {Version} from "../Version.js";
-import {PointAttributes, PointAttribute} from "../loader/PointAttributes.js";
+import {PointAttributes, PointAttribute, PointAttributeTypes} from "../loader/PointAttributes.js";
 
 /* global onmessage:true postMessage:false */
 /* exported onmessage */
@@ -272,6 +272,64 @@ onmessage = function (event) {
 		}
 		
 		attributeBuffers["INDICES"] = { buffer: buff, attribute: PointAttribute.INDICES };
+	}
+
+	{ // handle attribute vectors
+
+		
+
+		let vectors = pointAttributes.vectors;
+
+		for(let vector of vectors){
+
+			let {name, attributes} = vector;
+			let numVectorElements = attributes.length;
+			let buffer = new ArrayBuffer(numVectorElements * numPoints * 4);
+			let f32 = new Float32Array(buffer);
+
+			let iElement = 0;
+			for(let sourceName of attributes){
+				let sourceBuffer = attributeBuffers[sourceName];
+				let {offset, scale} = sourceBuffer;
+				let cv = new CustomView(sourceBuffer.buffer);
+
+				// const getterMap = {
+				// 	"int8":   cv.getInt8,
+				// 	"int16":  cv.getInt16,
+				// 	"int32":  cv.getInt32,
+				// 	"int64":  cv.getInt64,
+				// 	"uint8":  cv.getUint8,
+				// 	"uint16": cv.getUint16,
+				// 	"uint32": cv.getUint32,
+				// 	"uint64": cv.getUint64,
+				// 	"float":  cv.getFloat32,
+				// 	"double": cv.getFloat64,
+				// };
+
+				let sourceAttribute = pointAttributes.attributes.find(a => a.name === sourceName);
+				// const getter = getterMap[sourceAttribute.type.name].bind(cv);
+				const getter = cv.getFloat32.bind(cv);
+
+				for(let j = 0; j < numPoints; j++){
+					let value = getter(j * 4);
+
+					f32[j * numVectorElements + iElement] = (value / scale) + offset;
+				}
+
+				iElement++;
+			}
+
+			let vecAttribute = new PointAttribute(name, PointAttributeTypes.DATA_TYPE_FLOAT, 3);
+
+			attributeBuffers[name] = { 
+				buffer: buffer, 
+				attribute: vecAttribute,
+				// offset: offset,
+				// scale: scale,
+			};
+
+		}
+
 	}
 
 	performance.mark("binary-decoder-end");

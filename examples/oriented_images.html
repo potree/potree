@@ -83,7 +83,7 @@
 	<script>
 
 		const cameraParamsPath = "http://5.9.65.151/mschuetz/potree/resources/pointclouds/helimap/epalinges/img_selected/IXM35_190522_nodistortion.xml";
-		const imageParamsPath = "http://5.9.65.151/mschuetz/potree/resources/pointclouds/helimap/epalinges/img_selected/Calib190522_MN95_NF02_cam.txt";
+		const imageParamsPath = "http://5.9.65.151/mschuetz/potree/resources/pointclouds/helimap/epalinges/img_selected/Calib190522_MN95_NF2_cam_estim.txt";
 
 		Potree.OrientedImageLoader.load(cameraParamsPath, imageParamsPath, viewer).then( images => {
 			viewer.scene.addOrientedImages(images);

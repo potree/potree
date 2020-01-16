@@ -37,13 +37,25 @@ export async function loadLanes(s3, bucket, name, fname, supplierNum, annotation
                      if (err) {
                        console.log(err, err.stack);
                        // have to increment progress bar since function that would isnt going to be called
-                       loadingBarTotal.set(Math.min(Math.ceil(loadingBarTotal.value + (100/numberTasks))), 100);
+                       if (!annotationMode) {
+                        loadingBarTotal.set(Math.min(Math.ceil(loadingBarTotal.value + (100/numberTasks))), 100);
+                       }
+                       else {
+                        loadingBar.set(100);
+                        loadingBarTotal.set(100);
+                        removeLoadingScreen();
+                       }
                       } else {
                        const FlatbufferModule = await import(schemaUrl);
                        const laneGeometries = await parseLanes(data.Body, FlatbufferModule, resolvedSupplierNum, annotationMode, volumes);
-                       loadingBarTotal.set(Math.min(Math.ceil(loadingBarTotal.value + (100/numberTasks))), 100);
-                       loadingBar.set(0);
-                       if (loadingBarTotal.value >= 100) {
+                       if (!annotationMode) {
+                        loadingBarTotal.set(Math.min(Math.ceil(loadingBarTotal.value + (100/numberTasks))), 100);
+                        loadingBar.set(0);
+                        if (loadingBarTotal.value >= 100) {
+                          removeLoadingScreen();
+                        }
+                       } else {
+                         loadingBarTotal.set(100);
                          removeLoadingScreen();
                        }
                        await pause();
@@ -66,8 +78,8 @@ export async function loadLanes(s3, bucket, name, fname, supplierNum, annotation
           }
         }
         else {
-          loadingBarTotal.set(100);
-          removeLoadingScreen();
+          loadingBarTotal.set(50); // second half is loading in parseLanes
+          loadingBar.set(0);
         }
       await pause();
     });
@@ -307,6 +319,10 @@ async function createLaneGeometriesOld(lanes, supplierNum, annotationMode, volum
   let loadingBar = getLoadingBar();
   let loadingBarTotal = getLoadingBarTotal();
   for(let ii=0, len=lanes.length; ii<len; ii++) {
+    if (annotationMode) {
+      // hack: bar will decrease itself over time for no reason unless continously set during annotate lanes
+      loadingBarTotal.set(50); 
+    }
     loadingBar.set(ii/len * 100); // update progress
     // put in pause so running javascript can hand over temp control to the UI
     // gives it an opportunity to repaint the UI for the loading bar element

@@ -820,7 +820,7 @@ $(document).ready(() => {
 
 					{
 						setLoadingScreen();
-						loadLanesCallback(s3, bucket, name, () => {
+						await loadLanesCallback(s3, bucket, name, () => {
 							removeLoadingScreen();
 
 					// TOGGLE BUTTON TEXT

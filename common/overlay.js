@@ -62,7 +62,7 @@ export const numberTasks = 10; // TODO: find a way to make this dynamic
 export async function pause(name) {
   // argument for debugging if user wants to log what is currently trying to set the progress bar
   if (name) { console.log("pause " + name);}
-  return new Promise(resolve => setTimeout(() => {resolve()}, 0.5));
+  return new Promise(resolve => setTimeout(() => {resolve()}, 0));
 }
 
 export function setLoadingScreen() {

@@ -94,7 +94,7 @@ async function parseRTK(bytesArray, FlatbufferModule) {
   let segOffset = 0;
   let segSize, viewSize, viewData;
   while (segOffset < numBytes) {
-    loadingBar.set(segOffset/numBytes * 100); // update individual task progress
+    loadingBar.set(Math.max(segOffset/numBytes * 100, loadingBar.value)); // update individual task progress
     // put in pause so running javascript can hand over temp control to the UI
     // gives it an opportunity to repaint the UI for the loading bar element
     await pause();

@@ -323,7 +323,7 @@ async function createLaneGeometriesOld(lanes, supplierNum, annotationMode, volum
       // hack: bar will decrease itself over time for no reason unless continously set during annotate lanes
       loadingBarTotal.set(50); 
     }
-    loadingBar.set(ii/len * 100); // update progress
+    loadingBar.set(Math.max(ii/len * 100, loadingBar.value)); // update progress
     // put in pause so running javascript can hand over temp control to the UI
     // gives it an opportunity to repaint the UI for the loading bar element
     await pause();

@@ -491,7 +491,7 @@
 						if (xhr.lengthComputable) {
 							// update progress
                             let percentLoaded = xhr.loaded / xhr.total
-                            loadingBar.set(percentLoaded * 100)
+                            loadingBar.set(Math.max(percentLoaded * 100, loadingBar.value))
 							await pause()
 						}
 					}

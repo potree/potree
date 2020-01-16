@@ -167,7 +167,7 @@ async function createTrackGeometries(shaderMaterial, tracks, animationEngine) {
   let loadingBar = getLoadingBar()
   for (let ss=0, numTracks=tracks.length; ss<numTracks; ss++) {
     let track = tracks[ss];
-    loadingBar.set(ss/numTracks * 100);
+    loadingBar.set(Math.max(ss/numTracks * 100, loadingBar.value));
     // put in pause so running javascript can hand over temp control to the UI
     // gives it an opportunity to repaint the UI for the loading bar element
     await pause(); 

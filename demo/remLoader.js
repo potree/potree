@@ -117,7 +117,7 @@ async function createControlMeshes(controlPoints, remShaderMaterial, FlatbufferM
   let allSpheres = [];
   let controlTimes = [];
   for(let ii=0, len=controlPoints.length; ii<len; ii++) {
-    loadingBar.set(ii/len * 100); // update individual task progress
+    loadingBar.set(Math.max(ii/len * 100, loadingBar.value)); // update individual task progress
     await pause()
 
     point = controlPoints[ii];

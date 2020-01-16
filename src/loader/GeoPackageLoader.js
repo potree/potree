@@ -64,7 +64,7 @@ export class GeoPackageLoader{
 			
 			let transform = params.transform;
 			if(!transform){
-				transform = {forward: () => {}};
+				transform = {forward: (arg) => arg};
 			}
 
 			const wasmPath = `${Potree.scriptPath}/lazylibs/sql.js/sql-wasm.wasm`;
@@ -89,7 +89,10 @@ export class GeoPackageLoader{
 
 			for(const table of tables.features){
 				const dao = data.getFeatureDao(table);
-				const geoJson = data.queryForGeoJSONFeaturesInTable(table, dao.getBoundingBox());
+
+				let boundingBox = dao.getBoundingBox();
+				boundingBox = boundingBox.projectBoundingBox(dao.projection, 'EPSG:4326');
+				const geoJson = data.queryForGeoJSONFeaturesInTable(table, boundingBox);
 
 				const matLine = new THREE.LineMaterial( {
 					color: new THREE.Color().setRGB(...getColor(table)),
@@ -103,7 +106,8 @@ export class GeoPackageLoader{
 				geo.node.add(node);
 
 				for(const [index, feature] of Object.entries(geoJson)){
-					const featureNode = GeoPackageLoader.featureToSceneNode(feature, matLine, transform);
+					//const featureNode = GeoPackageLoader.featureToSceneNode(feature, matLine, transform);
+					const featureNode = GeoPackageLoader.featureToSceneNode(feature, matLine, dao.projection, transform);
 					node.add(featureNode);
 				}
 			}
@@ -114,7 +118,7 @@ export class GeoPackageLoader{
 		return new Promise(resolver);
 	}
 
-	static featureToSceneNode(feature, matLine, transform){
+	static featureToSceneNode(feature, matLine, geopackageProjection, transform){
 		let geometry = feature.geometry;
 		
 		let color = new THREE.Color(1, 1, 1);
@@ -125,7 +129,7 @@ export class GeoPackageLoader{
 			let s = new THREE.Mesh(sg, sm);
 			
 			let [long, lat] = geometry.coordinates;
-			let pos = transform.forward([long, lat]);
+			let pos = transform.forward(geopackageProjection.forward([long, lat]));
 			
 			s.position.set(...pos, 20);
 			
@@ -138,7 +142,7 @@ export class GeoPackageLoader{
 			let min = new THREE.Vector3(Infinity, Infinity, Infinity);
 			for(let i = 0; i < geometry.coordinates.length; i++){
 				let [long, lat] = geometry.coordinates[i];
-				let pos = transform.forward([long, lat]);
+				let pos = transform.forward(geopackageProjection.forward([long, lat]));
 				
 				min.x = Math.min(min.x, pos[0]);
 				min.y = Math.min(min.y, pos[1]);
@@ -172,7 +176,8 @@ export class GeoPackageLoader{
 				let min = new THREE.Vector3(Infinity, Infinity, Infinity);
 				for(let i = 0; i < pc.length; i++){
 					let [long, lat] = pc[i];
-					let pos = transform.forward([long, lat]);
+					
+					let pos = transform.forward(geopackageProjection.forward([long, lat]));
 					
 					min.x = Math.min(min.x, pos[0]);
 					min.y = Math.min(min.y, pos[1]);

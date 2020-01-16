@@ -22,6 +22,8 @@ export async function loadTracks(s3, bucket, name, shaderMaterial, animationEngi
                    async (err, data) => {
                      if (err) {
                         console.log(err, err.stack);
+                        // have to increment progress bar since function that would isnt going to be called
+                        loadingBarTotal.set(Math.min(Math.ceil(loadingBarTotal.value + (100/numberTasks))), 100);
                         // error, but everything else is loaded, then ok to proceed
                         if (loadingBarTotal.value  >= 100 - (100/numberTasks)) {
                           removeLoadingScreen();

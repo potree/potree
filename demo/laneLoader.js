@@ -36,6 +36,7 @@ export async function loadLanes(s3, bucket, name, fname, supplierNum, annotation
                    async (err, data) => {
                      if (err) {
                        console.log(err, err.stack);
+                       // have to increment progress bar since function that would isnt going to be called
                        loadingBarTotal.set(Math.min(Math.ceil(loadingBarTotal.value + (100/numberTasks))), 100);
                       } else {
                        const FlatbufferModule = await import(schemaUrl);

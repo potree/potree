@@ -19,6 +19,8 @@ export async function loadRtkFlatbuffer(s3, bucket, name, callback) {
                  async (err, data) => {
                    if (err) {
                      console.log(err, err.stack);
+                     // have to increment progress bar since function that would isnt going to be called
+                     loadingBarTotal.set(Math.min(Math.ceil(loadingBarTotal.value + (100/numberTasks))), 100);
                    } else {
                      // const string = new TextDecoder().decode(data.Body);
                      // const {mpos, orientations, t_init, t_range} = parseRTK(string);
@@ -31,7 +33,7 @@ export async function loadRtkFlatbuffer(s3, bucket, name, callback) {
       val = Math.max(lastLoaded, val);
       loadingBar.set(val);
       lastLoaded = val;
-      await pause('rtk download');
+      await pause();
     });
 
     request.on("complete", async () => {

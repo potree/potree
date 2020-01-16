@@ -28,11 +28,14 @@ export async function loadRem(s3, bucket, name, remShaderMaterial, animationEngi
                        const FlatbufferModule = await import(schemaUrl);
                        const remSphereMeshes = await parseControlPoints(data.Body, remShaderMaterial, FlatbufferModule, animationEngine);
                        await callback( remSphereMeshes );
+                     }
+                     if (loadingBarTotal.value  == 100) {
+                      removeLoadingScreen();
                      }});
       request.on("httpDownloadProgress", async (e) => {
         let val = e.loaded/e.total * 100;  
         val = Math.max(lastLoaded, val);
-        loadingBar.set(val);
+        loadingBar.set(Math.max(val, loadingBar.value));
         lastLoaded = val;
         await pause();
       });

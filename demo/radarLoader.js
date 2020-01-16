@@ -24,7 +24,7 @@ export async function loadRadar(s3, bucket, name, callback) {
     request.on("httpDownloadProgress", (e) => {
       let val = e.loaded/e.total * 100;  
       val = Math.max(lastLoaded, val);
-      loadingBar.set(val);
+      loadingBar.set(Math.max(val, loadingBar.value));
       lastLoaded = val;
     });
     

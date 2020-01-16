@@ -24,10 +24,6 @@ export async function loadTracks(s3, bucket, name, shaderMaterial, animationEngi
                         console.log(err, err.stack);
                         // have to increment progress bar since function that would isnt going to be called
                         loadingBarTotal.set(Math.min(Math.ceil(loadingBarTotal.value + (100/numberTasks))), 100);
-                        // error, but everything else is loaded, then ok to proceed
-                        if (loadingBarTotal.value  >= 100 - (100/numberTasks)) {
-                          removeLoadingScreen();
-                        }
                      } else {
                        const FlatbufferModule = await import(schemaUrl);
                        const trackGeometries = await parseTracks(data.Body, shaderMaterial, FlatbufferModule, animationEngine);
@@ -38,11 +34,14 @@ export async function loadTracks(s3, bucket, name, shaderMaterial, animationEngi
                        }
                        await pause();
                        await callback(trackGeometries, );
+                     }
+                     if (loadingBarTotal.value  >= 100) {
+                      removeLoadingScreen();
                      }});
       request.on("httpDownloadProgress", async (e) => {
         let val = e.loaded/e.total * 100; 
         val = Math.max(lastLoaded, val);
-        loadingBar.set(val);
+        loadingBar.set(Math.max(val, loadingBar.value));
         lastLoaded = val;
         await pause();
       });

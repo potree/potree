@@ -27,11 +27,14 @@ export async function loadRtkFlatbuffer(s3, bucket, name, callback) {
                      const FlatbufferModule = await import(schemaUrl);
                      const {mpos, orientations, timestamps, t_init, t_range} = await parseRTK(data.Body, FlatbufferModule);
                      await callback(mpos, orientations, timestamps, t_init, t_range);
+                   }
+                   if (loadingBarTotal.value  >= 100) {
+                    removeLoadingScreen();
                    }});
     request.on("httpDownloadProgress", async (e) => {
       let val = (e.loaded/e.total); 
       val = Math.max(lastLoaded, val);
-      loadingBar.set(val);
+      loadingBar.set(Math.max(val, loadingBar.value));
       lastLoaded = val;
       await pause();
     });

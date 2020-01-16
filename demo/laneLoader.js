@@ -60,11 +60,14 @@ export async function loadLanes(s3, bucket, name, fname, supplierNum, annotation
                        }
                        await pause();
                        await callback( laneGeometries );
+                     }
+                     if (loadingBarTotal.value  >= 100) {
+                      removeLoadingScreen();
                      }});
       request.on("httpDownloadProgress", async (e) => {
         let val = e.loaded/e.total * 100;  
         val = Math.max(lastLoaded, val);
-        loadingBar.set(val);
+        loadingBar.set(Math.max(val, loadingBar.value));
         lastLoaded = val;
         await pause();
       });
